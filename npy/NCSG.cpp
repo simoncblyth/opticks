@@ -806,6 +806,15 @@ nquad NCSG::getQuad(unsigned idx, unsigned j)
     return qj ;
 }
 
+
+/** 
+NCSG::import
+---------------
+
+From complete binary tree buffer into nnode tree
+
+**/
+
 void NCSG::import()
 {
     if(m_verbosity > 1)
@@ -827,7 +836,7 @@ void NCSG::import()
               ;
     }
 
-    m_root = import_r(0, NULL) ;  // complete binary tree buffer -> node tree
+    m_root = import_r(0, NULL) ;  
     m_root->set_treedir(m_treedir) ; 
     m_root->set_treeidx(getTreeNameIdx()) ; 
 
@@ -1543,10 +1552,13 @@ NCSG* NCSG::LoadTree(const char* treedir, const NSceneConfig* config  )
 
 }
 
+
 NCSG* NCSG::FromNode(nnode* root, const NSceneConfig* config)
 {
     //assert( root->boundary && "must root->set_boundary(spec) first" );
     // stipulation no longer needed ??
+
+    nnode::Set_parent_links_r(root, NULL);
 
     NCSG* tree = new NCSG(root);
 

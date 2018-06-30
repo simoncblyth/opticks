@@ -538,7 +538,7 @@ GVolume* X4PhysicalVolume::convertNode(const G4VPhysicalVolume* const pv, GVolum
 
      GParts* pts = GParts::make( csg, boundaryName.c_str(), m_verbosity  );  // see GScene::createVolume 
 
-     LOG(error) << " make pts " << pts->id() ; 
+     //LOG(error) << " make pts " << pts->id() ; 
 
 
      pts->setBndLib(m_blib);

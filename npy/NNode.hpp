@@ -173,7 +173,8 @@ struct NPY_API nnode
     void dump_gtransform() const ;
     void dump_planes() const ;
   
-
+    // needed for NCSG::FromNode
+    static void Set_parent_links_r(nnode* node, nnode* parent);
 
     unsigned get_num_prim() const ;
     void collect_prim(std::vector<const nnode*>& prim) const ;

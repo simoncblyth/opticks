@@ -44,11 +44,13 @@ class X4_API X4Solid : public X4SolidBase
         double z ; 
     };
     public:
+        static void SetVerbosity(unsigned verbosity);
         static nnode* Convert(const G4VSolid* solid);
     public:
         X4Solid(const G4VSolid* solid); 
     private:
         void init();
+        static unsigned fVerbosity ; 
     private:
         void convertDisplacedSolid();
         void convertUnionSolid();

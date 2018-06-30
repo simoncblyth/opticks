@@ -12,17 +12,20 @@ EOU
 
 
 ab-base(){  echo  /usr/local/opticks/geocache ; }
-ab-cd(){   cd $(ab-dir) ; }
+ab-cd(){   cd $(ab-base) ; }
 
 ab-tmp(){ echo /tmp/$USER/opticks/bin/ab ; }
 
-ab-adir(){ echo DayaBay_VGDX_20140414-1300/g4_00.dae/96ff965744a2f6b78c24e33c80d3a4cd  ; }
-ab-bdir(){ echo OKX4Test_World0xc15cfc0_PV_g4live/g4ok_gltf/828722902b5e94dab05ac248329ffebe ; }
+ab-a-dir(){ echo DayaBay_VGDX_20140414-1300/g4_00.dae/96ff965744a2f6b78c24e33c80d3a4cd  ; }
+ab-b-dir(){ echo OKX4Test_World0xc15cfc0_PV_g4live/g4ok_gltf/828722902b5e94dab05ac248329ffebe ; }
+ab-a-idpath(){ echo $(ab-base)/$(ab-a-dir)/103 ; }
+ab-b-idpath(){ echo $(ab-base)/$(ab-b-dir)/1 ; }
 
-ab-tail(){ echo 5 ; }
 
-ab-a-(){ echo $(ab-base)/$(ab-adir)/103/GPartsAnalytic/$(ab-tail) ; }
-ab-b-(){ echo $(ab-base)/$(ab-bdir)/1/GParts/$(ab-tail) ; }
+ab-tail(){ echo ${AB_TAIL:-0} ; }
+
+ab-a-(){ echo $(ab-a-idpath)/GPartsAnalytic/$(ab-tail) ; }
+ab-b-(){ echo $(ab-b-idpath)/GParts/$(ab-tail) ; }
 
 ab-a(){  cd $(ab-a-); }
 ab-b(){  cd $(ab-b-); }
@@ -40,6 +43,13 @@ ab-diff()
    np.py
    md5 *
 }
+
+ab-blib()
+{
+   blib.py $(ab-a-idpath)
+   blib.py $(ab-b-idpath)
+}
+
 
 
 ab-i-(){ cat << EOP
@@ -67,13 +77,13 @@ def cf(a, b):
 
         gta = a[i].view(np.int32)[3][3]
         gtb = b[i].view(np.int32)[3][3]
-        #assert gta == gtb
+        assert gta == gtb
         msg = " gt mismatch " if gta != gtb else ""
 
         mx = np.max(a[i]-b[i])
         print " i:%3d tc:%3d gta:%2d gtb:%2d mx:%10s %s  " % ( i, tc, gta, gtb, mx, msg  )
-        #if mx > 0.:
-        #    print (a[i]-b[i])/mx
+        if mx > 0.:
+            print (a[i]-b[i])/mx
         pass
     pass
 pass

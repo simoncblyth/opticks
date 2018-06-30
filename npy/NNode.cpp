@@ -1223,15 +1223,36 @@ void nnode::collect_prim_r(std::vector<const nnode*>& prim, const nnode* node) /
 
 
 
+/** 
+nnode::set_parent_links_r
+--------------------------
 
+Parent are setup on import NCSG::import_r
+from the complete binary buffer.  But when 
+operating FromNode there is no "import" 
+so need a separate setup of parent links.
+Parent links are necessary for calculating 
+gtransforms.
 
+**/
+void nnode::Set_parent_links_r(nnode* node, nnode* parent) // static 
+{
+    if(node->parent == NULL)
+    {
+        //LOG(error) << " setting parent link " ; 
+        node->parent = parent ; 
+    }
+    else
+    {
+        assert( node->parent == parent && "not expecting to change parent links") ; 
+    }
 
-
-
-
-
-
-
+    if(node->left && node->right)
+    {
+        Set_parent_links_r(node->left,  node);
+        Set_parent_links_r(node->right, node);
+    }
+}
 
 
 

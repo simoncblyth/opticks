@@ -1,7 +1,18 @@
-OKX4Test_missing_PMT_partIdx2_transform
-=========================================
+FIXED : OKX4Test_missing_PMT_partIdx2_transform
+===================================================
 
-Succeed to reproduce the problem in X4SolidTest:test_cathode
+* Succeed to reproduce the problem in X4SolidTest:test_cathode
+
+* the transform is getting thru to nnode model, but it is set on the difference operator
+  (the sphere-with-inner is a primitive in G4 but a composite in OK) 
+
+* think going to gtransforms too soon, should be setting level transforms
+  and only calculating gtransforms as late as possible
+
+* FIXED : the problem was that the parent links were not set for NCSG::FromNode
+  so only the gtransform calc was not including transforms on operators
+
+
 
 ::
 

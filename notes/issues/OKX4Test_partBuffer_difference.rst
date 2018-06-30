@@ -1,11 +1,12 @@
 OKX4Test_partBuffer_difference
 =================================
 
+* mm2/3/4  :doc:`OKX4Test_missing_surfaces`
 
-
+* FIXED : transform difference in mm5 see  :doc:`OKX4Test_missing_PMT_partIdx2_transform`
 
 * hmm I initially thought similar issue to :doc:`subtree_instances_missing_transform` 
-  coming from the interafce between the CSG tree and structure tree
+  coming from the interafce between the CSG tree and structure tree, but seems not
 
 
 ::
@@ -50,10 +51,109 @@ OKX4Test_partBuffer_difference
 
 
 
+FIXED :  mm5 analytic diff in gtransforms
+----------------------------------------------
+
+::
+
+    epsilon:4 blyth$ ab-i
+    import numpy as np
+
+    a = np.load("/usr/local/opticks/geocache/DayaBay_VGDX_20140414-1300/g4_00.dae/96ff965744a2f6b78c24e33c80d3a4cd/103/GPartsAnalytic/5/partBuffer.npy")
+    ta = np.load("/usr/local/opticks/geocache/DayaBay_VGDX_20140414-1300/g4_00.dae/96ff965744a2f6b78c24e33c80d3a4cd/103/GPartsAnalytic/5/tranBuffer.npy")
+    pa = np.load("/usr/local/opticks/geocache/DayaBay_VGDX_20140414-1300/g4_00.dae/96ff965744a2f6b78c24e33c80d3a4cd/103/GPartsAnalytic/5/primBuffer.npy")
+
+    b = np.load("/usr/local/opticks/geocache/OKX4Test_World0xc15cfc0_PV_g4live/g4ok_gltf/828722902b5e94dab05ac248329ffebe/1/GParts/5/partBuffer.npy")
+    tb = np.load("/usr/local/opticks/geocache/OKX4Test_World0xc15cfc0_PV_g4live/g4ok_gltf/828722902b5e94dab05ac248329ffebe/1/GParts/5/tranBuffer.npy")
+    pb = np.load("/usr/local/opticks/geocache/OKX4Test_World0xc15cfc0_PV_g4live/g4ok_gltf/828722902b5e94dab05ac248329ffebe/1/GParts/5/primBuffer.npy")
+
+    def cf(a, b):
+        assert len(a) == len(b)
+        assert a.shape == b.shape
+        for i in range(len(a)):
+            tca = a[i].view(np.int32)[2][3]
+            tcb = b[i].view(np.int32)[2][3]
+            tc = tca 
+            assert tca == tcb
+            if tca != tcb:
+                print " tc mismatch %d %d " % (tca, tcb)
+            pass
+
+            gta = a[i].view(np.int32)[3][3]
+            gtb = b[i].view(np.int32)[3][3]
+            assert gta == gtb
+            msg = " gt mismatch " if gta != gtb else ""
+
+            mx = np.max(a[i]-b[i])
+            print " i:%3d tc:%3d gta:%2d gtb:%2d mx:%10s %s  " % ( i, tc, gta, gtb, mx, msg  )
+            if mx > 0.:
+                print (a[i]-b[i])/mx
+            pass
+        pass
+    pass
+    cf(a,b)
+
+    args: /opt/local/bin/ipython -i /tmp/blyth/opticks/bin/ab/i.py
+     i:  0 tc:  1 gta: 0 gtb: 0 mx:       0.0   
+     i:  1 tc:  2 gta: 0 gtb: 0 mx:       0.0   
+     i:  2 tc: 12 gta: 4 gtb: 4 mx:       0.0   
+     i:  3 tc:  2 gta: 0 gtb: 0 mx:       0.0   
+     i:  4 tc:  5 gta: 3 gtb: 3 mx:       0.0   
+     i:  5 tc:  0 gta: 0 gtb: 0 mx:       0.0   
+     i:  6 tc:  0 gta: 0 gtb: 0 mx:       0.0   
+     i:  7 tc:  5 gta: 1 gtb: 1 mx:       0.0   
+     i:  8 tc:  5 gta: 2 gtb: 2 mx:       0.0   
+     i:  9 tc:  0 gta: 0 gtb: 0 mx:       0.0   
+     i: 10 tc:  0 gta: 0 gtb: 0 mx:       0.0   
+     i: 11 tc:  0 gta: 0 gtb: 0 mx:       0.0   
+     i: 12 tc:  0 gta: 0 gtb: 0 mx:       0.0   
+     i: 13 tc:  0 gta: 0 gtb: 0 mx:       0.0   
+     i: 14 tc:  0 gta: 0 gtb: 0 mx:       0.0   
+     i: 15 tc:  1 gta: 0 gtb: 0 mx:       0.0   
+     i: 16 tc:  2 gta: 0 gtb: 0 mx:       0.0   
+     i: 17 tc: 12 gta: 4 gtb: 4 mx:       0.0   
+     i: 18 tc:  2 gta: 0 gtb: 0 mx:       0.0   
+     i: 19 tc:  5 gta: 3 gtb: 3 mx:       0.0   
+     i: 20 tc:  0 gta: 0 gtb: 0 mx:       0.0   
+     i: 21 tc:  0 gta: 0 gtb: 0 mx:       0.0   
+     i: 22 tc:  5 gta: 1 gtb: 1 mx:       0.0   
+     i: 23 tc:  5 gta: 2 gtb: 2 mx:       0.0   
+     i: 24 tc:  0 gta: 0 gtb: 0 mx:       0.0   
+     i: 25 tc:  0 gta: 0 gtb: 0 mx:       0.0   
+     i: 26 tc:  0 gta: 0 gtb: 0 mx:       0.0   
+     i: 27 tc:  0 gta: 0 gtb: 0 mx:       0.0   
+     i: 28 tc:  0 gta: 0 gtb: 0 mx:       0.0   
+     i: 29 tc:  0 gta: 0 gtb: 0 mx:       0.0   
+     i: 30 tc:  1 gta: 0 gtb: 0 mx:       0.0   
+     i: 31 tc:  3 gta: 0 gtb: 0 mx:       0.0   
+     i: 32 tc:  3 gta: 0 gtb: 0 mx:       0.0   
+     i: 33 tc:  7 gta: 1 gtb: 1 mx:       0.0   
+     i: 34 tc:  7 gta: 1 gtb: 1 mx:7.6293945e-06   
+    [[0. 0. 0. 0.]
+     [1. 0. 0. 0.]
+     [0. 0. 0. 0.]
+     [0. 0. 0. 0.]]
+     i: 35 tc:  7 gta: 2 gtb: 2 mx:1.9073486e-06   
+    [[0. 0. 0. 0.]
+     [1. 0. 0. 0.]
+     [0. 0. 0. 0.]
+     [0. 0. 0. 0.]]
+     i: 36 tc:  7 gta: 2 gtb: 2 mx:1.9073486e-06   
+    [[0. 0. 0. 0.]
+     [1. 0. 0. 0.]
+     [0. 0. 0. 0.]
+     [0. 0. 0. 0.]]
+     i: 37 tc:  3 gta: 0 gtb: 0 mx:       0.0   
+     i: 38 tc:  7 gta: 1 gtb: 1 mx:       0.0   
+     i: 39 tc:  7 gta: 1 gtb: 1 mx:       0.0   
+     i: 40 tc: 12 gta: 1 gtb: 1 mx:       0.0   
 
 
 
 
+
+mm5 : gtransform differences
+-------------------------------
 
 
 ::
@@ -143,8 +243,15 @@ OKX4Test_partBuffer_difference
     old buffer gtransformIdx (gta) always zero for typecodes 0/1/2/3  CSG_ZERO/UNION/SUBTRACTION/INTERSECTION
 
 
-gtransforms on operator nodes or not ?
------------------------------------------
+gtransforms on operator nodes or not ? 
+---------------------------------------------
+
+* only gtransforms on leaf/primitive nodes are used on GPU, but level transforms
+  on operator nodes and parent links on all nodes are required in order to 
+  be able to calculate those gtransforms on the primitives
+
+* gtransforms on operator nodes do no harm 
+
 
 analytic/csg.py:serialize collects transforms from all nodes in preorder fashion.
 
@@ -243,11 +350,6 @@ on the node.
     1025         node->gtransform = gtransform ;
     1026         node->gtransform_idx = gtransform_idx ; // 1-based, 0 for None
     1027     }
-
-
-
-
-
 
 
 Still small differences 

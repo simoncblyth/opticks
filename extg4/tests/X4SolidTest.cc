@@ -60,8 +60,8 @@ void test_solid(G4VSolid* so)
     SSys::run(BStr::concat("prim.py ", path, NULL )); 
 
 
-    // X4Mesh* xm = new X4Mesh(so) ; 
-    // xm->save(BStr::concat("/tmp/X4SolidTest/",so->GetName().c_str(),".gltf")); 
+    X4Mesh* xm = new X4Mesh(so) ; 
+    xm->save(BStr::concat("/tmp/X4SolidTest/",so->GetName().c_str(),".gltf")); 
 
 }
 
@@ -191,7 +191,8 @@ void test_union_of_two_differences()
 
 void test_cathode()
 {
-    const char* name_1 = "pmt-hemi-cathode-face0xc28c5f8" ;
+    //const char* name_1 = "pmt-hemi-cathode-face0xc28c5f8" ;
+    const char* name_1 = "face" ;
     double rmax_1 = 128.0 ; 
     double rmin_1 = 127.95 ; 
     double sphi_1 = 0 ; 
@@ -201,7 +202,8 @@ void test_cathode()
     
     G4VSolid* s_1 = new G4Sphere(name_1, rmin_1, rmax_1, sphi_1, dphi_1, sthe_1, dthe_1 );
     
-    const char* name_2 = "pmt-hemi-cathode-belly0xc28c668" ;
+    //const char* name_2 = "pmt-hemi-cathode-belly0xc28c668" ;
+    const char* name_2 = "belly" ;
     double rmax_2 = 99.0 ; 
     double rmin_2 = 98.95 ; 
     double sphi_2 = 0 ; 
@@ -211,11 +213,14 @@ void test_cathode()
     
     G4VSolid* s_2 = new G4Sphere(name_2, rmin_2, rmax_2, sphi_2, dphi_2, sthe_2, dthe_2 );
 
-    const char* name = "pmt-hemi-cathode0xc2f1ce8" ; 
+    //const char* name = "pmt-hemi-cathode0xc2f1ce8" ; 
+    const char* name = "cathode" ; 
     G4RotationMatrix* rot = NULL ; 
     G4ThreeVector tla(0,0,43.0);
 
     G4VSolid* cathode = new G4UnionSolid( name, s_1, s_2, rot, tla ) ; 
+
+    X4Solid::SetVerbosity(5) ; 
     test_solid(cathode); 
 
 }
@@ -225,6 +230,7 @@ void test_cathode()
 int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv);
+
 
     //test_G4Sphere();
     //test_G4Orb();

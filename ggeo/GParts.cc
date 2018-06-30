@@ -751,7 +751,7 @@ void GParts::add(GParts* other, unsigned verbosity )
         assert(getBndLib() == other->getBndLib());
     }
 
-    LOG(error) << " add other : " << other->id() ; 
+    //LOG(error) << " add other : " << other->id() ; 
 
 
     unsigned int n0 = getNumParts(); // before adding
