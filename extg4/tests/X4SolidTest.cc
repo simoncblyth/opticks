@@ -175,6 +175,52 @@ void test_union_of_two_differences()
 }
 
 
+/**
+::
+
+  697     <union name="pmt-hemi-cathode0xc2f1ce8">
+  698       <first ref="pmt-hemi-cathode-face0xc28c5f8"/>
+        695     <sphere aunit="deg" deltaphi="360" deltatheta="40.5049977101673" lunit="mm" name="pmt-hemi-cathode-face0xc28c5f8" rmax="128" rmin="127.95" startphi="0" starttheta="0"/>
+
+  699       <second ref="pmt-hemi-cathode-belly0xc28c668"/>
+        696     <sphere aunit="deg" deltaphi="360" deltatheta="26.7358890588877" lunit="mm" name="pmt-hemi-cathode-belly0xc28c668" rmax="99" rmin="98.95" startphi="0" starttheta="55.7186312061423"/>  700       <position name="pmt-hemi-cathode0xc2f1ce8_pos" unit="mm" x="0" y="0" z="43"/>
+  701     </union>
+
+**/
+
+
+void test_cathode()
+{
+    const char* name_1 = "pmt-hemi-cathode-face0xc28c5f8" ;
+    double rmax_1 = 128.0 ; 
+    double rmin_1 = 127.95 ; 
+    double sphi_1 = 0 ; 
+    double dphi_1 = 360.*CLHEP::pi/180. ; 
+    double sthe_1 = 0 ; 
+    double dthe_1 = 40.5049977101673*CLHEP::pi/180. ;
+    
+    G4VSolid* s_1 = new G4Sphere(name_1, rmin_1, rmax_1, sphi_1, dphi_1, sthe_1, dthe_1 );
+    
+    const char* name_2 = "pmt-hemi-cathode-belly0xc28c668" ;
+    double rmax_2 = 99.0 ; 
+    double rmin_2 = 98.95 ; 
+    double sphi_2 = 0 ; 
+    double dphi_2 = 360.*CLHEP::pi/180. ; 
+    double sthe_2 = 55.7186312061423*CLHEP::pi/180. ; 
+    double dthe_2 = 26.7358890588877*CLHEP::pi/180. ;
+    
+    G4VSolid* s_2 = new G4Sphere(name_2, rmin_2, rmax_2, sphi_2, dphi_2, sthe_2, dthe_2 );
+
+    const char* name = "pmt-hemi-cathode0xc2f1ce8" ; 
+    G4RotationMatrix* rot = NULL ; 
+    G4ThreeVector tla(0,0,43.0);
+
+    G4VSolid* cathode = new G4UnionSolid( name, s_1, s_2, rot, tla ) ; 
+    test_solid(cathode); 
+
+}
+
+
 
 int main(int argc, char** argv)
 {
@@ -190,7 +236,8 @@ int main(int argc, char** argv)
     //test_G4Ellipsoid();
     //test_G4Hype();
     //test_intersectWithPhiSegment();
-    test_union_of_two_differences();
+    //test_union_of_two_differences();
+    test_cathode();
 
     return 0 ; 
 }

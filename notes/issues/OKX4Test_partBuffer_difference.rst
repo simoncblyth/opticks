@@ -2,6 +2,60 @@ OKX4Test_partBuffer_difference
 =================================
 
 
+
+
+* hmm I initially thought similar issue to :doc:`subtree_instances_missing_transform` 
+  coming from the interafce between the CSG tree and structure tree
+
+
+::
+
+     621 /**
+     622 GMergedMesh::mergeVolumeAnalytic
+     623 ----------------------------------
+     624 
+     625 Analytic CSG combined at node level.
+     626 
+     627 NB this is a very rare/unsual piece of code, because of the meeting 
+     628 between the CSG tree of transforms and the structure tree of transforms/
+     629   
+     630 * doing the applyPlacementTransform inside GMergedMesh seems mal-placed ? 
+     631   Always have to search to find it.
+     632 
+     633 **/
+     634 
+     635 void GMergedMesh::mergeVolumeAnalytic( GParts* pts, GMatrixF* transform, unsigned verbosity )
+     636 {
+     637     LOG(debug) << "GMergedMesh::mergeVolumeAnalytic"
+     638                << " pts (often NULL) " << ( pts ? pts->desc() : "-" )
+     639                 ; 
+     640                 
+     641     if(!pts)    
+     642     {
+     643         LOG(debug) << "GMergedMesh::mergeVolumeAnalytic pts NULL " ;
+     644         return ; 
+     645         //assert(pts);
+     646     }   
+     647     
+     648     if(transform && !transform->isIdentity())
+     649     {
+     650         pts->applyPlacementTransform(transform, verbosity );
+     651     }   
+     652     
+     653     if(!m_parts) m_parts = new GParts() ;
+     654     
+     655     m_parts->add(pts, verbosity);
+     656 }   
+     657 
+
+
+
+
+
+
+
+
+
 ::
 
     epsilon:~ blyth$ ab-;ab-i
@@ -165,6 +219,8 @@ down the tree, and uniquely collected into m_gtransforms with the 1-based index 
 on the node.
 
 
+::
+
     1006         node = import_primitive( idx, typecode );
     1007 
     1008         node->parent = parent ;                // <-- parent hookup needed prior to gtransform collection 
@@ -187,90 +243,6 @@ on the node.
     1025         node->gtransform = gtransform ;
     1026         node->gtransform_idx = gtransform_idx ; // 1-based, 0 for None
     1027     }
-
-
-
-
-primIdx 2 missing transform, when restrict to primitives
-
-::
-
-    epsilon:analytic blyth$ ab-prim
-    /usr/local/opticks/geocache/DayaBay_VGDX_20140414-1300/g4_00.dae/96ff965744a2f6b78c24e33c80d3a4cd/103/GPartsAnalytic/5
-    prim (5, 4) part (41, 4, 4) tran (12, 3, 4, 4) 
-
-    primIdx 0 prim array([ 0, 15,  0,  0], dtype=int32) partOffset 0 numParts 15 tranOffset 0 planOffset 0  
-        Part  1  0            union     0.0    
-        Part  2  0     intersection     0.0    
-        Part 12  4         cylinder     -84.5    
-        Part  2  0     intersection     0.0    
-        Part  5  3           sphere     69.0    
-        Part  5  1           sphere     0.0    
-        Part  5  2           sphere     43.0    
-
-    primIdx 1 prim array([15, 15,  4,  0], dtype=int32) partOffset 15 numParts 15 tranOffset 4 planOffset 0  
-        Part  1  0            union     0.0    
-        Part  2  0     intersection     0.0    
-        Part 12  4         cylinder     -81.5    
-        Part  2  0     intersection     0.0    
-        Part  5  3           sphere     69.0    
-        Part  5  1           sphere     0.0    
-        Part  5  2           sphere     43.0    
-
-    primIdx 2 prim array([30,  7,  8,  0], dtype=int32) partOffset 30 numParts 7 tranOffset 8 planOffset 0  
-        Part  1  0            union     0.0    
-        Part  3  0       difference     0.0    
-        Part  3  0       difference     0.0    
-        Part  7  1          zsphere     0.0    
-        Part  7  1          zsphere     0.0    
-        Part  7  2          zsphere     43.0    
-        Part  7  2          zsphere     43.0    
-
-    primIdx 3 prim array([37,  3, 10,  0], dtype=int32) partOffset 37 numParts 3 tranOffset 10 planOffset 0  
-        Part  3  0       difference     0.0    
-        Part  7  1          zsphere     69.0    
-        Part  7  1          zsphere     69.0    
-
-    primIdx 4 prim array([40,  1, 11,  0], dtype=int32) partOffset 40 numParts 1 tranOffset 11 planOffset 0  
-        Part 12  1         cylinder     -81.5    
-    /usr/local/opticks/geocache/OKX4Test_World0xc15cfc0_PV_g4live/g4ok_gltf/828722902b5e94dab05ac248329ffebe/1/GParts/5
-    prim (5, 4) part (41, 4, 4) tran (11, 3, 4, 4) 
-
-    primIdx 0 prim array([ 0, 15,  0,  0], dtype=int32) partOffset 0 numParts 15 tranOffset 0 planOffset 0  
-        Part  1  0            union     0.0    
-        Part  2  0     intersection     0.0    
-        Part 12  4         cylinder     -84.5    
-        Part  2  0     intersection     0.0    
-        Part  5  3           sphere     69.0    
-        Part  5  1           sphere     0.0    
-        Part  5  2           sphere     43.0    
-
-    primIdx 1 prim array([15, 15,  4,  0], dtype=int32) partOffset 15 numParts 15 tranOffset 4 planOffset 0  
-        Part  1  0            union     0.0    
-        Part  2  0     intersection     0.0    
-        Part 12  4         cylinder     -81.5    
-        Part  2  0     intersection     0.0    
-        Part  5  3           sphere     69.0    
-        Part  5  1           sphere     0.0    
-        Part  5  2           sphere     43.0    
-
-    primIdx 2 prim array([30,  7,  8,  0], dtype=int32) partOffset 30 numParts 7 tranOffset 8 planOffset 0  
-        Part  1  0            union     0.0    
-        Part  3  0       difference     0.0    
-        Part  3  0       difference     0.0    
-        Part  7  1          zsphere     0.0    
-        Part  7  1          zsphere     0.0    
-        Part  7  1          zsphere     0.0    
-        Part  7  1          zsphere     0.0    
-
-    primIdx 3 prim array([37,  3,  9,  0], dtype=int32) partOffset 37 numParts 3 tranOffset 9 planOffset 0  
-        Part  3  0       difference     0.0    
-        Part  7  1          zsphere     69.0    
-        Part  7  1          zsphere     69.0    
-
-    primIdx 4 prim array([40,  1, 10,  0], dtype=int32) partOffset 40 numParts 1 tranOffset 10 planOffset 0  
-        Part 12  1         cylinder     -81.5    
-    epsilon:analytic blyth$ 
 
 
 

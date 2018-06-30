@@ -645,6 +645,17 @@ unsigned int GParts::getNumParts()
 }
 
 
+/**
+GParts::applyPlacementTransform
+--------------------------------
+
+1. transforms the entire m_tran_buffer with the passed transform, 
+   to avoid leaving behind constituents this means that every constituent
+   must have an associated transform, **even if its the identity transform**
+
+
+**/
+
 void GParts::applyPlacementTransform(GMatrix<float>* gtransform, unsigned verbosity )
 {
    // gets invoked from GMergedMesh::mergeVolumeAnalytic

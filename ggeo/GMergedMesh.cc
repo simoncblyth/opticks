@@ -618,14 +618,25 @@ void GMergedMesh::mergeVolumeFaces( unsigned nface, guint3* faces, unsigned* nod
 }
 
 
+/**
+GMergedMesh::mergeVolumeAnalytic
+----------------------------------
+
+Analytic CSG combined at node level.
+
+NB this is a very rare/unsual piece of code, because of the meeting 
+between the CSG tree of transforms and the structure tree of transforms/
+  
+* doing the applyPlacementTransform inside GMergedMesh seems mal-placed ? 
+  Always have to search to find it.
+
+**/
+
 void GMergedMesh::mergeVolumeAnalytic( GParts* pts, GMatrixF* transform, unsigned verbosity )
 {
-    // analytic CSG combined at node level  
-
     LOG(debug) << "GMergedMesh::mergeVolumeAnalytic" 
                << " pts (often NULL) " << ( pts ? pts->desc() : "-" )
                 ; 
-
 
     if(!pts)
     {
@@ -641,11 +652,7 @@ void GMergedMesh::mergeVolumeAnalytic( GParts* pts, GMatrixF* transform, unsigne
 
     if(!m_parts) m_parts = new GParts() ; 
 
-
     m_parts->add(pts, verbosity); 
-
-
-
 }
 
 

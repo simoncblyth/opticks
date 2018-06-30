@@ -1,6 +1,9 @@
 #!/usr/bin/env python
 """
 
+TODO: consolidate ana/prim.py with dev/csg/GParts.py 
+
+
 ::
 
     In [5]: p.primBuf

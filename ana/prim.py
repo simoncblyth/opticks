@@ -1,4 +1,16 @@
 #!/usr/bin/env python
+"""
+prim.py 
+=========
+
+Loads a list of primitives from a GParts persisted directory.
+Used for debugging things such as missing transforms.
+
+See: notes/issues/OKX4Test_partBuffer_difference.rst
+
+TODO: consolidate ana/prim.py with dev/csg/GParts.py 
+
+"""
 import sys, os, numpy as np
 
 from opticks.sysrap.OpticksCSG import CSG_
@@ -10,13 +22,27 @@ class Part(object):
         tc = u[2][3]
         tcn = CSG_.desc(tc)
         gt = u[3][3]
+        self.f = f
         self.tc = tc
         self.tcn = tcn 
         self.gt = gt
         self.tran = trans[gt-1] if gt > 0 else np.eye(4)
 
     def __repr__(self):
-        return "    Part %2s %2s  %15s     %s    " % ( self.tc, self.gt, self.tcn, repr(self.tran[3][2]) )
+        return "    Part %2s %2s  %15s     tz:%10.3f    %s  " % ( self.tc, self.gt, self.tcn, self.tran[3][2], self.detail() )
+
+    def detail(self):
+        if self.tc == CSG_.ZSPHERE:
+            msg = " r: %10.3f z1:%10.3f z2:%10.3f " % ( self.f[0][3], self.f[1][0], self.f[1][1] ) 
+        elif self.tc == CSG_.SPHERE:
+            msg = " r: %10.3f " % ( self.f[0][3]  ) 
+        elif self.tc == CSG_.CYLINDER:
+            msg = " r: %10.3f z1:%10.3f z2:%10.3f " % ( self.f[0][3], self.f[1][0], self.f[1][1] ) 
+        else:
+            msg = ""
+        pass
+        return msg 
+        
 
 
 class Prim(object):
