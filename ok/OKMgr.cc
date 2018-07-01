@@ -40,7 +40,7 @@ int OKMgr::rc() const
 OKMgr::OKMgr(int argc, char** argv, const char* argforced ) 
     :
     m_log(new SLog("OKMgr::OKMgr")),
-    m_ok(Opticks::GetInstance() ? Opticks::GetInstance() : new Opticks(argc, argv, argforced)),         
+    m_ok(Opticks::HasInstance() ? Opticks::GetInstance() : new Opticks(argc, argv, argforced)),         
     m_hub(new OpticksHub(m_ok)),            // immediate configure and loadGeometry 
     m_idx(new OpticksIdx(m_hub)),
     m_num_event(m_ok->getMultiEvent()),     // after hub instanciation, as that configures Opticks
@@ -74,7 +74,7 @@ void OKMgr::propagate()
 {
     const Opticks& ok = *m_ok ; 
     
-    if(ok("nopropagate")) return ; 
+    if(ok("nopropagate|tracer")) return ; 
 
     bool production = m_ok->isProduction();
 

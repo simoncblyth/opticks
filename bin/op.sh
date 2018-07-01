@@ -731,7 +731,7 @@ op-lldb-dump()
 
 op-lldb-runline()
 { 
-   if [ -n "${OPTICKS_LLDB_SOURCE}" -a -f ${OPTICKS_LLDB_SOURCE} ] ; then 
+   if [ -n "${OPTICKS_LLDB_SOURCE}" -a -f "${OPTICKS_LLDB_SOURCE}" ] ; then 
       #echo lldb -f ${OPTICKS_BINARY} -s ${OPTICKS_LLDB_SOURCE} -s ${OPTICKS_LLDB_SOURCE}.autorun -- ${OPTICKS_ARGS} 
       # autorun manages to launch the process but output does not arrive in lldb console, 
       # and seemingly input doesnt get to the the app
@@ -795,6 +795,9 @@ op-ls()
 }
 
 
+#if [ -n "$OPTICKS_DEBUG_SCRIPT" ] ; then
+#   echo args $* 
+#fi 
 
 
 #opticks-

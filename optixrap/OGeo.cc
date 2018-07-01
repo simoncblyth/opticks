@@ -263,7 +263,7 @@ void OGeo::convertMergedMesh(unsigned i)
 
 optix::Group OGeo::makeRepeatedGroup(GMergedMesh* mm, bool raylod)
 {
-    const char geocode = mm->getGeoCode();
+    const char geocode = m_ok->isXAnalytic() ? OpticksConst::GEOCODE_ANALYTIC : mm->getGeoCode();
     assert( geocode == OpticksConst::GEOCODE_TRIANGULATED || geocode == OpticksConst::GEOCODE_ANALYTIC ) ;
 
     float instance_bounding_radius = mm->getBoundingRadiusCE(0) ; 
@@ -298,7 +298,7 @@ optix::Group OGeo::makeRepeatedGroup(GMergedMesh* mm, bool raylod)
     tri[0] = makeTriangulatedGeometry(mm, 0u );
     tri[1] = makeTriangulatedGeometry(mm, 1u );
 
-    if(m_gltf > 0)
+    if(m_gltf > 0 || m_ok->isXAnalytic() )
     {
         ana[0] = makeAnalyticGeometry(mm, 0u ) ; 
         ana[1] = makeAnalyticGeometry(mm, 1u ) ; 
@@ -590,7 +590,7 @@ optix::GeometryGroup OGeo::makeGeometryGroup(optix::GeometryInstance gi, optix::
 optix::Geometry OGeo::makeGeometry(GMergedMesh* mergedmesh, unsigned lod)
 {
     optix::Geometry geometry ; 
-    const char geocode = mergedmesh->getGeoCode();
+    const char geocode = m_ok->isXAnalytic() ? OpticksConst::GEOCODE_ANALYTIC : mergedmesh->getGeoCode() ;
 
     LOG(info) << "OGeo::makeGeometry geocode " << geocode ; 
 

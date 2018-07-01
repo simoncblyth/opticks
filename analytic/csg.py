@@ -786,6 +786,10 @@ class CSG(CSG_):
 
         lvidx = os.path.basename(treedir)
         tboolpath = self.tboolpath(treedir, lvidx)
+
+        soidx = 0 
+        idxbuf = np.array([0, soidx, lvidx, 0], dtype=np.uint32) 
+
         self.write_tbool(lvidx, tboolpath)
 
         nntpath = self.nntpath(treedir, lvidx)
@@ -802,6 +806,13 @@ class CSG(CSG_):
             planepath = self.planepath(treedir)
             np.save(planepath, planebuf)
         pass
+        if idxbuf is not None:
+            idxpath = self.idxpath(treedir)
+            np.save(idxpath, idxbuf)
+        pass
+
+
+
 
 
     stream = property(lambda self:self.save(sys.stdout))
@@ -812,6 +823,8 @@ class CSG(CSG_):
     @classmethod
     def planepath(cls, treedir):
         return os.path.join(treedir,"planes.npy") 
+    def idxpath(cls, treedir):
+        return os.path.join(treedir,"idx.npy") 
     @classmethod
     def vertpath(cls, treedir):
         return os.path.join(treedir,"srcverts.npy") 

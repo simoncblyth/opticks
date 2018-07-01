@@ -96,10 +96,8 @@ void NTreeBuilder<T>::init()
     for(unsigned i=0 ; i < m_subs.size() ; i++)
     {
         T* sub = m_subs[i] ;
-        if(m_verbosity > 2)
-        {
-            std::cout << sub->desc() << std::endl ; 
-        }
+        //if(m_verbosity > 2) std::cout << sub->desc() << std::endl ; 
+
         if( m_bileaf )
         {
             assert( sub->is_bileaf() );

@@ -13,7 +13,7 @@ Works with node structs with members:
 * char* label  
 
 Trying to stay const correct, makes difficult to 
-use in NNodeAnalyse
+use in NTreeAnalyse
 
 
 **/

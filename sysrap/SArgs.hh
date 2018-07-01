@@ -16,6 +16,9 @@ struct SArgs
 Allows combining standard arguments with arguments 
 from a split string.
 
+TODO: Why is this implemented in the header ? Was is for some logging reason ?
+      Investigate and fix as it forces recompilation of  everything following changes.
+
 
 **/
 
@@ -32,6 +35,11 @@ struct SArgs
         for(int i=0 ; i < argc_ ; i++) elem.push_back(argv_[i]) ;
     }
 
+    static bool starts_with( const std::string& e, const char* pfx )
+    {
+        return strncmp(e.c_str(), pfx, strlen(pfx)) == 0 ;
+    }
+
     void addElements(const std::string& line, bool dedupe)
     {
         // split string on whitespace
@@ -44,11 +52,23 @@ struct SArgs
         for(std::vector<std::string>::const_iterator it=vs.begin() ; it != vs.end() ; it++)
         {
             std::string e = *it ; 
-            bool skip = dedupe && std::find(elem.begin(), elem.end(), e) != elem.end() ;
+
+            /*
+            Need to only skip when looks like an option, starting with "--"
+            otherwise will skip repeated argument values too ... 
+            which causes many tboolean- tests to fail, from skipped values
+            causing option parse errors.
+            */
+
+            bool skip = dedupe && starts_with(e, "--") && std::find(elem.begin(), elem.end(), e) != elem.end() ;
             if(skip) 
-                printf("dedupe skipping %s \n", e.c_str());
+            {
+                printf("SArgs.hh: dedupe skipping %s \n", e.c_str());
+            }
             else 
+            {
                 elem.push_back(e);
+            }
         }
     } 
 

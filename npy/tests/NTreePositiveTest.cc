@@ -9,7 +9,7 @@
 #include "NBox.hpp"
 #include "NSphere.hpp"
 #include "NNode.hpp"
-#include "NNodeAnalyse.hpp"
+#include "NTreeAnalyse.hpp"
 #include "NTreePositive.hpp"
 
 
@@ -55,10 +55,10 @@ void test_positivize()
     nnode* abcde = nnode::make_operator_ptr( CSG_INTERSECTION, ab, cde );
 
     LOG(info) << abcde->desc() ; 
-    LOG(info) << NNodeAnalyse<nnode>::Desc(abcde) ; 
+    LOG(info) << NTreeAnalyse<nnode>::Desc(abcde) ; 
 
     NTreePositive<nnode> pos(abcde) ; 
-    LOG(info) << NNodeAnalyse<nnode>::Desc(abcde) ; 
+    LOG(info) << NTreeAnalyse<nnode>::Desc(abcde) ; 
 }
 
 

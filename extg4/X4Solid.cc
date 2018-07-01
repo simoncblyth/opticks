@@ -191,7 +191,7 @@ void X4Solid::convertDisplacedSolid()
     // a->update_gtransforms();  
     // without update_transforms does nothing 
     // YES : but should be done for the full solid, not just from one of the nodes
-    LOG(error) << gpresent("\n      disp", xf_disp) ; 
+    //LOG(error) << gpresent("\n      disp", xf_disp) ; 
 
     setRoot(a); 
 }

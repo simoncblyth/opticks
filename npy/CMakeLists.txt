@@ -80,7 +80,6 @@ set(SOURCES
     no.cpp
     NNode.cpp
     NNodeCollector.cpp
-    NNodeAnalyse.cpp
     NGrid.cpp
 
     NNodeEnum.cpp
@@ -156,6 +155,7 @@ set(SOURCES
     NTreePositive.cpp
     NTreeBalance.cpp
     NTreeProcess.cpp
+    NTreeAnalyse.cpp
 
     NTreeTools.cpp
     NGLMExt.cpp
@@ -269,7 +269,6 @@ NBBoxEnum.hpp
 No.hpp
 NNode.hpp
 NNodeCollector.hpp
-NNodeAnalyse.hpp
 
 
 NGrid.hpp
@@ -328,6 +327,7 @@ NTreeBuilder.hpp
 NTreePositive.hpp
 NTreeBalance.hpp
 NTreeProcess.hpp
+NTreeAnalyse.hpp
 
 NTreeTools.hpp
 NGLMExt.hpp

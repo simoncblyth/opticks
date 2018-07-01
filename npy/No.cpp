@@ -39,6 +39,22 @@ std::string no::desc() const
     return ss.str();
 }
 
+
+unsigned no::nmaxu(const unsigned a, const unsigned b)
+{
+    return a > b ? a : b ; 
+}
+
+unsigned no::maxdepth() const 
+{
+    return _maxdepth(0);
+}
+unsigned no::_maxdepth(unsigned depth) const   // recursive 
+{
+    return left && right ? nmaxu( left->_maxdepth(depth+1), right->_maxdepth(depth+1)) : depth ;  
+}
+
+
 bool no::is_primitive() const 
 {
     return left == NULL && right == NULL ; 

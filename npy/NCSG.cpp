@@ -637,6 +637,26 @@ void NCSG::loadPlanes()
     m_num_planes = a->getShape(0) ; 
 }
 
+void NCSG::loadIdx()
+{
+    std::string path = BFile::FormPath(m_treedir, IDX ) ;
+    //if(!BFile::ExistsFile(path.c_str())) return ; 
+
+    NPY<unsigned>* a = NPY<unsigned>::load(path.c_str());
+    bool valid = a->hasShape(1,4) ;
+    if(!valid) 
+    {
+        LOG(fatal) << "NCSG::loadIdx"
+                   << " invalid idx  "
+                   << " path " << path
+                   << " shape " << a->getShapeString()
+                   ;
+    }
+    assert(valid);
+    m_idx = a ;
+}
+
+
 void NCSG::load()
 {
     if(m_index % 100 == 0 && m_verbosity > 0)
@@ -1370,6 +1390,12 @@ void NCSG::export_()
 
 void NCSG::export_idx() 
 {
+    if(m_idx == NULL)
+    {
+        m_idx = NPY<unsigned>::make(1, 4);
+        m_idx->zero() ;  
+    } 
+
     glm::uvec4 uidx(m_index, m_soIdx, m_lvIdx, m_height); 
     m_idx->setQuad(uidx, 0u );     
 }

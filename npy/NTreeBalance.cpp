@@ -44,14 +44,14 @@ T* NTreeBalance<T>::create_balanced()
     {
         std::vector<T*> prims ; 
         subtrees( prims, 0 );    // subdepth 0 
-        LOG(info) << " prims " << prims.size() ; 
+        //LOG(info) << " prims " << prims.size() ; 
         balanced = NTreeBuilder<T>::CommonTree(prims, op ); 
     }
     else if( hop == CSG_INTERSECTION || hop == CSG_UNION ) 
     {
         std::vector<T*> bileafs ; 
         subtrees( bileafs, 1 );  // subdepth 1
-        LOG(info) << " bileafs " << bileafs.size() ; 
+        //LOG(info) << " bileafs " << bileafs.size() ; 
         balanced = NTreeBuilder<T>::BileafTree(bileafs, hop ); 
     }
     else
@@ -67,6 +67,8 @@ T* NTreeBalance<T>::create_balanced()
 template <typename T>
 unsigned NTreeBalance<T>::depth_r(T* node, unsigned depth, bool label )
 {
+    // cf nnode::maxdepth, this one provides labelling
+
     if(node == NULL) return depth ; 
 
     if(label)

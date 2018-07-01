@@ -199,11 +199,15 @@ void Opticks::dumpRC() const
 
 Opticks*    Opticks::fInstance = NULL ; 
 
+bool Opticks::HasInstance() 
+{
+    return fInstance != NULL ; 
+}
 Opticks* Opticks::GetInstance()
 {
      if(fInstance == NULL )
      {
-         const char* argforced = SSys::getenvvar("OPTICKS_ARGS") ; 
+         const char* argforced = SSys::getenvvar("OPTICKS_INTERNAL_ARGS") ; 
          Opticks* ok = new Opticks(0,0, argforced);  
          ok->setInternal(true);   // internal means was instanciated within Opticks::GetInstance
      }
@@ -219,6 +223,7 @@ Opticks::Opticks(int argc, char** argv, const char* argforced )
        m_sargs(new SArgs(argc, argv, argforced)), 
        m_argc(m_sargs->argc),
        m_argv(m_sargs->argv),
+       m_dumpenv(m_sargs->hasArg("--dumpenv")),
        m_production(m_sargs->hasArg("--production")),
        m_profile(new OpticksProfile("Opticks",m_sargs->hasArg("--stamp"))),
        m_materialprefix(NULL),
@@ -272,6 +277,11 @@ Opticks::Opticks(int argc, char** argv, const char* argforced )
        (*m_log)("DONE");
 }
 
+
+bool Opticks::isDumpEnv() const 
+{
+    return m_dumpenv ; 
+}
 bool Opticks::isInternal() const 
 {
     return m_internal ; 
@@ -504,6 +514,13 @@ bool Opticks::isPrintIndexLog() const
 {
     return m_cfg->hasOpt("pindexlog") ;
 }
+
+bool Opticks::isXAnalytic() const 
+{
+    return m_cfg->hasOpt("xanalytic") ;
+}
+
+
 
 int Opticks::getPrintIndex(unsigned dim) const 
 {

@@ -254,6 +254,7 @@ class NPY_API NCSG {
         void loadNodeMetadata();
         void loadTransforms();
         void loadPlanes();
+        void loadIdx();
         void loadSrcVerts();
         void loadSrcFaces();
 

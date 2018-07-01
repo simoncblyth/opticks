@@ -84,7 +84,7 @@ OpticksResource::OpticksResource(Opticks* opticks, const char* lastarg)
     :
        BOpticksResource(),
        m_log(new SLog("OpticksResource::OpticksResource")),
-       m_opticks(opticks),
+       m_ok(opticks),
        m_lastarg(lastarg ? strdup(lastarg) : NULL),
        m_query(new OpticksQuery(SSys::getenvvar(
                       m_key ? "OPTICKS_QUERY_LIVE" : "OPTICKS_QUERY" ,
@@ -572,6 +572,7 @@ OPTICKS_GEOKEY
     envvar naming another envvar (eg OPTICKSDATA_DAEPATH_DYB) that points to geometry file
 
 */
+    if(m_ok->isDumpEnv())  SSys::DumpEnv("OPTICKS") ; 
 
     m_geokey = SSys::getenvvar("OPTICKS_GEOKEY", DEFAULT_GEOKEY);
     const char* daepath = SSys::getenvvar(m_geokey);
@@ -1074,7 +1075,7 @@ OpticksAttrSeq* OpticksResource::getFlagNames()
         OpticksFlags* flags = getFlags();
         Index* index = flags->getIndex();
 
-        m_flagnames = new OpticksAttrSeq(m_opticks, "GFlags");
+        m_flagnames = new OpticksAttrSeq(m_ok, "GFlags");
         m_flagnames->loadPrefs(); // color, abbrev and order 
         m_flagnames->setSequence(index);
         m_flagnames->setCtrl(OpticksAttrSeq::SEQUENCE_DEFAULTS);    

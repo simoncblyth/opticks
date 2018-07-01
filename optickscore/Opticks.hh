@@ -110,6 +110,7 @@ class OKCORE_API Opticks {
        static Opticks*     fInstance ;  
    public:
        static Opticks* GetInstance();
+       static bool     HasInstance();
    public:
        Opticks(int argc=0, char** argv=NULL, const char* argforced=NULL );
    private:
@@ -267,6 +268,7 @@ class OKCORE_API Opticks {
        bool                 getPrintIndex(glm::ivec3& idx) const ;
        int                  getPrintIndex(unsigned dim=0) const ; 
        bool                 isPrintIndexLog() const ; 
+       bool                 isXAnalytic() const ;
    public:
        const char*          getDbgIndex() const ;
        const char*          getDbgCSGPath();
@@ -421,6 +423,7 @@ class OKCORE_API Opticks {
        bool isDbgClose() const ; 
    public:
        bool isInternal() const ; 
+       bool isDumpEnv() const ; 
    private:
        void setInternal(bool internal=true); 
    public:
@@ -436,6 +439,7 @@ class OKCORE_API Opticks {
        SArgs*               m_sargs ; 
        int                  m_argc ; 
        char**               m_argv ; 
+       bool                 m_dumpenv ; 
        bool                 m_production ; 
        OpticksProfile*      m_profile ; 
        const char*          m_materialprefix ;

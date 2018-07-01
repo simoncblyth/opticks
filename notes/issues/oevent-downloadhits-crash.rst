@@ -7,6 +7,59 @@ TODO:
 * abort on receipt of unknown option arguments like "--cfg4" 
 
 
+get similar problem with tboolean-interlocked  OEvent::downloadHits
+-----------------------------------------------------------------------
+
+The issue can be avoided with tracer option::
+
+    tboolean-;tboolean-interlocked --tracer
+
+
+
+::
+
+    tboolean-;tboolean-interlocked -D
+
+    2018-07-01 16:20:22.202 INFO  [2131258] [OpticksViz::downloadEvent@317] OpticksViz::downloadEvent (1) DONE 
+    2018-07-01 16:20:22.202 INFO  [2131258] [OEvent::download@352] OEvent::download id 1
+    2018-07-01 16:20:22.202 INFO  [2131258] [OContext::download@434] OContext::download PROCEED for sequence as OPTIX_NON_INTEROP
+    libc++abi.dylib: terminating with uncaught exception of type optix::Exception: Invalid value (Details: Function "RTresult _rtBufferGetDevicePointer(RTbuffer, int, void **)" caught exception: Cannot get device pointers from non-CUDA interop buffers.)
+    Process 3605 stopped
+    * thread #1, queue = 'com.apple.main-thread', stop reason = signal SIGABRT
+        frame #0: 0x00007fff734e6b6e libsystem_kernel.dylib`__pthread_kill + 10
+    libsystem_kernel.dylib`__pthread_kill:
+    ->  0x7fff734e6b6e <+10>: jae    0x7fff734e6b78            ; <+20>
+        0x7fff734e6b70 <+12>: movq   %rax, %rdi
+        0x7fff734e6b73 <+15>: jmp    0x7fff734ddb00            ; cerror_nocancel
+        0x7fff734e6b78 <+20>: retq   
+    Target 0: (OKTest) stopped.
+    (lldb) bt
+    * thread #1, queue = 'com.apple.main-thread', stop reason = signal SIGABRT
+      * frame #0: 0x00007fff734e6b6e libsystem_kernel.dylib`__pthread_kill + 10
+        frame #1: 0x00007fff736b1080 libsystem_pthread.dylib`pthread_kill + 333
+        frame #2: 0x00007fff734421ae libsystem_c.dylib`abort + 127
+        frame #3: 0x00007fff71346f8f libc++abi.dylib`abort_message + 245
+        frame #4: 0x00007fff71347113 libc++abi.dylib`default_terminate_handler() + 241
+        frame #5: 0x00007fff7277eeab libobjc.A.dylib`_objc_terminate() + 105
+        frame #6: 0x00007fff713627c9 libc++abi.dylib`std::__terminate(void (*)()) + 8
+        frame #7: 0x00007fff7136226f libc++abi.dylib`__cxa_throw + 121
+        frame #8: 0x0000000100481db5 libOptiXRap.dylib`optix::APIObj::checkError(this=0x000000011dc9a810, code=RT_ERROR_INVALID_VALUE) const at optixpp_namespace.h:1936
+        frame #9: 0x00000001004d327a libOptiXRap.dylib`OBufBase::bufspec() + 58
+        frame #10: 0x00000001004b1744 libOptiXRap.dylib`OEvent::downloadHits(this=0x000000010e8ebd70, evt=0x000000011d7e9600) at OEvent.cc:393
+        frame #11: 0x00000001004b18dd libOptiXRap.dylib`OEvent::download(this=0x000000010e8ebd70) at OEvent.cc:342
+        frame #12: 0x00000001003d1649 libOKOP.dylib`OpEngine::downloadEvent(this=0x000000010e851a80) at OpEngine.cc:122
+        frame #13: 0x00000001000d4db0 libOK.dylib`OKPropagator::downloadEvent(this=0x000000010e851a20) at OKPropagator.cc:108
+        frame #14: 0x00000001000d4a58 libOK.dylib`OKPropagator::propagate(this=0x000000010e851a20) at OKPropagator.cc:82
+        frame #15: 0x00000001000d4427 libOK.dylib`OKMgr::propagate(this=0x00007ffeefbfddd8) at OKMgr.cc:102
+        frame #16: 0x000000010000b9a1 OKTest`main(argc=28, argv=0x00007ffeefbfdeb8) at OKTest.cc:14
+        frame #17: 0x00007fff73396015 libdyld.dylib`start + 1
+        frame #18: 0x00007fff73396015 libdyld.dylib`start + 1
+    (lldb) 
+
+
+
+
+
 Which executable for aligned running ? Must use OKG4Mgr, eg OKG4Test 
 ------------------------------------------------------------------------
 

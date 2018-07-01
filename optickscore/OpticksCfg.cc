@@ -121,6 +121,11 @@ void OpticksCfg<Listener>::init()
    m_desc.add_options()
        ("nopropagate,P",  "inhibit generation/propagation") ;
 
+   m_desc.add_options()
+       ("xanalytic",  "try switching on analytic ray tracing from GGeo without the analytic toggle from GScene etc...") ;
+
+   m_desc.add_options()
+       ("dumpenv",  "dump envvars with names starting with OPTICKS") ;
 
    m_desc.add_options()
        ("noevent,E",  "inhibit event handling") ;

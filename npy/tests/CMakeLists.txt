@@ -157,8 +157,9 @@ NRngDiffuseTest.cc
 NTreeBuilderTest.cc
 NTreePositiveTest.cc
 NTreeBalanceTest.cc
+NTreeAnalyseTest.cc
+
 NNodeCollectorTest.cc
-NNodeAnalyseTest.cc
 NGridTest.cc
 
 

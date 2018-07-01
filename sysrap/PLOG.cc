@@ -183,7 +183,7 @@ const char* PLOG::name()
 
 PLOG::PLOG(int argc_, char** argv_, const char* fallback, const char* prefix)
     :
-      args(argc_, argv_, "OPTICKS_ARGS" , ' '),   // when argc_ is 0 the named envvar is checked for arguments instead 
+      args(argc_, argv_, "OPTICKS_LOG_ARGS" , ' '),   // when argc_ is 0 the named envvar is checked for arguments instead 
       level(info),
       logpath(_logpath_parse(argc_, argv_)),
       logmax(3)

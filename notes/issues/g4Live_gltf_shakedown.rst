@@ -28,11 +28,6 @@ NEXT
 
   * examine how GScene operates, possibly all thats needed is 
     some metadata in the GMergedMesh to switch geocode for oxrap.OGeo 
-     
-GScene::makeMergedMeshAndInstancedBuffers
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-
 
 
 

@@ -56,11 +56,20 @@ OpEngine::OpEngine(OpticksHub* hub)
 void OpEngine::init()
 {
    m_ok->setOptiXVersion(OConfig::OptiXVersion()); 
-   if(m_ok->isLoad())
+
+   bool is_load = m_ok->isLoad() ; 
+   bool is_tracer = m_ok->isTracer() ;
+
+   LOG(error) << "OpEngine::init"
+              << " is_load " << is_load 
+              << " is_tracer " << is_tracer
+              ; 
+
+   if(is_load)
    {
        LOG(warning) << "OpEngine::init skip initPropagation as just loading pre-cooked event " ;
    }
-   else if(m_ok->isTracer())
+   else if(is_tracer)
    {
        LOG(warning) << "OpEngine::init skip initPropagation as tracer mode is active  " ; 
    }

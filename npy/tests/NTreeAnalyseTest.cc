@@ -2,7 +2,7 @@
 
 #include "No.hpp"
 #include "NNodeCollector.hpp"
-#include "NNodeAnalyse.hpp"
+#include "NTreeAnalyse.hpp"
 
 int main(int argc, char** argv)
 {
@@ -18,7 +18,7 @@ int main(int argc, char** argv)
    
     LOG(info) << a->desc() ; 
 
-    NNodeAnalyse<no> ana(a); 
+    NTreeAnalyse<no> ana(a); 
     ana.nodes->dump() ; 
 
     LOG(info) << ana.desc() ; 

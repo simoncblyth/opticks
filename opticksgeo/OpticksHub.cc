@@ -229,9 +229,16 @@ void OpticksHub::configure()
     }
 
     m_gltf =  m_ok->getGLTF() ;
+
     LOG(info) << "OpticksHub::configure"
+              << " argc " << argc 
+              << " argv[0] " << ( argv[0] ? argv[0] : "-" )
               << " m_gltf " << m_gltf 
+              << " is_tracer " << m_ok->isTracer() ; 
               ;
+
+    //assert( m_ok->isTracer() ) ; 
+
 
     bool compute = m_ok->isCompute();
     bool compute_opt = hasOpt("compute") ;

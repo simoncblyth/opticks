@@ -7,7 +7,7 @@
 #include "NBox.hpp"
 #include "NSphere.hpp"
 #include "NNode.hpp"
-#include "NNodeAnalyse.hpp"
+#include "NTreeAnalyse.hpp"
 #include "NTreePositive.hpp"
 #include "NTreeBalance.hpp"
 #include "NTreeProcess.hpp"
@@ -57,14 +57,14 @@ void test_balance_0()
     NTreeBalance<nnode> bal(tree);  // writes depth, subdepth to all nodes
 
     LOG(info) << tree->desc() ; 
-    LOG(info) << NNodeAnalyse<nnode>::Desc(tree) ;
+    LOG(info) << NTreeAnalyse<nnode>::Desc(tree) ;
     LOG(info) << " ops: " << bal.operatorsDesc(0) ; 
     assert( bal.is_positive_form() == false );
 
 
     NTreePositive<nnode> pos(tree) ; 
 
-    LOG(info) << NNodeAnalyse<nnode>::Desc(tree) ; 
+    LOG(info) << NTreeAnalyse<nnode>::Desc(tree) ; 
     LOG(info) << " ops: " << bal.operatorsDesc(0) ; 
     assert( bal.is_positive_form() == true );
 
@@ -80,7 +80,7 @@ void test_balance_0()
     for(unsigned i=0 ; i < subs.size() ; i++)
     {
         nnode* sub = subs[i] ;
-        LOG(info) << NNodeAnalyse<nnode>::Desc(sub) ;
+        LOG(info) << NTreeAnalyse<nnode>::Desc(sub) ;
     }
 }
 
@@ -88,27 +88,27 @@ void test_balance_0()
 void test_balance()
 {
     nnode* tree = make_tree() ; 
-    LOG(info) << "tree initial \n" << NNodeAnalyse<nnode>::Desc(tree) ; 
+    LOG(info) << "tree initial \n" << NTreeAnalyse<nnode>::Desc(tree) ; 
 
     NTreePositive<nnode> pos(tree) ; // eliminate CSG_DIFFERENCE by DeMorgan rules, some leaves may be complemented 
-    LOG(info) << "tree positivized\n" << NNodeAnalyse<nnode>::Desc(tree) ; 
+    LOG(info) << "tree positivized\n" << NTreeAnalyse<nnode>::Desc(tree) ; 
 
     NTreeBalance<nnode> bal(tree);   // writes depth, subdepth to all nodes
 
     nnode* balanced = bal.create_balanced(); 
 
-    LOG(info) << "tree balanced\n" << NNodeAnalyse<nnode>::Desc(balanced) ; 
+    LOG(info) << "tree balanced\n" << NTreeAnalyse<nnode>::Desc(balanced) ; 
 }
 
 void test_process()
 {
     nnode* tree = make_tree() ; 
-    LOG(info) << "tree initial \n" << NNodeAnalyse<nnode>::Desc(tree) ; 
+    LOG(info) << "tree initial \n" << NTreeAnalyse<nnode>::Desc(tree) ; 
 
     NTreeProcess<nnode> proc(tree); 
 
     nnode* result = proc.result ; 
-    LOG(info) << "tree result \n" << NNodeAnalyse<nnode>::Desc(result) ; 
+    LOG(info) << "tree result \n" << NTreeAnalyse<nnode>::Desc(result) ; 
 }
 
 

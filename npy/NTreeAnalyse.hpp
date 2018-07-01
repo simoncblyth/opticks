@@ -3,7 +3,7 @@
 #include "NPY_API_EXPORT.hh"
 
 /**
-NNodeAnalyse
+NTreeAnalyse
 ==============
 
 * see ../analytic/csg.py 
@@ -15,12 +15,12 @@ template <typename T> struct NNodeCollector ;
 template <typename T> struct NGrid ; 
 
 template <typename T>
-struct NPY_API NNodeAnalyse
+struct NPY_API NTreeAnalyse
 {
     static std::string Desc(const T* root_);
   
-    NNodeAnalyse(const T* root_); 
-    ~NNodeAnalyse(); 
+    NTreeAnalyse(const T* root_); 
+    ~NTreeAnalyse(); 
 
     void init(); 
     void initGrid(); 

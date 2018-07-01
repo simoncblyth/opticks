@@ -137,7 +137,7 @@ GMesh::GMesh(unsigned int index,
       m_name(NULL),
       m_shortname(NULL),
       m_version(NULL),
-      m_geocode('T'),
+      m_geocode('T'),   // 'T'/'A' 
       m_islice(NULL),
       m_fslice(NULL),
       m_pslice(NULL),

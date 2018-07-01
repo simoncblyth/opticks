@@ -1,21 +1,21 @@
 
 #include <sstream>
 #include <algorithm>
-#include "NNodeAnalyse.hpp"
+#include "NTreeAnalyse.hpp"
 #include "NNodeCollector.hpp"
 #include "NGrid.hpp"
 
 
 template <typename T>
-std::string  NNodeAnalyse<T>::Desc(const T* root)  // static
+std::string  NTreeAnalyse<T>::Desc(const T* root)  // static
 {
-    NNodeAnalyse<T> ana(root); 
+    NTreeAnalyse<T> ana(root); 
     return ana.desc(); 
 }
 
 
 template <typename T>
-NNodeAnalyse<T>::NNodeAnalyse(const T* root_)
+NTreeAnalyse<T>::NTreeAnalyse(const T* root_)
     :
     root(root_),
     height(depth_(true)),
@@ -28,7 +28,7 @@ NNodeAnalyse<T>::NNodeAnalyse(const T* root_)
 
 
 template <typename T>
-NNodeAnalyse<T>::~NNodeAnalyse()
+NTreeAnalyse<T>::~NTreeAnalyse()
 {
     delete nodes ; 
     delete grid ; 
@@ -36,13 +36,13 @@ NNodeAnalyse<T>::~NNodeAnalyse()
 
 
 template <typename T>
-void NNodeAnalyse<T>::init()
+void NTreeAnalyse<T>::init()
 {
     initGrid();
 }
 
 template <typename T>
-void NNodeAnalyse<T>::initGrid()
+void NTreeAnalyse<T>::initGrid()
 {
     for(unsigned i=0 ; i < count ; i++)
     {
@@ -53,13 +53,13 @@ void NNodeAnalyse<T>::initGrid()
 
 
 template <typename T>
-unsigned NNodeAnalyse<T>::depth_(bool label)
+unsigned NTreeAnalyse<T>::depth_(bool label)
 {
     return depth_r(root, 0, label);
 }
 
 template <typename T>
-unsigned NNodeAnalyse<T>::depth_r(const T* node, unsigned depth, bool label)
+unsigned NTreeAnalyse<T>::depth_r(const T* node, unsigned depth, bool label)
 {
      if(node == NULL) return depth ; 
      if(label) const_cast<T*>(node)->depth = depth ; 
@@ -72,11 +72,11 @@ unsigned NNodeAnalyse<T>::depth_r(const T* node, unsigned depth, bool label)
 
 
 template <typename T>
-std::string NNodeAnalyse<T>::desc() const 
+std::string NTreeAnalyse<T>::desc() const 
 {
     std::stringstream ss ; 
     ss 
-       << "NNodeAnalyse"
+       << "NTreeAnalyse"
        << " height " << height 
        << " count " << count 
        << std::endl 
@@ -91,8 +91,8 @@ std::string NNodeAnalyse<T>::desc() const
 #include "No.hpp"
 #include "NNode.hpp"
 
-template struct NNodeAnalyse<no> ; 
-template struct NNodeAnalyse<nnode> ; 
+template struct NTreeAnalyse<no> ; 
+template struct NTreeAnalyse<nnode> ; 
 
 
 

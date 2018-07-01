@@ -2,6 +2,31 @@ OKX4Test_mm0_has_85k_parts_vs_12k
 ===================================
 
 
+
+
+Huh most of the listed are not balanced as not overheight 
+--------------------------------------------------------------
+
+* perhaps the peculiarity is with the old conversion, try to proceed asis 
+
+
+::
+
+    2018-07-01 14:11:39.987 INFO  [1847231] [*NTreeProcess<nnode>::Process@35]  soIdx  38 lvIdx  25 height0 2 height1 2 ### LISTED
+    2018-07-01 14:11:39.988 INFO  [1847231] [*NTreeProcess<nnode>::Process@35]  soIdx  39 lvIdx  26 height0 2 height1 2 ### LISTED
+    2018-07-01 14:11:39.992 INFO  [1847231] [*NTreeProcess<nnode>::Process@35]  soIdx  42 lvIdx  29 height0 3 height1 3 ### LISTED
+    2018-07-01 14:11:41.067 INFO  [1847231] [*NTreeProcess<nnode>::Process@35]  soIdx  73 lvIdx  60 height0 8 height1 4 ### LISTED
+    2018-07-01 14:11:41.084 INFO  [1847231] [*NTreeProcess<nnode>::Process@35]  soIdx  76 lvIdx  65 height0 4 height1 4 ### LISTED
+    2018-07-01 14:11:41.260 INFO  [1847231] [*NTreeProcess<nnode>::Process@35]  soIdx  79 lvIdx  68 height0 2 height1 2 ### LISTED
+    2018-07-01 14:11:41.634 INFO  [1847231] [*NTreeProcess<nnode>::Process@35]  soIdx  86 lvIdx  75 height0 3 height1 3 ### LISTED
+    2018-07-01 14:11:41.638 INFO  [1847231] [*NTreeProcess<nnode>::Process@35]  soIdx  88 lvIdx  77 height0 3 height1 3 ### LISTED
+    2018-07-01 14:11:41.644 INFO  [1847231] [*NTreeProcess<nnode>::Process@35]  soIdx  92 lvIdx  81 height0 3 height1 3 ### LISTED
+    2018-07-01 14:11:41.654 INFO  [1847231] [*NTreeProcess<nnode>::Process@35]  soIdx  96 lvIdx  85 height0 3 height1 3 ### LISTED
+    2018-07-01 14:11:42.665 INFO  [1847231] [*NTreeProcess<nnode>::Process@35]  soIdx 126 lvIdx 131 height0 3 height1 3 ### LISTED
+    2018-07-01 14:11:42.726 INFO  [1847231] [*NTreeProcess<nnode>::Process@35]  soIdx 151 lvIdx 140 height0 4 height1 4 ### LISTED
+
+
+
 mm0 has 12 discrepant trees : with different tree height 
 ------------------------------------------------------------
 

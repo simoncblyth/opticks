@@ -186,7 +186,7 @@ class OKCORE_API OpticksResource : public BOpticksResource {
        bool        isOther();
    private:
        SLog*       m_log ; 
-       Opticks*    m_opticks ; 
+       Opticks*    m_ok ; 
        const char* m_lastarg ; 
 
    private:

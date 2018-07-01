@@ -21,6 +21,10 @@ struct NPY_API no
  
     std::string id() const ;
     std::string desc() const ;
+    unsigned maxdepth() const ;
+    unsigned _maxdepth(unsigned depth) const;   // recursive 
+    static unsigned nmaxu(const unsigned a, const unsigned b);
+
     bool is_primitive() const ; 
     bool is_bileaf() const ; 
     bool is_operator() const ; 

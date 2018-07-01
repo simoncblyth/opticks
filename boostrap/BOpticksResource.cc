@@ -70,6 +70,8 @@ BOpticksResource::~BOpticksResource()
 
 void BOpticksResource::init()
 {
+    LOG(error) << "layout : " << m_layout ; 
+
     initInstallPrefix() ;
     initTopDownDirs();
     initDebuggingIDPATH();

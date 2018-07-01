@@ -22,6 +22,17 @@ simon:optixrap blyth$ echo $?
 214
 */
 
+extern char **environ;
+
+void SSys::DumpEnv(const char* pfx ) // static
+{
+    int i = 1;
+    for (char* s = *environ ; s; i++) 
+    {
+       if(pfx == NULL || strncmp(s, pfx, strlen(pfx)) == 0) printf("%s\n", s);
+       s = *(environ+i);
+    }
+}
 
 
 const unsigned SSys::SIGNBIT32  = 0x80000000 ;
@@ -237,7 +248,6 @@ const char* SSys::getenvvar( const char* envkey, const char* fallback )
     const char* evalue = getenvvar(envkey) ; 
     return evalue ? evalue : fallback ; 
 }
-
 
 
 
