@@ -128,9 +128,6 @@ Volume buffers in a GMesh (used from GMergedMesh)
                  [3203,   45,    1,    0]], dtype=uint32)
 
 
-
-
-
 Indices relation to nodeinfo
 -------------------------------
 

@@ -23,7 +23,11 @@ void test_FromNode_Meta()
     {
         nnode* n = *it ; 
         n->set_boundary(spec);
-        NCSG* tree = NCSG::FromNode( n , config );
+
+        unsigned soIdx = 0 ; 
+        unsigned lvIdx = 0 ; 
+
+        NCSG* tree = NCSG::FromNode( n , config , soIdx, lvIdx );
         LOG(info) << "test_FromNode_0 " << tree->soname() ; 
     }
 }
@@ -49,8 +53,11 @@ void test_FromNode()
 
         const char* gltfconfig = "csg_bbox_parsurf=1" ;
         const NSceneConfig* config = new NSceneConfig(gltfconfig) ; 
+
+        unsigned soIdx = 0 ; 
+        unsigned lvIdx = 0 ; 
              
-        NCSG* tree = NCSG::FromNode( n , config );
+        NCSG* tree = NCSG::FromNode( n , config, soIdx, lvIdx );
         LOG(info) 
                 << " node.name " << std::setw(20) << name 
                 << " tree.desc " << tree->desc()

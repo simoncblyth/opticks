@@ -166,7 +166,9 @@ class GGEO_API GParts {
 
        static void BufferTags(std::vector<std::string>& tags)  ;
        static const char* BufferName(const char* tag) ;
-       static NPY<float>* LoadBuffer(const char* dir, const char* tag);
+
+       template<typename T>
+       static NPY<T>* LoadBuffer(const char* dir, const char* tag);
 
     public:
         // buffer layout, must match locations in pmt-/tree.py:convert 
@@ -186,8 +188,8 @@ class GGEO_API GParts {
         static GParts* combine(GParts* onesub,            unsigned verbosity=0 );   // for consistent handling between 1 and many 
     public:
         GParts(GBndLib* bndlib=NULL);
-        GParts(NPY<float>* partBuf, NPY<float>* tranBuf, NPY<float>* planBuf, const char* spec, GBndLib* bndlib=NULL);
-        GParts(NPY<float>* partBuf, NPY<float>* tranBuf, NPY<float>* planBuf, GItemList* spec, GBndLib* bndlib=NULL);
+        GParts(NPY<unsigned>* idxBuf, NPY<float>* partBuf, NPY<float>* tranBuf, NPY<float>* planBuf, const char* spec, GBndLib* bndlib=NULL);
+        GParts(NPY<unsigned>* idxBuf, NPY<float>* partBuf, NPY<float>* tranBuf, NPY<float>* planBuf, GItemList* spec, GBndLib* bndlib=NULL);
    public:
         void setName(const char* name);
         void setBndLib(GBndLib* blib);
@@ -253,12 +255,13 @@ class GGEO_API GParts {
         unsigned int       getPrimNumParts(unsigned int prim_index);
         std::string        desc(); 
     public:
-        NPY<int>*          getPrimBuffer();
-        NPY<float>*        getPartBuffer();
-        NPY<float>*        getTranBuffer(); // inverse transforms IR*IT ie inverse of T*R 
-        NPY<float>*        getPlanBuffer(); // planes used by convex polyhedra such as trapezoid
+        NPY<unsigned>*     getIdxBuffer() const ;
+        NPY<int>*          getPrimBuffer() const ;
+        NPY<float>*        getPartBuffer() const ;
+        NPY<float>*        getTranBuffer() const ; // inverse transforms IR*IT ie inverse of T*R 
+        NPY<float>*        getPlanBuffer() const ; // planes used by convex polyhedra such as trapezoid
+    public:
         NPY<float>*        getBuffer(const char* tag) const ;
-
     public:
         void fulldump(const char* msg="GParts::fulldump", unsigned lim=10 );
         void dump(const char* msg="GParts::dump", unsigned lim=10 );
@@ -282,6 +285,7 @@ class GGEO_API GParts {
         void setBndSpec(GItemList* bndspec);
         void setPartBuffer(NPY<float>* part_buffer);
         void setPrimBuffer(NPY<int>*   prim_buffer);
+        void setIdxBuffer(NPY<unsigned>*  idx_buffer);
         void setTranBuffer(NPY<float>* tran_buffer);
         void setPlanBuffer(NPY<float>* plan_buffer);
         void setPrimFlag(OpticksCSG_t primflag);
@@ -294,6 +298,7 @@ class GGEO_API GParts {
     private:
         // almost no state other than buffers, just icing on top of them
         // allowing this to copied/used on GPU in cu/hemi-pmt.cu
+        NPY<unsigned>*     m_idx_buffer ; 
         NPY<float>*        m_part_buffer ; 
         NPY<float>*        m_tran_buffer ; 
         NPY<float>*        m_plan_buffer ; 

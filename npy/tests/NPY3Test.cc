@@ -125,6 +125,17 @@ void test_add()
     planes->dump();
 }
 
+void test_u()
+{
+    LOG(info) << "." ; 
+    NPY<unsigned>* idx = NPY<unsigned>::make(1,4);  
+    idx->zero();  
+    glm::uvec4 id(1,2,3,4) ; 
+    idx->setQuad(id, 0) ; 
+    idx->save("$TMP/idx.npy"); 
+}
+
+
 
 int main(int argc, char** argv )
 {
@@ -135,7 +146,8 @@ int main(int argc, char** argv )
     //test_loadFromBuffer(); 
 
     //test_cast();
-    test_add();
+    //test_add();
+    test_u();
 
     return 0 ; 
 }

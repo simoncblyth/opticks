@@ -95,6 +95,9 @@ GParts* GParts::make(const npart& pt, const char* spec)
     // Then instanciate a GParts instance to hold the parts buffer 
     // together with the boundary spec.
 
+    NPY<unsigned>* idxBuf = NPY<unsigned>::make(1,4);
+    idxBuf->zero();
+
     NPY<float>* partBuf = NPY<float>::make(1, NJ, NK );
     partBuf->zero();
 
@@ -104,10 +107,9 @@ GParts* GParts::make(const npart& pt, const char* spec)
     NPY<float>* planBuf = NPY<float>::make(0, 4 );
     planBuf->zero();
 
-
     partBuf->setPart( pt, 0u );
 
-    GParts* gpt = new GParts(partBuf,tranBuf,planBuf,spec) ;
+    GParts* gpt = new GParts(idxBuf, partBuf,tranBuf,planBuf,spec) ;
 
     unsigned typecode = gpt->getTypeCode(0u);
     assert(typecode == CSG_BOX || typecode == CSG_SPHERE || typecode == CSG_PRISM);
@@ -133,6 +135,10 @@ GParts* GParts::make(OpticksCSG_t csgflag, glm::vec4& param, const char* spec)
     } 
     //-------
 
+
+    NPY<unsigned>* idxBuf = NPY<unsigned>::make(1,4);
+    idxBuf->zero();
+
     NPY<float>* partBuf = NPY<float>::make(1, NJ, NK );
     partBuf->zero();
 
@@ -154,7 +160,7 @@ GParts* GParts::make(OpticksCSG_t csgflag, glm::vec4& param, const char* spec)
 
     // TODO: go via an npart instance
 
-    GParts* pt = new GParts(partBuf, tranBuf, planBuf, spec) ;
+    GParts* pt = new GParts(idxBuf, partBuf, tranBuf, planBuf, spec) ;
     pt->setTypeCode(0u, csgflag);
 
     return pt ; 
@@ -183,6 +189,7 @@ GParts* GParts::make( const NCSG* tree, const char* spec, unsigned verbosity )
     NPY<float>* tree_planbuf = tree->getPlaneBuffer() ;
     assert( tree_tranbuf );
 
+    NPY<unsigned>* idxbuf = tree->getIdxBuffer() ; //  (1,4) identity indices (index,soIdx,lvIdx,height)
     NPY<float>* nodebuf = tree->getNodeBuffer();       // serialized binary tree
     NPY<float>* tranbuf = usedglobally                 ? tree_tranbuf->clone() : tree_tranbuf ; 
     NPY<float>* planbuf = usedglobally && tree_planbuf ? tree_planbuf->clone() : tree_planbuf ;  
@@ -255,7 +262,7 @@ GParts* GParts::make( const NCSG* tree, const char* spec, unsigned verbosity )
 
     GItemList* lspec = GItemList::Repeat("GParts", spec, ni, reldir) ; 
 
-    GParts* pts = new GParts(nodebuf, tranbuf, planbuf, lspec) ;
+    GParts* pts = new GParts(idxbuf, nodebuf, tranbuf, planbuf, lspec) ;
 
     //pts->setTypeCode(0u, root->type);   //no need, slot 0 is the root node where the type came from
 
@@ -266,6 +273,7 @@ GParts* GParts::make( const NCSG* tree, const char* spec, unsigned verbosity )
 
 GParts::GParts(GBndLib* bndlib) 
       :
+      m_idx_buffer(NPY<unsigned>::make(0, 4)),
       m_part_buffer(NPY<float>::make(0, NJ, NK )),
       m_tran_buffer(NPY<float>::make(0, NTRAN, 4, 4 )),
       m_plan_buffer(NPY<float>::make(0, 4)),
@@ -281,14 +289,16 @@ GParts::GParts(GBndLib* bndlib)
       m_medium(NULL),
       m_csg(NULL)
 {
+      m_idx_buffer->zero();
       m_part_buffer->zero();
       m_tran_buffer->zero();
       m_plan_buffer->zero();
  
       init() ; 
 }
-GParts::GParts(NPY<float>* partBuf,  NPY<float>* tranBuf, NPY<float>* planBuf, const char* spec, GBndLib* bndlib) 
+GParts::GParts(NPY<unsigned>* idxBuf, NPY<float>* partBuf,  NPY<float>* tranBuf, NPY<float>* planBuf, const char* spec, GBndLib* bndlib) 
       :
+      m_idx_buffer(idxBuf ? idxBuf : NPY<unsigned>::make(0, 4)),
       m_part_buffer(partBuf ? partBuf : NPY<float>::make(0, NJ, NK )),
       m_tran_buffer(tranBuf ? tranBuf : NPY<float>::make(0, NTRAN, 4, 4 )),
       m_plan_buffer(planBuf ? planBuf : NPY<float>::make(0, 4)),
@@ -307,8 +317,9 @@ GParts::GParts(NPY<float>* partBuf,  NPY<float>* tranBuf, NPY<float>* planBuf, c
       m_bndspec->add(spec);
       init() ; 
 }
-GParts::GParts(NPY<float>* partBuf,  NPY<float>* tranBuf, NPY<float>* planBuf, GItemList* spec, GBndLib* bndlib) 
+GParts::GParts(NPY<unsigned>* idxBuf, NPY<float>* partBuf,  NPY<float>* tranBuf, NPY<float>* planBuf, GItemList* spec, GBndLib* bndlib) 
       :
+      m_idx_buffer(idxBuf ? idxBuf : NPY<unsigned>::make(0, 4)),
       m_part_buffer(partBuf ? partBuf : NPY<float>::make(0, NJ, NK )),
       m_tran_buffer(tranBuf ? tranBuf : NPY<float>::make(0, NTRAN, 4, 4 )),
       m_plan_buffer(planBuf ? planBuf : NPY<float>::make(0, 4)),
@@ -465,17 +476,20 @@ void GParts::save(const char* dir)
             }
         }
     } 
+    if(m_idx_buffer) m_idx_buffer->save(dir, BufferName("idx"));    
     if(m_prim_buffer) m_prim_buffer->save(dir, BufferName("prim"));    
 
     if(m_bndspec) m_bndspec->save(dir); 
 }
 
 
-NPY<float>* GParts::LoadBuffer(const char* dir, const char* tag) // static
+
+template<typename T>
+NPY<T>* GParts::LoadBuffer(const char* dir, const char* tag) // static
 {
     const char* name = BufferName(tag) ;
     bool quietly = true ; 
-    NPY<float>* buf = NPY<float>::load(dir, name, quietly ) ;
+    NPY<T>* buf = NPY<T>::load(dir, name, quietly ) ;
     return buf ; 
 }
 
@@ -483,9 +497,10 @@ GParts* GParts::Load(const char* dir) // static
 {
     LOG(debug) << "GParts::Load dir " << dir ; 
 
-    NPY<float>* partBuf = LoadBuffer(dir, "part");
-    NPY<float>* tranBuf = LoadBuffer(dir, "tran");
-    NPY<float>* planBuf = LoadBuffer(dir, "plan");
+    NPY<unsigned>* idxBuf = LoadBuffer<unsigned>(dir, "idx");
+    NPY<float>* partBuf = LoadBuffer<float>(dir, "part");
+    NPY<float>* tranBuf = LoadBuffer<float>(dir, "tran");
+    NPY<float>* planBuf = LoadBuffer<float>(dir, "plan");
 
     // hmm what is appropriate for spec and bndlib these ? 
     //
@@ -498,7 +513,7 @@ GParts* GParts::Load(const char* dir) // static
     const char* reldir = "" ;   // empty, signally inplace itemlist persisting
     GItemList* bndspec = GItemList::load(dir, "GParts", reldir ) ; 
     GBndLib*  bndlib = NULL ; 
-    GParts* parts = new GParts(partBuf,  tranBuf, planBuf, bndspec, bndlib) ;
+    GParts* parts = new GParts(idxBuf, partBuf,  tranBuf, planBuf, bndspec, bndlib) ;
     
     NPY<int>* primBuf = NPY<int>::load(dir, BufferName("prim") );
     parts->setPrimBuffer(primBuf);
@@ -580,13 +595,15 @@ GBndLib* GParts::getBndLib()
 {
     return m_bndlib ; 
 }
-
-
-
+void GParts::setIdxBuffer(NPY<unsigned>* buf )
+{
+    m_idx_buffer = buf ; 
+}
 void GParts::setPrimBuffer(NPY<int>* buf )
 {
     m_prim_buffer = buf ; 
 }
+
 void GParts::setPartBuffer(NPY<float>* buf )
 {
     m_part_buffer = buf ; 
@@ -601,19 +618,23 @@ void GParts::setPlanBuffer(NPY<float>* buf)
 }
 
 
-NPY<int>* GParts::getPrimBuffer()
+NPY<int>* GParts::getPrimBuffer() const 
 {
     return m_prim_buffer ; 
 }
-NPY<float>* GParts::getPartBuffer()
+NPY<unsigned>* GParts::getIdxBuffer() const 
+{
+    return m_idx_buffer ; 
+}
+NPY<float>* GParts::getPartBuffer() const 
 {
     return m_part_buffer ; 
 }
-NPY<float>* GParts::getTranBuffer()
+NPY<float>* GParts::getTranBuffer() const 
 {
     return m_tran_buffer ; 
 }
-NPY<float>* GParts::getPlanBuffer()
+NPY<float>* GParts::getPlanBuffer() const 
 {
     return m_plan_buffer ; 
 }
@@ -758,13 +779,18 @@ void GParts::add(GParts* other, unsigned verbosity )
 
     m_bndspec->add(other->getBndSpec());
 
+    NPY<unsigned>* other_idx_buffer = other->getIdxBuffer() ;
     NPY<float>* other_part_buffer = other->getPartBuffer() ;
     NPY<float>* other_tran_buffer = other->getTranBuffer() ;
     NPY<float>* other_plan_buffer = other->getPlanBuffer() ;
 
+    m_idx_buffer->add(other_idx_buffer);
     m_part_buffer->add(other_part_buffer);
     m_tran_buffer->add(other_tran_buffer);
     m_plan_buffer->add(other_plan_buffer);
+
+    unsigned num_idx_add = other_idx_buffer->getNumItems() ;
+    assert( num_idx_add == 1);
 
     unsigned num_part_add = other_part_buffer->getNumItems() ;
     unsigned num_tran_add = other_tran_buffer->getNumItems() ;
@@ -787,6 +813,7 @@ void GParts::add(GParts* other, unsigned verbosity )
     LOG(info) 
               << " n0 " << std::setw(3) << n0  
               << " n1 " << std::setw(3) << n1
+              << " num_idx_add " << std::setw(3) <<  num_idx_add
               << " num_part_add " << std::setw(3) <<  num_part_add
               << " num_tran_add " << std::setw(3) << num_tran_add
               << " num_plan_add " << std::setw(3) << num_plan_add
@@ -1487,5 +1514,10 @@ void GParts::dump(const char* msg, unsigned lim)
        printf("\n");
     }   
 }
+
+
+template GGEO_API NPY<float>* GParts::LoadBuffer<float>(const char*, const char*) ;
+template GGEO_API NPY<int>* GParts::LoadBuffer<int>(const char*, const char*) ;
+template GGEO_API NPY<unsigned>* GParts::LoadBuffer<unsigned>(const char*, const char*) ;
 
 

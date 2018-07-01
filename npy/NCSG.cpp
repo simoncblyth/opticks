@@ -46,6 +46,8 @@ const char* NCSG::NODE_META = "nodemeta.json" ;
 const char* NCSG::PLANES = "planes.npy" ; 
 const char* NCSG::SRC_FACES = "srcfaces.npy" ; 
 const char* NCSG::SRC_VERTS = "srcverts.npy" ; 
+const char* NCSG::IDX = "idx.npy" ; 
+
 
 const unsigned NCSG::NTRAN = 3 ; 
 const float NCSG::SURFACE_EPSILON = 1e-5f ; 
@@ -70,6 +72,7 @@ NCSG::NCSG(const char* treedir)
    m_planes(NULL),
    m_srcverts(NULL),
    m_srcfaces(NULL),
+   m_idx(NULL),
    m_num_nodes(0),
    m_num_transforms(0),
    m_num_planes(0),
@@ -107,6 +110,7 @@ NCSG::NCSG(nnode* root )
    m_planes(NULL),
    m_srcverts(NULL),
    m_srcfaces(NULL),
+   m_idx(NULL),
    m_num_nodes(0),
    m_num_transforms(0),
    m_num_planes(0),
@@ -138,6 +142,10 @@ NCSG::NCSG(nnode* root )
 
    m_planes = NPY<float>::make(0,4);
    m_planes->zero();
+
+   m_idx = NPY<unsigned>::make(1,4);
+   m_idx->zero();
+
 
    m_meta = new NParameters ; 
 }
@@ -694,6 +702,12 @@ NPY<float>* NCSG::getPlaneBuffer() const
 {
     return m_planes ; 
 }
+NPY<unsigned>* NCSG::getIdxBuffer() const 
+{
+    return m_idx ; 
+}
+
+
 
 NParameters* NCSG::getMetaParameters() const
 {
@@ -1341,8 +1355,6 @@ void NCSG::check_r(nnode* node)
 }
 
 
-
-
 void NCSG::export_()
 {
     assert(m_nodes);
@@ -1351,8 +1363,17 @@ void NCSG::export_()
               << " num_nodes " << m_num_nodes
               << " height " << m_height 
               ;
+    export_idx(); 
     export_r(m_root, 0);
 }
+
+
+void NCSG::export_idx() 
+{
+    glm::uvec4 uidx(m_index, m_soIdx, m_lvIdx, m_height); 
+    m_idx->setQuad(uidx, 0u );     
+}
+
 
 void NCSG::export_r(nnode* node, unsigned idx)
 {
@@ -1553,16 +1574,16 @@ NCSG* NCSG::LoadTree(const char* treedir, const NSceneConfig* config  )
 }
 
 
-NCSG* NCSG::FromNode(nnode* root, const NSceneConfig* config)
+NCSG* NCSG::FromNode(nnode* root, const NSceneConfig* config, unsigned soIdx, unsigned lvIdx )
 {
-    //assert( root->boundary && "must root->set_boundary(spec) first" );
-    // stipulation no longer needed ??
-
     nnode::Set_parent_links_r(root, NULL);
 
     NCSG* tree = new NCSG(root);
 
     tree->setConfig(config);
+    tree->setSOIdx(soIdx); 
+    tree->setLVIdx(lvIdx); 
+
     tree->export_();        // node tree -> complete binary tree m_nodes buffer
     assert( tree->getGTransformBuffer() );
 

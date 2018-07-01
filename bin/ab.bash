@@ -55,6 +55,8 @@ ab-blib()
 ab-i-(){ cat << EOP
 import numpy as np
 
+from opticks.ana.mesh import Mesh
+
 a = np.load("$(ab-a-)/partBuffer.npy")
 ta = np.load("$(ab-a-)/tranBuffer.npy")
 pa = np.load("$(ab-a-)/primBuffer.npy")
@@ -62,6 +64,10 @@ pa = np.load("$(ab-a-)/primBuffer.npy")
 b = np.load("$(ab-b-)/partBuffer.npy")
 tb = np.load("$(ab-b-)/tranBuffer.npy")
 pb = np.load("$(ab-b-)/primBuffer.npy")
+xb = np.load("$(ab-b-)/idxBuffer.npy")
+
+mb = Mesh.make("$(ab-b-idpath)")
+
 
 def cf(a, b):
     assert len(a) == len(b)
@@ -87,7 +93,15 @@ def cf(a, b):
         pass
     pass
 pass
-cf(a,b)
+#cf(a,b)
+
+w = np.where( pa[:,1] != pb[:,1] )[0]
+
+lv = np.unique(xb[w][:,2])
+
+print "\n".join(map(lambda _:mb.idx2name[_], lv ))
+
+
 
 EOP
 }

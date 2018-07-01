@@ -75,7 +75,10 @@ void GMakerTest::makeFromCSG()
 
         n->set_boundary(spec);
 
-        NCSG* csg = NCSG::FromNode( n, config );
+        unsigned soIdx = 0 ; 
+        unsigned lvIdx = 0 ; 
+
+        NCSG* csg = NCSG::FromNode( n, config, soIdx, lvIdx );
 
         csg->setMeta<std::string>("poly", "IM");
 

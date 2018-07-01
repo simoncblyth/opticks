@@ -493,6 +493,8 @@ GVolume* X4PhysicalVolume::convertNode(const G4VPhysicalVolume* const pv, GVolum
 
      if(mh->csgnode == NULL)
      {
+         // convert G4VSolid into nnode tree, and balance the tree
+
          nnode* tree = X4Solid::Convert(solid)  ; 
          NTreeProcess<nnode> proc(tree); 
          nnode* result = proc.result ; 
@@ -516,10 +518,11 @@ GVolume* X4PhysicalVolume::convertNode(const G4VPhysicalVolume* const pv, GVolum
          mh->vtx = mh->mesh->m_x4src_vtx ; 
          mh->idx = mh->mesh->m_x4src_idx ; 
 
-         mh->csg = NCSG::FromNode( mh->csgnode, NULL );   // FromNode exports nnode tree to m_nodes buffer 
 
-         const_cast<NCSG*>(mh->csg)->setSOIdx( nd->soIdx ); 
-         const_cast<NCSG*>(mh->csg)->setLVIdx( lvIdx ); 
+         // FromNode exports nnode tree to m_nodes buffer in NCSG instance
+
+         mh->csg = NCSG::FromNode( mh->csgnode, NULL, nd->soIdx, lvIdx );   
+
 
          assert( mh->csg ) ; 
          assert( mh->csg->isUsedGlobally() );

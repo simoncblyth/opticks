@@ -114,6 +114,7 @@ class NPY_API NCSG {
         static const char* PLANES ; 
         static const char* SRC_FACES ; 
         static const char* SRC_VERTS ;
+        static const char* IDX ; 
  
         static const unsigned NTRAN ; 
         static const float SURFACE_EPSILON ; 
@@ -122,7 +123,9 @@ class NPY_API NCSG {
         std::string getTestLVName() const ;
         std::string getTestPVName() const ;
 
-        static NCSG* FromNode(nnode* root, const NSceneConfig* config);  // not const because of nudger
+        // cannot be "const nnode* root" because of the nudger
+        static NCSG* FromNode(nnode* root, const NSceneConfig* config, unsigned soIdx, unsigned lvIdx );
+
         static NCSG* LoadCSG(const char* treedir, const char* gltfconfig);
         static NCSG* LoadTree(const char* treedir, const NSceneConfig* config );
 
@@ -210,6 +213,7 @@ class NPY_API NCSG {
         NPY<float>*  getTransformBuffer() const ;
         NPY<float>*  getGTransformBuffer() const ;
         NPY<float>*  getPlaneBuffer() const ;
+        NPY<unsigned>* getIdxBuffer() const ;
         NParameters* getMetaParameters() const ;
         NParameters* getNodeMetadata(unsigned idx) const ;
 
@@ -273,6 +277,7 @@ class NPY_API NCSG {
         // Serialize branch 
         // export node tree into a complete binary tree buffer of nodes
         void export_r(nnode* node, unsigned idx);
+        void export_idx();
         void export_();
 
         // collects gtransform into the tran buffer and sets gtransform_idx 
@@ -305,6 +310,7 @@ class NPY_API NCSG {
         NPY<float>* m_planes ;
         NPY<float>* m_srcverts ;
         NPY<int>*   m_srcfaces ;
+        NPY<unsigned>* m_idx ;
 
         std::map<unsigned, NParameters*> m_nodemeta ; 
 

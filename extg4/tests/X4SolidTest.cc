@@ -42,7 +42,10 @@ void test_solid(G4VSolid* so)
     root->update_gtransforms();
     root->dump();
 
-    NCSG* csg = NCSG::FromNode( root, NULL ); 
+    unsigned soIdx = 0 ; 
+    unsigned lvIdx = 0 ; 
+
+    NCSG* csg = NCSG::FromNode( root, NULL, soIdx, lvIdx ); 
 
     Opticks* ok = new Opticks(0,0);
     GMaterialLib* mlib = new GMaterialLib(ok); 

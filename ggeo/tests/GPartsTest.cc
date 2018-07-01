@@ -41,7 +41,10 @@ void test_FromNode()
 
         const NSceneConfig* config = NULL ; 
 
-        NCSG* tree = NCSG::FromNode( n , config  );
+        unsigned soIdx = 0 ; 
+        unsigned lvIdx = 0 ; 
+
+        NCSG* tree = NCSG::FromNode( n , config, soIdx, lvIdx );
 
         GParts* pts = GParts::make( tree, spec, verbosity ) ; 
         pts->dump("GPartsTest");
@@ -71,8 +74,10 @@ void test_save_load(GBndLib* bndlib)
     nnode* n = nodes[0] ;  
     n->set_boundary(spec) ; 
 
+    unsigned soIdx = 0 ; 
+    unsigned lvIdx = 0 ; 
 
-    NCSG* csg = NCSG::FromNode( n, config );
+    NCSG* csg = NCSG::FromNode( n, config, soIdx, lvIdx );
 
     unsigned verbosity = 2 ; 
     GParts* pts = GParts::make(csg, spec, verbosity ) ; 

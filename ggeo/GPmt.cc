@@ -134,13 +134,16 @@ void GPmt::loadFromCache(NSlice* slice)
 
     //if(bndSpec) bndSpec->dump("(GItemList)bndSpec->dump()"); 
 
+    NPY<unsigned>* idxBuf = NPY<unsigned>::make(1,4);
+    idxBuf->zero();
+
     NPY<float>* tranBuf = NPY<float>::make(0,NTRAN,4,4);
     tranBuf->zero();
 
     NPY<float>* planBuf = NPY<float>::make(0,4);
     planBuf->zero();
 
-    GParts* parts = new GParts(partBuf, tranBuf, planBuf, bndSpec, m_bndlib);
+    GParts* parts = new GParts(idxBuf, partBuf, tranBuf, planBuf, bndSpec, m_bndlib);
     parts->setAnalyticVersion(getIndex());
     parts->setPrimFlag(CSG_FLAGPARTLIST);
 

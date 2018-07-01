@@ -1,6 +1,381 @@
 OKX4Test_mm0_has_85k_parts_vs_12k
 ===================================
 
+
+mm0 has 12 discrepant trees : with different tree height 
+------------------------------------------------------------
+
+::
+
+    w = np.where( pa[:,1] != pb[:,1] )[0]
+
+    lv = np.unique(xb[w][:,2])
+
+    print "\n".join(map(lambda _:mb.idx2name[_], lv ))
+
+
+    args: /opt/local/bin/ipython -i /tmp/blyth/opticks/bin/ab/i.py
+    [2018-07-01 12:17:46,914] p44730 {opticks/ana/mesh.py:32} INFO - Mesh for idpath : /usr/local/opticks/geocache/OKX4Test_World0xc15cfc0_PV_g4live/g4ok_gltf/828722902b5e94dab05ac248329ffebe/1 
+
+    near_pool_dead_box0xbf8a280
+    near_pool_liner_box0xc2dcc28
+    PLACEHOLDER_near_pool_iws_box0xc288ce8
+    headon-pmt-assy0xbf55198
+    headon-pmt-base0xc25cb40
+    TopRefCutHols0xbf9bd50
+    SsTBotHub0xc26d1d0
+    SstTopRadiusRib0xc271720
+    SstInnVerRibBase0xbf30b50
+    OavTopRib0xc0d5e10
+    Co60AlSource0xc3cebf8
+    SidePinSSTube0xc3d1f08
+
+    In [1]: lv
+    Out[1]: array([ 25,  26,  29,  60,  65,  68,  75,  77,  81,  85, 131, 140], dtype=uint32)
+
+
+
+use mm5 to check the idx
+---------------------------
+
+::
+
+    In [1]: idx = np.load("idxBuffer.npy")
+
+    In [2]: idx
+    Out[2]: 
+    array([[ 0, 54, 47,  3],
+           [ 0, 55, 46,  3],
+           [ 0, 56, 43,  2],
+           [ 0, 57, 44,  1],
+           [ 0, 58, 45,  0]], dtype=uint32)
+
+
+    epsilon:5 blyth$ mesh.py 47 46 43 44 45    ## use the lvIdx to lookup the solid name
+
+    pmt-hemi0xc0fed90
+    pmt-hemi-vac0xc21e248
+    pmt-hemi-cathode0xc2f1ce8
+    pmt-hemi-bot0xc22a958
+    pmt-hemi-dynode0xc346c50
+
+
+
+added idxBuffer to NCSG/GParts so can see soIdx/lvIdx with problem parts
+-------------------------------------------------------------------------------
+
+
+
+::
+
+    In [19]: lv = np.unique(idx[w][:,2])
+
+
+
+::
+
+    In [3]: idx = np.load("idxBuffer.npy")
+
+    In [4]: idx[w]
+    Out[4]: 
+    array([[  0,  38,  25,   2],
+           [  0,  39,  26,   2],
+           [  0,  42,  29,   3],
+           [  0,  39,  26,   2],
+           [  0,  73,  60,   4],
+           [  0,  76,  65,   4],
+           [  0,  76,  65,   4],
+           [  0,  76,  65,   4],
+           [  0,  76,  65,   4],
+           [  0,  76,  65,   4],
+           [  0,  76,  65,   4],
+           [  0,  76,  65,   4],
+           [  0,  76,  65,   4],
+           [  0,  79,  68,   2],
+           [  0,  86,  75,   3],
+           [  0,  88,  77,   3],
+           [  0,  92,  81,   3],
+           [  0,  88,  77,   3],
+           [  0,  96,  85,   3],
+           [  0,  88,  77,   3],
+           [  0, 126, 131,   3],
+           [  0, 151, 140,   4],
+           [  0, 126, 131,   3],
+           [  0, 126, 131,   3],
+
+           [  0,  38,  25,   2],
+           [  0,  39,  26,   2],
+           [  0,  42,  29,   3],
+           [  0,  39,  26,   2],
+           [  0,  73,  60,   4],
+           [  0,  76,  65,   4],
+           [  0,  76,  65,   4],
+           [  0,  76,  65,   4],
+           [  0,  76,  65,   4],
+           [  0,  76,  65,   4],
+           [  0,  76,  65,   4],
+           [  0,  76,  65,   4],
+           [  0,  76,  65,   4],
+           [  0,  79,  68,   2],
+           [  0,  86,  75,   3],
+           [  0,  88,  77,   3],
+           [  0,  92,  81,   3],
+           [  0,  88,  77,   3],
+           [  0,  96,  85,   3],
+           [  0,  88,  77,   3],
+           [  0, 126, 131,   3],
+           [  0, 151, 140,   4],
+           [  0, 126, 131,   3],
+           [  0, 126, 131,   3]], dtype=uint32)
+
+
+
+require access from a part to  soIdx/lvIdx/ndIdx 
+------------------------------------------------------
+
+* hmm to debug need access to identity indices soIdx/lvIdx/ndIdx : in a prim-level (ie Volume level) array 
+  hmm isnth that already held in the merged mesh ?  not quite what is needed
+
+  * added idxBuf to GParts to provide a slot of 4 uint to go with every NCSG/GPart that gets
+    combined 
+
+
+::
+
+    /usr/local/opticks/geocache/OKX4Test_World0xc15cfc0_PV_g4live/g4ok_gltf/828722902b5e94dab05ac248329ffebe/1/GMergedMesh/0
+    epsilon:0 blyth$ np.py identity.npy 
+    (12230, 4)
+    u32
+    [[    0     0     0     0]
+     [    1     1     1     0]
+     [    2     2     2     0]
+     ...
+     [12227   246    85     0]
+     [12228   247    85     0]
+     [12229   248    85     0]]
+    epsilon:0 blyth$ 
+
+
+
+
+* but the primBuffer is derived from the partBuffer in GParts::makePrimBuffer()
+  so to follow that need to repeat identity at part-level 
+
+
+all bits of AD : notice the repeated pattern, for each AD
+------------------------------------------------------------
+
+
+* 24 shapes, repeated for each AD have different tree size
+* checking boundaries of geometry with discrepant tree sizes 
+
+::
+
+    pp = map(str.strip, open("GParts.txt").readlines())
+
+    In [51]: for _ in pb[w][:,0]: print pp[_]   
+
+    LiquidScintillator///Acrylic
+    LiquidScintillator///Acrylic
+    LiquidScintillator///Acrylic
+    LiquidScintillator///Acrylic
+    Air///ESR
+    MineralOil///StainlessSteel
+    MineralOil///StainlessSteel
+    MineralOil///StainlessSteel
+    MineralOil///StainlessSteel
+    MineralOil///StainlessSteel
+    MineralOil///StainlessSteel
+    MineralOil///StainlessSteel
+    MineralOil///StainlessSteel
+    MineralOil///StainlessSteel
+    MineralOil///Acrylic
+    MineralOil///Acrylic
+    MineralOil///Acrylic
+    MineralOil///Acrylic
+    MineralOil///Acrylic
+    MineralOil///Acrylic
+    Vacuum///Acrylic
+    NitrogenGas///Acrylic
+    Vacuum///Acrylic
+    Vacuum///Acrylic
+
+    LiquidScintillator///Acrylic
+    LiquidScintillator///Acrylic
+    LiquidScintillator///Acrylic
+    LiquidScintillator///Acrylic
+    Air///ESR
+    MineralOil///StainlessSteel
+    MineralOil///StainlessSteel
+    MineralOil///StainlessSteel
+    MineralOil///StainlessSteel
+    MineralOil///StainlessSteel
+    MineralOil///StainlessSteel
+    MineralOil///StainlessSteel
+    MineralOil///StainlessSteel
+    MineralOil///StainlessSteel
+    MineralOil///Acrylic
+    MineralOil///Acrylic
+    MineralOil///Acrylic
+    MineralOil///Acrylic
+    MineralOil///Acrylic
+    MineralOil///Acrylic
+    Vacuum///Acrylic
+    NitrogenGas///Acrylic
+    Vacuum///Acrylic
+    Vacuum///Acrylic
+
+
+mm0 part count differences all one level up, C++ (b) larger than the python (a)
+---------------------------------------------------------------------------------
+
+::
+
+    In [31]: w = np.where( pa[:,1] != pb[:,1] )[0]
+
+    In [36]: w
+    Out[36]: 
+    array([   8,    9,   12,   13,  317,  327,  328,  329,  330,  331,  332,  333,  334,  351,  392,  394,  398,  400,  404,  406,  454,  493,  542,  624,  708,  709,  712,  713, 1017, 1027, 1028, 1029,
+           1030, 1031, 1032, 1033, 1034, 1051, 1092, 1094, 1098, 1100, 1104, 1106, 1154, 1193, 1242, 1324])
+
+
+    
+
+
+    In [35]: np.hstack( [pa[w], pb[w]] )
+    Out[35]: 
+    array([[  38,    3,   14,    0,   38,    7,   14,    0],
+           [  41,    3,   15,    0,   45,    7,   15,    0],
+           [  48,    7,   18,    0,   56,   15,   18,    0],
+           [  55,    3,   20,    0,   71,    7,   20,    0],
+           [1923,   15,  579,  160, 1943,   31,  579,  160],
+           [1997,   15,  620,  160, 2033,   31,  620,  160],
+           [2012,   15,  623,  165, 2064,   31,  623,  165],
+           [2027,   15,  626,  170, 2095,   31,  626,  170],
+           [2042,   15,  629,  175, 2126,   31,  629,  175],
+           [2057,   15,  632,  180, 2157,   31,  632,  180],
+           [2072,   15,  635,  185, 2188,   31,  635,  185],
+           [2087,   15,  638,  190, 2219,   31,  638,  190],
+           [2102,   15,  641,  195, 2250,   31,  641,  195],
+           [2229,    3,  692,  248, 2393,    7,  692,  248],
+           [2448,    7,  781,  336, 2616,   15,  781,  336],
+           [2458,    7,  783,  336, 2634,   15,  783,  336],
+           [2468,    7,  787,  336, 2652,   15,  787,  336],
+           [2478,    7,  790,  336, 2670,   15,  790,  336],
+           [2494,    7,  797,  336, 2694,   15,  797,  336],
+           [2504,    7,  800,  336, 2712,   15,  800,  336],
+           [2708,    7,  897,  336, 2924,   15,  897,  336],
+           [2811,   15,  954,  336, 3035,   31,  954,  336],
+           [3072,    7, 1060,  336, 3312,   15, 1060,  336],
+           [3350,    7, 1198,  336, 3598,   15, 1198,  336],
+           [3530,    3, 1300,  336, 3786,    7, 1300,  336],
+           [3533,    3, 1301,  336, 3793,    7, 1301,  336],
+           [3540,    7, 1304,  336, 3804,   15, 1304,  336],
+           [3547,    3, 1306,  336, 3819,    7, 1306,  336],
+           [5415,   15, 1865,  496, 5691,   31, 1865,  496],
+           [5489,   15, 1906,  496, 5781,   31, 1906,  496],
+           [5504,   15, 1909,  501, 5812,   31, 1909,  501],
+           [5519,   15, 1912,  506, 5843,   31, 1912,  506],
+           [5534,   15, 1915,  511, 5874,   31, 1915,  511],
+           [5549,   15, 1918,  516, 5905,   31, 1918,  516],
+           [5564,   15, 1921,  521, 5936,   31, 1921,  521],
+           [5579,   15, 1924,  526, 5967,   31, 1924,  526],
+           [5594,   15, 1927,  531, 5998,   31, 1927,  531],
+           [5721,    3, 1978,  584, 6141,    7, 1978,  584],
+           [5940,    7, 2067,  672, 6364,   15, 2067,  672],
+           [5950,    7, 2069,  672, 6382,   15, 2069,  672],
+           [5960,    7, 2073,  672, 6400,   15, 2073,  672],
+           [5970,    7, 2076,  672, 6418,   15, 2076,  672],
+           [5986,    7, 2083,  672, 6442,   15, 2083,  672],
+           [5996,    7, 2086,  672, 6460,   15, 2086,  672],
+           [6200,    7, 2183,  672, 6672,   15, 2183,  672],
+           [6303,   15, 2240,  672, 6783,   31, 2240,  672],
+           [6564,    7, 2346,  672, 7060,   15, 2346,  672],
+           [6842,    7, 2484,  672, 7346,   15, 2484,  672]], dtype=int32)
+
+
+
+
+
+mm0 part counts 48/3116 have different part counts
+-----------------------------------------------------
+
+ab-i::
+
+    In [27]: np.where( pa[:,1] != pb[:,1] )[0]
+    Out[27]: 
+    array([   8,    9,   12,   13,  317,  327,  328,  329,  330,  331,  332,  333,  334,  351,  392,  394,  398,  400,  404,  406,  454,  493,  542,  624,  708,  709,  712,  713, 1017, 1027, 1028, 1029,
+           1030, 1031, 1032, 1033, 1034, 1051, 1092, 1094, 1098, 1100, 1104, 1106, 1154, 1193, 1242, 1324])
+
+    In [28]: np.where( pa[:,1] != pb[:,1] )[0].shape
+    Out[28]: (48,)
+
+    In [29]: pa.shape
+    Out[29]: (3116, 4)
+
+    In [30]: pb.shape
+    Out[30]: (3116, 4)
+
+
+
+
+mm0 plane and transform offsets match
+----------------------------------------
+
+ab-i::
+
+    In [13]: pa[:,2]
+    Out[13]: array([   0,    1,    2, ..., 5341, 5342, 5343], dtype=int32)
+
+    In [14]: pb[:,2]
+    Out[14]: array([   0,    1,    2, ..., 5341, 5342, 5343], dtype=int32)
+
+    In [15]: np.all( pa[:,2] == pb[:,2] )
+    Out[15]: True
+
+    In [16]: np.all( pa[:,3] == pb[:,3] )
+    Out[16]: True
+
+
+
+With balancing implemented are now in the same ballpark::
+
+    epsilon:issues blyth$ ab-diff
+    Files /usr/local/opticks/geocache/DayaBay_VGDX_20140414-1300/g4_00.dae/96ff965744a2f6b78c24e33c80d3a4cd/103/GPartsAnalytic/0/GParts.txt and /usr/local/opticks/geocache/OKX4Test_World0xc15cfc0_PV_g4live/g4ok_gltf/828722902b5e94dab05ac248329ffebe/1/GParts/0/GParts.txt differ
+    Files /usr/local/opticks/geocache/DayaBay_VGDX_20140414-1300/g4_00.dae/96ff965744a2f6b78c24e33c80d3a4cd/103/GPartsAnalytic/0/partBuffer.npy and /usr/local/opticks/geocache/OKX4Test_World0xc15cfc0_PV_g4live/g4ok_gltf/828722902b5e94dab05ac248329ffebe/1/GParts/0/partBuffer.npy differ
+    Files /usr/local/opticks/geocache/DayaBay_VGDX_20140414-1300/g4_00.dae/96ff965744a2f6b78c24e33c80d3a4cd/103/GPartsAnalytic/0/planBuffer.npy and /usr/local/opticks/geocache/OKX4Test_World0xc15cfc0_PV_g4live/g4ok_gltf/828722902b5e94dab05ac248329ffebe/1/GParts/0/planBuffer.npy differ
+    Files /usr/local/opticks/geocache/DayaBay_VGDX_20140414-1300/g4_00.dae/96ff965744a2f6b78c24e33c80d3a4cd/103/GPartsAnalytic/0/primBuffer.npy and /usr/local/opticks/geocache/OKX4Test_World0xc15cfc0_PV_g4live/g4ok_gltf/828722902b5e94dab05ac248329ffebe/1/GParts/0/primBuffer.npy differ
+    Files /usr/local/opticks/geocache/DayaBay_VGDX_20140414-1300/g4_00.dae/96ff965744a2f6b78c24e33c80d3a4cd/103/GPartsAnalytic/0/tranBuffer.npy and /usr/local/opticks/geocache/OKX4Test_World0xc15cfc0_PV_g4live/g4ok_gltf/828722902b5e94dab05ac248329ffebe/1/GParts/0/tranBuffer.npy differ
+    /usr/local/opticks/geocache/DayaBay_VGDX_20140414-1300/g4_00.dae/96ff965744a2f6b78c24e33c80d3a4cd/103/GPartsAnalytic/0
+            ./GParts.txt : 11984 
+        ./planBuffer.npy : (672, 4) 
+        ./partBuffer.npy : (11984, 4, 4) 
+        ./tranBuffer.npy : (5344, 3, 4, 4) 
+        ./primBuffer.npy : (3116, 4) 
+    MD5 (GParts.txt) = 5eeee07e08a9a50278a2339dd0b47ac4
+    MD5 (partBuffer.npy) = 8d837fba380dfc643968bd23f99d656f
+    MD5 (planBuffer.npy) = 94e18d5e55d190c9ed73e04b45ebb404
+    MD5 (primBuffer.npy) = e21f1c240c4d5e9450aff3ddc0fb78d6
+    MD5 (tranBuffer.npy) = 77359e6d3d628e93cb7cf0a4a3824ab3
+    /usr/local/opticks/geocache/OKX4Test_World0xc15cfc0_PV_g4live/g4ok_gltf/828722902b5e94dab05ac248329ffebe/1/GParts/0
+            ./GParts.txt : 12496 
+        ./planBuffer.npy : (672, 4) 
+        ./partBuffer.npy : (12496, 4, 4) 
+        ./tranBuffer.npy : (5344, 3, 4, 4) 
+        ./primBuffer.npy : (3116, 4) 
+    MD5 (GParts.txt) = b15ee45a4d00018105cc858c6e9dca2a
+    MD5 (partBuffer.npy) = 89b03b89698585d2172e58cf139e7aa4
+    MD5 (planBuffer.npy) = 43f2892dbf4b8e91231e5d830dee9e03
+    MD5 (primBuffer.npy) = 486732059344a6448c955e7d90d14d74
+    MD5 (tranBuffer.npy) = 74a6d92ff0d830990e81e10434865714
+    epsilon:0 blyth$ 
+
+
+
+
+
+
+
 Large differnce in number of parts from the lack of 
 tree balancing implementation in the direct approach.
 
