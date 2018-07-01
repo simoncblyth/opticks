@@ -197,6 +197,7 @@ class NPY_API NPY : public NPYBase {
        void add(void* bytes, unsigned int nbytes); // add bytes,  nbytes must be integral multiple of itemsize in bytes
        void add(T x, T y, T z, T w) ;   // add values of a quad, itemsize must be 4 
        void add(const glm::vec4& v ) ;  // add quad, itemsize must be 4 
+       void add(const glm::uvec4& u ) ;  // add quad, itemsize must be 4 
        void reset();   //  clears data, setHasData to false and setNumItems to zero
     public:
        void updateDigests();

@@ -398,7 +398,7 @@ op-geometry-query-dyb()
        JDYB)  echo "range:3158:3159" ;;  # 1 volume : pvIAV
        KDYB)  echo "range:3159:3160" ;;  # 1 volume : pvGDS
        LDYB)  echo "range:3156:3157" ;;  # 1 volume : pvOAV
-       MDYB)  echo "range:3201:3202,range:3153:3154"  ;;  # 2 volumes : first pmt-hemi-cathode and ADE  
+       MDYB)  echo "range:3201:3202,range:3153:3154"  ;;  # 2 volumes : all the pmt-hemi-cathode instances and ADE  
        DSST2)  echo "range:3155:3156,range:4440:4448" ;;    # large BBox discrep
        DRV3153) echo "index:3153,depth:13" ;;  
        DRV3155) echo "index:3155,depth:20" ;;  

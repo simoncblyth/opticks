@@ -370,6 +370,9 @@ void X4PhysicalVolume::convertStructure()
 
      m_root = convertTree_r(pv, parent, depth, parent_pv, recursive_select );
 
+     NTreeProcess<nnode>::SaveBuffer("$TMP/NTreeProcess.npy");      
+
+
      LOG(info) << " convertStructure END  " << m_sc->desc() ; 
 }
 
@@ -445,7 +448,7 @@ GVolume* X4PhysicalVolume::convertNode(const G4VPhysicalVolume* const pv, GVolum
 
      int ndIdx0 = m_sc->get_num_nodes();
 
-     bool selected = m_query->selected(pvName.c_str(), ndIdx0, depth, recursive_select);
+     bool selected = m_query->selected(pvName.c_str(), ndIdx0, depth, recursive_select, lvIdx );
 
      /*
      if(selected)

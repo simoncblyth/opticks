@@ -6,21 +6,23 @@
 
 #include "OpticksQuery.hh"
 
-#include "OKCORE_LOG.hh"
-#include "PLOG.hh"
+#include "OPTICKS_LOG.hh"
 
 
 struct Node 
 {
-    Node(unsigned idx, Node* parent) 
+    Node(unsigned idx_, unsigned lvIdx_, Node* parent ) 
         : 
-         idx(idx), 
+         idx(idx_), 
+         lvIdx(lvIdx_),
          parent(parent),
          left(NULL),
          right(NULL)
          {} ;
  
     unsigned idx ; 
+    unsigned lvIdx ;
+ 
     Node* parent ; 
     Node* left  ; 
     Node* right  ; 
@@ -44,7 +46,8 @@ struct Tree
 
     Node* make_r(unsigned idx, Node* parent, unsigned depth)
     {
-        Node* node = new Node(idx, parent);
+        unsigned lvIdx = depth ; // <--- for wont of something better
+        Node* node = new Node(idx, lvIdx, parent);
         count++ ; 
         if(depth < maxdepth)
         {
@@ -83,10 +86,12 @@ struct Tree
 
     void select_r(Node* node, OpticksQuery* q, unsigned depth, bool recursive_select)
     {
-        bool is_selected = q->selected("dummy", node->idx, depth, recursive_select );
+        unsigned lvIdx = depth ; 
+        bool is_selected = q->selected("dummy", node->idx, depth, recursive_select, lvIdx );
 
         std::cout << "select_r"
                   << " node.idx " << std::setw(6) << node->idx
+                  << " \"lvIdx\" " << std::setw(6) << lvIdx
                   << " depth " << std::setw(2) << depth
                   << " recursive_select " << ( recursive_select ? "Y" : "N" )
                   << " is_selected " << ( is_selected ? "Y" : "N" )
@@ -124,6 +129,19 @@ void test_range()
 }
 
 
+void test_lvrange()
+{
+     OpticksQuery q("lvr:2:3,lvr:4:5");
+     q.dump(); 
+
+     Tree t(6) ; 
+     LOG(info) << "initial " << t.desc() ; 
+
+     t.select(&q) ; 
+     LOG(info) << "after select " << t.desc() ; 
+}
+
+
 void test_all()
 {
      OpticksQuery q("all");
@@ -153,12 +171,12 @@ void test_index()
 
 int main(int argc, char** argv)
 {
-     PLOG_(argc, argv);
-     OKCORE_LOG__ ; 
+     OPTICKS_LOG(argc, argv);
 
      //test_range();
-     test_all();
+     //test_all();
      //test_index();
+     test_lvrange();
 
      return 0 ; 
 }

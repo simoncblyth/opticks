@@ -2,13 +2,97 @@ OKX4Test_mm0_has_85k_parts_vs_12k
 ===================================
 
 
+what are tree height actual limits ?
+-------------------------------------
+
+::
+
+     542 #define USE_TWIDDLE_POSTORDER 1
+     543 
+     544 static __device__
+     545 void evaluative_csg( const Prim& prim, const uint4& identity )
+     546 {
+     547     unsigned partOffset = prim.partOffset() ;
+     548     unsigned numParts   = prim.numParts() ;
+     549     unsigned tranOffset = prim.tranOffset() ;
+     550 
+     551     unsigned height = TREE_HEIGHT(numParts) ; // 1->0, 3->1, 7->2, 15->3, 31->4 
+     552 
+     553 #ifdef USE_TWIDDLE_POSTORDER
+     554     // bit-twiddle postorder limited to height 7, ie maximum of 0xff (255) nodes
+     555     // (using 2-bytes with PACK2 would bump that to 0xffff (65535) nodes)
+     556     // In any case 0xff nodes are far more than this is expected to be used with
+     557     //
+     558     if(height > 7)
+     559     {
+     560         rtPrintf("evaluative_csg tranOffset %u numParts %u perfect tree height %u exceeds current limit\n", tranOffset, numParts, height ) ;
+     561         return ;
+     562     }
+     563 #else
+     564     // pre-baked postorder limited to height 3 tree,  ie maximum of 0xf nodes
+     565     // by needing to stuff the postorder sequence 0x137fe6dc25ba498ull into 64 bits 
+     566     if(height > 3)
+     567     {
+     568         rtPrintf("evaluative_csg tranOffset %u numParts %u perfect tree height %u exceeds current limit\n", tranOffset, numParts, height ) ;
+     569         return ;
+     570     }
+
+
+
+Hmm maxcsgheight is 3 : not 4
+--------------------------------
+
+Argh, maybe trivial cut difference (misread the code, the default maxcsgheight of 4)
+is overrden down to 3::
+
+
+    509 def gdml2gltf_main( args ):
+    510     """
+    511     main used by bin/gdml2gltf.py 
+    512     """
+    513     # envvars are set within opticks_main
+    514     gdmlpath = os.environ['OPTICKS_GDMLPATH']
+    515     gltfpath = os.environ['OPTICKS_GLTFPATH']
+    516 
+    517     assert gdmlpath.replace('.gdml','.gltf') == gltfpath
+    518     assert gltfpath.replace('.gltf','.gdml') == gdmlpath
+    519 
+    520     log.info("start GDML parse")
+    521     gdml = GDML.parse(gdmlpath)
+    522 
+    523     log.info("start treeify")
+    524     tree = Tree(gdml.world)
+    525 
+    526     log.info("start apply_selection")
+    527     tree.apply_selection(args.query)   # sets node.selected "volume mask" 
+    528 
+    529     log.info("start Sc.ctor")
+    530     sc = Sc(maxcsgheight=3)
+    531 
+    532     sc.extras["verbosity"] = 1
+    533     sc.extras["targetnode"] = 0   # args.query.query_range[0]   # hmm get rid of this ?
+    534 
+    535     log.info("start Sc.add_tree_gdml")
+    536 
+    537     tg = sc.add_tree_gdml( tree.root, maxdepth=0)
+    538 
+    539     log.info("start Sc.add_tree_gdml DONE")
+    540 
+    541     #path = args.gltfpath
+    542     gltf = sc.save(gltfpath)
+    543 
+    544     sc.gdml = gdml
+    545     sc.tree = tree
+    546 
+    547     return sc
+
+
 
 
 Huh most of the listed are not balanced as not overheight 
 --------------------------------------------------------------
 
 * perhaps the peculiarity is with the old conversion, try to proceed asis 
-
 
 ::
 
@@ -76,13 +160,7 @@ use mm5 to check the idx
            [ 0, 58, 45,  0]], dtype=uint32)
 
 
-    epsilon:5 blyth$ mesh.py 47 46 43 44 45    ## use the lvIdx to lookup the solid name
 
-    pmt-hemi0xc0fed90
-    pmt-hemi-vac0xc21e248
-    pmt-hemi-cathode0xc2f1ce8
-    pmt-hemi-bot0xc22a958
-    pmt-hemi-dynode0xc346c50
 
 
 

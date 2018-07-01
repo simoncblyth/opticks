@@ -1,6 +1,8 @@
 #include <cassert>
 #include <vector>
 
+#include "NPY.hpp"
+
 #include "NTreeBalance.hpp"
 #include "NTreePositive.hpp"
 #include "NTreeAnalyse.hpp"
@@ -9,17 +11,27 @@
 #include "PLOG.hh"
 
 template <typename T>
-unsigned NTreeProcess<T>::MaxHeight0 = 4 ;  
+unsigned NTreeProcess<T>::MaxHeight0 = 3 ;   // was discrepantly 4 previously   
 
 template <typename T>
 std::vector<unsigned>* NTreeProcess<T>::LVList = NULL ;  
 
+template <typename T>
+NPY<unsigned>* NTreeProcess<T>::ProcBuffer = NULL ;  
+
+template <typename T>
+void NTreeProcess<T>::SaveBuffer(const char* path)
+{
+    ProcBuffer->save(path); 
+}
 
 template <typename T>
 T* NTreeProcess<T>::Process( T* root_ , unsigned soIdx, unsigned lvIdx )  // static
 {
     if( LVList == NULL )
          LVList = new std::vector<unsigned> {25,  26,  29,  60,  65,  68,  75,  77,  81,  85, 131, 140} ;
+  
+    if( ProcBuffer == NULL ) ProcBuffer = NPY<unsigned>::make(0,4) ; 
 
     bool listed = std::find(LVList->begin(), LVList->end(), lvIdx ) != LVList->end() ; 
 
@@ -43,6 +55,8 @@ T* NTreeProcess<T>::Process( T* root_ , unsigned soIdx, unsigned lvIdx )  // sta
          << " " << ( listed ? "### LISTED" : "" ) 
          ;
     }
+
+    if(ProcBuffer) ProcBuffer->add(soIdx, lvIdx, height0, height1);   
 
     return result ; 
 } 

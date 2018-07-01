@@ -6,10 +6,86 @@ GMesh default m_geocode to 'A' (rather than 'T').
 
 
 
-TODO: add geometry query to select on lvIdx 
+Added OpticksQuery lvr selecting on lvIdx 
 -----------------------------------------------
 
-* hmm to find the that can select specific lv "lv:248,lv:20"  ?
+::
+
+    export OPTICKS_QUERY_LIVE="lvr:47:48" ; lldb OKX4Test 
+           ## soft crashes for lack of any global geometry
+
+    export OPTICKS_QUERY_LIVE="lvr:0:1,lvr:47:48" ; lldb OKX4Test 
+           ## pool cover? and PMTs 
+
+    export OPTICKS_QUERY_LIVE="lvr:0:1,lvr:47:48,lvr:248:249" ; lldb OKX4Test 
+           ## including world box 248 : not very useful as far too big 
+
+    export OPTICKS_QUERY_LIVE="lvr:0:1,lvr:47:48,lvr:56:57" ; lldb OKX4Test 
+           ##  BINGO : including radial shield unit works in OGLRender
+           ##          but hard crashes in raytrace, causing system panic, reboot   
+
+
+::
+
+    56 : RadialShieldUnit0xc3d7da8 
+
+
+::
+
+    NTreeProcess
+
+    60     if(ProcBuffer) ProcBuffer->add(soIdx, lvIdx, height0, height1);
+
+    In [2]: prb = np.load(os.path.expandvars("$TMP/ProcBuffer.npy"))
+
+
+       [ 64,  50,   0,   0],
+       [ 65,  53,   0,   0],
+       [ 66,  55,   2,   2],
+       [ 67,  56,   8,   4],    <--- radial shield unit, height of 4 not too terrible ?
+       [ 68,  59,   5,   3],
+       [ 69,  58,   5,   3],
+       [ 70,  57,   9,   4],
+
+
+
+    In [3]: prb
+    Out[3]: 
+    array([[  0, 248,   0,   0],
+           [  1, 247,   1,   1],
+           [  2,  21,   1,   1],
+           [  3,   0,   4,   4],
+           [  4,   7,   0,   0],
+           [  5,   6,   0,   0],
+           [  6,   3,   0,   0],
+           [  7,   2,   0,   0],
+           [  8,   1,   0,   0],
+           [  9,   5,   0,   0],
+           [ 10,   4,   0,   0],
+           [ 11,   8,   0,   0],
+           [ 12,  20,   0,   0],
+           [ 13,  16,   0,   0],
+           [ 14,   9,   2,   2],
+           [ 15,  10,   2,   2],
+           [ 16,  11,   1,   1],
+           [ 17,  12,   1,   1],
+           [ 18,  13,   1,   1],
+           [ 19,  14,   0,   0],
+           [ 20,  15,   0,   0],
+
+
+
+
+
+Meaning of the indices corresponding to the source IDPATH, not the created one ?::
+
+    epsilon:extg4 blyth$ mesh.py 0 47 248 
+    INFO:__main__:Mesh for idpath : /usr/local/opticks/geocache/DayaBay_VGDX_20140414-1300/g4_00.dae/96ff965744a2f6b78c24e33c80d3a4cd/1 
+      0 : near_top_cover_box0xc23f970 
+     47 : pmt-hemi0xc0fed90 
+    248 : WorldBox0xc15cf40 
+    epsilon:extg4 blyth$ 
+
 
 
 Try full with some selection
@@ -25,6 +101,9 @@ Direct raytrace working for restricted selections.
     export OPTICKS_QUERY_LIVE="range:3153:3154" ; lldb OKX4Test   ## surprised to get a cylinder 
 
     export OPTICKS_QUERY_LIVE="range:3201:3202,range:3153:3154" ; lldb OKX4Test 
+
+
+
 
         ## shows 
 

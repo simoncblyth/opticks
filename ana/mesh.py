@@ -24,8 +24,13 @@ class Mesh(object):
         """
         elem = path.split("/")
         elen = map(len,elem)
-        digp = elen.index(32)   # digest has length of 32 
-        idpath = "/".join(elem[:digp+2])  # one past the digest 
+
+        try:
+            digp = elen.index(32)   # digest has length of 32 
+            idpath = "/".join(elem[:digp+2])  # one past the digest 
+        except ValueError:
+            idpath = os.environ["IDPATH"]
+        pass
         return idpath
 
     def __init__(self, idpath):
@@ -42,8 +47,10 @@ if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
     mh = Mesh.make()
     args = sys.argv[1:]
-    for idx in map(int,args):
-        print mh.idx2name[idx]
+
+    iargs = map(int, args) if len(args) > 0 else mh.idx2name.keys()
+    for idx in iargs:
+        print "%3d : %s " % ( idx, mh.idx2name[idx] )
     pass
 
      

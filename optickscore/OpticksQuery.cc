@@ -17,6 +17,7 @@ const char* OpticksQuery::INDEX_ = "index" ;
 const char* OpticksQuery::MERGE_ = "merge" ; 
 const char* OpticksQuery::DEPTH_ = "depth" ; 
 const char* OpticksQuery::RANGE_ = "range" ; 
+const char* OpticksQuery::LVR_ = "lvr" ; 
 const char* OpticksQuery::ALL_   = "all" ; 
 const char* OpticksQuery::EMPTY_   = "" ; 
 
@@ -61,10 +62,15 @@ int OpticksQuery::getQueryDepth() const
 {
     return m_query_depth == 0 ? 100 : m_query_depth ;  
 }
-std::vector<unsigned int> OpticksQuery::getQueryRange() const 
+std::vector<unsigned> OpticksQuery::getQueryRange() const 
 {
     return m_query_range ;  
 }
+std::vector<unsigned> OpticksQuery::getQueryLVRange() const 
+{
+    return m_query_lvrange ;  
+}
+
 
 bool OpticksQuery::isFlatSelection() const 
 {
@@ -101,13 +107,24 @@ std::string OpticksQuery::desc() const
 
    if(m_query_type == RANGE)
    {
-       size_t nrange = m_query_range.size() ;
-       ss << " nrange " << nrange ;
-       for(unsigned int i=0 ; i < nrange ; i++)
+       size_t num_range = m_query_range.size() ;
+       ss << " num_range " << num_range ;
+       for(unsigned i=0 ; i < num_range ; i++)
        {
           ss << " : " << m_query_range[i] ;
        }
    } 
+   else if(m_query_type == LVR)
+   {
+       size_t num_lvrange = m_query_lvrange.size() ;
+       ss << " num_lvrange " << num_lvrange ;
+       for(unsigned i=0 ; i < num_lvrange ; i++)
+       {
+          ss << " : " << m_query_lvrange[i] ;
+       }
+ 
+   }
+
    return ss.str();
 }
 
@@ -154,6 +171,7 @@ const char* OpticksQuery::getQueryTypeString() const
       case NAME     : type=NAME_      ;break; 
       case INDEX    : type=INDEX_     ;break; 
       case RANGE    : type=RANGE_     ;break; 
+      case LVR      : type=LVR_       ;break; 
       case MERGE    : type=MERGE_     ;break; 
       case DEPTH    : type=DEPTH_     ;break; 
       default       : type=UNDEFINED_ ;break; 
@@ -168,6 +186,7 @@ void OpticksQuery::parseQueryElement(const char* query)
    const char* name_token  = "name:" ;
    const char* index_token = "index:" ;
    const char* range_token = "range:" ;
+   const char* lvr_token = "lvr:" ;
    const char* merge_token = "merge:" ;
    const char* depth_token = "depth:" ;
 
@@ -212,6 +231,20 @@ void OpticksQuery::parseQueryElement(const char* query)
            m_query_range.push_back(query_range_elem) ;
        }
        m_flat_selection = true ; 
+   } 
+   else if(strncmp(query,lvr_token, strlen(lvr_token)) == 0)
+   {
+       m_query_type = LVR ; 
+       std::vector<std::string> elem ; 
+       BStr::split(elem, query+strlen(lvr_token), ':'); 
+       assert(elem.size() == 2);
+       for(unsigned int i=0 ; i<elem.size() ; ++i)
+       {
+           int query_lvrange_elem = atoi(elem[i].c_str());
+           assert(query_lvrange_elem > -1 );
+           m_query_lvrange.push_back(query_lvrange_elem) ;
+       }
+       m_flat_selection = true ; 
   } 
 }
 
@@ -227,7 +260,7 @@ boolean.
 
 **/
 
-bool OpticksQuery::selected(const char* name, unsigned int index, unsigned int depth, bool& recursive_select )
+bool OpticksQuery::selected(const char* name, unsigned int index, unsigned int depth, bool& recursive_select, unsigned lvIdx )
 {
    bool _selected(false) ; 
 
@@ -262,9 +295,17 @@ bool OpticksQuery::selected(const char* name, unsigned int index, unsigned int d
    else if(m_query_range.size() > 0)
    {
        assert(m_query_range.size() % 2 == 0);
-       for(unsigned int i=0 ; i < m_query_range.size()/2 ; i++ )
+       for(unsigned i=0 ; i < m_query_range.size()/2 ; i++ )
        {
            if( index >= m_query_range[i*2+0] && index < m_query_range[i*2+1] ) _selected = true ;
+       }
+   }
+   else if(m_query_lvrange.size() > 0)
+   {
+       assert(m_query_lvrange.size() % 2 == 0);
+       for(unsigned i=0 ; i < m_query_lvrange.size()/2 ; i++ )
+       {
+           if( lvIdx >= m_query_lvrange[i*2+0] && lvIdx < m_query_lvrange[i*2+1] ) _selected = true ;
        }
    }
    return _selected ; 

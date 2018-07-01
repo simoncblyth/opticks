@@ -55,7 +55,7 @@ Query string examples from opticks/bin/op.sh::
 class OKCORE_API OpticksQuery {
 
 public:
-    typedef enum { UNDEFINED, NAME, INDEX, MERGE, DEPTH, RANGE } OpticksQuery_t ;
+    typedef enum { UNDEFINED, NAME, INDEX, MERGE, DEPTH, RANGE, LVR } OpticksQuery_t ;
 
     static const char* UNDEFINED_ ; 
     static const char* NAME_ ; 
@@ -63,6 +63,7 @@ public:
     static const char* MERGE_ ; 
     static const char* DEPTH_ ; 
     static const char* RANGE_ ; 
+    static const char* LVR_ ; 
     static const char* ALL_ ; 
     static const char* EMPTY_ ; 
 
@@ -74,7 +75,7 @@ public:
 
 public:
     OpticksQuery(const char* query);
-    bool selected(const char* name, unsigned int index, unsigned int depth, bool& recursive_select );
+    bool selected(const char* name, unsigned int index, unsigned int depth, bool& recursive_select, unsigned lvIdx=0 );
 private:
     void init();
 public:
@@ -87,7 +88,8 @@ public:
     int          getQueryDepth() const ;
     bool         isNoSelection() const ;
     bool         isFlatSelection() const ;
-    std::vector<unsigned int> getQueryRange() const ;
+    std::vector<unsigned> getQueryRange() const ;
+    std::vector<unsigned> getQueryLVRange() const ;
 private:
     void parseQueryElement(const char* query);
     void parseQuery(const char* query);
@@ -100,7 +102,8 @@ private:
     unsigned int m_query_depth ; 
     OpticksQuery_t m_query_type ; 
 
-    std::vector<unsigned int> m_query_range ; 
+    std::vector<unsigned> m_query_range ; 
+    std::vector<unsigned> m_query_lvrange ; 
     bool m_flat_selection ; 
     bool m_no_selection ; 
 
