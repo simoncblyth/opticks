@@ -1208,17 +1208,17 @@ GMaterial* GGeo::getScintillatorMaterial(unsigned int index)
 void GGeo::prepareMeshes()
 {
     bool instanced = m_ok->isInstanced();
+    unsigned verbosity = 5  ; 
 
-    LOG(trace) << "GGeo::prepareMeshes START" 
-              << " instanced " << instanced 
+    LOG(error) << "GGeo::prepareMeshes START" 
+               << " instanced " << instanced 
+               << " verbosity " << verbosity 
               ;
-    unsigned verbosity = 0 ; 
 
     if(instanced)
     { 
         bool deltacheck = true ; 
         m_treecheck->createInstancedMergedMeshes(deltacheck, verbosity);   // GTreeCheck::createInstancedMergedMeshes
-
     }
     else
     {
@@ -1227,7 +1227,7 @@ void GGeo::prepareMeshes()
         m_geolib->makeMergedMesh(0, NULL, root, verbosity);  // ridx:0 rbase:NULL 
         // ^^^^  precache never needs analytic geolib ?
     }
-    LOG(trace) << "GGeo::prepareMeshes DONE" ;
+    LOG(error) << "GGeo::prepareMeshes DONE" ;
 }
 
 

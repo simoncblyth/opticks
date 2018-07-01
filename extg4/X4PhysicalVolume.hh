@@ -63,7 +63,7 @@ class X4_API X4PhysicalVolume
     public:
         X4PhysicalVolume(GGeo* ggeo, const G4VPhysicalVolume* const pv); 
         GGeo* getGGeo();
-        void  saveAsGLTF(const char* path=NULL);
+        void  saveAsGLTF(int root=0, const char* path=NULL);
     private:
         void init();
     private:

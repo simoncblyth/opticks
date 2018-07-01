@@ -81,8 +81,11 @@ GGeo* X4PhysicalVolume::Convert(const G4VPhysicalVolume* const top)
     GGeo* gg = new GGeo(ok) ;
 
     X4PhysicalVolume xtop(gg, top) ;  
+
     const char* path = NULL ; 
-    xtop.saveAsGLTF(path); 
+    int root = 0 ; 
+
+    xtop.saveAsGLTF(root, path);  // <-- TODO: give GGeo this capability 
  
     return gg ; 
 }
@@ -189,9 +192,9 @@ void X4PhysicalVolume::convertSurfaces()
 }
 
 
-void X4PhysicalVolume::saveAsGLTF(const char* path)
+void X4PhysicalVolume::saveAsGLTF(int root, const char* path)
 {
-     m_sc->root = SSys::getenvint("GLTF_ROOT", 3147); 
+     m_sc->root = SSys::getenvint("GLTF_ROOT", root);  // 3147
      LOG(error) << "X4PhysicalVolume::saveAsGLTF"
                 << " sc.root " << m_sc->root 
                 ;

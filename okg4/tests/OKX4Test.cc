@@ -17,6 +17,7 @@
 #include "CGDMLDetector.hh"
 
 #include "X4PhysicalVolume.hh"
+#include "X4Sample.hh"
 
 class G4VPhysicalVolume ;
 
@@ -39,19 +40,28 @@ See :doc:`../../notes/issues/OKX4Test`
 
 **/
 
+G4VPhysicalVolume* make_top(int argc, char** argv)
+{
+    Opticks* ok = new Opticks(argc, argv); 
+    OpticksHub* hub = new OpticksHub(ok);
+    OpticksQuery* query = ok->getQuery();
+    CGDMLDetector* detector  = new CGDMLDetector(hub, query) ; 
+    bool valid = detector->isValid();
+    assert(valid);
+    G4VPhysicalVolume* top = detector->Construct();
+    return top ; 
+}
+
+
 int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv);
 
-    Opticks ok(argc, argv);
-    OpticksHub hub(&ok);
-    OpticksQuery* query = ok.getQuery();
-    CGDMLDetector* detector  = new CGDMLDetector(&hub, query) ; 
-    bool valid = detector->isValid();
-    assert(valid);
-    G4VPhysicalVolume* top = detector->Construct();
-    assert(top);
+    G4VPhysicalVolume* top = make_top(argc, argv); 
+    //char c = 's' ; 
+    //G4VPhysicalVolume* top = X4Sample::Sample(c) ; 
 
+    assert(top);
     LOG(info) << "///////////////////////////////// " ; 
 
     const char* key = X4PhysicalVolume::Key(top) ; 
@@ -60,7 +70,7 @@ int main(int argc, char** argv)
 
     LOG(error) << " SetKey " << key  ;   
 
-    const char* argforce = "--tracer --nogeocache" ;
+    const char* argforce = "--tracer --nogeocache --xanalytic" ;
     // --nogeoache to prevent GGeo booting from cache 
 
     Opticks* ok2 = new Opticks(argc, argv, argforce);  // Opticks instanciation must be after Opticks::SetKey
@@ -75,7 +85,10 @@ int main(int argc, char** argv)
 
 
     X4PhysicalVolume xtop(gg2, top) ;    // populates gg2 
-    //xtop.saveAsGLTF(); 
+
+    int root = 0 ; 
+    const char* path = NULL ;  
+    xtop.saveAsGLTF(root, path); 
 
     gg2->prepare();   // merging meshes, closing libs
 
@@ -91,16 +104,15 @@ int main(int argc, char** argv)
 
     Opticks* oki = Opticks::GetInstance() ; 
 
+    assert( oki == ok2 ) ; 
+
     std::cout << " oki " << oki
               << " ok2 " << ok2 
-              << " ok " << &ok 
               << std::endl ; 
 
     LOG(info) << " oki.idpath " << oki->getIdPath() ; 
-    LOG(info) << " ok.idpath " << ok.getIdPath() ; 
     LOG(info) << " ok2.idpath " << ok2->getIdPath() ; 
 
-    //assert( oki == ok2 ); 
  
 
     return mgr.rc() ;

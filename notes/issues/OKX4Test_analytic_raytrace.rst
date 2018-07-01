@@ -6,17 +6,118 @@ GMesh default m_geocode to 'A' (rather than 'T').
 
 
 
+TODO: add geometry query to select on lvIdx 
+-----------------------------------------------
+
+* hmm to find the that can select specific lv "lv:248,lv:20"  ?
+
+
+Try full with some selection
+------------------------------
+
+Direct raytrace working for restricted selections.
+
+
+::
+
+    export OPTICKS_QUERY_LIVE="range:3153:12221"  # this is the default from OpticksResource::DEFAULT_QUERY_LIVE
+
+    export OPTICKS_QUERY_LIVE="range:3153:3154" ; lldb OKX4Test   ## surprised to get a cylinder 
+
+    export OPTICKS_QUERY_LIVE="range:3201:3202,range:3153:3154" ; lldb OKX4Test 
+
+        ## shows 
+
+::
+
+    392 op-geometry-query-dyb()
+    393 {
+    394     case $1 in
+    395    DYB|DLIN)  echo "range:3153:12221"  ;;
+    396        DFAR)  echo "range:4686:18894"   ;;  #  
+    397        IDYB)  echo "range:3158:3160" ;;  # 2 volumes : pvIAV and pvGDS
+    398        JDYB)  echo "range:3158:3159" ;;  # 1 volume : pvIAV
+    399        KDYB)  echo "range:3159:3160" ;;  # 1 volume : pvGDS
+    400        LDYB)  echo "range:3156:3157" ;;  # 1 volume : pvOAV
+    401        MDYB)  echo "range:3201:3202,range:3153:3154"  ;;  # 2 volumes : all the pmt-hemi-cathode instances and ADE  
+    402        DSST2)  echo "range:3155:3156,range:4440:4448" ;;    # large BBox discrep
+    403        DRV3153) echo "index:3153,depth:13" ;;
+    404        DRV3155) echo "index:3155,depth:20" ;;
+    405        DLV17)  echo "range:3155:3156,range:2436:2437" ;;    # huh just see the cylinder
+    406        DLV30)  echo "range:3155:3156,range:3167:3168" ;;    #
+    407        DLV46)  echo "range:3155:3156,range:3200:3201" ;;    #
+    408        DLV55)  echo "range:3155:3156,range:4357:4358" ;;    #
+    409        DLV56)  echo "range:3155:3156,range:4393:4394" ;;    #
+    410        DLV65)  echo "range:3155:3156,range:4440:4441" ;;
+    411        DLV66)  echo "range:3155:3156,range:4448:4449" ;;
+    412        DLV67)  echo "range:3155:3156,range:4456:4457" ;;
+    413        DLV68)  echo "range:3155:3156,range:4464:4465" ;;    # 
+    414       DLV103)  echo "range:3155:3156,range:4543:4544" ;;    #
+    415       DLV140)  echo "range:3155:3156,range:4606:4607" ;;    #
+    416       DLV185)  echo "range:3155:3156,range:4799:4800" ;;    #
+    417     esac
+
+
+
+
+Succeed to get a simple sphere thru the machinery
+-----------------------------------------------------
+
+Required to set the query envvar and change
+code to skip OScintillatorLib when no scintillators.
+
+::
+
+   OPTICKS_QUERY_LIVE="range:0:1" OKX4Test 
+
+   lldb OKX4Test  
+   (lldb) env OPTICKS_QUERY_LIVE="range:0:1"
+   (lldb) r 
+
+   export OPTICKS_QUERY_LIVE="range:0:1"    ## simpler to just set in invoking environment
+   lldb OKX4Test  
+ 
+
+
+Hmm how to debug
+------------------
+
+There is some issue with the directly converted analytic geometry. 
+How to find what ?
+
+1. Some GGeoTest equivalent ?
+
+   * GGeoTest is based on python CSG which becomes a nnode tree ... which is working, 
+     unclear how to make an equivalent
+
+2. Create some simple Geant4 geometry instead of the GDML one, and 
+   see if can analytic ray trace it 
+
+3. Play around with full geometry but changing the query to pull out bits of 
+   geometry   
 
 xanalytic switch
 -------------------
 
-::
+Actually because of the two Opticks instances, its
+cleaner just to change the argforced of the 2nd Opticks
+inside the test, rather than using cmdline.
 
+1. to assist with getting the G4VPhysicalVolume with GDML fixups
+2. to check the the conversion to GGeo 
+
+
+
+So use no args::
+
+   epsilon:issues blyth$ lldb OKX4Test 
+    
+
+Rather than providing args that go to both Opticks::
 
    epsilon:issues blyth$ lldb OKX4Test -- --xanalytic --restrictmesh 0 
 
    epsilon:issues blyth$ lldb OKX4Test -- --xanalytic  
-
 
 
 ::

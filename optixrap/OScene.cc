@@ -9,6 +9,7 @@
 
 // okg-
 #include "OpticksHub.hh"
+#include "GScintillatorLib.hh"
 
 // oxrap-
 #include "OContext.hh"
@@ -142,11 +143,24 @@ void OScene::init()
     m_osrc->convert();
 
 
+    GScintillatorLib* sclib = m_hub->getScintillatorLib() ;
+    unsigned num_scin = sclib->getNumScintillators(); 
     const char* slice = "0:1" ;
-    LOG(debug) << "OScene::init (OScintillatorLib) slice " << slice  ;
-    m_oscin = new OScintillatorLib(context, m_hub->getScintillatorLib());
-    m_oscin->convert(slice);
 
+    LOG(debug) << "OScene::init (OScintillatorLib)"
+               << " num_scin " << num_scin 
+               << " slice " << slice  
+               ;
+
+    if(num_scin > 0)
+    {
+        m_oscin = new OScintillatorLib(context, sclib );
+        m_oscin->convert(slice);
+    }
+    else
+    {
+        LOG(error) << " skip OScintillatorLib " ; 
+    }
 
     LOG(debug) << "OScene::init (OGeo)" ;
     m_ogeo = new OGeo(m_ocontext, m_ok, m_hub->getGeoLib(), builder, traverser);

@@ -73,6 +73,7 @@ set(SOURCES
     X4RotationMatrix.cc
     X4Transform3D.cc
     X4PhysicalVolume.cc
+    X4Sample.cc
 
     X4OpNoviceMaterials.cc
     OpNoviceDetectorConstruction.cc
@@ -107,6 +108,7 @@ set(HEADERS
     X4Transform3D.hh
     X4RotationMatrix.hh
     X4PhysicalVolume.hh
+    X4Sample.hh
 
     X4OpNoviceMaterials.hh
     OpNoviceDetectorConstruction.hh

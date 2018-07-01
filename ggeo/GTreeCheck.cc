@@ -61,6 +61,14 @@ void GTreeCheck::setVertexMin(unsigned int vertex_min)
    m_vertex_min = vertex_min ; 
 }
 
+/**
+GTreeCheck::createInstancedMergedMeshes
+------------------------------------------
+
+Canonical invokation from GGeo::prepareMeshes
+
+**/
+
 void GTreeCheck::createInstancedMergedMeshes(bool delta, unsigned verbosity)
 {
     //assert(0);  
@@ -250,19 +258,22 @@ void GTreeCheck::findRepeatCandidates(unsigned int repeat_min, unsigned int vert
          m_repeat_candidates.end()
     ); 
 
+
+
+    unsigned num_cand = cands.size() ; 
+    unsigned dmax = 20u ;  
+
+
     LOG(info) << "GTreeCheck::findRepeatCandidates"
               << " nall " << nall 
               << " repeat_min " << repeat_min 
               << " vertex_min " << vertex_min 
-              << " cands " << cands.size()
+              << " num_cand " << num_cand
               << " reps " << m_repeat_candidates.size()
               ;
 
     std::cout << " (**) candidates fulfil repeat/vert cuts   "  << std::endl ;
     std::cout << " (##) selected survive contained-repeat disqualification " << std::endl ;
-
-    unsigned num_cand = cands.size() ; 
-    unsigned dmax = 20u ;  
 
     for(unsigned i=0 ; i < std::min(num_cand, dmax) ; i++)
     {

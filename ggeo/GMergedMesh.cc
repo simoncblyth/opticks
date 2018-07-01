@@ -190,6 +190,13 @@ GMergedMesh* GMergedMesh::create(unsigned ridx, GNode* base, GNode* root, unsign
 {
     assert(root && "root node is required");
 
+    LOG(error) 
+        << " ridx " << ridx 
+        << " base " << base
+        << " root " << root
+        << " verbosity " << verbosity
+        ;
+
     Timer t("GMergedMesh::create") ; 
     t.setVerbose(false);
     t.start();
@@ -199,7 +206,7 @@ GMergedMesh* GMergedMesh::create(unsigned ridx, GNode* base, GNode* root, unsign
 
     GNode* start = base ? base : root ; 
 
-    if(verbosity > 1)
+    //if(verbosity > 1)
     LOG(info)<<"GMergedMesh::create"
              << " ridx " << ridx 
              << " starting from " << start->getName() ;
