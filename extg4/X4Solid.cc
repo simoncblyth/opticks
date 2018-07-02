@@ -34,6 +34,7 @@
 #include "NZSphere.hpp"
 #include "NSphere.hpp"
 #include "NBox.hpp"
+#include "NDisc.hpp"
 #include "NNode.hpp"
 #include "NTreeBuilder.hpp"
 
@@ -224,6 +225,7 @@ void X4Solid::convertBooleanSolid()
 
 
 
+const bool X4Solid::convertSphere_duplicate_py_segment_omission = true ; 
 
 nnode* X4Solid::convertSphere_(bool only_inner)
 {
@@ -293,7 +295,20 @@ nnode* X4Solid::convertSphere_(bool only_inner)
     //  z limited +- segZ/2 
 
 
-    bool deltaPhi_segment_enabled = true ; 
+    bool omit = convertSphere_duplicate_py_segment_omission ; 
+    
+    if(has_deltaPhi && omit)
+    {
+        LOG(error) << " convertSphere_duplicate_py_segment_omission " << omit 
+                   << " has_deltaPhi " << has_deltaPhi
+                   << " startPhi " << startPhi 
+                   << " deltaPhi " << deltaPhi 
+                   << " name " << m_name 
+                   ;
+    }
+
+    bool deltaPhi_segment_enabled = !omit ; 
+
     float segZ = radius*1.01 ; 
     float segR = radius*1.5 ;   
 
@@ -327,6 +342,8 @@ or small nnode CSG trees depending on parameter values.
        when applying a phi segment
 
 **/
+
+
 void X4Solid::convertSphere()
 {  
     const G4Sphere* const solid = static_cast<const G4Sphere*>(m_solid);
@@ -376,22 +393,15 @@ void X4Solid::convertBox()
     setRoot(n); 
 }
 
-void X4Solid::convertTubs()
-{  
-    // cf ../analytic/gdml.py:Tube
 
+nnode* X4Solid::convertTubs_cylinder()
+{  
     const G4Tubs* const solid = static_cast<const G4Tubs*>(m_solid);
     assert(solid); 
-    //LOG(info) << "\n" << *solid ; 
-
-    // match G4GDMLWriteSolids::TubeWrite
 
     float rmin = solid->GetInnerRadius()/mm ; 
     float rmax = solid->GetOuterRadius()/mm ; 
     float hz = solid->GetZHalfLength()/mm ;  
-    float z = hz*2.0 ;   // <-- this full-length is what GDML stores
-    float startPhi = solid->GetStartPhiAngle()/degree ; 
-    float deltaPhi = solid->GetDeltaPhiAngle()/degree ; 
 
     bool has_inner = rmin > 0.f ; 
    
@@ -407,12 +417,53 @@ void X4Solid::convertTubs()
         inner = new ncylinder(make_cylinder(rmin, -(hz+dz), (hz+dz) )); 
         inner->label = BStr::concat( m_name, "_inner", NULL ); 
     }
-    
+
     nnode* outer = new ncylinder(make_cylinder(rmax, -hz, hz));
     outer->label = BStr::concat( m_name, "_outer", NULL ); 
 
     nnode* tube = has_inner ? nnode::make_operator_ptr(CSG_DIFFERENCE, outer, inner) : outer ; 
     tube->label = BStr::concat( m_name, "_difference", NULL );
+
+    return tube ; 
+}
+
+const float X4Solid::hz_disc_cylinder_cut = 1.f ; // 1mm 
+
+nnode* X4Solid::convertTubs_disc()
+{  
+    const G4Tubs* const solid = static_cast<const G4Tubs*>(m_solid);
+    assert(solid); 
+ 
+    float rmin = solid->GetInnerRadius()/mm ; 
+    float rmax = solid->GetOuterRadius()/mm ; 
+    float hz = solid->GetZHalfLength()/mm ;  
+
+    assert( hz < hz_disc_cylinder_cut && "this is only applicable to very thin-in-z cylinders that can be regarded as discs" ) ; 
+
+    nnode* tube = new ndisc(make_disc(rmin,rmax, -hz, hz));
+    tube->label = BStr::concat( m_name, "_disc", NULL ); 
+
+    return tube ; 
+}
+
+void X4Solid::convertTubs()
+{  
+    // cf ../analytic/gdml.py:Tube
+
+    const G4Tubs* const solid = static_cast<const G4Tubs*>(m_solid);
+    assert(solid); 
+    //LOG(info) << "\n" << *solid ; 
+
+    float hz = solid->GetZHalfLength()/mm ;  
+    float z = hz*2.0 ;   // <-- this full-length z is what GDML stores
+
+    float startPhi = solid->GetStartPhiAngle()/degree ; 
+    float deltaPhi = solid->GetDeltaPhiAngle()/degree ; 
+    float rmax = solid->GetOuterRadius()/mm ; 
+
+    bool pick_disc = hz < hz_disc_cylinder_cut ; 
+
+    nnode* tube = pick_disc ? convertTubs_disc() : convertTubs_cylinder() ; 
 
     bool deltaPhi_segment_enabled = true ; 
     bool has_deltaPhi = deltaPhi < 360.f ; 
@@ -685,6 +736,9 @@ void X4Solid::convertPolyconePrimitives( const std::vector<zplane>& zp,  std::ve
 }
 
 
+
+const bool X4Solid::convertPolycone_duplicate_py_inner_omission = true ; 
+
 void X4Solid::convertPolycone()
 {  
     // G4GDMLWriteSolids::PolyconeWrite
@@ -743,6 +797,15 @@ void X4Solid::convertPolycone()
         double zmax = zp[nz-1].z ; 
         inner = new ncylinder(make_cylinder(rmin, zmin, zmax));
         inner->label = BStr::concat( m_name, "_inner_cylinder", NULL  ); 
+    }
+
+
+    bool omit = convertPolycone_duplicate_py_inner_omission ; 
+
+    if( has_inner && omit )
+    { 
+        LOG(error) << " convertPolycone_duplicate_py_inner_omission " << omit ;
+        inner = NULL ;  
     }
 
     nnode* result = inner ? nnode::make_operator_ptr(CSG_DIFFERENCE, cn, inner )  : cn ; 

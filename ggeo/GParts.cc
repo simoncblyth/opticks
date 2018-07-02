@@ -997,9 +997,37 @@ relevant to the primitive.
 
 prim/part/tran/plan buffers are used GPU side in cu/intersect_analytic.cu.
 
-Hmm looks impossible to do this prim Buffer derivation
-postcache, as it is relying on the offsets collected 
-at each concatentation. So will need to load the primBuf 
+
+example for DYB mm5 (PMT assembly instance) 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+::
+
+        ./GParts.txt : 41 
+    ./partBuffer.npy : (41, 4, 4) 
+    ./tranBuffer.npy : (12, 3, 4, 4) 
+    ./primBuffer.npy : (5, 4) 
+     ./idxBuffer.npy : (5, 4) 
+
+    In [1]: pb   ## partBuffer.npy with (partOffset, numParts, tranOffset, planOffset)
+    Out[1]: 
+    array([[ 0, 15,  0,  0],
+           [15, 15,  4,  0],
+           [30,  7,  8,  0],
+           [37,  3, 10,  0],
+           [40,  1, 11,  0]], dtype=int32)
+    //          ^^
+    //         numParts are complete binary tree sizes
+
+
+    In [1]: xb   ## idxBuffer.npy with (index,soIdx,lvIdx,height)  was added later for debugging only (so far)
+    Out[1]: 
+    array([[ 0, 54, 47,  3],
+           [ 0, 55, 46,  3],
+           [ 0, 56, 43,  2],
+           [ 0, 57, 44,  1],
+           [ 0, 58, 45,  0]], dtype=uint32)
+
 
 **/
 

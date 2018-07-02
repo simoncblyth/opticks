@@ -9,6 +9,13 @@ struct nuv ;
 
 #include "NPY_API_EXPORT.hh"
 
+/**
+ndisc
+======
+
+See oxrap/cu/csg_intersect_primitive.h:csg_intersect_disc
+
+**/
 
 struct NPY_API ndisc : nnode 
 {
@@ -34,6 +41,7 @@ struct NPY_API ndisc : nnode
     float     z() const  ; 
     glm::vec3 center() const  ; 
     float     radius() const  ; 
+    float     inner() const  ; 
     float     z1() const  ; 
     float     z2() const  ; 
     float     r1() const  ;   // see NNodeUncoincide
@@ -48,6 +56,7 @@ inline NPY_API float ndisc::z() const { return 0.f ; }
 inline NPY_API glm::vec3 ndisc::center() const { return glm::vec3(x(), y(), z()) ; }
 
 inline NPY_API float ndisc::radius() const { return param.f.w ; }
+inline NPY_API float ndisc::inner() const { return param.f.z ; }
 inline NPY_API float ndisc::r1() const {     return param.f.w ; }
 inline NPY_API float ndisc::r2() const {     return param.f.w ; }
 
@@ -75,7 +84,20 @@ inline NPY_API ndisc make_disc(const nquad& param, const nquad& param1 )
     return n ; 
 }
 
-inline NPY_API ndisc make_disc(float radius_, float z1_, float z2_)
+inline NPY_API ndisc make_disc(float inner_, float radius_, float z1_, float z2_ )
+{
+    nquad param, param1 ;
+
+    param.f = {0,0,inner_,radius_} ;
+
+    param1.f.x = z1_ ; 
+    param1.f.y = z2_ ; 
+    param1.u.z = 0u ; 
+    param1.u.w = 0u ; 
+
+    return make_disc(param, param1 );
+}
+inline NPY_API ndisc make_disc(float radius_, float z1_, float z2_ )
 {
     nquad param, param1 ;
 

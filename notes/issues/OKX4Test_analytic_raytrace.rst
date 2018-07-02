@@ -1,11 +1,6 @@
 OKX4Test_analytic_raytrace
 ============================
 
-Try switching in analytic raytrace by changing 
-GMesh default m_geocode to 'A' (rather than 'T').
-
-
-
 Added OpticksQuery lvr selecting on lvIdx 
 -----------------------------------------------
 
@@ -15,7 +10,7 @@ Added OpticksQuery lvr selecting on lvIdx
            ## soft crashes for lack of any global geometry
 
     export OPTICKS_QUERY_LIVE="lvr:0:1,lvr:47:48" ; lldb OKX4Test 
-           ## pool cover? and PMTs 
+           ## pool cover and PMTs 
 
     export OPTICKS_QUERY_LIVE="lvr:0:1,lvr:47:48,lvr:248:249" ; lldb OKX4Test 
            ## including world box 248 : not very useful as far too big 
@@ -25,10 +20,24 @@ Added OpticksQuery lvr selecting on lvIdx
            ##          but hard crashes in raytrace, causing system panic, reboot   
 
 
+
+lvIdx 56 
+----------
+
 ::
 
     56 : RadialShieldUnit0xc3d7da8 
 
+
+This one caused problems before, slab-segment intersects : tree balancing 
+putting two slabs together.
+
+* :doc:`vidx56_RadialShieldUnit0xc3d7da8`
+
+
+
+NTreeProcess stats
+--------------------
 
 ::
 
@@ -240,6 +249,14 @@ Rather than providing args that go to both Opticks::
         frame #19: 0x00007fff73396015 libdyld.dylib`start + 1
     (lldb) 
 
+
+
+
+First try changing GMesh default : subsequently added --xanalytic
+----------------------------------------------------------------------
+
+Try switching in analytic raytrace by changing 
+GMesh default m_geocode to 'A' (rather than 'T').
 
 
 

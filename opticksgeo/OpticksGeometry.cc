@@ -127,7 +127,7 @@ void OpticksGeometry::loadGeometryBase()
 
 
     m_ggeo->setMeshJoinImp(&MTool::joinSplitUnion);
-    m_ggeo->setMeshVerbosity(m_fcfg->getMeshVerbosity());    
+    m_ggeo->setMeshVerbosity(m_ok->getMeshVerbosity());    
     m_ggeo->setMeshJoinCfg( resource->getMeshfix() );
 
     std::string meshversion = m_fcfg->getMeshVersion() ;;

@@ -426,6 +426,11 @@ int Opticks::getStack() const
 {
    return m_cfg->getStack();
 }
+int Opticks::getMeshVerbosity() const 
+{
+   return m_cfg->getMeshVerbosity();
+}
+
 
 
 

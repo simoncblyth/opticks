@@ -22,6 +22,7 @@ ab-a-idpath(){ echo $(ab-base)/$(ab-a-dir)/103 ; }
 ab-b-idpath(){ echo $(ab-base)/$(ab-b-dir)/1 ; }
 
 
+#ab-tail(){ echo ${AB_TAIL:-.} ; }
 ab-tail(){ echo ${AB_TAIL:-0} ; }
 
 ab-a-(){ echo $(ab-a-idpath)/GPartsAnalytic/$(ab-tail) ; }
@@ -51,7 +52,6 @@ ab-blib()
 }
 
 
-
 ab-i-(){ cat << EOP
 import numpy as np
 
@@ -66,10 +66,26 @@ tb = np.load("$(ab-b-)/tranBuffer.npy")
 pb = np.load("$(ab-b-)/primBuffer.npy")
 xb = np.load("$(ab-b-)/idxBuffer.npy")
 
+ma = Mesh.make("$(ab-a-idpath)")
 mb = Mesh.make("$(ab-b-idpath)")
 
 
-def cf(a, b):
+def cfprim(pa,pb):
+    """
+    primBuffer will be matched when all prim trees have same heights
+    and the usage of tranforms and planes within each prim are the same
+    """
+    assert np.all(pa == pb)
+
+def cfpart(a, b):
+    """
+    comparing part buffers (aka csg nodes) 
+
+    1. typecode CSG_UNION/CSG_SPHERE/.. of each part (aka node)  
+    2. global transform index 
+    3. part parameter values 
+
+    """
     assert len(a) == len(b)
     assert a.shape == b.shape
     for i in range(len(a)):
@@ -88,18 +104,36 @@ def cf(a, b):
 
         mx = np.max(a[i]-b[i])
         print " i:%3d tc:%3d gta:%2d gtb:%2d mx:%10s %s  " % ( i, tc, gta, gtb, mx, msg  )
-        if mx > 0.:
+        if mx > 0.1:
             print (a[i]-b[i])/mx
         pass
     pass
 pass
-#cf(a,b)
+
+def cftran(ta, tb, cut=0.1):
+    """
+    comparing tranbuffers
+    """
+    assert ta.shape == tb.shape
+    for i in range(len(ta)):
+        mx = np.max(ta[i] - tb[i])
+        if mx > cut:
+            print i, mx
+        pass
+    pass
+
+
+#cfpart(a,b)
 
 w = np.where( pa[:,1] != pb[:,1] )[0]
 
 lv = np.unique(xb[w][:,2])
 
-print "\n".join(map(lambda _:mb.idx2name[_], lv ))
+print "\n".join(map(lambda _:ma.idx2name[_], lv ))
+
+
+
+
 
 
 

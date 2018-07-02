@@ -59,6 +59,7 @@ class X4_API X4Solid : public X4SolidBase
     private:
         void convertBooleanSolid();
         void convertSphere();
+        static const bool convertSphere_duplicate_py_segment_omission ; 
         void convertOrb();
         void convertBox();
         void convertTubs();
@@ -67,7 +68,12 @@ class X4_API X4Solid : public X4SolidBase
         void convertTorus();
         void convertEllipsoid();
         void convertPolycone();
+        static const bool convertPolycone_duplicate_py_inner_omission ; 
         void convertHype();
+    private:
+        static const float hz_disc_cylinder_cut ; 
+        nnode* convertTubs_disc();
+        nnode* convertTubs_cylinder();
     private:
         nnode* intersectWithPhiSegment(nnode* whole, float startPhi, float deltaPhi, float segZ, float segR );
         void booleanDisplacement( G4VSolid** pp, G4ThreeVector& pos, G4ThreeVector& rot );

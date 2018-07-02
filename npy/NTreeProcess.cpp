@@ -28,24 +28,31 @@ void NTreeProcess<T>::SaveBuffer(const char* path)
 template <typename T>
 T* NTreeProcess<T>::Process( T* root_ , unsigned soIdx, unsigned lvIdx )  // static
 {
+    //if( LVList == NULL )
+    //     LVList = new std::vector<unsigned> {25,  26,  29,  60,  65,  68,  75,  77,  81,  85, 131, 140} ;
     if( LVList == NULL )
-         LVList = new std::vector<unsigned> {25,  26,  29,  60,  65,  68,  75,  77,  81,  85, 131, 140} ;
-  
+         LVList = new std::vector<unsigned> {25,  26,  29,  60,  68,  75,  77,  81,  85, 131};
+ 
+
     if( ProcBuffer == NULL ) ProcBuffer = NPY<unsigned>::make(0,4) ; 
 
     bool listed = std::find(LVList->begin(), LVList->end(), lvIdx ) != LVList->end() ; 
 
+    if(listed) LOG(info) << "before\n" << NTreeAnalyse<T>::Desc(root_) ; 
+     // dump it here, prior to the inplace positivization 
+ 
     unsigned height0 = root_->maxdepth(); 
+
     NTreeProcess<T> proc(root_); 
+
     assert( height0 == proc.balancer->height0 ); 
 
     T* result = proc.result ; 
 
     unsigned height1 = result->maxdepth();   
 
-    if(listed || (height1 != height0) ) 
+    if(listed) 
     {
-         LOG(info) << "before\n" << NTreeAnalyse<T>::Desc(root_) ; 
          LOG(info) << "after\n" << NTreeAnalyse<T>::Desc(result) ; 
          LOG(info) 
          << " soIdx " << soIdx

@@ -475,7 +475,7 @@ GMergedMesh* GGeo::getMergedMesh(unsigned int index)
 
     GMergedMesh* mm = geolib->getMergedMesh(index);
 
-    unsigned int meshverbosity = getMeshVerbosity() ; 
+    unsigned meshverbosity = getMeshVerbosity() ; 
 
     LOG(debug) << "GGeo::getMergedMesh"
               << " index " << index 
@@ -1208,23 +1208,23 @@ GMaterial* GGeo::getScintillatorMaterial(unsigned int index)
 void GGeo::prepareMeshes()
 {
     bool instanced = m_ok->isInstanced();
-    unsigned verbosity = 5  ; 
+    unsigned meshverbosity = m_ok->getMeshVerbosity() ; 
 
     LOG(error) << "GGeo::prepareMeshes START" 
                << " instanced " << instanced 
-               << " verbosity " << verbosity 
+               << " meshverbosity " << meshverbosity 
               ;
 
     if(instanced)
     { 
         bool deltacheck = true ; 
-        m_treecheck->createInstancedMergedMeshes(deltacheck, verbosity);   // GTreeCheck::createInstancedMergedMeshes
+        m_treecheck->createInstancedMergedMeshes(deltacheck, meshverbosity);   // GTreeCheck::createInstancedMergedMeshes
     }
     else
     {
         LOG(warning) << "GGeo::prepareMeshes instancing inhibited " ;
         GNode* root = getNode(0);
-        m_geolib->makeMergedMesh(0, NULL, root, verbosity);  // ridx:0 rbase:NULL 
+        m_geolib->makeMergedMesh(0, NULL, root, meshverbosity);  // ridx:0 rbase:NULL 
         // ^^^^  precache never needs analytic geolib ?
     }
     LOG(error) << "GGeo::prepareMeshes DONE" ;

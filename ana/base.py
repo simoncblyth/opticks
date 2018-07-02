@@ -276,6 +276,10 @@ class OpticksEnv(object):
 
 
     def setdefault(self, k, v):
+        """
+        If the key is already in the environment does not 
+        change it, just records into ext 
+        """
         self.env[k] = v
         if k in os.environ:
             self.ext[k] = os.environ[k]
