@@ -68,6 +68,8 @@ ab-genrun(){
 }
 ab-i(){ ab-genrun $FUNCNAME ; }
 ab-p(){ ab-genrun $FUNCNAME ; }
+ab-t(){ ab-genrun $FUNCNAME ; }
+ab-s(){ ab-genrun $FUNCNAME ; }
 
 
 ab-p-(){ cat << EOP
@@ -96,14 +98,13 @@ nn = np.load(os.path.expandvars("$TMP/NNodeNudger.npy"))
 
 print "nudged (lvIdx/treeidx,num_prim,coincidences,nudges)\n nn[np.where( nn[:,3] > 0 )] \n", nn[np.where( nn[:,3] > 0 )]
 
-
 da = Dir(a_dir)
 db = Dir(b_dir)
+
 cut = 0.1
 where_discrepant = da.where_discrepant_prims(db, cut) 
 wd = np.array(where_discrepant, dtype=np.uint32)
 lvd = np.unique(xb[wd][:,2])
-
 
 print " num_discrepant %d cut %s " % ( len(where_discrepant), cut ) 
 
@@ -125,14 +126,154 @@ for i in where_discrepant:
 EOP
 }
 
-ab-i-(){ cat << EOP
+
+ab-s-(){ cat << EOP
 
 import os, numpy as np
+
+aa = np.load(os.path.expandvars("$TMP/Boolean_all_transforms.npy"))
+bb = np.load(os.path.expandvars("$TMP/X4Transform3D.npy"))
+
+assert np.all( aa[:,3] == bb[:,3] )  ## translation matches
+assert aa.shape == bb.shape 
+
+cut = 1e-19
+discrep = 0 
+
+"""
+X4Transform3D::GetDisplacementTransform
+
+* transposing C++ rotation gives agreement when using disp->GetObjectRotation()
+
+::
+
+     43 glm::mat4 X4Transform3D::GetDisplacementTransform(const G4DisplacedSolid* const disp)
+     44 {
+     45     if(TranBuffer == NULL) TranBuffer = NPY<float>::make(0,4,4) ;
+     46 
+     47     G4RotationMatrix rot = disp->GetFrameRotation();
+     48     //G4RotationMatrix rot = disp->GetObjectRotation();    // started with this, see notes/issues/OKX4Test_tranBuffer_mm0.rst
+     49     LOG(error) << "GetDisplacementTransform rot " << rot ;
+     50 
+
+"""
+for _ in range(len(aa)):
+    a = aa[_][:3,:3]
+    b = bb[_][:3,:3]
+
+    #ab = a - b.T   
+    ab = a - b 
+
+    mx = np.max( ab )
+    mi = np.min( ab ) 
+
+    if abs(mx) < cut and abs(mi) < cut:
+        pass
+    else:
+        discrep +=  1
+        print _, mx, mi
+        print np.hstack([a,b])
+    pass
+pass
+
+print " cut %s discrep %s " % ( cut, discrep ) 
+
+
+
+EOP
+}
+
+ab-t-(){ cat << EOP
+import os, numpy as np
 from opticks.ana.mesh import Mesh
+from opticks.ana.prim import Dir
 from opticks.sysrap.OpticksCSG import CSG_
 
 a_dir = "$(ab-a-)"
 b_dir = "$(ab-b-)"
+
+
+da = Dir(a_dir)
+db = Dir(b_dir)
+
+a_idpath = "$(ab-a-idpath)"
+b_idpath = "$(ab-b-idpath)"
+
+a_load = lambda _:np.load(os.path.join(a_dir, _))
+b_load = lambda _:np.load(os.path.join(b_dir, _))
+
+a = a_load("partBuffer.npy")
+ta = a_load("tranBuffer.npy")
+pa = a_load("primBuffer.npy")
+
+b = b_load("partBuffer.npy")
+tb = b_load("tranBuffer.npy")
+pb = b_load("primBuffer.npy")
+
+xb = b_load("idxBuffer.npy")
+
+ma = Mesh.make(a_idpath)
+mb = Mesh.make(b_idpath)
+
+
+cut = 0.1
+where_discrepant_tr = da.where_discrepant_tr(db, cut) 
+wd = np.array(where_discrepant_tr, dtype=np.uint32)
+lvd = np.unique(xb[wd][:,2])
+
+print " prim with discrepant_tr %d cut %s " % ( len(where_discrepant_tr), cut ) 
+
+
+detail = False
+
+lvs = set()
+
+for i in where_discrepant_tr:
+
+    primIdx = i 
+    _,soIdx,lvIdx,height = xb[i]
+    name = ma.idx2name[lvIdx]
+
+    print " %s primIdx:%3d soIdx:%3d lvIdx:%3d height:%d name:%s  %s " % ( "-" * 30, primIdx, soIdx,lvIdx,height, name,   "-" * 60 )
+    lvs.add(lvIdx)
+    if detail:
+        dap = da.prims[i]
+        dbp = db.prims[i]
+        print dap.tr_maxdiff(dbp)
+        print dap
+        print dbp
+        print
+        print
+    pass
+pass
+
+
+lvs = np.array( sorted(list(lvs)), dtype=np.uint32 )
+print "lvs: %s " % repr(lvs)
+
+
+
+
+EOP
+}
+
+
+ab-i-(){ cat << EOP
+
+import os, numpy as np
+from opticks.ana.mesh import Mesh
+from opticks.ana.prim import Dir
+from opticks.sysrap.OpticksCSG import CSG_
+
+a_dir = "$(ab-a-)"
+b_dir = "$(ab-b-)"
+
+
+da = Dir(a_dir)
+db = Dir(b_dir)
+
+
+
 a_idpath = "$(ab-a-idpath)"
 b_idpath = "$(ab-b-idpath)"
 
@@ -164,8 +305,14 @@ def cfprim_debug(pa,pb,xb,ma):
 
 def cfprim(pa,pb,xb,ma):
     """
+    high level comparison of prim buffers
+
     primBuffer will be matched when all prim trees have same heights
     and the usage of tranforms and planes within each prim are the same
+
+    a perfect match in this needs to be reached before can 
+    progress with cfpart matching, as the primBuffer provides the
+    index to which parts are constituents of each primitive
     """
     assert np.all(pa == pb)
 
@@ -178,7 +325,7 @@ def cfpart(a, b):
     comparing part buffers (aka csg nodes) 
 
     1. typecode CSG_UNION/CSG_SPHERE/.. of each part (aka node)  
-    2. global transform index 
+    2. complement bit and global transform index 
     3. part parameter values 
 
     """
@@ -212,19 +359,17 @@ def cfpart(a, b):
         assert gta == gtb
         msg = " gt mismatch " if gta != gtb else ""
 
-
-
         if gta < 0 or gtb < 0: msg += " : gta/gtb -ve " 
 
         mx = np.max(a[i]-b[i])
 
         if mx > cut or msg != "":
             count += 1 
-            print " i:%6d count:%6d tc:%3d tcn:%20s gta:%2d gtb:%2d mx:%10s %s  " % ( i, count, tc, tcn, gta, gtb, mx, msg  )
+            print " partIdx:%6d count:%6d tc:%3d tcn:%20s gta:%2d gtb:%2d mx:%10s %s  " % ( i, count, tc, tcn, gta, gtb, mx, msg  )
             #print np.hstack([a[i],b[i]])
         pass
     pass
-    print " num_nodes %5d  num_discrepant : %5d   cut:%s  " % ( len(a), count, cut  ) 
+    print " num_parts %5d  num_discrepant : %5d   cut:%s  " % ( len(a), count, cut  ) 
 pass
 
 

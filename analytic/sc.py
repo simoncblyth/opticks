@@ -8,7 +8,7 @@ log = logging.getLogger(__name__)
 from opticks.ana.base import opticks_main, expand_, json_load_, json_save_, json_save_pretty_, splitlines_
 from opticks.analytic.treebase import Tree
 from opticks.analytic.treebuilder import TreeBuilder
-from opticks.analytic.gdml import GDML
+from opticks.analytic.gdml import GDML, Boolean
 from opticks.analytic.csg import CSG
 from opticks.analytic.glm import mdot_, mdotr_,  to_pyline
 from opticks.analytic.polyconfig import PolyConfig
@@ -549,6 +549,8 @@ def gdml2gltf_main( args ):
 
     sc.gdml = gdml 
     sc.tree = tree
+
+    Boolean.SaveBuffer()
 
     return sc
 

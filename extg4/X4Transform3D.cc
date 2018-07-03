@@ -2,6 +2,7 @@
 #include "G4DisplacedSolid.hh"
 
 #include "X4Transform3D.hh"
+#include "NPY.hpp"
 #include "NGLM.hpp"
 #include "GLMFormat.hpp"
 #include "SDigest.hh"
@@ -30,12 +31,30 @@ glm::mat4 X4Transform3D::GetFrameTransform(const G4VPhysicalVolume* const pv)
     return Convert( tra ) ;
 }
 
+
+NPY<float>* X4Transform3D::TranBuffer = NULL ; 
+
+void X4Transform3D::SaveBuffer(const char* path)
+{
+    if(TranBuffer) TranBuffer->save(path); 
+}
+
+
 glm::mat4 X4Transform3D::GetDisplacementTransform(const G4DisplacedSolid* const disp)
 {
-    G4RotationMatrix rot = disp->GetObjectRotation();  
+    if(TranBuffer == NULL) TranBuffer = NPY<float>::make(0,4,4) ; 
+
+    G4RotationMatrix rot = disp->GetFrameRotation();  
+    //G4RotationMatrix rot = disp->GetObjectRotation();    // started with this, see notes/issues/OKX4Test_tranBuffer_mm0.rst
+    LOG(error) << "GetDisplacementTransform rot " << rot ;  
+
     G4ThreeVector    tla = disp->GetObjectTranslation();
     G4Transform3D    tra(rot,tla);
-    return Convert( tra ) ;
+    glm::mat4 mat =  Convert( tra ) ;
+
+    if(TranBuffer) TranBuffer->add(mat) ; 
+
+    return mat ; 
 }
 
 glm::mat4 X4Transform3D::Convert( const G4Transform3D& t ) // static

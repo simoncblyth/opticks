@@ -8,6 +8,8 @@
 class G4VPhysicalVolume ; 
 class G4DisplacedSolid ; 
 
+template <typename T> class NPY ;  
+
 #include "glm/fwd.hpp"
 
 
@@ -38,6 +40,9 @@ NB majority of the methods only used in development
 
 struct X4_API X4Transform3D
 {
+    static NPY<float>* TranBuffer ; 
+    static void SaveBuffer(const char* path);
+
     static std::string Digest(const G4Transform3D&  transform ); 
     static G4Transform3D Convert( const glm::mat4&     trs );
     static glm::mat4     Convert(const G4Transform3D&  transform );

@@ -164,6 +164,20 @@ class Geometry(G):
 
 
 class Boolean(Geometry):
+
+    all_transforms = []
+
+    @classmethod
+    def SaveBuffer(cls):
+        num_boolean_transforms = len(cls.all_transforms)
+        path = os.path.expandvars("$TMP/Boolean_all_transforms.npy")
+        print "Boolean.all_transforms %d save to %s  " % ( num_boolean_transforms, path )
+        if num_boolean_transforms > 0:
+             tbuf = np.vstack(cls.all_transforms).reshape(-1,4,4) 
+             np.save(path, tbuf)  
+        pass
+    pass
+
     firstref = property(lambda self:self.elem.find("first").attrib["ref"])
     secondref = property(lambda self:self.elem.find("second").attrib["ref"])
 
@@ -191,7 +205,10 @@ class Boolean(Geometry):
         assert left, " left fail as_ncsg for first : %r self: %r " % (self.first, self)
         assert right, "right fail as_ncsg for second : %r self: %r " % (self.second, self)
 
-        right.transform = self.secondtransform
+        transform = self.secondtransform 
+
+        right.transform = transform
+        self.__class__.all_transforms.append(transform)
 
         cn = CSG(self.operation, name=self.name)
         cn.left = left

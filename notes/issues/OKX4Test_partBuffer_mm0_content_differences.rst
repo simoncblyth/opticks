@@ -12,6 +12,7 @@ Summary
 
   * these two were mesh joined ? but surely not relevant for analytic geometry ?
 
+
 smoking gun for missing nudge :  NNodeUncoincide is no longer being applied
 --------------------------------------------------------------------------------
 

@@ -30,8 +30,9 @@ T* NTreeProcess<T>::Process( T* root_ , unsigned soIdx, unsigned lvIdx )  // sta
 {
     //if( LVList == NULL )
     //     LVList = new std::vector<unsigned> {25,  26,  29,  60,  68,  75,  77,  81,  85, 131};
+    if( LVList == NULL )
+         LVList = new std::vector<unsigned> {36,  56,  57,  60,  63,  65,  67,  69,  70,  74, 131, 200 } ; 
  
-
     if( ProcBuffer == NULL ) ProcBuffer = NPY<unsigned>::make(0,4) ; 
 
     bool listed = LVList != NULL && std::find(LVList->begin(), LVList->end(), lvIdx ) != LVList->end() ; 

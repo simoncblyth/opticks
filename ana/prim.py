@@ -15,6 +15,7 @@ import sys, os, numpy as np
 
 from opticks.sysrap.OpticksCSG import CSG_
 from opticks.ana.blib import BLib
+from opticks.ana.mesh import Mesh
    
 
 class Part(object):
@@ -60,6 +61,10 @@ class Part(object):
 
     r = property(lambda self:self.f[0][3])
 
+    xbox = property(lambda self:self.f[0][0])
+    ybox = property(lambda self:self.f[0][1])
+    zbox = property(lambda self:self.f[0][2])
+
     r1co = property(lambda self:self.f[0][0])
     z1co = property(lambda self:self.f[0][1])
     r2co = property(lambda self:self.f[0][2])
@@ -81,6 +86,8 @@ class Part(object):
             msg = "   z1:%10.3f z2:%10.3f r :%10.3f " % ( self.z1, self.z2, self.r) 
         elif self.tc == CSG_.CONE:
             msg = "   z1:%10.3f z2:%10.3f r1:%10.3f r2:%10.3f " % ( self.z1co, self.z2co, self.r1co, self.r2co ) 
+        elif self.tc == CSG_.BOX3:
+            msg = "   x:%10.3f y:%10.3f z:%10.3f  " % ( self.xbox, self.ybox, self.zbox  ) 
         else:
             msg = ""
         pass
@@ -93,15 +100,28 @@ class Prim(object):
         self.primIdx = primIdx
         self.prim = prim 
 
+        idx = d.idx[primIdx] if d.idx is not None else -np.ones(4,dtype=np.uint32) 
+        lvIdx = idx[2] 
+
+        self.idx = idx
+        self.lvIdx = lvIdx
+
+        self.lvName = d.ma.idx2name.get(lvIdx, "-") if d.ma is not None else "--"
+
         partOffset, numParts, tranOffset, planOffset = prim
+        numTran = d.ntran[primIdx]
 
-        parts = d.part[partOffset:partOffset+numParts]
-        trans = d.tran[tranOffset:,0]  # eg shape (2, 4, 4)
+        parts_ = d.part[partOffset:partOffset+numParts]
+        trans_ = d.tran[tranOffset:tranOffset+numTran,0]  # eg shape (2, 4, 4)
 
-        self.parts = map(lambda _:Part(_,trans,d), parts)
+        self.parts_ = parts_
+        self.trans_ = trans_    ## without the python class wrapping
+
+        self.parts = map(lambda _:Part(_,trans_,d), parts_)
 
         self.partOffset = partOffset
         self.numParts= numParts
+        self.numTran = numTran
         self.tranOffset = tranOffset
         self.planOffset = planOffset
         self.d = d
@@ -109,22 +129,40 @@ class Prim(object):
     def maxdiff(self, other):
         assert len(self.parts) == len(other.parts) 
         return max(map( lambda ab:ab[0].maxdiff(ab[1]), zip( self.parts, other.parts)))       
- 
+
+    def tr_maxdiff(self, other):
+        return np.max( self.trans_ - other.trans_ )      
+
     def __repr__(self):
-        return "primIdx %s partOffset %s numParts %s tranOffset %s planOffset %s  " % (self.primIdx, self.partOffset, self.numParts, self.tranOffset, self.planOffset )  
+        return "primIdx %s idx %s lvName %s partOffset %s numParts %s tranOffset %s numTran %s planOffset %s  " % (self.primIdx, repr(self.idx), self.lvName, self.partOffset, self.numParts, self.tranOffset, self.numTran, self.planOffset )  
 
     def __str__(self):
-        return "\n".join(["",repr(self)] + map(str,filter(lambda pt:pt.tc > 0, self.parts))) 
+        return "\n".join(["",repr(self)] + map(str,filter(lambda pt:pt.tc > 0, self.parts)) + [repr(self.trans_)]) 
 
 
 class Dir(object):
     def __init__(self, base):
         self.base = base
         self.blib = BLib.make(base)   # auto finds the idpath 
-        self.prim = np.load(os.path.join(base, "primBuffer.npy"))
-        self.part = np.load(os.path.join(base, "partBuffer.npy"))
-        self.tran = np.load(os.path.join(base, "tranBuffer.npy"))
+
+        prim = np.load(os.path.join(base, "primBuffer.npy"))
+        part = np.load(os.path.join(base, "partBuffer.npy"))
+        tran = np.load(os.path.join(base, "tranBuffer.npy"))
+        idxpath = os.path.join(base,"idxBuffer.npy")
+        idx = np.load(idxpath) if os.path.exists(idxpath) else None
+        ma = Mesh.make()   # uses IDPATH envvar 
+
+        ntran = np.ones( len(prim), dtype=np.uint32)
+        ntran[0:len(prim)-1] = prim[1:,2] - prim[:-1,2]    ## differencing the tranOffsets to give numtran
+
+        self.prim = prim
+        self.part = part 
+        self.tran = tran
+        self.ntran = ntran 
+        self.idx = idx 
+        self.ma = ma
         self.prims = self.get_prims()
+   
 
     def get_prims(self):
         pp = []
@@ -133,6 +171,10 @@ class Dir(object):
             pp.append(p)
         pass
         return pp
+
+    def where_discrepant_tr(self, other, cut=0.1):
+        assert len(self.prims) == len(other.prims) 
+        return map(lambda i_ab:i_ab[0], filter(lambda i_ab:i_ab[1][0].tr_maxdiff(i_ab[1][1]) > cut , enumerate(zip(self.prims, other.prims)) ))
 
     def where_discrepant_prims(self, other, cut=0.1):
         assert len(self.prims) == len(other.prims) 

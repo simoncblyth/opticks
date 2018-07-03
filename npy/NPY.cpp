@@ -314,6 +314,13 @@ void NPY<T>::add(const glm::uvec4& u)
     add(u.x, u.y, u.z, u.w);
 }
 
+template <typename T>
+void NPY<T>::add(const glm::mat4& m)
+{
+    const T* values = reinterpret_cast<const T*>(glm::value_ptr(m));    // expect gibberish when not float 
+    add((void*)values, 16*sizeof(float) );    
+}
+
 
 
 
