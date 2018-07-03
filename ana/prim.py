@@ -11,8 +11,8 @@ See: notes/issues/OKX4Test_partBuffer_difference.rst
 TODO: consolidate ana/prim.py with dev/csg/GParts.py 
 
 """
-import sys, os, numpy as np
-
+import sys, os, logging, numpy as np
+log = logging.getLogger(__name__)
 from opticks.sysrap.OpticksCSG import CSG_
 from opticks.ana.blib import BLib
 from opticks.ana.mesh import Mesh
@@ -50,7 +50,15 @@ class Part(object):
 
         self.bnd = bnd
         self.bname = d.blib.bname(bnd)
-        self.tran = trans[gt-1] if gt > 0 else np.eye(4)
+
+        try:
+            tran = trans[gt-1] if gt > 0 else np.eye(4)
+        except IndexError:
+            log.error("trans issue gt %s trans.shape %s " % ( gt, repr(trans.shape)))
+            tran = np.eye(4)
+        pass
+
+        self.tran = tran 
         self.d = d 
 
     def __repr__(self):

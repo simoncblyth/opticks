@@ -260,22 +260,18 @@ EOP
 
 ab-i-(){ cat << EOP
 
-import os, numpy as np
+import os, logging, numpy as np
+log = logging.getLogger(__name__)
 from opticks.ana.mesh import Mesh
 from opticks.ana.prim import Dir
 from opticks.sysrap.OpticksCSG import CSG_
 
+logging.basicConfig(level=logging.INFO)
+
+
 a_dir = "$(ab-a-)"
 b_dir = "$(ab-b-)"
 
-
-da = Dir(a_dir)
-db = Dir(b_dir)
-
-
-
-a_idpath = "$(ab-a-idpath)"
-b_idpath = "$(ab-b-idpath)"
 
 a_load = lambda _:np.load(os.path.join(a_dir, _))
 b_load = lambda _:np.load(os.path.join(b_dir, _))
@@ -288,6 +284,20 @@ b = b_load("partBuffer.npy")
 tb = b_load("tranBuffer.npy")
 pb = b_load("primBuffer.npy")
 
+
+msg = "shape mismatch can be caused by runnig with an active OPTICKS_QUERY_LIVE selection "
+assert a.shape == b.shape, msg 
+assert ta.shape == tb.shape, msg 
+assert pa.shape == pb.shape, msg  
+
+
+
+
+da = Dir(a_dir)
+db = Dir(b_dir)
+
+a_idpath = "$(ab-a-idpath)"
+b_idpath = "$(ab-b-idpath)"
 xb = b_load("idxBuffer.npy")
 
 ma = Mesh.make(a_idpath)

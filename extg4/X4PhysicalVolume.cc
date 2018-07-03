@@ -450,7 +450,6 @@ GVolume* X4PhysicalVolume::convertNode(const G4VPhysicalVolume* const pv, GVolum
 
      int ndIdx0 = m_sc->get_num_nodes();
 
-     bool selected = m_query->selected(pvName.c_str(), ndIdx0, depth, recursive_select, lvIdx );
 
      /*
      if(selected)
@@ -471,7 +470,7 @@ GVolume* X4PhysicalVolume::convertNode(const G4VPhysicalVolume* const pv, GVolum
                                  ltriple,
                                  boundaryName,
                                  depth,
-                                 selected,      // not yet used in YOG machinery  
+                                 true,      // selected: not yet used in YOG machinery  
                                  parent_nd
                                );
 
@@ -539,7 +538,15 @@ GVolume* X4PhysicalVolume::convertNode(const G4VPhysicalVolume* const pv, GVolum
 
      assert( mh->csgnode ); 
 
+     unsigned csgdepth = mh->csgnode->maxdepth();  
+     //unsigned lvr_lvIdx = csgdepth ; // misuse lvr: selection  (gives a black render)
+     unsigned lvr_lvIdx = lvIdx ; 
+
+     bool selected = m_query->selected(pvName.c_str(), ndIdx0, depth, recursive_select, lvr_lvIdx );
     
+     LOG(error) << " lv_lvIdx " << lvr_lvIdx
+                << " selected " << selected
+               ; 
 
      // mh->csgnode->set_boundary( boundaryName.c_str() ) ;  <-- makes no sense, would keep overwriting 
      //

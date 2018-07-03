@@ -1,6 +1,33 @@
 OKX4Test_analytic_raytrace
 ============================
 
+Summary
+---------
+
+* even after getting the analytic buffers near identical 
+  the new direct route ray trace remains fragile, with 
+  some lv (notably lvIdx:56 RadialShieldUnit0xc3d7da8 )
+  particularly prone to causing crashes 
+
+  * much more fragile than the old geocache gltf route 
+  * initially thought this may be GPU resource problem, 
+    but the success of the old route suggests that that 
+    is not the full story 
+
+
+Ideas to try
+----------------
+
+1. launch with reduced resolution 
+2. get opticks-nnt working again, extend it by generating 
+   some G4 C++ that creates each lvIdx, and use that to
+   implement 248 single lv visualizations   
+3. non-graphical ray tracing (snaps) of geometry 
+4. keep plogging away at matching the new direct workflow buffers with the old ones
+
+   * surfaces next 
+
+
 Added OpticksQuery lvr selecting on lvIdx 
 -----------------------------------------------
 
@@ -16,8 +43,180 @@ Added OpticksQuery lvr selecting on lvIdx
            ## including world box 248 : not very useful as far too big 
 
     export OPTICKS_QUERY_LIVE="lvr:0:1,lvr:47:48,lvr:56:57" ; lldb OKX4Test 
-           ##  BINGO : including radial shield unit works in OGLRender
+           ##  BINGO : including radial shield unit lv:56 works in OGLRender
            ##          but hard crashes in raytrace, causing system panic, reboot   
+
+
+    export OPTICKS_QUERY_LIVE="lvr:0:56" ; lldb OKX4Test 
+           ## raytrace works : see the building and the 2 ADs  
+
+    export OPTICKS_QUERY_LIVE="lvr:0:56,lvr:57:67" ; lldb OKX4Test 
+           ## crashes 
+
+    export OPTICKS_QUERY_LIVE="lvr:236:248" ; lldb OKX4Test 
+           ## ok 
+
+    export OPTICKS_QUERY_LIVE="lvr:200:248" ; lldb OKX4Test 
+           ## ok 
+
+    export OPTICKS_QUERY_LIVE="lvr:150:248" ; lldb OKX4Test 
+           ## ok 
+
+    export OPTICKS_QUERY_LIVE="lvr:100:248" ; lldb OKX4Test 
+           ## ok 
+
+    export OPTICKS_QUERY_LIVE="lvr:0:56,lvr:100:248" ; lldb OKX4Test 
+           ## ok 
+
+    export OPTICKS_QUERY_LIVE="lvr:0:56,lvr:80:248" ; lldb OKX4Test 
+           ## ok 
+           
+    export OPTICKS_QUERY_LIVE="lvr:0:56,lvr:70:248" ; lldb OKX4Test 
+           ## ok 
+
+    export OPTICKS_QUERY_LIVE="lvr:0:56,lvr:60:248" ; lldb OKX4Test 
+           ## ok 
+            
+    export OPTICKS_QUERY_LIVE="lvr:0:56,lvr:58:248" ; lldb OKX4Test 
+           ## ok 
+
+    export OPTICKS_QUERY_LIVE="lvr:0:56,lvr:57:248" ; lldb OKX4Test  
+           ## ok 
+
+    export OPTICKS_QUERY_LIVE="lvr:0:56,lvr:56:248" ; lldb OKX4Test  
+           ## ok : huh, it works this time : twas not a closup, perhaps depends on position 
+
+    export OPTICKS_QUERY_LIVE="lvr:0:56,lvr:56:248" ; lldb OKX4Test 
+           ## this time navigate into closer position (bookmark 2), then switch on raytrace : get the crash  
+
+    export OPTICKS_QUERY_LIVE="lvr:0:56,lvr:58:248" ; OKX4Test --stack 4360
+           ## again crash from bookmark 2 
+
+    export OPTICKS_QUERY_LIVE="range:3153:12221" ; lldb OKX4Test 
+           ## raytrace crash 
+
+    export OPTICKS_QUERY_LIVE="range:3153:12221" ; lldb OKX4Test -- --stack 3180
+           ## raytrace crash
+
+    export OPTICKS_QUERY_LIVE="lvr:0:1,lvr:57:58" ; OKX4Test --stack 4360 
+           ## 
+
+    export OPTICKS_QUERY_LIVE="lvr:0:1,lvr:57:58" ; OKX4Test --stack 4360 
+           ## works : pool cover and two top? reflector
+
+    export OPTICKS_QUERY_LIVE="lvr:0:1,lvr:56:57" ; OKX4Test --stack 4360 
+           ## crash : pool cover and two radial shield units
+
+    export OPTICKS_QUERY="lvr:0:1,lvr:56:57" ; OTracerTest --gltf 3 
+    OPTICKS_RESOURCE_LAYOUT=103 OTracerTest --gltf 3 
+            black renders
+
+
+     OPTICKS_RESOURCE_LAYOUT=103 OTracerTest --gltf 3 
+           actually the starting point and near/far are way out, need 
+           to use bookmarks to see something 
+           raytrace works 
+
+
+
+
+::
+
+    In [18]: for k,v in ma.idx2name.items(): print "%3d : %s " % (k,v )
+      0 : near_top_cover_box0xc23f970 
+      1 : RPCStrip0xc04bcb0 
+     ..
+     54 : headon-pmt-assy0xbf55198 
+     55 : headon-pmt-mount0xc2a7670 
+
+     56 : RadialShieldUnit0xc3d7da8 
+
+     57 : TopESRCutHols0xbf9de10 
+     58 : TopRefGapCutHols0xbf9cef8 
+     59 : TopRefCutHols0xbf9bd50 
+     60 : BotESRCutHols0xbfa7368 
+     61 : BotRefGapCutHols0xc34bb28 
+     62 : BotRefHols0xc3cd380 
+     63 : SstBotRib0xc26c4c0 
+
+
+
+
+hmm : select on CSG tree height ?
+------------------------------------
+
+Hmm attempt gives black render.  Need to test per lv.  H
+
+::
+
+    export OPTICKS_QUERY_LIVE="lvr:0:3" ; lldb OKX4Test 
+
+
+
+lvr:0:56,lvr:57:67 crashes too
+---------------------------------
+
+::
+
+    export OPTICKS_QUERY_LIVE="lvr:0:56,lvr:57:67" ; lldb OKX4Test 
+
+    2018-07-03 16:45:17.364 INFO  [619762] [OTracer::trace_@128] OTracer::trace  entry_index 0 trace_count 0 resolution_scale 1 size(2880,1704) ZProj.zw (-1.13622,-6811.12) front 0.8437,0.5368,0.0000
+    2018-07-03 16:45:17.365 INFO  [619762] [OContext::close@236] OContext::close numEntryPoint 1
+    2018-07-03 16:45:17.370 INFO  [619762] [OContext::close@240] OContext::close setEntryPointCount done.
+    2018-07-03 16:45:17.394 INFO  [619762] [OContext::close@246] OContext::close m_cfg->apply() done.
+    libc++abi.dylib: terminating with uncaught exception of type optix::Exception: Unknown error (Details: Function "RTresult _rtContextLaunch2D(RTcontext, unsigned int, RTsize, RTsize)" caught exception: Encountered a CUDA error: cudaDriver().CuMemcpyDtoHAsync( dstHost, srcDevice, byteCount, hStream.get() ) returned (719): Launch failed)
+    Process 70365 stopped
+    * thread #1, queue = 'com.apple.main-thread', stop reason = signal SIGABRT
+        frame #0: 0x00007fff7aacbb6e libsystem_kernel.dylib`__pthread_kill + 10
+    libsystem_kernel.dylib`__pthread_kill:
+    ->  0x7fff7aacbb6e <+10>: jae    0x7fff7aacbb78            ; <+20>
+        0x7fff7aacbb70 <+12>: movq   %rax, %rdi
+        0x7fff7aacbb73 <+15>: jmp    0x7fff7aac2b00            ; cerror_nocancel
+        0x7fff7aacbb78 <+20>: retq   
+    Target 0: (OKX4Test) stopped.
+    (lldb) bt
+    * thread #1, queue = 'com.apple.main-thread', stop reason = signal SIGABRT
+      * frame #0: 0x00007fff7aacbb6e libsystem_kernel.dylib`__pthread_kill + 10
+        frame #1: 0x00007fff7ac96080 libsystem_pthread.dylib`pthread_kill + 333
+        frame #2: 0x00007fff7aa271ae libsystem_c.dylib`abort + 127
+        frame #3: 0x00007fff7892bf8f libc++abi.dylib`abort_message + 245
+        frame #4: 0x00007fff7892c113 libc++abi.dylib`default_terminate_handler() + 241
+        frame #5: 0x00007fff79d63eab libobjc.A.dylib`_objc_terminate() + 105
+        frame #6: 0x00007fff789477c9 libc++abi.dylib`std::__terminate(void (*)()) + 8
+        frame #7: 0x00007fff7894726f libc++abi.dylib`__cxa_throw + 121
+        frame #8: 0x00000001004b9ce6 libOptiXRap.dylib`optix::ContextObj::checkError(this=0x000000011b46dad0, code=RT_ERROR_UNKNOWN) const at optixpp_namespace.h:1963
+        frame #9: 0x00000001004ce5e0 libOptiXRap.dylib`optix::ContextObj::launch(this=0x000000011b46dad0, entry_point_index=0, image_width=2880, image_height=1704) at optixpp_namespace.h:2536
+        frame #10: 0x00000001004ce453 libOptiXRap.dylib`OContext::launch_(this=0x000000012c46c6c0, entry=0, width=2880, height=1704) at OContext.cc:330
+        frame #11: 0x00000001004cdf46 libOptiXRap.dylib`OContext::launch(this=0x000000012c46c6c0, lmode=30, entry=0, width=2880, height=1704, times=0x000000011e1ac370) at OContext.cc:289
+        frame #12: 0x00000001004e07d7 libOptiXRap.dylib`OTracer::trace_(this=0x000000012d4ec460) at OTracer.cc:142
+        frame #13: 0x0000000100131925 libOpticksGL.dylib`OKGLTracer::render(this=0x000000012d4e7380) at OKGLTracer.cc:165
+        frame #14: 0x00000001001c7001 libOGLRap.dylib`OpticksViz::render(this=0x000000011cb862c0) at OpticksViz.cc:432
+        frame #15: 0x00000001001c5c12 libOGLRap.dylib`OpticksViz::renderLoop(this=0x000000011cb862c0) at OpticksViz.cc:474
+        frame #16: 0x00000001001c5352 libOGLRap.dylib`OpticksViz::visualize(this=0x000000011cb862c0) at OpticksViz.cc:135
+        frame #17: 0x000000010010a4ed libOK.dylib`OKMgr::visualize(this=0x00007ffeefbfe438) at OKMgr.cc:121
+        frame #18: 0x0000000100014c1b OKX4Test`main(argc=1, argv=0x00007ffeefbfea68) at OKX4Test.cc:99
+        frame #19: 0x00007fff7a97b015 libdyld.dylib`start + 1
+        frame #20: 0x00007fff7a97b015 libdyld.dylib`start + 1
+    (lldb) 
+
+
+
+
+Still get launch crash : even now that prim/part/tran are very close to perfect matches ?
+---------------------------------------------------------------------------------------------
+
+::
+
+
+    2018-07-03 16:37:31.132 INFO  [614164] [Interactor::key_pressed@409] Interactor::key_pressed O nextRenderStyle 
+    2018-07-03 16:37:31.249 INFO  [614164] [OTracer::trace_@128] OTracer::trace  entry_index 0 trace_count 0 resolution_scale 1 size(2880,1704) ZProj.zw (-1.04459,-2229.5) front 0.9371,0.3491,0.0000
+    2018-07-03 16:37:31.250 INFO  [614164] [OContext::close@236] OContext::close numEntryPoint 1
+    2018-07-03 16:37:31.260 INFO  [614164] [OContext::close@240] OContext::close setEntryPointCount done.
+    2018-07-03 16:37:31.285 INFO  [614164] [OContext::close@246] OContext::close m_cfg->apply() done.
+    libc++abi.dylib: terminating with uncaught exception of type optix::Exception: Unknown error (Details: Function "RTresult _rtContextLaunch2D(RTcontext, unsigned int, RTsize, RTsize)" caught exception: Encountered a CUDA error: cudaDriver().CuMemcpyDtoHAsync( dstHost, srcDevice, byteCount, hStream.get() ) returned (700): Illegal address)
+    Abort trap: 6
+    epsilon:analytic blyth$ 
+
 
 
 

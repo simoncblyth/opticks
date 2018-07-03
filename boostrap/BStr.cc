@@ -114,8 +114,13 @@ char* BStr::trimPointerSuffixPrefix(const char* origname, const char* prefix)
     //  __dd__Materials__ADTableStainlessSteel0xc177178    0x is 9 chars from the end
     const char* ox = "0x" ;
     char* name = strdup(origname);       // make a copy to modify 
-    char* c = name + strlen(name) - 9 ;    
-    if(strncmp(c, ox, strlen(ox)) == 0) *c = '\0';   // insert NULL to snip off the 0x tail
+
+    if( strlen(name) > 9 )
+    {
+        char* c = name + strlen(name) - 9 ;    
+        if(strncmp(c, ox, strlen(ox)) == 0) *c = '\0';   // insert NULL to snip off the 0x tail
+    }
+
     if(prefix) name += strlen(prefix) ;
     return name ;   
 }
