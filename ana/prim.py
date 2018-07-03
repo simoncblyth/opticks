@@ -58,13 +58,29 @@ class Part(object):
     def maxdiff(self, other):
         return np.max( self.fc - other.fc )
 
+    r = property(lambda self:self.f[0][3])
+
+    r1co = property(lambda self:self.f[0][0])
+    z1co = property(lambda self:self.f[0][1])
+    r2co = property(lambda self:self.f[0][2])
+    z2co = property(lambda self:self.f[0][3])
+
+    z1 = property(lambda self:self.f[1][0])  # cy or zsphere
+    z2 = property(lambda self:self.f[1][1])
+    r1 = property(lambda self:self.f[0][2])
+    r2 = property(lambda self:self.f[0][3])
+    dz = property(lambda self:self.z2 - self.z1)
+    dr = property(lambda self:self.r2 - self.r1)
+
     def detail(self):
         if self.tc == CSG_.ZSPHERE:
-            msg = " r: %10.3f z1:%10.3f z2:%10.3f " % ( self.f[0][3], self.f[1][0], self.f[1][1] ) 
+            msg = " r: %10.3f z1:%10.3f z2:%10.3f " % ( self.r, self.z1, self.z2 ) 
         elif self.tc == CSG_.SPHERE:
             msg = " r: %10.3f " % ( self.f[0][3]  ) 
         elif self.tc == CSG_.CYLINDER:
-            msg = " r: %10.3f z1:%10.3f z2:%10.3f " % ( self.f[0][3], self.f[1][0], self.f[1][1] ) 
+            msg = "   z1:%10.3f z2:%10.3f r :%10.3f " % ( self.z1, self.z2, self.r) 
+        elif self.tc == CSG_.CONE:
+            msg = "   z1:%10.3f z2:%10.3f r1:%10.3f r2:%10.3f " % ( self.z1co, self.z2co, self.r1co, self.r2co ) 
         else:
             msg = ""
         pass

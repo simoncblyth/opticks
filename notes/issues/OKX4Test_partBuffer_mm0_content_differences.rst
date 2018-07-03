@@ -4,7 +4,6 @@ OKX4Test_partBuffer_mm0_content_differences
 Got analytic buffer dimensions to match in :doc:`OKX4Test_partBuffer_mm0_global_differences` now
 try for the contents.
 
-
 Summary
 ----------
 
@@ -13,29 +12,159 @@ Summary
 
   * these two were mesh joined ? but surely not relevant for analytic geometry ?
 
+smoking gun for missing nudge :  NNodeUncoincide is no longer being applied
+--------------------------------------------------------------------------------
 
-iav/oav
----------
+How to proceed : compare NNodeUncoincide and NNodeNudger, see if the 
+nudger can be easily modified to do what uncoincide did.
+
+::
+
+     094 // ctor : booting from in memory node tree : cannot be const because of the nudger 
+      95 NCSG::NCSG(nnode* root )
+      96    :
+      97    m_meta(NULL),
+      98    m_treedir(NULL),
+      99    m_index(0),
+     100    m_surface_epsilon(SURFACE_EPSILON),
+     101    m_verbosity(root->verbosity),
+     102    m_usedglobally(true),   // changed to true : June 2018, see notes/issues/subtree_instances_missing_transform.rst
+     103    m_root(root),
+     104    m_points(NULL),
+     105    m_uncoincide(make_uncoincide()),
+     106    m_nudger(make_nudger()),
+     107    m_nodes(NULL),
+     108    m_transforms(NULL),
+     109    m_gtransforms(NULL),
+
+
+     154 NNodeUncoincide* NCSG::make_uncoincide() const
+     155 {  
+     156     return NULL ;
+     157     //return new NNodeUncoincide(m_root, m_surface_epsilon, m_root->verbosity);
+     158 }            
+     159 NNodeNudger* NCSG::get_nudger() const 
+     160 {            
+     161     return m_nudger ;
+     162 }  
+     163 NNodeNudger* NCSG::make_nudger() const
+     164 {      
+     165    // when test running from nnode there is no metadata or treedir
+     166    // LOG(info) << soname() << " treeNameIdx " << getTreeNameIdx() ; 
+     167    
+     168     NNodeNudger* nudger = new NNodeNudger(m_root, m_surface_epsilon, m_root->verbosity);
+     169     return nudger ;
+     170 }
 
 
 ::
 
-     ------------------------------ primIdx:  3 soIdx: 33 lvIdx: 42 height:2 name:oav0xc2ed7c8  ------------------------------------------------------------ 
+    321 unsigned NNodeUncoincide::uncoincide_treewise()
+    322 {
+    323     assert( m_node->is_root() );
+    324     nnode* root = m_node ;
+    325 
+    326     unsigned prim_mask = root->get_prim_mask();
+    327 
+    328     // TODO: investigate CSG_ZSPHERE too 
+    329     // TODO: hmm:perhaps can apply to any tree just select operable nodes to work with ...
+    330 
+    331 
+    332     bool proceed = prim_mask == CSGMASK_CYLINDER || prim_mask == (CSGMASK_CYLINDER | CSGMASK_CONE) ;
+    333 
+    334     LOG(info) << "NNodeUncoincide::uncoincide_treewise"
+    335               << " proceed " << ( proceed ? "Y" : "-" )
+    336               << " verbosity " << m_verbosity
+    337               << " prim_mask " << root->get_prim_mask_string()
+    338               ;
+    339     if(proceed)
+    340     {
+    341         uncoincide_uncyco(root);
+    342     }
+    343 
+    344     return 0 ;
+    345 }
+
+
+
+iav/oav
+---------
+
+::
+
+    num_discrepant 4 cut 0.1 
+    ------------------------------ primIdx:  3 soIdx: 33 lvIdx: 42 height:2 name:oav0xc2ed7c8  ------------------------------------------------------------ 
     1.0
 
     primIdx 3 partOffset 3 numParts 7 tranOffset 3 planOffset 0  
         Part   1  0            union    20      MineralOil///Acrylic   tz:     0.000      
-        Part  12  1         cylinder    20      MineralOil///Acrylic   tz: -7141.500     r:   2000.000 z1: -1968.500 z2:  *1969.500*    +1mm  
+        Part  12  1         cylinder    20      MineralOil///Acrylic   tz: -7141.500       z1: -1968.500 z2:  *1969.500* r :  2000.000   
         Part   1  0            union    20      MineralOil///Acrylic   tz:     0.000      
-        Part  12  2         cylinder    20      MineralOil///Acrylic   tz: -9110.000     r:   2040.000 z1:  3937.000 z2:  4000.025   
-        Part  15  2             cone    20      MineralOil///Acrylic   tz: -9110.000      
+        Part  12  2         cylinder    20      MineralOil///Acrylic   tz: -9110.000       z1:  3937.000 z2:  4000.025 r :  2040.000   
+        Part  15  2             cone    20      MineralOil///Acrylic   tz: -9110.000       z1:  3999.025 z2:  4094.621 r1:  1930.000 r2:   125.000   
 
     primIdx 3 partOffset 3 numParts 7 tranOffset 3 planOffset 0  
         Part   1  0            union    20      MineralOil///Acrylic   tz:     0.000      
-        Part  12  1         cylinder    20      MineralOil///Acrylic   tz: -7141.500     r:   2000.000 z1: -1968.500 z2:  1968.500   
+        Part  12  1         cylinder    20      MineralOil///Acrylic   tz: -7141.500       z1: -1968.500 z2:  1968.500 r :  2000.000   
         Part   1  0            union    20      MineralOil///Acrylic   tz:     0.000      
-        Part  12  2         cylinder    20      MineralOil///Acrylic   tz: -9110.000     r:   2040.000 z1:  3937.000 z2:  4000.025   
-        Part  15  2             cone    20      MineralOil///Acrylic   tz: -9110.000      
+        Part  12  2         cylinder    20      MineralOil///Acrylic   tz: -9110.000       z1:  3937.000 z2:  4000.025 r :  2040.000   
+        Part  15  2             cone    20      MineralOil///Acrylic   tz: -9110.000       z1:  3999.025 z2:  4094.621 r1:  1930.000 r2:   125.000   
+    
+
+        -7141.5 - -9110. =  1968.5
+
+         4000.025 - 1968.5 = 2031.525 
+         3937     - 1968.5 = 1968.5
+
+
+* notice the cone z1 is grown down into lip cylinder by 1mm  ( the 3999.025)
+* the missing nudge is to the top (z2) of the big cylinder, impinging it into the thin lip cylinder above 
+
+* hmm : need a nudge report per primitive 
+
+* lv:42 and lv:24 only got one nudge (growing the cone down) missing the nudge growing the big cylinder up into the lip cylinder   
+
+[[ 42   3   1   1]    
+ [ 37   3   1   1]
+ [ 24   3   1   1]
+
+
+::
+
+     In [1]: 3937./2.
+     Out[1]: 1968.5
+
+
+      690     <union name="oav0xc2ed7c8">
+      691       <first ref="oav_cyl0xc234858"/>
+
+          683     <tube aunit="deg" deltaphi="360" lunit="mm" name="oav_cyl0xc234858" rmax="2000" rmin="0" startphi="0" z="3937"/>
+
+                          2000mm radius big cylinder from z  -1968.5 -> +1968.5 
+
+      692       <second ref="oav_polycone0xbf1c840"/>
+
+          684     <polycone aunit="deg" deltaphi="360" lunit="mm" name="oav_polycone0xbf1c840" startphi="0">
+          685       <zplane rmax="2040" rmin="0" z="3937"/>
+          686       <zplane rmax="2040" rmin="0" z="4000.02470222796"/>    4000.02470222796 - 3937   = 63.024702227960006 
+          687       <zplane rmax="1930" rmin="0" z="4000.02470222796"/>
+          688       <zplane rmax="125" rmin="0" z="4094.62074383385"/>
+          689     </polycone>
+
+                         3937 - 1968.5             = 1968.5
+                         4000.02470222796 - 1968.5 = 2031.52470222796
+
+                            2040mm radius flat cylinder from z  1968.5 -> 2031.525  (lip on top of the big cylinder)    
+
+                         4000.02470222796 - 1968.5 = 2031.52470222796
+                         4094.62074383385 - 1968.5 = 2126.12074383385       
+
+                             thin cone on top from z 2031.525 -> 2126.120
+
+      693       <position name="oav0xc2ed7c8_pos" unit="mm" x="0" y="0" z="-1968.5"/>
+      694     </union>
+
+
 
 
      ------------------------------ primIdx:  5 soIdx: 35 lvIdx: 24 height:2 name:iav0xc346f90  ------------------------------------------------------------ 
