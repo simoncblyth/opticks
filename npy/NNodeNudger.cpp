@@ -8,9 +8,20 @@
 #include "OpticksCSG.h"
 #include "OpticksCSGMask.h"
 
+#include "NPY.hpp"
 #include "NNode.hpp"
 #include "NNodeNudger.hpp"
 
+
+std::vector<unsigned>* NNodeNudger::TreeList = NULL ;  
+
+
+NPY<unsigned>* NNodeNudger::NudgeBuffer = NULL ;  
+
+void NNodeNudger::SaveBuffer(const char* path)
+{
+    NudgeBuffer->save(path); 
+}
 
 
 NNodeNudger::NNodeNudger(nnode* root_, float epsilon_, unsigned /*verbosity*/) 
@@ -18,22 +29,36 @@ NNodeNudger::NNodeNudger(nnode* root_, float epsilon_, unsigned /*verbosity*/)
      root(root_),
      epsilon(epsilon_), 
      verbosity(SSys::getenvint("VERBOSITY",1)),
-     znudge_count(0)
+     listed(false),
+     enabled(true)
 {
     init();
 }
 
 void NNodeNudger::init()
 {
+    if( TreeList == NULL )
+         TreeList = new std::vector<unsigned> {24, 42};   // iav, oav
+
+    listed = TreeList != NULL && std::find(TreeList->begin(), TreeList->end(), root->treeidx ) != TreeList->end() ; 
+ 
+    if( NudgeBuffer == NULL ) NudgeBuffer = NPY<unsigned>::make(0,4) ; 
+
     root->collect_prim_for_edit(prim);
     update_prim_bb();
     collect_coincidence();
-    uncoincide();
+
+    if(enabled)
+       uncoincide();
+
+    if( listed || nudges.size() > 0 ) LOG(error) << brief() ;  
+
+
+    if(NudgeBuffer) NudgeBuffer->add(root->treeidx, prim.size(), coincidence.size(), nudges.size() );   
 }
 
 void NNodeNudger::update_prim_bb()
 {
-
     //LOG(info) << "NNodeNudger::update_prim_bb nprim " << prim.size() ;
     zorder.clear();
     bb.clear(); 
@@ -148,16 +173,21 @@ bool NNodeNudger::operator()( int i, int j)
 */
 
 
+unsigned NNodeNudger::get_num_prim() const 
+{
+    return prim.size() ;
+}
 
 
 
 void NNodeNudger::collect_coincidence()
 {
+
     if(root->treeidx < 0) return ; 
 
     coincidence.clear();
 
-    unsigned num_prim = prim.size() ;
+    unsigned num_prim = get_num_prim() ;
 
     for(unsigned i=0 ; i < num_prim ; i++){
     for(unsigned j=0 ; j < num_prim ; j++)
@@ -166,12 +196,11 @@ void NNodeNudger::collect_coincidence()
     }
     }
 
-    unsigned num_coincidence = coincidence.size() ;
 
-    LOG(trace) << "NNodeNudger::collect_coincidence" 
+    LOG(debug) << "NNodeNudger::collect_coincidence" 
               << " root.treeidx " << root->treeidx 
               << " num_prim " << num_prim 
-              << " num_coincidence " << num_coincidence
+              << " num_coincidence " << get_num_coincidence()
               << " verbosity " << verbosity 
               ; 
 }
@@ -246,6 +275,7 @@ std::string NNodeCoincidence::desc() const
         << "," << std::setw(2) << j->idx
         << ")"
         << " " << NNodeEnum::PairType(p)
+        << " " << NNodeEnum::NudgeType(n)
         << " " << i->tag()
         << " " << j->tag()
         << " sibs " << ( is_siblings() ? "Y" : "N" )
@@ -265,10 +295,27 @@ unsigned NNodeNudger::get_num_coincidence() const
    return coincidence.size();
 }
 
+
+std::string NNodeNudger::brief() const 
+{
+    std::stringstream ss ; 
+    ss
+        << "NNodeNudger::brief"
+        << " root.treeidx " << std::setw(3) << root->treeidx 
+        << " num_prim " << std::setw(2) << prim.size() 
+        << " num_coincidence " << std::setw(2) << coincidence.size()
+        << " num_nudge " << std::setw(2) << nudges.size()
+        << " " << ( listed ? "##LISTED" : "" )
+        ;
+    return ss.str();
+}
+
+
 std::string NNodeNudger::desc_coincidence() const 
 {
     unsigned num_prim = prim.size() ;
     unsigned num_coincidence = coincidence.size() ;
+    unsigned num_nudge = nudges.size() ;
 
     std::map<NNodePairType, unsigned> pair_counts ; 
     for(unsigned i=0 ; i < num_coincidence ; i++) pair_counts[coincidence[i].p]++ ; 
@@ -282,11 +329,11 @@ std::string NNodeNudger::desc_coincidence() const
         << " root.treeidx " << std::setw(3) << root->treeidx 
         << " num_prim " << std::setw(2) << num_prim 
         << " num_coincidence " << std::setw(2) << num_coincidence
+        << " num_nudge " << std::setw(2) << num_nudge
         << " MINMIN " << std::setw(2) << pair_counts[PAIR_MINMIN]
         << " MAXMIN " << std::setw(2) << pair_counts[PAIR_MAXMIN]
         << " MAXMAX " << std::setw(2) << pair_counts[PAIR_MAXMAX]
         ;
-
 
     if(verbosity > 2)
     {
@@ -399,10 +446,12 @@ void NNodeNudger::znudge_umaxmin(NNodeCoincidence* coin)
     if( ri > rj )  
     {
         j->decrease_z1( dz );   
+        coin->n = NUDGE_J_DECREASE_Z1 ; 
     }
     else
     {
         i->increase_z2( dz ); 
+        coin->n = NUDGE_I_INCREASE_Z2 ; 
     }
 
     nbbox ibb2 = i->bbox();
@@ -415,6 +464,9 @@ void NNodeNudger::znudge_umaxmin(NNodeCoincidence* coin)
     assert(join2 != JOIN_COINCIDENT);
 
     coin->fixed = true ; 
+
+    nudges.push_back(*coin); 
+
 }
 
 /*
@@ -449,7 +501,7 @@ void NNodeNudger::dump(const char* msg)
           << " treedir " << ( root->treedir ? root->treedir : "-" )
           << " typmsk " << root->get_type_mask_string() 
           << " nprim " << prim.size()
-          << " znudge_count " << znudge_count
+          << " nudges " << nudges.size()
           << " verbosity " << verbosity
            ; 
 
@@ -458,6 +510,8 @@ void NNodeNudger::dump(const char* msg)
       dump_qty('B');
       dump_joins();
 }
+
+
 
 void NNodeNudger::dump_qty(char qty, int wid)
 {

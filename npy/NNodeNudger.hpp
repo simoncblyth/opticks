@@ -48,6 +48,7 @@ VERBOSITY envvar.
 */
 
 
+template <typename T> class  NPY ; 
 
 struct NPY_API NNodeCoincidence 
 {
@@ -56,12 +57,15 @@ struct NPY_API NNodeCoincidence
          i(i_),
          j(j_),
          p(p_),
+         n(NUDGE_NONE),
          fixed(false)
     {} ;
 
     nnode* i ; 
     nnode* j ;
     NNodePairType p ; 
+    NNodeNudgeType n ; 
+
     bool   fixed ; 
 
     std::string desc() const ; 
@@ -70,25 +74,27 @@ struct NPY_API NNodeCoincidence
     bool is_union_parents() const;
     bool is_same_union() const;
     bool is_siblings() const;
-
-
 };
-
-
 
 
 struct NPY_API NNodeNudger 
 {
+    static std::vector<unsigned>*  TreeList ;  
+    static NPY<unsigned>* NudgeBuffer ; 
+    static void SaveBuffer(const char* path) ; 
+
     nnode* root ; 
     const float epsilon ; 
     const unsigned verbosity ; 
-    unsigned znudge_count ; 
+    bool listed ; 
+    bool enabled ; 
 
     std::vector<nnode*>       prim ; 
     std::vector<nbbox>        bb ; 
     std::vector<nbbox>        cc ; 
     std::vector<unsigned>     zorder ; 
     std::vector<NNodeCoincidence> coincidence ; 
+    std::vector<NNodeCoincidence> nudges ; 
 
     NNodeNudger(nnode* root, float epsilon, unsigned verbosity) ;
   
@@ -102,7 +108,9 @@ struct NPY_API NNodeNudger
     void collect_coincidence();
     void collect_coincidence(unsigned i, unsigned j);
     unsigned get_num_coincidence() const ; 
+    unsigned get_num_prim() const ; 
     std::string desc_coincidence() const ;
+    std::string brief() const ;
 
     bool can_znudge(const NNodeCoincidence* coin) const ;
     void znudge(NNodeCoincidence* coin);

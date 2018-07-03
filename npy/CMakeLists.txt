@@ -323,6 +323,8 @@ NGrid3.hpp
 NField3.hpp
 NFieldGrid3.hpp
 
+NNodeNudger.hpp
+
 NTreeBuilder.hpp
 NTreePositive.hpp
 NTreeBalance.hpp

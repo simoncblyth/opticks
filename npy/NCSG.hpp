@@ -142,6 +142,7 @@ class NPY_API NCSG {
 
         NNodeUncoincide* make_uncoincide() const ;
         NNodeNudger*     make_nudger() const ;
+        NNodeNudger*     get_nudger() const ;
         unsigned         get_num_coincidence() const ;
         std::string      desc_coincidence() const ;
 

@@ -48,6 +48,13 @@ typedef enum {
 
 
 
+typedef enum {
+    NUDGE_NONE,
+    NUDGE_J_DECREASE_Z1, 
+    NUDGE_I_INCREASE_Z2 
+} NNodeNudgeType ; 
+
+
 
 #include "NPY_API_EXPORT.hh"
 
@@ -77,7 +84,11 @@ class NPY_API NNodeEnum
         static const char* JoinType(NNodeJoinType join);
         static NNodeJoinType JoinClassify( float za, float zb, float epsilon);
 
- 
+        static const char* NUDGE_NONE_ ; 
+        static const char* NUDGE_J_DECREASE_Z1_ ; 
+        static const char* NUDGE_I_INCREASE_Z2_ ; 
+        static const char* NudgeType(NNodeNudgeType nudge);  
+
         static NNodePointType PointClassify( float sdf_ , float epsilon );
         static std::string PointMask(unsigned mask);
 

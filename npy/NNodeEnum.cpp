@@ -75,9 +75,20 @@ NNodeJoinType NNodeEnum::JoinClassify( float za, float zb, float epsilon )
 
 
 
-
-
-
+const char* NNodeEnum::NUDGE_NONE_ = "NUDGE_NONE" ; 
+const char* NNodeEnum::NUDGE_J_DECREASE_Z1_ = "NUDGE_J_DECREASE_Z1" ; 
+const char* NNodeEnum::NUDGE_I_INCREASE_Z2_ = "NUDGE_I_INCREASE_Z2" ; 
+const char* NNodeEnum::NudgeType(NNodeNudgeType nudge)
+{
+    const char* s = NULL ; 
+    switch(nudge)
+    {
+       case NUDGE_NONE:          s = NUDGE_NONE_          ; break ; 
+       case NUDGE_J_DECREASE_Z1: s = NUDGE_J_DECREASE_Z1_ ; break ; 
+       case NUDGE_I_INCREASE_Z2: s = NUDGE_I_INCREASE_Z2_ ; break ; 
+    }
+    return s ; 
+} 
 
 
 

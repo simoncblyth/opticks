@@ -44,6 +44,7 @@ template struct nxform<YOG::Nd> ;
 #include "NGLMExt.hpp"
 #include "NCSG.hpp"
 #include "NNode.hpp"
+#include "NNodeNudger.hpp"
 #include "NTreeProcess.hpp"
 
 #include "GMesh.hh"
@@ -371,7 +372,7 @@ void X4PhysicalVolume::convertStructure()
      m_root = convertTree_r(pv, parent, depth, parent_pv, recursive_select );
 
      NTreeProcess<nnode>::SaveBuffer("$TMP/NTreeProcess.npy");      
-
+     NNodeNudger::SaveBuffer("$TMP/NNodeNudger.npy"); 
 
      LOG(info) << " convertStructure END  " << m_sc->desc() ; 
 }

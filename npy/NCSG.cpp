@@ -127,6 +127,7 @@ NCSG::NCSG(nnode* root )
    m_lvIdx(0)
 {
 
+
    setBoundary( root->boundary );  // boundary spec
 
    m_num_nodes = NumNodes(m_height); // number of nodes for a complete binary tree of the needed height, with no balancing 
@@ -154,6 +155,10 @@ NNodeUncoincide* NCSG::make_uncoincide() const
 {
     return NULL ;  
     //return new NNodeUncoincide(m_root, m_surface_epsilon, m_root->verbosity);
+}
+NNodeNudger* NCSG::get_nudger() const 
+{
+    return m_nudger ; 
 }
 NNodeNudger* NCSG::make_nudger() const 
 {
@@ -1604,11 +1609,22 @@ NCSG* NCSG::FromNode(nnode* root, const NSceneConfig* config, unsigned soIdx, un
 {
     nnode::Set_parent_links_r(root, NULL);
 
+    root->set_treeidx(lvIdx) ;  // without this no nudging is done
+
     NCSG* tree = new NCSG(root);
 
     tree->setConfig(config);
     tree->setSOIdx(soIdx); 
     tree->setLVIdx(lvIdx); 
+
+    /*
+    LOG(error) 
+               << " soIdx " << std::setw(3) << soIdx  
+               << " lvIdx " << std::setw(3) << lvIdx  
+               << " "  
+               << tree->get_nudger()->brief() 
+               ;
+    */
 
     tree->export_();        // node tree -> complete binary tree m_nodes buffer
     assert( tree->getGTransformBuffer() );
