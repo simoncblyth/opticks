@@ -6,12 +6,13 @@
 
 #include "GLMFormat.hpp"
 #include "RBuf.hh"
+#include "NGPU.hpp"
 #include "PLOG.hh"
 
 
 const unsigned RBuf::UNSET = -1 ; 
 
-RBuf::RBuf(unsigned num_items_, unsigned num_bytes_, unsigned num_elements_ , void* ptr_)
+RBuf::RBuf(unsigned num_items_, unsigned num_bytes_, unsigned num_elements_ , void* ptr_, const char* name_)
     :
     id(UNSET),
     num_items(num_items_),
@@ -19,10 +20,12 @@ RBuf::RBuf(unsigned num_items_, unsigned num_bytes_, unsigned num_elements_ , vo
     num_elements(num_elements_),
     query_count(-1),
     ptr(ptr_),
+    name(name_ ? strdup(name_) : NULL),
     gpu_resident(false),
     max_dump(4),
     debug_index(-1)
 {
+    assert(name && "all RBuf buffers need to have a name "); 
 }
 
 
@@ -126,6 +129,8 @@ std::string RBuf::desc() const
     return ss.str();
 }
 
+char* RBuf::Owner = NULL ; 
+
 void RBuf::upload(GLenum target, GLenum usage )
 {
     if(this->id == UNSET)
@@ -133,6 +138,8 @@ void RBuf::upload(GLenum target, GLenum usage )
         glGenBuffers(1, &this->id);
         glBindBuffer(target, this->id);
         glBufferData(target, this->num_bytes, this->ptr, usage);
+
+        NGPU::GetInstance()->add(this->num_bytes,name, Owner, "RBuf:upl" ) ; 
     }
     else
     {

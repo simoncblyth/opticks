@@ -1,10 +1,14 @@
 #include "NPY.hpp"
+#include "NGPU.hpp"
 #include "OPropertyLib.hh"
 
 #include "PLOG.hh"
 
 
-OPropertyLib::OPropertyLib(optix::Context& ctx) : m_context(ctx)
+OPropertyLib::OPropertyLib(optix::Context& ctx, const char* name) 
+    : 
+    m_context(ctx),
+    m_name(name ? strdup(name) : NULL)
 {
 }
 
@@ -23,6 +27,9 @@ void OPropertyLib::upload(optix::Buffer& optixBuffer, NPY<float>* buffer)
     void* data = buffer->getBytes();
     memcpy( optixBuffer->map(), data, numBytes );
     optixBuffer->unmap(); 
+
+    NGPU::GetInstance()->add(numBytes, m_name, "OPropLib", "OScene" );   
+
 }
 
 //

@@ -9,6 +9,7 @@
 
 #include "BBufSpec.hh"
 #include "BFile.hh"
+#include "BStr.hh"
 #include "NSlice.hpp"
 #include "GBuffer.hh"
 
@@ -23,16 +24,27 @@ bool GBuffer::isEqual(GBuffer* other)
 
 
 
-GBuffer::GBuffer(unsigned int nbytes, void* pointer, unsigned int itemsize, unsigned int nelem)
+GBuffer::GBuffer(unsigned int nbytes, void* pointer, unsigned int itemsize, unsigned int nelem, const char* name)
          :
          m_nbytes(nbytes),     // total number of bytes 
          m_pointer(pointer),   // pointer to the bytes
          m_itemsize(itemsize), // sizeof each item, eg sizeof(gfloat3) = 3*4 = 12
          m_nelem(nelem),       // number of elements for each item, eg 2 or 3 for floats per vertex or 16 for a 4x4 matrix
+         m_name(name ? strdup(name) : NULL),
          m_buffer_id(-1),       // OpenGL buffer Id, set by Renderer on uploading to GPU 
          m_buffer_target(0),
          m_bufspec(NULL)
 {
+}
+
+const char* GBuffer::getName() const 
+{
+    return m_name ; 
+}
+
+void GBuffer::setName(const char* name)
+{
+    m_name = name ? strdup( name ) : NULL ;  
 }
 
 
@@ -239,8 +251,12 @@ GBuffer* GBuffer::load(const char* path)
 {
     //printf("GBuffer::load path %s \n", path );
 
+    std::string name = BFile::Stem(path) ;
 
-    LOG(trace) << " path "  << path ; 
+    LOG(error) 
+          << " path "  << path 
+          << " name "  << name 
+           ; 
               
 
     std::vector<T> vdata ;
@@ -266,6 +282,7 @@ GBuffer* GBuffer::load(const char* path)
     }
 
 
+
     LOG(trace) << " path "  << path 
               << " numItems " << numItems 
               << " numElements " << numElements
@@ -284,7 +301,7 @@ GBuffer* GBuffer::load(const char* path)
     T* tdata = new T[numValues] ;
     memcpy((void*)tdata,  (void*)vdata.data(), numBytes );
 
-    return new GBuffer( numBytes, (void*)tdata,  itemSize, numElements );
+    return new GBuffer( numBytes, (void*)tdata,  itemSize, numElements , name.c_str() );
 }
 
 
@@ -322,7 +339,10 @@ GBuffer* GBuffer::make_slice(NSlice* slice)
         memcpy( (void*)(dest + offset),(void*)(src + size*i), size ) ;
         offset += size ; 
     }
-    return new GBuffer( numBytes, (void*)dest, getItemSize(),  getNumElements())  ; 
+
+    std::string s_name = BStr::concat("s_", m_name, NULL );   
+
+    return new GBuffer( numBytes, (void*)dest, getItemSize(),  getNumElements() , s_name.c_str() )  ; 
 } 
 
 

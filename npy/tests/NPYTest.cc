@@ -1,3 +1,5 @@
+// om-;TEST=NPYTest om-t
+
 #include "NPY_FLAGS.hh"
 
 
@@ -15,8 +17,7 @@
 #include "NPY.hpp"
 #include "DummyPhotonsNPY.hpp"
 
-#include "BRAP_LOG.hh"
-#include "PLOG.hh"
+#include "OPTICKS_LOG.hh"
 
 
 
@@ -394,6 +395,88 @@ array([[['|u~lo123']]],
 }
 
 
+void test_ullstring()
+{
+    /*
+    Python side encode a string of maxlen 8 into an ULL:
+
+    In [18]: encode_ = lambda s:sum(map(lambda ic:ord(ic[1]) << 8*ic[0], enumerate(s[:8]) ))
+
+    In [19]: encode_(s)
+    Out[19]: 478560413032
+
+    In [20]: a = np.zeros(10, dtype=np.uint64)
+
+    In [21]: a[0] = encode_("hello")
+
+    In [22]: a[1] = encode_("world")
+
+    In [24]: a[2] = encode_("0123456789")
+
+    In [25]: np.save("/tmp/s8.npy", a)
+
+    epsilon:tests blyth$ xxd /tmp/s8.npy
+    00000000: 934e 554d 5059 0100 7600 7b27 6465 7363  .NUMPY..v.{'desc
+    00000010: 7227 3a20 273c 7538 272c 2027 666f 7274  r': '<u8', 'fort
+    00000020: 7261 6e5f 6f72 6465 7227 3a20 4661 6c73  ran_order': Fals
+    00000030: 652c 2027 7368 6170 6527 3a20 2831 302c  e, 'shape': (10,
+    00000040: 292c 207d 2020 2020 2020 2020 2020 2020  ), }            
+    00000050: 2020 2020 2020 2020 2020 2020 2020 2020                  
+    00000060: 2020 2020 2020 2020 2020 2020 2020 2020                  
+    00000070: 2020 2020 2020 2020 2020 2020 2020 200a                 .
+    00000080: 6865 6c6c 6f00 0000 776f 726c 6400 0000  hello...world...
+    00000090: 3031 3233 3435 3637 0000 0000 0000 0000  01234567........
+    000000a0: 0000 0000 0000 0000 0000 0000 0000 0000  ................
+    000000b0: 0000 0000 0000 0000 0000 0000 0000 0000  ................
+    000000c0: 0000 0000 0000 0000 0000 0000 0000 0000  ................
+    epsilon:tests blyth$ 
+
+    */
+
+    typedef unsigned long long ULL ; 
+    assert( sizeof(ULL) == 8 ); 
+
+    NPY<ULL>* s8buf = NPY<ULL>::load("/tmp/s8.npy");
+    if(!s8buf) return ; 
+
+    unsigned n = s8buf->getNumItems() ; 
+    LOG(info) << " s8 " << n ; 
+
+    for(unsigned i=0 ; i < n ; i++)
+    {
+        ULL value = s8buf->getValue(i,0,0); 
+
+
+
+        char* s = new char[8+1] ; 
+        s[8] = '\0' ; 
+        char unprintable = '.' ; 
+        for( ULL w=0 ; w < 8 ; w++)
+        {
+            ULL ullc = (value & (0xffull << w*8)) >> w*8 ;
+            char c = static_cast<char>(ullc) ; 
+            bool printable = c >= ' ' && c <= '~' ;
+            s[w] = printable ? c : unprintable ; 
+        }
+
+         std::cout 
+              << std::setw(3) << i 
+              << " : " 
+              << std::setw(20) << value 
+              << " : " 
+              << std::setw(10) << s 
+              << std::endl 
+              ;
+
+    }
+
+
+
+
+}
+
+
+
 
 void test_getBufSpec()
 {
@@ -427,10 +510,7 @@ void test_dbg_like()
 
 int main(int argc, char** argv )
 {
-    PLOG_(argc, argv);
-    BRAP_LOG_ ;   
-
-    //BRAP_LOG::Initialize(plog::get(), plog::get()->getMaxSeverity() );
+    OPTICKS_LOG(argc, argv);
 
 
     NPYBase::setGlobalVerbose(true);
@@ -446,19 +526,20 @@ int main(int argc, char** argv )
     test_setQuad();
 
     test_ctor_segfaults();
-  */
 
     test_path();
     test_load();
     test_save_path();
+  */
 
     //test_load_path_throws();
 
-    test_load_missing();
+    //test_load_missing();
 
-    test_getData();
-    test_getUSum();
-    test_string();
+    //test_getData();
+    //test_getUSum();
+    //test_string();
+    test_ullstring();
 
    /* 
     test_getBufSpec();
@@ -466,8 +547,8 @@ int main(int argc, char** argv )
    */
 
 
-    test_selection();
-    test_selection_write();
+    //test_selection();
+    //test_selection_write();
 
     return 0 ;
 }

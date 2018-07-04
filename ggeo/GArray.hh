@@ -11,7 +11,7 @@ class GGEO_API GArray : public GBuffer {
   public:
      GArray(unsigned int length, const T* values)
       :
-       GBuffer(sizeof(T)*length, (void*)values, sizeof(T), 1),
+       GBuffer(sizeof(T)*length, (void*)values, sizeof(T), 1, "GArray"),
        m_length(length)
      {
      }

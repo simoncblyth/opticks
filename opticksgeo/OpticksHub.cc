@@ -10,6 +10,7 @@
 #include "NPY.hpp"
 #include "NGLM.hpp"
 #include "NGLMExt.hpp"
+#include "NGPU.hpp"
 
 #define GLMVEC4(g) glm::vec4((g).x,(g).y,(g).z,(g).w) 
 
@@ -872,25 +873,22 @@ OpticksAttrSeq* OpticksHub::getFlagNames()
 
 
 
-
-
-
-
-
-
-
-
-
-
-
 void OpticksHub::cleanup()
 {
 #ifdef OPTICKS_NPYSERVER
     if(m_server) m_server->stop();
 #endif
+
+    LOG(error) << "OpticksHub::cleanup" ; 
+    if(m_ok->isGPUMon())
+    {
+        const char* path = m_ok->getGPUMonPath(); 
+        LOG(error) << "OpticksHub::cleanup GPUMon saving to " << path  ; 
+        NGPU* gpu = NGPU::GetInstance() ;
+        gpu->saveBuffer(path);
+        gpu->dump();
+    }  
 }
-
-
 
 
 void OpticksHub::dumpVolumes(unsigned cursor, GMergedMesh* mm, const char* msg )  

@@ -18,10 +18,14 @@ Hmm ShaderBase would be a better name, in light of transform feedback
 class OGLRAP_API RendererBase {
    public:
       RendererBase(const char* tag, const char* dir=NULL, const char* incl_path=NULL, bool ubo=false);
+
+      const char* getName() const ; 
+      unsigned    getIndex() const ; 
       const char* getShaderTag() const ; 
       const char* getShaderDir() const ; 
       const char* getInclPath() const ; 
 
+      void setIndexBBox(unsigned index, bool bbox=false);
       void setVerbosity(unsigned verbosity);
       void setNoFrag(bool nofrag);
   public:
@@ -38,6 +42,9 @@ class OGLRAP_API RendererBase {
       const char* m_shaderdir ; 
       const char* m_shadertag ; 
       const char* m_incl_path ; 
+      unsigned    m_index ; 
+      bool        m_bbox ; 
+      const char* m_name ; 
 
 };
 

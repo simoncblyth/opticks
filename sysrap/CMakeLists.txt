@@ -23,6 +23,7 @@ set(SOURCES
     PLOG.cc 
     SProc.cc
     SSys.cc
+    SStr.cc
     SSeq.cc
     STranche.cc
     SAr.cc
@@ -57,6 +58,7 @@ set(HEADERS
 
     SProc.hh
     SSys.hh
+    SStr.hh
     SSeq.hh
     STranche.hh
     SVec.hh

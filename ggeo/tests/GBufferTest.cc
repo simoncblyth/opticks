@@ -65,7 +65,7 @@ void test_getBufSpec()
     unsigned int itemsize = 4 ; 
     unsigned int nelem = 1 ;
 
-    GBuffer* buf = new GBuffer( nbytes, pointer, itemsize, nelem );
+    GBuffer* buf = new GBuffer( nbytes, pointer, itemsize, nelem , "Test");
 
 
     BBufSpec* bs = buf->getBufSpec();

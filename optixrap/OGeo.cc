@@ -8,6 +8,7 @@
 #include <GLFW/glfw3.h>
 #endif
 
+#include <sstream>
 #include <algorithm>
 #include <iomanip>
 
@@ -32,6 +33,7 @@
 
 // npy-
 #include "NPY.hpp"
+#include "NGPU.hpp"
 #include "NSlice.hpp"
 #include "GLMFormat.hpp"
 
@@ -125,15 +127,16 @@ const char* OGeo::TRAVERSER = "Bvh" ;
 
 
 OGeo::OGeo(OContext* ocontext, Opticks* ok, GGeoLib* geolib, const char* builder, const char* traverser)
-           : 
-           m_ocontext(ocontext),
-           m_ok(ok),
-           m_gltf(ok->getGLTF()),
-           m_geolib(geolib),
-           m_builder(builder ? strdup(builder) : BUILDER),
-           m_traverser(traverser ? strdup(traverser) : TRAVERSER),
-           m_description(NULL),
-           m_verbosity(m_ok->getVerbosity())
+    : 
+    m_ocontext(ocontext),
+    m_ok(ok),
+    m_gltf(ok->getGLTF()),
+    m_geolib(geolib),
+    m_builder(builder ? strdup(builder) : BUILDER),
+    m_traverser(traverser ? strdup(traverser) : TRAVERSER),
+    m_description(NULL),
+    m_verbosity(m_ok->getVerbosity()),
+    m_mmidx(0)
 {
     init();
 }
@@ -215,6 +218,8 @@ void OGeo::convert()
 
 void OGeo::convertMergedMesh(unsigned i)
 {
+    m_mmidx = i ; 
+
     if(m_verbosity > 2)
     LOG(info) << "OGeo::convertMesh START " << i ; 
 
@@ -239,7 +244,7 @@ void OGeo::convertMergedMesh(unsigned i)
 
     if( i == 0 )
     {
-        optix::Geometry gmm = makeGeometry(mm, 0);
+        optix::Geometry gmm = makeGeometry(mm, 0);   // tri or ana depending on mm.geocode
         optix::Material mat = makeMaterial();
         optix::GeometryInstance gi = makeGeometryInstance(gmm,mat);
         gi["instance_index"]->setUint( 0u );  // so same code can run Instanced or not 
@@ -294,6 +299,8 @@ optix::Group OGeo::makeRepeatedGroup(GMergedMesh* mm, bool raylod)
     assembly->setChildCount(islice->count());
 
     optix::Geometry tri[2], ana[2], gmm ; 
+
+    // TODO: avoid making tri when use ana ?
 
     tri[0] = makeTriangulatedGeometry(mm, 0u );
     tri[1] = makeTriangulatedGeometry(mm, 1u );
@@ -613,6 +620,8 @@ optix::Geometry OGeo::makeGeometry(GMergedMesh* mergedmesh, unsigned lod)
 
 optix::Geometry OGeo::makeAnalyticGeometry(GMergedMesh* mm, unsigned lod)
 {
+    m_lodidx = lod ; 
+
     if(m_verbosity > 2)
     LOG(warning) << "OGeo::makeAnalyticGeometry START" 
                  << " verbosity " << m_verbosity 
@@ -802,6 +811,8 @@ optix::Geometry OGeo::makeTriangulatedGeometry(GMergedMesh* mm, unsigned lod)
     // Hmm this is really treating each triangle as a primitive each with its own bounds...
     //  
 
+    m_lodidx = lod ; 
+
     optix::Geometry geometry = m_context->createGeometry();
     geometry->setIntersectionProgram(m_ocontext->createProgram("TriangleMesh.cu.ptx", "mesh_intersect"));
     geometry->setBoundingBoxProgram(m_ocontext->createProgram("TriangleMesh.cu.ptx", "mesh_bounds"));
@@ -875,6 +886,19 @@ optix::Geometry OGeo::makeTriangulatedGeometry(GMergedMesh* mm, unsigned lod)
     return geometry ; 
 }
 
+const char* OGeo::getContextName() const 
+{
+    std::stringstream ss ; 
+    ss << "OGeo"
+       << m_mmidx 
+       << "-"
+       << m_lodidx 
+        ; 
+      
+    std::string name = ss.str();  
+    return strdup(name.c_str()); 
+}
+
 
 template <typename T>
 optix::Buffer OGeo::createInputBuffer(GBuffer* buf, RTformat format, unsigned int fold, const char* name, bool reuse)
@@ -930,8 +954,11 @@ optix::Buffer OGeo::createInputBuffer(GBuffer* buf, RTformat format, unsigned in
    else
    {
         buffer = m_context->createBuffer( RT_BUFFER_INPUT, format, nit );
-        memcpy( buffer->map(), buf->getPointer(), buf->getNumBytes() );
+        unsigned num_bytes = buf->getNumBytes() ;
+        memcpy( buffer->map(), buf->getPointer(), num_bytes );
         buffer->unmap();
+
+        NGPU::GetInstance()->add(num_bytes, name, getContextName() , "cibGBuf" ); 
    } 
 
    return buffer ; 
@@ -1016,8 +1043,10 @@ optix::Buffer OGeo::createInputBuffer(NPY<S>* buf, RTformat format, unsigned int
    else
    {
         buffer = m_context->createBuffer( RT_BUFFER_INPUT, format, nit );
-        memcpy( buffer->map(), buf->getPointer(), buf->getNumBytes() );
+        unsigned num_bytes =  buf->getNumBytes() ;
+        memcpy( buffer->map(), buf->getPointer(), num_bytes );
         buffer->unmap();
+        NGPU::GetInstance()->add(num_bytes, name, getContextName(), "cibNPY" ); 
    } 
 
    return buffer ; 
@@ -1029,12 +1058,13 @@ optix::Buffer OGeo::createInputBuffer(NPY<S>* buf, RTformat format, unsigned int
 template<typename T>
 optix::Buffer OGeo::createInputUserBuffer(NPY<T>* src, unsigned elementSize, const char* name)
 {
-   return CreateInputUserBuffer(m_context, src, elementSize, name, m_verbosity);
+   const char* ctxname = getContextName();
+   return CreateInputUserBuffer(m_context, src, elementSize, name, ctxname, m_verbosity);
 }
 
 
 template<typename T>
-optix::Buffer OGeo::CreateInputUserBuffer(optix::Context& ctx, NPY<T>* src, unsigned elementSize, const char* name, unsigned verbosity)
+optix::Buffer OGeo::CreateInputUserBuffer(optix::Context& ctx, NPY<T>* src, unsigned elementSize, const char* name, const char* ctxname, unsigned verbosity)
 {
     unsigned numBytes = src->getNumBytes() ;
     assert( numBytes % elementSize == 0 );
@@ -1043,6 +1073,7 @@ optix::Buffer OGeo::CreateInputUserBuffer(optix::Context& ctx, NPY<T>* src, unsi
     if(verbosity > 2)
     LOG(info) << "OGeo::CreateInputUserBuffer"
               << " name " << name
+              << " ctxname " << ctxname
               << " src shape " << src->getShapeString()
               << " numBytes " << numBytes
               << " elementSize " << elementSize
@@ -1058,12 +1089,14 @@ optix::Buffer OGeo::CreateInputUserBuffer(optix::Context& ctx, NPY<T>* src, unsi
     memcpy( buffer->map(), src->getPointer(), numBytes );
     buffer->unmap();
 
+    NGPU::GetInstance()->add(numBytes, name, ctxname, "ciubNPY" ); 
+
     return buffer ; 
 }
 
 
 template
-optix::Buffer OGeo::CreateInputUserBuffer<float>(optix::Context& ctx, NPY<float>* src, unsigned elementSize, const char* name, unsigned verbosity) ;
+optix::Buffer OGeo::CreateInputUserBuffer<float>(optix::Context& ctx, NPY<float>* src, unsigned elementSize, const char* name, const char* ctxname, unsigned verbosity) ;
 
 
 

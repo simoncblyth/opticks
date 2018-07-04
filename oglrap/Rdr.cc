@@ -9,6 +9,7 @@
 
 // npy-
 #include "NGLM.hpp"
+#include "NGPU.hpp"
 #include "NPY.hpp"
 #include "ViewNPY.hpp"
 #include "MultiViewNPY.hpp"
@@ -316,6 +317,9 @@ void Rdr::upload(NPYBase* npy, ViewNPY* vnpy)
 
         npy->setBufferId(buffer_id); 
         m_device->add(npy);         //  (void*)npy used by Device::isUploaded to prevent re-uploads  
+
+
+        NGPU::GetInstance()->add( nbytes, vnpy->getName(), parent->getName(), "Rdr:upl" ); 
     }
 }
 

@@ -3,13 +3,7 @@
 #include <iostream>
 
 #include "BFile.hh"
-#include "PLOG.hh"
-
-#include "SYSRAP_LOG.hh"
-#include "BRAP_LOG.hh"
-#include "NPY_LOG.hh"
-#include "OKCORE_LOG.hh"
-
+#include "OPTICKS_LOG.hh"
 #include "Opticks.hh"
 
 
@@ -97,16 +91,23 @@ void test_getDbgSeqhisMap(Opticks* ok)
 */
 
 
+void test_gpumon(Opticks* ok)
+{
+   LOG(info)
+        << " --gpumonpath " << ok->getGPUMonPath()
+        << " --gpumon " << ok->isGPUMon()
+        ;
+         
+}
+
+
+
 int main(int argc, char** argv)
 {
-    PLOG_(argc,argv);
-
-    SYSRAP_LOG__ ; 
-    BRAP_LOG__ ; 
-    NPY_LOG__ ; 
-    OKCORE_LOG__ ; 
-     
+    OPTICKS_LOG(argc,argv);
+    
     LOG(info) << argv[0] ;
+
     Opticks ok(argc, argv);
     ok.configure();
 
@@ -119,9 +120,10 @@ int main(int argc, char** argv)
     test_getDAEPath(&ok);  
     test_getGDMLPath(&ok);  
     test_getMaterialMap(&ok);  
+    test_getDbgSeqhisMap(&ok);
     */
 
-    test_getDbgSeqhisMap(&ok);
+    test_gpumon(&ok);
 
 
     return 0 ;

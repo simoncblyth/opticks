@@ -155,7 +155,8 @@ NPYBase::NPYBase(const std::vector<int>& shape, unsigned char sizeoftype, Type_t
          m_has_data(has_data),
          m_dynamic(false),
          m_lookup(NULL),
-         m_parameters(new NParameters)
+         m_parameters(new NParameters),
+         m_name(NULL)
 {
    init();
 } 
@@ -163,6 +164,16 @@ NPYBase::NPYBase(const std::vector<int>& shape, unsigned char sizeoftype, Type_t
  NPYBase::~NPYBase()
 {
 }
+
+const char* NPYBase::getName() const 
+{
+    return m_name ;  
+}
+void NPYBase::setName(const char* name) 
+{
+    m_name = name ? strdup(name) : NULL ; 
+}
+
 
 
  void NPYBase::setHasData(bool has_data)

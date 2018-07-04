@@ -994,6 +994,13 @@ const char* Opticks::getGLTFPath() const
 {
     return m_resource->getGLTFPath() ;
 }
+
+
+
+
+
+
+
 const char* Opticks::getGLTFBase() const  // config base and name only used whilst testing with gltf >= 100
 {
     int gltf = getGLTF();
@@ -1040,6 +1047,17 @@ const char* Opticks::getGLTFConfig()
     return m_cfg->getGLTFConfig().c_str() ; 
 }
 
+
+
+const char* Opticks::getGPUMonPath() const 
+{
+    const std::string& gpumonpath = m_cfg->getGPUMonPath() ;
+    return gpumonpath.c_str() ;
+}
+bool Opticks::isGPUMon() const 
+{
+    return m_cfg->hasOpt("gpumon");
+}
 
 
 bool Opticks::isTest() const 

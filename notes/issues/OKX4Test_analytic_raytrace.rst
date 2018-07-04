@@ -27,6 +27,21 @@ Ideas to try
 
    * surfaces next 
 
+5. have neglected the triangles in the new route, suspect the lack of deduping so far
+   may mean are using more GPU resources than necessary, causing fragility 
+
+   * idea : keep count of all GPU buffer allocations (OpenGL tri, OptiX tri, OptiX ana)
+     in an NGPU class recording (numBytes, name, owner) : compare totals between branches
+     investigate outliers 
+
+6. simpler testing environment
+
+   * remember the very messy multi Opticks/OptickGeo and Hub environment
+     to fixup problems with the GDML : need to find way to test in a cleaner environment
+
+7. i have not checked the planeBuffer between old and new, that could easily 
+    cause crashes for geometry with convexpolyhedrons
+
 
 Added OpticksQuery lvr selecting on lvIdx 
 -----------------------------------------------

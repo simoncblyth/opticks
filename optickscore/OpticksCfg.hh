@@ -110,6 +110,7 @@ class OKCORE_API OpticksCfg : public BCfg {
      int                getTarget() const ;
      int                getAlignLevel() const ;
 
+     const std::string& getGPUMonPath() const ;
 
 
 
@@ -207,6 +208,7 @@ private:
      int         m_target ;  
      int         m_alignlevel ;  
 
+     std::string m_gpumonpath ;
 
 
 };

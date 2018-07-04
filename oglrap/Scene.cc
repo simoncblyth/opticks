@@ -457,17 +457,20 @@ void Scene::initRenderers()
 
         m_instance_renderer[i] = new Renderer("inrm", m_shader_dir, m_shader_incl_path );
         m_instance_renderer[i]->setInstanced();
+        m_instance_renderer[i]->setIndexBBox(i, false);
 
         if(m_instcull)
         {
             m_instlodcull[i] = new InstLODCull("inrmcull", m_shader_dir, m_shader_incl_path);
             m_instlodcull[i]->setVerbosity(1);
+            m_instlodcull[i]->setIndexBBox(i, false);
             m_instance_renderer[i]->setInstLODCull(m_instlodcull[i]);
         }
 
         //m_bbox_mode[i] = false ; 
         m_bbox_renderer[i] = new Renderer("inrm", m_shader_dir, m_shader_incl_path );
         m_bbox_renderer[i]->setInstanced();
+        m_bbox_renderer[i]->setIndexBBox(i, true);
         m_bbox_renderer[i]->setWireframe(false);  // wireframe is much slower than filled
     }
 

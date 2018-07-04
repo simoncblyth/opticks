@@ -239,7 +239,9 @@ class OKCORE_API Opticks {
 
        const char* getGLTFConfig();
        NSceneConfig* getSceneConfig();
-
+   public:
+       const char* getGPUMonPath() const ;   
+       bool        isGPUMon() const ;  
    public:
        bool        isTest() const ;
        bool        isTestAuto() const ;

@@ -40,7 +40,10 @@ int main( int argc, char** argv )
     planBuf->setQuad(5,j,  0.f, 0.f,-1.f,hsize );
 
     unsigned verbosity = 3 ; 
-    optix::Buffer planBuffer = OGeo::CreateInputUserBuffer<float>( context, planBuf,  4*4, "planBuffer", verbosity); 
+
+    const char* ctxname = "intersect_analytic_test" ; 
+
+    optix::Buffer planBuffer = OGeo::CreateInputUserBuffer<float>( context, planBuf,  4*4, "planBuffer", ctxname, verbosity); 
     context["planBuffer"]->setBuffer(planBuffer);
 
 

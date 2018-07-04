@@ -156,8 +156,10 @@ set(SOURCES
     NTreeBalance.cpp
     NTreeProcess.cpp
     NTreeAnalyse.cpp
-
     NTreeTools.cpp
+
+    NGPU.cpp
+
     NGLMExt.cpp
     NGLMCF.cpp
     NPolygonizer.cpp
@@ -330,8 +332,11 @@ NTreePositive.hpp
 NTreeBalance.hpp
 NTreeProcess.hpp
 NTreeAnalyse.hpp
-
 NTreeTools.hpp
+
+NGPU.hpp
+
+
 NGLMExt.hpp
 NPolygonizer.hpp
 NGLMCF.hpp

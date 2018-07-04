@@ -303,6 +303,7 @@ void Renderer::setDrawable(GDrawable* drawable) // CPU side buffer setup
         LOG(warning) << "Renderer::setDrawable instance slicing ibuf with " << islice->description() ;
 
     NPY<float>* ibuf = islice ? ibuf_orig->make_slice(islice) :  ibuf_orig ;
+    if(ibuf) ibuf->setName("itransforms"); 
 
     m_ibuf = MAKE_RBUF(ibuf) ; 
     setHasTransforms(m_ibuf != NULL);
@@ -316,12 +317,20 @@ void Renderer::upload()
 
     m_instlodcull_enabled = m_instlodcull && m_num_lod > 0 && num_instances > InstLODCull::INSTANCE_MINIMUM ;
     // Renderer::upload(GMergedMesh*) sets num_lod from mm components, >0 only for instanced mm
-        
-    m_vao_all = createVertexArray(m_ibuf);   // DEBUGGING ONLY 
+      
+    // (June 2018) IS THIS DUPLICATING THE UPLOADS WITH THE m_vao_all
+    //m_vao_all = createVertexArray(m_ibuf);   // DEBUGGING ONLY 
+
+    RBuf::Owner = strdup(getName()) ;  
 
     if(m_instlodcull_enabled) 
     {
         createVertexArrayLOD(); 
+    } 
+    else if(m_lod < 0)
+    {
+        // (June 2018) moved this here from outside the if to avoid duplicating the vertices
+        m_vao_all = createVertexArray(m_ibuf);   // DEBUGGING ONLY 
     } 
     else
     {

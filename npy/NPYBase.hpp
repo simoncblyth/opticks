@@ -44,6 +44,9 @@ class NPY_API NPYBase {
         bool hasData() const ;
         static void transfer(NPYBase* dst, NPYBase* src); 
    public:
+        const char* getName() const ; 
+        void setName(const char* name); 
+   public:
        // shape related
        NPYSpec* getShapeSpec() const ;
        NPYSpec* getItemSpec() const ;
@@ -197,6 +200,8 @@ class NPY_API NPYBase {
        bool               m_dynamic ;
        NLookup*           m_lookup ;   // only needed for legacy gensteps 
        NParameters*        m_parameters ;  // for keeping notes, especially for gensteps
+
+       const char*         m_name ; 
 
 };
 

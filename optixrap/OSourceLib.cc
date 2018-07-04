@@ -6,9 +6,9 @@
 #include "PLOG.hh"
 
 OSourceLib::OSourceLib(optix::Context& ctx, GSourceLib* lib)
-           : 
-           OPropertyLib(ctx),
-           m_lib(lib)
+    : 
+    OPropertyLib(ctx, "OSourceLib"),
+    m_lib(lib)
 {
 }
 

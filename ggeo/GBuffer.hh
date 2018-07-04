@@ -30,7 +30,7 @@ struct NSlice ;
 
 class GGEO_API GBuffer {
     public:
-        GBuffer(unsigned int nbytes, void* pointer, unsigned int itemsize, unsigned int nelem);
+        GBuffer(unsigned int nbytes, void* pointer, unsigned int itemsize, unsigned int nelem, const char* name);
     public:
         void reshape(unsigned int nelem);
         // NB reshape just changes interpretation, there is no change to NumBytes or NumElementsTotal
@@ -38,12 +38,15 @@ class GGEO_API GBuffer {
     public:
         unsigned int getNumBytes();
         void*        getPointer();
+        const char*  getName() const ;
         BBufSpec*    getBufSpec();
 
         unsigned int getItemSize();
         unsigned int getNumElements();
         unsigned int getNumItems();
         unsigned int getNumElementsTotal();
+    public:
+        void setName(const char* name); 
     public:
         bool isEqual(GBuffer* other);
         float fractionDifferent(GBuffer* other);
@@ -75,6 +78,7 @@ class GGEO_API GBuffer {
          void*        m_pointer ; 
          unsigned int m_itemsize ;
          unsigned int m_nelem ;
+         const char*  m_name ; 
     private:
          int          m_buffer_id ; 
          int          m_buffer_target ; 

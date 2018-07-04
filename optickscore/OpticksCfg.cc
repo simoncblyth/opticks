@@ -93,7 +93,8 @@ OpticksCfg<Listener>::OpticksCfg(const char* name, Listener* listener, bool live
        m_lodconfig("levels=3,verbosity=3"),
        m_lod(0),
        m_target(0),
-       m_alignlevel(0)
+       m_alignlevel(0),
+       m_gpumonpath("$TMP/GPUMonPath.npy")
 {   
    init();  
    m_listener->setCfg(this); 
@@ -820,6 +821,8 @@ void OpticksCfg<Listener>::init()
            "string with spaces to be live parsed, as test of composed overrides");
 
 
+
+
    char gltfbase[128];
    snprintf(gltfbase,128, "String identifying directory of glTF geometry files to load with --gltf option. Default %s ", m_gltfbase.c_str() );
    m_desc.add_options()
@@ -869,6 +872,16 @@ void OpticksCfg<Listener>::init()
               "See oxrap/OGeo.cc:makeRepeatedGroup and notes/issues/can-optix-selector-defer-expensive-csg.rst "
               ""
               "This is entirely distinct from the OpenGL mesh based LOD.") ;
+
+
+   char gpumonpath[128];
+   snprintf(gpumonpath,128, "Path to write the GPU buffer usage monitor file. Default %s ", m_gpumonpath.c_str() );
+   m_desc.add_options()
+       ("gpumonpath",   boost::program_options::value<std::string>(&m_gpumonpath), gpumonpath );
+
+   m_desc.add_options()
+       ("gpumon", "Switch on GPU buffer usage recording. ");   
+           
 
 
    char target[128];
@@ -1381,6 +1394,14 @@ const std::string& OpticksCfg<Listener>::getGLTFBase()
 {
    return m_gltfbase ; 
 }
+
+template <class Listener>
+const std::string& OpticksCfg<Listener>::getGPUMonPath() const 
+{
+    return m_gpumonpath ;  
+}
+
+
 
 template <class Listener>
 const std::string& OpticksCfg<Listener>::getGLTFName()

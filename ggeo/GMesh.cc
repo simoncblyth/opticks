@@ -794,7 +794,8 @@ void GMesh::setBuffer(const char* name, GBuffer* buffer)
 void GMesh::setVertices(gfloat3* vertices)
 {
     m_vertices = vertices ;
-    m_vertices_buffer = new GBuffer( sizeof(gfloat3)*m_num_vertices, (void*)m_vertices, sizeof(gfloat3), 3 ) ;
+    m_vertices_buffer = new GBuffer( sizeof(gfloat3)*m_num_vertices, (void*)m_vertices, sizeof(gfloat3), 3 , "vertices") ;
+
     assert(sizeof(gfloat3) == sizeof(float)*3);
 }
 void GMesh::setVerticesBuffer(GBuffer* buffer)
@@ -811,7 +812,7 @@ void GMesh::setVerticesBuffer(GBuffer* buffer)
 void GMesh::setNormals(gfloat3* normals)
 {
     m_normals = normals ;
-    m_normals_buffer = new GBuffer( sizeof(gfloat3)*m_num_vertices, (void*)m_normals, sizeof(gfloat3), 3 ) ;
+    m_normals_buffer = new GBuffer( sizeof(gfloat3)*m_num_vertices, (void*)m_normals, sizeof(gfloat3), 3 , "normals") ;
     assert(sizeof(gfloat3) == sizeof(float)*3);
 }
 void GMesh::setNormalsBuffer(GBuffer* buffer)
@@ -827,7 +828,7 @@ void GMesh::setNormalsBuffer(GBuffer* buffer)
 void GMesh::setColors(gfloat3* colors)
 {
     m_colors = colors ;
-    m_colors_buffer = new GBuffer( sizeof(gfloat3)*m_num_vertices, (void*)m_colors, sizeof(gfloat3), 3  ) ;
+    m_colors_buffer = new GBuffer( sizeof(gfloat3)*m_num_vertices, (void*)m_colors, sizeof(gfloat3), 3 , "colors") ;
     assert(sizeof(gfloat3) == sizeof(float)*3);
 }
 void GMesh::setColorsBuffer(GBuffer* buffer)
@@ -853,7 +854,7 @@ void GMesh::setCenterExtent(gfloat4* center_extent)
               ; 
 
     assert(m_num_volumes > 0);
-    m_center_extent_buffer = new GBuffer( sizeof(gfloat4)*m_num_volumes, (void*)m_center_extent, sizeof(gfloat4), 4 ); 
+    m_center_extent_buffer = new GBuffer( sizeof(gfloat4)*m_num_volumes, (void*)m_center_extent, sizeof(gfloat4), 4 , "cen_ext"); 
     assert(sizeof(gfloat4) == sizeof(float)*4);
 }
 void GMesh::setCenterExtentBuffer(GBuffer* buffer) 
@@ -879,7 +880,7 @@ void GMesh::setBBox(gbbox* bb)
 {
     m_bbox = bb ;  
     assert(m_num_volumes > 0);
-    m_bbox_buffer = new GBuffer( sizeof(gbbox)*m_num_volumes, (void*)m_bbox, sizeof(gbbox), 6 ); 
+    m_bbox_buffer = new GBuffer( sizeof(gbbox)*m_num_volumes, (void*)m_bbox, sizeof(gbbox), 6 , "bbox"); 
     assert(sizeof(gbbox) == sizeof(float)*6);
 }
 void GMesh::setBBoxBuffer(GBuffer* buffer) 
@@ -910,7 +911,7 @@ void GMesh::setTransforms(float* transforms)
               << " fsize " << sizeof(float)
               ;
 
-    m_transforms_buffer = new GBuffer( size*m_num_volumes, (void*)m_transforms, size, numElements ); 
+    m_transforms_buffer = new GBuffer( size*m_num_volumes, (void*)m_transforms, size, numElements , "transforms"); 
 }
 
 
@@ -980,7 +981,7 @@ void GMesh::setMeshes(unsigned int* meshes)
     m_meshes = meshes ;  
     assert(m_num_volumes > 0);
     unsigned int size = sizeof(unsigned int);
-    m_meshes_buffer = new GBuffer( size*m_num_volumes, (void*)m_meshes, size, 1 ); 
+    m_meshes_buffer = new GBuffer( size*m_num_volumes, (void*)m_meshes, size, 1 , "meshes"); 
 }
 
 void GMesh::setMeshesBuffer(GBuffer* buffer) 
@@ -1004,7 +1005,7 @@ void GMesh::setNodeInfo(guint4* nodeinfo)
     assert(m_num_volumes > 0);
     unsigned int size = sizeof(guint4);
     assert(size == sizeof(unsigned int)*4 );
-    m_nodeinfo_buffer = new GBuffer( size*m_num_volumes, (void*)m_nodeinfo, size, 4 ); 
+    m_nodeinfo_buffer = new GBuffer( size*m_num_volumes, (void*)m_nodeinfo, size, 4 , "nodeinfo"); 
 }
 void GMesh::setNodeInfoBuffer(GBuffer* buffer) 
 {
@@ -1028,7 +1029,7 @@ void GMesh::setIdentity(guint4* identity)
     assert(m_num_volumes > 0);
     unsigned int size = sizeof(guint4);
     assert(size == sizeof(unsigned int)*4 );
-    m_identity_buffer = new GBuffer( size*m_num_volumes, (void*)m_identity, size, 4 ); 
+    m_identity_buffer = new GBuffer( size*m_num_volumes, (void*)m_identity, size, 4 , "identity"); 
 }
 void GMesh::setIdentityBuffer(GBuffer* buffer) 
 {
@@ -1138,7 +1139,7 @@ void GMesh::setTexcoords(gfloat2* texcoords)
 {
     if(!texcoords) return ;
     m_texcoords = texcoords ;
-    m_texcoords_buffer = new GBuffer( sizeof(gfloat2)*m_num_vertices, (void*)m_texcoords, sizeof(gfloat2), 2  ) ;
+    m_texcoords_buffer = new GBuffer( sizeof(gfloat2)*m_num_vertices, (void*)m_texcoords, sizeof(gfloat2), 2 , "texcoords") ;
     assert(sizeof(gfloat2) == sizeof(float)*2);
 }
 void GMesh::setTexcoordsBuffer(GBuffer* buffer)
@@ -1161,7 +1162,7 @@ void GMesh::setFaces(guint3* faces)
     unsigned int nelem    = 1 ;                          // number of elements in the item
 
     m_faces = faces ;
-    m_indices_buffer = new GBuffer( totbytes, (void*)m_faces, itemsize, nelem ) ;
+    m_indices_buffer = new GBuffer( totbytes, (void*)m_faces, itemsize, nelem , "indices") ;
     assert(sizeof(guint3) == sizeof(unsigned int)*3);
 }
 void GMesh::setIndicesBuffer(GBuffer* buffer)
@@ -1178,7 +1179,7 @@ void GMesh::setIndicesBuffer(GBuffer* buffer)
 void GMesh::setNodes(unsigned* nodes)   // only makes sense to use from single subclasses instances like GMergedMesh 
 {
     m_nodes = nodes ;
-    m_nodes_buffer = new GBuffer( sizeof(unsigned int)*m_num_faces, (void*)m_nodes, sizeof(unsigned int), 1 ) ;
+    m_nodes_buffer = new GBuffer( sizeof(unsigned int)*m_num_faces, (void*)m_nodes, sizeof(unsigned int), 1 , "nodes") ;
     assert(sizeof(unsigned int) == sizeof(unsigned int)*1);
 }
 void GMesh::setNodesBuffer(GBuffer* buffer)
@@ -1199,7 +1200,7 @@ void GMesh::setNodesBuffer(GBuffer* buffer)
 void GMesh::setBoundaries(unsigned* boundaries)
 {
     m_boundaries = boundaries ;
-    m_boundaries_buffer = new GBuffer( sizeof(unsigned)*m_num_faces, (void*)m_boundaries, sizeof(unsigned), 1 ) ;
+    m_boundaries_buffer = new GBuffer( sizeof(unsigned)*m_num_faces, (void*)m_boundaries, sizeof(unsigned), 1 , "boundaries") ;
     assert(sizeof(unsigned) == sizeof(unsigned)*1);
 }
 void GMesh::setBoundariesBuffer(GBuffer* buffer)
@@ -1222,7 +1223,7 @@ void GMesh::setBoundariesBuffer(GBuffer* buffer)
 void GMesh::setSensors(unsigned* sensors)
 {
     m_sensors = sensors ;
-    m_sensors_buffer = new GBuffer( sizeof(unsigned)*m_num_faces, (void*)m_sensors, sizeof(unsigned), 1 ) ;
+    m_sensors_buffer = new GBuffer( sizeof(unsigned)*m_num_faces, (void*)m_sensors, sizeof(unsigned), 1 , "sensors") ;
     assert(sizeof(unsigned) == sizeof(unsigned)*1);
 }
 void GMesh::setSensorsBuffer(GBuffer* buffer)
@@ -2110,7 +2111,7 @@ GBuffer* GMesh::makeFaceRepeatedInstancedIdentityBuffer()
     }   
     
     unsigned int size = sizeof(guint4) ;
-    GBuffer* buffer = new GBuffer( size*numRepeatedIdentity, (void*)riid, size, 4 ); 
+    GBuffer* buffer = new GBuffer( size*numRepeatedIdentity, (void*)riid, size, 4 , "friib" ); 
     return buffer ; 
 }
 
@@ -2267,7 +2268,7 @@ GBuffer* GMesh::makeFaceRepeatedIdentityBuffer()
     }  
     
     unsigned int size = sizeof(guint4) ;
-    GBuffer* buffer = new GBuffer( size*numFaces, (void*)rid, size, 4 ); 
+    GBuffer* buffer = new GBuffer( size*numFaces, (void*)rid, size, 4 , "frib" ); 
     return buffer ; 
 }
 

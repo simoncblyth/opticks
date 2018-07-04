@@ -1,4 +1,5 @@
 #include "NPY.hpp"
+#include "NGPU.hpp"
 #include "OpticksColors.hh"
 #include "OColors.hh"
 
@@ -41,12 +42,16 @@ void OColors::convert()
     unsigned int n = npy->getNumItems();
     assert(npy->hasShape(n,4));
 
-    unsigned int nx = n ;  
-    unsigned int ny = 1 ;
+    unsigned nx = n ;  
+    unsigned ny = 1 ;
+    unsigned num_bytes = npy->getNumBytes(0) ;
 
     optix::Buffer colorBuffer = m_context->createBuffer(RT_BUFFER_INPUT, RT_FORMAT_UNSIGNED_BYTE4, nx, ny );
-    memcpy( colorBuffer->map(), npy->getBytes(), npy->getNumBytes(0) );
+    memcpy( colorBuffer->map(), npy->getBytes(), num_bytes );
     colorBuffer->unmap(); 
+
+    NGPU::GetInstance()->add(num_bytes, "colors", "OColors", "OScene" );   
+
 
     optix::TextureSampler tex = m_context->createTextureSampler();
     OConfig::configureSampler(tex, colorBuffer);

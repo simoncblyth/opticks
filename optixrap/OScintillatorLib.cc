@@ -7,9 +7,9 @@
 // trace/debug/info/warning/error/fatal
 
 OScintillatorLib::OScintillatorLib(optix::Context& ctx, GScintillatorLib* lib)
-           : 
-           OPropertyLib(ctx),
-           m_lib(lib)
+    : 
+    OPropertyLib(ctx, "OScintillatorLib"),
+    m_lib(lib)
 {
 }
 

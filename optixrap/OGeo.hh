@@ -71,7 +71,7 @@ private:
     void convertMergedMesh(unsigned i);
     void dumpStats(const char* msg="OGeo::dumpStats");
 public:
-    template <typename T> static     optix::Buffer CreateInputUserBuffer(optix::Context& ctx, NPY<T>* src, unsigned elementSize, const char* name, unsigned verbosity);
+    template <typename T> static     optix::Buffer CreateInputUserBuffer(optix::Context& ctx, NPY<T>* src, unsigned elementSize, const char* name, const char* ctxname, unsigned verbosity);
 public:
     template <typename T>             optix::Buffer createInputBuffer(GBuffer* buf, RTformat format, unsigned int fold, const char* name, bool reuse=false);
     template <typename T, typename S> optix::Buffer createInputBuffer(NPY<S>*  buf, RTformat format, unsigned int fold, const char* name, bool reuse=false);
@@ -108,6 +108,11 @@ private:
     const char*          m_traverser ; 
     const char*          m_description ; 
     unsigned             m_verbosity ; 
+private:
+    // for giving "context names" to GPU buffer uploads
+    const char*          getContextName() const ;
+    unsigned             m_mmidx ; 
+    unsigned             m_lodidx ; 
 private:
     // locals 
     optix::GeometryGroup  m_geometry_group ; 

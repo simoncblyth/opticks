@@ -14,7 +14,7 @@
 
 OBndLib::OBndLib(optix::Context& ctx, GBndLib* blib)
     : 
-    OPropertyLib(ctx),
+    OPropertyLib(ctx, "OBndLib"),
     m_blib(blib),
     m_debug_buffer(NULL),  
     m_width(0),

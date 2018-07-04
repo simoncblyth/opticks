@@ -1,3 +1,4 @@
+// om-; TEST=BFileTest om-t 
 
 #include <vector>
 #include <string>
@@ -235,6 +236,10 @@ void test_SomePath()
               << " stem " << stem
               << " dir " << dir
               ;
+
+    assert( name.compare("g4_00.gltf") == 0 ); 
+    assert( stem.compare("g4_00") == 0 ); 
+    assert( dir.compare("/usr/local/opticks/opticksdata/export/DayaBay_VGDX_20140414-1300") == 0 ); 
  
 }
 
@@ -432,7 +437,7 @@ int main(int argc, char** argv)
 
    //test_FormPath_reldir();
    //test_SomeDir();
-   //test_SomePath();
+   test_SomePath();
    //test_RemoveDir();
    //test_RemoveDir_2();
 
@@ -448,7 +453,7 @@ int main(int argc, char** argv)
 
    //test_FileSize();
 
-   test_FormPath_edge();
+   //test_FormPath_edge();
 
    return 0 ; 
 }

@@ -47,7 +47,7 @@ T GMatrix<T>::largestDiff(const GMatrix& m)
 
 template<typename T>
 GMatrix<T>::GMatrix() :
-      GBuffer( sizeof(T)*16, NULL, sizeof(T), 1 ),
+      GBuffer( sizeof(T)*16, NULL, sizeof(T), 1 , "GMatrix0"),
       a1(1.f), a2(0.f), a3(0.f), a4(0.f), 
       b1(0.f), b2(1.f), b3(0.f), b4(0.f), 
       c1(0.f), c2(0.f), c3(1.f), c4(0.f), 
@@ -58,7 +58,7 @@ GMatrix<T>::GMatrix() :
 
 template<typename T>
 GMatrix<T>::GMatrix(T _s) :
-      GBuffer( sizeof(T)*16, NULL, sizeof(T), 1 ),
+      GBuffer( sizeof(T)*16, NULL, sizeof(T), 1 , "GMatrix1"),
       a1( _s), a2(0.f), a3(0.f), a4(0.f), 
       b1(0.f), b2( _s), b3(0.f), b4(0.f), 
       c1(0.f), c2(0.f), c3( _s), c4(0.f), 
@@ -68,7 +68,7 @@ GMatrix<T>::GMatrix(T _s) :
 
 template<typename T>
 GMatrix<T>::GMatrix(T _x, T _y, T _z, T _s) :
-      GBuffer( sizeof(T)*16, NULL, sizeof(T), 1 ),
+      GBuffer( sizeof(T)*16, NULL, sizeof(T), 1 , "GMatrix2"),
       a1( _s), a2(0.f), a3(0.f), a4(_x), 
       b1(0.f), b2( _s), b3(0.f), b4(_y), 
       c1(0.f), c2(0.f), c3( _s), c4(_z), 
@@ -78,7 +78,7 @@ GMatrix<T>::GMatrix(T _x, T _y, T _z, T _s) :
 
 template<typename T>
 GMatrix<T>::GMatrix(const GMatrix& m) : 
-      GBuffer( sizeof(T)*16, NULL, sizeof(T), 1 ),
+      GBuffer( sizeof(T)*16, NULL, sizeof(T), 1 , "GMatrix3"),
       a1(m.a1), a2(m.a2), a3(m.a3), a4(m.a4), 
       b1(m.b1), b2(m.b2), b3(m.b3), b4(m.b4), 
       c1(m.c1), c2(m.c2), c3(m.c3), c4(m.c4), 
@@ -89,7 +89,7 @@ GMatrix<T>::GMatrix(const GMatrix& m) :
 
 template<typename T>
 GMatrix<T>::GMatrix(T* buf) :
-      GBuffer( sizeof(T)*16, NULL, sizeof(T), 1 ),
+      GBuffer( sizeof(T)*16, NULL, sizeof(T), 1 , "GMatrix4"),
 
       a1(buf[0]),
       a2(buf[4]),
@@ -123,7 +123,7 @@ GMatrix<T>::GMatrix(
           T _c1, T _c2, T _c3, T _c4,
           T _d1, T _d2, T _d3, T _d4
                 ) :
-      GBuffer( sizeof(T)*16, NULL, sizeof(T), 1 ),
+      GBuffer( sizeof(T)*16, NULL, sizeof(T), 1 , "GMatrix5"),
       a1(_a1), a2(_a2), a3(_a3), a4(_a4), 
       b1(_b1), b2(_b2), b3(_b3), b4(_b4), 
       c1(_c1), c2(_c2), c3(_c3), c4(_c4), 
