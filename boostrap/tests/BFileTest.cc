@@ -8,9 +8,7 @@
 #include "BOpticksResource.hh"
 #include "BFile.hh"
 
-#include "SYSRAP_LOG.hh"
-#include "BRAP_LOG.hh"
-#include "PLOG.hh"
+#include "OPTICKS_LOG.hh"
 
 
 void test_FindFile_(const char* dirlist, const char* sub, const char* name)
@@ -145,6 +143,7 @@ void test_FormPath()
 
 
     ss.push_back("$HOME/.opticks/GColors.json");
+    ss.push_back("/path/with/dollar/inside/$TMP");
  
     for(unsigned int i=0 ; i < ss.size() ; i++)
     {
@@ -420,9 +419,7 @@ void test_FileSize()
 
 int main(int argc, char** argv)
 {
-   PLOG_(argc, argv);
-   SYSRAP_LOG_ ;
-   BRAP_LOG_ ;
+   OPTICKS_LOG(argc, argv);
 
    //BOpticksResource rsc ;  // sets envvar OPTICKS_INSTALL_PREFIX internally 
    //rsc.Summary();
@@ -431,13 +428,13 @@ int main(int argc, char** argv)
    //test_ExistsDir();
    //test_CreateDir();
    //test_ParentDir();
-   //test_FormPath();
+   test_FormPath();
    //test_Name_ParentDir();
    //test_ChangeExt();
 
    //test_FormPath_reldir();
    //test_SomeDir();
-   test_SomePath();
+   //test_SomePath();
    //test_RemoveDir();
    //test_RemoveDir_2();
 

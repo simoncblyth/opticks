@@ -20,6 +20,7 @@ int main(int argc, char** argv)
 
     ok.visualize();
 
-    exit(EXIT_SUCCESS);
+    //  exit(EXIT_SUCCESS);   // dont do this, as it prevents cleanup being called
+    return ok.rc();  
 }
 

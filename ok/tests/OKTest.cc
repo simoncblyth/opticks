@@ -14,8 +14,6 @@ int main(int argc, char** argv)
     ok.propagate();
     ok.visualize();
 
-    //NGPU::GetInstance()->saveBuffer("$TMP/OKTest_NGPU.npy");  
-
     return ok.rc();
 }
 

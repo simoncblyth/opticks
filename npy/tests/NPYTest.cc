@@ -8,6 +8,8 @@
 #include <cassert>
 
 #include "SSys.hh"
+#include "SStr.hh"
+
 #include "BOpticksEvent.hh"
 #include "BBufSpec.hh"
 
@@ -445,21 +447,11 @@ void test_ullstring()
     for(unsigned i=0 ; i < n ; i++)
     {
         ULL value = s8buf->getValue(i,0,0); 
-
-
-
+    
         char* s = new char[8+1] ; 
-        s[8] = '\0' ; 
-        char unprintable = '.' ; 
-        for( ULL w=0 ; w < 8 ; w++)
-        {
-            ULL ullc = (value & (0xffull << w*8)) >> w*8 ;
-            char c = static_cast<char>(ullc) ; 
-            bool printable = c >= ' ' && c <= '~' ;
-            s[w] = printable ? c : unprintable ; 
-        }
+        SStr::FillFromULL(s, value, '.'); 
 
-         std::cout 
+        std::cout 
               << std::setw(3) << i 
               << " : " 
               << std::setw(20) << value 
@@ -469,9 +461,6 @@ void test_ullstring()
               ;
 
     }
-
-
-
 
 }
 

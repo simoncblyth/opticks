@@ -279,10 +279,12 @@ b_load = lambda _:np.load(os.path.join(b_dir, _))
 a = a_load("partBuffer.npy")
 ta = a_load("tranBuffer.npy")
 pa = a_load("primBuffer.npy")
+la = a_load("planBuffer.npy")
 
 b = b_load("partBuffer.npy")
 tb = b_load("tranBuffer.npy")
 pb = b_load("primBuffer.npy")
+lb = b_load("planBuffer.npy")
 
 
 msg = "shape mismatch can be caused by runnig with an active OPTICKS_QUERY_LIVE selection "

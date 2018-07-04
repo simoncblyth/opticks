@@ -42,6 +42,10 @@ Ideas to try
 7. i have not checked the planeBuffer between old and new, that could easily 
     cause crashes for geometry with convexpolyhedrons
 
+   * nothing smoking at a glance :doc:`OKX4Test_planBuffer_mm0`
+
+
+
 
 Added OpticksQuery lvr selecting on lvIdx 
 -----------------------------------------------

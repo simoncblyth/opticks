@@ -253,11 +253,12 @@ GBuffer* GBuffer::load(const char* path)
 
     std::string name = BFile::Stem(path) ;
 
-    LOG(error) 
+    LOG(trace) 
           << " path "  << path 
           << " name "  << name 
            ; 
-              
+     // GMeshLib loads 3 buffers for every lvIdx (248 for DYB)           
+  
 
     std::vector<T> vdata ;
     int numItems ; 

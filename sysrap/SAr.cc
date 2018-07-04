@@ -7,6 +7,9 @@
 
 #include "SAr.hh"
 
+SAr* SAr::Instance = NULL ; 
+
+
 SAr::SAr( int argc_ , char** argv_ , const char* envvar, char delim ) 
     :
     _argc( argc_ ),
@@ -22,6 +25,13 @@ SAr::SAr( int argc_ , char** argv_ , const char* envvar, char delim )
         assert( argc_ < 100 && "argc_ sanity check " );
         for(int i=0 ; i < argc_ ; i++ ) _argv[i] = strdup(argv_[i]) ; 
     }
+
+
+    if(Instance)
+        std::cout << "SAr::SAr replacing Instance " << std::endl ; 
+
+    Instance = this ; 
+
     //dump();
 }
 

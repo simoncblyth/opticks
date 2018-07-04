@@ -3,6 +3,8 @@
 #include <vector>
 
 
+#include "SAr.hh"
+#include "BStr.hh"
 #include "NGLM.hpp"
 #include "OpticksCfg.hh"
 #include "Opticks.hh"
@@ -94,7 +96,7 @@ OpticksCfg<Listener>::OpticksCfg(const char* name, Listener* listener, bool live
        m_lod(0),
        m_target(0),
        m_alignlevel(0),
-       m_gpumonpath("$TMP/GPUMonPath.npy")
+       m_gpumonpath(BStr::concat("$TMP/",SAr::Instance->exename(),"_GPUMon.npy"))
 {   
    init();  
    m_listener->setCfg(this); 
