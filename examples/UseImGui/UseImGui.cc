@@ -2,8 +2,6 @@
 #include <ImGui/imgui.h>
 
 
-
-
 int main()
 {
     float vx = 1.f ; 
