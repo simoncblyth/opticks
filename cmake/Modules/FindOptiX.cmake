@@ -60,15 +60,19 @@ OPTIX_find_api_library(optix 1)
 OPTIX_find_api_library(optixu 1)
 OPTIX_find_api_library(optix_prime 1)
 
+
 # Include
 find_path(OptiX_INCLUDE
   NAMES optix.h
   PATHS "${OptiX_INSTALL_DIR}/include"
   NO_DEFAULT_PATH
   )
+
+
 find_path(OptiX_INCLUDE
   NAMES optix.h
   )
+
 
 # Check to make sure we found what we were looking for
 function(OptiX_report_error error_message required)

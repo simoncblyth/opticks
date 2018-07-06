@@ -26,8 +26,8 @@ echo_target_std(Opticks::${dep})
 #set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
 
 add_executable(${name} ${name}.cc)
-
 target_link_libraries( ${name} PUBLIC Opticks::${dep})
+
 
 install(TARGETS ${name} DESTINATION lib)
 

@@ -13,6 +13,15 @@ A lower level pkg that BoostRap is required
 as nvcc, the CUDA compiler, has trouble compiling 
 some Boost headers.
 
+Linux
+-------
+
+::
+
+    yum install openssl-devel   # for openssl/md5.h 
+
+
+
 EOU
 }
 

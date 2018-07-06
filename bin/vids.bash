@@ -232,12 +232,95 @@ Performance comparisons of::
 NVIDIA Capture SDK (formerly GRID)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+
+* https://developer.download.nvidia.com/designworks/capture-sdk/docs/7.0/NVIDIA-Capture-SDK-FAQ.pdf
+* https://developer.download.nvidia.com/designworks/capture-sdk/docs/7.0/NVIDIA_Capture_SDK_7_0_Release_Notes.pdf
+
 * http://on-demand.gputechconf.com/gtc/2016/presentation/s6307-shounak-deshpande-get-to-know-the-nvidia-grid-sdk.pdf
 
 NVFBC : brute force full screen capture
 NVIFR 
    supports OpenGL/D3D APIs
    NVIFRToHWEnc internally invokes NVENC API
+
+
+
+Shadowplay Windows Only 
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* https://devtalk.nvidia.com/default/topic/1028866/opengl/opengl-and-shadowplay/
+
+
+* https://www.reddit.com/r/linux_gaming/comments/60h50n/shadowplay_on_linux/
+
+
+Shadowplay OpenGL (June 29th, 2016)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* https://www.howtogeek.com/259573/how-to-record-your-pc-gameplay-with-nvidia-shadowplay/
+
+ShadowPlay only directly supports with games that use Direct3D, and not OpenGL.
+While most games do use Direct3D, there are a few that use OpenGL instead. For
+example, DOOM, which we used as an example above, uses OpenGL, as does
+Minecraft.
+
+To record OpenGL games that don’t work with ShadowPlay, head to NVIDIA GeForce
+Experience > Preferences > ShadowPlay and activate the “Allow Desktop Capture”
+option. ShadowPlay will now be able to record your Windows desktop, including
+any OpenGL games running in a window on your desktop.
+
+Automatic background “Shadow” recording and the FPS counter don’t work in this
+mode. However, you can still start and stop manual recordings using the
+hotkeys.
+
+
+
+(May 2017) : Geforce Experience 3.6 : OpenGL and Vulkan support are finally part of the ShadowPlay package
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* https://www.anandtech.com/show/11365/nvidia-releases-geforce-experience-36-shadowplay-opengl-vulkan
+
+
+* https://www.howtogeek.com/259573/how-to-record-your-pc-gameplay-with-nvidia-shadowplay/
+
+
+* https://github.com/Toqozz/shadowplay-linux/blob/master/gloom.sh
+
+
+Shadowplay : internals (2013)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* https://www.anandtech.com/show/7492/the-geforce-gtx-780-ti-review/3
+
+On a related note, we did some digging for a technical answer for why
+Shadowplay performs as well as it does, and found our answer in an excellent
+summary of Shadowplay by Alexey Nicolaychuk, the author of RivaTuner and its
+
+* https://forums.guru3d.com/threads/msi-afterburner-3-0-0-beta-16-2013-10-25.382760/page-4#post-4687310
+* http://on-demand.gputechconf.com/gtc/2013/presentations/S3543-Accelerating-Cloud-Graphics.pdf
+
+
+derivatives (MSI Afterburner and EVGA Precision). As it turns out, although the
+NVENC video encoder plays a part in that – compressing the resulting video and
+making the resulting stream much easier to send back to the host and store –
+that’s only part of the story. The rest of Shadowplay’s low overhead comes from
+the fact that NVIDIA also has specific hardware and API support for the fast
+capture of frames built into Kepler GPUs. This functionality was originally
+intended to facilitate GRID and game streaming, which can also be utilized for
+game recording (after all, what is game recording but game streaming to a file
+instead of another client?).
+
+This functionality is exposed as Frame Buffer Capture (NVFBC) and Inband Frame
+Readback (NVIFR). NVFBC allows Shadowplay to pull finished frames straight out
+of the frame buffer directly at a low level, as opposed to having to traverse
+the graphics APIs at a high level. Meanwhile NVIFR does have operate at a
+slightly higher level to inject itself into the graphics API, but in doing so
+it gains the flexibility to capture images from render targets as opposed to
+just frame buffers. Based on what we’re seeing we believe that NVIDIA is using
+NVFBC for Shadowplay, which would be the lowest overhead option while also
+explaining why Shadowplay can only capture full screen games and not windowed
+mode games, as frame buffer capturing is only viable when a game has exclusive
+control over the frame buffer.
 
 
 EOU

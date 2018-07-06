@@ -10,8 +10,6 @@ XERCESC
 
 * XML handling package required for Geant4 GDML support
 
-
-
 FindEnvXercesC.cmake
 ----------------------
 
@@ -75,7 +73,6 @@ G4 expecting libxerces-c-3.1.dylib::
         @rpath/libG4track.dylib (compatibility version 0.0.0, current version 0.0.0)
         @rpath/libG4particles.dylib (compatibility version 0.0.0, current version 0.0.0)
 
-
 ::
 
     simon:cfg4 blyth$ port info xercesc
@@ -85,7 +82,6 @@ G4 expecting libxerces-c-3.1.dylib::
     simon:cfg4 blyth$ port info xercesc3
     xercesc3 @3.1.4 (textproc, xml, shibboleth)
     Variants:             universal
-
 
 
     simon:tests blyth$ c++ XercescCTest.cc -I/opt/local/include -L/opt/local/lib -lc++
@@ -100,8 +96,6 @@ G4 expecting libxerces-c-3.1.dylib::
     simon:tests blyth$ 
     simon:tests blyth$ pwd
     /Users/blyth/opticks/cfg4/tests
-
-
 
 
 
@@ -139,7 +133,7 @@ xercesc-library(){
       case $(uname -s) in 
            Darwin) echo $(xercesc-library-macports)  ;;
          MINGW64*) echo $(xercesc-prefix)/bin/libxerces-c-3-1.dll ;;
-                *) echo $(xercesc-prefix)/lib/libxerces-c-3-1.so  ;;
+                *) echo $(xercesc-prefix)/lib/libxerces-c-3.1.so  ;;
       esac
   fi 
 }

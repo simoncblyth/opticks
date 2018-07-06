@@ -10,6 +10,12 @@ BOOST
 * http://www.boost.org/users/history/
 
 
+Boost 1.48 Linux opticks/examples/UseUseBoost/PTreeIssue.cc
+--------------------------------------------------------------
+
+* https://stackoverflow.com/questions/47213341/does-boost-1-55-boostproperty-treeptree-compile-with-c11
+
+
 Boost on iOS : build script
 -----------------------------
 

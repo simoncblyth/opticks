@@ -1,21 +1,24 @@
 cmake_minimum_required(VERSION 3.5 FATAL_ERROR)
 # this file is copied from imgui-edir to imgui-sdir by imgui-get
 set(name ImGui)
-project(${name})
+project(${name} VERSION 0.1.0)
 include(OpticksBuildOptions)
 
-find_package(OpticksGLEW REQUIRED)
-find_package(OpticksGLFW REQUIRED)
+set(OpticksGLEW_VERBOSE ON)
+find_package(OpticksGLEW REQUIRED MODULE)
+message(STATUS "ImGui.OpticksGLEW_INCLUDE_DIR : ${OpticksGLEW_INCLUDE_DIR}")
+message(STATUS "ImGui.OpticksGLEW_LIBRARY     : ${OpticksGLEW_LIBRARY}")
 
-message("ImGui.OpticksGLEW_INCLUDE_DIRS : ${OpticksGLEW_INCLUDE_DIRS}")
-message("ImGui.OpticksGLFW_INCLUDE_DIRS : ${OpticksGLFW_INCLUDE_DIRS}")
+find_package(OpticksGLFW REQUIRED MODULE)
+message(STATUS "ImGui.OpticksGLFW_INCLUDE_DIR : ${OpticksGLFW_INCLUDE_DIR}")
+message(STATUS "ImGui.OpticksGLFW_LIBRARY     : ${OpticksGLFW_LIBRARY}")
 
 
 set(IMGUI_DEFINITIONS
 )
 
 set(LIBRARIES
-   ${OpticksGLEW_LIBRARIES} 
+   ${OpticksGLEW_LIBRARY} 
    ${OpticksGLFW_LIBRARIES}
 )
 
@@ -85,7 +88,7 @@ set(INCLUDE_DIRS
    ${CMAKE_CURRENT_BINARY_DIR}
 
    ${ImGui_SOURCE_DIR}/examples/opengl3_example
-   ${OpticksGLEW_INCLUDE_DIRS} 
+   ${OpticksGLEW_INCLUDE_DIR} 
    ${OpticksGLFW_INCLUDE_DIRS} 
 )
 

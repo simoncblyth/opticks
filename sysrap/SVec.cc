@@ -2,6 +2,7 @@
 #include <cmath>
 #include <iostream>
 #include <iomanip>
+#include <iterator>
 
 #include "SVec.hh"
 

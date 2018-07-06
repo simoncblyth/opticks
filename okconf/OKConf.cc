@@ -44,14 +44,14 @@ int OKConf::Check()
 void OKConf::Dump(const char* msg)
 {
     std::cout << msg << std::endl ; 
-    std::cout << std::setw(50) << "OKConf::OpticksInstallPrefix() " << OKConf::OpticksInstallPrefix() << std::endl ; 
-    std::cout << std::setw(50) << "OKConf::OptiXVersionInteger() "  << OKConf::OptiXVersionInteger() << std::endl ; 
-    std::cout << std::setw(50) << "OKConf::ComputeCapabilityInteger() " << OKConf::ComputeCapabilityInteger() << std::endl ; 
+    std::cout << std::setw(50) << "OKConf::CUDAVersionInteger() "      << OKConf::CUDAVersionInteger() << std::endl ; 
+    std::cout << std::setw(50) << "OKConf::OptiXVersionInteger() "     << OKConf::OptiXVersionInteger() << std::endl ; 
+    std::cout << std::setw(50) << "OKConf::ComputeCapabilityInteger() "<< OKConf::ComputeCapabilityInteger() << std::endl ; 
     std::cout << std::setw(50) << "OKConf::CUDA_NVCC_FLAGS() "         << OKConf::CUDA_NVCC_FLAGS() << std::endl ; 
     std::cout << std::setw(50) << "OKConf::CMAKE_CXX_FLAGS() "         << OKConf::CMAKE_CXX_FLAGS() << std::endl ; 
-    std::cout << std::setw(50) << "OKConf::OptiXInstallDir() "      << OKConf::OptiXInstallDir() << std::endl ; 
-    std::cout << std::setw(50) << "OKConf::Geant4VersionInteger() " << OKConf::Geant4VersionInteger() << std::endl ; 
-    std::cout << std::setw(50) << "OKConf::CUDAVersionInteger() " << OKConf::CUDAVersionInteger() << std::endl ; 
+    std::cout << std::setw(50) << "OKConf::OptiXInstallDir() "         << OKConf::OptiXInstallDir() << std::endl ; 
+    std::cout << std::setw(50) << "OKConf::Geant4VersionInteger() "    << OKConf::Geant4VersionInteger() << std::endl ; 
+    std::cout << std::setw(50) << "OKConf::OpticksInstallPrefix() "    << OKConf::OpticksInstallPrefix() << std::endl ; 
     std::cout << std::endl ; 
 }
 
@@ -126,10 +126,6 @@ const char* OKConf::CMAKE_CXX_FLAGS()
    return "MISSING" ; 
 #endif    
 }
-
-
-
-
 
 
 

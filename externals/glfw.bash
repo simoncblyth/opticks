@@ -16,6 +16,43 @@ applications and does not lay claim to the main loop.
 Version 3.1.1 released on March 19, 2015
 
 
+Linux
+-------
+
+You may need::
+
+    yum install libXrandr-devel 
+    yum install libXinerama-devel 
+    yum install libXcursor-devel 
+
+
+::
+
+	[ 16%] Building C object src/CMakeFiles/glfw.dir/glx_context.c.o
+	/home/blyth/local/opticks/externals/glfw/glfw-3.1.1/src/glx_context.c: In function ‘_glfwPlatformGetProcAddress’:
+	/home/blyth/local/opticks/externals/glfw/glfw-3.1.1/src/glx_context.c:541:5: warning: pointer targets in passing argument 2 of ‘dlsym’ differ in signedness [-Wpointer-sign]
+	     return _glfw_glXGetProcAddress((const GLubyte*) procname);
+	     ^
+	In file included from /home/blyth/local/opticks/externals/glfw/glfw-3.1.1/src/glx_context.h:41:0,
+			 from /home/blyth/local/opticks/externals/glfw/glfw-3.1.1/src/x11_platform.h:63,
+			 from /home/blyth/local/opticks/externals/glfw/glfw-3.1.1/src/internal.h:85,
+			 from /home/blyth/local/opticks/externals/glfw/glfw-3.1.1/src/glx_context.c:28:
+	/usr/include/dlfcn.h:65:14: note: expected ‘const char * __restrict__’ but argument is of type ‘const GLubyte *’
+	 extern void *dlsym (void *__restrict __handle,
+		      ^
+	[ 17%] Linking C shared library libglfw.so
+	[ 17%] Built target glfw
+	Scanning dependencies of target boing
+	[ 18%] Building C object examples/CMakeFiles/boing.dir/boing.c.o
+	[ 20%] Linking C executable boing
+	/usr/bin/ld: CMakeFiles/boing.dir/boing.c.o: undefined reference to symbol 'glClear'
+	//usr/lib64/libGL.so.1: error adding symbols: DSO missing from command line
+	collect2: error: ld returned 1 exit status
+
+
+
+
+
 Windows
 --------
 
@@ -264,6 +301,10 @@ glfw-wipe(){
 
 glfw-cmake(){
   local iwd=$PWD
+   
+  #local pref=GLVND ;  ## doesnt build : linking problem
+  local pref=LEGACY ;
+
 
   local bdir=$(glfw-bdir)
   if [ -d "$bdir" ]; then
@@ -271,7 +312,11 @@ glfw-cmake(){
   else
       mkdir -p $bdir
       glfw-bcd
-      cmake -G "$(opticks-cmake-generator)" -DBUILD_SHARED_LIBS=ON -DCMAKE_INSTALL_PREFIX=$(glfw-prefix) $(glfw-dir)
+      cmake -G "$(opticks-cmake-generator)" \
+                   -DBUILD_SHARED_LIBS=ON \
+                   -DOpenGL_GL_PREFERENCE=$pref \
+                   -DCMAKE_INSTALL_PREFIX=$(glfw-prefix) \
+                   $(glfw-dir)
   fi 
 
   cd $iwd
@@ -306,6 +351,8 @@ glfw--(){
    glfw-cmake
    glfw-make install
 }
+
+
 
 
 

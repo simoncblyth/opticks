@@ -423,12 +423,12 @@ oimplicitmesher
 odcs
 oyoctogl
 ocsgbsp
+xercesc
+g4
 EOL
 }
 
 opticks-optionals(){ cat << EOL
-xercesc
-g4
 EOL
 }
 
@@ -456,6 +456,8 @@ EON
 opticks-externals-install(){ echo $FUNCNAME ; opticks-externals | -opticks-installer ; }
 opticks-externals-url(){     echo $FUNCNAME ; opticks-externals | -opticks-url ; }
 opticks-externals-dist(){    echo $FUNCNAME ; opticks-externals | -opticks-dist ; }
+opticks-externals-dir(){     echo $FUNCNAME ; opticks-externals | -opticks-dir ; }
+opticks-externals-status(){  echo $FUNCNAME ; opticks-externals | -opticks-status ; }
 
 opticks-optionals-install(){ echo $FUNCNAME ; opticks-optionals | -opticks-installer ; }
 opticks-optionals-url(){     echo $FUNCNAME ; opticks-optionals | -opticks-url ; }
@@ -464,6 +466,20 @@ opticks-optionals-dist(){    echo $FUNCNAME ; opticks-optionals | -opticks-dist 
 opticks-possibles-install(){ echo $FUNCNAME ; opticks-possibles | -opticks-installer ; }
 opticks-possibles-url(){     echo $FUNCNAME ; opticks-possibles | -opticks-url ; }
 opticks-possibles-dist(){    echo $FUNCNAME ; opticks-possibles | -opticks-dist ; }
+
+
+# for finding system boost 
+opticks-boost-includedir(){ echo ${OPTICKS_BOOST_INCLUDEDIR:-/tmp} ; }
+opticks-boost-libdir(){     echo ${OPTICKS_BOOST_LIBDIR:-/tmp} ; }
+opticks-boost-info(){ cat << EOI
+$FUNCNAME
+===================
+
+   opticks-boost-includedir : $(opticks-boost-includedir)
+   opticks-boost-libdir     : $(opticks-boost-libdir)
+
+EOI
+}
 
 
 opticks-full()
@@ -530,6 +546,37 @@ opticks-full()
         printf "%30s :  %s \n" $ext $dist
    done
 }
+
+-opticks-dir(){
+   local ext
+   local dir
+   while read ext 
+   do
+        $ext-
+        dir=$($ext-dir 2>/dev/null)
+        printf "%30s :  %s \n" $ext $dir
+   done
+}
+-opticks-status(){
+   local ext
+   local dir
+   local iwd=$PWD 
+   while read ext 
+   do
+        $ext-
+        dir=$($ext-dir 2>/dev/null)
+        printf "\n\n%30s :  %s \n" $ext $dir
+
+        cd $dir 
+        [ -d ".hg" ]  && hg paths -v && hg status . 
+        [ -d ".git" ] && git remote -v && git status . 
+   done
+   cd $iwd
+}
+
+
+
+
 
 
 opticks-locations(){ cat << EOL

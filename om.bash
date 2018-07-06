@@ -329,7 +329,9 @@ om-conf-one()
            -DCMAKE_BUILD_TYPE=$(opticks-buildtype) \
            -DCMAKE_PREFIX_PATH=$(om-prefix)/externals \
            -DCMAKE_INSTALL_PREFIX=$(om-prefix) \
-           -DCMAKE_MODULE_PATH=$(om-home)/cmake/Modules 
+           -DCMAKE_MODULE_PATH=$(om-home)/cmake/Modules \
+           -DBOOST_INCLUDEDIR=$(opticks-boost-includedir) \
+           -DBOOST_LIBRARYDIR=$(opticks-boost-libdir)
 
         rc=$?
     fi

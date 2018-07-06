@@ -57,6 +57,28 @@ Not finding xercesc
              ^
     1 error generated.
 
+::
+
+	/opticks/externals/g4/geant4_10_02_p01/source/persistency/gdml/include -I/home/blyth/local/opticks/externals/g4/geant4_10_02_p01/source/persistency/mctruth/include  -W -Wall -pedantic -Wno-non-virtual-dtor -Wno-long-long -Wwrite-strings -Wpointer-arith -Woverloaded-virtual -Wno-variadic-macros -Wshadow -pipe -DG4USE_STD11 -O2 -g -fPIC   -std=c++11 -o CMakeFiles/G4persistency.dir/mctruth/src/G4VPHitsCollectionIO.cc.o -c /home/blyth/local/opticks/externals/g4/geant4_10_02_p01/source/persistency/mctruth/src/G4VPHitsCollectionIO.cc
+	gmake[2]: *** No rule to make target `/home/blyth/local/opticks/externals/lib/libxerces-c-3-1.so', needed by `BuildProducts/lib64/libG4persistency.so'.  Stop.
+	gmake[2]: Leaving directory `/home/blyth/local/opticks/externals/g4/geant4_10_02_p01.Debug.build'
+	gmake[1]: *** [source/persistency/CMakeFiles/G4persistency.dir/all] Error 2
+	gmake[1]: Leaving directory `/home/blyth/local/opticks/externals/g4/geant4_10_02_p01.Debug.build'
+	gmake: *** [all] Error 2
+	-bash: /home/blyth/local/opticks/externals/bin/geant4.sh: No such file or directory
+	=== g4-export-ini : writing G4 environment to /home/blyth/local/opticks/externals/config/geant4.ini
+	[blyth@localhost geant4_10_02_p01.Debug.build]$ 
+
+
+
+
+Expat
+-------
+
+::
+
+    yum install expat-devel
+
 
 
 G4 Version Macro
@@ -412,14 +434,12 @@ g4-cmake-modify(){
    cd $iwd
 }
 
-g4-cmake-modify-adopt-macports-xercesc()
+g4-cmake-modify-xercesc()
 {
    xercesc-
    g4-cmake-modify \
-      -DXERCESC_LIBRARY=$(xercesc-library-macports) \
-      -DXERCESC_INCLUDE_DIR=$(xercesc-include-dir-macports) 
-
-
+      -DXERCESC_LIBRARY=$(xercesc-library) \
+      -DXERCESC_INCLUDE_DIR=$(xercesc-include-dir) 
 }
 
 

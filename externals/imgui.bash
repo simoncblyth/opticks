@@ -376,9 +376,13 @@ imgui-get(){
        # from my fork : in order to fix the version
        git clone $(imgui-url)
 
-       imgui-fix
+       #imgui-fix
    fi 
-   cp $(imgui-edir)/CMakeLists.txt $(imgui-sdir)/
+  
+   ## cp $(imgui-edir)/CMakeLists.txt $(imgui-sdir)/
+   ## dont do this, just add it to the forked imgui 
+
+
    cd $iwd
 }
 
@@ -406,17 +410,17 @@ imgui-status(){
   cd $iwd
 }
 
-
-imgui-fix(){
-   local msg="=== $FUNCNAME :"
-   local name=imgui/examples/opengl3_example/imgui_impl_glfw_gl3.cpp
-
-   [ ! -f "$name" ] && echo $msg from pwd $(pwd) see no $name && return 
-   
-   perl -pi.orig -e 's,gl3w.h,glew.h,' $name
-
-   diff $name.orig $name
-}
+#  just make the change in the fork
+#imgui-fix(){
+#   local msg="=== $FUNCNAME :"
+#   local name=imgui/examples/opengl3_example/imgui_impl_glfw_gl3.cpp
+#
+#   [ ! -f "$name" ] && echo $msg from pwd $(pwd) see no $name && return 
+#   
+#   perl -pi.orig -e 's,gl3w.h,glew.h,' $name
+#
+#   diff $name.orig $name
+#}
 
 imgui-demo(){ vi $(imgui-dir)/imgui_demo.cpp  ; }
 
@@ -433,7 +437,12 @@ imgui-cmake(){
   imgui-bcd
 
   [ -f CMakeCache.txt ] && echo $msg already configured : imgui-configure to reconfigure  && return 
-  cmake -G "$(opticks-cmake-generator)" -DCMAKE_INSTALL_PREFIX=$(imgui-prefix) -DCMAKE_BUILD_TYPE=Debug $(imgui-sdir) 
+  cmake -G "$(opticks-cmake-generator)" \
+              -DCMAKE_INSTALL_PREFIX=$(imgui-prefix) \
+              -DCMAKE_MODULE_PATH=$(opticks-home)/cmake/Modules \
+              -DCMAKE_PREFIX_PATH=$(opticks-prefix)/externals \
+              -DCMAKE_BUILD_TYPE=Debug \
+              $(imgui-sdir) 
   cd $iwd
 }
 

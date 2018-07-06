@@ -28,8 +28,13 @@ does not work for OKConfTest ? But the above does::
 
 
 find_package(OpticksCUDA MODULE QUIET) 
+
+set(OptiX_VERBOSE YES)
 find_package(OptiX       MODULE QUIET) 
 find_package(G4          MODULE QUIET) 
+
+message(STATUS "OKCONF_OPTIX_INSTALL_DIR : ${OKCONF_OPTIX_INSTALL_DIR}")
+
 
 
 # generate define header for hardcoding in the library 

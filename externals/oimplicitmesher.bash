@@ -139,7 +139,9 @@ EOI
 oimplicitmesher-get(){
    local iwd=$PWD
    local dir=$(dirname $(oimplicitmesher-dir)) &&  mkdir -p $dir && cd $dir
-   [ ! -d implicitmesher ] && hg clone $(oimplicitmesher-url)
+   local url=$(oimplicitmesher-url)
+   local nam=$(basename $url)
+   [ ! -d $nam ] && hg clone $url
    cd $iwd
 }
 
@@ -157,6 +159,7 @@ oimplicitmesher-cmake()
 
     cmake \
        -DCMAKE_MODULE_PATH=$(opticks-home)/cmake/Modules \
+       -DCMAKE_PREFIX_PATH=$(opticks-prefix)/externals \
        -DCMAKE_BUILD_TYPE=Debug \
        -DCMAKE_INSTALL_PREFIX=$(opticks-prefix) \
        $* \

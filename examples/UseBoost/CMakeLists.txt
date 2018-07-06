@@ -32,6 +32,18 @@ target_link_libraries(${name} PUBLIC
    Boost::regex
 )
 
+
+set(example PTreeIssue)
+add_executable(${example} ${example}.cc)
+target_link_libraries( ${example} PUBLIC 
+   Boost::system
+   Boost::program_options
+   Boost::filesystem
+   Boost::regex
+)
+
+
+
 bcm_deploy(TARGETS ${name} NAMESPACE Opticks:: SKIP_HEADER_INSTALL) 
 install(FILES ${HEADERS}  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 

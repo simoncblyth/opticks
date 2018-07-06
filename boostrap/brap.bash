@@ -7,6 +7,21 @@ brap-usage(){ cat << EOU
 BoostRap
 ===========
 
+
+Linux Boost 1.48 has compilation issue for property tree
+-----------------------------------------------------------
+
+* https://stackoverflow.com/questions/47870370/compile-error-boost-property-tree-c
+* https://stackoverflow.com/questions/47213341/does-boost-1-55-boostproperty-treeptree-compile-with-c11
+
+::
+
+	/home/blyth/opticks/boostrap/BTree.cc:73:1:   required from here
+	/usr/include/boost148/boost/property_tree/detail/json_parser_read.hpp:105:17: error: no matching function for call to ‘boost::property_tree::basic_ptree<std::basic_string<char>, std::basic_string<char> >::push_back(std::pair<std::basic_string<char>, std::basic_string<char> >)’
+			 c.stack.back()->push_back(std::make_pair(c.name, Str(b, e)));
+
+
+
 Windows VS2015
 ---------------
 
