@@ -13,6 +13,39 @@ Quick migration guide for Geant4 version 10.x series
 * https://twiki.cern.ch/twiki/bin/view/Geant4/QuickMigrationGuideForGeant4V10
 
 
+data : G4NDL failed repeatedly, so copy from epsilon
+-----------------------------------------------------
+
+::
+
+    epsilon
+    /usr/local/opticks/externals/g4/geant4_10_02_p01.Debug.build/Externals
+    precise
+    /home/blyth/local/opticks/externals/g4/geant4_10_02_p01.Debug.build/Externals
+
+    epsilon:Externals blyth$ scp -r G4NDL-4.5 J:local/opticks/externals/g4/geant4_10_02_p01.Debug.build/Externals/
+
+
+
+::
+
+    epsilon:Externals blyth$ du -hs *
+     80K	G4ABLA-3.0
+     25M	G4EMLOW-6.48
+    2.1M	G4ENSDFSTATE-1.2.1
+    416M	G4NDL-4.5
+    3.1M	G4NEUTRONXS-1.4
+    5.1M	G4PII-1.3
+     52K	G4SAIDDATA-1.1
+    9.1M	PhotonEvaporation-3.2
+    8.1M	RadioactiveDecay-4.3.1
+    2.1M	RealSurface-1.0
+    epsilon:Externals blyth$ 
+
+
+
+
+
 Not finding xercesc
 --------------------
 

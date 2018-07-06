@@ -41,9 +41,6 @@ TODO: rearrange OptiX use to facilitate easier version switching
 * http://stackoverflow.com/questions/3597693/how-does-the-pimpl-idiom-reduce-dependencies
 
 
-
-
-
 OptiX Advanced Samples 
 ------------------------
 
@@ -97,6 +94,41 @@ Bound programs
 Bindless programs 
     are called via an ID obtained from the RTprogram on the host and unlike 
     bound programs do not inherit the semantic type or scope lookup of the calling program
+
+
+OptiX 5.1.0 (May 2018) Release Notes
+---------------------------------------
+
+* https://developer.download.nvidia.com/designworks/optix/secure/5.1.0/ga/OptiX_Release_Notes.pdf
+
+System Requirements (for running binaries referencing OptiX)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* Graphics Hardware : All NVIDIA GPUs of Compute Capability 3.0 (Kepler) or higher are supported. 
+* Graphics Driver:
+
+  * Windows: driver version 396.65 or later is required.
+  * Linux: driver version 390.42 or later is required.
+
+* Operating System:
+
+  * Windows 7/8.1/10 64-bit; Linux RHEL 4.8+ or Ubuntu 10.10+ 64-bit; Mac OS 10.9 or higher
+
+* CUDA Toolkit:
+
+  * It is not required to have any CUDA toolkit installed to be able to run OptiX-based applications
+
+
+Development Environment Requirements (for compiling with OptiX)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* CUDA Toolkit 7.0, or 7.5, 8.0, 9.0
+
+  OptiX 5.1 has been built with CUDA 9, but any specified toolkit should work
+  when compiling PTX for OptiX. If an application links against both the OptiX
+  library and the CUDA runtime on Linux, it is recommended to use CUDA 9.0.
+
+
 
 
 

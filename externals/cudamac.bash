@@ -11,12 +11,10 @@ Guide
 
 * http://docs.nvidia.com/cuda/cuda-installation-guide-mac-os-x/index.html
 
-
 eGPU 
 -----
 
 * https://github.com/marnovo/macOS-eGPU-CUDA-guide
-
 
 CUDA Driver 387.178
 ----------------------
@@ -26,7 +24,6 @@ CUDA Driver 387.178 and that are currently on 387.128
 
 * huh : I thought thats the one I installed (maybe because not yet rebooted?)
 * even after reboot stays the same
-  
 
 Current macOS builds installed
 --------------------------------
@@ -37,7 +34,6 @@ Current macOS builds installed
    10.9.4      13E28    /Volumes/DeltaClone
    10.13.3     17D102   /Volumes/TestHighSierra
    10.13.4     17E199   /Volumes/Epsilon  
-
 
 nvidia display driver (aka GPU driver)
 ----------------------------------------

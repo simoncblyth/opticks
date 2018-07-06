@@ -20,18 +20,15 @@ cuda uninstallers
 
 * http://docs.nvidia.com/cuda/cuda-installation-guide-mac-os-x/index.html#uninstall
 
-
 CUDA CMake
 ------------
 
 * https://devblogs.nvidia.com/parallelforall/building-cuda-applications-cmake/
 
-
 Avoid acos
 ------------
 
 * https://seblagarde.wordpress.com/2014/12/01/inverse-trigonometric-functions-gpu-optimization-for-amd-gcn-architecture/
-
 
 Capture stdout logging
 -----------------------
@@ -102,6 +99,9 @@ DOCS
 CUDA Linux
 -------------
 
+
+* https://docs.nvidia.com/cuda/cuda-installation-guide-linux/index.html
+
 * http://docs.nvidia.com/cuda/cuda-installation-guide-linux/index.html
 
 Native Linux Distribution Support 
@@ -121,9 +121,6 @@ EPEL : Extra Packages for Enterprise Linux
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * https://fedoraproject.org/wiki/EPEL
-
-
-
 
 
 CUDA Release History

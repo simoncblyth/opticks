@@ -46,6 +46,8 @@ OPTICKS_COMPUTE_CAPABILITY    opticks-;opticks-compute-capability
 OPTICKS_OPTIX_INSTALL_DIR     opticks-;opticks-optix-install-dir
 ===========================  ========================================
 
+Use the ``1_Utilities/deviceQuery`` CUDA sample to show your compute capability.
+A list is provided at https://developer.nvidia.com/cuda-gpus
 
 Opticks Installation Overview
 --------------------------------
@@ -53,7 +55,7 @@ Opticks Installation Overview
 Opticks installation requires:
 
 * bash shell and build tools such as mercurial, git, curl, etc.. 
-* recent cmake 2.8.9+
+* recent cmake 3.5+
 * Boost C++ libraries 1.59+ 
 
 * installations of pre-requisites packages, see below for notes on versions
@@ -77,7 +79,7 @@ its externals requires unix tools including:
 * curl
 * tar
 * zip
-* cmake 2.8.9+
+* cmake 3.5+
 
 CMake
 -------
@@ -85,7 +87,7 @@ CMake
 A rather recent cmake version is required. Check your version with::
 
     simon:~ blyth$ cmake --version
-    cmake version 3.4.1
+    cmake version 3.11.0
 
 Updating build tools is best done via your system package manager.  
 For example on OSX with macports update cmake with::
