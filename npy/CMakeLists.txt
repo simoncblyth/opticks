@@ -77,7 +77,7 @@ set(SOURCES
     NScan.cpp
     NScanLine.cpp
 
-    no.cpp
+    No.cpp
     NNode.cpp
     NNodeCollector.cpp
     NGrid.cpp

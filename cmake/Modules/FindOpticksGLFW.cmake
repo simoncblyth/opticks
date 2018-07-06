@@ -4,12 +4,18 @@ set(OpticksGLFW_PREFIX "${CMAKE_INSTALL_PREFIX}/externals")
 
 find_path( OpticksGLFW_INCLUDE_DIR
            NAMES GLFW/glfw3.h
-           PATHS ${OpticksGLFW_PREFIX}/include )
+           PATHS 
+              /usr/include
+              ${OpticksGLFW_PREFIX}/include 
+         )
 
 # remove glfw3 as causes to find system static lib
 find_library( OpticksGLFW_LIBRARY 
               NAMES glfw glfw3dll
-              PATHS ${OpticksGLFW_PREFIX}/lib )
+              PATHS 
+                   /usr/lib64
+                   ${OpticksGLFW_PREFIX}/lib
+              )
 
 if(OpticksGLFW_INCLUDE_DIR AND OpticksGLFW_LIBRARY)
    set(OpticksGLFW_FOUND "YES")
@@ -40,6 +46,9 @@ if(OpticksGLFW_FOUND AND NOT TARGET Opticks::OpticksGLFW)
            ${CoreFoundation_FRAMEWORK}
            ${CoreVideo_FRAMEWORK}
       )
+    else()
+       target_link_libraries(${tgt} INTERFACE GL)
+ 
     endif()
 
     set_target_properties(${tgt} PROPERTIES 

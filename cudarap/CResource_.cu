@@ -75,16 +75,16 @@ struct CResourceImp {
 
 void CResource::init()
 {
-    unsigned int flags ;
+    unsigned int flgs(0) ;
     switch(m_access)
     {
-       case RW: flags = cudaGraphicsMapFlagsNone         ;break;
-       case  R: flags = cudaGraphicsMapFlagsReadOnly     ;break;
-       case  W: flags = cudaGraphicsMapFlagsWriteDiscard ;break;
+       case RW: flgs = cudaGraphicsMapFlagsNone         ;break;
+       case  R: flgs = cudaGraphicsMapFlagsReadOnly     ;break;
+       case  W: flgs = cudaGraphicsMapFlagsWriteDiscard ;break;
     }
     //cudaStream_t stream1 ; 
     //cudaStreamCreate ( &stream1) ;
-    m_imp = new CResourceImp(m_buffer_id, flags, (cudaStream_t)0  );
+    m_imp = new CResourceImp(m_buffer_id, flgs, (cudaStream_t)0  );
 }
 
 void CResource::streamSync()

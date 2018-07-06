@@ -1,6 +1,6 @@
 #include "cuda.h"
 
-#include "OKCONF_Config.hh"
+#include "OKConf_Config.hh"
 
 #include "PLOG.hh"
 #include "SSys.hh"

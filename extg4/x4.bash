@@ -7,6 +7,45 @@ X4 Usage
 ===================
 
 
+xerces-c libicu version
+---------------------------
+
+::
+
+	[  8%] Linking CXX shared library libExtG4.so
+	[ 55%] Built target ExtG4
+	[ 57%] Linking CXX executable X4EntityTest
+	/usr/bin/ld: warning: libicui18n.so.58, needed by /home/blyth/local/opticks/externals/lib/libxerces-c-3.1.so, not found (try using -rpath or -rpath-link)
+	/usr/bin/ld: warning: libicuuc.so.58, needed by /home/blyth/local/opticks/externals/lib/libxerces-c-3.1.so, not found (try using -rpath or -rpath-link)
+	/usr/bin/ld: warning: libicudata.so.58, needed by /home/blyth/local/opticks/externals/lib/libxerces-c-3.1.so, not found (try using -rpath or -rpath-link)
+	/home/blyth/local/opticks/externals/lib/libxerces-c-3.1.so: undefined reference to `u_toupper_58'
+	/home/blyth/local/opticks/externals/lib/libxerces-c-3.1.so: undefined reference to `uset_getSerializedSet_58'
+	/home/blyth/local/opticks/externals/lib/libxerces-c-3.1.so: undefined reference to `UCNV_FROM_U_CALLBACK_SUBSTITUTE_58'
+	/home/blyth/local/opticks/externals/lib/libxerces-c-3.1.so: undefined reference to `ucnv_setFromUCallBack_58'
+	/home/blyth/local/opticks/externals/lib/libxerces-c-3.1.so: undefined reference to `uset_getSerializedRange_58'
+
+
+::
+
+	[blyth@localhost extg4]$ rpm -ql libicu
+	/usr/lib64/libicudata.so.50
+	/usr/lib64/libicudata.so.50.1.2
+	/usr/lib64/libicui18n.so.50
+	/usr/lib64/libicui18n.so.50.1.2
+	/usr/lib64/libicuio.so.50
+	/usr/lib64/libicuio.so.50.1.2
+	/usr/lib64/libicule.so.50
+	/usr/lib64/libicule.so.50.1.2
+
+
+
+Looks like the xerces-c installed by xercesc- is expecting a newer libicu than available, 
+perhaps use system xerces-c for compatibility.
+
+Reproduce it with opticks/examples/UseOpticksXercesC
+
+
+
 EOU
 }
 

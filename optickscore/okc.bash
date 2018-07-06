@@ -9,6 +9,28 @@ Brief History
 ==============
 
 
+
+When Meet a New OptiX version
+--------------------------------
+
+::
+
+	[ 51%] Linking CXX executable OpticksEventDumpTest
+	../libOpticksCore.so: undefined reference to `OpticksBufferSpec::source_compute_'
+	../libOpticksCore.so: undefined reference to `OpticksBufferSpec::genstep_interop_'
+	../libOpticksCore.so: undefined reference to `OpticksBufferSpec::source_interop_'
+	../libOpticksCore.so: undefined reference to `OpticksBufferSpec::photon_interop_'
+	../libOpticksCore.so: undefined reference to `OpticksBufferSpec::genstep_compute_'
+	../libOpticksCore.so: undefined reference to `OpticksBufferSpec::photon_compute_'
+	collect2: error: ld returned 1 exit status
+	gmake[2]: *** [tests/OpticksEventDumpTest] Error 1
+	gmake[1]: *** [tests/CMakeFiles/OpticksEventDumpTest.dir/all] Error 2
+	gmake: *** [all] Error 2
+	=== om-one-or-all install : non-zero rc 2
+	[blyth@localhost optickscore]$ 
+
+
+
 macOS link warning from libOpticksCore.dylib
 ----------------------------------------------
 

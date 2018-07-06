@@ -760,7 +760,7 @@ void X4Solid::convertPolycone()
     std::set<double> Rmin ; 
     unsigned nz = ph->Num_z_planes ; 
 
-    for (int i=0; i < nz ; i++) 
+    for (int i=0; i < int(nz) ; i++) 
     {
         zp[i] = { ph->Rmin[i], ph->Rmax[i], ph->Z_values[i] } ;  
         Rmin.insert( ph->Rmin[i] );

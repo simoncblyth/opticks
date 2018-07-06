@@ -5,6 +5,7 @@ include(OpticksBuildOptions)
 
 set(ImGui_VERBOSE ON)
 find_package(ImGui REQUIRED MODULE)   
+#find_package(OpticksGLFW REQUIRED MODULE)   
 
 message(STATUS "ImGui_MODULE  : ${ImGui_MODULE} ")
 
@@ -12,6 +13,11 @@ message(STATUS "ImGui_MODULE  : ${ImGui_MODULE} ")
 echo_target_std(Opticks::ImGui)
 
 add_executable(${name} ${name}.cc)
-target_link_libraries(${name} PUBLIC Opticks::ImGui )
+target_link_libraries(${name} PUBLIC 
+    Opticks::ImGui 
+ )
+#Opticks::OpticksGLFW
+
+
 install(TARGETS ${name}  DESTINATION lib)
 

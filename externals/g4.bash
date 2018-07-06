@@ -442,6 +442,15 @@ g4-cmake-modify-xercesc()
       -DXERCESC_INCLUDE_DIR=$(xercesc-include-dir) 
 }
 
+g4-cmake-modify-xercesc-system()
+{
+   g4-cmake-modify \
+      -DXERCESC_LIBRARY=$(xercesc-library) \
+      -DXERCESC_INCLUDE_DIR=$(xercesc-include-dir) 
+}
+
+
+
 
 
 g4-build(){

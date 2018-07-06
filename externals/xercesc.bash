@@ -122,7 +122,10 @@ xercesc-edit(){ vi $(opticks-home)/cmake/Modules/FindEnvXercesC.cmake ; }
 xercesc-library-macports(){     echo /opt/local/lib/libxerces-c.dylib ; }
 xercesc-include-dir-macports(){ echo /opt/local/include ; }
 
-xercesc-library(){  
+xercesc-library(){     echo ${OPTICKS_XERCESC_LIBRARY:-$(xercesc-library-)} ; }
+xercesc-include-dir(){ echo ${OPTICKS_XERCESC_INCLUDE_DIR:-$(xercesc-include-dir-)} ; }
+
+xercesc-library-(){  
 
   if [ "$NODE_TAG" == "MGB" ]; then
       ome-
@@ -138,7 +141,7 @@ xercesc-library(){
   fi 
 }
 
-xercesc-include-dir(){ 
+xercesc-include-dir-(){ 
   if [ "$NODE_TAG" == "MGB" ]; then
       ome-
       ome-xercesc-include
@@ -170,6 +173,13 @@ xercesc-info(){ cat << EOI
 $FUNCNAME
 ==============
 
+USED BY CMAKE, FOR EITHER SYSTEM OR MANULLY INSTALLED XERCES-C
+
+   xercesc-library : $(xercesc-library)
+   xercesc-include-dir : $(xercesc-include-dir)
+
+ONLY RELEVANT WHEN BUILDING MANUALLY 
+
    xercesc-url    : $(xercesc-url)
    xercesc-dist   : $(xercesc-dist)
    xercesc-name   : $(xercesc-name)
@@ -178,8 +188,7 @@ $FUNCNAME
    xercesc-bdir   : $(xercesc-bdir)
 
    xercesc-prefix  : $(xercesc-prefix)
-   xercesc-library : $(xercesc-library)
-   xercesc-include-dir : $(xercesc-include-dir)
+
 
    xercesc-library-macports : $(xercesc-library-macports)
    xercesc-include-dir-macports : $(xercesc-include-dir-macports)

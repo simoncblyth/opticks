@@ -6,28 +6,27 @@ usage(){ cat << EOU
 EOU
 }
 
-
 opticks-
-
-home=$(opticks-home)
-prefix=$(opticks-prefix)
 
 sdir=$(pwd)
 name=$(basename $sdir) 
 bdir=/tmp/$USER/$name/build 
-idir=/tmp/$USER/$name/install
 
 rm   -rf $bdir
 mkdir -p $bdir 
 cd $bdir 
 pwd 
 
-cmake $sdir -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_MODULE_PATH=$home/cmake/Modules
+cmake $sdir \
+     -DCMAKE_BUILD_TYPE=Debug \
+     -DCMAKE_INSTALL_PREFIX=$(opticks-prefix) \
+     -DCMAKE_MODULE_PATH=$(opticks-home)/cmake/Modules \
+     -DCMAKE_PREFIX_PATH=$(opticks-prefix)/externals 
 
 make
 make install   
 
-exe=$prefix/lib/$name
+exe=$(opticks-prefix)/lib/$name
 
 
 if [ -f "$exe" ]; then

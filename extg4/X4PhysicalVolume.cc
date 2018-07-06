@@ -487,7 +487,7 @@ GVolume* X4PhysicalVolume::convertNode(const G4VPhysicalVolume* const pv, GVolum
                << " soName " << soName
                ;
 
-     assert( ndIdx == m_ndCount ); 
+     assert( ndIdx == int(m_ndCount) ); 
      m_ndCount += 1 ; 
 
      const nmat4triple* gtriple = nxform<YOG::Nd>::make_global_transform(nd) ; 
@@ -538,7 +538,7 @@ GVolume* X4PhysicalVolume::convertNode(const G4VPhysicalVolume* const pv, GVolum
 
      assert( mh->csgnode ); 
 
-     unsigned csgdepth = mh->csgnode->maxdepth();  
+     //unsigned csgdepth = mh->csgnode->maxdepth();  
      //unsigned lvr_lvIdx = csgdepth ; // misuse lvr: selection  (gives a black render)
      unsigned lvr_lvIdx = lvIdx ; 
 

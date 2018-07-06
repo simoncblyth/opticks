@@ -1,6 +1,7 @@
 #pragma once
 
 #include "NPY_API_EXPORT.hh"
+#include <vector>
 #include <string>
 #include <glm/fwd.hpp>
 struct nd ; 

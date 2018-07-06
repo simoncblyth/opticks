@@ -1,5 +1,8 @@
 cmake_minimum_required(VERSION 3.5 FATAL_ERROR)
 # this file is copied from imgui-edir to imgui-sdir by imgui-get
+#  NO LONGER USED ? : NOW PUT THIS INTO THE FORK ? 
+
+
 set(name ImGui)
 project(${name} VERSION 0.1.0)
 include(OpticksBuildOptions)
@@ -128,6 +131,10 @@ if(WIN32)
              ${CMAKE_CURRENT_BINARY_DIR}/IMGUI_EXPORTS.h
       )
 endif(WIN32)
+
+## generate export API header ?? 
+## was this my first foray into windows visiblity ? 
+
 
 target_link_libraries(${name} ${LIBRARIES})
 

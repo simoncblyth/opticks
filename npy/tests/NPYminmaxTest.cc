@@ -1,5 +1,6 @@
 
 #include <iostream>
+#include <iterator>
 
 #include "OPTICKS_LOG.hh"
 #include "NPY.hpp"

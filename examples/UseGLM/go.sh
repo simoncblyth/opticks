@@ -16,23 +16,22 @@ Everything is done on every invokation.
 EOU
 }
 
-
 opticks-
-
-home=$(opticks-home)
-prefix=$(opticks-prefix)
 
 sdir=$(pwd)
 name=$(basename $sdir) 
 bdir=/tmp/$USER/$name/build 
-idir=/tmp/$USER/$name/install
 
 rm   -rf $bdir
 mkdir -p $bdir 
 cd $bdir 
 pwd 
 
-cmake $sdir -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_MODULE_PATH=$home/cmake/Modules
+cmake $sdir \
+      -DCMAKE_BUILD_TYPE=Debug \
+      -DCMAKE_INSTALL_PREFIX=$(opticks-prefix) \
+      -DCMAKE_MODULE_PATH=$(opticks-home)/cmake/Modules \
+      -DCMAKE_PREFIX_PATH=$(opticks-prefix)/externals
 
 # CONFIG mode find_package rules allow the BCM machinery in  <prefix>/share/bcm/cmake/ 
 # to be found without assistance (ie no need to modify CMAKE_MODULE_PATH)

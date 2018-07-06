@@ -33,7 +33,7 @@ target_link_libraries(${name} PUBLIC
 )
 
 
-set(example PTreeIssue)
+set(example PTreeMinimal)
 add_executable(${example} ${example}.cc)
 target_link_libraries( ${example} PUBLIC 
    Boost::system

@@ -1,3 +1,6 @@
+#include <cstring>
+#include <algorithm>
+
 #include "X4.hh"
 #include "BStr.hh"
 #include "BFile.hh"

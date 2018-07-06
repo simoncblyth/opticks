@@ -5,7 +5,9 @@ include(OpticksBuildOptions)
 
 find_package(ImGui       REQUIRED MODULE)
 find_package(OpticksGLEW REQUIRED MODULE)
-find_package(OpticksGLFW REQUIRED MODULE)
+
+#find_package(OpticksGLFW REQUIRED MODULE)
+# should come along with ImGui ?
 
 find_package(OpticksGeo  REQUIRED CONFIG)
 
@@ -101,14 +103,20 @@ SET(HEADERS
 add_library( ${name}  SHARED ${SOURCES})
 target_link_libraries( ${name} PUBLIC 
     Opticks::OpticksGLEW
-    Opticks::OpticksGLFW
     Opticks::ImGui
     Opticks::OpticksGeo
 )
 
+#    Opticks::OpticksGLFW
+
+
+
 if(WIN32)
-   target_link_libraries( ${name} opengl32.lib )
-endif(WIN32)
+   target_link_libraries( ${name} PUBLIC opengl32.lib )
+endif()
+if(UNIX AND NOT APPLE)
+   target_link_libraries( ${name} PUBLIC GL )
+endif()
 
 
 target_include_directories( ${name} PUBLIC 
@@ -120,6 +128,7 @@ target_compile_definitions( ${name} PUBLIC GUI_ OPTICKS_OGLRAP )
 
 install(FILES ${HEADERS}  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 install(DIRECTORY gl/ DESTINATION gl)
+
 bcm_deploy(TARGETS ${name} NAMESPACE Opticks:: SKIP_HEADER_INSTALL)
 
 add_subdirectory(tests)

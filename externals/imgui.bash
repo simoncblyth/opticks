@@ -16,7 +16,6 @@ that allows usage of env/cmake/Modules/FindImGui.cmake
 This is tested by imguitest-
 
 
-
 CMake issue reported by Axel 
 -------------------------------
 
@@ -41,10 +40,8 @@ This is due to dirty OPTICKS_HOME envvar dependency in the CMakeLists.txt::
      10 include(EnvBuildOptions)
 
 
-
 Other issues
 ---------------
-
 
 Fail to find 
 
@@ -69,8 +66,6 @@ Manual fixup in standard installation, for new layout motivated by greenfield fi
     simon:include blyth$ mkdir ImGui
     simon:include blyth$ mv imconfig.h imgui.h imgui_impl_glfw_gl3.h ImGui/
     simon:include blyth$ 
-
-
 
 
 ::
@@ -373,7 +368,7 @@ imgui-get(){
    local dir=$(dirname $(imgui-dir)) &&  mkdir -p $dir && cd $dir
    if [ ! -d "imgui" ]; then 
 
-       # from my fork : in order to fix the version
+       # from my fork : in order to pin the version
        git clone $(imgui-url)
 
        #imgui-fix
@@ -481,7 +476,5 @@ imgui--(){
 
   cd $iwd
 }
-
-
 
 

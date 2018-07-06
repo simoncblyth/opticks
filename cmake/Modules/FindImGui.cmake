@@ -12,6 +12,9 @@ find_library( ImGui_LIBRARY
               PATHS ${ImGui_PREFIX}/lib )
 
 
+find_package(OpticksGLFW REQUIRED MODULE)
+
+
 if(ImGui_INCLUDE_DIR AND ImGui_LIBRARY)
    set(ImGui_FOUND "YES")
 else()
@@ -24,6 +27,11 @@ if(ImGui_FOUND AND NOT TARGET ${tgt})
 
     add_library(${tgt} UNKNOWN IMPORTED) 
     set_target_properties(${tgt} PROPERTIES IMPORTED_LOCATION "${ImGui_LIBRARY}")
+
+    if(APPLE)
+    else()
+       target_link_libraries(${tgt} INTERFACE GL Opticks::OpticksGLFW)
+    endif()
 
     set_target_properties(${tgt} PROPERTIES 
         INTERFACE_INCLUDE_DIRECTORIES "${ImGui_INCLUDE_DIR}" 

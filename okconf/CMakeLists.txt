@@ -26,7 +26,6 @@ does not work for OKConfTest ? But the above does::
 
 #]=]
 
-
 find_package(OpticksCUDA MODULE QUIET) 
 
 set(OptiX_VERBOSE YES)
@@ -34,8 +33,6 @@ find_package(OptiX       MODULE QUIET)
 find_package(G4          MODULE QUIET) 
 
 message(STATUS "OKCONF_OPTIX_INSTALL_DIR : ${OKCONF_OPTIX_INSTALL_DIR}")
-
-
 
 # generate define header for hardcoding in the library 
 
@@ -54,8 +51,6 @@ set(OKCONF_CMAKE_CXX_FLAGS     "${CMAKE_CXX_FLAGS}")
 # TODO:get rid of the below : adopt the above names
 set(OXRAP_OPTIX_VERSION   "${OptiX_VERSION_INTEGER}")
 set(CFG4_G4VERSION_NUMBER "${G4_VERSION_INTEGER}")
-
-
 
 set(OKConf_GENERATED_HEADER  "OKConf_Config.hh")
 

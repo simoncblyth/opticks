@@ -15,7 +15,6 @@ applications and does not lay claim to the main loop.
 
 Version 3.1.1 released on March 19, 2015
 
-
 Linux
 -------
 
@@ -250,6 +249,16 @@ EOU
 
 
 glfw-env(){      opticks- ;  }
+
+
+glfw-info(){ cat << EOI
+
+   glfw-dir : $(glfw-dir)
+
+
+EOI
+}
+
 
 glfw-dir(){  echo $(opticks-prefix)/externals/glfw/$(glfw-name) ; }
 glfw-bdir(){ echo $(glfw-dir).build ; }

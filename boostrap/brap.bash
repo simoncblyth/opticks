@@ -8,6 +8,10 @@ BoostRap
 ===========
 
 
+
+Linux Boost 1.53 looking OK
+------------------------------
+
 Linux Boost 1.48 has compilation issue for property tree
 -----------------------------------------------------------
 

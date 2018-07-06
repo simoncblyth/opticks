@@ -28,6 +28,58 @@ Instancing Refs
 
 
 
+
+CentOS7 GLEQ
+---------------
+
+::
+
+	[ 71%] Building CXX object CMakeFiles/OGLRap.dir/OpticksViz.cc.o
+	In file included from /home/blyth/opticks/oglrap/GLEQ.hh:7:0,
+		 from /home/blyth/opticks/oglrap/Frame.hh:9,
+		 from /home/blyth/opticks/oglrap/OpticksViz.cc:43:
+	/home/blyth/opticks/oglrap/gleq.h:37:6: warning: #warning "This version of GLEQ does not support events added after GLFW 3.1" [-Wcpp]
+	#warning "This version of GLEQ does not support events added after GLFW 3.1"
+	^
+
+
+Centos7 Imgui linking
+----------------------
+
+
+::
+
+        om-install
+
+	[ 74%] Linking CXX shared library libOGLRap.so
+	[ 74%] Built target OGLRap
+	Scanning dependencies of target ProgTest
+	[ 76%] Building CXX object tests/CMakeFiles/ProgTest.dir/ProgTest.cc.o
+	[ 79%] Linking CXX executable ProgTest
+	../libOGLRap.so: undefined reference to `ImGui::SliderFloat(char const*, float*, float, float, char const*, float)'
+	../libOGLRap.so: undefined reference to `ImGui::Checkbox(char const*, bool*)'
+	../libOGLRap.so: undefined reference to `ImGui::ShowTestWindow(bool*)'
+	../libOGLRap.so: undefined reference to `ImGui::SliderInt(char const*, int*, int, int, char const*)'
+	../libOGLRap.so: undefined reference to `ImGui::Text(char const*, ...)'
+	../libOGLRap.so: undefined reference to `ImGui::Render()'
+	../libOGLRap.so: undefined reference to `ImGui::TextColored(ImVec4 const&, char const*, ...)'
+	../libOGLRap.so: undefined reference to `ImGui::GetIO()'
+	../libOGLRap.so: undefined reference to `ImGui::PushItemWidth(float)'
+
+
+opticks/examples/UseImGui::
+
+	[ 50%] Linking CXX executable UseImGui
+	/home/blyth/local/opticks/externals/lib/libImGui.so: undefined reference to `glfwSetScrollCallback'
+	/home/blyth/local/opticks/externals/lib/libImGui.so: undefined reference to `glfwGetTime'
+	/home/blyth/local/opticks/externals/lib/libImGui.so: undefined reference to `glfwSetKeyCallback'
+	/home/blyth/local/opticks/externals/lib/libImGui.so: undefined reference to `glfwSetClipboardString'
+	/home/blyth/local/opticks/externals/lib/libImGui.so: undefined reference to `glfwGetWindowSize'
+
+
+
+
+
 FrameTest cleanup error that hung system, forcing reboot
 ------------------------------------------------------------
 
@@ -415,5 +467,103 @@ oglrap-instcull()
 
 }
 
+oglrap-link-issue()
+{
+
+cd /home/blyth/local/opticks/build/oglrap/tests 
+/usr/bin/c++ \
+       -Wall -Wno-unused-function -Wno-comment -Wno-deprecated -Wno-shadow -g  \
+       CMakeFiles/ProgTest.dir/ProgTest.cc.o  -o ProgTest \
+        ../libOGLRap.so  \
+        /home/blyth/local/opticks/externals/lib/libImGui.so  \
+        /home/blyth/local/opticks/lib64/libSysRap.so \
 
 
+    cat << EOL > /dev/null
+       -fvisibility=hidden -fvisibility-inlines-hidden \
+        -Wl,-rpath,/home/blyth/local/opticks/build/oglrap:/home/blyth/local/opticks/externals/lib64:/home/blyth/local/opticks/externals/lib:/home/blyth/local/opticks/lib64: \
+        -lGL 
+        /usr/lib64/libglfw.so  \
+        /home/blyth/local/opticks/externals/lib64/libGLEW.so  \
+
+     /usr/lib64/libboost_program_options-mt.so \
+     /usr/lib64/libboost_filesystem-mt.so \
+     /usr/lib64/libboost_system-mt.so \
+     /usr/lib64/libboost_regex-mt.so \
+       -lssl -lcrypto \
+
+EOL
+
+}
+
+oglrap-link-issue-notes(){ cat << EON
+
+::
+
+	[blyth@localhost tests]$ oglrap-link-issue
+	../libOGLRap.so: undefined reference to `ImGui::SliderFloat(char const*, float*, float, float, char const*, float)'
+	../libOGLRap.so: undefined reference to `ImGui::Checkbox(char const*, bool*)'
+	../libOGLRap.so: undefined reference to `ImGui::ShowTestWindow(bool*)'
+	../libOGLRap.so: undefined reference to `ImGui::SliderInt(char const*, int*, int, int, char const*)'
+	../libOGLRap.so: undefined reference to `ImGui::Text(char const*, ...)'
+	../libOGLRap.so: undefined reference to `ImGui::Render()'
+	../libOGLRap.so: undefined reference to `ImGui::TextColored(ImVec4 const&, char const*, ...)'
+	../libOGLRap.so: undefined reference to `ImGui::GetIO()'
+	../libOGLRap.so: undefined reference to `ImGui::PushItemWidth(float)'
+	../libOGLRap.so: undefined reference to `ImGui::End()'
+	../libOGLRap.so: undefined reference to `ImGui_ImplGlfwGL3_NewFrame()'
+	../libOGLRap.so: undefined reference to `ImGui::SetWindowFontScale(float)'
+	../libOGLRap.so: undefined reference to `ImGui::RadioButton(char const*, int*, int)'
+	../libOGLRap.so: undefined reference to `ImGui::Button(char const*, ImVec2 const&)'
+	../libOGLRap.so: undefined reference to `ImGui::SliderFloat3(char const*, float*, float, float, char const*, float)'
+	../libOGLRap.so: undefined reference to `ImGui::Begin(char const*, bool*, ImVec2 const&, float, int)'
+	../libOGLRap.so: undefined reference to `ImGui_ImplGlfwGL3_Shutdown()'
+	../libOGLRap.so: undefined reference to `ImGui::SetNextWindowPos(ImVec2 const&, int)'
+	../libOGLRap.so: undefined reference to `ImGui_ImplGlfwGL3_Init(GLFWwindow*, bool)'
+	../libOGLRap.so: undefined reference to `ImGui::Spacing()'
+	../libOGLRap.so: undefined reference to `ImGui::CollapsingHeader(char const*, char const*, bool, bool)'
+	../libOGLRap.so: undefined reference to `ImGui::SameLine(float, float)'
+	collect2: error: ld returned 1 exit status
+
+	[blyth@localhost tests]$ nm ../libOGLRap.so | c++filt | grep ImGui
+			 U ImGui_ImplGlfwGL3_Init(GLFWwindow*, bool)
+			 U ImGui_ImplGlfwGL3_NewFrame()
+			 U ImGui_ImplGlfwGL3_Shutdown()
+			 U ImGui::RadioButton(char const*, int*, int)
+			 U ImGui::SliderFloat(char const*, float*, float, float, char const*, float)
+			 U ImGui::TextColored(ImVec4 const&, char const*, ...)
+			 U ImGui::SliderFloat3(char const*, float*, float, float, char const*, float)
+			 U ImGui::PushItemWidth(float)
+			 U ImGui::ShowTestWindow(bool*)
+			 U ImGui::CollapsingHeader(char const*, char const*, bool, bool)
+			 U ImGui::SetNextWindowPos(ImVec2 const&, int)
+			 U ImGui::SetWindowFontScale(float)
+			 U ImGui::End()
+			 U ImGui::Text(char const*, ...)
+			 U ImGui::Begin(char const*, bool*, ImVec2 const&, float, int)
+			 U ImGui::GetIO()
+			 U ImGui::Button(char const*, ImVec2 const&)
+			 U ImGui::Render()
+			 U ImGui::Spacing()
+			 U ImGui::Checkbox(char const*, bool*)
+			 U ImGui::SameLine(float, float)
+			 U ImGui::SliderInt(char const*, int*, int, int, char const*)
+	[blyth@localhost tests]$ 
+
+
+	[blyth@localhost tests]$ nm /home/blyth/local/opticks/externals/lib/libImGui.so | c++filt | grep SliderFloat 
+	0000000000019f41 t ImGui::SliderFloat(char const*, float*, float, float, char const*, float)
+	000000000001aba8 t ImGui::SliderFloat2(char const*, float*, float, float, char const*, float)
+	000000000001ac07 t ImGui::SliderFloat3(char const*, float*, float, float, char const*, float)
+	000000000001ac66 t ImGui::SliderFloat4(char const*, float*, float, float, char const*, float)
+	000000000001aa5c t ImGui::SliderFloatN(char const*, float*, int, float, float, char const*, float)
+	000000000001a47d t ImGui::VSliderFloat(char const*, ImVec2 const&, float*, float, float, char const*, float)
+
+	[blyth@localhost tests]$ nm /home/blyth/local/opticks/externals/lib/libImGui.so | c++filt | grep Checkbox
+	000000000001dc95 t ImGui::CheckboxFlags(char const*, unsigned int*, unsigned int)
+	000000000001d513 t ImGui::Checkbox(char const*, bool*)
+
+
+
+EON
+}

@@ -137,15 +137,10 @@ glew-install-win(){
    cd $iwd
 }
 
-
-
 glew--() {
     glew-get
     glew-make install
 }
-
-
-
 
 glew-cmake-not-working(){
    local iwd=$PWD
@@ -161,5 +156,4 @@ glew-make-not-working(){
    make $*
    cd $iwd
 }
-
 

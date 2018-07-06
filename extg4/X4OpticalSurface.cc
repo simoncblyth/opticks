@@ -37,7 +37,7 @@ GOpticalSurface* X4OpticalSurface::Convert( const G4OpticalSurface* const surf )
 
     G4OpticalSurfaceFinish finish = surf->GetFinish(); 
 
-    bool specular = false ; 
+    bool specular = false ;    // HUH: not used, TODO:check cfg4 
     switch(finish)
     {
         case polished              :  specular = true ; break ; // smooth perfectly polished surface

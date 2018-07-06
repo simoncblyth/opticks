@@ -1,7 +1,7 @@
 #include <xercesc/parsers/XercesDOMParser.hpp>
-//#include <xercesc/parsers/SAXParser.hpp>
 
-int main()
+int main(int argc, char** argv)
 {
     return 0 ; 
 }
+

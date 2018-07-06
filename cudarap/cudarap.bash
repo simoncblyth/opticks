@@ -10,6 +10,34 @@ CUDAWrap
 
 
 
+
+CentOS7
+----------
+
+::
+
+	[blyth@localhost cudarap]$ om--
+	=== om-make-one : cudarap         /home/blyth/opticks/cudarap                                  /home/blyth/local/opticks/build/cudarap                      
+	[  5%] Building NVCC (Device) object CMakeFiles/CUDARap.dir/CUDARap_generated_CResource_.cu.o
+	nvcc fatal   : Unsupported gpu architecture 'compute_'
+	CMake Error at CUDARap_generated_CResource_.cu.o.Debug.cmake:219 (message):
+	  Error generating
+	  /home/blyth/local/opticks/build/cudarap/CMakeFiles/CUDARap.dir//./CUDARap_generated_CResource_.cu.o
+
+
+	gmake[2]: *** [CMakeFiles/CUDARap.dir/CUDARap_generated_CResource_.cu.o] Error 1
+	gmake[1]: *** [CMakeFiles/CUDARap.dir/all] Error 2
+	gmake: *** [all] Error 2
+	=== om-one-or-all make : non-zero rc 2
+	[blyth@localhost cudarap]$ 
+	[blyth@localhost cudarap]$ 
+	[blyth@localhost cudarap]$ opticks-compute-capability
+	opticks-compute-capability   opticks-compute-capability-  
+	[blyth@localhost cudarap]$ opticks-compute-capability
+	70
+
+
+
 High Sierra Error 
 --------------------
 
