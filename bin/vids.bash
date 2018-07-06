@@ -51,6 +51,13 @@ ggv-hd-capture succeeds to create::
    Data rate      25.92 Mbit/s
 
 
+DELL S2716DG Monitor
+----------------------
+
+* QHD resolution (2560 x 1440)
+
+
+
 Observations 
 -----------------
 

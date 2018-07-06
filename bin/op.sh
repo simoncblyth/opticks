@@ -635,7 +635,8 @@ op-binary-setup()
 
     local presentation=""
     case $(uname) in
-       Linux) presentation="--size 1920,1080,1 " ;;
+       #Linux) presentation="--size 1920,1080,1 " ;;
+       Linux) presentation="--size 2560,1440,1 " ;;
       MINGW*) presentation="--size 1920,1080,1 --fullscreen" ;;
            *) presentation="" ;;
     esac

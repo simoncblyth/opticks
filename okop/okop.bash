@@ -356,5 +356,3 @@ okop-snap-gui()
 }
 
 
-
-
