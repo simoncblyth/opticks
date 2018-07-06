@@ -147,7 +147,9 @@ void npart::check_bb_zero(OpticksCSG_t typecode) const
 
    if( typecode == CSG_ZSPHERE )
    {
-       assert( q2.u.x == 3 );   // <-- no nolonger used endcap flags, but keeping it for matching 
+       if(q2.u.x != 3)
+           LOG(fatal) << "check_bb_zero endcap flags expected 3 (ignored anyhow) " << q2.u.x ;
+       //assert( q2.u.x == 3 );   // <-- no nolonger used endcap flags, but keeping it for matching 
    }
    else
    {

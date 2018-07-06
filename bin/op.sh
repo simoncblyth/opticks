@@ -840,7 +840,9 @@ else
        >&2 echo proceeding.. : $runline
    fi
 
+   echo $runline
    eval $runline
+
    RC=$?
    echo $0 RC $RC
    exit $RC

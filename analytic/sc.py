@@ -514,7 +514,7 @@ def gdml2gltf_main( args ):
     gdmlpath = os.environ['OPTICKS_GDMLPATH']   
     gltfpath = os.environ['OPTICKS_GLTFPATH']  
 
-    assert gltfpath.startswith("/tmp") 
+    #assert gltfpath.startswith("/tmp") 
 
     if gltfpath.startswith("/tmp"):
         pass
@@ -522,6 +522,11 @@ def gdml2gltf_main( args ):
         assert gdmlpath.replace('.gdml','.gltf') == gltfpath 
         assert gltfpath.replace('.gltf','.gdml') == gdmlpath 
     pass
+
+    log.info(" gdmlpath %s " % gdmlpath )
+    log.info(" gltfpath %s " % gltfpath )
+
+    #return 1
 
     log.info("start GDML parse")
     gdml = GDML.parse(gdmlpath)
