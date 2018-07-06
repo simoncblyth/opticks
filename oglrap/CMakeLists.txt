@@ -6,7 +6,7 @@ include(OpticksBuildOptions)
 find_package(ImGui       REQUIRED MODULE)
 find_package(OpticksGLEW REQUIRED MODULE)
 
-#find_package(OpticksGLFW REQUIRED MODULE)
+find_package(OpticksGLFW REQUIRED MODULE)
 # should come along with ImGui ?
 
 find_package(OpticksGeo  REQUIRED CONFIG)
@@ -105,9 +105,9 @@ target_link_libraries( ${name} PUBLIC
     Opticks::OpticksGLEW
     Opticks::ImGui
     Opticks::OpticksGeo
+    Opticks::OpticksGLFW
 )
 
-#    Opticks::OpticksGLFW
 
 
 
