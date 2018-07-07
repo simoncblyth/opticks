@@ -464,11 +464,18 @@ void Opticks::init()
     LOG(trace) << " Opticks::init start instanciate resource " ;
     m_resource = new OpticksResource(this, m_lastarg);
     LOG(trace) << " Opticks::init done instanciate resource " ;
-
     setDetector( m_resource->getDetector() );
 
     LOG(debug) << "Opticks::init DONE " << m_resource->desc()  ;
 }
+
+/*
+void Opticks::setupResource()
+{
+
+
+}
+*/
 
 
 
@@ -984,6 +991,7 @@ int  Opticks::getGLTFTarget() const
 {
     return m_cfg->getGLTFTarget(); 
 }
+
 bool Opticks::isGLTF() const 
 {
     return getGLTF() > 0 ; 
@@ -1046,6 +1054,12 @@ const char* Opticks::getGLTFConfig()
 {
     return m_cfg->getGLTFConfig().c_str() ; 
 }
+
+int  Opticks::getLayout() const 
+{
+    return m_cfg->getLayout(); 
+}
+
 
 
 

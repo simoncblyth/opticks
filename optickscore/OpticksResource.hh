@@ -29,7 +29,13 @@ OpticksResource
 =================
 
 Canonical m_resource instance is resident of Opticks
-instanciated by BOpticks::init prior to configuration.
+instanciated by BOpticks::init **prior to configuration**.
+
+WHY PRIOR TO CONFIG ?
+
+* more convenient to be after, then can feed in some values
+
+
 
 TODO:
 

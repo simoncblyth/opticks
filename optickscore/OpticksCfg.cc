@@ -92,6 +92,7 @@ OpticksCfg<Listener>::OpticksCfg(const char* name, Listener* listener, bool live
        m_gltfconfig("check_surf_containment=0,check_aabb_containment=0,instance_repeat_min=400,instance_vertex_min=0"),
        m_gltf(0),
        m_gltftarget(0),
+       m_layout(1),
        m_lodconfig("levels=3,verbosity=3"),
        m_lod(0),
        m_target(0),
@@ -857,6 +858,12 @@ void OpticksCfg<Listener>::init()
        );
 
 
+   char layout[128];
+   snprintf(layout,128, "Integer controlling OPTICKS_RESOURCE_LAYOUT, for alternate geocache dir.. Default %d ", m_layout );
+   m_desc.add_options()
+       ("layout",  boost::program_options::value<int>(&m_layout), layout );
+
+
    char lodconfig[128];
    snprintf(lodconfig,128, "String configuring LOD (level-of-detail) meshing, which is controlled with --lod option. Default %s ", m_lodconfig.c_str() );
    m_desc.add_options()
@@ -1424,15 +1431,18 @@ int OpticksCfg<Listener>::getGLTF()
     return m_gltf ; 
 }
 
+
 template <class Listener>
 int OpticksCfg<Listener>::getGLTFTarget()
 {
     return m_gltftarget ; 
 }
 
-
-
-
+template <class Listener>
+int OpticksCfg<Listener>::getLayout() const 
+{
+    return m_layout ; 
+}
 
 
 template <class Listener>
