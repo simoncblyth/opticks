@@ -568,7 +568,7 @@ opticks-full()
         printf "\n\n%30s :  %s \n" $ext $dir
         if [ -d "$dir" ]; then
             cd $dir 
-            [ -d ".hg" ]  && hg paths -v && hg status . --pager never 
+            [ -d ".hg" ]  && hg paths -v && hg status . 
             [ -d ".git" ] && git remote -v && git status . 
         else
             echo no such dir : maybe system repo install 
