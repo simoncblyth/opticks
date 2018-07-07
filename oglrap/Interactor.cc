@@ -27,9 +27,8 @@
 #include "Scene.hh"
 #include "Interactor.hh"
 
-#ifdef GUI_
-#include <ImGui/imgui.h>
-#endif
+#include "OGLRap_imgui.hh"
+
 
 const unsigned int Interactor::_pan_mode_key = GLFW_KEY_X ; 
 

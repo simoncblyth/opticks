@@ -12,11 +12,7 @@
 
 
 #include "Photons.hh"
-
-
-#ifdef GUI_
-#include <ImGui/imgui.h>
-#endif
+#include "OGLRap_imgui.hh"
 
 #include "GUI.hh"
 

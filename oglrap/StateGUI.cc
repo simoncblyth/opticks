@@ -2,9 +2,7 @@
 #include "NState.hpp"
 #include "PLOG.hh"
 
-#ifdef GUI_
-#include <ImGui/imgui.h>
-#endif
+#include "OGLRap_imgui.hh"
 
 
 StateGUI::StateGUI(NState* state) 

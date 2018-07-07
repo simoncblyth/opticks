@@ -50,11 +50,7 @@
 #include "Colors.hh"
 #include "Interactor.hh"
 
-#ifdef GUI_
-#include <ImGui/imgui.h>
-#endif
-
-
+#include "OGLRap_imgui.hh"
 
 #include "PLOG.hh"
 

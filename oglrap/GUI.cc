@@ -45,10 +45,7 @@
 #include "Photons.hh"
 #include "StateGUI.hh"
 
-
-
-#include <ImGui/imgui.h>
-#include "ImGui/imgui_impl_glfw_gl3.h"
+#include "OGLRap_imgui.hh"
 
 
 void GUI::setComposition(Composition* composition)
