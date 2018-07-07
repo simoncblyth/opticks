@@ -10,6 +10,17 @@ XERCESC
 
 * XML handling package required for Geant4 GDML support
 
+
+On Centos 7 got from base repo
+---------------------------------
+
+::
+
+	[blyth@localhost imgui]$ yum list installed | grep xerces
+	xerces-c.x86_64                         3.1.1-8.el7_2                  @base    
+	xerces-c-devel.x86_64                   3.1.1-8.el7_2                  @base    
+
+
 FindEnvXercesC.cmake
 ----------------------
 

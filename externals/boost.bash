@@ -10,6 +10,36 @@ BOOST
 * http://www.boost.org/users/history/
 
 
+On CentOS 7 got boost 1.53 from base repo 
+---------------------------------------------
+
+::
+
+	[blyth@localhost imgui]$ yum list installed | grep boost 
+	boost.x86_64                            1.53.0-27.el7                  @base    
+	boost-atomic.x86_64                     1.53.0-27.el7                  @base    
+	boost-chrono.x86_64                     1.53.0-27.el7                  @base    
+	boost-context.x86_64                    1.53.0-27.el7                  @base    
+	boost-date-time.x86_64                  1.53.0-27.el7                  @base    
+	boost-devel.x86_64                      1.53.0-27.el7                  @base    
+	boost-filesystem.x86_64                 1.53.0-27.el7                  @base    
+	boost-graph.x86_64                      1.53.0-27.el7                  @base    
+	boost-iostreams.x86_64                  1.53.0-27.el7                  @base    
+	boost-locale.x86_64                     1.53.0-27.el7                  @base    
+	boost-math.x86_64                       1.53.0-27.el7                  @base    
+	boost-program-options.x86_64            1.53.0-27.el7                  @base    
+	boost-python.x86_64                     1.53.0-27.el7                  @base    
+	boost-random.x86_64                     1.53.0-27.el7                  @base    
+	boost-regex.x86_64                      1.53.0-27.el7                  @base    
+	boost-serialization.x86_64              1.53.0-27.el7                  @base    
+	boost-signals.x86_64                    1.53.0-27.el7                  @base    
+	boost-system.x86_64                     1.53.0-27.el7                  @base    
+	boost-test.x86_64                       1.53.0-27.el7                  @base    
+	boost-thread.x86_64                     1.53.0-27.el7                  @base    
+	boost-timer.x86_64                      1.53.0-27.el7                  @base    
+	boost-wave.x86_64                       1.53.0-27.el7                  @base    
+
+
 Boost 1.48 Linux opticks/examples/UseUseBoost/PTreeIssue.cc
 --------------------------------------------------------------
 

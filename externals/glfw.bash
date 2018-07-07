@@ -15,8 +15,22 @@ applications and does not lay claim to the main loop.
 
 Version 3.1.1 released on March 19, 2015
 
-Linux
--------
+
+Linux CentOS 7 
+----------------
+
+eventually got 3.2.1 from epel
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+::
+
+	[blyth@localhost imgui]$ yum list installed | grep glfw
+	glfw.x86_64                             1:3.2.1-2.el7                  @epel    
+	glfw-devel.x86_64                       1:3.2.1-2.el7                  @epel    
+
+
+Initially tried to install manually with 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 You may need::
 
