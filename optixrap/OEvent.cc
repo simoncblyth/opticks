@@ -343,6 +343,12 @@ unsigned OEvent::download()
 }
 
 
+/** OEvent::download
+
+ 
+**/
+
+
 void OEvent::download(OpticksEvent* evt, unsigned mask)
 {
     OK_PROFILE("_OEvent::download");
@@ -390,7 +396,9 @@ unsigned OEvent::downloadHits(OpticksEvent* evt)
 
     NPY<float>* hit = evt->getHitData();
 
+    LOG(error) << "OEvent::downloadHits.cpho" ;
     CBufSpec cpho = m_photon_buf->bufspec();  
+    LOG(error) << "OEvent::downloadHits.cpho DONE " ;
     assert( cpho.size % 4 == 0 );
     cpho.size /= 4 ;    //  decrease size by factor of 4, increases cpho "item" from 1*float4 to 4*float4 
 

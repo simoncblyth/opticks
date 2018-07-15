@@ -58,6 +58,9 @@ okgl-apihh(){  echo $(okgl-sdir)/$(okgl-tag)_API_EXPORT.hh ; }
 okgl---(){     touch $(okgl-apihh) ; okgl--  ; } 
 
 
+
+okgl-t(){ okgl- ; okgl-cd ; om- ; om-test ; }
+
 okgl--(){                   opticks-- $(okgl-bdir) ; } 
 okgl-ctest(){               opticks-ctest $(okgl-bdir) $* ; } 
 okgl-genproj() { okgl-scd ; opticks-genproj $(okgl-name) $(okgl-tag) ; } 

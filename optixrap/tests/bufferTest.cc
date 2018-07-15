@@ -10,8 +10,7 @@
 #include "Opticks.hh"
 #include "OpticksBufferControl.hh"
 
-#include "OKCORE_LOG.hh"
-#include "OXRAP_LOG.hh"
+#include "OPTICKS_LOG.hh"
 
 #include "PLOG.hh"
 
@@ -97,10 +96,7 @@ Test:
 
 int main(int argc, char** argv)
 {
-    PLOG_(argc, argv);    
-
-    OKCORE_LOG__ ; 
-    OXRAP_LOG__ ; 
+    OPTICKS_LOG(argc, argv);    
 
     Opticks ok(argc, argv, "--compute");
     ok.configure();

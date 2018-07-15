@@ -15,7 +15,7 @@ g4ok-bcd(){ cd $(g4ok-dir) ; om-cd ;  }
 
 g4ok-conf(){  g4ok-cd ; om- ; om-conf $* ; }
 g4ok-make(){  g4ok-cd ; om- ; om-make $* ; }
-g4ok-test(){  g4ok-cd ; om- ; om-test $* ; }
+g4ok-test(){  g4ok-bcd ; om- ; om-test $* ; }
 
 g4ok--(){   g4ok-make ; }
 g4ok-t(){   g4ok-test ; }

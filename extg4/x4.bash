@@ -54,6 +54,7 @@ x4-dir(){ echo $(dirname $(x4-source)) ; }
 x4-cd(){  cd $(x4-dir) ; }
 x4-c(){   cd $(x4-dir) ; }
 x4--(){   opticks-- $(x4-dir) ; }
+x4-t(){   x4-cd ;  om- ; om-test ;  }
 
 
 
@@ -126,9 +127,5 @@ EOC
 
 x4-include(){  x4-foreach $FUNCNAME- ; }
 x4-include-(){ echo "#include \"G4$1.hh\"" ; }
-
-
-
-
 
 

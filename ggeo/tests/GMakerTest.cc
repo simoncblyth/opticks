@@ -1,6 +1,7 @@
 //  ggv --gmaker
 
 // sysrap-
+#include "OPTICKS_LOG.hh"
 #include "OpticksCSG.h"
 
 #include "NGLM.hpp"
@@ -95,9 +96,7 @@ void GMakerTest::makeFromCSG()
 
 int main(int argc, char** argv)
 {
-    PLOG_(argc, argv);
-    NPY_LOG__ ;
-    GGEO_LOG__ ;
+    OPTICKS_LOG(argc, argv);
 
     Opticks ok(argc, argv);
     ok.configure();

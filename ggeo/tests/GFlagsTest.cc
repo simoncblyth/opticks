@@ -5,13 +5,19 @@
 #include "OpticksAttrSeq.hh"
 #include "Index.hpp"
 
+#include "OPTICKS_LOG.hh"
+
+
 int main(int argc, char** argv)
 {
+    OPTICKS_LOG(argc, argv);
+
     Opticks ok(argc, argv) ; 
 
     //OpticksFlags gf(&ok);
 
     OpticksAttrSeq* q = ok.getFlagNames(); 
+    assert( q );
 
     q->dump();
 

@@ -6,7 +6,7 @@ include(OpticksBuildOptions)
 find_package(CFG4   REQUIRED CONFIG)   # brings G4 with it 
 find_package(OKConf REQUIRED CONFIG)   
 find_package(OKOP   REQUIRED CONFIG)
-find_package(G4DAE  REQUIRED CONFIG)
+#find_package(G4DAE  REQUIRED CONFIG)
 
 
 set(SOURCES
@@ -32,11 +32,18 @@ add_library(${name} SHARED  ${SOURCES})
 target_link_libraries( ${name} 
   PUBLIC 
      Opticks::CFG4
-     Opticks::G4DAE
      Opticks::OKOP
 )
-## hmm these need to be public for the tests to see the includes of 
-## the dependencies and their deps and so on 
+
+#[=[
+
+Opticks::G4DAE
+
+1. hmm these need to be public for the tests to see the includes of 
+   the dependencies and their deps and so on 
+
+#]=]
+
 
 target_compile_definitions( ${name} PUBLIC OPTICKS_G4OK )
 

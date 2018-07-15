@@ -27,7 +27,7 @@ NGPU::NGPU(NPY<ULL>* recs_)
 NGPU* NGPU::Load(const char* path)
 {
     NPY<ULL>* recs = NPY<ULL>::load(path) ;  
-    return new NGPU(recs); 
+    return recs ? new NGPU(recs) : NULL ; 
 }
 
 void NGPU::saveBuffer(const char* path)

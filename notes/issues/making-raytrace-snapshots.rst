@@ -12,6 +12,9 @@ Using OTracerTest is faster, no need to propagate::
     OPTICKS_RESOURCE_LAYOUT=103 OTracerTest --gltf 3
            for just geometry this is faster
 
+    OPTICKS_RESOURCE_LAYOUT=103 OTracerTest --size 2560,1440,1 --gltf 3
+            explicit size to avoid the quarter view problem    
+
 
 Note the interface is deceptive regarding bookmarks, they
 are loaded but are not listed until first used.  

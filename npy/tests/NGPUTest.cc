@@ -39,7 +39,14 @@ epsilon:npy blyth$
 void test_load(const char* path)
 {
     NGPU* gpu = NGPU::Load(path) ; 
-    gpu->dump();  
+    if(gpu) 
+    {
+        gpu->dump();  
+    }
+    else
+    {
+        LOG(info) << "no NGPU stats to load from: " << path ;      
+    }
 }
 
 

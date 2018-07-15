@@ -1,8 +1,7 @@
-optix-src(){      echo externals/optix.bash ; }
-optix-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(optix-src)} ; }
+optix-source(){   echo ${BASH_SOURCE} ; }
 optix-vi(){       vi $(optix-source) ; }
 optix-env(){      olocal- ; }
-optix-usage(){ cat << EOU
+optix-usage(){ cat << \EOU
 
 NVIDIA OptiX Ray Trace Toolkit
 ================================== 
@@ -3509,6 +3508,15 @@ optix-samples-cd(){    cd $(optix-samples-install-dir)/$1 ; }
 optix-download-cd(){   cd $(optix-download-dir) ; }
 
 optix-ftp(){ open https://ftpservices.nvidia.com ; }
+
+optix-info(){ cat << EOI
+
+   optix-dir     : $(optix-dir)
+   optix-sdk-dir : $(optix-sdk-dir)
+
+EOI
+}
+
 
 
 optix-c(){   cd $(optix-dir); }

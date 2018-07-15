@@ -17,9 +17,7 @@
 #include "OpticksResource.hh"
 #include "Opticks.hh"
 
-#include "GGEO_LOG.hh"
-#include "ASIRAP_LOG.hh"
-#include "PLOG.hh"
+#include "OPTICKS_LOG.hh"
 
 // cf canonical int AssimpGGeo::load(GGeo*) 
 
@@ -67,10 +65,7 @@ void test_getSensor(GGeo* gg)
 
 int main(int argc, char** argv)
 {
-    PLOG_(argc, argv);
-
-    GGEO_LOG__ ;
-    ASIRAP_LOG__ ;
+    OPTICKS_LOG(argc, argv);
 
     Opticks ok(argc, argv);
 

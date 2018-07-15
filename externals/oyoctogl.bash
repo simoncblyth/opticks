@@ -1,5 +1,4 @@
-oyoctogl-src(){      echo externals/oyoctogl.bash ; }
-oyoctogl-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(oyoctogl-src)} ; }
+oyoctogl-source(){   echo ${BASH_SOURCE} ; }
 oyoctogl-vi(){       vi $(oyoctogl-source) $(oyoctogl-dir)/yocto/yocto_gltf.h  ; }
 oyoctogl-env(){      olocal- ; opticks- ; }
 
@@ -265,11 +264,18 @@ oyoctogl--()
    oyoctogl-make install
 }
 
-oyoctogl-t()
+oyoctogl-reader()
 {
    # oyoctogl-make test
    ygltf_reader $TMP/nd/scene.gltf
 }
+
+oyoctogl-t()
+{
+   oyoctogl-cd ; om- ; om-test ;  
+}
+
+
 
 
 
