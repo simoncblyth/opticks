@@ -24,10 +24,8 @@
 
 #include "MWrap.hh"
 #include "MMesh.hh"
-#include "PLOG.hh"
-#include "GGEO_LOG.hh"
-#include "ASIRAP_LOG.hh"
-#include "MESHRAP_LOG.hh"
+
+#include "OPTICKS_LOG.hh"
 
 
 // huh: should this not be in MFixer ?
@@ -100,15 +98,13 @@ int fixmesh(Opticks* ok, GMesh* gm)
 
 int main(int argc, char** argv)
 {
-    PLOG_(argc, argv);
-
-    GGEO_LOG__ ;
-    ASIRAP_LOG__ ;
-    MESHRAP_LOG__ ;
+    OPTICKS_LOG(argc, argv);
 
     Opticks ok(argc, argv);
 
     ok.configure();
+
+    ok.setGeocache(false); 
 
     const char* path = ok.getDAEPath();
 

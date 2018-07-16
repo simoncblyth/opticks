@@ -12,7 +12,7 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv);
 
-    char c = argc > 1 ? *argv[1] : 'o' ; 
+    char c = argc > 1 ? *argv[1] : 'o' ;  
 
     G4VPhysicalVolume* top = X4Sample::Sample(c) ; 
 

@@ -8,9 +8,6 @@ Collective reporting from a bunch of separate ctest.log files::
     CTestLog.py /usr/local/opticks-cmake-overhaul/build
 
 
-TODO: fix the pkg order reporting to match dependency/run order
-
-
 """
 import sys, re, os, logging, argparse, datetime
 log = logging.getLogger(__name__)
@@ -37,17 +34,18 @@ class CTestLog(object):
     @classmethod
     def examine_logs(cls, args):
         logs = []
-        root = args.base 
+        root = str(args.base) 
         for dirpath, dirs, names in os.walk(root):
             if cls.NAME in names:
                 log.debug(dirpath)
-                reldir = dirpath[len(root)+1:]
+                reldir = dirpath[len(root):]
+                log.info("reldir:[%s] dirpath:[%s] root:[%s] %d " % (reldir, dirpath, root, len(root)) )
                 if reldir == "" and not args.withtop: 
                     log.debug("skipping toplevel tests, reldir [%s]" % reldir)
                     continue 
                 pass
                 path = os.path.join(dirpath, cls.NAME)
-                lines = map(str.rstrip, file(path,"r").readlines() ) 
+                lines = map(str.rstrip, file(path,"r").readlines() )
                 lg = cls(lines, path=path, reldir=reldir)
                 logs.append(lg)
             pass
@@ -66,6 +64,8 @@ class CTestLog(object):
     def desc_totals(cls):
         return " totals  %(fails)-3s / %(tests)-3s " % cls.tot
 
+    num_tests = property(lambda self:len(self.tests))
+    num_fails = property(lambda self:len(self.fails))
  
     def __init__(self, lines, path=None, reldir=None):
         self.lines = lines
@@ -91,7 +91,7 @@ class CTestLog(object):
 
  
     def __repr__(self):
-        return "CTestLog : %20s : %3s : %s : %s " % ( self.reldir, len(self.lines), self.dt, self.path  )
+        return "CTestLog : %20s : %6d/%6d : %s : %s " % ( self.reldir, self.num_fails, self.num_tests, self.dt, self.path  )
 
     def __str__(self):
         return "\n".join([repr(self)] + self.lines )
@@ -112,22 +112,30 @@ if __name__ == '__main__':
     pass
 
     CTestLog.examine_logs(args)
-    print CTestLog.desc_totals()
 
     lgs = sorted(CTestLog.logs, key=lambda lg:lg.dt)
 
+    print "\n\nTESTS:"
     for lg in lgs:
         print ""
+        print repr(lg)
         for tst in lg.tests:
             print tst
         pass
     pass
-    print "\n\nFAILS:"
 
+    print "\n\nLOGS:"
+    for lg in lgs:
+        print repr(lg)
+    pass
+    print CTestLog.desc_totals()
+
+    print "\n\nFAILS:"
     for lg in lgs:
         for tst in lg.fails:
             print tst
         pass
     pass
+
 
 

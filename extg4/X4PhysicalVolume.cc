@@ -108,6 +108,11 @@ X4PhysicalVolume::X4PhysicalVolume(GGeo* ggeo, const G4VPhysicalVolume* const to
     m_verbosity(m_ok->getVerbosity()),
     m_ndCount(0)
 {
+    const char* msg = "GGeo ctor argument of X4PhysicalVolume must have mlib, slib and blib already " ; 
+    assert( m_mlib && msg ); 
+    assert( m_slib && msg ); 
+    assert( m_blib && msg ); 
+
     init();
 }
 

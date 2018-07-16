@@ -61,6 +61,13 @@ void test_getSensor(GGeo* gg)
 
 }
 
+void test_hasBndLib(GGeo* gg)
+{
+    GBndLib* blib = gg->getBndLib(); 
+    assert( blib ) ; 
+}
+
+
 
 
 int main(int argc, char** argv)
@@ -70,6 +77,8 @@ int main(int argc, char** argv)
     Opticks ok(argc, argv);
 
     ok.configure();
+
+    ok.setGeocache(false);  // prevent loading from any preexisting geocache, same as --nogeocache/-G option
 
     const char* path = ok.getDAEPath();
 
@@ -91,6 +100,8 @@ int main(int argc, char** argv)
 
 
     GGeo* ggeo = new GGeo(&ok);
+
+    test_hasBndLib(ggeo); //
 
     LOG(info) << " import " << path ; 
 

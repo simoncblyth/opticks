@@ -11,8 +11,6 @@ Comparing with pycollada
 
 */
 
-
-
 #include <cstdio>
 #include <cstdlib>
 #include <cassert>
@@ -22,7 +20,6 @@ Comparing with pycollada
 #include "NGLM.hpp"
 #include "NPY.hpp"
 #include "Opticks.hh"
-
 
 #include "GDomain.hh"
 #include "GAry.hh"
@@ -36,41 +33,26 @@ Comparing with pycollada
 #include "GMergedMesh.hh"
 #include "GGeo.hh"
 
-
 #include "AssimpImporter.hh"
 #include "AssimpTree.hh"
 #include "AssimpNode.hh"
 #include "AssimpGGeo.hh"
 
-
-#include "PLOG.hh"
-
-#include "SYSRAP_LOG.hh"
-#include "BRAP_LOG.hh"
-#include "NPY_LOG.hh"
-#include "OKCORE_LOG.hh"
-#include "GGEO_LOG.hh"
-#include "ASIRAP_LOG.hh"
-
+#include "OPTICKS_LOG.hh"
 
 // cf with canonical : opticksgeo-/OpticksGeometry::loadGeometry()
 
 int main(int argc, char** argv)
 {
-    PLOG_(argc, argv);
-
-    SYSRAP_LOG__ ;
-    BRAP_LOG__ ;
-    NPY_LOG__ ;
-    OKCORE_LOG__ ;
-    GGEO_LOG__ ;
-    ASIRAP_LOG__ ;
+    OPTICKS_LOG(argc, argv);
 
     Opticks ok(argc, argv);
 
     LOG(info) << "ok" ;
 
     ok.configure();
+
+    ok.setGeocache(false);  // prevent loading from any pre-existing geocache, just like --nogeocache/-G 
 
     const char* daepath = ok.getDAEPath();
 
@@ -79,8 +61,6 @@ int main(int argc, char** argv)
         LOG(error) << "NULL daepath" ;
         return 0 ; 
     } 
-
-
 
 
     GGeo* m_ggeo = new GGeo(&ok);

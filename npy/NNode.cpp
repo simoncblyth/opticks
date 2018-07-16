@@ -1255,7 +1255,12 @@ void nnode::Set_parent_links_r(nnode* node, nnode* parent) // static
     }
     else
     {
-        assert( node->parent == parent && "not expecting to change parent links") ; 
+        LOG(error) << " changing parent links "
+                   << "\n node         : " << node 
+                   << "\n parent       : " << parent
+                   << "\n node->parent : " << node->parent
+                   ;
+        //assert( node->parent == parent && "not expecting to change parent links") ; 
     }
 
     if(node->left && node->right)

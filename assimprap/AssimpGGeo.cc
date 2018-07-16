@@ -387,8 +387,10 @@ void AssimpGGeo::convertMaterials(const aiScene* scene, GGeo* gg, const char* qu
              << " mNumMaterials " << scene->mNumMaterials  
              ;
 
-    //GDomain<float>* standard_domain = gg->getBoundaryLib()->getStandardDomain(); 
-    GDomain<float>* standard_domain = gg->getBndLib()->getStandardDomain(); 
+
+    GBndLib* blib = gg->getBndLib() ; 
+    assert( blib ); 
+    GDomain<float>* standard_domain = blib->getStandardDomain(); 
 
 
     for(unsigned int i = 0; i < scene->mNumMaterials; i++)
@@ -521,6 +523,7 @@ void AssimpGGeo::convertMaterials(const aiScene* scene, GGeo* gg, const char* qu
         free((void*)osfin);
         free((void*)osmod);
         free((void*)osval);
+
     }
 
 

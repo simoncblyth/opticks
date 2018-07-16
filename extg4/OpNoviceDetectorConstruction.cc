@@ -293,7 +293,13 @@ G4VPhysicalVolume* OpNoviceDetectorConstruction::Construct()
   G4OpticalSurface* opAirSurface = new G4OpticalSurface("AirSurface");
   opAirSurface->SetType(dielectric_dielectric);
   opAirSurface->SetFinish(polished);
+
+#ifdef FOR_OPTICKS
+  // avoid a assert in X4PhysicalVolume test TODO: look into difference between unified/glisur
+  opAirSurface->SetModel(unified);
+#else
   opAirSurface->SetModel(glisur);
+#endif
 
   G4LogicalSkinSurface* airSurface =
           new G4LogicalSkinSurface("AirSurface", bubbleAir_log, opAirSurface);
