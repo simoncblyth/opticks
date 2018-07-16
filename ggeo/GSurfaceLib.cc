@@ -973,8 +973,8 @@ bool GSurfaceLib::isSensorSurface(unsigned int qsurface)
     int pos = strlen(name) - strlen(SENSOR_SURFACE) ;
     bool iss = pos > 0 && strncmp(name + pos, SENSOR_SURFACE, strlen(SENSOR_SURFACE)) == 0 ;
 
-    if(iss)
-    LOG(trace) << "GSurfaceLib::isSensorSurface"
+    //if(iss)
+    LOG(error) << "GSurfaceLib::isSensorSurface"
               << " surface " << qsurface  
               << " name " << name 
               << " pos " << pos 

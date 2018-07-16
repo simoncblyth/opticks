@@ -1,22 +1,33 @@
-
 some-new-fails.txt
 ======================
 
+
+Linux 2018/7/16 monday 10/337 fails, mainly in cfg4
+----------------------------------------------------
+
+
 ::
 
- 
-     om-testlog
+    totals  10  / 337 
 
-      1  /2   Test #1  : OGLRapTest.ModelToWorldTest                   Passed                         0.03   
-      2  /2   Test #2  : OGLRapTest.ProgTest                           Passed                         0.05   
-      17 /22  Test #17 : CFG4Test.CInterpolationTest                   ***Exception: Child aborted    0.77   
-      1  /1   Test #1  : OpticksGLTest.OOAxisAppCheck                  ***Exception: Child aborted    0.04   
-      2  /24  Test #2  : SysRapTest.SArTest                            ***Exception: SegFault         0.00   
-      48 /49  Test #48 : GGeoTest.GSceneTest                           ***Exception: Child aborted    0.44   
-    epsilon:opticks-cmake-overhaul blyth$ 
+    FAILS:
+      1  /22  Test #1  : CFG4Test.CMaterialLibTest                     ***Exception: Child aborted    0.41   
+      2  /22  Test #2  : CFG4Test.CMaterialTest                        ***Exception: Child aborted    0.40   
+      3  /22  Test #3  : CFG4Test.CTestDetectorTest                    ***Exception: Child aborted    0.98   
+      4  /22  Test #4  : CFG4Test.CGDMLDetectorTest                    ***Exception: Child aborted    0.89   
+      5  /22  Test #5  : CFG4Test.CGeometryTest                        ***Exception: Child aborted    0.87   
+      6  /22  Test #6  : CFG4Test.CG4Test                              ***Exception: Child aborted    0.92   
+      17 /22  Test #17 : CFG4Test.CInterpolationTest                   ***Exception: Child aborted    0.93   
+      19 /22  Test #19 : CFG4Test.CGROUPVELTest                        ***Exception: Child aborted    0.40   
+      22 /22  Test #22 : CFG4Test.CRandomEngineTest                    ***Exception: Child aborted    0.89   
+      1  /1   Test #1  : OKG4Test.OKG4Test                             ***Exception: Child aborted    1.06   
+
+All look to be from same cause of a material named Bialkali with no associated sensor surface.
+Take that over to :doc:`bialkali-material-with-no-associated-sensor-surface`
 
 
-macOS 2018/7/16 Monday
+
+macos 2018/7/16 monday
 -----------------------
 
 ::
