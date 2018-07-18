@@ -314,6 +314,28 @@ okop-snap-base(){ echo /tmp/okop_snap ; }
 okop-snap-dir(){  echo $(okop-snap-base)/$(okop-snap-tag) ; }
 okop-snap-cd(){  cd $(okop-snap-dir) ; }
 
+
+okop-snap-notes(){ cat << EON
+
+::
+
+    --snap
+    --snapconfig
+    opticks-find getSnapConfig
+
+    okop/OpTracer.cc consumes snapconfig
+
+    --g4snap
+    --g4snapconfig
+    opticks-find getG4SnapConfig
+    ## seems not yet used 
+    
+
+
+
+EON
+}
+
 okop-snap()
 {
     ## intended to give same snap as okop-snap-gui, must OpticksHub::setupCompositionTargetting for this to be so
@@ -331,9 +353,12 @@ okop-snap-mp4()
     local tag=$(basename $PWD)
     local mp4=${tag}.mp4
 
+    ffmpeg-
+    ffmpeg-export
+
     ffmpeg -i %05d.ppm -pix_fmt yuv420p $mp4
 
-    scp $mp4 D:
+    #scp $mp4 D:
 }
 
 

@@ -116,15 +116,8 @@ void OpTracer::snap()
 
         m_ocontext->snap(path.c_str());
     }
-
-    //m_ocontext->save("/tmp/snap.npy");
-    //m_ocontext->snap("/tmp/snap.ppm");
    
     LOG(info) << "OpTracer::snap DONE " ;
-
 }
   
-
-
-
 

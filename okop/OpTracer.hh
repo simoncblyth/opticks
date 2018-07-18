@@ -24,6 +24,17 @@ template <typename T> class NPY ;
 
 #include "SRenderer.hh"
 
+/**
+OpTracer
+=========
+
+snap() takes a sequence of ppm geomtry snapshots 
+configured via --snapconfig and switched on via --snap
+see okop-
+
+
+**/
+
 class OKOP_API OpTracer : public SRenderer {
     public:
        OpTracer(OpEngine* ope, OpticksHub* hub, bool immediate);

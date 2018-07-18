@@ -3,12 +3,19 @@ vids-src(){      echo graphics/ggeoview/vids.bash ; }
 vids-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(vids-src)} ; }
 vids-vi(){       vi $(vids-source) ; }
 vids-env(){      olocal- ; }
-vids-usage(){ cat << EOU
+vids-usage(){ cat << \EOU
 
-GGeoView Video Captures 
+Opticks Video Captures 
 =============================
 
-* See Also :doc:`graphics/ggeoview/movie`
+See also
+----------
+
+* `env/ggeoview/movie.rst` for notes on macOS screen capture videos
+* okop- `opticks/okop/okop.bash` for making mp4 movies from ppm snaps with okop-snap etc..
+* ffmpeg-
+* x264- 
+* obs-
 
 Capture Procedure
 --------------------
@@ -25,6 +32,17 @@ Capture Procedure
 4. Invoke Quicktime capture with:: 
 
    ggv-hd-capture 
+
+   * from bin/ggv.bash based on "~/env/bin/caperture.swift -x $x -y $y -w $w -h $h" with::
+
+        x 100
+        y 100
+        w 1920
+        h 1080 
+
+     which launches Quicktime Player via an applescript and then 
+     injects artificial mouseDown/Drag events in swift to make a pixel precise 
+     selection window to record 
 
    * does not always work, possibly starting Quicktime Player first
      avoids this issue

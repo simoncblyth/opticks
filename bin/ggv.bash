@@ -557,6 +557,7 @@ ggv-hd-capture()
     local y=$(ggv-vid-y)
     local w=$(( $(ggv-vid-w)/2 ))
     local h=$(( $(ggv-vid-h)/2 ))
+    ## retina related factor of 2 ?
 
     local cmd="caperture.swift -x $x -y $y -w $w -h $h "
     echo $cmd
