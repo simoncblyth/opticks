@@ -522,6 +522,12 @@ const char* Opticks::getRenderMode()
 
 
 
+
+bool Opticks::isPrintEnabled() const 
+{
+    return m_cfg->hasOpt("printenabled") ;
+}
+
 bool Opticks::isPrintIndexLog() const 
 {
     return m_cfg->hasOpt("pindexlog") ;

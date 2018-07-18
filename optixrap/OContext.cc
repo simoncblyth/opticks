@@ -115,12 +115,17 @@ void OContext::init()
 
 void OContext::initPrint()
 {
-    m_context->setPrintEnabled(false);  // enable for 1st photon with --pindex 0 
+    bool printenabled = m_ok->isPrintEnabled() ; // --printenabled option, useful for small test launches only  
+    m_context->setPrintEnabled(printenabled);  // enable for 1st photon with --pindex 0 
     m_context->setPrintBufferSize(2*2*2*8192);
     //m_context->setPrintLaunchIndex(0,0,0);
 
     glm::ivec3 idx ; 
-    if(!m_ok->getPrintIndex(idx)) return ; 
+    if(!m_ok->getPrintIndex(idx)) 
+    {
+        LOG(error) << "exit OContext::initPrint with print disabled " ; 
+        return ; 
+    }
 
     m_context->setPrintEnabled(true);
     m_context->setPrintLaunchIndex(idx.x, idx.y, idx.z);

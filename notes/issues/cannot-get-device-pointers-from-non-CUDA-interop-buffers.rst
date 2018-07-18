@@ -1,7 +1,18 @@
 cannot-get-device-pointers-from-non-CUDA-interop-buffers
 ===============================================================
 
-Same problem on macOS and Linux (linux provides a backtrace) with OptiX 510.
+Search
+---------
+
+* https://devtalk.nvidia.com/search/more/sitecommentsearch/OptiX+5+OpenGL+interop/2/
+
+
+
+
+smoking gun : interop change between OptiX 411 and 501/510
+------------------------------------------------------------- 
+
+Same problem on macOS(OptiX_501) and Linux(OptiX_510) (linux provides a backtrace).
 Rebooting back to Delta with OptiX 411 shows no such problem.
 
 * likely cause : Looks like OpenGL/OptiX interop in 510 has changed cf 411.
@@ -45,9 +56,9 @@ Fail to get the pointer thats used for the streamed indirection.
 
 
 
-* https://devtalk.nvidia.com/search/more/sitecommentsearch/OptiX+5+OpenGL+interop/2/
 
-
+Reproduce more simply with tboolean-box
+-----------------------------------------
 
 ::
     
@@ -105,5 +116,40 @@ OpticksBufferSpec::
      46 NB have just moved to splitting the spec by compute and interop
      47    so some simplifications should be possible
      48 
+
+
+
+Output from Delta timemachine
+-------------------------------
+
+
+::
+
+    epsilon:issues blyth$ ll /Volumes/Delta/tmp/blyth/opticks/evt/tboolean-box/torch/1/
+    total 68096
+    -rw-r--r--   1 blyth  wheel       367 Jul 15 17:33 t_delta.ini
+    -rw-r--r--   1 blyth  wheel       344 Jul 15 17:33 t_absolute.ini
+    -rw-r--r--   1 blyth  wheel   6400080 Jul 15 17:33 so.npy
+    -rw-r--r--   1 blyth  wheel  16000096 Jul 15 17:33 rx.npy
+    -rw-r--r--   1 blyth  wheel   4000096 Jul 15 17:33 rs.npy
+    -rw-r--r--   1 blyth  wheel      2726 Jul 15 17:33 report.txt
+    -rw-r--r--   1 blyth  wheel    400080 Jul 15 17:33 ps.npy
+    -rw-r--r--   1 blyth  wheel   1600080 Jul 15 17:33 ph.npy
+    -rw-r--r--   1 blyth  wheel      2089 Jul 15 17:33 parameters.json
+    -rw-r--r--   1 blyth  wheel   6400080 Jul 15 17:33 ox.npy
+    -rw-r--r--   1 blyth  wheel        96 Jul 15 17:33 idom.npy
+    -rw-r--r--   1 blyth  wheel       176 Jul 15 17:33 gs.npy
+    -rw-r--r--   1 blyth  wheel       128 Jul 15 17:33 fdom.npy
+    -rw-r--r--   1 blyth  wheel       452 Jul 15 17:33 Material_SequenceSource.json
+    -rw-r--r--   1 blyth  wheel       450 Jul 15 17:33 Material_SequenceLocal.json
+    -rw-r--r--   1 blyth  wheel       568 Jul 15 17:33 History_SequenceSource.json
+    -rw-r--r--   1 blyth  wheel       572 Jul 15 17:33 History_SequenceLocal.json
+    -rw-r--r--   1 blyth  wheel        51 Jul 15 17:33 Boundary_IndexSource.json
+    -rw-r--r--   1 blyth  wheel        46 Jul 15 17:33 Boundary_IndexLocal.json
+    drwxr-xr-x   6 blyth  wheel       204 Jul 15 17:33 20180715_173353
+    drwxr-xr-x  22 blyth  wheel       748 Jul 15 17:33 .
+    drwxr-xr-x   8 blyth  wheel       272 Jul 15 17:34 ..
+
+
 
 

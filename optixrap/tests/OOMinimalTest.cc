@@ -2,14 +2,12 @@
 
 #include "NPY.hpp"
 
-#include "OXRAP_LOG.hh"
-#include "PLOG.hh"
+#include "OPTICKS_LOG.hh"
 
 
 int main( int argc, char** argv ) 
 {
-    PLOG_(argc, argv);
-    OXRAP_LOG__ ; 
+    OPTICKS_LOG(argc, argv);
 
     optix::Context context = optix::Context::create();
 
@@ -25,8 +23,6 @@ int main( int argc, char** argv )
 
     context->validate();
     context->compile();
-
-
 
     context->launch(0, width, height);
 

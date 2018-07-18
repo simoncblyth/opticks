@@ -10,11 +10,7 @@
 #include "TBuf.hh"
 #include "OXPPNS.hh"
 
-#include "PLOG.hh"
-
-#include "OXRAP_LOG.hh"
-#include "NPY_LOG.hh"
-
+#include "OPTICKS_LOG.hh"
 
 /**
 
@@ -39,12 +35,10 @@ of using a float4x4 type for the Thrust photons buffer description.
 
 int main(int argc, char** argv)
 {
-    PLOG_(argc, argv);
+    OPTICKS_LOG(argc, argv);
 
-    OXRAP_LOG__ ; 
-    NPY_LOG__ ; 
 
-    Opticks ok(argc, argv, "--compute");
+    Opticks ok(argc, argv, "--compute --printenabled");
     ok.configure() ;
  
 
@@ -52,8 +46,12 @@ int main(int argc, char** argv)
     unsigned PNUMQUAD = 4 ;
 
     NPY<float>* pho = DummyPhotonsNPY::make(num_photons);
+    pho->save("$TMP/DummyPhotonsNPY.npy"); 
+
 
     optix::Context context = optix::Context::create();
+    //context[ "PNUMQUAD" ]->setUint( PNUMQUAD );   // quads per photon
+
     OContext ctx(context, &ok, false );  // with_top:false
 
     int entry = ctx.addEntry("compactionTest.cu.ptx", "compactionTest", "exception");
@@ -64,8 +62,10 @@ int main(int argc, char** argv)
 
     OBuf* pbuf = new OBuf("photon",photon_buffer);
 
-    context[ "PNUMQUAD" ]->setUint( PNUMQUAD );   // quads per photon
+    // PNUMQUAD formerly set here 
     context["photon_buffer"]->setBuffer(photon_buffer);  
+    context["compaction_param"]->setUint(optix::make_uint2(PNUMQUAD, 0));
+
 
     ctx.launch( OContext::VALIDATE|OContext::COMPILE|OContext::PRELAUNCH,  entry,  0, 0, NULL);
 
@@ -74,21 +74,25 @@ int main(int argc, char** argv)
 
     ctx.launch( OContext::LAUNCH, entry, num_photons , 1, NULL ); 
 
+    LOG(error) << " launch DONE " ; 
 
     CBufSpec cpho = pbuf->bufspec();   // getDevicePointer happens here with OBufBase::bufspec
-
-    if(cpho.size != 4*num_photons)
+    bool match = cpho.size == 4*num_photons ;
+ 
+    if(!match)
         LOG(fatal) << " MISMATCH " 
                    << " cpho.size " <<  cpho.size
                    << " 4*num_photons " <<  4*num_photons
                    ;
+    assert(match);  
 
-    assert(cpho.size == 4*num_photons );
     cpho.size = num_photons ;   //  decrease size by factor of 4 in order to increase "item" from 1*float4 to 4*float4 
 
     TBuf tpho("tpho", cpho );
     //tpho.dump<unsigned>("tpho.dump<unsigned>(16,4*3+0,16*num_photons)", 16, 4*3+0, 16*num_photons );
     //tpho.dump<unsigned>("tpho.dump<unsigned>(16,4*3+3,16*num_photons)", 16, 4*3+3, 16*num_photons );
+
+    LOG(error) << " created tpho " ; 
 
     NPY<float>* hit = NPY<float>::make(0,4,4);
 
@@ -98,7 +102,6 @@ int main(int argc, char** argv)
     hit->save(path);
     SSys::npdump(path, "np.int32");
     SSys::npdump(path, "np.float32");
-
 
     return 0 ; 
 }
