@@ -8,7 +8,8 @@ int main(int argc, char** argv)
 {
     PLOG_(argc, argv);
 
-    NPY<float>* npy = DummyPhotonsNPY::make(100);
+    unsigned hitmask = 0x1 << 6 ;  // 64
+    NPY<float>* npy = DummyPhotonsNPY::make(100, hitmask);
     const char* path = "$TMP/DummyPhotonsNPYTest.npy" ;
     npy->save(path);
 

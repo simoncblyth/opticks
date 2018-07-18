@@ -25,6 +25,7 @@ TBuf::TBuf(const char* name, CBufSpec spec, const char* delim) :
         m_spec(spec),
         m_delim(strdup(delim))
 {
+    m_spec.Summary("TBuf::TBuf.m_spec"); 
 }
 
 CBufSlice TBuf::slice( unsigned int stride, unsigned int begin, unsigned int end ) const 
@@ -72,6 +73,8 @@ void TBuf::download(NPY<T>* npy, bool verbose) const
         std::cout << "TBuf::download SKIP "
                   << " numItems_tbuf " << numItems_tbuf
                   << std::endl ; 
+
+        m_spec.Summary("CBufSpec.Summary (empty tbuf?)"); 
         return ; 
     }
 
@@ -374,12 +377,5 @@ template void TBuf::fill<unsigned char>(unsigned char value) const ;
 
 
 template unsigned TBuf::downloadSelection<float4x4>(const char*, NPY<float>*, bool ) const ;
-
-
-
-
-
-
-
 
 

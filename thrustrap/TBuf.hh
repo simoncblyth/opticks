@@ -6,6 +6,14 @@
 template <typename T> class NPY ; 
 
 #include "THRAP_API_EXPORT.hh" 
+
+/**
+TBuf
+=====
+
+
+**/
+
 class THRAP_API TBuf {
    public:
       TBuf(const char* name, CBufSpec spec, const char* delim=" \n" );

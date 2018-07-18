@@ -5,6 +5,7 @@
 #include "DummyPhotonsNPY.hpp"
 
 #include "Opticks.hh"
+#include "OpticksPhoton.h"
 #include "OContext.hh"
 #include "OBuf.hh"
 #include "TBuf.hh"
@@ -45,7 +46,10 @@ int main(int argc, char** argv)
     unsigned num_photons = 100 ; 
     unsigned PNUMQUAD = 4 ;
 
-    NPY<float>* pho = DummyPhotonsNPY::make(num_photons);
+    unsigned hitmask = SURFACE_DETECT ; 
+    LOG(error) << " hitmask " << hitmask ;  
+
+    NPY<float>* pho = DummyPhotonsNPY::make(num_photons, hitmask );
     pho->save("$TMP/DummyPhotonsNPY.npy"); 
 
 
@@ -66,9 +70,7 @@ int main(int argc, char** argv)
     context["photon_buffer"]->setBuffer(photon_buffer);  
     context["compaction_param"]->setUint(optix::make_uint2(PNUMQUAD, 0));
 
-
     ctx.launch( OContext::VALIDATE|OContext::COMPILE|OContext::PRELAUNCH,  entry,  0, 0, NULL);
-
 
     OContext::upload<float>( photon_buffer, pho );
 
@@ -77,6 +79,7 @@ int main(int argc, char** argv)
     LOG(error) << " launch DONE " ; 
 
     CBufSpec cpho = pbuf->bufspec();   // getDevicePointer happens here with OBufBase::bufspec
+
     bool match = cpho.size == 4*num_photons ;
  
     if(!match)
@@ -88,15 +91,24 @@ int main(int argc, char** argv)
 
     cpho.size = num_photons ;   //  decrease size by factor of 4 in order to increase "item" from 1*float4 to 4*float4 
 
+    cpho.Summary("CBufSpec.Summary.cpho before TBuf"); 
+
     TBuf tpho("tpho", cpho );
+
+    assert( tpho.getSize() == cpho.size ) ; 
+
+    LOG(error) << " created tpho " 
+               << " cpho.size : " << cpho.size 
+               << " num_photons : " << num_photons 
+               ; 
+
     //tpho.dump<unsigned>("tpho.dump<unsigned>(16,4*3+0,16*num_photons)", 16, 4*3+0, 16*num_photons );
     //tpho.dump<unsigned>("tpho.dump<unsigned>(16,4*3+3,16*num_photons)", 16, 4*3+3, 16*num_photons );
 
-    LOG(error) << " created tpho " ; 
-
     NPY<float>* hit = NPY<float>::make(0,4,4);
-
-    tpho.downloadSelection4x4("thit<float4x4>", hit );
+    
+    bool verbose = true ; 
+    tpho.downloadSelection4x4("thit<float4x4>", hit, verbose );
 
     const char* path = "$TMP/compactionTest.npy";
     hit->save(path);
