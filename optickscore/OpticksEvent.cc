@@ -35,7 +35,6 @@
 #include "NLookup.hpp"
 #include "NGeoTestConfig.hpp"
 
-//#include "G4StepNPY.hpp"
 #include "ViewNPY.hpp"
 #include "MultiViewNPY.hpp"
 #include "TrivialCheckNPY.hpp"
@@ -47,6 +46,9 @@
 #include "Timer.hpp"
 #include "Times.hpp"
 #include "TimesTable.hpp"
+
+
+#include "OKConf.hh"
 
 // okc-
 #include "Opticks.hh"
@@ -141,6 +143,7 @@ OpticksEvent::OpticksEvent(OpticksEventSpec* spec)
           m_loaded(false),
 
           m_timer(NULL),
+          m_versions(NULL),
           m_parameters(NULL),
           m_report(NULL),
           m_ttable(NULL),
@@ -604,9 +607,15 @@ void OpticksEvent::init()
     m_timer->setVerbose(false);
     m_timer->start();
 
+    m_versions = new NParameters ;
     m_parameters = new NParameters ;
     m_report = new Report ; 
     m_domain = new OpticksDomain ; 
+
+    m_versions->add<int>("OptiXVersion",  OKConf::OptiXVersionInteger() );
+    m_versions->add<int>("CUDAVersion",   OKConf::CUDAVersionInteger() );
+    m_versions->add<int>("ComputeVersion", OKConf::ComputeCapabilityInteger() );
+    m_versions->add<int>("Geant4Version",  OKConf::Geant4VersionInteger() );
 
     m_parameters->add<std::string>("TimeStamp", timestamp() );
     m_parameters->add<std::string>("Type", m_typ );
@@ -1680,6 +1689,10 @@ void OpticksEvent::makeReport(bool verbose)
     if(verbose)
     m_ttable->dump("OpticksEvent::makeReport");
 
+    // TODO: add some context lines in the report  eg 
+    //       OS uname, NODE_TAG, hostname, OptiX version, CUDA version, G4 Version etc..
+
+    m_report->add(m_versions->getLines());
     m_report->add(m_parameters->getLines());
     m_report->add(m_ttable->getLines());
 }

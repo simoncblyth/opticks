@@ -374,7 +374,8 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec
        bool                  m_loaded ; 
 
        Timer*                m_timer ;
-       NParameters*           m_parameters ;
+       NParameters*          m_versions ;
+       NParameters*          m_parameters ;
        Report*               m_report ;
        TimesTable*           m_ttable ;
 
