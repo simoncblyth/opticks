@@ -98,8 +98,9 @@ int main()
 
     std::string ptx_filename = ptx_path(cmake_target, cu_name );  
     const char* raygen_ptx_filename = ptx_filename.c_str();
-    const char* raygen_ptx_filename_2 = "/usr/local/opticks/installcache/PTX/UseOptiXProgram_generated_UseOptiXProgram_minimal.cu.ptx"  ;
-    assert(strcmp( raygen_ptx_filename, raygen_ptx_filename_2) == 0 );
+    
+    //const char* raygen_ptx_filename_2 = "/usr/local/opticks/installcache/PTX/UseOptiXProgram_generated_UseOptiXProgram_minimal.cu.ptx"  ;
+    //assert(strcmp( raygen_ptx_filename, raygen_ptx_filename_2) == 0 );
 
     const char* raygen_program_name = "basicTest" ;
 
