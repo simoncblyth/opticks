@@ -34,6 +34,21 @@ References
 * http://www.makeuseof.com/tag/5-best-screen-recorders-capturing-mac-os-x/
 
 
+op.sh event movies
+-------------------
+
+::
+
+    op.sh --j1707 --gltf 3 --cerenkov --compute --save
+         ## using cerenkov genstep computes and saves the OpticksEvent (photon propagation)
+
+    op.sh --j1707 --gltf 3 --cerenkov --load
+         ## loads and visualizes the persisted propagation
+
+
+* see bin/ggv.sh for some examples, need to set timemax to avoid running out of time mid CD
+
+
 QuickTime Player 10.3
 -----------------------
 

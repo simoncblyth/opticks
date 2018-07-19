@@ -5,7 +5,7 @@
 #include "NPY.hpp"
 #include "GLMPrint.hpp"
 #include "RecordsNPY.hpp"
-#include "PLOG.hh"
+#include "OPTICKS_LOG.hh"
 
 // okc-
 #include "OpticksEventSpec.hh"
@@ -66,7 +66,7 @@ void test_appendNote()
 
 int main(int argc, char** argv)
 {
-    PLOG_(argc, argv);
+    OPTICKS_LOG(argc, argv);
 
     //test_genstep_derivative();
     //test_genstep();

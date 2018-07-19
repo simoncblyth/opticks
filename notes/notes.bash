@@ -92,4 +92,8 @@ notes-env(){
 notes-dir(){  echo $(opticks-home)/notes ; }
 notes-cd(){   cd $(notes-dir); }
 
+notes-progress-(){ echo $(notes-dir)/progress.rst ; }
+notes-progress(){ cat $(notes-progress-) | progress.py ; }
+notes-edit(){  vi $(notes-progress-) ; }
+
 
