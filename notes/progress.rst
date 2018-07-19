@@ -1,11 +1,15 @@
 Progress
 =========
 
+
+Updating 
+----------
+
 Use *hg-;hg-month n* to review commits for the numbered month, 
 negative n eg -12 for December of last year.
 
-``notes-progress`` summaries
--------------------------------
+`notes-progress` summaries
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 This progress text is parsed by `bin/progress.py` in preparation of ``notes-progress`` summaries, 
 to work with that parser follow some rules:
