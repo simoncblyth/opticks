@@ -7,6 +7,15 @@ Search
 * https://devtalk.nvidia.com/search/more/sitecommentsearch/OptiX+5+OpenGL+interop/2/
 
 
+interop
+--------
+
+* "opticks-find interop" leads to env-;throgl-  but thats Thrust-interop-with-CUDA-and-OpenGL
+  and its not very minimal
+
+* creating opticks/examples/UseOptiXProgram as really minimal OptiX starting point for 
+  subsequent example exercising minimal OptiX together with minimal OpenGL  
+
 
 
 smoking gun : interop change between OptiX 411 and 501/510
