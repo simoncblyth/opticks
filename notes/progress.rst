@@ -4,23 +4,41 @@ Progress
 Use *hg-;hg-month n* to review commits for the numbered month, 
 negative n eg -12 for December of last year.
 
-Dont use colons in section text for easy title grepping.
+``notes-progress`` summaries
+-------------------------------
+
+This progress text is parsed by `bin/progress.py` in preparation of ``notes-progress`` summaries, 
+to work with that parser follow some rules:
+
+1. title lines have a colon after the date, suppress a title by using semi-colon instead
+2. other lines have no colons
+3. bullet lines to be included in the summary should be in bold
 
 
-2018 June  
------------
+2018 July : discussions with Geant4 members, Linux port, direct translation debug
+--------------------------------------------------------------------------------------------------------------
 
-**Focus : simplify applying Opticks acceleration to any Geant4 geometry**
+* **discuss proposed extended optical example with Geant4 members**
+* **port to Linux CentOS7 Workstation with Volta GPU (NVIDIA Titan V), OptiX 5.1.0, CUDA 9.2**
+* **debugging direct geometry translation**
+
+* port python tree balancing to C++ NTreeBalance  
+
+
+2018 June : direct Geant4 to Opticks geometry conversion : **simplifies usage**
+---------------------------------------------------------------------------------
+
+* simplifies applying Opticks acceleration to any Geant4 geometry
 
 * X4/ExtG4 package for direct conversion of in memory Geant4 model into Opticks GGeo
 * YoctoGLRap YOG package for direct conversion from Geant4 into glTF 
 * direct conversions of G4VSolid into Opticks CSG nnode trees, and GMesh polygonizations
 * direct conversions of materials and surfaces
 
-2018 May 
----------
+2018 May : adopt modern CMake target export/import : **simplifies configuration**
+-----------------------------------------------------------------------------------
 
-**Focus : simplify Opticks configuration internally and from user projects**
+* greatly simplifies Opticks configuration internally and for users
 
 * research modern CMake (3.5+) capabilities for target export/import, find BCM
 * adopt Boost CMake Modules (BCM) http://bcm.readthedocs.io/  (proposed for Boost)
@@ -33,17 +51,17 @@ Dont use colons in section text for easy title grepping.
 * simplify logging OPTICKS_LOG.hh 
 * geometry digests to notice changed geometry 
 
+2018 March ; Opticks updated ; macOS High Sierra 10.13.4, Xcode 9.3, CUDA 9.1, OptiX 5.0.1  
+---------------------------------------------------------------------------------------------------
 
-2018 March/April : macOS system update from Mavericks to High Sierra
------------------------------------------------------------------------
-
-* get installation opational onto "new" machine, latest macOS : High Sierra 10.13.4, Xcode 9.3 with CUDA 9.1 and OptiX 5.0.1
+* get installation opational onto "new" machine, latest macOS ; High Sierra 10.13.4, Xcode 9.3 with CUDA 9.1 and OptiX 5.0.1
 
 
-2017 December
---------------
+2017 Dec : aligned bi-simulation ~perfect match with simple geometry after fixes 
+-----------------------------------------------------------------------------------
 
-**Focus : "--align" mode, taming randomness for perfectly aligned bi-simulation**
+* **aligning RNG consumption of GPU/CPU simulations -> trivial validation** 
+* **fix polarization + specular reflection discrepancies revealed by aligned running**
 
 * investigate approaches allowing use of the same RNG sequence with Opticks and Geant4
 
@@ -52,10 +70,8 @@ Dont use colons in section text for easy title grepping.
 * add diffuse emitters for testing all angle incidence
 * rework specular reflection to match Geant4, fixing polarization discrepancy
 
-2017 November
---------------
-
-**Focus : Improving automation/depth of integration testing**
+2017 Nov ; improved test automation/depth, help LZ user installation 
+------------------------------------------------------------------------
 
 * work with LZ user, on AssimpImporter issue
 * introduce "--reflectcheat" so photons can stay aligned thru BR/SR 
@@ -71,26 +87,23 @@ Dont use colons in section text for easy title grepping.
 * translation of optical surfaces to Geant4 motivates a reworking of surface geometry
   representation, enhanced persisting simplifies processing and conversion to Geant4  
 
-2017 October
---------------
+2017 Oct : emissive test geometry, CPU input photons, Opticks presented to Geant4 plenary
+--------------------------------------------------------------------------------------------
 
-**Focus : push analytic NCSG throughout the Opticks processing/validation chain**
+* **Opticks presented to plenary session of Geant4 Collaboration Meeting**
 
 * enable any CSG solid to emit test photons, generated CPU side such that 
   Opticks and Geant4 simulations are given exactly the same input photons
 * pushed Opticks analytic geometry support thru to okg4, allowing Opticks test geometries to 
-  be auto-converted to Geant4 ones : for okg4 comparisons
-* Opticks integration testing : automate comparison of intersect positions with geometry SDF values 
+  be auto-converted to Geant4 ones ; for okg4 comparisons
+* Opticks integration testing ; automate comparison of intersect positions with geometry SDF values 
 * debugged Opticks installs on two new Linux distros, Axel desktop, Shandong headless GPU server 
 * presenting Opticks to the plenary session of the Geant4 Collaboration Meeting in Australia
 
+2017 Sept : embedded Opticks with Tao Lin, headless GPU server tools at SDU
+--------------------------------------------------------------------------------------
 
-2017 September
-----------------
-
-**Focus : embedded application of Opticks**
-
-* work on some techniques to use Opticks on headless GPU server machines, 
+* work on some techniques (ffmpeg, okop-snap) to use Opticks on headless GPU server machines, 
   such as combining pure compute raytrace geometry snapshots into mp4 movies
 * work with Tao on Opticks/JUNO embedding 
 * implement embedded mode of Opticks operation using okop/OpMgr to run  
@@ -101,23 +114,23 @@ Dont use colons in section text for easy title grepping.
 Big Geometry
 ~~~~~~~~~~~~~~~
 
-* Eureka : avoiding having two InstLODCull active regains sanity, with this proviso frustum culling and LOD forking are both working
+* Eureka ; avoiding having two InstLODCull active regains sanity, with this proviso frustum culling and LOD forking are both working
 * InstLODCull simplifications from moving uniform handling to UBO in RContext
 
 
-2017 August : ellipsoid, torus solve-quartic troubles, hyperboloid, SOR
----------------------------------------------------------------------------
+2017 Aug : primitives for JUNO : ellipsoid, torus, hyperboloid : solve-quartic troubles
+---------------------------------------------------------------------------------------------
 
-**Focus : tricky primitives**
+* Focus on tricky primitives
 
 Overview
 ~~~~~~~~~~~
 
-* implemented the primitives needed for JUNO : torus was difficult, also 
-  implemented hyperboloid  : perhaps we can look into replacing torus with 
-  hyperboloid for the PMT (it is much much easier computationally: just quadratics rather than quartics)
+* implemented the primitives needed for JUNO ; torus was difficult, also 
+  implemented hyperboloid  ; perhaps we can look into replacing torus with 
+  hyperboloid for the PMT (it is much much easier computationally, just quadratics rather than quartics)
 
-* moved analytic geometry processing pre-cache : so launch time is 
+* moved analytic geometry processing pre-cache ; so launch time is 
   reduced from ~50 s to < 5 s
 
 * improved OpenGL visualisation performance using 
@@ -126,7 +139,7 @@ Overview
   prior to rendering each frame to skip instances that are not visible and replace distant instances with simpler
   geometry.   The improved performance will make it much easier to capture movies…
 
-  As Macs only go to OpenGL 4.1 : I am limited to techniques available to that version 
+  As Macs only go to OpenGL 4.1 ; I am limited to techniques available to that version 
   which means no OpenGL compute shaders.  I could of use CUDA interop techniques but 
   if possible it is better to stick with OpenGL for visualisation as that  can work on AMD 
   (and perhaps even Intel) GPUs, meaning much more users can benefit from it.
@@ -136,7 +149,7 @@ Solids
 ~~~~~~~~~
 
 * using doubles for quartic/cubic Solve now seems inevitable, issues are much reduced with doubles but not entirely fixed
-* op --j1707 --gltf 3 : fully analytic raytrace works, not having any triangles saves gobs of GPU memory : investigate ways to skip torus intersects
+* op --j1707 --gltf 3 ; fully analytic raytrace works, not having any triangles saves gobs of GPU memory ; investigate ways to skip torus intersects
 * start on hyperbolic hyperboloid of one sheet, hope to model PMT neck with hyperboloid rather than subtracted torus
 * torus artifacts gone, after move SolveCubicStrobachPolyFit to use initial gamma using SolveCubicPolyDivision instead of the cursed SolveCubicNumeric
 
@@ -150,7 +163,7 @@ Big Geometry
 * prep for bringing dynamic GPU LOD fork+frustum culling like env- instcull- into oglrap-, plan to use first class citizen RBuf (of Renderer) to simplify the buffer juggling
 
 
-2017 July : Solid level bbox Validations via  and fixes
+2017 July : Solid level bbox Validations and fixes
 ----------------------------------------------------------------------------------------------------
 
 Solids
@@ -163,7 +176,7 @@ Solids
 * add zcut ellipsoid by using zsphere with scaling adjusted to be 1 for z
 * investigate torus artifacts, by looking into cubic approach
 
-Validation : machinery for comparison G4DAE vs GDML/glTF geometries
+Validation ; machinery for comparison G4DAE vs GDML/glTF geometries
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * generalize GMeshLib to work in analytic and non-analytic branches, regularize GNodeLib to follow same persistency/reldir pattern
@@ -171,8 +184,8 @@ Validation : machinery for comparison G4DAE vs GDML/glTF geometries
 * get nnode_test_cpp.py codegen to work with nconvexpolyhedron primitives defined by planes and bbox
 
 * impingement debug by comparison of GDML/glTF and G4DAE branches
-* comparing GMesh bbox between branches, reveals lots of discrepancies : GScene_compareMeshes.rst
-* bbox comparisons are productive : cone-z misinterp, missing tube deltaphi
+* comparing GMesh bbox between branches, reveals lots of discrepancies ; GScene_compareMeshes.rst
+* bbox comparisons are productive ; cone-z misinterp, missing tube deltaphi
 * csg composite/prim bbox avoids polyfail noise reduces discrepant meshes to 12 percent
 * moving to parsurf bbox, avoids overlarge analytic bbox with complicated CSG trees
 * adopting adaptive parsurf_level to reach a parsurf_target number of surface points knocks 5 lvidx down the chart
@@ -183,13 +196,13 @@ Validation : machinery for comparison G4DAE vs GDML/glTF geometries
 2017 June : tapering poly dev, tree balancing, build out validation machinery, uncoincidence
 ----------------------------------------------------------------------------------------------------
 
-Polygonization : move on HY poly taking too long
+Polygonization ; move on HY poly taking too long
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * try subdivide border tris approach to boolean mesh combination, tboolean-hyctrl
 * decide to proceed regardless despite subdiv problems, forming a zippering approach
 
-Solids : analytic bbox combination, tree balancing positivize, ndisc
+Solids ; analytic bbox combination, tree balancing positivize, ndisc
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * nbbox::CombineCSG avoids the crazy large bbox
@@ -198,7 +211,7 @@ Solids : analytic bbox combination, tree balancing positivize, ndisc
 * checking deep csg trees with tboolean-sc
 * nbox::nudge finding coincident surfaces in CSG difference and nudging them to avoid the speckled ghost surface issues
 * tboolean-uncoincide for debugging uncoincide failure 
-* tboolean-esr : investigate ESR speckles and pole artifacting, from degenerate cylinder
+* tboolean-esr ; investigate ESR speckles and pole artifacting, from degenerate cylinder
 * add disc primitive tboolean-disc as degenerate cylinder replacement
 * make CSG_DISC work as a CSG subobject in boolean expressions by adding otherside intersects and rigidly oriented normals
 * mono bileaf CSG tree balancing to handle mixed deep trees, used for unions of cylinders with inners done via subtraction
@@ -209,7 +222,7 @@ Structure
 * completed transfer of node identity, boundary and sensor info, from triangulated G4DAE to analytic GDML/glTF branches in GScene
 * moving to absolute tree handling in gltf with selection mask gets steering of the branches much closer
 
-Validation : intersect point SDF, SDF scanning, containment(child surf vs parent SDF)
+Validation ; intersect point SDF, SDF scanning, containment(child surf vs parent SDF)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * factor GNodeLib out of GGeo to avoid duplication between GScene and GGeo, aiming to allow comparison of triangulated and analytic node trees
@@ -234,32 +247,32 @@ Validation : intersect point SDF, SDF scanning, containment(child surf vs parent
 2017 May : last primitive (trapezoid/convexpolyhedron), tree balancing, hybrid poly, scene structure
 -------------------------------------------------------------------------------------------------------
 
-Solids : trapezoid, nconvexpolyhedron : tree balancing
+Solids ; trapezoid, nconvexpolyhedron ; tree balancing
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-* tboolean-trapezoid : trapezoid, nconvexpolyhedron 
+* tboolean-trapezoid ; trapezoid, nconvexpolyhedron 
 * nconvexpolyhedron referencing sets of planes just like transforms referencing
 * icosahedron check 
 * investigate 22 deep CSG solids with binary tree height greater than 3 in DYB near geometry
-* implement complemented primitives : thru the chain from python CSG into npy NCSG, NNode, NPart and on into oxrap csg_intersect_part
+* implement complemented primitives ; thru the chain from python CSG into npy NCSG, NNode, NPart and on into oxrap csg_intersect_part
 * Tubs with inner radius needs an inner nudge, making the inner subtracted cylinder slightly thicker than the outer one
 * handling poles and seams in sphere parametrisation 
 
-Polygonization : hybrid implicit/parametric
+Polygonization ; hybrid implicit/parametric
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-* start HY : hybrid implicit/parametric polygonization
+* start HY ; hybrid implicit/parametric polygonization
 * parametric primitive meshing with NHybridMesher code HY, test with tboolean-hybrid
 * try subdivide border tris approach to boolean mesh combinatio
 * adopt centroid splitting succeeds to stay manifold 
 
-Structure : gltf transport
+Structure ; gltf transport
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * start on GPU scene conversion sc.py, gltf, NScene, GScene
 * booting analytic gdml/gltf root from gdml snippets with tgltf-
 * repeat candidate finding/using (ie instanced analytic and polygonized subtrees) in NScene/GScene
-* integration with oyoctogl- : for gltf parsing
+* integration with oyoctogl- ; for gltf parsing
 * tgltf-gdml from oil maxdepth 3, now working with skipped overheight csg nodes (may 20th)
 
 
@@ -276,7 +289,7 @@ Polygonization
 * conclude polygonization fails for cathode and base are a limitation of current poly techniques, 
   need new approach to work with thin volumes, find candidate env-;csgparametric-
 
-Solids : lots of new primitives ncylinder, nzsphere, ncone, box3
+Solids ; lots of new primitives ncylinder, nzsphere, ncone, box3
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * start adding transform handling to the CSG tree
@@ -290,7 +303,7 @@ Solids : lots of new primitives ncylinder, nzsphere, ncone, box3
 * polycones as unions of cones and cylinders
 * start looking at CSG tree balancing
 
-CSG Engine : bit twiddle postorder
+CSG Engine ; bit twiddle postorder
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * remove CSG tree height limitation by adoption of bit twiddling postorder, 
@@ -299,7 +312,7 @@ CSG Engine : bit twiddle postorder
 * attempts to use unbounded and open geometry as CSG sub-objects drives home 
   the theory behind CSG - S means SOLID, endcaps are not optional 
 
-Structure : jump ship to GDML
+Structure ; jump ship to GDML
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * complete conversion of detdesc PMT into NCSG (no uncoincide yet)
@@ -311,7 +324,7 @@ Structure : jump ship to GDML
 2017 Mar : GPU CSG raytracing implementation, SDF modelling, MC and DCS polygonization of CSG trees 
 -----------------------------------------------------------------------------------------------------
 
-CSG Engine : reiteration
+CSG Engine ; reiteration
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * moving CSG python prototype to CUDA
@@ -319,13 +332,13 @@ CSG Engine : reiteration
 * CSG stacks in CUDA
 * fix a real painful rare bug in tree reiteration  
 
-Solids : implicit modelling with SDFs
+Solids ; implicit modelling with SDFs
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * OpticksCSG unification of type shape codes
 * learn geometry modelling with implicit functions, SDFs
 
-Polygonization : Marching Cubes, Dual Contouring
+Polygonization ; Marching Cubes, Dual Contouring
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * start adding polygonization of CSG trees using SDF isosurface extraction
@@ -337,7 +350,7 @@ Polygonization : Marching Cubes, Dual Contouring
 2017 Feb : GPU CSG raytracing prototyping
 -------------------------------------------
 
-CSG Engine : python prototyping, recursive into iterative
+CSG Engine ; python prototyping, recursive into iterative
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * prototyping GPU CSG in python
@@ -347,7 +360,7 @@ CSG Engine : python prototyping, recursive into iterative
 * learn how to migrate recursive into iterative
 
 
-2017 Jan : presentations, proceedings, holidays
+2017 Jan : PSROC presentation, CHEP proceedings
 -------------------------------------------------
 
 * CHEP meeting proceedings bulk of the writing  
