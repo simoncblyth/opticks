@@ -271,7 +271,19 @@ bool GUI::animator_gui(Animator* animator, const char* label, const char* fmt, f
 
     if(animator->isSlowEnabled())
     {
-        ImGui::RadioButton(Animator::SLOW_, mode, Animator::SLOW);
+        ImGui::RadioButton(Animator::SLOW32_, mode, Animator::SLOW32);
+        ImGui::SameLine(); 
+
+        ImGui::RadioButton(Animator::SLOW16_, mode, Animator::SLOW16);
+        ImGui::SameLine(); 
+
+        ImGui::RadioButton(Animator::SLOW8_, mode, Animator::SLOW8);
+        ImGui::SameLine(); 
+
+        ImGui::RadioButton(Animator::SLOW4_, mode, Animator::SLOW4);
+        ImGui::SameLine(); 
+
+        ImGui::RadioButton(Animator::SLOW2_, mode, Animator::SLOW2);
         ImGui::SameLine(); 
     }
     if(animator->isNormEnabled())
