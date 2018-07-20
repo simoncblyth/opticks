@@ -13,11 +13,13 @@ class OKCORE_API Animator {
         static const int period_high ; 
 
         static const char* OFF_ ; 
-        static const char* SLOW_ ; 
+        static const char* SLOW8_ ; 
+        static const char* SLOW4_ ; 
+        static const char* SLOW2_ ; 
         static const char* NORM_ ; 
         static const char* FAST_ ; 
 
-        typedef enum {  OFF, SLOW, NORM, FAST, NUM_MODE } Mode_t ;
+        typedef enum {  OFF, SLOW8, SLOW4, SLOW2, NORM, FAST, NUM_MODE } Mode_t ;
 
 
         Animator(float* target, unsigned int period, float low=0.f, float high=1.f);

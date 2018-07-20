@@ -45,6 +45,13 @@ op.sh event movies
     op.sh --j1707 --gltf 3 --cerenkov --load
          ## loads and visualizes the persisted propagation
 
+    op.sh --j1707 --gltf 3 --scintillation --compute --timemax 400 --animtimemax 400
+
+
+
+
+
+
 
 * see bin/ggv.sh for some examples, need to set timemax to avoid running out of time mid CD
 

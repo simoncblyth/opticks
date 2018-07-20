@@ -11,7 +11,9 @@
 #include "PLOG.hh"
 
 const char* Animator::OFF_  = "OFF" ; 
-const char* Animator::SLOW_ = "SLOW" ; 
+const char* Animator::SLOW8_ = "SLOW8" ; 
+const char* Animator::SLOW4_ = "SLOW4" ; 
+const char* Animator::SLOW2_ = "SLOW2" ; 
 const char* Animator::NORM_ = "NORM" ; 
 const char* Animator::FAST_ = "FAST" ; 
 
@@ -31,12 +33,16 @@ Animator::Animator(float* target, unsigned int period, float low, float high)
     m_increment(1)
 {
     m_period[OFF]  = 0 ; 
-    m_period[SLOW] = period*2  ; 
+    m_period[SLOW8] = period*8  ; 
+    m_period[SLOW4] = period*4  ; 
+    m_period[SLOW2] = period*2  ; 
     m_period[NORM] = period    ; 
     m_period[FAST] = period/2  ; 
 
     m_fractions[OFF]  = NULL ; 
-    m_fractions[SLOW] = make_fractions(m_period[SLOW]) ;
+    m_fractions[SLOW8] = make_fractions(m_period[SLOW8]) ;
+    m_fractions[SLOW4] = make_fractions(m_period[SLOW4]) ;
+    m_fractions[SLOW2] = make_fractions(m_period[SLOW2]) ;
     m_fractions[NORM] = make_fractions(m_period[NORM]) ;
     m_fractions[FAST] = make_fractions(m_period[FAST]) ;
 }
@@ -62,7 +68,7 @@ int* Animator::getModePtr()
 
 bool Animator::isSlowEnabled()
 {
-    return SLOW < m_restrict ; 
+    return SLOW2 < m_restrict ; 
 }
 bool Animator::isNormEnabled()
 {
@@ -319,7 +325,9 @@ const char* Animator::getModeString()
     switch(m_mode)
     {
         case  OFF:mode = OFF_ ; break ; 
-        case SLOW:mode = SLOW_ ; break ; 
+        case SLOW8:mode = SLOW8_ ; break ; 
+        case SLOW4:mode = SLOW4_ ; break ; 
+        case SLOW2:mode = SLOW2_ ; break ; 
         case NORM:mode = NORM_ ; break ; 
         case FAST:mode = FAST_ ; break ; 
         case NUM_MODE:assert(0) ; break ; 

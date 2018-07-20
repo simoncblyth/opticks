@@ -96,7 +96,7 @@ void InterpolatedView::init()
     m_animator = new Animator(&m_fraction, m_period, 0.f, 1.f ); 
     //m_animator->setModeRestrict(Animator::NORM);  // only OFF,SLOW,NORM,FAST, 
     if(m_verbose) m_animator->Summary("InterpolatedView::init");
-    m_animator->setMode(Animator::SLOW);
+    m_animator->setMode(Animator::SLOW8);
 }
 
 bool InterpolatedView::hasChanged()

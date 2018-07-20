@@ -18,7 +18,7 @@ int main()
          anim.step(bump);
          printf("%5d bump? %d %16s %10.4f \n", i, bump, anim.description(), target)   ;
          if( i == 100 ) anim.setMode(Animator::FAST);
-         if( i == 400 ) anim.setMode(Animator::SLOW);
+         if( i == 400 ) anim.setMode(Animator::SLOW8);
 
          npy->setQuad(i, 0, float(i), float(target), 0.f, 0.f );
      }
