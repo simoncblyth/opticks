@@ -36,6 +36,12 @@ namespace YOG
 X4PhysicalVolume
 ===================
 
+Constructor populates the GGeo instance via direct conversion of 
+materials, surfaces and structure from the passed world volume::
+
+    X4PhysicalVolume(GGeo* ggeo, const G4VPhysicalVolume* const pv); 
+
+
 Hmm this shoud probably be named X4Scene or X4Tree, 
 as it forcusses on the tree not the PhysicalVolume node.
 

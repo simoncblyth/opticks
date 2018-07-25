@@ -190,9 +190,14 @@ $FUNCNAME
 ======================
 
 
+   opticks-tbool-path 0 : $(opticks-tbool-path 0)
+   opticks-nnt-path 0   : $(opticks-nnt-path 0)
+
 
 EOI
 }
+
+
 
 opticks-tbool-path(){ 
    local lvid=${1:-0} 
@@ -250,6 +255,7 @@ opticks-nnt-(){
 EOL
 }
 
+
 opticks-nnt()
 {
    local msg="$FUNCNAME :"
@@ -265,9 +271,6 @@ opticks-nnt()
    eval $($FUNCNAME- $path)  && $stem
 
    which $stem
-
-   
-
 }
 
 
@@ -1315,7 +1318,6 @@ tboxlaser-(){  . $(opticks-home)/tests/tboxlaser.bash && tboxlaser-env $* ; }
 tdefault-(){   . $(opticks-home)/tests/tdefault.bash  && tdefault-env $* ; }
 tconcentric-(){   . $(opticks-home)/tests/tconcentric.bash  && tconcentric-env $* ; }
 tboolean-(){      . $(opticks-home)/tests/tboolean.bash  && tboolean-env $* ; }
-tboolean2-(){      . $(opticks-home)/tests/tboolean2.bash  && tboolean2-env $* ; }
 tboolean-bib-(){      . $(opticks-home)/tests/tboolean-bib.bash  && tboolean-bib-env $* ; }
 tjuno-(){      . $(opticks-home)/tests/tjuno.bash  && tjuno-env $* ; }
 tgltf-(){         . $(opticks-home)/tests/tgltf.bash  && tgltf-env $* ; }

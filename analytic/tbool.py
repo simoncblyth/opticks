@@ -115,6 +115,16 @@ from opticks.ana.base import now_
 
 
 class TBoolBashFunction(dict):
+     """
+     This is used from opticks.analytic.csg with the "body" geometry 
+     provided by the recursive as_code function::
+
+        1335     def as_tbool(self, name="esr"):
+        1336         tbf = TBoolBashFunction(name=name, root=self.alabel, body=self.as_code(lang="py")  )
+        1337         return str(tbf)
+
+
+     """
      def __init__(self, *args, **kwa):
          dict.__init__(self, *args, **kwa)
 
@@ -162,6 +172,3 @@ if __name__ == '__main__':
      tbf.save()
 
      
-
-
-
