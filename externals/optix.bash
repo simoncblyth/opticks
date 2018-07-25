@@ -25,6 +25,21 @@ GTC 2018 : Whats new in 5.0, Whats coming in 5.1
 * http://on-demand.gputechconf.com/gtc-eu/2017/presentation/23136-timo-stich-scientific-ray-tracing-with-optix.pdf
 
 
+AI denoiser
+------------
+
+* https://developer.nvidia.com/optix-denoiser
+* http://research.nvidia.com/sites/default/files/publications/dnn_denoise_author.pdf
+* ~/opticks_refs/optix5_dnn_denoise_author.pdf
+
+
+OptiX MDL
+------------
+
+* http://on-demand.gputechconf.com/gtc/2016/presentation/s6244-roettger-optix-mdl.pdf
+* https://developer.nvidia.com/mdl-sdk
+
+
 OptiX RTX
 ----------
 
