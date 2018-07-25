@@ -15,6 +15,34 @@ See Also
 * cudamac-
 
 
+dynamic parallelism : series by  Andy Adinets
+-------------------------------------------------
+
+CUDA 5.0 introduced Dynamic Parallelism (Compute Capability 3.5 or higher), 
+which makes it possible to launch kernels from threads running on the device; 
+threads can launch more threads. An application can launch a coarse-grained 
+kernel which in turn launches finer-grained kernels to do work where needed.
+
+
+
+* https://devblogs.nvidia.com/introduction-cuda-dynamic-parallelism/
+
+  Multi-level parallelism example that avoids waisting compute in the black zone
+  inside the Mandelbrot set (Mariani-Silver Algorithm) 
+
+  Dynamic Parallelism uses the CUDA Device Runtime library (cudadevrt), 
+  a subset of CUDA Runtime API callable from device code.
+
+
+* https://devblogs.nvidia.com/cuda-dynamic-parallelism-api-principles/
+
+  practicalities of nested launches
+
+* https://devblogs.nvidia.com/a-cuda-dynamic-parallelism-case-study-panda/
+* http://on-demand.gputechconf.com/gtc/2014/presentations/S4499-gpus-for-online-track-reconstruction.pdf 
+
+
+
 cuda uninstallers
 -------------------
 
