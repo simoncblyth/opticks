@@ -35,12 +35,17 @@ void test_solid(G4VSolid* so)
     G4VisExtent vx = so->GetExtent() ; 
     std::cout << vx << std::endl ; 
 
-    X4Solid* xs = new X4Solid(so) ; 
+    bool top = true ; 
+    X4Solid* xs = new X4Solid(so, top) ; 
     LOG(info) << xs->desc() ; 
     nnode* root = xs->root(); 
     assert( root ) ; 
     root->update_gtransforms();
     root->dump();
+
+    root->dump_g4code(); 
+    root->write_g4code("$TMP/g4code.cc"); 
+
 
     unsigned soIdx = 0 ; 
     unsigned lvIdx = 0 ; 
@@ -160,6 +165,7 @@ void test_intersectWithPhiSegment()
 
 void test_union_of_two_differences()
 {
+
     G4RotationMatrix* rotMatrix = NULL ; 
     G4ThreeVector right(0.5,0,0);
     G4ThreeVector left(-0.5,0,0);
@@ -176,6 +182,27 @@ void test_union_of_two_differences()
 
     test_solid(uni1);
 }
+
+
+void test_boolean()
+{
+    G4VSolid* orb1 = new G4Orb("orb1",1.) ;
+    G4VSolid* orb2 = new G4Orb("orb2",2.) ;
+    G4VSolid* uni1 = new G4UnionSolid("uni1", orb1,orb2 ); 
+    test_solid(uni1); 
+}
+
+void test_boolean_displaced()
+{
+    G4RotationMatrix* rot = new G4RotationMatrix(G4ThreeVector(0.707107,-0.707107,0.000000),G4ThreeVector(0.707107,0.707107,0.000000),G4ThreeVector(0.000000,0.000000,1.000000));
+    G4ThreeVector tla(1,0,0);
+    G4VSolid* orb1 = new G4Orb("orb1",1.) ;
+    G4VSolid* orb2 = new G4Orb("orb2",2.) ;
+    G4VSolid* uni1 = new G4UnionSolid("uni1", orb1,orb2, rot, tla ); 
+    test_solid(uni1); 
+}
+
+
 
 
 /**
@@ -230,10 +257,11 @@ void test_cathode()
 
 
 
+
+
 int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv);
-
 
     //test_G4Sphere();
     //test_G4Orb();
@@ -246,7 +274,10 @@ int main(int argc, char** argv)
     //test_G4Hype();
     //test_intersectWithPhiSegment();
     //test_union_of_two_differences();
-    test_cathode();
+    //test_cathode();
+
+    //test_boolean();
+    test_boolean_displaced();
 
     return 0 ; 
 }

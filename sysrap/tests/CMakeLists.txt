@@ -33,6 +33,8 @@ set(TEST_SOURCES
    SDirectTest.cc 
    S_freopen_redirect_test.cc
 
+   SIdTest.cc
+
 )
 
 set(_TEST_SOURCES

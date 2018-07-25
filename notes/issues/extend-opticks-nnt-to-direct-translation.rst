@@ -33,6 +33,33 @@ of the tree.
 Note there is no G4 dependency : are just generating strings that 
 happen to be Geant4 geometry code.
 
+
+alt approach : from "System 1" following lunch 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Doing this in X4Solid will be much easier than nnode:
+
+* have the real Geant4 instance right there to spill its beans
+* this code gen is just for testing : so no problem to do it only at conversion 
+  and the resulting string can be stored along with the nnode
+
+* but this doesnt help with testing of tree balancing ? BUT its so much 
+  faster to implement than the nnode approach that its worth doing if first, checking 
+  all solids from this perspective and then worrying about tree balancing later.
+
+::
+
+    implemented via X4SolidBase::setG4Param and X4SolidBase::g4code which gets invoked
+    by the setG4Param
+
+
+what remains to implement
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* transforms, displaced solids
+
+
+
 how to test ?
 ~~~~~~~~~~~~~~
 

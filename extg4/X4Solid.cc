@@ -19,8 +19,10 @@
 #include "G4SystemOfUnits.hh"
 
 #include "X4Transform3D.hh"
+#include "X4AffineTransform.hh"
 #include "X4Solid.hh"
 
+#include "SId.hh"
 #include "BStr.hh"
 #include "OpticksCSG.h"
 #include "GLMFormat.hpp"
@@ -51,15 +53,16 @@ nnode* X4Solid::Convert(const G4VSolid* solid)
 {
     if(fVerbosity > 0) LOG(error) << " convert " << solid->GetName() ; 
 
-    X4Solid xs(solid);
+    bool top = true ; 
+    X4Solid xs(solid, top);
     nnode* root = xs.root(); 
     root->update_gtransforms();  
     return root ; 
 }
 
-X4Solid::X4Solid(const G4VSolid* solid )
+X4Solid::X4Solid(const G4VSolid* solid, bool top)
    :
-   X4SolidBase(solid)
+   X4SolidBase(solid, top)
 {
    init(); 
 }
@@ -134,9 +137,6 @@ G4ThreeVector X4Solid::GetAngles(const G4RotationMatrix& mtx)
    return G4ThreeVector(x,y,z);
 }
 
-
-
-
 void X4Solid::booleanDisplacement( G4VSolid** pp, G4ThreeVector& pos, G4ThreeVector& rot )
 {
     // cf /usr/local/opticks/externals/g4/geant4_10_02_p01/source/persistency/gdml/src/G4GDMLWriteSolids.cc
@@ -163,8 +163,6 @@ void X4Solid::booleanDisplacement( G4VSolid** pp, G4ThreeVector& pos, G4ThreeVec
 }
 
 
-
-
 void X4Solid::convertUnionSolid()
 {
     convertBooleanSolid() ;
@@ -183,16 +181,14 @@ void X4Solid::convertDisplacedSolid()
     G4VSolid* moved = disp->GetConstituentMovedSolid() ;
     assert( dynamic_cast<G4DisplacedSolid*>(moved) == NULL ); // only a single displacement is handled
 
-    X4Solid* xmoved = new X4Solid(moved);
+    bool top = false ;  // never top of tree : expect to always be a boolean RHS
+    X4Solid* xmoved = new X4Solid(moved, top);
     nnode* a = xmoved->root();
 
     glm::mat4 xf_disp = X4Transform3D::GetDisplacementTransform(disp);  
     a->transform = new nmat4triple(xf_disp); 
 
-    // a->update_gtransforms();  
-    // without update_transforms does nothing 
-    // YES : but should be done for the full solid, not just from one of the nodes
-    //LOG(error) << gpresent("\n      disp", xf_disp) ; 
+    // update_gtransforms() is invoked on the full solid, not here from just one node
 
     setRoot(a); 
 }
@@ -211,16 +207,60 @@ void X4Solid::convertBooleanSolid()
     G4VSolid* left  = const_cast<G4VSolid*>(solid->GetConstituentSolid(0));
     G4VSolid* right = const_cast<G4VSolid*>(solid->GetConstituentSolid(1));
 
-    assert( dynamic_cast<G4DisplacedSolid*>(left) == NULL ); // not expecting left displacement 
+    bool left_displaced = dynamic_cast<G4DisplacedSolid*>(left) != NULL ;
+    bool right_displaced = dynamic_cast<G4DisplacedSolid*>(right) != NULL ;
 
-    X4Solid* xleft = new X4Solid(left); 
-    X4Solid* xright = new X4Solid(right); 
+    assert( !left_displaced && "not expecting left displacement " ); 
+
+    X4Solid* xleft = new X4Solid(left, false); 
+    X4Solid* xright = new X4Solid(right, false); 
 
     nnode* a = xleft->root(); 
     nnode* b = xright->root(); 
     nnode* n = nnode::make_operator_ptr( _operator, a, b ); 
 
     setRoot(n); 
+
+
+    /*
+     Hmm will just detecting transforms on b catch em all ?
+    
+     Need to prepend the transform setup g4code to the node that 
+     uses it and assign an transform identifiers for rotation and translation and
+     refer to them in the below param list. 
+
+     Hmm the AffineTransform ctor with all the numbers is private, so might as well use boolean 
+     ctor with rotation and translation args ?
+
+     X4RotationMatrix makes the protected ctor accessible but then are 
+     not generating pure G4 code ? 
+    */
+
+    std::vector<std::string> param ;
+    param.push_back( xleft->getIdentifier() ); 
+    param.push_back( xright->getIdentifier() ); 
+
+    if(right_displaced)
+    {
+        //assert(b->gtransform) ; 
+        const G4DisplacedSolid* const disp = static_cast<const G4DisplacedSolid*>(right);
+        assert( disp ); 
+        X4AffineTransform xdirect(disp->GetDirectTransform()); 
+
+        const char* rot_id = OTHER_ID->get(false) ;
+        const char* tla_id = OTHER_ID->get(false) ;
+
+        std::string rot = xdirect.getRotationCode(rot_id);
+        std::string tla = xdirect.getTranslationCode(tla_id);
+
+        addG4Code(rot.c_str()) ;  
+        addG4Code(tla.c_str()) ;  
+
+        param.push_back( rot_id ) ; 
+        param.push_back( tla_id ) ; 
+    } 
+
+    setG4Param(param); 
 }
 
 
@@ -351,9 +391,23 @@ void X4Solid::convertSphere()
     //LOG(info) << "\n" << *solid ; 
 
     bool only_inner = false ; 
+
     nnode* n = convertSphere_(only_inner); 
     setRoot(n); 
+
+
+    std::vector<double> param = {
+                                 solid->GetInnerRadius() ,
+                                 solid->GetOuterRadius() ,
+                                 solid->GetStartPhiAngle() ,
+                                 solid->GetDeltaPhiAngle() ,
+                                 solid->GetStartThetaAngle() ,
+                                 solid->GetDeltaThetaAngle()
+                               } ;
+
+    setG4Param(param);
 }
+
 
 void X4Solid::convertOrb()
 {  
@@ -369,7 +423,11 @@ void X4Solid::convertOrb()
 
     nnode* n =  new nsphere(make_sphere( x, y, z, radius ));
     n->label = BStr::concat(m_name, "_sphere", NULL ) ; 
+
     setRoot(n); 
+
+    std::vector<double> param  = { solid->GetRadius() } ;
+    setG4Param(param); 
 }
 
 
@@ -384,13 +442,20 @@ void X4Solid::convertBox()
 
 
     // match G4GDMLWriteSolids::BoxWrite
-    float x = 2.0*solid->GetXHalfLength()/mm ; 
-    float y = 2.0*solid->GetYHalfLength()/mm ; 
-    float z = 2.0*solid->GetZHalfLength()/mm ; 
+    float hx = solid->GetXHalfLength()/mm ; 
+    float hy = solid->GetYHalfLength()/mm ; 
+    float hz = solid->GetZHalfLength()/mm ; 
+
+    float x = 2.0*hx ; 
+    float y = 2.0*hy ; 
+    float z = 2.0*hz ; 
 
     nnode* n =  new nbox(make_box3( x, y, z));
     n->label = BStr::concat(m_name, "_box3", NULL ) ; 
     setRoot(n); 
+
+    std::vector<double> param = { hx, hy, hz } ;
+    setG4Param(param);
 }
 
 
@@ -486,6 +551,15 @@ void X4Solid::convertTubs()
                   ;
 
     setRoot(result); 
+
+    std::vector<double> param = { 
+                                  solid->GetInnerRadius(), 
+                                  solid->GetOuterRadius(), 
+                                  solid->GetZHalfLength(), 
+                                  solid->GetStartPhiAngle(),
+                                  solid->GetDeltaPhiAngle() 
+                               } ;
+    setG4Param(param);
 }
 
 
@@ -556,6 +630,13 @@ Following
     trd->label = BStr::concat(m_name, "_solid", NULL ); 
 
     setRoot(trd); 
+
+    std::vector<double> param = { solid->GetXHalfLength1() , 
+                                 solid->GetXHalfLength2() , 
+                                 solid->GetYHalfLength1() ,
+                                 solid->GetYHalfLength2() ,
+                                 solid->GetZHalfLength()  } ;  
+    setG4Param(param);
 }
 
 
@@ -616,13 +697,24 @@ nnode* X4Solid::convertCons_(bool only_inner)
 
 void X4Solid::convertCons()
 {  
-    const G4Cons* const cone = static_cast<const G4Cons*>(m_solid);
-    assert(cone); 
-    //LOG(info) << "\n" << *cone ; 
+    const G4Cons* const solid = static_cast<const G4Cons*>(m_solid);
+    assert(solid); 
+    //LOG(info) << "\n" << *solid; 
 
     bool only_inner = false ; 
     nnode* n = convertCons_(only_inner); 
     setRoot(n); 
+
+    std::vector<double> param = {  
+                                  solid->GetInnerRadiusMinusZ() ,  
+                                  solid->GetOuterRadiusMinusZ() ,  
+                                  solid->GetInnerRadiusPlusZ()  ,  
+                                  solid->GetOuterRadiusPlusZ()  ,
+                                  solid->GetZHalfLength() , 
+                                  solid->GetStartPhiAngle() , 
+                                  solid->GetDeltaPhiAngle() 
+                               } ;
+    setG4Param(param);
 }
 
 void X4Solid::convertTorus()
@@ -648,6 +740,15 @@ void X4Solid::convertTorus()
     nnode* n = new ntorus(make_torus(R, r)) ;
     n->label = BStr::concat( m_name , "_torus" , NULL ); 
     setRoot(n); 
+
+    std::vector<double> param = {  
+                                  solid->GetRmin() ,  
+                                  solid->GetRmax() ,  
+                                  solid->GetRtor()  ,  
+                                  solid->GetSPhi()  ,
+                                  solid->GetDPhi()  
+                               } ;
+    setG4Param(param);
 }
 
 void X4Solid::convertEllipsoid()
@@ -693,6 +794,15 @@ void X4Solid::convertEllipsoid()
          ;
 
     setRoot(cn); 
+
+    std::vector<double> param = {  
+                                  solid->GetSemiAxisMax(0) ,  
+                                  solid->GetSemiAxisMax(1) ,  
+                                  solid->GetSemiAxisMax(2) ,  
+                                  solid->GetZBottomCut()  ,
+                                  solid->GetZTopCut()  
+                               } ;
+    setG4Param(param);
 }
 
 
@@ -825,6 +935,16 @@ void X4Solid::convertHype()
     bool only_inner = false ; 
     nnode* n = convertHype_(only_inner); 
     setRoot(n); 
+
+    std::vector<double> param = {
+                                  solid->GetInnerRadius(),
+                                  solid->GetOuterRadius(),
+                                  solid->GetInnerStereo(),
+                                  solid->GetOuterStereo(),
+                                  solid->GetZHalfLength()
+                                } ;
+                               
+    setG4Param(param);
 }
 
 nnode* X4Solid::convertHype_(bool only_inner)

@@ -12,6 +12,15 @@ class SYSRAP_API SStr {
       static void FillFromULL( char* dest, unsigned long long value, char unprintable='.') ; 
       static const char* FromULL(unsigned long long value, char unprintable='.'); 
       static unsigned long long ToULL(const char* s8 ); 
+
+      template <size_t SIZE>
+      static const char* Format1( const char* fmt, const char* value );
+
+      template <size_t SIZE>
+      static const char* Format2( const char* fmt, const char* value1, const char* value2 );
+
+      template <size_t SIZE>
+      static const char* Format3( const char* fmt, const char* value1, const char* value2, const char* value3 );
 };
 
 

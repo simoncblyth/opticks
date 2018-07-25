@@ -16,7 +16,8 @@ set(TEST_SOURCES
     X4PhysicalVolumeTest.cc
     X4PhysicalVolume2Test.cc
     X4Transform3DTest.cc
-
+    X4AffineTransformTest.cc
+    X4ThreeVectorTest.cc
 
 )
 

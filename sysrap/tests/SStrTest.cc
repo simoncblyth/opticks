@@ -48,13 +48,31 @@ void test_FromULL()
 
 
 
+
+void test_Format1()
+{
+    const char* fmt = "hello %s hello"  ; 
+    const char* value = "world" ; 
+    const char* result = SStr::Format1<256>(fmt, value );
+    const char* expect = "hello world hello" ; 
+    assert( strcmp( result, expect) == 0 ); 
+
+    // this asserts from truncation 
+    //const char* result2 = SStr::Format1<16>(fmt, value );
+    //LOG(info) << " result2 " << result2 ;  
+ 
+}
+
+
+
 int main(int argc , char** argv )
 {
     OPTICKS_LOG(argc, argv);
 
-    test_ToULL();
-    test_FromULL();
- 
+    //test_ToULL();
+    //test_FromULL();
+    test_Format1();  
+
     return 0  ; 
 }
 

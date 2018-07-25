@@ -47,7 +47,7 @@ class X4_API X4Solid : public X4SolidBase
         static void SetVerbosity(unsigned verbosity);
         static nnode* Convert(const G4VSolid* solid);
     public:
-        X4Solid(const G4VSolid* solid); 
+        X4Solid(const G4VSolid* solid, bool top); 
     private:
         void init();
         static unsigned fVerbosity ; 

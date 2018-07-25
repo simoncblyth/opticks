@@ -44,6 +44,7 @@ set(SOURCES
     md5.cc
     SPPM.cc
     SBufferSpec.cc
+    SId.cc
 ) 
 
 set(HEADERS
@@ -81,6 +82,7 @@ set(HEADERS
     S_freopen_redirect.hh
     SPPM.hh
     SBufferSpec.hh
+    SId.hh
 )
 
 

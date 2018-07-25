@@ -3,6 +3,8 @@
 #include <string>
 #include <vector>
 #include <functional>
+#include <ostream>
+#include <fstream>
 
 #include "OpticksCSG.h"
 #include "OpticksCSGMask.h"
@@ -268,9 +270,15 @@ struct NPY_API nnode
     NParameters*  meta ;
     NNodeDump*    _dump ;
     nbbox*        _bbox_model ; 
+    const char*  g4code ; 
+
 
     static nnode make_node(OpticksCSG_t operator_, nnode* left=NULL, nnode* right=NULL);
     static nnode* make_operator_ptr(OpticksCSG_t operator_, nnode* left=NULL, nnode* right=NULL );
+
+    void dump_g4code() const ;
+    void write_g4code(const char* path) const ;
+    static void to_g4code_r(const nnode* node, std::ostream& out);
 
 };
 inline nnode nnode::make_node(OpticksCSG_t operator_, nnode* left, nnode* right )

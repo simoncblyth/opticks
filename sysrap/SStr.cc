@@ -61,5 +61,39 @@ unsigned long long SStr::ToULL( const char* s )
 }
 
 
+template<size_t SIZE>
+const char* SStr::Format1( const char* fmt, const char* value )
+{
+    char buf[SIZE]; 
+    size_t cx = snprintf( buf, SIZE, fmt, value );   
+    assert( cx < SIZE && "snprintf truncation detected" );  
+    return strdup(buf);
+}
+
+template<size_t SIZE>
+const char* SStr::Format2( const char* fmt, const char* value1, const char* value2 )
+{
+    char buf[SIZE]; 
+    size_t cx = snprintf( buf, SIZE, fmt, value1, value2 );   
+    assert( cx < SIZE && "snprintf truncation detected" );  
+    return strdup(buf);
+}
+
+template<size_t SIZE>
+const char* SStr::Format3( const char* fmt, const char* value1, const char* value2, const char* value3 )
+{
+    char buf[SIZE]; 
+    size_t cx = snprintf( buf, SIZE, fmt, value1, value2, value3 );   
+    assert( cx < SIZE && "snprintf truncation detected" );  
+    return strdup(buf);
+}
+
+
+template const char* SStr::Format1<256>( const char* , const char* );
+template const char* SStr::Format2<256>( const char* , const char*, const char* );
+template const char* SStr::Format3<256>( const char* , const char*, const char* , const char* );
+
+template const char* SStr::Format1<16>( const char* , const char* );
+
 
 

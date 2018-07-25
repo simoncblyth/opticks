@@ -5,6 +5,7 @@
 #include <iomanip>
 #include <set>
 
+#include "BFile.hh"
 #include "BRng.hh"
 
 #include "NGLM.hpp"
@@ -204,6 +205,8 @@ void nnode::Init( nnode& n , OpticksCSG_t type, nnode* left, nnode* right )
     n.boundary = NULL ;  
     n.meta = NULL ; 
     n._dump = new NNodeDump(n) ; 
+    n._bbox_model = NULL ; 
+    n.g4code = NULL ;  
 
     n.transform = NULL ; 
     n.gtransform = NULL ; 
@@ -434,6 +437,28 @@ std::string nnode::get_mask_string(NNodeType ntyp) const
 
 
 
+void nnode::dump_g4code() const 
+{
+    std::ostream& out = std::cout ;
+    to_g4code_r( this, out ); 
+}
+void nnode::write_g4code(const char* path_) const 
+{
+    std::string path = BFile::FormPath(path_) ;
+    std::ofstream out(path.c_str());
+    to_g4code_r( this, out ); 
+}
+void nnode::to_g4code_r(const nnode* node, std::ostream& out)  // static
+{
+    if(node->left && node->right)
+    {
+        assert( node->left->g4code && node->right->g4code );
+        out << node->left->g4code << std::endl ; 
+        out << node->right->g4code << std::endl ; 
+    } 
+    assert( node->g4code );
+    out << node->g4code << std::endl ;  
+}
 
 
 

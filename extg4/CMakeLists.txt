@@ -72,6 +72,8 @@ set(SOURCES
     X4PhysicsVector.cc
     X4RotationMatrix.cc
     X4Transform3D.cc
+    X4AffineTransform.cc
+    X4ThreeVector.cc
     X4PhysicalVolume.cc
     X4Sample.cc
 
@@ -106,6 +108,8 @@ set(HEADERS
 
     X4PhysicsVector.hh
     X4Transform3D.hh
+    X4AffineTransform.hh
+    X4ThreeVector.hh
     X4RotationMatrix.hh
     X4PhysicalVolume.hh
     X4Sample.hh
