@@ -62,10 +62,25 @@ nnode* X4Solid::Convert(const G4VSolid* solid)
 
 X4Solid::X4Solid(const G4VSolid* solid, bool top)
    :
-   X4SolidBase(solid, top)
+   X4SolidBase(solid, top),
+   m_displaced(NULL)
 {
    init(); 
 }
+
+X4Solid* X4Solid::getDisplaced() const
+{
+    return m_displaced ; 
+}
+bool X4Solid::hasDisplaced() const 
+{
+    return m_displaced != NULL ; 
+}
+void X4Solid::setDisplaced(X4Solid* displaced)
+{
+    m_displaced = displaced ; 
+}
+
 
 void X4Solid::init()
 {
@@ -159,9 +174,7 @@ void X4Solid::booleanDisplacement( G4VSolid** pp, G4ThreeVector& pos, G4ThreeVec
              << " pos " << pos 
              << " rot " << rot 
              ;
-
 }
-
 
 void X4Solid::convertUnionSolid()
 {
@@ -175,6 +188,7 @@ void X4Solid::convertSubtractionSolid()
 {
     convertBooleanSolid() ;
 }
+
 void X4Solid::convertDisplacedSolid()
 {
     const G4DisplacedSolid* const disp = static_cast<const G4DisplacedSolid*>(m_solid);
@@ -183,6 +197,8 @@ void X4Solid::convertDisplacedSolid()
 
     bool top = false ;  // never top of tree : expect to always be a boolean RHS
     X4Solid* xmoved = new X4Solid(moved, top);
+    setDisplaced(xmoved); 
+
     nnode* a = xmoved->root();
 
     glm::mat4 xf_disp = X4Transform3D::GetDisplacementTransform(disp);  
@@ -207,10 +223,10 @@ void X4Solid::convertBooleanSolid()
     G4VSolid* left  = const_cast<G4VSolid*>(solid->GetConstituentSolid(0));
     G4VSolid* right = const_cast<G4VSolid*>(solid->GetConstituentSolid(1));
 
-    bool left_displaced = dynamic_cast<G4DisplacedSolid*>(left) != NULL ;
-    bool right_displaced = dynamic_cast<G4DisplacedSolid*>(right) != NULL ;
+    bool is_left_displaced = dynamic_cast<G4DisplacedSolid*>(left) != NULL ;
+    bool is_right_displaced = dynamic_cast<G4DisplacedSolid*>(right) != NULL ;
 
-    assert( !left_displaced && "not expecting left displacement " ); 
+    assert( !is_left_displaced && "not expecting left displacement " ); 
 
     X4Solid* xleft = new X4Solid(left, false); 
     X4Solid* xright = new X4Solid(right, false); 
@@ -238,10 +254,11 @@ void X4Solid::convertBooleanSolid()
 
     std::vector<std::string> param ;
     param.push_back( xleft->getIdentifier() ); 
-    param.push_back( xright->getIdentifier() ); 
 
-    if(right_displaced)
+    if(is_right_displaced)
     {
+        X4Solid* xright_displaced = xright->getDisplaced() ; 
+
         //assert(b->gtransform) ; 
         const G4DisplacedSolid* const disp = static_cast<const G4DisplacedSolid*>(right);
         assert( disp ); 
@@ -256,9 +273,15 @@ void X4Solid::convertBooleanSolid()
         addG4Code(rot.c_str()) ;  
         addG4Code(tla.c_str()) ;  
 
+        param.push_back( xright_displaced->getIdentifier() ); 
         param.push_back( rot_id ) ; 
         param.push_back( tla_id ) ; 
     } 
+    else
+    {
+        param.push_back( xright->getIdentifier() ); 
+    }
+
 
     setG4Param(param); 
 }

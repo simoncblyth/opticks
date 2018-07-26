@@ -43,37 +43,29 @@
 
 #include "SId.hh"
 
-SId* X4SolidBase::NODE_ID = new SId("abcdefghijklmnopqrstuvwxyz") ; 
+SId* X4SolidBase::NODE_ID  = new SId("abcdefghijklmnopqrstuvwxyz") ; 
 SId* X4SolidBase::OTHER_ID = new SId("ABCDEFGHIJKLMNOPQRSTUVWXYZ") ; 
 
-/*
-int X4SolidBase::IDENTIFIER_IDX = -1 ; 
-void X4SolidBase::ResetIdentifier()
+
+std::string X4SolidBase::brief() const 
 {
-    IDENTIFIER_IDX = -1 ; 
+    std::stringstream ss ; 
+    ss 
+       << std::setw(2) << ( m_top ? "T" : " " ) 
+       << std::setw(3)  << m_identifier
+       << std::setw(20) << m_entityName
+       ;
+    return ss.str();
 }
-
-
-const char* X4SolidBase::Identifier(bool reset)
-{
-    if(reset) ResetIdentifier(); 
-    IDENTIFIER_IDX += 1 ;  
-    int idx = IDENTIFIER_IDX ; 
-    assert( idx < int(strlen(IDENTIFIERS)) );
-    char id = IDENTIFIERS[idx] ; 
-    return strdup(&id) ; 
-}
-*/
-
-
 
 std::string X4SolidBase::desc() const 
 {
     std::stringstream ss ; 
     ss << "X4SolidBase" 
+       << " identifier " << m_identifier
+       << " entityType " << std::setw(20) << m_entityType 
+       << " entityName " << std::setw(20) << m_entityName
        << " name " << std::setw(40) << m_name
-       << " entityType " << m_entityType 
-       << " entityName " << m_entityName
        << " root " << m_root
        ;
     return ss.str();
@@ -177,6 +169,7 @@ X4SolidBase::X4SolidBase( const G4VSolid* solid, bool top )
    m_identifier(NODE_ID->get(top)),
    m_root(NULL)
 {
+   LOG(info) << brief() ; 
 }
 
 template<typename T>
@@ -230,10 +223,6 @@ void X4SolidBase::setG4Param(const std::vector<T>& param, const char* identifier
     std::stringstream ss ; 
     ss << GenInstanciate( m_entityName, identifier, m_name, param ) ;
     std::string g4code = ss.str();
-    LOG(info) << "setG4Param " 
-              << " npar : " << npar
-              << " g4code : " << g4code
-              ; 
 
     setG4Code( g4code.c_str() ); 
 }

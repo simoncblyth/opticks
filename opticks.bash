@@ -1272,6 +1272,7 @@ cfg4-(){            . $(opticks-home)/cfg4/cfg4.bash && cfg4-env $* ; }
 okg4-(){            . $(opticks-home)/okg4/okg4.bash && okg4-env $* ; }
    
 g4ok-(){            . $(opticks-home)/g4ok/g4ok.bash && g4ok-env $* ; }
+y4csg-(){           . $(opticks-home)/y4csg/y4csg.bash && y4csg-env $* ; }
 x4-(){              . $(opticks-home)/extg4/x4.bash  && x4-env $* ; }
 yog-(){             . $(opticks-home)/yoctoglrap/yog.bash && yog-env $* ; }
 

@@ -67,6 +67,7 @@ class X4_API X4SolidBase
         X4SolidBase(const G4VSolid* solid, bool top=false); 
         nnode* root() const ;
         std::string desc() const  ; 
+        std::string brief() const  ; 
     private:
         void init();
     protected:

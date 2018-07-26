@@ -48,6 +48,10 @@ class X4_API X4Solid : public X4SolidBase
         static nnode* Convert(const G4VSolid* solid);
     public:
         X4Solid(const G4VSolid* solid, bool top); 
+
+        bool hasDisplaced() const ; 
+        X4Solid* getDisplaced() const ; 
+        void setDisplaced(X4Solid* displaced);
     private:
         void init();
         static unsigned fVerbosity ; 
@@ -82,6 +86,8 @@ class X4_API X4Solid : public X4SolidBase
         nnode* convertCons_(bool only_inner);
         nnode* convertHype_(bool only_inner);
         void   convertPolyconePrimitives( const std::vector<zplane>& zp,  std::vector<nnode*>& prims );
+    private:
+        X4Solid* m_displaced ; 
 
 };
 

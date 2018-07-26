@@ -1516,6 +1516,7 @@ oks-docvi(){ vi $(oks-docsrc) ; }
 
 oks-genproj-yog(){  oks-genproj YoctoGLRap YOG ; }
 oks-genproj-g4ok(){ oks-genproj G4OK G4OK ; }
+oks-genproj-g4csg(){ oks-genproj G4CSG G4CSG ; }
 
 oks-genproj()
 {
@@ -1525,6 +1526,8 @@ oks-genproj()
     local name=$(basename $iwd)
 
     local msg=" === $FUNCNAME :"
+
+    
     local proj=${1}
     local tag=${2}
 

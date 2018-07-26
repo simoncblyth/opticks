@@ -13,6 +13,41 @@ in a geometry and its translation to the GPU.  Would want to test in
 both unbalanced and balanced forms : as balancing is a probable
 cause of issues.
 
+how to use the generated G4 geometry cc for each solid ?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Ideas:
+
+1.treat it just like python CSG : ie develop some 
+  holder class that can be used from some minimal code to 
+  convert the G4VSolid into NCSG : so can operate just like the 
+  tboolean tests 
+
+  * for that to work will need to polygonize and persist those meshes 
+    too so will need to construct a GGeo and persist it : hmm thats a lot of 
+    complexity for a test : actually my flawed poly is OK for this, as the 
+    poly is just for vis, what matters is the raytrace ... this is 
+    taking the same approach as tboolean-
+
+  * proceed with this by : creating a class to minimise the code needed
+    to go from a G4VSolid defined in code to a serialised NCSG : can this
+    be done from NPY level : actually this needs to do the same as
+    analytic/csg.py CSG.Serialize  
+
+    Unusual for Opticks combination of dependencies : G4 and NPY/NCSG, 
+    so new pkg g4csg 
+     
+
+2. place the G4VSolid in pure G4 LV/PV G4Material context, 
+   and persist to GDML : then can test from that GDML with OKX4Test
+
+
+Actually will probably need both these approaches, the first is 
+most natural for solid level debugging and the second for structure level
+debugging.
+
+
+
 how to implement ?
 ~~~~~~~~~~~~~~~~~~~~~~
 
