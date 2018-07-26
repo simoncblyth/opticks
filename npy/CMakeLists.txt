@@ -140,6 +140,7 @@ set(SOURCES
     NMarchingCubesNPY.cpp
 
     NCSG.cpp
+    NCSGData.cpp
     NCSGIntersect.cpp
     NCSGList.cpp
     NOctNodeEnum.cpp
@@ -315,6 +316,7 @@ Report.hpp
 PyMCubes/marchingcubes.hpp
 NMarchingCubesNPY.hpp
 NCSG.hpp
+NCSGData.hpp
 NCSGIntersect.hpp
 NCSGList.hpp
 NOctNode.hpp

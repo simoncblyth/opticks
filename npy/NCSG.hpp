@@ -25,14 +25,19 @@ cf dev/csg/csg.py
   to get those need to vivify the CSG tree and the export it back to the buffer
 
 
-TODO SOMETIME : break up the monolith
---------------------------------------
+TODO
+-------
 
-* Does too much for one class. 
-* A pivotal class, so rejigging it will be time consuming. 
+1. do not like the double ctors as it leads to schizophrenic class 
+   
+   * perhaps can start to tidy with an NCSGData constituent
+     that holds the transport buffers
 
-* perhaps transport buffers could live in a separate class fairly easily  
+2. break up the monolith. But its a pivotal class, so rejigging 
+   it will be time consuming. 
 
+3. evolved like this because of too many usages
+   including a input from CSG python
 
 
 setIsUsedGlobally : always now true ?
@@ -96,6 +101,7 @@ struct NNodeNudger ;
 
 
 class NParameters ; 
+class NCSGData ; 
 class NNodePoints ; 
 class NNodeUncoincide ; 
 class NTrianglesNPY ;
@@ -105,18 +111,6 @@ class NPY_API NCSG {
         friend struct NCSGLoadTest ; 
         typedef std::map<std::string, nnode*> MSN ; 
     public:
-        enum { NJ = 4, NK = 4, MAX_HEIGHT = 10 };
-
-        static const char* FILENAME ; 
-        static const char* TREE_META ; 
-        static const char* NODE_META ; 
-
-        static const char* PLANES ; 
-        static const char* SRC_FACES ; 
-        static const char* SRC_VERTS ;
-        static const char* IDX ; 
- 
-        static const unsigned NTRAN ; 
         static const float SURFACE_EPSILON ; 
 
         static std::string TestVolumeName(const char* shapename, const char* suffix, int idx) ; 
@@ -129,17 +123,6 @@ class NPY_API NCSG {
         static NCSG* LoadCSG(const char* treedir, const char* gltfconfig);
         static NCSG* LoadTree(const char* treedir, const NSceneConfig* config );
 
-        static unsigned NumNodes(unsigned height);
-
-        static std::string TxtPath(const char* treedir);
-        static bool Exists(const char* treedir);   // compat : pass thru to ExistsDir
-        static bool ExistsDir(const char* treedir);   // just checks existance of dir
-        static bool ExistsTxt(const char* treedir);  // looks for FILENAME (csg.txt) in the treedir
-
-        static std::string MetaPath(const char* treedir, int idx=-1);
-        static bool        ExistsMeta(const char* treedir, int idx=-1);
-        static NParameters* LoadMetadata(const char* treedir, int idx=-1);
-
         NNodeUncoincide* make_uncoincide() const ;
         NNodeNudger*     make_nudger() const ;
         NNodeNudger*     get_nudger() const ;
@@ -150,7 +133,6 @@ class NPY_API NCSG {
     public:
         NTrianglesNPY* polygonize();
         NTrianglesNPY* getTris() const ;
-
 
     public:
         // passthru to root
@@ -168,10 +150,8 @@ class NPY_API NCSG {
         static   glm::uvec4 collect_surface_points(std::vector<glm::vec3>& surface_points, const nnode* root, const NSceneConfig* config, unsigned verbosity, float epsilon );
     private:
         glm::uvec4 collect_surface_points();
+
     public:
-        template<typename T> void setMeta(const char* key, T value);
-    public:
-        template<typename T> T getMeta(const char* key, const char* fallback ) const ;
         std::string lvname() const ;
         std::string soname() const ;
         int treeindex() const ;
@@ -220,7 +200,6 @@ class NPY_API NCSG {
 
 
         unsigned     getNumNodes() const ;
-        //unsigned     getNumTransforms() const ;
 
         unsigned     getHeight() const ;
         nnode*       getRoot() const ;
@@ -232,32 +211,28 @@ class NPY_API NCSG {
         void setIndex(unsigned index);
         void setVerbosity(int verbosity);
     private:
+
+       //
         // Deserialize
         NCSG(const char* treedir);
          // Serialize 
         NCSG( nnode* root);  // cannot be const because of the nudger
-
     public:
         // for --testauto
         void setBoundary(const char* boundary);
     private:
         // Deserialize branch 
         void setConfig(const NSceneConfig* config);
+
         unsigned getTypeCode(unsigned idx);
         unsigned getTransformIndex(unsigned idx);
         bool     isComplement(unsigned idx);
         nquad getQuad(unsigned idx, unsigned j);
+
     private:
         void load();
-        void loadMetadata();
+        void postload();
         void increaseVerbosity(int verbosity);
-        void loadNodes();
-        void loadNodeMetadata();
-        void loadTransforms();
-        void loadPlanes();
-        void loadIdx();
-        void loadSrcVerts();
-        void loadSrcFaces();
 
    private:
         // import a complete binary tree buffer of nodes into a node tree 
@@ -274,6 +249,7 @@ class NPY_API NCSG {
     private:
         nmat4pair*   import_transform_pair(unsigned itra);
         nmat4triple* import_transform_triple(unsigned itra);
+
         unsigned addUniqueTransform( const nmat4triple* gtransform );
     private:
         // Serialize branch 
@@ -294,36 +270,17 @@ class NPY_API NCSG {
         unsigned getLVIdx() const ; 
 
     private:
-        NParameters* m_meta ; 
-        const char* m_treedir ; 
-        unsigned     m_index ; 
-        float        m_surface_epsilon ; 
-        int          m_verbosity ;  
-        bool         m_usedglobally ; 
-
-        nnode*       m_root ;  
+        const char*      m_treedir ; 
+        unsigned         m_index ; 
+        float            m_surface_epsilon ; 
+        int              m_verbosity ;  
+        bool             m_usedglobally ; 
+        nnode*           m_root ;  
         NNodePoints*     m_points ; 
         NNodeUncoincide* m_uncoincide ; 
         NNodeNudger*     m_nudger ; 
+        NCSGData*        m_csgdata ; 
 
-        NPY<float>* m_nodes ; 
-        NPY<float>* m_transforms ; 
-        NPY<float>* m_gtransforms ; 
-        NPY<float>* m_planes ;
-        NPY<float>* m_srcverts ;
-        NPY<int>*   m_srcfaces ;
-        NPY<unsigned>* m_idx ;
-
-        std::map<unsigned, NParameters*> m_nodemeta ; 
-
-        unsigned    m_num_nodes ; 
-        unsigned    m_num_transforms ; 
-        unsigned    m_num_planes ;
-
-        unsigned    m_num_srcverts ;
-        unsigned    m_num_srcfaces ;
- 
-        unsigned    m_height ; 
         const char*         m_boundary ; 
         const NSceneConfig* m_config ; 
 

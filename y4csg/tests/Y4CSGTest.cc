@@ -1,5 +1,7 @@
 #include "OPTICKS_LOG.hh"
 #include "Y4CSG.hh"
+#include "X4Solid.hh"
+#include "NCSG.hpp"
 
 
 // start of portion to be generated ----------------
@@ -25,9 +27,23 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv);
 
-    Y4CSG gc ;  
+    Y4CSG yc ;  
+
     G4VSolid* so = make_solid() ; 
     std::cout << *so << std::endl ; 
+
+
+    nnode* root = X4Solid::Convert(so) ; 
+    assert( root ) ; 
+
+    unsigned soIdx = 0 ; 
+    unsigned lvIdx = 0 ;
+
+    NCSG* csg = NCSG::FromNode( root, NULL, soIdx, lvIdx );
+    assert( csg ) ;  
+
+
+
 
     return 0 ; 
 }

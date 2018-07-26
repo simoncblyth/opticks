@@ -17,8 +17,10 @@ set(name Y4CSG)
 project(${name} VERSION 0.1.0)
 include(OpticksBuildOptions)
 
-find_package(G4  REQUIRED MODULE)
-find_package(NPY REQUIRED CONFIG)
+#find_package(G4  REQUIRED MODULE)
+#find_package(NPY REQUIRED CONFIG)
+find_package(ExtG4 REQUIRED CONFIG)
+
 
 set(SOURCES
     Y4CSG.cc
@@ -37,8 +39,9 @@ add_library(${name} SHARED  ${SOURCES})
 
 target_link_libraries( ${name} 
   PUBLIC 
-     Opticks::G4
-     Opticks::NPY
+     Opticks::ExtG4
+    # Opticks::G4
+    # Opticks::NPY
 )
 
 
