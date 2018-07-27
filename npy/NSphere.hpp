@@ -83,12 +83,3 @@ inline NPY_API nsphere make_sphere(float radius=100.f)
 }
 
 
-
-
-
-
-
-
-
-
-

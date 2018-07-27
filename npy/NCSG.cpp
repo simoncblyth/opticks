@@ -114,9 +114,6 @@ NNodeNudger* NCSG::make_nudger() const
 }
 
 
-std::string NCSG::lvname() const { return m_csgdata->getMeta<std::string>("lvname","-") ; }
-std::string NCSG::soname() const { return m_csgdata->getMeta<std::string>("soname","-") ; }
-
 std::string NCSG::TestVolumeName(const char* shapename, const char* suffix, int idx) // static
 {
     std::stringstream ss ; 
@@ -142,27 +139,23 @@ std::string NCSG::getTestLVName() const
 }
 
 
-
-int NCSG::treeindex() const { return m_csgdata->getMeta<int>("treeindex","-1") ; }
-int NCSG::depth() const {     return m_csgdata->getMeta<int>("depth","-1") ; }
-int NCSG::nchild() const {    return m_csgdata->getMeta<int>("nchild","-1") ; }
-
-bool NCSG::isSkip() const {       return m_csgdata->getMeta<int>("skip","0") == 1 ; }
-bool NCSG::is_uncoincide() const { return m_csgdata->getMeta<int>("uncoincide","1") == 1 ; }
+std::string NCSG::lvname() const {    return m_csgdata->getMeta<std::string>("lvname","-") ; }
+std::string NCSG::soname() const {    return m_csgdata->getMeta<std::string>("soname","-") ; }
+int         NCSG::treeindex() const { return m_csgdata->getMeta<int>("treeindex","-1") ; }
+int         NCSG::depth() const {     return m_csgdata->getMeta<int>("depth","-1") ; }
+int         NCSG::nchild() const {    return m_csgdata->getMeta<int>("nchild","-1") ; }
+bool        NCSG::isSkip() const {        return m_csgdata->getMeta<int>("skip","0") == 1 ; }
+bool        NCSG::is_uncoincide() const { return m_csgdata->getMeta<int>("uncoincide","1") == 1 ; }
+int         NCSG::getEmit() const {       return m_csgdata->getMeta<int>("emit","0") ;  }
 
 bool NCSG::isEmit() const 
 {  
     int emit = getEmit() ;
     return emit == 1 || emit == -1 ;
 }
-
 void NCSG::setEmit(int emit) // used by --testauto
 {
     m_csgdata->setMeta<int>("emit", emit);
-}
-int NCSG::getEmit() const 
-{   
-    return m_csgdata->getMeta<int>("emit","0") ; 
 }
 
 void NCSG::setEmitConfig(const char* emitconfig)
@@ -206,7 +199,6 @@ std::string NCSG::smry() const
     return ss.str();
 }
 
-
 NParameters* NCSG::getNodeMetadata(unsigned idx) const 
 {
     return m_csgdata->getNodeMetadata(idx); 
@@ -249,7 +241,16 @@ void NCSG::postload()
     increaseVerbosity(verbosity);
 }
 
+void NCSG::save(const char* treedir_ ) const 
+{
+    bool same_dir = m_treedir && strcmp( treedir_, m_treedir) == 0  ;
+    if( same_dir ) LOG(fatal) << "saving back into the same dir as loaded from is not allowed " ; 
+    assert( !same_dir) ; 
 
+    assert( treedir_ ) ; 
+    LOG(info) << " treedir_ " << treedir_ ; 
+    m_csgdata->save(treedir_) ;  
+}
 
 void NCSG::load()
 {
@@ -309,9 +310,9 @@ NPY<unsigned>* NCSG::getIdxBuffer() const
 {
     return m_csgdata->getIdxBuffer() ; 
 }
-NParameters* NCSG::getMetaParameters() const
+NParameters* NCSG::getMetaParameters(int idx) const
 {
-    return m_csgdata->getMetaParameters() ; 
+    return m_csgdata->getMetaParameters(idx) ; 
 }
 
 
@@ -524,6 +525,7 @@ void NCSG::postimport_autoscan()
 
 // itra is a 1-based index, with 0 meaning None
 
+/*
 nmat4pair* NCSG::import_transform_pair(unsigned itra)
 {
     return m_csgdata->import_transform_pair(itra);
@@ -533,7 +535,7 @@ nmat4triple* NCSG::import_transform_triple(unsigned itra)
 {
     return m_csgdata->import_transform_triple(itra);
 }
-
+*/
 
 
 
@@ -775,6 +777,12 @@ void NCSG::import_planes(nnode* node)
 }
 
 
+
+
+
+
+
+
 void NCSG::export_planes(nnode* node)
 {
     if(!node->has_planes()) return ;
@@ -823,8 +831,6 @@ unsigned NCSG::addUniqueTransform( const nmat4triple* gtransform_ )
     return m_csgdata->addUniqueTransform( gtransform ); 
 
 }
-
-
 
 
 void NCSG::check()
@@ -977,7 +983,7 @@ void NCSG::dump(const char* msg)
 
     m_root->dump("NCSG::dump");   
 
-    NParameters* _meta = m_csgdata->getMetaParameters() ;
+    NParameters* _meta = m_csgdata->getMetaParameters(-1) ;
     if(_meta) _meta->dump(); 
 
 }

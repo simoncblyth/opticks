@@ -197,9 +197,7 @@ class NPY_API NCSG {
         NPY<float>*  getGTransformBuffer() const ;
         NPY<float>*  getPlaneBuffer() const ;
         NPY<unsigned>* getIdxBuffer() const ;
-        NParameters* getMetaParameters() const ;
-        NParameters* getNodeMetadata(unsigned idx) const ;
-
+        NParameters* getMetaParameters(int idx) const ;
 
         unsigned     getNumNodes() const ;
 
@@ -207,6 +205,8 @@ class NPY_API NCSG {
         nnode*       getRoot() const ;
         OpticksCSG_t getRootType() const ;  
         unsigned getNumTriangles() const ;
+    private:
+        NParameters* getNodeMetadata(unsigned idx) const ;
     public:
         void check();
         void check_r(nnode* node); 
@@ -226,6 +226,8 @@ class NPY_API NCSG {
         // Deserialize branch 
         void setConfig(const NSceneConfig* config);
 
+    public:
+        void save(const char* treedir) const ;
     private:
         void load();
         void postload();
@@ -244,13 +246,13 @@ class NPY_API NCSG {
         void import_planes(nnode* node);
         void import_srcvertsfaces(nnode* node);
     private:
-        nmat4pair*   import_transform_pair(unsigned itra);
-        nmat4triple* import_transform_triple(unsigned itra);
+        //nmat4pair*   import_transform_pair(unsigned itra);
+        //nmat4triple* import_transform_triple(unsigned itra);
 
         unsigned addUniqueTransform( const nmat4triple* gtransform );
     private:
         // Serialize branch 
-        // export node tree into a complete binary tree buffer of nodes
+        // export node tree into a buffers (complete binary tree buffer of nodes, transforms, planes)
         void export_r(nnode* node, unsigned idx);
         void export_idx();
         void export_();

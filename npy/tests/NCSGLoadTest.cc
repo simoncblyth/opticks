@@ -27,9 +27,7 @@ Tests individual trees::
 #include "NGLMExt.hpp"
 #include "GLMFormat.hpp"
 
-#include "BRAP_LOG.hh"
-#include "NPY_LOG.hh"
-#include "PLOG.hh"
+#include "OPTICKS_LOG.hh"
 
 
 #include "SSys.hh"
@@ -85,9 +83,7 @@ void test_coincidence( const std::vector<NCSG*>& trees )
 
 int main(int argc, char** argv)
 {
-    PLOG_(argc, argv);
-    BRAP_LOG__ ;  
-    NPY_LOG__ ;  
+    OPTICKS_LOG(argc, argv);
 
     BOpticksResource okr ;  // no Opticks at this level 
 

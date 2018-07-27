@@ -38,12 +38,10 @@ class NPY_API NCSGData
     public:
         static NParameters* LoadMetadata(const char* treedir, int idx=-1);
         static bool         Exists(const char* treedir);     // compat : pass thru to ExistsDir
-
     public:
         NCSGData(); 
         void init_buffers(unsigned height);  // maxdepth of node tree
         void setIdx( unsigned index, unsigned soIdx, unsigned lvIdx, unsigned height );
-
     public:
         unsigned getHeight() const ;
         unsigned getNumNodes() const ;
@@ -55,7 +53,7 @@ class NPY_API NCSGData
         NPY<float>*    getSrcVertsBuffer() const ;
         NPY<int>*      getSrcFacesBuffer() const ;
         NPY<unsigned>* getIdxBuffer() const ;
-        NParameters*   getMetaParameters() const ;
+        NParameters*   getMetaParameters(int idx) const ;
         NParameters*   getNodeMetadata(unsigned idx) const ;
 
     public:
@@ -85,6 +83,16 @@ class NPY_API NCSGData
 
     public:
         void load(const char* treedir);
+        void save(const char* treedir) const ;
+    private:
+        void saveMetadata(const char* treedir, int idx) const  ;
+        void saveNodes(const char* treedir) const ;
+        void saveNodeMetadata(const char* treedir) const  ;
+        void saveTransforms(const char* treedir) const ;
+        void savePlanes(const char* treedir) const ;
+        void saveIdx(const char* treedir) const ;
+        void saveSrcVerts(const char* treedir) const ;
+        void saveSrcFaces(const char* treedir) const ;
     private:
         void loadMetadata(const char* treedir);
         void loadNodes(const char* treedir);
@@ -94,7 +102,6 @@ class NPY_API NCSGData
         void loadIdx(const char* treedir);
         void loadSrcVerts(const char* treedir);
         void loadSrcFaces(const char* treedir);
-
     private:
         int            m_verbosity ;  
         NParameters*   m_meta ; 

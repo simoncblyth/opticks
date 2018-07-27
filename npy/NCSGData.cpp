@@ -134,9 +134,9 @@ NPY<unsigned>* NCSGData::getIdxBuffer() const
     return m_idx ; 
 }
 
-NParameters* NCSGData::getMetaParameters() const
+NParameters* NCSGData::getMetaParameters(int idx) const
 {
-    return m_meta ; 
+    return idx < 0 ? m_meta : getNodeMetadata(unsigned(idx)) ; 
 }
 
 NParameters* NCSGData::getNodeMetadata(unsigned idx) const 
@@ -216,23 +216,37 @@ std::string NCSGData::desc() const
 }
 
 
-
-
-
-
+void NCSGData::save(const char* treedir ) const 
+{
+    saveMetadata(treedir, -1 ); 
+    saveNodes(treedir); 
+    saveNodeMetadata(treedir);
+    saveTransforms(treedir);
+    savePlanes(treedir);   
+    saveSrcVerts(treedir);   
+    saveSrcFaces(treedir);   
+}
 
 void NCSGData::load(const char* treedir)
 {
-    loadMetadata(treedir);  // m_meta
-
-    loadNodes(treedir);  // m_nodes, m_num_nodes, m_height 
-
+    loadMetadata(treedir);     // m_meta
+    loadNodes(treedir);        // m_nodes, m_num_nodes, m_height 
     loadNodeMetadata(treedir);
+    loadTransforms(treedir);   // m_transforms, m_num_transforms
+    loadPlanes(treedir);       // m_planes, m_num_planes 
+    loadSrcVerts(treedir);     // m_srcverts m_num_srcverts
+    loadSrcFaces(treedir);     // m_srcfaces, m_num_srcfaces
+}
 
-    loadTransforms(treedir); // m_transforms, m_num_transforms
-    loadPlanes(treedir);     // m_planes, m_num_planes 
-    loadSrcVerts(treedir);   // m_srcverts m_num_srcverts
-    loadSrcFaces(treedir);   // m_srcfaces, m_num_srcfaces
+
+
+void NCSGData::saveMetadata(const char* treedir, int idx) const 
+{
+    NParameters* meta = getMetaParameters(idx) ; 
+    if(!meta) return ; 
+
+    std::string metapath = MetaPath(treedir, idx) ;
+    meta->save(metapath.c_str()); 
 }
 
 void NCSGData::loadMetadata(const char* treedir)
@@ -283,6 +297,16 @@ NParameters* NCSGData::LoadMetadata(const char* treedir, int idx )
 }
 
 
+
+
+void NCSGData::saveNodeMetadata(const char* treedir) const 
+{
+    for(unsigned idx=0 ; idx < m_num_nodes ; idx++)
+    {
+        saveMetadata(treedir, idx); 
+    } 
+}
+
 void NCSGData::loadNodeMetadata(const char* treedir)
 {
     // FIX: this idx is not same as real complete binary tree node_idx ?
@@ -326,8 +350,11 @@ void NCSGData::loadNodeMetadata(const char* treedir)
 
 
 
-
-
+void NCSGData::saveNodes(const char* treedir) const
+{
+    std::string nodepath = BFile::FormPath(treedir, "nodes.npy") ;
+    m_nodes->save(nodepath.c_str());
+} 
 
 void NCSGData::loadNodes(const char* treedir)
 {
@@ -376,6 +403,14 @@ void NCSGData::loadNodes(const char* treedir)
 }
 
 
+
+void NCSGData::saveTransforms(const char* treedir) const
+{
+    std::string path = BFile::FormPath(treedir, "transforms.npy") ;
+    m_transforms->save(path.c_str());
+    // gtransforms not saved, they are constructed on load
+} 
+
 void NCSGData::loadTransforms(const char* treedir)
 {
     std::string tranpath = BFile::FormPath(treedir, "transforms.npy") ;
@@ -414,6 +449,14 @@ void NCSGData::loadTransforms(const char* treedir)
 
 }
 
+
+void NCSGData::saveSrcVerts(const char* treedir) const
+{
+    std::string path = BFile::FormPath(treedir, SRC_VERTS) ;
+    if(!m_srcverts) return ; 
+    m_srcverts->save(path.c_str());
+} 
+
 void NCSGData::loadSrcVerts(const char* treedir)
 {
     std::string path = BFile::FormPath(treedir,  SRC_VERTS ) ;
@@ -438,6 +481,15 @@ void NCSGData::loadSrcVerts(const char* treedir)
     LOG(info) << " loaded " << m_num_srcverts ;
 }
 
+
+
+void NCSGData::saveSrcFaces(const char* treedir) const
+{
+    std::string path = BFile::FormPath(treedir, SRC_FACES) ;
+    if(!m_srcfaces) return ; 
+    m_srcfaces->save(path.c_str());
+} 
+
 void NCSGData::loadSrcFaces(const char* treedir)
 {
     std::string path = BFile::FormPath(treedir,  SRC_FACES ) ;
@@ -461,6 +513,15 @@ void NCSGData::loadSrcFaces(const char* treedir)
     LOG(info) << " loaded " << m_num_srcfaces ;
 }
 
+
+
+void NCSGData::savePlanes(const char* treedir) const
+{
+    std::string path = BFile::FormPath(treedir, PLANES) ;
+    if(!m_planes) return ; 
+    m_planes->save(path.c_str());
+} 
+
 void NCSGData::loadPlanes(const char* treedir)
 {
     std::string path = BFile::FormPath(treedir,  PLANES ) ;
@@ -482,6 +543,15 @@ void NCSGData::loadPlanes(const char* treedir)
     m_planes = a ; 
     m_num_planes = a->getShape(0) ; 
 }
+
+
+
+void NCSGData::saveIdx(const char* treedir) const
+{
+    std::string path = BFile::FormPath(treedir, IDX) ;
+    if(!m_idx) return ; 
+    m_idx->save(path.c_str());
+} 
 
 void NCSGData::loadIdx(const char* treedir)
 {

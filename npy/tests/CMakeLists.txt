@@ -100,6 +100,7 @@ DummyPhotonsNPYTest.cc
 NMarchingCubesNPYTest.cc
 NCSGTest.cc
 NCSGLoadTest.cc
+NCSGSaveTest.cc
 NCSGScanTest.cc
 NCSGListTest.cc
 NEmitConfigTest.cc
