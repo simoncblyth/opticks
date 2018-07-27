@@ -1,12 +1,11 @@
-#include "NCSG.hpp"
-
-#include "PLOG.hh"
+#include "NCSGData.hpp"
+#include "OPTICKS_LOG.hh"
 
 int main(int argc, char** argv)
 {
-    PLOG_(argc, argv);
+    OPTICKS_LOG(argc, argv);
 
-    LOG(info) << NCSG::NTRAN ; 
+    LOG(info) << NCSGData::NTRAN ; 
 
     return 0 ; 
 }

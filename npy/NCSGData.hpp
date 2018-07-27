@@ -1,15 +1,21 @@
 #pragma once
 
 #include <map>
+#include <vector>
+#include <glm/fwd.hpp>
+
 template <typename T> class NPY ; 
 #include "NPY_API_EXPORT.hh"
 class NParameters ; 
 struct nmat4pair ; 
 struct nmat4triple ; 
+union nquad ; 
 
 
 class NPY_API NCSGData
 { 
+    public:
+        static const unsigned NTRAN ; 
     private:
         static const char* FILENAME ; 
         static const char* PLANES ; 
@@ -19,22 +25,24 @@ class NPY_API NCSGData
         static const char* TREE_META ; 
         static const char* NODE_META ; 
 
-        static const unsigned NTRAN ; 
         enum { NJ = 4, NK = 4, MAX_HEIGHT = 10 };
 
         static unsigned NumNodes(unsigned height);
 
         static std::string TxtPath(const char* treedir);
-        static bool        Exists(const char* treedir);     // compat : pass thru to ExistsDir
         static bool        ExistsDir(const char* treedir);  // just checks existance of dir
         static bool        ExistsTxt(const char* treedir);  // looks for FILENAME (csg.txt) in the treedir
         static std::string MetaPath(const char* treedir, int idx=-1);
         static bool        ExistsMeta(const char* treedir, int idx=-1);
 
+    public:
         static NParameters* LoadMetadata(const char* treedir, int idx=-1);
+        static bool         Exists(const char* treedir);     // compat : pass thru to ExistsDir
+
     public:
         NCSGData(); 
         void init_buffers(unsigned height);  // maxdepth of node tree
+        void setIdx( unsigned index, unsigned soIdx, unsigned lvIdx, unsigned height );
 
     public:
         unsigned getHeight() const ;
@@ -44,10 +52,14 @@ class NPY_API NCSGData
         NPY<float>*    getTransformBuffer() const ;
         NPY<float>*    getGTransformBuffer() const ;
         NPY<float>*    getPlaneBuffer() const ;
+        NPY<float>*    getSrcVertsBuffer() const ;
+        NPY<int>*      getSrcFacesBuffer() const ;
         NPY<unsigned>* getIdxBuffer() const ;
         NParameters*   getMetaParameters() const ;
         NParameters*   getNodeMetadata(unsigned idx) const ;
 
+    public:
+        void getPlanes(std::vector<glm::vec4>& _planes, unsigned idx, unsigned num_plane  ) const ;
 
     public:
         // from m_nodes 
@@ -67,6 +79,7 @@ class NPY_API NCSGData
         void dump_gtransforms() const ;
     public:
         std::string smry() const ;
+        std::string desc() const ;
         template<typename T> void setMeta(const char* key, T value);
         template<typename T> T getMeta(const char* key, const char* fallback ) const ;
 
@@ -83,6 +96,7 @@ class NPY_API NCSGData
         void loadSrcFaces(const char* treedir);
 
     private:
+        int            m_verbosity ;  
         NParameters*   m_meta ; 
         NPY<float>*    m_nodes ; 
         NPY<float>*    m_transforms ; 

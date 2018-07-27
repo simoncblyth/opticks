@@ -175,7 +175,11 @@ const char* BStr::xtoa( T x )
 
 
 
-
+template<typename T>
+T BStr::LexicalCast(const char* str) 
+{
+    return boost::lexical_cast<T>(str) ;
+}
 
 template<typename T>
 T BStr::LexicalCast(const char* str, T fallback, bool& badcast ) 
@@ -667,6 +671,19 @@ void BStr::ReplaceAll(std::string& subject, const char* search, const char* repl
 
 template BRAP_API const char* BStr::xtoa(float);
 template BRAP_API const char* BStr::xtoa(double);
+
+
+
+
+template BRAP_API bool               BStr::LexicalCast(const char* );
+template BRAP_API std::string        BStr::LexicalCast(const char* );
+template BRAP_API unsigned long long BStr::LexicalCast(const char* );
+template BRAP_API unsigned char      BStr::LexicalCast(const char* );
+template BRAP_API short              BStr::LexicalCast(const char* );
+template BRAP_API unsigned           BStr::LexicalCast(const char* );
+template BRAP_API int                BStr::LexicalCast(const char* );
+template BRAP_API float              BStr::LexicalCast(const char* );
+template BRAP_API double             BStr::LexicalCast(const char* ); 
 
 
 

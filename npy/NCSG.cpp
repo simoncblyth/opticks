@@ -49,24 +49,7 @@ NCSG::NCSG(const char* treedir)
    m_points(NULL),
    m_uncoincide(NULL),
    m_nudger(NULL),
-   m_csgdata(NULL),
-/*
-   m_meta(NULL),
-   m_nodes(NULL),
-   m_transforms(NULL),
-   m_gtransforms(NULL),
-   m_planes(NULL),
-   m_srcverts(NULL),
-   m_srcfaces(NULL),
-   m_idx(NULL),
-
-   m_num_nodes(0),
-   m_num_transforms(0),
-   m_num_planes(0),
-   m_num_srcverts(0),
-   m_num_srcfaces(0),
-   m_height(UINT_MAX),
-*/
+   m_csgdata(new NCSGData),
    m_boundary(NULL),
    m_config(NULL),
    m_gpuoffset(0,0,0),
@@ -90,24 +73,7 @@ NCSG::NCSG(nnode* root )
    m_points(NULL),
    m_uncoincide(make_uncoincide()),
    m_nudger(make_nudger()),
-   m_csgdata(NULL),
-   /*
-   m_meta(NULL),
-   m_nodes(NULL),
-   m_transforms(NULL),
-   m_gtransforms(NULL),
-   m_planes(NULL),
-   m_srcverts(NULL),
-   m_srcfaces(NULL),
-   m_idx(NULL),
-
-   m_num_nodes(0),
-   m_num_transforms(0),
-   m_num_planes(0),
-   m_num_srcverts(0),
-   m_num_srcfaces(0), 
-   m_height(root->maxdepth()),
-   */
+   m_csgdata(new NCSGData),
    m_boundary(NULL),
    m_config(NULL),
    m_gpuoffset(0,0,0),
@@ -118,36 +84,16 @@ NCSG::NCSG(nnode* root )
    m_lvIdx(0)
 {
 
-
    setBoundary( root->boundary );  // boundary spec
-
-   m_csgdata = new NCSGData ; 
    m_csgdata->init_buffers(root->maxdepth()) ;  
-
-
-/*
-   unsigned num_nodes = NumNodes(height); // number of nodes for a complete binary tree of the needed height, with no balancing 
-   m_num_nodes = 
-
-   m_nodes = NPY<float>::make( m_num_nodes, NJ, NK);
-   m_nodes->zero();
-
-   m_transforms = NPY<float>::make(0,NTRAN,4,4) ;  
-   m_transforms->zero();
-
-   m_gtransforms = NPY<float>::make(0,NTRAN,4,4) ; 
-   m_gtransforms->zero();
-
-   m_planes = NPY<float>::make(0,4);
-   m_planes->zero();
-
-   m_idx = NPY<unsigned>::make(1,4);
-   m_idx->zero();
-
-   m_meta = new NParameters ; 
-*/
-
 }
+
+
+NCSGData* NCSG::getCSGData() const 
+{
+   return m_csgdata ; 
+}
+
 
 NNodeUncoincide* NCSG::make_uncoincide() const 
 {
@@ -315,6 +261,7 @@ void NCSG::load()
                   ; 
     }
 
+    assert(m_csgdata);
     m_csgdata->load( m_treedir ) ; 
     postload();
 
@@ -333,15 +280,6 @@ OpticksCSG_t NCSG::getRootType() const
     assert(m_root);
     return m_root->type ; 
 }
-
-
-/*
-unsigned NCSG::NumNodes(unsigned height)
-{
-   return TREE_NODES(height);
-}
-
-*/
 
 unsigned NCSG::getHeight() const 
 {
@@ -707,10 +645,10 @@ nnode* NCSG::import_operator( unsigned idx, OpticksCSG_t typecode )
 
 nnode* NCSG::import_primitive( unsigned idx, OpticksCSG_t typecode )
 {
-    nquad p0 = getQuad(idx, 0);
-    nquad p1 = getQuad(idx, 1);
-    nquad p2 = getQuad(idx, 2);
-    nquad p3 = getQuad(idx, 3);
+    nquad p0 = m_csgdata->getQuad(idx, 0);
+    nquad p1 = m_csgdata->getQuad(idx, 1);
+    nquad p2 = m_csgdata->getQuad(idx, 2);
+    nquad p3 = m_csgdata->getQuad(idx, 3);
 
     if(m_verbosity > 2)
     {
@@ -783,15 +721,15 @@ nnode* NCSG::import_primitive( unsigned idx, OpticksCSG_t typecode )
 void NCSG::import_srcvertsfaces(nnode* node)
 {
     assert( node->has_planes() );
+    
+    NPY<float>* srcverts = m_csgdata->getSrcVertsBuffer() ; 
+    NPY<int>*   srcfaces = m_csgdata->getSrcFacesBuffer() ; 
 
-    if(!m_srcverts || !m_srcfaces) 
+    if(!srcverts || !srcfaces) 
     {
-        LOG(debug) << "NCSG::import_srcvertsfaces no m_srcverts  m_srcfaces " ; 
+        LOG(debug) << "NCSG::import_srcvertsfaces no srcverts  srcfaces " ; 
         return ; 
     }
-
-    //assert(m_srcverts);
-    //assert(m_srcfaces);
 
     nconvexpolyhedron* cpol = dynamic_cast<nconvexpolyhedron*>(node);
     assert(cpol);
@@ -799,8 +737,8 @@ void NCSG::import_srcvertsfaces(nnode* node)
     std::vector<glm::vec3> _verts ;  
     std::vector<glm::ivec4> _faces ;  
 
-    m_srcverts->copyTo(_verts);
-    m_srcfaces->copyTo(_faces);
+    srcverts->copyTo(_verts);
+    srcfaces->copyTo(_faces);
 
     cpol->set_srcvertsfaces(_verts, _faces);     
 }
@@ -826,28 +764,13 @@ void NCSG::import_planes(nnode* node)
               ;
     }
 
-    assert( idx < m_num_planes );
-    assert( idx + num_plane - 1 < m_num_planes );
-    assert( m_planes->hasShape(-1,4) );
     assert( node->planes.size() == 0u );
 
-
     std::vector<glm::vec4> _planes ;  
+    m_csgdata->getPlanes(_planes, idx, num_plane ); 
+    assert( _planes.size() == num_plane ) ; 
 
-    for(unsigned i=idx ; i < idx + num_plane ; i++)
-    {
-        glm::vec4 plane = m_planes->getQuad(i) ;
-
-        _planes.push_back(plane);    
-
-        if(m_verbosity > 3)
-        std::cout << " plane " << std::setw(3) << i 
-                  << gpresent(plane)
-                  << std::endl ; 
-
-    }
     cpol->set_planes(_planes);     
-
     assert( cpol->planes.size() == num_plane );
 }
 
@@ -862,7 +785,11 @@ void NCSG::export_planes(nnode* node)
     assert(node->planes.size() > 0);  
 
     unsigned planeNum = node->planes.size() ;
-    unsigned planeIdx0 = m_planes->getNumItems(); 
+
+    NPY<float>* _planes = m_csgdata->getPlaneBuffer() ; 
+
+    unsigned planeIdx0 = _planes->getNumItems(); 
+
     node->setPlaneIdx( planeIdx0 );
     node->setPlaneNum( planeNum );
     assert( planeNum > 3); 
@@ -870,9 +797,9 @@ void NCSG::export_planes(nnode* node)
     for(unsigned i=0 ; i < planeNum ; i++)
     {
         const glm::vec4& pln = node->planes[i] ; 
-        m_planes->add(pln); 
+        _planes->add(pln); 
     } 
-    unsigned planeIdxN = m_planes->getNumItems(); 
+    unsigned planeIdxN = _planes->getNumItems(); 
     assert( planeIdxN == planeIdx0 + planeNum );
 }
 
@@ -940,7 +867,9 @@ void NCSG::check_r(nnode* node)
 
 void NCSG::export_()
 {
-    assert(m_nodes);
+    NPY<float>* _nodes = m_csgdata->getNodeBuffer() ; 
+    assert(_nodes);
+
     LOG(debug) << "NCSG::export_ "
               << " exporting CSG node tree into buffer "
               << " num_nodes " << getNumNodes()
@@ -953,14 +882,7 @@ void NCSG::export_()
 
 void NCSG::export_idx() 
 {
-    if(m_idx == NULL)
-    {
-        m_idx = NPY<unsigned>::make(1, 4);
-        m_idx->zero() ;  
-    } 
-
-    glm::uvec4 uidx(m_index, m_soIdx, m_lvIdx, m_height); 
-    m_idx->setQuad(uidx, 0u );     
+    m_csgdata->setIdx( m_index, m_soIdx, m_lvIdx, getHeight() ); 
 }
 
 
@@ -997,7 +919,7 @@ these as idxs get into that buffer
 
 void NCSG::export_node(nnode* node, unsigned idx)
 {
-    assert(idx < m_num_nodes); 
+    assert(idx < getNumNodes() ); 
     LOG(trace) << "NCSG::export_node"
               << " idx " << idx 
               << node->desc()
@@ -1011,7 +933,8 @@ void NCSG::export_node(nnode* node, unsigned idx)
 
     pt.check_bb_zero(node->type); 
 
-    m_nodes->setPart( pt, idx);  // writes 4 quads to buffer
+    NPY<float>* _nodes = m_csgdata->getNodeBuffer(); 
+    _nodes->setPart( pt, idx);  // writes 4 quads to buffer
 }
 
 /**
@@ -1054,8 +977,9 @@ void NCSG::dump(const char* msg)
 
     m_root->dump("NCSG::dump");   
 
-    if(m_meta)
-    m_meta->dump(); 
+    NParameters* _meta = m_csgdata->getMetaParameters() ;
+    if(_meta) _meta->dump(); 
+
 }
 
 void NCSG::dump_surface_points(const char* msg, unsigned dmax) const 
@@ -1083,16 +1007,12 @@ std::string NCSG::brief() const
 
 std::string NCSG::desc()
 {
-    std::string node_sh = m_nodes ? m_nodes->getShapeString() : "-" ;    
-    std::string tran_sh = m_transforms ? m_transforms->getShapeString() : "-" ;    
     std::stringstream ss ; 
     ss << "NCSG " 
        << " index " << m_index
        << " treedir " << ( m_treedir ? m_treedir : "NULL" ) 
-       << " node_sh " << node_sh  
-       << " tran_sh " << tran_sh  
        << " boundary " << ( m_boundary ? m_boundary : "NULL" ) 
-       << " meta " << m_meta->desc()
+       << m_csgdata->desc()
        ;
     return ss.str();  
 }
@@ -1102,7 +1022,7 @@ std::string NCSG::desc()
 
 NCSG* NCSG::LoadCSG(const char* treedir, const char* gltfconfig)
 {
-    if(!Exists(treedir))
+    if(!NCSGData::Exists(treedir))
     {
          LOG(warning) << "NCSG::LoadCSG no such dir OR does not contain tree " << treedir ;
          return NULL ; 
@@ -1128,11 +1048,10 @@ NCSG* NCSG::LoadCSG(const char* treedir, const char* gltfconfig)
 
 NCSG* NCSG::LoadTree(const char* treedir, const NSceneConfig* config  )
 {
-    if(!Exists(treedir) )
+    if(!NCSGData::Exists(treedir) )
     {
          LOG(warning) << "NCSG::LoadTree no such treedir OR does not contain tree " 
                       << " treedir: " << treedir 
-                      << " FILENAME: " << FILENAME 
                       ;
 
          return NULL ; 

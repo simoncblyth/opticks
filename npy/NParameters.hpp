@@ -39,6 +39,9 @@ class NPY_API NParameters {
        template <typename T> 
        T get(const char* name, const char* fallback) const ;
 
+       template <typename T> 
+       T get_fallback(const char* fallback) const ;
+
    public:
        unsigned getNumItems();
        void dump();

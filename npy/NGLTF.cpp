@@ -8,6 +8,7 @@
 #include "NGLTF.hpp"
 #include "NPY.hpp"
 #include "NCSG.hpp"
+#include "NCSGData.hpp"
 #include "NGLMExt.hpp"
 #include "Nd.hpp"
 
@@ -356,7 +357,7 @@ int NGLTF::getLogicalVolumeIndex(int mesh_id)
 NParameters* NGLTF::getCSGMetadata( int mesh_id )
 {
     std::string csgpath = getCSGPath(mesh_id); 
-    NParameters* meta = NCSG::LoadMetadata(csgpath.c_str());
+    NParameters* meta = NCSGData::LoadMetadata(csgpath.c_str());
     return meta ; 
 }
 

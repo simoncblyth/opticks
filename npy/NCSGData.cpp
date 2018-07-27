@@ -1,9 +1,16 @@
-#include "BFile.hh"
-#include "NPY.hpp"
-#include "NPart.h"
-#include "NGLMExt.hpp"
 #include "SSys.hh"
+#include "PLOG.hh"
+
+#include "BFile.hh"
+#include "BStr.hh"
+
+#include "NPart.h"
+#include "NPY.hpp"
+#include "NParameters.hpp"
+#include "NGLMExt.hpp"
 #include "NCSGData.hpp"
+#include "GLMFormat.hpp"
+
 
 #define TREE_NODES(height) ( (0x1 << (1+(height))) - 1 )
 
@@ -61,7 +68,8 @@ bool NCSGData::ExistsMeta(const char* treedir, int idx)
 
 NCSGData::NCSGData()  
    :
-   m_meta(NULL),
+   m_verbosity(1),
+   m_meta(new NParameters),
    m_nodes(NULL),
    m_transforms(NULL),
    m_gtransforms(NULL),
@@ -77,6 +85,8 @@ NCSGData::NCSGData()
    m_num_srcfaces(0)
 {
 }
+
+
 
 
 unsigned NCSGData::NumNodes(unsigned height)
@@ -108,6 +118,17 @@ NPY<float>* NCSGData::getPlaneBuffer() const
 {
     return m_planes ; 
 }
+NPY<float>* NCSGData::getSrcVertsBuffer() const 
+{
+    return m_srcverts ; 
+}
+NPY<int>* NCSGData::getSrcFacesBuffer() const 
+{
+    return m_srcfaces ; 
+}
+
+
+
 NPY<unsigned>* NCSGData::getIdxBuffer() const 
 {
     return m_idx ; 
@@ -147,6 +168,24 @@ void NCSGData::init_buffers(unsigned height)
    m_idx->zero();
 }
 
+
+void NCSGData::setIdx( unsigned index, unsigned soIdx, unsigned lvIdx, unsigned height )
+{
+    if(m_idx == NULL)
+    {
+        m_idx = NPY<unsigned>::make(1, 4);
+        m_idx->zero() ;  
+    } 
+    assert( height == m_height ); 
+    glm::uvec4 uidx(index, soIdx, lvIdx, height); 
+    m_idx->setQuad(uidx, 0u );     
+}
+
+
+
+
+
+
 std::string NCSGData::smry() const 
 {
     std::stringstream ss ; 
@@ -163,9 +202,28 @@ std::string NCSGData::smry() const
 }
 
 
+std::string NCSGData::desc() const
+{
+    std::string node_sh = m_nodes ? m_nodes->getShapeString() : "-" ;    
+    std::string tran_sh = m_transforms ? m_transforms->getShapeString() : "-" ;    
+    std::stringstream ss ; 
+    ss << "NCSGData " 
+       << " node_sh " << node_sh  
+       << " tran_sh " << tran_sh  
+       << " meta " << m_meta->desc()
+       ;
+    return ss.str();  
+}
+
+
+
+
+
+
+
 void NCSGData::load(const char* treedir)
 {
-    loadMetadata(treedir);
+    loadMetadata(treedir);  // m_meta
 
     loadNodes(treedir);  // m_nodes, m_num_nodes, m_height 
 
@@ -177,7 +235,7 @@ void NCSGData::load(const char* treedir)
     loadSrcFaces(treedir);   // m_srcfaces, m_num_srcfaces
 }
 
-void NCSGData::loadMetadata(treedir)
+void NCSGData::loadMetadata(const char* treedir)
 {
     m_meta = LoadMetadata( treedir, -1 );  // -1:treemeta
     if(!m_meta)
@@ -450,13 +508,13 @@ void NCSGData::loadIdx(const char* treedir)
 template<typename T>
 T NCSGData::getMeta(const char* key, const char* fallback ) const 
 {
-    assert(m_meta) ;    
-    return m_meta->get<T>(key, fallback) ;
+    return m_meta ? m_meta->get<T>(key, fallback) : BStr::LexicalCast<T>(fallback) ;
 }
 
 template<typename T>
 void NCSGData::setMeta(const char* key, T value )
 {
+    assert( m_meta ) ; 
     return m_meta->set<T>(key, value) ;
 }
 
@@ -576,4 +634,29 @@ void NCSGData::dump_gtransforms() const
                   << std::endl ; 
     }
 }
+
+
+void NCSGData::getPlanes(std::vector<glm::vec4>& _planes, unsigned idx, unsigned num_plane ) const 
+{
+    assert( idx < m_num_planes );
+    assert( idx + num_plane - 1 < m_num_planes );
+
+    assert( m_planes->hasShape(-1,4) );
+
+    for(unsigned i=idx ; i < idx + num_plane ; i++)
+    {
+        glm::vec4 plane = m_planes->getQuad(i) ;
+
+        _planes.push_back(plane);    
+
+        if(m_verbosity > 3)
+        std::cout << " plane " << std::setw(3) << i 
+                  << gpresent(plane)
+                  << std::endl ; 
+
+    }
+}
+
+
+
 

@@ -134,6 +134,8 @@ class NPY_API NCSG {
         NTrianglesNPY* polygonize();
         NTrianglesNPY* getTris() const ;
 
+        NCSGData* getCSGData() const ;
+
     public:
         // passthru to root
         unsigned    get_type_mask() const ;
@@ -223,11 +225,6 @@ class NPY_API NCSG {
     private:
         // Deserialize branch 
         void setConfig(const NSceneConfig* config);
-
-        unsigned getTypeCode(unsigned idx);
-        unsigned getTransformIndex(unsigned idx);
-        bool     isComplement(unsigned idx);
-        nquad getQuad(unsigned idx, unsigned j);
 
     private:
         void load();

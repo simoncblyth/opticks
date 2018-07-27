@@ -893,6 +893,7 @@ opticks-t-()
 
    ## if 1st arg is a directory, cd there to run ctest     
    ## otherwise run from the top level bdir
+
    local arg=$1
    if [ "${arg:0:1}" == "/" -a -d "$arg" ]; then
        bdir=$arg
@@ -900,9 +901,18 @@ opticks-t-()
    else
        bdir=$(opticks-bdir) 
    fi
-
-
    cd $bdir
+
+   om-
+   om-test 
+}
+
+
+opticks-t-old-approach(){  cat << EOA
+
+   # this old approach was used before the move to 
+   # treating the sub-projs as independant : so it 
+   # worked from the top level bdir 
 
    local log=ctest.log
    #opticks-t-- $*
@@ -913,6 +923,9 @@ opticks-t-()
 
    cd $iwd
    echo $msg use -V to show output, ctest output written to $bdir/ctest.log
+
+
+EOA
 }
 
 

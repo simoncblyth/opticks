@@ -231,8 +231,6 @@ T NParameters::get(const char* name, const char* fallback) const
 
 
 
-
-
 template NPY_API void NParameters::append(const char* name, bool value, const char* delim);
 template NPY_API void NParameters::append(const char* name, int value, const char* delim);
 template NPY_API void NParameters::append(const char* name, unsigned int value, const char* delim);
@@ -275,10 +273,7 @@ template NPY_API unsigned int NParameters::get(const char* name, const char* fal
 template NPY_API std::string  NParameters::get(const char* name, const char* fallback) const ;
 template NPY_API float        NParameters::get(const char* name, const char* fallback) const ;
 template NPY_API char         NParameters::get(const char* name, const char* fallback) const ;
+
 //template NPY_API const char*  NParameters::get(const char* name, const char* fallback) const ;
-
-
-
-
 
 

@@ -47,6 +47,10 @@ class BRAP_API BStr {
      template<typename T>
      static T LexicalCast(const char* str, T fallback, bool& badcast ) ;
 
+     template<typename T>
+     static T LexicalCast(const char* str) ;
+
+
      template<typename T> 
      static unsigned Split(std::vector<T>& elem, const char* line, char delim );
 

@@ -12,8 +12,7 @@
 #include "NSlab.hpp"
 #include "NSphere.hpp"
 
-#include "PLOG.hh"
-#include "NPY_LOG.hh"
+#include "OPTICKS_LOG.hh"
 
 
 void test_sdf()
@@ -137,8 +136,7 @@ void test_slab_parsurf()
 
 int main(int argc, char** argv)
 {
-    PLOG_(argc, argv);
-    NPY_LOG__ ; 
+    OPTICKS_LOG(argc, argv);
 
     //test_sdf();
     //test_intersect();
