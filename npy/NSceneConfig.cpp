@@ -47,7 +47,7 @@ NSceneConfig::NSceneConfig(const char* cfg)
 
     default_csg_bbty(CSG_BBOX_PARSURF)
 {
-    LOG(info) << "NSceneConfig::NSceneConfig"
+    LOG(debug) << "NSceneConfig::NSceneConfig"
               << " cfg [" << ( cfg ? cfg : "NULL" ) << "]"
               ;
 

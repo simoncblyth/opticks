@@ -33,15 +33,22 @@ NCSG* make_csg()
 
 
 
+
+
+
 int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv);
 
-    NCSG* csg = make_csg();
-    csg->dump();
-    csg->dump_surface_points("dsp", 20);
+    //NCSG* csg = make_csg();
 
-    csg->save("$TMP/NCSGSaveTest") ; 
+    const char* treedir = "$TMP/tboolean-box--/1" ; 
+    NCSG* csg = NCSG::LoadCSG(treedir, NULL ); 
+
+    //csg->dump();
+    //csg->dump_surface_points("dsp", 20);
+
+    csg->save("$TMP/tboolean-box--save/1") ; 
 
 
     return 0 ; 

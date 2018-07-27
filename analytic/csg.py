@@ -788,7 +788,7 @@ class CSG(CSG_):
         tboolpath = self.tboolpath(treedir, lvidx)
 
         soidx = 0 
-        idxbuf = np.array([0, soidx, lvidx, 0], dtype=np.uint32) 
+        idxbuf = np.array([[0, soidx, lvidx, 0]], dtype=np.uint32) 
 
         self.write_tbool(lvidx, tboolpath)
 
@@ -812,25 +812,27 @@ class CSG(CSG_):
         pass
 
 
-
-
-
     stream = property(lambda self:self.save(sys.stdout))
 
     @classmethod
     def tranpath(cls, treedir):
-        return os.path.join(treedir,"transforms.npy") 
+        return os.path.join(treedir,"srctransforms.npy") 
     @classmethod
     def planepath(cls, treedir):
-        return os.path.join(treedir,"planes.npy") 
+        return os.path.join(treedir,"srcplanes.npy") 
+    @classmethod
     def idxpath(cls, treedir):
-        return os.path.join(treedir,"idx.npy") 
+        return os.path.join(treedir,"srcidx.npy") 
     @classmethod
     def vertpath(cls, treedir):
         return os.path.join(treedir,"srcverts.npy") 
     @classmethod
     def facepath(cls, treedir):
         return os.path.join(treedir,"srcfaces.npy") 
+    @classmethod
+    def nodepath(cls, treedir):
+        return os.path.join(treedir,"srcnodes.npy") 
+
 
 
     # must match NCSG::TREE_META NCSG::NODE_META
@@ -840,9 +842,7 @@ class CSG(CSG_):
     @classmethod
     def metapath(cls, treedir, idx=-1):
         return os.path.join(treedir,cls.TREE_META) if idx == -1 else os.path.join(treedir,str(idx),cls.NODE_META)
-    @classmethod
-    def nodepath(cls, treedir):
-        return os.path.join(treedir,"nodes.npy") 
+
     @classmethod
     def tboolpath(cls, treedir, name):
         return os.path.join(treedir,"tbool%s.bash" % name) 

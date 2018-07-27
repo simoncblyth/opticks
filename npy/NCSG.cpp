@@ -83,17 +83,14 @@ NCSG::NCSG(nnode* root )
    m_soIdx(0),
    m_lvIdx(0)
 {
-
    setBoundary( root->boundary );  // boundary spec
    m_csgdata->init_buffers(root->maxdepth()) ;  
 }
-
 
 NCSGData* NCSG::getCSGData() const 
 {
    return m_csgdata ; 
 }
-
 
 NNodeUncoincide* NCSG::make_uncoincide() const 
 {
@@ -252,7 +249,7 @@ void NCSG::save(const char* treedir_ ) const
     m_csgdata->save(treedir_) ;  
 }
 
-void NCSG::load()
+void NCSG::loadsrc()
 {
     if(m_index % 100 == 0 && m_verbosity > 0)
     {
@@ -263,7 +260,7 @@ void NCSG::load()
     }
 
     assert(m_csgdata);
-    m_csgdata->load( m_treedir ) ; 
+    m_csgdata->loadsrc( m_treedir ) ; 
     postload();
 
     LOG(debug) << "NCSG::load DONE " ; 
@@ -290,6 +287,9 @@ unsigned NCSG::getNumNodes() const
 {
     return m_csgdata->getNumNodes() ; 
 }
+
+
+
 NPY<float>* NCSG::getNodeBuffer() const 
 {
     return m_csgdata->getNodeBuffer() ; 
@@ -302,14 +302,28 @@ NPY<float>* NCSG::getGTransformBuffer() const
 {
     return m_csgdata->getGTransformBuffer() ; 
 }
-NPY<float>* NCSG::getPlaneBuffer() const 
+
+
+
+NPY<float>* NCSG::getSrcTransformBuffer() const 
 {
-    return m_csgdata->getPlaneBuffer() ; 
+    return m_csgdata->getSrcTransformBuffer() ; 
 }
-NPY<unsigned>* NCSG::getIdxBuffer() const 
+NPY<float>* NCSG::getSrcNodeBuffer() const 
 {
-    return m_csgdata->getIdxBuffer() ; 
+    return m_csgdata->getSrcNodeBuffer() ; 
 }
+NPY<float>* NCSG::getSrcPlaneBuffer() const 
+{
+    return m_csgdata->getSrcPlaneBuffer() ; 
+}
+NPY<unsigned>* NCSG::getSrcIdxBuffer() const 
+{
+    return m_csgdata->getSrcIdxBuffer() ; 
+}
+
+
+
 NParameters* NCSG::getMetaParameters(int idx) const
 {
     return m_csgdata->getMetaParameters(idx) ; 
@@ -394,11 +408,8 @@ void NCSG::setConfig(const NSceneConfig* config)
 
 
 /** 
-NCSG::import
----------------
-
-From complete binary tree buffer into nnode tree
-
+NCSG::import : from complete binary tree buffer into nnode tree
+------------------------------------------------------------------
 **/
 
 void NCSG::import()
@@ -412,12 +423,14 @@ void NCSG::import()
 
     if(m_verbosity > 0)
     {
-    LOG(info) << "NCSG::import"
-              << " importing buffer into CSG node tree "
-              << " num_nodes " << getNumNodes()
-              << " height " << getHeight()
-              ;
+        LOG(info) << "NCSG::import"
+                  << " importing buffer into CSG node tree "
+                  << " num_nodes " << getNumNodes()
+                  << " height " << getHeight()
+                  ;
     }
+
+    m_csgdata->prepareForImport() ;  // from m_srctransforms to m_transforms, and get m_gtransforms ready to collect
 
     m_root = import_r(0, NULL) ;  
 
@@ -432,40 +445,6 @@ void NCSG::import()
 }
 
 
-unsigned NCSG::get_num_coincidence() const 
-{
-   assert(m_nudger);
-   return m_nudger->get_num_coincidence() ; 
-}
-std::string NCSG::desc_coincidence() const 
-{
-   assert(m_nudger);
-   return m_nudger->desc_coincidence() ; 
-}
-
-std::string NCSG::get_type_mask_string() const 
-{
-   assert(m_root);
-   return m_root->get_type_mask_string() ;
-}
-unsigned NCSG::get_type_mask() const 
-{
-   assert(m_root);
-   return m_root->get_type_mask() ;
-}
-unsigned NCSG::get_oper_mask() const 
-{
-   assert(m_root);
-   return m_root->get_oper_mask() ;
-}
-unsigned NCSG::get_prim_mask() const 
-{
-   assert(m_root);
-   return m_root->get_prim_mask() ;
-}
-
-
-
 void NCSG::postimport()
 {
     m_nudger = make_nudger() ; 
@@ -477,74 +456,12 @@ void NCSG::postimport()
 }
 
 
-void NCSG::postimport_autoscan()
-{
-
-   float mmstep = 0.1f ; 
-    NScan scan(*m_root, m_verbosity);
-    unsigned nzero = scan.autoscan(mmstep);
-    const std::string& msg = scan.get_message();
-
-    bool even_crossings = nzero % 2 == 0 ; 
-
-    if( !msg.empty() )
-    {
-        LOG(warning) << "NCSG::postimport_autoscan"
-                     << " autoscan message " << msg 
-                     ;
-    }
-
-
-    if( !even_crossings )
-    {
-        LOG(warning) << "NCSG::postimport_autoscan"
-                     << " autoscan odd crossings "
-                     << " nzero " << nzero 
-                     ;
-    }
-
-    //LOG(info) << "NCSG::postimport" ;
-    std::cout 
-         << "NCSG::postimport_autoscan"
-         << " nzero " << std::setw(4) << nzero 
-         << " NScanTest " << std::left << std::setw(40) << getTreeDir()  << std::right
-         << " soname " << std::setw(40) << soname()  
-         << " tag " << std::setw(10) << m_root->tag()
-         << " nprim " << std::setw(4) << m_root->get_num_prim()
-         << " typ " << std::setw(20)  << m_root->get_type_mask_string()
-         << " msg " << scan.get_message()
-         << std::endl 
-         ;
-
-}
-
-
-
-
-
-
-// itra is a 1-based index, with 0 meaning None
-
-/*
-nmat4pair* NCSG::import_transform_pair(unsigned itra)
-{
-    return m_csgdata->import_transform_pair(itra);
-}
-
-nmat4triple* NCSG::import_transform_triple(unsigned itra)
-{
-    return m_csgdata->import_transform_triple(itra);
-}
-*/
-
-
-
 /**
 NCSG::import_r
 ----------------
 
-Importing from the python buffers written by analytic/csg.py 
-and constructing the node tree
+Importing : constructs the node tree from src buffers 
+loaded by loadsrc ( which were written by analytic/csg.py ) 
 
 On import the gtransforms (**for primitives only**) are constructed 
 by multiplication down the tree, and uniquely collected into m_gtransforms 
@@ -555,7 +472,8 @@ with the 1-based gtransforms_idx being set on the node.
 nnode* NCSG::import_r(unsigned idx, nnode* parent)
 {
     if(idx >= getNumNodes()) return NULL ; 
-        
+    
+    // from srcnodes     
     OpticksCSG_t typecode = (OpticksCSG_t)m_csgdata->getTypeCode(idx);      
     int transform_idx = m_csgdata->getTransformIndex(idx) ; 
     bool complement = m_csgdata->isComplement(idx) ; 
@@ -565,7 +483,7 @@ nnode* NCSG::import_r(unsigned idx, nnode* parent)
               << " transform_idx " << transform_idx
               << " complement " << complement 
               ;
- 
+
     nnode* node = NULL ;   
  
     if(typecode == CSG_UNION || typecode == CSG_INTERSECTION || typecode == CSG_DIFFERENCE)
@@ -576,7 +494,7 @@ nnode* NCSG::import_r(unsigned idx, nnode* parent)
         node->idx = idx ; 
         node->complement = complement ; 
 
-        node->transform = m_csgdata->import_transform_triple( transform_idx ) ;  // from m_transforms
+        node->transform = m_csgdata->import_transform_triple( transform_idx ) ;  // from m_transforms, expecting (-1,3,4,4)
 
         node->left = import_r(idx*2+1, node );  
         node->right = import_r(idx*2+2, node );
@@ -594,7 +512,7 @@ nnode* NCSG::import_r(unsigned idx, nnode* parent)
         node->idx = idx ; 
         node->complement = complement ; 
 
-        node->transform = m_csgdata->import_transform_triple( transform_idx ) ;
+        node->transform = m_csgdata->import_transform_triple( transform_idx ) ;  // from m_transforms, expecting (-1,3,4,4)
 
         const nmat4triple* gtransform = node->global_transform();   
 
@@ -609,6 +527,8 @@ nnode* NCSG::import_r(unsigned idx, nnode* parent)
 
         node->gtransform = gtransform ; 
         node->gtransform_idx = gtransform_idx ; // 1-based, 0 for None
+
+        LOG(error) << "import_r node->gtransform_idx " << node->gtransform_idx ; 
     }
     assert(node); 
 
@@ -619,8 +539,6 @@ nnode* NCSG::import_r(unsigned idx, nnode* parent)
     // in the above is not sufficient reason to put things here, so very late.
     return node ; 
 } 
-
-
 
 nnode* NCSG::import_operator( unsigned idx, OpticksCSG_t typecode )
 {
@@ -647,6 +565,7 @@ nnode* NCSG::import_operator( unsigned idx, OpticksCSG_t typecode )
 
 nnode* NCSG::import_primitive( unsigned idx, OpticksCSG_t typecode )
 {
+    // from srcnodes buffer
     nquad p0 = m_csgdata->getQuad(idx, 0);
     nquad p1 = m_csgdata->getQuad(idx, 1);
     nquad p2 = m_csgdata->getQuad(idx, 2);
@@ -700,7 +619,7 @@ nnode* NCSG::import_primitive( unsigned idx, OpticksCSG_t typecode )
 
     if(CSGHasPlanes(typecode)) 
     {
-        import_planes( node );
+        import_srcplanes( node );
         import_srcvertsfaces( node );
     }
 
@@ -713,9 +632,6 @@ nnode* NCSG::import_primitive( unsigned idx, OpticksCSG_t typecode )
               << " DONE " 
               ;
     } 
-
-    
-
     return node ; 
 }
 
@@ -745,14 +661,12 @@ void NCSG::import_srcvertsfaces(nnode* node)
     cpol->set_srcvertsfaces(_verts, _faces);     
 }
 
-
-void NCSG::import_planes(nnode* node)
+void NCSG::import_srcplanes(nnode* node)
 {
     assert( node->has_planes() );
 
     nconvexpolyhedron* cpol = dynamic_cast<nconvexpolyhedron*>(node);
     assert(cpol);
-
 
     unsigned iplane = node->planeIdx() ;   // 1-based idx ?
     unsigned num_plane = node->planeNum() ;
@@ -769,18 +683,12 @@ void NCSG::import_planes(nnode* node)
     assert( node->planes.size() == 0u );
 
     std::vector<glm::vec4> _planes ;  
-    m_csgdata->getPlanes(_planes, idx, num_plane ); 
+    m_csgdata->getSrcPlanes(_planes, idx, num_plane ); 
     assert( _planes.size() == num_plane ) ; 
 
     cpol->set_planes(_planes);     
     assert( cpol->planes.size() == num_plane );
 }
-
-
-
-
-
-
 
 
 void NCSG::export_planes(nnode* node)
@@ -828,7 +736,7 @@ unsigned NCSG::addUniqueTransform( const nmat4triple* gtransform_ )
               << std::endl 
               ;
     */
-    return m_csgdata->addUniqueTransform( gtransform ); 
+    return m_csgdata->addUniqueTransform( gtransform );   // add to m_gtransforms
 
 }
 
@@ -873,11 +781,12 @@ void NCSG::check_r(nnode* node)
 
 void NCSG::export_()
 {
+    m_csgdata->prepareForExport() ;  //  create node buffer 
     NPY<float>* _nodes = m_csgdata->getNodeBuffer() ; 
     assert(_nodes);
 
     LOG(debug) << "NCSG::export_ "
-              << " exporting CSG node tree into buffer "
+              << " exporting CSG node tree into nodes buffer "
               << " num_nodes " << getNumNodes()
               << " height " << getHeight()
               ;
@@ -902,7 +811,6 @@ void NCSG::export_r(nnode* node, unsigned idx)
         export_r(node->right, 2*idx + 2);
     }  
 }
-
 
 /**
 NCSG::export_node
@@ -935,7 +843,7 @@ void NCSG::export_node(nnode* node, unsigned idx)
     export_planes(node);
   
     // crucial 2-step here, where m_nodes gets totally rewritten
-    npart pt = node->part();
+    npart pt = node->part();  // node->type node->gtransform_idx node->complement written into pt 
 
     pt.check_bb_zero(node->type); 
 
@@ -963,6 +871,9 @@ void NCSG::export_gtransform(nnode* node)
         const nmat4triple* gtransform = node->global_transform();   
         if( gtransform == NULL ) gtransform = nmat4triple::make_identity() ;
         node->gtransform_idx = addUniqueTransform(gtransform) ; // to m_gtransforms
+
+        LOG(error) << " node->gtransform_idx " << node->gtransform_idx ; 
+
     }
 }
 
@@ -1070,9 +981,9 @@ NCSG* NCSG::LoadTree(const char* treedir, const NSceneConfig* config  )
     tree->setVerbosity(config->verbosity);
     tree->setIsUsedGlobally(true);
 
-    tree->load();
-    tree->import();  // complete binary tree m_nodes buffer -> node tree
-    tree->export_(); // node tree -> complete binary tree m_nodes buffer
+    tree->loadsrc();  // populate the src* buffers 
+    tree->import();   // complete binary tree m_nodes buffer -> node tree
+    tree->export_();  // node tree -> complete binary tree m_nodes buffer
 
     if(config->verbosity > 1) tree->dump("NCSG::LoadTree");
 
@@ -1247,5 +1158,78 @@ unsigned NCSG::getLVIdx() const
 
 
 
+
+
+unsigned NCSG::get_num_coincidence() const 
+{
+   assert(m_nudger);
+   return m_nudger->get_num_coincidence() ; 
+}
+std::string NCSG::desc_coincidence() const 
+{
+   assert(m_nudger);
+   return m_nudger->desc_coincidence() ; 
+}
+
+std::string NCSG::get_type_mask_string() const 
+{
+   assert(m_root);
+   return m_root->get_type_mask_string() ;
+}
+unsigned NCSG::get_type_mask() const 
+{
+   assert(m_root);
+   return m_root->get_type_mask() ;
+}
+unsigned NCSG::get_oper_mask() const 
+{
+   assert(m_root);
+   return m_root->get_oper_mask() ;
+}
+unsigned NCSG::get_prim_mask() const 
+{
+   assert(m_root);
+   return m_root->get_prim_mask() ;
+}
+
+
+void NCSG::postimport_autoscan()
+{
+
+   float mmstep = 0.1f ; 
+    NScan scan(*m_root, m_verbosity);
+    unsigned nzero = scan.autoscan(mmstep);
+    const std::string& msg = scan.get_message();
+
+    bool even_crossings = nzero % 2 == 0 ; 
+
+    if( !msg.empty() )
+    {
+        LOG(warning) << "NCSG::postimport_autoscan"
+                     << " autoscan message " << msg 
+                     ;
+    }
+
+
+    if( !even_crossings )
+    {
+        LOG(warning) << "NCSG::postimport_autoscan"
+                     << " autoscan odd crossings "
+                     << " nzero " << nzero 
+                     ;
+    }
+
+    std::cout 
+         << "NCSG::postimport_autoscan"
+         << " nzero " << std::setw(4) << nzero 
+         << " NScanTest " << std::left << std::setw(40) << getTreeDir()  << std::right
+         << " soname " << std::setw(40) << soname()  
+         << " tag " << std::setw(10) << m_root->tag()
+         << " nprim " << std::setw(4) << m_root->get_num_prim()
+         << " typ " << std::setw(20)  << m_root->get_type_mask_string()
+         << " msg " << scan.get_message()
+         << std::endl 
+         ;
+}
 
 

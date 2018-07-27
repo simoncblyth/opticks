@@ -11,20 +11,27 @@
 #include "NCSGData.hpp"
 #include "GLMFormat.hpp"
 
-
 #define TREE_NODES(height) ( (0x1 << (1+(height))) - 1 )
 
 // must match opticks/analytic/csg.py 
 const char* NCSGData::FILENAME  = "csg.txt" ; 
 const char* NCSGData::TREE_META = "meta.json" ;
 const char* NCSGData::NODE_META = "nodemeta.json" ;
-const char* NCSGData::PLANES    = "planes.npy" ; 
+
+const char* NCSGData::SRC_PLANES = "srcplanes.npy" ; 
 const char* NCSGData::SRC_FACES = "srcfaces.npy" ; 
 const char* NCSGData::SRC_VERTS = "srcverts.npy" ; 
-const char* NCSGData::IDX       = "idx.npy" ; 
+const char* NCSGData::SRC_TRANSFORMS = "srctransforms.npy" ; 
+const char* NCSGData::SRC_IDX       = "srcidx.npy" ; 
+const char* NCSGData::SRC_NODES     = "srcnodes.npy" ;
+
+//  results of export 
+const char* NCSGData::PLANES = "planes.npy" ; 
+const char* NCSGData::NODES  = "nodes.npy" ;
+const char* NCSGData::IDX    = "idx.npy" ;
+
 
 const unsigned NCSGData::NTRAN = 3 ; 
-
 
 bool NCSGData::Exists(const char* treedir)
 {
@@ -65,29 +72,57 @@ bool NCSGData::ExistsMeta(const char* treedir, int idx)
 }
 
 
-
 NCSGData::NCSGData()  
    :
    m_verbosity(1),
-   m_meta(new NParameters),
-   m_nodes(NULL),
-   m_transforms(NULL),
-   m_gtransforms(NULL),
-   m_planes(NULL),
+
+   m_srcnodes(NULL),
+   m_srctransforms(NULL),
+   m_srcplanes(NULL),
    m_srcverts(NULL),
    m_srcfaces(NULL),
-   m_idx(NULL),
+   m_srcidx(NULL),
+
    m_height(0),
    m_num_nodes(0),
    m_num_transforms(0),
    m_num_planes(0),
    m_num_srcverts(0),
-   m_num_srcfaces(0)
+   m_num_srcfaces(0),
+
+   m_meta(new NParameters),
+
+   m_nodes(NULL),
+   m_transforms(NULL),
+   m_gtransforms(NULL),
+   m_planes(NULL),
+   m_idx(NULL)
 {
 }
 
+unsigned NCSGData::CompleteTreeHeight( unsigned num_nodes )
+{
+    unsigned height = UINT_MAX ;  
+    int h = MAX_HEIGHT*2 ;   // <-- dont let exceeding MAXHEIGHT, mess up determination of height 
+    while(h--)
+    {
+        unsigned complete_nodes = TREE_NODES(h) ;
+        if(complete_nodes == num_nodes) height = h ; 
+    }
 
+    bool invalid_height = height == UINT_MAX ; 
 
+    if(invalid_height)
+    {
+        LOG(fatal) << "NCSGData::CompleteTreeHeight"
+                   << " INVALID_HEIGHT "
+                   << " num_nodes " << num_nodes
+                   << " MAX_HEIGHT " << MAX_HEIGHT
+                   ;
+    }
+    assert(!invalid_height); // must be complete binary tree sized 1, 3, 7, 15, 31, ...
+    return height ; 
+}
 
 unsigned NCSGData::NumNodes(unsigned height)
 {
@@ -101,6 +136,9 @@ unsigned NCSGData::getNumNodes() const
 {
     return m_num_nodes ; 
 }
+
+
+
 NPY<float>* NCSGData::getNodeBuffer() const 
 {
     return m_nodes ; 
@@ -109,14 +147,31 @@ NPY<float>* NCSGData::getTransformBuffer() const
 {
     return m_transforms ; 
 }
-
 NPY<float>* NCSGData::getGTransformBuffer() const
 {
     return m_gtransforms ; 
 }
-NPY<float>* NCSGData::getPlaneBuffer() const 
+NPY<float>* NCSGData::getPlaneBuffer() const
 {
     return m_planes ; 
+}
+NPY<unsigned>* NCSGData::getIdxBuffer() const 
+{
+    return m_idx ; 
+}
+
+
+NPY<float>* NCSGData::getSrcTransformBuffer() const 
+{
+    return m_srctransforms ; 
+}
+NPY<float>* NCSGData::getSrcNodeBuffer() const 
+{
+    return m_srcnodes ; 
+}
+NPY<float>* NCSGData::getSrcPlaneBuffer() const 
+{
+    return m_srcplanes ; 
 }
 NPY<float>* NCSGData::getSrcVertsBuffer() const 
 {
@@ -126,25 +181,24 @@ NPY<int>* NCSGData::getSrcFacesBuffer() const
 {
     return m_srcfaces ; 
 }
-
-
-
-NPY<unsigned>* NCSGData::getIdxBuffer() const 
+NPY<unsigned>* NCSGData::getSrcIdxBuffer() const 
 {
-    return m_idx ; 
+    return m_srcidx ; 
 }
+
 
 NParameters* NCSGData::getMetaParameters(int idx) const
 {
     return idx < 0 ? m_meta : getNodeMetadata(unsigned(idx)) ; 
 }
-
 NParameters* NCSGData::getNodeMetadata(unsigned idx) const 
 {
     return m_nodemeta.count(idx) == 1 ? m_nodemeta.at(idx) : NULL ; 
 }
 
 
+
+// invoked from NCSG::NCSG(nnode* root )
 void NCSGData::init_buffers(unsigned height)
 {
    m_height = height ; 
@@ -161,24 +215,31 @@ void NCSGData::init_buffers(unsigned height)
    m_gtransforms = NPY<float>::make(0,NTRAN,4,4) ; 
    m_gtransforms->zero();
 
-   m_planes = NPY<float>::make(0,4);
-   m_planes->zero();
 
-   m_idx = NPY<unsigned>::make(1,4);
-   m_idx->zero();
+
+   m_srctransforms = NPY<float>::make(0,4,4) ;  
+   m_srctransforms->zero();
+
+   m_srcplanes = NPY<float>::make(0,4);
+   m_srcplanes->zero();
+
+   m_srcidx = NPY<unsigned>::make(1,4);
+   m_srcidx->zero();
 }
+
+
 
 
 void NCSGData::setIdx( unsigned index, unsigned soIdx, unsigned lvIdx, unsigned height )
 {
-    if(m_idx == NULL)
+    if(m_srcidx == NULL)
     {
-        m_idx = NPY<unsigned>::make(1, 4);
-        m_idx->zero() ;  
+        m_srcidx = NPY<unsigned>::make(1, 4);
+        m_srcidx->zero() ;  
     } 
     assert( height == m_height ); 
     glm::uvec4 uidx(index, soIdx, lvIdx, height); 
-    m_idx->setQuad(uidx, 0u );     
+    m_srcidx->setQuad(uidx, 0u );     
 }
 
 
@@ -192,10 +253,12 @@ std::string NCSGData::smry() const
     ss 
        << " ht " << std::setw(2) << m_height 
        << " nn " << std::setw(4) << m_num_nodes
+       << " snd " << ( m_srcnodes ? m_srcnodes->getShapeString() : "NULL" )
        << " nd " << ( m_nodes ? m_nodes->getShapeString() : "NULL" )
+       << " str " << ( m_srctransforms ? m_srctransforms->getShapeString() : "NULL" )
        << " tr " << ( m_transforms ? m_transforms->getShapeString() : "NULL" )
        << " gtr " << ( m_gtransforms ? m_gtransforms->getShapeString() : "NULL" )
-       << " pln " << ( m_planes ? m_planes->getShapeString() : "NULL" )
+       << " pln " << ( m_srcplanes ? m_srcplanes->getShapeString() : "NULL" )
        ;
 
     return ss.str();
@@ -218,24 +281,30 @@ std::string NCSGData::desc() const
 
 void NCSGData::save(const char* treedir ) const 
 {
-    saveMetadata(treedir, -1 ); 
-    saveNodes(treedir); 
-    saveNodeMetadata(treedir);
-    saveTransforms(treedir);
-    savePlanes(treedir);   
+    saveSrcNodes(treedir); 
+    saveSrcTransforms(treedir);
+    saveSrcPlanes(treedir);   
     saveSrcVerts(treedir);   
     saveSrcFaces(treedir);   
+    saveSrcIdx(treedir);   
+
+    saveMetadata(treedir, -1 ); 
+    saveNodeMetadata(treedir);
 }
 
-void NCSGData::load(const char* treedir)
+void NCSGData::loadsrc(const char* treedir)
 {
-    loadMetadata(treedir);     // m_meta
-    loadNodes(treedir);        // m_nodes, m_num_nodes, m_height 
-    loadNodeMetadata(treedir);
-    loadTransforms(treedir);   // m_transforms, m_num_transforms
-    loadPlanes(treedir);       // m_planes, m_num_planes 
-    loadSrcVerts(treedir);     // m_srcverts m_num_srcverts
-    loadSrcFaces(treedir);     // m_srcfaces, m_num_srcfaces
+    loadSrcNodes(treedir);        // m_nodes, m_num_nodes, m_height 
+    loadSrcTransforms(treedir);   // m_transforms, m_num_transforms
+    loadSrcPlanes(treedir);       // m_planes, m_num_planes 
+    loadSrcVerts(treedir);        // m_srcverts m_num_srcverts
+    loadSrcFaces(treedir);        // m_srcfaces, m_num_srcfaces
+    loadSrcIdx(treedir);          // m_srcidx
+
+    loadMetadata(treedir);      // m_meta
+    loadNodeMetadata(treedir);  // requires m_num_nodes
+
+    LOG(info) << " loadsrc DONE " << smry() ; 
 }
 
 
@@ -265,33 +334,22 @@ void NCSGData::loadMetadata(const char* treedir)
 
 NParameters* NCSGData::LoadMetadata(const char* treedir, int idx )
 {
-    // TODO:
-    //    per-node metadata, using metaNN.json ?
-    //    where NN is the inorder tree index 
-    //    which then gets associated to the appropriate node 
-    //
-    //    Need for access to Trd srcmeta
-
-    NParameters* meta = NULL  ; 
-    std::string metapath = MetaPath(treedir, idx) ;
-
-    meta = new NParameters ; 
-
-    if(BFile::ExistsFile(metapath.c_str()))
+    std::string path = MetaPath(treedir, idx) ;
+    NParameters* meta = new NParameters ; 
+    if(BFile::ExistsFile(path.c_str()))
     {
-         meta->load_( metapath.c_str() );
+         meta->load_( path.c_str() );
     } 
     else
     {
-        // lots missing as are looping over complete tree node count
+        // lots missing is expected as are looping over complete tree node count
         // see notes/issues/axel_GSceneTest_fail.rst
         LOG(trace) << "NCSGData::LoadMetadata"
                      << " missing metadata "
                      << " treedir " << treedir  
                      << " idx " << idx
-                     << " metapath " << metapath
+                     << " path " << path
                      ;
-        //std::cerr << metapath << std::endl ; 
     }
     return meta ; 
 }
@@ -310,7 +368,6 @@ void NCSGData::saveNodeMetadata(const char* treedir) const
 void NCSGData::loadNodeMetadata(const char* treedir)
 {
     // FIX: this idx is not same as real complete binary tree node_idx ?
-
 
     // just looping over the number of nodes in the complete tree
     // so it is not surprising that many of them are missing metadata
@@ -350,103 +407,92 @@ void NCSGData::loadNodeMetadata(const char* treedir)
 
 
 
-void NCSGData::saveNodes(const char* treedir) const
+void NCSGData::saveSrcNodes(const char* treedir) const
 {
-    std::string nodepath = BFile::FormPath(treedir, "nodes.npy") ;
-    m_nodes->save(nodepath.c_str());
+    std::string path = BFile::FormPath(treedir, SRC_NODES) ;
+    m_srcnodes->save(path.c_str());
 } 
 
-void NCSGData::loadNodes(const char* treedir)
+void NCSGData::loadSrcNodes(const char* treedir)
 {
-    std::string nodepath = BFile::FormPath(treedir, "nodes.npy") ;
-    m_nodes = NPY<float>::load(nodepath.c_str());
+    std::string path = BFile::FormPath(treedir, SRC_NODES) ;
+    m_srcnodes = NPY<float>::load(path.c_str());
 
-    if(!m_nodes)
+    if(!m_srcnodes)
     {
-         LOG(fatal) << "NCSGData::loadNodes"
+         LOG(fatal) << "NCSGData::loadSrcNodes"
                     << " failed to load " 
-                    << " nodepath [" << nodepath << "]"
+                    << " path [" << path << "]"
                     ;
     }
 
-    assert(m_nodes);
+    assert(m_srcnodes);
+ 
+    // hmm dont like doing processing on load that 
+    // as wil not be done when getting from node tree ?
 
-    m_num_nodes  = m_nodes->getShape(0) ;  
-    unsigned nj = m_nodes->getShape(1);
-    unsigned nk = m_nodes->getShape(2);
-
+    m_num_nodes  = m_srcnodes->getShape(0) ;  
+    unsigned nj = m_srcnodes->getShape(1);
+    unsigned nk = m_srcnodes->getShape(2);
     assert( nj == NJ );
     assert( nk == NK );
-
-    m_height = UINT_MAX ; 
-    int h = MAX_HEIGHT*2 ;   // <-- dont let exceeding MAXHEIGHT, mess up determination of height 
-    while(h--)
-    {
-        unsigned complete_nodes = TREE_NODES(h) ;
-        if(complete_nodes == m_num_nodes) m_height = h ; 
-    }
-
-    bool invalid_height = m_height == UINT_MAX ; 
-
-    if(invalid_height)
-    {
-        LOG(fatal) << "NCSGData::loadNodes"
-                   << " INVALID_HEIGHT "
-                   << " m_nodes " << m_nodes->getShapeString()
-                   << " num_nodes " << m_num_nodes
-                   << " MAX_HEIGHT " << MAX_HEIGHT
-                   ;
-
-    }
-
-    assert(!invalid_height); // must be complete binary tree sized 1, 3, 7, 15, 31, ...
+    m_height = CompleteTreeHeight( m_num_nodes ) ; 
 }
 
 
-
-void NCSGData::saveTransforms(const char* treedir) const
+void NCSGData::saveSrcTransforms(const char* treedir) const
 {
-    std::string path = BFile::FormPath(treedir, "transforms.npy") ;
-    m_transforms->save(path.c_str());
+    std::string path = BFile::FormPath(treedir, SRC_TRANSFORMS) ;
+    m_srctransforms->save(path.c_str());
     // gtransforms not saved, they are constructed on load
 } 
 
-void NCSGData::loadTransforms(const char* treedir)
+void NCSGData::loadSrcTransforms(const char* treedir)
 {
-    std::string tranpath = BFile::FormPath(treedir, "transforms.npy") ;
-    if(!BFile::ExistsFile(tranpath.c_str())) return ; 
+    std::string path = BFile::FormPath(treedir, SRC_TRANSFORMS) ;
+    if(!BFile::ExistsFile(path.c_str())) return ; 
 
-    NPY<float>* src = NPY<float>::load(tranpath.c_str());
+    m_srctransforms = NPY<float>::load(path.c_str());
+    NPY<float>* src = m_srctransforms ; 
     assert(src); 
     bool valid_src = src->hasShape(-1,4,4) ;
     if(!valid_src) 
     {
-        LOG(fatal) << "NCSGData::loadTransforms"
+        LOG(fatal) << "NCSGData::loadSrcTransforms"
                    << " invalid src transforms "
-                   << " tranpath " << tranpath
-                   << " src_sh " << src->getShapeString()
+                   << " path " << path
+                   << " srctransforms " << src->getShapeString()
                    ;
     }
 
     assert(valid_src);
     unsigned ni = src->getShape(0) ;
+    m_num_transforms  = ni  ;  
+}
 
-              
+
+void NCSGData::prepareForImport()
+{
     assert(NTRAN == 2 || NTRAN == 3);
+    NPY<float>* src = m_srctransforms ; 
+
+    assert( src && "src buffers are required to prepareForImport "); 
 
     NPY<float>* transforms = NTRAN == 2 ? NPY<float>::make_paired_transforms(src) : NPY<float>::make_triple_transforms(src) ;
+    unsigned ni = src->getNumItems();  
     assert(transforms->hasShape(ni,NTRAN,4,4));
 
     m_transforms = transforms ; 
     m_gtransforms = NPY<float>::make(0,NTRAN,4,4) ;  // for collecting unique gtransforms
+}
 
-    m_num_transforms  = ni  ;  
+void NCSGData::prepareForExport()
+{
+    m_nodes = NPY<float>::make( m_num_nodes, NJ, NK);
+    m_nodes->zero();
 
-    LOG(trace) << "NCSGData::loadTransforms"
-              << " tranpath " << tranpath 
-              << " num_transforms " << ni
-              ;
-
+    m_planes = NPY<float>::make(0,4);
+    m_planes->zero();
 }
 
 
@@ -513,18 +559,16 @@ void NCSGData::loadSrcFaces(const char* treedir)
     LOG(info) << " loaded " << m_num_srcfaces ;
 }
 
-
-
-void NCSGData::savePlanes(const char* treedir) const
+void NCSGData::saveSrcPlanes(const char* treedir) const
 {
-    std::string path = BFile::FormPath(treedir, PLANES) ;
-    if(!m_planes) return ; 
-    m_planes->save(path.c_str());
+    std::string path = BFile::FormPath(treedir, SRC_PLANES) ;
+    if(!m_srcplanes) return ; 
+    m_srcplanes->save(path.c_str());
 } 
 
-void NCSGData::loadPlanes(const char* treedir)
+void NCSGData::loadSrcPlanes(const char* treedir)
 {
-    std::string path = BFile::FormPath(treedir,  PLANES ) ;
+    std::string path = BFile::FormPath(treedir,  SRC_PLANES ) ;
     if(!BFile::ExistsFile(path.c_str())) return ; 
 
     NPY<float>* a = NPY<float>::load(path.c_str());
@@ -532,7 +576,7 @@ void NCSGData::loadPlanes(const char* treedir)
     bool valid = a->hasShape(-1,4) ;
     if(!valid) 
     {
-        LOG(fatal) << "NCSGData::loadPlanes"
+        LOG(fatal) << "NCSGData::loadSrcPlanes"
                    << " invalid planes  "
                    << " path " << path
                    << " shape " << a->getShapeString()
@@ -540,78 +584,56 @@ void NCSGData::loadPlanes(const char* treedir)
     }
     assert(valid);
 
-    m_planes = a ; 
+    m_srcplanes = a ; 
     m_num_planes = a->getShape(0) ; 
 }
 
 
-
-void NCSGData::saveIdx(const char* treedir) const
+void NCSGData::saveSrcIdx(const char* treedir) const
 {
-    std::string path = BFile::FormPath(treedir, IDX) ;
-    if(!m_idx) return ; 
-    m_idx->save(path.c_str());
+    std::string path = BFile::FormPath(treedir, SRC_IDX) ;
+    if(!m_srcidx) return ; 
+    m_srcidx->save(path.c_str());
 } 
 
-void NCSGData::loadIdx(const char* treedir)
+void NCSGData::loadSrcIdx(const char* treedir)
 {
-    std::string path = BFile::FormPath(treedir, IDX ) ;
+    std::string path = BFile::FormPath(treedir, SRC_IDX ) ;
     //if(!BFile::ExistsFile(path.c_str())) return ; 
 
     NPY<unsigned>* a = NPY<unsigned>::load(path.c_str());
     bool valid = a->hasShape(1,4) ;
     if(!valid) 
     {
-        LOG(fatal) << "NCSGData::loadIdx"
+        LOG(fatal) << "NCSGData::loadSrcIdx"
                    << " invalid idx  "
                    << " path " << path
                    << " shape " << a->getShapeString()
                    ;
     }
     assert(valid);
-    m_idx = a ;
+    m_srcidx = a ;
 }
-
-// metadata from the root nodes of the CSG trees for each solid
-// pmt-cd treebase.py:Node._get_meta
-//
-template<typename T>
-T NCSGData::getMeta(const char* key, const char* fallback ) const 
-{
-    return m_meta ? m_meta->get<T>(key, fallback) : BStr::LexicalCast<T>(fallback) ;
-}
-
-template<typename T>
-void NCSGData::setMeta(const char* key, T value )
-{
-    assert( m_meta ) ; 
-    return m_meta->set<T>(key, value) ;
-}
-
-
-
-
-
 
 
 unsigned NCSGData::getTypeCode(unsigned idx)
 {
-    return m_nodes->getUInt(idx,TYPECODE_J,TYPECODE_K,0u);
+    return m_srcnodes->getUInt(idx,TYPECODE_J,TYPECODE_K,0u);
 }
 unsigned NCSGData::getTransformIndex(unsigned idx)
 {
-    unsigned raw = m_nodes->getUInt(idx,TRANSFORM_J,TRANSFORM_K,0u);
+    unsigned raw = m_srcnodes->getUInt(idx,TRANSFORM_J,TRANSFORM_K,0u);
     return raw & SSys::OTHERBIT32 ;   // <-- strip the sign bit  
 }
 bool NCSGData::isComplement(unsigned idx)
 {
-    unsigned raw = m_nodes->getUInt(idx,TRANSFORM_J,TRANSFORM_K,0u);
+    unsigned raw = m_srcnodes->getUInt(idx,TRANSFORM_J,TRANSFORM_K,0u);
     return raw & SSys::SIGNBIT32 ;   // pick the sign bit 
 }
 nquad NCSGData::getQuad(unsigned idx, unsigned j)
 {
     nquad qj ; 
-    qj.f = m_nodes->getVQuad(idx, j) ;
+    qj.f = m_srcnodes->getVQuad(idx, j) ;
     return qj ;
 }
 
@@ -651,33 +673,9 @@ nmat4triple* NCSGData::import_transform_triple(unsigned itra)
     return triple ; 
 }
 
-
-
-template NPY_API void NCSGData::setMeta<float>(const char*, float);
-template NPY_API void NCSGData::setMeta<int>(const char*, int);
-template NPY_API void NCSGData::setMeta<bool>(const char*, bool);
-template NPY_API void NCSGData::setMeta<std::string>(const char*, std::string);
-
-template NPY_API std::string NCSGData::getMeta<std::string>(const char*, const char*) const ;
-template NPY_API int         NCSGData::getMeta<int>(const char*, const char*) const ;
-template NPY_API float       NCSGData::getMeta<float>(const char*, const char*) const ;
-template NPY_API bool        NCSGData::getMeta<bool>(const char*, const char*) const ;
-
-
-
-
-
-
-
+// this is invoked from NCSG::import (constructing node tree from the buffers) 
 unsigned NCSGData::addUniqueTransform( const nmat4triple* gtransform )
 {
-    /*
-    std::cout << "NCSGData::addUniqueTransform"
-              << " gtransform " << *gtransform
-              << std::endl 
-              ;
-    */
-
     NPY<float>* gtmp = NPY<float>::make(1,NTRAN,4,4);
     gtmp->zero();
     gtmp->setMat4Triple( gtransform, 0);
@@ -687,8 +685,6 @@ unsigned NCSGData::addUniqueTransform( const nmat4triple* gtransform )
 
     return gtransform_idx ; 
 }
-
-
 
 
 void NCSGData::dump_gtransforms() const 
@@ -706,16 +702,16 @@ void NCSGData::dump_gtransforms() const
 }
 
 
-void NCSGData::getPlanes(std::vector<glm::vec4>& _planes, unsigned idx, unsigned num_plane ) const 
+void NCSGData::getSrcPlanes(std::vector<glm::vec4>& _planes, unsigned idx, unsigned num_plane ) const 
 {
     assert( idx < m_num_planes );
     assert( idx + num_plane - 1 < m_num_planes );
 
-    assert( m_planes->hasShape(-1,4) );
+    assert( m_srcplanes->hasShape(-1,4) );
 
     for(unsigned i=idx ; i < idx + num_plane ; i++)
     {
-        glm::vec4 plane = m_planes->getQuad(i) ;
+        glm::vec4 plane = m_srcplanes->getQuad(i) ;
 
         _planes.push_back(plane);    
 
@@ -727,6 +723,32 @@ void NCSGData::getPlanes(std::vector<glm::vec4>& _planes, unsigned idx, unsigned
     }
 }
 
+
+// metadata from the root nodes of the CSG trees for each solid
+// pmt-cd treebase.py:Node._get_meta
+//
+template<typename T>
+T NCSGData::getMeta(const char* key, const char* fallback ) const 
+{
+    return m_meta ? m_meta->get<T>(key, fallback) : BStr::LexicalCast<T>(fallback) ;
+}
+
+template<typename T>
+void NCSGData::setMeta(const char* key, T value )
+{
+    assert( m_meta ) ; 
+    return m_meta->set<T>(key, value) ;
+}
+
+template NPY_API void NCSGData::setMeta<float>(const char*, float);
+template NPY_API void NCSGData::setMeta<int>(const char*, int);
+template NPY_API void NCSGData::setMeta<bool>(const char*, bool);
+template NPY_API void NCSGData::setMeta<std::string>(const char*, std::string);
+
+template NPY_API std::string NCSGData::getMeta<std::string>(const char*, const char*) const ;
+template NPY_API int         NCSGData::getMeta<int>(const char*, const char*) const ;
+template NPY_API float       NCSGData::getMeta<float>(const char*, const char*) const ;
+template NPY_API bool        NCSGData::getMeta<bool>(const char*, const char*) const ;
 
 
 

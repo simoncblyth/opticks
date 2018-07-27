@@ -205,7 +205,7 @@ NCSG* NCSGList::loadTree(unsigned idx, const char* boundary) const
     tree->setVerbosity( m_verbosity );
     tree->setBoundary( boundary );
 
-    tree->load();    // m_nodes, the user input serialization buffer (no bbox from user input python)
+    tree->loadsrc();    // m_nodes, the user input serialization buffer (no bbox from user input python)
     tree->import();  // input m_nodes buffer into CSG nnode tree 
 
     return tree ; 

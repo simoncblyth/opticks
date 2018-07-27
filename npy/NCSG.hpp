@@ -192,11 +192,15 @@ class NPY_API NCSG {
         float        getContainerScale() const ;
         bool         isUsedGlobally() const ;
 
-        NPY<float>*  getNodeBuffer() const ;
-        NPY<float>*  getTransformBuffer() const ;
-        NPY<float>*  getGTransformBuffer() const ;
-        NPY<float>*  getPlaneBuffer() const ;
-        NPY<unsigned>* getIdxBuffer() const ;
+        NPY<float>*    getNodeBuffer() const ;
+        NPY<float>*    getTransformBuffer() const ;
+        NPY<float>*    getGTransformBuffer() const ;
+
+        NPY<float>*    getSrcTransformBuffer() const ;
+        NPY<float>*    getSrcNodeBuffer() const ;
+        NPY<float>*    getSrcPlaneBuffer() const ;
+        NPY<unsigned>* getSrcIdxBuffer() const ;
+
         NParameters* getMetaParameters(int idx) const ;
 
         unsigned     getNumNodes() const ;
@@ -229,7 +233,7 @@ class NPY_API NCSG {
     public:
         void save(const char* treedir) const ;
     private:
-        void load();
+        void loadsrc();
         void postload();
         void increaseVerbosity(int verbosity);
 
@@ -243,7 +247,7 @@ class NPY_API NCSG {
         nnode* import_r(unsigned idx, nnode* parent=NULL);
         nnode* import_primitive( unsigned idx, OpticksCSG_t typecode );
         nnode* import_operator( unsigned idx, OpticksCSG_t typecode );
-        void import_planes(nnode* node);
+        void import_srcplanes(nnode* node);
         void import_srcvertsfaces(nnode* node);
     private:
         //nmat4pair*   import_transform_pair(unsigned itra);
