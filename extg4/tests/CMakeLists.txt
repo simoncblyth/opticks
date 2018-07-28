@@ -18,7 +18,7 @@ set(TEST_SOURCES
     X4Transform3DTest.cc
     X4AffineTransformTest.cc
     X4ThreeVectorTest.cc
-
+    X4CSGTest.cc
 )
 
 

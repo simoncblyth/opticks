@@ -71,9 +71,6 @@
 #ifdef OPTICKS_X4
 #include "X4_LOG.hh"
 #endif
-#ifdef OPTICKS_Y4CSG
-#include "Y4CSG_LOG.hh"
-#endif
 
 
 
@@ -150,9 +147,6 @@ class SYSRAP_API OPTICKS_LOG_ {
 #ifdef OPTICKS_X4
     X4_LOG::Initialize(instance->prefixlevel_parse( max_level, "X4"), app1, NULL );
 #endif
-#ifdef OPTICKS_Y4CSG
-    Y4CSG_LOG::Initialize(instance->prefixlevel_parse( max_level, "Y4CSG"), app1, NULL );
-#endif
  
 
 
@@ -219,9 +213,6 @@ class SYSRAP_API OPTICKS_LOG_ {
 #endif
 #ifdef OPTICKS_X4
     X4_LOG::Check("X4");
-#endif
-#ifdef OPTICKS_Y4CSG
-    Y4CSG_LOG::Check("Y4CSG");
 #endif
 
 

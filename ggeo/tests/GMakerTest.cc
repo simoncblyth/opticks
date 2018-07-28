@@ -1,6 +1,5 @@
-//  ggv --gmaker
-
-// sysrap-
+// op --gmaker
+//
 #include "OPTICKS_LOG.hh"
 #include "OpticksCSG.h"
 
@@ -8,6 +7,7 @@
 #include "NCSG.hpp"
 #include "NCSGData.hpp"
 #include "NNode.hpp"
+#include "NNodeSample.hpp"
 #include "NSceneConfig.hpp"
 
 #include "Opticks.hh"
@@ -17,9 +17,8 @@
 #include "GBndLib.hh"
 #include "GMaker.hh"
 
-#include "PLOG.hh"
-#include "NPY_LOG.hh"
-#include "GGEO_LOG.hh"
+#include "OPTICKS_LOG.hh"
+
 #include "GGEO_BODY.hh"
 
 class GMakerTest 
@@ -62,7 +61,7 @@ void GMakerTest::makeFromCSG()
 {
     typedef std::vector<nnode*> VN ;
     VN nodes ; 
-    nnode::Tests(nodes);
+    NNodeSample::Tests(nodes);
 
     const char* spec = "Rock//perfectAbsorbSurface/Vacuum" ; 
 
@@ -80,7 +79,7 @@ void GMakerTest::makeFromCSG()
         unsigned soIdx = 0 ; 
         unsigned lvIdx = 0 ; 
 
-        NCSG* csg = NCSG::FromNode( n, config, soIdx, lvIdx );
+        NCSG* csg = NCSG::Adopt( n, config, soIdx, lvIdx );
         csg->getCSGData()->setMeta<std::string>("poly", "IM");
 
         GVolume* volume = m_maker->makeFromCSG(csg, verbosity );

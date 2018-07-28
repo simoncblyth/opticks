@@ -38,10 +38,7 @@ void test_make_csg(CMaker& mk)
     nsphere sp = make_sphere();
     sp.set_boundary("Dummy"); 
 
-    unsigned soIdx = 0 ; 
-    unsigned lvIdx = 0 ; 
-
-    NCSG* csg = NCSG::FromNode(&sp, NULL, soIdx, lvIdx);
+    NCSG* csg = NCSG::Adopt(&sp);
     if(!csg) return ; 
  
     csg->dump();

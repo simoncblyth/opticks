@@ -1,5 +1,5 @@
 #include "OPTICKS_LOG.hh"
-#include "Y4CSG.hh"
+#include "X4CSG.hh"
 #include "X4Solid.hh"
 #include "NCSG.hpp"
 
@@ -27,21 +27,19 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv);
 
-    Y4CSG yc ;  
+    X4CSG yc ;  
 
     G4VSolid* so = make_solid() ; 
     std::cout << *so << std::endl ; 
 
-
     nnode* root = X4Solid::Convert(so) ; 
     assert( root ) ; 
 
-    unsigned soIdx = 0 ; 
-    unsigned lvIdx = 0 ;
-
-    NCSG* csg = NCSG::FromNode( root, NULL, soIdx, lvIdx );
+    NCSG* csg = NCSG::Adopt( root );
     assert( csg ) ;  
 
+    const char* path = "$TMP/X4CSGTest/0" ; 
+    csg->savesrc(path) ;  
 
 
 

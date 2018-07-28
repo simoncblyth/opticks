@@ -530,9 +530,9 @@ GVolume* X4PhysicalVolume::convertNode(const G4VPhysicalVolume* const pv, GVolum
          mh->idx = mh->mesh->m_x4src_idx ; 
 
 
-         // FromNode exports nnode tree to m_nodes buffer in NCSG instance
-
-         mh->csg = NCSG::FromNode( mh->csgnode, NULL, nd->soIdx, lvIdx );   
+         // Adopt exports nnode tree to m_nodes buffer in NCSG instance
+         const NSceneConfig* config = NULL ; 
+         mh->csg = NCSG::Adopt( mh->csgnode, config, nd->soIdx, lvIdx );   
 
 
          assert( mh->csg ) ; 

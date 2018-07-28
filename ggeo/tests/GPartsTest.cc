@@ -3,22 +3,21 @@
 
 #include "NCSG.hpp"
 #include "NNode.hpp"
+#include "NNodeSample.hpp"
 
 #include "Opticks.hh"
 
 #include "GParts.hh"
 #include "GBndLib.hh"
 
-#include "PLOG.hh"
-#include "GGEO_LOG.hh"
-#include "NPY_LOG.hh"
+#include "OPTICKS_LOG.hh"
 
 
-void test_FromNode()
+void test_Adopt()
 {
     typedef std::vector<nnode*> VN ;
     VN nodes ; 
-    nnode::Tests(nodes);
+    NNodeSample::Tests(nodes);
     
     const char* spec = "Rock//perfectAbsorbSurface/Vacuum" ;
 
@@ -39,14 +38,9 @@ void test_FromNode()
 
         n->set_boundary(spec) ; 
 
-        const NSceneConfig* config = NULL ; 
+        NCSG* csg = NCSG::Adopt( n );
 
-        unsigned soIdx = 0 ; 
-        unsigned lvIdx = 0 ; 
-
-        NCSG* tree = NCSG::FromNode( n , config, soIdx, lvIdx );
-
-        GParts* pts = GParts::make( tree, spec, verbosity ) ; 
+        GParts* pts = GParts::make( csg , spec, verbosity ) ; 
         pts->dump("GPartsTest");
 
     }
@@ -69,7 +63,7 @@ void test_save_load(GBndLib* bndlib)
 
     typedef std::vector<nnode*> VN ;
     VN nodes ; 
-    nnode::Tests(nodes);
+    NNodeSample::Tests(nodes);
 
     nnode* n = nodes[0] ;  
     n->set_boundary(spec) ; 
@@ -77,7 +71,7 @@ void test_save_load(GBndLib* bndlib)
     unsigned soIdx = 0 ; 
     unsigned lvIdx = 0 ; 
 
-    NCSG* csg = NCSG::FromNode( n, config, soIdx, lvIdx );
+    NCSG* csg = NCSG::Adopt( n, config, soIdx, lvIdx );
 
     unsigned verbosity = 2 ; 
     GParts* pts = GParts::make(csg, spec, verbosity ) ; 
@@ -95,20 +89,12 @@ void test_save_load(GBndLib* bndlib)
     GParts* pts2 = GParts::Load(dir);
 
     pts2->dump("pts2");
-
-
 }
-
-
-
 
 
 int main(int argc, char** argv)
 {
-    PLOG_(argc, argv);
-    GGEO_LOG__ ;
-    NPY_LOG__ ;
-
+    OPTICKS_LOG(argc, argv);
 
     Opticks ok(argc, argv);
 

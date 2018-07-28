@@ -235,7 +235,7 @@ int BStr::atoi( const char* str, int fallback )
                    << " str " << str  
                    << " fallback " << fallback
                    ;  
-        assert(0); 
+       // assert(0); 
     }
 
     return i ;
