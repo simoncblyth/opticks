@@ -86,6 +86,8 @@ NCSG::NCSG(nnode* root )
    m_lvIdx(0)
 {
     setBoundary( root->boundary );  // boundary spec
+    LOG(error) << " NCSG adopt " << root->boundary ; 
+
     m_csgdata->init_buffers(root->maxdepth()) ;  
 }
 
@@ -138,11 +140,11 @@ std::string NCSG::getTestLVName() const
 }
 
 
-std::string NCSG::lvname() const {    return m_csgdata->getMeta<std::string>("lvname","-") ; }
-std::string NCSG::soname() const {    return m_csgdata->getMeta<std::string>("soname","-") ; }
-int         NCSG::treeindex() const { return m_csgdata->getMeta<int>("treeindex","-1") ; }
-int         NCSG::depth() const {     return m_csgdata->getMeta<int>("depth","-1") ; }
-int         NCSG::nchild() const {    return m_csgdata->getMeta<int>("nchild","-1") ; }
+std::string NCSG::lvname() const {        return m_csgdata->getMeta<std::string>("lvname","-") ; }
+std::string NCSG::soname() const {        return m_csgdata->getMeta<std::string>("soname","-") ; }
+int         NCSG::treeindex() const {     return m_csgdata->getMeta<int>("treeindex","-1") ; }
+int         NCSG::depth() const {         return m_csgdata->getMeta<int>("depth","-1") ; }
+int         NCSG::nchild() const {        return m_csgdata->getMeta<int>("nchild","-1") ; }
 bool        NCSG::isSkip() const {        return m_csgdata->getMeta<int>("skip","0") == 1 ; }
 bool        NCSG::is_uncoincide() const { return m_csgdata->getMeta<int>("uncoincide","1") == 1 ; }
 int         NCSG::getEmit() const {       return m_csgdata->getMeta<int>("emit","0") ;  }
@@ -861,8 +863,8 @@ void NCSG::export_itransform( nnode* node, NPY<float>* _dest )
 
     node->itransform_idx = itransform1  ;    
 
-    LOG(error) << " itransform1 " << itransform1 ;
-    std::cout << gpresent("t", t ) << std::endl ; 
+    //LOG(error) << " itransform1 " << itransform1 ;
+    //std::cout << gpresent("t", t ) << std::endl ; 
 }
 
 
@@ -932,7 +934,7 @@ void NCSG::export_gtransform(nnode* node)
         if( gtransform == NULL ) gtransform = nmat4triple::make_identity() ;
         node->gtransform_idx = addUniqueTransform(gtransform) ; // to m_gtransforms
 
-        LOG(error) << " node->gtransform_idx " << node->gtransform_idx ; 
+        //LOG(error) << " node->gtransform_idx " << node->gtransform_idx ; 
     }
 }
 

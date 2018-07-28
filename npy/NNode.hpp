@@ -280,7 +280,7 @@ struct NPY_API nnode
 
     void dump_g4code() const ;
     void write_g4code(const char* path) const ;
-    static void to_g4code_r(const nnode* node, std::ostream& out);
+    static void to_g4code_r(const nnode* node, std::ostream& out, unsigned depth );
 
 };
 inline nnode nnode::make_node(OpticksCSG_t operator_, nnode* left, nnode* right )

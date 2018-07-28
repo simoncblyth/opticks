@@ -441,23 +441,26 @@ std::string nnode::get_mask_string(NNodeType ntyp) const
 void nnode::dump_g4code() const 
 {
     std::ostream& out = std::cout ;
-    to_g4code_r( this, out ); 
+    to_g4code_r( this, out, 0); 
 }
 void nnode::write_g4code(const char* path_) const 
 {
     std::string path = BFile::FormPath(path_) ;
     std::ofstream out(path.c_str());
-    to_g4code_r( this, out ); 
+    to_g4code_r( this, out, 0 ); 
 }
-void nnode::to_g4code_r(const nnode* node, std::ostream& out)  // static
+void nnode::to_g4code_r(const nnode* node, std::ostream& out, unsigned depth )  // static
 {
     if(node->left && node->right)
     {
+        // hmm : this doesnt follow for polycone, as its an nnode union tree, but a primitive in G4 
         assert( node->left->g4code && node->right->g4code );
-        out << node->left->g4code << std::endl ; 
-        out << node->right->g4code << std::endl ; 
+
+        to_g4code_r( node->left, out, depth+1 ) ; 
+        to_g4code_r( node->right, out, depth+1 ) ; 
     } 
     assert( node->g4code );
+    out << "// " << depth << std::endl ;  
     out << node->g4code << std::endl ;  
 }
 

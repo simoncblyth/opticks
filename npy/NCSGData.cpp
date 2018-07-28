@@ -15,15 +15,16 @@
 
 // must match opticks/analytic/csg.py 
 const char* NCSGData::FILENAME  = "csg.txt" ; 
+
 const char* NCSGData::TREE_META = "meta.json" ;
 const char* NCSGData::NODE_META = "nodemeta.json" ;
 
-const char* NCSGData::SRC_PLANES = "srcplanes.npy" ; 
-const char* NCSGData::SRC_FACES = "srcfaces.npy" ; 
-const char* NCSGData::SRC_VERTS = "srcverts.npy" ; 
+const char* NCSGData::SRC_PLANES     = "srcplanes.npy" ; 
+const char* NCSGData::SRC_FACES      = "srcfaces.npy" ; 
+const char* NCSGData::SRC_VERTS      = "srcverts.npy" ; 
 const char* NCSGData::SRC_TRANSFORMS = "srctransforms.npy" ; 
-const char* NCSGData::SRC_IDX       = "srcidx.npy" ; 
-const char* NCSGData::SRC_NODES     = "srcnodes.npy" ;
+const char* NCSGData::SRC_IDX        = "srcidx.npy" ; 
+const char* NCSGData::SRC_NODES      = "srcnodes.npy" ;
 
 //  results of export 
 const char* NCSGData::PLANES = "planes.npy" ; 
@@ -565,7 +566,9 @@ void NCSGData::saveSrcPlanes(const char* treedir) const
 {
     std::string path = BFile::FormPath(treedir, SRC_PLANES) ;
     if(!m_srcplanes) return ; 
-    m_srcplanes->save(path.c_str());
+
+    if(m_srcplanes->getNumItems() > 0)
+        m_srcplanes->save(path.c_str()); 
 } 
 
 void NCSGData::loadSrcPlanes(const char* treedir)

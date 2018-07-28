@@ -170,6 +170,8 @@ X4SolidBase::X4SolidBase( const G4VSolid* solid, bool top )
    m_root(NULL)
 {
    LOG(info) << brief() ; 
+
+   if( m_top ) OTHER_ID->reset() ; 
 }
 
 template<typename T>
@@ -256,7 +258,7 @@ void X4SolidBase::setG4Code( const char* g4code )
         std::string concat = ss.str(); 
         m_root->g4code = strdup(concat.c_str()) ; 
     }
-    LOG(info) << " root.g4code " << m_root->g4code ; 
+    //LOG(info) << " root.g4code " << m_root->g4code ; 
 }
 
 const char* X4SolidBase::getG4Code(const char* identifier) const 

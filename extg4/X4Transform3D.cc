@@ -46,7 +46,7 @@ glm::mat4 X4Transform3D::GetDisplacementTransform(const G4DisplacedSolid* const 
 
     G4RotationMatrix rot = disp->GetFrameRotation();  
     //G4RotationMatrix rot = disp->GetObjectRotation();    // started with this, see notes/issues/OKX4Test_tranBuffer_mm0.rst
-    LOG(error) << "GetDisplacementTransform rot " << rot ;  
+    //LOG(error) << "GetDisplacementTransform rot " << rot ;  
 
     G4ThreeVector    tla = disp->GetObjectTranslation();
     G4Transform3D    tra(rot,tla);

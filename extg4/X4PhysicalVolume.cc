@@ -507,7 +507,12 @@ GVolume* X4PhysicalVolume::convertNode(const G4VPhysicalVolume* const pv, GVolum
      {
          // convert G4VSolid into nnode tree and balance it if overheight 
 
+         LOG(error) << " convert soIdx  " << nd->soIdx << " START " ; 
          nnode* tree = X4Solid::Convert(solid)  ; 
+         tree->dump_g4code(); 
+         LOG(error) << " convert soIdx  " << nd->soIdx << " DONE "  ; 
+
+
          nnode* result = NTreeProcess<nnode>::Process(tree, nd->soIdx, lvIdx); 
 
          mh->csgnode = result ; 
@@ -549,7 +554,7 @@ GVolume* X4PhysicalVolume::convertNode(const G4VPhysicalVolume* const pv, GVolum
 
      bool selected = m_query->selected(pvName.c_str(), ndIdx0, depth, recursive_select, lvr_lvIdx );
     
-     LOG(error) << " lv_lvIdx " << lvr_lvIdx
+     LOG(trace) << " lv_lvIdx " << lvr_lvIdx
                 << " selected " << selected
                ; 
 

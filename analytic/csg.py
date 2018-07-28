@@ -406,11 +406,7 @@ class CSG(CSG_):
         pass
         self.txt = txt
 
-
-
-
     is_root = property(lambda self:hasattr(self,'height') and hasattr(self,'totnodes'))
-
 
     @classmethod
     def treedir(cls, base, idx):
@@ -429,7 +425,6 @@ class CSG(CSG_):
         path = cls.Metapath(base)
         json.dump(topmeta,file(path,"w"))
 
-
     @classmethod
     def Serialize(cls, trees, args, outerfirst=1):
         """
@@ -437,7 +432,6 @@ class CSG(CSG_):
         :param args: namespace instance provided by opticks_main directory to save the tree serializations, under an indexed directory 
         :param outerfirst: when 1 signifies that the first listed tree contains is the outermost volume 
         """
-
         base = args.csgpath 
 
         assert type(trees) is list 

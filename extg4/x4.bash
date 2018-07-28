@@ -129,3 +129,40 @@ x4-include(){  x4-foreach $FUNCNAME- ; }
 x4-include-(){ echo "#include \"G4$1.hh\"" ; }
 
 
+
+
+x4-testconfig () 
+{ 
+    local testconfig;
+    local testname;
+    if [ -n "$TESTCONFIG" ]; then
+        testconfig=${TESTCONFIG};
+    fi;
+    echo $testconfig
+
+}
+
+
+x4-csg--()
+{
+    local cmdline=$*;
+    local testconfig=$(x4-testconfig)
+    echo testconfig $testconfig
+
+    op.sh $cmdline \
+          --rendermode +global,+axis \
+          --animtimemax 20 \
+          --timemax 20 \
+          --geocenter \
+          --eye 1,0,0 \
+          --dbganalytic \
+          --test \
+          --testconfig "$testconfig" 
+}
+
+x4-csg-(){ X4CSGTest ; }
+x4-csg(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>&1 1>/dev/null) x4-csg-- $* ;}  
+
+## TESTCONFIG is a capture of stderr with stdout ignored 
+
+

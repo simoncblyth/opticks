@@ -90,6 +90,7 @@ class X4_API X4Solid : public X4SolidBase
         nnode* convertCons_(bool only_inner);
         nnode* convertHype_(bool only_inner);
         void   convertPolyconePrimitives( const std::vector<zplane>& zp,  std::vector<nnode*>& prims );
+        void   convertPolycone_g4code();
     private:
         X4Solid* m_displaced ; 
 

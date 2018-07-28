@@ -89,10 +89,7 @@ void NTxt::prepDir() const
     LOG(debug) << "NTxt::prepDir"
               << " pdir " << pdir
               ;
-
 }
-
-
 
 void NTxt::write() const 
 {

@@ -21,6 +21,7 @@
 #include "X4Transform3D.hh"
 #include "X4AffineTransform.hh"
 #include "X4Solid.hh"
+#include "X4.hh"
 
 #include "SId.hh"
 #include "BStr.hh"
@@ -888,15 +889,28 @@ void X4Solid::convertPolycone()
     float deltaphi = ph->Opening_angle/degree ;
     assert( startphi == 0.f && deltaphi == 360.f ); 
 
-    std::vector<zplane> zp(ph->Num_z_planes) ; 
-
-    std::set<double> Rmin ; 
     unsigned nz = ph->Num_z_planes ; 
+
+    LOG(error) << " nz " << nz ; 
+
+    std::vector<zplane> zp(nz) ; 
+    std::set<double> Rmin ; 
 
     for (int i=0; i < int(nz) ; i++) 
     {
         zp[i] = { ph->Rmin[i], ph->Rmax[i], ph->Z_values[i] } ;  
         Rmin.insert( ph->Rmin[i] );
+
+        LOG(error) << " zp[i] (rmin,rmax,z)" << i  
+                   << " (" 
+                   << zp[i].rmin 
+                   << " , "
+                   << zp[i].rmax
+                   << " , "
+                   << zp[i].z
+                   << ")"
+                   ;
+
     }
 
     if( zp.size() == 2 && zp[0].z > zp[0].z )
@@ -943,10 +957,49 @@ void X4Solid::convertPolycone()
 
     nnode* result = inner ? nnode::make_operator_ptr(CSG_DIFFERENCE, cn, inner )  : cn ; 
     setRoot(result); 
-   
+
+    convertPolycone_g4code();
     //LOG(error) << "DONE" ; 
 }
 
+
+void X4Solid::convertPolycone_g4code()
+{
+    const G4Polycone* const so = static_cast<const G4Polycone*>(m_solid);
+    assert(so); 
+    const G4PolyconeHistorical* ph = so->GetOriginalParameters() ;
+
+    std::vector<std::string> param ;
+
+    double startPhi = so->GetStartPhi() ; 
+    double endPhi = so->GetEndPhi() ; 
+
+    double phiStart = startPhi ;   
+    double phiTotal = endPhi - startPhi ; 
+    unsigned numZPlanes = ph->Num_z_planes ; 
+
+    param.push_back( X4::Value(phiStart) ); 
+    param.push_back( X4::Value(phiTotal) ); 
+    param.push_back( X4::Value(numZPlanes) ); 
+
+    const char* zPlane_id = OTHER_ID->get(false) ; 
+    const char* rInner_id = OTHER_ID->get(false) ; 
+    const char* rOuter_id = OTHER_ID->get(false) ; 
+
+    std::string zPlane = X4::Array(ph->Z_values, numZPlanes , zPlane_id ) ;
+    std::string rInner = X4::Array(ph->Rmin    , numZPlanes , rInner_id ) ;
+    std::string rOuter = X4::Array(ph->Rmax    , numZPlanes , rOuter_id ) ;
+
+    addG4Code( zPlane.c_str() ); 
+    addG4Code( rInner.c_str() ); 
+    addG4Code( rOuter.c_str() ); 
+
+    param.push_back( zPlane_id ) ;  
+    param.push_back( rInner_id ) ;  
+    param.push_back( rOuter_id ) ;  
+
+    setG4Param(param);
+} 
 
 
 void X4Solid::convertHype()

@@ -1,3 +1,4 @@
+#include <sstream>
 #include <cstring>
 #include <algorithm>
 
@@ -97,6 +98,49 @@ template X4_API const char* X4::BaseName<G4LogicalSurface>(const G4LogicalSurfac
 template X4_API const char* X4::BaseName<G4VPhysicalVolume>(const G4VPhysicalVolume* const);
 template X4_API const char* X4::BaseName<G4LogicalVolume>(const G4LogicalVolume* const);
 template X4_API const char* X4::BaseName<G4Material>(const G4Material* const);
+
+
+
+
+template<typename T>
+std::string X4::Value( T v )
+{
+    std::stringstream ss ; 
+    ss << std::fixed << v ; 
+    return ss.str(); 
+}
+
+template X4_API std::string X4::Value<float>(float);
+template X4_API std::string X4::Value<double>(double);
+template X4_API std::string X4::Value<int>(int);
+template X4_API std::string X4::Value<unsigned>(unsigned);
+
+
+std::string X4::Array( const double* a, unsigned nv, const char* identifier )
+{
+    std::stringstream ss ; 
+
+    ss << "double " 
+       << identifier 
+       << "[]" 
+       << "="
+       << " { "
+       ;
+
+    for(unsigned i=0 ; i < nv ; i++ ) 
+    {
+        ss << std::fixed << a[i] ;
+        if( i < nv - 1) ss << ", " ;
+    }
+
+    ss << " } "
+       << " ; "
+       ;  
+
+    return ss.str(); 
+}
+
+
 
 
 

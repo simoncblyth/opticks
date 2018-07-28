@@ -22,7 +22,6 @@ bool NCSGList::ExistsDir(const char* dir)
     return true ; 
 }
 
-
 NCSGList* NCSGList::Load(const char* csgpath, int verbosity, bool checkmaterial)
 {
     if(!csgpath) return NULL ; 
@@ -32,18 +31,52 @@ NCSGList* NCSGList::Load(const char* csgpath, int verbosity, bool checkmaterial)
         LOG(warning) << "NCSGList::Load missing csgpath " << csgpath ; 
         return NULL ; 
     }
+
     NCSGList* ls = new NCSGList(csgpath, verbosity );
     ls->load();
-    if(checkmaterial)
-        ls->checkMaterialConsistency();
+    if(checkmaterial) ls->checkMaterialConsistency();
     return ls ;
 } 
+
+
+NCSGList* NCSGList::Create(std::vector<NCSG*>& trees, const char* csgpath, int verbosity )
+{
+    NCSGList* ls = new NCSGList(csgpath, verbosity );
+
+    for(unsigned i=0 ; i < trees.size() ; i++)
+    {
+        NCSG* tree = trees[i] ; 
+        ls->add(tree) ; 
+    }
+    return ls ; 
+} 
+
+void NCSGList::savesrc() const 
+{
+    unsigned numTrees = getNumTrees() ;
+    std::cout << "NCSGList::savesrc"
+              << " csgpath " << m_csgpath
+              << " verbosity " << m_verbosity 
+              << " numTrees " << numTrees
+              << std::endl 
+              ;
+
+    for(unsigned i=0 ; i < numTrees ; i++)
+    {
+        std::string treedir = getTreeDir(i);
+        NCSG* tree = getTree(i);
+        tree->savesrc(treedir.c_str()); 
+    }
+    m_bndspec->write();
+}
+
 
 NCSGList::NCSGList(const char* csgpath, int verbosity)
     :
     m_csgpath(strdup(csgpath)),
+    m_txtpath(strdup(BFile::FormPath(m_csgpath, FILENAME).c_str())),
     m_verbosity(verbosity),
-    m_bndspec(NULL),
+    m_bndspec(new NTxt(m_txtpath)),
     m_universe(NULL),
     m_container_bbox()  
 {
@@ -65,26 +98,28 @@ std::string NCSGList::getTreeDir(unsigned idx) const
     return BFile::FormPath(m_csgpath, BStr::itoa(idx));  
 }
 
+void NCSGList::add(NCSG* tree)
+{
+    const char* boundary = tree->getBoundary() ;
+    LOG(error) << " add tree, boundary: " << boundary ; 
+    m_trees.push_back(tree);  
+    m_bndspec->addLine( boundary ); 
+}
+
 void NCSGList::load()
 {
     assert(m_trees.size() == 0);
+    assert(m_bndspec) ; 
 
-    std::string txtpath = BFile::FormPath(m_csgpath, FILENAME) ;
-    bool exists = BFile::ExistsFile(txtpath.c_str() ); 
-
+    bool exists = BFile::ExistsFile(m_txtpath ); 
     if(!exists) 
     {
-                LOG(fatal) << "NCSGList::load"
-                           << " file does not exist " 
-                           << txtpath 
-                           ;
+        LOG(fatal) << "NCSGList::load missing " << m_txtpath ; 
     }
-
     //assert(exists); 
 
     if( exists )
     {
-        m_bndspec = new NTxt(txtpath.c_str());
         m_bndspec->read();
         //m_bndspec->dump("NCSGList::load");    
     }
@@ -94,7 +129,7 @@ void NCSGList::load()
     LOG(info) << "NCSGList::load"
               << " VERBOSITY " << m_verbosity 
               << " basedir " << m_csgpath 
-              << " txtpath " << txtpath 
+              << " txtpath " << m_txtpath 
               << " nbnd " << nbnd 
               ;
 
@@ -138,12 +173,11 @@ void NCSGList::load()
 
         LOG(debug) << "NCSGList::load [" << idx << "] " << tree->desc() ; 
 
-        m_trees.push_back(tree);  
+        add(tree) ; 
     }
 
     // back into original source order with outer first eg [outer, container, sphere]  
     std::reverse( m_trees.begin(), m_trees.end() );
-
 }
 
        
@@ -210,11 +244,6 @@ NCSG* NCSGList::loadTree(unsigned idx, const char* boundary) const
 
     return tree ; 
 }
-
-
-
-
-
 
 
 

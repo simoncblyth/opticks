@@ -19,6 +19,7 @@ set(TEST_SOURCES
     X4AffineTransformTest.cc
     X4ThreeVectorTest.cc
     X4CSGTest.cc
+    X4PolyconeTest.cc
 )
 
 

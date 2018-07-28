@@ -26,6 +26,12 @@ class X4_API X4
         static int GetItemIndex( const std::vector<T*>* vec, const T* const item );
 
         static size_t GetOpticksIndex( const G4LogicalSurface* const surf );
+
+        static std::string Array( const double* a, unsigned nv, const char* identifier );  
+
+        template<typename T>
+        static std::string Value( T v );  
+
 };
 
 

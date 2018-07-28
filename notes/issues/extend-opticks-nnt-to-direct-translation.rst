@@ -35,7 +35,7 @@ Ideas:
     analytic/csg.py CSG.Serialize  
 
     Unusual for Opticks combination of dependencies : G4 and NPY/NCSG, 
-    so new pkg g4csg 
+    so new pkg y4csg, but need X4Solid so might as well put into X4.
      
 
 2. place the G4VSolid in pure G4 LV/PV G4Material context, 
@@ -46,6 +46,17 @@ Actually will probably need both these approaches, the first is
 most natural for solid level debugging and the second for structure level
 debugging.
 
+
+mechanics of using the generated code
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+In C++ its simpler to generate a bunch of G4VSolid creating 
+functions with an index in the name together with a switch statement
+to pick them by index. Then can launch with eg *x4-csg 42*
+
+The geometry provider is a separate executable *X4CSGTest* with 
+a generated section for the g4code, which serializes to a directory and
+emits to stderr the testconfig opticks argument. 
 
 
 how to implement ?
@@ -167,6 +178,70 @@ These are written inside the extras of the old glTF::
 
        opticks-tbool-path 0 : /home/blyth/local/opticks/opticksdata/export/DayaBay_VGDX_20140414-1300/extras/0/tbool0.bash
        opticks-nnt-path 0   : /home/blyth/local/opticks/opticksdata/export/DayaBay_VGDX_20140414-1300/extras/0/NNodeTest_0.cc
+
+
+
+
+review tboolean launching
+----------------------------
+
+tboolean-box--::
+
+    import logging
+    log = logging.getLogger(__name__)
+    from opticks.ana.base import opticks_main
+    from opticks.analytic.csg import CSG  
+    autoemitconfig="photons:600000,wavelength:380,time:0.2,posdelta:0.1,sheetmask:0x1,umin:0.45,umax:0.55,vmin:0.45,vmax:0.55,diffuse:1,ctmindiffuse:0.5,ctmaxdiffuse:1.0"
+    args = opticks_main(csgpath="/tmp/blyth/opticks/tboolean-box--", autoemitconfig=autoemitconfig)
+
+    ... geometry and photon source setup ....
+
+    CSG.Serialize([container, box], args )
+
+
+
+* `tboolean-box--` emits the python source to stdout 
+* `tboolean-box-` pipes that to python, which serializes geometry trees to csgpath "/tmp/blyth/opticks/tboolean-box--" and emits testconfig to stdout
+* `tboolean-box` collects that testconfig into TESTCONFIG and invokes `tboolean--`
+
+::
+
+    tboolean-box- 2>/dev/null | tr "_" "\n"
+
+    autoseqmap=TO:0,SR:1,SA:0
+    name=tboolean-box--
+    outerfirst=1
+    analytic=1
+    csgpath=/tmp/blyth/opticks/tboolean-box--
+    mode=PyCsgInBox
+    autoobject=Vacuum/perfectSpecularSurface//GlassSchottF2
+    autoemitconfig=photons:600000,wavelength:380,time:0.2,posdelta:0.1,sheetmask:0x1,umin:0.45,umax:0.55,vmin:0.45,vmax:0.55,diffuse:1,ctmindiffuse:0.5,ctmaxdiffuse:1.0
+    autocontainer=Rock//perfectAbsorbSurface/Vacuum
+
+
+::
+
+    tboolean-box- () 
+    { 
+        $FUNCNAME- | python $*
+    }
+    tboolean-box () 
+    { 
+        TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null) tboolean-- $*
+    }
+    tboolean-- () 
+    { 
+        tboolean-;
+        local msg="=== $FUNCNAME :";
+        local cmdline=$*;
+        local stack=2180;
+        local testname=$(tboolean-testname);
+        local testconfig=$(tboolean-testconfig);
+        local torchconfig=$(tboolean-torchconfig);
+        $testname--;
+        op.sh $cmdline --rendermode +global,+axis --animtimemax 20 --timemax 20 --geocenter --stack $stack --eye 1,0,0 --dbganalytic --test --testconfig "$testconfig" --torch --torchconfig "$torchconfig" --torchdbg --tag $(tboolean-tag) --cat $testname --anakey tboolean --save
+    }
+
 
 
 
