@@ -50,6 +50,7 @@ NCSG::NCSG(const char* treedir)
    m_uncoincide(NULL),
    m_nudger(NULL),
    m_csgdata(new NCSGData),
+   m_adopted(false), 
    m_boundary(NULL),
    m_config(NULL),
    m_gpuoffset(0,0,0),
@@ -74,6 +75,7 @@ NCSG::NCSG(nnode* root )
    m_uncoincide(make_uncoincide()),
    m_nudger(make_nudger()),
    m_csgdata(new NCSGData),
+   m_adopted(true), 
    m_boundary(NULL),
    m_config(NULL),
    m_gpuoffset(0,0,0),
@@ -83,8 +85,8 @@ NCSG::NCSG(nnode* root )
    m_soIdx(0),
    m_lvIdx(0)
 {
-   setBoundary( root->boundary );  // boundary spec
-   m_csgdata->init_buffers(root->maxdepth()) ;  
+    setBoundary( root->boundary );  // boundary spec
+    m_csgdata->init_buffers(root->maxdepth()) ;  
 }
 
 NCSGData* NCSG::getCSGData() const 
@@ -238,15 +240,20 @@ void NCSG::postload()
     increaseVerbosity(verbosity);
 }
 
-void NCSG::save(const char* treedir_ ) const 
+void NCSG::savesrc(const char* treedir_ ) const 
 {
     bool same_dir = m_treedir && strcmp( treedir_, m_treedir) == 0  ;
     if( same_dir ) LOG(fatal) << "saving back into the same dir as loaded from is not allowed " ; 
+
+    // perhaps can relax this following splitting buffers into "src" and "transport"
+    // ... nope cannot allow because this is savesrc
+
     assert( !same_dir) ; 
 
     assert( treedir_ ) ; 
     LOG(info) << " treedir_ " << treedir_ ; 
-    m_csgdata->save(treedir_) ;  
+
+    m_csgdata->savesrc(treedir_) ;  
 }
 
 void NCSG::loadsrc()
@@ -305,6 +312,20 @@ NPY<float>* NCSG::getGTransformBuffer() const
 
 
 
+NPY<float>* NCSG::getPlaneBuffer() const 
+{
+    return m_csgdata->getSrcPlaneBuffer() ; 
+}
+NPY<unsigned>* NCSG::getIdxBuffer() const 
+{
+    return m_csgdata->getSrcIdxBuffer() ; 
+}
+
+
+
+
+
+
 NPY<float>* NCSG::getSrcTransformBuffer() const 
 {
     return m_csgdata->getSrcTransformBuffer() ; 
@@ -313,14 +334,7 @@ NPY<float>* NCSG::getSrcNodeBuffer() const
 {
     return m_csgdata->getSrcNodeBuffer() ; 
 }
-NPY<float>* NCSG::getSrcPlaneBuffer() const 
-{
-    return m_csgdata->getSrcPlaneBuffer() ; 
-}
-NPY<unsigned>* NCSG::getSrcIdxBuffer() const 
-{
-    return m_csgdata->getSrcIdxBuffer() ; 
-}
+
 
 
 
@@ -435,7 +449,7 @@ void NCSG::import()
     m_root = import_r(0, NULL) ;  
 
     m_root->set_treedir(m_treedir) ; 
-    m_root->set_treeidx(getTreeNameIdx()) ; 
+    m_root->set_treeidx(getTreeNameIdx()) ;  //
 
     postimport();
 
@@ -691,7 +705,7 @@ void NCSG::import_srcplanes(nnode* node)
 }
 
 
-void NCSG::export_planes(nnode* node)
+void NCSG::export_planes(nnode* node, NPY<float>* _planes)
 {
     if(!node->has_planes()) return ;
 
@@ -702,12 +716,11 @@ void NCSG::export_planes(nnode* node)
 
     unsigned planeNum = node->planes.size() ;
 
-    NPY<float>* _planes = m_csgdata->getPlaneBuffer() ; 
 
     unsigned planeIdx0 = _planes->getNumItems(); 
 
     node->setPlaneIdx( planeIdx0 );
-    node->setPlaneNum( planeNum );
+    node->setPlaneNum( planeNum );   // directly sets into node param
     assert( planeNum > 3); 
 
     for(unsigned i=0 ; i < planeNum ; i++)
@@ -779,6 +792,7 @@ void NCSG::check_r(nnode* node)
 }
 
 
+
 void NCSG::export_()
 {
     m_csgdata->prepareForExport() ;  //  create node buffer 
@@ -804,6 +818,7 @@ void NCSG::export_idx()
 void NCSG::export_r(nnode* node, unsigned idx)
 {
     export_node( node, idx) ; 
+    if(m_adopted) export_srcnode( node, idx) ; 
 
     if(node->left && node->right)
     {
@@ -811,6 +826,47 @@ void NCSG::export_r(nnode* node, unsigned idx)
         export_r(node->right, 2*idx + 2);
     }  
 }
+
+
+
+void NCSG::export_srcnode(nnode* node, unsigned idx)
+{
+    assert( m_adopted ) ; 
+
+    NPY<float>* _srcnodes = m_csgdata->getSrcNodeBuffer(); 
+    assert( _srcnodes ) ; 
+
+    NPY<float>* _srctransforms = m_csgdata->getSrcTransformBuffer(); 
+    export_itransform( node, _srctransforms );   // sets node->itransform_idx 
+
+    NPY<float>* _srcplanes = m_csgdata->getSrcPlaneBuffer() ; 
+    export_planes(node, _srcplanes);  // directly sets planeIdx, planeNum into nnode param
+ 
+    npart pt = node->srcpart();
+    _srcnodes->setPart( pt, idx );   // writes 4 quads to buffer 
+}
+
+
+void NCSG::export_itransform( nnode* node, NPY<float>* _dest )
+{
+    assert( _dest ) ; 
+
+    const nmat4triple* trs = node->transform ; 
+    const glm::mat4 identity ;  
+    const glm::mat4& t = trs ? trs->t : identity ; 
+
+    unsigned itransform1 = _dest->getNumItems() + 1 ;  // 1-based transform idx
+ 
+    _dest->add(t) ;   // <-- nothing fancy straight collection like csg.py:serialize 
+
+    node->itransform_idx = itransform1  ;    
+
+    LOG(error) << " itransform1 " << itransform1 ;
+    std::cout << gpresent("t", t ) << std::endl ; 
+}
+
+
+
 
 /**
 NCSG::export_node
@@ -831,6 +887,7 @@ these as idxs get into that buffer
 
 
 
+
 void NCSG::export_node(nnode* node, unsigned idx)
 {
     assert(idx < getNumNodes() ); 
@@ -840,7 +897,9 @@ void NCSG::export_node(nnode* node, unsigned idx)
               ;
 
     export_gtransform(node);
-    export_planes(node);
+
+    NPY<float>* _planes = m_csgdata->getPlaneBuffer() ; 
+    export_planes(node, _planes);
   
     // crucial 2-step here, where m_nodes gets totally rewritten
     npart pt = node->part();  // node->type node->gtransform_idx node->complement written into pt 
@@ -848,6 +907,7 @@ void NCSG::export_node(nnode* node, unsigned idx)
     pt.check_bb_zero(node->type); 
 
     NPY<float>* _nodes = m_csgdata->getNodeBuffer(); 
+
     _nodes->setPart( pt, idx);  // writes 4 quads to buffer
 }
 
@@ -873,7 +933,6 @@ void NCSG::export_gtransform(nnode* node)
         node->gtransform_idx = addUniqueTransform(gtransform) ; // to m_gtransforms
 
         LOG(error) << " node->gtransform_idx " << node->gtransform_idx ; 
-
     }
 }
 
@@ -934,46 +993,36 @@ std::string NCSG::desc()
     return ss.str();  
 }
 
- 
-
-
-NCSG* NCSG::LoadCSG(const char* treedir, const char* gltfconfig)
+NCSG* NCSG::Load(const char* treedir, const char* gltfconfig)
 {
     if(!NCSGData::Exists(treedir))
     {
-         LOG(warning) << "NCSG::LoadCSG no such dir OR does not contain tree " << treedir ;
+         LOG(warning) << "NCSG::Load no such treedir " << treedir ;
          return NULL ; 
     }
+
     NSceneConfig* config = new NSceneConfig(gltfconfig) ; 
-
-    int verbosity = SSys::getenvint("VERBOSITY", 1) ;
-    if(verbosity != config->verbosity) 
-    {
-        LOG(info) << "NCSG::LoadCSG"
-                  << " setting verbosity from envvar " 
-                  << verbosity 
-                  ;   
-         config->verbosity = verbosity ; 
-    }
-
-
-    NCSG* csg = NCSG::LoadTree(treedir, config);
+    NCSG* csg = NCSG::Load(treedir, config);
     assert(csg);
     return csg ; 
 }
 
+NCSG* NCSG::Load(const char* treedir)
+{
+    LOG(info) << treedir << " ############################ " ;  
 
-NCSG* NCSG::LoadTree(const char* treedir, const NSceneConfig* config  )
+    const char* config_ = "polygonize=0" ; 
+    NSceneConfig* config = new NSceneConfig(config_); 
+    return NCSG::Load(treedir, config); 
+}
+
+NCSG* NCSG::Load(const char* treedir, const NSceneConfig* config  )
 {
     if(!NCSGData::Exists(treedir) )
     {
-         LOG(warning) << "NCSG::LoadTree no such treedir OR does not contain tree " 
-                      << " treedir: " << treedir 
-                      ;
-
+         LOG(warning) << "NCSG::Load no such treedir " << treedir ;
          return NULL ; 
     }
- 
 
     NCSG* tree = new NCSG(treedir) ; 
 
@@ -985,7 +1034,7 @@ NCSG* NCSG::LoadTree(const char* treedir, const NSceneConfig* config  )
     tree->import();   // complete binary tree m_nodes buffer -> node tree
     tree->export_();  // node tree -> complete binary tree m_nodes buffer
 
-    if(config->verbosity > 1) tree->dump("NCSG::LoadTree");
+    if(config->verbosity > 1) tree->dump("NCSG::Load");
 
     if(config->polygonize)
     {
@@ -995,11 +1044,23 @@ NCSG* NCSG::LoadTree(const char* treedir, const NSceneConfig* config  )
     tree->collect_surface_points();
 
     return tree ; 
-
 }
 
+NCSG* NCSG::Adopt(nnode* root)
+{
+    const char* config = "" ; 
+    unsigned soIdx = 0 ; 
+    unsigned lvIdx = 0 ; 
+    return Adopt( root, config, soIdx , lvIdx ); 
+}
 
-NCSG* NCSG::FromNode(nnode* root, const NSceneConfig* config, unsigned soIdx, unsigned lvIdx )
+NCSG* NCSG::Adopt(nnode* root, const char* config_, unsigned soIdx, unsigned lvIdx)
+{
+    NSceneConfig* config = new NSceneConfig(config_); 
+    return Adopt( root, config, soIdx , lvIdx ); 
+}
+
+NCSG* NCSG::Adopt(nnode* root, const NSceneConfig* config, unsigned soIdx, unsigned lvIdx )
 {
     nnode::Set_parent_links_r(root, NULL);
 

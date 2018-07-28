@@ -32,8 +32,10 @@ Discreps
 ---------
 
 1. transforms are tripletized by the save : need a format like "csg.py" option
+   (are calling this the src format) 
 2. missing idx.npy
 3. nodes.py has gtransforms index off by one (its one based as written by python)
+   (this was due to dual-purposing ... are now splitting the src format and the transport format)
 
 analytic/csg.py::
 

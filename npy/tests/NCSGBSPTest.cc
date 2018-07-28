@@ -1,28 +1,22 @@
 #include <iostream>
 
-#include "NSceneConfig.hpp"
 #include "NCSG.hpp"
 #include "NCSGBSP.hpp"
 
-#include "NPY_LOG.hh"
-#include "PLOG.hh"
+#include "OPTICKS_LOG.hh"
 
 
 int main(int argc, char** argv)
 {
-    PLOG_(argc, argv);
-    NPY_LOG__ ;  
+    OPTICKS_LOG(argc, argv);
 
     LOG(info) << " argc " << argc << " argv[0] " << argv[0] ;  
 
     const char* treedir = argc > 1 ? argv[1] : "$TMP/tboolean-hyctrl--/1" ;
 
+    const char* config = "csg_bbox_parsurf=1" ;
 
-    const char* gltfconfig = "csg_bbox_parsurf=1" ;
-
-    const NSceneConfig* config = new NSceneConfig(gltfconfig) ; 
-
-    NCSG* csg = NCSG::LoadTree(treedir, config );
+    NCSG* csg = NCSG::Load(treedir, config );
 
     if(!csg)
     {

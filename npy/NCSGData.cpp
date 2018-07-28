@@ -216,6 +216,8 @@ void NCSGData::init_buffers(unsigned height)
    m_gtransforms->zero();
 
 
+   m_srcnodes = NPY<float>::make( m_num_nodes, NJ, NK);
+   m_srcnodes->zero();
 
    m_srctransforms = NPY<float>::make(0,4,4) ;  
    m_srctransforms->zero();
@@ -279,7 +281,7 @@ std::string NCSGData::desc() const
 }
 
 
-void NCSGData::save(const char* treedir ) const 
+void NCSGData::savesrc(const char* treedir ) const 
 {
     saveSrcNodes(treedir); 
     saveSrcTransforms(treedir);

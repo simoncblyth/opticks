@@ -15,11 +15,7 @@
 #include "G4VPhysicalVolume.hh"
 #include "G4Sphere.hh"
 
-#include "BRAP_LOG.hh"
-#include "NPY_LOG.hh"
-#include "GGEO_LOG.hh"
-#include "CFG4_LOG.hh"
-#include "PLOG.hh"
+#include "OPTICKS_LOG.hh"
 
 
 
@@ -28,8 +24,7 @@ void test_load_csg(CMaker& mk, int argc, char** argv)
     BOpticksResource okr ;  
     std::string treedir = okr.getDebuggingTreedir(argc, argv);
 
-    const char* config = NULL ; 
-    NCSG* csg = NCSG::LoadCSG( treedir.c_str(), config );  
+    NCSG* csg = NCSG::Load( treedir.c_str() );  
     if(!csg) return ; 
 
     csg->dump();
@@ -67,15 +62,9 @@ void test_make_csg(CMaker& mk)
 
 int main(int argc, char** argv)
 {
-    PLOG_(argc, argv)
-
-    BRAP_LOG__ ; 
-    NPY_LOG__ ; 
-    GGEO_LOG__ ; 
-    CFG4_LOG__ ; 
+    OPTICKS_LOG(argc, argv)
 
     LOG(info) << argv[0] ; 
-
 
     unsigned verbosity = SSys::getenvint("VERBOSITY", 1);
 
@@ -84,9 +73,6 @@ int main(int argc, char** argv)
 
     //test_load_csg(mk, argc, argv);
     test_make_csg(mk);
-
-
-
 
 
     return 0 ; 

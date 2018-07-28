@@ -21,6 +21,7 @@ class BRAP_API BStr {
 
      static int  atoi( const char* str, int fallback=0 );
      static float atof( const char* str, float fallback=0 );
+     static const char* utoa( unsigned u );
      static const char* itoa( int i );
      static const char* ctoa( char c );
      static const char* negate(const char* tag);

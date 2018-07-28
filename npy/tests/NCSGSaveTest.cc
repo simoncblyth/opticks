@@ -1,38 +1,64 @@
-#include "SSys.hh"
+#include "BFile.hh"
+#include "BStr.hh"
 
 #include "NCSG.hpp"
+#include "NNodeSample.hpp"
 #include "NNode.hpp"
-#include "NSphere.hpp"
-#include "NSceneConfig.hpp"
 
 #include "OPTICKS_LOG.hh"
 
 
-
-NCSG* make_csg()
+void test_load_save()
 {
+    NCSG* csg = NCSG::Load("$TMP/tboolean-box--/1"); 
+    if(!csg) return ; 
+    csg->savesrc("$TMP/tboolean-box--save/1") ; 
 
-    nsphere* a = new nsphere(make_sphere( 0.000,0.000,0.000,500.000 )) ; a->label = "a" ;   
-    nsphere* b = new nsphere(make_sphere( 0.000,0.000,0.000,100.000 )) ; b->label = "b" ;   
-    nintersection* ab = new nintersection(nintersection::make_intersection( a, b )) ; ab->label = "ab" ; a->parent = ab ; b->parent = ab ;  ;   
-    
-    ab->update_gtransforms();
-    ab->verbosity = SSys::getenvint("VERBOSITY", 1) ; 
-    ab->dump() ; 
+    // savesrc after Load is an easy test to pass, as have the src buffers already from the loadsrc
+}
 
-    const char* boundary = "Rock//perfectAbsorbSurface/Vacuum" ;
-    ab->set_boundary(boundary); 
-    const char* gltfconfig = "" ;  
-    const NSceneConfig* config = new NSceneConfig(gltfconfig);
-    unsigned soIdx = 0 ; 
-    unsigned lvIdx = 0 ; 
+void test_adopt_save()
+{
+    const char* name = "Box3" ; 
+    //const char* name = "DifferenceOfSpheres" ; 
 
-    NCSG* csg = NCSG::FromNode(ab, config, soIdx, lvIdx);
-    return csg ; 
+    nnode* sample = NNodeSample::Sample(name); 
+    NCSG* csg = NCSG::Adopt(sample);
+    assert( csg ); 
+
+    const char* path = BStr::concat("$TMP/NCSGSaveTest/test_adopt_save/", name, NULL) ; 
+    csg->savesrc(path); 
+
+
+    // savesrc after Adopt is more difficult, depending on export_srcnode operation
 }
 
 
+const char* get_path(const char* prefix, const char* name, unsigned i )
+{
+    std::string path_ = BFile::FormPath(prefix, name, BStr::utoa(i) ) ; 
+    const char* path = path_.c_str(); 
+    return strdup(path); 
+}
 
+void test_chain()
+{
+    const char* name = "Box3" ; 
+    nnode* sample = NNodeSample::Sample(name);
+    NCSG* csg0 = NCSG::Adopt(sample);
+    assert( csg0 ); 
+
+    NCSG* csg = csg0 ; 
+
+    const char* prefix = "$TMP/NCSGSaveTest/test_chain" ; 
+
+    for(unsigned i=0 ; i < 5 ; i++)
+    {
+        const char* path = get_path( prefix, name, i ); 
+        csg->savesrc(path);
+        csg = NCSG::Load(path) ; 
+    }
+}
 
 
 
@@ -40,21 +66,11 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv);
 
-    //NCSG* csg = make_csg();
-
-    const char* treedir = "$TMP/tboolean-box--/1" ; 
-    NCSG* csg = NCSG::LoadCSG(treedir, NULL ); 
-
-    //csg->dump();
-    //csg->dump_surface_points("dsp", 20);
-
-    csg->save("$TMP/tboolean-box--save/1") ; 
-
-
+    //test_load_save(); 
+    //test_adopt_save(); 
+    test_chain();
+ 
     return 0 ; 
 }
-
-
-
 
 

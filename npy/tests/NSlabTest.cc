@@ -98,7 +98,7 @@ void test_slab_sphere_intersection()
     const NSceneConfig* config = new NSceneConfig(gltfconfig);
     unsigned soIdx = 0 ; 
     unsigned lvIdx = 0 ; 
-    NCSG* csg = NCSG::FromNode(&ab, config, soIdx, lvIdx);
+    NCSG* csg = NCSG::Adopt(&ab, config, soIdx, lvIdx);
     csg->dump();
     csg->dump_surface_points("dsp", 20);
 

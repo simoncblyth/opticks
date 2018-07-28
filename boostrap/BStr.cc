@@ -155,6 +155,15 @@ const char* BStr::ctoa( char c )
     return strdup(s.c_str());
 }
 
+
+const char* BStr::utoa( unsigned u )
+{
+    std::stringstream ss ; 
+    ss << u ; 
+    std::string s = ss.str() ;
+    return strdup(s.c_str());
+}
+
 const char* BStr::itoa( int i )
 {
     std::stringstream ss ; 
@@ -205,16 +214,30 @@ int BStr::atoi( const char* str, int fallback )
 {
     int i(fallback) ;   
     if(!str) return i ; 
+  
+    bool badlex = false ; 
  
     try{ 
         i = boost::lexical_cast<int>(str) ;
     }   
     catch (const boost::bad_lexical_cast& e ) { 
         LOG(warning)  << "Caught bad lexical cast with error " << e.what() ;
+        badlex = true ; 
     }   
     catch( ... ){
         LOG(warning) << "Unknown exception caught!" ;
     }   
+
+
+    if(badlex)
+    {
+        LOG(error) << "BStr::atoi badlex "
+                   << " str " << str  
+                   << " fallback " << fallback
+                   ;  
+        assert(0); 
+    }
+
     return i ;
 }
 
@@ -636,7 +659,7 @@ Out[10]: array([ 0.1,  0.3,  0.5,  0.7,  0.9])
 }
 
 template <typename T>
-const char* BStr::concat( const char* head, T body_, const char* tail )
+const char* BStr::concat( const char* head, T body_, const char* tail  )
 {
     std::string body = boost::lexical_cast<std::string>(body_) ;
     std::stringstream ss ; 

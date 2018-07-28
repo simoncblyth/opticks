@@ -100,7 +100,7 @@ class NPY_API NCSGData
 
     public:
         void loadsrc(const char* treedir);
-        void save(const char* treedir) const ;
+        void savesrc(const char* treedir) const ;
     private:
         void saveSrcNodes(const char* treedir) const ;
         void saveSrcTransforms(const char* treedir) const ;

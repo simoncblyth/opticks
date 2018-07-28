@@ -23,6 +23,7 @@ struct NPY_API npart
     void check_bb_zero(OpticksCSG_t typecode) const ;
     void setTypeCode(OpticksCSG_t typecode);
     void setGTransform(unsigned gtransform_idx, bool complement=false);
+    void setITransform(unsigned itransform_idx, bool complement=false);  // used by NCSG::export_srcnode
     void setBBox(const nbbox& bb);
 
     void setParam(const nquad& param);

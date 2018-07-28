@@ -1,6 +1,7 @@
 
 #include <cmath>
 
+#include "SSys.hh"
 #include "BConfig.hh"
 #include "PLOG.hh"
 #include "NSceneConfig.hpp"
@@ -69,7 +70,24 @@ NSceneConfig::NSceneConfig(const char* cfg)
     bconfig->addInt("instance_vertex_min",    &instance_vertex_min);
 
     bconfig->parse();
+    env_override(); 
 }
+
+
+void NSceneConfig::env_override()
+{
+    int env_verbosity = SSys::getenvint("VERBOSITY", 1) ;
+    if(verbosity != env_verbosity) 
+    {
+        LOG(info) << "NSceneConfig"
+                  << " override verbosity from VERBOSITY envvar " 
+                  << env_verbosity 
+                  ;   
+        verbosity = env_verbosity ; 
+    }
+}
+
+
 
 void NSceneConfig::dump(const char* msg) const
 {

@@ -365,7 +365,7 @@ NParameters* NGLTF::getCSGMetadata( int mesh_id )
 NCSG* NGLTF::getCSG(int mesh_id)
 {
     std::string csgpath = getCSGPath(mesh_id); 
-    NCSG* csg = NCSG::LoadTree(csgpath.c_str(), m_config ); 
+    NCSG* csg = NCSG::Load(csgpath.c_str(), m_config ); 
     csg->setIndex(mesh_id);
     return csg ; 
 }

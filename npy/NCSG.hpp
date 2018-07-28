@@ -14,6 +14,34 @@ template <typename T> class NPY ;
 NCSG
 ======
 
+Workflow 1 : NCSG::Load from python CSG defined geometry thru to transport buffers 
+-------------------------------------------------------------------------------------
+
+Steps 1,2,3 are done by NCSG::Load
+
+0. serialize python defined geometry (see tboolean-box--) into src* buffers 
+1. loadsrc the src* buffers into NCSGData.m_src* 
+2. import the NCSGData.m_src* buffers into nnode tree
+3. export the nnode tree into NCSGData transport buffers m_nodes, m_gtransforms, m_planes
+
+Workflow 2 : from "g4code" generated G4VSolids thru to transport buffers 
+---------------------------------------------------------------------------
+
+Initial stages using the code generation not pinned down, but would like
+to be similar to tboolean-/opticks-nnt examples, see y4csg/tests/Y4CSGTest.cc.
+Revolves around the below conversions::
+    
+    G4VSolid* solid = ...
+    nnode* root = X4Solid::Convert(solid);                  // direct tree conversion from G4VSolid -> nnode  (with g4code generation on side)  
+    NCSG* csg = NCSG::Adopt( root ); // NCSG(nnode*) ctor, then export to transport buffers  
+
+Note that cfg4/CMaker can do the opposite conversion, creating a G4VSolid from nnode
+
+
+
+NCSG implementation
+----------------------
+
 cf dev/csg/csg.py 
 
 * NB two constructors:
@@ -118,10 +146,14 @@ class NPY_API NCSG {
         std::string getTestPVName() const ;
 
         // cannot be "const nnode* root" because of the nudger
-        static NCSG* FromNode(nnode* root, const NSceneConfig* config, unsigned soIdx, unsigned lvIdx );
+        // Adopt was formerly FromNode
+        static NCSG* Adopt(nnode* root, const NSceneConfig* config, unsigned soIdx, unsigned lvIdx );
+        static NCSG* Adopt(nnode* root, const char* config        , unsigned soIdx, unsigned lvIdx );
+        static NCSG* Adopt(nnode* root);
 
-        static NCSG* LoadCSG(const char* treedir, const char* gltfconfig);
-        static NCSG* LoadTree(const char* treedir, const NSceneConfig* config );
+        static NCSG* Load(const char* treedir);
+        static NCSG* Load(const char* treedir, const char* gltfconfig);
+        static NCSG* Load(const char* treedir, const NSceneConfig* config );
 
         NNodeUncoincide* make_uncoincide() const ;
         NNodeNudger*     make_nudger() const ;
@@ -192,15 +224,15 @@ class NPY_API NCSG {
         float        getContainerScale() const ;
         bool         isUsedGlobally() const ;
 
+        // principal consumer is GParts::make
         NPY<float>*    getNodeBuffer() const ;
         NPY<float>*    getTransformBuffer() const ;
         NPY<float>*    getGTransformBuffer() const ;
+        NPY<float>*    getPlaneBuffer() const ;
+        NPY<unsigned>* getIdxBuffer() const ;
 
         NPY<float>*    getSrcTransformBuffer() const ;
         NPY<float>*    getSrcNodeBuffer() const ;
-        NPY<float>*    getSrcPlaneBuffer() const ;
-        NPY<unsigned>* getSrcIdxBuffer() const ;
-
         NParameters* getMetaParameters(int idx) const ;
 
         unsigned     getNumNodes() const ;
@@ -217,11 +249,10 @@ class NPY_API NCSG {
         void setIndex(unsigned index);
         void setVerbosity(int verbosity);
     private:
-
-       //
         // Deserialize
         NCSG(const char* treedir);
-         // Serialize 
+
+        // Serialize 
         NCSG( nnode* root);  // cannot be const because of the nudger
     public:
         // for --testauto
@@ -231,14 +262,14 @@ class NPY_API NCSG {
         void setConfig(const NSceneConfig* config);
 
     public:
-        void save(const char* treedir) const ;
+        void savesrc(const char* treedir) const ;
     private:
         void loadsrc();
         void postload();
         void increaseVerbosity(int verbosity);
 
    private:
-        // import a complete binary tree buffer of nodes into a node tree 
+        // import src buffers of nodes/transforms into a node tree 
         void import();
         void postimport();
         void postimport_uncoincide();
@@ -265,7 +296,9 @@ class NPY_API NCSG {
         // into the node tree needed to prepare a G4 directly converted solid to go to GPU 
         void export_node( nnode* node, unsigned idx );
         void export_gtransform(nnode* node);
-        void export_planes(nnode* node);
+        void export_srcnode(nnode* node, unsigned idx);
+        void export_planes(nnode* node, NPY<float>* _dest );
+        void export_itransform( nnode* node, NPY<float>* _dest ); 
     public:
         void setSOIdx(unsigned soIdx);
         void setLVIdx(unsigned lvIdx);
@@ -284,6 +317,7 @@ class NPY_API NCSG {
         NNodeNudger*     m_nudger ; 
         NCSGData*        m_csgdata ; 
 
+        bool                m_adopted ; 
         const char*         m_boundary ; 
         const NSceneConfig* m_config ; 
 

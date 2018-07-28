@@ -33,6 +33,25 @@ void npart::setTypeCode(OpticksCSG_t typecode)
     q2.u.w = typecode ; 
 }
 
+void npart::setITransform(unsigned itransform_idx, bool complement)
+{
+    assert(VERSION == 1u);
+
+    assert( TRANSFORM_J == 3 && TRANSFORM_K == 3 );
+
+    unsigned ipack = itransform_idx & SSys::OTHERBIT32 ;
+    if(complement) ipack |= SSys::SIGNBIT32 ; 
+
+    LOG(debug) << "npart::setITransform"
+             << " itransform_idx " << itransform_idx
+             << " complement " << complement
+             << " ipack " << ipack 
+             << " ipack(hex) " << std::hex << ipack << std::dec 
+             ; 
+
+    q3.u.w = ipack ; 
+}
+
 void npart::setGTransform(unsigned gtransform_idx, bool complement)
 {
     assert(VERSION == 1u);
@@ -52,6 +71,8 @@ void npart::setGTransform(unsigned gtransform_idx, bool complement)
    q3.u.w = gpack ; 
 
 }
+
+
 
 
 

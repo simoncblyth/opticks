@@ -18,6 +18,10 @@ of nodes in the tree depends on G4VSolid parameter values,
 eg whether an inner radius greater than zero is set, or phi 
 segments are set.
 
+Note that cfg4/CMaker can do the opposite conversion, 
+creating a G4VSolid from nnode.
+
+
 NB the results of X4Solid conversions are **not visible in the glTF**
 renders, as those are based on the G4Polyhedron polgonization 
 of the solids.  Thus the skipping of G4DisplacedSolid displacement

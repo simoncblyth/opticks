@@ -79,6 +79,7 @@ set(SOURCES
 
     No.cpp
     NNode.cpp
+    NNodeSample.cpp
     NNodeCollector.cpp
     NGrid.cpp
 
@@ -271,6 +272,7 @@ NBBoxEnum.hpp
 
 No.hpp
 NNode.hpp
+NNodeSample.hpp
 NNodeCollector.hpp
 
 

@@ -66,7 +66,7 @@ struct NPY_API nnode
 
     std::function<float(float,float,float)> sdf() const ;
 
-    static nnode* load(const char* treedir, const NSceneConfig* config=NULL);
+    static nnode* Load(const char* treedir, const NSceneConfig* config=NULL);
     static void AdjustToFit(nnode* node, const nbbox& bb, float scale, float delta ) ;
 
     virtual const char* csgname() const ;  
@@ -77,6 +77,7 @@ struct NPY_API nnode
     void get_primitive_bbox( nbbox& bb ) const ;
 
     virtual npart part() const ;
+    virtual npart srcpart() const ;
     virtual unsigned maxdepth() const ;
     virtual unsigned _maxdepth(unsigned depth) const ;
 
@@ -85,7 +86,7 @@ struct NPY_API nnode
     std::string tag() const ;
     std::string id() const ;
 
-    static void Tests(std::vector<nnode*>& nodes );
+
     static void Init(nnode& n, OpticksCSG_t type, nnode* left=NULL, nnode* right=NULL);
 
     //unsigned uncoincide(unsigned verbosity);
@@ -255,6 +256,7 @@ struct NPY_API nnode
     const nmat4triple* transform ; 
     const nmat4triple* gtransform ; 
     unsigned           gtransform_idx ; 
+    unsigned           itransform_idx ; 
     bool               complement ; 
     int                verbosity ; 
 

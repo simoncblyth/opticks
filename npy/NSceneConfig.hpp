@@ -23,6 +23,8 @@ struct NPY_API NSceneConfig
 
     NSceneConfig(const char* cfg);
     struct BConfig* bconfig ;  
+
+    void env_override() ; 
     void dump(const char* msg="NSceneConfig::dump") const ; 
 
     int check_surf_containment ; 

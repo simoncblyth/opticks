@@ -103,7 +103,7 @@ int main(int argc, char** argv)
     const char* gltfconfig = "csg_bbox_parsurf=1" ;
     const char* treedir = argc > 1 ? argv[1] : NULL ;
 
-    NCSG* csg = NCSG::LoadCSG(treedir, gltfconfig );
+    NCSG* csg = NCSG::Load(treedir, gltfconfig );
     if(!csg) return 0 ; 
 
     if(BStr::existsEnv("SCAN"))

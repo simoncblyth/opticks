@@ -5,15 +5,16 @@
 #include "NCSG.hpp"
 #include "NSceneConfig.hpp"
 #include "NNode.hpp"
+#include "NNodeSample.hpp"
 
 #include "PLOG.hh"
 #include "NPY_LOG.hh"
 
-void test_FromNode_Meta()
+void test_Adopt_Meta()
 {
     typedef std::vector<nnode*> VN ;
     VN nodes ; 
-    nnode::Tests(nodes);
+    NNodeSample::Tests(nodes);
 
     const char* gltfconfig = "csg_bbox_parsurf=1" ;
     const NSceneConfig* config = new NSceneConfig(gltfconfig) ; 
@@ -27,16 +28,16 @@ void test_FromNode_Meta()
         unsigned soIdx = 0 ; 
         unsigned lvIdx = 0 ; 
 
-        NCSG* tree = NCSG::FromNode( n , config , soIdx, lvIdx );
-        LOG(info) << "test_FromNode_0 " << tree->soname() ; 
+        NCSG* tree = NCSG::Adopt( n , config , soIdx, lvIdx );
+        LOG(info) << "test_Adopt_0 " << tree->soname() ; 
     }
 }
 
-void test_FromNode()
+void test_Adopt()
 {
     typedef std::vector<nnode*> VN ;
     VN nodes ; 
-    nnode::Tests(nodes);
+    NNodeSample::Tests(nodes);
 
     const char* spec = "Rock//perfectAbsorbSurface/Vacuum" ;
 
@@ -57,7 +58,7 @@ void test_FromNode()
         unsigned soIdx = 0 ; 
         unsigned lvIdx = 0 ; 
              
-        NCSG* tree = NCSG::FromNode( n , config, soIdx, lvIdx );
+        NCSG* tree = NCSG::Adopt( n , config, soIdx, lvIdx );
         LOG(info) 
                 << " node.name " << std::setw(20) << name 
                 << " tree.desc " << tree->desc()
@@ -90,7 +91,7 @@ void test_setEmitconfig()
     const char* treedir = "$TMP/tboolean-zsphere0--/0" ; 
     LOG(info) << treedir ; 
 
-    NCSG* csg = NCSG::LoadCSG(treedir, NULL );
+    NCSG* csg = NCSG::Load(treedir);
     if(!csg) return ; 
 
     const char* ec0 = csg->getEmitConfig() ; 
@@ -121,8 +122,8 @@ int main(int argc, char** argv)
     NPY_LOG__ ;  
 
     //test_DeserializeTrees(argc, argv);
-    //test_FromNode();
-    //test_FromNode_Meta();
+    //test_Adopt();
+    //test_Adopt_Meta();
 
     test_setEmitconfig();
 

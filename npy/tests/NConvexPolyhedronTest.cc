@@ -23,7 +23,7 @@ nconvexpolyhedron* test_load(const char* path)
     const char* gltfconfig = "csg_bbox_parsurf=1" ;
     const NSceneConfig* config = new NSceneConfig(gltfconfig) ; 
 
-    nnode* root = nnode::load(path, config );
+    nnode* root = nnode::Load(path, config );
 
     assert(root->type == CSG_CONVEXPOLYHEDRON );
     nconvexpolyhedron* cpol = (nconvexpolyhedron*)root  ;

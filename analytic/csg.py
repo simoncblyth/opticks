@@ -700,7 +700,7 @@ class CSG(CSG_):
                 itransform = len(transforms) + 1  # 1-based index pointing to the transform
                 transforms.append(trs)
             pass
-
+            log.info(" itransform : %s " % itransform )
 
             node_planes = node.planes
             if len(node_planes) == 0:
@@ -1050,7 +1050,8 @@ class CSG(CSG_):
             arr[Q3] = self.param3
         pass
 
-        if self.transform is not None:
+        #if self.transform is not None:
+        if True:
             assert itransform > 0, itransform  # 1-based transform index
             arr.view(np.uint32)[Q3,W] = itransform 
         pass

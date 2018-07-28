@@ -104,7 +104,7 @@ int main(int argc, char** argv)
     if(BFile::pathEndsWithInt(basedir))
     {
         std::vector<NCSG*> trees ;    
-        NCSG* csg = NCSG::LoadCSG(basedir, gltfconfig);
+        NCSG* csg = NCSG::Load(basedir, gltfconfig);
         if(csg) trees.push_back(csg);   
         test_coincidence(trees);
     }

@@ -10,17 +10,16 @@
 #include "NTrianglesNPY.hpp"
 #include "NSphere.hpp"
 #include "NBox.hpp"
+#include "NNodeSample.hpp"
 
-#include "PLOG.hh"
-#include "BRAP_LOG.hh"
-#include "NPY_LOG.hh"
+#include "OPTICKS_LOG.hh"
 
 
 void test_csgsdf()
 {
     typedef std::vector<nnode*> VN ;
     VN nodes ; 
-    nnode::Tests(nodes);
+    NNodeSample::Tests(nodes);
 
     for(VN::const_iterator it=nodes.begin() ; it != nodes.end() ; it++)
     {
@@ -82,11 +81,6 @@ void test_box(NMarchingCubesNPY& mcu, bool dump)
 }
 
 
-
-
-
-
-
 void test_union(NMarchingCubesNPY& mcu, bool dump)
 {
     nsphere a = make_sphere(0.f,0.f,-50.f,100.f);
@@ -135,7 +129,7 @@ void test_generic(NMarchingCubesNPY& mcu)
 {
     typedef std::vector<nnode*> VN ;
     VN nodes ; 
-    nnode::Tests(nodes);
+    NNodeSample::Tests(nodes);
 
     for(VN::const_iterator it=nodes.begin() ; it != nodes.end() ; it++)
     {
@@ -170,8 +164,7 @@ void test_generic(NMarchingCubesNPY& mcu)
 
 int main(int argc, char** argv)
 {
-    PLOG_(argc, argv);
-    NPY_LOG__ ; 
+    OPTICKS_LOG(argc, argv);
 
     NMarchingCubesNPY mcu(15);
 

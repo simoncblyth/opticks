@@ -211,6 +211,7 @@ void nnode::Init( nnode& n , OpticksCSG_t type, nnode* left, nnode* right )
     n.transform = NULL ; 
     n.gtransform = NULL ; 
     n.gtransform_idx = 0 ; 
+    n.itransform_idx = 0 ; 
     n.complement = false ; 
     n.verbosity = 0 ; 
 
@@ -496,9 +497,19 @@ glm::vec3 nnode::gseedcenter() const
 
 
 
+npart nnode::srcpart() const 
+{
+    npart pt ; 
+    pt.zero();
+    pt.setParam(  param );
+    pt.setParam1( param1 );
+    pt.setParam2( param2 );
+    pt.setParam3( param3 );
 
-
-
+    pt.setTypeCode( type );
+    pt.setITransform( itransform_idx, complement ); // hmm complemented sources ?
+    return pt ; 
+}
 
 npart nnode::part() const 
 {
@@ -723,9 +734,9 @@ nbbox nnode::bbox() const
 
 
 
-nnode* nnode::load(const char* treedir, const NSceneConfig* config)
+nnode* nnode::Load(const char* treedir, const NSceneConfig* config)
 {
-    NCSG* tree = NCSG::LoadTree(treedir, config);
+    NCSG* tree = NCSG::Load(treedir, config);
     nnode* root = tree->getRoot();
     return root ; 
 }
@@ -759,50 +770,6 @@ float ndifference::operator()(float x, float y, float z) const
     float l = (*left)(x, y, z) ;
     float r = (*right)(x, y, z) ;
     return fmaxf( l, -r);    // difference is intersection with complement, complement negates signed distance function
-}
-
-
-void nnode::Tests(std::vector<nnode*>& nodes )
-{
-    // using default copy ctor to create nnode on heap
-
-    nsphere* a = new nsphere(make_sphere(0.f,0.f,-50.f,100.f));
-    nsphere* b = new nsphere(make_sphere(0.f,0.f, 50.f,100.f));
-    nbox*    c = new nbox(make_box(0.f,0.f,0.f,200.f));
-
-    nunion* u = new nunion(nunion::make_union( a, b ));
-    nintersection* i = new nintersection(nintersection::make_intersection( a, b )); 
-    ndifference* d1 = new ndifference(ndifference::make_difference( a, b )); 
-    ndifference* d2 = new ndifference(ndifference::make_difference( b, a )); 
-    nunion* u2 = new nunion(nunion::make_union( d1, d2 ));
-
-    nodes.push_back( (nnode*)a );
-    nodes.push_back( (nnode*)b );
-    nodes.push_back( (nnode*)u );
-    nodes.push_back( (nnode*)i );
-    nodes.push_back( (nnode*)d1 );
-    nodes.push_back( (nnode*)d2 );
-    nodes.push_back( (nnode*)u2 );
-
-    nodes.push_back( (nnode*)c );
-
-
-    float radius = 200.f ; 
-    float inscribe = 1.3f*radius/sqrt(3.f) ; 
-
-    nsphere* sp = new nsphere(make_sphere(0.f,0.f,0.f,radius));
-    nbox*    bx = new nbox(make_box(0.f,0.f,0.f, inscribe ));
-    nunion*  u_sp_bx = new nunion(nunion::make_union( sp, bx ));
-    nintersection*  i_sp_bx = new nintersection(nintersection::make_intersection( sp, bx ));
-    ndifference*    d_sp_bx = new ndifference(ndifference::make_difference( sp, bx ));
-    ndifference*    d_bx_sp = new ndifference(ndifference::make_difference( bx, sp ));
-
-    nodes.push_back( (nnode*)u_sp_bx );
-    nodes.push_back( (nnode*)i_sp_bx );
-    nodes.push_back( (nnode*)d_sp_bx );
-    nodes.push_back( (nnode*)d_bx_sp );
-
-
 }
 
 

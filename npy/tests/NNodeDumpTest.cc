@@ -1,15 +1,15 @@
 
 #include "NNode.hpp"
+#include "NNodeSample.hpp"
 
-#include "NPY_LOG.hh"
-#include "PLOG.hh"
+#include "OPTICKS_LOG.hh"
 
 
 void test_dump()
 {
     typedef std::vector<nnode*> VN ;
     VN nodes ; 
-    nnode::Tests(nodes);
+    NNodeSample::Tests(nodes);
 
     for(VN::const_iterator it=nodes.begin() ; it != nodes.end() ; it++)
     {   
@@ -21,8 +21,7 @@ void test_dump()
 
 int main(int argc, char** argv)
 {
-    PLOG_(argc, argv);
-    NPY_LOG__ ; 
+    OPTICKS_LOG(argc, argv);
 
     test_dump();
 
