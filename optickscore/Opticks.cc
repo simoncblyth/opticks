@@ -523,6 +523,11 @@ const char* Opticks::getRenderMode()
 
 
 
+bool Opticks::isG4CodeGen() const 
+{
+    return m_cfg->hasOpt("g4codegen") ;
+}
+
 bool Opticks::isPrintEnabled() const 
 {
     return m_cfg->hasOpt("printenabled") ;

@@ -169,7 +169,7 @@ X4SolidBase::X4SolidBase( const G4VSolid* solid, bool top )
    m_identifier(NODE_ID->get(top)),
    m_root(NULL)
 {
-   LOG(info) << brief() ; 
+   //LOG(info) << brief() ; 
 
    if( m_top ) OTHER_ID->reset() ; 
 }

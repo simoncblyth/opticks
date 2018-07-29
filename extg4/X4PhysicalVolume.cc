@@ -101,6 +101,7 @@ X4PhysicalVolume::X4PhysicalVolume(GGeo* ggeo, const G4VPhysicalVolume* const to
     m_ggeo(ggeo),
     m_top(top),
     m_ok(m_ggeo->getOpticks()), 
+    m_g4codegen(m_ok->isG4CodeGen()),
     m_query(m_ok->getQuery()),
     m_gltfpath(m_ok->getGLTFPath()),
     m_mlib(m_ggeo->getMaterialLib()),
@@ -456,20 +457,7 @@ GVolume* X4PhysicalVolume::convertNode(const G4VPhysicalVolume* const pv, GVolum
      const std::string& pvName = pv->GetName() ; 
      const std::string& soName = solid->GetName() ; 
 
-
      int ndIdx0 = m_sc->get_num_nodes();
-
-
-     /*
-     if(selected)
-     LOG(info) << " ndIdx0 " << std::setw(6) << ndIdx0 
-               << " selected " << selected 
-               << " recursive_select " << recursive_select 
-             //  << " pvName " << pvName
-               ;
-     */     
-
-
      int ndIdx = m_sc->add_node(
                                  lvIdx, 
                                  materialIdx,
@@ -505,56 +493,10 @@ GVolume* X4PhysicalVolume::convertNode(const G4VPhysicalVolume* const pv, GVolum
 
      Mh* mh = m_sc->get_mesh_for_node( ndIdx );  // node->mesh via soIdx (the local mesh index)
 
-     std::vector<unsigned> skips = {27, 29}; // soIdx     (formerly 33 too)
 
      if(mh->csgnode == NULL)
      {
-         // convert G4VSolid into nnode tree and balance it if overheight 
-
-         LOG(error) << " convert soIdx  " << nd->soIdx << " START " ; 
-         nnode* tree = X4Solid::Convert(solid)  ; 
-         tree->dump_g4code(); 
-         LOG(error) << " convert soIdx  " << nd->soIdx << " DONE "  ; 
-
-
-         X4CSG::GenerateTest( solid, X4::X4GEN_DIR , lvIdx ) ; 
-
-
-         nnode* result = NTreeProcess<nnode>::Process(tree, nd->soIdx, lvIdx); 
-
-         mh->csgnode = result ; 
-
-   
-         bool is_skip = std::find( skips.begin(), skips.end(), nd->soIdx ) != skips.end()  ; 
-
-         mh->mesh = is_skip ? X4Mesh::Placeholder(solid, nd->soIdx) : X4Mesh::Convert(solid, nd->soIdx ) ; 
-
-         /*
-         if(is_skip)
-         {
-             LOG(error) << " csgnode::dump START for skipped solid soIdx " << nd->soIdx ; 
-             mh->csgnode->dump();
-             LOG(error) << " csgnode::dump DONE for skipped solid soIdx " << nd->soIdx ; 
-         }
-         */
-       
-         mh->vtx = mh->mesh->m_x4src_vtx ; 
-         mh->idx = mh->mesh->m_x4src_idx ; 
-
-
-         // Adopt exports nnode tree to m_nodes buffer in NCSG instance
-         const NSceneConfig* config = NULL ; 
-         mh->csg = NCSG::Adopt( mh->csgnode, config, nd->soIdx, lvIdx );   
-
-
-         assert( mh->csg ) ; 
-         assert( mh->csg->isUsedGlobally() );
-
-
-         X4SolidRec rec(solid, tree, mh->csg, nd->soIdx, lvIdx );  
-         m_solidrec.push_back( rec ) ; 
-  
-         m_ggeo->add( mh->mesh ) ; 
+         convertSolid( lvIdx, mh, nd, solid);
      }
 
      assert( mh->csgnode ); 
@@ -569,24 +511,16 @@ GVolume* X4PhysicalVolume::convertNode(const G4VPhysicalVolume* const pv, GVolum
                 << " selected " << selected
                ; 
 
-     // mh->csgnode->set_boundary( boundaryName.c_str() ) ;  <-- makes no sense, would keep overwriting 
-     //
-     // can this be done at mesh level (ie within the above bracket) ?
-     // ... would be a big time saving 
-     // ... see how the boundary is used, also check GParts 
- 
-
      const GMesh* mesh = mh->mesh ;   // hmm AssimpGGeo::convertMeshes does deduping/fixing before inclusion in GVolume(GNode) 
 
      const NCSG* csg = mh->csg ; 
 
      GParts* pts = GParts::make( csg, boundaryName.c_str(), m_verbosity  );  // see GScene::createVolume 
-
-     //LOG(error) << " make pts " << pts->id() ; 
-
-
      pts->setBndLib(m_blib);
 
+     //  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ CAN THIS BE DONE AT MESH LEVEL ^^^^^^^^^^^^^^^
+     // DOES EACH GVolume needs its own GParts ?
+     // LOG(error) << " make pts " << pts->id() ; 
 
      // metadata needs to be transferred, like in GScene ?
 
@@ -609,7 +543,6 @@ GVolume* X4PhysicalVolume::convertNode(const G4VPhysicalVolume* const pv, GVolum
      volume->setPVName( pvName.c_str() );
      volume->setLVName( lvName.c_str() );
      volume->setName( pvName.c_str() );   // historically (AssimpGGeo) this was set to lvName, but pvName makes more sense for node node
-
 
      m_ggeo->countMeshUsage(nd->soIdx, ndIdx );
 
@@ -638,8 +571,50 @@ the source NPY arrays are also tacked on to the Mh instance.
 
 **/
 
-void X4PhysicalVolume::convertSolid( Mh* mh, const G4VSolid* const solid)
+void X4PhysicalVolume::convertSolid( int lvIdx, Mh* mh, const Nd* nd, const G4VSolid* const solid)
 {
+     // convert G4VSolid into nnode tree and balance it if overheight 
+     assert(mh->csgnode == NULL) ;
+
+     nnode* raw = X4Solid::Convert(solid)  ; 
+
+     if(m_g4codegen) 
+     {
+         raw->dump_g4code(); 
+         X4CSG::GenerateTest( solid, X4::X4GEN_DIR , lvIdx ) ; 
+     }
+
+     nnode* balanced = NTreeProcess<nnode>::Process(raw, nd->soIdx, lvIdx); 
+     mh->csgnode = balanced ; 
+
+     std::vector<unsigned> skips = {27, 29}; // soIdx     (formerly 33 too)
+     // they are skipped because Geant4 polygonization fails for them 
+
+     bool is_skip = std::find( skips.begin(), skips.end(), nd->soIdx ) != skips.end()  ; 
+
+     if( is_skip )
+     {
+          LOG(error) << " is_skip " 
+                     << " soIdx " << nd->soIdx  
+                     << " lvIdx " << lvIdx
+                     ;  
+         //mh->csgnode->dump();
+     }
+
+     mh->mesh = is_skip ? X4Mesh::Placeholder(solid, nd->soIdx) : X4Mesh::Convert(solid, nd->soIdx ) ; 
+     mh->vtx = mh->mesh->m_x4src_vtx ; 
+     mh->idx = mh->mesh->m_x4src_idx ; 
+
+     const NSceneConfig* config = NULL ; 
+     mh->csg = NCSG::Adopt( mh->csgnode, config, nd->soIdx, lvIdx );   // Adopt exports nnode tree to m_nodes buffer in NCSG instance
+
+     assert( mh->csg ) ; 
+     assert( mh->csg->isUsedGlobally() );
+
+     X4SolidRec rec(solid, raw, balanced, mh->csg, nd->soIdx, lvIdx );  
+     m_solidrec.push_back( rec ) ; 
+
+     m_ggeo->add( mh->mesh ) ; 
 } 
 
 

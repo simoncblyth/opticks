@@ -273,6 +273,7 @@ class OKCORE_API Opticks {
        bool                 getPrintIndex(glm::ivec3& idx) const ;
        int                  getPrintIndex(unsigned dim=0) const ; 
        bool                 isPrintIndexLog() const ; 
+       bool                 isG4CodeGen() const ;
        bool                 isPrintEnabled() const ;
        bool                 isXAnalytic() const ;
    public:

@@ -892,7 +892,7 @@ void X4Solid::convertPolycone()
 
     unsigned nz = ph->Num_z_planes ; 
 
-    LOG(error) << " nz " << nz ; 
+    //LOG(error) << " nz " << nz ; 
 
     std::vector<zplane> zp(nz) ; 
     std::set<double> Rmin ; 
@@ -902,6 +902,7 @@ void X4Solid::convertPolycone()
         zp[i] = { ph->Rmin[i], ph->Rmax[i], ph->Z_values[i] } ;  
         Rmin.insert( ph->Rmin[i] );
 
+/*
         LOG(error) << " zp[i] (rmin,rmax,z)" << i  
                    << " (" 
                    << zp[i].rmin 
@@ -911,6 +912,7 @@ void X4Solid::convertPolycone()
                    << zp[i].z
                    << ")"
                    ;
+*/
 
     }
 

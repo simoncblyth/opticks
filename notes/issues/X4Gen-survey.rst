@@ -11,10 +11,58 @@ Switch solid by setting LV envvar
      x4gen-csg    ## visual check 
 
 
+
+Survey With Balancing rmx:raw-max-depth bmx:balanced-max-depth
+-----------------------------------------------------------------
+
+::
+
+    epsilon:x4gen blyth$ grep bmx:04 solids.txt 
+     so:027 lv:232 rmx:12 bmx:04 soName: near_pool_ows_box0xbf8c8a8
+     so:029 lv:211 rmx:12 bmx:04 soName: near_pool_iws_box0xc288ce8
+     so:067 lv:056 rmx:08 bmx:04 soName: RadialShieldUnit0xc3d7da8
+     so:070 lv:057 rmx:08 bmx:04 soName: TopESRCutHols0xbf9de10
+     so:111 lv:105 rmx:10 bmx:04 soName: led-source-assy0xc3061d0
+     so:118 lv:112 rmx:10 bmx:04 soName: source-assy0xc2d5d78
+     so:125 lv:132 rmx:10 bmx:04 soName: amcco60-source-assy0xc0b1df8
+     so:153 lv:142 rmx:07 bmx:04 soName: GdsOflTnk0xc3d5160
+
+    epsilon:x4gen blyth$ grep bmx:03 solids.txt 
+     so:003 lv:000 rmx:04 bmx:03 soName: near_top_cover_box0xc23f970
+     so:025 lv:236 rmx:04 bmx:03 soName: near_pool_dead_box0xbf8a280
+     so:026 lv:234 rmx:04 bmx:03 soName: near_pool_liner_box0xc2dcc28
+     so:028 lv:213 rmx:04 bmx:03 soName: near_pool_curtain_box0xc2cef48
+     so:054 lv:047 rmx:03 bmx:03 soName: pmt-hemi0xc0fed90
+     so:055 lv:046 rmx:03 bmx:03 soName: pmt-hemi-vac0xc21e248
+     so:068 lv:059 rmx:05 bmx:03 soName: TopRefCutHols0xbf9bd50
+     so:069 lv:058 rmx:04 bmx:03 soName: TopRefGapCutHols0xbf9cef8
+     so:071 lv:062 rmx:05 bmx:03 soName: BotRefHols0xc3cd380
+     so:072 lv:061 rmx:04 bmx:03 soName: BotRefGapCutHols0xc34bb28
+     so:073 lv:060 rmx:07 bmx:03 soName: BotESRCutHols0xbfa7368
+     so:076 lv:065 rmx:04 bmx:03 soName: SstBotCirRibBase0xc26e2d0
+     so:080 lv:069 rmx:06 bmx:03 soName: SstTopCirRibBase0xc264f78
+     so:110 lv:098 rmx:03 bmx:03 soName: turntable0xbf784f0
+     so:149 lv:145 rmx:05 bmx:03 soName: OflTnkContainer0xc17cf50
+     so:151 lv:140 rmx:04 bmx:03 soName: LsoOflTnk0xc17d928
+     so:152 lv:141 rmx:03 bmx:03 soName: LsoOfl0xc348ac0
+     so:208 lv:200 rmx:05 bmx:03 soName: table_panel_box0xc00f558
+     so:248 lv:245 rmx:04 bmx:03 soName: near-radslab-box-90xcd31ea0
+
+
+
+
 Survey ASIS : solids of depth 3 or more : without tree balancing 
 ------------------------------------------------------------------------
 
 * height greater than 7 is skipped in kernel, so expect no-show for these
+
+
+The two deepest trees (depth 12) are G4 polygonization skipped because it hangs for them::
+
+    epsilon:x4gen blyth$ egrep so:027\|so:029 solids.txt
+     so:027 lv:232 mx:12 soName: near_pool_ows_box0xbf8c8a8
+     so:029 lv:211 mx:12 soName: near_pool_iws_box0xc288ce8
+
 
 ::
 

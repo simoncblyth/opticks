@@ -196,6 +196,10 @@ void OpticksCfg<Listener>::init()
        ("vizg4",   "when vizualizing loaded events, upload the G4Evt not the OKEvt one ") ; 
 
    m_desc.add_options()
+       ("g4codegen",   "generate and persist Geant4 geometry code for each solid of the geometry in X4PhysicalVolume, see X4GEN_DIR ") ; 
+
+
+   m_desc.add_options()
        ("tracer",   "used to argforced signal from OTracerTest that progagator should not be setup avoiding issue tracer_crash.rst") ; 
 
 

@@ -86,7 +86,7 @@ NCSG::NCSG(nnode* root )
    m_lvIdx(0)
 {
     setBoundary( root->boundary );  // boundary spec
-    LOG(error) << " NCSG adopt " << root->boundary ; 
+    //LOG(error) << " NCSG adopt " << root->boundary ; 
 
     m_csgdata->init_buffers(root->maxdepth()) ;  
 }
@@ -720,11 +720,13 @@ void NCSG::export_planes(nnode* node, NPY<float>* _planes)
     unsigned planeIdx0 = _planes->getNumItems();   // 0-based idx
     unsigned planeIdx1 = planeIdx0 + 1 ;           // 1-based idx
 
+/*
     LOG(error) 
          << " export "
          << " planeIdx1 " << planeIdx1 
          << " planeNum " << planeNum
          ;
+*/
 
     node->setPlaneIdx( planeIdx1 );  
     node->setPlaneNum( planeNum );   // directly sets into node param

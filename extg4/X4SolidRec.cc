@@ -7,15 +7,21 @@
 #include "X4SolidRec.hh"
 #include "G4VSolid.hh"
 
-X4SolidRec::X4SolidRec( const G4VSolid* solid_,  const nnode* node_, const NCSG* csg_, unsigned soIdx_, unsigned lvIdx_ )
+X4SolidRec::X4SolidRec( const G4VSolid* solid_,  const nnode* raw_, const nnode* balanced_, const NCSG* csg_, unsigned soIdx_, unsigned lvIdx_ )
     :
     solid(solid_),
-    node(node_),
+    raw(raw_),
+    balanced(balanced_),
     csg(csg_),
     soIdx(soIdx_),
     lvIdx(lvIdx_)
 {
 }
+
+X4SolidRec::~X4SolidRec()
+{
+}
+
 
 
 std::string X4SolidRec::desc() const 
@@ -24,7 +30,8 @@ std::string X4SolidRec::desc() const
     ss
         << " so:" << BStr::utoa(soIdx, 3, true)  
         << " lv:" << BStr::utoa(lvIdx, 3, true)  
-        << " mx:" << BStr::utoa(node->maxdepth(), 2, true )  
+        << " rmx:" << BStr::utoa(raw->maxdepth(), 2, true )  
+        << " bmx:" << BStr::utoa(balanced->maxdepth(), 2, true )  
         << " soName: " << solid->GetName() 
         ;
 

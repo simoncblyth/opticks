@@ -182,6 +182,9 @@ GParts* GParts::make( const NCSG* tree, const char* spec, unsigned verbosity )
 {
     assert(spec);
 
+    //LOG(info) << "GParts::make " << tree->getIndex() ; 
+
+
     bool usedglobally = tree->isUsedGlobally() ;   // see opticks/notes/issues/subtree_instances_missing_transform.rst
     //bool usedglobally = true ; 
 
