@@ -1,8 +1,15 @@
 OKX4Test_analytic_raytrace
 ============================
 
-Summary
----------
+July 29 : evening : more robust : MAYBE FIXED  
+--------------------------------------------------------------
+
+After fixing an off-by-one bug in plane loading, have not seen the CUDA exception issue. 
+And have succeeded to do a direct route normal selection DYB raytrace.
+
+
+Early July 2018 Summary : as transition to PR mode for conf and meetings
+----------------------------------------------------------------------------
 
 * even after getting the analytic buffers near identical 
   the new direct route ray trace remains fragile, with 
@@ -15,8 +22,8 @@ Summary
     is not the full story 
 
 
-July 29 
-----------
+July 29 : morning : still there crashing everytime, unless avoid some geometry lvIdx
+----------------------------------------------------------------------------------------
 
 ::
 
@@ -42,7 +49,7 @@ Ideas to try
    some G4 C++ that creates each lvIdx, and use that to
    implement 248 single lv visualizations   
 
-   * are pursuing this approach over in X4 
+   * are pursuing this approach over in X4 and with x4gen- and --g4codegen option 
 
 
 3. non-graphical ray tracing (snaps) of geometry 

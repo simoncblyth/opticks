@@ -1013,9 +1013,10 @@ const char* Opticks::getGLTFPath() const
 {
     return m_resource->getGLTFPath() ;
 }
-
-
-
+const char* Opticks::getG4CodeGenDir() const 
+{
+    return m_resource->getG4CodeGenDir() ;
+}
 
 
 

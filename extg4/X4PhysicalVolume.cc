@@ -101,9 +101,10 @@ X4PhysicalVolume::X4PhysicalVolume(GGeo* ggeo, const G4VPhysicalVolume* const to
     m_ggeo(ggeo),
     m_top(top),
     m_ok(m_ggeo->getOpticks()), 
-    m_g4codegen(m_ok->isG4CodeGen()),
     m_query(m_ok->getQuery()),
     m_gltfpath(m_ok->getGLTFPath()),
+    m_g4codegen(m_ok->isG4CodeGen()),
+    m_g4codegendir(m_ok->getG4CodeGenDir()),
     m_mlib(m_ggeo->getMaterialLib()),
     m_slib(m_ggeo->getSurfaceLib()),
     m_blib(m_ggeo->getBndLib()),
@@ -581,7 +582,8 @@ void X4PhysicalVolume::convertSolid( int lvIdx, Mh* mh, const Nd* nd, const G4VS
      if(m_g4codegen) 
      {
          raw->dump_g4code(); 
-         X4CSG::GenerateTest( solid, X4::X4GEN_DIR , lvIdx ) ; 
+         //X4CSG::GenerateTest( solid, X4::X4GEN_DIR , lvIdx ) ; 
+         X4CSG::GenerateTest( solid, m_g4codegendir , lvIdx ) ; 
      }
 
      nnode* balanced = NTreeProcess<nnode>::Process(raw, nd->soIdx, lvIdx); 
@@ -628,7 +630,11 @@ void X4PhysicalVolume::dumpSolidRec(const char* msg) const
 
 void X4PhysicalVolume::writeSolidRec() const 
 {
-    std::string path = BFile::FormPath( X4::X4GEN_DIR, "solids.txt" ) ; 
+    //std::string path = BFile::FormPath( X4::X4GEN_DIR, "solids.txt" ) ; 
+    std::string path = BFile::preparePath( m_g4codegendir, "solids.txt", true ) ; 
+    LOG(error) << " writeSolidRec " 
+               << " g4codegendir [" << m_g4codegendir << "]"
+               << " path [" << path << "]" ;  
     std::ofstream out(path.c_str());
     solidRecTable( out ); 
 }

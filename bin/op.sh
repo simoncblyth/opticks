@@ -177,6 +177,7 @@ op-binary-name()
            --keys) echo InteractorKeys ;;
           --tcfg4) echo CG4Test ;;
            --okg4) echo OKG4Test ;;
+           --okx4) echo OKX4Test ;;
          --tracer) echo OTracerTest ;;
       --gdml2gltf) echo gdml2gltf.py ;;
             --mat) echo GMaterialLibTest ;;

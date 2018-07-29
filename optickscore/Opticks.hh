@@ -231,6 +231,7 @@ class OKCORE_API Opticks {
        const char* getGLTFBase() const ;   
        const char* getGLTFName() const ;  
        bool        hasGLTF() const ; 
+       const char* getG4CodeGenDir() const ;  // search for g4code
    public:
        // from cfg
        int         getGLTF() const ;

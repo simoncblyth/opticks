@@ -58,6 +58,7 @@ class BRAP_API  BOpticksResource {
        static const char* InstallPath(const char* relpath) ;
    public:
        static const char* MakeSrcPath(const char* srcpath, const char* ext) ;
+       static const char* MakeSrcDir(const char* srcpath, const char* sub) ;
    public:
         BOpticksResource();
         virtual ~BOpticksResource();
@@ -115,6 +116,9 @@ class BRAP_API  BOpticksResource {
        const char* getDAEPath() const ;
        const char* getGDMLPath() const ;
        const char* getGLTFPath() const ;
+       const char* getG4CodeGenDir() const ;
+
+
        const char* getMetaPath() const ;
        const char* getIdMapPath() const ;
     public:
@@ -179,6 +183,7 @@ class BRAP_API  BOpticksResource {
        const char* m_gltfpath ;
        const char* m_metapath ;
        const char* m_idmappath ;
+       const char* m_g4codegendir ;
 };
 
 #include "BRAP_TAIL.hh"

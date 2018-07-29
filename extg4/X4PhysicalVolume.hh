@@ -99,9 +99,10 @@ class X4_API X4PhysicalVolume
         GGeo*                        m_ggeo ; 
         const G4VPhysicalVolume*     m_top ;  
         Opticks*                     m_ok ; 
-        bool                         m_g4codegen ; 
         OpticksQuery*                m_query ; 
         const char*                  m_gltfpath ; 
+        bool                         m_g4codegen ; 
+        const char*                  m_g4codegendir ;
     private:
         GMaterialLib*                m_mlib ; 
         GSurfaceLib*                 m_slib ; 

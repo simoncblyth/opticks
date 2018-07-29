@@ -1,5 +1,8 @@
- X4SolidLoadTest_plane_imports_failing
-==========================================
+FIXED :  X4SolidLoadTest_plane_imports_failing
+================================================
+
+* FIXED : an off-by-one bug 
+
 
 reproduce plane loading issue in X4SolidLoadTest
 ---------------------------------------------------

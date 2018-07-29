@@ -57,7 +57,8 @@ BOpticksResource::BOpticksResource()
     m_gdmlpath(NULL),
     m_gltfpath(NULL),
     m_metapath(NULL),
-    m_idmappath(NULL)
+    m_idmappath(NULL),
+    m_g4codegendir(NULL)
 {
     init();
     (*m_log)("DONE"); 
@@ -277,6 +278,13 @@ const char* BOpticksResource::MakeSrcPath(const char* srcpath, const char* ext)
     std::string path = BFile::ChangeExt(srcpath, ext ); 
     return strdup(path.c_str());
 }
+const char* BOpticksResource::MakeSrcDir(const char* srcpath, const char* sub) 
+{
+    std::string srcdir = BFile::ParentDir(srcpath); 
+    std::string path = BFile::FormPath(srcdir.c_str(), sub ); 
+    return strdup(path.c_str());
+}
+
 
 void BOpticksResource::setSrcPath(const char* srcpath)  
 {
@@ -304,12 +312,16 @@ void BOpticksResource::setSrcPath(const char* srcpath)
     m_metapath = MakeSrcPath(m_srcpath,".ini"); 
     m_idmappath = MakeSrcPath(m_srcpath,".idmap"); 
 
+
     m_res->addPath("srcpath", m_srcpath );
     m_res->addPath("daepath", m_daepath );
     m_res->addPath("gdmlpath", m_gdmlpath );
     m_res->addPath("gltfpath", m_gltfpath );
     m_res->addPath("metapath", m_metapath );
     m_res->addPath("idmappath", m_idmappath );
+
+    m_g4codegendir = MakeSrcDir(m_srcpath,"g4codegen"); 
+    m_res->addDir("g4codegendir", m_g4codegendir ); 
 
     std::string idname = BFile::ParentName(m_srcpath);
     m_idname = strdup(idname.c_str());   // idname is name of dir containing the srcpath eg DayaBay_VGDX_20140414-1300
@@ -397,6 +409,12 @@ void BOpticksResource::setupViaKey()
     std::string gltfpath = getIdPathPath( m_idfile );  // not a srcpath for G4LIVE, but potential cache file 
     m_gltfpath = strdup(gltfpath.c_str()) ;
     m_res->addPath("gltfpath", m_gltfpath ); 
+
+    std::string g4codegendir = getIdPathPath( "g4codegen" ); 
+    m_g4codegendir = strdup(g4codegendir.c_str());
+    m_res->addDir("g4codegendir", m_g4codegendir ); 
+
+
 }
 
 
@@ -478,6 +496,12 @@ const char* BOpticksResource::getGLTFPath() const
 {
     return m_gltfpath ;
 }
+const char* BOpticksResource::getG4CodeGenDir() const 
+{
+    return m_g4codegendir ;
+}
+
+
 const char* BOpticksResource::getMetaPath() const 
 {
     return m_metapath ;

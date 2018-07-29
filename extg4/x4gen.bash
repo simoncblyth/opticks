@@ -7,10 +7,14 @@ X4Gen Usage
 ===================
 
 
-1. *OKX4Test* 
+1. *OKX4Test --g4codegen* 
 
-   Generate the x000.cc geometry serialization mains 
-   for each solid of the geometry into $TMP/x4gen/tests with : OKX4Test 
+   Generate the geometry serialization mains 
+   for each solid of the geometry beneath a directory 
+   like the below for live running:
+
+   /usr/local/opticks/geocache/OKX4Test_World0xc15cfc0_PV_g4live/g4ok_gltf/828722902b5e94dab05ac248329ffebe/1/g4codegen
+   (formerly $TMP/x4gen/tests)
 
 2. x4gen-- 
 
@@ -116,7 +120,9 @@ x4gen-ed(){
 
 
 x4gen-cd(){   cd $(x4gen-base) ; }
-x4gen-base(){ echo $TMP/x4gen ; }
+#x4gen-base(){ echo $TMP/x4gen ; }
+x4gen-base(){ echo  /usr/local/opticks/geocache/OKX4Test_World0xc15cfc0_PV_g4live/g4ok_gltf/828722902b5e94dab05ac248329ffebe/1/g4codegen ; }
+
 x4gen-name(){ echo x$(printf "%0.3d" ${1:-0}) ; }
 x4gen-path(){ echo $(x4gen-base)/tests/$(x4gen-name $1).cc ; }
 

@@ -28,7 +28,10 @@ void X4CSG::Serialize( const G4VSolid* solid, const char* csgpath ) // static
 
 const char* X4CSG::GenerateTestPath( const char* prefix, unsigned lvidx ) // static
 { 
-    std::string path = BFile::FormPath(prefix, "tests", BStr::concat("x", BStr::utoa(lvidx, 3, true), ".cc")); 
+    std::string dir = BFile::FormPath( prefix, "tests" ); 
+    std::string name = BStr::concat("x", BStr::utoa(lvidx, 3, true), ".cc") ; 
+    bool create = true ; 
+    std::string path = BFile::preparePath(dir.c_str(), name.c_str(), create); 
     return strdup(path.c_str()); 
 }
 
