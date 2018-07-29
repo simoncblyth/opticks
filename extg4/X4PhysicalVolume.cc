@@ -19,6 +19,7 @@
 #include "X4LogicalBorderSurfaceTable.hh"
 #include "X4LogicalSkinSurfaceTable.hh"
 #include "X4Solid.hh"
+#include "X4CSG.hh"
 #include "X4Mesh.hh"
 #include "X4Transform3D.hh"
 
@@ -34,6 +35,7 @@ using YOG::Maker ;
 #include "SDigest.hh"
 #include "PLOG.hh"
 #include "BStr.hh"
+#include "BFile.hh"
 #include "BOpticksKey.hh"
 
 class NSensor ; 
@@ -90,6 +92,8 @@ GGeo* X4PhysicalVolume::Convert(const G4VPhysicalVolume* const top)
  
     return gg ; 
 }
+
+
 
 
 X4PhysicalVolume::X4PhysicalVolume(GGeo* ggeo, const G4VPhysicalVolume* const top)
@@ -513,6 +517,9 @@ GVolume* X4PhysicalVolume::convertNode(const G4VPhysicalVolume* const pv, GVolum
          LOG(error) << " convert soIdx  " << nd->soIdx << " DONE "  ; 
 
 
+         X4CSG::GenerateTest( solid, X4::X4GEN_DIR , lvIdx ) ; 
+
+
          nnode* result = NTreeProcess<nnode>::Process(tree, nd->soIdx, lvIdx); 
 
          mh->csgnode = result ; 
@@ -542,6 +549,10 @@ GVolume* X4PhysicalVolume::convertNode(const G4VPhysicalVolume* const pv, GVolum
 
          assert( mh->csg ) ; 
          assert( mh->csg->isUsedGlobally() );
+
+
+         X4SolidRec rec(solid, tree, mh->csg, nd->soIdx, lvIdx );  
+         m_solidrec.push_back( rec ) ; 
   
          m_ggeo->add( mh->mesh ) ; 
      }
@@ -630,4 +641,34 @@ the source NPY arrays are also tacked on to the Mh instance.
 void X4PhysicalVolume::convertSolid( Mh* mh, const G4VSolid* const solid)
 {
 } 
+
+
+
+void X4PhysicalVolume::dumpSolidRec(const char* msg) const 
+{
+    LOG(error) << msg ; 
+    std::ostream& out = std::cout ;
+    solidRecTable( out ); 
+}
+
+void X4PhysicalVolume::writeSolidRec() const 
+{
+    std::string path = BFile::FormPath( X4::X4GEN_DIR, "solids.txt" ) ; 
+    std::ofstream out(path.c_str());
+    solidRecTable( out ); 
+}
+
+void X4PhysicalVolume::solidRecTable( std::ostream& out ) const 
+{
+    unsigned num_solid = m_solidrec.size() ; 
+    out << "written by X4PhysicalVolume::solidRecTable " << std::endl ; 
+    out << "num_solid " << num_solid << std::endl ; 
+    for(unsigned i=0 ; i < num_solid ; i++)
+    {
+        const X4SolidRec& rec = m_solidrec[i] ; 
+        out << rec.desc() << std::endl ; 
+    }
+}
+
+
 

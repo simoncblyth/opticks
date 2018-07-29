@@ -52,12 +52,14 @@ set(SOURCES
      
     X4CSG.cc
 
+    X4Gen.cc
     X4.cc
     X4Entity.cc
     X4SolidBase.cc
     X4Solid.cc
     X4Mesh.cc
     X4SolidList.cc
+    X4SolidRec.cc
 
     X4Material.cc
     X4MaterialTable.cc
@@ -91,12 +93,14 @@ set(HEADERS
 
     X4CSG.hh
 
+    X4Gen.hh
     X4.hh
     X4Entity.hh
     X4SolidBase.hh
     X4Solid.hh
     X4Mesh.hh
     X4SolidList.hh
+    X4SolidRec.hh
 
     X4Material.hh
     X4MaterialTable.hh

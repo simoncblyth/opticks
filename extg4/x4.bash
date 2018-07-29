@@ -166,3 +166,134 @@ x4-csg(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>&1 1>/dev/null) x4-csg-- 
 ## TESTCONFIG is a capture of stderr with stdout ignored 
 
 
+
+
+
+x4-nnt-paths(){
+    local arg
+    for arg in $* 
+    do
+        echo $(x4-nnt-path $arg)
+    done
+}
+
+x4-nnt-vi(){ 
+   [[ $# -eq 0 ]] && echo expecting one or more lvidx integer arguments && return 
+   local paths=$(x4-nnt-paths $*)
+   vi $paths
+}
+
+
+
+x4-gen-cd(){   cd $(x4-gen-base) ; }
+x4-gen-base(){ echo $TMP/x4gen ; }
+x4-gen-name(){ echo x$(printf "%0.3d" ${1:-0}) ; }
+x4-gen-path(){ echo $(x4-gen-base)/tests/$(x4-gen-name $1).cc ; }
+
+x4-gen-hh(){ cat << EOC
+
+#pragma once
+struct X4Gen 
+{
+    X4Gen(); 
+};
+
+EOC
+}
+
+x4-gen-cc(){ cat << EOC
+
+#include "X4Gen.hh"
+#include "PLOG.hh"
+
+X4Gen::X4Gen()
+{
+   LOG(info) << "." ; 
+}
+
+EOC
+}
+
+
+x4-gen-CMakeLists(){ cat << EOH
+
+cmake_minimum_required(VERSION 3.5 FATAL_ERROR)
+set(name X4Gen)
+project(\${name} VERSION 0.1.0)
+include(OpticksBuildOptions)
+
+find_package(ExtG4 REQUIRED CONFIG)  
+
+set( SOURCES X4Gen.cc )
+set( HEADERS X4Gen.hh )
+    
+add_library( \${name}  SHARED \${SOURCES} \${HEADERS} )
+target_link_libraries( \${name} PUBLIC
+    Opticks::ExtG4
+)
+
+target_include_directories( \${name} PUBLIC
+   $<BUILD_INTERFACE:\${CMAKE_CURRENT_SOURCE_DIR}>
+)
+
+target_compile_definitions( \${name} PUBLIC OPTICKS_X4GEN )
+
+install(FILES \${HEADERS}  DESTINATION \${CMAKE_INSTALL_INCLUDEDIR})
+bcm_deploy(TARGETS \${name} NAMESPACE Opticks:: SKIP_HEADER_INSTALL)
+
+add_subdirectory(tests)
+
+EOH
+}
+
+x4-gen-CMakeLists-tests-head(){ cat << EOH
+
+cmake_minimum_required(VERSION 3.5 FATAL_ERROR)
+set(name X4GenTest)
+project(\${name} VERSION 0.1.0)
+include(OpticksBuildOptions)
+
+set(TEST_SOURCES
+
+EOH
+}
+
+x4-gen-CMakeLists-tests-tail(){ cat << EOT
+)
+foreach(TEST_CC_SRC \${TEST_SOURCES})
+    get_filename_component(TGT \${TEST_CC_SRC} NAME_WE)
+    add_executable(\${TGT} \${TEST_CC_SRC})
+
+    set(testname \${name}.\${TGT})
+    add_test(\${testname} \${TGT})
+
+    target_link_libraries(\${TGT} X4Gen )
+    install(TARGETS \${TGT} DESTINATION lib)
+endforeach()
+
+EOT
+}
+
+x4-gen-idx(){ cat << EOI
+1
+EOI
+}
+
+x4-gen(){
+   local base=$(x4-gen-base)
+   mkdir -p $base/tests
+
+   x4-gen-hh > $base/X4Gen.hh
+   x4-gen-cc > $base/X4Gen.cc
+   x4-gen-CMakeLists > $base/CMakeLists.txt
+
+   x4-gen-CMakeLists-tests-head > $base/tests/CMakeLists.txt
+
+   local idx 
+   x4-gen-idx | while read idx ; 
+   do
+       echo $(x4-gen-name $idx).cc >> $base/tests/CMakeLists.txt 
+   done
+
+   x4-gen-CMakeLists-tests-tail >> $base/tests/CMakeLists.txt
+}

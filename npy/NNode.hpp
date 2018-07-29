@@ -280,6 +280,7 @@ struct NPY_API nnode
 
     void dump_g4code() const ;
     void write_g4code(const char* path) const ;
+    static void to_g4code(const nnode* root, std::ostream& out, unsigned depth );
     static void to_g4code_r(const nnode* node, std::ostream& out, unsigned depth );
 
 };

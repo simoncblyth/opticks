@@ -717,12 +717,18 @@ void NCSG::export_planes(nnode* node, NPY<float>* _planes)
     assert(node->planes.size() > 0);  
 
     unsigned planeNum = node->planes.size() ;
+    unsigned planeIdx0 = _planes->getNumItems();   // 0-based idx
+    unsigned planeIdx1 = planeIdx0 + 1 ;           // 1-based idx
 
+    LOG(error) 
+         << " export "
+         << " planeIdx1 " << planeIdx1 
+         << " planeNum " << planeNum
+         ;
 
-    unsigned planeIdx0 = _planes->getNumItems(); 
-
-    node->setPlaneIdx( planeIdx0 );
+    node->setPlaneIdx( planeIdx1 );  
     node->setPlaneNum( planeNum );   // directly sets into node param
+
     assert( planeNum > 3); 
 
     for(unsigned i=0 ; i < planeNum ; i++)

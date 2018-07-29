@@ -186,14 +186,14 @@ std::string X4SolidBase::GenInstanciate(const char* cls, const char* identifier,
        <<  "\""
        << name 
        << "\"" 
-       << "," 
+       << ", " 
        ;
 
     unsigned npar = param.size(); 
     for(unsigned i=0 ; i < npar ; i++) 
     { 
        ss << param[i] ;     
-       if( i < npar - 1) ss << " , " ;
+       if( i < npar - 1) ss << ", " ;
     } 
 
     ss << ") ;" ; 

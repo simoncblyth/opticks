@@ -1,5 +1,6 @@
 #include <cstring>
 
+#include "SSys.hh"
 #include "BBnd.hh"
 #include "BStr.hh"
 #include "BFile.hh"
@@ -25,6 +26,9 @@ bool NCSGList::ExistsDir(const char* dir)
 NCSGList* NCSGList::Load(const char* csgpath, int verbosity, bool checkmaterial)
 {
     if(!csgpath) return NULL ; 
+
+    if(verbosity < 0 ) verbosity = SSys::getenvint("VERBOSE", 0 ) ; 
+
 
     if(!NCSGList::ExistsDir(csgpath))
     {

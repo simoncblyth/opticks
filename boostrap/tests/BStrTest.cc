@@ -346,6 +346,17 @@ void test_Split1(const char* keys, unsigned expected_nkey )
     assert( expected );
 }
 
+void test_utoa()
+{
+    LOG(info) << "." ; 
+    int width = 3 ; 
+    bool zeropad = true ; 
+    for(unsigned i=0 ; i < 2000 ; i+= 100 )
+    {
+        std::cout << i << " : " << BStr::utoa(i, width, zeropad ) << std::endl ; 
+    }
+}
+
 
 
 
@@ -372,11 +383,13 @@ int main(int argc, char** argv)
     test_usplit();
     test_LexicalCast();
     test_Split();
-*/
 
     test_Split1( "RINDEX,ABSLENGTH,RAYLEIGH,REEMISSIONPROB", 4 );
     test_Split1( "RINDEX,,,", 3 );
     test_Split1( "RINDEX,,, ", 4 );
+*/
+
+    test_utoa();
 
     return 0 ; 
 }

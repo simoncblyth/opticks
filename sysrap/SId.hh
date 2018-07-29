@@ -26,6 +26,7 @@ struct SYSRAP_API SId
     void reset(); 
 
     const char* identifiers ; 
+    int         len ; 
     int         idx ; 
     int         cycle ; 
 };

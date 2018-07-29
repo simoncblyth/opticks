@@ -6,6 +6,8 @@
 #include "BStr.hh"
 #include "BFile.hh"
 
+const char* X4::X4GEN_DIR = "$TMP/x4gen" ; 
+
 const char* X4::ShortName( const std::string& name )
 {
     char* shortname = BStr::trimPointerSuffixPrefix(name.c_str(), NULL) ;  

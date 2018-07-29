@@ -50,14 +50,15 @@ void X4Solid::SetVerbosity(unsigned verbosity) // static
     fVerbosity = verbosity ; 
 }
 
-nnode* X4Solid::Convert(const G4VSolid* solid)
+nnode* X4Solid::Convert(const G4VSolid* solid, const char* boundary)
 {
     if(fVerbosity > 0) LOG(error) << " convert " << solid->GetName() ; 
 
     bool top = true ; 
     X4Solid xs(solid, top);
     nnode* root = xs.root(); 
-    root->update_gtransforms();  
+    root->update_gtransforms(); 
+    if(boundary) root->boundary = boundary ; 
     return root ; 
 }
 
@@ -979,7 +980,7 @@ void X4Solid::convertPolycone_g4code()
     unsigned numZPlanes = ph->Num_z_planes ; 
 
     param.push_back( X4::Value(phiStart) ); 
-    param.push_back( X4::Value(phiTotal) ); 
+    param.push_back( phiTotal < CLHEP::twopi ? X4::Value(phiTotal) : "CLHEP::twopi" ); 
     param.push_back( X4::Value(numZPlanes) ); 
 
     const char* zPlane_id = OTHER_ID->get(false) ; 

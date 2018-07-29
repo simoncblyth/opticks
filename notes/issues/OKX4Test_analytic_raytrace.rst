@@ -15,6 +15,25 @@ Summary
     is not the full story 
 
 
+July 29 
+----------
+
+::
+
+    OKX4Test
+
+
+    2018-07-29 08:59:42.249 INFO  [5044504] [Interactor::key_pressed@408] Interactor::key_pressed O nextRenderStyle 
+    2018-07-29 08:59:42.388 INFO  [5044504] [OTracer::trace_@128] OTracer::trace  entry_index 0 trace_count 0 resolution_scale 1 size(2880,1704) ZProj.zw (-1.04459,-2229.5) front 0.8756,0.0629,-0.4789
+    2018-07-29 08:59:42.388 INFO  [5044504] [OContext::close@241] OContext::close numEntryPoint 1
+    2018-07-29 08:59:42.399 INFO  [5044504] [OContext::close@245] OContext::close setEntryPointCount done.
+    2018-07-29 08:59:42.423 INFO  [5044504] [OContext::close@251] OContext::close m_cfg->apply() done.
+    libc++abi.dylib: terminating with uncaught exception of type optix::Exception: Unknown error (Details: Function "RTresult _rtContextLaunch2D(RTcontext, unsigned int, RTsize, RTsize)" caught exception: Encountered a CUDA error: cudaDriver().CuMemcpyDtoHAsync( dstHost, srcDevice, byteCount, hStream.get() ) returned (700): Illegal address)
+    Abort trap: 6
+    epsilon:okg4 blyth$ 
+
+
+
 Ideas to try
 ----------------
 
@@ -22,6 +41,10 @@ Ideas to try
 2. get opticks-nnt working again, extend it by generating 
    some G4 C++ that creates each lvIdx, and use that to
    implement 248 single lv visualizations   
+
+   * are pursuing this approach over in X4 
+
+
 3. non-graphical ray tracing (snaps) of geometry 
 4. keep plogging away at matching the new direct workflow buffers with the old ones
 

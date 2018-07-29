@@ -156,10 +156,18 @@ const char* BStr::ctoa( char c )
 }
 
 
-const char* BStr::utoa( unsigned u )
+const char* BStr::utoa( unsigned u, int width, bool zeropad)
 {
     std::stringstream ss ; 
+
+    if(width > -1 )
+    ss << std::setw(width) ; 
+
+    if(zeropad)
+    ss << std::setfill('0') ; 
+
     ss << u ; 
+
     std::string s = ss.str() ;
     return strdup(s.c_str());
 }

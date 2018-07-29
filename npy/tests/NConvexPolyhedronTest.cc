@@ -1,3 +1,5 @@
+#include <iostream>
+#include <iomanip>
 
 #include "SSys.hh"
 #include "NCSG.hpp"
@@ -8,11 +10,7 @@
 #include "NSceneConfig.hpp"
 #include "NNodePoints.hpp"
 
-#include <iostream>
-#include <iomanip>
-
-#include "PLOG.hh"
-#include "NPY_LOG.hh"
+#include "OPTICKS_LOG.hh"
 
 
 
@@ -219,8 +217,7 @@ void test_transform_planes(nconvexpolyhedron* cpol )
 
 int main(int argc, char** argv)
 {
-    PLOG_(argc, argv);
-    NPY_LOG__ ; 
+    OPTICKS_LOG(argc, argv);
 
     //const char* path = argc > 1 ?  argv[1] : "$TMP/tboolean-trapezoid--/1" ;
     // nconvexpolyhedron*  cpol = test_load(path)

@@ -24,6 +24,9 @@ class GVolume ;
 class Opticks ; 
 class OpticksQuery ; 
 
+#include "X4SolidRec.hh" 
+
+
 namespace YOG 
 {
    struct Sc ; 
@@ -70,6 +73,12 @@ class X4_API X4PhysicalVolume
         X4PhysicalVolume(GGeo* ggeo, const G4VPhysicalVolume* const pv); 
         GGeo* getGGeo();
         void  saveAsGLTF(int root=0, const char* path=NULL);
+
+    public:
+        void dumpSolidRec(const char* msg="X4PhysicalVolume::dumpSolidRec") const ;
+        void writeSolidRec() const ;
+    private:
+        void solidRecTable( std::ostream& out ) const ;
     private:
         void init();
     private:
@@ -109,7 +118,7 @@ class X4_API X4PhysicalVolume
 
         std::vector<const G4LogicalVolume*> m_lvlist ; 
 
-        
+        std::vector<X4SolidRec>   m_solidrec ;          
 
 
 
