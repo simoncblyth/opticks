@@ -14,6 +14,16 @@ Maybe this package should be split into two portions:
 * application specifics 
 * generic functionality 
 
+
+References
+-------------
+
+Description of the NPY file format
+
+* https://docs.scipy.org/doc/numpy/reference/generated/numpy.lib.format.html#module-numpy.lib.format
+
+
+
 High Sierra Warnings, Xcode 92 
 ------------------------------------------
 

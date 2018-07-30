@@ -1,4 +1,5 @@
-oks-vi(){ vi $(opticks-home)/bin/oks.bash ; }
+oks-source(){ echo $BASH_SOURCE ; }
+oks-vi(){ vi $(oks-source) ; }
 oks-env(){ echo -n ; }
 oks-usage(){  cat << \EOU
 
@@ -21,6 +22,16 @@ oks-bash
 
 oks-txt
     edit CMakeLists.txt for interal projects 
+
+
+Refs to put into okref ?
+---------------------------
+
+* http://usqcd.jlab.org/usqcd-docs/chroma/HackLatt12/ChromaAndGPUs.pdf
+ 
+  GPU/CPUs : Amdahl's law  
+
+* https://en.wikipedia.org/wiki/Amdahl%27s_law
 
 
 

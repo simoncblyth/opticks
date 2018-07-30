@@ -2437,8 +2437,9 @@ NPYBase::Type_t NPY<int>::type = INT ;
 
 template<>
 NPYBase::Type_t NPY<short>::type = SHORT ;
-//template<>
-//NPYBase::Type_t NPY<char>::type = CHAR ;
+
+template<>
+NPYBase::Type_t NPY<char>::type = CHAR ;
 
 
 
@@ -2468,8 +2469,8 @@ template<>
 //double NPY<double>::UNSET = DBL_MAX ;
 double NPY<double>::UNSET = 0 ;
 
-//template<>
-//char NPY<char>::UNSET = 0 ;
+template<>
+char NPY<char>::UNSET = 0 ;
 
 template<>
 unsigned char NPY<unsigned char>::UNSET = 0 ;
@@ -2497,7 +2498,7 @@ template class NPY<float>;
 template class NPY<double>;
 template class NPY<short>;
 template class NPY<int>;
-//template class NPY<char>;
+template class NPY<char>;
 template class NPY<unsigned char>;
 template class NPY<unsigned int>;
 template class NPY<unsigned long long>;

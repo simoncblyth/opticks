@@ -19,6 +19,8 @@ class NPYSpec ;
 class NPY_API NPYBase {
    public:
        typedef enum { FLOAT, SHORT, DOUBLE, INT, UINT, CHAR, UCHAR, ULONGLONG} Type_t ;
+       static NPYBase* Load( const char* path, NPYBase::Type_t type );
+
       // static const char* DEFAULT_DIR_TEMPLATE  ; 
 
        static const char* FLOAT_ ; 
@@ -55,6 +57,8 @@ class NPY_API NPYBase {
        bool hasSameShape(NPYBase* other, unsigned fromdim=0) const ;
        bool hasShape(int ni, int nj=0, int nk=0, int nl=0, int nm=0) const ; // -1 for anything 
        bool hasItemShape(int nj, int nk=0, int nl=0, int nm=0) const ;
+  
+       static bool HasShape( NPYBase* a, int ni, int nj=0, int nk=0, int nl=0, int nm=0) ; // -1 for anything 
 
        bool hasShapeSpec(NPYSpec* spec) const ; 
        bool hasItemSpec(NPYSpec* spec) const ; 

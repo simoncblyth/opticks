@@ -908,7 +908,7 @@ void NCSG::export_node(nnode* node, unsigned idx)
 
     export_gtransform(node);
 
-    NPY<float>* _planes = m_csgdata->getPlaneBuffer() ; 
+    NPY<float>* _planes = m_csgdata->getSrcPlaneBuffer() ; 
     export_planes(node, _planes);
   
     // crucial 2-step here, where m_nodes gets totally rewritten

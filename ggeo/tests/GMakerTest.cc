@@ -5,6 +5,7 @@
 
 #include "NGLM.hpp"
 #include "NCSG.hpp"
+#include "NPYBase.hpp"
 #include "NCSGData.hpp"
 #include "NNode.hpp"
 #include "NNodeSample.hpp"

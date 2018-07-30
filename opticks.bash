@@ -1309,6 +1309,7 @@ g4x-(){             . $(opticks-home)/examples/g4x.bash && g4x-env $* ; }
 
 ### opticks launchers ########
 
+okr-(){             . $(opticks-home)/bin/okr.bash && okr-env $* ; }
 oks-(){             . $(opticks-home)/bin/oks.bash && oks-env $* ; }
 winimportlib-(){    . $(opticks-home)/bin/winimportlib.bash && winimportlib-env $* ; }
 ggv-(){             . $(opticks-home)/bin/ggv.bash && ggv-env $* ; }

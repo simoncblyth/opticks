@@ -2,6 +2,7 @@
 #include <boost/algorithm/string/replace.hpp>
 
 #include "NGLM.hpp"
+#include "NPY.hpp"
 #include "NPYBase.hpp"
 
 #include <cstring>
@@ -52,14 +53,31 @@ const char* NPYBase::TypeName(Type_t type)
 }
 
 
+NPYBase* NPYBase::Load( const char* path, NPYBase::Type_t type )
+{
+    // hmm is there some way to peek ahead inside the file and identify its 
+    // type without having to specify ?
 
+    NPYBase* buffer = NULL ; 
+    switch(type)
+    {
+        case FLOAT:     buffer = NPY<float>::load(path)               ; break ; 
+        case SHORT:     buffer = NPY<short>::load(path)               ; break ; 
+        case DOUBLE:    buffer = NPY<double>::load(path)              ; break ; 
+        case INT:       buffer = NPY<int>::load(path)                 ; break ; 
+        case UINT:      buffer = NPY<unsigned>::load(path)            ; break ; 
+        case CHAR:      buffer = NPY<char>::load(path)                ; break ; 
+        case UCHAR:     buffer = NPY<unsigned char>::load(path)       ; break ; 
+        case ULONGLONG: buffer = NPY<unsigned long long>::load(path)  ; break ; 
+    } 
+    return buffer ; 
+}
 
 std::string NPYBase::path(const char* dir, const char* reldir, const char* name)
 {
     std::string path = BOpticksEvent::path(dir, reldir, name);
     return path ; 
 }
-
 
 std::string NPYBase::path(const char* dir, const char* name)
 {
@@ -484,6 +502,12 @@ bool NPYBase::hasSameShape(NPYBase* other, unsigned fromdim) const
     unsigned int n = a.size();
     for(unsigned int i=fromdim ; i < n ; i++) if(a[i] != b[i]) return false ;
     return true ; 
+}
+
+
+bool NPYBase::HasShape(NPYBase* a , int ni, int nj, int nk, int nl, int nm) 
+{
+    return a ? a->hasShape(ni, nj, nk, nl, nm) : true ;  
 }
 
 bool NPYBase::hasShape(int ni, int nj, int nk, int nl, int nm) const 

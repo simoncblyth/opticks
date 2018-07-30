@@ -4,6 +4,120 @@ FIXED :  X4SolidLoadTest_plane_imports_failing
 * FIXED : an off-by-one bug 
 
 
+
+bug post-mortem 
+------------------
+
+Suspicion : dormant off-by-one bug surfaced in direct workflow, 
+because that brought into use some ancient code ?
+
+
+Checking old version of NCSG.cpp it uses the dirty in memory overwrite 
+of m_nodes with the m_planes being left as they were loaded from the
+python serialization.  
+
+* https://bitbucket.org/simoncblyth/opticks/src/3aa969a393617f34374fe3654126363aa0995c60/npy/NCSG.cpp?at=default
+
+
+python serialization very clearly uses 1-based for planes and transforms
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The analytic gdml2gltf workflow lays down the 
+planes and transforms with 1-based indexing in analytic/csg.py:serialize::
+
+     669     def serialize(self, suppress_identity=False):
+     670         """
+     671         Array is sized for a complete tree, empty slots stay all zero
+     672         """
+     673         if not self.is_root: self.analyse()
+     674         buf = np.zeros((self.totnodes,self.NJ,self.NK), dtype=np.float32 )
+     675 
+     676         transforms = []
+     677         planes = []
+     678 
+     679         def serialize_r(node, idx):
+     680             """
+     681             :param node:
+     682             :param idx: 0-based complete binary tree index, left:2*idx+1, right:2*idx+2 
+     683             """
+     684             trs = node.transform
+     685             if trs is None and suppress_identity == False:
+     686                 trs = np.eye(4, dtype=np.float32)
+     687                 # make sure root node always has a transform, incase of global placement 
+     688                 # hmm root node is just an op-node it doesnt matter, need transform slots for all primitives 
+     689             pass
+     690 
+     691             if trs is None:
+     692                 itransform = 0
+     693             else:
+     694                 itransform = len(transforms) + 1  # 1-based index pointing to the transform
+     695                 transforms.append(trs)
+     696             pass
+     697             log.info(" itransform : %s " % itransform )
+     698 
+     699             node_planes = node.planes
+     700             if len(node_planes) == 0:
+     701                 planeIdx = 0
+     702                 planeNum = 0
+     703             else:
+     704                 planeIdx = len(planes) + 1   # 1-based index pointing to the first plane for the node
+     705                 planeNum = len(node_planes)
+     706                 planes.extend(node_planes)
+     707             pass
+     708             log.debug("serialize_r idx %3d itransform %2d planeIdx %2d " % (idx, itransform, planeIdx))
+     709 
+     710             buf[idx] = node.as_array(itransform, planeIdx, planeNum)
+     711 
+     712             if node.left is not None and node.right is not None:
+     713                 serialize_r( node.left,  2*idx+1)
+     714                 serialize_r( node.right, 2*idx+2)
+     715             pass
+     716         pass
+     717 
+     718         serialize_r(self, 0)
+     719 
+     720         tbuf = np.vstack(transforms).reshape(-1,4,4) if len(transforms) > 0 else None
+     721         pbuf = np.vstack(planes).reshape(-1,4) if len(planes) > 0 else None
+     722 
+     723         log.debug("serialized CSG of height %2d into buf with %3d nodes, %3d transforms, %3d planes, meta %r " % (self.height, len(buf), len(transforms), len(planes), self.meta ))
+     724         assert tbuf is not None
+     725 
+     726         return buf, tbuf, pbuf
+     727 
+
+::
+
+    1020     def as_array(self, itransform=0, planeIdx=0, planeNum=0):
+    1021         """
+    1022         Both primitive and internal nodes:
+    1023 
+    1024         * q2.u.w : CSG type code eg CSG_UNION, CSG_DIFFERENCE, CSG_INTERSECTION, CSG_SPHERE, CSG_BOX, ... 
+    1025         * q3.u.w : 1-based transform index, 0 for None
+    1026 
+    1027         Primitive nodes only:
+    1028 
+    1029         * q0 : 4*float parameters eg center and radius for sphere
+    1030 
+    1031         """
+    1032         arr = np.zeros( (self.NJ, self.NK), dtype=np.float32 )
+    ....
+    1060         if len(self.planes) > 0:
+    1061             assert planeIdx > 0 and planeNum > 3, (planeIdx, planeNum)  # 1-based plane index
+    1062             arr.view(np.uint32)[Q0,X] = planeIdx   # cf NNode::planeIdx
+    1063             arr.view(np.uint32)[Q0,Y] = planeNum   # cf NNode::planeNum
+    1064         pass
+    1065 
+    1066         arr.view(np.uint32)[Q2,W] = self.typ
+    1067 
+    1068         return arr
+
+
+
+
+
+
+
+
 reproduce plane loading issue in X4SolidLoadTest
 ---------------------------------------------------
 

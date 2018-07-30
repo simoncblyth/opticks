@@ -728,6 +728,7 @@ template BRAP_API double   BStr::LexicalCast(const char*, double  , bool& );
 
 
 template BRAP_API unsigned BStr::Split(std::vector<unsigned long long>& , const char*, char );
+template BRAP_API unsigned BStr::Split(std::vector<char>& ,               const char*, char );
 template BRAP_API unsigned BStr::Split(std::vector<unsigned char>& ,      const char*, char );
 template BRAP_API unsigned BStr::Split(std::vector<short>& ,              const char*, char );
 template BRAP_API unsigned BStr::Split(std::vector<unsigned>& ,           const char*, char );

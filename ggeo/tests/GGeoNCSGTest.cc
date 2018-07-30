@@ -1,3 +1,5 @@
+
+#include "NPYBase.hpp"
 #include "NCSGData.hpp"
 #include "OPTICKS_LOG.hh"
 

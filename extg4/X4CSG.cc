@@ -8,6 +8,7 @@
 
 #include "NNode.hpp"
 #include "NCSG.hpp"
+#include "NPYBase.hpp"
 #include "NCSGData.hpp"
 #include "NCSGList.hpp"
 

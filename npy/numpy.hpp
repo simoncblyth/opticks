@@ -114,6 +114,9 @@ struct DescriptorDataType<double> { static const char value = 'f'; };
 template<>
 struct DescriptorDataType<float> { static const char value = 'f'; };
 
+
+template<>
+struct DescriptorDataType<char> { static const char value = 'i'; };
 template<>
 struct DescriptorDataType<short> { static const char value = 'i'; };
 template<>
