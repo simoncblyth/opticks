@@ -124,6 +124,12 @@ glm::uvec4 NNodePoints::collect_surface_points()
 
     glm::uvec4 tots ; 
 
+    
+    if(m_verbosity > 2)
+    LOG(error) << "before while" 
+               << " num_composite_points " << num_composite_points
+               << " target " << m_target 
+             ; 
     while( num_composite_points < m_target && countdown-- )
     {
         clear();
@@ -142,6 +148,10 @@ glm::uvec4 NNodePoints::collect_surface_points()
         level++ ; 
         num_composite_points = m_composite_points.size() ;
     }
+    if(m_verbosity > 2)
+    LOG(error) << "after while" 
+               << " num_composite_points " << num_composite_points
+                ; 
 
     return tots ; 
 }
@@ -165,15 +175,12 @@ glm::uvec4 NNodePoints::collectCompositePoints( unsigned level, int margin , uns
     {
         nnode* prim = m_primitives[prim_idx] ; 
 
-        
         if(m_verbosity > 4) 
-        {
         LOG(info) << "NNodePoints::collectCompositePoints"
                   << " prim_idx " << prim_idx 
                   << " level " << level
                   << " margin " << margin
                   ;
-        }
 
 
         prim->collectParPoints(prim_idx, level, margin, FRAME_GLOBAL , m_verbosity );
@@ -200,7 +207,6 @@ glm::uvec4 NNodePoints::collectCompositePoints( unsigned level, int margin , uns
 glm::uvec4 NNodePoints::selectBySDF(const nnode* prim, unsigned prim_idx, unsigned pointmask ) 
 {
     // this is invoked from root level, so no need to pass down a verbosity 
-
     std::function<float(float,float,float)> _sdf = m_root->sdf() ;
 
     typedef std::vector<glm::vec3> VV ; 
@@ -272,7 +278,6 @@ glm::uvec4 NNodePoints::selectBySDF(const nnode* prim, unsigned prim_idx, unsign
                << std::endl
                ; 
     }
-
 
     std::copy( _points.begin(), _points.end(), std::back_inserter(m_composite_points) );
     std::copy( _coords.begin(), _coords.end(), std::back_inserter(m_composite_coords) );

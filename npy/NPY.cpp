@@ -818,9 +818,17 @@ NBufferSpec NPY<T>::getBufferSpec() const
 }
 
 
+template <typename T>
+NPY<T>* NPY<T>::make(unsigned int ni, const NPYSpec* itemspec)
+{
+    NPYSpec* argspec = itemspec->clone(); 
+    argspec->setNumItems(ni); 
+    return NPY<T>::make( argspec ) ;  
+}
+
 
 template <typename T>
-NPY<T>* NPY<T>::make(NPYSpec* argspec)
+NPY<T>* NPY<T>::make(const NPYSpec* argspec)
 {
     std::vector<int> shape ; 
     for(unsigned int x=0 ; x < 4 ; x++)
@@ -831,7 +839,7 @@ NPY<T>* NPY<T>::make(NPYSpec* argspec)
     }
 
     NPY<T>* npy = make(shape);
-    NPYSpec* npyspec = npy->getShapeSpec(); 
+    const NPYSpec* npyspec = npy->getShapeSpec(); 
 
     bool spec_match = npyspec->isEqualTo(argspec) ;
 

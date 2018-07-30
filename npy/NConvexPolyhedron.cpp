@@ -75,7 +75,7 @@ float nconvexpolyhedron::operator()(float x, float y, float z) const
         if(d > dmax) dmax = d ;      
     }
 
-    if(verbosity > 2)
+    if(verbosity_ > 2)
     std::cout << std::endl ; 
 
     float sd = dmax ;
@@ -360,6 +360,49 @@ void nconvexpolyhedron::dump_uv_basis(const char* msg) const
 
 
 
+
+
+nconvexpolyhedron* nconvexpolyhedron::make_trapezoid_cube()
+{
+   /*
+    z-order verts
+
+
+                  6----------7
+                 /|         /|
+                / |        / |
+               4----------5  |
+               |  |       |  |                       
+               |  |       |  |         Z    
+               |  2-------|--3         |  Y
+               | /        | /          | /
+               |/         |/           |/
+               0----------1            +------ X
+                         
+
+    x1: x length at -z
+    y1: y length at -z
+
+    x2: x length at +z
+    y2: y length at +z
+
+    z:  z length
+
+    */
+
+    float z  = 200 ; 
+    float x1 = 200 ; 
+    float y1 = 200 ; 
+    float x2 = 200 ; 
+    float y2 = 200 ; 
+  
+    nconvexpolyhedron* cpol = nconvexpolyhedron::make_trapezoid( z,  x1,  y1,  x2,  y2 );
+
+    nbbox bb = cpol->bbox_model();
+    std::cout << "bbox_model " << bb.desc() << std::endl ; 
+
+    return cpol ; 
+}
 
 
 

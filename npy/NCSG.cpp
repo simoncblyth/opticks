@@ -720,13 +720,14 @@ void NCSG::export_planes(nnode* node, NPY<float>* _planes)
     unsigned planeIdx0 = _planes->getNumItems();   // 0-based idx
     unsigned planeIdx1 = planeIdx0 + 1 ;           // 1-based idx
 
-/*
+    if( node->verbosity > 2 )
     LOG(error) 
-         << " export "
+         << " export_planes "
+         << " node.verbosity " << node->verbosity
          << " planeIdx1 " << planeIdx1 
          << " planeNum " << planeNum
+         << " _planes.shape " << _planes->getShapeString() 
          ;
-*/
 
     node->setPlaneIdx( planeIdx1 );  
     node->setPlaneNum( planeNum );   // directly sets into node param
@@ -805,7 +806,12 @@ void NCSG::check_r(nnode* node)
 
 void NCSG::export_()
 {
+    LOG(error) << "export_ START " ; 
+
     m_csgdata->prepareForExport() ;  //  create node buffer 
+
+    LOG(error) << "export_ prepare DONE " ; 
+
     NPY<float>* _nodes = m_csgdata->getNodeBuffer() ; 
     assert(_nodes);
 
@@ -814,8 +820,13 @@ void NCSG::export_()
               << " num_nodes " << getNumNodes()
               << " height " << getHeight()
               ;
+
     export_idx(); 
+
+
     export_r(m_root, 0);
+   
+    LOG(error) << "export_ DONE " ; 
 }
 
 
@@ -827,6 +838,8 @@ void NCSG::export_idx()
 
 void NCSG::export_r(nnode* node, unsigned idx)
 {
+    LOG(error) << "export_r START  " ; 
+
     export_node( node, idx) ; 
     if(m_adopted) export_srcnode( node, idx) ; 
 
@@ -835,12 +848,15 @@ void NCSG::export_r(nnode* node, unsigned idx)
         export_r(node->left,  2*idx + 1);
         export_r(node->right, 2*idx + 2);
     }  
+    LOG(error) << "export_r DONE  " ; 
 }
 
 
 
 void NCSG::export_srcnode(nnode* node, unsigned idx)
 {
+    LOG(info) << "export_srcnode" ; 
+
     assert( m_adopted ) ; 
 
     NPY<float>* _srcnodes = m_csgdata->getSrcNodeBuffer(); 
@@ -854,6 +870,8 @@ void NCSG::export_srcnode(nnode* node, unsigned idx)
  
     npart pt = node->srcpart();
     _srcnodes->setPart( pt, idx );   // writes 4 quads to buffer 
+
+    LOG(info) << "export_srcnode DONE " ; 
 }
 
 
@@ -895,11 +913,10 @@ these as idxs get into that buffer
 
 **/
 
-
-
-
 void NCSG::export_node(nnode* node, unsigned idx)
 {
+    LOG(error) << "export_node START " ; 
+
     assert(idx < getNumNodes() ); 
     LOG(trace) << "NCSG::export_node"
               << " idx " << idx 
@@ -919,6 +936,9 @@ void NCSG::export_node(nnode* node, unsigned idx)
     NPY<float>* _nodes = m_csgdata->getNodeBuffer(); 
 
     _nodes->setPart( pt, idx);  // writes 4 quads to buffer
+
+    LOG(error) << "export_node DONE  " ; 
+
 }
 
 /**
@@ -986,6 +1006,7 @@ std::string NCSG::brief() const
        << " surfpoints " << std::setw(4) << getNumSurfacePoints() 
        << " so " << std::setw(40) << std::left << soname()
        << " lv " << std::setw(40) << std::left << lvname()
+       << " . " 
        ;
 
     return ss.str();  
@@ -1072,11 +1093,13 @@ NCSG* NCSG::Adopt(nnode* root, const char* config_, unsigned soIdx, unsigned lvI
 
 NCSG* NCSG::Adopt(nnode* root, const NSceneConfig* config, unsigned soIdx, unsigned lvIdx )
 {
+    LOG(error) << " Adopt START " ; 
     nnode::Set_parent_links_r(root, NULL);
 
     root->set_treeidx(lvIdx) ;  // without this no nudging is done
 
     NCSG* tree = new NCSG(root);
+    LOG(error) << " Adopt NCSG(root) DONE " ; 
 
     tree->setConfig(config);
     tree->setSOIdx(soIdx); 
@@ -1091,10 +1114,14 @@ NCSG* NCSG::Adopt(nnode* root, const NSceneConfig* config, unsigned soIdx, unsig
                ;
     */
 
+    LOG(error) << " Adopt export_  " ; 
     tree->export_();        // node tree -> complete binary tree m_nodes buffer
+    LOG(error) << " Adopt export_ DONE  " ; 
     assert( tree->getGTransformBuffer() );
 
+    LOG(error) << " Adopt collect_surface_points " ; 
     tree->collect_surface_points();
+    LOG(error) << " Adopt collect_surface_points DONE " ; 
 
     return tree ; 
 }
@@ -1141,18 +1168,14 @@ unsigned NCSG::getNumTriangles() const
 
 glm::uvec4 NCSG::collect_surface_points() 
 {
-    //LOG(info) << "NCSG::collect_surface_points START " << brief() ; 
+    if(m_verbosity > 3 )
+    LOG(info) << "NCSG::collect_surface_points START " << brief() ; 
 
     if(!m_points) 
     {
-        //LOG(info) << "NCSG::collect_surface_points points ctor " ; 
         m_points = new NNodePoints(m_root, m_config );
     } 
-
     glm::uvec4 tots = m_points->collect_surface_points();
-
-
-    //LOG(info) << "NCSG::collect_surface_points DONE " << m_points->desc()  ; 
     return tots ; 
 }
 

@@ -98,7 +98,9 @@ class NPY_API NPY : public NPYBase {
        // NB favor vec4 over vec3 for better GPU performance (due to memory coalescing/alignment)
        static NPY<T>* make_vec3(float* m2w, unsigned int npo=100);  
 
-       static NPY<T>* make(NPYSpec* spec);
+       static NPY<T>* make(unsigned int ni, const NPYSpec* itemspec);   // itemspec ni is expected to be zero, and is ignored
+       static NPY<T>* make(const NPYSpec* argspec);
+
        static NPY<T>* make(const std::vector<int>& shape);
        static NPY<T>* make(unsigned int ni);
        static NPY<T>* make(unsigned int ni, unsigned int nj );

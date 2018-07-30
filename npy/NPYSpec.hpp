@@ -10,29 +10,30 @@
 class NPY_API NPYSpec {
    public:
         NPYSpec(const char* name, unsigned int ni, unsigned int nj, unsigned int nk, unsigned int nl, unsigned int nm, NPYBase::Type_t type, const char* ctrl);
+        void setNumItems(unsigned ni) ; 
 
-        NPYSpec* clone(); 
+        NPYSpec* clone() const ; 
+        NPYBase::Type_t getType() const ;
 
-        NPYBase::Type_t getType();
-        const char* getName();
-        const char* getTypeName();
-        const char* getCtrl();
-        unsigned int getDimension(unsigned int i) ;
-        bool isEqualTo(NPYSpec* other) ;
+        const char*     getName() const ;
+        const char*     getTypeName() const ;
+        const char*     getCtrl() const ;
+        unsigned int    getDimension(unsigned int i) const ;
+        bool isEqualTo(const NPYSpec* other) const ;
+        std::string     description() const  ;
+        std::string     desc() const  ;
+        void Summary(const char* msg="NPYSpec::Summary") const ;
 
-        std::string description() ;
-        void Summary(const char* msg="NPYSpec::Summary") ;
    private:
-        const char*  m_name ; 
-        unsigned int m_ni ; 
-        unsigned int m_nj ; 
-        unsigned int m_nk ; 
-        unsigned int m_nl ; 
-        unsigned int m_nm ; 
-
-        unsigned int m_bad_index ; 
+        const char*      m_name ; 
+        unsigned         m_ni ; 
+        unsigned         m_nj ; 
+        unsigned         m_nk ; 
+        unsigned         m_nl ; 
+        unsigned         m_nm ; 
+        unsigned int     m_bad_index ; 
         NPYBase::Type_t  m_type ; 
-        const char*  m_ctrl  ; 
+        const char*      m_ctrl  ; 
 };
 
 

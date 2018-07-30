@@ -1,9 +1,10 @@
 #include "NPYSpec.hpp"
 
+#include <sstream>
 #include <cstring>
 #include <cstdio>
 #include <climits>
-
+#include <cassert>
 
 #include "PLOG.hh"
 
@@ -21,47 +22,60 @@ NPYSpec::NPYSpec(const char* name, unsigned ni, unsigned nj, unsigned nk, unsign
 {
 }
 
-NPYSpec* NPYSpec::clone()
+NPYSpec* NPYSpec::clone() const 
 {
     return new NPYSpec(m_name, m_ni, m_nj, m_nk, m_nl, m_nm, m_type, m_ctrl );
 }
+void NPYSpec::setNumItems(unsigned ni)
+{
+    m_ni = ni ; 
+}
 
-
-NPYBase::Type_t NPYSpec::getType()
+NPYBase::Type_t NPYSpec::getType() const 
 { 
     return m_type ;
 }
 
-const char* NPYSpec::getCtrl()
+const char* NPYSpec::getCtrl() const 
 {
     return m_ctrl ; 
 }
 
-const char* NPYSpec::getName()
+const char* NPYSpec::getName() const 
 {
     return m_name ; 
 }
 
-
-
-void NPYSpec::Summary(const char* msg) 
+void NPYSpec::Summary(const char* msg) const
 {
-        printf("%s : %20s %10u %10u %10u %10u %10u \n", msg, (m_name ? m_name : ""), m_ni, m_nj, m_nk, m_nl, m_nm);
+    printf("%s : %20s %10u %10u %10u %10u %10u \n", msg, (m_name ? m_name : ""), m_ni, m_nj, m_nk, m_nl, m_nm);
 }
 
-std::string NPYSpec::description() 
+std::string NPYSpec::description() const  
+{
+     std::stringstream ss ; 
+     ss << std::setw(20) << desc()
+        << " " 
+        << std::setw(20) << ( m_name ? m_name : "-" )
+        << std::setw(20) << getTypeName()
+        ; 
+     return ss.str(); 
+} 
+
+
+std::string NPYSpec::desc() const  
 {
      char s[64] ;
      snprintf(s, 64, " (%3u,%3u,%3u,%3u,%3u) ", m_ni, m_nj, m_nk, m_nl, m_nm);
      return s ;
 }
 
-const char* NPYSpec::getTypeName()
+const char* NPYSpec::getTypeName() const 
 {
     return NPYBase::TypeName(m_type);
 }
 
-unsigned int NPYSpec::getDimension(unsigned int i) 
+unsigned int NPYSpec::getDimension(unsigned int i) const 
 {
     switch(i)
     {
@@ -71,10 +85,11 @@ unsigned int NPYSpec::getDimension(unsigned int i)
         case 3:return m_nl; break;
         case 4:return m_nm; break;
     }
+    assert(0); 
     return m_bad_index ; 
 }
 
-bool NPYSpec::isEqualTo(NPYSpec* other) 
+bool NPYSpec::isEqualTo(const NPYSpec* other) const
 {
     bool match = 
          getDimension(0) == other->getDimension(0) &&
@@ -84,7 +99,6 @@ bool NPYSpec::isEqualTo(NPYSpec* other)
          getDimension(4) == other->getDimension(4) &&
          getType() == other->getType()
          ;
-
 
     if(!match)
     {

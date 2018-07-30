@@ -53,11 +53,10 @@ const char* NPYBase::TypeName(Type_t type)
 }
 
 
+
+
 NPYBase* NPYBase::Load( const char* path, NPYBase::Type_t type )
 {
-    // hmm is there some way to peek ahead inside the file and identify its 
-    // type without having to specify ?
-
     NPYBase* buffer = NULL ; 
     switch(type)
     {
@@ -72,6 +71,26 @@ NPYBase* NPYBase::Load( const char* path, NPYBase::Type_t type )
     } 
     return buffer ; 
 }
+
+NPYBase* NPYBase::Make( unsigned ni, const NPYSpec* itemspec )
+{
+    NPYBase* buffer = NULL ; 
+    NPYBase::Type_t type = itemspec->getType();  
+    switch(type)
+    {
+        case FLOAT:     buffer = NPY<float>::make(ni, itemspec)               ; break ; 
+        case SHORT:     buffer = NPY<short>::make(ni, itemspec)               ; break ; 
+        case DOUBLE:    buffer = NPY<double>::make(ni, itemspec)              ; break ; 
+        case INT:       buffer = NPY<int>::make(ni, itemspec)                 ; break ; 
+        case UINT:      buffer = NPY<unsigned>::make(ni, itemspec)            ; break ; 
+        case CHAR:      buffer = NPY<char>::make(ni, itemspec)                ; break ; 
+        case UCHAR:     buffer = NPY<unsigned char>::make(ni, itemspec)       ; break ; 
+        case ULONGLONG: buffer = NPY<unsigned long long>::make(ni, itemspec)  ; break ; 
+    } 
+    return buffer ; 
+}
+
+
 
 std::string NPYBase::path(const char* dir, const char* reldir, const char* name)
 {
@@ -154,32 +173,49 @@ T NPYBase::getParameter(const char* key, const char* fallback) const
 
 
 NPYBase::NPYBase(const std::vector<int>& shape, unsigned char sizeoftype, Type_t type, std::string& metadata, bool has_data) 
-         :
-         m_shape_spec(NULL),
-         m_item_spec(NULL),
-         m_buffer_spec(NULL),
-         m_sizeoftype(sizeoftype),
-         m_type(type),
-         m_buffer_id(-1),
-         m_buffer_target(-1),
-         m_buffer_control(0),
-         m_buffer_name(NULL),
-         m_action_control(0),
-         m_aux(NULL),
-         m_verbose(false),
-         m_allow_prealloc(false),
-         m_shape(shape),
-         m_metadata(metadata),
-         m_has_data(has_data),
-         m_dynamic(false),
-         m_lookup(NULL),
-         m_parameters(new NParameters),
-         m_name(NULL)
+    :
+    m_shape(shape),
+    m_sizeoftype(sizeoftype),
+    m_type(type),
+    m_metadata(metadata),
+    m_has_data(has_data),
+    m_ni(getShape(0)),
+    m_nj(getShape(1)),
+    m_nk(getShape(2)),
+    m_nl(getShape(3)),
+    m_nm(getShape(4)),
+    m_dim(m_shape.size()),
+    m_shape_spec(new NPYSpec(NULL, m_ni, m_nj, m_nk, m_nl, m_nm, m_type, "" )),
+    m_item_spec(new NPYSpec(NULL,    0, m_nj, m_nk, m_nl, m_nm, m_type, "" )),
+    m_buffer_spec(NULL),
+    m_buffer_id(-1),
+    m_buffer_target(-1),
+    m_buffer_control(0),
+    m_buffer_name(NULL),
+    m_action_control(0),
+    m_aux(NULL),
+    m_verbose(false),
+    m_allow_prealloc(false),
+    m_dynamic(false),
+    m_lookup(NULL),
+    m_parameters(new NParameters),
+    m_name(NULL)
 {
-   init();
 } 
 
- NPYBase::~NPYBase()
+void NPYBase::updateDimensions()
+{
+    m_ni = getShape(0); 
+    m_nj = getShape(1);
+    m_nk = getShape(2);
+    m_nl = getShape(3);  // gives 0 when beyond dimensions
+    m_nm = getShape(4);
+
+    m_dim = m_shape.size();
+}
+
+
+NPYBase::~NPYBase()
 {
 }
 
@@ -204,11 +240,11 @@ void NPYBase::setName(const char* name)
     return m_has_data ; 
 }
 
- NPYSpec* NPYBase::getShapeSpec() const 
+const NPYSpec* NPYBase::getShapeSpec() const 
 {
     return m_shape_spec ; 
 }
-NPYSpec* NPYBase::getItemSpec() const 
+const NPYSpec* NPYBase::getItemSpec() const 
 {
     return m_item_spec ; 
 }
@@ -332,7 +368,7 @@ unsigned long long* NPYBase::getActionControlPtr()
 
 void NPYBase::transfer(NPYBase* dst, NPYBase* src)
 {
-    NPYSpec* spec = src->getBufferSpec();
+    const NPYSpec* spec = src->getBufferSpec();
 
     dst->setBufferSpec(spec ? spec->clone() : NULL);
     dst->setBufferControl(src->getBufferControl());
@@ -345,7 +381,7 @@ void NPYBase::setBufferName(const char* name )
 {
     m_buffer_name = name ? strdup(name) : NULL  ;  
 }
-void NPYBase::setBufferSpec(NPYSpec* spec)
+void NPYBase::setBufferSpec(const NPYSpec* spec)
 {
     // set when OpticksEvent uses the ctor  NPY<T>::make(NPYSpec* )
     m_buffer_spec = spec ; 
@@ -356,7 +392,7 @@ const char* NPYBase::getBufferName() const
 {
     return m_buffer_name ;  
 }
-NPYSpec* NPYBase::getBufferSpec() const 
+const NPYSpec* NPYBase::getBufferSpec() const 
 {
     return m_buffer_spec ; 
 }
@@ -454,25 +490,6 @@ bool NPYBase::isFloatType() const
 }
 
 
-void NPYBase::init()
-{
-   updateDimensions(); 
-   m_shape_spec = new NPYSpec(NULL, m_ni, m_nj, m_nk, m_nl, m_nm, m_type, "" ); 
-   m_item_spec  = new NPYSpec(NULL,    0, m_nj, m_nk, m_nl, m_nm, m_type, "" ); 
-}
-
-
-void NPYBase::updateDimensions()
-{
-    m_ni = getShape(0); 
-    m_nj = getShape(1);
-    m_nk = getShape(2);
-    m_nl = getShape(3);  // gives 0 when beyond dimensions
-    m_nm = getShape(4);
-
-    m_dim = m_shape.size();
-}
-
 
 unsigned int NPYBase::getNumQuads() const 
 {
@@ -529,12 +546,12 @@ bool NPYBase::hasItemShape(int nj, int nk, int nl, int nm) const
            ( nm == -1 || int(m_nm) == nm) ;
 }
 
-bool NPYBase::hasItemSpec(NPYSpec* item_spec) const 
+bool NPYBase::hasItemSpec(const NPYSpec* item_spec) const 
 {
     return m_item_spec->isEqualTo(item_spec); 
 }
 
-bool NPYBase::hasShapeSpec(NPYSpec* shape_spec) const 
+bool NPYBase::hasShapeSpec(const NPYSpec* shape_spec) const 
 {
     return m_shape_spec->isEqualTo(shape_spec); 
 }

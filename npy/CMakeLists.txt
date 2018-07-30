@@ -34,6 +34,7 @@ set(SOURCES
     NBufferSpec.cpp
     NPYBase.cpp
     NPYSpec.cpp
+    NPYSpecList.cpp
     NSlice.cpp
     NPY.cpp
     NLoad.cpp
@@ -226,6 +227,7 @@ NPY.hpp
 NLoad.hpp
 ViewNPY.hpp
 NPYSpec.hpp
+NPYSpecList.hpp
 MultiViewNPY.hpp
 G4StepNPY.hpp
 TorchStepNPY.hpp

@@ -21,6 +21,7 @@ EnvTest.cc
 NPYBaseTest.cc
 NSliceTest.cc
 NPYSpecTest.cc
+NPYSpecListTest.cc
 NGeoTestConfigTest.cc
 
 GLMPrintTest.cc
@@ -105,6 +106,7 @@ NCSGScanTest.cc
 NCSGListTest.cc
 NEmitConfigTest.cc
 NCSGIntersectTest.cc
+NCSGRoundTripTest.cc
 NScanTest.cc
 
 NCSGPolygonizeTest.cc 

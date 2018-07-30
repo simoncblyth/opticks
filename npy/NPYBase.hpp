@@ -19,9 +19,14 @@ class NPYSpec ;
 class NPY_API NPYBase {
    public:
        typedef enum { FLOAT, SHORT, DOUBLE, INT, UINT, CHAR, UCHAR, ULONGLONG} Type_t ;
-       static NPYBase* Load( const char* path, NPYBase::Type_t type );
-
-      // static const char* DEFAULT_DIR_TEMPLATE  ; 
+   public:
+       // Load/Make return NPYBase for generic handling, but 
+       // they use type specialized NPY<T> buffers internally.
+       // dynamic_cast<NPY<T>*>(buf) them when needed.
+       //
+       static NPYBase* Load( const char* path, Type_t type );
+       static NPYBase* Make( unsigned ni, const NPYSpec* itemspec );
+   public:
 
        static const char* FLOAT_ ; 
        static const char* SHORT_ ; 
@@ -50,8 +55,8 @@ class NPY_API NPYBase {
         void setName(const char* name); 
    public:
        // shape related
-       NPYSpec* getShapeSpec() const ;
-       NPYSpec* getItemSpec() const ;
+       const NPYSpec* getShapeSpec() const ;
+       const NPYSpec* getItemSpec() const ;
        const std::vector<int>& getShapeVector() const ;
 
        bool hasSameShape(NPYBase* other, unsigned fromdim=0) const ;
@@ -60,8 +65,8 @@ class NPY_API NPYBase {
   
        static bool HasShape( NPYBase* a, int ni, int nj=0, int nk=0, int nl=0, int nm=0) ; // -1 for anything 
 
-       bool hasShapeSpec(NPYSpec* spec) const ; 
-       bool hasItemSpec(NPYSpec* spec) const ; 
+       bool hasShapeSpec(const NPYSpec* spec) const ; 
+       bool hasItemSpec(const NPYSpec* spec) const ; 
 
        std::string  getItemShape(unsigned int ifr=1) const ;
        std::string  getDigestString()  ;
@@ -71,7 +76,6 @@ class NPY_API NPYBase {
        bool isEqualTo(void* bytes, unsigned int nbytes) ;
        bool isEqualTo(NPYBase* other) ;
        unsigned int getNumQuads() const ;  // product of all dimensions excluding the last, which must be 4 
-       //unsigned int getLength();
        unsigned int getNumItems(int ifr=0, int ito=1) const;  // default ifr/ito=0/1 is size of 1st dimension
        unsigned int getNumElements() const ;   // size of last dimension
        unsigned int getDimensions() const ;
@@ -124,8 +128,8 @@ class NPY_API NPYBase {
        void     setLookup(NLookup* lookup);   // needed for legacy gensteps
        NLookup* getLookup() const ;
 
-       void         setBufferSpec(NPYSpec* spec);
-       NPYSpec*     getBufferSpec() const ;
+       void         setBufferSpec(const NPYSpec* spec);
+       const NPYSpec* getBufferSpec() const ;
        const char*  getBufferName() const ;
 
        void         setAux(void* aux);
@@ -174,20 +178,20 @@ class NPY_API NPYBase {
        void setNumItems(unsigned int ni);
 
    protected:
-       unsigned int       m_dim ; 
-
+       std::vector<int>   m_shape ; 
+       unsigned char      m_sizeoftype ; 
+       Type_t             m_type ; 
+       std::string        m_metadata ; 
+       bool               m_has_data ;
        unsigned int       m_ni ; 
        unsigned int       m_nj ; 
        unsigned int       m_nk ; 
        unsigned int       m_nl ; 
        unsigned int       m_nm ;
- 
-       NPYSpec*           m_shape_spec ; 
-       NPYSpec*           m_item_spec ; 
-       NPYSpec*           m_buffer_spec ; 
-
-       unsigned char      m_sizeoftype ; 
-       Type_t             m_type ; 
+       unsigned int       m_dim ; 
+       const NPYSpec*     m_shape_spec ; 
+       const NPYSpec*     m_item_spec ; 
+       const NPYSpec*     m_buffer_spec ; 
        int                m_buffer_id ; 
        int                m_buffer_target ; 
        unsigned long long m_buffer_control ; 
@@ -196,16 +200,12 @@ class NPY_API NPYBase {
        void*              m_aux ; 
        bool               m_verbose ; 
        bool               m_allow_prealloc ; 
- 
    private:
-       std::vector<int>   m_shape ; 
-       std::string        m_metadata ; 
-       bool               m_has_data ;
        bool               m_dynamic ;
        NLookup*           m_lookup ;   // only needed for legacy gensteps 
-       NParameters*        m_parameters ;  // for keeping notes, especially for gensteps
+       NParameters*       m_parameters ;  // for keeping notes, especially for gensteps
 
-       const char*         m_name ; 
+       const char*        m_name ; 
 
 };
 
