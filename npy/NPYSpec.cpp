@@ -8,7 +8,7 @@
 
 #include "PLOG.hh"
 
-NPYSpec::NPYSpec(const char* name, unsigned ni, unsigned nj, unsigned nk, unsigned nl, unsigned nm, NPYBase::Type_t type, const char* ctrl, bool optional)
+NPYSpec::NPYSpec(const char* name, unsigned ni, unsigned nj, unsigned nk, unsigned nl, unsigned nm, NPYBase::Type_t type, const char* ctrl, bool optional, int verbosity)
   :
     m_name(name ? strdup(name) : NULL),
     m_ni(ni),
@@ -19,7 +19,8 @@ NPYSpec::NPYSpec(const char* name, unsigned ni, unsigned nj, unsigned nk, unsign
     m_bad_index(UINT_MAX), 
     m_type(type),
     m_ctrl(ctrl ? strdup(ctrl) : NULL),
-    m_optional(optional)
+    m_optional(optional),
+    m_verbosity(verbosity)
 {
 }
 
@@ -45,6 +46,10 @@ const char* NPYSpec::getCtrl() const
 bool NPYSpec::isOptional() const 
 {
     return m_optional ; 
+}
+int NPYSpec::getVerbosity() const
+{
+    return m_verbosity ; 
 }
 const char* NPYSpec::getName() const 
 {

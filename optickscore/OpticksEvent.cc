@@ -1618,14 +1618,21 @@ void OpticksEvent::save()
 void OpticksEvent::saveHitData()
 {
     NPY<float>* ht = getHitData();
-    if(ht) ht->save("ht", m_typ,  m_tag, m_udet);
+    if(ht)
+    {
+        unsigned num_hit = ht->getNumItems(); 
+        if(num_hit > 0) ht->save("ht", m_typ,  m_tag, m_udet);
+        if(num_hit == 0) LOG(info) << "saveHitData zero hits " ; 
+    }
 }
 void OpticksEvent::saveNopstepData()
 {
     NPY<float>* no = getNopstepData();
     if(no)
     {
-        no->save("no", m_typ,  m_tag, m_udet);
+        unsigned num_nop = no->getNumItems(); 
+        if(num_nop > 0)  no->save("no", m_typ,  m_tag, m_udet);
+        if(num_nop == 0) LOG(info) << "saveNopstepData zero nop " ;
         no->dump("OpticksEvent::save (nopstep)");
     
         NPY<int>* idom = getIDomain();

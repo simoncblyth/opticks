@@ -33,18 +33,20 @@ class NPY_API NPYList
         std::string     getBufferPath( const char* treedir, int bid ) const ;
         std::string     desc() const ; 
     public:
+        void            setLocked(int bid, bool locked=true) ; 
+        bool            isLocked(int bid) ; 
         NPYBase*        getBuffer(int bid) const  ; 
         std::string     getBufferShape(int bid) const  ;
         unsigned        getNumItems(int bid) const  ;
-        void            saveBuffer(const char* treedir, int bid ) const ;
     public:
-        void            initBuffer(int bid, int ni, bool zero) ; 
-        void            setBuffer(int bid, NPYBase* buffer ) ; 
-    public:
-        void            loadBuffer(const char* treedir, int bid ) ;
+        void            saveBuffer(const char* treedir, int bid , const char* msg=NULL ) const ;
+        void            initBuffer(int bid, int ni, bool zero, const char* msg=NULL) ; 
+        void            setBuffer(int bid, NPYBase* buffer , const char* msg=NULL ) ; 
+        void            loadBuffer(const char* treedir, int bid , const char* msg=NULL ) ;
     private:
         const NPYSpecList*               m_specs ; 
         std::array<NPYBase*, MAX_BUF>    m_buf ;
+        std::array<bool,     MAX_BUF>    m_locked ;
 
 
 

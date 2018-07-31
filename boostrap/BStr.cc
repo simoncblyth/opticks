@@ -229,7 +229,9 @@ int BStr::atoi( const char* str, int fallback )
         i = boost::lexical_cast<int>(str) ;
     }   
     catch (const boost::bad_lexical_cast& e ) { 
-        LOG(warning)  << "Caught bad lexical cast with error " << e.what() ;
+        LOG(warning)  << "bad_lexical_cast [" << e.what() << "] " 
+                      << " with [" << str << "]" 
+                       ;
         badlex = true ; 
     }   
     catch( ... ){
@@ -258,7 +260,9 @@ float BStr::atof( const char* str, float fallback )
         f = boost::lexical_cast<float>(str) ;
     }   
     catch (const boost::bad_lexical_cast& e ) { 
-        LOG(warning)  << "Caught bad lexical cast with error " << e.what() ;
+        LOG(warning)  << "Caught bad lexical cast with error [" << e.what() << "] "
+                      << " for str [" << str << "]" 
+                      ;
     }   
     catch( ... ){
         LOG(warning) << "Unknown exception caught!" ;

@@ -202,12 +202,7 @@ void nconvexpolyhedron::pdump(const char* msg) const
               << std::endl ; 
 
     if(verbosity > 1 && gtransform) std::cout << *gtransform << std::endl ;
-
-
-
 }
-
-
 
 
 unsigned nconvexpolyhedron::par_nsurf() const 
@@ -308,6 +303,24 @@ void nconvexpolyhedron::set_srcvertsfaces( const std::vector<glm::vec3>& srcvert
     std::copy( srcfaces_.begin() , srcfaces_.end(), std::back_inserter(srcfaces) ) ;
 }
 
+void nconvexpolyhedron::dump_srcvertsfaces() const 
+{
+    LOG(info) << "dump_srcvertsfaces"
+              << " srcverts " << srcverts.size()  
+              << " srcfaces " << srcfaces.size()  
+              ;
+
+    for(unsigned i=0 ; i < srcverts.size() ; i++)
+    {
+        const glm::vec3& sv = srcverts[i]; 
+        std::cout << std::setw(6) << i << " : " << gpresent("sv", sv ) << std::endl ; 
+    }
+    for(unsigned i=0 ; i < srcfaces.size() ; i++)
+    {
+        const glm::ivec4& sf = srcfaces[i]; 
+        std::cout << std::setw(6) << i << " : " << gpresent("sf", sf ) << std::endl ; 
+    }
+}
 
 
 void nconvexpolyhedron::define_uv_basis()
@@ -317,7 +330,6 @@ void nconvexpolyhedron::define_uv_basis()
     assert( planes.size() == udirs.size() );
     assert( planes.size() == vdirs.size() );
 }
-
 
 
 void nconvexpolyhedron::dump_uv_basis(const char* msg) const 

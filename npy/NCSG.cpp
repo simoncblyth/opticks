@@ -11,8 +11,6 @@
 #include "GLMFormat.hpp"
 #include "NParameters.hpp"
 
-//#include "NPart.h"
-
 #include "NTrianglesNPY.hpp"
 #include "NPolygonizer.hpp"
 
@@ -31,19 +29,108 @@
 #include "NPYMeta.hpp"
 #include "NTxt.hpp"
 
-
-
 #include "PLOG.hh"
-
-
-NParameters* NCSG::LoadMetadata( const char* treedir, int item )
-{
-    return NPYMeta::LoadMetadata(treedir, item); 
-} 
-
 
 const float NCSG::SURFACE_EPSILON = 1e-5f ; 
 
+/////////////////////////////////////////////////////////////////////////////////////////
+/**
+NCSG::Load
+-----------
+
+**/
+
+NCSG* NCSG::Load(const char* treedir)
+{
+    const char* config_ = "polygonize=0" ; 
+    NSceneConfig* config = new NSceneConfig(config_); 
+    return NCSG::Load(treedir, config); 
+}
+
+NCSG* NCSG::Load(const char* treedir, const char* gltfconfig)
+{
+    if(!NCSGData::Exists(treedir))
+    {
+         LOG(warning) << "NCSG::Load no such treedir " << treedir ;
+         return NULL ; 
+    }
+    NSceneConfig* config = new NSceneConfig(gltfconfig) ; 
+    NCSG* csg = NCSG::Load(treedir, config);
+    assert(csg);
+    return csg ; 
+}
+
+NCSG* NCSG::Load(const char* treedir, const NSceneConfig* config  )
+{
+    if(!NCSGData::Exists(treedir) )
+    {
+         LOG(warning) << "NCSG::Load no such treedir " << treedir ;
+         return NULL ; 
+    }
+
+    NCSG* tree = new NCSG(treedir) ; 
+
+    tree->setConfig(config);
+    tree->setVerbosity(config->verbosity);
+    tree->setIsUsedGlobally(true);
+
+    tree->loadsrc();  // populate the src* buffers 
+    tree->import();   // complete binary tree m_nodes buffer -> node tree
+    tree->setup_global_transforms();  
+    tree->export_();  // node tree -> complete binary tree m_nodes buffer
+
+    if(config->verbosity > 1) tree->dump("NCSG::Load");
+    if(config->polygonize) tree->polygonize();
+
+    tree->collect_surface_points();
+
+    return tree ; 
+}
+
+/**
+/////////////////////////////////////////////////////////////////////////////////////////
+NCSG::Adopt
+------------
+
+**/
+
+NCSG* NCSG::Adopt(nnode* root)
+{
+    const char* config = "" ; 
+    unsigned soIdx = 0 ; 
+    unsigned lvIdx = 0 ; 
+    return Adopt( root, config, soIdx , lvIdx ); 
+}
+
+NCSG* NCSG::Adopt(nnode* root, const char* config_, unsigned soIdx, unsigned lvIdx)
+{
+    NSceneConfig* config = new NSceneConfig(config_); 
+    return Adopt( root, config, soIdx , lvIdx ); 
+}
+
+NCSG* NCSG::Adopt(nnode* root, const NSceneConfig* config, unsigned soIdx, unsigned lvIdx )
+{
+    nnode::Set_parent_links_r(root, NULL);
+
+    root->set_treeidx(lvIdx) ;  // without this no nudging is done
+
+    NCSG* tree = new NCSG(root);
+
+    tree->setConfig(config);
+    tree->setSOIdx(soIdx); 
+    tree->setLVIdx(lvIdx); 
+
+    tree->setup_global_transforms();  
+    tree->export_();        // node tree -> complete binary tree m_nodes buffer
+
+    assert( tree->getGTransformBuffer() );
+    tree->collect_surface_points();
+
+    return tree ; 
+}
+ 
+
+/////////////////////////////////////////////////////////////////////////////////////////
 
 // ctor : booting via deserialization of directory 
 NCSG::NCSG(const char* treedir) 
@@ -96,155 +183,34 @@ NCSG::NCSG(nnode* root )
    m_lvIdx(0)
 {
     setBoundary( root->boundary );  // boundary spec
-    //LOG(error) << " NCSG adopt " << root->boundary ; 
-
+    //LOG(error) << " NCSG adopt " ; 
     m_csgdata->init_buffers(root->maxdepth()) ;  
+    //LOG(error) << " NCSG adopt after init_buffers" ; 
 }
 
-NCSGData* NCSG::getCSGData() const 
+void NCSG::savesrc(const char* treedir_ ) const 
 {
-   return m_csgdata ; 
+    bool same_dir = m_treedir && strcmp( treedir_, m_treedir) == 0  ;
+    if( same_dir ) LOG(fatal) << "saving back into the same dir as loaded from is not allowed " ; 
+    assert( !same_dir) ; 
+    assert( treedir_ ) ; 
+
+    LOG(info) << " treedir_ " << treedir_ ; 
+
+    m_csgdata->savesrc(treedir_) ;  
+    m_meta->save( treedir_ ); 
 }
-NPYMeta* NCSG::getMeta() const 
+
+void NCSG::loadsrc()
 {
-   return m_meta ; 
+    if(m_index % 100 == 0 && m_verbosity > 0) LOG(info) << "NCSG::load " << " index " << m_index << " treedir " << m_treedir ; 
+
+    m_csgdata->loadsrc( m_treedir ) ; 
+    m_meta->load( m_treedir ); 
+
+    postload();
+    LOG(debug) << "NCSG::load DONE " ; 
 }
-
-
-
-NNodeUncoincide* NCSG::make_uncoincide() const 
-{
-    return NULL ;  
-    //return new NNodeUncoincide(m_root, m_surface_epsilon, m_root->verbosity);
-}
-NNodeNudger* NCSG::get_nudger() const 
-{
-    return m_nudger ; 
-}
-NNodeNudger* NCSG::make_nudger() const 
-{
-   // when test running from nnode there is no metadata or treedir
-   // LOG(info) << soname() << " treeNameIdx " << getTreeNameIdx() ; 
-
-    NNodeNudger* nudger = new NNodeNudger(m_root, m_surface_epsilon, m_root->verbosity);
-    return nudger ; 
-}
-
-
-std::string NCSG::TestVolumeName(const char* shapename, const char* suffix, int idx) // static
-{
-    std::stringstream ss ; 
-    ss << shapename << "_" << suffix ; 
-    if(idx > -1) ss << idx ; 
-    ss << "_" ; 
-    return ss.str();
-}
-
-std::string NCSG::getTestPVName() const 
-{
-    OpticksCSG_t type = getRootType() ;
-    const char* shapename = CSGName(type); 
-    unsigned idx = getIndex();
-    return TestVolumeName( shapename, "pv", idx);     
-}
-std::string NCSG::getTestLVName() const 
-{
-    OpticksCSG_t type = getRootType() ;
-    const char* shapename = CSGName(type); 
-    unsigned idx = getIndex();
-    return TestVolumeName( shapename, "lv", idx);     
-}
-
-
-std::string NCSG::lvname() const {        return m_meta->getValue<std::string>("lvname","-") ; }
-std::string NCSG::soname() const {        return m_meta->getValue<std::string>("soname","-") ; }
-int         NCSG::treeindex() const {     return m_meta->getValue<int>("treeindex","-1") ; }
-int         NCSG::depth() const {         return m_meta->getValue<int>("depth","-1") ; }
-int         NCSG::nchild() const {        return m_meta->getValue<int>("nchild","-1") ; }
-bool        NCSG::isSkip() const {        return m_meta->getValue<int>("skip","0") == 1 ; }
-bool        NCSG::is_uncoincide() const { return m_meta->getValue<int>("uncoincide","1") == 1 ; }
-int         NCSG::getEmit() const {       return m_meta->getValue<int>("emit","0") ;  }
-
-bool NCSG::isEmit() const 
-{  
-    int emit = getEmit() ;
-    return emit == 1 || emit == -1 ;
-}
-void NCSG::setEmit(int emit) // used by --testauto
-{
-    m_meta->setValue<int>("emit", emit);
-}
-
-void NCSG::setEmitConfig(const char* emitconfig)
-{
-    m_meta->setValue<std::string>("emitconfig", emitconfig );
-}
-const char* NCSG::getEmitConfig() const 
-{ 
-    std::string ec = m_meta->getValue<std::string>("emitconfig","") ;
-    return ec.empty() ? NULL : strdup(ec.c_str()) ; 
-}
-
-std::string NCSG::meta() const 
-{
-    std::stringstream ss ; 
-    ss << " treeindex " << treeindex()
-       << " depth " << depth()
-       << " nchild " << nchild()
-       << " lvname " << lvname() 
-       << " soname " << soname() 
-       << " isSkip " << isSkip()
-       << " is_uncoincide " << is_uncoincide()
-       << " emit " << getEmit()
-       ;
-
-    return ss.str();
-}
-
-std::string NCSG::smry() const 
-{
-    std::stringstream ss ; 
-    ss 
-       << " ht " << std::setw(2) << getHeight() 
-       << " nn " << std::setw(4) << getNumNodes()
-       << " tri " << std::setw(6) << getNumTriangles()
-       << " tmsg " << ( m_tris ? m_tris->getMessage() : "NULL-tris" ) 
-       << " iug " << m_usedglobally 
-       << m_csgdata->smry() 
-      ;
-
-    return ss.str();
-}
-
-NParameters* NCSG::getMeta(int idx) const 
-{
-    return m_meta->getMeta(idx); 
-}
-
-void NCSG::increaseVerbosity(int verbosity)
-{
-    if(verbosity > -1) 
-    {
-        if(verbosity > m_verbosity)
-        {
-            LOG(debug) << "NCSG::increaseVerbosity" 
-                       << " treedir " << m_treedir
-                       << " old " << m_verbosity 
-                       << " new " << verbosity 
-                       ; 
-        }
-        else
-        {
-            LOG(debug) << "NCSG::increaseVerbosity IGNORING REQUEST TO DECREASE verbosity " 
-                       << " treedir " << m_treedir
-                       << " current verbosity " << m_verbosity 
-                       << " requested : " << verbosity 
-                       ; 
- 
-        }
-    }
-}
-
 
 void NCSG::postload()
 {
@@ -258,186 +224,14 @@ void NCSG::postload()
     increaseVerbosity(verbosity);
 }
 
-void NCSG::savesrc(const char* treedir_ ) const 
-{
-    bool same_dir = m_treedir && strcmp( treedir_, m_treedir) == 0  ;
-    if( same_dir ) LOG(fatal) << "saving back into the same dir as loaded from is not allowed " ; 
-
-    // perhaps can relax this following splitting buffers into "src" and "transport"
-    // ... nope cannot allow because this is savesrc
-
-    assert( !same_dir) ; 
-
-    assert( treedir_ ) ; 
-    LOG(info) << " treedir_ " << treedir_ ; 
-
-    m_csgdata->savesrc(treedir_) ;  
-    m_meta->save( treedir_ ); 
-}
-
-void NCSG::loadsrc()
-{
-    if(m_index % 100 == 0 && m_verbosity > 0)
-    {
-        LOG(info) << "NCSG::load " 
-                  << " index " << m_index
-                  << " treedir " << m_treedir 
-                  ; 
-    }
-
-    assert(m_csgdata);
-    m_csgdata->loadsrc( m_treedir ) ; 
-    m_meta->load( m_treedir ); 
-
-    postload();
-
-    LOG(debug) << "NCSG::load DONE " ; 
-}
-
-
-
-
-nnode* NCSG::getRoot() const 
-{
-    return m_root ; 
-}
-OpticksCSG_t NCSG::getRootType() const 
-{
-    assert(m_root);
-    return m_root->type ; 
-}
-
-unsigned NCSG::getHeight() const 
-{
-    return m_csgdata->getHeight(); 
-}
-unsigned NCSG::getNumNodes() const 
-{
-    return m_csgdata->getNumNodes() ; 
-}
-
-
-
-NPY<float>* NCSG::getNodeBuffer() const 
-{
-    return m_csgdata->getNodeBuffer() ; 
-}
-NPY<float>* NCSG::getTransformBuffer() const 
-{
-    return m_csgdata->getTransformBuffer() ; 
-}
-NPY<float>* NCSG::getGTransformBuffer() const
-{
-    return m_csgdata->getGTransformBuffer() ; 
-}
-
-
-
-NPY<float>* NCSG::getPlaneBuffer() const 
-{
-    return m_csgdata->getSrcPlaneBuffer() ; 
-}
-NPY<unsigned>* NCSG::getIdxBuffer() const 
-{
-    return m_csgdata->getSrcIdxBuffer() ; 
-}
-
-
-
-
-
-
-NPY<float>* NCSG::getSrcTransformBuffer() const 
-{
-    return m_csgdata->getSrcTransformBuffer() ; 
-}
-NPY<float>* NCSG::getSrcNodeBuffer() const 
-{
-    return m_csgdata->getSrcNodeBuffer() ; 
-}
-
-
-
-
-
-const char* NCSG::getBoundary() const 
-{
-    return m_boundary ; 
-}
-const char* NCSG::getTreeDir() const 
-{
-    return m_treedir ; 
-}
-
-const char* NCSG::getTreeName() const 
-{
-    std::string name = BFile::Name(m_treedir ? m_treedir : "-1") ; 
-    return strdup(name.c_str());
-}
-int NCSG::getTreeNameIdx() const 
-{
-    const char* name = getTreeName();
-    return BStr::atoi(name, -1);
-}
-
-
-
-unsigned NCSG::getIndex() const 
-{
-    return m_index ; 
-}
-int NCSG::getVerbosity() const 
-{
-    return m_verbosity ; 
-}
-bool NCSG::isContainer() const 
-{
-    return m_container > 0  ; 
-}
-float NCSG::getContainerScale() const 
-{
-    return m_containerscale  ; 
-}
-bool NCSG::isUsedGlobally() const 
-{
-    return m_usedglobally ; 
-}
-
-
-
-
-
-
-
-void NCSG::setIndex(unsigned index)
-{
-    m_index = index ; 
-}
-void NCSG::setVerbosity(int verbosity)
-{
-    m_verbosity = verbosity ; 
-}
-void NCSG::setIsUsedGlobally(bool usedglobally )
-{
-    m_usedglobally = usedglobally ; 
-}
-
-
-void NCSG::setBoundary(const char* boundary)
-{
-    m_boundary = boundary ? strdup(boundary) : NULL ; 
-}
-
-void NCSG::setConfig(const NSceneConfig* config)
-{
-    m_config = config ; 
-}
-
-
-
 /** 
-NCSG::import : from complete binary tree buffer into nnode tree
-------------------------------------------------------------------
+NCSG::import : from complete binary tree buffers into nnode tree
+--------------------------------------------------------------------
+
+1. prepareForImport : tripletize the m_srctransforms into m_transforms
+2. import_r : collects m_gtransforms by multiplication down the tree
+
+
 **/
 
 void NCSG::import()
@@ -468,21 +262,16 @@ void NCSG::import()
     postimport();
 
     if(m_verbosity > 5) check();  // recursive transform dumping 
-
     if(m_verbosity > 1) LOG(info) << "NCSG::import DONE " ; 
 }
-
 
 void NCSG::postimport()
 {
     m_nudger = make_nudger() ; 
-
     //m_uncoincide = make_uncoincide(); 
     //m_uncoincide->uncoincide();
-
     //postimport_autoscan();
 }
-
 
 /**
 NCSG::import_r
@@ -501,7 +290,7 @@ nnode* NCSG::import_r(unsigned idx, nnode* parent)
 {
     if(idx >= getNumNodes()) return NULL ; 
     
-    // from srcnodes     
+    // from m_srcnodes     
     OpticksCSG_t typecode = (OpticksCSG_t)m_csgdata->getTypeCode(idx);      
     int transform_idx = m_csgdata->getTransformIndex(idx) ; 
     bool complement = m_csgdata->isComplement(idx) ; 
@@ -539,24 +328,7 @@ nnode* NCSG::import_r(unsigned idx, nnode* parent)
         node->parent = parent ;                // <-- parent hookup needed prior to gtransform collection 
         node->idx = idx ; 
         node->complement = complement ; 
-
         node->transform = m_csgdata->import_transform_triple( transform_idx ) ;  // from m_transforms, expecting (-1,3,4,4)
-
-        const nmat4triple* gtransform = node->global_transform();   
-
-        // see opticks/notes/issues/subtree_instances_missing_transform.rst
-        //if(gtransform == NULL && m_usedglobally)
-        if(gtransform == NULL )  // move to giving all primitives a gtransform 
-        {
-            gtransform = nmat4triple::make_identity() ;
-        }
-
-        unsigned gtransform_idx = gtransform ? addUniqueTransform(gtransform) : 0 ; 
-
-        node->gtransform = gtransform ; 
-        node->gtransform_idx = gtransform_idx ; // 1-based, 0 for None
-
-        LOG(error) << "import_r node->gtransform_idx " << node->gtransform_idx ; 
     }
     assert(node); 
 
@@ -567,6 +339,8 @@ nnode* NCSG::import_r(unsigned idx, nnode* parent)
     // in the above is not sufficient reason to put things here, so very late.
     return node ; 
 } 
+
+
 
 nnode* NCSG::import_operator( unsigned idx, OpticksCSG_t typecode )
 {
@@ -663,6 +437,14 @@ nnode* NCSG::import_primitive( unsigned idx, OpticksCSG_t typecode )
     return node ; 
 }
 
+/**
+NCSG::import_srcvertsfaces
+----------------------------
+
+Import from SrcVerts and SrcFaces buffers into the nconvexpolyhedron instance
+
+**/
+
 
 void NCSG::import_srcvertsfaces(nnode* node)
 {
@@ -718,9 +500,228 @@ void NCSG::import_srcplanes(nnode* node)
     assert( cpol->planes.size() == num_plane );
 }
 
+///////////////////////////////////////////////////////////////////////////////////////////////////
+
+void NCSG::check() const 
+{
+    check_r( m_root );
+    m_csgdata->dump_gtransforms(); 
+}
+
+void NCSG::check_r(const nnode* node) const 
+{
+    check_node(node);
+    if(node->left && node->right)
+    {
+        check_r(node->left);
+        check_r(node->right);
+    }
+}
+void NCSG::check_node(const nnode* node ) const 
+{
+    if(m_verbosity > 2)
+    {
+        if(node->gtransform)
+        {
+            std::cout << "NCSG::check_r"
+                      << " gtransform_idx " << node->gtransform_idx
+                      << std::endl 
+                      ;
+        }
+        if(node->transform)
+        {
+            std::cout << "NCSG::check_r"
+                      << " transform " << *node->transform
+                      << std::endl 
+                      ;
+        }
+    }
+}
+///////////////////////////////////////////////////////////////////////////////////////////////////
+/**
+NCSG::setup_global_transforms
+-------------------------------
+
+The setting of global transforms was formally done both on
+import and export : which was confusing.  To avoid the
+confusion split it off into these focussed methods.
+
+Effects:
+
+1. collects global transforms into m_gtransforms buffer
+2. sets node->gtransform and node->gtransform_idx for primitives in the tree
+
+Related:
+
+opticks/notes/issues/subtree_instances_missing_transform.rst
+
+On GPU only gtransform_idx on primitives are used
+(there being no multiplying up the tree). 
+Any gtransform_idx on operator nodes are ignored.
+
+see notes/issues/OKX4Test_partBuffer_difference.rst
+
+using 0 (meaning None) for identity 
+
+**/
+
+void NCSG::setup_global_transforms() 
+{
+    m_csgdata->prepareForSetup();
+    setup_global_transforms_r( m_root ) ; 
+}
+void NCSG::setup_global_transforms_r(nnode* node) 
+{
+    setup_global_transforms_visit(node);
+
+    if(node->left && node->right)
+    {
+        setup_global_transforms_r(node->left);
+        setup_global_transforms_r(node->right);
+    }
+}
+void NCSG::setup_global_transforms_visit(nnode* node)
+{
+    if(node->is_primitive())
+    {
+        const nmat4triple* gtransform = node->global_transform();   
+        if(gtransform == NULL )  // move to giving all primitives a gtransform 
+        {
+            gtransform = nmat4triple::make_identity() ;
+        }
+
+        unsigned gtransform_idx = gtransform ? addUniqueTransform(gtransform) : 0 ;   // collect into m_gtransforms
+
+        node->gtransform = gtransform ; 
+        node->gtransform_idx = gtransform_idx ; // 1-based, 0 for None
+    }
+} 
+
+unsigned NCSG::addUniqueTransform( const nmat4triple* gtransform_ )
+{
+    bool no_offset = m_gpuoffset.x == 0.f && m_gpuoffset.y == 0.f && m_gpuoffset.z == 0.f ;
+
+    bool reverse = true ; // <-- apply transfrom at root of transform hierarchy (rather than leaf)
+
+    const nmat4triple* gtransform = no_offset ? gtransform_ : gtransform_->make_translated(m_gpuoffset, reverse, "NCSG::addUniqueTransform" ) ;
+
+    /*
+    std::cout << "NCSG::addUniqueTransform"
+              << " orig " << *gtransform_
+              << " tlated " << *gtransform
+              << " gpuoffset " << m_gpuoffset 
+              << std::endl 
+              ;
+    */
+    return m_csgdata->addUniqueTransform( gtransform );   // add to m_gtransforms
+}
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+
+/**
+NCSG::export_
+-----------------
+
+Writing node tree into transport buffers 
+
+1. prepareForExport : init NODES, PLANES 
+
+
+NCSG::export_node
+~~~~~~~~~~~~~~~~~~
+
+export_gtransform
+   collects gtransform into the tran buffer and sets gtransform_idx 
+   on the node tree 
+
+export_planes
+   collects convex polyhedron planes into plan buffer
+
+NB the part writing into part buffer has to be after 
+these as idxs get into that buffer
+
+
+**/
+
+void NCSG::export_()
+{
+    //LOG(error) << "export_ START " ; 
+
+    m_csgdata->prepareForExport() ;  //  create node buffer 
+
+    //LOG(error) << "export_ prepare DONE " ; 
+
+    NPY<float>* _nodes = m_csgdata->getNodeBuffer() ; 
+    assert(_nodes);
+
+    LOG(debug) << "NCSG::export_ "
+              << " exporting CSG node tree into nodes buffer "
+              << " num_nodes " << getNumNodes()
+              << " height " << getHeight()
+              ;
+
+    export_idx();  
+
+    export_r(m_root, 0);
+   
+    //LOG(error) << "export_ DONE " ; 
+}
+
+void NCSG::export_idx()   // only tree level
+{
+    m_csgdata->setIdx( m_index, m_soIdx, m_lvIdx, getHeight() ); 
+}
+
+void NCSG::export_r(nnode* node, unsigned idx)
+{
+    export_node( node, idx) ; 
+
+    if(node->left && node->right)
+    {
+        export_r(node->left,  2*idx + 1);
+        export_r(node->right, 2*idx + 2);
+    }  
+}
+
+void NCSG::export_node(nnode* node, unsigned idx)
+{
+    //LOG(error) << "export_node START " ; 
+
+    assert(idx < getNumNodes() ); 
+    LOG(trace) << "NCSG::export_node"
+              << " idx " << idx 
+              << node->desc()
+              ;
+
+
+    if(m_adopted)   
+    {
+        export_srcnode( node, idx) ; 
+    }
+
+    //export_gtransform(node);
+
+    NPY<float>* _planes = m_csgdata->getPlaneBuffer() ; 
+    export_planes(node, _planes);
+  
+    // crucial 2-step here, where m_nodes gets totally rewritten
+    npart pt = node->part();  // node->type node->gtransform_idx node->complement written into pt 
+
+    pt.check_bb_zero(node->type); 
+
+    NPY<float>* _nodes = m_csgdata->getNodeBuffer(); 
+
+    _nodes->setPart( pt, idx);  // writes 4 quads to buffer
+
+    //LOG(error) << "export_node DONE  " ; 
+}
+
 
 void NCSG::export_planes(nnode* node, NPY<float>* _planes)
 {
+    assert( _planes && "export_planes requires _planes buffer "); 
+
     if(!node->has_planes()) return ;
 
     nconvexpolyhedron* cpol = dynamic_cast<nconvexpolyhedron*>(node);
@@ -756,118 +757,18 @@ void NCSG::export_planes(nnode* node, NPY<float>* _planes)
 }
 
 
-unsigned NCSG::addUniqueTransform( const nmat4triple* gtransform_ )
-{
-    bool no_offset = m_gpuoffset.x == 0.f && m_gpuoffset.y == 0.f && m_gpuoffset.z == 0.f ;
+/**
+NCSG::export_srcnode
+----------------------
 
-    bool reverse = true ; // <-- apply transfrom at root of transform hierarchy (rather than leaf)
-
-    const nmat4triple* gtransform = no_offset ? gtransform_ : gtransform_->make_translated(m_gpuoffset, reverse, "NCSG::addUniqueTransform" ) ;
-
-    /*
-    std::cout << "NCSG::addUniqueTransform"
-              << " orig " << *gtransform_
-              << " tlated " << *gtransform
-              << " gpuoffset " << m_gpuoffset 
-              << std::endl 
-              ;
-    */
-    return m_csgdata->addUniqueTransform( gtransform );   // add to m_gtransforms
-
-}
-
-
-void NCSG::check()
-{
-    check_r( m_root );
-
-    m_csgdata->dump_gtransforms(); 
-
-}
-
-void NCSG::check_r(nnode* node)
-{
-
-    if(m_verbosity > 2)
-    {
-        if(node->gtransform)
-        {
-            std::cout << "NCSG::check_r"
-                      << " gtransform_idx " << node->gtransform_idx
-                      << std::endl 
-                      ;
-        }
-        if(node->transform)
-        {
-            std::cout << "NCSG::check_r"
-                      << " transform " << *node->transform
-                      << std::endl 
-                      ;
-        }
-    }
-
-
-    if(node->left && node->right)
-    {
-        check_r(node->left);
-        check_r(node->right);
-    }
-}
-
-
-
-void NCSG::export_()
-{
-    LOG(error) << "export_ START " ; 
-
-    m_csgdata->prepareForExport() ;  //  create node buffer 
-
-    LOG(error) << "export_ prepare DONE " ; 
-
-    NPY<float>* _nodes = m_csgdata->getNodeBuffer() ; 
-    assert(_nodes);
-
-    LOG(debug) << "NCSG::export_ "
-              << " exporting CSG node tree into nodes buffer "
-              << " num_nodes " << getNumNodes()
-              << " height " << getHeight()
-              ;
-
-    export_idx(); 
-
-
-    export_r(m_root, 0);
-   
-    LOG(error) << "export_ DONE " ; 
-}
-
-
-void NCSG::export_idx() 
-{
-    m_csgdata->setIdx( m_index, m_soIdx, m_lvIdx, getHeight() ); 
-}
-
-
-void NCSG::export_r(nnode* node, unsigned idx)
-{
-    LOG(error) << "export_r START  " ; 
-
-    export_node( node, idx) ; 
-    if(m_adopted) export_srcnode( node, idx) ; 
-
-    if(node->left && node->right)
-    {
-        export_r(node->left,  2*idx + 1);
-        export_r(node->right, 2*idx + 2);
-    }  
-    LOG(error) << "export_r DONE  " ; 
-}
-
-
+In the adopted from nnode case (as opposed to loaded from python written buffers) there are no src buffers  
+so remedy that here : allowing loading just like from python
+ 
+**/
 
 void NCSG::export_srcnode(nnode* node, unsigned idx)
 {
-    LOG(info) << "export_srcnode" ; 
+    //LOG(info) << "export_srcnode" ; 
 
     assert( m_adopted ) ; 
 
@@ -883,7 +784,7 @@ void NCSG::export_srcnode(nnode* node, unsigned idx)
     npart pt = node->srcpart();
     _srcnodes->setPart( pt, idx );   // writes 4 quads to buffer 
 
-    LOG(info) << "export_srcnode DONE " ; 
+    //LOG(info) << "export_srcnode DONE " ; 
 }
 
 
@@ -900,83 +801,10 @@ void NCSG::export_itransform( nnode* node, NPY<float>* _dest )
     _dest->add(t) ;   // <-- nothing fancy straight collection like csg.py:serialize 
 
     node->itransform_idx = itransform1  ;    
-
-    //LOG(error) << " itransform1 " << itransform1 ;
-    //std::cout << gpresent("t", t ) << std::endl ; 
 }
 
 
-
-
-/**
-NCSG::export_node
--------------------
-
-export_gtransform
-   collects gtransform into the tran buffer and sets gtransform_idx 
-   on the node tree 
-
-export_planes
-   collects convex polyhedron planes into plan buffer
-
-
-NB the part writing into part buffer has to be after 
-these as idxs get into that buffer
-
-**/
-
-void NCSG::export_node(nnode* node, unsigned idx)
-{
-    LOG(error) << "export_node START " ; 
-
-    assert(idx < getNumNodes() ); 
-    LOG(trace) << "NCSG::export_node"
-              << " idx " << idx 
-              << node->desc()
-              ;
-
-    export_gtransform(node);
-
-    NPY<float>* _planes = m_csgdata->getSrcPlaneBuffer() ; 
-    export_planes(node, _planes);
-  
-    // crucial 2-step here, where m_nodes gets totally rewritten
-    npart pt = node->part();  // node->type node->gtransform_idx node->complement written into pt 
-
-    pt.check_bb_zero(node->type); 
-
-    NPY<float>* _nodes = m_csgdata->getNodeBuffer(); 
-
-    _nodes->setPart( pt, idx);  // writes 4 quads to buffer
-
-    LOG(error) << "export_node DONE  " ; 
-
-}
-
-/**
-NCSG::export_gtransform
--------------------------
-
-On GPU only gtransform_idx on primitives are used
-(there being no multiplying up the tree). 
-Any gtransform_idx on operator nodes are ignored.
-
-see notes/issues/OKX4Test_partBuffer_difference.rst
-
-using 0 (meaning None) for identity 
-
-**/
-void NCSG::export_gtransform(nnode* node)
-{
-    if(node->is_primitive())
-    {
-        const nmat4triple* gtransform = node->global_transform();   
-        if( gtransform == NULL ) gtransform = nmat4triple::make_identity() ;
-        node->gtransform_idx = addUniqueTransform(gtransform) ; // to m_gtransforms
-
-        //LOG(error) << " node->gtransform_idx " << node->gtransform_idx ; 
-    }
-}
+//////////////////////////////////////////////////////////////////////////////////////////////
 
 
 void NCSG::dump(const char* msg)
@@ -1007,9 +835,6 @@ void NCSG::dump_surface_points(const char* msg, unsigned dmax) const
 }
 
 
-
-
-
 std::string NCSG::brief() const 
 {
     std::stringstream ss ; 
@@ -1036,132 +861,15 @@ std::string NCSG::desc()
     return ss.str();  
 }
 
-NCSG* NCSG::Load(const char* treedir, const char* gltfconfig)
-{
-    if(!NCSGData::Exists(treedir))
-    {
-         LOG(warning) << "NCSG::Load no such treedir " << treedir ;
-         return NULL ; 
-    }
 
-    NSceneConfig* config = new NSceneConfig(gltfconfig) ; 
-    NCSG* csg = NCSG::Load(treedir, config);
-    assert(csg);
-    return csg ; 
-}
 
-NCSG* NCSG::Load(const char* treedir)
-{
-    LOG(info) << treedir << " ############################ " ;  
-
-    const char* config_ = "polygonize=0" ; 
-    NSceneConfig* config = new NSceneConfig(config_); 
-    return NCSG::Load(treedir, config); 
-}
-
-NCSG* NCSG::Load(const char* treedir, const NSceneConfig* config  )
-{
-    if(!NCSGData::Exists(treedir) )
-    {
-         LOG(warning) << "NCSG::Load no such treedir " << treedir ;
-         return NULL ; 
-    }
-
-    NCSG* tree = new NCSG(treedir) ; 
-
-    tree->setConfig(config);
-    tree->setVerbosity(config->verbosity);
-    tree->setIsUsedGlobally(true);
-
-    tree->loadsrc();  // populate the src* buffers 
-    tree->import();   // complete binary tree m_nodes buffer -> node tree
-    tree->export_();  // node tree -> complete binary tree m_nodes buffer
-
-    if(config->verbosity > 1) tree->dump("NCSG::Load");
-
-    if(config->polygonize)
-    {
-       tree->polygonize();
-    }
-
-    tree->collect_surface_points();
-
-    return tree ; 
-}
-
-NCSG* NCSG::Adopt(nnode* root)
-{
-    const char* config = "" ; 
-    unsigned soIdx = 0 ; 
-    unsigned lvIdx = 0 ; 
-    return Adopt( root, config, soIdx , lvIdx ); 
-}
-
-NCSG* NCSG::Adopt(nnode* root, const char* config_, unsigned soIdx, unsigned lvIdx)
-{
-    NSceneConfig* config = new NSceneConfig(config_); 
-    return Adopt( root, config, soIdx , lvIdx ); 
-}
-
-NCSG* NCSG::Adopt(nnode* root, const NSceneConfig* config, unsigned soIdx, unsigned lvIdx )
-{
-    LOG(error) << " Adopt START " ; 
-    nnode::Set_parent_links_r(root, NULL);
-
-    root->set_treeidx(lvIdx) ;  // without this no nudging is done
-
-    NCSG* tree = new NCSG(root);
-    LOG(error) << " Adopt NCSG(root) DONE " ; 
-
-    tree->setConfig(config);
-    tree->setSOIdx(soIdx); 
-    tree->setLVIdx(lvIdx); 
-
-    /*
-    LOG(error) 
-               << " soIdx " << std::setw(3) << soIdx  
-               << " lvIdx " << std::setw(3) << lvIdx  
-               << " "  
-               << tree->get_nudger()->brief() 
-               ;
-    */
-
-    LOG(error) << " Adopt export_  " ; 
-    tree->export_();        // node tree -> complete binary tree m_nodes buffer
-    LOG(error) << " Adopt export_ DONE  " ; 
-    assert( tree->getGTransformBuffer() );
-
-    LOG(error) << " Adopt collect_surface_points " ; 
-    tree->collect_surface_points();
-    LOG(error) << " Adopt collect_surface_points DONE " ; 
-
-    return tree ; 
-}
- 
 
 NTrianglesNPY* NCSG::polygonize()
 {
     if(m_tris == NULL)
     {
-        if(m_verbosity > 1)
-        {
-        LOG(info) << "NCSG::polygonize START"
-                  << " verbosity " << m_verbosity 
-                  << " treedir " << m_treedir
-                  ; 
-        }
-
         NPolygonizer pg(this);
         m_tris = pg.polygonize();
-
-        if(m_verbosity > 1)
-        {
-        LOG(info) << "NCSG::polygonize DONE" 
-                  << " verbosity " << m_verbosity 
-                  << " treedir " << m_treedir
-                  ; 
-        }
-
     }
     return m_tris ; 
 }
@@ -1170,12 +878,10 @@ NTrianglesNPY* NCSG::getTris() const
 {
     return m_tris ; 
 }
-
 unsigned NCSG::getNumTriangles() const 
 {
     return m_tris ? m_tris->getNumTriangles() : 0 ; 
 }
-
 
 
 glm::uvec4 NCSG::collect_surface_points() 
@@ -1337,5 +1043,251 @@ void NCSG::postimport_autoscan()
          << std::endl 
          ;
 }
+
+
+NParameters* NCSG::LoadMetadata( const char* treedir, int item )
+{
+    return NPYMeta::LoadMetadata(treedir, item); 
+} 
+
+NCSGData* NCSG::getCSGData() const 
+{
+   return m_csgdata ; 
+}
+
+NPYList* NCSG::getNPYList() const
+{
+   return m_csgdata->getNPYList() ;
+}
+
+
+NPYMeta* NCSG::getMeta() const 
+{
+   return m_meta ; 
+}
+
+NNodeUncoincide* NCSG::make_uncoincide() const 
+{
+    return NULL ;  
+    //return new NNodeUncoincide(m_root, m_surface_epsilon, m_root->verbosity);
+}
+NNodeNudger* NCSG::get_nudger() const 
+{
+    return m_nudger ; 
+}
+NNodeNudger* NCSG::make_nudger() const 
+{
+   // when test running from nnode there is no metadata or treedir
+   // LOG(info) << soname() << " treeNameIdx " << getTreeNameIdx() ; 
+
+    NNodeNudger* nudger = new NNodeNudger(m_root, m_surface_epsilon, m_root->verbosity);
+    return nudger ; 
+}
+
+
+std::string NCSG::TestVolumeName(const char* shapename, const char* suffix, int idx) // static
+{
+    std::stringstream ss ; 
+    ss << shapename << "_" << suffix ; 
+    if(idx > -1) ss << idx ; 
+    ss << "_" ; 
+    return ss.str();
+}
+
+std::string NCSG::getTestPVName() const 
+{
+    OpticksCSG_t type = getRootType() ;
+    const char* shapename = CSGName(type); 
+    unsigned idx = getIndex();
+    return TestVolumeName( shapename, "pv", idx);     
+}
+std::string NCSG::getTestLVName() const 
+{
+    OpticksCSG_t type = getRootType() ;
+    const char* shapename = CSGName(type); 
+    unsigned idx = getIndex();
+    return TestVolumeName( shapename, "lv", idx);     
+}
+
+
+std::string NCSG::lvname() const {        return m_meta->getValue<std::string>("lvname","-") ; }
+std::string NCSG::soname() const {        return m_meta->getValue<std::string>("soname","-") ; }
+int         NCSG::treeindex() const {     return m_meta->getValue<int>("treeindex","-1") ; }
+int         NCSG::depth() const {         return m_meta->getValue<int>("depth","-1") ; }
+int         NCSG::nchild() const {        return m_meta->getValue<int>("nchild","-1") ; }
+bool        NCSG::isSkip() const {        return m_meta->getValue<int>("skip","0") == 1 ; }
+bool        NCSG::is_uncoincide() const { return m_meta->getValue<int>("uncoincide","1") == 1 ; }
+int         NCSG::getEmit() const {       return m_meta->getValue<int>("emit","0") ;  }
+
+bool NCSG::isEmit() const 
+{  
+    int emit = getEmit() ;
+    return emit == 1 || emit == -1 ;
+}
+void NCSG::setEmit(int emit) // used by --testauto
+{
+    m_meta->setValue<int>("emit", emit);
+}
+
+void NCSG::setEmitConfig(const char* emitconfig)
+{
+    m_meta->setValue<std::string>("emitconfig", emitconfig );
+}
+const char* NCSG::getEmitConfig() const 
+{ 
+    std::string ec = m_meta->getValue<std::string>("emitconfig","") ;
+    return ec.empty() ? NULL : strdup(ec.c_str()) ; 
+}
+
+std::string NCSG::meta() const 
+{
+    std::stringstream ss ; 
+    ss << " treeindex " << treeindex()
+       << " depth " << depth()
+       << " nchild " << nchild()
+       << " lvname " << lvname() 
+       << " soname " << soname() 
+       << " isSkip " << isSkip()
+       << " is_uncoincide " << is_uncoincide()
+       << " emit " << getEmit()
+       ;
+
+    return ss.str();
+}
+
+std::string NCSG::smry() const 
+{
+    std::stringstream ss ; 
+    ss 
+       << " ht " << std::setw(2) << getHeight() 
+       << " nn " << std::setw(4) << getNumNodes()
+       << " tri " << std::setw(6) << getNumTriangles()
+       << " tmsg " << ( m_tris ? m_tris->getMessage() : "NULL-tris" ) 
+       << " iug " << m_usedglobally 
+       << m_csgdata->smry() 
+      ;
+
+    return ss.str();
+}
+
+NParameters* NCSG::getMeta(int idx) const 
+{
+    return m_meta->getMeta(idx); 
+}
+
+void NCSG::increaseVerbosity(int verbosity)
+{
+    if(verbosity > -1) 
+    {
+        if(verbosity > m_verbosity)
+        {
+            LOG(debug) << "NCSG::increaseVerbosity" 
+                       << " treedir " << m_treedir
+                       << " old " << m_verbosity 
+                       << " new " << verbosity 
+                       ; 
+        }
+        else
+        {
+            LOG(debug) << "NCSG::increaseVerbosity IGNORING REQUEST TO DECREASE verbosity " 
+                       << " treedir " << m_treedir
+                       << " current verbosity " << m_verbosity 
+                       << " requested : " << verbosity 
+                       ; 
+ 
+        }
+    }
+}
+
+
+
+nnode* NCSG::getRoot() const 
+{
+    return m_root ; 
+}
+OpticksCSG_t NCSG::getRootType() const 
+{
+    assert(m_root);
+    return m_root->type ; 
+}
+
+unsigned NCSG::getHeight() const { return m_csgdata->getHeight(); }
+unsigned NCSG::getNumNodes() const { return m_csgdata->getNumNodes() ; } 
+
+NPY<float>*    NCSG::getNodeBuffer() const {       return m_csgdata->getNodeBuffer() ; }
+NPY<unsigned>* NCSG::getIdxBuffer() const {        return m_csgdata->getIdxBuffer() ; } 
+NPY<float>*    NCSG::getTransformBuffer() const {  return m_csgdata->getTransformBuffer() ; } 
+NPY<float>*    NCSG::getGTransformBuffer() const { return m_csgdata->getGTransformBuffer() ; } 
+NPY<float>*    NCSG::getPlaneBuffer() const {      return m_csgdata->getPlaneBuffer() ; } 
+
+/*
+NPY<float>*    NCSG::getSrcNodeBuffer() const {      return m_csgdata->getSrcNodeBuffer() ; } 
+NPY<unsigned>* NCSG::getSrcIdxBuffer() const {       return m_csgdata->getSrcIdxBuffer() ; } 
+NPY<float>*    NCSG::getSrcPlaneBuffer() const {     return m_csgdata->getSrcPlaneBuffer() ; } 
+NPY<float>*    NCSG::getSrcTransformBuffer() const { return m_csgdata->getSrcTransformBuffer() ; } 
+*/
+
+
+const char* NCSG::getBoundary() const 
+{
+    return m_boundary ; 
+}
+const char* NCSG::getTreeDir() const 
+{
+    return m_treedir ; 
+}
+
+const char* NCSG::getTreeName() const 
+{
+    std::string name = BFile::Name(m_treedir ? m_treedir : "-1") ; 
+    return strdup(name.c_str());
+}
+int NCSG::getTreeNameIdx() const 
+{
+    const char* name = getTreeName();
+    return BStr::atoi(name, -1);
+}
+
+unsigned NCSG::getIndex() const 
+{
+    return m_index ; 
+}
+int NCSG::getVerbosity() const 
+{
+    return m_verbosity ; 
+}
+bool NCSG::isContainer() const 
+{
+    return m_container > 0  ; 
+}
+float NCSG::getContainerScale() const 
+{
+    return m_containerscale  ; 
+}
+bool NCSG::isUsedGlobally() const 
+{
+    return m_usedglobally ; 
+}
+void NCSG::setIndex(unsigned index)
+{
+    m_index = index ; 
+}
+void NCSG::setVerbosity(int verbosity)
+{
+    m_verbosity = verbosity ; 
+}
+void NCSG::setIsUsedGlobally(bool usedglobally )
+{
+    m_usedglobally = usedglobally ; 
+}
+void NCSG::setBoundary(const char* boundary)
+{
+    m_boundary = boundary ? strdup(boundary) : NULL ; 
+}
+void NCSG::setConfig(const NSceneConfig* config)
+{
+    m_config = config ; 
+}
+
 
 

@@ -27,6 +27,76 @@ Test
 
 
 
+Major NCSG Refactoring 
+--------------------------
+
+Taking a bulldozer to the monolith. Split into NCSG into:
+
+1. NCSGData
+2. NPYList
+3. NPYMeta 
+
+Problems with the from nnode Adopt route should show up in standard tests, 
+but also want to keep the from python route working. So remember to::
+
+
+
+Failing to make a gtransforms buffer for this route
+------------------------------------------------------
+
+::
+
+    tboolean-box -D
+
+::
+
+    (lldb) f 5
+    frame #5: 0x00000001018ba62a libGGeo.dylib`GMaker::makeFromCSG(csg=0x000000010eec2900, (null)=0x000000010eebebe0, verbosity=0) at GMaker.cc:163
+       160 	    volume->setLVName( strdup(lvn.c_str()) );
+       161 	    volume->setCSGFlag( type );
+       162 	
+    -> 163 	    GParts* pts = GParts::make( csg, spec, verbosity );
+       164 	
+       165 	    volume->setParts( pts );
+       166 	
+    (lldb) p csg->m_csgdata->m_npy->desc()
+    (std::__1::string) $11 = "NPYList srcnodes.npy 1,4,4   srcidx.npy 1,4   srctransforms.npy 1,4,4   nodes.npy 1,4,4   planes.npy 0,4   idx.npy 1,4   transforms.npy 1,3,4,4  "
+    (lldb) bt
+    * thread #1, queue = 'com.apple.main-thread', stop reason = signal SIGABRT
+        frame #0: 0x00007fff74570b6e libsystem_kernel.dylib`__pthread_kill + 10
+        frame #1: 0x00007fff7473b080 libsystem_pthread.dylib`pthread_kill + 333
+        frame #2: 0x00007fff744cc1ae libsystem_c.dylib`abort + 127
+        frame #3: 0x00007fff744941ac libsystem_c.dylib`__assert_rtn + 320
+        frame #4: 0x0000000101877a52 libGGeo.dylib`GParts::make(tree=0x000000010eec2900, spec="Rock//perfectAbsorbSurface/Vacuum", verbosity=0) at GParts.cc:193
+      * frame #5: 0x00000001018ba62a libGGeo.dylib`GMaker::makeFromCSG(csg=0x000000010eec2900, (null)=0x000000010eebebe0, verbosity=0) at GMaker.cc:163
+        frame #6: 0x00000001018ba1a7 libGGeo.dylib`GMaker::makeFromCSG(this=0x000000010eebd7c0, csg=0x000000010eec2900, verbosity=0) at GMaker.cc:114
+        frame #7: 0x00000001018b5a00 libGGeo.dylib`GGeoTest::importCSG(this=0x000000010eeb6130, volumes=size=1) at GGeoTest.cc:363
+        frame #8: 0x00000001018b5032 libGGeo.dylib`GGeoTest::initCreateCSG(this=0x000000010eeb6130) at GGeoTest.cc:200
+        frame #9: 0x00000001018b4a01 libGGeo.dylib`GGeoTest::init(this=0x000000010eeb6130) at GGeoTest.cc:137
+        frame #10: 0x00000001018b48ad libGGeo.dylib`GGeoTest::GGeoTest(this=0x000000010eeb6130, ok=0x000000010af4b220, basis=0x000000010af57640) at GGeoTest.cc:128
+        frame #11: 0x00000001018b4c65 libGGeo.dylib`GGeoTest::GGeoTest(this=0x000000010eeb6130, ok=0x000000010af4b220, basis=0x000000010af57640) at GGeoTest.cc:123
+        frame #12: 0x00000001005f0bbf libOpticksGeo.dylib`OpticksHub::createTestGeometry(this=0x000000010af4ee20, basis=0x000000010af57640) at OpticksHub.cc:461
+        frame #13: 0x00000001005ef5a2 libOpticksGeo.dylib`OpticksHub::loadGeometry(this=0x000000010af4ee20) at OpticksHub.cc:415
+        frame #14: 0x00000001005ee2c2 libOpticksGeo.dylib`OpticksHub::init(this=0x000000010af4ee20) at OpticksHub.cc:176
+        frame #15: 0x00000001005ee1ac libOpticksGeo.dylib`OpticksHub::OpticksHub(this=0x000000010af4ee20, ok=0x000000010af4b220) at OpticksHub.cc:158
+        frame #16: 0x00000001005ee3cd libOpticksGeo.dylib`OpticksHub::OpticksHub(this=0x000000010af4ee20, ok=0x000000010af4b220) at OpticksHub.cc:157
+        frame #17: 0x00000001000d3d7b libOK.dylib`OKMgr::OKMgr(this=0x00007ffeefbfddc8, argc=28, argv=0x00007ffeefbfdea8, argforced=0x0000000000000000) at OKMgr.cc:44
+        frame #18: 0x00000001000d41bb libOK.dylib`OKMgr::OKMgr(this=0x00007ffeefbfddc8, argc=28, argv=0x00007ffeefbfdea8, argforced=0x0000000000000000) at OKMgr.cc:52
+        frame #19: 0x000000010000b995 OKTest`main(argc=28, argv=0x00007ffeefbfdea8) at OKTest.cc:13
+        frame #20: 0x00007fff74420015 libdyld.dylib`start + 1
+        frame #21: 0x00007fff74420015 libdyld.dylib`start + 1
+    (lldb) 
+
+
+Seems issue from NCSGList loading, failing to somehow great the GTransforms buffer::
+
+    TEST=NCSGListTest om-t
+
+
+Argh : NCSG spills its guts in NCSGList.  Need to keep some distance between these.
+
+
+
 
 Discreps
 ---------

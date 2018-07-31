@@ -37,26 +37,33 @@ class NPY_API NCSGData
            SRC_VERTS,
 
            NODES,
+           PLANES,
+           IDX,
            TRANSFORMS, 
-           GTRANSFORMS, 
-           IDX
+           GTRANSFORMS
 
         }  NCSGData_t ; 
 
         static const NPYSpecList* MakeSPECS(); 
         static const NPYSpecList* SPECS ; 
+
     public:
+        unsigned getHeight() const ;
+        unsigned getNumNodes() const ;
+        NPYList* getNPYList() const ; 
+
+        NPY<float>*    getNodeBuffer() const ;
+        NPY<unsigned>* getIdxBuffer() const ;
+        NPY<float>*    getTransformBuffer() const ;
+        NPY<float>*    getGTransformBuffer() const ;
+        NPY<float>*    getPlaneBuffer() const ;
+
         NPY<float>*    getSrcNodeBuffer() const ;
         NPY<unsigned>* getSrcIdxBuffer() const ;
         NPY<float>*    getSrcTransformBuffer() const ;
         NPY<float>*    getSrcPlaneBuffer() const ;
         NPY<int>*      getSrcFacesBuffer() const ;
         NPY<float>*    getSrcVertsBuffer() const ;
-
-        NPY<float>*    getNodeBuffer() const ;
-        NPY<float>*    getTransformBuffer() const ;
-        NPY<float>*    getGTransformBuffer() const ;
-        NPY<unsigned>* getIdxBuffer() const ;
 
     public:
         void loadsrc(const char* treedir);
@@ -78,9 +85,7 @@ class NPY_API NCSGData
         NCSGData(); 
         void init_buffers(unsigned height);  // maxdepth of node tree
         void setIdx( unsigned index, unsigned soIdx, unsigned lvIdx, unsigned height );
-    public:
-        unsigned getHeight() const ;
-        unsigned getNumNodes() const ;
+
     public:
         // pure const access to src buffer content 
         void     getSrcPlanes(std::vector<glm::vec4>& _planes, unsigned idx, unsigned num_plane  ) const ;
@@ -93,6 +98,7 @@ class NPY_API NCSGData
         // from m_transforms
         nmat4triple* import_transform_triple(unsigned itra);
         void prepareForImport();  // m_srctransforms -> m_transforms + prepares m_gtransforms to collect globals during import  
+        void prepareForSetup();   
         void prepareForExport();  // create m_nodes ready for exporting from the node tree 
     public:
         unsigned addUniqueTransform( const nmat4triple* gtransform ); // add to m_gtransforms

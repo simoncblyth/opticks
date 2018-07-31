@@ -168,12 +168,15 @@ void NCSGList::load()
             float delta = 0.f ; 
             tree->adjustToFit(m_container_bbox, scale, delta );
 
-
             nbbox bba2 = tree->bbox_analytic();
             m_container_bbox.include(bba2);   // update for the auto-container, used by NCSGList::createUniverse
         }
       
         tree->export_(); // from CSG nnode tree back into *same* in memory buffer, with bbox added   
+
+        // ^^^^^^^^^^^^^ DONT LIKE THIS the Load does an export already 
+        //  this is trying to update the buffers following the adjustToFit 
+ 
 
         LOG(debug) << "NCSGList::load [" << idx << "] " << tree->desc() ; 
 
@@ -237,6 +240,7 @@ NCSG* NCSGList::loadTree(unsigned idx, const char* boundary) const
 {
     std::string treedir = getTreeDir(idx);
 
+/*
     NCSG* tree = new NCSG(treedir.c_str());
 
     tree->setIndex(idx);
@@ -244,7 +248,12 @@ NCSG* NCSGList::loadTree(unsigned idx, const char* boundary) const
     tree->setBoundary( boundary );
 
     tree->loadsrc();    // m_nodes, the user input serialization buffer (no bbox from user input python)
-    tree->import();  // input m_nodes buffer into CSG nnode tree 
+    tree->import();     // input m_nodes buffer into CSG nnode tree 
+*/
+
+    NCSG* tree = NCSG::Load(treedir.c_str()) ; 
+    tree->setIndex(idx);  
+    tree->setBoundary(boundary); 
 
     return tree ; 
 }

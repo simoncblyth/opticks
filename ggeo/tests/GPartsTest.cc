@@ -1,7 +1,11 @@
+// TEST=GPartsTest om-t
+
 #include <cassert>
 #include <vector>
 
 #include "NCSG.hpp"
+#include "NPYBase.hpp"
+#include "NPYList.hpp"
 #include "NNode.hpp"
 #include "NNodeSample.hpp"
 
@@ -91,11 +95,26 @@ void test_save_load(GBndLib* bndlib)
     pts2->dump("pts2");
 }
 
+void test_load_ncsg_make()
+{
+     NCSG* csg = NCSG::Load("$TMP/tboolean-box--/0");
+     const char* spec = "Rock//perfectAbsorbSurface/Vacuum" ; 
+     unsigned verbosity = 3 ; 
+
+     NPYList* npy = csg->getNPYList(); 
+     LOG(info) << " npy " << npy->desc() ; 
+
+     GParts* pts = GParts::make( csg, spec, verbosity );
+     assert(pts); 
+}
+
+
 
 int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv);
 
+/*
     Opticks ok(argc, argv);
 
     bool constituents = true ; 
@@ -104,6 +123,9 @@ int main(int argc, char** argv)
 
     test_save_empty(bndlib);
     test_save_load(bndlib);
+*/
+
+    test_load_ncsg_make();
 
     return 0 ;
 }

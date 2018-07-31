@@ -1,16 +1,29 @@
+// TEST=NCSGSaveTest om-t
+
 #include "BFile.hh"
 #include "BStr.hh"
 
+#include "NPY.hpp"
 #include "NCSG.hpp"
 #include "NNodeSample.hpp"
 #include "NNode.hpp"
 
 #include "OPTICKS_LOG.hh"
 
+void test_load()
+{
+    NCSG* csg = NCSG::Load("$TMP/tboolean-box--/1"); 
+    NPY<float>* gt = csg->getGTransformBuffer(); 
+    assert(gt);  
+    LOG(info) << " gt " << gt->getShapeString() ; 
+}
 
 void test_load_save()
 {
     NCSG* csg = NCSG::Load("$TMP/tboolean-box--/1"); 
+    NPY<float>* gt = csg->getGTransformBuffer(); 
+    assert(gt);  
+
     if(!csg) return ; 
     csg->savesrc("$TMP/tboolean-box--save/1") ; 
 
@@ -66,9 +79,10 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv);
 
+    test_load(); 
     //test_load_save(); 
     //test_adopt_save(); 
-    test_chain();
+    //test_chain();
  
     return 0 ; 
 }

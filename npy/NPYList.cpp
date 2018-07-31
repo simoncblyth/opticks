@@ -19,7 +19,9 @@ NPYList::NPYList(const NPYSpecList* specs)
 void NPYList::init()
 {
     m_buf.fill(NULL); 
+    m_locked.fill(false); 
 }
+
 
 const NPYSpec* NPYList::getBufferSpec( int bid) const
 {
@@ -40,10 +42,11 @@ std::string NPYList::getBufferPath( const char* treedir, int bid ) const
     return path ; 
 }
 
-void NPYList::saveBuffer(const char* treedir, int bid ) const
+void NPYList::saveBuffer(const char* treedir, int bid, const char* msg ) const
 {
     const NPYSpec* spec = getBufferSpec(bid) ; 
     bool optional = spec->isOptional() ; 
+    int verbosity = spec->getVerbosity() ; 
     NPYBase* buffer = getBuffer(bid); 
     if( !optional && buffer == NULL )
     {
@@ -51,17 +54,34 @@ void NPYList::saveBuffer(const char* treedir, int bid ) const
         assert(0) ; 
     }
     if( buffer == NULL ) return ; 
+    unsigned ni = buffer->getNumItems(); 
     std::string path = getBufferPath(treedir, bid); 
+
+    if(verbosity > 2)
+    LOG(info) 
+           << " spec.verbosity " << verbosity 
+           <<  " save " << path 
+           <<  " numItems " << ni 
+           << " msg " << ( msg ? msg : "-" )
+           ; 
+
+    if( optional && ni == 0) return ; 
     buffer->save(path.c_str());  
 }
 
-void NPYList::loadBuffer(const char* treedir, int bid )
+void NPYList::loadBuffer(const char* treedir, int bid, const char* msg)
 {
     const NPYSpec* spec = getBufferSpec(bid) ; 
+    if(isLocked(bid))
+    {
+        LOG(fatal) << "loadBuffer NOT ALLOWED :  BUFFER IS LOCKED " << spec->getName() ; 
+        assert(0); 
+    }  
+
     bool optional = spec->isOptional() ; 
+    int verbosity = spec->getVerbosity() ; 
 
     std::string path = getBufferPath(treedir, bid); 
-
     bool exists = BFile::ExistsFile(path.c_str()) ;
     if(!optional && !exists)
     {
@@ -69,6 +89,14 @@ void NPYList::loadBuffer(const char* treedir, int bid )
         assert(0) ; 
     }
     if(!exists) return ; 
+
+    if(verbosity > 2 )
+        LOG(info) 
+             << " spec.verbosity " << verbosity 
+             <<  " loaded " << path 
+             << " msg " << ( msg ? msg : "-" )
+             ; 
+
 
     NPYBase::Type_t type = getBufferType(bid); 
     NPYBase* buffer = NPYBase::Load( path.c_str(), type );     
@@ -79,12 +107,39 @@ void NPYList::loadBuffer(const char* treedir, int bid )
     assert( buffer == buffer2 ); 
 }   
 
-void NPYList::setBuffer( int bid, NPYBase* buffer )
+void NPYList::setBuffer( int bid, NPYBase* buffer, const char* msg )
 {
+    const NPYSpec* spec = getBufferSpec(bid) ; 
+    if(isLocked(bid))
+    {
+        LOG(fatal) << "setBuffer NOT ALLOWED :  BUFFER IS LOCKED " << spec->getName() ; 
+        assert(0); 
+    }  
+
     NPYBase* prior = getBuffer(bid) ; 
-    if(prior) LOG(warning) << "replacing prior buffer" ; 
+    if(prior) 
+    { 
+        LOG(error) << "replacing " << spec->getName() << " buffer "   
+                   << " prior " << prior->getShapeString()
+                   << " buffer " << buffer->getShapeString()
+                   << " msg " << ( msg ? msg : "-" )
+                   ; 
+        //assert(0);   NCSGList trips this with its re-export following an adjustToFit of the container
+    } 
     assert( bid > -1 && bid < MAX_BUF ) ; 
     m_buf[bid] = buffer ; 
+}
+
+void NPYList::setLocked( int bid, bool locked )
+{
+    assert( bid > -1 && bid < MAX_BUF ) ; 
+    m_locked[bid] = locked ; 
+}
+
+bool NPYList::isLocked( int bid )
+{
+    assert( bid > -1 && bid < MAX_BUF ) ; 
+    return m_locked[bid] ; 
 }
 
 NPYBase* NPYList::getBuffer(int bid) const 
@@ -114,11 +169,26 @@ unsigned NPYList::getNumItems(int bid) const
 }
 
 
-void NPYList::initBuffer(int bid, int ni, bool zero) 
+void NPYList::initBuffer(int bid, int ni, bool zero, const char* msg) 
 {
     const NPYSpec* spec = getBufferSpec(bid) ; 
+    if(isLocked(bid))
+    {
+        LOG(fatal) << "initBuffer NOT ALLOWED :  BUFFER IS LOCKED " << spec->getName() ; 
+        assert(0); 
+    }  
+
+    int verbosity = spec->getVerbosity() ; 
+    if( verbosity > 2 ) 
+         LOG(info) << " initBuffer " 
+                   << " spec.verbosity " << verbosity 
+                   << " msg " << ( msg ? msg : "NULL" ) 
+                   << " name " << spec->getName() 
+                  ; 
+
+
     NPYBase* buffer = NPYBase::Make( ni, spec, zero );  
-    setBuffer( bid, buffer );  
+    setBuffer( bid, buffer, msg );  
 }
 
 

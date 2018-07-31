@@ -131,6 +131,7 @@ class NParameters ;
 
 class NCSGData ; 
 class NPYMeta ; 
+class NPYList ; 
 
 class NNodePoints ; 
 class NNodeUncoincide ; 
@@ -171,6 +172,7 @@ class NPY_API NCSG {
         NTrianglesNPY* getTris() const ;
 
         NCSGData* getCSGData() const ;
+        NPYList* getNPYList() const ;
         NPYMeta*  getMeta() const ;
 
     public:
@@ -229,28 +231,42 @@ class NPY_API NCSG {
         float        getContainerScale() const ;
         bool         isUsedGlobally() const ;
 
-        // principal consumer is GParts::make
+
+
+    public:
+        // from NCSGData.m_csgdata, principal consumer is GParts::make
+
+        unsigned     getHeight() const ;
+        unsigned     getNumNodes() const ;
+
         NPY<float>*    getNodeBuffer() const ;
         NPY<float>*    getTransformBuffer() const ;
         NPY<float>*    getGTransformBuffer() const ;
         NPY<float>*    getPlaneBuffer() const ;
         NPY<unsigned>* getIdxBuffer() const ;
-
-        NPY<float>*    getSrcTransformBuffer() const ;
+    private: 
+        /*
         NPY<float>*    getSrcNodeBuffer() const ;
+        NPY<unsigned>* getSrcIdxBuffer() const ;
+        NPY<float>*    getSrcPlaneBuffer() const ;
+        NPY<float>*    getSrcTransformBuffer() const ;
+        */
+    public:
+        // from NPYMeta.m_meta 
         NParameters*   getMeta(int idx) const ;
 
-        unsigned     getNumNodes() const ;
 
-        unsigned     getHeight() const ;
         nnode*       getRoot() const ;
         OpticksCSG_t getRootType() const ;  
         unsigned getNumTriangles() const ;
     private:
         //NParameters* getNodeMetadata(unsigned idx) const ;
     public:
-        void check();
-        void check_r(nnode* node); 
+        void check() const ;
+    private:
+        void check_r(const nnode* node) const ; 
+        void check_node(const nnode* node ) const ;
+    public:
         void setIndex(unsigned index);
         void setVerbosity(int verbosity);
     private:
@@ -285,11 +301,15 @@ class NPY_API NCSG {
         nnode* import_operator( unsigned idx, OpticksCSG_t typecode );
         void import_srcplanes(nnode* node);
         void import_srcvertsfaces(nnode* node);
-    private:
-        //nmat4pair*   import_transform_pair(unsigned itra);
-        //nmat4triple* import_transform_triple(unsigned itra);
 
+    public:
+        // collect global transforms into m_gtransforms and sets the node->gtransform and node->gtransform_idx refs
+        void setup_global_transforms() ;
+    private:
+        void setup_global_transforms_r(nnode* node) ;
+        void setup_global_transforms_visit(nnode* node);
         unsigned addUniqueTransform( const nmat4triple* gtransform );
+
     private:
         // Serialize branch 
         // export node tree into a buffers (complete binary tree buffer of nodes, transforms, planes)
@@ -300,7 +320,7 @@ class NPY_API NCSG {
         // collects gtransform into the tran buffer and sets gtransform_idx 
         // into the node tree needed to prepare a G4 directly converted solid to go to GPU 
         void export_node( nnode* node, unsigned idx );
-        void export_gtransform(nnode* node);
+        //void export_gtransform(nnode* node);
         void export_srcnode(nnode* node, unsigned idx);
         void export_planes(nnode* node, NPY<float>* _dest );
         void export_itransform( nnode* node, NPY<float>* _dest ); 

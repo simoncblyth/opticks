@@ -1,20 +1,16 @@
-/*
-::
+// TEST=NCSGListTest om-t
 
-    simon:opticksnpy blyth$ NCSGListTest $TMP/tboolean-torus--
-*/
-
-#include "NPY_LOG.hh"
-#include "PLOG.hh"
+#include "OPTICKS_LOG.hh"
 #include "NCSGList.hpp"
 #include "NCSG.hpp"
+#include "NPYBase.hpp"
+#include "NPYList.hpp"
 
 int main(int argc, char** argv)
 {
-    PLOG_(argc, argv);
-    NPY_LOG__ ;  
+    OPTICKS_LOG(argc, argv);
 
-    const char* csgpath = argc > 1 ? argv[1] : NULL ; 
+    const char* csgpath = argc > 1 ? argv[1] : "$TMP/tboolean-box--" ; 
     unsigned verbosity = 0 ; 
 
     if(csgpath == NULL)
@@ -33,6 +29,22 @@ int main(int argc, char** argv)
     ls->dumpDesc();
     ls->dumpMeta();
     ls->dumpUniverse();
+
+    unsigned num_trees = ls->getNumTrees(); 
+
+    for(unsigned i=0 ; i < num_trees ; i++)
+    {
+        NCSG* tree = ls->getTree(i) ; 
+        NPYList* npy = tree->getNPYList(); 
+        LOG(info) << npy->desc() ; 
+
+        NPY<float>* gt = tree->getGTransformBuffer(); 
+
+        if(!gt) LOG(fatal) << "NO GTransformBuffer " ; 
+        //assert(gt); 
+    }
+
+
 
 
     return 0 ; 

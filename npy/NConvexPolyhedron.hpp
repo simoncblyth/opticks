@@ -32,6 +32,8 @@ struct NPY_API nconvexpolyhedron : nnode
 
     void set_planes(const std::vector<glm::vec4>& planes_) ;
     void set_srcvertsfaces( const std::vector<glm::vec3>& srcverts_ , const std::vector<glm::ivec4>& srcfaces_ ) ;
+    void dump_srcvertsfaces() const ; 
+
 
     void set_bbox(const nbbox& bb) ;
 

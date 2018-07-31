@@ -761,6 +761,7 @@ void NPY<T>::save(const char* raw)
                     << " itemshape " << itemshape
                     << " native " << native 
                     ; 
+         //assert(0);
     }
     else
     {
