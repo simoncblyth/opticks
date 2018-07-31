@@ -37,6 +37,8 @@ set(SOURCES
     NPYSpecList.cpp
     NSlice.cpp
     NPY.cpp
+    NPYList.cpp
+    NPYMeta.cpp
     NLoad.cpp
 
     GLMPrint.cpp
@@ -224,6 +226,8 @@ GLMFormat.hpp
 NBufferSpec.hpp
 NPYBase.hpp
 NPY.hpp
+NPYList.hpp
+NPYMeta.hpp
 NLoad.hpp
 ViewNPY.hpp
 NPYSpec.hpp

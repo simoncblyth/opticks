@@ -71,7 +71,7 @@ NPolygonizer::NPolygonizer(NCSG* csg)
     m_csg(csg), 
     m_root(csg->getRoot()),
     m_bbox(new nbbox(m_root->bbox())),
-    m_meta(csg->getMetaParameters(-1)),
+    m_meta(csg->getMeta(-1)),
     m_verbosity(m_meta->get<int>("verbosity", "0" )),
     m_index(m_csg->getIndex()),
     m_poly(NULL),

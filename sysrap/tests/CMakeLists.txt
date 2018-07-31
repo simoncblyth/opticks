@@ -34,6 +34,7 @@ set(TEST_SOURCES
    S_freopen_redirect_test.cc
 
    SIdTest.cc
+   ArrayTest.cc
 
 )
 

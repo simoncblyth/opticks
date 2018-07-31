@@ -934,7 +934,7 @@ void OpticksEvent::addBufferControl(const char* name, const char* ctrl_)
 
 void OpticksEvent::setBufferControl(NPYBase* data)
 {
-    NPYSpec* spec = data->getBufferSpec();
+    const NPYSpec* spec = data->getBufferSpec();
     const char* name = data->getBufferName(); 
 
     if(!spec)

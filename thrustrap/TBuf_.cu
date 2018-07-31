@@ -116,7 +116,10 @@ void TBuf::download(NPY<T>* npy, bool verbose) const
     assert(numBytes_match);
 
     void* src = getDevicePtr();
-    void* dst = npy->zero();
+    npy->zero();
+
+    void* dst = npy->getBytes(); 
+
     cudaMemcpy( dst, src, numBytes_tbuf, cudaMemcpyDeviceToHost );
 }
 

@@ -8,7 +8,7 @@
 
 #include "PLOG.hh"
 
-NPYSpec::NPYSpec(const char* name, unsigned ni, unsigned nj, unsigned nk, unsigned nl, unsigned nm, NPYBase::Type_t type, const char* ctrl)
+NPYSpec::NPYSpec(const char* name, unsigned ni, unsigned nj, unsigned nk, unsigned nl, unsigned nm, NPYBase::Type_t type, const char* ctrl, bool optional)
   :
     m_name(name ? strdup(name) : NULL),
     m_ni(ni),
@@ -18,13 +18,14 @@ NPYSpec::NPYSpec(const char* name, unsigned ni, unsigned nj, unsigned nk, unsign
     m_nm(nm),
     m_bad_index(UINT_MAX), 
     m_type(type),
-    m_ctrl(ctrl ? strdup(ctrl) : NULL)
+    m_ctrl(ctrl ? strdup(ctrl) : NULL),
+    m_optional(optional)
 {
 }
 
 NPYSpec* NPYSpec::clone() const 
 {
-    return new NPYSpec(m_name, m_ni, m_nj, m_nk, m_nl, m_nm, m_type, m_ctrl );
+    return new NPYSpec(m_name, m_ni, m_nj, m_nk, m_nl, m_nm, m_type, m_ctrl, m_optional );
 }
 void NPYSpec::setNumItems(unsigned ni)
 {
@@ -41,6 +42,10 @@ const char* NPYSpec::getCtrl() const
     return m_ctrl ; 
 }
 
+bool NPYSpec::isOptional() const 
+{
+    return m_optional ; 
+}
 const char* NPYSpec::getName() const 
 {
     return m_name ; 
@@ -56,6 +61,7 @@ std::string NPYSpec::description() const
      std::stringstream ss ; 
      ss << std::setw(20) << desc()
         << " " 
+        << std::setw(3) << ( m_optional ? "O" : " " )
         << std::setw(20) << ( m_name ? m_name : "-" )
         << std::setw(20) << getTypeName()
         ; 
@@ -123,10 +129,5 @@ bool NPYSpec::isEqualTo(const NPYSpec* other) const
 
     return match ; 
 }
-
-
-
-
-
 
 

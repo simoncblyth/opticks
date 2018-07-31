@@ -68,11 +68,11 @@ void NPY<T>::fill( T value)
 }
 
 template <typename T>
-T* NPY<T>::zero()
+void NPY<T>::zero()
 {
     T* data_ = allocate();
     memset( data_, 0, getNumBytes(0) );
-    return data_ ; 
+    //return data_ ; 
 }
 
 template <typename T>
@@ -250,7 +250,13 @@ void NPY<T>::addItem(NPY<T>* other, unsigned item)      // add another buffer to
     unsigned extra = 1 ; 
 
     bool same= hasSameItemSize(this, other);
-    assert(same);
+
+    if(!same) LOG(fatal) << "hasSameItemSize FAIL"
+                         << " other " << other->getShapeString()
+                         << " this " << this->getShapeString()
+                         ;
+
+    assert(same && "addItem requires the same item size for this and other");
 
     unsigned itemNumBytes = getNumBytes(1) ; 
     char* itemBytes = (char*)other->getBytes() + itemNumBytes*item; 

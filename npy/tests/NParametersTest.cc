@@ -24,7 +24,8 @@ void test_save_load()
     const char* path = "$TMP/parameters.json" ;
     p.save(path);
 
-    NParameters* q = NParameters::load(path);
+    NParameters* q = NParameters::Load(path);
+    if(!q) return ; 
     q->dump("q");
 }
 

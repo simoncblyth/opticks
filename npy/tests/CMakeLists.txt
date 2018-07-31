@@ -22,6 +22,8 @@ NPYBaseTest.cc
 NSliceTest.cc
 NPYSpecTest.cc
 NPYSpecListTest.cc
+NPYListTest.cc
+NPYMetaTest.cc
 NGeoTestConfigTest.cc
 
 GLMPrintTest.cc

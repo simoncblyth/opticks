@@ -28,11 +28,19 @@
 #include "NPY.hpp"
 #include "NCSG.hpp"
 #include "NCSGData.hpp"
+#include "NPYMeta.hpp"
 #include "NTxt.hpp"
 
 
 
 #include "PLOG.hh"
+
+
+NParameters* NCSG::LoadMetadata( const char* treedir, int item )
+{
+    return NPYMeta::LoadMetadata(treedir, item); 
+} 
+
 
 const float NCSG::SURFACE_EPSILON = 1e-5f ; 
 
@@ -50,6 +58,7 @@ NCSG::NCSG(const char* treedir)
    m_uncoincide(NULL),
    m_nudger(NULL),
    m_csgdata(new NCSGData),
+   m_meta(new NPYMeta),
    m_adopted(false), 
    m_boundary(NULL),
    m_config(NULL),
@@ -75,6 +84,7 @@ NCSG::NCSG(nnode* root )
    m_uncoincide(make_uncoincide()),
    m_nudger(make_nudger()),
    m_csgdata(new NCSGData),
+   m_meta(new NPYMeta),
    m_adopted(true), 
    m_boundary(NULL),
    m_config(NULL),
@@ -95,6 +105,12 @@ NCSGData* NCSG::getCSGData() const
 {
    return m_csgdata ; 
 }
+NPYMeta* NCSG::getMeta() const 
+{
+   return m_meta ; 
+}
+
+
 
 NNodeUncoincide* NCSG::make_uncoincide() const 
 {
@@ -140,14 +156,14 @@ std::string NCSG::getTestLVName() const
 }
 
 
-std::string NCSG::lvname() const {        return m_csgdata->getMeta<std::string>("lvname","-") ; }
-std::string NCSG::soname() const {        return m_csgdata->getMeta<std::string>("soname","-") ; }
-int         NCSG::treeindex() const {     return m_csgdata->getMeta<int>("treeindex","-1") ; }
-int         NCSG::depth() const {         return m_csgdata->getMeta<int>("depth","-1") ; }
-int         NCSG::nchild() const {        return m_csgdata->getMeta<int>("nchild","-1") ; }
-bool        NCSG::isSkip() const {        return m_csgdata->getMeta<int>("skip","0") == 1 ; }
-bool        NCSG::is_uncoincide() const { return m_csgdata->getMeta<int>("uncoincide","1") == 1 ; }
-int         NCSG::getEmit() const {       return m_csgdata->getMeta<int>("emit","0") ;  }
+std::string NCSG::lvname() const {        return m_meta->getValue<std::string>("lvname","-") ; }
+std::string NCSG::soname() const {        return m_meta->getValue<std::string>("soname","-") ; }
+int         NCSG::treeindex() const {     return m_meta->getValue<int>("treeindex","-1") ; }
+int         NCSG::depth() const {         return m_meta->getValue<int>("depth","-1") ; }
+int         NCSG::nchild() const {        return m_meta->getValue<int>("nchild","-1") ; }
+bool        NCSG::isSkip() const {        return m_meta->getValue<int>("skip","0") == 1 ; }
+bool        NCSG::is_uncoincide() const { return m_meta->getValue<int>("uncoincide","1") == 1 ; }
+int         NCSG::getEmit() const {       return m_meta->getValue<int>("emit","0") ;  }
 
 bool NCSG::isEmit() const 
 {  
@@ -156,16 +172,16 @@ bool NCSG::isEmit() const
 }
 void NCSG::setEmit(int emit) // used by --testauto
 {
-    m_csgdata->setMeta<int>("emit", emit);
+    m_meta->setValue<int>("emit", emit);
 }
 
 void NCSG::setEmitConfig(const char* emitconfig)
 {
-    m_csgdata->setMeta<std::string>("emitconfig", emitconfig );
+    m_meta->setValue<std::string>("emitconfig", emitconfig );
 }
 const char* NCSG::getEmitConfig() const 
 { 
-    std::string ec = m_csgdata->getMeta<std::string>("emitconfig","") ;
+    std::string ec = m_meta->getValue<std::string>("emitconfig","") ;
     return ec.empty() ? NULL : strdup(ec.c_str()) ; 
 }
 
@@ -200,9 +216,9 @@ std::string NCSG::smry() const
     return ss.str();
 }
 
-NParameters* NCSG::getNodeMetadata(unsigned idx) const 
+NParameters* NCSG::getMeta(int idx) const 
 {
-    return m_csgdata->getNodeMetadata(idx); 
+    return m_meta->getMeta(idx); 
 }
 
 void NCSG::increaseVerbosity(int verbosity)
@@ -232,13 +248,13 @@ void NCSG::increaseVerbosity(int verbosity)
 
 void NCSG::postload()
 {
-    m_container       = m_csgdata->getMeta<int>("container", "-1");
-    m_containerscale  = m_csgdata->getMeta<float>("containerscale", "2.");
+    m_container       = m_meta->getValue<int>("container", "-1");
+    m_containerscale  = m_meta->getValue<float>("containerscale", "2.");
 
-    std::string gpuoffset = m_csgdata->getMeta<std::string>("gpuoffset", "0,0,0" );
+    std::string gpuoffset = m_meta->getValue<std::string>("gpuoffset", "0,0,0" );
     m_gpuoffset = gvec3(gpuoffset);  
 
-    int verbosity     = m_csgdata->getMeta<int>("verbosity", "0");
+    int verbosity     = m_meta->getValue<int>("verbosity", "0");
     increaseVerbosity(verbosity);
 }
 
@@ -256,6 +272,7 @@ void NCSG::savesrc(const char* treedir_ ) const
     LOG(info) << " treedir_ " << treedir_ ; 
 
     m_csgdata->savesrc(treedir_) ;  
+    m_meta->save( treedir_ ); 
 }
 
 void NCSG::loadsrc()
@@ -270,6 +287,8 @@ void NCSG::loadsrc()
 
     assert(m_csgdata);
     m_csgdata->loadsrc( m_treedir ) ; 
+    m_meta->load( m_treedir ); 
+
     postload();
 
     LOG(debug) << "NCSG::load DONE " ; 
@@ -337,13 +356,6 @@ NPY<float>* NCSG::getSrcNodeBuffer() const
     return m_csgdata->getSrcNodeBuffer() ; 
 }
 
-
-
-
-NParameters* NCSG::getMetaParameters(int idx) const
-{
-    return m_csgdata->getMetaParameters(idx) ; 
-}
 
 
 
@@ -548,7 +560,7 @@ nnode* NCSG::import_r(unsigned idx, nnode* parent)
     }
     assert(node); 
 
-    NParameters* nodemeta = getNodeMetadata(idx);
+    NParameters* nodemeta = m_meta->getMeta(idx);
     if(nodemeta) node->meta = nodemeta ; 
 
     // Avoiding duplication between the operator and primitive branches 
@@ -983,7 +995,7 @@ void NCSG::dump(const char* msg)
 
     m_root->dump("NCSG::dump");   
 
-    NParameters* _meta = m_csgdata->getMetaParameters(-1) ;
+    NParameters* _meta = m_meta->getMeta(-1) ;
     if(_meta) _meta->dump(); 
 
 }

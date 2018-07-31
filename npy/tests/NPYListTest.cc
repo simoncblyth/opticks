@@ -1,9 +1,15 @@
-// TEST=NPYSpecListTest om-t 
+// TEST=NPYListTest om-t 
 
-#include "OPTICKS_LOG.hh"
+#include "SSys.hh"
+#include "BStr.hh"
+
 #include "NPYBase.hpp"
 #include "NPYSpec.hpp"
+#include "NPYList.hpp"
 #include "NPYSpecList.hpp"
+
+#include "OPTICKS_LOG.hh"
+
 
 typedef enum 
 { 
@@ -33,24 +39,31 @@ NPYSpecList* make_speclist()
     sl->add( (unsigned)SRC_VERTS       , new NPYSpec("srcverts.npy"       , 0, 3, 0, 0, 0, NPYBase::FLOAT , "" ));
     sl->add( (unsigned)NODES           , new NPYSpec("nodes.npy"          , 0, 4, 4, 0, 0, NPYBase::FLOAT , "" ));
     sl->add( (unsigned)TRANSFORMS      , new NPYSpec("transforms.npy"     , 0, 4, 4, 0, 0, NPYBase::FLOAT , "" ));
-    sl->add( (unsigned)GTRANSFORMS     , new NPYSpec("gtransforms.npy"    , 0, 4, 4, 0, 0, NPYBase::FLOAT , "" ));
+    sl->add( (unsigned)GTRANSFORMS     , new NPYSpec("gtransforms.npy"    , 0, 3, 4, 4, 0, NPYBase::FLOAT , "" ));
     sl->add( (unsigned)IDX             , new NPYSpec("idx.npy"            , 0, 4, 0, 0, 0, NPYBase::UINT  , "" ));
 
     LOG(info) << std::endl << sl->description() ; 
     return sl ; 
 } 
 
+
 int main(int argc, char** argv)
 {
-    OPTICKS_LOG(argc, argv); 
+    OPTICKS_LOG(argc, argv);
 
-    NPYSpecList* sl = make_speclist(); 
+    NPYSpecList* sl = make_speclist() ;
+    NPYList* nl = new NPYList(sl); 
 
-    NCSGData_t bid = GTRANSFORMS ; 
-    const NPYSpec* spec = sl->getByIdx( (unsigned)bid ); 
-    LOG(info) << " GTRANSFORMS : " << spec->description() ; 
+    nl->initBuffer( (int)GTRANSFORMS, 1, true ); 
+
+    LOG(info) << nl->desc() ; 
+
+    const char* dir = "$TMP/NPYListTest" ; 
+    nl->saveBuffer( dir, (int)GTRANSFORMS ); 
+
+    SSys::run( BStr::concat("np.py ", dir, "/gtransforms.npy" ));  
+    SSys::run( BStr::concat("np.py ", dir, NULL ));    // note no cleaning 
 
     return 0 ; 
 }
-
 

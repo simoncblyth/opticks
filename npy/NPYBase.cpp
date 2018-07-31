@@ -72,7 +72,7 @@ NPYBase* NPYBase::Load( const char* path, NPYBase::Type_t type )
     return buffer ; 
 }
 
-NPYBase* NPYBase::Make( unsigned ni, const NPYSpec* itemspec )
+NPYBase* NPYBase::Make( unsigned ni, const NPYSpec* itemspec, bool zero )
 {
     NPYBase* buffer = NULL ; 
     NPYBase::Type_t type = itemspec->getType();  
@@ -87,6 +87,11 @@ NPYBase* NPYBase::Make( unsigned ni, const NPYSpec* itemspec )
         case UCHAR:     buffer = NPY<unsigned char>::make(ni, itemspec)       ; break ; 
         case ULONGLONG: buffer = NPY<unsigned long long>::make(ni, itemspec)  ; break ; 
     } 
+    assert(buffer);
+    if(zero)
+    {
+        buffer->zero();  
+    }
     return buffer ; 
 }
 

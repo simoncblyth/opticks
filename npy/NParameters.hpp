@@ -9,8 +9,8 @@
 
 class NPY_API NParameters {
    public:
-       static NParameters* load(const char* path);
-       static NParameters* load(const char* dir, const char* name);
+       static NParameters* Load(const char* path);   // returns NULL for non-existing
+       static NParameters* Load(const char* dir, const char* name);
    public:
        typedef std::pair<std::string, std::string>   SS ; 
        typedef std::vector<SS>                      VSS ; 
@@ -53,8 +53,8 @@ class NPY_API NParameters {
        void save(const char* path);
        void save(const char* dir, const char* name);
    public:
-       void load_(const char* path);
-       void load_(const char* dir, const char* name);
+       bool load_(const char* path);
+       bool load_(const char* dir, const char* name);
    private:
        VSS m_parameters ; 
        VS  m_lines ;  

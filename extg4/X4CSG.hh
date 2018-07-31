@@ -8,6 +8,7 @@
 class G4VSolid ; 
 
 struct nnode ; 
+class NPYMeta ; 
 class NCSG ; 
 class NCSGData ; 
 class NCSGList ; 
@@ -28,7 +29,7 @@ struct X4_API X4CSG
     X4CSG(const G4VSolid* solid );
 
     void init();
-    void configure( NCSGData* data );
+    void configure( NPYMeta* meta );
     void dump(const char* msg="X4CSG::dump");
     std::string save(const char* csgpath) ;
     void loadcheck(const char* csgpath) const ;

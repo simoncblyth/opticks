@@ -127,9 +127,11 @@ struct nbbox ;
 struct NSceneConfig ; 
 struct NNodeNudger ; 
 
-
 class NParameters ; 
+
 class NCSGData ; 
+class NPYMeta ; 
+
 class NNodePoints ; 
 class NNodeUncoincide ; 
 class NTrianglesNPY ;
@@ -155,6 +157,8 @@ class NPY_API NCSG {
         static NCSG* Load(const char* treedir, const char* gltfconfig);
         static NCSG* Load(const char* treedir, const NSceneConfig* config );
 
+        static NParameters* LoadMetadata( const char* treedir, int item=-1 );  // -1 for global
+
         NNodeUncoincide* make_uncoincide() const ;
         NNodeNudger*     make_nudger() const ;
         NNodeNudger*     get_nudger() const ;
@@ -167,6 +171,7 @@ class NPY_API NCSG {
         NTrianglesNPY* getTris() const ;
 
         NCSGData* getCSGData() const ;
+        NPYMeta*  getMeta() const ;
 
     public:
         // passthru to root
@@ -233,7 +238,7 @@ class NPY_API NCSG {
 
         NPY<float>*    getSrcTransformBuffer() const ;
         NPY<float>*    getSrcNodeBuffer() const ;
-        NParameters* getMetaParameters(int idx) const ;
+        NParameters*   getMeta(int idx) const ;
 
         unsigned     getNumNodes() const ;
 
@@ -242,7 +247,7 @@ class NPY_API NCSG {
         OpticksCSG_t getRootType() const ;  
         unsigned getNumTriangles() const ;
     private:
-        NParameters* getNodeMetadata(unsigned idx) const ;
+        //NParameters* getNodeMetadata(unsigned idx) const ;
     public:
         void check();
         void check_r(nnode* node); 
@@ -315,9 +320,11 @@ class NPY_API NCSG {
         NNodePoints*     m_points ; 
         NNodeUncoincide* m_uncoincide ; 
         NNodeNudger*     m_nudger ; 
-        NCSGData*        m_csgdata ; 
 
-        bool                m_adopted ; 
+        NCSGData*        m_csgdata ; 
+        NPYMeta*         m_meta ; 
+
+        bool             m_adopted ; 
         const char*         m_boundary ; 
         const NSceneConfig* m_config ; 
 

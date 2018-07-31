@@ -9,6 +9,7 @@
 #include "NNode.hpp"
 #include "NCSG.hpp"
 #include "NPYBase.hpp"
+#include "NPYMeta.hpp"
 #include "NCSGData.hpp"
 #include "NCSGList.hpp"
 
@@ -94,17 +95,17 @@ X4CSG::X4CSG(const G4VSolid* solid_)
 
 void X4CSG::init()
 {
-    configure( csolid->getCSGData() ) ; 
-    configure( ccontainer->getCSGData() ) ; 
+    configure( csolid->getMeta() ) ; 
+    configure( ccontainer->getMeta() ) ; 
 
     trees.push_back( ccontainer ); 
     trees.push_back( csolid ); 
 }
 
-void X4CSG::configure( NCSGData* data )
+void X4CSG::configure( NPYMeta* meta )
 {
-    data->setMeta<std::string>( "poly", "IM" );  
-    data->setMeta<std::string>( "resolution", "20" );  
+    meta->setValue<std::string>( "poly", "IM" );  
+    meta->setValue<std::string>( "resolution", "20" );  
 }
 
 void X4CSG::dump(const char* msg)

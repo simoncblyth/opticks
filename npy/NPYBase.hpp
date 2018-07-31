@@ -25,7 +25,7 @@ class NPY_API NPYBase {
        // dynamic_cast<NPY<T>*>(buf) them when needed.
        //
        static NPYBase* Load( const char* path, Type_t type );
-       static NPYBase* Make( unsigned ni, const NPYSpec* itemspec );
+       static NPYBase* Make( unsigned ni, const NPYSpec* itemspec, bool zero );
    public:
 
        static const char* FLOAT_ ; 
@@ -67,6 +67,8 @@ class NPY_API NPYBase {
 
        bool hasShapeSpec(const NPYSpec* spec) const ; 
        bool hasItemSpec(const NPYSpec* spec) const ; 
+
+       virtual void zero() = 0 ; 
 
        std::string  getItemShape(unsigned int ifr=1) const ;
        std::string  getDigestString()  ;

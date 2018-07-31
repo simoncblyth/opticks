@@ -218,7 +218,7 @@ class NPY_API NPY : public NPYBase {
        std::vector<T>& data();
        void setData(T* data);
        void fill(T value);
-       T* zero();
+       void zero();
        T* allocate();
     private:
        void deallocate();  // clears data, setHasData to false and setNumItems to zero

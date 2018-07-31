@@ -6,7 +6,8 @@
 #include "NGLM.hpp"
 #include "NCSG.hpp"
 #include "NPYBase.hpp"
-#include "NCSGData.hpp"
+#include "NPYMeta.hpp"
+//#include "NCSGData.hpp"
 #include "NNode.hpp"
 #include "NNodeSample.hpp"
 #include "NSceneConfig.hpp"
@@ -81,7 +82,7 @@ void GMakerTest::makeFromCSG()
         unsigned lvIdx = 0 ; 
 
         NCSG* csg = NCSG::Adopt( n, config, soIdx, lvIdx );
-        csg->getCSGData()->setMeta<std::string>("poly", "IM");
+        csg->getMeta()->setValue<std::string>("poly", "IM");
 
         GVolume* volume = m_maker->makeFromCSG(csg, verbosity );
 

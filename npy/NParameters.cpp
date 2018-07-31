@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <iterator>
 
+#include "BFile.hh"
 #include "BList.hh"
 #include "PLOG.hh"
 
@@ -40,22 +41,35 @@ std::string NParameters::getStringValue(const char* name) const
 
 
 
-void NParameters::load_(const char* path)
+bool NParameters::load_(const char* path)
 {
+    bool exists = BFile::ExistsFile(path) ; 
+    if(!exists) return false ; 
     BList<std::string, std::string>::load(&m_parameters, path);
+    return true ; 
 }
-void NParameters::load_(const char* dir, const char* name)
+bool NParameters::load_(const char* dir, const char* name)
 {
+    bool exists = BFile::ExistsFile(dir, name) ; 
+    if(!exists) return false ; 
+
     BList<std::string, std::string>::load(&m_parameters, dir, name);
+    return true ; 
 }
-NParameters* NParameters::load(const char* path)
+NParameters* NParameters::Load(const char* path)
 {
+    bool exists = BFile::ExistsFile(path) ; 
+    if(!exists) return NULL ;  
+
     NParameters* p = new NParameters ;
     p->load_(path); 
     return p ; 
 }
-NParameters* NParameters::load(const char* dir, const char* name)
+NParameters* NParameters::Load(const char* dir, const char* name)
 {
+    bool exists = BFile::ExistsFile(dir, name) ; 
+    if(!exists) return NULL ; 
+
     NParameters* p = new NParameters ;
     p->load_(dir, name); 
     return p ; 
@@ -245,6 +259,7 @@ template NPY_API void NParameters::add(const char* name, int value);
 template NPY_API void NParameters::add(const char* name, unsigned int value);
 template NPY_API void NParameters::add(const char* name, std::string value);
 template NPY_API void NParameters::add(const char* name, float value);
+template NPY_API void NParameters::add(const char* name, double value);
 template NPY_API void NParameters::add(const char* name, char value);
 template NPY_API void NParameters::add(const char* name, const char* value);
 
@@ -254,6 +269,7 @@ template NPY_API void NParameters::set(const char* name, int value);
 template NPY_API void NParameters::set(const char* name, unsigned int value);
 template NPY_API void NParameters::set(const char* name, std::string value);
 template NPY_API void NParameters::set(const char* name, float value);
+template NPY_API void NParameters::set(const char* name, double value);
 template NPY_API void NParameters::set(const char* name, char value);
 template NPY_API void NParameters::set(const char* name, const char* value);
 
@@ -263,6 +279,7 @@ template NPY_API int          NParameters::get(const char* name) const ;
 template NPY_API unsigned int NParameters::get(const char* name) const ;
 template NPY_API std::string  NParameters::get(const char* name) const ;
 template NPY_API float        NParameters::get(const char* name) const ;
+template NPY_API double       NParameters::get(const char* name) const ;
 template NPY_API char         NParameters::get(const char* name) const ;
 //template NPY_API const char*  NParameters::get(const char* name) const ;
 
@@ -272,6 +289,7 @@ template NPY_API int          NParameters::get(const char* name, const char* fal
 template NPY_API unsigned int NParameters::get(const char* name, const char* fallback) const ;
 template NPY_API std::string  NParameters::get(const char* name, const char* fallback) const ;
 template NPY_API float        NParameters::get(const char* name, const char* fallback) const ;
+template NPY_API double       NParameters::get(const char* name, const char* fallback) const ;
 template NPY_API char         NParameters::get(const char* name, const char* fallback) const ;
 
 //template NPY_API const char*  NParameters::get(const char* name, const char* fallback) const ;
