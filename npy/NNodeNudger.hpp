@@ -3,9 +3,14 @@
 #include <vector>
 
 #include "NNodeEnum.hpp"
+#include "NNodeCoincidence.hpp"
 #include "NBBox.hpp"
 
 #include "NPY_API_EXPORT.hh"
+
+#include "plog/Severity.h"
+
+
 
 struct nnode ; 
 
@@ -50,32 +55,6 @@ VERBOSITY envvar.
 
 template <typename T> class  NPY ; 
 
-struct NPY_API NNodeCoincidence 
-{
-    NNodeCoincidence(nnode* i_, nnode* j_, NNodePairType p_) 
-         :
-         i(i_),
-         j(j_),
-         p(p_),
-         n(NUDGE_NONE),
-         fixed(false)
-    {} ;
-
-    nnode* i ; 
-    nnode* j ;
-    NNodePairType p ; 
-    NNodeNudgeType n ; 
-
-    bool   fixed ; 
-
-    std::string desc() const ; 
-
-    bool is_union_siblings() const;
-    bool is_union_parents() const;
-    bool is_same_union() const;
-    bool is_siblings() const;
-};
-
 
 struct NPY_API NNodeNudger 
 {
@@ -88,6 +67,8 @@ struct NPY_API NNodeNudger
     const unsigned verbosity ; 
     bool listed ; 
     bool enabled ; 
+    plog::Severity level ; 
+
 
     std::vector<nnode*>       prim ; 
     std::vector<nbbox>        bb ; 
@@ -115,13 +96,11 @@ struct NPY_API NNodeNudger
     bool can_znudge(const NNodeCoincidence* coin) const ;
     void znudge(NNodeCoincidence* coin);
 
-    bool can_znudge_umaxmin(const NNodeCoincidence* coin) const ;
-    void znudge_umaxmin(NNodeCoincidence* coin);
+    bool can_znudge_union_maxmin(const NNodeCoincidence* coin) const ;
+    void znudge_union_maxmin(NNodeCoincidence* coin);
 
-    bool can_znudge_dminmin(const NNodeCoincidence* coin) const ;
-    void znudge_dminmin(NNodeCoincidence* coin);
-
-
+    bool can_znudge_difference_minmin(const NNodeCoincidence* coin) const ;
+    void znudge_difference_minmin(NNodeCoincidence* coin);
 
 
     void dump(const char* msg="NNodeNudger::dump");
@@ -131,5 +110,70 @@ struct NPY_API NNodeNudger
 };
 
 // end of NNodeNudger 
+
+
+
+/*
+
+   * know how to handle siblings of union parent
+     with minmax or maxmin pair coincidence
+
+   * difference coincidence will often be non-siblings, eg 
+     (cy-cy)-co when the base of the subtracted cone lines up with 
+      the first cylinder ... perhaps should +ve-ize 
+
+
+            -
+         -    co
+       cy cy
+
+     +ve form:
+
+            *
+         *    !co
+       cy !cy
+
+
+     
+
+     Consider (cy - co) with coincident base...
+     solution is to grow co down, but how to 
+     detect in code ? 
+
+     When you get minmin coincidence ~~~
+     (min means low edge... so direction to grow
+      is clear ? Check parents of the pair and
+      operate on one with the "difference" parent, 
+      ie the one being subtracted) 
+
+     Nope they could both be being subtracted ?
+
+
+     A minmin coincidence after positivization, 
+     can always pull down the one with the complement ?
+
+
+
+                        +-----+
+                       /       \
+                      /         \
+             +-------*-------+   \
+             |      /        |    \
+             |     /         |     \
+             |    /          |      \
+             |   /           |       \
+             |  /            |        \
+             | /             |         \
+             |/              |          \
+             *               |           \
+            /|               |            \
+           / |               |        B    \
+          /  |  A            |              \
+         /   |               |               \
+        /    |               |                \
+       +-----+~~~~~~~~~~~~~~~+-----------------+
+
+
+*/
 
 

@@ -76,7 +76,7 @@ NCSG* NCSG::Load(const char* treedir, const NSceneConfig* config  )
 
     tree->loadsrc();  // populate the src* buffers 
     tree->import();   // complete binary tree m_nodes buffer -> node tree
-    tree->setup_global_transforms();  
+    tree->collect_global_transforms();  // also sets the gtransform_idx onto the tree
     tree->export_();  // node tree -> complete binary tree m_nodes buffer
 
     if(config->verbosity > 1) tree->dump("NCSG::Load");
@@ -91,7 +91,6 @@ NCSG* NCSG::Load(const char* treedir, const NSceneConfig* config  )
 /////////////////////////////////////////////////////////////////////////////////////////
 NCSG::Adopt
 ------------
-
 **/
 
 NCSG* NCSG::Adopt(nnode* root)
@@ -111,6 +110,12 @@ NCSG* NCSG::Adopt(nnode* root, const char* config_, unsigned soIdx, unsigned lvI
 NCSG* NCSG::Adopt(nnode* root, const NSceneConfig* config, unsigned soIdx, unsigned lvIdx )
 {
     nnode::Set_parent_links_r(root, NULL);
+    root->check_tree( FEATURE_PARENT_LINKS ); 
+
+    root->update_gtransforms() ;  // sets node->gtransform (not gtransform_idx) parent links are required 
+    root->check_tree( FEATURE_GTRANSFORMS ); 
+    root->check_tree( FEATURE_PARENT_LINKS | FEATURE_GTRANSFORMS ); 
+
 
     root->set_treeidx(lvIdx) ;  // without this no nudging is done
 
@@ -120,7 +125,7 @@ NCSG* NCSG::Adopt(nnode* root, const NSceneConfig* config, unsigned soIdx, unsig
     tree->setSOIdx(soIdx); 
     tree->setLVIdx(lvIdx); 
 
-    tree->setup_global_transforms();  
+    tree->collect_global_transforms();  // collects and sets the gtransform_idx onto the tree
     tree->export_();        // node tree -> complete binary tree m_nodes buffer
 
     assert( tree->getGTransformBuffer() );
@@ -128,7 +133,6 @@ NCSG* NCSG::Adopt(nnode* root, const NSceneConfig* config, unsigned soIdx, unsig
 
     return tree ; 
 }
- 
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
@@ -169,7 +173,7 @@ NCSG::NCSG(nnode* root )
    m_root(root),
    m_points(NULL),
    m_uncoincide(make_uncoincide()),
-   m_nudger(make_nudger()),
+   m_nudger(make_nudger("Adopt root ctor")),
    m_csgdata(new NCSGData),
    m_meta(new NPYMeta),
    m_adopted(true), 
@@ -231,7 +235,6 @@ NCSG::import : from complete binary tree buffers into nnode tree
 1. prepareForImport : tripletize the m_srctransforms into m_transforms
 2. import_r : collects m_gtransforms by multiplication down the tree
 
-
 **/
 
 void NCSG::import()
@@ -259,6 +262,10 @@ void NCSG::import()
     m_root->set_treedir(m_treedir) ; 
     m_root->set_treeidx(getTreeNameIdx()) ;  //
 
+    m_root->check_tree( FEATURE_PARENT_LINKS );  
+    m_root->update_gtransforms(); 
+    m_root->check_tree( FEATURE_PARENT_LINKS | FEATURE_GTRANSFORMS );  
+
     postimport();
 
     if(m_verbosity > 5) check();  // recursive transform dumping 
@@ -267,7 +274,8 @@ void NCSG::import()
 
 void NCSG::postimport()
 {
-    m_nudger = make_nudger() ; 
+    m_nudger = make_nudger("postimport") ; 
+
     //m_uncoincide = make_uncoincide(); 
     //m_uncoincide->uncoincide();
     //postimport_autoscan();
@@ -280,9 +288,13 @@ NCSG::import_r
 Importing : constructs the node tree from src buffers 
 loaded by loadsrc ( which were written by analytic/csg.py ) 
 
-On import the gtransforms (**for primitives only**) are constructed 
-by multiplication down the tree, and uniquely collected into m_gtransforms 
-with the 1-based gtransforms_idx being set on the node.
+Formerly:
+
+    On import the gtransforms (**for primitives only**) are constructed 
+    by multiplication down the tree, and uniquely collected into m_gtransforms 
+    with the 1-based gtransforms_idx being set on the node.
+
+But now thats done from NCSG::import 
 
 **/
 
@@ -539,7 +551,7 @@ void NCSG::check_node(const nnode* node ) const
 }
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 /**
-NCSG::setup_global_transforms
+NCSG::collect_global_transforms
 -------------------------------
 
 The setting of global transforms was formally done both on
@@ -549,7 +561,12 @@ confusion split it off into these focussed methods.
 Effects:
 
 1. collects global transforms into m_gtransforms buffer
-2. sets node->gtransform and node->gtransform_idx for primitives in the tree
+2. sets node->gtransform_idx for primitives in the tree
+
+   * formerly it set node->gtransform : but thats too late for eg NNodeNudger
+     so now it just checks it gets the same transform
+
+   
 
 Related:
 
@@ -565,37 +582,38 @@ using 0 (meaning None) for identity
 
 **/
 
-void NCSG::setup_global_transforms() 
+void NCSG::collect_global_transforms() 
 {
     m_csgdata->prepareForSetup();
-    setup_global_transforms_r( m_root ) ; 
+    collect_global_transforms_r( m_root ) ; 
 }
-void NCSG::setup_global_transforms_r(nnode* node) 
+void NCSG::collect_global_transforms_r(nnode* node) 
 {
-    setup_global_transforms_visit(node);
+    collect_global_transforms_visit(node);
 
     if(node->left && node->right)
     {
-        setup_global_transforms_r(node->left);
-        setup_global_transforms_r(node->right);
+        collect_global_transforms_r(node->left);
+        collect_global_transforms_r(node->right);
     }
 }
-void NCSG::setup_global_transforms_visit(nnode* node)
+void NCSG::collect_global_transforms_visit(nnode* node)
 {
     if(node->is_primitive())
     {
         const nmat4triple* gtransform = node->global_transform();   
-        if(gtransform == NULL )  // move to giving all primitives a gtransform 
-        {
-            gtransform = nmat4triple::make_identity() ;
-        }
+        assert( gtransform ); 
+        assert( node->gtransform ) ; 
+        assert( node->gtransform->is_equal_to( gtransform )); 
 
-        unsigned gtransform_idx = gtransform ? addUniqueTransform(gtransform) : 0 ;   // collect into m_gtransforms
+        unsigned gtransform_idx = addUniqueTransform(gtransform) ;   // collect into m_gtransforms
 
-        node->gtransform = gtransform ; 
-        node->gtransform_idx = gtransform_idx ; // 1-based, 0 for None
+        node->gtransform_idx = gtransform_idx ; // 1-based, 0 for None (which should not happen now)
     }
 } 
+
+
+
 
 unsigned NCSG::addUniqueTransform( const nmat4triple* gtransform_ )
 {
@@ -647,6 +665,7 @@ these as idxs get into that buffer
 void NCSG::export_()
 {
     //LOG(error) << "export_ START " ; 
+    m_root->check_tree( FEATURE_PARENT_LINKS | FEATURE_GTRANSFORMS ) ; 
 
     m_csgdata->prepareForExport() ;  //  create node buffer 
 
@@ -664,6 +683,9 @@ void NCSG::export_()
     export_idx();  
 
     export_r(m_root, 0);
+
+    // m_root->check_tree( FEATURE_PARENT_LINKS | FEATURE_GTRANSFORMS | FEATURE_GTRANSFORM_IDX ) ; 
+    //  FEATURE_GTRANSFORM_IDX not fulfilled
    
     //LOG(error) << "export_ DONE " ; 
 }
@@ -1075,11 +1097,11 @@ NNodeNudger* NCSG::get_nudger() const
 {
     return m_nudger ; 
 }
-NNodeNudger* NCSG::make_nudger() const 
+NNodeNudger* NCSG::make_nudger(const char* msg) const 
 {
    // when test running from nnode there is no metadata or treedir
    // LOG(info) << soname() << " treeNameIdx " << getTreeNameIdx() ; 
-
+    LOG(error) << " make_nudger " << msg ; 
     NNodeNudger* nudger = new NNodeNudger(m_root, m_surface_epsilon, m_root->verbosity);
     return nudger ; 
 }

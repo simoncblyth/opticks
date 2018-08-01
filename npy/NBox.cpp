@@ -341,13 +341,10 @@ void nbox::par_posnrm_model( glm::vec3& p, glm::vec3& n, unsigned s, float fu, f
 }
 
 
+/**
+nbox::nudge
+-------------
 
-
-
-
-void nbox::nudge(unsigned s, float delta)
-{
-/*
 How to nudge to avoid a coincidence ? 
 
 * want to grow the coincident face by some delta eg ~2*epsilon 
@@ -392,9 +389,10 @@ How to nudge to avoid a coincidence ?
     heirarchy of transforms collected from the ancestors of the primitive in 
     the tree ... so that means need to change transform and then update gtransforms
 
+**/
 
-
-*/
+void nbox::nudge(unsigned s, float delta)
+{
     assert( s < par_nsurf());
     assert( is_box3 && type == CSG_BOX3 && "nbox::nudge only implemented for CSG_BOX3 not CSG_BOX " );
 

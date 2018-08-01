@@ -255,10 +255,62 @@ const nmat4triple* nnode::global_transform(nnode* n)
 
     // tvq transforms are in reverse hierarchical order from leaf back up to root
     // these are the CSG nodes : not the structure nodes
+
     bool reverse = true ; 
-    return tvq.size() == 0 ? NULL : nmat4triple::product(tvq, reverse) ; 
+    const nmat4triple* gtransform= tvq.size() == 0 ? NULL : nmat4triple::product(tvq, reverse) ; 
+
+    if(gtransform == NULL )  // make sure all primitives have a gtransform 
+    {
+        gtransform = nmat4triple::make_identity() ;
+    }
+    return gtransform ; 
 }
 
+
+
+void nnode::check_tree(unsigned mask) const 
+{
+    check_tree_r(this, NULL, 0, mask); 
+}
+void nnode::check_tree_r(const nnode* node, const nnode* parent, unsigned depth, unsigned mask) // static
+{
+    if( mask & FEATURE_PARENT_LINKS )
+    {
+        if(depth == 0) assert( node->parent == NULL ); 
+        if(depth > 0)  assert( node->parent != NULL ); 
+        assert( node->parent == parent ) ; 
+    }
+
+    if(node->is_primitive())
+    {
+        if( mask & FEATURE_GTRANSFORMS )
+        {
+            assert( node->gtransform != NULL ); 
+        }
+
+        if( mask & FEATURE_GTRANSFORM_IDX )
+        {
+            assert( node->gtransform_idx > 0 ); 
+        }
+    } 
+    else
+    {
+        if( mask & FEATURE_GTRANSFORMS )
+        {
+            assert( node->gtransform == NULL ); 
+        }
+        if( mask & FEATURE_GTRANSFORM_IDX )
+        {
+            assert( node->gtransform_idx == 0 ); 
+        }
+    }
+
+    if(node->left && node->right)
+    {
+        check_tree_r(node->left, node, depth+1, mask);
+        check_tree_r(node->right, node, depth+1, mask);
+    }
+}
 
 
 
@@ -380,8 +432,11 @@ void nnode::update_gtransforms_r(nnode* node)
 {
     // NB this downwards traversal doesnt need parent links, 
     // but the ancestor collection of global_transforms that it uses does...
-    //
-    node->gtransform = node->global_transform();
+
+    if( node->is_primitive() )  // this was setting gtransform on all nodes until Aug 1 2018
+    {
+        node->gtransform = node->global_transform();
+    }
 
     if(node->left && node->right)
     {
@@ -720,22 +775,26 @@ void nnode::get_primitive_bbox(nbbox& bb) const
 }
 
 
+/**
+nnode::bbox()
+---------------
+
+The gtransforms are applied at the leaves, ie the bbox returned
+from primitives already uses the full heirarchy of transforms 
+collected from the tree by *update_gtransforms()*.  
+
+Due to this it would be incorrect to apply gtransforms 
+of composite nodes to their bbox as those gtransforms 
+together with those of their progeny have already been 
+applied down at the leaves.
+
+Indeed without subnode bbox being in the same CSG tree top frame
+it would not be possible to combine them.
+
+**/
+
 nbbox nnode::bbox() const 
 {
-    /*
-    The gtransforms are applied at the leaves, ie the bbox returned
-    from primitives already uses the full heirarchy of transforms 
-    collected from the tree by *update_gtransforms()*.  
-
-    Due to this it would be incorrect to apply gtransforms 
-    of composite nodes to their bbox as those gtransforms 
-    together with those of their progeny have already been 
-    applied down at the leaves.
-
-    Indeed without subnode bbox being in the same CSG tree top frame
-    it would not be possible to combine them.
-    */
-
     nnode::bb_count += 1 ; 
 
     if(verbosity > 0)
@@ -1258,8 +1317,8 @@ nnode::set_parent_links_r
 
 Parent are setup on import NCSG::import_r
 from the complete binary buffer.  But when 
-operating FromNode there is no "import" 
-so need a separate setup of parent links.
+Adoption there is no "import" so need a separate 
+setup of parent links.
 Parent links are necessary for calculating 
 gtransforms.
 
@@ -1330,23 +1389,26 @@ unsigned nnode::uncoincide(unsigned verbosity)
 
 
 
+/**
+nnode::getCoincident
+---------------------
+
+Checking the disposition of parametric points of parametric surfaces of this node 
+with respect to the implicit distance to the surface of the other node...  
+
+Parametric uv coordinates of this node are collected into *coincident* 
+when their positions are within epsilon of the surface of the other node.
+
+The frame of this nodes parametric positions and the frame of the other nodes 
+signed distance to surface are specified by the fr arguement, typically FRAME_LOCAL
+is appropriate.
+
+PROBLEM IS THIS WILL ONLY WORK AT BILEAF LEVEL JUST ABOVE PRIMITIVES
+
+**/
 
 void nnode::getCoincident(std::vector<nuv>& coincident, const nnode* other_, float epsilon, unsigned level, int margin, NNodeFrameType fr) const 
 {
-    /*
-    Checking the disposition of parametric points of parametric surfaces of this node 
-    with respect to the implicit distance to the surface of the other node...  
-    
-    Parametric uv coordinates of this node are collected into *coincident* 
-    when their positions are within epsilon of the surface of the other node.
-    
-    The frame of this nodes parametric positions and the frame of the other nodes 
-    signed distance to surface are specified by the fr arguement, typically FRAME_LOCAL
-    is appropriate.
-
-    PROBLEM IS THIS WILL ONLY WORK AT BILEAF LEVEL JUST ABOVE PRIMITIVES
-    */
-
      unsigned ns = par_nsurf();
      for(unsigned s = 0 ; s < ns ; s++)
      {    
@@ -1356,10 +1418,18 @@ void nnode::getCoincident(std::vector<nuv>& coincident, const nnode* other_, flo
 
 void nnode::getCoincidentSurfacePoints(std::vector<nuv>& surf, int s, unsigned level, int margin, const nnode* other_, float epsilon, NNodeFrameType fr) const 
 {
+    assert( level < 16 );  
     int nu = 1 << level ; 
     int nv = 1 << level ; 
     assert( (nv - margin) > 0 );
     assert( (nu - margin) > 0 );
+
+    //  level = 1, margin = 0   -> grid of 9 points on the surface
+    //        nu,nv = 2,2     v = 0,1,2   u = 0,1,2      
+    //
+    //  level = 1, margin = 1   -> single central point on the surface
+    //        nu,nv = 2,2     v = 1   u = 1      
+    //
 
     unsigned p = 0 ; 
 

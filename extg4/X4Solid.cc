@@ -57,7 +57,10 @@ nnode* X4Solid::Convert(const G4VSolid* solid, const char* boundary)
     bool top = true ; 
     X4Solid xs(solid, top);
     nnode* root = xs.root(); 
+
     root->update_gtransforms(); 
+
+
     if(boundary) root->boundary = boundary ; 
     return root ; 
 }

@@ -125,6 +125,30 @@ const char* NNodeEnum::PointType(NNodePointType pt)
     return s ;
 }
 
+
+
+
+const char* NNodeEnum::FEATURE_PARENT_LINKS_ = "FEATURE_PARENT_LINKS" ;
+const char* NNodeEnum::FEATURE_GTRANSFORMS_ = "FEATURE_GTRANSFORMS" ;
+const char* NNodeEnum::FEATURE_GTRANSFORM_IDX_ = "FEATURE_GTRANSFORM_IDX" ;
+
+const char* NNodeEnum::Feature(NNodeFeature ft)
+{
+    const char* s = NULL ;
+    switch(ft)
+    {
+        case FEATURE_PARENT_LINKS   : s = FEATURE_PARENT_LINKS_   ; break ; 
+        case FEATURE_GTRANSFORMS    : s = FEATURE_GTRANSFORMS_    ; break ; 
+        case FEATURE_GTRANSFORM_IDX : s = FEATURE_GTRANSFORM_IDX_ ; break ; 
+    }
+    return s ;
+}
+
+
+
+
+
+
 NNodePointType NNodeEnum::PointClassify( float sd, float epsilon )
 {
     return fabsf(sd) < epsilon ? POINT_SURFACE : ( sd < 0 ? POINT_INSIDE : POINT_OUTSIDE ) ; 

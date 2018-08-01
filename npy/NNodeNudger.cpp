@@ -9,8 +9,11 @@
 #include "OpticksCSGMask.h"
 
 #include "NPY.hpp"
+#include "NGLMExt.hpp"
+#include "GLMFormat.hpp"
 #include "NNode.hpp"
 #include "NNodeNudger.hpp"
+#include "NNodeCoincidence.hpp"
 
 
 std::vector<unsigned>* NNodeNudger::TreeList = NULL ;  
@@ -18,7 +21,7 @@ std::vector<unsigned>* NNodeNudger::TreeList = NULL ;
 
 NPY<unsigned>* NNodeNudger::NudgeBuffer = NULL ;  
 
-void NNodeNudger::SaveBuffer(const char* path)
+void NNodeNudger::SaveBuffer(const char* path)  // static
 {
     NudgeBuffer->save(path); 
 }
@@ -30,22 +33,26 @@ NNodeNudger::NNodeNudger(nnode* root_, float epsilon_, unsigned /*verbosity*/)
      epsilon(epsilon_), 
      verbosity(SSys::getenvint("VERBOSITY",1)),
      listed(false),
-     enabled(true)
+     enabled(true),
+     level(info)
 {
+    root->check_tree( FEATURE_GTRANSFORMS | FEATURE_PARENT_LINKS );
     init();
 }
 
 void NNodeNudger::init()
 {
+    LOG(level) << " init " ; 
+
     if( TreeList == NULL )
-         TreeList = new std::vector<unsigned> {24, 42};   // iav, oav
+         TreeList = new std::vector<unsigned> {24, 42, 37, 22};   // iav, oav, lso, gds
 
     listed = TreeList != NULL && std::find(TreeList->begin(), TreeList->end(), root->treeidx ) != TreeList->end() ; 
  
     if( NudgeBuffer == NULL ) NudgeBuffer = NPY<unsigned>::make(0,4) ; 
 
-    root->collect_prim_for_edit(prim);
-    update_prim_bb();
+    root->collect_prim_for_edit(prim);  // recursive collector 
+    update_prim_bb();                   // find z-order of prim using bb.min.z
     collect_coincidence();
 
     if(enabled)
@@ -53,8 +60,10 @@ void NNodeNudger::init()
 
     if( listed || nudges.size() > 0 ) LOG(error) << brief() ;  
 
-
     if(NudgeBuffer) NudgeBuffer->add(root->treeidx, prim.size(), coincidence.size(), nudges.size() );   
+
+    LOG(level) << brief() ; 
+
 }
 
 void NNodeNudger::update_prim_bb()
@@ -65,11 +74,22 @@ void NNodeNudger::update_prim_bb()
     for(unsigned i=0 ; i < prim.size() ; i++)
     {
         const nnode* p = prim[i] ; 
+
         nbbox pbb = p->bbox(); 
         bb.push_back(pbb);
         zorder.push_back(i);
+
+        const nmat4triple* gtransform = p->gtransform ; 
+        assert( gtransform ) ; 
+        const glm::mat4& t  = gtransform->t ;                
+
+        std::cout << " prim " << i 
+                  << " t " << gpresent("t", t )  
+                  << " pbb " << pbb.desc()
+                  << std::endl ; 
+
     }
-    std::sort(zorder.begin(), zorder.end(), *this );
+    std::sort(zorder.begin(), zorder.end(), *this );   // np.argsort style : sort the indices
 } 
 
 bool NNodeNudger::operator()( int i, int j)  
@@ -77,9 +97,70 @@ bool NNodeNudger::operator()( int i, int j)
     return bb[i].min.z < bb[j].min.z ;    // ascending bb.min.z
 }  
 
+unsigned NNodeNudger::get_num_prim() const 
+{
+    return prim.size() ;
+}
 
 
-/*
+/**
+NNodeNudger::collect_coincidence
+----------------------------------
+
+1. collects pairs of primitive indices with coincident 
+   bbox min.z or max.z recording the type of 
+   pairing PAIR_MINMIN PAIR_MINMAX etc..
+
+General collection of prim-prim coincidence is not useful
+for issue detection, because there are so many such coincidences
+that cause no problem.
+
+Nevertheless it may prove useful for classification of
+issues and automated decision making regards fixes. i.e.
+deciding which primitive to nudge and in which direction, 
+so as to avoid the issue and not change geometry.
+
+
+**/
+
+
+
+void NNodeNudger::collect_coincidence()
+{
+    LOG(level) << " collect_concidence " << root->treeidx ;  
+
+    if(root->treeidx < 0) return ; 
+
+    coincidence.clear();
+
+    unsigned num_prim = get_num_prim() ;
+
+    for(unsigned i=0 ; i < num_prim ; i++){
+    for(unsigned j=0 ; j < num_prim ; j++)
+    {
+        if( i < j ) collect_coincidence(i, j);  // all pairs once
+    }
+    }
+
+    LOG(debug) << "NNodeNudger::collect_coincidence" 
+              << " root.treeidx " << root->treeidx 
+              << " num_prim " << num_prim 
+              << " num_coincidence " << get_num_coincidence()
+              << " verbosity " << verbosity 
+              ; 
+}
+
+
+
+/**
+NNodeNudger::collect_coincidence(unsigned i, unsigned j)
+---------------------------------------------------------
+
+1. classify joins for all 4 pairings eg PAIR_MINMIN, PAIR_MINMAX, ...
+2. collect JOIN_COINCIDENT pairs recording the pairing type 
+
+
+::
 
               maxmax      +--+
                /          |  |
@@ -107,117 +188,15 @@ bool NNodeNudger::operator()( int i, int j)
       pair as first, eg smaller box in above
       comparisons. 
 
-
-
-
-
-   * know how to handle siblings of union parent
-     with minmax or maxmin pair coincidence
-
-   * difference coincidence will often be non-siblings, eg 
-     (cy-cy)-co when the base of the subtracted cone lines up with 
-      the first cylinder ... perhaps should +ve-ize 
-
-
-            -
-         -    co
-       cy cy
-
-     +ve form:
-
-            *
-         *    !co
-       cy !cy
-
-
-     
-
-     Consider (cy - co) with coincident base...
-     solution is to grow co down, but how to 
-     detect in code ? 
-
-     When you get minmin coincidence ~~~
-     (min means low edge... so direction to grow
-      is clear ? Check parents of the pair and
-      operate on one with the "difference" parent, 
-      ie the one being subtracted) 
-
-     Nope they could both be being subtracted ?
-
-
-     A minmin coincidence after positivization, 
-     can always pull down the one with the complement ?
-
-
-
-                        +-----+
-                       /       \
-                      /         \
-             +-------*-------+   \
-             |      /        |    \
-             |     /         |     \
-             |    /          |      \
-             |   /           |       \
-             |  /            |        \
-             | /             |         \
-             |/              |          \
-             *               |           \
-            /|               |            \
-           / |               |        B    \
-          /  |  A            |              \
-         /   |               |               \
-        /    |               |                \
-       +-----+~~~~~~~~~~~~~~~+-----------------+
-
-
-*/
-
-
-unsigned NNodeNudger::get_num_prim() const 
-{
-    return prim.size() ;
-}
-
-
-
-void NNodeNudger::collect_coincidence()
-{
-
-    if(root->treeidx < 0) return ; 
-
-    coincidence.clear();
-
-    unsigned num_prim = get_num_prim() ;
-
-    for(unsigned i=0 ; i < num_prim ; i++){
-    for(unsigned j=0 ; j < num_prim ; j++)
-    {
-        if( i < j ) collect_coincidence(i, j);  // all pairs once
-    }
-    }
-
-
-    LOG(debug) << "NNodeNudger::collect_coincidence" 
-              << " root.treeidx " << root->treeidx 
-              << " num_prim " << num_prim 
-              << " num_coincidence " << get_num_coincidence()
-              << " verbosity " << verbosity 
-              ; 
-}
+**/
 
 void NNodeNudger::collect_coincidence(unsigned i, unsigned j)
 {
-    /*
-     General collection of prim-prim coincidence is not useful
-     for issue detection, because there are so many such coincidences
-     that cause no problem.
-   
-     Nevertheless it may prove useful for classification of
-     issues and automated decision making regards fixes. i.e.
-     deciding which primitive to nudge and in which direction, 
-     so as to avoid the issue and not change geometry.
-    */
-
+    LOG(level) << " collect_concidence " 
+               << " treeidx : " << root->treeidx 
+               << " prim pair (i,j) : (" << i << "," << j << ")" 
+               ;
+  
     for(unsigned p=0 ; p < 4 ; p++)
     {
         NNodePairType pair = (NNodePairType)p ; 
@@ -231,7 +210,15 @@ void NNodeNudger::collect_coincidence(unsigned i, unsigned j)
             case PAIR_MAXMAX: { zi = bb[i].max.z ; zj = bb[j].max.z ; } ; break ;  
         }
 
+
         NNodeJoinType join = NNodeEnum::JoinClassify( zi, zj, epsilon );
+
+        LOG(level) 
+               << " pair: " << NNodeEnum::PairType(pair) 
+               << " zi: " << std::fixed << std::setw(10) << std::setprecision(3) << zi
+               << " zj: " << std::fixed << std::setw(10) << std::setprecision(3) << zj
+               << " join: " << NNodeEnum::JoinType(join) 
+               ;
 
         if(join == JOIN_COINCIDENT) 
         {
@@ -246,54 +233,156 @@ void NNodeNudger::collect_coincidence(unsigned i, unsigned j)
     }
 }
 
-
-
-
-bool NNodeCoincidence::is_siblings() const
-{
-   return i->parent && j->parent && i->parent == j->parent ;
-}
-
-bool NNodeCoincidence::is_union_siblings() const
-{
-   return is_siblings() && i->parent->type == CSG_UNION ;
-}
-
-bool NNodeCoincidence::is_union_parents() const
-{
-   return i->parent && j->parent && i->parent->type == CSG_UNION && j->parent->type == CSG_UNION ;
-}
-
-
-
-
-std::string NNodeCoincidence::desc() const 
-{
-    std::stringstream ss ; 
-    ss
-        << "(" << std::setw(2) << i->idx
-        << "," << std::setw(2) << j->idx
-        << ")"
-        << " " << NNodeEnum::PairType(p)
-        << " " << NNodeEnum::NudgeType(n)
-        << " " << i->tag()
-        << " " << j->tag()
-        << " sibs " << ( is_siblings() ? "Y" : "N" )
-        << " u_sibs " << ( is_union_siblings() ? "Y" : "N" )
-        << " u_par " << ( is_union_parents() ? "Y" : "N" )
-        << " u_same " << ( nnode::is_same_union(i,j) ? "Y" : "N" )
-        << " " << ( fixed ? "FIXED" : "" )
-        ; 
-  
-    return ss.str();
-}
-
-
-
 unsigned NNodeNudger::get_num_coincidence() const 
 {
    return coincidence.size();
 }
+
+void NNodeNudger::uncoincide()
+{
+   unsigned num_coincidence = coincidence.size();
+   for(unsigned i=0 ; i < num_coincidence ; i++)
+   {
+       znudge(&coincidence[i]);
+   }
+}
+
+
+void NNodeNudger::znudge(NNodeCoincidence* coin)
+{
+    // IS THIS MISSING A umaxmax ???
+
+    if(!coin->fixed && can_znudge_union_maxmin(coin))      znudge_union_maxmin(coin);
+    if(!coin->fixed && can_znudge_difference_minmin(coin)) znudge_difference_minmin(coin);
+}
+
+bool NNodeNudger::can_znudge_union_maxmin(const NNodeCoincidence* coin) const 
+{
+    const nnode* i = coin->i ; 
+    const nnode* j = coin->j ; 
+    const NNodePairType p = coin->p ; 
+    return nnode::is_same_union(i,j) && p == PAIR_MAXMIN && i->is_znudge_capable() && j->is_znudge_capable() ;
+
+    // requiring siblings is too restrictive... the binary splitup is an implemntation detail
+    // what matters is that they are from the same union not the same pair 
+    //
+    // for z-sphere the ability to znudge depends on endcap existance on a side ... ? also radius contraints
+    // due to this have removed from znudge capable
+}
+
+bool NNodeNudger::can_znudge_difference_minmin(const NNodeCoincidence* coin) const
+{
+    const nnode* i = coin->i ; 
+    const nnode* j = coin->j ; 
+    const NNodePairType p = coin->p ; 
+
+    return i->parent && j->parent && 
+           ( i->parent->type == CSG_DIFFERENCE ||  j->parent->type == CSG_DIFFERENCE ) 
+           && p == PAIR_MINMIN && i->is_znudge_capable() && j->is_znudge_capable() ;
+} 
+
+
+
+void NNodeNudger::znudge_difference_minmin(NNodeCoincidence* coin)
+{
+    std::cout << "NNodeNudger::znudge_difference_minmin"
+              << " coin " << coin->desc()
+              << std::endl ; 
+    LOG(fatal) << " NOT IMPLEMENTED " ; 
+}
+
+
+void NNodeNudger::znudge_union_maxmin(NNodeCoincidence* coin)
+{
+    assert(can_znudge_union_maxmin(coin));
+    assert(coin->fixed == false);
+
+    nnode* i = coin->i ; 
+    nnode* j = coin->j ; 
+    const NNodePairType p = coin->p ; 
+
+    nbbox ibb = i->bbox();
+    nbbox jbb = j->bbox();
+
+    float dz(1.);
+
+    assert( p == PAIR_MAXMIN );
+
+    float zi = ibb.max.z ; 
+    float zj = jbb.min.z ;
+    float ri = i->r2() ; 
+    float rj = j->r1() ; 
+
+    NNodeJoinType join = NNodeEnum::JoinClassify( zi, zj, epsilon );
+    assert(join == JOIN_COINCIDENT);
+
+    if( ri > rj )  
+    {
+        j->decrease_z1( dz );   
+        coin->n = NUDGE_J_DECREASE_Z1 ; 
+    }
+    else
+    {
+        i->increase_z2( dz ); 
+        coin->n = NUDGE_I_INCREASE_Z2 ; 
+    }
+
+    nbbox ibb2 = i->bbox();
+    nbbox jbb2 = j->bbox();
+
+    float zi2 = ibb2.max.z ; 
+    float zj2 = jbb2.min.z ;
+ 
+    NNodeJoinType join2 = NNodeEnum::JoinClassify( zi2, zj2, epsilon );
+    assert(join2 != JOIN_COINCIDENT);
+
+    coin->fixed = true ; 
+
+    nudges.push_back(*coin); 
+
+}
+
+
+bool NNodeNudger::can_znudge(const NNodeCoincidence* coin) const 
+{
+    bool can = false ; 
+
+    can = can_znudge_union_maxmin(coin);
+    if(can) return true ; 
+
+    can = can_znudge_difference_minmin(coin);
+    if(can) return true ; 
+
+    return can ; 
+}
+
+
+
+/*
+
+    +--------------+ .
+    |              |
+    |           . ++-------------+
+    |             ||             |
+    |         rb  ||  ra         |
+    |             ||             | 
+    |           . || .           |    
+    |             ||             |
+    |             ||          b  |
+    |           . ++-------------+
+    |  a           |
+    |              |
+    +--------------+ .
+
+                  za  
+                  zb                      
+
+    ------> Z
+
+*/
+
+
+
 
 
 std::string NNodeNudger::brief() const 
@@ -343,155 +432,6 @@ std::string NNodeNudger::desc_coincidence() const
   
     return ss.str();
 }
-
-
-
-
-
-
-
-
-void NNodeNudger::uncoincide()
-{
-   unsigned num_coincidence = coincidence.size();
-   for(unsigned i=0 ; i < num_coincidence ; i++)
-   {
-       znudge(&coincidence[i]);
-   }
-
-
-}
-
-
-bool NNodeNudger::can_znudge(const NNodeCoincidence* coin) const 
-{
-    bool can = false ; 
-
-    can = can_znudge_umaxmin(coin);
-    if(can) return true ; 
-
-    can = can_znudge_dminmin(coin);
-    if(can) return true ; 
-
-    return can ; 
-}
-
-void NNodeNudger::znudge(NNodeCoincidence* coin)
-{
-    if(!coin->fixed && can_znudge_umaxmin(coin)) znudge_umaxmin(coin);
-    if(!coin->fixed && can_znudge_dminmin(coin)) znudge_dminmin(coin);
-}
-
-
-bool NNodeNudger::can_znudge_umaxmin(const NNodeCoincidence* coin) const 
-{
-    const nnode* i = coin->i ; 
-    const nnode* j = coin->j ; 
-    const NNodePairType p = coin->p ; 
-    return nnode::is_same_union(i,j) && p == PAIR_MAXMIN && i->is_znudge_capable() && j->is_znudge_capable() ;
-
-    // requiring siblings is too restrictive... the binary splitup is an implemntation detail
-    // what matters is that they are from the same union not the same pair 
-    //
-    // for z-sphere the ability to znudge depends on endcap existance on a side ... ? also radius contraints
-    // due to this have removed from znudge capable
-}
-
-bool NNodeNudger::can_znudge_dminmin(const NNodeCoincidence* coin) const
-{
-    const nnode* i = coin->i ; 
-    const nnode* j = coin->j ; 
-    const NNodePairType p = coin->p ; 
-
-    return i->parent && j->parent && 
-           ( i->parent->type == CSG_DIFFERENCE ||  j->parent->type == CSG_DIFFERENCE ) 
-           && p == PAIR_MINMIN && i->is_znudge_capable() && j->is_znudge_capable() ;
-} 
-
-
-
-void NNodeNudger::znudge_dminmin(NNodeCoincidence* coin)
-{
-    std::cout << "NNodeNudger::znudge_dminmin"
-              << " coin " << coin->desc()
-              << std::endl ; 
-
-}
-
-
-void NNodeNudger::znudge_umaxmin(NNodeCoincidence* coin)
-{
-    assert(can_znudge_umaxmin(coin));
-    assert(coin->fixed == false);
-
-    nnode* i = coin->i ; 
-    nnode* j = coin->j ; 
-    const NNodePairType p = coin->p ; 
-
-    nbbox ibb = i->bbox();
-    nbbox jbb = j->bbox();
-
-    float dz(1.);
-
-    assert( p == PAIR_MAXMIN );
-
-    float zi = ibb.max.z ; 
-    float zj = jbb.min.z ;
-    float ri = i->r2() ; 
-    float rj = j->r1() ; 
-
-    NNodeJoinType join = NNodeEnum::JoinClassify( zi, zj, epsilon );
-    assert(join == JOIN_COINCIDENT);
-
-    if( ri > rj )  
-    {
-        j->decrease_z1( dz );   
-        coin->n = NUDGE_J_DECREASE_Z1 ; 
-    }
-    else
-    {
-        i->increase_z2( dz ); 
-        coin->n = NUDGE_I_INCREASE_Z2 ; 
-    }
-
-    nbbox ibb2 = i->bbox();
-    nbbox jbb2 = j->bbox();
-
-    float zi2 = ibb2.max.z ; 
-    float zj2 = jbb2.min.z ;
- 
-    NNodeJoinType join2 = NNodeEnum::JoinClassify( zi2, zj2, epsilon );
-    assert(join2 != JOIN_COINCIDENT);
-
-    coin->fixed = true ; 
-
-    nudges.push_back(*coin); 
-
-}
-
-/*
-
-    +--------------+ .
-    |              |
-    |           . ++-------------+
-    |             ||             |
-    |         rb  ||  ra         |
-    |             ||             | 
-    |           . || .           |    
-    |             ||             |
-    |             ||          b  |
-    |           . ++-------------+
-    |  a           |
-    |              |
-    +--------------+ .
-
-                  za  
-                  zb                      
-
-    ------> Z
-
-*/
-
 
 
 void NNodeNudger::dump(const char* msg)

@@ -91,6 +91,7 @@ set(SOURCES
     NNodePoints.cpp
     NNodeUncoincide.cpp
     NNodeNudger.cpp
+    NNodeCoincidence.cpp
 
     NBox.cpp
     NSlab.cpp
@@ -336,6 +337,7 @@ NField3.hpp
 NFieldGrid3.hpp
 
 NNodeNudger.hpp
+NNodeCoincidence.hpp
 
 NTreeBuilder.hpp
 NTreePositive.hpp

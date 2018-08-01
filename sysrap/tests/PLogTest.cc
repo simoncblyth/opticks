@@ -1,3 +1,4 @@
+// om-;TEST=PLogTest om-t
 #include <plog/Log.h>
 #include <plog/Appenders/ColorConsoleAppender.h>
 
@@ -39,6 +40,11 @@ int main(int, char** argv)
     if(1) LOG(info) << argv[0] << " if-LOG can can cause dangling else problem with some versions of plog " ;
 
 
+    int ilevel = info ; 
+    plog::Severity level = info ; 
+
+    LOG(level) << "gello " ; 
+    LOG((plog::Severity)ilevel) << "i-gello " ; 
 
 
     return 0 ; 

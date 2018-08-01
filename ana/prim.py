@@ -19,16 +19,40 @@ from opticks.ana.mesh import Mesh
    
 
 class Part(object):
+    """
+    Parts are CSG constituents, aka nodes of the CSG trees that make up each solid  
+    """
+    part_idx = 0 
+
     def __init__(self, part, trans, d):
+        """
+        Part instances are created within the parent Prim instance
+        by mapping this Part ctor over elements of the parts (nodes)
+        and global transforms arrays.
+
+        :param part: single csg node of shape (4,4)
+        :param trans: 1 or more transforms, shape (ntran,4,4)
+        :param d: Dir instance 
+        """
+        assert part.shape == (4,4), part
+        assert trans.shape[1:] == (4,4), trans
+        assert trans.shape[0] < 16, trans
+        assert d.__class__.__name__ == 'Dir'
+        ntran = trans.shape[0]
+        assert ntran > 0
+
+        #log.info( "Part : trans.shape %s " % repr(trans.shape))
+
         f = part.view(np.float32) 
         u = part.view(np.uint32)
 
         fc = part.copy().view(np.float32)
-        fc[1][2] = 0  # scrub boundary in copy, as its known discrepant 
+        fc[1][2] = 0  # scrub boundary in copy, as it is known discrepant : due to lack of surfaces
 
-        tc = u[2][3]
-        tcn = CSG_.desc(tc)
-        bnd = u[1][2]
+
+        tc = u[2][3]          ## typecode eg CSG_.UNION
+        tcn = CSG_.desc(tc)   ## typename 
+        bnd = u[1][2]         ## boundary index
 
         # check the complements, viewing as float otherwise lost "-0. ok but not -0"
         comp = np.signbit(f[3,3])  
@@ -39,6 +63,19 @@ class Part(object):
         # recover the gtransform index by getting rid of the complement signbit  
         gt = u[3][3] & 0x7fffffff
 
+        if tc in [CSG_.DIFFERENCE, CSG_.INTERSECTION, CSG_.UNION]:
+            assert gt == 0, "operators are expected to not have a gtransform" 
+        elif tc == CSG_.ZERO:
+            assert gt == 0, "zeros are not expected to have a gtransform"
+        else:
+            assert gt > 0, "primitives are expected to have a gtransform "   
+            assert gt <= ntran, ( "1-based gt expected to be <= ntran (local index, not global) ", gt, ntran )
+            if ntran > 5:
+                pass
+                #log.info(" part_idx:%5d ntran:%2d gt:%2d tcn:%s " % ( self.__class__.part_idx, ntran, gt, tcn )) 
+            pass
+        pass
+
 
         self.f = f
         self.fc = fc
@@ -46,7 +83,7 @@ class Part(object):
         self.tc = tc
         self.tcn = tcn 
         self.comp = comp
-        self.gt = gt
+        self.gt = gt        # 1-based gtransform pointer into trans
 
         self.bnd = bnd
         self.bname = d.blib.bname(bnd)
@@ -61,13 +98,22 @@ class Part(object):
         self.tran = tran 
         self.d = d 
 
+        self.idx = self.__class__.part_idx 
+        self.__class__.part_idx += 1 
+
     def __repr__(self):
-        return "    Part %1s%2s %2s  %15s   %3d %25s   tz:%10.3f    %s  " % ( "!" if self.comp else " ", self.tc, self.gt, self.tcn, self.bnd, self.bname, self.tran[3][2], self.detail() )
+        return "    Part %1s%2s %2s  %15s   %3d %25s   tz:%10.3f    %s  " % ( "!" if self.comp else " ", self.tc, self.gt, self.tcn, self.bnd, self.bname, self.tz, self.detail() )
 
     def maxdiff(self, other):
-        return np.max( self.fc - other.fc )
+        """
+        :param other: Part instance
+        :return float: max absolute difference between float param values of the CSG constituent part
+        (actually the boundary index is excluded by comparing a copy and scrubbing that) 
+        """
+        return np.max( np.abs(self.fc - other.fc) )
 
     r = property(lambda self:self.f[0][3])
+    tz = property(lambda self:self.tran[3][2])
 
     xbox = property(lambda self:self.f[0][0])
     ybox = property(lambda self:self.f[0][1])
@@ -86,14 +132,15 @@ class Part(object):
     dr = property(lambda self:self.r2 - self.r1)
 
     def detail(self):
+        tz = self.tz
         if self.tc == CSG_.ZSPHERE:
             msg = " r: %10.3f z1:%10.3f z2:%10.3f " % ( self.r, self.z1, self.z2 ) 
         elif self.tc == CSG_.SPHERE:
             msg = " r: %10.3f " % ( self.f[0][3]  ) 
         elif self.tc == CSG_.CYLINDER:
-            msg = "   z1:%10.3f z2:%10.3f r :%10.3f " % ( self.z1, self.z2, self.r) 
+            msg = "   z1:%10.3f z2:%10.3f r :%10.3f               z1+tz:%10.3f z2+tz:%10.3f" % ( self.z1, self.z2, self.r, self.z1 + tz, self.z2 + tz) 
         elif self.tc == CSG_.CONE:
-            msg = "   z1:%10.3f z2:%10.3f r1:%10.3f r2:%10.3f " % ( self.z1co, self.z2co, self.r1co, self.r2co ) 
+            msg = "   z1:%10.3f z2:%10.3f r1:%10.3f r2:%10.3f z1+tz:%10.3f z2+tz:%10.3f" % ( self.z1co, self.z2co, self.r1co, self.r2co, self.z1co+tz, self.z2co+tz ) 
         elif self.tc == CSG_.BOX3:
             msg = "   x:%10.3f y:%10.3f z:%10.3f  " % ( self.xbox, self.ybox, self.zbox  ) 
         else:
@@ -105,6 +152,12 @@ class Part(object):
 
 class Prim(object):
     def __init__(self, primIdx, prim, d):
+        """
+        """
+        assert primIdx > -1 and primIdx < 10000, primIdx
+        assert prim.shape == (4,), "unexpected prim.shape %s " % repr(prim.shape)
+ 
+
         self.primIdx = primIdx
         self.prim = prim 
 
@@ -120,12 +173,12 @@ class Prim(object):
         numTran = d.ntran[primIdx]
 
         parts_ = d.part[partOffset:partOffset+numParts]
-        trans_ = d.tran[tranOffset:tranOffset+numTran,0]  # eg shape (2, 4, 4)
+        trans_ = d.tran[tranOffset:tranOffset+numTran,0]  # eg shape (2, 4, 4)  plucking the first from the t,v,q triplet of transforms
 
         self.parts_ = parts_
         self.trans_ = trans_    ## without the python class wrapping
 
-        self.parts = map(lambda _:Part(_,trans_,d), parts_)
+        self.parts = map(lambda _:Part(_,trans_,d), parts_)   ## note that every part gets passed all the trans_ need to use the gt to determine which one to use
 
         self.partOffset = partOffset
         self.numParts= numParts
@@ -135,11 +188,18 @@ class Prim(object):
         self.d = d
 
     def maxdiff(self, other):
+        """
+        :return float: max difference over the constituent parts, from Part.maxdiff
+        """
         assert len(self.parts) == len(other.parts) 
         return max(map( lambda ab:ab[0].maxdiff(ab[1]), zip( self.parts, other.parts)))       
 
     def tr_maxdiff(self, other):
-        return np.max( self.trans_ - other.trans_ )      
+        """
+        :param other: Prim instance to compare self with
+        :return value: max absolute difference between the (numtran,4,4) elements 
+        """
+        return np.max(np.abs(self.trans_ - other.trans_))      
 
     def __repr__(self):
         return "primIdx %s idx %s lvName %s partOffset %s numParts %s tranOffset %s numTran %s planOffset %s  " % (self.primIdx, repr(self.idx), self.lvName, self.partOffset, self.numParts, self.tranOffset, self.numTran, self.planOffset )  
@@ -150,18 +210,23 @@ class Prim(object):
 
 class Dir(object):
     def __init__(self, base):
+        """  
+        :param base: directory containing primBuffer.npy etc..
+        """
         self.base = base
         self.blib = BLib.make(base)   # auto finds the idpath 
 
-        prim = np.load(os.path.join(base, "primBuffer.npy"))
+        prim = np.load(os.path.join(base, "primBuffer.npy"))  # "solid" tree level index into part and tran buffers
         part = np.load(os.path.join(base, "partBuffer.npy"))
         tran = np.load(os.path.join(base, "tranBuffer.npy"))
-        idxpath = os.path.join(base,"idxBuffer.npy")
+        idxpath = os.path.join(base,"idxBuffer.npy")          
         idx = np.load(idxpath) if os.path.exists(idxpath) else None
-        ma = Mesh.make()   # uses IDPATH envvar 
 
-        ntran = np.ones( len(prim), dtype=np.uint32)
+        ma = Mesh.make()   # uses IDPATH envvar , used to lookup solid/mesh names from lvIdx 
+
+        ntran = np.zeros( len(prim), dtype=np.uint32)
         ntran[0:len(prim)-1] = prim[1:,2] - prim[:-1,2]    ## differencing the tranOffsets to give numtran
+        ntran[len(prim)-1] = 1   # arbitrary guess for the number of transforms of the last prim
 
         self.prim = prim
         self.part = part 
@@ -171,14 +236,23 @@ class Dir(object):
         self.ma = ma
         self.prims = self.get_prims()
    
-
     def get_prims(self):
+        """
+        :return pp: python array of Prim instances deserialized from self.prim array
+        """ 
         pp = []
         for primIdx, prim in enumerate(self.prim):
             p = Prim(primIdx, prim, self)  
             pp.append(p)
         pass
         return pp
+
+    def enumerate_prim_zip(self, other):
+        """
+        :return i_ab: (idx,(this_prim,other_prim))  i_ab[0] 
+        """ 
+        assert len(self.prims) == len(other.prims) 
+        return enumerate(zip(self.prims, other.prims))
 
     def where_discrepant_tr(self, other, cut=0.1):
         assert len(self.prims) == len(other.prims) 
@@ -205,7 +279,7 @@ if __name__ == '__main__':
     d = Dir(dir_)
     print d
 
-    pp = d.prims()
+    pp = d.prims
     #assert len(pp) == 5
 
     for p in pp:
@@ -215,11 +289,4 @@ if __name__ == '__main__':
     #print d.tran
 
 
-    
-
-
-    
-
-    
-
-
+  

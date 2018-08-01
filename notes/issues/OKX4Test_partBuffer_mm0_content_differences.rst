@@ -11,6 +11,260 @@ Summary
   corresponding to two lvIdx 24, 42  (iav, oav)  
 
   * these two were mesh joined ? but surely not relevant for analytic geometry ?
+  * actually after absolution np.max(np.abs()) there are 8 discrepancies (iav,oav,gds,lso), 
+    listed in detail by ab-;ab-p
+  * all discrepancies have same tree structure 
+
+
+TODO: review NNodeNudger, NNodeUncoincide
+-------------------------------------------
+
+::
+
+   export LV=42
+   x4gen-
+   x4gen-info 
+   x4gen-csg
+
+
+
+After getting the gtransforms properly into place ab-p giving zero discrepancies with cut of 0.1
+----------------------------------------------------------------------------------------------------
+
+::
+
+    epsilon:ana blyth$ ab-;ab-p
+    [2018-08-01 20:03:52,934] p77726 {/tmp/blyth/opticks/bin/ab/ab-p.py:43} INFO -  num_discrepant 0 cut 0.1 
+
+
+::
+
+    Process 77699 launched: '/usr/local/opticks/lib/x042' (x86_64)
+    2018-08-01 19:58:37.204 INFO  [6944296] [NSceneConfig::env_override@82] NSceneConfig override verbosity from VERBOSITY envvar 1
+    2018-08-01 19:58:37.205 ERROR [6944296] [*NCSG::make_nudger@1104]  make_nudger Adopt root ctor
+    2018-08-01 19:58:37.205 INFO  [6944296] [NNodeNudger::init@45]  init 
+     prim 0 t          t  1.000   0.000   0.000   0.000 
+                0.000   1.000   0.000   0.000 
+                0.000   0.000   1.000   0.000 
+                0.000   0.000   0.000   1.000 
+    np.fromstring("1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 ", dtype=np.float32, sep=" ").reshape(4,4) 
+     pbb  mi (  -2000.000 -2000.000 -1968.500) mx (   2000.000  2000.000  1968.500) si (   4000.000  4000.000  3937.000)
+     prim 1 t          t  1.000   0.000   0.000   0.000 
+                0.000   1.000   0.000   0.000 
+                0.000   0.000   1.000   0.000 
+                0.000   0.000 -1968.500   1.000 
+    np.fromstring("1 0 0 0 0 1 0 0 0 0 1 0 0 0 -1968.5 1 ", dtype=np.float32, sep=" ").reshape(4,4) 
+     pbb  mi (  -2040.000 -2040.000  1968.500) mx (   2040.000  2040.000  2031.525) si (   4080.000  4080.000    63.025)
+     prim 2 t          t  1.000   0.000   0.000   0.000 
+                0.000   1.000   0.000   0.000 
+                0.000   0.000   1.000   0.000 
+                0.000   0.000 -1968.500   1.000 
+    np.fromstring("1 0 0 0 0 1 0 0 0 0 1 0 0 0 -1968.5 1 ", dtype=np.float32, sep=" ").reshape(4,4) 
+     pbb  mi (  -1930.000 -1930.000  2031.525) mx (   1930.000  1930.000  2126.121) si (   3860.000  3860.000    94.596)
+    2018-08-01 19:58:37.205 INFO  [6944296] [NNodeNudger::collect_coincidence@130]  collect_concidence 0
+    2018-08-01 19:58:37.205 INFO  [6944296] [NNodeNudger::collect_coincidence@195]  collect_concidence  treeidx : 0 prim pair (i,j) : (0,1)
+    2018-08-01 19:58:37.205 INFO  [6944296] [NNodeNudger::collect_coincidence@216]  pair: PAIR_MINMIN zi:  -1968.500 zj:   1968.500 join: JOIN_SPLIT
+    2018-08-01 19:58:37.205 INFO  [6944296] [NNodeNudger::collect_coincidence@216]  pair: PAIR_MINMAX zi:  -1968.500 zj:   2031.525 join: JOIN_SPLIT
+    2018-08-01 19:58:37.205 INFO  [6944296] [NNodeNudger::collect_coincidence@216]  pair: PAIR_MAXMIN zi:   1968.500 zj:   1968.500 join: JOIN_COINCIDENT
+    2018-08-01 19:58:37.205 INFO  [6944296] [NNodeNudger::collect_coincidence@216]  pair: PAIR_MAXMAX zi:   1968.500 zj:   2031.525 join: JOIN_SPLIT
+    2018-08-01 19:58:37.205 INFO  [6944296] [NNodeNudger::collect_coincidence@195]  collect_concidence  treeidx : 0 prim pair (i,j) : (0,2)
+    2018-08-01 19:58:37.205 INFO  [6944296] [NNodeNudger::collect_coincidence@216]  pair: PAIR_MINMIN zi:  -1968.500 zj:   2031.525 join: JOIN_SPLIT
+    2018-08-01 19:58:37.205 INFO  [6944296] [NNodeNudger::collect_coincidence@216]  pair: PAIR_MINMAX zi:  -1968.500 zj:   2126.121 join: JOIN_SPLIT
+    2018-08-01 19:58:37.205 INFO  [6944296] [NNodeNudger::collect_coincidence@216]  pair: PAIR_MAXMIN zi:   1968.500 zj:   2031.525 join: JOIN_SPLIT
+    2018-08-01 19:58:37.205 INFO  [6944296] [NNodeNudger::collect_coincidence@216]  pair: PAIR_MAXMAX zi:   1968.500 zj:   2126.121 join: JOIN_SPLIT
+    2018-08-01 19:58:37.205 INFO  [6944296] [NNodeNudger::collect_coincidence@195]  collect_concidence  treeidx : 0 prim pair (i,j) : (1,2)
+    2018-08-01 19:58:37.205 INFO  [6944296] [NNodeNudger::collect_coincidence@216]  pair: PAIR_MINMIN zi:   1968.500 zj:   2031.525 join: JOIN_SPLIT
+    2018-08-01 19:58:37.205 INFO  [6944296] [NNodeNudger::collect_coincidence@216]  pair: PAIR_MINMAX zi:   1968.500 zj:   2126.121 join: JOIN_SPLIT
+    2018-08-01 19:58:37.206 INFO  [6944296] [NNodeNudger::collect_coincidence@216]  pair: PAIR_MAXMIN zi:   2031.525 zj:   2031.525 join: JOIN_COINCIDENT
+    2018-08-01 19:58:37.206 INFO  [6944296] [NNodeNudger::collect_coincidence@216]  pair: PAIR_MAXMAX zi:   2031.525 zj:   2126.121 join: JOIN_SPLIT
+    2018-08-01 19:58:37.206 ERROR [6944296] [NNodeNudger::init@61] NNodeNudger::brief root.treeidx   0 num_prim  3 num_coincidence  2 num_nudge  2 
+    2018-08-01 19:58:37.206 INFO  [6944296] [NNodeNudger::init@65] NNodeNudger::brief root.treeidx   0 num_prim  3 num_coincidence  2 num_nudge  2 
+    2018-08-01 19:58:37.208 INFO  [6944296] [NSceneConfig::env_override@82] NSceneConfig override verbosity from VERBOSITY envvar 1
+    2018-08-01 19:58:37.208 ERROR [6944296] [*NCSG::make_nudger@1104]  make_nudger Adopt root ctor
+    2018-08-01 19:58:37.208 INFO  [6944296] [NNodeNudger::init@45]  init 
+
+
+
+
+Suspect nudge coincidence missing some as not applying transforms
+---------------------------------------------------------------------
+
+* the "4000.02,3999.02" looks like a prior nudge was done
+
+
+::
+
+    2018-08-01 16:30:24.585 ERROR [6821393] [*NCSG::make_nudger@1082]  make_nudger postimport
+    2018-08-01 16:30:24.585 INFO  [6821393] [NNodeNudger::init@42]  init 
+    2018-08-01 16:30:24.585 INFO  [6821393] [NNodeNudger::collect_coincidence@116]  collect_concidence 1
+    2018-08-01 16:30:24.586 INFO  [6821393] [NNodeNudger::collect_coincidence@181]  collect_concidence  treeidx : 1 prim pair (i,j) : (0,1)
+    2018-08-01 16:30:24.586 INFO  [6821393] [NNodeNudger::collect_coincidence@200]  zi, zj -1968.5,3937
+    2018-08-01 16:30:24.586 INFO  [6821393] [NNodeNudger::collect_coincidence@200]  zi, zj -1968.5,4000.02
+    2018-08-01 16:30:24.586 INFO  [6821393] [NNodeNudger::collect_coincidence@200]  zi, zj 1968.5,3937
+    2018-08-01 16:30:24.586 INFO  [6821393] [NNodeNudger::collect_coincidence@200]  zi, zj 1968.5,4000.02
+    2018-08-01 16:30:24.586 INFO  [6821393] [NNodeNudger::collect_coincidence@181]  collect_concidence  treeidx : 1 prim pair (i,j) : (0,2)
+    2018-08-01 16:30:24.586 INFO  [6821393] [NNodeNudger::collect_coincidence@200]  zi, zj -1968.5,3999.02
+    2018-08-01 16:30:24.586 INFO  [6821393] [NNodeNudger::collect_coincidence@200]  zi, zj -1968.5,4094.62
+    2018-08-01 16:30:24.586 INFO  [6821393] [NNodeNudger::collect_coincidence@200]  zi, zj 1968.5,3999.02
+    2018-08-01 16:30:24.586 INFO  [6821393] [NNodeNudger::collect_coincidence@200]  zi, zj 1968.5,4094.62
+    2018-08-01 16:30:24.586 INFO  [6821393] [NNodeNudger::collect_coincidence@181]  collect_concidence  treeidx : 1 prim pair (i,j) : (1,2)
+    2018-08-01 16:30:24.586 INFO  [6821393] [NNodeNudger::collect_coincidence@200]  zi, zj 3937,3999.02
+    2018-08-01 16:30:24.586 INFO  [6821393] [NNodeNudger::collect_coincidence@200]  zi, zj 3937,4094.62
+    2018-08-01 16:30:24.586 INFO  [6821393] [NNodeNudger::collect_coincidence@200]  zi, zj 4000.02,3999.02
+    2018-08-01 16:30:24.586 INFO  [6821393] [NNodeNudger::collect_coincidence@200]  zi, zj 4000.02,4094.62
+    2018-08-01 16:30:24.586 INFO  [6821393] [NNodeNudger::init@62] NNodeNudger::brief root.treeidx   1 num_prim  3 num_coincidence  0 num_nudge  0 
+
+
+    dbp: 
+    primIdx 3 idx array([ 0, 33, 42,  2], dtype=uint32) lvName oav0xc2ed7c8 partOffset 3 numParts 7 tranOffset 3 numTran 2 planOffset 0  
+        Part  12  1         cylinder    20      MineralOil///Acrylic   tz: -7141.500       z1: -1968.500 z2:  1968.500 r :  2000.000   
+        Part  12  2         cylinder    20      MineralOil///Acrylic   tz: -9110.000       z1:  3937.000 z2:  4000.025 r :  2040.000   
+        Part  15  2             cone    20      MineralOil///Acrylic   tz: -9110.000       z1:  3999.025 z2:  4094.621 r1:  1930.000 r2:   125.000   
+
+
+
+
+bbox and gtransforms
+-----------------------
+
+Getting an appropiate bbox depends on the gtransform->t of the primitive::
+
+     38 nbbox ncylinder::bbox() const 
+     39 {    
+     40     float r = radius();
+     41     glm::vec3 c = center();
+     42 
+     43     glm::vec3 mx(c.x + r, c.y + r, z2() );
+     44     glm::vec3 mi(c.x - r, c.y - r, z1() );
+     45 
+     46     nbbox bb = make_bbox(mi, mx, complement);
+     47 
+     48     return gtransform ? bb.make_transformed(gtransform->t) : bb ;
+     49 }    
+
+     22 nbbox ncone::bbox() const
+     23 {
+     24     glm::vec3 mx(  rmax(),  rmax(), z2() );
+     25     glm::vec3 mi( -rmax(), -rmax(), z1() );
+     26 
+     27     nbbox bb = make_bbox(mi, mx, complement);
+     28 
+     29     return gtransform ? bb.make_transformed(gtransform->t) : bb ;
+     30 }   
+
+
+
+SMOKING GUN : Z-COINCIDENCES MISSED FOR LACK OF COMPARING IN ROOT FRAME
+-------------------------------------------------------------------------
+
+
+
+
+
+::
+
+    ----- primIdx:  3 soIdx: 33 lvIdx: 42 height:2 name:oav0xc2ed7c8 nnsi:array([42,  3,  1,  1], dtype=uint32)   ---------- 
+    dap.maxdiff(dbp):1.0 
+    dap: 
+    primIdx 3 idx array([4294967295, 4294967295, 4294967295, 4294967295], dtype=uint32) lvName - partOffset 3 numParts 7 tranOffset 3 numTran 2 planOffset 0  
+        Part   1  0            union    20      MineralOil///Acrylic   tz:     0.000      
+        Part  12  1         cylinder    20      MineralOil///Acrylic   tz: -7141.500       z1: -1968.500 z2:  1969.500 r :  2000.000               z1+tz: -9110.000 z2+tz: -5172.000  
+        Part   1  0            union    20      MineralOil///Acrylic   tz:     0.000      
+        Part  12  2         cylinder    20      MineralOil///Acrylic   tz: -9110.000       z1:  3937.000 z2:  4000.025 r :  2040.000               z1+tz: -5173.000 z2+tz: -5109.976  
+        Part  15  2             cone    20      MineralOil///Acrylic   tz: -9110.000       z1:  3999.025 z2:  4094.621 r1:  1930.000 r2:   125.000 z1+tz: -5110.976 z2+tz: -5015.379  
+    array([[[      0.5432,      -0.8396,       0.    ,       0.    ],
+            [      0.8396,       0.5432,       0.    ,       0.    ],
+            [      0.    ,       0.    ,       1.    ,       0.    ],
+            [ -18079.453 , -799699.44  ,   -7141.5   ,       1.    ]],
+
+           [[      0.5432,      -0.8396,       0.    ,       0.    ],
+            [      0.8396,       0.5432,       0.    ,       0.    ],
+            [      0.    ,       0.    ,       1.    ,       0.    ],
+            [ -18079.453 , -799699.44  ,   -9110.    ,       1.    ]]], dtype=float32)
+    dbp: 
+    primIdx 3 idx array([ 0, 33, 42,  2], dtype=uint32) lvName oav0xc2ed7c8 partOffset 3 numParts 7 tranOffset 3 numTran 2 planOffset 0  
+        Part   1  0            union    20      MineralOil///Acrylic   tz:     0.000      
+        Part  12  1         cylinder    20      MineralOil///Acrylic   tz: -7141.500       z1: -1968.500 z2:  1968.500 r :  2000.000               z1+tz: -9110.000 z2+tz: -5173.000  
+        Part   1  0            union    20      MineralOil///Acrylic   tz:     0.000      
+        Part  12  2         cylinder    20      MineralOil///Acrylic   tz: -9110.000       z1:  3937.000 z2:  4000.025 r :  2040.000               z1+tz: -5173.000 z2+tz: -5109.976  
+        Part  15  2             cone    20      MineralOil///Acrylic   tz: -9110.000       z1:  3999.025 z2:  4094.621 r1:  1930.000 r2:   125.000 z1+tz: -5110.976 z2+tz: -5015.379  
+    array([[[      0.5432,      -0.8396,       0.    ,       0.    ],
+            [      0.8396,       0.5432,       0.    ,       0.    ],
+            [      0.    ,       0.    ,       1.    ,       0.    ],
+            [ -18079.453 , -799699.44  ,   -7141.5   ,       1.    ]],
+
+           [[      0.5432,      -0.8396,       0.    ,       0.    ],
+            [      0.8396,       0.5432,       0.    ,       0.    ],
+            [      0.    ,       0.    ,       1.    ,       0.    ],
+            [ -18079.453 , -799699.44  ,   -9110.    ,       1.    ]]], dtype=float32)
+
+
+
+ 
+
+
+
+ab-;ab-p
+------------
+
+* cylinder.z2 -1 mm 
+
+::
+
+    [2018-08-01 13:54:24,735] p33758 {/tmp/blyth/opticks/bin/ab/ab-p.py:43} INFO -  num_discrepant 8 cut 0.1 
+     ----- primIdx:  3 soIdx: 33 lvIdx: 42 height:2 name:oav0xc2ed7c8 nnsi:array([42,  3,  1,  1], dtype=uint32)   ---------- 
+     ----- primIdx:  4 soIdx: 34 lvIdx: 37 height:2 name:lso0xc028a38 nnsi:array([37,  3,  1,  1], dtype=uint32)   ---------- 
+     ----- primIdx:  5 soIdx: 35 lvIdx: 24 height:2 name:iav0xc346f90 nnsi:array([24,  3,  1,  1], dtype=uint32)   ---------- 
+     ----- primIdx:  6 soIdx: 36 lvIdx: 22 height:2 name:gds0xc28d3f0 nnsi:array([22,  3,  1,  1], dtype=uint32)   ---------- 
+     ----- primIdx:703 soIdx: 33 lvIdx: 42 height:2 name:oav0xc2ed7c8 nnsi:array([42,  3,  1,  1], dtype=uint32)   ---------- 
+     ----- primIdx:704 soIdx: 34 lvIdx: 37 height:2 name:lso0xc028a38 nnsi:array([37,  3,  1,  1], dtype=uint32)   ---------- 
+     ----- primIdx:705 soIdx: 35 lvIdx: 24 height:2 name:iav0xc346f90 nnsi:array([24,  3,  1,  1], dtype=uint32)   ---------- 
+     ----- primIdx:706 soIdx: 36 lvIdx: 22 height:2 name:gds0xc28d3f0 nnsi:array([22,  3,  1,  1], dtype=uint32)   ---------- 
+     ----- primIdx:  3 soIdx: 33 lvIdx: 42 height:2 name:oav0xc2ed7c8 nnsi:array([42,  3,  1,  1], dtype=uint32)   ---------- 
+    dap.maxdiff(dbp):1.0 
+    dap: 
+    primIdx 3 idx array([4294967295, 4294967295, 4294967295, 4294967295], dtype=uint32) lvName - partOffset 3 numParts 7 tranOffset 3 numTran 2 planOffset 0  
+        Part   1  0            union    20      MineralOil///Acrylic   tz:     0.000      
+        Part  12  1         cylinder    20      MineralOil///Acrylic   tz: -7141.500       z1: -1968.500 z2:  1969.500 r :  2000.000   
+        Part   1  0            union    20      MineralOil///Acrylic   tz:     0.000      
+        Part  12  2         cylinder    20      MineralOil///Acrylic   tz: -9110.000       z1:  3937.000 z2:  4000.025 r :  2040.000   
+        Part  15  2             cone    20      MineralOil///Acrylic   tz: -9110.000       z1:  3999.025 z2:  4094.621 r1:  1930.000 r2:   125.000   
+    array([[[      0.5432,      -0.8396,       0.    ,       0.    ],
+            [      0.8396,       0.5432,       0.    ,       0.    ],
+            [      0.    ,       0.    ,       1.    ,       0.    ],
+            [ -18079.453 , -799699.44  ,   -7141.5   ,       1.    ]],
+
+           [[      0.5432,      -0.8396,       0.    ,       0.    ],
+            [      0.8396,       0.5432,       0.    ,       0.    ],
+            [      0.    ,       0.    ,       1.    ,       0.    ],
+            [ -18079.453 , -799699.44  ,   -9110.    ,       1.    ]]], dtype=float32)
+    dbp: 
+    primIdx 3 idx array([ 0, 33, 42,  2], dtype=uint32) lvName oav0xc2ed7c8 partOffset 3 numParts 7 tranOffset 3 numTran 2 planOffset 0  
+        Part   1  0            union    20      MineralOil///Acrylic   tz:     0.000      
+        Part  12  1         cylinder    20      MineralOil///Acrylic   tz: -7141.500       z1: -1968.500 z2:  1968.500 r :  2000.000   
+        Part   1  0            union    20      MineralOil///Acrylic   tz:     0.000      
+        Part  12  2         cylinder    20      MineralOil///Acrylic   tz: -9110.000       z1:  3937.000 z2:  4000.025 r :  2040.000   
+        Part  15  2             cone    20      MineralOil///Acrylic   tz: -9110.000       z1:  3999.025 z2:  4094.621 r1:  1930.000 r2:   125.000   
+    array([[[      0.5432,      -0.8396,       0.    ,       0.    ],
+            [      0.8396,       0.5432,       0.    ,       0.    ],
+            [      0.    ,       0.    ,       1.    ,       0.    ],
+            [ -18079.453 , -799699.44  ,   -7141.5   ,       1.    ]],
+
+           [[      0.5432,      -0.8396,       0.    ,       0.    ],
+            [      0.8396,       0.5432,       0.    ,       0.    ],
+            [      0.    ,       0.    ,       1.    ,       0.    ],
+            [ -18079.453 , -799699.44  ,   -9110.    ,       1.    ]]], dtype=float32)
+
+
+
+
+
+
+
+NNodeNudger buffer info
+-------------------------
+
+
 
 
 smoking gun for missing nudge :  NNodeUncoincide is no longer being applied
@@ -121,7 +375,7 @@ iav/oav
 * notice the cone z1 is grown down into lip cylinder by 1mm  ( the 3999.025)
 * the missing nudge is to the top (z2) of the big cylinder, impinging it into the thin lip cylinder above 
 
-* hmm : need a nudge report per primitive 
+* hmm : need a nudge report per primitive
 
 * lv:42 and lv:24 only got one nudge (growing the cone down) missing the nudge growing the big cylinder up into the lip cylinder   
 
@@ -573,6 +827,8 @@ to debug the 1mm shifts need a way to go from the constituent
 to its root node and thence to find which primIdx and get 
 identity info lvIdx etc..
 
+* IMPLEMENTED in opticks/ana/prim.py Prim/Part/Dir
+
 primBuffer has partOffsets and partNumbers, so should 
 be able to go from a partIdx to a primIdx  
 
@@ -815,6 +1071,8 @@ reconstructed surfaces::
     Out[4]: array([ 17,  18,  19, ..., 120, 120, 120], dtype=int32)
 
     In [5]: b.view(np.int32)[:,1,2] = a.view(np.int32)[:,1,2]
+
+
 
 
 

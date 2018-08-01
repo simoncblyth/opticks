@@ -39,7 +39,21 @@ struct NPY_API nuv
     unsigned p_ ;
 };
 
+/**
+make_uv
+=========
 
+s
+   surface index, for example a cube has 6 surface "sheets" with s values 0,1,2,3,4,5
+u,v
+   2D parametric surface indices indicating a point on the surface 
+nu,nv
+   number of 2D surface indices 
+p
+   prim index (?)
+
+
+**/
 
 inline nuv make_uv(unsigned s, unsigned u, unsigned v, unsigned nu, unsigned nv, unsigned p)
 {

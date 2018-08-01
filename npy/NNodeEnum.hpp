@@ -20,6 +20,13 @@ typedef enum
 } NNodePointType ;
 
 
+typedef enum { 
+   FEATURE_PARENT_LINKS = 0x1 << 0, 
+   FEATURE_GTRANSFORMS  = 0x1 << 1,
+   FEATURE_GTRANSFORM_IDX  = 0x1 << 2
+} NNodeFeature  ; 
+
+
 typedef enum
 {  
    NODE_ALL, 
@@ -70,6 +77,11 @@ class NPY_API NNodeEnum
         static const char* POINT_SURFACE_;
         static const char* POINT_OUTSIDE_;
         static const char* PointType(NNodePointType pt);
+
+        static const char* FEATURE_PARENT_LINKS_ ;
+        static const char* FEATURE_GTRANSFORMS_ ;
+        static const char* FEATURE_GTRANSFORM_IDX_ ;
+        static const char* Feature(NNodeFeature ft);
 
         static const char* PAIR_MINMIN_;
         static const char* PAIR_MINMAX_;

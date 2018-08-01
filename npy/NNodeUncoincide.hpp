@@ -16,14 +16,34 @@ struct NNodeNudger ;
 NNodeUncoincide
 =================
 
+* this is not enanbled in NCSG, but NNodeNudger is  
+
+
 See issues/NScanTest_csg_zero_crossings.rst 
 
-* pairwise incoincidence is not helping much, 
+* pairwise uncoincidence is not helping much, 
   need to act at tree level 
-
 
 Canonically invoked after CSG import 
 via NCSG::postimport_uncoincide/nnode::uncoincide
+
+
+Hmm nothing fancy needed to see the coincidence,
+equality of a.bbox.min.z and b.bbox.max.z or vv.
+    
+Shapes with separate +z and -z parameters are
+easy to nudge in +z, -z direction.  
+
+* CSG_CYLINDER
+* CSG_CONE
+* CSG_ZSPHERE
+
+Shapes with symmetric parameters like box3 are a pain, as 
+to grow in eg +z direction need to grow in both +z and -z
+first and then transform to keep the other side at same place.
+
+Hmm to avoid this perhaps make a CSG_ZBOX primitive ? 
+
 
 */
 

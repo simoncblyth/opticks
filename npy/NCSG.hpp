@@ -161,7 +161,7 @@ class NPY_API NCSG {
         static NParameters* LoadMetadata( const char* treedir, int item=-1 );  // -1 for global
 
         NNodeUncoincide* make_uncoincide() const ;
-        NNodeNudger*     make_nudger() const ;
+        NNodeNudger*     make_nudger(const char* msg) const ;
         NNodeNudger*     get_nudger() const ;
         unsigned         get_num_coincidence() const ;
         std::string      desc_coincidence() const ;
@@ -304,10 +304,10 @@ class NPY_API NCSG {
 
     public:
         // collect global transforms into m_gtransforms and sets the node->gtransform and node->gtransform_idx refs
-        void setup_global_transforms() ;
+        void collect_global_transforms() ;
     private:
-        void setup_global_transforms_r(nnode* node) ;
-        void setup_global_transforms_visit(nnode* node);
+        void collect_global_transforms_r(nnode* node) ;
+        void collect_global_transforms_visit(nnode* node);
         unsigned addUniqueTransform( const nmat4triple* gtransform );
 
     private:

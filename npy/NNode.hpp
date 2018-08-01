@@ -163,6 +163,10 @@ struct NPY_API nnode
     const nmat4triple* global_transform(); 
     static const nmat4triple* global_transform(nnode* n); 
 
+    void check_tree(unsigned mask) const ;
+    static void check_tree_r(const nnode* node, const nnode* parent, unsigned depth, unsigned mask);
+
+
     glm::vec3 apply_gtransform(const glm::vec4& v_) const ;
 
     void collect_prim_centers(std::vector<glm::vec3>& centers, std::vector<glm::vec3>& dirs, int verbosity=0);
