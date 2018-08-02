@@ -57,10 +57,36 @@ X4Material::X4Material( const G4Material* material )
    :
    m_material(material),
    m_mpt(material->GetMaterialPropertiesTable()),
+   m_has_efficiency(HasEfficiencyProperty(m_mpt)),
    m_mat(NULL)
 {
    init() ;
 }
+
+bool X4Material::HasEfficiencyProperty(const G4MaterialPropertiesTable* mpt_) // static
+{
+    G4MaterialPropertiesTable* mpt = const_cast<G4MaterialPropertiesTable*>(mpt_) ; // G4 not const-correct 
+
+    const char* key = "EFFICIENCY" ; 
+    G4MaterialPropertyVector* mpv = mpt->GetProperty(key) ; 
+
+    bool ret = false ; 
+    if(mpv) 
+    {
+         LOG(error) << "found mpv for " << key ; 
+         ret = true ; 
+    }   
+    else if( mpt->ConstPropertyExists(key) )
+    {
+         LOG(error) << "found ConstProperty  " << key ; 
+         ret = true ; 
+    }
+    else 
+    {
+    }
+    return ret ; 
+}
+
 
 void X4Material::init()
 {
@@ -70,7 +96,7 @@ void X4Material::init()
     std::string name = BFile::Name( matname ); 
     unsigned index = m_material->GetIndex() ;
 
-    //LOG(error) << "name " << name ; 
+    LOG(error) << "name " << name ; 
 
 
     // FORMERLY set the index on collecting into GMaterialLib, 
@@ -81,9 +107,6 @@ void X4Material::init()
 
     X4MaterialPropertiesTable::Convert( m_mat, m_mpt );
 }
-
-
-
 
 
 

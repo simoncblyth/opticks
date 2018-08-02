@@ -22,7 +22,9 @@ class X4_API X4Material
         static std::string Digest(const G4Material* material);
     public:
         static GMaterial* Convert(const G4Material* material);
+        static bool HasEfficiencyProperty(const G4MaterialPropertiesTable* mpt) ; 
        // static void       AddProperties(GMaterial* mat, const G4MaterialPropertiesTable* mpt);
+
     public:
         X4Material(const G4Material* material); 
         GMaterial* getMaterial();
@@ -31,6 +33,8 @@ class X4_API X4Material
     private:
         const G4Material*                m_material ;  
         const G4MaterialPropertiesTable* m_mpt ; 
+        bool                             m_has_efficiency ; 
         GMaterial*                       m_mat ; 
+   
 };
 

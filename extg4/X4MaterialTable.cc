@@ -46,11 +46,10 @@ X4MaterialTable::X4MaterialTable(GMaterialLib* mlib)
 }
 
 
-
-
 void X4MaterialTable::init()
 {
     unsigned nmat = G4Material::GetNumberOfMaterials();
+    LOG(m_level) << ". G4 nmat " << nmat ;  
     for(unsigned i=0 ; i < nmat ; i++)
     {   
         G4Material* material = Get(i) ; 

@@ -63,6 +63,13 @@ void test_Format1()
  
 }
 
+void test_Contains()
+{
+    const char* s = "/hello/there/Cathode/World" ; 
+    assert( SStr::Contains(s, "Cathode") == true ); 
+    assert( SStr::Contains(s, "cathode") == false ); 
+}
+
 
 
 int main(int argc , char** argv )
@@ -71,7 +78,8 @@ int main(int argc , char** argv )
 
     //test_ToULL();
     //test_FromULL();
-    test_Format1();  
+    //test_Format1();  
+    test_Contains();  
 
     return 0  ; 
 }

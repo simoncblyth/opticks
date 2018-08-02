@@ -96,4 +96,14 @@ template const char* SStr::Format3<256>( const char* , const char*, const char* 
 template const char* SStr::Format1<16>( const char* , const char* );
 
 
+bool SStr::Contains( const char* s_ , const char* q_ )
+{
+    std::string s(s_); 
+    std::string q(q_); 
+    return s.find(q) != std::string::npos ;
+}
+
+
+
+
 

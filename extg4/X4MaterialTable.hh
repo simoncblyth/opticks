@@ -7,6 +7,7 @@ class G4Material ;
 
 #include "G4MaterialTable.hh"   // typedef std::vector<G4Material*>
 #include "X4_API_EXPORT.hh"
+#include "plog/Severity.h"
 
 /*
 X4MaterialTable
@@ -35,5 +36,6 @@ class X4_API X4MaterialTable
     private:
         const G4MaterialTable*  m_mtab ; 
         GMaterialLib*           m_mlib ;         
+        plog::Severity          m_level ; 
 };
 

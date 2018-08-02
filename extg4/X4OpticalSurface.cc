@@ -32,11 +32,8 @@ GOpticalSurface* X4OpticalSurface::Convert( const G4OpticalSurface* const surf )
 
     G4SurfaceType type = surf->GetType() ; 
 
-    LOG(info) 
-          << " name " << name
-          << " type " << Type(type)
-          ; 
-
+    
+    //LOG(info) << " name " << name << " type " << Type(type) ; 
 
     switch( type )
     {

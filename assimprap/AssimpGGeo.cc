@@ -185,9 +185,10 @@ int AssimpGGeo::convert(const char* ctrl)
     const aiScene* scene = m_tree->getScene();
 
     convertMaterials(scene, m_ggeo, ctrl );
+    m_ggeo->afterConvertMaterials(); 
+
     convertSensors( m_ggeo ); 
     convertMeshes(scene, m_ggeo, ctrl);
-
 
     convertStructure(m_ggeo);
 
@@ -527,7 +528,6 @@ void AssimpGGeo::convertMaterials(const aiScene* scene, GGeo* gg, const char* qu
     }
 
 
-    m_ggeo->afterConvertMaterials(); 
 }
 
 
@@ -535,11 +535,20 @@ void AssimpGGeo::convertMaterials(const aiScene* scene, GGeo* gg, const char* qu
 AssimpGGeo::convertSensors
 ---------------------------
 
+Invoked by AssimpGGeo::convert after convertMaterials (which collects 
+surfaces as well as materials).
+
 Opticks is a surface based simulation, as opposed to 
 Geant4 which is CSG volume based. In Geant4 hits are formed 
 on stepping into volumes with associated SensDet.
 The Opticks equivalent is intersecting with a "SensorSurface", 
 which are fabricated by AssimpGGeo::convertSensors.
+
+
+Need this for direct geometry route, so have to relocate 
+this into GGeo.
+
+1. 
 
 **/
 
@@ -620,6 +629,17 @@ void AssimpGGeo::convertSensors(GGeo* gg)
     }
 }
 
+/**
+AssimpGGeo::convertSensors TODO: rename to collectSensorLV
+------------------------------------------------------------
+
+Recursively searches for volumes with nodeIndex that 
+is on the m_sensor_list and which have the cathode material 
+(with an EFFICIENCY property).  The lv name of such volumes
+are collected into GGeo with addCathodeLV.
+
+**/
+
 void AssimpGGeo::convertSensors(GGeo* gg, AssimpNode* node, unsigned int depth)
 {
     // addCathodeLV into gg
@@ -629,20 +649,10 @@ void AssimpGGeo::convertSensors(GGeo* gg, AssimpNode* node, unsigned int depth)
 
 void AssimpGGeo::convertSensorsVisit(GGeo* gg, AssimpNode* node, unsigned int depth)
 {
-    // collects lv of nodes of cathode material allowing construction 
-    // of "fake" GSkinSurface
-    //
-    // NB border surface sensors at not handled, as there are non of those in DYB
-    //
-
     unsigned int nodeIndex = node->getIndex();
-
     const char* lv   = node->getName(0); 
-
     const char* pv   = node->getName(1); 
-
     unsigned int mti = node->getMaterialIndex() ;
- 
     GMaterial* mt = gg->getMaterial(mti);
     
     /*
@@ -651,6 +661,7 @@ void AssimpGGeo::convertSensorsVisit(GGeo* gg, AssimpNode* node, unsigned int de
     assert(sensor0 == sensor1);
     // these do not match
     */
+
     NSensor* sensor = m_sensor_list ? m_sensor_list->findSensorForNode( nodeIndex ) : NULL ; 
 
     if(sensor && mt == gg->getCathode())
@@ -663,7 +674,6 @@ void AssimpGGeo::convertSensorsVisit(GGeo* gg, AssimpNode* node, unsigned int de
          gg->addCathodeLV(lv) ;   
     }
 }
-
 
 
 GMesh* AssimpGGeo::convertMesh(const aiMesh* mesh, unsigned int index )

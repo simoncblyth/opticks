@@ -7,6 +7,7 @@
 #include "SDigest.hh"
 #include "GPropertyMap.hh"
 #include "GProperty.hh"
+#include "PLOG.hh"
 
 
 void X4MaterialPropertiesTable::Convert( GPropertyMap<float>* pmap,  const G4MaterialPropertiesTable* const mpt )
@@ -36,6 +37,9 @@ void X4MaterialPropertiesTable::AddProperties(GPropertyMap<float>* pmap, const G
     for(MKP::const_iterator it=pm->begin() ; it != pm->end() ; it++)
     {   
         G4String pname = it->first ;
+
+        LOG(error) << pname ; 
+
         G4MaterialPropertyVector* pvec = it->second ;  
         // G4MaterialPropertyVector is typedef to G4PhysicsOrderedFreeVector with most of imp in G4PhysicsVector
 

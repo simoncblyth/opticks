@@ -327,6 +327,16 @@ void X4PhysicalVolume::dumpLV()
    }
 }
 
+/**
+X4PhysicalVolume::findSurface
+------------------------------
+
+1. look for a border surface from PV_a to PV_b (do not look for the opposite direction)
+2. if no border surface look for a logical skin surface with the lv of the first PV_a otherwise the lv of PV_b 
+   (or vv when first_priority is false) 
+
+**/
+
 G4LogicalSurface* X4PhysicalVolume::findSurface( const G4VPhysicalVolume* const a, const G4VPhysicalVolume* const b, bool first_priority )
 {
      G4LogicalSurface* surf = G4LogicalBorderSurface::GetSurface(a, b) ;
@@ -406,6 +416,13 @@ GVolume* X4PhysicalVolume::convertTree_r(const G4VPhysicalVolume* const pv, GVol
      return volume   ; 
 }
 
+
+/**
+X4PhysicalVolume::addBoundary
+------------------------------
+
+
+**/
 
 unsigned X4PhysicalVolume::addBoundary(const G4VPhysicalVolume* const pv, const G4VPhysicalVolume* const pv_p )
 {

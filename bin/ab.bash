@@ -25,7 +25,9 @@ ab-tmp(){ echo /tmp/$USER/opticks/bin/ab ; }
 
 ab-a-dir(){ echo DayaBay_VGDX_20140414-1300/g4_00.dae/96ff965744a2f6b78c24e33c80d3a4cd  ; }
 ab-b-dir(){ echo OKX4Test_World0xc15cfc0_PV_g4live/g4ok_gltf/828722902b5e94dab05ac248329ffebe ; }
-ab-a-idpath(){ echo $(ab-base)/$(ab-a-dir)/103 ; }
+
+#ab-a-idpath(){ echo $(ab-base)/$(ab-a-dir)/103 ; }
+ab-a-idpath(){ echo $(ab-base)/$(ab-a-dir)/1 ; }
 ab-b-idpath(){ echo $(ab-base)/$(ab-b-dir)/1 ; }
 
 
@@ -744,6 +746,12 @@ Observations:
 2. two extra surfaces in B ( lvPmtHemiCathodeSensorSurface, lvHeadonPmtCathodeSensorSurface )
 
    * these are artificial additions.. for model matching 
+
+     * yes, but thats confusing : they are just being converted like all other surfaces
+       and they are there thanks to CDetector::attachSurfaces (GDML fixup)   
+
+   * what was wrong with the old 103 one are comparing against ?
+
    * forget the details, but twas something to do with it being easier to detect a 
      hit on a surface : in the Opticks surface model, so I added surfaces to the cathodes  
 
@@ -765,6 +773,8 @@ Observations:
 
    * think this was a fix to better translate the Geant4 meaning of border (with directionality)
      vs skin surfaces (without directionality)  
+   * probably easier to fix the old way to match 
+
 
 
 A
@@ -867,6 +877,4 @@ print np.hstack( [ia[w], ib[w]])
 EOP
 
 }
-
-
 

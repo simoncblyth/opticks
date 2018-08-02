@@ -393,6 +393,16 @@ void GGeo::init()
 
 void GGeo::add(GMaterial* material)
 {
+    if(material->hasProperty("EFFICIENCY"))
+    {
+        LOG(error) << " MATERIAL WITH EFFICIENCY " ; 
+    }
+    if(material->hasProperty("efficiency"))
+    {
+        LOG(error) << " MATERIAL WITH efficiency" ; 
+    }
+
+
     m_materiallib->add(material);
     //addToIndex((GPropertyMap<float>*)material);
 }
@@ -595,6 +605,9 @@ void GGeo::prepare()
    // prepare is needed prior to saving or GPU upload by OGeo
     assert( m_prepared == false && "have prepared already" ); 
     m_prepared = true ; 
+
+    //TODO: implement prepareSensorSurfaces() and invoke from here 
+
 
     prepareScintillatorLib();
 

@@ -87,6 +87,9 @@ int main(int argc, char** argv)
 
 
     X4PhysicalVolume xtop(gg2, top) ;    // populates gg2 
+
+
+/*
     xtop.dumpSolidRec(); 
     xtop.writeSolidRec(); 
 
@@ -121,6 +124,7 @@ int main(int argc, char** argv)
  
 
     return mgr.rc() ;
-
+*/
+    return 0 ;
 
 }
