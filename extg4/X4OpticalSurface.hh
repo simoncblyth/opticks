@@ -17,6 +17,7 @@ has been ported to Opticks.
 class X4_API X4OpticalSurface 
 {
     public:
+        static const char* Type(G4SurfaceType type);
         static GOpticalSurface* Convert(const G4OpticalSurface* const src );
 };
 

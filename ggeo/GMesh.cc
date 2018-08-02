@@ -1516,11 +1516,13 @@ arising from double use of slot zero for:
 
 void GMesh::updateBounds()
 {
+    /*
     if(m_num_volumes > 0)
     LOG(error) << "GMesh::updateBounds from bbox of vertices  " 
                << " num_vertices " << m_num_vertices
                << " num_volumes " << m_num_volumes
                ; 
+    */
 
     gbbox*  bb = findBBox(m_vertices, m_num_vertices);
 

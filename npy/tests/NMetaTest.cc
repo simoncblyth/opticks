@@ -1,9 +1,9 @@
+// TEST=NMetaTest om-t
 
 #include <string>
 
 #include "NMeta.hpp"
-#include "NPY_LOG.hh"
-#include "PLOG.hh"
+#include "OPTICKS_LOG.hh"
 
 void test_composable()
 {
@@ -40,8 +40,6 @@ void test_composable()
     m.dump();  
     m.save(path);
 
-
-
     NMeta* ml = NMeta::Load(path);
     ml->dump();
 
@@ -59,7 +57,6 @@ void test_composable()
             ; 
     }
 }
-
 
 void test_write_read()
 {
@@ -93,17 +90,12 @@ void test_copy_ctor()
     mc.dump("copy-ctor");
 
     assert( mc.getNumKeys() == 5 );
-
-
 }
  
 
-
-
 int main(int argc, char** argv)
 {
-    PLOG_(argc, argv);
-    NPY_LOG__ ; 
+    OPTICKS_LOG(argc, argv);
 
     test_write_read();
     test_composable();

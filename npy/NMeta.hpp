@@ -7,6 +7,14 @@
 #include "NYJSON.hpp"
 #include "NPY_HEAD.hh"
 
+/**
+NMeta
+=======
+
+Metadata persistency using nlohmann::json
+
+
+**/
 
 class NPY_API NMeta {
    public:

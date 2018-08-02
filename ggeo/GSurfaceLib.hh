@@ -33,6 +33,8 @@ class GItemList ;
 #include "GPropertyLib.hh"
 #include "GGEO_API_EXPORT.hh"
 #include "GGEO_HEAD.hh"
+#include "plog/Severity.h"
+
 
 class GGEO_API GSurfaceLib : public GPropertyLib {
    public:
@@ -145,6 +147,7 @@ class GGEO_API GSurfaceLib : public GPropertyLib {
    public:
        void import();
    private:
+       void dumpMeta(const char* msg="GSurfaceLib::dumpMeta") const ;
        void importOld();
        void importForTex2d();
        void import( GPropertyMap<float>* surf, float* data, unsigned int nj, unsigned int nk, unsigned int jcat=0 );
@@ -153,6 +156,8 @@ class GGEO_API GSurfaceLib : public GPropertyLib {
        float                                   m_fake_efficiency ; 
        NPY<unsigned int>*                      m_optical_buffer ; 
        GSurfaceLib*                            m_basis ; 
+       bool                                    m_dbgsurf ; 
+       plog::Severity                          m_level ; 
 
 
 };

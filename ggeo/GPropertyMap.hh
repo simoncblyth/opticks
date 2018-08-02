@@ -78,6 +78,7 @@ class GGEO_API GPropertyMap {
 
   public:
       std::string brief() const ; 
+      std::string desc() const ; 
       const char* getName();    // names like __dd__Materials__Nylon0xc3aa360 or __dd__Geometry__AdDetails__AdSurfacesNear__SSTWaterSurfaceNear2
       unsigned getIndex() const ;  // aiScene material index ("surfaces" and "materials" represented as Assimp materials)
       void setIndex(unsigned index);

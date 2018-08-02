@@ -1,7 +1,6 @@
 surface_review
 ================
 
-
 NEXT
 -----
 
@@ -36,8 +35,6 @@ full chain in flux is too much to handle.
 * eg the border/skin info is available pre-cache, so kludging 
   reconstruction of that post-cache points to infoloss
   in persisting and the GSurLib workaround that got out of control 
-
-
 
 
 
@@ -249,6 +246,12 @@ Improved PropLib Persisting with JSON metadata
 
 Added NMeta json infrastructure to enable full fidelity 
 metadata to be stored with persisted PropLib. 
+
+Where are those keys used to reconstitute the surfaces ?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* see :doc:`surface_metadata_mechanics_review`
+
 
 Where to tack the metadata ?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -494,6 +497,8 @@ GSurLib
         }   
         return m_gsurlib ; 
     }
+
+
 
 
 

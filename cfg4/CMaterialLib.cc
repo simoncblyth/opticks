@@ -24,9 +24,9 @@
 
 
 CMaterialLib::CMaterialLib(OpticksHub* hub) 
-   :
-   CPropLib(hub, 0),
-   m_converted(false)
+    :
+    CPropLib(hub, 0),
+    m_converted(false)
 {
 }
 

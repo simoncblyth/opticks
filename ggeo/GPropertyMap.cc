@@ -524,12 +524,6 @@ void GPropertyMap<T>::setSkinSurface()
     m_type = GSurfaceLib::SKINSURFACE ;
 }
 
-
-
-
-
-
-
 template <typename T>
 bool GPropertyMap<T>::isTestSurface() const
 {
@@ -548,6 +542,40 @@ bool GPropertyMap<T>::isMaterial() const
 {
     return m_type.compare("material") == 0 ;
 }
+
+
+template <typename T>
+std::string GPropertyMap<T>::desc() const 
+{
+    bool isSS = isSkinSurface()  ;
+    bool isBS = isBorderSurface()  ;
+    bool isTS = isTestSurface() ;
+    bool isSU = isSurface() ;
+    bool isMT = isMaterial() ;
+
+    std::stringstream ss ; 
+    ss 
+       << " GPropertyMap " 
+       << " type " << std::setw(15) << m_type
+       << " name " << std::setw(30) << m_name
+       << " isSS " << isSS
+       << " isBS " << isBS
+       << " isTS " << isTS
+       << " isSU " << isSU
+       << " isMT " << isMT
+       ;
+
+    if(isSS) ss << " sslv " << getSSLV() ; 
+    if(isBS) ss << " bpv1 " << getBPV1()  
+                << " bpv2 " << getBPV2() 
+                ; 
+
+    return ss.str();
+}
+
+
+
+
 
 
 

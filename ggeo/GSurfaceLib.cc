@@ -61,12 +61,14 @@ float GSurfaceLib::SURFACE_UNSET = -1.f ;
 
 void GSurfaceLib::save()
 {
+    LOG(m_level) << "." ; 
     saveToCache();
     saveOpticalBuffer();
 }
-GSurfaceLib* GSurfaceLib::load(Opticks* cache)
+GSurfaceLib* GSurfaceLib::load(Opticks* ok)
 {
-    GSurfaceLib* lib = new GSurfaceLib(cache);
+
+    GSurfaceLib* lib = new GSurfaceLib(ok);
     lib->loadFromCache();
     lib->loadOpticalBuffer();
     return lib ; 
@@ -74,8 +76,15 @@ GSurfaceLib* GSurfaceLib::load(Opticks* cache)
 
 void GSurfaceLib::loadOpticalBuffer()
 {
+
     std::string dir = getCacheDir(); 
     std::string name = getBufferName("Optical");
+
+    LOG(m_level) 
+         << " dir " << dir 
+         << " name " << name 
+         ;
+
     NPY<unsigned int>* ibuf = NPY<unsigned int>::load(dir.c_str(), name.c_str()); 
 
     importOpticalBuffer(ibuf);
@@ -124,16 +133,24 @@ GSurfaceLib::GSurfaceLib(Opticks* ok, GSurfaceLib* basis)
     GPropertyLib(ok, "GSurfaceLib"),
     m_fake_efficiency(-1.f),
     m_optical_buffer(NULL),
-    m_basis(basis)
+    m_basis(basis),
+    m_dbgsurf(ok->isDbgSurf()),
+    m_level(debug)
 {
+    LOG(m_level) << "." ; 
     init();
 }
 
 GSurfaceLib::GSurfaceLib(GSurfaceLib* src, GDomain<float>* domain, GSurfaceLib* basis) 
     :
     GPropertyLib(src, domain),
-    m_basis(basis)
+    m_fake_efficiency(-1.f),
+    m_optical_buffer(NULL),
+    m_basis(basis),
+    m_dbgsurf(m_ok->isDbgSurf()),
+    m_level(debug)
 {
+    LOG(m_level) << "." ; 
     init();
     initInterpolatingCopy(src, domain);
 }
@@ -231,6 +248,15 @@ void GSurfaceLib::init()
 
 
 
+/**
+const char* GSurfaceLib::AssignSurfaceType(NMeta* surfmeta )
+--------------------------------------------------------------
+
+Return SKINSURFACE, BORDERSURFACE or TESTSURFACE depending on the
+SSLV, BPV1, BPV2, name keys present in the surfmeta.
+
+
+**/
 
 const char* GSurfaceLib::AssignSurfaceType( NMeta* surfmeta ) // static 
 {
@@ -254,6 +280,18 @@ const char* GSurfaceLib::AssignSurfaceType( NMeta* surfmeta ) // static
 
      return surftype ; 
 }
+
+
+
+/**
+GSurfaceLib::add(GBorderSurface* raw)
+-------------------------------------
+
+1. setMetaKV keys "bpv1" "bpv2" onto the GPropertyMap 
+2. collect the GPropertyMap object into 
+
+**/
+
 
 void GSurfaceLib::add(GBorderSurface* raw)
 {
@@ -296,6 +334,16 @@ void GSurfaceLib::relocateBasisBorderSurface(const char* name, const char* bpv1,
 }
 
 
+
+/**
+GSurfaceLib::add(GSkinSurface* raw)
+-------------------------------------
+
+1. collect the object as a GPropertyMap 
+2. setMetaKV key "sslv" onto the GPropertyMap 
+
+**/
+
 void GSurfaceLib::add(GSkinSurface* raw)
 {
     GPropertyMap<float>* surf = dynamic_cast<GPropertyMap<float>* >(raw);
@@ -324,6 +372,18 @@ void GSurfaceLib::relocateBasisSkinSurface(const char* name, const char* sslv)
     addSkinSurface( surf, sslv, direct ); 
 }
 
+
+
+/**
+GSurfaceLib::add(GPropertyMap<float>* surf)
+-----------------------------------------------
+
+Common to both surface types:
+
+1. standardize
+2. collect into m_surfaces
+
+**/
 
 void GSurfaceLib::add(GPropertyMap<float>* surf)
 {
@@ -571,8 +631,18 @@ GItemList* GSurfaceLib::createNames()
 }
 
 
+/**
+NMeta* GSurfaceLib::createMeta()
+---------------------------------
+
+Compose collective metadata keyed by surface shortnames
+with all metadata for each surface.
+
+**/
+
 NMeta* GSurfaceLib::createMeta()
 {
+    LOG(m_level) << "." ; 
     NMeta* libmeta = new NMeta ; 
     unsigned int ni = getNumSurfaces();
     for(unsigned int i=0 ; i < ni ; i++)
@@ -704,6 +774,7 @@ NPY<float>* GSurfaceLib::createBufferOld()
 
 void GSurfaceLib::import()
 {
+    LOG(m_level) << "." ; 
     if(m_buffer == NULL)
     {
         setValid(false);
@@ -722,6 +793,16 @@ void GSurfaceLib::import()
 }
 
 
+/**
+GSurfaceLib::importForTex2d
+------------------------------
+
+1. surfmeta gets pulled out of the collective libmeta and 
+   set into the reconstituted GPropertyMap
+
+* observe : GOpticalSurface not reconstructed ?
+
+**/
 
 
 void GSurfaceLib::importForTex2d()
@@ -730,6 +811,9 @@ void GSurfaceLib::importForTex2d()
     unsigned int nj = m_buffer->getShape(1); // payload categories 
     unsigned int nk = m_buffer->getShape(2); // wavelength samples
     unsigned int nl = m_buffer->getShape(3); // 4 props
+    LOG(m_level) << "." 
+                 << " shape " << m_buffer->getShapeString()
+                 ; 
 
     assert(m_standard_domain->getLength() == nk );
 
@@ -739,14 +823,12 @@ void GSurfaceLib::importForTex2d()
     {
         const char* key = m_names->getKey(i);
 
-        LOG(debug) << std::setw(3) << i 
-                   << " " << key ;
-
-        GOpticalSurface* os = NULL ;
+        GOpticalSurface* os = NULL ;  // huh : not reconstructed ?
 
         NMeta* surfmeta = m_meta ? m_meta->getObj(key) : NULL  ;  
 
         const char* surftype = surfmeta ? AssignSurfaceType(surfmeta) : NULL ;
+
 
         if(surftype == NULL)
         {
@@ -762,6 +844,11 @@ void GSurfaceLib::importForTex2d()
         } 
 
         assert(surftype); 
+
+        LOG(m_level) << " i " << std::setw(3) << i 
+                     << " surftype " << std::setw(15) << surftype
+                     << " key " << key 
+                     ;
 
 
         GPropertyMap<float>* surf = new GPropertyMap<float>(key,i, surftype, os, surfmeta );
@@ -780,7 +867,32 @@ void GSurfaceLib::importForTex2d()
 
         m_surfaces.push_back(surf);
     }  
+
+
+    if(m_dbgsurf)
+    {
+        LOG(info) << " --dbgsurf dumpMeta " ; 
+        dumpMeta(); 
+    }
 }
+
+
+void GSurfaceLib::dumpMeta(const char* msg) const 
+{
+    unsigned num_surf = m_surfaces.size() ; 
+    LOG(info) << msg << " num_surf " << num_surf ; 
+    for( unsigned i=0 ; i < num_surf ; i++)
+    {
+         GPropertyMap<float>* surf = m_surfaces[i]; 
+         std::cout << " i " << std::setw(3) << i
+                   << " surf.desc " << surf->desc() 
+                   << std::endl 
+                   ; 
+ 
+    }
+}
+
+
 
 
 
@@ -973,7 +1085,7 @@ bool GSurfaceLib::isSensorSurface(unsigned int qsurface)
     int pos = strlen(name) - strlen(SENSOR_SURFACE) ;
     bool iss = pos > 0 && strncmp(name + pos, SENSOR_SURFACE, strlen(SENSOR_SURFACE)) == 0 ;
 
-    //if(iss)
+    if(iss)
     LOG(error) << "GSurfaceLib::isSensorSurface"
               << " surface " << qsurface  
               << " name " << name 

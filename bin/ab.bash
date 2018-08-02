@@ -35,6 +35,8 @@ ab-tail(){ echo ${AB_TAIL:-0} ; }
 ab-a-(){ echo $(ab-a-idpath)/GPartsAnalytic/$(ab-tail) ; }
 ab-b-(){ echo $(ab-b-idpath)/GParts/$(ab-tail) ; }
 
+
+
 ab-a(){  cd $(ab-a-); }
 ab-b(){  cd $(ab-b-); }
 
@@ -79,6 +81,7 @@ ab-t(){ ab-genrun $FUNCNAME ; }
 ab-s(){ ab-genrun $FUNCNAME ; }
 ab-part(){ ab-genrun $FUNCNAME ; }
 ab-plan(){ ab-genrun $FUNCNAME ; }
+ab-bnd(){ ab-genrun $FUNCNAME ; }
 
 
 ab-p-notes(){ cat << EON
@@ -603,7 +606,10 @@ b_load = lambda _:np.load(os.path.join(b_dir, _))
 a = a_load("partBuffer.npy")
 b = b_load("partBuffer.npy")
 
-scrub_boundary = True 
+ia = a.view(np.int32)[:,1,2].copy()
+ib = b.view(np.int32)[:,1,2].copy()
+
+scrub_boundary = False
 if scrub_boundary:
     b.view(np.int32)[:,1,2] = a.view(np.int32)[:,1,2]
 pass
@@ -625,6 +631,27 @@ pass
 EOP
 
 }
+
+ab-bnd-notes(){ cat << EON
+
+::
+
+    In [12]: np.unique(ia)
+    Out[12]: 
+    array([ 17,  18,  19,  20,  21,  22,  23,  24,  25,  26,  28,  29,  30,  31,  32,  33,  34,  35,  36,  37,  38,  39,  40,  41,  42,  43,  44,  45,  46,  47,  48,  49,  50,  51,  52,  53,  54,  55,
+            56,  57,  58,  59,  60,  61,  62,  63,  64,  65,  66,  67,  68,  69,  70,  71,  72,  73,  74,  75,  76,  77,  78,  79,  81,  82,  84,  87,  88,  89,  90,  91,  92,  93,  94,  95,  96,  97,
+            99, 100, 102, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120], dtype=int32)
+
+    In [13]: np.unique(ib)
+    Out[13]: 
+    array([ 17,  18,  19,  20,  21,  22,  23,  24,  25,  26,  28,  30,  31,  32,  33,  34,  35,  36,  37,  38,  39,  40,  41,  42,  43,  44,  45,  46,  47,  48,  49,  50,  51,  52,  53,  54,  55,  56,
+            57,  58,  59,  60,  61,  62,  63,  64,  65,  66,  67,  68,  69,  70,  71,  72,  73,  74,  75,  76,  77,  78,  79,  80,  82,  83,  85,  88,  89,  90,  91,  92,  93,  94,  95,  96,  97,  98,
+            99, 100, 102, 103, 105, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126], dtype=int32)
+
+EON
+}
+
+
 
 
 ab-plan-notes(){ cat << EON
@@ -698,6 +725,144 @@ for cut in [1e-1, 1e-2, 1e-3, 1e-4, 1e-5, 1e-6, 1e-7, 1e-8, 1e-9, 1e-10]:
     pass
 pass
 
+
+EOP
+
+}
+
+
+
+
+
+
+
+ab-blib-notes(){ cat << EON
+
+Observations: 
+
+1. same number of materials
+2. two extra surfaces in B ( lvPmtHemiCathodeSensorSurface, lvHeadonPmtCathodeSensorSurface )
+
+   * these are artificial additions.. for model matching 
+   * forget the details, but twas something to do with it being easier to detect a 
+     hit on a surface : in the Opticks surface model, so I added surfaces to the cathodes  
+
+ 534 /**
+ 535 AssimpGGeo::convertSensors
+ 536 ---------------------------
+ 537 
+ 538 Opticks is a surface based simulation, as opposed to 
+ 539 Geant4 which is CSG volume based. In Geant4 hits are formed 
+ 540 on stepping into volumes with associated SensDet.
+ 541 The Opticks equivalent is intersecting with a "SensorSurface", 
+ 542 which are fabricated by AssimpGGeo::convertSensors.
+ 543 
+ 544 **/
+ 545 
+
+
+3. B is sometimes duplicating isur/osur but A is not 
+
+   * think this was a fix to better translate the Geant4 meaning of border (with directionality)
+     vs skin surfaces (without directionality)  
+
+
+A
+nbnd 122 nmat  38 nsur  46 
+  0 : Vacuum///Vacuum 
+  1 : Vacuum///Rock 
+  2 : Rock///Air 
+  3 : Air/NearPoolCoverSurface//PPE 
+  4 : Air///Aluminium 
+  5 : Aluminium///Foam 
+...
+120 : DeadWater/LegInDeadTubSurface//ADTableStainlessSteel 
+121 : Rock///RadRock 
+
+B
+ nbnd 128 nmat  38 nsur  48 
+  0 : Vacuum///Vacuum 
+  1 : Vacuum///Rock 
+  2 : Rock///Air 
+  3 : Air/NearPoolCoverSurface/NearPoolCoverSurface/PPE 
+  4 : Air///Aluminium 
+  5 : Aluminium///Foam 
+
+
+epsilon:0 blyth$ diff -y $(ab-a-idpath)/GItemList/GSurfaceLib.txt $(ab-b-idpath)/GItemList/GSurfaceLib.txt
+NearPoolCoverSurface					      <
+NearDeadLinerSurface						NearDeadLinerSurface
+NearOWSLinerSurface						NearOWSLinerSurface
+NearIWSCurtainSurface						NearIWSCurtainSurface
+SSTWaterSurfaceNear1						SSTWaterSurfaceNear1
+SSTOilSurface							SSTOilSurface
+RSOilSurface						      <
+ESRAirSurfaceTop						ESRAirSurfaceTop
+ESRAirSurfaceBot						ESRAirSurfaceBot
+AdCableTraySurface					      <
+SSTWaterSurfaceNear2						SSTWaterSurfaceNear2
+							      >	NearPoolCoverSurface
+							      >	lvPmtHemiCathodeSensorSurface
+							      >	lvHeadonPmtCathodeSensorSurface
+							      >	RSOilSurface
+							      >	AdCableTraySurface
+PmtMtTopRingSurface						PmtMtTopRingSurface
+PmtMtBaseRingSurface						PmtMtBaseRingSurface
+PmtMtRib1Surface						PmtMtRib1Surface
+PmtMtRib2Surface						PmtMtRib2Surface
+
+
+
+
+EON
+
+}
+ab-blib()
+{
+   echo "A"
+   blib.py $(ab-a-)
+
+
+   echo "B"
+   blib.py $(ab-b-)
+
+
+   echo "A"
+   np.py $(ab-a-idpath)/GSurfaceLib  
+   echo "B"
+   np.py $(ab-b-idpath)/GSurfaceLib  
+
+   diff -y $(ab-a-idpath)/GItemList/GSurfaceLib.txt $(ab-b-idpath)/GItemList/GSurfaceLib.txt
+
+}
+
+ab-bnd-(){ cat << EOP
+
+import os, logging, numpy as np
+from opticks.ana.blib import BLib
+log = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO)
+
+a_dir = "$(ab-a-)"
+b_dir = "$(ab-b-)"
+
+a_load = lambda _:np.load(os.path.join(a_dir, _))
+b_load = lambda _:np.load(os.path.join(b_dir, _))
+
+a = a_load("partBuffer.npy")
+b = b_load("partBuffer.npy")
+assert a.shape == b.shape
+
+ia = a.view(np.int32)[:,1,2].copy()
+ib = b.view(np.int32)[:,1,2].copy()
+
+print " ia.min() %d ia.max() %d  len(np.unique(ia)) %d  " % ( ia.min(), ia.max(), len(np.unique(ia)) ) 
+print " ib.min() %d ib.max() %d  len(np.unique(ib)) %d  " % ( ib.min(), ib.max(), len(np.unique(ib)) ) 
+
+w = np.where( ia != ib )
+n = len(w[0])
+log.info( " part.bnd diff :  %d/%d " % ( n, len(a) ))
+print np.hstack( [ia[w], ib[w]])
 
 EOP
 

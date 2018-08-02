@@ -531,16 +531,20 @@ void AssimpGGeo::convertMaterials(const aiScene* scene, GGeo* gg, const char* qu
 }
 
 
+/**
+AssimpGGeo::convertSensors
+---------------------------
 
-void AssimpGGeo::convertSensors(GGeo* gg)
-{
-/*
 Opticks is a surface based simulation, as opposed to 
 Geant4 which is CSG volume based. In Geant4 hits are formed 
 on stepping into volumes with associated SensDet.
 The Opticks equivalent is intersecting with a "SensorSurface", 
 which are fabricated by AssimpGGeo::convertSensors.
-*/
+
+**/
+
+void AssimpGGeo::convertSensors(GGeo* gg)
+{
     convertSensors( gg, m_tree->getRoot(), 0); 
 
     //assert(m_cathode);

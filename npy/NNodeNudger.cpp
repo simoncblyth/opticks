@@ -34,7 +34,7 @@ NNodeNudger::NNodeNudger(nnode* root_, float epsilon_, unsigned /*verbosity*/)
      verbosity(SSys::getenvint("VERBOSITY",1)),
      listed(false),
      enabled(true),
-     level(info)
+     level(debug)
 {
     root->check_tree( FEATURE_GTRANSFORMS | FEATURE_PARENT_LINKS );
     init();
@@ -79,14 +79,15 @@ void NNodeNudger::update_prim_bb()
         bb.push_back(pbb);
         zorder.push_back(i);
 
+        /*
         const nmat4triple* gtransform = p->gtransform ; 
         assert( gtransform ) ; 
         const glm::mat4& t  = gtransform->t ;                
-
-        std::cout << " prim " << i 
-                  << " t " << gpresent("t", t )  
+        std::cout << " prim " << i << std::endl 
+                  << gpresent("t", t )  
                   << " pbb " << pbb.desc()
                   << std::endl ; 
+        */ 
 
     }
     std::sort(zorder.begin(), zorder.end(), *this );   // np.argsort style : sort the indices

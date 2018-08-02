@@ -1,3 +1,5 @@
+// TEST=CGDMLDetectorTest om-t
+
 #include <cassert>
 // cfg4--;op --cgdmldetector --dbg
 
@@ -14,6 +16,7 @@
 #include "CGDMLDetector.hh"
 #include "CMaterialTable.hh"
 #include "CBorderSurfaceTable.hh"
+#include "CSkinSurfaceTable.hh"
 
 // g4-
 #include "G4VPhysicalVolume.hh"
@@ -36,6 +39,9 @@ int main(int argc, char** argv)
 
     OpticksHub hub(&ok);
 
+    LOG(error) << "//////////////////////////  AFTER OpticksHub instanciation ///////////////////////////////////// " ; 
+ 
+
     //OpticksCfg<Opticks>* m_cfg = m_opticks->getCfg();
     //m_cfg->commandline(argc, argv);  
 
@@ -43,6 +49,8 @@ int main(int argc, char** argv)
     OpticksQuery* query = ok.getQuery();   // non-done inside Detector classes for transparent control/flexibility 
 
     CGDMLDetector* detector  = new CGDMLDetector(&hub, query) ; 
+
+    LOG(error) << "//////////////////////////  AFTER CGDMLDetector instanciation ///////////////////////////////////// " ; 
 
     ok.setIdPathOverride("$TMP");
     detector->saveBuffers();
@@ -80,6 +88,9 @@ int main(int argc, char** argv)
 
     CBorderSurfaceTable bst ; 
     bst.dump("CGDMLDetectorTest CBorderSurfaceTable");
+
+    CSkinSurfaceTable skt ; 
+    skt.dump("CGDMLDetectorTest CSkinSurfaceTable");
 
     return 0 ; 
 }

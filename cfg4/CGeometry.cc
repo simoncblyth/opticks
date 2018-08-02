@@ -35,17 +35,17 @@ CDetector* CGeometry::getDetector()
 
 
 CGeometry::CGeometry(OpticksHub* hub) 
-   :
-   m_hub(hub),
-   m_ok(m_hub->getOpticks()),
-   m_cfg(m_ok->getCfg()),
-   m_detector(NULL),
-   m_mlib(NULL),
-   m_material_table(NULL),
-   m_material_bridge(NULL),
-   m_surface_bridge(NULL)
+    :
+    m_hub(hub),
+    m_ok(m_hub->getOpticks()),
+    m_cfg(m_ok->getCfg()),
+    m_detector(NULL),
+    m_mlib(NULL),
+    m_material_table(NULL),
+    m_material_bridge(NULL),
+    m_surface_bridge(NULL)
 {
-   init();
+    init();
 }
 
 void CGeometry::init()
@@ -65,7 +65,7 @@ void CGeometry::init()
         detector  = static_cast<CDetector*>(new CGDMLDetector(m_hub, query)) ; 
     }
 
-    detector->attachSurfaces();
+    // detector->attachSurfaces();  moved into the ::init of CTestDetector and CGDMLDetector to avoid omission
 
     m_detector = detector ; 
     m_mlib = detector->getMaterialLib();

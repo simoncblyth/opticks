@@ -11,10 +11,8 @@
 #include "G4SystemOfUnits.hh"
 #include "CFG4_POP.hh"
 
-
 // brap-
 #include "BStr.hh"
-
 
 // okc-
 #include "Opticks.hh"
@@ -30,9 +28,7 @@
 #include "CSolid.hh"
 #include "CTraverser.hh"
 
-
 const char* CTraverser::GROUPVEL = "GROUPVEL" ; 
-
 
 CTraverser::CTraverser(Opticks* ok, G4VPhysicalVolume* top, NBoundingBox* bbox, OpticksQuery* query) 
    :
@@ -58,8 +54,6 @@ void CTraverser::init()
     m_gtransforms = NPY<float>::make(0, 4, 4);
     m_center_extent = NPY<float>::make(0, 4);
 }
-
-
 
 unsigned int CTraverser::getNumMaterials()
 {

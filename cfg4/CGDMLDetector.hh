@@ -4,14 +4,17 @@
 
 class OpticksQuery ; // okc-
 class OpticksHub ;   // okg-
+class G4VPhysicalVolume ; 
 
 #include "CDetector.hh"
 #include "CFG4_API_EXPORT.hh"
+#include "plog/Severity.h"
+
 
 /**
 
 CGDMLDetector
-~~~~~~~~~~~~~~
+==============
 
 *CGDMLDetector* is a :doc:`CDetector` subclass that
 loads Geant4 GDML persisted geometry files.
@@ -27,7 +30,12 @@ class CFG4_API CGDMLDetector : public CDetector
   private:
     void init();
   private:
+    G4VPhysicalVolume* parseGDML(const char* path) const ;
     void addMPT();
+    void addSurfaces();
+
+    plog::Severity m_level ;
+
 };
 
 

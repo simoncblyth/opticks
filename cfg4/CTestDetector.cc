@@ -95,6 +95,9 @@ void CTestDetector::init()
     LOG(trace) << "CTestDetector::init makeDetector DONE" ; 
 
     setTop(top) ;  // <-- kicks off CTraverser
+
+    // no addMPT() ? 
+    attachSurfaces();
 }
 
 

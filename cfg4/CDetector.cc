@@ -7,12 +7,12 @@
 // g4-
 #include "G4PVPlacement.hh"
 #include "G4GDMLParser.hh"
-
+#include "G4LogicalSkinSurface.hh"
+#include "G4LogicalBorderSurface.hh"
 
 
 // brap-
 #include "BFile.hh"
-
 
 // npy-
 #include "NGLM.hpp"
@@ -28,16 +28,8 @@
 
 #include "GGeo.hh"
 
-
-// want to eradicate
-//#include "GSurLib.hh"
-//#include "CSurLib.hh"
-
-// replacing with
-#include "CSurfaceLib.hh"
-
-
 // cfg4-
+#include "CSurfaceLib.hh"
 #include "CBndLib.hh"
 #include "CMaterialLib.hh"
 #include "CTraverser.hh"
@@ -46,27 +38,24 @@
 
 #include "PLOG.hh"
 
-
-
 CDetector::CDetector(OpticksHub* hub, OpticksQuery* query)
-  : 
-  m_hub(hub),
-  m_ok(m_hub->getOpticks()),
-  m_dbgsurf(m_ok->isDbgSurf()),
-  m_ggb(m_hub->getGGeoBase()),
-  m_blib(new CBndLib(m_hub)),
-  //m_gsurlib(m_hub->getSurLib()),       // invokes the deferred GGeo::createSurLib  
-  //m_csurlib(new CSurLib(m_gsurlib)),
-  m_query(query),
-  m_resource(m_ok->getResource()),
-  m_mlib(new CMaterialLib(m_hub)),
-  m_slib(new CSurfaceLib(m_hub->getSurfaceLib())),   // << WIP 
-  m_top(NULL),
-  m_traverser(NULL),
-  m_check(NULL),
-  m_bbox(new NBoundingBox),
-  m_verbosity(0),
-  m_valid(true)
+    : 
+    m_hub(hub),
+    m_ok(m_hub->getOpticks()),
+    m_dbgsurf(m_ok->isDbgSurf()),
+    m_ggb(m_hub->getGGeoBase()),
+    m_blib(new CBndLib(m_hub)),
+    m_query(query),
+    m_resource(m_ok->getResource()),
+    m_mlib(new CMaterialLib(m_hub)),
+    m_slib(new CSurfaceLib(m_hub->getSurfaceLib())),   // << WIP 
+    m_top(NULL),
+    m_traverser(NULL),
+    m_check(NULL),
+    m_bbox(new NBoundingBox),
+    m_verbosity(0),
+    m_valid(true),
+    m_level(info)
 {
     init();
 }
@@ -74,9 +63,8 @@ CDetector::CDetector(OpticksHub* hub, OpticksQuery* query)
 
 void CDetector::init()
 {
-    LOG(trace) << "CDetector::init" ;
+    LOG(m_level) << "." ; 
 }
-
 
 bool CDetector::isValid()
 {
@@ -89,10 +77,9 @@ void CDetector::setValid(bool valid)
 
 void CDetector::setTop(G4VPhysicalVolume* top)
 {
+    LOG(m_level) << "." ; 
     m_top = top ; 
-
     traverse(m_top);
-
 }
 
 void CDetector::traverse(G4VPhysicalVolume* /*top*/)
@@ -102,9 +89,7 @@ void CDetector::traverse(G4VPhysicalVolume* /*top*/)
     if(m_dbgsurf)
          LOG(info) << "[--dbgsurf] CDetector::traverse START " ;
 
-
     m_check = new CCheck(m_ok, m_top );
-
     
     m_traverser = new CTraverser(m_ok, m_top, m_bbox, m_query ); 
     m_traverser->Traverse();
@@ -112,11 +97,7 @@ void CDetector::traverse(G4VPhysicalVolume* /*top*/)
 
     if(m_dbgsurf)
          LOG(info) << "[--dbgsurf] CDetector::traverse DONE " ;
- 
 }
-
-
-
 
 G4VPhysicalVolume* CDetector::Construct()
 {
@@ -126,7 +107,6 @@ G4VPhysicalVolume* CDetector::getTop()
 {
     return m_top ; 
 }
-
 CMaterialLib* CDetector::getMaterialLib() const 
 {
     return m_mlib ; 
@@ -135,15 +115,10 @@ CSurfaceLib* CDetector::getSurfaceLib() const
 {
     return m_slib ; 
 }
-
-
-
-
 NBoundingBox* CDetector::getBoundingBox()
 {
     return m_bbox ; 
 }
-
 void CDetector::setVerbosity(unsigned int verbosity)
 {
     m_verbosity = verbosity ; 
@@ -218,8 +193,6 @@ const char* CDetector::getPVName(unsigned int index)
     return m_traverser->getPVName(index);
 }
 
-
-
 const G4VPhysicalVolume* CDetector::getPV(unsigned index)
 {
    return m_traverser->getPV(index); 
@@ -228,8 +201,6 @@ const G4VPhysicalVolume* CDetector::getPV(const char* name)
 {
    return m_traverser->getPV(name); 
 }
-
-
 
 const G4LogicalVolume* CDetector::getLV(unsigned index)
 {
@@ -240,16 +211,8 @@ const G4LogicalVolume* CDetector::getLV(const char* name)
    return m_traverser->getLV(name); 
 }
 
-
-
-
-
-
-
 //////// TODO get rid of m_pvm based methods, that rely on 
 ///////       manually setting m_pvm in CTestDetector
-
-
 
 void CDetector::dumpLocalPV(const char* msg)
 {
@@ -285,28 +248,55 @@ CDetector::~CDetector()
 
 
 
+/**
+CGDMLDetector::attachSurfaces
+----------------------------
+
+Older versions of GDML entirely omit the surfaces,  
+so try to reconstruct them by conversion with CSurfaceLib 
+from the Opticks surfaces held in GGeo/GSurfaceLib 
+
+Formerly:
+
+     Invoked from CGeometry::init immediately after 
+     CTestDetector or GDMLDetector instanciation
+
+
+Now done internally within CTestDetector::init and GDMLDetector::init
+to avoid forgetting to do them.
+
+
+**/
+
+
 
 void CDetector::attachSurfaces()
 {
-    // invoked from CGeometry::init immediately after CTestDetector or GDMLDetector instanciation
+    LOG(m_level) << "." ; 
+
+    int num_bs = G4LogicalBorderSurface::GetNumberOfBorderSurfaces();
+    int num_sk = G4LogicalSkinSurface::GetNumberOfSkinSurfaces();
+
+    LOG(info) 
+         << " num_bs " << num_bs
+         << " num_sk " << num_sk
+         ;
+
+    if(num_bs > 0 || num_sk > 0)
+    {
+        LOG(error) << " some surfaces were found : so assume there is nothing to do " ; 
+        return ; 
+    }
 
     if(m_dbgsurf)
-        LOG(info) << "[--dbgsurf] CDetector::attachSurfaces START closing gsurlib, creating csurlib  " ;
-
+        LOG(info) << "[--dbgsurf] CDetector::attachSurfaces START" ;
 
     m_slib->convert(this);
-
-/*
-    m_gsurlib->close();  // close the GSurLib
-    m_csurlib->convert(this);     
-*/
 
     if(m_dbgsurf)
         LOG(info) << "[--dbgsurf] CDetector::attachSurfaces DONE " ;
 
 } 
-
-
 
 
 void CDetector::export_dae(const char* dir, const char* name)
@@ -332,8 +322,6 @@ void CDetector::export_dae(const char* dir, const char* name)
 #endif
 }
 
-
-
 void CDetector::export_gdml(const char* dir, const char* name)
 {
     std::string path_ = BFile::FormPath(dir, name);
@@ -353,8 +341,5 @@ void CDetector::export_gdml(const char* dir, const char* name)
     g4gdml->Write(path, world_pv, refs, schemaLocation );
 
 }
-
-
-
 
 

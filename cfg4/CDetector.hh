@@ -15,13 +15,6 @@ class GGeoBase ;
 
 // cfg4-
 class CBndLib ; 
-
-
-// want to kill these 2
-//class GSurLib ; 
-//class CSurLib ; 
-
-
 class CSurfaceLib ; 
 
 class CMaterialLib ; 
@@ -37,6 +30,7 @@ class NBoundingBox ;
 
 #include <glm/fwd.hpp>
 #include "G4VUserDetectorConstruction.hh"
+#include "plog/Severity.h"
 
 #include "CFG4_API_EXPORT.hh"
 #include "CFG4_HEAD.hh"
@@ -116,8 +110,6 @@ class CFG4_API CDetector : public G4VUserDetectorConstruction
     bool               m_dbgsurf ; 
     GGeoBase*          m_ggb ; 
     CBndLib*           m_blib ; 
-    //GSurLib*           m_gsurlib ; 
-    //CSurLib*           m_csurlib ; 
  private:
     OpticksQuery*      m_query ;
     OpticksResource*   m_resource ;
@@ -131,6 +123,8 @@ class CFG4_API CDetector : public G4VUserDetectorConstruction
     bool               m_valid ;
     std::map<std::string, G4VPhysicalVolume*> m_pvm ; 
     std::map<std::string, G4LogicalVolume*>   m_lvm ; 
+    plog::Severity                            m_level ; 
+
 }; 
 #include "CFG4_TAIL.hh"
 

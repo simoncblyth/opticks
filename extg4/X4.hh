@@ -12,8 +12,9 @@ class X4_API X4
     public: 
         static const char* X4GEN_DIR ; 
     public: 
-        static const char* ShortName( const std::string& name );
         static const char* Name( const std::string& name );
+        static const char* ShortName( const std::string& name );
+        static const char* BaseName( const std::string& name );
 
         template<typename T>
         static const char* ShortName( const T* const obj );

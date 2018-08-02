@@ -1099,9 +1099,9 @@ NNodeNudger* NCSG::get_nudger() const
 }
 NNodeNudger* NCSG::make_nudger(const char* msg) const 
 {
-   // when test running from nnode there is no metadata or treedir
-   // LOG(info) << soname() << " treeNameIdx " << getTreeNameIdx() ; 
-    LOG(error) << " make_nudger " << msg ; 
+    // when test running from nnode there is no metadata or treedir
+    // LOG(info) << soname() << " treeNameIdx " << getTreeNameIdx() ; 
+    //LOG(error) << " make_nudger " << msg ; 
     NNodeNudger* nudger = new NNodeNudger(m_root, m_surface_epsilon, m_root->verbosity);
     return nudger ; 
 }

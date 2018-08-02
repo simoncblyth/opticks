@@ -29,7 +29,6 @@ template <typename T> class NPY ;
 class NBoundingBox ;
 
 
-
 /**
 CTraverser
 =============
@@ -41,20 +40,13 @@ argument allows the bounding box for a
 selection of the geometry to be determined.
 
 *CTraverser* is an internal constituent of :doc:`CDetector`
-
  
 AncestorTraverse
    collects m_pvs m_lvs m_lvm m_pvnames
     
-
-
-
 TODO: get rid of the VolumeTreeTraverse
 
-
 **/
-
-
 
 #include "CFG4_API_EXPORT.hh"
 #include "CFG4_HEAD.hh"
@@ -79,6 +71,7 @@ class CFG4_API CTraverser {
     public:
         unsigned int getNumSurfaces();
     private:
+        // these surface methods are not implemented, they just assert
         void addBorderSurface(const G4LogicalBorderSurface*);
         void addSkinSurface(const G4LogicalSkinSurface*);
         void addOpticalSurface(const G4OpticalSurface*);

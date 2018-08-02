@@ -27,12 +27,14 @@
 
 
 CSurfaceLib::CSurfaceLib(GSurfaceLib* surfacelib) 
-   :
-   m_surfacelib(surfacelib),
-   m_ok(surfacelib->getOpticks()),
-   m_dbgsurf(m_ok->isDbgSurf()),
-   m_detector(NULL)
+    :
+    m_surfacelib(surfacelib),
+    m_ok(surfacelib->getOpticks()),
+    m_dbgsurf(m_ok->isDbgSurf()),
+    m_detector(NULL),
+    m_level(info)
 {
+    LOG(m_level) << "." ; 
 }
 
 void CSurfaceLib::setDetector(CDetector* detector)
@@ -62,9 +64,22 @@ std::string CSurfaceLib::brief()
 //       detector->attachSurfaces(CSurfaceLib* ) 
 //
 
+/**
+CSurfaceLib::convert(CDetector* detector)
+------------------------------------------
+
+Creates G4LogicalBorderSurface + G4LogicalSkinSurface and associated G4OpticalSurface
+from GSurfaceLib instance, collecting them into m_border and m_skin vectors.
+
+* CDetector is required by makeBorderSurface makeSkinSurface to access the G4 lv and pv 
+
+**/
+
 
 void CSurfaceLib::convert(CDetector* detector)
 {
+    LOG(m_level) << "." ;
+
     //assert(m_surfacelib->isClosed()); 
     if(!m_surfacelib->isClosed())
     {
@@ -72,10 +87,13 @@ void CSurfaceLib::convert(CDetector* detector)
         m_surfacelib->close();
     }
 
-    // CDetector required by makeBorderSurface makeSkinSurface to access the G4 lv and pv 
     setDetector(detector);  
 
     unsigned num_surf = m_surfacelib->getNumSurfaces() ; 
+
+    LOG(m_level) << "." 
+                 << " num_surf " << num_surf
+                  ; 
 
     if(m_dbgsurf)
     LOG(info) << "[--dbgsurf] CSurfaceLib::convert  num_surf " << num_surf  ;   
@@ -184,9 +202,10 @@ G4LogicalBorderSurface* CSurfaceLib::makeBorderSurface(GPropertyMap<float>* surf
 G4LogicalSkinSurface* CSurfaceLib::makeSkinSurface(GPropertyMap<float>* surf, G4OpticalSurface* os)
 {
     const char* name = surf->getName() ;
+    std::string sslv = surf->getSSLV() ;
 
     bool trimPtr = false ; 
-    char* lvn = BStr::DAEIdToG4(name, trimPtr);
+    char* lvn = BStr::DAEIdToG4(sslv.c_str(), trimPtr);
     const G4LogicalVolume* lv = m_detector->getLV(lvn);
 
     if(m_dbgsurf)
@@ -195,6 +214,8 @@ G4LogicalSkinSurface* CSurfaceLib::makeSkinSurface(GPropertyMap<float>* surf, G4
               << " lvn " << std::setw(35) << lvn 
               << " lv " << ( lv ? lv->GetName() : "NULL" )
               ;
+
+    assert(lv) ;
 
     G4LogicalSkinSurface* lss = new G4LogicalSkinSurface(name, const_cast<G4LogicalVolume*>(lv), os );
     return lss ;

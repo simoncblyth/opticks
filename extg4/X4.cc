@@ -19,6 +19,15 @@ const char* X4::Name( const std::string& name )
     return strdup( name.c_str() );
 }
 
+const char* X4::BaseName( const std::string& name )
+{
+    const std::string base = BFile::Name(name.c_str());  
+    return ShortName(base) ;
+}
+
+
+
+
 
 template<typename T>
 const char* X4::ShortName( const T* const obj )
@@ -34,8 +43,7 @@ const char* X4::BaseName( const T* const obj )
 {    
     if(obj == NULL) return NULL ; 
     const std::string& name = obj->GetName();
-    const std::string base = BFile::Name(name.c_str());  
-    return ShortName(base);
+    return BaseName(name);
 }
 
 

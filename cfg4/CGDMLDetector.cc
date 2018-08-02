@@ -1,14 +1,8 @@
 // cfg4--;op --cgdmldetector
 
-// boost-
 #include "CFG4_BODY.hh"
-#include <boost/algorithm/string.hpp>
-
 
 #include "BFile.hh"
-
-
-// npy-
 #include "GLMFormat.hpp"
 
 // ggeo-
@@ -19,26 +13,27 @@
 #include "Opticks.hh"
 #include "OpticksResource.hh"
 
-#include "OpticksHub.hh"   // okg-
+// okg-
+#include "OpticksHub.hh"   
 
-// cfg4-
 #include "CMaterialLib.hh"
 #include "CTraverser.hh"    // m_traverser resides in base 
+#include "CGDMLDetector.hh"
 
-// g4-
 #include "G4LogicalVolume.hh"
 #include "G4Material.hh"
 #include "G4GDMLParser.hh"
 
-#include "CGDMLDetector.hh"
 
 #include "PLOG.hh"
 
 
 CGDMLDetector::CGDMLDetector(OpticksHub* hub, OpticksQuery* query)
-  : 
-  CDetector(hub, query)
+    : 
+    CDetector(hub, query),
+    m_level(info)
 {
+    LOG(m_level) << "." ; 
     init();
 }
 
@@ -51,46 +46,36 @@ void CGDMLDetector::init()
 {
     const char* path = m_ok->getGDMLPath();
     bool exists = BFile::ExistsFile(path);
-    std::string npath = BFile::FormPath(path);
-
-    LOG(info) << "CGDMLDetector::init" 
-              << " path " << path
-              << " npath " << npath
-              ; 
-
-
-    if(!exists)
+    if( !exists )
     {
          LOG(error)
               << "CGDMLDetector::init" 
               << " PATH DOES NOT EXIST "
               << " path " << path
-              << " npath " << npath
               ; 
 
          setValid(false);  
-
          return ; 
-     }
+    }
 
+    LOG(m_level) << "parse " << path ; 
+    G4VPhysicalVolume* world = parseGDML(path);
 
-
-    bool validate = false ; 
-    bool trimPtr = false ; 
-
-    G4String gpath = npath ; 
-    LOG(trace) << "parse " << gpath ; 
-
-
-    G4GDMLParser parser;
-
-    parser.SetStripFlag(trimPtr);
-
-    parser.Read(gpath, validate);
-
-    setTop(parser.GetWorldVolume());   // invokes *CDetector::traverse*
+    setTop(world);   // invokes *CDetector::traverse*
 
     addMPT();
+    attachSurfaces();
+
+}
+
+G4VPhysicalVolume* CGDMLDetector::parseGDML(const char* path) const 
+{
+    bool validate = false ; 
+    bool trimPtr = false ; 
+    G4GDMLParser parser;
+    parser.SetStripFlag(trimPtr);
+    parser.Read(path, validate);
+    return parser.GetWorldVolume() ;
 }
 
 
@@ -132,11 +117,15 @@ void CGDMLDetector::addMPT()
         G4Material* g4mat = m_traverser->getMaterialWithoutMPT(i) ;
         const char* name = g4mat->GetName() ;
 
+        const std::string base = BFile::Name(name);
+        const char* shortname = base.c_str();
+
+/*
         std::vector<std::string> elem;
         boost::split(elem,name,boost::is_any_of("/"));
         assert(elem.size() == 4 && "expecting material names like /dd/Materials/GdDopedLS " );
         const char* shortname = elem[3].c_str();
-
+*/
         const GMaterial* ggmat = m_mlib->getMaterial(shortname);          
         assert(ggmat && strcmp(ggmat->getShortName(), shortname)==0 && "failed to find corresponding G4DAE material") ;
 

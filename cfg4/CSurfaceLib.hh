@@ -16,6 +16,7 @@ class GOpticalSurface ;
 
 class CDetector ; 
 
+#include "plog/Severity.h"
 #include "CFG4_API_EXPORT.hh"
 
 /**
@@ -27,7 +28,6 @@ See :doc:`notes/issues/surface_review`
 * CSurfaceLib is aiming to eliminate the kludgy classes (GSur/GSurLib/CSurLib)
   by using a simpler direct from GSurfaceLib approach : made possible
   by improved GPropLib NMeta persisting 
-  
 
 Predecessor CSurLib
 ~~~~~~~~~~~~~~~~~~~~~
@@ -58,9 +58,9 @@ class CFG4_API CSurfaceLib
     protected:
          void convert(CDetector* detector);
     private:
+         G4OpticalSurface*       makeOpticalSurface(GPropertyMap<float>* surf);
          G4LogicalBorderSurface* makeBorderSurface( GPropertyMap<float>* surf, G4OpticalSurface* os);
          G4LogicalSkinSurface*   makeSkinSurface(   GPropertyMap<float>* surf, G4OpticalSurface* os);
-         G4OpticalSurface*       makeOpticalSurface(GPropertyMap<float>* surf);
 
          void addProperties(G4MaterialPropertiesTable* mpt_, GPropertyMap<float>* pmap);
          void setDetector(CDetector* detector);
@@ -69,6 +69,7 @@ class CFG4_API CSurfaceLib
          Opticks*       m_ok ; 
          bool           m_dbgsurf ; 
          CDetector*     m_detector ; 
+         plog::Severity m_level ; 
 
          std::vector<G4LogicalBorderSurface*> m_border ; 
          std::vector<G4LogicalSkinSurface*>   m_skin ; 
