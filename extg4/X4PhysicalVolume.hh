@@ -84,11 +84,14 @@ class X4_API X4PhysicalVolume
     private:
         void convertMaterials(); 
         void convertSurfaces(); 
+        void convertSensors(); 
+        void closeSurfaces(); 
         void convertStructure(); 
     private:
         void IndexTraverse(const G4VPhysicalVolume* const pv, int depth);
         void dumpLV();
     private:
+        void convertSensors_r(const G4VPhysicalVolume* const pv, int depth);
         GVolume* convertTree_r(const G4VPhysicalVolume* const pv, GVolume* parent, int depth, const G4VPhysicalVolume* const parent_pv, bool& recursive_select );
         GVolume* convertNode(const G4VPhysicalVolume* const pv, GVolume* parent, int depth, const G4VPhysicalVolume* const parent_pv, bool& recursive_select );
         unsigned addBoundary(const G4VPhysicalVolume* const pv, const G4VPhysicalVolume* const pv_p );
@@ -99,6 +102,7 @@ class X4_API X4PhysicalVolume
         GGeo*                        m_ggeo ; 
         const G4VPhysicalVolume*     m_top ;  
         Opticks*                     m_ok ; 
+        const char*                  m_lvsdname ; 
         OpticksQuery*                m_query ; 
         const char*                  m_gltfpath ; 
         bool                         m_g4codegen ; 

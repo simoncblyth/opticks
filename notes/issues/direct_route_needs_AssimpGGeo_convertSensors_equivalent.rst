@@ -16,12 +16,118 @@ props and surfaces.  Which makes sticking very close to the old way
 more appealing.
 
 
+Issue
+------
+
+Want to test the direct route from a Geant4 world, but 
+booting from GDML start with:
+
+1. no material properties : used CGDMLDetector::addMPT
+
+2. no surfaces : used CDetector::attachSurfaces to 
+   convert the Opticks surfaces into G4 ones with the fake
+   SensorSurfaces skipped
+
+3. no sensors 
+  
+Have fixed up using CFG4 machinery 
+but trying to fix sensors runs into problem of 
+Opticks/Geant4 model mismatch : Opticks puts 
+detection efficiency property onto artificially 
+added SensorSurface which is ascribed to the cathode LV. 
+
+Need to mock up the original situation with EFFICIENCY 
+property on the Cathode Bialkali material.
+
+Problem is complicated:
+
+1. have to mock up the Geant4 model from GDML + Opticks 
+   model fixups for deficiencies (this is why CFG4 is very useful
+   as it has lots of conversions from Opticks to G4)
+
+2. apply X4 direct machinery to convert from G4 model back to Opticks 
+
+   X4PhysicalVolume::convertSensors
+   GGeoSensor::AddSensorSurfaces
+
+
+
+CPropLib::makeMaterialPropertiesTable maybe fixed this already
+-----------------------------------------------------------------
+
+::
+
+    201 G4MaterialPropertiesTable* CPropLib::makeMaterialPropertiesTable(const GMaterial* ggmat)
+    202 {
+    203     const char* name = ggmat->getShortName();
+    204     GMaterial* _ggmat = const_cast<GMaterial*>(ggmat) ; // wont change it, i promise 
+    205 
+    206     LOG(error) << " name " << name ;
+    207 
+    208 
+    209     G4MaterialPropertiesTable* mpt = new G4MaterialPropertiesTable();
+    210     addProperties(mpt, _ggmat, "RINDEX,ABSLENGTH,RAYLEIGH,REEMISSIONPROB,GROUPVEL");
+    211 
+    212     if(strcmp(name, SENSOR_MATERIAL)==0)
+    213     {
+    214         GPropertyMap<float>* surf = m_sensor_surface ;
+    215 
+    216         if(!surf)
+    217         {
+    218             LOG(fatal) << "CPropLib::makeMaterialPropertiesTable"
+    219                        << " material with SENSOR_MATERIAL name " << name
+    220                        << " but no sensor_surface "
+    221                        ;
+    222             LOG(fatal) << "m_sensor_surface is obtained from slib at CPropLib::init "
+    223                        << " when Bialkai material is in the mlib "
+    224                        << " it is required for a sensor surface (with EFFICIENCY/detect) property "
+    225                        << " to be in the slib "
+    226                        ;
+    227         }
+    228         assert(surf);
+    229         addProperties(mpt, surf, "EFFICIENCY");
+    230 
+    231         // REFLECTIVITY ?
+    232     }
+
+
+
+
+
 How about being radically simple : just require substring "cathode" or "Cathode" in the LV name 
 ------------------------------------------------------------------------------------------------
 
 * this avoids sensor list and getting people to make one, and update it as geometry changes 
 
   * PMT identifiers can come later, i can just give them an adhoc index  
+
+
+CGDMLDetector::addMPT
+----------------------
+
+Have observed, Bialkali looses its EFFICIENCY, once thru Opticks standardization, the
+EFFICIENCY gets planted onto the fake SensorSurfaces::
+
+    2018-08-03 15:32:55.668 ERROR [7953232] [X4Material::init@99] name Bialkali
+    2018-08-03 15:32:55.668 ERROR [7953232] [X4MaterialPropertiesTable::AddProperties@41] ABSLENGTH
+    2018-08-03 15:32:55.669 ERROR [7953232] [X4MaterialPropertiesTable::AddProperties@41] GROUPVEL
+    2018-08-03 15:32:55.669 ERROR [7953232] [X4MaterialPropertiesTable::AddProperties@41] RAYLEIGH
+    2018-08-03 15:32:55.669 ERROR [7953232] [X4MaterialPropertiesTable::AddProperties@41] REEMISSIONPROB
+    2018-08-03 15:32:55.669 ERROR [7953232] [X4MaterialPropertiesTable::AddProperties@41] RINDEX
+
+
+Fixed inconsistency by moving surface collection from GGeo entirely into GSurfaceLib::
+
+    2018-08-03 18:40:13.570 INFO  [8076604] [X4PhysicalVolume::convertSurfaces@252] convertSurfaces num_lbs 8 num_sks 34
+    2018-08-03 18:40:13.603 FATAL [8076604] [GGeoSensor::AddSensorSurfaces@31]  require a cathode material to AddSensorSurfaces 
+    2018-08-03 18:40:13.603 ERROR [8076604] [X4PhysicalVolume::convertSensors@167]  m_lvsdname PmtHemiCathode,HeadonPmtCathode num_clv 2 num_bds 0 num_sks0 0 num_sks1 0
+    2018-08-03 18:40:13.603 INFO  [8076604] [GPropertyLib::close@418] GPropertyLib::close type GSurfaceLib buf 46,2,39,4
+
+    2018-08-03 19:39:59.246 INFO  [8108243] [X4PhysicalVolume::convertSurfaces@252] convertSurfaces num_lbs 8 num_sks 34
+    2018-08-03 19:39:59.279 FATAL [8108243] [GGeoSensor::AddSensorSurfaces@31]  require a cathode material to AddSensorSurfaces 
+    2018-08-03 19:39:59.279 ERROR [8108243] [X4PhysicalVolume::convertSensors@167]  m_lvsdname PmtHemiCathode,HeadonPmtCathode num_clv 2 num_bds 8 num_sks0 34 num_sks1 34
+    2018-08-03 19:39:59.279 INFO  [8108243] [GPropertyLib::close@418] GPropertyLib::close type GSurfaceLib buf 46,2,39,4
+
 
 
 
@@ -117,13 +223,6 @@ Maybe can just check all logvols::
 
 Adding SensorSurfaces
 -----------------------
-
-
-
-
-
-
-
 
 
 

@@ -60,6 +60,8 @@ OpticksCfg<Listener>::OpticksCfg(const char* name, Listener* listener, bool live
        m_fxabconfig("0"),
        m_fxscconfig("0"),
        m_apmtslice(""),
+       m_lvsdname("PmtHemiCathode,HeadonPmtCathode"),
+       m_cathode("Bialkali"),
        m_epsilon(0.1f),     
        m_seed(42),     
        m_rngmax(3000000),     
@@ -683,6 +685,22 @@ void OpticksCfg<Listener>::init()
        ("seqmap",      boost::program_options::value<std::string>(&m_seqmap), "Debug photon history hex string value map, used eg for NCSGIntersect checks via OpticksAnaEvent." );
 
 
+   char lvsdname[256]; 
+   snprintf(lvsdname,256, 
+"Comma delimited string with substrings to search for in the logical volume names"
+" when found the volumes will be treated as sensitive detectors, see X4PhysicalVolume::convertSensors " 
+" Default %s ",  m_lvsdname.c_str() );
+
+   m_desc.add_options()
+       ("lvsdname",   boost::program_options::value<std::string>(&m_lvsdname), lvsdname ) ; 
+
+
+   char cathode[128]; 
+   snprintf(cathode,128, 
+"Shortname of the cathode material. Default %s ", m_cathode.c_str() );
+   m_desc.add_options()
+       ("cathode",   boost::program_options::value<std::string>(&m_cathode), cathode ) ; 
+
 
 
    char seed[128];
@@ -708,6 +726,11 @@ void OpticksCfg<Listener>::init()
 "Default %d ", m_bouncemax);
    m_desc.add_options()
        ("bouncemax,b",  boost::program_options::value<int>(&m_bouncemax), bouncemax );
+
+
+
+
+
 
 
    // keeping bouncemax one less than recordmax is advantageous 
@@ -1233,7 +1256,16 @@ const std::string& OpticksCfg<Listener>::getAnalyticPMTMedium()
     return m_apmtmedium  ;
 }
 
-
+template <class Listener>
+const std::string& OpticksCfg<Listener>::getLVSDName()
+{
+    return m_lvsdname  ;
+}
+template <class Listener>
+const std::string& OpticksCfg<Listener>::getCathode()
+{
+    return m_cathode  ;
+}
 
 
 template <class Listener>

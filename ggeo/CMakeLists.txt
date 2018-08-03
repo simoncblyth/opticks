@@ -65,6 +65,7 @@ set(SOURCES
     GVolumeList.cc
     GGeoLib.cc
     GGeoCfg.cc
+    GGeoSensor.cc
     GGeoTest.cc
     GMaker.cc
     GBBoxMesh.cc
@@ -96,6 +97,7 @@ set(HEADERS
     GGeoBase.hh
     GGeo.hh
     GGeoCfg.hh
+    GGeoSensor.hh
     GMaterial.hh
     GSource.hh
     GMesh.hh

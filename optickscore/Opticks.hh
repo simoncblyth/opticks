@@ -267,8 +267,10 @@ class OKCORE_API Opticks {
        unsigned getAnalyticPMTIndex();
        const char* getAnalyticPMTMedium();
    public:
-       OpticksCfg<Opticks>* getCfg();
-       const char*          getRenderMode();
+       OpticksCfg<Opticks>* getCfg() const ;
+       const char*          getRenderMode() const ;
+       const char*          getLVSDName() const ;
+       const char*          getCathode() const ;
    public:
        const char*          getPrintIndexString() const ;
        bool                 getPrintIndex(glm::ivec3& idx) const ;

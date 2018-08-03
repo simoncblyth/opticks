@@ -174,8 +174,6 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
         void prepareVertexColors();
     public:
 
-        void setCathode(GMaterial* cathode);
-        GMaterial* getCathode();  
         unsigned int getMaterialLine(const char* shortname);
 
    private:
@@ -236,17 +234,12 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
         void add(GMaterial* material);
         void addRaw(GMaterial* material);
     public:
-        void add(GSkinSurface*  surface);
-        void add(GBorderSurface*  surface);
-
         // no longer needed ?
         //void addToIndex(GPropertyMap<float>* obj);
         //void dumpIndex(const char* msg="GGeo::dumpIndex");
 
     public:
-        void addRaw(GSkinSurface* surface);
-        void addRaw(GBorderSurface*  surface);
-      
+     
     public:
         // via meshlib
         GMeshLib*          getMeshLib();  // unplaced meshes
@@ -257,22 +250,13 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
         void countMeshUsage(unsigned meshIndex, unsigned nodeIndex);
         void reportMeshUsage(const char* msg="GGeo::reportMeshUsage");
     public:
-        void dumpRawSkinSurface(const char* name=NULL);
-        void dumpRawBorderSurface(const char* name=NULL);
-    public:
+   public:
         void traverse(const char* msg="GGeo::traverse");
     private:
         void traverse(GNode* node, unsigned int depth);
- 
     public:
         unsigned getNumMaterials() const ;
         unsigned getNumRawMaterials() const ;
-    public:
-        unsigned getNumSkinSurfaces();
-        unsigned getNumRawSkinSurfaces();
-    public:
-        unsigned getNumBorderSurfaces();
-        unsigned getNumRawBorderSurfaces();
     public:
         GScene*            getScene();
         GNodeLib*          getNodeLib();
@@ -292,8 +276,24 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
         Opticks*           getOpticks();
     public:
         GMaterial* getMaterial(unsigned int index) const ;   
-        GSkinSurface* getSkinSurface(unsigned int index);  
-        GBorderSurface* getBorderSurface(unsigned int index);  
+
+    public:
+        // m_surfacelib
+        void add(GSkinSurface*  surface);
+        void add(GBorderSurface*  surface);
+        void addRaw(GSkinSurface* surface);
+        void addRaw(GBorderSurface*  surface);
+        unsigned getNumSkinSurfaces() const ;
+        unsigned getNumBorderSurfaces() const ;
+        unsigned getNumRawSkinSurfaces() const ;
+        unsigned getNumRawBorderSurfaces() const ;
+        GSkinSurface*   getSkinSurface(unsigned index) const ;  
+        GBorderSurface* getBorderSurface(unsigned index) const ;  
+        GSkinSurface* findSkinSurface(const char* lv) const ;  
+        GBorderSurface* findBorderSurface(const char* pv1, const char* pv2) const ;  
+        void dumpRawSkinSurface(const char* name=NULL) const ;
+        void dumpRawBorderSurface(const char* name=NULL) const ;
+
     public:
         void findScintillatorMaterials(const char* props);
         void dumpScintillatorMaterials(const char* msg="GGeo::dumpScintillatorMaterials");
@@ -317,14 +317,12 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
         void updateBounds(GNode* node); 
 
     public:
+        void setCathode(GMaterial* cathode);
+        GMaterial* getCathode() const ;  
         void addCathodeLV(const char* lv);
-        void dumpCathodeLV(const char* msg="GGeo::dumpCathodeLV");
-        const char* getCathodeLV(unsigned int index);
-        unsigned int getNumCathodeLV();
-    public:
-        GSkinSurface* findSkinSurface(const char* lv);  
-        GBorderSurface* findBorderSurface(const char* pv1, const char* pv2);  
-
+        void dumpCathodeLV(const char* msg="GGeo::dumpCathodeLV") const ;
+        const char* getCathodeLV(unsigned int index) const ; 
+        unsigned int getNumCathodeLV() const ;
     public:
 
 #if 0
@@ -359,17 +357,8 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
 
 
 
-        //std::vector<GMaterial*>       m_materials ; 
-        std::vector<GSkinSurface*>    m_skin_surfaces ; 
-        std::vector<GBorderSurface*>  m_border_surfaces ; 
-
         std::vector<GVolume*>           m_sensitive_volumes ; 
         std::unordered_set<std::string> m_cathode_lv ; 
-
-        // _raw mainly for debug
-        //std::vector<GMaterial*>       m_materials_raw ; 
-        std::vector<GSkinSurface*>    m_skin_surfaces_raw ; 
-        std::vector<GBorderSurface*>  m_border_surfaces_raw ; 
 
         std::vector<GMaterial*>       m_scintillators_raw ; 
         std::vector<GMaterial*>       m_cathodes_raw ; 

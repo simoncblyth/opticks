@@ -35,6 +35,7 @@ const char* GMaterialLib::keyspec =
 "scattering_length:RAYLEIGH,"
 "reemission_prob:REEMISSIONPROB," 
 "group_velocity:GROUPVEL,"
+"detect:EFFICIENCY,"
 ;
 
 
@@ -234,6 +235,16 @@ void GMaterialLib::Summary(const char* msg)
 // invoked pre-cache by GGeo::add(GMaterial* material) AssimpGGeo::convertMaterials
 void GMaterialLib::add(GMaterial* mat)
 {
+    if(mat->hasProperty("EFFICIENCY"))
+    {
+        LOG(error) << " MATERIAL WITH EFFICIENCY " ; 
+        mat->Summary();        
+    }
+    if(mat->hasProperty("efficiency"))
+    {
+        LOG(error) << " MATERIAL WITH efficiency" ; 
+    }
+
     assert(!isClosed());
     m_materials.push_back(createStandardMaterial(mat)); 
 }

@@ -31,8 +31,10 @@ class CFG4_API CGDMLDetector : public CDetector
     void init();
   private:
     G4VPhysicalVolume* parseGDML(const char* path) const ;
+
     void addMPT();
     void addSurfaces();
+    void kludge_cathode_efficiency();
 
     plog::Severity m_level ;
 

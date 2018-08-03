@@ -43,6 +43,7 @@ void CMPT::dump(const char* msg) const
 
 }
 
+
 void CMPT::Dump(G4MaterialPropertiesTable* mpt, const char* msg)
 {
     LOG(info) << msg ; 
@@ -61,6 +62,25 @@ void CMPT::Dump(G4MaterialPropertiesTable* mpt, const char* msg)
         LOG(info) << pname << "\n" << *pvec ; 
     }   
 }
+
+
+bool CMPT::hasProperty(const char* pname) const
+{
+    G4MaterialPropertyVector* pvec = m_mpt->GetProperty(pname);
+    return pvec != NULL ; 
+}
+
+
+bool CMPT::HasProperty(const G4MaterialPropertiesTable* mpt_, const char* pname) 
+{    
+    G4MaterialPropertiesTable* mpt = const_cast<G4MaterialPropertiesTable*>(mpt_); 
+    G4MaterialPropertyVector* pvec = mpt->GetProperty(pname);
+    return pvec != NULL ; 
+}
+
+
+
+
 
 
 std::string CMPT::description(const char* msg)
@@ -208,6 +228,14 @@ std::vector<double> CMPT::getConstPropertyValues()
 
 
 
+/**
+CMPT::addProperty
+------------------
+
+Adds an Opticks GProperty to a Geant4 MPT doing the 
+wavelength to energy swap. 
+
+**/
 
 void CMPT::addProperty(const char* lkey,  GProperty<float>* prop, bool spline)
 {

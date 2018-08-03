@@ -56,7 +56,7 @@ class CFG4_API CSurfaceLib
          CSurfaceLib(GSurfaceLib* surlib);
          std::string brief();
     protected:
-         void convert(CDetector* detector);
+         void convert(CDetector* detector, bool exclude_sensors);
     private:
          G4OpticalSurface*       makeOpticalSurface(GPropertyMap<float>* surf);
          G4LogicalBorderSurface* makeBorderSurface( GPropertyMap<float>* surf, G4OpticalSurface* os);

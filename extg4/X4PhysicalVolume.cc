@@ -53,6 +53,7 @@ template struct nxform<YOG::Nd> ;
 #include "GVolume.hh"
 #include "GParts.hh"
 #include "GGeo.hh"
+#include "GGeoSensor.hh"
 #include "GMaterial.hh"
 #include "GMaterialLib.hh"
 #include "GSurfaceLib.hh"
@@ -101,6 +102,7 @@ X4PhysicalVolume::X4PhysicalVolume(GGeo* ggeo, const G4VPhysicalVolume* const to
     m_ggeo(ggeo),
     m_top(top),
     m_ok(m_ggeo->getOpticks()), 
+    m_lvsdname(strdup(m_ok->getLVSDName())),
     m_query(m_ok->getQuery()),
     m_gltfpath(m_ok->getGLTFPath()),
     m_g4codegen(m_ok->isG4CodeGen()),
@@ -133,8 +135,62 @@ void X4PhysicalVolume::init()
 
     convertMaterials();
     convertSurfaces();
+    convertSensors();  // before closeSurfaces as may add some SensorSurfaces
+
+    closeSurfaces();
+
     convertStructure();
 }
+
+
+/**
+X4PhysicalVolume::convertSensors
+---------------------------------
+
+Predecessor in old route is AssimpGGeo::convertSensors
+
+**/
+
+void X4PhysicalVolume::convertSensors()
+{
+    convertSensors_r(m_top, 0); 
+
+    unsigned num_clv = m_ggeo->getNumCathodeLV();
+    unsigned num_bds = m_ggeo->getNumBorderSurfaces() ; 
+    unsigned num_sks0 = m_ggeo->getNumSkinSurfaces() ; 
+
+    GGeoSensor::AddSensorSurfaces(m_ggeo) ;
+
+    unsigned num_sks1 = m_ggeo->getNumSkinSurfaces() ; 
+    assert( num_bds == m_ggeo->getNumBorderSurfaces()  ); 
+
+    LOG(error) 
+         << " m_lvsdname " << m_lvsdname 
+         << " num_clv " << num_clv 
+         << " num_bds " << num_bds
+         << " num_sks0 " << num_sks0
+         << " num_sks1 " << num_sks1
+         ; 
+}
+
+void X4PhysicalVolume::convertSensors_r(const G4VPhysicalVolume* const pv, int depth)
+{
+    const G4LogicalVolume* const lv = pv->GetLogicalVolume();
+    const char* lvname = lv->GetName().c_str(); 
+    bool is_lvsdname = BStr::Contains(lvname, m_lvsdname, ',' ) ;
+
+    if(is_lvsdname)
+    {
+        m_ggeo->addCathodeLV(lvname) ;
+    }  
+
+    for (int i=0 ; i < lv->GetNoDaughters() ;i++ )
+    {
+        const G4VPhysicalVolume* const child_pv = lv->GetDaughter(i);
+        convertSensors_r(child_pv, depth+1 );
+    }
+}
+
 
 void X4PhysicalVolume::convertMaterials()
 {
@@ -200,8 +256,14 @@ void X4PhysicalVolume::convertSurfaces()
 
     m_slib->addPerfectSurfaces();
 
+}
+
+void X4PhysicalVolume::closeSurfaces()
+{
     m_slib->close();  // may change order if prefs dictate
 }
+
+
 
 
 void X4PhysicalVolume::saveAsGLTF(int root, const char* path)

@@ -41,6 +41,15 @@ bool BStr::EndsWith(const char* s, const char* q)
     return boost::ends_with(s, q);
 }
 
+const char* BStr::WithoutEnding(const char* s, const char* q)
+{
+    assert( EndsWith(s,q) ); 
+    int n = std::strlen(s) - std::strlen(q) ; 
+    assert( n > 0 ) ; 
+    std::string fc( s, std::min<size_t>( n, std::strlen( s ) ));
+    return strdup(fc.c_str()); 
+}
+
 bool BStr::StartsWith(const char* s, const char* q)
 {
     return boost::starts_with(s, q);
@@ -321,6 +330,41 @@ void BStr::split( std::vector<std::string>& elem, const char* line, char delim )
     while (getline(f, s, delim)) elem.push_back(s);
 }
 */
+
+
+
+
+/**
+BStr::Contains(s, q, delim)
+-----------------------------
+
+Returns true when any of the strings obtained by splitting 
+q with delim are present in s. For example::
+
+   assert( BStr::Contains("/some/path/to/VolCathodeEsque", "Cathode,cathode", ',' ) == true ) ; 
+   assert( BStr::Contains("/some/path/to/VolcathodeEsque", "Cathode,cathode", ',' ) == true ) ; 
+
+For single string contains use SStr::Contains
+
+**/
+
+bool BStr::Contains( const char* s_ , const char* q_, char delim )
+{
+    std::string s(s_); 
+    std::vector<std::string> qv ; 
+    BStr::split(qv, q_, delim) ;  
+
+    for(unsigned i=0 ; i < qv.size() ; i++)
+    {
+        if(s.find(qv[i]) != std::string::npos) return true ;
+    }
+    return false ; 
+}
+
+
+
+
+
 
 
 

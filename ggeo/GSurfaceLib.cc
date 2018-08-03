@@ -1,7 +1,7 @@
 #include <iomanip>
 
+#include "SStr.hh"
 #include "BStr.hh"
-
 
 #include "NMeta.hpp"
 #include "NGLM.hpp"
@@ -48,6 +48,18 @@ const char* GSurfaceLib::TESTSURFACE      = "testsurface" ;
 const char* GSurfaceLib::REFLECTIVITY = "REFLECTIVITY" ;
 const char* GSurfaceLib::EFFICIENCY   = "EFFICIENCY" ;
 const char* GSurfaceLib::SENSOR_SURFACE = "SensorSurface" ;
+
+
+bool GSurfaceLib::NameEndsWithSensorSurface(const char* name) // static
+{
+    return BStr::EndsWith(name, SENSOR_SURFACE) ; 
+}
+const char* GSurfaceLib::NameWithoutSensorSurface(const char* name) // static
+{
+    return BStr::WithoutEnding(name, SENSOR_SURFACE) ; 
+} 
+
+
 
 
 const char* GSurfaceLib::keyspec = 
@@ -283,18 +295,33 @@ const char* GSurfaceLib::AssignSurfaceType( NMeta* surfmeta ) // static
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
 /**
 GSurfaceLib::add(GBorderSurface* raw)
 -------------------------------------
 
 1. setMetaKV keys "bpv1" "bpv2" onto the GPropertyMap 
-2. collect the GPropertyMap object into 
+2. collect the GPropertyMap object o 
 
 **/
 
 
 void GSurfaceLib::add(GBorderSurface* raw)
 {
+    m_border_surfaces.push_back(raw);
+
     GPropertyMap<float>* surf = dynamic_cast<GPropertyMap<float>* >(raw);
     bool direct = false  ;  // not standardized 
     addBorderSurface(surf, raw->getPV1(), raw->getPV2(), direct );
@@ -335,6 +362,7 @@ void GSurfaceLib::relocateBasisBorderSurface(const char* name, const char* bpv1,
 
 
 
+
 /**
 GSurfaceLib::add(GSkinSurface* raw)
 -------------------------------------
@@ -346,6 +374,27 @@ GSurfaceLib::add(GSkinSurface* raw)
 
 void GSurfaceLib::add(GSkinSurface* raw)
 {
+    /*
+    // this dont work : the sensors dont enter thru the front door
+
+    const char* name = raw->getName();
+    bool iss = NameEndsWithSensorSurface(name) ;     
+    if(iss)
+    {
+        LOG(error) 
+           <<  " SensorSurface " 
+           <<  " num " << m_sensor_skin_surfaces.size() 
+           <<  " name " << name 
+           ;
+
+        m_sensor_skin_surfaces.push_back(raw) ; 
+    } 
+    */
+
+    m_skin_surfaces.push_back(raw);
+
+    LOG(trace) << ( raw ? raw->getName() : "NULL" ) ;
+
     GPropertyMap<float>* surf = dynamic_cast<GPropertyMap<float>* >(raw);
     bool direct = false  ;  // not standardized 
     addSkinSurface( surf, raw->getSkinSurfaceVol(), direct );
@@ -1082,14 +1131,12 @@ bool GSurfaceLib::isSensorSurface(unsigned int qsurface)
     const char* name = getName(qsurface); 
     if(!name) return false ; 
 
-    int pos = strlen(name) - strlen(SENSOR_SURFACE) ;
-    bool iss = pos > 0 && strncmp(name + pos, SENSOR_SURFACE, strlen(SENSOR_SURFACE)) == 0 ;
+    bool iss = NameEndsWithSensorSurface(name) ;     
 
     if(iss)
     LOG(error) << "GSurfaceLib::isSensorSurface"
               << " surface " << qsurface  
               << " name " << name 
-              << " pos " << pos 
               << " iss " << iss 
               ;
 
@@ -1115,6 +1162,9 @@ GPropertyMap<float>* GSurfaceLib::getSurface(unsigned int i) const
     return i < m_surfaces.size() ? m_surfaces[i] : NULL ;
 }
 
+
+
+
 GPropertyMap<float>* GSurfaceLib::getSurface(const char* name) const 
 {
     if(!name) return NULL ; 
@@ -1134,6 +1184,17 @@ GPropertyMap<float>* GSurfaceLib::getSurface(const char* name) const
     return surf ; 
 }
 
+GProperty<float>* GSurfaceLib::getSurfaceProperty(const char* name, const char* prop) const
+{
+    GPropertyMap<float>* surf = getSurface(name) ; 
+    assert(surf); 
+    GProperty<float>* p = surf->getProperty(prop); 
+    return p ; 
+} 
+
+
+
+
 /*
 // this way only works after closing the lib, or for loaded libs 
 // as it uses the names buffer
@@ -1146,5 +1207,115 @@ GPropertyMap<float>* GSurfaceLib::getSurface(const char* name)
 }
 */
 
+
+
+
+
+
+
+
+
+
+
+/**
+Simple collection relocated from GGeo
+**/
+
+unsigned GSurfaceLib::getNumBorderSurfaces() const 
+{
+    return m_border_surfaces.size();
+}
+unsigned GSurfaceLib::getNumSkinSurfaces() const 
+{
+    return m_skin_surfaces.size();
+}
+
+GSkinSurface* GSurfaceLib::getSkinSurface(unsigned index) const 
+{
+    return m_skin_surfaces[index];
+}
+GBorderSurface* GSurfaceLib::getBorderSurface(unsigned index) const 
+{
+    return m_border_surfaces[index];
+}
+
+
+
+void GSurfaceLib::addRaw(GBorderSurface* surface)
+{
+    m_border_surfaces_raw.push_back(surface);
+}
+void GSurfaceLib::addRaw(GSkinSurface* surface)
+{
+    m_skin_surfaces_raw.push_back(surface);
+}
+
+unsigned GSurfaceLib::getNumRawBorderSurfaces() const
+{
+    return m_border_surfaces_raw.size();
+}
+unsigned GSurfaceLib::getNumRawSkinSurfaces() const 
+{
+    return m_skin_surfaces_raw.size();
+}
+
+
+
+GSkinSurface* GSurfaceLib::findSkinSurface(const char* lv) const 
+{
+    GSkinSurface* ss = NULL ; 
+    for(unsigned int i=0 ; i < m_skin_surfaces.size() ; i++ )
+    {
+         GSkinSurface* s = m_skin_surfaces[i];
+         if(s->matches(lv))   
+         {
+            ss = s ; 
+            break ; 
+         } 
+    }
+    return ss ;
+}
+
+GBorderSurface* GSurfaceLib::findBorderSurface(const char* pv1, const char* pv2) const 
+{
+    GBorderSurface* bs = NULL ; 
+    for(unsigned int i=0 ; i < m_border_surfaces.size() ; i++ )
+    {
+         GBorderSurface* s = m_border_surfaces[i];
+         if(s->matches(pv1,pv2))   
+         {
+            bs = s ; 
+            break ; 
+         } 
+    }
+    return bs ;
+}
+
+
+
+void GSurfaceLib::dumpRawSkinSurface(const char* name) const
+{
+    LOG(info) << name ; 
+
+    GSkinSurface* ss = NULL ; 
+    unsigned n = getNumRawSkinSurfaces();
+    for(unsigned i = 0 ; i < n ; i++)
+    {
+        ss = m_skin_surfaces_raw[i];
+        ss->Summary("dumpRawSkinSurface", 10); 
+    }
+}
+
+void GSurfaceLib::dumpRawBorderSurface(const char* name) const 
+{
+    LOG(info) << name ; 
+    GBorderSurface* bs = NULL ; 
+    unsigned n = getNumRawBorderSurfaces();
+    for(unsigned i = 0 ; i < n ; i++)
+    {
+        bs = m_border_surfaces_raw[i];
+        bs->Summary("dumpRawBorderSurface", 10); 
+    }
+}
 
 

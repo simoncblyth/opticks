@@ -69,17 +69,25 @@ void test_Contains()
     assert( SStr::Contains(s, "Cathode") == true ); 
     assert( SStr::Contains(s, "cathode") == false ); 
 }
-
+void test_EndsWith()
+{
+    const char* s = "/hello/there/Cathode/World" ; 
+    assert( SStr::EndsWith(s, "Cathode") == false ); 
+    assert( SStr::EndsWith(s, "World") == true ); 
+}
 
 
 int main(int argc , char** argv )
 {
     OPTICKS_LOG(argc, argv);
 
-    //test_ToULL();
-    //test_FromULL();
-    //test_Format1();  
+    /*
+    test_ToULL();
+    test_FromULL();
+    test_Format1();  
     test_Contains();  
+    */
+    test_EndsWith();  
 
     return 0  ; 
 }

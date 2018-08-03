@@ -27,6 +27,7 @@
 #include "GBorderSurface.hh"
 #include "GSkinSurface.hh"
 #include "GOpticalSurface.hh"
+#include "GGeoSensor.hh"
 
 #include "GBndLib.hh"
 #include "GSurfaceLib.hh"
@@ -84,7 +85,8 @@ AssimpGGeo::AssimpGGeo(GGeo* ggeo, AssimpTree* tree, AssimpSelection* selection,
    m_no_surface(0),
    m_volnames(m_ok->hasVolnames()),
    m_reverse(true),        // true: ascending wavelength ordering of properties
-   m_cathode(NULL),
+   m_cathode_amat(NULL),
+   m_cathode_gmat(NULL),
    m_verbosity(0)
 {
     init();
@@ -508,7 +510,9 @@ void AssimpGGeo::convertMaterials(const aiScene* scene, GGeo* gg, const char* qu
             {
                 assert(gg->getCathode() == NULL && "only expecting one material with an EFFICIENCY property" );
                 gg->setCathode(gmat) ;  
-                m_cathode = mat ; 
+
+                m_cathode_amat = mat ; 
+                m_cathode_gmat = gmat ; 
             }
 
         }
@@ -557,11 +561,17 @@ void AssimpGGeo::convertSensors(GGeo* gg)
     convertSensors( gg, m_tree->getRoot(), 0); 
 
     //assert(m_cathode);
-    if(!m_cathode)
+    if(!m_cathode_amat )
     {
-         LOG(warning) << "AssimpGGeo::convertSensors m_cathode NULL : no material with an efficiency property ?  " ;
+         LOG(warning) << "AssimpGGeo::convertSensors m_cathode_amat NULL : no aiMaterial with an efficiency property ?  " ;
          return ; 
     }
+    if(!m_cathode_gmat )
+    {
+         LOG(warning) << "AssimpGGeo::convertSensors m_cathode_gmat NULL : no material with an efficiency property ?  " ;
+         return ; 
+    }
+
 
     unsigned int nclv = gg->getNumCathodeLV();
 
@@ -570,17 +580,24 @@ void AssimpGGeo::convertSensors(GGeo* gg)
               << " nclv " << nclv
               ;
 
-    GDomain<float>* standard_domain = gg->getBndLib()->getStandardDomain(); 
+    //GDomain<float>* standard_domain = gg->getBndLib()->getStandardDomain(); 
 
     // DYB: nclv=2 for hemi and headon PMTs 
     for(unsigned int i=0 ; i < nclv ; i++)
     {
         const char* sslv = gg->getCathodeLV(i);
+        unsigned int index = gg->getNumMaterials() + gg->getNumSkinSurfaces() + gg->getNumBorderSurfaces() ; 
+        // standard materials/surfaces use the originating aiMaterial index, 
+        // extend that for fake SensorSurface by toting up all 
+
         LOG(info) << "AssimpGGeo::convertSensors" 
                   << " i " << i
                   << " sslv " << sslv 
+                  << " index " << index 
                   ;
 
+
+/*
         std::string name = BStr::trimPointerSuffixPrefix(sslv, NULL );
         name += GSurfaceLib::SENSOR_SURFACE ; 
 
@@ -598,9 +615,6 @@ void AssimpGGeo::convertSensors(GGeo* gg)
         // standard materials/surfaces use the originating aiMaterial index, 
         // extend that for fake SensorSurface by toting up all 
 
-        unsigned int index = gg->getNumMaterials() + gg->getNumSkinSurfaces() + gg->getNumBorderSurfaces() ; 
-
-
         GSkinSurface* gss = new GSkinSurface(name.c_str(), index, os);
 
         gss->setStandardDomain(standard_domain);
@@ -611,8 +625,12 @@ void AssimpGGeo::convertSensors(GGeo* gg)
         // story continues in GBoundaryLib::standardizeSurfaceProperties
         // that no longer exists, now probably GSurfaceLib::getSensorSurface
        //
+*/
 
-        addProperties(gss, m_cathode );
+        GSkinSurface* gss = GGeoSensor::MakeSensorSurface(sslv, index);
+        gss->setStandardDomain() ;  // default domain 
+
+        addProperties(gss, m_cathode_amat );
 
         LOG(info) << "AssimpGGeo::convertSensors gss " << gss->description(); 
  
@@ -620,10 +638,11 @@ void AssimpGGeo::convertSensors(GGeo* gg)
 
         {
             // without standard domain applied
-            GSkinSurface*  gss_raw = new GSkinSurface(name.c_str(), index, os);
-            gss_raw->setSkinSurface(sslv);
+            GSkinSurface* gss_raw = GGeoSensor::MakeSensorSurface(sslv, index);
+            //GSkinSurface*  gss_raw = new GSkinSurface(name.c_str(), index, os);
+            //gss_raw->setSkinSurface(sslv);
             // not setting sensor, only the standardized need that
-            addProperties(gss_raw, m_cathode );
+            addProperties(gss_raw, m_cathode_amat );
             gg->addRaw(gss_raw);
         }   
     }

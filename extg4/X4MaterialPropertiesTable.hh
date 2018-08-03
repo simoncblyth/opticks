@@ -14,7 +14,6 @@ GPropertyMap<float> base of GMaterial, GSkinSurface or GBorderSurface.
 
 **/
 
-
 class X4_API X4MaterialPropertiesTable 
 {
     public:

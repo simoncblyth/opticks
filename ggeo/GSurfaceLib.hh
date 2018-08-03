@@ -29,6 +29,7 @@ class GOpticalSurface ;
 class GSkinSurface ; 
 class GBorderSurface ; 
 class GItemList ; 
+template<typename T> class GProperty ; 
 
 #include "GPropertyLib.hh"
 #include "GGEO_API_EXPORT.hh"
@@ -64,6 +65,9 @@ class GGEO_API GSurfaceLib : public GPropertyLib {
        static const char* EFFICIENCY ; 
        static const char* REFLECTIVITY ; 
    public:
+       static bool NameEndsWithSensorSurface(const char* name);
+       static const char* NameWithoutSensorSurface(const char* name);
+
        static const char*  SENSOR_SURFACE ;
        static float        SURFACE_UNSET ; 
        static const char* keyspec ;
@@ -129,6 +133,7 @@ class GGEO_API GSurfaceLib : public GPropertyLib {
        GPropertyMap<float>* getSurface(const char* name) const ;        
        bool hasSurface(unsigned int index) const ; 
        bool hasSurface(const char* name) const ; 
+       GProperty<float>* getSurfaceProperty(const char* name, const char* prop) const ;
    private:
        guint4               createOpticalSurface(GPropertyMap<float>* src);
        GPropertyMap<float>* createStandardSurface(GPropertyMap<float>* src);
@@ -151,6 +156,25 @@ class GGEO_API GSurfaceLib : public GPropertyLib {
        void importOld();
        void importForTex2d();
        void import( GPropertyMap<float>* surf, float* data, unsigned int nj, unsigned int nk, unsigned int jcat=0 );
+
+   public:
+       // simple collections relocated from GGeo
+       unsigned getNumBorderSurfaces() const ;
+       unsigned getNumSkinSurfaces() const ;
+       GSkinSurface* getSkinSurface(unsigned index) const ;
+       GBorderSurface* getBorderSurface(unsigned index) const ;
+
+       void addRaw(GBorderSurface* surface); 
+       void addRaw(GSkinSurface* surface);
+       unsigned getNumRawBorderSurfaces() const ;
+       unsigned getNumRawSkinSurfaces() const ;
+
+       GSkinSurface* findSkinSurface(const char* lv) const ;
+       GBorderSurface* findBorderSurface(const char* pv1, const char* pv2) const ;
+       void dumpRawSkinSurface(const char* name) const ;
+       void dumpRawBorderSurface(const char* name) const ;
+
+
    private:
        std::vector<GPropertyMap<float>*>       m_surfaces ; 
        float                                   m_fake_efficiency ; 
@@ -158,6 +182,15 @@ class GGEO_API GSurfaceLib : public GPropertyLib {
        GSurfaceLib*                            m_basis ; 
        bool                                    m_dbgsurf ; 
        plog::Severity                          m_level ; 
+
+   private:
+       // relocated from GGeo
+       std::vector<GSkinSurface*>    m_skin_surfaces ; 
+       std::vector<GSkinSurface*>    m_sensor_skin_surfaces ; 
+       std::vector<GBorderSurface*>  m_border_surfaces ; 
+        // _raw mainly for debug
+       std::vector<GSkinSurface*>    m_skin_surfaces_raw ; 
+       std::vector<GBorderSurface*>  m_border_surfaces_raw ; 
 
 
 };

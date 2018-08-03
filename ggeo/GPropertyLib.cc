@@ -384,6 +384,11 @@ const char* GPropertyLib::getName(unsigned int index)
     return key ; 
 }
 
+void GPropertyLib::getIndicesWithNameEnding( std::vector<unsigned>& indices, const char* ending ) const 
+{
+    return m_names->getIndicesWithKeyEnding(indices, ending ); 
+}
+
 
 
 

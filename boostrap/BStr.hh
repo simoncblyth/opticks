@@ -30,6 +30,8 @@ class BRAP_API BStr {
      static char* trimPointerSuffixPrefix(const char* origname, const char* prefix);
      static char* DAEIdToG4( const char* daeid, bool trimPtr);
 
+     static bool Contains( const char* s_ , const char* q_, char delim=',' ); 
+
      static const char* uppercase( const char* str );
      static char* afterLastOrAll(const char* orig, char delim='/');
      static std::string firstChars( const char* orig, unsigned n );
@@ -63,7 +65,10 @@ class BRAP_API BStr {
      static void fsplitEnv( std::vector<float>& elem, const char* envvar, const char* fallback, char delim=' ' );
      static bool existsEnv( const char* envvar );
      static bool StartsWith( const char* s, const char* q );
+
      static bool EndsWith( const char* s, const char* q );
+     static const char* WithoutEnding(const char* s, const char* q);
+
 
      static void split( std::vector<std::string>& elem, const char* line, char delim );
      static std::vector<std::pair<std::string, std::string> > ekv_split( const char* line, char edelim=' ', const char* kvdelim=":" );

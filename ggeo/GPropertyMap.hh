@@ -64,7 +64,7 @@ class GGEO_API GPropertyMap {
 
       std::string getShortNameString();
       std::string getPDigestString(int ifr, int ito);
-      std::string getKeysString(); 
+      std::string getKeysString() const ; 
       std::string description();
   public:
       std::string make_table(unsigned int fwid=20, T dscale=1, bool dreciprocal=false);
@@ -119,7 +119,7 @@ class GGEO_API GPropertyMap {
 
   public:
       bool hasStandardDomain();
-      void setStandardDomain(GDomain<T>* standard_domain);
+      void setStandardDomain(GDomain<T>* standard_domain=NULL);  // default of NULL -> default domain
       GDomain<T>* getStandardDomain();
       T getDomainLow();
       T getDomainHigh();

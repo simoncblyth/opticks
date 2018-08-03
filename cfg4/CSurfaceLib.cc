@@ -55,28 +55,28 @@ std::string CSurfaceLib::brief()
     return ss.str();
 }
 
-
-
-// called by CGeometry::init for both CGDMLDetector and CTestDetector branches
-//
-// TODO:converse method would seems more appropriate
-//
-//       detector->attachSurfaces(CSurfaceLib* ) 
-//
-
 /**
 CSurfaceLib::convert(CDetector* detector)
 ------------------------------------------
+
+Invoked from CDetector::attachSurfaces which is invoked
+from both CGDMLDetector::init and CTestDetector::init.
 
 Creates G4LogicalBorderSurface + G4LogicalSkinSurface and associated G4OpticalSurface
 from GSurfaceLib instance, collecting them into m_border and m_skin vectors.
 
 * CDetector is required by makeBorderSurface makeSkinSurface to access the G4 lv and pv 
 
+TODO: see if can rearrange into an easier to grasp position, eg::
+
+    detector->attachSurfaces(CSurfaceLib* ) 
+
 **/
 
 
-void CSurfaceLib::convert(CDetector* detector)
+
+
+void CSurfaceLib::convert(CDetector* detector, bool exclude_sensors)
 {
     LOG(m_level) << "." ;
 
@@ -90,7 +90,6 @@ void CSurfaceLib::convert(CDetector* detector)
     setDetector(detector);  
 
     unsigned num_surf = m_surfacelib->getNumSurfaces() ; 
-
     LOG(m_level) << "." 
                  << " num_surf " << num_surf
                   ; 
@@ -101,6 +100,17 @@ void CSurfaceLib::convert(CDetector* detector)
     for(unsigned i=0 ; i < num_surf ; i++)
     {   
         GPropertyMap<float>* surf = m_surfacelib->getSurface(i);
+        const char* name = surf->getName(); 
+        bool is_sensor_surface = GSurfaceLib::NameEndsWithSensorSurface( name ) ; 
+
+        if( is_sensor_surface && exclude_sensors )
+        {
+            LOG(error) << " skip sensor surf : " 
+                       << " name " << name 
+                       << " keys " << surf->getKeysString()
+                       ; 
+            continue ; 
+        }
 
         if(surf->isBorderSurface()) 
         {

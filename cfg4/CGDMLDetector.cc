@@ -8,6 +8,7 @@
 // ggeo-
 #include "GMaterial.hh"
 #include "GSurfaceLib.hh"
+#include "GProperty.hh"
 
 // okc-
 #include "Opticks.hh"
@@ -65,6 +66,7 @@ void CGDMLDetector::init()
 
     addMPT();
     attachSurfaces();
+    kludge_cathode_efficiency(); 
 
 }
 
@@ -84,6 +86,23 @@ void CGDMLDetector::saveBuffers()
     // split off to allow setting idpath override whilst testing
     CDetector::saveBuffers("CGDMLDetector", 0);    
 }
+
+
+/**
+CGDMLDetector::addMPT
+----------------------
+
+Have observed, Bialkali looses its EFFICIENCY, once thru Opticks standardization, the
+EFFICIENCY gets planted onto the fake SensorSurfaces::
+
+    2018-08-03 15:32:55.668 ERROR [7953232] [X4Material::init@99] name Bialkali
+    2018-08-03 15:32:55.668 ERROR [7953232] [X4MaterialPropertiesTable::AddProperties@41] ABSLENGTH
+    2018-08-03 15:32:55.669 ERROR [7953232] [X4MaterialPropertiesTable::AddProperties@41] GROUPVEL
+    2018-08-03 15:32:55.669 ERROR [7953232] [X4MaterialPropertiesTable::AddProperties@41] RAYLEIGH
+    2018-08-03 15:32:55.669 ERROR [7953232] [X4MaterialPropertiesTable::AddProperties@41] REEMISSIONPROB
+    2018-08-03 15:32:55.669 ERROR [7953232] [X4MaterialPropertiesTable::AddProperties@41] RINDEX
+
+**/
 
 
 void CGDMLDetector::addMPT()
@@ -120,16 +139,11 @@ void CGDMLDetector::addMPT()
         const std::string base = BFile::Name(name);
         const char* shortname = base.c_str();
 
-/*
-        std::vector<std::string> elem;
-        boost::split(elem,name,boost::is_any_of("/"));
-        assert(elem.size() == 4 && "expecting material names like /dd/Materials/GdDopedLS " );
-        const char* shortname = elem[3].c_str();
-*/
+
         const GMaterial* ggmat = m_mlib->getMaterial(shortname);          
         assert(ggmat && strcmp(ggmat->getShortName(), shortname)==0 && "failed to find corresponding G4DAE material") ;
 
-        LOG(debug) << "CGDMLDetector::addMPT" 
+        LOG(trace) << "CGDMLDetector::addMPT" 
                   << " g4mat " << std::setw(45) << name
                   << " shortname " << std::setw(25) << shortname
                    ;
@@ -146,4 +160,53 @@ void CGDMLDetector::addMPT()
 
 
 
+/**
+CGDMLDetector::kludge_cathode_efficiency
+-----------------------------------------
+
+See :doc:`notes/issues/direct_route_needs_AssimpGGeo_convertSensors_equivalent`
+
+**/
+
+void CGDMLDetector::kludge_cathode_efficiency()
+{
+    GSurfaceLib* gsl = getGSurfaceLib(); 
+
+    unsigned num_surf = gsl->getNumSurfaces() ; 
+
+    std::vector<unsigned> indices ;  
+    gsl->getIndicesWithNameEnding(indices, GSurfaceLib::SENSOR_SURFACE) ; 
+    unsigned num_sens = indices.size(); 
+
+    LOG(error) << " gsl " 
+               << " num_surf " << num_surf
+               << " num_sens " << num_sens 
+               ; 
+
+    for( unsigned i=0 ; i < num_sens ; i++)
+    {
+        unsigned idx = indices[i] ; 
+
+        GPropertyMap<float>* surf = gsl->getSurface(idx) ;    
+        const char* name = surf->getName(); 
+        std::string sslv = surf->getSSLV(); 
+
+        bool is_sensor_surface = GSurfaceLib::NameEndsWithSensorSurface( name ) ; 
+        assert( is_sensor_surface ); 
+
+        const char* stem = GSurfaceLib::NameWithoutSensorSurface( name ) ; 
+
+        GProperty<float>* detect = surf->getProperty("detect") ; 
+        assert( detect ); 
+
+        LOG(error) 
+            << " i " << i 
+            << " idx " << idx 
+            << " name " << name 
+            << " stem " << stem 
+            << " detect " << detect->brief()
+            << " sslv " << sslv  
+            ;
+    }
+}
  

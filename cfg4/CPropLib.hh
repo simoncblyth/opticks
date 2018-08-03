@@ -3,6 +3,7 @@
 #include <cstddef>
 #include <string>
 #include <map>
+#include "plog/Severity.h"
 
 class Opticks ;    // okc-
 class OpticksHub ; // okg-
@@ -92,6 +93,7 @@ class CFG4_API CPropLib {
        GScintillatorLib*  m_sclib ; 
        GDomain<float>*    m_domain ; 
        float              m_dscale ;  
+       plog::Severity     m_level ; 
        GPropertyMap<float>* m_sensor_surface ; 
    private:
        std::map<std::string, std::map<std::string, float> > m_const_override ; 

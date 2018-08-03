@@ -383,9 +383,10 @@ void NScene::load_csg_metadata()
         std::string meta_soname = soname(mesh_id);
 
         bool soname_match = meta_soname.compare(soName) == 0 ;
+        
 
-
-        LOG(info) 
+        if(!soname_match) 
+        LOG(fatal) 
                << " mesh_id " << std::setw(4) << mesh_id  
                << " lvIdx " << std::setw(4) << lvIdx  
                << " meta " << meta  
@@ -394,7 +395,7 @@ void NScene::load_csg_metadata()
                << " soname_match " << ( soname_match ? "Y" : "N:???????????"  )
                ;
 
-        //assert( soname_match) ; 
+        assert( soname_match) ; 
 
         if(m_verbosity > 3)
         {

@@ -7,8 +7,7 @@
 #include <cstdio>
 #include <boost/algorithm/string/replace.hpp>
 
-#include "BRAP_LOG.hh"
-#include "PLOG.hh"
+#include "OPTICKS_LOG.hh"
 
 
 void test_index_all()
@@ -357,14 +356,27 @@ void test_utoa()
     }
 }
 
+void test_Contains()
+{
+   assert( BStr::Contains("/some/path/to/VolCathodeEsque", "Cathode,cathode", ',' ) == true ) ; 
+   assert( BStr::Contains("/some/path/to/VolcathodeEsque", "Cathode,cathode", ',' ) == true ) ; 
+   assert( BStr::Contains("/some/path/to/Nowhere", "Cathode,cathode", ',' ) == false ) ; 
+}
 
+void test_WithoutEnding()
+{
+    const char* s = "lvPmtHemiCathodeSensorSurface" ; 
+    const char* q = "SensorSurface" ; 
+    assert( BStr::EndsWith(s, q) ); 
+    const char* a = BStr::WithoutEnding(s, q) ; 
+    const char* x = "lvPmtHemiCathode" ; 
+    assert( strcmp( a, x ) == 0); 
+}
 
 
 int main(int argc, char** argv)
 {
-    PLOG_(argc, argv);
-
-    BRAP_LOG__ ; 
+    OPTICKS_LOG(argc, argv);
 
 /*
     test_patternPickField();
@@ -387,9 +399,11 @@ int main(int argc, char** argv)
     test_Split1( "RINDEX,ABSLENGTH,RAYLEIGH,REEMISSIONPROB", 4 );
     test_Split1( "RINDEX,,,", 3 );
     test_Split1( "RINDEX,,, ", 4 );
-*/
-
     test_utoa();
+    test_Contains();
+*/
+    test_WithoutEnding();
+
 
     return 0 ; 
 }

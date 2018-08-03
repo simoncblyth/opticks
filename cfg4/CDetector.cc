@@ -48,7 +48,8 @@ CDetector::CDetector(OpticksHub* hub, OpticksQuery* query)
     m_query(query),
     m_resource(m_ok->getResource()),
     m_mlib(new CMaterialLib(m_hub)),
-    m_slib(new CSurfaceLib(m_hub->getSurfaceLib())),   // << WIP 
+    m_gsurfacelib(m_hub->getSurfaceLib()),
+    m_slib(new CSurfaceLib(m_gsurfacelib)),   // << WIP 
     m_top(NULL),
     m_traverser(NULL),
     m_check(NULL),
@@ -115,6 +116,12 @@ CSurfaceLib* CDetector::getSurfaceLib() const
 {
     return m_slib ; 
 }
+GSurfaceLib* CDetector::getGSurfaceLib() const 
+{
+    return m_gsurfacelib ; 
+}
+
+
 NBoundingBox* CDetector::getBoundingBox()
 {
     return m_bbox ; 
@@ -249,7 +256,7 @@ CDetector::~CDetector()
 
 
 /**
-CGDMLDetector::attachSurfaces
+CDetector::attachSurfaces
 ----------------------------
 
 Older versions of GDML entirely omit the surfaces,  
@@ -266,9 +273,21 @@ Now done internally within CTestDetector::init and GDMLDetector::init
 to avoid forgetting to do them.
 
 
+Note that the conversion from the Opticks model back to the Geant4 one
+excludes sensors : this is because they are "fakes" added to bring 
+the Opticks surface model in line with the Geant4 volume model.
+
+Geant4
+    hit formed when photon track steps into sensitive volume
+Opticks
+    hit formed when photon reaches a sensitive surface 
+
+
+Have observed that this adds EFFICIENCY and REFLECTIVITY 
+properties to all surfaces, due to Opticks standardization
+in GSurfaceLib.
+
 **/
-
-
 
 void CDetector::attachSurfaces()
 {
@@ -291,7 +310,8 @@ void CDetector::attachSurfaces()
     if(m_dbgsurf)
         LOG(info) << "[--dbgsurf] CDetector::attachSurfaces START" ;
 
-    m_slib->convert(this);
+    bool exclude_sensors = true ; 
+    m_slib->convert(this, exclude_sensors );
 
     if(m_dbgsurf)
         LOG(info) << "[--dbgsurf] CDetector::attachSurfaces DONE " ;

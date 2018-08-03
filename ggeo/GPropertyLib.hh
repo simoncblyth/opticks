@@ -66,7 +66,9 @@ class GGEO_API GPropertyLib {
         static const char* bnd_ ;
     public:
         const char*  getName(unsigned int index);
-        unsigned int getIndex(const char* shortname);
+        unsigned getIndex(const char* shortname);
+    public:
+        void getIndicesWithNameEnding( std::vector<unsigned>& indices, const char* ending ) const ; 
     public:
         GPropertyLib(GPropertyLib* other, GDomain<float>* domain=NULL);
         GPropertyLib(Opticks* ok, const char* type);
@@ -114,6 +116,8 @@ class GGEO_API GPropertyLib {
         virtual NMeta*      createMeta() = 0;
         virtual GItemList*  createNames() = 0;
 
+    public:
+        //GProperty<float>*    getItemProperty(const char* item, const char* pname) const ;
     public:
         GProperty<float>*    getPropertyOrDefault(GPropertyMap<float>* pmap, const char* pname);
         GProperty<float>*    getProperty(GPropertyMap<float>* pmap, const char* dkey);

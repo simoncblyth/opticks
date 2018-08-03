@@ -48,7 +48,6 @@ void X4MaterialPropertiesTable::AddProperties(GPropertyMap<float>* pmap, const G
 
       //   pmap->addProperty( pname.c_str(), prop );  // non-interpolating collection
         pmap->addPropertyStandardized( pname.c_str(), prop );  // interpolates onto standard domain 
-
     }  
 
     typedef const std::map< G4String, G4double, std::less<G4String> > CKP ; 

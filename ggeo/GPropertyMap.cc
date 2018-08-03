@@ -263,8 +263,15 @@ void GPropertyMap<T>::setValid(bool valid)
 template <typename T>
 void GPropertyMap<T>::setStandardDomain(GDomain<T>* standard_domain)
 {
+    if(standard_domain == NULL)
+    {
+        standard_domain = GDomain<T>::GetDefaultDomain();
+        LOG(error) << " setStandardDomain(NULL) -> default_domain " << standard_domain->desc() ;
+    } 
     m_standard_domain = standard_domain ; 
 }
+
+
 
 template <typename T>
 GDomain<T>* GPropertyMap<T>::getStandardDomain()
@@ -901,7 +908,7 @@ unsigned int GPropertyMap<T>::getNumProperties() const
 }
 
 template <typename T>
-std::string GPropertyMap<T>::getKeysString()
+std::string GPropertyMap<T>::getKeysString() const 
 {
     std::stringstream ss ; 
     unsigned int nkeys = m_keys.size();

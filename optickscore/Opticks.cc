@@ -507,16 +507,29 @@ void Opticks::setCfg(OpticksCfg<Opticks>* cfg)
 {
     m_cfg = cfg ; 
 }
-OpticksCfg<Opticks>* Opticks::getCfg()
+OpticksCfg<Opticks>* Opticks::getCfg() const 
 {
     return m_cfg ; 
 }
 
-const char* Opticks::getRenderMode()
+const char* Opticks::getRenderMode() const 
 {
     const std::string& renderMode = m_cfg->getRenderMode();
     return renderMode.c_str();
 }
+
+const char* Opticks::getLVSDName() const 
+{
+    const std::string& lvsdname = m_cfg->getLVSDName();
+    return lvsdname.c_str();
+}
+const char* Opticks::getCathode() const 
+{
+    const std::string& cathode = m_cfg->getCathode();
+    return cathode.c_str();
+}
+
+
 
 
 

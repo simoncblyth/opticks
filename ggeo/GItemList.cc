@@ -9,6 +9,7 @@
 #include <iomanip>
 
 
+#include "SStr.hh"
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/join.hpp>
@@ -143,6 +144,17 @@ const char* GItemList::getKey(unsigned int index)
 {
     return index < m_list.size() ? m_list[index].c_str() : NULL  ;
 }
+
+
+void GItemList::getIndicesWithKeyEnding( std::vector<unsigned>& indices, const char* ending ) const 
+{  
+    for(unsigned i=0 ; i < m_list.size() ; i++)
+    {
+        const std::string& k = m_list[i] ; 
+        if( SStr::EndsWith( k.c_str(), ending )) indices.push_back(i) ; 
+    }
+}
+
 
 void GItemList::setKey(unsigned int index, const char* newkey)
 {

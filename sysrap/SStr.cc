@@ -103,7 +103,11 @@ bool SStr::Contains( const char* s_ , const char* q_ )
     return s.find(q) != std::string::npos ;
 }
 
-
+bool SStr::EndsWith( const char* s, const char* q)
+{
+    int pos = strlen(s) - strlen(q) ;
+    return pos > 0 && strncmp(s + pos, q, strlen(q)) == 0 ;
+}
 
 
 

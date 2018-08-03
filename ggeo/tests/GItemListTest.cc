@@ -1,18 +1,11 @@
 // ggv --itemlist
 #include <string>
-
-// brap-
 #include "Map.hh"
 
 #include "Opticks.hh"
-// ggeo-
 #include "GItemList.hh"
 
-#include "PLOG.hh"
-#include "BRAP_LOG.hh"
-#include "GGEO_LOG.hh"
-
-
+#include "OPTICKS_LOG.hh"
 
 #include "GGEO_BODY.hh"
 
@@ -92,26 +85,48 @@ void test_makeSlice(Opticks* cache)
 }
 
 
+void test_getIndicesWithKeyEnding()
+{
+    std::vector<unsigned> indices ; 
+    const char* ending = "SensorSurface" ; 
+
+    GItemList l("testlist", "GItemListTest/test_reldir");
+
+    l.add("red");
+    l.add("green");
+    l.add("blueSensorSurface");
+    l.add("cyan");
+    l.add("magenta");
+    l.add("yellowSensorSurface");
+    l.dump();
+
+    l.getIndicesWithKeyEnding( indices, ending ); 
+
+    assert( indices.size() == 2 ) ; 
+    assert( indices[0] == 2 );  
+    assert( indices[1] == 5 );  
+}
+
 
 
 
 
 int main(int argc, char** argv)
 {
-    PLOG_(argc, argv);
-    GGEO_LOG_ ;
-    BRAP_LOG_ ;
+    OPTICKS_LOG(argc, argv);
 
     LOG(info) << argv[0] ; 
 
 
     Opticks ok(argc, argv);
 
-    //test_base();
-    //test_replaceFields(&ok);
-    //test_makeSlice(&ok);
-
+    /*
+    test_base();
+    test_replaceFields(&ok);
+    test_makeSlice(&ok);
     test_reldir();
+    */
+    test_getIndicesWithKeyEnding();
 
     return 0 ;
 

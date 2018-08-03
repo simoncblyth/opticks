@@ -170,49 +170,54 @@ bool GGeo::isLoaded()
 
 
 
+///////// from m_surfacelib ////////////
+
+void GGeo::add(GBorderSurface* surface)
+{
+    m_surfacelib->add(surface);
+}
+void GGeo::add(GSkinSurface* surface)
+{
+    m_surfacelib->add(surface);
+}
+unsigned int GGeo::getNumBorderSurfaces() const 
+{
+    return m_surfacelib->getNumBorderSurfaces() ; 
+}
+unsigned int GGeo::getNumSkinSurfaces() const 
+{
+    return m_surfacelib->getNumSkinSurfaces() ; 
+}
+GSkinSurface* GGeo::getSkinSurface(unsigned index) const 
+{
+    return m_surfacelib->getSkinSurface(index); 
+}
+GBorderSurface* GGeo::getBorderSurface(unsigned index) const 
+{
+    return m_surfacelib->getBorderSurface(index); 
+}
 void GGeo::addRaw(GBorderSurface* surface)
 {
-    m_border_surfaces_raw.push_back(surface);
+    m_surfacelib->addRaw(surface);
 }
 void GGeo::addRaw(GSkinSurface* surface)
 {
-    m_skin_surfaces_raw.push_back(surface);
+    m_surfacelib->addRaw(surface);
 }
-
-
-unsigned int GGeo::getNumBorderSurfaces()
+unsigned GGeo::getNumRawBorderSurfaces() const 
 {
-    return m_border_surfaces.size();
+    return m_surfacelib->getNumRawBorderSurfaces() ; 
 }
-unsigned int GGeo::getNumSkinSurfaces()
+unsigned GGeo::getNumRawSkinSurfaces() const 
 {
-    return m_skin_surfaces.size();
-}
-
-
-
-
-unsigned int GGeo::getNumRawBorderSurfaces()
-{
-    return m_border_surfaces_raw.size();
-}
-unsigned int GGeo::getNumRawSkinSurfaces()
-{
-    return m_skin_surfaces_raw.size();
+    return m_surfacelib->getNumRawSkinSurfaces() ;
 }
 
 
 
 
 
-GSkinSurface* GGeo::getSkinSurface(unsigned int index)
-{
-    return m_skin_surfaces[index];
-}
-GBorderSurface* GGeo::getBorderSurface(unsigned int index)
-{
-    return m_border_surfaces[index];
-}
+
 
 
 
@@ -282,7 +287,7 @@ GTreeCheck* GGeo::getTreeCheck()
 
 
 
-GMaterial* GGeo::getCathode()
+GMaterial* GGeo::getCathode() const 
 {
     return m_cathode ; 
 }
@@ -296,11 +301,11 @@ void GGeo::addCathodeLV(const char* lv)
    m_cathode_lv.insert(lv);
 }
 
-unsigned int GGeo::getNumCathodeLV()
+unsigned int GGeo::getNumCathodeLV() const 
 {
    return m_cathode_lv.size() ; 
 }
-const char* GGeo::getCathodeLV(unsigned int index)
+const char* GGeo::getCathodeLV(unsigned int index) const 
 {
     typedef std::unordered_set<std::string>::const_iterator UCI ; 
     UCI it = m_cathode_lv.begin() ; 
@@ -308,7 +313,7 @@ const char* GGeo::getCathodeLV(unsigned int index)
     return it != m_cathode_lv.end() ? it->c_str() : NULL  ; 
 }
 
-void GGeo::dumpCathodeLV(const char* msg)
+void GGeo::dumpCathodeLV(const char* msg) const 
 {
     printf("%s\n", msg);
     typedef std::unordered_set<std::string>::const_iterator UCI ; 
@@ -317,6 +322,9 @@ void GGeo::dumpCathodeLV(const char* msg)
         printf("GGeo::dumpCathodeLV %s \n", it->c_str() ); 
     }
 }
+
+
+
 
 
 Opticks* GGeo::getOpticks()
@@ -393,15 +401,6 @@ void GGeo::init()
 
 void GGeo::add(GMaterial* material)
 {
-    if(material->hasProperty("EFFICIENCY"))
-    {
-        LOG(error) << " MATERIAL WITH EFFICIENCY " ; 
-    }
-    if(material->hasProperty("efficiency"))
-    {
-        LOG(error) << " MATERIAL WITH efficiency" ; 
-    }
-
 
     m_materiallib->add(material);
     //addToIndex((GPropertyMap<float>*)material);
@@ -430,23 +429,6 @@ unsigned GGeo::getNumRawMaterials() const
 
 
 
-
-
-void GGeo::add(GBorderSurface* surface)
-{
-    m_surfacelib->add(surface);
-    m_border_surfaces.push_back(surface);
-    //addToIndex((GPropertyMap<float>*)surface);
-}
-void GGeo::add(GSkinSurface* surface)
-{
-    LOG(trace) << "GGeo::add(GSkinSurface*) " << ( surface ? surface->getName() : "NULL" ) ;
-
-    m_surfacelib->add(surface);
-    m_skin_surfaces.push_back(surface);
-
-    //addToIndex((GPropertyMap<float>*)surface);
-}
 
 
 GGeoLib* GGeo::getGeoLib()
@@ -777,8 +759,8 @@ void GGeo::Summary(const char* msg)
               << " ms " << m_meshlib->getNumMeshes()
               << " so " << m_nodelib->getNumVolumes()
               << " mt " << m_materiallib->getNumMaterials()
-              << " bs " << m_border_surfaces.size()
-              << " ss " << m_skin_surfaces.size()
+              << " bs " << getNumBorderSurfaces() 
+              << " ss " << getNumSkinSurfaces()
               ;
 
     if(m_low)  printf("    low  %10.3f %10.3f %10.3f \n", m_low->x, m_low->y, m_low->z);
@@ -800,15 +782,15 @@ void GGeo::Details(const char* msg)
     }
     */
 
-    for(unsigned int ibs=0 ; ibs < m_border_surfaces.size()  ; ibs++ )
+    for(unsigned int ibs=0 ; ibs < getNumBorderSurfaces()  ; ibs++ )
     {
-        GBorderSurface* bs = m_border_surfaces[ibs];
+        GBorderSurface* bs = getBorderSurface(ibs);
         snprintf(mbuf,BSIZ, "%s bs %u", msg, ibs);
         bs->Summary(mbuf);
     }
-    for(unsigned int iss=0 ; iss < m_skin_surfaces.size()  ; iss++ )
+    for(unsigned int iss=0 ; iss < getNumSkinSurfaces()  ; iss++ )
     {
-        GSkinSurface* ss = m_skin_surfaces[iss];
+        GSkinSurface* ss = getSkinSurface(iss) ;
         snprintf(mbuf,BSIZ, "%s ss %u", msg, iss);
         ss->Summary(mbuf);
     }
@@ -973,112 +955,25 @@ std::vector<GMaterial*> GGeo::getRawMaterialsWithProperties(const char* props, c
 
 
 
-/*
-void GGeo::addToIndex(GPropertyMap<float>* psrc)
-{
-    unsigned pindex = psrc->getIndex();
-    const char* pname = psrc->getShortName() ;
-    LOG(info) 
-        << " pindex " << pindex 
-        << " pname " << pname
-        ; 
 
-    if(pindex < UINT_MAX)
-    {
-         if(m_index.count(pindex) == 0) 
-         {
-               m_index[pindex] = pname ; 
-         }
-         else
-         {
-               const char* prior = m_index[pindex].c_str() ;
-               const char* current = pname ;
-               bool same = strcmp(prior, current) == 0 ; 
-               if( !same )
-               {
-                   LOG(fatal) << " addToIndex MISMATCH "
-                              << " pindex " << pindex
-                              << " current " << current
-                              << " prior " << prior
-                              ;
-               }
-               assert(same);
-         }
-    }
+GSkinSurface* GGeo::findSkinSurface(const char* lv) const
+{
+    return m_surfacelib->findSkinSurface(lv);
+}
+GBorderSurface* GGeo::findBorderSurface(const char* pv1, const char* pv2) const 
+{
+    return m_surfacelib->findBorderSurface(pv1, pv2); 
 }
 
-
-void  GGeo::dumpIndex(const char* msg)
+void GGeo::dumpRawSkinSurface(const char* name) const
 {
-    printf("%s\n", msg);
-    for(Index_t::iterator it=m_index.begin() ; it != m_index.end() ; it++)
-         printf("  %3u :  %s \n", it->first, it->second.c_str() );
+    m_surfacelib->dumpRawSkinSurface(name); 
+}
+void GGeo::dumpRawBorderSurface(const char* name) const 
+{
+    m_surfacelib->dumpRawBorderSurface(name); 
 }
 
-*/
-
-
-
-
-
-
-
-GSkinSurface* GGeo::findSkinSurface(const char* lv)
-{
-    GSkinSurface* ss = NULL ; 
-    for(unsigned int i=0 ; i < m_skin_surfaces.size() ; i++ )
-    {
-         GSkinSurface* s = m_skin_surfaces[i];
-         if(s->matches(lv))   
-         {
-            ss = s ; 
-            break ; 
-         } 
-    }
-    return ss ;
-}
-
-GBorderSurface* GGeo::findBorderSurface(const char* pv1, const char* pv2)
-{
-    GBorderSurface* bs = NULL ; 
-    for(unsigned int i=0 ; i < m_border_surfaces.size() ; i++ )
-    {
-         GBorderSurface* s = m_border_surfaces[i];
-         if(s->matches(pv1,pv2))   
-         {
-            bs = s ; 
-            break ; 
-         } 
-    }
-    return bs ;
-}
-
-
-
-void GGeo::dumpRawSkinSurface(const char* name)
-{
-    LOG(info) << "GGeo::dumpRawSkinSurface " << name ; 
-
-    GSkinSurface* ss = NULL ; 
-    unsigned int n = getNumRawSkinSurfaces();
-    for(unsigned int i = 0 ; i < n ; i++)
-    {
-        ss = m_skin_surfaces_raw[i];
-        ss->Summary("GGeo::dumpRawSkinSurface", 10); 
-    }
-}
-
-void GGeo::dumpRawBorderSurface(const char* name)
-{
-    LOG(info) << "GGeo::dumpRawBorderSurface " << name ; 
-    GBorderSurface* bs = NULL ; 
-    unsigned int n = getNumRawBorderSurfaces();
-    for(unsigned int i = 0 ; i < n ; i++)
-    {
-        bs = m_border_surfaces_raw[i];
-        bs->Summary("GGeo::dumpRawBorderSurface", 10); 
-    }
-}
 
 
 

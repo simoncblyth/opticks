@@ -16,7 +16,7 @@ template <typename T>
 GDomain<T>* GDomain<T>::fDefaultDomain = NULL  ;
 
 template <typename T>
-GDomain<T>* GDomain<T>::GetDefaultDomain() 
+GDomain<T>* GDomain<T>::GetDefaultDomain()  // static
 {
     if(fDefaultDomain == NULL)
     {
@@ -25,52 +25,16 @@ GDomain<T>* GDomain<T>::GetDefaultDomain()
     return fDefaultDomain ;
 }
 
-template <typename T>
-GDomain<T>* GDomain<T>::makeInterpolationDomain(T step)
-{
-   return new GDomain<T>(m_low, m_high, step);
-}
 
 template <typename T>
-void GDomain<T>::Summary(const char* msg)
+unsigned GDomain<T>::Length(T low, T high, T step) // static
 {
-   unsigned int len = getLength();
-
-   LOG(info) << msg 
-             << " low " << m_low
-             << " high " << m_high
-             << " step " << m_step
-             << " len " << len 
-             ;
-
-   T* vals = getValues();
-   std::stringstream ss ;  
-   for(unsigned int i=0 ; i < len ; i++) ss << i << ":" << vals[i] << " " ; 
-
-   LOG(info) << "values: " << ss.str() ;
-}
-
-
-
-template <typename T>
-bool GDomain<T>::isEqual(GDomain<T>* other)
-{
-    return 
-       getLow() == other->getLow()   &&
-       getHigh() == other->getHigh() &&
-       getStep() == other->getStep() ;
-}
-
-
-template <typename T>
-unsigned int GDomain<T>::getLength()
-{
-   T x = m_low ; 
+   T x = low ; 
 
    unsigned int n = 0 ;
-   while( x <= m_high )
+   while( x <= high )
    {
-      x += m_step ;
+      x += step ;
       n++ ; 
    }
    assert(n < 5000); // sanity check 
@@ -84,13 +48,74 @@ unsigned int GDomain<T>::getLength()
    return n ;
 } 
 
+template <typename T>
+GDomain<T>* GDomain<T>::makeInterpolationDomain(T step) const 
+{
+   return new GDomain<T>(m_low, m_high, step);
+}
+
 
 template <typename T>
-T* GDomain<T>::getValues()
+GDomain<T>::GDomain(T low, T high, T step) 
+    : 
+    m_low(low), 
+    m_high(high), 
+    m_step(step),
+    m_length(Length(m_low, m_high, m_step))
 {
-   unsigned int length = getLength(); 
-   T* domain = new T[length];
-   for(unsigned int i=0 ; i < length ; i++)
+}
+
+
+
+template <typename T>
+std::string GDomain<T>::desc() const
+{
+    std::stringstream ss ; 
+    ss
+       << " GDomain " 
+       << " low " << m_low
+       << " high " << m_high
+       << " step " << m_step
+       << " length " << m_length
+    ;
+    return ss.str();
+}
+
+
+template <typename T>
+void GDomain<T>::Summary(const char* msg) const 
+{
+   LOG(info) << msg 
+             << " low " << m_low
+             << " high " << m_high
+             << " step " << m_step
+             << " length " << m_length
+             ;
+
+   T* vals = getValues();
+   std::stringstream ss ;  
+   for(unsigned int i=0 ; i < m_length ; i++) ss << i << ":" << vals[i] << " " ; 
+
+   LOG(info) << "values: " << ss.str() ;
+}
+
+
+
+template <typename T>
+bool GDomain<T>::isEqual(GDomain<T>* other) const 
+{
+    return 
+       getLow() == other->getLow()   &&
+       getHigh() == other->getHigh() &&
+       getStep() == other->getStep() ;
+}
+
+
+template <typename T>
+T* GDomain<T>::getValues() const 
+{
+   T* domain = new T[m_length];
+   for(unsigned int i=0 ; i < m_length ; i++)
    {
       domain[i] = m_low + i*m_step ; 
    }

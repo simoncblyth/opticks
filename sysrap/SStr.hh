@@ -24,6 +24,7 @@ class SYSRAP_API SStr {
       static const char* Format3( const char* fmt, const char* value1, const char* value2, const char* value3 );
 
       static bool Contains(const char* s, const char* q ); 
+      static bool EndsWith( const char* s, const char* q);
 
 
 };

@@ -130,7 +130,8 @@ private:
 
     bool             m_volnames ; 
     bool             m_reverse ; 
-    aiMaterial*      m_cathode ; 
+    aiMaterial*      m_cathode_amat ; 
+    GMaterial*       m_cathode_gmat ; 
     float            m_fake_efficiency ; 
 
     unsigned int     m_verbosity ; 

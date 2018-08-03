@@ -25,12 +25,14 @@ class CFG4_API CMPT {
        static CMPT* MakeDummy(); 
        static std::string Digest(G4MaterialPropertiesTable* mpt); 
        static void AddDummyProperty(G4MaterialPropertiesTable* mpt, const char* lkey, unsigned nval) ;
+       static bool HasProperty(const G4MaterialPropertiesTable* mpt, const char* pname); 
    public:
        void addDummyProperty(const char* lkey, unsigned nval) ; 
        //void dump(const char* msg); 
    public:
        CMPT(G4MaterialPropertiesTable* mpt, const char* name=NULL);
        std::string digest() const ;
+       bool hasProperty(const char* pname) const ; 
    public:
        // adds domain and value of prop, assumes prop domain is in ascending nm 
        // (as typically used for optical properties) and thus the order is  
