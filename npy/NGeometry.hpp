@@ -9,6 +9,18 @@ class NParameters ;
 class NCSG ; 
 struct NSceneConfig ; 
 
+/**
+NGeometry
+===========
+
+Pure virtual interface fulfilled by:
+
+1. NGLTF 
+
+
+**/
+
+
 class NPY_API NGeometry
 {
     public:

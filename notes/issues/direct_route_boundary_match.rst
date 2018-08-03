@@ -2,6 +2,49 @@ direct_route_boundary_match
 =============================
 
 
+Morning Reflections
+---------------------
+
+
+* presence of the SensorSurfaces at source is incorrect : need to exclude them 
+  from the attachSurfaces GDML fixup
+
+* then need to find a way to recover them in the direct approach 
+  (moving some of the common code to do that out of AssimpGGeo and into GGeo 
+   is the way to go)
+
+   * old approach uses aiMaterial m_cathode : so need to iterate on that route 
+     as change it within AssimpGGeo to be able to work from GMaterial/GSurface (?)  
+   * then can migrate into GGeo : where it can be used from both the old and direct routes
+
+
+revive old Assimp route for iteration as change the convertSensors to be migratable
+------------------------------------------------------------------------------------
+
+::
+
+
+   op --gdml2gltf
+
+   OPTICKS_RESOURCE_LAYOUT=104 OKTest -G --gltf 3 
+ 
+    ## loads G4DAE assimp + the analytic description from python
+
+
+Had to update paths in analytic/csg.py to match NPYMeta NCSGData and rerun gdml2gltf, to avoid::
+
+    2018-08-03 10:20:37.733 INFO  [7719911] [NCSG::loadsrc@210] NCSG::load  index 0 treedir /usr/local/opticks/opticksdata/export/DayaBay_VGDX_20140414-1300/extras/248
+    2018-08-03 10:20:37.733 FATAL [7719911] [NPYList::loadBuffer@88]  non-optional buffer does not exist /usr/local/opticks/opticksdata/export/DayaBay_VGDX_20140414-1300/extras/248/srcnodes.npy
+    Assertion failed: (0), function loadBuffer, file /Users/blyth/opticks/npy/NPYList.cpp, line 89.
+    Abort trap: 6
+
+
+* comparing the idx with ab-idx : see lots of zeros from old route  , FIXED see ab-idx-notes
+
+
+
+
+
 ab-blib 
 ---------
 
@@ -17,9 +60,6 @@ Observations:
    * what was wrong with the old one are comparing against ?
    * forget the details, but twas something to do with it being easier to detect a 
      hit on a surface : in the Opticks surface model, so I added surfaces to the cathodes  
-
-
-
 
 
 ::

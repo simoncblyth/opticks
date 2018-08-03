@@ -26,8 +26,9 @@ ab-tmp(){ echo /tmp/$USER/opticks/bin/ab ; }
 ab-a-dir(){ echo DayaBay_VGDX_20140414-1300/g4_00.dae/96ff965744a2f6b78c24e33c80d3a4cd  ; }
 ab-b-dir(){ echo OKX4Test_World0xc15cfc0_PV_g4live/g4ok_gltf/828722902b5e94dab05ac248329ffebe ; }
 
+ab-a-idpath(){ echo $(ab-base)/$(ab-a-dir)/104 ; }
 #ab-a-idpath(){ echo $(ab-base)/$(ab-a-dir)/103 ; }
-ab-a-idpath(){ echo $(ab-base)/$(ab-a-dir)/1 ; }
+#ab-a-idpath(){ echo $(ab-base)/$(ab-a-dir)/1 ; }
 ab-b-idpath(){ echo $(ab-base)/$(ab-b-dir)/1 ; }
 
 
@@ -84,6 +85,7 @@ ab-s(){ ab-genrun $FUNCNAME ; }
 ab-part(){ ab-genrun $FUNCNAME ; }
 ab-plan(){ ab-genrun $FUNCNAME ; }
 ab-bnd(){ ab-genrun $FUNCNAME ; }
+ab-idx(){ ab-genrun $FUNCNAME ; }
 
 
 ab-p-notes(){ cat << EON
@@ -877,4 +879,110 @@ print np.hstack( [ia[w], ib[w]])
 EOP
 
 }
+
+
+
+ab-idx-notes(){ cat << EON
+
+Old route A (python written nodetrees) fails to get the soIdx lvIdx into idxBuffer::
+
+    In [11]: a
+    Out[11]: 
+    array([[0, 0, 0, 0],
+           [0, 0, 0, 0],
+           [0, 0, 0, 0],
+           ...,
+           [0, 0, 0, 0],
+           [0, 0, 0, 0],
+           [0, 0, 0, 0]], dtype=uint32)
+
+    In [12]: b
+    Out[12]: 
+    array([[  0,  30, 192,   0],
+           [  0,  31,  94,   0],
+           [  0,  32,  90,   0],
+           ...,
+           [  0, 239, 235,   0],
+           [  0, 239, 235,   0],
+           [  0, 239, 235,   0]], dtype=uint32)
+
+
+::
+
+    ## columns are : index,soIdx,lvIdx,height
+    ## 4th column height always matches 
+
+    In [15]: np.all( a[:,3] == b[:,3] )
+    Out[15]: True
+
+    ## 1st 3 columns all zero for A
+
+    In [10]: np.all( a[:,:3] == 0 )
+    Out[10]: True
+
+    In [20]: np.unique(a[:,3], return_counts=True)
+    Out[20]: (array([0, 1, 2, 3, 4], dtype=uint32), array([ 638, 2140,  190,   62,   86]))
+
+    In [21]: np.unique(b[:,3], return_counts=True)
+    Out[21]: (array([0, 1, 2, 3, 4], dtype=uint32), array([ 638, 2140,  190,   62,   86]))
+
+
+
+After threading them thru the python csg.py and NCSG/NCSGData get the idx to agree:: 
+
+    In [1]: a
+    Out[1]: 
+    array([[  0,  30, 192,   0],
+           [  0,  31,  94,   0],
+           [  0,  32,  90,   0],
+           ...,
+           [  0, 239, 235,   0],
+           [  0, 239, 235,   0],
+           [  0, 239, 235,   0]], dtype=uint32)
+
+    In [2]: b
+    Out[2]: 
+    array([[  0,  30, 192,   0],
+           [  0,  31,  94,   0],
+           [  0,  32,  90,   0],
+           ...,
+           [  0, 239, 235,   0],
+           [  0, 239, 235,   0],
+           [  0, 239, 235,   0]], dtype=uint32)
+
+    In [3]: np.all( a == b )
+    Out[3]: True
+
+
+EON
+}
+
+ab-idx-(){ cat << EOP
+
+import os, logging, numpy as np
+from opticks.ana.blib import BLib
+log = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO)
+
+a_dir = "$(ab-a-)"
+b_dir = "$(ab-b-)"
+
+a_load = lambda _:np.load(os.path.join(a_dir, _))
+b_load = lambda _:np.load(os.path.join(b_dir, _))
+
+a = a_load("idxBuffer.npy")
+b = b_load("idxBuffer.npy")
+assert a.shape == b.shape
+
+
+print "a %s\n" % repr(a.shape), a
+print "b %s\n" % repr(b.shape), b
+
+assert np.all( a == b )
+
+
+EOP
+}
+
+
 

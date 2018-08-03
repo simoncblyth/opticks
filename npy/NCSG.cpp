@@ -91,6 +91,10 @@ NCSG* NCSG::Load(const char* treedir, const NSceneConfig* config  )
 /////////////////////////////////////////////////////////////////////////////////////////
 NCSG::Adopt
 ------------
+
+Canonical usage in direct route is from X4PhysicalVolume::convertSolid
+
+
 **/
 
 NCSG* NCSG::Adopt(nnode* root)
@@ -207,7 +211,12 @@ void NCSG::savesrc(const char* treedir_ ) const
 
 void NCSG::loadsrc()
 {
-    if(m_index % 100 == 0 && m_verbosity > 0) LOG(info) << "NCSG::load " << " index " << m_index << " treedir " << m_treedir ; 
+    if(m_verbosity > 1) 
+         LOG(info) 
+             << " verbosity(>1) " << m_verbosity 
+             << " index " << m_index 
+             << " treedir " << m_treedir 
+             ; 
 
     m_csgdata->loadsrc( m_treedir ) ; 
     m_meta->load( m_treedir ); 
@@ -218,6 +227,16 @@ void NCSG::loadsrc()
 
 void NCSG::postload()
 {
+    m_soIdx = m_csgdata->getSrcSOIdx(); 
+    m_lvIdx = m_csgdata->getSrcLVIdx(); 
+
+    if( m_verbosity > 2) 
+    LOG(error) 
+        << " verbosity(>2) " << m_verbosity
+        << " soIdx " << m_soIdx 
+        << " lvIdx " << m_lvIdx 
+        ; 
+
     m_container       = m_meta->getValue<int>("container", "-1");
     m_containerscale  = m_meta->getValue<float>("containerscale", "2.");
 
@@ -240,15 +259,16 @@ NCSG::import : from complete binary tree buffers into nnode tree
 void NCSG::import()
 {
     if(m_verbosity > 1)
-        LOG(info) << "NCSG::import START" 
-                  << " verbosity " << m_verbosity
+        LOG(info) 
+                  << " verbosity(>1) " << m_verbosity
                   << " treedir " << m_treedir
                   << " smry " << smry()
                   ; 
 
-    if(m_verbosity > 0)
+    if(m_verbosity > 1)
     {
-        LOG(info) << "NCSG::import"
+        LOG(info) 
+                  << " verbosity(>0) " << m_verbosity 
                   << " importing buffer into CSG node tree "
                   << " num_nodes " << getNumNodes()
                   << " height " << getHeight()
@@ -686,13 +706,22 @@ void NCSG::export_()
 
     // m_root->check_tree( FEATURE_PARENT_LINKS | FEATURE_GTRANSFORMS | FEATURE_GTRANSFORM_IDX ) ; 
     //  FEATURE_GTRANSFORM_IDX not fulfilled
-   
-    //LOG(error) << "export_ DONE " ; 
 }
 
 void NCSG::export_idx()   // only tree level
 {
-    m_csgdata->setIdx( m_index, m_soIdx, m_lvIdx, getHeight() ); 
+    unsigned height = getHeight()  ;
+
+    if(m_verbosity > 4)
+    LOG(error) 
+           << " m_csgdata->setIdx "
+           << " index " << m_index
+           << " soIdx " << m_soIdx
+           << " lvIdx " << m_lvIdx
+           << " height " << height
+           ;
+
+    m_csgdata->setIdx( m_index, m_soIdx, m_lvIdx, height ); 
 }
 
 void NCSG::export_r(nnode* node, unsigned idx)

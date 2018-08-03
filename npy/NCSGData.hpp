@@ -94,6 +94,13 @@ class NPY_API NCSGData
         bool     isComplement(unsigned idx) const ;
         nquad    getQuad(unsigned idx, unsigned j) const ;
 
+    private:
+        void import_src_identity();
+    public:  
+        unsigned getSrcIndex() const ; 
+        unsigned getSrcSOIdx() const ; 
+        unsigned getSrcLVIdx() const ; 
+        unsigned getSrcHeight() const ; 
     public:
         // from m_transforms
         nmat4triple* import_transform_triple(unsigned itra);
@@ -111,6 +118,14 @@ class NPY_API NCSGData
         NPYList*    m_npy ; 
         unsigned    m_height ; 
         unsigned    m_num_nodes ; 
+
+    private:
+        // from import_src_identity
+        unsigned m_src_index ; 
+        unsigned m_src_soIdx ; 
+        unsigned m_src_lvIdx ; 
+        unsigned m_src_height ; 
+
 };
 
 

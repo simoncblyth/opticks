@@ -461,7 +461,7 @@ void NScene::load_mesh_extras()
 {
     unsigned num_meshes = m_source->getNumMeshes();
 
-    if(m_verbosity > 1)
+    //if(m_verbosity > 1)
     {
     LOG(info) << "NScene::load_mesh_extras START" 
               << " m_verbosity " << m_verbosity

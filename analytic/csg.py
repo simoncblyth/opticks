@@ -694,7 +694,7 @@ class CSG(CSG_):
                 itransform = len(transforms) + 1  # 1-based index pointing to the transform
                 transforms.append(trs)
             pass
-            log.info(" itransform : %s " % itransform )
+            log.debug(" itransform : %s " % itransform )
 
             node_planes = node.planes
             if len(node_planes) == 0:
@@ -738,7 +738,7 @@ class CSG(CSG_):
             if not os.path.exists(dir_):
                 os.makedirs(dir_)
             pass 
-            log.info("write nodemeta to %s %r " % (nodemetapath, nodemeta)  )
+            log.debug("write nodemeta to %s %r " % (nodemetapath, nodemeta)  )
             json.dump(nodemeta,file(nodemetapath,"w"))
 
             if node.left is not None and node.right is not None:
@@ -763,7 +763,7 @@ class CSG(CSG_):
         np.save(vertpath, self.verts)
 
 
-    def save(self, treedir):
+    def save(self, treedir, soIdx=0, lvIdx=0):
         if not os.path.exists(treedir):
             os.makedirs(treedir)
         pass
@@ -778,16 +778,20 @@ class CSG(CSG_):
         self.save_nodemeta(treedir)
         self.save_src(treedir)
 
-        lvidx = os.path.basename(treedir)
-        tboolpath = self.tboolpath(treedir, lvidx)
+        lvIdx_t = os.path.basename(treedir)
+        assert int(lvIdx_t) == lvIdx 
 
-        soidx = 0 
-        idxbuf = np.array([[0, soidx, lvidx, 0]], dtype=np.uint32) 
+        tboolpath = self.tboolpath(treedir, lvIdx)
+        height = self.height 
 
-        self.write_tbool(lvidx, tboolpath)
+        log.info(" soIdx %d lvIdx %d height %d " % ( soIdx, lvIdx, height ))
 
-        nntpath = self.nntpath(treedir, lvidx)
-        self.write_NNodeTest(lvidx, nntpath)
+        idxbuf = np.array([[0, soIdx, lvIdx, height]], dtype=np.uint32) 
+
+        self.write_tbool(lvIdx, tboolpath)
+
+        nntpath = self.nntpath(treedir, lvIdx)
+        self.write_NNodeTest(lvIdx, nntpath)
 
         nodepath = self.nodepath(treedir)
         np.save(nodepath, nodebuf)
@@ -802,12 +806,15 @@ class CSG(CSG_):
         pass
         if idxbuf is not None:
             idxpath = self.idxpath(treedir)
+            log.info("save to idxpath %s " % idxpath)
             np.save(idxpath, idxbuf)
         pass
 
 
     stream = property(lambda self:self.save(sys.stdout))
 
+    
+    ## these paths must match those in NCSGData::MakeSPECS
     @classmethod
     def tranpath(cls, treedir):
         return os.path.join(treedir,"srctransforms.npy") 
@@ -828,14 +835,17 @@ class CSG(CSG_):
         return os.path.join(treedir,"srcnodes.npy") 
 
 
-
-    # must match NCSG::TREE_META NCSG::NODE_META
-    TREE_META = "meta.json"
-    NODE_META = "nodemeta.json"
+    # Formerly must match NCSG::TREE_META NCSG::NODE_META
+    # TREE_META = "meta.json"
+    # NODE_META = "nodemeta.json"
+    #
+    # Now must match NPYMeta::META NPYMeta::ITEM_META  
+    META = "meta.json"
+    ITEM_META = "item_meta.json"
 
     @classmethod
     def metapath(cls, treedir, idx=-1):
-        return os.path.join(treedir,cls.TREE_META) if idx == -1 else os.path.join(treedir,str(idx),cls.NODE_META)
+        return os.path.join(treedir,cls.META) if idx == -1 else os.path.join(treedir,str(idx),cls.ITEM_META)
 
     @classmethod
     def tboolpath(cls, treedir, name):

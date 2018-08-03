@@ -326,7 +326,9 @@ class Sc(object):
 
         polyconfig = PolyConfig(lv.shortname)
         csg.meta.update(polyconfig.meta )
-        csg.meta.update(lvname=lv.name, soname=lv.solid.name, height=csg.height)  
+
+        # lv.solid.idx gives an incorrect (too high) soIdx ??
+        csg.meta.update(lvname=lv.name, soname=lv.solid.name, lvIdx=lv.idx, height=csg.height)  
 
         ### Nope pvname is not appropriate in the CSG, CSG is a mesh level tink not a node/volume level thing 
 
@@ -432,7 +434,7 @@ class Sc(object):
             lvdir = os.path.join( extras_dir, "%d" % lvIdx )
             uri = os.path.relpath(lvdir, gdir)
             mesh.extras["uri"] = uri
-            mesh.csg.save(lvdir)
+            mesh.csg.save(lvdir, soIdx, lvIdx)
             btxt.append(uri)
             count += 1 
         pass
@@ -447,7 +449,7 @@ class Sc(object):
         log.info("dump_extras %d " %  len(self.meshes)) 
         for lvIdx, mesh in self.meshes.items():
             soIdx = mesh.soIdx
-            print "lv %5d so %5d " % (lvIdx, soIdx)    
+            log.debug( "lv %5d so %5d " % (lvIdx, soIdx)  )
         pass
 
     def save(self, path, load_check=True, pretty_also=False):

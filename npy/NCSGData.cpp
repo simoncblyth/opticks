@@ -86,11 +86,44 @@ void NCSGData::loadsrc(const char* treedir)  // invoked from NCSG::NCSG(const ch
     m_npy->loadBuffer( treedir,(int)SRC_VERTS ); 
     m_npy->loadBuffer( treedir,(int)SRC_FACES ); 
 
+
     m_num_nodes = m_npy->getNumItems((int)SRC_NODES); 
     m_height = CompleteTreeHeight( m_num_nodes ) ; 
 
-    LOG(info) << " loadsrc DONE " << smry() ; 
+    import_src_identity();
+
+    if(m_verbosity > 1)
+        LOG(info) 
+              << " verbosity(>1) " << m_verbosity  
+              << smry() 
+              ;
 }
+
+
+void NCSGData::import_src_identity()
+{
+    NPY<unsigned>* idx = dynamic_cast<NPY<unsigned>*>(m_npy->getBuffer((int)SRC_IDX)) ; 
+    assert( idx->hasShape(1,4) ); 
+    glm::uvec4 uidx = idx->getQuad(0) ;  
+
+    m_src_index = uidx.x ; 
+    m_src_soIdx = uidx.y ; 
+    m_src_lvIdx = uidx.z ; 
+    m_src_height = uidx.w ; 
+
+    assert( m_src_height == m_height );
+
+    /*
+    LOG(info) 
+        << " src_index " << m_src_index
+        << " src_soIdx " << m_src_soIdx
+        << " src_lvIdx " << m_src_lvIdx
+        << " src_height " << m_src_height
+        ; 
+    */
+ 
+}
+
 
 void NCSGData::savesrc(const char* treedir ) const 
 {
@@ -180,6 +213,10 @@ unsigned NCSGData::addUniqueTransform( const nmat4triple* gtransform )
     return gtransform_idx ; 
 }
 
+
+
+
+
 /**
 NCSGData::import_transform_triple
 -----------------------------------
@@ -213,13 +250,23 @@ nmat4triple* NCSGData::import_transform_triple(unsigned itra)
 
 
 NCSGData::NCSGData()  
-   :
-   m_verbosity(1),
-   m_npy(new NPYList(NCSGData::SPECS)),
-   m_height(0),
-   m_num_nodes(0)
+    :
+    m_verbosity(1),
+    m_npy(new NPYList(NCSGData::SPECS)),
+    m_height(0),
+    m_num_nodes(0),
+    m_src_index(0), 
+    m_src_soIdx(0),
+    m_src_lvIdx(0),
+    m_src_height(0)
 {
 }
+
+unsigned NCSGData::getSrcIndex() const { return m_src_index ; }
+unsigned NCSGData::getSrcLVIdx() const { return m_src_lvIdx ; }
+unsigned NCSGData::getSrcSOIdx() const { return m_src_soIdx ; }
+unsigned NCSGData::getSrcHeight() const { return m_src_height ; }
+ 
 
 NPYList* NCSGData::getNPYList() const 
 {
@@ -298,15 +345,11 @@ void NCSGData::setIdx( unsigned index, unsigned soIdx, unsigned lvIdx, unsigned 
     assert( height == m_height ); 
     glm::uvec4 uidx(index, soIdx, lvIdx, height); 
 
-    //NPY<unsigned>* _srcidx = getSrcIdxBuffer() ;  
-    //_srcidx->setQuad(uidx, 0u );     
-
     NPY<unsigned>* _idx = getIdxBuffer() ;  
     assert(_idx); 
     _idx->setQuad(uidx, 0u );     
 
     // used by GParts::make GParts::combine
-
 }
 
 std::string NCSGData::smry() const 
@@ -315,6 +358,10 @@ std::string NCSGData::smry() const
     ss 
        << " ht " << std::setw(2) << m_height 
        << " nn " << std::setw(4) << m_num_nodes
+       << " sid " << std::setw(4) << m_src_index
+       << " sso " << std::setw(4) << m_src_soIdx
+       << " slv " << std::setw(4) << m_src_lvIdx
+       << " sht " << std::setw(4) << m_src_height
        << " " << m_npy->desc()
        ;
     return ss.str();

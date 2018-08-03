@@ -13,6 +13,16 @@ class NCSG ;
 class NCSGData ; 
 class NCSGList ; 
 
+/**
+X4CSG
+=======
+
+* Used for testing single G4VSolid in isolation
+* Applied to all solids using codegen to construct mains 
+  for every solid, see x4gen-
+
+**/
+
 struct X4_API X4CSG 
 {
     static const std::string HEAD ; 
