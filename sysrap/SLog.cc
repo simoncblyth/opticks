@@ -3,12 +3,13 @@
 #include "SLog.hh"
 #include "PLOG.hh"
 
-SLog::SLog(const char* label, const char* extra) 
+SLog::SLog(const char* label, const char* extra, plog::Severity level) 
    :
    m_label(strdup(label)),
-   m_extra(strdup(extra))
+   m_extra(strdup(extra)),
+   m_level(level)
 {
-    LOG(debug) 
+    pLOG(m_level,-1) 
         << m_label 
         << " " 
         << m_extra 
@@ -17,7 +18,7 @@ SLog::SLog(const char* label, const char* extra)
 
 void SLog::operator()(const char* msg)
 {
-    LOG(info) 
+    pLOG(m_level,0) 
         << m_label 
         << " " 
         << m_extra 

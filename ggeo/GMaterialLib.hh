@@ -124,7 +124,9 @@ class GGEO_API GMaterialLib : public GPropertyLib {
        void addDirect(GMaterial* material);  // not-standarized
        void sort();
        bool operator()(const GMaterial& a_, const GMaterial& b_);
-
+    public:
+        void setCathode(GMaterial* cathode);
+        GMaterial* getCathode() const ;  
    public:
        // used by GGeoTest 
        GMaterial* getBasisMaterial(const char* name) const ;
@@ -163,6 +165,7 @@ class GGEO_API GMaterialLib : public GPropertyLib {
        std::vector<GMaterial*>       m_materials_raw ; 
 
        GMaterialLib*  m_basis ; 
+       GMaterial*     m_cathode ; 
 
 };
 #include "GGEO_TAIL.hh"

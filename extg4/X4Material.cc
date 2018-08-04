@@ -96,7 +96,7 @@ void X4Material::init()
     std::string name = BFile::Name( matname ); 
     unsigned index = m_material->GetIndex() ;
 
-    LOG(error) << "name " << name ; 
+    //LOG(error) << "name " << name ; 
 
 
     // FORMERLY set the index on collecting into GMaterialLib, 

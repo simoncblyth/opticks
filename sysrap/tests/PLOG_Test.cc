@@ -1,7 +1,8 @@
 #include "PLOG.hh"
 #include "SArgs.hh"
 
-int main(int, char** argv_)
+
+void test_arguments(const char* exe)
 {
     std::vector<std::string> tt  ; 
     tt.push_back( "--trace" );
@@ -55,11 +56,9 @@ int main(int, char** argv_)
     {
         std::string t = tt[i]; 
 
-        SArgs* a = new SArgs(argv_[0], t.c_str()) ;
-
+        SArgs* a = new SArgs(exe, t.c_str()) ;
 
         if(PLOG::instance != NULL) PLOG::instance = NULL ; 
-
 
         PLOG* pl = j == 0 ?
                              new PLOG(a->argc, a->argv, fallback ) 
@@ -82,7 +81,16 @@ int main(int, char** argv_)
                   ; 
     } 
     }
+}
 
+
+
+
+
+int main(int, char** argv_)
+{
+    const char* exe = argv_[0] ; 
+    test_arguments(exe); 
     
     return 0 ; 
 } 

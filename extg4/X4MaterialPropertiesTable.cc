@@ -38,7 +38,7 @@ void X4MaterialPropertiesTable::AddProperties(GPropertyMap<float>* pmap, const G
     {   
         G4String pname = it->first ;
 
-        LOG(error) << pname ; 
+        //LOG(error) << pname ; 
 
         G4MaterialPropertyVector* pvec = it->second ;  
         // G4MaterialPropertyVector is typedef to G4PhysicsOrderedFreeVector with most of imp in G4PhysicsVector

@@ -219,12 +219,8 @@ Maybe can just check all logvols::
 
 
 
-
-
 Adding SensorSurfaces
 -----------------------
-
-
 
 ::
 

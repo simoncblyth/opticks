@@ -12,6 +12,9 @@
 
 using namespace plog ; 
 
+
+
+
 int main(int, char** argv)
 {
 
@@ -47,5 +50,12 @@ int main(int, char** argv)
     LOG((plog::Severity)ilevel) << "i-gello " ; 
 
 
+
+
+
+
     return 0 ; 
 }
+
+
+

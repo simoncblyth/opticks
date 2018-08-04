@@ -110,7 +110,6 @@ GGeo::GGeo(Opticks* ok)
    m_low(NULL),
    m_high(NULL),
    m_sensitive_count(0),
-   m_cathode(NULL),
    m_join_cfg(NULL),
    m_mesh_verbosity(0),
    m_gscene(NULL)
@@ -287,14 +286,34 @@ GTreeCheck* GGeo::getTreeCheck()
 
 
 
-GMaterial* GGeo::getCathode() const 
-{
-    return m_cathode ; 
-}
+/**
+GGeo::setCathode
+------------------
+
+Invoked from AssimpGGeo::convertMaterials
+
+**/
 void GGeo::setCathode(GMaterial* cathode)
 {
-    m_cathode = cathode ; 
+    m_materiallib->setCathode(cathode); 
 }
+GMaterial* GGeo::getCathode() const 
+{
+    return m_materiallib->getCathode() ; 
+}
+
+
+
+/**
+GGeo::addCathodeLV
+-------------------
+
+From  
+
+1. AssimpGGeo::convertSensorsVisit
+2. X4PhysicalVolume::convertSensors_r
+
+**/
 
 void GGeo::addCathodeLV(const char* lv)
 {

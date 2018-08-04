@@ -33,7 +33,7 @@ CPropLib
 ==========
 
 CPropLib is base class of CMaterialLib which is a constituent of CDetector (eg CTestDector and CGDMLDetector)
-that converts GGeo (ie Opticks G4DAE) materials and surfaces into G4 materials and surfaces.
+that converts Opticks GGeo materials and surfaces into G4 materials and surfaces.
 
 TODO:
 ------

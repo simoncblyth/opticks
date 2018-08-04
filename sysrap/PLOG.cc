@@ -13,6 +13,15 @@ PLOG* PLOG::instance = NULL ;
 //#define PLOG_DBG 1
 
 
+plog::Severity PLOG::Delta(plog::Severity level_, int delta)
+{
+    int level = (int)level_ + delta ; 
+    if(level < (int)fatal)   level = (int)fatal ; 
+    if(level > (int)verbose) level = (int)verbose ; 
+    return (plog::Severity)level ; 
+}
+
+
 void PLOG::_dump(const char* msg, int argc, char** argv)
 {
     std::cerr <<  msg

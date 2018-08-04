@@ -28,6 +28,10 @@ set(TEST_SOURCES
 
    SYSRAP_OPTICKS_LOG_Test.cc
 
+   OPTICKS_LOG_Test.cc
+   pLOG_MACRO_Test.cc
+    
+
    OpticksCSGTest.cc
    hash_define_without_value.cc
    SDirectTest.cc 

@@ -150,7 +150,8 @@ unsigned GMaterialLib::getNumRawMaterials() const
 GMaterialLib::GMaterialLib(Opticks* ok, GMaterialLib* basis) 
     :
     GPropertyLib(ok, "GMaterialLib"),
-    m_basis(basis)
+    m_basis(basis),
+    m_cathode(NULL)
 {
     init();
 }
@@ -158,7 +159,8 @@ GMaterialLib::GMaterialLib(Opticks* ok, GMaterialLib* basis)
 GMaterialLib::GMaterialLib(GMaterialLib* src, GDomain<float>* domain, GMaterialLib* basis)  // hmm think basis never used with this ctor ?
     :
     GPropertyLib(src, domain),
-    m_basis(basis)
+    m_basis(basis),
+    m_cathode(NULL)
 {
     init();
     initInterpolatingCopy(src, domain);
@@ -240,10 +242,9 @@ void GMaterialLib::add(GMaterial* mat)
         LOG(error) << " MATERIAL WITH EFFICIENCY " ; 
         mat->Summary();        
     }
-    if(mat->hasProperty("efficiency"))
-    {
-        LOG(error) << " MATERIAL WITH efficiency" ; 
-    }
+
+    bool with_efficiency = mat->hasProperty("efficiency") ; 
+    assert( !with_efficiency ); 
 
     assert(!isClosed());
     m_materials.push_back(createStandardMaterial(mat)); 
@@ -980,5 +981,20 @@ void GMaterialLib::addTestMaterials()
    } 
 }
 
+
+
+
+
+
+
+void GMaterialLib::setCathode(GMaterial* cathode)
+{
+    assert( m_cathode == NULL && "only expecting one cathode material " );  
+    m_cathode = cathode ; 
+}
+GMaterial* GMaterialLib::getCathode() const 
+{
+    return m_cathode ; 
+}
 
 

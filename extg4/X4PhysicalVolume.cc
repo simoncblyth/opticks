@@ -153,6 +153,8 @@ Predecessor in old route is AssimpGGeo::convertSensors
 
 void X4PhysicalVolume::convertSensors()
 {
+    LOG(fatal) << "[" ; 
+
     convertSensors_r(m_top, 0); 
 
     unsigned num_clv = m_ggeo->getNumCathodeLV();
@@ -171,6 +173,8 @@ void X4PhysicalVolume::convertSensors()
          << " num_sks0 " << num_sks0
          << " num_sks1 " << num_sks1
          ; 
+
+    LOG(fatal) << "]" ; 
 }
 
 void X4PhysicalVolume::convertSensors_r(const G4VPhysicalVolume* const pv, int depth)
@@ -194,6 +198,8 @@ void X4PhysicalVolume::convertSensors_r(const G4VPhysicalVolume* const pv, int d
 
 void X4PhysicalVolume::convertMaterials()
 {
+    LOG(fatal) << "[" ;
+
     size_t num_materials0 = m_mlib->getNumMaterials() ;
     assert( num_materials0 == 0 );
 
@@ -203,9 +209,9 @@ void X4PhysicalVolume::convertMaterials()
     assert( num_materials > 0 );
 
 
-    LOG(info) << "convertMaterials"
-              << " num_materials " << num_materials
-              ;
+    LOG(fatal) << "."
+               << " num_materials " << num_materials
+               ;
 
 
     // TODO : can these go into one method within GMaterialLib?
@@ -236,10 +242,13 @@ void X4PhysicalVolume::convertMaterials()
                 ;
         }
 
+    LOG(fatal) << "]" ;
 }
 
 void X4PhysicalVolume::convertSurfaces()
 {
+    LOG(fatal) << "[" ;
+
     size_t num_surf0 = m_slib->getNumSurfaces() ; 
     assert( num_surf0 == 0 );
 
@@ -256,6 +265,7 @@ void X4PhysicalVolume::convertSurfaces()
 
     m_slib->addPerfectSurfaces();
 
+    LOG(fatal) << "]" ;
 }
 
 void X4PhysicalVolume::closeSurfaces()
@@ -438,27 +448,29 @@ used.
 
 void X4PhysicalVolume::convertStructure()
 {
-     assert(m_top) ;
-     LOG(info) << " convertStructure BEGIN " << m_sc->desc() ; 
+    LOG(fatal) << "[" ; 
+    assert(m_top) ;
+    LOG(info) << " convertStructure BEGIN " << m_sc->desc() ; 
 
-     const G4VPhysicalVolume* pv = m_top ; 
-     GVolume* parent = NULL ; 
-     const G4VPhysicalVolume* parent_pv = NULL ; 
-     int depth = 0 ;
+    const G4VPhysicalVolume* pv = m_top ; 
+    GVolume* parent = NULL ; 
+    const G4VPhysicalVolume* parent_pv = NULL ; 
+    int depth = 0 ;
 
-     IndexTraverse(pv, depth);
+    IndexTraverse(pv, depth);
 
-     if(m_verbosity > 5) dumpLV();
+    if(m_verbosity > 5) dumpLV();
 
-     bool recursive_select = false ;
+    bool recursive_select = false ;
 
-     m_root = convertTree_r(pv, parent, depth, parent_pv, recursive_select );
+    m_root = convertTree_r(pv, parent, depth, parent_pv, recursive_select );
 
-     NTreeProcess<nnode>::SaveBuffer("$TMP/NTreeProcess.npy");      
-     NNodeNudger::SaveBuffer("$TMP/NNodeNudger.npy"); 
-     X4Transform3D::SaveBuffer("$TMP/X4Transform3D.npy"); 
+    NTreeProcess<nnode>::SaveBuffer("$TMP/NTreeProcess.npy");      
+    NNodeNudger::SaveBuffer("$TMP/NNodeNudger.npy"); 
+    X4Transform3D::SaveBuffer("$TMP/X4Transform3D.npy"); 
 
-     LOG(info) << " convertStructure END  " << m_sc->desc() ; 
+    LOG(info) << " convertStructure END  " << m_sc->desc() ; 
+    LOG(fatal) << "]" ; 
 }
 
 

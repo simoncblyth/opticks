@@ -317,8 +317,11 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
         void updateBounds(GNode* node); 
 
     public:
+        // m_materiallib
         void setCathode(GMaterial* cathode);
         GMaterial* getCathode() const ;  
+    public:
+
         void addCathodeLV(const char* lv);
         void dumpCathodeLV(const char* msg="GGeo::dumpCathodeLV") const ;
         const char* getCathodeLV(unsigned int index) const ; 
@@ -386,7 +389,7 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
 
        // Index_t                            m_index ; 
         unsigned int                       m_sensitive_count ;  
-        GMaterial*                         m_cathode ; 
+        //GMaterial*                         m_cathode ; 
         const char*                        m_join_cfg ; 
         GJoinImpFunctionPtr                m_join_imp ;  
         GLoaderImpFunctionPtr              m_loader_imp ;  

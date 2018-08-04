@@ -25,7 +25,7 @@ const char* BOpticksResource::OKDATA_RELPATH = "opticksdata/config/opticksdata.i
 
 BOpticksResource::BOpticksResource()
     :
-    m_log(new SLog("BOpticksResource::BOpticksResource")),
+    m_log(new SLog("BOpticksResource::BOpticksResource","",debug)),
     m_setup(false),
     m_key(BOpticksKey::GetKey()),   // will be NULL unless BOpticksKey::SetKey has been called 
     m_id(NULL),

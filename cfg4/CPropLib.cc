@@ -51,7 +51,7 @@ CPropLib::CPropLib(OpticksHub* hub, int verbosity)
   m_sclib(m_hub->getScintillatorLib()),
   m_domain(m_mlib->getDefaultDomain()),
   m_dscale(1),
-  m_level(info)
+  m_level(verbose)
 {
     init();
 }
@@ -65,7 +65,7 @@ GSurfaceLib* CPropLib::getSurfaceLib()
 
 void CPropLib::init()
 {
-    LOG(info) << "CPropLib::init" ; 
+    pLOG(m_level,-2) << "CPropLib::init" ; 
 
     m_sensor_surface = m_slib->getSensorSurface(0) ;
 
@@ -108,8 +108,7 @@ void CPropLib::initSetupOverrides()
 
 void CPropLib::initCheckConstants()
 {
-
-    LOG(info) << "CPropLib::initCheckConstants" 
+    LOG(debug) << "CPropLib::initCheckConstants" 
                << " mm " << mm 
                << " MeV " << MeV
                << " nanosecond " << nanosecond
@@ -234,8 +233,7 @@ G4MaterialPropertiesTable* CPropLib::makeMaterialPropertiesTable(const GMaterial
 
         addProperties(mpt, surf, "EFFICIENCY");
 
-
-        CMPT::Dump(mpt);
+        //CMPT::Dump(mpt);
 
         assert( CMPT::HasProperty(mpt, "EFFICIENCY")) ; 
 
@@ -273,11 +271,11 @@ void CPropLib::addProperties(G4MaterialPropertiesTable* mpt, GPropertyMap<float>
     unsigned int nprop = pmap->getNumProperties();
 
     //if(m_verbosity > 1)
-    LOG(m_level) << "CPropLib::addProperties"
-              << " keys " << _keys
-              << " matname " << matname 
-              << " nprop " << nprop
-              ;
+    pLOG(m_level,0) << "CPropLib::addProperties"
+                   << " keys " << _keys
+                   << " matname " << matname 
+                   << " nprop " << nprop
+                    ;
 
     //pmap->dump("CPropLib::addProperties"); 
 
@@ -293,7 +291,7 @@ void CPropLib::addProperties(G4MaterialPropertiesTable* mpt, GPropertyMap<float>
         if(!ukey) LOG(fatal) << "CPropLib::addProperties missing key for prop " << i ; 
         assert(ukey);
 
-        LOG(m_level) << "CPropLib::addProperties " << matname << " " << i  << " key " << key << " lkey " << lkey << " ukey " << ukey  ;
+        pLOG(m_level,+1) << "CPropLib::addProperties " << matname << " " << i  << " key " << key << " lkey " << lkey << " ukey " << ukey  ;
 
         bool select = all ? true : std::find(keys.begin(), keys.end(), ukey) != keys.end() ;
         if(select)
@@ -308,11 +306,11 @@ void CPropLib::addProperties(G4MaterialPropertiesTable* mpt, GPropertyMap<float>
         }
         else
         {
-            LOG(m_level) << "CPropLib::addProperties " << std::setw(30) << matname << " skipped " << ukey ;
+            pLOG(m_level,0) << "CPropLib::addProperties " << std::setw(30) << matname << " skipped " << ukey ;
         }
     }
     std::string lka = ss.str(); 
-    LOG(m_level) << "CPropLib::addProperties MPT of " << std::setw(30) << matname << " keys: " << lka ; ; 
+    pLOG(m_level,-1) << "CPropLib::addProperties MPT of " << std::setw(30) << matname << " keys: " << lka ; ; 
 }
 
 

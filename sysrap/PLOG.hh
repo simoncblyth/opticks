@@ -107,6 +107,27 @@ struct PLOG ;
 
 
 
+/**
+Delta
+------
+::
+
+    enum Severity
+    {   
+        none = 0,
+        fatal = 1,
+        error = 2,
+        warning = 3,
+        info = 4,
+        debug = 5,
+        verbose = 6 
+    };  
+
+**/
+
+
+
+
 #include "SAr.hh"
 
 struct SYSRAP_API PLOG 
@@ -115,6 +136,8 @@ struct SYSRAP_API PLOG
     int         level ; 
     const char* logpath ; 
     int         logmax ; 
+
+    static plog::Severity Delta(plog::Severity level_, int delta); 
 
     PLOG(int argc, char** argv, const char* fallback="VERBOSE", const char* prefix=NULL );
 
@@ -136,6 +159,7 @@ struct SYSRAP_API PLOG
     static PLOG* instance ; 
 };
 
+#define pLOG(severity, delta)     LOG_(PLOG_DEFAULT_INSTANCE, PLOG::Delta(severity,delta))
 
 #include "PLOG_INIT.hh"
 

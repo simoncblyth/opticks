@@ -83,7 +83,7 @@ const char* OpticksResource::SENSOR_SURFACE_OTHER = "SS-OTHER-UNKNOWN" ;
 OpticksResource::OpticksResource(Opticks* opticks, const char* lastarg) 
     :
        BOpticksResource(),
-       m_log(new SLog("OpticksResource::OpticksResource")),
+       m_log(new SLog("OpticksResource::OpticksResource","",debug)),
        m_ok(opticks),
        m_lastarg(lastarg ? strdup(lastarg) : NULL),
        m_query(new OpticksQuery(SSys::getenvvar(
