@@ -52,17 +52,17 @@ public:
    void save(const char* path);
 
 public: 
-   T getLeft(){                              return m_values[0] ; }
-   T getRight(){                             return m_values[m_length-1] ; }
-   T getValue(unsigned int index){           return m_values[index] ;}
-   T operator[](int index){                  return index < 0 ? m_values[m_length + index] : m_values[index] ;}
+   T getLeft() const {                       return m_values[0] ; }
+   T getRight() const {                      return m_values[m_length-1] ; }
+   T getValue(unsigned int index) const {    return m_values[index] ;}
+   T operator[](int index) const {           return index < 0 ? m_values[m_length + index] : m_values[index] ;}
    T* getValues(){                           return m_values ; }
-   unsigned int getLength(){                 return m_length ; }
-   unsigned int getNbytes(){                 return m_length*sizeof(T) ; }
+   unsigned int getLength() const {          return m_length ; }
+   unsigned int getNbytes() const {          return m_length*sizeof(T) ; }
 
 public: 
-   T min(unsigned int& idx); 
-   T max(unsigned int& idx); 
+   T min(unsigned& idx) const ; 
+   T max(unsigned& idx) const ; 
    T getValueFractional(T findex); // fractional bin
    T getValueLookup(T u);          // from u(0:1) to fractional bin to values
    unsigned int getLeftZero();

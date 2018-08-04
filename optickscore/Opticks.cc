@@ -1030,6 +1030,11 @@ const char* Opticks::getG4CodeGenDir() const
 {
     return m_resource->getG4CodeGenDir() ;
 }
+const char* Opticks::getCacheMetaPath() const 
+{
+    return m_resource->getCacheMetaPath() ;
+}
+
 
 
 

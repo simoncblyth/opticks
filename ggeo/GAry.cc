@@ -987,7 +987,7 @@ unsigned int GAry<T>::sample_cdf(T u)
 
 
 template <typename T>
-T GAry<T>::min(unsigned int& idx)
+T GAry<T>::min(unsigned& idx) const 
 {
    T mi(FLT_MAX);
    for(unsigned int i=0 ; i < m_length ; i++ )
@@ -1003,7 +1003,7 @@ T GAry<T>::min(unsigned int& idx)
 }
 
 template <typename T>
-T GAry<T>::max(unsigned int& idx)
+T GAry<T>::max(unsigned& idx) const 
 {
    T mx(-FLT_MAX);
    for(unsigned int i=0 ; i < m_length ; i++ )

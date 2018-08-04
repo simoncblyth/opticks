@@ -52,7 +52,6 @@ void X4MaterialTable::init()
     unsigned nmat = G4Material::GetNumberOfMaterials();
 
     LOG(m_level) << ". G4 nmat " << nmat ;  
-    pLOG(m_level,1) << ". G4 nmat " << nmat ;  
 
     for(unsigned i=0 ; i < nmat ; i++)
     {   

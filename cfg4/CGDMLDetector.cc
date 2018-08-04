@@ -66,7 +66,7 @@ void CGDMLDetector::init()
 
     addMPT();
     attachSurfaces();
-    kludge_cathode_efficiency(); 
+    // kludge_cathode_efficiency(); 
 
 }
 
@@ -164,9 +164,10 @@ void CGDMLDetector::addMPT()
 CGDMLDetector::kludge_cathode_efficiency
 -----------------------------------------
 
+NOT NEEDED Cathode Efficiency fixup is done by CPropLib AFTER FIXING A KEY BUG 
+
 See :doc:`notes/issues/direct_route_needs_AssimpGGeo_convertSensors_equivalent`
 
-**/
 
 void CGDMLDetector::kludge_cathode_efficiency()
 {
@@ -209,4 +210,8 @@ void CGDMLDetector::kludge_cathode_efficiency()
             ;
     }
 }
+
+**/
+
+
  

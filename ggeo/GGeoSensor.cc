@@ -84,6 +84,12 @@ GOpticalSurface* GGeoSensor::MakeOpticalSurface( const char* sslv )
     std::string name = BStr::trimPointerSuffixPrefix(sslv, NULL );
     name += GSurfaceLib::SENSOR_SURFACE ;
 
+    LOG(fatal) 
+           << " sslv " << sslv  
+           << " name " << name
+           ;  
+
+
     const char* osnam = name.c_str() ;
     const char* ostyp = "0" ;
     const char* osmod = "1" ;

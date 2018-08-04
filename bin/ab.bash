@@ -24,12 +24,42 @@ ab-cd(){   cd $(ab-base) ; }
 ab-tmp(){ echo /tmp/$USER/opticks/bin/ab ; }
 
 ab-a-dir(){ echo DayaBay_VGDX_20140414-1300/g4_00.dae/96ff965744a2f6b78c24e33c80d3a4cd  ; }
-ab-b-dir(){ echo OKX4Test_World0xc15cfc0_PV_g4live/g4ok_gltf/828722902b5e94dab05ac248329ffebe ; }
+#ab-b-dir(){ echo OKX4Test_World0xc15cfc0_PV_g4live/g4ok_gltf/828722902b5e94dab05ac248329ffebe ; }
+ab-b-dir(){ echo OKX4Test_World0xc15cfc0_PV_g4live/g4ok_gltf/742ab212f7f2da665ed627411ebdb07d ; }
+
 
 ab-a-idpath(){ echo $(ab-base)/$(ab-a-dir)/104 ; }
 #ab-a-idpath(){ echo $(ab-base)/$(ab-a-dir)/103 ; }
 #ab-a-idpath(){ echo $(ab-base)/$(ab-a-dir)/1 ; }
 ab-b-idpath(){ echo $(ab-base)/$(ab-b-dir)/1 ; }
+
+
+ab-l-notes(){ cat << EON
+
+Check the dates of the cachemeta.json to see when the caches were last written::
+
+    epsilon:npy blyth$ ab-l
+    A -rw-r--r-- 1 blyth staff 63 Aug 4 20:15 /usr/local/opticks/geocache/DayaBay_VGDX_20140414-1300/g4_00.dae/96ff965744a2f6b78c24e33c80d3a4cd/104/cachemeta.json
+    B -rw-r--r-- 1 blyth staff 53 Aug 4 20:46 /usr/local/opticks/geocache/OKX4Test_World0xc15cfc0_PV_g4live/g4ok_gltf/742ab212f7f2da665ed627411ebdb07d/1/cachemeta.json
+
+EON
+}
+
+ab-l(){ 
+   echo A $(ls -l $(ab-a-idpath)/*.json)
+   echo B $(ls -l $(ab-b-idpath)/*.json)
+}
+
+ab-ls(){ 
+   echo A $(ab-a-idpath)
+   ls -l $(ab-a-idpath) 
+   echo B $(ab-b-idpath)
+   ls -l $(ab-b-idpath) 
+}
+
+
+
+
 
 
 #ab-tail(){ echo ${AB_TAIL:-.} ; }
@@ -57,11 +87,7 @@ ab-diff()
    md5 *
 }
 
-ab-blib()
-{
-   blib.py $(ab-a-idpath)
-   blib.py $(ab-b-idpath)
-}
+
 ab-prim(){
    prim.py $(ab-a-)
    prim.py $(ab-b-)
@@ -745,7 +771,8 @@ ab-blib-notes(){ cat << EON
 Observations: 
 
 1. same number of materials
-2. two extra surfaces in B ( lvPmtHemiCathodeSensorSurface, lvHeadonPmtCathodeSensorSurface )
+
+2. FIXED : two extra surfaces in B ( lvPmtHemiCathodeSensorSurface, lvHeadonPmtCathodeSensorSurface )
 
    * these are artificial additions.. for model matching 
 
@@ -754,76 +781,75 @@ Observations:
 
    * what was wrong with the old 103 one are comparing against ?
 
-   * forget the details, but twas something to do with it being easier to detect a 
-     hit on a surface : in the Opticks surface model, so I added surfaces to the cathodes  
 
- 534 /**
- 535 AssimpGGeo::convertSensors
- 536 ---------------------------
- 537 
- 538 Opticks is a surface based simulation, as opposed to 
- 539 Geant4 which is CSG volume based. In Geant4 hits are formed 
- 540 on stepping into volumes with associated SensDet.
- 541 The Opticks equivalent is intersecting with a "SensorSurface", 
- 542 which are fabricated by AssimpGGeo::convertSensors.
- 543 
- 544 **/
- 545 
+3. B is sometimes duplicating isur/osur but A is not : different border count 
 
+   * think this was a fix to better translate the Geant4 meaning of border (with directionality) vs skin surfaces (without directionality)  
+   * probably easier to find the logic to decide (skin/border etc..) and adjust the old way to match  
 
-3. B is sometimes duplicating isur/osur but A is not 
+::
 
-   * think this was a fix to better translate the Geant4 meaning of border (with directionality)
-     vs skin surfaces (without directionality)  
-   * probably easier to fix the old way to match 
+    epsilon:cfg4 blyth$ ab-;ab-blib
+    A
+     nbnd 122 nmat  38 nsur  46 
+      0 : Vacuum///Vacuum 
+      1 : Vacuum///Rock 
+      2 : Rock///Air 
+      3 : Air/NearPoolCoverSurface//PPE 
+      4 : Air///Aluminium 
+      5 : Aluminium///Foam 
+      6 : Foam///Bakelite 
+      7 : Bakelite///Air 
+      8 : Air///MixGas 
+    ...
+    119 : OwsWater/NearOutOutPiperSurface//PVC 
+    120 : DeadWater/LegInDeadTubSurface//ADTableStainlessSteel 
+    121 : Rock///RadRock 
 
-
-
-A
-nbnd 122 nmat  38 nsur  46 
-  0 : Vacuum///Vacuum 
-  1 : Vacuum///Rock 
-  2 : Rock///Air 
-  3 : Air/NearPoolCoverSurface//PPE 
-  4 : Air///Aluminium 
-  5 : Aluminium///Foam 
-...
-120 : DeadWater/LegInDeadTubSurface//ADTableStainlessSteel 
-121 : Rock///RadRock 
-
-B
- nbnd 128 nmat  38 nsur  48 
-  0 : Vacuum///Vacuum 
-  1 : Vacuum///Rock 
-  2 : Rock///Air 
-  3 : Air/NearPoolCoverSurface/NearPoolCoverSurface/PPE 
-  4 : Air///Aluminium 
-  5 : Aluminium///Foam 
+    B
+     nbnd 127 nmat  38 nsur  46 
+      0 : Vacuum///Vacuum 
+      1 : Vacuum///Rock 
+      2 : Rock///Air 
+      3 : Air/NearPoolCoverSurface/NearPoolCoverSurface/PPE 
+      4 : Air///Aluminium 
+      5 : Aluminium///Foam 
+      6 : Foam///Bakelite 
+      7 : Bakelite///Air 
+      8 : Air///MixGas 
+    ...
+    124 : OwsWater/NearOutOutPiperSurface/NearOutOutPiperSurface/PVC 
+    125 : DeadWater/LegInDeadTubSurface/LegInDeadTubSurface/ADTableStainlessSteel 
+    126 : Rock///RadRock 
 
 
-epsilon:0 blyth$ diff -y $(ab-a-idpath)/GItemList/GSurfaceLib.txt $(ab-b-idpath)/GItemList/GSurfaceLib.txt
-NearPoolCoverSurface					      <
-NearDeadLinerSurface						NearDeadLinerSurface
-NearOWSLinerSurface						NearOWSLinerSurface
-NearIWSCurtainSurface						NearIWSCurtainSurface
-SSTWaterSurfaceNear1						SSTWaterSurfaceNear1
-SSTOilSurface							SSTOilSurface
-RSOilSurface						      <
-ESRAirSurfaceTop						ESRAirSurfaceTop
-ESRAirSurfaceBot						ESRAirSurfaceBot
-AdCableTraySurface					      <
-SSTWaterSurfaceNear2						SSTWaterSurfaceNear2
-							      >	NearPoolCoverSurface
-							      >	lvPmtHemiCathodeSensorSurface
-							      >	lvHeadonPmtCathodeSensorSurface
-							      >	RSOilSurface
-							      >	AdCableTraySurface
-PmtMtTopRingSurface						PmtMtTopRingSurface
-PmtMtBaseRingSurface						PmtMtBaseRingSurface
-PmtMtRib1Surface						PmtMtRib1Surface
-PmtMtRib2Surface						PmtMtRib2Surface
+4. surface count matching but ORDERING DIFFERS 
+
+::
+
+    epsilon:0 blyth$ diff -y $(ab-a-idpath)/GItemList/GSurfaceLib.txt $(ab-b-idpath)/GItemList/GSurfaceLib.txt
+
+    NearPoolCoverSurface<
+    NearDeadLinerSurface    NearDeadLinerSurface
+    NearOWSLinerSurface     NearOWSLinerSurface
+    NearIWSCurtainSurface   NearIWSCurtainSurface
+    SSTWaterSurfaceNear1    SSTWaterSurfaceNear1
+    SSTOilSurface           SSTOilSurface
+    RSOilSurface<
+    ESRAirSurfaceTop        ESRAirSurfaceTop
+    ESRAirSurfaceBot        ESRAirSurfaceBot
+    AdCableTraySurface<
+    SSTWaterSurfaceNear2    SSTWaterSurfaceNear2
+                           >NearPoolCoverSurface
+                           >RSOilSurface
+                           >AdCableTraySurface
+    PmtMtTopRingSurface     PmtMtTopRingSurface
+    PmtMtBaseRingSurface    PmtMtBaseRingSurface
+    PmtMtRib1Surface        PmtMtRib1Surface
 
 
+
+* follow this up in notes/issues/surface_ordering.rst
 
 
 EON
@@ -834,26 +860,163 @@ ab-blib()
    echo "A"
    blib.py $(ab-a-)
 
-
    echo "B"
    blib.py $(ab-b-)
+}
 
-
+ab-surf()
+{
    echo "A"
    np.py $(ab-a-idpath)/GSurfaceLib  
    echo "B"
    np.py $(ab-b-idpath)/GSurfaceLib  
 
    diff -y $(ab-a-idpath)/GItemList/GSurfaceLib.txt $(ab-b-idpath)/GItemList/GSurfaceLib.txt
-
 }
+
+ab-surf1(){ ab-genrun $FUNCNAME ; }
+
+ab-surf1-notes(){ cat << EON
+
+Small unexplained differences for some surface properties::
+
+args: /opt/local/bin/ipython -i /tmp/blyth/opticks/bin/ab/ab-surf1.py
+a.shape : (48, 2, 39, 4) 
+b.shape : (48, 2, 39, 4) 
+ab.max() 5.9604645e-08
+ abmx*1000000000.0 : max absolute difference of property values of each surface 
+
+      0.000  : ESRAirSurfaceTop 
+      0.000  : ESRAirSurfaceBot 
+     ......
+      0.000  : SSTWaterSurfaceNear2 
+     59.605  : NearIWSCurtainSurface 
+     59.605  : NearOWSLinerSurface 
+     59.605  : NearDeadLinerSurface 
+      0.000  : NearPoolCoverSurface 
+      7.451  : RSOilSurface 
+      0.000  : AdCableTraySurface 
+      0.000  : PmtMtTopRingSurface 
+     ....
+      0.000  : perfectSpecularSurface 
+      0.000  : perfectDiffuseSurface 
+     59.605  : lvHeadonPmtCathodeSensorSurface 
+     59.605  : lvPmtHemiCathodeSensorSurface 
+
+
+Difference in optical "value" 
+
+::
+
+    np.hstack( [oa, ob] )
+    [[  0   0   0   0   0   0   0   0]
+     [  1   0   0   0   1   0   0   0]
+     [  2   0   3 100   2   0   3   0]
+     [  3   0   3 100   3   0   3   0]
+     [  4   0   3 100   4   0   3   0]
+     [  5   0   3  20   5   0   3   0]
+     [  6   0   3  20   6   0   3   0]
+     [  7   0   3  20   7   0   3   0]
+
+EON
+}
+
+ab-surf1-(){ cat << EOP
+
+import os, logging, numpy as np
+log = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO)
+
+a_dir = "$(ab-a-idpath)"
+b_dir = "$(ab-b-idpath)"
+
+a_npy = lambda _:np.load(os.path.join(a_dir, _))
+b_npy = lambda _:np.load(os.path.join(b_dir, _))
+a_txt = lambda _:map(str.strip,file(os.path.join(a_dir,_)).readlines())
+b_txt = lambda _:map(str.strip,file(os.path.join(b_dir,_)).readlines())
+
+a = a_npy("GSurfaceLib/GSurfaceLib.npy")
+b = b_npy("GSurfaceLib/GSurfaceLib.npy")
+
+sa = a_txt("GItemList/GSurfaceLib.txt")
+sb = b_txt("GItemList/GSurfaceLib.txt")
+assert sa == sb 
+
+print "a.shape : %s " % repr(a.shape)
+print "b.shape : %s " % repr(b.shape)
+
+assert a.shape == b.shape
+
+ab = np.abs( a - b )
+print "ab.max()", ab.max()
+abmx = np.max(ab, axis=(1,2,3))
+
+assert len(abmx) == len(a) == len(sa) 
+
+fac = 1e9
+
+print " abmx*%s : max absolute difference of property values of each surface "  % fac 
+
+print "\n".join([ " %10.3f  : %s " % ( abmx[i]*fac, sa[i] ) for i in range(len(ab))]) 
+
+oa = a_npy("GSurfaceLib/GSurfaceLibOptical.npy")
+ob = b_npy("GSurfaceLib/GSurfaceLibOptical.npy")
+assert oa.shape == ob.shape
+
+s = "np.hstack( [oa, ob] )"
+print s
+print eval(s)
+
+
+EOP
+}
+
+
+
+ab-mat()
+{
+   echo "A"
+   np.py $(ab-a-idpath)/GMaterialLib  
+   echo "B"
+   np.py $(ab-b-idpath)/GMaterialLib  
+
+   diff -y $(ab-a-idpath)/GItemList/GMaterialLib.txt $(ab-b-idpath)/GItemList/GMaterialLib.txt
+}
+
+
+
+
+
+
+ab-bnd-notes-(){ cat << EON
+
+
+Goes off the rails at part 8143 
+
+In [19]: ia.shape
+Out[19]: (11984,)
+
+In [20]: ib.shape
+Out[20]: (11984,)
+
+In [18]: np.all( ia[:8142] == ib[:8142] )
+Out[18]: True
+
+In [17]: np.all( ia[:8143] == ib[:8143] )
+Out[17]: False
+
+
+
+EON
+}
+
 
 ab-bnd-(){ cat << EOP
 
 import os, logging, numpy as np
-from opticks.ana.blib import BLib
-log = logging.getLogger(__name__)
-logging.basicConfig(level=logging.INFO)
+from opticks.ana.blib import blib
+log = logging.getlogger(__name__)
+logging.basicconfig(level=logging.info)
 
 a_dir = "$(ab-a-)"
 b_dir = "$(ab-b-)"
@@ -861,8 +1024,8 @@ b_dir = "$(ab-b-)"
 a_load = lambda _:np.load(os.path.join(a_dir, _))
 b_load = lambda _:np.load(os.path.join(b_dir, _))
 
-a = a_load("partBuffer.npy")
-b = b_load("partBuffer.npy")
+a = a_load("partbuffer.npy")
+b = b_load("partbuffer.npy")
 assert a.shape == b.shape
 
 ia = a.view(np.int32)[:,1,2].copy()
@@ -875,6 +1038,15 @@ w = np.where( ia != ib )
 n = len(w[0])
 log.info( " part.bnd diff :  %d/%d " % ( n, len(a) ))
 print np.hstack( [ia[w], ib[w]])
+
+
+r = np.arange(0,10000,1000, dtype=np.int32)
+r[0] = 100 
+
+for i in r:
+    s = "np.all( ia[:%(i)s] == ib[:%(i)s] ) " % locals() 
+    print s, eval(s) 
+pass
 
 EOP
 

@@ -320,6 +320,8 @@ GSurfaceLib::add(GBorderSurface* raw)
 
 void GSurfaceLib::add(GBorderSurface* raw)
 {
+    LOG(info) << " GBorderSurface " << raw->getName() ; 
+
     m_border_surfaces.push_back(raw);
 
     GPropertyMap<float>* surf = dynamic_cast<GPropertyMap<float>* >(raw);
@@ -374,6 +376,7 @@ GSurfaceLib::add(GSkinSurface* raw)
 
 void GSurfaceLib::add(GSkinSurface* raw)
 {
+    LOG(info) << " GSkinSurface " << raw->getName() ; 
     /*
     // this dont work : the sensors dont enter thru the front door
 
@@ -466,11 +469,19 @@ bool GSurfaceLib::operator()(const GPropertyMap<float>* a_, const GPropertyMap<f
 
 void GSurfaceLib::sort()
 {
+    bool asis = true ; 
+    if(asis)
+    {
+        LOG(error) << " not sorting ";
+        return  ;
+    } 
+
     typedef std::map<std::string, unsigned int> MSU ;
     MSU& order = getOrder();  
 
     if(order.size() == 0) return ; 
     std::stable_sort( m_surfaces.begin(), m_surfaces.end(), *this );
+
 }
 
 
@@ -1101,9 +1112,12 @@ void GSurfaceLib::dump( GPropertyMap<float>* surf, const char* msg)
               ; 
 }
 
+
+
 GPropertyMap<float>* GSurfaceLib::getSensorSurface(unsigned int offset)
 {
     GPropertyMap<float>* ss = NULL ; 
+
 
     unsigned int count = 0 ; 
     for(unsigned int index=0 ; index < getNumSurfaces() ; index++)
@@ -1125,16 +1139,25 @@ GPropertyMap<float>* GSurfaceLib::getSensorSurface(unsigned int offset)
     return ss ; 
 }  
 
+
+/**
+GSurfaceLib::isSensorSurface
+-----------------------------
+
+Called from AssimpGGeo::convertStructureVisit
+**/
+
 bool GSurfaceLib::isSensorSurface(unsigned int qsurface)
 {
     // "SensorSurface" name suffix based, see AssimpGGeo::convertSensor
+   
     const char* name = getName(qsurface); 
     if(!name) return false ; 
 
     bool iss = NameEndsWithSensorSurface(name) ;     
 
     if(iss)
-    LOG(error) << "GSurfaceLib::isSensorSurface"
+    LOG(debug) << "GSurfaceLib::isSensorSurface"
               << " surface " << qsurface  
               << " name " << name 
               << " iss " << iss 

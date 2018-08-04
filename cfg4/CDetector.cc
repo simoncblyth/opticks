@@ -307,13 +307,13 @@ void CDetector::attachSurfaces()
         return ; 
     }
 
-    if(m_dbgsurf)
+    //if(m_dbgsurf)
         LOG(info) << "[--dbgsurf] CDetector::attachSurfaces START" ;
 
     bool exclude_sensors = true ; 
     m_slib->convert(this, exclude_sensors );
 
-    if(m_dbgsurf)
+    //if(m_dbgsurf)
         LOG(info) << "[--dbgsurf] CDetector::attachSurfaces DONE " ;
 
 } 

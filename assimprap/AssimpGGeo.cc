@@ -86,7 +86,6 @@ AssimpGGeo::AssimpGGeo(GGeo* ggeo, AssimpTree* tree, AssimpSelection* selection,
    m_volnames(m_ok->hasVolnames()),
    m_reverse(true),        // true: ascending wavelength ordering of properties
    m_cathode_amat(NULL),
-   m_cathode_gmat(NULL),
    m_verbosity(0)
 {
     init();
@@ -380,6 +379,10 @@ const char* AssimpGGeo::g4dae_opticalsurface_model      = "g4dae_opticalsurface_
 const char* AssimpGGeo::g4dae_opticalsurface_finish     = "g4dae_opticalsurface_finish" ;
 const char* AssimpGGeo::g4dae_opticalsurface_value      = "g4dae_opticalsurface_value" ;
 
+const char* AssimpGGeo::g4dae_material_srcidx = "g4dae_material_srcidx" ;
+
+
+
 const char* AssimpGGeo::EFFICIENCY = "EFFICIENCY" ; 
 
 
@@ -405,11 +408,18 @@ void AssimpGGeo::convertMaterials(const aiScene* scene, GGeo* gg, const char* qu
         aiString name_;
         mat->Get(AI_MATKEY_NAME, name_);
 
-        const char* name = name_.C_Str();
+        const char* name0 = name_.C_Str();
+        const char* name = BStr::NumField( name0, ':') == 3 ? BStr::GetField( name0, ':', 2 ) : name0 ; 
 
         //if(strncmp(query, name, strlen(query))!=0) continue ;  
 
-        LOG(debug) << "AssimpGGeo::convertMaterials " << i << " " << name ;
+        const char* srcidx_ = getStringProperty(mat, g4dae_material_srcidx );
+        int srcidx = BStr::atoi( srcidx_ ) ; 
+
+        LOG(info) << " i " << i 
+                  << " name " << name 
+                  << " srcidx " << srcidx 
+                  ;
 
         const char* bspv1 = getStringProperty(mat, g4dae_bordersurface_physvolume1 );
         const char* bspv2 = getStringProperty(mat, g4dae_bordersurface_physvolume2 );
@@ -495,6 +505,7 @@ void AssimpGGeo::convertMaterials(const aiScene* scene, GGeo* gg, const char* qu
 
             //printf("AssimpGGeo::convertMaterials aiScene materialIndex %u (GMaterial) name %s \n", i, name);
             GMaterial* gmat = new GMaterial(name, index);
+            gmat->setMetaKV<int>("srcidx", srcidx);  
             gmat->setStandardDomain(standard_domain);
             addProperties(gmat, mat );
             gg->add(gmat);
@@ -508,11 +519,8 @@ void AssimpGGeo::convertMaterials(const aiScene* scene, GGeo* gg, const char* qu
 
             if(hasVectorProperty(mat, EFFICIENCY ))
             {
-                assert(gg->getCathode() == NULL && "only expecting one material with an EFFICIENCY property" );
                 gg->setCathode(gmat) ;  
-
                 m_cathode_amat = mat ; 
-                m_cathode_gmat = gmat ; 
             }
 
         }
@@ -552,35 +560,39 @@ which are fabricated by AssimpGGeo::convertSensors.
 Need this for direct geometry route, so have to relocate 
 this into GGeo.
 
-1. 
-
 **/
 
 void AssimpGGeo::convertSensors(GGeo* gg)
 {
-    convertSensors( gg, m_tree->getRoot(), 0); 
+    assert( m_sensor_list ) ; 
 
-    //assert(m_cathode);
     if(!m_cathode_amat )
     {
          LOG(warning) << "AssimpGGeo::convertSensors m_cathode_amat NULL : no aiMaterial with an efficiency property ?  " ;
+         assert(0); 
          return ; 
     }
-    if(!m_cathode_gmat )
+    if(!gg->getCathode() )
     {
          LOG(warning) << "AssimpGGeo::convertSensors m_cathode_gmat NULL : no material with an efficiency property ?  " ;
+         assert(0); 
          return ; 
     }
 
 
-    unsigned int nclv = gg->getNumCathodeLV();
+    gg->getCathode()->Summary();
 
+
+    convertSensors( gg, m_tree->getRoot(), 0); 
+
+    unsigned int nclv = gg->getNumCathodeLV();
 
     LOG(info) << "AssimpGGeo::convertSensors"
               << " nclv " << nclv
               ;
 
-    //GDomain<float>* standard_domain = gg->getBndLib()->getStandardDomain(); 
+    assert( nclv > 0 ); 
+
 
     // DYB: nclv=2 for hemi and headon PMTs 
     for(unsigned int i=0 ; i < nclv ; i++)
@@ -597,38 +609,9 @@ void AssimpGGeo::convertSensors(GGeo* gg)
                   ;
 
 
-/*
-        std::string name = BStr::trimPointerSuffixPrefix(sslv, NULL );
-        name += GSurfaceLib::SENSOR_SURFACE ; 
-
-        const char* osnam = name.c_str() ;
-        const char* ostyp = "0" ; 
-        const char* osmod = "1" ; 
-        const char* osfin = "3" ; 
-        const char* osval = "1" ;  
-
-        // TODO: check effects of above adhoc choice of common type/model/finish/value 
-        // TODO: add parse ctor that understands: "type=dielectric_dielectric;model=unified;finish=ground;value=1.0"
-
-        GOpticalSurface* os = new GOpticalSurface(osnam, ostyp, osmod, osfin, osval) ; 
-
-        // standard materials/surfaces use the originating aiMaterial index, 
-        // extend that for fake SensorSurface by toting up all 
-
-        GSkinSurface* gss = new GSkinSurface(name.c_str(), index, os);
-
-        gss->setStandardDomain(standard_domain);
-       
-        gss->setSkinSurface(sslv);
-
-        gss->setSensor();
-        // story continues in GBoundaryLib::standardizeSurfaceProperties
-        // that no longer exists, now probably GSurfaceLib::getSensorSurface
-       //
-*/
-
         GSkinSurface* gss = GGeoSensor::MakeSensorSurface(sslv, index);
         gss->setStandardDomain() ;  // default domain 
+        gss->setSensor();
 
         addProperties(gss, m_cathode_amat );
 
@@ -639,8 +622,6 @@ void AssimpGGeo::convertSensors(GGeo* gg)
         {
             // without standard domain applied
             GSkinSurface* gss_raw = GGeoSensor::MakeSensorSurface(sslv, index);
-            //GSkinSurface*  gss_raw = new GSkinSurface(name.c_str(), index, os);
-            //gss_raw->setSkinSurface(sslv);
             // not setting sensor, only the standardized need that
             addProperties(gss_raw, m_cathode_amat );
             gg->addRaw(gss_raw);
@@ -670,9 +651,10 @@ void AssimpGGeo::convertSensorsVisit(GGeo* gg, AssimpNode* node, unsigned int de
 {
     unsigned int nodeIndex = node->getIndex();
     const char* lv   = node->getName(0); 
-    const char* pv   = node->getName(1); 
+    //const char* pv   = node->getName(1); 
     unsigned int mti = node->getMaterialIndex() ;
     GMaterial* mt = gg->getMaterial(mti);
+    assert( mt );
     
     /*
     NSensor* sensor0 = sens->getSensor( nodeIndex ); 
@@ -683,12 +665,19 @@ void AssimpGGeo::convertSensorsVisit(GGeo* gg, AssimpNode* node, unsigned int de
 
     NSensor* sensor = m_sensor_list ? m_sensor_list->findSensorForNode( nodeIndex ) : NULL ; 
 
-    if(sensor && mt == gg->getCathode())
+    GMaterial* cathode = gg->getCathode() ; 
+
+    const char* cathode_material_name = gg->getCathodeMaterialName() ;
+    const char* name = mt->getName() ; 
+    bool name_match = strcmp(name, cathode_material_name) == 0 ;  
+    bool ptr_match = mt == cathode ;   // <--- always false 
+ 
+    if(sensor && name_match)
     {
          LOG(debug) << "AssimpGGeo::convertSensorsVisit " 
                    << " depth " << depth 
                    << " lv " << lv  
-                   << " pv " << pv  
+                   << " ptr_match " << ptr_match 
                    ;
          gg->addCathodeLV(lv) ;   
     }

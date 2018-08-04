@@ -35,13 +35,13 @@ void X4LogicalSkinSurfaceTable::init()
     {
         G4LogicalSkinSurface* src = (*m_src)[i] ; 
 
-        LOG(info) << " src " << src->GetName() ; 
+        //LOG(info) << src->GetName() ; 
 
         GSkinSurface* dst = X4LogicalSkinSurface::Convert( src );
 
         assert( dst ); 
 
-        m_dst->add(dst) ;
+        m_dst->add(dst) ; // GSurfaceLib
     }
 }
 

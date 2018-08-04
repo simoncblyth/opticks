@@ -45,6 +45,10 @@ to all the geocache Opticks resources.
 
 
 
+THIS NEEDS OVERHAUL TO MINIMISE REPETITION BETWEEN THE 
+BRANCHES OF OPERATION : USING RELATIVE APPROACH 
+
+
 **/
 
 class BRAP_API  BOpticksResource {
@@ -59,6 +63,7 @@ class BRAP_API  BOpticksResource {
    public:
        static const char* MakeSrcPath(const char* srcpath, const char* ext) ;
        static const char* MakeSrcDir(const char* srcpath, const char* sub) ;
+       const char* makeIdPathPath(const char* rela, const char* relb=NULL, const char* relc=NULL, const char* reld=NULL) ;
    public:
         BOpticksResource();
         virtual ~BOpticksResource();
@@ -105,6 +110,7 @@ class BRAP_API  BOpticksResource {
        std::string getIdPathPath(const char* rela, const char* relb=NULL, const char* relc=NULL, const char* reld=NULL ) const ; 
        std::string getGeoCachePath(const char* rela, const char* relb=NULL, const char* relc=NULL, const char* reld=NULL) const ;
        std::string getPropertyLibDir(const char* name) const ;
+
        std::string getInstallPath(const char* relpath) const ;
        const char* getIdPath() const ;
        const char* getIdFold() const ;  // parent directory of idpath containing g4_00.dae
@@ -117,7 +123,7 @@ class BRAP_API  BOpticksResource {
        const char* getGDMLPath() const ;
        const char* getGLTFPath() const ;
        const char* getG4CodeGenDir() const ;
-
+       const char* getCacheMetaPath() const ;
 
        const char* getMetaPath() const ;
        const char* getIdMapPath() const ;
@@ -184,6 +190,7 @@ class BRAP_API  BOpticksResource {
        const char* m_metapath ;
        const char* m_idmappath ;
        const char* m_g4codegendir ;
+       const char* m_cachemetapath ; 
 };
 
 #include "BRAP_TAIL.hh"

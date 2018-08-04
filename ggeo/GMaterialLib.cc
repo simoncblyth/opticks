@@ -151,7 +151,8 @@ GMaterialLib::GMaterialLib(Opticks* ok, GMaterialLib* basis)
     :
     GPropertyLib(ok, "GMaterialLib"),
     m_basis(basis),
-    m_cathode(NULL)
+    m_cathode(NULL),
+    m_cathode_material_name(NULL)
 {
     init();
 }
@@ -160,7 +161,8 @@ GMaterialLib::GMaterialLib(GMaterialLib* src, GDomain<float>* domain, GMaterialL
     :
     GPropertyLib(src, domain),
     m_basis(basis),
-    m_cathode(NULL)
+    m_cathode(NULL),
+    m_cathode_material_name(NULL)
 {
     init();
     initInterpolatingCopy(src, domain);
@@ -240,7 +242,7 @@ void GMaterialLib::add(GMaterial* mat)
     if(mat->hasProperty("EFFICIENCY"))
     {
         LOG(error) << " MATERIAL WITH EFFICIENCY " ; 
-        mat->Summary();        
+        setCathode(mat) ; 
     }
 
     bool with_efficiency = mat->hasProperty("efficiency") ; 
@@ -307,6 +309,9 @@ by step recording of millions of photons on GPU using
 only 4 bits to record the material index. 
 
 **/
+
+
+/*
 bool GMaterialLib::operator()(const GMaterial& a_, const GMaterial& b_)
 {
     const char* a = a_.getShortName();
@@ -320,6 +325,20 @@ bool GMaterialLib::operator()(const GMaterial& a_, const GMaterial& b_)
     unsigned int ib = order.find(b) == end ? UINT_MAX :  order[b] ; 
     return ia < ib ; 
 }
+*/
+
+bool GMaterialLib::operator()(const GMaterial& a_, const GMaterial& b_)
+{
+    int ia = a_.getMetaKV<int>("srcidx", "0");
+    int ib = b_.getMetaKV<int>("srcidx", "0");
+    LOG(info) 
+       <<  " ia " << ia 
+       <<  " ib " << ib
+       ; 
+
+    return ia < ib ; 
+}
+
 
 /**
 GMaterialLib::sort
@@ -330,6 +349,7 @@ This is invoked from the base when the proplib is closed.
 **/
 void GMaterialLib::sort()
 {
+    LOG(fatal) << " sorting by srcidx " ; 
     typedef std::map<std::string, unsigned> MSU ;
     MSU& order = getOrder();  
 
@@ -989,12 +1009,44 @@ void GMaterialLib::addTestMaterials()
 
 void GMaterialLib::setCathode(GMaterial* cathode)
 {
-    assert( m_cathode == NULL && "only expecting one cathode material " );  
+    assert( cathode ) ; 
+    if( cathode && m_cathode && cathode == m_cathode )
+    {
+        LOG(fatal) << " have already set that cathode GMaterial : " << cathode->getName() ; 
+        return ; 
+    }
+    if( cathode && m_cathode && cathode != m_cathode )
+    {
+        LOG(fatal) << " not expecting to change cathode GMaterial from  "
+                   << m_cathode->getName()
+                   << " to " 
+                   << cathode->getName()
+                   ; 
+        assert(0); 
+    } 
+    LOG(fatal) << " setting cathode " 
+               << " GMaterial : " << cathode 
+               << " name : " << cathode->getName() ; 
+    //cathode->Summary();       
+    LOG(info) << cathode->prop_desc() ; 
+
+    assert( cathode->hasNonZeroProperty("EFFICIENCY") );  
+
     m_cathode = cathode ; 
+    m_cathode_material_name = strdup( cathode->getName() ) ; 
 }
 GMaterial* GMaterialLib::getCathode() const 
 {
     return m_cathode ; 
 }
+
+const char* GMaterialLib::getCathodeMaterialName() const
+{
+    return m_cathode_material_name ; 
+}
+
+
+
+
 
 

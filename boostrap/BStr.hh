@@ -15,6 +15,10 @@
 class BRAP_API BStr {
   public:
 
+     static const char* GetField(const char* name, char delim, int field);
+     static unsigned NumField(const char* name, char delim );
+
+
      static void rtrim(std::string& s );
      static void replace_all(std::string& s, const std::string& fr, const std::string& to ) ;
      static bool HasChar(const std::string& s, char c);

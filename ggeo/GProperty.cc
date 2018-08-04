@@ -40,7 +40,7 @@ const char* GProperty<T>::VALUE_FMT = " %10.3f" ;
 
 
 template <typename T>
-std::string GProperty<T>::brief(const char* msg)
+std::string GProperty<T>::brief(const char* msg) const 
 {
     std::stringstream ss ;
 
@@ -596,7 +596,7 @@ GProperty<T>::~GProperty()
 } 
 
 template <typename T>
-unsigned int GProperty<T>::getLength()
+unsigned int GProperty<T>::getLength() const 
 {
     assert(m_values->getLength() == m_domain->getLength());
     return m_domain->getLength(); 
@@ -616,7 +616,7 @@ void GProperty<T>::save(const char* dir, const char* reldir, const char* name)
 
 
 template <typename T>
-bool GProperty<T>::isZero()
+bool GProperty<T>::isZero() const 
 {
     T zero(0);
     unsigned int len = getLength();
@@ -630,7 +630,7 @@ bool GProperty<T>::isZero()
 
 
 template <typename T>
-bool GProperty<T>::isConstant()
+bool GProperty<T>::isConstant() const 
 {
     unsigned int len = getLength();
     if(len == 0) return false ; 
@@ -645,20 +645,20 @@ bool GProperty<T>::isConstant()
 }
 
 template <typename T>
-T GProperty<T>::getConstant()
+T GProperty<T>::getConstant() const 
 {
     assert(getLength() > 0);
     return m_values->getValue(0); 
 }
 
 template <typename T>
-T GProperty<T>::getMin()
+T GProperty<T>::getMin() const 
 {
     unsigned idx ;     
     return m_values->min(idx); 
 }
 template <typename T>
-T GProperty<T>::getMax()
+T GProperty<T>::getMax() const 
 {
     unsigned idx ;     
     return m_values->max(idx); 

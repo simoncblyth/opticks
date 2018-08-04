@@ -58,7 +58,8 @@ BOpticksResource::BOpticksResource()
     m_gltfpath(NULL),
     m_metapath(NULL),
     m_idmappath(NULL),
-    m_g4codegendir(NULL)
+    m_g4codegendir(NULL),
+    m_cachemetapath(NULL)
 {
     init();
     (*m_log)("DONE"); 
@@ -286,6 +287,14 @@ const char* BOpticksResource::MakeSrcDir(const char* srcpath, const char* sub)
 }
 
 
+// cannot be static as IDPATH not available statically 
+const char* BOpticksResource::makeIdPathPath(const char* rela, const char* relb, const char* relc, const char* reld) 
+{
+    std::string path = getIdPathPath(rela, relb, relc, reld);  
+    return strdup(path.c_str());
+}
+
+
 void BOpticksResource::setSrcPath(const char* srcpath)  
 {
     // invoked by setupViaSrc or setupViaID
@@ -331,6 +340,10 @@ void BOpticksResource::setSrcPath(const char* srcpath)
 
     m_res->addName("idname", m_idname ); 
     m_res->addName("idfile", m_idfile ); 
+
+
+
+
 }
 
 void BOpticksResource::setSrcDigest(const char* srcdigest)
@@ -353,6 +366,8 @@ void BOpticksResource::setupViaID(const char* idpath)
 
     setSrcPath( srcpath );
     setSrcDigest( srcdigest );
+
+
 }
 
 
@@ -406,15 +421,14 @@ void BOpticksResource::setupViaKey()
     m_idpath = strdup(idpath.c_str()) ; 
     m_res->addDir("idpath", m_idpath ); 
 
-    std::string gltfpath = getIdPathPath( m_idfile );  // not a srcpath for G4LIVE, but potential cache file 
-    m_gltfpath = strdup(gltfpath.c_str()) ;
+    m_gltfpath = makeIdPathPath(m_idfile) ; // not a srcpath for G4LIVE, but potential cache file 
     m_res->addPath("gltfpath", m_gltfpath ); 
 
-    std::string g4codegendir = getIdPathPath( "g4codegen" ); 
-    m_g4codegendir = strdup(g4codegendir.c_str());
+    m_g4codegendir = makeIdPathPath("g4codegen" );
     m_res->addDir("g4codegendir", m_g4codegendir ); 
 
-
+    m_cachemetapath = makeIdPathPath("cachemeta.json");  
+    m_res->addPath("cachemetapath", m_cachemetapath ); 
 }
 
 
@@ -461,6 +475,10 @@ void BOpticksResource::setupViaSrc(const char* srcpath, const char* srcdigest)
     m_res->addDir("idpath", m_idpath );
 
     m_res->addDir("idpath_tmp", m_idpath_tmp );
+
+
+    m_cachemetapath = makeIdPathPath("cachemeta.json");  
+    m_res->addPath("cachemetapath", m_cachemetapath ); 
 }
 
 
@@ -471,6 +489,8 @@ std::string BOpticksResource::getPropertyLibDir(const char* name) const
 {
     return BFile::FormPath( m_idpath, name ) ;
 }
+
+
 
 
 const char* BOpticksResource::getSrcPath() const 
@@ -499,6 +519,10 @@ const char* BOpticksResource::getGLTFPath() const
 const char* BOpticksResource::getG4CodeGenDir() const 
 {
     return m_g4codegendir ;
+}
+const char* BOpticksResource::getCacheMetaPath() const
+{
+    return m_cachemetapath ; 
 }
 
 

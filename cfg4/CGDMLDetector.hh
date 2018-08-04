@@ -34,7 +34,7 @@ class CFG4_API CGDMLDetector : public CDetector
 
     void addMPT();
     void addSurfaces();
-    void kludge_cathode_efficiency();
+    //void kludge_cathode_efficiency();
 
     plog::Severity m_level ;
 

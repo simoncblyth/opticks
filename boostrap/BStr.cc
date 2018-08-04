@@ -135,6 +135,29 @@ char* BStr::trimPointerSuffixPrefix(const char* origname, const char* prefix)
 }
 
 
+unsigned BStr::NumField(const char* name, char delim )
+{
+    std::vector<std::string> elem ; 
+    BStr::split(elem, name, delim) ; 
+    return elem.size() ;  
+}
+
+const char* BStr::GetField(const char* name, char delim, int field)
+{
+    std::vector<std::string> elem ; 
+    BStr::split(elem, name, delim) ; 
+    int num_elem = elem.size() ;  
+    if( field < 0 ) field += num_elem ; 
+    assert( field > -1 && field < num_elem  ) ; 
+    return strdup(elem[field].c_str());
+}
+
+
+
+
+
+
+
 std::string BStr::firstChars( const char* s, unsigned n)
 {
      std::string fc( s, std::min<size_t>( n, std::strlen( s ) ));

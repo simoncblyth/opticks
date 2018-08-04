@@ -48,7 +48,7 @@ class GGEO_API GPropertyMap {
   public:
      // caller should free the char* returned after dumping 
       //char* ndigest();
-      char* pdigest(int ifr, int ito); 
+      char* pdigest(int ifr, int ito) const ; 
       const char* getShortName() const ; 
       bool hasShortName(const char* name);
       bool hasDefinedName();
@@ -59,13 +59,18 @@ class GGEO_API GPropertyMap {
 
       template <typename S> 
       void setMetaKV(const char* key, S value);
+
+      template <typename S> 
+      S getMetaKV(const char* key, const char* fallback) const ;   
+
       bool hasMetaItem(const char* key ) const ;
 
 
-      std::string getShortNameString();
-      std::string getPDigestString(int ifr, int ito);
+      std::string getShortNameString() const ;
+      std::string getPDigestString(int ifr, int ito) const ;
       std::string getKeysString() const ; 
       std::string description();
+      std::string prop_desc() const ;
   public:
       std::string make_table(unsigned int fwid=20, T dscale=1, bool dreciprocal=false);
   public:
@@ -79,11 +84,11 @@ class GGEO_API GPropertyMap {
   public:
       std::string brief() const ; 
       std::string desc() const ; 
-      const char* getName();    // names like __dd__Materials__Nylon0xc3aa360 or __dd__Geometry__AdDetails__AdSurfacesNear__SSTWaterSurfaceNear2
+      const char* getName() const ;    // names like __dd__Materials__Nylon0xc3aa360 or __dd__Geometry__AdDetails__AdSurfacesNear__SSTWaterSurfaceNear2
       unsigned getIndex() const ;  // aiScene material index ("surfaces" and "materials" represented as Assimp materials)
       void setIndex(unsigned index);
 
-      const char* getType();
+      const char* getType() const ;
 
 
       void setSkinSurface(); 
@@ -142,9 +147,10 @@ class GGEO_API GPropertyMap {
 
 
   public:
-      GProperty<T>* getPropertyByIndex(int index) ;
+      GProperty<T>* getPropertyByIndex(int index) const ;
       const char* getPropertyNameByIndex(int index) ;
-      GProperty<T>* getProperty(const char* pname)   ;
+      GProperty<T>* getProperty(const char* pname) const  ;
+      const GProperty<T>* getPropertyConst(const char* pname) const  ;
       GProperty<T>* getProperty(const char* pname, const char* prefix);
       bool hasProperty(const char* pname) ;
       std::vector<std::string>& getKeys() ;

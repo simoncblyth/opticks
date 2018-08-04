@@ -35,13 +35,13 @@ void X4LogicalBorderSurfaceTable::init()
     {
         G4LogicalBorderSurface* src = (*m_src)[i] ; 
 
-        LOG(info) << " src " << src->GetName() ; 
+        //LOG(info) << src->GetName() ; 
 
         GBorderSurface* dst = X4LogicalBorderSurface::Convert( src );
 
         assert( dst ); 
 
-        m_dst->add(dst) ;
+        m_dst->add(dst) ; // GSurfaceLib
     }
 }
 

@@ -83,9 +83,7 @@ void BResource::dumpPaths(const char* msg) const
 
         bool exists = path ? BFile::ExistsFile(path ) : false ; 
 
-
         const char* path2 = getPath(name) ; 
-        assert( path2 == path );
 
         std::cerr
              << std::setw(30) << name
@@ -95,6 +93,17 @@ void BResource::dumpPaths(const char* msg) const
              << std::setw(50) << ( path ? path : "-" )
              << std::endl 
              ;
+
+
+        bool match = path2 == path ;         
+        if(!match) LOG(fatal) 
+                    << " path [" << path << "] " 
+                    << " path2 [" << path2 << "] "
+                    ;
+
+        assert( match );
+
+
     } 
 }
 

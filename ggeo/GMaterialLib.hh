@@ -127,6 +127,7 @@ class GGEO_API GMaterialLib : public GPropertyLib {
     public:
         void setCathode(GMaterial* cathode);
         GMaterial* getCathode() const ;  
+        const char* getCathodeMaterialName() const ;
    public:
        // used by GGeoTest 
        GMaterial* getBasisMaterial(const char* name) const ;
@@ -166,6 +167,7 @@ class GGEO_API GMaterialLib : public GPropertyLib {
 
        GMaterialLib*  m_basis ; 
        GMaterial*     m_cathode ; 
+       const char*    m_cathode_material_name ; 
 
 };
 #include "GGEO_TAIL.hh"

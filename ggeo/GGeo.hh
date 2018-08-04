@@ -300,10 +300,6 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
         unsigned int getNumScintillatorMaterials();
         GMaterial* getScintillatorMaterial(unsigned int index);
     public:
-        void findCathodeMaterials(const char* props);
-        void dumpCathodeMaterials(const char* msg="GGeo::dumpCathodeMaterials");
-        unsigned int getNumCathodeMaterials();
-        GMaterial* getCathodeMaterial(unsigned int index);
     public:
         GPropertyMap<float>* findRawMaterial(const char* shortname) const ;
         GProperty<float>*    findRawMaterialProperty(const char* shortname, const char* propname) const ;
@@ -316,12 +312,19 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
         void setHigh(const gfloat3& high);
         void updateBounds(GNode* node); 
 
+
+    public:
+        // TODO: contrast with this earlier way 
+        void findCathodeMaterials(const char* props);
+        void dumpCathodeMaterials(const char* msg="GGeo::dumpCathodeMaterials");
+        unsigned int getNumCathodeMaterials();
+        GMaterial* getCathodeMaterial(unsigned int index);
     public:
         // m_materiallib
         void setCathode(GMaterial* cathode);
         GMaterial* getCathode() const ;  
+        const char* getCathodeMaterialName() const ;
     public:
-
         void addCathodeLV(const char* lv);
         void dumpCathodeLV(const char* msg="GGeo::dumpCathodeLV") const ;
         const char* getCathodeLV(unsigned int index) const ; 

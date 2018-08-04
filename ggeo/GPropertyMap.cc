@@ -55,6 +55,15 @@ void GPropertyMap<T>::setMetaKV(const char* key, S val)
 }
 
 template <typename T>
+template <typename S>
+S GPropertyMap<T>::getMetaKV(const char* key, const char* fallback)  const 
+{
+    return m_meta->get<S>(key, fallback) ; 
+}
+
+
+
+template <typename T>
 bool GPropertyMap<T>::hasMetaItem(const char* key) const 
 {
     return m_meta->hasItem(key) ; 
@@ -348,7 +357,7 @@ char* GPropertyMap<T>::ndigest()
 */
 
 template <typename T>
-char* GPropertyMap<T>::pdigest(int ifr, int ito)
+char* GPropertyMap<T>::pdigest(int ifr, int ito) const 
 {
     SDigest dig ;
 
@@ -377,20 +386,20 @@ char* GPropertyMap<T>::pdigest(int ifr, int ito)
 }
 
 template <typename T>
-std::string GPropertyMap<T>::getPDigestString(int ifr, int ito)
+std::string GPropertyMap<T>::getPDigestString(int ifr, int ito) const 
 {
     return pdigest(ifr, ito);
 }
 
 
 template <typename T>
-const char* GPropertyMap<T>::getName()
+const char* GPropertyMap<T>::getName() const 
 {
     return m_name.c_str();
 }
 
 template <typename T>
-std::string GPropertyMap<T>::getShortNameString()
+std::string GPropertyMap<T>::getShortNameString() const 
 {    
     return getShortName(); 
 }
@@ -501,7 +510,7 @@ void GPropertyMap<T>::setIndex(unsigned index)
 
 
 template <typename T>
-const char* GPropertyMap<T>::getType()
+const char* GPropertyMap<T>::getType() const 
 {
     return m_type.c_str();
 }
@@ -677,10 +686,22 @@ std::vector<std::string>& GPropertyMap<T>::getKeys()
 }
 
 template <typename T>
-GProperty<T>* GPropertyMap<T>::getProperty(const char* pname) 
+GProperty<T>* GPropertyMap<T>::getProperty(const char* pname) const 
 {
-   return (m_prop.find(pname) != m_prop.end()) ? m_prop[pname] : NULL ;
+   return (m_prop.find(pname) != m_prop.end()) ? m_prop.at(pname) : NULL ;
 }
+
+
+
+template <typename T>
+const GProperty<T>* GPropertyMap<T>::getPropertyConst(const char* pname) const 
+{
+   return (m_prop.find(pname) != m_prop.end()) ? m_prop.at(pname) : NULL ;
+}
+
+
+
+
 
 
 
@@ -718,7 +739,7 @@ bool GPropertyMap<T>::hasProperty(const char* pname)
 }
 
 template <typename T>
-GProperty<T>* GPropertyMap<T>::getPropertyByIndex(int index) 
+GProperty<T>* GPropertyMap<T>::getPropertyByIndex(int index) const 
 {
    int nprop  = m_keys.size(); 
    if(index < 0) index += nprop ;
@@ -777,6 +798,38 @@ void GPropertyMap<T>::Summary(const char* msg, unsigned int nline)
    if(m_optical_surface) m_optical_surface->Summary(msg, nline);
 }
 
+
+template <typename T>
+std::string GPropertyMap<T>::prop_desc() const 
+{
+   unsigned int n = getNumProperties();
+   std::string pdig = getPDigestString(0,n);
+
+   std::stringstream ss ; 
+
+   ss << " typ " << std::setw(10) << getType()
+      << " idx " << std::setw(4) << getIndex()
+      << " dig " << std::setw(32) << pdig.c_str()
+      << " npr " << std::setw(2)  << m_keys.size() 
+      << " nam " << getName() 
+      << std::endl 
+      ; 
+    
+   typedef std::vector<std::string> VS ; 
+ 
+   for(VS::const_iterator it=m_keys.begin() ; it != m_keys.end() ; it++ )
+   {
+       std::string key = *it ;
+       //GProperty<T>* prop = m_prop[key] ; 
+       const GProperty<T>* prop = getPropertyConst(key.c_str()); 
+
+       ss << std::setw(15) << key 
+          << " : " << prop->brief()
+          << std::endl 
+          ;
+   } 
+   return ss.str();
+}
 
 
 
@@ -1015,8 +1068,10 @@ head of the implementation.
 template class GPropertyMap<float>;
 template class GPropertyMap<double>;
 
+template GGEO_API void GPropertyMap<float>::setMetaKV(const char* name, int value);
 template GGEO_API void GPropertyMap<float>::setMetaKV(const char* name, std::string value);
 //template GGEO_API void GPropertyMap<float>::setMetaKV(const char* name, const char* value);
 
-
+template GGEO_API int         GPropertyMap<float>::getMetaKV(const char* name, const char* fallback) const ;
+template GGEO_API std::string GPropertyMap<float>::getMetaKV(const char* name, const char* fallback) const ;
 

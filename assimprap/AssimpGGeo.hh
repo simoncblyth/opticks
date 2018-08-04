@@ -78,6 +78,8 @@ public:
     static const char* g4dae_opticalsurface_finish ;
     static const char* g4dae_opticalsurface_value ;
 
+    static const char* g4dae_material_srcidx ; 
+
     static const char* EFFICIENCY ;
 
 public:

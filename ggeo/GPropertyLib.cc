@@ -410,7 +410,7 @@ void GPropertyLib::close()
 
     LOG(trace) << "GPropertyLib::close" ;
 
-    sort();
+    sort();   // pure virtual implemented in sub classes
 
     LOG(trace) << "GPropertyLib::close after sort " ;
 

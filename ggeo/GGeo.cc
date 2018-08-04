@@ -16,6 +16,7 @@ namespace fs = boost::filesystem;
 #include "NGLM.hpp"
 #include "NPY.hpp"
 #include "NQuad.hpp"
+#include "NMeta.hpp"
 #include "GLMPrint.hpp"
 #include "GLMFormat.hpp"
 #include "TorchStepNPY.hpp"
@@ -300,6 +301,10 @@ void GGeo::setCathode(GMaterial* cathode)
 GMaterial* GGeo::getCathode() const 
 {
     return m_materiallib->getCathode() ; 
+}
+const char* GGeo::getCathodeMaterialName() const
+{
+    return m_materiallib->getCathodeMaterialName() ; 
 }
 
 
@@ -636,6 +641,8 @@ void GGeo::loadAnalyticFromGLTF()
 }
 
 
+
+
 void GGeo::save()
 {
     const char* idpath = m_ok->getIdPath() ;
@@ -661,6 +668,15 @@ void GGeo::save()
     m_scintillatorlib->save();
     m_sourcelib->save();
     m_bndlib->save();  
+
+
+    NMeta cachemeta ; 
+    cachemeta.set<int>("answer", 42) ; 
+    cachemeta.set<std::string>("question", "huh?");
+    cachemeta.set<std::string>("argline", PLOG::instance->args.argline() ); 
+    const char* path = m_ok->getCacheMetaPath(); 
+    cachemeta.save(path); 
+
 }
 
 void GGeo::saveAnalytic()

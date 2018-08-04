@@ -51,7 +51,7 @@ CPropLib::CPropLib(OpticksHub* hub, int verbosity)
   m_sclib(m_hub->getScintillatorLib()),
   m_domain(m_mlib->getDefaultDomain()),
   m_dscale(1),
-  m_level(verbose)
+  m_level(info)
 {
     init();
 }
@@ -67,13 +67,17 @@ void CPropLib::init()
 {
     pLOG(m_level,-2) << "CPropLib::init" ; 
 
+    LOG(info) << m_slib->desc(); 
+    m_slib->dump(); 
+
     m_sensor_surface = m_slib->getSensorSurface(0) ;
 
     if(m_sensor_surface == NULL)
     {
-        LOG(warning) << "CPropLib::init"
-                     << " surface lib sensor_surface NULL "
-                     ; 
+        LOG(fatal) << " surface lib sensor_surface NULL " ;
+
+
+        assert(0); 
     }
     else
     {

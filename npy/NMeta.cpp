@@ -178,6 +178,12 @@ void NMeta::read(const char* path0, const char* path1)
 
 void NMeta::write(const char* path0, const char* path1) const 
 {
+    if(path0 == NULL  && path1 == NULL)
+    {
+        LOG(fatal) << " NULL paths " ; 
+        return ; 
+    }
+ 
     std::string path = BFile::FormPath(path0, path1);
 
     std::string pdir = BFile::ParentDir(path.c_str());

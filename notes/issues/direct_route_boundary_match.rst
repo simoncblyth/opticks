@@ -18,28 +18,55 @@ Morning Reflections
    * then can migrate into GGeo : where it can be used from both the old and direct routes
 
 
-revive old Assimp route for iteration as change the convertSensors to be migratable
-------------------------------------------------------------------------------------
+Compare old Assimp/G4DAE route with X4 direct route
+----------------------------------------------------------------------
 
-::
-
+Old route::
 
    op --gdml2gltf
-
-   OPTICKS_RESOURCE_LAYOUT=104 OKTest -G --gltf 3 
- 
-    ## loads G4DAE assimp + the analytic description from python
-
-
-Had to update paths in analytic/csg.py to match NPYMeta NCSGData and rerun gdml2gltf, to avoid::
-
-    2018-08-03 10:20:37.733 INFO  [7719911] [NCSG::loadsrc@210] NCSG::load  index 0 treedir /usr/local/opticks/opticksdata/export/DayaBay_VGDX_20140414-1300/extras/248
-    2018-08-03 10:20:37.733 FATAL [7719911] [NPYList::loadBuffer@88]  non-optional buffer does not exist /usr/local/opticks/opticksdata/export/DayaBay_VGDX_20140414-1300/extras/248/srcnodes.npy
-    Assertion failed: (0), function loadBuffer, file /Users/blyth/opticks/npy/NPYList.cpp, line 89.
-    Abort trap: 6
-
+   OPTICKS_RESOURCE_LAYOUT=104 OKTest -G --gltf 3  
+   ## loads G4DAE assimp + the analytic description from python
 
 * comparing the idx with ab-idx : see lots of zeros from old route  , FIXED see ab-idx-notes
+
+
+
+New route::
+
+   OKX4Test  
+   ## loads GDML to conjure up the G4 model, fixes omissions with G4DAE,
+   ## then converts the G4 model directly to Opticks GGeo   
+
+
+
+Investigate surface ordering
+-------------------------------
+
+* :doc:`surface_ordering`
+
+
+
+ab-bnd/ab-blib following cathode fixup
+-------------------------------------------
+
+From ab-bnd-notes::
+
+    Goes off the rails at part 8143 
+
+    In [19]: ia.shape
+    Out[19]: (11984,)
+
+    In [20]: ib.shape
+    Out[20]: (11984,)
+
+    In [18]: np.all( ia[:8142] == ib[:8142] )
+    Out[18]: True
+
+    In [17]: np.all( ia[:8143] == ib[:8143] )
+    Out[17]: False
+
+
+
 
 
 
@@ -265,9 +292,84 @@ Yep the old one is following the sorted order from opticksdata, the direct isnt:
      43 : NearOutOutPiperSurface 
      44 : LegInDeadTubSurface 
 
+B order is that coming out of the G4 border and skin surface tables
+
+
+
+::
+
+    2018-08-04 14:04:19.628 ERROR [8603404] [X4LogicalBorderSurfaceTable::init@32]  NumberOfBorderSurfaces 8
+    2018-08-04 14:04:19.628 INFO  [8603404] [X4LogicalBorderSurfaceTable::init@38] NearDeadLinerSurface
+    2018-08-04 14:04:19.628 INFO  [8603404] [X4LogicalBorderSurfaceTable::init@38] NearOWSLinerSurface
+    2018-08-04 14:04:19.628 INFO  [8603404] [X4LogicalBorderSurfaceTable::init@38] NearIWSCurtainSurface
+    2018-08-04 14:04:19.629 INFO  [8603404] [X4LogicalBorderSurfaceTable::init@38] SSTWaterSurfaceNear1
+    2018-08-04 14:04:19.629 INFO  [8603404] [X4LogicalBorderSurfaceTable::init@38] SSTOilSurface
+    2018-08-04 14:04:19.629 INFO  [8603404] [X4LogicalBorderSurfaceTable::init@38] ESRAirSurfaceTop
+    2018-08-04 14:04:19.629 INFO  [8603404] [X4LogicalBorderSurfaceTable::init@38] ESRAirSurfaceBot
+    2018-08-04 14:04:19.629 INFO  [8603404] [X4LogicalBorderSurfaceTable::init@38] SSTWaterSurfaceNear2
+    2018-08-04 14:04:19.629 ERROR [8603404] [X4LogicalSkinSurfaceTable::init@32]  NumberOfSkinSurfaces num_src 34
+    2018-08-04 14:04:19.629 INFO  [8603404] [X4LogicalSkinSurfaceTable::init@38] NearPoolCoverSurface
+    2018-08-04 14:04:19.629 INFO  [8603404] [X4LogicalSkinSurfaceTable::init@38] RSOilSurface
+    2018-08-04 14:04:19.629 INFO  [8603404] [X4LogicalSkinSurfaceTable::init@38] AdCableTraySurface
+    2018-08-04 14:04:19.630 INFO  [8603404] [X4LogicalSkinSurfaceTable::init@38] PmtMtTopRingSurface
+    2018-08-04 14:04:19.630 INFO  [8603404] [X4LogicalSkinSurfaceTable::init@38] PmtMtBaseRingSurface
+    2018-08-04 14:04:19.630 INFO  [8603404] [X4LogicalSkinSurfaceTable::init@38] PmtMtRib1Surface
+    2018-08-04 14:04:19.630 INFO  [8603404] [X4LogicalSkinSurfaceTable::init@38] PmtMtRib2Surface
+    2018-08-04 14:04:19.630 INFO  [8603404] [X4LogicalSkinSurfaceTable::init@38] PmtMtRib3Surface
+    2018-08-04 14:04:19.630 INFO  [8603404] [X4LogicalSkinSurfaceTable::init@38] LegInIWSTubSurface
 
 
 
 
+Switching off sorting in A in GSurfaceLib makes the ordering differ more::
+
+
+    AdCableTraySurface					      <
+    ESRAirSurfaceBot					      <
+    ESRAirSurfaceTop					      <
+    RSOilSurface						      <
+    SSTOilSurface						      <
+    SSTWaterSurfaceNear1					      <
+    SSTWaterSurfaceNear2					      <
+    NearDeadLinerSurface						NearDeadLinerSurface
+    NearIWSCurtainSurface					      <
+    NearInnInPiperSurface					      <
+    NearInnOutPiperSurface					      <
+    NearOWSLinerSurface						NearOWSLinerSurface
+    NearOutInPiperSurface					      |	NearIWSCurtainSurface
+    NearOutOutPiperSurface					      |	SSTWaterSurfaceNear1
+                                      >	SSTOilSurface
+                                      >	ESRAirSurfaceTop
+                                      >	ESRAirSurfaceBot
+                                      >	SSTWaterSurfaceNear2
+    NearPoolCoverSurface						NearPoolCoverSurface
+    TopShortCableTraySurface				      |	RSOilSurface
+    UnistrutRib6Surface					      |	AdCableTraySurface
+    UnistrutRib7Surface					      |	PmtMtTopRingSurface
+    ADVertiCableTraySurface					      <
+    LegInDeadTubSurface					      <
+    LegInIWSTubSurface					      <
+    LegInOWSTubSurface					      <
+    PmtMtBaseRingSurface						PmtMtBaseRingSurface
+
+
+
+Old route order of addition to GSurfaceLib, is that ::
+
+    2018-08-04 14:25:17.449 INFO  [8618927] [AssimpGGeo::convertMaterials@388] AssimpGGeo::convertMaterials  query  mNumMaterials 78
+    2018-08-04 14:25:17.450 INFO  [8618927] [GSurfaceLib::add@379]  GSkinSurface __dd__Geometry__AdDetails__AdSurfacesAll__AdCableTraySurface
+    2018-08-04 14:25:17.450 INFO  [8618927] [GSurfaceLib::add@323]  GBorderSurface __dd__Geometry__AdDetails__AdSurfacesAll__ESRAirSurfaceBot
+    2018-08-04 14:25:17.450 INFO  [8618927] [GSurfaceLib::add@323]  GBorderSurface __dd__Geometry__AdDetails__AdSurfacesAll__ESRAirSurfaceTop
+    2018-08-04 14:25:17.450 INFO  [8618927] [GSurfaceLib::add@379]  GSkinSurface __dd__Geometry__AdDetails__AdSurfacesAll__RSOilSurface
+    2018-08-04 14:25:17.450 INFO  [8618927] [GSurfaceLib::add@323]  GBorderSurface __dd__Geometry__AdDetails__AdSurfacesAll__SSTOilSurface
+    2018-08-04 14:25:17.450 INFO  [8618927] [GSurfaceLib::add@323]  GBorderSurface __dd__Geometry__AdDetails__AdSurfacesNear__SSTWaterSurfaceNear1
+    2018-08-04 14:25:17.451 INFO  [8618927] [GSurfaceLib::add@323]  GBorderSurface __dd__Geometry__AdDetails__AdSurfacesNear__SSTWaterSurfaceNear2
+    2018-08-04 14:25:17.451 INFO  [8618927] [GSurfaceLib::add@323]  GBorderSurface __dd__Geometry__PoolDetails__NearPoolSurfaces__NearDeadLinerSurface
+    2018-08-04 14:25:17.451 INFO  [8618927] [GSurfaceLib::add@323]  GBorderSurface __dd__Geometry__PoolDetails__NearPoolSurfaces__NearIWSCurtainSurface
+    2018-08-04 14:25:17.451 INFO  [8618927] [GSurfaceLib::add@379]  GSkinSurface __dd__Geometry__PoolDetails__NearPoolSurfaces__NearInnInPiperSurface
+    2018-08-04 14:25:17.451 INFO  [8618927] [GSurfaceLib::add@379]  GSkinSurface __dd__Geometry__PoolDetails__NearPoolSurfaces__NearInnOutPiperSurface
+    2018-08-04 14:25:17.451 INFO  [8618927] [GSurfaceLib::add@323]  GBorderSurface __dd__Geometry__PoolDetails__NearPoolSurfaces__NearOWSLinerSurface
+    2018-08-04 14:25:17.451 INFO  [8618927] [GSurfaceLib::add@379]  GSkinSurface __dd__Geometry__PoolDetails__NearPoolSurfaces__NearOutInPiperSurface
+    2018-08-04 14:25:17.452 INFO  [8618927] [GSurfaceLib::add@379]  GSkinSurface __dd__Geometry__PoolDetails__NearPoolSurfaces__NearOutOutPiperSurface
 
 

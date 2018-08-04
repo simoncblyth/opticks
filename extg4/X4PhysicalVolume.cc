@@ -177,6 +177,17 @@ void X4PhysicalVolume::convertSensors()
     LOG(fatal) << "]" ; 
 }
 
+
+/**
+X4PhysicalVolume::convertSensors_r
+-----------------------------------
+
+Collect (in m_ggeo) LV names that match strings 
+specified by m_lvsdname "LV sensitive detector name"
+eg something like "Cathode,cathode"   
+
+**/
+
 void X4PhysicalVolume::convertSensors_r(const G4VPhysicalVolume* const pv, int depth)
 {
     const G4LogicalVolume* const lv = pv->GetLogicalVolume();
@@ -185,7 +196,8 @@ void X4PhysicalVolume::convertSensors_r(const G4VPhysicalVolume* const pv, int d
 
     if(is_lvsdname)
     {
-        m_ggeo->addCathodeLV(lvname) ;
+        std::string name = BFile::Name(lvname); 
+        m_ggeo->addCathodeLV(name.c_str()) ;
     }  
 
     for (int i=0 ; i < lv->GetNoDaughters() ;i++ )

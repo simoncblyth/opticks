@@ -69,7 +69,7 @@ public:
    T getValue(unsigned int index);
    T getDomain(unsigned int index);
    T getInterpolatedValue(T val);
-   unsigned int getLength();
+   unsigned getLength() const ;
    GAry<T>* getValues();
    GAry<T>* getDomain();
    char* digest();   
@@ -78,11 +78,11 @@ public:
    void copyValuesFrom(GProperty<T>* other, T domdelta=1e-4 );
    void setValues(T val);
 public:
-   bool isZero();
-   bool isConstant();
-   T getConstant(); 
-   T getMin(); 
-   T getMax(); 
+   bool isZero() const ;
+   bool isConstant() const ;
+   T getConstant() const ; 
+   T getMin() const ; 
+   T getMax() const ; 
 public:
    // **lookup** here means that the input values are already within the domain 
    // this is appropriate for InverseCDF where the domain is 0:1 and 
@@ -115,7 +115,7 @@ public:
 public:
    void SummaryV(const char* msg, unsigned int nline=5);
    void Summary(const char* msg="GProperty::Summary", unsigned int imod=5 );
-   std::string brief(const char* msg=""); 
+   std::string brief(const char* msg="") const ; 
 
 private:
    unsigned int m_length ;

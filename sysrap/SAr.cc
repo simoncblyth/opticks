@@ -90,4 +90,9 @@ void SAr::dump() const
 } 
 
 
-
+std::string SAr::argline() const 
+{
+    std::stringstream ss ; 
+    for(int i=0 ; i < _argc ; i++ ) ss << " " << ( _argv[i] ? _argv[i] : "NULL" ) ; 
+    return ss.str(); 
+}

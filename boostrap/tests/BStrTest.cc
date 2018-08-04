@@ -373,6 +373,26 @@ void test_WithoutEnding()
     assert( strcmp( a, x ) == 0); 
 }
 
+void test_GetField()
+{
+    const char* name = "BS:007:__dd__Geometry__PoolDetails__NearPoolSurfaces__NearDeadLinerSurface" ; 
+
+    const char* f0 = "BS" ; 
+    const char* f1 = "007" ; 
+    const char* f2 = "__dd__Geometry__PoolDetails__NearPoolSurfaces__NearDeadLinerSurface" ; 
+
+    assert( BStr::NumField(name, ':') == 3 ); 
+
+    assert( strcmp( BStr::GetField( name, ':', 0 ), f0 ) == 0 ); 
+    assert( strcmp( BStr::GetField( name, ':', 1 ), f1 ) == 0 ); 
+    assert( strcmp( BStr::GetField( name, ':', 2 ), f2 ) == 0 ); 
+    assert( strcmp( BStr::GetField( name, ':', -1 ), f2 ) == 0 ); 
+    assert( strcmp( BStr::GetField( name, ':', -2 ), f1 ) == 0 ); 
+    assert( strcmp( BStr::GetField( name, ':', -3 ), f0 ) == 0 ); 
+
+}
+
+
 
 int main(int argc, char** argv)
 {
@@ -401,9 +421,10 @@ int main(int argc, char** argv)
     test_Split1( "RINDEX,,, ", 4 );
     test_utoa();
     test_Contains();
-*/
     test_WithoutEnding();
+*/
 
+    test_GetField();
 
     return 0 ; 
 }
