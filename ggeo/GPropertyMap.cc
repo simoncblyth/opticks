@@ -357,7 +357,7 @@ char* GPropertyMap<T>::ndigest()
 */
 
 template <typename T>
-char* GPropertyMap<T>::pdigest(int ifr, int ito) const 
+char* GPropertyMap<T>::pdigest(int ifr, int ito) const
 {
     SDigest dig ;
 
@@ -700,6 +700,28 @@ const GProperty<T>* GPropertyMap<T>::getPropertyConst(const char* pname) const
 }
 
 
+template <typename T>
+unsigned GPropertyMap<T>::size() const
+{
+   return m_prop.size(); 
+}
+
+template <typename T>
+std::string GPropertyMap<T>::dump_ptr() const
+{
+    typedef std::map<std::string,GProperty<T>*> GPropertyMap_t ;
+    std::stringstream ss ; 
+
+    for( typename GPropertyMap_t::const_iterator it=m_prop.begin() ; it != m_prop.end() ; it++)
+    {
+        ss 
+            << " (" << it->first 
+            << " " << it->second 
+            << " ) " 
+            ; 
+    }
+    return ss.str();  
+}
 
 
 
@@ -733,7 +755,7 @@ bool GPropertyMap<T>::setPropertyValues(const char* pname, T val)
 
 
 template <typename T>
-bool GPropertyMap<T>::hasProperty(const char* pname)  
+bool GPropertyMap<T>::hasProperty(const char* pname) const  
 {
    return m_prop.find(pname) != m_prop.end() ;
 }
@@ -754,7 +776,7 @@ GProperty<T>* GPropertyMap<T>::getPropertyByIndex(int index) const
 }
 
 template <typename T>
-const char* GPropertyMap<T>::getPropertyNameByIndex(int index)
+const char* GPropertyMap<T>::getPropertyNameByIndex(int index) const 
 {
    int nprop  = m_keys.size(); 
    if(index < 0) index += nprop ;

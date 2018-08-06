@@ -148,12 +148,14 @@ class GGEO_API GPropertyMap {
 
   public:
       GProperty<T>* getPropertyByIndex(int index) const ;
-      const char* getPropertyNameByIndex(int index) ;
-      GProperty<T>* getProperty(const char* pname) const  ;
+      const char* getPropertyNameByIndex(int index) const ;
+      GProperty<T>* getProperty(const char* pname) const ;
       const GProperty<T>* getPropertyConst(const char* pname) const  ;
       GProperty<T>* getProperty(const char* pname, const char* prefix);
-      bool hasProperty(const char* pname) ;
+      bool hasProperty(const char* pname) const ;
       std::vector<std::string>& getKeys() ;
+      unsigned size() const ; 
+      std::string dump_ptr() const ; 
   private:
       std::string m_name ;
       const char* m_shortname ; 

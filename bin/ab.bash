@@ -62,17 +62,16 @@ ab-ls(){
 }
 
 
-
-
+ab-A-(){ echo $(ab-a-idpath) ; }
+ab-B-(){ echo $(ab-b-idpath) ; }
+ab-A(){  cd $(ab-A-); }
+ab-B(){  cd $(ab-B-); }
 
 
 #ab-tail(){ echo ${AB_TAIL:-.} ; }
 ab-tail(){ echo ${AB_TAIL:-0} ; }
-
 ab-a-(){ echo $(ab-a-idpath)/GPartsAnalytic/$(ab-tail) ; }
 ab-b-(){ echo $(ab-b-idpath)/GParts/$(ab-tail) ; }
-
-
 
 ab-a(){  cd $(ab-a-); }
 ab-b(){  cd $(ab-b-); }
@@ -878,7 +877,6 @@ ab-surf()
    diff -y $(ab-a-idpath)/GItemList/GSurfaceLib.txt $(ab-b-idpath)/GItemList/GSurfaceLib.txt
 }
 
-ab-surf1(){ ab-genrun $FUNCNAME ; }
 
 ab-surf1-notes(){ cat << EON
 
@@ -925,6 +923,7 @@ Difference in optical "value"
 EON
 }
 
+ab-surf1(){ ab-genrun $FUNCNAME ; }
 ab-surf1-(){ cat << EOP
 
 import os, logging, numpy as np
@@ -980,17 +979,89 @@ EOP
 ab-mat()
 {
    echo "A"
-   np.py $(ab-a-idpath)/GMaterialLib  
+   np.py $(ab-A-)/GMaterialLib  
+   md5 $(ab-A-)/GMaterialLib/GMaterialLib.npy 
    echo "B"
-   np.py $(ab-b-idpath)/GMaterialLib  
+   np.py $(ab-B-)/GMaterialLib  
 
-   diff -y $(ab-a-idpath)/GItemList/GMaterialLib.txt $(ab-b-idpath)/GItemList/GMaterialLib.txt
-   diff  $(ab-a-idpath)/GItemList/GMaterialLib.txt $(ab-b-idpath)/GItemList/GMaterialLib.txt
+   echo
+   echo A $(ls -l $(ab-A-)/GMaterialLib/GMaterialLib.npy)
+   echo B $(ls -l $(ab-B-)/GMaterialLib/GMaterialLib.npy)
+   echo
+   md5 $(ab-A-)/GMaterialLib/GMaterialLib.npy 
+   md5 $(ab-B-)/GMaterialLib/GMaterialLib.npy 
+   echo
+   diff -y $(ab-A-)/GItemList/GMaterialLib.txt $(ab-B-)/GItemList/GMaterialLib.txt
+   diff  $(ab-A-)/GItemList/GMaterialLib.txt $(ab-B-)/GItemList/GMaterialLib.txt
 }
 
 
+ab-mat1(){ ab-genrun $FUNCNAME ; }
+ab-mat1-(){ cat << EOP
+
+import os, logging, numpy as np
+log = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO)
+
+a_dir = "$(ab-a-idpath)"
+b_dir = "$(ab-b-idpath)"
+
+a_npy = lambda _:np.load(os.path.join(a_dir, _))
+b_npy = lambda _:np.load(os.path.join(b_dir, _))
+a_txt = lambda _:map(str.strip,file(os.path.join(a_dir,_)).readlines())
+b_txt = lambda _:map(str.strip,file(os.path.join(b_dir,_)).readlines())
+
+a = a_npy("GMaterialLib/GMaterialLib.npy")
+b = b_npy("GMaterialLib/GMaterialLib.npy")
+assert a.shape == b.shape
+
+ma = a_txt("GItemList/GMaterialLib.txt")
+mb = b_txt("GItemList/GMaterialLib.txt")
+assert len(ma) == len(mb)
+assert len(ma) == len(a) 
+
+assert ma == mb, "material names must match see notes/issues/surface_ordering.rst "  
+
+ab0 = np.abs( a[:,0] - b[:,0] )
+ab0m = np.max(ab0, axis=(1,2) )
+
+ab1 = np.abs( a[:,1] - b[:,1] )
 
 
+
+
+
+EOP
+}
+ab-mat1-notes(){ cat << EON
+
+Huh all groupvel stuck at 300 in A, but not B::
+
+    In [42]: np.all( a[:,1,:,0] == 300. )
+    Out[42]: True
+
+
+Excluding groupvel the differences are not large, seem float precision
+diffs on some long abslength, scattering lengths::
+
+    In [23]: ab0 = np.abs( a[:,0] - b[:,0] )
+
+    In [24]: ab0.shape
+    Out[24]: (38, 39, 4)
+
+    In [25]: np.max(ab0, axis=(1,2) )
+    Out[25]: 
+    array([0.0156, 0.0156, 0.0156, 0.0156, 0.0002, 0.0059, 0.0059, 0.0059, 0.0059, 0.    , 0.    , 0.    , 0.    , 0.0002, 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    ,
+           0.    , 0.    , 0.    , 0.0156, 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    ], dtype=float32)
+
+
+
+EON
+}
+
+
+ab-a-run(){  OPTICKS_RESOURCE_LAYOUT=104 OKTest -G --gltf 3   ; }
+ab-b-run(){  OPTICKS_RESOURCE_LAYOUT=104 OKX4Test   ; }
 
 
 ab-bnd-notes-(){ cat << EON
@@ -1019,9 +1090,9 @@ EON
 ab-bnd-(){ cat << EOP
 
 import os, logging, numpy as np
-from opticks.ana.blib import blib
-log = logging.getlogger(__name__)
-logging.basicconfig(level=logging.info)
+from opticks.ana.blib import BLib
+log = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO)
 
 a_dir = "$(ab-a-)"
 b_dir = "$(ab-b-)"
@@ -1151,15 +1222,12 @@ a = a_load("idxBuffer.npy")
 b = b_load("idxBuffer.npy")
 assert a.shape == b.shape
 
-
 print "a %s\n" % repr(a.shape), a
 print "b %s\n" % repr(b.shape), b
 
 assert np.all( a == b )
 
-
 EOP
 }
-
 
 

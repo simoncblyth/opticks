@@ -41,8 +41,9 @@ const char* GMaterialLib::keyspec =
 
 void GMaterialLib::save()
 {
-    //assert(0);
+    LOG(fatal) << "[" ; 
     saveToCache();
+    LOG(fatal) << "]" ; 
 }
 
 GMaterialLib* GMaterialLib::load(Opticks* ok)
@@ -68,7 +69,7 @@ void GMaterialLib::postLoadFromCache()
     bool fxab = m_ok->hasOpt("fxab") ;
     bool fxsc = m_ok->hasOpt("fxsc") ;
 
-    bool groupvel = !m_ok->hasOpt("nogroupvel") ;
+    //bool groupvel = !m_ok->hasOpt("nogroupvel") ;
 
     LOG(info) << "GMaterialLib::postLoadFromCache " 
               << " nore " << nore 
@@ -80,7 +81,7 @@ void GMaterialLib::postLoadFromCache()
               << " fxre " << fxre 
               << " fxab " << fxab 
               << " fxsc " << fxsc 
-              << " groupvel " << groupvel 
+      //        << " groupvel " << groupvel 
               ; 
 
     if(nore || xxre || fxre)
@@ -118,13 +119,21 @@ void GMaterialLib::postLoadFromCache()
     }
 
 
+
+/*
+    TRYING TO MOVE THIS beforeClose
+
     if(groupvel)  // unlike the other material changes : this one is ON by default, so long at not swiched off with --nogroupvel 
     {
        bool debug = false ; 
        replaceGROUPVEL(debug);
     }
+    
+*/
 
-    if(nore || noab || nosc || xxre || xxab || xxsc || fxre || fxsc || fxab || groupvel)
+
+
+    if(nore || noab || nosc || xxre || xxab || xxsc || fxre || fxsc || fxab )
     {
         // need to replace the loaded buffer with a new one with the changes for Opticks to see it 
         NPY<float>* mbuf = createBuffer();
@@ -134,7 +143,7 @@ void GMaterialLib::postLoadFromCache()
 }
 
 
-unsigned GMaterialLib::getNumMaterials() const 
+unsigned GMaterialLib::getNumMaterials() const  
 {
     return m_materials.size();
 }
@@ -426,12 +435,22 @@ NPY<float>* GMaterialLib::createBuffer()
     return createBufferForTex2d() ; 
 }
 
+/**
+GMaterialLib::createBufferForTex2d
+------------------------------------
+
+1. buffer is created of shape like (38, 2, 39, 4) where 38 is the number of materials
+2. GProperty<float>  values from the m_materials vector of GMaterial
+   are copied into the buffer 
+
+Memory layout of this buffer is constrained at one end by 
+requirements of tex2d<float4> and at the other by matching the number of
+materials making it only possible to change in the middle number of groups.
+
+**/
 
 NPY<float>* GMaterialLib::createBufferForTex2d()
 {
-    // trying to arrange the memory layout of this buffer to 
-    // match the requirements of tex2d<float4>
-
     unsigned int ni = getNumMaterials();
     unsigned int nj = NUM_FLOAT4 ; 
     unsigned int nk = getStandardDomain()->getLength();
@@ -448,8 +467,6 @@ NPY<float>* GMaterialLib::createBufferForTex2d()
 
         return NULL ;  
     } 
-
-
 
     NPY<float>* mbuf = NPY<float>::make(ni, nj, nk, nl);  // materials/payload-category/wavelength-samples/4prop
     mbuf->zero();
@@ -483,71 +500,6 @@ NPY<float>* GMaterialLib::createBufferForTex2d()
 
 
 
-NPY<float>* GMaterialLib::createBufferOld()
-{
-    unsigned int ni = getNumMaterials();
-    unsigned int nj = getStandardDomain()->getLength();
-    unsigned int nk = NUM_PROP ;  // 4 or 8
-
-    assert(nk == 4 || nk == 8); 
-    assert(ni > 0 && nj > 0);
-
-    NPY<float>* mbuf = NPY<float>::make(ni, nj, nk);  // materials/wavelength-samples/properties
-    mbuf->zero();
-
-    float* data = mbuf->getValues();
-
-    GProperty<float>* p0(NULL) ; 
-    GProperty<float>* p1(NULL) ; 
-    GProperty<float>* p2(NULL) ; 
-    GProperty<float>* p3(NULL) ; 
-    GProperty<float>* p4(NULL) ; 
-    GProperty<float>* p5(NULL) ; 
-    GProperty<float>* p6(NULL) ; 
-    GProperty<float>* p7(NULL) ; 
-
-    for(unsigned int i=0 ; i < ni ; i++)
-    {
-        GMaterial* mat = m_materials[i] ;
-
-        p0 = mat->getPropertyByIndex(0);
-        p1 = mat->getPropertyByIndex(1);
-        p2 = mat->getPropertyByIndex(2);
-        p3 = mat->getPropertyByIndex(3);
-
-        if(nk > 4)
-        {  
-            p4 = mat->getPropertyByIndex(4);
-            p5 = mat->getPropertyByIndex(5);
-            p6 = mat->getPropertyByIndex(6);
-            p7 = mat->getPropertyByIndex(7);
-        }
-
-
-        for( unsigned int j = 0; j < nj; j++ )    // over wavelength-samples
-        {  
-            // serialize in interleaved fashion the
-            // 4 or 8 (NUM_PROP) properties into the buffer
-
-            unsigned int offset = i*nj*nk + j*nk ;  
-
-            data[offset+0] = p0->getValue(j) ;
-            data[offset+1] = p1->getValue(j) ;
-            data[offset+2] = p2->getValue(j) ;
-            data[offset+3] = p3->getValue(j) ;
-
-            if(nk > 4)
-            {
-                data[offset+4] = p4 ? p4->getValue(j) : MATERIAL_UNSET ;
-                data[offset+5] = p5 ? p5->getValue(j) : MATERIAL_UNSET ;
-                data[offset+6] = p6 ? p6->getValue(j) : MATERIAL_UNSET ;
-                data[offset+7] = p7 ? p7->getValue(j) : MATERIAL_UNSET ;
-            } 
-        } 
-    }
-    return mbuf ; 
-}
-
 
 void GMaterialLib::import()
 {
@@ -573,9 +525,21 @@ void GMaterialLib::import()
               ;
 
     importForTex2d();
-    //importOld();
 }
 
+
+/**
+GMaterialLib::importForTex2d
+------------------------------
+
+m_materials vector of GMaterial instances
+is reconstituted from the buffer
+
+
+   (ni, nj, nk, nl)
+   (38,  2, 39, 4) 
+
+**/
 
 void GMaterialLib::importForTex2d()
 {
@@ -609,7 +573,7 @@ void GMaterialLib::importForTex2d()
 
         GMaterial* mat = new GMaterial(key, i);
 
-        for(unsigned int j=0 ; j < nj ; j++)
+        for(unsigned int j=0 ; j < nj ; j++)  // over the two groups
         {
             import(mat, data + i*nj*nk*nl + j*nk*nl, nk, nl , j);
         }
@@ -618,47 +582,51 @@ void GMaterialLib::importForTex2d()
 }
 
 
-void GMaterialLib::importOld()
-{
-    unsigned int ni = m_buffer->getShape(0);
-    unsigned int nj = m_buffer->getShape(1);
-    unsigned int nk = m_buffer->getShape(2);
 
-    checkBufferCompatibility(nk, "GMaterialLib::import");
-
-    assert(m_standard_domain->getLength() == nj );
-
-    float* data = m_buffer->getValues();
-    for(unsigned int i=0 ; i < ni ; i++)
-    {
-        const char* key = m_names->getKey(i);
-        LOG(debug) << std::setw(3) << i 
-                   << " " << key ;
-
-        GMaterial* mat = new GMaterial(key, i);
-        import(mat, data + i*nj*nk, nj, nk );
-
-        m_materials.push_back(mat);
-    }  
-}
-
-
-void GMaterialLib::import( GMaterial* mat, float* data, unsigned int nj, unsigned int nk, unsigned int jcat )
+void GMaterialLib::import( GMaterial* mat, float* data, unsigned nj, unsigned nk, unsigned jcat )
 {
     float* domain = m_standard_domain->getValues();
 
-    for(unsigned int k = 0 ; k < nk ; k++)
+    for(unsigned k = 0 ; k < nk ; k++)  // over 4 props of the float4 
     {
         float* values = new float[nj] ; 
-        for(unsigned int j = 0 ; j < nj ; j++) values[j] = data[j*nk+k];   // un-interleaving 
-        GProperty<float>* prop = new GProperty<float>( values, domain, nj );
+        for(unsigned j = 0 ; j < nj ; j++) values[j] = data[j*nk+k];   // un-interleaving 
+       
+        GProperty<float>* prop = new GProperty<float>( values, domain, nj );  
         mat->addProperty(propertyName(k+4*jcat), prop);
     } 
 }
 
+
+void GMaterialLib::beforeClose()
+{
+    LOG(info) << "." ; 
+    bool debug = false ; 
+    replaceGROUPVEL(debug); 
+}
+
+
+
+/**
+GMaterialLib::replaceGROUPVEL
+------------------------------
+
+Use the refractive index of each Opticks GMaterial to 
+calculate the groupvel and replace the GROUPVEL property of the material. 
+
+Huh : requiring the buffer is odd... it prevents
+invoking this before the close.
+
+Fixed this to not require the buffer so it can be invoked before 
+saving to cache or after. 
+
+**/
+
 void GMaterialLib::replaceGROUPVEL(bool debug)
 {
-    unsigned ni = m_buffer->getShape(0);
+    //unsigned ni = m_buffer->getShape(0);
+    unsigned ni = getNumMaterials() ; // from the vector
+
     LOG(info) << "GMaterialLib::replaceGROUPVEL " << " ni " << ni ;
 
     const char* base = "$TMP/replaceGROUPVEL" ;
@@ -668,10 +636,34 @@ void GMaterialLib::replaceGROUPVEL(bool debug)
         LOG(warning) << "GMaterialLib::replaceGROUPVEL debug active : saving refractive_index.npy and group_velocity.npy beneath " << base  ; 
     }
 
+
+    for(unsigned i=0 ; i < ni ; i++) 
+        std::cout 
+             << " i " << std::setw(2) << i 
+             << m_materials[i]->dump_ptr()
+             << std::endl 
+             ;
+
+    for(unsigned i=0 ; i < ni ; i++) 
+        std::cout 
+             << " i " << std::setw(2) << i 
+             << " vg " << m_materials[i]->getProperty(group_velocity)
+             << " ri " << m_materials[i]->getProperty(refractive_index)
+             << std::endl 
+             ;
+
+
     for(unsigned i=0 ; i < ni ; i++)
     {
-        const char* key = m_names->getKey(i);
-        GMaterial* mat = getMaterial(key);
+
+        //const char* key = m_names->getKey(i);
+        //GMaterial* mat = getMaterial(key);
+        //    I guess this awkward way was from before postcache reconstruction of m_materials was implented
+
+        GMaterial* mat = getMaterial(i);
+        assert( m_materials[i] == mat ); 
+
+        const char* key = mat->getName() ; 
 
         GProperty<float>* vg = mat->getProperty(group_velocity);
         GProperty<float>* ri = mat->getProperty(refractive_index);
@@ -681,10 +673,20 @@ void GMaterialLib::replaceGROUPVEL(bool debug)
         GProperty<float>* vg_calc = GProperty<float>::make_GROUPVEL(ri);
         assert(vg_calc);
 
-        //mat->replaceProperty(group_velocity, vg_calc );
-        float wldelta = 1e-4 ; 
-        vg->copyValuesFrom(vg_calc, wldelta);       
+        std::cout 
+            << " i " << std::setw(2) << i 
+            << " n " << std::setw(2) << m_materials.size() 
+            << " mat " << mat 
+            << " vg " << vg
+            << " ri " << ri
+            << " vg_calc " << vg_calc
+            << " k " << key
+            << std::endl 
+            ; 
 
+
+        float wldelta = 1e-4 ; 
+        vg->copyValuesFrom(vg_calc, wldelta);         // <-- replacing the property inside the GMaterial instance
 
         if(debug)
         {

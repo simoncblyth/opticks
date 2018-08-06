@@ -390,9 +390,6 @@ void GPropertyLib::getIndicesWithNameEnding( std::vector<unsigned>& indices, con
 }
 
 
-
-
-
 std::string GPropertyLib::getBufferName(const char* suffix)
 {
     std::string name = m_type ;  
@@ -400,22 +397,39 @@ std::string GPropertyLib::getBufferName(const char* suffix)
     return name + ".npy" ; 
 }
 
+
+/**
+GPropertyLib::close
+---------------------
+
+After sorting the subclass implementations of createNames, createBuffer, createMeta
+are invoked : getting the lib ready to be persisted by for example copying the 
+properties of the individual instances (eg GMaterial) into the buffer.
+
+**/
+
+
+void GPropertyLib::beforeClose()
+{
+   // do nothing default : that can be overridden in subclasses 
+}
+
 void GPropertyLib::close()
 {
+    LOG(trace) << "[" ;
+
+    beforeClose(); 
+
+
     if(m_ok->isDbgClose())
     {
         LOG(fatal) << "[--dbgclose] hari-kari " ; 
         assert(0);
     }
 
-    LOG(trace) << "GPropertyLib::close" ;
-
     sort();   // pure virtual implemented in sub classes
 
-    LOG(trace) << "GPropertyLib::close after sort " ;
-
     // create methods from sub-class specializations
-
     GItemList* names = createNames();  
     NPY<float>* buf = createBuffer() ;  
     NMeta* meta = createMeta();
@@ -432,10 +446,8 @@ void GPropertyLib::close()
     setMeta(meta);
     setClosed();
 
-    LOG(trace) << "GPropertyLib::close DONE" ;
+    LOG(trace) << "]" ;
 }
-
-
 
 
 void GPropertyLib::saveToCache(NPYBase* buffer, const char* suffix)
@@ -470,13 +482,13 @@ void GPropertyLib::saveToCache()
 
     LOG(trace) << "GPropertyLib::saveToCache" ; 
  
-
     if(!isClosed()) close();
 
     if(m_buffer)
     {
         std::string dir = getCacheDir(); 
         std::string name = getBufferName();
+
         m_buffer->save(dir.c_str(), name.c_str());   
 
         if(m_meta)
@@ -489,7 +501,6 @@ void GPropertyLib::saveToCache()
     {
         saveNames(NULL);
     }
-
 
     LOG(trace) << "GPropertyLib::saveToCache DONE" ; 
 

@@ -228,13 +228,16 @@ void X4PhysicalVolume::convertMaterials()
 
     // TODO : can these go into one method within GMaterialLib?
     m_mlib->addTestMaterials() ;
-
     m_mlib->close();   // may change order if prefs dictate
 
-    // replaceGROUPVE needs the buffer : so must be after close
+
+
+    // replaceGROUPVEL needs the buffer : so must be after close
     bool debug = false ; 
     m_mlib->replaceGROUPVEL(debug); 
 
+    // hmm moving this precache means the addMPT to include the
+    // fixed GROUPVEL already (in testing) but not directly in Geant4 examples ?
     // TODO: do the GROUPVEL calc be directly within Geant4, to avoid the kludging 
 
     // getting names must be done after the close

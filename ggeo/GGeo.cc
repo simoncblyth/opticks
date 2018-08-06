@@ -646,7 +646,7 @@ void GGeo::loadAnalyticFromGLTF()
 void GGeo::save()
 {
     const char* idpath = m_ok->getIdPath() ;
-    LOG(info) << "GGeo::save" 
+    LOG(fatal) << "[" 
               << " idpath " << ( idpath ? idpath : "NULL" )
                ;
 
@@ -677,6 +677,8 @@ void GGeo::save()
     const char* path = m_ok->getCacheMetaPath(); 
     cachemeta.save(path); 
 
+
+    LOG(fatal) << "]" ;  
 }
 
 void GGeo::saveAnalytic()
@@ -1072,6 +1074,7 @@ void GGeo::prepareSourceLib()
 
 void GGeo::close()
 {
+    LOG(fatal) << "[" ; 
     // this needs to be invoked after all Opticks materials and surfaces have been
     // created, and before boundaries are formed : typically in the recursive structure traverse
 
@@ -1080,6 +1083,8 @@ void GGeo::close()
 
     mlib->close();
     slib->close();
+
+    LOG(fatal) << "]" ; 
 }
 
 

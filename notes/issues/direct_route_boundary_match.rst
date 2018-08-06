@@ -44,6 +44,10 @@ Investigate surface ordering
 
 * :doc:`surface_ordering`
 
+Material matching
+-------------------
+
+* :doc:`material_matching_between_old_and_direct_routes`
 
 
 ab-bnd/ab-blib following cathode fixup

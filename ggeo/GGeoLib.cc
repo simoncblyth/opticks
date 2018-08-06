@@ -143,13 +143,13 @@ void GGeoLib::removeConstituents(const char* idpath )
         if(BFile::ExistsDir(mmpath))
         {   
             BFile::RemoveDir(mmpath); 
-            LOG(info) << "GGeoLib::removeConstituents " << mmpath ; 
+            LOG(debug) << "GGeoLib::removeConstituents " << mmpath ; 
         }
 
         if(BFile::ExistsDir(ptpath))
         {   
             BFile::RemoveDir(ptpath); 
-            LOG(info) << "GGeoLib::removeConstituents " << mmpath ; 
+            LOG(debug) << "GGeoLib::removeConstituents " << mmpath ; 
         }
    } 
 }

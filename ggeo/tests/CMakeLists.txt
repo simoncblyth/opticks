@@ -12,6 +12,7 @@ set(TEST_SOURCES
     GBufferTest.cc
     GVectorTest.cc
 
+    GPropertyMapEditTest.cc
     GPropertyMapBaseTest.cc
     GPropertyBaseTest.cc
 

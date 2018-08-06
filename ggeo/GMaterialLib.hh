@@ -81,6 +81,7 @@ class GGEO_API GMaterialLib : public GPropertyLib {
        // concretization of GPropertyLib
        void defineDefaults(GPropertyMap<float>* defaults); 
        void import();
+       void beforeClose(); 
        void postLoadFromCache();
        bool setMaterialPropertyValues(const char* matname, const char* propname, float val); // post-import modification
 
@@ -90,9 +91,7 @@ class GGEO_API GMaterialLib : public GPropertyLib {
    private:
        void replaceGROUPVEL(bool debug=false);  // triggered in postLoadFromCache with --groupvel option
        void importForTex2d();
-       void importOld();
        NPY<float>* createBufferForTex2d();
-       NPY<float>* createBufferOld();
    public:
        // lifecycle
        void add(GMaterial* material);

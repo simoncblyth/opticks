@@ -154,7 +154,8 @@ class GGEO_API GPropertyLib {
         virtual NPY<float>* createBuffer() = 0;
         virtual NMeta*      createMeta() = 0;
         virtual GItemList*  createNames() = 0;
-
+    public:
+        virtual void beforeClose() ;   // dont force an implemnetation, using empty dummy, but allow override 
     public:
         //GProperty<float>*    getItemProperty(const char* item, const char* pname) const ;
     public:
