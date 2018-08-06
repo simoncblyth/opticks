@@ -17,6 +17,8 @@
 // okg-
 #include "OpticksHub.hh"   
 
+#include "CMaterialSort.hh"
+#include "GMaterialLib.hh"
 #include "CMaterialLib.hh"
 #include "CTraverser.hh"    // m_traverser resides in base 
 #include "CGDMLDetector.hh"
@@ -60,11 +62,15 @@ void CGDMLDetector::init()
     }
 
     LOG(m_level) << "parse " << path ; 
+
     G4VPhysicalVolume* world = parseGDML(path);
+
+    sortMaterials();
 
     setTop(world);   // invokes *CDetector::traverse*
 
     addMPT();
+
     attachSurfaces();
     // kludge_cathode_efficiency(); 
 
@@ -79,6 +85,14 @@ G4VPhysicalVolume* CGDMLDetector::parseGDML(const char* path) const
     parser.Read(path, validate);
     return parser.GetWorldVolume() ;
 }
+
+void CGDMLDetector::sortMaterials()
+{
+    GMaterialLib* mlib = getGMaterialLib();     
+    const std::map<std::string, unsigned>& order = mlib->getOrder(); 
+    CMaterialSort msort(order);  
+}
+
 
 
 void CGDMLDetector::saveBuffers()

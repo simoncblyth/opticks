@@ -9,48 +9,18 @@ Materials and Surfaces rather than directly persisting Boundaries.
 Contrary to initial thinking *GMaterialLib* now handles
 **only standardized material** collection. 
 General raw material handling is still done directly by *GGeo*.
- 
-The below *GPropertyLib* subclasses replace the former *GBoundaryLib*.
 
-* *GMaterialLib* 
-* *GSurfaceLib*
-* *GScintillatorLib*
-* *GBndLib* 
 
-Lifecycle of all property lib are similar:
+Material Ordering 
+------------------
 
-*ctor*
-     constituent of GGeo instanciated in GGeo::init when running precache 
-     or via GGeo::loadFromCache when running from cache
+Ordering is mostly an old approach possibility, 
+in the new live from G4 approach there is no detector 
+identification : so no opportunity for per detector preference
+order.  In the new approach change order at source by changing 
+the order of instanciation of the G4Material.
 
-*init*
-     invoked by *ctor*, sets up the keymapping and default properties 
-     that are housed in GPropertyLib base
 
-*add*
-     from GGeo::loadFromG4DAE (ie in precache running only) 
-     GMaterial instances are collected via AssimpGGeo::convertMaterials and GGeo::add
-
-*close*
-     GPropertyLib::close first invokes *sort* and then 
-     serializes collected and potentially reordered objects via *createBuffer* 
-     and *createNames* 
-
-     * *close* is triggered by the first call to getIndex
-     * after *close* no new materials can be added
-     * *close* is canonically invoked by GBndLib::getOrCreate during AssimpGGeo::convertStructureVisit 
- 
-*save*
-     buffer and names are written to cache by GPropertyLib::saveToCache
-
-*load*
-     static method that instanciates and populates via GPropertyLib::loadFromCache which
-     reads in the buffer and names and then invokes *import*
-     This allows operation from the cache without having to GGeo::loadFromG4DAE.
-
-*import*
-     reconstitutes the serialized objects and populates the collection of them
-     TODO: digest checking the reconstitution
 
 */
 #include <vector>
@@ -84,6 +54,12 @@ class GGEO_API GMaterialLib : public GPropertyLib {
        static const char* refractive_index_local ; 
    public:
        static const char* keyspec ;
+   public:
+       typedef enum { ORDER_ASIS, ORDER_BY_SRCIDX, ORDER_BY_PREFERENCE } MaterialOrder_t ; 
+       static const char* ORDER_ASIS_  ; 
+       static const char* ORDER_BY_SRCIDX_  ; 
+       static const char* ORDER_BY_PREFERENCE_ ; 
+       const char* getMaterialOrdering() const ;
    public:
        void save();
        static GMaterialLib* load(Opticks* cache);
@@ -123,6 +99,8 @@ class GGEO_API GMaterialLib : public GPropertyLib {
        void addRaw(GMaterial* material);
        void addDirect(GMaterial* material);  // not-standarized
        void sort();
+       bool order_by_preference(const GMaterial& a_, const GMaterial& b_);
+       bool order_by_srcidx(    const GMaterial& a_, const GMaterial& b_);
        bool operator()(const GMaterial& a_, const GMaterial& b_);
     public:
         void setCathode(GMaterial* cathode);
@@ -165,9 +143,11 @@ class GGEO_API GMaterialLib : public GPropertyLib {
        std::vector<GMaterial*>       m_materials ; 
        std::vector<GMaterial*>       m_materials_raw ; 
 
-       GMaterialLib*  m_basis ; 
-       GMaterial*     m_cathode ; 
-       const char*    m_cathode_material_name ; 
+       GMaterialLib*   m_basis ; 
+       GMaterial*      m_cathode ; 
+       const char*     m_cathode_material_name ; 
+       MaterialOrder_t m_material_order ; 
+
 
 };
 #include "GGEO_TAIL.hh"

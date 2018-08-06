@@ -19,11 +19,13 @@ G4Material* X4MaterialTable::Get(unsigned idx)
     assert( idx < nmat );
     G4MaterialTable* mtab = G4Material::GetMaterialTable();
     G4Material* material = (*mtab)[idx];
-    assert( material->GetIndex() == idx );
+
+    //assert( material->GetIndex() == idx );
+    // when the material table has been sorted with CMaterialSort 
+    // the indices no longer match the positions 
+
     return material ; 
 }
-
-
 
 void X4MaterialTable::Convert(GMaterialLib* mlib)
 {
@@ -66,7 +68,7 @@ void X4MaterialTable::init()
 
         GMaterial* mat = X4Material::Convert( material ); 
 
-        assert( mat->getIndex() == i ); // this is not the lib, no danger of triggering a close
+        //assert( mat->getIndex() == i ); // this is not the lib, no danger of triggering a close
 
         m_mlib->add(mat) ;    // creates standardized material
         m_mlib->addRaw(mat) ; // stores as-is

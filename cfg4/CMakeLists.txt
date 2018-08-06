@@ -45,6 +45,7 @@ set(SOURCES
     CRec.cc
     CTrack.cc
     CPropLib.cc
+    CMaterialSort.cc
     CMaterialLib.cc
     CMath.cc
     CSolid.cc
@@ -152,6 +153,7 @@ set(HEADERS
     CTrack.hh
 
     CPropLib.hh
+    CMaterialSort.hh
     CMaterialLib.hh
 
     CMath.hh

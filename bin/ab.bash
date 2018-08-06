@@ -24,8 +24,10 @@ ab-cd(){   cd $(ab-base) ; }
 ab-tmp(){ echo /tmp/$USER/opticks/bin/ab ; }
 
 ab-a-dir(){ echo DayaBay_VGDX_20140414-1300/g4_00.dae/96ff965744a2f6b78c24e33c80d3a4cd  ; }
+
 #ab-b-dir(){ echo OKX4Test_World0xc15cfc0_PV_g4live/g4ok_gltf/828722902b5e94dab05ac248329ffebe ; }
-ab-b-dir(){ echo OKX4Test_World0xc15cfc0_PV_g4live/g4ok_gltf/742ab212f7f2da665ed627411ebdb07d ; }
+#ab-b-dir(){ echo OKX4Test_World0xc15cfc0_PV_g4live/g4ok_gltf/742ab212f7f2da665ed627411ebdb07d ; }
+ab-b-dir(){ echo OKX4Test_World0xc15cfc0_PV_g4live/g4ok_gltf/0dce832a26eb41b58a000497a3127cb8 ; }
 
 
 ab-a-idpath(){ echo $(ab-base)/$(ab-a-dir)/104 ; }
@@ -46,11 +48,13 @@ EON
 }
 
 ab-l(){ 
+   date
    echo A $(ls -l $(ab-a-idpath)/*.json)
    echo B $(ls -l $(ab-b-idpath)/*.json)
 }
 
 ab-ls(){ 
+   date
    echo A $(ab-a-idpath)
    ls -l $(ab-a-idpath) 
    echo B $(ab-b-idpath)
@@ -981,6 +985,7 @@ ab-mat()
    np.py $(ab-b-idpath)/GMaterialLib  
 
    diff -y $(ab-a-idpath)/GItemList/GMaterialLib.txt $(ab-b-idpath)/GItemList/GMaterialLib.txt
+   diff  $(ab-a-idpath)/GItemList/GMaterialLib.txt $(ab-b-idpath)/GItemList/GMaterialLib.txt
 }
 
 

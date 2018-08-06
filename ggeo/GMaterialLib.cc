@@ -152,7 +152,8 @@ GMaterialLib::GMaterialLib(Opticks* ok, GMaterialLib* basis)
     GPropertyLib(ok, "GMaterialLib"),
     m_basis(basis),
     m_cathode(NULL),
-    m_cathode_material_name(NULL)
+    m_cathode_material_name(NULL),
+    m_material_order(ORDER_BY_PREFERENCE)
 {
     init();
 }
@@ -162,7 +163,8 @@ GMaterialLib::GMaterialLib(GMaterialLib* src, GDomain<float>* domain, GMaterialL
     GPropertyLib(src, domain),
     m_basis(basis),
     m_cathode(NULL),
-    m_cathode_material_name(NULL)
+    m_cathode_material_name(NULL),
+    m_material_order(ORDER_BY_PREFERENCE)
 {
     init();
     initInterpolatingCopy(src, domain);
@@ -311,8 +313,7 @@ only 4 bits to record the material index.
 **/
 
 
-/*
-bool GMaterialLib::operator()(const GMaterial& a_, const GMaterial& b_)
+bool GMaterialLib::order_by_preference(const GMaterial& a_, const GMaterial& b_)
 {
     const char* a = a_.getShortName();
     const char* b = b_.getShortName();
@@ -325,20 +326,44 @@ bool GMaterialLib::operator()(const GMaterial& a_, const GMaterial& b_)
     unsigned int ib = order.find(b) == end ? UINT_MAX :  order[b] ; 
     return ia < ib ; 
 }
-*/
 
-bool GMaterialLib::operator()(const GMaterial& a_, const GMaterial& b_)
+
+bool GMaterialLib::order_by_srcidx(const GMaterial& a_, const GMaterial& b_)
 {
-    int ia = a_.getMetaKV<int>("srcidx", "0");
-    int ib = b_.getMetaKV<int>("srcidx", "0");
-    LOG(info) 
-       <<  " ia " << ia 
-       <<  " ib " << ib
-       ; 
-
+    // large default so test material additions which have no srcidx stay at the end
+    int ia = a_.getMetaKV<int>("srcidx", "1000");
+    int ib = b_.getMetaKV<int>("srcidx", "1000");
     return ia < ib ; 
 }
 
+
+bool GMaterialLib::operator()(const GMaterial& a_, const GMaterial& b_)
+{
+    bool order = false ; 
+    switch(m_material_order)
+    {
+        case ORDER_ASIS          :  assert(0)                           ; break ; 
+        case ORDER_BY_SRCIDX     :  order = order_by_srcidx(a_, b_)     ; break ; 
+        case ORDER_BY_PREFERENCE :  order = order_by_preference(a_, b_) ; break ; 
+    }
+    return order ; 
+}
+
+const char* GMaterialLib::ORDER_ASIS_ = "ORDER_ASIS" ; 
+const char* GMaterialLib::ORDER_BY_SRCIDX_     = "ORDER_BY_SRCIDX" ; 
+const char* GMaterialLib::ORDER_BY_PREFERENCE_ = "ORDER_BY_PREFERENCE" ; 
+
+const char* GMaterialLib::getMaterialOrdering() const 
+{
+    const char* s = NULL ; 
+    switch(m_material_order)
+    {
+        case ORDER_ASIS          :  s = ORDER_ASIS_          ; break ; 
+        case ORDER_BY_SRCIDX     :  s = ORDER_BY_SRCIDX_     ; break ; 
+        case ORDER_BY_PREFERENCE :  s = ORDER_BY_PREFERENCE_ ; break ; 
+    }
+    return s ; 
+}
 
 /**
 GMaterialLib::sort
@@ -349,11 +374,19 @@ This is invoked from the base when the proplib is closed.
 **/
 void GMaterialLib::sort()
 {
-    LOG(fatal) << " sorting by srcidx " ; 
-    typedef std::map<std::string, unsigned> MSU ;
-    MSU& order = getOrder();  
+    LOG(fatal) << getMaterialOrdering() ; 
 
-    if(order.size() == 0) return ; 
+    if( m_material_order == ORDER_ASIS )
+    {
+        return ; 
+    }
+    else if( m_material_order == ORDER_BY_PREFERENCE )
+    {
+        typedef std::map<std::string, unsigned> MSU ;
+        MSU& order = getOrder();  
+        if(order.size() == 0) return ; 
+    } 
+
     std::stable_sort( m_materials.begin(), m_materials.end(), *this );
 }
 

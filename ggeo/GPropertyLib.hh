@@ -38,7 +38,9 @@ struct guint4 ;
 GPropertyLib
 ==============
 
-See GMaterialLib.hh for description of lifecycle of all GPropertyLib subclasses
+
+Subclasses
+-----------
 
 delta:ggeo blyth$ grep public\ GPropertyLib *.hh
 
@@ -47,6 +49,43 @@ GMaterialLib.hh    :class GMaterialLib : public GPropertyLib {
 GScintillatorLib.hh:class GScintillatorLib : public GPropertyLib {
 GSourceLib.hh      :class GSourceLib : public GPropertyLib {
 GSurfaceLib.hh     :class GSurfaceLib : public GPropertyLib {
+
+
+Lifecycle of GPropertyLib subclasses
+------------------------------------
+
+*ctor*
+     constituent of GGeo instanciated in GGeo::init when running precache 
+     or via GGeo::loadFromCache when running from cache
+
+*init*
+     invoked by *ctor*, sets up the keymapping and default properties 
+     that are housed in GPropertyLib base
+
+*add*
+     from GGeo::loadFromG4DAE (ie in precache running only) 
+     GMaterial instances are collected via AssimpGGeo::convertMaterials and GGeo::add
+
+*close*
+     GPropertyLib::close first invokes *sort* and then 
+     serializes collected and potentially reordered objects via *createBuffer* 
+     and *createNames* 
+
+     * *close* is triggered by the first call to getIndex
+     * after *close* no new materials can be added
+     * *close* is canonically invoked by GBndLib::getOrCreate during AssimpGGeo::convertStructureVisit 
+ 
+*save*
+     buffer and names are written to cache by GPropertyLib::saveToCache
+
+*load*
+     static method that instanciates and populates via GPropertyLib::loadFromCache which
+     reads in the buffer and names and then invokes *import*
+     This allows operation from the cache without having to GGeo::loadFromG4DAE.
+
+*import*
+     reconstitutes the serialized objects and populates the collection of them
+     TODO: digest checking the reconstitution
 
 **/
 

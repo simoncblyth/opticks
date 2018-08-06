@@ -43,6 +43,29 @@ Workflow comparing old Assimp/G4DAE route with X4 direct route
 
 
 
+Controlling material order prior to X4 (direct code)
+------------------------------------------------------
+
+Want the X4 code to just follow the Geant4 order.
+
+* added sortMaterials fixup using CMaterialSort to CGDMLDetector::init 
+  loading a sorting of the material table at G4 level to follow the preference order.
+ 
+  This is before getting to X4 level so X4 direct code just follows the G4 ordering it sees.  
+
+
+This gets close to an order match : apart from GlassSchottF2 which is not present
+in the GDML, its added later at Opticks level.  So change the order opticksdata/export/DayaBay/GMaterialLib/order.json
+to prevent the test materials partaking::
+
+
+     16     "Air": "15",
+     17     "GlassSchottF2": "160",
+     18     "PPE": "17",
+
+After that the ordering matches. ab-mat 
+
+
 Material Ordering 
 --------------------
 
@@ -56,8 +79,9 @@ Material Ordering
   as in the GDML 
 
 
-How to get the direct route to follow the desired order without specifying it ?
-Need to control the G4 order that is bases of.
+
+
+
 
 ::
 

@@ -320,7 +320,7 @@ GSurfaceLib::add(GBorderSurface* raw)
 
 void GSurfaceLib::add(GBorderSurface* raw)
 {
-    LOG(info) << " GBorderSurface " << raw->getName() ; 
+    LOG(debug) << " GBorderSurface " << raw->getName() ; 
 
     m_border_surfaces.push_back(raw);
 
@@ -376,7 +376,7 @@ GSurfaceLib::add(GSkinSurface* raw)
 
 void GSurfaceLib::add(GSkinSurface* raw)
 {
-    LOG(info) << " GSkinSurface " << raw->getName() ; 
+    LOG(debug) << " GSkinSurface " << raw->getName() ; 
     /*
     // this dont work : the sensors dont enter thru the front door
 

@@ -47,6 +47,7 @@ CDetector::CDetector(OpticksHub* hub, OpticksQuery* query)
     m_blib(new CBndLib(m_hub)),
     m_query(query),
     m_resource(m_ok->getResource()),
+    m_gmateriallib(m_hub->getMaterialLib()),
     m_mlib(new CMaterialLib(m_hub)),
     m_gsurfacelib(m_hub->getSurfaceLib()),
     m_slib(new CSurfaceLib(m_gsurfacelib)),   // << WIP 
@@ -112,6 +113,11 @@ CMaterialLib* CDetector::getMaterialLib() const
 {
     return m_mlib ; 
 }
+GMaterialLib* CDetector::getGMaterialLib() const 
+{
+    return m_gmateriallib ; 
+}
+
 CSurfaceLib* CDetector::getSurfaceLib() const 
 {
     return m_slib ; 

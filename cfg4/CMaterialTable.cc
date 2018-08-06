@@ -15,12 +15,16 @@
 
 CMaterialTable::CMaterialTable(const char* prefix)
     :
-    m_prefix(strdup(prefix)) 
+    m_prefix(strdup(prefix))
 {
     init();
 }
-   
 void CMaterialTable::init()
+{
+    initNameIndex();
+}
+
+void CMaterialTable::initNameIndex()
 {
     const G4MaterialTable* mtab  = G4Material::GetMaterialTable();
     unsigned nmat = G4Material::GetNumberOfMaterials();

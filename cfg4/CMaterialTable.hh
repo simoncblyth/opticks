@@ -21,6 +21,7 @@ class CFG4_API CMaterialTable {
          void dumpMaterial(G4Material* material);
     private:
          void init();
+         void initNameIndex();
     private:
          const char* m_prefix ; 
          std::map<std::string, unsigned> m_name2index ; 

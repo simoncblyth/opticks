@@ -416,7 +416,7 @@ void AssimpGGeo::convertMaterials(const aiScene* scene, GGeo* gg, const char* qu
         const char* srcidx_ = getStringProperty(mat, g4dae_material_srcidx );
         int srcidx = BStr::atoi( srcidx_ ) ; 
 
-        LOG(info) << " i " << i 
+        LOG(debug) << " i " << i 
                   << " name " << name 
                   << " srcidx " << srcidx 
                   ;

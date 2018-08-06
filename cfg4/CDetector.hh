@@ -13,6 +13,7 @@ class OpticksQuery ;
 //class GGeo ; 
 class GGeoBase ; 
 class GSurfaceLib ; 
+class GMaterialLib ; 
 
 // cfg4-
 class CBndLib ; 
@@ -70,6 +71,7 @@ class CFG4_API CDetector : public G4VUserDetectorConstruction
     NBoundingBox*      getBoundingBox();
     GSurfaceLib*       getGSurfaceLib() const ;
     CSurfaceLib*       getSurfaceLib() const ;
+    GMaterialLib*      getGMaterialLib() const ;
     CMaterialLib*      getMaterialLib() const ;
     G4VPhysicalVolume* getTop();
     bool               isValid();
@@ -115,6 +117,7 @@ class CFG4_API CDetector : public G4VUserDetectorConstruction
  private:
     OpticksQuery*      m_query ;
     OpticksResource*   m_resource ;
+    GMaterialLib*      m_gmateriallib ; 
     CMaterialLib*      m_mlib ; 
     GSurfaceLib*       m_gsurfacelib ; 
     CSurfaceLib*       m_slib ; 
