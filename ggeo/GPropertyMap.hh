@@ -141,7 +141,7 @@ class GGEO_API GPropertyMap {
 
        // this one does not interpolate  
       void addProperty(const char* pname, GProperty<T>* prop, const char* prefix=NULL);
-      void replaceProperty(const char* pname, GProperty<T>* prop, const char* prefix=NULL);
+      //void replaceProperty(const char* pname, GProperty<T>* prop, const char* prefix=NULL);
 
       unsigned int getNumProperties() const ;
 

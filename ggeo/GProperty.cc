@@ -59,20 +59,20 @@ std::string GProperty<T>::brief(const char* msg) const
 }
 
 template <typename T>
-T GProperty<T>::getValue(unsigned int index)
+T GProperty<T>::getValue(unsigned index) const 
 {
     return m_values->getValue(index);
 }
 
 template <typename T>
-T GProperty<T>::getDomain(unsigned int index)
+T GProperty<T>::getDomain(unsigned index) const 
 {
     return m_domain->getValue(index);
 }
 
  
 template <typename T>
-GAry<T>* GProperty<T>::getValues()
+GAry<T>* GProperty<T>::getValues() const 
 {
     return m_values ; 
 }
@@ -83,10 +83,8 @@ void GProperty<T>::setValues(T val)
     m_values->setValues(val) ;  
 }
 
-
-
 template <typename T>
-GAry<T>* GProperty<T>::getDomain()
+GAry<T>* GProperty<T>::getDomain() const 
 {
     return m_domain ; 
 }
@@ -564,10 +562,16 @@ GProperty<T>* GProperty<T>::ramp(T low, T step, T* domain, unsigned int length )
     return new GProperty<T>( vals, doms );
 }
 
-
+template <typename T>
+GProperty<T>* GProperty<T>::copy() const 
+{
+    return new GProperty<T>(this) ; 
+}
 
 template <typename T>
-GProperty<T>::GProperty(GProperty<T>* other) : m_length(other->getLength())
+GProperty<T>::GProperty(const GProperty<T>* other) 
+    : 
+    m_length(other->getLength())
 {
     m_values = new GAry<T>(other->getValues());
     m_domain = new GAry<T>(other->getDomain());
@@ -781,7 +785,7 @@ GProperty<T>* GProperty<T>::createInterpolatedProperty(GDomain<T>* domain)
 }
 
 template <typename T>
-T GProperty<T>::getInterpolatedValue(T x)
+T GProperty<T>::getInterpolatedValue(T x) const 
 {
     // find the value "y" at "x" by first placing "x" within the domain
     // and then using linear interpolation of the above and below values

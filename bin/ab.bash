@@ -6,6 +6,11 @@ ab-usage(){ cat << EOU
 ab Usage 
 ===================
 
+ab-l
+    list cachemeta in the geocache dirs being compared, to check last update time    
+ab-ls
+    more detailed listing of geocache dirs 
+
 ab-i 
     cfprim, cfpart, cftran simple direct buffer comparisons using python 
     instance wrappers 
@@ -13,6 +18,17 @@ ab-i
 ab-t
     closer look at discrepant tr using Dir.where_discrepant_tr
 
+
+To do a full check of analytic geometry should also look at the 
+repeated geometry by changing AB_TAIL : however most issues (deep shapes etc..) 
+are with the global geometry in slot 0::
+
+    ab-;AB_TAIL=0 ab-t    
+    ##   why is there no 1 ? unconfirmed guess is some repeated RPC geometry that got was cut by geoselection 
+    ab-;AB_TAIL=2 ab-t 
+    ab-;AB_TAIL=3 ab-t 
+    ab-;AB_TAIL=4 ab-t 
+    ab-;AB_TAIL=5 ab-t 
 
 EOU
 }
@@ -29,13 +45,50 @@ ab-a-dir(){ echo DayaBay_VGDX_20140414-1300/g4_00.dae/96ff965744a2f6b78c24e33c80
 #ab-b-dir(){ echo OKX4Test_World0xc15cfc0_PV_g4live/g4ok_gltf/742ab212f7f2da665ed627411ebdb07d ; }
 ab-b-dir(){ echo OKX4Test_World0xc15cfc0_PV_g4live/g4ok_gltf/0dce832a26eb41b58a000497a3127cb8 ; }
 
+ab-A-(){ echo $(ab-base)/$(ab-a-dir)/104 ; }
+#ab-A-(){ echo $(ab-base)/$(ab-a-dir)/103 ; }
+#ab-A-(){ echo $(ab-base)/$(ab-a-dir)/1 ; }
+ab-B-(){ echo $(ab-base)/$(ab-b-dir)/1 ; }
 
-ab-a-idpath(){ echo $(ab-base)/$(ab-a-dir)/104 ; }
-#ab-a-idpath(){ echo $(ab-base)/$(ab-a-dir)/103 ; }
-#ab-a-idpath(){ echo $(ab-base)/$(ab-a-dir)/1 ; }
-ab-b-idpath(){ echo $(ab-base)/$(ab-b-dir)/1 ; }
+ab-A(){  cd $(ab-A-); }
+ab-B(){  cd $(ab-B-); }
+
+ab-tail(){ echo ${AB_TAIL:-0} ; }
+ab-a-(){ echo $(ab-A-)/GPartsAnalytic/$(ab-tail) ; }
+ab-b-(){ echo $(ab-B-)/GParts/$(ab-tail) ; }
+
+ab-a-tails(){ ls -1 $(ab-b-)/../ ; }
+ab-b-tails(){ ls -1 $(ab-b-)/../ ; }
+
+ab-a(){  cd $(ab-a-); }
+ab-b(){  cd $(ab-b-); }
 
 
+ab-paths(){ cat << EOP
+
+   ab-base  : $(ab-base)
+   ab-a-dir : $(ab-a-dir)
+   ab-b-dir : $(ab-b-dir)
+
+   ab-A-   : $(ab-A-)
+   ab-B-   : $(ab-B-)
+
+   ab-tail : $(ab-tail)
+   ab-a-   : $(ab-a-)
+   ab-b-   : $(ab-b-)
+
+EOP
+}
+
+ab-a-run(){  OPTICKS_RESOURCE_LAYOUT=104 OKTest -G --gltf 3   ; }
+ab-b-run(){  OPTICKS_RESOURCE_LAYOUT=104 OKX4Test   ; }
+
+
+ab-l(){ 
+   date
+   echo A $(ls -l $(ab-A-)/*.json)
+   echo B $(ls -l $(ab-B-)/*.json)
+}
 ab-l-notes(){ cat << EON
 
 Check the dates of the cachemeta.json to see when the caches were last written::
@@ -47,34 +100,13 @@ Check the dates of the cachemeta.json to see when the caches were last written::
 EON
 }
 
-ab-l(){ 
-   date
-   echo A $(ls -l $(ab-a-idpath)/*.json)
-   echo B $(ls -l $(ab-b-idpath)/*.json)
-}
-
 ab-ls(){ 
    date
-   echo A $(ab-a-idpath)
-   ls -l $(ab-a-idpath) 
-   echo B $(ab-b-idpath)
-   ls -l $(ab-b-idpath) 
+   echo A $(ab-A-)
+   ls -l $(ab-A-) 
+   echo B $(ab-B-)
+   ls -l $(ab-B-) 
 }
-
-
-ab-A-(){ echo $(ab-a-idpath) ; }
-ab-B-(){ echo $(ab-b-idpath) ; }
-ab-A(){  cd $(ab-A-); }
-ab-B(){  cd $(ab-B-); }
-
-
-#ab-tail(){ echo ${AB_TAIL:-.} ; }
-ab-tail(){ echo ${AB_TAIL:-0} ; }
-ab-a-(){ echo $(ab-a-idpath)/GPartsAnalytic/$(ab-tail) ; }
-ab-b-(){ echo $(ab-b-idpath)/GParts/$(ab-tail) ; }
-
-ab-a(){  cd $(ab-a-); }
-ab-b(){  cd $(ab-b-); }
 
 ab-diff()
 {  
@@ -91,11 +123,21 @@ ab-diff()
 }
 
 
-ab-prim(){
-   prim.py $(ab-a-)
-   prim.py $(ab-b-)
-}
+ab-prim-a(){ prim.py $(ab-a-) $*; }
+ab-prim-b(){ prim.py $(ab-b-) $*; }
 
+ab-prim(){
+   prim.py $(ab-a-) $*
+   prim.py $(ab-b-) $*
+}
+ab-prim-notes(){ cat << EON
+
+AB_TAIL=5 ab-prim 0:1
+    dump the analytic geometry of the first primIdx of instance 5 
+    which is pmt-hemi from the two geocache 
+
+EON
+}
 
 
 
@@ -107,32 +149,74 @@ ab-genrun(){
     cat $py
     ipython -i $py 
 }
-ab-i(){ ab-genrun $FUNCNAME ; }
-ab-p(){ ab-genrun $FUNCNAME ; }
-ab-t(){ ab-genrun $FUNCNAME ; }
-ab-s(){ ab-genrun $FUNCNAME ; }
-ab-part(){ ab-genrun $FUNCNAME ; }
-ab-plan(){ ab-genrun $FUNCNAME ; }
-ab-bnd(){ ab-genrun $FUNCNAME ; }
-ab-idx(){ ab-genrun $FUNCNAME ; }
 
+ab-lv2name(){
 
-ab-p-notes(){ cat << EON
+   local d
+   local dirs="$(ab-A-) $(ab-B-)"
 
-For DYB gives 4 discrepant for the two iav + oav, 
-(lack of nudging)
+   local rel="MeshIndex/GItemIndexSource.json"
+   #local rel="MeshIndex/GItemIndexLocal.json"
 
-See NNodeNudger::
+   for d in $dirs ; do 
+      cd $d
+      pwd
+      ls -l $rel
+      js.py $rel | head -5
+      echo ...
+      js.py $rel | tail -5 
+   done 
+}
 
-    if(NudgeBuffer) 
-         NudgeBuffer->add(root->treeidx, prim.size(), coincidence.size(), nudges.size() );
+ab-lv2name-notes(){ cat << EON
 
+MeshIndex lvIdx to lvName mapping is totally off for live geometry 
+====================================================================
+
+Noticed this from getting incorrect lvNames from ab-prim when 
+it was using IDPATH from the direct geocache. 
+
+Investigate in :doc:`/notes/issues/ab-lvname`
+
+::
+
+    epsilon:1 blyth$ ab-;ab-lv2name
+    /usr/local/opticks/geocache/DayaBay_VGDX_20140414-1300/g4_00.dae/96ff965744a2f6b78c24e33c80d3a4cd/104
+    -rw-r--r--  1 blyth  staff  9448 Aug  7 13:18 MeshIndex/GItemIndexSource.json
+      0 : near_top_cover_box0xc23f970 
+      1 : RPCStrip0xc04bcb0 
+      2 : RPCGasgap140xbf4c660 
+      3 : RPCBarCham140xc2ba760 
+      4 : RPCGasgap230xbf50468 
+    ...
+    244 : near-radslab-box-80xcd308c0 
+    245 : near-radslab-box-90xcd31ea0 
+    246 : near_hall_bot0xbf3d718 
+    247 : near_rock0xc04ba08 
+    248 : WorldBox0xc15cf40 
+    /usr/local/opticks/geocache/OKX4Test_World0xc15cfc0_PV_g4live/g4ok_gltf/0dce832a26eb41b58a000497a3127cb8/1
+    -rw-r--r--  1 blyth  staff  9472 Aug  7 13:19 MeshIndex/GItemIndexSource.json
+      0 : WorldBox0xc15cf40 
+      1 : near_rock0xc04ba08 
+      2 : near_hall_top_dwarf0xc0316c8 
+      3 : near_top_cover_box0xc23f970 
+      4 : RPCMod0xc13bfd8 
+    ...
+    244 : near-radslab-box-50xccefd60 
+    245 : near-radslab-box-60xccefda0 
+    246 : near-radslab-box-70xccefde0 
+    247 : near-radslab-box-80xcd308c0 
+    248 : near-radslab-box-90xcd31ea0 
+    epsilon:1 blyth$ 
 
 
 EON
 }
 
 
+
+ab-p-desc(){ echo "Comparison of param values for all constituent parts of each prim " ; }
+ab-p(){ ab-genrun $FUNCNAME ; }
 ab-p-(){ cat << EOP
 import os, numpy as np
 from opticks.ana.mesh import Mesh
@@ -141,8 +225,8 @@ from opticks.sysrap.OpticksCSG import CSG_
 
 a_dir = "$(ab-a-)"
 b_dir = "$(ab-b-)"
-a_idpath = "$(ab-a-idpath)"
-b_idpath = "$(ab-b-idpath)"
+A_dir = "$(ab-A-)"
+B_dir = "$(ab-B-)"
 
 a_load = lambda _:np.load(os.path.join(a_dir, _))
 b_load = lambda _:np.load(os.path.join(b_dir, _))
@@ -159,7 +243,7 @@ max_uheight = uheight.max()
 assert max_uheight <= 4, (uheight, max_uheight) 
 
 
-ma = Mesh.make(a_idpath)
+ma = Mesh.make(A_dir)
 nn = np.load(os.path.expandvars("$TMP/NNodeNudger.npy"))
 assert np.all( np.sort(nn[:,0]) == np.arange(len(nn), dtype=np.uint32) )
 nns = nn[np.argsort(nn[:,0])]  # sort the nudge info into lvIdx order
@@ -171,40 +255,68 @@ print "nudged (lvIdx/treeidx,num_prim,coincidences,nudges)\n nn[np.where( nn[:,3
 da = Dir(a_dir)
 db = Dir(b_dir)
 
-cut = 0.1
-where_discrepant = da.where_discrepant_prims(db, cut)   ## compares param values for all constituent parts of the prim 
-wd = np.array(where_discrepant, dtype=np.uint32)        ## primIdx of discrepancies
-lvd = np.unique(xb[wd][:,2])    
+mxdump = 5 
 
-log.info(" num_discrepant %d cut %s " % ( len(where_discrepant), cut ) )
+for cut in [0.1, 1e-3, 1e-4]:
+    where_discrepant = da.where_discrepant_prims(db, cut)   ## compares param values for all constituent parts of the prim 
+    wd = np.array(where_discrepant, dtype=np.uint32)        ## primIdx of discrepancies
+    lwd = len(where_discrepant)
+    lvd = np.unique(xb[wd][:,2])    
+    log.info(" num_discrepant %d cut %s " % ( lwd, cut ) )
 
-for detail in [False, True, False]:
-    for i in where_discrepant:
-        primIdx = i 
-        _,soIdx,lvIdx,height = xb[i]
-        assert _ == 0   # why is this always zero ?
-        name = ma.idx2name[lvIdx]
-        nnsi = nns[lvIdx]
+    for detail in [False, True, False]:
+        for i, primIdx in enumerate(where_discrepant):
+            _,soIdx,lvIdx,height = xb[primIdx]
+            assert _ == 0   # why is this always zero ?
+            name = ma.idx2name[lvIdx]
+            nnsi = nns[lvIdx]
 
-        print " %s primIdx:%3d soIdx:%3d lvIdx:%3d height:%d name:%s nnsi:%s   %s " % ( "-" * 5, primIdx, soIdx,lvIdx,height, name, repr(nnsi),  "-" * 10 )
+            dap = da.prims[primIdx]
+            dbp = db.prims[primIdx]
+            mxd = dap.maxdiff(dbp)
 
-        if detail == True:
-            dap = da.prims[i]
-            dbp = db.prims[i]
+            print " %s mxd*1e6:%10.3f primIdx:%3d soIdx:%3d lvIdx:%3d height:%d name:%s nnsi:%s   %s " % ( "-" * 5, mxd*1e6, primIdx, soIdx,lvIdx,height, name, repr(nnsi),  "-" * 10 )
 
-            print "dap.maxdiff(dbp):%s " % dap.maxdiff(dbp)
-            print "dap:",dap
-            print "dbp:",dbp
-            print
-            print
+            if detail == True and i < mxdump:
+                print "dap.maxdiff(dbp):%s " % mxd
+                print "dap:",dap
+                print "dbp:",dbp
+                print
+                print
+            pass
         pass
+        if detail and lwd > mxdump:
+            log.warning("detail dumping of many more discrepancies was suppressed lwd %d mxdump %d " % ( lwd, mxdump ))
+        pass 
     pass
 pass
 
 EOP
 }
 
+ab-p-notes(){ cat << EON
 
+For DYB initially gave 8 1mm discrepant for the two iav + oav + gdls + lso, 
+fixed by some bug fixes to regard nudging.
+
+See NNodeNudger::
+
+    if(NudgeBuffer) 
+         NudgeBuffer->add(root->treeidx, prim.size(), coincidence.size(), nudges.size() );
+
+
+Following the fix to nudging have to go to 1e-4 level to see discrepancies.
+
+
+EON
+}
+
+
+
+
+
+
+ab-s(){ ab-genrun $FUNCNAME ; }
 ab-s-(){ cat << EOP
 
 import os, numpy as np
@@ -262,41 +374,8 @@ EOP
 }
 
 
-ab-t-notes(){ cat << EON
-
-::
-
-    In [15]: dt = np.max( np.abs(ta[:,0]-tb[:,0]), axis=(1,2))
-
-    In [17]: np.where( dt > 1e-6 )
-    Out[17]: (array([], dtype=int64),)
-
-    In [21]: np.where( dt > 1e-7 )[0].shape
-    Out[21]: (260,)
-
-
-EON
-}
-
-ab-t-notes(){ cat << EON
-
-[2018-08-01 12:49:31,643] p32697 {/Users/blyth/opticks/ana/mesh.py:37} INFO - Mesh for idpath : /usr/local/opticks/geocache/DayaBay_VGDX_20140414-1300/g4_00.dae/96ff965744a2f6b78c24e33c80d3a4cd/1 
-[2018-08-01 12:49:32,675] p32697 {/Users/blyth/opticks/ana/mesh.py:37} INFO - Mesh for idpath : /usr/local/opticks/geocache/DayaBay_VGDX_20140414-1300/g4_00.dae/96ff965744a2f6b78c24e33c80d3a4cd/1 
-[2018-08-01 12:49:33,732] p32697 {/Users/blyth/opticks/ana/mesh.py:37} INFO - Mesh for idpath : /usr/local/opticks/geocache/DayaBay_VGDX_20140414-1300/g4_00.dae/96ff965744a2f6b78c24e33c80d3a4cd/103 
-[2018-08-01 12:49:33,733] p32697 {/Users/blyth/opticks/ana/mesh.py:37} INFO - Mesh for idpath : /usr/local/opticks/geocache/OKX4Test_World0xc15cfc0_PV_g4live/g4ok_gltf/828722902b5e94dab05ac248329ffebe/1 
- prim with discrepant_tr 0 cut 0.1 
- prim with discrepant_tr 0 cut 0.01 
- prim with discrepant_tr 0 cut 0.001 
- prim with discrepant_tr 0 cut 1e-06 
- prim with discrepant_tr 156 cut 1e-07 
- ------------------------------ primIdx:283 soIdx: 67 lvIdx: 56 height:4 name:RadialShieldUnit0xc3d7da8  ------------------------------------------------------------ 
- ------------------------------ primIdx:285 soIdx: 67 lvIdx: 56 height:4 name:RadialShieldUnit0xc3d7da8  ------------------------------------------------------------ 
- ...
-
-EON
-}
-
-
+ab-t-desc(){ echo "Comparison focussing on transforms " ; }
+ab-t(){ ab-genrun $FUNCNAME ; }
 ab-t-(){ cat << EOP
 import os, numpy as np
 from opticks.ana.mesh import Mesh
@@ -305,13 +384,11 @@ from opticks.sysrap.OpticksCSG import CSG_
 
 a_dir = "$(ab-a-)"
 b_dir = "$(ab-b-)"
-
-
 da = Dir(a_dir)
 db = Dir(b_dir)
 
-a_idpath = "$(ab-a-idpath)"
-b_idpath = "$(ab-b-idpath)"
+A_dir = "$(ab-A-)"
+B_dir = "$(ab-B-)"
 
 a_load = lambda _:np.load(os.path.join(a_dir, _))
 b_load = lambda _:np.load(os.path.join(b_dir, _))
@@ -326,8 +403,8 @@ pb = b_load("primBuffer.npy")
 
 xb = b_load("idxBuffer.npy")
 
-ma = Mesh.make(a_idpath)
-mb = Mesh.make(b_idpath)
+ma = Mesh.make(A_dir)
+mb = Mesh.make(B_dir)
 
 for cut in [0.1,0.01,0.001,1e-6, 1e-7]:
     where_discrepant_tr = da.where_discrepant_tr(db, cut) 
@@ -368,67 +445,41 @@ print "lvs: %s " % repr(lvs)
 EOP
 }
 
-
-ab-i-notes(){ cat << EON
-
-cfpart
----------
-
-After absolution of the diffs, get 4 cones showing up as well as the 4 cylinders.
+ab-t-notes(){ cat << EON
 
 ::
 
-    args: /opt/local/bin/ipython -i /tmp/blyth/opticks/bin/ab/ab-i.py
-    [2018-07-31 23:53:10,696] p30680 {/Users/blyth/opticks/ana/mesh.py:37} INFO - Mesh for idpath : /usr/local/opticks/geocache/OKX4Test_World0xc15cfc0_PV_g4live/g4ok_gltf/828722902b5e94dab05ac248329ffebe/1 
-    [2018-07-31 23:53:11,668] p30680 {/Users/blyth/opticks/ana/mesh.py:37} INFO - Mesh for idpath : /usr/local/opticks/geocache/OKX4Test_World0xc15cfc0_PV_g4live/g4ok_gltf/828722902b5e94dab05ac248329ffebe/1 
-    [2018-07-31 23:53:12,641] p30680 {/Users/blyth/opticks/ana/mesh.py:37} INFO - Mesh for idpath : /usr/local/opticks/geocache/DayaBay_VGDX_20140414-1300/g4_00.dae/96ff965744a2f6b78c24e33c80d3a4cd/103 
-    [2018-07-31 23:53:12,641] p30680 {/Users/blyth/opticks/ana/mesh.py:37} INFO - Mesh for idpath : /usr/local/opticks/geocache/OKX4Test_World0xc15cfc0_PV_g4live/g4ok_gltf/828722902b5e94dab05ac248329ffebe/1 
-     partIdx:     4 count:     1 tc: 12 tcn:            cylinder gta: 1 gtb: 1 mx:       1.0   
-     partIdx:    18 count:     3 tc: 12 tcn:            cylinder gta: 1 gtb: 1 mx:       1.0   
-     partIdx:  3496 count:     5 tc: 12 tcn:            cylinder gta: 1 gtb: 1 mx:       1.0   
-     partIdx:  3510 count:     7 tc: 12 tcn:            cylinder gta: 1 gtb: 1 mx:       1.0   
+    In [15]: dt = np.max( np.abs(ta[:,0]-tb[:,0]), axis=(1,2))
+
+    In [17]: np.where( dt > 1e-6 )
+    Out[17]: (array([], dtype=int64),)
+
+    In [21]: np.where( dt > 1e-7 )[0].shape
+    Out[21]: (260,)
 
 
-     partIdx:    15 count:     2 tc: 15 tcn:                cone gta: 2 gtb: 2 mx:       1.0   
-     partIdx:    29 count:     4 tc: 15 tcn:                cone gta: 2 gtb: 2 mx:       1.0   
-     partIdx:  3507 count:     6 tc: 15 tcn:                cone gta: 2 gtb: 2 mx:       1.0   
-     partIdx:  3521 count:     8 tc: 15 tcn:                cone gta: 2 gtb: 2 mx:       1.0   
-
-
-     num_parts 11984  num_discrepant :     8   cut:0.0005  
-
-
-
-All the big diffs are 1mm, presumably from nudge not being applied::
-
-    In [5]: ab = np.max( np.abs( a - b  ), axis=(1,2) )
-
-    In [7]: np.where( ab > 1e-3 )
-    Out[7]: (array([   4,   15,   18,   29, 3496, 3507, 3510, 3521]),)
-
-    In [8]: w = np.where( ab > 1e-3 )
-
-    In [11]: a[w] - b[w]
-    Out[11]: 
-    array([[[ 0.,  0.,  0.,  0.],
-            [ 0.,  1.,  0.,  0.],
-            [ 0.,  0.,  0.,  0.],
-            [ 0.,  0.,  0.,  0.]],
-
-           [[ 0., -1.,  0.,  0.],
-            [ 0.,  0.,  0.,  0.],
-            [ 0.,  0.,  0.,  0.],
-            [ 0.,  0.,  0.,  0.]],
-
-
-
-
-
+[2018-08-01 12:49:31,643] p32697 {/Users/blyth/opticks/ana/mesh.py:37} INFO - Mesh for idpath : /usr/local/opticks/geocache/DayaBay_VGDX_20140414-1300/g4_00.dae/96ff965744a2f6b78c24e33c80d3a4cd/1 
+[2018-08-01 12:49:32,675] p32697 {/Users/blyth/opticks/ana/mesh.py:37} INFO - Mesh for idpath : /usr/local/opticks/geocache/DayaBay_VGDX_20140414-1300/g4_00.dae/96ff965744a2f6b78c24e33c80d3a4cd/1 
+[2018-08-01 12:49:33,732] p32697 {/Users/blyth/opticks/ana/mesh.py:37} INFO - Mesh for idpath : /usr/local/opticks/geocache/DayaBay_VGDX_20140414-1300/g4_00.dae/96ff965744a2f6b78c24e33c80d3a4cd/103 
+[2018-08-01 12:49:33,733] p32697 {/Users/blyth/opticks/ana/mesh.py:37} INFO - Mesh for idpath : /usr/local/opticks/geocache/OKX4Test_World0xc15cfc0_PV_g4live/g4ok_gltf/828722902b5e94dab05ac248329ffebe/1 
+ prim with discrepant_tr 0 cut 0.1 
+ prim with discrepant_tr 0 cut 0.01 
+ prim with discrepant_tr 0 cut 0.001 
+ prim with discrepant_tr 0 cut 1e-06 
+ prim with discrepant_tr 156 cut 1e-07 
+ ------------------------------ primIdx:283 soIdx: 67 lvIdx: 56 height:4 name:RadialShieldUnit0xc3d7da8  ------------------------------------------------------------ 
+ ------------------------------ primIdx:285 soIdx: 67 lvIdx: 56 height:4 name:RadialShieldUnit0xc3d7da8  ------------------------------------------------------------ 
+ ...
 
 EON
 }
 
 
+
+
+
+
+ab-i(){ ab-genrun $FUNCNAME ; }
 ab-i-(){ cat << EOP
 
 import os, logging, numpy as np
@@ -465,12 +516,12 @@ assert pa.shape == pb.shape, msg
 da = Dir(a_dir)
 db = Dir(b_dir)
 
-a_idpath = "$(ab-a-idpath)"
-b_idpath = "$(ab-b-idpath)"
+A_dir = "$(ab-A-)"
+B_dir = "$(ab-B-)"
 xb = b_load("idxBuffer.npy")
 
-ma = Mesh.make(a_idpath)
-mb = Mesh.make(b_idpath)
+ma = Mesh.make(A_dir)
+mb = Mesh.make(B_dir)
 
 
 def cfprim_debug(pa,pb,xb,ma):
@@ -604,26 +655,63 @@ EOP
 
 
 
-ab-part-notes(){ cat << EON
 
-Differences in CSG constitutent part params at a level that can be ignored.
+ab-i-notes(){ cat << EON
 
-args: /opt/local/bin/ipython -i /tmp/blyth/opticks/bin/ab/ab-part.py
-[2018-08-01 20:36:32,863] p78152 {/tmp/blyth/opticks/bin/ab/ab-part.py:22} INFO -  ab.max() 0.00024414062 
-[2018-08-01 20:36:32,863] p78152 {/tmp/blyth/opticks/bin/ab/ab-part.py:28} INFO -  part deviation > cut        0.1 :  0/11984 
-[2018-08-01 20:36:32,863] p78152 {/tmp/blyth/opticks/bin/ab/ab-part.py:28} INFO -  part deviation > cut       0.01 :  0/11984 
-[2018-08-01 20:36:32,863] p78152 {/tmp/blyth/opticks/bin/ab/ab-part.py:28} INFO -  part deviation > cut      0.001 :  0/11984 
-[2018-08-01 20:36:32,863] p78152 {/tmp/blyth/opticks/bin/ab/ab-part.py:28} INFO -  part deviation > cut     0.0001 :  80/11984 
-[2018-08-01 20:36:32,863] p78152 {/tmp/blyth/opticks/bin/ab/ab-part.py:28} INFO -  part deviation > cut      1e-05 :  80/11984 
-[2018-08-01 20:36:32,863] p78152 {/tmp/blyth/opticks/bin/ab/ab-part.py:28} INFO -  part deviation > cut      1e-06 :  82/11984 
-[2018-08-01 20:36:32,863] p78152 {/tmp/blyth/opticks/bin/ab/ab-part.py:28} INFO -  part deviation > cut      1e-07 :  82/11984 
-[2018-08-01 20:36:32,864] p78152 {/tmp/blyth/opticks/bin/ab/ab-part.py:28} INFO -  part deviation > cut      1e-08 :  82/11984 
-[2018-08-01 20:36:32,864] p78152 {/tmp/blyth/opticks/bin/ab/ab-part.py:28} INFO -  part deviation > cut      1e-09 :  82/11984 
-[2018-08-01 20:36:32,864] p78152 {/tmp/blyth/opticks/bin/ab/ab-part.py:28} INFO -  part deviation > cut      1e-10 :  82/11984 
+cfpart
+---------
+
+After absolution of the diffs, get 4 cones showing up as well as the 4 cylinders.
+
+::
+
+    args: /opt/local/bin/ipython -i /tmp/blyth/opticks/bin/ab/ab-i.py
+    [2018-07-31 23:53:10,696] p30680 {/Users/blyth/opticks/ana/mesh.py:37} INFO - Mesh for idpath : /usr/local/opticks/geocache/OKX4Test_World0xc15cfc0_PV_g4live/g4ok_gltf/828722902b5e94dab05ac248329ffebe/1 
+    [2018-07-31 23:53:11,668] p30680 {/Users/blyth/opticks/ana/mesh.py:37} INFO - Mesh for idpath : /usr/local/opticks/geocache/OKX4Test_World0xc15cfc0_PV_g4live/g4ok_gltf/828722902b5e94dab05ac248329ffebe/1 
+    [2018-07-31 23:53:12,641] p30680 {/Users/blyth/opticks/ana/mesh.py:37} INFO - Mesh for idpath : /usr/local/opticks/geocache/DayaBay_VGDX_20140414-1300/g4_00.dae/96ff965744a2f6b78c24e33c80d3a4cd/103 
+    [2018-07-31 23:53:12,641] p30680 {/Users/blyth/opticks/ana/mesh.py:37} INFO - Mesh for idpath : /usr/local/opticks/geocache/OKX4Test_World0xc15cfc0_PV_g4live/g4ok_gltf/828722902b5e94dab05ac248329ffebe/1 
+     partIdx:     4 count:     1 tc: 12 tcn:            cylinder gta: 1 gtb: 1 mx:       1.0   
+     partIdx:    18 count:     3 tc: 12 tcn:            cylinder gta: 1 gtb: 1 mx:       1.0   
+     partIdx:  3496 count:     5 tc: 12 tcn:            cylinder gta: 1 gtb: 1 mx:       1.0   
+     partIdx:  3510 count:     7 tc: 12 tcn:            cylinder gta: 1 gtb: 1 mx:       1.0   
+
+
+     partIdx:    15 count:     2 tc: 15 tcn:                cone gta: 2 gtb: 2 mx:       1.0   
+     partIdx:    29 count:     4 tc: 15 tcn:                cone gta: 2 gtb: 2 mx:       1.0   
+     partIdx:  3507 count:     6 tc: 15 tcn:                cone gta: 2 gtb: 2 mx:       1.0   
+     partIdx:  3521 count:     8 tc: 15 tcn:                cone gta: 2 gtb: 2 mx:       1.0   
+
+
+     num_parts 11984  num_discrepant :     8   cut:0.0005  
+
+
+
+All the big diffs are 1mm, presumably from nudge not being applied::
+
+    In [5]: ab = np.max( np.abs( a - b  ), axis=(1,2) )
+
+    In [7]: np.where( ab > 1e-3 )
+    Out[7]: (array([   4,   15,   18,   29, 3496, 3507, 3510, 3521]),)
+
+    In [8]: w = np.where( ab > 1e-3 )
+
+    In [11]: a[w] - b[w]
+    Out[11]: 
+    array([[[ 0.,  0.,  0.,  0.],
+            [ 0.,  1.,  0.,  0.],
+            [ 0.,  0.,  0.,  0.],
+            [ 0.,  0.,  0.,  0.]],
+
+           [[ 0., -1.,  0.,  0.],
+            [ 0.,  0.,  0.,  0.],
+            [ 0.,  0.,  0.,  0.],
+            [ 0.,  0.,  0.,  0.]],
 
 EON
 }
 
+
+ab-part(){ ab-genrun $FUNCNAME ; }
 ab-part-(){ cat << EOP
 
 import os, logging, numpy as np
@@ -665,24 +753,26 @@ EOP
 
 }
 
-ab-bnd-notes(){ cat << EON
+ab-part-notes(){ cat << EON
 
-::
+Differences in CSG constitutent part params at a level that can be ignored.
 
-    In [12]: np.unique(ia)
-    Out[12]: 
-    array([ 17,  18,  19,  20,  21,  22,  23,  24,  25,  26,  28,  29,  30,  31,  32,  33,  34,  35,  36,  37,  38,  39,  40,  41,  42,  43,  44,  45,  46,  47,  48,  49,  50,  51,  52,  53,  54,  55,
-            56,  57,  58,  59,  60,  61,  62,  63,  64,  65,  66,  67,  68,  69,  70,  71,  72,  73,  74,  75,  76,  77,  78,  79,  81,  82,  84,  87,  88,  89,  90,  91,  92,  93,  94,  95,  96,  97,
-            99, 100, 102, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120], dtype=int32)
-
-    In [13]: np.unique(ib)
-    Out[13]: 
-    array([ 17,  18,  19,  20,  21,  22,  23,  24,  25,  26,  28,  30,  31,  32,  33,  34,  35,  36,  37,  38,  39,  40,  41,  42,  43,  44,  45,  46,  47,  48,  49,  50,  51,  52,  53,  54,  55,  56,
-            57,  58,  59,  60,  61,  62,  63,  64,  65,  66,  67,  68,  69,  70,  71,  72,  73,  74,  75,  76,  77,  78,  79,  80,  82,  83,  85,  88,  89,  90,  91,  92,  93,  94,  95,  96,  97,  98,
-            99, 100, 102, 103, 105, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126], dtype=int32)
+args: /opt/local/bin/ipython -i /tmp/blyth/opticks/bin/ab/ab-part.py
+[2018-08-01 20:36:32,863] p78152 {/tmp/blyth/opticks/bin/ab/ab-part.py:22} INFO -  ab.max() 0.00024414062 
+[2018-08-01 20:36:32,863] p78152 {/tmp/blyth/opticks/bin/ab/ab-part.py:28} INFO -  part deviation > cut        0.1 :  0/11984 
+[2018-08-01 20:36:32,863] p78152 {/tmp/blyth/opticks/bin/ab/ab-part.py:28} INFO -  part deviation > cut       0.01 :  0/11984 
+[2018-08-01 20:36:32,863] p78152 {/tmp/blyth/opticks/bin/ab/ab-part.py:28} INFO -  part deviation > cut      0.001 :  0/11984 
+[2018-08-01 20:36:32,863] p78152 {/tmp/blyth/opticks/bin/ab/ab-part.py:28} INFO -  part deviation > cut     0.0001 :  80/11984 
+[2018-08-01 20:36:32,863] p78152 {/tmp/blyth/opticks/bin/ab/ab-part.py:28} INFO -  part deviation > cut      1e-05 :  80/11984 
+[2018-08-01 20:36:32,863] p78152 {/tmp/blyth/opticks/bin/ab/ab-part.py:28} INFO -  part deviation > cut      1e-06 :  82/11984 
+[2018-08-01 20:36:32,863] p78152 {/tmp/blyth/opticks/bin/ab/ab-part.py:28} INFO -  part deviation > cut      1e-07 :  82/11984 
+[2018-08-01 20:36:32,864] p78152 {/tmp/blyth/opticks/bin/ab/ab-part.py:28} INFO -  part deviation > cut      1e-08 :  82/11984 
+[2018-08-01 20:36:32,864] p78152 {/tmp/blyth/opticks/bin/ab/ab-part.py:28} INFO -  part deviation > cut      1e-09 :  82/11984 
+[2018-08-01 20:36:32,864] p78152 {/tmp/blyth/opticks/bin/ab/ab-part.py:28} INFO -  part deviation > cut      1e-10 :  82/11984 
 
 EON
 }
+
 
 
 
@@ -728,6 +818,12 @@ args: /opt/local/bin/ipython -i /tmp/blyth/opticks/bin/ab/ab-plan.py
 EON
 }
 
+
+
+
+
+
+ab-plan(){ ab-genrun $FUNCNAME ; }
 ab-plan-(){ cat << EOP
 
 import os, logging, numpy as np
@@ -765,8 +861,14 @@ EOP
 
 
 
+ab-blib()
+{
+   echo "A"
+   blib.py $(ab-a-)
 
-
+   echo "B"
+   blib.py $(ab-b-)
+}
 
 
 ab-blib-notes(){ cat << EON
@@ -830,7 +932,7 @@ Observations:
 
 ::
 
-    epsilon:0 blyth$ diff -y $(ab-a-idpath)/GItemList/GSurfaceLib.txt $(ab-b-idpath)/GItemList/GSurfaceLib.txt
+    epsilon:0 blyth$ diff -y $(ab-A-)/GItemList/GSurfaceLib.txt $(ab-B-)/GItemList/GSurfaceLib.txt
 
     NearPoolCoverSurface<
     NearDeadLinerSurface    NearDeadLinerSurface
@@ -850,31 +952,21 @@ Observations:
     PmtMtBaseRingSurface    PmtMtBaseRingSurface
     PmtMtRib1Surface        PmtMtRib1Surface
 
-
-
-* follow this up in notes/issues/surface_ordering.rst
-
+* FIXED see notes/issues/surface_ordering.rst
 
 EON
 
 }
-ab-blib()
-{
-   echo "A"
-   blib.py $(ab-a-)
 
-   echo "B"
-   blib.py $(ab-b-)
-}
 
 ab-surf()
 {
    echo "A"
-   np.py $(ab-a-idpath)/GSurfaceLib  
+   np.py $(ab-A-)/GSurfaceLib  
    echo "B"
-   np.py $(ab-b-idpath)/GSurfaceLib  
+   np.py $(ab-B-)/GSurfaceLib  
 
-   diff -y $(ab-a-idpath)/GItemList/GSurfaceLib.txt $(ab-b-idpath)/GItemList/GSurfaceLib.txt
+   diff -y $(ab-A-)/GItemList/GSurfaceLib.txt $(ab-B-)/GItemList/GSurfaceLib.txt
 }
 
 
@@ -930,13 +1022,13 @@ import os, logging, numpy as np
 log = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
-a_dir = "$(ab-a-idpath)"
-b_dir = "$(ab-b-idpath)"
+A_dir = "$(ab-A-)"
+B_dir = "$(ab-B-)"
 
-a_npy = lambda _:np.load(os.path.join(a_dir, _))
-b_npy = lambda _:np.load(os.path.join(b_dir, _))
-a_txt = lambda _:map(str.strip,file(os.path.join(a_dir,_)).readlines())
-b_txt = lambda _:map(str.strip,file(os.path.join(b_dir,_)).readlines())
+a_npy = lambda _:np.load(os.path.join(A_dir, _))
+b_npy = lambda _:np.load(os.path.join(B_dir, _))
+a_txt = lambda _:map(str.strip,file(os.path.join(A_dir,_)).readlines())
+b_txt = lambda _:map(str.strip,file(os.path.join(B_dir,_)).readlines())
 
 a = a_npy("GSurfaceLib/GSurfaceLib.npy")
 b = b_npy("GSurfaceLib/GSurfaceLib.npy")
@@ -1003,13 +1095,13 @@ import os, logging, numpy as np
 log = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
-a_dir = "$(ab-a-idpath)"
-b_dir = "$(ab-b-idpath)"
+A_dir = "$(ab-A-)"
+B_dir = "$(ab-B-)"
 
-a_npy = lambda _:np.load(os.path.join(a_dir, _))
-b_npy = lambda _:np.load(os.path.join(b_dir, _))
-a_txt = lambda _:map(str.strip,file(os.path.join(a_dir,_)).readlines())
-b_txt = lambda _:map(str.strip,file(os.path.join(b_dir,_)).readlines())
+a_npy = lambda _:np.load(os.path.join(A_dir, _))
+b_npy = lambda _:np.load(os.path.join(B_dir, _))
+a_txt = lambda _:map(str.strip,file(os.path.join(A_dir,_)).readlines())
+b_txt = lambda _:map(str.strip,file(os.path.join(B_dir,_)).readlines())
 
 a = a_npy("GMaterialLib/GMaterialLib.npy")
 b = b_npy("GMaterialLib/GMaterialLib.npy")
@@ -1022,13 +1114,18 @@ assert len(ma) == len(a)
 
 assert ma == mb, "material names must match see notes/issues/surface_ordering.rst "  
 
+
+print " check max deviations per material, and globally " 
+
 ab0 = np.abs( a[:,0] - b[:,0] )
 ab0m = np.max(ab0, axis=(1,2) )
+print "ab0m", ab0m
+print "ab0m.max()", ab0m.max()
 
 ab1 = np.abs( a[:,1] - b[:,1] )
-
-
-
+ab1m = np.max(ab1, axis=(1,2) )
+print "ab1m", ab1m
+print "ab1m.max()", ab1m.max()
 
 
 EOP
@@ -1040,53 +1137,33 @@ Huh all groupvel stuck at 300 in A, but not B::
     In [42]: np.all( a[:,1,:,0] == 300. )
     Out[42]: True
 
+FIXED : by moving replaceGROUPVEL to be done beforeClose rather than on loading 
 
-Excluding groupvel the differences are not large, seem float precision
-diffs on some long abslength, scattering lengths::
+Also see small differences on some long abslength, scattering lengths::
 
     In [23]: ab0 = np.abs( a[:,0] - b[:,0] )
 
     In [24]: ab0.shape
     Out[24]: (38, 39, 4)
 
-    In [25]: np.max(ab0, axis=(1,2) )
+    In [25]: ab0m = np.max(ab0, axis=(1,2) ) ; print ab0m 
     Out[25]: 
     array([0.0156, 0.0156, 0.0156, 0.0156, 0.0002, 0.0059, 0.0059, 0.0059, 0.0059, 0.    , 0.    , 0.    , 0.    , 0.0002, 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    ,
            0.    , 0.    , 0.    , 0.0156, 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    ], dtype=float32)
 
 
 
-EON
-}
-
-
-ab-a-run(){  OPTICKS_RESOURCE_LAYOUT=104 OKTest -G --gltf 3   ; }
-ab-b-run(){  OPTICKS_RESOURCE_LAYOUT=104 OKX4Test   ; }
-
-
-ab-bnd-notes-(){ cat << EON
-
-
-Goes off the rails at part 8143 
-
-In [19]: ia.shape
-Out[19]: (11984,)
-
-In [20]: ib.shape
-Out[20]: (11984,)
-
-In [18]: np.all( ia[:8142] == ib[:8142] )
-Out[18]: True
-
-In [17]: np.all( ia[:8143] == ib[:8143] )
-Out[17]: False
-
 
 
 EON
 }
 
 
+
+
+
+
+ab-bnd(){ ab-genrun $FUNCNAME ; }
 ab-bnd-(){ cat << EOP
 
 import os, logging, numpy as np
@@ -1128,7 +1205,71 @@ EOP
 
 }
 
+ab-bnd-notes(){ cat << EON
 
+::
+
+
+    Goes off the rails at part 8143 
+
+    In [19]: ia.shape
+    Out[19]: (11984,)
+
+    In [20]: ib.shape
+    Out[20]: (11984,)
+
+    In [18]: np.all( ia[:8142] == ib[:8142] )
+    Out[18]: True
+
+    In [17]: np.all( ia[:8143] == ib[:8143] )
+    Out[17]: False
+
+
+
+    In [12]: np.unique(ia)
+    Out[12]: 
+    array([ 17,  18,  19,  20,  21,  22,  23,  24,  25,  26,  28,  29,  30,  31,  32,  33,  34,  35,  36,  37,  38,  39,  40,  41,  42,  43,  44,  45,  46,  47,  48,  49,  50,  51,  52,  53,  54,  55,
+            56,  57,  58,  59,  60,  61,  62,  63,  64,  65,  66,  67,  68,  69,  70,  71,  72,  73,  74,  75,  76,  77,  78,  79,  81,  82,  84,  87,  88,  89,  90,  91,  92,  93,  94,  95,  96,  97,
+            99, 100, 102, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120], dtype=int32)
+
+    In [13]: np.unique(ib)
+    Out[13]: 
+    array([ 17,  18,  19,  20,  21,  22,  23,  24,  25,  26,  28,  30,  31,  32,  33,  34,  35,  36,  37,  38,  39,  40,  41,  42,  43,  44,  45,  46,  47,  48,  49,  50,  51,  52,  53,  54,  55,  56,
+            57,  58,  59,  60,  61,  62,  63,  64,  65,  66,  67,  68,  69,  70,  71,  72,  73,  74,  75,  76,  77,  78,  79,  80,  82,  83,  85,  88,  89,  90,  91,  92,  93,  94,  95,  96,  97,  98,
+            99, 100, 102, 103, 105, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126], dtype=int32)
+
+EON
+}
+
+
+
+
+
+ab-idx(){ ab-genrun $FUNCNAME ; }
+ab-idx-(){ cat << EOP
+
+import os, logging, numpy as np
+from opticks.ana.blib import BLib
+log = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO)
+
+a_dir = "$(ab-a-)"
+b_dir = "$(ab-b-)"
+
+a_load = lambda _:np.load(os.path.join(a_dir, _))
+b_load = lambda _:np.load(os.path.join(b_dir, _))
+
+a = a_load("idxBuffer.npy")
+b = b_load("idxBuffer.npy")
+assert a.shape == b.shape
+
+print "a %s\n" % repr(a.shape), a
+print "b %s\n" % repr(b.shape), b
+
+assert np.all( a == b )
+
+EOP
+}
 
 ab-idx-notes(){ cat << EON
 
@@ -1203,31 +1344,6 @@ After threading them thru the python csg.py and NCSG/NCSGData get the idx to agr
 
 
 EON
-}
-
-ab-idx-(){ cat << EOP
-
-import os, logging, numpy as np
-from opticks.ana.blib import BLib
-log = logging.getLogger(__name__)
-logging.basicConfig(level=logging.INFO)
-
-a_dir = "$(ab-a-)"
-b_dir = "$(ab-b-)"
-
-a_load = lambda _:np.load(os.path.join(a_dir, _))
-b_load = lambda _:np.load(os.path.join(b_dir, _))
-
-a = a_load("idxBuffer.npy")
-b = b_load("idxBuffer.npy")
-assert a.shape == b.shape
-
-print "a %s\n" % repr(a.shape), a
-print "b %s\n" % repr(b.shape), b
-
-assert np.all( a == b )
-
-EOP
 }
 
 

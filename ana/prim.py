@@ -202,7 +202,7 @@ class Prim(object):
         return np.max(np.abs(self.trans_ - other.trans_))      
 
     def __repr__(self):
-        return "primIdx %s idx %s lvName %s partOffset %s numParts %s tranOffset %s numTran %s planOffset %s  " % (self.primIdx, repr(self.idx), self.lvName, self.partOffset, self.numParts, self.tranOffset, self.numTran, self.planOffset )  
+        return "primIdx %s idx %s lvIdx %3d lvName %s partOffset %s numParts %s tranOffset %s numTran %s planOffset %s  " % (self.primIdx, repr(self.idx), self.lvIdx, self.lvName, self.partOffset, self.numParts, self.tranOffset, self.numTran, self.planOffset )  
 
     def __str__(self):
         return "\n".join(["",repr(self)] + map(str,filter(lambda pt:pt.tc > 0, self.parts)) + [repr(self.trans_)]) 
@@ -272,20 +272,28 @@ class Dir(object):
 
 if __name__ == '__main__':
 
+    logging.basicConfig(level=logging.INFO)
 
     ddir = "/usr/local/opticks/geocache/DayaBay_VGDX_20140414-1300/g4_00.dae/96ff965744a2f6b78c24e33c80d3a4cd/103/GPartsAnalytic/5"
     dir_ = sys.argv[1] if len(sys.argv) > 1 else ddir
+    sli_ = sys.argv[2] if len(sys.argv) > 2 else "0:10"
+    sli = slice(*map(int, sli_.split(":")))
 
-    d = Dir(dir_)
-    print d
-
-    pp = d.prims
-    #assert len(pp) == 5
-
-    for p in pp:
-        print p
+    if dir_ == ddir:
+        log.warning("using hardcoded dir" ) ;  
     pass
 
+    d = Dir(dir_)
+    print "Dir(dir_)", d
+
+    
+
+    pp = d.prims
+
+    print "dump sliced prims from the dir slice %s " % repr(sli)
+    for p in pp[sli]:
+        print p
+    pass
     #print d.tran
 
 

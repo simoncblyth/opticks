@@ -637,29 +637,18 @@ void GMaterialLib::replaceGROUPVEL(bool debug)
     }
 
 
+    /*
     for(unsigned i=0 ; i < ni ; i++) 
         std::cout 
              << " i " << std::setw(2) << i 
              << m_materials[i]->dump_ptr()
              << std::endl 
              ;
-
-    for(unsigned i=0 ; i < ni ; i++) 
-        std::cout 
-             << " i " << std::setw(2) << i 
-             << " vg " << m_materials[i]->getProperty(group_velocity)
-             << " ri " << m_materials[i]->getProperty(refractive_index)
-             << std::endl 
-             ;
+    */
 
 
     for(unsigned i=0 ; i < ni ; i++)
     {
-
-        //const char* key = m_names->getKey(i);
-        //GMaterial* mat = getMaterial(key);
-        //    I guess this awkward way was from before postcache reconstruction of m_materials was implented
-
         GMaterial* mat = getMaterial(i);
         assert( m_materials[i] == mat ); 
 
@@ -673,7 +662,7 @@ void GMaterialLib::replaceGROUPVEL(bool debug)
         GProperty<float>* vg_calc = GProperty<float>::make_GROUPVEL(ri);
         assert(vg_calc);
 
-        std::cout 
+        LOG(trace)
             << " i " << std::setw(2) << i 
             << " n " << std::setw(2) << m_materials.size() 
             << " mat " << mat 
@@ -681,9 +670,7 @@ void GMaterialLib::replaceGROUPVEL(bool debug)
             << " ri " << ri
             << " vg_calc " << vg_calc
             << " k " << key
-            << std::endl 
             ; 
-
 
         float wldelta = 1e-4 ; 
         vg->copyValuesFrom(vg_calc, wldelta);         // <-- replacing the property inside the GMaterial instance

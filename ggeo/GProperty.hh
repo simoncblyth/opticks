@@ -58,7 +58,8 @@ public:
    static GProperty<T>* ramp(T low, T step, T* domain, unsigned int length );
    static GProperty<T>* planck_spectral_radiance(GDomain<T>* nm, T blackbody_temp_kelvin=6500.);
 public:
-   GProperty(GProperty<T>* other);
+   GProperty<T>* copy() const ;
+   GProperty(const GProperty<T>* other);
    GProperty(T* values, T* domain, unsigned int length );
    GProperty( GAry<T>* vals, GAry<T>* dom ); // stealing ctor, use with newly allocated GAry<T> 
    virtual ~GProperty();
@@ -66,12 +67,12 @@ public:
 public:
    void save(const char* path);
    void save(const char* dir, const char* reldir, const char* name);
-   T getValue(unsigned int index);
-   T getDomain(unsigned int index);
-   T getInterpolatedValue(T val);
+   T getValue(unsigned index) const ;
+   T getDomain(unsigned index) const ;
+   T getInterpolatedValue(T val) const ;
    unsigned getLength() const ;
-   GAry<T>* getValues();
-   GAry<T>* getDomain();
+   GAry<T>* getValues() const ;
+   GAry<T>* getDomain() const ;
    char* digest();   
    std::string getDigestString();
 public:

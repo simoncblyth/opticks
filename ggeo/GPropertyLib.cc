@@ -598,6 +598,28 @@ GProperty<float>* GPropertyLib::getProperty(GPropertyMap<float>* pmap, const cha
 
 
 
+/**
+GPropertyLib::getPropertyOrDefault
+------------------------------------
+
+See GMaterialLib::createStandardMaterial for the canonical usage of this, 
+creating standardized materials.
+
+WARNING : the returned property will sometimes be a shared default value, 
+thus the caller needs to make a copy of the returned property 
+to make it their own. 
+
+Why is that needed:
+
+SHARING DEFAULT PROPERTY INSTANCES FROM LIB LEVEL ACROSS MULTIPLE MATERIALS
+BECOMES A PROBLEM ONCE YOU WANT TO CHANGE ONE OF THEM : BECAUSE OF THE 
+SHARED POINTER CHANGING THE MATERIAL OF ONE PROPERTTY WILL RESULT IN CHANGING THAT
+PROPERTY FOR ALL MATERIALS THAT USED THE DEFAULT ... 
+
+SOLUTION IS TO MAKE A COPY OF EVERY PROPERTY COLLECTED INTO EACH MATERIAL, 
+SO THE MATERIAL "OWNS" ITS PROPERTIES WHICH CAN THEN BE CHANGED AS NEEDED.
+**/
+
 GProperty<float>* GPropertyLib::getPropertyOrDefault(GPropertyMap<float>* pmap, const char* dkey)
 {
     // convert destination key such as "detect" into local key "EFFICIENCY" 
@@ -608,7 +630,9 @@ GProperty<float>* GPropertyLib::getPropertyOrDefault(GPropertyMap<float>* pmap, 
 
     GProperty<float>* prop = pmap ? pmap->getProperty(lkey) : NULL ;
 
-    return prop ? prop : fallback ;
+    GProperty<float>* uprop = prop ? prop : fallback ; 
+
+    return uprop ;
 }
 
 

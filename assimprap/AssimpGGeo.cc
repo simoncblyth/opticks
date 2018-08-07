@@ -473,7 +473,7 @@ void AssimpGGeo::convertMaterials(const aiScene* scene, GGeo* gg, const char* qu
                 GSkinSurface*  gss_raw = new GSkinSurface(name, index, os);
                 gss_raw->setSkinSurface(sslv);
                 addProperties(gss_raw, mat );
-                gg->addRaw(gss_raw);  // this was erroreously gss for a long time
+                gg->addRaw(gss_raw); 
             }   
 
         } 

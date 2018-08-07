@@ -30,13 +30,16 @@ class Mesh(object):
             idpath = "/".join(elem[:digp+2])  # one past the digest 
         except ValueError:
             idpath = os.environ["IDPATH"]
+            log.warning("using IDPATH from environment")
         pass
         return idpath
 
     def __init__(self, idpath):
         log.info("Mesh for idpath : %s " % idpath )
         self.idpath = idpath
-        mesh = js_load(self.path("MeshIndex/GItemIndexSource.json"))
+        self.map = self.path("MeshIndex/GItemIndexSource.json")
+        mesh = js_load(self.map)
+        log.info("loading map %s kv pairs %d " % (self.map, len(mesh.values())))
         self.name2idx = mesh
         self.idx2name = dict(zip(map(int,mesh.values()), mesh.keys()))
 

@@ -617,6 +617,12 @@ void GPropertyMap<T>::addProperty(const char* pname, T* values, T* domain, unsig
    GProperty<T>* orig = new GProperty<T>(vals, doms)  ;  
 
    addPropertyStandardized(pname, orig, prefix);
+
+   LOG(info) 
+        << " orig " << orig   
+        << " m_name " << m_name   
+        << " pname " << pname
+        ;  
 }
 
 
@@ -639,6 +645,19 @@ void GPropertyMap<T>::addPropertyStandardized(const char* pname,  GProperty<T>* 
 }
  
 
+/**
+GPropertyMap<T>::addProperty
+-----------------------------
+
+NB this method makes a copy of the property being added 
+prior to inclusion into the collection.  This is necessary 
+for independance of the propertyMap, such that it owns 
+the properties it holds and can potentially change them 
+without effecting other propertyMap instances.
+
+For more on why this is needed see GPropertyLib::getPropertyOrDefault
+
+**/
 
 template <typename T>
 void GPropertyMap<T>::addProperty(const char* pname,  GProperty<T>* prop, const char* _prefix)
@@ -654,10 +673,11 @@ void GPropertyMap<T>::addProperty(const char* pname,  GProperty<T>* prop, const 
     if(_prefix) key = _prefix + key ;
 
     m_keys.push_back(key);
-    m_prop[key] = prop ;  
+    m_prop[key] = prop->copy() ;  
 }
 
 
+/*
 template <typename T>
 void GPropertyMap<T>::replaceProperty(const char* pname, GProperty<T>* repl, const char* _prefix) 
 {
@@ -674,7 +694,7 @@ void GPropertyMap<T>::replaceProperty(const char* pname, GProperty<T>* repl, con
     m_prop.erase(key);
     m_prop[key] = repl ;
 }
-
+*/
 
 
 
