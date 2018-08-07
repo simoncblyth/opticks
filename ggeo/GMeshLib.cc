@@ -179,8 +179,6 @@ const GMesh* GMeshLib::getMesh(const char* name, bool startswith) const
     return getMesh(aindex);
 }
 
-
-
 void GMeshLib::add(const GMesh* mesh)
 {
     if(!m_meshindex) m_meshindex = new GItemIndex(GITEMINDEX, GetRelDirIndex(m_analytic))   ;

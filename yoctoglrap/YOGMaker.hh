@@ -15,8 +15,6 @@ YOGMaker
 * creates renderable glTF by providing the metadata 
   to describe the Opticks geocache buffers. 
 
-
-
 Dependencies
 -------------
 
@@ -25,8 +23,6 @@ in this header, that is hidden inside YOGMakerImpl.hh and YOGMaker.cc
 
 The motivation for this arrangement is to isolate users of YOG::Maker
 such as X4PhysicalVolume from the specific glTF implementation in use.
-
-
 
 **/
 

@@ -16,6 +16,7 @@ class G4VSolid ;
 template <typename T> struct nxform ; 
 
 class GGeo ; 
+class GMesh ; 
 class GMaterialLib ; 
 class GSurfaceLib ; 
 class GBndLib ; 
@@ -86,16 +87,19 @@ class X4_API X4PhysicalVolume
         void convertSurfaces(); 
         void convertSensors(); 
         void closeSurfaces(); 
+        void convertSolids(); 
         void convertStructure(); 
     private:
-        void IndexTraverse(const G4VPhysicalVolume* const pv, int depth);
+        //void IndexTraverse(const G4VPhysicalVolume* const pv, int depth);
+        void convertSolids_r(const G4VPhysicalVolume* const pv, int depth);
         void dumpLV();
+        void convertSolid( int lvIdx, int soIdx, YOG::Mh* mh, const G4VSolid* const solid);
+        GMesh* convertSolid( int lvIdx, int soIdx, const G4VSolid* const solid) const ;
     private:
         void convertSensors_r(const G4VPhysicalVolume* const pv, int depth);
         GVolume* convertTree_r(const G4VPhysicalVolume* const pv, GVolume* parent, int depth, const G4VPhysicalVolume* const parent_pv, bool& recursive_select );
         GVolume* convertNode(const G4VPhysicalVolume* const pv, GVolume* parent, int depth, const G4VPhysicalVolume* const parent_pv, bool& recursive_select );
         unsigned addBoundary(const G4VPhysicalVolume* const pv, const G4VPhysicalVolume* const pv_p );
-        void convertSolid( int lvIdx, YOG::Mh* mh, const YOG::Nd* nd, const G4VSolid* const solid);
 
         G4LogicalSurface* findSurface( const G4VPhysicalVolume* const a, const G4VPhysicalVolume* const b, bool first_priority );
     private:

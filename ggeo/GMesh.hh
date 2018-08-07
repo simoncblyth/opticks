@@ -7,6 +7,7 @@ template <typename T> class NPY ;
 class NPYBase ; 
 class GParts ; 
 class NCSG ; 
+struct nnode ; 
 
 //struct nbbox ; 
 
@@ -252,6 +253,7 @@ class GGEO_API GMesh : public GDrawable {
       const char* getVersion() const ;
       char getGeoCode() const ;
       const NCSG* getCSG() const ; 
+      const nnode* getRoot() const ; 
       const GMesh* getAlt() const ; 
 
       NSlice* getInstanceSlice();

@@ -139,6 +139,8 @@ void X4PhysicalVolume::init()
 
     closeSurfaces();
 
+    convertSolids();
+
     convertStructure();
 }
 
@@ -231,10 +233,11 @@ void X4PhysicalVolume::convertMaterials()
     m_mlib->close();   // may change order if prefs dictate
 
 
-
+    /*
     // replaceGROUPVEL needs the buffer : so must be after close
     bool debug = false ; 
     m_mlib->replaceGROUPVEL(debug); 
+    */
 
     // hmm moving this precache means the addMPT to include the
     // fixed GROUPVEL already (in testing) but not directly in Geant4 examples ?
@@ -379,41 +382,6 @@ const char* X4PhysicalVolume::Key(const G4VPhysicalVolume* const top )
 }   
 
 
-void X4PhysicalVolume::IndexTraverse(const G4VPhysicalVolume* const pv, int depth)
-{
-    const G4LogicalVolume* lv = pv->GetLogicalVolume() ;
-    for (int i=0 ; i < lv->GetNoDaughters() ;i++ )
-    {
-        const G4VPhysicalVolume* const daughter_pv = lv->GetDaughter(i);
-        IndexTraverse( daughter_pv , depth + 1 );
-    }
-
-    // for newly encountered lv record the tail/postorder idx for the lv
-    if(std::find(m_lvlist.begin(), m_lvlist.end(), lv) == m_lvlist.end())
-    {
-        m_lvidx[lv] = m_lvlist.size(); 
-        m_lvlist.push_back(lv);  
-    }  
-}
-
-void X4PhysicalVolume::dumpLV()
-{
-   LOG(info)
-        << " m_lvidx.size() " << m_lvidx.size() 
-        << " m_lvlist.size() " << m_lvlist.size() 
-        ;
-
-   for(unsigned i=0 ; i < m_lvlist.size() ; i++)
-   {
-       const G4LogicalVolume* lv = m_lvlist[i] ; 
-       std::cout 
-           << " i " << std::setw(5) << i
-           << " idx " << std::setw(5) << m_lvidx[lv]  
-           << " lv "  << lv->GetName()
-           << std::endl ;  
-   }
-}
-
 /**
 X4PhysicalVolume::findSurface
 ------------------------------
@@ -440,17 +408,201 @@ G4LogicalSurface* X4PhysicalVolume::findSurface( const G4VPhysicalVolume* const 
      return surf ; 
 }
 
+
+
+
+
+
+
+/**
+X4PhysicalVolume::convertSolids
+-----------------------------------
+
+Uses postorder recursive traverse, ie the "visit" is in the 
+tail after the recursive call, to match the traverse used 
+by GDML, and hence giving the same "postorder" indices
+for the solid lvIdx.
+
+**/
+
+void X4PhysicalVolume::convertSolids()
+{
+    LOG(fatal) << "[" ; 
+
+    const G4VPhysicalVolume* pv = m_top ; 
+    int depth = 0 ;
+    convertSolids_r(pv, depth);
+
+    if(m_verbosity > 5) dumpLV();
+    LOG(fatal) << "]" ; 
+}
+
+void X4PhysicalVolume::convertSolids_r(const G4VPhysicalVolume* const pv, int depth)
+{
+    const G4LogicalVolume* lv = pv->GetLogicalVolume() ;
+    for (int i=0 ; i < lv->GetNoDaughters() ;i++ )
+    {
+        const G4VPhysicalVolume* const daughter_pv = lv->GetDaughter(i);
+        convertSolids_r( daughter_pv , depth + 1 );
+    }
+
+    // for newly encountered lv record the tail/postorder idx for the lv
+    if(std::find(m_lvlist.begin(), m_lvlist.end(), lv) == m_lvlist.end())
+    {
+        int lvIdx = m_lvlist.size();  
+        m_lvidx[lv] = lvIdx ;  
+        m_lvlist.push_back(lv);  
+
+        const G4VSolid* const solid = lv->GetSolid(); 
+
+        int soIdx = m_sc->add_mesh( lvIdx, lv->GetName(), solid->GetName() ); 
+        assert( soIdx == lvIdx ) ; 
+
+        Mh* mh = m_sc->meshes[lvIdx] ;   
+
+        convertSolid( lvIdx, soIdx, mh, solid ) ; 
+    }  
+}
+
+void X4PhysicalVolume::convertSolid( int lvIdx, int soIdx, Mh* mh, const G4VSolid* const solid)
+{
+     assert(mh->csgnode == NULL) ;
+
+     GMesh* mesh = convertSolid( lvIdx, soIdx, solid ) ;  
+     mesh->setIndex( lvIdx ) ;   
+     // when converting in postorder soIdx becomes the same as lvIdx
+
+     const NCSG* csg = mesh->getCSG(); 
+     const nnode* root = mesh->getRoot(); 
+     const nnode* raw = root->other ; 
+
+     X4SolidRec rec(solid, raw, root, csg, soIdx, lvIdx );  
+     m_solidrec.push_back( rec ) ; 
+
+     m_ggeo->add( mesh ) ; 
+
+     const GMesh* mesh2 = m_ggeo->getMesh( soIdx );  // returns mesh with that index
+     assert( mesh2 == mesh ) ; 
+
+
+     mh->mesh = mesh ; 
+     mh->csg = csg ; 
+     mh->csgnode = root ; 
+     mh->vtx = mesh->m_x4src_vtx ; 
+     mh->idx = mesh->m_x4src_idx ; 
+} 
+
+
+
+GMesh* X4PhysicalVolume::convertSolid( int lvIdx, int soIdx, const G4VSolid* const solid) const 
+{
+     nnode* raw = X4Solid::Convert(solid)  ; 
+     if(m_g4codegen) 
+     {
+         raw->dump_g4code(); 
+         X4CSG::GenerateTest( solid, m_g4codegendir , lvIdx ) ; 
+     }
+
+     nnode* root = NTreeProcess<nnode>::Process(raw, soIdx, lvIdx);  // balances deep trees
+     root->other = raw ; 
+
+     const NSceneConfig* config = NULL ; 
+     NCSG* csg = NCSG::Adopt( root, config, soIdx, lvIdx );   // Adopt exports nnode tree to m_nodes buffer in NCSG instance
+     assert( csg ) ; 
+     assert( csg->isUsedGlobally() );
+
+     bool is_x4polyskip = m_ok->isX4PolySkip(lvIdx);   // --x4polyskip 211,232
+     if( is_x4polyskip ) LOG(fatal) << " is_x4polyskip " << " soIdx " << soIdx  << " lvIdx " << lvIdx ;  
+
+     GMesh* mesh =  is_x4polyskip ? X4Mesh::Placeholder(solid ) : X4Mesh::Convert(solid ) ; 
+     mesh->setCSG( csg ); 
+
+     return mesh ; 
+}
+
+/**
+convertSolid
+-------------
+
+Converts G4VSolid into two things:
+
+1. analytic CSG nnode tree, boolean solids or polycones convert to trees of multiple nodes,
+   deep trees are balanced to reduce their height
+2. triangulated vertices and faces held in GMesh instance
+
+As YOG doesnt depend on GGeo, and as workaround for GMesh/GBuffer deficiencies 
+the source NPY arrays are also tacked on to the Mh instance.
+
+
+--x4polyskip 211,232
+~~~~~~~~~~~~~~~~~~~~~~
+
+For DYB Near geometry two depth 12 CSG trees needed to be 
+skipped as the G4 polygonization goes into an infinite (or at least 
+beyond my patience) loop.::
+
+     so:029 lv:211 rmx:12 bmx:04 soName: near_pool_iws_box0xc288ce8
+     so:027 lv:232 rmx:12 bmx:04 soName: near_pool_ows_box0xbf8c8a8
+
+Skipping results in placeholder bounding box meshes being
+used instead of he real shape. 
+
+**/
+
+
+
+
+void X4PhysicalVolume::dumpSolidRec(const char* msg) const 
+{
+    LOG(error) << msg ; 
+    std::ostream& out = std::cout ;
+    solidRecTable( out ); 
+}
+
+void X4PhysicalVolume::writeSolidRec() const 
+{
+    std::string path = BFile::preparePath( m_g4codegendir, "solids.txt", true ) ; 
+    LOG(error) << " writeSolidRec " 
+               << " g4codegendir [" << m_g4codegendir << "]"
+               << " path [" << path << "]" ;  
+    std::ofstream out(path.c_str());
+    solidRecTable( out ); 
+}
+
+void X4PhysicalVolume::solidRecTable( std::ostream& out ) const 
+{
+    unsigned num_solid = m_solidrec.size() ; 
+    out << "written by X4PhysicalVolume::solidRecTable " << std::endl ; 
+    out << "num_solid " << num_solid << std::endl ; 
+    for(unsigned i=0 ; i < num_solid ; i++)
+    {
+        const X4SolidRec& rec = m_solidrec[i] ; 
+        out << rec.desc() << std::endl ; 
+    }
+}
+
+void X4PhysicalVolume::dumpLV()
+{
+   LOG(info)
+        << " m_lvidx.size() " << m_lvidx.size() 
+        << " m_lvlist.size() " << m_lvlist.size() 
+        ;
+
+   for(unsigned i=0 ; i < m_lvlist.size() ; i++)
+   {
+       const G4LogicalVolume* lv = m_lvlist[i] ; 
+       std::cout 
+           << " i " << std::setw(5) << i
+           << " idx " << std::setw(5) << m_lvidx[lv]  
+           << " lv "  << lv->GetName()
+           << std::endl ;  
+   }
+}
+
+
 /**
 convertStructure
 --------------------
-
-Moving convertNode to postorder position in the tail, 
-would avoid the separate IndexTraverse to give m_lvidx
-BUT preorder node indices (root being zero) are nicer, and would have to 
-collect vectors of child indices.
-
-The reason to keep using postorder indices is to 
-match GDML lvIdx.
 
 Note that its the YOG model that is updated, that gets
 converted to glTF later.  This is done to help keeping 
@@ -472,9 +624,7 @@ void X4PhysicalVolume::convertStructure()
     const G4VPhysicalVolume* parent_pv = NULL ; 
     int depth = 0 ;
 
-    IndexTraverse(pv, depth);
-
-    if(m_verbosity > 5) dumpLV();
+    //IndexTraverse(pv, depth);  moving into convertSolids_r 
 
     bool recursive_select = false ;
 
@@ -550,10 +700,9 @@ GVolume* X4PhysicalVolume::convertNode(const G4VPhysicalVolume* const pv, GVolum
          << " boundaryName " << boundaryName
          ;
 
-     //materialIdx = m_ndCount ; // <-- checking effect of different material idx
 
      const G4LogicalVolume* const lv   = pv->GetLogicalVolume() ;
-     const G4VSolid* const solid = lv->GetSolid();
+     //const G4VSolid* const solid = lv->GetSolid();
 
      int lvIdx = m_lvidx[lv] ;   // from postorder IndexTraverse, to match GDML lvIdx : mesh identity uses lvIdx
 
@@ -562,15 +711,14 @@ GVolume* X4PhysicalVolume::convertNode(const G4VPhysicalVolume* const pv, GVolum
 
      const std::string& lvName = lv->GetName() ; 
      const std::string& pvName = pv->GetName() ; 
-     const std::string& soName = solid->GetName() ; 
+     //const std::string& soName = solid->GetName() ; 
 
      int ndIdx0 = m_sc->get_num_nodes();
+
      int ndIdx = m_sc->add_node(
                                  lvIdx, 
                                  materialIdx,
-                                 lvName,
                                  pvName,
-                                 soName,
                                  ltriple,
                                  boundaryName,
                                  depth,
@@ -585,10 +733,10 @@ GVolume* X4PhysicalVolume::convertNode(const G4VPhysicalVolume* const pv, GVolum
      if(ndIdx % 1000 == 0) 
      LOG(info) << "convertNode " 
                << " ndIdx "  << std::setw(5) << ndIdx 
-               << " soIdx "  << std::setw(5) << nd->soIdx 
+         //      << " soIdx "  << std::setw(5) << nd->soIdx 
                << " lvIdx "  << std::setw(5) << lvIdx 
                << " materialIdx "  << std::setw(5) << materialIdx 
-               << " soName " << soName
+          //     << " soName " << soName
                ;
 
      assert( ndIdx == int(m_ndCount) ); 
@@ -598,29 +746,18 @@ GVolume* X4PhysicalVolume::convertNode(const G4VPhysicalVolume* const pv, GVolum
      glm::mat4 xf_global = gtriple->t ;
      GMatrixF* gtransform = new GMatrix<float>(glm::value_ptr(xf_global));
 
-     Mh* mh = m_sc->get_mesh_for_node( ndIdx );  // node->mesh via soIdx (the local mesh index)
+     Mh* mh = m_sc->get_mesh( lvIdx );
 
-
-     if(mh->csgnode == NULL)
-     {
-         convertSolid( lvIdx, mh, nd, solid);
-     }
-
+     const GMesh* mesh = mh->mesh ;   // hmm AssimpGGeo::convertMeshes does deduping/fixing before inclusion in GVolume(GNode) 
+     const NCSG* csg = mh->csg ; 
      assert( mh->csgnode ); 
 
-     //unsigned csgdepth = mh->csgnode->maxdepth();  
-     //unsigned lvr_lvIdx = csgdepth ; // misuse lvr: selection  (gives a black render)
      unsigned lvr_lvIdx = lvIdx ; 
-
      bool selected = m_query->selected(pvName.c_str(), ndIdx0, depth, recursive_select, lvr_lvIdx );
     
      LOG(trace) << " lv_lvIdx " << lvr_lvIdx
                 << " selected " << selected
                ; 
-
-     const GMesh* mesh = mh->mesh ;   // hmm AssimpGGeo::convertMeshes does deduping/fixing before inclusion in GVolume(GNode) 
-
-     const NCSG* csg = mh->csg ; 
 
      GParts* pts = GParts::make( csg, boundaryName.c_str(), m_verbosity  );  // see GScene::createVolume 
      pts->setBndLib(m_blib);
@@ -651,7 +788,7 @@ GVolume* X4PhysicalVolume::convertNode(const G4VPhysicalVolume* const pv, GVolum
      volume->setLVName( lvName.c_str() );
      volume->setName( pvName.c_str() );   // historically (AssimpGGeo) this was set to lvName, but pvName makes more sense for node node
 
-     m_ggeo->countMeshUsage(nd->soIdx, ndIdx );
+     m_ggeo->countMeshUsage(nd->prIdx, ndIdx );
 
 
      if(parent) 
@@ -661,100 +798,6 @@ GVolume* X4PhysicalVolume::convertNode(const G4VPhysicalVolume* const pv, GVolum
      } 
 
      return volume ; 
-}
-
-
-/**
-convertSolid
--------------
-
-Converts G4VSolid into two things:
-
-1. analytic CSG nnode tree, boolean solids or polycones convert to trees of multiple nodes
-2. triangulated vertices and faces held in GMesh instance
-
-As YOG doesnt depend on GGeo, and as workaround for GMesh/GBuffer deficiencies 
-the source NPY arrays are also tacked on to the Mh instance.
-
-**/
-
-void X4PhysicalVolume::convertSolid( int lvIdx, Mh* mh, const Nd* nd, const G4VSolid* const solid)
-{
-     // convert G4VSolid into nnode tree and balance it if overheight 
-     assert(mh->csgnode == NULL) ;
-
-     nnode* raw = X4Solid::Convert(solid)  ; 
-
-     if(m_g4codegen) 
-     {
-         raw->dump_g4code(); 
-         //X4CSG::GenerateTest( solid, X4::X4GEN_DIR , lvIdx ) ; 
-         X4CSG::GenerateTest( solid, m_g4codegendir , lvIdx ) ; 
-     }
-
-     nnode* balanced = NTreeProcess<nnode>::Process(raw, nd->soIdx, lvIdx); 
-     mh->csgnode = balanced ; 
-
-     std::vector<unsigned> skips = {27, 29}; // soIdx     (formerly 33 too)
-     // they are skipped because Geant4 polygonization fails for them 
-
-     bool is_skip = std::find( skips.begin(), skips.end(), nd->soIdx ) != skips.end()  ; 
-
-     if( is_skip )
-     {
-          LOG(error) << " is_skip " 
-                     << " soIdx " << nd->soIdx  
-                     << " lvIdx " << lvIdx
-                     ;  
-         //mh->csgnode->dump();
-     }
-
-     mh->mesh = is_skip ? X4Mesh::Placeholder(solid, nd->soIdx) : X4Mesh::Convert(solid, nd->soIdx ) ; 
-     mh->vtx = mh->mesh->m_x4src_vtx ; 
-     mh->idx = mh->mesh->m_x4src_idx ; 
-
-     const NSceneConfig* config = NULL ; 
-     mh->csg = NCSG::Adopt( mh->csgnode, config, nd->soIdx, lvIdx );   // Adopt exports nnode tree to m_nodes buffer in NCSG instance
-
-     assert( mh->csg ) ; 
-     assert( mh->csg->isUsedGlobally() );
-
-     X4SolidRec rec(solid, raw, balanced, mh->csg, nd->soIdx, lvIdx );  
-     m_solidrec.push_back( rec ) ; 
-
-     m_ggeo->add( mh->mesh ) ; 
-} 
-
-
-
-void X4PhysicalVolume::dumpSolidRec(const char* msg) const 
-{
-    LOG(error) << msg ; 
-    std::ostream& out = std::cout ;
-    solidRecTable( out ); 
-}
-
-void X4PhysicalVolume::writeSolidRec() const 
-{
-    //std::string path = BFile::FormPath( X4::X4GEN_DIR, "solids.txt" ) ; 
-    std::string path = BFile::preparePath( m_g4codegendir, "solids.txt", true ) ; 
-    LOG(error) << " writeSolidRec " 
-               << " g4codegendir [" << m_g4codegendir << "]"
-               << " path [" << path << "]" ;  
-    std::ofstream out(path.c_str());
-    solidRecTable( out ); 
-}
-
-void X4PhysicalVolume::solidRecTable( std::ostream& out ) const 
-{
-    unsigned num_solid = m_solidrec.size() ; 
-    out << "written by X4PhysicalVolume::solidRecTable " << std::endl ; 
-    out << "num_solid " << num_solid << std::endl ; 
-    for(unsigned i=0 ; i < num_solid ; i++)
-    {
-        const X4SolidRec& rec = m_solidrec[i] ; 
-        out << rec.desc() << std::endl ; 
-    }
 }
 
 

@@ -357,18 +357,26 @@ bool Opticks::hasMask() const
 }
 
 
-bool Opticks::isDbgPhoton(unsigned record_id)
+bool Opticks::isDbgPhoton(unsigned record_id) const 
 {
    return m_dbg->isDbgPhoton(record_id);
 }
-bool Opticks::isOtherPhoton(unsigned photon_id)
+bool Opticks::isOtherPhoton(unsigned photon_id) const 
 {
    return m_dbg->isOtherPhoton(photon_id);
 }
-bool Opticks::isMaskPhoton(unsigned photon_id)
+bool Opticks::isMaskPhoton(unsigned photon_id) const 
 {
    return m_dbg->isMaskPhoton(photon_id);
 }
+bool Opticks::isX4PolySkip(unsigned lvIdx) const 
+{
+   return m_dbg->isX4PolySkip(lvIdx);
+}
+
+
+
+
 
 
 bool Opticks::isDbgPhoton(int event_id, int track_id)

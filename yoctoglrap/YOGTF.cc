@@ -38,16 +38,17 @@ void TF::convert()
 
         node_t node ; 
         node.name = nd->name ;  // pvName 
-        node.mesh = nd->soIdx ; 
+        node.mesh = nd->prIdx ;   // glTF mesh corresponds to YOG::Pr 
         node.children = nd->children ; 
         node.extras["boundary"] = nd->boundary ; 
 
         gltf->nodes.push_back(node) ; 
     }
 
-    for(int i=0 ; i < sc->meshes.size() ; i++ )
+    for(int i=0 ; i < sc->prims.size() ; i++ )
     {
-        Mh* mh = sc->meshes[i] ; 
+        const Pr& pr = sc->prims[i] ; 
+        Mh* mh = sc->meshes[pr.lvIdx] ; 
 
         mesh_t mesh ; 
         mesh.name = mh->soName ;  

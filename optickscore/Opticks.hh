@@ -308,9 +308,10 @@ class OKCORE_API Opticks {
        unsigned getMaskIndex(unsigned idx) const ;  // original pre-masked index OR idx if no mask 
        bool hasMask() const ; 
 
-       bool isDbgPhoton(unsigned record_id);
-       bool isOtherPhoton(unsigned record_id);
-       bool isMaskPhoton(unsigned record_id);
+       bool isDbgPhoton(unsigned record_id) const ;
+       bool isOtherPhoton(unsigned record_id) const ;
+       bool isMaskPhoton(unsigned record_id) const ;
+       bool isX4PolySkip(unsigned lvIdx) const ;
 
        bool isDbgPhoton(int event_id, int track_id);
        bool isOtherPhoton(int event_id, int track_id);

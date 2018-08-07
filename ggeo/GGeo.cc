@@ -865,12 +865,13 @@ GItemIndex* GGeo::getMeshIndex()
 {
     return m_meshlib->getMeshIndex() ; 
 }
-const GMesh* GGeo::getMesh(unsigned int aindex)
+const GMesh* GGeo::getMesh(unsigned aindex)
 {
     return m_meshlib->getMesh(aindex);
 }  
 void GGeo::add(const GMesh* mesh)
 {
+    //assert(0);
     m_meshlib->add(mesh);
 }
 void GGeo::countMeshUsage(unsigned meshIndex, unsigned nodeIndex)

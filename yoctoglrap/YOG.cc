@@ -5,7 +5,6 @@
 #include "PLOG.hh"
 #include "BStr.hh"
 #include "NGLM.hpp"
-//#include "NTran.hpp"
 #include "YOG.hh"
 
 namespace YOG {
@@ -34,13 +33,25 @@ std::string Mh::desc() const
     return ss.str();
 }
 
+std::string Pr::desc() const 
+{
+    std::stringstream ss ; 
+    ss
+        << "Pr "
+        << std::setw(4) << lvIdx 
+        << " : "
+        << std::setw(4) << mtIdx 
+        ; 
+    return ss.str();
+}
+
 std::string Nd::desc() const 
 {
     std::stringstream ss ; 
     ss
         << "Nd "
         << " ndIdx:" << std::setw(4) << ndIdx 
-        << " soIdx:" << std::setw(4) << soIdx 
+        << " prIdx:" << std::setw(4) << prIdx 
         << " nch:"   << std::setw(4) << children.size()
         << " par:"   << std::setw(4) << parent  
         ; 
@@ -60,6 +71,7 @@ std::string Sc::desc() const
         << "Sc "
         << " nodes:" << std::setw(4) << nodes.size()
         << " meshes:" << std::setw(4) << meshes.size()
+        << " prims:" << std::setw(4) << prims.size()
         ; 
     return ss.str();
 }
@@ -89,8 +101,41 @@ bool Sc::has_mesh(int lvIdx) const
        const Mh* mh = meshes[i] ; 
        if(mh->lvIdx == lvIdx ) count++ ; 
     }
+    assert( count == 0 || count == 1); 
     return count == 1 ; 
 }
+
+
+int Sc::find_prim( int lvIdx, int mtIdx ) const  // return -1 if not present, or the index if found
+{
+    unsigned count(0); 
+    int prIdx = -1 ; 
+    for(int i=0 ; i < prims.size() ; i++)
+    {
+       const Pr& pr = prims[i] ; 
+       if(pr.lvIdx == lvIdx && pr.mtIdx == mtIdx ) 
+       {
+           prIdx = i ; 
+           count++ ; 
+       }
+    }
+    assert( count == 0 || count == 1); 
+    return prIdx ; 
+}
+
+int Sc::add_prim( int lvIdx, int mtIdx )  // only adds if not already present, returns prIdx  
+{
+    int prIdx = find_prim(lvIdx, mtIdx); 
+    if( prIdx == -1) 
+    {
+        prIdx = prims.size();  
+        prims.push_back( Pr(lvIdx, mtIdx) ) ; 
+    }
+    return prIdx ; 
+}
+
+
+
 
 /**
 add_mesh
@@ -98,11 +143,20 @@ add_mesh
 
 * only adds if no mesh with lvIdx is present already 
 
+
+* mtIdx is there because glTF mesh primitives carry a material index, 
+  was initially surprised by this : but when realise that 
+  the glTF mesh is very lightweight because it refers to accessors 
+  for the data it makes more sense
+
+  * but nevertheless this is a bit of a pain for X4PhysicalVolume 
+    and trying to do a convertSolids before the convertStructure ...
+    leaving it -1 : to be filled at point of use at node level 
+
 **/
 
-int Sc::add_mesh(
-                 int lvIdx,
-                 int mtIdx,
+int Sc::add_mesh( 
+                 int lvIdx, 
                  const std::string& lvName, 
                  const std::string& soName)
 {
@@ -111,19 +165,21 @@ int Sc::add_mesh(
     {
         soIdx = meshes.size(); 
 
-        //const nnode* csgnode = NULL ; 
         nnode* csgnode = NULL ; 
         const NCSG*  csg  = NULL ; 
         const GMesh* mesh  = NULL ; 
         const NPY<float>* vtx  = NULL ; 
         const NPY<unsigned>* idx  = NULL ; 
 
-        meshes.push_back(new Mh { lvIdx, mtIdx, lvName, soName, soIdx, csgnode, csg, mesh, vtx, idx }) ;
+        meshes.push_back(new Mh { lvIdx, lvName, soName, soIdx, csgnode, csg, mesh, vtx, idx }) ;
     }
     int soIdx2 = lv2so(lvIdx);
     if(soIdx > -1 ) assert( soIdx2 == soIdx ) ; // when a new mesh is added, can check local indices match
     return soIdx2 ; 
 }
+
+
+
 
 
 int Sc::get_material_idx(const std::string& matName) const 
@@ -165,12 +221,15 @@ int Sc::get_num_nodes() const
 {
     return nodes.size();
 }
+int Sc::get_num_prims() const 
+{
+    return prims.size();
+}
+
 
 int Sc::add_node(int lvIdx, 
-                 int mtIdx,
-                 const std::string& lvName, 
+                 int mtIdx, 
                  const std::string& pvName, 
-                 const std::string& soName, 
                  const nmat4triple* transform, 
                  const std::string& boundary,
                  int depth, 
@@ -178,25 +237,15 @@ int Sc::add_node(int lvIdx,
                  Nd* parent 
                 )
 {
-
-     int soIdx = add_mesh( lvIdx, mtIdx, lvName, soName);  
-
-     assert( soIdx > -1 );  
-     // soIdx is zero-based local index, lvIdx is an externally imposed index
-
-     Mh* mh = meshes[soIdx];  
+     int prIdx = add_prim( lvIdx, mtIdx ) ;  // only adds when not already present
 
      int ndIdx = nodes.size() ;
-     Nd* nd = new Nd {ndIdx, soIdx, transform, boundary, pvName, depth, this, selected, parent, mh }  ;
+
+     Nd* nd = new Nd {ndIdx, prIdx, transform, boundary, pvName, depth, selected, parent }  ;
 
      nodes.push_back(nd) ;
 
-     //LOG(info) << nd->desc(); 
-
-     if(parent)
-     {
-         parent->children.push_back(ndIdx);
-     } 
+     if(parent) parent->children.push_back(ndIdx);
 
      return ndIdx ; 
 }
@@ -210,12 +259,25 @@ Nd* Sc::get_node(int nodeIdx) const
 
 Mh* Sc::get_mesh_for_node(int nodeIdx) const  // node->mesh association via nd->soIdx
 {
-    Nd* nd = get_node(nodeIdx) ; 
-    Mh* mh = meshes[nd->soIdx];  
+    Nd* nd = get_node(nodeIdx) ;
+    int prIdx = nd->prIdx ; 
+    int lvIdx = prims[prIdx].lvIdx ;   
+    Mh* mh = meshes[lvIdx];  
     assert( mh );
-    assert( mh->soIdx == nd->soIdx );
+    //assert( mh->soIdx == nd->soIdx );
     return mh ;  
 }
+
+
+Mh* Sc::get_mesh(int lvIdx) const 
+{
+    assert( lvIdx < meshes.size() ) ; 
+    Mh* mh = meshes[lvIdx];  
+    assert( mh );
+    return mh ;  
+}
+
+
 
 
 
@@ -223,9 +285,7 @@ Mh* Sc::get_mesh_for_node(int nodeIdx) const  // node->mesh association via nd->
 int Sc::add_test_node(int lvIdx)
 {
     int mtIdx = lvIdx ; 
-    std::string lvName = BStr::concat<int>("lv", lvIdx, NULL) ;   
     std::string pvName = BStr::concat<int>("pv", lvIdx, NULL) ;   
-    std::string soName = BStr::concat<int>("so", lvIdx, NULL) ;   
     const nmat4triple* transform = NULL ; 
     std::string boundary = BStr::concat<int>("bd", lvIdx, NULL) ;   
     int depth = 0 ; 
@@ -234,9 +294,7 @@ int Sc::add_test_node(int lvIdx)
 
     int ndIdx = add_node(lvIdx, 
                          mtIdx,
-                         lvName, 
                          pvName, 
-                         soName, 
                          transform, 
                          boundary,
                          depth, 

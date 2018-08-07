@@ -33,6 +33,11 @@ unsigned OpticksDbg::getNumMaskPhoton() const
 {
     return m_mask.size() ; 
 }
+unsigned OpticksDbg::getNumX4PolySkip() const 
+{
+    return m_x4polyskip.size() ; 
+}
+
 
 NPY<unsigned>* OpticksDbg::getMaskBuffer() const
 {
@@ -81,10 +86,12 @@ void OpticksDbg::postconfigure()
    const std::string& oindex = m_cfg->getOtherIndex() ;
 
    const std::string& mask = m_cfg->getMask() ;
+   const std::string& x4polyskip = m_cfg->getX4PolySkip() ;
 
    postconfigure( dindex, m_debug_photon );
    postconfigure( oindex, m_other_photon );
    postconfigure( mask, m_mask );
+   postconfigure( x4polyskip, m_x4polyskip );
 
    if(m_mask.size() > 0)
    {
@@ -118,18 +125,25 @@ void OpticksDbg::postconfigure(const std::string& spec, std::vector<unsigned>& l
 
 
 
-bool OpticksDbg::isDbgPhoton(unsigned record_id)
+bool OpticksDbg::isDbgPhoton(unsigned record_id) const 
 {
     return std::find(m_debug_photon.begin(), m_debug_photon.end(), record_id ) != m_debug_photon.end() ; 
 }
-bool OpticksDbg::isOtherPhoton(unsigned record_id)
+bool OpticksDbg::isOtherPhoton(unsigned record_id) const 
 {
     return std::find(m_other_photon.begin(), m_other_photon.end(), record_id ) != m_other_photon.end() ; 
 }
-bool OpticksDbg::isMaskPhoton(unsigned record_id)
+bool OpticksDbg::isMaskPhoton(unsigned record_id) const
 {
     return std::find(m_mask.begin(), m_mask.end(), record_id ) != m_mask.end() ; 
 }
+bool OpticksDbg::isX4PolySkip(unsigned lvIdx) const 
+{
+    return std::find(m_x4polyskip.begin(), m_x4polyskip.end(), lvIdx ) != m_x4polyskip.end() ; 
+}
+
+
+
 
 
 

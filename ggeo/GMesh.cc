@@ -17,8 +17,8 @@
 #include "NGLM.hpp"
 #include "GLMFormat.hpp"
 #include "NBBox.hpp"
-
 #include "NPY.hpp"
+#include "NCSG.hpp"
 
 
 #include "GMatrix.hh"
@@ -205,6 +205,14 @@ const NCSG* GMesh::getCSG() const
 {
     return m_csg ; 
 }
+const nnode* GMesh::getRoot() const 
+{
+    return m_csg ? m_csg->getRoot() : NULL  ; 
+}
+
+
+
+
 void GMesh::setAlt(const GMesh* alt)
 {
     m_alt = alt ; 

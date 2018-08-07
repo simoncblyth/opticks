@@ -63,6 +63,12 @@ ab-b-tails(){ ls -1 $(ab-b-)/../ ; }
 ab-a(){  cd $(ab-a-); }
 ab-b(){  cd $(ab-b-); }
 
+ab-a-run(){  OPTICKS_RESOURCE_LAYOUT=104 OKTest -G --gltf 3   ; }
+ab-a-lldb(){  OPTICKS_RESOURCE_LAYOUT=104 lldb -- OKTest -G --gltf 3   ; }
+
+ab-b-run(){  OPTICKS_RESOURCE_LAYOUT=104 OKX4Test --x4polyskip 211,232  ; }
+ab-b-lldb(){  OPTICKS_RESOURCE_LAYOUT=104 lldb -- OKX4Test --x4polyskip  ; }
+
 
 ab-paths(){ cat << EOP
 
@@ -79,9 +85,6 @@ ab-paths(){ cat << EOP
 
 EOP
 }
-
-ab-a-run(){  OPTICKS_RESOURCE_LAYOUT=104 OKTest -G --gltf 3   ; }
-ab-b-run(){  OPTICKS_RESOURCE_LAYOUT=104 OKX4Test   ; }
 
 
 ab-l(){ 

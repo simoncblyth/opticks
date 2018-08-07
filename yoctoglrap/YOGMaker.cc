@@ -44,9 +44,7 @@ void Maker::SaveToGLTF(const NPY<float>* vtx, const NPY<unsigned>* idx, const ch
     int ndIdx = sc.add_node(
                             lvIdx, 
                             materialIdx,
-                            "lvName",
                             "pvName",
-                            "soName",
                             ltriple,
                             "boundaryName",
                             depth,
@@ -155,21 +153,52 @@ void Maker::convert()
     {
         Nd* nd = sc->nodes[i] ; 
 
+        const Pr& pr = sc->prims[nd->prIdx];
+        int lvIdx = pr.lvIdx ; 
+        int mtIdx = pr.mtIdx ; 
+        Mh* mh = sc->meshes[lvIdx] ;  
+
         int n = impl->add_node();
         node_t& node = impl->get_node(n) ;
  
         node.name = nd->name ;  // pvName 
-        node.mesh = nd->soIdx ; 
+        node.mesh = nd->prIdx ;    // glTF mesh corresponds to YOG::Pr
         node.children = nd->children ; 
         node.extras["boundary"] = nd->boundary ; 
         node.extras["ndIdx"] = nd->ndIdx ; 
+        node.extras["mtIdx"] = mtIdx ; 
         node.extras["parentIdx"] = nd->parent ? nd->parent->ndIdx : -1 ; 
-        node.extras["soName"] = nd->mh->soName ; 
+        node.extras["soName"] = mh->soName ; 
 
         if(nd->transform)
             nglmext::copyTransform( node.matrix, nd->transform->t );
     }
+   
+    /*
+    glTF meshes have a material index, but Opticks 
+    meshes (YOG::Mh, GMesh etc..) just describe shape 
+    not material ...  so handle the mismatch via 
+    the prim Pr object 
+    */ 
 
+    for(int i=0 ; i < sc->prims.size() ; i++ )
+    {
+        const Pr& pr = sc->prims[i] ; 
+
+        int lvIdx = pr.lvIdx ;    // shape
+        int mtIdx = pr.mtIdx ;    // material
+
+        Mh* mh = sc->meshes[lvIdx] ; 
+
+        int m = impl->add_mesh(); 
+        set_mesh_data( m,  mh,  mtIdx ); 
+
+        mesh_t& mesh = impl->get_mesh(m) ;
+        mesh.extras["meshIdx"] = m ; 
+    }
+
+
+/*
     for(int i=0 ; i < sc->meshes.size() ; i++ )
     {
         Mh* mh = sc->meshes[i] ; 
@@ -181,8 +210,8 @@ void Maker::convert()
 
         mesh_t& mesh = impl->get_mesh(m) ;
         mesh.extras["meshIdx"] = m ; 
-
     }
+*/
 
     for(int i=0 ; i < sc->materials.size() ; i++ )
     {

@@ -23,7 +23,6 @@ GMeshLib : provides load/save for GMesh instances with associated names
 * not on critical path (?) : used in checking feasibility of a polygonization implementation  
 
 
-
 TODO: use GItemList rather than GItemIndex for the names
 -------------------------------------------------------------
 
@@ -51,10 +50,6 @@ reason to use an Index.
         "AmCSSCap0xc3cfc58": "116",				      |	    "AmCSSCap0xc3cfc58": "115",
         "AmCSource0xc3d0708": "120",			      |	    "AmCSource0xc3d0708": "119",
         "AmCSourceAcrylicCup0xc3d1bc8": "119",		  |	    "AmCSourceAcrylicCup0xc3d1bc8": "118",
-
-
-
-
   
 ::
 
@@ -92,7 +87,7 @@ class GGEO_API GMeshLib
         //std::string desc() const ; 
         GItemIndex* getMeshIndex() ;
         unsigned    getNumMeshes() const ; 
-        const GMesh*  getMesh(unsigned aindex) const ;
+        const GMesh*  getMesh(unsigned aindex) const ;  // first mesh in m_meshes addition order with getIndex() matching aindex 
         const GMesh*  getMesh(const char* name, bool startswith) const ;
     private:
         void        loadFromCache();

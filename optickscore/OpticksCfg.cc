@@ -660,12 +660,24 @@ void OpticksCfg<Listener>::init()
    m_desc.add_options()
        ("oindex",        boost::program_options::value<std::string>(&m_oindex), "other debug photon_id indices in comma delimited list of ints, no size limit" );
 
+
    m_desc.add_options()
        ("mask",     boost::program_options::value<std::string>(&m_mask), 
                     "comma delimited list of photon indices specifying mask selection to apply to both simulations"
                     "see OpticksDbg, CInputPhotonSource, CRandomEngine"
                     "notes/issues/where_mask_running.rst "
                  );
+
+
+   m_desc.add_options()
+       ("x4polyskip",    boost::program_options::value<std::string>(&m_x4polyskip), 
+                  "comma delimited string listing lvIdx indices, no size limit," 
+                  "specifying solids to skip from Geant4 polygonization. "
+                  "Instead bounding box placeholders are used. "
+                  "This avoids G4 boolean processor infinite loop issue with some deep CSG trees."
+ 
+         );
+
 
 
    m_desc.add_options()
@@ -1180,8 +1192,11 @@ const std::string& OpticksCfg<Listener>::getMask() const
     return m_mask ;
 }
 
-
-
+template <class Listener>
+const std::string& OpticksCfg<Listener>::getX4PolySkip() const 
+{
+    return m_x4polyskip ;
+}
 
 
 template <class Listener>
