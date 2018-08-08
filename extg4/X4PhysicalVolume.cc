@@ -49,6 +49,7 @@ template struct nxform<X4Nd> ;
 #include "GMaterial.hh"
 #include "GMaterialLib.hh"
 #include "GSurfaceLib.hh"
+#include "GSkinSurface.hh"
 #include "GBndLib.hh"
 
 #include "Opticks.hh"
@@ -538,6 +539,9 @@ GVolume* X4PhysicalVolume::convertStructure_r(const G4VPhysicalVolume* const pv,
 /**
 X4PhysicalVolume::addBoundary
 ------------------------------
+
+See notes/issues/ab-blib.rst
+
 **/
 
 unsigned X4PhysicalVolume::addBoundary(const G4VPhysicalVolume* const pv, const G4VPhysicalVolume* const pv_p )
@@ -545,20 +549,42 @@ unsigned X4PhysicalVolume::addBoundary(const G4VPhysicalVolume* const pv, const 
      const G4LogicalVolume* const lv   = pv->GetLogicalVolume() ;
      const G4LogicalVolume* const lv_p = pv_p ? pv_p->GetLogicalVolume() : NULL ;
 
-     const G4Material* const imat = lv->GetMaterial() ;
-     const G4Material* const omat = lv_p ? lv_p->GetMaterial() : imat ;  // top omat -> imat 
+     const G4Material* const imat_ = lv->GetMaterial() ;
+     const G4Material* const omat_ = lv_p ? lv_p->GetMaterial() : imat_ ;  // top omat -> imat 
+
+     const char* omat = X4::BaseName(omat_) ; 
+     const char* imat = X4::BaseName(imat_) ; 
+
 
      bool first_priority = true ;  
-     const G4LogicalSurface* const isur = findSurface( pv  , pv_p , first_priority );
-     const G4LogicalSurface* const osur = findSurface( pv_p, pv   , first_priority );  
+     const G4LogicalSurface* const isur_ = findSurface( pv  , pv_p , first_priority );
+     const G4LogicalSurface* const osur_ = findSurface( pv_p, pv   , first_priority );  
      // doubtful of findSurface priority with double skin surfaces, see g4op-
 
-     unsigned boundary = m_blib->addBoundary( 
-                                                X4::BaseName(omat),  
-                                                X4::BaseName(osur),                   
-                                                X4::BaseName(isur),  
-                                                X4::BaseName(imat)       
-                                            );
+
+     // the above will not find Opticks SensorSurfaces ... so look for those 
+
+     const std::string& nlv = lv->GetName() ; 
+     const GSkinSurface* g_sks = m_ggeo->findSkinSurface(nlv.c_str()) ;  
+     if( g_sks == NULL && lv_p )
+     {
+         const std::string& nlv_p = lv_p->GetName() ; 
+         g_sks = m_ggeo->findSkinSurface(nlv_p.c_str()) ;  
+     }
+
+     unsigned boundary = 0 ; 
+     if( g_sks == NULL  )
+     {
+         const char* osur = X4::BaseName( osur_ ); 
+         const char* isur = X4::BaseName( isur_ ); 
+         boundary = m_blib->addBoundary( omat, osur, isur, imat ); 
+     }
+     else
+     {
+         const char* osur = g_sks->getName(); 
+         const char* isur = g_sks->getName(); 
+         boundary = m_blib->addBoundary( omat, osur, isur, imat ); 
+     }
      return boundary ; 
 }
 

@@ -1034,6 +1034,11 @@ const char* Opticks::getGLTFPath() const
 {
     return m_resource->getGLTFPath() ;
 }
+
+const char* Opticks::getSrcGLTFPath() const 
+{
+    return m_resource->getSrcGLTFPath() ;
+}
 const char* Opticks::getG4CodeGenDir() const 
 {
     return m_resource->getG4CodeGenDir() ;
@@ -1047,38 +1052,38 @@ const char* Opticks::getCacheMetaPath() const
 
 
 
-const char* Opticks::getGLTFBase() const  // config base and name only used whilst testing with gltf >= 100
+const char* Opticks::getSrcGLTFBase() const  // config base and name only used whilst testing with gltf >= 100
 {
     int gltf = getGLTF();
-    const char* path = getGLTFPath() ;
-    std::string base = gltf < 100 ? BFile::ParentDir(path) : m_cfg->getGLTFBase() ;
+    const char* path = getSrcGLTFPath() ;
+    std::string base = gltf < 100 ? BFile::ParentDir(path) : m_cfg->getSrcGLTFBase() ;
     return strdup(base.c_str()) ; 
 }
 
 
-const char* Opticks::getGLTFName() const 
+const char* Opticks::getSrcGLTFName() const 
 {
     int gltf = getGLTF();
-    const char* path = getGLTFPath() ;
-    std::string name = gltf < 100 ? BFile::Name(path) : m_cfg->getGLTFName()  ;
+    const char* path = getSrcGLTFPath() ;
+    std::string name = gltf < 100 ? BFile::Name(path) : m_cfg->getSrcGLTFName()  ;
     return strdup(name.c_str()) ; 
 }
 
 
-bool Opticks::hasGLTF() const 
+bool Opticks::hasSrcGLTF() const 
 {
     // lookahead to what GScene::GScene will do
-    return NGLTF::Exists(getGLTFBase(), getGLTFName()) ;
+    return NGLTF::Exists(getSrcGLTFBase(), getSrcGLTFName()) ;
 }
 
 
 void Opticks::configureCheckGeometryFiles() 
 {
-    if(isGLTF() && !hasGLTF())
+    if(isGLTF() && !hasSrcGLTF())
     {
         LOG(fatal) << "gltf option is selected but there is no gltf file " ;
-        LOG(fatal) << " GLTFBase " << getGLTFBase() ;
-        LOG(fatal) << " GLTFName " << getGLTFName() ;
+        LOG(fatal) << " SrcGLTFBase " << getSrcGLTFBase() ;
+        LOG(fatal) << " SrcGLTFName " << getSrcGLTFName() ;
         LOG(fatal) << "Try to create the GLTF from GDML with eg:  op --j1707 --gdml2gltf  "  ;
         
         //setExit(true); 
@@ -1395,11 +1400,11 @@ void Opticks::Summary(const char* msg)
         << std::setw(40) << " AnalyticPMTMedium "
         << std::setw(40) << getAnalyticPMTMedium()
         << std::endl
-        << std::setw(40) << " GLTFBase "
-        << std::setw(40) << getGLTFBase()
+        << std::setw(40) << " SrcGLTFBase "
+        << std::setw(40) << getSrcGLTFBase()
         << std::endl
-        << std::setw(40) << " GLTFName "
-        << std::setw(40) << getGLTFName()
+        << std::setw(40) << " SrcGLTFName "
+        << std::setw(40) << getSrcGLTFName()
         << std::endl
         ;
 

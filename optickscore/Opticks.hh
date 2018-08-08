@@ -227,12 +227,14 @@ class OKCORE_API Opticks {
        const char* getSensorSurface(); 
    public:
        // see GScene, NScene, NGLTF
-       const char* getGLTFPath() const ;   // <- standard above geocache position next to the .gdml and .dae
-       const char* getGLTFBase() const ;   
-       const char* getGLTFName() const ;  
-       bool        hasGLTF() const ; 
+       const char* getSrcGLTFPath() const ;   // <- standard above geocache position next to the .gdml and .dae
+       const char* getSrcGLTFBase() const ;   
+       const char* getSrcGLTFName() const ;  
+       bool        hasSrcGLTF() const ; 
+   public:
        const char* getG4CodeGenDir() const ;  // search for g4code
        const char* getCacheMetaPath() const ;
+       const char* getGLTFPath() const ;      // output GLTF path
    public:
        // from cfg
        int         getGLTF() const ;

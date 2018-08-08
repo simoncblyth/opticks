@@ -981,6 +981,7 @@ GVolume* AssimpGGeo::convertStructureVisit(GGeo* gg, AssimpNode* node, unsigned 
     if(sks)
     {
         osurf = sks ; 
+        isurf = sks ;      // see notes/issues/ab-blib.rst 
         if(m_skin_surface < 10)
             LOG(debug) << "AssimpGGeo::convertStructureVisit OSKIN " 
                       << std::setw(3) << m_skin_surface << " "
@@ -1012,8 +1013,10 @@ GVolume* AssimpGGeo::convertStructureVisit(GGeo* gg, AssimpNode* node, unsigned 
     }
 
     if(isurf && osurf) LOG(info) << "AssimpGGeo::convertStructureVisit boundary with both ISURF and OSURF defined " ;
+    // Now think that having both isurf and osurf defined is the way to translate 
+    // the Geant4 volume skin surface into the Opticks boundary. 
 
-    assert((isurf == NULL || osurf == NULL) && "tripwire to inform that both ISURF and OSURF are defined simultaneously" ) ;
+    //assert((isurf == NULL || osurf == NULL) && "tripwire to inform that both ISURF and OSURF are defined simultaneously" ) ;
 
 
     sensor = m_sensor_list ? m_sensor_list->findSensorForNode( nodeIndex ) : NULL ; 

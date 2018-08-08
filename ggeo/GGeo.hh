@@ -286,7 +286,7 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
         unsigned getNumRawBorderSurfaces() const ;
         GSkinSurface*   getSkinSurface(unsigned index) const ;  
         GBorderSurface* getBorderSurface(unsigned index) const ;  
-        GSkinSurface* findSkinSurface(const char* lv) const ;  
+        GSkinSurface*   findSkinSurface(const char* lv) const ;  
         GBorderSurface* findBorderSurface(const char* pv1, const char* pv2) const ;  
         void dumpRawSkinSurface(const char* name=NULL) const ;
         void dumpRawBorderSurface(const char* name=NULL) const ;

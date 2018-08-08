@@ -121,15 +121,16 @@ class BRAP_API  BOpticksResource {
        const char* getSrcDigest() const ;
        const char* getDAEPath() const ;
        const char* getGDMLPath() const ;
-       const char* getGLTFPath() const ;
+       const char* getSrcGLTFPath() const ;
+       const char* getSrcGLTFBase() const ;
+       const char* getSrcGLTFName() const ;
+    public:
        const char* getG4CodeGenDir() const ;
        const char* getCacheMetaPath() const ;
-
+       const char* getGLTFPath() const ;     // output path 
        const char* getMetaPath() const ;
        const char* getIdMapPath() const ;
     public:
-       const char* getGLTFBase() const ;
-       const char* getGLTFName() const ;
   private:
         void init();
         void initInstallPrefix();

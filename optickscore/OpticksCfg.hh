@@ -102,8 +102,8 @@ class OKCORE_API OpticksCfg : public BCfg {
      int          getAnalyticPMTIndex(); 
 
 
-     const std::string& getGLTFBase();
-     const std::string& getGLTFName();
+     const std::string& getSrcGLTFBase();
+     const std::string& getSrcGLTFName();
      const std::string& getGLTFConfig();
      int                getGLTF();
      int                getGLTFTarget();
@@ -202,8 +202,8 @@ private:
      int         m_apmtidx ; 
 
      std::string m_apmtmedium ; 
-     std::string m_gltfbase ; 
-     std::string m_gltfname ;
+     std::string m_srcgltfbase ; 
+     std::string m_srcgltfname ;
      std::string m_gltfconfig ;
      int         m_gltf ;  
      int         m_gltftarget ;  

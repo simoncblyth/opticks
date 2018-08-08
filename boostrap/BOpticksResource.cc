@@ -516,10 +516,26 @@ const char* BOpticksResource::getGDMLPath() const
 {
     return m_gdmlpath ;
 }
-const char* BOpticksResource::getGLTFPath() const 
+
+const char* BOpticksResource::getSrcGLTFPath() const 
 {
-    return m_gltfpath ;
+    return m_srcgltfpath ;
 }
+const char* BOpticksResource::getSrcGLTFBase() const
+{
+    std::string base = BFile::ParentDir(m_srcgltfpath) ;
+    return strdup(base.c_str()); 
+}
+const char* BOpticksResource::getSrcGLTFName() const
+{
+    std::string name = BFile::Name(m_srcgltfpath) ;
+    return strdup(name.c_str()); 
+}
+
+
+
+
+
 const char* BOpticksResource::getG4CodeGenDir() const 
 {
     return m_g4codegendir ;
@@ -528,6 +544,14 @@ const char* BOpticksResource::getCacheMetaPath() const
 {
     return m_cachemetapath ; 
 }
+const char* BOpticksResource::getGLTFPath() const 
+{
+    return m_gltfpath ;
+}
+
+
+
+
 
 
 const char* BOpticksResource::getMetaPath() const 
@@ -539,18 +563,6 @@ const char* BOpticksResource::getIdMapPath() const
     return m_idmappath ;
 }
 
-
-
-const char* BOpticksResource::getGLTFBase() const
-{
-    std::string base = BFile::ParentDir(m_gltfpath) ;
-    return strdup(base.c_str()); 
-}
-const char* BOpticksResource::getGLTFName() const
-{
-    std::string name = BFile::Name(m_gltfpath) ;
-    return strdup(name.c_str()); 
-}
 
 
 

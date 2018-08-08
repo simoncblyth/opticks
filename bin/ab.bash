@@ -176,10 +176,14 @@ ab-lv2name-notes(){ cat << EON
 MeshIndex lvIdx to lvName mapping is totally off for live geometry 
 ====================================================================
 
+* FIXED in X4PhysicalVolume by reworking convertSolids into postorder together with lvIdx
+
 Noticed this from getting incorrect lvNames from ab-prim when 
 it was using IDPATH from the direct geocache. 
 
-Investigate in :doc:`/notes/issues/ab-lvname`
+Investigate in :doc:`/notes/issues/ab-lvname`  
+
+
 
 ::
 
@@ -780,6 +784,47 @@ EON
 
 
 
+
+
+
+
+
+ab-plan(){ ab-genrun $FUNCNAME ; }
+ab-plan-(){ cat << EOP
+
+import os, logging, numpy as np
+log = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO)
+
+a_dir = "$(ab-a-)"
+b_dir = "$(ab-b-)"
+
+a_load = lambda _:np.load(os.path.join(a_dir, _))
+b_load = lambda _:np.load(os.path.join(b_dir, _))
+
+a = a_load("planBuffer.npy")
+b = b_load("planBuffer.npy")
+
+assert a.shape == b.shape
+ab = np.max(np.abs(a - b), axis=(1))
+
+assert len(ab) == len(a)
+log.info( " ab.max() %s " % ab.max() )
+
+for cut in [1e-1, 1e-2, 1e-3, 1e-4, 1e-5, 1e-6, 1e-7, 1e-8, 1e-9, 1e-10]:
+    w = np.where( ab > cut )
+    n = len(w[0])
+    log.info( " plan deviation > cut %10s :  %d/%d " % ( cut, n, len(ab) ))
+    if n < 25:
+        print np.hstack( [a[w]-b[w],a[w], b[w]])
+    pass
+pass
+
+
+EOP
+
+}
+
 ab-plan-notes(){ cat << EON
 
 Deviations look like float level precision on some planes at large distances from origin. 
@@ -822,55 +867,37 @@ EON
 }
 
 
-
-
-
-
-ab-plan(){ ab-genrun $FUNCNAME ; }
-ab-plan-(){ cat << EOP
-
-import os, logging, numpy as np
-log = logging.getLogger(__name__)
-logging.basicConfig(level=logging.INFO)
-
-a_dir = "$(ab-a-)"
-b_dir = "$(ab-b-)"
-
-a_load = lambda _:np.load(os.path.join(a_dir, _))
-b_load = lambda _:np.load(os.path.join(b_dir, _))
-
-a = a_load("planBuffer.npy")
-b = b_load("planBuffer.npy")
-
-assert a.shape == b.shape
-ab = np.max(np.abs(a - b), axis=(1))
-
-assert len(ab) == len(a)
-log.info( " ab.max() %s " % ab.max() )
-
-for cut in [1e-1, 1e-2, 1e-3, 1e-4, 1e-5, 1e-6, 1e-7, 1e-8, 1e-9, 1e-10]:
-    w = np.where( ab > cut )
-    n = len(w[0])
-    log.info( " plan deviation > cut %10s :  %d/%d " % ( cut, n, len(ab) ))
-    if n < 25:
-        print np.hstack( [a[w]-b[w],a[w], b[w]])
-    pass
-pass
-
-
-EOP
-
-}
-
-
-
+ab-blib-smry(){ MODE=1 ab-blib ; }
 ab-blib()
 {
    echo "A"
-   blib.py $(ab-a-)
-
    echo "B"
    blib.py $(ab-b-)
+}
+ab-blib-diff0()
+{
+   local tmp=$(ab-tmp)/$FUNCNAME
+   mkdir -p $tmp
+
+   blib.py $(ab-a-) > $tmp/a.txt 
+   blib.py $(ab-b-) > $tmp/b.txt 
+   
+   local cmd="diff -y $tmp/a.txt $tmp/b.txt --width 200"
+   echo $cmd
+   eval $cmd
+}
+
+ab-blib-diff2()
+{
+   local tmp=$(ab-tmp)/$FUNCNAME
+   mkdir -p $tmp
+
+   MODE=2 blib.py $(ab-a-) > $tmp/a2.txt 
+   MODE=2 blib.py $(ab-b-) > $tmp/b2.txt 
+   
+   local cmd="diff -y $tmp/a2.txt $tmp/b2.txt --width 180"
+   echo $cmd
+   eval $cmd
 }
 
 
@@ -1269,58 +1296,24 @@ assert a.shape == b.shape
 print "a %s\n" % repr(a.shape), a
 print "b %s\n" % repr(b.shape), b
 
-assert np.all( a == b )
+assert np.all( a[:,0] == b[:,0] )   ## always zero
+assert not np.all( a[:,1] == b[:,1] )
+assert np.all( a[:,2] == b[:,2] )
+assert np.all( a[:,3] == b[:,3] )
+
+## columns are : index,soIdx,lvIdx,height
+## 4th column height always matches 
 
 EOP
 }
 
 ab-idx-notes(){ cat << EON
 
-Old route A (python written nodetrees) fails to get the soIdx lvIdx into idxBuffer::
-
-    In [11]: a
-    Out[11]: 
-    array([[0, 0, 0, 0],
-           [0, 0, 0, 0],
-           [0, 0, 0, 0],
-           ...,
-           [0, 0, 0, 0],
-           [0, 0, 0, 0],
-           [0, 0, 0, 0]], dtype=uint32)
-
-    In [12]: b
-    Out[12]: 
-    array([[  0,  30, 192,   0],
-           [  0,  31,  94,   0],
-           [  0,  32,  90,   0],
-           ...,
-           [  0, 239, 235,   0],
-           [  0, 239, 235,   0],
-           [  0, 239, 235,   0]], dtype=uint32)
-
+These used to agree, but have change B X4PhysicalVolume 
+to do convertSolids into postorder tail resulting in soIdx 
+becoming the same as lvIdx.  
 
 ::
-
-    ## columns are : index,soIdx,lvIdx,height
-    ## 4th column height always matches 
-
-    In [15]: np.all( a[:,3] == b[:,3] )
-    Out[15]: True
-
-    ## 1st 3 columns all zero for A
-
-    In [10]: np.all( a[:,:3] == 0 )
-    Out[10]: True
-
-    In [20]: np.unique(a[:,3], return_counts=True)
-    Out[20]: (array([0, 1, 2, 3, 4], dtype=uint32), array([ 638, 2140,  190,   62,   86]))
-
-    In [21]: np.unique(b[:,3], return_counts=True)
-    Out[21]: (array([0, 1, 2, 3, 4], dtype=uint32), array([ 638, 2140,  190,   62,   86]))
-
-
-
-After threading them thru the python csg.py and NCSG/NCSGData get the idx to agree:: 
 
     In [1]: a
     Out[1]: 
@@ -1334,16 +1327,14 @@ After threading them thru the python csg.py and NCSG/NCSGData get the idx to agr
 
     In [2]: b
     Out[2]: 
-    array([[  0,  30, 192,   0],
-           [  0,  31,  94,   0],
-           [  0,  32,  90,   0],
+    array([[  0, 192, 192,   0],
+           [  0,  94,  94,   0],
+           [  0,  90,  90,   0],
            ...,
-           [  0, 239, 235,   0],
-           [  0, 239, 235,   0],
-           [  0, 239, 235,   0]], dtype=uint32)
+           [  0, 235, 235,   0],
+           [  0, 235, 235,   0],
+           [  0, 235, 235,   0]], dtype=uint32)
 
-    In [3]: np.all( a == b )
-    Out[3]: True
 
 
 EON

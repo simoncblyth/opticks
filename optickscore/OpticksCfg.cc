@@ -89,8 +89,8 @@ OpticksCfg<Listener>::OpticksCfg(const char* name, Listener* listener, bool live
        m_verbosity(0),
        m_apmtidx(0),
        m_apmtmedium(""),
-       m_gltfbase("$TMP/nd"),
-       m_gltfname("scene.gltf"),
+       m_srcgltfbase("$TMP/nd"),
+       m_srcgltfname("scene.gltf"),
        m_gltfconfig("check_surf_containment=0,check_aabb_containment=0,instance_repeat_min=400,instance_vertex_min=0"),
        m_gltf(0),
        m_gltftarget(0),
@@ -869,15 +869,15 @@ void OpticksCfg<Listener>::init()
 
 
 
-   char gltfbase[128];
-   snprintf(gltfbase,128, "String identifying directory of glTF geometry files to load with --gltf option. Default %s ", m_gltfbase.c_str() );
+   char srcgltfbase[128];
+   snprintf(srcgltfbase,128, "String identifying directory of glTF geometry files to load with --gltf option. Default %s ", m_srcgltfbase.c_str() );
    m_desc.add_options()
-       ("gltfbase",   boost::program_options::value<std::string>(&m_gltfbase), gltfbase );
+       ("srcgltfbase",   boost::program_options::value<std::string>(&m_srcgltfbase), srcgltfbase );
 
-   char gltfname[128];
-   snprintf(gltfname,128, "String identifying name of glTF geometry file to load with --gltf option. Default %s ", m_gltfname.c_str() );
+   char srcgltfname[128];
+   snprintf(srcgltfname,128, "String identifying name of glTF geometry file to load with --gltf option. Default %s ", m_srcgltfname.c_str() );
    m_desc.add_options()
-       ("gltfname",   boost::program_options::value<std::string>(&m_gltfname), gltfname );
+       ("srcgltfname",   boost::program_options::value<std::string>(&m_srcgltfname), srcgltfname );
 
    char gltfconfig[128];
    snprintf(gltfconfig,128, "String configuring glTF geometry file loading with --gltf option. Default %s ", m_gltfconfig.c_str() );
@@ -1453,11 +1453,6 @@ int OpticksCfg<Listener>::getAnalyticPMTIndex()
 }
 
 
-template <class Listener>
-const std::string& OpticksCfg<Listener>::getGLTFBase()
-{
-   return m_gltfbase ; 
-}
 
 template <class Listener>
 const std::string& OpticksCfg<Listener>::getGPUMonPath() const 
@@ -1468,12 +1463,15 @@ const std::string& OpticksCfg<Listener>::getGPUMonPath() const
 
 
 template <class Listener>
-const std::string& OpticksCfg<Listener>::getGLTFName()
+const std::string& OpticksCfg<Listener>::getSrcGLTFBase()
 {
-   return m_gltfname ; 
+   return m_srcgltfbase ; 
 }
-
-
+template <class Listener>
+const std::string& OpticksCfg<Listener>::getSrcGLTFName()
+{
+   return m_srcgltfname ; 
+}
 template <class Listener>
 const std::string& OpticksCfg<Listener>::getGLTFConfig()
 {

@@ -52,8 +52,8 @@ int main(int argc, char** argv)
     Opticks ok(argc, argv, "--gltf 3");
     ok.configure();
 
-    const char* base = ok.getGLTFBase() ;
-    const char* name = ok.getGLTFName() ;
+    const char* base = ok.getSrcGLTFBase() ;
+    const char* name = ok.getSrcGLTFName() ;
     const char* config = ok.getGLTFConfig() ;
     int gltf = ok.getGLTF();
 

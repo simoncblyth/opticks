@@ -42,16 +42,42 @@ class BLib(object):
                       self.sname(isur), 
                       self.mname(imat) ] )
 
+
     def __repr__(self):
         return " nbnd %3d nmat %3d nsur %3d " % ( len(self.blib), len(self.mlib), len(self.slib))
     def __str__(self):
         return "\n".join([repr(self)] +  map(lambda _:"%3d : %s " % ( _, self.bname(_)) , range(len(self.blib))))
+    def smry(self):
+        rng = range(len(self.blib))
+        rng = rng[0:5] + rng[-5:]
+        return "\n".join([repr(self)] +  map(lambda _:"%3d : %s " % ( _, self.bname(_)) , rng ))
+
+    def names(self):
+        rng = range(len(self.blib))
+        return "\n".join(map(lambda _:self.bname(_) , rng ))
+
+
 
 
 if __name__ == '__main__':
 
     bdir = sys.argv[1] if len(sys.argv) > 1 else os.environ["IDPATH"]
     blib = BLib.make(bdir)
-    print blib
+
+    mode = int(os.environ.get("MODE","0"))
+    if mode == 0: 
+        print blib
+    elif mode == 1: 
+        print blib.smry()
+    elif mode == 2: 
+        print blib.names()
+    else:
+        pass
+    pass
+
+
+
+
+
 
      
