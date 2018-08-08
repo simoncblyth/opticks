@@ -6,6 +6,8 @@
 #include <glm/fwd.hpp>
 #include "GVector.hh"
 
+struct nmat4triple ; 
+
 template <typename T> class GMatrix ; 
 class GMesh ;
 class GVolume ; 
@@ -74,15 +76,16 @@ class GGEO_API GNode {
       std::vector<unsigned int>& getDistinctBoundaryIndices();
       void updateDistinctBoundaryIndices();
   public:
-      unsigned int  getIndex();
+      unsigned int  getIndex() const ;
       GNode*        getParent() const ; 
-      GNode*        getChild(unsigned index);
-      GVolume*      getChildVolume(unsigned index);
-      unsigned int  getNumChildren();
+      GNode*        getChild(unsigned index) const ;
+      GVolume*      getChildVolume(unsigned index) const ; 
+      unsigned int  getNumChildren() const ;
+
       char*         getDescription();
       gfloat3*      getLow();
       gfloat3*      getHigh();
-      const GMesh*  getMesh();
+      const GMesh*  getMesh() const ;
       unsigned      getMeshIndex() const ;
   public:
       unsigned int* getNodeIndices();
@@ -99,6 +102,12 @@ class GGEO_API GNode {
       GMatrixF* getRelativeTransform(GNode* base);  // product of transforms from beneath base node
   public:
       void setLevelTransform(GMatrixF* ltransform);
+  public:
+      // aiming to transition to nmat4triple eventually 
+      void setLocalTransform(const nmat4triple* ltriple);   
+      void setGlobalTransform(const nmat4triple* gtriple);   
+      const nmat4triple* getLocalTransform() const ;  
+      const nmat4triple* getGlobalTransform() const ;  
   public:
       // *calculateTransform* 
       //       successfully duplicates the global transform of a node by calculating 
@@ -140,6 +149,9 @@ class GGEO_API GNode {
   private: 
       GMatrixF*           m_transform ; 
       GMatrixF*           m_ltransform ; 
+  private: 
+      const nmat4triple*  m_gtriple ; 
+      const nmat4triple*  m_ltriple ; 
   protected: 
       const GMesh*        m_mesh ; 
   private: 

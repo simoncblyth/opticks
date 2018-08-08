@@ -171,7 +171,8 @@ GMesh::GMesh(unsigned int index,
       m_parts(NULL),
 
       m_x4src_vtx(NULL), 
-      m_x4src_idx(NULL)  
+      m_x4src_idx(NULL),
+      m_g4vsolid(NULL)  
 
 {
      init(vertices, faces, normals, texcoords);

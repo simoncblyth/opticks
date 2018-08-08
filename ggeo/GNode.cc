@@ -32,6 +32,8 @@ GNode::GNode(unsigned int index, GMatrixF* transform, const GMesh* mesh)
     m_description(NULL),
     m_transform(transform),
     m_ltransform(NULL),
+    m_gtriple(NULL),
+    m_ltriple(NULL),
     m_mesh(mesh),
     m_low(NULL),
     m_high(NULL),
@@ -71,7 +73,7 @@ gfloat3* GNode::getHigh()
 {
     return m_high ; 
 }
-const GMesh* GNode::getMesh() 
+const GMesh* GNode::getMesh() const 
 {
    return m_mesh ;
 }
@@ -114,7 +116,7 @@ void GNode::setBoundaryIndices(unsigned int* boundary_indices)
 {
     m_boundary_indices = boundary_indices ; 
 }
-unsigned int GNode::getIndex()
+unsigned int GNode::getIndex() const 
 {
     return m_index ; 
 }
@@ -138,19 +140,19 @@ void GNode::addChild(GNode* child)
 {
     m_children.push_back(child);
 }
-GNode* GNode::getChild(unsigned int index)
+GNode* GNode::getChild(unsigned index) const 
 {
     return index < getNumChildren() ? m_children[index] : NULL ;
 }
 
-GVolume* GNode::getChildVolume(unsigned int index)
+GVolume* GNode::getChildVolume(unsigned index) const 
 {
     return dynamic_cast<GVolume*>(getChild(index));
 }
 
 
 
-unsigned int GNode::getNumChildren()
+unsigned GNode::getNumChildren() const 
 {
     return m_children.size();
 }
@@ -163,6 +165,33 @@ GMatrixF* GNode::getLevelTransform()
 {
    return m_ltransform ; 
 }
+
+
+
+
+void GNode::setLocalTransform(const nmat4triple* ltriple)
+{
+    m_ltriple = ltriple ; 
+}
+void GNode::setGlobalTransform(const nmat4triple* gtriple)
+{
+    m_gtriple = gtriple ; 
+}
+const nmat4triple* GNode::getLocalTransform() const 
+{
+    return m_ltriple ; 
+}
+const nmat4triple* GNode::getGlobalTransform() const 
+{
+    return m_gtriple ; 
+}
+ 
+
+
+
+
+
+
 
 void GNode::setName(const char* name)
 {

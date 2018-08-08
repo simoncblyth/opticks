@@ -53,11 +53,10 @@ class GGEO_API GVolume : public GNode {
       void setSensorSurfaceIndex(unsigned int ssi);
       unsigned int getSensorSurfaceIndex();
   public:
-      // need to resort to names for debugging IAV top lid issue
       void setPVName(const char* pvname);
       void setLVName(const char* lvname);
-      const char* getPVName();
-      const char* getLVName();
+      const char* getPVName() const ;
+      const char* getLVName() const ;
   public:
       OpticksCSG_t getCSGFlag();
       bool         isCSGSkip();

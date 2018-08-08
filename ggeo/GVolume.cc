@@ -71,11 +71,11 @@ void GVolume::setLVName(const char* lvname)
     m_lvname = strdup(lvname);
 }
 
-const char* GVolume::getPVName()
+const char* GVolume::getPVName() const 
 {
     return m_pvname ; 
 }
-const char* GVolume::getLVName()
+const char* GVolume::getLVName() const 
 {
     return m_lvname ; 
 }

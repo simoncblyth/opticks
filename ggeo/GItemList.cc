@@ -33,7 +33,7 @@ bool GItemList::isUnset(unsigned int index)
     return index == UNSET ; 
 }
 
-unsigned int GItemList::getIndex(const char* key)
+unsigned int GItemList::getIndex(const char* key) const 
 {
     if(key)
     {
@@ -135,12 +135,12 @@ unsigned int GItemList::getNumItems()
 {
     return m_list.size();
 }
-unsigned int GItemList::getNumKeys()
+unsigned int GItemList::getNumKeys() const 
 {
     return m_list.size();
 }
 
-const char* GItemList::getKey(unsigned int index)
+const char* GItemList::getKey(unsigned index) const 
 {
     return index < m_list.size() ? m_list[index].c_str() : NULL  ;
 }

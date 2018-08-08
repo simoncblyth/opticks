@@ -111,12 +111,12 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
         static const char* PICKFACE ;   
         static const char* PREFIX ;
     public:
-        // GGeoBase interface
-        const char*       getIdentifier();
-        GScintillatorLib* getScintillatorLib() ; 
+        // GGeoBase interface : so not so easy to const-ify 
+        const char*       getIdentifier()  ;
+        GScintillatorLib* getScintillatorLib()  ; 
         GSourceLib*       getSourceLib() ; 
         GBndLib*          getBndLib() ; 
-        GGeoLib*          getGeoLib() ; 
+        GGeoLib*          getGeoLib()  ; 
     public:
         const char* getPrefix();
         void configure(const char* name, const char* value);
@@ -218,34 +218,25 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
 
     public:
         // via GNodeLib
-        unsigned int getNumVolumes();
         void add(GVolume*    volume);
-        GNode* getNode(unsigned index); 
-        GVolume* getVolume(unsigned int index);  
-        GVolume* getVolumeSimple(unsigned int index);  
-        //GVolume* getVolumeAnalytic(unsigned idx);
 
-        const char* getPVName(unsigned int index);
-        const char* getLVName(unsigned int index);
-
-    private:
-       // void _add(GMaterial* material);
+        unsigned int getNumVolumes() const ;
+        GNode* getNode(unsigned index) const ; 
+        GVolume* getVolume(unsigned int index) const ;  
+        GVolume* getVolumeSimple(unsigned int index) const ;  
+        const char* getPVName(unsigned int index) const ;
+        const char* getLVName(unsigned int index) const ;
     public:
         void add(GMaterial* material);
         void addRaw(GMaterial* material);
-    public:
-        // no longer needed ?
-        //void addToIndex(GPropertyMap<float>* obj);
-        //void dumpIndex(const char* msg="GGeo::dumpIndex");
 
-    public:
      
     public:
         // via meshlib
         GMeshLib*          getMeshLib();  // unplaced meshes
-        unsigned           getNumMeshes();
+        unsigned           getNumMeshes() const ;
         GItemIndex*        getMeshIndex(); 
-        const GMesh*       getMesh(unsigned index);  
+        const GMesh*       getMesh(unsigned index) const ;  
         void               add(const GMesh* mesh);
         void countMeshUsage(unsigned meshIndex, unsigned nodeIndex);
         void reportMeshUsage(const char* msg="GGeo::reportMeshUsage");
@@ -258,12 +249,12 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
         unsigned getNumMaterials() const ;
         unsigned getNumRawMaterials() const ;
     public:
-        GScene*            getScene();
-        GNodeLib*          getNodeLib();
-        GMaterialLib*      getMaterialLib();
-        GSurfaceLib*       getSurfaceLib();
+        GScene*            getScene()  ;
+        GNodeLib*          getNodeLib() ;
+        GMaterialLib*      getMaterialLib() ;
+        GSurfaceLib*       getSurfaceLib() ;
+        GPmtLib*           getPmtLib() ; 
 
-        GPmtLib*           getPmtLib(); 
         NLookup*           getLookup(); 
     public:
         void  setLookup(NLookup* lookup);

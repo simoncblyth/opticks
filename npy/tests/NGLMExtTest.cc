@@ -395,6 +395,14 @@ void test_define_uv_basis()
     }
 }
 
+void test_make_yzflip()
+{
+    glm::mat4 yz = nglmext::make_yzflip(); 
+    std::cout << gpresent("yz", yz ) << std::endl ; 
+}
+
+
+
 
 
 int main(int argc, char** argv)
@@ -404,7 +412,7 @@ int main(int argc, char** argv)
     //test_stream();
     //test_invert_tr();
     //test_make_mat();
-    test_make_transform();
+    //test_make_transform();
     //test_nmat4triple_make_translated();
     //test_nmat4triple_id_digest();
 
@@ -415,6 +423,9 @@ int main(int argc, char** argv)
     //test_define_uv_basis();
 
     //test_nmat4triple_is_identity();
+
+    test_make_yzflip(); 
+
 
     return 0 ; 
 }

@@ -78,8 +78,6 @@ GGeo* X4PhysicalVolume::Convert(const G4VPhysicalVolume* const top)
 
     LOG(error) << " SetKey " << key  ; 
 
-    //Opticks* ok = Opticks::GetOpticks() ; 
-
     Opticks* ok = new Opticks(0,0);  // Opticks instanciation must be after BOpticksKey::SetKey
 
     GGeo* gg = new GGeo(ok) ;
@@ -87,7 +85,9 @@ GGeo* X4PhysicalVolume::Convert(const G4VPhysicalVolume* const top)
     X4PhysicalVolume xtop(gg, top) ;  
 
     const char* path = NULL ; 
-    int root = 0 ; 
+    int root = SSys::getenvint("GLTF_ROOT", 3147 );  
+
+    LOG(error) << " root " << root ; 
 
     xtop.saveAsGLTF(root, path);  // <-- TODO: give GGeo this capability 
  
@@ -112,7 +112,7 @@ X4PhysicalVolume::X4PhysicalVolume(GGeo* ggeo, const G4VPhysicalVolume* const to
     m_blib(m_ggeo->getBndLib()),
     m_xform(new nxform<YOG::Nd>(0,false)),
     m_sc(new YOG::Sc(0)),
-    m_maker(new YOG::Maker(m_sc)),
+    m_maker(NULL),
     m_verbosity(m_ok->getVerbosity()),
     m_ndCount(0)
 {
@@ -136,11 +136,8 @@ void X4PhysicalVolume::init()
     convertMaterials();
     convertSurfaces();
     convertSensors();  // before closeSurfaces as may add some SensorSurfaces
-
     closeSurfaces();
-
     convertSolids();
-
     convertStructure();
 }
 
@@ -234,7 +231,6 @@ void X4PhysicalVolume::convertMaterials()
 
 
     /*
-    // replaceGROUPVEL needs the buffer : so must be after close
     bool debug = false ; 
     m_mlib->replaceGROUPVEL(debug); 
     */
@@ -291,16 +287,16 @@ void X4PhysicalVolume::closeSurfaces()
     m_slib->close();  // may change order if prefs dictate
 }
 
-
-
-
 void X4PhysicalVolume::saveAsGLTF(int root, const char* path)
 {
-     m_sc->root = SSys::getenvint("GLTF_ROOT", root);  // 3147
+     m_sc->root = root ;   
      LOG(error) << "X4PhysicalVolume::saveAsGLTF"
                 << " sc.root " << m_sc->root 
                 ;
 
+     bool yzFlip = true ;  
+     bool saveNPYToGLTF = false ; 
+     m_maker = new YOG::Maker(m_sc, yzFlip, saveNPYToGLTF) ; 
      m_maker->convert();
      m_maker->save(path ? path : m_gltfpath);
 }
@@ -456,45 +452,45 @@ void X4PhysicalVolume::convertSolids_r(const G4VPhysicalVolume* const pv, int de
         const G4VSolid* const solid = lv->GetSolid(); 
 
         int soIdx = m_sc->add_mesh( lvIdx, lv->GetName(), solid->GetName() ); 
-        assert( soIdx == lvIdx ) ; 
+
+        assert( lvIdx == soIdx ) ; // when converting in postorder soIdx becomes the same as lvIdx
+
+        GMesh* mesh = convertSolid( lvIdx, soIdx, solid, lv->GetName() ) ;  
+        mesh->setIndex( lvIdx ) ;   
+
+        m_ggeo->add( mesh ) ; 
+
+        // --- angling to move glTF collection to GGeo --- getting rid of the below
+         
+        const GMesh* mesh2 = m_ggeo->getMesh( soIdx );  // returns mesh with that index
+        assert( mesh2 == mesh ) ; 
+
+        const G4VSolid* solid2 = (const G4VSolid*)mesh->m_g4vsolid ; 
+        assert( solid2 == solid ) ; 
+
+        const NCSG* csg = mesh->getCSG(); 
+        const nnode* root = mesh->getRoot(); 
+        const nnode* raw = root->other ; 
+
+        X4SolidRec rec(solid, raw, root, csg, soIdx, lvIdx );  
+        m_solidrec.push_back( rec ) ; 
 
         Mh* mh = m_sc->meshes[lvIdx] ;   
+        assert(mh->csgnode == NULL) ;
 
-        convertSolid( lvIdx, soIdx, mh, solid ) ; 
+        mh->mesh = mesh ; 
+        mh->csg = csg ; 
+        mh->csgnode = root ; 
+        mh->vtx = mesh->m_x4src_vtx ; 
+        mh->idx = mesh->m_x4src_idx ; 
+
+        // ----------------------------------------------------------------
+
     }  
 }
 
-void X4PhysicalVolume::convertSolid( int lvIdx, int soIdx, Mh* mh, const G4VSolid* const solid)
-{
-     assert(mh->csgnode == NULL) ;
 
-     GMesh* mesh = convertSolid( lvIdx, soIdx, solid ) ;  
-     mesh->setIndex( lvIdx ) ;   
-     // when converting in postorder soIdx becomes the same as lvIdx
-
-     const NCSG* csg = mesh->getCSG(); 
-     const nnode* root = mesh->getRoot(); 
-     const nnode* raw = root->other ; 
-
-     X4SolidRec rec(solid, raw, root, csg, soIdx, lvIdx );  
-     m_solidrec.push_back( rec ) ; 
-
-     m_ggeo->add( mesh ) ; 
-
-     const GMesh* mesh2 = m_ggeo->getMesh( soIdx );  // returns mesh with that index
-     assert( mesh2 == mesh ) ; 
-
-
-     mh->mesh = mesh ; 
-     mh->csg = csg ; 
-     mh->csgnode = root ; 
-     mh->vtx = mesh->m_x4src_vtx ; 
-     mh->idx = mesh->m_x4src_idx ; 
-} 
-
-
-
-GMesh* X4PhysicalVolume::convertSolid( int lvIdx, int soIdx, const G4VSolid* const solid) const 
+GMesh* X4PhysicalVolume::convertSolid( int lvIdx, int soIdx, const G4VSolid* const solid, const std::string& lvname) const 
 {
      nnode* raw = X4Solid::Convert(solid)  ; 
      if(m_g4codegen) 
@@ -510,6 +506,10 @@ GMesh* X4PhysicalVolume::convertSolid( int lvIdx, int soIdx, const G4VSolid* con
      NCSG* csg = NCSG::Adopt( root, config, soIdx, lvIdx );   // Adopt exports nnode tree to m_nodes buffer in NCSG instance
      assert( csg ) ; 
      assert( csg->isUsedGlobally() );
+
+     const std::string& soname = solid->GetName() ; 
+     csg->set_soname( soname.c_str() ) ; 
+     csg->set_lvname( lvname.c_str() ) ; 
 
      bool is_x4polyskip = m_ok->isX4PolySkip(lvIdx);   // --x4polyskip 211,232
      if( is_x4polyskip ) LOG(fatal) << " is_x4polyskip " << " soIdx " << soIdx  << " lvIdx " << lvIdx ;  
@@ -782,6 +782,10 @@ GVolume* X4PhysicalVolume::convertNode(const G4VPhysicalVolume* const pv, GVolum
      // TODO: rejig ctor args, to avoid needing the setters for array setup
 
      volume->setLevelTransform(ltransform);
+
+     volume->setLocalTransform(ltriple);
+     volume->setGlobalTransform(gtriple);
+ 
      volume->setParallelNode( nd ); 
      volume->setParts( pts ); 
      volume->setPVName( pvName.c_str() );

@@ -35,10 +35,11 @@ class GGEO_API GItemList : public NSequence {
        unsigned int getNumItems();
     public:
        // fulfil NSequence protocol
-       unsigned int getNumKeys();
+       const char* getKey(unsigned index) const ;
+       unsigned int getNumKeys() const ;
+       unsigned int getIndex(const char* key) const ;    // 0-based index of first matching name, OR INT_MAX if no match
+    public:
        void setKey(unsigned int index, const char* newkey);
-       const char* getKey(unsigned int index);
-       unsigned int getIndex(const char* key);    // 0-based index of first matching name, OR INT_MAX if no match
        static bool isUnset(unsigned int index);
    public:
        void getIndicesWithKeyEnding( std::vector<unsigned>& indices, const char* ending ) const ;  

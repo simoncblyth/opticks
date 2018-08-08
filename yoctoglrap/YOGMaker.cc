@@ -30,6 +30,14 @@ using ygltf::accessor_t ;
 
 namespace YOG {
 
+/**
+YOG::Maker::SaveToGLTF
+-----------------------
+
+Used from X4Mesh::save
+
+**/
+
 void Maker::SaveToGLTF(const NPY<float>* vtx, const NPY<unsigned>* idx, const char* path)
 {
     YOG::Sc sc ;
@@ -52,6 +60,7 @@ void Maker::SaveToGLTF(const NPY<float>* vtx, const NPY<unsigned>* idx, const ch
                             parent_nd
                             );
 
+     assert( ndIdx == 0 ); 
      YOG::Mh* mh = sc.get_mesh_for_node( ndIdx );
      mh->vtx = vtx ; 
      mh->idx = idx ; 
@@ -128,11 +137,12 @@ void Maker::demo_create(const Geometry& geom)
 }
 
 
-Maker::Maker(Sc* sc_, bool saveNPYToGLTF_ )  
+Maker::Maker(Sc* sc_, bool yzFlip_, bool saveNPYToGLTF_ )  
     :
     sc(sc_),
     impl(new Impl),
     verbosity(1),
+    yzFlip(yzFlip_),
     saveNPYToGLTF(saveNPYToGLTF_),
     converted(false)
 {
@@ -142,12 +152,6 @@ void Maker::convert()
 {
     assert( converted == false );
     converted = true ; 
-
-    if(impl->num_scene() == 0 )
-    {
-        impl->add_scene();
-        append_node_to_scene( sc->root );
-    }
 
     for(int i=0 ; i < sc->nodes.size() ; i++ )
     {
@@ -173,6 +177,16 @@ void Maker::convert()
         if(nd->transform)
             nglmext::copyTransform( node.matrix, nd->transform->t );
     }
+
+
+    int uroot = yzFlip ? add_yzflip_top_node( sc->root ) : sc->root ; 
+
+    if(impl->num_scene() == 0 )
+    {
+        impl->add_scene();
+        append_node_to_scene( uroot );
+    }
+
    
     /*
     glTF meshes have a material index, but Opticks 
@@ -198,21 +212,6 @@ void Maker::convert()
     }
 
 
-/*
-    for(int i=0 ; i < sc->meshes.size() ; i++ )
-    {
-        Mh* mh = sc->meshes[i] ; 
-
-        int mtIdx = mh->mtIdx ; // material
-
-        int m = impl->add_mesh(); 
-        set_mesh_data( m,  mh,  mtIdx ); 
-
-        mesh_t& mesh = impl->get_mesh(m) ;
-        mesh.extras["meshIdx"] = m ; 
-    }
-*/
-
     for(int i=0 ; i < sc->materials.size() ; i++ )
     {
         Mt* mt = sc->materials[i] ; 
@@ -221,6 +220,53 @@ void Maker::convert()
         set_material_name( m, mt->name ); 
     }
 }
+
+
+/**
+Fabricated Top Node, switching Z<->Y 
+-------------------------------------------
+
+::
+
+    343469     {
+    343470       "name": "Fabricated top node 12230",
+    343471       "children": [
+    343472         3152
+    343473       ],
+    343474       "matrix": [
+    343475         1.0, 0.0, 0.0, 0.0,
+    343476         0.0, 0.0, 1.0, 0.0,
+    343477         0.0, 1.0, 0.0, 0.0,
+    343478         0.0, 0.0, 0.0, 1.0
+    343479       ],
+    343480     } 
+    343481   ],
+    343482   "scenes": [
+    343483     {
+    343484       "nodes": [
+    343485         12230
+    343486       ] 
+    343487     } 
+    343488   ] 
+
+
+**/
+
+int Maker::add_yzflip_top_node(int root )
+{
+    int n = impl->add_node();
+    node_t& node = impl->get_node(n) ;
+
+    node.name = "fabricated yzflip top node" ; 
+    node.children = { root } ; 
+
+    glm::mat4 yzflip = nglmext::make_yzflip() ; 
+    nglmext::copyTransform( node.matrix, yzflip );
+
+    return n ; 
+}
+
+
 
 void Maker::set_mesh_data( int meshIdx, Mh* mh, int materialIdx )
 {   
@@ -504,30 +550,35 @@ void Maker::configure_material(
 
 
 
-void Maker::save(const char* path, bool cat) const 
+void Maker::save(const char* path_, bool cat) const 
 {
     assert( converted == true );
 
     bool createDirs = true ; 
-    BFile::preparePath(path, createDirs); 
+    std::string path = BFile::preparePath(path_, createDirs); 
 
     bool save_bin = saveNPYToGLTF ; 
 
-    impl->save(path, save_bin); 
+    impl->save(path.c_str(), save_bin); 
 
-    LOG(info) << "writing " << path ; 
+    LOG(info) << "writing " 
+              << std::endl  
+              << " path_ " << path_
+              << std::endl  
+              << " path  " << path
+              ; 
 
     LOG(info) << impl->desc() ; 
 
     if(cat)
     {
-        std::ifstream fp(path);
+        std::ifstream fp(path.c_str());
         std::string line;
         while(std::getline(fp, line)) std::cout << line << std::endl ; 
     } 
 
     if(!save_bin)
-        saveBuffers(path);
+        saveBuffers(path.c_str());
 }
 
 void Maker::saveBuffers(const char* path) const 

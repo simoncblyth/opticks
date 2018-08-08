@@ -135,6 +135,9 @@ struct NPY_API ndeco
 
 struct NPY_API nglmext 
 { 
+    static glm::mat4 make_yzflip() ;
+    static glm::mat4 make_flip(unsigned axa, unsigned axb) ;
+
     static void copyTransform( std::array<float,16>& dst, const glm::mat4& src );
     static std::string xform_string( const std::array<float, 16>& xform );
     static std::array<float, 16> _float4x4_mul( const std::array<float, 16>& a, const std::array<float, 16>& b) ;

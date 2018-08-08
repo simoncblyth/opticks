@@ -1,5 +1,7 @@
 // TEST=OKX4Test om-t
 
+#include "SSys.hh"
+
 #include "Opticks.hh"     
 #include "OpticksQuery.hh"
 #include "OpticksCfg.hh"
@@ -13,6 +15,7 @@
 
 #include "GBndLib.hh"
 #include "GGeo.hh"
+#include "GGeoGLTF.hh"
 
 #include "CGDMLDetector.hh"
 
@@ -92,10 +95,12 @@ int main(int argc, char** argv)
     xtop.dumpSolidRec(); 
     xtop.writeSolidRec(); 
 
-
-    int root = 0 ; 
+    int root = SSys::getenvint( "GLTF_ROOT", 3147 ); 
     const char* path = NULL ;  
     xtop.saveAsGLTF(root, path); 
+
+    GGeoGLTF::Save(gg2, "$TMP/ggeo.gltf", root ); 
+
 
     gg2->prepare();   // merging meshes, closing libs
 

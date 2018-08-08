@@ -377,7 +377,7 @@ unsigned int GPropertyLib::getIndex(const char* shortname)
     return m_names->getIndex(shortname);
 }
 
-const char* GPropertyLib::getName(unsigned int index)
+const char* GPropertyLib::getName(unsigned index) const 
 {
     assert(m_names);
     const char* key = m_names->getKey(index);

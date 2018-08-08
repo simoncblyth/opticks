@@ -84,7 +84,7 @@ struct YOG_API Sc  // scene
                  const std::string& boundary,
                  int   depth, 
                  bool  selected,
-                 Nd*   parent 
+                 Nd*   parent        // child is added, so cannot be const 
                  );  
 
     int add_test_node(int lvIdx);

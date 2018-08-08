@@ -104,7 +104,7 @@ class GGEO_API GPropertyLib {
         static const char* source ; 
         static const char* bnd_ ;
     public:
-        const char*  getName(unsigned int index);
+        const char*  getName(unsigned index) const ;
         unsigned getIndex(const char* shortname);
     public:
         void getIndicesWithNameEnding( std::vector<unsigned>& indices, const char* ending ) const ; 

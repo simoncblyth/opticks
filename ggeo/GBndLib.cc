@@ -225,7 +225,7 @@ GSurfaceLib* GBndLib::getSurfaceLib()
 }
 
 
-unsigned int GBndLib::getNumBnd()
+unsigned int GBndLib::getNumBnd() const
 {
     return m_bnd.size() ; 
 }
@@ -308,7 +308,7 @@ bool GBndLib::isDbgBnd() const
 
 
 
-bool GBndLib::contains(const char* spec, bool flip)
+bool GBndLib::contains(const char* spec, bool flip) const
 {
     guint4 bnd = parse(spec, flip);
     return contains(bnd);
@@ -316,7 +316,7 @@ bool GBndLib::contains(const char* spec, bool flip)
 
 
 
-guint4 GBndLib::parse( const char* spec, bool flip)
+guint4 GBndLib::parse( const char* spec, bool flip) const
 {
     GBnd b(spec, flip, m_mlib, m_slib, m_dbgbnd);
     return guint4( b.omat, b.osur, b.isur, b.imat ) ; 
@@ -390,7 +390,7 @@ void GBndLib::add(const guint4& bnd)  // all the adders invoke this
 }
 
 
-bool GBndLib::contains(const guint4& bnd)
+bool GBndLib::contains(const guint4& bnd) const 
 {
     typedef std::vector<guint4> G ;  
     G::const_iterator b = m_bnd.begin() ;
@@ -399,7 +399,7 @@ bool GBndLib::contains(const guint4& bnd)
     return i != e ;
 }
 
-unsigned int GBndLib::index(const guint4& bnd)
+unsigned int GBndLib::index(const guint4& bnd) const 
 {
     typedef std::vector<guint4> G ;  
     G::const_iterator b = m_bnd.begin() ;
@@ -408,10 +408,7 @@ unsigned int GBndLib::index(const guint4& bnd)
     return i == e ? UNSET : std::distance(b, i) ; 
 }
 
-
-
-
-std::string GBndLib::description(const guint4& bnd)
+std::string GBndLib::description(const guint4& bnd) const
 {
     unsigned int idx = index(bnd) ;
     std::string tag = idx == UNSET ? "-" : boost::lexical_cast<std::string>(idx) ; 
@@ -438,14 +435,14 @@ std::string GBndLib::description(const guint4& bnd)
     return ss.str();
 }
 
-std::string GBndLib::shortname(unsigned int boundary)
+std::string GBndLib::shortname(unsigned boundary) const 
 {
     guint4 bnd = getBnd(boundary);
     return shortname(bnd);
 }
 
 
-std::string GBndLib::shortname(const guint4& bnd)
+std::string GBndLib::shortname(const guint4& bnd) const 
 {
     std::stringstream ss ; 
     ss 
@@ -462,7 +459,7 @@ std::string GBndLib::shortname(const guint4& bnd)
 
 
 
-guint4 GBndLib::getBnd(unsigned int boundary)
+guint4 GBndLib::getBnd(unsigned boundary) const
 {
     unsigned int ni = getNumBnd();
     assert(boundary < ni);
@@ -470,48 +467,44 @@ guint4 GBndLib::getBnd(unsigned int boundary)
     return bnd ;  
 }
 
-unsigned int GBndLib::getInnerMaterial(unsigned int boundary)
+unsigned int GBndLib::getInnerMaterial(unsigned boundary) const 
 {
     guint4 bnd = getBnd(boundary);
     return bnd[IMAT] ; 
 }
-unsigned int GBndLib::getOuterMaterial(unsigned int boundary)
+unsigned int GBndLib::getOuterMaterial(unsigned boundary) const 
 {
     guint4 bnd = getBnd(boundary);
     return bnd[OMAT] ; 
 }
-unsigned int GBndLib::getInnerSurface(unsigned int boundary)
+unsigned int GBndLib::getInnerSurface(unsigned boundary) const 
 {
     guint4 bnd = getBnd(boundary);
     return bnd[ISUR] ; 
 }
-unsigned int GBndLib::getOuterSurface(unsigned int boundary)
+unsigned int GBndLib::getOuterSurface(unsigned boundary) const 
 {
     guint4 bnd = getBnd(boundary);
     return bnd[OSUR] ; 
 }
 
-
-
-const char* GBndLib::getOuterMaterialName(unsigned int boundary)
+const char* GBndLib::getOuterMaterialName(unsigned boundary) const
 {
     unsigned int omat = getOuterMaterial(boundary);
     return m_mlib->getName(omat);
 }
-const char* GBndLib::getInnerMaterialName(unsigned int boundary)
+const char* GBndLib::getInnerMaterialName(unsigned boundary) const 
 {
     unsigned int imat = getInnerMaterial(boundary);
     return m_mlib->getName(imat);
 }
 
-
-
-const char* GBndLib::getOuterSurfaceName(unsigned int boundary)
+const char* GBndLib::getOuterSurfaceName(unsigned boundary) const
 {
     unsigned int osur = getOuterSurface(boundary);
     return m_slib->getName(osur);
 }
-const char* GBndLib::getInnerSurfaceName(unsigned int boundary)
+const char* GBndLib::getInnerSurfaceName(unsigned boundary) const
 {
     unsigned int isur = getInnerSurface(boundary);
     return m_slib->getName(isur);
@@ -522,12 +515,12 @@ const char* GBndLib::getInnerSurfaceName(unsigned int boundary)
 
 
 
-const char* GBndLib::getOuterMaterialName(const char* spec)
+const char* GBndLib::getOuterMaterialName(const char* spec) 
 {
     unsigned int boundary = addBoundary(spec);
     return getOuterMaterialName(boundary);
 }
-const char* GBndLib::getInnerMaterialName(const char* spec)
+const char* GBndLib::getInnerMaterialName(const char* spec) 
 {
     unsigned int boundary = addBoundary(spec);
     return getInnerMaterialName(boundary);

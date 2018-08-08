@@ -46,7 +46,6 @@ very focussed converter classes.
 
 find_package(G4         REQUIRED MODULE)
 find_package(GGeo       REQUIRED CONFIG)   
-find_package(YoctoGLRap REQUIRED CONFIG)
 
 set(SOURCES
      
@@ -137,7 +136,6 @@ add_library( ${name}  SHARED ${SOURCES} ${HEADERS} )
 target_link_libraries( ${name} PUBLIC 
     Opticks::G4
     Opticks::GGeo
-    Opticks::YoctoGLRap
 )
 
 target_include_directories( ${name} PUBLIC 

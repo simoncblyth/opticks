@@ -72,27 +72,27 @@ class GGEO_API GBndLib : public GPropertyLib {
   private:
        void init(); 
   public:
-       unsigned int getNumBnd();
+       unsigned int getNumBnd() const ;
        void closeConstituents();
   public:
-       std::string description(const guint4& bnd);
-       std::string shortname(const guint4& bnd);
-       std::string shortname(unsigned int boundary);
-       bool contains(const guint4& bnd);
-       unsigned int index(const guint4& bnd);
+       std::string description(const guint4& bnd) const ;
+       std::string shortname(const guint4& bnd) const ;
+       std::string shortname(unsigned boundary) const ;
+       bool contains(const guint4& bnd) const ;
+       unsigned index(const guint4& bnd) const ;
   public:
        // boundary index lookups
-       guint4 getBnd(unsigned int boundary);
+       guint4 getBnd(unsigned int boundary) const ;
   public:
-       unsigned getOuterMaterial(unsigned boundary);
-       unsigned getOuterSurface(unsigned boundary);
-       unsigned getInnerSurface(unsigned boundary);
-       unsigned getInnerMaterial(unsigned boundary);
+       unsigned getOuterMaterial(unsigned boundary) const;
+       unsigned getOuterSurface(unsigned boundary) const;
+       unsigned getInnerSurface(unsigned boundary) const;
+       unsigned getInnerMaterial(unsigned boundary) const ;
   public:
-       const char* getOuterMaterialName(unsigned int boundary);
-       const char* getOuterSurfaceName(unsigned int boundary);
-       const char* getInnerSurfaceName(unsigned int boundary);
-       const char* getInnerMaterialName(unsigned int boundary);
+       const char* getOuterMaterialName(unsigned boundary) const;
+       const char* getOuterSurfaceName(unsigned boundary) const ;
+       const char* getInnerSurfaceName(unsigned boundary) const ;
+       const char* getInnerMaterialName(unsigned boundary) const ;
   public:
        // spec is added, yielding a boundary index 
        const char* getOuterMaterialName(const char* spec);
@@ -100,8 +100,8 @@ class GGEO_API GBndLib : public GPropertyLib {
        const char* getInnerSurfaceName(const char* spec);
        const char* getInnerMaterialName(const char* spec);
   public:
-       guint4 parse( const char* spec, bool flip=false);
-       bool contains( const char* spec, bool flip=false);
+       guint4 parse( const char* spec, bool flip=false) const ;
+       bool contains( const char* spec, bool flip=false) const ;
 
 
   public:

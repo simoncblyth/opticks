@@ -12,8 +12,18 @@ template <typename T> class NPY ;
 YOGMaker
 ==========
 
-* creates renderable glTF by providing the metadata 
-  to describe the Opticks geocache buffers. 
+Creates renderable glTF by providing the metadata 
+to describe the Opticks geocache buffers. 
+
+yzFlip
+   adds top node that acts as root and does the flip 
+   and points via its children to the "real" root node
+
+saveNPYToGLTF
+   enabling this gets ygltf to write the binary buffers, 
+   normally it is more convenient to save the buffers 
+   separately as ygltf is restricted to existing directories    
+
 
 Dependencies
 -------------
@@ -45,7 +55,7 @@ struct YOG_API Maker
 
     void demo_create(const Geometry& geom );
 
-    Maker(Sc* sc_=NULL, bool saveNPYToGLTF_=false );  
+    Maker(Sc* sc_=NULL, bool yzFlip_=true, bool saveNPYToGLTF_=false );  
     void convert();
 
     template <typename T> 
@@ -86,12 +96,18 @@ struct YOG_API Maker
     void saveBuffers(const char* path) const ;
 
 
+    int add_yzflip_top_node(int root );
+
+
+
     Sc*                      sc ;  
     Impl*                    impl ; 
     int                      verbosity ;  
 
+    bool                     yzFlip ;  
     bool                     saveNPYToGLTF ; 
     bool                     converted ; 
+
     std::vector<NBufferSpec> specs ; 
 
 };

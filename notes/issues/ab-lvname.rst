@@ -67,6 +67,7 @@ FIXED : by reworking YOG Model and X4PhysicalVolume to move convertSolids prior 
     M yoctoglrap/YOGTF.cc
     epsilon:opticks blyth$ 
 
+    epsilon:opticks blyth$ hg commit -m "rework X4PhysicalVolume and YOG model : adding Pr and removing mtIdx from Mh : to move convertSolids prior to convertStructure, fixing ab-lvname issue "
 
 
 

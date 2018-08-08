@@ -24,7 +24,14 @@
 #include "PLOG.hh"
 
 
+/**
+X4Mesh::Placeholder
+--------------------
 
+Converts G4VSolid into placeholder bounding box GMesh, the
+solid name is prefixed with "PLACEHOLDER_" to make this clear. 
+
+**/
 
 GMesh* X4Mesh::Placeholder(const G4VSolid* solid ) //static
 {
@@ -45,6 +52,7 @@ GMesh* X4Mesh::Placeholder(const G4VSolid* solid ) //static
 
     mesh->m_x4src_vtx = vtxidx.vtx ; 
     mesh->m_x4src_idx = vtxidx.idx ; 
+    mesh->m_g4vsolid = (void*)solid ; 
 
     const std::string& soName = solid->GetName(); 
     const char* name = BStr::concat("PLACEHOLDER_", soName.c_str(), NULL );  
@@ -58,6 +66,7 @@ GMesh* X4Mesh::Convert(const G4VSolid* solid ) //static
 {
     X4Mesh xm(solid); 
     GMesh* mesh = xm.getMesh();
+    mesh->m_g4vsolid = (void*)solid ; 
     return mesh ; 
 }
 

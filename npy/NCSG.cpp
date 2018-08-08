@@ -1161,6 +1161,10 @@ std::string NCSG::getTestLVName() const
 }
 
 
+
+void NCSG::set_lvname(const char* name) { m_meta->setValue<std::string>("lvname", name) ; }
+void NCSG::set_soname(const char* name) { m_meta->setValue<std::string>("soname", name) ; }
+
 std::string NCSG::lvname() const {        return m_meta->getValue<std::string>("lvname","-") ; }
 std::string NCSG::soname() const {        return m_meta->getValue<std::string>("soname","-") ; }
 int         NCSG::treeindex() const {     return m_meta->getValue<int>("treeindex","-1") ; }

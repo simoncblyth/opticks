@@ -4,6 +4,7 @@ project(${name} VERSION 0.1.0)
 include(OpticksBuildOptions)
 
 find_package(OpticksCore REQUIRED CONFIG)
+find_package(YoctoGLRap REQUIRED CONFIG)
 
 set(SOURCES
 
@@ -66,6 +67,8 @@ set(SOURCES
     GGeoLib.cc
     GGeoCfg.cc
     GGeoSensor.cc
+    GGeoGLTF.cc
+
     GGeoTest.cc
     GMaker.cc
     GBBoxMesh.cc
@@ -98,6 +101,8 @@ set(HEADERS
     GGeo.hh
     GGeoCfg.hh
     GGeoSensor.hh
+    GGeoGLTF.hh
+
     GMaterial.hh
     GSource.hh
     GMesh.hh
@@ -153,16 +158,11 @@ set(HEADERS
     GPropertyMap.hh
 )
 
-
 add_library( ${name}  SHARED ${SOURCES} ${HEADERS} )
 target_include_directories( ${name} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>) 
-target_link_libraries( ${name} PUBLIC Opticks::OpticksCore )
+target_link_libraries( ${name} PUBLIC Opticks::OpticksCore Opticks::YoctoGLRap)
 target_compile_definitions( ${name} PUBLIC OPTICKS_GGEO )
 install(FILES ${HEADERS}  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 bcm_deploy(TARGETS ${name} NAMESPACE Opticks:: SKIP_HEADER_INSTALL)
-
-
 add_subdirectory(tests)
-
-
 

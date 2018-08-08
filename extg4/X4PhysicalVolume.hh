@@ -1,5 +1,6 @@
 #pragma once
 
+#include <string>
 #include <vector>
 #include <map>
 
@@ -93,8 +94,7 @@ class X4_API X4PhysicalVolume
         //void IndexTraverse(const G4VPhysicalVolume* const pv, int depth);
         void convertSolids_r(const G4VPhysicalVolume* const pv, int depth);
         void dumpLV();
-        void convertSolid( int lvIdx, int soIdx, YOG::Mh* mh, const G4VSolid* const solid);
-        GMesh* convertSolid( int lvIdx, int soIdx, const G4VSolid* const solid) const ;
+        GMesh* convertSolid( int lvIdx, int soIdx, const G4VSolid* const solid, const std::string& lvname) const ;
     private:
         void convertSensors_r(const G4VPhysicalVolume* const pv, int depth);
         GVolume* convertTree_r(const G4VPhysicalVolume* const pv, GVolume* parent, int depth, const G4VPhysicalVolume* const parent_pv, bool& recursive_select );

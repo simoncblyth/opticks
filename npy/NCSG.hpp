@@ -193,6 +193,9 @@ class NPY_API NCSG {
         glm::uvec4 collect_surface_points();
 
     public:
+        void set_lvname(const char* name);
+        void set_soname(const char* name);
+    public:
         std::string lvname() const ;
         std::string soname() const ;
         int treeindex() const ;

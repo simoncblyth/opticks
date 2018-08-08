@@ -422,7 +422,21 @@ void nglmext::_define_uv_basis( const std::vector<glm::vec4>& perps, std::vector
 }
  
 
+glm::mat4 nglmext::make_yzflip(){ return make_flip(1,2) ; }  // static
 
+glm::mat4 nglmext::make_flip(unsigned axa, unsigned axb) // static
+{
+    assert( axa < 3 && axb < 3 && axa != axb ); 
+
+    glm::mat4 m(1.f) ; 
+
+    m[axa][axa] = 0.f ; 
+    m[axb][axb] = 0.f ; 
+    m[axb][axa] = 1.f ; 
+    m[axa][axb] = 1.f ; 
+
+    return m ; 
+}
 
 
 

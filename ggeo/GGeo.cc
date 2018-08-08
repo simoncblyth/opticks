@@ -216,41 +216,35 @@ unsigned GGeo::getNumRawSkinSurfaces() const
 
 
 
+////   const-ification aint so easy as these are part of base interface, changing which has wider implications to GScene etc...
 
-
-
-
-
-GBndLib* GGeo::getBndLib()
+GBndLib* GGeo::getBndLib() 
 {
     return m_bndlib ; 
 }
-
-GMaterialLib* GGeo::getMaterialLib()
+GMaterialLib* GGeo::getMaterialLib() 
 {
     return m_materiallib ; 
 }
-GSurfaceLib* GGeo::getSurfaceLib()
+GSurfaceLib* GGeo::getSurfaceLib() 
 {
     return m_surfacelib ; 
 }
-
-
-
-const char*  GGeo::getIdentifier()
+const char*  GGeo::getIdentifier() 
 {
     return "GGeo" ; 
 }
-
-
-GScintillatorLib* GGeo::getScintillatorLib()
+GScintillatorLib* GGeo::getScintillatorLib() 
 {
     return m_scintillatorlib ; 
 }
-GSourceLib* GGeo::getSourceLib()
+GSourceLib* GGeo::getSourceLib() 
 {
     return m_sourcelib ; 
 }
+
+
+
 
 void GGeo::setLookup(NLookup* lookup)
 {
@@ -455,21 +449,19 @@ unsigned GGeo::getNumRawMaterials() const
 
 
 
-GGeoLib* GGeo::getGeoLib()
+GGeoLib* GGeo::getGeoLib() 
 {
     return m_geolib ; 
 }
-GNodeLib* GGeo::getNodeLib()
+GNodeLib* GGeo::getNodeLib() 
 {
     return m_nodelib ; 
 }
-GPmtLib* GGeo::getPmtLib()
+GPmtLib* GGeo::getPmtLib() 
 {
     return m_pmtlib ; 
 }
-
-
-GScene* GGeo::getScene()
+GScene* GGeo::getScene() 
 {
     return m_gscene ; 
 }
@@ -857,7 +849,7 @@ GMeshLib* GGeo::getMeshLib()
 {
     return m_meshlib ; 
 }
-unsigned GGeo::getNumMeshes()
+unsigned GGeo::getNumMeshes() const 
 {
     return m_meshlib->getNumMeshes(); 
 }
@@ -865,7 +857,7 @@ GItemIndex* GGeo::getMeshIndex()
 {
     return m_meshlib->getMeshIndex() ; 
 }
-const GMesh* GGeo::getMesh(unsigned aindex)
+const GMesh* GGeo::getMesh(unsigned aindex) const 
 {
     return m_meshlib->getMesh(aindex);
 }  
@@ -888,7 +880,7 @@ void GGeo::reportMeshUsage(const char* msg)
 
 // via GNodeLib
 
-unsigned GGeo::getNumVolumes()
+unsigned GGeo::getNumVolumes() const 
 {
     return m_nodelib->getNumVolumes();
 }
@@ -896,23 +888,23 @@ void GGeo::add(GVolume* volume)
 {
     m_nodelib->add(volume);
 }
-GVolume* GGeo::getVolume(unsigned index)
+GVolume* GGeo::getVolume(unsigned index) const 
 {
     return m_nodelib->getVolume(index);
 }
-GVolume* GGeo::getVolumeSimple(unsigned int index)
+GVolume* GGeo::getVolumeSimple(unsigned int index) const 
 {
     return m_nodelib->getVolumeSimple(index);
 }
-const char* GGeo::getPVName(unsigned int index)
+const char* GGeo::getPVName(unsigned int index) const 
 {
     return m_nodelib->getPVName(index);
 }
-const char* GGeo::getLVName(unsigned int index)
+const char* GGeo::getLVName(unsigned int index) const 
 {
     return m_nodelib->getLVName(index);
 }
-GNode* GGeo::getNode(unsigned index)
+GNode* GGeo::getNode(unsigned index) const 
 {
     return m_nodelib->getNode(index);
 }

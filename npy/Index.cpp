@@ -147,9 +147,9 @@ bool Index::operator() (const std::string& a, const std::string& b)
     return m_local[a] < m_local[b] ; 
 }
 
-unsigned int Index::getIndexLocal(const char* name, unsigned int missing)
+unsigned int Index::getIndexLocal(const char* name, unsigned int missing) const 
 {
-    return m_local.count(name) == 1 ? m_local[name] : missing ; 
+    return m_local.count(name) == 1 ? m_local.at(name) : missing ; 
 }
 
 bool Index::hasItem(const char* name)
@@ -167,16 +167,16 @@ unsigned int Index::getNumItems()
 
 // fulfil NSequence
 //   NSequence indices are zero-based, so have to convert when one-based
-unsigned int Index::getNumKeys()
+unsigned int Index::getNumKeys() const 
 {
     return m_local.size();
 }
-const char* Index::getKey(unsigned int i)
+const char* Index::getKey(unsigned int i) const 
 {
     unsigned int local = m_onebased ? i + 1 : i ;
     return getNameLocal(local);
 }
-unsigned int Index::getIndex(const char* key)
+unsigned int Index::getIndex(const char* key) const
 {
     unsigned int local = getIndexLocal(key);
     return m_onebased ? local - 1 : local ; 
@@ -209,7 +209,7 @@ unsigned Index::getIndexSourceStarting(const char* name, unsigned int missing)
 {
     typedef std::map<std::string, unsigned int> MSU ; 
     unsigned source_idx = missing ;  
-    for(MSU::iterator it=m_source.begin() ; it != m_source.end() ; it++ ) 
+    for(MSU::const_iterator it=m_source.begin() ; it != m_source.end() ; it++ ) 
     {
          std::string it_name = it->first ; 
          unsigned it_idx = it->second ; 
@@ -224,17 +224,17 @@ unsigned Index::getIndexSourceStarting(const char* name, unsigned int missing)
 
 
 
-const char* Index::getNameLocal(unsigned int local, const char* missing)
+const char* Index::getNameLocal(unsigned int local, const char* missing) const 
 {
     typedef std::map<std::string, unsigned int> MSU ; 
-    for(MSU::iterator it=m_local.begin() ; it != m_local.end() ; it++ ) 
+    for(MSU::const_iterator it=m_local.begin() ; it != m_local.end() ; it++ ) 
         if(it->second == local) return it->first.c_str();
     return missing ; 
 }
-const char* Index::getNameSource(unsigned int source, const char* missing)
+const char* Index::getNameSource(unsigned int source, const char* missing) const 
 {
     typedef std::map<std::string, unsigned int> MSU ; 
-    for(MSU::iterator it=m_source.begin() ; it != m_source.end() ; it++ ) 
+    for(MSU::const_iterator it=m_source.begin() ; it != m_source.end() ; it++ ) 
         if(it->second == source) return it->first.c_str();
     return missing ; 
 }

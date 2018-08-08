@@ -575,6 +575,9 @@ class GGEO_API GMesh : public GDrawable {
       // expedient x4src buffers 
       NPY<float>*    m_x4src_vtx ; 
       NPY<unsigned>* m_x4src_idx ; 
+  public:
+      // expedient recording source solid in X4PhysicalVolume::convertSolid X4Mesh::Convert X4Mesh::Placeholder
+      const void*    m_g4vsolid ; 
 
 };
 

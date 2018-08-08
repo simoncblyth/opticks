@@ -42,9 +42,9 @@ class NPY_API Index : public NSequence {
         const char* getSelectedKey();
    public:
         // fulfil NSequence, in order to use with GAttrSequence
-        unsigned int getNumKeys();
-        const char* getKey(unsigned int i);
-        unsigned int getIndex(const char* key);
+        unsigned int getNumKeys() const ;
+        const char* getKey(unsigned int i) const ;
+        unsigned int getIndex(const char* key) const ;
    private:
         void loadMaps(const char* idpath);
         void crossreference();
@@ -58,7 +58,7 @@ class NPY_API Index : public NSequence {
    public:
         std::string getPrefixedString(const char* tail);
         void setExt(const char* ext);
-        unsigned getIndexLocal(const char* name, unsigned missing=0);
+        unsigned getIndexLocal(const char* name, unsigned missing=0) const ;
         unsigned getIndexSource(const char* name, unsigned missing=0);
         unsigned getIndexSourceStarting(const char* name, unsigned missing=0) ;
 
@@ -66,8 +66,8 @@ class NPY_API Index : public NSequence {
         float        getIndexSourceFraction(const char* name);
 
         bool         hasItem(const char* key);
-        const char* getNameLocal(unsigned int local, const char* missing=NULL);
-        const char* getNameSource(unsigned int source, const char* missing=NULL);
+        const char* getNameLocal(unsigned int local, const char* missing=NULL) const ;
+        const char* getNameSource(unsigned int source, const char* missing=NULL) const ;
 
         unsigned int convertLocalToSource(unsigned int local, unsigned int missing=0);
         unsigned int convertSourceToLocal(unsigned int source, unsigned int missing=0);

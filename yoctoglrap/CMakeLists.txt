@@ -3,16 +3,9 @@ set(name YoctoGLRap)
 project(${name} VERSION 0.1.0)
 include(OpticksBuildOptions)
 
-find_package(SysRap  REQUIRED CONFIG) 
 find_package(NPY     REQUIRED CONFIG) 
-find_package(YoctoGL REQUIRED CONFIG)  # from /usr/local/opticks/externals/lib/cmake/yoctogl/  
+# NPY depends on SysRap and YoctoGL among others, so no need to repeat here
 
-set(YoctoGL_VERBOSE OFF)
-if(YoctoGL_VERBOSE)
-    message(STATUS "YoctoGL_DIR   : ${YoctoGL_DIR} ")
-    message(STATUS "YoctoGL_FOUND : ${YoctoGL_FOUND} ")
-    echo_target_std(Opticks::YoctoGL)
-endif()
 
 set(SOURCES
     YOG_LOG.cc
@@ -42,9 +35,7 @@ SET(HEADERS
 
 add_library( ${name}  SHARED ${SOURCES} ${HEADERS} )
 target_link_libraries( ${name} PUBLIC 
-    Opticks::SysRap
     Opticks::NPY
-    Opticks::YoctoGL
 )
 
 target_include_directories( ${name} PUBLIC 

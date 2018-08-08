@@ -67,7 +67,7 @@ ab-a-run(){  OPTICKS_RESOURCE_LAYOUT=104 OKTest -G --gltf 3   ; }
 ab-a-lldb(){  OPTICKS_RESOURCE_LAYOUT=104 lldb -- OKTest -G --gltf 3   ; }
 
 ab-b-run(){  OPTICKS_RESOURCE_LAYOUT=104 OKX4Test --x4polyskip 211,232  ; }
-ab-b-lldb(){  OPTICKS_RESOURCE_LAYOUT=104 lldb -- OKX4Test --x4polyskip  ; }
+ab-b-lldb(){  OPTICKS_RESOURCE_LAYOUT=104 lldb -- OKX4Test --x4polyskip 211,232 ; }
 
 
 ab-paths(){ cat << EOP
