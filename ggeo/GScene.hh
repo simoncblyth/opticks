@@ -128,7 +128,6 @@ class GGEO_API GScene : public GGeoBase
         static GScene* Load(Opticks* ok, GGeo* ggeo) ;
         GScene(Opticks* ok, GGeo* ggeo, bool loaded);
 
-        GMergedMesh* getMergedMesh(unsigned ridx);
         GVolume* getVolume(unsigned nidx);
         void dumpNode(unsigned nidx);
         void anaEvent(OpticksEvent* evt);
@@ -136,15 +135,20 @@ class GGEO_API GScene : public GGeoBase
 
     public:
         // GGeoBase interface
-        const char*       getIdentifier();
-        GGeoLib*          getGeoLib() ; 
-        GNodeLib*         getNodeLib();
-        GSurfaceLib*      getSurfaceLib() ; 
-        GMaterialLib*     getMaterialLib() ; 
-        GBndLib*          getBndLib() ; 
-        GPmtLib*          getPmtLib() ; 
-        GScintillatorLib* getScintillatorLib() ; 
-        GSourceLib*       getSourceLib() ; 
+        GScintillatorLib* getScintillatorLib() const ; 
+        GSourceLib*       getSourceLib() const ; 
+        GSurfaceLib*      getSurfaceLib() const ; 
+        GMaterialLib*     getMaterialLib() const ; 
+
+        GBndLib*          getBndLib() const ; 
+        GPmtLib*          getPmtLib() const ; 
+        GGeoLib*          getGeoLib() const ; 
+        GNodeLib*         getNodeLib() const ;
+
+        const char*       getIdentifier() const ;
+        GMergedMesh*      getMergedMesh(unsigned ridx) const ;
+
+        // GGeoBase interface END
     private:
         void initFromGLTF();
         void prepareVertexColors();

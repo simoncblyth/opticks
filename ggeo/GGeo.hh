@@ -112,11 +112,21 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
         static const char* PREFIX ;
     public:
         // GGeoBase interface : so not so easy to const-ify 
-        const char*       getIdentifier()  ;
-        GScintillatorLib* getScintillatorLib()  ; 
-        GSourceLib*       getSourceLib() ; 
-        GBndLib*          getBndLib() ; 
-        GGeoLib*          getGeoLib()  ; 
+
+        GScintillatorLib* getScintillatorLib() const ; 
+        GSourceLib*       getSourceLib() const ; 
+        GSurfaceLib*      getSurfaceLib() const ;
+        GMaterialLib*     getMaterialLib() const ;
+
+        GBndLib*          getBndLib() const ; 
+        GPmtLib*          getPmtLib() const ; 
+        GGeoLib*          getGeoLib()  const ; 
+        GNodeLib*         getNodeLib() const ;
+
+        const char*       getIdentifier()  const ;
+        GMergedMesh* getMergedMesh(unsigned int index) const ;
+
+        // GGeoBase interace END
     public:
         const char* getPrefix();
         void configure(const char* name, const char* value);
@@ -127,7 +137,7 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
         typedef int (*GLoaderImpFunctionPtr)(GGeo*);
         void setLoaderImp(GLoaderImpFunctionPtr imp);
         void setMeshVerbosity(unsigned int verbosity);
-        unsigned int getMeshVerbosity();
+        unsigned int getMeshVerbosity() const ;
     public:
         typedef GMesh* (*GJoinImpFunctionPtr)(GMesh*, Opticks*);
         void setMeshJoinImp(GJoinImpFunctionPtr imp);
@@ -190,7 +200,6 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
         // pass thru to geolib
         GMergedMesh* makeMergedMesh(unsigned int index, GNode* base, GNode* root, unsigned verbosity );
         unsigned int getNumMergedMesh();
-        GMergedMesh* getMergedMesh(unsigned int index);
     public:
         // these are operational from cache
         // target 0 : all geometry of the mesh, >0 : specific volumes
@@ -250,10 +259,7 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
         unsigned getNumRawMaterials() const ;
     public:
         GScene*            getScene()  ;
-        GNodeLib*          getNodeLib() ;
-        GMaterialLib*      getMaterialLib() ;
-        GSurfaceLib*       getSurfaceLib() ;
-        GPmtLib*           getPmtLib() ; 
+
 
         NLookup*           getLookup(); 
     public:

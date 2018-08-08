@@ -39,17 +39,21 @@
 
 #include "PLOG.hh"
 
-const char*       GScene::getIdentifier(){       return "GScene" ;  }
-GGeoLib*          GScene::getGeoLib() {          return m_geolib ; } 
 
 
 // for some libs there is no analytic variant 
-GMaterialLib*     GScene::getMaterialLib() {     return m_ggeo->getMaterialLib(); } 
-GSurfaceLib*      GScene::getSurfaceLib() {      return m_ggeo->getSurfaceLib(); } 
-GBndLib*          GScene::getBndLib() {          return m_ggeo->getBndLib(); } 
-GPmtLib*          GScene::getPmtLib() {          return m_ggeo->getPmtLib(); } 
-GScintillatorLib* GScene::getScintillatorLib() { return m_ggeo->getScintillatorLib(); } 
-GSourceLib*       GScene::getSourceLib() {       return m_ggeo->getSourceLib(); } 
+GScintillatorLib* GScene::getScintillatorLib() const { return m_ggeo->getScintillatorLib(); } 
+GSourceLib*       GScene::getSourceLib() const  {      return m_ggeo->getSourceLib(); } 
+GSurfaceLib*      GScene::getSurfaceLib() const  {     return m_ggeo->getSurfaceLib(); } 
+GMaterialLib*     GScene::getMaterialLib() const {     return m_ggeo->getMaterialLib(); } 
+
+GBndLib*          GScene::getBndLib() const  {          return m_ggeo->getBndLib(); } 
+GPmtLib*          GScene::getPmtLib() const {          return m_ggeo->getPmtLib(); } 
+GGeoLib*          GScene::getGeoLib() const {          return m_geolib ; } 
+GNodeLib*         GScene::getNodeLib() const {         return m_nodelib ; }
+
+const char*       GScene::getIdentifier() const {       return "GScene" ;  }
+GMergedMesh*      GScene::getMergedMesh(unsigned idx) const { return m_geolib->getMergedMesh(idx); } 
 
 
 
@@ -147,10 +151,7 @@ void GScene::dumpNode( unsigned nidx)
         std::cout << std::endl << n->detail() << std::endl ;  
 }
 
-GNodeLib* GScene::getNodeLib()
-{
-    return m_nodelib ; 
-}
+
 
 guint4 GScene::getNodeInfo(unsigned idx) const 
 {
@@ -162,10 +163,6 @@ guint4 GScene::getIdentity(unsigned idx) const
 }
 
 
-GMergedMesh* GScene::getMergedMesh(unsigned idx)
-{
-    return m_geolib->getMergedMesh(idx);
-}
 GVolume* GScene::getVolume(unsigned idx)
 {
     return m_nodelib->getVolume(idx);

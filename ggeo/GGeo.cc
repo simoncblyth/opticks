@@ -146,7 +146,7 @@ void GGeo::setMeshVerbosity(unsigned int verbosity)
 {
     m_mesh_verbosity = verbosity  ; 
 }
-unsigned int GGeo::getMeshVerbosity()
+unsigned int GGeo::getMeshVerbosity() const 
 {
     return m_mesh_verbosity ;
 }
@@ -216,34 +216,21 @@ unsigned GGeo::getNumRawSkinSurfaces() const
 
 
 
-////   const-ification aint so easy as these are part of base interface, changing which has wider implications to GScene etc...
+/// GGeoBase interface ////
 
-GBndLib* GGeo::getBndLib() 
-{
-    return m_bndlib ; 
-}
-GMaterialLib* GGeo::getMaterialLib() 
-{
-    return m_materiallib ; 
-}
-GSurfaceLib* GGeo::getSurfaceLib() 
-{
-    return m_surfacelib ; 
-}
-const char*  GGeo::getIdentifier() 
-{
-    return "GGeo" ; 
-}
-GScintillatorLib* GGeo::getScintillatorLib() 
-{
-    return m_scintillatorlib ; 
-}
-GSourceLib* GGeo::getSourceLib() 
-{
-    return m_sourcelib ; 
-}
+GScintillatorLib* GGeo::getScintillatorLib() const { return m_scintillatorlib ; }
+GSourceLib*       GGeo::getSourceLib() const  { return m_sourcelib ; }
+GSurfaceLib*      GGeo::getSurfaceLib() const { return m_surfacelib ; } 
+GMaterialLib*     GGeo::getMaterialLib() const { return m_materiallib ; }
+ 
+GBndLib*          GGeo::getBndLib() const { return m_bndlib ; } 
+GPmtLib*          GGeo::getPmtLib() const { return m_pmtlib ; } 
+GGeoLib*          GGeo::getGeoLib() const { return m_geolib ; } 
+GNodeLib*         GGeo::getNodeLib() const { return m_nodelib ; } 
 
+const char*       GGeo::getIdentifier() const  { return "GGeo" ; } 
 
+/// END GGeoBase interface ////
 
 
 void GGeo::setLookup(NLookup* lookup)
@@ -440,33 +427,10 @@ unsigned GGeo::getNumRawMaterials() const
     return m_materiallib->getNumRawMaterials();
 }
 
-
-
-
-
-
-
-
-
-
-GGeoLib* GGeo::getGeoLib() 
-{
-    return m_geolib ; 
-}
-GNodeLib* GGeo::getNodeLib() 
-{
-    return m_nodelib ; 
-}
-GPmtLib* GGeo::getPmtLib() 
-{
-    return m_pmtlib ; 
-}
 GScene* GGeo::getScene() 
 {
     return m_gscene ; 
 }
-
-
 
 
 unsigned int GGeo::getNumMergedMesh()
@@ -476,7 +440,7 @@ unsigned int GGeo::getNumMergedMesh()
     return geolib->getNumMergedMesh();
 }
 
-GMergedMesh* GGeo::getMergedMesh(unsigned int index)
+GMergedMesh* GGeo::getMergedMesh(unsigned index) const 
 {
     GGeoLib* geolib = getGeoLib() ;
     assert(geolib);

@@ -61,22 +61,22 @@ NCSG*           GGeoTest::getUniverse() const  { return m_csglist ? m_csglist->g
 
 
 // pass along from basis
-GScintillatorLib* GGeoTest::getScintillatorLib(){ return m_basis->getScintillatorLib() ; }
-GSourceLib*       GGeoTest::getSourceLib(){       return m_basis->getSourceLib() ; }
+GScintillatorLib* GGeoTest::getScintillatorLib() const { return m_basis->getScintillatorLib() ; }
+GSourceLib*       GGeoTest::getSourceLib() const {       return m_basis->getSourceLib() ; }
 
 // local copy of m_basis pointer
-GPmtLib*          GGeoTest::getPmtLib(){          return m_pmtlib ; }
+GPmtLib*          GGeoTest::getPmtLib() const {          return m_pmtlib ; }
 
 // local residents backed by corresponding basis libs 
-GBndLib*          GGeoTest::getBndLib(){          return m_bndlib ;  }
-GSurfaceLib*      GGeoTest::getSurfaceLib(){      return m_slib ;  }
-GMaterialLib*     GGeoTest::getMaterialLib(){     return m_mlib ;  }
+GBndLib*          GGeoTest::getBndLib() const {          return m_bndlib ;  }
+GSurfaceLib*      GGeoTest::getSurfaceLib() const {      return m_slib ;  }
+GMaterialLib*     GGeoTest::getMaterialLib() const {     return m_mlib ;  }
 
 // locally customized 
-const char*       GGeoTest::getIdentifier(){               return "GGeoTest" ; }
-GMergedMesh*      GGeoTest::getMergedMesh(unsigned index){ return m_geolib->getMergedMesh(index) ; }
-GGeoLib*          GGeoTest::getGeoLib(){                   return m_geolib ; }
-GNodeLib*         GGeoTest::getNodeLib(){                  return m_nodelib ; }
+const char*       GGeoTest::getIdentifier() const {       return "GGeoTest" ; }
+GMergedMesh*      GGeoTest::getMergedMesh(unsigned index) const { return m_geolib->getMergedMesh(index) ; }
+GGeoLib*          GGeoTest::getGeoLib() const {                   return m_geolib ; }
+GNodeLib*         GGeoTest::getNodeLib() const {                  return m_nodelib ; }
 
 
 

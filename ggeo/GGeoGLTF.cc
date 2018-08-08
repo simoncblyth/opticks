@@ -20,14 +20,14 @@ using YOG::Mh ;
 using YOG::Maker ; 
 
 
-void GGeoGLTF::Save( GGeo* ggeo, const char* path, int root ) // static
+void GGeoGLTF::Save( const GGeo* ggeo, const char* path, int root ) // static
 {
     GGeoGLTF tf(ggeo); 
     tf.save(path, root); 
 }
 
 
-GGeoGLTF::GGeoGLTF( GGeo* ggeo )
+GGeoGLTF::GGeoGLTF( const GGeo* ggeo )
     :
     m_ggeo(ggeo),
     m_mlib(ggeo->getMaterialLib()),

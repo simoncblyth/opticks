@@ -19,16 +19,14 @@ namespace YOG
 GGeoGLTF
 =========
 
-TODO: const GGeo
-
 **/
 
 class GGEO_API GGeoGLTF
 {
     public:
-        static void Save( GGeo* ggeo, const char* path, int root ) ; 
+        static void Save( const GGeo* ggeo, const char* path, int root ) ; 
     public:
-        GGeoGLTF( GGeo* ggeo ); 
+        GGeoGLTF( const GGeo* ggeo ); 
         void save(const char* path, int root );
     private:
         void init();

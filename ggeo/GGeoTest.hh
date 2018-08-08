@@ -64,22 +64,20 @@ class GGEO_API GGeoTest : public GGeoBase {
        GMergedMesh* initCreateBIB();
        void setErr(int err); 
     public:
-       // GGeoBase : constituents locally customized
-       const char*       getIdentifier();
-       GMergedMesh*      getMergedMesh(unsigned index);
-       GGeoLib*          getGeoLib();
-       GNodeLib*         getNodeLib();
+       // GGeoBase
 
-       // GGeoBase : constituents passed along from basis geometry 
-       GScintillatorLib* getScintillatorLib() ;
-       GSourceLib*       getSourceLib() ;
-       GPmtLib*          getPmtLib() ;
-    public:
-       // at least surf and bnd libs need to be modified relative to base
-       // as there are location specifics in those
-       GMaterialLib*     getMaterialLib();
-       GSurfaceLib*      getSurfaceLib();
-       GBndLib*          getBndLib() ;    
+       GScintillatorLib* getScintillatorLib() const ;
+       GSourceLib*       getSourceLib() const ;
+       GSurfaceLib*      getSurfaceLib() const ;
+       GMaterialLib*     getMaterialLib() const ;
+
+       GBndLib*          getBndLib() const ;    
+       GPmtLib*          getPmtLib() const ;
+       GGeoLib*          getGeoLib() const ;
+       GNodeLib*         getNodeLib() const ;
+
+       const char*       getIdentifier() const ;
+       GMergedMesh*      getMergedMesh(unsigned index) const ;
 
     private:
        void autoTestSetup(NCSGList* csglist);
