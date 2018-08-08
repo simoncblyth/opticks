@@ -186,11 +186,12 @@ class BRAP_API  BOpticksResource {
    protected:
        const char* m_daepath ;
        const char* m_gdmlpath ;
-       const char* m_gltfpath ;
+       const char* m_srcgltfpath ;
        const char* m_metapath ;
        const char* m_idmappath ;
        const char* m_g4codegendir ;
        const char* m_cachemetapath ; 
+       const char* m_gltfpath ;
 };
 
 #include "BRAP_TAIL.hh"

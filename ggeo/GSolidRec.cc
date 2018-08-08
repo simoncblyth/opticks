@@ -4,12 +4,10 @@
 #include "BStr.hh"
 #include "NNode.hpp"
 #include "NCSG.hpp"
-#include "X4SolidRec.hh"
-#include "G4VSolid.hh"
+#include "GSolidRec.hh"
 
-X4SolidRec::X4SolidRec( const G4VSolid* solid_,  const nnode* raw_, const nnode* balanced_, const NCSG* csg_, unsigned soIdx_, unsigned lvIdx_ )
+GSolidRec::GSolidRec( const nnode* raw_, const nnode* balanced_, const NCSG* csg_, unsigned soIdx_, unsigned lvIdx_ )
     :
-    solid(solid_),
     raw(raw_),
     balanced(balanced_),
     csg(csg_),
@@ -18,13 +16,12 @@ X4SolidRec::X4SolidRec( const G4VSolid* solid_,  const nnode* raw_, const nnode*
 {
 }
 
-X4SolidRec::~X4SolidRec()
+GSolidRec::~GSolidRec()
 {
 }
 
 
-
-std::string X4SolidRec::desc() const 
+std::string GSolidRec::desc() const 
 {
     std::stringstream ss ; 
     ss
@@ -32,7 +29,7 @@ std::string X4SolidRec::desc() const
         << " lv:" << BStr::utoa(lvIdx, 3, true)  
         << " rmx:" << BStr::utoa(raw->maxdepth(), 2, true )  
         << " bmx:" << BStr::utoa(balanced->maxdepth(), 2, true )  
-        << " soName: " << solid->GetName() 
+        << " soName: " << csg->soname() 
         ;
 
     return ss.str(); 

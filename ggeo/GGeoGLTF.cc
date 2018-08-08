@@ -7,6 +7,7 @@
 #include "GBndLib.hh"
 #include "GGeoGLTF.hh"
 
+#include "NNode.hpp"
 #include "NCSG.hpp"
 
 #include "YOG.hh"
@@ -24,8 +25,8 @@ void GGeoGLTF::Save( const GGeo* ggeo, const char* path, int root ) // static
 {
     GGeoGLTF tf(ggeo); 
     tf.save(path, root); 
-}
 
+}
 
 GGeoGLTF::GGeoGLTF( const GGeo* ggeo )
     :
@@ -67,6 +68,7 @@ void GGeoGLTF::addMeshes()
         const GMesh* mesh = m_ggeo->getMesh(lvIdx); 
         const NCSG* csg = mesh->getCSG(); 
         const nnode* root = mesh->getRoot();  
+        const nnode* raw = root->other ;
 
         std::string lvname = csg->lvname();  // <-- probably wont work postcache
         std::string soname = csg->soname(); 
@@ -89,6 +91,8 @@ void GGeoGLTF::addMeshes()
         mh->vtx = mesh->m_x4src_vtx ; 
         mh->idx = mesh->m_x4src_idx ; 
 
+        GSolidRec rec(raw, root, csg, soIdx, lvIdx );
+        m_solidrec.push_back( rec ) ; 
     }
 }
 
@@ -139,25 +143,53 @@ void GGeoGLTF::addNodes_r(const GVolume* volume, YOG::Nd* parent_nd, int depth)
 
 void GGeoGLTF::save(const char* path, int root )  
 {
-     m_sc->root = root ;
+    m_sc->root = root ;
 
-     LOG(error) 
-                << " path " << path 
-                << " sc.root " << m_sc->root
-                ;
+    LOG(error) 
+              << " path " << path 
+              << " sc.root " << m_sc->root
+              ;
 
-     bool yzFlip = true ;
-     bool saveNPYToGLTF = false ;
+    bool yzFlip = true ;
+    bool saveNPYToGLTF = false ;
 
-     BFile::preparePath( path ) ; 
+    BFile::preparePath( path ) ; 
 
-     m_maker = new YOG::Maker(m_sc, yzFlip, saveNPYToGLTF) ;
-     m_maker->convert();
-     m_maker->save(path);
+    m_maker = new YOG::Maker(m_sc, yzFlip, saveNPYToGLTF) ;
+    m_maker->convert();
+    m_maker->save(path);
+
+    std::string dir = BFile::ParentDir(path); 
+    writeSolidRec(dir.c_str()); 
 }
 
 
+void GGeoGLTF::dumpSolidRec(const char* msg) const 
+{
+    LOG(error) << msg ; 
+    std::ostream& out = std::cout ;
+    solidRecTable( out );  
+}
 
+void GGeoGLTF::writeSolidRec(const char* dir) const 
+{
+    std::string path = BFile::preparePath( dir, "solids.txt", true ) ; 
+    LOG(error) << " writeSolidRec " 
+               << " dir [" << dir << "]" 
+               << " path [" << path << "]" ;   
+    std::ofstream out(path.c_str());
+    solidRecTable( out );  
+}
 
-
+void GGeoGLTF::solidRecTable( std::ostream& out ) const 
+{
+    unsigned num_solid = m_solidrec.size() ; 
+    out << "written by GGeoGLTF::solidRecTable " << std::endl ; 
+    out << "num_solid " << num_solid << std::endl ; 
+    for(unsigned i=0 ; i < num_solid ; i++)
+    {   
+        const GSolidRec& rec = m_solidrec[i] ; 
+        out << rec.desc() << std::endl ; 
+    }   
+}
 

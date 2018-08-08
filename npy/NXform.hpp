@@ -26,7 +26,7 @@ within X4PhysicalVolume.
 template <typename N>
 struct NPY_API nxform
 {
-    static const nmat4triple* make_global_transform(const N* n)  ;
+    static const nmat4triple* make_global_transform(const N* n)  ;  // for node structs 
 
     nxform(unsigned num_nodes_, bool debug_);
 
@@ -108,6 +108,7 @@ const nmat4triple* nxform<N>::make_global_transform(const N* n) // static
     bool reverse = true ; // as tvq in leaf-to-root order
     return tvq.size() == 0 ? NULL : nmat4triple::product(tvq, reverse) ; 
 }
+
 
 
 

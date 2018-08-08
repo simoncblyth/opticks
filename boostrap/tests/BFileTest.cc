@@ -427,8 +427,8 @@ int main(int argc, char** argv)
    //test_FindFile();
    //test_ExistsDir();
    //test_CreateDir();
-   //test_ParentDir();
-   test_FormPath();
+   test_ParentDir();
+   //test_FormPath();
    //test_Name_ParentDir();
    //test_ChangeExt();
 

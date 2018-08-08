@@ -8,10 +8,12 @@ class G4LogicalSurface ;
 class G4LogicalVolume ; 
 class G4VPhysicalVolume ; 
 class G4VSolid ; 
+
 #include "G4Transform3D.hh"
 
 #include "NGLM.hpp"
 #include "X4_API_EXPORT.hh"
+
 
 
 template <typename T> struct nxform ; 
@@ -25,17 +27,6 @@ class GVolume ;
 
 class Opticks ; 
 class OpticksQuery ; 
-
-#include "X4SolidRec.hh" 
-
-
-namespace YOG 
-{
-   struct Sc ; 
-   struct Mh ; 
-   struct Nd ; 
-   struct Maker ; 
-}
 
 /**
 X4PhysicalVolume
@@ -62,6 +53,15 @@ a name for the geometry cache.
 
 **/
 
+struct nmat4triple ; 
+
+struct X4_API X4Nd 
+{
+    const X4Nd*         parent ; 
+    const nmat4triple*  transform ; 
+};
+
+
 class X4_API X4PhysicalVolume
 {
     public:
@@ -74,13 +74,6 @@ class X4_API X4PhysicalVolume
     public:
         X4PhysicalVolume(GGeo* ggeo, const G4VPhysicalVolume* const pv); 
         GGeo* getGGeo();
-        void  saveAsGLTF(int root=0, const char* path=NULL);
-
-    public:
-        void dumpSolidRec(const char* msg="X4PhysicalVolume::dumpSolidRec") const ;
-        void writeSolidRec() const ;
-    private:
-        void solidRecTable( std::ostream& out ) const ;
     private:
         void init();
     private:
@@ -91,13 +84,12 @@ class X4_API X4PhysicalVolume
         void convertSolids(); 
         void convertStructure(); 
     private:
-        //void IndexTraverse(const G4VPhysicalVolume* const pv, int depth);
         void convertSolids_r(const G4VPhysicalVolume* const pv, int depth);
         void dumpLV();
         GMesh* convertSolid( int lvIdx, int soIdx, const G4VSolid* const solid, const std::string& lvname) const ;
     private:
         void convertSensors_r(const G4VPhysicalVolume* const pv, int depth);
-        GVolume* convertTree_r(const G4VPhysicalVolume* const pv, GVolume* parent, int depth, const G4VPhysicalVolume* const parent_pv, bool& recursive_select );
+        GVolume* convertStructure_r(const G4VPhysicalVolume* const pv, GVolume* parent, int depth, const G4VPhysicalVolume* const parent_pv, bool& recursive_select );
         GVolume* convertNode(const G4VPhysicalVolume* const pv, GVolume* parent, int depth, const G4VPhysicalVolume* const parent_pv, bool& recursive_select );
         unsigned addBoundary(const G4VPhysicalVolume* const pv, const G4VPhysicalVolume* const pv_p );
 
@@ -118,18 +110,15 @@ class X4_API X4PhysicalVolume
     private:
         GVolume*                     m_root ;  
     private:
-        nxform<YOG::Nd>*             m_xform ; 
+        nxform<X4Nd>*                m_xform ; 
     private:
-        YOG::Sc*                     m_sc ; 
-        YOG::Maker*                  m_maker ; 
         int                          m_verbosity ; 
-        unsigned                     m_ndCount ; 
+        unsigned                     m_node_count ; 
 
         std::map<const G4LogicalVolume*, int> m_lvidx ; 
 
         std::vector<const G4LogicalVolume*> m_lvlist ; 
 
-        std::vector<X4SolidRec>   m_solidrec ;          
 
 
 

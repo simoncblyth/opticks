@@ -55,11 +55,12 @@ BOpticksResource::BOpticksResource()
     m_debugging_idfold(NULL),
     m_daepath(NULL),
     m_gdmlpath(NULL),
-    m_gltfpath(NULL),
+    m_srcgltfpath(NULL),
     m_metapath(NULL),
     m_idmappath(NULL),
     m_g4codegendir(NULL),
-    m_cachemetapath(NULL)
+    m_cachemetapath(NULL),
+    m_gltfpath(NULL)
 {
     init();
     (*m_log)("DONE"); 
@@ -317,7 +318,7 @@ void BOpticksResource::setSrcPath(const char* srcpath)
 
     m_daepath = MakeSrcPath(m_srcpath,".dae"); 
     m_gdmlpath = MakeSrcPath(m_srcpath,".gdml"); 
-    m_gltfpath = MakeSrcPath(m_srcpath,".gltf"); 
+    m_srcgltfpath = MakeSrcPath(m_srcpath,".gltf"); 
     m_metapath = MakeSrcPath(m_srcpath,".ini"); 
     m_idmappath = MakeSrcPath(m_srcpath,".idmap"); 
 
@@ -325,7 +326,7 @@ void BOpticksResource::setSrcPath(const char* srcpath)
     m_res->addPath("srcpath", m_srcpath );
     m_res->addPath("daepath", m_daepath );
     m_res->addPath("gdmlpath", m_gdmlpath );
-    m_res->addPath("gltfpath", m_gltfpath );
+    m_res->addPath("srcgltfpath", m_srcgltfpath );
     m_res->addPath("metapath", m_metapath );
     m_res->addPath("idmappath", m_idmappath );
 
@@ -476,6 +477,9 @@ void BOpticksResource::setupViaSrc(const char* srcpath, const char* srcdigest)
 
     m_res->addDir("idpath_tmp", m_idpath_tmp );
 
+
+    m_gltfpath = makeIdPathPath("ok.gltf") ;
+    m_res->addPath("gltfpath", m_gltfpath ); 
 
     m_cachemetapath = makeIdPathPath("cachemeta.json");  
     m_res->addPath("cachemetapath", m_cachemetapath ); 

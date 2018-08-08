@@ -68,6 +68,7 @@ set(SOURCES
     GGeoCfg.cc
     GGeoSensor.cc
     GGeoGLTF.cc
+    GSolidRec.cc
 
     GGeoTest.cc
     GMaker.cc
@@ -102,6 +103,7 @@ set(HEADERS
     GGeoCfg.hh
     GGeoSensor.hh
     GGeoGLTF.hh
+    GSolidRec.hh
 
     GMaterial.hh
     GSource.hh

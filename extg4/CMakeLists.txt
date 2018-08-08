@@ -58,7 +58,6 @@ set(SOURCES
     X4Solid.cc
     X4Mesh.cc
     X4SolidList.cc
-    X4SolidRec.cc
 
     X4Material.cc
     X4MaterialTable.cc
@@ -99,7 +98,6 @@ set(HEADERS
     X4Solid.hh
     X4Mesh.hh
     X4SolidList.hh
-    X4SolidRec.hh
 
     X4Material.hh
     X4MaterialTable.hh
