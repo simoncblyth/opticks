@@ -22,6 +22,19 @@ namespace YOG
 GGeoGLTF
 =========
 
+Writes the glTF 2.0 representation of a GGeo geometry.
+glTF is a json based 3D file format that refers to other 
+binary files for vertex and triangle data. 
+
+Issues
+-------
+
+1. Suspect geocache duplication between the glTF extras and the GMeshLib persisted GMesh,
+   TODO: consolidate to avoid this : not need to use an "extras" dir a "GMeshLib" 
+   dir would work just fine  
+   
+2. Have not tried using this postcache OR with test geometry 
+   
 **/
 
 class GGEO_API GGeoGLTF

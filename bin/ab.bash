@@ -871,6 +871,7 @@ ab-blib-smry(){ MODE=1 ab-blib ; }
 ab-blib()
 {
    echo "A"
+   blib.py $(ab-a-)
    echo "B"
    blib.py $(ab-b-)
 }
@@ -1230,6 +1231,10 @@ for i in r:
     s = "np.all( ia[:%(i)s] == ib[:%(i)s] ) " % locals() 
     print s, eval(s) 
 pass
+
+s = "np.all( ia == ib ) "
+print s, eval(s) 
+
 
 EOP
 

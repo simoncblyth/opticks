@@ -30,10 +30,8 @@ void GSkinSurface::init()
 }
 
 
-
 GSkinSurface::~GSkinSurface()
 {
-    free(m_skinsurface_vol);
 }
 
 
@@ -43,21 +41,27 @@ void GSkinSurface::setSkinSurface(const char* vol)
 }
 
 
-char* GSkinSurface::getSkinSurfaceVol()
+const char* GSkinSurface::getSkinSurfaceVol() const 
 {
     return m_skinsurface_vol ; 
 }
 
-bool GSkinSurface::matches(const char* lv)
+
+/*
+bool GSkinSurface::matches(const char* lv) const 
 {
     return strncmp(m_skinsurface_vol, lv, strlen(lv)) == 0; 
+}
+*/
+
+bool GSkinSurface::matches(const char* lv) const 
+{
+    return strcmp(m_skinsurface_vol, lv) == 0; 
 }
 
 
 
-
-
-void GSkinSurface::Summary(const char* msg, unsigned int imod)
+void GSkinSurface::Summary(const char* msg, unsigned int imod) const 
 {
     if (m_skinsurface_vol)
     {
@@ -75,9 +79,12 @@ void GSkinSurface::Summary(const char* msg, unsigned int imod)
 
 
 
-std::string GSkinSurface::description()
+std::string GSkinSurface::description() const 
 {
     std::stringstream ss ; 
     ss << "GSS:: " << GPropertyMap<float>::description() ; 
     return ss.str();
 }
+
+
+

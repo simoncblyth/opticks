@@ -1264,24 +1264,6 @@ GBorderSurface* GSurfaceLib::getBorderSurface(unsigned index) const
 
 
 
-void GSurfaceLib::addRaw(GBorderSurface* surface)
-{
-    m_border_surfaces_raw.push_back(surface);
-}
-void GSurfaceLib::addRaw(GSkinSurface* surface)
-{
-    m_skin_surfaces_raw.push_back(surface);
-}
-
-unsigned GSurfaceLib::getNumRawBorderSurfaces() const
-{
-    return m_border_surfaces_raw.size();
-}
-unsigned GSurfaceLib::getNumRawSkinSurfaces() const 
-{
-    return m_skin_surfaces_raw.size();
-}
-
 
 
 GSkinSurface* GSurfaceLib::findSkinSurface(const char* lv) const 
@@ -1299,6 +1281,30 @@ GSkinSurface* GSurfaceLib::findSkinSurface(const char* lv) const
     return ss ;
 }
 
+void GSurfaceLib::dumpSkinSurface(const char* msg) const
+{
+    LOG(info) << msg ; 
+
+    for(unsigned i = 0 ; i < m_skin_surfaces.size() ; i++)
+    {
+        GSkinSurface* ss = m_skin_surfaces[i];
+        std::cout 
+            << " SS " 
+            << std::setw(4) << i 
+            << " : " 
+            << std::setw(40) << ss->getShortName() 
+            << " : " 
+            << ss->getSkinSurfaceVol()
+            << std::endl 
+            ;
+    }
+}
+
+
+
+
+
+
 GBorderSurface* GSurfaceLib::findBorderSurface(const char* pv1, const char* pv2) const 
 {
     GBorderSurface* bs = NULL ; 
@@ -1315,6 +1321,30 @@ GBorderSurface* GSurfaceLib::findBorderSurface(const char* pv1, const char* pv2)
 }
 
 
+
+
+
+
+
+
+
+void GSurfaceLib::addRaw(GBorderSurface* surface)
+{
+    m_border_surfaces_raw.push_back(surface);
+}
+void GSurfaceLib::addRaw(GSkinSurface* surface)
+{
+    m_skin_surfaces_raw.push_back(surface);
+}
+
+unsigned GSurfaceLib::getNumRawBorderSurfaces() const
+{
+    return m_border_surfaces_raw.size();
+}
+unsigned GSurfaceLib::getNumRawSkinSurfaces() const 
+{
+    return m_skin_surfaces_raw.size();
+}
 
 void GSurfaceLib::dumpRawSkinSurface(const char* name) const
 {

@@ -126,6 +126,7 @@ private:
     bool             m_domain_reciprocal ; 
 
     unsigned int     m_skin_surface ; 
+    unsigned int     m_doubleskin_surface ; 
     unsigned int     m_inborder_surface ; 
     unsigned int     m_outborder_surface ; 
     unsigned int     m_no_surface ; 

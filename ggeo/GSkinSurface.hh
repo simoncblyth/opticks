@@ -13,19 +13,17 @@ class GGEO_API GSkinSurface : public GPropertyMap<float> {
   public:
       GSkinSurface(const char* name, unsigned int index, GOpticalSurface* optical_surface);
       virtual ~GSkinSurface();
-      void Summary(const char* msg="GSkinSurface::Summary", unsigned int imod=1);
+      void Summary(const char* msg="GSkinSurface::Summary", unsigned int imod=1) const ;
+      std::string description() const ;
   private:
       void init();
   public:
-      std::string description();
-
-  public:
       void setSkinSurface(const char* vol);
-      char* getSkinSurfaceVol();
-      bool matches(const char* lv);
 
+      const char* getSkinSurfaceVol() const ;
+      bool matches(const char* lv) const ;
   private:
-      char*              m_skinsurface_vol ;  
+      const char*  m_skinsurface_vol ;  
 
 };
 

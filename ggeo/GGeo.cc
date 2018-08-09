@@ -306,6 +306,35 @@ void GGeo::addCathodeLV(const char* lv)
    m_cathode_lv.insert(lv);
 }
 
+int GGeo::findCathodeLVIndex(const char* lv) const  // -1 if not found
+{
+    int index = -1 ; 
+    if( lv == NULL ) return index ; 
+
+
+    typedef std::unordered_set<std::string>::const_iterator UCI ; 
+    UCI b = m_cathode_lv.begin() ;
+    UCI e = m_cathode_lv.end() ;
+
+    for(UCI it=b ; it != e ; it++)
+    {
+        const char* clv = it->c_str(); 
+        if( strcmp( clv, lv) == 0)
+        {
+            index = std::distance( b, it ) ; 
+            break ; 
+        }
+    }
+
+    if( index > -1 )
+    {
+        const char* clv2 = getCathodeLV(index); 
+        assert( strcmp(lv, clv2) == 0 ) ;  
+    }
+
+    return index ; 
+}
+
 unsigned int GGeo::getNumCathodeLV() const 
 {
    return m_cathode_lv.size() ; 
@@ -959,10 +988,16 @@ GBorderSurface* GGeo::findBorderSurface(const char* pv1, const char* pv2) const
     return m_surfacelib->findBorderSurface(pv1, pv2); 
 }
 
+
+void GGeo::dumpSkinSurface(const char* name) const
+{
+    m_surfacelib->dumpSkinSurface(name); 
+}
 void GGeo::dumpRawSkinSurface(const char* name) const
 {
     m_surfacelib->dumpRawSkinSurface(name); 
 }
+
 void GGeo::dumpRawBorderSurface(const char* name) const 
 {
     m_surfacelib->dumpRawBorderSurface(name); 

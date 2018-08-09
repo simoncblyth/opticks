@@ -170,10 +170,11 @@ class GGEO_API GSurfaceLib : public GPropertyLib {
        unsigned getNumRawSkinSurfaces() const ;
 
        GSkinSurface* findSkinSurface(const char* lv) const ;
+       void dumpSkinSurface(const char* msg="GSurfaceLib::dumpSkinSurface") const ;
+
        GBorderSurface* findBorderSurface(const char* pv1, const char* pv2) const ;
        void dumpRawSkinSurface(const char* name) const ;
        void dumpRawBorderSurface(const char* name) const ;
-
 
    private:
        std::vector<GPropertyMap<float>*>       m_surfaces ; 

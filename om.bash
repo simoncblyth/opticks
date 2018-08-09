@@ -158,11 +158,14 @@ om-subs(){
       om-subs-
   else
       [ "$arg" == ":" ] && arg="${name}:"
+      [ "$arg" == "+" ] && arg="${name}+"
       local sel=0 
       local sub
       om-subs- | while read sub ; do
          [ "${sub}:" == "$arg" ] && sel=1 
+         [ "${sub}+" == "$arg" ] && sel=2 
          [ "$sel" == "1" ] && echo $sub
+         [ "$sel" == "2" ] && sel=1
       done 
   fi
 }
@@ -202,6 +205,7 @@ om-echo(){    om-one-or-all echo $* ; }
 
 om--(){       om-make $* ; }     ## just this proj
 om---(){      om-make-all : ; }  ## all projs from this one onwards 
+om----(){     om-make-all + ; }  ## all projs after this one onwards 
 
 
 om-check()

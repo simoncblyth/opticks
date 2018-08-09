@@ -73,12 +73,11 @@ void GGeoGLTF::addMeshes()
         std::string lvname = csg->lvname();  // <-- probably wont work postcache
         std::string soname = csg->soname(); 
 
-        LOG(info)
+        LOG(trace)
             << " lvIdx " << lvIdx 
             << " lvname " << lvname 
             << " soname " << soname 
             ;
-
 
         int soIdx = m_sc->add_mesh( lvIdx, lvname.c_str(), soname.c_str() );
         assert( soIdx == int(lvIdx) ); 
@@ -116,7 +115,7 @@ void GGeoGLTF::addNodes_r(const GVolume* volume, YOG::Nd* parent_nd, int depth)
     int materialIdx = m_blib->getInnerMaterial(boundary);
     const char* pvName = volume->getPVName() ; 
 
-    LOG(info)
+    LOG(trace)
          << " volume " << volume 
          << " lv " << lvIdx 
          << " boundary " << std::setw(4) << boundary

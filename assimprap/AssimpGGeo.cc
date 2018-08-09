@@ -80,6 +80,7 @@ AssimpGGeo::AssimpGGeo(GGeo* ggeo, AssimpTree* tree, AssimpSelection* selection,
    m_values_scale(1.f),
    m_domain_reciprocal(true),
    m_skin_surface(0),
+   m_doubleskin_surface(0),
    m_inborder_surface(0),
    m_outborder_surface(0),
    m_no_surface(0),
@@ -456,7 +457,7 @@ void AssimpGGeo::convertMaterials(const aiScene* scene, GGeo* gg, const char* qu
             GSkinSurface* gss = new GSkinSurface(name, index, os);
 
 
-            LOG(debug) << "AssimpGGeo::convertMaterials GSkinSurface " 
+            LOG(info) << "GSkinSurface " 
                       << " name " << name 
                       << " sslv " << sslv 
                       ; 
@@ -821,10 +822,15 @@ void AssimpGGeo::convertStructure(GGeo* gg)
 
     m_ggeo->close(); 
 
+    assert( m_ggeo == gg ) ;  
+
+    gg->dumpSkinSurface();
+
     convertStructure(gg, m_tree->getRoot(), 0, NULL);
 
     LOG(info) << "AssimpGGeo::convertStructure found surfaces "
               << " skin " << m_skin_surface 
+              << " doubleskin " << m_doubleskin_surface 
               << " outborder " << m_outborder_surface 
               << " inborder " << m_inborder_surface 
               << " no " << m_no_surface  ;
@@ -916,6 +922,12 @@ GVolume* AssimpGGeo::convertStructureVisit(GGeo* gg, AssimpNode* node, unsigned 
     unsigned int mti_p = pnode->getMaterialIndex();
     GMaterial* mt_p = gg->getMaterial(mti_p);
 
+
+    const char* omat = mt_p->getShortName() ; 
+    const char* imat = mt->getShortName() ; 
+   // bool problem_pair  = strcmp(omat, "UnstStainlessSteel") == 0 && strcmp(imat, "BPE") == 0 ;
+
+
     //printf("AssimpGGeo::convertStructureVisit nodeIndex %d (mti %u mt %p) (mti_p %u mt_p %p) (msi %u mesh %p) \n", nodeIndex, mti, mt, mti_p, mt_p,  msi, mesh  );
     if(dbg || m_verbosity > 1)
     LOG(info) << "AssimpGGeo::convertStructureVisit" 
@@ -942,81 +954,65 @@ GVolume* AssimpGGeo::convertStructureVisit(GGeo* gg, AssimpNode* node, unsigned 
 
     const char* lv   = node->getName(0); 
     const char* pv   = node->getName(1); 
+
+    const char* lv_p   = pnode->getName(0); 
     const char* pv_p   = pnode->getName(1); 
 
     gg->countMeshUsage(msi, nodeIndex);
 
+    GPropertyMap<float>* isurf  = NULL ; 
+    GPropertyMap<float>* osurf  = NULL ; 
+
     GBorderSurface* obs = gg->findBorderSurface(pv_p, pv);  // outer surface (parent->self) 
     GBorderSurface* ibs = gg->findBorderSurface(pv, pv_p);  // inner surface (self->parent) 
     GSkinSurface*   sks = gg->findSkinSurface(lv);          
+    GSkinSurface*   sks_p = gg->findSkinSurface(lv_p);   
+    // dont like sks_p : but it seems to correspond with G4OpBoundary surface resolution see notes/issues/ab-blib.rst
 
-    if(sks && sks->hasNameEnding("SensorSurface"))
-    {
-       LOG(debug) << "AssimpGGeo::convertStructureVisit"
-                 << " sks " << sks->description()
-                 ;  
-    }
-
-    LOG(debug) << __func__ 
-              << " lv: " << lv
-              << " pv: " << pv
-              << " pv_p: " << pv_p
-              << " obs: " << (obs?obs->getName():"")
-              << " ibs: " << (ibs?ibs->getName():"")
-              << " sks: " << (sks?sks->getName():"")
-              ;
-  
     unsigned int nsurf = 0 ;
     if(sks) nsurf++ ;
     if(ibs) nsurf++ ;
     if(obs) nsurf++ ;
     assert(nsurf == 0 || nsurf == 1 || nsurf == 2); 
 
+    // see notes/issues/ab-blib.rst 
 
-    GPropertyMap<float>* isurf  = NULL ; 
-    GPropertyMap<float>* osurf  = NULL ; 
-    //GPropertyMap<float>* iextra = NULL ; 
-    //GPropertyMap<float>* oextra = NULL ; 
-
-    if(sks)
-    {
-        osurf = sks ; 
-        isurf = sks ;      // see notes/issues/ab-blib.rst 
-        if(m_skin_surface < 10)
-            LOG(debug) << "AssimpGGeo::convertStructureVisit OSKIN " 
-                      << std::setw(3) << m_skin_surface << " "
-                      << osurf->description() ;  
-        // TODO: surface census, see if inner skin makes any sense
-        m_skin_surface++ ; 
-    }
-    else if(obs)
+    if(obs)
     {
         osurf = obs ; 
-        LOG(debug) << "AssimpGGeo::convertStructureVisit OSURF " 
-                  << std::setw(3) << m_outborder_surface << " "
-                  << osurf->description() ;  
-
+        isurf = NULL ; 
         m_outborder_surface++ ; 
     }
     else if(ibs)
     {
+        osurf = NULL ; 
         isurf = ibs ; 
-        LOG(debug) << "AssimpGGeo::convertStructureVisit ISURF " 
-                   << std::setw(3) << m_inborder_surface << " "
-                  << isurf->description() ;  
-
         m_inborder_surface++ ; 
+    }
+    else if(sks && !sks_p)
+    {
+        osurf = sks ; 
+        isurf = sks ;      
+        m_skin_surface++ ; 
+    }
+    else if(!sks && sks_p )  
+    {
+        osurf = sks_p ; 
+        isurf = sks_p ;     
+        m_skin_surface++ ; 
+    }
+    else if(sks && sks_p ) // doubleskin : not yet seen in wild 
+    {
+        assert(0); 
+        bool swap = false ;    // unsure ... needs some testing vs G4
+        osurf = swap ? sks_p : sks   ; 
+        isurf = swap ? sks   : sks_p ; 
+        m_doubleskin_surface++ ; 
     }
     else
     {
         m_no_surface++ ;
     }
-
-    if(isurf && osurf) LOG(info) << "AssimpGGeo::convertStructureVisit boundary with both ISURF and OSURF defined " ;
-    // Now think that having both isurf and osurf defined is the way to translate 
-    // the Geant4 volume skin surface into the Opticks boundary. 
-
-    //assert((isurf == NULL || osurf == NULL) && "tripwire to inform that both ISURF and OSURF are defined simultaneously" ) ;
 
 
     sensor = m_sensor_list ? m_sensor_list->findSensorForNode( nodeIndex ) : NULL ; 
@@ -1025,12 +1021,13 @@ GVolume* AssimpGGeo::convertStructureVisit(GGeo* gg, AssimpNode* node, unsigned 
     GBndLib* blib = gg->getBndLib();  
     GSurfaceLib* slib = gg->getSurfaceLib();  
 
+
     // boundary identification via 4-uint 
     boundary = blib->addBoundary( 
-                                  mt_p->getShortName(),
+                                  omat,
                                   osurf ? osurf->getShortName() : NULL ,
                                   isurf ? isurf->getShortName() : NULL ,
-                                  mt->getShortName()
+                                  imat
                                   );
 
     volume->setBoundary(boundary);

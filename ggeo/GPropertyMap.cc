@@ -472,7 +472,7 @@ void GPropertyMap<T>::findShortName(const char* prefix)
 
 
 template <typename T>
-std::string GPropertyMap<T>::description()
+std::string GPropertyMap<T>::description() const 
 {
     std::stringstream ss ; 
     ss << "GPropertyMap<T>:: "  
@@ -618,7 +618,7 @@ void GPropertyMap<T>::addProperty(const char* pname, T* values, T* domain, unsig
 
    addPropertyStandardized(pname, orig, prefix);
 
-   LOG(info) 
+   LOG(debug) 
         << " orig " << orig   
         << " m_name " << m_name   
         << " pname " << pname
@@ -821,7 +821,7 @@ void GPropertyMap<T>::dump(const char* msg, unsigned int /*nline*/)
 
 
 template <typename T>
-void GPropertyMap<T>::Summary(const char* msg, unsigned int nline)
+void GPropertyMap<T>::Summary(const char* msg, unsigned int nline) const 
 {
    if(nline == 0) return ;
 
@@ -830,10 +830,12 @@ void GPropertyMap<T>::Summary(const char* msg, unsigned int nline)
 
    printf("%s %s %d %s %s\n", msg, getType(), getIndex(), pdig.c_str(), getName()); 
 
-   for(std::vector<std::string>::iterator it=m_keys.begin() ; it != m_keys.end() ; it++ )
+   typedef std::vector<std::string> VS ;  
+
+   for(VS::const_iterator it=m_keys.begin() ; it != m_keys.end() ; it++ )
    {
        std::string key = *it ;
-       GProperty<T>* prop = m_prop[key] ; 
+       GProperty<T>* prop = m_prop.at(key) ; 
        prop->Summary(key.c_str(), nline);
    } 
 

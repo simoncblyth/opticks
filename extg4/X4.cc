@@ -19,12 +19,17 @@ const char* X4::Name( const std::string& name )
     return strdup( name.c_str() );
 }
 
-const char* X4::BaseName( const std::string& name )
+const char* X4::BaseName( const std::string& name)
 {
     const std::string base = BFile::Name(name.c_str());  
     return ShortName(base) ;
 }
 
+const char* X4::BaseNameAsis( const std::string& name)
+{
+    const std::string base = BFile::Name(name.c_str());  
+    return strdup(base.c_str()) ;
+}
 
 
 
@@ -45,6 +50,15 @@ const char* X4::BaseName( const T* const obj )
     const std::string& name = obj->GetName();
     return BaseName(name);
 }
+
+template<typename T>
+const char* X4::BaseNameAsis( const T* const obj )
+{    
+    if(obj == NULL) return NULL ; 
+    const std::string& name = obj->GetName();
+    return BaseNameAsis(name);
+}
+
 
 
 template<typename T>
@@ -109,6 +123,14 @@ template X4_API const char* X4::BaseName<G4VPhysicalVolume>(const G4VPhysicalVol
 template X4_API const char* X4::BaseName<G4LogicalVolume>(const G4LogicalVolume* const);
 template X4_API const char* X4::BaseName<G4Material>(const G4Material* const);
 
+template X4_API const char* X4::BaseNameAsis<G4OpticalSurface>(const G4OpticalSurface* const);
+template X4_API const char* X4::BaseNameAsis<G4LogicalBorderSurface>(const G4LogicalBorderSurface* const);
+template X4_API const char* X4::BaseNameAsis<G4LogicalSkinSurface>(const G4LogicalSkinSurface* const);
+template X4_API const char* X4::BaseNameAsis<G4LogicalSurface>(const G4LogicalSurface* const);
+template X4_API const char* X4::BaseNameAsis<G4VPhysicalVolume>(const G4VPhysicalVolume* const);
+template X4_API const char* X4::BaseNameAsis<G4LogicalVolume>(const G4LogicalVolume* const);
+template X4_API const char* X4::BaseNameAsis<G4Material>(const G4Material* const);
+
 
 
 
@@ -149,11 +171,6 @@ std::string X4::Array( const double* a, unsigned nv, const char* identifier )
 
     return ss.str(); 
 }
-
-
-
-
-
 
 
 

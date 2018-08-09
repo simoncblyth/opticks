@@ -69,7 +69,7 @@ class GGEO_API GPropertyMap {
       std::string getShortNameString() const ;
       std::string getPDigestString(int ifr, int ito) const ;
       std::string getKeysString() const ; 
-      std::string description();
+      std::string description() const ;
       std::string prop_desc() const ;
   public:
       std::string make_table(unsigned int fwid=20, T dscale=1, bool dreciprocal=false);
@@ -120,7 +120,7 @@ class GGEO_API GPropertyMap {
 
 
       void dump(const char* msg="GPropertyMap::Summary", unsigned int nline=1);
-      void Summary(const char* msg="GPropertyMap::Summary", unsigned int nline=1);
+      void Summary(const char* msg="GPropertyMap::Summary", unsigned int nline=1) const ;
 
   public:
       bool hasStandardDomain();

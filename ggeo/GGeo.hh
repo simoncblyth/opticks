@@ -288,6 +288,7 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
         GBorderSurface* getBorderSurface(unsigned index) const ;  
         GSkinSurface*   findSkinSurface(const char* lv) const ;  
         GBorderSurface* findBorderSurface(const char* pv1, const char* pv2) const ;  
+        void dumpSkinSurface(const char* msg="GGeo::dumpSkinSurface") const ;
         void dumpRawSkinSurface(const char* name=NULL) const ;
         void dumpRawBorderSurface(const char* name=NULL) const ;
 
@@ -326,6 +327,7 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
         void dumpCathodeLV(const char* msg="GGeo::dumpCathodeLV") const ;
         const char* getCathodeLV(unsigned int index) const ; 
         unsigned int getNumCathodeLV() const ;
+        int findCathodeLVIndex(const char* lv) const ; // -1 if not found 
     public:
 
 #if 0

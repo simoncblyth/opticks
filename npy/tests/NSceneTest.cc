@@ -47,8 +47,8 @@ struct NSceneTest
 
     void load()
     {
-        const char* base = _bres.getGLTFBase();
-        const char* name = _bres.getGLTFName();
+        const char* base = _bres.getSrcGLTFBase();
+        const char* name = _bres.getSrcGLTFName();
         load(base, name);
     }
 

@@ -503,6 +503,10 @@ void X4PhysicalVolume::convertStructure()
     LOG(fatal) << "[" ; 
     assert(m_top) ;
 
+    m_ggeo->dumpCathodeLV("dumpCathodeLV"); 
+    m_ggeo->dumpSkinSurface("dumpSkinSurface"); 
+
+
     const G4VPhysicalVolume* pv = m_top ; 
     GVolume* parent = NULL ; 
     const G4VPhysicalVolume* parent_pv = NULL ; 
@@ -546,51 +550,106 @@ See notes/issues/ab-blib.rst
 
 unsigned X4PhysicalVolume::addBoundary(const G4VPhysicalVolume* const pv, const G4VPhysicalVolume* const pv_p )
 {
-     const G4LogicalVolume* const lv   = pv->GetLogicalVolume() ;
-     const G4LogicalVolume* const lv_p = pv_p ? pv_p->GetLogicalVolume() : NULL ;
+    const G4LogicalVolume* const lv   = pv->GetLogicalVolume() ;
+    const G4LogicalVolume* const lv_p = pv_p ? pv_p->GetLogicalVolume() : NULL ;
 
-     const G4Material* const imat_ = lv->GetMaterial() ;
-     const G4Material* const omat_ = lv_p ? lv_p->GetMaterial() : imat_ ;  // top omat -> imat 
+    const G4Material* const imat_ = lv->GetMaterial() ;
+    const G4Material* const omat_ = lv_p ? lv_p->GetMaterial() : imat_ ;  // top omat -> imat 
 
-     const char* omat = X4::BaseName(omat_) ; 
-     const char* imat = X4::BaseName(imat_) ; 
+    const char* omat = X4::BaseName(omat_) ; 
+    const char* imat = X4::BaseName(imat_) ; 
+
+    // Why do boundaries with this material pair have surface finding problem for the old route ?
+    bool problem_pair  = strcmp(omat, "UnstStainlessSteel") == 0 && strcmp(imat, "BPE") == 0 ; 
+
+    bool first_priority = true ;  
+    const G4LogicalSurface* const isur_ = findSurface( pv  , pv_p , first_priority );
+    const G4LogicalSurface* const osur_ = findSurface( pv_p, pv   , first_priority );  
+
+    // doubtful of findSurface priority with double skin surfaces, see g4op-
 
 
-     bool first_priority = true ;  
-     const G4LogicalSurface* const isur_ = findSurface( pv  , pv_p , first_priority );
-     const G4LogicalSurface* const osur_ = findSurface( pv_p, pv   , first_priority );  
-     // doubtful of findSurface priority with double skin surfaces, see g4op-
+    // the above will not find Opticks SensorSurfaces ... so look for those with GGeo
+
+    const char* _lv = X4::BaseNameAsis(lv) ;  
+    const char* _lv_p = X4::BaseNameAsis(lv_p) ;   // NULL when no lv_p   
+
+    const GSkinSurface* g_sslv = m_ggeo->findSkinSurface(_lv) ;  
+    const GSkinSurface* g_sslv_p = _lv_p ? m_ggeo->findSkinSurface(_lv_p) : NULL ;  
+
+    if( g_sslv_p )
+        LOG(error) << " node_count " << m_node_count 
+                   << " _lv_p   " << _lv_p
+                   << " g_sslv_p " << g_sslv_p->getName()
+                   ; 
 
 
-     // the above will not find Opticks SensorSurfaces ... so look for those 
+    /*
+    int clv = m_ggeo->findCathodeLVIndex( _lv ) ;   // > -1 when found
+    int clv_p = m_ggeo->findCathodeLVIndex( _lv_p ) ; 
+    assert( clv_p == -1 && "not expecting non-leaf cathode LV " ); 
+    bool is_cathode = clv > -1 ; 
+    */
 
-     const std::string& nlv = lv->GetName() ; 
-     const GSkinSurface* g_sks = m_ggeo->findSkinSurface(nlv.c_str()) ;  
-     if( g_sks == NULL && lv_p )
-     {
-         const std::string& nlv_p = lv_p->GetName() ; 
-         g_sks = m_ggeo->findSkinSurface(nlv_p.c_str()) ;  
-     }
+    if( problem_pair ) 
+        LOG(error) 
+            << " problem_pair "
+            << " node_count " << m_node_count 
+            << " isur_ " << isur_
+            << " osur_ " << osur_
+            << " _lv " << _lv 
+            << " _lv_p " << _lv_p
+            << " g_sslv " << g_sslv
+            << " g_sslv_p " << g_sslv_p
+            ;
+ 
+    /*
+    if( is_cathode ) 
+        LOG(error)
+                  << " node_count " << m_node_count 
+                   << " clv "    << clv   
+                   << " _lv " << _lv 
+                   << " _lv_p " << _lv_p
+                   << " g_sslv " << g_sslv 
+                   << " g_sslv_p " << g_sslv_p 
+                   ; 
+  
+    if( g_sslv )
+        LOG(error) << " node_count " << m_node_count 
+                   << " _lv   " << _lv 
+                   << " g_sslv " << g_sslv->getName()
+                   ; 
+    */ 
 
-     unsigned boundary = 0 ; 
-     if( g_sks == NULL  )
-     {
-         const char* osur = X4::BaseName( osur_ ); 
-         const char* isur = X4::BaseName( isur_ ); 
-         boundary = m_blib->addBoundary( omat, osur, isur, imat ); 
-     }
-     else
-     {
-         const char* osur = g_sks->getName(); 
-         const char* isur = g_sks->getName(); 
-         boundary = m_blib->addBoundary( omat, osur, isur, imat ); 
-     }
-     return boundary ; 
+
+
+    unsigned boundary = 0 ; 
+    if( g_sslv == NULL && g_sslv_p == NULL  )
+    {
+        const char* osur = X4::BaseName( osur_ ); 
+        const char* isur = X4::BaseName( isur_ ); 
+        boundary = m_blib->addBoundary( omat, osur, isur, imat ); 
+    }
+    else if( g_sslv )
+    {
+        const char* osur = g_sslv->getName(); 
+        const char* isur = osur ; 
+        boundary = m_blib->addBoundary( omat, osur, isur, imat ); 
+    }
+    else if( g_sslv_p )
+    {
+        const char* osur = g_sslv_p->getName(); 
+        const char* isur = osur ; 
+        boundary = m_blib->addBoundary( omat, osur, isur, imat ); 
+    } 
+
+    return boundary ; 
 }
 
 
 GVolume* X4PhysicalVolume::convertNode(const G4VPhysicalVolume* const pv, GVolume* parent, int depth, const G4VPhysicalVolume* const pv_p, bool& recursive_select )
 {
+
      X4Nd* parent_nd = parent ? static_cast<X4Nd*>(parent->getParallelNode()) : NULL ;
 
      unsigned boundary = addBoundary( pv, pv_p );
