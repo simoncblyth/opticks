@@ -155,6 +155,27 @@ G4OpticalSurface* CSurfaceLib::makeOpticalSurface(GPropertyMap<float>* surf )
     os->SetFinish(finish);
     os->SetType(type);
 
+
+    // fixed value omission : see notes/issues/ab-surf1.rst
+    unsigned upercent = optical.w ; 
+    float value = float(upercent)/100.f ; 
+
+    LOG(trace) 
+        << " upercent (optical.w) " << upercent
+        << " value " << value 
+        ;
+
+
+    if( model == glisur ) 
+    {
+        os->SetPolish(value) ; 
+    } 
+    else
+    {
+        os->SetSigmaAlpha(value) ; 
+    }
+
+
     LOG(debug) << "CSurfaceLib::makeOpticalSurface " 
                << COpticalSurface::Brief(os) 
                ;

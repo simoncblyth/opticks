@@ -7,32 +7,39 @@
 
 #include <boost/lexical_cast.hpp>
 
-// sysrap-
 #include "SDigest.hh"
-
-// ggeo-
 #include "GVector.hh"
 #include "GOpticalSurface.hh"
 
 #include "PLOG.hh"
 // trace/debug/info/warning/error/fatal
 
-char* GOpticalSurface::getName()
+
+const char* GOpticalSurface::getName() const
 {
     return m_name ; 
 }
-char* GOpticalSurface::getType()
+const char* GOpticalSurface::getType() const
 {
     return m_type ; 
 }
-char* GOpticalSurface::getModel()
+const char* GOpticalSurface::getModel() const
 {
     return m_model ; 
 }
-char* GOpticalSurface::getFinish()
+const char* GOpticalSurface::getFinish() const
 {
     return m_finish ; 
 }
+const char* GOpticalSurface::getValue() const 
+{
+    return m_value ; 
+}
+const char* GOpticalSurface::getShortName() const 
+{
+    return m_shortname ; 
+}
+
 
 /*
  source/materials/include/G4OpticalSurface.hh 
@@ -49,9 +56,6 @@ char* GOpticalSurface::getFinish()
  70 
 
 */
-
-
-
 
 const char* GOpticalSurface::polished_ = "polished" ;
 const char* GOpticalSurface::polishedfrontpainted_ = "polishedfrontpainted" ;
@@ -76,15 +80,6 @@ const char* GOpticalSurface::Finish(unsigned finish)
     return s ;  
 }
 
-char* GOpticalSurface::getValue()
-{
-    return m_value ; 
-}
-
-char* GOpticalSurface::getShortName()
-{
-    return m_shortname ; 
-}
 
 
 /*
@@ -100,8 +95,6 @@ char* GOpticalSurface::getShortName()
 
 */
 
-
-
 const char* GOpticalSurface::dielectric_dielectric_ = "dielectric_dielectric" ;
 const char* GOpticalSurface::dielectric_metal_      = "dielectric_metal" ;
 
@@ -116,8 +109,6 @@ const char* GOpticalSurface::Type(unsigned type)
     } 
     return s ;  
 }
-
-
 
 std::string GOpticalSurface::brief(const guint4& optical)
 {
@@ -139,32 +130,30 @@ std::string GOpticalSurface::brief(const guint4& optical)
     return ss.str();
 }
     
-
-
-
 GOpticalSurface* GOpticalSurface::create(const char* name, guint4 optical )
 {
     std::string type   = boost::lexical_cast<std::string>(optical.y);   
     std::string finish = boost::lexical_cast<std::string>(optical.z);   
     std::string model  = "1" ; // always unified so skipped?  was that 1?
-    float fvalue  = boost::lexical_cast<float>(optical.w)/100.f ;   
-    std::string value = boost::lexical_cast<std::string>(fvalue);   
+
+    unsigned upercent = optical.w ; 
+    float fraction = float(upercent)/100.f ; 
+    std::string value = boost::lexical_cast<std::string>(fraction);
+   
     return new GOpticalSurface( name, type.c_str(), model.c_str(), finish.c_str(), value.c_str() ); 
 }
 
 
-guint4 GOpticalSurface::getOptical()
+guint4 GOpticalSurface::getOptical() const 
 {
    guint4 optical ; 
    optical.x = UINT_MAX ; //  place holder
    optical.y = boost::lexical_cast<unsigned int>(getType()); 
    optical.z = boost::lexical_cast<unsigned int>(getFinish()); 
 
-   char* value = getValue();
+   const char* value = getValue();
    float percent = boost::lexical_cast<float>(value)*100.f ;   // express as integer percentage 
-
    unsigned upercent = unsigned(percent) ;   // rounds down 
-  // unsigned upercent = boost::lexical_cast<unsigned int>(percent) ;
 
    optical.w = upercent ;
 
@@ -181,7 +170,7 @@ GOpticalSurface::GOpticalSurface(const char* name, const char* type, const char*
     m_value(strdup(value)),
     m_shortname(NULL)
 {
-    findShortName();
+    init();
 }
 
 GOpticalSurface::GOpticalSurface(GOpticalSurface* other)
@@ -193,12 +182,31 @@ GOpticalSurface::GOpticalSurface(GOpticalSurface* other)
    m_value(strdup(other->getValue())),
    m_shortname(NULL)
 {
-    findShortName();
+    init();
 } 
 
+void GOpticalSurface::init()
+{
+    findShortName();
+    checkValue();
+}
+
+void GOpticalSurface::checkValue() const 
+{
+    float value = boost::lexical_cast<float>(m_value) ; 
+    bool is_fraction = value >= 0.f && value <= 1.f ; 
+    if(!is_fraction)
+        LOG(fatal) 
+            << " value unexpected " 
+            << " value " << value 
+            << " m_value " << m_value 
+            << " m_name " << m_name
+            ;
+    assert( is_fraction ); 
+}
 
 
-bool GOpticalSurface::isSpecular()
+bool GOpticalSurface::isSpecular() const 
 {
     if(strncmp(m_finish,"0",strlen(m_finish))==0)  return true ;
     if(strncmp(m_finish,"1",strlen(m_finish))==0)  return true ;  // used by JUNO.Mirror_opsurf m_finish 1
@@ -241,31 +249,26 @@ void GOpticalSurface::findShortName(char marker)
 
 GOpticalSurface::~GOpticalSurface()
 {
-    free(m_name);
-    free(m_type);
-    free(m_model);
-    free(m_finish);
-    free(m_value);
-    free(m_shortname);
 }
 
-char* GOpticalSurface::digest()
+
+const char* GOpticalSurface::digest() const 
 {
     SDigest dig ;
-    dig.update( m_type,   strlen(m_type) );
-    dig.update( m_model,  strlen(m_model) );
-    dig.update( m_finish, strlen(m_finish) );
-    dig.update( m_value,  strlen(m_value) );
+    dig.update_str( m_type );
+    dig.update_str( m_model );
+    dig.update_str( m_finish );
+    dig.update_str( m_value );
     return dig.finalize();
 }
 
 
-void GOpticalSurface::Summary(const char* msg, unsigned int /*imod*/)
+void GOpticalSurface::Summary(const char* msg, unsigned int /*imod*/) const 
 {
     printf("%s : type %s model %s finish %s value %4s shortname %s \n", msg, m_type, m_model, m_finish, m_value, m_shortname );
 }
 
-std::string GOpticalSurface::description()
+std::string GOpticalSurface::description() const 
 {
     std::stringstream ss ; 
 

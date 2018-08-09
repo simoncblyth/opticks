@@ -109,6 +109,15 @@ void SDigest::update(char* buffer, int length)
     md5digest_str2md5_update(m_ctx, buffer, length );
 }
 
+void SDigest::update_str(const char* str )
+{
+    md5digest_str2md5_update(m_ctx, (char*)str, strlen(str) );
+}
+
+
+
+
+
 char* SDigest::finalize()
 {
     return md5digest_str2md5_finalize(m_ctx);  

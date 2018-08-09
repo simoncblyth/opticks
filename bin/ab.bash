@@ -619,7 +619,11 @@ pass
 # boundaries differ due to lack of surfaces in the test, so scrub that  
 # as it hides other problems
 
-b.view(np.int32)[:,1,2] = a.view(np.int32)[:,1,2]
+scrub_boundary = False 
+if scrub_boundary:
+    b.view(np.int32)[:,1,2] = a.view(np.int32)[:,1,2]
+pass
+
 
 cfpart(a,b)
 
@@ -1001,6 +1005,62 @@ ab-surf()
 }
 
 
+ab-surf1(){ ab-genrun $FUNCNAME ; }
+ab-surf1-(){ cat << EOP
+
+import os, logging, numpy as np
+log = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO)
+
+A_dir = "$(ab-A-)"
+B_dir = "$(ab-B-)"
+
+a_npy = lambda _:np.load(os.path.join(A_dir, _))
+b_npy = lambda _:np.load(os.path.join(B_dir, _))
+a_txt = lambda _:map(str.strip,file(os.path.join(A_dir,_)).readlines())
+b_txt = lambda _:map(str.strip,file(os.path.join(B_dir,_)).readlines())
+
+a = a_npy("GSurfaceLib/GSurfaceLib.npy")
+b = b_npy("GSurfaceLib/GSurfaceLib.npy")
+
+sa = a_txt("GItemList/GSurfaceLib.txt")
+sb = b_txt("GItemList/GSurfaceLib.txt")
+assert sa == sb 
+
+print "a.shape : %s " % repr(a.shape)
+print "b.shape : %s " % repr(b.shape)
+
+assert a.shape == b.shape
+
+ab = np.abs( a - b )
+print "ab.max()", ab.max()
+abmx = np.max(ab, axis=(1,2,3))
+
+assert len(abmx) == len(a) == len(sa) 
+
+fac = 1e9
+
+print " abmx*%s : max absolute difference of property values of each surface "  % fac 
+
+print "\n".join([ " %10.3f  : %s " % ( abmx[i]*fac, sa[i] ) for i in range(len(ab))]) 
+
+oa = a_npy("GSurfaceLib/GSurfaceLibOptical.npy")
+ob = b_npy("GSurfaceLib/GSurfaceLibOptical.npy")
+assert oa.shape == ob.shape
+
+
+s = "np.hstack( [oa, ob] )"
+print s
+print eval(s)
+
+assert np.all( oa == ob ) 
+
+
+EOP
+}
+
+
+
 ab-surf1-notes(){ cat << EON
 
 Small unexplained differences for some surface properties::
@@ -1046,56 +1106,13 @@ Difference in optical "value"
 EON
 }
 
-ab-surf1(){ ab-genrun $FUNCNAME ; }
-ab-surf1-(){ cat << EOP
-
-import os, logging, numpy as np
-log = logging.getLogger(__name__)
-logging.basicConfig(level=logging.INFO)
-
-A_dir = "$(ab-A-)"
-B_dir = "$(ab-B-)"
-
-a_npy = lambda _:np.load(os.path.join(A_dir, _))
-b_npy = lambda _:np.load(os.path.join(B_dir, _))
-a_txt = lambda _:map(str.strip,file(os.path.join(A_dir,_)).readlines())
-b_txt = lambda _:map(str.strip,file(os.path.join(B_dir,_)).readlines())
-
-a = a_npy("GSurfaceLib/GSurfaceLib.npy")
-b = b_npy("GSurfaceLib/GSurfaceLib.npy")
-
-sa = a_txt("GItemList/GSurfaceLib.txt")
-sb = b_txt("GItemList/GSurfaceLib.txt")
-assert sa == sb 
-
-print "a.shape : %s " % repr(a.shape)
-print "b.shape : %s " % repr(b.shape)
-
-assert a.shape == b.shape
-
-ab = np.abs( a - b )
-print "ab.max()", ab.max()
-abmx = np.max(ab, axis=(1,2,3))
-
-assert len(abmx) == len(a) == len(sa) 
-
-fac = 1e9
-
-print " abmx*%s : max absolute difference of property values of each surface "  % fac 
-
-print "\n".join([ " %10.3f  : %s " % ( abmx[i]*fac, sa[i] ) for i in range(len(ab))]) 
-
-oa = a_npy("GSurfaceLib/GSurfaceLibOptical.npy")
-ob = b_npy("GSurfaceLib/GSurfaceLibOptical.npy")
-assert oa.shape == ob.shape
-
-s = "np.hstack( [oa, ob] )"
-print s
-print eval(s)
 
 
-EOP
-}
+
+
+
+
+
 
 
 

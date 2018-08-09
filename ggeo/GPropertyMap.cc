@@ -377,9 +377,8 @@ char* GPropertyMap<T>::pdigest(int ifr, int ito) const
 
     if(m_optical_surface)
     {
-        char* sdig = m_optical_surface->digest();
-        dig.update(sdig, strlen(sdig));
-        free(sdig);
+        const char* sdig = m_optical_surface->digest();
+        dig.update_str(sdig);
     }
 
     return dig.finalize();

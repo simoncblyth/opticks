@@ -3,6 +3,8 @@
 #include <climits>
 
 #include <boost/algorithm/string.hpp>
+#include <boost/lexical_cast.hpp>
+
 #include "BStr.hh"
 #include "BFile.hh"
 
@@ -433,8 +435,26 @@ void AssimpGGeo::convertMaterials(const aiScene* scene, GGeo* gg, const char* qu
         const char* osfin = getStringProperty(mat, g4dae_opticalsurface_finish );
         const char* osval = getStringProperty(mat, g4dae_opticalsurface_value );
 
+        bool is_os = osnam && ostyp && osmod && osfin && osval ;     
 
-        GOpticalSurface* os = osnam && ostyp && osmod && osfin && osval ? new GOpticalSurface(osnam, ostyp, osmod, osfin, osval) : NULL ; 
+        if(is_os)
+        {
+            float fraction = boost::lexical_cast<float>(osval) ; 
+            assert( fraction >= 0.f && fraction <= 1.f ); 
+        }
+
+        GOpticalSurface* os = is_os ? new GOpticalSurface(osnam, ostyp, osmod, osfin, osval) : NULL ; 
+
+        if(is_os)
+            LOG(error) 
+            << " osnam " << std::setw(80) << osnam 
+            << " ostyp " << ostyp
+            << " osmod " << osmod
+            << " osfin " << osfin
+            << " osval " << osval
+            ;
+
+
 
 
         // assimp "materials" are used to hold skinsurface and bordersurface properties, 
@@ -457,7 +477,7 @@ void AssimpGGeo::convertMaterials(const aiScene* scene, GGeo* gg, const char* qu
             GSkinSurface* gss = new GSkinSurface(name, index, os);
 
 
-            LOG(info) << "GSkinSurface " 
+            LOG(debug) << "GSkinSurface " 
                       << " name " << name 
                       << " sslv " << sslv 
                       ; 
@@ -1051,20 +1071,7 @@ GVolume* AssimpGGeo::convertStructureVisit(GGeo* gg, AssimpNode* node, unsigned 
     {
         volume->setPVName(pv);
         volume->setLVName(lv);
-
-        // these names have the ptr 
-        /*
-        LOG(info) 
-           << " pv " << pv 
-           << " lv " << lv 
-           ;
-        */ 
     }
-
-
-
-    free(desc);
-
     return volume ; 
 }
 

@@ -578,7 +578,7 @@ unsigned X4PhysicalVolume::addBoundary(const G4VPhysicalVolume* const pv, const 
     const GSkinSurface* g_sslv_p = _lv_p ? m_ggeo->findSkinSurface(_lv_p) : NULL ;  
 
     if( g_sslv_p )
-        LOG(error) << " node_count " << m_node_count 
+        LOG(debug) << " node_count " << m_node_count 
                    << " _lv_p   " << _lv_p
                    << " g_sslv_p " << g_sslv_p->getName()
                    ; 
@@ -592,7 +592,7 @@ unsigned X4PhysicalVolume::addBoundary(const G4VPhysicalVolume* const pv, const 
     */
 
     if( problem_pair ) 
-        LOG(error) 
+        LOG(debug) 
             << " problem_pair "
             << " node_count " << m_node_count 
             << " isur_ " << isur_
@@ -603,26 +603,6 @@ unsigned X4PhysicalVolume::addBoundary(const G4VPhysicalVolume* const pv, const 
             << " g_sslv_p " << g_sslv_p
             ;
  
-    /*
-    if( is_cathode ) 
-        LOG(error)
-                  << " node_count " << m_node_count 
-                   << " clv "    << clv   
-                   << " _lv " << _lv 
-                   << " _lv_p " << _lv_p
-                   << " g_sslv " << g_sslv 
-                   << " g_sslv_p " << g_sslv_p 
-                   ; 
-  
-    if( g_sslv )
-        LOG(error) << " node_count " << m_node_count 
-                   << " _lv   " << _lv 
-                   << " g_sslv " << g_sslv->getName()
-                   ; 
-    */ 
-
-
-
     unsigned boundary = 0 ; 
     if( g_sslv == NULL && g_sslv_p == NULL  )
     {
@@ -630,18 +610,22 @@ unsigned X4PhysicalVolume::addBoundary(const G4VPhysicalVolume* const pv, const 
         const char* isur = X4::BaseName( isur_ ); 
         boundary = m_blib->addBoundary( omat, osur, isur, imat ); 
     }
-    else if( g_sslv )
+    else if( g_sslv && !g_sslv_p )
     {
         const char* osur = g_sslv->getName(); 
         const char* isur = osur ; 
         boundary = m_blib->addBoundary( omat, osur, isur, imat ); 
     }
-    else if( g_sslv_p )
+    else if( g_sslv_p && !g_sslv )
     {
         const char* osur = g_sslv_p->getName(); 
         const char* isur = osur ; 
         boundary = m_blib->addBoundary( omat, osur, isur, imat ); 
     } 
+    else if( g_sslv_p && g_sslv )
+    {
+        assert( 0 && "fabled double skin found : see notes/issues/ab-blib.rst  " ); 
+    }
 
     return boundary ; 
 }

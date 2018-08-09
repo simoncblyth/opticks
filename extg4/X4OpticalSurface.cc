@@ -32,7 +32,6 @@ GOpticalSurface* X4OpticalSurface::Convert( const G4OpticalSurface* const surf )
 
     G4SurfaceType type = surf->GetType() ; 
 
-    
     //LOG(info) << " name " << name << " type " << Type(type) ; 
 
     switch( type )
@@ -74,14 +73,23 @@ GOpticalSurface* X4OpticalSurface::Convert( const G4OpticalSurface* const surf )
     }
 
     G4double value = (model==glisur) ? surf->GetPolish() : surf->GetSigmaAlpha();
+    assert( value >= 0. && value <= 1. ); 
+    std::string value_s = X4::Value( value ) ;   
 
+    LOG(error) 
+        << " name " << std::setw(30) << name
+        << " type " << type  
+        << " model " << model  
+        << " finish " << finish  
+        << " value " << value 
+        << " value_s " << value_s 
+        ; 
 
     const char* osnam = name ; 
     const char* ostyp = BStr::itoa(type);  
     const char* osmod = BStr::itoa(model);  
     const char* osfin = BStr::itoa(finish);  
-    int percent = int(value*100.0) ;  
-    const char* osval = BStr::itoa(percent);  
+    const char* osval = value_s.c_str() ; 
 
     GOpticalSurface* os = osnam && ostyp && osmod && osfin && osval ? new GOpticalSurface(osnam, ostyp, osmod, osfin, osval) : NULL ;
     assert( os ); 

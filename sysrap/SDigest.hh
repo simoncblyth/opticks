@@ -44,7 +44,8 @@ class SYSRAP_API SDigest
        SDigest();
        virtual ~SDigest();
    public:
-       void update(char* buffer, int length);
+       void update( char* buffer, int length);
+       void update_str( const char* str );
        void update( const std::string& str );
        char* finalize();
    private:
