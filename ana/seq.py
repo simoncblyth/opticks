@@ -267,7 +267,7 @@ class SeqTable(object):
             c2_pval = chi2_pvalue( c2sum , ndf )
 
 
-            #log.info(" c2p %s c2s_tot %s " % (c2p, c2s_tot ))
+            log.info(" c2sum %s ndf %s c2p %s c2_pval %s " % (c2sum,ndf,c2p, c2_pval ))
 
             cnames += ["c2"]
             tots += ["%10.2f/%d = %5.2f  (pval:%0.3f prob:%0.3f) " % (c2sum,ndf,c2p,c2_pval,1-c2_pval) ]

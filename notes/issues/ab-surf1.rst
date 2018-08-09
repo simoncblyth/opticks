@@ -1,6 +1,36 @@
 ab-surf1
 ===========
 
+FIXED
+------
+
+::
+
+    epsilon:issues blyth$ o
+    M assimprap/AssimpGGeo.cc
+    M bin/ab.bash
+    M cfg4/CSurfaceLib.cc
+    M extg4/X4OpticalSurface.cc
+    M extg4/X4PhysicalVolume.cc
+    M ggeo/GOpticalSurface.cc
+    M ggeo/GOpticalSurface.hh
+    M ggeo/GPropertyMap.cc
+    M sysrap/SDigest.cc
+    M sysrap/SDigest.hh
+    A notes/issues/ab-surf1.rst
+    epsilon:opticks blyth$ 
+    epsilon:opticks blyth$ 
+    epsilon:opticks blyth$ hg commit -m "fix ab-surf1 issue with optical surface values, was mixup regarding fractional or percent storage "
+    epsilon:opticks blyth$ hg push 
+    pushing to ssh://hg@bitbucket.org/simoncblyth/opticks
+    searching for changes
+    remote: adding changesets
+    remote: adding manifests
+    remote: adding file changes
+    remote: added 1 changesets with 11 changes to 11 files
+    epsilon:opticks blyth$ 
+
+
 Probable cause
 ---------------
 

@@ -153,7 +153,7 @@ def chi2_pvalue( c2obs, ndf ):
     not-significant results.
 
     Of course for Opticks-CFG4 comparisons I wish to see no significant 
-    deviations, so I want the p-value to be large indicating nothing of significance.
+    deviations, so I want the p-value to be close to 1 indicating nothing of significance.
 
     ::
 
@@ -166,7 +166,7 @@ def chi2_pvalue( c2obs, ndf ):
 
     """
     if _chi2 is None:
-        return None 
+        return 1
 
     p_value = 1 - _chi2.cdf(c2obs, ndf) 
     return p_value

@@ -77,7 +77,7 @@ void CPropLib::init()
         LOG(fatal) << " surface lib sensor_surface NULL " ;
 
 
-        assert(0); 
+        //assert(0);   // this happens with test running such as tboolean-box 
     }
     else
     {

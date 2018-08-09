@@ -779,7 +779,14 @@ class CSG(CSG_):
         self.save_src(treedir)
 
         lvIdx_t = os.path.basename(treedir)
-        assert int(lvIdx_t) == lvIdx 
+
+        dir_matches_lvIdx = int(lvIdx_t) == lvIdx
+        if not dir_matches_lvIdx:
+            log.warning("basename of treedir %s does not match the lvIdx %d " % ( lvIdx_t , lvIdx )) 
+        pass
+        if not lvIdx == 0:      ## testing uses lvIdx 0 
+            assert dir_matches_lvIdx
+        pass
 
         tboolpath = self.tboolpath(treedir, lvIdx)
         height = self.height 
