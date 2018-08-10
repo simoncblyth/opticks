@@ -9,17 +9,26 @@ find_package( G4OK CONFIG REQUIRED )
 set(SOURCES
     DetectorConstruction.cc
     PhysicsList.cc
-    Cerenkov.cc
+    L4Cerenkov.cc
     PrimaryGeneratorAction.cc
     SteppingAction.cc
+    TrackingAction.cc
+    EventAction.cc
+    Ctx.cc
+    G4.cc
+
 )
 
 set(HEADERS
     DetectorConstruction.hh
     PhysicsList.hh
-    Cerenkov.hh
+    L4Cerenkov.hh
     PrimaryGeneratorAction.hh
     SteppingAction.hh
+    TrackingAction.hh
+    EventAction.hh
+    Ctx.hh
+    G4.hh
 )
 
 add_executable(${name} ${name}.cc ${SOURCES} ${HEADERS})

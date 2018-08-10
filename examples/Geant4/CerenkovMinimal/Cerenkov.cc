@@ -1,5 +1,10 @@
 #include "G4Cerenkov.hh"
 #include "Cerenkov.hh"
+#include "G4LossTableManager.hh"
+
+using CLHEP::um ;
+
+
 #include "PLOG.hh"
 
 Cerenkov::Cerenkov( const G4String& processName, G4ProcessType type)
@@ -31,6 +36,18 @@ void Cerenkov::BuildPhysicsTable(const G4ParticleDefinition& aParticleType)
     DumpPhysicsTable(); 
 }
 
+
+G4VParticleChange* Cerenkov::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
+{
+    LOG(info) << "." ; 
+    return G4Cerenkov::PostStepDoIt(aTrack, aStep);  
+}
+
+
+
+
+
+/*
 G4double Cerenkov::PostStepGetPhysicalInteractionLength(
                                        const G4Track& aTrack,
                                        G4double ignored,
@@ -54,12 +71,116 @@ G4double Cerenkov::PostStepGetPhysicalInteractionLength(
 
     return psgpil ;   
 }
+*/
 
 
-G4VParticleChange* Cerenkov::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
+
+
+G4double Cerenkov::PostStepGetPhysicalInteractionLength(
+                                           const G4Track& aTrack,
+                                           G4double,
+                                           G4ForceCondition* condition)
 {
-    LOG(info) << "." ; 
-    return G4Cerenkov::PostStepDoIt(aTrack, aStep);  
+        *condition = NotForced;
+        G4double StepLimit = DBL_MAX;
+
+        const G4Material* aMaterial = aTrack.GetMaterial();
+	G4int materialIndex = aMaterial->GetIndex();
+
+	// If Physics Vector is not defined no Cerenkov photons
+	//    this check avoid string comparison below
+	if(!(*thePhysicsTable)[materialIndex]) { return StepLimit; }
+
+        const G4DynamicParticle* aParticle = aTrack.GetDynamicParticle();
+        const G4MaterialCutsCouple* couple = aTrack.GetMaterialCutsCouple();
+
+        G4double kineticEnergy = aParticle->GetKineticEnergy();
+        const G4ParticleDefinition* particleType = aParticle->GetDefinition();
+        G4double mass = particleType->GetPDGMass();
+
+        // particle beta
+        G4double beta = aParticle->GetTotalMomentum() /
+	                aParticle->GetTotalEnergy();
+        // particle gamma
+        G4double gamma = aParticle->GetTotalEnergy()/mass;
+
+        G4MaterialPropertiesTable* aMaterialPropertiesTable =
+                            aMaterial->GetMaterialPropertiesTable();
+
+        G4MaterialPropertyVector* Rindex = NULL;
+
+        if (aMaterialPropertiesTable)
+                     Rindex = aMaterialPropertiesTable->GetProperty("RINDEX");
+
+        G4double nMax;
+        if (Rindex) {
+           nMax = Rindex->GetMaxValue();
+        } else {
+           return StepLimit;
+        }
+
+        G4double BetaMin = 1./nMax;
+        if ( BetaMin >= 1. ) return StepLimit;
+
+        G4double GammaMin = 1./std::sqrt(1.-BetaMin*BetaMin);
+
+        if (gamma < GammaMin ) return StepLimit;
+
+        G4double kinEmin = mass*(GammaMin-1.);
+
+        G4double RangeMin = G4LossTableManager::Instance()->
+                                                   GetRange(particleType,
+                                                            kinEmin,
+                                                            couple);
+        G4double Range    = G4LossTableManager::Instance()->
+                                                   GetRange(particleType,
+                                                            kineticEnergy,
+                                                            couple);
+
+        G4double Step = Range - RangeMin;
+        if (Step < 1.*um ) return StepLimit;
+
+        if (Step > 0. && Step < StepLimit) StepLimit = Step; 
+
+        // If user has defined an average maximum number of photons to
+        // be generated in a Step, then calculate the Step length for
+        // that number of photons. 
+ 
+        if (fMaxPhotons > 0) {
+
+           // particle charge
+           const G4double charge = aParticle->
+                                   GetDefinition()->GetPDGCharge();
+
+	   G4double MeanNumberOfPhotons = 
+                    GetAverageNumberOfPhotons(charge,beta,aMaterial,Rindex);
+
+           Step = 0.;
+           if (MeanNumberOfPhotons > 0.0) Step = fMaxPhotons /
+                                                 MeanNumberOfPhotons;
+
+           if (Step > 0. && Step < StepLimit) StepLimit = Step;
+        }
+
+        // If user has defined an maximum allowed change in beta per step
+        if (fMaxBetaChange > 0.) {
+
+           G4double dedx = G4LossTableManager::Instance()->
+                                                   GetDEDX(particleType,
+                                                           kineticEnergy,
+                                                           couple);
+
+           G4double deltaGamma = gamma - 
+                                 1./std::sqrt(1.-beta*beta*
+                                                 (1.-fMaxBetaChange)*
+                                                 (1.-fMaxBetaChange));
+
+           Step = mass * deltaGamma / dedx;
+
+           if (Step > 0. && Step < StepLimit) StepLimit = Step;
+
+        }
+
+        *condition = StronglyForced;
+        return StepLimit;
 }
-
-

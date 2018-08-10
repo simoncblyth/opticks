@@ -2,10 +2,10 @@
 
 #include "G4VUserPhysicsList.hh"
 
-class G4Cerenkov ;
 class G4Scintillation ;
 class G4OpBoundaryProcess ;
 
+template <typename T>
 struct PhysicsList : public G4VUserPhysicsList
 {
     PhysicsList();
@@ -13,9 +13,12 @@ struct PhysicsList : public G4VUserPhysicsList
     virtual void ConstructParticle();
     virtual void ConstructProcess();
 
+    void ConstructEM();
+    void ConstructOp();
+
     G4int                fMaxNumPhotonStep ; 
     G4int                fVerboseLevel ;  
-    G4Cerenkov*          fCerenkovProcess ; 
+    T*                   fCerenkovProcess ; 
     G4Scintillation*     fScintillationProcess ; 
     G4OpBoundaryProcess* fBoundaryProcess ; 
 };

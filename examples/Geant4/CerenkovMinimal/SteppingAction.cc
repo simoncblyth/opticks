@@ -1,14 +1,18 @@
-
 #include "SteppingAction.hh"
 #include "G4Track.hh"
 #include "G4Step.hh"
+#include "Ctx.hh"
 #include "PLOG.hh"
+
+SteppingAction::SteppingAction(Ctx* ctx_)
+    :
+    ctx(ctx_)
+{
+}
 
 void SteppingAction::UserSteppingAction(const G4Step* step)
 {
-    G4Track* track = step->GetTrack();
-    G4String ParticleName = track->GetDynamicParticle()->GetParticleDefinition()->GetParticleName(); 
-    LOG(info) << ParticleName ;  
+    ctx->setStep(step); 
 }
 
 
