@@ -216,6 +216,7 @@ private:
      int         m_target ;  
      int         m_alignlevel ;  
 
+     const char* m_exename ; 
      std::string m_gpumonpath ;
 
 

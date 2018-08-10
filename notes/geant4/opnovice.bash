@@ -160,6 +160,17 @@ opnovice-bdir(){ echo /tmp/$USER/opticks/examples/Geant4/OpNovice ; }
 opnovice-bcd(){   cd $(opnovice-bdir) ; } 
 opnovice-b(){     cd $(opnovice-bdir) ; } 
 
+opnovice-info(){ cat << EOI
+
+   opnovice-sdir : $(opnovice-sdir)
+   opnovice-bdir : $(opnovice-bdir)
+
+
+EOI
+}
+
+
+
 opnovice-conf()
 {
    local iwd=$(pwd)
@@ -183,7 +194,12 @@ opnovice-conf()
 
 opnovice-make()
 {
+   local msg="=== $FUNCNAME :"
    local iwd=$(pwd)
+   local bdir=$(opnovice-bdir)
+
+   [ ! -d "$bdir" ] && echo $msg build dir $bdir does not exist : run opnovice-conf to create it && return 
+
    opnovice-bcd
    pwd
    make ${1:-install}
@@ -243,5 +259,44 @@ epsilon:OpNovice blyth$
 EON
 }
 
+
+
+opnovice-cls () 
+{ 
+    local iwd=$PWD;
+    opnovice-cd;
+    opnovice-cls- . $*;
+    cd $iwd
+}
+
+opnovice-cls- () 
+{ 
+    local base=${1:-.};
+    local name=${2:-OpNovice};
+    local hh=$(find $base -name "$name.hh");
+    local cc=$(find $base -name "$name.cc");
+    local vcmd="vi $hh $cc ";
+    echo $vcmd;
+    eval $vcmd
+}
+
+opnovice-lldb-notes(){ cat << EON
+
+(lldb) b G4Cerenkov::GetMeanFreePath(G4Track const&, double, G4ForceCondition*)
+Breakpoint 2: 2 locations.
+(lldb) b G4Cerenkov::PostStepDoIt(G4Track const&, G4Step const&) 
+Breakpoint 3: 2 locations.
+(lldb) 
+
+(lldb) b G4Cerenkov::PostStepGetPhysicalInteractionLength(G4Track const&, double, G4ForceCondition*)
+(lldb) b G4Cerenkov::GetAverageNumberOfPhotons(double, double, G4Material const*, G4PhysicsOrderedFreeVector*) const 
+
+
+(lldb) b G4SteppingManager::Stepping()
+
+
+EON
+
+}
 
 

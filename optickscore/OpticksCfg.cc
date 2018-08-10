@@ -99,7 +99,8 @@ OpticksCfg<Listener>::OpticksCfg(const char* name, Listener* listener, bool live
        m_lod(0),
        m_target(0),
        m_alignlevel(0),
-       m_gpumonpath(BStr::concat("$TMP/",SAr::Instance->exename(),"_GPUMon.npy"))
+       m_exename(SAr::Instance->exename()), 
+       m_gpumonpath(BStr::concat("$TMP/",m_exename ? m_exename : "OpticksCfg","_GPUMon.npy"))
 {   
    init();  
    m_listener->setCfg(this); 

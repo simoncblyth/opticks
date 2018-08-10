@@ -81,7 +81,7 @@ namespace {
 
 int main(int argc,char** argv)
 {
-  OPTICKS_LOG__(0,0);
+  OPTICKS_LOG(0,0);
   // Evaluate arguments
   //
   if ( argc > 9 ) {
