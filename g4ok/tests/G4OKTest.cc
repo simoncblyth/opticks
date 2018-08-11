@@ -1,14 +1,12 @@
 #include <cassert>
 #include "OPTICKS_LOG.hh"
-#include "G4OpticksManager.hh"
+#include "G4Opticks.hh"
 
 int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv) ;
 
-    OPTICKS_LOG_::Check();
-
-    G4OpticksManager* om = G4OpticksManager::GetOpticksManager() ; 
+    G4Opticks* om = G4Opticks::GetOpticks() ; 
 
     assert( om ) ;
 

@@ -3,7 +3,7 @@
 #include <string>
 #include "G4Types.hh"
 
-class OpticksHub ; 
+//class OpticksHub ; 
 class NLookup ; 
 template <typename T> class NPY ;
 
@@ -33,12 +33,12 @@ prior to the photon loop.
 
 class CFG4_API CCollector 
 {
-         friend class OKG4Mgr ; 
-         friend class CG4 ; 
+       //  friend class OKG4Mgr ; 
+       //  friend class CG4 ; 
    public:
          static CCollector* Instance();
    public:
-         CCollector(OpticksHub* hub);
+         CCollector(NLookup* lookup);   // cannot be const : a close is done
    public:
          NPY<float>*  getGensteps();
          NPY<float>*  getPrimary();
@@ -142,7 +142,7 @@ class CFG4_API CCollector
    private:
          static CCollector* INSTANCE ;      
    private:
-         OpticksHub*  m_hub ; 
+         //OpticksHub*  m_hub ; 
          NLookup*     m_lookup ; 
 
          NPY<float>*  m_genstep ;

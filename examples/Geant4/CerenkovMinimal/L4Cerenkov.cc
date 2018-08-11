@@ -68,6 +68,11 @@
 #include "PLOG.hh"
 #endif
 
+#ifdef WITH_OPTICKS
+#include "G4Opticks.hh"
+#include "PLOG.hh"
+#endif
+
 
 #include "G4ios.hh"
 #include "G4PhysicalConstants.hh"
@@ -286,7 +291,50 @@ L4Cerenkov::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
                      GetAverageNumberOfPhotons(charge,beta1,aMaterial,Rindex);
         G4double MeanNumberOfPhotons2 =
                      GetAverageNumberOfPhotons(charge,beta2,aMaterial,Rindex);
-	
+
+
+#ifdef WITH_OPTICKS
+    {
+        const G4ParticleDefinition* definition = aParticle->GetDefinition();
+        G4ThreeVector deltaPosition = aStep.GetDeltaPosition();
+        G4int materialIndex = aMaterial->GetIndex();
+        LOG(trace) << dp ; 
+
+        G4Opticks::GetOpticks()->collectCerenkovStep(
+               0,                  // 0     id:zero means use cerenkov step count 
+               aTrack.GetTrackID(),
+               materialIndex, 
+               NumPhotons,
+
+               x0.x(),                // 1
+               x0.y(),
+               x0.z(),
+               t0, 
+
+               deltaPosition.x(),     // 2
+               deltaPosition.y(),
+               deltaPosition.z(),
+               aStep.GetStepLength(),
+
+               definition->GetPDGEncoding(),   // 3
+               definition->GetPDGCharge(),
+               aTrack.GetWeight(),
+               ((pPreStepPoint->GetVelocity()+ pPostStepPoint->GetVelocity())/2.),
+    
+               BetaInverse,       // 4   
+               Pmin,
+               Pmax,
+               maxCos,
+
+               maxSin2,   // 5
+               MeanNumberOfPhotons1, 
+               MeanNumberOfPhotons2,
+               0   
+        ); 
+    }    
+#endif
+
+//#ifndef WITH_OPTICKS
 	for (G4int i = 0; i < NumPhotons; i++) {
 
 		// Determine photon energy
@@ -397,6 +445,7 @@ L4Cerenkov::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
 
 		aParticleChange.AddSecondary(aSecondaryTrack);
 	}
+//#endif
 
 	if (verboseLevel>0) {
 	   G4cout <<"\n Exiting from L4Cerenkov::DoIt -- NumberOfSecondaries = "

@@ -9,9 +9,7 @@
 
 #include "CCollector.hh"
 
-#include "SYSRAP_LOG.hh"
-#include "OKCORE_LOG.hh"
-#include "PLOG.hh"
+#include "OPTICKS_LOG.hh"
 
 
 unsigned mock_num_steps( unsigned e )
@@ -36,17 +34,14 @@ unsigned mock_num_steps( unsigned e )
 
 int main(int argc, char** argv)
 {
-    PLOG_(argc, argv);
-
-    SYSRAP_LOG__ ; 
-    OKCORE_LOG__ ; 
+    OPTICKS_LOG(argc, argv);
 
     unsigned mock_num_evt = 100 ; 
 
     Opticks ok(argc, argv);
     OpticksHub hub(&ok);
 
-    CCollector cc(&hub);
+    CCollector cc(hub.getLookup());
     NPY<float>* gs = cc.getGensteps(); 
 
 

@@ -36,7 +36,7 @@
 #include "G4Run.hh"
 
 #ifdef WITH_OPTICKS
-#include "G4OpticksManager.hh"
+#include "G4Opticks.hh"
 #endif
 
 
@@ -64,7 +64,8 @@ void OpNoviceRunAction::BeginOfRunAction(const G4Run* aRun)
   fTimer->Start();
 
 #ifdef WITH_OPTICKS
-  G4OpticksManager::GetOpticksManager()->BeginOfRunAction(aRun);
+  G4VPhysicalVolume* world_pv = G4TransportationManager::GetTransportationManager()->GetNavigatorForTracking()->GetWorldVolume() ; 
+  G4Opticks::GetOpticks()->setGeometry(world_pv);
 #endif
 
 }
@@ -78,7 +79,7 @@ void OpNoviceRunAction::EndOfRunAction(const G4Run* aRun)
          << " " << *fTimer << G4endl;
 
 #ifdef WITH_OPTICKS
-  G4OpticksManager::GetOpticksManager()->EndOfRunAction(aRun);
+  G4Opticks::GetOpticks()->EndOfRunAction(aRun);
 #endif
 
 }

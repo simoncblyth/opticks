@@ -277,7 +277,9 @@ void CG4::postinitialize()
 
     m_hub->overrideMaterialMapA( getMaterialMap(), "CG4::postinitialize/g4mm") ;  // for translation of material indices into GPU texture lines 
 
-    m_collector = new CCollector(m_hub) ; // currently hub just used for material code lookup, not evt access
+    NLookup* lookup = m_hub->getLookup();
+
+    m_collector = new CCollector(lookup) ; // currently hub just used for material code lookup, not evt access
 
 
     if(m_ok->isG4Snap()) snap() ;

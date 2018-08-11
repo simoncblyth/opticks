@@ -17,10 +17,9 @@ CCollector* CCollector::Instance()
    return INSTANCE ;
 }
 
-CCollector::CCollector(OpticksHub* hub)  
+CCollector::CCollector(NLookup* lookup)    
     :
-    m_hub(hub),
-    m_lookup(m_hub->getLookup()),
+    m_lookup(lookup),
     m_genstep(NPY<float>::make(0,6,4)),
     m_genstep_itemsize(m_genstep->getNumValues(1)),
     m_genstep_values(new float[m_genstep_itemsize]),
@@ -42,13 +41,26 @@ CCollector::CCollector(OpticksHub* hub)
 }
 
 void CCollector::postinit()
-{ 
+{
+    if(m_lookup == NULL) 
+    {
+        LOG(fatal) << " no lookup " ; 
+        return ; 
+    }
+ 
     m_lookup->close("CCollector::postinit closing lookup");
     //m_lookup->dump("Collector::postinit closing lookup");
 }
 
 int CCollector::translate(int acode)
 {
+    if(!m_lookup) 
+    {
+        LOG(fatal) << " no lookup " ; 
+        return acode ; 
+    }
+ 
+    // raw G4 materialId translated into GBndLib material line for GPU usage 
     int bcode = m_lookup->a2b(acode) ;
     return bcode ; 
 }
@@ -68,11 +80,6 @@ NPY<float>*  CCollector::getPrimary()
 {
     return m_primary ; 
 }
-
-
-
-
-
 
 
 void CCollector::consistencyCheck()

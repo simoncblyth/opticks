@@ -3,20 +3,19 @@ set(name G4OK)
 project(${name} VERSION 0.1.0)
 include(OpticksBuildOptions)
 
-find_package(CFG4   REQUIRED CONFIG)   # brings G4 with it 
-find_package(OKConf REQUIRED CONFIG)   
+find_package(CFG4   REQUIRED CONFIG)   
+find_package(ExtG4  REQUIRED CONFIG)   
 find_package(OKOP   REQUIRED CONFIG)
-#find_package(G4DAE  REQUIRED CONFIG)
 
 
 set(SOURCES
-    G4OpticksManager.cc
+    G4Opticks.cc
     G4OpticksGeometry.cc
 
     G4OK_LOG.cc
 )
 set(HEADERS
-    G4OpticksManager.hh
+    G4Opticks.hh
     G4OpticksGeometry.hh
     G4OpticksScintillationStep.hh
     G4OpticksCerenkovStep.hh
@@ -32,6 +31,7 @@ add_library(${name} SHARED  ${SOURCES})
 target_link_libraries( ${name} 
   PUBLIC 
      Opticks::CFG4
+     Opticks::ExtG4
      Opticks::OKOP
 )
 

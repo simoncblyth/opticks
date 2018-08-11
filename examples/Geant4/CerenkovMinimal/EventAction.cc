@@ -30,6 +30,10 @@ void EventAction::EndOfEventAction(const G4Event* event)
 
     addDummyHits(HCE);
     SensitiveDetector::DumpHitCollections(HCE);
+  
+
+    // A possible alternative location to invoke the GPU propagation
+    // and add hits in bulk to hit collections would be SensitiveDetector::EndOfEvent  
 }
 
 void EventAction::addDummyHits(G4HCofThisEvent* HCE)

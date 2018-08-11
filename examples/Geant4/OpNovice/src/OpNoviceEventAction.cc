@@ -3,7 +3,7 @@
 //#include "G4Event.hh"
 
 #ifdef WITH_OPTICKS
-#include "G4OpticksManager.hh"
+#include "G4Opticks.hh"
 #endif
 
 
@@ -20,14 +20,14 @@ OpNoviceEventAction::~OpNoviceEventAction()
 void OpNoviceEventAction::BeginOfEventAction(const G4Event* aEvent)
 {
 #ifdef WITH_OPTICKS
-  G4OpticksManager::GetOpticksManager()->BeginOfEventAction(aEvent);
+    G4Opticks::GetOpticks()->BeginOfEventAction(aEvent);
 #endif
 }
 
 void OpNoviceEventAction::EndOfEventAction(const G4Event* aEvent)
 {
 #ifdef WITH_OPTICKS
-  G4OpticksManager::GetOpticksManager()->EndOfEventAction(aEvent);
+    G4Opticks::GetOpticks()->EndOfEventAction(aEvent);
 #endif
 }
 
