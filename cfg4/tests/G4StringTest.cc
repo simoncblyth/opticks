@@ -3,44 +3,54 @@
 #include "CFG4_BODY.hh"
 #include "G4String.hh"
 
-#include "PLOG.hh"
-#include "CFG4_LOG.hh"
+#include "OPTICKS_LOG.hh"
 
 
-
-void test_G4String(const G4String& st )
+void test_remove()
 {
-    LOG(info) << st ; 
+    G4String name = "/some/path/to/a/file.txt" ; 
+
+    size_t sLast = name.last('/');
+
+
+    G4String SensitiveDetectorName ;
+    G4String thePathName ; 
+    G4String fullPathName  ;
+
+    if(sLast==std::string::npos)
+    { // detector name only
+        SensitiveDetectorName = name;
+        thePathName = "/";
+    }
+    else
+    { // name conatin the directory path
+        SensitiveDetectorName = name;
+        SensitiveDetectorName.remove(0,sLast+1);
+        thePathName = name;
+        thePathName.remove(sLast+1,name.length()-sLast);
+        if(thePathName(0)!='/') thePathName.prepend("/");
+    }
+    fullPathName = thePathName + SensitiveDetectorName;
+     
+    LOG(info) 
+       << std::endl 
+       << " name " << name << std::endl 
+       << " SensitiveDetectorName " << SensitiveDetectorName << std::endl
+       << " thePathName " << thePathName << std::endl
+       << " fullPathName " << fullPathName << std::endl
+       ;
+
 }
+
+
+
 
 
 int main(int argc, char** argv)
 {
-    PLOG_(argc, argv);
-    CFG4_LOG_ ;
+    OPTICKS_LOG(argc, argv);
 
-
-    const char* r = argv[0] ;
-
-    std::string s = r ;
-
-    G4String gr = r ;
-    G4String gs = s ;
-
-    LOG(info) << r ;
-    LOG(info) << s ;
-    LOG(info) << gr ;
-    LOG(info) << gs ;
-
-
-    test_G4String(r);
-    test_G4String(s);
-    test_G4String(gr);
-    test_G4String(gs);
-    
-
-
-
+    test_remove();  
 
 
     return 0 ;

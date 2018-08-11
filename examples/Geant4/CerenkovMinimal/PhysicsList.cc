@@ -17,7 +17,7 @@ template <typename T>
 PhysicsList<T>::PhysicsList()
        :
        fMaxNumPhotonStep(1000),
-       fVerboseLevel(10),
+       fVerboseLevel(1),
        fCerenkovProcess(NULL),
        fScintillationProcess(NULL),
        fBoundaryProcess(NULL)

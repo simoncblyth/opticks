@@ -5,6 +5,16 @@ g4-usage(){ cat << \EOU
 Geant4
 ========
 
+
+
+
+Sensitive Detector, Hits
+--------------------------
+
+
+
+
+
 Migration to 10 (Multithreaded)
 --------------------------------
 
@@ -486,9 +496,9 @@ g4-export-ini()
 g4-ifind(){ find $(g4-idir) -name ${1:-G4VUserActionInitialization.hh} ; }
 g4-sfind(){ find $(g4-dir)/source -name ${1:-G4VUserActionInitialization.hh} ; }
 
-g4-hh(){ find $(g4-dir)/source -name '*.hh' -exec grep -H ${1:-G4GammaConversion} {} \; ; }
-g4-icc(){ find $(g4-dir)/source -name '*.icc' -exec grep -H ${1:-G4GammaConversion} {} \; ; }
-g4-cc(){ find $(g4-dir)/source -name '*.cc' -exec grep -H ${1:-G4GammaConversion} {} \; ; }
+g4-hh(){ find $(g4-dir)/source -name '*.hh' -exec grep -H "${1:-G4GammaConversion}" {} \; ; }
+g4-icc(){ find $(g4-dir)/source -name '*.icc' -exec grep -H "${1:-G4GammaConversion}" {} \; ; }
+g4-cc(){ find $(g4-dir)/source -name '*.cc' -exec grep -H "${1:-G4GammaConversion}" {} \; ; }
 
 g4-cls-copy(){
    local iwd=$PWD

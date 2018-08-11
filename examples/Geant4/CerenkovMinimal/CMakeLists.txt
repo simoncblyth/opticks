@@ -14,9 +14,11 @@ set(SOURCES
     SteppingAction.cc
     TrackingAction.cc
     EventAction.cc
+    RunAction.cc
     Ctx.cc
     G4.cc
-
+    SensitiveDetector.cc
+    OpHit.cc
 )
 
 set(HEADERS
@@ -27,8 +29,11 @@ set(HEADERS
     SteppingAction.hh
     TrackingAction.hh
     EventAction.hh
+    RunAction.hh
     Ctx.hh
     G4.hh
+    SensitiveDetector.hh
+    OpHit.hh
 )
 
 add_executable(${name} ${name}.cc ${SOURCES} ${HEADERS})

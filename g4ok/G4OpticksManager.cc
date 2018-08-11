@@ -14,7 +14,6 @@
 
 #include "PLOG.hh"
 
-//G4ThreadLocal 
 G4OpticksManager* G4OpticksManager::fOpticksManager = NULL ;
 
 
