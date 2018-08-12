@@ -11,6 +11,12 @@ template <typename T> class NPY ;
 CCollector
 ==================== 
 
+Canonical instances:
+
+1. CG4.m_collector instanciated at postinitialize 
+
+
+
 Gensteps have an item shape of 6*4 (ie 6 quads) the 
 first 3 quads are common between scintillation and
 Cerenkov but the last 3 differ.
@@ -33,12 +39,10 @@ prior to the photon loop.
 
 class CFG4_API CCollector 
 {
-       //  friend class OKG4Mgr ; 
-       //  friend class CG4 ; 
    public:
          static CCollector* Instance();
    public:
-         CCollector(NLookup* lookup);   // cannot be const : a close is done
+         CCollector(const NLookup* lookup);  
    public:
          NPY<float>*  getGensteps();
          NPY<float>*  getPrimary();
@@ -49,7 +53,6 @@ class CFG4_API CCollector
    private:
          void setGensteps(NPY<float>* gs);
          void consistencyCheck();
-         void postinit();
    public:
          void collectScintillationStep(
             G4int                id, 
@@ -142,8 +145,7 @@ class CFG4_API CCollector
    private:
          static CCollector* INSTANCE ;      
    private:
-         //OpticksHub*  m_hub ; 
-         NLookup*     m_lookup ; 
+         const NLookup*     m_lookup ; 
 
          NPY<float>*  m_genstep ;
          unsigned     m_genstep_itemsize ; 

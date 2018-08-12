@@ -270,7 +270,7 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
         OpticksFlags*      getFlags(); 
         OpticksResource*   getResource();
         OpticksAttrSeq*    getFlagNames(); 
-        Opticks*           getOpticks();
+        Opticks*           getOpticks() const ;
     public:
         GMaterial* getMaterial(unsigned int index) const ;   
 

@@ -425,6 +425,8 @@ std::string GBndLib::description(const guint4& bnd) const
        << " os:" << std::setw(31) << (osur == UNSET ? ""                 : m_slib->getName(osur))  
        << " is:" << std::setw(31) << (isur == UNSET ? ""                 : m_slib->getName(isur)) 
        << " im:" << std::setw(25) << (imat == UNSET ? "IMAT-unset-ERROR" : m_mlib->getName(imat)) 
+       << " ("   << std::setw(3) << tag << ")" 
+       << "     "
        << " (" 
        << std::setw(2) << omat << ","
        << std::setw(2) << ( osur == UNSET ? -1 : (int)osur ) << ","
@@ -566,7 +568,7 @@ void GBndLib::dumpMaterialLineMap(std::map<std::string, unsigned int>& msu, cons
                    ;
 }
 
-void GBndLib::fillMaterialLineMap( std::map<std::string, unsigned int>& msu)
+void GBndLib::fillMaterialLineMap( std::map<std::string, unsigned>& msu)
 {
     // first occurence of a material within the boundaries
     // has its material line recorded in the MaterialLineMap
@@ -577,8 +579,8 @@ void GBndLib::fillMaterialLineMap( std::map<std::string, unsigned int>& msu)
         const char* omat = m_mlib->getName(bnd[OMAT]);
         const char* imat = m_mlib->getName(bnd[IMAT]);
         assert(imat && omat);
-        if(msu.count(imat) == 0) msu[imat] = getLine(i, IMAT) ; // incorrectly 0 until 2016/3/13
-        if(msu.count(omat) == 0) msu[omat] = getLine(i, OMAT) ; // incorrectly 1 until 2016/3/13
+        if(msu.count(imat) == 0) msu[imat] = getLine(i, IMAT) ;
+        if(msu.count(omat) == 0) msu[omat] = getLine(i, OMAT) ; 
     }
 
     if(m_ok->isMaterialDbg())
@@ -592,6 +594,18 @@ const std::map<std::string, unsigned int>& GBndLib::getMaterialLineMap()
     if(m_materialLineMap.size() == 0) fillMaterialLineMap(m_materialLineMap) ;
     return m_materialLineMap ;
 }
+
+void GBndLib::fillMaterialLineMap()
+{
+    if(m_materialLineMap.size() == 0) fillMaterialLineMap(m_materialLineMap) ;
+}
+
+const std::map<std::string, unsigned int>& GBndLib::getMaterialLineMapConst() const
+{
+    return m_materialLineMap ;
+}
+
+
 void GBndLib::dumpMaterialLineMap(const char* msg)
 {
     LOG(info) << "GBndLib::dumpMaterialLineMap" ; 
@@ -620,12 +634,12 @@ unsigned int GBndLib::getMaterialLine(const char* shortname_)
 
         if(strncmp(imat, shortname_, strlen(shortname_))==0)
         { 
-            line = getLine(i, IMAT);  // was incorrectly 0 until 2016/3/13
+            line = getLine(i, IMAT);  
             break ;
         }
         if(strncmp(omat, shortname_, strlen(shortname_))==0) 
         { 
-            line=getLine(i, OMAT);  // was incorrectly 1 until 2016/3/13
+            line=getLine(i, OMAT); 
             break ;
         } 
     }
@@ -637,7 +651,7 @@ unsigned int GBndLib::getMaterialLine(const char* shortname_)
 
     return line ;
 }
-unsigned int GBndLib::getLine(unsigned int ibnd, unsigned int imatsur)
+unsigned int GBndLib::getLine(unsigned ibnd, unsigned imatsur)
 {
     assert(imatsur < NUM_MATSUR);  // NUM_MATSUR canonically 4
     return ibnd*NUM_MATSUR + imatsur ;   

@@ -27,7 +27,6 @@ it with geometry, boundary etc.. info
 **/
 
 
-
 #include "OXRAP_API_EXPORT.hh"
 class OXRAP_API OScene {
     public:

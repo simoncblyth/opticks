@@ -26,7 +26,7 @@ class CFG4_API CGeometry
        CDetector*       getDetector();
        CMaterialBridge* getMaterialBridge();
        CSurfaceBridge*  getSurfaceBridge();
-       std::map<std::string, unsigned>& getMaterialMap();        
+       const std::map<std::string, unsigned>& getMaterialMap() const ;        
    private:
        void init();
        void export_();

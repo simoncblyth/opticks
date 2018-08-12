@@ -136,7 +136,9 @@ class GGEO_API GBndLib : public GPropertyLib {
        void setIndexBuffer(NPY<unsigned int>* index_buffer);
        void setOpticalBuffer(NPY<unsigned int>* optical_buffer);
   public:
-       const std::map<std::string, unsigned int>& getMaterialLineMap();
+       const std::map<std::string, unsigned>& getMaterialLineMap();
+       const std::map<std::string, unsigned>& getMaterialLineMapConst() const ;
+       void fillMaterialLineMap();
        void dumpMaterialLineMap(const char* msg="GBndLib::dumpMaterialLineMap"); 
   private:
        void fillMaterialLineMap(std::map<std::string, unsigned int>& msu);

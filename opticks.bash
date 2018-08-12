@@ -970,7 +970,7 @@ opticks-t--()
 }
 
 
-opticks-lfind(){ opticks-find $1 -l ; }
+opticks-findl(){ opticks-find $1 -l ; }
 opticks-f(){ opticks-find $* ; }
 opticks-find(){
    local str=${1:-ENV_HOME}
@@ -1342,7 +1342,7 @@ tjuno-(){      . $(opticks-home)/tests/tjuno.bash  && tjuno-env $* ; }
 tgltf-(){         . $(opticks-home)/tests/tgltf.bash  && tgltf-env $* ; }
 
 geocache-(){      . $(opticks-home)/ana/geocache.bash  && geocache-env $* ; }
-
+ckm-(){           . $(opticks-home)/examples/Geant4/CerenkovMinimal/ckm.bash  && ckm-env $* ; }
 
 
 ####### below functions support analysis on machines without a full opticks install

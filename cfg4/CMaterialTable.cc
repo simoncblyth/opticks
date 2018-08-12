@@ -15,7 +15,7 @@
 
 CMaterialTable::CMaterialTable(const char* prefix)
     :
-    m_prefix(strdup(prefix))
+    m_prefix(prefix ? strdup(prefix) : NULL)
 {
     init();
 }
@@ -31,7 +31,7 @@ void CMaterialTable::initNameIndex()
 
     LOG(info) << "CMaterialTable::init "
               << " numOfMaterials " << nmat
-              << " prefix " << m_prefix 
+              << " prefix " << ( m_prefix ? m_prefix : "NULL" ) 
               ;
     
     for(unsigned i=0 ; i < nmat ; i++)
@@ -39,37 +39,22 @@ void CMaterialTable::initNameIndex()
         G4Material* material = (*mtab)[i];
         G4String name_ = material->GetName() ;
         const char* name = name_.c_str();
+        const char* shortname =  m_prefix && strncmp(name, m_prefix, strlen(m_prefix)) == 0 ? name + strlen(m_prefix) : name ; 
 
-        if(strncmp(name, m_prefix, strlen(m_prefix)) == 0)
-        {
-            const char* shortname = name + strlen(m_prefix) ;
-            m_name2index[shortname] = i ;   
-            m_index2name[i] = shortname ;   
-        }
-        else
-        {
-            LOG(debug) << "CMaterialTable::init material with unexpected prefix " 
-                         << " name " << name
-                         << " prefix " << m_prefix 
-                         ; 
-        }
+        LOG(info) 
+            << " index " << std::setw(3) << i 
+            << " name " << std::setw(30) << name
+            << " shortname " << std::setw(30) << shortname
+            ;
+
+        m_name2index[shortname] = i ;   
+        m_index2name[i] = shortname ;   
     }
-
-    assert(m_name2index.size() == m_index2name.size());
 }
 
 void CMaterialTable::dump(const char* msg)
 {
     LOG(info) << msg << " prefix " << m_prefix ; 
-
-/*
-    typedef std::map<std::string, unsigned> MSU ; 
-    for(MSU::const_iterator it=m_name2index.begin() ; it != m_name2index.end() ; it++)
-        std::cout 
-             << std::setw(35) << it->first 
-             << std::setw(25) << it->second
-             << std::endl ; 
-*/
 
     typedef std::map<unsigned, std::string> MUS ; 
     for(MUS::const_iterator it=m_index2name.begin() ; it != m_index2name.end() ; it++)
@@ -91,7 +76,7 @@ void CMaterialTable::fillMaterialIndexMap( std::map<std::string, unsigned int>& 
     }
 }
 
-std::map<std::string, unsigned>& CMaterialTable::getMaterialMap()
+const std::map<std::string, unsigned>& CMaterialTable::getMaterialMap() const 
 {
    return m_name2index ;  
 }

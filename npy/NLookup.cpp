@@ -20,11 +20,11 @@ NLookup::NLookup()
 {
 }
 
-const std::map<std::string, unsigned int>& NLookup::getA()
+const std::map<std::string, unsigned>& NLookup::getA() const 
 {
     return m_A ; 
 }
-const std::map<std::string, unsigned int>& NLookup::getB()
+const std::map<std::string, unsigned>& NLookup::getB() const 
 {
     return m_B ; 
 }
@@ -41,7 +41,7 @@ void NLookup::mockA(const char* adir, const char* aname)
     mp["/dd/Materials/red"] = 10 ; 
     mp["/dd/Materials/green"] = 20 ; 
     mp["/dd/Materials/blue"] = 30 ; 
-    BMap<std::string, unsigned int>::save(&mp, adir, aname );
+    BMap<std::string, unsigned>::save(&mp, adir, aname );
 }
 void NLookup::mockB(const char* bdir, const char* bname)
 {
@@ -49,7 +49,7 @@ void NLookup::mockB(const char* bdir, const char* bname)
     mp["red"] = 1 ; 
     mp["green"] = 2 ; 
     mp["blue"] = 3 ; 
-    BMap<std::string, unsigned int>::save(&mp, bdir, bname );
+    BMap<std::string, unsigned>::save(&mp, bdir, bname );
 }
 
 
@@ -60,7 +60,7 @@ void NLookup::setA( const char* json )
 }
 
 
-void NLookup::setA( const std::map<std::string, unsigned int>& A, const char* aprefix, const char* alabel )
+void NLookup::setA( const std::map<std::string, unsigned>& A, const char* aprefix, const char* alabel )
 {
     assert(!m_closed);
 
@@ -87,7 +87,7 @@ void NLookup::setA( const std::map<std::string, unsigned int>& A, const char* ap
     }
 }
 
-void NLookup::setB( const std::map<std::string, unsigned int>& B, const char* bprefix, const char* blabel)
+void NLookup::setB( const std::map<std::string, unsigned>& B, const char* bprefix, const char* blabel)
 {
     assert(!m_closed);
 
@@ -113,7 +113,7 @@ void NLookup::setB( const std::map<std::string, unsigned int>& B, const char* bp
     }
 }
 
-std::string NLookup::brief()
+std::string NLookup::brief() const 
 {
     std::stringstream ss ; 
 
@@ -174,18 +174,17 @@ void NLookup::crossReference()
     m_B2A = create(m_B, m_A);
 }
 
-
-std::string NLookup::acode2name(unsigned int acode)
+std::string NLookup::acode2name(unsigned acode) const 
 {
     return find(m_A, acode);
 }
-std::string NLookup::bcode2name(unsigned int bcode)
+std::string NLookup::bcode2name(unsigned bcode) const 
 {
     return find(m_B, bcode);
 }
 
 
-void NLookup::dump(const char* msg)
+void NLookup::dump(const char* msg) const 
 {
     std::cout << msg
               << " A entries " <<  m_A.size() 
@@ -195,7 +194,7 @@ void NLookup::dump(const char* msg)
               ;
 
 
-    for(NLookup_t::iterator it=m_A2B.begin() ; it != m_A2B.end() ; it++)
+    for(NLookup_t::const_iterator it=m_A2B.begin() ; it != m_A2B.end() ; it++)
     {
         unsigned int acode = it->first ;  
         unsigned int bcode = it->second ;
@@ -206,41 +205,41 @@ void NLookup::dump(const char* msg)
 }
 
 
-std::map<unsigned int, unsigned int> NLookup::create(MSU& a, MSU&b)
+std::map<unsigned, unsigned> NLookup::create(MSU& a, MSU&b) const 
 {
     assert(m_closed);
     // cross referencing codes which correspond to the same names
     NLookup_t a2b_ ;
-    for(MSU::iterator ia=a.begin() ; ia != a.end() ; ia++)
+    for(MSU::const_iterator ia=a.begin() ; ia != a.end() ; ia++)
     {
         std::string aname = ia->first ;
-        unsigned int acode = ia->second ; 
+        unsigned acode = ia->second ; 
         if(b.find(aname) != b.end())
         {
-            unsigned int bcode = b[aname];
+            unsigned bcode = b.at(aname);
             a2b_[acode] = bcode ; 
         }
     }
     return a2b_ ; 
 }
 
-void NLookup::dumpMap(const char* msg, MSU& map)
+void NLookup::dumpMap(const char* msg, MSU& map) const 
 {
     printf("NLookup::dumpMap %s \n", msg);
-    for(MSU::iterator it=map.begin() ; it != map.end() ; it++)
+    for(MSU::const_iterator it=map.begin() ; it != map.end() ; it++)
     {
         std::string name = it->first ;
-        unsigned int code = it->second ; 
+        unsigned code = it->second ; 
         printf("   %25s : %u \n", name.c_str(), code);
     }
 }
 
-std::string NLookup::find(MSU& m, unsigned int code)
+std::string NLookup::find(const MSU& m, unsigned code) const 
 {
     std::string name ; 
-    for(MSU::iterator im=m.begin() ; im != m.end() ; im++)
+    for(MSU::const_iterator im=m.begin() ; im != m.end() ; im++)
     {
-        unsigned int mcode = im->second ; 
+        unsigned mcode = im->second ; 
         if(mcode == code)
         {
            name = im->first ;
@@ -250,19 +249,18 @@ std::string NLookup::find(MSU& m, unsigned int code)
     return name ; 
 }
 
-
-int NLookup::a2b(unsigned int a)
+int NLookup::a2b(unsigned a) const 
 {
     return lookup(m_A2B, a );
 }
-int NLookup::b2a(unsigned int b)
+int NLookup::b2a(unsigned b) const 
 {
     return lookup(m_B2A, b );
 }
-int NLookup::lookup(NLookup_t& lkup, unsigned int x)
+int NLookup::lookup(const NLookup_t& lkup, unsigned x) const 
 {
     assert(m_closed);
-    return lkup.find(x) == lkup.end() ? -1 : lkup[x] ;
+    return lkup.find(x) == lkup.end() ? -1 : lkup.at(x) ;
 }
 
 

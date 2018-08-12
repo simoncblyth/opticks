@@ -3,15 +3,19 @@
 #include <cstring>
 
 #include "BOpticksKey.hh"
+#include "NLookup.hpp"
 
 #include "CTraverser.hh"
+#include "CMaterialTable.hh"
 #include "CCollector.hh"
+
 #include "G4Opticks.hh"
 
 #include "Opticks.hh"
 #include "OpMgr.hh"
 
 #include "GGeo.hh"
+#include "GBndLib.hh"
 #include "X4PhysicalVolume.hh"
 
 #include "G4Material.hh"
@@ -55,10 +59,11 @@ G4Opticks::G4Opticks()
     m_world(NULL),
     m_ggeo(NULL),
     m_ok(NULL),
-    m_opmgr(NULL),
     m_traverser(NULL),
+    m_mtab(NULL),
     m_collector(NULL),
-    m_lookup(NULL)
+    m_lookup(NULL),
+    m_opmgr(NULL)
 {
     std::cout << "G4Opticks::G4Opticks" << std::endl ; 
     assert( fOpticks == NULL ); 
@@ -69,10 +74,14 @@ void G4Opticks::setGeometry(const G4VPhysicalVolume* world)
 {
     m_world = world ; 
     m_ggeo = translateGeometry( world );
+    m_blib = m_ggeo->getBndLib();  
     m_ok = m_ggeo->getOpticks(); 
 
-    NLookup* lookup = NULL ;  // TODO: come up with the lookup from GGeo/GBndLib without resorting to json maps m_lookup
-    m_collector = new CCollector(lookup); 
+    const char* prefix = NULL ; 
+    m_mtab = new CMaterialTable(prefix); 
+
+    setupMaterialLookup();
+    m_collector = new CCollector(m_lookup); 
 }
 
 GGeo* G4Opticks::translateGeometry( const G4VPhysicalVolume* top )
@@ -83,41 +92,56 @@ GGeo* G4Opticks::translateGeometry( const G4VPhysicalVolume* top )
     Opticks* ok = new Opticks(0,0, fEmbeddedCommandLine);  // Opticks instanciation must be after BOpticksKey::SetKey
     GGeo* gg = new GGeo(ok) ;
     X4PhysicalVolume xtop(gg, top) ;   // <-- populates gg 
+
+    GBndLib* blib = gg->getBndLib();
+    blib->fillMaterialLineMap();
+
     return gg ; 
+}
+
+void G4Opticks::setupMaterialLookup()
+{
+    const std::map<std::string, unsigned>& A = m_mtab->getMaterialMap() ;
+    const std::map<std::string, unsigned>& B = m_blib->getMaterialLineMapConst() ;
+ 
+    m_lookup = new NLookup ; 
+    m_lookup->setA(A,"","CMaterialTable");
+    m_lookup->setB(B,"","GBndLib");    // shortname eg "GdDopedLS" to material line mapping 
+    m_lookup->close(); 
 }
 
 
 void G4Opticks::collectCerenkovStep
-     (
-            G4int                id, 
-            G4int                parentId,
-            G4int                materialId,
-            G4int                numPhotons,
+    (
+        G4int                id, 
+        G4int                parentId,
+        G4int                materialId,
+        G4int                numPhotons,
     
-            G4double             x0_x,  
-            G4double             x0_y,  
-            G4double             x0_z,  
-            G4double             t0, 
+        G4double             x0_x,  
+        G4double             x0_y,  
+        G4double             x0_z,  
+        G4double             t0, 
 
-            G4double             deltaPosition_x, 
-            G4double             deltaPosition_y, 
-            G4double             deltaPosition_z, 
-            G4double             stepLength, 
+        G4double             deltaPosition_x, 
+        G4double             deltaPosition_y, 
+        G4double             deltaPosition_z, 
+        G4double             stepLength, 
 
-            G4int                pdgCode, 
-            G4double             pdgCharge, 
-            G4double             weight, 
-            G4double             meanVelocity, 
+        G4int                pdgCode, 
+        G4double             pdgCharge, 
+        G4double             weight, 
+        G4double             meanVelocity, 
 
-            G4double             betaInverse,
-            G4double             pmin,
-            G4double             pmax,
-            G4double             maxCos,
+        G4double             betaInverse,
+        G4double             pmin,
+        G4double             pmax,
+        G4double             maxCos,
 
-            G4double             maxSin2,
-            G4double             meanNumberOfPhotons1,
-            G4double             meanNumberOfPhotons2,
-            G4double             spare2
+        G4double             maxSin2,
+        G4double             meanNumberOfPhotons1,
+        G4double             meanNumberOfPhotons2,
+        G4double             spare2
     )
 {
     m_collector->collectCerenkovStep(
@@ -159,69 +183,9 @@ void G4Opticks::collectCerenkovStep
 
 
 
-void G4Opticks::BeginOfRunAction(const G4Run* aRun) 
-{
-    checkGeometry();
-    checkMaterials();
-    setupPropagator();
-}
-void G4Opticks::EndOfRunAction(const G4Run* aRun) 
-{
-    checkGeometry();
-}
-void G4Opticks::BeginOfEventAction(const G4Event* evt) 
-{
-    LOG(info) << " BeginOfEventAction " << evt->GetEventID() ; 
-}
-void G4Opticks::EndOfEventAction(const G4Event* evt) 
-{
-    LOG(info) << " EndOfEventAction " << evt->GetEventID() ; 
-    unsigned eventId = evt->GetEventID() ; 
-    propagate(eventId);
-}
 
-void G4Opticks::checkGeometry()
-{
-    G4VPhysicalVolume* world_pv = G4TransportationManager::GetTransportationManager()->GetNavigatorForTracking()->GetWorldVolume() ;
 
-    m_traverser = new CTraverser( m_ok, world_pv, NULL, NULL ); 
-    LOG(info) 
-        << " world_pv " << world_pv 
-        << " traverser " << m_traverser 
-        ; 
-
-    m_traverser->setVerbosity(5);
-    m_traverser->Traverse();     // both VolumeTree and Ancestor traverses
-}
-
-void G4Opticks::checkMaterials()
-{
-    const G4MaterialTable* mt = G4Material::GetMaterialTable();
-
-    std::stringstream ff; 
-    ff << "{" << std::endl;
-
-    for (G4MaterialTable::const_iterator it=mt->begin(); it != mt->end(); ++it) 
-    {
-          G4Material* material = *it ; 
-          const G4String& name = material->GetName() ; 
-          size_t index = material->GetIndex() ; 
-
-          m_mat_g[name] = index ;
-        
-          ff << '"' << name << '"' << ": " << index << ',' << std::endl;
-    }
-    ff << '"' << "ENDMAT" << '"' << ": 999999" << std::endl;
-    ff << "}" << std::endl;
-
-    std::string json_string = ff.str();
-    const char* json_str = json_string.c_str();
-
-    m_lookup = strdup(json_str);
-
-    LOG(info) << m_lookup ; 
-}
-
+/*
 
 void G4Opticks::setupPropagator()
 {
@@ -249,4 +213,4 @@ void G4Opticks::addGenstep( float* data, unsigned num_float )
     m_opmgr->addGenstep(data, num_float);
 }
 
-
+*/

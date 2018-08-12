@@ -123,7 +123,7 @@ CSurfaceBridge* CGeometry::getSurfaceBridge()
     return m_surface_bridge ; 
 }
 
-std::map<std::string, unsigned>& CGeometry::getMaterialMap()
+const std::map<std::string, unsigned>& CGeometry::getMaterialMap() const 
 {
     assert(m_material_table);
     return m_material_table->getMaterialMap();

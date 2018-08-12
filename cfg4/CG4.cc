@@ -290,7 +290,7 @@ void CG4::postinitialize()
 }
 
 
-std::map<std::string, unsigned>& CG4::getMaterialMap()
+const std::map<std::string, unsigned>& CG4::getMaterialMap() const 
 {
     return m_geometry->getMaterialMap();
 }

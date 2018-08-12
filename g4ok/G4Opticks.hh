@@ -6,11 +6,14 @@
 
 #include "G4OK_API_EXPORT.hh"
 
-
+class NLookup ; 
 class Opticks;
 class OpMgr;
 class GGeo ; 
+class GBndLib ; 
+
 class CTraverser ; 
+class CMaterialTable ; 
 class CCollector ; 
 
 class G4Run;
@@ -38,41 +41,32 @@ propagate and getHits
    called from EndOfEventAction 
 
 
-TODO
------
+Notes
+-------
 
-1. bring in the X4 direct translation 
-2. workout how to live boot the OpticksHub inside OpMgr with the directly translated geomtry 
-3. automate material mapping ? 
-  
-   * in CCollector the NLookup translates raw G4 materialIdx into a GBndLib texture line 
-     this is definitely needed : but it should be possible to entirely automate it 
-     from the direct geometry and thus get it out of the interface
+* :doc:`notes/issues/G4OK`
+
 
 **/
 
 class G4OK_API G4Opticks   
 {
-  private:
-    static const char* fEmbeddedCommandLine ; 
-  public:
-    static G4Opticks* GetOpticks();
-  public:
-    G4Opticks();
-    virtual ~G4Opticks();
-  public:
-    std::string desc();  
-  public:
-    // hmm : these are too generic : its better to inform the user whats happening 
-    virtual void BeginOfRunAction(const G4Run*);
-    virtual void EndOfRunAction(const G4Run*);
-    virtual void BeginOfEventAction(const G4Event*);
-    virtual void EndOfEventAction(const G4Event*);
-  public:
-    void setGeometry(const G4VPhysicalVolume* world); 
-    void addGenstep( float* data, unsigned num_float=4*6 );
-
-    void collectCerenkovStep(
+    private:
+        static const char* fEmbeddedCommandLine ; 
+    public:
+        static G4Opticks* GetOpticks();
+    public:
+        G4Opticks();
+        virtual ~G4Opticks();
+    public:
+        std::string desc();  
+    public:
+        void setGeometry(const G4VPhysicalVolume* world); 
+    private:
+        GGeo* translateGeometry( const G4VPhysicalVolume* top );
+        void setupMaterialLookup();
+    public:
+        void collectCerenkovStep(
             G4int                id, 
             G4int                parentId,
             G4int                materialId,
@@ -102,35 +96,20 @@ class G4OK_API G4Opticks
             G4double             meanNumberOfPhotons1,
             G4double             meanNumberOfPhotons2,
             G4double             spare2=0
-    );  
+        );  
 
-
-
-
-  private:
-    // invoked internally from BeginOfRun action 
-    void checkGeometry();
-    void checkMaterials();
-    void setupPropagator();
-
-  private:
-    GGeo* translateGeometry( const G4VPhysicalVolume* top );
-    void propagate(int eventId);
-
-  private:
-    const G4VPhysicalVolume*   m_world ; 
-    GGeo*                      m_ggeo ; 
-    Opticks*                   m_ok ;
-    OpMgr*                     m_opmgr;
-    CTraverser*                m_traverser ; 
-    CCollector*                m_collector ; 
-    const char*                m_lookup ; 
-    std::map<std::string, int> m_mat_g; // geant4 mat name: index
-    std::vector<int>           m_g2c; // mapping of mat idx: geant4 to opticks
-
-  private:
-     static G4Opticks*  fOpticks;
-
+    private:
+        const G4VPhysicalVolume*   m_world ; 
+        const GGeo*                m_ggeo ; 
+        const GBndLib*             m_blib ; 
+        Opticks*                   m_ok ;
+        CTraverser*                m_traverser ; 
+        CMaterialTable*            m_mtab ; 
+        CCollector*                m_collector ; 
+        NLookup*                   m_lookup ; 
+        OpMgr*                     m_opmgr;
+    private:
+        static G4Opticks*          fOpticks;
 
 };
 

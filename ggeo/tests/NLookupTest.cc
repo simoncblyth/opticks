@@ -1,3 +1,5 @@
+// TEST=NLookupTest om-t
+
 // ggv --lookup
 // ggv --jpmt --lookup
 
@@ -6,8 +8,7 @@
 #include "Opticks.hh"
 #include "GBndLib.hh"
 
-#include "GGEO_LOG.hh"
-#include "NPY_LOG.hh"
+#include "OPTICKS_LOG.hh"
 
 #include "GGEO_BODY.hh"
 #include "PLOG.hh"
@@ -61,32 +62,34 @@ defaults are used ?
 */
 
 
+
+
+
+
+
+
 int main(int argc, char** argv)
 {
-    PLOG_(argc, argv);
+    OPTICKS_LOG(argc, argv);
 
-    NPY_LOG__ ; 
-    GGEO_LOG__ ; 
 
-    Opticks* m_opticks = new Opticks(argc, argv);
-
-    GBndLib* blib = GBndLib::load(m_opticks, true );
-
+    // load GBndLib from cache and dump
+    Opticks* ok = new Opticks(argc, argv);
+    GBndLib* blib = GBndLib::load(ok, true );
     blib->dump();
+    blib->dumpMaterialLineMap("GBndLib.MaterialLineMap : texline to material name correspondence");
 
 
+    // load material name to index mapping from ChromaMaterialMap.json
+    // these these indices are used by some old gensteps 
     NLookup* m_lookup = new NLookup();
-
-    const char* cmmd = m_opticks->getDetectorBase() ;
-
+    const char* cmmd = ok->getDetectorBase() ;
     m_lookup->loadA( cmmd , "ChromaMaterialMap.json", "/dd/Materials/") ;
 
 
+
     const std::map<std::string, unsigned int>& B = blib->getMaterialLineMap() ;
-  
     m_lookup->setB(B,"","NLookupTest/blib");    // shortname eg "GdDopedLS" to material line mapping 
-
-
 
     m_lookup->close("ggeo-/NLookupTest");
 
@@ -97,7 +100,23 @@ int main(int argc, char** argv)
         int b = m_lookup->a2b(a);
         std::string aname = m_lookup->acode2name(a) ;
         std::string bname = m_lookup->bcode2name(b) ;
-        printf("  %3u -> %3d  ", a, b );
+
+        int c = b/4 ; 
+        int d = b - c*4 ; 
+
+        std::cout 
+            << " " 
+            << std::setw(3) << a 
+            << " -> " 
+            << std::setw(3) << b
+            << "   "
+            << "(" 
+            << std::setw(2) << c 
+            << "," 
+            << std::setw(1) << d 
+            <<  ")" 
+            ; 
+
 
         if(b < 0) 
         {
@@ -112,7 +131,7 @@ int main(int argc, char** argv)
         else
         {   
              assert(aname == bname);
-             printf(" %25s \n", aname.c_str() );
+             std::cout << " " << aname << std::endl ; 
         }   
     }   
 }

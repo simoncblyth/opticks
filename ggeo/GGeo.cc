@@ -361,7 +361,7 @@ void GGeo::dumpCathodeLV(const char* msg) const
 
 
 
-Opticks* GGeo::getOpticks()
+Opticks* GGeo::getOpticks() const 
 {
     return m_ok ; 
 }

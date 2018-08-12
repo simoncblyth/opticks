@@ -129,7 +129,7 @@ class CFG4_API CG4
         void preTrack();
         void postTrack();
    public:
-        std::map<std::string, unsigned>& getMaterialMap();        
+        const std::map<std::string, unsigned>& getMaterialMap() const ;        
    private:
         void init();
         void setUserInitialization(G4VUserDetectorConstruction* detector);

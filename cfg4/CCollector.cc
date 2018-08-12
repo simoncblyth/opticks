@@ -13,11 +13,11 @@ CCollector* CCollector::INSTANCE = NULL ;
 
 CCollector* CCollector::Instance()
 {
-   assert(INSTANCE && "CCollector needs to be instanciated with OpticksHub instance first");
+   assert(INSTANCE && "CCollector has not been instanciated");
    return INSTANCE ;
 }
 
-CCollector::CCollector(NLookup* lookup)    
+CCollector::CCollector(const NLookup* lookup)    
     :
     m_lookup(lookup),
     m_genstep(NPY<float>::make(0,6,4)),
@@ -33,34 +33,12 @@ CCollector::CCollector(NLookup* lookup)
 {
     assert( m_genstep_itemsize == 6*4 );
     assert( m_primary_itemsize == 4*4 );
-
+    assert( m_lookup && m_lookup->isClosed() ); 
     INSTANCE = this ; 
-
-    postinit();   
-    // closes Lookup only after CG4 has been able to override LookupA
 }
 
-void CCollector::postinit()
+int CCollector::translate(int acode) // raw G4 materialId translated into GBndLib material line for GPU usage 
 {
-    if(m_lookup == NULL) 
-    {
-        LOG(fatal) << " no lookup " ; 
-        return ; 
-    }
- 
-    m_lookup->close("CCollector::postinit closing lookup");
-    //m_lookup->dump("Collector::postinit closing lookup");
-}
-
-int CCollector::translate(int acode)
-{
-    if(!m_lookup) 
-    {
-        LOG(fatal) << " no lookup " ; 
-        return acode ; 
-    }
- 
-    // raw G4 materialId translated into GBndLib material line for GPU usage 
     int bcode = m_lookup->a2b(acode) ;
     return bcode ; 
 }
@@ -363,10 +341,5 @@ void CCollector::collectPrimary(
 
      m_primary->add(pr, m_primary_itemsize);
 }
-
-
-
-
-
 
  
