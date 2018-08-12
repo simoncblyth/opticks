@@ -3,7 +3,7 @@
 
 #include <cuda_gl_interop.h>
 #include "CResource.hh"
-#include "helper_cuda.h"
+#include "helper_cuda.h"   // for checkCudaErrors
 
 struct CResourceImp {
    unsigned int buffer_id ; 

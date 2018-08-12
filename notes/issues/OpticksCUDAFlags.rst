@@ -1,6 +1,34 @@
 CUDA config
 =============
 
+::
+
+    epsilon:opticks blyth$ o
+    M boostrap/CMakeLists.txt
+    M cmake/Modules/OpticksBuildOptions.cmake
+    M cudarap/CMakeLists.txt
+    M examples/ThrustOpenGLInterop/CMakeLists.txt
+    M examples/UseCUDARap/CMakeLists.txt
+    M examples/UseCUDARap/UseCUDARap.cc
+    M examples/UseOptiXProgram/CMakeLists.txt
+    M examples/UseOpticksCUDA/CMakeLists.txt
+    M okconf/CMakeLists.txt
+    M okop/CMakeLists.txt
+    M optickscore/CMakeLists.txt
+    M optixrap/CMakeLists.txt
+    M thrustrap/CMakeLists.txt
+    A cmake/Modules/OpticksCUDAFlags.cmake
+    A cmake/Modules/OpticksCXXFlags.cmake
+    A notes/issues/OpticksCUDAFlags.rst
+    A notes/issues/helper_cuda.rst
+    R cmake/Modules/OpticksCompilationFlags.cmake
+    epsilon:opticks blyth$ 
+    epsilon:opticks blyth$ 
+    epsilon:opticks blyth$ hg commit -m "split OpticksCompilationFlags.cmake into OpticksCXXFlags.cmake and OpticksCUDAFlags.cmake and include the OpticksCUDAFlags in OKConf generated TOPMATTER, removing need to do anything special for projs using CUDA : they just need to depend on OKConf package : see notes/issues/OpticksCUDAFlags.rst " 
+    epsilon:opticks blyth$ hg push 
+
+
+
 Formerly has to do something like the below in the CMakeLists.txt of 
 packages that use CUDA::
 

@@ -3,7 +3,7 @@
 
 #include "cuda.h"
 #include "driver_types.h"   // for cudaError_t
-#include "helper_cuda.h"
+#include "helper_cuda.h"    // for _cudaGetErrorEnum
 
 
 int main()
