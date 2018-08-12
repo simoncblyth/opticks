@@ -153,7 +153,7 @@ void Maker::convert()
     assert( converted == false );
     converted = true ; 
 
-    for(int i=0 ; i < sc->nodes.size() ; i++ )
+    for(int i=0 ; i < int(sc->nodes.size()) ; i++ )
     {
         Nd* nd = sc->nodes[i] ; 
 
@@ -195,7 +195,7 @@ void Maker::convert()
     the prim Pr object 
     */ 
 
-    for(int i=0 ; i < sc->prims.size() ; i++ )
+    for(int i=0 ; i < int(sc->prims.size()) ; i++ )
     {
         const Pr& pr = sc->prims[i] ; 
 
@@ -212,7 +212,7 @@ void Maker::convert()
     }
 
 
-    for(int i=0 ; i < sc->materials.size() ; i++ )
+    for(int i=0 ; i < int(sc->materials.size()) ; i++ )
     {
         Mt* mt = sc->materials[i] ; 
         int m = add_material(); 

@@ -107,7 +107,7 @@ void SSys::xxdump(char* buf, int num_bytes, int width, char non_printable )
              << " 'z' " << (int)'z'
              ;
 
-    for(unsigned i=0 ; i < num_bytes ; i++) 
+    for(int i=0 ; i < num_bytes ; i++) 
     {   
         char c = buf[i] ; 
         bool printable = c >= ' ' && c <= '~' ;  // https://en.wikipedia.org/wiki/ASCII

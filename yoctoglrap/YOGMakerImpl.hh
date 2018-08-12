@@ -46,37 +46,37 @@ struct Impl {
 
     scene_t& get_scene(int idx)
     {
-        assert( idx < gltf->scenes.size() );
+        assert( idx < int(gltf->scenes.size()) );
         return gltf->scenes[idx] ; 
     }
     node_t& get_node(int idx)
     {
-        assert( idx < gltf->nodes.size() );
+        assert( idx < int(gltf->nodes.size()) );
         return gltf->nodes[idx] ; 
     }
     mesh_t& get_mesh(int idx)
     {
-        assert( idx < gltf->meshes.size() );
+        assert( idx < int(gltf->meshes.size()) );
         return gltf->meshes[idx] ; 
     }
     buffer_t& get_buffer(int idx)
     {
-        assert( idx < gltf->buffers.size() );
+        assert( idx < int(gltf->buffers.size()) );
         return gltf->buffers[idx] ; 
     }
     bufferView_t& get_bufferView(int idx)
     {
-        assert( idx < gltf->bufferViews.size() );
+        assert( idx < int(gltf->bufferViews.size()) );
         return gltf->bufferViews[idx] ; 
     }
     accessor_t& get_accessor(int idx)
     {
-        assert( idx < gltf->accessors.size() );
+        assert( idx < int(gltf->accessors.size()) );
         return gltf->accessors[idx] ; 
     }
     material_t& get_material(int idx)
     {
-        assert( idx < gltf->materials.size() );
+        assert( idx < int(gltf->materials.size()) );
         return gltf->materials[idx] ; 
     }
 

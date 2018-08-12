@@ -32,7 +32,7 @@ void TF::convert()
     scene.nodes = { sc->root } ; 
     gltf->scenes = { scene } ;
 
-    for(int i=0 ; i < sc->nodes.size() ; i++ )
+    for(int i=0 ; i < int(sc->nodes.size()) ; i++ )
     {
         Nd* nd = sc->nodes[i] ; 
 
@@ -45,7 +45,7 @@ void TF::convert()
         gltf->nodes.push_back(node) ; 
     }
 
-    for(int i=0 ; i < sc->prims.size() ; i++ )
+    for(int i=0 ; i < int(sc->prims.size()) ; i++ )
     {
         const Pr& pr = sc->prims[i] ; 
         Mh* mh = sc->meshes[pr.lvIdx] ; 

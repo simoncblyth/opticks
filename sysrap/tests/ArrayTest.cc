@@ -40,7 +40,7 @@ int main(int argc, char** argv)
 
     arr[5] = new Demo("yo", 42) ; 
 
-    for(int i=0 ; i < arr.size() ; i++) LOG(info) << i << " : " << ( arr[i] ? arr[i]->desc() : "-" ) ; 
+    for(unsigned i=0 ; i < arr.size() ; i++) LOG(info) << i << " : " << ( arr[i] ? arr[i]->desc() : "-" ) ; 
 
     arr[10] = new Demo("hmm", 42) ; 
 

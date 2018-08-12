@@ -80,7 +80,7 @@ int Sc::lv2so(int lvIdx) const   // find local mesh index from the external lvId
 {
     int index(-1); 
     unsigned count(0); 
-    for(int i=0 ; i < meshes.size() ; i++)
+    for(int i=0 ; i < int(meshes.size()) ; i++)
     {
        const Mh* mh = meshes[i] ; 
        if(mh->lvIdx == lvIdx ) 
@@ -96,7 +96,7 @@ int Sc::lv2so(int lvIdx) const   // find local mesh index from the external lvId
 bool Sc::has_mesh(int lvIdx) const 
 {
     unsigned count(0); 
-    for(int i=0 ; i < meshes.size() ; i++)
+    for(int i=0 ; i < int(meshes.size()) ; i++)
     {
        const Mh* mh = meshes[i] ; 
        if(mh->lvIdx == lvIdx ) count++ ; 
@@ -110,7 +110,7 @@ int Sc::find_prim( int lvIdx, int mtIdx ) const  // return -1 if not present, or
 {
     unsigned count(0); 
     int prIdx = -1 ; 
-    for(int i=0 ; i < prims.size() ; i++)
+    for(int i=0 ; i < int(prims.size()) ; i++)
     {
        const Pr& pr = prims[i] ; 
        if(pr.lvIdx == lvIdx && pr.mtIdx == mtIdx ) 
@@ -186,7 +186,7 @@ int Sc::get_material_idx(const std::string& matName) const
 {
     int idx = -1 ; 
     unsigned count(0); 
-    for(int i=0 ; i < materials.size() ; i++)
+    for(int i=0 ; i < int(materials.size()) ; i++)
     {
         const Mt* mt = materials[i];
         if(strcmp(mt->name.c_str(), matName.c_str()) == 0) 
@@ -253,7 +253,7 @@ int Sc::add_node(int lvIdx,
 
 Nd* Sc::get_node(int nodeIdx) const 
 {
-    assert( nodeIdx < nodes.size() );
+    assert( nodeIdx < int(nodes.size()) );
     return nodes[nodeIdx] ;  
 }
 
@@ -271,7 +271,7 @@ Mh* Sc::get_mesh_for_node(int nodeIdx) const  // node->mesh association via nd->
 
 Mh* Sc::get_mesh(int lvIdx) const 
 {
-    assert( lvIdx < meshes.size() ) ; 
+    assert( lvIdx < int(meshes.size()) ) ; 
     Mh* mh = meshes[lvIdx];  
     assert( mh );
     return mh ;  

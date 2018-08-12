@@ -50,6 +50,32 @@ will probably work with older helpers.
     epsilon:opticks blyth$ 
 
 
+To test::
+
+   [blyth@localhost opticks]$ cd examples/UseOpticksCUDA
+   [blyth@localhost UseOpticksCUDA]$ ./go.sh 
+   ...
+
+    -- Found CUDA: /usr/local/cuda-9.2 (found version "9.2") 
+    -- Use examples/UseOpticksCUDA/CMakeLists.txt for testing FindOpticksCUDA.cmake
+    --   CUDA_TOOLKIT_ROOT_DIR   : /usr/local/cuda-9.2 
+    --   CUDA_SDK_ROOT_DIR       : CUDA_SDK_ROOT_DIR-NOTFOUND 
+    --   CUDA_VERSION            : 9.2 
+    --   HELPER_CUDA_INCLUDE_DIR : /usr/local/cuda-9.2/samples/common/inc 
+    --   PROJECT_SOURCE_DIR      : /home/blyth/opticks/examples/UseOpticksCUDA 
+    --   CMAKE_CURRENT_LIST_DIR  : /home/blyth/opticks/cmake/Modules 
+    -- FindOpticksCUDA.cmake:OpticksCUDA_VERBOSE      : ON 
+    -- FindOpticksCUDA.cmake:OpticksCUDA_FOUND        : YES 
+    -- FindOpticksCUDA.cmake:OpticksHELPER_CUDA_FOUND : YES 
+    -- FindOpticksCUDA.cmake:OpticksCUDA_API_VERSION  : 9020 
+    -- FindOpticksCUDA.cmake:CUDA_LIBRARIES           : /usr/local/cuda-9.2/lib64/libcudart_static.a;-lpthread;dl;/usr/lib64/librt.so 
+    -- FindOpticksCUDA.cmake:CUDA_INCLUDE_DIRS        : /usr/local/cuda-9.2/include 
+    -- FindOpticksCUDA.cmake:CUDA_curand_LIBRARY      : /usr/local/cuda-9.2/lib64/libcurand.so
+     key='CUDA_cudart_static_LIBRARY' val='/usr/local/cuda-9.2/lib64/libcudart_static.a' 
+     key='CUDA_curand_LIBRARY' val='/usr/local/cuda-9.2/lib64/libcurand.so' 
+
+    -- Configuring done
+
 
 
 
