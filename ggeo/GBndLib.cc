@@ -371,13 +371,13 @@ guint4 GBndLib::add( const char* spec, bool flip)
 }
 guint4 GBndLib::add( const char* omat_ , const char* osur_, const char* isur_, const char* imat_ )
 {
-    unsigned int omat = m_mlib->getIndex(omat_) ;
-    unsigned int osur = m_slib->getIndex(osur_) ;
-    unsigned int isur = m_slib->getIndex(isur_) ;
-    unsigned int imat = m_mlib->getIndex(imat_) ;
+    unsigned omat = m_mlib->getIndex(omat_) ;   // these are 0-based indices or UINT_MAX when no match
+    unsigned osur = m_slib->getIndex(osur_) ;
+    unsigned isur = m_slib->getIndex(isur_) ;
+    unsigned imat = m_mlib->getIndex(imat_) ;
     return add(omat, osur, isur, imat);
 }
-guint4 GBndLib::add( unsigned int omat , unsigned int osur, unsigned int isur, unsigned int imat )
+guint4 GBndLib::add( unsigned omat , unsigned osur, unsigned isur, unsigned imat )
 {
     guint4 bnd = guint4(omat, osur, isur, imat);
     add(bnd);

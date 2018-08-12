@@ -49,6 +49,14 @@ void Maker::SaveToGLTF(const NPY<float>* vtx, const NPY<unsigned>* idx, const ch
     int depth = 0 ; 
     nmat4triple* ltriple = NULL ; 
 
+    std::string lvName = "lvName" ; 
+    std::string soName = "soName" ; 
+
+    int soIdx = sc.add_mesh(lvIdx,  
+                            lvName,
+                            soName);
+    assert( soIdx == lvIdx ); 
+
     int ndIdx = sc.add_node(
                             lvIdx, 
                             materialIdx,
@@ -61,7 +69,8 @@ void Maker::SaveToGLTF(const NPY<float>* vtx, const NPY<unsigned>* idx, const ch
                             );
 
      assert( ndIdx == 0 ); 
-     YOG::Mh* mh = sc.get_mesh_for_node( ndIdx );
+
+     YOG::Mh* mh = sc.get_mesh( soIdx );
      mh->vtx = vtx ; 
      mh->idx = idx ; 
  

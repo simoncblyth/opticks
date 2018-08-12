@@ -19,6 +19,5 @@ int main(int argc, char** argv)
 
     xm->save("/tmp/X4MeshTest/X4MeshTest.gltf"); 
 
- 
     return 0 ; 
 }

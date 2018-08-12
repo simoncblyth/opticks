@@ -37,7 +37,7 @@ class GGEO_API GItemList : public NSequence {
        // fulfil NSequence protocol
        const char* getKey(unsigned index) const ;
        unsigned int getNumKeys() const ;
-       unsigned int getIndex(const char* key) const ;    // 0-based index of first matching name, OR INT_MAX if no match
+       unsigned int getIndex(const char* key) const ;    // 0-based index of first matching name, OR UINT_MAX if no match
     public:
        void setKey(unsigned int index, const char* newkey);
        static bool isUnset(unsigned int index);

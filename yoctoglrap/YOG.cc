@@ -262,12 +262,9 @@ Mh* Sc::get_mesh_for_node(int nodeIdx) const  // node->mesh association via nd->
     Nd* nd = get_node(nodeIdx) ;
     int prIdx = nd->prIdx ; 
     int lvIdx = prims[prIdx].lvIdx ;   
-    Mh* mh = meshes[lvIdx];  
-    assert( mh );
-    //assert( mh->soIdx == nd->soIdx );
+    Mh* mh = get_mesh(lvIdx); 
     return mh ;  
 }
-
 
 Mh* Sc::get_mesh(int lvIdx) const 
 {

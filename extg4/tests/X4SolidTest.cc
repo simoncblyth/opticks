@@ -62,7 +62,10 @@ void test_solid(G4VSolid* so)
 
     const char* path = "/tmp/X4SolidTest/GParts" ;
     cpts->save(path);
-    SSys::run(BStr::concat("prim.py ", path, NULL )); 
+
+    const char* cmdline = BStr::concat("prim.py ", path, NULL ); 
+    LOG(info) << "running : " << cmdline ; 
+    SSys::run(cmdline); 
 
 
     X4Mesh* xm = new X4Mesh(so) ; 
@@ -271,10 +274,10 @@ int main(int argc, char** argv)
     //test_G4Hype();
     //test_intersectWithPhiSegment();
     //test_union_of_two_differences();
-    //test_cathode();
+    test_cathode();
 
     //test_boolean();
-    test_boolean_displaced();
+    //test_boolean_displaced();
 
     return 0 ; 
 }

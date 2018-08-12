@@ -928,8 +928,12 @@ opticks-t-old-approach(){  cat << EOA
 EOA
 }
 
-
 opticks-tl()
+{
+   om-testlog
+}
+
+opticks-tl-old-approach()
 {
    local arg=$1
    if [ "${arg:0:1}" == "/" -a -d "$arg" ]; then

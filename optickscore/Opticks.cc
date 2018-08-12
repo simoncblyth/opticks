@@ -1056,6 +1056,7 @@ const char* Opticks::getSrcGLTFBase() const  // config base and name only used w
 {
     int gltf = getGLTF();
     const char* path = getSrcGLTFPath() ;
+    if(!path) return NULL ; 
     std::string base = gltf < 100 ? BFile::ParentDir(path) : m_cfg->getSrcGLTFBase() ;
     return strdup(base.c_str()) ; 
 }
@@ -1065,6 +1066,7 @@ const char* Opticks::getSrcGLTFName() const
 {
     int gltf = getGLTF();
     const char* path = getSrcGLTFPath() ;
+    if(!path) return NULL ; 
     std::string name = gltf < 100 ? BFile::Name(path) : m_cfg->getSrcGLTFName()  ;
     return strdup(name.c_str()) ; 
 }
@@ -1390,6 +1392,10 @@ void Opticks::Summary(const char* msg)
 
     m_resource->Summary(msg);
 
+    const char* srcgltfbase = getSrcGLTFBase() ;
+    const char* srcgltfname = getSrcGLTFName() ;
+
+
     std::cout
         << std::setw(40) << " isInternal "
         << std::setw(40) << isInternal()
@@ -1401,10 +1407,10 @@ void Opticks::Summary(const char* msg)
         << std::setw(40) << getAnalyticPMTMedium()
         << std::endl
         << std::setw(40) << " SrcGLTFBase "
-        << std::setw(40) << getSrcGLTFBase()
+        << std::setw(40) << ( srcgltfbase ? srcgltfbase : "-" )
         << std::endl
         << std::setw(40) << " SrcGLTFName "
-        << std::setw(40) << getSrcGLTFName()
+        << std::setw(40) << ( srcgltfname ? srcgltfname : "-" )
         << std::endl
         ;
 

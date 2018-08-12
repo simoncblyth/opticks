@@ -136,16 +136,26 @@ int main(int argc, char** argv)
         unsigned omat = bnd.x ; 
         unsigned osur = bnd.y ; 
         unsigned isur = bnd.z ; 
-        unsigned imat = bnd.w ; 
+        unsigned imat = bnd.w ;   // these are zero based indices, UINT_MAX for unset 
+
+        LOG(info) 
+            << " i "    << std::setw(3) << i
+            << " omat " << std::setw(3) << omat
+            << " osur " << std::setw(3) << osur
+            << " isur " << std::setw(3) << isur
+            << " imat " << std::setw(3) << imat
+            ;
 
         const G4Material* om = mbr->getG4Material(omat);
         const G4Material* im = mbr->getG4Material(imat);
+        assert(om) ; 
+        assert(im) ; 
 
-        const G4OpticalSurface* os = osur == INT_MAX ? NULL : sbr->getG4Surface(osur) ;
-        const G4OpticalSurface* is = isur == INT_MAX ? NULL : sbr->getG4Surface(isur) ;
+        const G4OpticalSurface* os = osur == UINT_MAX ? NULL : sbr->getG4Surface(osur) ;
+        const G4OpticalSurface* is = isur == UINT_MAX ? NULL : sbr->getG4Surface(isur) ;
 
         CMPT* ompt = new CMPT(om->GetMaterialPropertiesTable(), om->GetName().c_str()); 
-        CMPT* impt = new CMPT(im->GetMaterialPropertiesTable(), om->GetName().c_str()); 
+        CMPT* impt = new CMPT(im->GetMaterialPropertiesTable(), im->GetName().c_str()); 
         CMPT* ospt = os == NULL ? NULL : new CMPT(os->GetMaterialPropertiesTable(), os->GetName().c_str());
         CMPT* ispt = is == NULL ? NULL : new CMPT(is->GetMaterialPropertiesTable(), is->GetName().c_str());
          

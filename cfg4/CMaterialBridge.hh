@@ -2,6 +2,7 @@
 
 #include <string>
 #include <map>
+#include "plog/Severity.h"
 class GMaterialLib ;  
 
 #include "CFG4_API_EXPORT.hh"
@@ -43,6 +44,8 @@ class CFG4_API CMaterialBridge
         void initMap();
     private:
         GMaterialLib*   m_mlib ; 
+        plog::Severity  m_level ; 
+
         std::map<const G4Material*, unsigned> m_g4toix ; 
         std::map<unsigned int, std::string>   m_ixtoname ; 
         std::map<unsigned int, std::string>   m_ixtoabbr ; 

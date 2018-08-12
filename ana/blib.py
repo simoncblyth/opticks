@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
-import sys, os, numpy as np
+import sys, os, numpy as np, logging
+log = logging.getLogger(__name__)
 tx_load = lambda _:map(str.strip, open(_).readlines())
 
 class BLib(object):
@@ -18,8 +19,14 @@ class BLib(object):
         """
         elem = path.split("/")
         elen = map(len,elem)
-        digp = elen.index(32)   # digest has length of 32 
-        idpath = "/".join(elem[:digp+2])  # one past the digest 
+
+        try: 
+            digp = elen.index(32)   # digest has length of 32 
+            idpath = "/".join(elem[:digp+2])  # one past the digest 
+        except ValueError:
+            log.warning("failed to find_idpath from directory : fallback to envvar")
+            idpath = os.environ.get("IDPATH", None)
+        pass
         return idpath
 
     def __init__(self, idpath):
@@ -60,6 +67,8 @@ class BLib(object):
 
 
 if __name__ == '__main__':
+
+    logging.basicConfig(level=logging.INFO)
 
     bdir = sys.argv[1] if len(sys.argv) > 1 else os.environ["IDPATH"]
     blib = BLib.make(bdir)

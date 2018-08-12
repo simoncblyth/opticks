@@ -41,7 +41,8 @@ class Part(object):
         ntran = trans.shape[0]
         assert ntran > 0
 
-        #log.info( "Part : trans.shape %s " % repr(trans.shape))
+        log.info( "Part : trans.shape %s " % repr(trans.shape))
+        print "trans", trans 
 
         f = part.view(np.float32) 
         u = part.view(np.uint32)

@@ -48,7 +48,8 @@ void TF::convert()
     for(int i=0 ; i < int(sc->prims.size()) ; i++ )
     {
         const Pr& pr = sc->prims[i] ; 
-        Mh* mh = sc->meshes[pr.lvIdx] ; 
+
+        Mh* mh = sc->get_mesh(pr.lvIdx) ; 
 
         mesh_t mesh ; 
         mesh.name = mh->soName ;  
