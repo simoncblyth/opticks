@@ -162,7 +162,7 @@ Linker Visibility Warnings (FIXED?)
     This was likely caused by different translation units being compiled with different visibility settings.  [ 50%]
 
 
-Were still getting some of the above warning following addition of -fvisibility-inlines-hidden to OpticksCompilationFlags.cmake.
+Were still getting some of the above warning following addition of -fvisibility-inlines-hidden 
 Observed that only symbols three classes implicated::
 
    Clipper

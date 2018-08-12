@@ -3,19 +3,11 @@ set(name CUDARap)
 project(${name} VERSION 0.1.0)
 include(OpticksBuildOptions)      
 
-set(OKConf_VERBOSE ON)
-message(STATUS "${name}.finding OKConf")
-find_package(OKConf REQUIRED CONFIG)   
-message(STATUS "${name}.COMPUTE_CAPABILITY ${COMPUTE_CAPABILITY} ")
-
-
 set(FLAGS_VERBOSE ON)
-include(OpticksCompilationFlags)     ## repeating this here as nvcc flags require COMPUTE_CAPABILIY from OKConf     
 
 find_package(SysRap REQUIRED CONFIG)
 find_package(OpticksCUDA REQUIRED MODULE)
-
-## NB **NO BOOST** or pkgs with Boost in its ancestry : as nvcc barfs on it
+## NB **NO BOOST** or pkgs with Boost ancestry : as nvcc barfs on it
 
 #set(CUDARap_VERBOSE OFF)
 set(CUDARap_VERBOSE ON)

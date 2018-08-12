@@ -3,9 +3,7 @@ set(name OKOP)
 project(${name} VERSION 0.1.0)
 include(OpticksBuildOptions)   
 
-find_package(OKConf REQUIRED CONFIG)
-include(OpticksCompilationFlags)      
-
+set(FLAGS_VERBOSE ON)
 find_package(OptiXRap REQUIRED CONFIG)
 
 set(SOURCES

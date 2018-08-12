@@ -4,9 +4,6 @@ project(${name} VERSION 0.1.0)
 include(OpticksBuildOptions)
 set(ThrustRap_VERBOSE OFF)
 
-find_package(OKConf      REQUIRED CONFIG)
-include(OpticksCompilationFlags)
-
 find_package(OpticksCore REQUIRED CONFIG)
 find_package(CUDARap  REQUIRED CONFIG)
 

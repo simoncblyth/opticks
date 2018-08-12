@@ -3,9 +3,8 @@ set(name UseOptiXProgram)
 project(${name})
 include(OpticksBuildOptions)
 
-find_package(OKConf REQUIRED CONFIG)   
-include(OpticksCompilationFlags)     ## repeating this here as nvcc flags require COMPUTE_CAPABILIY from OKConf     
-find_package(OptiX MODULE QUIET)   
+find_package(OKConf      REQUIRED CONFIG)   
+find_package(OptiX       REQUIRED MODULE)   
 find_package(OpticksCUDA REQUIRED MODULE) 
 
 set(SOURCES

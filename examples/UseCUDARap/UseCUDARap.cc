@@ -5,7 +5,7 @@
 #include "LaunchSequence.hh"
 #include "cuRANDWrapper.hh"
 
-#include "PLOG.hh"
+#include "OPTICKS_LOG.hh"
 
 
 //#define WORK 1024*768
@@ -23,7 +23,7 @@ better how to split things between host compiler and nvcc ?).
 
 int main(int argc, char** argv)
 {
-    PLOG_(argc, argv);
+    OPTICKS_LOG(argc, argv);
 
     unsigned int work              = SSys::getenvint("CUDARAP_RNG_MAX", WORK) ;
     unsigned long long seed        = 0 ;
@@ -31,7 +31,7 @@ int main(int argc, char** argv)
     unsigned int max_blocks        = SSys::getenvint("MAX_BLOCKS", 128) ;
     unsigned int threads_per_block = SSys::getenvint("THREADS_PER_BLOCK", 256) ; 
 
-    const char* cachedir = SSys::getenvvar("CUDARAP_","RNG_DIR", "/tmp") ;
+    const char* cachedir = SSys::getenvvar("CUDARAP_RNG_DIR", "/tmp") ;
 
     LOG(info) 
           << " work " << work 

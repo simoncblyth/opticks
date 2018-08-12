@@ -157,7 +157,7 @@ Have been getting this warning for years::
     ld: warning: direct access in function 'boost::exception_detail::clone_impl<boost::exception_detail::error_info_injector<boost::bad_function_call> >::rethrow() const' from file 'CMakeFiles/BoostRap.dir/BStr.cc.o' to global weak symbol 'typeinfo for boost::exception_detail::clone_impl<boost::exception_detail::error_info_injector<boost::bad_function_call> >' from file 'CMakeFiles/BoostRap.dir/BCfg.cc.o' means the weak symbol cannot be overridden at runtime. This was likely caused by different translation units being compiled with different visibility settings.
     [ 34%] Built target BoostRap
 
-Avoided this warning by adding to OpticksCompilationFlags.cmake::
+Avoided this warning by adding to flags::
 
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fvisibility-inlines-hidden") ## avoid boostrap visibility warning at link
 

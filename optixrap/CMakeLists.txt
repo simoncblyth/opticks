@@ -3,11 +3,7 @@ set(name OptiXRap)
 project(${name} VERSION 0.1.0)
 include(OpticksBuildOptions)   
 
-find_package(OKConf REQUIRED CONFIG)
-include(OpticksCompilationFlags)   
-
 find_package(OptiX      REQUIRED MODULE)   
-
 find_package(OpticksGeo REQUIRED CONFIG)
 find_package(ThrustRap  REQUIRED CONFIG )
 

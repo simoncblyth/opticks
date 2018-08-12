@@ -96,6 +96,11 @@ if(OKConf_VERBOSE)
   message(STATUS \"\${CMAKE_CURRENT_LIST_FILE} : OptiX_INSTALL_DIR  : \${OptiX_INSTALL_DIR} \")
   message(STATUS \"\${CMAKE_CURRENT_LIST_FILE} : COMPUTE_CAPABILITY : \${COMPUTE_CAPABILITY} \")
 endif()
+
+include(OpticksCUDAFlags)
+
+## see notes/issues/OpticksCUDAFlags.rst
+
 " )
 
 

@@ -45,6 +45,9 @@ set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 #  find_package(OKConf     REQUIRED CONFIG)   
 #endif()
 
-include(OpticksCompilationFlags)   
+include(OpticksCXXFlags)   
+include(OpticksCUDAFlags)   
+
+
 
 
