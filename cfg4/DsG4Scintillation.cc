@@ -488,9 +488,9 @@ DsG4Scintillation::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
 
     G4int materialIndex = aMaterial->GetIndex();
 
-    G4PhysicsOrderedFreeVector* ReemissionIntegral = NULL;
-    ReemissionIntegral =
-        (G4PhysicsOrderedFreeVector*)((*theReemissionIntegralTable)(materialIndex));
+    //G4PhysicsOrderedFreeVector* ReemissionIntegral = NULL;
+    //ReemissionIntegral =
+    //    (G4PhysicsOrderedFreeVector*)((*theReemissionIntegralTable)(materialIndex));
 
     // Retrieve the Scintillation Integral for this material  
     // new G4PhysicsOrderedFreeVector allocated to hold CII's
