@@ -62,16 +62,3 @@ OpEngine
 
 
 
-OScene
-    hub is used to get to the geometry libs : twas thinking of hub as mediator to GGeo/GScene/...
-    but am aiming towards a single GGeo approach (and eliminating GScene) : so here the hub can be replaced
-    by the GGeoBase interface 
-
-OEvent 
-    GPU buffer control : only use of hub is getOpticks() and getEvent()
- 
-OPropagator
-    only use of hub is getOpticks()
-
-
-

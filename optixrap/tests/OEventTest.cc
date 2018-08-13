@@ -10,6 +10,7 @@
 #include "STimes.hh"
 #include "Opticks.hh"
 #include "OpticksHub.hh"
+#include "OpticksRun.hh"
 #include "OpticksGen.hh"
 #include "OpticksEvent.hh"
 #include "OpticksBufferControl.hh"
@@ -28,6 +29,8 @@ int main(int argc, char** argv)
     OPTICKS_LOG(argc, argv);    
 
     Opticks ok(argc, argv, "--machinery --compute");
+    OpticksRun* run = ok.getRun(); 
+
     OpticksHub hub(&ok);
 
 
@@ -42,7 +45,7 @@ int main(int argc, char** argv)
     OContext ctx(context, &ok, with_top);
     int entry = ctx.addEntry("OEventTest.cu.ptx", "OEventTest", "exception");
 
-    OEvent* oevt = new OEvent(&hub, &ctx);   
+    OEvent* oevt = new OEvent(&ok, &ctx);   
  
     bool prelaunch = false ; 
 
@@ -50,9 +53,8 @@ int main(int argc, char** argv)
     {
          NPY<float>* gs = gs0->clone();
 
-         hub.createEvent(i);
-
-         OpticksEvent* evt = hub.getEvent();
+         run->createEvent(i);
+         OpticksEvent* evt = run->getEvent();
 
          assert(evt->isMachineryType() && "--machinery type is forced as this writes incomplete OpticksEvents which would otherwise cause test failures for event reading tests" );
 

@@ -39,7 +39,6 @@ class NConfigurable ;
 OpMgr::OpMgr(Opticks* ok ) 
     :
     m_log(new SLog("OpMgr::OpMgr")),
-    //m_ok(new Opticks(argc, argv, argforced)),         
     m_ok(ok ? ok : Opticks::GetInstance()),         
     m_hub(new OpticksHub(m_ok)),            // immediate configure and loadGeometry 
     m_idx(new OpticksIdx(m_hub)),
@@ -50,9 +49,6 @@ OpMgr::OpMgr(Opticks* ok )
     m_count(0),
     m_opevt(NULL)
 {
-
-    //PLOG_COLOR(argc, argv);
-
     init();
     (*m_log)("DONE");
 }
@@ -104,6 +100,7 @@ void OpMgr::propagate()
          m_run->loadEvent(); 
 
          m_hub->target();           // if not Scene targetted, point Camera at gensteps of last created evt
+        // note that targetting is needed for pure compute not just viz, as snapshots are pure compute 
     }
     else if(ok.isEmbedded())
     {

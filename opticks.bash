@@ -970,25 +970,25 @@ opticks-t--()
 }
 
 
-opticks-findl(){ opticks-find $1 -l ; }
+opticks-findl(){ opticks-find "$1" -l ; }
 opticks-f(){ opticks-find $* ; }
 opticks-find(){
-   local str=${1:-ENV_HOME}
+   local str="${1:-ENV_HOME}"
    local opt=${2:--H}
 
    local iwd=$PWD
    opticks-scd
 
-   find . -name '*.sh' -exec grep $opt $str {} \;
-   find . -name '*.bash' -exec grep $opt $str {} \;
-   find . -name '*.cu' -exec grep $opt $str {} \;
-   find . -name '*.cc' -exec grep $opt $str {} \;
-   find . -name '*.hh' -exec grep $opt $str {} \;
-   find . -name '*.cpp' -exec grep $opt $str {} \;
-   find . -name '*.hpp' -exec grep $opt $str {} \;
-   find . -name '*.h' -exec grep $opt $str {} \;
-   find . -name '*.txt' -exec grep $opt $str {} \;
-   find . -name '*.py' -exec grep $opt $str {} \;
+   find . -name '*.sh' -exec grep $opt "$str" {} \;
+   find . -name '*.bash' -exec grep $opt "$str" {} \;
+   find . -name '*.cu' -exec grep $opt "$str" {} \;
+   find . -name '*.cc' -exec grep $opt "$str" {} \;
+   find . -name '*.hh' -exec grep $opt "$str" {} \;
+   find . -name '*.cpp' -exec grep $opt "$str" {} \;
+   find . -name '*.hpp' -exec grep $opt "$str" {} \;
+   find . -name '*.h' -exec grep $opt "$str" {} \;
+   find . -name '*.txt' -exec grep $opt "$str" {} \;
+   find . -name '*.py' -exec grep $opt "$str" {} \;
 
    #cd $iwd
 }
@@ -1555,4 +1555,7 @@ opticks-cmake-check(){
    ## see bin/CMakeLists.py for easier way of making such consistency checks 
 
 }
+
+opticks-pdoc(){ o ; vi okop/OKOP.rst opticksgeo/OKGEO.rst optixrap/OXRAP.rst thrustrap/THRAP.rst g4ok/G4OK.rst ; }
+
 

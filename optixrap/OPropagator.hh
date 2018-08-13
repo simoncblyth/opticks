@@ -31,7 +31,7 @@ Launch control
 #include "OXRAP_API_EXPORT.hh"
 class OXRAP_API OPropagator {
     public:
-        OPropagator( OpticksHub* hub, OEvent* oevt, OpticksEntry* entry); 
+        OPropagator( Opticks* ok, OEvent* oevt, OpticksEntry* entry); 
     public:
         void prelaunch();   
         void launch();
@@ -46,11 +46,10 @@ class OXRAP_API OPropagator {
         void setSize(unsigned width, unsigned height);
     private:
         SLog*                m_log ; 
-        OpticksHub*          m_hub ; 
+        Opticks*             m_ok ; 
         OEvent*              m_oevt ; 
         OContext*            m_ocontext ; 
         optix::Context       m_context ;
-        Opticks*             m_ok ; 
         OpticksCfg<Opticks>* m_cfg ; 
         ORng*                m_orng ; 
 

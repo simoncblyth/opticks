@@ -43,14 +43,13 @@ void OPropagator::setEntry(unsigned int entry_index)
     m_entry_index = entry_index;
 }
 
-OPropagator::OPropagator(OpticksHub* hub, OEvent* oevt, OpticksEntry* entry) 
+OPropagator::OPropagator(Opticks* ok, OEvent* oevt, OpticksEntry* entry) 
    :
     m_log(new SLog("OPropagator::OPropagator")),
-    m_hub(hub),
+    m_ok(ok),
     m_oevt(oevt),
     m_ocontext(m_oevt->getOContext()),
     m_context(m_ocontext->getContext()),
-    m_ok(hub->getOpticks()),
     m_cfg(m_ok->getCfg()),
     m_orng(new ORng(m_ok, m_ocontext)),
     m_override(m_cfg->getOverride()),

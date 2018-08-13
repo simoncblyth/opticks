@@ -3,8 +3,8 @@
 #include "OpZeroer.hh"
 
 #include "OpticksSwitches.h"
+#include "Opticks.hh"   
 #include "OpticksEvent.hh"   // okc-
-#include "OpticksHub.hh"    // okg-
 
 // npy-
 #include "Timer.hpp"
@@ -26,9 +26,9 @@
 
 #define TIMER(s) \
     { \
-       if(m_hub)\
+       if(m_ok)\
        {\
-          Timer& t = *(m_hub->getTimer()) ;\
+          Timer& t = *(m_ok->getTimer()) ;\
           t((s)) ;\
        }\
     }
@@ -36,9 +36,9 @@
 
 
 
-OpZeroer::OpZeroer(OpticksHub* hub, OEvent* oevt)  
+OpZeroer::OpZeroer(Opticks* ok, OEvent* oevt)  
    :
-     m_hub(hub),
+     m_ok(ok),
      m_oevt(oevt),
      m_ocontext(oevt->getOContext())
 {
@@ -65,7 +65,7 @@ void OpZeroer::zeroRecords()
 void OpZeroer::zeroRecordsViaOpenGL()
 {
 #ifdef WITH_RECORD
-    OpticksEvent* evt = m_hub->getEvent();
+    OpticksEvent* evt = m_ok->getEvent();
 
     NPY<short>* record = evt->getRecordData(); 
 

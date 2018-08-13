@@ -64,19 +64,20 @@ class OKOP_API OpEngine {
        void init();
        void initPropagation();
     private:
+       // ctor instanciated always
        SLog*                m_log ; 
        OpticksHub*          m_hub ; 
        Opticks*             m_ok ; 
        OScene*              m_scene ; 
        OContext*            m_ocontext ; 
+    private:
+       // conditionally instanciated in init, not for isLoad isTracer 
        OpticksEntry*        m_entry ; 
-
        OEvent*              m_oevt ; 
        OPropagator*         m_propagator ; 
        OpSeeder*            m_seeder ; 
        OpZeroer*            m_zeroer ; 
        OpIndexer*           m_indexer ; 
-       bool                 m_immediate ; 
 };
 
 

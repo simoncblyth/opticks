@@ -19,15 +19,9 @@
 #include "OScene.hh" 
 #include "OEvent.hh" 
 
-#include "OpSeeder.hh"   // opop-
+#include "OpSeeder.hh"   // okop-
 
-#include "SYSRAP_LOG.hh"
-#include "NPY_LOG.hh"
-#include "OKCORE_LOG.hh"
-#include "OXRAP_LOG.hh"
-#include "OKOP_LOG.hh"
-
-#include "PLOG.hh"
+#include "OPTICKS_LOG.hh"
 
 /**
 OpSeederTest
@@ -37,14 +31,7 @@ OpSeederTest
 
 int main(int argc, char** argv)
 {
-    PLOG_(argc, argv);    
-
-    SYSRAP_LOG__ ; 
-    NPY_LOG__ ; 
-    OKCORE_LOG__ ; 
-    OXRAP_LOG__ ; 
-    OKOP_LOG__ ; 
-
+    OPTICKS_LOG(argc, argv);    
 
     const char* forced = "--compute --trivial --multievent 2 --machinery" ;
     Opticks ok(argc, argv, forced );
@@ -61,9 +48,9 @@ int main(int argc, char** argv)
 
     OScene scene(&hub);
     OContext* octx = scene.getOContext();
-    OEvent oevt(&hub, octx );
-    OpSeeder  seeder(&hub, &oevt );
-    OPropagator propagator(&hub, &oevt, octx->addEntry(ok.getEntryCode()) );
+    OEvent oevt(&ok, octx );
+    OpSeeder  seeder(&ok, &oevt );
+    OPropagator propagator(&ok, &oevt, octx->addEntry(ok.getEntryCode()) );
 
     FabStepNPY* fab = gen->makeFabstep();
     NPY<float>* gs = fab->getNPY();

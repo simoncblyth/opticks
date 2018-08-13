@@ -15,7 +15,7 @@ class OpticksAttrSeq ;
 OpticksIdx
 ===========
 
-Wrapper around indexing functionality
+Wrapper around hostside(only?) indexing functionality
 
 
 */

@@ -11,6 +11,7 @@ template <typename T> class NPY ;
 TBuf
 =====
 
+CUDA single buffer operations : upload/download/reductions/slicing/dumping
 
 **/
 

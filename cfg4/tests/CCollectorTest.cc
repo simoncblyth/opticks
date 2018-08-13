@@ -1,6 +1,7 @@
 //#include "SProc.hh"
 #include "SSys.hh"
 
+#include "NLookup.hpp"
 #include "NGLM.hpp"
 #include "NPY.hpp"
 
@@ -36,12 +37,15 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv);
 
-    unsigned mock_num_evt = 100 ; 
+    unsigned mock_num_evt = 10 ; 
 
     Opticks ok(argc, argv);
     OpticksHub hub(&ok);
 
-    CCollector cc(hub.getLookup());
+    NLookup* lookup = hub.getLookup(); 
+    lookup->close(); 
+
+    CCollector cc(lookup);
     NPY<float>* gs = cc.getGensteps(); 
 
 

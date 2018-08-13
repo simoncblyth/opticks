@@ -35,11 +35,10 @@ OContext* OEvent::getOContext()
 // canonical single OEvent instance resides in OPropagator 
 // and is instanciated with OPropagator
 
-OEvent::OEvent(OpticksHub* hub, OContext* ocontext)
+OEvent::OEvent(Opticks* ok, OContext* ocontext)
    :
    m_log(new SLog("OEvent::OEvent")),
-   m_hub(hub),
-   m_ok(hub->getOpticks()),
+   m_ok(ok),
    m_mask(m_ok->getMaskBuffer()),
    m_ocontext(ocontext),
    m_context(ocontext->getContext()),
@@ -247,7 +246,7 @@ void OEvent::resizeBuffers(OpticksEvent* evt)
 
 unsigned OEvent::upload()
 {
-    OpticksEvent* evt = m_hub->getEvent();
+    OpticksEvent* evt = m_ok->getEvent();
     assert(evt); 
     return upload(evt) ;  
 }

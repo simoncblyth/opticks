@@ -6,7 +6,6 @@
 class SLog ; 
 class Opticks; 
 class OpticksEvent ; 
-class OpticksHub ; 
 class OContext ; 
 class OBuf ; 
 
@@ -29,6 +28,28 @@ are subsequently resized to correspond to the OpticksEvent.
 NB upload/download will only act on compute buffers, interop
 buffers are skipped within underlying OContext methods
 based on OpticksBufferControl settings.
+
+
+::
+
+    opticks-findl OEvent.hh
+
+    ./okop/OpSeeder.cc
+    ./okop/OpEngine.cc
+    ./okop/OpIndexerApp.cc
+    ./okop/OpZeroer.cc
+    ./okop/OpIndexer.cc
+    ./okop/tests/OpSeederTest.cc
+
+    ./optixrap/OPropagator.cc
+    ./optixrap/OEvent.cc
+
+    ./optixrap/CMakeLists.txt
+    ./optixrap/tests/OEventTest.cc
+    ./optixrap/oxrap.bash
+
+    ./ok/tests/VizTest.cc
+
 
 
 Necessary Buffers
@@ -72,7 +93,7 @@ class OXRAP_API OEvent
             DOWNLOAD_DEFAULT  = PHOTON | RECORD | SEQUENCE 
             };
     public:
-        OEvent(OpticksHub* hub, OContext* ocontext);
+        OEvent(Opticks* ok, OContext* ocontext);
         unsigned upload();
         unsigned download();
         void downloadPhotonData();
@@ -105,7 +126,6 @@ class OXRAP_API OEvent
         void download(OpticksEvent* evt, unsigned mask=DOWNLOAD_DEFAULT );
     private:
         SLog*           m_log ; 
-        OpticksHub*     m_hub ; 
         Opticks*        m_ok ; 
         NPY<unsigned>*  m_mask ; 
         OContext*       m_ocontext ; 

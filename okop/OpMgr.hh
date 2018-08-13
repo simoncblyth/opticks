@@ -14,19 +14,24 @@ class OpPropagator ;
 #include "OKOP_HEAD.hh"
 
 /*
-OpMgr
-======
+OpMgr : high level steering for compute only Opticks
+======================================================
 
-The highest of high level control, for compute only Opticks 
-(no viz, OpenGL).
-Used from primary applications such as *OpTest* (okop/tests/OpTest.cc)
+Only used from::
+
+    okop/tests/OpSnapTest
+    g4ok/G4Opticks
+
+
+Notice in propagate() repetition of the interplay between 
+OpPropagator.m_propagator and OpticksRun.m_run ... 
+perhaps factor out into OpKernel ?  
 
 */
 
 
 class OKOP_API OpMgr {
    public:
-       //OpMgr(int argc, char** argv, const char* argforced=0 );
        OpMgr(Opticks* ok );
        virtual ~OpMgr();
    public:

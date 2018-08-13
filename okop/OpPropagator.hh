@@ -15,10 +15,13 @@ class OpTracer ;
 #include "OKOP_HEAD.hh"
 
 /**
-OpPropagator : compute only okop- equivalent of the interop ok-/OKPropagator 
-=============================================================================
+OpPropagator : compute only propagator
+=========================================
+
+OpPropagator only used from OpMgr as m_propagator, ctor instanciated resident.
 
 
+Contrast with the viz enabled ok/OKPropagator
 
 
 **/

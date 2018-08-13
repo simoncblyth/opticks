@@ -46,10 +46,10 @@ void OpticksRun::createEvent(unsigned tagoffset)
     m_g4evt = m_ok->makeEvent(false, tagoffset) ;
     m_evt = m_ok->makeEvent(true, tagoffset) ;
 
+
     LOG(trace) << m_g4evt->brief() << " " << m_g4evt->getShapeString() ;  
     LOG(trace) << m_evt->brief() << " " << m_evt->getShapeString() ;  
   
-
     m_evt->setSibling(m_g4evt);
     m_g4evt->setSibling(m_evt);
 

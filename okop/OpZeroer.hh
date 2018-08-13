@@ -1,9 +1,8 @@
 #pragma once
 
-class OpticksHub ; 
+class Opticks ; 
 class OEvent ; 
 class OContext ; 
-
 
 // zeroes on GPU record buffer via OptiX or OpenGL
 
@@ -11,14 +10,14 @@ class OContext ;
 
 class OKOP_API OpZeroer {
    public:
-      OpZeroer(OpticksHub* hub, OEvent* oevt);
+      OpZeroer(Opticks* ok, OEvent* oevt);
    public:
       void zeroRecords();
    private:
       void zeroRecordsViaOpenGL();
       void zeroRecordsViaOptiX();
    private:
-      OpticksHub*              m_hub ;
+      Opticks*                 m_ok ;
       OEvent*                  m_oevt ;
       OContext*                m_ocontext ;
 };

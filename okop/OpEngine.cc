@@ -85,11 +85,11 @@ void OpEngine::init()
 void OpEngine::initPropagation()
 {
     m_entry = m_ocontext->addEntry(m_ok->getEntryCode()) ;
-    m_oevt = new OEvent(m_hub, m_ocontext);
-    m_propagator = new OPropagator(m_hub, m_oevt, m_entry);
-    m_seeder = new OpSeeder(m_hub, m_oevt) ;
-    m_zeroer = new OpZeroer(m_hub, m_oevt) ;
-    m_indexer = new OpIndexer(m_hub, m_oevt) ;
+    m_oevt = new OEvent(m_ok, m_ocontext);
+    m_propagator = new OPropagator(m_ok, m_oevt, m_entry);
+    m_seeder = new OpSeeder(m_ok, m_oevt) ;
+    m_zeroer = new OpZeroer(m_ok, m_oevt) ;
+    m_indexer = new OpIndexer(m_ok, m_oevt) ;
 }
 
 

@@ -5,12 +5,12 @@
 #include "OpticksSwitches.h"  
 #include "Opticks.hh"  
 #include "OpticksEvent.hh"  
-#include "OpticksHub.hh"    // okg-
+//#include "OpticksHub.hh"    // okg-
 
 #include "Timer.hpp"   // npy-
 #include "NPY.hpp"
 
-// cudawrap-
+// cudarap-
 #include "CResource.hh"
 #include "CBufSpec.hh"
 
@@ -28,10 +28,9 @@
 #include "PLOG.hh"
 
 
-OpSeeder::OpSeeder(OpticksHub* hub, OEvent* oevt)  
+OpSeeder::OpSeeder(Opticks* ok, OEvent* oevt)  
    :
-     m_hub(hub),
-     m_ok(hub->getOpticks()),
+     m_ok(ok),
      m_dbg(m_ok->hasOpt("dbgseed")),
      m_oevt(oevt),
      m_ocontext(oevt->getOContext())
@@ -55,7 +54,7 @@ void OpSeeder::seedPhotonsFromGensteps()
 #endif
     }    
 
-   // if(m_hub->hasOpt("onlyseed")) exit(EXIT_SUCCESS);
+   // if(m_ok->hasOpt("onlyseed")) exit(EXIT_SUCCESS);
 }
 
 void OpSeeder::seedComputeSeedsFromInteropGensteps()
@@ -63,7 +62,7 @@ void OpSeeder::seedComputeSeedsFromInteropGensteps()
 #ifdef WITH_SEED_BUFFER
     LOG(info)<<"OpSeeder::seedComputeSeedsFromInteropGensteps : WITH_SEED_BUFFER " ;
 
-    OpticksEvent* evt = m_hub->getEvent();
+    OpticksEvent* evt = m_ok->getEvent();
     assert(evt); 
 
     NPY<unsigned>* seedData =  evt->getSeedData() ;
@@ -95,7 +94,7 @@ void OpSeeder::seedPhotonsFromGenstepsViaOpenGL()
 {
     LOG(info)<<"OpSeeder::seedPhotonsFromGenstepsViaOpenGL" ;
 
-    OpticksEvent* evt = m_hub->getEvent();
+    OpticksEvent* evt = m_ok->getEvent();
     assert(evt); 
     NPY<float>* gensteps =  evt->getGenstepData() ;
     NPY<float>* photons  =  evt->getPhotonData() ;    // NB has no allocation and "uploaded" with glBufferData NULL
@@ -125,8 +124,22 @@ void OpSeeder::seedPhotonsFromGenstepsViaOpenGL()
 }
 
 
+/**
+OpSeeder::seedPhotonsFromGenstepsViaOptiX
+-------------------------------------------
 
+Access two GPU buffers via OEvent m_oevt and OBuf::
 
+1. genstep buffer
+2. seed buffer OR photon buffer  
+3. apply seedPhotonsFromGenstepsImp
+
+Seeding to the photon buf has the disadvantage that 
+you need to write to it as well as read, whereas when
+seeding to the seed buffer the photon buffer becomes 
+read only from CPU side.
+
+**/
 
 void OpSeeder::seedPhotonsFromGenstepsViaOptiX()
 {
@@ -164,8 +177,7 @@ void OpSeeder::seedPhotonsFromGenstepsViaOptiX()
 
 unsigned OpSeeder::getNumPhotonsCheck(const TBuf& tgs)
 {
-    OpticksEvent* evt = m_hub->getEvent();
-
+    OpticksEvent* evt = m_ok->getEvent();
     assert(evt); 
 
     NPY<float>* gensteps =  evt->getGenstepData() ;
@@ -190,7 +202,19 @@ unsigned OpSeeder::getNumPhotonsCheck(const TBuf& tgs)
 }
 
 
+/**
+OpSeeder::seedPhotonsFromGenstepsImp
+--------------------------------------
 
+1. create TBuf (Thrust buffer accessors) for the two buffers
+2. access CPU side gensteps from OpticksEvent
+3. check the photon counts from the GPU side gensteps match those from CPU side
+   (this implies that the event gensteps must have been uploaded to GPU already)
+4. create src(photon counts per genstep) and dst(genstep indices) buffer slices
+   with appropriate strides and offsets 
+5. use TBufPair::seedDestination which distributes genstep indices to every photon
+
+**/
 
 void OpSeeder::seedPhotonsFromGenstepsImp(const CBufSpec& s_gs, const CBufSpec& s_ox)
 {
@@ -204,7 +228,7 @@ void OpSeeder::seedPhotonsFromGenstepsImp(const CBufSpec& s_gs, const CBufSpec& 
     TBuf tox("tox", s_ox, " ");
     
 
-    OpticksEvent* evt = m_hub->getEvent();
+    OpticksEvent* evt = m_ok->getEvent();
     assert(evt); 
 
     NPY<float>* gensteps =  evt->getGenstepData() ;

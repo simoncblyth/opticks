@@ -254,6 +254,7 @@ Opticks::Opticks(int argc, char** argv, const char* argforced )
        m_domains_configured(false),
        m_mode(NULL),
        m_run(new OpticksRun(this)),
+       m_evt(NULL),
        m_ana(new OpticksAna(this)),
        m_dbg(new OpticksDbg(this)),
        m_rc(0),
@@ -634,13 +635,19 @@ OpticksRun* Opticks::getRun()
 {
     return m_run ;  
 }
-
-
+OpticksEvent* Opticks::getEvent() const 
+{
+    return m_run->getEvent()  ; 
+}
 
 Timer* Opticks::getTimer()
 {
-    return m_timer ; 
+    OpticksEvent* evt = m_run->getEvent();
+    return evt ? evt->getTimer() : m_timer ; 
 }
+
+
+
 NParameters* Opticks::getParameters()
 {
     return m_parameters ; 
@@ -1688,6 +1695,9 @@ OpticksEventSpec* Opticks::getEventSpec()
 {
     return m_spec ; 
 }
+
+
+
 
 OpticksEvent* Opticks::loadEvent(bool ok, unsigned tagoffset)
 {

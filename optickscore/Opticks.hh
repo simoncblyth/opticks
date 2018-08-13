@@ -366,6 +366,8 @@ class OKCORE_API Opticks {
        OpticksEvent*        loadEvent(bool ok=true, unsigned tagoffset=0); 
        BDynamicDefine*      makeDynamicDefine();
    public:
+       OpticksEvent*        getEvent() const ;   // from m_run
+   public:
        // load precooked indices
        Index*               loadHistoryIndex();
        Index*               loadMaterialIndex();
@@ -495,9 +497,14 @@ class OKCORE_API Opticks {
        //NB avoid duplication between here and OpticksCfg , only things that need more control need be here
 
        OpticksMode*         m_mode ; 
-       OpticksRun*          m_run ; 
+
+       OpticksRun*          m_run ;   // actually used for dual running 
+       OpticksEvent*        m_evt ; 
+
        OpticksAna*          m_ana ; 
        OpticksDbg*          m_dbg ; 
+
+
        int                  m_rc ; 
        const char*          m_rcmsg ; 
        unsigned             m_tagoffset ; 

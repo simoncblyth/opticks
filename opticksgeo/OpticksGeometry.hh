@@ -13,8 +13,8 @@ class GMesh ;
 class GMergedMesh ;
 
 /**
-OpticksGeometry
-================
+OpticksGeometry : GGeo holder/loader/fixer 
+============================================
 
 Actually OpticksGGeo would be a better name, this acts as a higher 
 level holder of GGeo with a triangulated (G4DAE) focus.  

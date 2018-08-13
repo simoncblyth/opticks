@@ -9,9 +9,6 @@
 #include "OpticksEvent.hh"
 #include "OpticksBufferControl.hh"
 
-// opticksgeo-
-#include "OpticksHub.hh"
-
 // npy-
 #include "PLOG.hh"
 #include "Timer.hpp"
@@ -30,37 +27,32 @@
 #include "OContext.hh"
 #include "OEvent.hh"
 
-// cudawrap-
+// cudarap-
 #include "CResource.hh"
 #include "CBufSpec.hh"
 
-//#ifdef WITH_OpIndexer_LOADED
 // thrust 
 #include <thrust/device_vector.h>
-//#endif
 
-
-// opticksop-
+// okop-
 #include "OpIndexer.hh"
 
 
 
 #define TIMER(s) \
     { \
-       if(m_hub)\
+       if(m_ok)\
        {\
-          Timer& t = *(m_hub->getTimer()) ;\
+          Timer& t = *(m_ok->getTimer()) ;\
           t((s)) ;\
        }\
     }
 
 
-OpIndexer::OpIndexer(OpticksHub* hub, OEvent* oevt)  
+OpIndexer::OpIndexer(Opticks* ok, OEvent* oevt)  
    :
-     m_hub(hub),
-     m_ok(hub->getOpticks()),
+     m_ok(ok),
      m_oevt(oevt),
-     m_opticks(hub->getOpticks()),
      m_evt(NULL),
      m_ocontext(oevt->getOContext()),
      m_seq(NULL),
@@ -89,7 +81,7 @@ void OpIndexer::setVerbose(bool verbose)
 
 void OpIndexer::update()
 {
-    m_evt = m_hub->getEvent();
+    m_evt = m_ok->getEvent();
     assert(m_evt) ;
 
     m_maxrec = m_evt->getMaxRec(); 
@@ -192,7 +184,7 @@ void OpIndexer::indexSequence()
 
     update();
 
-    if(m_evt->isIndexed() && !m_opticks->hasOpt("forceindex"))
+    if(m_evt->isIndexed() && !m_ok->hasOpt("forceindex"))
     {
         LOG(info) << "OpIndexer::indexSequence"
                   << " already indexed SKIP "
@@ -276,10 +268,9 @@ void OpIndexer::indexSequenceInterop()
 void OpIndexer::indexSequenceLoaded()
 {
     // starts from host based index
-//#ifdef WITH_OpIndexer_LOADED
 
     LOG(info) << "OpIndexer::indexSequenceLoaded" ; 
-    if(m_evt->isIndexed() && !m_opticks->hasOpt("forceindex")) 
+    if(m_evt->isIndexed() && !m_ok->hasOpt("forceindex")) 
     {
         LOG(info) << "OpIndexer::indexSequenceLoaded evt already indexed" ; 
         return ;  
@@ -313,8 +304,6 @@ void OpIndexer::indexSequenceLoaded()
     indexSequenceViaThrust(seqhis, seqmat, m_verbose );
 
     TIMER("indexSequenceLoaded"); 
-
-//#endif
 
 }
 

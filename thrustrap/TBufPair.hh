@@ -3,6 +3,19 @@
 #include "CBufSlice.hh"
 
 #include "THRAP_API_EXPORT.hh"
+
+/**
+TBufPair
+==========
+
+seedDestintion uses strided_range.h for src and dst buffers
+and iexpand.h  
+
+
+
+**/
+
+
 template <typename T>
 class THRAP_API TBufPair {
    public:

@@ -354,6 +354,14 @@ void OpticksHub::configureState(NConfigurable* scene)
     m_composition->setAnimatorPeriod(m_fcfg->getAnimatorPeriod()); 
 }
 
+/**
+OpticksHub::configureLookupA
+-----------------------------
+
+Invoked in init 
+
+**/
+
 void OpticksHub::configureLookupA()
 {
     const char* path = m_ok->getMaterialMap(); 
@@ -787,10 +795,9 @@ Bookmarks* OpticksHub::getBookmarks()
     return m_bookmarks ; 
 }
 
-Timer* OpticksHub::getTimer()
+Timer* OpticksHub::getTimer()  // timer is from current evt if exists already  
 {
-    OpticksEvent* evt = m_run->getEvent();
-    return evt ? evt->getTimer() : m_ok->getTimer() ; 
+    return m_ok->getTimer(); 
 }
 
 

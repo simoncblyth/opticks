@@ -64,7 +64,7 @@ unsigned G4StepNPY::getNumPhotonsTotal()
     return total ; 
 }
 
-unsigned* G4StepNPY::makePhotonSeedArray()
+unsigned* G4StepNPY::makePhotonSeedArray()   // there is some Thrust alternative to this ?
 {
     unsigned nstep = getNumSteps();
     unsigned nseed = getNumPhotonsTotal();

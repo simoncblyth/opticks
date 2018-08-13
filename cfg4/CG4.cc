@@ -17,8 +17,8 @@
 
 // npy-
 #include "NPY.hpp"
+#include "NLookup.hpp"
 #include "Timer.hpp"
-
 
 //ggeo-
 #include "GBndLib.hh"
@@ -279,12 +279,11 @@ void CG4::postinitialize()
 
     NLookup* lookup = m_hub->getLookup();
 
-    m_collector = new CCollector(lookup) ; // currently hub just used for material code lookup, not evt access
+    lookup->close() ;  // hmm what about B (from GBndLiB)  
 
+    m_collector = new CCollector(lookup) ; 
 
     if(m_ok->isG4Snap()) snap() ;
-
-
 
     LOG(info) << "CG4::postinitialize DONE" ;
 }

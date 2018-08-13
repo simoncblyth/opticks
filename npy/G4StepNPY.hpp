@@ -10,6 +10,19 @@ class NLookup ;
 
 #include "NPY_API_EXPORT.hh"
 
+/**
+G4StepNPY(NPY<float>* npy)
+=============================
+
+Wrapper for array of gensteps that understands the content, such as
+number of photons for each step etc...
+
+Used for m_g4step constituent of OpticksRun which is instanciated 
+by OpticksRun::importGenstepData
+
+
+**/
+
 class NPY_API G4StepNPY {
    public:  
         typedef std::set<unsigned int> Set_t ; 

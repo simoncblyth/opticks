@@ -10,13 +10,11 @@ find_package(OKOP   REQUIRED CONFIG)
 
 set(SOURCES
     G4Opticks.cc
-    G4OpticksGeometry.cc
 
     G4OK_LOG.cc
 )
 set(HEADERS
     G4Opticks.hh
-    G4OpticksGeometry.hh
     G4OpticksScintillationStep.hh
     G4OpticksCerenkovStep.hh
 
