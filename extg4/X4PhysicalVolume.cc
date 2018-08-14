@@ -88,7 +88,7 @@ X4PhysicalVolume::X4PhysicalVolume(GGeo* ggeo, const G4VPhysicalVolume* const to
     m_ggeo(ggeo),
     m_top(top),
     m_ok(m_ggeo->getOpticks()), 
-    m_lvsdname(strdup(m_ok->getLVSDName())),
+    m_lvsdname(m_ok->getLVSDName()),
     m_query(m_ok->getQuery()),
     m_gltfpath(m_ok->getGLTFPath()),
     m_g4codegen(m_ok->isG4CodeGen()),
@@ -143,6 +143,11 @@ void X4PhysicalVolume::convertSensors()
     convertSensors_r(m_top, 0); 
 
     unsigned num_clv = m_ggeo->getNumCathodeLV();
+    LOG(error) 
+         << " m_lvsdname " << m_lvsdname 
+         << " num_clv " << num_clv 
+         ;
+     
     unsigned num_bds = m_ggeo->getNumBorderSurfaces() ; 
     unsigned num_sks0 = m_ggeo->getNumSkinSurfaces() ; 
 
@@ -152,8 +157,6 @@ void X4PhysicalVolume::convertSensors()
     assert( num_bds == m_ggeo->getNumBorderSurfaces()  ); 
 
     LOG(error) 
-         << " m_lvsdname " << m_lvsdname 
-         << " num_clv " << num_clv 
          << " num_bds " << num_bds
          << " num_sks0 " << num_sks0
          << " num_sks1 " << num_sks1
@@ -167,9 +170,18 @@ void X4PhysicalVolume::convertSensors()
 X4PhysicalVolume::convertSensors_r
 -----------------------------------
 
-Collect (in m_ggeo) LV names that match strings 
-specified by m_lvsdname "LV sensitive detector name"
-eg something like "Cathode,cathode"   
+Sensors are identified by two approaches:
+
+1. logical volume having an associated sensitive detector G4VSensitiveDetector
+2. name of logical volume matching one of a comma delimited list 
+   of strings provided by the "LV sensitive detector name" option
+   eg  "--lvsdname Cathode,cathode,Sensor,SD" 
+
+The second approach is useful as a workaround when operating 
+with a GDML loaded geometry, as GDML does not yet(?) persist 
+the SD LV association.
+
+Names of sensitive LV are inserted into a set datastructure in GGeo. 
 
 **/
 
@@ -177,11 +189,20 @@ void X4PhysicalVolume::convertSensors_r(const G4VPhysicalVolume* const pv, int d
 {
     const G4LogicalVolume* const lv = pv->GetLogicalVolume();
     const char* lvname = lv->GetName().c_str(); 
-    bool is_lvsdname = BStr::Contains(lvname, m_lvsdname, ',' ) ;
+    G4VSensitiveDetector* sd = lv->GetSensitiveDetector() ; 
 
-    if(is_lvsdname)
+    bool is_lvsdname = m_lvsdname && BStr::Contains(lvname, m_lvsdname, ',' ) ;
+    bool is_sd = sd != NULL ; 
+
+    if( is_lvsdname || is_sd )
     {
         std::string name = BFile::Name(lvname); 
+        LOG(info) 
+            << " is_lvsdname " << is_lvsdname
+            << " is_sd " << is_sd
+            << " name " << name 
+            ;
+
         m_ggeo->addCathodeLV(name.c_str()) ;
     }  
 

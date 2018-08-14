@@ -21,8 +21,17 @@ GGeoSensor::AddSensorSurfaces
 See the similar AssimpGGeo::convertSensors from the old route
 This is invoked by X4PhysicalVolume::convertSensors in direct route.
 
-**/
+Hmm the material properties of the sensor are irrelevant currently, 
+but the surface properties are relevant (see oxrap/cu/propagate.h) 
+with 4 possibilities, with probabilities depending on the surface props:
 
+1. SURFACE_ABSORB
+2. SURFACE_DETECT
+3. SURFACE_DREFLECT diffuse
+4. SURFACE_SREFLECT specular  
+
+
+**/
 
 void GGeoSensor::AddSensorSurfaces( GGeo* gg )
 {
@@ -63,7 +72,6 @@ void GGeoSensor::AddSensorSurfaces( GGeo* gg )
             gss_raw->add(cathode_props);
             gg->addRaw(gss_raw);
         }  
-
     }
 }
 

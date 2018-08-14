@@ -23,16 +23,21 @@ G4Material* DetectorConstruction::MakeWater()
     G4int nelements;
     G4Element* O = new G4Element("Oxygen"  , "O", z=8 , a=16.00*CLHEP::g/CLHEP::mole);
     G4Element* H = new G4Element("Hydrogen", "H", z=1 , a=1.01*CLHEP::g/CLHEP::mole);
-    G4Material* water = new G4Material("Water", density= 1.0*CLHEP::g/CLHEP::cm3, nelements=2);
-    water->AddElement(H, 2);
-    water->AddElement(O, 1);
+    G4Material* mat = new G4Material("Water", density= 1.0*CLHEP::g/CLHEP::cm3, nelements=2);
+    mat->AddElement(H, 2);
+    mat->AddElement(O, 1);
 
-    G4MaterialPropertiesTable* mpt = new G4MaterialPropertiesTable();
     G4MaterialPropertyVector* ri = MakeWaterRI() ; 
     ri->SetSpline(false);
+
+    /*
+    G4MaterialPropertiesTable* mpt = new G4MaterialPropertiesTable();
     mpt->AddProperty("RINDEX", ri);
-    water->SetMaterialPropertiesTable(mpt);
-    return water ; 
+    mat->SetMaterialPropertiesTable(mpt);
+    */
+
+    AddProperty( mat, "RINDEX" , ri );  
+    return mat ; 
 }
 
 G4Material* DetectorConstruction::MakeAir()
@@ -42,16 +47,21 @@ G4Material* DetectorConstruction::MakeAir()
     G4Element* N = new G4Element("Nitrogen", "N", z=7 , a=14.01*CLHEP::g/CLHEP::mole);
     G4Element* O = new G4Element("Oxygen"  , "O", z=8 , a=16.00*CLHEP::g/CLHEP::mole);
 
-    G4Material* air = new G4Material("Air", density=1.29*CLHEP::mg/CLHEP::cm3, nelements=2);
-    air->AddElement(N, 70.*CLHEP::perCent);
-    air->AddElement(O, 30.*CLHEP::perCent);
+    G4Material* mat = new G4Material("Air", density=1.29*CLHEP::mg/CLHEP::cm3, nelements=2);
+    mat->AddElement(N, 70.*CLHEP::perCent);
+    mat->AddElement(O, 30.*CLHEP::perCent);
 
-    G4MaterialPropertiesTable* mpt = new G4MaterialPropertiesTable();
     G4MaterialPropertyVector* ri = MakeAirRI() ; 
     ri->SetSpline(false);
+
+    /*
+    G4MaterialPropertiesTable* mpt = new G4MaterialPropertiesTable();
     mpt->AddProperty("RINDEX", ri);
-    air->SetMaterialPropertiesTable(mpt);
-    return air ; 
+    mat->SetMaterialPropertiesTable(mpt);
+    */
+
+    AddProperty( mat, "RINDEX" , ri );  
+    return mat ; 
 }
 
 
@@ -67,27 +77,53 @@ G4Material* DetectorConstruction::MakeGlass()
     mat->AddElement(C,91.533*CLHEP::perCent);
     mat->AddElement(H,8.467*CLHEP::perCent);
 
-    G4MaterialPropertiesTable* mpt = new G4MaterialPropertiesTable();
     G4MaterialPropertyVector* ri = MakeGlassRI() ; 
     ri->SetSpline(false);
+
+/*
+    G4MaterialPropertiesTable* mpt = new G4MaterialPropertiesTable();
     mpt->AddProperty("RINDEX", ri);
     mat->SetMaterialPropertiesTable(mpt);
-
+*/
+    AddProperty( mat, "RINDEX" , ri );  
     return mat ; 
 }
 
+void DetectorConstruction::AddProperty( G4Material* mat , const char* name, G4MaterialPropertyVector* mpv )
+{
+    G4MaterialPropertiesTable* mpt = mat->GetMaterialPropertiesTable(); 
+    if( mpt == NULL ) mpt = new G4MaterialPropertiesTable();
+    mpt->AddProperty(name, mpv );   
+    mat->SetMaterialPropertiesTable(mpt) ;
+}  
+
+
+
+
+
 G4MaterialPropertyVector* DetectorConstruction::MakeGlassRI()
+{
+    return MakeConstantProperty(1.49) ; 
+}
+
+G4MaterialPropertyVector* DetectorConstruction::MakeConstantProperty(float value)
 {
     using CLHEP::eV ;
  
-    G4double photonEnergy[]   = { 2.034*eV , 2.885*eV, 4.136*eV };
-    G4double refractiveIndex[] ={  1.49   , 1.49   , 1.49    };     
+    G4double photonEnergy[]   = { 2.034*eV , 4.136*eV };
+    G4double propertyValue[] ={  value  , value    };     
 
-    assert(sizeof(photonEnergy) == sizeof(refractiveIndex));
+    assert(sizeof(photonEnergy) == sizeof(propertyValue));
     const G4int nEntries = sizeof(photonEnergy)/sizeof(G4double);
 
-    return new G4MaterialPropertyVector(photonEnergy, refractiveIndex,nEntries ); 
+    return new G4MaterialPropertyVector(photonEnergy, propertyValue,nEntries ); 
 }
+
+
+
+
+
+
 
 G4MaterialPropertyVector* DetectorConstruction::MakeWaterRI()
 {
@@ -146,7 +182,6 @@ G4MaterialPropertyVector* DetectorConstruction::MakeAirRI()
     return new G4MaterialPropertyVector(photonEnergy, refractiveIndex,nEntries ); 
 }
 
-
 G4VPhysicalVolume* DetectorConstruction::Construct()
 {
     G4Material* air = MakeAir(); 
@@ -161,6 +196,8 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
     assert( pv_1 ); 
 
     G4Material* glass = MakeGlass();    // slab of sensitive glass in the water 
+    AddProperty(glass, "EFFICIENCY", MakeConstantProperty(0.5)); 
+
     G4Box* so_2 = new G4Box("Det",400.,400.,10.);  // half sizes 
     G4LogicalVolume* lv_2 = new G4LogicalVolume(so_2,glass,"Det",0,0,0);
     G4VPhysicalVolume* pv_2 = new G4PVPlacement(0,G4ThreeVector(0,0,100.),lv_2 ,"Det",lv_1,false,0);

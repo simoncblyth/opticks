@@ -74,11 +74,13 @@ void OpMgr::setGensteps(NPY<float>* gensteps)
     m_gensteps = gensteps ; 
 }
 
-NPY<float>* OpMgr::getHits() const 
+OpticksEvent* OpMgr::getEvent() const 
 {
-    OpticksEvent* evt = m_run->getEvent(); 
-    return evt->getHitData(); 
+    return m_run->getEvent() ; 
 }
+
+
+
 
 void OpMgr::propagate()
 {
@@ -108,12 +110,19 @@ void OpMgr::propagate()
         if(!production) m_hub->anaEvent();
     }
 
+    m_ok->postpropagate();  // profiling 
+}
+
+
+void OpMgr::reset()
+{   
     m_run->resetEvent();
 
     // m_opevt->resetGensteps();  ???
-
-    m_ok->postpropagate();
 }
+
+
+
 
 
 void OpMgr::cleanup()

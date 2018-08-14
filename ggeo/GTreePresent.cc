@@ -105,12 +105,12 @@ void GTreePresent::write(const char* dir, const char* reldir)
 
     std::string txtpath = BFile::FormPath(dir, reldir, "GTreePresent.txt");
     const char* path = txtpath.c_str();
-    LOG(info) << "GTreePresent::write " << path ;  
+    LOG(debug) << "GTreePresent::write " << path ;  
     { 
         std::ofstream fp(path, std::ios::out );
         std::copy(m_flat.begin(), m_flat.end(), std::ostream_iterator<std::string>(fp, "\n"));
     }
-    LOG(info) << "GTreePresent::write " << path << "DONE"  ;  
+    LOG(debug) << "GTreePresent::write " << path << "DONE"  ;  
 
 }
 

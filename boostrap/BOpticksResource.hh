@@ -131,6 +131,7 @@ class BRAP_API  BOpticksResource {
        const char* getMetaPath() const ;
        const char* getIdMapPath() const ;
     public:
+       BOpticksKey* getKey() const ; 
   private:
         void init();
         void initInstallPrefix();

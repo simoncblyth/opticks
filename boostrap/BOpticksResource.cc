@@ -563,7 +563,10 @@ const char* BOpticksResource::getIdMapPath() const
     return m_idmappath ;
 }
 
-
+BOpticksKey*  BOpticksResource::getKey() const
+{
+    return m_key ; 
+}
 
 
 

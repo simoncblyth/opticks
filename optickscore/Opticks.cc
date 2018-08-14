@@ -531,7 +531,7 @@ const char* Opticks::getRenderMode() const
 const char* Opticks::getLVSDName() const 
 {
     const std::string& lvsdname = m_cfg->getLVSDName();
-    return lvsdname.c_str();
+    return lvsdname.empty() ? NULL : lvsdname.c_str();
 }
 const char* Opticks::getCathode() const 
 {
@@ -2045,7 +2045,7 @@ const char*     Opticks::getInstallPrefix() { return m_resource ? m_resource->ge
 
 bool             Opticks::SetKey(const char* spec) { return BOpticksKey::SetKey(spec) ; }
 BOpticksKey*     Opticks::GetKey() {                 return BOpticksKey::GetKey() ; }
-
+BOpticksKey*     Opticks::getKey() {                 return m_resource->getKey() ; }
 
 
 

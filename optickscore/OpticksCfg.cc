@@ -60,7 +60,8 @@ OpticksCfg<Listener>::OpticksCfg(const char* name, Listener* listener, bool live
        m_fxabconfig("0"),
        m_fxscconfig("0"),
        m_apmtslice(""),
-       m_lvsdname("PmtHemiCathode,HeadonPmtCathode"),
+       //m_lvsdname("PmtHemiCathode,HeadonPmtCathode"),
+       m_lvsdname(""),
        m_cathode("Bialkali"),
        m_epsilon(0.1f),     
        m_seed(42),     
@@ -700,9 +701,11 @@ void OpticksCfg<Listener>::init()
 
    char lvsdname[256]; 
    snprintf(lvsdname,256, 
-"Comma delimited string with substrings to search for in the logical volume names"
-" when found the volumes will be treated as sensitive detectors, see X4PhysicalVolume::convertSensors " 
-" Default %s ",  m_lvsdname.c_str() );
+"When lvsdname is blank logical volumes with an SD associated are used. "
+"As workaround for GDML not persisting the SD it is also possible to identify SD by their LV names, using this option. "
+"Provide a comma delimited string with substrings to search for in the logical volume names "
+"when found the volumes will be treated as sensitive detectors, see X4PhysicalVolume::convertSensors " 
+"Default %s ",  m_lvsdname.c_str() );
 
    m_desc.add_options()
        ("lvsdname",   boost::program_options::value<std::string>(&m_lvsdname), lvsdname ) ; 

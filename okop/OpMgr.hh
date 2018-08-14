@@ -6,6 +6,7 @@ class OpticksHub ;
 class OpticksGen ; 
 class OpticksRun ; 
 class OpticksIdx; 
+class OpticksEvent; 
 class OpEvt ;
 
 template <typename T> class NPY ; 
@@ -40,7 +41,8 @@ class OKOP_API OpMgr {
 
        void setGensteps(NPY<float>* gensteps); 
        void propagate();
-       NPY<float>* getHits() const ; 
+       OpticksEvent* getEvent() const ; 
+       void reset();
 
        void snap();
    private:

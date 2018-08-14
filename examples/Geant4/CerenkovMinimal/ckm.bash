@@ -12,8 +12,12 @@ ckm--(){ ckm-cd ; ./go.sh ; }
 
 
 
-ckm-key(){ echo CerenkovMinimal.X4PhysicalVolume.World.44ca65ec36cb6c03f465bc38ac5c5dd4 ; }
-ckm-idpath(){ echo $LOCAL_BASE/opticks/geocache/CerenkovMinimal_World_g4live/g4ok_gltf/44ca65ec36cb6c03f465bc38ac5c5dd4/1 ; }
+#ckm-dig(){ echo 44ca65ec36cb6c03f465bc38ac5c5dd4 ; }
+ckm-dig(){ echo 960713d973bd4be73b1b7d9aa4838c3e ; }
+
+ckm-key(){ echo CerenkovMinimal.X4PhysicalVolume.World.$(ckm-dig) ; }
+ckm-idpath(){ echo $LOCAL_BASE/opticks/geocache/CerenkovMinimal_World_g4live/g4ok_gltf/$(ckm-dig)/1 ; }
+
 ckm-evpath(){ echo /tmp/blyth/opticks/evt/g4live/natural/1 ; }
 
 ckm-load()

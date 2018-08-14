@@ -61,7 +61,7 @@ class G4OK_API G4Opticks
         G4Opticks();
         virtual ~G4Opticks();
     public:
-        std::string desc();  
+        std::string desc() const ;  
     public:
         void setGeometry(const G4VPhysicalVolume* world); 
         int propagateOpticalPhotons();

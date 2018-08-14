@@ -13,6 +13,7 @@
 #include "G4Opticks.hh"
 
 #include "Opticks.hh"
+#include "OpticksEvent.hh"
 #include "OpMgr.hh"
 
 #include "GGeo.hh"
@@ -30,12 +31,17 @@ G4Opticks* G4Opticks::fOpticks = NULL ;
 
 const char* G4Opticks::fEmbeddedCommandLine = " --gltf 3 --compute --save --embedded --natural " ; 
 
-std::string G4Opticks::desc()
+std::string G4Opticks::desc() const 
 {
+
+    BOpticksKey* key = m_ok ? m_ok->getKey() : NULL ; 
+
     std::stringstream ss ; 
     ss << "G4Opticks"
        << " ok " << m_ok 
        << " opmgr " << m_opmgr
+       << std::endl 
+       << ( key ? key->desc() : "NULL-key?" )
        ;
     return ss.str() ; 
 }
@@ -92,9 +98,10 @@ void G4Opticks::setGeometry(const G4VPhysicalVolume* world)
 
 GGeo* G4Opticks::translateGeometry( const G4VPhysicalVolume* top )
 {
-    const char* key = X4PhysicalVolume::Key(top) ; 
-    BOpticksKey::SetKey(key);
-    LOG(error) << " SetKey " << key  ;   
+    const char* keyspec = X4PhysicalVolume::Key(top) ; 
+    BOpticksKey::SetKey(keyspec);
+    LOG(error) << " SetKey " << keyspec  ;   
+
     Opticks* ok = new Opticks(0,0, fEmbeddedCommandLine);  // Opticks instanciation must be after BOpticksKey::SetKey
 
     GGeo* gg = new GGeo(ok) ;
@@ -120,7 +127,14 @@ int G4Opticks::propagateOpticalPhotons()
     m_gensteps = m_collector->getGensteps(); 
     m_opmgr->setGensteps(m_gensteps);      
     m_opmgr->propagate();
-    m_hits = m_opmgr->getHits(); 
+
+    OpticksEvent* event = m_opmgr->getEvent(); 
+    m_hits = event->getHitData()->clone() ; 
+
+    m_opmgr->reset();   
+    // clears OpticksEvent buffers,
+    // clone any buffers to be retained before the reset
+
     return m_hits ? m_hits->getNumItems() : -1 ;   
 }
 
@@ -128,11 +142,6 @@ NPY<float>* G4Opticks::getHits() const
 {
     return m_hits ; 
 }
-
-
-
-
-
 
 
 void G4Opticks::collectCerenkovStep

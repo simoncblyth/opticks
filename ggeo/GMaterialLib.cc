@@ -256,8 +256,8 @@ void GMaterialLib::add(GMaterial* mat)
         setCathode(mat) ; 
     }
 
-    bool with_efficiency = mat->hasProperty("efficiency") ; 
-    assert( !with_efficiency ); 
+    bool with_lowercase_efficiency = mat->hasProperty("efficiency") ; 
+    assert( !with_lowercase_efficiency ); 
 
     assert(!isClosed());
     m_materials.push_back(createStandardMaterial(mat)); 

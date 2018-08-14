@@ -106,6 +106,7 @@ class OKCORE_API Opticks {
    public:
        static BOpticksKey* GetKey();
        static bool         SetKey(const char* keyspec);
+       BOpticksKey*        getKey();  // non-static : the key actually in use, usually the same as GetKey()
    private:
        static Opticks*     fInstance ;  
    public:
