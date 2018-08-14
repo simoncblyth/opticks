@@ -3,7 +3,7 @@ om-vi(){ vi $(om-source) ; }
 om-env(){  olocal- ; opticks- ; }
 om-usage(){ cat << EOU
 
-OM : Opticks Mimimal Approach to Configuring and Building
+OM : Opticks Minimal Approach to Configuring and Building
 ===========================================================
 
 The below subproj functions configure, build, install or test 
