@@ -92,7 +92,7 @@ int main(int argc, char** argv)
     Opticks ok(argc, argv);
 
     // hmm geometry and mesh index dependant, 
-    // changes to repeat finding algo GTreeCheck will change 
+    // changes to repeat finding algo GInstancer will change 
     // indices and counts
 
     //unsigned index = 1 ;  //  zero-faces

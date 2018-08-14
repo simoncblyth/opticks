@@ -9,7 +9,7 @@ SLog::SLog(const char* label, const char* extra, plog::Severity level)
    m_extra(strdup(extra)),
    m_level(level)
 {
-    pLOG(m_level,-1) 
+    pLOG(m_level,0) 
         << m_label 
         << " " 
         << m_extra 

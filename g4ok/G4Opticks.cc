@@ -4,6 +4,7 @@
 
 #include "BOpticksKey.hh"
 #include "NLookup.hpp"
+#include "NPY.hpp"
 
 #include "CTraverser.hh"
 #include "CMaterialTable.hh"
@@ -63,7 +64,9 @@ G4Opticks::G4Opticks()
     m_mtab(NULL),
     m_collector(NULL),
     m_lookup(NULL),
-    m_opmgr(NULL)
+    m_opmgr(NULL),
+    m_gensteps(NULL),
+    m_hits(NULL)
 {
     std::cout << "G4Opticks::G4Opticks" << std::endl ; 
     assert( fOpticks == NULL ); 
@@ -82,6 +85,9 @@ void G4Opticks::setGeometry(const G4VPhysicalVolume* world)
 
     setupMaterialLookup();
     m_collector = new CCollector(m_lookup); 
+
+    // OpMgr instanciates OpticksHub which adopts the pre-existing m_ggeo instance just translated
+    m_opmgr = new OpMgr(m_ok) ;   
 }
 
 GGeo* G4Opticks::translateGeometry( const G4VPhysicalVolume* top )
@@ -90,11 +96,10 @@ GGeo* G4Opticks::translateGeometry( const G4VPhysicalVolume* top )
     BOpticksKey::SetKey(key);
     LOG(error) << " SetKey " << key  ;   
     Opticks* ok = new Opticks(0,0, fEmbeddedCommandLine);  // Opticks instanciation must be after BOpticksKey::SetKey
+
     GGeo* gg = new GGeo(ok) ;
     X4PhysicalVolume xtop(gg, top) ;   // <-- populates gg 
-
-    GBndLib* blib = gg->getBndLib();
-    blib->fillMaterialLineMap();
+    gg->postDirectTranslation(); 
 
     return gg ; 
 }
@@ -109,6 +114,25 @@ void G4Opticks::setupMaterialLookup()
     m_lookup->setB(B,"","GBndLib");    // shortname eg "GdDopedLS" to material line mapping 
     m_lookup->close(); 
 }
+
+int G4Opticks::propagateOpticalPhotons() 
+{
+    m_gensteps = m_collector->getGensteps(); 
+    m_opmgr->setGensteps(m_gensteps);      
+    m_opmgr->propagate();
+    m_hits = m_opmgr->getHits(); 
+    return m_hits ? m_hits->getNumItems() : -1 ;   
+}
+
+NPY<float>* G4Opticks::getHits() const 
+{
+    return m_hits ; 
+}
+
+
+
+
+
 
 
 void G4Opticks::collectCerenkovStep
@@ -185,32 +209,3 @@ void G4Opticks::collectCerenkovStep
 
 
 
-/*
-
-void G4Opticks::setupPropagator()
-{
-    // hmm this is using a pre-cached geometry : need to 
-    // form geometry digest and check if it matches the current G4 context geometry 
-    // and export if necessary 
-
-    // m_opmgr->snap(); // take raytrace snapshot of geometry 
-
-    //m_opmgr->setLookup(m_lookup);
-}
-void G4Opticks::propagate(int eventId)
-{
-    //std::stringstream ss;
-    //ss << "/tmp/output-genstep-" << eventId << ".npy";
-    //std::string name = ss.str();
-    //m_opmgr->saveEmbeddedGensteps(name.c_str());
-
-    //m_opmgr->propagate();
-}
-
-void G4Opticks::addGenstep( float* data, unsigned num_float ) 
-{
-    assert( num_float == 4*6 ); 
-    m_opmgr->addGenstep(data, num_float);
-}
-
-*/

@@ -44,15 +44,15 @@ class CFG4_API CCollector
    public:
          CCollector(const NLookup* lookup);  
    public:
-         NPY<float>*  getGensteps();
-         NPY<float>*  getPrimary();
+         NPY<float>*  getGensteps() const ;
+         NPY<float>*  getPrimary() const ;
    public:
-         std::string description();
-         void Summary(const char* msg="CCollector::Summary");
-         int translate(int acode);
+         std::string description() const ;
+         void Summary(const char* msg="CCollector::Summary") const  ;
+         int translate(int acode) const ;
    private:
          void setGensteps(NPY<float>* gs);
-         void consistencyCheck();
+         void consistencyCheck() const ;
    public:
          void collectScintillationStep(
             G4int                id, 

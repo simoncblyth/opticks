@@ -282,8 +282,8 @@ G4StepNPY* OpticksRun::importGenstepData(NPY<float>* gs, const char* oac_label)
     }
     else if(oac("GS_EMBEDDED"))
     {
-        std::cerr << "OpticksEvent::importGenstepData GS_EMBEDDED " << std::endl ; 
-        translateLegacyGensteps(g4step);
+        LOG(debug) << " GS_EMBEDDED collected direct gensteps assumed translated at collection  " << oac.description("oac") ; 
+        g4step->checklabel(CERENKOV, SCINTILLATION);
     }
     else if(oac("GS_TORCH"))
     {
@@ -338,7 +338,6 @@ bool OpticksRun::hasActionControl(NPYBase* npy, const char* label)
     return oac.isSet(label) ;
 } 
  
-
 void OpticksRun::translateLegacyGensteps(G4StepNPY* g4step)
 {
     NPY<float>* gs = g4step->getNPY();
@@ -346,23 +345,20 @@ void OpticksRun::translateLegacyGensteps(G4StepNPY* g4step)
     OpticksActionControl oac(gs->getActionControlPtr());
     bool gs_torch = oac.isSet("GS_TORCH") ; 
     bool gs_legacy = oac.isSet("GS_LEGACY") ; 
-    bool gs_embedded = oac.isSet("GS_EMBEDDED") ; 
+    //bool gs_embedded = oac.isSet("GS_EMBEDDED") ; 
 
-    if(!(gs_legacy || gs_embedded)) return ; 
+    if(!(gs_legacy)) return ; 
 
     assert(!gs_torch); // there are no legacy torch files ?
 
-
-    if(gs->isGenstepTranslated() && gs_legacy) // gs_embedded needs translation relabelling every time
+    if(gs->isGenstepTranslated() && gs_legacy)
     {
         LOG(warning) << "OpticksRun::translateLegacyGensteps already translated and gs_legacy  " ;
         return ; 
     }
 
-
     std::cerr << "OpticksRun::translateLegacyGensteps"
               << " gs_legacy " << ( gs_legacy ? "Y" : "N" )
-              << " gs_embedded " << ( gs_embedded ? "Y" : "N" )
               << std::endl 
               ;
 

@@ -9,10 +9,10 @@ template<class T> class NPY ;
 GTree
 =============
 
-Pulling out intended-to-be-common parts of GScene and GTreeCheck into GTree
+Pulling out intended-to-be-common parts of GScene and GInstancer into GTree
 to avoid duplicity issues. 
 
-Used by: GMergedMesh and GTreeCheck 
+Used by: GMergedMesh and GInstancer 
 
 Creates NPY buffers and populates with info from 
 the instance placements lists.

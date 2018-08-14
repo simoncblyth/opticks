@@ -47,7 +47,7 @@ class GSourceLib ;
 class GPmtLib ; 
 
 
-class GTreeCheck ;
+class GInstancer ;
 class GColorizer ; 
 
 class GItemIndex ; 
@@ -77,7 +77,7 @@ Primary Constituents
 
 Opticks
 Composition
-GTreeCheck
+GInstancer
 NLookup
 GMeshLib
 GGeoLib
@@ -159,6 +159,7 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
         void loadGeometry(); 
         void loadFromCache();
         void loadFromG4DAE();  // AssimpGGeo::load
+        void postDirectTranslation(); 
     private: 
         void loadAnalyticFromGLTF();
         void loadAnalyticFromCache();
@@ -173,6 +174,7 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
     public:
         // configureGeometry stage additions
     public:
+        bool isPrepared() const ; 
         void prepare();  // prepare is needed before saving to file or GPU upload by oxrap.OGeo
     public:
         void close();
@@ -342,7 +344,7 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
         void Details(const char* msg="GGeo::Details");
 
     public:
-        GTreeCheck* getTreeCheck();
+        GInstancer* getTreeCheck();
     public:
         void setPickFace(std::string pickface);
         void setPickFace(const glm::ivec4& pickface);
@@ -356,7 +358,7 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
         bool                          m_analytic ; 
         int                           m_gltf ; 
         Composition*                  m_composition ; 
-        GTreeCheck*                   m_treecheck ; 
+        GInstancer*                   m_instancer ; 
         bool                          m_loaded ;  
         bool                          m_prepared ;  
 

@@ -6,6 +6,8 @@
 
 #include "G4OK_API_EXPORT.hh"
 
+
+template <typename T> class NPY ; 
 class NLookup ; 
 class Opticks;
 class OpMgr;
@@ -62,6 +64,8 @@ class G4OK_API G4Opticks
         std::string desc();  
     public:
         void setGeometry(const G4VPhysicalVolume* world); 
+        int propagateOpticalPhotons();
+        NPY<float>* getHits() const ; 
     private:
         GGeo* translateGeometry( const G4VPhysicalVolume* top );
         void setupMaterialLookup();
@@ -108,6 +112,9 @@ class G4OK_API G4Opticks
         CCollector*                m_collector ; 
         NLookup*                   m_lookup ; 
         OpMgr*                     m_opmgr;
+    private:
+        NPY<float>*                m_gensteps ; 
+        NPY<float>*                m_hits ; 
     private:
         static G4Opticks*          fOpticks;
 

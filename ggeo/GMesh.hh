@@ -294,8 +294,8 @@ class GGEO_API GMesh : public GDrawable {
       void     dumpComponents(const char* msg="GMesh::dumpComponents") const ;
 
   public:
-      unsigned getNumTransforms() ;
-      unsigned getNumITransforms() ;
+      unsigned getNumTransforms() const ;
+      unsigned getNumITransforms() const ;
 
   public:
       // debug
@@ -378,7 +378,7 @@ class GGEO_API GMesh : public GDrawable {
       GBuffer* getNodeInfoBuffer() const ;
       GBuffer* getIdentityBuffer() const ;
   public:
-      // all instanced buffers created by GTreeCheck
+      // all instanced buffers created by GInstancer
       NPY<unsigned int>* getAnalyticInstancedIdentityBuffer() const ;
       NPY<float>*        getITransformsBuffer() const ;
       NPY<unsigned int>* getInstancedIdentityBuffer() const ; 
@@ -551,7 +551,7 @@ class GGEO_API GMesh : public GDrawable {
       GBuffer* m_nodeinfo_buffer ;
       GBuffer* m_identity_buffer ;
   private:
-      // instancing related  buffers created by GTreeCheck 
+      // instancing related  buffers created by GInstancer 
       NPY<float>*        m_itransforms_buffer ;
       NPY<unsigned>*     m_iidentity_buffer ;
       NPY<unsigned>*     m_aiidentity_buffer ; 

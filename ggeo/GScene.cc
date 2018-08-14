@@ -966,7 +966,7 @@ void GScene::makeMergedMeshAndInstancedBuffers()   // using m_geolib to makeMerg
               << "  num_ridx " << num_ridx 
               ;  
 
-    bool honour_selection = false ;   // in order to match GTreeCheck 
+    bool honour_selection = false ;   // in order to match GInstancer 
 
 
     for(unsigned ridx=0 ; ridx < num_ridx ; ridx++)

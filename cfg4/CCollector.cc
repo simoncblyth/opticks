@@ -37,13 +37,13 @@ CCollector::CCollector(const NLookup* lookup)
     INSTANCE = this ; 
 }
 
-int CCollector::translate(int acode) // raw G4 materialId translated into GBndLib material line for GPU usage 
+int CCollector::translate(int acode) const // raw G4 materialId translated into GBndLib material line for GPU usage 
 {
     int bcode = m_lookup->a2b(acode) ;
     return bcode ; 
 }
 
-NPY<float>*  CCollector::getGensteps()
+NPY<float>*  CCollector::getGensteps() const 
 {
     consistencyCheck() ;
     return m_genstep ; 
@@ -54,13 +54,13 @@ void CCollector::setGensteps(NPY<float>* gs)
     m_genstep = gs ; 
 }
 
-NPY<float>*  CCollector::getPrimary()
+NPY<float>*  CCollector::getPrimary() const 
 {
     return m_primary ; 
 }
 
 
-void CCollector::consistencyCheck()
+void CCollector::consistencyCheck() const 
 {
      unsigned numItems = m_genstep->getNumItems();
      bool consistent = numItems == m_scintillation_count + m_cerenkov_count + m_machinery_count ;
@@ -71,7 +71,7 @@ void CCollector::consistencyCheck()
      assert(consistent);
 }
 
-std::string CCollector::description()
+std::string CCollector::description() const
 {
     std::stringstream ss ; 
     ss << " CCollector "
@@ -85,7 +85,7 @@ std::string CCollector::description()
     return ss.str();
 }
 
-void CCollector::Summary(const char* msg)
+void CCollector::Summary(const char* msg) const 
 { 
     LOG(info) << msg 
               << description()

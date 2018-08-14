@@ -114,7 +114,7 @@ class GGEO_API GNode {
       //       the product of levelTransforms (ie single PV-LV transform)
       //       from ancestors + self
       // 
-      //       This can be verified for all nodes within GTreeCheck 
+      //       This can be verified for all nodes within GInstancer 
       //
       //
       GMatrixF*            calculateTransform();  

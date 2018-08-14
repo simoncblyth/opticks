@@ -227,13 +227,19 @@ void OGeo::convertMergedMesh(unsigned i)
 
     bool raylod = m_ok->isRayLOD() ; 
     if(raylod) 
-    LOG(warning) << " RayLOD enabled " ; 
+        LOG(warning) << " RayLOD enabled " ; 
     
-
-    if( mm == NULL || mm->isSkip() || mm->isEmpty() )
+    bool is_null = mm == NULL ; 
+    bool is_skip = mm->isSkip() ;  
+    bool is_empty = mm->isEmpty() ;  
+    
+    if( is_null || is_skip || is_empty )
     {
         LOG(warning) << "OGeo::convertMesh"
-                     << " skipping mesh " << i 
+                     << " not converting mesh " << i 
+                     << " is_null " << is_null
+                     << " is_skip " << is_skip
+                     << " is_empty " << is_empty
                      ;
         return  ; 
     }

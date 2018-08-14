@@ -98,7 +98,8 @@ X4PhysicalVolume::X4PhysicalVolume(GGeo* ggeo, const G4VPhysicalVolume* const to
     m_blib(m_ggeo->getBndLib()),
     m_xform(new nxform<X4Nd>(0,false)),
     m_verbosity(m_ok->getVerbosity()),
-    m_node_count(0)
+    m_node_count(0),
+    m_selected_node_count(0)
 {
     const char* msg = "GGeo ctor argument of X4PhysicalVolume must have mlib, slib and blib already " ; 
     assert( m_mlib && msg ); 
@@ -123,6 +124,7 @@ void X4PhysicalVolume::init()
     closeSurfaces();
     convertSolids();
     convertStructure();
+    convertCheck();
 }
 
 
@@ -485,6 +487,36 @@ void X4PhysicalVolume::dumpLV()
 }
 
 
+std::string X4PhysicalVolume::brief() const 
+{
+    std::stringstream ss ; 
+    ss
+        << " selected_node_count " << m_selected_node_count
+        << " node_count " << m_selected_node_count
+        ;
+
+    return ss.str(); 
+}
+
+
+void X4PhysicalVolume::convertCheck() const 
+{
+    bool no_nodes = m_selected_node_count == 0 || m_node_count == 0 ; 
+    if(no_nodes) 
+    {
+        LOG(fatal)
+            << " NO_NODES ERROR " 
+            << brief()
+            << std::endl
+            << " query " 
+            << m_query->desc()
+            ;
+        assert(0) ; 
+    }
+}
+
+
+
 /**
 convertStructure
 --------------------
@@ -497,6 +529,7 @@ used.
 * NB this is very similar to AssimpGGeo::convertStructure, GScene::createVolumeTree
 
 **/
+
 
 void X4PhysicalVolume::convertStructure()
 {
@@ -679,6 +712,7 @@ GVolume* X4PhysicalVolume::convertNode(const G4VPhysicalVolume* const pv, GVolum
 
      unsigned lvr_lvIdx = lvIdx ; 
      bool selected = m_query->selected(pvName.c_str(), ndIdx, depth, recursive_select, lvr_lvIdx );
+     if(selected) m_selected_node_count += 1 ;  
 
      LOG(trace) << " lv_lvIdx " << lvr_lvIdx
                 << " selected " << selected

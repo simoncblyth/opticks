@@ -18,6 +18,7 @@ class OXRAP_API OScintillatorLib : public OPropertyLib {
         void makeReemissionTexture(NPY<float>* buf);
     private:
         GScintillatorLib*    m_lib ;
+        NPY<float>*          m_placeholder ; 
 };
 
 

@@ -1,4 +1,4 @@
-
+//
 #include <vector>
 #include <climits>
 #include <iostream>
@@ -220,6 +220,15 @@ GMergedMesh* GMergedMesh::create(unsigned ridx, GNode* base, GNode* root, unsign
 
     // allocate space for flattened arrays
 
+    unsigned nvs = mm->getNumVolumesSelected() ; 
+    if( nvs == 0 )
+    {
+        LOG(fatal)
+           << "THERE ARE NO SELECTED VOLUMES FOR ridx " << ridx
+           <<  mm->brief()
+           ;
+    }
+
     if(verbosity > 1)
     LOG(info) << mm->brief() ; 
 
@@ -261,6 +270,7 @@ void GMergedMesh::traverse_r( GNode* node, unsigned int depth, unsigned int pass
          if(selected_ && csgskip) m_num_csgskip++ ; 
     }
 
+    
     if(verbosity > 1)
           LOG(info)
                   << "GMergedMesh::traverse_r"
@@ -299,7 +309,7 @@ void GMergedMesh::countVolume( GVolume* volume, bool selected, unsigned verbosit
         countMesh( mesh ); 
     }
 
-    if(m_verbosity > 1)
+    //if(m_verbosity > 1)
     LOG(info) << "GMergedMesh::count GVolume " 
               << " verbosity " << verbosity 
               << " selected " << selected
@@ -1076,5 +1086,34 @@ GMergedMesh* GMergedMesh::CreateQuadMesh(unsigned index, gbbox& bb ) // static
     return qmm ;   
 
 }
+
+
+
+std::string GMergedMesh::Desc(const GMergedMesh* mm)
+{
+    const char geocode = mm ? mm->getGeoCode() : '-' ;
+    unsigned numVolumes = mm ? mm->getNumVolumes() : -1 ;
+    unsigned numFaces = mm ? mm->getNumFaces() : -1 ;
+    unsigned numITransforms = mm ? mm->getNumITransforms() : -1 ;
+    unsigned index = mm->getIndex(); 
+
+    std::stringstream ss ; 
+    ss
+        << "mm" 
+        << " index " << std::setw(3) << index
+        << " geocode " << std::setw(3) << geocode 
+        << std::setw(5) << ( mm ? " " : "NULL" ) 
+        << std::setw(5) << ( mm && mm->isSkip(  ) ? "SKIP" : " " ) 
+        << std::setw(7) << ( mm && mm->isEmpty()  ? "EMPTY" : " " ) 
+        << " numVolumes " << std::setw(10) << numVolumes
+        << " numFaces  " << std::setw(10) << numFaces
+        << " numITransforms  " << std::setw(10) << numITransforms
+        << " numITransforms*numVolumes  " << std::setw(10) << numITransforms*numVolumes
+        ;   
+
+   return ss.str();
+}
+
+
 
 

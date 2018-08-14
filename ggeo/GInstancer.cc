@@ -21,7 +21,7 @@
 #include "GMatrix.hh"
 #include "GBuffer.hh"
 #include "GTree.hh"
-#include "GTreeCheck.hh"
+#include "GInstancer.hh"
 
 
 #include "PLOG.hh"
@@ -31,48 +31,48 @@
 // the below criteria are finding fewer repeats, for DYB only the hemi pmt
 // TODO: retune
 
-GTreeCheck::GTreeCheck(GGeoLib* geolib, GNodeLib* nodelib, NSceneConfig* config) 
-       :
-       m_log(new SLog("GTreeCheck::GTreeCheck")),
-       m_geolib(geolib),
-       m_verbosity(geolib->getVerbosity()),
-       m_nodelib(nodelib),
-       m_config(config),
-       m_repeat_min(config->instance_repeat_min),
-       m_vertex_min(config->instance_vertex_min),  // aiming to include leaf? sStrut and sFasteners
-       m_root(NULL),
-       m_count(0),
-       m_labels(0),
-       m_digest_count(new Counts<unsigned>("progenyDigest"))
+GInstancer::GInstancer(GGeoLib* geolib, GNodeLib* nodelib, NSceneConfig* config) 
+    : 
+    m_log(new SLog("GInstancer::GInstancer")),
+    m_geolib(geolib),
+    m_verbosity(geolib->getVerbosity()),
+    m_nodelib(nodelib),
+    m_config(config),
+    m_repeat_min(config->instance_repeat_min),
+    m_vertex_min(config->instance_vertex_min),  // aiming to include leaf? sStrut and sFasteners
+    m_root(NULL),
+    m_count(0),
+    m_labels(0),
+    m_digest_count(new Counts<unsigned>("progenyDigest"))
 {
 }
 
-unsigned int GTreeCheck::getNumRepeats()
+unsigned int GInstancer::getNumRepeats()
 {
     return m_repeat_candidates.size();
 }
 
-void GTreeCheck::setRepeatMin(unsigned int repeat_min)
+void GInstancer::setRepeatMin(unsigned int repeat_min)
 {
    m_repeat_min = repeat_min ; 
 }
-void GTreeCheck::setVertexMin(unsigned int vertex_min)
+void GInstancer::setVertexMin(unsigned int vertex_min)
 {
    m_vertex_min = vertex_min ; 
 }
 
 /**
-GTreeCheck::createInstancedMergedMeshes
+GInstancer::createInstancedMergedMeshes
 ------------------------------------------
 
 Canonical invokation from GGeo::prepareMeshes
 
 **/
 
-void GTreeCheck::createInstancedMergedMeshes(bool delta, unsigned verbosity)
+void GInstancer::createInstancedMergedMeshes(bool delta, unsigned verbosity)
 {
     //assert(0);  
-    Timer t("GTreeCheck::createInstancedMergedMeshes") ; 
+    Timer t("GInstancer::createInstancedMergedMeshes") ; 
     t.setVerbose(true);
     t.start();
 
@@ -100,7 +100,7 @@ void GTreeCheck::createInstancedMergedMeshes(bool delta, unsigned verbosity)
 
 
 
-void GTreeCheck::traverse()
+void GInstancer::traverse()
 {
     m_root = m_nodelib->getVolume(0);
     assert(m_root);
@@ -118,7 +118,7 @@ void GTreeCheck::traverse()
     dumpRepeatCandidates(20u);
 }
 
-void GTreeCheck::traverse_r( GNode* node, unsigned int depth)
+void GInstancer::traverse_r( GNode* node, unsigned int depth)
 {
     std::string& pdig = node->getProgenyDigest();
     m_digest_count->add(pdig.c_str());
@@ -128,7 +128,7 @@ void GTreeCheck::traverse_r( GNode* node, unsigned int depth)
 }
 
 
-void GTreeCheck::deltacheck()
+void GInstancer::deltacheck()
 {
     // check consistency of the level transforms
     m_root = m_nodelib->getVolume(0);
@@ -137,7 +137,7 @@ void GTreeCheck::deltacheck()
     deltacheck_r(m_root, 0);
 }
 
-void GTreeCheck::deltacheck_r( GNode* node, unsigned int depth)
+void GInstancer::deltacheck_r( GNode* node, unsigned int depth)
 {
     GVolume* volume = dynamic_cast<GVolume*>(node) ;
     GMatrixF* gtransform = volume->getTransform();
@@ -155,7 +155,7 @@ void GTreeCheck::deltacheck_r( GNode* node, unsigned int depth)
 
     if(nprogeny > 0 ) 
             LOG(debug) 
-              << "GTreeCheck::deltacheck " 
+              << "GInstancer::deltacheck " 
               << " #progeny "  << std::setw(6) << nprogeny 
               << " delta*1e6 " << std::setprecision(6) << std::fixed << delta*1e6 
               << " name " << node->getName() 
@@ -229,7 +229,7 @@ struct GRepeat
 //  allowing leaf repeaters results in too many, so place vertex count reqirement too 
 
 
-void GTreeCheck::findRepeatCandidates(unsigned int repeat_min, unsigned int vertex_min)
+void GInstancer::findRepeatCandidates(unsigned int repeat_min, unsigned int vertex_min)
 {
     unsigned int nall = m_digest_count->size() ; 
     std::vector<GRepeat> cands ; 
@@ -264,7 +264,7 @@ void GTreeCheck::findRepeatCandidates(unsigned int repeat_min, unsigned int vert
     unsigned dmax = 20u ;  
 
 
-    LOG(info) << "GTreeCheck::findRepeatCandidates"
+    LOG(info) << "GInstancer::findRepeatCandidates"
               << " nall " << nall 
               << " repeat_min " << repeat_min 
               << " vertex_min " << vertex_min 
@@ -285,13 +285,13 @@ void GTreeCheck::findRepeatCandidates(unsigned int repeat_min, unsigned int vert
 
 }
 
-bool GTreeCheck::operator()(const std::string& dig)  
+bool GInstancer::operator()(const std::string& dig)  
 {
     bool cr = isContainedRepeat(dig, 3);
  
     if(cr && m_verbosity > 2) 
          LOG(info) 
-                  << "GTreeCheck::operator() "
+                  << "GInstancer::operator() "
                   << " pdig "  << std::setw(32) << dig  
                   << " disallowd as isContainedRepeat "
                   ;
@@ -299,7 +299,7 @@ bool GTreeCheck::operator()(const std::string& dig)
     return cr ;  
 } 
 
-bool GTreeCheck::isContainedRepeat( const std::string& pdig, unsigned int levels ) const 
+bool GInstancer::isContainedRepeat( const std::string& pdig, unsigned int levels ) const 
 {
     // for the first node that matches the *pdig* progeny digest
     // look back *levels* ancestors to see if any of the immediate ancestors 
@@ -323,10 +323,10 @@ bool GTreeCheck::isContainedRepeat( const std::string& pdig, unsigned int levels
 } 
 
 
-void GTreeCheck::dumpRepeatCandidates(unsigned dmax)
+void GInstancer::dumpRepeatCandidates(unsigned dmax)
 {
     unsigned num_repcan = m_repeat_candidates.size() ; 
-    LOG(info) << "GTreeCheck::dumpRepeatCandidates" 
+    LOG(info) << "GInstancer::dumpRepeatCandidates" 
               << " num_repcan " << num_repcan
               << " dmax " << dmax
                ;
@@ -334,7 +334,7 @@ void GTreeCheck::dumpRepeatCandidates(unsigned dmax)
 }
 
 
-void GTreeCheck::dumpRepeatCandidate(unsigned int index, bool verbose)
+void GInstancer::dumpRepeatCandidate(unsigned int index, bool verbose)
 {
     std::string pdig = m_repeat_candidates[index];
     unsigned int ndig = m_digest_count->getCount(pdig.c_str());
@@ -365,7 +365,7 @@ void GTreeCheck::dumpRepeatCandidate(unsigned int index, bool verbose)
     }
 }
 
-unsigned int GTreeCheck::getRepeatIndex(const std::string& pdig )
+unsigned int GInstancer::getRepeatIndex(const std::string& pdig )
 {
     // repeat index corresponding to a digest
      unsigned int index(0);
@@ -373,7 +373,7 @@ unsigned int GTreeCheck::getRepeatIndex(const std::string& pdig )
      if(it != m_repeat_candidates.end())
      {
          index = std::distance(m_repeat_candidates.begin(), it ) + 1;  // 1-based index
-         LOG(debug)<<"GTreeCheck::getRepeatIndex " 
+         LOG(debug)<<"GInstancer::getRepeatIndex " 
                   << std::setw(32) << pdig 
                   << " index " << index 
                   ;
@@ -383,7 +383,7 @@ unsigned int GTreeCheck::getRepeatIndex(const std::string& pdig )
 
 
 
-void GTreeCheck::labelTree()
+void GInstancer::labelTree()
 {
     m_labels = 0 ; 
 
@@ -401,15 +401,15 @@ void GTreeCheck::labelTree()
          }
     }
 
-    LOG(info)<<"GTreeCheck::labelTree count of non-zero setRepeatIndex " << m_labels ; 
+    LOG(info)<<"GInstancer::labelTree count of non-zero setRepeatIndex " << m_labels ; 
 }
 
-void GTreeCheck::labelTree_r( GNode* node, unsigned int ridx)
+void GInstancer::labelTree_r( GNode* node, unsigned int ridx)
 {
     node->setRepeatIndex(ridx);
     if(ridx > 0)
     {
-         LOG(debug)<<"GTreeCheck::labelTree "
+         LOG(debug)<<"GInstancer::labelTree "
                   << " ridx " << std::setw(5) << ridx
                   << " n " << node->getName()
                   ;
@@ -419,7 +419,7 @@ void GTreeCheck::labelTree_r( GNode* node, unsigned int ridx)
 }
 
 
-std::vector<GNode*> GTreeCheck::getPlacements(unsigned int ridx)
+std::vector<GNode*> GInstancer::getPlacements(unsigned int ridx)
 {
     std::vector<GNode*> placements ;
     if(ridx == 0)
@@ -437,7 +437,7 @@ std::vector<GNode*> GTreeCheck::getPlacements(unsigned int ridx)
     return placements ; 
 }
 
-GNode* GTreeCheck::getRepeatExample(unsigned int ridx)
+GNode* GInstancer::getRepeatExample(unsigned int ridx)
 {
     std::vector<GNode*> placements = getPlacements(ridx);
     std::string pdig = m_repeat_candidates[ridx-1];
@@ -447,7 +447,15 @@ GNode* GTreeCheck::getRepeatExample(unsigned int ridx)
 }
 
 
-void GTreeCheck::makeMergedMeshAndInstancedBuffers(unsigned verbosity)
+/**
+GInstancer::makeMergedMeshAndInstancedBuffers
+----------------------------------------------
+
+Populates m_geolib with merged meshes including the instancing buffers.
+
+**/
+
+void GInstancer::makeMergedMeshAndInstancedBuffers(unsigned verbosity)
 {
     GNode* root = m_nodelib->getNode(0);
     assert(root); 
@@ -466,7 +474,7 @@ void GTreeCheck::makeMergedMeshAndInstancedBuffers(unsigned verbosity)
     unsigned numRepeats = getNumRepeats();
     unsigned numRidx = numRepeats + 1 ; 
  
-    LOG(info) << "GTreeCheck::makeMergedMeshAndInstancedBuffers"
+    LOG(info) << "GInstancer::makeMergedMeshAndInstancedBuffers"
               << " numRepeats " << numRepeats
               << " numRidx " << numRidx
               ;
@@ -476,7 +484,7 @@ void GTreeCheck::makeMergedMeshAndInstancedBuffers(unsigned verbosity)
          GNode*   rbase  = getRepeatExample(ridx) ;    // <--- why not the parent ? off-by-one confusion here as to which transforms to include
 
          if(m_verbosity > 2)
-         LOG(info) << "GTreeCheck::makeMergedMeshAndInstancedBuffers"
+         LOG(info) << "GInstancer::makeMergedMeshAndInstancedBuffers"
                    << " ridx " << ridx 
                    << " rbase " << rbase
                    ;
@@ -487,7 +495,7 @@ void GTreeCheck::makeMergedMeshAndInstancedBuffers(unsigned verbosity)
 
          mm->addInstancedBuffers(placements_);
      
-         //mm->reportMeshUsage( ggeo, "GTreeCheck::CreateInstancedMergedMeshes reportMeshUsage (instanced)");
+         //mm->reportMeshUsage( ggeo, "GInstancer::CreateInstancedMergedMeshes reportMeshUsage (instanced)");
     }
 }
 

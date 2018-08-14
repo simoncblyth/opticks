@@ -71,6 +71,7 @@ class X4_API X4PhysicalVolume
         static const char* Key(const G4VPhysicalVolume* const top);
         static std::string Digest( const G4VPhysicalVolume* const top);
         static std::string Digest( const G4LogicalVolume* const lv, const G4int depth );
+        std::string brief() const ;
     public:
         X4PhysicalVolume(GGeo* ggeo, const G4VPhysicalVolume* const pv); 
         GGeo* getGGeo();
@@ -83,6 +84,7 @@ class X4_API X4PhysicalVolume
         void closeSurfaces(); 
         void convertSolids(); 
         void convertStructure(); 
+        void convertCheck() const ;
     private:
         void convertSolids_r(const G4VPhysicalVolume* const pv, int depth);
         void dumpLV();
@@ -114,6 +116,7 @@ class X4_API X4PhysicalVolume
     private:
         int                          m_verbosity ; 
         unsigned                     m_node_count ; 
+        unsigned                     m_selected_node_count ; 
 
         std::map<const G4LogicalVolume*, int> m_lvidx ; 
 

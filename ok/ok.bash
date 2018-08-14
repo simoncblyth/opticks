@@ -619,11 +619,11 @@ Contiguous block of Fasteners all leaves at depth 6::
 TODO: 
 
 
-* on dyb GTreeCheck::findRepeatCandidates 
+* on dyb GInstancer::findRepeatCandidates 
 
   * not restricting repeats to non-leaf looses some geometry
   * but putting it back gives PMTs in both instance0 and instance1  
-  * GTreeCheck.dumpTree ridx not making sense when allow leaf repeats 
+  * GInstancer.dumpTree ridx not making sense when allow leaf repeats 
 
 * dump the text node tree for juno, to see where sFasteners is 
 * add --repeatidx 0,1,2,3 controlled loading in GGeo::loadMergedMeshes etc..

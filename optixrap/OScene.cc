@@ -152,15 +152,10 @@ void OScene::init()
                << " slice " << slice  
                ;
 
-    if(num_scin > 0)
-    {
-        m_oscin = new OScintillatorLib(context, sclib );
-        m_oscin->convert(slice);
-    }
-    else
-    {
-        LOG(error) << " skip OScintillatorLib " ; 
-    }
+    // a placeholder reemission texture is created even when no scintillators
+    m_oscin = new OScintillatorLib(context, sclib );
+    m_oscin->convert(slice);
+
 
     LOG(debug) << "OScene::init (OGeo)" ;
     m_ogeo = new OGeo(m_ocontext, m_ok, m_hub->getGeoLib(), builder, traverser);

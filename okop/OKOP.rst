@@ -106,9 +106,7 @@ OpMgr::Propagate
 Notice in propagate() repetition of the interplay between 
 OpPropagator.m_propagator and OpticksRun.m_run ... 
 perhaps factor out into OpKernel ?  
-
-
-
+ 
 
 
 OpPropagator(OpticksHub* hub, OpticksIdx* idx )

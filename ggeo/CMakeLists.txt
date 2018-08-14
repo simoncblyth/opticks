@@ -76,7 +76,7 @@ set(SOURCES
     GColorizer.cc
 
     GTree.cc
-    GTreeCheck.cc
+    GInstancer.cc
 
     GTraverse.cc
     GMergedMesh.cc
@@ -141,7 +141,7 @@ set(HEADERS
     GColorMap.hh
     GTraverse.hh
     GColorizer.hh
-    GTreeCheck.hh
+    GInstancer.hh
     GTreePresent.hh
     GBBoxMesh.hh
     GItemList.hh

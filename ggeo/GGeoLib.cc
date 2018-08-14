@@ -265,10 +265,13 @@ GMergedMesh* GGeoLib::makeMergedMesh(unsigned index, GNode* base, GNode* root, u
 
     if(m_merged_mesh.find(index) == m_merged_mesh.end())
     {
-        GMergedMesh* mm = GMergedMesh::create(index, base, root, verbosity );
-        m_merged_mesh[index] = mm ;
+        m_merged_mesh[index] = GMergedMesh::create(index, base, root, verbosity );
     }
-    return m_merged_mesh[index] ;
+    GMergedMesh* mm = m_merged_mesh[index] ;
+
+    LOG(error) << GMergedMesh::Desc( mm ) ;  
+
+    return mm ;
 }
 
 void GGeoLib::setMergedMesh(unsigned int index, GMergedMesh* mm)
@@ -324,35 +327,19 @@ void GGeoLib::dump(const char* msg)
     LOG(info) << desc() ; 
 
     unsigned nmm = getNumMergedMesh();
-
     unsigned num_total_volumes = 0 ; 
     unsigned num_instanced_volumes = 0 ; 
 
     for(unsigned i=0 ; i < nmm ; i++)
     {   
         GMergedMesh* mm = getMergedMesh(i); 
-        const char geocode = mm ? mm->getGeoCode() : '-' ;
+
         unsigned numVolumes = mm ? mm->getNumVolumes() : -1 ;
-        unsigned numFaces = mm ? mm->getNumFaces() : -1 ;
         unsigned numITransforms = mm ? mm->getNumITransforms() : -1 ;
-
         if( i == 0 ) num_total_volumes = numVolumes ; 
-
-        std::cout << "mm" 
-                  << " i " << std::setw(3) << i 
-                  << " geocode " << std::setw(3) << geocode 
-                  << std::setw(5) << ( mm ? " " : "NULL" ) 
-                  << std::setw(5) << ( mm && mm->isSkip(  ) ? "SKIP" : " " ) 
-                  << std::setw(7) << ( mm && mm->isEmpty()  ? "EMPTY" : " " ) 
-                  << " numVolumes " << std::setw(10) << numVolumes
-                  << " numFaces  " << std::setw(10) << numFaces
-                  << " numITransforms  " << std::setw(10) << numITransforms
-                  << " numITransforms*numVolumes  " << std::setw(10) << numITransforms*numVolumes
-                  << std::endl
-                  ;   
+        std::cout << GMergedMesh::Desc(mm) << std::endl ; 
         num_instanced_volumes += i > 0 ? numITransforms*numVolumes : 0 ;
     }
-
     std::cout
                 << " num_total_volumes " << num_total_volumes 
                 << " num_instanced_volumes " << num_instanced_volumes 

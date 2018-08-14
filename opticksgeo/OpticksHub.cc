@@ -161,13 +161,16 @@ OpticksHub::OpticksHub(Opticks* ok)
 
 void OpticksHub::init()
 {
+    LOG(fatal) << "[" ; 
+
     add(m_fcfg);
 
     configure();
     // configureGeometryPrep();
     configureServer();
     configureCompositionSize();
-    configureLookupA();
+
+    if(!m_ok->isEmbedded()) configureLookupA();
 
     m_aim = new OpticksAim(this) ; 
 
@@ -185,6 +188,8 @@ void OpticksHub::init()
 
     m_gen = new OpticksGen(this) ;
     m_gun = new OpticksGun(this) ;
+
+    LOG(fatal) << "]" ; 
 }
 
 
@@ -210,6 +215,7 @@ std::string OpticksHub::desc() const
 
 void OpticksHub::configure()
 {
+    LOG(error) << "[" ; 
     m_composition->addConfig(m_cfg); 
     //m_cfg->dumpTree();
 
@@ -262,6 +268,8 @@ void OpticksHub::configure()
         LOG(fatal) << "OpticksHub::configure OPTICKS INVALID : missing envvar or geometry path ?" ;
         assert(0);
     }
+
+    LOG(error) << "]" ; 
 }
 
 
@@ -448,6 +456,7 @@ void OpticksHub::loadGeometry()
 void OpticksHub::adoptGeometry()
 {
     assert( m_ggeo ); 
+    assert( m_ggeo->isPrepared() && "MUST GGeo::prepare() before geometry can be adopted, and uploaded to GPU " ) ;
 
     m_gscene = m_ggeo->getScene();  // DONT LIKE SEPARATE GScene 
 

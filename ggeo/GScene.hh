@@ -72,7 +72,7 @@ the normal GGeoLib route. oxrap/OScene/OGeo
 which converts the GGeo accessed GMergedMesh into OptiX form. 
 
 Fully analytic glTF based replacement for the 
-mainly triangulated GTreeCheck.
+mainly triangulated GInstancer.
 
 Note the only public method is the ctor, this 
 gets invoked from GGeo::loadGeometry/GGeo::loadFromGLTF
@@ -83,7 +83,7 @@ Using "--gltf 4", signals an early exit following GScene
 instanciation in GGeo::loadFromGLTF.
 
 
-* generally follows the same pattern as GTreeCheck 
+* generally follows the same pattern as GInstancer 
   labelling the GNode tree with a ridx repeat index... 
   which us used within  GGeo/GGeoLib/GMergedMesh mesh merging
   (which also merges analytic solids)

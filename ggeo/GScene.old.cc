@@ -55,7 +55,7 @@ NPY<unsigned>* GScene::makeInstanceIdentityBuffer(const std::vector<GNode*>& ins
     NPY<unsigned>* buf = NPY<unsigned>::make(num_instances, 4);
     buf->zero(); 
 
-    // huh : this is not doing the solid duplication of GTreeCheck::makeInstanceIdentityBuffer  ???
+    // huh : this is not doing the solid duplication of GInstancer::makeInstanceIdentityBuffer  ???
 
 
     for(unsigned i=0 ; i < num_instances ; i++)

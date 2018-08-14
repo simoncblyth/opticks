@@ -41,6 +41,7 @@ class GGEO_API GMergedMesh : public GMesh {
 public:
     enum { PASS_COUNT, PASS_MERGE } ;
 public:
+    static std::string Desc(const GMergedMesh* mm);
     static GMergedMesh* create(unsigned ridx, GNode* base, GNode* root, unsigned verbosity);
 private:
      // operates in COUNT and MERGE passes, COUNT find out the number of 

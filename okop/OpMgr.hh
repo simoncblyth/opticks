@@ -8,6 +8,8 @@ class OpticksRun ;
 class OpticksIdx; 
 class OpEvt ;
 
+template <typename T> class NPY ; 
+
 class OpPropagator ; 
 
 #include "OKOP_API_EXPORT.hh"
@@ -35,14 +37,10 @@ class OKOP_API OpMgr {
        OpMgr(Opticks* ok );
        virtual ~OpMgr();
    public:
-       void propagate();
-       void addGenstep( float* data, unsigned num_float );
-       void saveEmbeddedGensteps(const char* path) const ;
-       void loadEmbeddedGensteps(const char* path);
-       void setLookup(const char* json);
 
-       unsigned getNumGensteps() const ;
-       unsigned getNumHits() const ;
+       void setGensteps(NPY<float>* gensteps); 
+       void propagate();
+       NPY<float>* getHits() const ; 
 
        void snap();
    private:
@@ -59,6 +57,9 @@ class OKOP_API OpMgr {
        OpPropagator*  m_propagator ; 
        int            m_count ;  
        OpEvt*         m_opevt ; 
+
+       NPY<float>*    m_gensteps ; 
+       NPY<float>*    m_hits ; 
        
 };
 

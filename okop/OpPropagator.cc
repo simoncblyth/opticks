@@ -32,7 +32,7 @@
 
 OpPropagator::OpPropagator(OpticksHub* hub, OpticksIdx* idx) 
     :
-    m_log(new SLog("OKPropagator::OKPropagator")),
+    m_log(new SLog("OpPropagator::OpPropagator", "", fatal)),
     m_hub(hub),    
     m_idx(idx),
     m_ok(m_hub->getOpticks()),

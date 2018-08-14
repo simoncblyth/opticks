@@ -43,6 +43,10 @@ so...
 Investigate how its used in OKOP and see if a lite version (perhaps OpticksCtx) 
 with just the essentials replace it.  The ctx can then be a constituent of OpticksHub.
 
+Decide to stay with OpticksHub but reduce its usage to only where needed, using 
+constituents like Opticks where that will do.
+
+
 
 OpEngine
 ~~~~~~~~~

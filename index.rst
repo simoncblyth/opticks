@@ -29,9 +29,11 @@ Contents:
 
    optixrap/OXRAP
    opticksgeo/OKGEO
+   optickscore/OKCORE
    okop/OKOP 
    thrustrap/THRAP
    g4ok/G4OK
+   ggeo/GGEO
 
 
 

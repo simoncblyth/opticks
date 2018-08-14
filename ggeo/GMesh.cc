@@ -943,11 +943,11 @@ void GMesh::setITransformsBuffer(NPY<float>* buffer)
 
 
 
-unsigned int GMesh::getNumTransforms()
+unsigned int GMesh::getNumTransforms() const 
 {
     return m_transforms_buffer ? m_transforms_buffer->getNumBytes()/(16*sizeof(float)) : 0 ; 
 }
-unsigned int GMesh::getNumITransforms()
+unsigned int GMesh::getNumITransforms() const 
 {
     if(!m_itransforms_buffer) return 0 ;    
     unsigned int n0 = m_itransforms_buffer->getNumBytes()/(16*sizeof(float)) ; 

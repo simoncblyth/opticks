@@ -9,6 +9,11 @@
 #include "SensitiveDetector.hh"
 #include "OpHit.hh"
 
+#ifdef WITH_OPTICKS
+#include "G4Opticks.hh"
+#include "NPY.hpp"
+#endif
+
 #include "Ctx.hh"
 #include "PLOG.hh"
 
@@ -28,9 +33,16 @@ void EventAction::EndOfEventAction(const G4Event* event)
     G4HCofThisEvent* HCE = event->GetHCofThisEvent() ;
     assert(HCE); 
 
+#ifdef WITH_OPTICKS
+    G4Opticks* ok = G4Opticks::GetOpticks() ;
+    int num_hits = ok->propagateOpticalPhotons() ;  
+    NPY<float>* hits = ok->getHits(); 
+    assert( hits->getNumItems() == num_hits ) ; 
+    LOG(error) << " num_hits " << num_hits ; 
+#endif
+
     addDummyHits(HCE);
     SensitiveDetector::DumpHitCollections(HCE);
-  
 
     // A possible alternative location to invoke the GPU propagation
     // and add hits in bulk to hit collections would be SensitiveDetector::EndOfEvent  

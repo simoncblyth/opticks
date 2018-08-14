@@ -617,7 +617,7 @@ GSurfaceIndex
 GSurfaceLib
 GTransforms
 GTraverse
-GTreeCheck
+GInstancer
 GTreePresent
 
 GVector

@@ -9,17 +9,25 @@ class GNode ;
 #include "GGEO_HEAD.hh"
 
 
-/*
+/**
+GTreePresent
+=============
+
+Creates a text dump of a volume tree with suppression 
+of large numbers of siblings to make more readable.
+
 Removed GGeo dependency, now pass in top node at use::
 
     GNode* top = m_ggeo->getSolid(0); 
     treepresent->traverse(top)
 
-*/
+Compare with env/geant4/geometry/collada/g4daenode.py DAESubTree
 
-class GGEO_API GTreePresent {
+**/
 
-   // cf env/geant4/geometry/collada/g4daenode.py DAESubTree
+
+class GGEO_API GTreePresent 
+{
         static const char* NONAME ; 
    public:
         GTreePresent(unsigned int depth_max, unsigned int sibling_max );

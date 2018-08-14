@@ -24,9 +24,9 @@ class NConfigurable ;
 
 #define TIMER(s) \
     { \
-       if(m_hub)\
+       if(m_ok)\
        {\
-          Timer& t = *(m_hub->getTimer()) ;\
+          Timer& t = *(m_ok->getTimer()) ;\
           t((s)) ;\
        }\
     }
@@ -38,9 +38,9 @@ class NConfigurable ;
 
 OpMgr::OpMgr(Opticks* ok ) 
     :
-    m_log(new SLog("OpMgr::OpMgr")),
+    m_log(new SLog("OpMgr::OpMgr","",fatal)),
     m_ok(ok ? ok : Opticks::GetInstance()),         
-    m_hub(new OpticksHub(m_ok)),            // immediate configure and loadGeometry 
+    m_hub(new OpticksHub(m_ok)),            // immediate configure and loadGeometry OR adopt a preexisting GGeo instance
     m_idx(new OpticksIdx(m_hub)),
     m_num_event(m_ok->getMultiEvent()),     // after hub instanciation, as that configures Opticks
     m_gen(m_hub->getGen()),
@@ -68,23 +68,16 @@ void OpMgr::init()
     m_ok->dumpParameters("OpMgr::init");
 }
 
-void OpMgr::addGenstep( float* data, unsigned num_float )
+
+void OpMgr::setGensteps(NPY<float>* gensteps)
 {
-    assert(num_float == 6*4) ;
-    if(!m_opevt) m_opevt = new OpEvt ; 
-    m_opevt->addGenstep(data, num_float ); 
+    m_gensteps = gensteps ; 
 }
 
-unsigned OpMgr::getNumGensteps() const 
+NPY<float>* OpMgr::getHits() const 
 {
-   return m_opevt ? m_opevt->getNumGensteps() : 0 ;  
-}
-
-
-
-unsigned OpMgr::getNumHits() const 
-{
-    return 0u ; 
+    OpticksEvent* evt = m_run->getEvent(); 
+    return evt->getHitData(); 
 }
 
 void OpMgr::propagate()
@@ -93,69 +86,33 @@ void OpMgr::propagate()
     
     if(ok("nopropagate")) return ; 
 
+    assert( ok.isEmbedded() ); 
+
+    assert( m_gensteps ); 
+
     bool production = m_ok->isProduction();
 
-    if(ok.isLoad())
-    {
-         m_run->loadEvent(); 
+    bool compute = true ; 
 
-         m_hub->target();           // if not Scene targetted, point Camera at gensteps of last created evt
-        // note that targetting is needed for pure compute not just viz, as snapshots are pure compute 
+    m_gensteps->setBufferSpec(OpticksEvent::GenstepSpec(compute));
+
+    m_run->createEvent(0);
+
+    m_run->setGensteps(m_gensteps); 
+
+    m_propagator->propagate();
+
+    if(ok("save")) 
+    {
+        m_run->saveEvent();
+        if(!production) m_hub->anaEvent();
     }
-    else if(ok.isEmbedded())
-    {
-        NPY<float>* embedded_gensteps = m_opevt ? m_opevt->getEmbeddedGensteps() : NULL ; 
 
-        if(embedded_gensteps)
-        {
-            embedded_gensteps->setLookup(m_hub->getLookup());
+    m_run->resetEvent();
 
-            bool compute = true ; 
+    // m_opevt->resetGensteps();  ???
 
-            embedded_gensteps->setBufferSpec(OpticksEvent::GenstepSpec(compute));
-
-            m_run->createEvent(0);
-
-            m_run->setGensteps(embedded_gensteps); 
-
-            m_propagator->propagate();
-
-            if(ok("save")) 
-            {
-                m_run->saveEvent();
-                if(!production) m_hub->anaEvent();
-            }
-
-            m_run->resetEvent();
-
-            m_opevt->resetGensteps(); 
-
-            m_ok->postpropagate();
-        }
-        else
-        {
-            std::cerr << "OpMgr::propagate"
-                      << " called with no embedded gensteps collected " 
-                      ;
-        } 
-    } 
-    else if(m_num_event > 0)
-    {
-        for(int i=0 ; i < m_num_event ; i++) 
-        {
-            m_run->createEvent(i);
-            m_run->setGensteps(m_gen->getInputGensteps()); 
-            m_propagator->propagate();
-            if(ok("save")) 
-            {
-                m_run->saveEvent();
-                if(!production) m_hub->anaEvent();
-            }
-            m_run->resetEvent();
-        }
-
-        m_ok->postpropagate();
-    }
+    m_ok->postpropagate();
 }
 
 
@@ -174,21 +131,5 @@ void OpMgr::snap()
 }
 
 
-
-void OpMgr::saveEmbeddedGensteps(const char* path) const 
-{
-    assert(m_opevt);
-    m_opevt->saveEmbeddedGensteps(path);
-}
-void OpMgr::loadEmbeddedGensteps(const char* path)
-{
-    assert(m_opevt);
-    m_opevt->loadEmbeddedGensteps(path);
-}
-
-void OpMgr::setLookup(const char* json)
-{
-    m_hub->overrideMaterialMapA(json);
-}
 
 

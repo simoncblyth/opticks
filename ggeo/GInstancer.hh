@@ -18,28 +18,27 @@ template<class T> class Counts ;
 template<class T> class NPY ;
 
 
-// *createInstancedMergedMeshes* is canonically invoked by GGeo::loadFromG4DAE GGeo::prepareMeshes
 
 /**
-GTreeCheck
+GInstancer
 =============
 
-TODO: rename, this does essential instancing prep, it is not a "check"
+Formerly was misnamed GTreeCheck.
+Invoked by GGeo::prepareMeshes : finds instanced geometry and creates GMergedMesh for 
+each instance and for the global non-instanced geometry.
 
-Canonical instance *m_treecheck* is member of GGeo that 
-is used only precache.
-
-
-
+Canonical instance *m_treecheck* is constituent of GGeo that is used precache 
+to *createInstancedMergedMeshes* when invoked by  GGeo::loadFromG4DAE GGeo::prepareMeshes. 
+This populates GGeo.m_geolib with GMergedMesh.
 
 **/
 
 #include "GGEO_API_EXPORT.hh"
 #include "GGEO_HEAD.hh"
 
-class GGEO_API GTreeCheck {
+class GGEO_API GInstancer {
    public:
-        GTreeCheck(GGeoLib* geolib, GNodeLib* nodelib, NSceneConfig* config) ;
+        GInstancer(GGeoLib* geolib, GNodeLib* nodelib, NSceneConfig* config) ;
         void setRepeatMin(unsigned repeat_min);
         void setVertexMin(unsigned vertex_min);
    public:
@@ -81,11 +80,6 @@ class GGEO_API GTreeCheck {
         // output side, operates via GGeo::makeMergedMesh, GGeoLib::makeMergedMesh, GMergedMesh::create
         //   GMergedMesh::traverse uses the repeat index ridx labels written into the node tree
         void           makeMergedMeshAndInstancedBuffers(unsigned verbosity);
-
-        //void           makeInstancedBuffers(GMergedMesh* mergedmesh, unsigned ridx);
-        //NPY<float>*    makeInstanceTransformsBuffer(unsigned ridx);
-        //NPY<unsigned>* makeInstanceIdentityBuffer(unsigned ridx);
-        //NPY<unsigned>* makeAnalyticInstanceIdentityBuffer(unsigned ridx);
    private:
        SLog*                     m_log ; 
        GGeoLib*                  m_geolib ; 

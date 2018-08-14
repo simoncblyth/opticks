@@ -9,8 +9,10 @@
 OScintillatorLib::OScintillatorLib(optix::Context& ctx, GScintillatorLib* lib)
     : 
     OPropertyLib(ctx, "OScintillatorLib"),
-    m_lib(lib)
+    m_lib(lib),
+    m_placeholder(NPY<float>::make(1,4096,1))
 {
+    m_placeholder->zero(); 
 }
 
 
@@ -23,8 +25,16 @@ void OScintillatorLib::convert(const char* slice)
                << " ni " << ni 
                ;
 
-
-    if( ni > 1 && slice )
+    if( ni == 0) 
+    {
+        LOG(error) << " empty GScintillatorLib buffer : creating placeholder reemission texture " ; 
+        makeReemissionTexture(m_placeholder);
+    }
+    else if( ni == 1 )
+    { 
+        makeReemissionTexture(buf);
+    }
+    else if( ni > 1 && slice )
     { 
         NPY<float>* slice_buf = buf->make_slice(slice) ;
 
@@ -36,13 +46,12 @@ void OScintillatorLib::convert(const char* slice)
  
         makeReemissionTexture(slice_buf);
     }
-    else
-    {
-        makeReemissionTexture(buf);
-    }
 
     LOG(trace) << "OScintillatorLib::convert DONE" ;
 }
+
+
+
 
 void OScintillatorLib::makeReemissionTexture(NPY<float>* buf)
 {
@@ -54,19 +63,19 @@ void OScintillatorLib::makeReemissionTexture(NPY<float>* buf)
     } 
     assert(buf) ;  
 
-    unsigned int ni = buf->getShape(0);
-    unsigned int nj = buf->getShape(1);
-    unsigned int nk = buf->getShape(2);
+    unsigned ni = buf->getShape(0);
+    unsigned nj = buf->getShape(1);
+    unsigned nk = buf->getShape(2);
 
     bool empty = ni == 0 ;
      
-    unsigned int nx = 4096 ; 
-    unsigned int ny = 1 ; 
+    unsigned nx = 4096 ; 
+    unsigned ny = 1 ; 
 
     float step = 1.f/float(nx) ;
     optix::float4 domain = optix::make_float4(0.f , 1.f, step, 0.f );
 
-    LOG(trace) << "OScintillatorLib::makeReemissionTexture "
+    LOG(error) << "OScintillatorLib::makeReemissionTexture "
               << " nx " << nx
               << " ny " << ny  
               << " ni " << ni  
@@ -82,12 +91,12 @@ void OScintillatorLib::makeReemissionTexture(NPY<float>* buf)
         return ;   
     }
  
-    optix::Buffer optixBuffer = m_context->createBuffer(RT_BUFFER_INPUT, RT_FORMAT_FLOAT, nx, ny );
+    optix::Buffer buffer = m_context->createBuffer(RT_BUFFER_INPUT, RT_FORMAT_FLOAT, nx, ny );
 
-    upload(optixBuffer, buf);
+    upload(buffer, buf);
 
     optix::TextureSampler tex = m_context->createTextureSampler();
-    OConfig::configureSampler(tex, optixBuffer);
+    OConfig::configureSampler(tex, buffer);
 
     m_context["reemission_texture"]->setTextureSampler(tex);
     m_context["reemission_domain"]->setFloat(domain);

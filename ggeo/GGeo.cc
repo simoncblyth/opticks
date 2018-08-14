@@ -60,7 +60,7 @@ namespace fs = boost::filesystem;
 
 #include "GVolume.hh"
 #include "GMesh.hh"
-#include "GTreeCheck.hh"
+#include "GInstancer.hh"
 #include "GTreePresent.hh"
 #include "GColorizer.hh"
 #include "GPmtLib.hh"
@@ -94,7 +94,7 @@ GGeo::GGeo(Opticks* ok)
    m_analytic(false),
    m_gltf(m_ok->getGLTF()),   
    m_composition(NULL), 
-   m_treecheck(NULL), 
+   m_instancer(NULL), 
    m_loaded(false), 
    m_prepared(false), 
    m_lookup(NULL), 
@@ -260,9 +260,9 @@ gfloat3* GGeo::getHigh()
 }
 
 
-GTreeCheck* GGeo::getTreeCheck()
+GInstancer* GGeo::getTreeCheck()
 {
-    return m_treecheck ;
+    return m_instancer ;
 }
 
 
@@ -415,7 +415,7 @@ void GGeo::init()
    m_geolib = new GGeoLib(m_ok, m_analytic, m_bndlib );
    m_nodelib = new GNodeLib(m_ok, m_analytic, testgeo ); 
 
-   m_treecheck = new GTreeCheck(m_geolib, m_nodelib, m_ok->getSceneConfig() ) ;
+   m_instancer = new GInstancer(m_geolib, m_nodelib, m_ok->getSceneConfig() ) ;
 
 
    GColorizer::Style_t style = GColorizer::PSYCHEDELIC_NODE ;
@@ -566,9 +566,12 @@ void GGeo::loadGeometry()
         loadAnalyticFromGLTF();
     }
 
+
+    // HMM : this not done in direct route ?
     setupLookup();
     setupColors();
     setupTyp();
+
     LOG(info) << "GGeo::loadGeometry DONE" ; 
 }
 
@@ -591,6 +594,26 @@ void GGeo::loadFromG4DAE()
 }
 
 
+
+/**
+GGeo::postDirectTranslation
+-------------------------------
+
+Invoked from G4Opticks::translateGeometry after the X4PhysicalVolume conversion
+
+**/
+
+
+void GGeo::postDirectTranslation()
+{
+    LOG(fatal) << "[" ; 
+    prepare();         
+    GBndLib* blib = getBndLib();
+    blib->fillMaterialLineMap();
+    LOG(fatal) << "]" ; 
+}
+
+bool GGeo::isPrepared() const { return m_prepared ; }
 void GGeo::prepare()
 {
    // prepare is needed prior to saving or GPU upload by OGeo
@@ -599,12 +622,11 @@ void GGeo::prepare()
 
     //TODO: implement prepareSensorSurfaces() and invoke from here 
 
-
     prepareScintillatorLib();
 
     prepareSourceLib();
 
-    prepareMeshes();   // GTreeCheck::createInstancedMergedMeshes
+    prepareMeshes();   // GInstancer::createInstancedMergedMeshes
 
     prepareVertexColors();  // writes colors into GMergedMesh mm0
 }
@@ -730,8 +752,6 @@ void GGeo::setupLookup()
 
     m_lookup->setB(B,"", "GGeo::setupLookup/m_bndlib") ;
 }
-
-
 
 void GGeo::setupTyp()
 {
@@ -1158,7 +1178,7 @@ void GGeo::prepareMeshes()
     if(instanced)
     { 
         bool deltacheck = true ; 
-        m_treecheck->createInstancedMergedMeshes(deltacheck, meshverbosity);   // GTreeCheck::createInstancedMergedMeshes
+        m_instancer->createInstancedMergedMeshes(deltacheck, meshverbosity);   // GInstancer::createInstancedMergedMeshes
     }
     else
     {
