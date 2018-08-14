@@ -43,18 +43,18 @@ void GScintillatorLib::save()
     saveRaw();
 }
 
-GScintillatorLib* GScintillatorLib::load(Opticks* cache)
+GScintillatorLib* GScintillatorLib::load(Opticks* ok)
 {
-    GScintillatorLib* lib = new GScintillatorLib(cache);
+    GScintillatorLib* lib = new GScintillatorLib(ok);
     lib->loadFromCache();
     lib->loadRaw();
     return lib ; 
 }
 
 
-GScintillatorLib::GScintillatorLib( Opticks* cache, unsigned int icdf_length) 
+GScintillatorLib::GScintillatorLib( Opticks* ok, unsigned int icdf_length) 
     :
-    GPropertyLib(cache, "GScintillatorLib"),
+    GPropertyLib(ok, "GScintillatorLib", true ),
     m_icdf_length(icdf_length)
 {
     init();

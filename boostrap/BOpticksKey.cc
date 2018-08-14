@@ -21,6 +21,7 @@ int         BOpticksKey::LAYOUT = 1 ;
 
 BOpticksKey* BOpticksKey::GetKey()
 {
+    // invoked by BOpticksResource::BOpticksResource at Opticks instanciation
     return fKey ; 
 }
 

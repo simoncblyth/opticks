@@ -12,6 +12,7 @@
 #include "SSys.hh"
 // brap-
 #include "BDynamicDefine.hh"
+#include "BOpticksKey.hh"
 #include "BFile.hh"
 #include "BHex.hh"
 #include "BStr.hh"
@@ -38,7 +39,6 @@
 #include "OpticksPhoton.h"
 #include "OpticksFlags.hh"
 #include "Opticks.hh"
-#include "BOpticksKey.hh"
 #include "OpticksResource.hh"
 #include "OpticksColors.hh"
 #include "OpticksEvent.hh"
@@ -224,6 +224,7 @@ Opticks::Opticks(int argc, char** argv, const char* argforced )
        m_argc(m_sargs->argc),
        m_argv(m_sargs->argv),
        m_dumpenv(m_sargs->hasArg("--dumpenv")),
+       m_envkey(m_sargs->hasArg("--envkey") ? BOpticksKey::SetKey(NULL) : false),  // see tests/OpticksEventDumpTest.cc makes sensitive to OPTICKS_KEY
        m_production(m_sargs->hasArg("--production")),
        m_profile(new OpticksProfile("Opticks",m_sargs->hasArg("--stamp"))),
        m_materialprefix(NULL),
@@ -1246,6 +1247,15 @@ void Opticks::defineEventSpec()
 
     m_spec  = new OpticksEventSpec(typ,  tag, det.c_str(), cat.c_str() );
     m_nspec = new OpticksEventSpec(typ, ntag, det.c_str(), cat.c_str() );
+
+
+    LOG(info) 
+         << " typ " << typ
+         << " tag " << tag
+         << " det " << det 
+         << " cat " << cat 
+         ;
+
 }
 
 void Opticks::dumpArgs(const char* msg)
@@ -1647,6 +1657,10 @@ const char* Opticks::getEventCat()
 {
     return m_spec->getCat();
 }
+
+
+
+
 
 
 Index* Opticks::loadHistoryIndex()

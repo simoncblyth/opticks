@@ -376,7 +376,7 @@ Opticks* GGeo::getOpticks() const
 void GGeo::init()
 {
    const char* idpath = m_ok->getIdPath() ;
-   LOG(trace) << "GGeo::init" 
+   LOG(error) << "GGeo::init" 
               << " idpath " << ( idpath ? idpath : "NULL" )
               ; 
 
@@ -388,7 +388,7 @@ void GGeo::init()
 
    m_loaded = cache_exists && cache_requested ;
 
-   LOG(debug) << "GGeo::init"
+   LOG(error) << "GGeo::init"
              << " idpath " << idpath
              << " cache_exists " << cache_exists 
              << " cache_requested " << cache_requested
@@ -610,6 +610,9 @@ void GGeo::postDirectTranslation()
     prepare();         
     GBndLib* blib = getBndLib();
     blib->fillMaterialLineMap();
+
+    save();
+
     LOG(fatal) << "]" ; 
 }
 

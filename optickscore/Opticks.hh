@@ -456,6 +456,7 @@ class OKCORE_API Opticks {
        int                  m_argc ; 
        char**               m_argv ; 
        bool                 m_dumpenv ; 
+       bool                 m_envkey ; 
        bool                 m_production ; 
        OpticksProfile*      m_profile ; 
        const char*          m_materialprefix ;

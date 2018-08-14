@@ -15,13 +15,23 @@ OScintillatorLib::OScintillatorLib(optix::Context& ctx, GScintillatorLib* lib)
     m_placeholder->zero(); 
 }
 
+/*
+
+From OKTest running off a DYB geocache with scintillators::
+
+    2018-08-14 15:01:21.142 ERROR [29988] [OScintillatorLib::makeReemissionTexture@78] 
+        OScintillatorLib::makeReemissionTexture  nx 4096 ny 1 ni 1 nj 4096 nk 1 step 0.000244141 empty 0
+
+*/
+
 
 void OScintillatorLib::convert(const char* slice)
 {
     NPY<float>* buf = m_lib->getBuffer();
-    unsigned ni = buf->getShape(0) ; 
+    unsigned ni = buf ? buf->getShape(0) : 0 ; 
+
     LOG(trace) << "OScintillatorLib::convert" 
-               << " from " << buf->getShapeString() 
+               << " from " << ( buf ? buf->getShapeString() : "-" ) 
                << " ni " << ni 
                ;
 

@@ -5,10 +5,9 @@ OpticksEventDumpTest
 
 **/
 
-#include "OKCORE_LOG.hh"
-#include "NPY_LOG.hh"
+#include "OPTICKS_LOG.hh"
 
-
+#include "BOpticksKey.hh"
 #include "Opticks.hh"
 #include "OpticksEvent.hh"
 #include "OpticksEventDump.hh"
@@ -17,9 +16,10 @@ OpticksEventDumpTest
 
 int main(int argc, char** argv)
 {
-    PLOG_(argc, argv);
-    NPY_LOG__ ; 
-    OKCORE_LOG__ ; 
+    OPTICKS_LOG(argc, argv);
+
+    // BOpticksKey::SetKey(NULL);  // <-- makes sensitive to OPTICKS_KEY envvar 
+    // this is done internally at Opticks instanciation when have argument --envkey 
 
     Opticks ok(argc, argv);
     ok.configure();

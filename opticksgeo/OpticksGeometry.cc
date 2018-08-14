@@ -125,7 +125,6 @@ void OpticksGeometry::loadGeometryBase()
 
     m_ggeo->setLoaderImp(&AssimpGGeo::load);    // setting GLoaderImpFunctionPtr
 
-
     m_ggeo->setMeshJoinImp(&MTool::joinSplitUnion);
     m_ggeo->setMeshVerbosity(m_ok->getMeshVerbosity());    
     m_ggeo->setMeshJoinCfg( resource->getMeshfix() );

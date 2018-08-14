@@ -109,8 +109,8 @@ class GGEO_API GPropertyLib {
     public:
         void getIndicesWithNameEnding( std::vector<unsigned>& indices, const char* ending ) const ; 
     public:
-        GPropertyLib(GPropertyLib* other, GDomain<float>* domain=NULL);
-        GPropertyLib(Opticks* ok, const char* type);
+        GPropertyLib(GPropertyLib* other, GDomain<float>* domain=NULL, bool optional=false);
+        GPropertyLib(Opticks* ok, const char* type, bool optional=false);
         virtual ~GPropertyLib();
     public:
         unsigned    getUNSET();
@@ -190,6 +190,8 @@ class GGEO_API GPropertyLib {
         void setNoLoad(bool noload=true);
         bool isNoLoad() const ;
 
+        bool isOptional() const ;
+
 
         std::string  getBufferName(const char* suffix=NULL);
         NPY<float>*  getBuffer();
@@ -219,6 +221,7 @@ class GGEO_API GPropertyLib {
         const char*                          m_type ; 
         const char*                          m_comptype ; 
         GDomain<float>*                      m_standard_domain ;  
+        bool                                 m_optional ; 
     private:
         GPropertyMap<float>*                 m_defaults ;  
         std::map<std::string, std::string>   m_keymap ;   

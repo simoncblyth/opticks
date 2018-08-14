@@ -78,7 +78,7 @@ const char* GPropertyLib::bnd_     = "bnd" ;
 
 
 // this ctor is used from GBndLib::load for interpolating to finedom
-GPropertyLib::GPropertyLib(GPropertyLib* other, GDomain<float>* domain)
+GPropertyLib::GPropertyLib(GPropertyLib* other, GDomain<float>* domain, bool optional )
     :
      m_log(new SLog("GPropertyLib::GPropertyLib.interpolating-ctor")),
      m_ok(other->getOpticks()),
@@ -90,6 +90,7 @@ GPropertyLib::GPropertyLib(GPropertyLib* other, GDomain<float>* domain)
      m_type(strdup(other->getType())),
      m_comptype(NULL),
      m_standard_domain(domain),
+     m_optional(optional),
      m_defaults(NULL),
      m_closed(false),
      m_valid(true)
@@ -103,7 +104,7 @@ GPropertyLib::GPropertyLib(GPropertyLib* other, GDomain<float>* domain)
 
 // this is the normal ctor, used by GBndLib, GMaterialLib
 // the domain will get set in ::init to the default
-GPropertyLib::GPropertyLib(Opticks* ok, const char* type) 
+GPropertyLib::GPropertyLib(Opticks* ok, const char* type, bool optional) 
      :
      //m_log(new SLog("GPropertyLib::GPropertyLib.normal-ctor", type)),
      m_log(NULL),
@@ -116,6 +117,7 @@ GPropertyLib::GPropertyLib(Opticks* ok, const char* type)
      m_type(strdup(type)),
      m_comptype(NULL),
      m_standard_domain(NULL),
+     m_optional(optional),
      m_defaults(NULL),
      m_closed(false),
      m_valid(true)
@@ -265,6 +267,11 @@ void GPropertyLib::setNoLoad(bool noload)
 bool GPropertyLib::isNoLoad() const 
 {
     return m_noload ; 
+}
+
+bool GPropertyLib::isOptional() const 
+{
+    return m_optional ; 
 }
 
 
@@ -527,6 +534,18 @@ void GPropertyLib::loadFromCache()
 
   
     NPY<float>* buf = NPY<float>::load(dir.c_str(), name.c_str()); 
+
+
+    if(!buf && isOptional())
+    {
+        LOG(info) << "Optional buffer not present "
+                  << " dir " << dir
+                  << " name " << name 
+                  ;
+        return ; 
+    }
+
+
     if(!buf)
     {
         LOG(fatal) << "GPropertyLib::loadFromCache FAILED " 
