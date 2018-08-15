@@ -23,6 +23,9 @@ void CGDML::Export(const char* path, const G4VPhysicalVolume* const world )
         return ; 
     }
 
+    bool create = true ; 
+    BFile::preparePath( path, create ) ;   
+
     LOG(info) << "export to " << path ; 
 
     G4GDMLParser* gdml = new G4GDMLParser ;

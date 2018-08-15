@@ -29,8 +29,10 @@ void X4MaterialPropertiesTable::init()
 }
 
 
-void X4MaterialPropertiesTable::AddProperties(GPropertyMap<float>* pmap, const G4MaterialPropertiesTable* const mpt)   // static
+void X4MaterialPropertiesTable::AddProperties(GPropertyMap<float>* pmap, const G4MaterialPropertiesTable* const mpt_)   // static
 {
+    G4MaterialPropertiesTable* mpt = const_cast<G4MaterialPropertiesTable*>(mpt_);   // needed with 10.4.2
+
     typedef const std::map< G4String, G4MaterialPropertyVector*, std::less<G4String> > MKP ;
     MKP* pm = mpt->GetPropertiesMap() ;
 
@@ -63,8 +65,9 @@ void X4MaterialPropertiesTable::AddProperties(GPropertyMap<float>* pmap, const G
     }     
 }
 
-std::string X4MaterialPropertiesTable::Digest(const G4MaterialPropertiesTable* mpt)  // static
+std::string X4MaterialPropertiesTable::Digest(const G4MaterialPropertiesTable* mpt_)  // static
 {
+    G4MaterialPropertiesTable* mpt = const_cast<G4MaterialPropertiesTable*>(mpt_);   // needed with 10.4.2
     if(!mpt) return "" ; 
 
     typedef const std::map< G4String, G4MaterialPropertyVector*, std::less<G4String> > MKP ;

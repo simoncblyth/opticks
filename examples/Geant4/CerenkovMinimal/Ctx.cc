@@ -37,13 +37,20 @@ void Ctx::setTrack(const G4Track* track)
     _step = NULL ; 
     _step_id = -1 ;  
 
-    G4ParticleDefinition* particle = track->GetDefinition();
+//#if ( G4VERSION_NUMBER >= 1042 )
+//#else
 
-    _track_particle_name = track->GetDynamicParticle()->GetParticleDefinition()->GetParticleName(); 
+    //G4ParticleDefinition* particle = track->GetDefinition();
+
+    const G4DynamicParticle* dp = track->GetDynamicParticle() ;   // 10.4.2 giving NULL DynamicParticle
+
+    const G4ParticleDefinition* particle = dp ? dp->GetParticleDefinition() : NULL ;
+
+    _track_particle_name = particle ? particle->GetParticleName() : "NULL-DynamicParticle" ; 
 
     _track_optical = particle == G4OpticalPhoton::OpticalPhotonDefinition() ;
 
-    _track_pdg_encoding = particle->GetPDGEncoding();
+    _track_pdg_encoding = particle ? particle->GetPDGEncoding() : -1 ;
 
     if(_track_optical)
     {

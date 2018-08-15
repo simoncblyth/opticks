@@ -119,13 +119,8 @@ void test_units()
               ;
 }
 
-
-int main(int argc, char** argv)
+void test_convert()
 {
-    OPTICKS_LOG_COLOR__(argc, argv);
-    
-    //test_units();
-
     X4PhysicsVectorTest pvt  ; 
 
     G4PhysicsOrderedFreeVector* pof = pvt.make_pof(); 
@@ -135,6 +130,30 @@ int main(int argc, char** argv)
     prop->SummaryV("prop", 50);
 
     prop->save("/tmp/prop.npy");
+}
 
-    return 0 ; 
+void test_digest()
+{
+    X4PhysicsVectorTest pvt  ; 
+
+    G4PhysicsOrderedFreeVector* pof = pvt.make_pof(); 
+
+    std::string dig = X4PhysicsVector<float>::Digest(pof) ; 
+
+    LOG(info) << " dig " << dig ; 
+}
+
+
+int main(int argc, char** argv)
+{
+    OPTICKS_LOG(argc, argv);
+
+    /*    
+    test_units();
+    test_convert();
+    */
+    test_digest();
+
+
+   return 0 ; 
 }

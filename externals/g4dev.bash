@@ -12,10 +12,7 @@ than the current Opticks standard one.
 For the standard version use the g4- functions.
 
 
-
-
 * https://github.com/Geant4/geant4/releases?after=v9.5.1
-
 
 EOU
 }

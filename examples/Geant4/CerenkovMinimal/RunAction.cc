@@ -1,4 +1,6 @@
 
+#include <cassert>
+
 #ifdef WITH_OPTICKS
 #include "G4TransportationManager.hh"
 #include "G4Opticks.hh"
@@ -18,6 +20,7 @@ void RunAction::BeginOfRunAction(const G4Run*)
     LOG(info) << "." ;
 #ifdef WITH_OPTICKS
     G4VPhysicalVolume* world = G4TransportationManager::GetTransportationManager()->GetNavigatorForTracking()->GetWorldVolume() ; 
+    assert( world ) ; 
     G4Opticks::GetOpticks()->setGeometry(world);    
 #endif
 }

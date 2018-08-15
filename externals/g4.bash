@@ -13,7 +13,6 @@ Quick migration guide for Geant4 version 10.x series
 
 * https://twiki.cern.ch/twiki/bin/view/Geant4/QuickMigrationGuideForGeant4V10
 
-
 data : G4NDL failed repeatedly, so copy from epsilon
 -----------------------------------------------------
 
@@ -215,7 +214,6 @@ g4-env(){
    opticks-
 }
 
-
 g4-edir(){ echo $(opticks-home)/g4 ; }
 
 #g4-dir(){  echo $(local-base)/env/g4/$(g4-name) ; }
@@ -252,17 +250,30 @@ g4-dir(){   echo $(g4-prefix)/$(g4-tag)/$(g4-name) ; }
 
 
 
-#g4-nom(){ echo Geant4-10.2.1 ; }
-#g4-nom(){ echo Geant4-10.2.2 ; }
-#g4-nom(){ echo geant4-9.5.0 ; }
-#g4-nom(){ echo geant4_10_04_p01 ; }
-g4-nom(){  echo geant4_10_04_p02 ; }
-#g4-nom(){ echo geant4.10.05.b01 ; }
+
+g4-nom()
+{
+   case $NODE_TAG in
+     E) echo geant4_10_04_p02 ;;   ## macOS
+     J) echo Geant4-10.2.1 ;;      ## Linux
+     *) echo Geant4-10.2.1 ;;  
+   esac
+}
+
 
 g4-nom-notes(){ cat << EON
 
+::
+
+  geant4-9.5.0      # ancient version
+  Geant4-10.2.1     # long time default
+  Geant4-10.2.2     # used on SDU X node 
+  geant4_10_04_p01  # never proceeded with this one
+  geant4_10_04_p02  # attempt on E  
+  geant4.10.05.b01  # beta, not yet tried
+
 The nom identifier needs to match the name of the folder created by exploding the zip or tarball, 
-unfortunamely this is not simply connected with the basename of the url and also Geant4 continues to 
+unfortunately this is not simply connected with the basename of the url and also Geant4 continues to 
 reposition URLs and names so these are liable to going stale.
 
 EON
@@ -458,6 +469,7 @@ g4-cmake(){
 
    cmake \
        -G "$(opticks-cmake-generator)" \
+       -DCMAKE_BUILD_TYPE=$(opticks-buildtype) \
        -DGEANT4_INSTALL_DATA=ON \
        -DGEANT4_USE_GDML=ON \
        -DXERCESC_LIBRARY=$(xercesc-library) \
@@ -498,7 +510,9 @@ g4-cmake-modify-xercesc-system()
 
 g4-build(){
    g4-bcd
+   date
    cmake --build . --config $(g4-config) --target ${1:-install}
+   date
 }
 
 g4-sh(){  echo $(g4-idir)/bin/geant4.sh ; }

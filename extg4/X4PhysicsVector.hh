@@ -24,6 +24,7 @@ template <typename T>
 class X4_API X4PhysicsVector
 {
     public:
+        static std::string    Digest0(const G4PhysicsVector* vec ) ; 
         static std::string    Digest(const G4PhysicsVector* vec ) ; 
         static GProperty<T>* Convert(const G4PhysicsVector* vec ) ; 
     public:

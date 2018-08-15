@@ -8,7 +8,7 @@
 #include "DebugG4Transportation.hh"
 #include "G4RunManagerKernel.hh"
 
-
+#include "G4Version.hh"
 #include "G4ParticleDefinition.hh"
 #include "G4ParticleTypes.hh"
 #include "G4ParticleTable.hh"
@@ -202,10 +202,20 @@ void OpNovicePhysicsList::addTransportation()
 #endif
  
   // loop over all particles in G4ParticleTable
+
+
+#if ( G4VERSION_NUMBER >= 1042 )
+  auto particleIterator=GetParticleIterator();
+  particleIterator->reset();
+  while( (*particleIterator)() )
+  {
+      G4ParticleDefinition* particle = particleIterator->value();
+#else
   theParticleIterator->reset();
   while( (*theParticleIterator)() )
   {
       G4ParticleDefinition* particle = theParticleIterator->value();
+#endif
       G4ProcessManager* pmanager = particle->GetProcessManager();
       // Add transportation process for all particles 
       assert( pmanager );
@@ -329,11 +339,22 @@ void OpNovicePhysicsList::ConstructOpDYB()
     boundproc->SetModel(unified);
 
     //G4FastSimulationManagerProcess* fast_sim_man = new G4FastSimulationManagerProcess("fast_sim_man");
-    
-    theParticleIterator->reset();
-    while( (*theParticleIterator)() ) {
 
-        G4ParticleDefinition* particle = theParticleIterator->value();
+
+
+
+#if ( G4VERSION_NUMBER >= 1042 )
+  auto particleIterator=GetParticleIterator();
+  particleIterator->reset();
+  while( (*particleIterator)() )
+  {
+      G4ParticleDefinition* particle = particleIterator->value();
+#else
+  theParticleIterator->reset();
+  while( (*theParticleIterator)() )
+  {
+      G4ParticleDefinition* particle = theParticleIterator->value();
+#endif
         G4ProcessManager* pmanager = particle->GetProcessManager();
     
         // Caution: as of G4.9, Cerenkov becomes a Discrete Process.
@@ -480,9 +501,18 @@ void OpNovicePhysicsList::ConstructDecay()
 {
   // Add Decay Process
   G4Decay* theDecayProcess = new G4Decay();
+#if ( G4VERSION_NUMBER >= 1042 )
+  auto particleIterator=GetParticleIterator();
+  particleIterator->reset();
+  while( (*particleIterator)() )
+  {
+      G4ParticleDefinition* particle = particleIterator->value();
+#else
   theParticleIterator->reset();
-  while( (*theParticleIterator)() ){
-    G4ParticleDefinition* particle = theParticleIterator->value();
+  while( (*theParticleIterator)() )
+  {
+      G4ParticleDefinition* particle = theParticleIterator->value();
+#endif
     G4ProcessManager* pmanager = particle->GetProcessManager();
     if (theDecayProcess->IsApplicable(*particle)) {
       pmanager ->AddProcess(theDecayProcess);
@@ -518,9 +548,19 @@ void OpNovicePhysicsList::ConstructDecay()
 void OpNovicePhysicsList::Summary(const char* msg)
 {
     LOG(info) << msg ; 
-    theParticleIterator->reset();
-    while( (*theParticleIterator)() ){
-         G4ParticleDefinition* particle = theParticleIterator->value();
+
+#if ( G4VERSION_NUMBER >= 1042 )
+  auto particleIterator=GetParticleIterator();
+  particleIterator->reset();
+  while( (*particleIterator)() )
+  {
+      G4ParticleDefinition* particle = particleIterator->value();
+#else
+  theParticleIterator->reset();
+  while( (*theParticleIterator)() )
+  {
+      G4ParticleDefinition* particle = theParticleIterator->value();
+#endif
          G4String particleName = particle->GetParticleName();
 
          G4ProcessManager* pmanager = particle->GetProcessManager();
@@ -565,9 +605,19 @@ void  OpNovicePhysicsList::setupEmVerbosity(unsigned int verbosity)
 
 void  OpNovicePhysicsList::setProcessVerbosity(int verbosity)
 {
-    theParticleIterator->reset();
-    while( (*theParticleIterator)() ){
-         G4ParticleDefinition* particle = theParticleIterator->value();
+
+#if ( G4VERSION_NUMBER >= 1042 )
+  auto particleIterator=GetParticleIterator();
+  particleIterator->reset();
+  while( (*particleIterator)() )
+  {
+      G4ParticleDefinition* particle = particleIterator->value();
+#else
+  theParticleIterator->reset();
+  while( (*theParticleIterator)() )
+  {
+      G4ParticleDefinition* particle = theParticleIterator->value();
+#endif
          G4String particleName = particle->GetParticleName();
          G4ProcessManager* pmanager = particle->GetProcessManager();
          if(!pmanager) continue ; 
@@ -593,9 +643,18 @@ void  OpNovicePhysicsList::setProcessVerbosity(int verbosity)
 
 void OpNovicePhysicsList::collectProcesses()
 {
-    theParticleIterator->reset();
-    while( (*theParticleIterator)() ){
-         G4ParticleDefinition* particle = theParticleIterator->value();
+#if ( G4VERSION_NUMBER >= 1042 )
+  auto particleIterator=GetParticleIterator();
+  particleIterator->reset();
+  while( (*particleIterator)() )
+  {
+      G4ParticleDefinition* particle = particleIterator->value();
+#else
+  theParticleIterator->reset();
+  while( (*theParticleIterator)() )
+  {
+      G4ParticleDefinition* particle = theParticleIterator->value();
+#endif
          G4String particleName = particle->GetParticleName();
          G4ProcessManager* pmanager = particle->GetProcessManager();
          if(!pmanager) 
@@ -621,9 +680,19 @@ void OpNovicePhysicsList::collectProcesses()
 
 void OpNovicePhysicsList::ConstructEM()
 {
+#if ( G4VERSION_NUMBER >= 1042 )
+  auto particleIterator=GetParticleIterator();
+  particleIterator->reset();
+  while( (*particleIterator)() )
+  {
+      G4ParticleDefinition* particle = particleIterator->value();
+#else
   theParticleIterator->reset();
-  while( (*theParticleIterator)() ){
-    G4ParticleDefinition* particle = theParticleIterator->value();
+  while( (*theParticleIterator)() )
+  {
+      G4ParticleDefinition* particle = theParticleIterator->value();
+#endif
+
     G4ProcessManager* pmanager = particle->GetProcessManager();
     G4String particleName = particle->GetParticleName();
 

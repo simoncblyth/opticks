@@ -1496,7 +1496,8 @@ opticks-cls-()
     local hh=$(find $base -name "$name.hh");
     local cc=$(find $base -name "$name.cc");
     local icc=$(find $base -name "$name.icc");
-    local vcmd="vi -R $h $hh $icc $cc";
+    local tcc=$(find $base -name "${name}Test.cc");
+    local vcmd="vi  $h $hh $icc $cc $tcc";
     echo $vcmd;
     eval $vcmd;
     cd $iwd

@@ -11,8 +11,21 @@
 #include "PLOG.hh"
 
 
+
 template <typename T>
 std::string X4PhysicsVector<T>::Digest(const G4PhysicsVector* vec)  // see cfg4.G4PhysicsOrderedFreeVectorTest
+{   
+    if(!vec) return "" ;
+    GProperty<T>* prop = Convert( vec ) ; 
+    return prop->getDigestString(); 
+}
+
+/**
+Digest0 is reproducibly SIGABRT crashing with G4 10.4.2  on macOS High Sierra
+**/
+
+template <typename T>
+std::string X4PhysicsVector<T>::Digest0(const G4PhysicsVector* vec)  // see cfg4.G4PhysicsOrderedFreeVectorTest
 {   
     if(!vec) return "" ;
 

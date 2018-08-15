@@ -9,6 +9,7 @@
 #include "G4BosonConstructor.hh"
 #include "G4LeptonConstructor.hh"
 
+#include "G4Version.hh"
 #include "G4Scintillation.hh"
 #include "G4OpBoundaryProcess.hh"
 
@@ -66,9 +67,19 @@ void PhysicsList<T>::ConstructProcess()
 template <typename T>
 void PhysicsList<T>::ConstructEM()
 {
+#if ( G4VERSION_NUMBER >= 1042 )
+  auto particleIterator=GetParticleIterator();
+  particleIterator->reset();
+  while( (*particleIterator)() )
+  {
+      G4ParticleDefinition* particle = particleIterator->value();
+#else
   theParticleIterator->reset();
-  while( (*theParticleIterator)() ){
-    G4ParticleDefinition* particle = theParticleIterator->value();
+  while( (*theParticleIterator)() )
+  {
+      G4ParticleDefinition* particle = theParticleIterator->value();
+#endif
+
     G4ProcessManager* pmanager = particle->GetProcessManager();
     G4String particleName = particle->GetParticleName();
 
@@ -129,10 +140,21 @@ void PhysicsList<T>::ConstructOp()
 
     fBoundaryProcess = new G4OpBoundaryProcess();
 
-    theParticleIterator->reset();
-    while( (*theParticleIterator)() )
-    {
-        G4ParticleDefinition* particle = theParticleIterator->value();
+
+
+
+#if ( G4VERSION_NUMBER >= 1042 )
+  auto particleIterator=GetParticleIterator();
+  particleIterator->reset();
+  while( (*particleIterator)() )
+  {
+      G4ParticleDefinition* particle = particleIterator->value();
+#else
+  theParticleIterator->reset();
+  while( (*theParticleIterator)() )
+  {
+      G4ParticleDefinition* particle = theParticleIterator->value();
+#endif
         G4ProcessManager* pmanager = particle->GetProcessManager();
         G4String particleName = particle->GetParticleName();
 
