@@ -15,6 +15,17 @@ class CSurfaceBridge ;
 
 #include "CFG4_API_EXPORT.hh"
 
+/**
+CGeometry
+===========
+
+1. init with CTestDetector or CGDMLDetector
+2. relies on creator(CG4) to call CGeometry::hookup(CG4* g4) giving the geometry to Geant4 
+
+
+
+**/
+
 class CFG4_API CGeometry 
 {
    public:
@@ -22,10 +33,10 @@ class CFG4_API CGeometry
        bool hookup(CG4* g4);
        void postinitialize();   // invoked by CG4::postinitialize after Geant4 geometry constructed
    public:
-       CMaterialLib*    getMaterialLib();
-       CDetector*       getDetector();
-       CMaterialBridge* getMaterialBridge();
-       CSurfaceBridge*  getSurfaceBridge();
+       CMaterialLib*    getMaterialLib() const ;
+       CDetector*       getDetector() const ;
+       CMaterialBridge* getMaterialBridge() const ;
+       CSurfaceBridge*  getSurfaceBridge() const ;
        const std::map<std::string, unsigned>& getMaterialMap() const ;        
    private:
        void init();

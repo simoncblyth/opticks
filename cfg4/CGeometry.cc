@@ -24,15 +24,16 @@ class OpticksQuery ;
 #include "PLOG.hh"
 
 
-CMaterialLib* CGeometry::getMaterialLib()
-{
-   return m_mlib ; 
-}
-CDetector* CGeometry::getDetector()
-{
-   return m_detector; 
-}
+CMaterialLib*    CGeometry::getMaterialLib() const { return m_mlib ; }
+CDetector*       CGeometry::getDetector() const { return m_detector; } 
+CMaterialBridge* CGeometry::getMaterialBridge() const { return m_material_bridge ; }
+CSurfaceBridge*  CGeometry::getSurfaceBridge() const { return m_surface_bridge ; }
 
+const std::map<std::string, unsigned>& CGeometry::getMaterialMap() const 
+{
+    assert(m_material_table);
+    return m_material_table->getMaterialMap();
+}
 
 CGeometry::CGeometry(OpticksHub* hub) 
     :
@@ -83,7 +84,7 @@ bool CGeometry::hookup(CG4* g4)
 
     m_ok->setSpaceDomain(ce); // triggers Opticks::configureDomains
 
-   return true ; 
+    return true ; 
 }
 
 
@@ -91,7 +92,7 @@ void CGeometry::postinitialize()
 {
     // both these are deferred til here as needs G4 materials table to have been constructed 
 
-    m_material_table = new CMaterialTable(m_ok->getMaterialPrefix()); // TODO: move into CGeometry
+    m_material_table = new CMaterialTable(m_ok->getMaterialPrefix()); 
     //m_material_table->dump("CGeometry::postinitialize");
 
     GMaterialLib* mlib = m_hub->getMaterialLib(); 
@@ -99,7 +100,6 @@ void CGeometry::postinitialize()
 
     GSurfaceLib* slib = m_hub->getSurfaceLib(); 
     m_surface_bridge = new CSurfaceBridge( slib ); 
-
 
     // was surprised to find that CMaterialLib is that comes from detector is not 
     // converted as standard the materoal converts are called individually 
@@ -109,24 +109,6 @@ void CGeometry::postinitialize()
     clib->postinitialize();
 
     export_();
-}
-
-CMaterialBridge* CGeometry::getMaterialBridge()
-{
-   // used by CRecorder::postinitialize
-    assert(m_material_bridge);
-    return m_material_bridge ; 
-}
-CSurfaceBridge* CGeometry::getSurfaceBridge()
-{
-    assert(m_surface_bridge);
-    return m_surface_bridge ; 
-}
-
-const std::map<std::string, unsigned>& CGeometry::getMaterialMap() const 
-{
-    assert(m_material_table);
-    return m_material_table->getMaterialMap();
 }
 
 void CGeometry::export_()

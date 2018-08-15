@@ -11,7 +11,7 @@
 #include "OpticksPhoton.h"
 #include "OpticksCfg.hh"
 
-// opticksgeo-
+// okg-
 #include "OpticksHub.hh"
 #include "OpticksRun.hh"
 
@@ -23,27 +23,22 @@
 //ggeo-
 #include "GBndLib.hh"
 
-
 #include "CFG4_PUSH.hh"
 //g4-
 #include "G4String.hh"
-
 #include "G4RunManager.hh"
 #include "G4VisExecutive.hh"
 #include "G4UImanager.hh"
 #include "G4UIExecutive.hh"
 #include "G4GeometryManager.hh"
 
-
-//cg4-
-
+//cfg4-
 #include "CRandomEngine.hh"
 #include "CPhysics.hh"
 #include "CGeometry.hh"
 #include "CMaterialLib.hh"
 #include "CDetector.hh"
 #include "CGenerator.hh"
-
 #include "CCollector.hh"
 #include "CRecorder.hh"
 #include "CStepRec.hh"
@@ -54,104 +49,52 @@
 #include "CRunAction.hh"
 #include "CEventAction.hh"
 
-
 #include "CRayTracer.hh"
 #include "CMaterialTable.hh"
 #include "CG4.hh"
-
 
 #include "CFG4_POP.hh"
 #include "CFG4_BODY.hh"
 
 #include "PLOG.hh"
 
+CG4* CG4::INSTANCE = NULL ; 
+
+Opticks*    CG4::getOpticks() const { return m_ok ; } 
+OpticksHub* CG4::getHub() const { return m_hub ; }
+OpticksRun* CG4::getRun() const { return m_run ; } 
+
+CRandomEngine*     CG4::getRandomEngine() const { return m_engine ; }
+CRecorder*         CG4::getRecorder() const { return m_recorder ; }
+unsigned long long CG4::getSeqHis() const { return m_recorder->getSeqHis() ; }
+unsigned long long CG4::getSeqMat() const { return m_recorder->getSeqMat() ; }
+CStepRec*          CG4::getStepRec() const { return m_steprec ; }
+CGeometry*         CG4::getGeometry() const { return m_geometry ; }
+CMaterialBridge*   CG4::getMaterialBridge() const { return m_geometry->getMaterialBridge() ; }
 
 
-Opticks* CG4::getOpticks() const
-{
-    return m_ok ; 
-}
-OpticksHub* CG4::getHub() const
-{
-    return m_hub ; 
-}
-OpticksRun* CG4::getRun() const 
-{
-    return m_run ; 
-}
+CSurfaceBridge*    CG4::getSurfaceBridge() const { return m_geometry->getSurfaceBridge() ; }
+CMaterialLib*      CG4::getMaterialLib() const { return m_mlib ; }
+CDetector*         CG4::getDetector() const  { return m_detector ; }
+CEventAction*      CG4::getEventAction() const { return m_ea ;    }
+CTrackingAction*   CG4::getTrackingAction() const { return m_ta ;    }
+CSteppingAction*   CG4::getSteppingAction() const { return m_sa ;    } 
 
+double             CG4::getCtxRecordFraction() const { return m_ctx._record_fraction ; }
+NPY<float>*        CG4::getGensteps() const { return m_collector->getGensteps(); } 
 
-
-CGeometry* CG4::getGeometry()
+const std::map<std::string, unsigned>& CG4::getMaterialMap() const 
 {
-    return m_geometry ; 
+    return m_geometry->getMaterialMap();
 }
-CMaterialBridge* CG4::getMaterialBridge()
-{
-    return m_geometry->getMaterialBridge() ; 
-}
-CSurfaceBridge* CG4::getSurfaceBridge()
-{
-    return m_geometry->getSurfaceBridge() ; 
-}
-CRandomEngine* CG4::getRandomEngine() const 
-{
-    return m_engine ; 
-}
-
 double CG4::flat_instrumented(const char* file, int line)
 {
     return m_engine ? m_engine->flat_instrumented(file, line) : G4UniformRand() ; 
 }
-
-
-
-
-
-CRecorder* CG4::getRecorder()
-{
-    return m_recorder ; 
-}
-
-CStepRec* CG4::getStepRec()
-{
-    return m_steprec ; 
-}
-
-
-CMaterialLib* CG4::getMaterialLib()
-{
-    return m_mlib ; 
-}
-
-
-CDetector* CG4::getDetector()
-{
-    return m_detector ; 
-}
-
-
 CG4Ctx& CG4::getCtx()
 {
     return m_ctx ; 
 }
-
-double CG4::getCtxRecordFraction() const 
-{
-    return m_ctx._record_fraction ; 
-}
-
-unsigned long long CG4::getSeqHis() const 
-{
-    return m_recorder->getSeqHis() ;
-}
-unsigned long long CG4::getSeqMat() const 
-{
-    return m_recorder->getSeqMat() ; 
-}
-
-
-CG4* CG4::INSTANCE = NULL ; 
 
 CG4::CG4(OpticksHub* hub) 
    :
@@ -190,21 +133,22 @@ CG4::CG4(OpticksHub* hub)
 
 void CG4::init()
 {
-    //m_ok->Summary("CG4::init opticks summary");
-
     LOG(info) << "CG4::init"  << " ctx " << m_ctx.desc() ; 
-
     initialize();
 }
 
+/**
+CG4::setUserInitialization
+---------------------------
 
+Invoked from above initializer list(m_hookup) via CGeometry::hookup 
+after CGeometry/m_geometry is initialized.
 
-
+**/
 void CG4::setUserInitialization(G4VUserDetectorConstruction* detector)
 {
     m_runManager->SetUserInitialization(detector);
 }
-
 
 void CG4::initialize()
 {
@@ -212,40 +156,15 @@ void CG4::initialize()
     m_initialized = true ; 
     LOG(info) << "CG4::initialize" ;
 
-
     m_runManager->SetUserAction(m_ra);
     m_runManager->SetUserAction(m_ea);
     m_runManager->SetUserAction(m_pga);
     m_runManager->SetUserAction(m_ta);
     m_runManager->SetUserAction(m_sa);
 
-
     m_runManager->Initialize();
     postinitialize();
 }
-
-
-
-CEventAction* CG4::getEventAction()
-{
-    return m_ea ;    
-}
-CTrackingAction* CG4::getTrackingAction()
-{
-    return m_ta ;    
-}
-CSteppingAction* CG4::getSteppingAction()
-{
-    return m_sa ;    
-}
-
-
-//int CG4::getStepId()
-//{
-//    return m_sa->getStepId();
-//}
-
-
 
 void CG4::postinitialize()
 {
@@ -257,28 +176,21 @@ void CG4::postinitialize()
     if(!inimac.empty()) execute(inimac.c_str()) ;
 
     m_physics->setProcessVerbosity(0); 
-
     // needs to be after the detector Construct creates the materials
-
     // postinitialize order matters, creates/shares m_material_bridge instance
 
     m_geometry->postinitialize();
     m_recorder->postinitialize();  
     //m_rec->postinitialize();
 
-
     m_ea->postinitialize();
-
     m_ta->postinitialize();
-
     m_sa->postinitialize();
 
-
-
-    m_hub->overrideMaterialMapA( getMaterialMap(), "CG4::postinitialize/g4mm") ;  // for translation of material indices into GPU texture lines 
+    // for translation of material indices into GPU texture lines 
+    m_hub->overrideMaterialMapA( getMaterialMap(), "CG4::postinitialize/g4mm") ; 
 
     NLookup* lookup = m_hub->getLookup();
-
     lookup->close() ;  // hmm what about B (from GBndLiB)  
 
     m_collector = new CCollector(lookup) ; 
@@ -286,12 +198,6 @@ void CG4::postinitialize()
     if(m_ok->isG4Snap()) snap() ;
 
     LOG(info) << "CG4::postinitialize DONE" ;
-}
-
-
-const std::map<std::string, unsigned>& CG4::getMaterialMap() const 
-{
-    return m_geometry->getMaterialMap();
 }
 
 void CG4::execute(const char* path)
@@ -308,15 +214,12 @@ void CG4::execute(const char* path)
     m_uiManager->ApplyCommand(cmd);
 }
 
-
-
 void CG4::snap()
 {
     m_visManager = new G4VisExecutive;
     m_visManager->Initialize();
     m_rt->snap();
 }
-
 
 // invoked from CTrackingAction::PreUserTrackingAction immediately after CG4Ctx::setTrack
 void CG4::preTrack()
@@ -339,7 +242,6 @@ void CG4::postTrack()
     }
 }
 
-
 // invoked from CSteppingAction::UserSteppingAction
 void CG4::postStep()
 {
@@ -348,9 +250,6 @@ void CG4::postStep()
         m_engine->postStep();
     }
 }
-
-
-
 
 void CG4::interactive()
 {
@@ -365,7 +264,6 @@ void CG4::interactive()
     m_ui = new G4UIExecutive(m_ok->getArgc(), m_ok->getArgv());
     m_ui->SessionStart();
 }
-
 
 void CG4::initEvent(OpticksEvent* evt)
 {
@@ -382,13 +280,10 @@ void CG4::initEvent(OpticksEvent* evt)
 }
 
 
-
-
 NPY<float>* CG4::propagate()
 {
     OpticksEvent* evt = m_run->getG4Event();
     LOG(info) << evt->brief() <<  " " << evt->getShapeString() ;
-
 
     bool isg4evt = evt && evt->isG4() ;  
 
@@ -443,22 +338,12 @@ void CG4::postpropagate()
     assert(evt);
     evt->postPropagateGeant4();
 
-
     dynamic_cast<CSteppingAction*>(m_sa)->report("CG4::postpropagate");
-
-
 
     if(m_engine) m_engine->postpropagate();  
 
     LOG(info) << "CG4::postpropagate(" << m_ok->getTagOffset() << ") DONE"  ;
 }
-
-
-NPY<float>* CG4::getGensteps()
-{
-    return m_collector->getGensteps();
-}
-
 
 void CG4::cleanup()
 {

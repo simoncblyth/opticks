@@ -13,7 +13,7 @@
 
 CSkinSurfaceTable::CSkinSurfaceTable()
     :
-     CSurfaceTable("skin")
+    CSurfaceTable("skin")
 {
     init();
 }

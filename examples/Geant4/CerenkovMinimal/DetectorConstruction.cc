@@ -30,12 +30,6 @@ G4Material* DetectorConstruction::MakeWater()
     G4MaterialPropertyVector* ri = MakeWaterRI() ; 
     ri->SetSpline(false);
 
-    /*
-    G4MaterialPropertiesTable* mpt = new G4MaterialPropertiesTable();
-    mpt->AddProperty("RINDEX", ri);
-    mat->SetMaterialPropertiesTable(mpt);
-    */
-
     AddProperty( mat, "RINDEX" , ri );  
     return mat ; 
 }
@@ -53,12 +47,6 @@ G4Material* DetectorConstruction::MakeAir()
 
     G4MaterialPropertyVector* ri = MakeAirRI() ; 
     ri->SetSpline(false);
-
-    /*
-    G4MaterialPropertiesTable* mpt = new G4MaterialPropertiesTable();
-    mpt->AddProperty("RINDEX", ri);
-    mat->SetMaterialPropertiesTable(mpt);
-    */
 
     AddProperty( mat, "RINDEX" , ri );  
     return mat ; 
@@ -80,11 +68,6 @@ G4Material* DetectorConstruction::MakeGlass()
     G4MaterialPropertyVector* ri = MakeGlassRI() ; 
     ri->SetSpline(false);
 
-/*
-    G4MaterialPropertiesTable* mpt = new G4MaterialPropertiesTable();
-    mpt->AddProperty("RINDEX", ri);
-    mat->SetMaterialPropertiesTable(mpt);
-*/
     AddProperty( mat, "RINDEX" , ri );  
     return mat ; 
 }

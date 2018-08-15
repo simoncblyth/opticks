@@ -45,11 +45,17 @@ void test_getDAEPath(Opticks* opticks)
     test_path("getDAEPath", path);
 }
 
-void test_getGDMLPath(Opticks* opticks)
+void test_getGDMLPath(Opticks* ok)
 {
-    assert(opticks);
-    const char* path = opticks->getGDMLPath();
-    test_path("getGDMLPath", path);
+    assert(ok);
+    const char* path0 = ok->getSrcGDMLPath();
+    test_path("getSrcGDMLPath", path0);
+
+    const char* path1 = ok->getGDMLPath();
+    test_path("getGDMLPath", path1);
+
+    const char* path2 = ok->getCurrentGDMLPath();
+    test_path("getCurrentGDMLPath", path2);
 }
 
 
@@ -118,12 +124,12 @@ int main(int argc, char** argv)
     /*
     test_MaterialSequence();  
     test_getDAEPath(&ok);  
-    test_getGDMLPath(&ok);  
     test_getMaterialMap(&ok);  
     test_getDbgSeqhisMap(&ok);
+    test_gpumon(&ok);
     */
 
-    test_gpumon(&ok);
+    test_getGDMLPath(&ok);  
 
 
     return 0 ;

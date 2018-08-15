@@ -2038,15 +2038,21 @@ const char*     Opticks::getIdPath() {    return m_resource ? m_resource->getIdP
 const char*     Opticks::getIdFold() {    return m_resource ? m_resource->getIdFold() : NULL ; }
 const char*     Opticks::getDetectorBase() {    return m_resource ? m_resource->getDetectorBase() : NULL ; }
 const char*     Opticks::getMaterialMap() {  return m_resource ? m_resource->getMaterialMap() : NULL ; }
-const char*     Opticks::getGDMLPath() {  return m_resource ? m_resource->getGDMLPath() : NULL ; }
 const char*     Opticks::getDAEPath() {   return m_resource ? m_resource->getDAEPath() : NULL ; }
 const char*     Opticks::getInstallPrefix() { return m_resource ? m_resource->getInstallPrefix() : NULL ; }
-
 
 bool             Opticks::SetKey(const char* spec) { return BOpticksKey::SetKey(spec) ; }
 BOpticksKey*     Opticks::GetKey() {                 return BOpticksKey::GetKey() ; }
 BOpticksKey*     Opticks::getKey() {                 return m_resource->getKey() ; }
 
+const char*     Opticks::getSrcGDMLPath() const {  return m_resource ? m_resource->getSrcGDMLPath() : NULL ; }
+const char*     Opticks::getGDMLPath()    const {  return m_resource ? m_resource->getGDMLPath() : NULL ; }
+const char*     Opticks::getCurrentGDMLPath() const 
+{
+    bool is_embedded = isEmbedded() ;   
+    return is_embedded ? getGDMLPath() : getSrcGDMLPath() ;
+    // GDML path for embedded Opticks (ie direct from Geant4) is within the geocache directory 
+}
 
 
 void Opticks::prepareInstallCache(const char* dir)

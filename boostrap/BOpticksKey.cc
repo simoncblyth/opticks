@@ -14,6 +14,7 @@
 BOpticksKey* BOpticksKey::fKey = NULL ; 
 
 const char* BOpticksKey::G4LIVE = "g4live" ; 
+const char* BOpticksKey::IDSTEM = "g4ok" ; 
 const char* BOpticksKey::IDFILE = "g4ok.gltf" ; 
 const char* BOpticksKey::IDSUBD = "g4ok_gltf" ; 
 int         BOpticksKey::LAYOUT = 1 ; 
@@ -24,6 +25,12 @@ BOpticksKey* BOpticksKey::GetKey()
     // invoked by BOpticksResource::BOpticksResource at Opticks instanciation
     return fKey ; 
 }
+
+const char* BOpticksKey::StemName( const char* ext, const char* sep )
+{
+    return BStr::concat(IDSTEM, sep, ext );
+}
+
 
 bool BOpticksKey::SetKey(const char* spec)
 {
@@ -47,7 +54,8 @@ BOpticksKey::BOpticksKey(const char* spec)
    m_volname( NULL ),
    m_digest( NULL ),
    m_idname( NULL ),
-   m_idfile( IDFILE ),
+   m_idfile( StemName("gltf", ".") ),
+   m_idgdml( StemName("gdml", ".") ),
    m_idsubd( IDSUBD ),
    m_layout( LAYOUT )
 {
@@ -106,10 +114,17 @@ const char* BOpticksKey::getIdname() const
 {
    return m_idname ;  
 }
+
 const char* BOpticksKey::getIdfile() const 
 {
    return m_idfile ;  
 }
+const char* BOpticksKey::getIdGDML() const 
+{
+   return m_idgdml ;  
+}
+
+
 const char* BOpticksKey::getIdsubd() const 
 {
    return m_idsubd ;  
@@ -134,6 +149,7 @@ std::string BOpticksKey::desc() const
        << std::setw(25) << " digest "  << " : " << m_digest  << std::endl 
        << std::setw(25) << " idname "  << " : " << m_idname  << std::endl 
        << std::setw(25) << " idfile "  << " : " << m_idfile  << std::endl 
+       << std::setw(25) << " idgdml "  << " : " << m_idgdml  << std::endl 
        << std::setw(25) << " layout "  << " : " << m_layout  << std::endl 
        ;
     return ss.str(); 

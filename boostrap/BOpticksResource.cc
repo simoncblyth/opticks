@@ -47,6 +47,7 @@ BOpticksResource::BOpticksResource()
     m_srcdigest(NULL),
     m_idfold(NULL),
     m_idfile(NULL),
+    m_idgdml(NULL),
     m_idsubd(NULL),
     m_idname(NULL),
     m_idpath(NULL),
@@ -55,6 +56,7 @@ BOpticksResource::BOpticksResource()
     m_debugging_idfold(NULL),
     m_daepath(NULL),
     m_gdmlpath(NULL),
+    m_srcgdmlpath(NULL),
     m_srcgltfpath(NULL),
     m_metapath(NULL),
     m_idmappath(NULL),
@@ -317,7 +319,7 @@ void BOpticksResource::setSrcPath(const char* srcpath)
     m_res->addDir("srcbase", m_srcbase ); 
 
     m_daepath = MakeSrcPath(m_srcpath,".dae"); 
-    m_gdmlpath = MakeSrcPath(m_srcpath,".gdml"); 
+    m_srcgdmlpath = MakeSrcPath(m_srcpath,".gdml"); 
     m_srcgltfpath = MakeSrcPath(m_srcpath,".gltf"); 
     m_metapath = MakeSrcPath(m_srcpath,".ini"); 
     m_idmappath = MakeSrcPath(m_srcpath,".idmap"); 
@@ -325,7 +327,7 @@ void BOpticksResource::setSrcPath(const char* srcpath)
 
     m_res->addPath("srcpath", m_srcpath );
     m_res->addPath("daepath", m_daepath );
-    m_res->addPath("gdmlpath", m_gdmlpath );
+    m_res->addPath("srcgdmlpath", m_srcgdmlpath );
     m_res->addPath("srcgltfpath", m_srcgltfpath );
     m_res->addPath("metapath", m_metapath );
     m_res->addPath("idmappath", m_idmappath );
@@ -406,6 +408,12 @@ void BOpticksResource::setupViaKey()
     m_idfile = strdup(idfile); 
     m_res->addName("idfile", m_idfile ); 
 
+    const char* idgdml = m_key->getIdGDML() ; //  eg  g4ok.gdml
+    assert(idgdml) ; 
+    m_idgdml = strdup(idgdml); 
+    m_res->addName("idgdml", m_idgdml ); 
+
+
     std::string fold = getGeoCachePath(  m_idname ) ; 
     m_idfold = strdup(fold.c_str()) ; 
     m_res->addDir("idfold", m_idfold ); 
@@ -424,6 +432,10 @@ void BOpticksResource::setupViaKey()
 
     m_gltfpath = makeIdPathPath(m_idfile) ; // not a srcpath for G4LIVE, but potential cache file 
     m_res->addPath("gltfpath", m_gltfpath ); 
+
+    m_gdmlpath = makeIdPathPath(m_idgdml) ; // output gdml 
+    m_res->addPath("gdmlpath", m_gdmlpath ); 
+
 
     m_g4codegendir = makeIdPathPath("g4codegen" );
     m_res->addDir("g4codegendir", m_g4codegendir ); 
@@ -516,6 +528,12 @@ const char* BOpticksResource::getGDMLPath() const
 {
     return m_gdmlpath ;
 }
+const char* BOpticksResource::getSrcGDMLPath() const 
+{
+    return m_srcgdmlpath ;
+}
+
+
 
 const char* BOpticksResource::getSrcGLTFPath() const 
 {

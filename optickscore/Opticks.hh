@@ -172,8 +172,11 @@ class OKCORE_API Opticks {
        const char* getMaterialPrefix();
        std::string getObjectPath(const char* name, unsigned int ridx, bool relative=false);
        const char* getDAEPath();
-       const char* getGDMLPath();
-
+   public:
+       const char* getGDMLPath() const ;
+       const char* getSrcGDMLPath() const ;
+       const char* getCurrentGDMLPath() const ;
+   public:
        NSensorList* getSensorList();
        const char* getIdPath();
        const char* getIdFold();

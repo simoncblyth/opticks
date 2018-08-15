@@ -68,13 +68,13 @@ class CFG4_API CDetector : public G4VUserDetectorConstruction
     // G4VUserDetectorConstruction 
     virtual G4VPhysicalVolume* Construct();
  public: 
-    NBoundingBox*      getBoundingBox();
+    NBoundingBox*      getBoundingBox() const ;
     GSurfaceLib*       getGSurfaceLib() const ;
     CSurfaceLib*       getSurfaceLib() const ;
     GMaterialLib*      getGMaterialLib() const ;
     CMaterialLib*      getMaterialLib() const ;
-    G4VPhysicalVolume* getTop();
-    bool               isValid();
+    G4VPhysicalVolume* getTop() const ;
+    bool               isValid() const ;
  protected:
     void               setValid(bool valid); 
  public: 

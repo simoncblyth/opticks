@@ -174,87 +174,10 @@ Windows : Resource Issue ?
 
 
 
-Plumbing Classes
--------------------
+Class docs
+------------
 
-CG4 
-     geant4 singleton (guest from cg4-)
-
-CCfG4
-     high level control, app umbrella, bringing together Opticks and G4 
-     constituents include: CTestDetector, Recorder and Rec
-
-CPrimaryGeneratorAction
-     G4VUserPrimaryGeneratorAction subclass, "shell" class just 
-     providing GeneratePrimaries(G4Event*)
-     which passes through to CSource::GeneratePrimaryVertex
-
-CSteppingAction
-     G4UserSteppingAction subclass, which feeds G4Step to the recorders
-     in method CSteppingAction::UserSteppingAction(G4Step*)
-
-ActionInitialization
-     G4VUserActionInitialization subclass, providing UserAction plumbing 
-     for CPrimaryGeneratorAction and CSteppingAction
-
-PhysicsList
-     G4VModularPhysicsList subclass, follow chroma : registered just 
-
-     G4OpticalPhysics() 
-     G4EmPenelopePhysics(0) 
-
-
-Domain Classes
----------------
-
-CSource
-     G4VPrimaryGenerator subclass, with GeneratePrimaryVertex(G4Event *evt)
-     Provides TorchStepNPY configurable optical photon squadrons just like the GPU eqivalent.
-     Implemented using distribution generators from SingleParticleSource: 
-
-     G4SPSPosDistribution
-     G4SPSAngDistribution
-     G4SPSEneDistribution
-
-CTestDetector
-     G4VUserDetectorConstruction subclass, converts simple test geometries
-     commandline configured using GGeoTestConfig into G4 geometries
-     with help from constituents: CMaker and CPropLib
-
-CGDMLDetector
-     G4VUserDetectorConstruction subclass, loads GDML persisted G4 geometries
-     with help from constituent: CPropLib
-
-CMaker
-     Constitent of CTestDetector used to convert GCSG geometry 
-     into G4 geometry in G4VPhysicalVolume* CTestDetector::Construct() 
-
-CPropLib  
-     CPropLib is a constituent of CTestDetector that converts
-     GGeo materials and surfaces into G4 materials and surfaces
-
-OpStatus
-     G4 status/enum code formatters and translation of G4 codes to Opticks flags 
-
-Recorder
-     Collects G4Step/G4StepPoint optical photon data  
-     into NPY arrays in Opticks array format
-     which are persisted to .npy  within a OpticksEvent
-
-     *RecordStep* is called for all G4Step
-     each of which is comprised of *pre* and *post* G4StepPoint, 
-     as a result the same G4StepPoint are "seen" twice, 
-     thus *RecordStep* only records the 1st of the pair 
-     (the 2nd will come around as the first at the next call)
-     except for the last G4Step pair where both points are recorded
-
-Rec 
-     Alternative implementation of Recorder using a vector of State instances
-
-State 
-     holds copy of G4Step together with G4OpBoundaryProcessStatus, 
-     a vector of State instances is held by Rec
-
+Moved to :doc:`CFG4`
 
 
 Other Classes

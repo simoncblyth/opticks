@@ -9,6 +9,7 @@
 #include "CTraverser.hh"
 #include "CMaterialTable.hh"
 #include "CCollector.hh"
+#include "CGDML.hh"
 
 #include "G4Opticks.hh"
 
@@ -17,6 +18,7 @@
 #include "OpMgr.hh"
 
 #include "GGeo.hh"
+#include "GGeoGLTF.hh"
 #include "GBndLib.hh"
 #include "X4PhysicalVolume.hh"
 
@@ -104,9 +106,16 @@ GGeo* G4Opticks::translateGeometry( const G4VPhysicalVolume* top )
 
     Opticks* ok = new Opticks(0,0, fEmbeddedCommandLine);  // Opticks instanciation must be after BOpticksKey::SetKey
 
+    const char* gdmlpath = ok->getGDMLPath();   // inside geocache, not SrcGDMLPath from opticksdata
+    CGDML::Export( gdmlpath, top ); 
+
     GGeo* gg = new GGeo(ok) ;
     X4PhysicalVolume xtop(gg, top) ;   // <-- populates gg 
     gg->postDirectTranslation(); 
+
+    int root = 0 ; 
+    const char* gltfpath = ok->getGLTFPath();   // inside geocache
+    GGeoGLTF::Save(gg, gltfpath, root );
 
     return gg ; 
 }

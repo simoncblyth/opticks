@@ -60,7 +60,9 @@ EON
 
 #g4dev-nom(){ echo Geant4-10.2.1 ; }
 #g4dev-nom(){ echo geant4-9.5.0 ; }
-g4dev-nom(){ echo geant4_10_04_p01 ; }
+#g4dev-nom(){ echo geant4_10_04_p01 ; }
+g4dev-nom(){  echo geant4_10_04_p02 ; }
+#g4dev-nom(){ echo geant4.10.05.b01 ; }
 
 
 g4dev-url(){   
@@ -68,6 +70,8 @@ g4dev-url(){
        Geant4-10.2.1) echo http://geant4.cern.ch/support/source/geant4_10_02_p01.zip ;;
         geant4-9.5.0) echo https://github.com/Geant4/geant4/archive/v9.5.0.zip ;;
         geant4_10_04_p01) echo http://geant4-data.web.cern.ch/geant4-data/releases/geant4_10_04_p01.zip  ;; 
+        geant4_10_04_p02) echo http://geant4-data.web.cern.ch/geant4-data/releases/geant4.10.04.p02.tar.gz ;; 
+        geant4.10.05.b01) echo http://geant4-data.web.cern.ch/geant4-data/releases/geant4.10.05.b01.tar.gz ;; 
    esac
 }
 
@@ -76,8 +80,14 @@ g4dev-dir(){   echo $(g4dev-prefix)/$(g4dev-tag)/$(g4dev-nom) ; }
 
 g4dev-dist(){ echo $(dirname $(g4dev-dir))/$(basename $(g4dev-url)) ; }
 g4dev-filename(){  echo $(basename $(g4dev-url)) ; }
-g4dev-name(){  local filename=$(g4dev-filename) ; echo ${filename%.*} ; }  
-# hmm .tar.gz would still have a .tar on the name
+g4dev-name(){  
+   local name=$(g4dev-filename) ; 
+   name=${name/.tar.gz}
+   name=${name/.zip}
+   echo $name
+}
+
+  
 
 g4dev-txt(){ vi $(g4dev-dir)/CMakeLists.txt ; }
 
@@ -133,8 +143,15 @@ g4dev-get(){
    local dst=$(basename $url)
    local nom=$(g4dev-nom)
 
-   [ ! -f "$dst" ] && curl -L -O $url 
-   [ ! -d "$nom" ] && unzip $dst 
+   [ ! -f "$dst" ] && echo getting $url && curl -L -O $url 
+
+   if [ "${dst/.zip}" != "${dst}" ]; then 
+        [ ! -d "$nom" ] && unzip $dst 
+   fi 
+   if [ "${dst/.tar.gz}" != "${dst}" ]; then 
+        [ ! -d "$nom" ] && tar zxvf $dst 
+   fi 
+
 }
 
 g4dev-wipe(){

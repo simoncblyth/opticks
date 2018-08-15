@@ -6,15 +6,6 @@ Geant4
 ========
 
 
-
-
-Sensitive Detector, Hits
---------------------------
-
-
-
-
-
 Migration to 10 (Multithreaded)
 --------------------------------
 
@@ -35,8 +26,6 @@ data : G4NDL failed repeatedly, so copy from epsilon
 
     epsilon:Externals blyth$ scp -r G4NDL-4.5 J:local/opticks/externals/g4/geant4_10_02_p01.Debug.build/Externals/
 
-
-
 ::
 
     epsilon:Externals blyth$ du -hs *
@@ -51,9 +40,6 @@ data : G4NDL failed repeatedly, so copy from epsilon
     8.1M	RadioactiveDecay-4.3.1
     2.1M	RealSurface-1.0
     epsilon:Externals blyth$ 
-
-
-
 
 
 Not finding xercesc
@@ -265,40 +251,51 @@ g4-dir(){   echo $(g4-prefix)/$(g4-tag)/$(g4-name) ; }
 # follow env/psm1/dist/dist.psm1 approach : everythinh based off the url
 
 
-g4-tag(){   echo g4 ; }
-g4-url(){   echo http://geant4.cern.ch/support/source/geant4_10_02_p01.zip ; }
-g4-dist(){ echo $(dirname $(g4-dir))/$(basename $(g4-url)) ; }
 
-g4-name2(){ 
-    case $NODE_TAG in 
-      X) echo Geant4-10.2.2 ;;
-      *) echo Geant4-10.2.1 ;; 
-    esac
+#g4-nom(){ echo Geant4-10.2.1 ; }
+#g4-nom(){ echo Geant4-10.2.2 ; }
+#g4-nom(){ echo geant4-9.5.0 ; }
+#g4-nom(){ echo geant4_10_04_p01 ; }
+g4-nom(){  echo geant4_10_04_p02 ; }
+#g4-nom(){ echo geant4.10.05.b01 ; }
+
+g4-nom-notes(){ cat << EON
+
+The nom identifier needs to match the name of the folder created by exploding the zip or tarball, 
+unfortunamely this is not simply connected with the basename of the url and also Geant4 continues to 
+reposition URLs and names so these are liable to going stale.
+
+EON
 }
 
+g4-url(){   
+   case $(g4-nom) in
+        Geant4-10.2.1)    echo http://geant4.cern.ch/support/source/geant4_10_02_p01.zip ;;
+        Geant4-10.2.2)    echo http://geant4.cern.ch/support/source/geant4_10_02_p02.zip ;;
+        geant4-9.5.0)     echo https://github.com/Geant4/geant4/archive/v9.5.0.zip ;;
+        geant4_10_04_p01) echo http://geant4-data.web.cern.ch/geant4-data/releases/geant4_10_04_p01.zip  ;; 
+        geant4_10_04_p02) echo http://geant4-data.web.cern.ch/geant4-data/releases/geant4.10.04.p02.tar.gz ;; 
+        geant4.10.05.b01) echo http://geant4-data.web.cern.ch/geant4-data/releases/geant4.10.05.b01.tar.gz ;; 
+   esac
+}
+
+g4-tag(){   echo g4 ; }
+g4-dist(){ echo $(dirname $(g4-dir))/$(basename $(g4-url)) ; }
+
 g4-filename(){  echo $(basename $(g4-url)) ; }
-g4-name(){  local filename=$(g4-filename) ; echo ${filename%.*} ; }  
-# hmm .tar.gz would still have a .tar on the name
-
-
-
-
-
-
+g4-name(){  local name=$(g4-filename) ; name=${name/.tar.gz} ; name=${name/.zip} ; echo ${name} ; }  
 
 g4-txt(){ vi $(g4-dir)/CMakeLists.txt ; }
-
 
 g4-config(){ echo Debug ; }
 #g4-config(){ echo RelWithDebInfo ; }
 
 g4-bdir(){ echo $(g4-dir).$(g4-config).build ; }
 
-g4-cmake-dir(){     echo $(g4-prefix)/lib$(g4-libsuffix)/$(g4-name2) ; }
-g4-examples-dir(){  echo $(g4-prefix)/share/$(g4-name2)/examples ; }
+g4-cmake-dir(){     echo $(g4-prefix)/lib$(g4-libsuffix)/$(g4-nom) ; }
+g4-examples-dir(){  echo $(g4-prefix)/share/$(g4-nom)/examples ; }
 g4-gdml-dir(){      echo $(g4-dir)/source/persistency/gdml/src ; }
 g4-optical-dir(){   echo $(g4-dir)/source/processes/optical/src ; }
-
 
 g4-ecd(){  cd $(g4-edir); }
 g4-c(){    cd $(g4-dir); }
@@ -311,22 +308,35 @@ g4-xcd(){  cd $(g4-examples-dir); }
 g4-gcd(){  cd $(g4-gdml-dir); }
 g4-ocd(){  cd $(g4-optical-dir); }
 
+g4-get-info(){ cat << EOI
 
+   g4-dir : $(g4-dir)
+   g4-nom : $(g4-nom)
+   g4-url : $(g4-url)
 
-g4-get-tgz(){
-   local dir=$(dirname $(g4-dir)) &&  mkdir -p $dir && cd $dir
-   local url=$(g4-url)
-   # replace zip to tar.gz
-   url=${url/.zip/.tar.gz}
-   local tgz=$(basename $url)
-   local nam=${tgz/.tar.gz}
-
-   [ ! -f "$tgz" ] && curl -L -O $url 
-   [ ! -d "$nam" ] && tar zxvf $tgz 
+EOI
 }
 
 
+g4-get(){
+   local dir=$(dirname $(g4-dir)) &&  mkdir -p $dir && cd $dir
+   local url=$(g4-url)
+   local dst=$(basename $url)
+   local nam=$dst
+   nam=${nam/.zip}
+   nam=${nam/.tar.gz}
 
+   g4-get-info
+
+   [ ! -f "$dst" ] && echo getting $url && curl -L -O $url
+
+   if [ "${dst/.zip}" != "${dst}" ]; then
+        [ ! -d "$nam" ] && unzip $dst
+   fi
+   if [ "${dst/.tar.gz}" != "${dst}" ]; then
+        [ ! -d "$nam" ] && tar zxvf $dst
+   fi
+}
 
 g4--()
 {
@@ -336,17 +346,6 @@ g4--()
     g4-export-ini
 }
 
-
-
-g4-get(){
-   local dir=$(dirname $(g4-dir)) &&  mkdir -p $dir && cd $dir
-   local url=$(g4-url)
-   local dst=$(basename $url)
-   local nam=${dst/.zip}
-
-   [ ! -f "$dst" ] && curl -L -O $url 
-   [ ! -d "$nam" ] && unzip $dst 
-}
 
 g4-wipe(){
    local bdir=$(g4-bdir)
@@ -361,27 +360,13 @@ g4-configure()
 
    g4-cmake $*
 }
+
 g4-configure-msg(){ cat << EOM
 g4 has been configured already, to change configuration use: g4-cmake-modify 
 or to start over use : g4-wipe then g4-configure 
 EOM
 }
 
-
-g4-cmake-info(){ cat << EOI
-$FUNCNAME
-===============
-
-   opticks-cmake-generator : $(opticks-cmake-generator)
-   xercesc-library         : $(xercesc-library)
-   xercesc-include-dir     : $(xercesc-include-dir)
-   g4-prefix               : $(g4-prefix) 
-   g4-bdir                 : $(g4-bdir) 
-   g4-dir                  : $(g4-dir) 
-
-
-EOI
-}
 
 
 g4-info(){ cat << EOI
@@ -403,6 +388,58 @@ EOI
 }
 
 
+g4-cmake-info(){ cat << EOI
+$FUNCNAME
+===============
+
+   opticks-cmake-generator : $(opticks-cmake-generator)
+   xercesc-library         : $(xercesc-library)
+   xercesc-include-dir     : $(xercesc-include-dir)
+   g4-prefix               : $(g4-prefix) 
+   g4-bdir                 : $(g4-bdir) 
+   g4-dir                  : $(g4-dir) 
+
+
+
+EOI
+}
+
+g4-whats-installed-where(){ cat << EON
+
+Intallation paths with g4-prefix of /usr/local/opticks/externals 
+
+/usr/local/opticks/externals/lib/
+    libG4* get mingled with other externals lib.
+    Convenient, but a bit messy when changing Geant4 versions.
+
+/usr/local/opticks/externals/lib/Geant4-10.4.2
+    cmake machinery, including crucial Geant4Config.cmake 
+    that is found by CMake via CMAKE_PREFIX_PATH::
+
+       -DCMAKE_PREFIX_PATH=$(om-prefix)/externals
+
+/usr/local/opticks/externals/include/Geant4/
+    Found mixed timestamp versions of installed headers
+    so deleted the include/Geant4 and reinstalled with g4-build
+
+
+/usr/local/opticks/externals/share/Geant4-10.4.2/data/
+/usr/local/opticks/externals/share/Geant4-10.4.2/examples
+    data and examples are placed under a version dir 
+
+/usr/local/opticks/externals/bin/
+    some unversioned scripts:
+    geant4.sh 
+    geant4.csh
+    geant4-config
+
+
+
+
+
+
+EON
+}
 
 
 
@@ -459,16 +496,10 @@ g4-cmake-modify-xercesc-system()
       -DXERCESC_INCLUDE_DIR=$(xercesc-include-dir) 
 }
 
-
-
-
-
 g4-build(){
    g4-bcd
    cmake --build . --config $(g4-config) --target ${1:-install}
 }
-
-
 
 g4-sh(){  echo $(g4-idir)/bin/geant4.sh ; }
 g4-ini(){ echo $(opticks-prefix)/externals/config/geant4.ini ; }
@@ -491,7 +522,7 @@ g4-export-ini()
 
 
 
-################# below funcions for styduing G4 source ##################################
+################# below funcions for studying G4 source ##################################
 
 g4-ifind(){ find $(g4-idir) -name ${1:-G4VUserActionInitialization.hh} ; }
 g4-sfind(){ find $(g4-dir)/source -name ${1:-G4VUserActionInitialization.hh} ; }
@@ -585,8 +616,5 @@ g4-look(){
 
 g4-find-(){ find $(g4-dir) $* ; }
 g4-find-gdml(){ g4-find- -name '*.gdml' ; } 
-
-
-
 
 

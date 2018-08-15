@@ -96,13 +96,11 @@ void CRecorder::postTrack() // invoked from CTrackingAction::PostUserTrackingAct
 {
     assert(!m_live);
 
-
     if(m_ctx._dbgrec) LOG(info) << "CRecorder::postTrack" ; 
 
     if(m_recpoi)
     {
         postTrackWritePoints();  // experimental alt 
-
 
         if(m_reccf)
         {
@@ -128,8 +126,6 @@ void CRecorder::postTrack() // invoked from CTrackingAction::PostUserTrackingAct
             assert( ps._seqhis == pp._seqhis );
             assert( ps._seqmat == pp._seqmat );
         }
-
-
     }
     else
     {

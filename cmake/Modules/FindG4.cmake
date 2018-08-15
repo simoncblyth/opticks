@@ -78,3 +78,16 @@ if(Geant4_FOUND)
 endif()
 
 
+if(G4_VERBOSE)
+  message(STATUS "G4_MODULE          : ${G4_MODULE} " )
+  message(STATUS "G4_PREFIX          : ${G4_PREFIX} " )
+  message(STATUS "G4_FOUND           : ${G4_FOUND} " )
+  message(STATUS "G4_DIR             : ${G4_DIR} " )
+  message(STATUS "G4_VERSION         : ${G4_VERSION} " )
+  message(STATUS "G4_VERSION_INTEGER : ${G4_VERSION_INTEGER} " )
+  message(STATUS "G4_INCLUDE_DIR     : ${G4_INCLUDE_DIR} " )
+  message(STATUS "G4_INCLUDE_DIRS    : ${G4_INCLUDE_DIRS} " )
+  message(STATUS "G4_LIBRARIES       : ${G4_LIBRARIES} " )
+  message(STATUS "G4_DEFINITIONS     : ${G4_DEFINITIONS} " )
+endif()
+

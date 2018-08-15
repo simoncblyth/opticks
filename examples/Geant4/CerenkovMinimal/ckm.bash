@@ -7,6 +7,7 @@ EOU
 }
 ckm-dir(){ echo $(dirname $(ckm-source)) ; }
 ckm-cd(){  cd $(ckm-dir) ; }
+ckm-c(){  cd $(ckm-dir) ; }
 
 ckm--(){ ckm-cd ; ./go.sh ; }
 
@@ -36,7 +37,7 @@ ckm-dump()
 
 ckm-cfg4()
 {
-    OPTICKS_KEY=$(ckm-key) lldb -- OKG4Test --compute --envkey
+    OPTICKS_KEY=$(ckm-key) lldb -- OKG4Test --compute --envkey --embedded
 }
 
 

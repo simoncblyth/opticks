@@ -23,17 +23,8 @@ CRandomEngine isa CLHEP::HepRandomEngine which gets annointed
 as the Geant4 engine in CRandomEngine::init with 
 CLHEP::HepRandom::setTheEngine.
 
-
-
-
-
-
 Canonical m_engine instance is resident of CG4 and is instanciated with it, 
 when the --align option is used.
-
-
-
-
 
 **/
 

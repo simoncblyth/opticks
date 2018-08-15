@@ -29,7 +29,7 @@ rtBuffer<uint4>                optical_buffer;
 RT_PROGRAM void ORayleighTest()
 {
     unsigned long long generate_id = launch_index.x ;
-    unsigned long long generate_offset = unsigned(generate_id)*4 ;
+    //unsigned long long generate_offset = unsigned(generate_id)*4 ;
     curandState rng = rng_states[generate_id];
 
     Photon o, p ; 

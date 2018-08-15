@@ -3,6 +3,7 @@ set(name UseG4)
 project(${name} VERSION 0.1.0)
 include(OpticksBuildOptions)
 
+set(G4_VERBOSE ON)
 find_package(G4 MODULE REQUIRED)   
 
 #echo_pfx_vars(G4 "FOUND;DIR;VERSION;VERSION_INTEGER;INCLUDE_DIR;INCLUDE_DIRS;LIBRARIES;DEFINITIONS")

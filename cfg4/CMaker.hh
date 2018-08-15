@@ -25,15 +25,11 @@ CMaker
 ======
 
 CMaker is a constitent of CTestDetector used
-to convert GCSG geometry into G4 geometry in 
-G4VPhysicalVolume* CTestDetector::Construct(). 
+to convert NCSG/nnode shapes into G4VSolid. 
+CMaker::makeSolid handles booleans via recursive calls.
 
-CMaker::makeSolid handles some boolean intersection
-and union combinations via recursive calls to itself.
+An earlier implementation from prior to NCSG/nnode is in CMaker.cc.old 
 
-CMaker only handles the geometrical shapes.
-Material assignments are done elsewhere, 
-at a higher level eg by CTestDetector.
 
 **/
 
@@ -47,13 +43,6 @@ class CFG4_API CMaker
     public:
         CMaker(Opticks* ok, int verbosity=0);
     public:
-        // primordial CSG
-        G4VSolid* makeSolid_OLD(OpticksCSG_t type, const glm::vec4& param);
-        G4VSolid* makeBox_OLD(const glm::vec4& param);
-        G4VSolid* makeSphere_OLD(const glm::vec4& param);
-        G4VSolid* makeSolid_OLD(GCSG* csg, unsigned int i); 
-    public:
-        // current CSG 
         G4VSolid* makeSolid(const NCSG* csg);                  
     private:
         G4VSolid* makeSolid_r(const nnode* node);

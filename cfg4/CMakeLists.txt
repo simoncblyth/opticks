@@ -66,7 +66,6 @@ set(SOURCES
     OpStatus.cc
     Format.cc
     CTraverser.cc
-    CImporter.cc
     CCheck.cc
     State.cc
 
@@ -82,6 +81,7 @@ set(SOURCES
 
     CDetector.cc
     CGDMLDetector.cc
+    CGDML.cc
     COptical.cc
     CSurfaceLib.cc
     CMaker.cc
@@ -174,7 +174,6 @@ set(HEADERS
     OpStatus.hh
     Format.hh
     CTraverser.hh
-    CImporter.hh
     State.hh
 
     CSource.hh
@@ -183,6 +182,7 @@ set(HEADERS
     CRecorder.hh
     CDetector.hh
     CGDMLDetector.hh
+    CGDML.hh
     CMaker.hh
     CTestDetector.hh
     CStepRec.hh

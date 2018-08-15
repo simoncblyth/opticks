@@ -70,8 +70,7 @@ CStepRec
 CRecorder
    records optical photon steps and photon tracks
 
-
-CStepRec is beautifully simple, CRecorder is horrible complicated in comparison
+CStepRec is beautifully simple, CRecorder is horribly complicated in comparison
 
 
 Workflow overview
@@ -104,7 +103,7 @@ photon counts ahead of time.
 
 class CFG4_API CG4 
 {
-        friend class CGeometry ; 
+        friend class CGeometry ;  // for setUserInitialization
    public:
         static CG4* INSTANCE ; 
    public:
@@ -113,17 +112,12 @@ class CFG4_API CG4
         void cleanup();
         bool isDynamic(); // true for G4GUN without gensteps ahead of time, false for TORCH with gensteps ahead of time
    public:
-        void initialize();
         NPY<float>* propagate();
    private:
         void postinitialize();
         void postpropagate();
    public:
-        int              getPrintIndex() const ;
-        CEventAction*    getEventAction();
-        CSteppingAction* getSteppingAction();
-        CTrackingAction* getTrackingAction();
-        //int getStepId();
+        int getPrintIndex() const ;
 
         void postStep();
         void preTrack();
@@ -132,6 +126,7 @@ class CFG4_API CG4
         const std::map<std::string, unsigned>& getMaterialMap() const ;        
    private:
         void init();
+        void initialize();
         void setUserInitialization(G4VUserDetectorConstruction* detector);
         void execute(const char* path);
         void initEvent(OpticksEvent* evt);
@@ -144,20 +139,25 @@ class CFG4_API CG4
         Opticks*         getOpticks() const ;
         OpticksHub*      getHub() const ;
         OpticksRun*      getRun() const;
-        CGeometry*       getGeometry();
-        CMaterialBridge* getMaterialBridge();
-        CSurfaceBridge*  getSurfaceBridge();
         CRandomEngine*   getRandomEngine() const ; 
-        double           flat_instrumented(const char* file, int line); 
-
-        CG4Ctx&          getCtx();
+        CRecorder*       getRecorder() const ;
+        CStepRec*        getStepRec() const ;
+        CGeometry*       getGeometry() const ;
+        CMaterialBridge* getMaterialBridge() const ;
+        CSurfaceBridge*  getSurfaceBridge() const ;
+        CMaterialLib*    getMaterialLib() const ;
+        CDetector*       getDetector() const ;
         double           getCtxRecordFraction() const ;  // ctx is updated at setTrackOptical
+   public:
+        CEventAction*    getEventAction() const ;
+        CSteppingAction* getSteppingAction() const ;
+        CTrackingAction* getTrackingAction() const ;
+   public:
+        NPY<float>*      getGensteps() const ;
+   public:
+        double           flat_instrumented(const char* file, int line); 
+        CG4Ctx&          getCtx();
 
-        CRecorder*     getRecorder();
-        CStepRec*      getStepRec();
-        CMaterialLib*  getMaterialLib();
-        CDetector*     getDetector();
-        NPY<float>*    getGensteps();
    private:
         OpticksHub*           m_hub ; 
         Opticks*              m_ok ; 
@@ -193,8 +193,5 @@ class CFG4_API CG4
         CRayTracer*                    m_rt ; 
 
         bool                           m_initialized ; 
-
-
-        
 };
 

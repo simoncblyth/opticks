@@ -10,14 +10,13 @@ class G4VPhysicalVolume ;
 #include "CFG4_API_EXPORT.hh"
 #include "plog/Severity.h"
 
-
 /**
-
 CGDMLDetector
 ==============
 
 *CGDMLDetector* is a :doc:`CDetector` subclass that
-loads Geant4 GDML persisted geometry files.
+loads Geant4 GDML persisted geometry files, 
+from m_ok->getGDMLPath().
 
 **/
 

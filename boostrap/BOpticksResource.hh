@@ -121,6 +121,7 @@ class BRAP_API  BOpticksResource {
        const char* getSrcDigest() const ;
        const char* getDAEPath() const ;
        const char* getGDMLPath() const ;
+       const char* getSrcGDMLPath() const ;
        const char* getSrcGLTFPath() const ;
        const char* getSrcGLTFBase() const ;
        const char* getSrcGLTFName() const ;
@@ -178,6 +179,7 @@ class BRAP_API  BOpticksResource {
         const char* m_srcdigest ; 
         const char* m_idfold ; 
         const char* m_idfile ; 
+        const char* m_idgdml ; 
         const char* m_idsubd ; 
         const char* m_idname ; 
         const char* m_idpath ; 
@@ -188,6 +190,7 @@ class BRAP_API  BOpticksResource {
    protected:
        const char* m_daepath ;
        const char* m_gdmlpath ;
+       const char* m_srcgdmlpath ;
        const char* m_srcgltfpath ;
        const char* m_metapath ;
        const char* m_idmappath ;

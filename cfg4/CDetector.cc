@@ -35,8 +35,21 @@
 #include "CTraverser.hh"
 #include "CDetector.hh"
 #include "CCheck.hh"
+#include "CGDML.hh"
 
 #include "PLOG.hh"
+
+G4VPhysicalVolume* CDetector::getTop() const { return m_top ; }
+CMaterialLib* CDetector::getMaterialLib() const { return m_mlib ; }
+GMaterialLib* CDetector::getGMaterialLib() const { return m_gmateriallib ; }
+CSurfaceLib* CDetector::getSurfaceLib() const { return m_slib ; }
+GSurfaceLib* CDetector::getGSurfaceLib() const { return m_gsurfacelib ; }
+NBoundingBox* CDetector::getBoundingBox() const { return m_bbox ; } 
+bool CDetector::isValid() const { return m_valid ; }
+
+void CDetector::setValid(bool valid) { m_valid = valid ; }
+void CDetector::setVerbosity(unsigned int verbosity) { m_verbosity = verbosity ; }
+
 
 CDetector::CDetector(OpticksHub* hub, OpticksQuery* query)
     : 
@@ -68,13 +81,9 @@ void CDetector::init()
     LOG(m_level) << "." ; 
 }
 
-bool CDetector::isValid()
+G4VPhysicalVolume* CDetector::Construct()
 {
-    return m_valid ; 
-}
-void CDetector::setValid(bool valid)
-{
-    m_valid = valid ; 
+    return m_top ; 
 }
 
 void CDetector::setTop(G4VPhysicalVolume* top)
@@ -100,43 +109,6 @@ void CDetector::traverse(G4VPhysicalVolume* /*top*/)
     if(m_dbgsurf)
          LOG(info) << "[--dbgsurf] CDetector::traverse DONE " ;
 }
-
-G4VPhysicalVolume* CDetector::Construct()
-{
-    return m_top ; 
-}
-G4VPhysicalVolume* CDetector::getTop()
-{
-    return m_top ; 
-}
-CMaterialLib* CDetector::getMaterialLib() const 
-{
-    return m_mlib ; 
-}
-GMaterialLib* CDetector::getGMaterialLib() const 
-{
-    return m_gmateriallib ; 
-}
-
-CSurfaceLib* CDetector::getSurfaceLib() const 
-{
-    return m_slib ; 
-}
-GSurfaceLib* CDetector::getGSurfaceLib() const 
-{
-    return m_gsurfacelib ; 
-}
-
-
-NBoundingBox* CDetector::getBoundingBox()
-{
-    return m_bbox ; 
-}
-void CDetector::setVerbosity(unsigned int verbosity)
-{
-    m_verbosity = verbosity ; 
-}
-
 
 
 void CDetector::dumpLV(const char* msg)
@@ -350,22 +322,9 @@ void CDetector::export_dae(const char* dir, const char* name)
 
 void CDetector::export_gdml(const char* dir, const char* name)
 {
-    std::string path_ = BFile::FormPath(dir, name);
- 
     m_check->checkSurf();
- 
-    const G4String path = path_ ; 
-    LOG(info) << "export to " << path_ ; 
-
-    G4VPhysicalVolume* world_pv = getTop();
-    assert( world_pv  );
-
-    G4GDMLParser* g4gdml = new G4GDMLParser ;
-    G4bool refs = true ;
-    G4String schemaLocation = "" ; 
-
-    g4gdml->Write(path, world_pv, refs, schemaLocation );
-
+    G4VPhysicalVolume* world = getTop();
+    CGDML::Export(dir, name, world ); 
 }
 
 

@@ -294,7 +294,6 @@ om-visit-one()
 
 om-conf-one()
 {
-    local rc=0
     local arg=$1
     local iwd=$(pwd)
 
@@ -315,33 +314,60 @@ om-conf-one()
     cd $bdir
     printf "%s %-15s %-60s %-60s \n"  "$msg" $name $sdir $bdir
 
-    # TODO: hmm cleaner just to use same invokation for all pkgs 
-
+    local rc=0
     if [ "$name" == "okconf" ]; then     
-        cmake $sdir \
-           -G "$(om-cmake-generator)" \
-           -DCMAKE_BUILD_TYPE=$(opticks-buildtype) \
-           -DCMAKE_PREFIX_PATH=$(om-prefix)/externals \
-           -DCMAKE_INSTALL_PREFIX=$(om-prefix) \
-           -DCMAKE_MODULE_PATH=$(om-home)/cmake/Modules \
-           -DOptiX_INSTALL_DIR=$(opticks-optix-install-dir) \
-           -DCOMPUTE_CAPABILITY=$(opticks-compute-capability)
+        om-cmake-okconf $sdir
         rc=$?
     else
-        cmake $sdir \
-           -G "$(om-cmake-generator)" \
-           -DCMAKE_BUILD_TYPE=$(opticks-buildtype) \
-           -DCMAKE_PREFIX_PATH=$(om-prefix)/externals \
-           -DCMAKE_INSTALL_PREFIX=$(om-prefix) \
-           -DCMAKE_MODULE_PATH=$(om-home)/cmake/Modules 
-
-#           -DBOOST_INCLUDEDIR=$(opticks-boost-includedir) \
-#           -DBOOST_LIBRARYDIR=$(opticks-boost-libdir)
-
+        om-cmake $sdir
         rc=$?
     fi
     return $rc
 }
+
+
+om-cmake-okconf()
+{
+    local sdir=$1  
+    local bdir=$PWD
+    [ "$sdir" == "$bdir" ] && echo ERROR sdir and bdir are the same $sdir && return 1000
+
+    local rc 
+    cmake $sdir \
+       -G "$(om-cmake-generator)" \
+       -DCMAKE_BUILD_TYPE=$(opticks-buildtype) \
+       -DCMAKE_PREFIX_PATH=$(om-prefix)/externals \
+       -DCMAKE_INSTALL_PREFIX=$(om-prefix) \
+       -DCMAKE_MODULE_PATH=$(om-home)/cmake/Modules \
+       -DOptiX_INSTALL_DIR=$(opticks-optix-install-dir) \
+       -DCOMPUTE_CAPABILITY=$(opticks-compute-capability)
+
+    rc=$?
+    return $rc
+}
+
+
+om-cmake()
+{
+    local sdir=$1  
+    local bdir=$PWD
+    [ "$sdir" == "$bdir" ] && echo ERROR sdir and bdir are the same $sdir && return 1000
+
+    local rc 
+    cmake $sdir \
+       -G "$(om-cmake-generator)" \
+       -DCMAKE_BUILD_TYPE=$(opticks-buildtype) \
+       -DCMAKE_PREFIX_PATH=$(om-prefix)/externals \
+       -DCMAKE_INSTALL_PREFIX=$(om-prefix) \
+       -DCMAKE_MODULE_PATH=$(om-home)/cmake/Modules 
+
+    rc=$?
+    return $rc
+#   -DBOOST_INCLUDEDIR=$(opticks-boost-includedir) \
+#   -DBOOST_LIBRARYDIR=$(opticks-boost-libdir)
+}
+
+
 
 om-make-one()
 {

@@ -21,11 +21,13 @@ class BRAP_API BOpticksKey
 {
     public:
         static const char* G4LIVE ; 
+        static const char* IDSTEM ; 
         static const char* IDFILE ; 
         static const char* IDSUBD ; 
         static int         LAYOUT ; 
         static BOpticksKey* GetKey();
         static bool         SetKey(const char* spec) ;  
+        static const char* StemName( const char* ext, const char* sep="." );
     public:
         const char* getSpec() const ; 
         const char* getExename() const ; 
@@ -35,6 +37,7 @@ class BRAP_API BOpticksKey
     public:
         const char* getIdname() const ; 
         const char* getIdfile() const ; 
+        const char* getIdGDML() const ; 
         const char* getIdsubd() const ; 
         int         getLayout() const ; 
     public:
@@ -50,6 +53,7 @@ class BRAP_API BOpticksKey
 
         const char* m_idname ; // eg OpNovice_World_g4live
         const char* m_idfile ; // eg g4ok.gltf
+        const char* m_idgdml ; // eg g4ok.gdml
         const char* m_idsubd ; // eg g4ok_gltf
         int         m_layout ; 
  

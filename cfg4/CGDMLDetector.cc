@@ -47,7 +47,8 @@ CGDMLDetector::~CGDMLDetector()
 
 void CGDMLDetector::init()
 {
-    const char* path = m_ok->getGDMLPath();
+    const char* path = m_ok->getCurrentGDMLPath() ;
+
     bool exists = BFile::ExistsFile(path);
     if( !exists )
     {

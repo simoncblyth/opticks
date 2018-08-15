@@ -171,6 +171,29 @@ CUDA installation guides:
 * http://docs.nvidia.com/cuda/cuda-installation-guide-mac-os-x/index.html
 
 
+Finding CUDA
+~~~~~~~~~~~~~
+
+Opticks uses the `FindCUDA.cmake` supplied by CMake to, eg 
+on macOS at `/opt/local/share/cmake-3.12/Modules/FindCUDA.cmake`.  
+Quoting from that::
+
+   29 # The script will prompt the user to specify ``CUDA_TOOLKIT_ROOT_DIR`` if
+   30 # the prefix cannot be determined by the location of nvcc in the system
+   31 # path and ``REQUIRED`` is specified to :command:`find_package`. 
+
+
+Thus check that `nvcc` is in your PATH, and preferably compile some CUDA examples
+on your system before installing Opticks.:: 
+
+    epsilon:opticks blyth$ which nvcc    # macOS
+    /Developer/NVIDIA/CUDA-9.1/bin/nvcc
+
+    [blyth@localhost ~]$ which nvcc   # Linux
+    /usr/local/cuda-9.2/bin/nvcc
+
+
+
 Opticks without an CUDA capable GPU ?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

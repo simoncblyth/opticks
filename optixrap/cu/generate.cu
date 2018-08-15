@@ -291,13 +291,13 @@ RT_PROGRAM void tracetest()
     unsigned int genstep_id = seed_buffer[photon_id] ;      
     unsigned int genstep_offset = genstep_id*GNUMQUAD ; 
 
-    union quad ghead ; 
-    ghead.f = genstep_buffer[genstep_offset+0]; 
-    int gencode = ghead.i.x ; 
+    //union quad ghead ; 
+    //ghead.f = genstep_buffer[genstep_offset+0]; 
+    //int gencode = ghead.i.x ; 
 
     curandState rng = rng_states[photon_id];
 
-    State s ;   
+    //State s ;   
     Photon p ;  
 
     TorchStep ts ;
@@ -305,7 +305,7 @@ RT_PROGRAM void tracetest()
     //tsdebug(ts);
     generate_torch_photon(p, ts, rng );         
 
-    s.flag = TORCH ;  
+    //s.flag = TORCH ;  
  
     PerRayData_propagate prd ;
 
