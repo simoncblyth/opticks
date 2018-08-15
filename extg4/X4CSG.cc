@@ -18,7 +18,9 @@
 
 #include "G4Box.hh"
 #include "G4VSolid.hh"
-#include "G4VisExtent.hh"
+
+//#include "G4VisExtent.hh"
+#include "X4SolidExtent.hh"
 
 
 void X4CSG::Serialize( const G4VSolid* solid, const char* csgpath ) // static
@@ -47,8 +49,8 @@ void X4CSG::GenerateTest( const G4VSolid* solid, const char* prefix, unsigned lv
 
 G4VSolid* X4CSG::MakeContainer(const G4VSolid* solid, float scale ) // static
 {
-    G4VisExtent ve = solid->GetExtent();
-
+   /*
+    G4VisExtent ve = solid->GetExtent();  // crashes in 10.4.2
     float xmin = ve.GetXmin() ;
     float ymin = ve.GetYmin() ;
     float zmin = ve.GetZmin() ;
@@ -56,6 +58,17 @@ G4VSolid* X4CSG::MakeContainer(const G4VSolid* solid, float scale ) // static
     float xmax = ve.GetXmax() ;
     float ymax = ve.GetYmax() ;
     float zmax = ve.GetZmax() ;
+    */
+
+    nbbox* bb = X4SolidExtent::Extent(solid) ; 
+
+    float xmin = bb->min.x ; 
+    float ymin = bb->min.y ; 
+    float zmin = bb->min.z ; 
+
+    float xmax = bb->max.x ; 
+    float ymax = bb->max.y ; 
+    float zmax = bb->max.z ; 
 
     float hx0 = std::max(std::abs(xmin),std::abs(xmax)) ; 
     float hy0 = std::max(std::abs(ymin),std::abs(ymax)) ; 

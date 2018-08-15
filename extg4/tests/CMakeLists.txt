@@ -11,6 +11,7 @@ set(TEST_SOURCES
     X4SolidTest.cc
     X4SolidLoadTest.cc
     X4MeshTest.cc
+    X4SolidExtentTest.cc
     X4SolidListTest.cc
     X4PhysicsVectorTest.cc
     X4MaterialTest.cc

@@ -229,6 +229,9 @@ void CTraverser::AncestorVisit(std::vector<const G4VPhysicalVolume*> ancestors, 
     m_lvs.push_back(lv);  // <-- hmm will be many of the same lv in m_lvs 
 
     std::string lvn = lv->GetName();
+
+    LOG(info) << " lvn " << lvn ; 
+
     m_lvm[lvn] = lv ; 
 
 

@@ -7,27 +7,8 @@ include(OpticksBuildOptions)
 ExtG4 : Objectives
 =============================
 
-Bring together G4 and lower level Opticks to 
-investigate live G4 direct to GLTF exporting.
-
-For example pulling NPY arrays out of a G4VSolid 
-to eventually make GMesh/GParts instances.
-
-Dependencies:
-
-SysRap
-   yes
-NPY
-   yes
-
-GGeo
-   inevitable eventually
-
-YoctoGLRap
-   hmm : maybe not : retain some distance 
-   from GLTF stuff ?  but then need to hold onto 
-   json type data some other way 
-
+Bring together G4 and GGeo to 
+investigate live G4 direct to GGeo conversion.
 
 Class requirements for this package
 
@@ -56,6 +37,7 @@ set(SOURCES
     X4Entity.cc
     X4SolidBase.cc
     X4Solid.cc
+    X4SolidExtent.cc
     X4Mesh.cc
     X4SolidList.cc
 
@@ -96,6 +78,7 @@ set(HEADERS
     X4Entity.hh
     X4SolidBase.hh
     X4Solid.hh
+    X4SolidExtent.hh
     X4Mesh.hh
     X4SolidList.hh
 

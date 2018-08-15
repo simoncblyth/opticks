@@ -10,6 +10,7 @@
 
 struct X4_API X4AffineTransform
 {  
+    static G4AffineTransform FromTransform(const G4Transform3D& T );
     static X4AffineTransform FromGLM( const glm::mat4& trs );
 
     X4AffineTransform( const G4AffineTransform&  t ); 

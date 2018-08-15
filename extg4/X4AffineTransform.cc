@@ -13,6 +13,23 @@ X4AffineTransform::X4AffineTransform(const G4AffineTransform&  t )
 {
 }
 
+
+G4AffineTransform X4AffineTransform::FromTransform(const G4Transform3D& T )
+{
+    // duplicate from CFG4.CMath
+
+    G4ThreeVector colX(T.xx(), T.xy(), T.xz());
+    G4ThreeVector colY(T.yx(), T.yy(), T.yz());
+    G4ThreeVector colZ(T.zx(), T.zy(), T.zz());
+
+    G4RotationMatrix rot(colX,colY,colZ) ;
+    G4ThreeVector tlate(T.dx(), T.dy(), T.dz());
+
+    return G4AffineTransform( rot, tlate) ; 
+}
+
+
+
 X4AffineTransform X4AffineTransform::FromGLM( const glm::mat4& trs )
 {
     glm::mat3 trot(trs) ; 

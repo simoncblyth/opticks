@@ -415,6 +415,19 @@ om-test-one()
 }
 
 
+om-bdir-()
+{
+    local iwd=$(pwd)
+    local name=$(basename ${iwd/tests})   # trim tests to get name of subproj from tests folder or subproj folder
+    local bdir=$(om-bdir $name)
+    echo $bdir  
+}
+
+om-test-log(){ echo $(om-bdir-)/ctest.log ; }
+om-tl(){ cat $(om-test-log) ; }
+
+
+
 
 om-divider(){ cat << EOD
 //////////////////////////////////////////////////////////////////////////////////

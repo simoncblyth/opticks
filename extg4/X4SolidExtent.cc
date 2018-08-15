@@ -1,4 +1,3 @@
-#include "CFG4_BODY.hh"
 
 // g4-
 #include "G4VSolid.hh"
@@ -11,22 +10,22 @@
 #include "NBBox.hpp"
 #include "GLMFormat.hpp"
 
-#include "CMath.hh"
-#include "CSolid.hh"
+#include "X4SolidExtent.hh"
+#include "X4AffineTransform.hh"
 
 #include "PLOG.hh"
 
 
 
-CSolid::CSolid(const G4VSolid* solid) 
+X4SolidExtent::X4SolidExtent(const G4VSolid* solid) 
    :
       m_solid(solid)
 {
 }
 
-void CSolid::extent(const G4Transform3D& tran, glm::vec3& low, glm::vec3& high, glm::vec4& ce)
+void X4SolidExtent::extent(const G4Transform3D& tran, glm::vec3& low, glm::vec3& high, glm::vec4& ce)
 {
-    G4AffineTransform  atran = CMath::make_affineTransform(tran);
+    G4AffineTransform  atran = X4AffineTransform::FromTransform(tran);
     G4VoxelLimits      limit; // Unlimited
 
     G4double minX,maxX,minY,maxY,minZ,maxZ ;
@@ -49,17 +48,17 @@ void CSolid::extent(const G4Transform3D& tran, glm::vec3& low, glm::vec3& high, 
     ce.w = NBoundingBox::extent(low, high);
 
 
-    LOG(debug) << "CSolid::extent"
+    LOG(debug) << "X4SolidExtent::extent"
               << " low " << gformat(low)
               << " high " << gformat(high)
               ;
 
 }
 
-nbbox* CSolid::Extent(const G4VSolid* solid)
+nbbox* X4SolidExtent::Extent(const G4VSolid* solid)
 {
     G4Transform3D tran ; 
-    CSolid cs(solid); 
+    X4SolidExtent cs(solid); 
     nbbox bb ; 
     glm::vec4 ce ; 
     cs.extent( tran, bb.min, bb.max, ce ); 

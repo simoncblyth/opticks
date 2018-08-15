@@ -23,7 +23,7 @@ struct NPY_API nbbox
     void scan_sdf( const glm::vec3& o, const glm::vec3& range, const nmat4triple* t=NULL ) const ;
 
 
-    void dump(const char* msg);
+    void dump(const char* msg="nbbox::dump");
     void include(const nbbox& other );
     void include(const glm::vec3& p);
     static nbbox from_points(const std::vector<glm::vec3>& points, unsigned verbosity );

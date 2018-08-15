@@ -8,7 +8,7 @@
 #include "G4LogicalSkinSurface.hh"
 #include "G4LogicalBorderSurface.hh"
 #include "G4Material.hh"
-#include "G4VisExtent.hh"
+//#include "G4VisExtent.hh"
 #include "G4VSolid.hh"
 #include "G4TransportationManager.hh"
 

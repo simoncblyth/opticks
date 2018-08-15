@@ -4,10 +4,12 @@
 #include <string>
 
 
-#include "G4VisExtent.hh"
+// #include "G4VisExtent.hh"  
+
 #include "G4VSolid.hh"
 #include "G4Polyhedron.hh"
 
+#include "X4SolidExtent.hh"
 #include "X4Mesh.hh"
 
 #include "YOGMaker.hh"
@@ -35,14 +37,19 @@ solid name is prefixed with "PLACEHOLDER_" to make this clear.
 
 GMesh* X4Mesh::Placeholder(const G4VSolid* solid ) //static
 {
+
+/*
     G4VisExtent ve = solid->GetExtent();
     //LOG(info) << " visExtent " << ve ; 
  
     nbbox bb = make_bbox( 
                    ve.GetXmin(), ve.GetYmin(), ve.GetZmin(), 
                    ve.GetXmax(), ve.GetYmax(), ve.GetZmax(),  false );  
+*/
 
-    NTrianglesNPY* tris = NTrianglesNPY::box(bb) ;     
+    nbbox* bb = X4SolidExtent::Extent(solid) ; 
+
+    NTrianglesNPY* tris = NTrianglesNPY::box(*bb) ;     
     GMesh* mesh = GMeshMaker::make_mesh(tris->getTris());
 
     NVtxIdx vtxidx ;
