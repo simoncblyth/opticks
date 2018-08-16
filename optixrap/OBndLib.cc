@@ -145,7 +145,7 @@ void OBndLib::makeBoundaryTexture(NPY<float>* buf)
     unsigned int nx = nl ;           // wavelength samples
     unsigned int ny = ni*nj*nk ;     // total number of properties from all (two) float4 property groups of all (4) species in all (~123) boundaries 
    
-    LOG(trace) << "OBndLib::makeBoundaryTexture buf " 
+    LOG(verbose) << "OBndLib::makeBoundaryTexture buf " 
               << buf->getShapeString() 
               << " ---> "  
               << " nx " << nx
@@ -167,7 +167,7 @@ void OBndLib::makeBoundaryTexture(NPY<float>* buf)
     unsigned int ymin = 0 ;
     unsigned int ymax = ny - 1 ; 
 
-    LOG(trace) << "OBndLib::makeBoundaryTexture"
+    LOG(verbose) << "OBndLib::makeBoundaryTexture"
               << " xmin " << xmin 
               << " xmax " << xmax
               << " nx " << nx 
@@ -185,7 +185,7 @@ void OBndLib::makeBoundaryTexture(NPY<float>* buf)
  
     optix::uint4 bounds = optix::make_uint4(xmin, xmax, ymin, ymax );
 
-    LOG(trace) << "OBndLib::makeBoundaryTexture bounds (not including the num_float4) " 
+    LOG(verbose) << "OBndLib::makeBoundaryTexture bounds (not including the num_float4) " 
               << " x " << bounds.x 
               << " y " << bounds.y
               << " z " << bounds.z 
@@ -211,7 +211,7 @@ void OBndLib::makeBoundaryOptical(NPY<unsigned int>* obuf)
     unsigned int numBnd = numBytes/(GPropertyLib::NUM_MATSUR*4*sizeof(unsigned int)) ;  // this 4 is not NUM_PROP
     unsigned int nx = numBnd*GPropertyLib::NUM_MATSUR ;
 
-    LOG(trace) << "OBndLib::makeBoundaryOptical obuf " 
+    LOG(verbose) << "OBndLib::makeBoundaryOptical obuf " 
               << obuf->getShapeString() 
               << " numBnd " << numBnd 
               << " numBytes " << numBytes 

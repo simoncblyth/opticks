@@ -55,7 +55,7 @@ PLOG_INIT macros are used in two situations:
     LOG(warning) << msg  ; \
     LOG(info) << msg  ; \
     LOG(debug) << msg  ; \
-    LOG(trace) << msg  ; \
+    LOG(verbose) << msg  ; \
     LOG(verbose) << msg  ; \
 } \
 

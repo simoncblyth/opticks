@@ -186,7 +186,7 @@ void OGeo::convert()
     unsigned int geometryGroupCount = m_geometry_group->getChildCount() ;
     unsigned int repeatedGroupCount = m_repeated_group->getChildCount() ;
    
-    LOG(trace) << "OGeo::convert"
+    LOG(verbose) << "OGeo::convert"
               << " geometryGroupCount(global) " << geometryGroupCount
               << " repeatedGroupCount(instanced) " << repeatedGroupCount
               ;
@@ -293,7 +293,7 @@ optix::Group OGeo::makeRepeatedGroup(GMergedMesh* mm, bool raylod)
     assert(numIdentity % numTransforms == 0 && "expecting numIdentity to be integer multiple of numTransforms"); 
     unsigned int numSolids = numIdentity/numTransforms ;
 
-    LOG(trace) << "OGeo::makeRepeatedGroup"
+    LOG(verbose) << "OGeo::makeRepeatedGroup"
               << " numTransforms " << numTransforms 
               << " numIdentity " << numIdentity  
               << " numSolids " << numSolids  
@@ -569,7 +569,7 @@ optix::Acceleration OGeo::makeAcceleration(const char* builder, const char* trav
 
 optix::Material OGeo::makeMaterial()
 {
-    LOG(trace) << "OGeo::makeMaterial " 
+    LOG(verbose) << "OGeo::makeMaterial " 
                << " radiance_ray " << OContext::e_radiance_ray  
                << " propagate_ray " << OContext::e_propagate_ray  
                ; 
@@ -848,7 +848,7 @@ optix::Geometry OGeo::makeTriangulatedGeometry(GMergedMesh* mm, unsigned lod)
     {
         id = mm->getFaceRepeatedInstancedIdentityBuffer();
         assert(id);
-        LOG(trace) << "OGeo::makeTriangulatedGeometry using FaceRepeatedInstancedIdentityBuffer"
+        LOG(verbose) << "OGeo::makeTriangulatedGeometry using FaceRepeatedInstancedIdentityBuffer"
                   << " friid items " << id->getNumItems() 
                   << " numITransforms*numFaces " << numITransforms*numFaces
                   ;
@@ -859,7 +859,7 @@ optix::Geometry OGeo::makeTriangulatedGeometry(GMergedMesh* mm, unsigned lod)
    {
         id = mm->getFaceRepeatedIdentityBuffer();
         assert(id);
-        LOG(trace) << "OGeo::makeTriangulatedGeometry using FaceRepeatedIdentityBuffer"
+        LOG(verbose) << "OGeo::makeTriangulatedGeometry using FaceRepeatedIdentityBuffer"
                   << " frid items " << id->getNumItems() 
                   << " numFaces " << numFaces
                   ;

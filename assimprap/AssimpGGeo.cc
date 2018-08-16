@@ -775,7 +775,7 @@ GMesh* AssimpGGeo::convertMesh(const char* qname)
         const char* meshname = mesh->mName.C_Str() ; 
         std::string tmeshname = BStr::trimPointerSuffixPrefix(meshname, NULL );
 
-        //LOG(trace) << "AssimpGGeo::convertMesh" << " tmeshname " << tmeshname ; 
+        //LOG(verbose) << "AssimpGGeo::convertMesh" << " tmeshname " << tmeshname ; 
 
         if(tmeshname.compare(qname)==0) 
         {
@@ -821,7 +821,7 @@ void AssimpGGeo::convertMeshes(const aiScene* scene, GGeo* gg, const char* /*que
 
         if(gfixed != gmesh)
         {
-            LOG(trace) << "AssimpGGeo::convertMeshes meshfixing was done for "
+            LOG(verbose) << "AssimpGGeo::convertMeshes meshfixing was done for "
                         << " meshname " << meshname 
                         << " index " << i 
                          ; 

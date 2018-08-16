@@ -16,6 +16,7 @@
 #include "BFile.hh"
 #include "BHex.hh"
 #include "BStr.hh"
+#include "BEnv.hh"
 #include "PLOG.hh"
 #include "Map.hh"
 
@@ -471,9 +472,9 @@ void Opticks::init()
     m_lastarg = m_argc > 1 ? strdup(m_argv[m_argc-1]) : NULL ;
 
 
-    LOG(trace) << " Opticks::init start instanciate resource " ;
+    LOG(verbose) << " Opticks::init start instanciate resource " ;
     m_resource = new OpticksResource(this, m_lastarg);
-    LOG(trace) << " Opticks::init done instanciate resource " ;
+    LOG(verbose) << " Opticks::init done instanciate resource " ;
     setDetector( m_resource->getDetector() );
 
     LOG(debug) << "Opticks::init DONE " << m_resource->desc()  ;
@@ -989,7 +990,7 @@ const char* Opticks::getAnalyticPMTMedium()
     {
         std::string cmed = m_cfg->getAnalyticPMTMedium() ;
         std::string dmed = m_resource->getDefaultMedium()  ; 
-        LOG(trace) 
+        LOG(verbose) 
             << " cmed " << cmed 
             << " cmed.empty " << cmed.empty()
             << " dmed " << dmed 
@@ -1354,6 +1355,11 @@ void Opticks::configure()
 
     configureGeometryHandling();
 
+
+    if(hasOpt("dumpenv")) 
+         BEnv::dumpEnvironment("Opticks::configure --dumpenv", "G4,OPTICKS,DAE,IDPATH") ; 
+
+
     LOG(debug) << "Opticks::configure DONE " 
               << " verbosity " << m_verbosity 
               ;
@@ -1510,7 +1516,7 @@ void Opticks::configureDomains()
    int x_rng_max = getRngMax() ;
 
    if(e_rng_max != x_rng_max)
-       LOG(trace) << "Opticks::configureDomains"
+       LOG(verbose) << "Opticks::configureDomains"
                   << " CUDAWRAP_RNG_MAX " << e_rng_max 
                   << " x_rng_max " << x_rng_max 
                   ;

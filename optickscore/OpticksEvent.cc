@@ -272,12 +272,12 @@ void OpticksEvent::setNumPhotons(unsigned int num_photons, bool resize_)
     m_num_photons = num_photons ; 
     if(resize_)
     {
-        LOG(trace) << "OpticksEvent::setNumPhotons RESIZING " << num_photons ;  
+        LOG(verbose) << "OpticksEvent::setNumPhotons RESIZING " << num_photons ;  
         resize();
     }
     else
     {
-        LOG(trace) << "OpticksEvent::setNumPhotons NOT RESIZING " << num_photons ;  
+        LOG(verbose) << "OpticksEvent::setNumPhotons NOT RESIZING " << num_photons ;  
     }
 }
 unsigned int OpticksEvent::getNumPhotons() const 

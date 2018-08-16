@@ -1523,7 +1523,7 @@ void nnode::generateParPointsSheet(std::vector<glm::vec3>& points, std::vector<g
     glm::vec3 pos ; 
     glm::vec3 nrm ; 
 
-    LOG(trace) << "nnode::generateParPointsSheet"
+    LOG(verbose) << "nnode::generateParPointsSheet"
               << " sheet " << sheet 
               << " num " << num
               ;

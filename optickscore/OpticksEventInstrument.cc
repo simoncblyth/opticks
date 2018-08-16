@@ -13,7 +13,7 @@
 
 RecordsNPY* OpticksEventInstrument::CreateRecordsNPY(const OpticksEvent* evt) // static
 {
-    LOG(trace) << "OpticksEventInstrument::CreateRecordsNPY start" ; 
+    LOG(verbose) << "OpticksEventInstrument::CreateRecordsNPY start" ; 
 
     if(!evt || evt->isNoLoad()) return NULL ; 
 
@@ -37,7 +37,7 @@ RecordsNPY* OpticksEventInstrument::CreateRecordsNPY(const OpticksEvent* evt) //
               << " shape " << rx->getShapeString() 
               ;
 
-    LOG(trace) << "OpticksEventInstrument::CreateRecordsNPY done" ; 
+    LOG(verbose) << "OpticksEventInstrument::CreateRecordsNPY done" ; 
 
     return rec ; 
 } 

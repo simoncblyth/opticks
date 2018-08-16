@@ -193,7 +193,7 @@ const G4Material* CMaterialLib::convertMaterial(const GMaterial* kmat)
     }
 
 
-    LOG(trace) << "." ; 
+    LOG(verbose) << "." ; 
 
     G4MaterialPropertiesTable* mpt = makeMaterialPropertiesTable(kmat);
     material->SetMaterialPropertiesTable(mpt);
@@ -281,7 +281,7 @@ void CMaterialLib::dump(const char* msg)
     const char* lastarg = m_ok->getLastArg();
 
 
-    LOG(trace) <<  " ni " << ni 
+    LOG(verbose) <<  " ni " << ni 
                << " index " << index
                << " lastarg " << lastarg
               ; 
@@ -289,19 +289,19 @@ void CMaterialLib::dump(const char* msg)
 
     if(index < int(ni) && index >=0)
     {   
-        LOG(trace) << " dump index " << index ;
+        LOG(verbose) << " dump index " << index ;
         const GMaterial* mat = getMaterial(index);
         dump(mat, msg);
     }   
     else if(hasMaterial(lastarg))
     {   
-        LOG(trace) << " dump lastarg " << lastarg ;
+        LOG(verbose) << " dump lastarg " << lastarg ;
         const GMaterial* mat = getMaterial(lastarg);
         dump(mat, msg);
     }   
     else
     {
-        LOG(trace) << " dump ni " << ni  ;
+        LOG(verbose) << " dump ni " << ni  ;
         for(unsigned int i=0 ; i < ni ; i++)
         {
            const GMaterial* mat = getMaterial(i);
@@ -315,12 +315,12 @@ void CMaterialLib::dump(const char* msg)
 
 void CMaterialLib::dump(const GMaterial* mat, const char* msg)
 {
-    LOG(trace) << " dump mat " << mat ;
+    LOG(verbose) << " dump mat " << mat ;
     GMaterial* _mat = const_cast<GMaterial*>(mat); 
     const char* _name = _mat->getName();
-    LOG(trace) << " dump _name " << _name ;
+    LOG(verbose) << " dump _name " << _name ;
     const G4Material* g4mat = getG4Material(_name);
-    LOG(trace) << " dump g4mat " << g4mat ;
+    LOG(verbose) << " dump g4mat " << g4mat ;
     dumpMaterial(g4mat, msg);
 }
 

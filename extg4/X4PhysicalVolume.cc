@@ -700,7 +700,7 @@ GVolume* X4PhysicalVolume::convertNode(const G4VPhysicalVolume* const pv, GVolum
 
      int lvIdx = m_lvidx[lv] ;   // from postorder traverse in convertSolids to match GDML lvIdx : mesh identity uses lvIdx
 
-     LOG(trace) 
+     LOG(verbose) 
          << " boundary " << std::setw(4) << boundary 
          << " materialIdx " << std::setw(4) << materialIdx
          << " boundaryName " << boundaryName
@@ -735,7 +735,7 @@ GVolume* X4PhysicalVolume::convertNode(const G4VPhysicalVolume* const pv, GVolum
      bool selected = m_query->selected(pvName.c_str(), ndIdx, depth, recursive_select, lvr_lvIdx );
      if(selected) m_selected_node_count += 1 ;  
 
-     LOG(trace) << " lv_lvIdx " << lvr_lvIdx
+     LOG(verbose) << " lv_lvIdx " << lvr_lvIdx
                 << " selected " << selected
                ; 
  

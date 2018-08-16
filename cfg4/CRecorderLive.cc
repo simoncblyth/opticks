@@ -62,7 +62,7 @@ bool CRecorderLive::Record(G4OpBoundaryProcessStatus boundary_status)
     m_step_action = 0 ; 
 
     if(m_ctx._dbgrec)
-    LOG(trace) << "CRecorderLive::Record"
+    LOG(verbose) << "CRecorderLive::Record"
               << " step_id " << m_ctx._step_id
               << " record_id " << m_ctx._record_id
               << " stage " << CStage::Label(m_ctx._stage)

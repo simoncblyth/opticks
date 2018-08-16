@@ -16,7 +16,7 @@
 DetectorConstruction::DetectorConstruction( const char* sdname_ )
     :
     G4VUserDetectorConstruction(),
-    sdname(strdup(sdname_))
+    sdname(sdname_ ? strdup(sdname_) : NULL)
 {
 }
 
@@ -189,10 +189,12 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
     G4VPhysicalVolume* pv_2 = new G4PVPlacement(0,G4ThreeVector(0,0,100.),lv_2 ,"Det",lv_1,false,0);
     assert( pv_2 ); 
 
-    G4SDManager* SDMan = G4SDManager::GetSDMpointerIfExist();        assert( SDMan && " SDMan should have been created before now " ); 
-    G4VSensitiveDetector* sd = SDMan->FindSensitiveDetector(sdname); assert( sd && " failed for find sd with sdname " ); 
-    lv_2->SetSensitiveDetector(sd); 
-
+    if(sdname)
+    {
+        G4SDManager* SDMan = G4SDManager::GetSDMpointerIfExist();        assert( SDMan && " SDMan should have been created before now " ); 
+        G4VSensitiveDetector* sd = SDMan->FindSensitiveDetector(sdname); assert( sd && " failed for find sd with sdname " ); 
+        lv_2->SetSensitiveDetector(sd); 
+    }
 
     const std::string& lv_1_name = lv_1->GetName() ; 
     std::cout << " lv_1_name " << lv_1_name << std::endl ; 

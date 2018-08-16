@@ -21,7 +21,7 @@ OAccel::OAccel(optix::Acceleration accel, const char* path) :
 
 char* OAccel::read(const char* path)
 {
-    LOG(trace) << "OAccel::read path " << path ; 
+    LOG(verbose) << "OAccel::read path " << path ; 
 
     std::ifstream in( path, std::ifstream::in | std::ifstream::binary );
     if(!in)

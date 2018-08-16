@@ -209,7 +209,14 @@ void CTraverser::AncestorVisit(std::vector<const G4VPhysicalVolume*> ancestors, 
         T = T*P ; 
     }
     const G4VPhysicalVolume* pv = ancestors.back() ; 
-    G4LogicalVolume* lv = pv->GetLogicalVolume() ;
+    const G4LogicalVolume* lv = pv->GetLogicalVolume() ;
+
+
+    const std::string& pvn = pv->GetName();
+    const std::string& lvn = lv->GetName();
+
+    LOG(info) << " pvn " << pvn ; 
+    LOG(info) << " lvn " << lvn ; 
 
 
     updateBoundingBox(lv->GetSolid(), T, selected);
@@ -223,14 +230,10 @@ void CTraverser::AncestorVisit(std::vector<const G4VPhysicalVolume*> ancestors, 
 
 
     collectTransformT(m_gtransforms, T );
-    m_pvnames.push_back(pv->GetName());
+    m_pvnames.push_back(pvn);
 
     m_pvs.push_back(pv);
     m_lvs.push_back(lv);  // <-- hmm will be many of the same lv in m_lvs 
-
-    std::string lvn = lv->GetName();
-
-    LOG(info) << " lvn " << lvn ; 
 
     m_lvm[lvn] = lv ; 
 

@@ -144,7 +144,7 @@ const char* OpticksFlags::Abbrev(const unsigned int flag)
         case MACHINERY:        s=_MACHINERY;break; 
         case EMITSOURCE:       s=_EMITSOURCE;break; 
         default:               s=_BAD_FLAG  ;
-                               LOG(trace) << "OpticksFlags::Abbrev BAD_FLAG [" << flag << "]" << std::hex << flag << std::dec ;             
+                               LOG(verbose) << "OpticksFlags::Abbrev BAD_FLAG [" << flag << "]" << std::hex << flag << std::dec ;             
     }
     return s;
 }
@@ -386,7 +386,7 @@ void OpticksFlags::init(const char* path)
     m_index = parseFlags(path);
     unsigned int num_flags = m_index ? m_index->getNumItems() : 0 ;
 
-    LOG(trace) << "OpticksFlags::init"
+    LOG(verbose) << "OpticksFlags::init"
               << " path " << path 
               << " num_flags " << num_flags 
               << " " << ( m_index ? m_index->description() : "NULL index" )

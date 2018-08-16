@@ -39,15 +39,15 @@ Map<K,V>* Map<K,V>::load(const char* dir, const char* name)
 template <typename K, typename V>
 Map<K,V>* Map<K,V>::load(const char* path)
 {
-    LOG(trace) << " path " << path ; 
+    LOG(verbose) << " path " << path ; 
     if(!BFile::ExistsFile(path))
     {
-       LOG(trace) << " no path " << path ;
+       LOG(verbose) << " no path " << path ;
        return NULL ;  
     }
     else
     {
-       LOG(trace) << " Map<K,V>::load path " << path ;
+       LOG(verbose) << " Map<K,V>::load path " << path ;
     }
     Map* m = new Map<K,V>() ; 
     m->loadFromCache(path);

@@ -50,7 +50,7 @@ void CEventAction::setEvent(const G4Event* event)
 
 void CEventAction::postinitialize()
 {
-    LOG(trace) << "CEventAction::postinitialize" 
+    LOG(verbose) << "CEventAction::postinitialize" 
               << brief()
                ;
 }

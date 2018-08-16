@@ -381,7 +381,7 @@ template <typename T>
 int Maker::add_buffer( const NPY<T>* npy, const char* uri )
 {
     
-    LOG(trace) << "add_buffer" 
+    LOG(verbose) << "add_buffer" 
                << " uri " << uri 
                << " shape " << npy->getShapeString()
                ;

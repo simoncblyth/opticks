@@ -160,7 +160,7 @@ G4OpticalSurface* CSurfaceLib::makeOpticalSurface(GPropertyMap<float>* surf )
     unsigned upercent = optical.w ; 
     float value = float(upercent)/100.f ; 
 
-    LOG(trace) 
+    LOG(verbose) 
         << " upercent (optical.w) " << upercent
         << " value " << value 
         ;

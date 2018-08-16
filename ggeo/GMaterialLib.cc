@@ -662,7 +662,7 @@ void GMaterialLib::replaceGROUPVEL(bool debug)
         GProperty<float>* vg_calc = GProperty<float>::make_GROUPVEL(ri);
         assert(vg_calc);
 
-        LOG(trace)
+        LOG(verbose)
             << " i " << std::setw(2) << i 
             << " n " << std::setw(2) << m_materials.size() 
             << " mat " << mat 

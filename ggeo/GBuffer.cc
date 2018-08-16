@@ -253,7 +253,7 @@ GBuffer* GBuffer::load(const char* path)
 
     std::string name = BFile::Stem(path) ;
 
-    LOG(trace) 
+    LOG(verbose) 
           << " path "  << path 
           << " name "  << name 
            ; 
@@ -284,7 +284,7 @@ GBuffer* GBuffer::load(const char* path)
 
 
 
-    LOG(trace) << " path "  << path 
+    LOG(verbose) << " path "  << path 
               << " numItems " << numItems 
               << " numElements " << numElements
               ;

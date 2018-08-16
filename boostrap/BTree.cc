@@ -22,7 +22,7 @@ namespace pt = boost::property_tree;
 void BTree::saveTree(const pt::ptree& t , const char* path_)
 {
     std::string path = BFile::preparePath(path_, true);
-    LOG(trace) << "BTree::saveTree "
+    LOG(verbose) << "BTree::saveTree "
                << " path_ " << path_ 
                << " path " << path 
                ; 

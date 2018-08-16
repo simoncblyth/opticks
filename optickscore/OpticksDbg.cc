@@ -71,7 +71,7 @@ void OpticksDbg::loadNPY1(std::vector<unsigned>& vec, const char* path )
 
     u->copyTo(vec);
 
-    LOG(trace) << "loaded " << vec.size() << " from " << path ; 
+    LOG(verbose) << "loaded " << vec.size() << " from " << path ; 
     assert( vec.size() == u->getShape(0) ); 
 }
 
@@ -79,7 +79,7 @@ void OpticksDbg::loadNPY1(std::vector<unsigned>& vec, const char* path )
 
 void OpticksDbg::postconfigure()
 {
-   LOG(trace) << "setting up"  ; 
+   LOG(verbose) << "setting up"  ; 
    m_cfg = m_ok->getCfg();
 
    const std::string& dindex = m_cfg->getDbgIndex() ;
@@ -108,7 +108,7 @@ void OpticksDbg::postconfigure(const std::string& spec, std::vector<unsigned>& l
 {
    if(spec.empty())
    {
-       LOG(trace) << "spec empty" ;
+       LOG(verbose) << "spec empty" ;
    } 
    else if(BFile::LooksLikePath(spec.c_str()))
    { 
@@ -116,7 +116,7 @@ void OpticksDbg::postconfigure(const std::string& spec, std::vector<unsigned>& l
    }
    else
    { 
-       LOG(trace) << " spec " << spec ;  
+       LOG(verbose) << " spec " << spec ;  
        BStr::usplit(ls, spec.c_str(), ',');
    }
 }

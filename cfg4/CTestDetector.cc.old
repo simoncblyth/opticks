@@ -183,7 +183,7 @@ void CTestDetector::makePMT_OLD(G4LogicalVolume* container)
 {
     // try without creating an explicit node tree 
 
-    LOG(trace) << "CTestDetector::makePMT_OLD" ; 
+    LOG(verbose) << "CTestDetector::makePMT_OLD" ; 
 
     GPmtLib* pmtlib = m_ggb->getPmtLib();
     GPmt* pmt = pmtlib->getLoadedAnalyticPmt();

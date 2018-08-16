@@ -441,7 +441,7 @@ GLuint Renderer::createVertexArray(RBuf* instanceBuffer)
  
     if(instanceBO > 0)
     {
-        LOG(trace) << "Renderer::upload_buffers setup instance transform attributes " ;
+        LOG(verbose) << "Renderer::upload_buffers setup instance transform attributes " ;
         glBindBuffer (GL_ARRAY_BUFFER, instanceBO);
 
         uintptr_t qsize = sizeof(GLfloat) * 4 ;
@@ -700,7 +700,7 @@ void Renderer::check_uniforms()
     bool inrm = tag.compare("inrm") == 0 ; 
     bool tex = tag.compare("tex") == 0 ; 
 
-    LOG(trace) << "Renderer::check_uniforms " 
+    LOG(verbose) << "Renderer::check_uniforms " 
               << " tag " << tag  
               << " nrm " << nrm  
               << " nrmvec " << nrmvec  
@@ -753,7 +753,7 @@ void Renderer::check_uniforms()
         assert(0); 
     }
 
-    LOG(trace) << "Renderer::check_uniforms "
+    LOG(verbose) << "Renderer::check_uniforms "
               << " tag " << tag 
               << " mvp " << m_mvp_location
               << " mv " << m_mv_location 

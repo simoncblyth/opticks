@@ -396,7 +396,7 @@ void GMergedMesh::mergeVolume( GVolume* volume, bool selected, unsigned verbosit
     unsigned num_face = mesh->getNumFaces();
 
 
-    LOG(trace) << "GMergedMesh::mergeVolume "
+    LOG(verbose) << "GMergedMesh::mergeVolume "
                << " m_cur_volume " << std::setw(6) << m_cur_volume
                << " pts (normally NULL) " << pts
                << " selected " << ( selected ? "YES" : "NO" ) 

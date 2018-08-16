@@ -114,7 +114,7 @@ int BMap<A,B>::load( const char* dir, const char* name, unsigned int depth)
 
     if(!path.empty())
     {
-        LOG(trace) << "BMap<A,B>::load path " << path  ;
+        LOG(verbose) << "BMap<A,B>::load path " << path  ;
         rc = load( path.c_str(), depth );
     }
     else
@@ -139,7 +139,7 @@ int BMap<A,B>::load(const char* path, unsigned int depth)
         return 1 ; 
     } 
 
-    LOG(trace) << "BMap<A,B>::load"  
+    LOG(verbose) << "BMap<A,B>::load"  
                << " path " << path 
                << " fpath " << fpath 
                << " depth " << depth

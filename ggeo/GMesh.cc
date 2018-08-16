@@ -1934,7 +1934,7 @@ void GMesh::save(const char* dir, const char* typedir, const char* instancedir) 
 
 void GMesh::loadBuffers(const char* dir)
 {
-    LOG(trace) << "GMesh::loadBuffers " << dir ;  
+    LOG(verbose) << "GMesh::loadBuffers " << dir ;  
 
     for(unsigned int i=0 ; i<m_names.size() ; i++)
     {
@@ -1949,7 +1949,7 @@ void GMesh::loadBuffers(const char* dir)
         }
         else
         {
-            LOG(trace) << "no such bufpath: " << bufpath ; 
+            LOG(verbose) << "no such bufpath: " << bufpath ; 
         }
     } 
     updateBounds();
@@ -1982,7 +1982,7 @@ GMesh* GMesh::makeDedupedCopy()
 
 GMesh* GMesh::load_deduped(const char* dir, const char* typedir, const char* instancedir)
 {
-    LOG(trace) << "GMesh::load_deduped"
+    LOG(verbose) << "GMesh::load_deduped"
                << " dir " << dir
                << " typedir " << typedir
                << " instancedir " << instancedir

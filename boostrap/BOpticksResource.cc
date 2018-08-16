@@ -119,7 +119,7 @@ void BOpticksResource::initInstallPrefix()
 
     int rc = SSys::setenvvar(key, m_install_prefix, true );  
 
-    LOG(trace) << "OpticksResource::adoptInstallPrefix " 
+    LOG(verbose) << "OpticksResource::adoptInstallPrefix " 
                << " install_prefix " << m_install_prefix  
                << " key " << key 
                << " rc " << rc
@@ -596,7 +596,7 @@ void BOpticksResource::setIdPathOverride(const char* idpath_tmp)  // used for te
 } 
 const char* BOpticksResource::getIdPath() const 
 {
-    LOG(trace) << "getIdPath"
+    LOG(verbose) << "getIdPath"
               << " idpath_tmp " << m_idpath_tmp 
               << " idpath " << m_idpath
               ; 

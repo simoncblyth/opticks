@@ -22,7 +22,7 @@ CSurfaceBridge::CSurfaceBridge( GSurfaceLib* slib)
 
 void CSurfaceBridge::initMap(CSurfaceTable* stab)
 {
-    LOG(trace) << "CSurfaceBridge::initMap" 
+    LOG(verbose) << "CSurfaceBridge::initMap" 
                << " stab " << stab->getName()
               ;
 
@@ -43,7 +43,7 @@ void CSurfaceBridge::initMap(CSurfaceTable* stab)
         m_ixtoname[index] = shortname ;
 
 
-        LOG(trace) << " i " << std::setw(3) << i 
+        LOG(verbose) << " i " << std::setw(3) << i 
                   << " name " << std::setw(35) << name 
                   << " shortname " << std::setw(35) << shortname 
                   << " index " << std::setw(5)  << index

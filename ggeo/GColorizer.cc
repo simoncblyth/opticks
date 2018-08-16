@@ -105,7 +105,7 @@ void GColorizer::traverse_r( GNode* node, unsigned depth)
 
     bool selected = volume->isSelected() && volume->getRepeatIndex() == m_repeat_index ;
 
-    LOG(trace) << "GColorizer::traverse"
+    LOG(verbose) << "GColorizer::traverse"
               << " depth " << depth
               << " node " << ( node ? node->getIndex() : 0 )
               << " nvert " << nvert

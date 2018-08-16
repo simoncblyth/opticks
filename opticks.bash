@@ -971,7 +971,6 @@ opticks-t--()
 
 
 opticks-findl(){ opticks-find "$1" -l ; }
-opticks-f(){ opticks-find $* ; }
 opticks-find(){
    local str="${1:-ENV_HOME}"
    local opt=${2:--H}
@@ -992,6 +991,36 @@ opticks-find(){
 
    #cd $iwd
 }
+
+
+opticks-f(){   
+   local str="${1:-ENV_HOME}"
+   local opt=${2:--H}
+
+   local iwd=$PWD
+   opticks-scd
+
+   find . \
+        \( \
+       -name '*.sh' -or \
+       -name '*.bash' -or \
+       -name '*.cu' -or \
+       -name '*.cc' -or \
+       -name '*.hh' -or \
+       -name '*.cpp' -or \
+       -name '*.hpp' -or \
+       -name '*.h' -or \
+       -name '*.txt' -or \
+       -name '*.py' \
+        \) \
+       -exec grep $opt "$str" {} \;
+
+}
+
+
+
+
+
 
 
 opticks-unset--()

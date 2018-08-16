@@ -306,7 +306,7 @@ nnode* X4Solid::convertSphere_(bool only_inner)
     nnode* inner = has_inner ? convertSphere_(true) : NULL ;  
     float radius = only_inner ? rmin : rmax ;   
 
-    LOG(trace) 
+    LOG(verbose) 
               << " radius : " << radius 
               << " only_inner : " << only_inner
               << " has_inner : " << has_inner 
@@ -323,7 +323,7 @@ nnode* X4Solid::convertSphere_(bool only_inner)
 
     bool zslice = startThetaAngle > 0.f || deltaThetaAngle < 180.f ; 
 
-    LOG(trace) 
+    LOG(verbose) 
               << " rTheta : " << rTheta
               << " lTheta : " << lTheta
               << " zslice : " << zslice

@@ -1,6 +1,7 @@
 #include <cassert>
 #include "BStr.hh"
 
+#include "G4Version.hh"
 #include "G4OpticalSurface.hh"
 #include "X4.hh"
 #include "X4OpticalSurface.hh"
@@ -17,9 +18,13 @@ const char* X4OpticalSurface::Type(G4SurfaceType type)
        case dielectric_metal      : t="dielectric_metal"      ; break ; 
        case dielectric_dielectric : t="dielectric_dielectric" ; break ; 
        case dielectric_LUT        : t="dielectric_LUT"        ; break ; 
+#if (G4VERSION_NUMBER >= 1042)
+       case dielectric_LUTDAVIS   : t="dielectric_LUTDAVIS"    ; break ; 
+#endif
        case dielectric_dichroic   : t="dielectric_dichroic"   ; break ; 
        case firsov                : t="firsov"                ; break ;
        case x_ray                 : t="x_ray"                 ; break ;
+       default                    : t="OTHER?"                ; break ; 
    }
    return t ; 
 }    

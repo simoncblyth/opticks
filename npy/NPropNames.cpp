@@ -27,7 +27,7 @@ std::string NPropNames::libpath(const char* libname)
 
 void NPropNames::read()
 {
-    LOG(trace) << "NPropNames::read" 
+    LOG(verbose) << "NPropNames::read" 
                << " libname " << ( m_libname ? m_libname : "NULL" )
                ;
 
@@ -43,7 +43,7 @@ void NPropNames::read()
         {
             // GItemList name like GMaterialLib 
             std::string path = libpath(m_libname) ; 
-            LOG(trace) << "NPropNames::read"
+            LOG(verbose) << "NPropNames::read"
                        << " path " << path ; 
 
             m_txt = new NTxt(path.c_str());

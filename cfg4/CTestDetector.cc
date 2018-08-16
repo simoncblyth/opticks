@@ -63,7 +63,7 @@ CTestDetector::CTestDetector(OpticksHub* hub, OpticksQuery* query)
 
 void CTestDetector::init()
 {
-    LOG(trace) << "CTestDetector::init" ; 
+    LOG(verbose) << "CTestDetector::init" ; 
 
     if(m_ok->hasOpt("dbgtestgeo"))
     {
@@ -71,11 +71,11 @@ void CTestDetector::init()
         setVerbosity(1);
     }
 
-    LOG(trace) << "CTestDetector::init CMaker created" ; 
+    LOG(verbose) << "CTestDetector::init CMaker created" ; 
 
     G4VPhysicalVolume* top = makeDetector();
 
-    LOG(trace) << "CTestDetector::init makeDetector DONE" ; 
+    LOG(verbose) << "CTestDetector::init makeDetector DONE" ; 
 
     setTop(top) ;  // <-- kicks off CTraverser
 

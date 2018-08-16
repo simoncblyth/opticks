@@ -158,7 +158,7 @@ const char* Scene::getRecordStyleName()
 void Scene::init()
 {
     LOG(debug) << "Scene::init" ; 
-    LOG(trace) << "Scene::init (config from cmake)"
+    LOG(verbose) << "Scene::init (config from cmake)"
               << " OGLRAP_INSTALL_PREFIX " << OGLRAP_INSTALL_PREFIX
               << " OGLRAP_SHADER_DIR " << OGLRAP_SHADER_DIR
               << " OGLRAP_SHADER_INCL_PATH " << OGLRAP_SHADER_INCL_PATH
@@ -613,7 +613,7 @@ void Scene::uploadGeometryInstanced(GMergedMesh* mm)
             //m_instance_mode[m_num_instance_renderer] = true ; 
         }
 
-        LOG(trace)<< "Scene::uploadGeometryInstanced bbox renderer " << m_num_instance_renderer  ;
+        LOG(verbose)<< "Scene::uploadGeometryInstanced bbox renderer " << m_num_instance_renderer  ;
         GBBoxMesh* bb = GBBoxMesh::create(mm); assert(bb);
 
         if(m_bbox_renderer[m_num_instance_renderer])

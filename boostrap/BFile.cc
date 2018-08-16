@@ -108,17 +108,17 @@ std::string expandvar(const char* s)
            if(evalue.compare("TMP")==0) //  TMP envvar not defined
            {
                evalue = usertmpdir("/tmp","opticks", NULL);
-               LOG(trace) << "expandvar replacing TMP with " << evalue ; 
+               LOG(verbose) << "expandvar replacing TMP with " << evalue ; 
            }
            else if(evalue.compare("TMPTEST")==0) 
            {
                evalue = usertmpdir("/tmp","opticks","test");
-               LOG(trace) << "expandvar replacing TMPTEST with " << evalue ; 
+               LOG(verbose) << "expandvar replacing TMPTEST with " << evalue ; 
            }
            else if(evalue.compare("OPTICKS_EVENT_BASE")==0) 
            {
                evalue = usertmpdir("/tmp","opticks",NULL);
-               LOG(trace) << "expandvar replacing OPTICKS_EVENT_BASE  with " << evalue ; 
+               LOG(verbose) << "expandvar replacing OPTICKS_EVENT_BASE  with " << evalue ; 
            }
 
 
@@ -332,7 +332,7 @@ std::string BFile::FormPath(const char* path, const char* sub, const char* name,
 {
 
    bool prepare = false ; 
-   LOG(trace) << "BFile::FormPath"
+   LOG(verbose) << "BFile::FormPath"
               << " path " << path 
               << " sub " << sub
               << " name " << name

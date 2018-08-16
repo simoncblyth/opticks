@@ -133,7 +133,10 @@ void OpticksCfg<Listener>::init()
        ("xanalytic",  "try switching on analytic ray tracing from GGeo without the analytic toggle from GScene etc...") ;
 
    m_desc.add_options()
-       ("dumpenv",  "dump envvars with names starting with OPTICKS") ;
+       ("dumpenv",  
+         "dump envvars with names starting with OPTICKS at Opticks instanciation "
+         " and envvars starting with G4,OPTICKS,DAE,IDPATH in Opticks::configure "
+       ) ;
 
    m_desc.add_options()
        ("noevent,E",  "inhibit event handling") ;

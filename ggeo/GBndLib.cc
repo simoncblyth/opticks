@@ -36,11 +36,11 @@ GBndLib* GBndLib::load(Opticks* ok, bool constituents)
 {
     GBndLib* blib = new GBndLib(ok);
 
-    LOG(trace) << "GBndLib::load" ; 
+    LOG(verbose) << "GBndLib::load" ; 
 
     blib->loadIndexBuffer();
 
-    LOG(trace) << "GBndLib::load indexBuffer loaded" ; 
+    LOG(verbose) << "GBndLib::load indexBuffer loaded" ; 
     blib->importIndexBuffer();
 
 
@@ -79,19 +79,19 @@ GBndLib* GBndLib::load(Opticks* ok, bool constituents)
         } 
     }
 
-    LOG(trace) << "GBndLib::load DONE" ; 
+    LOG(verbose) << "GBndLib::load DONE" ; 
 
     return blib ; 
 }
 
 void GBndLib::loadIndexBuffer()
 {
-    LOG(trace) << "GBndLib::loadIndexBuffer" ; 
+    LOG(verbose) << "GBndLib::loadIndexBuffer" ; 
 
     std::string dir = getCacheDir(); 
     std::string name = getBufferName("Index");
 
-    LOG(trace) << "GBndLib::loadIndexBuffer" 
+    LOG(verbose) << "GBndLib::loadIndexBuffer" 
                << " dir " << dir
                << " name " << name 
                 ; 
@@ -100,7 +100,7 @@ void GBndLib::loadIndexBuffer()
     NPY<unsigned int>* indexBuf = NPY<unsigned int>::load(dir.c_str(), name.c_str()); 
 
 
-    LOG(trace) << "GBndLib::loadIndexBuffer" 
+    LOG(verbose) << "GBndLib::loadIndexBuffer" 
                << " indexBuf " << indexBuf
                ;
 
@@ -183,7 +183,7 @@ NPY<unsigned int>* GBndLib::createIndexBuffer()
 
 void GBndLib::importIndexBuffer()
 {
-    LOG(trace) << "GBndLib::importIndexBuffer" ; 
+    LOG(verbose) << "GBndLib::importIndexBuffer" ; 
     NPY<unsigned int>* ibuf = getIndexBuffer();
 
     if(ibuf == NULL)
@@ -644,7 +644,7 @@ unsigned int GBndLib::getMaterialLine(const char* shortname_)
         } 
     }
 
-    LOG(trace) << "GBndLib::getMaterialLine"
+    LOG(verbose) << "GBndLib::getMaterialLine"
               << " shortname_ " << shortname_ 
               << " line " << line 
               ; 
@@ -696,7 +696,7 @@ NPY<float>* GBndLib::createBufferForTex2d()
 
     */
 
-    LOG(trace) << "GBndLib::createBufferForTex2d" ;
+    LOG(verbose) << "GBndLib::createBufferForTex2d" ;
 
     NPY<float>* mat = m_mlib->getBuffer();
     NPY<float>* sur = m_slib->getBuffer();

@@ -7,7 +7,7 @@
 
 void check(const char* msg)
 {
-    LOG(trace) << msg ; 
+    LOG(verbose) << msg ; 
     LOG(verbose) << msg ; 
     LOG(info) << msg ; 
     LOG(debug) << msg ; 

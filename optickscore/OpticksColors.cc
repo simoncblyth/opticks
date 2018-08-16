@@ -154,7 +154,7 @@ nvec3 OpticksColors::getPsychedelic(unsigned int num)
     const char* cname = getNamePsychedelic(index);    
 
 /*
-    LOG(trace) << "OpticksColors::getPsychedelic"
+    LOG(verbose) << "OpticksColors::getPsychedelic"
               << " num " << num 
               << " index " << index
               << " num_colors " << num_colors 
@@ -296,7 +296,7 @@ NPY<unsigned char>* OpticksColors::make_buffer(std::vector<unsigned int>& codes)
     buf->zero();    
     unsigned char* data = buf->getValues();
 
-    LOG(trace) << "OpticksColors::make_buffer" 
+    LOG(verbose) << "OpticksColors::make_buffer" 
                << " n " << n 
                ; 
 
@@ -307,7 +307,7 @@ NPY<unsigned char>* OpticksColors::make_buffer(std::vector<unsigned int>& codes)
         unsigned int green = (color & 0x00FF00) >> 8 ;
         unsigned int blue  = (color & 0x0000FF)      ;
 
-        LOG(trace) << std::setw(4) << i 
+        LOG(verbose) << std::setw(4) << i 
                   << std::setw(10) << hex << color << dec
                   << std::setw(10) << hex << red << dec
                   << std::setw(10) << hex << green << dec
@@ -357,7 +357,7 @@ void OpticksColors::addColors(std::vector<unsigned int>& codes, unsigned int sta
     unsigned char alpha = 0xFF ; 
     typedef std::vector<unsigned int> VU ; 
 
-    LOG(trace) << "OpticksColors::addColors " 
+    LOG(verbose) << "OpticksColors::addColors " 
               << " codes.size " << codes.size()
               << " start " << start 
               << " max_colors " << max_colors 
@@ -424,7 +424,7 @@ void OpticksColors::setupCompositeColorBuffer(std::vector<unsigned int>&  materi
     unsigned int spectral_color_offset = SPECTRAL_COLOR_OFFSET ; 
 
 
-    LOG(trace) << "OpticksColors::setupCompositeColorBuffer"
+    LOG(verbose) << "OpticksColors::setupCompositeColorBuffer"
               << " material_codes " << material_codes.size()
               << " flag_codes " << flag_codes.size()
               << " psychedelic_codes " << psychedelic_codes.size()
@@ -470,6 +470,6 @@ void OpticksColors::setupCompositeColorBuffer(std::vector<unsigned int>&  materi
     //
     //     fcolor = texture(Colors, (float(flq[0].x) + MATERIAL_COLOR_OFFSET - 1.0 + 0.5)/ColorDomain.y ) 
     //
-    LOG(trace) << "OpticksColors::setupCompositeColorBuffer DONE " ;
+    LOG(verbose) << "OpticksColors::setupCompositeColorBuffer DONE " ;
 }
 

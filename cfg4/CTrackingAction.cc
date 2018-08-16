@@ -45,7 +45,7 @@ void CTrackingAction::postinitialize()
 {
     assert(m_ctx._track_id == -1);
     assert(m_ctx._parent_id == -1);
-    LOG(trace) << "CTrackingAction::postinitialize" << brief() ; 
+    LOG(verbose) << "CTrackingAction::postinitialize" << brief() ; 
 }
 
 
@@ -67,7 +67,7 @@ void CTrackingAction::PreUserTrackingAction(const G4Track* track)
 {
     setTrack(track);
 
-    LOG(trace) << "CTrackingAction::PreUserTrackingAction" << brief()  ;
+    LOG(verbose) << "CTrackingAction::PreUserTrackingAction" << brief()  ;
 
     if(m_ctx._optical)
     {
@@ -86,7 +86,7 @@ void CTrackingAction::PostUserTrackingAction(const G4Track* track)
     assert( track_id == m_ctx._track_id );
     assert( track == m_ctx._track );
 
-    LOG(trace) << "CTrackingAction::PostUserTrackingAction"  << brief() ;
+    LOG(verbose) << "CTrackingAction::PostUserTrackingAction"  << brief() ;
 
     if(m_ctx._optical)
     {

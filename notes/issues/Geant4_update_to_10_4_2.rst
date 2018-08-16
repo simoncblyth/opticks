@@ -119,8 +119,8 @@ CFG4 still has 6 fails
     epsilon:tests blyth$ 
 
 
-ENSDFSTATE issue
--------------------
+FIXED : ENSDFSTATE issue, had omitted to g4-export-ini to update the internal envvars
+-------------------------------------------------------------------------------------------
 
 The 4 SEGFAULT are all from the same cause::
 
@@ -147,7 +147,10 @@ The 4 SEGFAULT are all from the same cause::
     epsilon:tests blyth$ g4-sh
     /usr/local/opticks/externals/bin/geant4.sh
     epsilon:tests blyth$ vi /usr/local/opticks/externals/bin/geant4.sh
-    epsilon:tests blyth$ env | grep G4
+
+
+    epsilon:tests blyth$ env | grep G4   ## these external envvars get trumped by those from g4-ini
+
     G4LEVELGAMMADATA=/usr/local/opticks/externals/share/Geant4-10.4.2/data/PhotonEvaporation5.2
     G4NEUTRONXSDATA=/usr/local/opticks/externals/share/Geant4-10.4.2/data/G4NEUTRONXS1.4
     G4LEDATA=/usr/local/opticks/externals/share/Geant4-10.4.2/data/G4EMLOW7.3
@@ -158,8 +161,6 @@ The 4 SEGFAULT are all from the same cause::
     G4PIIDATA=/usr/local/opticks/externals/share/Geant4-10.4.2/data/G4PII1.3
     G4SAIDXSDATA=/usr/local/opticks/externals/share/Geant4-10.4.2/data/G4SAIDDATA1.1
     G4REALSURFACEDATA=/usr/local/opticks/externals/share/Geant4-10.4.2/data/RealSurface2.1.1
-
-
 
 ::
 
@@ -196,8 +197,6 @@ The 4 SEGFAULT are all from the same cause::
     (lldb) 
 
 
-* http://hypernews.slac.stanford.edu/HyperNews/geant4/get/installconfig/1887.html
-
 ::
 
     epsilon:extg4 blyth$ ll /usr/local/opticks/externals/share/Geant4-10.4.2/data/G4ENSDFSTATE2.2/
@@ -211,6 +210,132 @@ The 4 SEGFAULT are all from the same cause::
     -rw-r--r--  1 blyth  staff  1785840 Sep  5  2017 /usr/local/opticks/externals/share/Geant4-10.4.2/data/G4ENSDFSTATE2.2/ENSDFSTATE.dat
     epsilon:extg4 blyth$ 
 
+
+As I left office, recalled some internal envvar setup via ini
+---------------------------------------------------------------
+
+::
+
+    epsilon:opticks blyth$ g4-
+    epsilon:opticks blyth$ t g4-export-ini
+    g4-export-ini is a function
+    g4-export-ini () 
+    { 
+        local msg="=== $FUNCNAME :";
+        g4-export;
+        local ini=$(g4-ini);
+        local dir=$(dirname $ini);
+        mkdir -p $dir;
+        echo $msg writing G4 environment to $ini;
+        env | grep G4 > $ini;
+        cat $ini
+    }
+
+    epsilon:opticks blyth$ g4-ini
+    /usr/local/opticks/externals/config/geant4.ini
+
+    epsilon:opticks blyth$ opticks-find geant4.ini
+    ./bin/oks.bash:    2016-07-07 13:48:50.187 WARN  [21116] [OpticksResource::readG4Environment@321] OpticksResource::readG4Environment MISSING FILE externals/config/geant4.ini (create it with bash functions: g4-;g4-export-ini ) 
+    ./bin/oks.bash:    /home/simonblyth/local/opticks/externals/config/geant4.ini
+    ./bin/oks.bash:    === g4-export-ini : writing G4 environment to /home/simonblyth/local/opticks/externals/config/geant4.ini
+    ./externals/g4.bash:	=== g4-export-ini : writing G4 environment to /home/blyth/local/opticks/externals/config/geant4.ini
+    ./externals/g4.bash:g4-ini(){ echo $(opticks-prefix)/externals/config/geant4.ini ; }
+    ./boostrap/tests/BFileTest.cc:    ss.push_back("$OPTICKS_INSTALL_PREFIX/externals/config/geant4.ini") ;
+    ./boostrap/tests/BEnvTest.cc:    testIniLoad("$OPTICKS_INSTALL_PREFIX/externals/config/geant4.ini") ;
+    ./boostrap/BOpticksResource.cc:const char* BOpticksResource::G4ENV_RELPATH = "externals/config/geant4.ini" ;
+    epsilon:opticks blyth$ 
+
+::
+
+    096 const char* BOpticksResource::InstallPathG4ENV()
+     97 {
+     98     return InstallPath(G4ENV_RELPATH);
+     99 }
+
+    142 
+    143     m_res->addPath("g4env_ini", InstallPathG4ENV() );
+    144     m_res->addPath("okdata_ini", InstallPathOKDATA() );
+    145 
+    146 }
+
+
+::
+
+    epsilon:cfg4 blyth$ opticks-find g4env
+    ./optickscore/OpticksResource.cc:       m_g4env(NULL),
+    ./optickscore/OpticksResource.cc:    m_g4env = readIniEnvironment(inipath);
+    ./optickscore/OpticksResource.cc:    if(m_g4env)
+    ./optickscore/OpticksResource.cc:        m_g4env->setEnvironment();
+    ./boostrap/BOpticksResource.cc:    m_res->addPath("g4env_ini", InstallPathG4ENV() );
+    ./optickscore/OpticksResource.hh:       BEnv*          m_g4env ; 
+    epsilon:opticks blyth$ 
+    epsilon:opticks blyth$ 
+
+
+::
+
+     214        BEnv*          m_g4env ;
+     215        BEnv*          m_okenv ;
+
+
+     488 void OpticksResource::readG4Environment()
+     489 {
+     490     // NB this relpath needs to match that in g4-;g4-export-ini
+     491     //    it is relative to the install_prefix which 
+     492     //    is canonically /usr/local/opticks
+     493     //
+     494     const char* inipath = InstallPathG4ENV();
+     495 
+     496     m_g4env = readIniEnvironment(inipath);
+     497     if(m_g4env)
+     498     {
+     499         m_g4env->setEnvironment();
+     500     }
+     501     else
+     502     {
+     503         LOG(warning) << "OpticksResource::readG4Environment"
+     504                      << " MISSING inipath " << inipath
+     505                      << " (create it with bash functions: g4-;g4-export-ini ) "
+     506                      ;
+     507     }
+     508 }
+
+
+Dumping the internal environment, shows have omitted to update the geant4.ini::
+
+    epsilon:boostrap blyth$ CTestDetectorTest --dumpenv
+    2018-08-16 09:24:06.558 INFO  [1602290] [main@47] CTestDetectorTest
+    ...
+    2018-08-16 09:24:06.563 INFO  [1602290] [BEnv::dumpEnvironment@259] OPTICKSINSTALLPREFIX=/usr/local/opticks
+    2018-08-16 09:24:06.563 INFO  [1602290] [BEnv::dumpEnvironment@259] G4ABLADATA=/usr/local/opticks/externals/share/Geant4-10.2.1/data/G4ABLA3.0
+    2018-08-16 09:24:06.563 INFO  [1602290] [BEnv::dumpEnvironment@259] G4ENSDFSTATEDATA=/usr/local/opticks/externals/share/Geant4-10.2.1/data/G4ENSDFSTATE1.2.1
+    2018-08-16 09:24:06.563 INFO  [1602290] [BEnv::dumpEnvironment@259] G4LEDATA=/usr/local/opticks/externals/share/Geant4-10.2.1/data/G4EMLOW6.48
+    2018-08-16 09:24:06.563 INFO  [1602290] [BEnv::dumpEnvironment@259] G4LEVELGAMMADATA=/usr/local/opticks/externals/share/Geant4-10.2.1/data/PhotonEvaporation3.2
+    2018-08-16 09:24:06.563 INFO  [1602290] [BEnv::dumpEnvironment@259] G4NEUTRONHPDATA=/usr/local/opticks/externals/share/Geant4-10.2.1/data/G4NDL4.5
+    2018-08-16 09:24:06.563 INFO  [1602290] [BEnv::dumpEnvironment@259] G4NEUTRONXSDATA=/usr/local/opticks/externals/share/Geant4-10.2.1/data/G4NEUTRONXS1.4
+    2018-08-16 09:24:06.563 INFO  [1602290] [BEnv::dumpEnvironment@259] G4PIIDATA=/usr/local/opticks/externals/share/Geant4-10.2.1/data/G4PII1.3
+    2018-08-16 09:24:06.563 INFO  [1602290] [BEnv::dumpEnvironment@259] G4RADIOACTIVEDATA=/usr/local/opticks/externals/share/Geant4-10.2.1/data/RadioactiveDecay4.3.1
+    2018-08-16 09:24:06.563 INFO  [1602290] [BEnv::dumpEnvironment@259] G4REALSURFACEDATA=/usr/local/opticks/externals/share/Geant4-10.2.1/data/RealSurface1.0
+    2018-08-16 09:24:06.563 INFO  [1602290] [BEnv::dumpEnvironment@259] G4SAIDXSDATA=/usr/local/opticks/externals/share/Geant4-10.2.1/data/G4SAIDDATA1.1
+    2018-08-16 09:24:06.563 INFO  [1602290] [OpticksHub::configure@240] OpticksHub::configure argc 2 argv[0] CTestDetectorTest m_gltf 0 is_tracer 0
+    2018-08-16 09:24:06.563 ERROR [1602290] [OpticksHub::configure@272] ]
+
+
+Update with::
+
+    epsilon:issues blyth$ g4-export-ini  ## this is done by the standard g4--
+    === g4-export-ini : writing G4 environment to /usr/local/opticks/externals/config/geant4.ini
+    G4LEVELGAMMADATA=/usr/local/opticks/externals/share/Geant4-10.4.2/data/PhotonEvaporation5.2
+    G4NEUTRONXSDATA=/usr/local/opticks/externals/share/Geant4-10.4.2/data/G4NEUTRONXS1.4
+    G4LEDATA=/usr/local/opticks/externals/share/Geant4-10.4.2/data/G4EMLOW7.3
+    G4NEUTRONHPDATA=/usr/local/opticks/externals/share/Geant4-10.4.2/data/G4NDL4.5
+    G4ENSDFSTATEDATA=/usr/local/opticks/externals/share/Geant4-10.4.2/data/G4ENSDFSTATE2.2
+    G4RADIOACTIVEDATA=/usr/local/opticks/externals/share/Geant4-10.4.2/data/RadioactiveDecay5.2
+    G4ABLADATA=/usr/local/opticks/externals/share/Geant4-10.4.2/data/G4ABLA3.1
+    G4PIIDATA=/usr/local/opticks/externals/share/Geant4-10.4.2/data/G4PII1.3
+    G4SAIDXSDATA=/usr/local/opticks/externals/share/Geant4-10.4.2/data/G4SAIDDATA1.1
+    G4REALSURFACEDATA=/usr/local/opticks/externals/share/Geant4-10.4.2/data/RealSurface2.1.1
+    epsilon:issues blyth$ 
 
 
 
@@ -312,6 +437,130 @@ Garbled names::
     2018-08-15 23:48:01.751 INFO  [1444508] [CTraverser::AncestorVisit@233]  lvn 
     2018-08-15 23:48:01.751 INFO  [1444508] [CTraverser::AncestorVisit@233]  lvn 
 
+Only LV::
+
+    2018-08-16 09:38:56.027 INFO  [1617288] [CDetector::setTop@91] .
+    2018-08-16 09:38:56.039 INFO  [1617288] [CTraverser::AncestorVisit@218]  pvn World0xc15cfc0_PV
+    2018-08-16 09:38:56.039 INFO  [1617288] [CTraverser::AncestorVisit@219]  lvn ?c??
+    2018-08-16 09:38:56.039 INFO  [1617288] [CTraverser::AncestorVisit@218]  pvn /dd/Structure/Sites/db-rock0xc15d358
+    2018-08-16 09:38:56.039 INFO  [1617288] [CTraverser::AncestorVisit@219]  lvn ?c??
+    2018-08-16 09:38:56.039 INFO  [1617288] [CTraverser::AncestorVisit@218]  pvn /dd/Geometry/Sites/lvNearSiteRock#pvNearHallTop0xbf89820
+    2018-08-16 09:38:56.039 INFO  [1617288] [CTraverser::AncestorVisit@219]  lvn +@??
+    2018-08-16 09:38:56.039 INFO  [1617288] [CTraverser::AncestorVisit@218]  pvn /dd/Geometry/Sites/lvNearHallTop#pvNearTopCover0xc23f9b8
+
+
+
+GDML read::
+
+    30931     <volume name="World0xc15cfc0">
+    30932       <materialref ref="/dd/Materials/Vacuum0xbf9fcc0"/>
+    30933       <solidref ref="WorldBox0xc15cf40"/>
+    30934       <physvol name="/dd/Structure/Sites/db-rock0xc15d358">
+    30935         <volumeref ref="/dd/Geometry/Sites/lvNearSiteRock0xc030350"/>
+    30936         <position name="/dd/Structure/Sites/db-rock0xc15d358_pos" unit="mm" x="-16519.9999999999" y="-802110" z="-2110"/>
+    30937         <rotation name="/dd/Structure/Sites/db-rock0xc15d358_rot" unit="deg" x="0" y="0" z="-122.9"/>
+    30938       </physvol>
+    30939     </volume>
+
+    // b G4GDMLReadStructure::VolumeRead(
+
+
+    (lldb) b "G4GDMLReadStructure::VolumeRead"
+    Breakpoint 1: where = libG4persistency.dylib`G4GDMLReadStructure::VolumeRead(xercesc_3_2::DOMElement const*) + 32 at G4GDMLReadStructure.cc:575, address = 0x000000000019b2a0
+    (lldb) 
+
+    (lldb) c
+    Process 9126 resuming
+    Process 9126 stopped
+    * thread #1, queue = 'com.apple.main-thread', stop reason = breakpoint 2.1
+        frame #0: 0x0000000100d17435 libG4persistency.dylib`G4GDMLReadStructure::VolumeRead(this=0x000000010f24d5e0, volumeElement=0x000000010f4b85e0) at G4GDMLReadStructure.cc:581
+       578 	   
+       579 	   XMLCh *name_attr = xercesc::XMLString::transcode("name");
+       580 	   const G4String name = Transcode(volumeElement->getAttribute(name_attr));
+    -> 581 	   xercesc::XMLString::release(&name_attr);
+       582 	
+       583 	   for (xercesc::DOMNode* iter = volumeElement->getFirstChild();
+       584 	        iter != 0; iter = iter->getNextSibling())
+    Target 0: (CTestDetectorTest) stopped.
+    (lldb) p name
+    (const G4String) $0 = (std::__1::string = "/dd/Geometry/PoolDetails/lvNearTopCover0xc137060")
+    (lldb) 
+
+    (lldb) c
+    Process 9126 resuming
+    Process 9126 stopped
+    * thread #1, queue = 'com.apple.main-thread', stop reason = breakpoint 4.1
+        frame #0: 0x0000000100d17bd9 libG4persistency.dylib`G4GDMLReadStructure::VolumeRead(this=0x000000010f24d5e0, volumeElement=0x000000010f4b9028) at G4GDMLReadStructure.cc:609
+       606 	   pMotherLogical = new G4LogicalVolume(solidPtr,materialPtr,
+       607 	                                        GenerateName(name),0,0,0);
+       608 	
+    -> 609 	   if (!auxList.empty()) { auxMap[pMotherLogical] = auxList; }
+       610 	
+       611 	   Volume_contentRead(volumeElement);
+       612 	}
+    Target 0: (CTestDetectorTest) stopped.
+    (lldb) p name
+    (const G4String) $6 = (std::__1::string = "/dd/Geometry/RPC/lvRPCStrip0xc2213c0")
+    (lldb) p pMotherLogical->GetName()
+    (const G4String) $7 = (std::__1::string = "/dd/Geometry/RPC/lvRPCStrip0xc2213c0")
+    (lldb) 
+
+
+
+
+
+    572 void G4GDMLReadStructure::
+    573 VolumeRead(const xercesc::DOMElement* const volumeElement)
+    574 {
+    575    G4VSolid* solidPtr = 0;
+    576    G4Material* materialPtr = 0;
+    577    G4GDMLAuxListType auxList;
+    578 
+    579    XMLCh *name_attr = xercesc::XMLString::transcode("name");
+    580    const G4String name = Transcode(volumeElement->getAttribute(name_attr));
+    581    xercesc::XMLString::release(&name_attr);
+    582 
+
+
+    289 void G4GDMLReadStructure::
+    290 PhysvolRead(const xercesc::DOMElement* const physvolElement,
+    291             G4AssemblyVolume* pAssembly)
+    292 {
+    293    G4String name;
+    294    G4LogicalVolume* logvol = 0;
+    295    G4AssemblyVolume* assembly = 0;
+    296    G4ThreeVector position(0.0,0.0,0.0);
+    297    G4ThreeVector rotation(0.0,0.0,0.0);
+    298    G4ThreeVector scale(1.0,1.0,1.0);
+    299    G4int copynumber = 0;
+    300 
+    301    const xercesc::DOMNamedNodeMap* const attributes
+    302          = physvolElement->getAttributes();
+    303    XMLSize_t attributeCount = attributes->getLength();
+    304 
+    305    for (XMLSize_t attribute_index=0;
+    306         attribute_index<attributeCount; attribute_index++)
+    307    { 
+    308      xercesc::DOMNode* attribute_node = attributes->item(attribute_index);
+    309      
+    310      if (attribute_node->getNodeType() != xercesc::DOMNode::ATTRIBUTE_NODE)
+    311        { continue; }
+    312      
+    313      const xercesc::DOMAttr* const attribute
+    314            = dynamic_cast<xercesc::DOMAttr*>(attribute_node);
+    315      if (!attribute)
+    316      { 
+    317        G4Exception("G4GDMLReadStructure::PhysvolRead()",
+    318                    "InvalidRead", FatalException, "No attribute found!");
+    319        return;
+    320      }
+    321      const G4String attName = Transcode(attribute->getName());
+    322      const G4String attValue = Transcode(attribute->getValue());
+    323      
+    324      if (attName=="name") { name = attValue; } 
+    325      if (attName=="copynumber") { copynumber = eval.EvaluateInteger(attValue); }
+    326    }
+    327 
 
 
 
@@ -319,6 +568,7 @@ Garbled names::
 
 
 
+::
 
     2018-08-15 23:38:23.321 INFO  [1438333] [CSurfaceLib::convert@93] . num_surf 48
     Assertion failed: (lv), function makeSkinSurface, file /Users/blyth/opticks/cfg4/CSurfaceLib.cc, line 249.
@@ -350,4 +600,39 @@ Garbled names::
         frame #14: 0x00007fff533b2015 libdyld.dylib`start + 1
         frame #15: 0x00007fff533b2015 libdyld.dylib`start + 1
     (lldb) 
+
+
+
+ckm NULL track::
+
+    (lldb) bt
+    * thread #1, queue = 'com.apple.main-thread', stop reason = EXC_BAD_ACCESS (code=1, address=0x0)
+      * frame #0: 0x000000010002fedc CerenkovMinimal`G4Track::GetCurrentStepNumber(this=0x0000000000000000) const at G4Track.icc:235
+        frame #1: 0x000000010002fe79 CerenkovMinimal`Ctx::setStep(this=0x0000000110a06fe0, step=0x0000000110cd09a0) at Ctx.cc:71
+        frame #2: 0x000000010002d511 CerenkovMinimal`SteppingAction::UserSteppingAction(this=0x0000000110cf7a00, step=0x0000000110cd09a0) at SteppingAction.cc:15
+        frame #3: 0x00000001023aef06 libG4tracking.dylib`G4SteppingManager::Stepping(this=0x0000000110cd0810) at G4SteppingManager.cc:243
+        frame #4: 0x00000001023c586f libG4tracking.dylib`G4TrackingManager::ProcessOneTrack(this=0x0000000110cd07d0, apValueG4Track=0x0000000116675000) at G4TrackingManager.cc:126
+        frame #5: 0x000000010228c71a libG4event.dylib`G4EventManager::DoProcessing(this=0x0000000110cd0740, anEvent=0x0000000116653f20) at G4EventManager.cc:185
+        frame #6: 0x000000010228dc2f libG4event.dylib`G4EventManager::ProcessOneEvent(this=0x0000000110cd0740, anEvent=0x0000000116653f20) at G4EventManager.cc:338
+        frame #7: 0x00000001021999f5 libG4run.dylib`G4RunManager::ProcessOneEvent(this=0x0000000110a07050, i_event=0) at G4RunManager.cc:399
+        frame #8: 0x0000000102199825 libG4run.dylib`G4RunManager::DoEventLoop(this=0x0000000110a07050, n_event=1, macroFile=0x0000000000000000, n_select=-1) at G4RunManager.cc:367
+        frame #9: 0x0000000102197ce1 libG4run.dylib`G4RunManager::BeamOn(this=0x0000000110a07050, n_event=1, macroFile=0x0000000000000000, n_select=-1) at G4RunManager.cc:273
+        frame #10: 0x00000001000321cd CerenkovMinimal`G4::beamOn(this=0x00007ffeefbfe498, nev=1) at G4.cc:53
+        frame #11: 0x0000000100032077 CerenkovMinimal`G4::G4(this=0x00007ffeefbfe498, nev=1) at G4.cc:48
+        frame #12: 0x00000001000321fb CerenkovMinimal`G4::G4(this=0x00007ffeefbfe498, nev=1) at G4.cc:30
+        frame #13: 0x0000000100011461 CerenkovMinimal`main(argc=1, argv=0x00007ffeefbfe578) at CerenkovMinimal.cc:7
+        frame #14: 0x00007fff533b2015 libdyld.dylib`start + 1
+        frame #15: 0x00007fff533b2015 libdyld.dylib`start + 1
+    (lldb) f 1
+    frame #1: 0x000000010002fe79 CerenkovMinimal`Ctx::setStep(this=0x0000000110a06fe0, step=0x0000000110cd09a0) at Ctx.cc:71
+       68  	void Ctx::setStep(const G4Step* step)
+       69  	{  
+       70  	    _step = step ; 
+    -> 71  	    _step_id = _track->GetCurrentStepNumber() - 1 ;
+       72  	
+       73  	    _track_step_count += 1 ;
+       74  	    
+    (lldb) 
+
+
 

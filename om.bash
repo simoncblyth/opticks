@@ -190,6 +190,7 @@ om-make-all(){      om-all ${FUNCNAME/-all} $* ; }
 om-install-all(){   om-all ${FUNCNAME/-all} $* ; }
 om-test-all(){      om-all ${FUNCNAME/-all} $* ; om-testlog ; }
 om-echo-all(){      om-all ${FUNCNAME/-all} $* ; }
+om-find-all(){      om-all ${FUNCNAME/-all} $* ; }
 
 om-testlog(){      CTestLog.py $(om-bdir)  ; }
 
@@ -202,6 +203,7 @@ om-install(){ om-one-or-all install $* ; }
 om-visit(){   om-one-or-all visit $* ; }
 om-test(){    om-one-or-all test $* ; }
 om-echo(){    om-one-or-all echo $* ; }
+om-find(){    om-one-or-all find $* ; }
 
 om--(){       om-make $* ; }     ## just this proj
 om---(){      om-make-all : ; }  ## all projs from this one onwards 
@@ -234,9 +236,17 @@ om-all()
     local name
     om-subs $* | while read name 
     do 
+        local sdir=$(om-sdir $name)
         local bdir=$(om-bdir $name)
         mkdir -p $bdir
-        cd $bdir
+        local udir
+        case $func in
+          om-find) udir=$sdir ;;
+                *) udir=$bdir ;;
+        esac
+        
+        cd $udir
+
         $func
         rc=$?
         [ "$rc" != "0" ] && echo $msg ERROR bdir $bdir : non-zero rc $rc && return $rc
@@ -413,6 +423,35 @@ om-test-one()
 
     cd $iwd
 }
+
+
+om-find-one(){   
+   local str="${1:-ENV_HOME}"
+   local opt=${2:--H}
+   local iwd=$(pwd)
+   find . \
+        \( \
+       -name '*.sh' -or \
+       -name '*.bash' -or \
+       -name '*.cu' -or \
+       -name '*.cc' -or \
+       -name '*.hh' -or \
+       -name '*.cpp' -or \
+       -name '*.hpp' -or \
+       -name '*.h' -or \
+       -name '*.txt' -or \
+       -name '*.py' \
+        \) \
+       -exec grep $opt "$str" {} \;
+
+    cd $iwd
+}
+
+
+
+
+
+
 
 
 om-bdir-()
@@ -599,24 +638,6 @@ $1--(){   opticks-- \$($1-dir) ; }
 EOT
 }
 
-
-om-find()
-{ 
-    local str=${1:-ENV_HOME}
-    local opt=${2:--H}
-    local iwd=$PWD
-    cd $(opticks-home) 
-    find . -name '*.sh' -exec grep $opt $str {} \;
-    find . -name '*.bash' -exec grep $opt $str {} \;
-    find . -name '*.cu' -exec grep $opt $str {} \;
-    find . -name '*.cc' -exec grep $opt $str {} \;
-    find . -name '*.hh' -exec grep $opt $str {} \;
-    find . -name '*.cpp' -exec grep $opt $str {} \;
-    find . -name '*.hpp' -exec grep $opt $str {} \;
-    find . -name '*.h' -exec grep $opt $str {} \;
-    find . -name '*.txt' -exec grep $opt $str {} \;
-    find . -name '*.py' -exec grep $opt $str {} \;
-}
 
 
 

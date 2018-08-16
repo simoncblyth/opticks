@@ -169,7 +169,7 @@ NTrianglesNPY* NMarchingCubesNPY::makeTriangles()
          glm::vec3 v1( v[i1*3+0],  v[i1*3+1],  v[i1*3+2] );
          glm::vec3 v2( v[i2*3+0],  v[i2*3+1],  v[i2*3+2] );
 
-         LOG(trace)
+         LOG(verbose)
              << " t " << std::setw(5) << t 
              << " i0 " << std::setw(5) << i0  << " " << gformat(v0)
              << " i1 " << std::setw(5) << i1  << " " << gformat(v1)

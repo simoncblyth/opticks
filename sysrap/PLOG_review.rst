@@ -18,6 +18,32 @@ which all log to the same console and logfile.
            --sysrap warning 
 
 
+Getting rid of the dangerous re-define of trace
+-------------------------------------------------
+
+Observe a problem with xercesc headers : so bite the bullet 
+and get rid of the dangerous define and switch all 
+use of LOG(trace) into LOG(verbose)
+
+::
+
+    epsilon:sysrap blyth$ hg diff PLOG.hh
+    diff -r 3e7743e5bc48 sysrap/PLOG.hh
+    --- a/sysrap/PLOG.hh    Thu Aug 16 00:01:19 2018 +0800
+    +++ b/sysrap/PLOG.hh    Thu Aug 16 12:57:29 2018 +0800
+    @@ -15,7 +15,7 @@
+     using plog::verbose ;
+     
+     // hmm dangerous but what alternative 
+    -#define trace plog::verbose 
+    +//#define trace plog::verbose 
+     
+     #include "SYSRAP_API_EXPORT.hh"
+     
+    epsilon:sysrap blyth$ 
+
+
+
 plog
 ------
 

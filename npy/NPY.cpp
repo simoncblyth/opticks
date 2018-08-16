@@ -580,11 +580,11 @@ NPY<T>* NPY<T>::loadFromBuffer(const std::vector<unsigned char>& vsrc) // buffer
     NPY* npy = NULL ;
     try 
     {
-        LOG(trace) <<  "NPY<T>::loadFromBuffer before aoba " ; 
+        LOG(verbose) <<  "NPY<T>::loadFromBuffer before aoba " ; 
          
         aoba::BufferLoadArrayFromNumpy<T>( bytes, size, shape, data );
 
-        LOG(trace) <<  "NPY<T>::loadFromBuffer after aoba " ; 
+        LOG(verbose) <<  "NPY<T>::loadFromBuffer after aoba " ; 
 
         npy = new NPY<T>(shape,data,metadata) ;  
         // data is copied but ctor, could do more efficiently via an adopt buffer approach ? 
@@ -621,11 +621,11 @@ NPY<T>* NPY<T>::load(const char* path_, bool quietly)
     try 
     {
 
-        LOG(trace) <<  "NPY<T>::load before aoba " ; 
+        LOG(verbose) <<  "NPY<T>::load before aoba " ; 
          
         aoba::LoadArrayFromNumpy<T>(path.c_str(), shape, data );
 
-        LOG(trace) <<  "NPY<T>::load after aoba " ; 
+        LOG(verbose) <<  "NPY<T>::load after aoba " ; 
 
         npy = new NPY<T>(shape,data,metadata) ;
     }
@@ -1449,7 +1449,7 @@ NPY<T>* NPY<T>::make_slice(NSlice* slice)
     }
     unsigned int count = slice->count();
 
-    LOG(trace) << "NPY::make_slice from " 
+    LOG(verbose) << "NPY::make_slice from " 
               << ni << " -> " << count 
               << " slice " << slice->description() ;
 
@@ -1689,7 +1689,7 @@ void NPY<T>::dump(const char* msg, unsigned int limit)
     }
 
 
-    LOG(trace) << "NPY<T>::dump " 
+    LOG(verbose) << "NPY<T>::dump " 
                << " dim " << m_dim 
                << " ni " << ni
                << " nj " << nj
@@ -1706,7 +1706,7 @@ void NPY<T>::dump(const char* msg, unsigned int limit)
             {   
                 unsigned int offset = i*nj*nk + j*nk + k ; 
 
-                LOG(trace) << "NPY<T>::dump " 
+                LOG(verbose) << "NPY<T>::dump " 
                            << " i " << i 
                            << " j " << j 
                            << " k " << k
@@ -1723,7 +1723,7 @@ void NPY<T>::dump(const char* msg, unsigned int limit)
    }   
 
 
-   LOG(trace) << "NPY<T>::dump DONE " ; 
+   LOG(verbose) << "NPY<T>::dump DONE " ; 
 
    std::cout << std::endl ; 
 }

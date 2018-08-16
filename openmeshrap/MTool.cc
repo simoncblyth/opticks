@@ -89,7 +89,7 @@ GMesh* MTool::joinSplitUnion(GMesh* gmesh, Opticks* opticks)
 
     int ncomp = wsrc.labelConnectedComponentVertices("component"); 
 
-    LOG(trace) << "MTool::joinSplitUnion " 
+    LOG(verbose) << "MTool::joinSplitUnion " 
                << " index " << gmesh->getIndex() 
                << " shortname " << gmesh->getShortName()
                << " ncomp " << ncomp
@@ -133,15 +133,15 @@ GMesh* MTool::joinSplitUnion(GMesh* gmesh, Opticks* opticks)
     // centroid is the input property, paired is output 
     MWrap<MMesh>::labelSpatialPairs( wa.getMesh(), wb.getMesh(), delta, "centroid", "paired");
 
-    LOG(trace) << "MWrap<MMesh>::labelSpatialPairs DONE " ; 
+    LOG(verbose) << "MWrap<MMesh>::labelSpatialPairs DONE " ; 
 
     wa.deleteFaces("paired");
 
-    LOG(trace) << "wa.deleteFaces DONE " ; 
+    LOG(verbose) << "wa.deleteFaces DONE " ; 
 
     wb.deleteFaces("paired");
 
-    LOG(trace) << "wb.deleteFaces DONE " ; 
+    LOG(verbose) << "wb.deleteFaces DONE " ; 
 
     wa.collectBoundaryLoop();
     wb.collectBoundaryLoop();

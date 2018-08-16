@@ -740,7 +740,7 @@ void NCSG::export_node(nnode* node, unsigned idx)
     //LOG(error) << "export_node START " ; 
 
     assert(idx < getNumNodes() ); 
-    LOG(trace) << "NCSG::export_node"
+    LOG(verbose) << "NCSG::export_node"
               << " idx " << idx 
               << node->desc()
               ;

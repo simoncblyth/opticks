@@ -177,7 +177,7 @@ void GSurfaceLib::initInterpolatingCopy(GSurfaceLib* src, GDomain<float>* domain
 
         if(!ssur->hasStandardDomain())
         {
-             LOG(trace) << "GSurfaceLib::GSurfaceLib set ssur standard domain for " << i << " out of " << nsur ;
+             LOG(verbose) << "GSurfaceLib::GSurfaceLib set ssur standard domain for " << i << " out of " << nsur ;
              ssur->setStandardDomain(src->getStandardDomain());
         }
 
@@ -396,7 +396,7 @@ void GSurfaceLib::add(GSkinSurface* raw)
 
     m_skin_surfaces.push_back(raw);
 
-    LOG(trace) << ( raw ? raw->getName() : "NULL" ) ;
+    LOG(verbose) << ( raw ? raw->getName() : "NULL" ) ;
 
     GPropertyMap<float>* surf = dynamic_cast<GPropertyMap<float>* >(raw);
     bool direct = false  ;  // not standardized 

@@ -29,7 +29,7 @@ void SLog::operator()(const char* msg)
 
 void SLog::Nonce()
 {
-    LOG(trace) << "trace" ; 
+    LOG(verbose) << "verbose" ; 
     LOG(debug) << "debug" ; 
     LOG(info) << "info" ; 
     LOG(warning) << "warning" ; 

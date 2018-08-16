@@ -429,7 +429,7 @@ void GGeo::init()
 
    m_pmtlib = NULL ; 
 
-   LOG(trace) << "GGeo::init DONE" ; 
+   LOG(verbose) << "GGeo::init DONE" ; 
 }
 
 
@@ -766,7 +766,7 @@ void GGeo::setupTyp()
 
 void GGeo::setupColors()
 {
-    LOG(trace) << "GGeo::setupColors" ; 
+    LOG(verbose) << "GGeo::setupColors" ; 
 
     //OpticksFlags* flags = m_ok->getFlags();
 
@@ -777,7 +777,7 @@ void GGeo::setupColors()
 
     colors->setupCompositeColorBuffer( material_codes, flag_codes  );
 
-    LOG(trace) << "GGeo::setupColors DONE" ; 
+    LOG(verbose) << "GGeo::setupColors DONE" ; 
 }
 
 
@@ -1058,7 +1058,7 @@ void GGeo::traverse( GNode* node, unsigned int depth)
 
 void GGeo::prepareMaterialLib()
 {
-    LOG(trace) << "GGeo::prepareMaterialLib " ; 
+    LOG(verbose) << "GGeo::prepareMaterialLib " ; 
 
     GMaterialLib* mlib = getMaterialLib() ;
    
@@ -1067,7 +1067,7 @@ void GGeo::prepareMaterialLib()
 
 void GGeo::prepareSurfaceLib()
 {
-    LOG(trace) << "GGeo::prepareSurfaceLib " ; 
+    LOG(verbose) << "GGeo::prepareSurfaceLib " ; 
 
     GSurfaceLib* slib = getSurfaceLib() ;
    
@@ -1077,7 +1077,7 @@ void GGeo::prepareSurfaceLib()
 
 void GGeo::prepareSourceLib()
 {
-    LOG(trace) << "GGeo::prepareSourceLib " ; 
+    LOG(verbose) << "GGeo::prepareSourceLib " ; 
 
     GSourceLib* srclib = getSourceLib() ;
 
@@ -1107,7 +1107,7 @@ void GGeo::close()
 
 void GGeo::prepareScintillatorLib()
 {
-    LOG(trace) << "GGeo::prepareScintillatorLib " ; 
+    LOG(verbose) << "GGeo::prepareScintillatorLib " ; 
 
     findScintillatorMaterials("SLOWCOMPONENT,FASTCOMPONENT,REEMISSIONPROB"); 
 
@@ -1211,9 +1211,9 @@ GMergedMesh* GGeo::makeMergedMesh(unsigned int index, GNode* base, GNode* root, 
 void GGeo::prepareVertexColors()
 {
     // GColorizer needs full tree,  so have to use pre-cache
-    LOG(trace) << "GGeo::prepareVertexColors START" ;
+    LOG(verbose) << "GGeo::prepareVertexColors START" ;
     m_colorizer->writeVertexColors();
-    LOG(trace) << "GGeo::prepareVertexColors DONE " ;
+    LOG(verbose) << "GGeo::prepareVertexColors DONE " ;
 }
 
 
@@ -1637,7 +1637,7 @@ GMesh* GGeo::invokeMeshJoin(GMesh* mesh)
     bool join = shouldMeshJoin(mesh);
     if(join)
     {
-        LOG(trace) << "GGeo::invokeMeshJoin proceeding for " << mesh->getName() ; 
+        LOG(verbose) << "GGeo::invokeMeshJoin proceeding for " << mesh->getName() ; 
 
         result = (*m_join_imp)(mesh, m_ok); 
 

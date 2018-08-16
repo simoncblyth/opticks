@@ -228,7 +228,7 @@ void Rdr::upload(MultiViewNPY* mvn, bool debug)
         else
         {
             assert(npy == vnpy->getNPY());     
-            LOG(trace) << "Rdr::upload counts, prior: " << count << " current: " << vnpy->getCount() ; 
+            LOG(verbose) << "Rdr::upload counts, prior: " << count << " current: " << vnpy->getCount() ; 
             assert(count == vnpy->getCount());
         } 
         address(vnpy); 
@@ -407,7 +407,7 @@ void Rdr::address(ViewNPY* vnpy)
     // offset of the first component of the first generic vertex attribute 
     // in the array in the data store of the buffer currently bound to GL_ARRAY_BUFFER target
 
-    LOG(trace) << "Rdr::address (glVertexAttribPointer) "
+    LOG(verbose) << "Rdr::address (glVertexAttribPointer) "
               << std::setw(10) << getShaderTag() 
               << " name " << name 
               << " type " << std::setw(20) << vnpy->getTypeName() 

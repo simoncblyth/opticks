@@ -4,7 +4,7 @@ int main(int argc, char** argv)
 {
     PLOG_(argc, argv);
 
-    LOG(trace) << argv[0] ;
+    LOG(verbose) << argv[0] ;
     LOG(debug) << argv[0] ;
     LOG(info) << argv[0] ;
     LOG(warning) << argv[0] ;

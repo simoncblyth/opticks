@@ -483,7 +483,7 @@ std::string Types::getMaskString(unsigned int mask, Item_t etype)
 void Types::readFlags(const char* path)
 {
     // read photon header to get flag names and enum values
-    LOG(trace) << "Types::readFlags"
+    LOG(verbose) << "Types::readFlags"
               << " path[" << path << "]"
               ;
 
@@ -493,7 +493,7 @@ void Types::readFlags(const char* path)
     BRegex::upairs_t ups ; 
     BRegex::enum_regexsearch( ups, path ); 
 
-    LOG(trace) << "Types::readFlags"
+    LOG(verbose) << "Types::readFlags"
               << " pair count " << ups.size() ; 
 
 

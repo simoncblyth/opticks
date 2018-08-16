@@ -32,7 +32,7 @@ unsigned int OpticksAttrSeq::ERROR_COLOR = 0xAAAAAA ;
 
 OpticksAttrSeq::OpticksAttrSeq(Opticks* ok, const char* type)
    :
-   m_log(new SLog("OpticksAttrSeq::OpticksAttrSeq","",trace)),
+   m_log(new SLog("OpticksAttrSeq::OpticksAttrSeq","",verbose)),
    m_ok(ok),
    m_resource(m_ok->getResource()),
    m_type(strdup(type)),

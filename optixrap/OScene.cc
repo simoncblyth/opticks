@@ -113,9 +113,9 @@ void OScene::init()
     const char* builder   = builder_.empty() ? NULL : builder_.c_str() ;
     const char* traverser = traverser_.empty() ? NULL : traverser_.c_str() ;
 
-    LOG(trace) << "OScene::init optix::Context::create() START " ; 
+    LOG(verbose) << "OScene::init optix::Context::create() START " ; 
     optix::Context context = optix::Context::create();
-    LOG(trace) << "OScene::init optix::Context::create() DONE " ; 
+    LOG(verbose) << "OScene::init optix::Context::create() DONE " ; 
 
     m_ocontext = new OContext(context, m_ok);
 

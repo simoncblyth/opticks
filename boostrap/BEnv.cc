@@ -71,12 +71,12 @@ void BEnv::readEnv()
 
 void BEnv::readFile(const char* dir, const char* name)
 {
-    LOG(trace) << " dir " << dir << " name " << name ; 
+    LOG(verbose) << " dir " << dir << " name " << name ; 
     m_all  = MSS::load(dir, name); 
 }
 void BEnv::readFile(const char* path)
 {
-    LOG(trace) << " path " << path ; 
+    LOG(verbose) << " path " << path ; 
     m_path = path ? strdup(path) : NULL ;  
     m_all  = MSS::load(path); 
 }
@@ -164,7 +164,7 @@ std::string BEnv::nativePath(const char* val)
 
     std::string npath = BFile::FormPath(bpath.c_str());
 
-    LOG(trace) << "BEnv::nativePath"
+    LOG(verbose) << "BEnv::nativePath"
                << " val " << val
                << " bpath " << bpath
                << " npath " << npath
@@ -209,7 +209,7 @@ void BEnv::setEnvironment(bool overwrite, bool native)
         int rc = SSys::setenvvar(  k.c_str(), nv.c_str(), overwrite);
         assert(rc == 0 );
 
-        LOG(trace) << "BEnv::setEnvironment" 
+        LOG(verbose) << "BEnv::setEnvironment" 
                    << " overwrite " << overwrite 
                    << " k " << std::setw(30) << k 
                    << " v " <<std::setw(100) << v 

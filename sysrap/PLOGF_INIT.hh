@@ -18,7 +18,6 @@
     LOG(warning) << msg  ; \
     LOG(info) << msg  ; \
     LOG(debug) << msg  ; \
-    LOG(trace) << msg  ; \
     LOG(verbose) << msg  ; \
 } \
 

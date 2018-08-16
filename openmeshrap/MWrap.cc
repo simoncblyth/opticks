@@ -90,7 +90,7 @@ void MWrap<MeshT>::copyIn(float* vdata, unsigned int num_vertices, unsigned int*
 {
 
 #ifdef DOLOG
-    LOG(trace) << "MWrap<MeshT>::copyIn"
+    LOG(verbose) << "MWrap<MeshT>::copyIn"
                << " num_vertices " << num_vertices
                << " num_faces " << num_faces 
                ;
@@ -295,7 +295,7 @@ template <typename MeshT>
 void MWrap<MeshT>::calcFaceCentroids(const char* fpropname)
 {
 
-    LOG(trace) << "MWrap<MeshT>::calcFaceCentroids"
+    LOG(verbose) << "MWrap<MeshT>::calcFaceCentroids"
                << " fpropname " << fpropname 
                ;
 
@@ -329,7 +329,7 @@ int MWrap<MeshT>::labelSpatialPairs(MeshT* a, MeshT* b, const glm::vec4& delta, 
     typedef typename MeshT::Point P ; 
     typedef typename MeshT::FaceIter FI ; 
 
-    LOG(trace) << "MWrap<MeshT>::labelSpatialPairs"
+    LOG(verbose) << "MWrap<MeshT>::labelSpatialPairs"
                << " fposprop " << fposprop
                << " fpropname " << fpropname 
                << " delta " 
@@ -422,11 +422,11 @@ int MWrap<MeshT>::labelSpatialPairs(MeshT* a, MeshT* b, const glm::vec4& delta, 
 
     std::stringstream ssa ; 
     for( FI af=a->faces_begin() ; af != a->faces_end(); ++af ) if(a->property(a_paired, *af) > 0) ssa << af->idx() << " " ; 
-    LOG(trace) << "MWrap<MeshT>::labelSpatialPairs" << " ssa " << ssa.str() ;
+    LOG(verbose) << "MWrap<MeshT>::labelSpatialPairs" << " ssa " << ssa.str() ;
            
     std::stringstream ssb ; 
     for( FI bf=b->faces_begin() ; bf != b->faces_end(); ++bf ) if(b->property(b_paired, *bf) > 0) ssb << bf->idx() << " " ; 
-    LOG(trace) << "MWrap<MeshT>::labelSpatialPairs" << " ssb " << ssb.str() ;
+    LOG(verbose) << "MWrap<MeshT>::labelSpatialPairs" << " ssb " << ssb.str() ;
  
 
     return npair ; 
@@ -439,7 +439,7 @@ unsigned int MWrap<MeshT>::deleteFaces(const char* fpredicate_name )
 {
     MeshT* mesh = m_mesh ;
 
-    LOG(trace) << "MWrap<MeshT>::deleteFaces"
+    LOG(verbose) << "MWrap<MeshT>::deleteFaces"
                << " fpredicate_name " << fpredicate_name
                ;
 
@@ -458,7 +458,7 @@ unsigned int MWrap<MeshT>::deleteFaces(const char* fpredicate_name )
 
     std::stringstream ssm ; 
     for( FI f=mesh->faces_begin() ; f != mesh->faces_end(); ++f ) if(mesh->property(fpredicate, *f) > 0) ssm << f->idx() << " " ; 
-    LOG(trace) << "MWrap<MeshT>::deleteFaces " << " ssm " << ssm.str() ;
+    LOG(verbose) << "MWrap<MeshT>::deleteFaces " << " ssm " << ssm.str() ;
 
 
 

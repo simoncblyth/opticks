@@ -70,7 +70,7 @@ int SSys::run(const char* cmd)
         LOG(warning) << "SSys::run FAILED with "
                      << " cmd " << cmd 
                      ;
-        LOG(trace) << " possibly you need to set export PATH=$OPTICKS_HOME/ana:$OPTICKS_HOME/bin:/usr/local/opticks/lib:$PATH " ;
+        LOG(verbose) << " possibly you need to set export PATH=$OPTICKS_HOME/ana:$OPTICKS_HOME/bin:/usr/local/opticks/lib:$PATH " ;
     }
     
 
@@ -182,7 +182,7 @@ bool SSys::IsRemoteSession()
 
     bool is_remote = ssh_client != NULL || ssh_tty != NULL ; 
 
-    LOG(trace) << "SSys::IsRemoteSession"
+    LOG(verbose) << "SSys::IsRemoteSession"
                << " ssh_client " << ssh_client 
                << " ssh_tty " << ssh_tty
                << " is_remote " << is_remote
@@ -267,7 +267,7 @@ int SSys::setenvvar( const char* ekey, const char* value, bool overwrite)
 
     const char* after = getenv(ekey) ;
 
-    LOG(trace) << "SSys::setenvvar"
+    LOG(verbose) << "SSys::setenvvar"
               << " ekey " << ekey 
               << " ekv " << ekv 
               << " overwrite " << overwrite

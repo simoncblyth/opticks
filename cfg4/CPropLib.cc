@@ -130,7 +130,7 @@ void CPropLib::initCheckConstants()
 
 unsigned int CPropLib::getNumMaterials()
 {
-   LOG(trace) << "." ; 
+   LOG(verbose) << "." ; 
    if(m_mlib == NULL)
    {
        LOG(error) << "mlib NULL" ;
@@ -208,7 +208,7 @@ G4MaterialPropertiesTable* CPropLib::makeMaterialPropertiesTable(const GMaterial
     const char* name = ggmat->getShortName();
     GMaterial* _ggmat = const_cast<GMaterial*>(ggmat) ; // wont change it, i promise 
 
-    LOG(trace) << " name " << name ; 
+    LOG(verbose) << " name " << name ; 
 
     G4MaterialPropertiesTable* mpt = new G4MaterialPropertiesTable();
     addProperties(mpt, _ggmat, "RINDEX,ABSLENGTH,RAYLEIGH,REEMISSIONPROB,GROUPVEL");

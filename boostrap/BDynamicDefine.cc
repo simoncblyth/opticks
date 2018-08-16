@@ -18,7 +18,7 @@ BDynamicDefine::BDynamicDefine()
 void BDynamicDefine::write(const char* dir, const char* name)
 {
 
-    LOG(trace) << "BDynamicDefine::write"
+    LOG(verbose) << "BDynamicDefine::write"
               << " dir " << dir
               << " name " << name
               ;
@@ -55,7 +55,7 @@ void BDynamicDefine::write(const char* dir, const char* name)
 template <typename T>
 void BDynamicDefine::add(const char* name, T value)
 {
-    LOG(trace) << "BDynamicDefine::add"
+    LOG(verbose) << "BDynamicDefine::add"
               << " name " << name
               << " value " << value
               ; 

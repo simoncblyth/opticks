@@ -141,7 +141,7 @@ void CGenerator::configureEvent(OpticksEvent* evt)
 
 CSource* CGenerator::initTorchSource()
 {
-    LOG(trace) << "CGenerator::initTorchSource " ; 
+    LOG(verbose) << "CGenerator::initTorchSource " ; 
 
     TorchStepNPY* torch = m_hub->getTorchstep();
 
@@ -185,7 +185,7 @@ CSource* CGenerator::initInputPhotonSource()
 CSource* CGenerator::initG4GunSource()
 {
     std::string gunconfig = m_hub->getG4GunConfig() ; // NB via OpticksGun in the hub, not directly from Opticks
-    LOG(trace) << "CGenerator::initG4GunSource " 
+    LOG(verbose) << "CGenerator::initG4GunSource " 
                << " gunconfig " << gunconfig
                 ; 
 

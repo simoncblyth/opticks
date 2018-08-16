@@ -316,7 +316,7 @@ void OpticksResource::identifyGeometry()
            else 
                  m_other = true ;
 
-           LOG(trace) << "OpticksResource::identifyGeometry" 
+           LOG(verbose) << "OpticksResource::identifyGeometry" 
                       << " metavalue detector " <<  detector 
                       ; 
        }
@@ -340,7 +340,7 @@ void OpticksResource::identifyGeometry()
 
    assert(m_detector);
 
-   LOG(trace) << "OpticksResource::identifyGeometry"
+   LOG(verbose) << "OpticksResource::identifyGeometry"
               << " m_detector " << m_detector
               ;
 
@@ -534,7 +534,7 @@ BEnv* OpticksResource::readIniEnvironment(const std::string& inipath)
     BEnv* env = NULL ; 
     if(BFile::ExistsFile(inipath.c_str()))
     {
-        LOG(trace) << "OpticksResource::readIniEnvironment" 
+        LOG(verbose) << "OpticksResource::readIniEnvironment" 
                   << " from " << inipath
                   ;
 
@@ -844,7 +844,7 @@ std::string OpticksResource::getPreferenceDir(const char* type, const char* udet
     if(subtype) prefdir /= subtype ; 
     std::string pdir = prefdir.string() ;
 
-    LOG(trace) << "OpticksResource::getPreferenceDir"
+    LOG(verbose) << "OpticksResource::getPreferenceDir"
               << " type " << type 
               << " detector_type " << detector_type
               << " resource_type " << resource_type
@@ -898,7 +898,7 @@ bool OpticksResource::loadPreference(std::map<std::string, std::string>& mss, co
     std::string prefdir = getPreferenceDir(type);
     bool empty = prefdir.empty() ; 
 
-    LOG(trace) << "OpticksResource::loadPreference(MSS)" 
+    LOG(verbose) << "OpticksResource::loadPreference(MSS)" 
               << " prefdir " << prefdir
               << " name " << name
               << " empty " << ( empty ? "YES" : "NO" )
@@ -920,7 +920,7 @@ bool OpticksResource::loadPreference(std::map<std::string, unsigned int>& msu, c
     std::string prefdir = getPreferenceDir(type);
     bool empty = prefdir.empty() ; 
 
-    LOG(trace) << "OpticksResource::loadPreference(MSU)" 
+    LOG(verbose) << "OpticksResource::loadPreference(MSU)" 
               << " prefdir " << prefdir
               << " name " << name
               << " empty " << ( empty ? "YES" : "NO" )

@@ -60,8 +60,8 @@ G4VPhysicalVolume* X4Sample::OpNovice()
     std::string _cout = coutbuf.str() ; 
     std::string _cerr = cerrbuf.str() ; 
  
-    //LOG(trace) << " cout " << _cout ;
-    LOG(trace) << " cerr " << _cerr ;
+    //LOG(verbose) << " cout " << _cout ;
+    LOG(verbose) << " cerr " << _cerr ;
     assert(top);  
 
     return top ; 

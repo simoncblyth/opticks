@@ -2,7 +2,9 @@
 #include <plog/Log.h>
 #include <plog/Appenders/ColorConsoleAppender.h>
 
-// translate from boost log levels to plog 
+// translate from boost log levels to plog  ... but this are dangerous
+// Better to do using plog::verbose etc...
+
 #define fatal plog::fatal
 #define error plog::error
 #define warning plog::warning

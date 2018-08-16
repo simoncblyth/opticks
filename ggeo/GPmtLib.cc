@@ -66,7 +66,7 @@ void GPmtLib::loadAnaPmt()
 
     if(m_apmt)
     {
-        LOG(trace) << "GPmtLib::loadAnalyticPmt SUCCEEDED " << m_apmt->getPath()   ; 
+        LOG(verbose) << "GPmtLib::loadAnalyticPmt SUCCEEDED " << m_apmt->getPath()   ; 
         if(m_ok->isDbgAnalytic())
         {
             m_apmt->dump("GPmt::dump --dbganalytic " );

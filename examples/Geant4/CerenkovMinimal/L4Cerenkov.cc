@@ -298,7 +298,7 @@ L4Cerenkov::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
         const G4ParticleDefinition* definition = aParticle->GetDefinition();
         G4ThreeVector deltaPosition = aStep.GetDeltaPosition();
         G4int materialIndex = aMaterial->GetIndex();
-        LOG(trace) << dp ; 
+        LOG(verbose) << dp ; 
 
         G4Opticks::GetOpticks()->collectCerenkovStep(
                0,                  // 0     id:zero means use cerenkov step count 

@@ -72,7 +72,7 @@ optix::Program OConfig::createProgram(const char* filename, const char* progname
   std::string path = BOpticksResource::PTXPath(filename); 
   std::string key = path + ":" + progname ; 
 
-  LOG(trace) << "OConfig::createProgram"
+  LOG(verbose) << "OConfig::createProgram"
              << " path " << path 
              ;
 
@@ -129,7 +129,7 @@ void OConfig::addProg(OProg* prog, bool defer)
 {
     int index = prog->index ; 
 
-    LOG(trace) << "OConfig::addProg"
+    LOG(verbose) << "OConfig::addProg"
               << " desc " << prog->description()
               << " index/raytype " << index 
               ;
@@ -151,7 +151,7 @@ unsigned int OConfig::getNumEntryPoint()
     } 
     assert(m_raygen_index == m_exception_index);
 
-    LOG(trace) << "OConfig::getNumEntryPoint" 
+    LOG(verbose) << "OConfig::getNumEntryPoint" 
               << " m_raygen_index " << m_raygen_index
               << " m_exception_index " << m_exception_index
               ;
@@ -409,7 +409,7 @@ const char* OConfig::getFormatName(RTformat format)
 
 void OConfig::configureSampler(optix::TextureSampler& sampler, optix::Buffer& buffer)
 {
-    LOG(trace) << "OPropertyLib::configureSampler" ; 
+    LOG(verbose) << "OPropertyLib::configureSampler" ; 
 
     // cuda-pdf p43 // default is to clamp to the range
     RTwrapmode wrapmode = RT_WRAP_REPEAT ;

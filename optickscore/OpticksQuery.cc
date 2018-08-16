@@ -148,7 +148,7 @@ void OpticksQuery::parseQuery(const char* query)
 
        for(unsigned int i=0 ; i < elem.size() ; i++ ) parseQueryElement( elem[i].c_str() );
 
-       LOG(trace) << "OpticksQuery::parseQuery" 
+       LOG(verbose) << "OpticksQuery::parseQuery" 
                  << " query:[" << query << "]"
                  << " elements:" << elem.size()  
                  << " queryType:" << getQueryTypeString()

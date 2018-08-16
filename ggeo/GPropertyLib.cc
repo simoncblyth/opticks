@@ -423,7 +423,7 @@ void GPropertyLib::beforeClose()
 
 void GPropertyLib::close()
 {
-    LOG(trace) << "[" ;
+    LOG(verbose) << "[" ;
 
     beforeClose(); 
 
@@ -453,7 +453,7 @@ void GPropertyLib::close()
     setMeta(meta);
     setClosed();
 
-    LOG(trace) << "]" ;
+    LOG(verbose) << "]" ;
 }
 
 
@@ -487,7 +487,7 @@ void GPropertyLib::saveToCache(NPYBase* buffer, const char* suffix)
 void GPropertyLib::saveToCache()
 {
 
-    LOG(trace) << "GPropertyLib::saveToCache" ; 
+    LOG(verbose) << "GPropertyLib::saveToCache" ; 
  
     if(!isClosed()) close();
 
@@ -509,7 +509,7 @@ void GPropertyLib::saveToCache()
         saveNames(NULL);
     }
 
-    LOG(trace) << "GPropertyLib::saveToCache DONE" ; 
+    LOG(verbose) << "GPropertyLib::saveToCache DONE" ; 
 
 }
 
@@ -522,12 +522,12 @@ void GPropertyLib::saveNames(const char* dir) const
 
 void GPropertyLib::loadFromCache()
 {
-    LOG(trace) << "GPropertyLib::loadFromCache" ;
+    LOG(verbose) << "GPropertyLib::loadFromCache" ;
 
     std::string dir = getCacheDir(); 
     std::string name = getBufferName();
 
-    LOG(trace) << "GPropertyLib::loadFromCache" 
+    LOG(verbose) << "GPropertyLib::loadFromCache" 
               << " dir " << dir
               << " name " << name 
                ;

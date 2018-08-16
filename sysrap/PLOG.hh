@@ -15,7 +15,7 @@ using plog::debug ;
 using plog::verbose ;
 
 // hmm dangerous but what alternative 
-#define trace plog::verbose 
+//#define trace plog::verbose 
 
 #include "SYSRAP_API_EXPORT.hh"
 

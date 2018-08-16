@@ -98,7 +98,7 @@ void BList<A,B>::save(const char* path)
 template<typename A, typename B> 
 void BList<A,B>::load(const char* dir, const char* name)
 {
-    LOG(trace) << "load"
+    LOG(verbose) << "load"
               << " dir [" << dir << "]" 
               << " name [" << name << "]" 
               ;

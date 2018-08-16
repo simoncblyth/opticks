@@ -117,7 +117,7 @@ void CSurLib::convert(CDetector* detector)
         } 
         else
         {
-              LOG(trace) << "CSurLib::convert SKIPPED GSur index " << i << " : " << sur->brief() ;  
+              LOG(verbose) << "CSurLib::convert SKIPPED GSur index " << i << " : " << sur->brief() ;  
         }
     }   
     LOG(info) << brief();

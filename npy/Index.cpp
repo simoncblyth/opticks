@@ -357,7 +357,7 @@ void Index::save(const char* idpath)
     BMap<std::string, unsigned int>::save( &m_source, dir.c_str(), sname.c_str() );  
     BMap<std::string, unsigned int>::save( &m_local , dir.c_str(), lname.c_str() );  
 
-    LOG(trace) << "Index::save DONE" ;
+    LOG(verbose) << "Index::save DONE" ;
 
 }
 std::string Index::getPrefixedString(const char* tail)

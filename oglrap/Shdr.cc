@@ -101,7 +101,7 @@ void Shdr::setInclPath(const char* incl_path, char delim)
     //boost::split(m_incl_dirs,incl_path,boost::is_any_of(delim));
     BStr::split(m_incl_dirs,incl_path,delim);
 
-    LOG(trace) << "Shdr::setInclPath "
+    LOG(verbose) << "Shdr::setInclPath "
               << " incl_path " << incl_path
               << " delim " << delim
               << " elems " << m_incl_dirs.size()

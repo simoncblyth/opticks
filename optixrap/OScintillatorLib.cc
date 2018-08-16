@@ -30,7 +30,7 @@ void OScintillatorLib::convert(const char* slice)
     NPY<float>* buf = m_lib->getBuffer();
     unsigned ni = buf ? buf->getShape(0) : 0 ; 
 
-    LOG(trace) << "OScintillatorLib::convert" 
+    LOG(verbose) << "OScintillatorLib::convert" 
                << " from " << ( buf ? buf->getShapeString() : "-" ) 
                << " ni " << ni 
                ;
@@ -48,7 +48,7 @@ void OScintillatorLib::convert(const char* slice)
     { 
         NPY<float>* slice_buf = buf->make_slice(slice) ;
 
-        LOG(trace) << "OScintillatorLib::convert" 
+        LOG(verbose) << "OScintillatorLib::convert" 
                   << " sliced buffer with " << slice
                   << " from " << buf->getShapeString()
                   << " to " << slice_buf->getShapeString()
@@ -57,7 +57,7 @@ void OScintillatorLib::convert(const char* slice)
         makeReemissionTexture(slice_buf);
     }
 
-    LOG(trace) << "OScintillatorLib::convert DONE" ;
+    LOG(verbose) << "OScintillatorLib::convert DONE" ;
 }
 
 
@@ -111,7 +111,7 @@ void OScintillatorLib::makeReemissionTexture(NPY<float>* buf)
     m_context["reemission_texture"]->setTextureSampler(tex);
     m_context["reemission_domain"]->setFloat(domain);
 
-    LOG(trace) << "OScintillatorLib::makeReemissionTexture DONE " ; 
+    LOG(verbose) << "OScintillatorLib::makeReemissionTexture DONE " ; 
 }
 
 

@@ -84,7 +84,7 @@ void GPmt::loadFromCache(NSlice* slice)
     std::string relpath = resource->getPmtPath(m_index, relative=true); 
     std::string path    = resource->getPmtPath(m_index, relative=false ); 
 
-    LOG(trace) << "GPmt::loadFromCache"
+    LOG(verbose) << "GPmt::loadFromCache"
                << " base " << base
                << " relpath " << relpath 
                << " path " << path 
