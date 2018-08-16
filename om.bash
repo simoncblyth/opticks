@@ -113,7 +113,6 @@ npy
 yoctoglrap
 optickscore
 ggeo
-extg4
 assimprap
 openmeshrap
 opticksgeo
@@ -124,6 +123,7 @@ okop
 oglrap
 opticksgl
 ok
+extg4
 cfg4
 okg4
 g4ok
@@ -190,6 +190,7 @@ om-make-all(){      om-all ${FUNCNAME/-all} $* ; }
 om-install-all(){   om-all ${FUNCNAME/-all} $* ; }
 om-test-all(){      om-all ${FUNCNAME/-all} $* ; om-testlog ; }
 om-echo-all(){      om-all ${FUNCNAME/-all} $* ; }
+om-clean-all(){     om-all ${FUNCNAME/-all} $* ; }
 om-find-all(){      om-all ${FUNCNAME/-all} $* ; }
 
 om-testlog(){      CTestLog.py $(om-bdir)  ; }
@@ -203,6 +204,7 @@ om-install(){ om-one-or-all install $* ; }
 om-visit(){   om-one-or-all visit $* ; }
 om-test(){    om-one-or-all test $* ; }
 om-echo(){    om-one-or-all echo $* ; }
+om-clean(){   om-one-or-all clean $* ; }
 om-find(){    om-one-or-all find $* ; }
 
 om--(){       om-make $* ; }     ## just this proj
@@ -423,6 +425,29 @@ om-test-one()
 
     cd $iwd
 }
+
+om-clean-one()
+{
+    local iwd=$(pwd)
+    local name=$(basename $iwd)
+
+    local msg="=== $FUNCNAME :"
+    local name=$(basename ${iwd/tests})   # trim tests to get name of subproj from tests folder or subproj folder
+    local sdir=$(om-sdir $name)
+    local bdir=$(om-bdir $name)
+    cd $sdir
+    local cmd="rm -rf $bdir" 
+
+    #local ans
+    #read -p "$FUNCNAME : Enter Y to \"$cmd\" : " ans
+    #[ "$ans" == "Y" ] && echo $cmd 
+    echo $cmd
+
+    cd $iwd
+}
+
+
+
 
 
 om-find-one(){   

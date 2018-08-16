@@ -215,8 +215,8 @@ void CTraverser::AncestorVisit(std::vector<const G4VPhysicalVolume*> ancestors, 
     const std::string& pvn = pv->GetName();
     const std::string& lvn = lv->GetName();
 
-    LOG(info) << " pvn " << pvn ; 
-    LOG(info) << " lvn " << lvn ; 
+    LOG(verbose) << " pvn " << pvn ; 
+    LOG(verbose) << " lvn " << lvn ; 
 
 
     updateBoundingBox(lv->GetSolid(), T, selected);

@@ -13,6 +13,8 @@
 void test_load()
 {
     NCSG* csg = NCSG::Load("$TMP/tboolean-box--/1"); 
+    if(!csg) return ; 
+
     NPY<float>* gt = csg->getGTransformBuffer(); 
     assert(gt);  
     LOG(info) << " gt " << gt->getShapeString() ; 

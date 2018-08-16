@@ -581,7 +581,23 @@ opticks-full()
 }
 
 
+opticks-g4-clean-build()
+{
+    local arg="extg4:"
 
+    om-
+    om-subs $arg 
+    om-clean $arg 
+
+    type $FUNCNAME
+    read -p "$FUNCNAME : enter YES to proceed to to clean and build : " ans
+
+    [ "$ans" != "YES" ] && echo skip && return 
+
+    om-clean $arg | sh 
+    om-conf $arg
+    om-make $arg
+}
 
 
 
@@ -930,6 +946,7 @@ EOA
 
 opticks-tl()
 {
+   om-
    om-testlog
 }
 

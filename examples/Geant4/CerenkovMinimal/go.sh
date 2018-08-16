@@ -6,7 +6,7 @@ sdir=$(pwd)
 name=$(basename $sdir)
 bdir=/tmp/$USER/opticks/examples/$name/build 
 
-#rm -rf $bdir 
+rm -rf $bdir 
 if [ ! -d "$bdir" ]; then 
     mkdir -p $bdir && cd $bdir 
     cmake $sdir -DCMAKE_BUILD_TYPE=Debug \

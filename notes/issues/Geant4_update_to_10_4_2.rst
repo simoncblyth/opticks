@@ -4,12 +4,35 @@ Geant4_update_to_10_4_2
 * https://bitbucket.org/simoncblyth/opticks/commits/db6a93f072ed6ce5ef98556f5c2f1884d1de7c6f
 
 
+DONE : Compilation
+--------------
+
 * theParticleIterator
 * needed to const_cast G4MaterialPropertiesTable
-* getting NULL dynamicparticle
+
+DONE : config : omitted opticks-buildtype : so had to rebuild
+------------------------------------------------------------
+
+Nuclear option as g4-configure omitted to setup Debug build.::
+
+   g4-wipe
+   g4--
+
+
+FIXED : crash at used of X4PhysicsVector::Digest 
+---------------------------------------------------
 
 * X4PhysicsVector::Digest reproducibly SIGABRT on macOS, workaround get digest from converted GProperty 
 
+
+FIXED : NULL dynamicparticle in ckm-
+----------------------------------------
+
+* getting NULL dynamicparticle : FIXED with a deep clean of all projs depending on G4 
+
+
+WORKAROUND : polygonize crash : move from G4VisAtt to X4SolidExtent
+---------------------------------------------------------------------
 
 ckm- polygonize crash, and dont have debug symbols ?? for G4 
 
@@ -37,13 +60,6 @@ X4MeshTest has the same issue with GetExtent()::
         frame #6: 0x00007fff533b2015 libdyld.dylib`start + 1
         frame #7: 0x00007fff533b2015 libdyld.dylib`start + 1
     (lldb) 
-
-
-Nuclear option as g4-configure omitted to setup Debug build.::
-
-   g4-wipe
-   g4--
-
 
 
 After replacing all use of G4VisExtent for X4SolidExtent all X4 tests pass::
@@ -95,10 +111,8 @@ After replacing all use of G4VisExtent for X4SolidExtent all X4 tests pass::
 
 
 
-
-
-CFG4 still has 6 fails
-------------------------
+FIXED : CFG4 6 fails  : only one CInterpolationTest FAIL left, known from before G4 version hop
+--------------------------------------------------------------------------------------------------
 
 ::
 
@@ -211,10 +225,12 @@ The 4 SEGFAULT are all from the same cause::
     epsilon:extg4 blyth$ 
 
 
-As I left office, recalled some internal envvar setup via ini
----------------------------------------------------------------
 
-::
+
+FIXED : wrong version of internal g4env environment issue
+----------------------------------------------------------------------
+
+As I left office, recalled some internal envvar setup via ini::
 
     epsilon:opticks blyth$ g4-
     epsilon:opticks blyth$ t g4-export-ini
@@ -340,10 +356,8 @@ Update with::
 
 
 
-
-
-2 SIGABRT : from same assert related to skin surfaces
-------------------------------------------------------
+FIXED : 2 SIGABRT : from same assert related to skin surfaces : due to garbled GDML loaded LV names
+------------------------------------------------------------------------------------------------------
 
 ::
 
@@ -565,6 +579,87 @@ GDML read::
 
 
 
+Getting rid of the PLOG.hh dangerous define of trace, fixes the mangled LV names.
+
+::
+
+    epsilon:cfg4 blyth$ om-test
+    === om-test-one : cfg4            /Users/blyth/opticks/cfg4                                    /usr/local/opticks/build/cfg4                                
+    Thu Aug 16 13:10:10 CST 2018
+    Test project /usr/local/opticks/build/cfg4
+          Start  1: CFG4Test.CMaterialLibTest
+     1/23 Test  #1: CFG4Test.CMaterialLibTest .................   Passed    0.38 sec
+          Start  2: CFG4Test.CMaterialTest
+     2/23 Test  #2: CFG4Test.CMaterialTest ....................   Passed    0.30 sec
+          Start  3: CFG4Test.CTestDetectorTest
+     3/23 Test  #3: CFG4Test.CTestDetectorTest ................   Passed    1.69 sec
+          Start  4: CFG4Test.CGDMLDetectorTest
+     4/23 Test  #4: CFG4Test.CGDMLDetectorTest ................   Passed    1.52 sec
+          Start  5: CFG4Test.CGeometryTest
+     5/23 Test  #5: CFG4Test.CGeometryTest ....................   Passed    1.56 sec
+          Start  6: CFG4Test.CG4Test
+     6/23 Test  #6: CFG4Test.CG4Test ..........................   Passed   42.06 sec
+          Start  7: CFG4Test.G4MaterialTest
+     7/23 Test  #7: CFG4Test.G4MaterialTest ...................   Passed    0.06 sec
+          Start  8: CFG4Test.G4StringTest
+     8/23 Test  #8: CFG4Test.G4StringTest .....................   Passed    0.05 sec
+          Start  9: CFG4Test.G4SphereTest
+     9/23 Test  #9: CFG4Test.G4SphereTest .....................   Passed    0.05 sec
+          Start 10: CFG4Test.CSolidTest
+    10/23 Test #10: CFG4Test.CSolidTest .......................   Passed    0.05 sec
+          Start 11: CFG4Test.G4PhysicsOrderedFreeVectorTest
+    11/23 Test #11: CFG4Test.G4PhysicsOrderedFreeVectorTest ...   Passed    0.05 sec
+          Start 12: CFG4Test.CVecTest
+    12/23 Test #12: CFG4Test.CVecTest .........................   Passed    0.05 sec
+          Start 13: CFG4Test.G4MaterialPropertiesTableTest
+    13/23 Test #13: CFG4Test.G4MaterialPropertiesTableTest ....   Passed    0.05 sec
+          Start 14: CFG4Test.G4UniformRandTest
+    14/23 Test #14: CFG4Test.G4UniformRandTest ................   Passed    0.05 sec
+          Start 15: CFG4Test.G4BoxTest
+    15/23 Test #15: CFG4Test.G4BoxTest ........................   Passed    0.05 sec
+          Start 16: CFG4Test.G4ThreeVectorTest
+    16/23 Test #16: CFG4Test.G4ThreeVectorTest ................   Passed    0.05 sec
+          Start 17: CFG4Test.CCollectorTest
+    17/23 Test #17: CFG4Test.CCollectorTest ...................   Passed    1.80 sec
+          Start 18: CFG4Test.CInterpolationTest
+    18/23 Test #18: CFG4Test.CInterpolationTest ...............***Exception: Child aborted  1.86 sec
+          Start 19: CFG4Test.OpRayleighTest
+    19/23 Test #19: CFG4Test.OpRayleighTest ...................   Passed    1.34 sec
+          Start 20: CFG4Test.CGROUPVELTest
+    20/23 Test #20: CFG4Test.CGROUPVELTest ....................   Passed    0.34 sec
+          Start 21: CFG4Test.CMakerTest
+    21/23 Test #21: CFG4Test.CMakerTest .......................   Passed    0.05 sec
+          Start 22: CFG4Test.CPhotonTest
+    22/23 Test #22: CFG4Test.CPhotonTest ......................   Passed    0.05 sec
+          Start 23: CFG4Test.CRandomEngineTest
+    23/23 Test #23: CFG4Test.CRandomEngineTest ................   Passed    1.67 sec
+
+    96% tests passed, 1 tests failed out of 23
+
+    Total Test time (real) =  55.45 sec
+
+    The following tests FAILED:
+         18 - CFG4Test.CInterpolationTest (Child aborted)
+    Errors while running CTest
+    Thu Aug 16 13:11:06 CST 2018
+    epsilon:cfg4 blyth$ 
+
+
+That fail is a known problem with the default geocache::
+
+
+    2018-08-16 13:15:09.635 INFO  [2386316] [main@190]    17( 5,-1,-1, 5)                                         IwsWater///IwsWater om         /dd/Materials/IwsWater im         /dd/Materials/IwsWater
+    2018-08-16 13:15:09.635 INFO  [2386316] [main@141]  i  18 omat   5 osur   4 isur 4294967295 imat  36
+    2018-08-16 13:15:09.635 FATAL [2386316] [*CMaterialBridge::getG4Material@190]  failed to find a G4Material with index 36 in all the indices 15 25 14 24 18 16 26 22 0 2 27 1 4 10 12 13 28 35 9 21 3 29 30 31 32 33 19 6 20 5 17 23 8 7 34 11 
+    Assertion failed: (im), function main, file /Users/blyth/opticks/cfg4/tests/CInterpolationTest.cc, line 152.
+    Abort trap: 6
+    epsilon:cfg4 blyth$ 
+
+
+
+
+
+
 
 
 
@@ -633,6 +728,76 @@ ckm NULL track::
        73  	    _track_step_count += 1 ;
        74  	    
     (lldb) 
+
+
+
+FIXED : by deleting build dir and rebuilding : PostUserTrackingAction bad access
+-----------------------------------------------------------------------------------
+
+::
+
+    (lldb) f 1
+    frame #1: 0x00000001023c6937 libG4tracking.dylib`G4TrackingManager::ProcessOneTrack(this=0x0000000110d85e80, apValueG4Track=0x0000000116e31e80) at G4TrackingManager.cc:140
+       137 	
+       138 	  // Post tracking user intervention process.
+       139 	  if( fpUserTrackingAction != 0 ) {
+    -> 140 	     fpUserTrackingAction->PostUserTrackingAction(fpTrack);
+       141 	  }
+       142 	
+       143 	  // Destruct the trajectory if it was created
+    (lldb) p fpTrack
+    (G4Track *) $0 = 0x0000000116e31e80
+    (lldb) f 0
+    frame #0: 0x00007fff8b2e7058 libc++abi.dylib`vtable for __cxxabiv1::__si_class_type_info + 16
+    libc++abi.dylib`vtable for __cxxabiv1::__si_class_type_info:
+    ->  0x7fff8b2e7058 <+16>: popq   %rsi
+        0x7fff8b2e7059 <+17>: cli    
+    (lldb) bt
+    * thread #1, queue = 'com.apple.main-thread', stop reason = EXC_BAD_ACCESS (code=2, address=0x7fff8b2e7058)
+      * frame #0: 0x00007fff8b2e7058 libc++abi.dylib`vtable for __cxxabiv1::__si_class_type_info + 16
+        frame #1: 0x00000001023c6937 libG4tracking.dylib`G4TrackingManager::ProcessOneTrack(this=0x0000000110d85e80, apValueG4Track=0x0000000116e31e80) at G4TrackingManager.cc:140
+        frame #2: 0x000000010228d71a libG4event.dylib`G4EventManager::DoProcessing(this=0x0000000110d85df0, anEvent=0x0000000116e02600) at G4EventManager.cc:185
+        frame #3: 0x000000010228ec2f libG4event.dylib`G4EventManager::ProcessOneEvent(this=0x0000000110d85df0, anEvent=0x0000000116e02600) at G4EventManager.cc:338
+        frame #4: 0x000000010219a9f5 libG4run.dylib`G4RunManager::ProcessOneEvent(this=0x0000000110c5dbf0, i_event=0) at G4RunManager.cc:399
+        frame #5: 0x000000010219a825 libG4run.dylib`G4RunManager::DoEventLoop(this=0x0000000110c5dbf0, n_event=1, macroFile=0x0000000000000000, n_select=-1) at G4RunManager.cc:367
+        frame #6: 0x0000000102198ce1 libG4run.dylib`G4RunManager::BeamOn(this=0x0000000110c5dbf0, n_event=1, macroFile=0x0000000000000000, n_select=-1) at G4RunManager.cc:273
+        frame #7: 0x000000010003310d CerenkovMinimal`G4::beamOn(this=0x00007ffeefbfe498, nev=1) at G4.cc:53
+        frame #8: 0x0000000100032fb7 CerenkovMinimal`G4::G4(this=0x00007ffeefbfe498, nev=1) at G4.cc:48
+        frame #9: 0x000000010003313b CerenkovMinimal`G4::G4(this=0x00007ffeefbfe498, nev=1) at G4.cc:30
+        frame #10: 0x0000000100011e91 CerenkovMinimal`main(argc=1, argv=0x00007ffeefbfe578) at CerenkovMinimal.cc:7
+        frame #11: 0x00007fff533b2015 libdyld.dylib`start + 1
+        frame #12: 0x00007fff533b2015 libdyld.dylib`start + 1
+    (lldb) 
+
+::
+
+    epsilon:issues blyth$ opticks-deps | grep G4
+    INFO:__main__:root /Users/blyth/opticks 
+     10          OKCONF :               okconf :               OKConf : OpticksCUDA OptiX G4  
+     65              X4 :                extg4 :                ExtG4 : G4 GGeo  
+    170            CFG4 :                 cfg4 :                 CFG4 : G4 ExtG4 OpticksXercesC OpticksGeo  
+    180            OKG4 :                 okg4 :                 OKG4 : OK CFG4  
+    190            G4OK :                 g4ok :                 G4OK : CFG4 ExtG4 OKOP  
+
+
+Clean build all proj depending on G4::
+
+    opticks-g4-clean-build()
+    {
+        local arg="extg4:"
+
+        om-subs $arg 
+        om-clean $arg 
+
+        type $FUNCNAME
+        read -p "$FUNCNAME : enter YES to proceed to to clean and build : " ans
+
+        [ "$ans" != "YES" ] && echo skip && return 
+
+        om-clean $arg | sh 
+        om-conf $arg 
+        om-make $arg 
+    }
 
 
 

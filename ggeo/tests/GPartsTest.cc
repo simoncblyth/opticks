@@ -98,6 +98,8 @@ void test_save_load(GBndLib* bndlib)
 void test_load_ncsg_make()
 {
      NCSG* csg = NCSG::Load("$TMP/tboolean-box--/0");
+     if(!csg) return ; 
+
      const char* spec = "Rock//perfectAbsorbSurface/Vacuum" ; 
      unsigned verbosity = 3 ; 
 

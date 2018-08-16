@@ -1,3 +1,20 @@
+/**
+This failed to reproduce a problem of mangled LV names 
+seen in the switch to 10.4.2 see: 
+
+* notes/issues/Geant4_update_to_10_4_2.rst
+
+But it did reveal interference between some PLOG.hh dangerous 
+define of trace and xercesc headers, see:
+
+* notes/issues/PLOG_dangerous_trace_define.rst
+
+And fixing that issue fixed the mangled names problem, so 
+this was a useful check even though it didnt reproduce the problem
+
+**/
+
+
 #include "DetectorConstruction.hh"
 
 #include "G4VPhysicalVolume.hh"
@@ -27,18 +44,6 @@ G4VPhysicalVolume* read_gdml( const char* path )
     return gdml.GetWorldVolume() ;
 }
 
-/**
-This failed to reproduce a problem of mangled LV names 
-seen in the switch to 10.4.2 see: 
-
-* notes/issues/Geant4_update_to_10_4_2.rst
-
-But it did reveal interference between some PLOG.hh dangerous 
-define of trace and xercesc headers, see:
-
-* notes/issues/PLOG_dangerous_trace_define.rst
-
-**/
 
 int main(int argc, char** argv)
 {

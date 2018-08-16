@@ -255,10 +255,24 @@ g4-nom()
 {
    case $NODE_TAG in
      E) echo geant4_10_04_p02 ;;   ## macOS
-     J) echo Geant4-10.2.1 ;;      ## Linux
-     *) echo Geant4-10.2.1 ;;  
+   OLD) echo Geant4-10.2.1 ;;  
+     *) echo geant4_10_04_p02 ;;
    esac
 }
+
+
+g4-title()
+{
+   case $(g4-nom) in 
+      Geant4-10.2.1)    echo Geant4 10.2 first released 4 December 2015 \(patch-03, released 27 January 2017\) ;;
+      geant4_10_04_p01) echo Geant4 10.4 patch-01, released 28 February 2018 ;; 
+      geant4_10_04_p02) echo Geant4 10.4 patch-02, released 25 May 2018 ;; 
+   esac
+
+}
+
+
+
 
 
 g4-nom-notes(){ cat << EON
@@ -387,7 +401,8 @@ g4-info(){ cat << EOI
    g4-dist         : $(g4-dist)
    g4-filename     : $(g4-filename)
    g4-name         : $(g4-name)
-   g4-name2        : $(g4-name2)
+   g4-nom          : $(g4-nom)
+   g4-title        : $(g4-title)
 
    g4-prefix       : $(g4-prefix) 
    g4-cmake-dir    : $(g4-cmake-dir)
@@ -397,6 +412,7 @@ g4-info(){ cat << EOI
 
 EOI
 }
+
 
 
 g4-cmake-info(){ cat << EOI

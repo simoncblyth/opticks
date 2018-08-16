@@ -31,6 +31,9 @@ void Ctx::setEvent(const G4Event* event)
 
 void Ctx::setTrack(const G4Track* track)
 {
+
+    LOG(error) << "." ; 
+
     _track = track ; 
     _track_id = track->GetTrackID() - 1 ;
 
@@ -43,6 +46,7 @@ void Ctx::setTrack(const G4Track* track)
     //G4ParticleDefinition* particle = track->GetDefinition();
 
     const G4DynamicParticle* dp = track->GetDynamicParticle() ;   // 10.4.2 giving NULL DynamicParticle
+    assert( dp ) ;  
 
     const G4ParticleDefinition* particle = dp ? dp->GetParticleDefinition() : NULL ;
 
@@ -67,8 +71,16 @@ void Ctx::setTrack(const G4Track* track)
 
 void Ctx::setStep(const G4Step* step)
 {  
+    LOG(error) << "." ; 
+
+    assert( _track ) ; 
+
+    
+    const G4Track* track = _track ? _track : step->GetTrack() ; 
+    // curious 10.4.2 getting setStep before setTrack ?
+
     _step = step ; 
-    _step_id = _track->GetCurrentStepNumber() - 1 ;
+    _step_id = track->GetCurrentStepNumber() - 1 ;
 
     _track_step_count += 1 ;
     
