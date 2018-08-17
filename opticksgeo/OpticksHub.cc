@@ -680,31 +680,17 @@ std::string OpticksHub::getG4GunConfig()
     return m_gun->getConfig();
 }
 
-TorchStepNPY* OpticksHub::getTorchstep()   // needed by CGenerator
-{
-    return m_gen->getTorchstep() ; 
-}
 
-GenstepNPY* OpticksHub::getGenstepNPY()   // needed by CGenerator
-{
-    return m_gen->getGenstepNPY() ; 
-}
+// from OpticksGen : needed by CGenerator
+TorchStepNPY*   OpticksHub::getTorchstep()  {          return m_gen->getTorchstep() ; }
+GenstepNPY*     OpticksHub::getGenstepNPY()   {        return m_gen->getGenstepNPY() ; }
+NPY<float>*     OpticksHub::getInputPhotons()   {      return m_gen->getInputPhotons() ; }
+unsigned        OpticksHub::getSourceCode() const {    return m_gen->getSourceCode() ; }
+NPY<float>*     OpticksHub::getInputGensteps() const { return m_gen->getInputGensteps(); }
 
 
-NPY<float>* OpticksHub::getInputPhotons()   // needed by CGenerator
-{
-    return m_gen->getInputPhotons() ; 
-}
 
-unsigned OpticksHub::getSourceCode() const 
-{
-    return m_gen->getSourceCode() ; 
-}
 
-NPY<float>* OpticksHub::getInputGensteps() const 
-{
-    return m_gen->getInputGensteps();
-}
 
 
 

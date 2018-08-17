@@ -103,16 +103,54 @@ So how to make that work.
 4. persist GGeo to geocache 
   
 
-OKG4Test
-~~~~~~~~~~
+OKG4Test : idea is to this as a "2nd" executable to do the instrumented bi-simulation
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ::
 
     OPTICKS_KEY=$(ckm-key) OKG4Test --compute --envkey 
 
 
-Argh GDML matrix values truncation again : this is just cause to update G4
-----------------------------------------------------------------------------
+* key geocache with the GDML (as part of geocache) succeed to recover the original geometry for both simulations
+* BUT: the source of photons is not recovered 
+
+  * in original ckm- that source is some gensteps that are collected , Opticks in original or
+    2nd executable is happy to propagate those... (if persist them somewhere appropriate : 
+    probably inside an evt folder inside the live geocache makes sense)
+
+  * BUT Cerenkov doesnt have the capability to replay some gensteps,
+    could it be hacked to do that ?
+
+  * hmm a way around this is to use inputphotons from an emitsource : 
+    which both Opticks and G4 can use (this is what worked before, in the aligned test)
+
+
+Notice there is a potential problem with inconsistency of the original physics (Cerenkov) 
+implementation in 1st (example) executable and in the 2nd (coming from CFG4).  Could just use the 
+CFG4.Cerenkov in the example ... but thats complicating the example.  The idea is to 
+keep the 1st executable simple and do all complex instrumentation and trickery in the 2nd 
+executable only.  
+
+To this end giving CFG4.Cerenkov capability to replay canned gensteps fits in, 
+although is means that the photons will be in places out of step with the other particles, unless 
+succeed to arrange a reproducible rest of the event. 
+But they dont matter really : the objective is to compare the photon propagation between the 
+two simulations. True but, hacking Cerekov replaying is too whacky and niche : 
+better to develop code that makes more general sense and thus has more use than the immediate problem, ie
+
+* parametrize and persist the gun source (there is something like that already : perhaps in opposite direction
+  converting a commandline gun specification into a G4 gun) : need the opposite get the spec from the gun 
+* verify that can use it to reproducibly get the same non-opticals in 1st and 2nd executables, then should
+  have reproducible G4 cerenkov photons (and gensteps) : will need to use same physics to do this  
+
+
+
+
+
+
+
+Argh GDML matrix values truncation again : this is just cause to update G4 : DONE : UPDATED TO 10.4.2
+--------------------------------------------------------------------------------------------------------
 
 * :doc:`GDML_matrix_values_truncation`
 

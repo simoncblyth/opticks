@@ -128,6 +128,15 @@ void CGDMLDetector::addMPT()
     unsigned int nmat = m_traverser->getNumMaterials();
     unsigned int nmat_without_mpt = m_traverser->getNumMaterialsWithoutMPT();
 
+    if(nmat > 0 && nmat_without_mpt == 0 )
+    {
+        LOG(error) << "CGDMLDetector::addMPT" 
+                     << " Looks like GDML has succeded to load material MPTs  "
+                     << " skipping the fixup " 
+                     ;
+        return ; 
+ 
+    }
     if(nmat > 0 && nmat_without_mpt == nmat )
     {
         LOG(warning) << "CGDMLDetector::addMPT" 

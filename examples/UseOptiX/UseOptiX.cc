@@ -55,7 +55,7 @@ int main()
 
     RTcontext context = 0;
 
-    RTprogram program;
+    //RTprogram program;
     RTbuffer  buffer;
     RTvariable variable ; 
 

@@ -13,8 +13,7 @@ ckm--(){ ckm-cd ; ./go.sh ; }
 
 
 
-#ckm-dig(){ echo 44ca65ec36cb6c03f465bc38ac5c5dd4 ; }
-ckm-dig(){ echo 960713d973bd4be73b1b7d9aa4838c3e ; }
+ckm-dig(){ echo c250d41454fba7cb19f3b83815b132c2 ; }
 
 ckm-key(){ echo CerenkovMinimal.X4PhysicalVolume.World.$(ckm-dig) ; }
 ckm-idpath(){ echo $LOCAL_BASE/opticks/geocache/CerenkovMinimal_World_g4live/g4ok_gltf/$(ckm-dig)/1 ; }

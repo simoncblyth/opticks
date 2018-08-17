@@ -54,7 +54,7 @@ class OKGEO_API OpticksGen
         NPY<float>*          loadGenstepFile(const char* label);
         TorchStepNPY*        makeTorchstep();
     private:
-       //  FabStepNPY and TorchStepNPY are specializations of GenstepNPY
+        //  FabStepNPY and TorchStepNPY are specializations of GenstepNPY
         void                 targetGenstep( GenstepNPY* gs );
         void                 setMaterialLine( GenstepNPY* gs );
     private:

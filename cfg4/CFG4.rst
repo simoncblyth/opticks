@@ -1,7 +1,6 @@
 CFG4
 ======
 
-
 Control
 ----------
 
@@ -73,7 +72,14 @@ CRandomEngine
 CCollector
     collects gensteps
 
+
+CGenerator 
+    m_generator instance resident of CG4 
+
+
 CSource
+     m_source instance resident of CGenerator of type G4GUN/TORCH/EMITSOURCE
+
      G4VPrimaryGenerator subclass, with `GeneratePrimaryVertex(G4Event *evt)`
      Provides TorchStepNPY configurable optical photon squadrons just like the GPU eqivalent.
      Implemented using distribution generators from SingleParticleSource: 

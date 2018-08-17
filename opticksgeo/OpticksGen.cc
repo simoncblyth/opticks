@@ -13,6 +13,7 @@
 
 #include "OpticksPhoton.h"
 #include "Opticks.hh"
+#include "OpticksFlags.hh"
 #include "OpticksCfg.hh"
 #include "OpticksHub.hh"
 #include "OpticksEvent.hh"
@@ -123,6 +124,16 @@ void OpticksGen::initFromGensteps()
 NPY<float>* OpticksGen::makeInputGensteps(unsigned code)
 {
     NPY<float>* gs = NULL ; 
+
+    const char* srctype = OpticksFlags::SourceType( code ) ; 
+    assert( srctype ); 
+
+    LOG(error) 
+       << " code " << code
+       << " srctype " << srctype  
+       ;
+ 
+
     if( code == FABRICATED || code == MACHINERY  )
     {
         m_fabstep = makeFabstep();
