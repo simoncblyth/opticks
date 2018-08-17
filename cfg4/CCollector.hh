@@ -8,17 +8,17 @@ class NLookup ;
 template <typename T> class NPY ;
 
 /**
-CCollector
-==================== 
+CCollector : methods for collection of gensteps and primaries
+=================================================================
 
-Canonical instances:
-
-1. CG4.m_collector instanciated at postinitialize 
-
+Canonical CG4.m_collector is instanciated at postinitialize, 
+and G4Opticks.m_collector instance is instanciated at setGeometry
 
 
-Gensteps have an item shape of 6*4 (ie 6 quads) the 
-first 3 quads are common between scintillation and
+Gensteps (item shape 6*4, 6 quads) 
+-------------------------------------
+
+First 3 quads are common between scintillation and
 Cerenkov but the last 3 differ.
 
 Furthermore the precise details of which quanties are included 
@@ -31,7 +31,15 @@ equivalence comparisons.
 Each implementation will need slightly different genstep and OptiX port.
 
 Effectively the genstep can be regarded as the "stack" just 
-prior to the photon loop.
+prior to the photon generation loop.
+
+
+Primaries (item shape 4*4, 4 quads)
+-------------------------------------
+
+Primary collection is invoked from CSource::collectPrimary(G4PrimaryVertex* vtx)
+into the CCollector singleton instance.
+
  
 **/
 

@@ -12,28 +12,19 @@
 #include "GenstepNPY.hpp"
 
 #include "Opticks.hh"
-
 #include "GConstant.hh"
-
 
 // cfg4-
 #include "CInputPhotonSource.hh"
 #include "CRecorder.hh"
 
-
-
-
 // g4-
 #include "G4PrimaryParticle.hh"
 #include "G4Event.hh"
-
 #include "G4SystemOfUnits.hh"
 #include "G4PhysicalConstants.hh"
-
-
 #include "G4TrackingManager.hh"
 #include "G4Track.hh"
-
 
 #include "PLOG.hh"
 
@@ -45,7 +36,6 @@ unsigned CInputPhotonSource::getNumPhotonsPerG4Event() const
 {
     return m_numPhotonsPerG4Event ;
 }
-
 
 CInputPhotonSource::CInputPhotonSource(Opticks* ok, NPY<float>* input_photons, GenstepNPY* gsnpy, unsigned int verbosity)  
     :
@@ -67,7 +57,15 @@ CInputPhotonSource::~CInputPhotonSource()
 {
 }
 
+/**
+CInputPhotonSource::convertPhoton
+----------------------------------
 
+Converts n_pho input photon at index pho_index into a G4PrimaryVertex
+with the currently defined particle m_definition.
+
+
+**/
 
 G4PrimaryVertex* CInputPhotonSource::convertPhoton(unsigned pho_index)
 {
@@ -151,11 +149,22 @@ G4PrimaryVertex* CInputPhotonSource::convertPhoton(unsigned pho_index)
 }
 
 
+
+
+/**
+CInputPhotonSource::GeneratePrimaryVertex
+------------------------------------------
+
+Repeated calls to this for each Geant4 event hook up the configured
+max of photons per event for all but the last tranche, which just 
+does the remainder.  The G4PrimaryVertex created for each input photon
+as well as being added to the G4Event is collected using the base class
+CSource::collectPrimary.
+
+**/
+
 void CInputPhotonSource::GeneratePrimaryVertex(G4Event *evt) 
 {
-    // repeated calls to this hook up the configured max of photons per event
-    // for all but the last tranche 
-
     unsigned n = m_tranche->tranche_size(m_gpv_count) ; 
     SetNumberOfParticles(n);
     assert( m_num == int(n) );

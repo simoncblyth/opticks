@@ -1,5 +1,165 @@
+NPY : Numerical basis classes
+================================
 
-.. include:: NPY.hpp
-   :start-after: /**
-   :end-before: **/
 
+NPho
+    wrapper for NPY<float>* photons array with higher level accessors and dumping  
+
+
+
+Others::
+
+    AxisNPY
+    BoundariesNPY
+    Counts
+    DummyPhotonsNPY
+    FabStepNPY
+    G4StepNPY
+    GLMFormat
+    GLMPrint
+    GenstepNPY
+    HitsNPY
+    Index
+    MaterialLibNPY
+    MultiViewNPY
+    N
+    NBBox
+    NBBoxEnum
+    NBoundingBox
+    NBox
+    NBufferSpec
+    NCIE
+    NCSG
+    NCSGBSP
+    NCSGData
+    NCSGIntersect
+    NCSGList
+    NCache
+    NCone
+    NConfigurable
+    NConvexPolyhedron
+    NCubic
+    NCylinder
+    NDisc
+    NDualContouringSample
+    NEmitConfig
+    NEmitPhotonsNPY
+    NField3
+    NFieldCache
+    NFieldGrid3
+    NGLM
+    NGLMCF
+    NGLMExt
+    NGLTF
+    NGPU
+    NGenerator
+    NGeoTestConfig
+    NGeometry
+    NGrid
+    NGrid3
+    NGunConfig
+    NHybridMesher
+    NHyperboloid
+    NImplicitMesher
+    NJS
+    NLODConfig
+    NLoad
+    NLookup
+    NMarchingCubesNPY
+    NMeta
+    NNode
+    NNodeCoincidence
+    NNodeCollector
+    NNodeDump
+    NNodeEnum
+    NNodeNudger
+    NNodePoints
+    NNodeSample
+    NNodeUncoincide
+    NOct
+    NOctNode
+    NOctNodeEnum
+    NOctools
+    NOpenMesh
+    NOpenMeshBisect
+    NOpenMeshBoundary
+    NOpenMeshBuild
+    NOpenMeshCfg
+    NOpenMeshDesc
+    NOpenMeshEnum
+    NOpenMeshFind
+    NOpenMeshProp
+    NOpenMeshSubdiv
+    NOpenMeshTraverse
+    NOpenMeshType
+    NOpenMeshZipper
+    NPY
+    NPYBase
+    NPYConfig
+    NPYList
+    NPYMeta
+    NPYSpec
+    NPYSpecList
+    NParameters
+    NPart
+
+
+    NPlanck
+    NPlane
+    NPlaneFromPoints
+    NPolygonizer
+    NPrimitives
+    NPrism
+    NPropNames
+    NQuad
+    NRngDiffuse
+    NSDF
+    NScan
+    NScanLine
+    NScene
+    NSceneConfig
+    NSensor
+    NSensorList
+    NSequence
+    NSlab
+    NSlice
+    NSnapConfig
+    NSpectral
+    NSphere
+    NState
+    NTesselate
+    NTorus
+    NTreeAnalyse
+    NTreeBalance
+    NTreeBuilder
+    NTreePositive
+    NTreeProcess
+    NTreeTools
+    NTriSource
+    NTriangle
+    NTrianglesNPY
+    NTris
+    NTxt
+    NXform
+    NYGLTF
+    NYJSON
+    NYMath
+    NYShape
+    NZSphere
+    Nd
+    No
+    Nuv
+    PhotonsNPY
+    RecordsNPY
+    Report
+    SeqNPY
+    SequenceNPY
+    Timer
+    Times
+    TimesTable
+    TorchStepNPY
+    TrivialCheckNPY
+    Typ
+    Types
+    ViewNPY
+    numpy

@@ -81,12 +81,20 @@ CSource
      m_source instance resident of CGenerator of type G4GUN/TORCH/EMITSOURCE
 
      G4VPrimaryGenerator subclass, with `GeneratePrimaryVertex(G4Event *evt)`
+     providing common functionality for the various source types
+
+CTorchSource 
      Provides TorchStepNPY configurable optical photon squadrons just like the GPU eqivalent.
      Implemented using distribution generators from SingleParticleSource: 
 
      G4SPSPosDistribution
      G4SPSAngDistribution
      G4SPSEneDistribution
+
+CInputPhotonSource 
+      
+
+
 
 OpStatus
      G4 status/enum code formatters and translation of G4 codes to Opticks flags 

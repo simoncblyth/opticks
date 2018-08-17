@@ -19,6 +19,10 @@ CInputPhotonSource
 
 Canonical m_source instance lives in CGenerator, created by CGenerator::initInputPhotonSource
 
+Implements the G4VPrimaryGenerator interface : GeneratePrimaryVertex
+
+
+
 **/
 
 
@@ -28,7 +32,10 @@ class CFG4_API CInputPhotonSource: public CSource
         CInputPhotonSource(Opticks* ok, NPY<float>* input_photons, GenstepNPY* gsnpy, unsigned int verbosity);
     public:
         virtual ~CInputPhotonSource();
+    public:
+        // G4VPrimaryGenerator interface
         void     GeneratePrimaryVertex(G4Event *evt);
+    public:
         unsigned  getNumG4Event() const ; 
         unsigned  getNumPhotonsPerG4Event() const;
         std::string desc() const ;

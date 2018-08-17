@@ -16,10 +16,11 @@ class G4PrimaryVertex ;
 #include "CFG4_HEAD.hh"
 
 /**
-CSource
-=========
+CSource(G4VPrimaryGenerator) : common functionality of the various source types
+=======================================================================================
 
-Base class of CTorchSource, CGunSource, CInputPhotonSource
+* abstract base class of CTorchSource, CGunSource, CInputPhotonSource 
+* subclass of G4VPrimaryGenerator
 
 The specialized prime method GeneratePrimaryVertex 
 is invoked from CPrimaryGeneratorAction::GeneratePrimaries

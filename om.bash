@@ -148,7 +148,69 @@ om-subs--()
 
 om-subs-(){ om-subs-- | grep -v ^\# ; }
 
+
+
+om-subs-notes(){ cat << EON
+om-subs
+--------
+
+Default with no argument lists all subproject directory names 
+in build dependency order. Arguments can be used to select 
+ranges of names.
+ 
+Shorthand forms  ":" and "+" only work from within a subproj
+which is taken as the first, all other forms work from anywhere.
+
+:
+    subproj from current onwards  
++
+    subproj from next onwards  
+
+:last
+    subprojects from the first "okconf" to the last specified inclusive, 
+    eg ":ok" lists all up to and including "ok" 
+
+first:last
+    subprojects from the "first" to "last" inclusive 
+
+EON
+}
+
 om-subs(){
+
+   local arg=$1
+   [ -z "$arg" ] && om-subs- && return 
+ 
+   local iwd=$(pwd)
+   local name=$(basename $iwd)
+
+   local mode=":"
+   local first
+   local last 
+
+   ## expand shorthand argument into full 
+   [ "$arg" == ":" ] && arg="${name}:" && mode=":"
+   [ "$arg" == "+" ] && arg="${name}:" && mode="+"
+
+   ## form ":last" means from okconf (1st project)  
+   [ "${arg:0:1}" == ":" ] && first="okconf" || first=${arg/:*}
+   last=${arg/*:}
+
+   #echo $FUNCNAME arg $arg name $name first $first last $last  
+
+   local sel=0 
+   local sub
+   om-subs- | while read sub ; do
+       [ "${sub}" == "$first" -a "${mode}" == ":" ] && sel=1 
+       [ "${sub}" == "$first" -a "${mode}" == "+" ] && sel=2 
+       [ "$sel" == "1" ] && echo $sub
+       [ "${sub}" == "$last" -a "${mode}" == ":" ] && sel=0
+       [ "$sel" == "2" ] && sel=1
+   done 
+}
+
+
+om-subs0(){
   local arg=$1
 
   local iwd=$(pwd)
@@ -169,6 +231,10 @@ om-subs(){
       done 
   fi
 }
+
+
+
+
 
 om-reldir()
 {

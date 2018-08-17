@@ -32,9 +32,25 @@ struct nmat4triple ;
 class NPYSpec ; 
 class G4StepNPY ; 
 
-/*
+
+/**
+
+
+NPY : C++ NumPy style array 
+==============================
+
+*NPY* provides array operations includes persistency, the structure 
+and approach are inspired by the NumPy array http://www.numpy.org 
+and the **NPY** persistency format is adopted allowing Opticks
+geometry and event data to be loaded into python OR ipython sessions
+with::
+
+   import numpy as np
+   a = np.load("/path/to/file.npy")
+
+
 Interop NumPy -> NPY
-======================
+-----------------------
 
 The type of the NumPy array saved from python
 needs to match the NPY basis type 
@@ -53,26 +69,6 @@ From python control the type, eg to save as float with::
 Going the other way, NPY -> NumPy just works as NumPy 
 recognises the type on loading, thanks to the numpy.hpp metadata header.
 
-*/
-
-// hmm most of the inlines should go into .cpp 
-// and the NPY_FLAGS should go there too
-// otherwise type conversion warning quellings will spread to clients ?
-
-
-/**
-
-NPY : C++ NumPy style array 
-==============================
-
-*NPY* provides array operations includes persistency, the structure 
-and approach are inspired by the NumPy array http://www.numpy.org 
-and the **NPY** persistency format is adopted allowing Opticks
-geometry and event data to be loaded into python OR ipython sessions
-with::
-
-   import numpy as np
-   a = np.load("/path/to/file.npy")
 
 **/
 

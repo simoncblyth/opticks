@@ -80,6 +80,15 @@ CTorchSource::~CTorchSource()
 }
 
 
+/**
+CTorchSource::configure
+------------------------
+
+Translate the Opticks TorchStepNPY into Geant4 generator photon source
+
+
+**/
+
 
 void CTorchSource::configure()
 {
