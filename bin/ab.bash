@@ -34,16 +34,20 @@ EOU
 }
 
 
-ab-base(){  echo  /usr/local/opticks/geocache ; }
+ab-base(){  echo  $LOCAL_BASE/opticks/geocache ; }
 ab-cd(){   cd $(ab-base) ; }
 
 ab-tmp(){ echo /tmp/$USER/opticks/bin/ab ; }
 
 ab-a-dir(){ echo DayaBay_VGDX_20140414-1300/g4_00.dae/96ff965744a2f6b78c24e33c80d3a4cd  ; }
 
-#ab-b-dir(){ echo OKX4Test_World0xc15cfc0_PV_g4live/g4ok_gltf/828722902b5e94dab05ac248329ffebe ; }
-#ab-b-dir(){ echo OKX4Test_World0xc15cfc0_PV_g4live/g4ok_gltf/742ab212f7f2da665ed627411ebdb07d ; }
-ab-b-dir(){ echo OKX4Test_World0xc15cfc0_PV_g4live/g4ok_gltf/0dce832a26eb41b58a000497a3127cb8 ; }
+
+#ab-b-digest(){ echo 828722902b5e94dab05ac248329ffebe ; }
+#ab-b-digest(){ echo 742ab212f7f2da665ed627411ebdb07d ; }
+ab-b-digest(){ echo 0dce832a26eb41b58a000497a3127cb8 ; }  # macOS
+#ab-b-digest(){ echo 1e09cf8f68430eed01a7146c036aa4b6 ; }   # Linux
+ab-b-dir(){ echo OKX4Test_World0xc15cfc0_PV_g4live/g4ok_gltf/$(ab-b-digest) ; }
+
 
 ab-A-(){ echo $(ab-base)/$(ab-a-dir)/104 ; }
 #ab-A-(){ echo $(ab-base)/$(ab-a-dir)/103 ; }
