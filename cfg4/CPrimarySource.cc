@@ -11,6 +11,7 @@
 #include "G4Event.hh"
 #include "G4ParticleMomentum.hh"
 #include "G4ParticleTable.hh"
+#include "G4ThreeVector.hh"
 
 // cfg4-
 #include "CPrimarySource.hh"
@@ -136,7 +137,7 @@ G4PrimaryParticle* CPrimarySource::makePrimaryParticle(unsigned idx) const
 {
     G4int pdgcode = m_pri->getPDGCode(idx) ; 
 
-    G4ParticleTable* tab = G4ParticleTable::GetParticleTable()
+    G4ParticleTable* tab = G4ParticleTable::GetParticleTable();
     G4ParticleDefinition* pd = tab->FindParticle(pdgcode); 
     assert( pd ) ; 
 
@@ -145,7 +146,8 @@ G4PrimaryParticle* CPrimarySource::makePrimaryParticle(unsigned idx) const
     glm::vec4 dirw = m_pri->getDirectionWeight(idx); 
     glm::vec4 polk = m_pri->getPolarizationKineticEnergy(idx); 
 
-    pp->SetMomentumDirection( dirw.x, dirw.y. dirw.z ); 
+    G4ThreeVector dir(dirw.x, dirw.y, dirw.z); 
+    pp->SetMomentumDirection(dir); 
     pp->SetWeight( dirw.w ); 
 
     pp->SetPolarization( polk.x, polk.y, polk.z ); 
@@ -191,7 +193,6 @@ G4PrimaryParticle* CPrimarySource::makePrimaryParticle(unsigned idx) const
 */
 
 
-}
 
 
 
