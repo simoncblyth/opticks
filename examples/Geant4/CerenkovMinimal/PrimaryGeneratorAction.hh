@@ -12,6 +12,7 @@ struct PrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
 {
     PrimaryGeneratorAction(Ctx* ctx_);
     void GeneratePrimaries(G4Event* anEvent);
+    void collectPrimary(const G4Event* anEvent);
    
     Ctx*           ctx ; 
     G4ParticleGun* fParticleGun ; 

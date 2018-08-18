@@ -102,6 +102,8 @@ set(SOURCES
     CRayTracer.cc
     CVis.cc
     CCollector.cc
+    CPrimarySource.cc
+    CPrimaryCollector.cc
     CRunAction.cc
     CEventAction.cc
 
@@ -197,6 +199,8 @@ set(HEADERS
     CG4Ctx.hh
     CG4.hh
     CCollector.hh
+    CPrimarySource.hh
+    CPrimaryCollector.hh
     CRunAction.hh
     CEventAction.hh
 )

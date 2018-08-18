@@ -26,6 +26,7 @@ class CSurfaceBridge ;
 class CGenerator ; 
 
 class CCollector ; 
+class CPrimaryCollector ; 
 class CRecorder ; 
 class CStepRec ; 
 class CRandomEngine ; 
@@ -177,6 +178,7 @@ class CFG4_API CG4
         bool                  m_dynamic ; 
    private:
         CCollector*           m_collector ; 
+        CPrimaryCollector*    m_primary_collector ; 
         CRecorder*            m_recorder ; 
         CStepRec*             m_steprec ; 
    private:

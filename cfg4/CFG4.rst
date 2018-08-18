@@ -70,30 +70,47 @@ CRandomEngine
     m_engine instance resident of CG4, provides control of random number stream for aligned running 
    
 CCollector
-    collects gensteps
-
+    collects gensteps and primaries
 
 CGenerator 
-    m_generator instance resident of CG4 
+    m_generator instance resident of CG4 initializes CSource.m_source 
+    in initSource of subclass CGunSource/CTorchSource/CInputPhotonSource
+    depending of source code of G4GUN/TORCH/EMITSOURCE   
+
+    This converts Opticks photon sources from hub into CSource(G4VPrimaryGenerator) 
+    to be consumed by CPrimaryGeneratorAction further down the CG4 initializer list::
+
+         m_generator(new CGenerator(m_hub, this)),
+         ...
+         m_pga(new CPrimaryGeneratorAction(m_generator->getSource())), 
 
 
 CSource
-     m_source instance resident of CGenerator of type G4GUN/TORCH/EMITSOURCE
+    m_source instance resident of CGenerator of type G4GUN/TORCH/EMITSOURCE
 
-     G4VPrimaryGenerator subclass, with `GeneratePrimaryVertex(G4Event *evt)`
-     providing common functionality for the various source types
+    G4VPrimaryGenerator subclass, with `GeneratePrimaryVertex(G4Event *evt)`
+    providing common functionality for the various source types
 
 CTorchSource 
-     Provides TorchStepNPY configurable optical photon squadrons just like the GPU eqivalent.
-     Implemented using distribution generators from SingleParticleSource: 
+    Provides TorchStepNPY configurable optical photon squadrons just like the GPU eqivalent.
+    Implemented using distribution generators from SingleParticleSource: 
 
-     G4SPSPosDistribution
-     G4SPSAngDistribution
-     G4SPSEneDistribution
+    G4SPSPosDistribution
+    G4SPSAngDistribution
+    G4SPSEneDistribution
 
 CInputPhotonSource 
-      
+    convert NPY buffer of input photons into an G4Event with primary vertices
+    for each photon up to the maximum configured number per event       
 
+CGunSource
+    Converts NGunConfig into G4VPrimaryGenerator 
+    with `GeneratePrimaryVertex(G4Event *evt)`
+
+CPrimaryGeneratorAction
+    isa G4VUserPrimaryGeneratorAction that uses the G4VPrimaryGenerator capabilities
+    of the various CSource subclasses to `GeneratePrimaries(G4Event*)`
+    which is invoked by Geant4 beamOn within CG4::propagate
 
 
 OpStatus

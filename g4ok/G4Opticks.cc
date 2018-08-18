@@ -153,6 +153,12 @@ NPY<float>* G4Opticks::getHits() const
 }
 
 
+void G4Opticks::collectPrimaries(const G4Event* event)
+{
+    m_collector->collectPrimaries(event); 
+}
+
+
 void G4Opticks::collectCerenkovStep
     (
         G4int                id, 

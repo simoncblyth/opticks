@@ -15,6 +15,14 @@ Canonical CG4.m_collector is instanciated at postinitialize,
 and G4Opticks.m_collector instance is instanciated at setGeometry
 
 
+G4 Independency 
+----------------
+
+NB there are no G4 classes used here, just a few type definitions
+which could be removed easily. Users of this such as CSource should 
+convert from G4 class instances into basic types for collection here.
+
+
 Gensteps (item shape 6*4, 6 quads) 
 -------------------------------------
 
@@ -34,12 +42,6 @@ Effectively the genstep can be regarded as the "stack" just
 prior to the photon generation loop.
 
 
-Primaries (item shape 4*4, 4 quads)
--------------------------------------
-
-Primary collection is invoked from CSource::collectPrimary(G4PrimaryVertex* vtx)
-into the CCollector singleton instance.
-
  
 **/
 
@@ -53,7 +55,6 @@ class CFG4_API CCollector
          CCollector(const NLookup* lookup);  
    public:
          NPY<float>*  getGensteps() const ;
-         NPY<float>*  getPrimary() const ;
    public:
          std::string description() const ;
          void Summary(const char* msg="CCollector::Summary") const  ;
@@ -126,29 +127,6 @@ class CFG4_API CCollector
             G4double             spare2=0
         );
    public:
-          void collectPrimary(
-               G4double  x0,
-               G4double  y0,
-               G4double  z0,
-               G4double  t0,
-
-               G4double  dir_x,
-               G4double  dir_y,
-               G4double  dir_z,
-               G4double  weight,
-
-               G4double  pol_x,
-               G4double  pol_y,
-               G4double  pol_z,
-               G4double  wavelength,
-
-               unsigned flags_x,
-               unsigned flags_y,
-               unsigned flags_z,
-               unsigned flags_w
-          );
-
-   public:
          void collectMachineryStep(unsigned code);
    private:
          static CCollector* INSTANCE ;      
@@ -162,10 +140,4 @@ class CFG4_API CCollector
          unsigned     m_scintillation_count ; 
          unsigned     m_cerenkov_count ; 
          unsigned     m_machinery_count ; 
-
-         NPY<float>*  m_primary ;
-         unsigned     m_primary_itemsize ; 
-         float*       m_primary_values ;  
-         unsigned     m_primary_count ;  
-
 };

@@ -1,6 +1,4 @@
-# === func-gen- : numerics/thrust/thrust fgp externals/thrust.bash fgn thrust fgh numerics/thrust
-thrust-src(){      echo externals/thrust.bash ; }
-thrust-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(thrust-src)} ; }
+thrust-source(){   echo ${BASH_SOURCE} ; }
 thrust-vi(){       vi $(thrust-source) ; }
 thrust-usage(){ cat << EOU
 

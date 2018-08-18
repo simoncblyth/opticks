@@ -36,14 +36,12 @@ CGenerator::CGenerator(OpticksHub* hub, CG4* g4)
     init();
 }
 
-
 void CGenerator::init()
 {
     unsigned code = m_hub->getSourceCode();
     CSource* source = initSource(code) ;
     setSource(source);
 }
-
 
 CSource* CGenerator::initSource(unsigned code)
 {
@@ -65,60 +63,32 @@ CSource* CGenerator::initSource(unsigned code)
     return source ; 
 }
 
-void CGenerator::setSource(CSource* source)
-{
-    m_source = source ; 
-}
-CSource* CGenerator::getSource()
-{
-    return m_source ; 
-}
 
-void CGenerator::setNumG4Event(unsigned num)
-{
-    m_num_g4evt = num ;
-}
-unsigned CGenerator::getNumG4Event()
-{
-    return m_num_g4evt ;  
-}
+CSource* CGenerator::getSource() const { return m_source ; }
+unsigned CGenerator::getNumG4Event() const { return m_num_g4evt ;  }
+unsigned CGenerator::getNumPhotonsPerG4Event() const { return m_photons_per_g4evt ;  }
+NPY<float>* CGenerator::getGensteps() const { return m_gensteps ; }
+bool CGenerator::isDynamic() const { return m_dynamic ; }
+bool CGenerator::hasGensteps() const { return m_gensteps != NULL ; }
 
-void CGenerator::setNumPhotonsPerG4Event(unsigned num)
-{
-    m_photons_per_g4evt = num ;
-}
-unsigned CGenerator::getNumPhotonsPerG4Event()
-{
-    return m_photons_per_g4evt ;  
-}
-
-void CGenerator::setGensteps(NPY<float>* gensteps)
-{
-    m_gensteps = gensteps ; 
-}
-NPY<float>* CGenerator::getGensteps()
-{
-    return m_gensteps ; 
-}
-void CGenerator::setDynamic(bool dynamic)
-{
-   m_dynamic = dynamic ; 
-}
-bool CGenerator::isDynamic()
-{
-    return m_dynamic ; 
-}
+void CGenerator::setNumG4Event(unsigned num) { m_num_g4evt = num ; }
+void CGenerator::setNumPhotonsPerG4Event(unsigned num) { m_photons_per_g4evt = num ; }
+void CGenerator::setGensteps(NPY<float>* gensteps) { m_gensteps = gensteps ; }
+void CGenerator::setDynamic(bool dynamic) { m_dynamic = dynamic ; }
+void CGenerator::setSource(CSource* source) { m_source = source ; }
 
 
-bool CGenerator::hasGensteps()
-{
-    return m_gensteps != NULL ; 
-}
+/**
+CGenerator::configureEvent
+---------------------------
+
+Invoked from CG4::initEvent/CG4::propagate record 
+generator config into the OpticksEvent.
+
+**/
 
 void CGenerator::configureEvent(OpticksEvent* evt)
 {
-   // invoked from CG4::initEvent/CG4::propagate 
-
    if(hasGensteps())
    {
         LOG(info) << "CGenerator:configureEvent"
@@ -139,6 +109,15 @@ void CGenerator::configureEvent(OpticksEvent* evt)
     }
 }
 
+
+/**
+CGenerator::initTorchSource
+----------------------------
+
+Converts TorchStepNPY from hub into CSource for Geant4 consumption
+
+**/
+
 CSource* CGenerator::initTorchSource()
 {
     LOG(verbose) << "CGenerator::initTorchSource " ; 
@@ -157,6 +136,13 @@ CSource* CGenerator::initTorchSource()
     return source ; 
 }
 
+/**
+CGenerator::initInputPhotonSource
+----------------------------------
+
+Hmm : what are the inputGensteps for with inputPhotons ? Placeholder ?
+
+**/
 
 CSource* CGenerator::initInputPhotonSource()
 {
@@ -181,6 +167,17 @@ CSource* CGenerator::initInputPhotonSource()
     CSource* source  = static_cast<CSource*>(cips); 
     return source ; 
 }
+
+
+/**
+CGenerator::initG4GunSource
+-----------------------------
+
+* setup source based on NGunConfig parse of the G4GunConfig string.
+* no gensteps at this stage, they have to be collected from Geant4 : dynamic mode
+* geometry info is needed as gunconfig picks target volumes by index
+
+**/
 
 CSource* CGenerator::initG4GunSource()
 {

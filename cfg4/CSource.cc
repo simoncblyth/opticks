@@ -9,7 +9,12 @@
 #include "G4SystemOfUnits.hh"
 #include "G4PhysicalConstants.hh"
 
+#include "G4Event.hh"
+#include "G4PrimaryVertex.hh"
+#include "G4PrimaryParticle.hh"
+
 #include "CCollector.hh"
+#include "CPrimaryCollector.hh"
 #include "CSource.hh"
 #include "PLOG.hh"
 
@@ -143,12 +148,41 @@ void CSource::SetParticleDefinition(G4ParticleDefinition* definition)
 }
 
 
-void CSource::collectPrimary(G4PrimaryVertex* vtx)
-{
-    G4ThreeVector pos = vtx->GetPosition() ;
-    G4double time = vtx->GetT0() ;
 
-    G4PrimaryParticle* pp = vtx->GetPrimary();     
+
+void CSource::collectPrimaries(const G4Event* anEvent)
+{
+    G4int num_v = anEvent->GetNumberOfPrimaryVertex() ;
+    LOG(info) << " num_v " << num_v ; 
+    for(G4int v=0 ; v < num_v ; v++)
+    {   
+        const G4PrimaryVertex* vtx = anEvent->GetPrimaryVertex(v) ;
+        collectPrimaryVertex(vtx); 
+    }
+    assert(0); 
+}
+
+void CSource::collectPrimaryVertex(const G4PrimaryVertex* vtx)
+{
+    G4int num_p = vtx->GetNumberOfParticle() ;
+    LOG(info) << " vtx " << vtx << " num_p " << num_p ;    
+    for(G4int p=0 ; p < num_p ; p++) collectPrimaryParticle( p, vtx ) ; 
+}
+
+void CSource::collectPrimaryParticle(G4int primary_index, const G4PrimaryVertex* vtx)
+{
+    G4double time = vtx->GetT0() ;
+    G4PrimaryParticle* pp = vtx->GetPrimary(primary_index); 
+
+    const G4ParticleDefinition* pd = pp->GetParticleDefinition();  
+    G4int pdgcode = pp->GetPDGcode() ; 
+    LOG(info) 
+        << " pp " << pp  
+        << " pdgcode " << pdgcode
+        << " pd " << pd->GetParticleName() 
+        ;   
+
+    G4ThreeVector pos = vtx->GetPosition() ;
 
     const G4ThreeVector& dir = pp->GetMomentumDirection()  ; 
     G4ThreeVector pol = pp->GetPolarization() ;
@@ -158,7 +192,7 @@ void CSource::collectPrimary(G4PrimaryVertex* vtx)
 
     G4double weight = pp->GetWeight() ; 
 
-    CCollector::Instance()->collectPrimary(
+    CPrimaryCollector::Instance()->collectPrimary(
 
            pos.x()/mm,
            pos.y()/mm,
@@ -182,6 +216,7 @@ void CSource::collectPrimary(G4PrimaryVertex* vtx)
                
          ); 
 }
+
 
 
 

@@ -181,7 +181,7 @@ void CInputPhotonSource::GeneratePrimaryVertex(G4Event *evt)
         // just straight convert of the photon pulled out the buffer
 
         evt->AddPrimaryVertex(vertex);
-        collectPrimary(vertex);
+        collectPrimaryVertex(vertex);
 	}
     m_gpv_count++ ; 
 }

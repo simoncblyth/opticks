@@ -2,6 +2,14 @@
 #include "G4ParticleTable.hh"
 #include "G4ParticleGun.hh"
 
+#ifdef WITH_OPTICKS
+#include "G4Opticks.hh"
+#endif
+
+
+
+
+
 using CLHEP::MeV ; 
 
 PrimaryGeneratorAction::PrimaryGeneratorAction(Ctx* ctx_)
@@ -22,5 +30,13 @@ PrimaryGeneratorAction::PrimaryGeneratorAction(Ctx* ctx_)
 void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 {
     fParticleGun->GeneratePrimaryVertex(anEvent);
+
+#ifdef WITH_OPTICKS
+    // not strictly required by Opticks, but useful for debugging + visualization of non-opticals
+    G4Opticks::GetOpticks()->collectPrimaries(anEvent) ;  
+#endif
+
 }
+
+
  

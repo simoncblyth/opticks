@@ -40,6 +40,7 @@
 #include "CDetector.hh"
 #include "CGenerator.hh"
 #include "CCollector.hh"
+#include "CPrimaryCollector.hh"
 #include "CRecorder.hh"
 #include "CStepRec.hh"
 
@@ -113,6 +114,7 @@ CG4::CG4(OpticksHub* hub)
      m_generator(new CGenerator(m_hub, this)),
      m_dynamic(m_generator->isDynamic()),
      m_collector(NULL),   // deferred instanciation until CG4::postinitialize after G4 materials have overridden lookupA
+     m_primary_collector(new CPrimaryCollector),
      m_recorder(new CRecorder(this, m_geometry, m_dynamic)), 
      m_steprec(new CStepRec(m_ok, m_dynamic)),  
      m_visManager(NULL),
@@ -319,7 +321,7 @@ NPY<float>* CG4::propagate()
 
     NPY<float>* gs = m_collector->getGensteps(); 
 
-    NPY<float>* pr = m_collector->getPrimary(); 
+    NPY<float>* pr = m_primary_collector->getPrimary(); 
     pr->save("$TMP/cg4/primary.npy");   // debugging primary position issue 
 
     return gs ; 

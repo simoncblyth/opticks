@@ -17,6 +17,8 @@ CGenerator
 ===========
 
 Canonical m_generator instance is CG4 resident instanciated within it.    
+Essentially this steers the conversion of Opticks photon sources 
+into CSource(G4VPrimaryGenerator) to be consumed by Geant4 
 
 =====================  ==========
 source                  dynamic 
@@ -36,12 +38,12 @@ class CFG4_API CGenerator
    public:
        void        configureEvent(OpticksEvent* evt);
    public:
-       CSource*    getSource();
-       bool        isDynamic();
-       unsigned    getNumG4Event();
-       unsigned    getNumPhotonsPerG4Event();
-       NPY<float>* getGensteps();
-       bool        hasGensteps();
+       CSource*    getSource() const ;
+       bool        isDynamic() const ;
+       unsigned    getNumG4Event() const ;
+       unsigned    getNumPhotonsPerG4Event() const ;
+       NPY<float>* getGensteps() const ;
+       bool        hasGensteps() const ;
    private:
        void init();
        CSource* initSource(unsigned code);

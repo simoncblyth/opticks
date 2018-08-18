@@ -19,7 +19,7 @@ PLOG_INIT macros are used in two situations:
 
 
 
-#define PLOG_INIT(level, app1, app2 ) \
+#define PLOG_INIT0(level, app1, app2 ) \
 { \
     plog::IAppender* appender1 = app1 ? static_cast<plog::IAppender*>(app1) : NULL ; \
     plog::IAppender* appender2 = app2 ? static_cast<plog::IAppender*>(app2) : NULL ; \
@@ -28,6 +28,19 @@ PLOG_INIT macros are used in two situations:
     if(appender2) \
         plog::get()->addAppender(appender2) ; \
 } \
+
+
+#define PLOG_INIT(level, app1, app2 ) \
+{ \
+    plog::IAppender* appender1 = static_cast<plog::IAppender*>(app1) ; \
+    plog::IAppender* appender2 = static_cast<plog::IAppender*>(app2) ; \
+    plog::Severity severity = static_cast<plog::Severity>(level) ; \
+    plog::init( severity ,  appender1 ); \
+    if(appender2) \
+        plog::get()->addAppender(appender2) ; \
+} \
+
+
 
 
 #define PLOG_COLOR(argc, argv) \
