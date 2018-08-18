@@ -252,10 +252,10 @@ class NPY_API NPY : public NPYBase {
 
        unsigned int getUSum(unsigned int j, unsigned int k);
 
-       T            getValue(unsigned int i, unsigned int j, unsigned int k, unsigned int l=0);
-       float        getFloat(unsigned int i, unsigned int j, unsigned int k, unsigned int l=0);
-       unsigned int getUInt( unsigned int i, unsigned int j, unsigned int k, unsigned int l=0);
-       int          getInt(  unsigned int i, unsigned int j, unsigned int k, unsigned int l=0);
+       T            getValue(unsigned int i, unsigned int j, unsigned int k, unsigned int l=0) const ;
+       float        getFloat(unsigned int i, unsigned int j, unsigned int k, unsigned int l=0) const ;
+       unsigned int getUInt( unsigned int i, unsigned int j, unsigned int k, unsigned int l=0) const ;
+       int          getInt(  unsigned int i, unsigned int j, unsigned int k, unsigned int l=0) const ;
 
        void         getU( short& value, unsigned short& uvalue, unsigned char& msb, unsigned char& lsb, unsigned int i, unsigned int j, unsigned int k, unsigned int l=0);
 
@@ -284,12 +284,12 @@ class NPY_API NPY : public NPYBase {
 
 
        // 
-       nvec4        getVQuad(unsigned int i,  unsigned int j=0, unsigned int k=0 );
+       nvec4        getVQuad(unsigned int i,  unsigned int j=0, unsigned int k=0 ) const ;
 
        ///  quad getters
-       glm::vec4    getQuad(unsigned int i,  unsigned int j=0, unsigned int k=0 );
-       glm::ivec4   getQuadI(unsigned int i, unsigned int j=0, unsigned int k=0 );
-       glm::uvec4   getQuadU(unsigned int i, unsigned int j=0, unsigned int k=0 );
+       glm::vec4    getQuad(unsigned int i,  unsigned int j=0, unsigned int k=0 ) const ;
+       glm::ivec4   getQuadI(unsigned int i, unsigned int j=0, unsigned int k=0 ) const ;
+       glm::uvec4   getQuadU(unsigned int i, unsigned int j=0, unsigned int k=0 ) const ;
 
 
        // Mat4 

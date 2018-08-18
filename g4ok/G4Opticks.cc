@@ -9,6 +9,7 @@
 #include "CTraverser.hh"
 #include "CMaterialTable.hh"
 #include "CCollector.hh"
+#include "CPrimaryCollector.hh"
 #include "CGDML.hh"
 
 #include "G4Opticks.hh"
@@ -71,6 +72,7 @@ G4Opticks::G4Opticks()
     m_traverser(NULL),
     m_mtab(NULL),
     m_collector(NULL),
+    m_primary_collector(NULL),
     m_lookup(NULL),
     m_opmgr(NULL),
     m_gensteps(NULL),
@@ -92,7 +94,8 @@ void G4Opticks::setGeometry(const G4VPhysicalVolume* world)
     m_mtab = new CMaterialTable(prefix); 
 
     setupMaterialLookup();
-    m_collector = new CCollector(m_lookup); 
+    m_collector = new CCollector(m_lookup);   // <-- CG4 holds an instance too 
+    m_primary_collector = new CPrimaryCollector ; 
 
     // OpMgr instanciates OpticksHub which adopts the pre-existing m_ggeo instance just translated
     m_opmgr = new OpMgr(m_ok) ;   
@@ -155,7 +158,13 @@ NPY<float>* G4Opticks::getHits() const
 
 void G4Opticks::collectPrimaries(const G4Event* event)
 {
-    m_collector->collectPrimaries(event); 
+    m_primary_collector->collectPrimaries(event); 
+
+    //const char* path = "$TMP/G4Opticks/collectPrimaries.npy" ;
+    const char* path = m_ok->getPrimariesPath(); 
+
+    LOG(info) << " saving to " << path ; 
+    m_primary_collector->save(path); 
 }
 
 

@@ -38,7 +38,6 @@ class Composition ;
 class Bookmarks ; 
 
 class OpticksGen ; 
-class OpticksGun ; 
 class OpticksRun ; 
 class OpticksAim ; 
 
@@ -101,7 +100,6 @@ class OKGEO_API OpticksHub {
 
    public:
        int getErr() const ;
-       unsigned getSourceCode() const ; 
   private:
        void init();
        void setErr(int err);
@@ -131,9 +129,17 @@ class OKGEO_API OpticksHub {
    public:
        void         dumpVolumes(unsigned cursor, GMergedMesh* mm, const char* msg="OpticksHub::dumpVolumes" );  
    public:
-       std::string    getG4GunConfig();
+      // from m_gen
+       unsigned       getSourceCode() const ; 
+       NPY<float>*    getInputPhotons() const ;
        NPY<float>*    getInputGensteps() const ;
-       NPY<float>*    getInputPhotons();
+       NPY<float>*    getInputPrimaries() const ;
+       TorchStepNPY*  getTorchstep() const ;   // Torchstep is here as needs geometry for targetting 
+       GenstepNPY*    getGenstepNPY() const ;
+       std::string    getG4GunConfig() const ;
+  public:
+
+   public:
        OpticksEvent*  getG4Event();
        OpticksEvent*  getEvent();
        void createEvent(unsigned tagoffset=0);
@@ -147,13 +153,6 @@ class OKGEO_API OpticksHub {
        void            target();   // point composition at geocenter or the m_evt (last created)
        void            setTarget(unsigned target=0, bool aim=true);
        unsigned        getTarget();
-  public:
-       // Torchstep is here are it needs geometry for targetting 
-       // getter used by CGenerator::makeTorchSource so that cfg4-
-       // reuses the same torch 
-       TorchStepNPY*        getTorchstep(); 
-       GenstepNPY*          getGenstepNPY();
-
    public:
        Composition*         getComposition();
        OpticksGeometry*     getGeometry();
@@ -240,7 +239,6 @@ class OKGEO_API OpticksHub {
 
    private:
        OpticksGen*          m_gen ; 
-       OpticksGun*          m_gun ; 
        OpticksAim*          m_aim ;
  
        GGeoTest*            m_geotest ; 

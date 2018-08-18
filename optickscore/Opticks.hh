@@ -238,6 +238,7 @@ class OKCORE_API Opticks {
    public:
        const char* getG4CodeGenDir() const ;  // search for g4code
        const char* getCacheMetaPath() const ;
+       const char* getPrimariesPath() const ;
        const char* getGLTFPath() const ;      // output GLTF path
    public:
        // from cfg
@@ -339,32 +340,37 @@ class OKCORE_API Opticks {
    public:
        int                  getMultiEvent();
        int                  getRestrictMesh();
-       unsigned int         getSourceCode();
-       char                 getEntryCode();    // G:generate S:seedTest T:trivial
-       const char*          getEntryName();    
-       bool                 isTrivial();
-       bool                 isSeedtest();
-
-       bool                 isNoInputGensteps();          // eg when loading a prior propagation
-       bool                 isLiveGensteps();             // --live option indicating get gensteps from G4 directly
-       bool                 isEmbedded() const ;          // --embedded option indicating get gensteps via OpMgr API 
-
-
-       bool                 isFabricatedGensteps();       // TORCH or MACHINERY source
-       const char*          getSourceType();
-       const char*          getEventTag();
-       const char*          getEventDir();  // tag directory 
-       const char*          getEventFold(); // one level above the tag directory 
-       int                  getEventITag(); 
-       const char*          getEventCat();
-       const char*          getUDet();
    public:
+       unsigned int         getSourceCode() const ;
+       const char*          getSourceType() const ;
+   public:
+       bool                 isFabricatedGensteps() const ;       // TORCH or MACHINERY source
+       bool                 isNoInputGensteps() const ;          // eg when loading a prior propagation
+       bool                 isLiveGensteps() const ;             // --live option indicating get gensteps from G4 directly
+       bool                 isEmbedded() const ;          // --embedded option indicating get gensteps via OpMgr API 
+   public:
+       char                 getEntryCode() const ;    // G:generate S:seedTest T:trivial
+       const char*          getEntryName() const ;    
+       bool                 isTrivial() const ;
+       bool                 isSeedtest() const ;
+   public:
+       const char*          getEventTag() const ;
+       const char*          getEventDir() const ;  // tag directory 
+       const char*          getEventFold() const ; // one level above the tag directory 
+       int                  getEventITag() const ; 
+       const char*          getEventCat() const ;
+   public:
+       const char*          getUDet()  ;
        std::string          getPreferenceDir(const char* type, const char* subtype);
    public:
-       std::string          getGenstepPath();
-       bool                 existsGenstepPath();
-       NPY<float>*          loadGenstep();
+       std::string          getGenstepPath() const ;
+       bool                 existsGenstepPath() const ;
+       bool                 existsPrimariesPath() const ;
+       NPY<float>*          load(const char* path) const ;
+       NPY<float>*          loadGenstep() const ;
+       NPY<float>*          loadPrimaries() const ;
        TorchStepNPY*        makeSimpleTorchStep();
+   public:
        OpticksEventSpec*    getEventSpec();
        OpticksEvent*        makeEvent(bool ok=true, unsigned tagoffset=0); 
        OpticksEvent*        loadEvent(bool ok=true, unsigned tagoffset=0); 

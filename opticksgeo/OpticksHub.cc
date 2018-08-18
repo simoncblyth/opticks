@@ -55,7 +55,6 @@
 // opticksgeo-
 #include "OpticksHub.hh"
 #include "OpticksGen.hh"
-#include "OpticksGun.hh"
 #include "OpticksRun.hh"
 #include "OpticksAim.hh"
 #include "OpticksGeometry.hh"
@@ -150,7 +149,6 @@ OpticksHub::OpticksHub(Opticks* ok)
    m_lookup(new NLookup()),
    m_bookmarks(NULL),
    m_gen(NULL),
-   m_gun(NULL),
    m_aim(NULL),
    m_geotest(NULL),
    m_err(0)
@@ -187,7 +185,6 @@ void OpticksHub::init()
     configureGeometry() ;    
 
     m_gen = new OpticksGen(this) ;
-    m_gun = new OpticksGun(this) ;
 
     LOG(fatal) << "]" ; 
 }
@@ -206,7 +203,6 @@ std::string OpticksHub::desc() const
        << " m_gscene " << m_gscene
        << " m_geometry " << m_geometry
        << " m_gen " << m_gen
-       << " m_gun " << m_gun
        ;  
 
     return ss.str();
@@ -675,20 +671,18 @@ void OpticksHub::anaEvent()
 
 
 
-std::string OpticksHub::getG4GunConfig()
-{
-    return m_gun->getConfig();
-}
-
 
 // from OpticksGen : needed by CGenerator
-TorchStepNPY*   OpticksHub::getTorchstep()  {          return m_gen->getTorchstep() ; }
-GenstepNPY*     OpticksHub::getGenstepNPY()   {        return m_gen->getGenstepNPY() ; }
-NPY<float>*     OpticksHub::getInputPhotons()   {      return m_gen->getInputPhotons() ; }
-unsigned        OpticksHub::getSourceCode() const {    return m_gen->getSourceCode() ; }
-NPY<float>*     OpticksHub::getInputGensteps() const { return m_gen->getInputGensteps(); }
+unsigned        OpticksHub::getSourceCode() const {         return m_gen->getSourceCode() ; }
 
+NPY<float>*     OpticksHub::getInputPhotons() const    {    return m_gen->getInputPhotons() ; }
+NPY<float>*     OpticksHub::getInputGensteps() const {      return m_gen->getInputGensteps(); }
+NPY<float>*     OpticksHub::getInputPrimaries() const  {    return m_gen->getInputPrimaries() ; }
 
+TorchStepNPY*   OpticksHub::getTorchstep() const {          return m_gen->getTorchstep() ; }
+GenstepNPY*     OpticksHub::getGenstepNPY() const  {        return m_gen->getGenstepNPY() ; }
+
+std::string     OpticksHub::getG4GunConfig() const {        return m_gen->getG4GunConfig(); } 
 
 
 

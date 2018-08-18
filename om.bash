@@ -275,7 +275,7 @@ om-find(){    om-one-or-all find $* ; }
 
 om--(){       om-make $* ; }     ## just this proj
 om---(){      om-make-all : ; }  ## all projs from this one onwards 
-om----(){     om-make-all + ; }  ## all projs after this one onwards 
+om--+(){      om-make-all + ; }  ## all projs following this one 
 
 
 om-check()
@@ -531,6 +531,7 @@ om-find-one(){
        -name '*.hpp' -or \
        -name '*.h' -or \
        -name '*.txt' -or \
+       -name '*.rst' -or \
        -name '*.py' \
         \) \
        -exec grep $opt "$str" {} \;
@@ -582,7 +583,9 @@ om-mk
 
 om-mk allows running commands from the parallel build tree, 
 particularly useful for quickly building and running/debugging 
-single test executables
+single test executables. This is especially useful with projects 
+like NPY which is quite slow to build fully, as it allows just the 
+needed code to be built for the test executable.
 
 Note this works so long as the source changes are all within the 
 current subproj. If there are changes in other projs this will not 

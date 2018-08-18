@@ -17,6 +17,7 @@ class GBndLib ;
 class CTraverser ; 
 class CMaterialTable ; 
 class CCollector ; 
+class CPrimaryCollector ; 
 
 class G4Run;
 class G4Event; 
@@ -111,6 +112,7 @@ class G4OK_API G4Opticks
         CTraverser*                m_traverser ; 
         CMaterialTable*            m_mtab ; 
         CCollector*                m_collector ; 
+        CPrimaryCollector*         m_primary_collector ; 
         NLookup*                   m_lookup ; 
         OpMgr*                     m_opmgr;
     private:

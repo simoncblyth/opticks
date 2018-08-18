@@ -28,14 +28,8 @@
 
 #include "PLOG.hh"
 
-unsigned CInputPhotonSource::getNumG4Event() const 
-{
-    return m_tranche->num_tranche ; 
-}
-unsigned CInputPhotonSource::getNumPhotonsPerG4Event() const
-{
-    return m_numPhotonsPerG4Event ;
-}
+unsigned CInputPhotonSource::getNumG4Event() const { return m_tranche->num_tranche ; }
+unsigned CInputPhotonSource::getNumPhotonsPerG4Event() const { return m_numPhotonsPerG4Event ; }
 
 CInputPhotonSource::CInputPhotonSource(Opticks* ok, NPY<float>* input_photons, GenstepNPY* gsnpy, unsigned int verbosity)  
     :
@@ -46,7 +40,6 @@ CInputPhotonSource::CInputPhotonSource(Opticks* ok, NPY<float>* input_photons, G
     m_numPhotonsPerG4Event(m_gsnpy->getNumPhotonsPerG4Event()),
     m_numPhotons(m_pho->getNumPhotons()),
     m_tranche(new STranche(m_numPhotons,m_numPhotonsPerG4Event)),
-    m_primary(NPY<float>::make(0,4,4)),
     m_gpv_count(0)
 {
     setParticle("opticalphoton");

@@ -66,6 +66,7 @@ OpticksHub* CG4::getHub() const { return m_hub ; }
 OpticksRun* CG4::getRun() const { return m_run ; } 
 
 CRandomEngine*     CG4::getRandomEngine() const { return m_engine ; }
+CGenerator*        CG4::getGenerator() const { return m_generator ; }
 CRecorder*         CG4::getRecorder() const { return m_recorder ; }
 unsigned long long CG4::getSeqHis() const { return m_recorder->getSeqHis() ; }
 unsigned long long CG4::getSeqMat() const { return m_recorder->getSeqMat() ; }
@@ -111,7 +112,7 @@ CG4::CG4(OpticksHub* hub)
      m_hookup(m_geometry->hookup(this)),
      m_mlib(m_geometry->getMaterialLib()),
      m_detector(m_geometry->getDetector()),
-     m_generator(new CGenerator(m_hub, this)),
+     m_generator(new CGenerator(m_hub->getGen(), this)),
      m_dynamic(m_generator->isDynamic()),
      m_collector(NULL),   // deferred instanciation until CG4::postinitialize after G4 materials have overridden lookupA
      m_primary_collector(new CPrimaryCollector),
@@ -294,11 +295,12 @@ NPY<float>* CG4::propagate()
 
     assert(isg4evt);
 
-    if(m_ok->isFabricatedGensteps())
+    //if(m_ok->isFabricatedGensteps())
+    if(m_generator->hasGensteps())
     {
         bool hasGensteps = evt->hasGenstepData();
         if(!hasGensteps) 
-             LOG(fatal) << "MUST: OpticksRun::setGensteps before CG4::propagate when ok.isFabricatedGensteps " ; 
+             LOG(fatal) << "OpticksRun CGenerator gensteps inconsistency " ; 
         assert(hasGensteps);    
     }
 

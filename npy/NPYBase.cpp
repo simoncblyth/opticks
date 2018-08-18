@@ -435,7 +435,7 @@ const NPYSpec* NPYBase::getBufferSpec() const
 }
 
 
- unsigned int NPYBase::getValueIndex(unsigned i, unsigned j, unsigned k, unsigned l, unsigned m) const 
+ unsigned int NPYBase::getValueIndex(unsigned i, unsigned j, unsigned k, unsigned l, unsigned m) const  
 {
     unsigned int nj = m_nj == 0 ? 1 : m_nj ;
     unsigned int nk = m_nk == 0 ? 1 : m_nk ;

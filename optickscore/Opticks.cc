@@ -1038,26 +1038,11 @@ bool Opticks::isGLTF() const
     return getGLTF() > 0 ; 
 }
 
-
-const char* Opticks::getGLTFPath() const 
-{
-    return m_resource->getGLTFPath() ;
-}
-
-const char* Opticks::getSrcGLTFPath() const 
-{
-    return m_resource->getSrcGLTFPath() ;
-}
-const char* Opticks::getG4CodeGenDir() const 
-{
-    return m_resource->getG4CodeGenDir() ;
-}
-const char* Opticks::getCacheMetaPath() const 
-{
-    return m_resource->getCacheMetaPath() ;
-}
-
-
+const char* Opticks::getGLTFPath() const { return m_resource->getGLTFPath() ; }
+const char* Opticks::getSrcGLTFPath() const { return m_resource->getSrcGLTFPath() ; }
+const char* Opticks::getG4CodeGenDir() const { return m_resource->getG4CodeGenDir() ; }
+const char* Opticks::getCacheMetaPath() const { return m_resource->getCacheMetaPath() ; } 
+const char* Opticks::getPrimariesPath() const { return m_resource->getPrimariesPath() ; } 
 
 
 
@@ -1545,7 +1530,27 @@ const char* Opticks::getUDet()
 }
 
 
-unsigned int Opticks::getSourceCode()
+
+
+
+/**
+Opticks::getSourceCode
+-------------------------
+
+This is not the final word, see OpticksGen 
+
+*live-gensteps* 
+    G4GUN: collected from a live CG4 instance  
+
+*loaded-from-file*
+    CERENKOV SCINTILLATION NATURAL
+
+*fabricated-from-config*
+    TORCH  
+
+**/
+
+unsigned int Opticks::getSourceCode() const
 {
     unsigned int code ;
     if(     m_cfg->hasOpt("natural"))       code = NATURAL ;     // doing (CERENKOV | SCINTILLATION) would entail too many changes 
@@ -1558,70 +1563,41 @@ unsigned int Opticks::getSourceCode()
     return code ;
 }
 
+// not-definitive see OpticksGen CGenerator
+const char* Opticks::getSourceType() const
+{
+    unsigned int code = getSourceCode();
+    return OpticksFlags::SourceTypeLowercase(code) ; 
+}
 
-
-
-
-bool Opticks::isFabricatedGensteps()
+bool Opticks::isFabricatedGensteps() const
 {
     unsigned int code = getSourceCode() ;
     return code == TORCH || code == MACHINERY ;  
 }
 
+bool Opticks::isEmbedded() const { return hasOpt("embedded"); }
+bool Opticks::isLiveGensteps() const {  return hasOpt("live"); }
+bool Opticks::isNoInputGensteps() const { return hasOpt("load|nopropagate") ; } 
 
-bool Opticks::isEmbedded() const 
+
+
+
+char Opticks::getEntryCode() const  // debug switching of OptiX launch program  
 {
-    return hasOpt("embedded");
-}
-
-
-bool Opticks::isLiveGensteps()
-{  
-    return hasOpt("live");
-    //unsigned int code = getSourceCode();
-    //return code == G4GUN ;
-    //
-    //  *live-gensteps* 
-    //        G4GUN: collected from a live CG4 instance  
-    //
-    //  *loaded-from-file*
-    //        CERENKOV SCINTILLATION NATURAL
-    //
-    //  *fabricated-from-config*
-    //        TORCH  
-}
-
-
-
-char Opticks::getEntryCode()
-{
-   /*
-    char code ;
-    if(     m_cfg->hasOpt("trivial"))   code = 'T' ; 
-    else if(m_cfg->hasOpt("nothing"))   code = 'N' ; 
-    else if(m_cfg->hasOpt("dumpseed"))  code = 'D' ; 
-    else if(m_cfg->hasOpt("seedtest"))  code = 'S' ; 
-    else if(m_cfg->hasOpt("tracetest")) code = 'R' ; 
-    else                                code = 'G' ; 
-    return code  ;   
-   */
-
    return OpticksEntry::CodeFromConfig(m_cfg);
 }
-
-const char* Opticks::getEntryName()
+const char* Opticks::getEntryName() const
 {  
     char code = getEntryCode();
     return OpticksEntry::Name(code);
 }
-
-
-bool Opticks::isTrivial()
+bool Opticks::isTrivial() const
 {
    char code = getEntryCode();
    return  code == 'T' ; 
 }
-bool Opticks::isSeedtest()
+bool Opticks::isSeedtest() const
 {
    char code = getEntryCode();
    return  code == 'S' ; 
@@ -1629,37 +1605,25 @@ bool Opticks::isSeedtest()
 
 
 
-bool Opticks::isNoInputGensteps()
-{
-    return hasOpt("load|nopropagate") ;
-}
 
-
-const char* Opticks::getSourceType()
-{
-    unsigned int code = getSourceCode();
-    return OpticksFlags::SourceTypeLowercase(code) ; 
-}
-
-
-
-const char* Opticks::getEventFold()
+const char* Opticks::getEventFold() const
 {
     return m_spec ? m_spec->getFold() : NULL ;
 }
-const char* Opticks::getEventDir()
+
+const char* Opticks::getEventDir() const 
 {
     return m_spec ? m_spec->getDir() : NULL ;
 }
-const char* Opticks::getEventTag()
+const char* Opticks::getEventTag() const
 {
     return m_spec->getTag();
 }
-int Opticks::getEventITag()
+int Opticks::getEventITag() const
 {
     return m_spec->getITag() ; 
 }
-const char* Opticks::getEventCat()
+const char* Opticks::getEventCat() const
 {
     return m_spec->getCat();
 }
@@ -1862,7 +1826,10 @@ unsigned Opticks::getGeant4Version()
 }
 
 
-std::string Opticks::getGenstepPath()
+
+
+
+std::string Opticks::getGenstepPath() const 
 {
     const char* det = m_spec->getDet();
     const char* typ = m_spec->getTyp();
@@ -1881,28 +1848,43 @@ std::string Opticks::getGenstepPath()
     return path ; 
 }
 
-bool Opticks::existsGenstepPath()
+bool Opticks::existsGenstepPath() const 
 {
     std::string path = getGenstepPath();
     return BFile::ExistsFile(path.c_str()); 
 }
 
-
-NPY<float>* Opticks::loadGenstep()
+bool Opticks::existsPrimariesPath() const 
 {
-    std::string path = getGenstepPath();
-    NPY<float>* gs = NPY<float>::load(path.c_str());
-    if(!gs)
+    const char* path = getPrimariesPath();
+    return path ? BFile::ExistsFile(path) : false ; 
+}
+
+
+NPY<float>* Opticks::load(const char* path) const 
+{
+    NPY<float>* a = NPY<float>::load(path);
+    if(!a)
     {
-        LOG(warning) << "Opticks::loadGenstep"
-                     << " FAILED TO LOAD GENSTEPS FROM "
+        LOG(warning) << "Opticks::load"
+                     << " FAILED TO LOAD FROM "
                      << " path " << path 
                      ; 
         return NULL ;
     }
-    return gs ; 
+    return a ; 
 }
 
+NPY<float>* Opticks::loadGenstep() const 
+{
+    std::string path = getGenstepPath();
+    return load(path.c_str()); 
+}
+NPY<float>* Opticks::loadPrimaries() const 
+{
+    const char* path = getPrimariesPath();
+    return load(path); 
+}
 
 
 

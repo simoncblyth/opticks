@@ -14,6 +14,7 @@ _TorchStepNPYTest.cc
 set(_TEST_SOURCES
 
 FabStepTest.cc
+NPriTest.cc
 
 NXformTest.cc 
 

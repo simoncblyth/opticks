@@ -31,8 +31,7 @@ void Ctx::setEvent(const G4Event* event)
 
 void Ctx::setTrack(const G4Track* track)
 {
-
-    LOG(error) << "." ; 
+    //LOG(error) << "." ; 
 
     _track = track ; 
     _track_id = track->GetTrackID() - 1 ;
@@ -40,21 +39,17 @@ void Ctx::setTrack(const G4Track* track)
     _step = NULL ; 
     _step_id = -1 ;  
 
-//#if ( G4VERSION_NUMBER >= 1042 )
-//#else
 
-    //G4ParticleDefinition* particle = track->GetDefinition();
-
-    const G4DynamicParticle* dp = track->GetDynamicParticle() ;   // 10.4.2 giving NULL DynamicParticle
+    const G4DynamicParticle* dp = track->GetDynamicParticle() ; 
     assert( dp ) ;  
+    const G4ParticleDefinition* particle = dp->GetParticleDefinition() ;
+    assert( particle ) ;  
 
-    const G4ParticleDefinition* particle = dp ? dp->GetParticleDefinition() : NULL ;
-
-    _track_particle_name = particle ? particle->GetParticleName() : "NULL-DynamicParticle" ; 
+    _track_particle_name = particle->GetParticleName() ; 
 
     _track_optical = particle == G4OpticalPhoton::OpticalPhotonDefinition() ;
 
-    _track_pdg_encoding = particle ? particle->GetPDGEncoding() : -1 ;
+    _track_pdg_encoding = particle->GetPDGEncoding() ;
 
     if(_track_optical)
     {
@@ -71,7 +66,7 @@ void Ctx::setTrack(const G4Track* track)
 
 void Ctx::setStep(const G4Step* step)
 {  
-    LOG(error) << "." ; 
+    //LOG(error) << "." ; 
 
     assert( _track ) ; 
 

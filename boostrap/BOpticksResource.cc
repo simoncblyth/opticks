@@ -62,6 +62,7 @@ BOpticksResource::BOpticksResource()
     m_idmappath(NULL),
     m_g4codegendir(NULL),
     m_cachemetapath(NULL),
+    m_primariespath(NULL),
     m_gltfpath(NULL)
 {
     init();
@@ -442,6 +443,10 @@ void BOpticksResource::setupViaKey()
 
     m_cachemetapath = makeIdPathPath("cachemeta.json");  
     m_res->addPath("cachemetapath", m_cachemetapath ); 
+
+    m_primariespath = makeIdPathPath("primaries.npy");  
+    m_res->addPath("primariespath", m_primariespath ); 
+
 }
 
 
@@ -509,36 +514,13 @@ std::string BOpticksResource::getPropertyLibDir(const char* name) const
 
 
 
-const char* BOpticksResource::getSrcPath() const 
-{
-    return m_srcpath ;
-}
-const char* BOpticksResource::getSrcDigest() const 
-{
-    return m_srcdigest ;
-}
+const char* BOpticksResource::getSrcPath() const { return m_srcpath ; }
+const char* BOpticksResource::getSrcDigest() const { return m_srcdigest ; }
+const char* BOpticksResource::getDAEPath() const { return m_daepath ; }
+const char* BOpticksResource::getGDMLPath() const { return m_gdmlpath ; }
+const char* BOpticksResource::getSrcGDMLPath() const { return m_srcgdmlpath ; } 
+const char* BOpticksResource::getSrcGLTFPath() const { return m_srcgltfpath ; } 
 
-
-
-const char* BOpticksResource::getDAEPath() const 
-{
-    return m_daepath ;
-}
-const char* BOpticksResource::getGDMLPath() const 
-{
-    return m_gdmlpath ;
-}
-const char* BOpticksResource::getSrcGDMLPath() const 
-{
-    return m_srcgdmlpath ;
-}
-
-
-
-const char* BOpticksResource::getSrcGLTFPath() const 
-{
-    return m_srcgltfpath ;
-}
 const char* BOpticksResource::getSrcGLTFBase() const
 {
     std::string base = BFile::ParentDir(m_srcgltfpath) ;
@@ -550,36 +532,13 @@ const char* BOpticksResource::getSrcGLTFName() const
     return strdup(name.c_str()); 
 }
 
+const char* BOpticksResource::getG4CodeGenDir() const { return m_g4codegendir ; }
+const char* BOpticksResource::getCacheMetaPath() const { return m_cachemetapath ; }
+const char* BOpticksResource::getPrimariesPath() const { return m_primariespath ; } 
+const char* BOpticksResource::getGLTFPath() const { return m_gltfpath ; } 
+const char* BOpticksResource::getMetaPath() const { return m_metapath ; }
+const char* BOpticksResource::getIdMapPath() const { return m_idmappath ; } 
 
-
-
-
-const char* BOpticksResource::getG4CodeGenDir() const 
-{
-    return m_g4codegendir ;
-}
-const char* BOpticksResource::getCacheMetaPath() const
-{
-    return m_cachemetapath ; 
-}
-const char* BOpticksResource::getGLTFPath() const 
-{
-    return m_gltfpath ;
-}
-
-
-
-
-
-
-const char* BOpticksResource::getMetaPath() const 
-{
-    return m_metapath ;
-}
-const char* BOpticksResource::getIdMapPath() const 
-{
-    return m_idmappath ;
-}
 
 BOpticksKey*  BOpticksResource::getKey() const
 {

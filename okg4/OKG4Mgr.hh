@@ -7,6 +7,7 @@ class OpticksIdx;
 class OpticksGen ; 
 class OpticksRun ; 
 class CG4 ; 
+class CGenerator ; 
 class OpticksViz ; 
 class OKPropagator ; 
 
@@ -34,6 +35,7 @@ class OKG4_API OKG4Mgr {
        int            m_num_event ; 
        OpticksGen*    m_gen ; 
        CG4*           m_g4 ; 
+       CGenerator*    m_generator ; 
        OpticksViz*    m_viz ; 
        OKPropagator*  m_propagator ; 
     

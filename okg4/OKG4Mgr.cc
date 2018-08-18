@@ -19,6 +19,7 @@ class NConfigurable ;
 #include "OpticksViz.hh"
 
 #include "CG4.hh"
+#include "CGenerator.hh"
 
 #include "PLOG.hh"
 #include "OKG4_BODY.hh"
@@ -34,12 +35,13 @@ OKG4Mgr::OKG4Mgr(int argc, char** argv)
     m_log(new SLog("OKG4Mgr::OKG4Mgr")),
     m_ok(new Opticks(argc, argv)),  
     m_run(m_ok->getRun()),
-    m_hub(new OpticksHub(m_ok)),                       // configure, loadGeometry and setupInputGensteps immediately
+    m_hub(new OpticksHub(m_ok)),            // configure, loadGeometry and setupInputGensteps immediately
     m_load(m_ok->isLoad()),
     m_idx(new OpticksIdx(m_hub)),
-    m_num_event(m_ok->getMultiEvent()),                    // after hub instanciation, as that configures Opticks
+    m_num_event(m_ok->getMultiEvent()),     // huh : m_gen should be in change of the number of events ? 
     m_gen(m_hub->getGen()),
-    m_g4(m_load ? NULL : new CG4(m_hub)),                        // configure and initialize immediately 
+    m_g4(m_load ? NULL : new CG4(m_hub)),   // configure and initialize immediately 
+    m_generator( m_load ? NULL : m_g4->getGenerator()),
     m_viz(m_ok->isCompute() ? NULL : new OpticksViz(m_hub, m_idx, true)),    // true: load/create Bookmarks, setup shaders, upload geometry immediately 
     m_propagator(new OKPropagator(m_hub, m_idx, m_viz))
 {
@@ -96,31 +98,45 @@ void OKG4Mgr::propagate()
 
 
 
+
+/**
+OKG4Mgr::propagate_
+---------------------
+
+Hmm propagate implies just photons to me, so this name 
+is misleading as it does a G4 beamOn with the hooked up 
+CSource subclass providing the primaries, which can be 
+photons but not necessarily. 
+
+Normally the G4 propagation is done first, because 
+gensteps eg from G4Gun can then be passed to Opticks.
+However with RNG-aligned testing using "--align" option
+which uses emitconfig CPU generated photons there is 
+no need to do G4 first. Actually it is more convenient
+for Opticks to go first in order to allow access to the ucf.py 
+parsed  kernel pindex log during lldb python scripted G4 debugging.
+ 
+Hmm it would be cleaner if m_gen was in charge if the branching 
+here as its kinda similar to initSourceCode.
+
+**/
+
 void OKG4Mgr::propagate_()
-{
-    // Normally the G4 propagation is done first, because 
-    // gensteps eg from G4Gun can then be passed to Opticks.
-    // However with RNG-aligned testing using "--align" option
-    // which uses emitconfig CPU generated photons there is 
-    // no need to do G4 first. Actually it is more convenient
-    // for Opticks to go first in order to allow access to the ucf.py 
-    // parsed  kernel pindex log during lldb python scripted G4 debugging.
-  
+{ 
     bool align = m_ok->isAlign();
 
-    if(m_ok->isFabricatedGensteps())  // eg torch running 
-    {
-         NPY<float>* gs = m_gen->getInputGensteps() ;
 
+    if(m_generator->hasGensteps())   // TORCH
+    {
+         NPY<float>* gs = m_generator->getGensteps() ;
          m_run->setGensteps(gs); 
 
          if(align)
              m_propagator->propagate();
           
-
          m_g4->propagate();
     }
-    else
+    else   // no-gensteps : G4GUN or PRIMARYSOURCE
     {
          NPY<float>* gs = m_g4->propagate() ;
 

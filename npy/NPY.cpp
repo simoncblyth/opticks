@@ -1896,10 +1896,10 @@ BBufSpec* NPY<T>::getBufSpec()
 }
 
 template <typename T> 
- T NPY<T>::getValue(unsigned int i, unsigned int j, unsigned int k, unsigned int l)
+ T NPY<T>::getValue(unsigned int i, unsigned int j, unsigned int k, unsigned int l) const 
 {
     unsigned int idx = getValueIndex(i,j,k,l);
-    T* data_ = getValues();
+    const T* data_ = getValuesConst();
     return  *(data_ + idx);
 }
 
@@ -2199,7 +2199,7 @@ template <typename T>
 
 
 template <typename T> 
- glm::vec4 NPY<T>::getQuad(unsigned int i, unsigned int j, unsigned int k)
+ glm::vec4 NPY<T>::getQuad(unsigned int i, unsigned int j, unsigned int k) const 
 {
     glm::vec4 vec ; 
     for(unsigned int l=0 ; l < 4 ; l++) vec[l] = getValue(i,j,k,l); 
@@ -2208,7 +2208,7 @@ template <typename T>
 
 
 template <typename T> 
-nvec4 NPY<T>::getVQuad(unsigned int i, unsigned int j, unsigned int k)
+nvec4 NPY<T>::getVQuad(unsigned int i, unsigned int j, unsigned int k) const 
 {
     nvec4 vec ; 
     vec.x = getValue(i,j,k,0);
@@ -2220,15 +2220,15 @@ nvec4 NPY<T>::getVQuad(unsigned int i, unsigned int j, unsigned int k)
 
 
 template <typename T> 
- glm::ivec4 NPY<T>::getQuadI(unsigned int i, unsigned int j, unsigned int k)
+glm::ivec4 NPY<T>::getQuadI(unsigned int i, unsigned int j, unsigned int k) const 
 {
     glm::ivec4 vec ; 
-    for(unsigned int l=0 ; l < 4 ; l++) vec[l] = getValue(i,j,k,l); 
+    for(unsigned l=0 ; l < 4 ; l++) vec[l] = getInt(i,j,k,l);   // changed from getValue Aug18 2018 
     return vec ; 
 }
 
 template <typename T> 
- glm::uvec4 NPY<T>::getQuadU(unsigned int i, unsigned int j, unsigned int k)
+ glm::uvec4 NPY<T>::getQuadU(unsigned int i, unsigned int j, unsigned int k) const 
 {
     glm::uvec4 vec ; 
     for(unsigned int l=0 ; l < 4 ; l++) vec[l] = getUInt(i,j,k,l); 
@@ -2243,7 +2243,7 @@ template <typename T>
 
 
 template <typename T> 
- float NPY<T>::getFloat(unsigned int i, unsigned int j, unsigned int k, unsigned int l)
+ float NPY<T>::getFloat(unsigned int i, unsigned int j, unsigned int k, unsigned int l) const
 {
     uif_t uif ; 
     uif.u = 0 ;
@@ -2279,7 +2279,7 @@ template <typename T>
 
 
 template <typename T> 
- unsigned int NPY<T>::getUInt(unsigned int i, unsigned int j, unsigned int k, unsigned int l)
+ unsigned int NPY<T>::getUInt(unsigned int i, unsigned int j, unsigned int k, unsigned int l) const 
 {
     uif_t uif ; 
     uif.u = 0 ;
@@ -2317,7 +2317,7 @@ template <typename T>
 }
 
 template <typename T> 
- int NPY<T>::getInt(unsigned int i, unsigned int j, unsigned int k, unsigned int l)
+ int NPY<T>::getInt(unsigned int i, unsigned int j, unsigned int k, unsigned int l) const 
 {
     uif_t uif ;             // how does union handle different sizes ? 
     uif.u = 0 ; 

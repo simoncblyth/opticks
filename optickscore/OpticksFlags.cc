@@ -26,6 +26,7 @@ const char* OpticksFlags::NATURAL_           = "NATURAL" ;
 const char* OpticksFlags::FABRICATED_        = "FABRICATED" ;
 const char* OpticksFlags::MACHINERY_         = "MACHINERY" ;
 const char* OpticksFlags::EMITSOURCE_        = "EMITSOURCE" ;
+const char* OpticksFlags::PRIMARYSOURCE_     = "PRIMARYSOURCE" ;
 
 const char* OpticksFlags::CERENKOV_          = "CERENKOV" ;
 const char* OpticksFlags::SCINTILLATION_     = "SCINTILLATION" ;
@@ -55,6 +56,7 @@ const char* OpticksFlags::_NATURAL           = "NL" ;
 const char* OpticksFlags::_FABRICATED        = "FD" ;
 const char* OpticksFlags::_MACHINERY         = "MY" ;
 const char* OpticksFlags::_EMITSOURCE        = "SO" ;
+const char* OpticksFlags::_PRIMARYSOURCE     = "PS" ;
 
 const char* OpticksFlags::_CERENKOV          = "CK" ;
 const char* OpticksFlags::_SCINTILLATION     = "SI" ;
@@ -81,6 +83,7 @@ const char* OpticksFlags::cerenkov_          = "cerenkov" ;
 const char* OpticksFlags::scintillation_     = "scintillation" ;
 const char* OpticksFlags::torch_             = "torch" ; 
 const char* OpticksFlags::emitsource_        = "emitsource" ; 
+const char* OpticksFlags::primarysource_     = "primarysource" ; 
 const char* OpticksFlags::g4gun_             = "g4gun" ; 
 const char* OpticksFlags::other_             = "other" ;
 
@@ -110,6 +113,7 @@ const char* OpticksFlags::Flag(const unsigned int flag)
         case FABRICATED:       s=FABRICATED_ ;break; 
         case MACHINERY:        s=MACHINERY_;break; 
         case EMITSOURCE:       s=EMITSOURCE_;break; 
+        case PRIMARYSOURCE:    s=PRIMARYSOURCE_;break; 
         default:               s=BAD_FLAG_  ;
                                LOG(debug) << "OpticksFlags::Flag BAD_FLAG [" << flag << "]" << std::hex << flag << std::dec ;             
     }
@@ -143,6 +147,7 @@ const char* OpticksFlags::Abbrev(const unsigned int flag)
         case FABRICATED:       s=_FABRICATED ;break; 
         case MACHINERY:        s=_MACHINERY;break; 
         case EMITSOURCE:       s=_EMITSOURCE;break; 
+        case PRIMARYSOURCE:    s=_PRIMARYSOURCE;break; 
         default:               s=_BAD_FLAG  ;
                                LOG(verbose) << "OpticksFlags::Abbrev BAD_FLAG [" << flag << "]" << std::hex << flag << std::dec ;             
     }

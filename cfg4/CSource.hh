@@ -56,10 +56,8 @@ class CFG4_API CSource : public G4VPrimaryGenerator
     void SetParticleTime(G4double time);
 
  public:
-    //void collectPrimary(G4PrimaryVertex* vertex);
-    void collectPrimaries(const G4Event* anEvent);
+     // to CPrimaryCollector
     void collectPrimaryVertex(const G4PrimaryVertex* vtx);
-    void collectPrimaryParticle(G4int primary_index, const G4PrimaryVertex* vtx);
 
  public:
     // inline getters

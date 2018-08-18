@@ -1,5 +1,5 @@
 #include "Opticks.hh"
-#include "OpticksHub.hh"
+#include "OpticksGen.hh"
 #include "OpticksCfg.hh"
 #include "OpticksFlags.hh"
 #include "OpticksEvent.hh"
@@ -14,6 +14,7 @@
 #include "CTorchSource.hh"
 #include "CGunSource.hh"
 #include "CInputPhotonSource.hh"
+#include "CPrimarySource.hh"
 
 #include "CDetector.hh"
 #include "CGenerator.hh"
@@ -21,13 +22,15 @@
 #include "PLOG.hh"
 
 
-CGenerator::CGenerator(OpticksHub* hub, CG4* g4)
+
+CGenerator::CGenerator(OpticksGen* gen, CG4* g4)
     :
-    m_hub(hub),
-    m_ok(m_hub->getOpticks()),
+    m_gen(gen), 
+    m_ok(m_gen->getOpticks()),
     m_cfg(m_ok->getCfg()),
     m_g4(g4),
-    m_source(NULL),
+    m_source_code(m_gen->getSourceCode()),
+    m_source(initSource(m_source_code)),
     m_num_g4evt(1),
     m_photons_per_g4evt(0),
     m_gensteps(NULL),
@@ -38,9 +41,6 @@ CGenerator::CGenerator(OpticksHub* hub, CG4* g4)
 
 void CGenerator::init()
 {
-    unsigned code = m_hub->getSourceCode();
-    CSource* source = initSource(code) ;
-    setSource(source);
 }
 
 CSource* CGenerator::initSource(unsigned code)
@@ -57,6 +57,7 @@ CSource* CGenerator::initSource(unsigned code)
     if(     code == G4GUN)      source = initG4GunSource();
     else if(code == TORCH)      source = initTorchSource();
     else if(code == EMITSOURCE) source = initInputPhotonSource();
+    else if(code == PRIMARYSOURCE) source = initInputPrimarySource();
 
     assert(source) ;
 
@@ -64,6 +65,7 @@ CSource* CGenerator::initSource(unsigned code)
 }
 
 
+unsigned CGenerator::getSourceCode() const { return m_source_code ; }
 CSource* CGenerator::getSource() const { return m_source ; }
 unsigned CGenerator::getNumG4Event() const { return m_num_g4evt ;  }
 unsigned CGenerator::getNumPhotonsPerG4Event() const { return m_photons_per_g4evt ;  }
@@ -75,7 +77,6 @@ void CGenerator::setNumG4Event(unsigned num) { m_num_g4evt = num ; }
 void CGenerator::setNumPhotonsPerG4Event(unsigned num) { m_photons_per_g4evt = num ; }
 void CGenerator::setGensteps(NPY<float>* gensteps) { m_gensteps = gensteps ; }
 void CGenerator::setDynamic(bool dynamic) { m_dynamic = dynamic ; }
-void CGenerator::setSource(CSource* source) { m_source = source ; }
 
 
 /**
@@ -122,7 +123,7 @@ CSource* CGenerator::initTorchSource()
 {
     LOG(verbose) << "CGenerator::initTorchSource " ; 
 
-    TorchStepNPY* torch = m_hub->getTorchstep();
+    TorchStepNPY* torch = m_gen->getTorchstep();
 
     setGensteps( torch->getNPY() );  
     // triggers the event init 
@@ -147,9 +148,9 @@ Hmm : what are the inputGensteps for with inputPhotons ? Placeholder ?
 CSource* CGenerator::initInputPhotonSource()
 {
     LOG(info) << "CGenerator::initInputPhotonSource " ; 
-    NPY<float>* inputPhotons = m_hub->getInputPhotons();
-    NPY<float>* inputGensteps = m_hub->getInputGensteps();
-    GenstepNPY* gsnpy = m_hub->getGenstepNPY();
+    NPY<float>* inputPhotons = m_gen->getInputPhotons();
+    NPY<float>* inputGensteps = m_gen->getInputGensteps();
+    GenstepNPY* gsnpy = m_gen->getGenstepNPY();
 
     assert( inputPhotons );
     assert( inputGensteps );
@@ -169,6 +170,32 @@ CSource* CGenerator::initInputPhotonSource()
 }
 
 
+
+/**
+CGenerator::initInputPrimarySource
+-------------------------------------
+
+* setup source based on NGunConfig parse of the G4GunConfig string.
+* no gensteps at this stage, they have to be collected from Geant4 : dynamic mode
+* geometry info is needed as gunconfig picks target volumes by index
+
+**/
+
+CSource* CGenerator::initInputPrimarySource()
+{
+    NPY<float>* inputPrimaries = m_gen->getInputPrimaries() ;  
+
+    setDynamic(true);
+    setGensteps(NULL);  // gensteps must be collected from G4, they cannot be fabricated
+
+    CPrimarySource* prs = new CPrimarySource( m_ok, inputPrimaries, m_ok->getVerbosity() );
+    setNumG4Event( prs->getNumG4Event()); 
+
+    CSource* source  = static_cast<CSource*>(prs); 
+    return source ; 
+}
+
+
 /**
 CGenerator::initG4GunSource
 -----------------------------
@@ -181,7 +208,7 @@ CGenerator::initG4GunSource
 
 CSource* CGenerator::initG4GunSource()
 {
-    std::string gunconfig = m_hub->getG4GunConfig() ; // NB via OpticksGun in the hub, not directly from Opticks
+    std::string gunconfig = m_gen->getG4GunConfig() ; // NB via OpticksGun in the hub, not directly from Opticks
     LOG(verbose) << "CGenerator::initG4GunSource " 
                << " gunconfig " << gunconfig
                 ; 

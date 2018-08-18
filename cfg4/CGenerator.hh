@@ -17,8 +17,10 @@ CGenerator
 ===========
 
 Canonical m_generator instance is CG4 resident instanciated within it.    
-Essentially this steers the conversion of Opticks photon sources 
-into CSource(G4VPrimaryGenerator) to be consumed by Geant4 
+
+Instanciation hooks up the configured sources (of photons or primaries) 
+into CSource(G4VPrimaryGenerator) ready to be given to Geant4
+to make primary vertices with. 
 
 =====================  ==========
 source                  dynamic 
@@ -26,6 +28,7 @@ source                  dynamic
 inputPhotonSource         N 
 TorchSource               N
 G4GunSource               Y
+inputPrimarySource        Y
 =====================  ==========
 
 
@@ -34,10 +37,11 @@ G4GunSource               Y
 class CFG4_API CGenerator 
 {
    public:
-       CGenerator(OpticksHub* hub, CG4* g4);
+       CGenerator(OpticksGen* gen, CG4* g4);
    public:
        void        configureEvent(OpticksEvent* evt);
    public:
+       unsigned    getSourceCode() const ;
        CSource*    getSource() const ;
        bool        isDynamic() const ;
        unsigned    getNumG4Event() const ;
@@ -48,6 +52,7 @@ class CFG4_API CGenerator
        void init();
        CSource* initSource(unsigned code);
        CSource* initInputPhotonSource();
+       CSource* initInputPrimarySource();
        CSource* initTorchSource();
        CSource* initG4GunSource();
     private:
@@ -55,12 +60,12 @@ class CFG4_API CGenerator
        void setNumG4Event(unsigned num);
        void setNumPhotonsPerG4Event(unsigned num);
        void setGensteps(NPY<float>* gensteps);
-       void setSource(CSource* source);
    private:
-       OpticksHub*           m_hub ;
+       OpticksGen*           m_gen ;
        Opticks*              m_ok ;
        OpticksCfg<Opticks>*  m_cfg ;
        CG4*                  m_g4 ; 
+       unsigned              m_source_code ; 
        CSource*              m_source ; 
    private:
        unsigned      m_num_g4evt ; 

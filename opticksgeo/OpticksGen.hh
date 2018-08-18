@@ -1,10 +1,12 @@
 #pragma once
 
 class OpticksHub ; 
+class OpticksGun ; 
 class Opticks ; 
 template <typename T> class NPY  ; 
 template <typename T> class OpticksCfg ; 
 class NLookup ; 
+class NCSG ; 
 class GGeoBase ; 
 class GBndLib ; 
 
@@ -35,20 +37,27 @@ class OKGEO_API OpticksGen
     public:
         unsigned             getSourceCode() const ;
     public:
+        bool                 hasInputPrimaries() const ;
+    public:
+        Opticks*             getOpticks() const ; 
         NPY<float>*          getInputPhotons() const ;    // currently only used for NCSG emitter testing 
         NPY<float>*          getInputGensteps() const ;
+        NPY<float>*          getInputPrimaries() const ;
 
         FabStepNPY*          getFabStep() const  ;
         TorchStepNPY*        getTorchstep() const ;
         GenstepNPY*          getGenstepNPY() const ;
+        std::string          getG4GunConfig() const ;
     public:
         NEmitPhotonsNPY*     getEmitter() const ;
     public:
         FabStepNPY*          makeFabstep();  
     private:
         void                 init();
+        unsigned             initSourceCode() const ;
         void                 initFromGensteps();
         void                 initFromEmitter();
+        void                 initFromPrimaries();
     private:
         NPY<float>*          makeInputGensteps(unsigned code);
         NPY<float>*          loadGenstepFile(const char* label);
@@ -62,6 +71,7 @@ class OKGEO_API OpticksGen
         void                 setInputPhotons(NPY<float>* iox);
     private:
         OpticksHub*           m_hub ; 
+        OpticksGun*           m_gun ; 
         Opticks*              m_ok ; 
         OpticksCfg<Opticks>*  m_cfg ; 
         GGeoBase*             m_ggb ; 
@@ -75,6 +85,7 @@ class OKGEO_API OpticksGen
         bool                  m_emitter_dbg ; 
         NEmitPhotonsNPY*      m_emitter ; 
         NPY<float>*           m_input_photons ; 
+        NPY<float>*           m_input_primaries ; 
         unsigned              m_source_code ; 
   
 };

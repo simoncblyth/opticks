@@ -34,7 +34,7 @@ ckm-dump()
 }
 
 
-ckm-cfg4()
+ckm-okg4()
 {
     OPTICKS_KEY=$(ckm-key) lldb -- OKG4Test --compute --envkey --embedded
 }

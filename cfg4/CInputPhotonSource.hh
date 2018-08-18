@@ -49,7 +49,6 @@ class CFG4_API CInputPhotonSource: public CSource
         unsigned              m_numPhotonsPerG4Event ;
         unsigned              m_numPhotons ;
         STranche*             m_tranche ; 
-        NPY<float>*           m_primary ; 
         unsigned              m_gpv_count ;   // count calls to GeneratePrimaryVertex
 
 };

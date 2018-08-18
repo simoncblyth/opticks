@@ -44,11 +44,6 @@ class OpticksEvent ;
 class Opticks ; 
 template <typename T> class OpticksCfg ;
 
-
-
-
-
-
 /**
 
 CG4
@@ -58,7 +53,6 @@ Canonical instance m_g4 is resident of OKG4Mgr and is instanciated
 with it for non "--load" option running.
 
 Prime method CG4::propagate is invoked from OKG4Mgr::propagate
-
 
 
 Whats the difference between CRecorder/m_recorder and CStepRec/m_steprec ?
@@ -141,6 +135,7 @@ class CFG4_API CG4
         OpticksHub*      getHub() const ;
         OpticksRun*      getRun() const;
         CRandomEngine*   getRandomEngine() const ; 
+        CGenerator*      getGenerator() const ;
         CRecorder*       getRecorder() const ;
         CStepRec*        getStepRec() const ;
         CGeometry*       getGeometry() const ;

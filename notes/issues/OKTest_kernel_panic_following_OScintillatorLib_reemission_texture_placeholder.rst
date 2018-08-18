@@ -27,9 +27,28 @@ Now think this issue is unrelated to Opticks : seems to be the NVIDIA driver,
 and have slight suspiscion of rapid scrolling.
 
 
+* https://www.tonymacx86.com/threads/restart-after-render-and-stress-z370-hd3-i7-8700.251438/
 
 
 Panics::
+
+    Sat Aug 18 22:04:32 2018
+
+    *** Panic Report ***
+    panic(cpu 6 caller 0xffffff801ee89754): "thread_invoke: preemption_level 1, possible cause: blocking while holding a spinlock, or within interrupt context"@/BuildRoot/Library/Caches/com.apple.xbs/Sources/xnu/xnu-4570.51.1/osfmk/kern/sched_prim.c:2231
+    Backtrace (CPU 6), Frame : Return Address
+    ...
+    0xffffff920f983f70 : 0xffffff801f497dac 
+    0xffffff920f983fa0 : 0xffffff801ee1f4f7 
+          Kernel Extensions in backtrace:
+             com.nvidia.web.NVDAResmanWeb(10.3.1)[732647D4-EFC4-3E75-9618-B96D61BE214C]@0xffffff7f9f790000->0xffffff7f9fe08fff
+                dependency: com.apple.iokit.IOPCIFamily(2.9)[1850E7DA-E707-3027-A3AA-637C80B57219]@0xffffff7f9f694000
+                dependency: com.apple.iokit.IONDRVSupport(519.15)[B419F958-11B8-3F7D-A31B-A72166B6E234]@0xffffff7f9f775000
+                dependency: com.apple.iokit.IOGraphicsFamily(519.15)[D5F2A20D-CAB0-33B2-91B9-E8755DFC34CB]@0xffffff7f9f71f000
+                dependency: com.apple.AppleGraphicsDeviceControl(3.18.48)[89491182-0B41-3BC3-B16F-D5043425D66F]@0xffffff7f9f785000
+             com.nvidia.web.NVDAGK100HalWeb(10.3.1)[BC0C27F0-12AF-36CA-AC52-ACD84F718B30]@0xffffff7fa0507000->0xffffff7fa0664fff
+                dependency: com.nvidia.web.NVDAResmanWeb(10.3.1)[732647D4-EFC4-3E75-9618-B96D61BE214C]@0xffffff7f9f790000
+                dependency: com.apple.iokit.IOPCIFamily(2.9)[1850E7DA-E707-3027-A3AA-637C80B57219]@0xffffff7f9f694000
 
 
     *** Panic Report ***
@@ -51,8 +70,36 @@ Panics::
 
 
 
+
+Not just me : tonymac also with com.nvidia.web.NVDAResmanWeb(10.3.1)
+----------------------------------------------------------------------
+
+* https://www.tonymacx86.com/threads/restart-after-render-and-stress-z370-hd3-i7-8700.251438/
+
+Some guy with hackintosh with
+
+::
+
+    0xffffff9225523fa0 : 0xffffff800ea1f4f7 
+    Kernel Extensions in backtrace:
+    com.nvidia.web.NVDAResmanWeb(10.3.1)[8E2AB3E3-4EE5-3F90-B6D8-54CEB8595A5F]@0xffffff7f8f3fa000->0xffffff7f8fa72fff
+    dependency: com.apple.iokit.IOPCIFamily(2.9)[1850E7DA-E707-3027-A3AA-637C80B57219]@0xffffff7f8f334000
+    dependency: com.apple.iokit.IONDRVSupport(519.15)[B419F958-11B8-3F7D-A31B-A72166B6E234]@0xffffff7f8f3df000
+    dependency: com.apple.iokit.IOGraphicsFamily(519.15)[D5F2A20D-CAB0-33B2-91B9-E8755DFC34CB]@0xffffff7f8f389000
+    dependency: com.apple.AppleGraphicsDeviceControl(3.18.48)[89491182-0B41-3BC3-B16F-D5043425D66F]@0xffffff7f8f3ef000
+    com.nvidia.web.NVDAGP100HalWeb(10.3.1)[0CDFBF48-5CD7-3C97-A083-A7E179C25654]@0xffffff7f8fa89000->0xffffff7f8fc2ffff
+    dependency: com.nvidia.web.NVDAResmanWeb(10.3.1)[8E2AB3E3-4EE5-3F90-B6D8-54CEB8595A5F]@0xffffff7f8f3fa000
+    dependency: com.apple.iokit.IOPCIFamily(2.9)[1850E7DA-E707-3027-A3AA-637C80B57219]@0xffffff7f8f334000
+
+
+
+
+
 Kernel Extensions in backtrace
 ---------------------------------
+
+
+
 
 ::
 

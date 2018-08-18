@@ -148,75 +148,11 @@ void CSource::SetParticleDefinition(G4ParticleDefinition* definition)
 }
 
 
-
-
-void CSource::collectPrimaries(const G4Event* anEvent)
-{
-    G4int num_v = anEvent->GetNumberOfPrimaryVertex() ;
-    LOG(info) << " num_v " << num_v ; 
-    for(G4int v=0 ; v < num_v ; v++)
-    {   
-        const G4PrimaryVertex* vtx = anEvent->GetPrimaryVertex(v) ;
-        collectPrimaryVertex(vtx); 
-    }
-    assert(0); 
-}
-
 void CSource::collectPrimaryVertex(const G4PrimaryVertex* vtx)
 {
-    G4int num_p = vtx->GetNumberOfParticle() ;
-    LOG(info) << " vtx " << vtx << " num_p " << num_p ;    
-    for(G4int p=0 ; p < num_p ; p++) collectPrimaryParticle( p, vtx ) ; 
+    CPrimaryCollector* pc = CPrimaryCollector::Instance() ;
+    assert( pc ); 
+    G4int vertex_index = 0 ;    // assumption 
+    pc->collectPrimaryVertex(vtx, vertex_index); 
 }
-
-void CSource::collectPrimaryParticle(G4int primary_index, const G4PrimaryVertex* vtx)
-{
-    G4double time = vtx->GetT0() ;
-    G4PrimaryParticle* pp = vtx->GetPrimary(primary_index); 
-
-    const G4ParticleDefinition* pd = pp->GetParticleDefinition();  
-    G4int pdgcode = pp->GetPDGcode() ; 
-    LOG(info) 
-        << " pp " << pp  
-        << " pdgcode " << pdgcode
-        << " pd " << pd->GetParticleName() 
-        ;   
-
-    G4ThreeVector pos = vtx->GetPosition() ;
-
-    const G4ThreeVector& dir = pp->GetMomentumDirection()  ; 
-    G4ThreeVector pol = pp->GetPolarization() ;
-  
-    G4double energy = pp->GetTotalEnergy()  ; 
-    G4double wavelength = h_Planck*c_light/energy ;
-
-    G4double weight = pp->GetWeight() ; 
-
-    CPrimaryCollector::Instance()->collectPrimary(
-
-           pos.x()/mm,
-           pos.y()/mm,
-           pos.z()/mm,
-           time/ns,
-
-           dir.x(),
-           dir.y(),
-           dir.z(),
-           weight,
-
-           pol.x(),
-           pol.y(),
-           pol.z(),
-           wavelength/nm,
-
-           0u,
-           0u,
-           0u,
-           0u 
-               
-         ); 
-}
-
-
-
 
