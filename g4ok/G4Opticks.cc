@@ -94,7 +94,7 @@ void G4Opticks::setGeometry(const G4VPhysicalVolume* world)
     m_mtab = new CMaterialTable(prefix); 
 
     setupMaterialLookup();
-    m_collector = new CCollector(m_lookup);   // <-- CG4 holds an instance too 
+    m_collector = new CCollector(m_lookup);   // <-- CG4 holds an instance too : and they are singletons, so should not use G4Opticks and CG4 together
     m_primary_collector = new CPrimaryCollector ; 
 
     // OpMgr instanciates OpticksHub which adopts the pre-existing m_ggeo instance just translated

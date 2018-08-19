@@ -486,6 +486,9 @@ void OpNovicePhysicsList::ConstructParticle()
 
   G4IonConstructor iConstructor;
   iConstructor.ConstructParticle(); 
+
+   
+
 }
 
 
@@ -823,9 +826,6 @@ void OpNovicePhysicsList::dumpRayleigh(const char* msg)
     }
 
 }
-
-
-
 
 
 

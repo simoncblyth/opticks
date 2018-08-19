@@ -43,8 +43,9 @@ DsPhysConsOptical::DsPhysConsOptical(Opticks* ok)
       m_useScintillation(true),           // "UseScintillation"         "Use the Scintillation process?"
       m_useRayleigh(true),                // "UseRayleigh"              "Use the Rayleigh scattering process?"
       m_useAbsorption(true),              // "UseAbsorption"            "Use light absorption process?"
-      m_applyWaterQe(true),               // "ApplyWaterQe"             
-                                          // "Apply QE for water cerenkov process when OP is created? If it is true the CerenPhotonScaleWeight will be disabled in water, but it still works for AD and others "
+      m_applyWaterQe(false),              // "ApplyWaterQe"             
+                                          // "Apply QE for water cerenkov process when OP is created? 
+                                          // If it is true the CerenPhotonScaleWeight will be disabled in water, but it still works for AD and others "
       m_cerenPhotonScaleWeight(3.125),    // "CerenPhotonScaleWeight"    "Scale down number of produced Cerenkov photons by this much."
       m_cerenMaxPhotonPerStep(300),       // "CerenMaxPhotonsPerStep"   "Limit step to at most this many (unscaled) Cerenkov photons."
       m_scintPhotonScaleWeight(3.125),    // "ScintPhotonScaleWeight"    "Scale down number of produced scintillation photons by this much."

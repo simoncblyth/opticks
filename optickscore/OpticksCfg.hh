@@ -64,6 +64,8 @@ class OKCORE_API OpticksCfg : public BCfg {
      const std::string& getDbgSeqmat();
      const std::string& getLVSDName();
      const std::string& getCathode();
+     const std::string& getCerenkovClass();
+     const std::string& getScintillationClass();
 
      const std::string& getFxReConfig();
      const std::string& getFxScConfig();
@@ -173,6 +175,8 @@ private:
 
      std::string m_lvsdname ;
      std::string m_cathode ;
+     std::string m_cerenkovclass ;
+     std::string m_scintillationclass ;
 
      float       m_epsilon ; 
      unsigned    m_seed ; 

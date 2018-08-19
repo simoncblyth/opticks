@@ -121,8 +121,112 @@ Strategy:
        (17E199) 387.10.10.10.30.103   (## CUDA Driver 387.178, 04/02/2018  ##)
 
 
+CUDA Mac Driver : Archive
+----------------------------
+
+* https://www.nvidia.com/object/mac-driver-archive.html
+
+::
+
+    CUDA 396.148 driver for MAC  Release Date: 07/09/2018
+    CUDA 396.64 driver for MAC   Release Date: 05/17/2018
+    CUDA 387.178 driver for MAC  Release Date: 04/02/2018
+    CUDA 387.128 driver for MAC  Release Date: 01/25/2018
+
+
+* High Sierra 10.13.6 now listed in App store, updates
+
+
+CUDA Driver Syspanel
+----------------------
+
+Says::
+
+    CUDA Driver Version : 387.128    (CUDA 396.148 Driver update is available)
+
+
+
+
+Spate of kernel panics
+------------------------
+
+* https://forums.geforce.com/default/topic/930758/geforce-drivers/-problem-spontaneous-kernel-panics-with-nvidia-web-driver-on-mac/
+
+::
+
+    Sun Aug 19 13:01:16 2018
+
+       *** Panic Report ***
+        panic(cpu 0 caller 0xffffff800da89754): "thread_invoke: preemption_level 1, possible cause: blocking while holding a spinlock, or within interrupt context"@/BuildRoot/Library/Caches/com.apple.xbs/Sources/xnu/xnu-4570.51.1/osfmk/kern/sched_prim.c:2231
+        Backtrace (CPU 0), Frame : Return Address
+        0xffffff81f8ec3610 : 0xffffff800da6e166 
+        0xffffff81f8ec3660 : 0xffffff800db96714 
+        0xffffff81f8ec36a0 : 0xffffff800db88a00 
+        ...
+
+         Kernel Extensions in backtrace:
+             com.nvidia.web.NVDAResmanWeb(10.3.1)[8E2AB3E3-4EE5-3F90-B6D8-54CEB8595A5F]@0xffffff7f8e390000->0xffffff7f8ea08fff
+                dependency: com.apple.iokit.IOPCIFamily(2.9)[1850E7DA-E707-3027-A3AA-637C80B57219]@0xffffff7f8e294000
+                dependency: com.apple.iokit.IONDRVSupport(519.15)[B419F958-11B8-3F7D-A31B-A72166B6E234]@0xffffff7f8e375000
+                dependency: com.apple.iokit.IOGraphicsFamily(519.15)[D5F2A20D-CAB0-33B2-91B9-E8755DFC34CB]@0xffffff7f8e31f000
+                dependency: com.apple.AppleGraphicsDeviceControl(3.18.48)[89491182-0B41-3BC3-B16F-D5043425D66F]@0xffffff7f8e385000
+             com.nvidia.web.NVDAGK100HalWeb(10.3.1)[BC0C27F0-12AF-36CA-AC52-ACD84F718B30]@0xffffff7f8ef9b000->0xffffff7f8f0f8fff
+                dependency: com.nvidia.web.NVDAResmanWeb(10.3.1)[8E2AB3E3-4EE5-3F90-B6D8-54CEB8595A5F]@0xffffff7f8e390000
+                dependency: com.apple.iokit.IOPCIFamily(2.9)[1850E7DA-E707-3027-A3AA-637C80B57219]@0xffffff7f8e294000
+
+
+
+Check /var/log/system.log looks like the time on the panic is after the reboot, so nothing logged prior to panic?:: 
+
+
+    1020 Aug 19 12:51:02 epsilon login[5175]: USER_PROCESS: 5175 ttys006
+    1021 Aug 19 12:56:15 epsilon syslogd[56]: ASL Sender Statistics
+    1022 Aug 19 12:59:58 epsilon GoogleSoftwareUpdateAgent[5443]: 2018-08-19 12:59:58.858 GoogleSoftwareUpdateAgent[5443/0x7fff8d0f2380] [lvl=2] -[KSAgentApp(PrivateMethods) setUpLoggerOutputF     orVerboseMode:] Agent default/global settings: <KSAgentSettings:0x7fc96c436120 bundleID=com.google.Keystone.Agent lastCheck=2018-08-19 02:59:12 +0000 lastServerCheck=2018-08-19 02:59:     11 +0000 lastCheckStart=2018-08-19 02:59:09 +0000 checkInterval=18000.000000 uiDisplayInterval=604800.000000 sleepInterval=1800.000000 jitterInterval=900 maxRunInterval=0.000000 isCon     soleUser=1 ticketStorePath=/Users/blyth/Library/Google/GoogleSoftwareUpdate/TicketStore/Keystone.ticketstore runMode=3 daemonUpdateEngineBrokerServiceName=com.google.Keystone.Daemon.U     pdateEngine daemonAdministrationServiceName=com.google.Keystone.Daemon.Administration alwaysPromptForUpdates=0 lastUIDisplayed=(null) alwaysShowStatusItem=0 updateCheckTag=(null) prin     tResults=NO userInitiated=NO>
+    1023 Aug 19 13:01:04 localhost bootlog[0]: BOOT_TIME 1534654864 0
+    1024 Aug 19 13:01:16 localhost syslogd[56]: Configuration Notice:
+    1025     ASL Module "com.apple.cdscheduler" claims selected messages.
+    1026     Those messages may not appear in standard system log files or in the ASL database.
+    1027 Aug 19 13:01:16 localhost syslogd[56]: Configuration Notice:
+    1028     ASL Module "com.apple.install" claims selected messages.
+    1029     Those messages may not appear in standard system log files or in the ASL database.
+
+
+/var/log/wifi.log::
+
+    Sun Aug 19 10:42:45.695 <airportd[162]> _processIPv4Changes: ARP/NDP offloads disabled, not programming the offload
+    Sun Aug 19 10:42:45.707 <airportd[162]> _processIPv4Changes: ARP/NDP offloads disabled, not programming the offload
+    Sun Aug 19 10:42:51.659 <kernel> Setting BTCoex Config: enable_2G:1, profile_2g:0, enable_5G:1, profile_5G:0
+    Sun Aug 19 13:01:16.823 ***Starting Up***
+    Sun Aug 19 13:01:16.893 <kernel> IO80211Controller::addSubscriptionForThisReporterFetchedOnTimer() Failed to addSubscription for group Interface p2p0 subgroup Data Packets driver 0x6252c64761f0ccff - data underrun
+    Sun Aug 19 13:01:16.893 <kernel> IO80211InterfaceMonitor::configureSubscriptions() failed to add subscription
+    Sun Aug 19 13:01:17.064 <kernel>  Creating all peerManager reporters
+
+
+
+
+* :google:`macOS kernel panic com.nvidia.web.NVDAResmanWeb(10.3.1)` 
+
+* https://github.com/lvs1974/NvidiaGraphicsFixup/releases
+* https://github.com/acidanthera/WhateverGreen
+* https://github.com/acidanthera/Lilu
+* https://github.com/acidanthera/WhateverGreen/blob/master/WhateverGreen/kern_ngfx.cpp
+
+
 NVIDIA GPU driver
 -------------------
+
+Aug 18, 2018 : updated 103 to 106 using the NVIDIA panel
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Did the update in reponse to ~daily kernel panics, that occur randomly. 
+Updated::
+ 
+     from 387.10.10.30.103 
+     to   387.10.10.30.106 
+
+But following the update got another panic the day after.
+
+
 
 387.10.10.10.30.103 2018.4.2 10.13.4(17E199)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

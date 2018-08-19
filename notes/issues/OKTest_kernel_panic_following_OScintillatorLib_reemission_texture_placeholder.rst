@@ -1,5 +1,95 @@
-OKTest
-========
+kernel panics with com.nvidia.web.NVDAResmanWeb(10.3.1) implicated
+=====================================================================
+
+After getting two kernel panics in one day Aug 18, 2018, 
+the second of which was without any USB stick attached : decided
+that have no choice but to update the NVIDIA web driver.
+
+Updated from 103 to 106:: 
+    
+    387.10.10.30.103 
+    387.10.10.30.106 
+
+
+
+Got another panic::
+
+    Anonymous UUID:       32BCAB7F-2AEA-A951-3785-013ECFB913EA
+
+    Sun Aug 19 13:01:16 2018
+
+    *** Panic Report ***
+    panic(cpu 0 caller 0xffffff800da89754): "thread_invoke: preemption_level 1, possible cause: blocking while holding a spinlock, or within interrupt context"@/BuildRoot/Library/Caches/com.apple.xbs/Sources/xnu/xnu-4570.51.1/osfmk/kern/sched_prim.c:2231
+    Backtrace (CPU 0), Frame : Return Address
+    0xffffff81f8ec3610 : 0xffffff800da6e166 
+    0xffffff81f8ec3660 : 0xffffff800db96714 
+    0xffffff81f8ec36a0 : 0xffffff800db88a00 
+    0xffffff81f8ec3720 : 0xffffff800da20180 
+    0xffffff81f8ec3740 : 0xffffff800da6dbdc 
+    0xffffff81f8ec3870 : 0xffffff800da6d99c 
+    0xffffff81f8ec38d0 : 0xffffff800da89754 
+    0xffffff81f8ec3950 : 0xffffff800da885df 
+    0xffffff81f8ec39a0 : 0xffffff800db81fd6 
+    0xffffff81f8ec3a00 : 0xffffff800da1eaad 
+    0xffffff81f8ec3a20 : 0xffffff800daf3f91 
+    0xffffff81f8ec3b00 : 0xffffff800daba723 
+    0xffffff81f8ec3c30 : 0xffffff800da4fc16 
+    0xffffff81f8ec3c60 : 0xffffff800da50803 
+    0xffffff81f8ec3cb0 : 0xffffff800da73df2 
+    0xffffff81f8ec3cf0 : 0xffffff7f8e3979fd 
+    0xffffff81f8ec3d30 : 0xffffff7f8e3ef029 
+    0xffffff81f8ec3d50 : 0xffffff7f8e4a759e 
+    0xffffff81f8ec3da0 : 0xffffff7f8e4eca8c 
+    0xffffff81f8ec3dc0 : 0xffffff7f8f0aa242 
+    0xffffff81f8ec3e10 : 0xffffff7f8e3f621c 
+    0xffffff81f8ec3ed0 : 0xffffff800e09a005 
+    0xffffff81f8ec3f30 : 0xffffff800e098772 
+    0xffffff81f8ec3f70 : 0xffffff800e097dac 
+    0xffffff81f8ec3fa0 : 0xffffff800da1f4f7 
+          Kernel Extensions in backtrace:
+             com.nvidia.web.NVDAResmanWeb(10.3.1)[8E2AB3E3-4EE5-3F90-B6D8-54CEB8595A5F]@0xffffff7f8e390000->0xffffff7f8ea08fff
+                dependency: com.apple.iokit.IOPCIFamily(2.9)[1850E7DA-E707-3027-A3AA-637C80B57219]@0xffffff7f8e294000
+                dependency: com.apple.iokit.IONDRVSupport(519.15)[B419F958-11B8-3F7D-A31B-A72166B6E234]@0xffffff7f8e375000
+                dependency: com.apple.iokit.IOGraphicsFamily(519.15)[D5F2A20D-CAB0-33B2-91B9-E8755DFC34CB]@0xffffff7f8e31f000
+                dependency: com.apple.AppleGraphicsDeviceControl(3.18.48)[89491182-0B41-3BC3-B16F-D5043425D66F]@0xffffff7f8e385000
+             com.nvidia.web.NVDAGK100HalWeb(10.3.1)[BC0C27F0-12AF-36CA-AC52-ACD84F718B30]@0xffffff7f8ef9b000->0xffffff7f8f0f8fff
+                dependency: com.nvidia.web.NVDAResmanWeb(10.3.1)[8E2AB3E3-4EE5-3F90-B6D8-54CEB8595A5F]@0xffffff7f8e390000
+                dependency: com.apple.iokit.IOPCIFamily(2.9)[1850E7DA-E707-3027-A3AA-637C80B57219]@0xffffff7f8e294000
+
+    BSD process name corresponding to current thread: kernel_task
+
+    Mac OS version:
+    17E199
+
+    Kernel version:
+    Darwin Kernel Version 17.5.0: Mon Mar  5 22:24:32 PST 2018; root:xnu-4570.51.1~1/RELEASE_X86_64
+    Kernel UUID: 1B55340B-0B14-3026-8A47-1E139DB63DA3
+    Kernel slide:     0x000000000d800000
+    Kernel text base: 0xffffff800da00000
+    __HIB  text base: 0xffffff800d900000
+    System model name: MacBookPro11,3 (Mac-2BD1B31983FE1663)
+
+    System uptime in nanoseconds: 14578410381626
+    last loaded kext at 6285423941732: com.apple.driver.usb.cdc	5.0.0 (addr 0xffffff7f916d0000, size 28672)
+
+
+
+
+::
+
+    epsilon:opticks blyth$ kextstat | grep -v com.apple
+    Index Refs Address            Size       Wired      Name (Version) UUID <Linked Against>
+      145    2 0xffffff7f80b90000 0x679000   0x679000   com.nvidia.web.NVDAResmanWeb (10.3.1) 8E2AB3E3-4EE5-3F90-B6D8-54CEB8595A5F <122 98 97 12 7 5 4 3 1>
+      146    0 0xffffff7f8179b000 0x15e000   0x15e000   com.nvidia.web.NVDAGK100HalWeb (10.3.1) BC0C27F0-12AF-36CA-AC52-ACD84F718B30 <145 12 4 3>
+      147    0 0xffffff7f81594000 0xa8000    0xa8000    com.nvidia.web.GeForceWeb (10.3.1) B4761F6B-66C5-3512-BD13-2CCC7BCC1868 <145 126 122 97 12 7 5 4 3 1>
+      153    0 0xffffff7f81698000 0x2000     0x2000     com.nvidia.CUDA (1.1.0) 4329B052-6C8A-3900-8E83-744487AEDEF1 <4 1>
+    epsilon:opticks blyth$ 
+
+
+
+
+
+
 
 In response to this issue in CerenkovMinimal (which has no scintillators)::
 
@@ -25,6 +115,7 @@ but got an unually quick kernel panic, seconds after launching OKTest
 
 Now think this issue is unrelated to Opticks : seems to be the NVIDIA driver, 
 and have slight suspiscion of rapid scrolling.
+
 
 
 * https://www.tonymacx86.com/threads/restart-after-render-and-stress-z370-hd3-i7-8700.251438/

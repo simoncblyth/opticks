@@ -1,5 +1,7 @@
 #pragma once
 
+namespace Ds {
+
 enum DsG4OpBoundaryProcessStatus {  Undefined,
                                   FresnelRefraction, FresnelReflection,
                                   TotalInternalReflection,
@@ -8,4 +10,6 @@ enum DsG4OpBoundaryProcessStatus {  Undefined,
                                   Absorption, Detection, NotAtBoundary,
                                   SameMaterial, StepTooSmall, NoRINDEX };
 
+
+}
 

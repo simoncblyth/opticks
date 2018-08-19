@@ -25,6 +25,12 @@ set(SOURCES
     DsPhotonTrackInfo.cc
     DsG4CompositeTrackInfo.cc
 
+    CCerenkov.cc
+    G4Cerenkov1042.cc
+    C4Cerenkov1042.cc
+    CPhysicsList.cc 
+
+
     Cerenkov.cc
     OpRayleigh.cc
 
@@ -135,6 +141,11 @@ set(HEADERS
     DsPhotonTrackInfo.h
     DsG4CompositeTrackInfo.h
 
+    CCerenkov.hh
+    G4Cerenkov1042.hh
+    C4Cerenkov1042.hh
+    CPhysicsList.hh
+
     Cerenkov.hh
     OpRayleigh.hh
 
@@ -213,7 +224,11 @@ target_link_libraries( ${name} PUBLIC
    Opticks::OpticksXercesC
    Opticks::OpticksGeo
 )
-target_compile_definitions( ${name} PUBLIC OPTICKS_CFG4 )
+target_compile_definitions( ${name} 
+   PUBLIC OPTICKS_CFG4 
+   PRIVATE WITH_OPTICKS_GENSTEP_COLLECTION
+)
+
 target_include_directories( ${name} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}> )
 
 install(FILES ${HEADERS}  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})

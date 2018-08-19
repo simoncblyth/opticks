@@ -31,7 +31,7 @@ void CPhysics::init()
     m_runManager->SetUserInitialization(m_physics);
 }
 
-G4RunManager* CPhysics::getRunManager()
+G4RunManager* CPhysics::getRunManager() const 
 {
    return m_runManager ; 
 }
@@ -45,9 +45,6 @@ void CPhysics::setProcessVerbosity(int verbosity)
     m_physics->setProcessVerbosity(verbosity); 
 #endif
 }
-
-
-
 
 
 

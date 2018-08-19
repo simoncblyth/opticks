@@ -279,6 +279,8 @@ class OKCORE_API Opticks {
        const char*          getRenderMode() const ;
        const char*          getLVSDName() const ;
        const char*          getCathode() const ;
+       const char*          getCerenkovClass() const ;
+       const char*          getScintillationClass() const ;
    public:
        const char*          getPrintIndexString() const ;
        bool                 getPrintIndex(glm::ivec3& idx) const ;

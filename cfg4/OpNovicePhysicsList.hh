@@ -21,6 +21,22 @@ class G4OpMieHG;
 #include "CFG4_API_EXPORT.hh"
 #include "CFG4_HEAD.hh"
 
+/**
+OpNovicePhysicsList
+=====================
+
+* this is messy : but important so make a new CPhysicsList implementation
+
+Ideas:
+
+* split off into CCerenkov and CScintillation
+  where they do runtime implementation switch (not processor defines)
+  to the different possible implementations
+   
+
+**/
+
+
 class CFG4_API OpNovicePhysicsList : public G4VUserPhysicsList
 {
   public:

@@ -63,6 +63,8 @@ OpticksCfg<Listener>::OpticksCfg(const char* name, Listener* listener, bool live
        //m_lvsdname("PmtHemiCathode,HeadonPmtCathode"),
        m_lvsdname(""),
        m_cathode("Bialkali"),
+       m_cerenkovclass("C4Cerenkov1042"),
+       m_scintillationclass("C4Scintillation1042"),
        m_epsilon(0.1f),     
        m_seed(42),     
        m_rngmax(3000000),     
@@ -722,6 +724,25 @@ void OpticksCfg<Listener>::init()
 
 
 
+   char cerenkovclass[128]; 
+   snprintf(cerenkovclass,128, 
+"Name of the Cerenkov class to use in CFG4.CPhysicsList. Default %s ", m_cerenkovclass.c_str() );
+   m_desc.add_options()
+       ("cerenkovclass",   boost::program_options::value<std::string>(&m_cerenkovclass), cerenkovclass ) ; 
+
+
+   char scintillationclass[128]; 
+   snprintf(scintillationclass,128, 
+"Name of the Scintillation class to use in CFG4.CPhysicsList. Default %s ", m_scintillationclass.c_str() );
+   m_desc.add_options()
+       ("scintillationclass",   boost::program_options::value<std::string>(&m_scintillationclass), scintillationclass ) ; 
+
+
+
+
+
+
+
    char seed[128];
    snprintf(seed,128, 
 "Unsigned int seed used with NEmitPhotons/BRng"
@@ -1283,11 +1304,27 @@ const std::string& OpticksCfg<Listener>::getLVSDName()
 {
     return m_lvsdname  ;
 }
+
 template <class Listener>
 const std::string& OpticksCfg<Listener>::getCathode()
 {
     return m_cathode  ;
 }
+
+template <class Listener>
+const std::string& OpticksCfg<Listener>::getCerenkovClass()
+{
+    return m_cerenkovclass  ;
+}
+
+template <class Listener>
+const std::string& OpticksCfg<Listener>::getScintillationClass()
+{
+    return m_scintillationclass  ;
+}
+
+
+
 
 
 template <class Listener>

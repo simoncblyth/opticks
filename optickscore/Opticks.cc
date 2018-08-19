@@ -525,19 +525,32 @@ OpticksCfg<Opticks>* Opticks::getCfg() const
 
 const char* Opticks::getRenderMode() const 
 {
-    const std::string& renderMode = m_cfg->getRenderMode();
-    return renderMode.c_str();
+    const std::string& s = m_cfg->getRenderMode();
+    return s.c_str();
 }
 
 const char* Opticks::getLVSDName() const 
 {
-    const std::string& lvsdname = m_cfg->getLVSDName();
-    return lvsdname.empty() ? NULL : lvsdname.c_str();
+    const std::string& s = m_cfg->getLVSDName();
+    return s.empty() ? NULL : s.c_str();
 }
+
 const char* Opticks::getCathode() const 
 {
-    const std::string& cathode = m_cfg->getCathode();
-    return cathode.c_str();
+    const std::string& s = m_cfg->getCathode();
+    return s.c_str();
+}
+
+const char* Opticks::getCerenkovClass() const 
+{
+    const std::string& s = m_cfg->getCerenkovClass();
+    return s.c_str();
+}
+
+const char* Opticks::getScintillationClass() const 
+{
+    const std::string& s = m_cfg->getScintillationClass();
+    return s.c_str();
 }
 
 

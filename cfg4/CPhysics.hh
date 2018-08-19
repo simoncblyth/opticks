@@ -14,12 +14,20 @@ class OpNovicePhysicsList ;
 
 #include "CFG4_API_EXPORT.hh"
 
+/**
+CPhysics
+==========
+
+HUH: why the runManager lives here ? , expected CG4
+
+**/
+
 class CFG4_API CPhysics 
 {
     public:
         CPhysics(CG4* g4);
     public:
-        G4RunManager* getRunManager(); 
+        G4RunManager* getRunManager() const ; 
         void setProcessVerbosity(int verbosity);
     private:
         void init();
