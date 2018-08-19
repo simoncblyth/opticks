@@ -103,8 +103,8 @@ struct CFG4_API CG4Ctx
 
 
 #ifdef USE_CUSTOM_BOUNDARY
-    DsG4OpBoundaryProcessStatus _boundary_status ;
-    DsG4OpBoundaryProcessStatus _prior_boundary_status ;
+    Ds::DsG4OpBoundaryProcessStatus _boundary_status ;
+    Ds::DsG4OpBoundaryProcessStatus _prior_boundary_status ;
 #else
     G4OpBoundaryProcessStatus   _boundary_status ;
     G4OpBoundaryProcessStatus   _prior_boundary_status ;

@@ -102,7 +102,7 @@ class CFG4_API CRecorder {
         void initEvent(OpticksEvent* evt);   // called prior to recording, sets up writer (output buffers)
         void postTrack();                    // invoked from CTrackingAction::PostUserTrackingAction for optical photons
 #ifdef USE_CUSTOM_BOUNDARY
-        bool Record(DsG4OpBoundaryProcessStatus boundary_status);
+        bool Record(Ds::DsG4OpBoundaryProcessStatus boundary_status);
 #else
         bool Record(G4OpBoundaryProcessStatus boundary_status);
 #endif
@@ -114,7 +114,7 @@ class CFG4_API CRecorder {
         void postTrackWritePoints();  // experimental alternative using CPoi
  
 #ifdef USE_CUSTOM_BOUNDARY
-        bool RecordStepPoint(const G4StepPoint* point, unsigned int flag, unsigned int material, DsG4OpBoundaryProcessStatus boundary_status, const char* label);
+        bool RecordStepPoint(const G4StepPoint* point, unsigned int flag, unsigned int material, Ds::DsG4OpBoundaryProcessStatus boundary_status, const char* label);
 #else
         bool RecordStepPoint(const G4StepPoint* point, unsigned int flag, unsigned int material, G4OpBoundaryProcessStatus boundary_status, const char* label);
 #endif

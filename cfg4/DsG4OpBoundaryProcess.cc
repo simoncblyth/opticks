@@ -134,7 +134,7 @@ DsG4OpBoundaryProcess::DsG4OpBoundaryProcess(CG4* g4, const G4String& processNam
 
         SetProcessSubType(fOpBoundary);
 
-	theStatus = Undefined;
+	theStatus = Ds::Undefined;
 	theModel = glisur;
 	theFinish = polished;
         theReflectivity = 1.;
@@ -173,7 +173,7 @@ G4VParticleChange*
 DsG4OpBoundaryProcess::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
 {
 
-    theStatus = Undefined;
+    theStatus = Ds::Undefined;
 
     aParticleChange.Initialize(aTrack);
     G4double startVelocity = aTrack.GetVelocity() ; 
@@ -235,12 +235,12 @@ DsG4OpBoundaryProcess::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
 
     if (pPostStepPoint->GetStepStatus() != fGeomBoundary)
     {
-	    theStatus = NotAtBoundary;
+	    theStatus = Ds::NotAtBoundary;
 	    return G4VDiscreteProcess::PostStepDoIt(aTrack, aStep);
 	}
 	if (aTrack.GetStepLength()<=kCarTolerance/2)
     {
-	    theStatus = StepTooSmall;
+	    theStatus = Ds::StepTooSmall;
 
         G4VParticleChange* change = G4VDiscreteProcess::PostStepDoIt(aTrack, aStep);
 
@@ -314,7 +314,7 @@ DsG4OpBoundaryProcess::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
 	}
 	else 
     {
-	    theStatus = NoRINDEX;
+	    theStatus = Ds::NoRINDEX;
 		aParticleChange.ProposeTrackStatus(fStopAndKill);
 		return G4VDiscreteProcess::PostStepDoIt(aTrack, aStep);
 	}
@@ -335,7 +335,7 @@ DsG4OpBoundaryProcess::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
 	}
 	else 
     {
-	    theStatus = NoRINDEX;
+	    theStatus = Ds::NoRINDEX;
         aParticleChange.ProposeTrackStatus(fStopAndKill);
 		return G4VDiscreteProcess::PostStepDoIt(aTrack, aStep);
 	}
@@ -399,7 +399,7 @@ DsG4OpBoundaryProcess::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
                    }
                    else 
                    {
-		              theStatus = NoRINDEX;
+		              theStatus = Ds::NoRINDEX;
                       aParticleChange.ProposeTrackStatus(fStopAndKill);
                       return G4VDiscreteProcess::PostStepDoIt(aTrack, aStep);
                   }
@@ -611,7 +611,7 @@ DsG4OpBoundaryProcess::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
             {
 	            if (Material1 == Material2)
                 {
-		            theStatus = SameMaterial;
+		            theStatus = Ds::SameMaterial;
 		            return G4VDiscreteProcess::PostStepDoIt(aTrack, aStep);
  	            }
                 aMaterialPropertiesTable = Material2->GetMaterialPropertiesTable();
@@ -627,7 +627,7 @@ DsG4OpBoundaryProcess::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
                 }
                 else 
                 {
-		            theStatus = NoRINDEX;
+		            theStatus = Ds::NoRINDEX;
                     aParticleChange.ProposeTrackStatus(fStopAndKill);
                     return G4VDiscreteProcess::PostStepDoIt(aTrack, aStep);
 	            }
@@ -668,7 +668,7 @@ DsG4OpBoundaryProcess::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
                 }
                 else 
                 {
-                    if ( theFinish == groundfrontpainted ) theStatus = LambertianReflection;
+                    if ( theFinish == groundfrontpainted ) theStatus = Ds::LambertianReflection;
                     DoReflection();
                 }
             }
@@ -692,31 +692,31 @@ DsG4OpBoundaryProcess::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
         {
 		    G4cout << " New Momentum Direction: " << NewMomentum     << G4endl;
 		    G4cout << " New Polarization:       " << NewPolarization << G4endl;
-		    if ( theStatus == Undefined ) G4cout << " *** Undefined *** " << G4endl;
-		    if ( theStatus == FresnelRefraction ) G4cout << " *** FresnelRefraction *** " << G4endl;
-		    if ( theStatus == FresnelReflection )
+		    if ( theStatus == Ds::Undefined ) G4cout << " *** Undefined *** " << G4endl;
+		    if ( theStatus == Ds::FresnelRefraction ) G4cout << " *** FresnelRefraction *** " << G4endl;
+		    if ( theStatus == Ds::FresnelReflection )
 			    G4cout << " *** FresnelReflection *** " << G4endl;
-		    if ( theStatus == TotalInternalReflection )
+		    if ( theStatus == Ds::TotalInternalReflection )
 			    G4cout << " *** TotalInternalReflection *** " << G4endl;
-		    if ( theStatus == LambertianReflection )
+		    if ( theStatus == Ds::LambertianReflection )
 			    G4cout << " *** LambertianReflection *** " << G4endl;
-		    if ( theStatus == LobeReflection )
+		    if ( theStatus == Ds::LobeReflection )
 			    G4cout << " *** LobeReflection *** " << G4endl;
-		    if ( theStatus == SpikeReflection )
+		    if ( theStatus == Ds::SpikeReflection )
 			G4cout << " *** SpikeReflection *** " << G4endl;
-		if ( theStatus == BackScattering )
+		if ( theStatus == Ds::BackScattering )
 			G4cout << " *** BackScattering *** " << G4endl;
-		if ( theStatus == Absorption )
+		if ( theStatus == Ds::Absorption )
 			G4cout << " *** Absorption *** " << G4endl;
-		if ( theStatus == Detection )
+		if ( theStatus == Ds::Detection )
 			G4cout << " *** Detection *** " << G4endl;
-                if ( theStatus == NotAtBoundary )
+                if ( theStatus == Ds::NotAtBoundary )
                         G4cout << " *** NotAtBoundary *** " << G4endl;
-                if ( theStatus == SameMaterial )
+                if ( theStatus == Ds::SameMaterial )
                         G4cout << " *** SameMaterial *** " << G4endl;
-                if ( theStatus == StepTooSmall )
+                if ( theStatus == Ds::StepTooSmall )
                         G4cout << " *** StepTooSmall *** " << G4endl;
-                if ( theStatus == NoRINDEX )
+                if ( theStatus == Ds::NoRINDEX )
                         G4cout << " *** NoRINDEX *** " << G4endl;
         }
 
@@ -727,7 +727,7 @@ DsG4OpBoundaryProcess::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
 #ifdef GEANT4_BT_GROUPVEL_FIX
        // from /usr/local/opticks/externals/g4/geant4_10_02_p01/source/processes/optical/src/G4OpBoundaryProcess.cc
        //if ( theStatus == FresnelRefraction || theStatus == Transmission ) 
-       if ( theStatus == FresnelRefraction ) 
+       if ( theStatus == Ds::FresnelRefraction ) 
        {
            G4MaterialPropertyVector* groupvel = Material2->GetMaterialPropertiesTable()->GetProperty("GROUPVEL");
            G4double finalVelocity = groupvel->Value(thePhotonMomentum);
@@ -840,20 +840,20 @@ void DsG4OpBoundaryProcess::DielectricMetal()
 
                 if ( n == 1 ) ChooseReflection();   //  this assumes unified model with prob_ss prob_bs prob_sl ...
                                                                                 
-                if ( theStatus == LambertianReflection ) 
+                if ( theStatus == Ds::LambertianReflection ) 
                 {
                    m_DielectricMetal_LambertianReflection += 1 ; 
                    //LOG(info) << "DsG4OpBoundaryProcess::DielectricMetal LambertianReflection " << m_DielectricMetal_LambertianReflection ;
                    DoReflection();
                 }
-                else if ( theStatus == BackScattering ) 
+                else if ( theStatus == Ds::BackScattering ) 
                 {
                    NewMomentum = -OldMomentum;
                    NewPolarization = -OldPolarization;
                 }
                 else {
 
-                   if(theStatus==LobeReflection)theFacetNormal = GetFacetNormal(OldMomentum,theGlobalNormal);
+                   if(theStatus==Ds::LobeReflection)theFacetNormal = GetFacetNormal(OldMomentum,theGlobalNormal);
 
                    G4double PdotN = OldMomentum * theFacetNormal;
                    NewMomentum = OldMomentum - (2.*PdotN)*theFacetNormal;
@@ -957,15 +957,15 @@ void DsG4OpBoundaryProcess::DielectricDielectric()
 
 	      if (Swap) Swap = !Swap;
 
-              theStatus = TotalInternalReflection;
+              theStatus = Ds::TotalInternalReflection;
 
 	      if ( theModel == unified && theFinish != polished )
 						     ChooseReflection();
 
-	      if ( theStatus == LambertianReflection ) {
+	      if ( theStatus == Ds::LambertianReflection ) {
 		 DoReflection();
 	      }
-	      else if ( theStatus == BackScattering ) {
+	      else if ( theStatus == Ds::BackScattering ) {
 		 NewMomentum = -OldMomentum;
 		 NewPolarization = -OldPolarization;
 	      }
@@ -1038,15 +1038,15 @@ void DsG4OpBoundaryProcess::DielectricDielectric()
 
                  if (Swap) Swap = !Swap;
 
-		 theStatus = FresnelReflection;
+		 theStatus = Ds::FresnelReflection;
 
 		 if ( theModel == unified && theFinish != polished )
 						     ChooseReflection();
 
-		 if ( theStatus == LambertianReflection ) {
+		 if ( theStatus == Ds::LambertianReflection ) {
 		    DoReflection();
 		 }
-		 else if ( theStatus == BackScattering ) {
+		 else if ( theStatus == Ds::BackScattering ) {
 		    NewMomentum = -OldMomentum;
 		    NewPolarization = -OldPolarization;
 		 }
@@ -1088,7 +1088,7 @@ void DsG4OpBoundaryProcess::DielectricDielectric()
 
 		 Inside = !Inside;
 		 Through = true;
-		 theStatus = FresnelRefraction;
+		 theStatus = Ds::FresnelRefraction;
 
 	         if (sint1 > 0.0) {      // incident ray oblique
 
@@ -1117,7 +1117,7 @@ void DsG4OpBoundaryProcess::DielectricDielectric()
 	   OldMomentum = NewMomentum.unit();
 	   OldPolarization = NewPolarization.unit();
 
-	   if (theStatus == FresnelRefraction) {
+	   if (theStatus == Ds::FresnelRefraction) {
 	      Done = (NewMomentum * theGlobalNormal <= 0.0);
 	   } 
 	   else {
@@ -1137,7 +1137,7 @@ void DsG4OpBoundaryProcess::DielectricDielectric()
               }
 	          else 
               {
-		           if (theStatus != FresnelRefraction ) 
+		           if (theStatus != Ds::FresnelRefraction ) 
                    {
 		               theGlobalNormal = -theGlobalNormal;
 	               }
@@ -1148,7 +1148,7 @@ void DsG4OpBoundaryProcess::DielectricDielectric()
 		               G4SwapObj(&Rindex1,&Rindex2);
 	               }
 		           if ( theFinish == groundbackpainted )
-				 	     theStatus = LambertianReflection;
+				 	     theStatus = Ds::LambertianReflection;
 
 	               DoReflection();
 
@@ -1240,7 +1240,7 @@ void DsG4OpBoundaryProcess::DoAbsorption()
     //          << " theEfficiency " << theEfficiency
     //          ; 
 
-    theStatus = Absorption;
+    theStatus = Ds::Absorption;
 
 
 #ifdef SCB_REFLECT_CHEAT
@@ -1253,7 +1253,7 @@ void DsG4OpBoundaryProcess::DoAbsorption()
 #endif
     {
         // EnergyDeposited =/= 0 means: photon has been detected
-        theStatus = Detection;
+        theStatus = Ds::Detection;
         aParticleChange.ProposeLocalEnergyDeposit(thePhotonMomentum);
     }
     else 

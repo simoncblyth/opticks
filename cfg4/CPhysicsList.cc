@@ -6,6 +6,8 @@
 #include "CG4.hh"
 #include "Opticks.hh"
 
+#include "PLOG.hh"
+
 
 CPhysicsList::CPhysicsList(CG4* g4) 
     :   
@@ -14,6 +16,7 @@ CPhysicsList::CPhysicsList(CG4* g4)
     m_ok(g4->getOpticks()),
     m_cerenkov(NULL),
     m_cerenkovProcess(NULL),
+    m_scintillationProcess(NULL),
     m_boundaryProcess(NULL)
 {
 }
@@ -195,7 +198,7 @@ void CPhysicsList::constructOp()
     m_cerenkov = new CCerenkov(m_g4); 
     m_cerenkovProcess = m_cerenkov->getProcess() ; 
     m_boundaryProcess = new G4OpBoundaryProcess() ;
-    for(VP::iteratator it=m_particles.begin() ; it != m_particles.end() ; it++ ) constructOp(*it) ; 
+    for(VP::iterator it=m_particles.begin() ; it != m_particles.end() ; it++ ) constructOp(*it) ; 
 }
 
 void CPhysicsList::constructOp( G4ParticleDefinition* particle )
@@ -226,5 +229,35 @@ void CPhysicsList::constructOp( G4ParticleDefinition* particle )
 }
 
 
+
+
+
+void CPhysicsList::setProcessVerbosity(int verbosity)
+{
+    for(VP::iterator it=m_particles.begin() ; it != m_particles.end() ; it++ ) setProcessVerbosity(*it, verbosity) ; 
+}
+
+void CPhysicsList::setProcessVerbosity(G4ParticleDefinition* particle, int verbosity)
+{
+    G4String particleName = particle->GetParticleName();
+    G4ProcessManager* pmanager = particle->GetProcessManager();
+    if(!pmanager) return ; 
+
+    unsigned int npro = pmanager ? pmanager->GetProcessListLength() : 0 ;
+    G4ProcessVector* procs = pmanager->GetProcessList();
+    for(unsigned int i=0 ; i < npro ; i++)
+    {
+        G4VProcess* proc = (*procs)[i] ; 
+        G4String processName = proc->GetProcessName() ;
+        G4int prior = proc->GetVerboseLevel();
+        proc->SetVerboseLevel(verbosity);
+        G4int curr = proc->GetVerboseLevel() ;
+        assert(curr == verbosity);
+
+        if(curr != prior)
+            LOG(debug) << "CPhysicsList::setProcessVerbosity " << particleName << ":" << processName << " from " << prior << " to " << proc->GetVerboseLevel() ;
+
+    }
+}
 
 

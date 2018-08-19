@@ -181,7 +181,7 @@ TODO: assert on this
 // invoked by CSteppingAction::setStep
 // stage is set by CG4Ctx::setStepOptical from CSteppingAction::setStep
 #ifdef USE_CUSTOM_BOUNDARY
-bool CRecorder::Record(DsG4OpBoundaryProcessStatus boundary_status)
+bool CRecorder::Record(Ds::DsG4OpBoundaryProcessStatus boundary_status)
 #else
 bool CRecorder::Record(G4OpBoundaryProcessStatus boundary_status)
 #endif
@@ -238,7 +238,7 @@ void CRecorder::zeroPhoton()
 void CRecorder::postTrackWritePoints()
 { 
 #ifdef USE_CUSTOM_BOUNDARY
-    DsG4OpBoundaryProcessStatus boundary_status = Undefined ;
+    Ds::DsG4OpBoundaryProcessStatus boundary_status = Ds::Undefined ;
 #else
     G4OpBoundaryProcessStatus boundary_status = Undefined ;
 #endif
@@ -278,9 +278,9 @@ void CRecorder::postTrackWriteSteps()
     assert(!m_live) ;
 
 #ifdef USE_CUSTOM_BOUNDARY
-    DsG4OpBoundaryProcessStatus prior_boundary_status = Undefined ;
-    DsG4OpBoundaryProcessStatus boundary_status = Undefined ;
-    DsG4OpBoundaryProcessStatus next_boundary_status = Undefined ;
+    Ds::DsG4OpBoundaryProcessStatus prior_boundary_status = Ds::Undefined ;
+    Ds::DsG4OpBoundaryProcessStatus boundary_status = Ds::Undefined ;
+    Ds::DsG4OpBoundaryProcessStatus next_boundary_status = Ds::Undefined ;
 #else
     G4OpBoundaryProcessStatus prior_boundary_status = Undefined ;
     G4OpBoundaryProcessStatus boundary_status = Undefined ;
@@ -320,9 +320,19 @@ void CRecorder::postTrackWriteSteps()
         const G4StepPoint* pre  = step->GetPreStepPoint() ; 
         const G4StepPoint* post = step->GetPostStepPoint() ; 
 
+#ifdef USE_CUSTOM_BOUNDARY
+        prior_boundary_status = i == 0 ? Ds::Undefined : boundary_status ; 
+#else
         prior_boundary_status = i == 0 ? Undefined : boundary_status ; 
+#endif
+
         boundary_status = stp->getBoundaryStatus() ; 
+
+#ifdef USE_CUSTOM_BOUNDARY
+        next_boundary_status = next_stp ? next_stp->getBoundaryStatus() : Ds::Undefined ; 
+#else
         next_boundary_status = next_stp ? next_stp->getBoundaryStatus() : Undefined ; 
+#endif
       
         unsigned premat = m_material_bridge->getPreMaterial(step) ; 
 
@@ -336,9 +346,13 @@ void CRecorder::postTrackWriteSteps()
 
         bool surfaceAbsorb = (postFlag & (SURFACE_ABSORB | SURFACE_DETECT)) != 0 ;
 
+#ifdef USE_CUSTOM_BOUNDARY
+        bool postSkip = boundary_status == Ds::StepTooSmall && !lastPost  ;  
+        bool matSwap = next_boundary_status == Ds::StepTooSmall ; 
+#else
         bool postSkip = boundary_status == StepTooSmall && !lastPost  ;  
-
         bool matSwap = next_boundary_status == StepTooSmall ; 
+#endif
 
         // see notes/issues/geant4_opticks_integration/tconcentric_post_recording_has_seqmat_zeros.rst
 
@@ -442,10 +456,18 @@ void CRecorder::postTrackWriteSteps()
 
 
 #ifdef USE_CUSTOM_BOUNDARY
-bool CRecorder::RecordStepPoint(const G4StepPoint* point, unsigned flag, unsigned int material, DsG4OpBoundaryProcessStatus boundary_status, const char* )
+bool CRecorder::RecordStepPoint(const G4StepPoint* point, unsigned flag, unsigned int material, Ds::DsG4OpBoundaryProcessStatus boundary_status, const char* )
+{
+    if(flag == 0)
+    {
+        if(!(boundary_status == Ds::SameMaterial || boundary_status == Ds::Undefined))
+            LOG(warning) << " boundary_status not handled : " << OpStatus::OpBoundaryAbbrevString(boundary_status) ; 
+    }
+    // the below adds flag and material to the shared m_photon struct
+    return m_writer->writeStepPoint( point, flag, material );
+}
 #else
 bool CRecorder::RecordStepPoint(const G4StepPoint* point, unsigned flag, unsigned int material, G4OpBoundaryProcessStatus boundary_status, const char* )
-#endif
 {
     if(flag == 0)
     {
@@ -455,6 +477,7 @@ bool CRecorder::RecordStepPoint(const G4StepPoint* point, unsigned flag, unsigne
     // the below adds flag and material to the shared m_photon struct
     return m_writer->writeStepPoint( point, flag, material );
 }
+#endif
 
 
 /*

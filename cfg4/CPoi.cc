@@ -11,7 +11,7 @@
 
 
 #ifdef USE_CUSTOM_BOUNDARY
-CPoi::CPoi(const G4StepPoint* point, unsigned flag, unsigned material, DsG4OpBoundaryProcessStatus boundary_status, CStage::CStage_t stage, const G4ThreeVector& origin) 
+CPoi::CPoi(const G4StepPoint* point, unsigned flag, unsigned material, Ds::DsG4OpBoundaryProcessStatus boundary_status, CStage::CStage_t stage, const G4ThreeVector& origin) 
 #else
 CPoi::CPoi(const G4StepPoint* point, unsigned flag, unsigned material, G4OpBoundaryProcessStatus boundary_status, CStage::CStage_t stage, const G4ThreeVector& origin) 
 #endif
@@ -44,7 +44,7 @@ unsigned CPoi::getMaterial() const
 
 
 #ifdef USE_CUSTOM_BOUNDARY
-DsG4OpBoundaryProcessStatus CPoi::getBoundaryStatus() const
+Ds::DsG4OpBoundaryProcessStatus CPoi::getBoundaryStatus() const
 #else
 G4OpBoundaryProcessStatus   CPoi::getBoundaryStatus() const
 #endif

@@ -110,8 +110,16 @@ void CG4Ctx::init()
     _step_id = -1 ;
     _step_total = 0 ; 
 
+#ifdef USE_CUSTOM_BOUNDARY
+    _boundary_status = Ds::Undefined ; 
+    _prior_boundary_status = Ds::Undefined ; 
+#else
     _boundary_status = Undefined ; 
     _prior_boundary_status = Undefined ; 
+#endif
+
+
+
  
 }
 

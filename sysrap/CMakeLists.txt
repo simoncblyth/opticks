@@ -21,6 +21,7 @@ find_package(PLog   REQUIRED MODULE)
 set(SOURCES
     SYSRAP_LOG.cc 
     PLOG.cc 
+    SBacktrace.cc
     SProc.cc
     SSys.cc
     SStr.cc
@@ -58,6 +59,7 @@ set(HEADERS
     PLOG_INIT.hh  
 
     SProc.hh
+    SBacktrace.hh
     SSys.hh
     SStr.hh
     SSeq.hh

@@ -6,9 +6,9 @@
 
 
 #ifdef USE_CUSTOM_BOUNDARY
-DsG4OpBoundaryProcessStatus CBoundaryProcess::GetOpBoundaryProcessStatus()
+Ds::DsG4OpBoundaryProcessStatus CBoundaryProcess::GetOpBoundaryProcessStatus()
 {
-    DsG4OpBoundaryProcessStatus status = Undefined;
+    Ds::DsG4OpBoundaryProcessStatus status = Ds::Undefined;
 #else
 G4OpBoundaryProcessStatus CBoundaryProcess::GetOpBoundaryProcessStatus()
 {

@@ -33,10 +33,32 @@ std::string OpStatus::OpStepString(const G4StepStatus status)
 
 
 #ifdef USE_CUSTOM_BOUNDARY
-std::string OpStatus::OpBoundaryAbbrevString(const DsG4OpBoundaryProcessStatus status)
+std::string OpStatus::OpBoundaryAbbrevString(const Ds::DsG4OpBoundaryProcessStatus status)
+{
+    std::stringstream ss ; 
+    std::string s ; 
+    switch(status)
+    {
+        case Ds::Undefined:s="Und";break;
+        case Ds::FresnelRefraction:s="FrT";break;
+        case Ds::FresnelReflection:s="FrR";break;
+        case Ds::TotalInternalReflection:s="TIR";break;
+        case Ds::LambertianReflection:s="LaR";break; 
+        case Ds::LobeReflection:s="LoR";break; 
+        case Ds::SpikeReflection:s="SpR";break; 
+        case Ds::BackScattering:s="BkS";break;
+        case Ds::Absorption:s="Abs";break; 
+        case Ds::Detection:s="Det";break;
+        case Ds::NotAtBoundary:s="NAB";break;
+        case Ds::SameMaterial:s="SAM";break; 
+        case Ds::StepTooSmall:s="STS";break;
+        case Ds::NoRINDEX:s="NRI";break;
+    }
+    ss << s ; 
+    return ss.str();
+}
 #else
 std::string OpStatus::OpBoundaryAbbrevString(const G4OpBoundaryProcessStatus status)
-#endif
 {
     std::stringstream ss ; 
     std::string s ; 
@@ -56,8 +78,6 @@ std::string OpStatus::OpBoundaryAbbrevString(const G4OpBoundaryProcessStatus sta
         case SameMaterial:s="SAM";break; 
         case StepTooSmall:s="STS";break;
         case NoRINDEX:s="NRI";break;
-#ifdef USE_CUSTOM_BOUNDARY
-#else
         case Transmission:s="Tra";break;
         case PolishedLumirrorAirReflection:s="PolishedLumirrorAirReflection";break;
         case PolishedLumirrorGlueReflection:s="PolishedLumirrorGlueReflection";break;
@@ -84,19 +104,41 @@ std::string OpStatus::OpBoundaryAbbrevString(const G4OpBoundaryProcessStatus sta
         case GroundVM2000AirReflection:s="GroundVM2000AirReflection";break;
         case GroundVM2000GlueReflection:s="GroundVM2000GlueReflection";break;
         case Dichroic:s="Dichroic";break;
-#endif
     }
     ss << s ; 
     return ss.str();
 }
+#endif
 
 
 
 #ifdef USE_CUSTOM_BOUNDARY
-std::string OpStatus::OpBoundaryString(const DsG4OpBoundaryProcessStatus status)
+std::string OpStatus::OpBoundaryString(const Ds::DsG4OpBoundaryProcessStatus status)
+{
+    std::stringstream ss ; 
+    std::string s ; 
+    switch(status)
+    {
+        case Ds::Undefined:s="Undefined";break;
+        case Ds::FresnelRefraction:s="FresnelRefraction";break;
+        case Ds::FresnelReflection:s="FresnelReflection";break;
+        case Ds::TotalInternalReflection:s="TotalInternalReflection";break;
+        case Ds::LambertianReflection:s="LambertianReflection";break; 
+        case Ds::LobeReflection:s="LobeReflection";break; 
+        case Ds::SpikeReflection:s="SpikeReflection:";break; 
+        case Ds::BackScattering:s="BackScattering";break;
+        case Ds::Absorption:s="Absorption";break; 
+        case Ds::Detection:s="Detection";break;
+        case Ds::NotAtBoundary:s="NotAtBoundary";break;
+        case Ds::SameMaterial:s="SameMaterial";break; 
+        case Ds::StepTooSmall:s="StepTooSmall";break;
+        case Ds::NoRINDEX:s="NoRINDEX";break;
+    }
+    ss << s ; 
+    return ss.str();
+}
 #else
 std::string OpStatus::OpBoundaryString(const G4OpBoundaryProcessStatus status)
-#endif
 {
     std::stringstream ss ; 
     std::string s ; 
@@ -116,8 +158,6 @@ std::string OpStatus::OpBoundaryString(const G4OpBoundaryProcessStatus status)
         case SameMaterial:s="SameMaterial";break; 
         case StepTooSmall:s="StepTooSmall";break;
         case NoRINDEX:s="NoRINDEX";break;
-#ifdef USE_CUSTOM_BOUNDARY
-#else
         case Transmission:s="Transmission";break;
         case PolishedLumirrorAirReflection:s="PolishedLumirrorAirReflection";break;
         case PolishedLumirrorGlueReflection:s="PolishedLumirrorGlueReflection";break;
@@ -144,12 +184,11 @@ std::string OpStatus::OpBoundaryString(const G4OpBoundaryProcessStatus status)
         case GroundVM2000AirReflection:s="GroundVM2000AirReflection";break;
         case GroundVM2000GlueReflection:s="GroundVM2000GlueReflection";break;
         case Dichroic:s="Dichroic";break;
-#endif
     }
     ss << s ; 
     return ss.str();
 }
-
+#endif
 
 
 bool OpStatus::IsTerminalFlag(unsigned flag)
@@ -160,10 +199,46 @@ bool OpStatus::IsTerminalFlag(unsigned flag)
 
 
 #ifdef USE_CUSTOM_BOUNDARY
-unsigned int OpStatus::OpBoundaryFlag(const DsG4OpBoundaryProcessStatus status)
+unsigned int OpStatus::OpBoundaryFlag(const Ds::DsG4OpBoundaryProcessStatus status)
+{
+    unsigned flag = 0 ; 
+    switch(status)
+    {
+        case Ds::FresnelRefraction:
+        case Ds::SameMaterial:
+                               flag=BOUNDARY_TRANSMIT;
+                               break;
+        case Ds::TotalInternalReflection:
+        case Ds::FresnelReflection:
+                               flag=BOUNDARY_REFLECT;
+                               break;
+        case Ds::StepTooSmall:
+                               flag=NAN_ABORT;
+                               break;
+        case Ds::Absorption:
+                               flag=SURFACE_ABSORB ; 
+                               break;
+        case Ds::Detection:
+                               flag=SURFACE_DETECT ; 
+                               break;
+        case Ds::SpikeReflection:
+                               flag=SURFACE_SREFLECT ; 
+                               break;
+        case Ds::LobeReflection:
+        case Ds::LambertianReflection:
+                               flag=SURFACE_DREFLECT ; 
+                               break;
+        case Ds::Undefined:
+        case Ds::BackScattering:
+        case Ds::NotAtBoundary:
+        case Ds::NoRINDEX:
+                      flag=0;
+                      break;
+    }
+    return flag ; 
+}
 #else
 unsigned int OpStatus::OpBoundaryFlag(const G4OpBoundaryProcessStatus status)
-#endif
 {
     unsigned flag = 0 ; 
     switch(status)
@@ -196,9 +271,6 @@ unsigned int OpStatus::OpBoundaryFlag(const G4OpBoundaryProcessStatus status)
         case BackScattering:
         case NotAtBoundary:
         case NoRINDEX:
-
-#ifdef USE_CUSTOM_BOUNDARY
-#else
         case Transmission:
         case PolishedLumirrorAirReflection:
         case PolishedLumirrorGlueReflection:
@@ -225,16 +297,16 @@ unsigned int OpStatus::OpBoundaryFlag(const G4OpBoundaryProcessStatus status)
         case GroundVM2000AirReflection:
         case GroundVM2000GlueReflection:
         case Dichroic:
-#endif
                       flag=0;
                       break;
     }
     return flag ; 
 }
+#endif
 
 
 #ifdef USE_CUSTOM_BOUNDARY
-unsigned int OpStatus::OpPointFlag(const G4StepPoint* point, const DsG4OpBoundaryProcessStatus bst, CStage::CStage_t stage)
+unsigned int OpStatus::OpPointFlag(const G4StepPoint* point, const Ds::DsG4OpBoundaryProcessStatus bst, CStage::CStage_t stage)
 #else
 unsigned int OpStatus::OpPointFlag(const G4StepPoint* point, const G4OpBoundaryProcessStatus bst, CStage::CStage_t stage)
 #endif

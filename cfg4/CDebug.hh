@@ -40,8 +40,8 @@ class CFG4_API CDebug {
     public:
 
 #ifdef USE_CUSTOM_BOUNDARY
-        void Collect(const G4StepPoint* point, DsG4OpBoundaryProcessStatus boundary_status, const CPhoton& photon );
-        void dump_point(const G4ThreeVector& origin, unsigned index, const G4StepPoint* point, DsG4OpBoundaryProcessStatus boundary_status, unsigned flag, const char* matname );
+        void Collect(const G4StepPoint* point, Ds::DsG4OpBoundaryProcessStatus boundary_status, const CPhoton& photon );
+        void dump_point(const G4ThreeVector& origin, unsigned index, const G4StepPoint* point, Ds::DsG4OpBoundaryProcessStatus boundary_status, unsigned flag, const char* matname );
 #else
         void Collect(const G4StepPoint* point, G4OpBoundaryProcessStatus boundary_status, const CPhoton& photon );
         void dump_point(const G4ThreeVector& origin, unsigned index, const G4StepPoint* point, G4OpBoundaryProcessStatus boundary_status, unsigned flag, const char* matname );
@@ -104,7 +104,7 @@ class CFG4_API CDebug {
 
 
 #ifdef USE_CUSTOM_BOUNDARY
-        std::vector<DsG4OpBoundaryProcessStatus>  m_bndstats ; 
+        std::vector<Ds::DsG4OpBoundaryProcessStatus>  m_bndstats ; 
 #else
         std::vector<G4OpBoundaryProcessStatus>  m_bndstats ; 
 #endif

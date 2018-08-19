@@ -39,6 +39,7 @@ set(TEST_SOURCES
 
    SIdTest.cc
    ArrayTest.cc
+   SBacktraceTest.cc
 
 )
 

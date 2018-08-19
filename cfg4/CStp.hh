@@ -14,9 +14,9 @@ class CFG4_API CStp
 {
    public:
 #ifdef USE_CUSTOM_BOUNDARY
-       DsG4OpBoundaryProcessStatus getBoundaryStatus() ;
-       CStp(const G4Step* step, int step_id, DsG4OpBoundaryProcessStatus boundary_status, CStage::CStage_t stage, const G4ThreeVector& origin);
-       CStp(const G4Step* step, int step_id, DsG4OpBoundaryProcessStatus boundary_status, unsigned premat, unsigned postmat, unsigned preflag, unsigned postflag, CStage::CStage_t stage, int action, const G4ThreeVector& origin);
+       Ds::DsG4OpBoundaryProcessStatus getBoundaryStatus() ;
+       CStp(const G4Step* step, int step_id, Ds::DsG4OpBoundaryProcessStatus boundary_status, CStage::CStage_t stage, const G4ThreeVector& origin);
+       CStp(const G4Step* step, int step_id, Ds::DsG4OpBoundaryProcessStatus boundary_status, unsigned premat, unsigned postmat, unsigned preflag, unsigned postflag, CStage::CStage_t stage, int action, const G4ThreeVector& origin);
 #else
        G4OpBoundaryProcessStatus   getBoundaryStatus() ;
        CStp(const G4Step* step, int step_id,   G4OpBoundaryProcessStatus boundary_status, CStage::CStage_t stage, const G4ThreeVector& origin);
@@ -38,7 +38,7 @@ class CFG4_API CStp
          const G4Step*               m_step ; 
          int                         m_step_id ; 
 #ifdef USE_CUSTOM_BOUNDARY
-         DsG4OpBoundaryProcessStatus m_boundary_status ;
+         Ds::DsG4OpBoundaryProcessStatus m_boundary_status ;
 #else
          G4OpBoundaryProcessStatus   m_boundary_status ;
 #endif

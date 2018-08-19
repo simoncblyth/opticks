@@ -36,8 +36,13 @@ ckm-dump()
 
 ckm-okg4()
 {
-    OPTICKS_KEY=$(ckm-key) lldb -- OKG4Test --compute --envkey --embedded
+    OPTICKS_KEY=$(ckm-key) lldb -- OKG4Test --compute --envkey --embedded --save
 }
+ckm-okg4-load()
+{
+    OPTICKS_KEY=$(ckm-key) lldb -- OKG4Test --load --envkey --embedded
+}
+
 
 
 

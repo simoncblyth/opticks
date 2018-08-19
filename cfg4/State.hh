@@ -16,8 +16,8 @@ class CFG4_API State
 {
    public:
 #ifdef USE_CUSTOM_BOUNDARY
-       State(const G4Step* step, DsG4OpBoundaryProcessStatus boundary_status, unsigned int premat, unsigned int postmat, CStage::CStage_t stage, unsigned action);
-       DsG4OpBoundaryProcessStatus getBoundaryStatus() const ;
+       State(const G4Step* step, Ds::DsG4OpBoundaryProcessStatus boundary_status, unsigned int premat, unsigned int postmat, CStage::CStage_t stage, unsigned action);
+       Ds::DsG4OpBoundaryProcessStatus getBoundaryStatus() const ;
 #else
        State(const G4Step* step, G4OpBoundaryProcessStatus boundary_status, unsigned int premat, unsigned int postmat, CStage::CStage_t stage, unsigned action);
        G4OpBoundaryProcessStatus getBoundaryStatus() const ;
@@ -34,7 +34,7 @@ class CFG4_API State
    private:
        const G4Step*             m_step ;
 #ifdef USE_CUSTOM_BOUNDARY
-       DsG4OpBoundaryProcessStatus m_boundary_status ;
+       Ds::DsG4OpBoundaryProcessStatus m_boundary_status ;
 #else
        G4OpBoundaryProcessStatus m_boundary_status ;
 #endif

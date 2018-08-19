@@ -211,12 +211,21 @@ double CRandomEngine::flat()
 { 
     if(!m_internal) m_location = CurrentProcessName();
     assert( m_current_record_flat_count < m_curand_nv ); 
- 
+
+
+#ifdef USE_CUSTOM_BOUNDARY 
+    bool kludge = m_dbgkludgeflatzero 
+               && m_current_step_flat_count == 0
+               && m_ctx._boundary_status == Ds::StepTooSmall
+               && m_ctx._prior_boundary_status == Ds::FresnelReflection 
+               ;
+#else
     bool kludge = m_dbgkludgeflatzero 
                && m_current_step_flat_count == 0
                && m_ctx._boundary_status == StepTooSmall
                && m_ctx._prior_boundary_status == FresnelReflection 
                ;
+#endif
 
     double v = kludge ? _peek(-2) : _flat() ; 
   

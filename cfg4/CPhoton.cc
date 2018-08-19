@@ -15,6 +15,9 @@
 #include "CStep.hh"
 #include "CPhoton.hh"
 
+#include "PLOG.hh"
+
+
 CPhoton::CPhoton(const CG4Ctx& ctx, CRecState& state)
     :
     _ctx(ctx),
@@ -58,7 +61,9 @@ void CPhoton::add(unsigned flag, unsigned  material)
     {
         _badflag += 1 ; 
         _state._step_action |= CAction::ZERO_FLAG ; 
-        assert(0);
+
+        LOG(fatal) << " bad-flag " << _badflag ; 
+        //assert(0);
     }
 
     unsigned slot = _state.constrained_slot(); 
@@ -69,8 +74,15 @@ void CPhoton::add(unsigned flag, unsigned  material)
     _his = BBit::ffs(flag) & 0xFull ; 
 
     _flag = 0x1 << (_his - 1) ; 
-    //std::cout << " _flag " << _flag << " _his " << _his << " flag " << flag << std::endl ; 
-    assert( _flag == flag ); 
+
+    bool flag_match = _flag == flag  ; 
+    if(!flag_match)
+       LOG(fatal) << "flag mismatch "
+                  << " _flag " << _flag 
+                  << " _his " << _his 
+                  << " flag " << flag 
+                  ; 
+    //assert( flag_match ); 
 
     _mat = material < 0xFull ? material : 0xFull ; 
     _material = material ; 

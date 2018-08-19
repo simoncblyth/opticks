@@ -29,6 +29,9 @@ class CFG4_API CPhysicsList : public G4VUserPhysicsList
         // fulfil the interface
         void ConstructParticle();
         void ConstructProcess();
+    public:
+        void setProcessVerbosity(int verbosity);
+        void setProcessVerbosity(G4ParticleDefinition* particle, int verbosity);
     private:
         void initParticles();
         void constructDecay();
@@ -41,6 +44,7 @@ class CFG4_API CPhysicsList : public G4VUserPhysicsList
         Opticks*     m_ok ; 
         CCerenkov*   m_cerenkov ; 
         G4VProcess*  m_cerenkovProcess ; 
+        G4VProcess*  m_scintillationProcess ; 
         G4VProcess*  m_boundaryProcess ; 
 
         typedef std::vector<G4ParticleDefinition*> VP ; 

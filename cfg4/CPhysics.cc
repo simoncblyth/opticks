@@ -10,6 +10,7 @@
 #include "OpticksHub.hh"
 #include "CG4.hh"
 #include "CPhysics.hh"
+#include "CPhysicsList.hh"
 
 CPhysics::CPhysics(CG4* g4) 
     :
@@ -18,9 +19,10 @@ CPhysics::CPhysics(CG4* g4)
     m_ok(g4->getOpticks()),
     m_runManager(new G4RunManager),
 #ifdef OLDPHYS
-    m_physics(new PhysicsList())
+    m_physicslist(new PhysicsList())
 #else
-    m_physics(new OpNovicePhysicsList(m_g4))
+    m_physicslist(new CPhysicsList(m_g4))
+    //m_physicslist(new OpNovicePhysicsList(m_g4))
 #endif
 {
     init();
@@ -28,7 +30,7 @@ CPhysics::CPhysics(CG4* g4)
 
 void CPhysics::init()
 {
-    m_runManager->SetUserInitialization(m_physics);
+    m_runManager->SetUserInitialization(m_physicslist);
 }
 
 G4RunManager* CPhysics::getRunManager() const 
@@ -42,7 +44,7 @@ void CPhysics::setProcessVerbosity(int verbosity)
    // so this needs to be called after then
 #ifdef OLDPHYS
 #else
-    m_physics->setProcessVerbosity(verbosity); 
+    m_physicslist->setProcessVerbosity(verbosity); 
 #endif
 }
 

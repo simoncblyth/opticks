@@ -2105,6 +2105,19 @@ void OpticksEvent::indexPhotonsCPU()
     assert(sequence->hasItemShape(1,2));
     assert(phosel->hasItemShape(1,4));
     assert(recsel0->hasItemShape(maxrec,1,4));
+
+
+    if( sequence->getShape(0) != phosel->getShape(0))
+    {
+        LOG(fatal) << " length mismatch " 
+                   << " sequence : " << sequence->getShape(0)
+                   << " phosel   : " << phosel->getShape(0)
+                   << " ABORT indexing "
+                   ;
+         return ;   
+    }
+
+
     assert(sequence->getShape(0) == phosel->getShape(0));
     assert(sequence->getShape(0) == recsel0->getShape(0));
 

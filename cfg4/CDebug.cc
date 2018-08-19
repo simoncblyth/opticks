@@ -104,7 +104,7 @@ void CDebug::postTrack()
 
 
 #ifdef USE_CUSTOM_BOUNDARY
-void CDebug::Collect(const G4StepPoint* point, DsG4OpBoundaryProcessStatus boundary_status, const CPhoton& photon )
+void CDebug::Collect(const G4StepPoint* point, Ds::DsG4OpBoundaryProcessStatus boundary_status, const CPhoton& photon )
 #else
 void CDebug::Collect(const G4StepPoint* point, G4OpBoundaryProcessStatus boundary_status, const CPhoton& photon )
 #endif
@@ -241,7 +241,7 @@ void CDebug::dump_points(const char* msg)
 
 
 #ifdef USE_CUSTOM_BOUNDARY
-void CDebug::dump_point(const G4ThreeVector& origin, unsigned index, const G4StepPoint* point, DsG4OpBoundaryProcessStatus boundary_status, unsigned flag, const char* matname )
+void CDebug::dump_point(const G4ThreeVector& origin, unsigned index, const G4StepPoint* point, Ds::DsG4OpBoundaryProcessStatus boundary_status, unsigned flag, const char* matname )
 #else
 void CDebug::dump_point(const G4ThreeVector& origin, unsigned index, const G4StepPoint* point, G4OpBoundaryProcessStatus boundary_status, unsigned flag, const char* matname )
 #endif

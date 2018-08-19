@@ -14,7 +14,7 @@ class CFG4_API CBoundaryProcess
 {
     public:
 #ifdef USE_CUSTOM_BOUNDARY
-        static DsG4OpBoundaryProcessStatus GetOpBoundaryProcessStatus() ;
+        static Ds::DsG4OpBoundaryProcessStatus GetOpBoundaryProcessStatus() ;
 #else
         static G4OpBoundaryProcessStatus   GetOpBoundaryProcessStatus() ;
 #endif

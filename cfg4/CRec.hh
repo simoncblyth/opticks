@@ -54,7 +54,7 @@ class CFG4_API CRec
    public:
 
 #ifdef USE_CUSTOM_BOUNDARY
-        bool add(DsG4OpBoundaryProcessStatus boundary_status);
+        bool add(Ds::DsG4OpBoundaryProcessStatus boundary_status);
 #else
         bool add(G4OpBoundaryProcessStatus boundary_status);
 #endif
@@ -63,14 +63,14 @@ class CFG4_API CRec
         bool addPoi(CStp* stp);
 
 #ifdef USE_CUSTOM_BOUNDARY
-        void setBoundaryStatus(DsG4OpBoundaryProcessStatus boundary_status);
+        void setBoundaryStatus(Ds::DsG4OpBoundaryProcessStatus boundary_status);
 #else
         void setBoundaryStatus(G4OpBoundaryProcessStatus boundary_status);
 #endif
 
 
 #ifdef USE_CUSTOM_BOUNDARY
-        void add(DsG4OpBoundaryProcessStatus boundary_status, unsigned premat, unsigned postmat, unsigned preflag, unsigned postflag, int action);
+        void add(Ds::DsG4OpBoundaryProcessStatus boundary_status, unsigned premat, unsigned postmat, unsigned preflag, unsigned postflag, int action);
 #else
         void add(G4OpBoundaryProcessStatus boundary_status, unsigned premat, unsigned postmat, unsigned preflag, unsigned postflag, int action);
 #endif
@@ -95,8 +95,8 @@ class CFG4_API CRec
 
    private:
 #ifdef USE_CUSTOM_BOUNDARY
-        DsG4OpBoundaryProcessStatus m_prior_boundary_status ; 
-        DsG4OpBoundaryProcessStatus m_boundary_status ; 
+        Ds::DsG4OpBoundaryProcessStatus m_prior_boundary_status ; 
+        Ds::DsG4OpBoundaryProcessStatus m_boundary_status ; 
 #else
         G4OpBoundaryProcessStatus m_prior_boundary_status ; 
         G4OpBoundaryProcessStatus m_boundary_status ; 

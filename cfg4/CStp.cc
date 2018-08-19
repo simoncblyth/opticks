@@ -13,7 +13,7 @@
 
 // ctor used for debug dumping of live recording 
 #ifdef USE_CUSTOM_BOUNDARY
-CStp::CStp(const G4Step* step, int step_id, DsG4OpBoundaryProcessStatus boundary_status, unsigned premat, unsigned postmat, unsigned preflag, unsigned postflag, CStage::CStage_t stage, int action, const G4ThreeVector& origin) 
+CStp::CStp(const G4Step* step, int step_id, Ds::DsG4OpBoundaryProcessStatus boundary_status, unsigned premat, unsigned postmat, unsigned preflag, unsigned postflag, CStage::CStage_t stage, int action, const G4ThreeVector& origin) 
 #else
 CStp::CStp(const G4Step* step, int step_id,   G4OpBoundaryProcessStatus boundary_status, unsigned premat, unsigned postmat, unsigned preflag, unsigned postflag, CStage::CStage_t stage, int action, const G4ThreeVector& origin) 
 #endif
@@ -34,7 +34,7 @@ CStp::CStp(const G4Step* step, int step_id,   G4OpBoundaryProcessStatus boundary
 
 // ctor used for post recording : currently recommended for its clarity  
 #ifdef USE_CUSTOM_BOUNDARY
-CStp::CStp(const G4Step* step, int step_id, DsG4OpBoundaryProcessStatus boundary_status, CStage::CStage_t stage, const G4ThreeVector& origin) 
+CStp::CStp(const G4Step* step, int step_id, Ds::DsG4OpBoundaryProcessStatus boundary_status, CStage::CStage_t stage, const G4ThreeVector& origin) 
 #else
 CStp::CStp(const G4Step* step, int step_id,  G4OpBoundaryProcessStatus boundary_status, CStage::CStage_t stage, const G4ThreeVector& origin) 
 #endif
@@ -61,7 +61,7 @@ int CStp::getStepId()
    return m_step_id ; 
 }
 #ifdef USE_CUSTOM_BOUNDARY
-DsG4OpBoundaryProcessStatus CStp::getBoundaryStatus() 
+Ds::DsG4OpBoundaryProcessStatus CStp::getBoundaryStatus() 
 #else
 G4OpBoundaryProcessStatus   CStp::getBoundaryStatus() 
 #endif

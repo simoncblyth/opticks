@@ -156,7 +156,7 @@ public: // With description
 	G4OpticalSurfaceModel GetModel() const;
         // Returns the optical surface mode.
 
-        DsG4OpBoundaryProcessStatus GetStatus() const;
+        Ds::DsG4OpBoundaryProcessStatus GetStatus() const;
         // Returns the current status.
 
 	G4double GetIncidentAngle();
@@ -231,7 +231,7 @@ private:
 
 	G4double cost1, cost2, sint1, sint2;
 
-	DsG4OpBoundaryProcessStatus theStatus;
+	Ds::DsG4OpBoundaryProcessStatus theStatus;
 
 	G4OpticalSurfaceModel theModel;
 
@@ -276,7 +276,7 @@ G4OpticalSurfaceModel DsG4OpBoundaryProcess::GetModel() const
 }
 
 inline
-DsG4OpBoundaryProcessStatus DsG4OpBoundaryProcess::GetStatus() const
+Ds::DsG4OpBoundaryProcessStatus DsG4OpBoundaryProcess::GetStatus() const
 {
    return theStatus;
 }
@@ -292,19 +292,19 @@ void DsG4OpBoundaryProcess::ChooseReflection()
 {
                  G4double rand = CG4UniformRand(__FILE__,__LINE__);
                  if ( rand >= 0.0 && rand < prob_ss ) {
-                    theStatus = SpikeReflection;
+                    theStatus = Ds::SpikeReflection;
                     theFacetNormal = theGlobalNormal;
                  }
                  else if ( rand >= prob_ss &&
                            rand <= prob_ss+prob_sl) {
-                    theStatus = LobeReflection;
+                    theStatus = Ds::LobeReflection;
                  }
                  else if ( rand > prob_ss+prob_sl &&
                            rand < prob_ss+prob_sl+prob_bs ) {
-                    theStatus = BackScattering;
+                    theStatus = Ds::BackScattering;
                  }
                  else {
-                    theStatus = LambertianReflection;
+                    theStatus = Ds::LambertianReflection;
                  }
 }
 
@@ -312,7 +312,7 @@ void DsG4OpBoundaryProcess::ChooseReflection()
 inline
 void DsG4OpBoundaryProcess::DoReflection()
 {
-        if ( theStatus == LambertianReflection ) {
+        if ( theStatus == Ds::LambertianReflection ) {
 
           NewMomentum = G4LambertianRand(theGlobalNormal);
           theFacetNormal = (NewMomentum - OldMomentum).unit();
@@ -320,7 +320,7 @@ void DsG4OpBoundaryProcess::DoReflection()
         }
         else if ( theFinish == ground ) {
 
-	  theStatus = LobeReflection;
+	  theStatus = Ds::LobeReflection;
           theFacetNormal = GetFacetNormal(OldMomentum,theGlobalNormal);
           G4double PdotN = OldMomentum * theFacetNormal;
           NewMomentum = OldMomentum - (2.*PdotN)*theFacetNormal;
@@ -328,7 +328,7 @@ void DsG4OpBoundaryProcess::DoReflection()
         }
         else {
 
-          theStatus = SpikeReflection;
+          theStatus = Ds::SpikeReflection;
           theFacetNormal = theGlobalNormal;
           G4double PdotN = OldMomentum * theFacetNormal;
           NewMomentum = OldMomentum - (2.*PdotN)*theFacetNormal;

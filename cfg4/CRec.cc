@@ -34,8 +34,13 @@ CRec::CRec(CG4* g4, CRecState& state)
     m_point_limited(false),
     m_point_terminated(false),
     m_material_bridge(NULL),
+#ifdef USE_CUSTOM_BOUNDARY
+    m_prior_boundary_status(Ds::Undefined),
+    m_boundary_status(Ds::Undefined)
+#else
     m_prior_boundary_status(Undefined),
     m_boundary_status(Undefined)
+#endif
 {
 }
 
@@ -94,7 +99,7 @@ void CRec::setMaterialBridge(CMaterialBridge* material_bridge)
 
 
 #ifdef USE_CUSTOM_BOUNDARY
-void CRec::setBoundaryStatus(DsG4OpBoundaryProcessStatus boundary_status)
+void CRec::setBoundaryStatus(Ds::DsG4OpBoundaryProcessStatus boundary_status)
 #else
 void CRec::setBoundaryStatus(G4OpBoundaryProcessStatus boundary_status)
 #endif
@@ -191,7 +196,7 @@ void CRec::clear()
 // returning true kills the track, as needed for truncation of big bouncers
 
 #ifdef USE_CUSTOM_BOUNDARY
-bool CRec::add(DsG4OpBoundaryProcessStatus boundary_status )
+bool CRec::add(Ds::DsG4OpBoundaryProcessStatus boundary_status )
 #else
 bool CRec::add(G4OpBoundaryProcessStatus boundary_status )
 #endif
@@ -265,7 +270,13 @@ bool CRec::addPoi(CStp* stp )
 
     bool surfaceAbsorb = (postFlag & (SURFACE_ABSORB | SURFACE_DETECT)) != 0 ;
 
+#ifdef USE_CUSTOM_BOUNDARY
+    bool preSkip = m_prior_boundary_status == Ds::StepTooSmall && m_ctx._stage != CStage::REJOIN  && m_ctx._stage != CStage::START  ;  
+#else
     bool preSkip = m_prior_boundary_status == StepTooSmall && m_ctx._stage != CStage::REJOIN  && m_ctx._stage != CStage::START  ;  
+#endif
+
+
     // cannot preSkip CStage::START as that yields seqhis zero for "TO AB" 
     // bool preSkip = m_prior_boundary_status == StepTooSmall && m_ctx._stage != CStage::REJOIN  ;  
 
@@ -306,7 +317,7 @@ bool CRec::addPoi(CStp* stp )
 
 
 #ifdef USE_CUSTOM_BOUNDARY
-void CRec::add(DsG4OpBoundaryProcessStatus boundary_status, unsigned premat, unsigned postmat, unsigned preflag, unsigned postflag, int action)
+void CRec::add(Ds::DsG4OpBoundaryProcessStatus boundary_status, unsigned premat, unsigned postmat, unsigned preflag, unsigned postflag, int action)
 #else
 void CRec::add(G4OpBoundaryProcessStatus boundary_status, unsigned premat, unsigned postmat, unsigned preflag, unsigned postflag, int action)
 #endif

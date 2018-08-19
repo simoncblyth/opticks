@@ -9,7 +9,8 @@ class G4RunManager ;
 #ifdef OLDPHYS
 class PhysicsList ; 
 #else
-class OpNovicePhysicsList ; 
+//class OpNovicePhysicsList ; 
+class CPhysicsList ; 
 #endif
 
 #include "CFG4_API_EXPORT.hh"
@@ -37,9 +38,10 @@ class CFG4_API CPhysics
         Opticks*       m_ok ;     
         G4RunManager*  m_runManager ; 
 #ifdef OLDPHYS
-        PhysicsList*          m_physics ; 
+        PhysicsList*          m_physicslist ; 
 #else
-        OpNovicePhysicsList*  m_physics ; 
+        //OpNovicePhysicsList*  m_physicslist ; 
+        CPhysicsList*           m_physicslist ; 
 #endif
 
 };
