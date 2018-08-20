@@ -1,9 +1,13 @@
 #pragma once
 
-// CTrackingAction
-// ================
-//
-//
+/**
+CTrackingAction : G4 to CG4 interface for tracks
+==================================================
+
+* CG4Ctx::setTrack at pre 
+* CG4::preTrack CG4::postTrack for optical 
+
+**/
 
 #include <string>
 #include "G4TrackStatus.hh"
@@ -16,7 +20,6 @@ struct CG4Ctx ;
 
 class Opticks ; 
 class CG4 ; 
-//class CRecorder ; 
 
 #include "CFG4_API_EXPORT.hh"
 #include "CFG4_HEAD.hh"
@@ -41,8 +44,6 @@ class CFG4_API CTrackingAction : public G4UserTrackingAction
     CG4*                  m_g4 ; 
     CG4Ctx&               m_ctx ; 
     Opticks*              m_ok ; 
-    //CRecorder*            m_recorder ; 
-
 
 };
 

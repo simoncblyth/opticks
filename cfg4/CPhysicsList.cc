@@ -4,9 +4,13 @@
 #include "G4ProcessManager.hh"
 
 #include "CG4.hh"
+#include "DsG4OpBoundaryProcess.h"
 #include "Opticks.hh"
 
 #include "PLOG.hh"
+
+
+const CPhysicsList* CPhysicsList::INSTANCE = NULL ; 
 
 
 CPhysicsList::CPhysicsList(CG4* g4) 
@@ -19,6 +23,7 @@ CPhysicsList::CPhysicsList(CG4* g4)
     m_scintillationProcess(NULL),
     m_boundaryProcess(NULL)
 {
+    INSTANCE = this ; 
 }
 
 CPhysicsList::~CPhysicsList() 
@@ -29,12 +34,10 @@ CPhysicsList::~CPhysicsList()
 
 #include "G4BosonConstructor.hh"
 #include "G4LeptonConstructor.hh"
-/*
 #include "G4MesonConstructor.hh"
 #include "G4BaryonConstructor.hh"
 #include "G4IonConstructor.hh"
 #include "G4ShortLivedConstructor.hh"
-*/
 
 
 void CPhysicsList::ConstructParticle()
@@ -50,7 +53,6 @@ void CPhysicsList::ConstructParticle()
   G4LeptonConstructor lConstructor;
   lConstructor.ConstructParticle();
 
-/*
   G4MesonConstructor mConstructor;
   mConstructor.ConstructParticle();
 
@@ -59,7 +61,6 @@ void CPhysicsList::ConstructParticle()
 
   G4IonConstructor iConstructor;
   iConstructor.ConstructParticle();
-*/
 
     initParticles(); 
 }
@@ -197,7 +198,12 @@ void CPhysicsList::constructOp()
 {
     m_cerenkov = new CCerenkov(m_g4); 
     m_cerenkovProcess = m_cerenkov->getProcess() ; 
+
+#ifdef USE_CUSTOM_BOUNDARY
+    m_boundaryProcess = new DsG4OpBoundaryProcess(m_g4) ;
+#else
     m_boundaryProcess = new G4OpBoundaryProcess() ;
+#endif
     for(VP::iterator it=m_particles.begin() ; it != m_particles.end() ; it++ ) constructOp(*it) ; 
 }
 

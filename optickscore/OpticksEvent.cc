@@ -2052,12 +2052,21 @@ void OpticksEvent::postPropagateGeant4()
               ;
 
 
-    if(!m_ok->isFabricatedGensteps())
+    // HMM : see OpticksGen/CGenerator : what about when running off primaries ???
+    // this means not TORCH or MACHINERY 
+
+    if(!m_ok->isFabricatedGensteps())    
     {
+        LOG(fatal) << " setting num_photons " << num_photons ; 
         setNumPhotons(num_photons);  
         // triggers resize ???  THIS IS ONLY NEED FOR DYNAMIC RUNNING 
         // WITH FABRICATED OR LOADED GENSTEPS THIS IS KNOWN AHEAD OF TIME
     }
+    else
+    {
+        LOG(fatal) << " NOT setting num_photons " << num_photons ; 
+    }
+
 
     indexPhotonsCPU();    
     collectPhotonHitsCPU();
@@ -2106,6 +2115,9 @@ void OpticksEvent::indexPhotonsCPU()
     assert(phosel->hasItemShape(1,4));
     assert(recsel0->hasItemShape(maxrec,1,4));
 
+    // hmm this is expecting a resize to have been done ???
+    // in order to provide the slots in phosel and recsel 
+    // for the index applyLookup to write to 
 
     if( sequence->getShape(0) != phosel->getShape(0))
     {

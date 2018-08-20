@@ -152,6 +152,83 @@ Spate of kernel panics
 
 * https://forums.geforce.com/default/topic/930758/geforce-drivers/-problem-spontaneous-kernel-panics-with-nvidia-web-driver-on-mac/
 
+
+::
+
+    865 Aug 20 10:23:04 epsilon GoogleSoftwareUpdateAgent[33997]: 2018-08-20 10:23:04.616 GoogleSoftwareUpdateAgent[33997/0x7fff98781380] [lvl=2] -[KSAgentApp(PrivateMethods) applicationDidFinishLaunching:]      Agent running failed with error: <KSError:0x1004195b0
+     866         domain="com.Google.Keystone.AgentErrorDomain"
+     867         code=103
+     868         userInfo={
+     869             NSLocalizedDescription = "Agent is running as user id 504, which is not the console user.";
+     870             line = 409;
+     871             filename = "KSAgentApp.m";
+     872             function = "-[KSAgentApp(PrivateMethods) checkForUpdatesUsingArguments:invocation:error:]";
+     873             date = 2018-08-20 02:23:04 +0000;
+     874         }
+     875     >
+     876 Aug 20 10:23:04 epsilon com.apple.xpc.launchd[1] (com.google.keystone.user.agent[33997]): Service exited with abnormal code: 1
+     877 Aug 20 10:27:08 localhost bootlog[0]: BOOT_TIME 1534732028 0
+     878 Aug 20 10:27:21 localhost syslogd[56]: Configuration Notice:
+
+
+
+
+::
+
+    Anonymous UUID:       32BCAB7F-2AEA-A951-3785-013ECFB913EA
+
+    Mon Aug 20 10:27:21 2018
+
+    *** Panic Report ***
+    panic(cpu 0 caller 0xffffff800e489754): "thread_invoke: preemption_level 1, possible cause: blocking while holding a spinlock, or within interrupt context"@/BuildRoot/Library/Caches/com.apple.xbs/Sources/xnu/xnu-4570.51.1/osfmk/kern/sched_prim.c:2231
+    Backtrace (CPU 0), Frame : Return Address
+    0xffffff91ff2f3610 : 0xffffff800e46e166 
+    0xffffff91ff2f3660 : 0xffffff800e596714 
+    0xffffff91ff2f36a0 : 0xffffff800e588a00 
+    0xffffff91ff2f3720 : 0xffffff800e420180 
+    0xffffff91ff2f3740 : 0xffffff800e46dbdc 
+    0xffffff91ff2f3870 : 0xffffff800e46d99c 
+    0xffffff91ff2f38d0 : 0xffffff800e489754 
+    0xffffff91ff2f3950 : 0xffffff800e4885df 
+    0xffffff91ff2f39a0 : 0xffffff800e581fd6 
+    0xffffff91ff2f3a00 : 0xffffff800e41eaad 
+    0xffffff91ff2f3a20 : 0xffffff800e4f3f91 
+    0xffffff91ff2f3b00 : 0xffffff800e4ba723 
+    0xffffff91ff2f3c30 : 0xffffff800e44fc16 
+    0xffffff91ff2f3c60 : 0xffffff800e450803 
+    0xffffff91ff2f3cb0 : 0xffffff800e473df2 
+    0xffffff91ff2f3cf0 : 0xffffff7f8ed979fd 
+    0xffffff91ff2f3d30 : 0xffffff7f8edef029 
+    0xffffff91ff2f3d50 : 0xffffff7f8eea759e 
+    0xffffff91ff2f3da0 : 0xffffff7f8eeeca8c 
+    0xffffff91ff2f3dc0 : 0xffffff7f8faaa242 
+    0xffffff91ff2f3e10 : 0xffffff7f8edf621c 
+    0xffffff91ff2f3ed0 : 0xffffff800ea9a005 
+    0xffffff91ff2f3f30 : 0xffffff800ea98772 
+    0xffffff91ff2f3f70 : 0xffffff800ea97dac 
+    0xffffff91ff2f3fa0 : 0xffffff800e41f4f7 
+          Kernel Extensions in backtrace:
+             com.nvidia.web.NVDAResmanWeb(10.3.1)[8E2AB3E3-4EE5-3F90-B6D8-54CEB8595A5F]@0xffffff7f8ed90000->0xffffff7f8f408fff
+                dependency: com.apple.iokit.IOPCIFamily(2.9)[1850E7DA-E707-3027-A3AA-637C80B57219]@0xffffff7f8ec94000
+                dependency: com.apple.iokit.IONDRVSupport(519.15)[B419F958-11B8-3F7D-A31B-A72166B6E234]@0xffffff7f8ed75000
+                dependency: com.apple.iokit.IOGraphicsFamily(519.15)[D5F2A20D-CAB0-33B2-91B9-E8755DFC34CB]@0xffffff7f8ed1f000
+                dependency: com.apple.AppleGraphicsDeviceControl(3.18.48)[89491182-0B41-3BC3-B16F-D5043425D66F]@0xffffff7f8ed85000
+             com.nvidia.web.NVDAGK100HalWeb(10.3.1)[BC0C27F0-12AF-36CA-AC52-ACD84F718B30]@0xffffff7f8f99b000->0xffffff7f8faf8fff
+                dependency: com.nvidia.web.NVDAResmanWeb(10.3.1)[8E2AB3E3-4EE5-3F90-B6D8-54CEB8595A5F]@0xffffff7f8ed90000
+                dependency: com.apple.iokit.IOPCIFamily(2.9)[1850E7DA-E707-3027-A3AA-637C80B57219]@0xffffff7f8ec94000
+
+    BSD process name corresponding to current thread: kernel_task
+
+    Mac OS version:
+    17E199
+
+    Kernel version:
+    Darwin Kernel Version 17.5.0: Mon Mar  5 22:24:32 PST 2018; root:xnu-4570.51.1~1/RELEASE_X86_64
+    Kernel UUID: 1B55340B-0B14-3026-8A47-1E139DB63DA3
+
+
+
+
 ::
 
     Sun Aug 19 13:01:16 2018

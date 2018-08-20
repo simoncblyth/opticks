@@ -342,6 +342,23 @@ cfg4-g4lldb()
 }
 
 
+
+cfg4-G4OpBoundaryProcess()
+{
+    g4- 
+    enu.py $(g4-dir)/source/processes/optical/include/G4OpBoundaryProcess.hh 
+}
+cfg4-DsG4OpBoundaryProcessStatus()
+{
+    cfg4-scd
+    g4- 
+    enu.py DsG4OpBoundaryProcessStatus.h
+}
+
+
+
+
+
 ############### old funcs predating SUPERBUILD approach  #################
 
 

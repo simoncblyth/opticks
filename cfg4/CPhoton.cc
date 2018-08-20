@@ -59,11 +59,10 @@ void CPhoton::add(unsigned flag, unsigned  material)
 {
     if(flag == 0 ) 
     {
+        LOG(fatal) << " _badflag " << _badflag ; 
         _badflag += 1 ; 
         _state._step_action |= CAction::ZERO_FLAG ; 
-
-        LOG(fatal) << " bad-flag " << _badflag ; 
-        //assert(0);
+        assert(0); // check boundary_status and WhateverG4OpBoundaryProcess setup : usual cause of badflags, eg using default when should be custom
     }
 
     unsigned slot = _state.constrained_slot(); 

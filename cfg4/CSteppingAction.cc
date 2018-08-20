@@ -109,7 +109,6 @@ void CSteppingAction::UserSteppingAction(const G4Step* step)
     else
     {
         // guess work for alignment
-
         // should this be done after a jump ?
 
         bool zeroStep = m_ctx._noZeroSteps > 0 ;   // usually means there was a jump back 

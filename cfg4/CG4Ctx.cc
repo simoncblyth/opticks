@@ -285,16 +285,13 @@ void CG4Ctx::setStepOptical() // invoked by CG4Ctx::setStep
         // rejoin count is zeroed in setTrackOptical, so each remission generation trk will result in REJOIN 
     }
 
-
-#ifdef USE_CUSTOM_BOUNDARY
     _prior_boundary_status = _boundary_status ; 
     _boundary_status = CBoundaryProcess::GetOpBoundaryProcessStatus() ;
-#else
-    _prior_boundary_status = _boundary_status ; 
-    _boundary_status = CBoundaryProcess::GetOpBoundaryProcessStatus() ;
-#endif
-  
 
+    LOG(verbose) 
+        <<  " _prior_boundary_status " << std::setw(35) << CBoundaryProcess::OpBoundaryString(_prior_boundary_status)
+        <<  " _boundary_status " << std::setw(35) << CBoundaryProcess::OpBoundaryString(_boundary_status)
+        ;
 }
 
 

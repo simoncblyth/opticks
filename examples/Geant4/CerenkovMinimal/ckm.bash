@@ -26,7 +26,6 @@ ckm-load()
     type $FUNCNAME
 }
 
-
 ckm-dump()
 {
     OPTICKS_KEY=$(ckm-key) OpticksEventDumpTest --natural --envkey
@@ -42,7 +41,6 @@ ckm-okg4-load()
 {
     OPTICKS_KEY=$(ckm-key) lldb -- OKG4Test --load --envkey --embedded
 }
-
 
 
 

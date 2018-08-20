@@ -12,7 +12,6 @@
 // cg4-
 #include "CG4Ctx.hh"
 #include "CG4.hh"
-//#include "CRecorder.hh"
 #include "CTrack.hh"
 #include "CTrackingAction.hh"
 
@@ -33,7 +32,6 @@ CTrackingAction::CTrackingAction(CG4* g4)
    m_g4(g4),
    m_ctx(g4->getCtx()),
    m_ok(g4->getOpticks())
-   //m_recorder(g4->getRecorder())
 { 
 }
 

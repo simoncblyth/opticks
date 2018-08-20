@@ -233,6 +233,7 @@ void CG4::preTrack()
     }
 }
 
+// invoked from CTrackingAction::PostUserTrackingAction for optical photons only 
 void CG4::postTrack()
 {
     if(m_ctx._optical)
