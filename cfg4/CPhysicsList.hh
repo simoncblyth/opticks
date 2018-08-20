@@ -10,6 +10,11 @@ CPhysicsList
 
 * A reimplementation of the messy OpNovicePhysicsList 
 
+TODO:
+
+Follow the CCerenokov cleanup with analogous classes for Boundary and Scintillation
+
+
 **/
 
 class CG4 ; 

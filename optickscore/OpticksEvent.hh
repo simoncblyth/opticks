@@ -144,10 +144,12 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec
        std::string getTimeStamp();
        std::string getCreator();
        char getEntryCode();
+       int getDynamic() const ;
 
        void setTimeStamp(const char* tstamp);
        void setCreator(const char* executable);
        void setEntryCode(char entryCode);
+       void setDynamic(int dynamic);
    public:
         const char*    getGeoPath();
        NGeoTestConfig* getTestConfig();

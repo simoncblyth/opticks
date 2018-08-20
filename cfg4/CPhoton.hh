@@ -8,6 +8,16 @@ struct CRecState ;
 #include "CRecorder.h"
 #include "CFG4_API_EXPORT.hh"
 
+/**
+CPhoton
+=========
+
+Used CPU side only for Geant4 recording in OpticksEvent format
+
+
+
+**/
+
 
 struct CFG4_API CPhoton
 {

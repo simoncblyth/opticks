@@ -42,12 +42,14 @@ Immediate Issues
 
 * Lots of bad flags : skipped some asserts in CRecorder/CPhoton to complete
 
-  * FIXED :doc:`OKG4Test_CPhoton_badflag`
-
-
-* no hits from G4 : SD-LV ASSOCIATION DIDNT SURVIVE THE CACHE/GDML ??
+  * FIXED :doc:`OKG4Test_CPhoton_badflag` was using default G4OpBoundaryProcess when need the custom one
 
 * CPU side indexing aborted, fails to create the phosel + recsel for G4 
+
+  * FIXED :doc:`OKG4Test_OpticksEvent_indexPhotonsCPU_assert` by direct recording whether dynamic 
+    in OpticksEvent and using that to decide on resize via setNumPhotons
+
+* no hits from G4 : SD-LV ASSOCIATION DIDNT SURVIVE THE CACHE/GDML ??
 
 * listed under torch, need a new "primaries" source code ? 
 

@@ -17,6 +17,19 @@ class CG4 ;
 struct CG4Ctx ; 
 struct CPhoton ; 
 
+/**
+CWriter
+=========
+
+Canonical m_writer instance is resident of CRecorder and is instanciated with it.
+
+Writes step records, final photons and sequence(aka history) entries 
+collected from Geant4 into buffers in the "g4evt" OpticksEvent.
+
+In static mode the number of photons is known in advance, in dynamic
+mode the buffers are grown as new photons are added.
+
+**/
 
 class CFG4_API CWriter 
 {

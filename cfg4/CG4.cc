@@ -352,7 +352,8 @@ void CG4::postpropagate()
 
 void CG4::cleanup()
 {
-    LOG(info) << "CG4::cleanup opening geometry" ; 
+    LOG(info) << "opening geometry" ; 
     G4GeometryManager::GetInstance()->OpenGeometry();
+    LOG(info) << "opening geometry DONE " ; 
 }
 

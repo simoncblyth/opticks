@@ -267,7 +267,7 @@ void OpticksEvent::resizeToZero()
     setNumPhotons(0, resize_);
 }
 
-void OpticksEvent::setNumPhotons(unsigned int num_photons, bool resize_)
+void OpticksEvent::setNumPhotons(unsigned int num_photons, bool resize_)  // resize_ default true 
 {
     m_num_photons = num_photons ; 
     if(resize_)
@@ -809,6 +809,15 @@ char OpticksEvent::getEntryCode()
 }
 
 
+void OpticksEvent::setDynamic(int dynamic)
+{
+    m_parameters->add<int>("Dynamic", dynamic );
+}
+int OpticksEvent::getDynamic() const 
+{
+    return m_parameters->get<int>("Dynamic", "-1");
+}
+
 
 
 
@@ -1027,7 +1036,6 @@ void OpticksEvent::resetBuffers()
     // deallocate (clearing the underlying vector) and setNumItems to 0 
     if(m_nopstep_data)  m_nopstep_data->reset();    
     if(m_photon_data)   m_photon_data->reset();    
-    //if(m_source_data)   m_source_data->reset();    
     if(m_sequence_data) m_sequence_data->reset();    
     if(m_seed_data)     m_seed_data->reset();    
     if(m_phosel_data)   m_phosel_data->reset();    
@@ -1037,13 +1045,24 @@ void OpticksEvent::resetBuffers()
 }
 
 
+/**
+OpticksEvent::resize
+---------------------
+
+For dynamically recorded g4evt the photon, sequence and record 
+buffers are grown during the instrumented Geant4 stepping, a
+subsequent resize makes no difference to those buffers but pulls
+up the counts for phosel and recsel (and seed) ready to 
+hold the CPU indices. 
+
+**/
+
 void OpticksEvent::resize()
 {
     // NB these are all photon level qtys on the first dimension
     //    including recsel and record thanks to structured arrays (num_photons, maxrec, ...)
 
     assert(m_photon_data);
-    //assert(m_source_data);
     assert(m_sequence_data);
     assert(m_phosel_data);
     assert(m_recsel_data);
@@ -1064,8 +1083,6 @@ void OpticksEvent::resize()
     assert(enoughRng && " need to prepare and persist more RNG states up to maximual per propagation number" );
 
 
-
-
     LOG(debug) << "OpticksEvent::resize " 
               << " num_photons " << num_photons  
               << " num_records " << num_records 
@@ -1075,10 +1092,11 @@ void OpticksEvent::resize()
 
     m_photon_data->setNumItems(num_photons);
     m_sequence_data->setNumItems(num_photons);
+    m_record_data->setNumItems(num_photons);
+
     m_seed_data->setNumItems(num_photons);
     m_phosel_data->setNumItems(num_photons);
     m_recsel_data->setNumItems(num_photons);
-    m_record_data->setNumItems(num_photons);
 
     m_parameters->add<unsigned int>("NumGensteps", getNumGensteps());
     m_parameters->add<unsigned int>("NumPhotons",  getNumPhotons());
@@ -2042,6 +2060,21 @@ unsigned int OpticksEvent::getNumPhotonsPerG4Event() const
 {
    return m_parameters->get<int>("NumPhotonsPerG4Event","0");  // "0" : fallback if not set (eg for G4GUN running )
 }
+
+
+
+
+/**
+OpticksEvent::postPropagateGeant4
+----------------------------------
+
+For dynamically recorded g4evt the photon, sequence and record 
+buffers are grown during the instrumented Geant4 stepping, a
+subsequent resize from setNumPhotons makes no difference to those buffers 
+but pulls up the counts for phosel and recsel (and seed) ready to 
+hold the CPU indices. 
+
+**/
  
 void OpticksEvent::postPropagateGeant4()
 {
@@ -2049,18 +2082,17 @@ void OpticksEvent::postPropagateGeant4()
     LOG(info) << "OpticksEvent::postPropagateGeant4"
               << " shape " << getShapeString()
               << " num_photons " << num_photons
+              << " dynamic " << getDynamic() 
               ;
 
-
-    // HMM : see OpticksGen/CGenerator : what about when running off primaries ???
-    // this means not TORCH or MACHINERY 
-
-    if(!m_ok->isFabricatedGensteps())    
+    //if(!m_ok->isFabricatedGensteps())    
+    int dynamic = getDynamic(); 
+    if(dynamic == 1)    
     {
-        LOG(fatal) << " setting num_photons " << num_photons ; 
+        LOG(fatal) << " setting num_photons " << num_photons 
+                   << " as dynamic : to pull up recsel, phosel ready to hold the indices " 
+                   ; 
         setNumPhotons(num_photons);  
-        // triggers resize ???  THIS IS ONLY NEED FOR DYNAMIC RUNNING 
-        // WITH FABRICATED OR LOADED GENSTEPS THIS IS KNOWN AHEAD OF TIME
     }
     else
     {
@@ -2090,6 +2122,24 @@ void OpticksEvent::collectPhotonHitsCPU()
 
     OK_PROFILE("OpticksEvent::collectPhotonHitsCPU");
 }
+
+
+/**
+OpticksEvent::indexPhotonsCPU
+------------------------------
+
+* used only for g4evt ie CRecorder/CWriter collected 
+  records, photons, sequence buffers. 
+
+* phosel and recsel are expected to have been sized, but 
+  not to contain any data 
+
+* unsigned long long sequence is the input to the indexing
+  yielding phosel and recsel indices 
+
+
+**/
+
 
 void OpticksEvent::indexPhotonsCPU()
 {
@@ -2124,9 +2174,9 @@ void OpticksEvent::indexPhotonsCPU()
         LOG(fatal) << " length mismatch " 
                    << " sequence : " << sequence->getShape(0)
                    << " phosel   : " << phosel->getShape(0)
-                   << " ABORT indexing "
                    ;
-         return ;   
+               //    << " ABORT indexing "
+         //return ;   
     }
 
 

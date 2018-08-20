@@ -1571,8 +1571,10 @@ unsigned int Opticks::getSourceCode() const
     else if(m_cfg->hasOpt("scintillation")) code = SCINTILLATION ;
     else if(m_cfg->hasOpt("torch"))         code = TORCH ;
     else if(m_cfg->hasOpt("machinery"))     code = MACHINERY ;
-    else if(m_cfg->hasOpt("g4gun"))         code = G4GUN ;
-    else                                    code = TORCH ;
+    else if(m_cfg->hasOpt("g4gun"))         code = G4GUN ;           // <-- dynamic : photon count not known ahead of time
+    else if(m_cfg->hasOpt("emitsource"))    code = EMITSOURCE ;      
+    else if(m_cfg->hasOpt("primarysource")) code = PRIMARYSOURCE ;   // <-- dynamic : photon count not known ahead of time
+    else                                    code = TORCH ;             
     return code ;
 }
 

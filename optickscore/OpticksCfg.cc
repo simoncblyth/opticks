@@ -430,6 +430,14 @@ void OpticksCfg<Listener>::init()
        ("g4gun",  "enable cfg4- geant4 only particle gun ") ;
 
    m_desc.add_options()
+       ("emitsource",  "indicates use of photons obtained from emissive geometry ") ;
+
+   m_desc.add_options()
+       ("primarysource",  "indicates use of primary non-optical particles as source, simular to g4gun  ") ;
+
+
+
+   m_desc.add_options()
        ("g4gunconfig",   boost::program_options::value<std::string>(&m_g4gunconfig), "g4gun configuration" );
 
    m_desc.add_options()

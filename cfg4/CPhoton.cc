@@ -54,6 +54,13 @@ void CPhoton::clear()
     _flag_prior = 0 ; 
 }
 
+/**
+CPhoton::add
+---------------
+
+Building seqhis seqmat bitfields slot by slot 
+
+**/
 
 void CPhoton::add(unsigned flag, unsigned  material)
 {

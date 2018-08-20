@@ -59,12 +59,22 @@ void CWriter::setEnabled(bool enabled)
     m_enabled = enabled ; 
 }
 
+/**
+CWriter::initEvent
+-------------------
+
+Gets refs to the history, photons and records buffers from the event.
+When dynamic the records target is single item dynamic_records otherwise
+goes direct to the records_buffer.
+
+**/
 
 void CWriter::initEvent(OpticksEvent* evt)  // called by CRecorder::initEvent/CG4::initEvent
 {
     m_evt = evt ; 
     assert(m_evt && m_evt->isG4());
 
+    m_evt->setDynamic( m_dynamic ? 1 : 0 ) ;  
 
     LOG(info) << "CWriter::initEvent"
               << " dynamic " << ( m_dynamic ? "DYNAMIC(CPU style)" : "STATIC(GPU style)" )
@@ -145,6 +155,15 @@ bool CWriter::writeStepPoint(const G4StepPoint* point, unsigned flag, unsigned m
     return done ; 
 }
 
+
+/**
+CWriter::writeStepPoint_
+--------------------------
+
+Writes compressed step records if Geant4 CG4 instrumented events 
+in format to match that written on GPU by oxrap.
+
+**/
 
 void CWriter::writeStepPoint_(const G4StepPoint* point, const CPhoton& photon )
 {
@@ -227,13 +246,31 @@ void CWriter::writeStepPoint_(const G4StepPoint* point, const CPhoton& photon )
     // but dynamic mode will have an extra record
 }
 
+
+/**
+CWriter::writePhoton
+--------------------
+
+Gets called at last step (eg absorption) or when truncated,
+for reemission have to rely on downstream overwrites
+via rerunning with a target_record_id to scrub old values.
+
+In static case (where the number of photons is known ahead of time) 
+directly populates the pre-sized photon buffer in dynamic case populates 
+the single item m_dynamic_photons buffer first and then adds that to 
+the m_photons_buffer
+
+generate.cu
+
+(x)  p.flags.i.x = prd.boundary ;   // last boundary
+(y)  p.flags.u.y = s.identity.w ;   // sensorIndex  >0 only for cathode hits
+(z)  p.flags.u.z = s.index.x ;      // material1 index  : redundant with boundary  
+(w)  p.flags.u.w |= s.flag ;        // OR of step flags : redundant ? unless want to try to live without seqhis
+
+**/
+
 void CWriter::writePhoton(const G4StepPoint* point )
 {
-    // gets called at last step (eg absorption) or when truncated
-    // for reemission have to rely on downstream overwrites
-    // via rerunning with a target_record_id to scrub old values
-
-
     const G4ThreeVector& pos = point->GetPosition();
     const G4ThreeVector& dir = point->GetMomentumDirection();
     const G4ThreeVector& pol = point->GetPolarization();
@@ -244,8 +281,7 @@ void CWriter::writePhoton(const G4StepPoint* point )
     G4double weight = 1.0 ; 
 
     NPY<float>* target = m_dynamic ? m_dynamic_photons : m_photons_buffer ; 
-    unsigned int target_record_id = m_dynamic ? 0 : m_ctx._record_id ; 
-
+    unsigned target_record_id = m_dynamic ? 0 : m_ctx._record_id ; 
 
     target->setQuad(target_record_id, 0, 0, pos.x()/mm, pos.y()/mm, pos.z()/mm, time/ns  );
     target->setQuad(target_record_id, 1, 0, dir.x(), dir.y(), dir.z(), weight  );
@@ -256,22 +292,10 @@ void CWriter::writePhoton(const G4StepPoint* point )
     target->setUInt(target_record_id, 3, 0, 2, m_photon._c4.u );
     target->setUInt(target_record_id, 3, 0, 3, m_photon._mskhis );
 
-    // in static case directly populate the pre-sized photon buffer
-    // in dynamic case populate the single photon buffer first and then 
-    // add that to the photons below
-
     if(m_dynamic)
     {
         m_photons_buffer->add(m_dynamic_photons);
     }
-
-    // generate.cu
-    //
-    //  (x)  p.flags.i.x = prd.boundary ;   // last boundary
-    //  (y)  p.flags.u.y = s.identity.w ;   // sensorIndex  >0 only for cathode hits
-    //  (z)  p.flags.u.z = s.index.x ;      // material1 index  : redundant with boundary  
-    //  (w)  p.flags.u.w |= s.flag ;        // OR of step flags : redundant ? unless want to try to live without seqhis
-    //
 
     NPY<unsigned long long>* h_target = m_dynamic ? m_dynamic_history : m_history_buffer ; 
 
