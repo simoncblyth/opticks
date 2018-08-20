@@ -12,6 +12,7 @@ class CMaterialLib ;
 class CMaterialTable ; 
 class CMaterialBridge ; 
 class CSurfaceBridge ; 
+class CSensitiveDetector ; 
 
 #include "CFG4_API_EXPORT.hh"
 
@@ -29,7 +30,7 @@ CGeometry
 class CFG4_API CGeometry 
 {
    public:
-       CGeometry(OpticksHub* hub);
+       CGeometry(OpticksHub* hub, CSensitiveDetector* sd);
        bool hookup(CG4* g4);
        void postinitialize();   // invoked by CG4::postinitialize after Geant4 geometry constructed
    public:
@@ -43,6 +44,7 @@ class CFG4_API CGeometry
        void export_();
    private:
        OpticksHub*          m_hub ; 
+       CSensitiveDetector*  m_sd ; 
 
        Opticks*             m_ok ; 
        OpticksCfg<Opticks>* m_cfg ; 

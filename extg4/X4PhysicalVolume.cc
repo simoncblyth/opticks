@@ -11,6 +11,7 @@
 //#include "G4VisExtent.hh"
 #include "G4VSolid.hh"
 #include "G4TransportationManager.hh"
+#include "G4VSensitiveDetector.hh"
 
 #include "X4.hh"
 #include "X4PhysicalVolume.hh"
@@ -25,7 +26,9 @@
 
 #include "SSys.hh"
 #include "SDigest.hh"
+#include "SGDML.hh"
 #include "PLOG.hh"
+
 #include "BStr.hh"
 #include "BFile.hh"
 #include "BOpticksKey.hh"
@@ -194,16 +197,20 @@ void X4PhysicalVolume::convertSensors_r(const G4VPhysicalVolume* const pv, int d
     bool is_lvsdname = m_lvsdname && BStr::Contains(lvname, m_lvsdname, ',' ) ;
     bool is_sd = sd != NULL ; 
 
+    const std::string sdn = sd ? sd->GetName() : "SD?" ;   // perhaps GetFullPathName() 
+
     if( is_lvsdname || is_sd )
     {
         std::string name = BFile::Name(lvname); 
+        std::string nameref = SGDML::GenerateName( name.c_str() , lv , true );   
         LOG(info) 
             << " is_lvsdname " << is_lvsdname
             << " is_sd " << is_sd
             << " name " << name 
+            << " nameref " << nameref 
             ;
 
-        m_ggeo->addCathodeLV(name.c_str()) ;
+        m_ggeo->addLVSD(nameref.c_str(), sdn.c_str()) ;
     }  
 
     for (int i=0 ; i < lv->GetNoDaughters() ;i++ )

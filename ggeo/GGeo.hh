@@ -11,6 +11,7 @@
 #include "NConfigurable.hpp"
 
 class NLookup ; 
+class NMeta ;
 class TorchStepNPY ; 
 class SLog ; 
 
@@ -311,8 +312,9 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
         void setLow(const gfloat3& low);
         void setHigh(const gfloat3& high);
         void updateBounds(GNode* node); 
-
-
+    private:
+        void saveCacheMeta();
+        void loadCacheMeta();
     public:
         // TODO: contrast with this earlier way 
         void findCathodeMaterials(const char* props);
@@ -325,9 +327,13 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
         GMaterial* getCathode() const ;  
         const char* getCathodeMaterialName() const ;
     public:
-        void addCathodeLV(const char* lv);
+        void addLVSD(const char* lv, const char* sd);
+        unsigned getNumLVSD() const ;
+        std::pair<std::string,std::string> getLVSD(unsigned idx) const ;
+    public:
         void dumpCathodeLV(const char* msg="GGeo::dumpCathodeLV") const ;
         const char* getCathodeLV(unsigned int index) const ; 
+        void getCathodeLV( std::vector<std::string>& lvnames ) const ;
         unsigned int getNumCathodeLV() const ;
         int findCathodeLVIndex(const char* lv) const ; // -1 if not found 
     public:
@@ -362,6 +368,8 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
         bool                          m_loaded ;  
         bool                          m_prepared ;  
 
+        NMeta*                        m_cachemeta ; 
+        NMeta*                        m_lv2sd ; 
 
 
         std::vector<GVolume*>           m_sensitive_volumes ; 

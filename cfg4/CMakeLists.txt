@@ -30,6 +30,9 @@ set(SOURCES
     C4Cerenkov1042.cc
     CPhysicsList.cc 
 
+    CHit.cc
+    CSensitiveDetector.cc 
+
 
     Cerenkov.cc
     OpRayleigh.cc
@@ -145,6 +148,10 @@ set(HEADERS
     G4Cerenkov1042.hh
     C4Cerenkov1042.hh
     CPhysicsList.hh
+
+    CHit.hh
+    CSensitiveDetector.hh
+
 
     Cerenkov.hh
     OpRayleigh.hh

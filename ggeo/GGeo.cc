@@ -97,6 +97,8 @@ GGeo::GGeo(Opticks* ok)
    m_instancer(NULL), 
    m_loaded(false), 
    m_prepared(false), 
+   m_cachemeta(NULL),
+   m_lv2sd(NULL),
    m_lookup(NULL), 
    m_meshlib(NULL),
    m_geolib(NULL),
@@ -291,7 +293,7 @@ const char* GGeo::getCathodeMaterialName() const
 
 
 /**
-GGeo::addCathodeLV
+GGeo::addLVSD
 -------------------
 
 From  
@@ -301,10 +303,31 @@ From
 
 **/
 
-void GGeo::addCathodeLV(const char* lv)
+void GGeo::addLVSD(const char* lv, const char* sd)
 {
+   assert( lv ) ;  
    m_cathode_lv.insert(lv);
+
+   if(sd) 
+   {
+       if(m_lv2sd == NULL ) m_lv2sd = new NMeta ; 
+       m_lv2sd->set<std::string>(lv, sd) ; 
+   }
 }
+unsigned GGeo::getNumLVSD() const
+{
+   return m_lv2sd ? m_lv2sd->getNumKeys() : 0 ;  
+}
+std::pair<std::string,std::string> GGeo::getLVSD(unsigned idx) const
+{
+    const char* lv = m_lv2sd->getKey(idx) ; 
+    std::string sd = m_lv2sd->get<std::string>(lv); 
+    return std::pair<std::string,std::string>( lv, sd ); 
+}
+
+
+
+
 
 int GGeo::findCathodeLVIndex(const char* lv) const  // -1 if not found
 {
@@ -355,6 +378,13 @@ void GGeo::dumpCathodeLV(const char* msg) const
     {
         printf("GGeo::dumpCathodeLV %s \n", it->c_str() ); 
     }
+}
+ 
+void GGeo::getCathodeLV( std::vector<std::string>& lvnames ) const 
+{
+    typedef std::unordered_set<std::string>::const_iterator UCI ; 
+    for(UCI it=m_cathode_lv.begin() ; it != m_cathode_lv.end() ; it++) 
+         lvnames.push_back(*it) ; 
 }
 
 
@@ -679,17 +709,32 @@ void GGeo::save()
     m_sourcelib->save();
     m_bndlib->save();  
 
-
-    NMeta cachemeta ; 
-    cachemeta.set<int>("answer", 42) ; 
-    cachemeta.set<std::string>("question", "huh?");
-    cachemeta.set<std::string>("argline", PLOG::instance->args.argline() ); 
-    const char* path = m_ok->getCacheMetaPath(); 
-    cachemeta.save(path); 
-
+    saveCacheMeta();
 
     LOG(fatal) << "]" ;  
 }
+
+
+void GGeo::saveCacheMeta()
+{
+    if(m_cachemeta == NULL ) m_cachemeta = new NMeta ; 
+
+    m_cachemeta->set<int>("answer", 42) ; 
+    m_cachemeta->set<std::string>("question", "huh?");
+    m_cachemeta->set<std::string>("argline", PLOG::instance->args.argline() ); 
+
+    if(m_lv2sd) m_cachemeta->setObj("lv2sd", m_lv2sd ); 
+    const char* path = m_ok->getCacheMetaPath(); 
+    m_cachemeta->save(path); 
+}
+void GGeo::loadCacheMeta()
+{
+    const char* path = m_ok->getCacheMetaPath(); 
+    assert( m_cachemeta == NULL ); 
+    m_cachemeta = NMeta::Load(path);
+    m_lv2sd = m_cachemeta->getObj("lv2sd"); 
+}
+
 
 void GGeo::saveAnalytic()
 { 
@@ -717,6 +762,8 @@ void GGeo::loadFromCache()
     m_geolib = GGeoLib::Load(m_ok, analytic, m_bndlib);
     m_nodelib = GNodeLib::Load(m_ok, analytic, testgeo );        
     m_meshlib = GMeshLib::Load(m_ok, analytic);
+
+    loadCacheMeta();
 
     LOG(error) << "GGeo::loadFromCache DONE" ; 
 }

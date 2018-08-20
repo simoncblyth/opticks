@@ -1,4 +1,5 @@
 #include "G4RunManager.hh"
+#include "G4GeometryManager.hh"
 
 #include "G4.hh"
 #include "Ctx.hh"
@@ -47,6 +48,13 @@ G4::G4(int nev)
 
     beamOn(nev); 
 }
+
+
+G4::~G4()
+{
+    G4GeometryManager::GetInstance()->OpenGeometry(); 
+}
+
 
 void G4::beamOn(int nev)
 {

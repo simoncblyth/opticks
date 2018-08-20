@@ -46,6 +46,7 @@ set(SOURCES
     SPPM.cc
     SBufferSpec.cc
     SId.cc
+    SGDML.cc
 ) 
 
 set(HEADERS
@@ -85,6 +86,7 @@ set(HEADERS
     SPPM.hh
     SBufferSpec.hh
     SId.hh
+    SGDML.hh
 )
 
 

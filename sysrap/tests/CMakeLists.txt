@@ -40,7 +40,7 @@ set(TEST_SOURCES
    SIdTest.cc
    ArrayTest.cc
    SBacktraceTest.cc
-
+   SGDMLTest.cc
 )
 
 set(_TEST_SOURCES

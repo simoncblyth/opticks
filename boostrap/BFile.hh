@@ -31,6 +31,9 @@ class BRAP_API BFile {
        static bool ExistsFile(const char* path, const char* sub=NULL, const char* name=NULL);
        static bool ExistsDir(const char* path, const char* sub=NULL, const char* name=NULL);
        static void RemoveDir(const char* path, const char* sub=NULL, const char* name=NULL);
+       static void RemoveFile(const char* path, const char* sub=NULL, const char* name=NULL);
+       static void CreateFile(const char* path, const char* sub=NULL, const char* name=NULL);
+
        static std::time_t* LastWriteTime(const char* path,  const char* sub=NULL, const char* name=NULL);
        static std::time_t* SinceLastWriteTime(const char* path,  const char* sub=NULL, const char* name=NULL);
 

@@ -50,7 +50,9 @@ int main(int argc, char** argv)
 
     OpticksQuery* query = ok.getQuery();   // non-done inside Detector classes for transparent control/flexibility 
 
-    CGDMLDetector* detector  = new CGDMLDetector(&hub, query) ; 
+    CSensitiveDetector* sd = NULL ; 
+
+    CGDMLDetector* detector  = new CGDMLDetector(&hub, query, sd) ; 
 
     ok.setIdPathOverride("$TMP");
     detector->saveBuffers();

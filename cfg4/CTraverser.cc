@@ -30,7 +30,7 @@
 
 const char* CTraverser::GROUPVEL = "GROUPVEL" ; 
 
-CTraverser::CTraverser(Opticks* ok, G4VPhysicalVolume* top, NBoundingBox* bbox, OpticksQuery* query) 
+CTraverser::CTraverser(Opticks* ok, G4VPhysicalVolume* top, NBoundingBox* bbox, OpticksQuery* query ) 
    :
    m_ok(ok),
    m_top(top),
@@ -54,6 +54,7 @@ void CTraverser::init()
     m_gtransforms = NPY<float>::make(0, 4, 4);
     m_center_extent = NPY<float>::make(0, 4);
 }
+
 
 unsigned int CTraverser::getNumMaterials()
 {

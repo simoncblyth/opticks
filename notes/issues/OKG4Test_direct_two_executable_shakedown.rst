@@ -51,6 +51,8 @@ Immediate Issues
 
 * no hits from G4 : SD-LV ASSOCIATION DIDNT SURVIVE THE CACHE/GDML ??
 
+  * :doc:`OKG4Test_no_G4_hits`
+
 * listed under torch, need a new "primaries" source code ? 
 
 

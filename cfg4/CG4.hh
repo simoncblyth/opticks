@@ -31,12 +31,12 @@ class CRecorder ;
 class CStepRec ; 
 class CRandomEngine ; 
 
-//class ActionInitialization ;
 class CRunAction ; 
 class CEventAction ; 
 class CPrimaryGeneratorAction ;
 class CTrackingAction ; 
 class CSteppingAction ; 
+class CSensitiveDetector ; 
 
 class OpticksHub ; 
 class OpticksRun ; 
@@ -145,9 +145,10 @@ class CFG4_API CG4
         CDetector*       getDetector() const ;
         double           getCtxRecordFraction() const ;  // ctx is updated at setTrackOptical
    public:
-        CEventAction*    getEventAction() const ;
-        CSteppingAction* getSteppingAction() const ;
-        CTrackingAction* getTrackingAction() const ;
+        CEventAction*       getEventAction() const ;
+        CSteppingAction*    getSteppingAction() const ;
+        CTrackingAction*    getTrackingAction() const ;
+        CSensitiveDetector* getSensitiveDetector() const ;
    public:
         NPY<float>*      getGensteps() const ;
    public:
@@ -165,6 +166,7 @@ class CFG4_API CG4
         CRandomEngine*        m_engine ; 
         CPhysics*             m_physics ; 
         G4RunManager*         m_runManager ; 
+        CSensitiveDetector*   m_sd ; 
         CGeometry*            m_geometry ; 
         bool                  m_hookup ; 
         CMaterialLib*         m_mlib ; 

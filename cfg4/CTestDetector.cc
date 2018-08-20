@@ -50,9 +50,9 @@
 #include "PLOG.hh"
 
 
-CTestDetector::CTestDetector(OpticksHub* hub, OpticksQuery* query)
+CTestDetector::CTestDetector(OpticksHub* hub, OpticksQuery* query, CSensitiveDetector* sd)
     : 
-    CDetector(hub, query),
+    CDetector(hub, query, sd),
     m_geotest(hub->getGGeoTest()),
     m_config(m_geotest->getConfig()),
     m_maker(new CMaker(m_ok))
@@ -81,6 +81,9 @@ void CTestDetector::init()
 
     // no addMPT() ? 
     attachSurfaces();
+
+    hookupSD(); 
+
 }
 
 

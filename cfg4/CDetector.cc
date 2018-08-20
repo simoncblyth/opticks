@@ -35,6 +35,7 @@
 #include "CTraverser.hh"
 #include "CDetector.hh"
 #include "CCheck.hh"
+#include "CSensitiveDetector.hh"
 #include "CGDML.hh"
 
 #include "PLOG.hh"
@@ -51,11 +52,13 @@ void CDetector::setValid(bool valid) { m_valid = valid ; }
 void CDetector::setVerbosity(unsigned int verbosity) { m_verbosity = verbosity ; }
 
 
-CDetector::CDetector(OpticksHub* hub, OpticksQuery* query)
+CDetector::CDetector(OpticksHub* hub, OpticksQuery* query, CSensitiveDetector* sd)
     : 
     m_hub(hub),
+    m_sd(sd),
     m_ok(m_hub->getOpticks()),
     m_dbgsurf(m_ok->isDbgSurf()),
+    m_ggeo(m_hub->getGGeo()),
     m_ggb(m_hub->getGGeoBase()),
     m_blib(new CBndLib(m_hub)),
     m_query(query),
@@ -102,7 +105,7 @@ void CDetector::traverse(G4VPhysicalVolume* /*top*/)
 
     m_check = new CCheck(m_ok, m_top );
     
-    m_traverser = new CTraverser(m_ok, m_top, m_bbox, m_query ); 
+    m_traverser = new CTraverser(m_ok, m_top, m_bbox, m_query); 
     m_traverser->Traverse();
     m_traverser->Summary("CDetector::traverse");
 
@@ -116,6 +119,47 @@ void CDetector::dumpLV(const char* msg)
     assert(m_traverser);
     m_traverser->dumpLV(msg);
 }
+
+void CDetector::hookupSD()
+{
+    unsigned nlvsd = m_ggeo->getNumLVSD() ;
+    const std::string sdname = m_sd ? m_sd->GetName() : "noSD" ; 
+    LOG(error) 
+        << " nlvsd " << nlvsd
+        << " sd " << m_sd 
+        << " sdname " << sdname
+        ;  
+
+
+    if(!m_sd) return ; 
+    for( unsigned i = 0 ; i < nlvsd ; i++)
+    {
+        std::pair<std::string,std::string> lvsd = m_ggeo->getLVSD(i) ; 
+        const char* lvn = lvsd.first.c_str(); 
+        const char* sdn = lvsd.second.c_str(); 
+
+        assert( strcmp( sdname.c_str(), sdn ) == 0 ) ;  
+
+        //const char* lvn = m_ggeo->getCathodeLV(i); 
+
+        const G4LogicalVolume* lv = m_traverser->getLV(lvn);
+
+        LOG(error) 
+             << "SetSensitiveDetector"
+             << " lvn " << lvn
+             << " sdn " << sdn
+             << " lv " << lv 
+             ; 
+
+        if(!lv) LOG(fatal) << " no lv " << lvn ; 
+        assert(lv); 
+
+        const_cast<G4LogicalVolume*>(lv)->SetSensitiveDetector(m_sd) ; 
+    }
+}
+
+
+
 
 
 const glm::vec4& CDetector::getCenterExtent()

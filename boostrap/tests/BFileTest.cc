@@ -75,10 +75,21 @@ void test_RemoveDir()
    BFile::RemoveDir("$TMP/a/b/c");
 }
 
+
+
 void test_RemoveDir_2()
 {
    BFile::CreateDir("$TMP","b","c");
    BFile::RemoveDir("$TMP","b","c");
+}
+
+
+void test_RemoveFile()
+{
+   LOG(info) << "." ; 
+
+   BFile::CreateFile("$TMP/a/b/c.txt");
+   BFile::RemoveFile("$TMP/a/b/c.txt");
 }
 
 
@@ -427,7 +438,7 @@ int main(int argc, char** argv)
    //test_FindFile();
    //test_ExistsDir();
    //test_CreateDir();
-   test_ParentDir();
+   //test_ParentDir();
    //test_FormPath();
    //test_Name_ParentDir();
    //test_ChangeExt();
@@ -437,6 +448,7 @@ int main(int argc, char** argv)
    //test_SomePath();
    //test_RemoveDir();
    //test_RemoveDir_2();
+   test_RemoveFile();
 
 
    //test_LastWriteTime();
@@ -451,6 +463,7 @@ int main(int argc, char** argv)
    //test_FileSize();
 
    //test_FormPath_edge();
+
 
    return 0 ; 
 }

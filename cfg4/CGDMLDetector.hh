@@ -6,6 +6,9 @@ class OpticksQuery ; // okc-
 class OpticksHub ;   // okg-
 class G4VPhysicalVolume ; 
 
+
+class CSensitiveDetector ; 
+
 #include "CDetector.hh"
 #include "CFG4_API_EXPORT.hh"
 #include "plog/Severity.h"
@@ -23,7 +26,7 @@ from m_ok->getGDMLPath().
 class CFG4_API CGDMLDetector : public CDetector
 {
   public:
-    CGDMLDetector(OpticksHub* hub, OpticksQuery* query);
+    CGDMLDetector(OpticksHub* hub, OpticksQuery* query, CSensitiveDetector* sd);
     void saveBuffers();
     virtual ~CGDMLDetector();
   private:
@@ -33,6 +36,7 @@ class CFG4_API CGDMLDetector : public CDetector
 
     void sortMaterials();
     void addMPT();
+    //void addSD();    <-- too early SD only gets created later at CG4 
     void addSurfaces();
     //void kludge_cathode_efficiency();
 

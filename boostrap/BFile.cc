@@ -424,6 +424,57 @@ std::string BFile::FormPath(const char* path, const char* sub, const char* name,
    return preferred ;
 }
 
+void BFile::CreateFile(const char* path, const char* sub, const char* name)
+{
+    std::string p = FormPath(path, sub, name) ;
+    assert(!p.empty());
+
+    if( p.size() < 2 ) 
+    {
+        LOG(error) << " path sanity check fail " << p  ; 
+        return ; 
+    }
+
+    preparePath( p.c_str() ) ; 
+    
+    fs::path fsp(p);
+    if( fs::exists(fsp) ) 
+    {
+        LOG(error) << " path exists already " << p ; 
+        return ; 
+    }
+
+    fs::ofstream ofs{fsp};
+ 
+}
+
+void BFile::RemoveFile(const char* path, const char* sub, const char* name)
+{
+    std::string p = FormPath(path, sub, name) ;
+    assert(!p.empty());
+
+    if( p.size() < 2 ) 
+    {
+        LOG(error) << " path sanity check fail " << p  ; 
+        return ; 
+    }
+
+    fs::path fsp(p);
+
+    if( !fs::exists(fsp) ) 
+    {
+        LOG(error) << " path does not exist " << p ; 
+        return ; 
+    }
+    if( !fs::is_regular_file(fsp) )
+    {  
+        LOG(error) << " path is not a regular file " << p  ; 
+        return ; 
+    }
+
+    bool ret = fs::remove(fsp) ; 
+    assert( ret == true );  
+}
 
 
 

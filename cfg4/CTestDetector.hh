@@ -19,6 +19,7 @@ class GCSG ;
 // cfg4-
 class CMaker ; 
 class CPropLib ; 
+class CSensitiveDetector ; 
 
 // g4-
 class G4LogicalVolume;
@@ -48,7 +49,7 @@ is invoked.
 class CFG4_API CTestDetector : public CDetector
 {
  public:
-    CTestDetector(OpticksHub* hub, OpticksQuery* query=NULL);
+    CTestDetector(OpticksHub* hub, OpticksQuery* query=NULL, CSensitiveDetector* sd=NULL);
   private:
     void init();
 

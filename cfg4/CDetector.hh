@@ -10,7 +10,7 @@ class OpticksResource ;
 class OpticksQuery ; 
 
 // gg-
-//class GGeo ; 
+class GGeo ; 
 class GGeoBase ; 
 class GSurfaceLib ; 
 class GMaterialLib ; 
@@ -18,6 +18,7 @@ class GMaterialLib ;
 // cfg4-
 class CBndLib ; 
 class CSurfaceLib ; 
+class CSensitiveDetector ; 
 
 class CMaterialLib ; 
 class CTraverser ; 
@@ -55,7 +56,7 @@ class CFG4_API CDetector : public G4VUserDetectorConstruction
     friend class CTestDetector ; 
     friend class CGDMLDetector ; 
  public:
-    CDetector(OpticksHub* hub, OpticksQuery* query);
+    CDetector(OpticksHub* hub, OpticksQuery* query, CSensitiveDetector* sd);
     void setVerbosity(unsigned int verbosity);
     void attachSurfaces();
     virtual ~CDetector();
@@ -75,6 +76,7 @@ class CFG4_API CDetector : public G4VUserDetectorConstruction
     CMaterialLib*      getMaterialLib() const ;
     G4VPhysicalVolume* getTop() const ;
     bool               isValid() const ;
+    void               hookupSD(); 
  protected:
     void               setValid(bool valid); 
  public: 
@@ -108,10 +110,12 @@ class CFG4_API CDetector : public G4VUserDetectorConstruction
     void  export_gdml(const char* dir, const char* name);
     void  export_dae(const char* dir, const char* name);
  private:
-    OpticksHub*        m_hub ;
+    OpticksHub*         m_hub ;
+    CSensitiveDetector* m_sd ; 
  protected: 
     Opticks*           m_ok ;
     bool               m_dbgsurf ; 
+    GGeo*              m_ggeo ; 
     GGeoBase*          m_ggb ; 
     CBndLib*           m_blib ; 
  private:

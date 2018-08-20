@@ -42,7 +42,9 @@ int main(int argc, char** argv)
     LOG(info) << argv[0] ;
     Opticks ok(argc, argv);
     OpticksHub hub(&ok) ;
-    CGeometry cg(&hub);
+
+    CSensitiveDetector* sd = NULL ; 
+    CGeometry cg(&hub, sd);
 
     CDetector* detector = cg.getDetector();
 

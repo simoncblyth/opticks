@@ -9,6 +9,7 @@ set(TEST_SOURCES
     CMaterialLibTest.cc
     CMaterialTest.cc
     CTestDetectorTest.cc
+    CGDMLTest.cc
     CGDMLDetectorTest.cc
     CGeometryTest.cc
     CG4Test.cc

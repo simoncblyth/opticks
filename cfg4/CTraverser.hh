@@ -24,9 +24,12 @@ class G4LogicalSkinSurface ;
 class Opticks ; 
 class OpticksQuery ; 
 
+class GGeo ; 
+
 // npy-
 template <typename T> class NPY ;
 class NBoundingBox ;
+
 
 
 /**
@@ -77,10 +80,10 @@ class CFG4_API CTraverser {
         void addOpticalSurface(const G4OpticalSurface*);
     public:
         // TODO: split material collection into another class ?
-        void         dumpMaterials(const char* msg="CTraverser::dumpMaterials");
-        void         dumpLV(const char* msg="CTraverser::dumpLV");
-        unsigned int getNumMaterials();
-        unsigned int getNumMaterialsWithoutMPT();
+        void     dumpMaterials(const char* msg="CTraverser::dumpMaterials");
+        void     dumpLV(const char* msg="CTraverser::dumpLV");
+        unsigned getNumMaterials();
+        unsigned getNumMaterialsWithoutMPT();
     public:
         const G4Material* getMaterial(unsigned int index);
         G4Material*       getMaterialWithoutMPT(unsigned int index);
@@ -103,9 +106,9 @@ class CFG4_API CTraverser {
         NPY<float>*  getLocalTransforms();
         NPY<float>*  getCenterExtent();
     public:
-        unsigned int getNumGlobalTransforms();
-        unsigned int getNumLocalTransforms();
-        unsigned int getNumSelected();
+        unsigned getNumGlobalTransforms();
+        unsigned getNumLocalTransforms();
+        unsigned getNumSelected();
     private:
         void collectTransformT(NPY<float>* buffer, const G4Transform3D& T);
         void collectTransform(NPY<float>* buffer, const G4Transform3D& T);
@@ -152,6 +155,7 @@ class CFG4_API CTraverser {
         std::map<std::string, const G4LogicalVolume*>  m_lvm ; 
         std::vector<unsigned int>                      m_selection ; 
 };
+
 
 #include "CFG4_TAIL.hh"
 

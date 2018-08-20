@@ -17,6 +17,7 @@ struct SteppingAction ;
 struct G4
 {
     G4(int nev); 
+    ~G4();
     void beamOn(int nev);
 
     Ctx*                    ctx ; 

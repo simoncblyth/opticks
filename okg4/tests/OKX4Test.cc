@@ -48,7 +48,8 @@ G4VPhysicalVolume* make_top(int argc, char** argv)
     Opticks* ok = new Opticks(argc, argv); 
     OpticksHub* hub = new OpticksHub(ok);
     OpticksQuery* query = ok->getQuery();
-    CGDMLDetector* detector  = new CGDMLDetector(hub, query) ; 
+    CSensitiveDetector* sd = NULL ; 
+    CGDMLDetector* detector  = new CGDMLDetector(hub, query, sd) ; 
     bool valid = detector->isValid();
     assert(valid);
     G4VPhysicalVolume* top = detector->Construct();

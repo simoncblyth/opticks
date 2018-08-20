@@ -5,6 +5,8 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/lexical_cast.hpp>
 
+#include "SGDML.hh"
+
 #include "BStr.hh"
 #include "BFile.hh"
 
@@ -657,13 +659,13 @@ AssimpGGeo::convertSensors TODO: rename to collectSensorLV
 Recursively searches for volumes with nodeIndex that 
 is on the m_sensor_list and which have the cathode material 
 (with an EFFICIENCY property).  The lv name of such volumes
-are collected into GGeo with addCathodeLV.
+are collected into GGeo with addLVSD.
 
 **/
 
 void AssimpGGeo::convertSensors(GGeo* gg, AssimpNode* node, unsigned int depth)
 {
-    // addCathodeLV into gg
+    // addLVSD into gg
     convertSensorsVisit(gg, node, depth);
     for(unsigned int i = 0; i < node->getNumChildren(); i++) convertSensors(gg, node->getChild(i), depth + 1);
 }
@@ -693,14 +695,17 @@ void AssimpGGeo::convertSensorsVisit(GGeo* gg, AssimpNode* node, unsigned int de
     bool name_match = strcmp(name, cathode_material_name) == 0 ;  
     bool ptr_match = mt == cathode ;   // <--- always false 
  
+    const char* sd = "SD_AssimpGGeo" ; 
+
     if(sensor && name_match)
     {
          LOG(debug) << "AssimpGGeo::convertSensorsVisit " 
                    << " depth " << depth 
                    << " lv " << lv  
+                   << " sd " << sd 
                    << " ptr_match " << ptr_match 
                    ;
-         gg->addCathodeLV(lv) ;   
+         gg->addLVSD(lv, sd) ;   
     }
 }
 

@@ -20,6 +20,7 @@ class OpticksQuery ;
 #include "CDetector.hh"
 #include "CGeometry.hh"
 #include "CMaterialLib.hh"
+#include "CSensitiveDetector.hh"
 
 #include "PLOG.hh"
 
@@ -35,9 +36,10 @@ const std::map<std::string, unsigned>& CGeometry::getMaterialMap() const
     return m_material_table->getMaterialMap();
 }
 
-CGeometry::CGeometry(OpticksHub* hub) 
+CGeometry::CGeometry(OpticksHub* hub, CSensitiveDetector* sd) 
     :
     m_hub(hub),
+    m_sd(sd),
     m_ok(m_hub->getOpticks()),
     m_cfg(m_ok->getCfg()),
     m_detector(NULL),
@@ -56,14 +58,14 @@ void CGeometry::init()
     {
         LOG(fatal) << "CGeometry::init G4 simple test geometry " ; 
         OpticksQuery* query = NULL ;  // normally no OPTICKS_QUERY geometry subselection with test geometries
-        detector  = static_cast<CDetector*>(new CTestDetector(m_hub, query)) ; 
+        detector  = static_cast<CDetector*>(new CTestDetector(m_hub, query, m_sd)) ; 
     }
     else
     {
         // no options here: will load the .gdml sidecar of the geocache .dae 
         LOG(fatal) << "CGeometry::init G4 GDML geometry " ; 
         OpticksQuery* query = m_ok->getQuery();
-        detector  = static_cast<CDetector*>(new CGDMLDetector(m_hub, query)) ; 
+        detector  = static_cast<CDetector*>(new CGDMLDetector(m_hub, query, m_sd)) ; 
     }
 
     // detector->attachSurfaces();  moved into the ::init of CTestDetector and CGDMLDetector to avoid omission
@@ -76,6 +78,7 @@ void CGeometry::init()
 bool CGeometry::hookup(CG4* g4)
 {
     g4->setUserInitialization(m_detector);
+
 
     glm::vec4 ce = m_detector->getCenterExtent();
     LOG(info) << "CGeometry::hookup"

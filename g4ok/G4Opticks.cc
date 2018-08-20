@@ -45,6 +45,9 @@ std::string G4Opticks::desc() const
        << " opmgr " << m_opmgr
        << std::endl 
        << ( key ? key->desc() : "NULL-key?" )
+       << std::endl
+       << m_ok->getIdPath()
+       << std::endl
        ;
     return ss.str() ; 
 }

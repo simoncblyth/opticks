@@ -49,6 +49,7 @@
 #include "CTrackingAction.hh"
 #include "CRunAction.hh"
 #include "CEventAction.hh"
+#include "CSensitiveDetector.hh"
 
 #include "CRayTracer.hh"
 #include "CMaterialTable.hh"
@@ -80,6 +81,7 @@ CMaterialLib*      CG4::getMaterialLib() const { return m_mlib ; }
 CDetector*         CG4::getDetector() const  { return m_detector ; }
 CEventAction*      CG4::getEventAction() const { return m_ea ;    }
 CTrackingAction*   CG4::getTrackingAction() const { return m_ta ;    }
+CSensitiveDetector* CG4::getSensitiveDetector() const { return m_sd ;    }
 CSteppingAction*   CG4::getSteppingAction() const { return m_sa ;    } 
 
 double             CG4::getCtxRecordFraction() const { return m_ctx._record_fraction ; }
@@ -108,7 +110,8 @@ CG4::CG4(OpticksHub* hub)
      m_engine(m_ok->isAlign() ? new CRandomEngine(this) : NULL ),
      m_physics(new CPhysics(this)),
      m_runManager(m_physics->getRunManager()),
-     m_geometry(new CGeometry(m_hub)),
+     m_sd(new CSensitiveDetector("SD0")),
+     m_geometry(new CGeometry(m_hub, m_sd)),
      m_hookup(m_geometry->hookup(this)),
      m_mlib(m_geometry->getMaterialLib()),
      m_detector(m_geometry->getDetector()),

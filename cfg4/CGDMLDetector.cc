@@ -31,9 +31,9 @@
 #include "PLOG.hh"
 
 
-CGDMLDetector::CGDMLDetector(OpticksHub* hub, OpticksQuery* query)
+CGDMLDetector::CGDMLDetector(OpticksHub* hub, OpticksQuery* query, CSensitiveDetector* sd)
     : 
-    CDetector(hub, query),
+    CDetector(hub, query, sd),
     m_level(info)
 {
     LOG(m_level) << "." ; 
@@ -74,6 +74,8 @@ void CGDMLDetector::init()
 
     attachSurfaces();
     // kludge_cathode_efficiency(); 
+
+    hookupSD(); 
 
 }
 
@@ -181,6 +183,13 @@ void CGDMLDetector::addMPT()
     LOG(info) << "CGDMLDetector::addMPT added MPT to " <<  ng4mat << " g4 materials " ; 
 
 }
+
+
+
+
+
+
+
 
 
 
