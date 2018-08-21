@@ -60,23 +60,23 @@ RT_PROGRAM void cbrtTest()
     unsigned int photon_offset = photon_id*4 ; 
    
 
-    unsigned msk = 0u ; 
-    double a = 10.0 ; 
-    double b = 20.0 ; 
-    double c = 30.0 ; 
+    //unsigned msk = 0u ; 
+    //double a = 10.0 ; 
+    //double b = 20.0 ; 
+    //double c = 30.0 ; 
 
-    double rts[3] ; 
-    unsigned nrts ; 
+    //double rts[3] ; 
+    //unsigned nrts ; 
 
-    nrts = callable[0](a, b, c, rts, msk); 
-    nrts = callable[0](a, b, c, rts, msk); 
-    nrts = callable[0](a, b, c, rts, msk); 
-    nrts = callable[0](a, b, c, rts, msk); 
-    nrts = callable[0](a, b, c, rts, msk); 
-    nrts = callable[0](a, b, c, rts, msk); 
-    nrts = callable[0](a, b, c, rts, msk); 
-    nrts = callable[0](a, b, c, rts, msk); 
-    nrts = callable[0](a, b, c, rts, msk); 
+    //nrts = callable[0](a, b, c, rts, msk); 
+    //nrts = callable[0](a, b, c, rts, msk); 
+    //nrts = callable[0](a, b, c, rts, msk); 
+    //nrts = callable[0](a, b, c, rts, msk); 
+    //nrts = callable[0](a, b, c, rts, msk); 
+    //nrts = callable[0](a, b, c, rts, msk); 
+    //nrts = callable[0](a, b, c, rts, msk); 
+    //nrts = callable[0](a, b, c, rts, msk); 
+    //nrts = callable[0](a, b, c, rts, msk); 
 
 #ifdef CSG_INTERSECT_TORUS_TEST 
     rtPrintf("cbrtTest SolveCubic_callable a:%f b:%f c:%f nrts:%u rts (%g %g %g)  \n", a,b,c,nrts,rts[0],rts[1],rts[2] );
@@ -95,7 +95,7 @@ RT_PROGRAM void cbrtTest()
     q = 408572956.1 ;
     r = -1483476.478 ;
 
-    Solve_t roq = -r/q ; 
+    //Solve_t roq = -r/q ; 
 
 #ifdef CSG_INTERSECT_TORUS_TEST 
     rtPrintf("cbrtTest crf:%f crd:%g  \n", crf, crd );
@@ -103,10 +103,8 @@ RT_PROGRAM void cbrtTest()
 #endif
  
 
-    unsigned nr = 0 ;  
     Solve_t xx[3] ; 
-    nr = SolveCubic(p,q,r,xx, 0u ); 
-    nr = SolveCubic(p,q,r,xx, 0u ); 
+    unsigned nr = SolveCubic(p,q,r,xx, 0u ); 
     //nr = SolveCubic(p,q,r,xx, 0u ); 
 
     // NB : only one or 2 calls to simple inlined SolveCubic works 

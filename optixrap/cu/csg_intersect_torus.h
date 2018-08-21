@@ -172,7 +172,7 @@ bool csg_intersect_torus(const quad& q0, const float& t_min, float4& isect, cons
 */
 
 
-    const Torus_t zero(0) ; 
+    //const Torus_t zero(0) ; 
     const Torus_t one(1) ; 
     const Torus_t two(2) ; 
     const Torus_t four(4) ; 
@@ -227,7 +227,7 @@ bool csg_intersect_torus(const quad& q0, const float& t_min, float4& isect, cons
 #endif      
 
     const Torus_t rmax = R+r ; 
-    const Torus_t rmin = R-r ; 
+    //const Torus_t rmin = R-r ; 
  
     const Torus_t rr = r*r ; 
     const Torus_t RR = R*R ; 
@@ -255,11 +255,11 @@ bool csg_intersect_torus(const quad& q0, const float& t_min, float4& isect, cons
     const Torus_t tc = -oxsx_oysy/sxsx_sysy ;    
     const Torus_t xc = ox + sx*tc ; 
     const Torus_t yc = oy + sy*tc ; 
-    const Torus_t zc = oz + sz*tc ; 
+    //const Torus_t zc = oz + sz*tc ; 
     const Torus_t rcrc = xc*xc + yc*yc ;   // square of distance to axis at closest approach 
 
     const Torus_t rmax_rmax = rmax*rmax ; 
-    const Torus_t rmin_rmin = rmin*rmin ; 
+    //const Torus_t rmin_rmin = rmin*rmin ; 
 
 
     if( rcrc > rmax_rmax )   // intersect not possible when closest approach to axis exceeds rmax
@@ -432,8 +432,11 @@ void csg_intersect_torus_scale_test(unsigned long long photon_id, bool do_scale)
 
     const float r = 10.f ; 
     const float R = 100.f ; 
+
+#ifdef CSG_INTERSECT_TORUS_TEST
     const float rmax = R + r  ;  
-    const float rmin = R - r ; 
+#endif
+    //const float rmin = R - r ; 
 
 /*
    // SCALE TEST

@@ -2,16 +2,27 @@
 OpticksBuildOptions.cmake
 ============================
 
-During integrated builds the project name is the top level 
-one "Opticks" so the "name" variable is used here as
-that works the same in integrated and proj-by-proj building.
+This is included into all Opticks subproject CMakeLists.txt
+Formerly did a conditional find_package for OKConf here::
 
-OKConf package is found prior to setting up compilation flags in order 
-to get the COMPUTE_CAPABILITY which is needed to define the CUDA_NVCC_FLAGS
-see $(opticks-prefix)/lib/cmake/okconf/okconf-config.cmake
+   if(NOT ${name} STREQUAL "OKConf" AND NOT ${name} STREQUAL "OKConfTest")
+      find_package(OKConf     REQUIRED CONFIG)   
+   endif()
 
-RPATH setup https://gitlab.kitware.com/cmake/community/wikis/doc/cmake/RPATH-handling
+But it is confusing to hide a package dependency like this, 
+it is better to be explicit and have opticks-deps give a true picture 
+of the dependencies. BCM is an exception as it is CMake level only 
+infrastructure. 
 
+Also formerly included OpticksCUDAFlags which defines CUDA_NVCC_FLAGS here, 
+but that depends on the COMPUTE_CAPABILITY that is provided by OKConf 
+so have moved that to the OKConf generated TOPMATTER, which generates:
+
+*  $(opticks-prefix)/lib/cmake/okconf/okconf-config.cmake
+
+RPATH setup docs 
+
+* https://gitlab.kitware.com/cmake/community/wikis/doc/cmake/RPATH-handling
 
 #]=]
 
@@ -40,14 +51,6 @@ include(EchoTarget)
 set(BUILD_SHARED_LIBS ON)
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
-#
-#if(NOT ${name} STREQUAL "OKConf" AND NOT ${name} STREQUAL "OKConfTest")
-#  find_package(OKConf     REQUIRED CONFIG)   
-#endif()
-
 include(OpticksCXXFlags)   
-include(OpticksCUDAFlags)   
-
-
 
 

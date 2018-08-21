@@ -25,8 +25,8 @@ RT_PROGRAM void exception()
 {
     rtPrintExceptionDetails();
 
-    unsigned long long photon_id = launch_index.x ;  
-    unsigned int photon_offset = photon_id*6 ; 
+    //unsigned long long photon_id = launch_index.x ;  
+    //unsigned int photon_offset = photon_id*6 ; 
 }
 
 

@@ -21,7 +21,11 @@
 
 # Locate the OptiX distribution.  Search relative to the SDK first, then look in the system.
 
-#message(STATUS "${CMAKE_CURRENT_LIST_FILE} : OptiX_INSTALL_DIR : ${OptiX_INSTALL_DIR} ")
+if(OptiX_VERBOSE)
+    message(STATUS "${CMAKE_CURRENT_LIST_FILE} : OptiX_VERBOSE     : ${OptiX_VERBOSE} ")
+    message(STATUS "${CMAKE_CURRENT_LIST_FILE} : OptiX_INSTALL_DIR : ${OptiX_INSTALL_DIR} ")
+endif()
+
 # Our initial guess will be within the SDK.
 #set(OptiX_INSTALL_DIR "${CMAKE_SOURCE_DIR}/../" CACHE PATH "Path to OptiX installed location.")
 

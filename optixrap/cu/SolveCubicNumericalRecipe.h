@@ -17,7 +17,7 @@ unsigned SolveCubic(Solve_t a, Solve_t b, Solve_t c, Solve_t* xx, unsigned msk )
     const Solve_t fiftyfour(54) ;
 
     const Solve_t othree = one/three ; 
-    const Solve_t otwo = one/two ; 
+    //const Solve_t otwo = one/two ; 
     const Solve_t twpi = M_PI*two  ;
    
     const Solve_t a3 = a*othree ; 

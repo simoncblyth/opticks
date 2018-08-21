@@ -26,13 +26,13 @@ RT_PROGRAM void OEventTest()
 {
     unsigned long long photon_id = launch_index.x ;  
     unsigned int photon_offset = photon_id*PNUMQUAD ;   // 4
-    union quad phead ;
-    phead.f = photon_buffer[photon_offset+0] ;
+    //union quad phead ;
+    //phead.f = photon_buffer[photon_offset+0] ;
 
-    unsigned int genstep_id = phead.u.x ; 
-    unsigned int genstep_offset = genstep_id*GNUMQUAD ; 
-    union quad ghead ; 
-    ghead.f = genstep_buffer[genstep_offset+0]; 
+    //unsigned int genstep_id = phead.u.x ; 
+    //unsigned int genstep_offset = genstep_id*GNUMQUAD ; 
+    //union quad ghead ; 
+    //ghead.f = genstep_buffer[genstep_offset+0]; 
 
 //    rtPrintf("(OEventTest) photon_id %d photon_offset %d genstep_id %d GNUMQUAD %d genstep_offset %d \n", photon_id, photon_offset, genstep_id, GNUMQUAD, genstep_offset  );
 

@@ -32,8 +32,8 @@ RT_PROGRAM void seedTest()
     // getting crazy values for this in interop, photon_buffer being overwritten ?? 
     unsigned int genstep_offset = genstep_id*GNUMQUAD ; 
 
-    union quad ghead ; 
-    ghead.f = genstep_buffer[genstep_offset+0]; 
+    //union quad ghead ; 
+    //ghead.f = genstep_buffer[genstep_offset+0]; 
 
     rtPrintf("(seedTest) photon_id %d photon_offset %d genstep_id %d GNUMQUAD %d genstep_offset %d \n", photon_id, photon_offset, genstep_id, GNUMQUAD, genstep_offset  );
 
