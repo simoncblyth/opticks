@@ -13,9 +13,6 @@
 #include <cstring>
 #include <iomanip>
 
-
-//#include "OpticksCMakeConfig.hh"
-
 // sysrap-
 #include "STimes.hh"
 
@@ -1623,13 +1620,25 @@ void OpticksEvent::save()
 }
 
 
+
+/**
+OpticksEvent::saveHitData
+--------------------------
+
+Writes hit buffer even when empty, otherwise get inconsistent 
+buffer time stamps when changes makes hits go away and are writing 
+into the same directory.
+
+**/
+
 void OpticksEvent::saveHitData()
 {
     NPY<float>* ht = getHitData();
     if(ht)
     {
         unsigned num_hit = ht->getNumItems(); 
-        if(num_hit > 0) ht->save("ht", m_typ,  m_tag, m_udet);
+        //if(num_hit > 0) ht->save("ht", m_typ,  m_tag, m_udet);
+        ht->save("ht", m_typ,  m_tag, m_udet);   
         if(num_hit == 0) LOG(info) << "saveHitData zero hits " ; 
     }
 }

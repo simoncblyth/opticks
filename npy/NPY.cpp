@@ -487,14 +487,33 @@ void NPY<T>::qdump(const char* msg)
 
 
 
+
 template <typename T>
-T NPY<T>::maxdiff(NPY<T>* other, bool dump_)
+bool NPY<T>::equals(const NPY<T>* other, bool dump_) const 
+{
+    unsigned nv = getNumValues(0);
+    unsigned no = other->getNumValues(0);
+
+    if(dump_) 
+        LOG(info)
+            << " nv " << nv  
+            << " no " << no
+            ;  
+
+    if( nv != no ) return false ; 
+    T mxd = maxdiff(other, dump_) ;  
+    T zero(0) ; 
+    return mxd == zero ;  
+} 
+
+template <typename T>
+T NPY<T>::maxdiff(const NPY<T>* other, bool dump_) const 
 {
     unsigned int nv = getNumValues(0);
-    unsigned int no = getNumValues(0);
+    unsigned int no = other->getNumValues(0);
     assert( no == nv);
-    T* v_ = getValues();
-    T* o_ = other->getValues();
+    const T* v_ = getValuesConst();
+    const T* o_ = other->getValuesConst();
 
     T mx(0); 
     for(unsigned int i=0 ; i < nv ; i++)
@@ -752,16 +771,16 @@ void NPY<T>::save(const char* raw)
 
     T* values = getValues();
 
-    bool allow_save_empty = false ; // <-- causes flakey segfaults inside aoba when true 
+    bool skip_saving_empty = false ; // <-- formerly caused flakey segfaults when passing NULL values to aoba 
 
-    if(values == NULL && !allow_save_empty )
+    if(values == NULL && skip_saving_empty )
     {
          LOG(fatal) << "NPY values NULL, SKIP attempt to save  " 
+                    << " skip_saving_empty " << skip_saving_empty
                     << " itemcount " << itemcount
                     << " itemshape " << itemshape
                     << " native " << native 
                     ; 
-         //assert(0);
     }
     else
     {

@@ -55,6 +55,10 @@ Immediate Issues
 
 * listed under torch, need a new "primaries" source code ? 
 
+* FIXED longstanding issue of mixed timestamp event dirs when changes make eg the hits buffer go away,
+  when now getting zero hits : cause is that NPY has problems with saving empties, so it just skips 
+
+
 
 ::
 

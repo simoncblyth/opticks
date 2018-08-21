@@ -171,7 +171,8 @@ class NPY_API NPY : public NPYBase {
        NPY<T>* transform(glm::mat4& tr);
        NPY<T>* scale(float factor);
    public:
-       T maxdiff(NPY<T>* other, bool dump=false);
+       bool equals(const NPY<T>* other, bool dump=false) const ;
+       T maxdiff(const NPY<T>* other, bool dump=false) const ;
    public:
        T* getValues();
        const T* getValuesConst() const ;

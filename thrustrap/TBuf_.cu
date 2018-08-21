@@ -68,6 +68,9 @@ void TBuf::download(NPY<T>* npy, bool verbose) const
     unsigned numItems_npy = npy->getNumItems();
     unsigned numItems_tbuf = getSize(); 
 
+    bool create_empty_npy = true ; 
+
+
     if(numItems_tbuf == 0)
     {
         std::cout << "TBuf::download SKIP "
@@ -75,6 +78,11 @@ void TBuf::download(NPY<T>* npy, bool verbose) const
                   << std::endl ; 
 
         m_spec.Summary("CBufSpec.Summary (empty tbuf?)"); 
+        if(create_empty_npy)
+        {
+            std::cout << "create_empty_npy" << std::endl ; 
+            npy->zero();
+        }
         return ; 
     }
 

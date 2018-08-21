@@ -249,7 +249,11 @@ void SaveArrayAsNumpy(
     stream << preamble << header;
     int size = 1;
     for(int i=0; i<n_dims; ++i) { size *= shape[i]; }
-    stream.write(reinterpret_cast<const char*>(data), sizeof(Scalar)*size);
+
+    if( data != NULL)  // try to allow writing empties
+    {
+        stream.write(reinterpret_cast<const char*>(data), sizeof(Scalar)*size);
+    }
 }
 
 

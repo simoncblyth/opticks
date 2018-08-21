@@ -1,3 +1,5 @@
+// TEST=NPY2Test om-t
+
 #include "NPY_FLAGS.hh"
 
 #include <cassert>
@@ -9,10 +11,7 @@
 #include "NPY.hpp"
 #include "GLMFormat.hpp"
 
-#include "NPY_LOG.hh"
-#include "BRAP_LOG.hh"
-
-#include "PLOG.hh"
+#include "OPTICKS_LOG.hh"
 
 
 
@@ -169,6 +168,42 @@ void test_make_paired_transforms()
    // hmm again, refuses to save an empty 
 
 }
+
+
+void test_save_load_empty()
+{
+    NPY<float>* empty = NPY<float>::make(0, 4, 4);
+    empty->zero();
+    const char* path = "$TMP/npy/test_save_load_empty.npy" ; 
+    empty->save(path); 
+
+    NPY<float>* empty2 = NPY<float>::load(path); 
+    assert( empty2 ); 
+
+    LOG(info) 
+        << " empty " << empty->getShapeString() 
+        << " empty2 " << empty2->getShapeString() 
+        ;
+
+    assert( empty->equals(empty2,true) ) ; 
+    assert( empty2->equals(empty,true) ) ; 
+}
+
+/*
+epsilon:tests blyth$ xxd /tmp/blyth/opticks/test_save_empty.npy
+00000000: 934e 554d 5059 0100 4600 7b27 6465 7363  .NUMPY..F.{'desc
+00000010: 7227 3a20 273c 6634 272c 2027 666f 7274  r': '<f4', 'fort
+00000020: 7261 6e5f 6f72 6465 7227 3a20 4661 6c73  ran_order': Fals
+00000030: 652c 2027 7368 6170 6527 3a20 2830 2c20  e, 'shape': (0, 
+00000040: 342c 2034 292c 207d 2020 2020 2020 200a  4, 4), }       .
+
+In [1]: a = np.load("/tmp/blyth/opticks/test_save_empty.npy")
+
+In [2]: a
+Out[2]: array([], shape=(0, 4, 4), dtype=float32)
+
+*/
+
 
 
 
@@ -336,10 +371,7 @@ void test_make_masked()
 
 int main(int argc, char** argv )
 {
-    PLOG_(argc, argv);
-    NPY_LOG__ ;   
-    BRAP_LOG_ ;   
-
+    OPTICKS_LOG(argc, argv);
 
     NPYBase::setGlobalVerbose(true);
 
@@ -358,9 +390,10 @@ int main(int argc, char** argv )
     test_copyTo_ivec4();
     test_copyTo_vec3();
     test_make_from_str();
-*/
-
     test_make_masked();
+*/
+    test_save_load_empty();
+
 
     return 0 ; 
 }
