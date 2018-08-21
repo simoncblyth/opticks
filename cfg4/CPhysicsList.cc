@@ -18,6 +18,7 @@ CPhysicsList::CPhysicsList(CG4* g4)
     G4VUserPhysicsList(),
     m_g4(g4),
     m_ok(g4->getOpticks()),
+    m_emVerbosity(0),
     m_cerenkov(NULL),
     m_cerenkovProcess(NULL),
     m_scintillationProcess(NULL),
@@ -136,8 +137,18 @@ void CPhysicsList::constructDecay()
 
 #include "G4hIonisation.hh"
 
+
+void CPhysicsList::setupEmVerbosity(unsigned verbosity)
+{
+   // these are used in Em process constructors, so do this prior to process creation
+    G4EmParameters* empar = G4EmParameters::Instance() ;
+    empar->SetVerbose(verbosity); 
+    empar->SetWorkerVerbose(verbosity); 
+}
+
 void CPhysicsList::constructEM()
 {
+    setupEmVerbosity(m_emVerbosity);
     for(VP::iterator it=m_particles.begin() ; it != m_particles.end() ; it++ ) constructEM(*it) ; 
 }
  

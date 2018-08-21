@@ -11,6 +11,13 @@ ckm-c(){  cd $(ckm-dir) ; }
 
 ckm--(){ ckm-cd ; ./go.sh ; }
 
+ckm-run()
+{
+    g4-
+    g4-export   # internal envvar stuff, is it done here ? NOPE
+    # CerenkovMinimal --dbgtex    ## cannot do this either, as opticks is embedded
+}
+
 
 
 ckm-dig(){ echo c250d41454fba7cb19f3b83815b132c2 ; }

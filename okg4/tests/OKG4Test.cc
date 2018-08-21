@@ -9,5 +9,7 @@ int main(int argc, char** argv)
     okg4.propagate();
     okg4.visualize();   
 
-    return okg4.rc() ;
+    int rc = okg4.rc() ;
+    LOG(info) << " end of main " << rc  ; 
+    return rc ;
 }

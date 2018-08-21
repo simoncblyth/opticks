@@ -76,6 +76,39 @@ void test_EndsWith()
     assert( SStr::EndsWith(s, "World") == true ); 
 }
 
+void test_HasPointerSuffix()
+{
+
+    std::vector<std::string> yes = 
+      {
+         "det0x110d9a820",
+         "0x110d9a820" ,
+         "0xdeadbeef0" 
+      }
+   ;
+
+    std::vector<std::string> no = 
+      {
+         "tooshort",
+         "0xdeadbeef",
+         "0xdeadbeef"
+      }
+   ;
+
+    for( unsigned i=0 ; i < yes.size() ; i++) 
+    {
+        std::cout << "y: " << yes[i] << std::endl ; 
+        assert( SStr::HasPointerSuffix(yes[i].c_str(), 9) == true );
+    }
+    for( unsigned i=0 ; i < no.size() ; i++) 
+    { 
+        std::cout << "n: " << no[i] << std::endl ; 
+        assert( SStr::HasPointerSuffix(no[i].c_str(), 9) == false );
+    }
+
+}
+
+
 
 int main(int argc , char** argv )
 {
@@ -86,8 +119,9 @@ int main(int argc , char** argv )
     test_FromULL();
     test_Format1();  
     test_Contains();  
-    */
     test_EndsWith();  
+    */
+    test_HasPointerSuffix();  
 
     return 0  ; 
 }

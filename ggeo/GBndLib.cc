@@ -146,6 +146,10 @@ NMeta* GBndLib::createMeta()
 
 void GBndLib::createDynamicBuffers()
 {
+    // there is not much difference between this and doing a close ??? 
+
+    GItemList* names = createNames();     // added Aug 21, 2018
+    setNames(names); 
 
     NPY<float>* buf = createBuffer();
     setBuffer(buf);
@@ -860,6 +864,30 @@ NPY<unsigned int>* GBndLib::createOpticalBuffer()
     // this means that for order preferences ~/.opticks/GMaterialLib/order.json and ~/.opticks/GSurfaceLib/order.json
     // to be reflected need to rebuild the cache with ggv -G first 
 }
+
+/**
+
+dbgtex.py optical buffer for 3 boundaries with just omat/imat set::
+
+    Out[1]: 
+    array([[[1, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [1, 0, 0, 0]],
+
+           [[1, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [2, 0, 0, 0]],
+
+           [[2, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [3, 0, 0, 0]]], dtype=uint32)
+
+**/
+
+
 
 
 void GBndLib::import()

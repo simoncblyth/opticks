@@ -16,9 +16,11 @@ OBndLib::OBndLib(optix::Context& ctx, GBndLib* blib)
     : 
     OPropertyLib(ctx, "OBndLib"),
     m_blib(blib),
+    m_ok(blib->getOpticks()),
     m_debug_buffer(NULL),  
     m_width(0),
-    m_height(0)
+    m_height(0),
+    m_level(info)
 {
 }
 
@@ -81,7 +83,7 @@ This keeps lookup simple.
 
 void OBndLib::convert()
 {
-    LOG(debug) << "OBndLib::convert" ;
+    LOG(m_level) << "OBndLib::convert" ;
 
     m_blib->createDynamicBuffers();
 
@@ -106,6 +108,16 @@ void OBndLib::convert()
     NPY<unsigned int>* obuf = m_blib->getOpticalBuffer() ;  // (123, 4, 4)
 
     makeBoundaryOptical(obuf);
+
+    if(m_ok->isDbgTex())  // --dbgtex
+    {
+        const char* idpath = m_ok->getIdPath(); 
+        LOG(fatal) << " --dbgtex saving buf and obuf into " << idpath << "/dbgtex" ; 
+        buf->save(idpath,"dbgtex","buf.npy" ) ;
+        obuf->save(idpath,"dbgtex","obuf.npy" ) ;
+        m_blib->saveNames(idpath, "dbgtex", "bnd.txt"); 
+    }
+
 }
 
 
@@ -145,7 +157,7 @@ void OBndLib::makeBoundaryTexture(NPY<float>* buf)
     unsigned int nx = nl ;           // wavelength samples
     unsigned int ny = ni*nj*nk ;     // total number of properties from all (two) float4 property groups of all (4) species in all (~123) boundaries 
    
-    LOG(verbose) << "OBndLib::makeBoundaryTexture buf " 
+    LOG(m_level) << "OBndLib::makeBoundaryTexture buf " 
               << buf->getShapeString() 
               << " ---> "  
               << " nx " << nx

@@ -20,6 +20,25 @@ Geant4 culprit for writing big chunks of text is G4EmModelManager::
    g4-cls G4EmModelManager
 
 
+Workaround is to kill the EM verbosity::
+
+    141 void CPhysicsList::setupEmVerbosity(unsigned verbosity)
+    142 {
+    143    // these are used in Em process constructors, so do this prior to process creation
+    144     G4EmParameters* empar = G4EmParameters::Instance() ;
+    145     empar->SetVerbose(verbosity);
+    146     empar->SetWorkerVerbose(verbosity);
+    147 }
+    148 
+    149 void CPhysicsList::constructEM()
+    150 {
+    151     setupEmVerbosity(m_emVerbosity);
+    152     for(VP::iterator it=m_particles.begin() ; it != m_particles.end() ; it++ ) constructEM(*it) ;
+    153 }
+       
+
+
+
 ::
 
     130 /////////////////////////////////////////////

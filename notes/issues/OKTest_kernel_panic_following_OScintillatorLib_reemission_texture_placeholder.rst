@@ -12,6 +12,13 @@ Updated from 103 to 106::
 
 
 
+
+* https://stackoverflow.com/questions/1957398/what-exactly-are-spin-locks
+
+
+Yet another, this time again while scrolling rapidly.
+
+
 Got another panic::
 
     Anonymous UUID:       32BCAB7F-2AEA-A951-3785-013ECFB913EA

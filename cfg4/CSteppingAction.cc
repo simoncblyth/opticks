@@ -154,13 +154,15 @@ bool CSteppingAction::setStep(const G4Step* step)
 {
     int noZeroSteps = -1 ;
     int severity = m_nav->SeverityOfZeroStepping( &noZeroSteps );
+
+    /*
     if(noZeroSteps > 0)
     LOG(info) 
               << " noZeroSteps " << noZeroSteps
               << " severity " << severity
               << " ctx " << m_ctx.desc()
               ;
-
+    */ 
 
     bool done = false ; 
 

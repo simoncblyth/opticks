@@ -23,6 +23,7 @@ class GGEO_API GItemList : public NSequence {
        void add(const char* name);
        void add(GItemList* other);
        void save(const char* idpath);
+       void save(const char* idpath, const char* reldir, const char* txtname);  // for debug 
        void dump(const char* msg="GItemList::dump");
        const std::string& getRelDir() const ;  
     public:

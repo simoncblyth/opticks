@@ -197,6 +197,8 @@ class GGEO_API GPropertyLib {
         NPY<float>*  getBuffer();
         NMeta*       getMeta() const  ;
         GItemList*   getNames() const ;
+        void saveNames(const char* idpath, const char* reldir, const char* txtname) const ; 
+
         OpticksAttrSeq*    getAttrNames();
         std::string getAbbr(const char* key);
     public:

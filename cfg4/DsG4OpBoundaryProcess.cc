@@ -244,7 +244,7 @@ DsG4OpBoundaryProcess::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
 
         G4VParticleChange* change = G4VDiscreteProcess::PostStepDoIt(aTrack, aStep);
 
-        LOG(info) << " StepTooSmall" ;   // (*lldb*) StepTooSmall
+        //LOG(info) << " StepTooSmall" ;   // (*lldb*) StepTooSmall
 
 	    return change ; 
 	}

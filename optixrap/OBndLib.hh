@@ -4,8 +4,10 @@
 #include <optixu/optixu_math_namespace.h>
 
 class GBndLib ; 
+class Opticks ; 
 template <typename T> class NPY ;
 
+#include "plog/Severity.h"
 #include "OPropertyLib.hh"
 #include "OXRAP_API_EXPORT.hh"
 
@@ -42,9 +44,11 @@ private:
     void makeBoundaryOptical(NPY<unsigned int>* obuf);
 private:
     GBndLib*             m_blib ; 
+    Opticks*             m_ok ; 
     NPY<float>*          m_debug_buffer ; 
     unsigned int         m_width ; 
     unsigned int         m_height ; 
+    plog::Severity       m_level ; 
 
 
 };

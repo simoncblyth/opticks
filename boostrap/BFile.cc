@@ -5,6 +5,7 @@
 
 #include <cstring>
 #include <ctime>
+#include <fstream>
 #include <iostream>
 #include <iomanip>
 #include <vector>

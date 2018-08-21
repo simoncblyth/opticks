@@ -45,7 +45,7 @@ G4bool SensitiveDetector::ProcessHits(G4Step* step,G4TouchableHistory* )
     OpHitCollection* hc = pos.x() > 0 ? hitCollectionA : hitCollectionB ; 
     hc->insert(hit); 
 
-    LOG(info) << Ctx::Format(step, "HIT") ; 
+    //LOG(info) << Ctx::Format(step, "HIT") ; 
     return true ; 
 }
 

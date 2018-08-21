@@ -32,7 +32,7 @@
 G4Opticks* G4Opticks::fOpticks = NULL ;
 
 
-const char* G4Opticks::fEmbeddedCommandLine = " --gltf 3 --compute --save --embedded --natural " ; 
+const char* G4Opticks::fEmbeddedCommandLine = " --gltf 3 --compute --save --embedded --natural --dbgtex " ; 
 
 std::string G4Opticks::desc() const 
 {
@@ -88,8 +88,13 @@ G4Opticks::G4Opticks()
 
 void G4Opticks::setGeometry(const G4VPhysicalVolume* world)
 {
+    LOG(fatal) << "[[[" ; 
+
+    GGeo* ggeo = translateGeometry( world ) ;
+
+
     m_world = world ; 
-    m_ggeo = translateGeometry( world );
+    m_ggeo = ggeo ;
     m_blib = m_ggeo->getBndLib();  
     m_ok = m_ggeo->getOpticks(); 
 
@@ -102,6 +107,8 @@ void G4Opticks::setGeometry(const G4VPhysicalVolume* world)
 
     // OpMgr instanciates OpticksHub which adopts the pre-existing m_ggeo instance just translated
     m_opmgr = new OpMgr(m_ok) ;   
+
+    LOG(fatal) << "]]]" ; 
 }
 
 GGeo* G4Opticks::translateGeometry( const G4VPhysicalVolume* top )
@@ -125,6 +132,10 @@ GGeo* G4Opticks::translateGeometry( const G4VPhysicalVolume* top )
 
     return gg ; 
 }
+
+
+
+
 
 void G4Opticks::setupMaterialLookup()
 {

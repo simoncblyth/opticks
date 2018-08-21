@@ -47,7 +47,12 @@ void GGeoSensor::AddSensorSurfaces( GGeo* gg )
     for(unsigned i=0 ; i < nclv ; i++)
     {
         const char* sslv = gg->getCathodeLV(i);
-        unsigned index = gg->getNumMaterials() + gg->getNumSkinSurfaces() + gg->getNumBorderSurfaces() ;
+
+        unsigned num_mat = gg->getNumMaterials()  ;
+        unsigned num_sks = gg->getNumSkinSurfaces() ;
+        unsigned num_bds = gg->getNumBorderSurfaces() ;
+
+        unsigned index = num_mat + num_sks + num_bds ;
         // standard materials/surfaces use the originating aiMaterial index, 
         // extend that for fake SensorSurface by toting up all 
 
@@ -55,6 +60,9 @@ void GGeoSensor::AddSensorSurfaces( GGeo* gg )
                   << " i " << i
                   << " sslv " << sslv
                   << " index " << index
+                  << " num_mat " << num_mat
+                  << " num_sks " << num_sks
+                  << " num_bds " << num_bds
                   ;
 
         GSkinSurface* gss = MakeSensorSurface(sslv, index);

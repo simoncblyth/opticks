@@ -13,8 +13,7 @@ class G4VSolid ;
 
 #include "NGLM.hpp"
 #include "X4_API_EXPORT.hh"
-
-
+#include "X4Named.hh"
 
 template <typename T> struct nxform ; 
 
@@ -62,7 +61,7 @@ struct X4_API X4Nd
 };
 
 
-class X4_API X4PhysicalVolume
+class X4_API X4PhysicalVolume : public X4Named 
 {
     public:
         static const G4VPhysicalVolume* const Top();

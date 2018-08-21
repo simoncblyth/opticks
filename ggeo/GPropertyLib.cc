@@ -209,7 +209,6 @@ NMeta* GPropertyLib::getMeta() const
     return m_meta ; 
 }
 
-
 GItemList* GPropertyLib::getNames() const 
 {
     return m_names ;
@@ -518,6 +517,22 @@ void GPropertyLib::saveNames(const char* dir) const
     assert(m_names); 
     m_names->save( dir ? dir : m_resource->getIdPath() );
 }
+
+
+
+void GPropertyLib::saveNames(const char* idpath, const char* reldir, const char* txtname) const
+{
+    if(m_names == NULL) 
+    {
+        LOG(fatal) << " no names to save " 
+                   << " " << ( m_closed ? "CLOSED" : "not-closed" ) 
+                   ; 
+        return ; 
+    }
+    m_names->save(idpath, reldir, txtname); 
+}
+
+
 
 
 void GPropertyLib::loadFromCache()

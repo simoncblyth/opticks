@@ -36,6 +36,7 @@ class CFG4_API CPhysicsList : public G4VUserPhysicsList
         void ConstructParticle();
         void ConstructProcess();
     public:
+        void setupEmVerbosity(unsigned verbosity);
         void setProcessVerbosity(int verbosity);
         void setProcessVerbosity(G4ParticleDefinition* particle, int verbosity);
     private:
@@ -48,6 +49,7 @@ class CFG4_API CPhysicsList : public G4VUserPhysicsList
     private:
         CG4*         m_g4 ; 
         Opticks*     m_ok ; 
+        unsigned     m_emVerbosity ; 
         CCerenkov*   m_cerenkov ; 
         G4VProcess*  m_cerenkovProcess ; 
         G4VProcess*  m_scintillationProcess ; 

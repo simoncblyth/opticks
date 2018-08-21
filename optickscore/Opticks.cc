@@ -731,6 +731,11 @@ bool Opticks::isDbgKludgeFlatZero() const  // --dbgkludgeflatzero
 {
    return m_cfg->hasOpt("dbgkludgeflatzero");
 }
+bool Opticks::isDbgTex() const  // --dbgtex
+{
+   return m_cfg->hasOpt("dbgtex");
+}
+
 
 
 

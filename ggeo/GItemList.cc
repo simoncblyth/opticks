@@ -94,6 +94,14 @@ void GItemList::save(const char* idpath)
     save_(txtpath.c_str());
 }
 
+void GItemList::save(const char* idpath, const char* reldir, const char* txtname)
+{
+    std::string txtpath = BFile::preparePath(idpath, reldir, txtname ); 
+    LOG(debug) << "GItemList::save writing to " << txtpath ;       
+    save_(txtpath.c_str());
+}
+
+
 void GItemList::save_(const char* txtpath)
 {
     std::ofstream ofs(txtpath);

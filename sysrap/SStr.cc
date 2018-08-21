@@ -109,5 +109,42 @@ bool SStr::EndsWith( const char* s, const char* q)
     return pos > 0 && strncmp(s + pos, q, strlen(q)) == 0 ;
 }
 
+/**
+
+SStr::HasPointerSuffix
+-----------------------
+
+Typically see 12 hexdigit pointers, as even though have 64 bits it is normal to only use 48 bits in an address space
+    0x7ff46e500520 
+
+But with G4 are seeing only 9 hexdigits ??
+
+
+**/
+
+bool SStr::HasPointerSuffix( const char* name, unsigned hexdigits )
+{
+   // eg Det0x110d9a820      why 9 hex digits vs
+   //       0x7ff46e500520    
+   //
+    std::string s(name); 
+    unsigned l = s.size() ; 
+    if(l < hexdigits+2 ) return false ;
+ 
+    for(unsigned i=0 ; i < hexdigits+2 ; i++)
+    {
+        char c = s[l-11+i] ; 
+        bool ok = false ; 
+        switch(i)
+        {
+            case 0: ok = c == '0' ; break ; 
+            case 1: ok = c == 'x' ; break ; 
+            default:  ok = ( c >= '0' && c <= '9' ) || ( c >= 'a' && c <= 'f' ) ; break ;   
+        }
+        if(!ok) return false ; 
+    }
+    return true  ; 
+}
+
 
 

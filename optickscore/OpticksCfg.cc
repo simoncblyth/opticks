@@ -385,6 +385,11 @@ void OpticksCfg<Listener>::init()
        ("dbgbnd", "debug boundary handling see notes/issues/surface_review.rst "); 
 
    m_desc.add_options()
+       ("dbgtex", "debug boundary texture see OBndLib "); 
+
+
+
+   m_desc.add_options()
        ("dbgrec", "debug CRecorder "); 
 
    m_desc.add_options()

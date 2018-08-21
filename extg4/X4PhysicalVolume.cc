@@ -88,6 +88,7 @@ GGeo* X4PhysicalVolume::Convert(const G4VPhysicalVolume* const top)
 
 X4PhysicalVolume::X4PhysicalVolume(GGeo* ggeo, const G4VPhysicalVolume* const top)
     :
+    X4Named("X4PhysicalVolume"),
     m_ggeo(ggeo),
     m_top(top),
     m_ok(m_ggeo->getOpticks()), 
@@ -634,6 +635,33 @@ unsigned X4PhysicalVolume::addBoundary(const G4VPhysicalVolume* const pv, const 
 
     const char* _lv = X4::BaseNameAsis(lv) ;  
     const char* _lv_p = X4::BaseNameAsis(lv_p) ;   // NULL when no lv_p   
+
+    const char* _n_lv = X4::GDMLName(lv) ; 
+    const char* _n_lv_p = X4::GDMLName(lv_p) ; 
+
+
+    printf(" printf this %p \n", this ) ; 
+    printf(" printf lv  %p \n", lv ) ; 
+
+    LOG(fatal)
+        << " this " << this 
+        << " X4::GDMLName(this) " << X4::GDMLName(this) 
+        ;
+
+    LOG(fatal)
+        << " lv names to look for skinsurfaces with "
+        << " lv " << lv 
+        << " _lv " << _lv
+        << " _n_lv " << _n_lv
+        ;
+
+    LOG(fatal)
+        << " lv names to look for skinsurfaces with "
+        << " lv_p " << lv_p 
+        << " _lv_p " << _lv_p
+        << " _n_lv_p " << _n_lv_p
+        ;
+
 
     const GSkinSurface* g_sslv = m_ggeo->findSkinSurface(_lv) ;  
     const GSkinSurface* g_sslv_p = _lv_p ? m_ggeo->findSkinSurface(_lv_p) : NULL ;  

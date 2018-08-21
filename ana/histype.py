@@ -69,7 +69,7 @@ if __name__ == '__main__':
      
      test_HistoryTable(ht, seqhis)
 
-     test_roundtrip(af)
+     #test_roundtrip(af)
 
 
 

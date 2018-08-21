@@ -3,6 +3,7 @@
 #include <algorithm>
 
 #include "X4.hh"
+#include "SGDML.hh"
 #include "BStr.hh"
 #include "BFile.hh"
 
@@ -62,6 +63,23 @@ const char* X4::BaseNameAsis( const T* const obj )
 
 
 template<typename T>
+const char* X4::GDMLName( const T* const obj )
+{    
+    if(obj == NULL) return NULL ; 
+    const std::string& name = obj->GetName();
+
+    const char* base = BaseNameAsis(name); 
+    bool addPointerToName = true ; 
+    std::string gn = SGDML::GenerateName( base, obj, addPointerToName  )  ;
+    free((void*)base); 
+    return strdup(gn.c_str());
+}
+
+
+
+
+
+template<typename T>
 const char* X4::Name( const T* const obj )
 {    
     if(obj == NULL) return NULL ; 
@@ -98,6 +116,8 @@ template X4_API int X4::GetItemIndex<G4LogicalSkinSurface>(const std::vector<G4L
 #include "G4VPhysicalVolume.hh"
 #include "G4LogicalVolume.hh"
 #include "G4Material.hh"
+#include "X4Named.hh"
+#include "X4PhysicalVolume.hh"
 
 template X4_API const char* X4::Name<G4OpticalSurface>(const G4OpticalSurface* const);
 template X4_API const char* X4::Name<G4LogicalBorderSurface>(const G4LogicalBorderSurface* const);
@@ -106,6 +126,8 @@ template X4_API const char* X4::Name<G4LogicalSurface>(const G4LogicalSurface* c
 template X4_API const char* X4::Name<G4VPhysicalVolume>(const G4VPhysicalVolume* const);
 template X4_API const char* X4::Name<G4LogicalVolume>(const G4LogicalVolume* const);
 template X4_API const char* X4::Name<G4Material>(const G4Material* const);
+template X4_API const char* X4::Name<X4Named>(const X4Named* const);
+template X4_API const char* X4::Name<X4PhysicalVolume>(const X4PhysicalVolume* const);
 
 template X4_API const char* X4::ShortName<G4OpticalSurface>(const G4OpticalSurface* const);
 template X4_API const char* X4::ShortName<G4LogicalBorderSurface>(const G4LogicalBorderSurface* const);
@@ -114,6 +136,8 @@ template X4_API const char* X4::ShortName<G4LogicalSurface>(const G4LogicalSurfa
 template X4_API const char* X4::ShortName<G4VPhysicalVolume>(const G4VPhysicalVolume* const);
 template X4_API const char* X4::ShortName<G4LogicalVolume>(const G4LogicalVolume* const);
 template X4_API const char* X4::ShortName<G4Material>(const G4Material* const);
+template X4_API const char* X4::ShortName<X4Named>(const X4Named* const);
+template X4_API const char* X4::ShortName<X4PhysicalVolume>(const X4PhysicalVolume* const);
 
 template X4_API const char* X4::BaseName<G4OpticalSurface>(const G4OpticalSurface* const);
 template X4_API const char* X4::BaseName<G4LogicalBorderSurface>(const G4LogicalBorderSurface* const);
@@ -122,6 +146,8 @@ template X4_API const char* X4::BaseName<G4LogicalSurface>(const G4LogicalSurfac
 template X4_API const char* X4::BaseName<G4VPhysicalVolume>(const G4VPhysicalVolume* const);
 template X4_API const char* X4::BaseName<G4LogicalVolume>(const G4LogicalVolume* const);
 template X4_API const char* X4::BaseName<G4Material>(const G4Material* const);
+template X4_API const char* X4::BaseName<X4Named>(const X4Named* const);
+template X4_API const char* X4::BaseName<X4PhysicalVolume>(const X4PhysicalVolume* const);
 
 template X4_API const char* X4::BaseNameAsis<G4OpticalSurface>(const G4OpticalSurface* const);
 template X4_API const char* X4::BaseNameAsis<G4LogicalBorderSurface>(const G4LogicalBorderSurface* const);
@@ -130,6 +156,21 @@ template X4_API const char* X4::BaseNameAsis<G4LogicalSurface>(const G4LogicalSu
 template X4_API const char* X4::BaseNameAsis<G4VPhysicalVolume>(const G4VPhysicalVolume* const);
 template X4_API const char* X4::BaseNameAsis<G4LogicalVolume>(const G4LogicalVolume* const);
 template X4_API const char* X4::BaseNameAsis<G4Material>(const G4Material* const);
+template X4_API const char* X4::BaseNameAsis<X4Named>(const X4Named* const);
+template X4_API const char* X4::BaseNameAsis<X4PhysicalVolume>(const X4PhysicalVolume* const);
+
+template X4_API const char* X4::GDMLName<G4OpticalSurface>(const G4OpticalSurface* const);
+template X4_API const char* X4::GDMLName<G4LogicalBorderSurface>(const G4LogicalBorderSurface* const);
+template X4_API const char* X4::GDMLName<G4LogicalSkinSurface>(const G4LogicalSkinSurface* const);
+template X4_API const char* X4::GDMLName<G4LogicalSurface>(const G4LogicalSurface* const);
+template X4_API const char* X4::GDMLName<G4VPhysicalVolume>(const G4VPhysicalVolume* const);
+template X4_API const char* X4::GDMLName<G4LogicalVolume>(const G4LogicalVolume* const);
+template X4_API const char* X4::GDMLName<G4Material>(const G4Material* const);
+template X4_API const char* X4::GDMLName<X4Named>(const X4Named* const);
+template X4_API const char* X4::GDMLName<X4PhysicalVolume>(const X4PhysicalVolume* const);
+
+
+
 
 
 
