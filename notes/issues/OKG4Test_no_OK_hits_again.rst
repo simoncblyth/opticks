@@ -9,6 +9,114 @@ within the OpticksEvent for G4.
 * checking precache with ckm-- also see no OK hits 
 
 
+After adopt X4::GDMLName in X4PhysicalVolume::addBoundary
+-------------------------------------------------------------
+
+Have regained sensor surfaces::
+
+    epsilon:issues blyth$ dbgtex.py 
+
+    [[[  1   0   0   0]
+      [  0   0   0   0]
+      [  0   0   0   0]
+      [  1   0   0   0]]
+
+     [[  1   0   0   0]
+      [  0   0   0   0]
+      [  0   0   0   0]
+      [  2   0   0   0]]
+
+     [[  2   0   0   0]
+      [  5   0   3 100]
+      [  5   0   3 100]
+      [  3   0   0   0]]]
+    epsilon:issues blyth$ 
+
+::
+
+    epsilon:1 blyth$ cd dbgtex/
+    epsilon:dbgtex blyth$ l
+    total 48
+    -rw-r--r--  1 blyth  staff     90 Aug 21 23:04 bnd.txt
+    -rw-r--r--  1 blyth  staff    272 Aug 21 23:04 obuf.npy
+    -rw-r--r--  1 blyth  staff  15072 Aug 21 23:04 buf.npy
+    epsilon:dbgtex blyth$ cat bnd.txt 
+    Air///Air
+    Air///Water
+    Water/Det0x110ebadb0SensorSurface/Det0x110ebadb0SensorSurface/Glass
+    epsilon:dbgtex blyth$ 
+
+
+And in ckm (precache) have some hits::
+
+    2018-08-21 23:04:13.811 ERROR [185967] [OEvent::downloadHits@398] OEvent::downloadHits.cpho
+    2018-08-21 23:04:13.812 ERROR [185967] [OEvent::downloadHits@400] OEvent::downloadHits.cpho DONE 
+    TBuf::TBuf.m_spec : dev_ptr 0x700943000 size 75 num_bytes 4800 hexdump 0 
+    TBuf::TBuf.m_spec : dev_ptr 0x700242000 size 9 num_bytes 576 hexdump 0 
+    2018-08-21 23:04:13.812 FATAL [185967] [OpPropagator::propagate@67] OpPropagator::propagate(1) DONE nhit: 9
+    2018-08-21 23:04:13.812 ERROR [185967] [OpticksEvent::save@1582] skip as CanAnalyse returns false 
+    2018-08-21 23:04:13.812 INFO  [185967] [OpticksEvent::save@1593] OpticksEvent::save  id: 1 typ: natural tag: 1 det: g4live cat:  udet: g4live num_photons: 75 num_source : 0 genstep 4,6,4 nopstep 0,4,4 photon 75,4,4 source NULL record 75,10,2,4 phosel 75,1,4 recsel 75,10,1,4 sequence 75,1,2 seed 75,1,1 hit 9,4,4 dir /tmp/blyth/opticks/evt/g4live/natural/1
+    2018-08-21 23:04:13.812 INFO  [185967] [OpticksEvent::saveNopstepData@1652] saveNopstepData zero nop 
+    2018-08-21 23:04:13.812 INFO  [185967] [NPY<float>::dump@1687] OpticksEvent::save (nopstep) (0,4,4) 
+
+ckm saves into /tmp/blyth/opticks/evt/g4live/natural/1::
+
+    epsilon:1 blyth$ np.py 
+    /private/tmp/blyth/opticks/evt/g4live/natural/1
+            ./report.txt : 38 
+                ./ps.npy : (75, 1, 4) 
+                ./ht.npy : (9, 4, 4) 
+                ./rx.npy : (75, 10, 2, 4) 
+              ./fdom.npy : (3, 1, 4) 
+                ./ox.npy : (75, 4, 4) 
+                ./gs.npy : (4, 6, 4) 
+                ./rs.npy : (75, 10, 1, 4) 
+                ./ph.npy : (75, 1, 2) 
+              ./idom.npy : (1, 1, 4) 
+    ./20180821_230413/report.txt : 38 
+    epsilon:1 blyth$ 
+
+
+Postcache too::
+
+    epsilon:torch blyth$ np.py 
+    /private/tmp/blyth/opticks/evt/g4live/torch
+           ./Opticks.npy : (34, 1, 4) 
+         ./-1/report.txt : 35 
+             ./-1/ps.npy : (54, 1, 4) 
+             ./-1/ht.npy : (0, 4, 4)    #### HAVE G4 HITS THAT NEED TO BE REFLECTED INTO THE OPTICKS EVENT  
+             ./-1/rx.npy : (54, 10, 2, 4) 
+           ./-1/fdom.npy : (3, 1, 4) 
+             ./-1/ox.npy : (54, 4, 4) 
+             ./-1/no.npy : (94, 4, 4) 
+             ./-1/gs.npy : (3, 6, 4) 
+             ./-1/rs.npy : (54, 10, 1, 4) 
+             ./-1/ph.npy : (54, 1, 2) 
+           ./-1/idom.npy : (1, 1, 4) 
+    ./-1/20180821_232057/report.txt : 35 
+          ./1/report.txt : 38 
+              ./1/ps.npy : (54, 1, 4) 
+              ./1/ht.npy : (9, 4, 4) 
+              ./1/rx.npy : (54, 10, 2, 4) 
+            ./1/fdom.npy : (3, 1, 4) 
+              ./1/ox.npy : (54, 4, 4) 
+              ./1/no.npy : (94, 4, 4) 
+              ./1/gs.npy : (3, 6, 4) 
+              ./1/rs.npy : (54, 10, 1, 4) 
+              ./1/ph.npy : (54, 1, 2) 
+            ./1/idom.npy : (1, 1, 4) 
+    ./1/20180821_232057/report.txt : 38 
+    epsilon:torch blyth$ 
+
+
+* notice different photon counts before and after cache 
+
+  * TODO: check the primary transport
+
+  
+
+
+
 Manual ipython dumping photon seqhis labels : reveals no SD (surface detect)
 --------------------------------------------------------------------------------
 

@@ -49,9 +49,15 @@ Immediate Issues
   * FIXED :doc:`OKG4Test_OpticksEvent_indexPhotonsCPU_assert` by direct recording whether dynamic 
     in OpticksEvent and using that to decide on resize via setNumPhotons
 
-* no hits from G4 : SD-LV ASSOCIATION DIDNT SURVIVE THE CACHE/GDML ??
+* no hits from G4 : SD-LV ASSOCIATION DIDNT SURVIVE THE CACHE/GDML ?? 
 
-  * :doc:`OKG4Test_no_G4_hits`
+  * :doc:`OKG4Test_no_G4_hits` actually now have in G4, but not reflected into OpticksEvent yet 
+
+* OK hits lost, following the lv name changes 
+
+  * fixed by consistent use of GDML pointer suffixed names  
+  * :doc:`OKG4Test_no_OK_hits_again` FIXED at ckm (precache, directly converted) level at least 
+
 
 * listed under torch, need a new "primaries" source code ? 
 

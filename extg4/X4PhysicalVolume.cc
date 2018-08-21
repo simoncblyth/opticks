@@ -24,6 +24,7 @@
 #include "X4Mesh.hh"
 #include "X4Transform3D.hh"
 
+#include "SStr.hh"
 #include "SSys.hh"
 #include "SDigest.hh"
 #include "SGDML.hh"
@@ -630,36 +631,38 @@ unsigned X4PhysicalVolume::addBoundary(const G4VPhysicalVolume* const pv, const 
 
     // doubtful of findSurface priority with double skin surfaces, see g4op-
 
-
     // the above will not find Opticks SensorSurfaces ... so look for those with GGeo
 
+    /*
     const char* _lv = X4::BaseNameAsis(lv) ;  
     const char* _lv_p = X4::BaseNameAsis(lv_p) ;   // NULL when no lv_p   
 
-    const char* _n_lv = X4::GDMLName(lv) ; 
-    const char* _n_lv_p = X4::GDMLName(lv_p) ; 
+    const char* this_name = X4::GDMLName(this) ;
+    assert( SStr::HasPointerSuffix(this_name, 12) == true ) ;
 
+    // is Geant4 allocator using placement new into some defined location
+    // somehow ?  https://isocpp.org/wiki/faq/dtors#placement-new 
+    */
 
-    printf(" printf this %p \n", this ) ; 
-    printf(" printf lv  %p \n", lv ) ; 
+    const char* _lv = X4::GDMLName(lv) ; 
+    const char* _lv_p = X4::GDMLName(lv_p) ; 
 
-    LOG(fatal)
-        << " this " << this 
-        << " X4::GDMLName(this) " << X4::GDMLName(this) 
-        ;
+    assert( SStr::HasPointerSuffix(_lv, 9) == true ) ;    
+    if( _lv_p )
+    {
+        assert( SStr::HasPointerSuffix(_lv_p, 9) == true ) ;    
+    }
 
     LOG(fatal)
         << " lv names to look for skinsurfaces with "
         << " lv " << lv 
         << " _lv " << _lv
-        << " _n_lv " << _n_lv
         ;
 
     LOG(fatal)
         << " lv names to look for skinsurfaces with "
         << " lv_p " << lv_p 
         << " _lv_p " << _lv_p
-        << " _n_lv_p " << _n_lv_p
         ;
 
 

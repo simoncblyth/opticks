@@ -173,11 +173,14 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
     G4Material* air = MakeAir(); 
     G4Box* so_0 = new G4Box("World",1000.,1000.,1000.);
     G4LogicalVolume* lv_0 = new G4LogicalVolume(so_0,air,"World",0,0,0);
+    std::cout << " lv_0 " << lv_0 << std::endl  ;
+
     G4VPhysicalVolume* pv_0 = new G4PVPlacement(0,G4ThreeVector(),lv_0 ,"World",0,false,0);
 
     G4Material* water = MakeWater(); 
     G4Box* so_1 = new G4Box("Obj",500.,500.,500.);
     G4LogicalVolume* lv_1 = new G4LogicalVolume(so_1,water,"Obj",0,0,0);
+    std::cout << " lv_1 " << lv_1 << std::endl  ;
     G4VPhysicalVolume* pv_1 = new G4PVPlacement(0,G4ThreeVector(),lv_1 ,"Obj",lv_0,false,0);
     assert( pv_1 ); 
 
@@ -186,6 +189,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
 
     G4Box* so_2 = new G4Box("Det",400.,400.,10.);  // half sizes 
     G4LogicalVolume* lv_2 = new G4LogicalVolume(so_2,glass,"Det",0,0,0);
+    std::cout << " lv_2 " << lv_2 << std::endl  ;
     G4VPhysicalVolume* pv_2 = new G4PVPlacement(0,G4ThreeVector(0,0,100.),lv_2 ,"Det",lv_1,false,0);
     assert( pv_2 ); 
 
