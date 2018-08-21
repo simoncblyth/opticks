@@ -30,14 +30,16 @@ CGenerator::CGenerator(OpticksGen* gen, CG4* g4)
     m_cfg(m_ok->getCfg()),
     m_g4(g4),
     m_source_code(m_gen->getSourceCode()),
-    m_source(initSource(m_source_code)),
+    m_gensteps(NULL),
+    m_dynamic(true),
     m_num_g4evt(1),
     m_photons_per_g4evt(0),
-    m_gensteps(NULL),
-    m_dynamic(true)
+    m_source(initSource(m_source_code))
+    // m_source must be last as it can change m_gensteps, m_dynamic, ...
 {
     init();
 }
+
 
 void CGenerator::init()
 {
@@ -47,19 +49,21 @@ CSource* CGenerator::initSource(unsigned code)
 {
     const char* sourceType = OpticksFlags::SourceType(code);
 
-    LOG(info) << "CGenerator::makeSource" 
-              << " code " << code
-              << " type " << sourceType
-              ; 
-
     CSource* source = NULL ;  
 
     if(     code == G4GUN)      source = initG4GunSource();
     else if(code == TORCH)      source = initTorchSource();
     else if(code == EMITSOURCE) source = initInputPhotonSource();
     else if(code == PRIMARYSOURCE) source = initInputPrimarySource();
-
+    else  assert( 0 && "code not handled" ); 
+ 
     assert(source) ;
+
+    LOG(fatal) 
+        << " code " << code
+        << " type " << sourceType
+        << " " << ( m_dynamic ? "DYNAMIC" : "STATIC" ) 
+        ; 
 
     return source ; 
 }
@@ -124,8 +128,10 @@ CSource* CGenerator::initTorchSource()
     LOG(verbose) << "CGenerator::initTorchSource " ; 
 
     TorchStepNPY* torch = m_gen->getTorchstep();
-
-    setGensteps( torch->getNPY() );  
+    NPY<float>* gs = torch->getNPY() ;  
+    if(!gs) LOG(fatal) << " NULL gs " ; 
+    assert( gs ); 
+    setGensteps( gs );  
     // triggers the event init 
 
     setDynamic(false);

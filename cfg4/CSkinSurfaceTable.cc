@@ -13,7 +13,8 @@
 
 CSkinSurfaceTable::CSkinSurfaceTable()
     :
-    CSurfaceTable("skin")
+    CSurfaceTable("skin"),
+    m_level(info)
 {
     init();
 }
@@ -22,9 +23,9 @@ void CSkinSurfaceTable::init()
 {
     int nsurf = G4LogicalSkinSurface::GetNumberOfSkinSurfaces();
 
-    LOG(info) << "CSkinSurfaceTable::init"
-              << " nsurf " << nsurf 
-              ;
+    LOG(m_level) << "CSkinSurfaceTable::init"
+                 << " nsurf " << nsurf 
+                 ;
 
     const G4LogicalSkinSurfaceTable* sst = G4LogicalSkinSurface::GetSurfaceTable();
 
@@ -37,6 +38,8 @@ void CSkinSurfaceTable::init()
         add(os);
 
         const G4LogicalVolume* lv = ss->GetLogicalVolume() ;
+
+        if( m_level > info )
         std::cout << std::setw(5) << i 
                   << std::setw(35) << ( ss ? ss->GetName() : "NULL" )
                   << std::setw(35) << ( os ? os->GetName() : "NULL" )

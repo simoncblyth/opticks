@@ -41,7 +41,7 @@ void CMaterialTable::initNameIndex()
         const char* name = name_.c_str();
         const char* shortname =  m_prefix && strncmp(name, m_prefix, strlen(m_prefix)) == 0 ? name + strlen(m_prefix) : name ; 
 
-        LOG(info) 
+        LOG(debug) 
             << " index " << std::setw(3) << i 
             << " name " << std::setw(30) << name
             << " shortname " << std::setw(30) << shortname

@@ -4,6 +4,7 @@
 #include "CFG4_HEAD.hh"
 
 #include "CSurfaceTable.hh"
+#include "plog/Severity.h"
 
 class CFG4_API CBorderSurfaceTable : public CSurfaceTable {
     public:
@@ -11,6 +12,8 @@ class CFG4_API CBorderSurfaceTable : public CSurfaceTable {
          void dump(const char* msg="CBorderSurfaceTable::dump");
     private:
          void init();
+    private:
+         plog::Severity m_level ; 
 
 };
 

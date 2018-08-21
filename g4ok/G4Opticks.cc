@@ -46,7 +46,7 @@ std::string G4Opticks::desc() const
        << std::endl 
        << ( key ? key->desc() : "NULL-key?" )
        << std::endl
-       << m_ok->getIdPath()
+       << ( m_ok ? m_ok->getIdPath() : "-" )
        << std::endl
        ;
     return ss.str() ; 

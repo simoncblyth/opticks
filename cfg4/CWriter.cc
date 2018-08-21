@@ -32,26 +32,27 @@
 
 
 CWriter::CWriter(CG4* g4, CPhoton& photon, bool dynamic)
-   :
-   m_g4(g4),
-   m_photon(photon),
-   m_dynamic(dynamic),
-   m_ctx(g4->getCtx()),
-   m_ok(g4->getOpticks()),
-   m_enabled(true),
+    :
+    m_g4(g4),
+    m_photon(photon),
+    m_dynamic(dynamic),
+    m_ctx(g4->getCtx()),
+    m_ok(g4->getOpticks()),
+    m_enabled(true),
 
-   m_evt(NULL),
+    m_evt(NULL),
 
-   m_primary(NULL),
+    m_primary(NULL),
 
-   m_records_buffer(NULL),
-   m_photons_buffer(NULL),
-   m_history_buffer(NULL),
+    m_records_buffer(NULL),
+    m_photons_buffer(NULL),
+    m_history_buffer(NULL),
 
-   m_dynamic_records(NULL),
-   m_dynamic_photons(NULL),
-   m_dynamic_history(NULL)
+    m_dynamic_records(NULL),
+    m_dynamic_photons(NULL),
+    m_dynamic_history(NULL)
 {
+    LOG(fatal) << " " << ( m_dynamic ? "DYNAMIC" : "STATIC" ) ;
 }
 
 void CWriter::setEnabled(bool enabled)
@@ -78,9 +79,9 @@ void CWriter::initEvent(OpticksEvent* evt)  // called by CRecorder::initEvent/CG
 
     LOG(info) << "CWriter::initEvent"
               << " dynamic " << ( m_dynamic ? "DYNAMIC(CPU style)" : "STATIC(GPU style)" )
-              << " record_max " << m_ctx._record_max
-              << " bounce_max  " << m_ctx._bounce_max 
-              << " steps_per_photon " << m_ctx._steps_per_photon 
+              << " _record_max " << m_ctx._record_max
+              << " _bounce_max  " << m_ctx._bounce_max 
+              << " _steps_per_photon " << m_ctx._steps_per_photon 
               << " num_g4event " << m_evt->getNumG4Event() 
               ;
 

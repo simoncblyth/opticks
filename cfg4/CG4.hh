@@ -10,6 +10,8 @@ class G4UImanager ;
 class G4UIExecutive ; 
 class G4VUserDetectorConstruction ;
 
+class SLog ; 
+
 // npy-
 template <typename T> class NPY ; 
 
@@ -156,6 +158,7 @@ class CFG4_API CG4
         CG4Ctx&          getCtx();
 
    private:
+        SLog*                 m_log ; 
         OpticksHub*           m_hub ; 
         Opticks*              m_ok ; 
         OpticksRun*           m_run ; 

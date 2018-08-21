@@ -9,22 +9,12 @@
 
 #include "CG4.hh"
 
-#include "PLOG.hh"
-#include "NPY_LOG.hh"
-#include "OKCORE_LOG.hh"
-#include "GGEO_LOG.hh"
-#include "CFG4_LOG.hh"
+#include "OPTICKS_LOG.hh"
 
 
 int main(int argc, char** argv)
 {
-    PLOG_COLOR(argc, argv);
-
-    NPY_LOG__ ; 
-    OKCORE_LOG__ ; 
-    GGEO_LOG__ ; 
-    CFG4_LOG__ ; 
-
+    OPTICKS_LOG(argc, argv);
 
     LOG(info) << argv[0] ;
 
@@ -32,17 +22,18 @@ int main(int argc, char** argv)
     ok.setModeOverride( OpticksMode::CFG4_MODE );   // with GPU running this is COMPUTE/INTEROP
 
     OpticksHub hub(&ok) ; 
+    LOG(warning) << " post hub " ; 
+
     OpticksRun* run = ok.getRun();
+    LOG(warning) << " post run " ; 
     OpticksGen* gen = hub.getGen();
     
     CG4* g4 = new CG4(&hub) ; 
-
-    LOG(info) << "  CG4 ctor DONE "  ;
-
+    LOG(warning) << " post CG4 " ; 
 
     g4->interactive();
 
-    LOG(info) << "  CG4 interactive DONE "  ;
+    LOG(warning) << "  post CG4::interactive"  ;
 
 
     run->createEvent();
@@ -50,7 +41,12 @@ int main(int argc, char** argv)
     if(ok.isFabricatedGensteps())  // eg TORCH running
     { 
         NPY<float>* gs = gen->getInputGensteps() ;
+        LOG(error) << " setting gensteps " << gs ; 
         run->setGensteps(gs);
+    }
+    else
+    {
+        LOG(error) << " not setting gensteps " ; 
     }
 
     g4->propagate();

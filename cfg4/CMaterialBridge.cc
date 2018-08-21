@@ -17,7 +17,7 @@ CMaterialBridge::CMaterialBridge( GMaterialLib* mlib)
     m_level(info)
 {
     initMap();
-    if(m_level >= info)
+    if(m_level > info)
         dump("CMaterialBridge::CMaterialBridge");
 }
 
@@ -50,7 +50,7 @@ void CMaterialBridge::initMap()
         m_ixtoabbr[index] = m_mlib->getAbbr(shortname) ;
 
 
-        LOG(m_level) << " i " << std::setw(3) << i 
+        pLOG(m_level,+1) << " i " << std::setw(3) << i 
                   << " name " << std::setw(35) << name 
                   << " shortname " << std::setw(35) << shortname 
                   << " abbr " << std::setw(35) << abbr 

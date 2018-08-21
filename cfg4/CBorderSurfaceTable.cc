@@ -10,8 +10,9 @@
 #include "G4OpticalSurface.hh"
 
 CBorderSurfaceTable::CBorderSurfaceTable()
-   :
-    CSurfaceTable("border")
+    :
+    CSurfaceTable("border"),
+    m_level(info)
 {
     init();
 }
@@ -34,22 +35,24 @@ void CBorderSurfaceTable::init()
         G4OpticalSurface* os = dynamic_cast<G4OpticalSurface*>(bs->GetSurfaceProperty());
         add(os);
 
-        const G4VPhysicalVolume* pv1 = bs->GetVolume1() ;
-        const G4VPhysicalVolume* pv2 = bs->GetVolume2() ;
+        if(m_level > info)
+        {
+            const G4VPhysicalVolume* pv1 = bs->GetVolume1() ;
+            const G4VPhysicalVolume* pv2 = bs->GetVolume2() ;
+            std::cout << std::setw(5) << i 
+                      << std::setw(35) << bs->GetName()
+                      << std::setw(35) << os->GetName()
+                      ;
 
-        std::cout << std::setw(5) << i 
-                  << std::setw(35) << bs->GetName()
-                  << std::setw(35) << os->GetName()
-                  ;
+           if(pv1) std::cout << " pv1 " << pv1->GetName() << " #" << pv1->GetCopyNo()  ;
+           else std::cout << " pv1 NULL " ;
 
-       if(pv1) std::cout << " pv1 " << pv1->GetName() << " #" << pv1->GetCopyNo()  ;
-       else std::cout << " pv1 NULL " ;
+           if(pv2) std::cout << " pv2 " << pv2->GetName() << " #" << pv2->GetCopyNo()  ;
+           else std::cout << " pv2 NULL " ;
 
-       if(pv2) std::cout << " pv2 " << pv2->GetName() << " #" << pv2->GetCopyNo()  ;
-       else std::cout << " pv2 NULL " ;
-
-  
-       std::cout << std::endl ;
+      
+           std::cout << std::endl ;
+       }
     }
 }
 

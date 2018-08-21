@@ -4,6 +4,8 @@
 
 #include "CFG4_BODY.hh"
 
+#include "SLog.hh"
+
 // okc-
 #include "Opticks.hh"
 #include "OpticksFlags.hh"
@@ -101,40 +103,42 @@ CG4Ctx& CG4::getCtx()
 }
 
 CG4::CG4(OpticksHub* hub) 
-   :
-     m_hub(hub),
-     m_ok(m_hub->getOpticks()),
-     m_run(m_ok->getRun()),
-     m_cfg(m_ok->getCfg()),
-     m_ctx(m_ok),
-     m_engine(m_ok->isAlign() ? new CRandomEngine(this) : NULL ),
-     m_physics(new CPhysics(this)),
-     m_runManager(m_physics->getRunManager()),
-     m_sd(new CSensitiveDetector("SD0")),
-     m_geometry(new CGeometry(m_hub, m_sd)),
-     m_hookup(m_geometry->hookup(this)),
-     m_mlib(m_geometry->getMaterialLib()),
-     m_detector(m_geometry->getDetector()),
-     m_generator(new CGenerator(m_hub->getGen(), this)),
-     m_dynamic(m_generator->isDynamic()),
-     m_collector(NULL),   // deferred instanciation until CG4::postinitialize after G4 materials have overridden lookupA
-     m_primary_collector(new CPrimaryCollector),
-     m_recorder(new CRecorder(this, m_geometry, m_dynamic)), 
-     m_steprec(new CStepRec(m_ok, m_dynamic)),  
-     m_visManager(NULL),
-     m_uiManager(NULL),
-     m_ui(NULL),
-     m_pga(new CPrimaryGeneratorAction(m_generator->getSource())),
-     m_sa(new CSteppingAction(this, m_generator->isDynamic())),
-     m_ta(new CTrackingAction(this)),
-     m_ra(new CRunAction(m_hub)),
-     m_ea(new CEventAction(this)),
-     m_rt(new CRayTracer(this)),
-     m_initialized(false)
+    :
+    m_log(new SLog("CG4::CG4", "", fatal)),
+    m_hub(hub),
+    m_ok(m_hub->getOpticks()),
+    m_run(m_ok->getRun()),
+    m_cfg(m_ok->getCfg()),
+    m_ctx(m_ok),
+    m_engine(m_ok->isAlign() ? new CRandomEngine(this) : NULL ),
+    m_physics(new CPhysics(this)),
+    m_runManager(m_physics->getRunManager()),
+    m_sd(new CSensitiveDetector("SD0")),
+    m_geometry(new CGeometry(m_hub, m_sd)),
+    m_hookup(m_geometry->hookup(this)),
+    m_mlib(m_geometry->getMaterialLib()),
+    m_detector(m_geometry->getDetector()),
+    m_generator(new CGenerator(m_hub->getGen(), this)),
+    m_dynamic(m_generator->isDynamic()),
+    m_collector(NULL),   // deferred instanciation until CG4::postinitialize after G4 materials have overridden lookupA
+    m_primary_collector(new CPrimaryCollector),
+    m_recorder(new CRecorder(this, m_geometry, m_dynamic)), 
+    m_steprec(new CStepRec(m_ok, m_dynamic)),  
+    m_visManager(NULL),
+    m_uiManager(NULL),
+    m_ui(NULL),
+    m_pga(new CPrimaryGeneratorAction(m_generator->getSource())),
+    m_sa(new CSteppingAction(this, m_generator->isDynamic())),
+    m_ta(new CTrackingAction(this)),
+    m_ra(new CRunAction(m_hub)),
+    m_ea(new CEventAction(this)),
+    m_rt(new CRayTracer(this)),
+    m_initialized(false)
 {
-     OK_PROFILE("CG4::CG4");
-     init();
-     INSTANCE = this ; 
+    OK_PROFILE("CG4::CG4");
+    init();
+    INSTANCE = this ; 
+    (*m_log)("DONE");
 }
 
 void CG4::init()

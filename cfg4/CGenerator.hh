@@ -65,13 +65,14 @@ class CFG4_API CGenerator
        Opticks*              m_ok ;
        OpticksCfg<Opticks>*  m_cfg ;
        CG4*                  m_g4 ; 
-       unsigned              m_source_code ; 
-       CSource*              m_source ; 
    private:
-       unsigned      m_num_g4evt ; 
-       unsigned      m_photons_per_g4evt ;           
-       NPY<float>*   m_gensteps ; 
-       bool          m_dynamic ; 
+       unsigned              m_source_code ; 
+       NPY<float>*           m_gensteps ; 
+       bool                  m_dynamic ; 
+       unsigned              m_num_g4evt ; 
+       unsigned              m_photons_per_g4evt ;           
+   private:
+       CSource*              m_source ; 
 
 };
 

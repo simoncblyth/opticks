@@ -54,26 +54,27 @@ unsigned long long CRecorder::getSeqMat() const
 
 
 CRecorder::CRecorder(CG4* g4, CGeometry* geometry, bool dynamic) 
-   :
-   m_g4(g4),
-   m_ctx(g4->getCtx()),
-   m_ok(g4->getOpticks()),
-   m_recpoi(m_ok->isRecPoi()),
-   m_reccf(m_ok->isRecCf()),
-   m_state(m_ctx),
-   m_photon(m_ctx, m_state),
+    :
+    m_g4(g4),
+    m_ctx(g4->getCtx()),
+    m_ok(g4->getOpticks()),
+    m_recpoi(m_ok->isRecPoi()),
+    m_reccf(m_ok->isRecCf()),
+    m_state(m_ctx),
+    m_photon(m_ctx, m_state),
 
-   m_crec(new CRec(m_g4, m_state)),
-   m_dbg(m_ctx.is_dbg() ? new CDebug(g4, m_photon, this) : NULL),
+    m_crec(new CRec(m_g4, m_state)),
+    m_dbg(m_ctx.is_dbg() ? new CDebug(g4, m_photon, this) : NULL),
 
-   m_evt(NULL),
-   m_geometry(geometry),
-   m_material_bridge(NULL),
-   m_dynamic(dynamic),
-   m_live(false),
-   m_writer(new CWriter(g4, m_photon, m_dynamic)),
-   m_not_done_count(0)
+    m_evt(NULL),
+    m_geometry(geometry),
+    m_material_bridge(NULL),
+    m_dynamic(dynamic),
+    m_live(false),
+    m_writer(new CWriter(g4, m_photon, m_dynamic)),
+    m_not_done_count(0)
 {   
+    LOG(fatal) << " " << ( m_dynamic ? "DYNAMIC" : "STATIC" ) ;
 }
 
 void CRecorder::postinitialize()
