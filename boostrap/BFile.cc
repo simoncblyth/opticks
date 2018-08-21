@@ -445,7 +445,8 @@ void BFile::CreateFile(const char* path, const char* sub, const char* name)
         return ; 
     }
 
-    fs::ofstream ofs{fsp};
+    std::ofstream ofs(p.c_str()) ;
+    //fs::ofstream ofs{fsp};
  
 }
 

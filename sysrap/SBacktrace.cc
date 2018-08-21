@@ -47,7 +47,6 @@ static inline void printStackTrace( FILE *out = stderr, unsigned int max_frames 
    {
       char* begin_name   = NULL;
       char* begin_offset = NULL;
-      //char* end_offset   = NULL;
  
       // find parentheses and +address offset surrounding the mangled name
 #ifdef __APPLE__
@@ -89,6 +88,7 @@ static inline void printStackTrace( FILE *out = stderr, unsigned int max_frames 
  
 
 #else // !DARWIN - but is posix
+      char* end_offset   = NULL;
       printf("not-APPLE\n");
       // not OSX style
       // ./module(function+0x15c) [0x8048a6d]

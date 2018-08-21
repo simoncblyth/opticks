@@ -275,7 +275,7 @@ om-find(){    om-one-or-all find $* ; }
 
 om--(){       om-make $* ; }     ## just this proj
 om---(){      om-make-all : ; }  ## all projs from this one onwards 
-om--+(){      om-make-all + ; }  ## all projs following this one 
+om----(){     om-make-all + ; }  ## all projs following this one 
 
 
 om-check()

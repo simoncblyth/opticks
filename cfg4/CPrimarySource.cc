@@ -65,9 +65,9 @@ void CPrimarySource::GeneratePrimaryVertex(G4Event *evt)
             int vertexIdx = m_pri->getVertexIndex(idx); 
             int particleIdx = m_pri->getParticleIndex(idx); 
 
-            assert( eventIdx == m_event_count ) ; 
-            assert( vertexIdx == v ); 
-            assert( particleIdx == p ); 
+            assert( unsigned(eventIdx) == m_event_count ) ; 
+            assert( unsigned(vertexIdx) == v ); 
+            assert( unsigned(particleIdx) == p ); 
 
             G4PrimaryParticle* pp = makePrimaryParticle(idx); 
             vtx->SetPrimary(pp) ; // NOTE poor API, actually adding not setting 
@@ -98,12 +98,14 @@ void CPrimarySource::findVertices( std::vector<unsigned>& vtx_start, std::vector
         int vertexIdx = m_pri->getVertexIndex(idx); 
         int particleIdx = m_pri->getParticleIndex(idx); 
 
-        if( eventIdx  == m_event_count && vertexIdx == vtx_start.size() && particleIdx == 0) 
+        if( unsigned(eventIdx) == m_event_count && 
+            unsigned(vertexIdx) == vtx_start.size() && 
+            unsigned(particleIdx) == 0u) 
         {
             unsigned offset = 1 ;  // lookahead within the same vertex, until reach next vertex or end of pri  
             while( idx + offset < num_pri && m_pri->getVertexIndex(idx+offset) == vertexIdx )
             {
-                assert( m_pri->getParticleIndex(idx+offset) == offset ); 
+                assert( unsigned(m_pri->getParticleIndex(idx+offset)) == offset ); 
                 offset += 1 ; 
             } 
             vtx_start.push_back(idx); 

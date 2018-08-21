@@ -200,8 +200,8 @@ DsG4Scintillation::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
 
     G4String pname="";
     G4ThreeVector vertpos;
-    G4double vertenergy=0.0;
-    G4double reem_d=0.0;
+    G4double vertenergy=0.0;  // tis used : but on the other side of this monolith
+    G4double reem_d=0.0;      // tis used : but on the other side of this monolith 
     G4bool flagReemission= false;
     DsPhotonTrackInfo* reemittedTI=0;
     if (aTrack.GetDefinition() == G4OpticalPhoton::OpticalPhoton()) {
