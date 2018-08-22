@@ -29,12 +29,12 @@ when the --align option is used.
 **/
 
 #include "CLHEP/Random/RandomEngine.h"
-
+#include "CRandomListener.hh"
 
 template <typename T> class BLocSeq ; 
 
 
-class CFG4_API CRandomEngine : public CLHEP::HepRandomEngine 
+class CFG4_API CRandomEngine : public CRandomListener, public CLHEP::HepRandomEngine 
 {
     public:
         static std::string CurrentProcessName();
@@ -47,6 +47,8 @@ class CFG4_API CRandomEngine : public CLHEP::HepRandomEngine
     protected:
         friend class CG4 ; 
         friend struct CRandomEngineTest ; 
+
+        // CRandomListener
         void postpropagate();
         void preTrack();
         void postTrack();

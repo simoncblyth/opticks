@@ -36,6 +36,8 @@
 
 //cfg4-
 #include "CRandomEngine.hh"
+#include "CMixMaxRng.hh"
+
 #include "CPhysics.hh"
 #include "CGeometry.hh"
 #include "CMaterialLib.hh"
@@ -68,7 +70,7 @@ Opticks*    CG4::getOpticks() const { return m_ok ; }
 OpticksHub* CG4::getHub() const { return m_hub ; }
 OpticksRun* CG4::getRun() const { return m_run ; } 
 
-CRandomEngine*     CG4::getRandomEngine() const { return m_engine ; }
+//CRandomEngine*     CG4::getRandomEngine() const { return m_engine ; }
 CGenerator*        CG4::getGenerator() const { return m_generator ; }
 CRecorder*         CG4::getRecorder() const { return m_recorder ; }
 unsigned long long CG4::getSeqHis() const { return m_recorder->getSeqHis() ; }
@@ -110,7 +112,7 @@ CG4::CG4(OpticksHub* hub)
     m_run(m_ok->getRun()),
     m_cfg(m_ok->getCfg()),
     m_ctx(m_ok),
-    m_engine(m_ok->isAlign() ? new CRandomEngine(this) : NULL ),
+    m_engine(m_ok->isAlign() ? (CRandomListener*)new CRandomEngine(this) : (CRandomListener*)new CMixMaxRng ),
     m_physics(new CPhysics(this)),
     m_runManager(m_physics->getRunManager()),
     m_sd(new CSensitiveDetector("SD0")),

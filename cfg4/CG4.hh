@@ -32,6 +32,7 @@ class CPrimaryCollector ;
 class CRecorder ; 
 class CStepRec ; 
 class CRandomEngine ; 
+class CRandomListener ; 
 
 class CRunAction ; 
 class CEventAction ; 
@@ -136,7 +137,7 @@ class CFG4_API CG4
         Opticks*         getOpticks() const ;
         OpticksHub*      getHub() const ;
         OpticksRun*      getRun() const;
-        CRandomEngine*   getRandomEngine() const ; 
+        //CRandomEngine*   getRandomEngine() const ; 
         CGenerator*      getGenerator() const ;
         CRecorder*       getRecorder() const ;
         CStepRec*        getStepRec() const ;
@@ -166,7 +167,9 @@ class CFG4_API CG4
 
         CG4Ctx                m_ctx ;       
 
-        CRandomEngine*        m_engine ; 
+        //CRandomEngine*        m_engine ; 
+        CRandomListener*        m_engine ; 
+
         CPhysics*             m_physics ; 
         G4RunManager*         m_runManager ; 
         CSensitiveDetector*   m_sd ; 

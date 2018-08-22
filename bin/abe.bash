@@ -28,9 +28,12 @@ abe-genrun(){
     ipython -i $py
 }
 
+abe-tag(){ echo 1 ; }
+
 abe-tmp(){   echo $TMP/abe ; }
-abe-a-dir(){ echo $TMP/evt/g4live/natural/1 ; }
-abe-b-dir(){ echo $TMP/evt/g4live/torch/1 ; }
+abe-a-dir(){ echo $TMP/evt/g4live/natural ; }  # ckm--
+abe-b-dir(){ echo $TMP/evt/g4live/torch   ; }  # ckm-okg4 
+
 abe-a(){ cd $(abe-a-dir) ; }
 abe-b(){ cd $(abe-b-dir) ; }
 
@@ -51,10 +54,10 @@ abe-ls(){
 abe-xx-(){ cat << EOP
 import numpy as np, commands
 
-apath = "$(abe-a-dir)/$1.npy"
-bpath = "$(abe-b-dir)/$1.npy"
+apath = "$(abe-a-dir)/$1"
+bpath = "$(abe-b-dir)/$2"
 
-print " $FUNCNAME comparing $1.npy between two dirs " 
+print " $FUNCNAME comparing $1 and $2 between two dirs " 
 
 print "  ", commands.getoutput("date")
 print "a ", commands.getoutput("ls -l %s" % apath)
@@ -109,12 +112,14 @@ EOP
 }
 
 
-abe-ht-(){ abe-xx- ht ; }
+abe-ht4-(){ abe-xx- -1/ht.npy  -1/ht.npy  ; }
+abe-ht-(){ abe-xx-   1/ht.npy  1/ht.npy  ; }
 abe-gs-(){ 
-   abe-xx- gs 
+   abe-xx- 1/gs.npy 1/gs.npy 
    abe-gs-- 
 }
 
+abe-ht4(){ abe-genrun $FUNCNAME ; }
 abe-ht(){ abe-genrun $FUNCNAME ; }
 abe-gs(){ abe-genrun $FUNCNAME ; }
 

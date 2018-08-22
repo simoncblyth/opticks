@@ -5,9 +5,7 @@
 
 #include "BFile.hh"
 
-#include "NPY_LOG.hh"
-#include "BRAP_LOG.hh"
-#include "PLOG.hh"
+#include "OPTICKS_LOG.hh"
 
 void test_read()
 {
@@ -42,9 +40,7 @@ void test_write()
 
 int main(int argc, char** argv )
 {
-    PLOG_(argc, argv);
-    BRAP_LOG__ ;
-    NPY_LOG__ ;
+    OPTICKS_LOG(argc, argv);
 
     test_write();
 

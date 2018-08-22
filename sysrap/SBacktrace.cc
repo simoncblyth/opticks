@@ -16,6 +16,86 @@ https://panthema.net/2008/0901-stacktrace-demangled/cxa_demangle.html
 #include <execinfo.h>
 #include <errno.h>
 #include <cxxabi.h>
+
+
+
+
+
+/*
+
+static const char* caller(unsigned int max_frames = 63)
+{
+    void* addrlist[max_frames+1];
+    unsigned addrlen = backtrace( addrlist, sizeof( addrlist ) / sizeof( void* ));
+    if( addrlen == 0 ) return NULL ; 
+#ifdef __APPLE__
+    char** symbollist = backtrace_symbols( addrlist, addrlen );
+    size_t funcnamesize = 1024;
+    char funcname[1024];
+
+    for(unsigned i = 4; i < addrlen; i++ )
+    {
+        char* begin_name   = NULL;
+        char* begin_offset = NULL;
+          
+
+
+
+#else
+    return NULL ;
+#endif
+}
+
+
+
+struct frame
+{
+    char* symbol ; 
+    char* funcname ; 
+ 
+    static size_t funcnamesize = 1024;
+    char funcname[1024];
+ 
+};
+
+
+
+static inline void parseSymbol_macOS(char* symbol, char** begin_name, char** begin_offset )
+{
+    for( char* p = symbol ; *p ; ++p )
+    {
+        if (( *p == '_' ) && ( *(p-1) == ' ' )) *begin_name = p-1;
+        else if ( *p == '+' ) *begin_offset = p-1;
+    }
+
+    if ( *begin_name && *begin_offset && ( *begin_name < *begin_offset ))
+    {
+        begin_name++ = '\0';
+        begin_offset++ = '\0';
+ 
+        int status;
+        char* ret = abi::__cxa_demangle( *begin_name, &funcname[0], &funcnamesize, &status );
+         if ( status == 0 ) 
+         {
+            strncpy( funcname, ret, funcnamesize  );
+
+            fprintf( out, " : %-30s : %-40s : %s :\n",
+                     symbollist[i], funcname, begin_offset );
+         } else {
+            // demangling failed. Output function name as a C function with
+            // no arguments.
+            fprintf( out, " : %-30s %-38s() %s\n",
+                     symbollist[i], begin_name, begin_offset );
+         }
+ 
+
+
+
+
+}
+ 
+*/
+
  
 static inline void printStackTrace( FILE *out = stderr, unsigned int max_frames = 63 )
 {
@@ -37,6 +117,13 @@ static inline void printStackTrace( FILE *out = stderr, unsigned int max_frames 
    // Actually it will be ## program address function + offset
    // this array must be free()-ed
    char** symbollist = backtrace_symbols( addrlist, addrlen );
+
+
+   for ( unsigned i = 4; i < addrlen; i++ )
+   {
+       fprintf( out, "  %s \n", symbollist[i]);
+   }
+
  
    size_t funcnamesize = 1024;
    char funcname[1024];
@@ -50,16 +137,12 @@ static inline void printStackTrace( FILE *out = stderr, unsigned int max_frames 
  
       // find parentheses and +address offset surrounding the mangled name
 #ifdef __APPLE__
-      //printf("APPLE\n");
-      // OSX style stack trace
-
 
       for ( char *p = symbollist[i]; *p; ++p )
       {
          if (( *p == '_' ) && ( *(p-1) == ' ' )) begin_name = p-1;
          else if ( *p == '+' ) begin_offset = p-1;
       }
-      fprintf( out, "  %s \n", symbollist[i]);
  
       if ( begin_name && begin_offset && ( begin_name < begin_offset ))
       {
@@ -82,12 +165,12 @@ static inline void printStackTrace( FILE *out = stderr, unsigned int max_frames 
          } else {
             // demangling failed. Output function name as a C function with
             // no arguments.
-            fprintf( out, "  %-30s %-38s() %s\n",
+            fprintf( out, " : %-30s %-38s() %s\n",
                      symbollist[i], begin_name, begin_offset );
          }
  
 
-#else // !DARWIN - but is posix
+#else 
       char* end_offset   = NULL;
       printf("not-APPLE\n");
       // not OSX style

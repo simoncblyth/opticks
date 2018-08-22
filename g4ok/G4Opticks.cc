@@ -153,13 +153,17 @@ void G4Opticks::setupMaterialLookup()
     m_lookup->close(); 
 }
 
+
+/**
+G4Opticks::propagateOpticalPhotons
+-----------------------------------
+
+Invoked from EventAction::EndOfEventAction
+
+**/
+
 int G4Opticks::propagateOpticalPhotons() 
 {
-     // minimal g4 side instrumentation in "1st executable" 
-    m_g4hit = m_g4hit_collector->getPhoton();  
-    m_g4evt = m_opmgr->getG4Event(); 
-    m_g4evt->saveHitData( m_g4hit ) ; // pass thru to the dir, owned by m_g4hit_collector ?
-
 
     m_gensteps = m_collector->getGensteps(); 
     m_opmgr->setGensteps(m_gensteps);      
@@ -167,6 +171,14 @@ int G4Opticks::propagateOpticalPhotons()
 
     OpticksEvent* event = m_opmgr->getEvent(); 
     m_hits = event->getHitData()->clone() ; 
+
+
+    // minimal g4 side instrumentation in "1st executable" 
+    // do after propagate, so the event will be created
+    m_g4hit = m_g4hit_collector->getPhoton();  
+    m_g4evt = m_opmgr->getG4Event(); 
+    m_g4evt->saveHitData( m_g4hit ) ; // pass thru to the dir, owned by m_g4hit_collector ?
+
 
     m_opmgr->reset();   
     // clears OpticksEvent buffers,

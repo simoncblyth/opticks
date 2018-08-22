@@ -118,6 +118,9 @@ set(SOURCES
     CEventAction.cc
 
     CRandomEngine.cc
+    CRandomListener.cc
+    CMixMaxRng.cc
+
     CProcess.cc
     CProcessManager.cc
     CStepping.cc
@@ -223,6 +226,11 @@ set(HEADERS
     CPhotonCollector.hh
     CRunAction.hh
     CEventAction.hh
+
+    CRandomEngine.hh
+    CRandomListener.hh
+    CMixMaxRng.hh
+
 )
 
 add_library(${name} SHARED  ${SOURCES})

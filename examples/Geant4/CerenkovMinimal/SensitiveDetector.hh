@@ -26,6 +26,8 @@ struct SensitiveDetector : public G4VSensitiveDetector
     OpHitCollection* hitCollectionA ; 
     OpHitCollection* hitCollectionB ; 
 
+    unsigned m_hit_count ;
+
 };
 
 

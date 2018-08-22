@@ -21,7 +21,8 @@ const char* SensitiveDetector::collectionNameB = "OpHitCollectionB" ;
 
 SensitiveDetector::SensitiveDetector(const char* name) 
     :
-    G4VSensitiveDetector(name)
+    G4VSensitiveDetector(name),
+    m_hit_count(0)
 {
     SDName = strdup(name) ; 
     collectionName.insert(collectionNameA); 
@@ -42,6 +43,8 @@ G4bool SensitiveDetector::ProcessHits(G4Step* step,G4TouchableHistory* )
     const G4ThreeVector& pos = point->GetPosition();
     const G4ThreeVector& dir = point->GetMomentumDirection();
     const G4ThreeVector& pol = point->GetPolarization();
+
+    m_hit_count += 1 ; 
 
 #ifdef WITH_OPTICKS
     {
@@ -130,6 +133,8 @@ void SensitiveDetector::EndOfEvent(G4HCofThisEvent* HCE)
         << " HCE " << HCE
         << " hitCollectionA->entries() " << hitCollectionA->entries()
         << " hitCollectionB->entries() " << hitCollectionB->entries()
+        << " A+B " << hitCollectionA->entries() + hitCollectionB->entries()
+        << " m_hit_count " << m_hit_count 
         ; 
 }
 

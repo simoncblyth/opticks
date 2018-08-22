@@ -41,7 +41,7 @@ void EventAction::EndOfEventAction(const G4Event* event)
     LOG(error) << " num_hits " << num_hits ; 
 #endif
 
-    addDummyHits(HCE);
+    //addDummyHits(HCE);
     SensitiveDetector::DumpHitCollections(HCE);
 
     // A possible alternative location to invoke the GPU propagation
