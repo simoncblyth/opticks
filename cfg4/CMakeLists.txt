@@ -113,6 +113,7 @@ set(SOURCES
     CCollector.cc
     CPrimarySource.cc
     CPrimaryCollector.cc
+    CPhotonCollector.cc
     CRunAction.cc
     CEventAction.cc
 
@@ -219,6 +220,7 @@ set(HEADERS
     CCollector.hh
     CPrimarySource.hh
     CPrimaryCollector.hh
+    CPhotonCollector.hh
     CRunAction.hh
     CEventAction.hh
 )

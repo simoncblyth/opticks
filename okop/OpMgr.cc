@@ -78,6 +78,11 @@ OpticksEvent* OpMgr::getEvent() const
 {
     return m_run->getEvent() ; 
 }
+OpticksEvent* OpMgr::getG4Event() const 
+{
+    return m_run->getG4Event() ; 
+}
+
 
 
 

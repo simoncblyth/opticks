@@ -240,8 +240,11 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec
        void importDomainsBuffer();
    public:
        void save();
+   public:
+       // used from G4Opticks for the minimal G4 side instrumentation of "1st executable"
+       void saveHitData(NPY<float>* ht) const ; 
    private:
-       void saveHitData(); 
+       void saveHitData() const ; 
        void saveNopstepData(); 
        void saveGenstepData(); 
        void savePhotonData(); 

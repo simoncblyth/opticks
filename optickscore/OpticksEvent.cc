@@ -1629,19 +1629,30 @@ Writes hit buffer even when empty, otherwise get inconsistent
 buffer time stamps when changes makes hits go away and are writing 
 into the same directory.
 
+Argument form allows externals like G4Opticks to save Geant4 sourced
+hit data collected with CPhotonCollector into an event dir 
+with minimal fuss. 
+
 **/
 
-void OpticksEvent::saveHitData()
+void OpticksEvent::saveHitData() const 
 {
     NPY<float>* ht = getHitData();
+    saveHitData(ht); 
+}
+
+void OpticksEvent::saveHitData(NPY<float>* ht) const 
+{
     if(ht)
     {
         unsigned num_hit = ht->getNumItems(); 
-        //if(num_hit > 0) ht->save("ht", m_typ,  m_tag, m_udet);
-        ht->save("ht", m_typ,  m_tag, m_udet);   
+        ht->save("ht", m_typ,  m_tag, m_udet);  // even when zero hits
         if(num_hit == 0) LOG(info) << "saveHitData zero hits " ; 
     }
 }
+
+
+
 void OpticksEvent::saveNopstepData()
 {
     NPY<float>* no = getNopstepData();

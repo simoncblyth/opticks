@@ -2,7 +2,7 @@
 """
 python -c "import numpy as np, sys ; np.set_printoptions(suppress=True) ; print np.load(sys.argv[1]) " 
 """
-import sys, fnmatch, os, logging, numpy as np
+import sys, fnmatch, os, logging, numpy as np, commands
 log = logging.getLogger(__name__)
 
 np.set_printoptions(suppress=True, precision=4, linewidth=200)
@@ -29,7 +29,8 @@ def dump_tree(base=".", verbose=0):
         for name in filter(is_npy_,files):
             path = os.path.join(root, name)
             a = np.load(path)
-            print "%20s : %s " % ( path, repr(a.shape))
+            fdig = commands.getoutput("md5 %s" % path).split()[-1]
+            print "%20s : %20s : %s " % ( path, repr(a.shape), fdig)
             if verbose > 0:
                 dump_one(a, verbose)
             pass

@@ -82,6 +82,9 @@ def unique2D_subarray(a):
 def array_digest(a):
     """
     https://stackoverflow.com/questions/5386694/fast-way-to-hash-numpy-objects-for-caching
+
+    file digest includes the header, not just the data : so will not match this 
+
     """
     dig = md5()
     data = np.ascontiguousarray(a.view(np.uint8))

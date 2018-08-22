@@ -42,6 +42,7 @@ class OKOP_API OpMgr {
        void setGensteps(NPY<float>* gensteps); 
        void propagate();
        OpticksEvent* getEvent() const ; 
+       OpticksEvent* getG4Event() const ; 
        void reset();
 
        void snap();

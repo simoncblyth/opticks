@@ -10,6 +10,7 @@
 #include "CMaterialTable.hh"
 #include "CCollector.hh"
 #include "CPrimaryCollector.hh"
+#include "CPhotonCollector.hh"
 #include "CGDML.hh"
 
 #include "G4Opticks.hh"
@@ -79,7 +80,10 @@ G4Opticks::G4Opticks()
     m_lookup(NULL),
     m_opmgr(NULL),
     m_gensteps(NULL),
-    m_hits(NULL)
+    m_hits(NULL),
+    m_g4hit_collector(NULL),
+    m_g4evt(NULL),
+    m_g4hit(NULL)
 {
     std::cout << "G4Opticks::G4Opticks" << std::endl ; 
     assert( fOpticks == NULL ); 
@@ -104,6 +108,7 @@ void G4Opticks::setGeometry(const G4VPhysicalVolume* world)
     setupMaterialLookup();
     m_collector = new CCollector(m_lookup);   // <-- CG4 holds an instance too : and they are singletons, so should not use G4Opticks and CG4 together
     m_primary_collector = new CPrimaryCollector ; 
+    m_g4hit_collector = new CPhotonCollector ; 
 
     // OpMgr instanciates OpticksHub which adopts the pre-existing m_ggeo instance just translated
     m_opmgr = new OpMgr(m_ok) ;   
@@ -150,6 +155,12 @@ void G4Opticks::setupMaterialLookup()
 
 int G4Opticks::propagateOpticalPhotons() 
 {
+     // minimal g4 side instrumentation in "1st executable" 
+    m_g4hit = m_g4hit_collector->getPhoton();  
+    m_g4evt = m_opmgr->getG4Event(); 
+    m_g4evt->saveHitData( m_g4hit ) ; // pass thru to the dir, owned by m_g4hit_collector ?
+
+
     m_gensteps = m_collector->getGensteps(); 
     m_opmgr->setGensteps(m_gensteps);      
     m_opmgr->propagate();
@@ -215,7 +226,7 @@ void G4Opticks::collectCerenkovStep
         G4double             spare2
     )
 {
-    m_collector->collectCerenkovStep(
+     m_collector->collectCerenkovStep(
                        id, 
                        parentId,
                        materialId,
@@ -251,7 +262,52 @@ void G4Opticks::collectCerenkovStep
 
 
 
+void G4Opticks::collectHit
+    (
+        G4double             pos_x,  
+        G4double             pos_y,  
+        G4double             pos_z,  
+        G4double             time ,
 
+        G4double             dir_x,  
+        G4double             dir_y,  
+        G4double             dir_z,  
+        G4double             weight ,
+
+        G4double             pol_x,  
+        G4double             pol_y,  
+        G4double             pol_z,  
+        G4double             wavelength ,
+
+        G4int                flags_x, 
+        G4int                flags_y, 
+        G4int                flags_z, 
+        G4int                flags_w
+    )
+{
+     m_g4hit_collector->collectPhoton(
+         pos_x, 
+         pos_y, 
+         pos_z,
+         time, 
+
+         dir_x, 
+         dir_y, 
+         dir_z, 
+         weight, 
+
+         pol_x, 
+         pol_y, 
+         pol_z, 
+         wavelength,
+
+         flags_x,
+         flags_y,
+         flags_z,
+         flags_w
+     ) ;
+}
+ 
 
 
 

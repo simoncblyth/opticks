@@ -2,9 +2,17 @@
 #include "Ctx.hh"
 #include "OpHit.hh"
 #include "SensitiveDetector.hh"
+
 #include "G4OpticalPhoton.hh"
+#include "G4SystemOfUnits.hh"
+#include "G4PhysicalConstants.hh"
 #include "G4SDManager.hh"
+
 #include "PLOG.hh"
+
+#ifdef WITH_OPTICKS
+#include "G4Opticks.hh"
+#endif
 
 
 const char* SensitiveDetector::SDName = NULL ; 
@@ -30,14 +38,50 @@ G4bool SensitiveDetector::ProcessHits(G4Step* step,G4TouchableHistory* )
 
     G4double ene = step->GetTotalEnergyDeposit();
     G4StepPoint* point = step->GetPreStepPoint();
-    G4double tim = point->GetGlobalTime(); 
+    G4double time = point->GetGlobalTime(); 
     const G4ThreeVector& pos = point->GetPosition();
     const G4ThreeVector& dir = point->GetMomentumDirection();
     const G4ThreeVector& pol = point->GetPolarization();
+
+#ifdef WITH_OPTICKS
+    {
+        G4double energy = point->GetKineticEnergy();
+        G4double wavelength = h_Planck*c_light/energy ;
+        G4double weight = 1.0 ;
+        G4int flags_x = 0 ; 
+        G4int flags_y = 0 ; 
+        G4int flags_z = 0 ; 
+        G4int flags_w = 0 ; 
+ 
+        G4Opticks::GetOpticks()->collectHit(
+             pos.x()/mm, 
+             pos.y()/mm, 
+             pos.z()/mm,
+             time/ns,
+
+             dir.x(),
+             dir.y(),
+             dir.z(),
+             weight, 
+
+             pol.x(),
+             pol.y(),
+             pol.z(),
+             wavelength/nm, 
+
+             flags_x,
+             flags_y,
+             flags_z,
+             flags_w
+        );
+    }
+#endif
+
+
  
     OpHit* hit = new OpHit ; 
     hit->ene = ene ;  
-    hit->tim = tim ;  
+    hit->tim = time ;  
     hit->pos = pos ;  
     hit->dir = dir ;  
     hit->pol = pol ;  

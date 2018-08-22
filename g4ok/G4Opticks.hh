@@ -10,6 +10,7 @@
 template <typename T> class NPY ; 
 class NLookup ; 
 class Opticks;
+class OpticksEvent;
 class OpMgr;
 class GGeo ; 
 class GBndLib ; 
@@ -18,6 +19,7 @@ class CTraverser ;
 class CMaterialTable ; 
 class CCollector ; 
 class CPrimaryCollector ; 
+class CPhotonCollector ; 
 
 class G4Run;
 class G4Event; 
@@ -104,7 +106,30 @@ class G4OK_API G4Opticks
             G4double             spare2=0
         );  
 
-    private:
+    public:
+        void collectHit(
+            G4double             pos_x,  
+            G4double             pos_y,  
+            G4double             pos_z,  
+            G4double             time ,
+
+            G4double             dir_x,  
+            G4double             dir_y,  
+            G4double             dir_z,  
+            G4double             weight ,
+
+            G4double             pol_x,  
+            G4double             pol_y,  
+            G4double             pol_z,  
+            G4double             wavelength ,
+
+            G4int                flags_x, 
+            G4int                flags_y, 
+            G4int                flags_z, 
+            G4int                flags_w
+         ); 
+            
+     private:
         const G4VPhysicalVolume*   m_world ; 
         const GGeo*                m_ggeo ; 
         const GBndLib*             m_blib ; 
@@ -118,6 +143,11 @@ class G4OK_API G4Opticks
     private:
         NPY<float>*                m_gensteps ; 
         NPY<float>*                m_hits ; 
+    private:
+        // minimal instrumentation from the G4 side of things 
+        CPhotonCollector*          m_g4hit_collector ; 
+        OpticksEvent*              m_g4evt ; 
+        NPY<float>*                m_g4hit ; 
     private:
         static G4Opticks*          fOpticks;
 

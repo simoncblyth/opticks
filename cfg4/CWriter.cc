@@ -24,12 +24,7 @@
 #include "OpticksEvent.hh"
 
 #include "CWriter.hh"
-
 #include "PLOG.hh"
-
-
-
-
 
 CWriter::CWriter(CG4* g4, CPhoton& photon, bool dynamic)
     :
