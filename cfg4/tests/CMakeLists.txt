@@ -22,6 +22,7 @@ set(TEST_SOURCES
     CVecTest.cc
 
     G4MaterialPropertiesTableTest.cc
+    CMPTTest.cc
 
     G4UniformRandTest.cc
     G4BoxTest.cc

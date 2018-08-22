@@ -44,7 +44,7 @@ void CMPT::dump(const char* msg) const
 }
 
 
-void CMPT::Dump(G4MaterialPropertiesTable* mpt, const char* msg)
+void CMPT::Dump_OLD(G4MaterialPropertiesTable* mpt, const char* msg)
 {
     LOG(info) << msg ; 
     LOG(info) << "digest : " << CMPT::Digest(mpt) ; 
@@ -59,6 +59,31 @@ void CMPT::Dump(G4MaterialPropertiesTable* mpt, const char* msg)
         G4MaterialPropertyVector* pvec2 = mpt->GetProperty(pname.c_str()) ;
         assert( pvec == pvec2 ) ;   
  
+        LOG(info) << pname << "\n" << *pvec ; 
+    }   
+}
+
+
+void CMPT::Dump(G4MaterialPropertiesTable* mpt, const char* msg)
+{
+    LOG(info) << msg ; 
+    LOG(info) << "digest : " << CMPT::Digest(mpt) ; 
+
+    typedef G4MaterialPropertyVector MPV ; 
+    G4bool warning ; 
+
+    std::vector<G4String> pns = mpt->GetMaterialPropertyNames() ;
+    LOG(debug) << " pns " << pns.size() ; 
+    for( unsigned i=0 ; i < pns.size() ; i++)
+    {   
+        const std::string& pname = pns[i]; 
+        G4int pidx = mpt->GetPropertyIndex(pname, warning=true); 
+        assert( pidx > -1 );  
+        MPV* pvec = const_cast<G4MaterialPropertiesTable*>(mpt)->GetProperty(pidx, warning=false );  
+        MPV* pvec2 = mpt->GetProperty(pname.c_str()) ;
+        assert( pvec == pvec2 ) ;   
+        if(pvec == NULL) continue ; 
+
         LOG(info) << pname << "\n" << *pvec ; 
     }   
 }
@@ -107,14 +132,37 @@ std::string CMPT::description(const char* msg)
    return ss.str();
 }
 
-std::vector<std::string> CMPT::getPropertyKeys()
+std::vector<std::string> CMPT::getPropertyKeys_OLD()
 {
+    std::vector<std::string> keys ; 
+
     typedef const std::map< G4String, G4MaterialPropertyVector*, std::less<G4String> > MKP ;
     MKP* pm = m_mpt->GetPropertiesMap() ;
-    std::vector<std::string> keys ; 
     for(MKP::const_iterator it=pm->begin() ; it != pm->end() ; it++)  keys.push_back(it->first) ;
     return keys ; 
 }
+
+std::vector<std::string> CMPT::getPropertyKeys() const 
+{
+    std::vector<std::string> keys ; 
+
+    typedef G4MaterialPropertyVector MPV ; 
+    G4bool warning ; 
+    std::vector<G4String> pns = m_mpt->GetMaterialPropertyNames() ;
+    LOG(debug) << " pns " << pns.size() ; 
+    for( unsigned i=0 ; i < pns.size() ; i++)
+    {   
+        const std::string& pname = pns[i]; 
+        G4int pidx = m_mpt->GetPropertyIndex(pname, warning=true); 
+        assert( pidx > -1 );  
+        MPV* pvec = const_cast<G4MaterialPropertiesTable*>(m_mpt)->GetProperty(pidx, warning=false );  
+        if(pvec == NULL) continue ;    
+
+        keys.push_back(pname); 
+    }
+    return keys ; 
+}
+
 
 void CMPT::addDummyProperty(const char* lkey, unsigned nval)
 {
@@ -162,6 +210,32 @@ std::string CMPT::Digest(G4MaterialPropertiesTable* mpt)
 {
     if(!mpt) return "" ; 
 
+    SDigest dig ;
+    typedef G4MaterialPropertyVector MPV ;
+    G4bool warning ;
+
+    std::vector<G4String> pns = mpt->GetMaterialPropertyNames() ;
+    LOG(debug) << " pns " << pns.size() ;
+    for( unsigned i=0 ; i < pns.size() ; i++)
+    {
+        const std::string& n = pns[i];
+        G4int pidx = mpt->GetPropertyIndex(n, warning=true);
+        assert( pidx > -1 );
+        MPV* v = const_cast<G4MaterialPropertiesTable*>(mpt)->GetProperty(pidx, warning=false );
+        if(v == NULL) continue ;
+
+        std::string vs = CVec::Digest(v) ; 
+        dig.update( const_cast<char*>(n.data()),  n.size() );
+        dig.update( const_cast<char*>(vs.data()), vs.size() );
+    }
+    return dig.finalize();
+}
+
+
+std::string CMPT::Digest_OLD(G4MaterialPropertiesTable* mpt)  
+{
+    if(!mpt) return "" ; 
+
     typedef const std::map< G4String, G4MaterialPropertyVector*, std::less<G4String> > MKP ;
     MKP* pm = mpt->GetPropertiesMap() ;
 
@@ -178,17 +252,25 @@ std::string CMPT::Digest(G4MaterialPropertiesTable* mpt)
     return dig.finalize();
 }
 
+
+
+
+
+
+
 std::string CMPT::digest() const 
 {
     return Digest(m_mpt) ; 
 }
 
 
-std::vector<std::string> CMPT::getPropertyDesc() const
+std::vector<std::string> CMPT::getPropertyDesc_OLD() const
 {
+    std::vector<std::string> desc ; 
+
+
     typedef const std::map< G4String, G4MaterialPropertyVector*, std::less<G4String> > MKP ;
     MKP* pm = m_mpt->GetPropertiesMap() ;
-    std::vector<std::string> desc ; 
     for(MKP::const_iterator it=pm->begin() ; it != pm->end() ; it++)  
     {
         G4String pname = it->first ;
@@ -216,24 +298,113 @@ std::vector<std::string> CMPT::getPropertyDesc() const
 }
 
 
-
-std::vector<std::string> CMPT::getConstPropertyKeys()
+std::vector<std::string> CMPT::getPropertyDesc() const
 {
+    std::vector<std::string> desc ; 
+
+    typedef G4MaterialPropertyVector MPV ; 
+    G4bool warning ; 
+    std::vector<G4String> pns = m_mpt->GetMaterialPropertyNames() ;
+    LOG(debug) << " pns " << pns.size() ; 
+    for( unsigned i=0 ; i < pns.size() ; i++)
+    {   
+        const std::string& pname = pns[i]; 
+        G4int pidx = m_mpt->GetPropertyIndex(pname, warning=true); 
+        assert( pidx > -1 );  
+        MPV* pvec = const_cast<G4MaterialPropertiesTable*>(m_mpt)->GetProperty(pidx, warning=false );  
+        if(pvec == NULL) continue ;    
+ 
+        double pmin = pvec->GetMinValue() ;
+        double pmax = pvec->GetMaxValue() ;
+
+        std::stringstream ss ; 
+        ss << pname << ":"  ;
+
+        if(pmin == pmax)
+           ss << ":" << pmin ;
+        else 
+           ss << ":" << pmin
+              << ":" << pmax
+              << ":" << pvec->GetMaxEnergy()  
+           // << ":" << pvec->GetVectorLength()
+               ;
+
+        desc.push_back(ss.str()) ;
+    }
+    return desc ; 
+}
+
+
+
+
+
+
+
+std::vector<std::string> CMPT::getConstPropertyKeys_OLD()
+{
+    std::vector<std::string> keys ; 
+
     typedef const std::map< G4String, G4double, std::less<G4String> > MKC ; 
     MKC* cm = m_mpt->GetPropertiesCMap() ;
-    std::vector<std::string> keys ; 
     for(MKC::const_iterator it=cm->begin() ; it != cm->end() ; it++)  keys.push_back(it->first) ;
     return keys ; 
 }
 
-std::vector<double> CMPT::getConstPropertyValues()
+std::vector<std::string> CMPT::getConstPropertyKeys() const 
 {
+    std::vector<std::string> keys ; 
+
+    std::vector<G4String> cpns = m_mpt->GetMaterialConstPropertyNames() ;
+    LOG(debug) << " cpns " << cpns.size() ; 
+
+    for( unsigned i=0 ; i < cpns.size() ; i++)
+    {   
+        const std::string& pname = cpns[i]; 
+        G4bool exists = m_mpt->ConstPropertyExists( pname.c_str() ) ; 
+        if(!exists) continue ; 
+        keys.push_back(pname) ; 
+    }
+    return keys ; 
+}
+
+ 
+
+std::vector<double> CMPT::getConstPropertyValues_OLD()
+{
+    std::vector<double> vals ; 
+
     typedef const std::map< G4String, G4double, std::less<G4String> > MKC ; 
     MKC* cm = m_mpt->GetPropertiesCMap() ;
-    std::vector<double> vals ; 
     for(MKC::const_iterator it=cm->begin() ; it != cm->end() ; it++)  vals.push_back(it->second) ;
     return vals ; 
 }
+
+std::vector<double> CMPT::getConstPropertyValues() const 
+{
+    std::vector<double> vals ; 
+
+    G4bool warning ; 
+    std::vector<G4String> cpns = m_mpt->GetMaterialConstPropertyNames() ;
+    LOG(debug) << " cpns " << cpns.size() ; 
+
+    for( unsigned i=0 ; i < cpns.size() ; i++)
+    {   
+        const std::string& pname = cpns[i]; 
+        G4bool exists = m_mpt->ConstPropertyExists( pname.c_str() ) ; 
+        if(!exists) continue ; 
+
+        G4int pidx = m_mpt->GetConstPropertyIndex(pname, warning=true); 
+        G4double pval = m_mpt->GetConstProperty(pidx);  
+
+        vals.push_back(pval); 
+    }
+
+    return vals ; 
+}
+
+
+
+
 
 
 

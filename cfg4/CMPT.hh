@@ -23,9 +23,12 @@ CMPT
 class CFG4_API CMPT {
    public:
        static CMPT* MakeDummy(); 
+
+       static std::string Digest_OLD(G4MaterialPropertiesTable* mpt); 
        static std::string Digest(G4MaterialPropertiesTable* mpt); 
+
        static void AddDummyProperty(G4MaterialPropertiesTable* mpt, const char* lkey, unsigned nval) ;
-       static void AddConstProperty(G4MaterialPropertiesTable* mpt, const char* lkey, G4double pval ) ;
+       static void AddConstProperty(G4MaterialPropertiesTable* mpt, const char* lkey, double pval ) ;
        static bool HasProperty(const G4MaterialPropertiesTable* mpt, const char* pname); 
    public:
        void addDummyProperty(const char* lkey, unsigned nval) ; 
@@ -43,6 +46,7 @@ class CFG4_API CMPT {
        void dumpRaw(const char* lkey);
    public:
        static void Dump(G4MaterialPropertiesTable* mpt, const char* msg="CMPT::Dump"); 
+       static void Dump_OLD(G4MaterialPropertiesTable* mpt, const char* msg="CMPT::Dump"); 
        void dump(const char* msg="CMPT::dump") const; 
        void dumpProperty(const char* lkey);
        void sample(NPY<float>* a, unsigned offset, const char* _keys, float low, float step, unsigned nstep );
@@ -58,10 +62,18 @@ class CFG4_API CMPT {
 
 
        std::string description(const char* msg);
-       std::vector<std::string> getPropertyKeys();
+       std::vector<std::string> getPropertyKeys_OLD();
+       std::vector<std::string> getPropertyKeys() const ;
+
+       std::vector<std::string> getPropertyDesc_OLD() const ;
        std::vector<std::string> getPropertyDesc() const ;
-       std::vector<std::string> getConstPropertyKeys();
-       std::vector<double> getConstPropertyValues();
+
+       std::vector<std::string> getConstPropertyKeys_OLD();
+       std::vector<std::string> getConstPropertyKeys() const ;
+
+       std::vector<double> getConstPropertyValues_OLD();
+       std::vector<double> getConstPropertyValues() const ;
+
    private:
        G4MaterialPropertiesTable* m_mpt ; 
        const char* m_name ; 
