@@ -27,6 +27,8 @@ class SYSRAP_API SStr {
       static bool EndsWith( const char* s, const char* q);
 
       static bool HasPointerSuffix( const char* name, unsigned hexdigits ) ;   // 12 typically, 9 with Geant4 ???
+      static bool HasPointerSuffix( const char* name, unsigned min_hexdigits, unsigned max_hexdigits ) ;
+      static int  GetPointerSuffixDigits( const char* name );
 
 };
 

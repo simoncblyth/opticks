@@ -6,6 +6,17 @@ Geant4
 ========
 
 
+
+Breakpoints 
+-------------
+
+::
+
+    (lldb) b G4Exception(char const*, char const*, G4ExceptionSeverity, char const*)
+      ## break on exceptions
+
+
+
 Migration to 10 (Multithreaded)
 --------------------------------
 

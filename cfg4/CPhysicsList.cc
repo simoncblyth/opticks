@@ -48,6 +48,14 @@ void CPhysicsList::ConstructParticle()
   // This ensures that objects of these particle types will be
   // created in the program.
 
+    G4BosonConstructor::ConstructParticle(); 
+    G4LeptonConstructor::ConstructParticle(); 
+    G4MesonConstructor::ConstructParticle();
+    G4BaryonConstructor::ConstructParticle();
+    G4IonConstructor::ConstructParticle();
+
+
+/*
   G4BosonConstructor bConstructor;
   bConstructor.ConstructParticle();
 
@@ -62,6 +70,8 @@ void CPhysicsList::ConstructParticle()
 
   G4IonConstructor iConstructor;
   iConstructor.ConstructParticle();
+
+*/
 
     initParticles(); 
 }

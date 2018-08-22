@@ -4,26 +4,27 @@ project(${name} VERSION 0.1.0)
 include(OpticksBuildOptions)
 
 #[=[
-ExtG4 : Objectives
-=============================
+ExtG4 : X4 : Direct/Live conversion of Geant4 geometry into GGeo
+=========================================================================
 
-Bring together G4 and GGeo to 
-investigate live G4 direct to GGeo conversion.
+Class requirements for X4 package:
 
-Class requirements for this package
-
-1. simple single objective classes that 
-   wrap single G4 instances
+1. simple single objective classes that wrap single G4 instances
 2. named after the classes they enhance
-3. expose functionaliy via static functions
-   where possible
+3. expose functionaliy via static functions where possible
+4. **NOT generally useful code : focus just on doing conversion**
+
+* **NB does not depend on the CFG4 (big gorilla) the idea behind 
+  this is to force X4 to be kept minimal and stable**  
+
+* X4 is aiming to become production code, not instrumented debugging code 
+  like much of CFG4
 
 Some CFG4 classes that fit the simplicity criteria
 could be migrated here, but probably better to re-implement 
 very focussed converter classes.
 
 #]=]
-
 
 find_package(G4         REQUIRED MODULE)
 find_package(GGeo       REQUIRED CONFIG)   

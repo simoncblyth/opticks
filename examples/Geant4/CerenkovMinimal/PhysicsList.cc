@@ -4,10 +4,6 @@
 
 // process
 #include "G4VUserPhysicsList.hh"
-//#include "G4Electron.hh"
-//#include "G4OpticalPhoton.hh"
-#include "G4BosonConstructor.hh"
-#include "G4LeptonConstructor.hh"
 
 #include "G4Version.hh"
 #include "G4Scintillation.hh"
@@ -16,21 +12,33 @@
 
 template <typename T>
 PhysicsList<T>::PhysicsList()
-       :
-       fMaxNumPhotonStep(1000),
-       fVerboseLevel(1),
-       fCerenkovProcess(NULL),
-       fScintillationProcess(NULL),
-       fBoundaryProcess(NULL)
+    :
+    fMaxNumPhotonStep(1000),
+    fVerboseLevel(1),
+    fCerenkovProcess(NULL),
+    fScintillationProcess(NULL),
+    fBoundaryProcess(NULL)
 {
 }
+
+
+
+#include "G4BosonConstructor.hh"
+#include "G4LeptonConstructor.hh"
+#include "G4MesonConstructor.hh"
+#include "G4BaryonConstructor.hh"
+#include "G4IonConstructor.hh"
+#include "G4ShortLivedConstructor.hh"
 
 
 template <typename T>
 void PhysicsList<T>::ConstructParticle()
 {
-    G4LeptonConstructor::ConstructParticle(); 
     G4BosonConstructor::ConstructParticle(); 
+    G4LeptonConstructor::ConstructParticle(); 
+    G4MesonConstructor::ConstructParticle();
+    G4BaryonConstructor::ConstructParticle();
+    G4IonConstructor::ConstructParticle();
 }
 
 template <typename T>
@@ -67,6 +75,12 @@ void PhysicsList<T>::ConstructProcess()
 template <typename T>
 void PhysicsList<T>::ConstructEM()
 {
+    G4int em_verbosity = 0 ; 
+    G4EmParameters* empar = G4EmParameters::Instance() ;
+    empar->SetVerbose(em_verbosity); 
+    empar->SetWorkerVerbose(em_verbosity); 
+
+
 #if ( G4VERSION_NUMBER >= 1042 )
   auto particleIterator=GetParticleIterator();
   particleIterator->reset();

@@ -29,7 +29,109 @@ void X4MaterialPropertiesTable::init()
 }
 
 
-void X4MaterialPropertiesTable::AddProperties(GPropertyMap<float>* pmap, const G4MaterialPropertiesTable* const mpt_)   // static
+void X4MaterialPropertiesTable::AddProperties(GPropertyMap<float>* pmap, const G4MaterialPropertiesTable* const mpt)   // static
+{
+    typedef G4MaterialPropertyVector MPV ; 
+    G4bool warning ; 
+
+    std::vector<G4String> pns = mpt->GetMaterialPropertyNames() ;
+    LOG(debug) << " pns " << pns.size() ; 
+    for( unsigned i=0 ; i < pns.size() ; i++)
+    {   
+        const std::string& pname = pns[i]; 
+        G4int pidx = mpt->GetPropertyIndex(pname, warning=true); 
+        assert( pidx > -1 );  
+        MPV* pvec = const_cast<G4MaterialPropertiesTable*>(mpt)->GetProperty(pidx, warning=false );  
+        if(pvec == NULL) continue ; 
+
+        LOG(debug)
+            << " pname : " 
+            << std::setw(30) << pname  
+            << " pidx : " 
+            << std::setw(5) << pidx 
+            << " pvec : "
+            << std::setw(16) << pvec 
+            ;   
+
+        GProperty<float>* prop = X4PhysicsVector<float>::Convert(pvec) ; 
+        pmap->addPropertyStandardized( pname.c_str(), prop );  // interpolates onto standard domain 
+    }
+
+
+    std::vector<G4String> cpns = mpt->GetMaterialConstPropertyNames() ;
+    LOG(debug) << " cpns " << cpns.size() ; 
+
+    for( unsigned i=0 ; i < cpns.size() ; i++)
+    {   
+        const std::string& pname = cpns[i]; 
+        G4bool exists = mpt->ConstPropertyExists( pname.c_str() ) ;
+        if(!exists) continue ; 
+
+        G4int pidx = mpt->GetConstPropertyIndex(pname, warning=true); 
+        assert( pidx > -1 );  
+        G4double pval = mpt->GetConstProperty(pidx);  
+
+        LOG(debug)
+            << " pname : " 
+            << std::setw(30) << pname  
+            << " pidx : " 
+            << std::setw(5) << pidx 
+            << " pval : "
+            << std::setw(16) << pval 
+            ;   
+
+        pmap->addConstantProperty( pname.c_str(), pval );   // asserts without standard domain
+    }
+}
+
+
+
+std::string X4MaterialPropertiesTable::Digest(const G4MaterialPropertiesTable* mpt)  // static
+{
+    if(!mpt) return "" ; 
+
+    SDigest dig ;
+
+    typedef G4MaterialPropertyVector MPV ; 
+    G4bool warning ; 
+
+    std::vector<G4String> pns = mpt->GetMaterialPropertyNames() ;
+    LOG(debug) << " pns " << pns.size() ; 
+    for( unsigned i=0 ; i < pns.size() ; i++)
+    {   
+        const std::string& n = pns[i]; 
+        G4int pidx = mpt->GetPropertyIndex(n, warning=true); 
+        assert( pidx > -1 );  
+        MPV* v = const_cast<G4MaterialPropertiesTable*>(mpt)->GetProperty(pidx, warning=false );  
+        if(v == NULL) continue ; 
+
+        std::string vs = X4PhysicsVector<float>::Digest(v) ; 
+        dig.update( const_cast<char*>(n.data()),  n.size() );  
+        dig.update( const_cast<char*>(vs.data()), vs.size() );  
+    }
+
+    std::vector<G4String> cpns = mpt->GetMaterialConstPropertyNames() ;
+    LOG(debug) << " cpns " << cpns.size() ; 
+
+    for( unsigned i=0 ; i < cpns.size() ; i++)
+    {   
+        const std::string& n = cpns[i]; 
+        G4bool exists = mpt->ConstPropertyExists( n.c_str() ) ;
+        if(!exists) continue ; 
+
+        G4int pidx = mpt->GetConstPropertyIndex(n, warning=true); 
+        assert( pidx > -1 );  
+        G4double pvalue = mpt->GetConstProperty(pidx);  
+
+        dig.update( const_cast<char*>(n.data()), n.size() );  
+        dig.update( reinterpret_cast<char*>(&pvalue), sizeof(double) );  
+    }
+    return dig.finalize();
+}
+
+
+
+void X4MaterialPropertiesTable::AddProperties_OLD(GPropertyMap<float>* pmap, const G4MaterialPropertiesTable* const mpt_)   // static
 {
     G4MaterialPropertiesTable* mpt = const_cast<G4MaterialPropertiesTable*>(mpt_);   // needed with 10.4.2
 
@@ -39,8 +141,6 @@ void X4MaterialPropertiesTable::AddProperties(GPropertyMap<float>* pmap, const G
     for(MKP::const_iterator it=pm->begin() ; it != pm->end() ; it++)
     {   
         G4String pname = it->first ;
-
-        //LOG(error) << pname ; 
 
         G4MaterialPropertyVector* pvec = it->second ;  
         // G4MaterialPropertyVector is typedef to G4PhysicsOrderedFreeVector with most of imp in G4PhysicsVector
@@ -65,7 +165,9 @@ void X4MaterialPropertiesTable::AddProperties(GPropertyMap<float>* pmap, const G
     }     
 }
 
-std::string X4MaterialPropertiesTable::Digest(const G4MaterialPropertiesTable* mpt_)  // static
+
+
+std::string X4MaterialPropertiesTable::Digest_OLD(const G4MaterialPropertiesTable* mpt_)  // static
 {
     G4MaterialPropertiesTable* mpt = const_cast<G4MaterialPropertiesTable*>(mpt_);   // needed with 10.4.2
     if(!mpt) return "" ; 

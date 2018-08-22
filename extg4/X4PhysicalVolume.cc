@@ -647,10 +647,15 @@ unsigned X4PhysicalVolume::addBoundary(const G4VPhysicalVolume* const pv, const 
     const char* _lv = X4::GDMLName(lv) ; 
     const char* _lv_p = X4::GDMLName(lv_p) ; 
 
-    assert( SStr::HasPointerSuffix(_lv, 9) == true ) ;    
+    bool ps = SStr::HasPointerSuffix(_lv, 9, 12) ; 
+    if(!ps) LOG(fatal) << " unexpected pointer suffix _lv " << _lv ;  
+    assert(ps) ;    
+
     if( _lv_p )
     {
-        assert( SStr::HasPointerSuffix(_lv_p, 9) == true ) ;    
+        bool ps = SStr::HasPointerSuffix(_lv_p, 9, 12);
+        if(!ps) LOG(fatal) << " unexpected pointer suffix _lv " << _lv_p ;  
+        assert(ps) ;    
     }
 
     LOG(fatal)

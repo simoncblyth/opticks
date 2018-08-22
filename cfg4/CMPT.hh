@@ -25,6 +25,7 @@ class CFG4_API CMPT {
        static CMPT* MakeDummy(); 
        static std::string Digest(G4MaterialPropertiesTable* mpt); 
        static void AddDummyProperty(G4MaterialPropertiesTable* mpt, const char* lkey, unsigned nval) ;
+       static void AddConstProperty(G4MaterialPropertiesTable* mpt, const char* lkey, G4double pval ) ;
        static bool HasProperty(const G4MaterialPropertiesTable* mpt, const char* pname); 
    public:
        void addDummyProperty(const char* lkey, unsigned nval) ; 

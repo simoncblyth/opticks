@@ -147,4 +147,52 @@ bool SStr::HasPointerSuffix( const char* name, unsigned hexdigits )
 }
 
 
+/**
+SStr::GetPointerSuffixDigits
+------------------------------
+
+Check for hexdigits backwards, until reach first non-hexdigit the 'x'::
+
+   World0x7fc10641cbb0  -> 12 
+     Det0x110fa38b0     ->  9
+     Hello              -> -1
+
+**/
+
+int SStr::GetPointerSuffixDigits( const char* name )
+{
+    if( name == NULL ) return -1 ; 
+    int l = strlen(name) ; 
+    int num = 0 ; 
+    for(int i=0 ; i < l ; i++ )  
+    {
+         char c = *(name + l - 1 - i) ; 
+         //std::cout << c << " " ; 
+         bool hexdigit = ( c >= '0' && c <= '9' ) || ( c >= 'a' && c <= 'f' ) ; 
+         if(!hexdigit) break ;  
+         num += 1 ; 
+    } 
+    //std::cout << std::endl ; 
+    if(l - num - 1 < 0 )  return -1 ; 
+    if(l - num - 2 < 0 )  return -1 ; 
+
+    char c1 = *(name + l - num - 1);
+    char c2 = *(name + l - num - 2);
+
+    return  c1 == 'x' && c2 == '0'  ?  num : -1 ; 
+}
+
+
+bool SStr::HasPointerSuffix( const char* name, unsigned min_hexdigits, unsigned max_hexdigits )
+{    
+    int num_hexdigits = GetPointerSuffixDigits( name ); 
+    //std::cout << " num_hexdigits " << num_hexdigits << std::endl ; 
+    return  num_hexdigits > -1 && num_hexdigits >= min_hexdigits && num_hexdigits <= max_hexdigits ; 
+}
+
+
+
+
+
+
 

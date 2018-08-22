@@ -109,6 +109,32 @@ void test_HasPointerSuffix()
 }
 
 
+void test_HasPointerSuffix2()
+{
+    const char* name = "World0x7fc10641cbb0" ; 
+    assert( SStr::HasPointerSuffix( name, 9, 12 ) == true ); 
+
+    assert( SStr::GetPointerSuffixDigits("World0x7fc10641cbb0") == 12 ); 
+    assert( SStr::GetPointerSuffixDigits("World0x7fc10641cbb") == 11 ); 
+    assert( SStr::GetPointerSuffixDigits("World0x7fc10641cb") == 10 ); 
+    assert( SStr::GetPointerSuffixDigits("World0x7fc10641c") == 9 ); 
+    assert( SStr::GetPointerSuffixDigits("World0x7fc10641") == 8 ); 
+    assert( SStr::GetPointerSuffixDigits("World0x7fc1064") == 7 ); 
+    assert( SStr::GetPointerSuffixDigits("World0x7fc106") == 6 ); 
+    assert( SStr::GetPointerSuffixDigits("World0x7fc10") == 5 ); 
+    assert( SStr::GetPointerSuffixDigits("World0x7fc1") == 4 ); 
+    assert( SStr::GetPointerSuffixDigits("World0x7fc") == 3 ); 
+    assert( SStr::GetPointerSuffixDigits("World0x7f") == 2 ); 
+    assert( SStr::GetPointerSuffixDigits("World0x7") == 1 ); 
+    assert( SStr::GetPointerSuffixDigits("World0x") == 0 ); 
+    assert( SStr::GetPointerSuffixDigits("World0") == -1 ); 
+    assert( SStr::GetPointerSuffixDigits("World") == -1 ); 
+    assert( SStr::GetPointerSuffixDigits("") == -1 ); 
+    assert( SStr::GetPointerSuffixDigits(NULL) == -1 ); 
+}
+
+
+
 
 int main(int argc , char** argv )
 {
@@ -120,8 +146,9 @@ int main(int argc , char** argv )
     test_Format1();  
     test_Contains();  
     test_EndsWith();  
-    */
     test_HasPointerSuffix();  
+    */
+    test_HasPointerSuffix2();  
 
     return 0  ; 
 }

@@ -138,6 +138,15 @@ void CMPT::AddDummyProperty(G4MaterialPropertiesTable* mpt, const char* lkey, un
 }
 
 
+void CMPT::AddConstProperty(G4MaterialPropertiesTable* mpt, const char* lkey, G4double pval)
+{
+    mpt->AddConstProperty(lkey, pval); 
+}
+
+
+
+
+
 CMPT* CMPT::MakeDummy()
 {
     G4MaterialPropertiesTable* _mpt = new G4MaterialPropertiesTable(); 
