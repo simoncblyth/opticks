@@ -33,11 +33,12 @@ void CPhotonCollector::save(const char* path) const
     m_photon->save(path) ; 
 }
 
-std::string CPhotonCollector::description() const
+std::string CPhotonCollector::desc() const
 {
     std::stringstream ss ; 
     ss << " CPhotonCollector "
        << " photon_count " << m_photon_count
+       << " photon_shape " << m_photon->getShapeString()
        ;
     return ss.str();
 }
@@ -45,7 +46,7 @@ std::string CPhotonCollector::description() const
 void CPhotonCollector::Summary(const char* msg) const 
 { 
     LOG(info) << msg 
-              << description()
+              << desc()
               ;
 }
 
@@ -102,6 +103,9 @@ void CPhotonCollector::collectPhoton(
      pr[3*4+3] = flags[3].f  ;
 
      m_photon->add(pr, m_photon_itemsize);
+
+     m_photon_count += 1 ;
+
 }
 
 

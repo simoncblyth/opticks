@@ -20,7 +20,7 @@ class CFG4_API CPhotonCollector
     public:
         CPhotonCollector();  
 
-        std::string description() const ;
+        std::string desc() const ;
         void Summary(const char* msg="CPhotonCollector::Summary") const  ;
     public:
         NPY<float>*  getPhoton() const ;

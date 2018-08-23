@@ -85,6 +85,22 @@ is amenable to random alignment with Opticks which is doing the same thing
 when running from gensteps. 
 
 
+DONE : first cut CCerenkovGenerator + tests/CCerenkovGeneratorTest 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* standalone CCerenkovGeneratorTest executable
+
+  * (requires loading full hub just to get at RINDEX for materials)
+  * loads gensteps
+  * generates and saves photons
+
+* issues : with old gensteps had to force a materialIndex 
+
+  * TODO: avoid by using new gensteps (from ckm)
+  * TODO: wavelength units off by 1e6 : review unit conversions thru the chain
+
+
+
 G4Cerenkov -> CCerenkovSource
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

@@ -2,6 +2,7 @@
 
 #include "OPTICKS_LOG.hh"
 
+#include "SSys.hh"
 #include "NPY.hpp"
 #include "NGS.hpp"
 #include "CCerenkovGenerator.hh"
@@ -39,9 +40,17 @@ int main(int argc, char** argv)
 
  
     CCerenkovGenerator* cg = new CCerenkovGenerator(gs) ; 
-    G4VParticleChange* pc = cg->generatePhotonsFromGenstep(0);
-    LOG(info) << " pc " << pc ; 
+    
+    //G4VParticleChange* pc = cg->generatePhotonsFromGenstep(0);
 
+    cg->generateAndCollectPhotonsFromGenstep(0); 
+
+    const char* ph_path = "$TMP/cfg4/CCerenkovGeneratorTest/photons.npy" ; 
+    cg->savePhotons(ph_path);
+    LOG(info) << cg->desc() ;
+
+    SSys::npdump( ph_path, "np.float32", "", "suppress=True") ;  
+ 
 
     return 0 ; 
 }
