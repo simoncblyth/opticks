@@ -136,6 +136,8 @@ set(SOURCES
     PhotonsNPY.cpp
     NPho.cpp
     NPri.cpp
+    NGS.cpp
+
     RecordsNPY.cpp
     HitsNPY.cpp
     BoundariesNPY.cpp
@@ -241,8 +243,11 @@ FabStepNPY.hpp
 GenstepNPY.hpp
 NGunConfig.hpp
 PhotonsNPY.hpp
+
 NPho.hpp
 NPri.hpp
+NGS.hpp
+
 
 HitsNPY.hpp
 RecordsNPY.hpp

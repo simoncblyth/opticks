@@ -97,6 +97,7 @@ NPYminmaxTest.cc
 NPYreshapeTest.cc
 
 NLoadTest.cc
+NGSTest.cc
 
 
 DummyPhotonsNPYTest.cc
