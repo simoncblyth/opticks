@@ -1,8 +1,12 @@
 #pragma once
 
+
+#include <ostream>
 #include "CFG4_API_EXPORT.hh"
 #include "CLHEP/Random/MixMaxRng.h"
 #include "CRandomListener.hh"
+
+
 
 struct CFG4_API CMixMaxRng :  public CRandomListener, public CLHEP::MixMaxRng
 {
@@ -18,6 +22,9 @@ struct CFG4_API CMixMaxRng :  public CRandomListener, public CLHEP::MixMaxRng
     double flat_instrumented(const char* file, int line);
 
     unsigned count ; 
+
+    std::ostream* out ; 
+
 
 };
 

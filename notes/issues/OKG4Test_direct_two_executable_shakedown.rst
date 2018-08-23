@@ -1,28 +1,101 @@
 OKG4Test_direct_two_executable_shakedown
-=========================================
+===========================================
+
+simstream G4 vs G4 comparison with the two executables : ckm-- and ckm-okg4
+----------------------------------------------------------------------------
+
+Implemented SBacktrack::CallSite and using it from CMixMaxRng flat shim 
+to see who is calling flat, write those out to simstream files 
+with the random number. 
+
+vimdiff between them makes it very apparent that the only way of getting alignment is
+to be using exactly the same code for the physics. 
+
+Previously starting from the photons is much easier, as there is so much less 
+physics to worry about.
+
+* this observation from seeing the G4-G4 simstreams makes me realize need to switch 
+  back to genstep strategy :doc:`strategy_for_Cerenkov_Scintillation_alignment`
 
 
-Thoughts
------------
+::
 
-Why was I trying to start from primaries ? Rather than gensteps ?
+    00 :   0.519572 :       + 661 G4VEmProcess::PostStepGetPhysicalInteractionLength(G4Track const&, double, G4ForceCondition*)
+     1 :   0.887343 :       + 935 G4VEnergyLossProcess::PostStepGetPhysicalInteractionLength(G4Track const&, double, G4ForceCondition*)
+     2 :   0.469907 :       + 935 G4VEnergyLossProcess::PostStepGetPhysicalInteractionLength(G4Track const&, double, G4ForceCondition*)
+     3 :   0.222093 :        + 22 CLHEP::RandGaussQ::shoot(CLHEP::HepRandomEngine*)
+     4 :   0.859488 :      + 2654 G4UrbanMscModel::SampleCosineTheta(double, double)
+     5 :   0.546826 :      + 2706 G4UrbanMscModel::SampleCosineTheta(double, double)
+     6 :   0.928684 :      + 2763 G4UrbanMscModel::SampleCosineTheta(double, double)
+     7 :   0.439334 :       + 554 G4UrbanMscModel::SampleScattering(CLHEP::Hep3Vector const&, double)
+     8 :   0.739872 :       + 110 G4UrbanMscModel::SampleDisplacement(double, double)
+     9 :   0.608161 :       + 816 G4UrbanMscModel::SampleDisplacement(double, double)
+    10 :   0.434261 :        + 74 G4Poisson(double)
+    11 :   0.505910 :       + 168 G4UniversalFluctuation::AddExcitation(CLHEP::HepRandomEngine*, double, double, double&, double&, double&)
+    12 :   0.092601 :        + 22 CLHEP::RandGaussQ::shoot(CLHEP::HepRandomEngine*)
+    13 :   0.417196 :        + 74 G4Poisson(double)
+    14 :   0.917940 :      + 3421 G4UniversalFluctuation::SampleFluctuations(G4MaterialCutsCouple const*, G4DynamicParticle const*, double, double, double)
+    15 :   0.310028 :      + 3421 G4UniversalFluctuation::SampleFluctuations(G4MaterialCutsCouple const*, G4DynamicParticle const*, double, double, double)
+    16 :   0.392645 :      + 3421 G4UniversalFluctuation::SampleFluctuations(G4MaterialCutsCouple const*, G4DynamicParticle const*, double, double, double)
+    17 :   0.864323 :      + 3421 G4UniversalFluctuation::SampleFluctuations(G4MaterialCutsCouple const*, G4DynamicParticle const*, double, double, double)
+    18 :   0.733161 :      + 3421 G4UniversalFluctuation::SampleFluctuations(G4MaterialCutsCouple const*, G4DynamicParticle const*, double, double, double)
+    19 :   0.377088 :      + 3421 G4UniversalFluctuation::SampleFluctuations(G4MaterialCutsCouple const*, G4DynamicParticle const*, double, double, double)
+    20 :   0.056634 :      + 3421 G4UniversalFluctuation::SampleFluctuations(G4MaterialCutsCouple const*, G4DynamicParticle const*, double, double, double)
+    21 :   0.708644 :      + 3421 G4UniversalFluctuation::SampleFluctuations(G4MaterialCutsCouple const*, G4DynamicParticle const*, double, double, double)
+    22 :   0.290254 :      + 3421 G4UniversalFluctuation::SampleFluctuations(G4MaterialCutsCouple const*, G4DynamicParticle const*, double, double, double)
+    23 :   0.663173 :      + 3421 G4UniversalFluctuation::SampleFluctuations(G4MaterialCutsCouple const*, G4DynamicParticle const*, double, double, double)
+    24 :   0.338007 :      + 3421 G4UniversalFluctuation::SampleFluctuations(G4MaterialCutsCouple const*, G4DynamicParticle const*, double, double, double)
+    25 :   0.026170 :      + 3421 G4UniversalFluctuation::SampleFluctuations(G4MaterialCutsCouple const*, G4DynamicParticle const*, double, double, double)
+    26 :   0.900784 :      + 3421 G4UniversalFluctuation::SampleFluctuations(G4MaterialCutsCouple const*, G4DynamicParticle const*, double, double, double)
+    27 :   0.422549 :      + 3421 G4UniversalFluctuation::SampleFluctuations(G4MaterialCutsCouple const*, G4DynamicParticle const*, double, double, double)
+    28 :   0.778952 :        + 22 CLHEP::RandGaussQ::shoot(CLHEP::HepRandomEngine*)
+    29 :   0.956925 :        + 74 G4Poisson(double)
+    30 :   0.406647 :      + 2433 C4Cerenkov1042::PostStepDoIt(G4Track const&, G4Step const&)
+    31 :   0.490262 :      + 2654 C4Cerenkov1042::PostStepDoIt(G4Track const&, G4Step const&)
+    32 :   0.671936 :      + 2749 C4Cerenkov1042::PostStepDoIt(G4Track const&, G4Step const&)
 
-* because are trying to duplicate the G4 running too, and G4 cannot 
-  start from gensteps 
 
-* SO : need to focus first on matching the G4 runs, start by 
-  collecting G4 hits into an OpticksEvent : not with full machinery 
-  need a simple way, as want to do from 1st and 2nd executable  
+::
 
-  * just have a collector for hits too, hmm will need to do for 
-    entire collection in reverse : so do at collection level ?
-    then theres an intermediary hit class inbetween : better to 
-    do in ProcessHits just like `CWriter::writePhoton(const G4StepPoint* point )`
-    
+    00 :   0.519572 :       + 661 G4VEmProcess::PostStepGetPhysicalInteractionLength(G4Track const&, double, G4ForceCondition*)
+     1 :   0.887343 :       + 935 G4VEnergyLossProcess::PostStepGetPhysicalInteractionLength(G4Track const&, double, G4ForceCondition*)
+     2 :   0.469907 :       + 935 G4VEnergyLossProcess::PostStepGetPhysicalInteractionLength(G4Track const&, double, G4ForceCondition*)
+     3 :   0.222093 :        + 22 CLHEP::RandGaussQ::shoot(CLHEP::HepRandomEngine*)
+     4 :   0.859488 :      + 2654 G4UrbanMscModel::SampleCosineTheta(double, double)
+     5 :   0.546826 :      + 2706 G4UrbanMscModel::SampleCosineTheta(double, double)
+     6 :   0.928684 :      + 2763 G4UrbanMscModel::SampleCosineTheta(double, double)
+     7 :   0.439334 :       + 554 G4UrbanMscModel::SampleScattering(CLHEP::Hep3Vector const&, double)
+     8 :   0.739872 :       + 110 G4UrbanMscModel::SampleDisplacement(double, double)
+     9 :   0.608161 :       + 816 G4UrbanMscModel::SampleDisplacement(double, double)
+    10 :   0.434261 :        + 74 G4Poisson(double)
+    11 :   0.505910 :       + 168 G4UniversalFluctuation::AddExcitation(CLHEP::HepRandomEngine*, double, double, double&, double&, double&)
+    12 :   0.092601 :        + 22 CLHEP::RandGaussQ::shoot(CLHEP::HepRandomEngine*)
+    13 :   0.417196 :        + 74 G4Poisson(double)
+    14 :   0.917940 :      + 3421 G4UniversalFluctuation::SampleFluctuations(G4MaterialCutsCouple const*, G4DynamicParticle const*, double, double, double)
+    15 :   0.310028 :      + 3421 G4UniversalFluctuation::SampleFluctuations(G4MaterialCutsCouple const*, G4DynamicParticle const*, double, double, double)
+    16 :   0.392645 :      + 3421 G4UniversalFluctuation::SampleFluctuations(G4MaterialCutsCouple const*, G4DynamicParticle const*, double, double, double)
+    17 :   0.864323 :      + 3421 G4UniversalFluctuation::SampleFluctuations(G4MaterialCutsCouple const*, G4DynamicParticle const*, double, double, double)
+    18 :   0.733161 :      + 3421 G4UniversalFluctuation::SampleFluctuations(G4MaterialCutsCouple const*, G4DynamicParticle const*, double, double, double)
+    19 :   0.377088 :      + 3421 G4UniversalFluctuation::SampleFluctuations(G4MaterialCutsCouple const*, G4DynamicParticle const*, double, double, double)
+    20 :   0.056634 :      + 3421 G4UniversalFluctuation::SampleFluctuations(G4MaterialCutsCouple const*, G4DynamicParticle const*, double, double, double)
+    21 :   0.708644 :      + 3421 G4UniversalFluctuation::SampleFluctuations(G4MaterialCutsCouple const*, G4DynamicParticle const*, double, double, double)
+    22 :   0.290254 :      + 3421 G4UniversalFluctuation::SampleFluctuations(G4MaterialCutsCouple const*, G4DynamicParticle const*, double, double, double)
+    23 :   0.663173 :      + 3421 G4UniversalFluctuation::SampleFluctuations(G4MaterialCutsCouple const*, G4DynamicParticle const*, double, double, double)
+    24 :   0.338007 :      + 3421 G4UniversalFluctuation::SampleFluctuations(G4MaterialCutsCouple const*, G4DynamicParticle const*, double, double, double)
+    25 :   0.026170 :      + 3421 G4UniversalFluctuation::SampleFluctuations(G4MaterialCutsCouple const*, G4DynamicParticle const*, double, double, double)
+    26 :   0.900784 :      + 3421 G4UniversalFluctuation::SampleFluctuations(G4MaterialCutsCouple const*, G4DynamicParticle const*, double, double, double)
+    27 :   0.422549 :      + 3421 G4UniversalFluctuation::SampleFluctuations(G4MaterialCutsCouple const*, G4DynamicParticle const*, double, double, double)
+    28 :   0.778952 :        + 22 CLHEP::RandGaussQ::shoot(CLHEP::HepRandomEngine*)
+    29 :   0.956925 :        + 74 G4Poisson(double)
+    30 :   0.406647 :      + 2662 L4Cerenkov::PostStepDoIt(G4Track const&, G4Step const&)
+    31 :   0.490262 :      + 2883 L4Cerenkov::PostStepDoIt(G4Track const&, G4Step const&)
+    32 :   0.671936 :      + 2978 L4Cerenkov::PostStepDoIt(G4Track const&, G4Step const&)
+    33 :   0.749394 :      + 3690 L4Cerenkov::PostStepDoIt(G4Track const&, G4Step const&)
 
 
 
-* need also to check the state of the seed 
+
+
 
 
 

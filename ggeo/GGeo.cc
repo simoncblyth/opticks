@@ -722,15 +722,9 @@ void GGeo::saveCacheMeta()
     m_cachemeta->set<int>("answer", 42) ; 
     m_cachemeta->set<std::string>("question", "huh?");
 
-    LOG(error) << " PLOG::instance " << PLOG::instance ; 
+    //LOG(error) << " PLOG::instance " << PLOG::instance ; 
 
-
-#ifdef __APPLE__
     std::string argline = PLOG::instance->args.argline() ; 
-#else
-    // Linux has troubles with accessing PLOG::instance from the main from libs ? 
-    std::string argline = "no-argline-on-linux" ; 
-#endif
     m_cachemeta->set<std::string>("argline", argline ); 
 
     if(m_lv2sd) m_cachemeta->setObj("lv2sd", m_lv2sd ); 

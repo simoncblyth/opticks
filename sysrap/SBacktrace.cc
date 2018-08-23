@@ -2,7 +2,6 @@
 /*
 
 https://oroboro.com/stack-trace-on-crash/
-
 https://panthema.net/2008/0901-stacktrace-demangled/cxa_demangle.html
 
 */
@@ -11,164 +10,87 @@ https://panthema.net/2008/0901-stacktrace-demangled/cxa_demangle.html
 #include <cstdlib>
 #include <string.h>
 
+#include "SFrame.hh"
 #include "SBacktrace.hh"
 
 #include <execinfo.h>
 #include <errno.h>
-#include <cxxabi.h>
 
- 
-static inline void printStackTrace( FILE *out = stderr, unsigned int max_frames = 63 )
+
+void SBacktrace::Dump() 
 {
-   fprintf(out, "stack trace:\n");
- 
-   // storage array for stack trace address data
+   unsigned max_frames = 63 ; 
+   FILE *out = stderr ; 
    void* addrlist[max_frames+1];
+   unsigned addrlen = backtrace( addrlist, sizeof(addrlist)/sizeof(void*));
+   fprintf(out, "SBacktrace::Dump addrlen %d \n", addrlen );
+   if(addrlen == 0) return;
  
-   // retrieve current stack addresses
-   unsigned int addrlen = backtrace( addrlist, sizeof( addrlist ) / sizeof( void* ));
- 
-   if ( addrlen == 0 ) 
-   {
-      fprintf( out, "  \n" );
-      return;
-   }
- 
-   // resolve addresses into strings containing "filename(function+address)",
-   // Actually it will be ## program address function + offset
-   // this array must be free()-ed
    char** symbollist = backtrace_symbols( addrlist, addrlen );
+   for ( unsigned i = 0 ; i < addrlen; i++ )
+       fprintf( out, "%s : %p \n", symbollist[i], addrlist[i] );
 
+   fprintf(out, "SFrames..\n" ); 
    for ( unsigned i = 0 ; i < addrlen; i++ )
    {
-       fprintf( out, "%s\n", symbollist[i]);
+       SFrame f(symbollist[i]) ; 
+       f.dump(); 
    }
- 
-   size_t funcnamesize = 1024;
-   char funcname[1024];
-
-      // find parentheses and +address offset surrounding the mangled name
-#ifdef __APPLE__
-   for ( unsigned int i = 4; i < addrlen; i++ )
-   {
-      char* begin_name   = NULL;
-      char* begin_offset = NULL;
-
-      for ( char *p = symbollist[i]; *p; ++p )
-      {
-         if (( *p == '_' ) && ( *(p-1) == ' ' )) begin_name = p-1;
-         else if ( *p == '+' ) begin_offset = p-1;
-      }
- 
-      if ( begin_name && begin_offset && ( begin_name < begin_offset ))
-      {
-         *begin_name++ = '\0';
-         *begin_offset++ = '\0';
- 
-         // mangled name is now in [begin_name, begin_offset) and caller
-         // offset in [begin_offset, end_offset). now apply
-         // __cxa_demangle():
-         int status;
-         char* ret = abi::__cxa_demangle( begin_name, &funcname[0],
-                                          &funcnamesize, &status );
-         if ( status == 0 ) 
-         {
-            //funcname = ret; // use possibly realloc()-ed string
-            strncpy( funcname, ret, funcnamesize  );
-
-            fprintf( out, " : %-30s : %-40s : %s :\n",
-                     symbollist[i], funcname, begin_offset );
-         } else {
-            // demangling failed. Output function name as a C function with
-            // no arguments.
-            fprintf( out, " : %-30s %-38s() %s\n",
-                     symbollist[i], begin_name, begin_offset );
-         }
-
-      } else {
-         // couldn't parse the line? print the whole line.
-         fprintf(out, "  %-40s\n", symbollist[i]);
-      }
-   }
- 
-#else 
-
-   for ( unsigned int i = 3 ; i < addrlen; i++ )
-   {
-      char* begin_name   = NULL;
-      char* begin_offset = NULL;
-      char* end_offset   = NULL;
-      // ./module(function+0x15c) [0x8048a6d]
-      for ( char *p = symbollist[i]; *p; ++p )
-      {
-         if ( *p == '(' )
-            begin_name = p;
-         else if ( *p == '+' )
-            begin_offset = p;
-         else if ( *p == ')' && ( begin_offset || begin_name ))
-            end_offset = p;
-      }
- 
-      if ( begin_name && end_offset && ( begin_name < end_offset ))
-      {
-         *begin_name++   = '\0';
-         *end_offset++   = '\0';
-         if ( begin_offset )
-            *begin_offset++ = '\0';
- 
-         // mangled name is now in [begin_name, begin_offset) and caller
-         // offset in [begin_offset, end_offset). now apply
-         // __cxa_demangle():
- 
-         int status = 0;
-         char* ret = abi::__cxa_demangle( begin_name, funcname,
-                                          &funcnamesize, &status );
-         char* fname = begin_name;
-         if ( status == 0 ) 
-            fname = ret;
- 
-         if ( begin_offset )
-         {
-            fprintf( out, "  %-30s ( %-40s  + %-6s) %s\n",
-                     symbollist[i], fname, begin_offset, end_offset );
-         } else {
-            fprintf( out, "  %-30s ( %-40s    %-6s) %s\n",
-                     symbollist[i], fname, "", end_offset );
-         }
-
-
-      } else {
-         // couldn't parse the line? print the whole line.
-         fprintf(out, "  %-40s\n", symbollist[i]);
-      }
-   }
- 
-#endif  // !DARWIN - but is posix
 
    free(symbollist);
 }
 
 
+/**
+SBacktrace::CallSite
+---------------------
 
-void printStackTrace_0()
+For a call stack like the below with call "::flat()" return the line starting with 3::
+
+    SFrames..
+    0   libSysRap.dylib                     0x000000010b991662 SBacktrace::Dump()                                                                                   + 114      
+    1   libCFG4.dylib                       0x000000010026909d CMixMaxRng::flat()                                                                                   + 445      
+    2   libCFG4.dylib                       0x0000000100269169 non-virtual thunk to CMixMaxRng::flat()                                                              + 25       
+    3   libG4processes.dylib                0x0000000102ba3ee5 G4VEmProcess::PostStepGetPhysicalInteractionLength(G4Track const&, double, G4ForceCondition*)        + 661      
+    4   libG4tracking.dylib                 0x00000001023e8ff0 G4VProcess::PostStepGPIL(G4Track const&, double, G4ForceCondition*)                                  + 80       
+    5   libG4tracking.dylib                 0x00000001023e8a1a G4SteppingManager::DefinePhysicalStepLength()                                                        + 298      
+    6   libG4tracking.dylib                 0x00000001023e5c3a G4SteppingManager::Stepping()                                                                        + 394      
+
+
+**/
+
+const char* SBacktrace::CallSite(const char* call )
 {
-    void *returnAddresses[500];
-    int depth = backtrace(returnAddresses, sizeof returnAddresses / sizeof *returnAddresses);
-    printf("stack depth = %d\n", depth);
-    char **symbols = backtrace_symbols(returnAddresses, depth);
-    for (int i = 0; i < depth; ++i) {
-        printf("%s\n", symbols[i]);
-    }
-    free(symbols);
+   const char* site = NULL ;  
+   unsigned max_frames = 63 ; 
+   void* addrlist[max_frames+1];
+   unsigned addrlen = backtrace( addrlist, sizeof(addrlist)/sizeof(void*));
+   if(addrlen == 0) return site ;
+ 
+   char** symbollist = backtrace_symbols( addrlist, addrlen );
+   int state = -1 ; 
+   for ( unsigned i = 0 ; i < addrlen; i++ )
+   {
+       SFrame f(symbollist[i]) ; 
+       //f.dump(); 
+
+       char* p = f.func ? strstr( f.func, call ) : NULL ; 
+       if(p) state++ ; 
+ 
+       if(!p && state > -1 )    // pick first line without call string following a line with it 
+       {
+           char out[256]; 
+           //snprintf( out, 256, "%16p %10s %s", addrlist[i], f.offset, f.func ) ;  
+           // addresses different for each executable so not good for comparisons
+           snprintf( out, 256, " %10s %s", f.offset, f.func ) ;
+           site = strdup(out) ;
+           break ; 
+       }    
+   }
+
+   free(symbollist);
+   return site ; 
 }
-
-
-void SBacktrace::Dump() 
-{
-    printStackTrace();
-    //printStackTrace_0();
-}
-
-
+  
 
 

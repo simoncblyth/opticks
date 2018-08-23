@@ -25,6 +25,9 @@ CSource(G4VPrimaryGenerator) : common functionality of the various source types
 The specialized prime method GeneratePrimaryVertex 
 is invoked from CPrimaryGeneratorAction::GeneratePrimaries
 by the Geant4 framework.
+
+THIS NEEDS REWORKING : THE SUBCLASSES ARE MOSTLY IGNORING THE BASE
+
        
 **/
 

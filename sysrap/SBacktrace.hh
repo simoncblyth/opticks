@@ -5,6 +5,7 @@
 struct SYSRAP_API SBacktrace
 {
     static void Dump(); 
+    static const char* CallSite(const char* call="::flat()" );  
 };
 
 
