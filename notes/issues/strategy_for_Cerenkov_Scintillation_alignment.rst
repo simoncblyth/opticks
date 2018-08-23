@@ -35,6 +35,13 @@ Why was I trying to start from primaries ? Rather than gensteps ?
     entire collection in reverse : so do at collection level ?
     then theres an intermediary hit class inbetween : better to 
     do in ProcessHits just like `CWriter::writePhoton(const G4StepPoint* point )`
+
+
+Validating the C+S sources ?
+-------------------------------
+
+* simply compare the photons and hits from the natural full physics case
+  with the cleanroom case booted from gensteps 
     
 
 What is really needed ?

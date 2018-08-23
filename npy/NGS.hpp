@@ -37,19 +37,29 @@ class NPY_API NGS {
     public:  
         NPY<float>*           getGensteps() const ;
         unsigned              getNumGensteps() const ;
+        unsigned              getNumPhotons() const ;
+        float                 getAvgPhotonsPerGenstep() const ;
     public:  
         glm::ivec4            getHdr(unsigned i) const ;
         glm::vec4             getPositionTime(unsigned i) const ; 
         glm::vec4             getDeltaPositionStepLength(unsigned i) const ; 
+
         glm::vec4             getQ3(unsigned i) const ; 
         glm::vec4             getQ4(unsigned i) const ; 
         glm::vec4             getQ5(unsigned i) const ; 
 
+        glm::ivec4            getI3(unsigned i) const ; 
+        glm::ivec4            getI4(unsigned i) const ; 
+        glm::ivec4            getI5(unsigned i) const ; 
+    public:  
         std::string           desc(unsigned i) const ;
         std::string           desc() const ;
         void                  dump(unsigned modulo, unsigned margin, const char* msg="NGS::dump") const ;
-   private:
-       NPY<float>*            m_gensteps ; 
+    private:
+        NPY<float>*           m_gensteps ; 
+        unsigned              m_num_gensteps ; 
+        unsigned              m_num_photons ; 
+        float                 m_avg_photons_per_genstep ; 
 
 };
 

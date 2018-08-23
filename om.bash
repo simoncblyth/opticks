@@ -605,6 +605,9 @@ detect that::
    TEST=NSceneLoadTest om-t
 
 
+Note that this does not install ... and 
+there seems no way to install just the one test ?
+
 EON
 }
 
