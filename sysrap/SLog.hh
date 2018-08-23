@@ -9,6 +9,7 @@
 class SYSRAP_API SLog 
 {
     public:
+        static const char* exename();
         static void Nonce(); 
     public:
         SLog(const char* label, const char* extra="", plog::Severity=plog::info );

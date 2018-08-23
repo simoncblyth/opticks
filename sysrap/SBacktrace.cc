@@ -17,85 +17,6 @@ https://panthema.net/2008/0901-stacktrace-demangled/cxa_demangle.html
 #include <errno.h>
 #include <cxxabi.h>
 
-
-
-
-
-/*
-
-static const char* caller(unsigned int max_frames = 63)
-{
-    void* addrlist[max_frames+1];
-    unsigned addrlen = backtrace( addrlist, sizeof( addrlist ) / sizeof( void* ));
-    if( addrlen == 0 ) return NULL ; 
-#ifdef __APPLE__
-    char** symbollist = backtrace_symbols( addrlist, addrlen );
-    size_t funcnamesize = 1024;
-    char funcname[1024];
-
-    for(unsigned i = 4; i < addrlen; i++ )
-    {
-        char* begin_name   = NULL;
-        char* begin_offset = NULL;
-          
-
-
-
-#else
-    return NULL ;
-#endif
-}
-
-
-
-struct frame
-{
-    char* symbol ; 
-    char* funcname ; 
- 
-    static size_t funcnamesize = 1024;
-    char funcname[1024];
- 
-};
-
-
-
-static inline void parseSymbol_macOS(char* symbol, char** begin_name, char** begin_offset )
-{
-    for( char* p = symbol ; *p ; ++p )
-    {
-        if (( *p == '_' ) && ( *(p-1) == ' ' )) *begin_name = p-1;
-        else if ( *p == '+' ) *begin_offset = p-1;
-    }
-
-    if ( *begin_name && *begin_offset && ( *begin_name < *begin_offset ))
-    {
-        begin_name++ = '\0';
-        begin_offset++ = '\0';
- 
-        int status;
-        char* ret = abi::__cxa_demangle( *begin_name, &funcname[0], &funcnamesize, &status );
-         if ( status == 0 ) 
-         {
-            strncpy( funcname, ret, funcnamesize  );
-
-            fprintf( out, " : %-30s : %-40s : %s :\n",
-                     symbollist[i], funcname, begin_offset );
-         } else {
-            // demangling failed. Output function name as a C function with
-            // no arguments.
-            fprintf( out, " : %-30s %-38s() %s\n",
-                     symbollist[i], begin_name, begin_offset );
-         }
- 
-
-
-
-
-}
- 
-*/
-
  
 static inline void printStackTrace( FILE *out = stderr, unsigned int max_frames = 63 )
 {
@@ -118,25 +39,20 @@ static inline void printStackTrace( FILE *out = stderr, unsigned int max_frames 
    // this array must be free()-ed
    char** symbollist = backtrace_symbols( addrlist, addrlen );
 
-
-   for ( unsigned i = 4; i < addrlen; i++ )
+   for ( unsigned i = 0 ; i < addrlen; i++ )
    {
-       fprintf( out, "  %s \n", symbollist[i]);
+       fprintf( out, "%s\n", symbollist[i]);
    }
-
  
    size_t funcnamesize = 1024;
    char funcname[1024];
- 
-   // iterate over the returned symbol lines. skip the first, it is the
-   // address of this function.
+
+      // find parentheses and +address offset surrounding the mangled name
+#ifdef __APPLE__
    for ( unsigned int i = 4; i < addrlen; i++ )
    {
       char* begin_name   = NULL;
       char* begin_offset = NULL;
- 
-      // find parentheses and +address offset surrounding the mangled name
-#ifdef __APPLE__
 
       for ( char *p = symbollist[i]; *p; ++p )
       {
@@ -168,12 +84,20 @@ static inline void printStackTrace( FILE *out = stderr, unsigned int max_frames 
             fprintf( out, " : %-30s %-38s() %s\n",
                      symbollist[i], begin_name, begin_offset );
          }
- 
 
+      } else {
+         // couldn't parse the line? print the whole line.
+         fprintf(out, "  %-40s\n", symbollist[i]);
+      }
+   }
+ 
 #else 
+
+   for ( unsigned int i = 3 ; i < addrlen; i++ )
+   {
+      char* begin_name   = NULL;
+      char* begin_offset = NULL;
       char* end_offset   = NULL;
-      printf("not-APPLE\n");
-      // not OSX style
       // ./module(function+0x15c) [0x8048a6d]
       for ( char *p = symbollist[i]; *p; ++p )
       {
@@ -211,7 +135,7 @@ static inline void printStackTrace( FILE *out = stderr, unsigned int max_frames 
             fprintf( out, "  %-30s ( %-40s    %-6s) %s\n",
                      symbollist[i], fname, "", end_offset );
          }
-#endif  // !DARWIN - but is posix
+
 
       } else {
          // couldn't parse the line? print the whole line.
@@ -219,6 +143,8 @@ static inline void printStackTrace( FILE *out = stderr, unsigned int max_frames 
       }
    }
  
+#endif  // !DARWIN - but is posix
+
    free(symbollist);
 }
 

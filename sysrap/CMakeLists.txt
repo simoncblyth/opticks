@@ -22,6 +22,7 @@ set(SOURCES
     SYSRAP_LOG.cc 
     PLOG.cc 
     SBacktrace.cc
+    SFrame.cc
     SProc.cc
     SSys.cc
     SStr.cc
@@ -61,6 +62,7 @@ set(HEADERS
 
     SProc.hh
     SBacktrace.hh
+    SFrame.hh
     SSys.hh
     SStr.hh
     SSeq.hh

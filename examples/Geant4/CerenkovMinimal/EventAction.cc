@@ -37,7 +37,7 @@ void EventAction::EndOfEventAction(const G4Event* event)
     G4Opticks* ok = G4Opticks::GetOpticks() ;
     int num_hits = ok->propagateOpticalPhotons() ;  
     NPY<float>* hits = ok->getHits(); 
-    assert( hits->getNumItems() == num_hits ) ; 
+    assert( hits->getNumItems() == unsigned(num_hits) ) ; 
     LOG(error) << " num_hits " << num_hits ; 
 #endif
 

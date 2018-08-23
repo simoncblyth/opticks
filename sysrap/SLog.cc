@@ -16,6 +16,12 @@ SLog::SLog(const char* label, const char* extra, plog::Severity level)
         ;  
 }
 
+
+const char* SLog::exename() // static
+{
+    return PLOG::instance->args.exename() ; 
+}
+
 void SLog::operator()(const char* msg)
 {
     pLOG(m_level,0) 

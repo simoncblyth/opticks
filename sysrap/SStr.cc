@@ -187,7 +187,7 @@ bool SStr::HasPointerSuffix( const char* name, unsigned min_hexdigits, unsigned 
 {    
     int num_hexdigits = GetPointerSuffixDigits( name ); 
     //std::cout << " num_hexdigits " << num_hexdigits << std::endl ; 
-    return  num_hexdigits > -1 && num_hexdigits >= min_hexdigits && num_hexdigits <= max_hexdigits ; 
+    return  num_hexdigits > -1 && num_hexdigits >= int(min_hexdigits) && num_hexdigits <= int(max_hexdigits) ; 
 }
 
 

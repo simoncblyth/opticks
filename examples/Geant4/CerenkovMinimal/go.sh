@@ -28,6 +28,14 @@ make install
 g4-
 g4-export
 
-lldb $(opticks-prefix)/lib/$name
+arch=$(uname) 
+exe=$(opticks-prefix)/lib/$name
 
+if [ "$arch" == "Linux" ]; then  
+    gdb $exe
+elif [ "$arch" == "Darwin" ]; then
+    lldb $exe
+else 
+    echo you are kidding : unexpected arch $arch  
+fi 
 

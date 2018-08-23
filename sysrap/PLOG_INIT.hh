@@ -43,20 +43,21 @@ PLOG_INIT macros are used in two situations:
 
 
 
+
 #define PLOG_COLOR(argc, argv) \
 { \
-    PLOG _plog(argc, argv); \
-    static plog::RollingFileAppender<plog::TxtFormatter> fileAppender( _plog.logpath, _plog.logmax); \
+    PLOG* _plog = new PLOG(argc, argv); \
+    static plog::RollingFileAppender<plog::TxtFormatter> fileAppender( _plog->logpath, _plog->logmax); \
     static plog::ColorConsoleAppender<plog::TxtFormatter> consoleAppender; \
-    PLOG_INIT( _plog.level, &consoleAppender, &fileAppender ); \
+    PLOG_INIT( _plog->level, &consoleAppender, &fileAppender ); \
 } \
 
 #define PLOG_(argc, argv) \
 { \
-    PLOG _plog(argc, argv); \
-    static plog::RollingFileAppender<plog::TxtFormatter> fileAppender( _plog.logpath, _plog.logmax); \
+    PLOG* _plog = new PLOG(argc, argv); \
+    static plog::RollingFileAppender<plog::TxtFormatter> fileAppender( _plog->logpath, _plog->logmax); \
     static plog::ConsoleAppender<plog::TxtFormatter> consoleAppender; \
-    PLOG_INIT( _plog.level,  &consoleAppender, &fileAppender ); \
+    PLOG_INIT( _plog->level,  &consoleAppender, &fileAppender ); \
 } \
 
 

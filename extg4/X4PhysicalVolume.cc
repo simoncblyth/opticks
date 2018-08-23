@@ -61,6 +61,7 @@ template struct nxform<X4Nd> ;
 
 
 
+
 const G4VPhysicalVolume* const X4PhysicalVolume::Top()
 {
     const G4VPhysicalVolume* const top = G4TransportationManager::GetTransportationManager()->GetNavigatorForTracking()->GetWorldVolume() ;
@@ -336,9 +337,7 @@ std::string X4PhysicalVolume::Digest( const G4VPhysicalVolume* const top)
 const char* X4PhysicalVolume::Key(const G4VPhysicalVolume* const top )
 {
     std::string digest = Digest(top);
-
     const char* exename = PLOG::instance->args.exename() ; 
-
     std::stringstream ss ; 
     ss 
        << exename
@@ -647,13 +646,14 @@ unsigned X4PhysicalVolume::addBoundary(const G4VPhysicalVolume* const pv, const 
     const char* _lv = X4::GDMLName(lv) ; 
     const char* _lv_p = X4::GDMLName(lv_p) ; 
 
-    bool ps = SStr::HasPointerSuffix(_lv, 9, 12) ; 
+
+    bool ps = SStr::HasPointerSuffix(_lv, 6, 12) ;  // 9,12 on macOS 
     if(!ps) LOG(fatal) << " unexpected pointer suffix _lv " << _lv ;  
     assert(ps) ;    
 
     if( _lv_p )
     {
-        bool ps = SStr::HasPointerSuffix(_lv_p, 9, 12);
+        bool ps = SStr::HasPointerSuffix(_lv_p, 6, 12); 
         if(!ps) LOG(fatal) << " unexpected pointer suffix _lv " << _lv_p ;  
         assert(ps) ;    
     }

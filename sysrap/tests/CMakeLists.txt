@@ -30,6 +30,7 @@ set(TEST_SOURCES
 
    OPTICKS_LOG_Test.cc
    pLOG_MACRO_Test.cc
+   PLOG_exename_Test.cc
     
 
    OpticksCSGTest.cc
@@ -40,7 +41,7 @@ set(TEST_SOURCES
    SIdTest.cc
    ArrayTest.cc
    SBacktraceTest.cc
-   SBacktrace2Test.cc
+   SFrameTest.cc
    SGDMLTest.cc
 )
 

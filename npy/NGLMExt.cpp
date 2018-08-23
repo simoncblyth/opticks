@@ -259,7 +259,9 @@ float nglmext::compDiff2(const float a_ , const float b_, bool fractional, float
     float b = fabsf(b_) < epsilon  ? 0.f : b_ ; 
 
     float d = fabsf(a - b);
-    if(fractional) d /= (a+b)/2.f ; 
+
+    float denom = (a+b)/2.f ; 
+    if(fractional && denom != 0.f) d /= denom    ; 
     return d ; 
 }
 
