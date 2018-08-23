@@ -8,11 +8,9 @@
 #include "CMaterialLib.hh"
 #include "CMPT.hh"
 #include "CVec.hh"
-#include "CFG4_BODY.hh"
-#include "GGEO_LOG.hh"
-#include "CFG4_LOG.hh"
 
-#include "PLOG.hh"
+#include "OPTICKS_LOG.hh"
+
 
 
 void test_CMPT(CMaterialLib* clib)
@@ -102,10 +100,8 @@ GPropertyMap<T>::make_table vprops 4 cprops 1 dprops 0 eprops 0 fprops 0 gprops 
 
 int main(int argc, char** argv)
 {
-    PLOG_(argc, argv);
+    OPTICKS_LOG(argc, argv);
 
-    GGEO_LOG__ ;  
-    CFG4_LOG__ ;  
 
     LOG(info) << argv[0] ; 
 

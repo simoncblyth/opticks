@@ -29,6 +29,7 @@ set(SOURCES
     G4Cerenkov1042.cc
     C4Cerenkov1042.cc
     CPhysicsList.cc 
+    CCerenkovGenerator.cc
 
     CHit.cc
     CSensitiveDetector.cc 
@@ -152,6 +153,7 @@ set(HEADERS
     G4Cerenkov1042.hh
     C4Cerenkov1042.hh
     CPhysicsList.hh
+    CCerenkovGenerator.hh
 
     CHit.hh
     CSensitiveDetector.hh

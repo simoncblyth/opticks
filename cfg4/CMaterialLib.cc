@@ -115,7 +115,7 @@ void CMaterialLib::convert()
         //assert(groupvel);
 
         std::string keys = getMaterialKeys(g4mat);
-        LOG(info) << "CMaterialLib::convert : converted ggeo material to G4 material " << name << " with keys " << keys ;  
+        LOG(info) << "converted ggeo material to G4 material " << name << " with keys " << keys ;  
     }
     LOG(info) << "CMaterialLib::convert : converted " << ngg << " ggeo materials to G4 materials " ; 
 }

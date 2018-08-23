@@ -419,7 +419,33 @@ void CPropLib::addProperty(G4MaterialPropertiesTable* mpt, const char* matname, 
 
 
 
+
 std::string CPropLib::getMaterialKeys(const G4Material* mat)
+{   
+    G4bool warning ; 
+    typedef G4MaterialPropertyVector MPV ; 
+
+    std::stringstream ss ;
+    G4MaterialPropertiesTable* mpt = mat->GetMaterialPropertiesTable();
+
+    std::vector<G4String> pns = mpt->GetMaterialPropertyNames() ;
+    LOG(debug) << " pns " << pns.size() ; 
+    for( unsigned i=0 ; i < pns.size() ; i++)
+    {   
+        const std::string& pname = pns[i]; 
+        G4int pidx = mpt->GetPropertyIndex(pname, warning=true); 
+        assert( pidx > -1 );  
+        MPV* pvec = const_cast<G4MaterialPropertiesTable*>(mpt)->GetProperty(pidx, warning=false );  
+        if(pvec == NULL) continue ; 
+
+        ss << pname << " " ; 
+    }   
+    return ss.str(); 
+}
+
+
+
+std::string CPropLib::getMaterialKeys_OLD(const G4Material* mat)
 {   
     std::stringstream ss ;
     G4MaterialPropertiesTable* mpt = mat->GetMaterialPropertiesTable();

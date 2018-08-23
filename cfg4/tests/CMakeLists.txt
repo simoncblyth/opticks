@@ -36,6 +36,7 @@ set(TEST_SOURCES
     CPhotonTest.cc
     CRandomEngineTest.cc
     CMixMaxRngTest.cc
+    CCerenkovGeneratorTest.cc
 
 )
 

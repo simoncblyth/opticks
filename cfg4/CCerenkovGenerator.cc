@@ -1,42 +1,80 @@
 #include <cassert>
+#include <vector>
 
 #include "NGLM.hpp"
 #include "NGS.hpp"
 
 #include "G4SystemOfUnits.hh"
 #include "G4PhysicalConstants.hh"
-#include "G4PrimaryParticle.hh"
-#include "G4Event.hh"
-#include "G4ParticleMomentum.hh"
-#include "G4ParticleTable.hh"
+
+
 #include "G4ThreeVector.hh"
-
-
+#include "G4ParticleChange.hh"
+#include "G4StepPoint.hh"
+#include "G4Step.hh"
+#include "G4Track.hh"
+#include "G4Material.hh"
+#include "G4MaterialPropertiesTable.hh"
+#include "G4MaterialPropertyVector.hh"
+#include "G4ParticleMomentum.hh"
+#include "G4DynamicParticle.hh"
+#include "G4OpticalPhoton.hh"
+#include "Randomize.hh"
 
 #include "CCerenkovGenerator.hh"
 #include "PLOG.hh"
 
 
-CCerenkovGenerator::CCerenkovGenerator(NPY<float>* gs)  
+CCerenkovGenerator::CCerenkovGenerator(NGS* gs)  
     :
-    m_gs(new NGS(gs)),
+    m_gs(gs)
 {
 }
 
-G4VParticleChange* CCerenkovGenerator::generatePhotonsFromGenstep( unsigned i )
+
+
+G4MaterialPropertyVector* CCerenkovGenerator::getRINDEX(unsigned materialIndex)
 {
-    glm::ivec4 hdr = m_gs->getHdr(i); 
-    glm::vec4 post = m_gs->getPositionTime(i); 
-    glm::vec4 dpsl = m_gs->getDeltaPositionStepLength(i); 
+    const std::vector<G4Material*>& mtab = *G4Material::GetMaterialTable() ; 
 
-    glm::vec4 q3   = m_gs->getQ3(i); 
-    glm::vec4 i3   = m_gs->getI3(i); 
-    glm::vec4 q4   = m_gs->getQ4(i); 
-    glm::vec4 q5   = m_gs->getQ5(i); 
+    bool have_material = materialIndex < mtab.size() ; 
+    if(!have_material) 
+        LOG(fatal) << " missing materialIndex " << materialIndex
+                   << " in table of " << mtab.size()
+                   ;
 
-    unsigned id = hdr.x ; 
+    assert( have_material ) ; 
+    const G4Material* aMaterial = mtab[materialIndex] ; 
+
+    G4MaterialPropertiesTable* aMaterialPropertiesTable = aMaterial->GetMaterialPropertiesTable(); 
+    assert(aMaterialPropertiesTable); 
+
+    G4MaterialPropertyVector* Rindex = aMaterialPropertiesTable->GetProperty(kRINDEX); 
+    assert(Rindex);  
+
+    return Rindex ;
+}
+
+
+G4VParticleChange* CCerenkovGenerator::generatePhotonsFromGenstep( unsigned idx )
+{
+    // resurrect PostStepDoIt context of the genstep item
+
+    glm::ivec4 hdr = m_gs->getHdr(idx); 
+    glm::vec4 post = m_gs->getPositionTime(idx); 
+    glm::vec4 dpsl = m_gs->getDeltaPositionStepLength(idx); 
+    glm::vec4 q3   = m_gs->getQ3(idx); 
+    glm::vec4 i3   = m_gs->getI3(idx); 
+    glm::vec4 q4   = m_gs->getQ4(idx); 
+    glm::vec4 q5   = m_gs->getQ5(idx); 
+
+   // int gencode = hdr.x ;    // enum CERENKOV, SCINTILLATION, TORCH, EMITSOURCE  : but old gensteps just used sign of 1-based index 
     unsigned trackID = hdr.y ;  
     unsigned materialIndex = hdr.z ;  
+
+    //OVERRIDE  : seems to be a problem with the index or order of materials 
+    materialIndex = 0 ; 
+
     unsigned fNumPhotons = hdr.w ; 
 
     G4ThreeVector x0( post.x, post.y, post.z  ); 
@@ -45,57 +83,50 @@ G4VParticleChange* CCerenkovGenerator::generatePhotonsFromGenstep( unsigned i )
     G4ThreeVector deltaPosition( dpsl.x, dpsl.y, dpsl.z ); 
     G4double stepLength = dpsl.w ;  
 
-    G4int pdgCode = i3.x ; 
-    G4double pdgCharge = q3.y ;  
-    G4double weight = q3.z ;  
+    //G4int pdgCode = i3.x ; 
+    //G4double pdgCharge = q3.y ;  
+    //G4double weight = q3.z ;      // unused is good : means space for the two velocities
     G4double meanVelocity = q3.w ;  
 
     G4double BetaInverse = q4.x ; 
     G4double Pmin = q4.y ; 
     G4double Pmax = q4.z ; 
-    G4double maxCos = q4.w ;
+    //G4double maxCos = q4.w ;
 
     G4double maxSin2 = q5.x ; 
     G4double MeanNumberOfPhotons1 = q5.y ; 
     G4double MeanNumberOfPhotons2 = q5.z ; 
     G4double zero = q5.w ; 
-    assert( zero == 0. ) ; 
+    G4double epsilon = 1e-6 ; 
+    assert( std::abs(zero) < epsilon ) ;     // caution with mixed buffers
 
 
     G4double dp = Pmax - Pmin;
-    G4ThreeVector p0 = deltaPosition().unit();
+    G4ThreeVector p0 = deltaPosition.unit();
 
-    // resurrect PostStepDoIt context 
 
     G4ParticleChange* pParticleChange = new G4ParticleChange ;
     G4ParticleChange& aParticleChange = *pParticleChange ; 
 
-    G4StepPoint preStepPoint ; 
-    G4StepPoint postStepPoint ;
+    G4Step aStep ;   // dtor will delete points so they must be on heap
+    aStep.SetPreStepPoint(new G4StepPoint); 
+    aStep.SetPostStepPoint(new G4StepPoint); 
+    aStep.SetStepLength(stepLength);  
 
-    preStepPoint.SetPosition(x0) ; 
-    postStepPoint.SetPosition(x0+deltaPosition) ; 
+    G4StepPoint* pPreStepPoint = aStep.GetPreStepPoint();
+    G4StepPoint* pPostStepPoint = aStep.GetPostStepPoint();
 
-    G4Step aStep ;
-    aStep.SetPreStepPoint(&preStepPoint); 
-    aStep.SetPostStepPoint(&postStepPoint); 
-    aStep.SetStepLength( stepLength );  
+    pPreStepPoint->SetPosition(x0) ; 
+    pPostStepPoint->SetPosition(x0+deltaPosition) ; 
+
 
     G4Track aTrack ; 
-    aTrack.SetTrackID(trackId) ; 
+    aTrack.SetTrackID(trackID) ; 
 
     G4int verboseLevel = 1 ;   
 
+    G4MaterialPropertyVector* Rindex = getRINDEX(materialIndex) ;  // hmm ordinng problem potential
 
-    const std::vector<G4Material*>& mtab = *G4Material::GetMaterialTable() ; 
-    assert( materialIndex < mtab.size() ) ; 
-    const G4Material* aMaterial = mtab[materialIndex] ; 
-
-    G4MaterialPropertiesTable* aMaterialPropertiesTable = aMaterial->GetMaterialPropertiesTable(); 
-    assert(aMaterialPropertiesTable); 
-
-    G4MaterialPropertyVector* Rindex = aMaterialPropertiesTable->GetProperty(kRINDEX); 
-    assert(Rindex);  
 
     using CLHEP::twopi ; 
 
