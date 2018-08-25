@@ -20,10 +20,12 @@ class CMaterialTable ;
 class CCollector ; 
 class CPrimaryCollector ; 
 class CPhotonCollector ; 
+class C4PhotonCollector ; 
 
 class G4Run;
 class G4Event; 
 class G4VPhysicalVolume ;
+class G4VParticleChange ; 
 
 #include "G4Types.hh"
 
@@ -105,7 +107,8 @@ class G4OK_API G4Opticks
             G4double             meanNumberOfPhotons2,
             G4double             spare2=0
         );  
-
+    public:
+        void collectSecondaryPhotons(const G4VParticleChange* pc);
     public:
         void collectHit(
             G4double             pos_x,  
@@ -142,12 +145,17 @@ class G4OK_API G4Opticks
         OpMgr*                     m_opmgr;
     private:
         NPY<float>*                m_gensteps ; 
+        NPY<float>*                m_genphotons ; 
         NPY<float>*                m_hits ; 
     private:
         // minimal instrumentation from the G4 side of things 
         CPhotonCollector*          m_g4hit_collector ; 
+        C4PhotonCollector*         m_g4photon_collector ; 
+        unsigned                   m_genstep_idx ; 
+    private:
         OpticksEvent*              m_g4evt ; 
         NPY<float>*                m_g4hit ; 
+        bool                       m_gpu_propagate ;  
     private:
         static G4Opticks*          fOpticks;
 

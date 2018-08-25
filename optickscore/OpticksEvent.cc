@@ -1302,6 +1302,8 @@ void OpticksEvent::setSourceData(NPY<float>* source_data)
 {
     if(!source_data) return ; 
 
+    source_data->setBufferSpec(m_source_spec);  
+    
     setBufferControl(source_data);
 
     m_source_data = source_data  ;
@@ -1701,13 +1703,24 @@ void OpticksEvent::saveSeedData()
     // if(se) se->save("se", m_typ,  m_tag, m_udet);
 }
 
-void OpticksEvent::saveSourceData()
+
+
+void OpticksEvent::saveSourceData() const 
 {
     // source data originates CPU side, and is INPUT_ONLY to GPU side
     NPY<float>* so = getSourceData();
-    if(so) so->save("so", m_typ,  m_tag, m_udet);
+    saveSourceData(so); 
 }
 
+void OpticksEvent::saveSourceData(NPY<float>* so) const 
+{
+    if(so)
+    {
+        //unsigned num_so = so->getNumItems(); 
+        so->save("so", m_typ,  m_tag, m_udet);  
+        //if(num_so == 0) LOG(info) << "saveSourceData zero source " ; 
+    }
+}
 
 
 

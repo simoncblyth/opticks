@@ -11,6 +11,7 @@
 #include "CCollector.hh"
 #include "CPrimaryCollector.hh"
 #include "CPhotonCollector.hh"
+#include "C4PhotonCollector.hh"
 #include "CGDML.hh"
 
 #include "G4Opticks.hh"
@@ -81,10 +82,14 @@ G4Opticks::G4Opticks()
     m_lookup(NULL),
     m_opmgr(NULL),
     m_gensteps(NULL),
+    m_genphotons(NULL),
     m_hits(NULL),
     m_g4hit_collector(NULL),
+    m_g4photon_collector(NULL),
+    m_genstep_idx(0),
     m_g4evt(NULL),
-    m_g4hit(NULL)
+    m_g4hit(NULL),
+    m_gpu_propagate(true)
 {
     std::cout << "G4Opticks::G4Opticks" << std::endl ; 
     assert( fOpticks == NULL ); 
@@ -110,6 +115,8 @@ void G4Opticks::setGeometry(const G4VPhysicalVolume* world)
     m_collector = new CCollector(m_lookup);   // <-- CG4 holds an instance too : and they are singletons, so should not use G4Opticks and CG4 together
     m_primary_collector = new CPrimaryCollector ; 
     m_g4hit_collector = new CPhotonCollector ; 
+    m_g4photon_collector = new C4PhotonCollector ; 
+
 
     // OpMgr instanciates OpticksHub which adopts the pre-existing m_ggeo instance just translated
     m_opmgr = new OpMgr(m_ok) ;   
@@ -161,39 +168,51 @@ G4Opticks::propagateOpticalPhotons
 
 Invoked from EventAction::EndOfEventAction
 
+TODO: relocate direct events inside the geocache ? 
+      and place these direct gensteps and genphotons 
+      within the OpticksEvent directory 
+
+
 **/
 
 int G4Opticks::propagateOpticalPhotons() 
 {
-
     m_gensteps = m_collector->getGensteps(); 
-    const char* path = m_ok->getDirectGenstepPath(); 
+    const char* gspath = m_ok->getDirectGenstepPath(); 
 
-    LOG(info) << " saving gensteps to " << path ; 
+    LOG(info) << " saving gensteps to " << gspath ; 
     m_gensteps->setArrayContentVersion(G4VERSION_NUMBER); 
-    m_gensteps->save(path); 
+    m_gensteps->save(gspath); 
+
+    // initial generated photons before propagation 
+    m_genphotons = m_g4photon_collector->getPhoton(); 
+    m_genphotons->setArrayContentVersion(G4VERSION_NUMBER); 
+
+    //const char* phpath = m_ok->getDirectPhotonsPath(); 
+    //m_genphotons->save(phpath); 
+
+   
+    if(m_gpu_propagate)
+    {
+        m_opmgr->setGensteps(m_gensteps);      
+        m_opmgr->propagate();
+
+        OpticksEvent* event = m_opmgr->getEvent(); 
+        m_hits = event->getHitData()->clone() ; 
+
+        // minimal g4 side instrumentation in "1st executable" 
+        // do after propagate, so the event will be created
+        m_g4hit = m_g4hit_collector->getPhoton();  
+        m_g4evt = m_opmgr->getG4Event(); 
+        m_g4evt->saveHitData( m_g4hit ) ; // pass thru to the dir, owned by m_g4hit_collector ?
+
+        m_g4evt->saveSourceData( m_genphotons ) ; 
 
 
-    /*
-
-    m_opmgr->setGensteps(m_gensteps);      
-    m_opmgr->propagate();
-
-    OpticksEvent* event = m_opmgr->getEvent(); 
-    m_hits = event->getHitData()->clone() ; 
-
-    // minimal g4 side instrumentation in "1st executable" 
-    // do after propagate, so the event will be created
-    m_g4hit = m_g4hit_collector->getPhoton();  
-    m_g4evt = m_opmgr->getG4Event(); 
-    m_g4evt->saveHitData( m_g4hit ) ; // pass thru to the dir, owned by m_g4hit_collector ?
-
-    m_opmgr->reset();   
-    // clears OpticksEvent buffers,
-    // clone any buffers to be retained before the reset
-
-    */
-
+        m_opmgr->reset();   
+        // clears OpticksEvent buffers,
+        // clone any buffers to be retained before the reset
+    }
 
     return m_hits ? m_hits->getNumItems() : -1 ;   
 }
@@ -208,11 +227,27 @@ void G4Opticks::collectPrimaries(const G4Event* event)
 {
     m_primary_collector->collectPrimaries(event); 
 
-    //const char* path = "$TMP/G4Opticks/collectPrimaries.npy" ;
     const char* path = m_ok->getPrimariesPath(); 
 
     LOG(info) << " saving to " << path ; 
     m_primary_collector->save(path); 
+}
+
+
+/**
+G4Opticks::collectSecondaryPhotons
+-----------------------------------
+
+This is invoked from the tail of the PostStepDoIt of
+instrumented photon producing processes. See L4Cerenkov
+**/
+
+void G4Opticks::collectSecondaryPhotons(const G4VParticleChange* pc)
+{
+    // equivalent collection in "2nd" fully instrumented executable 
+    // is invoked from CGenstepSource::generatePhotonsFromOneGenstep
+    m_g4photon_collector->collectSecondaryPhotons( pc, m_genstep_idx );
+    m_genstep_idx += 1 ; 
 }
 
 
@@ -331,7 +366,4 @@ void G4Opticks::collectHit
      ) ;
 }
  
-
-
-
 

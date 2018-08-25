@@ -17,6 +17,9 @@ template <typename T> class NPY ;
 CGenstepSource
 ==================
 
+Instanciated by CGenerator::initSource like all other CSource subclasses.
+
+
 Note that Opticks has been running gensteps from the beginning, the
 difference with this class is that it allows Geant4 for do that too, by 
 moving a copy of the photon generation loop from Cerenkov or Scintillation 
@@ -62,6 +65,7 @@ class CFG4_API CGenstepSource: public CSource
     public:
         CGenstepSource(Opticks* ok,  NPY<float>* gs );
         virtual ~CGenstepSource();
+        NPY<float>* getSourcePhotons() const ;
     private:
         void init();
     public:

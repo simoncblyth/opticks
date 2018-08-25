@@ -1,5 +1,7 @@
 #include <sstream>
 
+#include "NPY.hpp"
+
 #include "G4ParticleChange.hh"
 #include "G4Track.hh"
 #include "G4DynamicParticle.hh"
@@ -7,6 +9,7 @@
 #include "G4ThreeVector.hh"
 #include "G4SystemOfUnits.hh"
 #include "G4PhysicalConstants.hh"
+#include "G4Version.hh"
 
 #include "C4PhotonCollector.hh"
 #include "CPhotonCollector.hh"
@@ -16,6 +19,8 @@ C4PhotonCollector::C4PhotonCollector()
     :
     m_photon_collector(new CPhotonCollector)
 {
+    NPY<float>* photon = m_photon_collector->getPhoton();
+    photon->setArrayContentVersion(G4VERSION_NUMBER);
 }
 
 void C4PhotonCollector::savePhotons(const char* path) const 
@@ -31,6 +36,11 @@ std::string C4PhotonCollector::desc() const
        << " " << m_photon_collector->desc()
        ;
     return ss.str(); 
+}
+
+NPY<float>*  C4PhotonCollector::getPhoton() const 
+{
+    return m_photon_collector->getPhoton() ; 
 }
 
 

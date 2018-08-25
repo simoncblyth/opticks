@@ -55,6 +55,13 @@ CGenstepSource::~CGenstepSource()
 }
 
 
+NPY<float>* CGenstepSource::getSourcePhotons() const
+{
+    return m_photon_collector->getPhoton() ; 
+}
+
+
+
 void CGenstepSource::GeneratePrimaryVertex(G4Event *event) 
 {
     for(unsigned i=0 ; i < m_num_genstep_per_g4event ; i++ )

@@ -351,6 +351,10 @@ void CG4::postpropagate()
 
     OpticksEvent* evt = m_run->getG4Event();
     assert(evt);
+
+    NPY<float>* so = m_generator->getSourcePhotons(); 
+    if(so) evt->setSourceData(so); 
+
     evt->postPropagateGeant4();
 
     dynamic_cast<CSteppingAction*>(m_sa)->report("CG4::postpropagate");

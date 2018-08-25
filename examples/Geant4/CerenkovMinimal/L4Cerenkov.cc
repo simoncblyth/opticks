@@ -452,6 +452,11 @@ L4Cerenkov::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
 	          << aParticleChange.GetNumberOfSecondaries() << G4endl;
 	}
 
+
+#ifdef WITH_OPTICKS
+        G4Opticks::GetOpticks()->collectSecondaryPhotons(pParticleChange) ; 
+#endif
+
         return pParticleChange;
 }
 

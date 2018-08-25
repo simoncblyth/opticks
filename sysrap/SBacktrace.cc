@@ -4,6 +4,11 @@
 https://oroboro.com/stack-trace-on-crash/
 https://panthema.net/2008/0901-stacktrace-demangled/cxa_demangle.html
 
+https://eli.thegreenplace.net/2015/programmatic-access-to-the-call-stack-in-c/
+
+   suggests libunwind
+
+
 */
 
 #include <cstdio>
@@ -59,7 +64,7 @@ For a call stack like the below with call "::flat()" return the line starting wi
 
 **/
 
-const char* SBacktrace::CallSite(const char* call )
+const char* SBacktrace::CallSite(const char* call, bool addr )
 {
    const char* site = NULL ;  
    unsigned max_frames = 63 ; 
@@ -80,9 +85,17 @@ const char* SBacktrace::CallSite(const char* call )
        if(!p && state > -1 )    // pick first line without call string following a line with it 
        {
            char out[256]; 
-           //snprintf( out, 256, "%16p %10s %s", addrlist[i], f.offset, f.func ) ;  
-           // addresses different for each executable so not good for comparisons
-           snprintf( out, 256, " %10s %s", f.offset, f.func ) ;
+           if(addr)
+           {
+               snprintf( out, 256, "%16p %10s %s", addrlist[i], f.offset, f.func ) ;  
+               // addresses different for each executable so not good for comparisons, but real handy
+               // for looking up source line in debugger with : 
+               //      (lldb) source list  -a 0x000...
+           }
+           else
+           {
+               snprintf( out, 256, " %10s %s", f.offset, f.func ) ;
+           }
            site = strdup(out) ;
            break ; 
        }    

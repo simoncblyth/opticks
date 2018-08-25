@@ -75,9 +75,12 @@ unsigned CGenerator::getSourceCode() const { return m_source_code ; }
 CSource* CGenerator::getSource() const { return m_source ; }
 unsigned CGenerator::getNumG4Event() const { return m_num_g4evt ;  }
 unsigned CGenerator::getNumPhotonsPerG4Event() const { return m_photons_per_g4evt ;  }
-NPY<float>* CGenerator::getGensteps() const { return m_gensteps ; }
 bool CGenerator::isDynamic() const { return m_dynamic ; }
 bool CGenerator::hasGensteps() const { return m_gensteps != NULL ; }
+
+NPY<float>* CGenerator::getGensteps() const { return m_gensteps ; }
+NPY<float>* CGenerator::getSourcePhotons() const { return m_source->getSourcePhotons() ; }
+
 
 void CGenerator::setNumG4Event(unsigned num) { m_num_g4evt = num ; }
 void CGenerator::setNumPhotonsPerG4Event(unsigned num) { m_photons_per_g4evt = num ; }

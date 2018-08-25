@@ -243,12 +243,13 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec
    public:
        // used from G4Opticks for the minimal G4 side instrumentation of "1st executable"
        void saveHitData(NPY<float>* ht) const ; 
+       void saveSourceData(NPY<float>* so) const ; 
    private:
        void saveHitData() const ; 
+       void saveSourceData() const ; 
        void saveNopstepData(); 
        void saveGenstepData(); 
        void savePhotonData(); 
-       void saveSourceData(); 
        void saveRecordData(); 
        void saveSequenceData(); 
        void saveSeedData(); 
@@ -262,9 +263,10 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec
    public: 
        void createBuffers(NPY<float>* gs=NULL); 
        void createSpec(); 
+   public:
+       void setSourceData(NPY<float>* source_data); // from CG4::postpropagate
    private:
        void setPhotonData(NPY<float>* photon_data);
-       void setSourceData(NPY<float>* source_data);
        void setSequenceData(NPY<unsigned long long>* history_data);
        void setSeedData(NPY<unsigned>* seed_data);
        void setHitData(NPY<float>* hit_data);

@@ -368,6 +368,7 @@ class OKCORE_API Opticks {
        std::string          getGenstepPath() const ;
        const char*          getPrimariesPath() const ;
        const char*          getDirectGenstepPath() const ; 
+       const char*          getDirectPhotonsPath() const ; 
        bool                 existsGenstepPath() const ;
        bool                 existsPrimariesPath() const ;
        bool                 existsDirectGenstepPath() const ;

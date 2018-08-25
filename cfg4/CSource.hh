@@ -5,6 +5,7 @@ class CRecorder ;
 
 class G4Event ; 
 class G4PrimaryVertex ; 
+template<typename T> class NPY ; 
 
 #include "CFG4_API_EXPORT.hh"
 #include "CFG4_HEAD.hh"
@@ -35,6 +36,8 @@ class CFG4_API CSource : public G4VPrimaryGenerator
     virtual ~CSource();
   public:
     virtual void GeneratePrimaryVertex(G4Event *evt) = 0 ;
+  public:
+    virtual NPY<float>* getSourcePhotons() const ;  // default implementation returning NULL  
   public:
      // to CPrimaryCollector
     void collectPrimaryVertex(const G4PrimaryVertex* vtx);

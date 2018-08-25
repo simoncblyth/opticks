@@ -21,6 +21,12 @@ void CSource::setRecorder(CRecorder* recorder)
     m_recorder = recorder ;  
 }
 
+
+NPY<float>* CSource::getSourcePhotons() const
+{
+    return NULL ; 
+}
+
 void CSource::collectPrimaryVertex(const G4PrimaryVertex* vtx)
 {
     CPrimaryCollector* pc = CPrimaryCollector::Instance() ;

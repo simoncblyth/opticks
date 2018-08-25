@@ -1062,6 +1062,7 @@ const char* Opticks::getG4CodeGenDir() const { return m_resource->getG4CodeGenDi
 const char* Opticks::getCacheMetaPath() const { return m_resource->getCacheMetaPath() ; } 
 const char* Opticks::getPrimariesPath() const { return m_resource->getPrimariesPath() ; } 
 const char* Opticks::getDirectGenstepPath() const { return m_resource->getDirectGenstepPath() ; } 
+const char* Opticks::getDirectPhotonsPath() const { return m_resource->getDirectPhotonsPath() ; } 
 
 
 

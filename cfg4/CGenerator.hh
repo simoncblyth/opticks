@@ -57,6 +57,7 @@ class CFG4_API CGenerator
        unsigned    getNumPhotonsPerG4Event() const ;
        NPY<float>* getGensteps() const ;
        bool        hasGensteps() const ;
+       NPY<float>* getSourcePhotons() const ; // prior to propagation
    private:
        void init();
        CSource* initSource(unsigned code);

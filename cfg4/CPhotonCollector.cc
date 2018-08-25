@@ -23,6 +23,7 @@ CPhotonCollector::CPhotonCollector()
 }
 
 
+
 NPY<float>*  CPhotonCollector::getPhoton() const 
 {
     return m_photon ; 
@@ -39,6 +40,7 @@ std::string CPhotonCollector::desc() const
     ss << " CPhotonCollector "
        << " photon_count " << m_photon_count
        << " photon_shape " << m_photon->getShapeString()
+       << " content_version " << m_photon->getArrayContentVersion() 
        ;
     return ss.str();
 }
