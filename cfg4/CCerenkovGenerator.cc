@@ -8,7 +8,6 @@
 #include "G4SystemOfUnits.hh"
 #include "G4PhysicalConstants.hh"
 
-
 #include "G4ThreeVector.hh"
 #include "G4ParticleChange.hh"
 #include "G4StepPoint.hh"
@@ -23,29 +22,11 @@
 #include "Randomize.hh"
 
 #include "CCerenkovGenerator.hh"
-#include "CPhotonCollector.hh"
 #include "PLOG.hh"
 
 
-CCerenkovGenerator::CCerenkovGenerator(NGS* gs)  
-    :
-    m_gs(gs),
-    m_photon_collector(new CPhotonCollector)
-{
-}
 
-std::string CCerenkovGenerator::desc() const 
-{
-    std::stringstream ss ; 
-    ss 
-        << "CCerenkovGenerator" << std::endl 
-        << m_gs->desc() << std::endl 
-        << m_photon_collector->desc() << std::endl 
-        ;
-    return ss.str(); 
-}
-
-G4MaterialPropertyVector* CCerenkovGenerator::getRINDEX(unsigned materialIndex) const 
+G4MaterialPropertyVector* CCerenkovGenerator::GetRINDEX(unsigned materialIndex) // static
 {
     const std::vector<G4Material*>& mtab = *G4Material::GetMaterialTable() ; 
 
@@ -79,16 +60,27 @@ A method of two halves:
 
 **/
 
-G4VParticleChange* CCerenkovGenerator::generatePhotonsFromGenstep( unsigned idx ) const 
+G4VParticleChange* CCerenkovGenerator::GeneratePhotonsFromGenstep( const NGS* gs, unsigned idx ) // static 
 {
+    unsigned num_gs = gs->getNumGensteps(); 
+    bool have_gs = idx < num_gs ; 
 
-    glm::ivec4 hdr = m_gs->getHdr(idx); 
-    glm::vec4 post = m_gs->getPositionTime(idx); 
-    glm::vec4 dpsl = m_gs->getDeltaPositionStepLength(idx); 
-    glm::vec4 q3   = m_gs->getQ3(idx); 
-    glm::vec4 i3   = m_gs->getI3(idx); 
-    glm::vec4 q4   = m_gs->getQ4(idx); 
-    glm::vec4 q5   = m_gs->getQ5(idx); 
+    if(!have_gs) 
+        LOG(fatal) 
+            << " IDX out of range " 
+            << " num_gs " << num_gs
+            << " idx " << idx
+            ;
+
+    assert(have_gs) ; 
+
+    glm::ivec4 hdr = gs->getHdr(idx); 
+    glm::vec4 post = gs->getPositionTime(idx); 
+    glm::vec4 dpsl = gs->getDeltaPositionStepLength(idx); 
+    glm::vec4 q3   = gs->getQ3(idx); 
+    glm::vec4 i3   = gs->getI3(idx); 
+    glm::vec4 q4   = gs->getQ4(idx); 
+    glm::vec4 q5   = gs->getQ5(idx); 
 
    // int gencode = hdr.x ;    // enum CERENKOV, SCINTILLATION, TORCH, EMITSOURCE  : but old gensteps just used sign of 1-based index 
     unsigned trackID = hdr.y ;  
@@ -127,6 +119,7 @@ G4VParticleChange* CCerenkovGenerator::generatePhotonsFromGenstep( unsigned idx 
     G4double zero = q5.w ; 
     G4double epsilon = 1e-6 ; 
     assert( std::abs(zero) < epsilon ) ;     // caution with mixed buffers
+    // am i storing a int in there, get a very small number ?
 
     G4double dp = Pmax - Pmin;
     G4ThreeVector p0 = deltaPosition.unit();
@@ -148,17 +141,28 @@ G4VParticleChange* CCerenkovGenerator::generatePhotonsFromGenstep( unsigned idx 
     G4Track aTrack ; 
     aTrack.SetTrackID(trackID) ; 
 
+    G4MaterialPropertyVector* Rindex = GetRINDEX(materialIndex) ;  // hmm ordinng problem potential
+
     G4int verboseLevel = 1 ;   
-
-    G4MaterialPropertyVector* Rindex = getRINDEX(materialIndex) ;  // hmm ordinng problem potential
-
-
     using CLHEP::twopi ; 
 
-    //////////////////////////////////////////////////////////////////////////////////////
-    ///// below is VERBATIM PHOTON GENERATION LOOP  from  C4Cerenkov1042.cc 
-    ////   keep changes to a minimum , and mark them all 
-    //////////////////////////////////////////////////////////////////////////////////////
+
+    /////////////////////////////////////////////////////////////////////////////////////////////////
+    //
+    //  TO CONSIDER :
+    // 
+    //  Use a C4Cerenkov1041PhotonGenerationLoop.icc to avoid the source duplication 
+    //  and use that in two places:
+    //   
+    //  1. normal PostStepDoIt
+    //  2. static G4VParticleChange* C4Cerenkov1042::GenerateSecondaryPhotons( const NGS* gs, unsigned idx ) ;  
+    //
+    /////////////////////////////////////////////////////////////////////////////////////////////////
+    //
+    //  The below is a VERBATIM COPY of the PHOTON GENERATION LOOP from C4Cerenkov1042.cc 
+    //  any changes should be marked by ifdef-else preprocessor defines that retain the original 
+    //
+    /////////////////////////////////////////////////////////////////////////////////////////////////
 
 
   for (G4int i = 0; i < fNumPhotons; i++) {
@@ -286,88 +290,6 @@ G4VParticleChange* CCerenkovGenerator::generatePhotonsFromGenstep( unsigned idx 
   return pParticleChange;
 }
 
-
-/**
-CCerenkovGenerator::collectSecondaryPhotons
----------------------------------------------
-
-Structured in this keyhole surgery way in order that the above code 
-can stay verbatim the same as the G4Cerenkov::PostStepDoIt generation loop.
-
-**/
-
-void CCerenkovGenerator::collectSecondaryPhotons( const G4VParticleChange* pc, unsigned idx ) 
-{
-    G4int numberOfSecondaries = pc->GetNumberOfSecondaries(); 
-
-    LOG(info) << " numberOfSecondaries " << numberOfSecondaries ; 
-
-
-    for( G4int i=0 ; i < numberOfSecondaries ; i++)
-    {
-        G4Track* track =  pc->GetSecondary(i) ; 
-
-        assert( track->GetParticleDefinition() == G4OpticalPhoton::Definition() );  
-
-        const G4DynamicParticle* aCerenkovPhoton = track->GetDynamicParticle() ;
-
-        const G4ThreeVector& photonMomentum = aCerenkovPhoton->GetMomentumDirection() ;   
-
-        const G4ThreeVector& photonPolarization = aCerenkovPhoton->GetPolarization() ; 
-
-        G4double kineticEnergy = aCerenkovPhoton->GetKineticEnergy() ;  
-
-        G4double wavelength = h_Planck*c_light/kineticEnergy ; 
-
-        const G4ThreeVector& aSecondaryPosition = track->GetPosition() ;
-
-        G4double aSecondaryTime = track->GetGlobalTime() ;
-
-        G4double weight = track->GetWeight() ; 
-
-        int flags_x = idx ;  
-        int flags_y = i ;  
-        int flags_z = 0 ;  
-        int flags_w = 0 ;  
-
-        m_photon_collector->collectPhoton(
-                 aSecondaryPosition.x()/mm,  
-                 aSecondaryPosition.y()/mm,  
-                 aSecondaryPosition.z()/mm,  
-                 aSecondaryTime/ns, 
-
-                 photonMomentum.x(),
-                 photonMomentum.y(),
-                 photonMomentum.z(),
-                 weight,
-
-                 photonPolarization.x(),
-                 photonPolarization.y(),
-                 photonPolarization.z(),
-                 wavelength,
-
-                 flags_x, 
-                 flags_y, 
-                 flags_z, 
-                 flags_w
-        ); 
-
-    } 
-}
-
-
-void CCerenkovGenerator::generateAndCollectPhotonsFromGenstep( unsigned idx ) 
-{
-    G4VParticleChange* pc = generatePhotonsFromGenstep(idx); 
-    collectSecondaryPhotons(pc, idx); 
-}
-
-
-void CCerenkovGenerator::savePhotons(const char* path) const 
-{
-    LOG(info) << " path " << path ; 
-    m_photon_collector->save(path); 
-}
 
 
 

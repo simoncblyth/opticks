@@ -1,44 +1,32 @@
-#include "CFG4_BODY.hh"
-#include <cassert>
+#pragma once
 
-#include "NGLM.hpp"
-#include "NGS.hpp"
+#include "CSource.hh"
+#include "CFG4_API_EXPORT.hh"
+#include <vector>
 
-// g4-
-#include "G4SystemOfUnits.hh"
-#include "G4PhysicalConstants.hh"
-#include "G4PrimaryParticle.hh"
-#include "G4Event.hh"
-#include "G4ParticleMomentum.hh"
-#include "G4ParticleTable.hh"
-#include "G4ThreeVector.hh"
+class G4Event ; 
+class G4PrimaryVertex ;
+class G4PrimaryParticle ;
+class G4VParticleChange ; 
 
-// cfg4-
-#include "CCerenkovSource.hh"
-
-#include "PLOG.hh"
-
-
-CCerenkovSource::CCerenkovSource(Opticks* ok, NPY<float>* gs)  
-    :
-    CSource(ok, ok->getVerbosity()),
-    m_gs(new NGS(gs)),
-    m_generate_count(0)
-{
-    init();
-}
-
-void CCerenkovSource::init()
-{
-}
-
-CCerenkovSource::~CCerenkovSource() 
-{
-}
+class Opticks ; 
+class NGS ; 
+template <typename T> class NPY ; 
 
 /**
-Recall that gensteps can yield many millions of 
-photons : how best to arrange those into G4Event/G4PrimaryVertex/G4PrimaryParticle ?
+CGenstepSource
+==================
+
+Recall that gensteps can yield many millions of photons : 
+how best to arrange those into G4Event/G4PrimaryVertex/G4PrimaryParticle ?
+
+Putting them all into a single event will probably fail, putting 
+a single photon into each event would probably be horribly slow.
+
+As gensteps are the input its natural split along genstep lines, 
+putting a configurable number of gensteps into each event.  
+With photon sources, I restricted to 10000(?) photons per event 
+so perhaps 100 gensteps per event. 
 
 :: 
 
@@ -55,17 +43,29 @@ photons : how best to arrange those into G4Event/G4PrimaryVertex/G4PrimaryPartic
      i       6 hdr     -19       1      12      93 post ( -16566.762-802037.688 -7066.003       1.032) dpsl (     -2.057     3.181    -0.000       3.788)
     ...
 
+
 **/
 
-
-void CCerenkovSource::GeneratePrimaryVertex(G4Event *evt) 
+class CFG4_API CGenstepSource: public CSource
 {
-    LOG(fatal) << "CCerenkovSource::GeneratePrimaryVertex" ;
-    m_generate_count += 1 ; 
-}
+    public:
+        CGenstepSource(Opticks* ok,  NPY<float>* gs );
+        virtual ~CGenstepSource();
+    private:
+        void init();
+    public:
+        G4VParticleChange* generatePhotonsFromNextGenstep();
+    public:
+        // G4VPrimaryGenerator interface
+        void GeneratePrimaryVertex(G4Event *evt);
+    private:
+        NGS*                  m_gs ;
+        unsigned              m_num_genstep ; 
+        unsigned              m_idx ; 
+        unsigned              m_generate_count ;   
+        // event count should be in base class : but base needs a rewrite so leave it here for now
 
 
-
-
+};
 
 

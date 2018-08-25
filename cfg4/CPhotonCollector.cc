@@ -53,20 +53,20 @@ void CPhotonCollector::Summary(const char* msg) const
 
 void CPhotonCollector::collectPhoton(
 
-               G4double  pos_x,
-               G4double  pos_y,
-               G4double  pos_z,
-               G4double  time,
+               double  pos_x,
+               double  pos_y,
+               double  pos_z,
+               double  time,
 
-               G4double  dir_x,
-               G4double  dir_y,
-               G4double  dir_z,
-               G4double  weight,
+               double  dir_x,
+               double  dir_y,
+               double  dir_z,
+               double  weight,
 
-               G4double  pol_x,
-               G4double  pol_y,
-               G4double  pol_z,
-               G4double  wavelength,
+               double  pol_x,
+               double  pol_y,
+               double  pol_z,
+               double  wavelength,
 
                int flags_x,
                int flags_y,

@@ -16,7 +16,8 @@ Why was I trying to start from primaries ? Rather than gensteps ?
 
   * yes G4 cannot start from Gensteps : but it can start from the photons that the gensteps yield 
  
-    * **THIS IS THE CORE PROBLEM** are missing CCerenkovSource (primary generator class)
+    * **THIS IS THE CORE PROBLEM** are missing: CCerenkovSource (primary generator class)
+      
 
   * original motivation is to try to align Cerenkov/Scintillation generation of photons  
 

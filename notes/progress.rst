@@ -28,7 +28,6 @@ to work with that parser follow some rules:
 
 * port python tree balancing to C++ NTreeBalance  
 
-
 2018 June : direct Geant4 to Opticks geometry conversion : **simplifies usage**
 ---------------------------------------------------------------------------------
 
@@ -51,7 +50,7 @@ to work with that parser follow some rules:
   by user code, only need to be concerned with direct dependencies, the tree
   of sub-dependencies is configured  automatically 
 * BCM wave over all ~100 CMakeLists.txt took ~10 days
-* g4ok project for Geant4 based user code with embedded Opticks, via G4OpticksManager
+* G4OK project for Geant4 based user code with embedded Opticks, via G4Opticks singleton
 * simplify logging OPTICKS_LOG.hh 
 * geometry digests to notice changed geometry 
 

@@ -35,11 +35,10 @@ CGenerator::CGenerator(OpticksGen* gen, CG4* g4)
     m_num_g4evt(1),
     m_photons_per_g4evt(0),
     m_source(initSource(m_source_code))
-    // m_source must be last as it can change m_gensteps, m_dynamic, ...
+    // m_source must be last as initSource will change m_gensteps, m_dynamic, ...
 {
     init();
 }
-
 
 void CGenerator::init()
 {

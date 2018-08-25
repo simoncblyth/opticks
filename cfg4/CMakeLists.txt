@@ -112,9 +112,12 @@ set(SOURCES
     CRayTracer.cc
     CVis.cc
     CCollector.cc
+
+    CGenstepSource.cc
     CPrimarySource.cc
     CPrimaryCollector.cc
     CPhotonCollector.cc
+    C4PhotonCollector.cc
     CRunAction.cc
     CEventAction.cc
 
@@ -223,9 +226,12 @@ set(HEADERS
     CG4Ctx.hh
     CG4.hh
     CCollector.hh
+
+    CGenstepSource.hh
     CPrimarySource.hh
     CPrimaryCollector.hh
     CPhotonCollector.hh
+    C4PhotonCollector.hh
     CRunAction.hh
     CEventAction.hh
 

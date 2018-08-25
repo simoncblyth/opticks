@@ -1,12 +1,17 @@
 #pragma once
 
 template <typename T> class NPY ;
-#include "G4Types.hh"
 #include "CFG4_API_EXPORT.hh"
 
 /**
 CPhotonCollector
 ===================
+
+NB : **No Geant4 dependency** use C4PhotonCollector for that 
+
+This only depends on NPY, so it can be relocated downwards 
+to a future intermediary subproj above NPY but below G4 specifics.
+
 
 Photons (item shape 4*4, 4 quads)
 -------------------------------------
@@ -27,20 +32,20 @@ class CFG4_API CPhotonCollector
         void save(const char* path) const ; 
     public:
         void collectPhoton(
-               G4double  pos_x,
-               G4double  pos_y,
-               G4double  pos_z,
-               G4double  time,
+               double  pos_x,
+               double  pos_y,
+               double  pos_z,
+               double  time,
 
-               G4double  dir_x,
-               G4double  dir_y,
-               G4double  dir_z,
-               G4double  weight,
+               double  dir_x,
+               double  dir_y,
+               double  dir_z,
+               double  weight,
 
-               G4double  pol_x,
-               G4double  pol_y,
-               G4double  pol_z,
-               G4double  wavelength,
+               double  pol_x,
+               double  pol_y,
+               double  pol_z,
+               double  wavelength,
 
                int flags_x,
                int flags_y,

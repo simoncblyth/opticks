@@ -5,8 +5,9 @@
 #include "SSys.hh"
 #include "NPY.hpp"
 #include "NGS.hpp"
-#include "CCerenkovGenerator.hh"
 
+#include "CCerenkovGenerator.hh"
+#include "C4PhotonCollector.hh"
 
 #include "Opticks.hh"
 #include "OpticksMode.hh"
@@ -36,18 +37,20 @@ int main(int argc, char** argv)
     OpticksHub hub(&ok) ; 
     CMaterialLib* clib = new CMaterialLib(&hub);
     clib->convert();
-    // TODO: a more direct way to get to a refractive index 
+    // TODO: a more direct way to get to a refractive index, than the above that loads the entire geometry  
 
- 
-    CCerenkovGenerator* cg = new CCerenkovGenerator(gs) ; 
-    
-    //G4VParticleChange* pc = cg->generatePhotonsFromGenstep(0);
+   
 
-    cg->generateAndCollectPhotonsFromGenstep(0); 
+    unsigned idx = 0 ;  
+    G4VParticleChange* pc = CCerenkovGenerator::GeneratePhotonsFromGenstep(gs,idx) ;
+
+    C4PhotonCollector* collector = new C4PhotonCollector ; 
+    collector->collectSecondaryPhotons( pc, idx ); 
 
     const char* ph_path = "$TMP/cfg4/CCerenkovGeneratorTest/photons.npy" ; 
-    cg->savePhotons(ph_path);
-    LOG(info) << cg->desc() ;
+    collector->savePhotons(ph_path);
+
+    LOG(info) << collector->desc() ;
 
     SSys::npdump( ph_path, "np.float32", "", "suppress=True") ;  
  

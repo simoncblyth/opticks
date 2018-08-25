@@ -32,6 +32,15 @@ inputPrimarySource        Y
 =====================  ==========
 
 
+Used from CG4::CG4 initializer list to prepare the CSource instance
+to pass to CPrimaryGeneratorAction::
+
+    123     m_generator(new CGenerator(m_hub->getGen(), this)),
+    124     m_dynamic(m_generator->isDynamic()),
+    ...
+    132     m_pga(new CPrimaryGeneratorAction(m_generator->getSource())),
+
+
 **/
 
 class CFG4_API CGenerator 
