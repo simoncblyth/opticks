@@ -23,7 +23,7 @@ unsigned CPrimarySource::getNumG4Event() const { return m_pri->getNumG4Event() ;
 
 CPrimarySource::CPrimarySource(Opticks* ok, NPY<float>* input_primaries, int verbosity)  
     :
-    CSource(ok, verbosity),
+    CSource(ok),
     m_pri(new NPri(input_primaries)),
     m_event_count(0)
 {

@@ -93,14 +93,15 @@ class NPY_API NPYBase {
        template <typename T> T getParameter(const char* key, const char* fallback) const ;
 
        // TODO: switch over to NMeta from NParameters
+       void setMeta(NMeta* meta); 
        template <typename T> void setMeta(const char* key, T value);
        template <typename T> T getMeta(const char* key, const char* fallback) const ;
        int getArrayContentVersion() const ;
        void setArrayContentVersion(int acv);
 
    public:
-       void saveMeta( const char* path) const ; 
-       static NMeta* LoadMeta( const char* path ); 
+       void saveMeta( const char* path, const char* ext=".json") const ; 
+       static NMeta* LoadMeta( const char* path, const char* ext=".json"); 
 
    public:
        // depending on sizeoftype

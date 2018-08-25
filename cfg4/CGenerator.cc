@@ -168,8 +168,7 @@ CSource* CGenerator::initInputPhotonSource()
     setGensteps(inputGensteps);
     setDynamic(false);
 
-    int verbosity = m_ok->isDbgSource() ? 10 : 0 ; 
-    CInputPhotonSource* cips = new CInputPhotonSource( m_ok, inputPhotons, gsnpy, verbosity) ;
+    CInputPhotonSource* cips = new CInputPhotonSource( m_ok, inputPhotons, gsnpy ) ;
 
     setNumG4Event( cips->getNumG4Event() );
     setNumPhotonsPerG4Event( cips->getNumPhotonsPerG4Event() );
@@ -290,8 +289,7 @@ CSource* CGenerator::initG4GunSource()
     setNumG4Event(gc->getNumber()); 
     setNumPhotonsPerG4Event(0); 
 
-    int verbosity = m_cfg->hasOpt("g4gundbg") ? 10 : 0 ; 
-    CGunSource* gun = new CGunSource(m_ok, verbosity) ;
+    CGunSource* gun = new CGunSource(m_ok ) ;
     gun->configure(gc);      
 
     CSource* source  = static_cast<CSource*>(gun);

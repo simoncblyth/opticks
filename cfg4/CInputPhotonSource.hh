@@ -29,7 +29,7 @@ Implements the G4VPrimaryGenerator interface : GeneratePrimaryVertex
 class CFG4_API CInputPhotonSource: public CSource
 {
     public:
-        CInputPhotonSource(Opticks* ok, NPY<float>* input_photons, GenstepNPY* gsnpy, unsigned int verbosity);
+        CInputPhotonSource(Opticks* ok, NPY<float>* input_photons, GenstepNPY* gsnpy );
     public:
         virtual ~CInputPhotonSource();
     public:

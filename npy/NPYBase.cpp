@@ -189,6 +189,11 @@ unsigned NPYBase::getNumHit() const
 
 
 
+void NPYBase::setMeta(NMeta* meta)
+{
+    m_meta = meta ;
+}
+
 template <typename T>
 void NPYBase::setMeta(const char* key, T value)
 {
@@ -777,18 +782,24 @@ std::string NPYBase::description(const char* msg) const
 }
 
 
-void NPYBase::saveMeta( const char* path) const 
+void NPYBase::saveMeta( const char* path, const char* ext) const 
 {
     if(!m_meta) return ; 
     if(m_meta->size() == 0) return ; 
 
-    LOG(info) << " save to " << path ;      
-    m_meta->save(path); 
+    std::string metapath_ = BFile::ChangeExt(path, ext);  
+    const char* metapath = metapath_.c_str(); 
+
+    LOG(info) << " save to " << metapath ;      
+    m_meta->save(metapath); 
 }
 
-NMeta* NPYBase::LoadMeta( const char* path ) // static 
+NMeta* NPYBase::LoadMeta( const char* path, const char* ext) // static 
 {
-    return BFile::ExistsFile(path) ? NMeta::Load(path) : NULL ;      
+    std::string _metapath = BFile::ChangeExt(path, ext );  
+    const char* metapath = _metapath.c_str(); 
+
+    return BFile::ExistsFile(metapath) ? NMeta::Load(metapath) : NULL ;      
 }
 
 

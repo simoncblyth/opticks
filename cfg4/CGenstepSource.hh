@@ -54,8 +54,8 @@ so perhaps 100 gensteps per event.
 
 **/
 
-
 struct STranche ; 
+class C4PhotonCollector ; 
 
 class CFG4_API CGenstepSource: public CSource
 {
@@ -79,8 +79,8 @@ class CFG4_API CGenstepSource: public CSource
         STranche*             m_tranche ; 
         unsigned              m_idx ; 
         unsigned              m_generate_count ;   
+        C4PhotonCollector*    m_photon_collector ; 
         // event count should be in base class : but base needs a rewrite so leave it here for now
-
 
 };
 

@@ -656,6 +656,12 @@ NPY<T>* NPY<T>::load(const char* path_, bool quietly)
         }
     }
 
+    if( npy != NULL)
+    {
+        NMeta* meta = NPYBase::LoadMeta( path.c_str(), ".json" ) ; 
+        npy->setMeta(meta); 
+    }
+
     return npy ;
 }
 
@@ -749,7 +755,6 @@ void NPY<T>::save(const char* raw)
 
     fs::path _path(native);
     fs::path dir = _path.parent_path();
-    fs::path name = _path.filename();
 
     if(!fs::exists(dir))
     {   
@@ -768,15 +773,7 @@ void NPY<T>::save(const char* raw)
     }
 
 
-
-
-    std::string sdir = dir.string(); 
-    std::string metaname = name.string() ; 
-    metaname += ".json" ; 
-    std::string metapath = BFile::FormPath( sdir.c_str(), metaname.c_str() ) ; 
-    NPYBase::saveMeta( metapath.c_str() ) ; 
-
-
+    NPYBase::saveMeta( native.c_str(), ".json" ) ; 
 
 
     unsigned int itemcount = getShape(0);    // dimension 0, corresponds to "length/itemcount"

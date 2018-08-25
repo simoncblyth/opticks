@@ -76,7 +76,7 @@ void CPrimaryCollector::collectPrimaryVertex(G4int vertex_index, const G4Event* 
 void CPrimaryCollector::collectPrimaryVertex(const G4PrimaryVertex* vtx, G4int vertex_index)
 {
     G4int num_p = vtx->GetNumberOfParticle() ;
-    LOG(info) << " vtx " << vtx << " num_p " << num_p ;    
+    LOG(debug) << " vtx " << vtx << " num_p " << num_p ;    
     for(G4int p=0 ; p < num_p ; p++) collectPrimaryParticle(vertex_index, p, vtx ) ; 
 }
 
@@ -87,7 +87,7 @@ void CPrimaryCollector::collectPrimaryParticle(G4int vertex_index, G4int primary
 
     const G4ParticleDefinition* pd = pp->GetParticleDefinition();  
     G4int pdgcode = pp->GetPDGcode() ; 
-    LOG(info) 
+    LOG(debug) 
         << " pp " << pp  
         << " pdgcode " << pdgcode
         << " pd " << pd->GetParticleName() 

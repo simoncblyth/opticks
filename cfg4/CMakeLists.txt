@@ -64,6 +64,7 @@ set(SOURCES
     CVec.cc
     CMaterialTable.cc
     CMaterialBridge.cc
+    CParticleDefinition.cc
 
     CBorderSurfaceTable.cc
     CSkinSurfaceTable.cc
@@ -192,6 +193,7 @@ set(HEADERS
     CVec.hh
     CMaterialTable.hh
     CMaterialBridge.hh
+    CParticleDefinition.hh
 
     CBorderSurfaceTable.hh
     CSkinSurfaceTable.hh

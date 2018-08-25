@@ -25,6 +25,7 @@
 #include "CGenstepSource.hh"
 #include "CCerenkovGenerator.hh"
 #include "CGenstepSource.hh"
+#include "C4PhotonCollector.hh"
 
 #include "STranche.hh"
 #include "PLOG.hh"
@@ -34,13 +35,14 @@ unsigned CGenstepSource::getNumGenstepsPerG4Event() const { return m_num_genstep
 
 CGenstepSource::CGenstepSource(Opticks* ok, NPY<float>* gs)  
     :
-    CSource(ok, ok->getVerbosity()),
+    CSource(ok),
     m_gs(new OpticksGenstep(gs)),
     m_num_genstep(m_gs->getNumGensteps()),
     m_num_genstep_per_g4event(1),
     m_tranche(new STranche(m_num_genstep,m_num_genstep_per_g4event)),
     m_idx(0),
-    m_generate_count(0)
+    m_generate_count(0),
+    m_photon_collector(new C4PhotonCollector) 
 {
     init();
 }
@@ -60,6 +62,8 @@ void CGenstepSource::GeneratePrimaryVertex(G4Event *event)
         if( m_idx == m_num_genstep ) break ;    // all gensteps done
         G4VParticleChange* pc = generatePhotonsFromOneGenstep() ; 
         addPrimaryVertices( event, pc ); 
+
+
     }
     m_generate_count += 1 ; 
 }
@@ -86,6 +90,8 @@ G4VParticleChange* CGenstepSource::generatePhotonsFromOneGenstep()
             ; 
    
     assert( pc ); 
+
+    m_photon_collector->collectSecondaryPhotons( pc, m_idx );  // "Secondary" : but this makes them primary 
 
     m_idx += 1 ; 
     return pc ; 

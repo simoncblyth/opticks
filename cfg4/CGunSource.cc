@@ -1,49 +1,29 @@
 #include "CFG4_BODY.hh"
 #include <cassert>
 
-// npy-
 #include "NGunConfig.hpp"
 
-// g4-
-#include "G4AutoLock.hh"
 #include "G4SystemOfUnits.hh"
 #include "G4PhysicalConstants.hh"
 #include "G4PrimaryParticle.hh"
 #include "G4Event.hh"
 #include "G4ParticleMomentum.hh"
 
-// cfg4-
+#include "CParticleDefinition.hh"
 #include "CRecorder.hh"
 #include "CGunSource.hh"
 
 #include "PLOG.hh"
 
-
-
-CGunSource::CGunSource(Opticks* ok, int verbosity)  
+CGunSource::CGunSource(Opticks* ok)  
     :
-    CSource(ok, verbosity),
+    CSource(ok),
     m_config(NULL)
 {
-    init();
-}
-
-
-void CGunSource::init()
-{
-
-  //  G4MUTEXINIT(m_mutex);
 }
 
 CGunSource::~CGunSource() 
 {
-  //  G4MUTEXDESTROY(m_mutex);
-}
-
-void CGunSource::SetVerbosity(int vL) 
-{
-  //  G4AutoLock l(&m_mutex);
-    m_verbosityLevel = vL;
 }
 
 void CGunSource::configure(NGunConfig* gc)
@@ -51,52 +31,33 @@ void CGunSource::configure(NGunConfig* gc)
     m_config = gc ; 
 
     LOG(info) << "CGunSource::configure" ; 
-    gc->Summary("CGunSource::configure");
-
-    setParticle(gc->getParticle());
-    assert(m_definition);
-
-    SetParticleTime( gc->getTime()*ns );
-    SetParticleEnergy( gc->getEnergy()*MeV );
-
-    glm::vec3 pos = gc->getPosition();
-    glm::vec3 dir = gc->getDirection();
-    glm::vec3 pol = gc->getPolarization();
-
-    SetParticlePosition(G4ThreeVector(pos.x*mm,pos.y*mm,pos.z*mm));
-    SetParticleMomentumDirection(G4ThreeVector(dir.x,dir.y,dir.z));
-    SetParticlePolarization(G4ThreeVector(pol.x,pol.y,pol.z));
-
+    m_config->Summary("CGunSource::configure");
 }
 
-void CGunSource::GeneratePrimaryVertex(G4Event *evt) 
+void CGunSource::GeneratePrimaryVertex(G4Event *event) 
 {
     LOG(fatal) << "CGunSource::GeneratePrimaryVertex" ;
 
-    G4ThreeVector position = GetParticlePosition();
-    G4double time = GetParticleTime() ; 
+    glm::vec3 pos = m_config->getPosition();
+    G4ThreeVector position( pos.x*mm, pos.y*mm, pos.z*mm );
+    G4double time =  m_config->getTime()*ns ; 
 
     G4PrimaryVertex* vertex = new G4PrimaryVertex(position, time);
 
-    G4double energy = GetParticleEnergy();
+    G4double kineticEnergy = m_config->getEnergy()*MeV ;
+    glm::vec3 dir = m_config->getDirection();   
+    glm::vec3 pol = m_config->getPolarization();
 
-    G4ParticleMomentum direction = GetParticleMomentumDirection();
-    G4ThreeVector polarization = GetParticlePolarization();
+    G4ParticleDefinition* definition = CParticleDefinition::Find(m_config->getParticle()) ; 
+    G4PrimaryParticle* primary = new G4PrimaryParticle(definition);
+    primary->SetKineticEnergy( kineticEnergy);
 
-    G4double mass = m_definition->GetPDGMass() ;
-    G4double charge = m_definition->GetPDGCharge() ;
-
-    G4PrimaryParticle* primary = new G4PrimaryParticle(m_definition);
-
-    primary->SetKineticEnergy( energy);
-    primary->SetMass( mass );
-    primary->SetMomentumDirection( direction);
-    primary->SetCharge( charge );
-	primary->SetPolarization(polarization.x(), polarization.y(), polarization.z()); 
+    G4ThreeVector direction(dir.x, dir.y, dir.z) ;  
+    primary->SetMomentumDirection( direction );
+	primary->SetPolarization(pol.x, pol.y, pol.z ); 
 
     vertex->SetPrimary(primary);
-    evt->AddPrimaryVertex(vertex);
-
+    event->AddPrimaryVertex(vertex);
  
     LOG(info) << "CGunSource::GeneratePrimaryVertex" 
               << " time " << time 
@@ -106,6 +67,6 @@ void CGunSource::GeneratePrimaryVertex(G4Event *evt)
               ; 
 
     //m_recorder->RecordPrimaryVertex(vertex);
-
 }
+
 

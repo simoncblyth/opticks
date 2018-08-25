@@ -1,11 +1,9 @@
 #pragma once
 
-
 class NGunConfig ; 
 
 #include "CSource.hh"
 #include "CFG4_API_EXPORT.hh"
-
 
 /**
 CGunSource
@@ -19,17 +17,14 @@ with GeneratePrimaryVertex(G4Event *evt)
 
 class CFG4_API CGunSource: public CSource
 {
-  public:
-    CGunSource(Opticks* ok, int verbosity);
-    virtual ~CGunSource();
-    void configure(NGunConfig* gc);
-  private:
-    void init();
-    void SetVerbosity(int vL);
-  public:
-    void GeneratePrimaryVertex(G4Event *evt);
-  private:
-    NGunConfig*           m_config ; 
+    public:
+        CGunSource(Opticks* ok);
+        virtual ~CGunSource();
+        void configure(NGunConfig* gc);
+    public:
+        void GeneratePrimaryVertex(G4Event* event);
+    private:
+        NGunConfig*   m_config ; 
 
 };
 
