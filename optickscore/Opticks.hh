@@ -238,7 +238,7 @@ class OKCORE_API Opticks {
    public:
        const char* getG4CodeGenDir() const ;  // search for g4code
        const char* getCacheMetaPath() const ;
-       const char* getPrimariesPath() const ;
+
        const char* getGLTFPath() const ;      // output GLTF path
    public:
        // from cfg
@@ -366,11 +366,16 @@ class OKCORE_API Opticks {
        std::string          getPreferenceDir(const char* type, const char* subtype);
    public:
        std::string          getGenstepPath() const ;
+       const char*          getPrimariesPath() const ;
+       const char*          getDirectGenstepPath() const ; 
        bool                 existsGenstepPath() const ;
        bool                 existsPrimariesPath() const ;
+       bool                 existsDirectGenstepPath() const ;
        NPY<float>*          load(const char* path) const ;
        NPY<float>*          loadGenstep() const ;
        NPY<float>*          loadPrimaries() const ;
+       NPY<float>*          loadDirectGenstep() const ;
+   public:
        TorchStepNPY*        makeSimpleTorchStep();
    public:
        OpticksEventSpec*    getEventSpec();

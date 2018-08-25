@@ -37,6 +37,7 @@ set(TEST_SOURCES
     CRandomEngineTest.cc
     CMixMaxRngTest.cc
     CCerenkovGeneratorTest.cc
+    CGenstepSourceTest.cc
 
 )
 

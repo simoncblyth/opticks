@@ -30,6 +30,12 @@ nlohmann::json& NMeta::js()
     return m_js ; 
 }  
 
+
+unsigned NMeta::size() const 
+{
+    return m_js.size() ; 
+}
+
 const nlohmann::json& NMeta::cjs() const 
 {
     return m_js ; 
@@ -143,6 +149,13 @@ T NMeta::get(const char* name, const char* fallback) const
 }
 
 template <typename T>
+T NMeta::Get(const NMeta* meta, const char* name, const char* fallback) // static
+{
+    return meta ? meta->get<T>(name, fallback) : boost::lexical_cast<T>(fallback) ;
+}
+
+
+template <typename T>
 T NMeta::get(const char* name) const 
 {
     assert( m_js.count(name) == 1  );
@@ -234,5 +247,13 @@ template NPY_API float        NMeta::get(const char* name, const char* fallback)
 template NPY_API char         NMeta::get(const char* name, const char* fallback) const ;
 //template NPY_API const char*  NMeta::get(const char* name, const char* fallback) const ;
 
+
+template NPY_API bool         NMeta::Get(const NMeta*, const char* name, const char* fallback) ; 
+template NPY_API int          NMeta::Get(const NMeta*, const char* name, const char* fallback) ; 
+template NPY_API unsigned int NMeta::Get(const NMeta*, const char* name, const char* fallback) ; 
+template NPY_API std::string  NMeta::Get(const NMeta*, const char* name, const char* fallback) ; 
+template NPY_API float        NMeta::Get(const NMeta*, const char* name, const char* fallback) ; 
+template NPY_API char         NMeta::Get(const NMeta*, const char* name, const char* fallback) ; 
+//template NPY_API const char*  NMeta::Get(const NMeta*,const char* name, const char* fallback) ; 
 
 

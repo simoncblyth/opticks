@@ -14,11 +14,13 @@
 #include "SDigest.hh"
 
 //brap- 
+#include "BFile.hh"
 #include "BStr.hh"
 #include "BOpticksEvent.hh"
 
 
 #include "NParameters.hpp"
+#include "NMeta.hpp"
 #include "NPYSpec.hpp"
 #include "PLOG.hh"
 
@@ -135,32 +137,18 @@ NLookup* NPYBase::getLookup() const
 {
     return m_lookup ; 
 }
+
+
+
+
+// TODO: move from NParameters to NMeta : which is composable and is persisted
+
+
+
 NParameters* NPYBase::getParameters() const 
 {
     return m_parameters ;
 }
-
-
-bool NPYBase::isGenstepTranslated() const 
-{
-    return m_parameters->get<bool>("GenstepTranslated","0");  // fallback to false if not set 
-}
-void NPYBase::setGenstepTranslated(bool flag)
-{
-    m_parameters->add<bool>("GenstepTranslated", flag); 
-}
-
-
-void NPYBase::setNumHit(unsigned num_hit)
-{
-    m_parameters->set<unsigned>("NumHit", num_hit); 
-}
-
-unsigned NPYBase::getNumHit() const 
-{
-    return m_parameters->get<unsigned>("NumHit","0"); 
-}
-
 
 template <typename T>
 void NPYBase::setParameter(const char* key, T value)
@@ -173,6 +161,57 @@ T NPYBase::getParameter(const char* key, const char* fallback) const
     m_parameters->get<T>(key,fallback);
 }
 
+
+
+
+
+//// TODO : get rid of the specifics 
+////        they look out of place in this generic code
+
+bool NPYBase::isGenstepTranslated() const 
+{
+    return m_parameters->get<bool>("GenstepTranslated","0");  // fallback to false if not set 
+}
+void NPYBase::setGenstepTranslated(bool flag)
+{
+    m_parameters->add<bool>("GenstepTranslated", flag); 
+}
+void NPYBase::setNumHit(unsigned num_hit)
+{
+    m_parameters->set<unsigned>("NumHit", num_hit); 
+}
+unsigned NPYBase::getNumHit() const 
+{
+    return m_parameters->get<unsigned>("NumHit","0"); 
+}
+
+
+
+
+
+template <typename T>
+void NPYBase::setMeta(const char* key, T value)
+{
+    m_meta->set<T>(key, value);
+}
+template <typename T>
+T NPYBase::getMeta(const char* key, const char* fallback) const 
+{
+    m_meta->get<T>(key,fallback);
+}
+
+
+
+const char* NPYBase::ArrayContentVersion = "ArrayContentVersion" ; 
+
+int NPYBase::getArrayContentVersion() const 
+{
+    return NMeta::Get<int>(m_meta, ArrayContentVersion, "0") ; 
+}
+void NPYBase::setArrayContentVersion(int acv)
+{
+    m_meta->set<int>(ArrayContentVersion, acv) ; 
+}
 
 
 
@@ -204,6 +243,7 @@ NPYBase::NPYBase(const std::vector<int>& shape, unsigned char sizeoftype, Type_t
     m_dynamic(false),
     m_lookup(NULL),
     m_parameters(new NParameters),
+    m_meta(new NMeta),
     m_name(NULL)
 {
 } 
@@ -735,6 +775,24 @@ std::string NPYBase::description(const char* msg) const
 
     return ss.str();
 }
+
+
+void NPYBase::saveMeta( const char* path) const 
+{
+    if(!m_meta) return ; 
+    if(m_meta->size() == 0) return ; 
+
+    LOG(info) << " save to " << path ;      
+    m_meta->save(path); 
+}
+
+NMeta* NPYBase::LoadMeta( const char* path ) // static 
+{
+    return BFile::ExistsFile(path) ? NMeta::Load(path) : NULL ;      
+}
+
+
+
 
 
 

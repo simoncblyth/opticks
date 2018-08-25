@@ -21,6 +21,10 @@ Used for m_g4step constituent of OpticksRun which is instanciated
 by OpticksRun::importGenstepData
 
 
+TODO: merge up into okc/OpticksGenstep ?
+      perhaps no longer need the lookup with direct mode ?
+
+
 **/
 
 class NPY_API G4StepNPY {

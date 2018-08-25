@@ -15,6 +15,7 @@
 #include "CGunSource.hh"
 #include "CInputPhotonSource.hh"
 #include "CPrimarySource.hh"
+#include "CGenstepSource.hh"
 
 #include "CDetector.hh"
 #include "CGenerator.hh"
@@ -34,6 +35,7 @@ CGenerator::CGenerator(OpticksGen* gen, CG4* g4)
     m_dynamic(true),
     m_num_g4evt(1),
     m_photons_per_g4evt(0),
+    m_gensteps_per_g4evt(0),
     m_source(initSource(m_source_code))
     // m_source must be last as initSource will change m_gensteps, m_dynamic, ...
 {
@@ -54,6 +56,7 @@ CSource* CGenerator::initSource(unsigned code)
     else if(code == TORCH)      source = initTorchSource();
     else if(code == EMITSOURCE) source = initInputPhotonSource();
     else if(code == PRIMARYSOURCE) source = initInputPrimarySource();
+    else if(code == GENSTEPSOURCE) source = initInputGenstepSource();
     else  assert( 0 && "code not handled" ); 
  
     assert(source) ;
@@ -78,6 +81,7 @@ bool CGenerator::hasGensteps() const { return m_gensteps != NULL ; }
 
 void CGenerator::setNumG4Event(unsigned num) { m_num_g4evt = num ; }
 void CGenerator::setNumPhotonsPerG4Event(unsigned num) { m_photons_per_g4evt = num ; }
+void CGenerator::setNumGenstepsPerG4Event(unsigned num) { m_gensteps_per_g4evt = num ; }
 void CGenerator::setGensteps(NPY<float>* gensteps) { m_gensteps = gensteps ; }
 void CGenerator::setDynamic(bool dynamic) { m_dynamic = dynamic ; }
 
@@ -173,6 +177,40 @@ CSource* CGenerator::initInputPhotonSource()
     CSource* source  = static_cast<CSource*>(cips); 
     return source ; 
 }
+
+
+
+
+/**
+CGenerator::initInputGenstepSource
+----------------------------------
+
+**/
+
+CSource* CGenerator::initInputGenstepSource()
+{
+    LOG(info) << "CGenerator::initInputGenstepSource " ; 
+    NPY<float>* dgs = m_gen->getDirectGensteps();
+
+    assert( dgs );
+
+    setGensteps(dgs);  //why ?
+    setDynamic(false);
+
+    CGenstepSource* gsrc = new CGenstepSource( m_ok, dgs ) ;
+
+    setNumGenstepsPerG4Event( gsrc->getNumGenstepsPerG4Event() );
+    setNumG4Event( gsrc->getNumG4Event() );
+
+    CSource* source  = static_cast<CSource*>(gsrc); 
+    return source ; 
+}
+
+
+
+
+
+
 
 
 

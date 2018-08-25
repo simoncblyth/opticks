@@ -745,8 +745,11 @@ void NPY<T>::save(const char* raw)
         LOG(info) << "NPY::save native np.load(\"" << native << "\") " ; 
     }
 
+    // TODO: replace below with BFile::preparePath do this ???
+
     fs::path _path(native);
     fs::path dir = _path.parent_path();
+    fs::path name = _path.filename();
 
     if(!fs::exists(dir))
     {   
@@ -763,6 +766,16 @@ void NPY<T>::save(const char* raw)
             LOG(info) << "NPY::save dir exists \"" << _path.string() << "\" " ; 
         }
     }
+
+
+
+
+    std::string sdir = dir.string(); 
+    std::string metaname = name.string() ; 
+    metaname += ".json" ; 
+    std::string metapath = BFile::FormPath( sdir.c_str(), metaname.c_str() ) ; 
+    NPYBase::saveMeta( metapath.c_str() ) ; 
+
 
 
 

@@ -10,12 +10,16 @@ void test_composable()
     const char* path = "$TMP/NMetaTest/test_composable.json" ;
 
     NMeta m1 ; 
+    assert( m1.size() == 0 ); 
+
     m1.set<int>("red", 1);
+    assert( m1.size() == 1 ); 
     m1.set<int>("green", 2);
     m1.set<int>("blue", 3);
     m1.set<float>("pi", 3.1415);
     m1.set<std::string>("name", "yo");
 
+    assert( m1.size() == 5 ); 
     assert( m1.getNumKeys() == 5 ); 
 
     NMeta m2 ; 

@@ -3,7 +3,9 @@
 #include <vector>
 
 #include "NGLM.hpp"
-#include "NGS.hpp"
+#include "OpticksPhoton.h"
+#include "OpticksFlags.hh"
+#include "OpticksGenstep.hh"
 
 #include "G4SystemOfUnits.hh"
 #include "G4PhysicalConstants.hh"
@@ -60,7 +62,7 @@ A method of two halves:
 
 **/
 
-G4VParticleChange* CCerenkovGenerator::GeneratePhotonsFromGenstep( const NGS* gs, unsigned idx ) // static 
+G4VParticleChange* CCerenkovGenerator::GeneratePhotonsFromGenstep( const OpticksGenstep* gs, unsigned idx ) // static 
 {
     unsigned num_gs = gs->getNumGensteps(); 
     bool have_gs = idx < num_gs ; 
@@ -73,6 +75,10 @@ G4VParticleChange* CCerenkovGenerator::GeneratePhotonsFromGenstep( const NGS* gs
             ;
 
     assert(have_gs) ; 
+
+    unsigned gencode = gs->getGencode(idx); 
+    assert( gencode == CERENKOV ); 
+
 
     glm::ivec4 hdr = gs->getHdr(idx); 
     glm::vec4 post = gs->getPositionTime(idx); 
@@ -155,7 +161,7 @@ G4VParticleChange* CCerenkovGenerator::GeneratePhotonsFromGenstep( const NGS* gs
     //  and use that in two places:
     //   
     //  1. normal PostStepDoIt
-    //  2. static G4VParticleChange* C4Cerenkov1042::GenerateSecondaryPhotons( const NGS* gs, unsigned idx ) ;  
+    //  2. static G4VParticleChange* C4Cerenkov1042::GenerateSecondaryPhotons( const OpticksGenstep* gs, unsigned idx ) ;  
     //
     /////////////////////////////////////////////////////////////////////////////////////////////////
     //

@@ -13,6 +13,12 @@ NMeta
 
 Metadata persistency using nlohmann::json
 
+/usr/local/opticks/externals/yoctogl/yocto-gl/yocto/ext/json.hpp
+
+https://github.com/nlohmann/json
+
+https://nlohmann.github.io/json/
+
 
 **/
 
@@ -23,6 +29,7 @@ class NPY_API NMeta {
    public:
        NMeta();
        NMeta(const NMeta& other);
+       unsigned size() const ; 
 
        nlohmann::json& js();
        const nlohmann::json& cjs() const ;
@@ -40,6 +47,8 @@ class NPY_API NMeta {
        template <typename T> T get(const char* name) const ;
        template <typename T> T get(const char* name, const char* fallback) const ;
        bool hasItem(const char* name) const ;
+   public:
+       template <typename T> static T Get(const NMeta* meta, const char* name, const char* fallback)  ;
    public:
        void save(const char* path) const ;
        void save(const char* dir, const char* name) const ;

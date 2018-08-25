@@ -320,10 +320,17 @@ void CTorchSource::GeneratePrimaryVertex(G4Event *evt)
         G4double charge = m_definition->GetPDGCharge();
 
 		G4PrimaryParticle* particle = new G4PrimaryParticle(m_definition);
+       
 		particle->SetKineticEnergy(pp.energy );
-		particle->SetMass( mass );
+
+        // huh : these should already be set from the ctor arg 
+		//particle->SetMass( mass );
+		//particle->SetCharge( charge );
+        assert(  particle->GetMass() == mass ) ; 
+        assert(  particle->GetCharge() == charge ) ; 
+
+
 		particle->SetMomentumDirection( pp.momentum_direction );
-		particle->SetCharge( charge );
 
         if(m_torch->isIncidentSphere())
         {

@@ -4,8 +4,8 @@
 
 #include "SSys.hh"
 #include "NPY.hpp"
-#include "NGS.hpp"
 
+#include "OpticksGenstep.hh"
 #include "CCerenkovGenerator.hh"
 #include "C4PhotonCollector.hh"
 
@@ -26,7 +26,7 @@ int main(int argc, char** argv)
     NPY<float>* np = NPY<float>::load(path) ; 
     if(np == NULL) return 0 ; 
 
-    NGS* gs = new NGS(np) ; 
+    OpticksGenstep* gs = new OpticksGenstep(np) ; 
     unsigned modulo = 1000 ; 
     unsigned margin = 10 ;   
     gs->dump( modulo, margin ) ; 
@@ -57,3 +57,4 @@ int main(int argc, char** argv)
 
     return 0 ; 
 }
+

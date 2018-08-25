@@ -42,6 +42,7 @@ OpticksGen::OpticksGen(OpticksHub* hub)
     m_emitter(m_csg_emit ? new NEmitPhotonsNPY(m_csg_emit, EMITSOURCE, m_ok->getSeed(), m_emitter_dbg, m_ok->getMaskBuffer()) : NULL ),
     m_input_photons(NULL),
     m_input_primaries(m_ok->existsPrimariesPath() ? m_ok->loadPrimaries() : NULL ),
+    m_direct_gensteps(m_ok->existsDirectGenstepPath() ? m_ok->loadDirectGenstep() : NULL ),
     m_source_code(initSourceCode())
 {
     init() ;
@@ -59,7 +60,11 @@ bool OpticksGen::hasInputPrimaries() const
 unsigned OpticksGen::initSourceCode() const 
 {
     unsigned code = 0 ; 
-    if(m_input_primaries)
+    if(m_direct_gensteps)
+    {
+        code = GENSTEPSOURCE ; 
+    }  
+    else if(m_input_primaries)
     {
         code = PRIMARYSOURCE ; 
     }  
@@ -82,7 +87,11 @@ unsigned OpticksGen::getSourceCode() const
 
 void OpticksGen::init()
 {
-    if(m_input_primaries)
+    if(m_direct_gensteps)
+    {
+        initFromDirectGensteps();
+    }  
+    else if(m_input_primaries)
     {
         initFromPrimaries();
     }  
@@ -135,7 +144,14 @@ void OpticksGen::initFromEmitter()
 }
 
 
+NPY<float>* OpticksGen::getDirectGensteps() const { return m_direct_gensteps ; }
 
+void OpticksGen::initFromDirectGensteps()
+{
+    LOG(info) << "." ; 
+    assert( m_direct_gensteps ) ; 
+    m_direct_gensteps->setBufferSpec(OpticksEvent::GenstepSpec(m_ok->isCompute()));
+}
 
 void OpticksGen::initFromGensteps()
 {

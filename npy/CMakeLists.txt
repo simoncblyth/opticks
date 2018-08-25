@@ -136,7 +136,6 @@ set(SOURCES
     PhotonsNPY.cpp
     NPho.cpp
     NPri.cpp
-    NGS.cpp
 
     RecordsNPY.cpp
     HitsNPY.cpp
@@ -246,7 +245,6 @@ PhotonsNPY.hpp
 
 NPho.hpp
 NPri.hpp
-NGS.hpp
 
 
 HitsNPY.hpp

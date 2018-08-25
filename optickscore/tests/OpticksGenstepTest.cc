@@ -1,8 +1,8 @@
-// TEST=NGSTest om-t
+// TEST=OpticksGenstepTest om-t
 
 #include "OPTICKS_LOG.hh"
 #include "NPY.hpp"
-#include "NGS.hpp"
+#include "OpticksGenstep.hh"
 
 int main(int argc, char** argv)
 {
@@ -14,7 +14,7 @@ int main(int argc, char** argv)
     NPY<float>* np = NPY<float>::load(path) ; 
     if(np == NULL) return 0 ; 
 
-    NGS* gs = new NGS(np) ; 
+    OpticksGenstep* gs = new OpticksGenstep(np) ; 
 
     unsigned modulo = 1000 ; 
     unsigned margin = 10 ;  

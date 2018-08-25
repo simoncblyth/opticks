@@ -37,6 +37,7 @@ set(SOURCES
     OpticksBufferSpec.cc
     OpticksBufferControl.cc
     OpticksActionControl.cc
+    OpticksGenstep.cc
     Indexer.cc
 
     OpticksFlags.cc
@@ -99,6 +100,7 @@ set(HEADERS
     OpticksBufferControl.hh
     OpticksActionControl.hh
     OpticksBufferSpec.hh
+    OpticksGenstep.hh
     Indexer.hh
 
     OpticksSwitches.h

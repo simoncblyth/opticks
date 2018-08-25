@@ -4,7 +4,7 @@
 
 #include "G4MaterialPropertyVector.hh"
 class G4VParticleChange ; 
-class NGS ; 
+class OpticksGenstep ; 
 
 /**
 CCerenkovGenerator
@@ -24,7 +24,7 @@ class CFG4_API CCerenkovGenerator
 {
     public:
         static G4MaterialPropertyVector* GetRINDEX(unsigned materialIndex) ;
-        static G4VParticleChange* GeneratePhotonsFromGenstep( const NGS* gs, unsigned idx )  ;
+        static G4VParticleChange* GeneratePhotonsFromGenstep( const OpticksGenstep* gs, unsigned idx )  ;
 
 };
 

@@ -27,6 +27,7 @@
 #include "G4Material.hh"
 #include "G4Event.hh"
 #include "G4TransportationManager.hh"
+#include "G4Version.hh"
 
 #include "PLOG.hh"
 
@@ -166,12 +167,20 @@ int G4Opticks::propagateOpticalPhotons()
 {
 
     m_gensteps = m_collector->getGensteps(); 
+    const char* path = m_ok->getDirectGenstepPath(); 
+
+    LOG(info) << " saving gensteps to " << path ; 
+    m_gensteps->setArrayContentVersion(G4VERSION_NUMBER); 
+    m_gensteps->save(path); 
+
+
+    /*
+
     m_opmgr->setGensteps(m_gensteps);      
     m_opmgr->propagate();
 
     OpticksEvent* event = m_opmgr->getEvent(); 
     m_hits = event->getHitData()->clone() ; 
-
 
     // minimal g4 side instrumentation in "1st executable" 
     // do after propagate, so the event will be created
@@ -179,10 +188,12 @@ int G4Opticks::propagateOpticalPhotons()
     m_g4evt = m_opmgr->getG4Event(); 
     m_g4evt->saveHitData( m_g4hit ) ; // pass thru to the dir, owned by m_g4hit_collector ?
 
-
     m_opmgr->reset();   
     // clears OpticksEvent buffers,
     // clone any buffers to be retained before the reset
+
+    */
+
 
     return m_hits ? m_hits->getNumItems() : -1 ;   
 }

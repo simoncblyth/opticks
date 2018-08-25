@@ -12,6 +12,7 @@
 
 
 class NParameters ; 
+class NMeta ; 
 class NLookup ; 
 class NPYSpec ; 
 #include "NPY_API_EXPORT.hh"
@@ -24,6 +25,7 @@ class NPY_API NPYBase {
        // they use type specialized NPY<T> buffers internally.
        // dynamic_cast<NPY<T>*>(buf) them when needed.
        //
+       static const char* ArrayContentVersion ; 
        static NPYBase* Load( const char* path, Type_t type );
        static NPYBase* Make( unsigned ni, const NPYSpec* itemspec, bool zero );
    public:
@@ -87,13 +89,18 @@ class NPY_API NPYBase {
        unsigned int getNumValues(unsigned int from_dim=0) const ;
 
        NParameters*  getParameters() const ;
+       template <typename T> void setParameter(const char* key, T value);
+       template <typename T> T getParameter(const char* key, const char* fallback) const ;
 
-       template <typename T>
-       void setParameter(const char* key, T value);
+       // TODO: switch over to NMeta from NParameters
+       template <typename T> void setMeta(const char* key, T value);
+       template <typename T> T getMeta(const char* key, const char* fallback) const ;
+       int getArrayContentVersion() const ;
+       void setArrayContentVersion(int acv);
 
-       template <typename T>
-       T getParameter(const char* key, const char* fallback) const ;
-
+   public:
+       void saveMeta( const char* path) const ; 
+       static NMeta* LoadMeta( const char* path ); 
 
    public:
        // depending on sizeoftype
@@ -206,6 +213,7 @@ class NPY_API NPYBase {
        bool               m_dynamic ;
        NLookup*           m_lookup ;   // only needed for legacy gensteps 
        NParameters*       m_parameters ;  // for keeping notes, especially for gensteps
+       NMeta*             m_meta ; 
 
        const char*        m_name ; 
 

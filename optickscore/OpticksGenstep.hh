@@ -4,11 +4,11 @@
 #include <glm/fwd.hpp>
 
 template <typename T> class NPY ; 
-#include "NPY_API_EXPORT.hh"
+#include "OKCORE_API_EXPORT.hh"
 
 /**
-NGS
-======
+OpticksGenstep
+==================
 
 Wrapper for an (n,6,4) genstep buffer providing higher level
 accessors and dumping. Only generic functionality working for all 
@@ -25,13 +25,16 @@ The first three quads are common to all types of gensteps, the
 last three have different meanings depending on the
 type of genstep.
 
+TODO: incorporate npy.G4StepNPY ?
+
+
 **/
 
-class NPY_API NGS {
+class OKCORE_API OpticksGenstep {
     public:  
         static void Dump(NPY<float>* gs, unsigned modulo, unsigned margin, const char* msg) ;
     public:  
-        NGS(NPY<float>* gs); 
+        OpticksGenstep(NPY<float>* gs); 
     private:
         void init();   
     public:  
@@ -39,6 +42,8 @@ class NPY_API NGS {
         unsigned              getNumGensteps() const ;
         unsigned              getNumPhotons() const ;
         float                 getAvgPhotonsPerGenstep() const ;
+    public:  
+        unsigned              getGencode(unsigned idx) const ; 
     public:  
         glm::ivec4            getHdr(unsigned i) const ;
         glm::vec4             getPositionTime(unsigned i) const ; 
@@ -54,9 +59,10 @@ class NPY_API NGS {
     public:  
         std::string           desc(unsigned i) const ;
         std::string           desc() const ;
-        void                  dump(unsigned modulo, unsigned margin, const char* msg="NGS::dump") const ;
+        void                  dump(unsigned modulo, unsigned margin, const char* msg="OpticksGenstep::dump") const ;
     private:
         NPY<float>*           m_gensteps ; 
+        int                   m_gensteps_content_version ; 
         unsigned              m_num_gensteps ; 
         unsigned              m_num_photons ; 
         float                 m_avg_photons_per_genstep ; 

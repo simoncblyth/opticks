@@ -63,6 +63,7 @@ BOpticksResource::BOpticksResource()
     m_g4codegendir(NULL),
     m_cachemetapath(NULL),
     m_primariespath(NULL),
+    m_directgensteppath(NULL),
     m_gltfpath(NULL)
 {
     init();
@@ -447,6 +448,11 @@ void BOpticksResource::setupViaKey()
     m_primariespath = makeIdPathPath("primaries.npy");  
     m_res->addPath("primariespath", m_primariespath ); 
 
+    m_directgensteppath = makeIdPathPath("directgenstep.npy");  
+    m_res->addPath("directgensteppath", m_directgensteppath ); 
+
+
+
 }
 
 
@@ -535,6 +541,7 @@ const char* BOpticksResource::getSrcGLTFName() const
 const char* BOpticksResource::getG4CodeGenDir() const { return m_g4codegendir ; }
 const char* BOpticksResource::getCacheMetaPath() const { return m_cachemetapath ; }
 const char* BOpticksResource::getPrimariesPath() const { return m_primariespath ; } 
+const char* BOpticksResource::getDirectGenstepPath() const { return m_directgensteppath ; } 
 const char* BOpticksResource::getGLTFPath() const { return m_gltfpath ; } 
 const char* BOpticksResource::getMetaPath() const { return m_metapath ; }
 const char* BOpticksResource::getIdMapPath() const { return m_idmappath ; } 

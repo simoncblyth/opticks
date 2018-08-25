@@ -21,7 +21,8 @@ enum
     NATURAL           = 0x1 << 16,
     MACHINERY         = 0x1 << 17,
     EMITSOURCE        = 0x1 << 18,
-    PRIMARYSOURCE     = 0x1 << 19
+    PRIMARYSOURCE     = 0x1 << 19,
+    GENSTEPSOURCE     = 0x1 << 20
 }; 
 
 //  only ffs 0-15 make it into the record so debug flags only beyond 15 

@@ -62,12 +62,14 @@ class CFG4_API CGenerator
        CSource* initSource(unsigned code);
        CSource* initInputPhotonSource();
        CSource* initInputPrimarySource();
+       CSource* initInputGenstepSource();
        CSource* initTorchSource();
        CSource* initG4GunSource();
     private:
        void setDynamic(bool dynamic);
        void setNumG4Event(unsigned num);
        void setNumPhotonsPerG4Event(unsigned num);
+       void setNumGenstepsPerG4Event(unsigned num);
        void setGensteps(NPY<float>* gensteps);
    private:
        OpticksGen*           m_gen ;
@@ -80,6 +82,7 @@ class CFG4_API CGenerator
        bool                  m_dynamic ; 
        unsigned              m_num_g4evt ; 
        unsigned              m_photons_per_g4evt ;           
+       unsigned              m_gensteps_per_g4evt ;
    private:
        CSource*              m_source ; 
 

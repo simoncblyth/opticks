@@ -1061,6 +1061,7 @@ const char* Opticks::getSrcGLTFPath() const { return m_resource->getSrcGLTFPath(
 const char* Opticks::getG4CodeGenDir() const { return m_resource->getG4CodeGenDir() ; }
 const char* Opticks::getCacheMetaPath() const { return m_resource->getCacheMetaPath() ; } 
 const char* Opticks::getPrimariesPath() const { return m_resource->getPrimariesPath() ; } 
+const char* Opticks::getDirectGenstepPath() const { return m_resource->getDirectGenstepPath() ; } 
 
 
 
@@ -1873,12 +1874,18 @@ bool Opticks::existsGenstepPath() const
     std::string path = getGenstepPath();
     return BFile::ExistsFile(path.c_str()); 
 }
-
 bool Opticks::existsPrimariesPath() const 
 {
     const char* path = getPrimariesPath();
     return path ? BFile::ExistsFile(path) : false ; 
 }
+bool Opticks::existsDirectGenstepPath() const 
+{
+    const char* path = getDirectGenstepPath();
+    return path ? BFile::ExistsFile(path) : false ; 
+}
+
+
 
 
 NPY<float>* Opticks::load(const char* path) const 
@@ -1898,6 +1905,11 @@ NPY<float>* Opticks::load(const char* path) const
 NPY<float>* Opticks::loadGenstep() const 
 {
     std::string path = getGenstepPath();
+    return load(path.c_str()); 
+}
+NPY<float>* Opticks::loadDirectGenstep() const 
+{
+    std::string path = getDirectGenstepPath();
     return load(path.c_str()); 
 }
 NPY<float>* Opticks::loadPrimaries() const 

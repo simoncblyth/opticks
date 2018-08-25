@@ -34,6 +34,7 @@ set(TEST_SOURCES
     OpticksEventAnaTest.cc
     OpticksEventCompareTest.cc
     OpticksEventDumpTest.cc
+    OpticksGenstepTest.cc 
 
 )
 
