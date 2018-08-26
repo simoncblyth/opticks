@@ -189,6 +189,10 @@ const char* PLOG::name()
    return _name(severity);
 }
 
+const char* PLOG::exename() const 
+{
+    return args.exename(); 
+}
 
 PLOG::PLOG(int argc_, char** argv_, const char* fallback, const char* prefix)
     :

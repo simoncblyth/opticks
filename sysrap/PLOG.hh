@@ -142,6 +142,8 @@ struct SYSRAP_API PLOG
     PLOG(int argc, char** argv, const char* fallback="VERBOSE", const char* prefix=NULL );
 
     const char* name(); 
+    const char* exename() const ;
+
     int parse( const char* fallback);
     int parse( plog::Severity _fallback);
 

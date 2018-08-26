@@ -11,9 +11,13 @@
 const char* CAlignEngine::LOGNAME = "CAlignEngine.log" ; 
 CAlignEngine* CAlignEngine::INSTANCE = NULL ; 
 
-bool CAlignEngine::Initialize(const char* simstreampath ) // static
+bool CAlignEngine::Initialize(const char* simstreamdir ) // static
 {
-    if(INSTANCE == NULL ) INSTANCE = new CAlignEngine(simstreampath) ; 
+    if(INSTANCE == NULL ) 
+    {
+        const char* reldir = PLOG::instance->exename() ; 
+        INSTANCE = new CAlignEngine(simstreamdir, reldir ) ; 
+    }
     return INSTANCE->isReady(); 
 }
 
@@ -25,14 +29,14 @@ void CAlignEngine::Finalize() // static
 
 void CAlignEngine::SetSequenceIndex(int seq_index) // static
 {
-    if(INSTANCE == NULL ) INSTANCE = new CAlignEngine(NULL) ; 
+    if(INSTANCE == NULL ) INSTANCE = new CAlignEngine(NULL, NULL) ; 
     INSTANCE->setSequenceIndex(seq_index); 
 }
 
-const char* CAlignEngine::InitSimLog( const char* ssdir) // static
+const char* CAlignEngine::InitSimLog( const char* ssdir, const char* reldir ) // static
 {
     if( ssdir == NULL ) return NULL ; 
-    std::string path = BFile::preparePath( ssdir, LOGNAME ); 
+    std::string path = BFile::preparePath( ssdir, reldir, LOGNAME ); 
     return strdup(path.c_str()); 
 }
 
@@ -46,7 +50,7 @@ CAlignEngine::~CAlignEngine()
 }
 
 
-CAlignEngine::CAlignEngine(const char* ssdir)
+CAlignEngine::CAlignEngine(const char* ssdir, const char* reldir)
     :
     m_seq_path("$TMP/TRngBufTest.npy"),
     m_seq(NPY<double>::load(m_seq_path)),
@@ -58,7 +62,7 @@ CAlignEngine::CAlignEngine(const char* ssdir)
     m_seq_index(-1),
     m_recycle(true),
     m_default(CLHEP::HepRandom::getTheEngine()),
-    m_sslogpath(InitSimLog(ssdir)),
+    m_sslogpath(InitSimLog(ssdir, reldir)),
     m_backtrace(true),
     m_out(NULL)
 {

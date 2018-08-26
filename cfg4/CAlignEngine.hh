@@ -46,9 +46,9 @@ class CFG4_API CAlignEngine : public CLHEP::HepRandomEngine
     private:
         static CAlignEngine* INSTANCE ; 
         static const char* LOGNAME ; 
-        static const char* InitSimLog( const char* ssdir);
+        static const char* InitSimLog( const char* ssdir, const char* reldir);
     private:
-        CAlignEngine(const char* ssdir);
+        CAlignEngine(const char* ssdir, const char* reldir);
         virtual ~CAlignEngine(); 
 
         void setSequenceIndex(int record_id); 
