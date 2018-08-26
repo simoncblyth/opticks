@@ -338,6 +338,16 @@ L4Cerenkov::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
 	for (G4int i = 0; i < NumPhotons; i++) {
 
 		// Determine photon energy
+#ifdef WITH_OPTICKS_ALIGN
+        //
+        // Hmm need to form a global record_index for the photon otherwise
+        // the next genstep will continue some of the streams from the previous gensteps.
+        //
+        // Need a genstep index offset to add to this gensteps photon index, which is the cumulative total 
+        // of all "gensteps" (ie photon producing PostStepDoIt) that came before.  
+        // 
+        G4Opticks::GetOpticks()->setAlignIndex(i); 
+#endif
 
 		G4double rand;
 		G4double sampledEnergy, sampledRI; 
@@ -444,6 +454,13 @@ L4Cerenkov::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
                 aSecondaryTrack->SetParentID(aTrack.GetTrackID());
 
 		aParticleChange.AddSecondary(aSecondaryTrack);
+
+
+#ifdef WITH_OPTICKS_ALIGN
+        G4Opticks::GetOpticks()->setAlignIndex(-1); 
+#endif
+
+
 	}
 //#endif
 

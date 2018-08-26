@@ -12,39 +12,63 @@
 struct CAlignEngineTest
 {
     CAlignEngineTest();  
+    void spin(unsigned n, bool dump);
     void check( int v0 , int v1, int i0, int i1, bool dump );
 
+
+    bool ready ; 
+    const CAlignEngine* ae ;  
     NPY<double>* seq ; 
+    int ni ; 
+    int nv ; 
 
 };
 
 
 CAlignEngineTest::CAlignEngineTest()
+    :
+    ready(CAlignEngine::Initialize("$TMP/cfg4/CAlignEngineTest")),
+    ae(CAlignEngine::INSTANCE),
+    seq(ae->m_seq),
+    ni(ae->m_seq_ni), 
+    nv(ae->m_seq_nv)  
 {
-    CAlignEngine::Initialize("$TMP/cfg4/CAlignEngineTest/simstream.txt"); 
-
-    const CAlignEngine* ae = CAlignEngine::INSTANCE ; 
-    seq = ae->m_seq ;  
     assert( seq ); 
-
-    assert( ae->m_seq_nv == 256 );      
-    assert( ae->m_seq_ni == 100000 );      
-
-    int ni =  ae->m_seq_ni ; 
-    int nv =  ae->m_seq_nv ; 
+    assert( nv == 256 );      
+    assert( ni == 100000 );      
 
     LOG(info) 
         << " ni " << ni 
         << " nv " << nv
         ;
 
+    spin(10, true) ; 
+
     check( 0, 16, 0, 10, true ); 
     //check(  0,  nv, 0, 10, true );     
 
     check( 0, 16, ni-10, ni, true ); 
-
-    
 }
+
+
+
+void CAlignEngineTest::spin(unsigned n, bool dump)
+{
+    for(unsigned i=0 ; i < n ; i++)
+    {
+        double u = G4UniformRand() ; 
+        if(dump) 
+           std::cout 
+               << " " << std::setw(6) << i 
+               << ":" 
+               << " " << std::setw(10) << std::fixed << std::setprecision(6) << u  
+               << std::endl 
+               ;
+
+    }
+
+}
+
 
 
 void CAlignEngineTest::check( int v0 , int v1, int i0, int i1, bool dump )

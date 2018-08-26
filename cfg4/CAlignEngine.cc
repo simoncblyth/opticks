@@ -8,11 +8,13 @@
 #include "SBacktrace.hh"
 #include "CAlignEngine.hh"
 
+const char* CAlignEngine::LOGNAME = "CAlignEngine.log" ; 
 CAlignEngine* CAlignEngine::INSTANCE = NULL ; 
 
-void CAlignEngine::Initialize(const char* simstreampath ) // static
+bool CAlignEngine::Initialize(const char* simstreampath ) // static
 {
     if(INSTANCE == NULL ) INSTANCE = new CAlignEngine(simstreampath) ; 
+    return INSTANCE->isReady(); 
 }
 void CAlignEngine::SetSequenceIndex(int seq_index) // static
 {
@@ -20,7 +22,15 @@ void CAlignEngine::SetSequenceIndex(int seq_index) // static
     INSTANCE->setSequenceIndex(seq_index); 
 }
 
-CAlignEngine::CAlignEngine(const char* simstreampath)
+const char* CAlignEngine::InitSimLog( const char* ssdir) // static
+{
+    if( ssdir == NULL ) return NULL ; 
+    std::string path = BFile::preparePath( ssdir, LOGNAME ); 
+    return strdup(path.c_str()); 
+}
+
+
+CAlignEngine::CAlignEngine(const char* ssdir)
     :
     m_seq_path("$TMP/TRngBufTest.npy"),
     m_seq(NPY<double>::load(m_seq_path)),
@@ -31,7 +41,7 @@ CAlignEngine::CAlignEngine(const char* simstreampath)
     m_cur_values(m_cur->fill(0)),
     m_seq_index(-1),
     m_default(CLHEP::HepRandom::getTheEngine()),
-    m_simstreampath(simstreampath ? strdup(simstreampath) : NULL),
+    m_sslogpath(InitSimLog(ssdir)),
     m_backtrace(true),
     m_out(NULL)
 {
@@ -40,11 +50,10 @@ CAlignEngine::CAlignEngine(const char* simstreampath)
 
     if(!m_backtrace) return ; 
 
-    if(m_simstreampath) 
+    if(m_sslogpath) 
     { 
-        std::string path = BFile::preparePath( m_simstreampath ); 
-        m_out = new std::ofstream(path.c_str()) ;
-        LOG(info) << " simstreampath " << path ; 
+        m_out = new std::ofstream(m_sslogpath) ;
+        LOG(info) << " simstream logpath " << m_sslogpath ; 
     }
     else
     {
@@ -52,6 +61,12 @@ CAlignEngine::CAlignEngine(const char* simstreampath)
     }
     (*m_out) << desc() << std::endl ;  
 }
+
+bool CAlignEngine::isReady() const 
+{
+    return m_seq && m_seq_ni > 0 && m_seq_nv > 0 ; 
+}
+
 
 std::string CAlignEngine::desc() const 
 {
@@ -63,7 +78,7 @@ std::string CAlignEngine::desc() const
        << " seq_nv " << m_seq_nv
        << " cur " << ( m_cur ? m_cur->getShapeString() : "-" )
        << " seq_path " << ( m_seq_path ? m_seq_path : "-" )
-       << " simstreampath " << ( m_simstreampath ? m_simstreampath : "-" )
+       << " simstream logpath " << ( m_sslogpath ? m_sslogpath : "-" )
        ;
     return ss.str(); 
 }

@@ -12,6 +12,7 @@
 #include "CPrimaryCollector.hh"
 #include "CPhotonCollector.hh"
 #include "C4PhotonCollector.hh"
+#include "CAlignEngine.hh"
 #include "CGDML.hh"
 
 #include "G4Opticks.hh"
@@ -117,6 +118,7 @@ void G4Opticks::setGeometry(const G4VPhysicalVolume* world)
     m_g4hit_collector = new CPhotonCollector ; 
     m_g4photon_collector = new C4PhotonCollector ; 
 
+    CAlignEngine::Initialize(m_ok->getIdPath()) ;
 
     // OpMgr instanciates OpticksHub which adopts the pre-existing m_ggeo instance just translated
     m_opmgr = new OpMgr(m_ok) ;   
@@ -161,6 +163,11 @@ void G4Opticks::setupMaterialLookup()
     m_lookup->close(); 
 }
 
+
+void G4Opticks::setAlignIndex(int align_idx) const 
+{
+    CAlignEngine::SetSequenceIndex(align_idx); 
+}
 
 /**
 G4Opticks::propagateOpticalPhotons

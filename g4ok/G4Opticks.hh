@@ -72,6 +72,7 @@ class G4OK_API G4Opticks
         void collectPrimaries(const G4Event* event); 
         int propagateOpticalPhotons();
         NPY<float>* getHits() const ; 
+        void setAlignIndex(int align_idx) const ; 
     private:
         GGeo* translateGeometry( const G4VPhysicalVolume* top );
         void setupMaterialLookup();

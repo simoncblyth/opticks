@@ -39,7 +39,11 @@ set(HEADERS
 add_executable(${name} ${name}.cc ${SOURCES} ${HEADERS})
 
 target_link_libraries(${name} Opticks::G4OK )
-target_compile_definitions( ${name} PRIVATE WITH_OPTICKS )
+target_compile_definitions( ${name} 
+  PRIVATE 
+      WITH_OPTICKS
+      WITH_OPTICKS_ALIGN
+ )
 
 install(TARGETS ${name} DESTINATION lib)
 
