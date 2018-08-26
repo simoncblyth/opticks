@@ -3,12 +3,12 @@
 #include <string>
 #include "G4Types.hh"
 
-//class OpticksHub ; 
+//class OpticksGenstep ; 
 class NLookup ; 
 template <typename T> class NPY ;
 
 /**
-CCollector : methods for collection of gensteps and primaries
+CGenstepCollector : methods for collection of gensteps
 =================================================================
 
 Canonical CG4.m_collector is instanciated at postinitialize, 
@@ -47,20 +47,24 @@ prior to the photon generation loop.
 
 #include "CFG4_API_EXPORT.hh"
 
-class CFG4_API CCollector 
+class CFG4_API CGenstepCollector 
 {
    public:
-         static CCollector* Instance();
+         static CGenstepCollector* Instance();
    public:
-         CCollector(const NLookup* lookup);  
+         CGenstepCollector(const NLookup* lookup);  
+   public:
+         unsigned getNumGensteps() const ; 
+         unsigned getNumPhotons() const ;  // total 
+         unsigned getNumPhotons( unsigned gs_idx) const ; 
    public:
          NPY<float>*  getGensteps() const ;
    public:
          std::string description() const ;
-         void Summary(const char* msg="CCollector::Summary") const  ;
+         void Summary(const char* msg="CGenstepCollector::Summary") const  ;
          int translate(int acode) const ;
    private:
-         void setGensteps(NPY<float>* gs);
+         //void setGensteps(NPY<float>* gs);
          void consistencyCheck() const ;
    public:
          void collectScintillationStep(
@@ -129,15 +133,19 @@ class CFG4_API CCollector
    public:
          void collectMachineryStep(unsigned code);
    private:
-         static CCollector* INSTANCE ;      
+         static CGenstepCollector* INSTANCE ;      
    private:
          const NLookup*     m_lookup ; 
 
-         NPY<float>*  m_genstep ;
-         unsigned     m_genstep_itemsize ; 
-         float*       m_genstep_values ;  
+         NPY<float>*       m_genstep ;
+         //OpticksGenstep*   m_gs ; 
 
-         unsigned     m_scintillation_count ; 
-         unsigned     m_cerenkov_count ; 
-         unsigned     m_machinery_count ; 
+         unsigned          m_genstep_itemsize ; 
+         float*            m_genstep_values ;  
+         unsigned          m_scintillation_count ; 
+         unsigned          m_cerenkov_count ; 
+         unsigned          m_machinery_count ; 
+
+         std::vector<unsigned> m_gs_photons ; 
+
 };

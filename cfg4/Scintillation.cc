@@ -82,7 +82,7 @@
 #include "G4ParticleTypes.hh"
 #include "G4EmProcessSubType.hh"
 
-#include "CCollector.hh"
+#include "CGenstepCollector.hh"
 #include "Scintillation.hh"
 
 #include "CFG4_POP.hh"
@@ -440,7 +440,7 @@ Scintillation::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
             {
                 const G4ParticleDefinition* definition = aParticle->GetDefinition();
                 G4ThreeVector deltaPosition = aStep.GetDeltaPosition();
-                CCollector::Instance()->collectScintillationStep(
+                CGenstepCollector::Instance()->collectScintillationStep(
 
                        0,                  // 0     id:zero means use scintillation step count 
                        aTrack.GetTrackID(),

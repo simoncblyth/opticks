@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <unordered_set>
 #include "CFG4_API_EXPORT.hh"
 #include "CFG4_HEAD.hh"
 template <typename T> class NPY ; 
@@ -39,6 +40,7 @@ class CFG4_API CAlignEngine : public CLHEP::HepRandomEngine
         friend struct CAlignEngineTest ; 
     public:
         static bool Initialize(const char* ssdir); 
+        static void Finalize(); 
         static void SetSequenceIndex(int record_id); 
         double flat() ;  
     private:
@@ -47,6 +49,8 @@ class CFG4_API CAlignEngine : public CLHEP::HepRandomEngine
         static const char* InitSimLog( const char* ssdir);
     private:
         CAlignEngine(const char* ssdir);
+        virtual ~CAlignEngine(); 
+
         void setSequenceIndex(int record_id); 
         std::string desc() const ; 
         bool isReady() const ; 
@@ -59,6 +63,7 @@ class CFG4_API CAlignEngine : public CLHEP::HepRandomEngine
         NPY<int>*                m_cur ; 
         int*                     m_cur_values ; 
         int                      m_seq_index ; 
+        bool                     m_recycle ;   // temporary measure to decide on how much needs to be precooked 
         CLHEP::HepRandomEngine*  m_default ; 
         const char*              m_sslogpath ; 
         bool                     m_backtrace ; 
@@ -75,6 +80,8 @@ class CFG4_API CAlignEngine : public CLHEP::HepRandomEngine
         void saveStatus( const char * ) const ; 
         void restoreStatus( const char * ); 
         void showStatus() const ; 
+
+        std::unordered_set<unsigned> m_recycle_idx ; 
 };
 
 #include "CFG4_TAIL.hh"

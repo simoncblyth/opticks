@@ -1,26 +1,29 @@
 #include <sstream>
+#include <numeric>
 
 #include "NLookup.hpp"
 #include "NPY.hpp"
-#include "CCollector.hh"
+#include "CGenstepCollector.hh"
 
 #include "OpticksHub.hh"
+//#include "OpticksGenstep.h"
 #include "OpticksPhoton.h"
 
 #include "PLOG.hh"
 
-CCollector* CCollector::INSTANCE = NULL ;
+CGenstepCollector* CGenstepCollector::INSTANCE = NULL ;
 
-CCollector* CCollector::Instance()
+CGenstepCollector* CGenstepCollector::Instance()
 {
-   assert(INSTANCE && "CCollector has not been instanciated");
+   assert(INSTANCE && "CGenstepCollector has not been instanciated");
    return INSTANCE ;
 }
 
-CCollector::CCollector(const NLookup* lookup)    
+CGenstepCollector::CGenstepCollector(const NLookup* lookup)    
     :
     m_lookup(lookup),
     m_genstep(NPY<float>::make(0,6,4)),
+   // m_gs(new OpticksGenstep(m_genstep)),
     m_genstep_itemsize(m_genstep->getNumValues(1)),
     m_genstep_values(new float[m_genstep_itemsize]),
     m_scintillation_count(0),
@@ -32,39 +35,58 @@ CCollector::CCollector(const NLookup* lookup)
     INSTANCE = this ; 
 }
 
-int CCollector::translate(int acode) const // raw G4 materialId translated into GBndLib material line for GPU usage 
+int CGenstepCollector::translate(int acode) const // raw G4 materialId translated into GBndLib material line for GPU usage 
 {
     int bcode = m_lookup->a2b(acode) ;
     return bcode ; 
 }
 
-NPY<float>*  CCollector::getGensteps() const 
+
+unsigned CGenstepCollector::getNumGensteps() const 
+{
+    return m_gs_photons.size(); 
+}
+unsigned CGenstepCollector::getNumPhotons() const 
+{
+    return std::accumulate(m_gs_photons.begin(), m_gs_photons.end(), 0u );
+} 
+unsigned CGenstepCollector::getNumPhotons(unsigned gs_idx) const 
+{
+    assert( gs_idx < m_gs_photons.size() ); 
+    return m_gs_photons[gs_idx] ; 
+} 
+
+
+
+
+NPY<float>*  CGenstepCollector::getGensteps() const 
 {
     consistencyCheck() ;
     return m_genstep ; 
 }
 
-void CCollector::setGensteps(NPY<float>* gs)
+/*
+void CGenstepCollector::setGensteps(NPY<float>* gs)
 {
     m_genstep = gs ; 
 }
+*/
 
-
-void CCollector::consistencyCheck() const 
+void CGenstepCollector::consistencyCheck() const 
 {
      unsigned numItems = m_genstep->getNumItems();
      bool consistent = numItems == m_scintillation_count + m_cerenkov_count + m_machinery_count ;
      if(!consistent)
-         LOG(fatal) << "CCollector::consistencyCheck FAIL " 
+         LOG(fatal) << "CGenstepCollector::consistencyCheck FAIL " 
                     << description()
                     ;
      assert(consistent);
 }
 
-std::string CCollector::description() const
+std::string CGenstepCollector::description() const
 {
     std::stringstream ss ; 
-    ss << " CCollector "
+    ss << " CGenstepCollector "
        << " numItems " << m_genstep->getNumItems() 
        << " scintillation_count " << m_scintillation_count
        << " cerenkov_count " << m_cerenkov_count
@@ -74,7 +96,7 @@ std::string CCollector::description() const
     return ss.str();
 }
 
-void CCollector::Summary(const char* msg) const 
+void CGenstepCollector::Summary(const char* msg) const 
 { 
     LOG(info) << msg 
               << description()
@@ -82,7 +104,7 @@ void CCollector::Summary(const char* msg) const
 }
 
 
-void CCollector::collectScintillationStep
+void CGenstepCollector::collectScintillationStep
 (
             G4int                /*id*/, 
             G4int                parentId,
@@ -116,6 +138,8 @@ void CCollector::collectScintillationStep
 ) 
 {
      m_scintillation_count += 1 ;   // 1-based index
+     m_gs_photons.push_back(numPhotons); 
+
      LOG(debug) 
           << " scintillation_count " << m_scintillation_count ;
 
@@ -172,7 +196,7 @@ void CCollector::collectScintillationStep
 
 
 
-void CCollector::collectCerenkovStep
+void CGenstepCollector::collectCerenkovStep
 (
             G4int              /*id*/, 
             G4int                parentId,
@@ -206,6 +230,8 @@ void CCollector::collectCerenkovStep
 )
 {
      m_cerenkov_count += 1 ;   // 1-based index
+     m_gs_photons.push_back(numPhotons); 
+
      LOG(debug) 
            << " cerenkov_count " << m_cerenkov_count ;
 
@@ -259,7 +285,7 @@ void CCollector::collectCerenkovStep
      m_genstep->add(cs, m_genstep_itemsize);
 }
 
-void CCollector::collectMachineryStep(unsigned code)
+void CGenstepCollector::collectMachineryStep(unsigned code)
 {
      m_machinery_count += 1 ;   // 1-based index
      LOG(debug) 

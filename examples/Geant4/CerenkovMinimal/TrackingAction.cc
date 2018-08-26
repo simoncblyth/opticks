@@ -11,8 +11,9 @@ void TrackingAction::PreUserTrackingAction(const G4Track* track)
 {
     ctx->setTrack(track); 
 }
-void TrackingAction::PostUserTrackingAction(const G4Track* )
+void TrackingAction::PostUserTrackingAction(const G4Track* track)
 {
+    ctx->postTrack(track);     
 }
 
 

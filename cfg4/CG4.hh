@@ -27,7 +27,7 @@ class CMaterialBridge ;
 class CSurfaceBridge ; 
 class CGenerator ; 
 
-class CCollector ; 
+class CGenstepCollector ; 
 class CPrimaryCollector ; 
 class CRecorder ; 
 class CStepRec ; 
@@ -180,7 +180,7 @@ class CFG4_API CG4
         CGenerator*           m_generator ; 
         bool                  m_dynamic ; 
    private:
-        CCollector*           m_collector ; 
+        CGenstepCollector*           m_collector ; 
         CPrimaryCollector*    m_primary_collector ; 
         CRecorder*            m_recorder ; 
         CStepRec*             m_steprec ; 

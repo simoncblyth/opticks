@@ -1563,7 +1563,7 @@ NPY<T>* NPY<T>::make_vec3(float* m2w_, unsigned int npo)
 
 
 template <typename T>
-unsigned int NPY<T>::getUSum(unsigned int j, unsigned int k)
+unsigned int NPY<T>::getUSum(unsigned int j, unsigned int k) const 
 {
     unsigned int ni = m_ni ;
     unsigned int nj = m_nj ;
@@ -1573,9 +1573,9 @@ unsigned int NPY<T>::getUSum(unsigned int j, unsigned int k)
 
     unsigned int usum = 0 ; 
     uif_t uif ; 
-    for(unsigned int i=0 ; i<ni ; i++ )
+    for(unsigned i=0 ; i<ni ; i++ )
     {
-        unsigned int index = i*nj*nk + j*nk + k ;
+        unsigned index = i*nj*nk + j*nk + k ;
         uif.f = m_data[index] ;
         usum += uif.u ;
     }

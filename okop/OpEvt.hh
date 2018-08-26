@@ -10,7 +10,7 @@ Light weight "API" event
 Canonical m_opevt instance is resident of OpMgr and 
 is instanciated when OpMgr::addGenstep is called.
 
-HMM : CFG4.CCollector does all that this does and more (but not too much more)
+HMM : CFG4.CGenstepCollector does all that this does and more (but not too much more)
 
 */
 

@@ -4,6 +4,13 @@
 
 #include "Ctx.hh"
 
+#ifdef WITH_OPTICKS
+#include "G4Opticks.hh"
+#include "CTrackInfo.hh"
+#include "PLOG.hh"
+#endif
+
+
 #include "G4Event.hh"
 #include "G4Track.hh"
 #include "G4Step.hh"
@@ -13,7 +20,6 @@
 #include "G4Step.hh"
 #include "G4StepPoint.hh"
 
-#include "PLOG.hh"
 
 
 void Ctx::setEvent(const G4Event* event)
@@ -25,20 +31,16 @@ void Ctx::setEvent(const G4Event* event)
 
     _track = NULL ; 
     _track_id = -1 ; 
-
-    LOG(info) << " _event_id " << _event_id ; 
+    _record_id = -1 ; 
 }
 
 void Ctx::setTrack(const G4Track* track)
 {
-    //LOG(error) << "." ; 
-
     _track = track ; 
     _track_id = track->GetTrackID() - 1 ;
 
     _step = NULL ; 
     _step_id = -1 ;  
-
 
     const G4DynamicParticle* dp = track->GetDynamicParticle() ; 
     assert( dp ) ;  
@@ -52,17 +54,39 @@ void Ctx::setTrack(const G4Track* track)
     _track_pdg_encoding = particle->GetPDGEncoding() ;
 
     if(_track_optical)
-    {
-        const_cast<G4Track*>(track)->UseGivenVelocity(true);
-    }
-
-/*
-    LOG(info) << " _track_id " << _track_id 
-              << " _track_pdg_encoding " << _track_pdg_encoding
-              << " _track_particle_name " << _track_particle_name
-              ;
-*/
+        setTrackOptical(track);  
 }
+
+void Ctx::postTrack( const G4Track* track)
+{
+    if(_track_optical)
+        postTrackOptical(track);  
+}
+
+
+void Ctx::setTrackOptical(const G4Track* track)
+{
+    const_cast<G4Track*>(track)->UseGivenVelocity(true);
+
+#ifdef WITH_OPTICKS
+    CTrackInfo* info=dynamic_cast<CTrackInfo*>(track->GetUserInformation()); 
+    assert(info) ; 
+    _record_id = info->photon_record_id ;  
+    G4Opticks::GetOpticks()->setAlignIndex(_record_id);
+#endif
+}
+
+void Ctx::postTrackOptical(const G4Track* track)
+{
+#ifdef WITH_OPTICKS
+    CTrackInfo* info=dynamic_cast<CTrackInfo*>(track->GetUserInformation()); 
+    assert(info) ; 
+    assert( _record_id == info->photon_record_id ) ;  
+    G4Opticks::GetOpticks()->setAlignIndex(-1);
+#endif
+}
+
+
 
 void Ctx::setStep(const G4Step* step)
 {  

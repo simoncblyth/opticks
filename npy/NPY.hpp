@@ -251,7 +251,7 @@ class NPY_API NPY : public NPYBase {
     public:
        // type shifting get/set using union trick
 
-       unsigned int getUSum(unsigned int j, unsigned int k);
+       unsigned getUSum(unsigned int j, unsigned int k) const ;
 
        T            getValue(unsigned int i, unsigned int j, unsigned int k, unsigned int l=0) const ;
        float        getFloat(unsigned int i, unsigned int j, unsigned int k, unsigned int l=0) const ;

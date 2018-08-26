@@ -43,7 +43,7 @@
 #include "CMaterialLib.hh"
 #include "CDetector.hh"
 #include "CGenerator.hh"
-#include "CCollector.hh"
+#include "CGenstepCollector.hh"
 #include "CPrimaryCollector.hh"
 #include "CRecorder.hh"
 #include "CStepRec.hh"
@@ -206,7 +206,7 @@ void CG4::postinitialize()
     NLookup* lookup = m_hub->getLookup();
     lookup->close() ;  // hmm what about B (from GBndLiB)  
 
-    m_collector = new CCollector(lookup) ; 
+    m_collector = new CGenstepCollector(lookup) ; 
 
     if(m_ok->isG4Snap()) snap() ;
 

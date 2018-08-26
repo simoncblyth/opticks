@@ -27,7 +27,7 @@ set(TEST_SOURCES
     G4UniformRandTest.cc
     G4BoxTest.cc
     G4ThreeVectorTest.cc
-    CCollectorTest.cc
+    CGenstepCollectorTest.cc
     CInterpolationTest.cc
     OpRayleighTest.cc 
     CGROUPVELTest.cc 

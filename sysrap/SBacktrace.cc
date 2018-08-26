@@ -44,17 +44,14 @@ void SBacktrace::Dump(std::ostream& out)
    if(addrlen == 0) return;
  
    char** symbollist = backtrace_symbols( addrlist, addrlen );
-   for ( unsigned i = 0 ; i < addrlen; i++ )
-   {
-      // fprintf( out, "%s : %p \n", symbollist[i], addrlist[i] );
+
+   bool raw = false ; 
+   if(raw) for ( unsigned i = 0 ; i < addrlen; i++ )
        out << symbollist[i] 
            << " : "
            << addrlist[i]
            << std::endl 
            ; 
-   }
-
-   //fprintf(out, "SFrames..\n" ); 
 
    out << "SFrames..\n" ; 
 

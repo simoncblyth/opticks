@@ -32,13 +32,14 @@ TODO: incorporate npy.G4StepNPY ?
 
 class OKCORE_API OpticksGenstep {
     public:  
-        static void Dump(NPY<float>* gs, unsigned modulo, unsigned margin, const char* msg) ;
+        static void Dump(const NPY<float>* gs, unsigned modulo, unsigned margin, const char* msg) ;
     public:  
-        OpticksGenstep(NPY<float>* gs); 
+        OpticksGenstep(const NPY<float>* gs); 
     private:
         void init();   
     public:  
-        NPY<float>*           getGensteps() const ;
+        const NPY<float>*     getGensteps() const ;
+        unsigned              getContentVersion() const ;
         unsigned              getNumGensteps() const ;
         unsigned              getNumPhotons() const ;
         float                 getAvgPhotonsPerGenstep() const ;
@@ -61,11 +62,7 @@ class OKCORE_API OpticksGenstep {
         std::string           desc() const ;
         void                  dump(unsigned modulo, unsigned margin, const char* msg="OpticksGenstep::dump") const ;
     private:
-        NPY<float>*           m_gensteps ; 
-        int                   m_gensteps_content_version ; 
-        unsigned              m_num_gensteps ; 
-        unsigned              m_num_photons ; 
-        float                 m_avg_photons_per_genstep ; 
+        const NPY<float>*     m_gs ; 
 
 };
 

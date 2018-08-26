@@ -22,8 +22,10 @@ set(SOURCES
     DsG4OpRayleigh.cc
     DsG4OpBoundaryProcess.cc
     DsG4Cerenkov.cc
+
     DsPhotonTrackInfo.cc
     DsG4CompositeTrackInfo.cc
+    CTrackInfo.cc
 
     CCerenkov.cc
     G4Cerenkov1042.cc
@@ -112,7 +114,7 @@ set(SOURCES
     CG4.cc
     CRayTracer.cc
     CVis.cc
-    CCollector.cc
+    CGenstepCollector.cc
 
     CGenstepSource.cc
     CPrimarySource.cc
@@ -151,8 +153,10 @@ set(HEADERS
     DsG4OpBoundaryProcess.h
     DsG4OpBoundaryProcessStatus.h
     DsG4Cerenkov.h
+
     DsPhotonTrackInfo.h
     DsG4CompositeTrackInfo.h
+    CTrackInfo.hh
 
     CCerenkov.hh
     G4Cerenkov1042.hh
@@ -228,7 +232,7 @@ set(HEADERS
     CProcessSwitches.hh
     CG4Ctx.hh
     CG4.hh
-    CCollector.hh
+    CGenstepCollector.hh
 
     CGenstepSource.hh
     CPrimarySource.hh

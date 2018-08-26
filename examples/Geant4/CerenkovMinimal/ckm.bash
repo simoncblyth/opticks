@@ -83,3 +83,10 @@ ckm-okg4-load()
 }
 
 
+
+ckm-addr2line()
+{
+    local addr=${1:-0x10002160e}
+    PATH=/usr/bin lldb $(which CerenkovMinimal) -o "source list -a $addr"  --batch
+}
+

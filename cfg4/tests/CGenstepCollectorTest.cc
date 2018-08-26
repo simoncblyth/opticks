@@ -8,7 +8,7 @@
 #include "Opticks.hh"
 #include "OpticksHub.hh"
 
-#include "CCollector.hh"
+#include "CGenstepCollector.hh"
 
 #include "OPTICKS_LOG.hh"
 
@@ -45,7 +45,7 @@ int main(int argc, char** argv)
     NLookup* lookup = hub.getLookup(); 
     lookup->close(); 
 
-    CCollector cc(lookup);
+    CGenstepCollector cc(lookup);
     NPY<float>* gs = cc.getGensteps(); 
 
 
@@ -53,9 +53,9 @@ int main(int argc, char** argv)
     {
         unsigned num_steps = mock_num_steps(e); 
 
-        for(unsigned i=0 ; i < num_steps ; i++) CCollector::Instance()->collectMachineryStep(e*1000+i);
+        for(unsigned i=0 ; i < num_steps ; i++) CGenstepCollector::Instance()->collectMachineryStep(e*1000+i);
 
-        const char* path = SSys::fmt("$TMP/CCollectorTest%u.npy",e) ;
+        const char* path = SSys::fmt("$TMP/CGenstepCollectorTest%u.npy",e) ;
         gs->save(path);
         gs->reset();
 
@@ -76,7 +76,7 @@ int main(int argc, char** argv)
 
 In [1]: import sys, os, numpy as np ; np.set_printoptions(suppress=True, precision=3)
 
-In [2]: a=np.load(os.path.expandvars("$TMP/CCollectorTest_vm.npy"))
+In [2]: a=np.load(os.path.expandvars("$TMP/CGenstepCollectorTest_vm.npy"))
 
 In [3]: a.shape
 Out[3]: (100,)

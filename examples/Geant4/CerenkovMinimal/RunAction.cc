@@ -29,6 +29,7 @@ void RunAction::EndOfRunAction(const G4Run*)
     LOG(info) << "." ;
 #ifdef WITH_OPTICKS
     LOG(info) << G4Opticks::GetOpticks()->desc(); 
+    G4Opticks::Finalize();
 #endif
 }
 

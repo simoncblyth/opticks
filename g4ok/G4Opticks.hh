@@ -17,7 +17,7 @@ class GBndLib ;
 
 class CTraverser ; 
 class CMaterialTable ; 
-class CCollector ; 
+class CGenstepCollector ; 
 class CPrimaryCollector ; 
 class CPhotonCollector ; 
 class C4PhotonCollector ; 
@@ -62,6 +62,7 @@ class G4OK_API G4Opticks
         static const char* fEmbeddedCommandLine ; 
     public:
         static G4Opticks* GetOpticks();
+        static void Finalize();
     public:
         G4Opticks();
         virtual ~G4Opticks();
@@ -77,6 +78,7 @@ class G4OK_API G4Opticks
         GGeo* translateGeometry( const G4VPhysicalVolume* top );
         void setupMaterialLookup();
     public:
+        unsigned getNumPhotons() const ;
         void collectCerenkovStep(
             G4int                id, 
             G4int                parentId,
@@ -140,7 +142,7 @@ class G4OK_API G4Opticks
         Opticks*                   m_ok ;
         CTraverser*                m_traverser ; 
         CMaterialTable*            m_mtab ; 
-        CCollector*                m_collector ; 
+        CGenstepCollector*                m_collector ; 
         CPrimaryCollector*         m_primary_collector ; 
         NLookup*                   m_lookup ; 
         OpMgr*                     m_opmgr;

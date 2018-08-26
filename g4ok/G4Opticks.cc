@@ -8,7 +8,7 @@
 
 #include "CTraverser.hh"
 #include "CMaterialTable.hh"
-#include "CCollector.hh"
+#include "CGenstepCollector.hh"
 #include "CPrimaryCollector.hh"
 #include "CPhotonCollector.hh"
 #include "C4PhotonCollector.hh"
@@ -63,12 +63,15 @@ G4Opticks* G4Opticks::GetOpticks()
     return fOpticks ;
 }
 
+void G4Opticks::Finalize()
+{
+    delete fOpticks ; 
+    fOpticks = NULL ;
+}
+
 G4Opticks::~G4Opticks()
 {
-    if (fOpticks)
-    {
-        delete fOpticks ; fOpticks = NULL ;
-    }
+    CAlignEngine::Finalize() ;
 }
 
 G4Opticks::G4Opticks()
@@ -113,7 +116,7 @@ void G4Opticks::setGeometry(const G4VPhysicalVolume* world)
     m_mtab = new CMaterialTable(prefix); 
 
     setupMaterialLookup();
-    m_collector = new CCollector(m_lookup);   // <-- CG4 holds an instance too : and they are singletons, so should not use G4Opticks and CG4 together
+    m_collector = new CGenstepCollector(m_lookup);   // <-- CG4 holds an instance too : and they are singletons, so should not use G4Opticks and CG4 together
     m_primary_collector = new CPrimaryCollector ; 
     m_g4hit_collector = new CPhotonCollector ; 
     m_g4photon_collector = new C4PhotonCollector ; 
@@ -163,6 +166,11 @@ void G4Opticks::setupMaterialLookup()
     m_lookup->close(); 
 }
 
+
+unsigned G4Opticks::getNumPhotons() const 
+{
+    return m_collector->getNumPhotons()  ; 
+}
 
 void G4Opticks::setAlignIndex(int align_idx) const 
 {
@@ -256,6 +264,8 @@ void G4Opticks::collectSecondaryPhotons(const G4VParticleChange* pc)
     m_g4photon_collector->collectSecondaryPhotons( pc, m_genstep_idx );
     m_genstep_idx += 1 ; 
 }
+
+
 
 
 void G4Opticks::collectCerenkovStep

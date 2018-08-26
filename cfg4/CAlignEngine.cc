@@ -16,6 +16,13 @@ bool CAlignEngine::Initialize(const char* simstreampath ) // static
     if(INSTANCE == NULL ) INSTANCE = new CAlignEngine(simstreampath) ; 
     return INSTANCE->isReady(); 
 }
+
+void CAlignEngine::Finalize() // static
+{
+    delete INSTANCE ;  
+}
+
+
 void CAlignEngine::SetSequenceIndex(int seq_index) // static
 {
     if(INSTANCE == NULL ) INSTANCE = new CAlignEngine(NULL) ; 
@@ -29,6 +36,15 @@ const char* CAlignEngine::InitSimLog( const char* ssdir) // static
     return strdup(path.c_str()); 
 }
 
+CAlignEngine::~CAlignEngine()
+{
+    if(!m_sslogpath) return ; 
+    
+    std::string path = BFile::ChangeExt( m_sslogpath, ".npy" ); 
+    LOG(info) << " saving cursors to " << path ; 
+    m_cur->save(path.c_str()); 
+}
+
 
 CAlignEngine::CAlignEngine(const char* ssdir)
     :
@@ -40,6 +56,7 @@ CAlignEngine::CAlignEngine(const char* ssdir)
     m_cur(NPY<int>::make(m_seq_ni)),
     m_cur_values(m_cur->fill(0)),
     m_seq_index(-1),
+    m_recycle(true),
     m_default(CLHEP::HepRandom::getTheEngine()),
     m_sslogpath(InitSimLog(ssdir)),
     m_backtrace(true),
@@ -79,9 +96,11 @@ std::string CAlignEngine::desc() const
        << " cur " << ( m_cur ? m_cur->getShapeString() : "-" )
        << " seq_path " << ( m_seq_path ? m_seq_path : "-" )
        << " simstream logpath " << ( m_sslogpath ? m_sslogpath : "-" )
+       << " recycle_idx " << m_recycle_idx.size()
        ;
     return ss.str(); 
 }
+
 
 void CAlignEngine::setSequenceIndex(int seq_index)
 {
@@ -139,7 +158,35 @@ double CAlignEngine::flat()
 
     *(m_cur_values + m_seq_index) += 1 ;   
 
-    assert( cursor < m_seq_nv ) ; 
+
+   
+    if( m_recycle == false )
+    {
+        assert( cursor < m_seq_nv ) ; 
+    }
+    else
+    {
+        // note that this does not change the value of the cursor 
+        // in the m_cur buffer : it just cycles the usage if it 
+
+        if(cursor >= m_seq_nv ) 
+        {
+            unsigned n0 = m_recycle_idx.size(); 
+            m_recycle_idx.insert(m_seq_index); 
+            unsigned n1 = m_recycle_idx.size(); 
+
+            if( n1 > n0) 
+            LOG(error) << " recycling RNG : not enough pre-cooked :" 
+                       << " seq_index " << m_seq_index 
+                       << " seq_nv " << m_seq_nv
+                       << " cursor " << cursor
+                       << " recycle_idx " << m_recycle_idx.size()
+                       ; 
+ 
+            cursor = cursor % m_seq_nv ;  
+        }
+    }
+
 
     int idx = m_seq_index*m_seq_nv + cursor ; 
 

@@ -69,7 +69,7 @@ Event
 CRandomEngine
     m_engine instance resident of CG4, provides control of random number stream for aligned running 
    
-CCollector
+CGenstepCollector
     collects gensteps and primaries
 
 CGenerator 

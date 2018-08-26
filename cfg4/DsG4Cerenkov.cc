@@ -105,7 +105,7 @@
 #include "DsG4CompositeTrackInfo.h"
 using namespace std;
 
-#include "CCollector.hh"
+#include "CGenstepCollector.hh"
 #include "PLOG.hh"
 
 using CLHEP::twopi ; 
@@ -323,7 +323,7 @@ DsG4Cerenkov::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
         const G4ParticleDefinition* definition = aParticle->GetDefinition();
         G4ThreeVector deltaPosition = aStep.GetDeltaPosition();
         G4int materialIndex = aMaterial->GetIndex();
-        CCollector::Instance()->collectCerenkovStep(
+        CGenstepCollector::Instance()->collectCerenkovStep(
 
                0,                  // 0     id:zero means use cerenkov step count 
                aTrack.GetTrackID(),

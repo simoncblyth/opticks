@@ -13,43 +13,64 @@
 
 #include "PLOG.hh"
 
-OpticksGenstep::OpticksGenstep(NPY<float>* gs) 
+OpticksGenstep::OpticksGenstep(const NPY<float>* gs) 
     :  
-    m_gensteps(gs),
-    m_gensteps_content_version(gs ? gs->getArrayContentVersion() : -1 ), 
-    m_num_gensteps(gs ? gs->getNumItems() : 0),
-    m_num_photons(gs ? gs->getUSum(0,3) : 0),
-    m_avg_photons_per_genstep( m_num_gensteps > 0 ? float(m_num_photons)/float(m_num_gensteps) : 0 )
+    m_gs(gs)
 {
     init();
 }
 
 void OpticksGenstep::init()
 {
-    assert( m_gensteps->hasShape(-1,6,4) );
+    assert( m_gs->hasShape(-1,6,4) );
 }
 
-unsigned OpticksGenstep::getNumGensteps() const { return m_num_gensteps ; }
-unsigned OpticksGenstep::getNumPhotons() const { return m_num_photons ; }
-float OpticksGenstep::getAvgPhotonsPerGenstep() const { return m_avg_photons_per_genstep ; }
+const NPY<float>* OpticksGenstep::getGensteps() const { return m_gs ; }
+
+unsigned OpticksGenstep::getContentVersion() const { return m_gs ? m_gs->getArrayContentVersion() : -1 ; }
+unsigned OpticksGenstep::getNumGensteps() const { return m_gs ? m_gs->getNumItems() : 0 ; }
+unsigned OpticksGenstep::getNumPhotons() const { return m_gs ? m_gs->getUSum(0,3) : 0  ; }
+
+float OpticksGenstep::getAvgPhotonsPerGenstep() const { 
+
+   float num_photons = getNumPhotons();
+   float num_gensteps = getNumGensteps() ; 
+   return num_gensteps > 0 ? num_photons/num_gensteps : 0 ; 
+}
+
+std::string OpticksGenstep::desc() const 
+{
+    std::stringstream ss ;
+    ss << "OpticksGenstep " 
+       << ( m_gs ? m_gs->getShapeString() : "-" ) 
+       << " content_version " << getContentVersion()
+       << " num_gensteps " << getNumGensteps()
+       << " num_photons " << getNumPhotons()
+       << " avg_photons_per_genstep " << getAvgPhotonsPerGenstep()
+       ; 
+    return ss.str();
+}
 
 
 unsigned OpticksGenstep::getGencode(unsigned idx) const 
 {
-    int gs00 = m_gensteps->getInt(idx,0u,0u) ;
+    int gs00 = m_gs->getInt(idx,0u,0u) ;
 
     int gencode = -1 ; 
-    if( m_gensteps_content_version == 0 )  // old style unversioned gensteps , this is fallback when no metadata 
+
+    unsigned content_version = getContentVersion() ; 
+
+    if( content_version == 0 )  // old style unversioned gensteps , this is fallback when no metadata 
     {
         gencode = gs00 < 0 ? CERENKOV : SCINTILLATION ;  
     }
-    else if( m_gensteps_content_version == 1042 )
+    else if( content_version >= 1042 )
     {
         gencode = gs00 ; 
     }
     else
     { 
-        LOG(fatal) << " unexpected gensteps_content_version " << m_gensteps_content_version ; 
+        LOG(fatal) << " unexpected gensteps content_version " << content_version ; 
         assert(0); 
     }
 
@@ -67,46 +88,32 @@ unsigned OpticksGenstep::getGencode(unsigned idx) const
 
 
 
-NPY<float>* OpticksGenstep::getGensteps() const { return m_gensteps ; }
 
 glm::ivec4 OpticksGenstep::getHdr(unsigned i) const 
 {
-    glm::ivec4 hdr = m_gensteps->getQuadI(i,0);
+    glm::ivec4 hdr = m_gs->getQuadI(i,0);
     return hdr ; 
 }
 glm::vec4 OpticksGenstep::getPositionTime(unsigned i) const 
 {
-    glm::vec4 post = m_gensteps->getQuad(i,1);
+    glm::vec4 post = m_gs->getQuad(i,1);
     return post ; 
 }
 glm::vec4 OpticksGenstep::getDeltaPositionStepLength(unsigned i) const 
 {
-    glm::vec4 dpsl = m_gensteps->getQuad(i,2);
+    glm::vec4 dpsl = m_gs->getQuad(i,2);
     return dpsl ; 
 }
 
 
-glm::vec4 OpticksGenstep::getQ3(unsigned i) const  {  return m_gensteps->getQuad(i,3); }
-glm::vec4 OpticksGenstep::getQ4(unsigned i) const  {  return m_gensteps->getQuad(i,4); }
-glm::vec4 OpticksGenstep::getQ5(unsigned i) const  {  return m_gensteps->getQuad(i,5); }
+glm::vec4 OpticksGenstep::getQ3(unsigned i) const  {  return m_gs->getQuad(i,3); }
+glm::vec4 OpticksGenstep::getQ4(unsigned i) const  {  return m_gs->getQuad(i,4); }
+glm::vec4 OpticksGenstep::getQ5(unsigned i) const  {  return m_gs->getQuad(i,5); }
 
-glm::ivec4 OpticksGenstep::getI3(unsigned i) const  {  return m_gensteps->getQuadI(i,3); }
-glm::ivec4 OpticksGenstep::getI4(unsigned i) const  {  return m_gensteps->getQuadI(i,4); }
-glm::ivec4 OpticksGenstep::getI5(unsigned i) const  {  return m_gensteps->getQuadI(i,5); }
+glm::ivec4 OpticksGenstep::getI3(unsigned i) const  {  return m_gs->getQuadI(i,3); }
+glm::ivec4 OpticksGenstep::getI4(unsigned i) const  {  return m_gs->getQuadI(i,4); }
+glm::ivec4 OpticksGenstep::getI5(unsigned i) const  {  return m_gs->getQuadI(i,5); }
 
-
-std::string OpticksGenstep::desc() const 
-{
-    std::stringstream ss ;
-    ss << "OpticksGenstep " 
-       << ( m_gensteps ? m_gensteps->getShapeString() : "-" ) 
-       << " gensteps_content_version " << m_gensteps_content_version
-       << " num_gensteps " << m_num_gensteps
-       << " num_photons " << m_num_photons
-       << " avg_photons_per_genstep " << m_avg_photons_per_genstep
-       ; 
-    return ss.str();
-}
 
 std::string OpticksGenstep::desc(unsigned i) const 
 {
@@ -126,7 +133,7 @@ std::string OpticksGenstep::desc(unsigned i) const
 }
 
 
-void OpticksGenstep::Dump(NPY<float>* gs_, unsigned modulo, unsigned margin, const char* msg) 
+void OpticksGenstep::Dump(const NPY<float>* gs_, unsigned modulo, unsigned margin, const char* msg) 
 {
     LOG(info) << msg 
               << " modulo " << modulo

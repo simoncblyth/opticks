@@ -71,6 +71,7 @@
 #ifdef WITH_OPTICKS
 #include "G4Opticks.hh"
 #include "PLOG.hh"
+#include "CTrackInfo.hh"    // naughty direct use of CFG4 
 #endif
 
 
@@ -294,11 +295,16 @@ L4Cerenkov::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
 
 
 #ifdef WITH_OPTICKS
+    unsigned opticks_photon_offset = 0 ; 
     {
         const G4ParticleDefinition* definition = aParticle->GetDefinition();
         G4ThreeVector deltaPosition = aStep.GetDeltaPosition();
         G4int materialIndex = aMaterial->GetIndex();
         LOG(verbose) << dp ; 
+
+        opticks_photon_offset = G4Opticks::GetOpticks()->getNumPhotons(); 
+        // total photons from all gensteps collected before this one
+        // within this OpticksEvent (potentially crossing multiple G4Event) 
 
         G4Opticks::GetOpticks()->collectCerenkovStep(
                0,                  // 0     id:zero means use cerenkov step count 
@@ -334,19 +340,12 @@ L4Cerenkov::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
     }    
 #endif
 
-//#ifndef WITH_OPTICKS
 	for (G4int i = 0; i < NumPhotons; i++) {
 
 		// Determine photon energy
-#ifdef WITH_OPTICKS_ALIGN
-        //
-        // Hmm need to form a global record_index for the photon otherwise
-        // the next genstep will continue some of the streams from the previous gensteps.
-        //
-        // Need a genstep index offset to add to this gensteps photon index, which is the cumulative total 
-        // of all "gensteps" (ie photon producing PostStepDoIt) that came before.  
-        // 
-        G4Opticks::GetOpticks()->setAlignIndex(i); 
+#ifdef WITH_OPTICKS
+        unsigned record_id = opticks_photon_offset+i ; 
+        G4Opticks::GetOpticks()->setAlignIndex(record_id); 
 #endif
 
 		G4double rand;
@@ -456,13 +455,13 @@ L4Cerenkov::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
 		aParticleChange.AddSecondary(aSecondaryTrack);
 
 
-#ifdef WITH_OPTICKS_ALIGN
+#ifdef WITH_OPTICKS
+        aSecondaryTrack->SetUserInformation(new CTrackInfo( record_id ) );
         G4Opticks::GetOpticks()->setAlignIndex(-1); 
 #endif
 
 
 	}
-//#endif
 
 	if (verboseLevel>0) {
 	   G4cout <<"\n Exiting from L4Cerenkov::DoIt -- NumberOfSecondaries = "

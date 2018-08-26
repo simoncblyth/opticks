@@ -74,7 +74,7 @@
 #include "C4Cerenkov1042.hh"
 
 #ifdef WITH_OPTICKS_GENSTEP_COLLECTION
-#include "CCollector.hh"
+#include "CGenstepCollector.hh"
 #endif
 
 
@@ -278,7 +278,7 @@ C4Cerenkov1042::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
         G4ThreeVector deltaPosition = aStep.GetDeltaPosition();
         G4int materialIndex = aMaterial->GetIndex();
 
-        CCollector::Instance()->collectCerenkovStep(
+        CGenstepCollector::Instance()->collectCerenkovStep(
                0,                  // 0     id:zero means use cerenkov step count 
                aTrack.GetTrackID(),
                materialIndex, 
