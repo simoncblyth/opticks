@@ -31,21 +31,23 @@ so can switch between streams, resuming as appropriate.
 
 **/
 
+#include <ostream>
 #include "CLHEP/Random/RandomEngine.h"
 
 class CFG4_API CAlignEngine : public CLHEP::HepRandomEngine 
 {
         friend struct CAlignEngineTest ; 
     public:
+        static void Initialize(const char* simstreampath); 
         static void SetSequenceIndex(int record_id); 
         double flat() ;  
     private:
         static CAlignEngine* INSTANCE ; 
-        CAlignEngine();
+        CAlignEngine(const char* simstreampath);
         void setSequenceIndex(int record_id); 
         std::string desc() const ; 
     private:
-        const char*              m_path ; 
+        const char*              m_seq_path ; 
         NPY<double>*             m_seq ; 
         double*                  m_seq_values ; 
         int                      m_seq_ni ; 
@@ -54,6 +56,9 @@ class CFG4_API CAlignEngine : public CLHEP::HepRandomEngine
         int*                     m_cur_values ; 
         int                      m_seq_index ; 
         CLHEP::HepRandomEngine*  m_default ; 
+        const char*              m_simstreampath ; 
+        bool                     m_backtrace ; 
+        std::ostream*            m_out ; 
     private:
         bool isTheEngine() const ; 
         void enable() const ; 

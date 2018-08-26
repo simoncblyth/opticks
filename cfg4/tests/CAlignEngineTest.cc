@@ -21,7 +21,7 @@ struct CAlignEngineTest
 
 CAlignEngineTest::CAlignEngineTest()
 {
-    CAlignEngine::SetSequenceIndex(-1); 
+    CAlignEngine::Initialize("$TMP/cfg4/CAlignEngineTest/simstream.txt"); 
 
     const CAlignEngine* ae = CAlignEngine::INSTANCE ; 
     seq = ae->m_seq ;  
@@ -38,8 +38,10 @@ CAlignEngineTest::CAlignEngineTest()
         << " nv " << nv
         ;
 
-    //check( 0, 16, 0, 10, true ); 
-    check(  0,  nv, 0, 10, true );     
+    check( 0, 16, 0, 10, true ); 
+    //check(  0,  nv, 0, 10, true );     
+
+    check( 0, 16, ni-10, ni, true ); 
 
     
 }
@@ -56,6 +58,14 @@ void CAlignEngineTest::check( int v0 , int v1, int i0, int i1, bool dump )
 
     if(dump)
     {
+        std::cout 
+            << " v0 " << v0 
+            << " v1 " << v1
+            << " i0 " << i0 
+            << " i1 " << i1
+            << std::endl 
+            ;
+
         std::cout << std::setw(10) << "" << "   " ; 
         for(int i=i0 ; i < i1 ; i++) std::cout << " " <<  std::setw(10) << i ; 
         std::cout << std::endl ; 

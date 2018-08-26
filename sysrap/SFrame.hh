@@ -1,5 +1,6 @@
 #pragma once
 #include "SYSRAP_API_EXPORT.hh"
+#include <ostream>
 
 struct SYSRAP_API SFrame
 {
@@ -9,6 +10,7 @@ struct SYSRAP_API SFrame
     void parse();
     char* demangle(); // fails for non C++ symbols
     void dump();
+    void dump(std::ostream& out);
 
     char* line ; 
     char* name ; 

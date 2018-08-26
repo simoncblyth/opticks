@@ -2,32 +2,55 @@
 #include <cassert>
 #include "Randomize.hh"
 
+#include "BFile.hh"
 #include "PLOG.hh"
 #include "NPY.hpp"
+#include "SBacktrace.hh"
 #include "CAlignEngine.hh"
 
 CAlignEngine* CAlignEngine::INSTANCE = NULL ; 
 
+void CAlignEngine::Initialize(const char* simstreampath ) // static
+{
+    if(INSTANCE == NULL ) INSTANCE = new CAlignEngine(simstreampath) ; 
+}
 void CAlignEngine::SetSequenceIndex(int seq_index) // static
 {
-    if(INSTANCE == NULL ) INSTANCE = new CAlignEngine ; 
+    if(INSTANCE == NULL ) INSTANCE = new CAlignEngine(NULL) ; 
     INSTANCE->setSequenceIndex(seq_index); 
 }
 
-CAlignEngine::CAlignEngine()
+CAlignEngine::CAlignEngine(const char* simstreampath)
     :
-    m_path("$TMP/TRngBufTest.npy"),
-    m_seq(NPY<double>::load(m_path)),
+    m_seq_path("$TMP/TRngBufTest.npy"),
+    m_seq(NPY<double>::load(m_seq_path)),
     m_seq_values(m_seq ? m_seq->getValues() : NULL),
     m_seq_ni(m_seq ? m_seq->getShape(0) : 0 ),
     m_seq_nv(m_seq ? m_seq->getNumValues(1) : 0 ),  // itemvalues
     m_cur(NPY<int>::make(m_seq_ni)),
     m_cur_values(m_cur->fill(0)),
     m_seq_index(-1),
-    m_default(CLHEP::HepRandom::getTheEngine())  
+    m_default(CLHEP::HepRandom::getTheEngine()),
+    m_simstreampath(simstreampath ? strdup(simstreampath) : NULL),
+    m_backtrace(true),
+    m_out(NULL)
 {
     assert( m_default ); 
     LOG(info) << desc(); 
+
+    if(!m_backtrace) return ; 
+
+    if(m_simstreampath) 
+    { 
+        std::string path = BFile::preparePath( m_simstreampath ); 
+        m_out = new std::ofstream(path.c_str()) ;
+        LOG(info) << " simstreampath " << path ; 
+    }
+    else
+    {
+        m_out = new std::ostream(std::cout.rdbuf());
+    }
+    (*m_out) << desc() << std::endl ;  
 }
 
 std::string CAlignEngine::desc() const 
@@ -39,6 +62,8 @@ std::string CAlignEngine::desc() const
        << " seq_ni " << m_seq_ni
        << " seq_nv " << m_seq_nv
        << " cur " << ( m_cur ? m_cur->getShapeString() : "-" )
+       << " seq_path " << ( m_seq_path ? m_seq_path : "-" )
+       << " simstreampath " << ( m_simstreampath ? m_simstreampath : "-" )
        ;
     return ss.str(); 
 }
@@ -103,7 +128,31 @@ double CAlignEngine::flat()
 
     int idx = m_seq_index*m_seq_nv + cursor ; 
 
-    return m_seq_values[idx] ; 
+    double u = m_seq_values[idx] ; 
+
+
+    if( m_backtrace )
+    {
+        bool first = cursor == 0 && m_seq_index == 0 ;
+
+        if(first) SBacktrace::Dump(*m_out);  
+
+        const char* caller = SBacktrace::CallSite( "::flat" ) ;
+
+        (*m_out) 
+            << "(" 
+            << std::setw(6) << m_seq_index 
+            << ":"
+            << std::setw(4) << cursor  
+            << ") "
+            << std::setw(10) << std::fixed << u
+            << " : "
+            << caller
+            << std::endl 
+            ;   
+    }
+
+    return u ; 
 }
 
 std::string CAlignEngine::name() const 

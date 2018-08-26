@@ -20,6 +20,14 @@ SFrame::~SFrame()
     free(func);  
 }
 
+void SFrame::dump()
+{
+    std::ostream& out = std::cout ;
+    dump(out);    
+}
+
+
+
 #ifdef __APPLE__
 void SFrame::parse()
 {
@@ -40,23 +48,24 @@ void SFrame::parse()
     }  
 }
 
-void SFrame::dump()
+
+void SFrame::dump(std::ostream& out)
 {
      if( func )
      {
-         std::cout 
-               << std::setw(30) << std::left << line  
-               << " "
-               << std::setw(100) << std::left << func
-               << " "
-               << std::setw(10) << std::left << offset 
-               << " " 
-               << std::endl 
-               ;
+         out 
+             << std::setw(30) << std::left << line  
+             << " "
+             << std::setw(100) << std::left << func
+             << " "
+             << std::setw(10) << std::left << offset 
+             << " " 
+             << std::endl 
+             ;
      }
      else
      {
-         std::cout  << line << std::endl ; 
+         out << line << std::endl ; 
 
      }
 }
@@ -82,11 +91,11 @@ void SFrame::parse()
         func = demangle(); 
     }  
 }
-void SFrame::dump()
+void SFrame::dump(std::ostream& out)
 {
      if( func )
      {
-         std::cout 
+         out 
                << std::setw(25) << std::left << ( end_offset ? end_offset : "" )  // addr
                << " " << std::setw(10) << std::left << offset 
                << " " << std::setw(60) << line  
@@ -96,7 +105,7 @@ void SFrame::dump()
      }
      else
      {
-         std::cout  << line << std::endl ; 
+         out  << line << std::endl ; 
 
      }
 }

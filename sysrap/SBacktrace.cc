@@ -11,9 +11,12 @@ https://eli.thegreenplace.net/2015/programmatic-access-to-the-call-stack-in-c/
 
 */
 
+
 #include <cstdio>
 #include <cstdlib>
 #include <string.h>
+#include <ostream>
+#include <iostream>
 
 #include "SFrame.hh"
 #include "SBacktrace.hh"
@@ -21,25 +24,44 @@ https://eli.thegreenplace.net/2015/programmatic-access-to-the-call-stack-in-c/
 #include <execinfo.h>
 #include <errno.h>
 
-
 void SBacktrace::Dump() 
+{ 
+    std::ostream& out = std::cout ;
+    Dump(out);  
+}
+
+void SBacktrace::Dump(std::ostream& out) 
 {
    unsigned max_frames = 63 ; 
-   FILE *out = stderr ; 
    void* addrlist[max_frames+1];
    unsigned addrlen = backtrace( addrlist, sizeof(addrlist)/sizeof(void*));
-   fprintf(out, "SBacktrace::Dump addrlen %d \n", addrlen );
+
+   out << "SBacktrace::Dump"
+       << " addrlen " << addrlen 
+       << std::endl 
+       ;
+
    if(addrlen == 0) return;
  
    char** symbollist = backtrace_symbols( addrlist, addrlen );
    for ( unsigned i = 0 ; i < addrlen; i++ )
-       fprintf( out, "%s : %p \n", symbollist[i], addrlist[i] );
+   {
+      // fprintf( out, "%s : %p \n", symbollist[i], addrlist[i] );
+       out << symbollist[i] 
+           << " : "
+           << addrlist[i]
+           << std::endl 
+           ; 
+   }
 
-   fprintf(out, "SFrames..\n" ); 
+   //fprintf(out, "SFrames..\n" ); 
+
+   out << "SFrames..\n" ; 
+
    for ( unsigned i = 0 ; i < addrlen; i++ )
    {
        SFrame f(symbollist[i]) ; 
-       f.dump(); 
+       f.dump(out); 
    }
 
    free(symbollist);
