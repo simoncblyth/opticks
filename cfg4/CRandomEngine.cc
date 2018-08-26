@@ -58,7 +58,7 @@ CRandomEngine::CRandomEngine(CG4* g4)
     m_curand(NPY<double>::load(m_path)),
     m_curand_index(-1),
     m_curand_ni(m_curand ? m_curand->getShape(0) : 0 ),
-    m_curand_nv(m_curand ? m_curand->getNumValues(1) : 0 ),
+    m_curand_nv(m_curand ? m_curand->getNumValues(1) : 0 ),  // itemvalues
     m_current_record_flat_count(0),
     m_current_step_flat_count(0),
     m_jump(0),
@@ -105,6 +105,8 @@ void CRandomEngine::initCurand()
               ; 
 
     if(!m_curand) return ; 
+
+    assert( m_curand->hasShape(-1,16,16)) ; 
         
     unsigned w = 4 ; 
     if( m_curand_ni > 0 )
@@ -266,7 +268,7 @@ double CRandomEngine::_peek(int offset) const
 
 double CRandomEngine::_flat() 
 {
-    m_cursor += 1 ; 
+    m_cursor += 1 ;    // m_cursor initialized to -1, and reset there by setRandomSequence, so this does start from 0  
     assert( m_cursor >= 0 && m_cursor < int(m_sequence.size()) );
     double v = m_sequence[m_cursor];
     return v  ;    
@@ -372,19 +374,29 @@ void CRandomEngine::postStep()
 CRandomEngine::preTrack
 -------------------------
 
+Invoked from CG4::preTrack following CG4Ctx::setTrack
+
 Use of the maskIndex allows a partial run on a single 
 input photon to use the same RNG sequence as a full run 
 over many photons, buy jumping forwards to the appropriate 
 place in RNG sequence.
 
+Hmm this aint going to work for aligning generation 
+as the track aint born yet... need to set the photon
+index back in the PostStepDoIt generation loop/ 
+
+And need to retain separate cursors for the streams for 
+each photon, as the generation loop generates all photons
+each consuming a vaying number of RNG  
+and then starts propagating them.  This differs from Opticks
+which does generation and propagation in each thread sequentially.
+
 **/
 
-// invoked from CG4::preTrack following CG4Ctx::setTrack
 void CRandomEngine::preTrack()
 {
     m_jump = 0 ; 
     m_jump_count = 0 ; 
-
 
     unsigned use_index ; 
     bool align_mask = m_ok->isAlign() && m_ok->hasMask() ;

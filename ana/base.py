@@ -343,6 +343,7 @@ def opticks_args(**kwa):
     tag = kwa.get("tag", defaults["tag"])
 
     llv = kwa.get("loglevel", "info")
+    llv2 = kwa.get("log-level", "info")
     mrc = kwa.get("mrc", 101)
     doc = kwa.get("doc", None)
     tagoffset = kwa.get("tagoffset", 0)
@@ -420,6 +421,7 @@ def opticks_args(**kwa):
     parser.add_argument(     "--noplot",  dest="plot", default=plot, action="store_false", help="switch off plotting"  )
     parser.add_argument(     "--show",  default=show, action="store_true", help="dump invoking commandline "  )
     parser.add_argument(     "--loglevel", default=llv, help=" set logging level : DEBUG/INFO/WARNING/ERROR/CRITICAL. Default %(default)s." )
+    parser.add_argument(     "--log-level", default=llv2, help=" mirror ipython level option to avoid complications with splitting options. Default %(default)s." )
 
     parser.add_argument(     "--profile",  default=None, help="Unused option allowing argparser to cope with remnant ipython profile option"  )
     parser.add_argument(     "-i", dest="interactive", action="store_true", default=False, help="Unused option allowing argparser to cope with remnant ipython -i option"  )

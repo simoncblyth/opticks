@@ -124,6 +124,7 @@ set(SOURCES
 
     CRandomEngine.cc
     CRandomListener.cc
+    CAlignEngine.cc
     CMixMaxRng.cc
 
     CProcess.cc
@@ -238,6 +239,7 @@ set(HEADERS
     CEventAction.hh
 
     CRandomEngine.hh
+    CAlignEngine.hh
     CRandomListener.hh
     CMixMaxRng.hh
 

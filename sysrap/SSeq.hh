@@ -2,6 +2,12 @@
 #include "SYSRAP_API_EXPORT.hh"
 
 
+/**
+SSeq : integers as sequences of nibbles (4-bits)
+==================================================
+
+**/
+
 
 template <typename T>
 struct SYSRAP_API SSeq

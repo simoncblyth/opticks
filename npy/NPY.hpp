@@ -214,7 +214,7 @@ class NPY_API NPY : public NPYBase {
     public:
        std::vector<T>& data();
        void setData(T* data);
-       void fill(T value);
+       T* fill(T value);
        void zero();
        T* allocate();
     private:

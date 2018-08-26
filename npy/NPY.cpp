@@ -61,11 +61,15 @@ void NPY<T>::setData(T* data_)
 }
 
 template <typename T>
-void NPY<T>::fill( T value)
+T* NPY<T>::fill( T value)
 {
     allocate();
     std::fill(m_data.begin(), m_data.end(), value);
+    return m_data.data(); 
 }
+
+
+
 
 template <typename T>
 void NPY<T>::zero()

@@ -35,6 +35,7 @@ set(TEST_SOURCES
     CMakerTest.cc
     CPhotonTest.cc
     CRandomEngineTest.cc
+    CAlignEngineTest.cc
     CMixMaxRngTest.cc
     CCerenkovGeneratorTest.cc
     CGenstepSourceTest.cc
