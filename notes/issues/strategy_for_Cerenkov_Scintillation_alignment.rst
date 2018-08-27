@@ -25,12 +25,15 @@ Why was I trying to start from primaries ? Rather than gensteps ?
     but Cerenkov needs the em energy loss to do anything  
 
     * how does the Cerenkov process interface to learn of the energy loss ? 
-      Can I mock that up somehow  ? basically I need a clean environment 
-      without a lot of physics calling flat  
+      Can I mock that up somehow : DECIDED NOT TO GO THERE  ?
+
+    * basically I need a clean environment without a lot of physics calling flat  
 
 * SO : need to focus first on matching the G4 runs, start by 
   collecting G4 hits into an OpticksEvent : not with full machinery 
   need a simple way, as want to do from 1st and 2nd executable  
+
+  * NOT GOING HERE EITHER : CerenkovGenerator IS THE WAY, THE TRUTH AND THE LIGHT  
 
   * just have a collector for hits too, hmm will need to do for 
     entire collection in reverse : so do at collection level ?
@@ -69,6 +72,64 @@ What is really needed ?
 * recall gensteps are the "stack" midway thru the Cerenkov and Scintillation processes 
   so getting a hacked version of these to generate photons from loaded gensteps should
   be straightforward 
+
+
+Thoughts on alternative strategies
+-------------------------------------
+
+CAlignEngine in its initial form **brings in** external precooked RNG and
+interposes them for the photon generation and propagation. 
+
+* This will change the simulation, not only of the photons but also of all the 
+  other particles because are changing the RNG that the other particles 
+  use by not using the original ones for the photons : this means will get 
+  different numbers of gensteps 
+
+* A shadow burn on the original RNG generator would not work as 
+  the consumption numbers will usually differ : unless record the consumption numbers
+  for generation and propagation ?
+
+* the most correct way is to not interpose external RNG but rather to record the 
+  original ones, together with the gensteps ... this does not touch the original
+  simulation : and should (once debugged) provide a perfect "hacking out" 
+  of the G4 original photons 
+
+  * the problem with this is that it needs GPU development to replace curand_uniform
+    with reads from a buffer : either that or a GPU implementation of the RNG algorithm 
+    (looking at g4-cls MixMaxRng : thats far too much work)
+
+  * the bringing in of external RNG from curand avoids the GPU development, and whilst it 
+    is a little dirty in that it changes the original simulation, I dont think it does
+    so in a dangerous way : especially given that the objective is just for aligned validation 
+    of the photon generation+propagation
+ 
+* a more technical quibble is that the way CAlignEngine is setup, other RNG consumption
+  is not being backtraced : so not appearing in simstream, at least for dev it would 
+  be better to have all calls to flat instrumented : so can see that the photon "bracketing"
+  is working as intended 
+
+
+Aligning engines ? I discounted this possibility before : looking again no change 
+------------------------------------------------------------------------------------
+
+* /Developer/NVIDIA/CUDA-9.1/doc/pdf/CURAND_Library.pdf 
+
+g4-cls Randomize::
+
+     26 // Including Engines ...
+     27 
+     28 #include "CLHEP/Random/DualRand.h"
+     29 #include "CLHEP/Random/JamesRandom.h"
+     30 #include "CLHEP/Random/MixMaxRng.h"
+     31 #include "CLHEP/Random/MTwistEngine.h"
+     32 #include "CLHEP/Random/RanecuEngine.h"
+     33 #include "CLHEP/Random/RanluxEngine.h"
+     34 #include "CLHEP/Random/Ranlux64Engine.h"
+     35 #include "CLHEP/Random/RanshiEngine.h"
+     36 
+
+
+
 
 
 
@@ -137,6 +198,8 @@ DONE : CAlignEngine : Multiple Random streams, with a cursor for each
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * also added simstream logging into the idPath 
+
+
 
 
 Apply CAlignEngine to CerenkovMinimal+G4Opticks 

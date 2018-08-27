@@ -25,6 +25,8 @@ set(TEST_SOURCES
     CMPTTest.cc
 
     G4UniformRandTest.cc
+    EngineTest.cc
+
     G4BoxTest.cc
     G4ThreeVectorTest.cc
     CGenstepCollectorTest.cc

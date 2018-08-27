@@ -19,6 +19,46 @@ to work with that parser follow some rules:
 3. bullet lines to be included in the summary should be in bold
 
 
+2018 August
+-------------
+
+* AB test validating the direct geometry by comparison of geometry NPY buffers
+
+  * plethora of issues surfaces/materials/boundaries/sensors 
+  * only way to get a match is to fix problems both in the old and new approaches, 
+    even down to the forked assimp external 
+
+* start prototype "user" example project : "CerenkovMinimal" 
+
+  * with SensitiveDetector, Hit collections etc..
+  * configured against only the G4OK interface project 
+  * used for guiding development of the G4OK package, that
+    provides interface between Geant4 user code with an embedded Opticks propagator
+
+* update to Geant4 10.4.2 in preparation for aligned validation 
+
+* adopt two executable with shared geocache pattern for validation,
+  (expanding on tboolean using the new capabilities of direct translation of 
+   any geometry)
+
+  * 1st executable : anything from a simple Geant4 example to a full detector simulation package 
+    with Opticks embedded inside the Geant4 user code using the G4OK package 
+
+  * 2nd executable : operating from geocache+gensteps persisted from the 1st executable 
+
+    * fully instrumented gorilla (records all steps of all photons) OKG4Test executable, 
+      with Geant4 embedded inside Opticks 
+    * simple purely optical physics : "cleanroom" environment making 
+      it possible to attempt alignment of generation + propagation 
+
+* implemented CCerenkovGenerator + CGenstepSource : to allow 2nd executable Geant4 
+  to run from gensteps by generating photons at primary level 
+  (turning secondary photons from the 1st executable into primaries of the 2nd)
+
+* implemented CAlignEngine for simple switching between pre-cooked RNG streams 
+
+
+
 2018 July : discussions with Geant4 members, Linux port, direct translation debug
 --------------------------------------------------------------------------------------------------------------
 
@@ -27,6 +67,13 @@ to work with that parser follow some rules:
 * **debugging direct geometry translation**
 
 * port python tree balancing to C++ NTreeBalance  
+* CHEP + JUNO meetings 
+* movie making machinery 
+* port the old python opticks-nnt codegen to C++ for the direct route, see x4gen-
+  giving code generation of all solids in the geometry 
+* refactoring analytic geometry code NCSG, splitting into NCSGData 
+* NCSG level persisting 
+
 
 2018 June : direct Geant4 to Opticks geometry conversion : **simplifies usage**
 ---------------------------------------------------------------------------------
@@ -35,7 +82,10 @@ to work with that parser follow some rules:
 
 * X4/ExtG4 package for direct conversion of in memory Geant4 model into Opticks GGeo
 * YoctoGLRap YOG package for direct conversion from Geant4 into glTF 
-* direct conversions of G4VSolid into Opticks CSG nnode trees, and GMesh polygonizations
+* direct fully analytic conversions of G4VSolid into Opticks CSG nnode trees, 
+* direct conversions of G4 polgonizations (triangle approximation) into Opticks GMesh 
+* adopt integrated approach for analytic and approximate geometry, incorporating 
+  both into GGeo rather than the former separate GScene approach 
 * direct conversions of materials and surfaces
 
 2018 May : adopt modern CMake target export/import : **simplifies configuration**

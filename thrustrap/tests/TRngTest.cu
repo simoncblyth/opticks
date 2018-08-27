@@ -14,6 +14,8 @@
 #include "OPTICKS_LOG.hh"
 
 
+
+
 int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv);
@@ -43,9 +45,7 @@ int main(int argc, char** argv)
 
     ox->save(path)  ;
 
-    SSys::npdump(path, "np.float64", NULL, "suppress=True,precision=8" );
 
     cudaDeviceSynchronize();  
 }
-
 

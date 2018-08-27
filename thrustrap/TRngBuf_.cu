@@ -28,15 +28,11 @@ TRngBuf<T>::TRngBuf(unsigned ni, unsigned nj, CBufSpec spec, unsigned long long 
 }
 
 
-template <typename T>
-void TRngBuf<T>::generate(unsigned id_offset, unsigned id_0, unsigned id_1)
-{
-    m_id_offset = id_offset ;  
-    thrust::for_each( 
-          thrust::counting_iterator<unsigned>(id_0), 
-          thrust::counting_iterator<unsigned>(id_1), 
-           *this);
-}
+/**
+TRngBuf<T>::generate
+---------------------
+
+**/
 
 template <typename T>
 void TRngBuf<T>::generate()
@@ -72,7 +68,26 @@ void TRngBuf<T>::generate()
     }
 }
 
- 
+/**
+thrust::for_each "launch" covering uid from id_offset+id_0 to id_offset+id_1
+notice how the functor manages to capture the m_id_offset constant 
+together with other param like m_seed for use on the device.
+
+Suspect the repeated curand_init for every id maybe a very 
+inefficient way of doing this
+
+**/
+
+template <typename T>
+void TRngBuf<T>::generate(unsigned id_offset, unsigned id_0, unsigned id_1)
+{
+    m_id_offset = id_offset ;  
+    thrust::for_each( 
+          thrust::counting_iterator<unsigned>(id_0), 
+          thrust::counting_iterator<unsigned>(id_1), 
+           *this);
+}
+
 template <typename T>
 __device__ 
 void TRngBuf<T>::operator()(unsigned id) 
@@ -92,8 +107,6 @@ void TRngBuf<T>::operator()(unsigned id)
     }
 } 
  
-
-
 template class TRngBuf<float>;
 template class TRngBuf<double>;
 

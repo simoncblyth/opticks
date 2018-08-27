@@ -14,8 +14,8 @@ is the SD associated to LV looked for, and if present a hit is formed.
 
     g4-cls G4OpBoundaryProcess
 
-G4OpBoundaryProcess.hh fraction of DoAbsorption get `theStatus = Detection` depending
-on EFFICIENCY::
+    G4OpBoundaryProcess.hh fraction of DoAbsorption get `theStatus = Detection` depending
+    on EFFICIENCY::
 
     306 inline
     307 void G4OpBoundaryProcess::DoAbsorption()
