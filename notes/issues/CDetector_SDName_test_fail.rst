@@ -116,3 +116,18 @@ So I tried updating my geocache `op.sh -G` to see if that gets us to the same er
 
 
 
+Removing the assert moves along to another error::
+
+    2018-08-28 22:39:00.301 INFO  [3004244] [CDetector::attachSurfaces@339] [--dbgsurf] CDetector::attachSurfaces DONE 
+    2018-08-28 22:39:00.301 ERROR [3004244] [CDetector::hookupSD@127]  nlvsd 2 sd 0x7fe113e01df0 sdname SD0
+    2018-08-28 22:39:00.301 ERROR [3004244] [CDetector::hookupSD@147] SetSensitiveDetector lvn __dd__Geometry__PMT__lvHeadonPmtCathode0xc2c8d98 sdn SD_AssimpGGeo lv 0x0
+    2018-08-28 22:39:00.301 FATAL [3004244] [CDetector::hookupSD@154]  no lv __dd__Geometry__PMT__lvHeadonPmtCathode0xc2c8d98
+    Assertion failed: (lv), function hookupSD, file /Users/blyth/opticks/cfg4/CDetector.cc, line 155.
+    Abort trap: 6
+    epsilon:cfg4 blyth$ 
+
+
+The route cause of the problem, is that I have recently been working on a simple test geometry over in examples/Geant4/CerenkovMinimal
+and it seems the changes I made to CDetector are not working with the full geometry.  
+
+

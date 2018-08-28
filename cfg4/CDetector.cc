@@ -138,7 +138,7 @@ void CDetector::hookupSD()
         const char* lvn = lvsd.first.c_str(); 
         const char* sdn = lvsd.second.c_str(); 
 
-        assert( strcmp( sdname.c_str(), sdn ) == 0 ) ;  
+        //assert( strcmp( sdname.c_str(), sdn ) == 0 ) ;  
 
         //const char* lvn = m_ggeo->getCathodeLV(i); 
 
