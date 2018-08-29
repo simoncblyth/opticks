@@ -147,7 +147,7 @@ void OPropagator::prelaunch()
     STimes* prelaunch_times = evt->getPrelaunchTimes() ;
 
     OK_PROFILE("_OPropagator::prelaunch");
-    m_ocontext->launch( OContext::VALIDATE|OContext::COMPILE|OContext::PRELAUNCH,  m_entry_index ,  0, 0, prelaunch_times ); 
+    m_ocontext->launch( OContext::VALIDATE|OContext::COMPILE|OContext::PRELAUNCH,  m_entry_index ,  1, 1, prelaunch_times ); 
     OK_PROFILE("OPropagator::prelaunch");
 
     m_count += 1 ; 

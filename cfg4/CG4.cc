@@ -58,6 +58,7 @@
 #include "CRayTracer.hh"
 #include "CMaterialTable.hh"
 #include "CG4.hh"
+#include "C4FPEDetection.hh"
 
 #include "CFG4_POP.hh"
 #include "CFG4_BODY.hh"
@@ -181,6 +182,9 @@ void CG4::initialize()
 
 void CG4::postinitialize()
 {
+
+    C4FPEDetection::InvalidOperationDetection_Disable();  // see notes/issues/OKG4Test_prelaunch_FPE_causing_fail.rst
+
     m_uiManager = G4UImanager::GetUIpointer();
 
     assert(m_cfg);    

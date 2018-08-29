@@ -112,6 +112,7 @@ set(SOURCES
     CProcessSwitches.cc
     CG4Ctx.cc
     CG4.cc
+    C4FPEDetection.cc
     CRayTracer.cc
     CVis.cc
     CGenstepCollector.cc
@@ -232,6 +233,7 @@ set(HEADERS
     CProcessSwitches.hh
     CG4Ctx.hh
     CG4.hh
+    C4FPEDetection.hh
     CGenstepCollector.hh
 
     CGenstepSource.hh

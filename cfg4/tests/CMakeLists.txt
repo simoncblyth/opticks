@@ -41,6 +41,7 @@ set(TEST_SOURCES
     CMixMaxRngTest.cc
     CCerenkovGeneratorTest.cc
     CGenstepSourceTest.cc
+    C4FPEDetectionTest.cc
 
 )
 
