@@ -310,7 +310,7 @@ void GMergedMesh::countVolume( GVolume* volume, bool selected, unsigned verbosit
     }
 
     //if(m_verbosity > 1)
-    LOG(info) << "GMergedMesh::count GVolume " 
+    LOG(debug) << "GMergedMesh::count GVolume " 
               << " verbosity " << verbosity 
               << " selected " << selected
               << " num_volumes " << m_num_volumes 

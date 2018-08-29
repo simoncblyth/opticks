@@ -673,7 +673,16 @@ void AssimpGGeo::convertSensors(GGeo* gg, AssimpNode* node, unsigned int depth)
 void AssimpGGeo::convertSensorsVisit(GGeo* gg, AssimpNode* node, unsigned int depth)
 {
     unsigned int nodeIndex = node->getIndex();
-    const char* lv   = node->getName(0); 
+    const char* lv_dae   = node->getName(0); 
+    bool trimPtr = false ; 
+    const char* lv = BStr::DAEIdToG4(lv_dae, trimPtr ); 
+
+    LOG(debug) 
+        << " lv_dae " << lv_dae 
+        << " lv " << lv
+        ;
+
+
     //const char* pv   = node->getName(1); 
     unsigned int mti = node->getMaterialIndex() ;
     GMaterial* mt = gg->getMaterial(mti);
@@ -695,7 +704,8 @@ void AssimpGGeo::convertSensorsVisit(GGeo* gg, AssimpNode* node, unsigned int de
     bool name_match = strcmp(name, cathode_material_name) == 0 ;  
     bool ptr_match = mt == cathode ;   // <--- always false 
  
-    const char* sd = "SD_AssimpGGeo" ; 
+    //const char* sd = "SD_AssimpGGeo" ; 
+    const char* sd = "SD0" ; 
 
     if(sensor && name_match)
     {

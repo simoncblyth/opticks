@@ -131,3 +131,223 @@ The route cause of the problem, is that I have recently been working on a simple
 and it seems the changes I made to CDetector are not working with the full geometry.  
 
 
+
+
+Review the stack::
+
+    (lldb) bt
+    * thread #1, queue = 'com.apple.main-thread', stop reason = signal SIGABRT
+        frame #3: 0x00007fff7ad201ac libsystem_c.dylib`__assert_rtn + 320
+        frame #4: 0x00000001001d10c9 libCFG4.dylib`CDetector::hookupSD(this=0x000000010a7e3480) at CDetector.cc:155
+        frame #5: 0x00000001001d7835 libCFG4.dylib`CGDMLDetector::init(this=0x000000010a7e3480) at CGDMLDetector.cc:78
+        frame #6: 0x00000001001d74f3 libCFG4.dylib`CGDMLDetector::CGDMLDetector(this=0x000000010a7e3480, hub=0x00007ffeefbfe250, query=0x000000010c010bd0, sd=0x000000010a7e2640) at CGDMLDetector.cc:40
+        frame #7: 0x00000001001d787d libCFG4.dylib`CGDMLDetector::CGDMLDetector(this=0x000000010a7e3480, hub=0x00007ffeefbfe250, query=0x000000010c010bd0, sd=0x000000010a7e2640) at CGDMLDetector.cc:38
+        frame #8: 0x000000010012bd2d libCFG4.dylib`CGeometry::init(this=0x000000010a7e3430) at CGeometry.cc:68
+        frame #9: 0x000000010012ba2c libCFG4.dylib`CGeometry::CGeometry(this=0x000000010a7e3430, hub=0x00007ffeefbfe250, sd=0x000000010a7e2640) at CGeometry.cc:51
+        frame #10: 0x000000010012bdc5 libCFG4.dylib`CGeometry::CGeometry(this=0x000000010a7e3430, hub=0x00007ffeefbfe250, sd=0x000000010a7e2640) at CGeometry.cc:50
+        frame #11: 0x00000001001f562c libCFG4.dylib`CG4::CG4(this=0x00007ffeefbfe090, hub=0x00007ffeefbfe250) at CG4.cc:120
+        frame #12: 0x00000001001f5fad libCFG4.dylib`CG4::CG4(this=0x00007ffeefbfe090, hub=0x00007ffeefbfe250) at CG4.cc:140
+        frame #13: 0x000000010000ee91 CInterpolationTest`main(argc=1, argv=0x00007ffeefbfea18) at CInterpolationTest.cc:57
+
+
+    (lldb) f 11
+    frame #11: 0x00000001001f562c libCFG4.dylib`CG4::CG4(this=0x00007ffeefbfe090, hub=0x00007ffeefbfe250) at CG4.cc:120
+       117 	    m_physics(new CPhysics(this)),
+       118 	    m_runManager(m_physics->getRunManager()),
+       119 	    m_sd(new CSensitiveDetector("SD0")),
+    -> 120 	    m_geometry(new CGeometry(m_hub, m_sd)),
+       121 	    m_hookup(m_geometry->hookup(this)),
+       122 	    m_mlib(m_geometry->getMaterialLib()),
+       123 	    m_detector(m_geometry->getDetector()),
+
+    (lldb) f 8
+    frame #8: 0x000000010012bd2d libCFG4.dylib`CGeometry::init(this=0x000000010a7e3430) at CGeometry.cc:68
+       65  	        // no options here: will load the .gdml sidecar of the geocache .dae 
+       66  	        LOG(fatal) << "CGeometry::init G4 GDML geometry " ; 
+       67  	        OpticksQuery* query = m_ok->getQuery();
+    -> 68  	        detector  = static_cast<CDetector*>(new CGDMLDetector(m_hub, query, m_sd)) ; 
+       69  	    }
+       70  	
+       71  	    // detector->attachSurfaces();  moved into the ::init of CTestDetector and CGDMLDetector to avoid omission
+
+
+
+Traverser has names like below::
+
+    (lldb) p m_traverser->m_lvm
+    (std::__1::map<std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> >, const G4LogicalVolume *, std::__1::less<std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > >, std::__1::allocator<std::__1::pair<const std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> >, const G4LogicalVolume *> > >) $2 = size=249 {
+      [0] = {
+        first = "/dd/Geometry/AD/lvADE0xc2a78c0"
+        second = 0x000000010efc7760
+      }
+      [1] = {
+        first = "/dd/Geometry/AD/lvGDS0xbf6cbb8"
+        second = 0x000000010edfbed0
+      }
+      [2] = {
+        first = "/dd/Geometry/AD/lvIAV0xc404ee8"
+        second = 0x000000010edfbfd0
+      }
+
+
+Are missing some name translation::
+
+    (lldb) p lvn
+    (const char *) $3 = 0x000000010f1f2610 "__dd__Geometry__PMT__lvHeadonPmtCathode0xc2c8d98"
+    (lldb) p m_traverser->getLV("/dd/Geometry/PMT/lvHeadonPmtCathode0xc2c8d98")
+    (G4LogicalVolume *) $4 = 0x00000001118046a0
+    (lldb) 
+
+Huh the name with "__dd__" was for G4DAE XML.  
+
+
+lvn is coming from LVSD::
+
+     306 void GGeo::addLVSD(const char* lv, const char* sd)
+     307 {
+     308    assert( lv ) ;
+     309    m_cathode_lv.insert(lv);
+     310 
+     311    if(sd)
+     312    {
+     313        if(m_lv2sd == NULL ) m_lv2sd = new NMeta ;
+     314        m_lv2sd->set<std::string>(lv, sd) ;
+     315    }
+     316 }
+     317 unsigned GGeo::getNumLVSD() const
+     318 {
+     319    return m_lv2sd ? m_lv2sd->getNumKeys() : 0 ;
+     320 }
+     321 std::pair<std::string,std::string> GGeo::getLVSD(unsigned idx) const
+     322 {
+     323     const char* lv = m_lv2sd->getKey(idx) ;
+     324     std::string sd = m_lv2sd->get<std::string>(lv);
+     325     return std::pair<std::string,std::string>( lv, sd );
+     326 }
+
+
+The lvsd names are direct from assimp (from the G4DAE) without any translation::
+
+     673 void AssimpGGeo::convertSensorsVisit(GGeo* gg, AssimpNode* node, unsigned int depth)
+     674 {
+     675     unsigned int nodeIndex = node->getIndex();
+     676     const char* lv   = node->getName(0);
+     677     //const char* pv   = node->getName(1); 
+     678     unsigned int mti = node->getMaterialIndex() ;
+     679     GMaterial* mt = gg->getMaterial(mti);
+     680     assert( mt );
+     681 
+     682     /*
+     683     NSensor* sensor0 = sens->getSensor( nodeIndex ); 
+     684     NSensor* sensor1 = sens->findSensorForNode( nodeIndex ); 
+     685     assert(sensor0 == sensor1);
+     686     // these do not match
+     687     */
+     688 
+     689     NSensor* sensor = m_sensor_list ? m_sensor_list->findSensorForNode( nodeIndex ) : NULL ;
+     690 
+     691     GMaterial* cathode = gg->getCathode() ;
+     692 
+     693     const char* cathode_material_name = gg->getCathodeMaterialName() ;
+     694     const char* name = mt->getName() ;
+     695     bool name_match = strcmp(name, cathode_material_name) == 0 ;
+     696     bool ptr_match = mt == cathode ;   // <--- always false 
+     697 
+     698     const char* sd = "SD_AssimpGGeo" ;
+     699 
+     700     if(sensor && name_match)
+     701     {
+     702          LOG(debug) << "AssimpGGeo::convertSensorsVisit "
+     703                    << " depth " << depth
+     704                    << " lv " << lv
+     705                    << " sd " << sd
+     706                    << " ptr_match " << ptr_match
+     707                    ;
+     708          gg->addLVSD(lv, sd) ;
+     709     }
+     710 }
+
+
+
+Are missing::
+
+     94 char* BStr::DAEIdToG4( const char* daeid, bool trimPtr)
+     95 {
+     96     /**
+     97         Convert daeid such as  "__dd__Geometry__PoolDetails__lvLegInIWSTub0xc400e40" 
+     98         to G4 name                  /dd/Geometry/PoolDetails/lvLegInIWSTub
+     99     **/
+
+
+
+
+
+
+
+And the CTraverser names are direct from GDML::
+
+    193 void CTraverser::AncestorVisit(std::vector<const G4VPhysicalVolume*> ancestors, bool selected)
+    194 {   
+    195     G4Transform3D T ;
+    196     
+    197     for(unsigned int i=0 ; i < ancestors.size() ; i++)
+    198     {   
+    199         const G4VPhysicalVolume* apv = ancestors[i] ;
+    200         
+    201         G4RotationMatrix rot, invrot;
+    202         if (apv->GetFrameRotation() != 0)
+    203         {   
+    204             rot = *(apv->GetFrameRotation());
+    205             invrot = rot.inverse();
+    206         }
+    207         
+    208         G4Transform3D P(invrot,apv->GetObjectTranslation());
+    209         
+    210         T = T*P ;
+    211     }
+    212     const G4VPhysicalVolume* pv = ancestors.back() ; 
+    213     const G4LogicalVolume* lv = pv->GetLogicalVolume() ;
+    214 
+    215     
+    216     const std::string& pvn = pv->GetName();
+    217     const std::string& lvn = lv->GetName();
+    218     
+    219     LOG(verbose) << " pvn " << pvn ;
+    220     LOG(verbose) << " lvn " << lvn ;
+    221 
+    222     
+    223     updateBoundingBox(lv->GetSolid(), T, selected);
+    224     
+    225     LOG(debug) << "CTraverser::AncestorVisit " 
+    226               << " size " << std::setw(3) << ancestors.size()
+    227               << " gcount " << std::setw(6) << m_gcount
+    228               << " pvname " << pv->GetName()
+    229               ; 
+    230     m_gcount += 1 ;
+    231 
+    232     
+    233     collectTransformT(m_gtransforms, T );
+    234     m_pvnames.push_back(pvn);
+    235     
+    236     m_pvs.push_back(pv);  
+    237     m_lvs.push_back(lv);  // <-- hmm will be many of the same lv in m_lvs 
+    238     
+    239     m_lvm[lvn] = lv ;
+    240 
+    241 
+    242     m_ancestor_index += 1 ;
+    243 }
+
+
+
+
+Note other DAE names::
+
+    2018-08-29 20:02:16.334 INFO  [3660017] [GSurfaceLib::dumpSkinSurface@1286] GGeo::dumpSkinSurface
+     SS    0 :                     NearPoolCoverSurface : __dd__Geometry__PoolDetails__lvNearTopCover0xc137060
+     SS    1 :                             RSOilSurface : __dd__Geometry__AdDetails__lvRadialShieldUnit0xc3d7ec0
+     SS    2 :                       AdCableTraySurface : __dd__Geometry__AdDetails__lvAdVertiCableTray0xc3a27f0
+     SS    3 :                      PmtMtTopRingSurface : __dd__Geometry__PMT__lvPmtTopRing0xc3486f0
+     SS    4 :                     PmtMtBaseRingSurface : __dd__Geometry__PMT__lvPmtBaseRing0xc00f400
+
+

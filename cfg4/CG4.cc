@@ -323,7 +323,9 @@ NPY<float>* CG4::propagate()
 
     OK_PROFILE("_CG4::propagate");
 
+    LOG(info) << " calling BeamOn numG4Evt " << numG4Evt ; 
     m_runManager->BeamOn(numG4Evt);
+    LOG(info) << " calling BeamOn numG4Evt " << numG4Evt << " DONE " ; 
 
     OK_PROFILE("CG4::propagate");
 
