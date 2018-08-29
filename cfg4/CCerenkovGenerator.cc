@@ -95,7 +95,7 @@ G4VParticleChange* CCerenkovGenerator::GeneratePhotonsFromGenstep( const Opticks
     //OVERRIDE  : seems to be a problem with the index or order of materials 
     materialIndex = 0 ; 
 
-    unsigned fNumPhotons = hdr.w ; 
+    int fNumPhotons = hdr.w ; 
 
     G4ThreeVector x0( post.x, post.y, post.z  ); 
     G4double t0 = post.w*ns ;  

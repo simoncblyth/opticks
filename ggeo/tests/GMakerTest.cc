@@ -1,3 +1,4 @@
+// TEST=GMakerTest om-t
 // op --gmaker
 //
 #include "OPTICKS_LOG.hh"
@@ -106,10 +107,16 @@ int main(int argc, char** argv)
     GBndLib* blib = GBndLib::load(&ok, constituents ); 
     blib->closeConstituents();
 
+    LOG(error) << " after load " ; 
+
     GMakerTest tst(&ok, blib);
 
+    LOG(error) << " after ctor " ; 
+
     tst.makeSphere();
+    LOG(error) << " after makeSphere  " ; 
     tst.makeFromCSG();
+    LOG(error) << " after makeFromCSG   " ; 
 
 }
 

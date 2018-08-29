@@ -2,6 +2,7 @@
 
 #include <string>
 #include "OXPPNS.hh"
+#include "plog/Severity.h"
 
 #include "NPYBase.hpp"
 template <typename T> class NPY ; 
@@ -35,6 +36,7 @@ class OXRAP_API OContext {
         typedef enum { COMPUTE, INTEROP } Mode_t ;   
         static const char* COMPUTE_ ; 
         static const char* INTEROP_ ; 
+        static plog::Severity LEVEL ; 
 
      public:
             static const char* LaunchLogPath(unsigned index); 

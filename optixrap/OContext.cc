@@ -36,6 +36,9 @@ using namespace optix ;
 const char* OContext::COMPUTE_ = "COMPUTE" ; 
 const char* OContext::INTEROP_ = "INTEROP" ; 
 
+plog::Severity OContext::LEVEL = info ; 
+
+
 const char* OContext::getModeName()
 {
     switch(m_mode)
@@ -104,7 +107,7 @@ void OContext::init()
 
     unsigned stacksize_bytes = m_ok->getStack() ;
 
-    LOG(debug) << "OContext::init " 
+    LOG(LEVEL) << "OContext::init " 
               << " mode " << getModeName()
               << " num_ray_type " << num_ray_type 
               << " stacksize_bytes " << stacksize_bytes
@@ -196,14 +199,14 @@ void OContext::cleanUp()
 
 optix::Program OContext::createProgram(const char* filename, const char* progname )
 {  
-    LOG(debug) << "OContext::createProgram START "
+    LOG(LEVEL) << "OContext::createProgram START "
               << " filename " << filename
               << " progname " << progname
               ;
 
     optix::Program prog = m_cfg->createProgram(filename, progname);
 
-    LOG(debug) << "OContext::createProgram DONE "
+    LOG(LEVEL) << "OContext::createProgram DONE "
               << " filename " << filename
               << " progname " << progname
               ;
@@ -267,7 +270,7 @@ void OContext::launch(unsigned int lmode, unsigned int entry, unsigned int width
 {
     if(!m_closed) close();
 
-    LOG(debug)<< "OContext::launch" 
+    LOG(LEVEL)<< "OContext::launch" 
               << " entry " << entry 
               << " width " << width 
               << " height " << height 
@@ -278,28 +281,28 @@ void OContext::launch(unsigned int lmode, unsigned int entry, unsigned int width
     if(lmode & VALIDATE)
     {
         double dt = validate_();
-        LOG(debug) << "OContext::launch VALIDATE time: " << dt ;
+        LOG(LEVEL) << "OContext::launch VALIDATE time: " << dt ;
         if(times) times->validate  += dt  ;
     }
 
     if(lmode & COMPILE)
     {
         double dt = compile_();
-        LOG(debug) << "OContext::launch COMPILE time: " << dt ;
+        LOG(LEVEL) << "OContext::launch COMPILE time: " << dt ;
         if(times) times->compile  += dt ;
     }
 
     if(lmode & PRELAUNCH)
     {
         double dt = launch_(entry, width, height );
-        LOG(debug) << "OContext::launch PRELAUNCH time: " << dt ;
+        LOG(LEVEL) << "OContext::launch PRELAUNCH time: " << dt ;
         if(times) times->prelaunch  += dt ;
     }
 
     if(lmode & LAUNCH)
     {
         double dt = m_llogpath ? launch_redirected_(entry, width, height ) : launch_(entry, width, height );
-        LOG(debug) << "OContext::launch LAUNCH time: " << dt  ;
+        LOG(LEVEL) << "OContext::launch LAUNCH time: " << dt  ;
         if(times) times->launch  += dt  ;
     }
 }
@@ -586,13 +589,13 @@ void OContext::configureBuffer(optix::Buffer& buffer, NPY<T>* npy, const char* n
     if(format == RT_FORMAT_USER )
     {
         buffer->setElementSize(sizeof(T));
-        LOG(debug) << hdr
+        LOG(LEVEL) << hdr
                   << " elementsize " << sizeof(T)
                   ;
     }
     else
     {
-        LOG(debug) << hdr ;
+        LOG(LEVEL) << hdr ;
     }
     
 
@@ -649,7 +652,7 @@ RTformat OContext::getFormat(NPYBase::Type_t type, bool is_seed)
     {
          assert(type == NPYBase::UINT);
          format = RT_FORMAT_UNSIGNED_INT ;
-         LOG(debug) << "OContext::getFormat override format for seed " ; 
+         LOG(LEVEL) << "OContext::getFormat override format for seed " ; 
     }
     return format ; 
 }
