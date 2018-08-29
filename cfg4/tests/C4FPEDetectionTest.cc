@@ -11,7 +11,7 @@ int main(int argc, char** argv)
     InvalidOperationDetection(); 
     C4FPEDetection::InvalidOperationDetection_Disable(); 
 
-    LOG(info) << 1/0 ; 
+    //LOG(info) << 1/0 ; 
     
 
     return 0 ; 
