@@ -38,6 +38,22 @@ big file issue
     epsilon:export blyth$ 
 
 
+A few hours later from ~/opticksdata it works::
+
+    epsilon:juno1808 blyth$ hg commit -m "j1808"
+    epsilon:juno1808 blyth$ hg push 
+    pushing to ssh://hg@bitbucket.org/simoncblyth/opticksdata
+    Enter passphrase for key '/Users/blyth/.ssh/id_rsa': 
+    searching for changes
+    remote: adding changesets
+    remote: adding manifests
+    remote: adding file changes
+    remote: added 1 changesets with 1 changes to 1 files
+    epsilon:juno1808 blyth$ 
+    epsilon:juno1808 blyth$ 
+
+
+
 
 FUNCTIONS
 -----------
@@ -108,6 +124,7 @@ opticksdata-cd(){  cd $(opticksdata-dir)/$1 ; }
 opticksdata-url(){       echo http://bitbucket.org/simoncblyth/opticksdata ; }
 opticksdata-url-ssh(){ echo ssh://hg@bitbucket.org/simoncblyth/opticksdata ; }
 
+opticksdata-j(){ echo $(opticksdata-xpath j1808).gdml ; }
 
 opticksdata-info(){ cat << EOM
 

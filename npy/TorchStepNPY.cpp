@@ -18,9 +18,13 @@
 #include "TorchStepNPY.hpp"
 #include "PLOG.hh"
 
+
+// frame=3153,      DYB NEAR AD center
+// frame=62593      j1808 lAcrylic0x4bd3f20         ce  0.000   0.000   0.009 17820.008
+
 const char* TorchStepNPY::DEFAULT_CONFIG = 
     "type=sphere_"
-    "frame=3153_"
+    "frame=62593_"
     "source=0,0,0_"
     "target=0,0,1_"
     "photons=10000_"

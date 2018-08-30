@@ -36,7 +36,7 @@ using namespace optix ;
 const char* OContext::COMPUTE_ = "COMPUTE" ; 
 const char* OContext::INTEROP_ = "INTEROP" ; 
 
-plog::Severity OContext::LEVEL = info ; 
+plog::Severity OContext::LEVEL = debug ; 
 
 
 const char* OContext::getModeName()

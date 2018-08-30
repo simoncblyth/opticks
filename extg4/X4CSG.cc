@@ -163,6 +163,8 @@ const std::string X4CSG::HEAD = R"(
 #include "G4Trd.hh"
 #include "G4Polycone.hh"
 #include "G4Cons.hh"
+#include "G4Ellipsoid.hh"
+#include "G4Torus.hh"
 
 #include "G4UnionSolid.hh"
 #include "G4IntersectionSolid.hh"

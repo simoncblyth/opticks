@@ -46,3 +46,27 @@ geocache-py()
 
 
 
+geocache-info(){ cat << EOI
+
+  OPTICKS_KEY     :  ${OPTICKS_KEY}
+  geocache-keydir : $(geocache-keydir)
+
+EOI
+}
+
+geocache-keydir()
+{
+    local k=$OPTICKS_KEY
+    local arr=(${k//./ })
+    [ "${#arr[@]}" != "4" ] && echo $msg expecting four fields separate by dot && sleep 100000
+    local exe=${arr[0]}
+    local cls=${arr[1]}
+    local top=${arr[2]}
+    local dig=${arr[3]}
+    echo $LOCAL_BASE/opticks/geocache/${exe}_${top}_g4live/g4ok_gltf/$dig/1 
+    #echo $LOCAL_BASE/opticks/geocache/OKX4Test_lWorld0x4bc2710_PV_g4live/g4ok_gltf/528f4cefdac670fffe846377973af10a/1
+}
+
+geocache-kcd(){ cd $(geocache-keydir) ; }
+
+

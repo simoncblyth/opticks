@@ -1,5 +1,5 @@
-OKX4Test_j1808
-================
+OKX4Test_j1808 : GDML 1042 booted, direct conversion to Opticks/GGeo geocache
+=========================================================================================
 
 After fixed :doc:`OpticksResourceTest_j1808_geokey_not_getting_thru_when_have_no_dae`.
 
@@ -13,6 +13,16 @@ Sidestepping OpticksResource is the correct thing to do as want to start from pu
 
    OKX4Test --gdmlpath /usr/local/opticks/opticksdata/export/juno1808/g4_00.gdml  
    lldb OKX4Test --  --gdmlpath /usr/local/opticks/opticksdata/export/juno1808/g4_00.gdml
+
+
+rerun with codegen : to investigate PMT CSG structure
+------------------------------------------------------------
+
+::
+
+    opticksdata-
+    GLTF_ROOT=0 OKX4Test --gdmlpath $(opticksdata-j) --g4codegen
+
 
 
 
@@ -98,6 +108,10 @@ so this sidesteps the OpticksResource machinery::
 
     ...
 
+
+7/17 materials have no properties
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 But it seems Geant4 10.4.2 GDML is not complete wrt the materials ? No it seems not an G4 level 
 problem as some materials have mpt::
 
@@ -122,7 +136,7 @@ problem as some materials have mpt::
     2018-08-30 13:41:16.793 FATAL [4006633] [X4PhysicalVolume::convertMaterials@240] . num_materials 10
 
 
-Scintillator has no property refs::
+eg Scintillator has no property refs::
 
    310     <material name="Scintillator0x4bbd230" state="solid">
    311       <T unit="K" value="293.15"/>
@@ -132,6 +146,9 @@ Scintillator has no property refs::
    315       <fraction n="0.914544377696929" ref="Carbon0x4b5cff0"/>
    316     </material>
 
+
+UpperChimneyTyvekOpticalSurface trips glisur assert
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 glisur assert::
 
@@ -183,7 +200,11 @@ glisur assert::
 
 
 
-torus deltaphi assert::
+
+torus negative startPhi
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+torus negative startPhi assert::
 
     Assertion failed: (startPhi == 0.f && deltaPhi == 360.f), function convertTorus, file /Users/blyth/opticks/extg4/X4Solid.cc, line 762.
     Process 43740 stopped
@@ -273,6 +294,10 @@ torus deltaphi assert::
 
 
 
+PMT_20inch_inner1_log0x4cb3cc0 depth 4 CSG tree : needs balancing ?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
 Balancing trees of this structure not implemented::
 
     2018-08-30 13:55:56.585 FATAL [4016543] [X4Solid::convertTorus@763]  changing torus -ve startPhi (degrees) to zero -0.01
@@ -359,7 +384,7 @@ Balancing trees of this structure not implemented::
     (lldb) 
 
 
-Hmm height 4 is bordeline in needing balancing, need to see the tree 
+Height 4 means (5 levels) so in does need balancing, or a rethink to simplify. Need to see the tree 
 to see how to proceed.
 
 
@@ -442,6 +467,11 @@ to see how to proceed.
 
 
 
+
+5 primitives in tree : would be much better for that to be 4 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
 ::
 
     2018-08-30 14:18:01.708 FATAL [4065914] [X4Solid::convertTorus@763]  changing torus -ve startPhi (degrees) to zero -0.01
@@ -508,6 +538,10 @@ Skip the assert to proceed::
 
 
 
+polycone z-ascending assert : fixed with a swap
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
+
+
 z-ascending assert::
 
      846 void X4Solid::convertPolyconePrimitives( const std::vector<zplane>& zp,  std::vector<nnode*>& prims )
@@ -572,7 +606,10 @@ Found that my swap fix had a bug::
      935     }
 
 
-Torus deltaPhi::
+Torus deltaPhi 356 ?
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+::
 
     (lldb) bt
     * thread #1, queue = 'com.apple.main-thread', stop reason = signal SIGABRT
@@ -623,7 +660,10 @@ Torus deltaPhi::
 
 
 
-Default gensteps expecting GdLS::
+Default gensteps expecting GdLS : this was redherring : real problem was the skipped materials
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+::
 
 
     2018-08-30 14:42:15.264 INFO  [4083817] [OpticksHub::adoptGeometry@463] OpticksHub::adoptGeometry DONE

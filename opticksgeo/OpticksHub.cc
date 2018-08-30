@@ -910,6 +910,27 @@ void OpticksHub::dumpVolumes(unsigned cursor, GMergedMesh* mm, const char* msg )
                    << gpresent( "ce", ce_ )
                    ;
     }
+
+
+    float extent_cut = 5000.f ;
+    LOG(info) << " volumes with extent greater than " << extent_cut << " mm " ; 
+    for(unsigned i=0 ; i < num_volumes ; i++)
+    {
+         glm::vec4 ce_ = mm->getCE(i);
+
+         if(ce_.w > extent_cut )
+         std::cout << " " << std::setw(3) << i 
+                   << " " << ( i == cursor ? "**" : "  " ) 
+                   << std::setw(50) << ( test ? "test" : nodelib->getLVName(i) )
+                   << " " 
+                   << gpresent( "ce", ce_ )
+                   ;
+    }
+
+
+
+
+
 }
 
 

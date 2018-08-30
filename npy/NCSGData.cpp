@@ -111,17 +111,20 @@ void NCSGData::import_src_identity()
     m_src_lvIdx = uidx.z ; 
     m_src_height = uidx.w ; 
 
-    assert( m_src_height == m_height );
+    bool match_height = m_src_height == m_height ;
+  
+    if(!match_height)
+        LOG(fatal)  
+            << " src_index " << m_src_index
+            << " src_soIdx " << m_src_soIdx
+            << " src_lvIdx " << m_src_lvIdx
+            << " src_height " << m_src_height
+            << " m_height " << m_height
+            ; 
+     
+    //assert( match_height );
 
-    /*
-    LOG(info) 
-        << " src_index " << m_src_index
-        << " src_soIdx " << m_src_soIdx
-        << " src_lvIdx " << m_src_lvIdx
-        << " src_height " << m_src_height
-        ; 
-    */
- 
+
 }
 
 

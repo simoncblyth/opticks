@@ -9,12 +9,68 @@ X4Gen Usage
 
 1. *OKX4Test --g4codegen* 
 
-   Generate the geometry serialization mains 
-   for each solid of the geometry beneath a directory 
-   like the below for live running:
+    Runinng OKX4Test with --g4codegen option generates an 
+    g4codegen dir within the geocache keydir, 
+    containing G4VSolid making mains::
 
-   /usr/local/opticks/geocache/OKX4Test_World0xc15cfc0_PV_g4live/g4ok_gltf/828722902b5e94dab05ac248329ffebe/1/g4codegen
-   (formerly $TMP/x4gen/tests)
+        blyth@localhost 1]$ find g4codegen
+        g4codegen
+        g4codegen/tests
+        g4codegen/tests/x000.cc
+        g4codegen/tests/x001.cc
+        g4codegen/tests/x002.cc
+        g4codegen/tests/x003.cc
+        g4codegen/tests/x004.cc
+        g4codegen/tests/x005.cc
+        g4codegen/tests/x006.cc
+        ...
+
+The mains are all the same, with a different make_solid::
+
+    int main( int argc , char** argv )
+    {
+        OPTICKS_LOG(argc, argv);
+
+        const char* exename = PLOG::instance->args.exename() ; 
+
+        G4VSolid* solid = make_solid() ; 
+
+        std::string csgpath = BFile::FormPath(X4::X4GEN_DIR, exename) ; 
+
+        X4CSG::Serialize( solid, csgpath.c_str() ) ;
+
+        return 0 ; 
+    }
+
+Currently::
+
+    const char* X4::X4GEN_DIR = "$TMP/x4gen" ;
+
+    026 void X4CSG::Serialize( const G4VSolid* solid, const char* csgpath ) // static
+     27 {
+     28     X4CSG xcsg(solid);
+     29     std::cerr << xcsg.save(csgpath) << std::endl ;   // NB only stderr emission to be captured by bash 
+     30     xcsg.dumpTestMain();
+     31 }
+
+    131 std::string X4CSG::configuration(const char* csgpath) const
+    132 {
+    133     std::stringstream ss ;
+    134     ss << "analytic=1_csgpath=" << csgpath ;
+    135     return ss.str();
+    136 }
+    137 
+    138 std::string X4CSG::save(const char* csgpath)
+    139 {
+    140     ls = NCSGList::Create( trees, csgpath , verbosity );
+    141     ls->savesrc();
+    142     return configuration(csgpath);
+    143 }
+
+
+
+
+
 
 2. x4gen-- 
 
@@ -28,6 +84,17 @@ X4Gen Usage
 
 EOU
 }
+
+
+x4gen--notes(){ cat << EON
+
+
+
+EON
+}
+
+
+
 
 
 x4gen-dir(){ echo $(dirname $(x4gen-source)) ; }
@@ -54,6 +121,7 @@ x4gen-csg---()
     echo testconfig $testconfig
 
     op.sh $cmdline \
+          --envkey \
           --rendermode +global,+axis \
           --animtimemax 20 \
           --timemax 20 \
@@ -68,9 +136,8 @@ x4gen-csg---()
 
 }
 x4gen-csg--(){ x$(x4gen-lvf) ; }
-x4gen-csg-(){ $FUNCNAME- 2>&1 1>/dev/null ; }
+x4gen-csg-(){ $FUNCNAME- 2>&1 1>/dev/null ; } ## stderr with stdout ignored 
 x4gen-csg(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME-) x4gen-csg--- $* ;}  
-
 
 x4gen-lv(){ echo ${LV:-000} ; }
 x4gen-lvf(){ echo $(printf "%0.3d" $(x4gen-lv)) ; }
@@ -97,11 +164,6 @@ x4gen-deep(){
    #grep mx:00 $(x4gen-solids) 
 }
 
-## TESTCONFIG is a capture of stderr with stdout ignored 
-
-
-
-
 
 x4gen-paths(){
     local arg
@@ -120,11 +182,13 @@ x4gen-ed(){
 
 
 x4gen-cd(){   cd $(x4gen-base) ; }
-#x4gen-base(){ echo $TMP/x4gen ; }
-x4gen-base(){ echo  /usr/local/opticks/geocache/OKX4Test_World0xc15cfc0_PV_g4live/g4ok_gltf/828722902b5e94dab05ac248329ffebe/1/g4codegen ; }
+x4gen-base-fromkey(){ geocache- ; echo $(geocache-keydir) ; }  # requires OPTICKS_KEY envvar 
+x4gen-base-manual(){  echo  /usr/local/opticks/geocache/OKX4Test_World0xc15cfc0_PV_g4live/g4ok_gltf/828722902b5e94dab05ac248329ffebe/1 ; }
+x4gen-base(){ x4gen-base-fromkey ; } 
+
 
 x4gen-name(){ echo x$(printf "%0.3d" ${1:-0}) ; }
-x4gen-path(){ echo $(x4gen-base)/tests/$(x4gen-name $1).cc ; }
+x4gen-path(){ echo $(x4gen-base)/g4codegen/tests/$(x4gen-name $1).cc ; }
 
 x4gen-hh(){ cat << EOC
 
@@ -239,9 +303,10 @@ make install
 EOG
 }
 
+
 x4gen--(){
    local msg="=== $FUNCNAME :"
-   local base=$(x4gen-base)
+   local base=$(x4gen-base)/g4codegen
 
    echo $msg generating project into $base 
 

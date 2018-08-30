@@ -29,7 +29,7 @@ template <typename T>
 T* NTreeProcess<T>::Process( T* root_ , unsigned soIdx, unsigned lvIdx )  // static
 {
     if( LVList == NULL )
-         LVList = new std::vector<unsigned> { 18 } ; 
+         LVList = new std::vector<unsigned> { 16, 17, 18, 19, 20, 21, 22 } ; 
          //LVList = new std::vector<unsigned> {36,  56,  57,  60,  63,  65,  67,  69,  70,  74, 131, 200 } ; 
  
     if( ProcBuffer == NULL ) ProcBuffer = NPY<unsigned>::make(0,4) ; 

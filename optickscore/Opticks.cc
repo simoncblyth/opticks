@@ -1319,7 +1319,11 @@ void Opticks::configure()
     } 
     else
     {
+#ifdef __APPLE__
         m_size = glm::uvec4(2880,1704,2,0) ;  // 1800-44-44px native height of menubar  
+#else
+        m_size = glm::uvec4(1920,1080,1,0) ;
+#endif
     }
 
 
@@ -1330,7 +1334,11 @@ void Opticks::configure()
     }
     else
     {
+#ifdef __APPLE__
         m_position = glm::uvec4(200,200,0,0) ;  // top left
+#else
+        m_position = glm::uvec4(100,100,0,0) ;  // top left
+#endif
     }
 
 
