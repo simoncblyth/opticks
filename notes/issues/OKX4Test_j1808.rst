@@ -3,19 +3,24 @@ OKX4Test_j1808 : GDML 1042 booted, direct conversion to Opticks/GGeo geocache
 
 After fixed :doc:`OpticksResourceTest_j1808_geokey_not_getting_thru_when_have_no_dae`.
 
+
+Direct GDML1042 booted route 
+--------------------------------
     
-Try to do a codegen survey on juno solids::
+Actually sidestepping OpticksResource is the correct thing to do as want to start from pure G4, 
+so dont need to have two Opticks instances with GDML exported from Geant4 1042 (as no need to fixup 
+stuff missing from GDML)::
 
-   op --j1808 --okx4 
-   op --j1808 --okx4 --g4codegen
+    opticksdata- 
 
-Sidestepping OpticksResource is the correct thing to do as want to start from pure G4::
+    epsilon:issues blyth$ opticksdata-j
+    /usr/local/opticks/opticksdata/export/juno1808/g4_00.gdml
 
-   OKX4Test --gdmlpath /usr/local/opticks/opticksdata/export/juno1808/g4_00.gdml  
-   lldb OKX4Test --  --gdmlpath /usr/local/opticks/opticksdata/export/juno1808/g4_00.gdml
+    OKX4Test --gdmlpath $(opticksdata-j)
+    lldb OKX4Test --  --gdmlpath $(opticksdata-j)
 
 
-rerun with codegen : to investigate PMT CSG structure
+rerun with codegen : to do a survey of the solids
 ------------------------------------------------------------
 
 ::
@@ -24,10 +29,18 @@ rerun with codegen : to investigate PMT CSG structure
     GLTF_ROOT=0 OKX4Test --gdmlpath $(opticksdata-j) --g4codegen
 
 
+* :doc:`OKX4Test_j1808_x4gen_csg_solids_survey`
+
 
 
 Old way : fails for lack of DAE
 -----------------------------------
+
+Try to do a codegen survey on juno solids::
+
+   op --j1808 --okx4 
+   op --j1808 --okx4 --g4codegen
+
 
 Not unsurprisingly::
 

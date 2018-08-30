@@ -109,8 +109,9 @@ x4gen-testconfig ()
     if [ -n "$TESTCONFIG" ]; then
         testconfig=${TESTCONFIG};
     fi;
-    echo $testconfig
 
+    echo $testconfig
+    #echo ${testconfig/analytic=1/analytic=0}    not so easy, trips assert in GGeoTest::initCreateCSG
 }
 
 
@@ -138,6 +139,7 @@ x4gen-csg---()
 x4gen-csg--(){ x$(x4gen-lvf) ; }
 x4gen-csg-(){ $FUNCNAME- 2>&1 1>/dev/null ; } ## stderr with stdout ignored 
 x4gen-csg(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME-) x4gen-csg--- $* ;}  
+
 
 x4gen-lv(){ echo ${LV:-000} ; }
 x4gen-lvf(){ echo $(printf "%0.3d" $(x4gen-lv)) ; }
@@ -331,10 +333,14 @@ x4gen--(){
 }
 
 
+
+
+#x4gen-run-(){ ( cd $(opticks-bindir) ; ls -1 x* )  ; }
+x4gen-run-(){ ( cd $(opticks-bindir) ; ls -1 x00* x01* x02* x03* )  ; }
 x4gen-run()
 {
    local x
-   ( cd $(opticks-bindir) ; ls -1 x* ) | while read x 
+   x4gen-run- | while read x 
    do 
         echo x $x 
         $x

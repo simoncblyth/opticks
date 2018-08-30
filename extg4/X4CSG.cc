@@ -6,6 +6,7 @@
 #include "BStr.hh"
 #include "BFile.hh"
 
+#include "NTreeAnalyse.hpp"
 #include "NNode.hpp"
 #include "NCSG.hpp"
 #include "NPYBase.hpp"
@@ -108,6 +109,10 @@ X4CSG::X4CSG(const G4VSolid* solid_)
 
 void X4CSG::init()
 {
+
+    LOG(info) << NTreeAnalyse<nnode>::Desc(nsolid) ;
+
+
     configure( csolid->getMeta() ) ; 
     configure( ccontainer->getMeta() ) ; 
 
@@ -131,7 +136,7 @@ void X4CSG::dump(const char* msg)
 std::string X4CSG::configuration(const char* csgpath) const 
 {
     std::stringstream ss ; 
-    ss << "analytic=1_csgpath=" << csgpath ; 
+    ss << "analytic=1_csgpath=" << csgpath ;    // TODO: not convenient to hardcode analytic=1 here 
     return ss.str(); 
 }
 

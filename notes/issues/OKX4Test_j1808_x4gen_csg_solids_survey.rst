@@ -1,5 +1,8 @@
-OKX4Test_j1808_x4gen_to_investigate_PMT_csg
+OKX4Test_j1808_x4gen_csg_solids_survey
 ==============================================
+
+* for context :doc:`OKX4Test_j1808`
+
 
 boot with GDML, direct convert to GGeo, persist to geocache with codegen 
 --------------------------------------------------------------------------
@@ -7,6 +10,37 @@ boot with GDML, direct convert to GGeo, persist to geocache with codegen
 ::
 
     opticksdata- ; OKX4Test --gdmlpath $(opticksdata-j) --g4codegen
+
+
+copy the key "spec" into OPTICKS_KEY envvar
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Notice the key "spec" output and copy it into OPTICKS_KEY envvar::
+
+    2018-08-30 21:58:03.003 INFO  [4283586] [BOpticksResource::setupViaKey@392] BOpticksKey
+                        spec  : OKX4Test.X4PhysicalVolume.lWorld0x4bc2710_PV.15cf540d9c315b7f5d0adc7c3907b922
+                     exename  : OKX4Test
+                       class  : X4PhysicalVolume
+                     volname  : lWorld0x4bc2710_PV
+                      digest  : 15cf540d9c315b7f5d0adc7c3907b922
+                      idname  : OKX4Test_lWorld0x4bc2710_PV_g4live
+                      idfile  : g4ok.gltf
+                      idgdml  : g4ok.gdml
+                      layout  : 1
+
+Export that envvar when reusing this geometry. NB Opticks executables 
+are only sensitve to OPTICKS_KEY envvar when the --envkey option is used.::
+
+    export OPTICKS_KEY=OKX4Test.X4PhysicalVolume.lWorld0x4bc2710_PV.15cf540d9c315b7f5d0adc7c3907b922 
+
+    epsilon:opticks blyth$ geocache-info
+
+      OPTICKS_KEY     :  OKX4Test.X4PhysicalVolume.lWorld0x4bc2710_PV.15cf540d9c315b7f5d0adc7c3907b922
+      geocache-keydir : /usr/local/opticks/geocache/OKX4Test_lWorld0x4bc2710_PV_g4live/g4ok_gltf/15cf540d9c315b7f5d0adc7c3907b922/1
+
+    epsilon:opticks blyth$ geocache-kcd
+    epsilon:1 blyth$ pwd
+    /usr/local/opticks/geocache/OKX4Test_lWorld0x4bc2710_PV_g4live/g4ok_gltf/15cf540d9c315b7f5d0adc7c3907b922/1
 
 
 generate CMakeLists.txt and scripts to build the generated code into executables for every solid
@@ -56,6 +90,9 @@ survey the 40 solids of j1808
            looks like a box subtract a cylinder 
            with serious case of coincidence subtraction speckles
 
+           issue A : probably easy fix, just grow the subtracted cylinder in correct direction 
+
+
      so:011 lv:011 rmx:00 bmx:00 soName: sExpHall0x4bcd390
      so:012 lv:012 rmx:00 bmx:00 soName: sTopRock0x4bccfc0
      so:013 lv:013 rmx:01 bmx:01 soName: sTarget0x4bd4340
@@ -71,10 +108,12 @@ survey the 40 solids of j1808
             .. not using the balanced or balancing failed ?
             had to force quit the raytrace
 
+            issue B : investigate balancing for this tree
+
+
      so:017 lv:017 rmx:02 bmx:02 soName: sMask0x4ca38d0
 
            LV=17 x4gen-csg  
-
            observatory dome shape, polygonization failed, raytrace looks OK 
 
      so:018 lv:018 rmx:04 bmx:04 soName: PMT_20inch_inner1_solid0x4cb3610
@@ -84,12 +123,19 @@ survey the 40 solids of j1808
            wow : profligate use of a depth 4 tree (31 nodes)
            when a single node would do: ellipsoid with z range
 
+           issue C : profligacy : fix is easy, just need to convince people to use sane CSG  
+
+
      so:019 lv:019 rmx:04 bmx:04 soName: PMT_20inch_inner2_solid0x4cb3870
 
            LV=19 x4gen-csg  
 
            speckle neck 
            also : profligate use of CSG intersection to chop the cathode off 
+
+           issue C : profligacy : fix is easy, just need to convince people to use sane CSG  
+           issue D : speckle neck : fix is easy, just need to convince people to use hyperboloid neck            
+
 
      so:020 lv:020 rmx:03 bmx:03 soName: PMT_20inch_body_solid0x4c90e50
 
@@ -99,16 +145,18 @@ survey the 40 solids of j1808
            but this time the speckle disappears when closeup 
            and from some angles 
 
+           issue D : speckle neck : fix is easy, just need to convince people to use hyperboloid neck            
+
+
      so:021 lv:021 rmx:03 bmx:03 soName: PMT_20inch_pmt_solid0x4c81b40
 
            LV=21 x4gen-csg  
 
            ditto : speckle neck 
 
+           issue D : speckle neck : fix is easy, just need to convince people to use hyperboloid neck            
 
      so:022 lv:022 rmx:00 bmx:00 soName: sMask_virtual0x4c36e10
-
-
      so:023 lv:023 rmx:00 bmx:00 soName: PMT_3inch_inner1_solid_ell_helper0x510ae30
      so:024 lv:024 rmx:00 bmx:00 soName: PMT_3inch_inner2_solid_ell_helper0x510af10
      so:025 lv:025 rmx:00 bmx:00 soName: PMT_3inch_body_solid_ell_ell_helper0x510ada0
@@ -128,4 +176,175 @@ survey the 40 solids of j1808
      so:039 lv:039 rmx:00 bmx:00 soName: sWorld0x4bc2350
 
 
+
+
+
+
+issue B : sFasteners0x4c01080 : deep tree
+---------------------------------------------
+
+::
+
+     so:016 lv:016 rmx:11 bmx:02 soName: sFasteners0x4c01080
+
+           LV=16 x4gen-csg  
+
+            bizarre shape, raytrace get:
+               evaluative_csg : perfect tree height 11 exceeds current limit 
+            .. not using the balanced or balancing failed ?
+            had to force quit the raytrace
+
+            issue B : investigate balancing for this tree
+
+
+
+Rearrange the generated code to make it understandable::
+
+     27 G4VSolid* make_solid()
+     28 {
+     29 
+     30     G4VSolid* k = new G4Tubs("solidFasteners_down0x4bff9b0", 80, 150, 5, 0, 6.28319) ; // 10
+     31     G4VSolid* c1 = new G4Tubs("solidFasteners_up0x4c01b50", 0, 150, 10, 0, 6.28319) ; // 2
+            G4VSolid* e1 = new G4Tubs("solidFasteners_up10x4bff890", 41, 50, 25, 0, 6.28319) ; // 1
+
+     32     
+     33     
+     34     G4VSolid* m = new G4Tubs("solidFasteners_Bolts0x4bffad0", 0, 10, 70, 0, 6.28319) ; // 10
+     35     G4VSolid* o = new G4Tubs("solidFasteners_Bolts0x4bffad0", 0, 10, 70, 0, 6.28319) ; // 9
+     36     G4VSolid* q = new G4Tubs("solidFasteners_Bolts0x4bffad0", 0, 10, 70, 0, 6.28319) ; // 8
+     37     G4VSolid* s = new G4Tubs("solidFasteners_Bolts0x4bffad0", 0, 10, 70, 0, 6.28319) ; // 7
+     38     
+     39     G4VSolid* u = new G4Tubs("solidFasteners_Bolts0x4bffad0", 0, 10, 70, 0, 6.28319) ; // 6
+     40     G4VSolid* w = new G4Tubs("solidFasteners_Bolts0x4bffad0", 0, 10, 70, 0, 6.28319) ; // 5
+     41     G4VSolid* y = new G4Tubs("solidFasteners_Bolts0x4bffad0", 0, 10, 70, 0, 6.28319) ; // 4
+     42     G4VSolid* a1 = new G4Tubs("solidFasteners_Bolts0x4bffad0", 0, 10, 70, 0, 6.28319) ; // 3
+     43     
+     44     G4ThreeVector B(0.000000,125.000000,-70.000000);
+     45     G4ThreeVector D(88.388348,88.388348,-70.000000);
+     46     G4ThreeVector F(125.000000,0.000000,-70.000000);
+     47     G4ThreeVector H(88.388348,-88.388348,-70.000000);
+     48     
+     49     G4ThreeVector J(0.000000,-125.000000,-70.000000);
+     50     G4ThreeVector L(-88.388348,-88.388348,-70.000000);
+     51     G4ThreeVector N(-125.000000,-0.000000,-70.000000);
+     52     G4ThreeVector P(-88.388348,88.388348,-70.000000);
+     53     
+     54     G4VSolid* j = new G4UnionSolid("solid_FastenersUnion0x4bffbf0", k, m, NULL, B) ; // 9
+     55     G4VSolid* i = new G4UnionSolid("solid_FastenersUnion0x4bffdd0", j, o, NULL, D) ; // 8
+     56     G4VSolid* h = new G4UnionSolid("solid_FastenersUnion0x4c00030", i, q, NULL, F) ; // 7
+     57     G4VSolid* g = new G4UnionSolid("solid_FastenersUnion0x4c00290", h, s, NULL, H) ; // 6
+     58     
+     59     G4VSolid* f = new G4UnionSolid("solid_FastenersUnion0x4c004f0", g, u, NULL, J) ; // 5
+     60     G4VSolid* e = new G4UnionSolid("solid_FastenersUnion0x4c00750", f, w, NULL, L) ; // 4
+     61     G4VSolid* d = new G4UnionSolid("solid_FastenersUnion0x4c009b0", e, y, NULL, N) ; // 3
+     62     G4VSolid* c = new G4UnionSolid("solid_FastenersUnion0x4c00c10", d, a1, NULL, P) ;   // 2
+     63     
+     64     
+     65     G4ThreeVector R(0.000000,0.000000,-140.000000);
+     66     G4VSolid* b = new G4UnionSolid("solidFasteners20x4c00e30", c, c1, NULL, R) ; // 1
+     67     
+     68     G4ThreeVector T(0.000000,0.000000,-165.000000);
+     69     G4VSolid* a = new G4UnionSolid("sFasteners0x4c01080", b, e1, NULL, T) ; // 0
+     70     
+     71     return a ;
+     72 }   
+
+
+
+
+::
+
+   593     <tube aunit="deg" deltaphi="360" lunit="mm" name="solidFasteners_down0x4bff9b0" rmax="150" rmin="80" startphi="0" z="10"/>
+   594     <tube aunit="deg" deltaphi="360" lunit="mm" name="solidFasteners_Bolts0x4bffad0" rmax="10" rmin="0" startphi="0" z="140"/>
+
+
+   595     <union name="solid_FastenersUnion0x4bffbf0">
+   596       <first ref="solidFasteners_down0x4bff9b0"/>
+   597       <second ref="solidFasteners_Bolts0x4bffad0"/>
+   598       <position name="solid_FastenersUnion0x4bffbf0_pos" unit="mm" x="0" y="125" z="-70"/>
+   599     </union>
+   600     <union name="solid_FastenersUnion0x4bffdd0">
+   601       <first ref="solid_FastenersUnion0x4bffbf0"/>
+   602       <second ref="solidFasteners_Bolts0x4bffad0"/>
+   603       <position name="solid_FastenersUnion0x4bffdd0_pos" unit="mm" x="88.3883476483184" y="88.3883476483184" z="-70"/>
+   604     </union>
+   605     <union name="solid_FastenersUnion0x4c00030">
+   606       <first ref="solid_FastenersUnion0x4bffdd0"/>
+   607       <second ref="solidFasteners_Bolts0x4bffad0"/>
+   608       <position name="solid_FastenersUnion0x4c00030_pos" unit="mm" x="125" y="7.65404249467096e-15" z="-70"/>
+   609     </union>
+   610     <union name="solid_FastenersUnion0x4c00290">
+   611       <first ref="solid_FastenersUnion0x4c00030"/>
+   612       <second ref="solidFasteners_Bolts0x4bffad0"/>
+   613       <position name="solid_FastenersUnion0x4c00290_pos" unit="mm" x="88.3883476483184" y="-88.3883476483184" z="-70"/>
+   614     </union>
+   615     <union name="solid_FastenersUnion0x4c004f0">
+   616       <first ref="solid_FastenersUnion0x4c00290"/>
+   617       <second ref="solidFasteners_Bolts0x4bffad0"/>
+   618       <position name="solid_FastenersUnion0x4c004f0_pos" unit="mm" x="1.53080849893419e-14" y="-125" z="-70"/>
+   619     </union>
+   620     <union name="solid_FastenersUnion0x4c00750">
+   621       <first ref="solid_FastenersUnion0x4c004f0"/>
+   622       <second ref="solidFasteners_Bolts0x4bffad0"/>
+   623       <position name="solid_FastenersUnion0x4c00750_pos" unit="mm" x="-88.3883476483184" y="-88.3883476483185" z="-70"/>
+   624     </union>
+   625     <union name="solid_FastenersUnion0x4c009b0">
+   626       <first ref="solid_FastenersUnion0x4c00750"/>
+   627       <second ref="solidFasteners_Bolts0x4bffad0"/>
+   628       <position name="solid_FastenersUnion0x4c009b0_pos" unit="mm" x="-125" y="-2.29621274840129e-14" z="-70"/>
+   629     </union>
+   630     <union name="solid_FastenersUnion0x4c00c10">
+   631       <first ref="solid_FastenersUnion0x4c009b0"/>
+   632       <second ref="solidFasteners_Bolts0x4bffad0"/>
+   633       <position name="solid_FastenersUnion0x4c00c10_pos" unit="mm" x="-88.3883476483185" y="88.3883476483184" z="-70"/>
+   634     </union>
+
+
+
+   635     <tube aunit="deg" deltaphi="360" lunit="mm" name="solidFasteners_up0x4c01b50" rmax="150" rmin="0" startphi="0" z="20"/>
+   636     <union name="solidFasteners20x4c00e30">
+   637       <first ref="solid_FastenersUnion0x4c00c10"/>
+   638       <second ref="solidFasteners_up0x4c01b50"/>
+   639       <position name="solidFasteners20x4c00e30_pos" unit="mm" x="0" y="0" z="-140"/>
+   640     </union>
+   641     <tube aunit="deg" deltaphi="360" lunit="mm" name="solidFasteners_up10x4bff890" rmax="50" rmin="41" startphi="0" z="50"/>
+
+   642     <union name="sFasteners0x4c01080">
+   643       <first ref="solidFasteners20x4c00e30"/>
+   644       <second ref="solidFasteners_up10x4bff890"/>
+   645       <position name="sFasteners0x4c01080_pos" unit="mm" x="0" y="0" z="-165"/>
+   646     </union>
+
+
+
+Originally 8 bolts and 2 plates and one rim?, one plate and the rim? has non-zero rmin, 
+so: 8 + 1 + 2 + 2 = 13 
+
+
+::
+
+    2018-08-30 23:27:54.425 INFO  [4332762] [X4CSG::init@113] NTreeAnalyse height 11 count 25
+                                                                                          un            
+
+                                                                                  un              di    
+
+                                                                          un          cy      cy      cy
+
+                                                                  un          cy                        
+
+                                                          un          cy                                
+
+                                                  un          cy                                        
+
+                                          un          cy                                                
+
+                                  un          cy                                                        
+
+                          un          cy                                                                
+
+                  un          cy                                                                        
+
+          di          cy                                                                                
+
+      cy      cy                                           
 

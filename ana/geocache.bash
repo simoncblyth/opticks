@@ -58,7 +58,7 @@ geocache-keydir()
 {
     local k=$OPTICKS_KEY
     local arr=(${k//./ })
-    [ "${#arr[@]}" != "4" ] && echo $msg expecting four fields separate by dot && sleep 100000
+    [ "${#arr[@]}" != "4" ] && echo $msg expecting OPTICKS_KEY envvar with four fields separate by dot && sleep 100000
     local exe=${arr[0]}
     local cls=${arr[1]}
     local top=${arr[2]}

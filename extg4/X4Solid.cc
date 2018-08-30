@@ -272,6 +272,7 @@ void X4Solid::convertBooleanSolid()
         const char* rot_id = OTHER_ID->get(false) ;
         const char* tla_id = OTHER_ID->get(false) ;
 
+        // TODO: suppress identity 
         std::string rot = xdirect.getRotationCode(rot_id);
         std::string tla = xdirect.getTranslationCode(tla_id);
 

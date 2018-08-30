@@ -533,7 +533,7 @@ void nnode::to_g4code_r(const nnode* node, std::ostream& out, unsigned depth )  
         }
         else
         {
-            LOG(error) << "no g4code on left/right :  prim in G4, tree in OK ? " ;             
+            LOG(error) << "no g4code on left/right :  prim in G4, but tree in Opticks perhaps ? " ;             
         }
     } 
     assert( node->g4code );
