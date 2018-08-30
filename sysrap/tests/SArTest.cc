@@ -4,6 +4,10 @@
 #include "SAr.hh"
 #include "SSys.hh"
 
+
+
+
+
 int main(int argc, char** argv)
 {
     std::cout << "start" << std::endl ; 
@@ -11,8 +15,16 @@ int main(int argc, char** argv)
     SAr a(argc, argv );
     std::cout << "a instanciated " << std::endl ; 
     a.dump();
-    //a.dump();
     std::cout << "a dumped " << std::endl ; 
+
+    const char* option = "--gdmlpath" ; 
+    const char* value = a.get_arg_after(option) ; 
+    std::cout 
+        << " option " << option
+        << " value " << ( value ? value : "-" ) 
+        << std::endl 
+        ;
+
 
 
     const char* key = "SAR_TEST" ; 

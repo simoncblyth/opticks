@@ -658,13 +658,13 @@ unsigned X4PhysicalVolume::addBoundary(const G4VPhysicalVolume* const pv, const 
         assert(ps) ;    
     }
 
-    LOG(fatal)
+    LOG(debug)
         << " lv names to look for skinsurfaces with "
         << " lv " << lv 
         << " _lv " << _lv
         ;
 
-    LOG(fatal)
+    LOG(debug)
         << " lv names to look for skinsurfaces with "
         << " lv_p " << lv_p 
         << " _lv_p " << _lv_p
@@ -699,6 +699,14 @@ unsigned X4PhysicalVolume::addBoundary(const G4VPhysicalVolume* const pv, const 
             << " g_sslv " << g_sslv
             << " g_sslv_p " << g_sslv_p
             ;
+
+
+
+    LOG(debug) 
+         << " addBoundary "
+         << " omat " << omat 
+         << " imat " << imat 
+         ;
  
     unsigned boundary = 0 ; 
     if( g_sslv == NULL && g_sslv_p == NULL  )

@@ -17,6 +17,7 @@
 #include "GGeo.hh"
 #include "GGeoGLTF.hh"
 
+#include "CGDML.hh"
 #include "CGDMLDetector.hh"
 
 #include "X4PhysicalVolume.hh"
@@ -61,13 +62,23 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv);
 
-    G4VPhysicalVolume* top = make_top(argc, argv); 
+    //G4VPhysicalVolume* top = make_top(argc, argv); 
+
+    const char* gdmlpath = PLOG::instance->get_arg_after("--gdmlpath") ; 
+    if( gdmlpath == NULL )
+    {
+        LOG(fatal) << " --gdmlpath existing-path : is required " ; 
+        return 0 ; 
+    } 
+
+    LOG(info) << " parsing " << gdmlpath ; 
+    G4VPhysicalVolume* top = CGDML::Parse( gdmlpath ) ; 
+
     //char c = 's' ; 
     //G4VPhysicalVolume* top = X4Sample::Sample(c) ; 
 
     assert(top);
     LOG(info) << "///////////////////////////////// " ; 
-
 
 
     const char* key = X4PhysicalVolume::Key(top) ; 

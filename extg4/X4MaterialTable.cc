@@ -13,6 +13,10 @@
 #include "PLOG.hh"
 
 
+const plog::Severity X4MaterialTable::LEVEL = info ; 
+
+
+
 G4Material* X4MaterialTable::Get(unsigned idx)
 {
     unsigned nmat = G4Material::GetNumberOfMaterials();
@@ -42,8 +46,7 @@ GMaterialLib* X4MaterialTable::getMaterialLib()
 X4MaterialTable::X4MaterialTable(GMaterialLib* mlib)
     :
     m_mtab(G4Material::GetMaterialTable()),
-    m_mlib(mlib),
-    m_level(debug)
+    m_mlib(mlib)
 {
     init();
 }
@@ -53,7 +56,7 @@ void X4MaterialTable::init()
 {
     unsigned nmat = G4Material::GetNumberOfMaterials();
 
-    LOG(m_level) << ". G4 nmat " << nmat ;  
+    LOG(LEVEL) << ". G4 nmat " << nmat ;  
 
     for(unsigned i=0 ; i < nmat ; i++)
     {   
@@ -62,8 +65,12 @@ void X4MaterialTable::init()
 
         if( mpt == NULL )
         {
-            LOG(warning) << "skip convert of material with no mpt " << material->GetName() ; 
-            continue ;  
+            LOG(warning) << "PROCEEDING TO convert material with no mpt " << material->GetName() ; 
+            // continue ;  
+        }
+        else
+        {
+            LOG(LEVEL) << " converting material with mpt " <<  material->GetName() ; 
         }
 
         GMaterial* mat = X4Material::Convert( material ); 

@@ -57,7 +57,7 @@ T* NTreeBalance<T>::create_balanced()
     else
     {
         LOG(fatal) << "balancing trees of this structure not implemented" ; 
-        assert(0); 
+        //assert(0); 
         balanced = root ; 
     }
     return balanced ; 

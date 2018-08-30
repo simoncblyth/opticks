@@ -57,7 +57,7 @@ X4Material::X4Material( const G4Material* material )
    :
    m_material(material),
    m_mpt(material->GetMaterialPropertiesTable()),
-   m_has_efficiency(HasEfficiencyProperty(m_mpt)),
+   m_has_efficiency(m_mpt ? HasEfficiencyProperty(m_mpt) : false),
    m_mat(NULL)
 {
    init() ;
@@ -103,9 +103,11 @@ void X4Material::init()
     // now are just passing the creation index along  
 
     m_mat = new GMaterial(name.c_str(), index) ; 
-    assert( m_mpt );
-
-    X4MaterialPropertiesTable::Convert( m_mat, m_mpt );
+    //assert( m_mpt );
+    if( m_mpt )
+    {
+        X4MaterialPropertiesTable::Convert( m_mat, m_mpt );
+    }
 }
 
 

@@ -7,6 +7,19 @@
 #include "PLOG.hh"
 
 
+
+
+G4VPhysicalVolume* CGDML::Parse(const char* path) // static 
+{
+    bool validate = false ; 
+    bool trimPtr = false ; 
+    G4GDMLParser parser;
+    parser.SetStripFlag(trimPtr);
+    parser.Read(path, validate);
+    return parser.GetWorldVolume() ;
+}
+
+
 void CGDML::Export(const char* dir, const char* name, const G4VPhysicalVolume* const world )
 {
     std::string path = BFile::FormPath(dir, name);

@@ -23,6 +23,8 @@ const char* BOpticksResource::G4ENV_RELPATH = "externals/config/geant4.ini" ;
 const char* BOpticksResource::OKDATA_RELPATH = "opticksdata/config/opticksdata.ini" ; // TODO: relocate into geocache
 
 
+const plog::Severity BOpticksResource::LEVEL = error ; 
+
 BOpticksResource::BOpticksResource()
     :
     m_log(new SLog("BOpticksResource::BOpticksResource","",debug)),
@@ -458,9 +460,21 @@ void BOpticksResource::setupViaKey()
 }
 
 
+/**
+BOpticksResource::setupViaSrc
+--------------------------------
+
+Invoked from OpticksResource::readEnvironment
+
+**/
+
 void BOpticksResource::setupViaSrc(const char* srcpath, const char* srcdigest)
 {  
-    // invoked from OpticksResource::readEnvironment
+    LOG(LEVEL) 
+        << " srcpath " << srcpath 
+        << " srcdigest " << srcdigest
+        ;
+
  
     assert( !m_setup );
     m_setup = true ; 

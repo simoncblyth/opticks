@@ -27,6 +27,7 @@ in original creation order with original indices.
 class X4_API X4MaterialTable 
 {
     public:
+        static const plog::Severity  LEVEL ; 
         static void Convert(GMaterialLib* mlib) ; 
         static G4Material* Get(unsigned idx);
     private:
@@ -36,6 +37,5 @@ class X4_API X4MaterialTable
     private:
         const G4MaterialTable*  m_mtab ; 
         GMaterialLib*           m_mlib ;         
-        plog::Severity          m_level ; 
 };
 

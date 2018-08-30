@@ -53,7 +53,7 @@ GOpticalSurface* X4OpticalSurface::Convert( const G4OpticalSurface* const surf )
     G4OpticalSurfaceModel model = surf->GetModel(); 
     switch( model )
     {
-        case glisur             : assert(0) ; break ;   // original GEANT3 model
+        case glisur             :             break ;   // original GEANT3 model, UpperChimneyTyvekOpticalSurface
         case unified            :             break ;   // UNIFIED model
         case LUT                : assert(0) ; break ;   // Look-Up-Table model
         case dichroic           : assert(0) ; break ; 

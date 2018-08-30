@@ -79,7 +79,7 @@ const char* OpticksResource::SENSOR_SURFACE_DYB = "lvPmtHemiCathodeSensorSurface
 const char* OpticksResource::SENSOR_SURFACE_JUNO = "SS-JUNO-UNKNOWN" ; 
 const char* OpticksResource::SENSOR_SURFACE_OTHER = "SS-OTHER-UNKNOWN" ; 
 
-
+const plog::Severity OpticksResource::LEVEL = error ; 
 
 OpticksResource::OpticksResource(Opticks* opticks, const char* lastarg) 
     :
@@ -148,15 +148,6 @@ const char* OpticksResource::getMaterialMap()
 }
 
 
-
-
-
-/*
-const char* OpticksResource::getQueryString()
-{
-    return m_query_string ;
-}
-*/
 
 OpticksQuery* OpticksResource::getQuery()
 {
@@ -256,7 +247,7 @@ std::string OpticksResource::getRelativePath(const char* path)
 
 void OpticksResource::init()
 {
-   LOG(debug) << "OpticksResource::init" ; 
+   LOG(LEVEL) << "OpticksResource::init" ; 
 
    BStr::split(m_detector_types, "GScintillatorLib,GMaterialLib,GSurfaceLib,GBndLib,GSourceLib", ',' ); 
    BStr::split(m_resource_types, "GFlags,OpticksColors", ',' ); 
@@ -278,7 +269,7 @@ void OpticksResource::init()
    assignDetectorName(); 
    assignDefaultMaterial(); 
 
-   LOG(debug) << "OpticksResource::init DONE" ; 
+   LOG(LEVEL) << "OpticksResource::init DONE" ; 
 }
 
 
@@ -515,6 +506,8 @@ void OpticksResource::readOpticksEnvironment()
     //    is canonically /usr/local/opticks
     //
     const char* inipath = InstallPathOKDATA();
+    LOG(LEVEL) << " inipath " << inipath ; 
+
     m_okenv = readIniEnvironment(inipath);
     if(m_okenv)
     {
@@ -576,6 +569,8 @@ OPTICKS_GEOKEY
     if(m_ok->isDumpEnv())  SSys::DumpEnv("OPTICKS") ; 
 
     m_geokey = SSys::getenvvar("OPTICKS_GEOKEY", DEFAULT_GEOKEY);
+    LOG(LEVEL) << " initial m_geokey " << m_geokey ;  
+
     const char* daepath = SSys::getenvvar(m_geokey);
 
     if(daepath == NULL)

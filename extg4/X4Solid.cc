@@ -758,6 +758,23 @@ void X4Solid::convertTorus()
     float startPhi = solid->GetSPhi()/degree ; 
     float deltaPhi = solid->GetDPhi()/degree ; 
 
+    if( startPhi < 0 ) 
+    {
+        LOG(fatal) 
+           <<  " changing torus -ve startPhi (degrees) to zero " << startPhi 
+           ;
+         startPhi = 0.f ; 
+    } 
+
+    if( deltaPhi != 360.f ) 
+    {
+        LOG(fatal) 
+           <<  " changing torus deltaPhi (degrees) to 360 " << deltaPhi 
+           ;
+         deltaPhi = 360.f ; 
+    } 
+
+
     assert( rmin == 0.f ); // torus with rmin not yet handled 
     assert( startPhi == 0.f && deltaPhi == 360.f ); 
 
@@ -811,7 +828,7 @@ void X4Solid::convertEllipsoid()
     cn->label = BStr::concat(m_name, "_ellipsoid", NULL) ; 
     cn->transform = nmat4triple::make_scale( scale );
     
-    LOG(info) 
+    LOG(debug) 
          << std::endl  
          << gpresent("tr.t", cn->transform->t ) 
          << std::endl  
@@ -919,7 +936,7 @@ void X4Solid::convertPolycone()
 
     }
 
-    if( zp.size() == 2 && zp[0].z > zp[0].z )
+    if( zp.size() == 2 && zp[0].z > zp[1].z )  // Aug 2018 FIX: was [0] [0] 
     {
         LOG(warning) << "Polycone swap misordered pair of zplanes for " << m_name ; 
         std::reverse( std::begin(zp), std::end(zp) ) ; 

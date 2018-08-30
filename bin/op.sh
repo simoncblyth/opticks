@@ -23,6 +23,21 @@ executables use "-h" rather than the "--help"
 that provides this text.
 
 
+Testing new geometry
+---------------------
+
+
+::
+
+    opticksdata-
+    opticksdata-export
+    opticksdata-export-ini   ## .ini file is needed, not the environment
+    opticksdata-dump         ## this dumps the environment
+
+
+    VERBOSE=1 op --resource --j1808 --dumpenv
+
+
 Profile Setup 
 ---------------
 
@@ -331,6 +346,7 @@ op-geometry-name()
        --dlv185) echo DLV185 ;; 
        --jpmt) echo JPMT ;; 
        --j1707) echo J1707 ;; 
+       --j1808) echo J1808 ;; 
        --lxe)  echo LXE ;; 
 
        --idyb) echo IDYB ;; 
@@ -357,6 +373,7 @@ op-geometry-desc()
       --jpmt) echo "JUNO with PMTs" ;;
       --lxe)  echo "Geant4 LXe Liquid Xenon example" ;; 
       --j1707)  echo "JUNO with ~36k 3inch PMTs, ~18k 20inch PMTs, torus guide tube " ;; 
+      --j1808)  echo "JUNO Geant4 10.4.2 GDML export, without truncated attributes " ;; 
    esac
 }
          
@@ -386,7 +403,7 @@ op-geometry-setup()
     op-geometry-unset 
     case $geo in 
      DYB|IDYB|JDYB|KDYB|LDYB|MDYB|DLIN|DFAR|DSST2|DLV*|DRV*) op-geometry-setup-dyb  $geo  ;;
-                             JUNO|JPMT|JTST|J1707) op-geometry-setup-juno $geo  ;;
+                             JUNO|JPMT|JTST|J1707|J1808) op-geometry-setup-juno $geo  ;;
                               DPIB|DPMT|LXE) op-geometry-setup-misc $geo  ;;
     esac
 }
@@ -441,6 +458,8 @@ op-geometry-setup-juno()
    ##    so changes to the query will necessitate a rebuild of the geocache
 
    local geo=${1:-JPMT}
+   [ -n "$VERBOSE" ] && echo $FUNCNAME : geo $geo 
+
    if [ "$geo" == "JUNO" ]; then 
        export OPTICKS_GEOKEY=OPTICKSDATA_DAEPATH_JUNO
        export OPTICKS_QUERY="range:1:50000"
@@ -457,7 +476,14 @@ op-geometry-setup-juno()
        export OPTICKS_GEOKEY=OPTICKSDATA_DAEPATH_J1707
        export OPTICKS_QUERY="all" 
        export OPTICKS_CTRL=""
+   elif [ "$geo" == "J1808" ]; then
+       export OPTICKS_GEOKEY=OPTICKSDATA_DAEPATH_J1808
+       export OPTICKS_QUERY="all" 
+       export OPTICKS_CTRL=""
    fi
+
+ 
+
 }
 op-geometry-setup-misc()
 {
@@ -629,7 +655,7 @@ op-binary-setup()
        #echo ubin $ubin cfm $cfm cmdline $cmdline
 
        case $cfm in 
-         --surf|--scint|--oscint|--pmt|--j1707) export OPTICKS_ARGS=${cmdline/$cfm}   ;;
+         --surf|--scint|--oscint|--pmt|--j1707|--j1808) export OPTICKS_ARGS=${cmdline/$cfm}   ;;
                                              *) export OPTICKS_ARGS=$cmdline ;;
        esac
     fi 
@@ -663,9 +689,13 @@ op-cmdline-parse()
 
     op-cmdline-binary-match
     op-cmdline-geometry-match
+    [ -n "$VERBOSE" ] && echo $FUNCNAME OPTICKS_GEO : ${OPTICKS_GEO} 
+
 
     op-binary-setup
     op-geometry-setup
+
+    [ -n "$VERBOSE" ] && echo $FUNCNAME : OPTICKS_GEOKEY ${OPTICKS_GEOKEY}  
 }
 
 
@@ -742,8 +772,6 @@ op-lldb-runline()
       echo lldb -f ${OPTICKS_BINARY} -- ${OPTICKS_ARGS} 
    fi 
 }
-
-
 
 op-runline()
 {
@@ -841,6 +869,8 @@ else
    if [ -n "$OPTICKS_QUIET" ]; then 
        >&2 echo proceeding.. : $runline
    fi
+
+   [ -n "$VERBOSE" ] && echo MAIN OPTICKS_GEOKEY : ${OPTICKS_GEOKEY} 
 
    echo $runline
    eval $runline

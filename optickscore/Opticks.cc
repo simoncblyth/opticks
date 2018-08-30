@@ -677,6 +677,13 @@ OpticksResource* Opticks::getResource()
 {
     return m_resource  ; 
 }
+void Opticks::dumpResource() const 
+{
+    return m_resource->Dump()  ; 
+}
+
+
+
 NState* Opticks::getState()
 {
     return m_state  ; 

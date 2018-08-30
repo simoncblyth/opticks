@@ -194,6 +194,14 @@ const char* PLOG::exename() const
     return args.exename(); 
 }
 
+const char* PLOG::get_arg_after(const char* option) const 
+{
+    return args.get_arg_after(option); 
+}
+
+
+
+
 PLOG::PLOG(int argc_, char** argv_, const char* fallback, const char* prefix)
     :
       args(argc_, argv_, "OPTICKS_LOG_ARGS" , ' '),   // when argc_ is 0 the named envvar is checked for arguments instead 
@@ -206,12 +214,14 @@ PLOG::PLOG(int argc_, char** argv_, const char* fallback, const char* prefix)
    assert( instance == NULL && "ONLY EXPECTING A SINGLE PLOG INSTANCE" );
    instance = this ; 
 
+/*
    std::cerr << "PLOG::PLOG " 
              << " instance " << instance 
              << " this " << this 
              << " logpath " << logpath
              << std::endl
              ;
+*/
 
 }
 

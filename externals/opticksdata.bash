@@ -19,6 +19,26 @@ Locations
        readonly opticksdata bitbucket clone that only pulls, this is what users see
 
 
+
+big file issue
+----------------
+
+::
+
+    epsilon:export blyth$ hg commit -m "juno1808" 
+    epsilon:export blyth$ hg push 
+    pushing to http://bitbucket.org/simoncblyth/opticksdata
+    real URL is https://bitbucket.org/simoncblyth/opticksdata
+    searching for changes
+    http authorization required for https://bitbucket.org/simoncblyth/opticksdata                                                                                                                              
+    realm: Bitbucket.org HTTP
+    user: simoncblyth
+    password: 
+    abort: missing support for check:phases                                                                                                                                                                    
+    epsilon:export blyth$ 
+
+
+
 FUNCTIONS
 -----------
 
@@ -155,6 +175,7 @@ opticksdata-xpath(){
        lxe) echo $base/LXe/g4_00 ;;
       jpmt) echo $base/juno/test3 ;;
       j1707) echo $base/juno1707/g4_00 ;; 
+      j1808) echo $base/juno1808/g4_00 ;; 
   esac
 
 #      dybf) echo $base/DayaBay_VGDX_20140414-1300/g4_00 ;;
@@ -172,21 +193,26 @@ DPIB
 JPMT
 LXE
 J1707
+J1808
 EOT
 }
 
 opticksdata-export(){
    local utag
    local ltag
-   local path
+   local daepath
+   local gdmlpath
    for utag in $(opticksdata-tags-) 
    do
       ltag=$(echo $utag | tr "A-Z" "a-z")
-      path=$(opticksdata-path $ltag) 
-      #printf "%5s %5s %s \n"  $utag $ltag $path
+      daepath=$(opticksdata-xpath $ltag).dae 
+      gdmlpath=$(opticksdata-xpath $ltag).gdml 
+      #printf "%5s %5s %s \n"  $utag $ltag $daepath
 
-      if [ -f "$path" ]; then 
-          export OPTICKSDATA_DAEPATH_$utag=$path
+      if [ -f "$daepath" ]; then 
+          export OPTICKSDATA_DAEPATH_$utag=$daepath
+      elif [ -f "$gdmlpath" ]; then 
+          export OPTICKSDATA_DAEPATH_$utag=$daepath    ## yes really daepath : gdmlpath can be derived from it 
       else
           [ -n "$VERBOSE" ] && echo $msg SKIP MISSING PATH for $utag 
       fi

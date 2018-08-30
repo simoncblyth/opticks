@@ -96,3 +96,16 @@ std::string SAr::argline() const
     for(int i=0 ; i < _argc ; i++ ) ss << " " << ( _argv[i] ? _argv[i] : "NULL" ) ; 
     return ss.str(); 
 }
+
+const char* SAr::get_arg_after(const char* option) const
+{
+    for(int i=1 ; i < _argc - 1 ; i++ ) 
+    {
+        const char* a0 = _argv[i] ; 
+        const char* a1 = _argv[i+1] ;
+        if(a0 && strcmp(a0, option) == 0) return a1 ;   
+    }
+    return NULL ; 
+}
+
+

@@ -302,6 +302,7 @@ class OKCORE_API Opticks {
        const char*          getAnaKeyArgs() const ;
    public:
        OpticksResource*     getResource(); 
+       void                 dumpResource() const ; 
        OpticksRun*          getRun(); 
    public:
        OpticksQuery*        getQuery(); 

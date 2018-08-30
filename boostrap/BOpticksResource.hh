@@ -4,6 +4,7 @@
 #include <map>
 #include <string>
 
+#include "plog/Severity.h"
 #include "BRAP_API_EXPORT.hh"
 #include "BRAP_HEAD.hh"
 
@@ -54,6 +55,7 @@ BRANCHES OF OPERATION : USING RELATIVE APPROACH
 class BRAP_API  BOpticksResource {
        
     private:
+       static const plog::Severity  LEVEL ; 
        static const char* G4ENV_RELPATH ; 
        static const char* OKDATA_RELPATH ;
     protected:

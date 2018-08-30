@@ -19,6 +19,7 @@ class BEnv ;
 class Types ;
 class Typ ;
 
+#include "plog/Severity.h"
 #include "OKCORE_API_EXPORT.hh"
 #include "OKCORE_HEAD.hh"
 
@@ -63,6 +64,8 @@ TODO:
 
 
 class OKCORE_API OpticksResource : public BOpticksResource {
+    public:
+       static const plog::Severity LEVEL ;  
     private:
        static const char* EMPTY ; 
        static const char* G4LIVE ; 
