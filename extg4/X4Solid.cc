@@ -40,6 +40,7 @@
 #include "NDisc.hpp"
 #include "NNode.hpp"
 #include "NTreeBuilder.hpp"
+#include "NTreeProcess.hpp"
 
 #include "PLOG.hh"
 
@@ -60,10 +61,19 @@ nnode* X4Solid::Convert(const G4VSolid* solid, const char* boundary)
 
     root->update_gtransforms(); 
 
-
     if(boundary) root->boundary = boundary ; 
+
     return root ; 
 }
+
+nnode* X4Solid::Balance(nnode* raw, unsigned soIdx , unsigned lvIdx )
+{
+    nnode* root = NTreeProcess<nnode>::Process(raw, soIdx, lvIdx);  // balances deep trees
+    root->other = raw ; 
+    root->boundary = raw->boundary ? strdup(raw->boundary) : NULL ; 
+    return root ; 
+}
+
 
 X4Solid::X4Solid(const G4VSolid* solid, bool top)
    :

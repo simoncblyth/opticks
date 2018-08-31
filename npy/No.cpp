@@ -94,6 +94,7 @@ no no::make_node(OpticksCSG_t type, no* left, no* right )
     n.label = strdup(tag.c_str()) ;    
     n.left = left ; 
     n.right = right ; 
+    n.parent = NULL ; 
     n.depth = 0 ; 
     n.type = type ; 
     n.complement = false ; 

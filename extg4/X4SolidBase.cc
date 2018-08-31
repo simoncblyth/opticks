@@ -244,7 +244,7 @@ const char* X4SolidBase::getIdentifier() const
  
 void X4SolidBase::addG4Code( const char* g4code )
 {
-    LOG(error) << "[" << g4code << "]" ; 
+    //LOG(error) << "[" << g4code << "]" ; 
     assert( g4code && g4code[0] != ' ' && "do not indent the input" ) ; 
     m_g4code.push_back(g4code); 
 }

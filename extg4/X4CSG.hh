@@ -39,6 +39,8 @@ struct X4_API X4CSG
     X4CSG(const G4VSolid* solid );
 
     void init();
+    void checkTree() const ;
+
     void configure( NPYMeta* meta );
     void dump(const char* msg="X4CSG::dump");
     std::string save(const char* csgpath) ;
@@ -53,6 +55,7 @@ struct X4_API X4CSG
     const G4VSolid*  container ; 
     const char*      solid_boundary ; 
     const char*      container_boundary ; 
+    nnode*           nraw ;   // unbalanced
     nnode*           nsolid ; 
     nnode*           ncontainer ; 
     NCSG*            csolid ; 

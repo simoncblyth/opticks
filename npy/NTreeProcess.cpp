@@ -29,7 +29,7 @@ template <typename T>
 T* NTreeProcess<T>::Process( T* root_ , unsigned soIdx, unsigned lvIdx )  // static
 {
     if( LVList == NULL )
-         LVList = new std::vector<unsigned> { 10, 16, 17, 18, 19, 20, 21 } ; 
+         LVList = new std::vector<unsigned> { 10, 16, 17, 18, 19, 20, 21, 999 } ; 
          //LVList = new std::vector<unsigned> {36,  56,  57,  60,  63,  65,  67,  69,  70,  74, 131, 200 } ; 
  
     if( ProcBuffer == NULL ) ProcBuffer = NPY<unsigned>::make(0,4) ; 
@@ -69,14 +69,14 @@ T* NTreeProcess<T>::Process( T* root_ , unsigned soIdx, unsigned lvIdx )  // sta
 
 template <typename T>
 NTreeProcess<T>::NTreeProcess( T* root_ ) 
-   :
-   root(root_),
-   balanced(NULL),
-   result(NULL),
-   balancer(new NTreeBalance<T>(root_)),    // writes depth, subdepth to all nodes
-   positiver(NULL)
+    :
+    root(root_),
+    balanced(NULL),
+    result(NULL),
+    balancer(new NTreeBalance<T>(root_)),    // writes depth, subdepth to all nodes
+    positiver(NULL)
 {
-   init();
+    init();
 }
 
 template <typename T>

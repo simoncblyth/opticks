@@ -14,6 +14,8 @@ struct NPY_API no
     const char* label ; 
     no* left ; 
     no* right ; 
+    no* parent ; 
+
     unsigned depth ;
     unsigned subdepth ;
     OpticksCSG_t type ; 

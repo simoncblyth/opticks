@@ -7,6 +7,7 @@
 #include "BFile.hh"
 
 #include "NTreeAnalyse.hpp"
+#include "NTreeProcess.hpp"
 #include "NNode.hpp"
 #include "NCSG.hpp"
 #include "NPYBase.hpp"
@@ -98,7 +99,8 @@ X4CSG::X4CSG(const G4VSolid* solid_)
     container(MakeContainer(solid, 1.5f)),
     solid_boundary("Vacuum///GlassSchottF2"),
     container_boundary("Rock//perfectAbsorbSurface/Vacuum"),
-    nsolid(X4Solid::Convert(solid, solid_boundary)),
+    nraw(X4Solid::Convert(solid, solid_boundary)),
+    nsolid(X4Solid::Balance(nraw)),
     ncontainer(X4Solid::Convert(container, container_boundary)),
     csolid( NCSG::Adopt(nsolid) ),
     ccontainer( NCSG::Adopt(ncontainer) ),
@@ -109,9 +111,7 @@ X4CSG::X4CSG(const G4VSolid* solid_)
 
 void X4CSG::init()
 {
-
-    LOG(info) << NTreeAnalyse<nnode>::Desc(nsolid) ;
-
+    //checkTree();  
 
     configure( csolid->getMeta() ) ; 
     configure( ccontainer->getMeta() ) ; 
@@ -119,6 +119,21 @@ void X4CSG::init()
     trees.push_back( ccontainer ); 
     trees.push_back( csolid ); 
 }
+
+
+void X4CSG::checkTree() const 
+{
+    unsigned soIdx = 0 ; 
+    unsigned lvIdx = 999 ;  // a listed value 
+
+    //LOG(info) << " nraw " << std::endl << NTreeAnalyse<nnode>::Desc(nraw) ;
+
+    nnode* pro = NTreeProcess<nnode>::Process(nraw, soIdx, lvIdx);  // balances deep trees 
+    assert( pro ) ; 
+
+    //LOG(info) << " pro " << std::endl << NTreeAnalyse<nnode>::Desc(pro) ;
+}
+
 
 void X4CSG::configure( NPYMeta* meta )
 {
@@ -202,6 +217,12 @@ int main( int argc , char** argv )
 
 void X4CSG::generateTestMain( std::ostream& out ) const 
 {
+    if( nsolid->g4code == NULL ) 
+    { 
+        LOG(error) << " skip as no g4code " ; 
+        return ;
+    }   
+
     out << HEAD ; 
     nnode::to_g4code(nsolid, out,  0 ) ;  
     out << TAIL ; 

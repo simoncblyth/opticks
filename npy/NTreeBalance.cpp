@@ -7,7 +7,8 @@
 #include "NTreeBuilder.hpp"
 #include "PLOG.hh"
 
-
+template <typename T>
+const plog::Severity NTreeBalance<T>::LEVEL = info ; 
 
 
 template <typename T>
@@ -35,6 +36,11 @@ T* NTreeBalance<T>::create_balanced()
     unsigned op_mask = operators(); 
     unsigned hop_mask = operators(2);  // operators above the bileaf operators
 
+
+    LOG(LEVEL) << "op_mask " << CSGMaskDesc(op_mask ); 
+    LOG(LEVEL) << "hop_mask " << CSGMaskDesc(hop_mask ); 
+
+
     OpticksCSG_t op = CSG_MonoOperator(op_mask) ;  
     OpticksCSG_t hop = CSG_MonoOperator(hop_mask) ;  
 
@@ -43,16 +49,35 @@ T* NTreeBalance<T>::create_balanced()
     if( op == CSG_INTERSECTION || op == CSG_UNION ) 
     {
         std::vector<T*> prims ; 
-        subtrees( prims, 0 );    // subdepth 0 
-        //LOG(info) << " prims " << prims.size() ; 
+        std::vector<T*> otherprim ; 
+        subtrees( prims, 0, otherprim );    // subdepth 0 
+        LOG(LEVEL) << " CommonTree prims " << prims.size() ; 
+        assert( otherprim.size() == 0 );  
+
         balanced = NTreeBuilder<T>::CommonTree(prims, op ); 
     }
     else if( hop == CSG_INTERSECTION || hop == CSG_UNION ) 
     {
         std::vector<T*> bileafs ; 
-        subtrees( bileafs, 1 );  // subdepth 1
-        //LOG(info) << " bileafs " << bileafs.size() ; 
-        balanced = NTreeBuilder<T>::BileafTree(bileafs, hop ); 
+        std::vector<T*> otherprim ; 
+
+        subtrees( bileafs, 1, otherprim );  // subdepth 1
+        LOG(LEVEL) 
+            << " bileafs " << bileafs.size()
+            << " otherprim " << otherprim.size() 
+            ;
+
+        if( otherprim.size() == 0 )
+        {
+            balanced = NTreeBuilder<T>::BileafTree(bileafs, hop ); 
+        }
+        else
+        {
+            balanced = NTreeBuilder<T>::MixedTree(bileafs, otherprim, hop ); 
+        }
+
+        // BUT : can also have bileafs + primitives in a mixed tree, 
+        //       like with sFasterner bolts : and this is dropping them 
     }
     else
     {
@@ -118,29 +143,67 @@ void NTreeBalance<T>::subdepth_r(T* node, unsigned depth_ )
 }
 
 
+
+
+
+
 /**
 NTreeBalance<T>::subtrees
 ---------------------------
 
-Collect all subtrees of a particular subdepth.
+Collect all subtrees of a particular subdepth into *subs*
+on first pass.  On second pass collect into *otherprim* 
+any primitives that are not already collected  
+either directly or as bileaf leaves within subs.
 
 **/
 
 template <typename T>
-void NTreeBalance<T>::subtrees(std::vector<T*>& subs, unsigned subdepth )
+void NTreeBalance<T>::subtrees(std::vector<T*>& subs, unsigned subdepth, std::vector<T*>& otherprim )
 {
-    subtrees_r( root, subs, subdepth );      
+    subtrees_r( root, subs, subdepth, otherprim, 0  );
+    subtrees_r( root, subs, subdepth, otherprim, 1  );
 }
 
 template <typename T>
-void NTreeBalance<T>::subtrees_r(T* node, std::vector<T*>& subs, unsigned subdepth ) // static
+void NTreeBalance<T>::subtrees_r(T* node, std::vector<T*>& subs, unsigned subdepth, std::vector<T*>& otherprim, unsigned pass ) // static
 {
     if( node == NULL ) return ; 
-    subtrees_r(node->left , subs, subdepth );
-    subtrees_r(node->right, subs, subdepth );
+    subtrees_r(node->left , subs, subdepth, otherprim, pass);
+    subtrees_r(node->right, subs, subdepth, otherprim, pass);
     // postorder visit (ie from leftmost visiting children before their parents)
-    if(node->subdepth == subdepth) subs.push_back(node) ;
+
+    if(pass == 0 ) 
+    {
+        if(node->subdepth == subdepth) 
+        {
+            subs.push_back(node) ;
+        }
+    }
+    else if( pass == 1 )   // mop up any other primitives that are not already collected
+    {
+        if( node->is_primitive() && !is_collected(subs, node) )
+        { 
+            otherprim.push_back(node); 
+        }
+    }
 }
+
+
+template <typename T>
+bool NTreeBalance<T>::is_collected(const std::vector<T*>& subs, const T* node) // static
+{
+    for(unsigned i=0 ; i < subs.size() ; i++)
+    {
+        const T* sub = subs[i] ; 
+        if( sub->is_primitive() && sub == node ) return true ; 
+        if( sub->is_operator() && sub->left == node ) return true ; 
+        if( sub->is_operator() && sub->right == node ) return true ; 
+    }
+    return false ; 
+
+}
+
 
 
 template <typename T>
