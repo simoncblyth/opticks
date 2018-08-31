@@ -7,6 +7,7 @@
 
 #include "SStr.hh"
 #include "NNode.hpp"
+#include "X4.hh"
 #include "X4Solid.hh"
 #include "G4VSolid.hh"
 #include "PLOG.hh"
@@ -192,7 +193,7 @@ std::string X4SolidBase::GenInstanciate(const char* cls, const char* identifier,
     unsigned npar = param.size(); 
     for(unsigned i=0 ; i < npar ; i++) 
     { 
-       ss << param[i] ;     
+       ss << X4::Argument(param[i]) ;     
        if( i < npar - 1) ss << ", " ;
     } 
 
@@ -200,6 +201,8 @@ std::string X4SolidBase::GenInstanciate(const char* cls, const char* identifier,
     return ss.str(); 
 }
 
+
+// hmm its inconvenient to have string together with numbers as cannot swap twopi or pi number 
 
 template std::string X4SolidBase::GenInstanciate<float>(const char*, const char*, const char*, const std::vector<float>& );
 template std::string X4SolidBase::GenInstanciate<double>(const char*, const char*, const char*, const std::vector<double>& );
@@ -226,7 +229,8 @@ void X4SolidBase::setG4Param(const std::vector<T>& param, const char* identifier
     ss << GenInstanciate( m_entityName, identifier, m_name, param ) ;
     std::string g4code = ss.str();
 
-    setG4Code( g4code.c_str() ); 
+    addG4Code( g4code.c_str() ); 
+    setG4Code();
 }
 
 template void X4SolidBase::setG4Param<float>(const std::vector<float>&, const char* );
@@ -240,39 +244,29 @@ const char* X4SolidBase::getIdentifier() const
  
 void X4SolidBase::addG4Code( const char* g4code )
 {
+    LOG(error) << "[" << g4code << "]" ; 
+    assert( g4code && g4code[0] != ' ' && "do not indent the input" ) ; 
     m_g4code.push_back(g4code); 
 }
 
-void X4SolidBase::setG4Code( const char* g4code )
+void X4SolidBase::setG4Code()
 {
     assert( m_root && "must setG4Code after setRoot " ); 
-    if(m_g4code.size() == 0 )
+
+    const char* indent = "    " ; 
+
+    std::stringstream ss ; 
+    unsigned num_lines = m_g4code.size() ; 
+    for( unsigned i=0 ; i < num_lines ; i++) 
     {
-        m_root->g4code = strdup(g4code) ; 
-    }
-    else
-    {
-        addG4Code(g4code); 
-        std::stringstream ss ; 
-        for( unsigned i=0 ; i < m_g4code.size() ; i++) ss << m_g4code[i] << std::endl ;  
-        std::string concat = ss.str(); 
-        m_root->g4code = strdup(concat.c_str()) ; 
-    }
-    //LOG(info) << " root.g4code " << m_root->g4code ; 
+        ss << indent << m_g4code[i] ;  
+        if( i < num_lines - 1 ) ss << std::endl ;  
+    } 
+
+    std::string concat = ss.str(); 
+    m_root->g4code = strdup(concat.c_str()) ; 
 }
 
-const char* X4SolidBase::getG4Code(const char* identifier) const 
-{
-    // not using this currently : instead trying to 
-    // set identifies at instanciation rather than fixing up lates 
-    //
-    // Note that NNode used concatenated identifiers for booleans joining 
-    // all the primitives identifiers.
-
-    assert( m_root && "must setRoot and setG4Code/setG4Param before this " ); 
-    const char* g4code = m_root->g4code ; 
-    return SStr::Format1<256>( g4code, identifier ) ; 
-}
  
 nnode* X4SolidBase::root() const 
 {

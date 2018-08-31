@@ -189,6 +189,60 @@ template X4_API std::string X4::Value<int>(int);
 template X4_API std::string X4::Value<unsigned>(unsigned);
 
 
+
+
+
+template<typename T>
+std::string X4::Argument( T v )
+{
+    std::stringstream ss ; 
+    ss << std::fixed << v ; 
+    return ss.str(); 
+}
+
+// template specialization 
+template<>
+std::string X4::Argument<std::string>( std::string v )
+{
+    std::stringstream ss ; 
+    ss << v ; 
+    return ss.str(); 
+}
+
+template<>
+std::string X4::Argument<double>( double  v )
+{
+    std::string code ;  
+    if( v == CLHEP::twopi ) code = "CLHEP::twopi" ;  
+    if( v == CLHEP::pi ) code = "CLHEP::pi" ;  
+
+    std::stringstream ss ; 
+    if(!code.empty())
+    {
+        ss << code ; 
+    }
+    else
+    {
+        ss << std::fixed << v ; 
+    } 
+    return ss.str(); 
+}
+
+
+template X4_API std::string X4::Argument<float>(float);
+//template X4_API std::string X4::Argument<double>(double);
+template X4_API std::string X4::Argument<int>(int);
+template X4_API std::string X4::Argument<unsigned>(unsigned);
+//template X4_API std::string X4::Argument<std::string>(std::string);
+
+
+
+
+
+
+
+
+
 std::string X4::Array( const double* a, unsigned nv, const char* identifier )
 {
     std::stringstream ss ; 

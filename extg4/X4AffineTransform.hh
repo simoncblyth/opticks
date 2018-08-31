@@ -22,6 +22,11 @@ struct X4_API X4AffineTransform
     G4ThreeVector getTranslation() const ;
     std::string getTranslationCode(const char* identifier) const ;
 
+    bool isIdentityRotation() const ; 
+    bool isIdentityTranslation() const ; 
+    bool isIdentityTransform() const ; 
+ 
+
     const G4AffineTransform& tr ;    
     const G4RotationMatrix  rot ; 
     const G4ThreeVector     tla ;  

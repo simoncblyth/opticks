@@ -4,16 +4,20 @@ OKX4Test_j1808_x4gen_csg_solids_survey
 * for context :doc:`OKX4Test_j1808`
 
 
-boot with GDML, direct convert to GGeo, persist to geocache with codegen 
+
+Setup for survey of solids
 --------------------------------------------------------------------------
+
+OKX4Test : boot with GDML, direct convert to GGeo, persist to geocache with codegen 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ::
 
     opticksdata- ; OKX4Test --gdmlpath $(opticksdata-j) --g4codegen
 
 
-copy the key "spec" into OPTICKS_KEY envvar
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+copy the key "spec" into OPTICKS_KEY envvar, add to .bash_profile/.bashrc
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Notice the key "spec" output and copy it into OPTICKS_KEY envvar::
 
@@ -29,7 +33,7 @@ Notice the key "spec" output and copy it into OPTICKS_KEY envvar::
                       layout  : 1
 
 Export that envvar when reusing this geometry. NB Opticks executables 
-are only sensitve to OPTICKS_KEY envvar when the --envkey option is used.::
+are currently only sensitive to OPTICKS_KEY envvar when the --envkey option is used.::
 
     export OPTICKS_KEY=OKX4Test.X4PhysicalVolume.lWorld0x4bc2710_PV.15cf540d9c315b7f5d0adc7c3907b922 
 
@@ -44,7 +48,7 @@ are only sensitve to OPTICKS_KEY envvar when the --envkey option is used.::
 
 
 generate CMakeLists.txt and scripts to build the generated code into executables for every solid
---------------------------------------------------------------------------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ::
 
@@ -63,6 +67,14 @@ x4gen- shakedown
      so:019 lv:019 rmx:04 bmx:04 soName: PMT_20inch_inner2_solid0x4cb3870
      so:020 lv:020 rmx:03 bmx:03 soName: PMT_20inch_body_solid0x4c90e50
      so:021 lv:021 rmx:03 bmx:03 soName: PMT_20inch_pmt_solid0x4c81b40
+
+
+
+
+g4codegen mini-review
+-----------------------
+
+* :doc:`g4codegen_review`
 
 
 survey the 40 solids of j1808
@@ -177,6 +189,23 @@ survey the 40 solids of j1808
 
 
 
+
+issue A : sAirTT0x5b34000
+---------------------------
+
+::
+
+     27 G4VSolid* make_solid()
+     28 {
+     29     G4VSolid* b = new G4Box("BoxsAirTT0x5b33e60", 24000, 24000, 2500) ; // 1
+     30     G4VSolid* d = new G4Tubs("Cylinder0x5b33ef0", 0, 500, 2000, 0, 6.28319) ; // 1
+     31  
+     32     G4ThreeVector A(0.000000,0.000000,-500.000000);
+     33     G4VSolid* a = new G4SubtractionSolid("sAirTT0x5b34000", b, d, NULL, A) ; // 0
+     34     return a ;
+     35 } 
+
+     //  z:  2500 - 500 = 2000 voila z-coincidence 
 
 
 

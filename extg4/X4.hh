@@ -54,6 +54,7 @@ class X4_API X4
         static size_t GetOpticksIndex( const G4LogicalSurface* const surf );
 
         template<typename T> static std::string Value( T v );  
+        template<typename T> static std::string Argument( T v );  
         static std::string Array( const double* a, unsigned nv, const char* identifier );  
 
 };

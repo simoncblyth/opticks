@@ -68,10 +68,6 @@ Currently::
     143 }
 
 
-
-
-
-
 2. x4gen-- 
 
    Generate the CMake project to build and install the executables and then do so.
@@ -88,18 +84,11 @@ EOU
 
 x4gen--notes(){ cat << EON
 
-
-
 EON
 }
 
 
-
-
-
 x4gen-dir(){ echo $(dirname $(x4gen-source)) ; }
-x4gen-cd(){  cd $(x4gen-dir) ; }
-x4gen-c(){   cd $(x4gen-dir) ; }
 
 
 x4gen-testconfig () 
@@ -184,9 +173,9 @@ x4gen-ed(){
 
 
 x4gen-cd(){   cd $(x4gen-base) ; }
+x4gen-base(){ x4gen-base-fromkey ; } 
 x4gen-base-fromkey(){ geocache- ; echo $(geocache-keydir) ; }  # requires OPTICKS_KEY envvar 
 x4gen-base-manual(){  echo  /usr/local/opticks/geocache/OKX4Test_World0xc15cfc0_PV_g4live/g4ok_gltf/828722902b5e94dab05ac248329ffebe/1 ; }
-x4gen-base(){ x4gen-base-fromkey ; } 
 
 
 x4gen-name(){ echo x$(printf "%0.3d" ${1:-0}) ; }
@@ -306,6 +295,8 @@ EOG
 }
 
 
+
+
 x4gen--(){
    local msg="=== $FUNCNAME :"
    local base=$(x4gen-base)/g4codegen
@@ -330,6 +321,13 @@ x4gen--(){
    ./go.sh 
 
    cd $iwd
+}
+
+x4gen-go()
+{
+   cd $(x4gen-base)/g4codegen  
+   ./go.sh 
+
 }
 
 

@@ -440,7 +440,7 @@ GMesh* X4PhysicalVolume::convertSolid( int lvIdx, int soIdx, const G4VSolid* con
      nnode* raw = X4Solid::Convert(solid)  ; 
      if(m_g4codegen) 
      {
-         raw->dump_g4code(); 
+         raw->dump_g4code();  // just for debug 
          X4CSG::GenerateTest( solid, m_g4codegendir , lvIdx ) ; 
      }
 

@@ -326,9 +326,9 @@ void GMeshLib::reportMeshUsage_(std::ostream& out) const
              << " v" << std::setw(5) << nvert 
              << " f" << std::setw(5) << nface
              << " )"
-             << " : " << std::setw(6) << nodeCount
-             << " : " << std::setw(7) << nodeCount*nvert
-             << " : " << std::setw(7) << nodeCount*nface
+             << " : " << std::setw(7) << nodeCount
+             << " : " << std::setw(10) << nodeCount*nvert
+             << " : " << std::setw(10) << nodeCount*nface
              << " : " << meshName 
              << std::endl ; 
 

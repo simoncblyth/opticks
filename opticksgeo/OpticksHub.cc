@@ -903,7 +903,7 @@ void OpticksHub::dumpVolumes(unsigned cursor, GMergedMesh* mm, const char* msg )
     for(unsigned i=0 ; i < std::min(num_volumes, 20u) ; i++)
     {
          glm::vec4 ce_ = mm->getCE(i);
-         std::cout << " " << std::setw(3) << i 
+         std::cout << " " << std::setw(7) << i 
                    << " " << ( i == cursor ? "**" : "  " ) 
                    << std::setw(50) << ( test ? "test" : nodelib->getLVName(i) )
                    << " " 

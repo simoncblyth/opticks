@@ -269,11 +269,13 @@ void X4Solid::convertBooleanSolid()
         assert( disp ); 
         X4AffineTransform xdirect(disp->GetDirectTransform()); 
 
-        const char* rot_id = OTHER_ID->get(false) ;
+        bool identityRotation = xdirect.isIdentityRotation() ; 
+
+        const char* rot_id = identityRotation ? "NULL" : OTHER_ID->get(false) ;
         const char* tla_id = OTHER_ID->get(false) ;
 
         // TODO: suppress identity 
-        std::string rot = xdirect.getRotationCode(rot_id);
+        std::string rot = identityRotation ? "" : xdirect.getRotationCode(rot_id);
         std::string tla = xdirect.getTranslationCode(tla_id);
 
         addG4Code(rot.c_str()) ;  
@@ -580,6 +582,8 @@ void X4Solid::convertTubs()
                   ;
 
     setRoot(result); 
+
+
 
     std::vector<double> param = { 
                                   solid->GetInnerRadius(), 

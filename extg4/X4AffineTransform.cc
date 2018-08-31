@@ -13,6 +13,24 @@ X4AffineTransform::X4AffineTransform(const G4AffineTransform&  t )
 {
 }
 
+bool X4AffineTransform::isIdentityRotation() const 
+{
+    return rot.isIdentity(); 
+}
+bool X4AffineTransform::isIdentityTranslation() const 
+{
+    return 
+        tla.x() == 0. && 
+        tla.y() == 0. && 
+        tla.z() == 0. 
+        ; 
+}
+bool X4AffineTransform::isIdentityTransform() const 
+{
+    return isIdentityRotation() && isIdentityTranslation() ;
+}
+ 
+
 
 G4AffineTransform X4AffineTransform::FromTransform(const G4Transform3D& T )
 {
