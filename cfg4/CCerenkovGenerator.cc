@@ -26,6 +26,10 @@
 #include "CCerenkovGenerator.hh"
 #include "PLOG.hh"
 
+#define ALIGN_DEBUG 1
+#ifdef ALIGN_DEBUG
+#include "CAlignEngine.hh"
+#endif
 
 
 G4MaterialPropertyVector* CCerenkovGenerator::GetRINDEX(unsigned materialIndex) // static
@@ -109,13 +113,20 @@ G4VParticleChange* CCerenkovGenerator::GeneratePhotonsFromGenstep( const Opticks
     G4double meanVelocity = q3.w ;  
 
     G4double BetaInverse = q4.x ; 
-    G4double Pmin = q4.y ;    // TODO: check units 
+    G4double Pmin = q4.y ;    
     G4double Pmax = q4.z ; 
+
+    G4double wavelength_min = h_Planck*c_light/Pmax ;
+    G4double wavelength_max = h_Planck*c_light/Pmin ;
+
+
     //G4double maxCos = q4.w ;
 
     LOG(info) 
         << " Pmin " << Pmin
         << " Pmax " << Pmax
+        << " wavelength_min(nm) " << wavelength_min/nm
+        << " wavelength_max(nm) " << wavelength_max/nm
         << " meanVelocity " << meanVelocity
         ;
 
@@ -153,6 +164,7 @@ G4VParticleChange* CCerenkovGenerator::GeneratePhotonsFromGenstep( const Opticks
     using CLHEP::twopi ; 
 
 
+
     /////////////////////////////////////////////////////////////////////////////////////////////////
     //
     //  TO CONSIDER :
@@ -169,11 +181,18 @@ G4VParticleChange* CCerenkovGenerator::GeneratePhotonsFromGenstep( const Opticks
     //  any changes should be marked by ifdef-else preprocessor defines that retain the original 
     //
     /////////////////////////////////////////////////////////////////////////////////////////////////
+#ifdef ALIGN_DEBUG
+    int pindex = 0 ; 
+#endif
 
 
   for (G4int i = 0; i < fNumPhotons; i++) {
 
       // Determine photon energy
+#ifdef ALIGN_DEBUG
+      CAlignEngine::SetSequenceIndex(i) ; 
+      G4double rand2 ;
+#endif    
 
       G4double rand;
       G4double sampledEnergy, sampledRI; 
@@ -187,8 +206,24 @@ G4VParticleChange* CCerenkovGenerator::GeneratePhotonsFromGenstep( const Opticks
          sampledRI = Rindex->Value(sampledEnergy);
          cosTheta = BetaInverse / sampledRI;  
 
+#ifdef ALIGN_DEBUG
+         if( i == pindex ) LOG(error)
+                          << " pindex " << pindex
+                          << " gcp.u0 " << rand
+                          << " Pmin " << Pmin
+                          << " Pmax " << Pmax
+                          << " dp " << dp
+                          << " sampledEnergy " << sampledEnergy
+                          << " sampledRI " << sampledRI
+                          ;   
+#endif    
+
          sin2Theta = (1.0 - cosTheta)*(1.0 + cosTheta);
          rand = G4UniformRand();	
+
+#ifdef ALIGN_DEBUG
+         if( i == pindex ) LOG(error) << "gcp.u1 " << rand ;   
+#endif    
 
         // Loop checking, 07-Aug-2015, Vladimir Ivanchenko
       } while (rand*maxSin2 > sin2Theta);
@@ -197,6 +232,14 @@ G4VParticleChange* CCerenkovGenerator::GeneratePhotonsFromGenstep( const Opticks
       // defined by Theta 
 
       rand = G4UniformRand();
+
+
+#ifdef ALIGN_DEBUG
+      if( i == pindex ) LOG(error) << "gcp.u2 " << rand ;   
+#endif    
+
+
+
 
       G4double phi = twopi*rand;
       G4double sinPhi = std::sin(phi);
@@ -252,10 +295,28 @@ G4VParticleChange* CCerenkovGenerator::GeneratePhotonsFromGenstep( const Opticks
 
       do {
          rand = G4UniformRand();
+
+#ifdef ALIGN_DEBUG
+         if( i == pindex ) LOG(error) << "gcp.u3 " << rand ;   
+#endif    
+
          NumberOfPhotons = MeanNumberOfPhotons1 - rand *
                                 (MeanNumberOfPhotons1-MeanNumberOfPhotons2);
+
+
+#ifdef ALIGN_DEBUG
+         rand2 = G4UniformRand();
+         N = rand2 *
+                        std::max(MeanNumberOfPhotons1,MeanNumberOfPhotons2);
+
+         if( i == pindex ) LOG(error) << "gcp.u4 " << rand2 ;   
+#else
+
          N = G4UniformRand() *
                         std::max(MeanNumberOfPhotons1,MeanNumberOfPhotons2);
+
+#endif
+
         // Loop checking, 07-Aug-2015, Vladimir Ivanchenko
       } while (N > NumberOfPhotons);
 
@@ -286,6 +347,11 @@ G4VParticleChange* CCerenkovGenerator::GeneratePhotonsFromGenstep( const Opticks
       aSecondaryTrack->SetParentID(aTrack.GetTrackID());
 
       aParticleChange.AddSecondary(aSecondaryTrack);
+
+#ifdef ALIGN_DEBUG
+      CAlignEngine::SetSequenceIndex(-1) ; 
+#endif    
+
   }
 
   if (verboseLevel>0) {

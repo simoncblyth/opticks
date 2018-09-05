@@ -326,7 +326,7 @@ void NCSGList::checkMaterialConsistency() const
 
         }
 
-        assert( consistent_imat_omat );
+        //assert( consistent_imat_omat );
     }
 }
 

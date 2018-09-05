@@ -1,8 +1,12 @@
-
 OKX4Test_sFasteners_generalize_tree_balancing
 ================================================
 
-::
+Following generalization can raytrace the balanced tree::
+
+   LV=16 x4gen-csg   
+
+
+Tree balancing lost all the bolts for this deep tree::
 
     epsilon:npy blyth$ TEST=NTreeBalanceTest om-t
 

@@ -119,6 +119,7 @@ float nhyperboloid::rz(float z) const
 
 float nhyperboloid::rrz(float z) const
 { 
+    // r^2 at z 
     //  rr =  x^2 +  y^2  =  a^2 * (  (z/c)^2  +  1 )
     float a = r0();
     float aa = a*a ; 

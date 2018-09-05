@@ -674,7 +674,11 @@ void OpticksCfg<Listener>::init()
 
 
    m_desc.add_options()
-       ("pindex",        boost::program_options::value<std::string>(&m_pindex), "debug OptiX launch print index specified by up to three comma delimited ints " );
+       ("pindex",        boost::program_options::value<std::string>(&m_pindex), 
+                     "debug OptiX launch print index specified by three comma delimited ints,"
+                     " giving 3D spec of single launch slot to enable debugging for "
+                   );
+
    m_desc.add_options()
        ("dindex",        boost::program_options::value<std::string>(&m_dindex), "debug photon_id indices in comma delimited list of ints, no size limit" );
    m_desc.add_options()

@@ -2827,7 +2827,6 @@ CSG.kwa = dict(poly="IM", resolution="50")
 container = CSG("box", param=[0,0,0,400], boundary=args.container, poly="MC", nx="20" )
 
 
-
 class Tor(object):
     def __init__(self, R, r):
         self.R = R
@@ -2850,7 +2849,13 @@ class Hyp(object):
 
     @classmethod
     def ZF(cls, r0, zw, w ):
-        """ hyperboloid zf param to hit radius w, at z=zw """
+        """ 
+        :param r0: waist radius, ie radius at z=0 
+        :param zw: z at which to pin the radius
+        :param w: 
+
+        hyperboloid zf param to hit radius w, at z=zw 
+        """
         rr0 = r0*r0
         ww = w*w 
         return zw*math.sqrt(rr0/(ww-rr0)) 
@@ -2915,9 +2920,15 @@ e.transform = [[1.000,0.000,0.000,0.000],[0.000,1.000,0.000,0.000],[0.000,0.000,
 abcde = CSG("intersection", left=abcd, right=e)
 abcde2 = CSG("intersection", left=abcd2, right=e)
 
+# intersection with cylinder is the profligate splitting 
+#raw = abcde
+#raw2 = abcde2
 
-raw = abcde
-raw2 = abcde2
+raw = abcd
+raw2 = abcd2
+
+
+
 
 
 raw.dump("raw")

@@ -118,6 +118,7 @@ void OContext::init()
 
 void OContext::initPrint()
 {
+
     bool printenabled = m_ok->isPrintEnabled() ; // --printenabled option, useful for small test launches only  
     m_context->setPrintEnabled(printenabled);  // enable for 1st photon with --pindex 0 
     m_context->setPrintBufferSize(2*2*2*8192);
@@ -133,6 +134,11 @@ void OContext::initPrint()
     m_context->setPrintEnabled(true);
     m_context->setPrintLaunchIndex(idx.x, idx.y, idx.z);
 
+    LOG(fatal) << "setPrintLaunchIndex "
+               << " idx.x " << idx.x
+               << " idx.y " << idx.y
+               << " idx.z " << idx.z
+               ; 
 
     unsigned uindex = m_ok->hasMask() ? m_ok->getMaskIndex(idx.x) : idx.x ; 
     m_llogpath = m_ok->isPrintIndexLog() ?  LaunchLogPath(uindex) : NULL ; 

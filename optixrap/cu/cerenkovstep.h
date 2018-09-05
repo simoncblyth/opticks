@@ -186,16 +186,19 @@ __device__ void csdebug( CerenkovStep& cs )
 }
 
 
+#define ALIGN_DEBUG 1 
 
 __device__ void
 generate_cerenkov_photon(Photon& p, CerenkovStep& cs, curandState &rng)
 {
-#ifdef DEBUG
-      //if(cs.MaterialIndex == 24) 
-      //{
-      //    rtPrintf("KLUDGE SKIP Aluminium : leaving undefines \n");
-      //}
+#ifdef ALIGN_DEBUG
+    {
+        float wavelength_0 = boundary_sample_reciprocal_domain(0.f); 
+        float wavelength_1 = boundary_sample_reciprocal_domain(1.f); 
+        rtPrintf(" wavelength_0 %10.5f wavelength_1 %10.5f \n", wavelength_0, wavelength_1 );  
+    }
 #endif
+
 
      float cosTheta ;
      float sin2Theta ;
@@ -220,12 +223,16 @@ generate_cerenkov_photon(Photon& p, CerenkovStep& cs, curandState &rng)
      //
 
      do {
+    
+        u = curand_uniform(&rng) ; 
 
-        wavelength = boundary_sample_reciprocal_domain(curand_uniform(&rng));   
+        wavelength = boundary_sample_reciprocal_domain(u);   
 
         float4 props = boundary_lookup(wavelength, cs.MaterialIndex, 0);
 
         sampledRI = props.x ; 
+
+        rtPrintf("gcp.u0 %10.5f wavelength %10.5f sampledRI %10.5f \n", u, wavelength, sampledRI  ); 
 
         cosTheta = cs.BetaInverse / sampledRI;  
 
@@ -234,6 +241,8 @@ generate_cerenkov_photon(Photon& p, CerenkovStep& cs, curandState &rng)
         u = curand_uniform(&rng) ;
 
         u_maxSin2 = u*cs.maxSin2 ;
+
+        rtPrintf("gcp.u1 %10.5f u_maxSin2 %10.5f sin2Theta %10.5f \n", u, u_maxSin2, sin2Theta  ); 
 
 /*
 #ifdef DEBUG
@@ -250,23 +259,19 @@ generate_cerenkov_photon(Photon& p, CerenkovStep& cs, curandState &rng)
 
       p.wavelength = wavelength ; 
 
-      
-/*
-#ifdef DEBUG
-      if(cs.MaterialIndex == 24) 
-      {
-          rtPrintf("KLUDGE SKIP Aluminium : leaving undefineds : wavelength %10.4f \n", wavelength);
-          return ;  
-      }
-#endif
-*/
-
       // Generate random position of photon on cone surface defined by Theta 
 
-      float phi = 2.f*M_PIf*curand_uniform(&rng);
+      
+      u = curand_uniform(&rng) ; 
+
+      float phi = 2.f*M_PIf*u ;
       float sinPhi, cosPhi;
       sincosf(phi,&sinPhi,&cosPhi);
 	
+
+      rtPrintf("gcp.u2   %10.5f phi %10.5f \n", u, phi );   
+
+
       // calculate x,y, and z components of photon energy
       // (in coord system with primary particle direction 
       //  aligned with the z axis)
@@ -294,14 +299,20 @@ generate_cerenkov_photon(Photon& p, CerenkovStep& cs, curandState &rng)
       float DeltaN = (cs.MeanNumberOfPhotons1-cs.MeanNumberOfPhotons2) ; 
       do 
       {
-
           fraction = curand_uniform(&rng) ;
 
           delta = fraction  * cs.step_length ;
 
           NumberOfPhotons = cs.MeanNumberOfPhotons1 - fraction * DeltaN  ;
 
-          N = curand_uniform(&rng) * cs.MeanNumberOfPhotonsMax ;
+          rtPrintf("gcp.u3 %10.5f delta %10.5f NumberOfPhotons %10.5f  \n", fraction, delta, NumberOfPhotons  ) ;
+
+          u = curand_uniform(&rng) ; 
+
+          N = u * cs.MeanNumberOfPhotonsMax ;
+
+          rtPrintf("gcp.u4 %10.5f N %10.5f  \n", u, N  ); 
+
 
       }  while (N > NumberOfPhotons);
 

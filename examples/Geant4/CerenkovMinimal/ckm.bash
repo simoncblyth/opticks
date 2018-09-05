@@ -14,14 +14,15 @@ ckm--(){ ckm-cd ; ./go.sh ; }
 ckm-run()
 {
     g4-
-    g4-export   # internal envvar stuff, is it done here ? NOPE
-    # CerenkovMinimal --dbgtex    ## cannot do this either, as opticks is embedded
+    g4-export        # internal envvar stuff is not done here 
+    CerenkovMinimal  # NB the Opticks is embedded via G4OK : so commandline doesnt get thru 
 }
 
 
 
 #ckm-dig(){ echo c250d41454fba7cb19f3b83815b132c2 ; }
 ckm-dig(){ echo 792496b5e2cc08bdf5258cc12e63de9f ; }
+
 
 ckm-key(){ echo CerenkovMinimal.X4PhysicalVolume.World.$(ckm-dig) ; }
 ckm-idpath(){ echo $LOCAL_BASE/opticks/geocache/CerenkovMinimal_World_g4live/g4ok_gltf/$(ckm-dig)/1 ; }
@@ -81,6 +82,8 @@ ckm-okg4-load()
 {
     OPTICKS_KEY=$(ckm-key) lldb -- OKG4Test --load --envkey --embedded
 }
+
+
 
 
 

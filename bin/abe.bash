@@ -32,7 +32,8 @@ abe-tag(){ echo 1 ; }
 
 abe-tmp(){   echo $TMP/abe ; }
 abe-a-dir(){ echo $TMP/evt/g4live/natural ; }  # ckm--
-abe-b-dir(){ echo $TMP/evt/g4live/torch   ; }  # ckm-okg4 
+abe-b-dir(){ echo $TMP/evt/g4live/natural ; }  # ckm--
+#abe-b-dir(){ echo $TMP/evt/g4live/torch   ; }  # ckm-okg4 
 
 abe-a(){ cd $(abe-a-dir) ; }
 abe-b(){ cd $(abe-b-dir) ; }
@@ -114,6 +115,7 @@ EOP
 
 abe-ht4-(){ abe-xx- -1/ht.npy  -1/ht.npy  ; }
 abe-ht-(){ abe-xx-   1/ht.npy  1/ht.npy  ; }
+abe-so-(){ abe-xx-   -1/so.npy  1/ox.npy  ; }
 abe-gs-(){ 
    abe-xx- 1/gs.npy 1/gs.npy 
    abe-gs-- 
@@ -122,6 +124,7 @@ abe-gs-(){
 abe-ht4(){ abe-genrun $FUNCNAME ; }
 abe-ht(){ abe-genrun $FUNCNAME ; }
 abe-gs(){ abe-genrun $FUNCNAME ; }
+abe-so(){ abe-genrun $FUNCNAME ; }
 
 abe-np(){
    local iwd=$PWD
@@ -153,3 +156,7 @@ print "p %s " % repr(p.shape)
 
 EOP
 }
+
+
+
+

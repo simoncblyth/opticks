@@ -20,7 +20,9 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
 
-    const char* def = "/usr/local/opticks/opticksdata/gensteps/dayabay/natural/1.npy" ; 
+    //const char* def = "/usr/local/opticks/opticksdata/gensteps/dayabay/natural/1.npy" ; 
+    const char* def = "/tmp/blyth/opticks/evt/g4live/natural/1/gs.npy" ; 
+
     const char* path = argc > 1 ? argv[1] : def ; 
 
     NPY<float>* np = NPY<float>::load(path) ; 

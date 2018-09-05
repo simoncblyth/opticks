@@ -36,7 +36,7 @@
 G4Opticks* G4Opticks::fOpticks = NULL ;
 
 
-const char* G4Opticks::fEmbeddedCommandLine = " --gltf 3 --compute --save --embedded --natural --dbgtex " ; 
+const char* G4Opticks::fEmbeddedCommandLine = " --gltf 3 --compute --save --embedded --natural --dbgtex --printenabled --pindex 0 --bouncemax 0"  ; 
 
 std::string G4Opticks::desc() const 
 {
