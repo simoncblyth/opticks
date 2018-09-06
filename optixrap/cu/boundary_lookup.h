@@ -13,7 +13,9 @@ rtDeclareVariable(uint4,  boundary_texture_dim, , );
 static __device__ __inline__ float boundary_sample_reciprocal_domain(const float& u)
 {
     // return wavelength, from uniform sampling of 1/wavelength[::-1] domain
-    float iw = lerp( boundary_domain_reciprocal.x , boundary_domain_reciprocal.y, u ) ;
+    // need to flip to match Geant4 energy sampling, see boundary_lookup.py 
+    //float iw = lerp( boundary_domain_reciprocal.x , boundary_domain_reciprocal.y, u ) ;
+    float iw = lerp( boundary_domain_reciprocal.y , boundary_domain_reciprocal.x, u ) ;
     return 1.f/iw ;  
 }
 

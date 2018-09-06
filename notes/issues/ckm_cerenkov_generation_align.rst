@@ -252,7 +252,7 @@ how to proceed
 
 
 
-how to replace G4Materials with standardized versions ?
+DONE : replace G4Materials with standardized versions 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * G4Material::theMaterialTable structure doesnt make this easy to do
@@ -266,8 +266,15 @@ how to replace G4Materials with standardized versions ?
 
     G4Material::SetMaterialPropertiesTable(G4MaterialPropertiesTable* anMPT);
 
+* implemented with::
 
-  
+    X4MaterialLib
+    X4PropertyMap
+    X4Property  
+
+
+
+
 where the Pmin/Pmax comes from in genstep collection
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -360,6 +367,96 @@ smoking gun for domain inconsistency
     156     // HMM POTENTIAL FOR BREAKAGE WHEN THE Pmin/Pmax travelling
     157     // via genstep is no longer correct for the rindex of the material
 
+
+
+
+after standardizing materials are getting more gensteps, more photons
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* not surprising 
+* convenient dev cycle means need a way to terminate after one genstep 
+
+
+
+FIXED : need to domain flip to get same energy sampling for the same randoms : see boundary_lookup.py
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+::
+
+    2018-09-06 10:52:56.339 INFO  [765903] [*CCerenkovGenerator::GeneratePhotonsFromGenstep@158]  Pmin 1.512e-06 Pmax 2.0664e-05 wavelength_min(nm) 60 wavelength_max(nm) 820 meanVelocity 274.664
+    2018-09-06 10:52:56.339 ERROR [765903] [*CCerenkovGenerator::GetRINDEX@72]  aMaterial 0x10a607830 materialIndex 1 num_material 3 Rindex 0x10a609580 Rindex2 0x10a609580
+    2018-09-06 10:52:56.339 ERROR [765903] [*CCerenkovGenerator::GeneratePhotonsFromGenstep@251]  genstep_idx 0 fNumPhotons 221 pindex 0
+    2018-09-06 10:52:56.339 ERROR [765903] [*CCerenkovGenerator::GeneratePhotonsFromGenstep@283]  gcp.u0 0.740219 sampledEnergy 1.56887e-05 sampledWavelength 79.0277 sampledRI 1.3608
+    2018-09-06 10:52:56.339 ERROR [765903] [*CCerenkovGenerator::GeneratePhotonsFromGenstep@295] gcp.u1 0.438451
+    2018-09-06 10:52:56.340 ERROR [765903] [*CCerenkovGenerator::GeneratePhotonsFromGenstep@308] gcp.u2 0.517013
+    2018-09-06 10:52:56.399 ERROR [765903] [*CCerenkovGenerator::GeneratePhotonsFromGenstep@370] gcp.u3 0.156989
+    2018-09-06 10:52:56.400 ERROR [765903] [*CCerenkovGenerator::GeneratePhotonsFromGenstep@382] gcp.u4 0.0713675
+
+    0.740219*(2.0664e-05-1.512e-06)+1.512e-06
+
+    In [1]: 0.740219*(2.0664e-05-1.512e-06)+1.512e-06
+    Out[1]: 1.5688674288e-05
+
+::
+
+    generate photon_id 0 
+     wavelength_0   60.00000 wavelength_1  820.00018 
+    gcp.u0    0.74022 wavelength  191.11748 sampledRI    1.36080 
+    gcp.u1    0.43845 u_maxSin2    0.15637 sin2Theta    0.35665 
+    gcp.u2      0.51701 phi    3.24849 
+    gcp.u3    0.15699 delta    0.05618 NumberOfPhotons  658.09430  
+    gcp.u4    0.07137 N   46.97818  
+
+
+After domain flipping in boundary_lookup get same wavelength:: 
+
+    2018-09-06 11:53:25.773 ERROR [832700] [OPropagator::launch@175] LAUNCH NOW -
+    generate photon_id 0 
+     wavelength_0  820.00000 wavelength_1   60.00000 
+    gcp.u0    0.74022 wavelength   79.02767 sampledRI    1.36080 
+    gcp.u1    0.43845 u_maxSin2    0.15637 sin2Theta    0.35665 
+    gcp.u2      0.51701 phi    3.24849 
+    gcp.u3    0.15699 delta    0.05618 NumberOfPhotons  658.09430  
+    gcp.u4    0.07137 N   46.97818  
+     WITH_ALIGN_DEV_DEBUG psave (0.0539942347 -0.0108201597 -0.00217639492 0.000204547003) ( -1036, 2, 67305985, 1 ) 
+    2018-09-06 11:53:25.775 ERROR [832700] [OPropagator::launch@177] LAUNCH DONE
+    
+::
+
+     06 rtTextureSampler<float4, 2>  boundary_texture ;
+      7 rtDeclareVariable(float4, boundary_domain, , );
+      8 rtDeclareVariable(float4, boundary_domain_reciprocal, , );
+      9 rtDeclareVariable(uint4,  boundary_bounds, , );
+     10 rtDeclareVariable(uint4,  boundary_texture_dim, , );
+     11 
+     12 
+     13 static __device__ __inline__ float boundary_sample_reciprocal_domain(const float& u)
+     14 {
+     15     // return wavelength, from uniform sampling of 1/wavelength[::-1] domain
+     16     float iw = lerp( boundary_domain_reciprocal.x , boundary_domain_reciprocal.y, u ) ;
+     17     return 1.f/iw ;
+     18 }
+     19 
+
+::
+
+    2018-09-06 11:20:09.169 INFO  [818718] [OBndLib::makeBoundaryTexture@161] OBndLib::makeBoundaryTexture buf 3,4,2,39,4 --->  nx 39 ny 24
+    2018-09-06 11:20:09.169 INFO  [818718] [OBndLib::makeBoundaryTexture@220] boundary_domain_reciprocal       rdom  0.017   0.001   0.000   0.000 
+     rdom.x 0.016667 rdom.y 0.001220 dom.x 60.000000 dom.y 820.000000 dom.z 20.000000 dom.w 760.000000
+
+::
+
+    In [7]: 1./60.   # rdom.x
+    Out[7]: 0.016666666666666666
+
+    In [8]: 1./820.  # rdom.y 
+    Out[8]: 0.0012195121951219512
+
+
+    ## lerp 
+    ##         (1-t)*a + t*b   =   a + t*(b - a)    
+    ##
+    ##            
 
 
 

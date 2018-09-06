@@ -69,16 +69,19 @@ class G4OK_API G4Opticks
     public:
         std::string desc() const ;  
     public:
-        void setGeometry(const G4VPhysicalVolume* world); 
+        void setGeometry(const G4VPhysicalVolume* world, bool standardize_geant4_materials=false); 
         void collectPrimaries(const G4Event* event); 
         int propagateOpticalPhotons();
         NPY<float>* getHits() const ; 
         void setAlignIndex(int align_idx) const ; 
     private:
         GGeo* translateGeometry( const G4VPhysicalVolume* top );
+        void standardizeGeant4MaterialProperties();
         void setupMaterialLookup();
     public:
         unsigned getNumPhotons() const ;
+        unsigned getNumGensteps() const ;
+
         void collectCerenkovStep(
             G4int                id, 
             G4int                parentId,
@@ -142,7 +145,7 @@ class G4OK_API G4Opticks
         Opticks*                   m_ok ;
         CTraverser*                m_traverser ; 
         CMaterialTable*            m_mtab ; 
-        CGenstepCollector*                m_collector ; 
+        CGenstepCollector*         m_genstep_collector ; 
         CPrimaryCollector*         m_primary_collector ; 
         NLookup*                   m_lookup ; 
         OpMgr*                     m_opmgr;

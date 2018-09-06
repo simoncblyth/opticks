@@ -196,13 +196,15 @@ G4VParticleChange* CCerenkovGenerator::GeneratePhotonsFromGenstep( const Opticks
     G4double Pmin2 = Rindex->GetMinLowEdgeEnergy();
     G4double Pmax2 = Rindex->GetMaxLowEdgeEnergy();
 
-    bool Pmin_match = Pmin2 == Pmin ; 
-    bool Pmax_match = Pmax2 == Pmax ; 
+    bool Pmin_match = std::abs( Pmin2 - Pmin ) < epsilon ; 
+    bool Pmax_match = std::abs( Pmax2 - Pmax ) < epsilon ; 
    
     if(!Pmin_match)
         LOG(fatal) 
             << " Pmin " << Pmin
             << " Pmin2 " << Pmin2
+            << " dif " << std::abs( Pmin2 - Pmin )
+            << " epsilon " << epsilon
             << " Pmin(nm) " << h_Planck*c_light/Pmin/nm
             << " Pmin2(nm) " << h_Planck*c_light/Pmin2/nm
             ;
@@ -211,6 +213,8 @@ G4VParticleChange* CCerenkovGenerator::GeneratePhotonsFromGenstep( const Opticks
         LOG(fatal) 
             << " Pmax " << Pmax
             << " Pmax2 " << Pmax2
+            << " dif " << std::abs( Pmax2 - Pmax )
+            << " epsilon " << epsilon
             << " Pmax(nm) " << h_Planck*c_light/Pmax/nm
             << " Pmax2(nm) " << h_Planck*c_light/Pmax2/nm
             ;
@@ -274,9 +278,13 @@ G4VParticleChange* CCerenkovGenerator::GeneratePhotonsFromGenstep( const Opticks
          cosTheta = BetaInverse / sampledRI;  
 
 #ifdef ALIGN_DEBUG
+         G4double sampledWavelength = h_Planck*c_light/sampledEnergy ;
+
          if( i == pindex ) LOG(error)
                           << " gcp.u0 " << rand
                           << " sampledEnergy " << sampledEnergy
+                          << " sampledWavelength " << sampledWavelength/nm
+                          << " hc/nm " << h_Planck*c_light/nm 
                           << " sampledRI " << sampledRI
                           ;   
 #endif    

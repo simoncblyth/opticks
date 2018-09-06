@@ -24,14 +24,5 @@ class X4_API X4Property
 {
     public:
         static G4PhysicsVector*  Convert(const GProperty<T>* prop) ; 
-    public:
-        X4Property( const GProperty<T>* prop );
-        G4PhysicsVector* getVector() const ;
-    private:
-        void init(); 
-    private:
-        const GProperty<T>*    m_prop ; 
-        G4PhysicsVector*       m_vec ; 
-
 };
 

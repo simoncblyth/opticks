@@ -22,9 +22,12 @@
 #include "OpMgr.hh"
 
 #include "GGeo.hh"
+#include "GMaterialLib.hh"
 #include "GGeoGLTF.hh"
 #include "GBndLib.hh"
+
 #include "X4PhysicalVolume.hh"
+#include "X4MaterialLib.hh"
 
 #include "G4Material.hh"
 #include "G4Event.hh"
@@ -81,7 +84,7 @@ G4Opticks::G4Opticks()
     m_ok(NULL),
     m_traverser(NULL),
     m_mtab(NULL),
-    m_collector(NULL),
+    m_genstep_collector(NULL),
     m_primary_collector(NULL),
     m_lookup(NULL),
     m_opmgr(NULL),
@@ -100,12 +103,16 @@ G4Opticks::G4Opticks()
 }
 
 
-void G4Opticks::setGeometry(const G4VPhysicalVolume* world)
+void G4Opticks::setGeometry(const G4VPhysicalVolume* world, bool standardize_geant4_materials)
 {
     LOG(fatal) << "[[[" ; 
 
     GGeo* ggeo = translateGeometry( world ) ;
 
+    if( standardize_geant4_materials )
+    {
+        standardizeGeant4MaterialProperties();
+    }
 
     m_world = world ; 
     m_ggeo = ggeo ;
@@ -116,7 +123,7 @@ void G4Opticks::setGeometry(const G4VPhysicalVolume* world)
     m_mtab = new CMaterialTable(prefix); 
 
     setupMaterialLookup();
-    m_collector = new CGenstepCollector(m_lookup);   // <-- CG4 holds an instance too : and they are singletons, so should not use G4Opticks and CG4 together
+    m_genstep_collector = new CGenstepCollector(m_lookup);   // <-- CG4 holds an instance too : and they are singletons, so should not use G4Opticks and CG4 together
     m_primary_collector = new CPrimaryCollector ; 
     m_g4hit_collector = new CPhotonCollector ; 
     m_g4photon_collector = new C4PhotonCollector ; 
@@ -152,6 +159,21 @@ GGeo* G4Opticks::translateGeometry( const G4VPhysicalVolume* top )
 }
 
 
+/**
+G4Opticks::standardizeGeant4MaterialProperties
+-----------------------------------------------
+
+Standardize G4 material properties to use the Opticks standard domain 
+
+**/
+
+void G4Opticks::standardizeGeant4MaterialProperties()
+{
+    G4MaterialTable* mtab = G4Material::GetMaterialTable();   
+    const GMaterialLib* mlib = GMaterialLib::GetInstance(); 
+    X4MaterialLib::Standardize( mtab, mlib ) ;  
+}
+
 
 
 
@@ -169,8 +191,13 @@ void G4Opticks::setupMaterialLookup()
 
 unsigned G4Opticks::getNumPhotons() const 
 {
-    return m_collector->getNumPhotons()  ; 
+    return m_genstep_collector->getNumPhotons()  ; 
 }
+unsigned G4Opticks::getNumGensteps() const 
+{
+    return m_genstep_collector->getNumGensteps()  ; 
+}
+
 
 void G4Opticks::setAlignIndex(int align_idx) const 
 {
@@ -192,7 +219,7 @@ TODO: relocate direct events inside the geocache ?
 
 int G4Opticks::propagateOpticalPhotons() 
 {
-    m_gensteps = m_collector->getGensteps(); 
+    m_gensteps = m_genstep_collector->getGensteps(); 
     const char* gspath = m_ok->getDirectGenstepPath(); 
 
     LOG(info) << " saving gensteps to " << gspath ; 
@@ -301,7 +328,7 @@ void G4Opticks::collectCerenkovStep
         G4double             spare2
     )
 {
-     m_collector->collectCerenkovStep(
+     m_genstep_collector->collectCerenkovStep(
                        id, 
                        parentId,
                        materialId,

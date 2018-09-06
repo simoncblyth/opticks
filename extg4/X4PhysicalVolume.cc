@@ -242,8 +242,13 @@ void X4PhysicalVolume::convertMaterials()
                ;
 
 
-    // TODO : can these go into one method within GMaterialLib?
-    m_mlib->addTestMaterials() ;
+    // Adding test materials only at Opticks level is a standardization
+    // problem : TODO: implement creation of test materials at G4 level
+    // then they will be present at all levels.
+    // 
+    //m_mlib->addTestMaterials() ;
+
+
     m_mlib->close();   // may change order if prefs dictate
 
 

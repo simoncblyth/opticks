@@ -2,8 +2,9 @@
 
 #include "X4_API_EXPORT.hh"
 
-class G4MaterialPropertiesTable ; 
 template <typename T> class GPropertyMap ; 
+class GMaterialLib ;
+#include "G4MaterialTable.hh"
 
 /**
 X4MaterialLib
@@ -17,8 +18,13 @@ the standardized domain properties from the Opticks GMaterialLib
 class X4_API X4MaterialLib
 {
     public:
-        X4MaterialLib(const GMaterialLib* mlib) ; 
+        static void Standardize( G4MaterialTable* mtab, const GMaterialLib* mlib ); 
+    public:
+        X4MaterialLib(G4MaterialTable* mtab,  const GMaterialLib* mlib) ; 
     private:
+        void init(); 
+    private:
+        G4MaterialTable*      m_mtab ; 
         const GMaterialLib*   m_mlib ; 
 };
 

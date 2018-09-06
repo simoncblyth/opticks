@@ -54,13 +54,44 @@ void Ctx::setTrack(const G4Track* track)
     _track_pdg_encoding = particle->GetPDGEncoding() ;
 
     if(_track_optical)
+    {
         setTrackOptical(track);  
+    }
+    else
+    {
+#ifdef WITH_OPTICKS
+        unsigned num_gs = G4Opticks::GetOpticks()->getNumGensteps() ; 
+        unsigned max_gs = 1 ;   // quick kill for fast dev cycle
+        bool kill = num_gs >= max_gs ; 
+
+        LOG(fatal) 
+            << " _track_particle_name " << _track_particle_name 
+            << " _track_id " << _track_id 
+            << " _step_id " << _step_id 
+            << " num_gs " << num_gs 
+            << " max_gs " << max_gs 
+            << " kill " << kill
+            ;  
+
+        if(kill)
+        {
+            const_cast<G4Track*>(track)->SetTrackStatus(fStopAndKill);
+        }
+
+#endif
+    }
 }
 
 void Ctx::postTrack( const G4Track* track)
 {
     if(_track_optical)
+    {
         postTrackOptical(track);  
+    }
+    else
+    {
+        LOG(fatal) << " _track_particle_name " << _track_particle_name ; 
+    }
 }
 
 
@@ -108,11 +139,16 @@ void Ctx::setStep(const G4Step* step)
 
     if(_step_id == 0) _step_origin = pre->GetPosition();
 
-/*
-    LOG(info) 
-        << " _step_id " << _step_id 
-        ;  
-*/
+#ifdef WITH_OPTICKS
+    if(!_track_optical)
+    {
+        LOG(info) 
+            << " _step_id " << _step_id 
+            << " num_gs " << G4Opticks::GetOpticks()->getNumGensteps() 
+            ;  
+    }
+
+#endif
 
 }
 

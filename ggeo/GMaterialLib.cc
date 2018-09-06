@@ -40,6 +40,9 @@ const char* GMaterialLib::keyspec =
 "scattering_length:RAYLEIGH,"
 "reemission_prob:REEMISSIONPROB," 
 "group_velocity:GROUPVEL,"
+"extra_y:EXTRA_Y,"
+"extra_z:EXTRA_Z,"
+"extra_w:EXTRA_W,"
 "detect:EFFICIENCY,"
 ;
 

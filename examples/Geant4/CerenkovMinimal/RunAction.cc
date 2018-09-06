@@ -10,9 +10,9 @@
 #include "PLOG.hh"
 
 RunAction::RunAction(Ctx* ctx_) 
-   :   
-     G4UserRunAction(),
-     ctx(ctx_)
+    :   
+    G4UserRunAction(),
+    ctx(ctx_)
 {
 }
 void RunAction::BeginOfRunAction(const G4Run*)
@@ -21,7 +21,8 @@ void RunAction::BeginOfRunAction(const G4Run*)
 #ifdef WITH_OPTICKS
     G4VPhysicalVolume* world = G4TransportationManager::GetTransportationManager()->GetNavigatorForTracking()->GetWorldVolume() ; 
     assert( world ) ; 
-    G4Opticks::GetOpticks()->setGeometry(world);    
+    bool standardize_geant4_materials = true ;   // required for alignment 
+    G4Opticks::GetOpticks()->setGeometry(world, standardize_geant4_materials );    
 #endif
 }
 void RunAction::EndOfRunAction(const G4Run*)

@@ -1,5 +1,6 @@
 
 #include "NPY.hpp"
+#include "GLMFormat.hpp"
 
 #include "Opticks.hh"
 
@@ -214,6 +215,20 @@ void OBndLib::makeBoundaryTexture(NPY<float>* buf)
     m_context["boundary_domain"]->setFloat(dom.x, dom.y, dom.z, dom.w); 
     m_context["boundary_domain_reciprocal"]->setFloat(rdom.x, rdom.y, rdom.z, rdom.w); 
     m_context["boundary_bounds"]->setUint(bounds); 
+
+
+    LOG(info) 
+        << "boundary_domain_reciprocal "
+        << gpresent("rdom", rdom )  
+        << " rdom.x " << std::fixed << rdom.x
+        << " rdom.y " << std::fixed << rdom.y
+        << " dom.x " << std::fixed << dom.x
+        << " dom.y " << std::fixed << dom.y
+        << " dom.z " << std::fixed << dom.z
+        << " dom.w " << std::fixed << dom.w
+        ;
+
+
 }
 
 
