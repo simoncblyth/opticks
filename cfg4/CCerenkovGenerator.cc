@@ -305,12 +305,6 @@ G4VParticleChange* CCerenkovGenerator::GeneratePhotonsFromGenstep( const Opticks
       rand = G4UniformRand();
 
 
-#ifdef ALIGN_DEBUG
-      if( i == pindex ) LOG(error) << "gcp.u2 " << rand ;   
-#endif    
-
-
-
 
       G4double phi = twopi*rand;
       G4double sinPhi = std::sin(phi);
@@ -360,6 +354,26 @@ G4VParticleChange* CCerenkovGenerator::GeneratePhotonsFromGenstep( const Opticks
 
       aCerenkovPhoton->SetKineticEnergy(sampledEnergy);
 
+
+#ifdef ALIGN_DEBUG
+      if( i == pindex ) 
+          LOG(error) 
+              << "gcp.u2 " << rand 
+              << " dir (" 
+              << " " << photonMomentum.x()
+              << " " << photonMomentum.y()
+              << " " << photonMomentum.z()
+              << " )"
+              << " pol (" 
+              << " " << photonPolarization.x()
+              << " " << photonPolarization.y()
+              << " " << photonPolarization.z()
+              << " )"
+              ;   
+#endif    
+
+
+
       // Generate new G4Track object:
 
       G4double NumberOfPhotons, N;
@@ -408,6 +422,18 @@ G4VParticleChange* CCerenkovGenerator::GeneratePhotonsFromGenstep( const Opticks
       G4double aSecondaryTime = t0 + deltaTime;
 
       G4ThreeVector aSecondaryPosition = x0 + rand * aStep.GetDeltaPosition();
+
+#ifdef ALIGN_DEBUG
+      if( i == pindex ) 
+          LOG(error) 
+              << "gcp.post ("
+              << " " << std::fixed <<  aSecondaryPosition.x() 
+              << " " << std::fixed <<  aSecondaryPosition.y() 
+              << " " << std::fixed <<  aSecondaryPosition.z()
+              << " : " << std::fixed <<  aSecondaryTime
+              << ")"
+              ;
+#endif
 
       G4Track* aSecondaryTrack = 
                new G4Track(aCerenkovPhoton,aSecondaryTime,aSecondaryPosition);

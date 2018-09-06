@@ -1,7 +1,6 @@
 ckm_cerenkov_generation_align
 ==============================
 
-
 Best of both worlds validation
 --------------------------------
 
@@ -13,10 +12,22 @@ Best of both worlds validation
      (full Geant4 physics)                          (optical only Geant4)
                           
      CerenkovMinimal                                OKG4Test    
- 
+
      G4 example                                     Opticks 
          -  G4OK (Opticks embedded)                   -  CFG4   (Geant4 embedded)
 
+
+
+Alignments:
+
+1. cross executable like-to-like alignment  
+
+   * G4-G4 : not quite the same code, so this checks the genstep transports the stack correctly and the code accomodates
+   * OK-OK : should be trivial as same gensteps+code : but need to check anyhow
+
+2. same executable G4-OK
+
+   * difficult one 
 
 
 
@@ -222,13 +233,13 @@ how to proceed
 * derive the G4 style propertyvec from Opticks standardized material and compare with source
 * use the standardized domain interpolated prop for the aligned comparison 
 
-* hmm will need to rewrite all properties of all materials (and surfaces) : so better to 
+* DONE : hmm will need to rewrite all properties of all materials : so better to 
   do this in one place : not specific to Cerenkov Generator 
 
 * DONE : added assert in CCerenkovGeneration comparing the Rindex domain
   from the material to that from the genstep
 
-* clearest way is to used an OPTICKS_ALIGN switch in ckm- DetectorConstruction 
+* DID NOT DO THIS WAY : clearest way is to used an OPTICKS_ALIGN switch in ckm- DetectorConstruction 
   that does the G4 material standardization, CMaterialLib should do it 
   and should be invoked via some API in G4Opticks 
 
@@ -238,6 +249,8 @@ how to proceed
      from Geant4 materials is better for standardize override
 
    * can have an option to G4Opticks
+
+   * DONE : added standardization option to G4Opticks::setGeometry
 
 
 
@@ -341,18 +354,8 @@ where the source domain comes from
 
 
 
-::
 
-     13 static __device__ __inline__ float boundary_sample_reciprocal_domain(const float& u)
-     14 {
-     15     // return wavelength, from uniform sampling of 1/wavelength[::-1] domain
-     16     float iw = lerp( boundary_domain_reciprocal.x , boundary_domain_reciprocal.y, u ) ;
-     17     return 1.f/iw ;
-     18 }
-
-
-
-smoking gun for domain inconsistency
+CONFIRMED : smoking gun for domain inconsistency
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ::
@@ -459,26 +462,127 @@ After domain flipping in boundary_lookup get same wavelength::
     ##            
 
 
+dir pol : cross executable cross sim
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+ckm--::
+
+    2018-09-06 13:28:46.126 INFO  [875245] [OPropagator::prelaunch@155] 1 : (0;221,1) prelaunch_times vali,comp,prel,lnch  0.0000 0.0000 0.9111 0.0000
+    2018-09-06 13:28:46.126 ERROR [875245] [OPropagator::launch@175] LAUNCH NOW -
+    generate photon_id 0 
+     wavelength_0  820.00000 wavelength_1   60.00000 
+    gcp.u0    0.74022 wavelength   79.02767 sampledRI    1.36080 
+    gcp.u1    0.43845 u_maxSin2    0.15637 sin2Theta    0.35665 
+    gcp.u2      0.51701 phi    3.24849 dir (    0.79632   -0.22456    0.56165 ) pol (   -0.57103    0.02716    0.82048 )  
+    gcp.u3    0.15699 delta    0.05618 NumberOfPhotons  658.09430  
+    gcp.u4    0.07137 N   46.97818  
+     WITH_ALIGN_DEV_DEBUG psave (0.0539942347 -0.0108201597 -0.00217639492 0.000204547003) ( -741367809, 2, 67305985, 1 ) 
+    2018-09-06 13:28:46.128 ERROR [875245] [OPropagator::launch@177] LAUNCH DONE
 
 
-cross executable like-to-like alignment  G4-G4 OK-OK 
--------------------------------------------------------
+ckm-gentest::
+
+    2018-09-06 13:42:33.902 ERROR [880755] [*CCerenkovGenerator::GetRINDEX@72]  aMaterial 0x10b831560 materialIndex 1 num_material 3 Rindex 0x10b8332b0 Rindex2 0x10b8332b0
+    2018-09-06 13:42:33.902 ERROR [880755] [*CCerenkovGenerator::GeneratePhotonsFromGenstep@251]  genstep_idx 0 fNumPhotons 221 pindex 0
+    2018-09-06 13:42:33.903 ERROR [880755] [*CCerenkovGenerator::GeneratePhotonsFromGenstep@283]  gcp.u0 0.740219 sampledEnergy 1.56887e-05 sampledWavelength 79.0277 hc/nm 0.00123984 sampledRI 1.3608
+    2018-09-06 13:42:33.903 ERROR [880755] [*CCerenkovGenerator::GeneratePhotonsFromGenstep@296] gcp.u1 0.438451
+    2018-09-06 13:42:33.962 ERROR [880755] [*CCerenkovGenerator::GeneratePhotonsFromGenstep@360] gcp.u2 0.517013 dir ( 0.796318 -0.22456 0.56165 ) pol ( -0.571033 0.027155 0.820478 )
+    2018-09-06 13:42:33.963 ERROR [880755] [*CCerenkovGenerator::GeneratePhotonsFromGenstep@385] gcp.u3 0.156989
+    2018-09-06 13:42:33.963 ERROR [880755] [*CCerenkovGenerator::GeneratePhotonsFromGenstep@397] gcp.u4 0.0713675
 
 
-CerenkovMinimal structure
-----------------------------
-
-* setup like a Geant4 example using G4OK to access Opticks 
-* this means the Opticks commandline is embedded inside G4Opticks
-
-  * so as soon as have control of ckm the idea to do like-for-like matchinh 
+post
+~~~~~~~~
 
 
-0. Getting G4 and Opticks to start from the same RNG stream
---------------------------------------------------------------
+ckm--::
 
-Hmm. Recall that the commandline is internal inside 
+    2018-09-06 13:52:00.474 ERROR [887643] [OPropagator::launch@175] LAUNCH NOW -
+    generate photon_id 0 
+     wavelength_0  820.00000 wavelength_1   60.00000 
+    gcp.u0    0.74022 wavelength   79.02767 sampledRI    1.36080 
+    gcp.u1    0.43845 u_maxSin2    0.15637 sin2Theta    0.35665 
+    gcp.u2      0.51701 phi    3.24849 dir (    0.79632   -0.22456    0.56165 ) pol (   -0.57103    0.02716    0.82048 )  
+    gcp.u3    0.15699 delta    0.05618 NumberOfPhotons  658.09430  
+    gcp.u4    0.07137 N   46.97818  
+    gcp.post (    0.05399   -0.01082   -0.00218 :    0.00020 )  
+     WITH_ALIGN_DEV_DEBUG psave (0.0539942347 -0.0108201597 -0.00217639492 0.000204547003) ( -538970241, 2, 67305985, 1 ) 
+    2018-09-06 13:52:00.478 ERROR [887643] [OPropagator::launch@177] LAUNCH DONE
 
-::
 
-   CerenkovMinimal 
+ckm-gentest::
+
+    2018-09-06 13:50:43.523 INFO  [886026] [*CCerenkovGenerator::GeneratePhotonsFromGenstep@158]  Pmin 1.512e-06 Pmax 2.0664e-05 wavelength_min(nm) 60 wavelength_max(nm) 820 meanVelocity 274.664
+    2018-09-06 13:50:43.523 ERROR [886026] [*CCerenkovGenerator::GetRINDEX@72]  aMaterial 0x10b941990 materialIndex 1 num_material 3 Rindex 0x10b946270 Rindex2 0x10b946270
+    2018-09-06 13:50:43.523 ERROR [886026] [*CCerenkovGenerator::GeneratePhotonsFromGenstep@251]  genstep_idx 0 fNumPhotons 221 pindex 0
+    2018-09-06 13:50:43.523 ERROR [886026] [*CCerenkovGenerator::GeneratePhotonsFromGenstep@283]  gcp.u0 0.740219 sampledEnergy 1.56887e-05 sampledWavelength 79.0277 hc/nm 0.00123984 sampledRI 1.3608
+    2018-09-06 13:50:43.523 ERROR [886026] [*CCerenkovGenerator::GeneratePhotonsFromGenstep@296] gcp.u1 0.438451
+    2018-09-06 13:50:43.583 ERROR [886026] [*CCerenkovGenerator::GeneratePhotonsFromGenstep@360] gcp.u2 0.517013 dir ( 0.796318 -0.22456 0.56165 ) pol ( -0.571033 0.027155 0.820478 )
+    2018-09-06 13:50:43.583 ERROR [886026] [*CCerenkovGenerator::GeneratePhotonsFromGenstep@385] gcp.u3 0.156989
+    2018-09-06 13:50:43.583 ERROR [886026] [*CCerenkovGenerator::GeneratePhotonsFromGenstep@397] gcp.u4 0.0713675
+    2018-09-06 13:50:43.583 ERROR [886026] [*CCerenkovGenerator::GeneratePhotonsFromGenstep@428] gcp.post ( 0.053994 -0.010820 -0.002176 : 0.000205)
+
+
+
+Genstep 0 comparisons : see ckm-so
+---------------------------------------
+
+Comparing Cerenkov generated photons between:
+
+ckm-- 
+    CerenkovMinimal : geant4 example app, with genstep and photon collection
+    via embedded Opticks with embedded commandline 
+    " --gltf 3 --compute --save --embedded --natural --dbgtex --printenabled --pindex 0 --bouncemax 0"  
+
+    --bouncemax 0 
+        means that photons are saved immediately after generation, with no propagation 
+   
+    --printenabled --pindex 0
+        dump kernel debug for photon 0 
+
+
+ckm-gentest : 
+    CCerenkovGeneratorTest : genstep eating standalone CPU generator that tries to
+    mimic the cerenkov process photons via verbatim code copy 
+
+    genstep source set in main at: "/tmp/blyth/opticks/evt/g4live/natural/1/gs.npy"
+
+
+cross exe, "same" sim
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Comparing photons from genstep 0, 
+   /tmp/blyth/opticks/evt/g4live/natural/~1/so.npy 
+   /tmp/blyth/opticks/cfg4/CCerenkovGeneratorTest/so.npy
+
+* small deviations at 1e~5 level mostly in wavelength 
+
+same ckm exe, cross sim
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Comparing photons from genstep 0, 
+    /tmp/blyth/opticks/evt/g4live/natural/~1/so.npy 
+    /tmp/blyth/opticks/evt/g4live/natural/1/ox.npy
+
+* same level of small deviations, 1e~5 level mostly in wavelength 
+
+
+cross exe, same sim
+~~~~~~~~~~~~~~~~~~~~~
+
+
+For direct workflow : would be more convenient to save events within the keydir 
+---------------------------------------------------------------------------------
+
+* especially important for passing gensteps between executables, for direct running
+  can have a standard path within the keydir for each tag at which to look for gensteps
+
+  * first geometry + genstep collecting and writing executable is special : it should write its event
+    and genstep into distinctive "standard" directory (perhaps under the name "source") within the
+    geocache keydir 
+
+  * all other executables sharing the same keydir can put their events underneath 
+    a relpath named after the executable  
+
+
+   

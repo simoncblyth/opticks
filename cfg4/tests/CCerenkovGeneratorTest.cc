@@ -57,7 +57,7 @@ int main(int argc, char** argv)
     C4PhotonCollector* collector = new C4PhotonCollector ; 
     collector->collectSecondaryPhotons( pc, idx ); 
 
-    const char* ph_path = "$TMP/cfg4/CCerenkovGeneratorTest/photons.npy" ; 
+    const char* ph_path = "$TMP/cfg4/CCerenkovGeneratorTest/so.npy" ; 
     collector->savePhotons(ph_path);
 
     LOG(info) << collector->desc() ;

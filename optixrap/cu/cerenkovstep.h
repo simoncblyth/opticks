@@ -244,16 +244,6 @@ generate_cerenkov_photon(Photon& p, CerenkovStep& cs, curandState &rng)
 
         rtPrintf("gcp.u1 %10.5f u_maxSin2 %10.5f sin2Theta %10.5f \n", u, u_maxSin2, sin2Theta  ); 
 
-/*
-#ifdef DEBUG
-        if(cs.MaterialIndex == 24)
-        {
-             rtPrintf("cs.MaterialIndex %d props %10.4f %10.4f %10.4f %10.4f : wl %10.4f cosTheta %10.4f sin2Theta %10.4f u %10.4f u_maxSin2 %10.4f \n", 
-                     cs.MaterialIndex, props.x, props.y, props.z, props.w, wavelength, cosTheta, sin2Theta, u, u_maxSin2 ) ;
-             return ;  
-        }
-#endif
-*/  
   
       } while ( u_maxSin2 > sin2Theta);
 
@@ -269,7 +259,6 @@ generate_cerenkov_photon(Photon& p, CerenkovStep& cs, curandState &rng)
       sincosf(phi,&sinPhi,&cosPhi);
 	
 
-      rtPrintf("gcp.u2   %10.5f phi %10.5f \n", u, phi );   
 
 
       // calculate x,y, and z components of photon energy
@@ -282,6 +271,8 @@ generate_cerenkov_photon(Photon& p, CerenkovStep& cs, curandState &rng)
       rotateUz(photonMomentum, cs.p0 );
       p.direction = photonMomentum ;
 
+
+
       // Determine polarization of new photon 
       // and rotate back to original coord system 
 
@@ -289,6 +280,10 @@ generate_cerenkov_photon(Photon& p, CerenkovStep& cs, curandState &rng)
       rotateUz(photonPolarization, cs.p0);
       p.polarization = photonPolarization ;
 
+      rtPrintf("gcp.u2   %10.5f phi %10.5f dir ( %10.5f %10.5f %10.5f ) pol ( %10.5f %10.5f %10.5f )  \n", u, phi, 
+              p.direction.x, p.direction.y, p.direction.z ,
+              p.polarization.x, p.polarization.y, p.polarization.z
+           );   
      
       float fraction ; 
       float delta ;
@@ -321,6 +316,9 @@ generate_cerenkov_photon(Photon& p, CerenkovStep& cs, curandState &rng)
       p.time = cs.t0 + delta / cs.MeanVelocity ;
 
       p.position = cs.x0 + fraction * cs.DeltaPosition ; 
+
+      rtPrintf("gcp.post ( %10.5f %10.5f %10.5f : %10.5f )  \n", p.position.x, p.position.y, p.position.z, p.time  ); 
+
 
       p.weight = cs.weight ;
 
