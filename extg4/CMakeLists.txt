@@ -47,6 +47,10 @@ set(SOURCES
     X4MaterialTable.cc
     X4MaterialPropertiesTable.cc
 
+    X4MaterialLib.cc
+    X4PropertyMap.cc
+    X4Property.cc
+
     X4LogicalBorderSurfaceTable.cc
     X4LogicalSkinSurfaceTable.cc
 
@@ -88,6 +92,10 @@ set(HEADERS
     X4Material.hh
     X4MaterialTable.hh
     X4MaterialPropertiesTable.hh
+
+    X4MaterialLib.hh
+    X4PropertyMap.hh
+    X4Property.hh
 
     X4LogicalBorderSurfaceTable.hh
     X4LogicalSkinSurfaceTable.hh

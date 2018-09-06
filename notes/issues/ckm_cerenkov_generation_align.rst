@@ -139,6 +139,34 @@ Focus on generation "--bouncemax 0"
 
 
 
+DONE : reverse translate from texline to material index in GBndLib::MaterialIndexFromLine
+--------------------------------------------------------------------------------------------
+
+* material texline is either an inner or outer material
+
+::
+
+    658 unsigned GBndLib::getLine(unsigned ibnd, unsigned imatsur)
+    659 {   
+    660     assert(imatsur < NUM_MATSUR);  // NUM_MATSUR canonically 4
+    661     return ibnd*NUM_MATSUR + imatsur ;
+    662 }
+
+
+DONE : GBndLib::MaterialIndexFromLine
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+From line to ibnd/imatsur is easy, then can use the optical buffer to get the original index:
+
+1. assert imatsur is 0 or 3 for imat, omat 
+2. lookup the 1-based original indices 
+
+::
+
+    ibnd = line / NUM_MATSUR
+    imatsur = line - ibnd*NUM_MATSUR 
+    
+
 CCerenkovGeneratorTest
 --------------------------
 
@@ -156,18 +184,11 @@ Line up the same gensteps::
 
 ::
 
-    (0     :0   ) 0.740219   :      0x1004fc6f4     + 2516 CCerenkovGenerator::GeneratePhotonsFromGenstep(OpticksGenstep const*, unsigned int)
     2018-09-05 11:12:37.120 ERROR [237892] [*CCerenkovGenerator::GeneratePhotonsFromGenstep@203]  pindex 0 gcp.u0 0.740219 sampledEnergy 3.58994e-06 sampledRI 1.51438
-    (0     :1   ) 0.438451   :      0x1004fca84     + 3428 CCerenkovGenerator::GeneratePhotonsFromGenstep(OpticksGenstep const*, unsigned int)
     2018-09-05 11:12:37.120 ERROR [237892] [*CCerenkovGenerator::GeneratePhotonsFromGenstep@215] gcp.u1 0.438451
-    (0     :2   ) 0.517013   :      0x1004fcc29     + 3849 CCerenkovGenerator::GeneratePhotonsFromGenstep(OpticksGenstep const*, unsigned int)
     2018-09-05 11:12:37.120 ERROR [237892] [*CCerenkovGenerator::GeneratePhotonsFromGenstep@228] gcp.u2 0.517013
-    (0     :3   ) 0.156989   :      0x1004fd032     + 4882 CCerenkovGenerator::GeneratePhotonsFromGenstep(OpticksGenstep const*, unsigned int)
     2018-09-05 11:12:37.180 ERROR [237892] [*CCerenkovGenerator::GeneratePhotonsFromGenstep@290] gcp.u3 0.156989
-    (0     :4   ) 0.071368   :      0x1004fd22b     + 5387 CCerenkovGenerator::GeneratePhotonsFromGenstep(OpticksGenstep const*, unsigned int)
     2018-09-05 11:12:37.180 ERROR [237892] [*CCerenkovGenerator::GeneratePhotonsFromGenstep@302] gcp.u4 0.0713675
-    (1     :0   ) 0.920994   :      0x1004fc6f4     + 2516 CCerenkovGenerator::GeneratePhotonsFromGenstep(OpticksGenstep const*, unsigned int)
-    (1     :1   ) 0.460364   :      0x1004fca84     + 3428 CCerenkovGenerator::GeneratePhotonsFromGenstep(OpticksGenstep const*, unsigned int)
 
 
 
@@ -194,7 +215,61 @@ domain range difference
 * G4: domain range from original G4Material feeds into Pmin/Pmax
 * OK: standardized domain range used
 
+how to proceed
+~~~~~~~~~~~~~~~
 
+* DONE : reverse translate materialLine to materialIndex
+* derive the G4 style propertyvec from Opticks standardized material and compare with source
+* use the standardized domain interpolated prop for the aligned comparison 
+
+* hmm will need to rewrite all properties of all materials (and surfaces) : so better to 
+  do this in one place : not specific to Cerenkov Generator 
+
+* DONE : added assert in CCerenkovGeneration comparing the Rindex domain
+  from the material to that from the genstep
+
+* clearest way is to used an OPTICKS_ALIGN switch in ckm- DetectorConstruction 
+  that does the G4 material standardization, CMaterialLib should do it 
+  and should be invoked via some API in G4Opticks 
+
+   * hmm not so sure CMaterialLib is showing its age, its based off of GMaterialLib from hub 
+   * X4MaterialTable is what is doing the direct Geant4 to Opticks GGeo conversion, 
+     so perhaps X4PhysicalVolume::convertMaterials which populates GMaterialLib directly 
+     from Geant4 materials is better for standardize override
+
+   * can have an option to G4Opticks
+
+
+
+1. DONE : got CMaterialLibTest to work from key 
+
+::
+
+    ckm-mlib () 
+    { 
+        OPTICKS_KEY=$(ckm-key) CMaterialLibTest --envkey
+    }
+
+
+
+how to replace G4Materials with standardized versions ?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* G4Material::theMaterialTable structure doesnt make this easy to do
+
+* thought about placement new to replace the G4Material in same location
+  of the std::vector<G4Material*> BUT actually there is no need as the material 
+  is fine its just an interpolation of properties onto a standard domain and perhaps addition
+  of some default properties is all that is needed 
+
+* so just need to replace the MPT::
+
+    G4Material::SetMaterialPropertiesTable(G4MaterialPropertiesTable* anMPT);
+
+
+  
+where the Pmin/Pmax comes from in genstep collection
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
 examples/Geant4/CerenkovMinimal/L4Cerenkov.cc
@@ -229,6 +304,9 @@ cfg4/C4Cerenkov1042.cc::
 
 
 
+where the source domain comes from
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 ::
 
     114 G4MaterialPropertyVector* DetectorConstruction::MakeWaterRI()
@@ -243,6 +321,7 @@ cfg4/C4Cerenkov1042.cc::
     123                   3.026*eV, 3.102*eV, 3.181*eV, 3.265*eV,
     124                   3.353*eV, 3.446*eV, 3.545*eV, 3.649*eV,
     125                   3.760*eV, 3.877*eV, 4.002*eV, 4.136*eV };
+
 
 
 
@@ -263,6 +342,23 @@ cfg4/C4Cerenkov1042.cc::
      16     float iw = lerp( boundary_domain_reciprocal.x , boundary_domain_reciprocal.y, u ) ;
      17     return 1.f/iw ;
      18 }
+
+
+
+smoking gun for domain inconsistency
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+::
+
+    149     G4double BetaInverse = q4.x ;
+    150     G4double Pmin = q4.y ;
+    151     G4double Pmax = q4.z ;
+    152 
+    153     G4double wavelength_min = h_Planck*c_light/Pmax ;
+    154     G4double wavelength_max = h_Planck*c_light/Pmin ;
+    155 
+    156     // HMM POTENTIAL FOR BREAKAGE WHEN THE Pmin/Pmax travelling
+    157     // via genstep is no longer correct for the rindex of the material
 
 
 

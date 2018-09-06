@@ -82,6 +82,7 @@ class CFG4_API CPropLib {
        void addConstProperty(G4MaterialPropertiesTable* mpt, const char* matname, const char* lkey,  GProperty<float>* prop );
        GProperty<float>* convertVector(G4PhysicsVector* pvec);
        GPropertyMap<float>* convertTable(G4MaterialPropertiesTable* mpt, const char* name);
+       GPropertyMap<float>* convertTable_OLD(G4MaterialPropertiesTable* mpt, const char* name);
 
    protected:
        OpticksHub*        m_hub ; 

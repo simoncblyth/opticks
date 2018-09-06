@@ -460,7 +460,67 @@ std::string CPropLib::getMaterialKeys_OLD(const G4Material* mat)
 }
 
 
+
+
+
+
 GPropertyMap<float>* CPropLib::convertTable(G4MaterialPropertiesTable* mpt, const char* name)
+{    
+    GPropertyMap<float>* pmap = new GPropertyMap<float>(name);
+
+    typedef G4MaterialPropertyVector MPV ; 
+    bool warning ; 
+
+    std::vector<G4String> pns = mpt->GetMaterialPropertyNames() ;
+    for( unsigned i=0 ; i < pns.size() ; i++)
+    {   
+        const std::string& pname = pns[i]; 
+        G4int pidx = mpt->GetPropertyIndex(pname, warning=true); 
+        assert( pidx > -1 );  
+        MPV* pvec = const_cast<G4MaterialPropertiesTable*>(mpt)->GetProperty(pidx, warning=false );  
+        if(pvec == NULL) continue ; 
+
+        GProperty<float>* prop = convertVector(pvec);        
+        pmap->addProperty( pname.c_str(), prop );  
+    }   
+
+
+    std::vector<G4String> cpns = mpt->GetMaterialConstPropertyNames() ;
+    LOG(debug) << " cpns " << cpns.size() ; 
+
+    for( unsigned i=0 ; i < cpns.size() ; i++)
+    {   
+        const std::string& n = cpns[i]; 
+        G4bool exists = mpt->ConstPropertyExists( n.c_str() ) ; 
+        if(!exists) continue ; 
+
+        G4int pidx = mpt->GetConstPropertyIndex(n, warning=true); 
+        assert( pidx > -1 );  
+        G4double pvalue = mpt->GetConstProperty(pidx);  
+
+        // express standard Opticks nm range in MeV, and swap order
+        float dlow  = m_dscale/m_domain->getHigh() ; 
+        float dhigh = m_dscale/m_domain->getLow() ;  
+    
+        LOG(info) << "CPropLib::convertTable" 
+                  << " domlow (nm) "  << m_domain->getLow()  
+                  << " domhigh (nm) " << m_domain->getHigh()
+                  << " dscale MeV/nm " << m_dscale 
+                  << " dlow  (MeV)  " << dlow 
+                  << " dhigh (MeV) " << dhigh
+                  ;
+
+
+        GProperty<float>* prop = GProperty<float>::from_constant(pvalue, dlow, dhigh );        
+        pmap->addProperty( n.c_str(), prop );  
+   }
+   return pmap ;    
+}
+
+
+
+
+GPropertyMap<float>* CPropLib::convertTable_OLD(G4MaterialPropertiesTable* mpt, const char* name)
 {    
     GPropertyMap<float>* pmap = new GPropertyMap<float>(name);
     

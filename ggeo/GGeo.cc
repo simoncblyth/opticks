@@ -1150,6 +1150,12 @@ void GGeo::close()
     mlib->close();
     slib->close();
 
+
+    // this was not here traditionally due to late addition of boundaries 
+    GBndLib* blib = getBndLib() ;
+    blib->createDynamicBuffers(); 
+
+
     LOG(fatal) << "]" ; 
 }
 

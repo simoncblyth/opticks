@@ -165,7 +165,7 @@ class GGEO_API GPropertyLib {
         GProperty<float>*    makeRampProperty();
     public:
         void setKeyMap(const char* spec);
-        const char* getLocalKey(const char* dkey); // map standard -> local keys 
+        const char* getLocalKey(const char* dkey) const ; // map standard -> local keys 
     public:
         void checkBufferCompatibility(unsigned int nk, const char* msg="GPropertyLib::checkBufferCompatibility");
     public:

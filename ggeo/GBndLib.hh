@@ -57,6 +57,10 @@ in order to make the functionality available without doing a load.
 
 class GGEO_API GBndLib : public GPropertyLib {
   public:
+       static const GBndLib* INSTANCE ; 
+       static const GBndLib* GetInstance() ; 
+       static unsigned MaterialIndexFromLine( unsigned line ) ;
+  public:
        enum {
                OMAT,
                OSUR,
@@ -123,6 +127,7 @@ class GGEO_API GBndLib : public GPropertyLib {
   public:
        void saveIndexBuffer();
        void saveOpticalBuffer();
+       void dumpOpticalBuffer() const ;
   public:
        void saveAllOverride(const char* dir="$TMP");
   public:
@@ -146,6 +151,8 @@ class GGEO_API GBndLib : public GPropertyLib {
   public:
        unsigned int getMaterialLine(const char* shortname);
        static unsigned int getLine(unsigned int ibnd, unsigned int iquad);
+       unsigned getMaterialIndexFromLine(unsigned line) const ;
+ 
        unsigned int getLineMin();
        unsigned int getLineMax();
   public:

@@ -15,6 +15,11 @@
 
 #include "PLOG.hh"
 
+
+const GMaterialLib* GMaterialLib::INSTANCE = NULL ; 
+const GMaterialLib* GMaterialLib::GetInstance(){ return INSTANCE ; }
+
+
 const float GMaterialLib::MATERIAL_UNSET   = 0.0f  ;
 
 const char* GMaterialLib::refractive_index  = "refractive_index" ;
@@ -182,6 +187,7 @@ GMaterialLib::GMaterialLib(GMaterialLib* src, GDomain<float>* domain, GMaterialL
 
 void GMaterialLib::init()
 {
+    INSTANCE = this ; 
     setKeyMap(keyspec);
     defineDefaults(getDefaults());
 }

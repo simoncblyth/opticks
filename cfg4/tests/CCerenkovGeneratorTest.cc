@@ -4,6 +4,8 @@
 
 #include "SSys.hh"
 #include "NPY.hpp"
+#include "GGeo.hh"
+#include "GBndLib.hh"
 
 #include "OpticksGenstep.hh"
 #include "CCerenkovGenerator.hh"
@@ -13,6 +15,7 @@
 #include "OpticksMode.hh"
 #include "OpticksHub.hh"
 #include "CMaterialLib.hh"
+#include "CAlignEngine.hh"
 
 
 
@@ -23,7 +26,8 @@ int main(int argc, char** argv)
     //const char* def = "/usr/local/opticks/opticksdata/gensteps/dayabay/natural/1.npy" ; 
     const char* def = "/tmp/blyth/opticks/evt/g4live/natural/1/gs.npy" ; 
 
-    const char* path = argc > 1 ? argv[1] : def ; 
+    //const char* path = argc > 1 ? argv[1] : def ; 
+    const char* path = def ; 
 
     NPY<float>* np = NPY<float>::load(path) ; 
     if(np == NULL) return 0 ; 
@@ -41,10 +45,14 @@ int main(int argc, char** argv)
     clib->convert();
     // TODO: a more direct way to get to a refractive index, than the above that loads the entire geometry  
 
-   
+ 
+
+
+    CAlignEngine::Initialize( ok.getIdPath() );  
 
     unsigned idx = 0 ;  
     G4VParticleChange* pc = CCerenkovGenerator::GeneratePhotonsFromGenstep(gs,idx) ;
+    //assert(0);  
 
     C4PhotonCollector* collector = new C4PhotonCollector ; 
     collector->collectSecondaryPhotons( pc, idx ); 

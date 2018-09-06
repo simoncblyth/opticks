@@ -93,12 +93,23 @@ bool CMaterialLib::isConverted()
 }
 
 
+/**
+CMaterialLib::convert
+----------------------
+
+This never getting called during standard running, 
+nope materials are converted one-by-one from CTestDetector::makeDetector
+
+* TODO: check this
+
+
+With CCerenkovGeneratorTest are invoking from main
+
+**/
+
 void CMaterialLib::convert()
 {
-   // assert(0) ; 
-   // huh this never getting called during standard running, 
-   // nope  materials are converted one-by-one from CTestDetector::makeDetector
-
+   //  assert(0) ; 
     assert(m_converted == false);
     m_converted = true ; 
 
@@ -114,8 +125,27 @@ void CMaterialLib::convert()
         //G4MaterialPropertyVector* groupvel = g4mat->GetMaterialPropertiesTable()->GetProperty("GROUPVEL") ;
         //assert(groupvel);
 
+        G4MaterialPropertyVector* rindex = g4mat->GetMaterialPropertiesTable()->GetProperty("RINDEX") ;
+        assert(rindex);
+
+        G4double Pmin = rindex->GetMinLowEdgeEnergy();
+        G4double Pmax = rindex->GetMaxLowEdgeEnergy();
+
+        G4double Wmin = h_Planck*c_light/Pmax ;
+        G4double Wmax = h_Planck*c_light/Pmin ;
+
         std::string keys = getMaterialKeys(g4mat);
-        LOG(info) << "converted ggeo material to G4 material " << name << " with keys " << keys ;  
+        assert( !keys.empty() ); 
+
+        //LOG(info) << "converted ggeo material to G4 material " << name << " with keys " << keys ;  
+        LOG(info) 
+            << " g4mat " << (void*)g4mat
+            << " name " << name 
+            << " Pmin " << Pmin
+            << " Pmax " << Pmax
+            << " Wmin " << Wmin/nm
+            << " Wmax " << Wmax/nm
+            ;  
     }
     LOG(info) << "CMaterialLib::convert : converted " << ngg << " ggeo materials to G4 materials " ; 
 }
@@ -412,7 +442,6 @@ void CMaterialLib::dumpMaterialValueMap(const char* msg, std::map<std::string,fl
     } 
 }
 
-
 std::string CMaterialLib::firstKeyForValue(float val, std::map<std::string,float>& vmp, float delta)
 {
     std::string empty ; 
@@ -425,8 +454,6 @@ std::string CMaterialLib::firstKeyForValue(float val, std::map<std::string,float
     }
     return empty ;
 }
-
-
 
 void CMaterialLib::dumpMaterials(const char* msg)
 {
@@ -458,10 +485,6 @@ void CMaterialLib::dumpMaterials(const char* msg)
                   << std::endl ; 
 
         dumpMaterial(g4mat, "g4mat");
-
-
     }
 }
-
-
 

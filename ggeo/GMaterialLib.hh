@@ -35,6 +35,9 @@ class GItemList ;
 
 class GGEO_API GMaterialLib : public GPropertyLib {
    public:
+       static const GMaterialLib* INSTANCE ; 
+       static const GMaterialLib* GetInstance() ; 
+   public:
        friend class X4PhysicalVolume ; 
    public:
        // 4 standard material property names : interleaved into float4 wavelength texture

@@ -27,6 +27,17 @@
 
 #include "PLOG.hh"
 
+
+const GBndLib* GBndLib::INSTANCE = NULL ; 
+const GBndLib* GBndLib::GetInstance(){ return INSTANCE ; }
+
+unsigned GBndLib::MaterialIndexFromLine( unsigned line ) 
+{
+    assert( INSTANCE ) ; 
+    return INSTANCE->getMaterialIndexFromLine(line) ;
+}
+
+
 void GBndLib::save()
 {
     saveIndexBuffer();  
@@ -133,6 +144,21 @@ void GBndLib::saveOpticalBuffer()
     NPY<unsigned int>* optical_buffer = createOpticalBuffer();
     setOpticalBuffer(optical_buffer);
     saveToCache(optical_buffer, "Optical") ; 
+}
+
+
+
+
+void GBndLib::dumpOpticalBuffer() const 
+{
+    LOG(error) << "." ; 
+
+
+    if( m_optical_buffer )
+    {
+        m_optical_buffer->dump("dumpOpticalBuffer");     
+    }
+
 }
 
 
@@ -289,6 +315,7 @@ GBndLib::GBndLib(Opticks* ok)
 
 void GBndLib::init()
 {
+    INSTANCE=this ; 
     if(m_dbgbnd)
     {
         LOG(fatal) << "[--dbgbnd] " << m_dbgbnd ; 
@@ -625,12 +652,16 @@ void GBndLib::dumpMaterialLineMap(const char* msg)
 }
 
 
-unsigned int GBndLib::getMaterialLine(const char* shortname_)
+
+
+
+
+unsigned GBndLib::getMaterialLine(const char* shortname_)
 {
     // used by App::loadGenstep for setting material line in TorchStep
-    unsigned int ni = getNumBnd();
-    unsigned int line = 0 ; 
-    for(unsigned int i=0 ; i < ni ; i++)    
+    unsigned ni = getNumBnd();
+    unsigned line = 0 ; 
+    for(unsigned i=0 ; i < ni ; i++)    
     {
         const guint4& bnd = m_bnd[i] ;
         const char* omat = m_mlib->getName(bnd[OMAT]);
@@ -655,23 +686,53 @@ unsigned int GBndLib::getMaterialLine(const char* shortname_)
 
     return line ;
 }
-unsigned int GBndLib::getLine(unsigned ibnd, unsigned imatsur)
+unsigned GBndLib::getLine(unsigned ibnd, unsigned imatsur)
 {
     assert(imatsur < NUM_MATSUR);  // NUM_MATSUR canonically 4
     return ibnd*NUM_MATSUR + imatsur ;   
 }
-unsigned int GBndLib::getLineMin()
+unsigned GBndLib::getLineMin()
 {
-    unsigned int lineMin = getLine(0, 0);
+    unsigned lineMin = getLine(0, 0);
     return lineMin ; 
 }
 unsigned int GBndLib::getLineMax()
 {
-    unsigned int numBnd = getNumBnd() ; 
-    unsigned int lineMax = getLine(numBnd - 1, NUM_MATSUR-1);   
+    unsigned numBnd = getNumBnd() ; 
+    unsigned lineMax = getLine(numBnd - 1, NUM_MATSUR-1);   
     assert(lineMax == numBnd*NUM_MATSUR - 1 );
     return lineMax ; 
 }
+
+unsigned GBndLib::getMaterialIndexFromLine(unsigned line) const 
+{
+    unsigned numBnd = getNumBnd() ; 
+    unsigned ibnd = line / NUM_MATSUR ; 
+    assert( NUM_MATSUR == 4 ); 
+    assert( ibnd < numBnd ) ;  
+    unsigned imatsur = line - ibnd*NUM_MATSUR ; 
+
+    LOG(error) 
+        << " line " << line 
+        << " ibnd " << ibnd 
+        << " numBnd " << numBnd 
+        << " imatsur " << imatsur
+        ;
+
+    assert( imatsur == 0 || imatsur == 3 ); 
+
+    assert( m_optical_buffer );  
+    glm::uvec4 optical = m_optical_buffer->getQuadU(ibnd, imatsur, 0 );  
+ 
+    unsigned matIdx1 = optical.x ; 
+    assert( matIdx1 >= 1 );   // 1-based index
+
+    return matIdx1 - 1 ;  // 0-based index
+}
+
+
+
+
 
 NPY<float>* GBndLib::createBuffer()
 {
@@ -758,16 +819,16 @@ NPY<float>* GBndLib::createBufferForTex2d()
     for(unsigned int i=0 ; i < ni ; i++)      // over bnd
     {
         const guint4& bnd = m_bnd[i] ;
-        for(unsigned int j=0 ; j < nj ; j++)     // over imat/omat/isur/osur species
+        for(unsigned j=0 ; j < nj ; j++)     // over imat/omat/isur/osur species
         {
-            unsigned int wof = nj*nk*nl*nm*i + nk*nl*nm*j ;
+            unsigned wof = nj*nk*nl*nm*i + nk*nl*nm*j ;
 
             if(j == IMAT || j == OMAT)    
             {
-                unsigned int midx = bnd[j] ;
+                unsigned midx = bnd[j] ;
                 if(midx != UNSET)
                 { 
-                    unsigned int mof = nk*nl*nm*midx ; 
+                    unsigned mof = nk*nl*nm*midx ; 
                     memcpy( wdat+wof, mdat+mof, sizeof(float)*nk*nl*nm );  
                 }
                 else
@@ -782,11 +843,11 @@ NPY<float>* GBndLib::createBufferForTex2d()
             }
             else if(j == ISUR || j == OSUR) 
             {
-                unsigned int sidx = bnd[j] ;
+                unsigned sidx = bnd[j] ;
                 if(sidx != UNSET)
                 {
                     assert( sdat && sur );
-                    unsigned int sof = nk*nl*nm*sidx ;  
+                    unsigned sof = nk*nl*nm*sidx ;  
                     memcpy( wdat+wof, sdat+sof, sizeof(float)*nk*nl*nm );  
                 }
             }
@@ -798,19 +859,27 @@ NPY<float>* GBndLib::createBufferForTex2d()
 
 
 
+/**
+GBndLib::createOpticalBuffer
+-----------------------------
 
-NPY<unsigned int>* GBndLib::createOpticalBuffer()
+Optical buffer can be derived from the m_bnd array 
+of guint4. It contains omat-osur-isur-imat info, 
+for materials just the material one based index, for 
+surfaces the one based surface index and other optical 
+surface parameters. 
+
+As it can be derived it is often not persisted.
+
+**/
+
+
+
+
+
+NPY<unsigned>* GBndLib::createOpticalBuffer()
 {
-    /*
-    m_bnd vector of guint4 is persisted in the optical buffer
 
-    Optical buffer contains omat-osur-isur-imat info, 
-    for materials just the material one based index, for 
-    surfaces the one based surface index and other optical 
-    surface parameters. 
-
-    */
- 
     bool one_based = true ; // surface and material indices 1-based, so 0 can stand for unset
     // hmm, the bnd itself is zero-based
 
@@ -818,20 +887,20 @@ NPY<unsigned int>* GBndLib::createOpticalBuffer()
     unsigned int nj = NUM_MATSUR ;    // om-os-is-im
     unsigned int nk = 4 ;           // THIS 4 IS NOT RELATED TO NUM_PROP
 
-    NPY<unsigned int>* optical = NPY<unsigned int>::make( ni, nj, nk) ;
+    NPY<unsigned>* optical = NPY<unsigned>::make( ni, nj, nk) ;
     optical->zero(); 
-    unsigned int* odat = optical->getValues();
+    unsigned* odat = optical->getValues();
 
-    for(unsigned int i=0 ; i < ni ; i++)      // over bnd
+    for(unsigned i=0 ; i < ni ; i++)      // over bnd
     {
         const guint4& bnd = m_bnd[i] ;
 
-        for(unsigned int j=0 ; j < nj ; j++)  // over imat/omat/isur/osur
+        for(unsigned j=0 ; j < nj ; j++)  // over imat/omat/isur/osur
         {
-            unsigned int offset = nj*nk*i+nk*j ;
+            unsigned offset = nj*nk*i+nk*j ;
             if(j == IMAT || j == OMAT)    
             {
-                unsigned int midx = bnd[j] ;
+                unsigned midx = bnd[j] ;
                 assert(midx != UNSET);
 
                 odat[offset+0] = one_based ? midx + 1 : midx  ; 
@@ -842,10 +911,9 @@ NPY<unsigned int>* GBndLib::createOpticalBuffer()
             }
             else if(j == ISUR || j == OSUR)  
             {
-                unsigned int sidx = bnd[j] ;
+                unsigned sidx = bnd[j] ;
                 if(sidx != UNSET)
                 {
-      
                     guint4 os = m_slib->getOpticalSurface(sidx) ;
 
                     odat[offset+0] = one_based ? sidx + 1 : sidx  ; 

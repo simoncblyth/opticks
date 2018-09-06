@@ -26,7 +26,7 @@ void CMaterialTable::init()
 
 void CMaterialTable::initNameIndex()
 {
-    const G4MaterialTable* mtab  = G4Material::GetMaterialTable();
+    const G4MaterialTable* mtab = G4Material::GetMaterialTable();
     unsigned nmat = G4Material::GetNumberOfMaterials();
 
     LOG(info) << "CMaterialTable::init "

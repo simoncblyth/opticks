@@ -83,6 +83,15 @@ ckm-okg4-load()
     OPTICKS_KEY=$(ckm-key) lldb -- OKG4Test --load --envkey --embedded
 }
 
+ckm-mlib()
+{
+    OPTICKS_KEY=$(ckm-key) CMaterialLibTest --envkey 
+}
+
+ckm-gentest()
+{
+    OPTICKS_KEY=$(ckm-key) lldb -- CCerenkovGeneratorTest --envkey 
+}
 
 
 

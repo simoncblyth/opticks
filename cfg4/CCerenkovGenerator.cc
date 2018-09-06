@@ -24,6 +24,8 @@
 #include "Randomize.hh"
 
 #include "CCerenkovGenerator.hh"
+#include "GBndLib.hh"
+#include "GLMFormat.hpp"
 #include "PLOG.hh"
 
 #define ALIGN_DEBUG 1
@@ -32,14 +34,26 @@
 #endif
 
 
+/**
+CCerenkovGenerator::GetRINDEX
+-------------------------------
+
+TODO : materialline (texture line) saved in the genstep for GPU tex lookups, needs
+to be translated back into an ordinary Geant4 material index.
+
+
+**/
+
 G4MaterialPropertyVector* CCerenkovGenerator::GetRINDEX(unsigned materialIndex) // static
 {
     const std::vector<G4Material*>& mtab = *G4Material::GetMaterialTable() ; 
 
-    bool have_material = materialIndex < mtab.size() ; 
+    unsigned num_material = mtab.size() ; 
+
+    bool have_material = materialIndex < num_material ; 
     if(!have_material) 
         LOG(fatal) << " missing materialIndex " << materialIndex
-                   << " in table of " << mtab.size()
+                   << " in table of " << num_material
                    ;
 
     assert( have_material ) ; 
@@ -50,6 +64,19 @@ G4MaterialPropertyVector* CCerenkovGenerator::GetRINDEX(unsigned materialIndex) 
 
     G4MaterialPropertyVector* Rindex = aMaterialPropertiesTable->GetProperty(kRINDEX); 
     assert(Rindex);  
+
+    G4MaterialPropertyVector* Rindex2 = aMaterialPropertiesTable->GetProperty("RINDEX"); 
+    assert(Rindex2);  
+
+
+    LOG(error) 
+         << " aMaterial " << (void*)aMaterial
+         << " materialIndex " << materialIndex
+         << " num_material " << num_material
+         << " Rindex " << Rindex 
+         << " Rindex2 " << Rindex2 
+         ;
+
 
     return Rindex ;
 }
@@ -94,15 +121,22 @@ G4VParticleChange* CCerenkovGenerator::GeneratePhotonsFromGenstep( const Opticks
 
    // int gencode = hdr.x ;    // enum CERENKOV, SCINTILLATION, TORCH, EMITSOURCE  : but old gensteps just used sign of 1-based index 
     unsigned trackID = hdr.y ;  
-    unsigned materialIndex = hdr.z ;  
-
-    //OVERRIDE  : seems to be a problem with the index or order of materials 
-    materialIndex = 0 ; 
+    unsigned materialLine = hdr.z ;  
+    unsigned materialIndex = GBndLib::MaterialIndexFromLine( materialLine ) ; 
+    // back translate a texture material line into a material index
 
     int fNumPhotons = hdr.w ; 
 
     G4ThreeVector x0( post.x, post.y, post.z  ); 
     G4double t0 = post.w*ns ;  
+
+    LOG(info) 
+        << " genstep_idx " << idx
+        << " num_gs " << num_gs
+        << " materialLine " << materialLine
+        << " materialIndex " << materialIndex 
+        << gpresent("post", post ) 
+        ;
 
     G4ThreeVector deltaPosition( dpsl.x, dpsl.y, dpsl.z ); 
     G4double stepLength = dpsl.w ;  
@@ -118,7 +152,6 @@ G4VParticleChange* CCerenkovGenerator::GeneratePhotonsFromGenstep( const Opticks
 
     G4double wavelength_min = h_Planck*c_light/Pmax ;
     G4double wavelength_max = h_Planck*c_light/Pmin ;
-
 
     //G4double maxCos = q4.w ;
 
@@ -158,7 +191,33 @@ G4VParticleChange* CCerenkovGenerator::GeneratePhotonsFromGenstep( const Opticks
     G4Track aTrack ; 
     aTrack.SetTrackID(trackID) ; 
 
-    G4MaterialPropertyVector* Rindex = GetRINDEX(materialIndex) ;  // hmm ordinng problem potential
+    G4MaterialPropertyVector* Rindex = GetRINDEX(materialIndex) ; 
+
+    G4double Pmin2 = Rindex->GetMinLowEdgeEnergy();
+    G4double Pmax2 = Rindex->GetMaxLowEdgeEnergy();
+
+    bool Pmin_match = Pmin2 == Pmin ; 
+    bool Pmax_match = Pmax2 == Pmax ; 
+   
+    if(!Pmin_match)
+        LOG(fatal) 
+            << " Pmin " << Pmin
+            << " Pmin2 " << Pmin2
+            << " Pmin(nm) " << h_Planck*c_light/Pmin/nm
+            << " Pmin2(nm) " << h_Planck*c_light/Pmin2/nm
+            ;
+
+    if(!Pmax_match)
+        LOG(fatal) 
+            << " Pmax " << Pmax
+            << " Pmax2 " << Pmax2
+            << " Pmax(nm) " << h_Planck*c_light/Pmax/nm
+            << " Pmax2(nm) " << h_Planck*c_light/Pmax2/nm
+            ;
+
+    assert( Pmin_match && "material mismatches genstep source material" ); 
+    assert( Pmax_match && "material mismatches genstep source material" ); 
+
 
     G4int verboseLevel = 1 ;   
     using CLHEP::twopi ; 
@@ -175,6 +234,8 @@ G4VParticleChange* CCerenkovGenerator::GeneratePhotonsFromGenstep( const Opticks
     //  1. normal PostStepDoIt
     //  2. static G4VParticleChange* C4Cerenkov1042::GenerateSecondaryPhotons( const OpticksGenstep* gs, unsigned idx ) ;  
     //
+    //  When by mistake a material like vacuum which has no-Cerenkov is used : this will go into a tailspin 
+    //
     /////////////////////////////////////////////////////////////////////////////////////////////////
     //
     //  The below is a VERBATIM COPY of the PHOTON GENERATION LOOP from C4Cerenkov1042.cc 
@@ -183,7 +244,13 @@ G4VParticleChange* CCerenkovGenerator::GeneratePhotonsFromGenstep( const Opticks
     /////////////////////////////////////////////////////////////////////////////////////////////////
 #ifdef ALIGN_DEBUG
     int pindex = 0 ; 
+    LOG(error) 
+        << " genstep_idx " << idx
+        << " fNumPhotons " << fNumPhotons
+        << " pindex " << pindex
+        ;
 #endif
+
 
 
   for (G4int i = 0; i < fNumPhotons; i++) {
@@ -208,11 +275,7 @@ G4VParticleChange* CCerenkovGenerator::GeneratePhotonsFromGenstep( const Opticks
 
 #ifdef ALIGN_DEBUG
          if( i == pindex ) LOG(error)
-                          << " pindex " << pindex
                           << " gcp.u0 " << rand
-                          << " Pmin " << Pmin
-                          << " Pmax " << Pmax
-                          << " dp " << dp
                           << " sampledEnergy " << sampledEnergy
                           << " sampledRI " << sampledRI
                           ;   
