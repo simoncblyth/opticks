@@ -3,6 +3,7 @@
 
 #include "SProc.hh"
 #include "BTimer.hh"
+#include "BFile.hh"
 #include "BStr.hh"
 
 #include "NGLM.hpp"
@@ -50,7 +51,7 @@ const char* OpticksProfile::getName()
 }
 std::string OpticksProfile::getPath()
 {
-    return NPYBase::path(m_dir, m_name);
+    return BFile::FormPath(m_dir, m_name);
 }
 
 

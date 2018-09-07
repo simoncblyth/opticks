@@ -2,6 +2,7 @@
 #include "SSys.hh"
 #include "BFile.hh"
 #include "BStr.hh"
+#include "BResource.hh"
 
 #include <cstring>
 #include <ctime>
@@ -65,11 +66,7 @@ std::string usertmpdir(const char* base, const char* sub, const char* rel )
 {
     fs::path p(base) ; 
 
-#ifdef _MSC_VER
-    const char* user = SSys::getenvvar("USERNAME") ;
-#else
-    const char* user = SSys::getenvvar("USER") ;
-#endif
+    const char* user = SSys::username(); 
 
     if(user) p /= user ;
     if(sub) p /= sub ; 
@@ -118,7 +115,15 @@ std::string expandvar(const char* s)
            }
            else if(evalue.compare("OPTICKS_EVENT_BASE")==0) 
            {
-               evalue = usertmpdir("/tmp","opticks",NULL);
+               const char* evtbase = BResource::Get("evtbase") ; 
+               if( evtbase != NULL )
+               {
+                   evalue = evtbase ; 
+               }
+               else
+               {
+                   evalue = usertmpdir("/tmp","opticks",NULL);
+               } 
                LOG(verbose) << "expandvar replacing OPTICKS_EVENT_BASE  with " << evalue ; 
            }
 

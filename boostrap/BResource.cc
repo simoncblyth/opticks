@@ -5,22 +5,54 @@
 #include "BFile.hh"
 #include "PLOG.hh"
 
+const BResource* BResource::INSTANCE = NULL ; 
+
+const BResource* BResource::GetInstance()
+{
+    return INSTANCE ; 
+}
+
+const char* BResource::Get(const char* label)
+{
+    const BResource* br = GetInstance(); 
+    const char* ret = NULL ; 
+
+    if( ret == NULL ) ret = br->getPath(label); 
+    if( ret == NULL ) ret = br->getDir(label); 
+    if( ret == NULL ) ret = br->getName(label); 
+
+    LOG(info)
+         << " label " << label 
+         << " ret " << ret 
+         ;
+ 
+
+    return ret ;
+}
+
+
 BResource::BResource()
 {
+    INSTANCE=this ; 
 }
 
 BResource::~BResource()
 {
 }
 
-const char* BResource::getPath(const char* label) const 
+const char* BResource::getPath(const char* label) const { return get(label, m_paths); }
+const char* BResource::getDir(const char* label) const { return get(label, m_dirs); }
+const char* BResource::getName(const char* label) const { return get(label, m_names); }
+
+
+const char* BResource::get(const char* label, const std::vector<std::pair<std::string, std::string>>& vss) const 
 {
     typedef std::pair<std::string, std::string> SS ; 
     typedef std::vector<SS> VSS ; 
 
     const char* path = NULL ; 
  
-    for(VSS::const_iterator it=m_paths.begin() ; it != m_paths.end() ; it++)
+    for(VSS::const_iterator it=vss.begin() ; it != vss.end() ; it++)
     {
         const SS& ss = *it ;
         if(ss.first.compare(label) == 0) 

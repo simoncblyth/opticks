@@ -30,15 +30,18 @@ void dumpenv_1(char** envp)
 
 int main(int argc, char** argv, char** envp)
 {
-
     dumpenv_0( envp, "OPTICKS_" ) ; 
 
     OPTICKS_LOG(argc, argv);
+
+    /*
+    No longer needed, to make sensitive to OPTICKS_KEY envvar use "--envkey" option 
 
     const char* demokey = "OKX4Test.X4PhysicalVolume.World0xc15cfc0_PV.0dce832a26eb41b58a000497a3127cb8" ; 
     const char* ukey = NULL ; 
     if( argc > 1 && strcmp(argv[1], "--demokey") == 0) ukey = demokey ;   
     Opticks::SetKey(ukey);  // <-- using NULL makes sensitive to OPTICKS_KEY envvar for debugging
+    */
 
 
     Opticks ok(argc, argv) ;

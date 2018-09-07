@@ -58,45 +58,21 @@ EOI
 ckm-notes(){ cat << EON
 
 --envkey 
-     option makes executables senitive to the OPTICKS_KEY envvar allowing 
+     option makes executables sensitive to the OPTICKS_KEY envvar allowing 
      booting from the corresponding geocache 
 
 EON
 }
 
 
-ckm-load()
-{
-    OPTICKS_KEY=$(ckm-key) lldb -- OKTest --load --natural --envkey
-    type $FUNCNAME
-}
-ckm-dump()
-{
-    OPTICKS_KEY=$(ckm-key) OpticksEventDumpTest --natural --envkey
-    type $FUNCNAME
-}
-ckm-okg4()
-{
-    #OPTICKS_KEY=$(ckm-key) OKG4Test --compute --envkey --embedded --save
-    OPTICKS_KEY=$(ckm-key) lldb -- OKG4Test --compute --envkey --embedded --save
-}
-ckm-okg4-load()
-{
-    OPTICKS_KEY=$(ckm-key) lldb -- OKG4Test --load --envkey --embedded
-}
-
-ckm-mlib()
-{
-    OPTICKS_KEY=$(ckm-key) CMaterialLibTest --envkey 
-}
-
-ckm-gentest()
-{
-    OPTICKS_KEY=$(ckm-key) lldb -- CCerenkovGeneratorTest --envkey 
-}
-
-
-
+ckm-load(){      OPTICKS_KEY=$(ckm-key) lldb -- OKTest --load --natural --envkey ;}
+ckm-dump(){      OPTICKS_KEY=$(ckm-key) OpticksEventDumpTest --natural --envkey  ;}
+ckm-res(){       OPTICKS_KEY=$(ckm-key) lldb -- OpticksResourceTest --natural --envkey ;}
+ckm-okg4(){      OPTICKS_KEY=$(ckm-key) lldb -- OKG4Test --compute --envkey --embedded --save ;}
+ckm-okg4-load(){ OPTICKS_KEY=$(ckm-key) lldb -- OKG4Test --load --envkey --embedded ;}
+ckm-mlib(){      OPTICKS_KEY=$(ckm-key) CMaterialLibTest --envkey  ;}
+ckm-gentest(){   OPTICKS_KEY=$(ckm-key) lldb -- CCerenkovGeneratorTest --envkey ;}
+ckm-okt(){       OPTICKS_KEY=$(ckm-key) lldb -- OpticksTest --envkey ;}
 
 ckm-addr2line()
 {

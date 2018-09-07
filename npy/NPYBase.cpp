@@ -16,7 +16,7 @@
 //brap- 
 #include "BFile.hh"
 #include "BStr.hh"
-#include "BOpticksEvent.hh"
+//#include "BOpticksEvent.hh"
 
 
 #include "NParameters.hpp"
@@ -99,6 +99,8 @@ NPYBase* NPYBase::Make( unsigned ni, const NPYSpec* itemspec, bool zero )
 
 
 
+/*
+
 std::string NPYBase::path(const char* dir, const char* reldir, const char* name)
 {
     std::string path = BOpticksEvent::path(dir, reldir, name);
@@ -116,6 +118,9 @@ std::string NPYBase::path(const char* det, const char* source, const char* tag, 
     std::string path = BOpticksEvent::path(det, source, tag, tfmt );
     return path ; 
 }
+
+*/
+
 
 
 int NPYBase::checkNumItems(NPYBase* data) 

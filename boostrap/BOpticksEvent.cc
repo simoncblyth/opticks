@@ -7,6 +7,7 @@
 
 
 #include "BFile.hh"
+#include "BResource.hh"
 #include "BOpticksEvent.hh"
 
 #include "PLOG.hh"
@@ -137,6 +138,18 @@ std::string BOpticksEvent::path(const char* top, const char* sub, const char* ta
     return p ; 
 }
 
+
+
+const char* BOpticksEvent::srcpath( const char* det, const char* typ, const char* tag) // static
+{
+    const char* srcevtbase = BResource::Get("srcevtbase"); 
+    return srcevtbase ? strdup(srcevtbase) : NULL  ; 
+}
+
+
+
+
+/*
 std::string BOpticksEvent::path(const char* dir, const char* name)
 {
     std::string path = BFile::FormPath(dir, name);  
@@ -148,7 +161,7 @@ std::string BOpticksEvent::path(const char* dir, const char* reldir, const char*
     std::string path = BFile::FormPath(dir, reldir, name);  
     return path ; 
 }
-
+*/
 
 
 

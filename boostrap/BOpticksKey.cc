@@ -4,6 +4,7 @@
 #include <cstring>
 #include <vector>
 
+#include "SAr.hh"
 #include "SSys.hh"
 #include "SDigest.hh"
 #include "BStr.hh"
@@ -46,6 +47,12 @@ bool BOpticksKey::SetKey(const char* spec)
     return true ; 
 }
 
+
+bool BOpticksKey::isKeySource() const 
+{
+    return m_current_exename && m_exename && strcmp(m_current_exename, m_exename) == 0 ; 
+}
+
 BOpticksKey::BOpticksKey(const char* spec)
    :
    m_spec( spec ? strdup(spec) : NULL ),
@@ -57,7 +64,8 @@ BOpticksKey::BOpticksKey(const char* spec)
    m_idfile( StemName("gltf", ".") ),
    m_idgdml( StemName("gdml", ".") ),
    m_idsubd( IDSUBD ),
-   m_layout( LAYOUT )
+   m_layout( LAYOUT ),
+   m_current_exename( SAr::Instance->exename() )
 {
    std::vector<std::string> elem ; 
    BStr::split(elem, spec, '.' ); 
@@ -70,6 +78,8 @@ BOpticksKey::BOpticksKey(const char* spec)
    m_class = strdup(elem[1].c_str()); 
    m_volname   = strdup(elem[2].c_str()); 
    m_digest = strdup(elem[3].c_str()); 
+
+
 
    assert( SDigest::IsDigest(m_digest) ); 
 
@@ -141,9 +151,12 @@ std::string BOpticksKey::desc() const
 {
     std::stringstream ss ; 
     ss 
-       << "BOpticksKey" << std::endl 
+       << "BOpticksKey " 
+       << ( isKeySource() ? " KEYSOURCE " : " " )
+       << std::endl 
        << std::setw(25) << " spec "    << " : " << m_spec    << std::endl 
        << std::setw(25) << " exename " << " : " << m_exename << std::endl 
+       << std::setw(25) << " current_exename " << " : " << m_current_exename << std::endl 
        << std::setw(25) << " class "   << " : " << m_class   << std::endl 
        << std::setw(25) << " volname " << " : " << m_volname << std::endl 
        << std::setw(25) << " digest "  << " : " << m_digest  << std::endl 

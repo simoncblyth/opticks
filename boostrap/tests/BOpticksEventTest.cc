@@ -2,8 +2,7 @@
 
 #include "BOpticksResource.hh"
 #include "BOpticksEvent.hh"
-#include "BRAP_LOG.hh"
-#include "PLOG.hh"
+#include "OPTICKS_LOG.hh"
 
 class BOpticksEventTest {
     public:
@@ -70,15 +69,26 @@ void test_notag()
 
 }
 
+void test_srcpath()
+{
+    // needs resources loaded : so cannot test at this level
+ 
+    const char* det = "det" ; 
+    const char* typ = "typ" ; 
+    const char* tag = "tag" ; 
+    std::string p = BOpticksEvent::srcpath(det, typ, tag ); 
+
+    LOG(info) << p ; 
+
+}
 
 
 
 int main(int argc, char** argv)
 {
-    PLOG_(argc, argv);
+    OPTICKS_LOG(argc, argv);
 
-    BRAP_LOG__ ; 
-
+/*
     BOpticksResource res ; 
     res.Summary();
 
@@ -90,6 +100,9 @@ int main(int argc, char** argv)
     oet.check_layout_version("det",   "source","tag", "stem", "ext") ;
 
     test_notag();
+*/
+    //test_srcpath(); 
+
 
     return 0 ; 
 }

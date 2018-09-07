@@ -137,7 +137,10 @@ class BRAP_API  BOpticksResource {
        const char* getMetaPath() const ;
        const char* getIdMapPath() const ;
     public:
+       const char* getEventBase() const ; 
+    public:
        BOpticksKey* getKey() const ; 
+       bool         isKeySource() const ; 
   private:
         void init();
         void initInstallPrefix();
@@ -149,6 +152,7 @@ class BRAP_API  BOpticksResource {
         friend struct HitsNPYTest ; 
         friend struct BOpticksResourceTest ; 
         // only use one setup route
+        
         void setupViaSrc(const char* srcpath, const char* srcdigest);
         void setupViaID(const char* idpath );
         void setupViaKey();
@@ -189,6 +193,8 @@ class BRAP_API  BOpticksResource {
         const char* m_idname ; 
         const char* m_idpath ; 
         const char* m_idpath_tmp ; 
+        const char* m_srcevtbase ; 
+        const char* m_evtbase ; 
    protected:
         const char* m_debugging_idpath ; 
         const char* m_debugging_idfold ; 

@@ -12,6 +12,7 @@
 #include "SSys.hh"
 // brap-
 #include "BDynamicDefine.hh"
+#include "BOpticksEvent.hh"
 #include "BOpticksKey.hh"
 #include "BFile.hh"
 #include "BHex.hh"
@@ -1864,6 +1865,23 @@ unsigned Opticks::getGeant4Version()
 
 
 
+std::string Opticks::getGenstepPath2() const 
+{
+    const char* det = m_spec->getDet();
+    const char* typ = m_spec->getTyp();
+    const char* tag = m_spec->getTag();
+
+    const char* srcpath = BOpticksEvent::srcpath(det, typ, tag ); 
+
+    LOG(info) << "Opticks::getGenstepPath2"
+              << " det " << det 
+              << " typ " << typ 
+              << " tag " << tag
+              << " srcpath " << srcpath
+              ; 
+
+    return srcpath ; 
+}
 
 
 std::string Opticks::getGenstepPath() const 

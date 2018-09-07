@@ -9,6 +9,7 @@ namespace fs = boost::filesystem;
 
 #include "SLog.hh"
 #include "SSys.hh"
+#include "SAr.hh"
 
 #include "BFile.hh"
 #include "BStr.hh"
@@ -54,6 +55,8 @@ BOpticksResource::BOpticksResource()
     m_idname(NULL),
     m_idpath(NULL),
     m_idpath_tmp(NULL),
+    m_srcevtbase(NULL),
+    m_evtbase(NULL),
     m_debugging_idpath(NULL),
     m_debugging_idfold(NULL),
     m_daepath(NULL),
@@ -374,10 +377,19 @@ void BOpticksResource::setupViaID(const char* idpath)
 
     setSrcPath( srcpath );
     setSrcDigest( srcdigest );
-
-
 }
 
+/**
+BOpticksResource::setupViaKey
+===============================
+
+Invoked from OpticksResource::init only when 
+BOpticksKey::SetKey called prior to Opticks instanciation.   
+
+This is used for live/direct mode running, 
+see for example CerenkovMinimal ckm- 
+
+**/
 
 void BOpticksResource::setupViaKey()
 {
@@ -392,6 +404,8 @@ void BOpticksResource::setupViaKey()
     LOG(info) << m_key->desc()  ;  
 
     m_layout = m_key->getLayout(); 
+
+
     const char* layout = BStr::itoa(m_layout) ;
     m_res->addName("OPTICKS_RESOURCE_LAYOUT", layout );
 
@@ -457,7 +471,17 @@ void BOpticksResource::setupViaKey()
     m_directphotonspath = makeIdPathPath("directphotons.npy");  
     m_res->addPath("directphotonspath", m_directphotonspath ); 
 
+    const char* user = SSys::username(); 
+    //m_srcevtbase = makeIdPathPath("evt", user, "source"); 
+    m_srcevtbase = makeIdPathPath("source"); 
+    m_res->addDir( "srcevtbase", m_srcevtbase ); 
+
+    const char* exename = SAr::Instance->exename(); 
+    m_evtbase = isKeySource() ? strdup(m_srcevtbase) : makeIdPathPath("tmp", user, exename ) ;  
+    m_res->addDir( "evtbase", m_evtbase ); 
 }
+
+
 
 
 /**
@@ -563,13 +587,19 @@ const char* BOpticksResource::getGLTFPath() const { return m_gltfpath ; }
 const char* BOpticksResource::getMetaPath() const { return m_metapath ; }
 const char* BOpticksResource::getIdMapPath() const { return m_idmappath ; } 
 
+//const char* BOpticksResource::getSrcEventBase() const { return m_srcevtbase ; } 
+const char* BOpticksResource::getEventBase() const { return m_evtbase ; } 
+
 
 BOpticksKey*  BOpticksResource::getKey() const
 {
     return m_key ; 
 }
 
-
+bool BOpticksResource::isKeySource() const 
+{
+    return m_key ? m_key->isKeySource() : false ; 
+}
 
 
 

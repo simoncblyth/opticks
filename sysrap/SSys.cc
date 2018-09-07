@@ -232,22 +232,23 @@ const char* SSys::getenvvar( const char* envvar )
     return evalue ; 
 }
 
-
-/*
-const char* SSys::getenvvar( const char* envprefix, const char* envkey, const char* fallback )
-{
-    char envvar[128];
-    snprintf(envvar, 128, "%s%s", envprefix, envkey );
-    const char* evalue = getenvvar(envvar) ; 
-    return evalue ? evalue : fallback ; 
-}
-*/
-
 const char* SSys::getenvvar( const char* envkey, const char* fallback )
 {
     const char* evalue = getenvvar(envkey) ; 
     return evalue ? evalue : fallback ; 
 }
+
+const char* SSys::username()
+{
+#ifdef _MSC_VER
+    const char* user = SSys::getenvvar("USERNAME") ;
+#else
+    const char* user = SSys::getenvvar("USER") ;
+#endif
+    return user ; 
+}
+
+
 
 
 

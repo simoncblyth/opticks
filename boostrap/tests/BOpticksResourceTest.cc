@@ -2,8 +2,7 @@
 
 #include "SSys.hh"
 #include "BOpticksResource.hh"
-#include "BRAP_LOG.hh"
-#include "PLOG.hh"
+#include "OPTICKS_LOG.hh"
 
 struct BOpticksResourceTest
 {
@@ -58,9 +57,8 @@ void test_ViaSrc()
 
 int main(int argc, char** argv)
 {
-    PLOG_(argc, argv);
+    OPTICKS_LOG(argc, argv);
 
-    BRAP_LOG__ ; 
 
     const char* idpath  = SSys::getenvvar("IDPATH");
     if(!idpath) return 0 ;     

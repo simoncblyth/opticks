@@ -367,6 +367,7 @@ class OKCORE_API Opticks {
        std::string          getPreferenceDir(const char* type, const char* subtype);
    public:
        std::string          getGenstepPath() const ;
+       std::string          getGenstepPath2() const ;
        const char*          getPrimariesPath() const ;
        const char*          getDirectGenstepPath() const ; 
        const char*          getDirectPhotonsPath() const ; 

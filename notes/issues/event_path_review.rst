@@ -220,8 +220,8 @@ back to step collection
     ./g4ok/G4Opticks.hh:        void collectCerenkovStep(
 
 
-domain range difference
---------------------------
+FIXED : domain range difference
+-------------------------------------
 
 * G4: domain range from original G4Material feeds into Pmin/Pmax
 * OK: standardized domain range used
@@ -284,8 +284,6 @@ DONE : replace G4Materials with standardized versions
     X4MaterialLib
     X4PropertyMap
     X4Property  
-
-
 
 
 where the Pmin/Pmax comes from in genstep collection
@@ -355,8 +353,8 @@ where the source domain comes from
 
 
 
-CONFIRMED : smoking gun for domain inconsistency
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+CONFIRMED + FIXED : smoking gun for domain inconsistency
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ::
 
@@ -372,14 +370,14 @@ CONFIRMED : smoking gun for domain inconsistency
 
 
 
-
 after standardizing materials are getting more gensteps, more photons
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-* not surprising 
-* convenient dev cycle means need a way to terminate after one genstep 
+* not surprising : tis effectively a material change 
+* DONE : convenient dev cycle means need a way to terminate after a max_gs count, did this via fStopAndKill G4Track 
 
-
+  * TODO: make max_gs configurable
+  
 
 FIXED : need to domain flip to get same energy sampling for the same randoms : see boundary_lookup.py
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -571,8 +569,8 @@ cross exe, same sim
 ~~~~~~~~~~~~~~~~~~~~~
 
 
-For direct workflow : would be more convenient to save events within the keydir 
----------------------------------------------------------------------------------
+WIP : For direct workflow : would be more convenient to save events within the keydir 
+------------------------------------------------------------------------------------------
 
 * :doc:`event_path_review`
 
@@ -585,6 +583,395 @@ For direct workflow : would be more convenient to save events within the keydir
 
   * all other executables sharing the same keydir can put their events underneath 
     a relpath named after the executable  
-
-
    
+
+* context :doc:`ckm_cerenkov_generation_align`
+
+
+former non-scalable approach
+-----------------------------
+
+* non-scalable because there is no tag or typ specification just the gensteps directly in geocache 
+
+* HMM : is anything more than tag actually needed in direct route ?
+
+
+::
+
+    epsilon:source blyth$ opticks-find directgensteppath 
+    ./boostrap/BOpticksResource.cc:    m_directgensteppath(NULL),
+    ./boostrap/BOpticksResource.cc:    m_directgensteppath = makeIdPathPath("directgenstep.npy");  
+    ./boostrap/BOpticksResource.cc:    m_res->addPath("directgensteppath", m_directgensteppath ); 
+    ./boostrap/BOpticksResource.cc:const char* BOpticksResource::getDirectGenstepPath() const { return m_directgensteppath ; } 
+    ./boostrap/BOpticksResource.hh:       const char* m_directgensteppath ; 
+    epsilon:opticks blyth$ 
+
+    epsilon:opticks blyth$ opticks-find getDirectGenstepPath
+    ./g4ok/G4Opticks.cc:    const char* gspath = m_ok->getDirectGenstepPath(); 
+    ./optickscore/Opticks.cc:const char* Opticks::getDirectGenstepPath() const { return m_resource->getDirectGenstepPath() ; } 
+    ./optickscore/Opticks.cc:    const char* path = getDirectGenstepPath();
+    ./optickscore/Opticks.cc:    std::string path = getDirectGenstepPath();
+    ./boostrap/BOpticksResource.cc:const char* BOpticksResource::getDirectGenstepPath() const { return m_directgensteppath ; } 
+    ./optickscore/Opticks.hh:       const char*          getDirectGenstepPath() const ; 
+    ./boostrap/BOpticksResource.hh:       const char* getDirectGenstepPath() const ;
+    epsilon:opticks blyth$ 
+
+::
+
+    207 /**
+    208 G4Opticks::propagateOpticalPhotons
+    209 -----------------------------------
+    210 
+    211 Invoked from EventAction::EndOfEventAction
+    212 
+    213 TODO: relocate direct events inside the geocache ? 
+    214       and place these direct gensteps and genphotons 
+    215       within the OpticksEvent directory 
+    216 
+    217 
+    218 **/
+    219 
+    220 int G4Opticks::propagateOpticalPhotons()
+    221 {
+    222     m_gensteps = m_genstep_collector->getGensteps();
+    223     const char* gspath = m_ok->getDirectGenstepPath();
+    224 
+    225     LOG(info) << " saving gensteps to " << gspath ;
+    226     m_gensteps->setArrayContentVersion(G4VERSION_NUMBER);
+    227     m_gensteps->save(gspath);
+    228 
+
+    1898 bool Opticks::existsDirectGenstepPath() const
+    1899 {
+    1900     const char* path = getDirectGenstepPath();
+    1901     return path ? BFile::ExistsFile(path) : false ;
+    1902 }
+    1903 
+
+    epsilon:optickscore blyth$ opticks-find loadDirectGenstep
+    ./opticksgeo/OpticksGen.cc:    m_direct_gensteps(m_ok->existsDirectGenstepPath() ? m_ok->loadDirectGenstep() : NULL ),
+    ./optickscore/Opticks.cc:NPY<float>* Opticks::loadDirectGenstep() const 
+    ./optickscore/Opticks.hh:       NPY<float>*          loadDirectGenstep() const ;
+    epsilon:opticks blyth$ 
+
+
+
+OpticksGen auto sets the sourcecode based on existance of direct gensteps::
+
+     28 OpticksGen::OpticksGen(OpticksHub* hub)
+     29     :
+     30     m_hub(hub),
+     31     m_gun(new OpticksGun(hub)),
+     32     m_ok(hub->getOpticks()),
+     33     m_cfg(m_ok->getCfg()),
+     34     m_ggb(hub->getGGeoBase()),
+     35     m_blib(m_ggb->getBndLib()),
+     36     m_lookup(hub->getLookup()),
+     37     m_torchstep(NULL),
+     38     m_fabstep(NULL),
+     39     m_input_gensteps(NULL),
+     40     m_csg_emit(hub->findEmitter()),
+     41     m_emitter_dbg(false),
+     42     m_emitter(m_csg_emit ? new NEmitPhotonsNPY(m_csg_emit, EMITSOURCE, m_ok->getSeed(), m_emitter_dbg, m_ok->getMaskBuffer()) : NULL ),
+     43     m_input_photons(NULL),
+     44     m_input_primaries(m_ok->existsPrimariesPath() ? m_ok->loadPrimaries() : NULL ),
+     45     m_direct_gensteps(m_ok->existsDirectGenstepPath() ? m_ok->loadDirectGenstep() : NULL ),
+     46     m_source_code(initSourceCode())
+     47 {
+     48     init() ;
+     49 }
+     50 
+     51 Opticks* OpticksGen::getOpticks() const { return m_ok ; }
+     52 std::string OpticksGen::getG4GunConfig() const { return m_gun->getConfig() ; }
+     53 
+     54 bool OpticksGen::hasInputPrimaries() const
+     55 {
+     56     return m_input_primaries != NULL ;
+     57 }
+     58 
+     59 
+     60 unsigned OpticksGen::initSourceCode() const
+     61 {
+     62     unsigned code = 0 ;
+     63     if(m_direct_gensteps)
+     64     {
+     65         code = GENSTEPSOURCE ;
+     66     } 
+     67     else if(m_input_primaries)
+     68     {
+     69         code = PRIMARYSOURCE ;
+     70     } 
+     71     else if(m_emitter)
+
+
+
+
+
+How to distinguish the special key creating executable from key reading ?
+----------------------------------------------------------------------------
+
+The distinguishing thing is the direct translation of geometry done in G4Opticks::translateGeometry
+so perhaps a "keysource" flag option for  BOpticksKey::SetKey(keyspec)
+
+* actually can auto-detect this from the exename of the key matching that of the current executable
+
+::
+
+    139 GGeo* G4Opticks::translateGeometry( const G4VPhysicalVolume* top )
+    140 {
+    141     const char* keyspec = X4PhysicalVolume::Key(top) ;
+    142     BOpticksKey::SetKey(keyspec);
+    143     LOG(error) << " SetKey " << keyspec  ;
+    144 
+    145     Opticks* ok = new Opticks(0,0, fEmbeddedCommandLine);  // Opticks instanciation must be after BOpticksKey::SetKey
+    146 
+
+
+How to allow other executables to access paths written by the keysource executable ?
+---------------------------------------------------------------------------------------
+
+Provide two dirs, which are the same for the KeySource case, so can always write to evtbase
+and can read from srcevtbase.
+
+::
+
+    474     const char* user = SSys::username();
+    475     m_srcevtbase = makeIdPathPath("evt", user, "source");
+    476     m_res->addDir( "srcevtbase", m_srcevtbase );
+    477 
+    478     const char* exename = SAr::Instance->exename();
+    479     m_evtbase = isKeySource() ? strdup(m_srcevtbase) : makeIdPathPath("evt", user, exename ) ;
+    480     m_res->addDir( "evtbase", m_evtbase );
+
+
+How to handle multiple users sharing a geocache ?
+---------------------------------------------------
+
+* could move current TMP /tmp/username/opticks into  keydir ?
+
+  * using a username dir  
+
+
+Event Path machinery 
+----------------------
+
+NPY has special handling of quad-argument save::
+
+     707 template <typename T>
+     708 NPY<T>* NPY<T>::load(const char* tfmt, const char* source, const char* tag, const char* det, bool quietly)
+     709 {
+     710     //  (ox,cerenkov,1,dayabay)  ->   (dayabay,cerenkov,1,ox)
+     711     //
+     712     //     arg order twiddling done here is transitional to ease the migration 
+     713     //     once working in the close to old arg order, can untwiddling all the calls
+     714     //
+     715     std::string path = NPYBase::path(det, source, tag, tfmt );
+     716     return load(path.c_str(),quietly);
+     717 }
+     718 template <typename T>
+     719 void NPY<T>::save(const char* tfmt, const char* source, const char* tag, const char* det)
+     720 {
+     721     std::string path_ = NPYBase::path(det, source, tag, tfmt );
+     722     save(path_.c_str());
+     723 }
+     724 
+     
+::
+
+    102 std::string NPYBase::path(const char* dir, const char* reldir, const char* name)
+    103 {
+    104     std::string path = BOpticksEvent::path(dir, reldir, name);
+    105     return path ;
+    106 }
+    107 
+    108 std::string NPYBase::path(const char* dir, const char* name)
+    109 {
+    110     std::string path = BOpticksEvent::path(dir, name);
+    111     return path ;
+    112 }
+    113 
+    114 std::string NPYBase::path(const char* det, const char* source, const char* tag, const char* tfmt)
+    115 {
+    116     std::string path = BOpticksEvent::path(det, source, tag, tfmt );
+    117     return path ;
+    118 }
+
+
+
+::
+
+     14 const char* BOpticksEvent::DEFAULT_DIR_TEMPLATE_NOTAG = "$OPTICKS_EVENT_BASE/evt/$1/$2" ;  // formerly "$LOCAL_BASE/env/opticks/$1/$2"
+     15 const char* BOpticksEvent::DEFAULT_DIR_TEMPLATE       = "$OPTICKS_EVENT_BASE/evt/$1/$2/$3" ;  // formerly "$LOCAL_BASE/env/opticks/$1/$2"
+     16 const char* BOpticksEvent::OVERRIDE_EVENT_BASE = NULL ;
+     17 
+     18 const int BOpticksEvent::DEFAULT_LAYOUT_VERSION = 2 ;
+     19 int BOpticksEvent::LAYOUT_VERSION = 2 ;
+     20 
+
+::
+
+    epsilon:boostrap blyth$ opticks-find OPTICKS_EVENT_BASE
+    ./boostrap/BFile.cc:           else if(evalue.compare("OPTICKS_EVENT_BASE")==0) 
+    ./boostrap/BFile.cc:               LOG(verbose) << "expandvar replacing OPTICKS_EVENT_BASE  with " << evalue ; 
+    ./boostrap/BOpticksEvent.cc:const char* BOpticksEvent::DEFAULT_DIR_TEMPLATE_NOTAG = "$OPTICKS_EVENT_BASE/evt/$1/$2" ;  // formerly "$LOCAL_BASE/env/opticks/$1/$2"
+    ./boostrap/BOpticksEvent.cc:const char* BOpticksEvent::DEFAULT_DIR_TEMPLATE       = "$OPTICKS_EVENT_BASE/evt/$1/$2/$3" ;  // formerly "$LOCAL_BASE/env/opticks/$1/$2"
+    ./boostrap/BOpticksEvent.cc:       LOG(debug) << "BOpticksEvent::directory_template OVERRIDE_EVENT_BASE replacing OPTICKS_EVENT_BASE with " << OVERRIDE_EVENT_BASE ; 
+    ./boostrap/BOpticksEvent.cc:       boost::replace_first(deftmpl, "$OPTICKS_EVENT_BASE/evt", OVERRIDE_EVENT_BASE );
+    ./ana/ncensus.py:    c = Census("$OPTICKS_EVENT_BASE/evt")
+    ./ana/nload.py:DEFAULT_BASE = "$OPTICKS_EVENT_BASE/evt"
+    ./ana/base.py:        self.setdefault("OPTICKS_EVENT_BASE",      os.path.expandvars("/tmp/$USER/opticks") )
+    epsilon:opticks blyth$ 
+
+
+BFile.cc OPTICKS_EVENT_BASE is not an envvar but it is internally treated a bit like one, which works
+as all file access goes thru BFile::FormPath::
+
+    087 std::string expandvar(const char* s)
+     88 {
+     89     fs::path p ;
+     90 
+     91     std::string dollar("$");
+     92     boost::regex e("(\\$)(\\w+)(.*?)"); // eg $HOME/.opticks/hello
+     93     boost::cmatch m ;
+     94 
+     95     if(boost::regex_match(s,m,e))
+     96     {
+     97         //dump(m);  
+     98 
+     99         unsigned int size = m.size();
+    100 
+    101         if(size == 4 && dollar.compare(m[1]) == 0)
+    102         {
+    103            std::string key = m[2] ;
+    104 
+    105            const char* evalue_ = SSys::getenvvar(key.c_str()) ;
+    106 
+    107            std::string evalue = evalue_ ? evalue_ : key ;
+    108 
+    109            if(evalue.compare("TMP")==0) //  TMP envvar not defined
+    110            {
+    111                evalue = usertmpdir("/tmp","opticks", NULL);
+    112                LOG(verbose) << "expandvar replacing TMP with " << evalue ;
+    113            }
+    114            else if(evalue.compare("TMPTEST")==0)
+    115            {
+    116                evalue = usertmpdir("/tmp","opticks","test");
+    117                LOG(verbose) << "expandvar replacing TMPTEST with " << evalue ;
+    118            }
+    119            else if(evalue.compare("OPTICKS_EVENT_BASE")==0)
+    120            {
+    121                evalue = usertmpdir("/tmp","opticks",NULL);
+    122                LOG(verbose) << "expandvar replacing OPTICKS_EVENT_BASE  with " << evalue ;
+    123            }
+    124 
+    125 
+    126            p /= evalue ;
+    127 
+    128            std::string tail = m[3] ;
+    129 
+    130            p /= tail ;
+
+
+
+CerenkovMinimal::
+
+     18 void RunAction::BeginOfRunAction(const G4Run*)
+     19 {
+     20     LOG(info) << "." ;
+     21 #ifdef WITH_OPTICKS
+     22     G4VPhysicalVolume* world = G4TransportationManager::GetTransportationManager()->GetNavigatorForTracking()->GetWorldVolume() ;
+     23     assert( world ) ;
+     24     bool standardize_geant4_materials = true ;   // required for alignment 
+     25     G4Opticks::GetOpticks()->setGeometry(world, standardize_geant4_materials );
+     26 #endif
+     27 }
+
+Direct route, keyspec required to be set prior to Opticks instanciation::
+
+    139 GGeo* G4Opticks::translateGeometry( const G4VPhysicalVolume* top )
+    140 {
+    141     const char* keyspec = X4PhysicalVolume::Key(top) ;
+    142     BOpticksKey::SetKey(keyspec);
+    143     LOG(error) << " SetKey " << keyspec  ;
+    144 
+    145     Opticks* ok = new Opticks(0,0, fEmbeddedCommandLine);  // Opticks instanciation must be after BOpticksKey::SetKey
+    146 
+
+
+::
+
+     28 BOpticksResource::BOpticksResource()
+     29     :
+     30     m_log(new SLog("BOpticksResource::BOpticksResource","",debug)),
+     31     m_setup(false),
+     32     m_key(BOpticksKey::GetKey()),   // will be NULL unless BOpticksKey::SetKey has been called 
+     33     m_id(NULL),
+
+::
+ 
+     248 void OpticksResource::init()
+     249 {
+     250    LOG(LEVEL) << "OpticksResource::init" ;
+     251 
+     252    BStr::split(m_detector_types, "GScintillatorLib,GMaterialLib,GSurfaceLib,GBndLib,GSourceLib", ',' );
+     253    BStr::split(m_resource_types, "GFlags,OpticksColors", ',' );
+     254 
+     255    readG4Environment();
+     256    readOpticksEnvironment();
+     257 
+     258    if( m_key )
+     259    {
+     260        setupViaKey();    // from BOpticksResource base
+     261    }
+     262    else
+     263    {
+     264        readEnvironment();
+     265    }
+     266 
+     267    readMetadata();
+     268    identifyGeometry();
+     269    assignDetectorName();
+     270    assignDefaultMaterial();
+     271 
+     272    LOG(LEVEL) << "OpticksResource::init DONE" ;
+     273 }
+
+
+
+
+Hmm having username prefix for source would be inconvenient cross user, also evt is duplicated::
+
+    epsilon:1 blyth$ find evt
+    evt
+    evt/blyth
+    evt/blyth/source
+    evt/blyth/source/evt
+    evt/blyth/source/evt/g4live
+    evt/blyth/source/evt/g4live/natural
+    evt/blyth/source/evt/g4live/natural/-1
+    evt/blyth/source/evt/g4live/natural/-1/ht.npy
+    evt/blyth/source/evt/g4live/natural/-1/so.npy
+    evt/blyth/source/evt/g4live/natural/-1/so.json
+    evt/blyth/source/evt/g4live/natural/Opticks.npy
+    evt/blyth/source/evt/g4live/natural/DeltaVM.ini
+    evt/blyth/source/evt/g4live/natural/1
+    evt/blyth/source/evt/g4live/natural/1/ps.npy
+    evt/blyth/source/evt/g4live/natural/1/ht.npy
+    evt/blyth/source/evt/g4live/natural/1/rx.npy
+    evt/blyth/source/evt/g4live/natural/1/History_SequenceSource.json
+    evt/blyth/source/evt/g4live/natural/1/parameters.json
+    evt/blyth/source/evt/g4live/natural/1/Material_SequenceLocal.json
+    evt/blyth/source/evt/g4live/natural/1/History_SequenceLocal.json
+    evt/blyth/source/evt/g4live/natural/1/20180906_190855
+    evt/blyth/source/evt/g4live/natural/1/20180906_190855/parameters.json
+    evt/blyth/source/evt/g4live/natural/1/20180906_190855/t_delta.ini
+    evt/blyth/source/evt/g4live/natural/1/20180906_190855/t_absolute.ini
+    evt/blyth/source/evt/g4live/natural/1/20180906_190855/report.txt
+    evt/blyth/source/evt/g4live/natural/1/fdom.npy
+    evt/blyth/source/evt/g4live/natural/1/Boundary_IndexLocal.json
+    evt/blyth/source/evt/g4live/natural/1/t_delta.ini
+    evt/blyth/source/evt/g4live/natural/1/ox.npy
+    evt/blyth/source/evt/g4live/natural/1/t_absolute.ini
+    evt/blyth/source/evt/g4live/natural/1/Boundary_IndexSource.json
+
+

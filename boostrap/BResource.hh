@@ -10,6 +10,11 @@
 
 class BRAP_API BResource 
 {
+   private:
+        static const BResource* INSTANCE ; 
+   public:
+        static const BResource* GetInstance() ;
+        static const char* Get(const char* label ) ;
    public:
         BResource();
         virtual ~BResource();
@@ -23,12 +28,17 @@ class BRAP_API BResource
        void dumpDirs(const char* msg) const ;
        void dumpNames(const char* msg) const ;
 
-       const char* getPath(const char* label) const  ;
+       const char* getPath( const char* label ) const ; 
+       const char* getDir( const char* label ) const ; 
+       const char* getName( const char* label ) const ; 
+   private:
+       typedef std::pair<std::string, std::string> SS ; 
+       typedef std::vector<SS> VSS ; 
+       const char* get(const char* label, const VSS& vss) const  ;
    protected:
-        std::vector<std::pair<std::string, std::string> >  m_paths  ; 
-        std::vector<std::pair<std::string, std::string> >  m_dirs  ; 
-        std::vector<std::pair<std::string, std::string> >  m_names  ; 
-
+        VSS m_paths ; 
+        VSS m_dirs ; 
+        VSS m_names ; 
 
 };
 

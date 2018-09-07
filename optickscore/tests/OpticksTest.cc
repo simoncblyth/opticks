@@ -38,10 +38,21 @@ void test_path(const char* msg, const char* path)
 }
 
 
-void test_getDAEPath(Opticks* opticks)
+
+void test_getGenstepPath2(Opticks* ok)
 {
-    assert(opticks);
-    const char* path = opticks->getDAEPath();
+    assert(ok);
+
+    //const char* path = ok->getGenstepPath();
+    std::string path = ok->getGenstepPath2();
+    test_path("getGenstepPath2", path.c_str());
+}
+
+
+void test_getDAEPath(Opticks* ok)
+{
+    assert(ok);
+    const char* path = ok->getDAEPath();
     test_path("getDAEPath", path);
 }
 
@@ -127,9 +138,10 @@ int main(int argc, char** argv)
     test_getMaterialMap(&ok);  
     test_getDbgSeqhisMap(&ok);
     test_gpumon(&ok);
+    test_getGDMLPath(&ok);  
     */
 
-    test_getGDMLPath(&ok);  
+    test_getGenstepPath2(&ok);  
 
 
     return 0 ;

@@ -42,10 +42,12 @@ class BRAP_API BOpticksKey
         int         getLayout() const ; 
     public:
         std::string desc() const ; 
+        bool isKeySource() const ; 
     private:
         BOpticksKey(const char* spec); 
     private:
         const char* m_spec   ; 
+
         const char* m_exename ; 
         const char* m_class   ; 
         const char* m_volname   ; 
@@ -56,6 +58,7 @@ class BRAP_API BOpticksKey
         const char* m_idgdml ; // eg g4ok.gdml
         const char* m_idsubd ; // eg g4ok_gltf
         int         m_layout ; 
+        const char* m_current_exename ;
  
         static BOpticksKey* fKey ; 
 
