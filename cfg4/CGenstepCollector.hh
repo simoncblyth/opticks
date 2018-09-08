@@ -118,7 +118,7 @@ class CFG4_API CGenstepCollector
             G4int                pdgCode, 
             G4double             pdgCharge, 
             G4double             weight, 
-            G4double             meanVelocity, 
+            G4double             preVelocity, 
 
             G4double             betaInverse,
             G4double             pmin,
@@ -128,7 +128,7 @@ class CFG4_API CGenstepCollector
             G4double             maxSin2,
             G4double             meanNumberOfPhotons1,
             G4double             meanNumberOfPhotons2,
-            G4double             spare2=0
+            G4double             postVelocity
         );
    public:
          void collectMachineryStep(unsigned code);

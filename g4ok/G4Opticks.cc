@@ -315,7 +315,7 @@ void G4Opticks::collectCerenkovStep
         G4int                pdgCode, 
         G4double             pdgCharge, 
         G4double             weight, 
-        G4double             meanVelocity, 
+        G4double             preVelocity,     
 
         G4double             betaInverse,
         G4double             pmin,
@@ -325,7 +325,7 @@ void G4Opticks::collectCerenkovStep
         G4double             maxSin2,
         G4double             meanNumberOfPhotons1,
         G4double             meanNumberOfPhotons2,
-        G4double             spare2
+        G4double             postVelocity
     )
 {
      m_genstep_collector->collectCerenkovStep(
@@ -347,7 +347,7 @@ void G4Opticks::collectCerenkovStep
                        pdgCode,
                        pdgCharge,
                        weight,
-                       meanVelocity,
+                       preVelocity,
 
                        betaInverse,
                        pmin,
@@ -357,7 +357,7 @@ void G4Opticks::collectCerenkovStep
                        maxSin2,
                        meanNumberOfPhotons1,
                        meanNumberOfPhotons2,
-                       spare2
+                       postVelocity
                        ) ;
 }
   

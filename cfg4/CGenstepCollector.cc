@@ -216,7 +216,7 @@ void CGenstepCollector::collectCerenkovStep
             G4int                pdgCode, 
             G4double             pdgCharge, 
             G4double             weight, 
-            G4double             meanVelocity, 
+            G4double             preVelocity, 
 
             G4double             betaInverse,
             G4double             pmin,
@@ -226,7 +226,7 @@ void CGenstepCollector::collectCerenkovStep
             G4double             maxSin2,
             G4double             meanNumberOfPhotons1,
             G4double             meanNumberOfPhotons2,
-            G4double             spare2
+            G4double             postVelocity
 )
 {
      m_cerenkov_count += 1 ;   // 1-based index
@@ -270,7 +270,7 @@ void CGenstepCollector::collectCerenkovStep
      cs[3*4+0] = uifb[0].f ;  // pdgCode
      cs[3*4+1] = pdgCharge ;
      cs[3*4+2] = weight ;
-     cs[3*4+3] = meanVelocity ;
+     cs[3*4+3] = preVelocity ;
 
      cs[4*4+0] = betaInverse ;  
      cs[4*4+1] = pmin ;
@@ -280,7 +280,7 @@ void CGenstepCollector::collectCerenkovStep
      cs[5*4+0] = maxSin2 ;  
      cs[5*4+1] = meanNumberOfPhotons1 ;
      cs[5*4+2] = meanNumberOfPhotons2 ;
-     cs[5*4+3] = spare2 ;
+     cs[5*4+3] = postVelocity ;
 
      m_genstep->add(cs, m_genstep_itemsize);
 }

@@ -82,6 +82,12 @@ class G4OK_API G4Opticks
         unsigned getNumPhotons() const ;
         unsigned getNumGensteps() const ;
 
+        /**
+        2018/9/8 Geant4.1042 requires both velocities so:
+             meanVelocity->preVelocity
+             spare1->postVelocity 
+             see notes/issues/ckm_cerenkov_generation_align_small_quantized_deviation_g4_g4.rst
+        **/
         void collectCerenkovStep(
             G4int                id, 
             G4int                parentId,
@@ -101,7 +107,7 @@ class G4OK_API G4Opticks
             G4int                pdgCode, 
             G4double             pdgCharge, 
             G4double             weight, 
-            G4double             meanVelocity, 
+            G4double             preVelocity, 
 
             G4double             betaInverse,
             G4double             pmin,
@@ -111,7 +117,7 @@ class G4OK_API G4Opticks
             G4double             maxSin2,
             G4double             meanNumberOfPhotons1,
             G4double             meanNumberOfPhotons2,
-            G4double             spare2=0
+            G4double             postVelocity
         );  
     public:
         void collectSecondaryPhotons(const G4VParticleChange* pc);

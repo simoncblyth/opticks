@@ -144,7 +144,7 @@ G4VParticleChange* CCerenkovGenerator::GeneratePhotonsFromGenstep( const Opticks
     //G4int pdgCode = i3.x ; 
     //G4double pdgCharge = q3.y ;  
     //G4double weight = q3.z ;      // unused is good : means space for the two velocities
-    G4double meanVelocity = q3.w ;  
+    G4double preVelocity = q3.w ;  
 
     G4double BetaInverse = q4.x ; 
     G4double Pmin = q4.y ;    
@@ -155,24 +155,23 @@ G4VParticleChange* CCerenkovGenerator::GeneratePhotonsFromGenstep( const Opticks
 
     //G4double maxCos = q4.w ;
 
+    G4double maxSin2 = q5.x ; 
+    G4double MeanNumberOfPhotons1 = q5.y ; 
+    G4double MeanNumberOfPhotons2 = q5.z ; 
+    G4double postVelocity = q5.w ; 
+
+    //G4double dp = Pmax - Pmin;   // <-- precision loss if energies travel as MeV  : TODO get energies to travel in eV
+    G4ThreeVector p0 = deltaPosition.unit();
+
     LOG(info) 
         << " Pmin " << Pmin
         << " Pmax " << Pmax
         << " wavelength_min(nm) " << wavelength_min/nm
         << " wavelength_max(nm) " << wavelength_max/nm
-        << " meanVelocity " << meanVelocity
+        << " preVelocity " << preVelocity
+        << " postVelocity " << postVelocity
         ;
 
-    G4double maxSin2 = q5.x ; 
-    G4double MeanNumberOfPhotons1 = q5.y ; 
-    G4double MeanNumberOfPhotons2 = q5.z ; 
-    G4double zero = q5.w ; 
-    G4double epsilon = 1e-6 ; 
-    assert( std::abs(zero) < epsilon ) ;     // caution with mixed buffers
-    // am i storing a int in there, get a very small number ?
-
-    G4double dp = Pmax - Pmin;   // <-- precision loss if energies travel as MeV 
-    G4ThreeVector p0 = deltaPosition.unit();
 
     G4ParticleChange* pParticleChange = new G4ParticleChange ;
     G4ParticleChange& aParticleChange = *pParticleChange ; 
@@ -188,6 +187,10 @@ G4VParticleChange* CCerenkovGenerator::GeneratePhotonsFromGenstep( const Opticks
     pPreStepPoint->SetPosition(x0) ; 
     pPostStepPoint->SetPosition(x0+deltaPosition) ; 
 
+    pPreStepPoint->SetVelocity(preVelocity) ; 
+    pPostStepPoint->SetVelocity(postVelocity) ; 
+
+
     G4Track aTrack ; 
     aTrack.SetTrackID(trackID) ; 
 
@@ -197,6 +200,7 @@ G4VParticleChange* CCerenkovGenerator::GeneratePhotonsFromGenstep( const Opticks
     G4double Pmax2 = Rindex->GetMaxLowEdgeEnergy();
     G4double dp2 = Pmax2 - Pmin2;
 
+    G4double epsilon = 1e-6 ; 
     bool Pmin_match = std::abs( Pmin2 - Pmin ) < epsilon ; 
     bool Pmax_match = std::abs( Pmax2 - Pmax ) < epsilon ; 
    
@@ -410,15 +414,15 @@ G4VParticleChange* CCerenkovGenerator::GeneratePhotonsFromGenstep( const Opticks
       G4double delta = rand * aStep.GetStepLength();
 
 
-#ifdef HAVE_CHANGED_GENSTEP_TO_STORE_BOTH_VELOCITIES
+//#ifdef HAVE_CHANGED_GENSTEP_TO_STORE_BOTH_VELOCITIES
 
       G4double deltaTime = delta / (pPreStepPoint->GetVelocity()+
                                       rand*(pPostStepPoint->GetVelocity()-
                                             pPreStepPoint->GetVelocity())*0.5);
 
-#else
-      G4double deltaTime = delta / meanVelocity ; 
-#endif
+//#else
+//      G4double deltaTime = delta / meanVelocity ; 
+//#endif
 
 
       G4double aSecondaryTime = t0 + deltaTime;

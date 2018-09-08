@@ -191,11 +191,16 @@ print "b %s " % repr(b.shape)
 
 dv = np.max( np.abs(a[:,:3]-b[:,:3]), axis=(1,2) )
 
-cut = 1e-5
-wh = np.where( dv > cut )[0] 
-print " deviations above cut %s wh %s num_wh %d" % ( cut, repr(wh), len(wh) )
-for i in wh:
-    print i, dv[i], "\n",np.hstack([a[i,:3],(a[i,:3]-b[i,:3])/cut,b[i,:3]])
+print "max deviation %s " % dv.max() 
+
+cuts = [1e-5, 1e-6, 1e-7, 1e-8]
+for cut in cuts:
+    wh = np.where( dv > cut )[0] 
+    print " deviations above cut %s num_wh %d" % ( cut, len(wh) )
+    for i in wh:
+        print i, dv[i], "\n",np.hstack([a[i,:3],(a[i,:3]-b[i,:3])/cut,b[i,:3]])
+    pass
+pass
 
 
 EOP

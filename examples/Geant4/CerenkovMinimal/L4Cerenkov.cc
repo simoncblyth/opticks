@@ -325,7 +325,7 @@ L4Cerenkov::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
                definition->GetPDGEncoding(),   // 3
                definition->GetPDGCharge(),
                aTrack.GetWeight(),
-               ((pPreStepPoint->GetVelocity()+ pPostStepPoint->GetVelocity())/2.),
+               pPreStepPoint->GetVelocity(),
     
                BetaInverse,       // 4   
                Pmin,
@@ -335,7 +335,7 @@ L4Cerenkov::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
                maxSin2,   // 5
                MeanNumberOfPhotons1, 
                MeanNumberOfPhotons2,
-               0   
+               pPostStepPoint->GetVelocity()
         ); 
     }    
 #endif
