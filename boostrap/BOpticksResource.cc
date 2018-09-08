@@ -44,6 +44,7 @@ BOpticksResource::BOpticksResource()
     m_rng_installcache_dir(NULL),
     m_okc_installcache_dir(NULL),
     m_ptx_installcache_dir(NULL),
+    m_tmpuser_dir(NULL),
     m_srcpath(NULL),
     m_srcfold(NULL),
     m_srcbase(NULL),
@@ -199,6 +200,9 @@ void BOpticksResource::initTopDownDirs()
     m_res->addDir("rng_installcache_dir", m_rng_installcache_dir );
     m_res->addDir("okc_installcache_dir", m_okc_installcache_dir );
     m_res->addDir("ptx_installcache_dir", m_ptx_installcache_dir );
+
+    m_tmpuser_dir = MakeTmpUserDir("opticks", NULL) ; 
+    m_res->addDir( "tmpuser_dir", m_tmpuser_dir ); 
 }
 
 void BOpticksResource::initDebuggingIDPATH()
@@ -267,6 +271,10 @@ std::string BOpticksResource::PTXPath(const char* name, const char* target)
 }
 
 
+
+
+
+
 const char* BOpticksResource::getInstallDir() {         return m_install_prefix ; }   
 const char* BOpticksResource::getOpticksDataDir() {     return m_opticksdata_dir ; }   
 const char* BOpticksResource::getGeoCacheDir() {        return m_geocache_dir ; }   
@@ -277,6 +285,7 @@ const char* BOpticksResource::getInstallCacheDir() {    return m_installcache_di
 const char* BOpticksResource::getRNGInstallCacheDir() { return m_rng_installcache_dir ; } 
 const char* BOpticksResource::getOKCInstallCacheDir() { return m_okc_installcache_dir ; } 
 const char* BOpticksResource::getPTXInstallCacheDir() { return m_ptx_installcache_dir ; } 
+const char* BOpticksResource::getTmpUserDir() const {   return m_tmpuser_dir ; } 
 
 
 const char* BOpticksResource::getDebuggingIDPATH() {    return m_debugging_idpath ; } 
@@ -296,6 +305,17 @@ const char* BOpticksResource::MakeSrcDir(const char* srcpath, const char* sub)
     std::string path = BFile::FormPath(srcdir.c_str(), sub ); 
     return strdup(path.c_str());
 }
+const char* BOpticksResource::MakeTmpUserDir(const char* sub, const char* rel) 
+{
+    const char* base = "/tmp" ; 
+    const char* user = SSys::username(); 
+    std::string path = BFile::FormPath(base, user, sub, rel ) ; 
+    return strdup(path.c_str());
+}
+
+
+
+
 
 
 // cannot be static as IDPATH not available statically 
@@ -479,6 +499,8 @@ void BOpticksResource::setupViaKey()
     const char* exename = SAr::Instance->exename(); 
     m_evtbase = isKeySource() ? strdup(m_srcevtbase) : makeIdPathPath("tmp", user, exename ) ;  
     m_res->addDir( "evtbase", m_evtbase ); 
+
+
 }
 
 
@@ -581,8 +603,8 @@ const char* BOpticksResource::getSrcGLTFName() const
 const char* BOpticksResource::getG4CodeGenDir() const { return m_g4codegendir ; }
 const char* BOpticksResource::getCacheMetaPath() const { return m_cachemetapath ; }
 const char* BOpticksResource::getPrimariesPath() const { return m_primariespath ; } 
-const char* BOpticksResource::getDirectGenstepPath() const { return m_directgensteppath ; } 
-const char* BOpticksResource::getDirectPhotonsPath() const { return m_directphotonspath ; } 
+//const char* BOpticksResource::getDirectGenstepPath() const { return m_directgensteppath ; } 
+//const char* BOpticksResource::getDirectPhotonsPath() const { return m_directphotonspath ; } 
 const char* BOpticksResource::getGLTFPath() const { return m_gltfpath ; } 
 const char* BOpticksResource::getMetaPath() const { return m_metapath ; }
 const char* BOpticksResource::getIdMapPath() const { return m_idmappath ; } 

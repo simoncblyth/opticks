@@ -19,11 +19,14 @@ CGenstepSource
 
 Instanciated by CGenerator::initSource like all other CSource subclasses.
 
-
-Note that Opticks has been running gensteps from the beginning, the
+Note that Opticks has been running from gensteps from the beginning, the
 difference with this class is that it allows Geant4 for do that too, by 
 moving a copy of the photon generation loop from Cerenkov or Scintillation 
-PostStepDoIt into the primary stage.
+process PostStepDoIt into the primary stage.
+
+Having both Opticks and Geant4 run from the same gensteps is convenient 
+for aligned validation as optical only Geant4 can be used which makes
+for a fast and clean environment.
 
 
 Recall that gensteps can yield many millions of photons : 

@@ -139,29 +139,29 @@ std::string BOpticksEvent::path(const char* top, const char* sub, const char* ta
 }
 
 
+/**
 
-const char* BOpticksEvent::srcpath( const char* det, const char* typ, const char* tag) // static
+BOpticksEvent::srctagdir
+----------------------------
+
+srcevtbase
+     inside the geocache keydir eg:
+     /usr/local/opticks/geocache/CerenkovMinimal_World_g4live/g4ok_gltf/792496b5e2cc08bdf5258cc12e63de9f/1/source
+
+**/
+
+const char* BOpticksEvent::srctagdir( const char* det, const char* typ, const char* tag) // static
 {
-    const char* srcevtbase = BResource::Get("srcevtbase"); 
-    return srcevtbase ? strdup(srcevtbase) : NULL  ; 
+    const char* srcevtbase = BResource::Get("srcevtbase");   
+    if( srcevtbase == NULL ) srcevtbase = BResource::Get("tmpuser_dir") ;   
+    assert( srcevtbase ); 
+
+    std::string path = BFile::FormPath(srcevtbase, "evt", det, typ, tag ); 
+    //  source/evt/g4live/natural/1/        gs.npy
+
+    return strdup(path.c_str()) ; 
 }
 
-
-
-
-/*
-std::string BOpticksEvent::path(const char* dir, const char* name)
-{
-    std::string path = BFile::FormPath(dir, name);  
-    return path ; 
-}
-
-std::string BOpticksEvent::path(const char* dir, const char* reldir, const char* name)
-{
-    std::string path = BFile::FormPath(dir, reldir, name);  
-    return path ; 
-}
-*/
 
 
 

@@ -65,6 +65,8 @@ class BRAP_API  BOpticksResource {
    public:
        static const char* MakeSrcPath(const char* srcpath, const char* ext) ;
        static const char* MakeSrcDir(const char* srcpath, const char* sub) ;
+       static const char* MakeTmpUserDir(const char* sub, const char* rel) ;
+
        const char* makeIdPathPath(const char* rela, const char* relb=NULL, const char* relc=NULL, const char* reld=NULL) ;
    public:
         BOpticksResource();
@@ -102,6 +104,7 @@ class BRAP_API  BOpticksResource {
         const char* getRNGInstallCacheDir();
         const char* getOKCInstallCacheDir();
         const char* getPTXInstallCacheDir();
+        const char* getTmpUserDir() const ;
 
         const char* getDebuggingTreedir(int argc, char** argv);
         std::string getPTXPath(const char* name, const char* target="OptiXRap");
@@ -131,8 +134,8 @@ class BRAP_API  BOpticksResource {
        const char* getG4CodeGenDir() const ;
        const char* getCacheMetaPath() const ;
        const char* getPrimariesPath() const ;
-       const char* getDirectGenstepPath() const ;
-       const char* getDirectPhotonsPath() const ;
+       //const char* getDirectGenstepPath() const ;
+       //const char* getDirectPhotonsPath() const ;
        const char* getGLTFPath() const ;     // output path 
        const char* getMetaPath() const ;
        const char* getIdMapPath() const ;
@@ -181,6 +184,7 @@ class BRAP_API  BOpticksResource {
         const char* m_rng_installcache_dir ; 
         const char* m_okc_installcache_dir ; 
         const char* m_ptx_installcache_dir ; 
+        const char* m_tmpuser_dir ; 
    protected:
         const char* m_srcpath ; 
         const char* m_srcfold ; 

@@ -108,6 +108,8 @@ X4PhysicalVolume::X4PhysicalVolume(GGeo* ggeo, const G4VPhysicalVolume* const to
     m_selected_node_count(0)
 {
     const char* msg = "GGeo ctor argument of X4PhysicalVolume must have mlib, slib and blib already " ; 
+
+    // trying to Opticks::configure earlier, from Opticks::init trips these asserts
     assert( m_mlib && msg ); 
     assert( m_slib && msg ); 
     assert( m_blib && msg ); 

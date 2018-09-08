@@ -246,6 +246,7 @@ Opticks::Opticks(int argc, char** argv, const char* argforced )
 
        m_lastarg(NULL),
 
+       m_configured(false),
        m_cfg(NULL),
        m_timer(NULL),
        m_parameters(NULL),
@@ -479,6 +480,8 @@ void Opticks::init()
     setDetector( m_resource->getDetector() );
 
     LOG(debug) << "Opticks::init DONE " << m_resource->desc()  ;
+
+    //configure(); 
 }
 
 /*
@@ -1069,8 +1072,6 @@ const char* Opticks::getSrcGLTFPath() const { return m_resource->getSrcGLTFPath(
 const char* Opticks::getG4CodeGenDir() const { return m_resource->getG4CodeGenDir() ; }
 const char* Opticks::getCacheMetaPath() const { return m_resource->getCacheMetaPath() ; } 
 const char* Opticks::getPrimariesPath() const { return m_resource->getPrimariesPath() ; } 
-const char* Opticks::getDirectGenstepPath() const { return m_resource->getDirectGenstepPath() ; } 
-const char* Opticks::getDirectPhotonsPath() const { return m_resource->getDirectPhotonsPath() ; } 
 
 
 
@@ -1244,7 +1245,12 @@ void  Opticks::setVerbosity(unsigned verbosity)
 
 
 
+/**
+Opticks::defineEventSpec
+-------------------------
 
+
+**/
 
 
 void Opticks::defineEventSpec()
@@ -1297,6 +1303,13 @@ void Opticks::checkOptionValidity()
 
 void Opticks::configure()
 {
+    if(m_configured) 
+    {
+        LOG(fatal) << " configured already " ; 
+        return ; 
+    }
+    m_configured = true ; 
+
     dumpArgs("Opticks::configure");  
 
 
@@ -1865,23 +1878,28 @@ unsigned Opticks::getGeant4Version()
 
 
 
-std::string Opticks::getGenstepPath2() const 
+const char* Opticks::getDirectGenstepPath() const 
 {
     const char* det = m_spec->getDet();
     const char* typ = m_spec->getTyp();
     const char* tag = m_spec->getTag();
 
-    const char* srcpath = BOpticksEvent::srcpath(det, typ, tag ); 
+    const char* srctagdir = BOpticksEvent::srctagdir(det, typ, tag ); 
 
-    LOG(info) << "Opticks::getGenstepPath2"
+    LOG(info) << "Opticks::getDirectGenstepPath"
               << " det " << det 
               << " typ " << typ 
               << " tag " << tag
-              << " srcpath " << srcpath
+              << " srctagdir " << srctagdir
               ; 
 
-    return srcpath ; 
+    std::string path = BFile::FormPath( srctagdir, "gs.npy" ); 
+    return strdup(path.c_str())  ; 
 }
+
+//const char* Opticks::getDirectGenstepPath() const { return m_resource->getDirectGenstepPath() ; } 
+//const char* Opticks::getDirectPhotonsPath() const { return m_resource->getDirectPhotonsPath() ; } 
+
 
 
 std::string Opticks::getGenstepPath() const 

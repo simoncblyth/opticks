@@ -367,10 +367,10 @@ class OKCORE_API Opticks {
        std::string          getPreferenceDir(const char* type, const char* subtype);
    public:
        std::string          getGenstepPath() const ;
-       std::string          getGenstepPath2() const ;
+       //std::string          getGenstepPath2() const ;
        const char*          getPrimariesPath() const ;
        const char*          getDirectGenstepPath() const ; 
-       const char*          getDirectPhotonsPath() const ; 
+       //const char*          getDirectPhotonsPath() const ; 
        bool                 existsGenstepPath() const ;
        bool                 existsPrimariesPath() const ;
        bool                 existsDirectGenstepPath() const ;
@@ -499,6 +499,7 @@ class OKCORE_API Opticks {
        const char*      m_lastarg ; 
 
    private:
+       bool                 m_configured ; 
        OpticksCfg<Opticks>* m_cfg ; 
        Timer*               m_timer ; 
        NParameters*          m_parameters ; 

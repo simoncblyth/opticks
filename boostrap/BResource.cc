@@ -16,6 +16,7 @@ const char* BResource::Get(const char* label)
 {
     const BResource* br = GetInstance(); 
     const char* ret = NULL ; 
+    if( !br ) return ret ;  
 
     if( ret == NULL ) ret = br->getPath(label); 
     if( ret == NULL ) ret = br->getDir(label); 

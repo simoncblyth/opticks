@@ -69,19 +69,21 @@ void test_notag()
 
 }
 
-void test_srcpath()
+
+/*
+void test_srctagdir()
 {
-    // needs resources loaded : so cannot test at this level
+    // needs resources loaded which is done from okc- : so cannot test at this level
  
     const char* det = "det" ; 
     const char* typ = "typ" ; 
     const char* tag = "tag" ; 
-    std::string p = BOpticksEvent::srcpath(det, typ, tag ); 
+    std::string p = BOpticksEvent::srctagdir(det, typ, tag ); 
 
     LOG(info) << p ; 
 
 }
-
+*/
 
 
 int main(int argc, char** argv)
@@ -101,7 +103,7 @@ int main(int argc, char** argv)
 
     test_notag();
 */
-    //test_srcpath(); 
+    //test_srctagdir(); 
 
 
     return 0 ; 

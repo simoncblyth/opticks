@@ -69,12 +69,19 @@ void CGenstepSource::GeneratePrimaryVertex(G4Event *event)
         if( m_idx == m_num_genstep ) break ;    // all gensteps done
         G4VParticleChange* pc = generatePhotonsFromOneGenstep() ; 
         addPrimaryVertices( event, pc ); 
-
-
     }
     m_generate_count += 1 ; 
 }
 
+
+/**
+CGenstepSource::generatePhotonsFromOneGenstep
+----------------------------------------------
+
+Notice that genstep arrays can contain mixed types of gensteps, BUT that
+each individual genstep is always of one particular type.
+
+**/
 
 G4VParticleChange* CGenstepSource::generatePhotonsFromOneGenstep()
 {

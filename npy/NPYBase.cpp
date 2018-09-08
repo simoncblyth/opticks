@@ -27,6 +27,12 @@
 
 bool NPYBase::GLOBAL_VERBOSE = false ; 
 
+bool  NPYBase::NPDump = false ; 
+void NPYBase::SetNPDump(bool npdump) { NPDump = npdump ; }
+bool NPYBase::IsNPDump(){ return NPDump ; }
+
+
+
 
 const char* NPYBase::FLOAT_ = "FLOAT" ; 
 const char* NPYBase::SHORT_ = "SHORT" ; 

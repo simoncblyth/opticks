@@ -171,7 +171,7 @@ G4VParticleChange* CCerenkovGenerator::GeneratePhotonsFromGenstep( const Opticks
     assert( std::abs(zero) < epsilon ) ;     // caution with mixed buffers
     // am i storing a int in there, get a very small number ?
 
-    G4double dp = Pmax - Pmin;
+    G4double dp = Pmax - Pmin;   // <-- precision loss if energies travel as MeV 
     G4ThreeVector p0 = deltaPosition.unit();
 
     G4ParticleChange* pParticleChange = new G4ParticleChange ;
@@ -195,6 +195,7 @@ G4VParticleChange* CCerenkovGenerator::GeneratePhotonsFromGenstep( const Opticks
 
     G4double Pmin2 = Rindex->GetMinLowEdgeEnergy();
     G4double Pmax2 = Rindex->GetMaxLowEdgeEnergy();
+    G4double dp2 = Pmax2 - Pmin2;
 
     bool Pmin_match = std::abs( Pmin2 - Pmin ) < epsilon ; 
     bool Pmax_match = std::abs( Pmax2 - Pmax ) < epsilon ; 
@@ -273,7 +274,8 @@ G4VParticleChange* CCerenkovGenerator::GeneratePhotonsFromGenstep( const Opticks
 
       do {
          rand = G4UniformRand();	
-         sampledEnergy = Pmin + rand * dp; 
+         //sampledEnergy = Pmin + rand * dp; 
+         sampledEnergy = Pmin2 + rand * dp2 ; 
          sampledRI = Rindex->Value(sampledEnergy);
          cosTheta = BetaInverse / sampledRI;  
 

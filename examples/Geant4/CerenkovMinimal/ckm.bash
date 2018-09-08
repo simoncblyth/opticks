@@ -71,8 +71,8 @@ ckm-res(){       OPTICKS_KEY=$(ckm-key) lldb -- OpticksResourceTest --natural --
 ckm-okg4(){      OPTICKS_KEY=$(ckm-key) lldb -- OKG4Test --compute --envkey --embedded --save ;}
 ckm-okg4-load(){ OPTICKS_KEY=$(ckm-key) lldb -- OKG4Test --load --envkey --embedded ;}
 ckm-mlib(){      OPTICKS_KEY=$(ckm-key) CMaterialLibTest --envkey  ;}
-ckm-gentest(){   OPTICKS_KEY=$(ckm-key) lldb -- CCerenkovGeneratorTest --envkey ;}
-ckm-okt(){       OPTICKS_KEY=$(ckm-key) lldb -- OpticksTest --envkey ;}
+ckm-gentest(){   OPTICKS_KEY=$(ckm-key) lldb -- CCerenkovGeneratorTest --natural --envkey ;}
+ckm-okt(){       OPTICKS_KEY=$(ckm-key) lldb -- OpticksTest --natural --envkey ;}
 
 ckm-addr2line()
 {
@@ -82,16 +82,20 @@ ckm-addr2line()
 
 
 ckm-genrun(){
+    local iwd=$PWD
+    ckm-kcd
+
     local func=$1
     mkdir -p $(ckm-tmp)
     local py=$(ckm-tmp)/$func.py
     $func- $* > $py 
     cat $py 
     ipython -i $py 
+
+    cd $iwd
 }
 
 ckm-tag(){ echo 1 ; }
-
 ckm-tmp(){   echo $TMP/ckm ; }
 
 #############################################################
@@ -99,16 +103,30 @@ ckm-tmp(){   echo $TMP/ckm ; }
 #ckm-a-dir(){ echo $TMP/evt/g4live/natural/-1 ; }  # ckm--
 #ckm-a-name(){  echo so.npy ; }
 
-ckm-a-dir(){   echo $TMP/evt/g4live/natural/1 ; }  # ckm--
-ckm-a-name(){  echo ox.npy ; }
+#ckm-a-dir(){   echo $TMP/evt/g4live/natural/1 ; }  # ckm--
+#ckm-a-name(){  echo ox.npy ; }
+
+#ckm-a-dir(){   echo source/evt/g4live/natural/1 ; }  # ckm--
+#ckm-a-name(){  echo ox.npy ; }         
+
+## are GPU ox.npy can be matched with CPU so.npy when use   --bouncemax 0
+## TODO: perhaps formalize that, by copying from ox.npy to so.npy when --bouncemax 0 ??
+
+ckm-a-dir(){   echo source/evt/g4live/natural/-1 ; }  # ckm--
+ckm-a-name(){  echo so.npy ; }         
+
 
 #############################################################
 
 #ckm-b-dir(){ echo $TMP/evt/g4live/torch   ; }  # ckm-okg4 
 #ckm-b-name(){  echo so.npy ; }
 
-ckm-b-dir(){ echo $TMP/cfg4/CCerenkovGeneratorTest ; }  # ckm-gentest
+#ckm-b-dir(){ echo $TMP/cfg4/CCerenkovGeneratorTest ; }  # ckm-gentest
+#ckm-b-name(){  echo so.npy ; }
+
+ckm-b-dir(){   echo tests/CCerenkovGeneratorTest ; }  # ckm-gentest
 ckm-b-name(){  echo so.npy ; }
+
 
 #ckm-b-dir(){   echo $TMP/evt/g4live/natural/1 ; }  # ckm--
 #ckm-b-name(){  echo ox.npy ; }
@@ -118,14 +136,22 @@ ckm-b-name(){  echo so.npy ; }
 ckm-a(){ cd $(ckm-a-dir) ; } 
 ckm-b(){ cd $(ckm-b-dir) ; } 
 
-ckm-l(){ 
+ckm-l(){
+    local iwd=$PWD
+    ckm-kcd 
     date
+
     echo A $(ls -l $(ckm-a-dir)/*.json)
     echo B $(ls -l $(ckm-b-dir)/*.json)
+
+    cd $iwd
 }
 
 ckm-ls(){ 
+    local iwd=$PWD
+    ckm-kcd 
     date
+
     echo A $(ckm-a-dir)
     ls -l  $(ckm-a-dir) 
     np.py  $(ckm-a-dir)
@@ -133,6 +159,8 @@ ckm-ls(){
     echo B $(ckm-b-dir)
     ls -l  $(ckm-b-dir) 
     np.py  $(ckm-b-dir)
+
+    cd $iwd
 }
 
 

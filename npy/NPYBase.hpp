@@ -28,6 +28,12 @@ class NPY_API NPYBase {
        static const char* ArrayContentVersion ; 
        static NPYBase* Load( const char* path, Type_t type );
        static NPYBase* Make( unsigned ni, const NPYSpec* itemspec, bool zero );
+
+   private:
+       static bool NPDump ; 
+   public:
+       static void SetNPDump(bool npdump); 
+       static bool IsNPDump(); 
    public:
 
        static const char* FLOAT_ ; 

@@ -39,13 +39,12 @@ void test_path(const char* msg, const char* path)
 
 
 
-void test_getGenstepPath2(Opticks* ok)
+void test_getDirectGenstepPath(Opticks* ok)
 {
     assert(ok);
 
-    //const char* path = ok->getGenstepPath();
-    std::string path = ok->getGenstepPath2();
-    test_path("getGenstepPath2", path.c_str());
+    const char* path = ok->getDirectGenstepPath();
+    test_path("getDirectGenstepPath", path );
 }
 
 
@@ -141,7 +140,7 @@ int main(int argc, char** argv)
     test_getGDMLPath(&ok);  
     */
 
-    test_getGenstepPath2(&ok);  
+    test_getDirectGenstepPath(&ok);  
 
 
     return 0 ;

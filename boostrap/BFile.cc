@@ -103,15 +103,20 @@ std::string expandvar(const char* s)
 
            std::string evalue = evalue_ ? evalue_ : key ; 
 
-           if(evalue.compare("TMP")==0) //  TMP envvar not defined
+           if(evalue.compare("TMP")==0) //  TMP is not an envvar, but this makes it seem like one
            {
-               evalue = usertmpdir("/tmp","opticks", NULL);
+               //evalue = usertmpdir("/tmp","opticks", NULL);
+               evalue = BResource::Get("tmpuser_dir") ; 
+
                LOG(verbose) << "expandvar replacing TMP with " << evalue ; 
            }
-           else if(evalue.compare("TMPTEST")==0) 
+           else if(evalue.compare("KEYDIR")==0 ) 
            {
-               evalue = usertmpdir("/tmp","opticks","test");
-               LOG(verbose) << "expandvar replacing TMPTEST with " << evalue ; 
+               const char* idpath = BResource::Get("idpath") ; 
+               assert( idpath ); 
+               evalue = idpath ;  
+
+               LOG(error) << "expandvar replacing IDPATH with " << evalue ; 
            }
            else if(evalue.compare("OPTICKS_EVENT_BASE")==0) 
            {
@@ -122,7 +127,8 @@ std::string expandvar(const char* s)
                }
                else
                {
-                   evalue = usertmpdir("/tmp","opticks",NULL);
+                   evalue = BResource::Get("tmpuser_dir") ; 
+                   //evalue = usertmpdir("/tmp","opticks",NULL);
                } 
                LOG(verbose) << "expandvar replacing OPTICKS_EVENT_BASE  with " << evalue ; 
            }

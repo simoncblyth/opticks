@@ -220,8 +220,8 @@ back to step collection
     ./g4ok/G4Opticks.hh:        void collectCerenkovStep(
 
 
-domain range difference
---------------------------
+FIXED : domain range difference
+-------------------------------------
 
 * G4: domain range from original G4Material feeds into Pmin/Pmax
 * OK: standardized domain range used
@@ -355,8 +355,8 @@ where the source domain comes from
 
 
 
-CONFIRMED : smoking gun for domain inconsistency
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+CONFIRMED + FIXED : smoking gun for domain inconsistency
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ::
 
@@ -376,8 +376,10 @@ CONFIRMED : smoking gun for domain inconsistency
 after standardizing materials are getting more gensteps, more photons
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-* not surprising 
-* convenient dev cycle means need a way to terminate after one genstep 
+* not surprising : tis effectively a material change 
+* DONE : convenient dev cycle means need a way to terminate after a max_gs count, did this via fStopAndKill G4Track 
+
+  * TODO : make max_gs configurable
 
 
 
@@ -552,39 +554,32 @@ cross exe, "same" sim
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Comparing photons from genstep 0, 
-   /tmp/blyth/opticks/evt/g4live/natural/~1/so.npy 
+   /tmp/blyth/opticks/evt/g4live/natural/-1/so.npy 
    /tmp/blyth/opticks/cfg4/CCerenkovGeneratorTest/so.npy
 
-* small deviations at 1e~5 level mostly in wavelength 
+* small deviations at 1e-5 level mostly in wavelength 
+* TODO: investigate the cause of the deviations : perfect agreement should be possible here 
 
 same ckm exe, cross sim
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Comparing photons from genstep 0, 
-    /tmp/blyth/opticks/evt/g4live/natural/~1/so.npy 
+    /tmp/blyth/opticks/evt/g4live/natural/-1/so.npy 
     /tmp/blyth/opticks/evt/g4live/natural/1/ox.npy
 
 * same level of small deviations, 1e~5 level mostly in wavelength 
 
 
-cross exe, same sim
-~~~~~~~~~~~~~~~~~~~~~
+WIP : For direct workflow : would be more convenient to save events within the keydir 
+---------------------------------------------------------------------------------------
 
-
-For direct workflow : would be more convenient to save events within the keydir 
----------------------------------------------------------------------------------
+The excessive bookeeping with lots of different paths above, motivated
+a resource layout rationalization : moving event files into the keydir : in 
+source and other subfolders named after executables.
 
 * :doc:`event_path_review`
-
-* especially important for passing gensteps between executables, for direct running
-  can have a standard path within the keydir for each tag at which to look for gensteps
-
-  * first geometry + genstep collecting and writing executable is special : it should write its event
-    and genstep into distinctive "standard" directory (perhaps under the name "source") within the
-    geocache keydir 
-
-  * all other executables sharing the same keydir can put their events underneath 
-    a relpath named after the executable  
+* :doc:`ckm_cerenkov_generation_align_small_quantized_deviation_g4_g4` 
 
 
-   
+
+ 

@@ -23,13 +23,31 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
 
+/*
     //const char* def = "/usr/local/opticks/opticksdata/gensteps/dayabay/natural/1.npy" ; 
     const char* def = "/tmp/blyth/opticks/evt/g4live/natural/1/gs.npy" ; 
-
     //const char* path = argc > 1 ? argv[1] : def ; 
     const char* path = def ; 
 
     NPY<float>* np = NPY<float>::load(path) ; 
+*/
+
+    Opticks ok(argc, argv);
+    ok.setModeOverride( OpticksMode::CFG4_MODE );  
+    // override COMPUTE/INTEROP mode, as those do not apply to CFG4 
+    // still needed ?
+ 
+
+    OpticksHub hub(&ok) ; 
+    CMaterialLib* clib = new CMaterialLib(&hub);
+    clib->convert();
+    // TODO: a more direct way to get to a refractive index, than the above that loads the entire geometry  
+
+
+
+    // below needs to be done after Opticks::configure for setup of the event spec
+
+    NPY<float>* np = ok.loadDirectGenstep(); 
     if(np == NULL) return 0 ; 
 
     OpticksGenstep* gs = new OpticksGenstep(np) ; 
@@ -38,32 +56,22 @@ int main(int argc, char** argv)
     gs->dump( modulo, margin ) ; 
 
 
-    Opticks ok(argc, argv);
-    ok.setModeOverride( OpticksMode::CFG4_MODE );  // override COMPUTE/INTEROP mode, as those do not apply to CFG4 
-    OpticksHub hub(&ok) ; 
-    CMaterialLib* clib = new CMaterialLib(&hub);
-    clib->convert();
-    // TODO: a more direct way to get to a refractive index, than the above that loads the entire geometry  
-
- 
-
 
     CAlignEngine::Initialize( ok.getIdPath() );  
 
     unsigned idx = 0 ;  
     G4VParticleChange* pc = CCerenkovGenerator::GeneratePhotonsFromGenstep(gs,idx) ;
-    //assert(0);  
 
     C4PhotonCollector* collector = new C4PhotonCollector ; 
     collector->collectSecondaryPhotons( pc, idx ); 
 
-    const char* ph_path = "$TMP/cfg4/CCerenkovGeneratorTest/so.npy" ; 
-    collector->savePhotons(ph_path);
+    NPYBase::SetNPDump(true);
+    collector->savePhotons("$KEYDIR/tests/CCerenkovGeneratorTest/so.npy") ; 
+    NPYBase::SetNPDump(false);
 
     LOG(info) << collector->desc() ;
 
-    SSys::npdump( ph_path, "np.float32", "", "suppress=True") ;  
- 
+    //SSys::npdump( ph_path, "np.float32", "", "suppress=True") ;  
 
     return 0 ; 
 }

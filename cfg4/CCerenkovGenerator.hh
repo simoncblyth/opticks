@@ -18,6 +18,10 @@ Getting the same photons as a prior run requires:
 1. same RINDEX property at the genstep recorded G4Material materialIndex
 2. arranging that the same RNG are provided, by controlling the engine  
 
+
+This is used by CGenstepSource
+
+
 **/
 
 class CFG4_API CCerenkovGenerator

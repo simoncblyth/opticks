@@ -7,6 +7,7 @@
 
 namespace fs = boost::filesystem;
 
+#include "SSys.hh"
 #include "BFile.hh"
 #include "BOpticksEvent.hh"
 #include "BStr.hh"
@@ -19,9 +20,6 @@ namespace fs = boost::filesystem;
 #include "NPY.hpp"
 
 #include "PLOG.hh"
-
-
-
 
 
 // ctor takes ownership of a copy of the inputs 
@@ -807,7 +805,9 @@ void NPY<T>::save(const char* raw)
     else
     {
         aoba::SaveArrayAsNumpy<T>(native.c_str(), itemcount, itemshape.c_str(), values );
+        if(IsNPDump()) SSys::npdump( native.c_str(), "np.float32", "", "suppress=True") ;
     }
+
 }
 
 

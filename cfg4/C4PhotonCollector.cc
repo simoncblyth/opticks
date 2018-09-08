@@ -96,7 +96,7 @@ void C4PhotonCollector::collectSecondaryPhotons( const G4VParticleChange* pc, un
                  photonMomentum.x(),
                  photonMomentum.y(),
                  photonMomentum.z(),
-                 weight,
+                 kineticEnergy/eV,        // temporary switch from weight 
 
                  photonPolarization.x(),
                  photonPolarization.y(),
