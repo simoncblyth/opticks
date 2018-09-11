@@ -19,6 +19,17 @@ static __device__ __inline__ float boundary_sample_reciprocal_domain(const float
     return 1.f/iw ;  
 }
 
+static __device__ __inline__ float boundary_sample_reciprocal_domain_v3(const float& u)
+{
+    // see boundary_lookup.py
+    float a = boundary_domain.x ; 
+    float b = boundary_domain.y ; 
+    return a*b/lerp( a, b, u ) ;
+}
+
+
+
+
 static __device__ __inline__ float boundary_sample_domain(const float& u)
 {
     // return wavelength, from uniform sampling of wavelength domain

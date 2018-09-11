@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 
-
-
-
+import numpy as np
 
 class F4(object):
     def __init__(self, x,y,z,w):
@@ -28,6 +26,28 @@ def boundary_sample_reciprocal_domain(u, flip=False):
     pass
     return 1./iw 
 
+
+def boundary_sample_reciprocal_domain_v3( u ):
+    """
+    ::
+                  1 - u          u         (flipped)
+          iw  =  --------  +   -----    
+                    b            a
+
+           
+       a.b.iw =   a( 1 -u ) +  b u 
+
+
+                        a.b
+           w  =   ------------------   
+                    a(1-u) + b u      
+
+    """
+    a = dom.x
+    b = dom.y 
+    return  a*b/lerp( a, b, u )
+
+
 def sampledEnergy(u):
     """
     In [12]: (1240./1e6)/2.0664e-05
@@ -45,12 +65,19 @@ def sampledEnergy(u):
 
 if __name__ == '__main__':
 
-    for u in [0,0.740219,1]:
-        w0=boundary_sample_reciprocal_domain(u, flip=False) 
-        w1=boundary_sample_reciprocal_domain(u, flip=True) 
+    uu = [0,0.740219,1] 
+
+
+    w = np.zeros( (len(uu), 4), dtype=np.float64) 
+
+    for i, u in enumerate(uu):
+        w[i,0]=boundary_sample_reciprocal_domain(u, flip=False) 
+        w[i,1]=boundary_sample_reciprocal_domain(u, flip=True) 
         en = sampledEnergy(u) 
-        w2 = hc/en 
-        print "%10.4f : %10.4f : %10.4f : %10.4f : %10.4f " % (u, w0, w1, w2, en  )
+        w[i,2] = hc/en 
+        w[i,3]=boundary_sample_reciprocal_domain_v3(u) 
+
+        print "%10.4f : %10.4f : %10.4f : %10.4f : %10.4f : %10.4f " % (u, w[i,0], w[i,1], w[i,2], w[i,3], en  )
     pass
 
 

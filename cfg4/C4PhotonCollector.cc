@@ -60,6 +60,11 @@ void C4PhotonCollector::collectSecondaryPhotons( const G4VParticleChange* pc, un
     LOG(info) << " numberOfSecondaries " << numberOfSecondaries ; 
 
 
+     
+
+
+
+
     for( G4int i=0 ; i < numberOfSecondaries ; i++)
     {
         G4Track* track =  pc->GetSecondary(i) ; 
@@ -81,6 +86,7 @@ void C4PhotonCollector::collectSecondaryPhotons( const G4VParticleChange* pc, un
         G4double aSecondaryTime = track->GetGlobalTime() ;
 
         G4double weight = track->GetWeight() ; 
+        //G4double weight = kineticEnergy/eV ;   // temporary switch from debugging
 
         int flags_x = idx ;  
         int flags_y = i ;  
@@ -96,7 +102,7 @@ void C4PhotonCollector::collectSecondaryPhotons( const G4VParticleChange* pc, un
                  photonMomentum.x(),
                  photonMomentum.y(),
                  photonMomentum.z(),
-                 kineticEnergy/eV,        // temporary switch from weight 
+                 weight,      
 
                  photonPolarization.x(),
                  photonPolarization.y(),

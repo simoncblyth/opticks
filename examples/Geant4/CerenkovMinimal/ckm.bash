@@ -100,17 +100,9 @@ ckm-tmp(){   echo $TMP/ckm ; }
 
 #############################################################
 
-#ckm-a-dir(){ echo $TMP/evt/g4live/natural/-1 ; }  # ckm--
-#ckm-a-name(){  echo so.npy ; }
-
-#ckm-a-dir(){   echo $TMP/evt/g4live/natural/1 ; }  # ckm--
-#ckm-a-name(){  echo ox.npy ; }
 
 #ckm-a-dir(){   echo source/evt/g4live/natural/1 ; }  # ckm--
 #ckm-a-name(){  echo ox.npy ; }         
-
-## are GPU ox.npy can be matched with CPU so.npy when use   --bouncemax 0
-## TODO: perhaps formalize that, by copying from ox.npy to so.npy when --bouncemax 0 ??
 
 ckm-a-dir(){   echo source/evt/g4live/natural/-1 ; }  # ckm--
 ckm-a-name(){  echo so.npy ; }         
@@ -118,18 +110,11 @@ ckm-a-name(){  echo so.npy ; }
 
 #############################################################
 
-#ckm-b-dir(){ echo $TMP/evt/g4live/torch   ; }  # ckm-okg4 
+#ckm-b-dir(){   echo tests/CCerenkovGeneratorTest ; }  # ckm-gentest
 #ckm-b-name(){  echo so.npy ; }
 
-#ckm-b-dir(){ echo $TMP/cfg4/CCerenkovGeneratorTest ; }  # ckm-gentest
-#ckm-b-name(){  echo so.npy ; }
-
-ckm-b-dir(){   echo tests/CCerenkovGeneratorTest ; }  # ckm-gentest
-ckm-b-name(){  echo so.npy ; }
-
-
-#ckm-b-dir(){   echo $TMP/evt/g4live/natural/1 ; }  # ckm--
-#ckm-b-name(){  echo ox.npy ; }
+ckm-b-dir(){   echo source/evt/g4live/natural/1 ; }  # ckm--
+ckm-b-name(){  echo ox.npy ; }
 
 #############################################################
 
@@ -179,6 +164,7 @@ bpath = "$bpath"
 
 print " $FUNCNAME comparing $1 and $2 between two dirs " 
 
+print "pwd", commands.getoutput("pwd")
 print "  ", commands.getoutput("date")
 print "a ", commands.getoutput("ls -l %s" % apath)
 print "b ", commands.getoutput("ls -l %s" % bpath)
@@ -197,7 +183,7 @@ cuts = [1e-5, 1e-6, 1e-7, 1e-8]
 for cut in cuts:
     wh = np.where( dv > cut )[0] 
     print " deviations above cut %s num_wh %d" % ( cut, len(wh) )
-    for i in wh:
+    for i in wh[:10]:
         print i, dv[i], "\n",np.hstack([a[i,:3],(a[i,:3]-b[i,:3])/cut,b[i,:3]])
     pass
 pass
@@ -223,42 +209,48 @@ ckm--
 
     --bouncemax 0 
         means that photons are saved immediately after generation, with no propagation 
+
+        * which means that GPU ox.npy can be matched with CPU so.npy 
+        * TODO: perhaps formalize that, by copying ox.npy to so.npy when --bouncemax 0 ??
+          but then what when switch bouncemax back to normal
    
     --printenabled --pindex 0
         dump kernel debug for photon 0 
+
+
+    The big advantage of ckm-- is that it can look like any Geant4 example, that however 
+    is also its biggest disadvantage in that this restricts it to minimally instrumented G4 
+    as it does not make use of the CFG4/CRecorder : for full photon step recording : which 
+    is the reason source/evt/g4live/natural/-1/ is rather empty compared
+    to the fully featured source/evt/g4live/natural/1/
+
 
 
 ckm-gentest : 
     CCerenkovGeneratorTest : genstep eating standalone CPU generator that tries to
     mimic the cerenkov process photons via verbatim code copy 
 
-    genstep source set in main at: "/tmp/blyth/opticks/evt/g4live/natural/1/gs.npy"
 
-
-
-
-cross exe, "same" sim
----------------------------
+cross exe, g4-g4 "same" sim : but with float genstep transport
+----------------------------------------------------------------
 
 Comparing photons from genstep 0, 
-   /tmp/blyth/opticks/evt/g4live/natural/-1/so.npy 
-   /tmp/blyth/opticks/cfg4/CCerenkovGeneratorTest/so.npy
+   source/evt/g4live/natural/-1/so.npy 
+   tests/CCerenkovGeneratorTest/so.npy
 
-* small deviations at 1e-5 level mostly in wavelength 
+* initially : small deviations at 1e-5 level mostly in wavelength
+* fixed precision loss issue with wavelength and omission with time :
+  bringing deviations down to an unfocussed 1e-8 level 
 
-same ckm exe, cross sim
----------------------------
+
+same ckm exe, cross sim G4/OK : with --bouncemax 0 for generation only comparison
+------------------------------------------------------------------------------------------
 
 Comparing photons from genstep 0, 
-    /tmp/blyth/opticks/evt/g4live/natural/-1/so.npy 
-    /tmp/blyth/opticks/evt/g4live/natural/1/ox.npy
+    source/evt/g4live/natural/-1/so.npy 
+    source/evt/g4live/natural/1/ox.npy  
 
-* same level of small deviations, 1e-5 level mostly in wavelength 
-
-
-cross exe, same sim
----------------------
-
+* initially same level of 1e-5 level deviations, mostly in wavelength 
 
 
 

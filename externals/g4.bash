@@ -16,6 +16,14 @@ Breakpoints
       ## break on exceptions
 
 
+Introductions
+--------------
+
+* http://www.niser.ac.in/sercehep2017/notes/serc17_geant4.pdf
+
+  111 slides of Geant4 intro 
+
+
 
 Migration to 10 (Multithreaded)
 --------------------------------

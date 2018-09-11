@@ -147,8 +147,28 @@ GItemList*  GScintillatorLib::createNames()
     }
     return names ; 
 }
- 
 
+
+/**
+GScintillatorLib::constructInvertedReemissionCDF
+---------------------------------------------------
+
+This is invoked by the GScintillatorLib::createBuffer method 
+above with the results being persisted to the buffer.
+
+
+
+Why does lookup "sampling" require so many more bins to get agreeable 
+results than standard sampling ?
+
+* maybe because "agree" means it matches a prior standard sampling and in
+  the limit of many bins the techniques converge ?
+  
+* Nope, its because of the fixed width raster across entire 0:1 in 
+  lookup compared to "effectively" variable raster when doing value binary search
+  as opposed to domain jump-to-the-bin : see notes in tests/GPropertyTest.cc
+
+**/
 
 GProperty<float>* GScintillatorLib::constructInvertedReemissionCDF(GPropertyMap<float>* pmap)
 {
@@ -168,7 +188,6 @@ GProperty<float>* GScintillatorLib::constructInvertedReemissionCDF(GPropertyMap<
 
     P* srrd = rrd->createZeroTrimmed();                 // trim extraneous zero values, leaving at most one zero at either extremity
 
-
     unsigned int l_srrd = srrd->getLength() ;
     unsigned int l_rrd = rrd->getLength()  ;
 
@@ -182,18 +201,6 @@ GProperty<float>* GScintillatorLib::constructInvertedReemissionCDF(GPropertyMap<
     //assert( l_srrd == l_rrd - 2); // expect to trim 2 values
 
     P* rcdf = srrd->createCDF();
-
-    //
-    // Why does lookup "sampling" require so many more bins to get agreeable 
-    // results than standard sampling ?
-    //
-    // * maybe because "agree" means it matches a prior standard sampling and in
-    //   the limit of many bins the techniques converge ?
-    //
-    // * Nope, its because of the fixed width raster across entire 0:1 in 
-    //   lookup compared to "effectively" variable raster when doing value binary search
-    //   as opposed to domain jump-to-the-bin : see notes in tests/GPropertyTest.cc
-    //
 
     P* icdf = rcdf->createInverseCDF(m_icdf_length); 
 
@@ -210,7 +217,6 @@ GProperty<float>* GScintillatorLib::constructReemissionCDF(GPropertyMap<float>* 
     GProperty<float>* fast = getProperty(pmap, fast_component);
     assert(slow != NULL && fast != NULL );
 
-
     float mxdiff = GProperty<float>::maxdiff(slow, fast);
     //printf("mxdiff pslow-pfast *1e6 %10.4f \n", mxdiff*1e6 );
     assert(mxdiff < 1e-6 );
@@ -220,6 +226,5 @@ GProperty<float>* GScintillatorLib::constructReemissionCDF(GPropertyMap<float>* 
     delete rrd ; 
     return cdf ;
 }
-
 
 

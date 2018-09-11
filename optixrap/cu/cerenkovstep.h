@@ -20,7 +20,7 @@ struct CerenkovStep
     int code; 
     float charge ;
     float weight ;
-    float MeanVelocity ; 
+    float preVelocity ; 
 
     /// the above first 4 quads are common to both CerenkovStep and ScintillationStep 
 
@@ -32,7 +32,8 @@ struct CerenkovStep
     float maxSin2 ;
     float MeanNumberOfPhotons1 ; 
     float MeanNumberOfPhotons2 ; 
-    int   BialkaliMaterialIndex  ;
+    float postVelocity ; 
+    //int   BialkaliMaterialIndex  ;
 
     // above are loaded parameters, below are derived from them
 
@@ -65,7 +66,7 @@ __device__ void csload( CerenkovStep& cs, optix::buffer<float4>& cerenkov, unsig
     cs.code = ccwv.i.x ;
     cs.charge = ccwv.f.y ;
     cs.weight = ccwv.f.z ;
-    cs.MeanVelocity = ccwv.f.w ;
+    cs.preVelocity = ccwv.f.w ;
 
     float4 bppm = cerenkov[offset+4] ;
     cs.BetaInverse = bppm.x ; 
@@ -77,7 +78,8 @@ __device__ void csload( CerenkovStep& cs, optix::buffer<float4>& cerenkov, unsig
     cs.maxSin2 = mmmm.f.x ; 
     cs.MeanNumberOfPhotons1 = mmmm.f.y ; 
     cs.MeanNumberOfPhotons2 = mmmm.f.z ; 
-    cs.BialkaliMaterialIndex = mmmm.i.w ; 
+    cs.postVelocity = mmmm.f.w ; 
+    //cs.BialkaliMaterialIndex = mmmm.i.w ; 
 
 
     //  derived qtys
@@ -110,11 +112,12 @@ __device__ void csdump( CerenkovStep& cs )
        cs.step_length
        ); 
 
-    rtPrintf("code %d  charge %f weight %f MeanVelocity %f \n", 
+    rtPrintf("code %d  charge %f weight %f preVelocity %f postVelocity %f \n", 
        cs.code,
        cs.charge,
        cs.weight,
-       cs.MeanVelocity
+       cs.preVelocity,
+       cs.postVelocity
       );
 
     rtPrintf("BetaInverse %f  Pmin %f Pmax %f maxCos %f \n", 
@@ -226,7 +229,7 @@ generate_cerenkov_photon(Photon& p, CerenkovStep& cs, curandState &rng)
     
         u = curand_uniform(&rng) ; 
 
-        wavelength = boundary_sample_reciprocal_domain(u);   
+        wavelength = boundary_sample_reciprocal_domain_v3(u);   
 
         float4 props = boundary_lookup(wavelength, cs.MaterialIndex, 0);
 
@@ -258,9 +261,6 @@ generate_cerenkov_photon(Photon& p, CerenkovStep& cs, curandState &rng)
       float sinPhi, cosPhi;
       sincosf(phi,&sinPhi,&cosPhi);
 	
-
-
-
       // calculate x,y, and z components of photon energy
       // (in coord system with primary particle direction 
       //  aligned with the z axis)
@@ -270,8 +270,6 @@ generate_cerenkov_photon(Photon& p, CerenkovStep& cs, curandState &rng)
       float3 photonMomentum = make_float3( sinTheta*cosPhi, sinTheta*sinPhi, cosTheta ); 
       rotateUz(photonMomentum, cs.p0 );
       p.direction = photonMomentum ;
-
-
 
       // Determine polarization of new photon 
       // and rotate back to original coord system 
@@ -313,7 +311,9 @@ generate_cerenkov_photon(Photon& p, CerenkovStep& cs, curandState &rng)
 
 
 
-      p.time = cs.t0 + delta / cs.MeanVelocity ;
+      float midVelocity = cs.preVelocity + fraction*( cs.postVelocity - cs.preVelocity )*0.5f ;  
+
+      p.time = cs.t0 + delta / midVelocity ;
 
       p.position = cs.x0 + fraction * cs.DeltaPosition ; 
 
