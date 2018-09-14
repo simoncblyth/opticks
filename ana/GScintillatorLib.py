@@ -31,11 +31,13 @@ if __name__ == '__main__':
 
     fig = plt.figure()
 
-    plt.title("Inverse Cumulative Distribution Function : for Scintillator Reemission " )
+    plt.title("Inverted Cumulative Distribution Function : for Scintillator Reemission " )
 
     ax = fig.add_subplot(1,1,1)
-    ax.plot( a, b ) 
-    ax.set_xlabel("Wavelength (nm)")
+    #ax.plot( a, b ) 
+    ax.plot( b, a ) 
+    ax.set_ylabel("Wavelength (nm)")
+    ax.set_xlabel("Probability")
 
     fig.show()
 

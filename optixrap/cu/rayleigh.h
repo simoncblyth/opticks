@@ -1,5 +1,15 @@
 #pragma once
 
+/**
+
+http://www.nat.vu.nl/en/sec/atom/Publications/pdf/rayleigh.pdf
+
+ Lord Rayleigh, Philos. Mag. 47, 375 (1899).
+
+
+**/
+
+
 #include "random.h"
 #include "rotateUz.h"
 
