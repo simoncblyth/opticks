@@ -3,22 +3,80 @@
 Continuing from tboolean-12
 """
 
+import logging
+log = logging.getLogger(__name__)
 import numpy as np, math 
 import matplotlib.pyplot as plt
 from matplotlib.patches import Rectangle, Circle, Ellipse
 import matplotlib.lines as mlines
+
 
 class Shape(object):
     """
     matplotlib patches do not support deferred placement it seems, 
     so do that here 
     """
-    def __init__(self, shape, param, **kwa ):
-        assert shape in ["Ellipsoid","Tubs","Torus"]
+    KWA = dict(fill=False)
+    dtype = np.float64
+
+    PRIMITIVE = ["Ellipsoid","Tubs","Torus"]
+    COMPOSITE = ["UnionSolid", "SubtractionSolid", "IntersectionSolid"]
+
+    def __repr__(self):
+        return "%s : %s%s : %20s : %s " % (self.name, 
+                                   ("L" if self.is_left_child else "l"),
+                                   ("R" if self.is_right_child else "r"),
+                                   self.shape, repr(self.ltransform) )
+
+
+    def __init__(self, name, shape, param, **kwa ):
+        assert shape in self.PRIMITIVE + self.COMPOSITE
+        primitive = shape in self.PRIMITIVE
+        composite = shape in self.COMPOSITE
+
+        d = self.KWA.copy()
+        d.update(kwa)
+        self.kwa = d
+
+        self.name = name
         self.shape = shape      
         self.param = param
-        self.kwa = kwa
-        self.xy = np.array([0,0], dtype=np.float32)
+
+        self.parent = None
+        self.ltransform = None
+        self.left = None
+        self.right = None
+
+        if composite:  
+            left = self.param[0]
+            right = self.param[1]
+            right.ltransform = self.param[2]  
+
+            left.parent = self
+            right.parent = self
+
+            self.left = left
+            self.right = right
+        pass
+
+
+    is_composite = property(lambda self:self.left is not None and self.right is not None)
+    is_right_child = property(lambda self:self.parent is not None and self.parent.right == self)
+    is_left_child = property(lambda self:self.parent is not None and self.parent.left == self)
+
+    def _get_xy(self):
+        xy = np.array([0,0], dtype=self.dtype )
+        node = self
+        while node is not None:
+            if node.ltransform is not None:
+                print "adding ltransform ", node
+                xy += node.ltransform
+            pass
+            node = node.parent 
+        pass
+        return xy 
+
+    xy = property(_get_xy)
 
     def patches(self):
         if self.shape == "Ellipsoid":
@@ -32,7 +90,14 @@ class Shape(object):
             rhs = self.make_circle( self.xy + [+R,0], r, **self.kwa)
             return [lhs, rhs]
         else:
-            assert 0      
+            assert self.is_composite 
+            pts = []
+            pts.extend( self.left.patches() )
+            pts.extend( self.right.patches() )
+            return pts 
+        pass
+
+
 
     @classmethod
     def make_rect(cls, xy , wh, **kwa ):
@@ -51,15 +116,24 @@ class Shape(object):
 
 
 class Ellipsoid(Shape):
-    def __init__(self, param, **kwa):
-        Shape.__init__(self, self.__class__.__name__, param, **kwa )
+    def __init__(self, name, param, **kwa):
+        Shape.__init__(self, name, self.__class__.__name__, param, **kwa )
 class Tubs(Shape):
-    def __init__(self, param, **kwa):
-        Shape.__init__(self, self.__class__.__name__, param, **kwa )
+    def __init__(self, name, param, **kwa):
+        Shape.__init__(self, name, self.__class__.__name__, param, **kwa )
 class Torus(Shape):
-    def __init__(self, param, **kwa):
-        Shape.__init__(self, self.__class__.__name__, param, **kwa )
+    def __init__(self, name, param, **kwa):
+        Shape.__init__(self, name, self.__class__.__name__, param, **kwa )
 
+
+class BooleanSolid(Shape):
+    def __init__(self, name, param, **kwa):
+        Shape.__init__(self, name, self.__class__.__name__, param, **kwa )
+
+
+class UnionSolid(BooleanSolid):pass
+class SubtractionSolid(BooleanSolid):pass
+class IntersectionSolid(BooleanSolid):pass
 
 
 class X018(object):
@@ -101,99 +175,35 @@ class X018(object):
 
     """
     def __init__(self):
+        A = np.array( [0, -23.772510] )
+        B = np.array( [0, -195.227490] )
+        C = np.array( [0, -276.500000] )
+        D = np.array( [0, 92.000000] )
 
-        A = np.array( [0, -23.772510], dtype=np.float32 )
-        B = np.array( [0, -195.227490], dtype=np.float32 )
-        C = np.array( [0, -276.500000], dtype=np.float32 )
-        D = np.array( [0, 92.000000], dtype=np.float32 )
+        g = Tubs("g", [75.951247,23.782510] )
 
-        d = Ellipsoid( [249.000, 179.000 ], fill=False )
-        g = Tubs(    [75.951247,23.782510], fill=False )
-        i = Torus( [ 52.010000, 97.000000], fill=False )
-        k = Tubs( [45.010000, 57.510000], fill=False )
-        m = Tubs( [254.000000, 92.000000], fill=False )
+        i = Torus("i", [ 52.010000, 97.000000] )
+        f = SubtractionSolid("f", [g,i,A] )
 
-        i.xy += A+B 
-        g.xy += B 
-        k.xy += C 
-        m.xy += D 
+        d = Ellipsoid("d", [249.000, 179.000 ] )
+        c = UnionSolid("c", [d,f,B] )
 
+        k = Tubs("k", [45.010000, 57.510000] )
+        m = Tubs("m", [254.000000, 92.000000] )
+        b = UnionSolid("b", [c,k,C] )
+        a = IntersectionSolid("a", [b,m,D] )
+
+        self.a = a 
         self.sz = 400
-        self.prims = [d,g,i,k,m]
+    pass
 
-
-
-class X019(object):
-    """
-    G4VSolid* make_solid()
-    { 
-        G4VSolid* d = new G4Ellipsoid("PMT_20inch_inner_solid_1_Ellipsoid0x4c91130", 249.000000, 249.000000, 179.000000, -179.000000, 179.000000) ; // 3
-        G4VSolid* g = new G4Tubs("PMT_20inch_inner_solid_2_Tube0x4c91210", 0.000000, 75.951247, 23.782510, 0.000000, CLHEP::twopi) ; // 4
-        G4VSolid* i = new G4Torus("PMT_20inch_inner_solid_2_Torus0x4c91340", 0.000000, 52.010000, 97.000000, -0.000175, CLHEP::twopi) ; // 4
-        
-        G4ThreeVector A(0.000000,0.000000,-23.772510);
-        G4VSolid* f = new G4SubtractionSolid("PMT_20inch_inner_solid_part20x4cb2d80", g, i, NULL, A) ; // 3
-        
-        G4ThreeVector B(0.000000,0.000000,-195.227490);
-        G4VSolid* c = new G4UnionSolid("PMT_20inch_inner_solid_1_20x4cb30f0", d, f, NULL, B) ; // 2
-        G4VSolid* k = new G4Tubs("PMT_20inch_inner_solid_3_EndTube0x4cb2fc0", 0.000000, 45.010000, 57.510000, 0.000000, CLHEP::twopi) ; // 2
-        
-        G4ThreeVector C(0.000000,0.000000,-276.500000);
-        G4VSolid* b = new G4UnionSolid("PMT_20inch_inner_solid0x4cb32e0", c, k, NULL, C) ; // 1
-        G4VSolid* m = new G4Tubs("Inner_Separator0x4cb3530", 0.000000, 254.000000, 92.000000, 0.000000, CLHEP::twopi) ; // 1
-        
-        G4ThreeVector D(0.000000,0.000000,92.000000);
-        G4VSolid* a = new G4SubtractionSolid("PMT_20inch_inner2_solid0x4cb3870", b, m, NULL, D) ; // 0
-        return a ; 
-    } 
-
-
-
-
-                           a
-
-                      b             m(D)
-                                   
-                c          k(C)
-              bulb+neck   endtube    
- 
-            d     f(B) 
-         bulb     neck
-
-                g(B)  i(B+A)
-               tubs   torus
-
-
-    """
-    def __init__(self):
-         
-        A = np.array( [0, -23.772510], dtype=np.float32 )
-        B = np.array( [0, -195.227490], dtype=np.float32 )
-        C = np.array( [0, -276.500000], dtype=np.float32 )
-        D = np.array( [0, 92.000000], dtype=np.float32 )
-
-        d = Ellipsoid( [249.000, 179.000 ], fill=False )
-        g = Tubs(    [75.951247,23.782510], fill=False )
-        i = Torus( [ 52.010000, 97.000000], fill=False )
-        k = Tubs( [45.010000, 57.510000], fill=True )
-        m = Tubs( [254.000000, 92.000000], fill=False )
-
-        i.xy += A+B 
-        g.xy += B 
-        k.xy += C 
-        m.xy += D 
-
-        self.sz = 400
-        self.prims = [d,g,i,k,m]
 
 
 
 if __name__ == '__main__':
 
     x = X018()
-    #x = X019()
     sz = x.sz
-    prims = x.prims
 
     plt.ion()
     fig = plt.figure(figsize=(5,5))
@@ -203,9 +213,8 @@ if __name__ == '__main__':
     ax.set_ylim([-sz,sz])
     ax.set_xlim([-sz,sz])
 
-    for prim in prims:
-        for pt in prim.patches():
-            ax.add_patch(pt)
+    for pt in x.a.patches():
+        ax.add_patch(pt)
     pass
    
     fig.show()
