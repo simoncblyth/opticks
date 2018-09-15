@@ -1,14 +1,49 @@
 #!/usr/bin/env python
 """
 Continuing from tboolean-12
+
+Next:
+
+1. ad-hoc overlay hyperboloid curves
+
+2. consider ellipse tangent matching in addition to intersect : 
+   looking at shape of the hyperboloid neck when targetting 
+   closest approach point vs the torus neck : there seems to 
+   be no point in fiddling more : also probably not possible
+   as no other parameter to diddle 
+
+3. Hype following the pattern of Ellipsoid etc.. hmm not so easy no
+   nice patch ready to use : would have to approximate with a parametrically 
+   defined path : so dont bother
+
+4. Come up with G4Hype arguments and test how it looks in 3D, by changing x019.cc
+  
+::
+
+     79 
+     80   G4Hype(const G4String& pName,
+     81                G4double  newInnerRadius,
+     82                G4double  newOuterRadius,
+     83                G4double  newInnerStereo,
+     84                G4double  newOuterStereo,
+     85                G4double  newHalfLenZ);
+     86 
+
+    // arghh : G4Hype cannot be z-cut : so would have to intersect with cylinder 
+    // this makes me want to use a cone for the neck instead 
+
+
 """
 
 import logging
 log = logging.getLogger(__name__)
 import numpy as np, math 
 import matplotlib.pyplot as plt
-from matplotlib.patches import Rectangle, Circle, Ellipse
+from matplotlib.patches import Rectangle, Circle, Ellipse, PathPatch
 import matplotlib.lines as mlines
+import matplotlib.path as mpath
+
+from opticks.ana.torus_hyperboloid import Tor, Hyp
 
 
 class Shape(object):
@@ -19,17 +54,20 @@ class Shape(object):
     KWA = dict(fill=False)
     dtype = np.float64
 
-    PRIMITIVE = ["Ellipsoid","Tubs","Torus"]
+    PRIMITIVE = ["Ellipsoid","Tubs","Torus", "Cons", "Hype"]
     COMPOSITE = ["UnionSolid", "SubtractionSolid", "IntersectionSolid"]
 
     def __repr__(self):
-        return "%s : %s%s : %20s : %s " % (self.name, 
-                                   ("L" if self.is_left_child else "l"),
-                                   ("R" if self.is_right_child else "r"),
-                                   self.shape, repr(self.ltransform) )
+        return "%s : %20s : %s : %s " % (
+                      self.name, 
+                      self.shape, 
+                      repr(self.ltransform),
+                      repr(self.param)
+                     )
 
 
-    def __init__(self, name, shape, param, **kwa ):
+    def __init__(self, name, param, **kwa ):
+        shape = self.__class__.__name__
         assert shape in self.PRIMITIVE + self.COMPOSITE
         primitive = shape in self.PRIMITIVE
         composite = shape in self.COMPOSITE
@@ -61,8 +99,6 @@ class Shape(object):
 
 
     is_composite = property(lambda self:self.left is not None and self.right is not None)
-    is_right_child = property(lambda self:self.parent is not None and self.parent.right == self)
-    is_left_child = property(lambda self:self.parent is not None and self.parent.left == self)
 
     def _get_xy(self):
         xy = np.array([0,0], dtype=self.dtype )
@@ -80,15 +116,15 @@ class Shape(object):
 
     def patches(self):
         if self.shape == "Ellipsoid":
-            return [self.make_ellipse( self.xy, self.param, **self.kwa )] 
+            return self.make_ellipse( self.xy, self.param, **self.kwa )
         elif self.shape == "Tubs":
-            return [self.make_rect( self.xy, self.param, **self.kwa)]
+            return self.make_rect( self.xy, self.param, **self.kwa)
         elif self.shape == "Torus":
-            r = self.param[0]
-            R = self.param[1]
-            lhs = self.make_circle( self.xy + [-R,0], r, **self.kwa)
-            rhs = self.make_circle( self.xy + [+R,0], r, **self.kwa)
-            return [lhs, rhs]
+            return self.make_torus( self.xy, self.param, **self.kwa)
+        elif self.shape == "Cons":
+            return self.make_cons( self.xy, self.param, **self.kwa)
+        elif self.shape == "Hype":
+            return self.make_hype( self.xy, self.param, **self.kwa)
         else:
             assert self.is_composite 
             pts = []
@@ -97,8 +133,6 @@ class Shape(object):
             return pts 
         pass
 
-
-
     @classmethod
     def make_rect(cls, xy , wh, **kwa ):
         """
@@ -106,34 +140,106 @@ class Shape(object):
         :param wh: halfwidth, halfheight
         """
         ll = ( xy[0] - wh[0], xy[1] - wh[1] )
-        return Rectangle( ll,  2.*wh[0], 2.*wh[1], **kwa  ) 
+        return [Rectangle( ll,  2.*wh[0], 2.*wh[1], **kwa  )]
+
     @classmethod
     def make_ellipse(cls, xy , param, **kwa ):
-        return Ellipse( xy,  width=2.*param[0], height=2.*param[1], **kwa  ) 
+        return [Ellipse( xy,  width=2.*param[0], height=2.*param[1], **kwa  )]
+
     @classmethod
     def make_circle(cls, xy , radius, **kwa ):
-        return Circle( xy,  radius=radius, **kwa  ) 
+        return [Circle( xy,  radius=radius, **kwa  )] 
+
+    @classmethod
+    def make_torus(cls, xy, param, **kwa ):
+        r = param[0]
+        R = param[1]
+
+        pts = []
+        lhs = cls.make_circle( xy + [-R,0], r, **kwa)
+        rhs = cls.make_circle( xy + [+R,0], r, **kwa)
+        pts.extend(lhs)
+        pts.extend(rhs)
+        return pts
+
+    @classmethod
+    def make_pathpatch(cls, xy, vtxs, **kwa ):
+        """see analytic/pathpatch.py"""
+        Path = mpath.Path
+        path_data = []
+        
+        for i, vtx in enumerate(vtxs):
+            act = Path.MOVETO if i == 0 else Path.LINETO
+            path_data.append( (act, (vtx[0], vtx[1])) )
+        pass
+        path_data.append( (Path.CLOSEPOLY, (vtxs[0,0], vtxs[0,1])) )
+        pass
+
+        codes, verts = zip(*path_data)
+        path = Path(verts, codes)
+        patch = PathPatch(path, **kwa)  
+        return [patch]
+
+    @classmethod
+    def make_cons(cls, xy , param, **kwa ):
+        r1 = param[0]
+        r2 = param[1]
+        hz = param[2]
+
+        z2 =  hz + xy[1] 
+        z1 = -hz + xy[1]
+
+        vtxs = np.zeros( (4,2) )
+        vtxs[0] = ( -r1, z1) 
+        vtxs[1] = ( -r2,  z2)
+        vtxs[2] = (  r2,  z2)
+        vtxs[3] = (  r1,  z1)
+        return cls.make_pathpatch( xy, vtxs, **kwa )
 
 
-class Ellipsoid(Shape):
-    def __init__(self, name, param, **kwa):
-        Shape.__init__(self, name, self.__class__.__name__, param, **kwa )
-class Tubs(Shape):
-    def __init__(self, name, param, **kwa):
-        Shape.__init__(self, name, self.__class__.__name__, param, **kwa )
-class Torus(Shape):
-    def __init__(self, name, param, **kwa):
-        Shape.__init__(self, name, self.__class__.__name__, param, **kwa )
+    @classmethod
+    def make_hype(cls, xy , param, **kwa ):
+        """
+             4----------- 5
+              3          6
+               2        7 
+              1          8
+             0 ---------- 9
+
+           sqrt(x^2+y^2) =   r0 * np.sqrt(  (z/zf)^2  +  1 )
+
+        """
+        r0 = param[0]
+        stereo = param[1]
+        hz = param[2]
+        zf = r0/np.tan(stereo)
+
+        r_ = lambda z:r0*np.sqrt( np.square(z/zf) + 1. )
+
+        nz = 20 
+        zlhs = np.linspace( -hz, hz, nz )
+        zrhs = np.linspace(  hz, -hz, nz )
+
+        vtxs = np.zeros( (nz*2,2) )
+
+        vtxs[:nz,0] = -r_(zlhs) + xy[0]
+        vtxs[:nz,1] = zlhs + xy[1]
+
+        vtxs[nz:,0] = r_(zrhs) + xy[0]
+        vtxs[nz:,1] = zrhs + xy[1]
+
+        return cls.make_pathpatch( xy, vtxs, **kwa )
 
 
-class BooleanSolid(Shape):
-    def __init__(self, name, param, **kwa):
-        Shape.__init__(self, name, self.__class__.__name__, param, **kwa )
+class Ellipsoid(Shape):pass
+class Tubs(Shape):pass
+class Torus(Shape):pass
+class Cons(Shape):pass
+class Hype(Shape):pass
+class UnionSolid(Shape):pass
+class SubtractionSolid(Shape):pass
+class IntersectionSolid(Shape):pass
 
-
-class UnionSolid(BooleanSolid):pass
-class SubtractionSolid(BooleanSolid):pass
-class IntersectionSolid(BooleanSolid):pass
 
 
 class X018(object):
@@ -174,48 +280,220 @@ class X018(object):
                 g(B)  i(B+A)
 
     """
-    def __init__(self):
+    def __init__(self, mode=0):
         A = np.array( [0, -23.772510] )
-        B = np.array( [0, -195.227490] )
         C = np.array( [0, -276.500000] )
         D = np.array( [0, 92.000000] )
 
-        g = Tubs("g", [75.951247,23.782510] )
+        B0 = np.array( [0, -195.227490] )
+        z0 = B0[1] + A[1]    ## offset of torus (ellipsoid frame)
 
-        i = Torus("i", [ 52.010000, 97.000000] )
-        f = SubtractionSolid("f", [g,i,A] )
+        self.z0 = z0
+
+        i = Torus("i", [ 52.010000, 97.000000] )   
+        # 97-51.01 = 44.99 ( slightly inside the tube radius 45.01 ? accident or CSG planning ?)
+        r = i.param[0] 
+        R = i.param[1]
+
+        self.r = r
+        self.R = R
 
         d = Ellipsoid("d", [249.000, 179.000 ] )
-        c = UnionSolid("c", [d,f,B] )
+        ex = d.param[0]
+        ez = d.param[1]
+
+        self.ex = ex
+        self.ez = ez
 
         k = Tubs("k", [45.010000, 57.510000] )
+        bx = k.param[0]
+        self.bx = bx
+
+
+        p = ellipse_closest_approach_to_point( ex, ez, [R,z0] ) # center of torus RHS circle 
+        pr = p[0]
+        pz = p[1]    # z of ellipse to torus-circle closest approach point (ellipsoid frame) 
+
+        self.p = p 
+
+
+        if mode == 0:
+            g = Tubs("g", [75.951247,23.782510] )
+            f = SubtractionSolid("f", [g,i,A] )
+            B = B0
+        elif mode == 1:
+            r2 = 83.9935              # at torus/ellipse closest approach point 
+            r1 = R - r               
+
+            mz = (z0 + pz)/2.         # mid-z cone coordinate (ellipsoid frame) 
+            hz = (pz - z0)/2.         # cons half height  
+
+            f = Cons("f", [r1,r2,hz ] )
+            B = np.array( [0, mz] )
+
+        elif mode == 2:
+
+            r0 = R - r
+            rw,zw = pr,pz-z0   # target the closest approach point  
+
+            zf = Hyp.ZF( r0, zw, rw )
+            hyp = Hyp( r0, zf )
+         
+            stereo = hyp.stereo
+            hhh = pz - z0    # hype-half-height 
+
+            f = Hype("f", [r0,stereo,hhh] ) 
+            B = np.array( [0, z0] )
+
+        else:
+            assert 0 
+        pass
+
+        c = UnionSolid("c", [d,f,B] )
+
         m = Tubs("m", [254.000000, 92.000000] )
         b = UnionSolid("b", [c,k,C] )
         a = IntersectionSolid("a", [b,m,D] )
 
-        self.a = a 
+        self.root = a 
         self.sz = 400
+
+        self.ellipse = d
+        self.torus = i
+        #self.cyneck = g
+        self.f = f 
     pass
 
 
+def ellipse_closest_approach_to_point( ex, ez, _c ):
+    """ 
+    Ellipse natural frame
+
+    :param ex: semi-major axis 
+    :param ez: semi-major axis 
+    :param c: xz coordinates of point 
+    """
+
+    # parametric ellipse
+    t = np.linspace( 0, 2*np.pi, 1000000 )
+    e = np.zeros( [len(t), 2] )
+    e[:,0] = ex*np.cos(t) 
+    e[:,1] = ez*np.sin(t) 
+
+    c = np.asarray( _c )   # center of RHS torus circle
+
+    # point on ellipse of closest approach to center of torus circle
+    p = e[np.sum(np.square(e-c), 1).argmin()]   
+
+    return p 
 
 
 if __name__ == '__main__':
 
-    x = X018()
+    #x = X018(mode=0)  # crazy cylinder-torus neck
+    #x = X018(mode=1)  # cone neck 
+    x = X018(mode=2)  # hype neck 
+
+    print "x.f ", x.f
+
+
     sz = x.sz
 
+    r = x.r
+    R = x.R
+    z0 = x.z0   # natural torus frame offset in ellipse frame
+
+    #ch = x.cyneck.param[1]*2   # full-height of cylinder neck 
+    #cr = x.cyneck.param[0]     # half-width of cylinder neck, ie the radius 
+
+    ex = x.ex
+    ez = x.ez
+
+    p = x.p  # closest approach of RHS torus circle center to a point on the ellipse  
+
+
+    tor = Tor(R,r)
+    assert tor.rz(0) == R - r 
+    assert tor.rz(r) == R  
+    assert np.all(tor.rz([0,r]) == np.asarray( [R-r, R] ) )
+
+
+    tz0 = 0 
+    tz1 = r      # how far in z to draw the torus and hype parametric lines
+    #tz1 = ch 
+
+    tz = np.linspace( tz0, tz1, 100)
+    tr = tor.rz(tz)
+
+
+    r0 = R - r     # Hyperboloid waist radius at z=0 (natural frame)
+    # defining parameter of Hyperboloid by targetting an rz-point (natural frame)
+    
+    #rw,zw = R, r   # target the top of the torus : gives wider neck than  cy-tor 
+    rw,zw = p[0],p[1]-z0   # target the closest approach point  
+    halfZlen = p[1]-z0
+
+    """
+    hmm the intersection point of the torus "circle" and the ellipse would
+    be a good point to target : as aiming to elimnate the cyclinder neck anyhow
+
+    equation of RHS torus circle, in ellipse frame
+
+        (x - R)^2 + (z - z0)^2 - r^2 = 0  
+
+    equation of ellipse
+
+        (x/ex)^2 + (z/ez)^2 - 1 = 0 
+
+    """
+
+    zf = Hyp.ZF( r0, zw, rw )
+    hyp = Hyp( r0, zf )
+    print hyp
+    print "hyp halfZLen ", halfZlen 
+
+    hr = hyp.rz(tz)
+
+    tz += z0    
+
+
     plt.ion()
-    fig = plt.figure(figsize=(5,5))
+    fig = plt.figure(figsize=(6,5.5))
     plt.title("x018_torus_hyperboloid_plt")
 
     ax = fig.add_subplot(111)
-    ax.set_ylim([-sz,sz])
-    ax.set_xlim([-sz,sz])
+    ax.set_ylim([-350,200])
+    ax.set_xlim([-300,300])
 
-    for pt in x.a.patches():
+    for pt in x.root.patches():
+        print "pt ", pt
         ax.add_patch(pt)
     pass
+
+    #rhs = Circle( [R,z0], radius=r )
+    #ax.add_patch(rhs)
+    #ell = Ellipse( [0,0], 2*ex, 2*ez ) 
+    #ax.add_patch(ell)
+
+    #ax.scatter( e[:,0], e[:,1], s=1 ) 
+
+    ax.scatter( p[0], p[1] , marker="*")
+    ax.scatter( -p[0], p[1] , marker="*" )
+
+    ax.plot( [R, p[0]], [z0, p[1]] )
+    ax.plot( [-R, -p[0]], [z0, p[1]] )
+
+    ax.plot( [R-r, p[0]], [z0, p[1]] )
+    ax.plot( [-R+r, -p[0]], [z0, p[1]] )
+
+    ax.plot(  tr, tz )
+    ax.plot( -tr, tz )
+
+    ax.plot(  hr, tz , linestyle="dashed")
+    ax.plot( -hr, tz , linestyle="dashed")
+
+
+
    
     fig.show()
 

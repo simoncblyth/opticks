@@ -1091,6 +1091,11 @@ nnode* X4Solid::convertHype_(bool only_inner)
                tanphi/r0 = 1/zf
 
                zf = r0/tanphi
+
+               tanphi = r0/zf
+
+                  phi = arctan(r0/zf)
+
     */
 
     float zf = radius/std::tan(stereo*CLHEP::pi/180.) ;

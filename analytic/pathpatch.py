@@ -12,6 +12,9 @@ plt.ion()
 fig, ax = plt.subplots()
 
 Path = mpath.Path
+
+"""
+
 path_data = [
     (Path.MOVETO, (1.58, -2.57)),
     (Path.CURVE4, (0.35, -1.1)),
@@ -23,15 +26,41 @@ path_data = [
     (Path.CURVE4, (2.0, -0.5)),
     (Path.CLOSEPOLY, (1.58, -2.57)),
     ]
+
+"""
+
+"""
+
+       
+
+       +---|---+
+             r1
+"""
+
+r1 = 10
+r2 = 20
+hz = 5 
+
+z2 =  hz 
+z1 = -hz
+
+path_data = [
+   (Path.MOVETO,  ( -r1, z1)),
+   (Path.LINETO,  ( -r2,  z2)),
+   (Path.LINETO,  (  r2,  z2)),
+   (Path.LINETO,  (  r1,  z1)),
+   (Path.CLOSEPOLY, (-r1, z1)),
+]
+
 codes, verts = zip(*path_data)
 path = mpath.Path(verts, codes)
-patch = mpatches.PathPatch(path, facecolor='r', alpha=0.5)
+patch = mpatches.PathPatch(path, fill=False)  # facecolor='r', alpha=0.5)
 ax.add_patch(patch)
 
 # plot control points and connecting lines
-x, y = zip(*path.vertices)
-line, = ax.plot(x, y, 'go-')
+#x, y = zip(*path.vertices)
+#line, = ax.plot(x, y, 'go-')
 
-ax.grid()
+#ax.grid()
 ax.axis('equal')
 plt.show()

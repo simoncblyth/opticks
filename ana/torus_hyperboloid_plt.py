@@ -11,49 +11,9 @@ import matplotlib.pyplot as plt
 from matplotlib.patches import Rectangle, Circle, Ellipse
 import matplotlib.lines as mlines
 
+from opticks.ana.torus_hyperboloid import Tor, Hyp
 
-class Tor(object):
-    def __init__(self, R, r):
-        self.R = R
-        self.r = r
 
-    def __repr__(self):
-        return "Tor r:%s R:%s " % (self.r, self.R )
-
-    def rz(self, z):
-        R = self.R
-        r = self.r
-        return R - math.sqrt(r*r-z*z)  
-   
-class Hyp(object):
-    def __init__(self, r0, zf, z1, z2):
-        self.r0 = r0
-        self.zf = zf
-        self.z1 = z1
-        self.z2 = z2
-
-    @classmethod
-    def ZF(cls, r0, zw, w ):
-        """ 
-        :param r0: waist radius, ie radius at z=0  
-        :param zw: z at which to pin the radius
-        :param w: 
-
-        hyperboloid zf param to hit radius w, at z=zw 
-        """  
-        rr0 = r0*r0
-        ww = w*w 
-        return zw*math.sqrt(rr0/(ww-rr0)) 
-
-    def __repr__(self):
-        return "Hyp r0:%s zf:%s z1:%s z2:%s " % (self.r0, self.zf, self.z1, self.z2 ) 
-
-    def rz(self, z):
-        r0 = self.r0
-        zf = self.zf
-        zs = z/zf 
-        return r0*np.sqrt( zs*zs + 1 )  
- 
 def make_rect( cxy , wh, **kwa ):
     """
     :param cxy: center of rectangle
@@ -66,11 +26,9 @@ def make_rect( cxy , wh, **kwa ):
 if __name__ == '__main__':
 
 
-
-    R,r,ch,cz,cn = 97.000,52.010,23.783,-23.773,-195.227
-
+    R,r = 97.000,52.010
+    ch,cz,cn = 23.783,-23.773,-195.227
     cyr = 75.951
-
 
     r0 = R - r 
     rr0 = r0*r0
@@ -85,18 +43,18 @@ if __name__ == '__main__':
     rtop, rbot = tor.rz(ztop), tor.rz(zbot)
 
     zf = Hyp.ZF( rbot, ztop, rtop )
-    hyp = Hyp( rbot, zf, zbot, ztop )
+    hyp = Hyp( rbot, zf )
 
 
-    sz = R+1.5*r
-    sz = 500 
+    #sz = R+1.5*r
+    sz = 400 
 
 
     exy,ez = 1.391,1.000
     era = 179.00
 
 
-    bulb = Ellipse( xy=(0,0), width=exy*era, height=ez*era, fill=False )  
+    bulb = Ellipse( xy=(0,0), width=2*exy*era, height=2*ez*era, fill=False )  
 
 
     rhs = Circle( (R,cz),  radius=r, fill=False) 
@@ -116,7 +74,7 @@ if __name__ == '__main__':
 
     plt.ion()
     fig = plt.figure(figsize=(5,5))
-    plt.title("to_boundary")
+    plt.title("torus_hyperboloid_plt")
 
     ax = fig.add_subplot(111)
     ax.set_ylim([-sz,sz])
@@ -132,18 +90,13 @@ if __name__ == '__main__':
     z = np.linspace( -sz, sz, 100 )
 
     dz = cz
-
     rz = hyp.rz(z) 
 
     ax.plot( rz, z + dz, c="b") 
-
     ax.plot( -rz, z + dz, c="b") 
 
     
     fig.show()
-
-
-
 
 
 
