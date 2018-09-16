@@ -27,6 +27,7 @@ set(TEST_SOURCES
     G4UniformRandTest.cc
     G4PhysicalConstantsTest.cc
     EngineTest.cc
+    EngineMinimalTest.cc
 
     G4BoxTest.cc
     G4ThreeVectorTest.cc

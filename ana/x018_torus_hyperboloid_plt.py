@@ -367,32 +367,44 @@ class X018(object):
 
 def ellipse_closest_approach_to_point( ex, ez, _c ):
     """ 
-    Ellipse natural frame
+    Ellipse natural frame, semi axes ex, ez.  _c coordinates of point
 
     :param ex: semi-major axis 
     :param ez: semi-major axis 
     :param c: xz coordinates of point 
-    """
 
-    # parametric ellipse
+    :return p: point on ellipse of closest approach to center of torus circle
+
+    Closest approach on the bulb ellipse to the center of torus "circle" 
+    is a good point to target for hype/cone/whatever neck, 
+    as are aiming to eliminate the cylinder neck anyhow
+
+    equation of RHS torus circle, in ellipse frame
+
+        (x - R)^2 + (z - z0)^2 - r^2 = 0  
+
+    equation of ellipse
+
+        (x/ex)^2 + (z/ez)^2 - 1 = 0 
+
+    """
+    c = np.asarray( _c )   # center of RHS torus circle
+    assert c.shape == (2,)
+
     t = np.linspace( 0, 2*np.pi, 1000000 )
     e = np.zeros( [len(t), 2] )
     e[:,0] = ex*np.cos(t) 
-    e[:,1] = ez*np.sin(t) 
+    e[:,1] = ez*np.sin(t)   # 1M parametric points on the ellipse 
 
-    c = np.asarray( _c )   # center of RHS torus circle
-
-    # point on ellipse of closest approach to center of torus circle
-    p = e[np.sum(np.square(e-c), 1).argmin()]   
-
+    p = e[np.sum(np.square(e-c), 1).argmin()]   # point on ellipse closest to c 
     return p 
 
 
 if __name__ == '__main__':
 
-    #x = X018(mode=0)  # crazy cylinder-torus neck
+    x = X018(mode=0)  # crazy cylinder-torus neck
     #x = X018(mode=1)  # cone neck 
-    x = X018(mode=2)  # hype neck 
+    #x = X018(mode=2)  # hype neck 
 
     print "x.f ", x.f
 
@@ -433,20 +445,6 @@ if __name__ == '__main__':
     rw,zw = p[0],p[1]-z0   # target the closest approach point  
     halfZlen = p[1]-z0
 
-    """
-    hmm the intersection point of the torus "circle" and the ellipse would
-    be a good point to target : as aiming to elimnate the cyclinder neck anyhow
-
-    equation of RHS torus circle, in ellipse frame
-
-        (x - R)^2 + (z - z0)^2 - r^2 = 0  
-
-    equation of ellipse
-
-        (x/ex)^2 + (z/ez)^2 - 1 = 0 
-
-    """
-
     zf = Hyp.ZF( r0, zw, rw )
     hyp = Hyp( r0, zf )
     print hyp
@@ -462,8 +460,18 @@ if __name__ == '__main__':
     plt.title("x018_torus_hyperboloid_plt")
 
     ax = fig.add_subplot(111)
-    ax.set_ylim([-350,200])
-    ax.set_xlim([-300,300])
+
+    #zoom = False
+    zoom = True
+
+    if zoom:
+        zmp = np.array( [R, z0, 1.5*r, 1.5*r] )
+        ax.set_xlim([zmp[0]-zmp[2],zmp[0]+zmp[2]])
+        ax.set_ylim([zmp[1]-zmp[3],zmp[1]+zmp[3]])
+    else:
+        ax.set_ylim([-350,200])
+        ax.set_xlim([-300,300])
+    pass
 
     for pt in x.root.patches():
         print "pt ", pt

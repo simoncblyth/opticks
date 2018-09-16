@@ -1,14 +1,19 @@
-// TEST=EngineTest om-t
 
 #include "OPTICKS_LOG.hh"
 #include "Randomize.hh"
+
+
+struct MyEngine : public CLHEP::MixMaxRng 
+{
+    double flat(){ return .42 ; }
+};
+
 
 int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv);
 
-    //CLHEP::HepRandom::setTheEngine(new CLHEP::MTwistEngine()); 
-    CLHEP::HepRandom::setTheEngine(new CLHEP::RanluxEngine()); 
+    CLHEP::HepRandom::setTheEngine(new MyEngine()); 
 
     LOG(info) 
         << " using " << CLHEP::HepRandom::getTheEngine()->name()
