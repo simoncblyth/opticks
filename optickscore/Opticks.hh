@@ -113,6 +113,7 @@ class OKCORE_API Opticks {
    public:
        static Opticks* GetInstance();
        static bool     HasInstance();
+       static bool     HasKey();
    public:
        Opticks(int argc=0, char** argv=NULL, const char* argforced=NULL );
    private:

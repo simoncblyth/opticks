@@ -68,6 +68,8 @@ class CFG4_API CAlignEngine : public CLHEP::HepRandomEngine
         const char*              m_sslogpath ; 
         bool                     m_backtrace ; 
         std::ostream*            m_out ; 
+        int                      m_count ; 
+        int                      m_modulo ; 
     private:
         bool isTheEngine() const ; 
         void enable() const ; 

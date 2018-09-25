@@ -549,6 +549,24 @@ CG4Test + OKG4Test : shortnorm issue
 CGenstepSourceTest : domain mismatch
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* probably are getting the wrong material
+
+::
+
+    CGenstepSourceTest -n
+    CGenstepSourceTest -c
+          # suspect plucking wrong material : causing domain mismatch ?
+
+    CGenstepSourceTest -s  
+          # expected assert as SCINTILLATION not implemented
+
+
+* could be old genstep issue ? these gensteps have worked for a long time cannot ascribe to this
+* but could be the old checknut of genstep lookup/translation : ie perhaps the new approach has skipped 
+  some needed translation 
+
+
+
 ::
 
     2018-09-25 17:34:59.128 INFO  [7904431] [CMaterialLib::convert@153] CMaterialLib::convert : converted 38 ggeo materials to G4 materials 
@@ -570,6 +588,61 @@ CGenstepSourceTest : domain mismatch
     Target 0: (CGenstepSourceTest) stopped.
     (lldb) 
 
+
+::
+
+    In [1]: a = np.load("/usr/local/opticks/opticksdata/gensteps/dayabay/cerenkov/./1.npy")
+
+    In [3]: a.shape
+    Out[3]: (7836, 6, 4)
+
+    In [4]: a[:,0]
+    Out[4]: 
+    array([[nan,  0.,  0.,  0.],
+           [nan,  0.,  0.,  0.],
+           [nan,  0.,  0.,  0.],
+           ...,
+           [nan,  0.,  0.,  0.],
+           [nan,  0.,  0.,  0.],
+           [nan,  0.,  0.,  0.]], dtype=float32)
+
+    In [5]: a[:,0].view(np.int32)
+    Out[5]: 
+    array([[   -1,     1,    12,    80],
+           [   -2,     1,    12,   108],
+           [   -3,     1,    12,    77],
+           ...,
+           [-7834,     1,     8,    91],
+           [-7835,     1,     8,    83],
+           [-7836,     1,     8,    48]], dtype=int32)
+
+    In [8]: np.unique( a[:,0,1].view(np.int32) )
+    Out[8]: 
+    array([   1,    7,    8,   10,   13,   14,  127,  141,  142,  169,  177,  183,  185,  189,  194,  196,  198,  201,  204,  221,  225,  226,  229,  230,  231,  233,  234,  236,  238,  240,  242,  246,
+            247,  249,  254,  260,  261,  267,  268,  272,  285,  288,  301,  302,  303,  327,  329,  331,  332,  343,  344,  386,  388,  391,  393,  394,  402,  406,  415,  417,  418,  424,  425,  427,
+            431,  432,  438,  440,  441,  443,  444,  445,  446,  453,  454,  455,  456,  459,  461,  462,  465,  466,  471,  475,  479,  482,  483,  490,  493,  495,  499,  505,  507,  513,  515,  518,
+            520,  522,  526,  527,  529,  530,  533,  534,  535,  539,  542,  545,  546,  547,  549,  551,  554,  561,  563,  567,  568,  572,  575,  580,  584,  586,  589,  592,  593,  595,  598,  599,
+            602,  605,  610,  611,  615,  616,  619,  623,  625,  626,  632,  633,  634,  636,  638,  644,  652,  660,  665,  667,  670,  671,  674,  677,  683,  690,  691,  693,  697,  700,  702,  703,
+            708,  713,  715,  716,  720,  722,  727,  730,  737,  740,  744,  748,  753,  758,  763,  765,  766,  767,  768,  771,  776,  777,  780,  781,  784,  785,  791,  793,  802,  812,  814,  817,
+            819,  822,  825,  830,  834,  837,  838,  840,  842,  857,  873,  877,  888,  891,  892,  893,  895,  896,  900,  901,  903,  904,  949,  955,  960,  963,  973,  983,  987,  994,  996, 1008,
+           1010, 1013, 1014, 1015, 1016, 1018, 1031, 1034, 1036, 1049, 1051, 1054, 1056, 1062, 1069, 1070, 1073, 1087, 1088, 1095, 1107, 1114, 1117, 1120, 1125, 1131, 1139, 1142, 1147, 1148, 1153, 1158,
+           1160, 1206, 1210, 1213, 1224, 1243, 1244, 1245, 1247, 1259, 1261, 1262, 1263, 1264, 1272, 1279, 1287, 1292, 1293, 1296, 1298, 1300, 1303, 1304, 1307, 1309, 1314, 1332, 1336, 1339, 1344, 1348,
+           1352, 1354, 1366], dtype=int32)
+
+    In [9]: np.unique( a[:,0,2].view(np.int32) )
+    Out[9]: array([ 1,  8, 10, 12, 13, 14, 19], dtype=int32)
+
+
+
+::
+
+     07 struct CerenkovStep
+      8 {
+      9     int Id    ;
+     10     int ParentId ;
+     11     int MaterialIndex  ;
+     12     int NumPhotons ;
+     13 
 
 
 

@@ -143,11 +143,11 @@ void CMaterialLib::convert()
         //LOG(info) << "converted ggeo material to G4 material " << name << " with keys " << keys ;  
         LOG(info) 
             << " g4mat " << (void*)g4mat
-            << " name " << name 
-            << " Pmin " << Pmin
-            << " Pmax " << Pmax
-            << " Wmin " << Wmin/nm
-            << " Wmax " << Wmax/nm
+            << " name " << std::setw(30) << name 
+            << " Pmin " << std::setw(10) << Pmin
+            << " Pmax " << std::setw(10) << Pmax
+            << " Wmin " << std::setw(10) << Wmin/nm
+            << " Wmax " << std::setw(10) << Wmax/nm
             ;  
     }
     LOG(info) << "CMaterialLib::convert : converted " << ngg << " ggeo materials to G4 materials " ; 

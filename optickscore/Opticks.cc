@@ -205,6 +205,13 @@ bool Opticks::HasInstance()
 {
     return fInstance != NULL ; 
 }
+
+bool Opticks::HasKey()
+{
+    assert( fInstance ) ; 
+    return fInstance->hasKey() ; 
+}
+
 Opticks* Opticks::GetInstance()
 {
      if(fInstance == NULL )
@@ -1915,6 +1922,8 @@ const char* Opticks::getLegacyGenstepPath() const
 
     return strdup(path.c_str()) ; 
 }
+
+
 
 bool Opticks::hasKey() const { return m_resource->hasKey() ; }
 

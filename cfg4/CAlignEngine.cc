@@ -64,7 +64,9 @@ CAlignEngine::CAlignEngine(const char* ssdir, const char* reldir)
     m_default(CLHEP::HepRandom::getTheEngine()),
     m_sslogpath(InitSimLog(ssdir, reldir)),
     m_backtrace(true),
-    m_out(NULL)
+    m_out(NULL),
+    m_count(0),
+    m_modulo(1000)
 {
     assert( m_default ); 
     LOG(info) << desc(); 
@@ -201,10 +203,12 @@ double CAlignEngine::flat()
     {
         bool first = cursor == 0 && m_seq_index == 0 ;
 
-        if(first) SBacktrace::Dump(*m_out);  
+        //if(first) SBacktrace::Dump(*m_out);  
 
         const char* caller = SBacktrace::CallSite( "::flat" ) ;
 
+
+        if( m_modulo == 0 || m_count % m_modulo == 0 ) 
         (*m_out) 
             << "(" 
             << std::setw(6) << m_seq_index 
@@ -217,6 +221,8 @@ double CAlignEngine::flat()
             << std::endl 
             ;   
     }
+
+    m_count++ ; 
 
     return u ; 
 }

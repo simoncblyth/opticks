@@ -51,7 +51,7 @@ CPropLib::CPropLib(OpticksHub* hub, int verbosity)
   m_sclib(m_hub->getScintillatorLib()),
   m_domain(m_mlib->getDefaultDomain()),
   m_dscale(1),
-  m_level(info)
+  m_level(verbose)
 {
     init();
 }
@@ -220,7 +220,7 @@ G4MaterialPropertiesTable* CPropLib::makeMaterialPropertiesTable(const GMaterial
     bool is_sensor_material = strcmp(name, SENSOR_MATERIAL) == 0 ;
     bool is_scintillator = _ggmat->hasNonZeroProperty("reemission_prob") ;
 
-    LOG(info) 
+    LOG(debug) 
          << " name " << name
          << " " << ( is_sensor_material ? "is_sensor_material" : "" ) 
          << " " << ( is_scintillator ? "is_scintillator" : "" ) 

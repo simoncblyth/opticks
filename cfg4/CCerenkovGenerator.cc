@@ -3,6 +3,7 @@
 #include <vector>
 
 #include "NGLM.hpp"
+#include "Opticks.hh"
 #include "OpticksPhoton.h"
 #include "OpticksFlags.hh"
 #include "OpticksGenstep.hh"
@@ -71,6 +72,7 @@ G4MaterialPropertyVector* CCerenkovGenerator::GetRINDEX(unsigned materialIndex) 
 
     LOG(error) 
          << " aMaterial " << (void*)aMaterial
+         << " aMaterial.Name " << aMaterial->GetName()
          << " materialIndex " << materialIndex
          << " num_material " << num_material
          << " Rindex " << Rindex 
@@ -204,29 +206,36 @@ G4VParticleChange* CCerenkovGenerator::GeneratePhotonsFromGenstep( const Opticks
     bool Pmin_match = std::abs( Pmin2 - Pmin ) < epsilon ; 
     bool Pmax_match = std::abs( Pmax2 - Pmax ) < epsilon ; 
    
-    if(!Pmin_match)
+    if(!Pmin_match || !Pmax_match)
         LOG(fatal) 
             << " Pmin " << Pmin
-            << " Pmin2 " << Pmin2
+            << " Pmin2 (MinLowEdgeEnergy) " << Pmin2
             << " dif " << std::abs( Pmin2 - Pmin )
             << " epsilon " << epsilon
             << " Pmin(nm) " << h_Planck*c_light/Pmin/nm
             << " Pmin2(nm) " << h_Planck*c_light/Pmin2/nm
             ;
 
-    if(!Pmax_match)
+    if(!Pmax_match || !Pmin_match)
         LOG(fatal) 
             << " Pmax " << Pmax
-            << " Pmax2 " << Pmax2
+            << " Pmax2 (MaxLowEdgeEnergy) " << Pmax2
             << " dif " << std::abs( Pmax2 - Pmax )
             << " epsilon " << epsilon
             << " Pmax(nm) " << h_Planck*c_light/Pmax/nm
             << " Pmax2(nm) " << h_Planck*c_light/Pmax2/nm
             ;
 
-    assert( Pmin_match && "material mismatches genstep source material" ); 
-    assert( Pmax_match && "material mismatches genstep source material" ); 
-
+    bool with_key = Opticks::HasKey() ; 
+    if(with_key)
+    {
+        assert( Pmin_match && "material mismatches genstep source material" ); 
+        assert( Pmax_match && "material mismatches genstep source material" ); 
+    }
+    else
+    {
+        LOG(warning) << "permissive generation for legacy gensteps " ;
+    }
 
     G4int verboseLevel = 1 ;   
     using CLHEP::twopi ; 
@@ -286,7 +295,7 @@ G4VParticleChange* CCerenkovGenerator::GeneratePhotonsFromGenstep( const Opticks
 #ifdef ALIGN_DEBUG
          G4double sampledWavelength = h_Planck*c_light/sampledEnergy ;
 
-         if( i == pindex ) LOG(error)
+         if( i == pindex ) LOG(verbose)
                           << " gcp.u0 " << rand
                           << " sampledEnergy " << sampledEnergy
                           << " sampledWavelength " << sampledWavelength/nm
@@ -299,7 +308,7 @@ G4VParticleChange* CCerenkovGenerator::GeneratePhotonsFromGenstep( const Opticks
          rand = G4UniformRand();	
 
 #ifdef ALIGN_DEBUG
-         if( i == pindex ) LOG(error) << "gcp.u1 " << rand ;   
+         if( i == pindex ) LOG(verbose) << "gcp.u1 " << rand ;   
 #endif    
 
         // Loop checking, 07-Aug-2015, Vladimir Ivanchenko
