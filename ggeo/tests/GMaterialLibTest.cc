@@ -96,7 +96,7 @@ void test_interpolatingCopyCtor(GMaterialLib* mlib)
 
 void test_getLocalKey(GMaterialLib* mlib)
 {
-    const char* keys_ = "refractive_index absorption_length scattering_length reemission_prob non_existing_key" ; 
+    const char* keys_ = "refractive_index absorption_length scattering_length reemission_prob detect non_existing_key absorb" ; 
     std::vector<std::string> keys ; 
     BStr::split(keys, keys_, ' '); 
 

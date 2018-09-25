@@ -202,18 +202,34 @@ G4LogicalBorderSurface* CPropLib::makeCathodeSurface(const char* name, G4VPhysic
 }
 
 
+/**
+CPropLib::makeMaterialPropertiesTable
+---------------------------------------
+
+
+
+
+**/
+
 
 G4MaterialPropertiesTable* CPropLib::makeMaterialPropertiesTable(const GMaterial* ggmat)
 {
     const char* name = ggmat->getShortName();
-    GMaterial* _ggmat = const_cast<GMaterial*>(ggmat) ; // wont change it, i promise 
+    GMaterial* _ggmat = const_cast<GMaterial*>(ggmat) ; // not changed 
 
-    LOG(verbose) << " name " << name ; 
+    bool is_sensor_material = strcmp(name, SENSOR_MATERIAL) == 0 ;
+    bool is_scintillator = _ggmat->hasNonZeroProperty("reemission_prob") ;
 
+    LOG(info) 
+         << " name " << name
+         << " " << ( is_sensor_material ? "is_sensor_material" : "" ) 
+         << " " << ( is_scintillator ? "is_scintillator" : "" ) 
+          ; 
+        
     G4MaterialPropertiesTable* mpt = new G4MaterialPropertiesTable();
     addProperties(mpt, _ggmat, "RINDEX,ABSLENGTH,RAYLEIGH,REEMISSIONPROB,GROUPVEL");
 
-    if(strcmp(name, SENSOR_MATERIAL)==0)
+    if(is_sensor_material)
     {
         GPropertyMap<float>* surf = m_sensor_surface ; 
 
@@ -233,9 +249,16 @@ G4MaterialPropertiesTable* CPropLib::makeMaterialPropertiesTable(const GMaterial
 
         LOG(error) 
              << " name " << name 
-             << " adding EFFICIENCY " << surf->brief() ;  
+             << " adding EFFICIENCY : START " << surf->brief() ;  
 
-        addProperties(mpt, surf, "EFFICIENCY");
+        //surf->dump("transfer detect to EFFICIENCY");
+
+
+        GProperty<float>* detect = surf->getProperty("detect"); 
+        assert( detect ); 
+
+        //addProperties(mpt, surf, "EFFICIENCY");
+        addProperty( mpt, name, "EFFICIENCY", detect );   // name arg is for debug only 
 
         //CMPT::Dump(mpt);
 
@@ -244,7 +267,8 @@ G4MaterialPropertiesTable* CPropLib::makeMaterialPropertiesTable(const GMaterial
         // REFLECTIVITY ?
     }
 
-    if(_ggmat->hasNonZeroProperty("reemission_prob"))
+
+    if(is_scintillator)
     {
         GPropertyMap<float>* scintillator = m_sclib->getRaw(name);
         assert(scintillator && "non-zero reemission prob materials should has an associated raw scintillator");
@@ -263,13 +287,23 @@ G4MaterialPropertiesTable* CPropLib::makeMaterialPropertiesTable(const GMaterial
 }
 
 
+/**
+CPropLib::addProperties
+-------------------------
+
+Add properties from GPropertyMap.pmap to the G4MaterialPropertiesTable.mpt 
+identified by the _keys comma delimited list of local keys (eg EFFICIENCY)
+
+
+**/
+
 void CPropLib::addProperties(G4MaterialPropertiesTable* mpt, GPropertyMap<float>* pmap, const char* _keys, bool keylocal, bool constant)
 {
+   
     std::vector<std::string> keys ; 
     boost::split(keys, _keys, boost::is_any_of(","));   
-
-
     bool all = keys.size() == 1 && keys[0].compare("ALL") == 0 ;
+
 
     const char* matname = pmap->getShortName();
     unsigned int nprop = pmap->getNumProperties();
@@ -288,7 +322,7 @@ void CPropLib::addProperties(G4MaterialPropertiesTable* mpt, GPropertyMap<float>
     for(unsigned int i=0 ; i<nprop ; i++)
     {
         const char* key =  pmap->getPropertyNameByIndex(i); // refractive_index absorption_length scattering_length reemission_prob
-        const char* lkey = keylocal ? m_mlib->getLocalKey(key) : NULL ;      // RINDEX ABSLENGTH RAYLEIGH REEMISSIONPROB
+        const char* lkey = m_mlib->getLocalKey(key) ;       // ->lkey RINDEX ABSLENGTH RAYLEIGH REEMISSIONPROB EFFICIENCY  or NULL if not found
         const char* ukey = keylocal ? lkey : key ;
 
         if(!ukey) 
@@ -353,6 +387,8 @@ void CPropLib::addConstProperty(G4MaterialPropertiesTable* mpt, const char* matn
 
 void CPropLib::addProperty(G4MaterialPropertiesTable* mpt, const char* matname, const char* lkey,  GProperty<float>* prop )
 {
+    // matname only used for debug dumping 
+
 
     bool abslength = strcmp(lkey, "ABSLENGTH") == 0 ;
     bool rayleigh = strcmp(lkey, "RAYLEIGH") == 0 ;

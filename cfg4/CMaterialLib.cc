@@ -118,6 +118,9 @@ void CMaterialLib::convert()
     {
         const GMaterial* ggmat = getMaterial(i);
         const char* name = ggmat->getShortName() ;
+
+        //if(strcmp(name, "Bialkali") == 0) continue ; 
+
         const G4Material* g4mat = convertMaterial(ggmat);
 
         // special cased GROUPVEL getter invokes setGROUPVEL which adds the property to the MPT 

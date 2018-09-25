@@ -443,7 +443,133 @@ CMaterialLibTest trying to convert all scintillator props ?::
     (lldb) 
 
 
-These 
+
+* CMaterialLib::convert issue for Bialkali  "detect" property ... this is due to the dirty way are moving 
+  a surface property into a material 
+
+
+
+Simplifying the transfer of efficieny gets down to 3 fails
+---------------------------------------------------------------------
+
+::
+
+    ...
+    CTestLog :                 g4ok :      0/     1 : 2018-09-25 18:45:00.094744 : /usr/local/opticks/build/g4ok/ctest.log 
+    totals  3   / 372 
+
+
+    FAILS:
+      7  /33  Test #7  : CFG4Test.CG4Test                              ***Exception: Child aborted    9.70   
+      32 /33  Test #32 : CFG4Test.CGenstepSourceTest                   ***Exception: Child aborted    0.30   
+      1  /1   Test #1  : OKG4Test.OKG4Test                             ***Exception: Child aborted    13.10  
+
+
+
+
+CG4Test + OKG4Test : shortnorm issue
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+::
+
+    2018-09-25 17:33:26.238 INFO  [7903324] [CRunAction::BeginOfRunAction@19] CRunAction::BeginOfRunAction count 1
+    2018-09-25 17:33:26.251 INFO  [7903324] [CSensitiveDetector::Initialize@56]  HCE 0x1111bb4f0 HCE.Capacity 2 SensitiveDetectorName SD0 collectionName[0] OpHitCollectionA collectionName[1] OpHitCollectionB
+    libc++abi.dylib: terminating with uncaught exception of type boost::numeric::positive_overflow: bad numeric conversion: positive overflow
+    Process 83048 stopped
+    * thread #1, queue = 'com.apple.main-thread', stop reason = signal SIGABRT
+        frame #0: 0x00007fff655dbb6e libsystem_kernel.dylib`__pthread_kill + 10
+    libsystem_kernel.dylib`__pthread_kill:
+    ->  0x7fff655dbb6e <+10>: jae    0x7fff655dbb78            ; <+20>
+        0x7fff655dbb70 <+12>: movq   %rax, %rdi
+        0x7fff655dbb73 <+15>: jmp    0x7fff655d2b00            ; cerror_nocancel
+        0x7fff655dbb78 <+20>: retq   
+    Target 0: (CG4Test) stopped.
+    (lldb) bt
+    * thread #1, queue = 'com.apple.main-thread', stop reason = signal SIGABRT
+      * frame #0: 0x00007fff655dbb6e libsystem_kernel.dylib`__pthread_kill + 10
+        frame #1: 0x00007fff657a6080 libsystem_pthread.dylib`pthread_kill + 333
+        frame #2: 0x00007fff655371ae libsystem_c.dylib`abort + 127
+        frame #3: 0x00007fff6343bf8f libc++abi.dylib`abort_message + 245
+        frame #4: 0x00007fff6343c113 libc++abi.dylib`default_terminate_handler() + 241
+        frame #5: 0x00007fff64873eab libobjc.A.dylib`_objc_terminate() + 105
+        frame #6: 0x00007fff634577c9 libc++abi.dylib`std::__terminate(void (*)()) + 8
+        frame #7: 0x00007fff6345726f libc++abi.dylib`__cxa_throw + 121
+        frame #8: 0x000000010803592f libBoostRap.dylib`boost::numeric::def_overflow_handler::operator(this=0x00007ffeefbfa7c8, r=cPosOverflow)(boost::numeric::range_check_result) at converter_policies.hpp:166
+        frame #9: 0x0000000108035d32 libBoostRap.dylib`boost::numeric::convdetail::generic_range_checker<boost::numeric::conversion_traits<short, float>, boost::numeric::convdetail::LT_HalfPrevLoT<boost::numeric::conversion_traits<short, float> >, boost::numeric::convdetail::GT_HalfSuccHiT<boost::numeric::conversion_traits<short, float> >, boost::numeric::def_overflow_handler>::validate_range(s=70203.2421) at converter.hpp:294
+        frame #10: 0x00000001080356a7 libBoostRap.dylib`boost::numeric::convdetail::rounding_converter<boost::numeric::conversion_traits<short, float>, boost::numeric::convdetail::generic_range_checker<boost::numeric::conversion_traits<short, float>, boost::numeric::convdetail::LT_HalfPrevLoT<boost::numeric::conversion_traits<short, float> >, boost::numeric::convdetail::GT_HalfSuccHiT<boost::numeric::conversion_traits<short, float> >, boost::numeric::def_overflow_handler>, boost::numeric::raw_converter<boost::numeric::conversion_traits<short, float> >, boost::numeric::RoundEven<float> >::convert(s=70203.2421) at converter.hpp:487
+        frame #11: 0x0000000108035489 libBoostRap.dylib`short BConverter::round_to_even<short, float>(x=0x00007ffeefbfa820) at BConverter.cc:12
+        frame #12: 0x0000000108035460 libBoostRap.dylib`BConverter::shortnorm(v=0, center=-16520, extent=7710.625) at BConverter.cc:18
+        frame #13: 0x00000001001cd7cd libCFG4.dylib`CWriter::writeStepPoint_(this=0x00000001129ceb50, point=0x00000001118c6b50, photon=0x00000001129cf480) at CWriter.cc:197
+        frame #14: 0x00000001001cd34a libCFG4.dylib`CWriter::writeStepPoint(this=0x00000001129ceb50, point=0x00000001118c6b50, flag=4096, material=13) at CWriter.cc:133
+        frame #15: 0x00000001001bb7ee libCFG4.dylib`CRecorder::RecordStepPoint(this=0x00000001129cf440, point=0x00000001118c6b50, flag=4096, material=13, boundary_status=Undefined, (null)="PRE") at CRecorder.cc:468
+        frame #16: 0x00000001001baae2 libCFG4.dylib`CRecorder::postTrackWriteSteps(this=0x00000001129cf440) at CRecorder.cc:398
+        frame #17: 0x00000001001b9f4e libCFG4.dylib`CRecorder::postTrack(this=0x00000001129cf440) at CRecorder.cc:133
+        frame #18: 0x00000001001f5611 libCFG4.dylib`CG4::postTrack(this=0x000000010a7e6060) at CG4.cc:255
+        frame #19: 0x00000001001efb37 libCFG4.dylib`CTrackingAction::PostUserTrackingAction(this=0x00000001129cec80, track=0x00000001118c5560) at CTrackingAction.cc:91
+        frame #20: 0x00000001020b7937 libG4tracking.dylib`G4TrackingManager::ProcessOneTrack(this=0x000000010a5dedc0, apValueG4Track=0x00000001118c5560) at G4TrackingManager.cc:140
+        frame #21: 0x0000000101f7e71a libG4event.dylib`G4EventManager::DoProcessing(this=0x000000010a5ded30, anEvent=0x0000000110d4a2c0) at G4EventManager.cc:185
+        frame #22: 0x0000000101f7fc2f libG4event.dylib`G4EventManager::ProcessOneEvent(this=0x000000010a5ded30, anEvent=0x0000000110d4a2c0) at G4EventManager.cc:338
+        frame #23: 0x0000000101e8b9f5 libG4run.dylib`G4RunManager::ProcessOneEvent(this=0x000000010a7e6a70, i_event=0) at G4RunManager.cc:399
+        frame #24: 0x0000000101e8b825 libG4run.dylib`G4RunManager::DoEventLoop(this=0x000000010a7e6a70, n_event=1, macroFile=0x0000000000000000, n_select=-1) at G4RunManager.cc:367
+        frame #25: 0x0000000101e89ce1 libG4run.dylib`G4RunManager::BeamOn(this=0x000000010a7e6a70, n_event=1, macroFile=0x0000000000000000, n_select=-1) at G4RunManager.cc:273
+        frame #26: 0x00000001001f6396 libCFG4.dylib`CG4::propagate(this=0x000000010a7e6060) at CG4.cc:331
+        frame #27: 0x000000010000f615 CG4Test`main(argc=1, argv=0x00007ffeefbfe950) at CG4Test.cc:52
+        frame #28: 0x00007fff6548b015 libdyld.dylib`start + 1
+    (lldb) 
+
+
+::
+
+    (lldb) f 13
+    frame #13: 0x0000000106a3e7cd libCFG4.dylib`CWriter::writeStepPoint_(this=0x000000011727af30, point=0x00000001460d0140, photon=0x000000011727ae00) at CWriter.cc:197
+       194 	    const glm::vec4& td = m_evt->getTimeDomain() ; 
+       195 	    const glm::vec4& wd = m_evt->getWavelengthDomain() ; 
+       196 	
+    -> 197 	    short posx = BConverter::shortnorm(pos.x()/mm, sd.x, sd.w ); 
+       198 	    short posy = BConverter::shortnorm(pos.y()/mm, sd.y, sd.w ); 
+       199 	    short posz = BConverter::shortnorm(pos.z()/mm, sd.z, sd.w ); 
+       200 	    short time_ = BConverter::shortnorm(time/ns,   td.x, td.y );
+    (lldb) p pos
+    (G4ThreeVector) $0 = (dx = 0, dy = 0, dz = 0)
+    (lldb) p sd
+    (glm::vec4) $1 = {
+       = (x = -16520, r = -16520, s = -16520)
+       = (y = -802110, g = -802110, t = -802110)
+       = (z = -7125, b = -7125, p = -7125)
+       = (w = 7710.625, a = 7710.625, q = 7710.625)
+    }
+    (lldb) p pos.x()
+    (double) $2 = 0
+    (lldb) 
+
+
+
+
+
+CGenstepSourceTest : domain mismatch
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+::
+
+    2018-09-25 17:34:59.128 INFO  [7904431] [CMaterialLib::convert@153] CMaterialLib::convert : converted 38 ggeo materials to G4 materials 
+    2018-09-25 17:34:59.128 ERROR [7904431] [GBndLib::getMaterialIndexFromLine@715]  line 12 ibnd 3 numBnd 127 imatsur 0
+    2018-09-25 17:34:59.128 INFO  [7904431] [*CCerenkovGenerator::GeneratePhotonsFromGenstep@133]  genstep_idx 0 num_gs 7245 materialLine 12 materialIndex 14      post-16536.295 -802084.812 -7066.000   0.844 
+
+    2018-09-25 17:34:59.128 INFO  [7904431] [*CCerenkovGenerator::GeneratePhotonsFromGenstep@166]  Pmin 1.55e-06 Pmax 6.2e-06 wavelength_min(nm) 199.974 wavelength_max(nm) 799.898 preVelocity 299.791 postVelocity 7.00649e-45
+    2018-09-25 17:34:59.128 ERROR [7904431] [*CCerenkovGenerator::GetRINDEX@72]  aMaterial 0x10dc51340 materialIndex 14 num_material 38 Rindex 0x10dc531c0 Rindex2 0x10dc531c0
+    2018-09-25 17:34:59.128 FATAL [7904431] [*CCerenkovGenerator::GeneratePhotonsFromGenstep@218]  Pmax 6.2e-06 Pmax2 2.0664e-05 dif 1.4464e-05 epsilon 1e-06 Pmax(nm) 199.974 Pmax2(nm) 60
+    Assertion failed: (Pmax_match && "material mismatches genstep source material"), function GeneratePhotonsFromGenstep, file /Users/blyth/opticks/cfg4/CCerenkovGenerator.cc, line 228.
+    Process 83053 stopped
+    * thread #1, queue = 'com.apple.main-thread', stop reason = signal SIGABRT
+        frame #0: 0x00007fff655dbb6e libsystem_kernel.dylib`__pthread_kill + 10
+    libsystem_kernel.dylib`__pthread_kill:
+    ->  0x7fff655dbb6e <+10>: jae    0x7fff655dbb78            ; <+20>
+        0x7fff655dbb70 <+12>: movq   %rax, %rdi
+        0x7fff655dbb73 <+15>: jmp    0x7fff655d2b00            ; cerror_nocancel
+        0x7fff655dbb78 <+20>: retq   
+    Target 0: (CGenstepSourceTest) stopped.
+    (lldb) 
+
 
 
 

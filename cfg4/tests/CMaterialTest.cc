@@ -7,8 +7,7 @@
 #include "CVec.hh"
 
 #include "CFG4_BODY.hh"
-#include "GGEO_LOG.hh"
-#include "CFG4_LOG.hh"
+#include "OPTICKS_LOG.hh"
 
 #include "PLOG.hh"
 
@@ -28,10 +27,7 @@ void test_CMPT(CMaterialLib* clib)
 
 int main(int argc, char** argv)
 {
-    PLOG_(argc, argv);
-
-    GGEO_LOG__ ;  
-    CFG4_LOG__ ;  
+    OPTICKS_LOG(argc, argv);
 
     LOG(info) << argv[0] ; 
 
