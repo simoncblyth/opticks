@@ -29,9 +29,9 @@ struct estimate_pi
 
 
 
-#include <cmath>
+//#include <cmath>
 #include <thrust/iterator/counting_iterator.h> 
-#include <thrust/functional.h> 
+//#include <thrust/functional.h> 
 #include <thrust/transform_reduce.h> 
 #include <iostream> 
 #include <iomanip> 

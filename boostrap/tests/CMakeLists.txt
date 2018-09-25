@@ -21,6 +21,7 @@ set(TEST_SOURCES
    BBufSpecTest.cc
    BEnvTest.cc
    BOpticksResourceTest.cc
+   BResourceTest.cc
    BOpticksKeyTest.cc
    BDynamicDefineTest.cc
    BOpticksEventTest.cc

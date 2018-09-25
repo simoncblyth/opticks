@@ -152,6 +152,7 @@ void test_FormPath()
     ss.push_back("$OPTICKS_INSTALL_PREFIX/externals/config/geant4.ini") ;
     ss.push_back("$OPTICKS_INSTALL_PREFIX/opticksdata/config/opticksdata.ini") ;
 
+    ss.push_back("$OPTICKS_EVENT_BASE/evt/dayabay/cerenkov/1") ; 
 
     ss.push_back("$HOME/.opticks/GColors.json");
     ss.push_back("/path/with/dollar/inside/$TMP");
@@ -439,7 +440,7 @@ int main(int argc, char** argv)
    //test_ExistsDir();
    //test_CreateDir();
    //test_ParentDir();
-   //test_FormPath();
+   test_FormPath();
    //test_Name_ParentDir();
    //test_ChangeExt();
 
@@ -448,7 +449,7 @@ int main(int argc, char** argv)
    //test_SomePath();
    //test_RemoveDir();
    //test_RemoveDir_2();
-   test_RemoveFile();
+   //test_RemoveFile();
 
 
    //test_LastWriteTime();

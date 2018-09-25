@@ -823,6 +823,9 @@ opticks-config-type(){ echo RelWithDebInfo ; }
 
 opticks--(){     
    local bdir=$1
+   if [ "$bdir" == "" ]; then
+      bdir=$(opticks-home) 
+   fi 
    shift 
    local iwd=$(pwd)
    cd $bdir

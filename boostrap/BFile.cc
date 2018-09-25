@@ -105,8 +105,8 @@ std::string expandvar(const char* s)
 
            if(evalue.compare("TMP")==0) //  TMP is not an envvar, but this makes it seem like one
            {
-               //evalue = usertmpdir("/tmp","opticks", NULL);
-               evalue = BResource::Get("tmpuser_dir") ; 
+               evalue = usertmpdir("/tmp","opticks", NULL);
+               //evalue = BResource::Get("tmpuser_dir") ;   // bad access if returns NULL
 
                LOG(verbose) << "expandvar replacing TMP with " << evalue ; 
            }
@@ -127,8 +127,8 @@ std::string expandvar(const char* s)
                }
                else
                {
-                   evalue = BResource::Get("tmpuser_dir") ; 
-                   //evalue = usertmpdir("/tmp","opticks",NULL);
+                   //evalue = BResource::Get("tmpuser_dir") ; 
+                   evalue = usertmpdir("/tmp","opticks",NULL);
                } 
                LOG(verbose) << "expandvar replacing OPTICKS_EVENT_BASE  with " << evalue ; 
            }
