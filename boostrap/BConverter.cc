@@ -14,8 +14,8 @@ template<typename T, typename S> T BConverter::round_to_even(const S& x)
 
 short BConverter::shortnorm( float v, float center, float extent ) // static
 {
-    float fv = 32767.0f * (v - center)/extent ;
-    return round_to_even<short, float>( fv ) ; 
+    float f = (v - center)/extent ;
+    return std::abs(f) > 1 ? SHRT_MIN : round_to_even<short, float>( 32767.0f * f ) ; 
 }
 
 
