@@ -677,7 +677,7 @@ unsigned        OpticksHub::getSourceCode() const {         return m_gen->getSou
 
 NPY<float>*     OpticksHub::getInputPhotons() const    {    return m_gen->getInputPhotons() ; }
 NPY<float>*     OpticksHub::getInputGensteps() const {      return m_gen->getInputGensteps(); }
-NPY<float>*     OpticksHub::getInputPrimaries() const  {    return m_gen->getInputPrimaries() ; }
+//NPY<float>*     OpticksHub::getInputPrimaries() const  {    return m_gen->getInputPrimaries() ; }
 
 TorchStepNPY*   OpticksHub::getTorchstep() const {          return m_gen->getTorchstep() ; }
 GenstepNPY*     OpticksHub::getGenstepNPY() const  {        return m_gen->getGenstepNPY() ; }

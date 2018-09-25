@@ -673,7 +673,7 @@ GProperty<float>* GPropertyLib::getPropertyOrDefault(GPropertyMap<float>* pmap, 
 
 const char* GPropertyLib::getLocalKey(const char* dkey) const // mapping between standard keynames and local key names, eg refractive_index -> RINDEX
 {
-    return m_keymap.at(dkey).c_str();
+    return m_keymap.count(dkey) == 0 ? NULL : m_keymap.at(dkey).c_str();
 }
 
 void GPropertyLib::setKeyMap(const char* spec)

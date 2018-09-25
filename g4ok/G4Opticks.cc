@@ -265,15 +265,6 @@ NPY<float>* G4Opticks::getHits() const
 }
 
 
-void G4Opticks::collectPrimaries(const G4Event* event)
-{
-    m_primary_collector->collectPrimaries(event); 
-
-    const char* path = m_ok->getPrimariesPath(); 
-
-    LOG(info) << " saving to " << path ; 
-    m_primary_collector->save(path); 
-}
 
 
 /**

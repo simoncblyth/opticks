@@ -28,7 +28,6 @@ source                  dynamic
 inputPhotonSource         N 
 TorchSource               N
 G4GunSource               Y
-inputPrimarySource        Y
 =====================  ==========
 
 
@@ -62,7 +61,6 @@ class CFG4_API CGenerator
        void init();
        CSource* initSource(unsigned code);
        CSource* initInputPhotonSource();
-       CSource* initInputPrimarySource();
        CSource* initInputGenstepSource();
        CSource* initTorchSource();
        CSource* initG4GunSource();

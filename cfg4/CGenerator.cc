@@ -55,7 +55,6 @@ CSource* CGenerator::initSource(unsigned code)
     if(     code == G4GUN)      source = initG4GunSource();
     else if(code == TORCH)      source = initTorchSource();
     else if(code == EMITSOURCE) source = initInputPhotonSource();
-    else if(code == PRIMARYSOURCE) source = initInputPrimarySource();
     else if(code == GENSTEPSOURCE) source = initInputGenstepSource();
     else  assert( 0 && "code not handled" ); 
  
@@ -192,7 +191,8 @@ CGenerator::initInputGenstepSource
 CSource* CGenerator::initInputGenstepSource()
 {
     LOG(info) << "CGenerator::initInputGenstepSource " ; 
-    NPY<float>* dgs = m_gen->getDirectGensteps();
+    //NPY<float>* dgs = m_gen->getDirectGensteps();
+    NPY<float>* dgs = m_gen->getInputGensteps();
 
     assert( dgs );
 
@@ -209,36 +209,6 @@ CSource* CGenerator::initInputGenstepSource()
 }
 
 
-
-
-
-
-
-
-
-/**
-CGenerator::initInputPrimarySource
--------------------------------------
-
-* setup source based on NGunConfig parse of the G4GunConfig string.
-* no gensteps at this stage, they have to be collected from Geant4 : dynamic mode
-* geometry info is needed as gunconfig picks target volumes by index
-
-**/
-
-CSource* CGenerator::initInputPrimarySource()
-{
-    NPY<float>* inputPrimaries = m_gen->getInputPrimaries() ;  
-
-    setDynamic(true);
-    setGensteps(NULL);  // gensteps must be collected from G4, they cannot be fabricated
-
-    CPrimarySource* prs = new CPrimarySource( m_ok, inputPrimaries, m_ok->getVerbosity() );
-    setNumG4Event( prs->getNumG4Event()); 
-
-    CSource* source  = static_cast<CSource*>(prs); 
-    return source ; 
-}
 
 
 /**

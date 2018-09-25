@@ -1,4 +1,5 @@
-// ggv --opticks 
+// op --opticks    ## handy to be within envvar environ in legacy mode
+// TEST=OpticksTest om-t 
 
 #include <iostream>
 
@@ -38,14 +39,31 @@ void test_path(const char* msg, const char* path)
 }
 
 
-
-void test_getDirectGenstepPath(Opticks* ok)
+struct OpticksTest 
 {
-    assert(ok);
+    OpticksTest(const Opticks* ok_) : ok(ok_) 
+    {
+        assert(ok);
+    }  
 
-    const char* path = ok->getDirectGenstepPath();
-    test_path("getDirectGenstepPath", path );
-}
+    void test_getDirectGenstepPath()
+    {
+        const char* path = ok->getDirectGenstepPath();
+        test_path("getDirectGenstepPath", path );
+    }
+
+    void test_getGenstepPath()
+    {
+        const char* path = ok->getGenstepPath();
+        test_path("getGenstepPath", path );
+    }
+
+    const Opticks* ok ; 
+
+};
+
+
+
 
 
 void test_getDAEPath(Opticks* ok)
@@ -140,7 +158,10 @@ int main(int argc, char** argv)
     test_getGDMLPath(&ok);  
     */
 
-    test_getDirectGenstepPath(&ok);  
+    OpticksTest okt(&ok); 
+
+    okt.test_getGenstepPath();  
+    okt.test_getDirectGenstepPath();  
 
 
     return 0 ;

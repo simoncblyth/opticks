@@ -80,6 +80,7 @@ class OKCORE_API Opticks {
        friend class OpticksRun ; 
        friend class OpEngine ; 
        friend class CG4 ; 
+       friend struct OpticksTest ; 
    public:
        static const float F_SPEED_OF_LIGHT ;  // mm/ns
    public:
@@ -366,18 +367,15 @@ class OKCORE_API Opticks {
        const char*          getUDet()  ;
        std::string          getPreferenceDir(const char* type, const char* subtype);
    public:
-       std::string          getGenstepPath() const ;
-       //std::string          getGenstepPath2() const ;
-       const char*          getPrimariesPath() const ;
-       const char*          getDirectGenstepPath() const ; 
-       //const char*          getDirectPhotonsPath() const ; 
+       bool                 hasKey() const ;  // distinguishes direct from legacy mode
+       const char*          getGenstepPath() const ;  // either direct or legacy depending on mode : as distinguished by hasKey 
        bool                 existsGenstepPath() const ;
-       bool                 existsPrimariesPath() const ;
-       bool                 existsDirectGenstepPath() const ;
+       const char*          getDirectGenstepPath() const ; 
+       const char*          getLegacyGenstepPath() const ; 
+
        NPY<float>*          load(const char* path) const ;
        NPY<float>*          loadGenstep() const ;
-       NPY<float>*          loadPrimaries() const ;
-       NPY<float>*          loadDirectGenstep() const ;
+
    public:
        TorchStepNPY*        makeSimpleTorchStep();
    public:

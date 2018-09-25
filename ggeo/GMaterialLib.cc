@@ -47,6 +47,21 @@ const char* GMaterialLib::keyspec =
 ;
 
 
+/**
+m_keys = size=8 {
+    [0] = "detect"
+    [1] = "absorb"
+    [2] = "reflect_specular"
+    [3] = "reflect_diffuse"
+    [4] = "extra_x"
+    [5] = "extra_y"
+    [6] = "extra_z"
+    [7] = "extra_w"
+  }
+
+**/
+
+
 void GMaterialLib::save()
 {
     LOG(fatal) << "[" ; 

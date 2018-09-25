@@ -406,6 +406,8 @@ BOpticksResource::setupViaKey
 Invoked from OpticksResource::init only when 
 BOpticksKey::SetKey called prior to Opticks instanciation.   
 
+Legacy mode alternative to this is setupViaSrc.
+
 This is used for live/direct mode running, 
 see for example CerenkovMinimal ckm- 
 
@@ -492,25 +494,39 @@ void BOpticksResource::setupViaKey()
     m_res->addPath("directphotonspath", m_directphotonspath ); 
 
     const char* user = SSys::username(); 
-    //m_srcevtbase = makeIdPathPath("evt", user, "source"); 
     m_srcevtbase = makeIdPathPath("source"); 
     m_res->addDir( "srcevtbase", m_srcevtbase ); 
 
     const char* exename = SAr::Instance->exename(); 
     m_evtbase = isKeySource() ? strdup(m_srcevtbase) : makeIdPathPath("tmp", user, exename ) ;  
+    ///  should this always be KeySource ???
+    ///      NO : KeySource means that the current executable is same as the exename 
+    ///           enshrined into the geocache : ie the geocache creator  
+
     m_res->addDir( "evtbase", m_evtbase ); 
 
+/**
+   
+* first geometry + genstep collecting and writing executable is special, 
+  it writes its event and genstep into a distinctive "standard" directory (resource "srcevtbase") 
+  within the geocache keydir 
+
+* all other executables sharing the same keydir can put their events underneath 
+  a relpath named after the executable (resource "evtbase")   
+
+**/
 
 }
 
 
-
-
 /**
-BOpticksResource::setupViaSrc
---------------------------------
+BOpticksResource::setupViaSrc  LEGACY approach to resource setup, based on envvars pointing at src dae
+------------------------------------------------------------------------------------------------------------
 
-Invoked from OpticksResource::readEnvironment
+Invoked from OpticksResource::init OpticksResource::readEnvironment
+
+Direct mode equivalent (loosely speaking) is setupViaKey
+
 
 **/
 
@@ -568,6 +584,20 @@ void BOpticksResource::setupViaSrc(const char* srcpath, const char* srcdigest)
 
     m_cachemetapath = makeIdPathPath("cachemeta.json");  
     m_res->addPath("cachemetapath", m_cachemetapath ); 
+
+
+/**
+Legacy mode equivalents for resource dirs:
+
+srcevtbase 
+    directory within opticksdata with the gensteps ?
+
+evtbase
+    user tmp directory for outputting events 
+
+**/
+
+
 }
 
 
@@ -613,6 +643,10 @@ const char* BOpticksResource::getIdMapPath() const { return m_idmappath ; }
 const char* BOpticksResource::getEventBase() const { return m_evtbase ; } 
 
 
+bool  BOpticksResource::hasKey() const
+{
+    return m_key != NULL ; 
+}
 BOpticksKey*  BOpticksResource::getKey() const
 {
     return m_key ; 

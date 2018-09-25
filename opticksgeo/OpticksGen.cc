@@ -24,6 +24,8 @@
 
 #include "PLOG.hh"
 
+NPY<float>* OpticksGen::getInputGensteps() const { return m_input_gensteps ; }
+NPY<float>* OpticksGen::getInputPhotons() const {   return m_input_photons ; }
 
 OpticksGen::OpticksGen(OpticksHub* hub) 
     :
@@ -36,13 +38,11 @@ OpticksGen::OpticksGen(OpticksHub* hub)
     m_lookup(hub->getLookup()),
     m_torchstep(NULL),
     m_fabstep(NULL),
-    m_input_gensteps(NULL),
     m_csg_emit(hub->findEmitter()),
     m_emitter_dbg(false),
     m_emitter(m_csg_emit ? new NEmitPhotonsNPY(m_csg_emit, EMITSOURCE, m_ok->getSeed(), m_emitter_dbg, m_ok->getMaskBuffer()) : NULL ),
     m_input_photons(NULL),
-    m_input_primaries(m_ok->existsPrimariesPath() ? m_ok->loadPrimaries() : NULL ),
-    m_direct_gensteps(m_ok->existsDirectGenstepPath() ? m_ok->loadDirectGenstep() : NULL ),
+    m_input_gensteps(m_ok->existsGenstepPath() ? m_ok->loadGenstep() : NULL ),
     m_source_code(initSourceCode())
 {
     init() ;
@@ -51,22 +51,13 @@ OpticksGen::OpticksGen(OpticksHub* hub)
 Opticks* OpticksGen::getOpticks() const { return m_ok ; }
 std::string OpticksGen::getG4GunConfig() const { return m_gun->getConfig() ; }
 
-bool OpticksGen::hasInputPrimaries() const 
-{
-    return m_input_primaries != NULL ;  
-}
-
 
 unsigned OpticksGen::initSourceCode() const 
 {
     unsigned code = 0 ; 
-    if(m_direct_gensteps)
+    if(m_input_gensteps)
     {
         code = GENSTEPSOURCE ; 
-    }  
-    else if(m_input_primaries)
-    {
-        code = PRIMARYSOURCE ; 
     }  
     else if(m_emitter) 
     {
@@ -87,13 +78,9 @@ unsigned OpticksGen::getSourceCode() const
 
 void OpticksGen::init()
 {
-    if(m_direct_gensteps)
+    if(m_input_gensteps)
     {
-        initFromDirectGensteps();
-    }  
-    else if(m_input_primaries)
-    {
-        initFromPrimaries();
+        initFromGensteps();
     }  
     else if(m_emitter) 
     {
@@ -101,15 +88,9 @@ void OpticksGen::init()
     }
     else
     { 
-        initFromGensteps();
+        initFromLegacyGensteps();
     }
 }
-
-void OpticksGen::initFromPrimaries()
-{
-    LOG(fatal) << "booting from input_primaries " << m_ok->getPrimariesPath()  ; 
-}
-
 
 void OpticksGen::initFromEmitter()
 {
@@ -144,38 +125,37 @@ void OpticksGen::initFromEmitter()
 }
 
 
-NPY<float>* OpticksGen::getDirectGensteps() const { return m_direct_gensteps ; }
-
-void OpticksGen::initFromDirectGensteps()
-{
-    LOG(info) << "." ; 
-    assert( m_direct_gensteps ) ; 
-    m_direct_gensteps->setBufferSpec(OpticksEvent::GenstepSpec(m_ok->isCompute()));
-}
 
 void OpticksGen::initFromGensteps()
 {
+    LOG(info) << "." ; 
+    assert( m_input_gensteps ) ; 
+    m_input_gensteps->setBufferSpec(OpticksEvent::GenstepSpec(m_ok->isCompute()));
+}
+
+void OpticksGen::initFromLegacyGensteps()
+{
     if(m_ok->isNoInputGensteps() || m_ok->isEmbedded())
     {
-        LOG(warning) << "OpticksGen::initFromGensteps SKIP as isNoInputGensteps OR isEmbedded  " ; 
+        LOG(warning) << "OpticksGen::initFromLegacyGensteps SKIP as isNoInputGensteps OR isEmbedded  " ; 
         return ; 
     } 
 
     const char* type = m_ok->getSourceType();
     unsigned code = m_ok->getSourceCode();
 
-    LOG(debug) << "OpticksGen::initFromGensteps" 
+    LOG(debug) << "OpticksGen::initFromLegacyGensteps" 
                << " code " << code
                << " type " << type
                ;
 
-    NPY<float>* gs = makeInputGensteps(code) ; 
+    NPY<float>* gs = makeLegacyGensteps(code) ; 
     assert( gs );
     setInputGensteps(gs);
 }
 
 
-NPY<float>* OpticksGen::makeInputGensteps(unsigned code)
+NPY<float>* OpticksGen::makeLegacyGensteps(unsigned code)
 {
     NPY<float>* gs = NULL ; 
 
@@ -222,7 +202,6 @@ NPY<float>* OpticksGen::makeInputGensteps(unsigned code)
 
 
 
-NPY<float>* OpticksGen::getInputGensteps() const { return m_input_gensteps ; }
 FabStepNPY* OpticksGen::getFabStep() const { return m_fabstep ; }
 
 
@@ -247,9 +226,6 @@ GenstepNPY* OpticksGen::getGenstepNPY() const
 
 
 
-NPY<float>* OpticksGen::getInputPhotons() const {   return m_input_photons ; }
-NPY<float>* OpticksGen::getInputPrimaries() const { return m_input_primaries ; }
-
 
 
 void OpticksGen::setInputGensteps(NPY<float>* gs)
@@ -261,17 +237,17 @@ void OpticksGen::setInputGensteps(NPY<float>* gs)
     }
 }
 
-void OpticksGen::setInputPhotons(NPY<float>* iox)
+void OpticksGen::setInputPhotons(NPY<float>* ox)
 {
-    m_input_photons = iox ;  
-    if(iox) 
+    m_input_photons = ox ;  
+    if(ox) 
     {
         LOG(error) << "OpticksGen::setInputPhotons"
-                   << " iox " << iox->getShapeString()
-                   << " ios.hasMsk " << ( iox->hasMsk() ? "Y" : "N" )
+                   << " ox " << ox->getShapeString()
+                   << " ox.hasMsk " << ( ox->hasMsk() ? "Y" : "N" )
                    ;
 
-        iox->setBufferSpec(OpticksEvent::SourceSpec(m_ok->isCompute()));
+        ox->setBufferSpec(OpticksEvent::SourceSpec(m_ok->isCompute()));
     }
 }
 

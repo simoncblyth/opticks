@@ -143,6 +143,7 @@ class BRAP_API  BOpticksResource {
        const char* getEventBase() const ; 
     public:
        BOpticksKey* getKey() const ; 
+       bool         hasKey() const ;   // distinguishes direct from legacy 
        bool         isKeySource() const ; 
   private:
         void init();

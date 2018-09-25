@@ -51,7 +51,7 @@ CPropLib::CPropLib(OpticksHub* hub, int verbosity)
   m_sclib(m_hub->getScintillatorLib()),
   m_domain(m_mlib->getDefaultDomain()),
   m_dscale(1),
-  m_level(verbose)
+  m_level(info)
 {
     init();
 }
@@ -283,16 +283,25 @@ void CPropLib::addProperties(G4MaterialPropertiesTable* mpt, GPropertyMap<float>
 
     //pmap->dump("CPropLib::addProperties"); 
 
-
     std::stringstream ss ; 
 
     for(unsigned int i=0 ; i<nprop ; i++)
     {
         const char* key =  pmap->getPropertyNameByIndex(i); // refractive_index absorption_length scattering_length reemission_prob
-        const char* lkey = m_mlib->getLocalKey(key) ;      // RINDEX ABSLENGTH RAYLEIGH REEMISSIONPROB
+        const char* lkey = keylocal ? m_mlib->getLocalKey(key) : NULL ;      // RINDEX ABSLENGTH RAYLEIGH REEMISSIONPROB
         const char* ukey = keylocal ? lkey : key ;
 
-        if(!ukey) LOG(fatal) << "CPropLib::addProperties missing key for prop " << i ; 
+        if(!ukey) 
+           LOG(fatal) 
+               << "missing key for prop"
+               << " i " << i
+               << " nprop " << nprop
+               << " matname " << matname
+               << " key " << key 
+               << " lkey " << lkey 
+               << " ukey " << ukey 
+               << " keylocal " << keylocal
+               ; 
         assert(ukey);
 
         pLOG(m_level,+1) << "CPropLib::addProperties " << matname << " " << i  << " key " << key << " lkey " << lkey << " ukey " << ukey  ;

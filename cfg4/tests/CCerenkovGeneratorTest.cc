@@ -47,7 +47,7 @@ int main(int argc, char** argv)
 
     // below needs to be done after Opticks::configure for setup of the event spec
 
-    NPY<float>* np = ok.loadDirectGenstep(); 
+    NPY<float>* np = ok.loadGenstep();    // loads direct OR legacy gensteps 
     if(np == NULL) return 0 ; 
 
     OpticksGenstep* gs = new OpticksGenstep(np) ; 

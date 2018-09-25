@@ -1,4 +1,4 @@
-
+ 
 #include "SSys.hh"
 #include "BFile.hh"
 #include "BStr.hh"
@@ -431,6 +431,16 @@ std::string BFile::FormPath(const char* path, const char* sub, const char* name,
    {
        preparePath(preferred.c_str(), true);
    }
+
+
+   std::string check ; 
+   //check="/tmp/blyth/opticks/evt/dayabay/machinery/1/gs.npy" ; 
+
+   if(!check.empty() && check.compare(preferred) == 0) 
+   {
+       LOG(fatal) << "forming a checked path " << preferred ; 
+       assert(0); 
+   }    
 
 
    return preferred ;

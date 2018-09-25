@@ -33,7 +33,7 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 
 #ifdef WITH_OPTICKS
     // not strictly required by Opticks, but useful for debugging + visualization of non-opticals
-    G4Opticks::GetOpticks()->collectPrimaries(anEvent) ;  
+    //G4Opticks::GetOpticks()->collectPrimaries(anEvent) ;  
 #endif
 
 }

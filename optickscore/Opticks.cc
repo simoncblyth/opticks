@@ -1071,7 +1071,7 @@ const char* Opticks::getGLTFPath() const { return m_resource->getGLTFPath() ; }
 const char* Opticks::getSrcGLTFPath() const { return m_resource->getSrcGLTFPath() ; }
 const char* Opticks::getG4CodeGenDir() const { return m_resource->getG4CodeGenDir() ; }
 const char* Opticks::getCacheMetaPath() const { return m_resource->getCacheMetaPath() ; } 
-const char* Opticks::getPrimariesPath() const { return m_resource->getPrimariesPath() ; } 
+
 
 
 
@@ -1897,12 +1897,8 @@ const char* Opticks::getDirectGenstepPath() const
     return strdup(path.c_str())  ; 
 }
 
-//const char* Opticks::getDirectGenstepPath() const { return m_resource->getDirectGenstepPath() ; } 
-//const char* Opticks::getDirectPhotonsPath() const { return m_resource->getDirectPhotonsPath() ; } 
 
-
-
-std::string Opticks::getGenstepPath() const 
+const char* Opticks::getLegacyGenstepPath() const 
 {
     const char* det = m_spec->getDet();
     const char* typ = m_spec->getTyp();
@@ -1910,32 +1906,47 @@ std::string Opticks::getGenstepPath() const
 
     std::string path = NLoad::GenstepsPath(det, typ, tag);
 
-    LOG(info) << "Opticks::getGenstepPath"
+    LOG(info) << "Opticks::getLegacyGenstepPath"
               << " det " << det 
               << " typ " << typ 
               << " tag " << tag
               << " path " << path
               ; 
 
-
-    return path ; 
+    return strdup(path.c_str()) ; 
 }
+
+bool Opticks::hasKey() const { return m_resource->hasKey() ; }
+
+
+/**
+Opticks::getGenstepPath
+-------------------------
+
+Legacy genstep paths carry the tag in their stems::
+
+    /usr/local/opticks/opticksdata/gensteps/dayabay/scintillation/./1.npy 
+
+**/
+
+const char* Opticks::getGenstepPath() const 
+{
+    return hasKey() ? getDirectGenstepPath() : getLegacyGenstepPath() ; 
+}
+
 
 bool Opticks::existsGenstepPath() const 
 {
-    std::string path = getGenstepPath();
-    return BFile::ExistsFile(path.c_str()); 
+    const char* path = getGenstepPath();
+    bool exists = path ? BFile::ExistsFile(path) : false ;
+    LOG(error) 
+       << " path " << path 
+       << " exists " << exists 
+       ;
+
+    return exists ; 
 }
-bool Opticks::existsPrimariesPath() const 
-{
-    const char* path = getPrimariesPath();
-    return path ? BFile::ExistsFile(path) : false ; 
-}
-bool Opticks::existsDirectGenstepPath() const 
-{
-    const char* path = getDirectGenstepPath();
-    return path ? BFile::ExistsFile(path) : false ; 
-}
+
 
 
 
@@ -1959,17 +1970,42 @@ NPY<float>* Opticks::loadGenstep() const
     std::string path = getGenstepPath();
     return load(path.c_str()); 
 }
+
+/*
+bool Opticks::existsDirectGenstepPath() const 
+{
+    const char* path = getDirectGenstepPath();
+    bool exists = path ? BFile::ExistsFile(path) : false ;
+    LOG(error) 
+       << " path " << path 
+       << " exists " << exists 
+       ;
+
+    return exists ; 
+}
+
 NPY<float>* Opticks::loadDirectGenstep() const 
 {
     std::string path = getDirectGenstepPath();
     return load(path.c_str()); 
 }
+
+const char* Opticks::getPrimariesPath() const { return m_resource->getPrimariesPath() ; } 
+
+bool Opticks::existsPrimariesPath() const 
+{
+    const char* path = getPrimariesPath();
+    return path ? BFile::ExistsFile(path) : false ; 
+}
+
+
 NPY<float>* Opticks::loadPrimaries() const 
 {
     const char* path = getPrimariesPath();
     return load(path); 
 }
 
+*/
 
 
 

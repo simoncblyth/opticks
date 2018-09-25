@@ -37,13 +37,10 @@ class OKGEO_API OpticksGen
     public:
         unsigned             getSourceCode() const ;
     public:
-        bool                 hasInputPrimaries() const ;
     public:
         Opticks*             getOpticks() const ; 
         NPY<float>*          getInputPhotons() const ;    // currently only used for NCSG emitter testing 
         NPY<float>*          getInputGensteps() const ;
-        NPY<float>*          getDirectGensteps() const ;
-        NPY<float>*          getInputPrimaries() const ;
 
         FabStepNPY*          getFabStep() const  ;
         TorchStepNPY*        getTorchstep() const ;
@@ -56,12 +53,11 @@ class OKGEO_API OpticksGen
     private:
         void                 init();
         unsigned             initSourceCode() const ;
+        void                 initFromLegacyGensteps();
         void                 initFromGensteps();
-        void                 initFromDirectGensteps();
         void                 initFromEmitter();
-        void                 initFromPrimaries();
     private:
-        NPY<float>*          makeInputGensteps(unsigned code);
+        NPY<float>*          makeLegacyGensteps(unsigned code);
         NPY<float>*          loadGenstepFile(const char* label);
         TorchStepNPY*        makeTorchstep();
     private:
@@ -82,13 +78,11 @@ class OKGEO_API OpticksGen
         NLookup*              m_lookup ; 
         TorchStepNPY*         m_torchstep ;
         FabStepNPY*           m_fabstep ;  
-        NPY<float>*           m_input_gensteps ; 
         NCSG*                 m_csg_emit ; 
         bool                  m_emitter_dbg ; 
         NEmitPhotonsNPY*      m_emitter ; 
         NPY<float>*           m_input_photons ; 
-        NPY<float>*           m_input_primaries ; 
-        NPY<float>*           m_direct_gensteps ; 
+        NPY<float>*           m_input_gensteps ; 
         unsigned              m_source_code ; 
   
 };

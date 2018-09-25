@@ -48,7 +48,7 @@ bool BOpticksKey::SetKey(const char* spec)
 }
 
 
-bool BOpticksKey::isKeySource() const 
+bool BOpticksKey::isKeySource() const  // current executable is geocache creator 
 {
     return m_current_exename && m_exename && strcmp(m_current_exename, m_exename) == 0 ; 
 }

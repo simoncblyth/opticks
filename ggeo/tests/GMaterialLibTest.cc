@@ -1,4 +1,5 @@
 // op --mat
+//  TEST=GMaterialLibTest om-t 
 
 #include <string>
 #include <iostream>
@@ -9,6 +10,7 @@
 
 
 #include "SSys.hh"
+#include "BStr.hh"
 
 #include "Opticks.hh"
 #include "OpticksAttrSeq.hh"
@@ -19,9 +21,7 @@
 #include "GMaterialLib.hh"
 #include "GDomain.hh"
 
-#include "PLOG.hh"
-#include "GGEO_LOG.hh"
-
+#include "OPTICKS_LOG.hh"
 
 
 void colorcodes(GMaterialLib* mlib)
@@ -94,12 +94,27 @@ void test_interpolatingCopyCtor(GMaterialLib* mlib)
 
 }
 
+void test_getLocalKey(GMaterialLib* mlib)
+{
+    const char* keys_ = "refractive_index absorption_length scattering_length reemission_prob non_existing_key" ; 
+    std::vector<std::string> keys ; 
+    BStr::split(keys, keys_, ' '); 
+
+    for(unsigned i=0 ; i < keys.size() ; i++)
+    {
+        const char* key = keys[i].c_str(); 
+        const char* lkey = mlib->getLocalKey(key); 
+        LOG(info) 
+            << " key " << std::setw(30) << key 
+            << " lkey " << std::setw(30) << lkey
+            ;  
+    }
+}
 
 
 int main(int argc, char** argv)
 {
-    PLOG_(argc, argv);
-    GGEO_LOG__ ;
+    OPTICKS_LOG(argc, argv);
 
     SSys::setenvvar("IDPATH", "$TMP", true );
 
@@ -121,6 +136,8 @@ int main(int argc, char** argv)
 
 
     //test_interpolatingCopyCtor(mlib);
+
+    test_getLocalKey(mlib) ; 
 
 
     return 0 ;

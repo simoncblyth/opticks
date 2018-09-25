@@ -255,13 +255,13 @@ void OpticksResource::init()
    readG4Environment();
    readOpticksEnvironment();
 
-   if( m_key )  
+   if( hasKey() )  
    {
        setupViaKey();    // from BOpticksResource base
    } 
    else
    {
-       readEnvironment();
+       readEnvironment();  // invokes BOpticksResource::setupViaSrc after getting daepath from envvar
    }
 
    readMetadata();
