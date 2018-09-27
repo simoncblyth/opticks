@@ -241,10 +241,19 @@ thrust-export()
 thrust-samples-dir(){ echo $(cuda-dir)/samples ; }
 thrust-samples-cd(){  cd $(thrust-samples-dir) ; }
 
+thrust-samples-find(){ 
+   thrust-samples-cd
+   find . -type f -exec grep -l thrust {} \;
+}
+
+
 thrust-pdf(){  open $(cuda-dir)/doc/pdf/Thrust_Quick_Start_Guide.pdf ; }
 thrust-html(){ open $(cuda-dir)/doc/html/thrust/index.html ; }
 
 thrust-doc(){  open https://github.com/thrust/thrust/wiki/Documentation ; }
+
+thrust-ex(){ open https://github.com/thrust/thrust/tree/master/examples ; }
+
 
 
 

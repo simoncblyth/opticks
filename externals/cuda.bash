@@ -15,6 +15,19 @@ See Also
 * cudamac-
 
 
+Samples
+---------
+
+* https://github.com/NVIDIA/cuda-samples
+
+
+Intros
+----------
+
+* https://devblogs.nvidia.com/even-easier-introduction-cuda/
+* https://devblogs.nvidia.com/unified-memory-cuda-beginners/
+
+
 dynamic parallelism : series by  Andy Adinets
 -------------------------------------------------
 
@@ -41,6 +54,11 @@ kernel which in turn launches finer-grained kernels to do work where needed.
 * https://devblogs.nvidia.com/a-cuda-dynamic-parallelism-case-study-panda/
 * http://on-demand.gputechconf.com/gtc/2014/presentations/S4499-gpus-for-online-track-reconstruction.pdf 
 
+
+how is CUDA memory managed ?
+-----------------------------
+
+* https://stackoverflow.com/questions/8684770/how-is-cuda-memory-managed
 
 
 cuda uninstallers
@@ -942,6 +960,10 @@ cuda-samples-dir(){  echo $(cuda-writable-dir)/$(cuda-samples-name) ; }
 cuda-samples-find(){ 
    find $(cuda-samples-dir) -type f -exec grep -${2:-l} ${1:-cuda_gl_interop.h} {} \;  
 }
+
+cuda-samples-tex2D(){  cuda-samples-find tex2D ; }
+cuda-samples-tex3D(){  cuda-samples-find tex3D ; }
+
 
 
 cuda-cd(){           cd $(cuda-dir); }

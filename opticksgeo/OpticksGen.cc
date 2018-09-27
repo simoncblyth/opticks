@@ -24,7 +24,7 @@
 
 #include "PLOG.hh"
 
-NPY<float>* OpticksGen::getInputGensteps() const { return m_input_gensteps ; }
+NPY<float>* OpticksGen::getInputGensteps() const { return m_direct_gensteps ? m_direct_gensteps : m_legacy_gensteps ; }
 NPY<float>* OpticksGen::getInputPhotons() const {   return m_input_photons ; }
 
 OpticksGen::OpticksGen(OpticksHub* hub) 
@@ -42,7 +42,8 @@ OpticksGen::OpticksGen(OpticksHub* hub)
     m_emitter_dbg(false),
     m_emitter(m_csg_emit ? new NEmitPhotonsNPY(m_csg_emit, EMITSOURCE, m_ok->getSeed(), m_emitter_dbg, m_ok->getMaskBuffer()) : NULL ),
     m_input_photons(NULL),
-    m_input_gensteps(m_ok->existsGenstepPath() ? m_ok->loadGenstep() : NULL ),
+    m_direct_gensteps(m_ok->hasKey() && m_ok->existsDirectGenstepPath() ? m_ok->loadDirectGenstep() : NULL ),
+    m_legacy_gensteps(NULL),
     m_source_code(initSourceCode())
 {
     init() ;
@@ -52,10 +53,16 @@ Opticks* OpticksGen::getOpticks() const { return m_ok ; }
 std::string OpticksGen::getG4GunConfig() const { return m_gun->getConfig() ; }
 
 
+/**
+This is trying to treat direct and legacy gensteps the same ... but they aint
+
+**/
+
+
 unsigned OpticksGen::initSourceCode() const 
 {
     unsigned code = 0 ; 
-    if(m_input_gensteps)
+    if(m_direct_gensteps)
     {
         code = GENSTEPSOURCE ; 
     }  
@@ -78,7 +85,7 @@ unsigned OpticksGen::getSourceCode() const
 
 void OpticksGen::init()
 {
-    if(m_input_gensteps)
+    if(m_direct_gensteps)
     {
         initFromGensteps();
     }  
@@ -116,7 +123,7 @@ void OpticksGen::initFromEmitter()
     gs->addActionControl(OpticksActionControl::Parse(oac_));
 
     OpticksActionControl oac(gs->getActionControlPtr());
-    setInputGensteps(gs);
+    setLegacyGensteps(gs);
 
     LOG(info) << "OpticksGen::initFromEmitter getting input photons and shim genstep "
               << " input_photons " << m_input_photons->getNumItems()
@@ -129,8 +136,8 @@ void OpticksGen::initFromEmitter()
 void OpticksGen::initFromGensteps()
 {
     LOG(info) << "." ; 
-    assert( m_input_gensteps ) ; 
-    m_input_gensteps->setBufferSpec(OpticksEvent::GenstepSpec(m_ok->isCompute()));
+    assert( m_direct_gensteps ) ; 
+    m_direct_gensteps->setBufferSpec(OpticksEvent::GenstepSpec(m_ok->isCompute()));
 }
 
 void OpticksGen::initFromLegacyGensteps()
@@ -151,7 +158,7 @@ void OpticksGen::initFromLegacyGensteps()
 
     NPY<float>* gs = makeLegacyGensteps(code) ; 
     assert( gs );
-    setInputGensteps(gs);
+    setLegacyGensteps(gs);
 }
 
 
@@ -180,17 +187,17 @@ NPY<float>* OpticksGen::makeLegacyGensteps(unsigned code)
     }
     else if( code == CERENKOV || code == SCINTILLATION || code == NATURAL )
     {
-        gs = loadGenstepFile("GS_LOADED,GS_LEGACY");
+        gs = loadLegacyGenstepFile("GS_LOADED,GS_LEGACY");
     }
     else if( code == G4GUN  )
     {
-        if(m_ok->existsGenstepPath())
+        if(m_ok->existsLegacyGenstepPath())
         {
-             gs = loadGenstepFile("GS_LOADED");
+             gs = loadLegacyGenstepFile("GS_LOADED");
         }
         else
         {
-             std::string path = m_ok->getGenstepPath();
+             std::string path = m_ok->getLegacyGenstepPath();
              LOG(warning) <<  "G4GUN running, but no gensteps at " << path 
                           << " LIVE G4 is required to provide the gensteps " 
                           ;
@@ -223,14 +230,9 @@ GenstepNPY* OpticksGen::getGenstepNPY() const
 }
 
 
-
-
-
-
-
-void OpticksGen::setInputGensteps(NPY<float>* gs)
+void OpticksGen::setLegacyGensteps(NPY<float>* gs)
 {
-    m_input_gensteps = gs ;  
+    m_legacy_gensteps = gs ;  
     if(gs)  // will be NULL for G4GUN for example
     {
         gs->setBufferSpec(OpticksEvent::GenstepSpec(m_ok->isCompute()));
@@ -250,9 +252,6 @@ void OpticksGen::setInputPhotons(NPY<float>* ox)
         ox->setBufferSpec(OpticksEvent::SourceSpec(m_ok->isCompute()));
     }
 }
-
-
-
 
 
 TorchStepNPY* OpticksGen::getTorchstep() const // used by CGenerator for  cfg4-/CTorchSource duplication
@@ -293,6 +292,15 @@ void OpticksGen::targetGenstep( GenstepNPY* gs )
 
 
 
+/**
+OpticksGen::setMaterialLine
+-----------------------------
+
+Translation from a string name from config into a mat line
+only depends on the GBndLib being loaded, so no G4 complications
+just need to avoid trying to translate the matline later.
+
+**/
 
 void OpticksGen::setMaterialLine( GenstepNPY* gs )
 {
@@ -301,11 +309,6 @@ void OpticksGen::setMaterialLine( GenstepNPY* gs )
         LOG(warning) << "OpticksGen::setMaterialLine no blib, skip setting material line " ;
         return ; 
     }
-
-   // translation from a string name from config into a mat line
-   // only depends on the GBndLib being loaded, so no G4 complications
-   // just need to avoid trying to translate the matline later
-
    const char* material = gs->getMaterial() ;
 
    if(material == NULL)
@@ -340,6 +343,21 @@ FabStepNPY* OpticksGen::makeFabstep()
 TorchStepNPY* OpticksGen::makeTorchstep()
 {
     TorchStepNPY* torchstep = m_ok->makeSimpleTorchStep();
+
+    if(torchstep->isDefault())
+    {
+        int frameIdx = torchstep->getFrameIndex(); 
+        int detectorDefaultFrame = m_ok->getDefaultFrame() ; 
+        LOG(error) 
+            << " as torchstep isDefault replacing placeholder frame " 
+            << " frameIdx : " << frameIdx
+            << " detectorDefaultFrame : " << detectorDefaultFrame
+            ; 
+
+        torchstep->setFrame(detectorDefaultFrame); 
+    }
+
+
     targetGenstep(torchstep);  // sets frame transform
     setMaterialLine(torchstep);
     torchstep->addActionControl(OpticksActionControl::Parse("GS_TORCH"));
@@ -353,12 +371,12 @@ TorchStepNPY* OpticksGen::makeTorchstep()
     return torchstep ; 
 }
 
-NPY<float>* OpticksGen::loadGenstepFile(const char* label)
+NPY<float>* OpticksGen::loadLegacyGenstepFile(const char* label)
 {
-    NPY<float>* gs = m_ok->loadGenstep();
+    NPY<float>* gs = m_ok->loadLegacyGenstep();
     if(gs == NULL)
     {
-        LOG(fatal) << "OpticksGen::loadGenstepFile FAILED" ;
+        LOG(fatal) << "OpticksGen::loadLegacyGenstepFile FAILED" ;
         m_ok->setExit(true);
         return NULL ; 
     } 
@@ -371,7 +389,7 @@ NPY<float>* OpticksGen::loadGenstepFile(const char* label)
     if(modulo > 0) 
     {    
         parameters->add<std::string>("genstepOriginal",   gs->getDigestString()  );
-        LOG(warning) << "OptickGen::loadGenstepFile applying modulo scaledown " << modulo ;
+        LOG(warning) << "OptickGen::loadLegacyGenstepFile applying modulo scaledown " << modulo ;
         gs = NPY<float>::make_modulo(gs, modulo);
         parameters->add<std::string>("genstepModulo",   gs->getDigestString()  );
     }    

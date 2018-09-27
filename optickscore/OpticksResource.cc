@@ -79,6 +79,11 @@ const char* OpticksResource::SENSOR_SURFACE_DYB = "lvPmtHemiCathodeSensorSurface
 const char* OpticksResource::SENSOR_SURFACE_JUNO = "SS-JUNO-UNKNOWN" ; 
 const char* OpticksResource::SENSOR_SURFACE_OTHER = "SS-OTHER-UNKNOWN" ; 
 
+const int OpticksResource::DEFAULT_FRAME_OTHER = 0 ; 
+const int OpticksResource::DEFAULT_FRAME_DYB = 3153 ; 
+const int OpticksResource::DEFAULT_FRAME_JUNO = 62593 ; 
+
+
 const plog::Severity OpticksResource::LEVEL = error ; 
 
 OpticksResource::OpticksResource(Opticks* opticks, const char* lastarg) 
@@ -116,6 +121,7 @@ OpticksResource::OpticksResource(Opticks* opticks, const char* lastarg)
        m_default_medium(NULL),
        m_example_matnames(NULL),
        m_sensor_surface(NULL),
+       m_default_frame(DEFAULT_FRAME_OTHER),
        m_testcsgpath(NULL),
        m_testconfig(NULL),
        m_sensor_list(NULL)
@@ -355,6 +361,9 @@ void OpticksResource::assignDefaultMaterial()
     if(m_juno)   m_sensor_surface =  SENSOR_SURFACE_JUNO  ; 
     if(m_dayabay) m_sensor_surface = SENSOR_SURFACE_DYB ; 
 
+    m_default_frame = DEFAULT_FRAME_OTHER ; 
+    if(m_juno)    m_default_frame = DEFAULT_FRAME_JUNO ;
+    if(m_dayabay) m_default_frame = DEFAULT_FRAME_DYB ;
 
 }
 
@@ -370,10 +379,16 @@ const char* OpticksResource::getExampleMaterialNames()
 {
     return m_example_matnames ; 
 }
+
 const char* OpticksResource::getSensorSurface()
 {
     return m_sensor_surface ; 
 }
+int OpticksResource::getDefaultFrame() const 
+{
+    return m_default_frame ; 
+}
+
 
 
 

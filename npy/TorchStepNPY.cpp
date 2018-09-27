@@ -21,10 +21,12 @@
 
 // frame=3153,      DYB NEAR AD center
 // frame=62593      j1808 lAcrylic0x4bd3f20         ce  0.000   0.000   0.009 17820.008
+//    "frame=3153_"
+//    "frame=62593_"
 
 const char* TorchStepNPY::DEFAULT_CONFIG = 
     "type=sphere_"
-    "frame=62593_"
+    "frame=0_"
     "source=0,0,0_"
     "target=0,0,1_"
     "photons=10000_"
@@ -73,10 +75,6 @@ Torch_t TorchStepNPY::parseType(const char* k)
     else if(  strcmp(k,T_RING_)==0)      type = T_RING ; 
     return type ;   
 }
-
-
-
-
 
 ::Torch_t TorchStepNPY::getType()
 {
@@ -281,21 +279,32 @@ void TorchStepNPY::set(Param_t p, const char* s)
 
 
 TorchStepNPY::TorchStepNPY(unsigned genstep_type, unsigned int num_step, const char* config) 
-       :  
-       GenstepNPY(genstep_type,  num_step, config ? strdup(config) : DEFAULT_CONFIG )
+    :  
+    GenstepNPY(genstep_type,  num_step, config ? strdup(config) : DEFAULT_CONFIG, config == NULL ),
+    m_level(info)
 {
-   init();
+    init();
 }
+
 
 
 void TorchStepNPY::init()
 {
     const char* config = getConfig(); 
 
+    LOG(m_level) 
+        << " config " <<  config 
+        ;
+
     typedef std::pair<std::string,std::string> KV ; 
     std::vector<KV> ekv = BStr::ekv_split(config,'_',"=");
 
-    LOG(debug) << "TorchStepNPY::init " <<  config ;
+    LOG(m_level) 
+        << " config " <<  config 
+        << " ekv " << ekv.size() 
+        ;
+
+
     for(std::vector<KV>::const_iterator it=ekv.begin() ; it!=ekv.end() ; it++)
     {
         const char* k = it->first.c_str() ;  
@@ -303,7 +312,7 @@ void TorchStepNPY::init()
 
         Param_t p = parseParam(k) ;
 
-        LOG(debug) << std::setw(20) << k << ":" << v  ; 
+        LOG(m_level) << std::setw(20) << k << ":" << v  ; 
 
         if(p == UNRECOGNIZED)
         {

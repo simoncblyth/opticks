@@ -91,6 +91,10 @@ class OKCORE_API OpticksResource : public BOpticksResource {
        static const char* DEFAULT_MEDIUM_JUNO ;
        static const char* DEFAULT_MEDIUM_OTHER ;
     public:
+       static const int DEFAULT_FRAME_DYB ;
+       static const int DEFAULT_FRAME_JUNO ;
+       static const int DEFAULT_FRAME_OTHER ;
+    public:
        static const char* SENSOR_SURFACE_DYB ;
        static const char* SENSOR_SURFACE_JUNO ;
        static const char* SENSOR_SURFACE_OTHER ;
@@ -125,6 +129,7 @@ class OKCORE_API OpticksResource : public BOpticksResource {
        const char* getDefaultMedium();    // PMT medium material name 
        const char* getExampleMaterialNames();  // comma delimited list of short material names
        const char* getSensorSurface(); 
+       int         getDefaultFrame() const ; 
     public:
        std::string getRelativePath(const char* path); 
        std::string getRelativePath(const char* name, unsigned int ridx);
@@ -232,6 +237,7 @@ class OKCORE_API OpticksResource : public BOpticksResource {
        const char* m_default_medium  ;
        const char* m_example_matnames  ;
        const char* m_sensor_surface  ;
+       int         m_default_frame ; 
    private:
        const char*  m_testcsgpath ;
        const char*  m_testconfig ;

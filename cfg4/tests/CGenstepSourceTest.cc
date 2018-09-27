@@ -42,10 +42,10 @@ int main(int argc, char** argv)
     // TODO: a more direct way to get to a refractive index, than the above that loads the entire geometry  
 
 
-    const char* gsp = ok.getGenstepPath() ; 
+    const char* gsp = ok.getDirectGenstepPath() ; 
     LOG(error) << " gsp " << gsp ; 
 
-    NPY<float>* np = ok.loadGenstep() ; 
+    NPY<float>* np = ok.loadDirectGenstep() ; 
     if(np == NULL) return 0 ; 
 
 

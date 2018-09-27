@@ -44,10 +44,9 @@ int main(int argc, char** argv)
     // TODO: a more direct way to get to a refractive index, than the above that loads the entire geometry  
 
 
-
     // below needs to be done after Opticks::configure for setup of the event spec
 
-    NPY<float>* np = ok.loadGenstep();    // loads direct OR legacy gensteps 
+    NPY<float>* np = ok.hasKey() ? ok.loadDirectGenstep() : NULL ;   
     if(np == NULL) return 0 ; 
 
     OpticksGenstep* gs = new OpticksGenstep(np) ; 

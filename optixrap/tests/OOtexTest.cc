@@ -1,7 +1,9 @@
+// TEST=OOtexTest om-t
+
 #include "NPY.hpp"
 #include "OXPPNS.hh"
 #include "OConfig.hh"
-#include "PLOG.hh"
+#include "OPTICKS_LOG.hh"
 
 
 /**
@@ -16,7 +18,7 @@ Technical tex roundtrip test.
 
 int main(int argc, char** argv)
 {
-    PLOG_(argc, argv);    
+    OPTICKS_LOG(argc, argv);    
 
     LOG(info) << " ok " ; 
 

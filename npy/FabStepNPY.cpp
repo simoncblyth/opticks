@@ -4,7 +4,7 @@
 
 FabStepNPY::FabStepNPY(unsigned genstep_type, unsigned num_step, unsigned num_photons_per_step) 
        :  
-       GenstepNPY(genstep_type, num_step),
+       GenstepNPY(genstep_type, num_step, NULL, false ),
        m_num_photons_per_step(num_photons_per_step)
 {
     init();

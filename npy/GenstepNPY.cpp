@@ -13,31 +13,35 @@
 
 
 
-GenstepNPY::GenstepNPY(unsigned genstep_type, unsigned num_step, const char* config) 
-       :  
-       m_genstep_type(genstep_type),
-       m_num_step(num_step),
-       m_config(config ? strdup(config) : NULL),
-       m_material(NULL),
-       m_npy(NPY<float>::make(num_step, 6, 4)),
-       m_step_index(0),
-       m_ctrl(0,0,0,0),
-       m_post(0,0,0,0),
-       m_dirw(0,0,0,0),
-       m_polw(0,0,0,0),
-       m_zeaz(0,0,0,0),
-       m_beam(0,0,0,0),
-       m_frame(-1,0,0,0),
-       m_frame_transform(1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1),
-       m_frame_targetted(false),
-       m_num_photons_per_g4event(10000)
+GenstepNPY::GenstepNPY(unsigned genstep_type, unsigned num_step, const char* config, bool is_default ) 
+    :  
+    m_genstep_type(genstep_type),
+    m_num_step(num_step),
+    m_config(config ? strdup(config) : NULL),
+    m_is_default(is_default),
+    m_material(NULL),
+    m_npy(NPY<float>::make(num_step, 6, 4)),
+    m_step_index(0),
+    m_ctrl(0,0,0,0),
+    m_post(0,0,0,0),
+    m_dirw(0,0,0,0),
+    m_polw(0,0,0,0),
+    m_zeaz(0,0,0,0),
+    m_beam(0,0,0,0),
+    m_frame(-1,0,0,0),
+    m_frame_transform(1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1),
+    m_frame_targetted(false),
+    m_num_photons_per_g4event(10000)
 {
+    assert( m_config ) ; 
+
+    LOG(error ) << " m_config " << m_config ; 
+
     m_npy->zero();
 }
 
 
-
-
+bool GenstepNPY::isDefault() const { return m_is_default ; } 
 
 // used from cfg4-
 void GenstepNPY::setNumPhotonsPerG4Event(unsigned int n)
@@ -405,7 +409,7 @@ void GenstepNPY::setFrame(const char* s)
     std::string ss(s);
     m_frame = givec4(ss);
 }
-void GenstepNPY::setFrame(unsigned int vindex)
+void GenstepNPY::setFrame(unsigned vindex)
 {
     m_frame.x = vindex ; 
     m_frame.y = 0 ; 

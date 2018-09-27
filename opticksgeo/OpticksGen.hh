@@ -58,14 +58,14 @@ class OKGEO_API OpticksGen
         void                 initFromEmitter();
     private:
         NPY<float>*          makeLegacyGensteps(unsigned code);
-        NPY<float>*          loadGenstepFile(const char* label);
+        NPY<float>*          loadLegacyGenstepFile(const char* label);
         TorchStepNPY*        makeTorchstep();
     private:
         //  FabStepNPY and TorchStepNPY are specializations of GenstepNPY
         void                 targetGenstep( GenstepNPY* gs );
         void                 setMaterialLine( GenstepNPY* gs );
     private:
-        void                 setInputGensteps(NPY<float>* igs);
+        void                 setLegacyGensteps(NPY<float>* igs);
         void                 setInputPhotons(NPY<float>* iox);
     private:
         OpticksHub*           m_hub ; 
@@ -82,7 +82,8 @@ class OKGEO_API OpticksGen
         bool                  m_emitter_dbg ; 
         NEmitPhotonsNPY*      m_emitter ; 
         NPY<float>*           m_input_photons ; 
-        NPY<float>*           m_input_gensteps ; 
+        NPY<float>*           m_direct_gensteps ; 
+        NPY<float>*           m_legacy_gensteps ; 
         unsigned              m_source_code ; 
   
 };

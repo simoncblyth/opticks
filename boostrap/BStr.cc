@@ -562,6 +562,8 @@ std::string BStr::join( const char* a, const char* b, const char* c, const char*
 
 int BStr::ekv_split( std::vector<std::pair<std::string, std::string> > & ekv, const char* line_, char edelim, const char* kvdelim)
 {
+    //LOG(error) << " line_ " << line_ ; 
+
     int err = 0 ; 
     bool warn = true ; 
     const char* line = strdup(line_);
@@ -570,6 +572,8 @@ int BStr::ekv_split( std::vector<std::pair<std::string, std::string> > & ekv, co
     std::string s;
     while (getline(f, s, edelim))
     {
+        //LOG(error) << " s " << s ; 
+
         std::vector<std::string> kv ;
         boost::split(kv, s, boost::is_any_of(kvdelim));
         if(kv.size() == 2)

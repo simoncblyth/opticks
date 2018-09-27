@@ -276,6 +276,7 @@ class OKCORE_API Opticks {
        bool     isAnalyticPMTLoad();
        unsigned getAnalyticPMTIndex();
        const char* getAnalyticPMTMedium();
+       const int getDefaultFrame() const ; 
    public:
        OpticksCfg<Opticks>* getCfg() const ;
        const char*          getRenderMode() const ;
@@ -369,13 +370,16 @@ class OKCORE_API Opticks {
        std::string          getPreferenceDir(const char* type, const char* subtype);
    public:
        bool                 hasKey() const ;  // distinguishes direct from legacy mode
-       const char*          getGenstepPath() const ;  // either direct or legacy depending on mode : as distinguished by hasKey 
-       bool                 existsGenstepPath() const ;
+       //const char*          getGenstepPath() const ;  // either direct or legacy depending on mode : as distinguished by hasKey 
+       //bool                 existsGenstepPath() const ;
+       bool                 existsDirectGenstepPath() const ;
+       bool                 existsLegacyGenstepPath() const ;
        const char*          getDirectGenstepPath() const ; 
        const char*          getLegacyGenstepPath() const ; 
 
        NPY<float>*          load(const char* path) const ;
-       NPY<float>*          loadGenstep() const ;
+       NPY<float>*          loadDirectGenstep() const ;
+       NPY<float>*          loadLegacyGenstep() const ;
 
    public:
        TorchStepNPY*        makeSimpleTorchStep();

@@ -13,6 +13,16 @@ typedef enum {
 #include "NPY_API_EXPORT.hh"
 #include "NPY_HEAD.hh"
 
+/**
+FabStepNPY
+=============
+
+Frame targetting and NPY creation are handled in base class GenstepNPY, 
+currently the only other GenstepNPY subclass is TorchStepNPY 
+
+**/
+
+
 class NPY_API FabStepNPY : public GenstepNPY 
 {
    public:

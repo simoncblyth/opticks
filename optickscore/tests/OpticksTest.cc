@@ -52,11 +52,13 @@ struct OpticksTest
         test_path("getDirectGenstepPath", path );
     }
 
+/*
     void test_getGenstepPath()
     {
         const char* path = ok->getGenstepPath();
         test_path("getGenstepPath", path );
     }
+*/
 
     const Opticks* ok ; 
 
@@ -160,7 +162,7 @@ int main(int argc, char** argv)
 
     OpticksTest okt(&ok); 
 
-    okt.test_getGenstepPath();  
+    //okt.test_getGenstepPath();  
     okt.test_getDirectGenstepPath();  
 
 

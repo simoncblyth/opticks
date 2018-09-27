@@ -1038,6 +1038,12 @@ const char* Opticks::getAnalyticPMTMedium()
     return m_apmtmedium ;
 }
 
+const int Opticks::getDefaultFrame() const 
+{
+    return m_resource->getDefaultFrame() ; 
+}
+
+
 NSlice* Opticks::getAnalyticPMTSlice()
 {
     if(m_apmtslice == 0)
@@ -1936,17 +1942,18 @@ Legacy genstep paths carry the tag in their stems::
 
     /usr/local/opticks/opticksdata/gensteps/dayabay/scintillation/./1.npy 
 
-**/
 
 const char* Opticks::getGenstepPath() const 
 {
     return hasKey() ? getDirectGenstepPath() : getLegacyGenstepPath() ; 
 }
 
+**/
 
-bool Opticks::existsGenstepPath() const 
+
+bool Opticks::existsDirectGenstepPath() const 
 {
-    const char* path = getGenstepPath();
+    const char* path = getDirectGenstepPath();
     bool exists = path ? BFile::ExistsFile(path) : false ;
     LOG(error) 
        << " path " << path 
@@ -1955,6 +1962,19 @@ bool Opticks::existsGenstepPath() const
 
     return exists ; 
 }
+
+bool Opticks::existsLegacyGenstepPath() const 
+{
+    const char* path = getLegacyGenstepPath();
+    bool exists = path ? BFile::ExistsFile(path) : false ;
+    LOG(error) 
+       << " path " << path 
+       << " exists " << exists 
+       ;
+
+    return exists ; 
+}
+
 
 
 
@@ -1974,11 +1994,19 @@ NPY<float>* Opticks::load(const char* path) const
     return a ; 
 }
 
-NPY<float>* Opticks::loadGenstep() const 
+NPY<float>* Opticks::loadDirectGenstep() const 
 {
-    std::string path = getGenstepPath();
+    std::string path = getDirectGenstepPath();
     return load(path.c_str()); 
 }
+NPY<float>* Opticks::loadLegacyGenstep() const 
+{
+    std::string path = getLegacyGenstepPath();
+    return load(path.c_str()); 
+}
+
+
+
 
 /*
 bool Opticks::existsDirectGenstepPath() const 

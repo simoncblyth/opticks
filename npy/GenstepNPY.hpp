@@ -17,8 +17,6 @@ GenstepNPY
 Base class of FabStepNPY and TorchStepNPY 
 
 
-
-
    *setZenithAzimuth*
 
    Photons directions are generated using two random numbers in range 0:1 
@@ -37,10 +35,9 @@ Base class of FabStepNPY and TorchStepNPY
 
 class NPY_API GenstepNPY {
    public:  
-       GenstepNPY(unsigned genstep_type, unsigned num_step=1, const char* config=NULL); 
+       GenstepNPY(unsigned genstep_type, unsigned num_step=1, const char* config=NULL, bool is_default=false); 
        void addStep(bool verbose=false); // increments m_step_index
        unsigned getNumStep();
-
 
    public:
        // slots used by Geant4 only (not Opticks) from cfg4- 
@@ -72,7 +69,7 @@ class NPY_API GenstepNPY {
    public:  
        // target setting needs external info regarding geometry 
        void setFrame(const char* s );
-       void setFrame(unsigned int vindex );
+       void setFrame(unsigned vindex );
        glm::ivec4&  getFrame();
        int getFrameIndex();
        void setFrameTransform(glm::mat4& transform);
@@ -121,10 +118,12 @@ class NPY_API GenstepNPY {
        void setMaterial(const char* s );
        const char* getConfig();
        const char* getMaterial();
+       bool isDefault() const ; 
   private:
        unsigned int m_genstep_type ; 
        unsigned int m_num_step ; 
        const char*  m_config ;
+       bool         m_is_default ; 
   private:
        const char*  m_material ;
        NPY<float>*  m_npy ; 

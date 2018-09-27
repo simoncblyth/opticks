@@ -1,12 +1,12 @@
 #include "LaunchSequence.hh"
 #include "LaunchCommon.hh"
 
-#include "PLOG.hh"
+#include "OPTICKS_LOG.hh"
 #include "SSys.hh"
 
 int main(int argc, char** argv)
 {
-    PLOG_(argc, argv);
+    OPTICKS_LOG(argc, argv);
 
     unsigned int work = SSys::getenvint("WORK", 1024*768) ;
     unsigned int threads_per_block = SSys::getenvint("THREADS_PER_BLOCK", 256) ; 

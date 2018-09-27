@@ -498,6 +498,8 @@ glm::mat4 OpticksHub::getTransform(int index)
     {    
         GMergedMesh* mesh0 = getMergedMesh(0);
         float* transform = mesh0 ? mesh0->getTransform(index) : NULL ;
+        assert( transform ) ; 
+
         if(transform) vt = glm::make_mat4(transform) ;
     }    
     return vt ;  

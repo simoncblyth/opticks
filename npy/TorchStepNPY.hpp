@@ -37,13 +37,22 @@ typedef enum {
 
 template<typename T> class NPY ; 
 
+#include "plog/Severity.h"
 
 #include "GenstepNPY.hpp"
 #include "NPY_API_EXPORT.hh"
 #include "NPY_HEAD.hh"
 
+/**
+TorchStepNPY
+==============
 
-// frame targetting and NPY creation are handled in base class 
+Frame targetting and NPY creation are handled in base class GenstepNPY, 
+currently the only other GenstepNPY subclass is FabStepNPY 
+
+
+**/
+
 class NPY_API TorchStepNPY : public GenstepNPY {
    public:
        typedef enum { TYPE, 
@@ -103,7 +112,7 @@ class NPY_API TorchStepNPY : public GenstepNPY {
        static const char* M_WAVELENGTH_COMB_ ; 
 
    public:  
-       TorchStepNPY(unsigned int genstep_type, unsigned int num_step=1, const char* config=NULL); 
+       TorchStepNPY(unsigned genstep_type, unsigned num_step=1, const char* config=NULL); 
        void update();
    private:
        void init();
@@ -155,6 +164,7 @@ class NPY_API TorchStepNPY : public GenstepNPY {
        glm::vec4    m_pol ;
        glm::vec3    m_dir ;
 
+       plog::Severity m_level ; 
 
 };
 
