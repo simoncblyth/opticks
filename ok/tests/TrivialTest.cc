@@ -3,20 +3,11 @@
 
 #include "TrivialCheckNPY.hpp"
 
-
-#include "OKCORE_LOG.hh"
-#include "OK_LOG.hh"
-#include "NPY_LOG.hh"
-
-#include "PLOG.hh"
+#include "OPTICKS_LOG.hh"
 
 int main(int argc, char** argv)
 {
-    PLOG_(argc, argv);
-
-    NPY_LOG__ ;  
-    OKCORE_LOG__ ;  
-    OK_LOG__ ;  
+    OPTICKS_LOG(argc, argv);
 
     Opticks ok(argc, argv);
     ok.configure();
@@ -34,6 +25,8 @@ int main(int argc, char** argv)
         LOG(fatal) << " ################## tagoffset " << tagoffset ; 
 
         OpticksEvent* evt = ok.loadEvent(true, tagoffset);  
+        LOG(info) << " dir " << evt->getDir() ; 
+
 
         if(evt->isNoLoad()) 
         {
@@ -41,10 +34,17 @@ int main(int argc, char** argv)
             continue ;  
         }
          
-
         evt->Summary();
 
-        TrivialCheckNPY tcn(evt->getPhotonData(), evt->getGenstepData(), evt->getEntryCode());
+        char entryCode = evt->getEntryCode() ; 
+        if(!TrivialCheckNPY::IsApplicable( entryCode )) 
+        {
+            LOG(error) << " skipping event with non-applicable entryCode " << entryCode ; 
+            continue ; 
+        }
+
+
+        TrivialCheckNPY tcn(evt->getPhotonData(), evt->getGenstepData(), entryCode );
         fail += tcn.check(argv[0]);
     }
 

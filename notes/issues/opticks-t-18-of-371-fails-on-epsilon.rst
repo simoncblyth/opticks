@@ -646,3 +646,327 @@ CGenstepSourceTest : domain mismatch
 
 
 
+
+After reworking gensteps for better legacy handling 
+---------------------------------------------------------
+
+::
+
+    totals  6   / 372 
+
+
+    FAILS:
+      19 /120 Test #19 : NPYTest.FabStepTest                           ***Exception: Child aborted    0.01   
+           FabStep have NULL config, have to remove assert 
+
+      21 /24  Test #21 : OpticksCoreTest.OpticksEventAnaTest           ***Exception: SegFault         0.03   
+           skip out when "suceeded to load ok evt, BUT it has no associated geopath "
+
+      14 /18  Test #14 : OptiXRapTest.OEventTest                       ***Exception: Child aborted    0.30   
+           huh, not reproduced ?
+
+      2  /5   Test #2  : OKOPTest.OpSeederTest                         ***Exception: Child aborted    0.30   
+           huh, not reproduced ?
+
+
+      5  /5   Test #5  : OKTest.TrivialTest                            ***Exception: Child aborted    0.06   
+           avoided via applicability check   
+
+
+      32 /33  Test #32 : CFG4Test.CGenstepSourceTest                   ***Exception: Child aborted    0.30   
+    epsilon:build blyth$ 
+
+
+
+
+TrivialTest  : avoided with applicability check 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+Hmm : getting interference between tests based on existance of saved events 
+
+::
+
+
+    OKTest --save --compute
+
+    TrivialTest 
+
+        2018-09-27 21:01:59.900 INFO  [9501962] [*Opticks::loadEvent@1760] Opticks::loadEvent tagdir /tmp/blyth/opticks/evt/dayabay/torch/1 SUCEEDED
+        2018-09-27 21:01:59.900 INFO  [9501962] [main@28]  dir /tmp/blyth/opticks/evt/dayabay/torch/1
+        2018-09-27 21:01:59.900 INFO  [9501962] [OpticksEvent::Summary@1516] OpticksEvent::Summary  id: 1 typ: torch tag: 1 det: dayabay cat:  udet: dayabay num_photons: 10000 num_source : 0
+        Assertion failed: (m_entryCode == 'T' || m_entryCode == 'D'), function TrivialCheckNPY, file /Users/blyth/opticks/npy/TrivialCheckNPY.cpp, line 15.
+        Abort trap: 6
+        epsilon:ok blyth$ 
+
+
+
+    OKTest --save --compute --trivial
+ 
+    TrivialTest 
+         ## now completes ok
+
+
+
+
+::
+
+    epsilon:ok blyth$ cat /tmp/blyth/opticks/evt/dayabay/torch/1/parameters.json 
+    {
+        "TimeStamp": "20180927_210402",
+        "Type": "torch",
+        "Tag": "1",
+        "Detector": "dayabay",
+        "Cat": "",
+        "UDet": "dayabay",
+        "Id": "1",
+        "EntryCode": "T",
+        "RngMax": "3000000",
+        "BounceMax": "9",
+        "RecordMax": "10",
+        "mode": "COMPUTE_MODE",
+        "cmdline": "--save --compute --trivial ",
+        "EntryName": "TRIVIAL",
+        "Creator": "OKTest",
+        "genstepDigest": "7c3f2c3ee8fa39235edd12ed8ea671ce",
+        "NumGensteps": "1",
+        "NumPhotons": "10000",
+        "NumRecords": "100000",
+        "photonData": "2aedc1739ca20896414efc0fa2717c06",
+        "recordData": "11f538c506e1647fdef2f57bea679b2e",
+        "sequenceData": "17654ea2aacd9e472094439442bd07a0"
+    }
+    epsilon:ok blyth$ 
+
+
+
+
+CGenstepSourceTest 
+~~~~~~~~~~~~~~~~~~~
+
+::
+
+    2018-09-27 21:16:18.455 INFO  [9515534] [*BResource::Get@25]  label srcevtbase ret (null)
+    2018-09-27 21:16:18.455 INFO  [9515534] [*BResource::Get@25]  label tmpuser_dir ret /tmp/blyth/opticks
+    2018-09-27 21:16:18.456 INFO  [9515534] [*Opticks::getDirectGenstepPath@1902] Opticks::getDirectGenstepPath det dayabay typ torch tag 1 srctagdir /tmp/blyth/opticks/evt/dayabay/torch/1
+    2018-09-27 21:16:18.456 FATAL [9515534] [*CGenstepSource::generatePhotonsFromOneGenstep@100]  failed to generate for  gencode 2 flag SCINTILLATION
+    Assertion failed: (pc), function generatePhotonsFromOneGenstep, file /Users/blyth/opticks/cfg4/CGenstepSource.cc, line 106.
+    Abort trap: 6
+    epsilon:ok blyth$ 
+
+    (lldb) bt
+    * thread #1, queue = 'com.apple.main-thread', stop reason = signal SIGABRT
+      * frame #0: 0x00007fff655dbb6e libsystem_kernel.dylib`__pthread_kill + 10
+        frame #1: 0x00007fff657a6080 libsystem_pthread.dylib`pthread_kill + 333
+        frame #2: 0x00007fff655371ae libsystem_c.dylib`abort + 127
+        frame #3: 0x00007fff654ff1ac libsystem_c.dylib`__assert_rtn + 320
+        frame #4: 0x00000001001fc2af libCFG4.dylib`CGenstepSource::generatePhotonsFromOneGenstep(this=0x000000010b1d9940) at CGenstepSource.cc:106
+        frame #5: 0x00000001001fbfcd libCFG4.dylib`CGenstepSource::GeneratePrimaryVertex(this=0x000000010b1d9940, event=0x000000010b1d9ea0) at CGenstepSource.cc:70
+        frame #6: 0x000000010000ef53 CGenstepSourceTest`main(argc=1, argv=0x00007ffeefbfe940) at CGenstepSourceTest.cc:56
+        frame #7: 0x00007fff6548b015 libdyld.dylib`start + 1
+    (lldb) 
+
+
+
+Hmm these gensteps are not direct ones?
+
+* they are legacy fabricated torch gensteps
+* not surprising that failed to generate scintillation photons from it... 
+* must be some accidental mis-interpretation of gencode ?
+* need some version checking assert after genstep loading 
+
+
+::
+
+    2018-09-27 21:21:30.894 INFO  [9519092] [CMaterialLib::convert@144]  g4mat 0x7fd4585a7430 name                    MainH2OHale Pmin  1.512e-06 Pmax 2.0664e-05 Wmin         60 Wmax        820
+    2018-09-27 21:21:30.894 INFO  [9519092] [CMaterialLib::convert@153] CMaterialLib::convert : converted 38 ggeo materials to G4 materials 
+    2018-09-27 21:21:30.894 ERROR [9519092] [main@44] --------------------------------
+    2018-09-27 21:21:30.894 INFO  [9519092] [*BResource::Get@25]  label srcevtbase ret (null)
+    2018-09-27 21:21:30.894 INFO  [9519092] [*BResource::Get@25]  label tmpuser_dir ret /tmp/blyth/opticks
+    2018-09-27 21:21:30.894 INFO  [9519092] [*Opticks::getDirectGenstepPath@1902] Opticks::getDirectGenstepPath det dayabay typ torch tag 1 srctagdir /tmp/blyth/opticks/evt/dayabay/torch/1
+    2018-09-27 21:21:30.894 ERROR [9519092] [main@48]  gsp /tmp/blyth/opticks/evt/dayabay/torch/1/gs.npy
+    2018-09-27 21:21:30.894 INFO  [9519092] [*BResource::Get@25]  label srcevtbase ret (null)
+    2018-09-27 21:21:30.894 INFO  [9519092] [*BResource::Get@25]  label tmpuser_dir ret /tmp/blyth/opticks
+    2018-09-27 21:21:30.894 INFO  [9519092] [*Opticks::getDirectGenstepPath@1902] Opticks::getDirectGenstepPath det dayabay typ torch tag 1 srctagdir /tmp/blyth/opticks/evt/dayabay/torch/1
+    2018-09-27 21:21:30.894 FATAL [9519092] [*CGenstepSource::generatePhotonsFromOneGenstep@100]  failed to generate for  gencode 2 flag SCINTILLATION
+    Assertion failed: (pc), function generatePhotonsFromOneGenstep, file /Users/blyth/opticks/cfg4/CGenstepSource.cc, line 106.
+    Abort trap: 6
+    epsilon:cfg4 blyth$ 
+
+::
+
+    077 /**
+     78 CGenstepSource::generatePhotonsFromOneGenstep
+     79 ----------------------------------------------
+     80 
+     81 Notice that genstep arrays can contain mixed types of gensteps, BUT that
+     82 each individual genstep is always of one particular type.
+     83 
+     84 **/
+     85 
+     86 G4VParticleChange* CGenstepSource::generatePhotonsFromOneGenstep()
+     87 {
+     88     assert( m_idx < m_num_genstep );
+     89     unsigned gencode = m_gs->getGencode(m_idx) ;
+     90     G4VParticleChange* pc = NULL ;
+     91 
+     92     switch( gencode )
+     93     {
+     94         case CERENKOV:      pc = CCerenkovGenerator::GeneratePhotonsFromGenstep(m_gs,m_idx) ; break ;
+     95         case SCINTILLATION: pc = NULL                                                       ; break ;
+     96         default:            pc = NULL ;
+     97     }
+     98 
+     99     if(!pc)
+    100         LOG(fatal)
+    101             << " failed to generate for "
+    102             << " gencode " << gencode
+    103             << " flag " << OpticksFlags::Flag(gencode)
+    104             ;
+    105 
+    106     assert( pc );
+    107 
+    108     m_photon_collector->collectSecondaryPhotons( pc, m_idx );  // "Secondary" : but this makes them primary 
+    109 
+    110     m_idx += 1 ;
+    111     return pc ;
+    112 }
+
+
+
+getGencode tripped up by fabricated torch gensteps::
+
+     55 unsigned OpticksGenstep::getGencode(unsigned idx) const
+     56 {
+     57     int gs00 = m_gs->getInt(idx,0u,0u) ;
+     58 
+     59     int gencode = -1 ;
+     60 
+     61     unsigned content_version = getContentVersion() ;
+     62 
+     63     if( content_version == 0 )  // old style unversioned gensteps , this is fallback when no metadata 
+     64     {
+     65         gencode = gs00 < 0 ? CERENKOV : SCINTILLATION ;
+     66     }
+     67     else if( content_version >= 1042 )
+     68     {
+     69         gencode = gs00 ;
+     70     }
+     71     else
+     72     {
+     73         LOG(fatal) << " unexpected gensteps content_version " << content_version ;
+     74         assert(0);
+     75     }
+     76 
+     77     bool expected = gencode == CERENKOV || gencode == SCINTILLATION  ;
+     78 
+     79     if(!expected)
+     80          LOG(fatal) << "unexpected gencode "
+     81                     << " gencode " << gencode
+     82                     << " flag " << OpticksFlags::Flag(gencode)
+     83                     ;
+     84 
+     85     assert(expected) ;
+     86     return gencode ;
+     87 }
+
+
+
+
+
+
+::
+
+    epsilon:ok blyth$ np.py /tmp/blyth/opticks/evt/dayabay/torch/1/gs.npy
+    (1, 6, 4)
+    f32
+    [[[      0.          0.          0.          0.   ]
+      [ -18079.453 -799699.44    -6605.          0.1  ]
+      [      0.          0.          1.          1.   ]
+      [        nan         nan         nan     430.   ]
+      [      0.          1.          0.          1.   ]
+      [      0.          0.          0.          0.   ]]]
+    i32
+    [[[      4096          0         95      10000]
+      [-963821848 -918340297 -976328704 1036831949]
+      [         0          0 1065353216 1065353216]
+      [  -4194304   -4194304   -4194304 1138163712]
+      [         0 1065353216          0 1065353216]
+      [         0          0          0          1]]]
+    epsilon:ok blyth$ 
+
+
+The gs00 4096 is correct TORCH type::
+
+     03 enum
+      4 {
+      5     CERENKOV          = 0x1 <<  0,
+      6     SCINTILLATION     = 0x1 <<  1,
+      7     MISS              = 0x1 <<  2,
+      8     BULK_ABSORB       = 0x1 <<  3,
+      9     BULK_REEMIT       = 0x1 <<  4,
+     10     BULK_SCATTER      = 0x1 <<  5,
+     11     SURFACE_DETECT    = 0x1 <<  6,
+     12     SURFACE_ABSORB    = 0x1 <<  7,
+     13     SURFACE_DREFLECT  = 0x1 <<  8,
+     14     SURFACE_SREFLECT  = 0x1 <<  9,
+     15     BOUNDARY_REFLECT  = 0x1 << 10,
+     16     BOUNDARY_TRANSMIT = 0x1 << 11,
+     17     TORCH             = 0x1 << 12,
+     18     NAN_ABORT         = 0x1 << 13,
+     19     G4GUN             = 0x1 << 14,
+     20     FABRICATED        = 0x1 << 15,
+     21     NATURAL           = 0x1 << 16,
+     22     MACHINERY         = 0x1 << 17,
+     23     EMITSOURCE        = 0x1 << 18,
+     24     PRIMARYSOURCE     = 0x1 << 19,
+     25     GENSTEPSOURCE     = 0x1 << 20
+     26 };
+     27 
+
+
+    In [1]: 0x1 << 12
+    Out[1]: 4096
+
+
+Can use NPYBase setMeta to persist metadata about the gensteps, and then CGenerateSource can assert on them being the appropriate type ?::
+
+    104        void setMeta(NMeta* meta);
+    105        template <typename T> void setMeta(const char* key, T value);
+    106        template <typename T> T getMeta(const char* key, const char* fallback) const ;
+    107        int getArrayContentVersion() const ;
+    108        void setArrayContentVersion(int acv);
+
+In principal genstep files can mix up types, so better to do this internally with genstep typecode.
+
+
+Gensteps originating from G4 are versioned following collection (which is carried in metadata),
+need to do the same for Opticks fabricated ones::
+
+    220 int G4Opticks::propagateOpticalPhotons()
+    221 {
+    222     m_gensteps = m_genstep_collector->getGensteps();
+    223     const char* gspath = m_ok->getDirectGenstepPath();
+    224 
+    225     LOG(info) << " saving gensteps to " << gspath ;
+    226     m_gensteps->setArrayContentVersion(G4VERSION_NUMBER);
+    227     m_gensteps->save(gspath);
+    228 
+
+
+
+Hmm need a version number for Opticks::
+
+    epsilon:opticks blyth$ hg id
+    f2154765e548+ tip
+    epsilon:opticks blyth$ hg id -i
+    f2154765e548+
+    epsilon:opticks blyth$ hg id --num 
+    2565+
+    epsilon:opticks blyth$ hg id --num -r .
+    2565
+
+Decide not to do anything complicated, just OKConf/OpticksVersionNumber.hh
+
+
+

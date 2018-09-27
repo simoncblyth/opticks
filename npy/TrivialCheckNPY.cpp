@@ -5,6 +5,12 @@
 
 #include "PLOG.hh"
 
+bool TrivialCheckNPY::IsApplicable(char entryCode)
+{
+    return entryCode == 'T' || entryCode == 'D' ; 
+}
+
+
 TrivialCheckNPY::TrivialCheckNPY(NPY<float>* photons, NPY<float>* gensteps, char entryCode)
     :
     m_entryCode(entryCode),
@@ -12,7 +18,11 @@ TrivialCheckNPY::TrivialCheckNPY(NPY<float>* photons, NPY<float>* gensteps, char
     m_gensteps(gensteps),
     m_g4step(new G4StepNPY(m_gensteps))
 {
-    assert(m_entryCode == 'T' || m_entryCode == 'D');
+    bool expected = IsApplicable(m_entryCode)  ; 
+    if(!expected) 
+       LOG(fatal) << " unexpected entryCode " << m_entryCode ; 
+
+    assert(expected);
 }
 
 int TrivialCheckNPY::check(const char* msg)

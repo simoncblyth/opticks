@@ -7,9 +7,6 @@ it came from, for intersect tests.
 
 **/
 
-#include "OKCORE_LOG.hh"
-#include "NPY_LOG.hh"
-
 #include "NCSGList.hpp"
 
 #include "Opticks.hh"
@@ -17,15 +14,12 @@ it came from, for intersect tests.
 #include "OpticksEventDump.hh"
 #include "OpticksEventAna.hh"
 
-#include "PLOG.hh"
+#include "OPTICKS_LOG.hh"
 
 
 int main(int argc, char** argv)
 {
-    PLOG_COLOR(argc, argv);
-
-    NPY_LOG__ ; 
-    OKCORE_LOG__ ; 
+    OPTICKS_LOG(argc, argv);
 
     Opticks ok(argc, argv);
     ok.configure();
@@ -38,6 +32,12 @@ int main(int argc, char** argv)
     }
     const char* geopath = evt->getGeoPath();
     LOG(info) << " geopath : " << ( geopath ? geopath : "-" ) ; 
+
+    if( geopath == NULL )
+    {
+        LOG(fatal) << "suceeded to load ok evt, BUT it has no associated geopath " ; 
+        return 0 ; 
+    }
 
     NCSGList* csglist = NCSGList::Load(geopath, ok.getVerbosity() );
     csglist->dump();
@@ -59,13 +59,8 @@ int main(int argc, char** argv)
     OpticksEventAna* g4ana = new OpticksEventAna(&ok, g4evt, csglist);
     g4ana->dump("GGeoTest::anaEvent.g4");
 
-
-
-
     if(okana) okana->dumpPointExcursions("ok");
     if(g4ana) g4ana->dumpPointExcursions("g4");
-    
-   
 
     return 0 ; 
 }

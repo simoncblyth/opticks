@@ -33,10 +33,7 @@ GenstepNPY::GenstepNPY(unsigned genstep_type, unsigned num_step, const char* con
     m_frame_targetted(false),
     m_num_photons_per_g4event(10000)
 {
-    assert( m_config ) ; 
-
-    LOG(error ) << " m_config " << m_config ; 
-
+    //assert( m_config ) ;   FabStep have NULL config   
     m_npy->zero();
 }
 

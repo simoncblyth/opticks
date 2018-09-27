@@ -11,6 +11,7 @@
 #include "GGeoBase.hh"
 #include "GBndLib.hh"
 
+#include "OpticksVersionNumber.hh"
 #include "OpticksGun.hh"
 #include "OpticksPhoton.h"
 #include "Opticks.hh"
@@ -366,6 +367,8 @@ TorchStepNPY* OpticksGen::makeTorchstep()
     torchstep->addStep(torchdbg);  // copyies above configured step settings into the NPY and increments the step index, ready for configuring the next step 
 
     NPY<float>* gs = torchstep->getNPY();
+    gs->setArrayContentVersion(-OPTICKS_VERSION_NUMBER) ; 
+
     if(torchdbg) gs->save("$TMP/torchdbg.npy");
 
     return torchstep ; 

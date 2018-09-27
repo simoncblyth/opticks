@@ -27,7 +27,7 @@ void OpticksGenstep::init()
 
 const NPY<float>* OpticksGenstep::getGensteps() const { return m_gs ; }
 
-unsigned OpticksGenstep::getContentVersion() const { return m_gs ? m_gs->getArrayContentVersion() : -1 ; }
+int OpticksGenstep::getContentVersion() const { return m_gs ? m_gs->getArrayContentVersion() : 0 ; }
 unsigned OpticksGenstep::getNumGensteps() const { return m_gs ? m_gs->getNumItems() : 0 ; }
 unsigned OpticksGenstep::getNumPhotons() const { return m_gs ? m_gs->getUSum(0,3) : 0  ; }
 
@@ -58,13 +58,17 @@ unsigned OpticksGenstep::getGencode(unsigned idx) const
 
     int gencode = -1 ; 
 
-    unsigned content_version = getContentVersion() ; 
+    int content_version = getContentVersion() ; 
 
     if( content_version == 0 )  // old style unversioned gensteps , this is fallback when no metadata 
     {
         gencode = gs00 < 0 ? CERENKOV : SCINTILLATION ;  
     }
-    else if( content_version >= 1042 )
+    else if( content_version >= 1042 )   // G4 version starting point 
+    {
+        gencode = gs00 ; 
+    }
+    else if( content_version <= -10 )   // OK version starting point 
     {
         gencode = gs00 ; 
     }
@@ -79,6 +83,7 @@ unsigned OpticksGenstep::getGencode(unsigned idx) const
     if(!expected)
          LOG(fatal) << "unexpected gencode " 
                     << " gencode " << gencode
+                    << " content_version " << content_version
                     << " flag " << OpticksFlags::Flag(gencode) 
                     ;
 

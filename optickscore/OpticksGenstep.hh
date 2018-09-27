@@ -39,7 +39,7 @@ class OKCORE_API OpticksGenstep {
         void init();   
     public:  
         const NPY<float>*     getGensteps() const ;
-        unsigned              getContentVersion() const ;
+        int                   getContentVersion() const ;
         unsigned              getNumGensteps() const ;
         unsigned              getNumPhotons() const ;
         float                 getAvgPhotonsPerGenstep() const ;

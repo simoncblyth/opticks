@@ -63,10 +63,12 @@ configure_file( ${OKConf_GENERATED_HEADER}.in inc/${OKConf_GENERATED_HEADER} )
 
 set(SOURCES
     OKConf.cc
+    OpticksVersionNumber.cc
 )
 
 set(HEADERS
     OKConf.hh
+    OpticksVersionNumber.hh
     OKCONF_API_EXPORT.hh
 )
 

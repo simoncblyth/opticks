@@ -41,6 +41,8 @@ int main(int argc, char** argv)
     clib->convert();
     // TODO: a more direct way to get to a refractive index, than the above that loads the entire geometry  
 
+    LOG(error) << "--------------------------------" ; 
+
 
     const char* gsp = ok.getDirectGenstepPath() ; 
     LOG(error) << " gsp " << gsp ; 

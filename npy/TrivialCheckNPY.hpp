@@ -15,6 +15,7 @@ class NPY_API TrivialCheckNPY {
        };
 
    public:  
+       static bool IsApplicable( char entryCode);
        TrivialCheckNPY(NPY<float>* photons, NPY<float>* gensteps, char entryCode);
        int checkItemValue(unsigned istep, NPY<float>* npy, unsigned i0, unsigned i1, unsigned jj, unsigned kk, const char* label, int expect, int constant=0, int scale=0 );
    public:  
