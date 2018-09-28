@@ -22,6 +22,7 @@ class CFG4_API C4PhotonCollector
     public:
         void collectSecondaryPhotons( const G4VParticleChange* pc, unsigned idx ) ;
         void savePhotons(const char* path) const ; 
+        void savePhotons(const char* dir, const char* name) const ; 
         std::string desc() const ; 
     private:
         CPhotonCollector*     m_photon_collector ; 

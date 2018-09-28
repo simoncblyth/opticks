@@ -30,6 +30,7 @@ class CFG4_API CPhotonCollector
     public:
         NPY<float>*  getPhoton() const ;
         void save(const char* path) const ; 
+        void save(const char* dir, const char* name) const ; 
     public:
         void collectPhoton(
                double  pos_x,

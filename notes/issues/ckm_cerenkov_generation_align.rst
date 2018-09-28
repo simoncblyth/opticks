@@ -582,4 +582,26 @@ source and other subfolders named after executables.
 
 
 
- 
+ckm-gentest  CCerenkovGeneratorTest
+---------------------------------------
+
+* now writes into $KEYDIR/tests/CCerenkovGeneratorTest 
+
+::
+
+    epsilon:CerenkovMinimal blyth$ ckm-kcd
+    epsilon:1 blyth$ pwd
+    /usr/local/opticks/geocache/CerenkovMinimal_World_g4live/g4ok_gltf/792496b5e2cc08bdf5258cc12e63de9f/1
+    epsilon:1 blyth$ ckm-idpath
+    /usr/local/opticks/geocache/CerenkovMinimal_World_g4live/g4ok_gltf/792496b5e2cc08bdf5258cc12e63de9f/1
+
+    epsilon:1 blyth$ l tests/CCerenkovGeneratorTest/
+    total 48
+    -rw-r--r--  1 blyth  staff  14224 Sep 28 11:43 so.npy
+    -rw-r--r--  1 blyth  staff     28 Sep 28 11:43 so.json
+    -rw-r--r--  1 blyth  staff    567 Sep 28 11:43 CAlignEngine.log
+    epsilon:1 blyth$ 
+
+
+
+   

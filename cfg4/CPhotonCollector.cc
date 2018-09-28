@@ -33,6 +33,12 @@ void CPhotonCollector::save(const char* path) const
 {
     m_photon->save(path) ; 
 }
+void CPhotonCollector::save(const char* dir, const char* name) const 
+{
+    m_photon->save(dir, name) ; 
+}
+
+
 
 std::string CPhotonCollector::desc() const
 {

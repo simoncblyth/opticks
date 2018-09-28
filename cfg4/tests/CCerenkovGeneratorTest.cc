@@ -23,20 +23,9 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
 
-/*
-    //const char* def = "/usr/local/opticks/opticksdata/gensteps/dayabay/natural/1.npy" ; 
-    const char* def = "/tmp/blyth/opticks/evt/g4live/natural/1/gs.npy" ; 
-    //const char* path = argc > 1 ? argv[1] : def ; 
-    const char* path = def ; 
-
-    NPY<float>* np = NPY<float>::load(path) ; 
-*/
 
     Opticks ok(argc, argv);
     ok.setModeOverride( OpticksMode::CFG4_MODE );  
-    // override COMPUTE/INTEROP mode, as those do not apply to CFG4 
-    // still needed ?
- 
 
     OpticksHub hub(&ok) ; 
     CMaterialLib* clib = new CMaterialLib(&hub);
@@ -54,9 +43,8 @@ int main(int argc, char** argv)
     unsigned margin = 10 ;   
     gs->dump( modulo, margin ) ; 
 
-
-
-    CAlignEngine::Initialize( ok.getIdPath() );  
+    const char* testdir = "$KEYDIR/tests/CCerenkovGeneratorTest" ;
+    CAlignEngine::Initialize( testdir );  
 
     unsigned idx = 0 ;  
     G4VParticleChange* pc = CCerenkovGenerator::GeneratePhotonsFromGenstep(gs,idx) ;
@@ -64,8 +52,9 @@ int main(int argc, char** argv)
     C4PhotonCollector* collector = new C4PhotonCollector ; 
     collector->collectSecondaryPhotons( pc, idx ); 
 
+
     NPYBase::SetNPDump(true);
-    collector->savePhotons("$KEYDIR/tests/CCerenkovGeneratorTest/so.npy") ; 
+    collector->savePhotons(testdir, "so.npy") ; 
     NPYBase::SetNPDump(false);
 
     LOG(info) << collector->desc() ;

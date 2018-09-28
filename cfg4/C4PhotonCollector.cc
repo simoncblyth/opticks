@@ -28,6 +28,16 @@ void C4PhotonCollector::savePhotons(const char* path) const
     LOG(info) << " path " << path ; 
     m_photon_collector->save(path); 
 }
+void C4PhotonCollector::savePhotons(const char* dir, const char* name) const 
+{
+    LOG(info) 
+       << " dir " << dir 
+       << " name " << name 
+       ; 
+    m_photon_collector->save(dir, name); 
+}
+
+
 
 std::string C4PhotonCollector::desc() const 
 {

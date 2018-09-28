@@ -44,6 +44,13 @@ int main(int argc, char** argv)
     LOG(error) << "--------------------------------" ; 
 
 
+    if(!ok.hasKey())
+    {
+        LOG(fatal) << " currently this test is for keyed (direct mode) running only " ; 
+        return 0 ; 
+    }
+
+
     const char* gsp = ok.getDirectGenstepPath() ; 
     LOG(error) << " gsp " << gsp ; 
 
