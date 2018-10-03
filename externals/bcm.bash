@@ -1,5 +1,4 @@
-bcm-src(){      echo externals/bcm.bash ; }
-bcm-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(bcm-src)} ; }
+bcm-source(){   echo ${BASH_SOURCE} ; }
 bcm-vi(){       vi $(bcm-source) ; }
 bcm-usage(){ cat << EOU
 

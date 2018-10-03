@@ -21,6 +21,50 @@ Samples
 * https://github.com/NVIDIA/cuda-samples
 
 
+CUDA CMake : Building using Modern CMake Native CUDA Support 
+-------------------------------------------------------------
+
+::
+
+    project(${name} VERSION 0.1.0 LANGUAGES CXX CUDA )  
+
+
+* https://stackoverflow.com/questions/50583886/rosetta-for-switching-to-native-cmake-cuda-support
+
+* https://devblogs.nvidia.com/parallelforall/building-cuda-applications-cmake/
+
+  * CMake 3.8 makes CUDA C++ an intrinsically supported language 
+  * with example 
+
+  * BUT its doesnt work for me 
+
+::
+
+    epsilon:recon blyth$ DYLD_LIBRARY_PATH=/tmp/blyth/intro_to_cuda/recon/install/lib /tmp/blyth/intro_to_cuda/recon/install/lib/ReconTest
+    libc++abi.dylib: terminating with uncaught exception of type thrust::system::system_error: device free failed: CUDA driver version is insufficient for CUDA runtime version
+    Abort trap: 6
+       
+
+Note no CUDA in above languages list as the very new native CUDA support 
+that would switch on does not work for me, at runtime it gives::
+
+    CUDA driver version is insufficient for CUDA runtime version
+
+However the old FindCUDA.cmake approach works
+
+
+
+
+
+
+
+CuPP
+-----
+
+* https://www.jensbreitbart.de/pdf/frameworkeasyCUDAintegration.pdf
+* ~/opticks_refs/CuPP_frameworkeasyCUDAintegration.pdf
+
+
 Intros
 ----------
 
@@ -65,11 +109,6 @@ cuda uninstallers
 -------------------
 
 * http://docs.nvidia.com/cuda/cuda-installation-guide-mac-os-x/index.html#uninstall
-
-CUDA CMake
-------------
-
-* https://devblogs.nvidia.com/parallelforall/building-cuda-applications-cmake/
 
 Avoid acos
 ------------

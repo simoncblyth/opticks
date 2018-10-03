@@ -29,6 +29,13 @@ Refs
 * http://astronomy.swin.edu.au/supercomputing/thrust.pdf
 
 
+HEP Thrust Usage
+------------------
+
+
+* https://github.com/MultithreadCorner/MCBooster
+
+
 Experts
 --------
 
