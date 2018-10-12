@@ -5,7 +5,7 @@ Mostly Non-numpy basics, just numpy configuration
 
 import numpy as np
 import os, logging, json, ctypes, subprocess, argparse, sys, datetime, re
-from OpticksQuery import OpticksQuery 
+from opticks.ana.OpticksQuery import OpticksQuery 
 from opticks.ana.enum import Enum 
 from opticks.ana.bpath import BPath 
 
@@ -69,13 +69,13 @@ def dump_extras_meta(base, name="meta.json", fmt=" %(idx)5s : %(height)6s : %(lv
     log.info("dump_extras_meta base:%s xbase:%s " % (base,expand_(base)))
 
     keys = re.compile("\((\w*)\)").findall(fmt)
-    print fmt % dict(zip(keys,keys))
+    print(fmt % dict(zip(keys,keys)))
 
     for idx in idxs:
         meta = json_load_(os.path.join(base,str(idx),name))
         meta['idx'] = idx
         meta['err'] = meta.get('err',"-")
-        print fmt % meta
+        print(fmt % meta)
     pass
 
 
@@ -215,11 +215,11 @@ class OpticksEnv(object):
         self.env = {}
 
         if IDPATH == "$IDPATH":
-            print "ana/base.py:OpticksEnv missing IDPATH envvar [%s] " % IDPATH
+            print("ana/base.py:OpticksEnv missing IDPATH envvar [%s] " % IDPATH)
             sys.exit(1)  
 
         if not os.path.isdir(IDPATH): 
-            print "ana/base.py:OpticksEnv warning IDPATH directory does not exist [%s] " % IDPATH
+            print("ana/base.py:OpticksEnv warning IDPATH directory does not exist [%s] " % IDPATH)
         pass  
         self.idpath = IDPATH
 
@@ -721,15 +721,15 @@ if __name__ == '__main__':
     opticks_environment(dump=True)
 
     lf = ItemList("GMaterialLib")
-    print "ItemList(GMaterialLib).name2code"
-    print "\n".join([" %s : %s " % (k,v) for k,v in lf.name2code.items()])
+    print("ItemList(GMaterialLib).name2code")
+    print("\n".join([" %s : %s " % (k,v) for k,v in lf.name2code.items()]))
 
     inif = IniFlags()
-    print "IniFlags(photon flags)"
-    print "\n".join([" %s : %s " % (k,v) for k,v in inif.name2code.items()])
+    print("IniFlags(photon flags)")
+    print("\n".join([" %s : %s " % (k,v) for k,v in inif.name2code.items()]))
 
     enuf = EnumFlags()
-    print "EnumFlags(photon flags)"
-    print "\n".join([" %s : %s " % (k,v) for k,v in enuf.name2code.items()])
+    print("EnumFlags(photon flags)")
+    print("\n".join([" %s : %s " % (k,v) for k,v in enuf.name2code.items()]))
 
 

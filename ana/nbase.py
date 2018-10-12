@@ -43,7 +43,9 @@ def find_ranges(i):
 
     http://stackoverflow.com/questions/4628333/converting-a-list-of-integers-into-range-in-python
     """
-    for a, b in itertools.groupby(enumerate(i), lambda (x, y): y - x):
+    func = lambda x,y:y-x
+
+    for a, b in itertools.groupby(enumerate(i), func):
         b = list(b)
         yield b[0][1], b[-1][1]
 

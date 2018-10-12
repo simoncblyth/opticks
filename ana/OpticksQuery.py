@@ -111,9 +111,9 @@ class OpticksQuery(object):
 def test_multirange():
     q_ = "range:3155:3156,range:4448:4449"
     q = OpticksQuery(q_)
-    print q 
+    print(q)
     s = filter(lambda i:q(i)[0] == True, range(3000,5000))
-    print s
+    print(s)
     assert s == [3155, 4448]
     assert len(s) == 2, s  
 

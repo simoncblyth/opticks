@@ -227,6 +227,7 @@ int G4Opticks::propagateOpticalPhotons()
     m_gensteps->save(gspath); 
 
     // initial generated photons before propagation 
+    // CPU genphotons needed only while validating 
     m_genphotons = m_g4photon_collector->getPhoton(); 
     m_genphotons->setArrayContentVersion(G4VERSION_NUMBER); 
 

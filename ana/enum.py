@@ -41,6 +41,6 @@ if __name__ == '__main__':
      logging.basicConfig(level=logging.INFO)  
 
      d = Enum("$OPTICKS_HOME/optickscore/OpticksPhoton.h")
-     print d
+     print(d)
       
 

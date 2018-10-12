@@ -1,7 +1,14 @@
 #!/usr/bin/env python
 import os, sys, logging, datetime
 log = logging.getLogger(__name__)
-from StringIO import StringIO
+
+
+try:
+    from StringIO import StringIO
+except ImportError:
+    from io import StringIO
+pass
+
 import numpy as np
 from opticks.ana.base import opticks_main, ini_
 
@@ -93,7 +100,7 @@ def typdirs_(evtdir=None):
         detdir = os.path.join(evtdir, det)
         for typ in os.listdir(detdir): 
             typdir = os.path.join(detdir, typ)
-            print "typdir : ", typdir
+            print("typdir : ", typdir)
             typdirs.append(typdir)
         pass
     pass
@@ -296,7 +303,7 @@ if __name__ == '__main__':
         sys.exit(args.mrc)
 
     log.info(" loaded i %s %s " % (i.path, i.stamp))
-    print "\n".join([" %20s : %s " % (k,v) for k,v in i.items()])
+    print("\n".join([" %20s : %s " % (k,v) for k,v in i.items()]))
 
 
     #a = A.load_("ph", "torch","5", "rainbow")

@@ -28,7 +28,7 @@ def test_HistoryTable(ht, seqhis):
 
          n = len(seqhis[psel])
          assert n == ht.label2count.get(seq)
-         print "%10s %s " % (n, seq ) 
+         print("%10s %s " % (n, seq )) 
      pass
      log.info("test_HistoryTable DONE")  
 
@@ -36,7 +36,7 @@ def test_roundtrip(af):
      x=0x8cbbbcd
      l = af.label(x)
      c = af.code(l)
-     print "%x %s %x " % ( x,l,c )
+     print("%x %s %x " % ( x,l,c ))
      assert x == c 
 
 

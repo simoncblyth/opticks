@@ -50,14 +50,14 @@ if __name__ == '__main__':
     for key in keys:
         idpath = os.environ.get(key, None)
         idp = BPath(idpath)
-        print
-        print key 
-        print idp 
+        print()
+        print(key) 
+        print(idp)
 
         if not os.path.isdir(idp.idpath):
-           print " missing idpath "
+           print(" missing idpath ")
         if not os.path.isfile(idp.srcpath):
-           print " missing srcpath "
+           print(" missing srcpath ")
 
 
 

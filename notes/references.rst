@@ -313,3 +313,17 @@ echo $(( 2048*80 ))
 
 
 
+CSG 
+-----
+
+
+Spatially Efficient Tree Layout for GPU Ray-tracing of Constructive Solid Geometry Scenes
+D.Y. Ulyanov1,2, D.K. Bogolepov2, V.E. Turlapov1 University of Nizhniy Novgorod1, OpenCASCADE2
+
+* pseudo-code in this paper led me astray, intead started from Kensler
+
+* ~/opticks_refs/csg_090.pdf
+
+
+* ~/opticks_refs/Kensler_Ray_Tracing_CSG_Using_Single_Hit_Intersections.pdf
+
