@@ -276,7 +276,7 @@ class OKCORE_API Opticks {
        bool     isAnalyticPMTLoad();
        unsigned getAnalyticPMTIndex();
        const char* getAnalyticPMTMedium();
-       const int getDefaultFrame() const ; 
+       int         getDefaultFrame() const ; 
    public:
        OpticksCfg<Opticks>* getCfg() const ;
        const char*          getRenderMode() const ;

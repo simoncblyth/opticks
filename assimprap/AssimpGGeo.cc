@@ -592,7 +592,7 @@ void AssimpGGeo::convertSensors(GGeo* gg)
     if(!m_cathode_amat )
     {
          LOG(warning) << "AssimpGGeo::convertSensors m_cathode_amat NULL : no aiMaterial with an efficiency property ?  " ;
-         assert(0); 
+         //assert(0); 
          return ; 
     }
     if(!gg->getCathode() )
