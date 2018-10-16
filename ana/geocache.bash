@@ -77,11 +77,8 @@ geocache-j1808()
     OKX4Test --gdmlpath $(opticksdata-j) --g4codegen 
 }
 
-geocache-j1808a()
+geocache-view()
 {
-    opticksdata- 
-    gdb OKX4Test -- --gdmlpath $(opticksdata-j) --g4codegen --gltf 3 
+    OKTest --envkey --xanalytic
 }
-
-
 
