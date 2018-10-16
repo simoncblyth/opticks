@@ -1038,7 +1038,7 @@ const char* Opticks::getAnalyticPMTMedium()
     return m_apmtmedium ;
 }
 
-const int Opticks::getDefaultFrame() const 
+int Opticks::getDefaultFrame() const 
 {
     return m_resource->getDefaultFrame() ; 
 }
@@ -1376,7 +1376,7 @@ void Opticks::configure()
 
     std::string prefdir = getPreferenceDir(type, subtype);  
 
-    LOG(debug) << "Opticks::configure " 
+    LOG(fatal) << "Opticks::configure " 
                << " m_size " << gformat(m_size)
                << " m_position " << gformat(m_position)
                << " prefdir " << prefdir
