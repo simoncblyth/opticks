@@ -24,7 +24,8 @@ SPPM::SPPM()
     pixels(NULL),
     pwidth(0),
     pheight(0),
-    pscale(0)
+    pscale(0),
+    yflip(true)
 {
 }
 
@@ -35,6 +36,7 @@ std::string SPPM::desc() const
        << " pwidth " << pwidth 
        << " pheight " << pheight
        << " pscale " << pscale
+       << " yflip " << yflip
         ;
     return ss.str(); 
 }
@@ -58,14 +60,14 @@ void SPPM::resize( int width, int height, int scale )
 void SPPM::save(const char* path)
 {
     if(path == NULL ) path = "/tmp/SPPM.ppm" ; 
-    save(path, pwidth*pscale, pheight*pscale, pixels );
+    save(path, pwidth*pscale, pheight*pscale, pixels, yflip );
     LOG(fatal) 
         << " path " << path 
         << " desc " << desc()
         ; 
 }
 
-void SPPM::save(const char* path, int width, int height, const unsigned char* image) 
+void SPPM::save(const char* path, int width, int height, const unsigned char* image, bool yflip)
 {
     FILE * fp;
     fp = fopen(path, "wb");
@@ -76,19 +78,16 @@ void SPPM::save(const char* path, int width, int height, const unsigned char* im
     unsigned size = height*width*3 ; 
     unsigned char* data = new unsigned char[size] ;
 
-    bool yflip = true ;  // flip vertically
  
-    int y0 = yflip ? height-1 : 0 ; 
-    int y1 = yflip ?        0 : height - 1 ; 
-    int yd = yflip ?       -1 : +1  ; 
-
-    for( int y=y0; y >= y1; y+=yd ) 
+    for( int h=0 ; h < height ; h++ ) 
     {
+        int y = yflip ? height - 1 - h : h ;  
+
         for( int x=0; x < width ; ++x )
         {
-            *(data + (y*width+x)*3+0) = image[(y*width+x)*ncomp+0] ;
-            *(data + (y*width+x)*3+1) = image[(y*width+x)*ncomp+1] ;
-            *(data + (y*width+x)*3+2) = image[(y*width+x)*ncomp+2] ;
+            *(data + (y*width+x)*3+0) = image[(h*width+x)*ncomp+0] ;
+            *(data + (y*width+x)*3+1) = image[(h*width+x)*ncomp+1] ;
+            *(data + (y*width+x)*3+2) = image[(h*width+x)*ncomp+2] ;
         }
     }
     fwrite(data, sizeof(unsigned char)*size, 1, fp);

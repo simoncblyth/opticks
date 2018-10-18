@@ -12,6 +12,7 @@ struct SYSRAP_API SPPM
     int pwidth ; 
     int pheight ; 
     int pscale ; 
+    bool yflip ; 
 
     std::string desc() const ; 
 
@@ -21,7 +22,7 @@ struct SYSRAP_API SPPM
     void save(const char* path=NULL);
     void snap(const char* path=NULL); 
 
-    static void save( const char* path, int width, int height, const unsigned char* image ) ;
+    static void save( const char* path, int width, int height, const unsigned char* image, bool yflip ) ;
 
     static void write( const char* filename, const unsigned char* image, int width, int height, int ncomp ) ;
     static void write( const char* filename, const         float* image, int width, int height, int ncomp ) ;
