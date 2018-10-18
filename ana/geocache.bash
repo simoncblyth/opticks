@@ -50,6 +50,7 @@ geocache-info(){ cat << EOI
 
   OPTICKS_KEY     :  ${OPTICKS_KEY}
   geocache-keydir : $(geocache-keydir)
+      directory derived from the OPTICKS_KEY envvar 
 
 EOI
 }
@@ -69,4 +70,15 @@ geocache-keydir()
 
 geocache-kcd(){ cd $(geocache-keydir) ; }
 
+
+geocache-j1808()
+{
+    opticksdata- 
+    OKX4Test --gdmlpath $(opticksdata-j) --g4codegen 
+}
+
+geocache-view()
+{
+    OKTest --envkey --xanalytic
+}
 
