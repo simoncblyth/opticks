@@ -461,6 +461,10 @@ void Interactor::key_pressed(unsigned int key)
         case GLFW_KEY_SPACE:
             space_pressed();
             break;
+        case GLFW_KEY_TAB:
+            tab_pressed();
+            break;
+
     } 
     updateStatus();
 }
@@ -543,6 +547,13 @@ void Interactor::number_key_pressed(unsigned int number)
 
     bookmarks->number_key_pressed(number, modifiers);
 }
+
+void Interactor::tab_pressed()
+{
+    LOG(info) << "Interactor::tab_pressed " ;   
+    m_frame->snap(); 
+}
+
 
 void Interactor::space_pressed()
 {

@@ -10,6 +10,8 @@
 
 #include "OGLRAP_BODY.hh"
 #include "PLOG.hh"
+#include "SPPM.hh"
+
 //
 //  C:\Program Files (x86)\Windows Kits\8.1\Include\shared\minwindef.h(130): warning C4005: 'APIENTRY': macro redefinition
 // when PLOG is after glfw3
@@ -30,6 +32,8 @@
 #include "Composition.hh"
 #include "Scene.hh"
 
+#include "Pix.hh"
+
 
 Frame::Frame(Opticks* ok) 
     :
@@ -46,6 +50,7 @@ Frame::Frame(Opticks* ok)
      m_interactor(NULL),
      m_composition(NULL),
      m_scene(NULL),
+     m_pix(new Pix),
      m_cursor_inwindow(true),
      m_cursor_x(-1.f),
      m_cursor_y(-1.f),
@@ -54,8 +59,6 @@ Frame::Frame(Opticks* ok)
      m_pos_x(0),
      m_pos_y(0),
      m_cursor_moved_mode(ok->hasOpt("ctrldrag") ? CTRL_DRAG : JUST_MOVE)
-
-    
 {
 }
 
@@ -199,6 +202,8 @@ void Frame::setSize(unsigned int width, unsigned int height, unsigned int coord2
     m_width = width ;
     m_height = height ;
     m_coord2pixel = coord2pixel ;
+
+    m_pix->resize(width, height, coord2pixel); 
 }
 
 glm::uvec4 Frame::getSize()
@@ -464,8 +469,10 @@ float Frame::readDepth( int x, int y_, int yheight )
     return depth ; 
 }
 
-
-
+void Frame::snap()
+{
+    m_pix->snap("/tmp/Frame.ppm"); 
+}
 
 
 void Frame::getCursorPos()

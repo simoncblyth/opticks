@@ -55,6 +55,7 @@ set(SOURCES
 
     G.cc
     Frame.cc
+    Pix.cc
 
     Renderer.cc
     InstLODCull.cc
@@ -73,6 +74,8 @@ SET(HEADERS
 
     Texture.hh
     Frame.hh
+    Pix.hh
+
     Interactor.hh
     InteractorCfg.hh
     Scene.hh

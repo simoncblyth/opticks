@@ -19,6 +19,8 @@ class Interactor ;
 class Composition ; 
 class Scene ; 
 
+struct Pix ; 
+
 
 //  
 // The window is created invisble by frame.init() 
@@ -108,6 +110,7 @@ class OGLRAP_API Frame : public Touchable {
        static float readDepth( int x, int y, int height );
        float readDepth( int x, int y);
 
+       void snap();  
 
    private:
        void getCursorPos();
@@ -143,6 +146,7 @@ class OGLRAP_API Frame : public Touchable {
        Interactor*   m_interactor ; 
        Composition*  m_composition; 
        Scene*        m_scene ; 
+       Pix*          m_pix ; 
 
        bool          m_cursor_inwindow ; 
        float         m_cursor_x ; 

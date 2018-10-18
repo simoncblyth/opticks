@@ -79,6 +79,7 @@ class OGLRAP_API Interactor {
        void key_pressed(unsigned int key);
        void key_released(unsigned int key);
        void space_pressed();
+       void tab_pressed();
 
   public:
        void configureF(const char* name, std::vector<float> values);

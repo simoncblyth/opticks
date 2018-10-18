@@ -33,6 +33,9 @@ om-conf
 om-make
    build and install 
 
+om--
+   shorter name for om-make
+
 om-install
     configures, builds and installs by doing both om-conf and om-make 
 
@@ -444,6 +447,27 @@ om-cmake()
 #   -DBOOST_INCLUDEDIR=$(opticks-boost-includedir) \
 #   -DBOOST_LIBRARYDIR=$(opticks-boost-libdir)
 }
+
+om-cmake-info(){ cat << EOI
+
+$FUNCNAME
+===============
+
+   om-cmake-generator         : $(om-cmake-generator)
+   opticks-buildtype          : $(opticks-buildtype)
+   om-prefix                  : $(om-prefix)
+
+   opticks-optix-install-dir  : $(opticks-optix-install-dir)
+   OPTICKS_OPTIX_INSTALL_DIR  : $OPTICKS_OPTIX_INSTALL_DIR
+ 
+   opticks-compute-capability : $(opticks-compute-capability)
+   OPTICKS_COMPUTE_CAPABILITY : $OPTICKS_COMPUTE_CAPABILITY 
+
+   NODE_TAG                   : $NODE_TAG
+
+EOI
+}
+
 
 
 

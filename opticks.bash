@@ -411,7 +411,9 @@ opticks-compute-capability-()
     esac
 }
 
-opticks-externals(){ cat << EOL
+opticks-externals(){ 
+: emits to stdout the names of the bash precursors that download and install the externals 
+  cat << EOL
 bcm
 glm
 glfw

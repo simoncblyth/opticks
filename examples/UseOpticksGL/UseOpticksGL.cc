@@ -14,25 +14,19 @@
 // opticksgl-
 #include "OAxisTest.hh"
 
-#include "OGLRAP_LOG.hh"
-#include "OXRAP_LOG.hh"
-#include "OKGL_LOG.hh"
-#include "PLOG.hh"
+#include "OPTICKS_LOG.hh"
 
 int main(int argc, char** argv)
 {
-    PLOG_(argc, argv);
+    OPTICKS_LOG(argc, argv);
 
-    OGLRAP_LOG__ ; 
-    OXRAP_LOG__ ; 
-    OKGL_LOG__ ; 
 
     Opticks ok(argc, argv, "--interop");
     ok.configure();
 
     LOG(info) << argv[0] ; 
 
-    AxisApp axa(argc, argv); 
+    AxisApp axa(&ok); 
     NPY<float>* npy = axa.getAxisData();
     assert(npy->hasShape(3,3,4));
 
