@@ -58,10 +58,10 @@ Installation Basics, bash reminder
 
 Opticks builds and installs are based on CMake but are controlled from
 a layer of bash functions. These functions follow consistent naming conventions, 
-functions such as `opticks-` or `om-` ending in `-` are termed *precursor* functions.
+functions such as *opticks-* or *om-* ending in *-* are termed *precursor* functions.
 Running these functions define other functions all with the corresponding 
-prefix, to see the functions use eg  `opticks-vi` or `om-vi`.
-To introspect the definition of a function use `type`::
+prefix, to see the functions use eg *opticks-vi* or *om-vi*.
+To introspect the definition of a function use *type*::
 
     epsilon:opticks blyth$ type opticks-full
     opticks-full is a function
@@ -133,7 +133,7 @@ First use introspection to see how the functions work::
     }
 
 
-These names get piped to `-opticks-installer` by `opticks-externals-install`::
+These names get piped to *-opticks-installer* by *opticks-externals-install*::
 
     epsilon:opticks blyth$ t opticks-externals-install
     opticks-externals-install is a function
@@ -144,7 +144,7 @@ These names get piped to `-opticks-installer` by `opticks-externals-install`::
     }
 
 
-The installer runs the precursor `name-` and then the installer `name--` for each in turn::
+The installer runs the precursor *name-* and then the installer *name--* for each in turn::
 
     epsilon:opticks blyth$ t -- -opticks-installer
     -opticks-installer is a function
@@ -174,7 +174,7 @@ If there are errors with the externals debug them individually as shown above.
 checking externals or Opticks subprojects
 --------------------------------------------
 
-The Opticks `examples` directory has many `Use*` examples which test single externals 
+The Opticks *examples* directory has many *Use* examples which test single externals 
 or subprojects.   
 
 ::
@@ -282,12 +282,12 @@ The building of these small examples is typically::
 om-install : configures, builds and installs 
 ---------------------------------------------------
 
-For details `om-;om-vi` or:
+For details *om-;om-vi* or:
 
 * https://bitbucket.org/simoncblyth/opticks/src/default/om.bash
 
 Note that the invoking directory is taken as an "argument" to the `om-` functions 
-such as `om-install`, `om-conf`, `om-make` controlling whether to operate on all subprojects 
+such as *om-install*, *om-conf*, *om-make* controlling whether to operate on all subprojects 
 or only one.   
 
 If there is a problem with build first try to debug the initial subproject "OKConf".
@@ -343,7 +343,7 @@ If that fails to build, then investigate how OKConf is configured::
     }
 
 
-Check that the location of OptiX install `OptiX_INSTALL_DIR` and `COMPUTE_CAPAPBILITY` of your GPU are correct::
+Check that the location of OptiX install *OptiX_INSTALL_DIR* and *COMPUTE_CAPABILITY* of your GPU are correct::
 
     epsilon:okconf blyth$ om-cmake-info
 
