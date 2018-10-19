@@ -43,22 +43,31 @@ GInstancer::GInstancer(GGeoLib* geolib, GNodeLib* nodelib, NSceneConfig* config)
     m_root(NULL),
     m_count(0),
     m_labels(0),
-    m_digest_count(new Counts<unsigned>("progenyDigest"))
+    m_digest_count(new Counts<unsigned>("progenyDigest")),
+    m_csgskiplv(-1),
+    m_csgskiplv_count(0)
 {
 }
 
-unsigned int GInstancer::getNumRepeats()
+unsigned GInstancer::getNumRepeats() const 
 {
     return m_repeat_candidates.size();
 }
 
-void GInstancer::setRepeatMin(unsigned int repeat_min)
+void GInstancer::setCSGSkipLV(unsigned csgskiplv)
 {
-   m_repeat_min = repeat_min ; 
+    m_csgskiplv = csgskiplv  ; 
+    LOG(fatal) << " csgskiplv " << csgskiplv ; 
 }
-void GInstancer::setVertexMin(unsigned int vertex_min)
+
+void GInstancer::setRepeatMin(unsigned repeat_min)
 {
-   m_vertex_min = vertex_min ; 
+    m_repeat_min = repeat_min ; 
+}
+
+void GInstancer::setVertexMin(unsigned vertex_min)
+{
+    m_vertex_min = vertex_min ; 
 }
 
 /**
@@ -401,12 +410,30 @@ void GInstancer::labelTree()
          }
     }
 
-    LOG(info)<<"GInstancer::labelTree count of non-zero setRepeatIndex " << m_labels ; 
+    LOG(info)
+        << " m_labels (count of non-zero setRepeatIndex) " << m_labels 
+        << " m_csgskiplv " << m_csgskiplv     
+        << " m_csgskiplv_count " << m_csgskiplv_count
+        ;     
 }
 
 void GInstancer::labelTree_r( GNode* node, unsigned int ridx)
 {
     node->setRepeatIndex(ridx);
+
+    unsigned lvidx = node->getMeshIndex();  
+    m_meshset[ridx].insert( lvidx ) ; 
+
+
+    // kludge attempt to skip a volume 
+    if( m_csgskiplv > -1 && int(lvidx) == m_csgskiplv ) 
+    {
+        GVolume* vol = dynamic_cast<GVolume*>(node); 
+        vol->setCSGSkip(true);      
+        m_csgskiplv_count += 1 ; 
+    }
+
+
     if(ridx > 0)
     {
          LOG(debug)<<"GInstancer::labelTree "
@@ -417,6 +444,16 @@ void GInstancer::labelTree_r( GNode* node, unsigned int ridx)
     }
     for(unsigned int i = 0; i < node->getNumChildren(); i++) labelTree_r(node->getChild(i), ridx );
 }
+
+
+
+
+
+
+
+
+
+
 
 
 std::vector<GNode*> GInstancer::getPlacements(unsigned int ridx)
@@ -498,5 +535,48 @@ void GInstancer::makeMergedMeshAndInstancedBuffers(unsigned verbosity)
          //mm->reportMeshUsage( ggeo, "GInstancer::CreateInstancedMergedMeshes reportMeshUsage (instanced)");
     }
 }
+
+
+
+/**
+GInstancer::dumpMeshset
+-------------------------
+
+Dumping the unique LVs in each repeater
+
+**/
+
+void GInstancer::dumpMeshset() const 
+{
+    unsigned numRepeats = getNumRepeats();
+    unsigned numRidx = numRepeats + 1 ; 
+ 
+    LOG(info) 
+        << " numRepeats " << numRepeats 
+        << " numRidx " << numRidx
+        ;
+
+    typedef std::set<unsigned> SU ; 
+
+    for(unsigned ridx=0 ; ridx < numRidx ; ridx++ )
+    {
+        if( m_meshset.find(ridx) == m_meshset.end() ) continue ;   
+
+        const SU& ms = m_meshset.at(ridx); 
+
+        std::cout << " ridx " << ridx 
+                  << " ms " << ms.size()
+                  << " ( " 
+                  ;
+ 
+        for(SU::const_iterator it=ms.begin() ; it != ms.end() ; it++ )
+              std::cout << *it << " " ;
+
+        std::cout << " ) " << std::endl ; 
+
+    }
+}
+
+
 
 

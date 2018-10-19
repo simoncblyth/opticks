@@ -222,6 +222,7 @@ class OKCORE_API Opticks {
        unsigned long long getDbgSeqmat();
        int   getDebugIdx() const ;
        int   getDbgNode() const ;
+       int   getCSGSkipLV() const ;
        int   getStack() const ;
        int getMeshVerbosity() const ;
        const char* getDbgMesh() const ;

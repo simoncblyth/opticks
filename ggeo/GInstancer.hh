@@ -2,6 +2,8 @@
 
 #include <string>
 #include <vector>
+#include <map>
+#include <set>
 
 class SLog ; 
 struct NSceneConfig ; 
@@ -69,9 +71,12 @@ class GGEO_API GInstancer {
         // Using m_repeat_candidates vector of digests
         //
         unsigned            getRepeatIndex(const std::string& pdig );
-        unsigned            getNumRepeats();   
+        unsigned            getNumRepeats() const ;   
         GNode*              getRepeatExample(unsigned int ridx);    // first node that matches the ridx progeny digest
         std::vector<GNode*> getPlacements(unsigned int ridx);  // all GNode with the ridx progeny digest
+   public:
+        void dumpMeshset() const ;
+        void setCSGSkipLV(unsigned csgskiplv);
    private:
         // recursive setRepeatIndex on the GNode tree for each of the repeated bits of geometry
         void           labelTree();
@@ -89,11 +94,16 @@ class GGEO_API GInstancer {
 
        unsigned int              m_repeat_min ; 
        unsigned int              m_vertex_min ; 
-       GVolume*                   m_root ; 
+       GVolume*                  m_root ; 
        unsigned int              m_count ;  
        unsigned int              m_labels ;   // count of nodes labelled
        Counts<unsigned int>*     m_digest_count ; 
        std::vector<std::string>  m_repeat_candidates ; 
+
+       std::map<unsigned, std::set<unsigned> >   m_meshset ;   // collect unique mesh indices (LVs) for each ridx     
+       int                       m_csgskiplv ;
+       unsigned                  m_csgskiplv_count ;
+
  
 };
 

@@ -442,6 +442,10 @@ int Opticks::getDbgNode() const
 {
    return m_cfg->getDbgNode();
 }
+int Opticks::getCSGSkipLV() const 
+{
+   return m_cfg->getCSGSkipLV();
+}
 int Opticks::getStack() const 
 {
    return m_cfg->getStack();

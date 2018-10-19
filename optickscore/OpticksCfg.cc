@@ -84,6 +84,7 @@ OpticksCfg<Listener>::OpticksCfg(const char* name, Listener* listener, bool live
        m_override(-1),
        m_debugidx(0),
        m_dbgnode(-1),
+       m_csgskiplv(-1),
        m_stack(2180),
        m_num_photons_per_g4event(10000),
        m_loadverbosity(0),
@@ -599,6 +600,12 @@ void OpticksCfg<Listener>::init()
    snprintf(dbgmesh,128, "Name of mesh solid for debugging, see GMeshLibTest, invoke inside environment with --gmeshlib option. Default %s", m_dbgmesh.c_str());
    m_desc.add_options()
        ("dbgmesh",  boost::program_options::value<std::string>(&m_dbgmesh), dbgmesh );
+
+
+   char csgskiplv[128];
+   snprintf(csgskiplv,128, "Index of LV to kludge skip from geometry, see GInstancer. Default %d", m_csgskiplv );
+   m_desc.add_options()
+       ("csgskiplv",  boost::program_options::value<int>(&m_csgskiplv), csgskiplv );
 
 
 
@@ -1463,6 +1470,15 @@ int OpticksCfg<Listener>::getDbgNode() const
 {
     return m_dbgnode ; 
 }
+
+
+template <class Listener>
+int OpticksCfg<Listener>::getCSGSkipLV() const 
+{
+    return m_csgskiplv ; 
+}
+
+
 
 template <class Listener>
 int OpticksCfg<Listener>::getStack() const 

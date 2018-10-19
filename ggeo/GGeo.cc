@@ -1230,6 +1230,9 @@ void GGeo::prepareMeshes()
     bool instanced = m_ok->isInstanced();
     unsigned meshverbosity = m_ok->getMeshVerbosity() ; 
 
+    m_instancer->setCSGSkipLV(m_ok->getCSGSkipLV()) ;  
+
+
     LOG(error) << "GGeo::prepareMeshes START" 
                << " instanced " << instanced 
                << " meshverbosity " << meshverbosity 
@@ -1247,6 +1250,10 @@ void GGeo::prepareMeshes()
         m_geolib->makeMergedMesh(0, NULL, root, meshverbosity);  // ridx:0 rbase:NULL 
         // ^^^^  precache never needs analytic geolib ?
     }
+
+
+    m_instancer->dumpMeshset() ; 
+
     LOG(error) << "GGeo::prepareMeshes DONE" ;
 }
 

@@ -74,7 +74,7 @@ geocache-kcd(){ cd $(geocache-keydir) ; }
 geocache-j1808()
 {
     opticksdata- 
-    OKX4Test --gdmlpath $(opticksdata-j) --g4codegen 
+    OKX4Test --gdmlpath $(opticksdata-j) --g4codegen --csgskiplv 22 
 }
 
 geocache-view()

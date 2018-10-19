@@ -94,6 +94,7 @@ class OKCORE_API OpticksCfg : public BCfg {
 
      int          getDebugIdx() const ; 
      int          getDbgNode() const ;  
+     int          getCSGSkipLV() const ;  
      int          getStack() const ; 
 
      int          getNumPhotonsPerG4Event(); 
@@ -197,6 +198,7 @@ private:
      int         m_override ; 
      int         m_debugidx ; 
      int         m_dbgnode ; 
+     int         m_csgskiplv ; 
      int         m_stack ; 
      int         m_num_photons_per_g4event;
      int         m_loadverbosity ; 

@@ -15,6 +15,32 @@ OKX4Test : boot with GDML, direct convert to GGeo, persist to geocache with code
     opticksdata- ; OKX4Test --gdmlpath $(opticksdata-j) --g4codegen
 
 
+Creating the geocache::
+
+    [blyth@localhost tests]$ t geocache-j1808
+    geocache-j1808 is a function
+    geocache-j1808 () 
+    { 
+        opticksdata-;
+        OKX4Test --gdmlpath $(opticksdata-j) --g4codegen
+    }
+
+
+viewing it::
+
+
+    localhost ggeo]$ t geocache-view
+    geocache-view is a function
+    geocache-view () 
+    { 
+        OKTest --envkey --xanalytic
+    }
+
+
+
+
+
+
 copy the key "spec" into OPTICKS_KEY envvar, add to .bash_profile/.bashrc
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -88,10 +114,12 @@ survey the 40 solids of j1808
      so:001 lv:001 rmx:01 bmx:01 soName: Upper_Steel_tube0x5b2eb10
      so:002 lv:002 rmx:01 bmx:01 soName: Upper_Tyvek_tube0x5b2ec30
      so:003 lv:003 rmx:00 bmx:00 soName: Upper_Chimney0x5b2e8e0
+     -----------------
      so:004 lv:004 rmx:00 bmx:00 soName: sBar0x5b34ab0
      so:005 lv:005 rmx:00 bmx:00 soName: sBar0x5b34920
      so:006 lv:006 rmx:00 bmx:00 soName: sModuleTape0x5b34790
      so:007 lv:007 rmx:00 bmx:00 soName: sModule0x5b34600
+     -----------------
      so:008 lv:008 rmx:00 bmx:00 soName: sPlane0x5b34470
      so:009 lv:009 rmx:00 bmx:00 soName: sWall0x5b342e0
      so:010 lv:010 rmx:01 bmx:01 soName: sAirTT0x5b34000
@@ -109,8 +137,10 @@ survey the 40 solids of j1808
      so:012 lv:012 rmx:00 bmx:00 soName: sTopRock0x4bccfc0
      so:013 lv:013 rmx:01 bmx:01 soName: sTarget0x4bd4340
      so:014 lv:014 rmx:01 bmx:01 soName: sAcrylic0x4bd3cd0
-     so:015 lv:015 rmx:01 bmx:01 soName: sStrut0x4bd4b80
 
+     ---------------
+     so:015 lv:015 rmx:01 bmx:01 soName: sStrut0x4bd4b80
+     ---------------
      so:016 lv:016 rmx:11 bmx:02 soName: sFasteners0x4c01080
 
            LV=16 x4gen-csg  
@@ -123,7 +153,7 @@ survey the 40 solids of j1808
             issue B : investigate balancing for this tree
 
             FIXED : BY GENERALIZING THE TREE BALANCING 
-
+     ---------------
 
      so:017 lv:017 rmx:02 bmx:02 soName: sMask0x4ca38d0
            LV=17 x4gen-csg  observatory dome shape, polygonization failed, raytrace looks OK 
@@ -149,8 +179,6 @@ survey the 40 solids of j1808
            issue C : profligate CSG chop : fix is easy, just need to convince people to use sane CSG  
            issue D : speckle neck : fix is easy, just need to convince people to use hyperboloid neck            
 
-
-
      so:020 lv:020 rmx:03 bmx:03 soName: PMT_20inch_body_solid0x4c90e50
 
            LV=20 x4gen-csg  
@@ -161,7 +189,6 @@ survey the 40 solids of j1808
 
            issue D : speckle neck : fix is easy, just need to convince people to use hyperboloid neck            
 
-
      so:021 lv:021 rmx:03 bmx:03 soName: PMT_20inch_pmt_solid0x4c81b40
 
            LV=21 x4gen-csg  
@@ -171,11 +198,20 @@ survey the 40 solids of j1808
            issue D : speckle neck : fix is easy, just need to convince people to use hyperboloid neck            
 
      so:022 lv:022 rmx:00 bmx:00 soName: sMask_virtual0x4c36e10
+
+           cylinder, but described with 2-zplane polycone : see below
+
+     ---------------
+
      so:023 lv:023 rmx:00 bmx:00 soName: PMT_3inch_inner1_solid_ell_helper0x510ae30
      so:024 lv:024 rmx:00 bmx:00 soName: PMT_3inch_inner2_solid_ell_helper0x510af10
      so:025 lv:025 rmx:00 bmx:00 soName: PMT_3inch_body_solid_ell_ell_helper0x510ada0
      so:026 lv:026 rmx:00 bmx:00 soName: PMT_3inch_cntr_solid0x510afa0
      so:027 lv:027 rmx:01 bmx:01 soName: PMT_3inch_pmt_solid0x510aae0
+
+     ---------------
+
+
      so:028 lv:028 rmx:01 bmx:01 soName: sChimneyAcrylic0x5b310c0
      so:029 lv:029 rmx:00 bmx:00 soName: sChimneyLS0x5b312e0
      so:030 lv:030 rmx:01 bmx:01 soName: sChimneySteel0x5b314f0
@@ -188,6 +224,7 @@ survey the 40 solids of j1808
      so:037 lv:037 rmx:00 bmx:00 soName: sPoolLining0x4bd1eb0
      so:038 lv:038 rmx:00 bmx:00 soName: sBottomRock0x4bcd770
      so:039 lv:039 rmx:00 bmx:00 soName: sWorld0x4bc2350
+
 
 
 
