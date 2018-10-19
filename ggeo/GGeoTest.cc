@@ -293,8 +293,14 @@ void GGeoTest::relocateSurfaces(GVolume* volume, const char* spec)
 }
 
 
+/**
+GGeoTest::reuseMaterials
+-------------------------
 
+Reusing materials from the basis geometry means that 
+they are added into the local GGeoTest material lib.
 
+**/
 
 void GGeoTest::reuseMaterials(NCSGList* csglist)
 {
@@ -310,6 +316,7 @@ void GGeoTest::reuseMaterials(NCSGList* csglist)
 
 void GGeoTest::reuseMaterials(const char* spec)
 {
+
     BBnd b(spec);
 
     if(strcmp(b.omat, b.imat) == 0)
@@ -339,8 +346,10 @@ void GGeoTest::importCSG(std::vector<GVolume*>& volumes)
 
 
     assert( numTree > 0 );
-    reuseMaterials(m_csglist);
 
+    m_mlib->addTestMaterials(); 
+
+    reuseMaterials(m_csglist);
    
 
     if(m_dbgbnd)

@@ -375,3 +375,62 @@ TODO: rework tboolean-12-- using G4Hype in x4gen g4codegen/tests
 
 
 
+2018/10/18 : FIXED : x4gen-csg failing on Precision for lack of glass
+------------------------------------------------------------------------
+
+
+Perhaps GGeo::prepare which is invoked from GGeo::postDirectTranslation needs to addTestMaterials ?
+Actually dont like that approach, as test materials only relevant to testing : so do this in GGeoTest::importCSG instead.
+
+
+
+
+::
+
+    [blyth@localhost opticks]$ LV=10 x4gen-csg -D
+    testconfig analytic=1_csgpath=/tmp/blyth/opticks/x4gen/x010
+    === op-cmdline-binary-match : finds 1st argument with associated binary : --tracer
+    152 -rwxr-xr-x. 1 blyth blyth 153600 Oct 18 18:22 /home/blyth/local/opticks/lib/OTracerTest
+    proceeding.. : gdb --args /home/blyth/local/opticks/lib/OTracerTest --size 1920,1080,1 --position 100,100 -D --envkey --rendermode +global,+axis --animtimemax 20 --timemax 20 --geocenter --eye 1,0,0 --dbganalytic --test --testconfig analytic=1_csgpath=/tmp/blyth/opticks/x4gen/x010 --tracer --printenabled
+    gdb --args /home/blyth/local/opticks/lib/OTracerTest --size 1920,1080,1 --position 100,100 -D --envkey --rendermode +global,+axis --animtimemax 20 --timemax 20 --geocenter --eye 1,0,0 --dbganalytic --test --testconfig analytic=1_csgpath=/tmp/blyth/opticks/x4gen/x010 --tracer --printenabled
+
+    ...
+
+    2018-10-19 09:52:10.980 INFO  [180480] [NSceneConfig::env_override@82] NSceneConfig override verbosity from VERBOSITY envvar 1
+    2018-10-19 09:52:10.981 ERROR [180480] [NPYList::setBuffer@122] replacing nodes.npy buffer  prior 1,4,4 buffer 1,4,4 msg prepareForExport
+    2018-10-19 09:52:10.981 ERROR [180480] [NPYList::setBuffer@122] replacing planes.npy buffer  prior 0,4 buffer 0,4 msg prepareForExport
+    2018-10-19 09:52:10.981 ERROR [180480] [NPYList::setBuffer@122] replacing idx.npy buffer  prior 1,4 buffer 1,4 msg prepareForExport
+    2018-10-19 09:52:10.981 ERROR [180480] [NCSGList::add@108]  add tree, boundary: Rock//perfectAbsorbSurface/Vacuum
+    2018-10-19 09:52:10.981 FATAL [180480] [GGeoTest::GGeoTest@124] GGeoTest::GGeoTest
+    2018-10-19 09:52:10.981 INFO  [180480] [GGeoTest::init@135] GGeoTest::init START 
+    2018-10-19 09:52:10.981 INFO  [180480] [GGeoTest::importCSG@334] GGeoTest::importCSG START  csgpath /tmp/blyth/opticks/x4gen/x010 numTree 2 verbosity 0
+    2018-10-19 09:52:10.981 FATAL [180480] [GMaterialLib::reuseBasisMaterial@996] reuseBasisMaterial requires basis library to be present and to contain the material  GlassSchottF2
+    OTracerTest: /home/blyth/opticks/ggeo/GMaterialLib.cc:997: void GMaterialLib::reuseBasisMaterial(const char*): Assertion `mat' failed.
+
+    Program received signal SIGABRT, Aborted.
+    0x00007fffe7f74277 in raise () from /lib64/libc.so.6
+    Missing separate debuginfos, use: debuginfo-install boost-filesystem-1.53.0-27.el7.x86_64 boost-program-options-1.53.0-27.el7.x86_64 boost-regex-1.53.0-27.el7.x86_64 boost-system-1.53.0-27.el7.x86_64 glfw-3.2.1-2.el7.x86_64 glibc-2.17-222.el7.x86_64 keyutils-libs-1.5.8-3.el7.x86_64 krb5-libs-1.15.1-19.el7.x86_64 libX11-1.6.5-1.el7.x86_64 libXau-1.0.8-2.1.el7.x86_64 libXcursor-1.1.14-8.el7.x86_64 libXext-1.3.3-3.el7.x86_64 libXfixes-5.0.3-1.el7.x86_64 libXinerama-1.1.3-2.1.el7.x86_64 libXrandr-1.5.1-2.el7.x86_64 libXrender-0.9.10-1.el7.x86_64 libXxf86vm-1.1.4-1.el7.x86_64 libcom_err-1.42.9-12.el7_5.x86_64 libgcc-4.8.5-28.el7_5.1.x86_64 libicu-50.1.2-15.el7.x86_64 libselinux-2.5-12.el7.x86_64 libstdc++-4.8.5-28.el7_5.1.x86_64 libxcb-1.12-1.el7.x86_64 openssl-libs-1.0.2k-12.el7.x86_64 pcre-8.32-17.el7.x86_64 zlib-1.2.7-17.el7.x86_64
+    (gdb) bt
+    #0  0x00007fffe7f74277 in raise () from /lib64/libc.so.6
+    #1  0x00007fffe7f75968 in abort () from /lib64/libc.so.6
+    #2  0x00007fffe7f6d096 in __assert_fail_base () from /lib64/libc.so.6
+    #3  0x00007fffe7f6d142 in __assert_fail () from /lib64/libc.so.6
+    #4  0x00007ffff508a55d in GMaterialLib::reuseBasisMaterial (this=0x581db90, name=0x58391f8 "GlassSchottF2") at /home/blyth/opticks/ggeo/GMaterialLib.cc:997
+    #5  0x00007ffff50d49d4 in GGeoTest::reuseMaterials (this=0x5821790, spec=0x582cbd0 "Vacuum///GlassSchottF2") at /home/blyth/opticks/ggeo/GGeoTest.cc:322
+    #6  0x00007ffff50d48e6 in GGeoTest::reuseMaterials (this=0x5821790, csglist=0x58174d0) at /home/blyth/opticks/ggeo/GGeoTest.cc:307
+    #7  0x00007ffff50d4bea in GGeoTest::importCSG (this=0x5821790, volumes=std::vector of length 0, capacity 0) at /home/blyth/opticks/ggeo/GGeoTest.cc:342
+    #8  0x00007ffff50d4135 in GGeoTest::initCreateCSG (this=0x5821790) at /home/blyth/opticks/ggeo/GGeoTest.cc:200
+    #9  0x00007ffff50d3ca2 in GGeoTest::init (this=0x5821790) at /home/blyth/opticks/ggeo/GGeoTest.cc:137
+    #10 0x00007ffff50d3af6 in GGeoTest::GGeoTest (this=0x5821790, ok=0x664750, basis=0x688600) at /home/blyth/opticks/ggeo/GGeoTest.cc:128
+    #11 0x00007ffff64ef82f in OpticksHub::createTestGeometry (this=0x67dc60, basis=0x688600) at /home/blyth/opticks/opticksgeo/OpticksHub.cc:474
+    #12 0x00007ffff64ef339 in OpticksHub::loadGeometry (this=0x67dc60) at /home/blyth/opticks/opticksgeo/OpticksHub.cc:427
+    #13 0x00007ffff64edd7a in OpticksHub::init (this=0x67dc60) at /home/blyth/opticks/opticksgeo/OpticksHub.cc:177
+    #14 0x00007ffff64edb9a in OpticksHub::OpticksHub (this=0x67dc60, ok=0x664750) at /home/blyth/opticks/opticksgeo/OpticksHub.cc:156
+    #15 0x00007ffff7bd585f in OKMgr::OKMgr (this=0x7fffffffd380, argc=22, argv=0x7fffffffd4f8, argforced=0x405809 "--tracer") at /home/blyth/opticks/ok/OKMgr.cc:44
+    #16 0x0000000000402e2b in main (argc=22, argv=0x7fffffffd4f8) at /home/blyth/opticks/ok/tests/OTracerTest.cc:19
+    (gdb) 
+
+
+
+
+
