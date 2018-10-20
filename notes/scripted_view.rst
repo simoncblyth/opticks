@@ -16,6 +16,15 @@ Overview
 Everything scripting-wise (especially async) looks so heavyweight, nothing than can pull together in a few days.
 So de-scope to just a sequence of animations strung together and controlled via simple txt lingo.
 
+Hmm even that looks too heavy and inconvenient to use, maybe can just generalize TrackView into a FlightView where the
+path is designed via a numpy array of (n,4,4) way points with : position, times, view directions, frame indices. 
+
+Being able to design a flight path with NumPy outside the app seems a much more controlled approach, 
+than bookmark interpolation : can then use matplotlib 3d plotting to design the flight path, 
+but will need to export mm0 global geometry dimensions to know where to aim.
+Dump the CSG of the large extent volumes in mm0, for 2d drafting.
+
+
 
 Invent a language OR use python/lua/... : boost-python is the obvious path, but what about async execution ?
 -------------------------------------------------------------------------------------------------------------

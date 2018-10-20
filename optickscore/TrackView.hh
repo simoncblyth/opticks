@@ -1,19 +1,23 @@
 #pragma once
 
-// operates from Composition via base class method View::getTransforms 
-// which invokes the overriden getEye, getLook, getUp
-// updating w2c c2w gaze
-//
-//
-// Provides a head on animated view of the genstep, 
-// does linear interpolation between start and end positions of the genstep.
-// Look point if fixed at that advancing position with eye offset from
-// there by time_ahead ns.  Initially the gaze if a head on view. Can manually 
-// offset from there via rotations and translations.
-//
-//  See npy-/genstep.py for creation of the eg 1_track.npy file
-//  that defines the path.
-//  
+/**
+TrackView
+============
+
+Operates from Composition via base class method View::getTransforms 
+which invokes the overriden getEye, getLook, getUp
+updating w2c c2w gaze
+
+Provides a head on animated view of the genstep, 
+does linear interpolation between start and end positions of the genstep.
+Look point if fixed at that advancing position with eye offset from
+there by time_ahead ns.  Initially the gaze if a head on view. Can manually 
+offset from there via rotations and translations.
+
+See ana/genstep.py for creation of the eg 1_track.npy file
+that defines the path.
+  
+**/
 
 template <typename T> class NPY ;
 class Animator ; 

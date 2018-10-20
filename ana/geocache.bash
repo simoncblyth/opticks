@@ -73,12 +73,15 @@ geocache-kcd(){ cd $(geocache-keydir) ; }
 
 geocache-j1808()
 {
+    type $FUNCNAME
     opticksdata- 
     OKX4Test --gdmlpath $(opticksdata-j) --g4codegen --csgskiplv 22 
 }
 
 geocache-view()
 {
-    OKTest --envkey --xanalytic
+    type $FUNCNAME
+    OKTest --envkey --xanalytic --tracer
+    #OKTest --envkey --xanalytic 
 }
 

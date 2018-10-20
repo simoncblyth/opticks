@@ -73,17 +73,6 @@ void TrackView::setFraction(float fraction)
 
 
 
-
-
-
-
-
-
-
-
-
-
-
 void TrackView::setAnimator(Animator* animator)
 {
     m_animator = animator ; 

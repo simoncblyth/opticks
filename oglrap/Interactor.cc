@@ -237,6 +237,7 @@ void Interactor::cursor_drag(float x, float y, float dx, float dy, int ix, int i
     m_changed = true ; 
     //printf("Interactor::cursor_drag x,y  %0.5f,%0.5f dx,dy  %0.5f,%0.5f \n", x,y,dx,dy );
 
+    float rf = 1.0 ; 
     float df = m_dragfactor ; 
 
     if( m_yfov_mode )
@@ -265,7 +266,7 @@ void Interactor::cursor_drag(float x, float y, float dx, float dy, int ix, int i
     } 
     else if( m_rotate_mode )
     {
-        m_trackball->drag_to(df*x,df*y,df*dx,df*dy);
+        m_trackball->drag_to(rf*x,rf*y,rf*dx,rf*dy);
     }
     else if( m_time_mode )
     {
@@ -561,7 +562,7 @@ void Interactor::space_pressed()
     Bookmarks* bookmarks = getBookmarks();
 
     unsigned int current = bookmarks->getCurrent();
-    if(current == 0) return ; 
+    //if(current == 0) return ; 
     LOG(info) << "Interactor::space_pressed current " << current ;   
 
     m_composition->commitView(); // fold rotator+trackball into view (and home rotator+trackball)

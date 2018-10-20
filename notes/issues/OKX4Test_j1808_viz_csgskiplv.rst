@@ -106,3 +106,12 @@ Dumping the LV in each repeater::
 
 
 
+idxBuffer.npy from geocache GParts/0 shows the LV of the global (non-instanced) volumes::
+
+    In [8]: np.unique(i[:,1])
+    Out[8]: 
+    array([ 0,  1,  2,  3,  8,  9, 10, 11, 12, 13, 14, 28, 29, 30, 31, 32, 33,
+           34, 35, 36, 37, 38, 39], dtype=uint32)
+
+
+

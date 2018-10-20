@@ -414,9 +414,9 @@ void GUI::clipper_gui(Clipper* clipper)
 
 void GUI::bookmarks_gui(Bookmarks* bookmarks)
 { 
-    ImGui::SameLine();
+    //ImGui::SameLine();
     if(ImGui::Button("collect")) bookmarks->collect();
-    ImGui::SameLine();
+    //ImGui::SameLine();
     if(ImGui::Button("apply")) bookmarks->apply();
 
     ImGui::SliderInt( "IVperiod", bookmarks->getIVPeriodPtr(),  50, 400 ); 

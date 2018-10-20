@@ -3,6 +3,9 @@
 genstep.py: Fit genstep xyz vs time, used for viewpoint tracking 
 =================================================================
 
+See okc/TrackView.cc for the usage of this
+
+
 Fit the genstep xyz vs time to obtain parametric eqn of genstep position 
 with time parameter.::
 
@@ -83,7 +86,7 @@ if __name__ == '__main__':
     ax = fig.add_subplot(ny,nx,1)
     ax.scatter(t, x)
     xf = np.polyfit(t,x,1,full=True)
-    xm, xc = xf[0]
+    xm, xc = xf[0]        ## xm is "x**1" coefficient, xc is "x**0" (constant term)
     xl = [xm*tt + xc for tt in tr]
     ax.plot(tr, xl, '-r')
 
@@ -102,6 +105,7 @@ if __name__ == '__main__':
     ax.plot(tr, zl, '-r')
 
 
+    ## origin, direction, range 
     track = np.array(
                 [[
                   [xc,yc,zc,1.0],
