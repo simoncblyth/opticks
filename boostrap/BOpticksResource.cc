@@ -165,7 +165,7 @@ std::string BOpticksResource::getGeoCachePath(const char* rela, const char* relb
 std::string BOpticksResource::getIdPathPath(const char* rela, const char* relb, const char* relc, const char* reld ) const 
 {
     const char* idpath = getIdPath(); 
-    LOG(info) << " idpath " << idpath ; 
+    LOG(debug) << " idpath " << idpath ; 
 
     std::string path = BFile::FormPath(idpath, rela, relb, relc, reld ) ;
     return path ;

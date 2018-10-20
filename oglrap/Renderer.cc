@@ -554,7 +554,7 @@ void Renderer::setupDraws(GMergedMesh* mm)
     //bool one_draw = mm == NULL || num_comp < 1 || m_instlodcull_enabled == false ;
     bool one_draw = mm == NULL || num_comp < 1 ;
 
-    LOG(info) << "Renderer::setupDraws"
+    LOG(debug) << "Renderer::setupDraws"
               << brief()
               << " num_comp " << num_comp 
               << " m_lod " << m_lod 

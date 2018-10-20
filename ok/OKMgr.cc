@@ -39,7 +39,7 @@ int OKMgr::rc() const
 
 OKMgr::OKMgr(int argc, char** argv, const char* argforced ) 
     :
-    m_log(new SLog("OKMgr::OKMgr")),
+    m_log(new SLog("OKMgr::OKMgr","", debug)),
     m_ok(Opticks::HasInstance() ? Opticks::GetInstance() : new Opticks(argc, argv, argforced)),         
     m_hub(new OpticksHub(m_ok)),            // immediate configure and loadGeometry 
     m_idx(new OpticksIdx(m_hub)),

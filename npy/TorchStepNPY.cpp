@@ -281,7 +281,7 @@ void TorchStepNPY::set(Param_t p, const char* s)
 TorchStepNPY::TorchStepNPY(unsigned genstep_type, unsigned int num_step, const char* config) 
     :  
     GenstepNPY(genstep_type,  num_step, config ? strdup(config) : DEFAULT_CONFIG, config == NULL ),
-    m_level(info)
+    m_level(debug)
 {
     init();
 }

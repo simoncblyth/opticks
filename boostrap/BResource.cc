@@ -22,7 +22,7 @@ const char* BResource::Get(const char* label)
     if( ret == NULL ) ret = br->getDir(label); 
     if( ret == NULL ) ret = br->getName(label); 
 
-    LOG(info)
+    LOG(debug)
          << " label " << label 
          << " ret " << ret 
          ;

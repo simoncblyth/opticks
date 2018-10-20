@@ -829,7 +829,7 @@ optix::Geometry OGeo::makeTriangulatedGeometry(GMergedMesh* mm, unsigned lod)
     unsigned numITransforms = mm->getNumITransforms();
     unsigned numFaces0 = mm->getNodeInfo(0).x ; 
 
-    LOG(info) << "OGeo::makeTriangulatedGeometry " 
+    LOG(debug) 
               << " lod " << lod
               << " mmIndex " << mm->getIndex() 
               << " numFaces (PrimitiveCount) " << numFaces

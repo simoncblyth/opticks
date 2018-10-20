@@ -2052,7 +2052,7 @@ GBuffer* GMesh::makeFaceRepeatedInstancedIdentityBuffer()
     bool iidentity_ok = m_iidentity_buffer->getNumItems() == numVolumes*numITransforms ;
 
     //if(!nodeinfo_ok)
-    LOG(fatal) 
+    LOG(debug) 
                << "GMesh::makeFaceRepeatedInstancedIdentityBuffer"
                << " nodeinfo_ok " << nodeinfo_ok
                << " nodeinfo_buffer_items " << m_nodeinfo_buffer->getNumItems()
@@ -2060,7 +2060,7 @@ GBuffer* GMesh::makeFaceRepeatedInstancedIdentityBuffer()
                ;
 
     //if(!iidentity_ok)
-    LOG(fatal) 
+    LOG(debug) 
                << "GMesh::makeFaceRepeatedInstancedIdentityBuffer"
                << " iidentity_ok " << iidentity_ok
                << " iidentity_buffer_items " << m_iidentity_buffer->getNumItems() 

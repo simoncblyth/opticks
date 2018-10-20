@@ -654,7 +654,7 @@ void Scene::uploadGeometry()
         GMergedMesh* mm = m_geolib->getMergedMesh(i);
         if(!mm) continue ; 
 
-        LOG(info) << "Scene::uploadGeometry " 
+        LOG(debug) << "Scene::uploadGeometry " 
                   << i 
                   << " geoCode " << mm->getGeoCode() ; 
 

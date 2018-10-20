@@ -907,7 +907,7 @@ void OpticksHub::dumpVolumes(unsigned cursor, GMergedMesh* mm, const char* msg )
          glm::vec4 ce_ = mm->getCE(i);
          std::cout << " " << std::setw(7) << i 
                    << " " << ( i == cursor ? "**" : "  " ) 
-                   << std::setw(50) << ( test ? "test" : nodelib->getLVName(i) )
+                   << std::setw(70) << ( test ? "test" : nodelib->getLVName(i) )
                    << " " 
                    << gpresent( "ce", ce_ )
                    ;
@@ -921,9 +921,9 @@ void OpticksHub::dumpVolumes(unsigned cursor, GMergedMesh* mm, const char* msg )
          glm::vec4 ce_ = mm->getCE(i);
 
          if(ce_.w > extent_cut )
-         std::cout << " " << std::setw(3) << i 
+         std::cout << " " << std::setw(7) << i 
                    << " " << ( i == cursor ? "**" : "  " ) 
-                   << std::setw(50) << ( test ? "test" : nodelib->getLVName(i) )
+                   << std::setw(70) << ( test ? "test" : nodelib->getLVName(i) )
                    << " " 
                    << gpresent( "ce", ce_ )
                    ;

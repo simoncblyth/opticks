@@ -227,7 +227,7 @@ Opticks* Opticks::GetInstance()
 
 Opticks::Opticks(int argc, char** argv, const char* argforced )
      :
-       m_log(new SLog("Opticks::Opticks")),
+       m_log(new SLog("Opticks::Opticks","",debug)),
        m_ok(this),
        m_sargs(new SArgs(argc, argv, argforced)), 
        m_argc(m_sargs->argc),

@@ -108,13 +108,13 @@ unsigned int Bookmarks::getCurrent()
 
 void Bookmarks::init(const char* dir)
 {
-    LOG(debug) << "Bookmarks::init"
+    LOG(info) << "Bookmarks::init"
               << " dir " << ( dir ? dir : "NULL" )
               ; 
 
     std::string _dir = BFile::FormPath(dir) ;
 
-    LOG(debug) << "Bookmarks::init"
+    LOG(info) << "Bookmarks::init"
               << " expandvars dir " << _dir 
               ; 
 
