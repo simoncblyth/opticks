@@ -43,6 +43,8 @@ set(TEST_SOURCES
    SBacktraceTest.cc
    SFrameTest.cc
    SGDMLTest.cc
+
+   SSetTest.cc
 )
 
 set(_TEST_SOURCES

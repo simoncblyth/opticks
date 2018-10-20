@@ -3,11 +3,25 @@ gleq-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(gleq-src)} ; }
 gleq-vi(){       vi $(gleq-source) ; }
 gleq-env(){      olocal- ; opticks- ; }
 gleq-usage(){ cat << EOU
+GLEQ : Simple GLFW Event Queue 
+=================================
+
+* https://github.com/simoncblyth/gleq
+* https://github.com/glfw/gleq
+
+Hmm it appears gleq.h was just copied into oglrap, and slightly modified::
+
+    epsilon:gleq blyth$ gleq-diff
+    diff /usr/local/opticks/externals/gleq/gleq.h /Users/blyth/opticks/oglrap/gleq.h
+    274c274
+    <     event->file.paths = malloc(count * sizeof(char*));
+    ---
+    >     event->file.paths = (char**)malloc(count * sizeof(char*));
+    epsilon:gleq blyth$ 
 
 
-From mountains- whilst trying to 
-port from SFML to GLFW/GLEW/GLEQ get 
-compilation issue (from compiling C as C++)::
+Compilation error from mountains- (which was porting from SFML to GLFW/GLEW/GLEQ)
+presumably from compiling C as C++::
 
     make: *** [all] Error 2
     [ 20%] Building CXX object CMakeFiles/Mountains.dir/main.cpp.o
@@ -18,8 +32,7 @@ compilation issue (from compiling C as C++)::
                           ^ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     1 error generated.
 
-
-Fix easy, but why this has no effect in oglrap-:
+Fix easy, but why this has no effect in oglrap- ?::
 
     event->file.paths = (char**)malloc(count * sizeof(char*));
 
@@ -46,5 +59,12 @@ gleq-hdr(){
 
 gleq--(){
    gleq-get
+}
+
+gleq-diff()
+{ 
+    local cmd="diff $(gleq-dir)/gleq.h $(opticks-home)/oglrap/gleq.h" 
+    echo $cmd
+    eval $cmd
 }
 

@@ -4,14 +4,21 @@
 #include "View.hh"
 class Animator ; 
 
-// created by Composition::makeOrbitalView
-//
-// operates from Composition via base class method View::getTransforms 
-// which invokes the overriden getEye, getLook, getUp
-// updating w2c c2w gaze
-//
-// void View::getTransforms(const glm::mat4& m2w, glm::mat4& world2camera, glm::mat4& camera2world, glm::vec4& gaze )
-//
+/**
+OrbitalView
+=============
+
+* instances created by Composition::makeOrbitalView
+
+* operates from Composition via base class method View::getTransforms 
+  which invokes the overriden getEye, getLook, getUp
+  updating w2c c2w gaze
+
+::
+
+    void View::getTransforms(const glm::mat4& m2w, glm::mat4& world2camera, glm::mat4& camera2world, glm::vec4& gaze )
+
+**/
 
 #include "OKCORE_API_EXPORT.hh"
 #include "OKCORE_HEAD.hh"

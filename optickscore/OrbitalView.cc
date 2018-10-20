@@ -17,7 +17,6 @@ const char* OrbitalView::getPrefix()
     return PREFIX ; 
 }
 
-
 OrbitalView::OrbitalView(View* basis, unsigned int period, bool verbose) 
      : 
      View(ORBITAL),
@@ -40,15 +39,6 @@ void OrbitalView::setFraction(float fraction)
 {
     m_fraction = fraction ; 
 }
-
-
-
-
-
-
-
-
-
 
 void OrbitalView::init()
 {
@@ -103,6 +93,16 @@ std::string OrbitalView::description(const char* msg)
     return ss.str();
 }
 
+
+/**
+OrbitalView::update
+---------------------
+
+Uses basis view eye position (x,y) to define the 
+radius and initial phase (phi angle) of the orbit.
+The gaze direction is tangential to the path 
+
+**/
 
 void OrbitalView::update()
 {
@@ -164,17 +164,10 @@ glm::vec4 OrbitalView::getGaze(const glm::mat4& m2w, bool )
     return gaze ;                // w=0. OK as direction
 }
 
-
-
 void OrbitalView::Summary(const char* msg)
 {
-    LOG(info) << msg 
-              ;
-
+    LOG(info) << msg ;
     m_basis->Summary(msg); 
-
 }
-
-
 
 

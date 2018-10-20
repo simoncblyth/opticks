@@ -1,6 +1,13 @@
 Movie
 ======
 
+Thinking about recording GLFW events for replay to make movies
+-----------------------------------------------------------------
+
+* :doc:`glfw_gleq_event_record_replay`
+
+
+
 Experience with g4daeview
 ----------------------------
 
@@ -46,9 +53,6 @@ op.sh event movies
          ## loads and visualizes the persisted propagation
 
     op.sh --j1707 --gltf 3 --scintillation --compute --timemax 400 --animtimemax 400
-
-
-
 
 
 

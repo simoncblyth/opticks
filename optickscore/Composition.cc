@@ -658,17 +658,17 @@ void Composition::nextViewMode(unsigned int modifiers)
 }
 
 
-
-
 OrbitalView* Composition::makeOrbitalView()
 {
     View* basis = m_view->isStandard() ? m_view : m_standard_view ; 
-    return new OrbitalView(basis, m_ovperiod, true );
+    bool verbose = true ; 
+    return new OrbitalView(basis, m_ovperiod, verbose );
 }
 
 TrackView* Composition::makeTrackView()
 {
-    return m_track ? new TrackView(m_track, m_tvperiod, true ) : NULL ;
+    bool verbose = true ; 
+    return m_track ? new TrackView(m_track, m_tvperiod, verbose ) : NULL ;
 }
 
 

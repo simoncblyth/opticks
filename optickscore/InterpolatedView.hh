@@ -3,15 +3,25 @@
 #include <vector>
 class Animator ; 
 
-// created by Bookmarks::makeInterpolatedView
-//
-// operates from Composition via base class method View::getTransforms 
-// which invokes the overriden getEye, getLook, getUp
-// updating w2c c2w gaze
-//
-// void View::getTransforms(const glm::mat4& m2w, glm::mat4& world2camera, glm::mat4& camera2world, glm::vec4& gaze )
-//
-//
+/**
+InterpolatedView 
+=================
+
+Created by Bookmarks::makeInterpolatedView
+
+operates from Composition via base class method View::getTransforms 
+which invokes the overriden getEye, getLook, getUp
+updating w2c c2w gaze
+
+    void View::getTransforms(const glm::mat4& m2w, glm::mat4& world2camera, glm::mat4& camera2world, glm::vec4& gaze )
+
+
+The view overrides all use interpolated fractional mixes between current and next view,
+with the fraction being animated between  0 to 1 
+before switching to the next pair of views.
+
+**/
+
 #include "View.hh"
 #include "OKCORE_API_EXPORT.hh"
 #include "OKCORE_HEAD.hh"
