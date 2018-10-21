@@ -19,7 +19,7 @@ class Shape(object):
     KWA = dict(fill=False)
     dtype = np.float64
 
-    PRIMITIVE = ["Ellipsoid","Tubs","Torus", "Cons", "Hype"]
+    PRIMITIVE = ["Ellipsoid","Tubs","Torus", "Cons", "Hype", "Box"]
     COMPOSITE = ["UnionSolid", "SubtractionSolid", "IntersectionSolid"]
 
     def __repr__(self):
@@ -70,7 +70,7 @@ class Shape(object):
         node = self
         while node is not None:
             if node.ltransform is not None:
-                print("adding ltransform ", node)
+                #print("adding ltransform ", node)
                 xy += node.ltransform
             pass
             node = node.parent 
@@ -90,6 +90,8 @@ class Shape(object):
             return self.make_cons( self.xy, self.param, **self.kwa)
         elif self.shape == "Hype":
             return self.make_hype( self.xy, self.param, **self.kwa)
+        elif self.shape == "Box":
+            return self.make_rect( self.xy, self.param, **self.kwa)
         else:
             assert self.is_composite 
             pts = []
@@ -97,6 +99,10 @@ class Shape(object):
             pts.extend( self.right.patches() )
             return pts 
         pass
+
+    @classmethod
+    def create(cls, pt ):
+        pass        
 
     @classmethod
     def make_rect(cls, xy , wh, **kwa ):

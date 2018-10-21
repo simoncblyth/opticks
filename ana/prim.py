@@ -16,6 +16,21 @@ log = logging.getLogger(__name__)
 from opticks.sysrap.OpticksCSG import CSG_
 from opticks.ana.blib import BLib
 from opticks.ana.mesh import Mesh
+
+from opticks.ana.shape import Shape
+
+class Ellipsoid(Shape):pass
+class Tubs(Shape):pass
+class Torus(Shape):pass
+class Cons(Shape):pass
+class Hype(Shape):pass
+class Box(Shape):pass
+
+class UnionSolid(Shape):pass
+class SubtractionSolid(Shape):pass
+class IntersectionSolid(Shape):pass
+
+
    
 
 class Part(object):
@@ -102,6 +117,8 @@ class Part(object):
         self.idx = self.__class__.part_idx 
         self.__class__.part_idx += 1 
 
+
+
     def __repr__(self):
         return "    Part %1s%2s %2s  %15s   %3d %25s   tz:%10.3f    %s  " % ( "!" if self.comp else " ", self.tc, self.gt, self.tcn, self.bnd, self.bname, self.tz, self.detail() )
 
@@ -131,6 +148,22 @@ class Part(object):
     r2 = property(lambda self:self.f[0][3])
     dz = property(lambda self:self.z2 - self.z1)
     dr = property(lambda self:self.r2 - self.r1)
+
+
+    def as_shape(self, name, sc):
+        if self.tc == CSG_.BOX3:
+            sh = Box(name, [self.xbox/sc, self.zbox/sc ] )
+        elif self.tc == CSG_.CYLINDER:
+            sh = Tubs(name, [self.r/sc, abs(self.z1/sc) ] )
+        elif self.tc == CSG_.TORUS:
+            sh = Ellipsoid(name, [self.r/sc, self.r/sc ] )
+        else:
+            sh = None
+        pass
+        if not sh is None:
+            sh.ltransform = [0, self.tz/sc ]  
+        pass
+        return sh 
 
     def detail(self):
         tz = self.tz
