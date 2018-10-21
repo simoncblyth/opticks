@@ -15,6 +15,7 @@ set(SOURCES
     Light.cc
     Trackball.cc
     InterpolatedView.cc
+    FlightPath.cc
     OrbitalView.cc
     TrackView.cc
 
@@ -82,6 +83,7 @@ set(HEADERS
     Light.hh
     Trackball.hh
     InterpolatedView.hh
+    FlightPath.hh
     OrbitalView.hh
     TrackView.hh
 

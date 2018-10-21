@@ -225,6 +225,7 @@ class OKCORE_API Opticks {
        int   getCSGSkipLV() const ;
        int   getStack() const ;
        int getMeshVerbosity() const ;
+       const char* getFlightPathDir() const ;
        const char* getDbgMesh() const ;
        float getFxRe();
        float getFxAb();

@@ -456,6 +456,11 @@ int Opticks::getMeshVerbosity() const
 }
 
 
+const char* Opticks::getFlightPathDir() const 
+{
+   const std::string& dir = m_cfg->getFlightPathDir();
+   return dir.empty() ? NULL : dir.c_str() ;
+}
 
 
 const char* Opticks::getDbgMesh() const 

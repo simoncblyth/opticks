@@ -92,6 +92,7 @@ OpticksCfg<Listener>::OpticksCfg(const char* name, Listener* listener, bool live
        m_meshverbosity(0),
        m_verbosity(0),
        m_apmtidx(0),
+       m_flightpathdir("/tmp"),
        m_apmtmedium(""),
        m_srcgltfbase("$TMP/nd"),
        m_srcgltfname("scene.gltf"),
@@ -839,6 +840,17 @@ void OpticksCfg<Listener>::init()
        ("tvperiod",  boost::program_options::value<int>(&m_tvperiod), tvperiod);
 
 
+
+
+   char flightpathdir[256]; 
+   snprintf(flightpathdir,256, 
+"Directory from which to load flightpath.npy style persisted view for use in InterpolatedView/FlightPath. Default %s ",  m_flightpathdir.c_str() );
+
+   m_desc.add_options()
+       ("flightpathdir",   boost::program_options::value<std::string>(&m_flightpathdir), flightpathdir ) ; 
+
+
+
    char repeatidx[128];
    snprintf(repeatidx,128, "Repeat index used in development of instanced geometry, -1:flat full geometry. Default %d ", m_repeatidx);
    m_desc.add_options()
@@ -1316,12 +1328,17 @@ const std::string& OpticksCfg<Listener>::getAnalyticPMTSlice()
 {
     return m_apmtslice  ;
 }
-
+template <class Listener>
+const std::string& OpticksCfg<Listener>::getFlightPathDir()
+{
+    return m_flightpathdir   ;
+}
 template <class Listener>
 const std::string& OpticksCfg<Listener>::getAnalyticPMTMedium()
 {
     return m_apmtmedium  ;
 }
+
 
 template <class Listener>
 const std::string& OpticksCfg<Listener>::getLVSDName()

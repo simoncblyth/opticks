@@ -22,6 +22,7 @@ class Trackball ;
 class Clipper ; 
 class Animator ; 
 class Bookmarks ; 
+class FlightPath ; 
 class OpticksEvent ; 
 
 
@@ -298,7 +299,7 @@ class OKCORE_API Composition : public NConfigurable {
       void setView(View* view);
       void resetView();
       void setBookmarks(Bookmarks* bookmarks);
-
+      void setFlightPath(FlightPath* flightpath);
   public: 
       // getters of inputs 
       const glm::vec4& getLODCut() const ;
@@ -420,6 +421,7 @@ class OKCORE_API Composition : public NConfigurable {
       Camera*    m_camera ;
       Trackball* m_trackball ;
       Bookmarks* m_bookmarks ; 
+      FlightPath* m_flightpath ; 
 
       View*      m_view ;
       View*      m_standard_view ;

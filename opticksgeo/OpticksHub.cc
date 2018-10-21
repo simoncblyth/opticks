@@ -43,6 +43,7 @@
 
 // okc-
 #include "Bookmarks.hh"
+#include "FlightPath.hh"
 #include "OpticksPhoton.h"
 #include "Opticks.hh"
 #include "OpticksCfg.hh"
@@ -148,6 +149,7 @@ OpticksHub::OpticksHub(Opticks* ok)
    m_state(NULL),
    m_lookup(new NLookup()),
    m_bookmarks(NULL),
+   m_flightpath(NULL),
    m_gen(NULL),
    m_aim(NULL),
    m_geotest(NULL),
@@ -352,10 +354,16 @@ void OpticksHub::configureState(NConfigurable* scene)
     m_bookmarks->setVerbose();
     m_bookmarks->setInterpolatedViewPeriod(m_fcfg->getInterpolatedViewPeriod());
 
+
+    m_flightpath = new FlightPath(m_ok->getFlightPathDir()) ; 
+
     m_composition->setBookmarks(m_bookmarks);
+    m_composition->setFlightPath(m_flightpath); 
+
 
     m_composition->setOrbitalViewPeriod(m_fcfg->getOrbitalViewPeriod()); 
     m_composition->setAnimatorPeriod(m_fcfg->getAnimatorPeriod()); 
+
 }
 
 /**
@@ -781,10 +789,19 @@ OpticksGeometry* OpticksHub::getGeometry()
 {
     return m_geometry ;  
 }
-Bookmarks* OpticksHub::getBookmarks()
+
+
+Bookmarks* OpticksHub::getBookmarks() const 
 {
     return m_bookmarks ; 
 }
+FlightPath* OpticksHub::getFlightPath() const 
+{
+    return m_flightpath ; 
+}
+
+
+
 
 Timer* OpticksHub::getTimer()  // timer is from current evt if exists already  
 {

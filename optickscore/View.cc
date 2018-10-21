@@ -7,7 +7,7 @@
 #include <boost/lexical_cast.hpp>
 
 #include "NGLM.hpp"
-
+#include "NPY.hpp"
 
 // npy-
 #include "GLMPrint.hpp"
@@ -17,6 +17,33 @@
 #include "View.hh"
 
 #include "PLOG.hh"
+
+
+
+const char* View::STANDARD_ = "STANDARD" ; 
+const char* View::FLIGHTPATH_ = "FLIGHTPATH" ; 
+const char* View::INTERPOLATED_ = "INTERPOLATED" ;   // rename to BOOKMARKS ?
+const char* View::ORBITAL_ = "ORBITAL" ; 
+const char* View::TRACK_ = "TRACK" ; 
+
+
+const char* View::TypeName( View_t v )
+{
+    const char* s = NULL ; 
+    switch(v)
+    {
+        case STANDARD     : s = STANDARD_     ; break ; 
+        case FLIGHTPATH   : s = FLIGHTPATH_   ; break ; 
+        case INTERPOLATED : s = INTERPOLATED_ ; break ; 
+        case ORBITAL      : s = ORBITAL_ ; break ; 
+        case TRACK        : s = TRACK_ ; break ; 
+        default:            s = NULL ; break ; 
+    }
+    assert( s ) ; 
+    return s ; 
+}
+
+
 
 const char* View::PREFIX = "view" ;
 const char* View::getPrefix()
@@ -101,6 +128,24 @@ void View::configureS(const char* name, std::vector<std::string> values)
 
 
 
+View* View::FromArrayItem( NPY<float>* flightpath, unsigned i )
+{
+    assert( flightpath->hasShape( -1, 4, 4) ) ; 
+
+    glm::vec4 eye  = flightpath->getQuad(i, 0) ;   
+    glm::vec4 look = flightpath->getQuad(i, 1) ;   
+    glm::vec4 up   = flightpath->getQuad(i, 2) ;   
+
+    View* v = new View ; 
+    v->setEye(eye);       
+    v->setLook(look);       
+    v->setUp(up);       
+
+    // hmm it would be more convient for timing info to travel in flightpath too ???
+    // and what about frames ?
+
+    return v ; 
+}
 
 
 View::View(View_t type)  : m_type(type) 
@@ -124,7 +169,7 @@ bool View::isStandard()
 }
 bool View::isInterpolated()
 {
-    return m_type == INTERPOLATED ; 
+    return m_type == INTERPOLATED || m_type == FLIGHTPATH ; 
 }
 bool View::isOrbital()
 {

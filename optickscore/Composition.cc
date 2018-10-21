@@ -46,6 +46,7 @@
 #include "Animator.hh"
 #include "Light.hh"
 #include "Bookmarks.hh"
+#include "FlightPath.hh"
 
 #include "OpticksEvent.hh"
 
@@ -159,6 +160,7 @@ Composition::Composition()
   m_camera(NULL),
   m_trackball(NULL),
   m_bookmarks(NULL),
+  m_flightpath(NULL),
   m_view(NULL),
   m_standard_view(NULL),
   m_viewtype(View::STANDARD),
@@ -228,6 +230,10 @@ void Composition::setCamera(Camera* camera)
 void Composition::setBookmarks(Bookmarks* bookmarks)
 {
     m_bookmarks = bookmarks ; 
+}
+void Composition::setFlightPath(FlightPath* flightpath)
+{
+    m_flightpath = flightpath ; 
 }
 
 
@@ -422,7 +428,7 @@ const char* Composition::getGeometryStyleName()
 
 
 
-void Composition::nextViewType(unsigned int /*modifiers*/)
+void Composition::nextViewType(unsigned int /*modifiers*/)  // U KEY 
 {
     int next = (getViewType() + 1) % View::NUM_VIEW_TYPE ; 
     setViewType( (View::View_t)next ) ; 
@@ -647,7 +653,7 @@ void Composition::nextRotatorMode(unsigned modifiers)
 }
 
 
-void Composition::nextViewMode(unsigned int modifiers)  
+void Composition::nextViewMode(unsigned int modifiers)    // T KEY
 {
     if(m_view->isStandard())
     {
@@ -673,16 +679,38 @@ TrackView* Composition::makeTrackView()
 
 
 
-void Composition::applyViewType()
+
+
+
+void Composition::applyViewType() // invoked by nextViewType/setViewType
 {
+    LOG(warning) << "Composition::applyViewType(KEY_U) switching " << View::TypeName(m_viewtype) ; 
     if(m_viewtype == View::STANDARD)
     {
-        LOG(warning) << "Composition::applyViewType(KEY_U) switching to standard view " ; 
         resetView();
+    }
+    else if(m_viewtype == View::FLIGHTPATH)
+    {
+        assert(m_flightpath);
+
+        m_flightpath->refreshInterpolatedView();
+
+        InterpolatedView* iv = m_flightpath->getInterpolatedView();     
+        if(!iv)
+        {
+            LOG(warning) << "Composition::changeView"
+                         << " FAILED "
+                         << " FLIGHTPATH interpolated view requires at least 2 views " 
+                         ;
+            return  ;
+        }
+
+        iv->Summary("Composition::changeView(KEY_U)");
+
+        setView(iv); 
     }
     else if(m_viewtype == View::INTERPOLATED)
     {
-        LOG(warning) << "Composition::applyViewType(KEY_U) switching to interpolated view " ; 
         assert(m_bookmarks);
 
         m_bookmarks->refreshInterpolatedView();
@@ -704,19 +732,12 @@ void Composition::applyViewType()
     }
     else if(m_viewtype == View::ORBITAL)
     {
-        LOG(warning) << "Composition::applyViewType(KEY_U) switching to orbital view " ; 
-
         OrbitalView* ov = makeOrbitalView();
-
         setView(ov);
-
     }
     else if(m_viewtype == View::TRACK)
     {
-        LOG(warning) << "Composition::applyViewType(KEY_U) switching to track view " ; 
-
         TrackView* tv = makeTrackView();
-
         if(tv == NULL)
         {
             LOG(warning) << "Composition::applyViewType(KEY_U) requires track information ";

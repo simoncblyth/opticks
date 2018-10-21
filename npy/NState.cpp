@@ -108,7 +108,7 @@ void NState::Summary(const char* msg)
 
 void NState::addConfigurable(NConfigurable* configurable)
 {
-    const char* prefix = configurable->getPrefix();
+    const char* prefix = configurable->getPrefix();   // for View(NConfigurable) the prefix is "view"
     m_configurables[prefix] = configurable ; 
 }
 

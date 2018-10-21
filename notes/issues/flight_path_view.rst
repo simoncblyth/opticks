@@ -66,6 +66,29 @@ array([[     0,     39,     39,      0],
  
 
 
+
+Center Extents
+-----------------
+
+::
+
+    epsilon:0 blyth$ pwd
+    /usr/local/opticks/geocache/OKX4Test_lWorld0x4bc2710_PV_g4live/g4ok_gltf/15cf540d9c315b7f5d0adc7c3907b922/1/GMergedMesh/0
+    epsilon:0 blyth$ np.py center_extent.npy 
+    (366697, 4)
+    ('f32\n', array([[     0.    ,      0.    ,      0.    ,  60000.    ],
+           [     0.    ,      0.    ,  32550.    ,  27000.    ],
+           [     0.    ,      0.    ,  31050.    ,  24000.    ],
+           ...,
+           [ 19897.387 ,  -2023.3665, -21732.506 ,    261.5059],
+           [ 19897.387 ,  -2023.3665, -21565.492 ,    245.9163],
+           [ 19897.387 ,  -2023.3665, -21821.998 ,    245.9163]], dtype=float32))
+
+
+
+Create a scratch mm0 global geometry 2d plot
+-----------------------------------------------
+
 ::
 
     epsilon:ana blyth$ ./mm0prim.py 
@@ -132,6 +155,156 @@ Establish correspondence to volume indices::
     primIdx 200 idx  [352854     32     32      0] lvIdx  32 lvName          svacSurftube0x5b3bf50 partOffset 218 numParts   1 tranOffset 205 numTran   1 planOffset   0  
     pvacSurftube0x5b3c120
     lvacSurftube0x5b3c020
+
+
+
+okc.FlightPath
+----------------
+
+View eye/look/up are all purely relative to the extent of a particular volume, only via model2world
+arguments does the view provide absolute positions.  Where is the frame setup ?
+
+::
+
+    520 void OpticksHub::setupCompositionTargetting()
+    521 {
+    522     m_aim->setupCompositionTargetting();
+    523 }
+    524 void OpticksHub::target()   // point composition at geocenter or the m_evt (last created)
+    525 {
+    526     m_aim->target();
+    527 }
+    528 void OpticksHub::setTarget(unsigned target, bool aim)
+    529 {
+    530     m_aim->setTarget(target, aim);
+    531 }
+    532 unsigned OpticksHub::getTarget()
+    533 {
+    534     return m_aim->getTarget();
+    535 }
+
+
+::
+
+    098 void  OpticksAim::setTarget(unsigned target, bool aim)
+    099 {   
+    100     // formerly of oglrap-/Scene
+    101     // invoked by OpticksViz::uploadGeometry OpticksViz::init
+    102    
+    103    if(m_mesh0 == NULL)
+    104     {    
+    105         LOG(info) << "OpticksAim::setTarget " << target << " deferring as geometry not loaded " ;
+    106         m_target_deferred = target ;
+    107         return ;
+    108     }    
+    109     m_target = target ;
+    110     
+    111     dumpTarget("OpticksAim::setTarget");
+    112 
+    113     
+    114     glm::vec4 ce = m_mesh0->getCE(target);
+    115 
+    116     
+    117     LOG(fatal)<<"OpticksAim::setTarget " 
+    118              << " based on CenterExtent from m_mesh0 "
+    119              << " target " << target
+    120              << " aim " << aim
+    121              << " ce " << gformat(ce)
+    122              ;
+    123     
+    124     m_composition->setCenterExtent(ce, aim);
+    125 }
+
+
+
+How does jumping to a bookmark work wrt targetting/frames ?
+--------------------------------------------------------------
+
+::
+
+    540 void Interactor::number_key_pressed(unsigned int number)
+    541 {
+    542     m_bookmark_mode = true ;
+    543 
+    544     unsigned int modifiers = getModifiers() ;
+    545 
+    546     m_composition->commitView(); // fold rotator+trackball into view (and home rotator+trackball)
+    547 
+    548     Bookmarks* bookmarks = getBookmarks();
+    549 
+    550     bookmarks->number_key_pressed(number, modifiers);
+    551 }
+
+
+scenetarget ?  target volume identifies the frame of operation
+----------------------------------------------------------------
+
+
+* to prepare View param externally need to know the CE of the active targetted frame 
+
+
+::
+
+    epsilon:State blyth$ cat 001.ini 
+    [camera]
+    far=19119.1719
+    near=161.8355
+    scale=161.8355
+    zoom=2.5633
+    [clipper]
+    cutnormal=1.0000,0.0000,0.0000
+    cutplane=1.0000,0.0000,0.0000,1.0000
+    cutpoint=0.0000,0.0000,0.0000
+    [scene]
+    scenetarget=11566
+    [trackball]
+    orientation=1.0000,0.0000,0.0000,0.0000
+    radius=1.0000
+    translate=0.0000,0.0000,0.0000
+    translatefactor=1000.0000
+    [view]
+    eye=-2.1509,-0.6663,-0.3384
+    look=-1.5381,-1.6631,-1.1326
+    up=0.3997,-0.4082,0.8207
+    epsilon:State blyth$ 
+    epsilon:State blyth$ 
+    epsilon:State blyth$ 
+    epsilon:State blyth$ 
+    epsilon:State blyth$ 
+    epsilon:State blyth$ 
+    epsilon:State blyth$ pwd
+    /Users/blyth/.opticks/dayabay/State
+
+::
+
+    epsilon:opticks blyth$ opticks-find scenetarget 
+    ./oglrap/Scene.cc:const char* Scene::TARGET = "scenetarget" ; // trying to extracate targetting from Scene 
+    epsilon:opticks blyth$ 
+
+
+::
+
+     945 void Scene::jump()
+     946 {
+     947    // hmm what about instanced ?
+     948     unsigned target = m_hub->getTarget();
+     949     if( m_touch > 0 && m_touch != target )
+     950     {
+     951         LOG(info)<<"Scene::jump-ing from  target -> m_touch  " << target << " -> " << m_touch  ;
+     952         m_hub->setTarget(m_touch);
+     953     }
+     954 }
+     955 
+     956 void Scene::setTarget(unsigned int target, bool aim)
+     957 {
+     958     m_hub->setTarget(target, aim); // sets center_extent in Composition via okg-/OpticksHub/OpticksGeometry
+     959 }
+     960 unsigned int Scene::getTarget()
+     961 {
+     962     return m_hub->getTarget() ;
+     963 }
+
+
 
 
 

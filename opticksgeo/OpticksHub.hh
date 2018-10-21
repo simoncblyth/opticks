@@ -36,6 +36,7 @@ class GPmtLib ;
 
 class Composition ; 
 class Bookmarks ; 
+class FlightPath ; 
 
 class OpticksGen ; 
 class OpticksRun ; 
@@ -200,7 +201,8 @@ class OKGEO_API OpticksHub {
        std::string          getCfgString();
        NState*              getState();
        NLookup*             getLookup();    // material code translation
-       Bookmarks*           getBookmarks();
+       Bookmarks*           getBookmarks() const ;
+       FlightPath*          getFlightPath() const ;
        NPY<unsigned char>*  getColorBuffer();
        Timer*               getTimer(); 
 
@@ -236,6 +238,7 @@ class OKGEO_API OpticksHub {
        NState*              m_state ; 
        NLookup*             m_lookup ; 
        Bookmarks*           m_bookmarks ; 
+       FlightPath*          m_flightpath ; 
 
    private:
        OpticksGen*          m_gen ; 

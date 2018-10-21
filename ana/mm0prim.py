@@ -10,6 +10,7 @@ from opticks.ana.prim import Dir
 
 import matplotlib.pyplot as plt
 
+
 if __name__ == '__main__':
 
     logging.basicConfig(level=logging.INFO)
@@ -25,6 +26,9 @@ if __name__ == '__main__':
         pvn = None
         lvn = None
     pass
+
+    ce = np.load(os.path.join(kd, "GMergedMesh/0/center_extent.npy"))
+
 
     log.info(kd)
     assert os.path.exists(kd), kd 
@@ -66,7 +70,8 @@ if __name__ == '__main__':
     for i,p in enumerate(prims):
         assert len(p.parts) == 1 
         pt = p.parts[0]
-        print(pt) 
+        print(repr(p)) 
+        #print(pt) 
         #print(pt.tran) 
         sh = pt.as_shape("prim%s" % i, sc=sc ) 
         if sh is None: 

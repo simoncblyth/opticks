@@ -310,7 +310,7 @@ const char* Interactor::keys =
 "\n S: screen scale mode toggle  drag up/down to change screen scale (use in Orthographic) " 
 "\n T: Composition::nextViewMode, has effect only with non-standard views (Interpolated, Track, Orbital)"
 "\n    typically changing animation speed " 
-"\n U: Composition::nextViewType, use to cycle thru view/altview : altview is InterpolatedView  " 
+"\n U: Composition::nextViewType, use to toggle between standard and altview : altview mode can be changed with T InterpolatedView  " 
 "\n V: View::nextMode      rotate view, with shift modifier rotates in opposite direction "    
 "\n W: decrease(increase with shift modifier) OptiX rendering resolution by multiples of 2, up to 16x"
 "\n X: pan mode toggle "

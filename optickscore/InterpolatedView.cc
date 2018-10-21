@@ -112,7 +112,7 @@ void InterpolatedView::tick()
 
     m_animator->step(bump);
 
-    //LOG(info) << description("IV::tick") << " : " << m_animator->description() ;
+    LOG(info) << description("IV::tick") << " : " << m_animator->description() ;
 
     if(bump)
     {

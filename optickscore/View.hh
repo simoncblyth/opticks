@@ -11,22 +11,26 @@
 #include "OKCORE_API_EXPORT.hh"
 #include "OKCORE_HEAD.hh"
 
-/**
+template <typename T> class NPY ; 
 
+/**
 View
 ======
-
-
-
-
-
 
 
 **/
 
 class OKCORE_API View : public NConfigurable {
 public:
-   typedef enum { STANDARD, INTERPOLATED, ORBITAL, TRACK, NUM_VIEW_TYPE } View_t ; 
+   typedef enum { STANDARD, FLIGHTPATH, INTERPOLATED, ORBITAL, TRACK, NUM_VIEW_TYPE } View_t ; 
+
+   static const char* STANDARD_ ; 
+   static const char* FLIGHTPATH_ ; 
+   static const char* INTERPOLATED_ ; 
+   static const char* ORBITAL_ ; 
+   static const char* TRACK_ ; 
+   static const char* TypeName( View_t v ); 
+
 
    static const char* PREFIX ; 
    virtual const char* getPrefix();
@@ -34,6 +38,8 @@ public:
    static const char* EYE ; 
    static const char* LOOK ; 
    static const char* UP ; 
+
+   static View* FromArrayItem( NPY<float>* flightpath, unsigned i ); 
 
    View(View_t type=STANDARD);
    virtual ~View();
