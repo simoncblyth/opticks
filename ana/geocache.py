@@ -1,9 +1,21 @@
 #!/usr/bin/env python
-
-import os, numpy as np
+"""
+See also ana/geocache.bash 
+"""
+import os, logging, numpy as np
+log = logging.getLogger(__name__)
 
 idp_ = lambda _:os.path.expandvars("$IDPATH/%s" % _ )
 idp2_ = lambda _:os.path.expandvars("$IDPATH2/%s" % _ )
+
+
+def keydir(ok=os.environ["OPTICKS_KEY"]):
+    e = ok.split(".")
+    assert len(e) == 4, e 
+    exe,cls,top,dig = e 
+    tmpl = "$LOCAL_BASE/opticks/geocache/{exe}_{top}_g4live/g4ok_gltf/{dig}/1".format(**locals())
+    return os.path.expandvars(tmpl)
+
 
 
 def cflib(aa, bb):
@@ -28,17 +40,19 @@ def cflib(aa, bb):
     pass
 
 
-
-
-
-if __name__ == '__main__':
-    pass
-
+def cflib_test():
     #rel = "GMaterialLib/GMaterialLib.npy"
     rel = "GSurfaceLib/GSurfaceLib.npy"
 
     aa = np.load(idp_(rel))
     bb = np.load(idp2_(rel))
-
     cflib(aa,bb)
-   
+ 
+
+
+if __name__ == '__main__':
+    pass
+    logging.basicConfig(level=logging.INFO)
+
+    kd = keydir()
+    print kd

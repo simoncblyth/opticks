@@ -653,9 +653,12 @@ NPY<float>* GParts::getBuffer(const char* tag) const
 
 
 
+unsigned GParts::getNumIdx() const 
+{
+    return m_idx_buffer->getNumItems() ; 
+}
 
-
-unsigned int GParts::getNumParts()
+unsigned GParts::getNumParts() const 
 {
     // for combo GParts this is total of all prim
     if(!m_part_buffer)
@@ -1390,6 +1393,7 @@ void GParts::setUInt(unsigned int i, unsigned int j, unsigned int k, unsigned in
 
 
 
+
 unsigned int GParts::getNodeIndex(unsigned int part)
 {
     return getUInt(part, NODEINDEX_J, NODEINDEX_K);
@@ -1545,6 +1549,45 @@ void GParts::dump(const char* msg, unsigned lim)
        printf("\n");
     }   
 }
+
+
+
+/**
+For "global" bits of geometry (from mm0) its handy to keep a reference to 
+the volume index at analytic lebel
+**/
+
+void GParts::setUIntIdx(unsigned i, unsigned j, unsigned idx)
+{
+    assert(1 == getNumIdx() && i == 0 );
+    unsigned k=0u ; 
+    unsigned l=0u ; 
+    m_idx_buffer->setUInt(i,j,k,l, idx);
+}
+unsigned GParts::getUIntIdx(unsigned i, unsigned j ) const 
+{
+    assert( i < getNumIdx() ); 
+    unsigned k=0u ; 
+    unsigned l=0u ; 
+    unsigned idx = m_idx_buffer->getUInt( i, j, k, l); 
+    return idx ; 
+}
+
+const unsigned GParts::VOL_IDX = 0 ; 
+
+void GParts::setVolumeIndex(unsigned idx)
+{
+    assert( 1 == getNumIdx() ) ;  
+    setUIntIdx( 0, VOL_IDX, idx ) ; 
+}
+unsigned GParts::getVolumeIndex(unsigned i) const
+{
+    return getUIntIdx(i, VOL_IDX ) ;  
+}
+
+
+
+
 
 
 template GGEO_API NPY<float>* GParts::LoadBuffer<float>(const char*, const char*) ;

@@ -10,27 +10,27 @@ is_npy_ = lambda _:fnmatch.fnmatch(_,"*.npy")
 is_txt_ = lambda _:fnmatch.fnmatch(_,"*.txt")
 
 def dump_one(a, verbose):
-    print a.shape
-    print "f32\n",a.view(np.float32)
-    print "i32\n",a.view(np.int32)
+    print(a.shape)
+    print("f32\n",a.view(np.float32))
+    print("i32\n",a.view(np.int32))
 
 def dump_tree(base=".", verbose=0):
     """
     Recursively lists shapes of all .npy files 
     and line lengths of .txt files.
     """
-    print os.path.abspath(base)
+    print(os.path.abspath(base))
     for root, dirs, files in os.walk(base):
         for name in filter(is_txt_,files):
             path = os.path.join(root, name)
             lines = len(file(path, "r").readlines())
-            print "%20s : %s " % ( path, lines)
+            print("%20s : %s " % ( path, lines))
         pass
         for name in filter(is_npy_,files):
             path = os.path.join(root, name)
             a = np.load(path)
             fdig = commands.getoutput("md5 %s" % path).split()[-1]
-            print "%20s : %20s : %s " % ( path, repr(a.shape), fdig)
+            print("%20s : %20s : %s " % ( path, repr(a.shape), fdig))
             if verbose > 0:
                 dump_one(a, verbose)
             pass

@@ -41,8 +41,8 @@ class Part(object):
         ntran = trans.shape[0]
         assert ntran > 0
 
-        log.info( "Part : trans.shape %s " % repr(trans.shape))
-        print "trans", trans 
+        log.debug( "Part : trans.shape %s " % repr(trans.shape))
+        #print("trans", trans) 
 
         f = part.view(np.float32) 
         u = part.view(np.uint32)
@@ -203,7 +203,7 @@ class Prim(object):
         return np.max(np.abs(self.trans_ - other.trans_))      
 
     def __repr__(self):
-        return "primIdx %s idx %s lvIdx %3d lvName %s partOffset %s numParts %s tranOffset %s numTran %s planOffset %s  " % (self.primIdx, repr(self.idx), self.lvIdx, self.lvName, self.partOffset, self.numParts, self.tranOffset, self.numTran, self.planOffset )  
+        return "primIdx %3s idx %30s lvIdx %3d lvName %30s partOffset %3s numParts %3s tranOffset %3s numTran %3s planOffset %3s  " % (self.primIdx, str(self.idx), self.lvIdx, self.lvName, self.partOffset, self.numParts, self.tranOffset, self.numTran, self.planOffset )  
 
     def __str__(self):
         return "\n".join(["",repr(self)] + map(str,filter(lambda pt:pt.tc > 0, self.parts)) + [repr(self.trans_)]) 

@@ -251,7 +251,8 @@ class GGEO_API GParts {
         GBndLib*           getBndLib();
         GItemList*         getBndSpec();
         unsigned int       getNumPrim();
-        unsigned int       getNumParts();
+        unsigned int       getNumParts() const ;
+        unsigned int       getNumIdx() const ;
         unsigned int       getPrimNumParts(unsigned int prim_index);
         std::string        desc(); 
     public:
@@ -295,6 +296,17 @@ class GGEO_API GParts {
     private:
        unsigned int getUInt(unsigned int part, unsigned int j, unsigned int k);
        void         setUInt(unsigned int part, unsigned int j, unsigned int k, unsigned int value);
+
+    public:
+        // for global pieces of geometry its useful to keep
+        // reference to the volume index at analytic level 
+        static const unsigned VOL_IDX ; 
+        void setVolumeIndex(unsigned idx); 
+        unsigned getVolumeIndex(unsigned i) const ; 
+    private:
+        void     setUIntIdx( unsigned i, unsigned j, unsigned idx) ; 
+        unsigned getUIntIdx( unsigned i, unsigned j ) const ; 
+
     private:
         // almost no state other than buffers, just icing on top of them
         // allowing this to copied/used on GPU in cu/hemi-pmt.cu

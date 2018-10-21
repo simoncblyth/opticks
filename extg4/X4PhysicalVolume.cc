@@ -770,6 +770,8 @@ GVolume* X4PhysicalVolume::convertNode(const G4VPhysicalVolume* const pv, GVolum
      GParts* pts = GParts::make( csg, boundaryName.c_str(), m_verbosity  );  // see GScene::createVolume 
      pts->setBndLib(m_blib);
 
+
+
      //  boundary name is a node level thing, not mesh level : so forced to do GParts::make at node level
      //  TODO: see if GParts stuff not needing the boundary could be factored out 
 
@@ -786,6 +788,10 @@ GVolume* X4PhysicalVolume::convertNode(const G4VPhysicalVolume* const pv, GVolum
 
      NSensor* sensor = NULL ; 
      unsigned ndIdx = m_node_count ;  
+
+ 
+     pts->setVolumeIndex( ndIdx );  
+
      GVolume* volume = new GVolume(ndIdx, gtransform, mesh, boundary, sensor );
      m_node_count += 1 ; 
 
