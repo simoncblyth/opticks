@@ -82,6 +82,32 @@ if __name__ == '__main__':
             ax.add_patch(pa)
         pass
     pass
+
+    dtype = np.float32
+    n = 3 
+    eye = np.zeros( (n, 3), dtype=dtype )
+    look = np.zeros( (n, 3), dtype=dtype )
+    up = np.zeros( (n, 3), dtype=dtype )
+
+    eye[0] = [-2, 0, -1] 
+    eye[1] = [ 0, 0, 0.5]
+    eye[2] = [ 0, 0, 2]
+
+
+    look[:-1] = eye[1:]
+    look[-1] = eye[0]
+    up[:] = [0,0,1] 
+
+    v = np.zeros( (n,4,4), dtype=np.float32)
+    v[:,0,:3] = eye 
+    v[:,1,:3] = look
+    v[:,2,:3] = up
+
+    sc = 30.
+    ax.plot( sc*eye[:,0], sc*eye[:,2]  )
+
+    np.save("/tmp/flightpath.npy", v ) 
+
     fig.show()
 
 
