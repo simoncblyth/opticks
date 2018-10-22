@@ -7,7 +7,6 @@ log = logging.getLogger(__name__)
 from opticks.ana.geocache import keydir
 from opticks.ana.prim import Dir
 
-
 class Geom2d(object):
     """
     Scratch geometry, for designing flight paths
@@ -38,13 +37,15 @@ class Geom2d(object):
         sli = slice(0,None)
         gprim = []
         for p in pp[sli]:
+            if p.lvIdx in [11,12]: continue   # expHall and topRock
             if p.lvIdx in [8,9]: continue   # too many  of these LV
             if p.numParts > 1: continue     # skip compounds for now
             gprim.append(p)
-            #print(repr(p)) 
+            print(repr(p)) 
+            vol = p.idx[0]
+            print(self.ce[vol])
             #print(str(p)) 
             if names:
-                vol = p.idx[0]
                 pv = self.pv[vol]
                 lv = self.lv[vol]
                 print(pv)
@@ -63,7 +64,7 @@ class Geom2d(object):
             #print(pt) 
             #print(pt.tran) 
  
-    def render(self, ax):   
+    def render(self, ax, art3d=None):   
         sc = 1000
         for i,p in enumerate(self.gprim):
             assert len(p.parts) == 1 
@@ -75,6 +76,9 @@ class Geom2d(object):
             #print(sh)
             for pa in sh.patches():
                 ax.add_patch(pa)
+                if not art3d is None:
+                    art3d.pathpatch_2d_to_3d(pa, z=0, zdir="y")
+                pass
             pass
         pass
 
@@ -95,16 +99,25 @@ if __name__ == '__main__':
     mm0 = Geom2d(kd, ridx=0)
 
     import matplotlib.pyplot as plt 
+    from mpl_toolkits.mplot3d import Axes3D 
+    import mpl_toolkits.mplot3d.art3d as art3d
 
     plt.ion()
     fig = plt.figure(figsize=(6,5.5))
-    ax = fig.add_subplot(111)
+    ax = fig.add_subplot(111,projection='3d')
     plt.title("mm0 geom2d")
-    sz = 50 
-    ax.set_ylim([-sz,sz])
-    ax.set_xlim([-sz,sz])
+    sz = 25
 
-    mm0.render(ax)
+    ax.set_xlim([-sz,sz])
+    ax.set_ylim([-sz,sz])
+    ax.set_zlim([-sz,sz])
+
+    ax.set_xlabel("x")
+    ax.set_ylabel("y")
+    ax.set_zlabel("z")
+
+
+    mm0.render(ax, art3d=art3d)
 
 
 

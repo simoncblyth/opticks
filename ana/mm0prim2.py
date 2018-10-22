@@ -25,23 +25,34 @@ if __name__ == '__main__':
 
     mm0 = Geom2d(kd, ridx=0)
 
+    target = 352854   # guide tube torus, is convenient frame 
+    sc = mm0.ce[target][3]/1000.   #  torus big radius in meters   17.838   
+
 
     import matplotlib.pyplot as plt 
+    from mpl_toolkits.mplot3d import Axes3D 
+    import mpl_toolkits.mplot3d.art3d as art3d
 
     plt.ion()
-    fig = plt.figure(figsize=(6,5.5))
-    ax = fig.add_subplot(111)
+    fig = plt.figure(figsize=(9,9))
+    ax = fig.add_subplot(111,projection='3d')
     plt.title("mm0 geom2d")
-    sz = 50 
-    ax.set_ylim([-sz,sz])
+    sz = 25
+
     ax.set_xlim([-sz,sz])
+    ax.set_ylim([-sz,sz])
+    ax.set_zlim([-sz,sz])
 
-    mm0.render(ax)
+    ax.set_xlabel("x")
+    ax.set_ylabel("y")
+    ax.set_zlabel("z")
+
+    mm0.render(ax, art3d=art3d)
 
 
-    pz = 0.3
-    pr = 0.32
-    sc = 30.    # half the extent of world volume in meters
+
+    pz = 1.0
+    pr = 1.1
 
 
     dtype = np.float32
@@ -50,7 +61,8 @@ if __name__ == '__main__':
     ta = np.linspace( 0, 2*np.pi, 20 )[:-1]
     za = np.cos(ta+phase0)
 
-    m = np.argmin(np.abs(za[1:]-pz))+1   # index of za closest to that pz value going around again, excluding 0
+
+    m = np.argmin(np.abs(za[2:]-pz))+2   # index of za closest to that pz value going around again, excluding 0
     t0 = ta[:m+1]
     m0 = len(t0)
     st0 = np.sin(t0+phase0)
@@ -61,13 +73,13 @@ if __name__ == '__main__':
     oxz[:,0] = st0
     oxz[:,1] = 0
     oxz[:,2] = ct0
+    oxz *= pr
 
     uxz = np.zeros( (m0,3) , dtype=dtype )
     uxz[:,0] = st0
     uxz[:,1] = 0 
     uxz[:,2] = ct0 
 
-    oxz *= pr
 
     # take the last point x value (close to pz) and make xy loop
     r2 = np.abs(oxz[-1,0])
@@ -108,25 +120,28 @@ if __name__ == '__main__':
     gaze = look - eye
 
     x = sc*eye[:,0] 
+    y = sc*eye[:,1] 
     z = sc*eye[:,2]
 
-    #u = gaze[:, 0] 
-    #w = gaze[:, 2] 
+    u0 = gaze[:, 0] 
+    v0 = gaze[:, 1] 
+    w0 = gaze[:, 2] 
 
-    u = up[:, 0] 
-    w = up[:, 2] 
+    u1 = up[:, 0] 
+    v1 = up[:, 1] 
+    w1 = up[:, 2] 
 
- 
    
     #ax.plot( x,z )
-    ax.quiver( x, z, u, w  ) 
+    ax.quiver( x, y, z, u0, v0, w0  ) 
+    ax.quiver( x, y, z, u1, v1, w1  ) 
 
 
 
-    labels = True
+    labels = False
     if labels:
         for i in range(len(eye)):
-            plt.text( x[i], z[i], i , fontsize=12 )
+            plt.text( x[i], y[i], z[i], i , "z" )
         pass  
     pass
 
