@@ -47,7 +47,11 @@ if __name__ == '__main__':
     dtype = np.float32
 
     phase0 = np.arccos(pz) 
-    t0 = np.linspace( 0, 2*np.pi, 20 )[:-1]
+    ta = np.linspace( 0, 2*np.pi, 20 )[:-1]
+    za = np.cos(ta+phase0)
+
+    m = np.argmin(np.abs(za[1:]-pz))+1   # index of za closest to that pz value going around again, excluding 0
+    t0 = ta[:m+1]
     m0 = len(t0)
     st0 = np.sin(t0+phase0)
     ct0 = np.cos(t0+phase0)
@@ -65,20 +69,35 @@ if __name__ == '__main__':
 
     oxz *= pr
 
+    # take the last point x value (close to pz) and make xy loop
+    r2 = np.abs(oxz[-1,0])
+    tb = np.linspace( 0, 2*np.pi, 32)[:-1]
+    m1 = len(tb)
 
+    oxy = np.zeros( (m1,3), dtype=dtype )
+    oxy[:,0] = r2*np.cos(tb)
+    oxy[:,1] = r2*np.sin(tb)
+    oxy[:,2] = oxz[-1,2]
 
-    n = 2 + m0 
+    uxy = np.zeros( (m1,3), dtype=dtype )
+    uxy[:,0] = np.zeros(m1, dtype=dtype)
+    uxy[:,1] = np.zeros(m1, dtype=dtype)
+    uxy[:,2] = np.ones(m1, dtype=dtype)
+
+    n = 2 + m0 + m1
     eye = np.zeros( (n, 3), dtype=dtype )
     look = np.zeros( (n, 3), dtype=dtype )
     up = np.zeros( (n, 3), dtype=dtype )
 
     eye[0] = [-1, 0, pz] 
     eye[1] = [ 0, 0, pz]
-    eye[2:2+len(oxz)] = oxz
+    eye[2:2+m0] = oxz
+    eye[2+m0:2+m0+m1] = oxy
 
     up[0] = [0,0,1]
     up[1] = [0,0,1]
-    up[2:2+len(uxz)] = uxz
+    up[2:2+m0] = uxz
+    up[2+m0:2+m0+m1] = uxy
 
 
 
