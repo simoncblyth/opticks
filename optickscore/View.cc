@@ -142,7 +142,10 @@ View* View::FromArrayItem( NPY<float>* flightpath, unsigned i )
     v->setUp(up);       
 
     // hmm it would be more convient for timing info to travel in flightpath too ???
-    // and what about frames ?
+    //
+    // what about frames ? 
+    //      best to keep those separate in order that flightpaths 
+    //      can in principal be used for different frames for geometries of very different scales
 
     return v ; 
 }
@@ -279,15 +282,6 @@ void View::setUp(glm::vec4& up)
 }
 
 
-
-
-
-
-
-
-
-
-
 void View::Print(const char* )
 {
     print(getEye(), getLook(), getUp() , "eye/look/up");
@@ -343,9 +337,9 @@ void View::handleDegenerates()
    float eul = glm::length(glm::cross(gaze, m_up));
    if(eul==0.f)
    {
-#ifdef VIEW_DEBUG
+//#ifdef VIEW_DEBUG
        LOG(warning) << "View::handleDegenerates looking for ne changing up axis " ; 
-#endif
+//#endif
        for(unsigned int i=0 ; i < m_axes.size() ; i++)
        {
             glm::vec4 axis = m_axes[i] ; 
@@ -353,9 +347,9 @@ void View::handleDegenerates()
             if(aul > 0.f)
             {
                   setUp(axis);
-#ifdef VIEW_DEBUG
+//#ifdef VIEW_DEBUG
                   LOG(warning) << "View::handleDegenerates picked new up axis " << i ; 
-#endif
+//#endif
                   break ; 
             }
         }
@@ -532,7 +526,10 @@ glm::vec4 View::getGaze()
 }
 
 
-
+void View::reset()
+{
+   // do nothing default, overridden in InterpolatedView
+}
 void View::tick()
 {
    // do nothing default, overridden in InterpolatedView

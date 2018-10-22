@@ -78,10 +78,23 @@ geocache-j1808()
     OKX4Test --gdmlpath $(opticksdata-j) --g4codegen --csgskiplv 22 
 }
 
+
+geocache-target(){ echo 352854 ; }
+
 geocache-view()
 {
     type $FUNCNAME
-    OKTest --envkey --xanalytic --tracer
+    OKTest --envkey --xanalytic  --tracer --target $(geocache-target)
     #OKTest --envkey --xanalytic 
 }
+
+geocache-sc()
+{
+    # with --scintillation tried kludge symbolic link in opticksdata/gensteps g4live -> juno1707
+    # but that gives applyLookup fails 
+
+    OKTest --envkey --xanalytic --timemax 400 --animtimemax 400 --target $(geocache-target)
+}
+
+
 

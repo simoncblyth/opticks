@@ -15,9 +15,15 @@ class OKCORE_API OpticksConst {
               e_option  = 1 << 2,  
               e_command = 1 << 3 
             } ; 
+      // GLFW_MOD_SHIFT
+      // GLFW_MOD_CONTROL
+      // GLFW_MOD_ALT
+      // GLFW_MOD_SUPER
+
        static bool isShift(unsigned int modifiers);
        static bool isControl(unsigned int modifiers);
-       static bool isCommand(unsigned int modifiers);
+       static bool isShiftOption(unsigned int modifiers);
+       static bool isCommand(unsigned int modifiers);  // <-- Linux super key often redefined, unlike macOS command key so not so useful
        static bool isOption(unsigned int modifiers);
        static std::string describeModifiers(unsigned int modifiers);
    public:

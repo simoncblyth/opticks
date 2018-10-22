@@ -8,6 +8,102 @@ Thinking about recording GLFW events for replay to make movies
 
 
 
+Screen Recording
+------------------
+
+See obs- Open Broadcast Studio, basically obs-run then get the .mp4 from $HOME, 
+check them with vlc
+
+
+FlightPath movies
+-------------------
+
+Flightpaths are NPY arrays with eye, look and up coordinates in 
+the target frame using extent scale, so values are usually within or not far 
+from unit cube.
+
+Create flightpath arrays and save to /tmp/flightpath.npy with python scripts such as::
+
+     ~/opticks/ana/mm0prim.py 
+     ~/opticks/ana/mm0prim2.py 
+
+These scripts show a scratch geometry, to aid the design of flightpaths.
+
+To run the flightpath, simply startup OKTest and press U to move to the altview (can press T
+to change the animation speed).
+
+Issues
+~~~~~~~
+
+* when the distance between waypoints is variable the animation 
+  can appear too slow or too fast 
+
+* TODO: somehow adjust animation period to have a constant velocity, 
+  perhaps with some control fraction relative to that to allow speed control
+
+
+Controlling with U and T
+--------------------------
+
+Interactor.cc::
+
+    311 "\n T: Composition::nextViewMode, has effect only with non-standard views (Interpolated, Track, Orbital)"
+    312 "\n    typically changing animation speed "
+    313 "\n U: Composition::nextViewType, use to toggle between standard and altview : altview mode can be changed with T InterpolatedView  "
+    ...
+    329 "\n Holding SHIFT with A,V,T reverses animation time direction "
+    330 "\n Holding OPTION with A,V,T changes to previous animation mode, instead of next  "
+    331 "\n Holding CONTROL with A,V,T sets animation mode to OFF  "
+    ...
+    424         case GLFW_KEY_T:
+    425             m_composition->nextViewMode(modifiers) ;
+    426             break;
+    427         case GLFW_KEY_U:
+    428             m_composition->nextViewType(modifiers) ;
+    429             break;
+
+Composition.cc::
+
+     656 void Composition::nextViewMode(unsigned int modifiers)    // T KEY
+     657 {
+     658     if(m_view->isStandard())
+     659     {
+     660        LOG(info) << "Composition::nextViewMode(KEY_T) does nothing in standard view, switch to alt views with U:nextViewType " ;
+     661        return ;
+     662     }
+     663     m_view->nextMode(modifiers);
+     664 }
+
+InterpolatedView.cc::
+
+     95 void InterpolatedView::nextMode(unsigned int modifiers)
+     96 {
+     97     m_animator->nextMode(modifiers);
+     98 }
+
+Animator.cc::
+
+    140 void Animator::nextMode(unsigned int modifiers)
+    141 {
+    142     if(modifiers & OpticksConst::e_shift) m_increment = -m_increment ;
+    143 
+    144     bool option = 0 != (modifiers & OpticksConst::e_option) ;
+    145     bool control = 0 != (modifiers & OpticksConst::e_control) ;
+    146 
+    147     unsigned int num_mode = getNumMode();
+    148 
+    149     int mode = ( option ? m_mode - 1 : m_mode + 1) % num_mode ;
+    150 
+    151     if(mode < 0) mode = num_mode - 1 ;
+    152 
+    153     if(control) mode = OFF ;
+    154 
+    155     setMode((Mode_t)mode) ;
+    156 }
+
+
+
+
 Experience with g4daeview
 ----------------------------
 

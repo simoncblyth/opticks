@@ -42,6 +42,7 @@ class OKCORE_API InterpolatedView :  public View {
         glm::vec4 getUp(const glm::mat4& m2w);
         glm::vec4 getGaze(const glm::mat4& m2w, bool debug=false);
     public:
+        void reset();
         void tick();
         bool isActive();
         bool hasChanged();

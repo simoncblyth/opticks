@@ -15,7 +15,6 @@ const char* InterpolatedView::getPrefix()
     return PREFIX ; 
 }
 
-
 InterpolatedView::InterpolatedView(unsigned int period, bool verbose) 
      : 
      View(INTERPOLATED),
@@ -30,7 +29,22 @@ InterpolatedView::InterpolatedView(unsigned int period, bool verbose)
     init();
 }
 
+void InterpolatedView::init()
+{
+    m_animator = new Animator(&m_fraction, m_period, 0.f, 1.f ); 
+    //m_animator->setModeRestrict(Animator::NORM);  // only OFF,SLOW,NORM,FAST, 
+    if(m_verbose) m_animator->Summary("InterpolatedView::init");
+    //m_animator->setMode(Animator::SLOW4);
+    m_animator->setMode(Animator::SLOW2);
+}
 
+void InterpolatedView::reset()
+{
+    m_i = 0 ; 
+    m_j = 1 ; 
+    m_count = 0 ; 
+    m_fraction = 0.f ;  // start from entirely currentView 0
+}
 
 Animator* InterpolatedView::getAnimator()
 {
@@ -77,16 +91,6 @@ void InterpolatedView::nextPair()
     setPair(i,j);
 }
 
-
-void InterpolatedView::init()
-{
-    m_animator = new Animator(&m_fraction, m_period, 0.f, 1.f ); 
-    //m_animator->setModeRestrict(Animator::NORM);  // only OFF,SLOW,NORM,FAST, 
-    if(m_verbose) m_animator->Summary("InterpolatedView::init");
-    //m_animator->setMode(Animator::SLOW4);
-    m_animator->setMode(Animator::SLOW2);
-}
-
 bool InterpolatedView::hasChanged()
 {
     return m_count > 0 && m_animator->isActive() ;  
@@ -112,7 +116,7 @@ void InterpolatedView::tick()
 
     m_animator->step(bump);
 
-    LOG(info) << description("IV::tick") << " : " << m_animator->description() ;
+    //LOG(info) << description("IV::tick") << " : " << m_animator->description() ;
 
     if(bump)
     {
@@ -168,8 +172,6 @@ glm::vec4 InterpolatedView::getGaze(const glm::mat4& m2w, bool )
     glm::vec4 gaze = look - eye ; 
     return gaze ;                // w=0. OK as direction
 }
-
-
 
 void InterpolatedView::Summary(const char* msg)
 {

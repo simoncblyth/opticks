@@ -5,6 +5,46 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+
+#include <string>
+#include <sstream>
+#include <iostream>
+
+
+
+enum { NUM_KEYS = 512  } ;
+static bool keys_down[NUM_KEYS] ;
+
+
+enum { 
+      e_shift   = 1 << 0,  
+      e_control = 1 << 1,  
+      e_option  = 1 << 2,  
+      e_command = 1 << 3 
+    } ; 
+
+
+static int getModifiers()
+{
+    unsigned modifiers = 0 ; 
+    if( keys_down[GLFW_KEY_LEFT_SHIFT]   || keys_down[GLFW_KEY_RIGHT_SHIFT] )    modifiers |= e_shift ;
+    if( keys_down[GLFW_KEY_LEFT_CONTROL] || keys_down[GLFW_KEY_RIGHT_CONTROL] )  modifiers |= e_control ;
+    if( keys_down[GLFW_KEY_LEFT_ALT]     || keys_down[GLFW_KEY_RIGHT_ALT] )      modifiers |= e_option ;
+    if( keys_down[GLFW_KEY_LEFT_SUPER]   || keys_down[GLFW_KEY_RIGHT_SUPER] )    modifiers |= e_command ;
+    return modifiers ; 
+}
+
+std::string descModifiers(int modifiers)
+{
+    std::stringstream ss ;  
+    if( modifiers & e_shift ) ss << "shift " ; 
+    if( modifiers & e_control ) ss << "control " ; 
+    if( modifiers & e_option ) ss << "option " ; 
+    if( modifiers & e_command ) ss << "command " ; 
+    return ss.str();  
+}
+
+
 static void error_callback(int error, const char* description)
 {
     fputs(description, stderr);
@@ -13,12 +53,30 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
 {
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
         glfwSetWindowShouldClose(window, GL_TRUE);
+
+    if( action == GLFW_PRESS )
+    {
+        keys_down[key] = true ;   
+    }
+    else if (action == GLFW_RELEASE )
+    {
+        keys_down[key] = false ;   
+    }
+
+
+    int modifiers = getModifiers(); 
+    std::cout << descModifiers(modifiers) << std::endl ; 
+
+
 }
 
 
 int main(void)
 {
     GLFWwindow* window;
+
+    for(unsigned i=0 ; i < NUM_KEYS ; i++) keys_down[i] = false ;
+
     glfwSetErrorCallback(error_callback);
     if (!glfwInit())
         exit(EXIT_FAILURE);

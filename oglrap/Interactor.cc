@@ -330,6 +330,8 @@ const char* Interactor::keys =
 "\n Holding OPTION with A,V,T changes to previous animation mode, instead of next  "
 "\n Holding CONTROL with A,V,T sets animation mode to OFF  "
 "\n "
+"\n Holding SHIFT+OPTION with T resets an InterpolatedView back to the start "
+"\n "
 "\n ";
 
 

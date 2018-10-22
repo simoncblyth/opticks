@@ -95,6 +95,7 @@ public:
    virtual glm::vec4 getLook(const glm::mat4& m2w);
    virtual glm::vec4 getUp(const glm::mat4& m2w);
    virtual glm::vec4 getGaze(const glm::mat4& m2w, bool debug=false);
+   virtual void reset();
    virtual void tick();
    virtual void nextMode(unsigned int modifiers);
    virtual bool isActive(); // always false, used in InterpolatedView

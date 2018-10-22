@@ -48,6 +48,7 @@
 #include "Bookmarks.hh"
 #include "FlightPath.hh"
 
+#include "OpticksConst.hh"
 #include "OpticksEvent.hh"
 
 #include "Composition.hh"
@@ -660,7 +661,16 @@ void Composition::nextViewMode(unsigned int modifiers)    // T KEY
        LOG(info) << "Composition::nextViewMode(KEY_T) does nothing in standard view, switch to alt views with U:nextViewType " ; 
        return ;
     }
-    m_view->nextMode(modifiers);    
+
+    if(OpticksConst::isShiftOption(modifiers)) 
+    {
+        LOG(info) << " SHIFT+OPTION+T : resetting view " ;  
+        m_view->reset() ;
+    }
+    else
+    {
+        m_view->nextMode(modifiers);    
+    } 
 }
 
 
