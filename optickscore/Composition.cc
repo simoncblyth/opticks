@@ -38,6 +38,7 @@
 #include "TrackballCfg.hh"
 #include "Clipper.hh"
 #include "ClipperCfg.hh"
+#include "ContentStyle.hh"
 
 #include "InterpolatedView.hh"
 #include "OrbitalView.hh"
@@ -171,6 +172,7 @@ Composition::Composition()
   m_track(NULL), 
   m_light(NULL),
   m_clipper(NULL),
+  m_content_style(new ContentStyle),
   m_count(0),
   m_axis_data(NULL),
   m_axis_attr(NULL),
@@ -222,6 +224,12 @@ Clipper* Composition::getClipper()
 {
     return m_clipper ;
 }
+ContentStyle* Composition::getContentStyle() const 
+{
+    return m_content_style ;
+}
+
+
 
 void Composition::clipper_next()
 {

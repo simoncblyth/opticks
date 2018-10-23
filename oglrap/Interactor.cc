@@ -13,6 +13,7 @@
 
 #include "OpticksHub.hh"
 
+#include "ContentStyle.hh"
 #include "Composition.hh"
 #include "Bookmarks.hh"
 #include "Camera.hh"
@@ -40,6 +41,7 @@ Interactor::Interactor(OpticksHub* hub)
    :
    m_hub(hub),
    m_composition(NULL),
+   m_content_style(NULL),
    m_bookmarks(NULL),  // defer, as my be NULL at this point
    m_camera(NULL),
    m_view(NULL),
@@ -224,6 +226,7 @@ void Interactor::configureI(const char* /*name*/, std::vector<int> values)
 void Interactor::setComposition(Composition* composition)
 {
     m_composition = composition ;
+    m_content_style = composition->getContentStyle(); 
     m_camera = composition->getCamera() ;
     m_view   = composition->getView();
     m_trackball = composition->getTrackball();
@@ -357,16 +360,15 @@ talked to a single umbrella class (living at lower level, not up here)
 for controlling all this.  
 Composition does that a bit but far from completely.
 
-This is to have a single controller that can be talked to 
-by various means: such as:
+The reason is that having a single controller that can be talked to 
+by various means avoids duplication. The means could include: 
 
 * via keyboard (here with GLFW)
 * via command strings 
 
 The problem is that too much state is residing too far up the heirarchy, 
 it should be living in generic fashion lower down.
-
-
+In MVC speak : lots of "M" is living in "V" 
 
 **/
 
@@ -388,11 +390,13 @@ void Interactor::key_pressed(unsigned int key)
             m_composition->nextAnimatorMode(modifiers) ; 
             break;
         case GLFW_KEY_B:
-            //m_scene->nextGeometryStyle(); 
-            m_scene->nextContentStyle(); 
+            m_content_style->nextContentStyle();
+            m_scene->applyContentStyle();  
+            // Prodding the scene to apply changes is a pain for generalizing to string commands
+            // but what alternative : generic scene update that applies everything ?
+            // Just changing uniforms work fine, no need to talk to scene, but others are less easy
             break;
         case GLFW_KEY_C:
-            //m_clipper->next(); 
             m_composition->clipper_next(); 
             break;
         case GLFW_KEY_D:
@@ -406,7 +410,6 @@ void Interactor::key_pressed(unsigned int key)
             break;
         case GLFW_KEY_G:
             printf("Interactor:G\n");
-            //m_gui_mode = !m_gui_mode ; 
             nextGUIStyle();
             break;
         case GLFW_KEY_H:

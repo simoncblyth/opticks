@@ -23,6 +23,7 @@
 #include "OpticksEvent.hh"
 #include "OpticksRun.hh"
 #include "Composition.hh"
+#include "ContentStyle.hh"
 #include "Bookmarks.hh"
 
 // opticksgeo-
@@ -70,6 +71,7 @@ OpticksViz::OpticksViz(OpticksHub* hub, OpticksIdx* idx, bool immediate)
     m_immediate(immediate),
     m_interactivity(m_ok->getInteractivityLevel()),
     m_composition(hub->getComposition()),
+    m_content_style(m_composition->getContentStyle()),
     m_types(m_ok->getTypes()),
     m_title(NULL),
     m_scene(NULL),
@@ -203,7 +205,7 @@ void OpticksViz::setupRestrictions()
 
         if(!hasOpt("jwire")) // use --jwire to enable wireframe with JUNO, do this only on workstations with very recent GPUs
         { 
-            m_scene->setNumContentStyle(Scene::WIRE); 
+            m_content_style->setNumContentStyle(ContentStyle::WIRE); 
         }
         m_scene->setNumGlobalStyle(Scene::GVISVEC); // disable GVISVEC, GVEC debug styles
     }

@@ -8,6 +8,7 @@ class Opticks ;
 class OpticksHub ; 
 
 class Composition ;
+class ContentStyle ; 
 class Bookmarks ; 
 
 class Camera ; 
@@ -93,6 +94,7 @@ class OGLRAP_API Interactor {
   private:
        OpticksHub*  m_hub ; 
        Composition* m_composition ; 
+       ContentStyle*  m_content_style ; 
        Bookmarks*   m_bookmarks ; 
        Camera*      m_camera ; 
        View*        m_view ; 

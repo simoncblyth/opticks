@@ -17,6 +17,7 @@ class Opticks ;
 class OpticksRun ; 
 class OpticksEvent ; 
 class Composition ; 
+class ContentStyle ; 
 class OpticksEvent ; 
 class Types ; 
 
@@ -95,6 +96,7 @@ class OGLRAP_API OpticksViz {
          bool          m_immediate ; 
          int           m_interactivity ; 
          Composition*  m_composition ;
+         ContentStyle* m_content_style ; 
          Types*        m_types ; 
 
          const char*   m_title ; 

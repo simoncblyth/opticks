@@ -42,6 +42,7 @@
 #include "OGLRap_Config.hh"      // cmake generated header
 
 #include "Composition.hh"
+#include "ContentStyle.hh"
 #include "Renderer.hh"
 #include "RContext.hh"
 #include "InstLODCull.hh"
@@ -94,14 +95,6 @@ const char* Scene::RECORD   = "record" ;
 const char* Scene::REC_ = "point" ;   
 const char* Scene::ALTREC_ = "line" ; 
 const char* Scene::DEVREC_ = "vector" ; 
-
-const char* Scene::ASIS_ = "asis" ; 
-const char* Scene::BBOX_ = "bbox" ; 
-const char* Scene::NORM_ = "norm" ;   
-const char* Scene::NONE_ = "none" ;   
-const char* Scene::WIRE_ = "wire" ; 
-const char* Scene::NORM_BBOX_ = "norm_bbox" ; 
-
 
 
 const char* Scene::getRecordStyleName(Scene::RecordStyle_t style)
@@ -515,6 +508,7 @@ void Scene::setComposition(Composition* composition)
     //     updated from Scene, then most Renderers wont need composition ? 
 
     m_composition = composition ; 
+    m_content_style = m_composition->getContentStyle(); 
 
     if(m_global_renderer)
         m_global_renderer->setComposition(composition);
@@ -1054,8 +1048,10 @@ Scene::Scene(OpticksHub* hub, const char* shader_dir, const char* shader_incl_pa
             m_source_mode(false),
             m_record_mode(true),
             m_record_style(ALTREC),
+      /*
             m_content_style(ASIS),
             m_num_content_style(0),
+       */
             m_global_style(GVIS),
             m_num_global_style(0),
             m_instance_style(IVIS),
@@ -1221,119 +1217,16 @@ void Scene::nextPhotonStyle()
 
 
 ////// ContentStyle (B-key) /////////////////////
-////// TODO: RenderStyle would be a better name
-//////       also this should be down in composition, not up here
+//// mostly moved down to okc.Style
 
-unsigned int Scene::getNumContentStyle()
+void Scene::applyContentStyle()
 {
-    return m_num_content_style == 0 ? int(NUM_CONTENT_STYLE) : m_num_content_style ;
-}
-void Scene::setNumContentStyle(unsigned int num_content_style)
-{
-    m_num_content_style = num_content_style ;
-
-    dumpContentStyles("Scene::setNumContentStyle");
-}
-
-void Scene::dumpContentStyles(const char* msg)
-{
-    const ContentStyle_t style0 = getContentStyle() ;
-    ContentStyle_t style = style0 ; 
-
-    LOG(info) << msg << " (Scene::dumpContentStyles) " ; 
-
-    while( style != style0 )
-    {
-        nextContentStyle();
-        style = getContentStyle() ;
-    }
- 
-    assert( style == style0 );
-}
-
-Scene::ContentStyle_t Scene::getContentStyle() const 
-{
-    return m_content_style ;
-}
-
-void Scene::nextContentStyle()
-{
-    unsigned num_content_style = getNumContentStyle() ;
-    int next = (m_content_style + 1) % num_content_style ; 
-    setContentStyle( (ContentStyle_t)next );
-
-    const char* stylename = getContentStyleName();
-    printf("Scene::nextContentStyle : %s num_content_style %u m_num_content_style %u  \n", stylename, num_content_style, m_num_content_style );
-}
-
-void Scene::setContentStyle(ContentStyle_t style)
-{
-    m_content_style = style ; 
-    applyContentStyle();
-}
-
-const char* Scene::getContentStyleName(Scene::ContentStyle_t style)
-{
-   switch(style)
-   {
-      case ASIS:return ASIS_ ; break; 
-      case BBOX:return BBOX_ ; break; 
-      case NORM:return NORM_ ; break; 
-      case NONE:return NONE_ ; break; 
-      case WIRE:return WIRE_ ; break; 
-      case NORM_BBOX:return NORM_BBOX_ ; break; 
-      case NUM_CONTENT_STYLE:assert(0) ; break ; 
-      default: assert(0); break ; 
-   } 
-   return NULL ; 
-}
-
-const char* Scene::getContentStyleName()
-{
-   return getContentStyleName(m_content_style);
-}
-
-void Scene::applyContentStyle()  // B:key 
-{
-    bool inst(false) ; 
-    bool bbox(false) ; 
-    bool wire(false) ; 
-
-    switch(m_content_style)
-    {
-      case ASIS:
-             break; 
-      case BBOX:
-             inst = false ; 
-             bbox = true ; 
-             wire = false ; 
-             break;
-      case NORM:
-             inst = true ;
-             bbox = false ; 
-             wire = false ; 
-             break;
-      case NONE:
-             inst = false ;
-             bbox = false ; 
-             wire = false ; 
-             break;
-      case WIRE:
-             inst = true ;
-             bbox = false ; 
-             wire = true ; 
-             break;
-      case NORM_BBOX:
-             inst = true ; 
-             bbox = true ; 
-             wire = false ; 
-             break;
-      case NUM_CONTENT_STYLE:
-             assert(0);
-             break;
-   }
-
-   if(m_content_style != ASIS)
+   bool inst = m_content_style->isInst(); 
+   bool bbox = m_content_style->isBBox(); 
+   bool wire = m_content_style->isWire(); 
+   bool asis = m_content_style->isASIS(); 
+  
+   if(!asis)
    {
        for(unsigned int i=0 ; i < m_num_instance_renderer ; i++ ) 
        {
@@ -1344,9 +1237,7 @@ void Scene::applyContentStyle()  // B:key
    }
 
    LOG(fatal) << "Scene::applyContentStyle" ; 
-   //assert(0);
 }
-
 
 
 

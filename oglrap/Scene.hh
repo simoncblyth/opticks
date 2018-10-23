@@ -27,6 +27,7 @@ class InstLODCull ;
 class Rdr ;
 class Device ; 
 class Composition ; 
+class ContentStyle ; 
 class Photons ; 
 class Colors ; 
 class Interactor ; 
@@ -123,14 +124,7 @@ class OGLRAP_API Scene : public NConfigurable {
         static const char* REC_ ; 
         static const char* ALTREC_ ; 
         static const char* DEVREC_ ; 
-   public:
-        // ContentStyle
-        static const char* ASIS_ ; 
-        static const char* BBOX_ ; 
-        static const char* NORM_ ; 
-        static const char* NONE_ ; 
-        static const char* WIRE_ ; 
-        static const char* NORM_BBOX_ ; 
+
    public:
         enum { MAX_INSTANCE_RENDERER = 5 };  
         static const char* _INSTANCE   ;
@@ -161,18 +155,8 @@ class OGLRAP_API Scene : public NConfigurable {
         const char* getRecordStyleName();
         void nextPhotonStyle();
    public:
-        // B-key
-        // disabled styles after NUM_CONTENT_STYLE
-        typedef enum { ASIS, BBOX, NORM, NONE, WIRE, NUM_CONTENT_STYLE, NORM_BBOX } ContentStyle_t ;
-        void setContentStyle(Scene::ContentStyle_t style);
-        unsigned int getNumContentStyle(); // allows ro override the enum
-        Scene::ContentStyle_t getContentStyle() const ; 
-        void setNumContentStyle(unsigned int num_content_style); // used to disable WIRE style for JUNO
-        void applyContentStyle();
-        static const char* getContentStyleName(Scene::ContentStyle_t style);
-        const char* getContentStyleName();
-        void nextContentStyle();
-        void dumpContentStyles(const char* msg); 
+        // B-key : mostly moved to okc.ContentStyle
+        void applyContentStyle(); 
    public:
         void setWireframe(bool wire=true);
         void setInstCull(bool instcull=true);
@@ -329,6 +313,7 @@ class OGLRAP_API Scene : public NConfigurable {
         GGeoLib*       m_geolib ;
         GMergedMesh* m_mesh0 ; 
         Composition* m_composition ;
+        ContentStyle*   m_content_style ; 
         NPY<unsigned char>*     m_colorbuffer ;
         unsigned int m_touch ;
 
@@ -345,8 +330,10 @@ class OGLRAP_API Scene : public NConfigurable {
         bool         m_record_mode ; 
    private:
         RecordStyle_t   m_record_style ; 
-        ContentStyle_t  m_content_style ; 
-        unsigned int    m_num_content_style ; 
+
+
+   private:
+
         GlobalStyle_t   m_global_style ; 
         unsigned int    m_num_global_style ; 
         InstanceStyle_t m_instance_style ; 

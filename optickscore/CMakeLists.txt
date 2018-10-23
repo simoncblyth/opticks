@@ -59,6 +59,7 @@ set(SOURCES
     OpticksApp.cc
     Bookmarks.cc
     Composition.cc
+    ContentStyle.cc
 
     Demo.cc
     DemoCfg.cc
@@ -125,6 +126,7 @@ set(HEADERS
     OpticksApp.hh
     Bookmarks.hh
     Composition.hh
+    ContentStyle.hh
 
     OpticksPhoton.h
     OpticksQuadrant.h
