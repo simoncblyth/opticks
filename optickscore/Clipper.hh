@@ -45,7 +45,7 @@ class OKCORE_API Clipper : public NConfigurable {
         void setMode(int mode);
         int getMode();
         void next();  // toggles mode, Interactor invokes this on pressing C
-
+        void command(const char* cmd);  // C0:off C1:on
 
         // TODO:  try to eliminate the modal switch by some input side helpers 
         //        to make it easy to enter abs planes from non-abs inputs perhaps?

@@ -95,7 +95,8 @@ if __name__ == '__main__':
     eye = np.zeros( (n, 3), dtype=dtype )
     look = np.zeros( (n, 3), dtype=dtype )
     up = np.zeros( (n, 3), dtype=dtype )
-    ctrl = np.zeros( (n, 4), dtype=dtype )
+    fctrl = np.zeros( (n, 4), dtype=dtype )
+    ctrl = fctrl.view("|S2")
 
     eye[0] = [-1, 0, 0] 
     eye[1:1+m0] = oxz
@@ -108,11 +109,8 @@ if __name__ == '__main__':
 
 
 
-    ## test ctrl message, see SCtrl
-    mid = ctrl[m0/2].view("|S2")
-    mid[0] = "c0" ; 
-    mid[1] = "c1" ; 
-    mid[2] = "aa" ; 
+    ctrl[1,0] = "C1"  # up to 8 commands (2 bytes each) in the float4 ctrl slot of 4*4 = 16 bytes 
+    ctrl[10,0] = "C0"  
 
 
 
@@ -154,7 +152,7 @@ if __name__ == '__main__':
     elu[:,0,:3] = eye 
     elu[:,1,:3] = look
     elu[:,2,:3] = up
-    elu[:,3] = ctrl
+    elu[:,3] = fctrl
 
     # print elu[:,3].copy().view("|S2")
 

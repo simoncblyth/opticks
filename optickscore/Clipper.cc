@@ -94,6 +94,17 @@ void Clipper::next()
 }
 
 
+void Clipper::command(const char* cmd)  // C0 C1
+{
+    if(strlen(cmd) == 2 && cmd[0] == 'C' && ( cmd[1] == '0' || cmd[1] == '1' )  )
+    {
+        switch( cmd[1] )
+        {
+            case '0': m_mode = -1 ; break ; 
+            case '1': m_mode = 0 ; break ; 
+        }
+    }
+}
 
 
 

@@ -18,7 +18,7 @@
 #include "Camera.hh"
 #include "View.hh"
 #include "Trackball.hh"
-#include "Clipper.hh"
+//#include "Clipper.hh"
 #include "Animator.hh"
 
 
@@ -44,7 +44,7 @@ Interactor::Interactor(OpticksHub* hub)
    m_camera(NULL),
    m_view(NULL),
    m_trackball(NULL),
-   m_clipper(NULL),
+   //m_clipper(NULL),
    m_touchable(NULL),
    m_frame(NULL),
    m_scene(NULL),
@@ -227,7 +227,7 @@ void Interactor::setComposition(Composition* composition)
     m_camera = composition->getCamera() ;
     m_view   = composition->getView();
     m_trackball = composition->getTrackball();
-    m_clipper  = composition->getClipper();
+    //m_clipper  = composition->getClipper();
     m_animator = NULL ;  // defer
 }
 
@@ -348,6 +348,28 @@ void Interactor::pan_mode_key_pressed(unsigned int modifiers)
 }
 
 
+/**
+Interactor::key_pressed
+------------------------
+
+Hmm it would be better if the interactor
+talked to a single umbrella class (living at lower level, not up here)
+for controlling all this.  
+Composition does that a bit but far from completely.
+
+This is to have a single controller that can be talked to 
+by various means: such as:
+
+* via keyboard (here with GLFW)
+* via command strings 
+
+The problem is that too much state is residing too far up the heirarchy, 
+it should be living in generic fashion lower down.
+
+
+
+**/
+
 void Interactor::key_pressed(unsigned int key)
 {
     m_changed = true ; 
@@ -369,7 +391,8 @@ void Interactor::key_pressed(unsigned int key)
             m_scene->nextGeometryStyle(); 
             break;
         case GLFW_KEY_C:
-            m_clipper->next(); 
+            //m_clipper->next(); 
+            m_composition->clipper_next(); 
             break;
         case GLFW_KEY_D:
             m_camera->nextStyle(modifiers); 

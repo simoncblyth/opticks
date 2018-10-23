@@ -223,6 +223,16 @@ Clipper* Composition::getClipper()
     return m_clipper ;
 }
 
+void Composition::clipper_next()
+{
+    m_clipper->next(); 
+}
+void Composition::clipper_command(const char* cmd)
+{
+    m_clipper->command(cmd); 
+}
+
+
 void Composition::setCamera(Camera* camera)
 {
     m_camera = camera ; 

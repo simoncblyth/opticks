@@ -4,6 +4,7 @@
 
 // brap-
 #include "BCfg.hh"
+#include "BStr.hh"
 #include "BMap.hh"
 
 #include "NState.hpp"
@@ -130,10 +131,33 @@ int OpticksHub::getErr() const
 }
 
 
-// SCtrl 
-void OpticksHub::command(const char* cmd) 
+
+/**
+OpticksHub::command
+-------------------
+
+Invoked from lower levels, eg okc.InterpolatedView, on view switching via SCtrl protocol.
+It would be better for this to live down in Composition, but it will take a while to 
+get the requisite state all down there, so leaving up here for now.
+
+**/
+void OpticksHub::command(const char* ctrl) 
 {
-    LOG(fatal) << "cmd [" << cmd << "]" ;  
+    std::vector<std::string> cmds ; 
+    BStr::split(cmds, ctrl, ',' ); 
+
+    unsigned n = cmds.size(); 
+    LOG(fatal) << "ctrl [" << ctrl << "] " << n  ;  
+    for( unsigned i=0 ; i < n ; i++)
+    {
+        std::string cmd = cmds[i] ; 
+        if(cmd.size() != 2) continue ; 
+        switch(cmd[0])
+        {
+            case 'C': m_composition->clipper_command(cmd.c_str())                    ; break ; 
+            default : LOG(fatal) << "ignoring unimplemented command [" << cmd << "]" ; break ;  
+        }
+    } 
 }
 
 

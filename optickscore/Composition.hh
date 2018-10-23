@@ -297,6 +297,9 @@ class OKCORE_API Composition : public NConfigurable {
       View*      getView(); 
       Light*     getLight(); 
       Clipper*   getClipper(); 
+
+      void clipper_next(); 
+      void clipper_command(const char* cmd);  // C0:off C1:on 
       
       void setCamera(Camera* camera);
       void setView(View* view);

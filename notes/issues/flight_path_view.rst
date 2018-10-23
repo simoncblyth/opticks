@@ -319,9 +319,8 @@ like switching animation speed OR render options OR clipplanes etc.
 Problem is that Interactor is too derived (specific to GLFW). Need a more fundamental controller.
 Looks like OpticksHub is the appropriate nexus point.
 
-* give OpticksHub a pure virtual "SController" base, (similar to SRenderer or SLauncher) which accepts string commands
+* give OpticksHub a pure virtual "SCtrl" base, (similar to SRenderer or SLauncher) which accepts string commands
 * so lower levels like InterpolatedView can than pass commands up to the hub  
-* could also mint OpticksController(SController) this ? 
 
 
 

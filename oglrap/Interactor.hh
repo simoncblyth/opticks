@@ -13,7 +13,7 @@ class Bookmarks ;
 class Camera ; 
 class View ; 
 class Trackball ;
-class Clipper ;
+//class Clipper ;
 class Touchable ; 
 class Frame ;   
 class Scene ;   
@@ -97,7 +97,7 @@ class OGLRAP_API Interactor {
        Camera*      m_camera ; 
        View*        m_view ; 
        Trackball*   m_trackball ; 
-       Clipper*     m_clipper ; 
+       //Clipper*     m_clipper ; 
        Touchable*   m_touchable ; 
        Frame*       m_frame; 
        Scene*       m_scene; 
