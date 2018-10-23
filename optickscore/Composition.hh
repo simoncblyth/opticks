@@ -5,6 +5,8 @@
 
 #include <glm/fwd.hpp>  
 
+
+class SCtrl ; 
 // bcfg-
 class BCfg ;
 
@@ -117,6 +119,7 @@ class OKCORE_API Composition : public NConfigurable {
   public:
       Composition();
       void addConstituentConfigurables(NState* state);
+      void setCtrl(SCtrl* ctrl ); 
       virtual ~Composition();
    public:
       void setAnimatorPeriod(int period);
@@ -441,7 +444,7 @@ class OKCORE_API Composition : public NConfigurable {
   private:
       // visitors
       OpticksEvent*  m_evt ; 
-
+      SCtrl*         m_ctrl ; 
   private:
       // updated by *update* based on inputs and residents
       glm::vec4 m_viewport ; 

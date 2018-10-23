@@ -2,12 +2,16 @@
 
 #include <vector>
 class Animator ; 
+class SCtrl ; 
 
 /**
 InterpolatedView 
 =================
 
-Created by Bookmarks::makeInterpolatedView
+Created by::
+
+     Bookmarks::makeInterpolatedView
+     FlightPath::makeInterpolatedView
 
 operates from Composition via base class method View::getTransforms 
 which invokes the overriden getEye, getLook, getUp
@@ -51,6 +55,7 @@ class OKCORE_API InterpolatedView :  public View {
         unsigned int getNumViews();
         void setFraction(float fraction);
         std::string description(const char* msg="IV");
+        void setCtrl(SCtrl* ctrl); 
     private:
         void init();
         View* getView(unsigned int index);
@@ -67,6 +72,7 @@ class OKCORE_API InterpolatedView :  public View {
         Animator*    m_animator ;
         std::vector<View*>  m_views ; 
         bool         m_verbose ; 
+        SCtrl*       m_ctrl ; 
 
 };
 

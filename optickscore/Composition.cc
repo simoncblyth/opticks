@@ -12,7 +12,7 @@
 #include <boost/math/constants/constants.hpp>
 #include "BStr.hh"
 #include "NGLM.hpp"
-
+#include "SHub.hh"
 
 
 // npy-
@@ -176,6 +176,7 @@ Composition::Composition()
   m_axis_attr(NULL),
   m_changed(true), 
   m_evt(NULL), 
+  m_ctrl(NULL),
   m_lookphi(0.f), 
   m_axis_x(1000.f,    0.f,    0.f, 0.f),
   m_axis_y(0.f   , 1000.f,    0.f, 0.f),
@@ -247,6 +248,13 @@ void Composition::setEvt(OpticksEvent* evt)
 {
     m_evt = evt ; 
 }
+void Composition::setCtrl(SCtrl* ctrl)
+{
+    m_ctrl = ctrl ; 
+}
+
+
+
 
 
 glm::vec4& Composition::getCenterExtent()

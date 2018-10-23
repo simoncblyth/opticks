@@ -20,13 +20,19 @@
 
 const char* FlightPath::FILENAME = "flightpath.npy"  ; 
 
+void FlightPath::setCtrl(SCtrl* ctrl)
+{
+    m_ctrl = ctrl ; 
+}
+
 FlightPath::FlightPath(const char* dir)  
     :
     m_flightpathdir(dir ? strdup(dir) : NULL),
     m_flightpath(NULL),
     m_view(NULL),
     m_verbose(false),
-    m_ivperiod(100)
+    m_ivperiod(100),
+    m_ctrl(NULL)
 {
 }
 
@@ -84,6 +90,8 @@ InterpolatedView* FlightPath::makeInterpolatedView()
     }
 
     InterpolatedView* iv = new InterpolatedView(m_ivperiod) ; 
+    iv->setCtrl(m_ctrl); 
+
     for(unsigned i=0 ; i < m_flightpath->getNumItems() ; i++ )
     {
         View* v = View::FromArrayItem( m_flightpath, i ) ; 

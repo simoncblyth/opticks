@@ -38,6 +38,7 @@ set(SOURCES
     SArrayDigest.cc
     SLauncher.cc
     SRenderer.cc
+    SCtrl.cc
     STimes.cc
     SLog.cc
     SBase36.cc
@@ -74,6 +75,7 @@ set(HEADERS
     SArrayDigest.hh
     SLauncher.hh
     SRenderer.hh
+    SCtrl.hh
     STimes.hh
     SLog.hh
     SBase36.hh

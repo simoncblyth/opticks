@@ -307,4 +307,27 @@ scenetarget ?  target volume identifies the frame of operation
 
 
 
+Hmm : write ctrl commands from python into flightpath.npy that are run when switching to that view ?
+------------------------------------------------------------------------------------------------------
+
+The writing cmds from python and interpreting from C++ is straightforward, see ~/np/NPTypeTest.{rst,cc} 
+
+The difficultry is arranging message passing from low level okc.InterpolatedView which is aware of when
+the view gets switched up to high level command control (Interactor) to run the command (eg doing things
+like switching animation speed OR render options OR clipplanes etc.
+
+Problem is that Interactor is too derived (specific to GLFW). Need a more fundamental controller.
+Looks like OpticksHub is the appropriate nexus point.
+
+* give OpticksHub a pure virtual "SController" base, (similar to SRenderer or SLauncher) which accepts string commands
+* so lower levels like InterpolatedView can than pass commands up to the hub  
+* could also mint OpticksController(SController) this ? 
+
+
+
+
+
+   
+
+
 

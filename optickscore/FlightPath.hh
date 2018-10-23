@@ -2,6 +2,9 @@
 
 #include <string>
 
+class SCtrl ; 
+
+
 // npy-
 template<typename T> class NPY ; 
 
@@ -11,6 +14,9 @@ class InterpolatedView ;
 /**
 FlightPath
 ============
+
+Used from 
+
 
 **/
 
@@ -25,6 +31,7 @@ public:
     void Summary(const char* msg="FlightPath::Summary");
 public:
     unsigned getNumViews() const ;
+    void setCtrl(SCtrl* ctrl); 
 public:
     void setVerbose(bool verbose=true);
     void setInterpolatedViewPeriod(unsigned int ivperiod); 
@@ -41,6 +48,7 @@ private:
     InterpolatedView*                    m_view ;  
     bool                                 m_verbose ; 
     int                                  m_ivperiod ; 
+    SCtrl*                               m_ctrl ; 
 
 };
 

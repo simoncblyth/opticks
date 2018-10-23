@@ -1,6 +1,8 @@
 #include <boost/lexical_cast.hpp>
 #include <sstream>
 
+
+#include "SCtrl.hh"
 #include "PLOG.hh"
 
 #include "NGLM.hpp"
@@ -24,7 +26,8 @@ InterpolatedView::InterpolatedView(unsigned int period, bool verbose)
      m_period(period),
      m_fraction(0.f),
      m_animator(NULL),
-     m_verbose(verbose)
+     m_verbose(verbose),
+     m_ctrl(NULL)
 {
     init();
 }
@@ -77,11 +80,20 @@ void InterpolatedView::setFraction(float fraction)
     m_fraction = fraction ; 
 }
 
+
 void InterpolatedView::setPair(unsigned int i, unsigned int j)
 {
     m_i = i ;
     m_j = j ; 
 }
+
+void InterpolatedView::setCtrl(SCtrl* ctrl)
+{
+    m_ctrl = ctrl ; 
+}
+
+
+
 
 void InterpolatedView::nextPair()
 {
@@ -89,6 +101,8 @@ void InterpolatedView::nextPair()
     unsigned int i = (m_i + 1) % n ;   
     unsigned int j = (m_j + 1) % n ;
     setPair(i,j);
+
+    if(m_ctrl) m_ctrl->command("InterpolatedView::nextPair"); 
 }
 
 bool InterpolatedView::hasChanged()

@@ -52,6 +52,8 @@ class TorchStepNPY ;
 template <typename> class NPY ;
 template <typename> class OpticksCfg ;
 
+#include "SCtrl.hh"
+
 #ifdef OPTICKS_NPYSERVER
 class numpydelegate ; 
 template <typename> class numpyserver ;
@@ -79,7 +81,7 @@ GGeoBase* getGGeoBase()
 
 #include "OKGEO_API_EXPORT.hh"
 
-class OKGEO_API OpticksHub {
+class OKGEO_API OpticksHub : public SCtrl {
 
     // friends using overrideMaterialMapA
        friend class OpMgr ; 
@@ -101,6 +103,10 @@ class OKGEO_API OpticksHub {
 
    public:
        int getErr() const ;
+
+   public:
+       // SHub
+       void command(const char* cmd);  
   private:
        void init();
        void setErr(int err);

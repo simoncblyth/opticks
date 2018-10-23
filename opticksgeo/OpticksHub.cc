@@ -1,5 +1,6 @@
 // sysrap-
 #include "SLog.hh"
+#include "SCtrl.hh"
 
 // brap-
 #include "BCfg.hh"
@@ -129,9 +130,18 @@ int OpticksHub::getErr() const
 }
 
 
+// SCtrl 
+void OpticksHub::command(const char* cmd) 
+{
+    LOG(fatal) << "cmd [" << cmd << "]" ;  
+}
+
+
+
 
 OpticksHub::OpticksHub(Opticks* ok) 
    :
+   SCtrl(),
    m_log(new SLog("OpticksHub::OpticksHub")),
    m_ok(ok),
    m_gltf(-1),        // m_ok not yet configured, so defer getting the settings
@@ -162,6 +172,8 @@ OpticksHub::OpticksHub(Opticks* ok)
 void OpticksHub::init()
 {
     LOG(fatal) << "[" ; 
+
+    m_composition->setCtrl(this); 
 
     add(m_fcfg);
 
@@ -356,6 +368,8 @@ void OpticksHub::configureState(NConfigurable* scene)
 
 
     m_flightpath = new FlightPath(m_ok->getFlightPathDir()) ; 
+    m_flightpath->setCtrl(this) ; 
+
 
     m_composition->setBookmarks(m_bookmarks);
     m_composition->setFlightPath(m_flightpath); 
