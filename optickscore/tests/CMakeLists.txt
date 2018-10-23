@@ -29,6 +29,7 @@ set(TEST_SOURCES
 
     CompositionTest.cc
     ViewTest.cc
+    CtrlTest.cc
 
     EvtLoadTest.cc
     OpticksEventAnaTest.cc

@@ -69,6 +69,7 @@ if __name__ == '__main__':
     oxz[:,2] = ct0
     oxz *= pr
 
+
     uxz = np.zeros( (m0,3) , dtype=dtype )
     uxz[:,0] = st0
     uxz[:,1] = 0 
@@ -94,6 +95,7 @@ if __name__ == '__main__':
     eye = np.zeros( (n, 3), dtype=dtype )
     look = np.zeros( (n, 3), dtype=dtype )
     up = np.zeros( (n, 3), dtype=dtype )
+    ctrl = np.zeros( (n, 4), dtype=dtype )
 
     eye[0] = [-1, 0, 0] 
     eye[1:1+m0] = oxz
@@ -104,6 +106,13 @@ if __name__ == '__main__':
     up[1:1+m0] = uxz
     up[1+m0:1+m0+m1] = uxy
 
+
+
+    ## test ctrl message, see SCtrl
+    mid = ctrl[m0/2].view("|S2")
+    mid[0] = "c0" ; 
+    mid[1] = "c1" ; 
+    mid[2] = "aa" ; 
 
 
 
@@ -145,6 +154,10 @@ if __name__ == '__main__':
     elu[:,0,:3] = eye 
     elu[:,1,:3] = look
     elu[:,2,:3] = up
+    elu[:,3] = ctrl
+
+    # print elu[:,3].copy().view("|S2")
+
     np.save("/tmp/flightpath.npy", elu ) 
 
 

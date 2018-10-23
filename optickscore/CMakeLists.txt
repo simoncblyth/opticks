@@ -18,6 +18,7 @@ set(SOURCES
     FlightPath.cc
     OrbitalView.cc
     TrackView.cc
+    Ctrl.cc
 
     OpticksConst.cc
     OpticksQuery.cc
@@ -86,6 +87,7 @@ set(HEADERS
     FlightPath.hh
     OrbitalView.hh
     TrackView.hh
+    Ctrl.hh
 
     OpticksConst.hh
     OpticksQuery.hh

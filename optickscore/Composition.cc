@@ -12,7 +12,7 @@
 #include <boost/math/constants/constants.hpp>
 #include "BStr.hh"
 #include "NGLM.hpp"
-#include "SHub.hh"
+#include "SCtrl.hh"
 
 
 // npy-

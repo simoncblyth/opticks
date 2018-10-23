@@ -102,7 +102,16 @@ void InterpolatedView::nextPair()
     unsigned int j = (m_j + 1) % n ;
     setPair(i,j);
 
-    if(m_ctrl) m_ctrl->command("InterpolatedView::nextPair"); 
+    if(m_ctrl)
+    { 
+        View* curr = getCurrentView() ; 
+        if(curr->hasCmds())  
+        {
+            const std::string& cmds = curr->getCmds() ;  
+            m_ctrl->command("IV::nextPair"); 
+            m_ctrl->command(cmds.c_str()); 
+        }
+    }
 }
 
 bool InterpolatedView::hasChanged()

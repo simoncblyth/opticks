@@ -62,7 +62,10 @@ public:
    std::vector<std::string> getTags();
    void set(const char* name, std::string& xyz);
    std::string get(const char* name);
-
+ public:
+   void setCmds(const std::string& cmds);
+   const std::string& getCmds() const ;
+   bool hasCmds() const ;   
  public:
    void home(); 
 
@@ -119,6 +122,8 @@ private:
    glm::vec3 m_up ; 
    bool      m_changed ; 
    std::vector<glm::vec4> m_axes ; 
+   std::string m_cmds ; 
+
 
 };
 

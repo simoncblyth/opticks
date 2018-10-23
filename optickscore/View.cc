@@ -15,6 +15,7 @@
 
 // okc-
 #include "View.hh"
+#include "Ctrl.hh"
 
 #include "PLOG.hh"
 
@@ -135,11 +136,16 @@ View* View::FromArrayItem( NPY<float>* flightpath, unsigned i )
     glm::vec4 eye  = flightpath->getQuad(i, 0) ;   
     glm::vec4 look = flightpath->getQuad(i, 1) ;   
     glm::vec4 up   = flightpath->getQuad(i, 2) ;   
+    glm::vec4 vctrl = flightpath->getQuad(i, 3) ;   
 
     View* v = new View ; 
     v->setEye(eye);       
     v->setLook(look);       
-    v->setUp(up);       
+    v->setUp(up); 
+
+    Ctrl ctrl(glm::value_ptr(vctrl), 4);
+    std::string cmds = ctrl.getCommands() ; 
+    v->setCmds(cmds);      
 
     // hmm it would be more convient for timing info to travel in flightpath too ???
     //
@@ -159,6 +165,21 @@ View::View(View_t type)  : m_type(type)
     m_axes.push_back(glm::vec4(0,0,1,0));
     m_axes.push_back(glm::vec4(1,0,0,0));
 }
+
+void View::setCmds(const std::string& cmds)
+{
+    m_cmds = cmds ; 
+}
+const std::string& View::getCmds() const 
+{
+    return m_cmds ; 
+}
+bool View::hasCmds() const
+{ 
+    return !m_cmds.empty() ;  
+}
+
+
 
 
 View::~View()
@@ -280,6 +301,13 @@ void View::setUp(glm::vec4& up)
 {
     setUp(up.x, up.y, up.z );
 }
+
+//void View::setCtrl(const glm::vec4& ctrl)
+//{
+//}
+
+
+
 
 
 void View::Print(const char* )
