@@ -672,7 +672,7 @@ void Scene::uploadGeometry()
              << " m_num_instance_renderer " << m_num_instance_renderer
              ; 
 
-    applyGeometryStyle(); // sets m_instance_mode m_bbox_mode switches, change with "B"  nextGeometryStyle()
+    applyContentStyle(); // sets m_instance_mode m_bbox_mode switches, change with "B"  nextContentStyle()
 }
 
 void Scene::uploadColorBuffer(NPY<unsigned char>* colorbuffer)
@@ -1054,8 +1054,8 @@ Scene::Scene(OpticksHub* hub, const char* shader_dir, const char* shader_incl_pa
             m_source_mode(false),
             m_record_mode(true),
             m_record_style(ALTREC),
-            m_geometry_style(ASIS),
-            m_num_geometry_style(0),
+            m_content_style(ASIS),
+            m_num_content_style(0),
             m_global_style(GVIS),
             m_num_global_style(0),
             m_instance_style(IVIS),
@@ -1220,57 +1220,59 @@ void Scene::nextPhotonStyle()
 
 
 
-////// GeometryStyle (B-key) /////////////////////
+////// ContentStyle (B-key) /////////////////////
+////// TODO: RenderStyle would be a better name
+//////       also this should be down in composition, not up here
 
-unsigned int Scene::getNumGeometryStyle()
+unsigned int Scene::getNumContentStyle()
 {
-    return m_num_geometry_style == 0 ? int(NUM_GEOMETRY_STYLE) : m_num_geometry_style ;
+    return m_num_content_style == 0 ? int(NUM_CONTENT_STYLE) : m_num_content_style ;
 }
-void Scene::setNumGeometryStyle(unsigned int num_geometry_style)
+void Scene::setNumContentStyle(unsigned int num_content_style)
 {
-    m_num_geometry_style = num_geometry_style ;
+    m_num_content_style = num_content_style ;
 
-    dumpGeometryStyles("Scene::setNumGeometryStyle");
+    dumpContentStyles("Scene::setNumContentStyle");
 }
 
-void Scene::dumpGeometryStyles(const char* msg)
+void Scene::dumpContentStyles(const char* msg)
 {
-    const GeometryStyle_t style0 = getGeometryStyle() ;
-    GeometryStyle_t style = style0 ; 
+    const ContentStyle_t style0 = getContentStyle() ;
+    ContentStyle_t style = style0 ; 
 
-    LOG(info) << msg << " (Scene::dumpGeometryStyles) " ; 
+    LOG(info) << msg << " (Scene::dumpContentStyles) " ; 
 
     while( style != style0 )
     {
-        nextGeometryStyle();
-        style = getGeometryStyle() ;
+        nextContentStyle();
+        style = getContentStyle() ;
     }
  
     assert( style == style0 );
 }
 
-Scene::GeometryStyle_t Scene::getGeometryStyle() const 
+Scene::ContentStyle_t Scene::getContentStyle() const 
 {
-    return m_geometry_style ;
+    return m_content_style ;
 }
 
-void Scene::nextGeometryStyle()
+void Scene::nextContentStyle()
 {
-    unsigned num_geometry_style = getNumGeometryStyle() ;
-    int next = (m_geometry_style + 1) % num_geometry_style ; 
-    setGeometryStyle( (GeometryStyle_t)next );
+    unsigned num_content_style = getNumContentStyle() ;
+    int next = (m_content_style + 1) % num_content_style ; 
+    setContentStyle( (ContentStyle_t)next );
 
-    const char* stylename = getGeometryStyleName();
-    printf("Scene::nextGeometryStyle : %s num_geometry_style %u m_num_geometry_style %u  \n", stylename, num_geometry_style, m_num_geometry_style );
+    const char* stylename = getContentStyleName();
+    printf("Scene::nextContentStyle : %s num_content_style %u m_num_content_style %u  \n", stylename, num_content_style, m_num_content_style );
 }
 
-void Scene::setGeometryStyle(GeometryStyle_t style)
+void Scene::setContentStyle(ContentStyle_t style)
 {
-    m_geometry_style = style ; 
-    applyGeometryStyle();
+    m_content_style = style ; 
+    applyContentStyle();
 }
 
-const char* Scene::getGeometryStyleName(Scene::GeometryStyle_t style)
+const char* Scene::getContentStyleName(Scene::ContentStyle_t style)
 {
    switch(style)
    {
@@ -1280,24 +1282,24 @@ const char* Scene::getGeometryStyleName(Scene::GeometryStyle_t style)
       case NONE:return NONE_ ; break; 
       case WIRE:return WIRE_ ; break; 
       case NORM_BBOX:return NORM_BBOX_ ; break; 
-      case NUM_GEOMETRY_STYLE:assert(0) ; break ; 
+      case NUM_CONTENT_STYLE:assert(0) ; break ; 
       default: assert(0); break ; 
    } 
    return NULL ; 
 }
 
-const char* Scene::getGeometryStyleName()
+const char* Scene::getContentStyleName()
 {
-   return getGeometryStyleName(m_geometry_style);
+   return getContentStyleName(m_content_style);
 }
 
-void Scene::applyGeometryStyle()  // B:key 
+void Scene::applyContentStyle()  // B:key 
 {
     bool inst(false) ; 
     bool bbox(false) ; 
     bool wire(false) ; 
 
-    switch(m_geometry_style)
+    switch(m_content_style)
     {
       case ASIS:
              break; 
@@ -1326,12 +1328,12 @@ void Scene::applyGeometryStyle()  // B:key
              bbox = true ; 
              wire = false ; 
              break;
-      case NUM_GEOMETRY_STYLE:
+      case NUM_CONTENT_STYLE:
              assert(0);
              break;
    }
 
-   if(m_geometry_style != ASIS)
+   if(m_content_style != ASIS)
    {
        for(unsigned int i=0 ; i < m_num_instance_renderer ; i++ ) 
        {
@@ -1341,7 +1343,7 @@ void Scene::applyGeometryStyle()  // B:key
        setWireframe(wire);
    }
 
-   LOG(fatal) << "Scene::applyGeometryStyle" ; 
+   LOG(fatal) << "Scene::applyContentStyle" ; 
    //assert(0);
 }
 
@@ -1420,7 +1422,7 @@ void Scene::nextInstanceStyle()
 
 void Scene::applyInstanceStyle()  // I:key 
 {
-    // hmm some overlap with GeometryStyle ... but that includes wireframe which can be very slow
+    // hmm some overlap with ContentStyle ... but that includes wireframe which can be very slow
     bool inst(false);
     switch(m_instance_style)
     {

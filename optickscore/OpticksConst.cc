@@ -19,7 +19,7 @@ std::string OpticksConst::describeModifiers(unsigned int modifiers)
 }
 bool OpticksConst::isShift(unsigned int modifiers) { return 0 != (modifiers & e_shift) ; }
 bool OpticksConst::isOption(unsigned int modifiers) { return 0 != (modifiers & e_option) ; }
-bool OpticksConst::isShiftOption(unsigned int modifiers) { return 0 != (modifiers & (e_option|e_shift)) ; }
+bool OpticksConst::isShiftOption(unsigned int modifiers) { return isShift(modifiers) && isOption(modifiers) ; }
 bool OpticksConst::isCommand(unsigned int modifiers) { return 0 != (modifiers & e_command) ; }
 bool OpticksConst::isControl(unsigned int modifiers) { return 0 != (modifiers & e_control) ; }
 

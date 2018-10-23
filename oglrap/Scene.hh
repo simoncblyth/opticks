@@ -87,14 +87,14 @@ Despite appearances buffers are not uploaded more than once, however binding mus
 
 
 
-GeometryStyle (B key)
+ContentStyle (B key)
     what combination of bbox and instances to render
 
 GlobalStyle (Q key)
     control global and globalvec rendering of non-instanced geometry
 
 InstanceStyle (I key)
-    control instance rendering (some overlap with GeometryStyle) 
+    control instance rendering (some overlap with ContentStyle) 
 
 
 
@@ -124,7 +124,7 @@ class OGLRAP_API Scene : public NConfigurable {
         static const char* ALTREC_ ; 
         static const char* DEVREC_ ; 
    public:
-        // GeometryStyle
+        // ContentStyle
         static const char* ASIS_ ; 
         static const char* BBOX_ ; 
         static const char* NORM_ ; 
@@ -162,17 +162,17 @@ class OGLRAP_API Scene : public NConfigurable {
         void nextPhotonStyle();
    public:
         // B-key
-        // disabled styles after NUM_GEOMETRY_STYLE
-        typedef enum { ASIS, BBOX, NORM, NONE, WIRE, NUM_GEOMETRY_STYLE, NORM_BBOX } GeometryStyle_t ;
-        void setGeometryStyle(Scene::GeometryStyle_t style);
-        unsigned int getNumGeometryStyle(); // allows ro override the enum
-        Scene::GeometryStyle_t getGeometryStyle() const ; 
-        void setNumGeometryStyle(unsigned int num_geometry_style); // used to disable WIRE style for JUNO
-        void applyGeometryStyle();
-        static const char* getGeometryStyleName(Scene::GeometryStyle_t style);
-        const char* getGeometryStyleName();
-        void nextGeometryStyle();
-        void dumpGeometryStyles(const char* msg); 
+        // disabled styles after NUM_CONTENT_STYLE
+        typedef enum { ASIS, BBOX, NORM, NONE, WIRE, NUM_CONTENT_STYLE, NORM_BBOX } ContentStyle_t ;
+        void setContentStyle(Scene::ContentStyle_t style);
+        unsigned int getNumContentStyle(); // allows ro override the enum
+        Scene::ContentStyle_t getContentStyle() const ; 
+        void setNumContentStyle(unsigned int num_content_style); // used to disable WIRE style for JUNO
+        void applyContentStyle();
+        static const char* getContentStyleName(Scene::ContentStyle_t style);
+        const char* getContentStyleName();
+        void nextContentStyle();
+        void dumpContentStyles(const char* msg); 
    public:
         void setWireframe(bool wire=true);
         void setInstCull(bool instcull=true);
@@ -345,8 +345,8 @@ class OGLRAP_API Scene : public NConfigurable {
         bool         m_record_mode ; 
    private:
         RecordStyle_t   m_record_style ; 
-        GeometryStyle_t m_geometry_style ; 
-        unsigned int    m_num_geometry_style ; 
+        ContentStyle_t  m_content_style ; 
+        unsigned int    m_num_content_style ; 
         GlobalStyle_t   m_global_style ; 
         unsigned int    m_num_global_style ; 
         InstanceStyle_t m_instance_style ; 

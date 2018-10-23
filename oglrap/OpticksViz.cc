@@ -203,7 +203,7 @@ void OpticksViz::setupRestrictions()
 
         if(!hasOpt("jwire")) // use --jwire to enable wireframe with JUNO, do this only on workstations with very recent GPUs
         { 
-            m_scene->setNumGeometryStyle(Scene::WIRE); 
+            m_scene->setNumContentStyle(Scene::WIRE); 
         }
         m_scene->setNumGlobalStyle(Scene::GVISVEC); // disable GVISVEC, GVEC debug styles
     }

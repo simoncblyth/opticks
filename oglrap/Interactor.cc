@@ -330,7 +330,7 @@ const char* Interactor::keys =
 "\n Holding OPTION with A,V,T changes to previous animation mode, instead of next  "
 "\n Holding CONTROL with A,V,T sets animation mode to OFF  "
 "\n "
-"\n Holding SHIFT+OPTION with T resets an InterpolatedView back to the start "
+"\n Holding SHIFT+OPTION+T resets an InterpolatedView back to the start "
 "\n "
 "\n ";
 
@@ -388,7 +388,8 @@ void Interactor::key_pressed(unsigned int key)
             m_composition->nextAnimatorMode(modifiers) ; 
             break;
         case GLFW_KEY_B:
-            m_scene->nextGeometryStyle(); 
+            //m_scene->nextGeometryStyle(); 
+            m_scene->nextContentStyle(); 
             break;
         case GLFW_KEY_C:
             //m_clipper->next(); 
