@@ -219,47 +219,37 @@ Trackball* Composition::getTrackball()
 {
     return m_trackball ;
 }
-Clipper* Composition::getClipper()
-{
-    return m_clipper ;
-}
-ContentStyle* Composition::getContentStyle() const 
-{
-    return m_content_style ;
-}
-void Composition::nextContentStyle() 
-{
-    m_content_style->nextContentStyle(); 
-}
 
 
+
+
+// ContentStyle
+ContentStyle* Composition::getContentStyle() const { return m_content_style ; }
+void Composition::nextContentStyle()  { m_content_style->nextContentStyle();  }
+void Composition::commandContentStyle(const char* cmd) { m_content_style->command(cmd);  }
 
 // RenderStyle
 void Composition::nextRenderStyle(unsigned modifiers) { m_render_style->nextRenderStyle(modifiers) ;  }
+void Composition::commandRenderStyle(const char* cmd) { m_render_style->command(cmd);  }
+
 void Composition::setRaytraceEnabled(bool enable){ m_render_style->setRaytraceEnabled( enable ) ; }
 bool Composition::isProjectiveRender() const {  return m_render_style->isProjectiveRender() ; }
 bool Composition::isRaytracedRender() const {   return m_render_style->isRaytracedRender() ; }
 bool Composition::isCompositeRender() const {   return m_render_style->isCompositeRender() ; }
  
+// Clipper
+Clipper* Composition::getClipper(){ return m_clipper ; }
+void Composition::nextClipperStyle(){ m_clipper->next(); }
+void Composition::commandClipper(const char* cmd) { m_clipper->command(cmd);  }
 
 
 
-void Composition::nextClipperStyle()
-{
-    m_clipper->next(); 
-}
-void Composition::commandClipper(const char* cmd)
-{
-    m_clipper->command(cmd); 
-}
 
 
 void Composition::setCamera(Camera* camera)
 {
     m_camera = camera ; 
 }
-
-
 void Composition::setBookmarks(Bookmarks* bookmarks)
 {
     m_bookmarks = bookmarks ; 

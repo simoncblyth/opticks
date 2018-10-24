@@ -174,14 +174,23 @@ class OKCORE_API Composition : public NConfigurable {
        void nextPickPhotonStyle();
        void setPickPhotonStyle(Composition::PickPhotonStyle_t style);
        Composition::PickPhotonStyle_t getPickPhotonStyle();
-
    public:
         // RenderStyle : O_KEY 
         void nextRenderStyle(unsigned modifiers); 
+        void commandRenderStyle(const char* cmd); 
         bool isProjectiveRender() const ;
         bool isRaytracedRender() const ;
         bool isCompositeRender() const ;
         void setRaytraceEnabled(bool enable) ; 
+   public:
+        // Clipper : C_KEY 
+        void nextClipperStyle(); 
+        void commandClipper(const char* cmd);  // C0:off C1:on 
+   public:
+        // ContentStyle : B_KEY
+        ContentStyle* getContentStyle() const ;
+        void          nextContentStyle(); 
+        void          commandContentStyle(const char* cmd);
   private:
       void init();
       void initAxis();
@@ -307,13 +316,7 @@ class OKCORE_API Composition : public NConfigurable {
       View*      getView(); 
       Light*     getLight(); 
       Clipper*   getClipper(); 
-
-      ContentStyle* getContentStyle() const ;
-      void          nextContentStyle(); 
-
-      void nextClipperStyle(); 
-      void commandClipper(const char* cmd);  // C0:off C1:on 
-      
+     
       void setCamera(Camera* camera);
       void setView(View* view);
       void resetView();

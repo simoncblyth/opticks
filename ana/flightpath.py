@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 """
+flightpath.py
+==============
 
-    +       +
+FlightPath not in active use, easier to directly create the eye-look-up array, 
+as done in mm0prim2.py  and use quiver plots to debug the path.
 
-
-
-    +       +
 
 """
 

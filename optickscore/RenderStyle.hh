@@ -20,6 +20,7 @@ class OKCORE_API RenderStyle
         RenderStyle(Composition* composition);
     public:
         void nextRenderStyle(unsigned modifiers); 
+        void command(const char* cmd) ;
         std::string desc() const ; 
 
         typedef enum { R_PROJECTIVE, R_RAYTRACED, R_COMPOSITE,  NUM_RENDER_STYLE } RenderStyle_t ;  

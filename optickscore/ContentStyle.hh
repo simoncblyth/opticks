@@ -17,6 +17,8 @@ class OKCORE_API ContentStyle {
         ContentStyle();
    public:
         void nextContentStyle();
+        void command(const char* cmd); 
+
         std::string desc() const ; 
         bool isInst() const ; 
         bool isBBox() const ; 

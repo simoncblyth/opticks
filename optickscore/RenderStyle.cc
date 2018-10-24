@@ -101,6 +101,23 @@ void RenderStyle::nextRenderStyle(unsigned modifiers)  // O:key cycling: Project
     m_composition->setChanged(true) ; // trying to avoid the need for shift-O nudging 
 }
 
+
+void RenderStyle::command(const char* cmd) 
+{ 
+    LOG(info) << cmd ; 
+    if(strlen(cmd) == 2 && cmd[0] == 'O' && ( cmd[1] == '0' || cmd[1] == '1' || cmd[1] == '2' )  )
+    {
+        switch( cmd[1] )
+        {
+            case '0': m_render_style = R_PROJECTIVE ; break ; 
+            case '1': m_render_style = R_RAYTRACED  ; break ; 
+            case '2': m_render_style = R_COMPOSITE  ; break ; 
+        }
+    }
+}
+
+
+
 void RenderStyle::applyRenderStyle()   
 {
     // nothing to do, style is honoured by  Scene::render

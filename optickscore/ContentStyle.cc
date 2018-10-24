@@ -65,6 +65,32 @@ void ContentStyle::nextContentStyle()
     setContentStyle( (ContentStyle_t)next );
 }
 
+
+void ContentStyle::command(const char* cmd) 
+{ 
+    LOG(info) << cmd ; 
+
+    if(strlen(cmd) != 2 ) return ; 
+    if( cmd[0] != 'B')    return ; 
+
+    std::string allowed("012345") ; 
+    if(allowed.find(cmd[1]) == std::string::npos) return ; 
+
+    
+    ContentStyle_t style = ASIS ; 
+    switch( cmd[1] )
+    {
+        case '0': style = ASIS ; break ; 
+        case '1': style = BBOX ; break ; 
+        case '2': style = NORM ; break ; 
+        case '3': style = NONE ; break ; 
+        case '4': style = WIRE ; break ; 
+        case '5': style = NORM_BBOX ; break ; 
+    }
+    setContentStyle(style); 
+}
+
+
 void ContentStyle::setContentStyle(ContentStyle_t style)
 {
     m_content_style = style ; 

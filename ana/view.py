@@ -1,5 +1,16 @@
 #!/usr/bin/env python
+"""
+This turned out not to help much, easier to simply construct 
+eye-look-up array directly as done in:
 
+flightpath.py
+    early attempts, at mpl viz of flight path with 3D arrows, 
+    quiver plots turned out to be a better way  
+
+mm0prim2.py 
+    xz + xy circles path and testing flightpath cmds
+
+"""
 import numpy as np
 
 class View(object):
