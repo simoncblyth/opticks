@@ -1,3 +1,4 @@
+// TEST=BStrTest om-t 
 #include "BStr.hh"
 #include <iomanip>
 
@@ -393,6 +394,13 @@ void test_GetField()
 }
 
 
+void test_ctoi()
+{
+    char c = '4' ; 
+    int i = (int)c - (int)'0' ; 
+    assert( i == 4 ) ; 
+}
+
 
 int main(int argc, char** argv)
 {
@@ -422,9 +430,10 @@ int main(int argc, char** argv)
     test_utoa();
     test_Contains();
     test_WithoutEnding();
+    test_GetField();
 */
 
-    test_GetField();
+    test_ctoi();
 
     return 0 ; 
 }
