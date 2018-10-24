@@ -51,6 +51,7 @@ class OKCORE_API InterpolatedView :  public View {
         bool isActive();
         bool hasChanged();
         void nextMode(unsigned int modifiers);
+        void commandMode(const char* cmd);
     public:
         unsigned int getNumViews();
         void setFraction(float fraction);

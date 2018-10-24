@@ -140,6 +140,12 @@ Invoked from lower levels, eg okc.InterpolatedView, on view switching via SCtrl 
 It would be better for this to live down in Composition, but it will take a while to 
 get the requisite state all down there, so leaving up here for now.
 
+Hmm but this is not high enough... 
+
+For commandContentStyle need to prod the Scene, for the change to be acted upon 
+Perhaps should move most of the below command handling down to Composition and 
+move the frontdoor up to OpticksViz, so could do then easily prod the Scene ?
+
 **/
 void OpticksHub::command(const char* ctrl) 
 {
@@ -157,6 +163,7 @@ void OpticksHub::command(const char* ctrl)
             case 'C': m_composition->commandClipper(cmd.c_str())                     ; break ; 
             case 'O': m_composition->commandRenderStyle(cmd.c_str())                 ; break ; 
             case 'B': m_composition->commandContentStyle(cmd.c_str())                ; break ; 
+            case 'T': m_composition->commandViewMode(cmd.c_str())                    ; break ; 
             default : LOG(fatal) << "ignoring unimplemented command [" << cmd << "]" ; break ;  
         }
     } 

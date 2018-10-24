@@ -32,6 +32,8 @@ class OKCORE_API RenderStyle
     public:
         RenderStyle::RenderStyle_t getRenderStyle() const  ;
 
+        void setRenderStyle(int style) ; 
+
         const char*   getRenderStyleName() const  ;
         void setRaytraceEnabled(bool raytrace_enabled); // set by OKGLTracer
         void applyRenderStyle();

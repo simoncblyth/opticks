@@ -102,6 +102,7 @@ public:
    virtual void reset();
    virtual void tick();
    virtual void nextMode(unsigned int modifiers);
+   virtual void commandMode(const char* cmd);
    virtual bool isActive(); // always false, used in InterpolatedView
    virtual bool hasChanged();
 

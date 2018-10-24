@@ -69,14 +69,12 @@ std::string RenderStyle::desc() const
 }
 
 
-
-
 void RenderStyle::setRaytraceEnabled(bool raytrace_enabled) // set by OKGLTracer
 {
     m_raytrace_enabled = raytrace_enabled ;
 }
 
-void RenderStyle::nextRenderStyle(unsigned modifiers)  // O:key cycling: Projective, Raytraced, Composite 
+void RenderStyle::nextRenderStyle(unsigned /*modifiers*/)  // O:key cycling: Projective, Raytraced, Composite 
 {
     if(!m_raytrace_enabled)
     {
@@ -84,44 +82,53 @@ void RenderStyle::nextRenderStyle(unsigned modifiers)  // O:key cycling: Project
         return ; 
     }
 
-
+/*
     bool nudge = modifiers & OpticksConst::e_shift ;
     if(nudge)
     {
         m_composition->setChanged(true) ;
         return ; 
     }
+*/
 
     int next = (m_render_style + 1) % NUM_RENDER_STYLE ; 
 
-    m_render_style = (RenderStyle_t)next ; 
+    setRenderStyle(next); 
+}
 
+
+void RenderStyle::setRenderStyle( int style )
+{
+    m_render_style = (RenderStyle_t)style  ; 
     applyRenderStyle();
-
     m_composition->setChanged(true) ; // trying to avoid the need for shift-O nudging 
+
+    LOG(info) << desc() ; 
 }
 
 
 void RenderStyle::command(const char* cmd) 
 { 
     LOG(info) << cmd ; 
-    if(strlen(cmd) == 2 && cmd[0] == 'O' && ( cmd[1] == '0' || cmd[1] == '1' || cmd[1] == '2' )  )
+    assert(strlen(cmd) == 2 );
+    assert( cmd[0] == 'O' ); 
+    assert( cmd[1] == '0' || cmd[1] == '1' || cmd[2] == '0' );  
+
+
+    RenderStyle_t style = R_PROJECTIVE ; 
+    switch( cmd[1] )
     {
-        switch( cmd[1] )
-        {
-            case '0': m_render_style = R_PROJECTIVE ; break ; 
-            case '1': m_render_style = R_RAYTRACED  ; break ; 
-            case '2': m_render_style = R_COMPOSITE  ; break ; 
-        }
+        case '0': style = R_PROJECTIVE ; break ; 
+        case '1': style = R_RAYTRACED  ; break ; 
+        case '2': style = R_COMPOSITE  ; break ; 
     }
+
+    setRenderStyle((int)style); 
 }
-
-
 
 void RenderStyle::applyRenderStyle()   
 {
     // nothing to do, style is honoured by  Scene::render
 }
-
 
 

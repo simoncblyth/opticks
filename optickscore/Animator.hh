@@ -3,6 +3,8 @@
 // TODO: try to support live changing of the range 
 
 #define ANIMATOR_DEBUG 1
+
+#include <string>
 #include "OKCORE_API_EXPORT.hh"
 
 class OKCORE_API Animator {
@@ -20,8 +22,11 @@ class OKCORE_API Animator {
         static const char* SLOW2_ ; 
         static const char* NORM_ ; 
         static const char* FAST_ ; 
+        static const char* FAST2_ ; 
+        static const char* FAST4_ ; 
 
-        typedef enum {  OFF, SLOW32, SLOW16, SLOW8, SLOW4, SLOW2, NORM, FAST, NUM_MODE } Mode_t ;
+        //              T0     T1     T2     T3     T4      T5    T6    T7     T8    T9
+        typedef enum {  OFF, SLOW32, SLOW16, SLOW8, SLOW4, SLOW2, NORM, FAST, FAST2, FAST4, NUM_MODE } Mode_t ;
 
 
         Animator(float* target, unsigned int period, float low=0.f, float high=1.f);
@@ -52,7 +57,10 @@ class OKCORE_API Animator {
         unsigned int getNumMode();
         void setMode( Mode_t mode);
         void nextMode(unsigned int modifiers);
-        const char* getModeString();
+        void commandMode(const char* cmd);
+
+        const char* getModeName() const ;
+        std::string desc() const ;
 
         char* description();
 

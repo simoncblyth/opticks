@@ -703,6 +703,21 @@ void Composition::nextViewMode(unsigned int modifiers)    // T KEY
 }
 
 
+void Composition::commandViewMode(const char* cmd) 
+{
+    if(m_view->isStandard())
+    {
+       LOG(info) << "Composition::commandViewMode(KEY_T) does nothing in standard view, switch to alt views with U:nextViewType " ; 
+       return ;
+    }
+    m_view->commandMode(cmd);  
+}
+
+
+
+
+
+
 OrbitalView* Composition::makeOrbitalView()
 {
     View* basis = m_view->isStandard() ? m_view : m_standard_view ; 

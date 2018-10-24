@@ -4,6 +4,7 @@
 #include <cmath>
 #include <cstdio>
 #include <cassert>
+#include <sstream>
 
 #include "OpticksConst.hh"
 #include "Animator.hh"
@@ -18,6 +19,8 @@ const char* Animator::SLOW4_ = "SLOW4" ;
 const char* Animator::SLOW2_ = "SLOW2" ; 
 const char* Animator::NORM_ = "NORM" ; 
 const char* Animator::FAST_ = "FAST" ; 
+const char* Animator::FAST2_ = "FAST2" ; 
+const char* Animator::FAST4_ = "FAST4" ; 
 
 const int Animator::period_low  = 25 ; 
 const int Animator::period_high = 10000 ; 
@@ -42,6 +45,8 @@ Animator::Animator(float* target, unsigned int period, float low, float high)
     m_period[SLOW2] = period*2  ; 
     m_period[NORM] = period    ; 
     m_period[FAST] = period/2  ; 
+    m_period[FAST2] = period/4  ; 
+    m_period[FAST4] = period/8  ; 
 
     m_fractions[OFF]  = NULL ; 
     m_fractions[SLOW32] = make_fractions(m_period[SLOW32]) ;
@@ -51,6 +56,8 @@ Animator::Animator(float* target, unsigned int period, float low, float high)
     m_fractions[SLOW2] = make_fractions(m_period[SLOW2]) ;
     m_fractions[NORM] = make_fractions(m_period[NORM]) ;
     m_fractions[FAST] = make_fractions(m_period[FAST]) ;
+    m_fractions[FAST2] = make_fractions(m_period[FAST2]) ;
+    m_fractions[FAST4] = make_fractions(m_period[FAST4]) ;
 }
 
 
@@ -128,6 +135,9 @@ void Animator::setMode(Mode_t mode)
     if(mode == m_mode) return ;
     float fraction = getFractionForValue(*m_target);
     m_mode = mode ;  
+
+    LOG(info) << desc() ; 
+
     modeTransition(fraction);
 }
 
@@ -135,6 +145,20 @@ void Animator::setMode(Mode_t mode)
 unsigned int Animator::getNumMode()
 {
     return m_restrict > 0 ? m_restrict : NUM_MODE ;  
+}
+
+
+void Animator::commandMode(const char* cmd)
+{
+    LOG(info) << cmd ; 
+
+    assert(strlen(cmd) == 2); 
+    assert( cmd[0] == 'T' ); 
+      
+    int mode = (int)cmd[1] - (int)'0' ; 
+    assert( mode > -1 && mode < NUM_MODE ) ; 
+
+    setMode((Mode_t)mode) ; 
 }
 
 void Animator::nextMode(unsigned int modifiers)
@@ -316,7 +340,7 @@ unsigned int Animator::find_closest_index(float f )
 
 char* Animator::description()
 {
-    snprintf(m_desc, 64, " %5s %d/%d/%10.4f", getModeString() , m_index, m_period[m_mode], *m_target );
+    snprintf(m_desc, 64, " %5s %d/%d/%10.4f", getModeName() , m_index, m_period[m_mode], *m_target );
     return m_desc ; 
 }
 
@@ -325,7 +349,7 @@ void Animator::Summary(const char* msg)
     LOG(info) << msg << description() ; 
 }
 
-const char* Animator::getModeString()
+const char* Animator::getModeName() const 
 {
     const char* mode(NULL);
     switch(m_mode)
@@ -338,12 +362,22 @@ const char* Animator::getModeString()
         case SLOW2:mode = SLOW2_ ; break ; 
         case NORM:mode = NORM_ ; break ; 
         case FAST:mode = FAST_ ; break ; 
+        case FAST2:mode = FAST2_ ; break ; 
+        case FAST4:mode = FAST4_ ; break ; 
         case NUM_MODE:assert(0) ; break ; 
     }
     return mode ; 
 }
 
+std::string Animator::desc() const 
+{
+    std::stringstream ss ; 
+    ss << "Animator "
+       << getModeName()
+        ;
 
+    return ss.str(); 
+}
 
 
 

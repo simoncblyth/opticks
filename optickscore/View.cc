@@ -566,6 +566,14 @@ void View::nextMode(unsigned int)
 {
    // do nothing default, overridden in InterpolatedView
 }
+void View::commandMode(const char* )
+{
+   // do nothing default, overridden in InterpolatedView
+}
+
+
+
+
 bool View::isActive()
 {
    return false ; 

@@ -128,7 +128,10 @@ class OKCORE_API Composition : public NConfigurable {
       Animator* getAnimator();
       void nextAnimatorMode(unsigned int modifiers);
       void nextRotatorMode(unsigned int modifiers);
+
       void nextViewMode(unsigned int modifiers);
+      void commandViewMode(const char* cmd) ;
+
       void changeView(unsigned int modifiers);
       unsigned int tick();
       unsigned int getCount();

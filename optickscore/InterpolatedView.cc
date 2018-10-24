@@ -123,6 +123,13 @@ void InterpolatedView::nextMode(unsigned int modifiers)
 {
     m_animator->nextMode(modifiers);
 }
+void InterpolatedView::commandMode(const char* cmd)
+{
+    m_animator->commandMode(cmd);
+}
+
+
+
 
 bool InterpolatedView::isActive()
 {
