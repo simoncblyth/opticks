@@ -4,7 +4,8 @@
 #include <vector>
 #include <string>
 
-#include <glm/fwd.hpp>  
+//#include <glm/fwd.hpp>  
+#include "NGLM.hpp"
 
 //#define VIEW_DEBUG
 #include "NConfigurable.hpp"

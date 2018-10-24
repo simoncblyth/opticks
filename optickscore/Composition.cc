@@ -39,6 +39,7 @@
 #include "Clipper.hh"
 #include "ClipperCfg.hh"
 #include "ContentStyle.hh"
+#include "RenderStyle.hh"
 
 #include "InterpolatedView.hh"
 #include "OrbitalView.hh"
@@ -129,9 +130,6 @@ const char* Composition::getGeometryStyleName(Composition::GeometryStyle_t style
 
 
 
-
-
-
 Composition::Composition()
   :
   m_lodcut(5000.f,10000.f,0.f,0.f),
@@ -173,6 +171,7 @@ Composition::Composition()
   m_light(NULL),
   m_clipper(NULL),
   m_content_style(new ContentStyle),
+  m_render_style(new RenderStyle(this)),
   m_count(0),
   m_axis_data(NULL),
   m_axis_attr(NULL),
@@ -228,14 +227,28 @@ ContentStyle* Composition::getContentStyle() const
 {
     return m_content_style ;
 }
+void Composition::nextContentStyle() 
+{
+    m_content_style->nextContentStyle(); 
+}
 
 
 
-void Composition::clipper_next()
+// RenderStyle
+void Composition::nextRenderStyle(unsigned modifiers) { m_render_style->nextRenderStyle(modifiers) ;  }
+void Composition::setRaytraceEnabled(bool enable){ m_render_style->setRaytraceEnabled( enable ) ; }
+bool Composition::isProjectiveRender() const {  return m_render_style->isProjectiveRender() ; }
+bool Composition::isRaytracedRender() const {   return m_render_style->isRaytracedRender() ; }
+bool Composition::isCompositeRender() const {   return m_render_style->isCompositeRender() ; }
+ 
+
+
+
+void Composition::nextClipperStyle()
 {
     m_clipper->next(); 
 }
-void Composition::clipper_command(const char* cmd)
+void Composition::commandClipper(const char* cmd)
 {
     m_clipper->command(cmd); 
 }

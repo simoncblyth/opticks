@@ -60,6 +60,7 @@ set(SOURCES
     Bookmarks.cc
     Composition.cc
     ContentStyle.cc
+    RenderStyle.cc
 
     Demo.cc
     DemoCfg.cc
@@ -127,6 +128,7 @@ set(HEADERS
     Bookmarks.hh
     Composition.hh
     ContentStyle.hh
+    RenderStyle.hh
 
     OpticksPhoton.h
     OpticksQuadrant.h

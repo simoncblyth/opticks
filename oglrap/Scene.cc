@@ -113,34 +113,6 @@ const char* Scene::getRecordStyleName(Scene::RecordStyle_t style)
 
 
 
-const char* Scene::R_PROJECTIVE_ = "R_PROJECTIVE" ;
-const char* Scene::R_RAYTRACED_  = "R_RAYTRACED" ; 
-const char* Scene::R_COMPOSITE_  = "R_COMPOSITE" ; 
-const char* Scene::RenderStyle(RenderStyle_t style)
-{
-    const char* s = NULL ; 
-    switch(style)
-    { 
-       case R_PROJECTIVE: s = R_PROJECTIVE_ ; break ; 
-       case R_RAYTRACED:  s = R_RAYTRACED_  ; break ; 
-       case R_COMPOSITE:  s = R_COMPOSITE_  ; break ; 
-       case NUM_RENDER_STYLE: s = "ERR"     ; break ; 
-    }
-    return s ; 
-}
-
-
-const char* Scene::getRenderStyleString() const 
-{
-    return RenderStyle(getRenderStyle()) ; 
-}
-
-Scene::RenderStyle_t Scene::getRenderStyle() const 
-{
-    return m_render_style ; 
-}
-
-
 
 
 const char* Scene::getRecordStyleName()
@@ -853,14 +825,13 @@ void Scene::renderEvent()
 
 std::string Scene::desc() const 
 {
-    bool raytraced = isRaytracedRender() ;
-    bool composite = isCompositeRender() ;
+    bool raytraced = m_composition->isRaytracedRender() ;
+    bool composite = m_composition->isCompositeRender() ;
     std::stringstream ss ; 
     ss 
        << " Scene.render_count " << m_render_count
        << ( raytraced ? " raytraced " : " " )
        << ( composite ? " composite " : " " )
-       << " RenderStyle "  << getRenderStyleString() 
        << " RenderMode "  << getRenderMode() 
        ;
 
@@ -871,8 +842,8 @@ void Scene::render()
 {
     //LOG(info) << desc() ; 
 
-    bool raytraced = isRaytracedRender() ;
-    bool composite = isCompositeRender() ;
+    bool raytraced = m_composition->isRaytracedRender() ;
+    bool composite = m_composition->isCompositeRender() ;
 
     if(raytraced || composite)
     {
@@ -958,6 +929,7 @@ unsigned int Scene::getTarget()
 
 
 
+/*
 
 void Scene::setRaytraceEnabled(bool raytrace_enabled) // set by OKGLTracer
 {
@@ -988,7 +960,6 @@ void Scene::nextRenderStyle(unsigned int modifiers)  // O:key cycling: Projectiv
 
 
 
-
 bool Scene::isProjectiveRender() const 
 {
    return m_render_style == R_PROJECTIVE ;
@@ -1005,9 +976,11 @@ bool Scene::isCompositeRender() const
 void Scene::applyRenderStyle()   
 {
     // nothing to do, style is honoured by  Scene::render
-
-
 }
+
+
+*/
+
 
 
 Scene::Scene(OpticksHub* hub, const char* shader_dir, const char* shader_incl_path, const char* shader_dynamic_dir) 
@@ -1048,15 +1021,15 @@ Scene::Scene(OpticksHub* hub, const char* shader_dir, const char* shader_incl_pa
             m_source_mode(false),
             m_record_mode(true),
             m_record_style(ALTREC),
-      /*
-            m_content_style(ASIS),
-            m_num_content_style(0),
-       */
             m_global_style(GVIS),
             m_num_global_style(0),
             m_instance_style(IVIS),
+/*
+
             m_render_style(R_PROJECTIVE),
             m_raytrace_enabled(false),    // <-- enabled by OKGLTracer 
+
+*/
             m_initialized(false),
             m_time_fraction(0.f),
             m_instcull(true),

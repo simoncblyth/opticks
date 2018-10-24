@@ -154,7 +154,9 @@ void OpticksHub::command(const char* ctrl)
         if(cmd.size() != 2) continue ; 
         switch(cmd[0])
         {
-            case 'C': m_composition->clipper_command(cmd.c_str())                    ; break ; 
+            case 'C': m_composition->commandClipper(cmd.c_str())                     ; break ; 
+           // case 'O': m_composition->commandRenderStyle(cmd.c_str())                 ; break ; 
+           // case 'B': m_composition->commandContentStyle(cmd.c_str())                ; break ; 
             default : LOG(fatal) << "ignoring unimplemented command [" << cmd << "]" ; break ;  
         }
     } 

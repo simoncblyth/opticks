@@ -87,7 +87,9 @@ void OKGLTracer::prepareTracer()
 
     Scene* scene = Scene::GetInstance();
     assert(scene); 
-    scene->setRaytraceEnabled(true);  // enables the "O" key to switch to ray trace
+ 
+    //scene->setRaytraceEnabled(true);  // enables the "O" key to switch to ray trace
+    m_composition->setRaytraceEnabled(true);  // enables the "O" key to switch to ray trace
 
 
     m_viz->setExternalRenderer(this);

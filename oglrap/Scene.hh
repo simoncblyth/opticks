@@ -168,6 +168,9 @@ class OGLRAP_API Scene : public NConfigurable {
         void nextGlobalStyle();  
         void applyGlobalStyle();
    public:
+
+
+/*
         // O-key
         typedef enum { R_PROJECTIVE, R_RAYTRACED, R_COMPOSITE,  NUM_RENDER_STYLE } RenderStyle_t ;  
         static const char* R_PROJECTIVE_ ; 
@@ -177,14 +180,15 @@ class OGLRAP_API Scene : public NConfigurable {
 
         Scene::RenderStyle_t getRenderStyle() const  ;
         const char*   getRenderStyleString() const  ;
-
         void setRaytraceEnabled(bool raytrace_enabled); // set by OKGLTracer
-
         void nextRenderStyle(unsigned int modifiers); 
         void applyRenderStyle();
         bool isProjectiveRender() const ;
         bool isRaytracedRender() const ;
         bool isCompositeRender() const ;
+
+*/
+
    public:
         // I-key
         typedef enum { IVIS, IINVIS, NUM_INSTANCE_STYLE } InstanceStyle_t ;  
@@ -338,8 +342,13 @@ class OGLRAP_API Scene : public NConfigurable {
         unsigned int    m_num_global_style ; 
         InstanceStyle_t m_instance_style ; 
 
+/*
+
+   private:
         RenderStyle_t   m_render_style ; 
         bool            m_raytrace_enabled ; 
+
+*/
 
         bool            m_initialized ;  
         float           m_time_fraction ;  

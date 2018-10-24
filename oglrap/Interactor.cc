@@ -13,13 +13,11 @@
 
 #include "OpticksHub.hh"
 
-#include "ContentStyle.hh"
 #include "Composition.hh"
 #include "Bookmarks.hh"
 #include "Camera.hh"
 #include "View.hh"
 #include "Trackball.hh"
-//#include "Clipper.hh"
 #include "Animator.hh"
 
 
@@ -41,12 +39,10 @@ Interactor::Interactor(OpticksHub* hub)
    :
    m_hub(hub),
    m_composition(NULL),
-   m_content_style(NULL),
    m_bookmarks(NULL),  // defer, as my be NULL at this point
    m_camera(NULL),
    m_view(NULL),
    m_trackball(NULL),
-   //m_clipper(NULL),
    m_touchable(NULL),
    m_frame(NULL),
    m_scene(NULL),
@@ -226,11 +222,9 @@ void Interactor::configureI(const char* /*name*/, std::vector<int> values)
 void Interactor::setComposition(Composition* composition)
 {
     m_composition = composition ;
-    m_content_style = composition->getContentStyle(); 
     m_camera = composition->getCamera() ;
     m_view   = composition->getView();
     m_trackball = composition->getTrackball();
-    //m_clipper  = composition->getClipper();
     m_animator = NULL ;  // defer
 }
 
@@ -390,14 +384,14 @@ void Interactor::key_pressed(unsigned int key)
             m_composition->nextAnimatorMode(modifiers) ; 
             break;
         case GLFW_KEY_B:
-            m_content_style->nextContentStyle();
+            m_composition->nextContentStyle();
             m_scene->applyContentStyle();  
             // Prodding the scene to apply changes is a pain for generalizing to string commands
             // but what alternative : generic scene update that applies everything ?
             // Just changing uniforms work fine, no need to talk to scene, but others are less easy
             break;
         case GLFW_KEY_C:
-            m_composition->clipper_next(); 
+            m_composition->nextClipperStyle(); 
             break;
         case GLFW_KEY_D:
             m_camera->nextStyle(modifiers); 
@@ -435,7 +429,8 @@ void Interactor::key_pressed(unsigned int key)
             m_near_mode = !m_near_mode ; 
             break;
         case GLFW_KEY_O:
-            m_scene->nextRenderStyle(modifiers);
+            //m_scene->nextRenderStyle(modifiers);
+            m_composition->nextRenderStyle(modifiers);
             LOG(info) << "Interactor::key_pressed O nextRenderStyle " ; 
             break;
         case GLFW_KEY_P:

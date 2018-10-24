@@ -23,6 +23,7 @@ class Light ;
 class Trackball ; 
 class Clipper ; 
 class ContentStyle; 
+class RenderStyle; 
 class Animator ; 
 class Bookmarks ; 
 class FlightPath ; 
@@ -173,6 +174,14 @@ class OKCORE_API Composition : public NConfigurable {
        void nextPickPhotonStyle();
        void setPickPhotonStyle(Composition::PickPhotonStyle_t style);
        Composition::PickPhotonStyle_t getPickPhotonStyle();
+
+   public:
+        // RenderStyle : O_KEY 
+        void nextRenderStyle(unsigned modifiers); 
+        bool isProjectiveRender() const ;
+        bool isRaytracedRender() const ;
+        bool isCompositeRender() const ;
+        void setRaytraceEnabled(bool enable) ; 
   private:
       void init();
       void initAxis();
@@ -298,10 +307,12 @@ class OKCORE_API Composition : public NConfigurable {
       View*      getView(); 
       Light*     getLight(); 
       Clipper*   getClipper(); 
-      ContentStyle* getContentStyle() const ;
 
-      void clipper_next(); 
-      void clipper_command(const char* cmd);  // C0:off C1:on 
+      ContentStyle* getContentStyle() const ;
+      void          nextContentStyle(); 
+
+      void nextClipperStyle(); 
+      void commandClipper(const char* cmd);  // C0:off C1:on 
       
       void setCamera(Camera* camera);
       void setView(View* view);
@@ -442,6 +453,7 @@ class OKCORE_API Composition : public NConfigurable {
       Light*     m_light ;
       Clipper*   m_clipper ;
       ContentStyle*  m_content_style ; 
+      RenderStyle*   m_render_style ; 
       unsigned int m_count ; 
       NPY<float>*  m_axis_data ; 
       MultiViewNPY* m_axis_attr ;

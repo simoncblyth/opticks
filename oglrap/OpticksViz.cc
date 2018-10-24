@@ -429,7 +429,7 @@ void OpticksViz::render()
     m_frame->viewport();
     m_frame->clear();
 
-    if(m_scene->isRaytracedRender() || m_scene->isCompositeRender()) 
+    if(m_composition->isRaytracedRender() || m_composition->isCompositeRender()) 
     {
         if(m_external_renderer) m_external_renderer->render();
     }
