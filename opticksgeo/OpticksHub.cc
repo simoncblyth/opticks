@@ -137,6 +137,9 @@ OpticksHub::command
 -------------------
 
 Invoked from lower levels, eg okc.InterpolatedView, on view switching via SCtrl protocol.
+(OpticksHub ISA SCtrl, which is set as okc.InterpolatedView.m_ctrl allowing 
+InterpolatedView::nextPair to send commands on high : up to here)
+ 
 It would be better for this to live down in Composition, but it will take a while to 
 get the requisite state all down there, so leaving up here for now.
 
@@ -146,6 +149,11 @@ For commandContentStyle need to prod the Scene, for the change to be acted upon
 Perhaps should move most of the below command handling down to Composition and 
 move the frontdoor up to OpticksViz, so could do then easily prod the Scene ?
 
+
+Hmm NConfigurable is doing something very similar to SCtrl and is already 
+inplace for many classes.  TODO: combine these 
+
+
 **/
 void OpticksHub::command(const char* ctrl) 
 {
@@ -153,23 +161,15 @@ void OpticksHub::command(const char* ctrl)
     BStr::split(cmds, ctrl, ',' ); 
 
     unsigned n = cmds.size(); 
-    LOG(fatal) << "ctrl [" << ctrl << "] " << n  ;  
-    for( unsigned i=0 ; i < n ; i++)
+    LOG(fatal) << "ctrl [" << ctrl << "] " << n  ;
+  
+    for( unsigned i=0 ; i < n ; i++ )
     {
         std::string cmd = cmds[i] ; 
         if(cmd.size() != 2) continue ; 
-        switch(cmd[0])
-        {
-            case 'C': m_composition->commandClipper(cmd.c_str())                     ; break ; 
-            case 'O': m_composition->commandRenderStyle(cmd.c_str())                 ; break ; 
-            case 'B': m_composition->commandContentStyle(cmd.c_str())                ; break ; 
-            case 'T': m_composition->commandViewMode(cmd.c_str())                    ; break ; 
-            default : LOG(fatal) << "ignoring unimplemented command [" << cmd << "]" ; break ;  
-        }
+        m_composition->command(cmd.c_str()); 
     } 
 }
-
-
 
 
 OpticksHub::OpticksHub(Opticks* ok) 
@@ -196,17 +196,24 @@ OpticksHub::OpticksHub(Opticks* ok)
    m_gen(NULL),
    m_aim(NULL),
    m_geotest(NULL),
-   m_err(0)
+   m_err(0),
+   m_ctrl(this)
 {
    init();
    (*m_log)("DONE");
+}
+
+
+void OpticksHub::setCtrl(SCtrl* ctrl)
+{
+    m_ctrl = ctrl ; 
 }
 
 void OpticksHub::init()
 {
     LOG(fatal) << "[" ; 
 
-    m_composition->setCtrl(this); 
+    //m_composition->setCtrl(this); 
 
     add(m_fcfg);
 
@@ -375,6 +382,17 @@ void OpticksHub::configureCompositionSize()
     m_composition->setFramePosition( position );
 }
 
+
+/**
+OpticksHub::configureState
+----------------------------
+
+Invoked from oglrap/OpticksViz.cc
+
+
+**/
+
+
 void OpticksHub::configureState(NConfigurable* scene)
 {
     // NState manages the state (in the form of strings) of a collection of NConfigurable objects
@@ -401,7 +419,7 @@ void OpticksHub::configureState(NConfigurable* scene)
 
 
     m_flightpath = new FlightPath(m_ok->getFlightPathDir()) ; 
-    m_flightpath->setCtrl(this) ; 
+    m_flightpath->setCtrl(m_ctrl) ; 
 
 
     m_composition->setBookmarks(m_bookmarks);

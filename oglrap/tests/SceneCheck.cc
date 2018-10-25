@@ -90,7 +90,8 @@ int main(int argc, char** argv)
     m_frame->init();  
     m_window = m_frame->getWindow();
    
-    m_scene->setComposition(m_composition);     // defer until renderers are setup 
+    //m_scene->setComposition(m_composition);     // defer until renderers are setup 
+    m_scene->hookupRenderers();     // defer until renderers are setup 
 
 
     // App::uploadGeometryViz  (has to be after setting up the renderers)

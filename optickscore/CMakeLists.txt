@@ -61,6 +61,7 @@ set(SOURCES
     Composition.cc
     ContentStyle.cc
     RenderStyle.cc
+    GlobalStyle.cc
 
     Demo.cc
     DemoCfg.cc
@@ -129,6 +130,7 @@ set(HEADERS
     Composition.hh
     ContentStyle.hh
     RenderStyle.hh
+    GlobalStyle.hh
 
     OpticksPhoton.h
     OpticksQuadrant.h

@@ -129,6 +129,7 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
 
         // GGeoBase interace END
     public:
+        // NConfigurable
         const char* getPrefix();
         void configure(const char* name, const char* value);
         std::vector<std::string> getTags();

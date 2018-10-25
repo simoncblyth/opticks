@@ -3,6 +3,7 @@
 
 
 #include "SCtrl.hh"
+#include "BStr.hh"
 #include "PLOG.hh"
 
 #include "NGLM.hpp"
@@ -108,11 +109,37 @@ void InterpolatedView::nextPair()
         if(curr->hasCmds())  
         {
             const std::string& cmds = curr->getCmds() ;  
-            m_ctrl->command("IV::nextPair"); 
-            m_ctrl->command(cmds.c_str()); 
+            dispatchCommands(cmds.c_str()); 
         }
     }
 }
+
+
+/**
+InterpolatedView::dispatchCommands
+-----------------------------------
+
+Commands are passed to the appropriate objects 
+from the high controller, using the SCtrl mechanism.
+
+**/
+
+void InterpolatedView::dispatchCommands(const char* cmds_)
+{
+    std::vector<std::string> cmds ; 
+    BStr::split(cmds, cmds_, ',' ); 
+
+    unsigned n = cmds.size(); 
+    LOG(fatal) << "cmds_ [" << cmds_ << "] " << n  ;    
+    for( unsigned i=0 ; i < n ; i++) 
+    {    
+        std::string cmd = cmds[i] ; 
+        if(cmd.size() != 2) continue ;
+
+        m_ctrl->command( cmd.c_str() ) ; 
+    }    
+}
+
 
 bool InterpolatedView::hasChanged()
 {

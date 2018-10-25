@@ -38,8 +38,10 @@
 #include "TrackballCfg.hh"
 #include "Clipper.hh"
 #include "ClipperCfg.hh"
+
 #include "ContentStyle.hh"
 #include "RenderStyle.hh"
+#include "GlobalStyle.hh"
 
 #include "InterpolatedView.hh"
 #include "OrbitalView.hh"
@@ -172,12 +174,13 @@ Composition::Composition()
   m_clipper(NULL),
   m_content_style(new ContentStyle),
   m_render_style(new RenderStyle(this)),
+  m_global_style(new GlobalStyle()),
   m_count(0),
   m_axis_data(NULL),
   m_axis_attr(NULL),
   m_changed(true), 
   m_evt(NULL), 
-  m_ctrl(NULL),
+  //m_ctrl(NULL),
   m_lookphi(0.f), 
   m_axis_x(1000.f,    0.f,    0.f, 0.f),
   m_axis_y(0.f   , 1000.f,    0.f, 0.f),
@@ -223,10 +226,38 @@ Trackball* Composition::getTrackball()
 
 
 
+// SCtrl 
+void Composition::command(const char* cmd) 
+{
+    assert( strlen(cmd) == 2 ) ; 
+    switch(cmd[0])
+    {
+        case 'C': commandClipper(cmd)                     ; break ; 
+        case 'O': commandRenderStyle(cmd)                 ; break ; 
+        case 'B': commandContentStyle(cmd)                ; break ; 
+        case 'Q': commandGlobalStyle(cmd)                 ; break ; 
+        case 'T': commandViewMode(cmd)                    ; break ; 
+        default : LOG(fatal) << "ignoring unimplemented command [" << cmd << "]" ; break ;  
+    }
+}
+
+
+
+
+
+
 // ContentStyle
 ContentStyle* Composition::getContentStyle() const { return m_content_style ; }
 void Composition::nextContentStyle()  { m_content_style->nextContentStyle();  }
 void Composition::commandContentStyle(const char* cmd) { m_content_style->command(cmd);  }
+
+// GlobalStyle
+GlobalStyle* Composition::getGlobalStyle() const { return m_global_style ; }
+bool* Composition::getGlobalModePtr(){    return m_global_style->getGlobalModePtr() ; }
+bool* Composition::getGlobalVecModePtr(){ return m_global_style->getGlobalVecModePtr() ; }
+void  Composition::nextGlobalStyle()  { m_global_style->nextGlobalStyle();  }
+void  Composition::commandGlobalStyle(const char* cmd) { m_global_style->command(cmd);  }
+
 
 // RenderStyle
 void Composition::nextRenderStyle(unsigned modifiers) { m_render_style->nextRenderStyle(modifiers) ;  }
@@ -269,11 +300,13 @@ void Composition::setEvt(OpticksEvent* evt)
 {
     m_evt = evt ; 
 }
+
+/*
 void Composition::setCtrl(SCtrl* ctrl)
 {
     m_ctrl = ctrl ; 
 }
-
+*/
 
 
 

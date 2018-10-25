@@ -17,7 +17,10 @@ class Opticks ;
 class OpticksRun ; 
 class OpticksEvent ; 
 class Composition ; 
+
 class ContentStyle ; 
+class GlobalStyle ; 
+
 class OpticksEvent ; 
 class Types ; 
 
@@ -36,6 +39,8 @@ class GUI ;
 
 
 #include "OGLRAP_API_EXPORT.hh"
+#include "SCtrl.hh"
+
 
 /**
 OpticksViz
@@ -43,11 +48,10 @@ OpticksViz
 
 Canonical m_viz instances are residents of the top level managers: ok/OKMgr.hh okg4/OKG4Mgr.hh opticksgl/OKGLTracer.hh
 
-
 **/
 
 
-class OGLRAP_API OpticksViz {
+class OGLRAP_API OpticksViz : public SCtrl  {
          friend class AxisApp ; 
     public:
          OpticksViz(OpticksHub* hub, OpticksIdx* idx, bool immediate=false);
@@ -65,6 +69,9 @@ class OGLRAP_API OpticksViz {
          NConfigurable* getSceneConfigurable(); 
          Scene*         getScene(); 
          int            getTarget();
+    public:
+         // SCtrl 
+         void command(const char* ctrl); 
     public:
          void uploadGeometry();
          void uploadEvent();
@@ -96,7 +103,10 @@ class OGLRAP_API OpticksViz {
          bool          m_immediate ; 
          int           m_interactivity ; 
          Composition*  m_composition ;
+
          ContentStyle* m_content_style ; 
+         GlobalStyle*  m_global_style ; 
+
          Types*        m_types ; 
 
          const char*   m_title ; 

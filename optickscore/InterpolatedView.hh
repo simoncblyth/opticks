@@ -65,6 +65,9 @@ class OKCORE_API InterpolatedView :  public View {
         void nextPair();
         void setPair(unsigned int i, unsigned int j);
     private:
+        // SCtrl 
+        void dispatchCommands(const char* cmds_);
+    private:
         unsigned int m_i ; 
         unsigned int m_j ; 
         unsigned int m_count ; 

@@ -23,7 +23,10 @@
 #include "OpticksEvent.hh"
 #include "OpticksRun.hh"
 #include "Composition.hh"
+
 #include "ContentStyle.hh"
+#include "GlobalStyle.hh"
+
 #include "Bookmarks.hh"
 
 // opticksgeo-
@@ -62,6 +65,7 @@
 
 OpticksViz::OpticksViz(OpticksHub* hub, OpticksIdx* idx, bool immediate)
     :
+    SCtrl(),
     m_log(new SLog("OpticksViz::OpticksViz")),
     m_hub(hub),
     m_ok(hub->getOpticks()),
@@ -72,6 +76,7 @@ OpticksViz::OpticksViz(OpticksHub* hub, OpticksIdx* idx, bool immediate)
     m_interactivity(m_ok->getInteractivityLevel()),
     m_composition(hub->getComposition()),
     m_content_style(m_composition->getContentStyle()),
+    m_global_style(m_composition->getGlobalStyle()),
     m_types(m_ok->getTypes()),
     m_title(NULL),
     m_scene(NULL),
@@ -92,6 +97,8 @@ OpticksViz::OpticksViz(OpticksHub* hub, OpticksIdx* idx, bool immediate)
 
 void OpticksViz::init()
 {
+    m_hub->setCtrl(this);  // For "command(char* ctrl)" interface from lower levels to route via OpticksViz
+
     const char* shader_dir = getenv("OPTICKS_SHADER_DIR"); 
     const char* shader_incl_path = getenv("OPTICKS_SHADER_INCL_PATH"); 
     const char* shader_dynamic_dir = getenv("OPTICKS_SHADER_DYNAMIC_DIR"); 
@@ -168,6 +175,13 @@ NConfigurable* OpticksViz::getSceneConfigurable()
     return dynamic_cast<NConfigurable*>(m_scene) ; 
 }
 
+void OpticksViz::command(const char* cmd)
+{
+    LOG(info) << cmd ; 
+    m_hub->command(cmd); 
+    m_scene->command(cmd);  // some commands need explicit scene updating 
+}
+
 
 bool OpticksViz::hasOpt(const char* name)
 {
@@ -207,11 +221,11 @@ void OpticksViz::setupRestrictions()
         { 
             m_content_style->setNumContentStyle(ContentStyle::WIRE); 
         }
-        m_scene->setNumGlobalStyle(Scene::GVISVEC); // disable GVISVEC, GVEC debug styles
+        m_global_style->setNumGlobalStyle(GlobalStyle::GVISVEC); // disable GVISVEC, GVEC debug styles
     }
     else if(m_ok->isDayabay())
     {
-        m_scene->setNumGlobalStyle(Scene::GVISVEC);   // disable GVISVEC, GVEC debug styles
+        m_global_style->setNumGlobalStyle(GlobalStyle::GVISVEC);   // disable GVISVEC, GVEC debug styles
     }
 }
 
@@ -241,7 +255,9 @@ void OpticksViz::prepareScene(const char* rendermode)
 
     m_window = m_frame->getWindow();
 
-    m_scene->setComposition(m_hub->getComposition());     // deferred until here, after renderers are setup 
+
+    //m_scene->setComposition(m_hub->getComposition());   
+    m_scene->hookupRenderers();   // deferred until here, after renderers are setup 
 
 }
 

@@ -435,7 +435,8 @@ void Interactor::key_pressed(unsigned int key)
             m_scene->nextPhotonStyle(); 
             break;
         case GLFW_KEY_Q:
-            m_scene->nextGlobalStyle(); 
+            //m_scene->nextGlobalStyle(); 
+            m_composition->nextGlobalStyle(); 
             break;
         case GLFW_KEY_R:
             m_rotate_mode = !m_rotate_mode ; 

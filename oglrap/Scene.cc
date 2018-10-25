@@ -122,6 +122,12 @@ const char* Scene::getRecordStyleName()
  
 void Scene::init()
 {
+
+    m_content_style = m_composition->getContentStyle(); 
+    m_global_mode_ptr = m_composition->getGlobalModePtr(); 
+    m_globalvec_mode_ptr = m_composition->getGlobalVecModePtr(); 
+
+
     LOG(debug) << "Scene::init" ; 
     LOG(verbose) << "Scene::init (config from cmake)"
               << " OGLRAP_INSTALL_PREFIX " << OGLRAP_INSTALL_PREFIX
@@ -198,7 +204,7 @@ void Scene::setRenderMode(const char* s)
              }
         } 
         
-        if(strcmp(el, GLOBAL)==0)  m_global_mode = setting ; 
+        if(strcmp(el, GLOBAL)==0)  *m_global_mode_ptr = setting ; 
         if(strcmp(el, AXIS)==0)    m_axis_mode = setting ; 
         if(strcmp(el, GENSTEP)==0) m_genstep_mode = setting ; 
         if(strcmp(el, NOPSTEP)==0) m_nopstep_mode = setting ; 
@@ -214,7 +220,7 @@ std::string Scene::getRenderMode() const
 
     std::stringstream ss ; 
 
-    if(m_global_mode)  ss << GLOBAL << delim ; 
+    if(*m_global_mode_ptr)  ss << GLOBAL << delim ; 
     if(m_axis_mode)    ss << AXIS << delim ; 
     if(m_genstep_mode) ss << GENSTEP << delim ; 
     if(m_nopstep_mode) ss << NOPSTEP << delim ; 
@@ -235,7 +241,8 @@ std::string Scene::getRenderMode() const
 void Scene::gui()
 {
 #ifdef GUI_
-     ImGui::Checkbox(GLOBAL,   &m_global_mode);
+     //ImGui::Checkbox(GLOBAL,   &m_global_mode);
+     ImGui::Checkbox(GLOBAL,    m_composition->getGlobalModePtr() );
 
      ImGui::Checkbox(BBOX0,     m_bbox_mode+0);
      ImGui::Checkbox(BBOX1,     m_bbox_mode+1);
@@ -473,14 +480,14 @@ void Scene::initRenderers()
     m_initialized = true ; 
 }
 
-void Scene::setComposition(Composition* composition)
+void Scene::hookupRenderers()
 {
     // HMM better to use hub ? to avoid this lot ?
     //     actually best to move to 1 or 2 UBO 
     //     updated from Scene, then most Renderers wont need composition ? 
 
-    m_composition = composition ; 
-    m_content_style = m_composition->getContentStyle(); 
+    assert(m_composition); 
+    Composition* composition = m_composition ; 
 
     if(m_global_renderer)
         m_global_renderer->setComposition(composition);
@@ -550,7 +557,6 @@ void Scene::uploadGeometryGlobal(GMergedMesh* mm)
 
         n_global++ ; 
         assert(n_global == 1);
-        //m_global_mode = true ;
     }
     else
     {
@@ -796,8 +802,10 @@ void Scene::preRenderCompute()
 
 void Scene::renderGeometry()
 {
-    if(m_global_mode && m_global_renderer)       m_global_renderer->render();
-    if(m_globalvec_mode && m_globalvec_renderer) m_globalvec_renderer->render();
+    if(*m_global_mode_ptr && m_global_renderer)       m_global_renderer->render();
+    if(*m_globalvec_mode_ptr && m_globalvec_renderer) m_globalvec_renderer->render();
+    // hmm this could be doing both global and globalvec ? Or does it need to be so ?
+
 
     for(unsigned int i=0; i<m_num_instance_renderer; i++)
     {
@@ -1009,11 +1017,16 @@ Scene::Scene(OpticksHub* hub, const char* shader_dir, const char* shader_incl_pa
             m_photons(NULL),
             m_geolib(NULL),
             m_mesh0(NULL),
-            m_composition(NULL),
+            m_composition(m_hub->getComposition()),
             m_colorbuffer(NULL),
             m_touch(0),
+/*
             m_global_mode(false),
             m_globalvec_mode(false),
+*/
+            m_global_mode_ptr(NULL),
+            m_globalvec_mode_ptr(NULL),
+
             m_axis_mode(true),
             m_genstep_mode(true),
             m_nopstep_mode(true),
@@ -1021,8 +1034,11 @@ Scene::Scene(OpticksHub* hub, const char* shader_dir, const char* shader_incl_pa
             m_source_mode(false),
             m_record_mode(true),
             m_record_style(ALTREC),
+
+/*
             m_global_style(GVIS),
             m_num_global_style(0),
+*/
             m_instance_style(IVIS),
 /*
 
@@ -1188,6 +1204,26 @@ void Scene::nextPhotonStyle()
 
 
 
+/**
+Scene::command
+-----------------
+
+Part of SCtrl mechanism, this method is invoked by the 
+high controller, eg OpticksViz, after the state has been 
+changed, usually by calls to okc.Composition::command 
+
+**/
+
+void Scene::command(const char* cmd)
+{
+    assert( strlen(cmd) == 2 ); 
+    switch( cmd[0] )
+    {
+        case 'B': applyContentStyle() ; break ; 
+        default:                      ; break ; 
+    }
+}
+
 
 ////// ContentStyle (B-key) /////////////////////
 //// mostly moved down to okc.Style
@@ -1216,7 +1252,7 @@ void Scene::applyContentStyle()
 
 
 
-
+/*
 // GlobalStyle (Q key)
 
 unsigned int Scene::getNumGlobalStyle()
@@ -1267,6 +1303,9 @@ void Scene::applyGlobalStyle()
         
     }
 }
+
+*/
+
 
 
 

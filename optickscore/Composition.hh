@@ -6,7 +6,7 @@
 #include <glm/fwd.hpp>  
 
 
-class SCtrl ; 
+//class SCtrl ; 
 // bcfg-
 class BCfg ;
 
@@ -22,8 +22,11 @@ class TrackView ;
 class Light ;
 class Trackball ; 
 class Clipper ; 
+
 class ContentStyle; 
 class RenderStyle; 
+class GlobalStyle; 
+
 class Animator ; 
 class Bookmarks ; 
 class FlightPath ; 
@@ -121,8 +124,10 @@ class OKCORE_API Composition : public NConfigurable {
   public:
       Composition();
       void addConstituentConfigurables(NState* state);
-      void setCtrl(SCtrl* ctrl ); 
       virtual ~Composition();
+   public:
+      //void setCtrl(SCtrl* ctrl ); 
+      void command(const char* cmd) ;
    public:
       void setAnimatorPeriod(int period);
       Animator* getAnimator();
@@ -194,6 +199,13 @@ class OKCORE_API Composition : public NConfigurable {
         ContentStyle* getContentStyle() const ;
         void          nextContentStyle(); 
         void          commandContentStyle(const char* cmd);
+   public:
+        // GlobalStyle : Q_KEY 
+        GlobalStyle* getGlobalStyle() const ;
+        bool* getGlobalModePtr();
+        bool* getGlobalVecModePtr();
+        void nextGlobalStyle();
+        void commandGlobalStyle(const char* cmd);
   private:
       void init();
       void initAxis();
@@ -458,8 +470,11 @@ class OKCORE_API Composition : public NConfigurable {
 
       Light*     m_light ;
       Clipper*   m_clipper ;
+
       ContentStyle*  m_content_style ; 
       RenderStyle*   m_render_style ; 
+      GlobalStyle*   m_global_style ; 
+
       unsigned int m_count ; 
       NPY<float>*  m_axis_data ; 
       MultiViewNPY* m_axis_attr ;
@@ -468,7 +483,7 @@ class OKCORE_API Composition : public NConfigurable {
   private:
       // visitors
       OpticksEvent*  m_evt ; 
-      SCtrl*         m_ctrl ; 
+      //SCtrl*         m_ctrl ; 
   private:
       // updated by *update* based on inputs and residents
       glm::vec4 m_viewport ; 

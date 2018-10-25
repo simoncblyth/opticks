@@ -15,7 +15,12 @@ class InterpolatedView ;
 FlightPath
 ============
 
-Used from 
+Canonical m_flighpath instance is resident of OpticksHub
+and is instanciated in OpticksHub::configureState following m_bookmarks.
+
+Note that FlightPath can in principal be used in a pure compute 
+manner with no OpenGL involvement, eg for making pure raytrace movies
+on headless nodes without OpenGL capability.
 
 
 **/

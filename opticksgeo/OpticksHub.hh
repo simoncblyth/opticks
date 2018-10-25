@@ -4,7 +4,7 @@
 #include <map>
 #include <glm/fwd.hpp>
 
-
+class SCtrl ; 
 class SLog ; 
 class BCfg ; 
 class Timer ; 
@@ -103,6 +103,7 @@ class OKGEO_API OpticksHub : public SCtrl {
 
    public:
        int getErr() const ;
+       void setCtrl(SCtrl* ctrl);
 
    public:
        // SHub
@@ -252,6 +253,7 @@ class OKGEO_API OpticksHub : public SCtrl {
  
        GGeoTest*            m_geotest ; 
        int                  m_err ; 
+       SCtrl*               m_ctrl ; 
 
 
 

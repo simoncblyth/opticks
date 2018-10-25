@@ -103,9 +103,10 @@ InstanceStyle (I key)
 
 
 #include "NConfigurable.hpp"
+#include "SCtrl.hh"
 #include "OGLRAP_API_EXPORT.hh"
 
-class OGLRAP_API Scene : public NConfigurable {
+class OGLRAP_API Scene : public NConfigurable, public SCtrl  {
    public:
         static Scene*      GetInstance();
         static const char* PREFIX ;
@@ -141,6 +142,9 @@ class OGLRAP_API Scene : public NConfigurable {
         static const char* BBOX4  ;
 
    public:
+        // SCtrl
+        void command(const char* cmd); 
+   public:
         void setVerbosity(unsigned verbosity);
         void setRenderMode(const char* s);
         std::string getRenderMode() const ;
@@ -161,12 +165,16 @@ class OGLRAP_API Scene : public NConfigurable {
         void setWireframe(bool wire=true);
         void setInstCull(bool instcull=true);
    public:
+
+/*
         // Q-key 
         typedef enum { GVIS, GINVIS, GVISVEC, GVEC, NUM_GLOBAL_STYLE } GlobalStyle_t ;  
         unsigned int getNumGlobalStyle(); 
         void setNumGlobalStyle(unsigned int num_global_style); // used to disable GVISVEC GVEC styles for JUNO
         void nextGlobalStyle();  
         void applyGlobalStyle();
+*/
+
    public:
 
 
@@ -186,9 +194,7 @@ class OGLRAP_API Scene : public NConfigurable {
         bool isProjectiveRender() const ;
         bool isRaytracedRender() const ;
         bool isCompositeRender() const ;
-
 */
-
    public:
         // I-key
         typedef enum { IVIS, IINVIS, NUM_INSTANCE_STYLE } InstanceStyle_t ;  
@@ -216,7 +222,8 @@ class OGLRAP_API Scene : public NConfigurable {
 
    public:
         void configureI(const char* name, std::vector<int> values);
-        void setComposition(Composition* composition);
+        //void setComposition(Composition* composition);
+        void hookupRenderers();
         void setPhotons(Photons* photons);
    public:
         void setGeometry(GGeoLib* geolib);
@@ -314,7 +321,7 @@ class OGLRAP_API Scene : public NConfigurable {
         Rdr*         m_devrecord_renderer ; 
    private:
         Photons*     m_photons ; 
-        GGeoLib*       m_geolib ;
+        GGeoLib*     m_geolib ;
         GMergedMesh* m_mesh0 ; 
         Composition* m_composition ;
         ContentStyle*   m_content_style ; 
@@ -322,8 +329,14 @@ class OGLRAP_API Scene : public NConfigurable {
         unsigned int m_touch ;
 
    private:
+        /*
         bool         m_global_mode ; 
         bool         m_globalvec_mode ; 
+        */
+        bool*        m_global_mode_ptr ; 
+        bool*        m_globalvec_mode_ptr ; 
+
+
         bool         m_instance_mode[MAX_INSTANCE_RENDERER] ; 
         bool         m_bbox_mode[MAX_INSTANCE_RENDERER] ; 
         bool         m_axis_mode ; 
@@ -337,19 +350,18 @@ class OGLRAP_API Scene : public NConfigurable {
 
 
    private:
-
+       /*
         GlobalStyle_t   m_global_style ; 
         unsigned int    m_num_global_style ; 
+       */
+
         InstanceStyle_t m_instance_style ; 
 
 /*
-
    private:
         RenderStyle_t   m_render_style ; 
         bool            m_raytrace_enabled ; 
-
 */
-
         bool            m_initialized ;  
         float           m_time_fraction ;  
         bool            m_instcull ; 
