@@ -68,22 +68,17 @@ class OKCORE_API InterpolatedView :  public View {
         void nextPair();
         void setPair(unsigned int i, unsigned int j);
     private:
-        // SCtrl 
-        void dispatchCommands(const char* cmds_);
-    private:
-        unsigned int m_i ; 
-        unsigned int m_j ; 
-        unsigned int m_count ; 
-        unsigned int m_local_count ; 
-        unsigned int m_period ; 
-        float        m_fraction ; 
-        Animator*    m_animator ;
-        unsigned     m_animator_index ; 
-        unsigned     m_animator_period ; 
+        unsigned  m_i ; 
+        unsigned  m_j ; 
+        unsigned  m_count ; 
+        unsigned  m_period ; 
+        float     m_fraction ; 
+        Animator* m_animator ;
         std::vector<View*>  m_views ; 
         bool         m_verbose ; 
         SCtrl*       m_ctrl ; 
 
+        unsigned  m_local_count ;
 };
 
 #include "OKCORE_TAIL.hh"

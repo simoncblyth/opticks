@@ -3,8 +3,8 @@
 
 #include <vector>
 #include <string>
+#include <array>
 
-//#include <glm/fwd.hpp>  
 #include "NGLM.hpp"
 
 //#define VIEW_DEBUG
@@ -64,9 +64,9 @@ public:
    void set(const char* name, std::string& xyz);
    std::string get(const char* name);
  public:
-   void setCmds(const std::string& cmds);
+   void setCmds(const std::vector<std::string>& cmds);
    void setNumCmds(unsigned num_cmds);
-   const std::string& getCmds() const ;
+   const std::string& getCmd(unsigned i) const ;
    bool hasCmds() const ;   
  public:
    void home(); 
@@ -125,8 +125,9 @@ private:
    glm::vec3 m_up ; 
    bool      m_changed ; 
    std::vector<glm::vec4> m_axes ; 
-   std::string m_cmds ; 
    unsigned    m_num_cmds ; 
+   std::array<std::string, 8> m_cmds ; 
+
 
 
 };

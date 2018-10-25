@@ -144,8 +144,8 @@ View* View::FromArrayItem( NPY<float>* flightpath, unsigned i )
     v->setUp(up); 
 
     Ctrl ctrl(glm::value_ptr(vctrl), 4);
-    std::string cmds = ctrl.getCommands() ; 
-    v->setCmds(cmds);      
+    //std::string cmds = ctrl.getCommands() ; 
+    v->setCmds(ctrl.cmds);      
     v->setNumCmds(ctrl.num_cmds); 
 
     return v ; 
@@ -165,13 +165,20 @@ void View::setNumCmds(unsigned num_cmds)
 {
     m_num_cmds = num_cmds ; 
 }
-void View::setCmds(const std::string& cmds)
+
+void View::setCmds(const std::vector<std::string>& cmds)
 {
-    m_cmds = cmds ; 
+    assert( cmds.size() == 8 ); 
+    for(unsigned i=0 ; i < cmds.size() ; i++ )
+    {
+        m_cmds[i] = cmds[i] ; 
+    }
 }
-const std::string& View::getCmds() const 
+
+const std::string& View::getCmd(unsigned i) const 
 {
-    return m_cmds ; 
+    assert( i < 8 ); 
+    return m_cmds[i] ; 
 }
 bool View::hasCmds() const
 { 

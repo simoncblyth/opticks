@@ -47,22 +47,18 @@ InterpolatedView* InterpolatedView::MakeFromArray(NPY<float>* elu, unsigned peri
 
 
 
-
-
 InterpolatedView::InterpolatedView(unsigned int period, bool verbose) 
     : 
     View(INTERPOLATED),
     m_i(0),
     m_j(1),
     m_count(0),
-    m_local_count(-1),
     m_period(period),
     m_fraction(0.f),
     m_animator(NULL),
-    m_animator_index(0),
-    m_animator_period(0),
     m_verbose(verbose),
-    m_ctrl(NULL)
+    m_ctrl(NULL),
+    m_local_count(-1)
 {
     init();
 }
@@ -80,7 +76,8 @@ void InterpolatedView::reset()
 {
     m_count = 0 ; 
     m_fraction = 0.f ;  // start from entirely currentView 0
-    setPair(0,1);  // may dispatch commands
+    setPair(0,1);  
+    m_animator->home(); 
 }
 
 Animator* InterpolatedView::getAnimator()
@@ -109,26 +106,17 @@ View* InterpolatedView::getNextView()
     return getView(m_j);
 }
 
+
+
 void InterpolatedView::setFraction(float fraction)
 {
     m_fraction = fraction ; 
 }
 
-
 void InterpolatedView::setPair(unsigned i, unsigned j)
 {
     m_i = i ;
     m_j = j ; 
-
-    if(m_ctrl)
-    { 
-        View* curr = getCurrentView() ; 
-        if(curr->hasCmds())  
-        {
-            const std::string& cmds = curr->getCmds() ;  
-            dispatchCommands(cmds.c_str()); 
-        }
-    }
 }
 
 void InterpolatedView::setCtrl(SCtrl* ctrl)
@@ -145,42 +133,6 @@ void InterpolatedView::nextPair()
 }
 
 
-/**
-InterpolatedView::dispatchCommands
------------------------------------
-
-Commands are passed to the appropriate objects 
-from the high controller, using the SCtrl mechanism.
-
-Could somehow defer the dispatch doing it from tick ?
-Acording to position and the period ?
-
-
-**/
-
-
-void InterpolatedView::dispatchCommands(const char* cmds_)
-{
-    std::vector<std::string> cmds ; 
-    BStr::split(cmds, cmds_, ',' ); 
-
-    unsigned n = cmds.size(); 
-    assert( n == 8 );  // 8*2 = 16 (8*2-byte cmds in float4 quad ie 4*4-byte )
-
-    LOG(fatal) << "cmds_ [" << cmds_ << "] " << n  ;    
-    for( unsigned i=0 ; i < n ; i++) 
-    {    
-        std::string cmd = cmds[i] ; 
-        if(cmd.size() != 2) continue ;
-        if(cmd.compare("  ") == 0) continue ;     
-
-        // not using positional info i yet 
-
-        m_ctrl->command( cmd.c_str() ) ; 
-    }    
-}
-
-
 bool InterpolatedView::hasChanged()
 {
     return m_count > 0 && m_animator->isActive() ;  
@@ -188,6 +140,7 @@ bool InterpolatedView::hasChanged()
 
 void InterpolatedView::nextMode(unsigned int modifiers)
 {
+    LOG(info) << description() ; 
     m_animator->nextMode(modifiers);
 }
 void InterpolatedView::commandMode(const char* cmd)
@@ -203,16 +156,53 @@ bool InterpolatedView::isActive()
 
 
 
+/**
+InterpolatedView::tick
+-----------------------------------
+
+Commands are passed to the appropriate objects 
+from the high controller, using the SCtrl mechanism.
+
+**/
+
+
 void InterpolatedView::tick()
 {
     m_count++ ; 
     m_local_count++ ; 
 
     bool bump(false);
-    m_animator->step(bump, m_animator_index, m_animator_period);
+    unsigned cmd_index(0) ; 
+    unsigned cmd_offset(0) ; 
+
+    m_animator->step(bump, cmd_index, cmd_offset);
+    
+    // spread out command dispatch for a view according to their slots
+    // for better control of, factor of 8 better granularity.
+ 
+    if(m_ctrl && cmd_offset == 1)
+    { 
+        View* curr = getCurrentView() ; 
+        if(curr->hasCmds())  
+        {
+            const std::string& cmd = curr->getCmd(cmd_index) ; 
+            if( cmd.compare("  ") != 0 )  
+            {
+                m_ctrl->command(cmd.c_str());  
+
+                LOG(info) 
+                    << " cmd " << cmd 
+                    << " ("
+                    << " cmd_index " << cmd_index
+                    << " cmd_offset " << cmd_offset
+                    << " )"
+                    ;
+            }
+        }
+    }
 
     //LOG(info) << description("IV::tick") << " : " << m_animator->description() ;
-    LOG(info) << description("IV") ; 
+    //LOG(info) << description("IV") ; 
 
     if(bump)
     {
@@ -230,8 +220,6 @@ std::string InterpolatedView::description(const char* msg)
        << " f:" << m_fraction 
        << " c:" << m_count 
        << " lc:" << m_local_count 
-       << " ai:" << m_animator_index 
-       << " ap:" << m_animator_period
        ;
     return ss.str();
 }

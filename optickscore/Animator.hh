@@ -42,7 +42,7 @@ class OKCORE_API Animator {
         void home();
         void reset();
         bool step(bool& bump); 
-        bool step(bool& bump, unsigned& index, unsigned& period); 
+        bool step(bool& bump, unsigned& cmd_index, unsigned& cmd_offset); 
         void Summary(const char* msg);
         void scrub_to(float x, float y, float dx, float dy); // Interactor:K scrub_mode
 
@@ -61,6 +61,7 @@ class OKCORE_API Animator {
         void commandMode(const char* cmd);
 
         const char* getModeName() const ;
+        const char* getModeCmd() const ;
         std::string desc() const ;
 
         char* description();
@@ -87,11 +88,18 @@ class OKCORE_API Animator {
         float        m_low ; 
         float        m_high ; 
         float*       m_fractions[NUM_MODE] ; 
+        const char*  m_cmd[NUM_MODE] ; 
+
         unsigned int m_count ; 
         unsigned int m_index ; 
         char         m_desc[32] ; 
         float*       m_target ; 
         int          m_increment ; 
+
+        unsigned     m_cmd_slots ; 
+        unsigned     m_cmd_index ; 
+        unsigned     m_cmd_offset ; 
+        unsigned     m_cmd_tranche ; 
 };
 
 

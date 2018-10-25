@@ -35,7 +35,11 @@ Animator::Animator(float* target, unsigned int period, float low, float high)
     m_count(0),
     m_index(0),
     m_target(target),
-    m_increment(1)
+    m_increment(1),
+    m_cmd_slots(8),
+    m_cmd_index(0),
+    m_cmd_offset(0),
+    m_cmd_tranche(0)
 {
     m_period[OFF]  = 0 ; 
     m_period[SLOW32] = period*32 ; 
@@ -58,6 +62,18 @@ Animator::Animator(float* target, unsigned int period, float low, float high)
     m_fractions[FAST] = make_fractions(m_period[FAST]) ;
     m_fractions[FAST2] = make_fractions(m_period[FAST2]) ;
     m_fractions[FAST4] = make_fractions(m_period[FAST4]) ;
+
+    m_cmd[OFF]  = "T0" ; 
+    m_cmd[SLOW32] = "T1" ; 
+    m_cmd[SLOW16] = "T2" ; 
+    m_cmd[SLOW8] = "T3" ; 
+    m_cmd[SLOW4] = "T4" ; 
+    m_cmd[SLOW2] = "T5" ; 
+    m_cmd[NORM] = "T6" ; 
+    m_cmd[FAST] = "T7" ; 
+    m_cmd[FAST2] = "T8" ; 
+    m_cmd[FAST4] = "T9" ; 
+
 }
 
 /**
@@ -148,7 +164,7 @@ void Animator::setMode(Mode_t mode)
     float fraction = getFractionForValue(*m_target);
     m_mode = mode ;  
 
-    LOG(info) << desc() ; 
+    LOG(info) << description() ; 
 
     modeTransition(fraction);
 }
@@ -278,14 +294,21 @@ float Animator::getFractionFromTarget()
     return getFractionForValue(*m_target);
 }
 
-bool Animator::step(bool& bump, unsigned& index, unsigned& period)
+bool Animator::step(bool& bump, unsigned& cmd_index, unsigned& cmd_offset )
 {
     bool st = step(bump) ; 
-    if(st)
-    { 
-        index = m_index ;
-        period = m_period[m_mode] ;   
-    }
+    if(!st) return st ; 
+
+    m_cmd_tranche = m_period[m_mode]/m_cmd_slots ; //  NB keep animator_period a suitable power of two, such as 128
+    m_cmd_index = m_index/m_cmd_tranche ;  
+    assert( m_cmd_index < m_cmd_slots ) ;    
+    m_cmd_offset = m_index - m_cmd_index*m_cmd_tranche ;
+    assert( m_cmd_offset < m_cmd_tranche ) ;
+
+    cmd_index = m_cmd_index ; 
+    cmd_offset = m_cmd_offset ;     
+
+
     return st ; 
 }
  
@@ -364,7 +387,7 @@ unsigned int Animator::find_closest_index(float f )
 
 char* Animator::description()
 {
-    snprintf(m_desc, 64, " %5s %d/%d/%10.4f", getModeName() , m_index, m_period[m_mode], *m_target );
+    snprintf(m_desc, 64, " %2s:%5s %d/%d/%10.4f", getModeCmd(), getModeName() , m_index, m_period[m_mode], *m_target );
     return m_desc ; 
 }
 
@@ -373,6 +396,12 @@ void Animator::Summary(const char* msg)
     LOG(info) << msg << description() ; 
 }
 
+
+const char* Animator::getModeCmd() const
+{
+    return m_cmd[m_mode] ; 
+}
+ 
 const char* Animator::getModeName() const 
 {
     const char* mode(NULL);
@@ -396,10 +425,12 @@ const char* Animator::getModeName() const
 std::string Animator::desc() const 
 {
     std::stringstream ss ; 
-    ss << "Animator "
-       << getModeName()
+    ss  << "Animator "
+        << getModeName()
+        << " ci:" << m_cmd_index
+        << " co:" << m_cmd_offset
+        << " ct:" << m_cmd_tranche 
         ;
-
     return ss.str(); 
 }
 

@@ -77,18 +77,6 @@ if __name__ == '__main__':
 
     uaa[:n0] = [0,0,1] 
 
-    # cmds not working on slot-0 ? up to eight 2-char cmds per slot
-    #caa[1].view("|S2")[0] = "O1"   
-    #caa[2].view("|S2")[0] = "O0" 
-    ## flip raytrace on/off to get timeconsuming setup done before start recording 
-
-    #caa[3].view("|S2")[0] = "C1"   ## distant views need the cut 
-    #caa[7].view("|S2")[0] = "O1" 
-    #caa[8].view("|S2")[0] = "O0" 
-
-    #caa[9].view("|S2")[0] = "C0" 
-
-
     caa[0].view("|S2")[0:4] = ["C1", FAST, "B2", "Q0" ]
     caa[2].view("|S2")[0:1] = [NORM] 
 
