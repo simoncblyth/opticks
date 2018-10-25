@@ -157,7 +157,9 @@ class OGLRAP_API Scene : public NConfigurable, public SCtrl  {
         Scene::RecordStyle_t getRecordStyle();
         static const char* getRecordStyleName(Scene::RecordStyle_t style);
         const char* getRecordStyleName();
-        void nextPhotonStyle();
+        //void nextPhotonStyle();
+        void nextRecordStyle();
+        void commandRecordStyle(const char* cmd);
    public:
         // B-key : mostly moved to okc.ContentStyle
         void applyContentStyle(); 

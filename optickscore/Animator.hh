@@ -2,7 +2,7 @@
 
 // TODO: try to support live changing of the range 
 
-#define ANIMATOR_DEBUG 1
+//#define ANIMATOR_DEBUG 1
 
 #include <string>
 #include "OKCORE_API_EXPORT.hh"
@@ -42,6 +42,7 @@ class OKCORE_API Animator {
         void home();
         void reset();
         bool step(bool& bump); 
+        bool step(bool& bump, unsigned& index, unsigned& period); 
         void Summary(const char* msg);
         void scrub_to(float x, float y, float dx, float dy); // Interactor:K scrub_mode
 

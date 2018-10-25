@@ -432,10 +432,10 @@ void Interactor::key_pressed(unsigned int key)
             m_composition->nextRenderStyle(modifiers);
             break;
         case GLFW_KEY_P:
-            m_scene->nextPhotonStyle(); 
+            //m_scene->nextPhotonStyle(); 
+            m_scene->nextRecordStyle(); 
             break;
         case GLFW_KEY_Q:
-            //m_scene->nextGlobalStyle(); 
             m_composition->nextGlobalStyle(); 
             break;
         case GLFW_KEY_R:

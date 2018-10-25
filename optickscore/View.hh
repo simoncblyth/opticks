@@ -65,6 +65,7 @@ public:
    std::string get(const char* name);
  public:
    void setCmds(const std::string& cmds);
+   void setNumCmds(unsigned num_cmds);
    const std::string& getCmds() const ;
    bool hasCmds() const ;   
  public:
@@ -125,6 +126,7 @@ private:
    bool      m_changed ; 
    std::vector<glm::vec4> m_axes ; 
    std::string m_cmds ; 
+   unsigned    m_num_cmds ; 
 
 
 };

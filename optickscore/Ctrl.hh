@@ -22,6 +22,8 @@ struct OKCORE_API Ctrl
 
     std::vector<std::string> cmds ;
 
+    unsigned num_cmds ; 
+
 };
 
 

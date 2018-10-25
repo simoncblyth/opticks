@@ -1180,9 +1180,12 @@ void Scene::setPhotons(Photons* photons)
 
 
 
+
+
 void Scene::setRecordStyle(RecordStyle_t style)
 {
     m_record_style = style ; 
+    LOG(info) << getRecordStyleName() ; 
 }
 
 Scene::RecordStyle_t Scene::getRecordStyle()
@@ -1190,17 +1193,21 @@ Scene::RecordStyle_t Scene::getRecordStyle()
     return m_record_style ; 
 }
 
-
-
-
-
-
-
-void Scene::nextPhotonStyle()
+void Scene::nextRecordStyle()  // formerly nextPhotonStyle
 {
     int next = (m_record_style + 1) % NUM_RECORD_STYLE ; 
-    m_record_style = (RecordStyle_t)next ; 
+    RecordStyle_t style = (RecordStyle_t)next ; 
+    setRecordStyle(style);
 }
+
+void Scene::commandRecordStyle(const char* cmd)
+{
+    assert(cmd[0] == 'P'); 
+    int style = (int)cmd[1] - (int)'0' ; 
+    setRecordStyle( (RecordStyle_t)style ); 
+}
+
+
 
 
 
@@ -1219,6 +1226,7 @@ void Scene::command(const char* cmd)
     assert( strlen(cmd) == 2 ); 
     switch( cmd[0] )
     {
+        case 'P': commandRecordStyle(cmd) ; break ; 
         case 'B': applyContentStyle() ; break ; 
         default:                      ; break ; 
     }

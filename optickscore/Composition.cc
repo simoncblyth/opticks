@@ -224,9 +224,14 @@ Trackball* Composition::getTrackball()
 }
 
 
+/**
+Composition::command
+---------------------
 
+Part of SCtrl mechanism, typically invoked from OpticksViz
 
-// SCtrl 
+**/
+
 void Composition::command(const char* cmd) 
 {
     assert( strlen(cmd) == 2 ) ; 
@@ -237,6 +242,7 @@ void Composition::command(const char* cmd)
         case 'B': commandContentStyle(cmd)                ; break ; 
         case 'Q': commandGlobalStyle(cmd)                 ; break ; 
         case 'T': commandViewMode(cmd)                    ; break ; 
+        case 'P': LOG(debug) << "P is handled at scene level alone " ; break ; 
         default : LOG(fatal) << "ignoring unimplemented command [" << cmd << "]" ; break ;  
     }
 }
@@ -468,6 +474,7 @@ Composition::NormalStyle_t Composition::getNormalStyle()
 
 
 
+////////////// E_KEY 
 
 void Composition::nextGeometryStyle()
 {
@@ -488,10 +495,9 @@ const char* Composition::getGeometryStyleName()
 }
 
 
+//////////////// U_KEY
 
-
-
-void Composition::nextViewType(unsigned int /*modifiers*/)  // U KEY 
+void Composition::nextViewType(unsigned int /*modifiers*/)
 {
     int next = (getViewType() + 1) % View::NUM_VIEW_TYPE ; 
     setViewType( (View::View_t)next ) ; 

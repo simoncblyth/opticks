@@ -146,18 +146,13 @@ View* View::FromArrayItem( NPY<float>* flightpath, unsigned i )
     Ctrl ctrl(glm::value_ptr(vctrl), 4);
     std::string cmds = ctrl.getCommands() ; 
     v->setCmds(cmds);      
-
-    // hmm it would be more convient for timing info to travel in flightpath too ???
-    //
-    // what about frames ? 
-    //      best to keep those separate in order that flightpaths 
-    //      can in principal be used for different frames for geometries of very different scales
+    v->setNumCmds(ctrl.num_cmds); 
 
     return v ; 
 }
 
 
-View::View(View_t type)  : m_type(type) 
+View::View(View_t type)  : m_type(type), m_num_cmds(0) 
 {
     home();
 
@@ -166,6 +161,10 @@ View::View(View_t type)  : m_type(type)
     m_axes.push_back(glm::vec4(1,0,0,0));
 }
 
+void View::setNumCmds(unsigned num_cmds)
+{
+    m_num_cmds = num_cmds ; 
+}
 void View::setCmds(const std::string& cmds)
 {
     m_cmds = cmds ; 
@@ -176,7 +175,7 @@ const std::string& View::getCmds() const
 }
 bool View::hasCmds() const
 { 
-    return !m_cmds.empty() ;  
+    return m_num_cmds > 0  ;  
 }
 
 

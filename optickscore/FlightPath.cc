@@ -31,7 +31,7 @@ FlightPath::FlightPath(const char* dir)
     m_flightpath(NULL),
     m_view(NULL),
     m_verbose(false),
-    m_ivperiod(100),
+    m_ivperiod(128),
     m_ctrl(NULL)
 {
 }
@@ -79,25 +79,7 @@ InterpolatedView* FlightPath::makeInterpolatedView()
 {
     load(); 
     assert( m_flightpath ) ; 
-
-    if(m_flightpath->getNumItems() < 2)
-    {
-        LOG(warning) << "FlightPath::makeInterpolatedView" 
-                     << " requires at least 2 views in flightpath  "
-                     ;
-
-        return NULL ; 
-    }
-
-    InterpolatedView* iv = new InterpolatedView(m_ivperiod) ; 
-    iv->setCtrl(m_ctrl); 
-
-    for(unsigned i=0 ; i < m_flightpath->getNumItems() ; i++ )
-    {
-        View* v = View::FromArrayItem( m_flightpath, i ) ; 
-        iv->addView(v);
-    }
-    return iv ; 
+    return InterpolatedView::MakeFromArray( m_flightpath, m_ivperiod, m_ctrl  ) ; 
 }
 
 

@@ -26,6 +26,8 @@ before switching to the next pair of views.
 
 **/
 
+template<typename T> class NPY ; 
+
 #include "View.hh"
 #include "OKCORE_API_EXPORT.hh"
 #include "OKCORE_HEAD.hh"
@@ -34,6 +36,7 @@ class OKCORE_API InterpolatedView :  public View {
     public:
         static const char* PREFIX ; 
         virtual const char* getPrefix();
+        static InterpolatedView* MakeFromArray(NPY<float>* elu, unsigned period, SCtrl* ctrl );
     public:
         InterpolatedView(unsigned int period=100, bool verbose=false);
         Animator* getAnimator();
@@ -71,9 +74,12 @@ class OKCORE_API InterpolatedView :  public View {
         unsigned int m_i ; 
         unsigned int m_j ; 
         unsigned int m_count ; 
+        unsigned int m_local_count ; 
         unsigned int m_period ; 
         float        m_fraction ; 
         Animator*    m_animator ;
+        unsigned     m_animator_index ; 
+        unsigned     m_animator_period ; 
         std::vector<View*>  m_views ; 
         bool         m_verbose ; 
         SCtrl*       m_ctrl ; 

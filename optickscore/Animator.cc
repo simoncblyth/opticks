@@ -60,6 +60,18 @@ Animator::Animator(float* target, unsigned int period, float low, float high)
     m_fractions[FAST4] = make_fractions(m_period[FAST4]) ;
 }
 
+/**
+    SLOW32 128*32      4096
+           128*16      2048
+    SLOW8  128*8       1024
+           128*4        512
+    SLOW2  128*2        256
+    NORM   128          128
+    FAST   128/2         64
+    FAST2  128/4         32
+    FAST4  128/8         16
+**/
+
 
 Animator::Mode_t Animator::getMode()
 {
@@ -266,8 +278,18 @@ float Animator::getFractionFromTarget()
     return getFractionForValue(*m_target);
 }
 
-
+bool Animator::step(bool& bump, unsigned& index, unsigned& period)
+{
+    bool st = step(bump) ; 
+    if(st)
+    { 
+        index = m_index ;
+        period = m_period[m_mode] ;   
+    }
+    return st ; 
+}
  
+
 bool Animator::step(bool& bump)
 {
    // still seeing occasional jumps, but cannot reproduce
@@ -290,6 +312,8 @@ bool Animator::step(bool& bump)
 
     return true ; 
 }
+
+
 void Animator::reset()
 {
     m_count = 0 ; 

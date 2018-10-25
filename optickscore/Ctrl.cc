@@ -3,17 +3,26 @@
 #include "Ctrl.hh"
 
 
-Ctrl::Ctrl(float* fptr, unsigned n) 
+Ctrl::Ctrl(float* fptr, unsigned n) : num_cmds(0)
 {
     assert( n == 4 ); 
     for(unsigned j=0 ; j < n ; j++ ) fc.f[j] = *(fptr+j) ; 
 
+
     for(int i=0 ; i < 8 ; i++)
     {
         char* p = fc.c + i*2 ;
-        if(*p == 0) continue ; 
-        std::string cmd(p, 2) ;
-        cmds.push_back(cmd); 
+        // retain the positional info, for possible timing control 
+        if(*p == 0) 
+        {
+            cmds.push_back("  ");    
+        } 
+        else
+        {
+            std::string cmd(p, 2) ;
+            cmds.push_back(cmd); 
+            num_cmds += 1 ;  
+        }
     }
 }  
 
