@@ -13,9 +13,8 @@ Clone the repository from bitbucket::
 Bash setup, envvars
 ---------------------
 
-Connect the opticks bash functions to your shell by adding a line to your *.bash_profile*
-(or on some distributions *.bashrc*)
-and configure the location of the install with the LOCAL_BASE environment variable 
+Connect the opticks bash functions to your shell by adding a line to your *.bashrc* (Linux)
+OR *.bash_profile* (macOS).  Also configure the location of the install with the LOCAL_BASE environment variable 
 and the location of the source with the OPTICKS_HOME envvar::
 
    opticks-(){ . $HOME/opticks/opticks.bash && opticks-env $* ; }
@@ -32,6 +31,37 @@ Some further .bash_profile setup simplifies use of Opticks binaries and analysis
 
     export PYTHONPATH=$HOME
     export PATH=$LOCAL_BASE/opticks/lib:$OPTICKS_HOME/bin:$OPTICKS_HOME/ana:$PATH
+
+
+Check your bash environment setup
+-------------------------------------
+
+If the below commandline gives errors, check your *.bash_profile* OR *.bashrc*  
+
+::
+
+    [blyth@localhost ~]$ bash -lc "opticks- ; opticks-info "
+
+    opticks-locations
+    ==================
+
+          opticks-source   :   /home/blyth/opticks/opticks.bash
+          opticks-home     :   /home/blyth/opticks
+          opticks-name     :   opticks
+
+          opticks-fold     :   /home/blyth/local/opticks
+ 
+    ...
+
+
+.bash_profile OR .bashrc, macOS and Linux
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+With most Linux distributions and terminal managers the *.bash_profile* is run
+only on login and *.bashrc* is run for every new terminal window, BUT with macOS Terminal.app
+the *.bash_profile* is run for every new terminal window.  Thus for compatibility 
+the best approach to put setup into *.bashrc* and source it from *.bash_profile* : giving 
+the same behaviour on both Linux and macOS.
 
 
 
