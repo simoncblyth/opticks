@@ -1236,9 +1236,21 @@ opticks-rdocs(){   opticks-open  http://simoncblyth.bitbucket.io/opticks/index.h
 opticks-rnotes(){  opticks-open  http://simoncblyth.bitbucket.io/opticks_notes/index.html ; } 
 opticks-docs(){    opticks-open  $(opticks-docs-htmldir)/index.html ; } 
 opticks-docs-htmldir(){ 
-   local htmldirbb=$HOME/simoncblyth.bitbucket.org/opticks 
+   local htmldirbb=$HOME/simoncblyth.bitbucket.io/opticks 
    [ -d "$htmldirbb" ] && echo $htmldirbb || echo $(opticks-prefix)/html 
 }
+
+opticks-docs-make-info(){ cat << EOI
+
+$FUNCNAME
+========================
+
+opticks-docs-htmldir : $(opticks-docs-htmldir)
+
+EOI
+}
+
+
 opticks-docs-make()
 {
    local iwd=$PWD

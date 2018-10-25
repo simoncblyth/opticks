@@ -13,7 +13,8 @@ Clone the repository from bitbucket::
 Bash setup, envvars
 ---------------------
 
-Connect the opticks bash functions to your shell by adding a line to your .bash_profile
+Connect the opticks bash functions to your shell by adding a line to your *.bash_profile*
+(or on some distributions *.bashrc*)
 and configure the location of the install with the LOCAL_BASE environment variable 
 and the location of the source with the OPTICKS_HOME envvar::
 

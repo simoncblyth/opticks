@@ -200,6 +200,11 @@ that you have installation problems with, using the standalone **go.sh**
 script that is in each directory. 
 
 
+
+
+
+
+
 One example : examples/UseOpticksGLFW
 ------------------------------------------------
 
@@ -275,6 +280,41 @@ The building of these small examples is typically::
     -rw-r--r--  1 blyth  staff   209 Jun 25 14:05 UseBoost.hh
     epsilon:UseBoost blyth$ ./go.sh 
     ...
+
+
+Pattern of the *go.sh* scripts 
+-------------------------------------------
+
+Most of the *go.sh* scripts follow a similar pattern, with many 
+deleting their builddir in order to do everything everytime, which
+is often the most convenient approach for debugging.
+
+Notice that the script runs the *opticks-* precursor function 
+to define the other functions like *opticks-prefix* that 
+locate the Opticks installation.  If these functions cannot be 
+found then see the first few sections of :doc:`opticks`.  You may need
+to put the *opticks-* precursor setup into *.bashrc* rather than *.bash_profile*. 
+
+::
+
+    epsilon:UseOpticksGLFW blyth$ cat go.sh
+    #!/bin/bash -l
+
+    opticks-
+
+    sdir=$(pwd)
+    bdir=/tmp/$USER/opticks/$(basename $sdir)/build 
+
+    rm -rf $bdir && mkdir -p $bdir && cd $bdir && pwd 
+
+
+    cmake $sdir -DCMAKE_BUILD_TYPE=Debug \
+                -DCMAKE_PREFIX_PATH=$(opticks-prefix)/externals \
+                -DCMAKE_INSTALL_PREFIX=$(opticks-prefix) \
+                -DCMAKE_MODULE_PATH=$(opticks-home)/cmake/Modules 
+
+    make
+    make install   
 
 
 
