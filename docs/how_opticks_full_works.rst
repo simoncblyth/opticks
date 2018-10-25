@@ -352,7 +352,6 @@ the OKConfTest executable which dumps this information::
                          OKConf::CUDAVersionInteger() 9010
                         OKConf::OptiXVersionInteger() 50001
                    OKConf::ComputeCapabilityInteger() 30
-                            OKConf::CUDA_NVCC_FLAGS() MISSING
                             OKConf::CMAKE_CXX_FLAGS()  -fvisibility=hidden -fvisibility-inlines-hidden -Wall -Wno-unused-function -Wno-unused-private-field -Wno-shadow
                             OKConf::OptiXInstallDir() /Developer/OptiX_501
                        OKConf::Geant4VersionInteger() 1042

@@ -21,10 +21,13 @@ int OKConf::Check()
    {
        rc += 1 ; 
    }
+   /*
+   // this setup is now downstream of OKConf, actually from OKConf TOPMATTER
    if(CUDA_NVCC_FLAGS() == 0)
    {
        rc += 1 ; 
    }
+   */ 
    if(CMAKE_CXX_FLAGS() == 0)
    {
        rc += 1 ; 
@@ -47,7 +50,7 @@ void OKConf::Dump(const char* msg)
     std::cout << std::setw(50) << "OKConf::CUDAVersionInteger() "      << OKConf::CUDAVersionInteger() << std::endl ; 
     std::cout << std::setw(50) << "OKConf::OptiXVersionInteger() "     << OKConf::OptiXVersionInteger() << std::endl ; 
     std::cout << std::setw(50) << "OKConf::ComputeCapabilityInteger() "<< OKConf::ComputeCapabilityInteger() << std::endl ; 
-    std::cout << std::setw(50) << "OKConf::CUDA_NVCC_FLAGS() "         << OKConf::CUDA_NVCC_FLAGS() << std::endl ; 
+    //std::cout << std::setw(50) << "OKConf::CUDA_NVCC_FLAGS() "         << OKConf::CUDA_NVCC_FLAGS() << std::endl ; 
     std::cout << std::setw(50) << "OKConf::CMAKE_CXX_FLAGS() "         << OKConf::CMAKE_CXX_FLAGS() << std::endl ; 
     std::cout << std::setw(50) << "OKConf::OptiXInstallDir() "         << OKConf::OptiXInstallDir() << std::endl ; 
     std::cout << std::setw(50) << "OKConf::Geant4VersionInteger() "    << OKConf::Geant4VersionInteger() << std::endl ; 
@@ -109,6 +112,7 @@ const char* OKConf::OptiXInstallDir()
 #endif    
 }
 
+/*
 const char* OKConf::CUDA_NVCC_FLAGS()
 {
 #ifdef OKCONF_CUDA_NVCC_FLAGS
@@ -117,6 +121,7 @@ const char* OKConf::CUDA_NVCC_FLAGS()
    return "MISSING" ; 
 #endif    
 }
+*/
 
 const char* OKConf::CMAKE_CXX_FLAGS()
 {
