@@ -3,6 +3,7 @@ set(name UseOpticksGLFW)
 project(${name} VERSION 0.1.0)
 include(OpticksBuildOptions)
 
+set(OpticksGLFW_ALT ON)
 set(OpticksGLFW_VERBOSE ON)
 find_package(OpticksGLFW REQUIRED MODULE)   
 

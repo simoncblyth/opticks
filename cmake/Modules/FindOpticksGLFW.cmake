@@ -1,6 +1,7 @@
 
 set(OpticksGLFW_MODULE "${CMAKE_CURRENT_LIST_FILE}")
 set(OpticksGLFW_PREFIX "${CMAKE_INSTALL_PREFIX}/externals")
+#set(OpticksGLFW_ALT "ON")
 
 find_path( OpticksGLFW_INCLUDE_DIR
            NAMES GLFW/glfw3.h
@@ -38,16 +39,41 @@ if(OpticksGLFW_FOUND AND NOT TARGET Opticks::OpticksGLFW)
        find_library( CoreFoundation_FRAMEWORK NAMES CoreFoundation )
        find_library( CoreVideo_FRAMEWORK NAMES CoreVideo )
 
-       ## NB cannot just use "-framework Cocoa" etc, theres some secret distinguishing frameworks apparently 
-       target_link_libraries(${tgt} INTERFACE 
-           ${Cocoa_FRAMEWORK}
-           ${OpenGL_FRAMEWORK}
-           ${IOKit_FRAMEWORK} 
-           ${CoreFoundation_FRAMEWORK}
-           ${CoreVideo_FRAMEWORK}
-      )
+       if(OpticksGLFW_ALT)
+           message(STATUS "FindOpticksGLFW.cmake : ALT " )
+           set_target_properties(${tgt} PROPERTIES 
+                      INTERFACE_LINK_LIBRARIES 
+                         "${Cocoa_FRAMEWORK};${OpenGL_FRAMEWORK};${IOKit_FRAMEWORK};${CoreFoundation_FRAMEWORK};${CoreVideo_FRAMEWORK}")
+ 
+       else()
+           message(STATUS "FindOpticksGLFW.cmake : not-ALT " )
+           target_link_libraries(${tgt} INTERFACE 
+               ${Cocoa_FRAMEWORK}
+               ${OpenGL_FRAMEWORK}
+               ${IOKit_FRAMEWORK} 
+               ${CoreFoundation_FRAMEWORK}
+               ${CoreVideo_FRAMEWORK}
+          )
+      endif()
+
+#[=[
+NB cannot just use "-framework Cocoa" etc, theres some secret distinguishing frameworks apparently 
+#]=]
+
+      if(OpticksGLFW_VERBOSE)
+          message(STATUS "FindOpticksGLFW.cmake : Cocoa_FRAMEWORK : ${Cocoa_FRAMEWORK}")
+          message(STATUS "FindOpticksGLFW.cmake : OpenGL_FRAMEWORK : ${OpenGL_FRAMEWORK}")
+          message(STATUS "FindOpticksGLFW.cmake : IOKit_FRAMEWORK : ${IOKit_FRAMEWORK}")
+          message(STATUS "FindOpticksGLFW.cmake : CoreFoundation_FRAMEWORK : ${CoreFoundation_FRAMEWORK}")
+          message(STATUS "FindOpticksGLFW.cmake : CoreVideo_FRAMEWORK : ${CoreVideo_FRAMEWORK}")
+      endif()
+
     else()
-       target_link_libraries(${tgt} INTERFACE GL)
+       if(OpticksGLFW_ALT)
+           set_target_properties(${tgt} PROPERTIES INTERFACE_LINK_LIBRARIES GL)
+       else() 
+           target_link_libraries(${tgt} INTERFACE GL)
+       endif()
  
     endif()
 
@@ -65,6 +91,7 @@ if(OpticksGLFW_FOUND AND NOT TARGET Opticks::OpticksGLFW)
 endif()
 
 if(OpticksGLFW_VERBOSE)
+  message(STATUS "FindOpticksGLFW.cmake : OpticksGLFW_ALT         : ${OpticksGLFW_ALT} " )
   message(STATUS "FindOpticksGLFW.cmake : OpticksGLFW_MODULE      : ${OpticksGLFW_MODULE} " )
   message(STATUS "FindOpticksGLFW.cmake : OpticksGLFW_LIBRARY     : ${OpticksGLFW_LIBRARY} " )
   message(STATUS "FindOpticksGLFW.cmake : OpticksGLFW_INCLUDE_DIR : ${OpticksGLFW_INCLUDE_DIR} " )
