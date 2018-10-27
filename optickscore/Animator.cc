@@ -178,10 +178,10 @@ unsigned int Animator::getNumMode()
 
 void Animator::commandMode(const char* cmd)
 {
-    LOG(info) << cmd ; 
+    //LOG(info) << cmd ; 
 
     assert(strlen(cmd) == 2); 
-    assert( cmd[0] == 'T' ); 
+    assert( cmd[0] == 'T' || cmd[0] == 'A' ); 
       
     int mode = (int)cmd[1] - (int)'0' ; 
     assert( mode > -1 && mode < NUM_MODE ) ; 

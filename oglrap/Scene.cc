@@ -1226,9 +1226,10 @@ void Scene::command(const char* cmd)
     assert( strlen(cmd) == 2 ); 
     switch( cmd[0] )
     {
-        case 'P': commandRecordStyle(cmd) ; break ; 
-        case 'B': applyContentStyle() ; break ; 
-        default:                      ; break ; 
+        case 'I': commandInstanceStyle(cmd) ; break ; 
+        case 'P': commandRecordStyle(cmd)   ; break ; 
+        case 'B': applyContentStyle()       ; break ; 
+        default:                            ; break ; 
     }
 }
 
@@ -1322,15 +1323,22 @@ void Scene::applyGlobalStyle()
 
 ///  InstanceStyle(I key)
 
-
-
 void Scene::nextInstanceStyle()
 {
     int next = (m_instance_style + 1) % NUM_INSTANCE_STYLE ; 
-    m_instance_style = (InstanceStyle_t)next ; 
+    setInstanceStyle(next) ; 
+}
+void Scene::commandInstanceStyle(const char* cmd)
+{
+    assert( strlen(cmd) == 2 && cmd[0] == 'I' ); 
+    int style = (int)cmd[1] - (int)'0' ; 
+    setInstanceStyle(style) ; 
+}
+void Scene::setInstanceStyle(int style)
+{
+    m_instance_style = (InstanceStyle_t)style ; 
     applyInstanceStyle();
 }
-
 void Scene::applyInstanceStyle()  // I:key 
 {
     // hmm some overlap with ContentStyle ... but that includes wireframe which can be very slow

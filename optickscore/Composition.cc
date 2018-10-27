@@ -235,16 +235,29 @@ Part of SCtrl mechanism, typically invoked from OpticksViz
 void Composition::command(const char* cmd) 
 {
     assert( strlen(cmd) == 2 ) ; 
+
+    const char* msg = NULL ; 
+ 
     switch(cmd[0])
     {
-        case 'C': commandClipper(cmd)                     ; break ; 
-        case 'O': commandRenderStyle(cmd)                 ; break ; 
-        case 'B': commandContentStyle(cmd)                ; break ; 
-        case 'Q': commandGlobalStyle(cmd)                 ; break ; 
-        case 'T': commandViewMode(cmd)                    ; break ; 
-        case 'P': LOG(debug) << "P is handled at scene level alone " ; break ; 
-        default : LOG(fatal) << "ignoring unimplemented command [" << cmd << "]" ; break ;  
+        case 'A': commandAnimatorMode(cmd)          ; break ; 
+        case 'B': commandContentStyle(cmd)          ; break ; 
+        case 'C': commandClipper(cmd)               ; break ; 
+        case 'E': commandGeometryStyle(cmd)         ; break ; 
+        case 'I': msg="I: handled at scene level"   ; break ; 
+        case 'O': commandRenderStyle(cmd)           ; break ; 
+        case 'P': msg="P: handled at scene level"   ; break ; 
+        case 'Q': commandGlobalStyle(cmd)           ; break ; 
+        case 'T': commandViewMode(cmd)              ; break ; 
+        default : msg="unimplemented command"       ; break ;  
     }
+
+    if(msg) 
+        LOG(info)
+            << " cmd " << cmd 
+            << " msg " << msg
+            ;
+
 }
 
 
@@ -463,6 +476,9 @@ void Composition::nextNormalStyle()
     int next = (getNormalStyle() + 1) % NUM_NORMAL_STYLE ; 
     setNormalStyle( (NormalStyle_t)next ) ; 
 }
+
+
+
 void Composition::setNormalStyle(NormalStyle_t style)
 {
     m_nrmparam.x = int(style) ;
@@ -481,6 +497,14 @@ void Composition::nextGeometryStyle()
     int next = (getGeometryStyle() + 1) % NUM_GEOMETRY_STYLE ; 
     setGeometryStyle( (GeometryStyle_t)next ) ; 
 }
+void Composition::commandGeometryStyle(const char* cmd)
+{
+    assert( strlen(cmd) == 2 && cmd[0] == 'E' );
+    int style = (int)cmd[1] - (int)'0' ; 
+    setGeometryStyle( (GeometryStyle_t)style ) ; 
+}
+
+
 void Composition::setGeometryStyle(GeometryStyle_t style)
 {
     m_nrmparam.y = int(style) ;
@@ -715,6 +739,14 @@ void Composition::nextAnimatorMode(unsigned modifiers)
     m_animator->nextMode(modifiers);
 }
 
+void Composition::commandAnimatorMode(const char* cmd)
+{
+    if(!m_animator) initAnimator() ;
+    m_animator->commandMode(cmd);    // A0 or A1
+} 
+
+
+
 void Composition::nextRotatorMode(unsigned modifiers)
 {
     if(!m_rotator) initRotator();
@@ -724,21 +756,26 @@ void Composition::nextRotatorMode(unsigned modifiers)
 
 void Composition::nextViewMode(unsigned int modifiers)    // T KEY
 {
-    if(m_view->isStandard())
-    {
-       LOG(info) << "Composition::nextViewMode(KEY_T) does nothing in standard view, switch to alt views with U:nextViewType " ; 
-       return ;
-    }
 
     if(OpticksConst::isShiftOption(modifiers)) 
     {
-        LOG(info) << " SHIFT+OPTION+T : resetting view " ;  
-        m_view->reset() ;
+        LOG(info) << " SHIFT+OPTION+T : resetting composition " ;  
+        resetComposition() ;
+    }
+    else if(m_view->isStandard())
+    {
+       LOG(info) << "Composition::nextViewMode(KEY_T) does nothing in standard view, switch to alt views with U:nextViewType " ; 
     }
     else
     {
         m_view->nextMode(modifiers);    
     } 
+}
+
+void Composition::resetComposition()
+{
+    if(m_animator) m_animator->home();    
+    m_view->reset() ;
 }
 
 

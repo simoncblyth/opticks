@@ -4,6 +4,44 @@ geocache-sdir(){ echo $(dirname $(geocache-source)) ; }
 geocache-scd(){  cd $(geocache-dir) ; }
 geocache-usage(){ cat << EOU
 
+Movie Script
+----------------
+
+1. obs-;obs-run
+2. generate flightpath with ana/mm0prim2.py  
+3. starting the recording  
+
+   a) run the viz geocache-;geocache-sc leaving window in orginal position, so screen recording gets it all 
+   b) press O (wait) then O and O again # switch to raytrace render, then composite and back to normal  
+   c) adjust camera near: press n + drag down half a screen, press n again to toggle off
+   d) adjust window position to make sure nothing obscuring the viz window 
+   e) make sure obs "Start Recording" button is visible, and cursor is nearby
+   f) press U : start the flightpath interpolated view
+   g) press "Start Recording" in obs interface
+  
+4. during the recording : things to do 
+
+   a) press Q, to switch off global a few times
+   b) press X, and drag up/down to show the view along some parallel paths
+      while doing this press O to switch to raytrace 
+   c) press D, for orthographic view
+   d) which photons are visible : press G and show the history selection 
+
+5. ending the recording
+
+   a) pick a good area to end with, eg chimney region
+
+
+Issues
+--------
+
+* pressing O is a 3-way cycle including composite,
+  composite is good for showing photons together with the raytrace, which 
+  means have to switch off the rasterized geometry : to avoid coincidence
+  between the two geometries : but thats quite a few keys and then it switch it back   
+  on again : better to auto switch off rasterized when switch to composite 
+
+
 
 EOU
 }
@@ -93,7 +131,7 @@ geocache-sc()
     # with --scintillation tried kludge symbolic link in opticksdata/gensteps g4live -> juno1707
     # but that gives applyLookup fails 
 
-    OKTest --envkey --xanalytic --timemax 400 --animtimemax 400 --target $(geocache-target)
+    OKTest --envkey --xanalytic --timemax 400 --animtimemax 400 --target $(geocache-target) --near 1000
 }
 
 

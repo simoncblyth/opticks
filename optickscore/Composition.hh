@@ -131,12 +131,18 @@ class OKCORE_API Composition : public NConfigurable {
    public:
       void setAnimatorPeriod(int period);
       Animator* getAnimator();
+   public:
+      // A_KEY
       void nextAnimatorMode(unsigned int modifiers);
+      void commandAnimatorMode(const char* cmd);
+   public:
+      // V_KEY
       void nextRotatorMode(unsigned int modifiers);
-
+   public:
+      // T_KEY ?
       void nextViewMode(unsigned int modifiers);
       void commandViewMode(const char* cmd) ;
-
+      void resetComposition();  // SHIFT+OPTION+T
       void changeView(unsigned int modifiers);
       unsigned int tick();
       unsigned int getCount();
@@ -153,12 +159,14 @@ class OKCORE_API Composition : public NConfigurable {
    public:
        void scrub_to(float x, float y, float dx, float dy); // Interactor:K scrub_mode
    public:
+      // U_KEY 
       void nextViewType(unsigned int modifiers);
       void setViewType(View::View_t type);
       View::View_t getViewType();
    private:
        void applyViewType();
    public:
+       // M_KEY
        typedef enum { WHITE, MAT1, MAT2, FLAG1, FLAG2, POL1, POL2, NUM_COLOR_STYLE } ColorStyle_t ;
        static const char* getColorStyleName(Composition::ColorStyle_t style);
        const char* getColorStyleName();
@@ -171,10 +179,12 @@ class OKCORE_API Composition : public NConfigurable {
        void setNormalStyle(Composition::NormalStyle_t style);
        Composition::NormalStyle_t getNormalStyle();
    public:
+       // E_KEY
        typedef enum { DEF_GEOMETRY, NRMCOL_GEOMETRY, VTXCOL_GEOMETRY, FACECOL_GEOMETRY, NUM_GEOMETRY_STYLE } GeometryStyle_t ;
        static const char* getGeometryStyleName(Composition::GeometryStyle_t style);
        const char* getGeometryStyleName();
        void nextGeometryStyle();   // changes m_nrmparam.y
+       void commandGeometryStyle(const char* cmd) ;
        void setGeometryStyle(Composition::GeometryStyle_t style);
        Composition::GeometryStyle_t getGeometryStyle();
    public:

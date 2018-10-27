@@ -161,7 +161,7 @@ void OpticksHub::command(const char* ctrl)
     BStr::split(cmds, ctrl, ',' ); 
 
     unsigned n = cmds.size(); 
-    LOG(fatal) << "ctrl [" << ctrl << "] " << n  ;
+    LOG(debug) << "ctrl [" << ctrl << "] " << n  ;
   
     for( unsigned i=0 ; i < n ; i++ )
     {

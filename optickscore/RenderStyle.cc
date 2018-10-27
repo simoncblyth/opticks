@@ -112,7 +112,7 @@ void RenderStyle::command(const char* cmd)
     LOG(info) << cmd ; 
     assert(strlen(cmd) == 2 );
     assert( cmd[0] == 'O' ); 
-    assert( cmd[1] == '0' || cmd[1] == '1' || cmd[2] == '0' );  
+    assert( cmd[1] == '0' || cmd[1] == '1' || cmd[1] == '2' );  
 
 
     RenderStyle_t style = R_PROJECTIVE ; 

@@ -77,8 +77,8 @@ if __name__ == '__main__':
 
     uaa[:n0] = [0,0,1] 
 
-    caa[0].view("|S2")[0:4] = ["C1", FAST, "B2", "Q0" ]
-    caa[2].view("|S2")[0:1] = [NORM] 
+    caa[0].view("|S2")[0:8] = ["C1", "T6", "B2", "Q0", "A1", "P1", "", "" ]
+    caa[2].view("|S2")[0:8] = ["Q1","","","Q0","","T5","",""] 
 
     #################
 
@@ -107,14 +107,21 @@ if __name__ == '__main__':
     ubb[:,1] = 0 
     ubb[:,2] = ct0 
 
-    cbb[0].view("|S2")[0:2] = ["C0", SLOW2 ] 
-    cbb[1].view("|S2")[0:1] = [FAST ] 
+    cbb[0].view("|S2")[0:8] = ["C0", "","","","T6","","T7","" ] 
+    cbb[1].view("|S2")[0:1] = ["T8"] 
+    cbb[n1/2+0].view("|S2")[0:8] = ["E3","","","","","","","" ]
+    cbb[n1/2+1].view("|S2")[0:8] = ["","","","","","","","" ]
+    cbb[n1/2+2].view("|S2")[0:8] = ["","","","","","","","" ]
+    cbb[n1/2+3].view("|S2")[0:8] = ["","","","","","","","" ]
+    cbb[n1/2+4].view("|S2")[0:8] = ["E1","","","","","","","" ]
+
+    cbb[n1-2].view("|S2")[0:1] = ["T5"] 
 
     ##############################
 
     # take the last point x value (close to pz) and make xy loop
     r2 = np.abs(ebb[-1,0])
-    tb = np.linspace( 0, 2*np.pi, 8)[:-1]
+    tb = np.linspace( 0, 2*np.pi, 16)[:-1]
     n2 = len(tb)
 
     ecc = np.zeros( (n2,3), dtype=dtype )
@@ -129,6 +136,12 @@ if __name__ == '__main__':
     ucc[:,0] = np.zeros(n2, dtype=dtype)
     ucc[:,1] = np.zeros(n2, dtype=dtype)
     ucc[:,2] = np.ones(n2, dtype=dtype)
+
+
+    ccc[0].view("|S2")[0:8] = ["T7","","","" ,"","","",""]
+    ccc[n2/2].view("|S2")[0:8] = ["O2","I1","","" ,"","","",""]
+    ccc[n2/2+2].view("|S2")[0:8] = ["I0","O0","","" ,"","","",""]
+
 
 
     #########  joining together the sub-paths 

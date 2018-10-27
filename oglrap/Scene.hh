@@ -167,40 +167,11 @@ class OGLRAP_API Scene : public NConfigurable, public SCtrl  {
         void setWireframe(bool wire=true);
         void setInstCull(bool instcull=true);
    public:
-
-/*
-        // Q-key 
-        typedef enum { GVIS, GINVIS, GVISVEC, GVEC, NUM_GLOBAL_STYLE } GlobalStyle_t ;  
-        unsigned int getNumGlobalStyle(); 
-        void setNumGlobalStyle(unsigned int num_global_style); // used to disable GVISVEC GVEC styles for JUNO
-        void nextGlobalStyle();  
-        void applyGlobalStyle();
-*/
-
-   public:
-
-
-/*
-        // O-key
-        typedef enum { R_PROJECTIVE, R_RAYTRACED, R_COMPOSITE,  NUM_RENDER_STYLE } RenderStyle_t ;  
-        static const char* R_PROJECTIVE_ ; 
-        static const char* R_RAYTRACED_ ; 
-        static const char* R_COMPOSITE_ ; 
-        static const char* RenderStyle(RenderStyle_t style);
-
-        Scene::RenderStyle_t getRenderStyle() const  ;
-        const char*   getRenderStyleString() const  ;
-        void setRaytraceEnabled(bool raytrace_enabled); // set by OKGLTracer
-        void nextRenderStyle(unsigned int modifiers); 
-        void applyRenderStyle();
-        bool isProjectiveRender() const ;
-        bool isRaytracedRender() const ;
-        bool isCompositeRender() const ;
-*/
-   public:
         // I-key
         typedef enum { IVIS, IINVIS, NUM_INSTANCE_STYLE } InstanceStyle_t ;  
         void nextInstanceStyle();
+        void commandInstanceStyle(const char* cmd);
+        void setInstanceStyle(int style);
         void applyInstanceStyle();
    public:
         Scene(OpticksHub* hub, const char* shader_dir=NULL, const char* shader_incl_path=NULL, const char* shader_dynamic_dir=NULL );

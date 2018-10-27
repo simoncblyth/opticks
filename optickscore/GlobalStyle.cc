@@ -47,7 +47,7 @@ GlobalStyle::GlobalStyle()
     m_global_mode(false),
     m_globalvec_mode(false),
     m_global_style(GVIS),
-    m_num_global_style(0)
+    m_num_global_style(GVISVEC)
 {
 }
 
