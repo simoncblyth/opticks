@@ -53,6 +53,9 @@ class OGLRAP_API Interactor {
        void setOptiXResolutionScale(unsigned int scale);
        void nextOptiXResolutionScale(unsigned int modifiers);
        unsigned int getOptiXResolutionScale();
+  public:
+       void nextRenderStyle(unsigned modifiers);
+  public:
 
        Touchable*   getTouchable();
        Frame*       getFrame();
@@ -94,12 +97,10 @@ class OGLRAP_API Interactor {
   private:
        OpticksHub*  m_hub ; 
        Composition* m_composition ; 
-       //ContentStyle*  m_content_style ; 
        Bookmarks*   m_bookmarks ; 
        Camera*      m_camera ; 
        View*        m_view ; 
        Trackball*   m_trackball ; 
-       //Clipper*     m_clipper ; 
        Touchable*   m_touchable ; 
        Frame*       m_frame; 
        Scene*       m_scene; 
@@ -121,7 +122,6 @@ class OGLRAP_API Interactor {
        bool m_label_mode ;
        bool m_keys_down[NUM_KEYS] ; 
 
-       //int  m_optix_mode ;
        unsigned int m_optix_resolution_scale ;
 
        float m_dragfactor ;

@@ -81,18 +81,7 @@ void RenderStyle::nextRenderStyle(unsigned /*modifiers*/)  // O:key cycling: Pro
         LOG(error) << "RenderStyle::nextRenderStyle is inhibited as RenderStyle::setRaytraceEnabled has not been called, see okgl.OKGLTracer " ;  
         return ; 
     }
-
-/*
-    bool nudge = modifiers & OpticksConst::e_shift ;
-    if(nudge)
-    {
-        m_composition->setChanged(true) ;
-        return ; 
-    }
-*/
-
     int next = (m_render_style + 1) % NUM_RENDER_STYLE ; 
-
     setRenderStyle(next); 
 }
 
@@ -112,18 +101,9 @@ void RenderStyle::command(const char* cmd)
     LOG(info) << cmd ; 
     assert(strlen(cmd) == 2 );
     assert( cmd[0] == 'O' ); 
-    assert( cmd[1] == '0' || cmd[1] == '1' || cmd[1] == '2' );  
 
-
-    RenderStyle_t style = R_PROJECTIVE ; 
-    switch( cmd[1] )
-    {
-        case '0': style = R_PROJECTIVE ; break ; 
-        case '1': style = R_RAYTRACED  ; break ; 
-        case '2': style = R_COMPOSITE  ; break ; 
-    }
-
-    setRenderStyle((int)style); 
+    int style = (int)cmd[1] - (int)'0' ;  
+    setRenderStyle(style); 
 }
 
 void RenderStyle::applyRenderStyle()   

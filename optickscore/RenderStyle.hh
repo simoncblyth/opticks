@@ -23,7 +23,10 @@ class OKCORE_API RenderStyle
         void command(const char* cmd) ;
         std::string desc() const ; 
 
-        typedef enum { R_PROJECTIVE, R_RAYTRACED, R_COMPOSITE,  NUM_RENDER_STYLE } RenderStyle_t ;  
+        //typedef enum { R_PROJECTIVE, R_RAYTRACED, R_COMPOSITE,  NUM_RENDER_STYLE } RenderStyle_t ;  
+        typedef enum { R_PROJECTIVE, R_COMPOSITE,  NUM_RENDER_STYLE, R_RAYTRACED } RenderStyle_t ;  
+
+        // try always using composite raytrace (now that are switching off rasterized) see Interactor::nextRenderStyle
 
         static const char* R_PROJECTIVE_ ; 
         static const char* R_RAYTRACED_ ; 

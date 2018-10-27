@@ -167,6 +167,18 @@ class OGLRAP_API Scene : public NConfigurable, public SCtrl  {
         void setWireframe(bool wire=true);
         void setInstCull(bool instcull=true);
    public:
+        // MINUS-key : skip geometry rendering 
+        typedef enum { NOSKIPGEO, SKIPGEO, NUM_SKIPGEO_STYLE } SkipGeoStyle_t ;  
+        void nextSkipGeoStyle();
+        void commandSkipGeoStyle(const char* cmd);
+        void setSkipGeoStyle(int style);
+   public:
+        // EQUAL-key : skip event rendering 
+        typedef enum { NOSKIPEVT, SKIPEVT, NUM_SKIPEVT_STYLE } SkipEvtStyle_t ;  
+        void nextSkipEvtStyle();
+        void commandSkipEvtStyle(const char* cmd);
+        void setSkipEvtStyle(int style);
+   public:
         // I-key
         typedef enum { IVIS, IINVIS, NUM_INSTANCE_STYLE } InstanceStyle_t ;  
         void nextInstanceStyle();
@@ -302,13 +314,8 @@ class OGLRAP_API Scene : public NConfigurable, public SCtrl  {
         unsigned int m_touch ;
 
    private:
-        /*
-        bool         m_global_mode ; 
-        bool         m_globalvec_mode ; 
-        */
         bool*        m_global_mode_ptr ; 
         bool*        m_globalvec_mode_ptr ; 
-
 
         bool         m_instance_mode[MAX_INSTANCE_RENDERER] ; 
         bool         m_bbox_mode[MAX_INSTANCE_RENDERER] ; 
@@ -320,21 +327,11 @@ class OGLRAP_API Scene : public NConfigurable, public SCtrl  {
         bool         m_record_mode ; 
    private:
         RecordStyle_t   m_record_style ; 
-
-
-   private:
-       /*
-        GlobalStyle_t   m_global_style ; 
-        unsigned int    m_num_global_style ; 
-       */
-
         InstanceStyle_t m_instance_style ; 
+        SkipGeoStyle_t  m_skipgeo_style ; 
+        SkipEvtStyle_t  m_skipevt_style ; 
 
-/*
    private:
-        RenderStyle_t   m_render_style ; 
-        bool            m_raytrace_enabled ; 
-*/
         bool            m_initialized ;  
         float           m_time_fraction ;  
         bool            m_instcull ; 

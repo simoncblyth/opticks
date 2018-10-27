@@ -41,6 +41,8 @@ Issues
   between the two geometries : but thats quite a few keys and then it switch it back   
   on again : better to auto switch off rasterized when switch to composite 
 
+  * so O, Q and I need to be coordinated somehow 
+
 
 
 EOU

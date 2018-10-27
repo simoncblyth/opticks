@@ -241,7 +241,6 @@ std::string Scene::getRenderMode() const
 void Scene::gui()
 {
 #ifdef GUI_
-     //ImGui::Checkbox(GLOBAL,   &m_global_mode);
      ImGui::Checkbox(GLOBAL,    m_composition->getGlobalModePtr() );
 
      ImGui::Checkbox(BBOX0,     m_bbox_mode+0);
@@ -802,31 +801,38 @@ void Scene::preRenderCompute()
 
 void Scene::renderGeometry()
 {
-    if(*m_global_mode_ptr && m_global_renderer)       m_global_renderer->render();
-    if(*m_globalvec_mode_ptr && m_globalvec_renderer) m_globalvec_renderer->render();
-    // hmm this could be doing both global and globalvec ? Or does it need to be so ?
-
-
-    for(unsigned int i=0; i<m_num_instance_renderer; i++)
+    if(m_skipgeo_style == NOSKIPGEO )
     {
-        if(m_instance_mode[i] && m_instance_renderer[i]) m_instance_renderer[i]->render();
-        if(m_bbox_mode[i] && m_bbox_renderer[i])         m_bbox_renderer[i]->render();
+        if(*m_global_mode_ptr && m_global_renderer)       m_global_renderer->render();
+        if(*m_globalvec_mode_ptr && m_globalvec_renderer) m_globalvec_renderer->render();
+        // hmm this could be doing both global and globalvec ? Or does it need to be so ?
+
+
+        for(unsigned int i=0; i<m_num_instance_renderer; i++)
+        {
+            if(m_instance_mode[i] && m_instance_renderer[i]) m_instance_renderer[i]->render();
+            if(m_bbox_mode[i] && m_bbox_renderer[i])         m_bbox_renderer[i]->render();
+        }
     }
+
     if(m_axis_mode && m_axis_renderer)     m_axis_renderer->render();
 }
 
 
 void Scene::renderEvent()
 {
-    if(m_genstep_mode && m_genstep_renderer)  m_genstep_renderer->render();  
-    if(m_nopstep_mode && m_nopstep_renderer)  m_nopstep_renderer->render();  
-    if(m_photon_mode  && m_photon_renderer)   m_photon_renderer->render();
-    if(m_source_mode  && m_source_renderer)   m_source_renderer->render();
-    if(m_record_mode)
+    if(m_skipevt_style == NOSKIPEVT )
     {
-        Rdr* rdr = getRecordRenderer();
-        if(rdr)
-            rdr->render();
+        if(m_genstep_mode && m_genstep_renderer)  m_genstep_renderer->render();  
+        if(m_nopstep_mode && m_nopstep_renderer)  m_nopstep_renderer->render();  
+        if(m_photon_mode  && m_photon_renderer)   m_photon_renderer->render();
+        if(m_source_mode  && m_source_renderer)   m_source_renderer->render();
+        if(m_record_mode)
+        {
+            Rdr* rdr = getRecordRenderer();
+            if(rdr)
+                rdr->render();
+        }
     }
 }
 
@@ -937,122 +943,53 @@ unsigned int Scene::getTarget()
 
 
 
-/*
-
-void Scene::setRaytraceEnabled(bool raytrace_enabled) // set by OKGLTracer
-{
-    m_raytrace_enabled = raytrace_enabled ;
-}
-
-void Scene::nextRenderStyle(unsigned int modifiers)  // O:key cycling: Projective, Raytraced, Composite 
-{
-    if(!m_raytrace_enabled)
-    {
-        LOG(error) << "Scene::nextRenderStyle is inhibited as Scene::setRaytraceEnabled has not been called, see okgl.OKGLTracer " ;  
-        return ; 
-    }
-
-    bool nudge = modifiers & OpticksConst::e_shift ;
-    if(nudge)
-    {
-        m_composition->setChanged(true) ;
-        return ; 
-    }
-
-    int next = (m_render_style + 1) % NUM_RENDER_STYLE ; 
-    m_render_style = (RenderStyle_t)next ; 
-    applyRenderStyle();
-
-    m_composition->setChanged(true) ; // trying to avoid the need for shift-O nudging 
-}
-
-
-
-bool Scene::isProjectiveRender() const 
-{
-   return m_render_style == R_PROJECTIVE ;
-}
-bool Scene::isRaytracedRender() const 
-{
-   return m_render_style == R_RAYTRACED ;
-}
-bool Scene::isCompositeRender() const 
-{
-   return m_render_style == R_COMPOSITE ;
-}
-
-void Scene::applyRenderStyle()   
-{
-    // nothing to do, style is honoured by  Scene::render
-}
-
-
-*/
-
-
-
 Scene::Scene(OpticksHub* hub, const char* shader_dir, const char* shader_incl_path, const char* shader_dynamic_dir) 
-            :
-            m_hub(hub),
-            m_ok(hub->getOpticks()),
-            m_shader_dir(shader_dir ? strdup(shader_dir): NULL ),
-            m_shader_dynamic_dir(shader_dynamic_dir ? strdup(shader_dynamic_dir): NULL),
-            m_shader_incl_path(shader_incl_path ? strdup(shader_incl_path): NULL),
-            m_device(NULL),
-            m_colors(NULL),
-            m_interactor(NULL),
-            m_num_instance_renderer(0),
-            m_geometry_renderer(NULL),
-            m_global_renderer(NULL),
-            m_globalvec_renderer(NULL),
-            m_raytrace_renderer(NULL),
-            m_axis_renderer(NULL),
-            m_genstep_renderer(NULL),
-            m_nopstep_renderer(NULL),
-            m_photon_renderer(NULL),
-            m_source_renderer(NULL),
-            m_record_renderer(NULL),
-            m_altrecord_renderer(NULL),
-            m_devrecord_renderer(NULL),
-            m_photons(NULL),
-            m_geolib(NULL),
-            m_mesh0(NULL),
-            m_composition(m_hub->getComposition()),
-            m_colorbuffer(NULL),
-            m_touch(0),
-/*
-            m_global_mode(false),
-            m_globalvec_mode(false),
-*/
-            m_global_mode_ptr(NULL),
-            m_globalvec_mode_ptr(NULL),
-
-            m_axis_mode(true),
-            m_genstep_mode(true),
-            m_nopstep_mode(true),
-            m_photon_mode(true),
-            m_source_mode(false),
-            m_record_mode(true),
-            m_record_style(ALTREC),
-
-/*
-            m_global_style(GVIS),
-            m_num_global_style(0),
-*/
-            m_instance_style(IVIS),
-/*
-
-            m_render_style(R_PROJECTIVE),
-            m_raytrace_enabled(false),    // <-- enabled by OKGLTracer 
-
-*/
-            m_initialized(false),
-            m_time_fraction(0.f),
-            m_instcull(true),
-            m_verbosity(0),
-            m_render_count(0)
+    :
+    m_hub(hub),
+    m_ok(hub->getOpticks()),
+    m_shader_dir(shader_dir ? strdup(shader_dir): NULL ),
+    m_shader_dynamic_dir(shader_dynamic_dir ? strdup(shader_dynamic_dir): NULL),
+    m_shader_incl_path(shader_incl_path ? strdup(shader_incl_path): NULL),
+    m_device(NULL),
+    m_colors(NULL),
+    m_interactor(NULL),
+    m_num_instance_renderer(0),
+    m_geometry_renderer(NULL),
+    m_global_renderer(NULL),
+    m_globalvec_renderer(NULL),
+    m_raytrace_renderer(NULL),
+    m_axis_renderer(NULL),
+    m_genstep_renderer(NULL),
+    m_nopstep_renderer(NULL),
+    m_photon_renderer(NULL),
+    m_source_renderer(NULL),
+    m_record_renderer(NULL),
+    m_altrecord_renderer(NULL),
+    m_devrecord_renderer(NULL),
+    m_photons(NULL),
+    m_geolib(NULL),
+    m_mesh0(NULL),
+    m_composition(m_hub->getComposition()),
+    m_colorbuffer(NULL),
+    m_touch(0),
+    m_global_mode_ptr(NULL),
+    m_globalvec_mode_ptr(NULL),
+    m_axis_mode(true),
+    m_genstep_mode(true),
+    m_nopstep_mode(true),
+    m_photon_mode(true),
+    m_source_mode(false),
+    m_record_mode(true),
+    m_record_style(ALTREC),
+    m_instance_style(IVIS),
+    m_skipgeo_style(NOSKIPGEO),
+    m_skipevt_style(NOSKIPEVT),
+    m_initialized(false),
+    m_time_fraction(0.f),
+    m_instcull(true),
+    m_verbosity(0),
+    m_render_count(0)
 {
-
     init();
     fInstance = this ; 
 
@@ -1180,32 +1117,74 @@ void Scene::setPhotons(Photons* photons)
 
 
 
-
+//  P_KEY
 
 void Scene::setRecordStyle(RecordStyle_t style)
 {
     m_record_style = style ; 
     LOG(info) << getRecordStyleName() ; 
 }
-
 Scene::RecordStyle_t Scene::getRecordStyle()
 {
     return m_record_style ; 
 }
-
 void Scene::nextRecordStyle()  // formerly nextPhotonStyle
 {
     int next = (m_record_style + 1) % NUM_RECORD_STYLE ; 
     RecordStyle_t style = (RecordStyle_t)next ; 
     setRecordStyle(style);
 }
-
 void Scene::commandRecordStyle(const char* cmd)
 {
     assert(cmd[0] == 'P'); 
     int style = (int)cmd[1] - (int)'0' ; 
     setRecordStyle( (RecordStyle_t)style ); 
 }
+
+
+
+
+
+//  MINUS_KEY
+
+void Scene::nextSkipGeoStyle()  
+{
+    int next = (m_skipgeo_style + 1) % NUM_SKIPGEO_STYLE ; 
+    SkipGeoStyle_t style = (SkipGeoStyle_t)next ; 
+    setSkipGeoStyle(style);
+}
+void Scene::commandSkipGeoStyle(const char* cmd)
+{
+    assert(cmd[0] == '-'); 
+    int style = (int)cmd[1] - (int)'0' ; 
+    setSkipGeoStyle( style ); 
+}
+void Scene::setSkipGeoStyle(int style)
+{
+    m_skipgeo_style = (SkipGeoStyle_t)style ; 
+}
+
+
+
+//  EQUAL_KEY
+
+void Scene::nextSkipEvtStyle()  
+{
+    int next = (m_skipevt_style + 1) % NUM_SKIPEVT_STYLE ; 
+    SkipEvtStyle_t style = (SkipEvtStyle_t)next ; 
+    setSkipEvtStyle(style);
+}
+void Scene::commandSkipEvtStyle(const char* cmd)
+{
+    assert(cmd[0] == '-'); 
+    int style = (int)cmd[1] - (int)'0' ; 
+    setSkipEvtStyle( style ); 
+}
+void Scene::setSkipEvtStyle(int style)
+{
+    m_skipevt_style = (SkipEvtStyle_t)style ; 
+}
+
 
 
 
@@ -1235,7 +1214,7 @@ void Scene::command(const char* cmd)
 
 
 ////// ContentStyle (B-key) /////////////////////
-//// mostly moved down to okc.Style
+//// mostly moved down to okc.ContentStyle
 
 void Scene::applyContentStyle()
 {
@@ -1254,69 +1233,8 @@ void Scene::applyContentStyle()
        setWireframe(wire);
    }
 
-   LOG(fatal) << "Scene::applyContentStyle" ; 
+   LOG(debug) << "Scene::applyContentStyle" ; 
 }
-
-
-
-
-
-/*
-// GlobalStyle (Q key)
-
-unsigned int Scene::getNumGlobalStyle()
-{
-    return m_num_global_style == 0 ? int(NUM_GLOBAL_STYLE) : m_num_global_style ;
-}
-void Scene::setNumGlobalStyle(unsigned int num_global_style)
-{
-    m_num_global_style = num_global_style ;
-}
-
-void Scene::nextGlobalStyle()
-{
-    int next = (m_global_style + 1) % getNumGlobalStyle() ; 
-    m_global_style = (GlobalStyle_t)next ; 
-    applyGlobalStyle();
-}
-
-void Scene::applyGlobalStyle()
-{
-   // { GVIS, 
-   //   GINVIS, 
-   //   GVISVEC, 
-   //   GVEC, 
-   //   NUM_GLOBAL_STYLE }
-
-
-    switch(m_global_style)
-    {
-        case GVIS:
-                  m_global_mode = true ;    
-                  m_globalvec_mode = false ;    
-                  break ; 
-        case GVISVEC:
-                  m_global_mode = true ;    
-                  m_globalvec_mode = true ;
-                  break ; 
-        case GVEC:
-                  m_global_mode = false ;    
-                  m_globalvec_mode = true ;
-                  break ; 
-        case GINVIS:
-                  m_global_mode = false ;    
-                  m_globalvec_mode = false ;
-                  break ; 
-        default:
-                  assert(0);
-        
-    }
-}
-
-*/
-
-
-
 
 
 
@@ -1359,9 +1277,7 @@ void Scene::applyInstanceStyle()  // I:key
    for(unsigned int i=0 ; i < m_num_instance_renderer ; i++ ) 
    {
        m_instance_mode[i] = inst ; 
-       //m_bbox_mode[i] = !inst ; 
    } 
-
 }
 
 

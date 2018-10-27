@@ -313,6 +313,8 @@ const char* Interactor::keys =
 "\n X: pan mode toggle "
 "\n Y: yfov mode toggle "
 "\n Z: zoom mode toggle   (actually changes z position, not zoom) " 
+"\n -: Scene::nextSkipGeoStyle skip rendering geometry, leaving all other state asis " 
+"\n =: Scene::nextSkipEvtStyle skip rendering event, leaving all other state asis " 
 "\n 0-9: jump to preexisting bookmark  " 
 "\n 0-9 + shift: create or update bookmark  " 
 "\n SPACE: update the current bookmark, commiting trackballing into the view and persisting "
@@ -429,7 +431,8 @@ void Interactor::key_pressed(unsigned int key)
             m_near_mode = !m_near_mode ; 
             break;
         case GLFW_KEY_O:
-            m_composition->nextRenderStyle(modifiers);
+            //m_composition->nextRenderStyle(modifiers);
+            nextRenderStyle(modifiers);
             break;
         case GLFW_KEY_P:
             m_scene->nextRecordStyle(); 
@@ -464,6 +467,12 @@ void Interactor::key_pressed(unsigned int key)
         case GLFW_KEY_Z:
             m_zoom_mode = !m_zoom_mode ; 
             break;
+        case GLFW_KEY_MINUS:
+            m_scene->nextSkipGeoStyle(); 
+            break;
+        case GLFW_KEY_EQUAL:
+            m_scene->nextSkipEvtStyle(); 
+            break;
         case GLFW_KEY_UP:
             m_dragfactor *= 2. ; 
             break;
@@ -494,6 +503,14 @@ void Interactor::key_pressed(unsigned int key)
 }
 
 
+
+void Interactor::nextRenderStyle(unsigned modifiers)
+{
+    m_composition->nextRenderStyle(modifiers);
+    bool composite = m_composition->isCompositeRender() ; 
+    m_scene->setSkipGeoStyle( composite ? 1 : 0) ; 
+    // inhibit rasterized geometry in raytrace composite mode 
+}
 
 
 unsigned int Interactor::getModifiers()

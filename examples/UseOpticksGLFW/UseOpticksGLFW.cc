@@ -10,6 +10,8 @@
 #include <sstream>
 #include <iostream>
 
+#include "glfw_keyname.h"
+
 
 
 enum { NUM_KEYS = 512  } ;
@@ -57,6 +59,10 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
     if( action == GLFW_PRESS )
     {
         keys_down[key] = true ;   
+
+        const char* keyname = glfw_keyname(key) ; 
+        std::cout << " pressed : " << keyname << std::endl ; 
+
     }
     else if (action == GLFW_RELEASE )
     {
@@ -65,8 +71,8 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
 
 
     int modifiers = getModifiers(); 
+    if(modifiers != 0)
     std::cout << descModifiers(modifiers) << std::endl ; 
-
 
 }
 
