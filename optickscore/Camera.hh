@@ -150,6 +150,9 @@ class OKCORE_API Camera : public NConfigurable  {
        void setStyle(Camera::Style_t style);
        Camera::Style_t getStyle();
 
+   public:
+       void commandNear( const char* cmd );
+
  public:
      // NConfigurable realization
      const char* getPrefix();

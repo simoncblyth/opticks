@@ -23,7 +23,9 @@ View
 
 class OKCORE_API View : public NConfigurable {
 public:
-   typedef enum { STANDARD, FLIGHTPATH, INTERPOLATED, ORBITAL, TRACK, NUM_VIEW_TYPE } View_t ; 
+   //typedef enum { STANDARD, FLIGHTPATH, INTERPOLATED, ORBITAL, TRACK, NUM_VIEW_TYPE } View_t ; 
+   // just the two for now
+   typedef enum { STANDARD, FLIGHTPATH, NUM_VIEW_TYPE, INTERPOLATED, ORBITAL, TRACK } View_t ; 
 
    static const char* STANDARD_ ; 
    static const char* FLIGHTPATH_ ; 

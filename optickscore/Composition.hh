@@ -174,6 +174,9 @@ class OKCORE_API Composition : public NConfigurable {
        void setColorStyle(Composition::ColorStyle_t style);
        Composition::ColorStyle_t getColorStyle();
    public:
+       // D_KEY
+       void nextCameraStyle(unsigned modifiers);
+   public:
        typedef enum { DEF_NORMAL, FLIP_NORMAL, NUM_NORMAL_STYLE } NormalStyle_t ;
        void nextNormalStyle();   // changes m_nrmparam.x
        void setNormalStyle(Composition::NormalStyle_t style);
@@ -205,6 +208,8 @@ class OKCORE_API Composition : public NConfigurable {
         void nextClipperStyle(); 
         void commandClipper(const char* cmd);  // C0:off C1:on 
    public:
+        void commandCameraNear(const char* cmd);  // N0:default N1:def/2 N2:def/4 
+   public:
         // ContentStyle : B_KEY
         ContentStyle* getContentStyle() const ;
         void          nextContentStyle(); 
@@ -216,6 +221,9 @@ class OKCORE_API Composition : public NConfigurable {
         bool* getGlobalVecModePtr();
         void nextGlobalStyle();
         void commandGlobalStyle(const char* cmd);
+   public:
+        // "." PERIOD_KEY    
+        void nextPauseStyle();
   private:
       void init();
       void initAxis();
@@ -314,6 +322,8 @@ class OKCORE_API Composition : public NConfigurable {
       void setUpW(const glm::vec4& upw);
       void setUpW(std::string upw);
   public:
+      void setEyeGUI(const char* cmd);
+      void setUpGUI(const char* cmd);
       void setEyeGUI(const glm::vec3& gui);
   public: 
       void home();
@@ -484,6 +494,7 @@ class OKCORE_API Composition : public NConfigurable {
       ContentStyle*  m_content_style ; 
       RenderStyle*   m_render_style ; 
       GlobalStyle*   m_global_style ; 
+      bool           m_paused ;   
 
       unsigned int m_count ; 
       NPY<float>*  m_axis_data ; 

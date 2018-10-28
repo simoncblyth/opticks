@@ -78,6 +78,8 @@ class OGLRAP_API Interactor {
         void applyGUIStyle();
   public:
        void pan_mode_key_pressed(unsigned int modifiers);
+       void y_key_pressed(unsigned int modifiers);
+       void z_key_pressed(unsigned int modifiers);
        void number_key_pressed(unsigned int number);
        void number_key_released(unsigned int number);
        void key_pressed(unsigned int key);

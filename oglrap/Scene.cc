@@ -855,6 +855,7 @@ std::string Scene::desc() const
 void Scene::render()
 {
     //LOG(info) << desc() ; 
+    m_composition->update();  // Oct 2018, moved prior to raytrace render
 
     bool raytraced = m_composition->isRaytracedRender() ;
     bool composite = m_composition->isCompositeRender() ;
@@ -868,7 +869,8 @@ void Scene::render()
     }
 
 
-    m_composition->update();
+
+
     const glm::vec4& lodcut = m_composition->getLODCut();
     const glm::mat4& world2eye = m_composition->getWorld2Eye();
     const glm::mat4& world2clip = m_composition->getWorld2Clip(); 

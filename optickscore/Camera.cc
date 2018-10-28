@@ -4,7 +4,6 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/math/constants/constants.hpp>
 
-
 // npy-
 #include "NGLM.hpp"
 #include "GLMPrint.hpp"
@@ -24,7 +23,6 @@
 //         far -> far_
 
 
-
 const char* Camera::PREFIX = "camera" ;
 const char* Camera::PRINT    = "print" ;
 
@@ -34,7 +32,6 @@ const char* Camera::ZOOM     = "zoom" ;
 const char* Camera::SCALE     = "scale" ;
 
 const char* Camera::PARALLEL = "parallel" ;
-
 
 
 const char* Camera::getPrefix()
@@ -169,18 +166,27 @@ void Camera::aim(float basis)
    float a_far  = basis*5.f ;
    float a_scale = basis ; 
 
+   LOG(fatal) 
+          << " basis " << basis
+          << " a_near " << a_near
+          << " a_far " << a_far
+          << " a_scale " << a_scale
+          ;
+
    //printf("Camera::aim basis %10.4f a_near %10.4f a_far %10.4f a_scale %10.4f \n", basis, a_near, a_far, a_scale );
 
    setBasis(basis);
-   setNear( a_near );
-   setFar(  a_far );
-
    //setNearClip( a_near/10.f,  a_near*10.f) ;
    //setNearClip( a_near/10.f,  a_near*20.f) ;
    setNearClip( a_near/10.f,  a_far ) ;
 
    setFarClip(  a_far/10.f,   a_far*10.f );
    setScaleClip( a_scale/10.f, a_scale*10.f );
+
+   // oct 2018 : moved setting near and far after setting of their clip ranges
+   setNear( a_near );
+   setFar(  a_far );
+
 
    setScale( a_scale );  // scale should be renamed to Ortho scale, as only relevant to Orthographic projection
 }
@@ -190,6 +196,34 @@ void Camera::setBasis(float basis)
     m_basis = basis ; 
 }
 
+void Camera::commandNear( const char* cmd )
+{
+    assert( strlen(cmd) == 2 && cmd[0] == 'N' ) ;
+    int mode = (int)cmd[1] - (int)'0' ; 
+
+    float factor = 1.f ; 
+    switch(mode)
+    {
+        case 0: factor=1.f ; break ;
+        case 1: factor=2.f ; break ;
+        case 2: factor=4.f ; break ;
+    }
+
+     
+    float a_far  = m_basis*5.f ;  
+    float a_near = m_basis/10.f ;
+    a_near /= factor ; 
+
+    setNearClip( a_near/10.f , a_far ) ; 
+    setNear( a_near ); 
+    
+
+    LOG(info) 
+        << " cmd " << cmd
+        << " a_near " << a_near 
+        << " m_near " << m_near 
+        ;
+}
 
 
 
@@ -214,7 +248,9 @@ void Camera::nextStyle(unsigned modifiers)
 }
 void Camera::setStyle(Style_t style)
 {
-    m_parallel = int(style) == 1  ;
+    bool para = (int(style) == 1) ;
+    setParallel( para );   
+
 }
 Camera::Style_t Camera::getStyle()
 {
@@ -223,13 +259,11 @@ Camera::Style_t Camera::getStyle()
 
 
 
-
-
-
 void Camera::setParallel(bool parallel)
 {
     m_parallel = parallel ;
     m_changed = true ; 
+    LOG(info) << " parallel " << m_parallel ; 
 }
 bool Camera::getParallel(){ return m_parallel ; }
 

@@ -175,10 +175,21 @@ NConfigurable* OpticksViz::getSceneConfigurable()
     return dynamic_cast<NConfigurable*>(m_scene) ; 
 }
 
+/**
+OpticksViz::command
+----------------------
+
+Commands currently only from InterpolatedView flightpaths
+
+**/
+
 void OpticksViz::command(const char* cmd)
 {
+    assert( strlen(cmd) == 2 ); 
     LOG(info) << cmd ; 
-    m_hub->command(cmd); 
+
+    // m_hub->command(cmd); // hub always redirects to composition anyhow
+    m_composition->command(cmd) ;    
     m_scene->command(cmd);  // some commands need explicit scene updating 
 }
 

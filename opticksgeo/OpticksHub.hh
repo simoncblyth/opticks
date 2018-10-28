@@ -106,8 +106,8 @@ class OKGEO_API OpticksHub : public SCtrl {
        void setCtrl(SCtrl* ctrl);
 
    public:
-       // SHub
-       void command(const char* cmd);  
+       // SCtrl
+       void command(const char* cmd);  // no longer in chain, moved to OpticksViz
   private:
        void init();
        void setErr(int err);

@@ -313,8 +313,12 @@ const char* Interactor::keys =
 "\n X: pan mode toggle "
 "\n Y: yfov mode toggle "
 "\n Z: zoom mode toggle   (actually changes z position, not zoom) " 
+"\n X+ALT: -X view "
+"\n Y+ALT: -Y view "
+"\n Z+ALT: -Z view "
 "\n -: Scene::nextSkipGeoStyle skip rendering geometry, leaving all other state asis " 
 "\n =: Scene::nextSkipEvtStyle skip rendering event, leaving all other state asis " 
+"\n .: Composition::nextPauseStyle pause animators, both view interpolation and photon record " 
 "\n 0-9: jump to preexisting bookmark  " 
 "\n 0-9 + shift: create or update bookmark  " 
 "\n SPACE: update the current bookmark, commiting trackballing into the view and persisting "
@@ -340,11 +344,45 @@ void Interactor::pan_mode_key_pressed(unsigned int modifiers)
     {
         m_time_mode = !m_time_mode ; 
     }
+    else if(modifiers & OpticksConst::e_option)
+    {
+        m_composition->setEyeGUI("X-");  
+    }
     else
     {
         m_pan_mode = !m_pan_mode ; 
     }
 }
+
+
+void Interactor::y_key_pressed(unsigned int modifiers)
+{
+    if(modifiers & OpticksConst::e_option)
+    {
+        m_composition->setEyeGUI("Y-");  
+    }
+    else
+    {
+        m_yfov_mode = !m_yfov_mode ; 
+    }
+}
+
+void Interactor::z_key_pressed(unsigned int modifiers)
+{
+    if(modifiers & OpticksConst::e_option)
+    {
+        m_composition->setEyeGUI("Z-");  
+    }
+    else
+    {
+        m_zoom_mode = !m_zoom_mode ; 
+    }
+}
+
+
+
+
+
 
 
 /**
@@ -396,7 +434,8 @@ void Interactor::key_pressed(unsigned int key)
             m_composition->nextClipperStyle(); 
             break;
         case GLFW_KEY_D:
-            m_camera->nextStyle(modifiers); 
+            //m_camera->nextStyle(modifiers); 
+            m_composition->nextCameraStyle(modifiers); 
             break;
         case GLFW_KEY_E:
             m_composition->nextGeometryStyle(); 
@@ -462,16 +501,19 @@ void Interactor::key_pressed(unsigned int key)
             pan_mode_key_pressed(modifiers);
             break;
         case GLFW_KEY_Y:
-            m_yfov_mode = !m_yfov_mode ; 
+            y_key_pressed(modifiers); 
             break;
         case GLFW_KEY_Z:
-            m_zoom_mode = !m_zoom_mode ; 
+            z_key_pressed(modifiers); 
             break;
         case GLFW_KEY_MINUS:
             m_scene->nextSkipGeoStyle(); 
             break;
         case GLFW_KEY_EQUAL:
             m_scene->nextSkipEvtStyle(); 
+            break;
+        case GLFW_KEY_PERIOD:
+            m_composition->nextPauseStyle(); 
             break;
         case GLFW_KEY_UP:
             m_dragfactor *= 2. ; 

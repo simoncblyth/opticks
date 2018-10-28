@@ -184,9 +184,16 @@ void Animator::commandMode(const char* cmd)
     assert( cmd[0] == 'T' || cmd[0] == 'A' ); 
       
     int mode = (int)cmd[1] - (int)'0' ; 
-    assert( mode > -1 && mode < NUM_MODE ) ; 
-
-    setMode((Mode_t)mode) ; 
+    if( mode > -1 && mode < NUM_MODE ) 
+    {
+         setMode((Mode_t)mode) ; 
+    }
+    else
+    {
+         LOG(info) << cmd ; 
+         setMode(OFF); 
+         home();
+    }
 }
 
 void Animator::nextMode(unsigned int modifiers)
@@ -195,6 +202,8 @@ void Animator::nextMode(unsigned int modifiers)
 
     bool option = 0 != (modifiers & OpticksConst::e_option) ;    
     bool control = 0 != (modifiers & OpticksConst::e_control) ;    
+    //bool command = 0 != (modifiers & OpticksConst::e_command) ;    
+
 
     unsigned int num_mode = getNumMode();
 

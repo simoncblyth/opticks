@@ -175,6 +175,7 @@ Composition::Composition()
   m_content_style(new ContentStyle),
   m_render_style(new RenderStyle(this)),
   m_global_style(new GlobalStyle()),
+  m_paused(false),
   m_count(0),
   m_axis_data(NULL),
   m_axis_attr(NULL),
@@ -245,6 +246,7 @@ void Composition::command(const char* cmd)
         case 'C': commandClipper(cmd)               ; break ; 
         case 'E': commandGeometryStyle(cmd)         ; break ; 
         case 'I': msg="I: handled at scene level"   ; break ; 
+        case 'N': commandCameraNear(cmd)            ; break ; 
         case 'O': commandRenderStyle(cmd)           ; break ; 
         case 'P': msg="P: handled at scene level"   ; break ; 
         case 'Q': commandGlobalStyle(cmd)           ; break ; 
@@ -257,12 +259,11 @@ void Composition::command(const char* cmd)
             << " cmd " << cmd 
             << " msg " << msg
             ;
-
 }
 
 
-
-
+// cameraNear
+void Composition::commandCameraNear(const char* cmd){ m_camera->commandNear(cmd) ; }
 
 
 // ContentStyle
@@ -739,6 +740,12 @@ void Composition::nextAnimatorMode(unsigned modifiers)
     m_animator->nextMode(modifiers);
 }
 
+void Composition::nextCameraStyle(unsigned modifiers)
+{
+    m_camera->nextStyle(modifiers);
+}
+
+
 void Composition::commandAnimatorMode(const char* cmd)
 {
     if(!m_animator) initAnimator() ;
@@ -772,10 +779,14 @@ void Composition::nextViewMode(unsigned int modifiers)    // T KEY
     } 
 }
 
-void Composition::resetComposition()
+
+
+void Composition::resetComposition()   // SHIFT+ALT+T
 {
     if(m_animator) m_animator->home();    
     m_view->reset() ;
+
+    m_paused = true ; 
 }
 
 
@@ -912,6 +923,8 @@ void Composition::resetView()
 
 unsigned int Composition::tick()
 {
+    if(m_paused) return m_count ; 
+
     m_count++ ; 
 
     if(!m_animator) initAnimator();
@@ -925,6 +938,12 @@ unsigned int Composition::tick()
 
     return m_count ; 
 }
+
+void Composition::nextPauseStyle()    // "." PERIOD_KEY 
+{
+    m_paused = !m_paused ;  
+}
+
 
 
 
@@ -1253,10 +1272,52 @@ void Composition::setUpW(const glm::vec4& upw)
 
 
 
+void Composition::setUpGUI(const char* cmd)
+{
+    if(     strcmp(cmd, "X+") == 0)  setUpW( glm::vec4(1,0,0,0)) ; 
+    else if(strcmp(cmd, "X-") == 0)  setUpW( glm::vec4(-1,0,0,0)) ;
+    else if(strcmp(cmd, "Y+") == 0)  setUpW( glm::vec4(0,1,0,0)) ;
+    else if(strcmp(cmd, "Y-") == 0)  setUpW( glm::vec4(0,-1,0,0)) ;
+    else if(strcmp(cmd, "Z+") == 0)  setUpW( glm::vec4(0,0,1,0)) ;
+    else if(strcmp(cmd, "Z-") == 0)  setUpW( glm::vec4(0,0,-1,0)) ;
+}
 
 
+void Composition::setEyeGUI(const char* cmd)
+{
+    LOG(info) << cmd ; 
 
-
+    if(     strcmp(cmd, "X+") == 0) 
+    {
+        setEyeGUI(glm::vec3(1,0,0));
+        setUpGUI("Z+"); 
+    }
+    else if(strcmp(cmd, "X-") == 0) 
+    {
+        setEyeGUI(glm::vec3(-1,0,0));
+        setUpGUI("Z+"); 
+    }
+    else if(strcmp(cmd, "Y+") == 0) 
+    {
+        setEyeGUI(glm::vec3(0,1,0));
+        setUpGUI("Z+"); 
+    }
+    else if(strcmp(cmd, "Y-") == 0) 
+    {
+        setEyeGUI(glm::vec3(0,-1,0));
+        setUpGUI("Z+"); 
+    }
+    else if(strcmp(cmd, "Z+") == 0) 
+    {
+        setEyeGUI(glm::vec3(0,0,1));
+        setUpGUI("X+"); 
+    }
+    else if(strcmp(cmd, "Z-") == 0) 
+    {
+        setEyeGUI(glm::vec3(0,0,-1));
+        setUpGUI("X+"); 
+    }
+}
 
 void Composition::setEyeGUI(const glm::vec3& gui)
 {
@@ -1908,33 +1969,53 @@ float Composition::getClipDepth(const glm::vec4& position_world)
 
 void Composition::getEyeUVW(glm::vec3& eye, glm::vec3& U, glm::vec3& V, glm::vec3& W, glm::vec4& ZProj )
 {
-   update();
+    update();
 
-   float tanYfov = m_camera->getTanYfov();
-   float aspect = m_camera->getAspect();
 
-   m_camera->fillZProjection(ZProj); // 3rd row of projection matrix
+    bool parallel = m_camera->getParallel();  
+    float scale = m_camera->getScale(); 
+    float length   = parallel ? scale : m_gazelength ; 
 
-   float v_half_height = m_gazelength * tanYfov ; 
-   float u_half_width  = v_half_height * aspect ; 
-   float w_depth       = m_gazelength ; 
+   /*
+    float near  = m_camera->getNear();  
+    float basis = m_camera->getBasis() ; 
+    LOG(info) 
+         << " parallel " << parallel 
+         << " scale " << scale 
+         << " basis " << basis 
+         << " near " << near 
+         << " m_gazelength " << m_gazelength 
+         << " length " << length
+         ;
+    */
 
-   //  Eye frame axes and origin 
-   //  transformed into world frame
 
-   glm::vec4 right( 1., 0., 0., 0.);
-   glm::vec4   top( 0., 1., 0., 0.);
-   glm::vec4  gaze( 0., 0.,-1., 0.);
+    float tanYfov = m_camera->getTanYfov();  // reciprocal of camera zoom
+    float aspect = m_camera->getAspect();
 
-   glm::vec4 origin(0., 0., 0., 1.);
+    m_camera->fillZProjection(ZProj); // 3rd row of projection matrix
 
-   // and scaled to focal plane dimensions 
+    //float v_half_height = m_gazelength * tanYfov ;  
+    float v_half_height = length * tanYfov ;  
+    float u_half_width  = v_half_height * aspect ; 
+    float w_depth       = m_gazelength ; 
 
-   U = glm::vec3( m_eye2world * right ) * u_half_width ;  
-   V = glm::vec3( m_eye2world * top   ) * v_half_height ;  
-   W = glm::vec3( m_eye2world * gaze  ) * w_depth  ;  
+    //  Eye frame axes and origin 
+    //  transformed into world frame
 
-   eye = glm::vec3( m_eye2world * origin );   
+    glm::vec4 right( 1., 0., 0., 0.);
+    glm::vec4   top( 0., 1., 0., 0.);
+    glm::vec4  gaze( 0., 0.,-1., 0.);
+
+    glm::vec4 origin(0., 0., 0., 1.);
+
+    // and scaled to focal plane dimensions 
+
+    U = glm::vec3( m_eye2world * right ) * u_half_width ;  
+    V = glm::vec3( m_eye2world * top   ) * v_half_height ;  
+    W = glm::vec3( m_eye2world * gaze  ) * w_depth  ;  
+
+    eye = glm::vec3( m_eye2world * origin );   
 
 }
 

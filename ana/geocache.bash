@@ -9,15 +9,18 @@ Movie Script
 
 1. obs-;obs-run
 2. generate flightpath with ana/mm0prim2.py  
-3. starting the recording  
+3. before starting the recording  
 
    a) run the viz geocache-;geocache-sc leaving window in orginal position, so screen recording gets it all 
-   b) press O (wait) then O and O again # switch to raytrace render, then composite and back to normal  
-   c) adjust camera near: press n + drag down half a screen, press n again to toggle off
-   d) adjust window position to make sure nothing obscuring the viz window 
-   e) make sure obs "Start Recording" button is visible, and cursor is nearby
-   f) press U : start the flightpath interpolated view
-   g) press "Start Recording" in obs interface
+   b) press O (wait) then O again # switch to composite raytrace render, then back to normal rasterized  
+   c) make sure nothing obscuring the viz window 
+   d) press alt-Y and adjust standard view 
+
+4. starting recording 
+
+   a) make sure obs "Start Recording" button is visible, and cursor is nearby
+   b) press U : start the flightpath interpolated view
+   c) press "Start Recording" in obs interface
   
 4. during the recording : things to do 
 
@@ -25,11 +28,14 @@ Movie Script
    b) press X, and drag up/down to show the view along some parallel paths
       while doing this press O to switch to raytrace 
    c) press D, for orthographic view
-   d) which photons are visible : press G and show the history selection 
+   d) when photons are visible : press G and show the history selection 
+   e) press . to stop event and geometry animations, take a look around, 
+      press H to return to home for resumption of animation
 
 5. ending the recording
 
    a) pick a good area to end with, eg chimney region
+
 
 
 Issues
@@ -132,8 +138,9 @@ geocache-sc()
 {
     # with --scintillation tried kludge symbolic link in opticksdata/gensteps g4live -> juno1707
     # but that gives applyLookup fails 
+    #   --near 1000    not working, presumably overridden by basis aim  
 
-    OKTest --envkey --xanalytic --timemax 400 --animtimemax 400 --target $(geocache-target) --near 1000
+    OKTest --envkey --xanalytic --timemax 400 --animtimemax 400 --target $(geocache-target) --eye -3,0,0
 }
 
 

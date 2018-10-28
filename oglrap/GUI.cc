@@ -384,6 +384,7 @@ void GUI::camera_gui(Camera* camera)
     ImGui::SliderFloat("scale",camera->getScalePtr(),camera->getScaleMin(),camera->getScaleMax(), "%.3f", power);
     ImGui::Checkbox("parallel", camera->getParallelPtr() );
     if (ImGui::Button("Camera Summary")) camera->Summary();
+    if (ImGui::Button("Camera setChanged")) camera->setChanged(true);
 }
 
 

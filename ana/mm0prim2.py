@@ -8,8 +8,14 @@ log = logging.getLogger(__name__)
 from opticks.ana.geocache import keydir
 from opticks.ana.prim import Dir
 from opticks.ana.geom2d import Geom2d
+from opticks.ana.flight import Flight
 
 np.set_printoptions(suppress=True)
+
+dtype = np.float32
+
+
+
 
 
 if __name__ == '__main__':
@@ -49,25 +55,32 @@ if __name__ == '__main__':
 
     mm0.render(ax, art3d=art3d)
 
-    dtype = np.float32
-
-    OFF="T0"
-    SLOW32="T1"
-    SLOW16="T2" 
-    SLOW8="T3" 
-    SLOW4="T4" 
-    SLOW2="T5" 
-    NORM="T6" 
-    FAST="T7"
-    FAST2="T8"
-    FAST4="T9"
-
 
     ####################
+    n9 = 7
+    ezz = np.zeros( (n9,3), dtype=dtype )
+    lzz = np.zeros( (n9,3), dtype=dtype )
+    uzz = np.zeros( (n9,3), dtype=dtype )
+    czz = np.zeros( (n9,4), dtype=dtype )
 
+    ezz[:,0] = [-3,-2,-1,0,-1,-2,-3] 
+    ezz[:,1] = np.zeros( n9, dtype=dtype ) 
+    ezz[:,2] = np.zeros( n9, dtype=dtype )
+    lzz[:n9] = [1,0,0]
+    uzz[:n9] = [0,0,1] 
+    czz[0].view("|S2")[0:8] = ["AA", "C0", "T5", "B2", "Q1", "", "N2", "" ]
+    czz[2].view("|S2")[0:8] = ["","","","", "A1","","","" ] 
+    czz[n9/2].view("|S2")[0:8] = ["T6", "", "", "", "", "", "", "" ]
+    # AA: home the animation as ascii A - 0 is greater than the number of modes 
+    # Q1:invis GlobalStyle
+
+
+    fzz = Flight(ezz,lzz,uzz,czz) 
+
+    ####################
     n0 = 3
-
     eaa = np.zeros( (n0,3), dtype=dtype )
+    laa = np.zeros( (n0,3), dtype=dtype )
     uaa = np.zeros( (n0,3), dtype=dtype )
     caa = np.zeros( (n0,4), dtype=dtype )
 
@@ -77,8 +90,13 @@ if __name__ == '__main__':
 
     uaa[:n0] = [0,0,1] 
 
-    caa[0].view("|S2")[0:8] = ["C1", "T6", "B2", "Q0", "A1", "P1", "", "" ]
-    caa[2].view("|S2")[0:8] = ["Q1","","","Q0","","T5","",""] 
+    caa[0].view("|S2")[0:8] = ["C1", "T6", "B2", "Q0", "A1", "P1", "N1", "" ]
+    caa[2].view("|S2")[0:8] = ["Q1","","","Q0","C0","T5","",""] 
+
+    laa[:-1] = eaa[1:]
+    laa[-1] = [0,0,1]
+
+    faa = Flight(eaa,laa,uaa,caa) 
 
     #################
 
@@ -95,6 +113,7 @@ if __name__ == '__main__':
     ct0 = np.cos(t0+phase0)
 
     ebb = np.zeros( (n1,3) , dtype=dtype )  # eye position 
+    lbb = np.zeros( (n1,3) , dtype=dtype ) # up direction
     ubb = np.zeros( (n1,3) , dtype=dtype ) # up direction
     cbb = np.zeros( (n1,4), dtype=dtype )  # ctrl  
 
@@ -117,6 +136,11 @@ if __name__ == '__main__':
 
     cbb[n1-2].view("|S2")[0:1] = ["T5"] 
 
+    lbb[:-1] = ebb[1:]
+    lbb[-1] = [0,0,1]
+
+    fbb = Flight(ebb,lbb,ubb,cbb) 
+
     ##############################
 
     # take the last point x value (close to pz) and make xy loop
@@ -125,9 +149,9 @@ if __name__ == '__main__':
     n2 = len(tb)
 
     ecc = np.zeros( (n2,3), dtype=dtype )
+    lcc = np.zeros( (n2,3), dtype=dtype )
     ucc = np.zeros( (n2,3), dtype=dtype )
     ccc = np.zeros( (n2,4), dtype=dtype )
-
 
     ecc[:,0] = r2*np.cos(tb)
     ecc[:,1] = r2*np.sin(tb)
@@ -137,73 +161,23 @@ if __name__ == '__main__':
     ucc[:,1] = np.zeros(n2, dtype=dtype)
     ucc[:,2] = np.ones(n2, dtype=dtype)
 
-
     ccc[0].view("|S2")[0:8] = ["T7","","","" ,"","","",""]
-    ccc[n2/2].view("|S2")[0:8] = ["O1","I1","","" ,"","","",""]
-    ccc[n2/2+2].view("|S2")[0:8] = ["I0","O0","","" ,"","","",""]
+    ccc[n2/2].view("|S2")[0:8] = ["","","","" ,"","","",""]
+    ccc[n2/2+2].view("|S2")[0:8] = ["","","","" ,"","","",""]
 
+    lcc[:-1] = ecc[1:]
+    lcc[-1] = [0,0,1]
 
+    fcc = Flight(ecc,lcc,ucc,ccc) 
 
-    #########  joining together the sub-paths 
+    ################################################## 
 
-    n = n0 + n1 + n2
-
-    eye = np.zeros( (n, 3), dtype=dtype )
-    look = np.zeros( (n, 3), dtype=dtype )
-    up = np.zeros( (n, 3), dtype=dtype )
-    ctrl = np.zeros( (n, 4), dtype=dtype )
-
-    eye[:n0] = eaa
-    eye[n0:n0+n1] = ebb
-    eye[n0+n1:n0+n1+n2] = ecc
-
-    up[:n0] = uaa
-    up[n0:n0+n1] = ubb
-    up[n0+n1:n0+n1+n2] = ucc
-
-    ctrl[:n0] = caa  
-    ctrl[n0:n0+n1] = cbb
-    ctrl[n0+n1:n0+n1+n2] = ccc
-
-
-    look[:-1] = eye[1:]
-    look[-1] = eye[0]
-    gaze = look - eye
-
-    x = sc*eye[:,0] 
-    y = sc*eye[:,1] 
-    z = sc*eye[:,2]
-
-    u0 = gaze[:, 0] 
-    v0 = gaze[:, 1] 
-    w0 = gaze[:, 2] 
-
-    u1 = up[:, 0] 
-    v1 = up[:, 1] 
-    w1 = up[:, 2] 
-   
-    #ax.plot( x,z )
-    ax.quiver( x, y, z, u0, v0, w0  ) 
-    ax.quiver( x, y, z, u1, v1, w1  ) 
-
-
-    labels = False
-    if labels:
-        for i in range(len(eye)):
-            plt.text( x[i], y[i], z[i], i , "z" )
-        pass  
-    pass
-
-
-    fig.show()
-
-    elu = np.zeros( (n,4,4), dtype=np.float32)
-    elu[:,0,:3] = eye 
-    elu[:,1,:3] = look
-    elu[:,2,:3] = up
-    elu[:,3,:4] = ctrl
+    f = Flight.combine( [fzz, faa, fbb, fcc] )
+    elu = f.elu
+    np.save("/tmp/flightpath.npy", elu ) 
     print(elu[:,3,:4].copy().view("|S2"))
 
-    np.save("/tmp/flightpath.npy", elu ) 
+    f.quiver_plot(ax, sc=sc)
 
+    fig.show()
 

@@ -153,22 +153,12 @@ move the frontdoor up to OpticksViz, so could do then easily prod the Scene ?
 Hmm NConfigurable is doing something very similar to SCtrl and is already 
 inplace for many classes.  TODO: combine these 
 
-
 **/
-void OpticksHub::command(const char* ctrl) 
-{
-    std::vector<std::string> cmds ; 
-    BStr::split(cmds, ctrl, ',' ); 
 
-    unsigned n = cmds.size(); 
-    LOG(debug) << "ctrl [" << ctrl << "] " << n  ;
-  
-    for( unsigned i=0 ; i < n ; i++ )
-    {
-        std::string cmd = cmds[i] ; 
-        if(cmd.size() != 2) continue ; 
-        m_composition->command(cmd.c_str()); 
-    } 
+void OpticksHub::command(const char* cmd) 
+{
+    assert( strlen(cmd) == 2 ); 
+    m_composition->command(cmd); 
 }
 
 
