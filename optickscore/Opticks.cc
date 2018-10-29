@@ -546,8 +546,14 @@ OpticksCfg<Opticks>* Opticks::getCfg() const
 const char* Opticks::getRenderMode() const 
 {
     const std::string& s = m_cfg->getRenderMode();
-    return s.c_str();
+    return s.empty() ? NULL : s.c_str();
 }
+const char* Opticks::getRenderCmd() const 
+{
+    const std::string& s = m_cfg->getRenderCmd();
+    return s.empty() ? NULL : s.c_str();
+}
+
 
 const char* Opticks::getLVSDName() const 
 {

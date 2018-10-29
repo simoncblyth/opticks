@@ -282,6 +282,7 @@ class OKCORE_API Opticks {
    public:
        OpticksCfg<Opticks>* getCfg() const ;
        const char*          getRenderMode() const ;
+       const char*          getRenderCmd() const ;
        const char*          getLVSDName() const ;
        const char*          getCathode() const ;
        const char*          getCerenkovClass() const ;

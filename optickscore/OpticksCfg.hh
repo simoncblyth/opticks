@@ -43,6 +43,7 @@ class OKCORE_API OpticksCfg : public BCfg {
      const std::string& getZExplodeConfig();
      const std::string& getMeshVersion();
      const std::string& getRenderMode();
+     const std::string& getRenderCmd();
      const std::string& getISlice();
      const std::string& getFSlice();
      const std::string& getPSlice();
@@ -156,6 +157,7 @@ private:
      std::string m_zexplodeconfig ;
      std::string m_meshversion ;
      std::string m_rendermode ;
+     std::string m_rendercmd ;
      std::string m_islice ;
      std::string m_fslice ;
      std::string m_pslice ;

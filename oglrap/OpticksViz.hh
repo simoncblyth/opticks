@@ -71,7 +71,8 @@ class OGLRAP_API OpticksViz : public SCtrl  {
          int            getTarget();
     public:
          // SCtrl 
-         void command(const char* ctrl); 
+         void command(const char* ctrl);         // single 2-char command 
+         void commandline(const char* cmdline);  // list of comma delimited 2-char commands
     public:
          void uploadGeometry();
          void uploadEvent();

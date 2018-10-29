@@ -5,6 +5,8 @@
 #include "SLauncher.hh"
 #include "SRenderer.hh"
 
+#include "BStr.hh"
+
 // npy-
 #include "Types.hpp"
 #include "NParameters.hpp"
@@ -134,6 +136,11 @@ void OpticksViz::init()
         prepareScene(renderMode);      // setup OpenGL shaders and creates OpenGL context (the window)
  
         uploadGeometry();    // Scene::uploadGeometry, hands geometry to the Renderer instances for upload
+
+
+        const char* renderCmd = m_ok->getRenderCmd(); 
+        commandline(renderCmd); 
+
     }
 }
 
@@ -192,6 +199,27 @@ void OpticksViz::command(const char* cmd)
     m_composition->command(cmd) ;    
     m_scene->command(cmd);  // some commands need explicit scene updating 
 }
+
+void OpticksViz::commandline(const char* cmdline)
+{
+    if(cmdline == NULL) return ; 
+
+    std::vector<std::string> cmds ;
+    BStr::split(cmds, cmdline, ',' );
+
+    LOG(info) 
+         << " cmdline " << cmdline 
+         << " cmds " << cmds.size()
+         ;
+
+    for(unsigned i=0 ; i < cmds.size() ; i++) 
+    {
+        std::string& cmd = cmds[i] ; 
+        command(cmd.c_str()); 
+    }
+}
+
+
 
 
 bool OpticksViz::hasOpt(const char* name)
@@ -270,6 +298,7 @@ void OpticksViz::prepareScene(const char* rendermode)
     //m_scene->setComposition(m_hub->getComposition());   
     m_scene->hookupRenderers();   // deferred until here, after renderers are setup 
 
+  
 }
 
 

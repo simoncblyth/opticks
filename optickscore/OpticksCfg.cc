@@ -43,6 +43,7 @@ OpticksCfg<Listener>::OpticksCfg(const char* name, Listener* listener, bool live
        m_zexplodeconfig("-5564.975,1000."),  // -(5564.950 + 5565.000)/2.0 = -5564.975
        m_meshversion(""),
        m_rendermode(""),
+       m_rendercmd(""),
        m_islice(""),
        m_fslice(""),
        m_pslice(""),
@@ -659,6 +660,9 @@ void OpticksCfg<Listener>::init()
    m_desc.add_options()
        ("rendermode",   boost::program_options::value<std::string>(&m_rendermode), "debug only rendermode, see oglrap-/OpticksViz::prepareScene" );
 
+   m_desc.add_options()
+       ("rendercmd",   boost::program_options::value<std::string>(&m_rendercmd), "debug only rendercmd, see oglrap-/OpticksViz::prepareScene" );
+
 
 
    m_desc.add_options()
@@ -1203,6 +1207,13 @@ const std::string& OpticksCfg<Listener>::getRenderMode()
 {
     return m_rendermode ;
 }
+
+template <class Listener>
+const std::string& OpticksCfg<Listener>::getRenderCmd()
+{
+    return m_rendercmd ;
+}
+
 
 template <class Listener>
 const std::string& OpticksCfg<Listener>::getISlice()

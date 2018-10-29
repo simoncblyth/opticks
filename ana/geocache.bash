@@ -4,14 +4,26 @@ geocache-sdir(){ echo $(dirname $(geocache-source)) ; }
 geocache-scd(){  cd $(geocache-dir) ; }
 geocache-usage(){ cat << EOU
 
-Movie Script
-----------------
+Screen Capture Movies 
+--------------------------
+
+Avoiding White Flicker in movies
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* make sure all executable logging (including obs) is 
+  redirected to file, otherwise get white line flicker in the screen captures 
+
+
+
+
+Script
+~~~~~~~~~~
 
 1. obs-;obs-run
 2. generate flightpath with ana/mm0prim2.py  
 3. before starting the recording  
 
-   a) run the viz geocache-;geocache-sc leaving window in orginal position, so screen recording gets it all 
+   a) run the viz geocache-;geocache-movie leaving window in orginal position, so screen recording gets it all 
    b) press O (wait) then O again # switch to composite raytrace render, then back to normal rasterized  
    c) make sure nothing obscuring the viz window 
    d) press alt-Y and adjust standard view 
@@ -134,14 +146,25 @@ geocache-view()
     #OKTest --envkey --xanalytic 
 }
 
-geocache-sc()
+geocache-movie-()
 {
     # with --scintillation tried kludge symbolic link in opticksdata/gensteps g4live -> juno1707
     # but that gives applyLookup fails 
     #   --near 1000    not working, presumably overridden by basis aim  
+    # --rendermode +global,+in0,+in1,+in2,+in3,+in4,+axis
+    #
+    # B2:viz instances
+    # Q0:viz global
 
-    OKTest --envkey --xanalytic --timemax 400 --animtimemax 400 --target $(geocache-target) --eye -3,0,0
+    OKTest --envkey \
+            --xanalytic \
+            --timemax 400 \
+            --animtimemax 400 \
+            --target $(geocache-target) \
+            --eye -2,0,0 \
+            --rendercmd B2,Q0 
 }
 
+geocache-movie(){ $FUNCNAME- 2>&1 > /tmp/$FUNCNAME.log ; }
 
 
