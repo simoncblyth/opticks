@@ -13,8 +13,12 @@ Avoiding White Flicker in movies
 * make sure all executable logging (including obs) is 
   redirected to file, otherwise get white line flicker in the screen captures 
 
+Window placement tip
+~~~~~~~~~~~~~~~~~~~~~
 
-
+* position the obs window with "start recording" button 
+  to the right of the bottom right of the viz window, so 
+  initial near scanning can work more smoothing  
 
 Script
 ~~~~~~~~~~
@@ -50,16 +54,70 @@ Script
 
 
 
-Issues
+Choreography : 2018-10-29_13-24-36  ~6 min
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Movie is good enough if dont have time 
+to try and record a better one.::
+
+    epsilon:Movies blyth$ du -h 2018-10-29_13-24-36.mp4
+    212M	2018-10-29_13-24-36.mp4
+
+What can be improved:
+
+* a few minutes shorter would be good
+* forgot to use Q to switch off global during the flight, 
+  this would have been particularly useful when R:rotating 
+  view to look at PMTs 
+
+
+::
+
+    O: raytrace "eye" 1st frame
+
+    [START RECORDING]
+
+    click bottom right frame
+
+    N: perspective near scan in/out
+    D: ortho near scan in/out -> back to "eye"
+    O: rasterized ortho, near scan in/out -> back to "eye"
+    D: rasterized perspective, near scan in/out with raytrace flips 
+
+    U: start flight 
+    P: photon style
+
+    .: pause when reach chimney region
+    N: adjust near
+    X: pan up with O flips to see chimney and TT
+    H: home (back to flightpath)
+    .: resume flight  
+
+    on way down, X: out to see pool PMTs
+    H: home (back to flightpath)
+
+    on way up, D: ortho flip and back to see photons
+
+    .: pause again when reach chimney region
+    R: rotate and look up at PMTs,  N:scanning 
+    H: home to flightpath 
+    .:  resume
+    .: pause once back outside
+    D:ortho O:raytrace N:near scan to half G:photon select 
+
+
+Issues 
 --------
 
-* pressing O is a 3-way cycle including composite,
-  composite is good for showing photons together with the raytrace, which 
-  means have to switch off the rasterized geometry : to avoid coincidence
-  between the two geometries : but thats quite a few keys and then it switch it back   
-  on again : better to auto switch off rasterized when switch to composite 
+FIXED : awkward raytrace composite requiring hiding of rasterized geometry
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-  * so O, Q and I need to be coordinated somehow 
+Formerly O was a 3 way: raster/raytrace/composite
+composite is good to showing photons together with raytrace geometry :
+but that requires to switch off rasterized geometry
+
+Fixed the awkwardness by making it a 2-way raster/composite and 
+always switching off rasterized geometry within composite mode
 
 
 
