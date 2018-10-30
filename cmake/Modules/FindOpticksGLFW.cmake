@@ -1,7 +1,7 @@
 
 set(OpticksGLFW_MODULE "${CMAKE_CURRENT_LIST_FILE}")
 set(OpticksGLFW_PREFIX "${CMAKE_INSTALL_PREFIX}/externals")
-#set(OpticksGLFW_ALT "ON")
+set(OpticksGLFW_ALT "ON")
 
 find_path( OpticksGLFW_INCLUDE_DIR
            NAMES GLFW/glfw3.h
