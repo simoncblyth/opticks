@@ -21,6 +21,12 @@ Samples
 * https://github.com/NVIDIA/cuda-samples
 
 
+Measuring Bandwidth
+-----------------------
+
+* https://devtalk.nvidia.com/default/topic/382019/cuda-programming-and-performance/how-to-get-peak-rate-with-simple-opeartion-question-about-performance-optimization/#entry290441
+
+
 CUDA CMake : Building using Modern CMake Native CUDA Support 
 -------------------------------------------------------------
 
