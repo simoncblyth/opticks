@@ -35,6 +35,9 @@ Current macOS builds installed
    10.13.3     17D102   /Volumes/TestHighSierra
    10.13.4     17E199   /Volumes/Epsilon  
 
+* in "About This Mac" option click on the 
+  version eg "10.13.4" to see the build code eg "17E199"
+
 nvidia display driver (aka GPU driver)
 ----------------------------------------
 
@@ -45,6 +48,33 @@ provided by apple.
 
 GPU drivers are kernel extensions (forcing caution), and requiring a 
 precise match between the GPU driver and macOS version+build number.   
+
+
+Dec 2018 : Review Versions
+----------------------------
+
+::
+
+    macOS        : 10.13.4 17E199        (About This Mac + option click on version)
+    GPU Driver   : 387.10.10.10.30.106   (Menu bar NVIDIA panel OR from System Prefs > NVIDIA Driver Manager)
+    CUDA Driver  : 387.128               (from System Prefs > CUDA)
+ 
+    (*) states that CUDA 410.130 Driver is available
+
+
+Look for problems with searches on version numbers
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* :google:`macos 10.13.6 nvidia web driver`
+
+* https://www.nvidia.com/download/driverResults.aspx/136062/en-us
+
+  QUADRO & GEFORCE MACOS DRIVER RELEASE 387.10.10.10.40.105
+
+  New in Release 387.10.10.10.40.105:
+  Graphics driver updated for macOS High Sierra 10.13.6 (17G65)
+
+
 
 
 Aligning three release sequences :  macOS point release, NVIDIA GPU drivers, NVIDIA CUDA drivers
