@@ -9,6 +9,7 @@ set(TEST_SOURCES
     OpticksQueryTest.cc
     IndexerTest.cc
     CameraTest.cc
+    CameraSwiftTest.cc
     AnimatorTest.cc
     TrackballTest.cc
     OpticksEventSpecTest.cc

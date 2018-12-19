@@ -53,13 +53,19 @@ precise match between the GPU driver and macOS version+build number.
 Dec 2018 : Review Versions
 ----------------------------
 
-::
+Before Update::
 
     macOS        : 10.13.4 17E199        (About This Mac + option click on version)
     GPU Driver   : 387.10.10.10.30.106   (Menu bar NVIDIA panel OR from System Prefs > NVIDIA Driver Manager)
     CUDA Driver  : 387.128               (from System Prefs > CUDA)
  
     (*) states that CUDA 410.130 Driver is available
+
+After macOS Update + GPU Driver Update::
+
+    macOS         :  10.13.6 (17G65)
+    GPU Driver    :  387.10.10.10.40.105   
+    CUDA Driver   :  387.128 
 
 
 Look for problems with searches on version numbers
@@ -75,6 +81,14 @@ Look for problems with searches on version numbers
   Graphics driver updated for macOS High Sierra 10.13.6 (17G65)
 
 
+Thoughts on when to update macOS + GPU driver
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+When you have a good reason to do so, eg want to use a newer Xcode 10.1 for its support for new devices.
+Also require:
+
+* macOS updates are at least 2-3 months old 
+* you are not in a critical period, eg just before a presentation
 
 
 Aligning three release sequences :  macOS point release, NVIDIA GPU drivers, NVIDIA CUDA drivers
@@ -158,10 +172,23 @@ CUDA Mac Driver : Archive
 
 ::
 
+    CUDA 410.130 driver for MAC   Release Date: 09/19/2018
+
     CUDA 396.148 driver for MAC  Release Date: 07/09/2018
     CUDA 396.64 driver for MAC   Release Date: 05/17/2018
     CUDA 387.178 driver for MAC  Release Date: 04/02/2018
     CUDA 387.128 driver for MAC  Release Date: 01/25/2018
+
+
+
+
+
+
+
+
+
+
+
 
 
 * High Sierra 10.13.6 now listed in App store, updates

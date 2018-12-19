@@ -503,8 +503,16 @@ void Camera::Summary(const char* msg)
     glm::mat4 ortho = getOrtho();    
     print(ortho, "ortho");
 
+    const float* ort = glm::value_ptr(ortho);
+    for(unsigned i=0 ; i < 16 ; i++)
+        std::cout << std::setw(3) << i << " : " << *(ort+i) << std::endl ;  
+
     glm::mat4 frustum = getFrustum();    
     print(frustum, "frustum");
+
+    const float* fru = glm::value_ptr(frustum);
+    for(unsigned i=0 ; i < 16 ; i++)
+        std::cout << std::setw(3) << i << " : " << *(fru+i) << std::endl ;  
 }     
 
 
