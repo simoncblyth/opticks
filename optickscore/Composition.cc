@@ -1713,8 +1713,14 @@ void Composition::update()
 
 
     m_view->getTransforms(m_model2world, m_world2camera, m_camera2world, m_gaze );   // model2world is input, the others are updated
-
+    //
     // the eye2look look2eye pair allows trackball rot to be applied around the look 
+    // recall the eye frame, has eye at the origin and the object are looking 
+    // at (0,0,-m_gazelength) along -Z (m_gazelength is +ve) eye2look in the 
+    // translation to jump between frames, from eye/camera frame to a frame centered on the object of the look 
+    //
+    // camera and eye frames are the same
+    // 
     m_gazelength = glm::length(m_gaze);
     m_eye2look = glm::translate( glm::mat4(1.), glm::vec3(0,0,m_gazelength));  
     m_look2eye = glm::translate( glm::mat4(1.), glm::vec3(0,0,-m_gazelength));

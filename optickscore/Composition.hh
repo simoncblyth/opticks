@@ -44,7 +44,7 @@ class OpticksEvent ;
 Composition
 =============
 
-Canonical m_composition instance is ctor resident of the top level OpticksHub m_hub. 
+Canonical m_composition instance is ctor resident of the top level OpticksHub m_hub (okg-). 
 
 Encapsulates
 
@@ -52,8 +52,7 @@ Encapsulates
 * camera parameters near, far, zoom
 * viewpoint eye, look, up in model frame (ie relative to current ce of an object of interest)
 
-
-Pointers the Composition instance are held by:
+Pointers to the canonical Composition instance are held by:
 
 * AxisApp
 * Frame
@@ -66,7 +65,8 @@ Pointers the Composition instance are held by:
 * Scene
 
 
-Primary purpose of composition is to supply uniforms to the shaders::
+Primary purpose of the composition instance is to supply uniforms to the shaders, 
+as controlled by the Renderer (oglrap-)::
 
     504 void Renderer::update_uniforms()
     505 {
