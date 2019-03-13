@@ -2,6 +2,7 @@
 #include <iostream>
 #include <cstring>
 
+#include "SSys.hh"
 #include "BOpticksKey.hh"
 #include "NLookup.hpp"
 #include "NPY.hpp"
@@ -38,8 +39,20 @@
 
 G4Opticks* G4Opticks::fOpticks = NULL ;
 
+//const char* G4Opticks::fEmbeddedCommandLine = " --gltf 3 --compute --save --embedded --natural --dbgtex --printenabled --pindex 0 --bouncemax 0"  ; 
+//  --bouncemax 0 historical for checking generation   ??
+//
 
-const char* G4Opticks::fEmbeddedCommandLine = " --gltf 3 --compute --save --embedded --natural --dbgtex --printenabled --pindex 0 --bouncemax 0"  ; 
+const char* G4Opticks::fEmbeddedCommandLine = " --gltf 3 --compute --save --embedded --natural --dbgtex --printenabled --pindex 0"  ; 
+
+std::string G4Opticks::EmbeddedCommandLine(const char* extra)
+{
+    std::stringstream ss ; 
+    ss << fEmbeddedCommandLine << " " ;
+    if(extra) ss << extra ; 
+    return ss.str();  
+}
+
 
 std::string G4Opticks::desc() const 
 {
@@ -142,7 +155,11 @@ GGeo* G4Opticks::translateGeometry( const G4VPhysicalVolume* top )
     BOpticksKey::SetKey(keyspec);
     LOG(error) << " SetKey " << keyspec  ;   
 
-    Opticks* ok = new Opticks(0,0, fEmbeddedCommandLine);  // Opticks instanciation must be after BOpticksKey::SetKey
+    const char* g4opticks_debug = SSys::getenvvar("G4OPTICKS_DEBUG") ; 
+    std::string ecl = EmbeddedCommandLine(g4opticks_debug) ; 
+    LOG(info) << "EmbeddedCommandLine : [" << ecl << "]" ; 
+
+    Opticks* ok = new Opticks(0,0, ecl.c_str() );  // Opticks instanciation must be after BOpticksKey::SetKey
 
     const char* gdmlpath = ok->getGDMLPath();   // inside geocache, not SrcGDMLPath from opticksdata
     CGDML::Export( gdmlpath, top ); 

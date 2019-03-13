@@ -186,3 +186,16 @@ are split between only detect/absorb (no reflection off cathode yet).::
      548         }
      549         else
 
+
+
+So next question : How to get Opticks isSensor assigned for CerenkovMinimal ?
+-------------------------------------------------------------------------------
+
+* hmm, vague recollect doing something like this before ... adding pseudo surfaces on Opticks side
+  to keep the models aligned : that was before the direct approach 
+
+  * what about :doc:`direct_route_needs_AssimpGGeo_convertSensors_equivalent`
+
+* need to review the direct conversion : g4ok-cd x4-cd
+
+

@@ -39,7 +39,9 @@ void EventAction::EndOfEventAction(const G4Event* event)
     NPY<float>* hits = ok->getHits(); 
 
     assert( hits == NULL || hits->getNumItems() == unsigned(num_hits) ) ; 
-    LOG(error) << " num_hits " << num_hits ; 
+    LOG(error) << " num_hits " << num_hits 
+               << " hits " << hits 
+               ; 
 
     // TODO: feed the hits into the Hit collection 
 

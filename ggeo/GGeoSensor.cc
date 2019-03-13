@@ -41,6 +41,7 @@ void GGeoSensor::AddSensorSurfaces( GGeo* gg )
         LOG(fatal) << " require a cathode material to AddSensorSurfaces " ; 
         return ; 
     }
+    assert( cathode_props ); 
 
     unsigned nclv = gg->getNumCathodeLV();
 

@@ -60,6 +60,7 @@ class G4OK_API G4Opticks
 {
     private:
         static const char* fEmbeddedCommandLine ; 
+        static std::string EmbeddedCommandLine(const char* extra=NULL); 
     public:
         static G4Opticks* GetOpticks();
         static void Finalize();

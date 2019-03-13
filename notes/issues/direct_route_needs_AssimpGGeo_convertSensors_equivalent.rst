@@ -102,6 +102,11 @@ How about being radically simple : just require substring "cathode" or "Cathode"
   * PMT identifiers can come later, i can just give them an adhoc index  
 
 
+Name Hardcoding not a good approach : instead need API in G4Opticks to declare sensitive LV names 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+
 CGDMLDetector::addMPT
 ----------------------
 
@@ -127,8 +132,6 @@ Fixed inconsistency by moving surface collection from GGeo entirely into GSurfac
     2018-08-03 19:39:59.279 FATAL [8108243] [GGeoSensor::AddSensorSurfaces@31]  require a cathode material to AddSensorSurfaces 
     2018-08-03 19:39:59.279 ERROR [8108243] [X4PhysicalVolume::convertSensors@167]  m_lvsdname PmtHemiCathode,HeadonPmtCathode num_clv 2 num_bds 8 num_sks0 34 num_sks1 34
     2018-08-03 19:39:59.279 INFO  [8108243] [GPropertyLib::close@418] GPropertyLib::close type GSurfaceLib buf 46,2,39,4
-
-
 
 
 Finding Sensitive Volumes  : old way 
@@ -231,4 +234,11 @@ Adding SensorSurfaces
     epsilon:geant4_10_02_p01 blyth$ 
     epsilon:geant4_10_02_p01 blyth$ g4-hh EFFICIENCY 
     epsilon:geant4_10_02_p01 blyth$ 
+
+
+With direct geomerty : I have access to original in memory Geant4 geometry model ... so can persist my way
+--------------------------------------------------------------------------------------------------------------
+
+
+
 

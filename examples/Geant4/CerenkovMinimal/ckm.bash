@@ -3,19 +3,40 @@ ckm-vi(){ vi $(ckm-source) ; }
 ckm-env(){ echo -n ; }
 ckm-usage(){ cat << EOU
 
+CerenkovMinimal
+==================
+
+Exploring a different architecture for Opticks executables, 
+revolving around the direct geometry geocache and persisted gensteps which
+are identified via OPTICKS_KEY envvar.   
+
+
+ckm--
+ckm-go
+    builds and runs the CerenkovMinimal example
+ckm-run
+    just runs the CerenkovMinimal example   
+
+
 EOU
 }
 ckm-dir(){ echo $(dirname $(ckm-source)) ; }
 ckm-cd(){  cd $(ckm-dir) ; }
 ckm-c(){  cd $(ckm-dir) ; }
 
-ckm--(){ ckm-cd ; ./go.sh ; }
+
+ckm--(){ ckm-go ; }
+ckm-go(){ ckm-cd ; ./go.sh ; }
 
 ckm-run()
 {
     g4-
     g4-export        # internal envvar stuff is not done here 
     CerenkovMinimal  # NB the Opticks is embedded via G4OK : so commandline doesnt get thru 
+}
+
+ckm-run-bouncemax-zero(){
+   G4OPTICKS_DEBUG="--bouncemax 0" ckm-run
 }
 
 
@@ -54,12 +75,14 @@ EOI
 }
 
 
-
 ckm-notes(){ cat << EON
 
 --envkey 
      option makes executables sensitive to the OPTICKS_KEY envvar allowing 
      booting from the corresponding geocache 
+
+--natural
+     without this option the default is torch gensteps
 
 EON
 }
@@ -68,8 +91,8 @@ EON
 ckm-load(){      OPTICKS_KEY=$(ckm-key) lldb -- OKTest --load --natural --envkey ;}
 ckm-dump(){      OPTICKS_KEY=$(ckm-key) OpticksEventDumpTest --natural --envkey  ;}
 ckm-res(){       OPTICKS_KEY=$(ckm-key) lldb -- OpticksResourceTest --natural --envkey ;}
-ckm-okg4(){      OPTICKS_KEY=$(ckm-key) lldb -- OKG4Test --compute --envkey --embedded --save ;}
-ckm-okg4-load(){ OPTICKS_KEY=$(ckm-key) lldb -- OKG4Test --load --envkey --embedded ;}
+ckm-okg4(){      OPTICKS_KEY=$(ckm-key) lldb -- OKG4Test --compute --envkey --embedded --save --natural ;}
+ckm-okg4-load(){ OPTICKS_KEY=$(ckm-key) lldb -- OKG4Test --load --envkey --embedded --natural ;}
 ckm-mlib(){      OPTICKS_KEY=$(ckm-key) CMaterialLibTest --envkey  ;}
 ckm-gentest(){   OPTICKS_KEY=$(ckm-key) lldb -- CCerenkovGeneratorTest --natural --envkey ;}
 ckm-okt(){       OPTICKS_KEY=$(ckm-key) lldb -- OpticksTest --natural --envkey ;}
@@ -80,6 +103,19 @@ ckm-addr2line()
     PATH=/usr/bin lldb $(which CerenkovMinimal) -o "source list -a $addr"  --batch
 }
 
+
+ckm-genrun-note(){ cat << EON
+
+ckm-genrun func args...
+    generates a python script into a tmp directory from the output 
+    of bash function "func-" into func.py where func is the first argument 
+    to this bash function, then runs the script in ipython using the remainder 
+    of the arguments
+
+    See ckm-so for an example of usage
+
+EON
+}
 
 ckm-genrun(){
     local iwd=$PWD
@@ -205,14 +241,15 @@ Comparing Cerenkov generated photons between:
 ckm-- 
     CerenkovMinimal : geant4 example app, with genstep and photon collection
     via embedded Opticks with embedded commandline 
-    " --gltf 3 --compute --save --embedded --natural --dbgtex --printenabled --pindex 0 --bouncemax 0"  
+    " --gltf 3 --compute --save --embedded --natural --dbgtex --printenabled --pindex 0"  
+
+    Note as "--bouncemax 0" prevents getting any hits, now have to use G4OPTICKS_DEBUG="--bouncemax 0" to
+    add this to the G4Opticks embedded commandline. As done by: ckm-run-bouncemax-zero
 
     --bouncemax 0 
         means that photons are saved immediately after generation, with no propagation 
 
         * which means that GPU ox.npy can be matched with CPU so.npy 
-        * TODO: perhaps formalize that, by copying ox.npy to so.npy when --bouncemax 0 ??
-          but then what when switch bouncemax back to normal
    
     --printenabled --pindex 0
         dump kernel debug for photon 0 
@@ -223,7 +260,6 @@ ckm--
     as it does not make use of the CFG4/CRecorder : for full photon step recording : which 
     is the reason source/evt/g4live/natural/-1/ is rather empty compared
     to the fully featured source/evt/g4live/natural/1/
-
 
 
 ckm-gentest : 
@@ -251,7 +287,6 @@ Comparing photons from genstep 0,
     source/evt/g4live/natural/1/ox.npy  
 
 * initially same level of 1e-5 level deviations, mostly in wavelength 
-
 
 
 EON
