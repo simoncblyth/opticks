@@ -71,6 +71,12 @@ CAlignEngine::CAlignEngine(const char* ssdir)
     assert( m_default ); 
     LOG(info) << desc(); 
 
+    bool has_seq = m_seq_ni > 0 ; 
+    if(!has_seq) LOG(fatal) << "MISSING/EMPTY m_seq_path : " << m_seq_path 
+                            << " ( Run TRngBufTest executable to generate the missing .npy file ) " << desc() ; 
+
+    assert(has_seq); 
+
     if(!m_backtrace) return ; 
 
     if(m_sslogpath) 
@@ -110,7 +116,9 @@ std::string CAlignEngine::desc() const
 
 void CAlignEngine::setSequenceIndex(int seq_index)
 {
-    assert( seq_index < m_seq_ni );
+    bool have_seq = seq_index < m_seq_ni ; 
+    if(!have_seq) LOG(fatal) << "OUT OF RANGE : " << desc() ; 
+    assert( have_seq );
   
     m_seq_index = seq_index ; 
 

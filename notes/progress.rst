@@ -19,6 +19,25 @@ to work with that parser follow some rules:
 3. bullet lines to be included in the summary should be in bold
 
 
+2019 March
+-----------
+
+* improve CAlignEngine error handling of missing seq
+
+2018 October
+-------------
+
+* CHEP 2018 proceedings
+* viz flightpath enhancements, simple control language 
+
+2018 September
+---------------
+
+* CCerenkovGenerator : G4-G4 matching to 1e-8 : so can resume from gensteps, bi-executable convenience
+* PMT neck tests : hyperboloid/cone 
+* Qingdao seminar ~21st (1.5hr), preparation in env repo
+* looking into usage of GPUs for reconstruction
+
 2018 August
 -------------
 
@@ -54,6 +73,8 @@ to work with that parser follow some rules:
 * implemented CCerenkovGenerator + CGenstepSource : to allow 2nd executable Geant4 
   to run from gensteps by generating photons at primary level 
   (turning secondary photons from the 1st executable into primaries of the 2nd)
+
+   * **notice this is turning gensteps into first class citizens**
 
 * implemented CAlignEngine for simple switching between pre-cooked RNG streams 
 

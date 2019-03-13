@@ -4,6 +4,7 @@ issues
 
 .. toctree::
 
+    ckm_revival_improve_error_handling_of_missing_rng_seq
     scintillation_integration_example
     dot_opticks_misuse
     csg_intersect_comparisons
