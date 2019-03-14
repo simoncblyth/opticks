@@ -166,6 +166,7 @@ G4VParticleChange* CCerenkovGenerator::GeneratePhotonsFromGenstep( const Opticks
     G4ThreeVector p0 = deltaPosition.unit();
 
     LOG(info) 
+        << " From Genstep : " 
         << " Pmin " << Pmin
         << " Pmax " << Pmax
         << " wavelength_min(nm) " << wavelength_min/nm
@@ -196,7 +197,7 @@ G4VParticleChange* CCerenkovGenerator::GeneratePhotonsFromGenstep( const Opticks
     G4Track aTrack ; 
     aTrack.SetTrackID(trackID) ; 
 
-    G4MaterialPropertyVector* Rindex = GetRINDEX(materialIndex) ; 
+    G4MaterialPropertyVector* Rindex = GetRINDEX(materialIndex) ;  // NB straight G4, no range standardization
 
     G4double Pmin2 = Rindex->GetMinLowEdgeEnergy();
     G4double Pmax2 = Rindex->GetMaxLowEdgeEnergy();

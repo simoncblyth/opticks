@@ -43,8 +43,12 @@ int main(int argc, char** argv)
     unsigned margin = 10 ;   
     gs->dump( modulo, margin ) ; 
 
-    const char* testdir = "$KEYDIR/tests/CCerenkovGeneratorTest" ;
-    CAlignEngine::Initialize( testdir );  
+    const char* simstreamdir = "$KEYDIR/tests/CCerenkovGeneratorTest" ;
+    // KEYDIR is an internal "envvar", see boosttrap/BFile.cc that 
+    // is resolved to BResource::Get("idpath"). 
+    // The simstreamdir is used for RNG logging and storing the 
+    // generated photons.
+    CAlignEngine::Initialize( simstreamdir );  
 
     unsigned idx = 0 ;  
     G4VParticleChange* pc = CCerenkovGenerator::GeneratePhotonsFromGenstep(gs,idx) ;
@@ -54,7 +58,7 @@ int main(int argc, char** argv)
 
 
     NPYBase::SetNPDump(true);
-    collector->savePhotons(testdir, "so.npy") ; 
+    collector->savePhotons(simstreamdir, "so.npy") ; 
     NPYBase::SetNPDump(false);
 
     LOG(info) << collector->desc() ;

@@ -146,14 +146,17 @@ void CG4Ctx::initEvent(const OpticksEvent* evt)
 
     const char* typ = evt->getTyp();
     _gen = OpticksFlags::SourceCode(typ);
-    assert( _gen == TORCH || _gen == G4GUN  );
-  
+
     LOG(info) << "CG4Ctx::initEvent"
               << " _record_max (numPhotons from genstep summation) " << _record_max 
               << " photons_per_g4event " << _photons_per_g4event
               << " steps_per_photon " << _steps_per_photon
+              << " typ " << typ
               << " gen " << _gen
+              << " SourceType " << OpticksFlags::SourceType(_gen)
               ;
+
+    assert( _gen == TORCH || _gen == G4GUN || _gen == NATURAL );  // what is needed to add NATURAL ?
 }
 
 std::string CG4Ctx::desc_event() const 
