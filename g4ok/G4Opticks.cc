@@ -15,6 +15,8 @@
 #include "C4PhotonCollector.hh"
 #include "CAlignEngine.hh"
 #include "CGDML.hh"
+#include "C4FPEDetection.hh"
+
 
 #include "G4Opticks.hh"
 
@@ -111,8 +113,10 @@ G4Opticks::G4Opticks()
     m_g4hit(NULL),
     m_gpu_propagate(true)
 {
-    std::cout << "G4Opticks::G4Opticks" << std::endl ; 
     assert( fOpticks == NULL ); 
+    C4FPEDetection::InvalidOperationDetection_Disable();  // see notes/issues/OKG4Test_prelaunch_FPE_causing_fail.rst
+    std::cout << "DISABLE FPE detection : as it breaks OptiX launches" << std::endl ; 
+    std::cout << "G4Opticks::G4Opticks" << std::endl ; 
 }
 
 

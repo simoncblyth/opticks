@@ -1,6 +1,17 @@
 OKG4Test_prelaunch_FPE_causing_fail FIXED with C4FPEDetection
 =================================================================
 
+* have not seen this problem on macOS, only Linux
+* root cause is using a debug Geant4 build which switches on the FPE detection 
+* bites me in ckm- CerenkovMinimal too 
+
+* need a higher level way to switch off the FPE detection in G4Opticks, 
+  is that finniky abut when it gets done ... would guess not, just try doing it 
+  when G4Opticks is first invoked ?
+
+  * hmm should G4Opticks be exposing the underlying Opticks to users or not ?
+
+
 
 It appears the prelaunch width,height of 0,0 that have been using forever actually causes an FPE inside OptiX 
 that shows up only in OKG4Test and not OKTest for example : because G4 debug build has G4FPE_DEBUG defined ?? 

@@ -89,14 +89,22 @@ EON
 }
 
 
-ckm-load(){      OPTICKS_KEY=$(ckm-key) lldb -- OKTest --load --natural --envkey ;}
+
+ckm-dbg(){
+  case $(uname) in
+     Darwin) echo lldb -- ;; 
+     Linux) echo gdb --args ;;
+  esac
+}
+
+ckm-load(){      OPTICKS_KEY=$(ckm-key) $(ckm-dbg) OKTest --load --natural --envkey ;}
 ckm-dump(){      OPTICKS_KEY=$(ckm-key) OpticksEventDumpTest --natural --envkey  ;}
-ckm-res(){       OPTICKS_KEY=$(ckm-key) lldb -- OpticksResourceTest --natural --envkey ;}
-ckm-okg4(){      OPTICKS_KEY=$(ckm-key) lldb -- OKG4Test --compute --envkey --embedded --save --natural ;}
-ckm-okg4-load(){ OPTICKS_KEY=$(ckm-key) lldb -- OKG4Test --load --envkey --embedded --natural ;}
+ckm-res(){       OPTICKS_KEY=$(ckm-key) $(ckm-dbg) OpticksResourceTest --natural --envkey ;}
+ckm-okg4(){      OPTICKS_KEY=$(ckm-key) $(ckm-dbg) OKG4Test --compute --envkey --embedded --save --natural ;}
+ckm-okg4-load(){ OPTICKS_KEY=$(ckm-key) $(ckm-dbg) OKG4Test --load --envkey --embedded --natural ;}
 ckm-mlib(){      OPTICKS_KEY=$(ckm-key) CMaterialLibTest --envkey  ;}
-ckm-gentest(){   OPTICKS_KEY=$(ckm-key) lldb -- CCerenkovGeneratorTest --natural --envkey ;}
-ckm-okt(){       OPTICKS_KEY=$(ckm-key) lldb -- OpticksTest --natural --envkey ;}
+ckm-gentest(){   OPTICKS_KEY=$(ckm-key) $(ckm-dbg) CCerenkovGeneratorTest --natural --envkey ;}
+ckm-okt(){       OPTICKS_KEY=$(ckm-key) $(ckm-dbg) OpticksTest --natural --envkey ;}
 
 
 ckm-gentest-notes(){ cat << EON
@@ -296,7 +304,7 @@ ckm-so-notes
 
 Comparing Cerenkov generated photons between:
 
-ckm-- 
+ckm-go 
     CerenkovMinimal : geant4 example app, with genstep and photon collection
     via embedded Opticks with embedded commandline 
     " --gltf 3 --compute --save --embedded --natural --dbgtex --printenabled --pindex 0"  
