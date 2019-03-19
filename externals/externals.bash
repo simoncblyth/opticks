@@ -9,6 +9,7 @@ assimp-(){           . $(opticks-home)/externals/assimp.bash            && assim
 openmesh-(){         . $(opticks-home)/externals/openmesh.bash          && openmesh-env $* ; }
 cuda-(){             . $(opticks-home)/externals/cuda.bash              && cuda-env $* ; }
 cudamac-(){          . $(opticks-home)/externals/cudamac.bash           && cudamac-env $* ; }
+cudalin-(){          . $(opticks-home)/externals/cudalin.bash           && cudalin-env $* ; }
 cu-(){               . $(opticks-home)/externals/cuda.bash              && cuda-env $* ; }
 thrust-(){           . $(opticks-home)/externals/thrust.bash            && thrust-env $* ; }
 optix-(){            . $(opticks-home)/externals/optix.bash             && optix-env $* ; }

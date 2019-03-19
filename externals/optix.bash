@@ -110,6 +110,77 @@ Bindless programs
     bound programs do not inherit the semantic type or scope lookup of the calling program
 
 
+
+
+OptiX 6.0 (Feb 2019) : with RTX support
+-------------------------------------------
+
+* https://developer.nvidia.com/designworks/optix/downloads/6.0.0/releasenotes
+
+System Requirements (for running binaries referencing OptiX)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* Graphics Hardware : All NVIDIA GPUs of Compute Capability 5.0 (Maxwell) or higher are supported.  
+  (see cuda-;cuda-vi for a list of GPUs with their compute capability)
+
+* Graphics Driver: 
+
+  * Windows: driver version 418.81 or later is required.  
+  * Linux: driver version 418.30 or later is required.  
+
+    * https://www.nvidia.com/Download/driverResults.aspx/142958/en-us
+
+* Operating System:
+
+  * Windows 7/8.1/10 64-bit; Linux RHEL 4.8+ or Ubuntu 10.10+ 64-bit  
+  * (macOS has been dropped)
+
+* CUDA Toolkit:
+
+  * It is not required to have any CUDA toolkit installed to be able to run OptiX-based applications.
+
+
+Development Environment Requirements (for compiling with OptiX)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* CUDA Toolkit 7.0, 8.0, 9.0, 10.0
+
+  OptiX 6.0.0 has been built with CUDA 10, but any specified toolkit should work
+  when compiling PTX for OptiX. If an application links against both the OptiX
+  library and the CUDA runtime on Linux, it is recommended to use CUDA 10.0. 
+
+  OptiX supports running with NVIDIA Nsight but does not currently support kernel
+  debugging. In addition, it is not recommended to compile PTX code using the -G
+  (debug) flag with nvcc. However, if you need line info, please add the -lineinfo flag. 
+
+
+Improvements in OptiX 6.0.0  
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* OptiX 6.0.0 fully implements RTX acceleration including 
+
+  * Support for RT Cores    
+  * Separate compilation of shaders for faster startup times and updates 
+  * **RTX acceleration is supported on Maxwell and newer GPUs but require Turing GPUs for RT Core acceleration** 
+
+* Multi-GPU support for scaling performance across GPUs, Mixing GPUs with RT Cores and without RT Cores is not supported 
+* Support for scaling texture memory across NVLink connected GPUs 
+* Triangle API with motion blur and attribute programs 
+* rtTrace from bindless callable programs 
+* Turing-specific optimizations for the OptiX AI denoiser 
+* API to set the stack size by providing the trace depth 
+* API to take advantage of hardware-accelerated 8-bit mask 
+
+
+Known Issues 
+~~~~~~~~~~~~~~
+
+* Selectors are not implemented in RTX Mode 
+* Acceleration structure builds are not done in parallel on Multi 
+  GPU systems so build times are longer with Multi-GPU
+
+
+
 OptiX 5.1.0 (May 2018) Release Notes
 ---------------------------------------
 
@@ -141,8 +212,6 @@ Development Environment Requirements (for compiling with OptiX)
   OptiX 5.1 has been built with CUDA 9, but any specified toolkit should work
   when compiling PTX for OptiX. If an application links against both the OptiX
   library and the CUDA runtime on Linux, it is recommended to use CUDA 9.0.
-
-
 
 
 

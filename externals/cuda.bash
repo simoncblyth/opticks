@@ -78,6 +78,87 @@ Intros
 * https://devblogs.nvidia.com/unified-memory-cuda-beginners/
 
 
+GPU Compute Capability
+------------------------
+
+* https://developer.nvidia.com/cuda-gpus#collapse5
+
+* OptiX 6 (Feb 2019, with RTX support) is raising the bar 
+  from Compute Capability 3.0(Kepler) to 5.0(Maxwell)
+
+
+Tesla : Data Center
+~~~~~~~~~~~~~~~~~~~~
+
+=================  ======
+Data Center GPU     CC
+=================  ======
+Tesla T4            7.5
+Tesla V100          7.0
+Tesla P100          6.0
+Tesla P40           6.1
+Tesla P4            6.1
+Tesla M60           5.2
+Tesla M40           5.2
+-----------------  ------
+Tesla K80           3.7
+Tesla K40           3.5
+Tesla K20           3.5
+Tesla K10           3.0
+=================  ======
+
+
+GeForce : Desktop 
+~~~~~~~~~~~~~~~~~~~~~~
+
+=======================  ====================
+GPU                       Compute Capability
+=======================  ====================
+NVIDIA TITAN RTX         7.5
+Geforce RTX 2080 Ti      7.5
+Geforce RTX 2080         7.5
+Geforce RTX 2070         7.5
+Geforce RTX 2060         7.5
+NVIDIA TITAN V           7.0
+NVIDIA TITAN Xp          6.1
+NVIDIA TITAN X           6.1
+GeForce GTX 1080 Ti      6.1
+GeForce GTX 1080         6.1
+GeForce GTX 1070         6.1
+GeForce GTX 1060         6.1
+GeForce GTX 1050         6.1
+GeForce GTX TITAN X      5.2
+GeForce GTX 980 Ti       5.2
+GeForce GTX 980          5.2
+GeForce GTX 970          5.2
+GeForce GTX 960          5.2
+GeForce GTX 950          5.2
+GeForce GTX 750 Ti       5.0
+GeForce GTX 750          5.0
+-----------------------  --------------------
+GeForce GTX 780 Ti       3.5
+GeForce GTX 780          3.5
+GeForce GTX 770          3.0
+GeForce GTX 760          3.0
+GeForce GTX TITAN Z      3.5
+GeForce GTX TITAN Black  3.5
+GeForce GTX TITAN        3.5
+GeForce GTX 690          3.0
+GeForce GTX 680          3.0
+GeForce GTX 670          3.0
+GeForce GTX 660 Ti       3.0
+GeForce GTX 660          3.0
+GeForce GTX 650 Ti BOOST 3.0
+GeForce GTX 650 Ti       3.0
+GeForce GTX 650          3.0
+=======================  ====================
+
+
+
+
+
+
+
 dynamic parallelism : series by  Andy Adinets
 -------------------------------------------------
 
