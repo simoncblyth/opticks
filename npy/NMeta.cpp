@@ -203,7 +203,7 @@ void NMeta::write(const char* path0, const char* path1) const
 
     BFile::CreateDir(pdir.c_str()); 
 
-    LOG(info) << "write to " << path ; 
+    LOG(debug) << "write to " << path ; 
 
     std::ofstream out(path.c_str(), std::ios::out);
 

@@ -588,7 +588,7 @@ std::string BFile::preparePath(const char* dir_, const char* name, bool create )
     {
         if (fs::create_directories(fdir))
         {
-            LOG(info)<< "preparePath : created directory " << dir ;
+            LOG(info)<< "created directory " << dir ;
         }
     }
     if(fs::exists(fdir) && fs::is_directory(fdir))
@@ -599,7 +599,7 @@ std::string BFile::preparePath(const char* dir_, const char* name, bool create )
     }
     else
     {
-        LOG(warning)<< "preparePath : FAILED " 
+        LOG(warning)<< " FAILED " 
                     << " dir " << dir 
                     << " dir_ " << dir_ 
                     << " name " << name ;

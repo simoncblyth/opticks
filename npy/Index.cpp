@@ -345,7 +345,7 @@ void Index::save(const char* idpath)
     std::string sname = getPrefixedString("Source") ;
     std::string lname = getPrefixedString("Local") ;
 
-    LOG(info) << "Index::save"
+    LOG(verbose) 
               << " sname " << sname 
               << " lname " << lname 
               << " itemtype " << m_itemtype

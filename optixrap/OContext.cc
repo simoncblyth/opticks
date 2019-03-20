@@ -247,17 +247,17 @@ void OContext::close()
 
     unsigned int num = m_cfg->getNumEntryPoint() ;
 
-    LOG(info) << "OContext::close numEntryPoint " << num ; 
+    LOG(debug) << "numEntryPoint " << num ; 
 
     m_context->setEntryPointCount( num );
 
-    LOG(info) << "OContext::close setEntryPointCount done." ;
+    LOG(debug) << "setEntryPointCount done." ;
  
     if(m_verbose) m_cfg->dump("OContext::close");
 
     m_cfg->apply();
 
-    LOG(info) << "OContext::close m_cfg->apply() done." ;
+    LOG(debug) << "m_cfg->apply() done." ;
 
 }
 
@@ -276,7 +276,7 @@ void OContext::launch(unsigned int lmode, unsigned int entry, unsigned int width
 {
     if(!m_closed) close();
 
-    LOG(LEVEL)<< "OContext::launch" 
+    LOG(LEVEL)
               << " entry " << entry 
               << " width " << width 
               << " height " << height 
@@ -287,28 +287,28 @@ void OContext::launch(unsigned int lmode, unsigned int entry, unsigned int width
     if(lmode & VALIDATE)
     {
         double dt = validate_();
-        LOG(LEVEL) << "OContext::launch VALIDATE time: " << dt ;
+        LOG(LEVEL) << "VALIDATE time: " << dt ;
         if(times) times->validate  += dt  ;
     }
 
     if(lmode & COMPILE)
     {
         double dt = compile_();
-        LOG(LEVEL) << "OContext::launch COMPILE time: " << dt ;
+        LOG(LEVEL) << "COMPILE time: " << dt ;
         if(times) times->compile  += dt ;
     }
 
     if(lmode & PRELAUNCH)
     {
         double dt = launch_(entry, width, height );
-        LOG(LEVEL) << "OContext::launch PRELAUNCH time: " << dt ;
+        LOG(LEVEL) << "PRELAUNCH time: " << dt ;
         if(times) times->prelaunch  += dt ;
     }
 
     if(lmode & LAUNCH)
     {
         double dt = m_llogpath ? launch_redirected_(entry, width, height ) : launch_(entry, width, height );
-        LOG(LEVEL) << "OContext::launch LAUNCH time: " << dt  ;
+        LOG(LEVEL) << "LAUNCH time: " << dt  ;
         if(times) times->launch  += dt  ;
     }
 }
@@ -376,11 +376,7 @@ indicating that the cleanup is not complete::
     2017-12-13 15:33:13.436 FATAL [321569] [Opticks::dumpRC@186]  rc 1 rcmsg : OpticksAna::run non-zero RC from ana script
     2017-12-13 15:33:13.436 INFO  [321569] [SSys::WaitForInput@151] SSys::WaitForInput OpticksAna::run paused : hit RETURN to continue...
 
-
-
 */
-
-
 
 
 
@@ -674,7 +670,6 @@ void OContext::snap(const char* path)
     output_buffer->getSize(width, height, depth);
 
     LOG(info) 
-         << "OContext::snap"
          << " path " << path 
          << " width " << width
          << " width " << (int)width
@@ -700,7 +695,6 @@ void OContext::save(const char* path)
     output_buffer->getSize(width, height, depth);
 
     LOG(info)
-         << "OContext::save"
          << " width " << width
          << " width " << (int)width
          << " height " << height

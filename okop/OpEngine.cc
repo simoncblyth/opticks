@@ -98,20 +98,31 @@ void OpEngine::initPropagation()
 
 unsigned OpEngine::uploadEvent()
 {
-    return m_oevt->upload();                   // creates OptiX buffers, uploads gensteps
+    LOG(info) << "." ; 
+    LOG(verbose) << "[" ; 
+    unsigned n = m_oevt->upload();                   // creates OptiX buffers, uploads gensteps
+    LOG(verbose) << "]" ; 
+    return n ; 
 }
 
 void OpEngine::propagate()
 {
+    LOG(info) << "[" ; 
+
+    LOG(debug) << "( seeder.seedPhotonsFromGensteps ";  
     m_seeder->seedPhotonsFromGensteps();  // distributes genstep indices into the photons buffer OR seed buffer
+    LOG(debug) << ") seeder.seedPhotonsFromGensteps ";  
 
     m_oevt->markDirty();                   // inform OptiX that must sync with the CUDA modified photon/seed depending on WITH_SEED_BUFFER 
 
     //m_zeroer->zeroRecords();              // zeros on GPU record buffer via OptiX or OpenGL  (not working OptiX 4 in interop)
 
+    LOG(info) << "( propagator.launch ";  
     m_propagator->launch();               // perform OptiX GPU propagation : write the photon, record and sequence buffers
+    LOG(info) << ") propagator.launch ";  
 
     indexEvent();
+    LOG(info) << "]" ; 
 }
 
 
@@ -128,7 +139,11 @@ void OpEngine::indexEvent()
 
 unsigned OpEngine::downloadEvent()
 {
-    return m_oevt->download();
+    LOG(info) << "." ; 
+    LOG(debug) << "[" ; 
+    unsigned n = m_oevt->download();
+    LOG(debug) << "]" ; 
+    return n ; 
 }
 
 

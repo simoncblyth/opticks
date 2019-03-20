@@ -81,7 +81,7 @@ void OpticksRun::annotateEvent()
     const char* testcsgpath = resource->getTestCSGPath();
     const char* geotestconfig = resource->getTestConfig();
 
-    LOG(info) << "OpticksRun::annotateEvent"
+    LOG(debug) 
               << " testcsgpath " << ( testcsgpath ? testcsgpath : "-" )
               << " geotestconfig " << ( geotestconfig ? geotestconfig : "-" )
               ;
@@ -128,13 +128,13 @@ gensteps and maybe source photon data (via aux association) are lodged into m_g4
 before passing baton (sharing pointers) with m_evt
 
 **/
-void OpticksRun::setGensteps(NPY<float>* gensteps) // THIS IS CALLED FROM VERY HIGH LEVEL IN OKMgr to OKG4Mgr 
+void OpticksRun::setGensteps(NPY<float>* gensteps) // THIS IS CALLED FROM VERY HIGH LEVEL IN OKMgr OR OKG4Mgr 
 {
     bool no_gensteps = gensteps == NULL ; 
     if(no_gensteps) LOG(fatal) << "OpticksRun::setGensteps given NULL gensteps" ; 
     assert(!no_gensteps); 
 
-    LOG(info) << "OpticksRun::setGensteps " << gensteps->getShapeString() ;  
+    LOG(info) << "genstep " << gensteps->getShapeString() ;  
 
     assert(m_evt && m_g4evt && "must OpticksRun::createEvent prior to OpticksRun::setGensteps");
 
@@ -161,17 +161,28 @@ void OpticksRun::setGensteps(NPY<float>* gensteps) // THIS IS CALLED FROM VERY H
     passBaton();  
 }
 
+/**
+OpticksRun::passBaton
+
+Handoff from G4Event to Opticks event of the
+Nopstep, Genstep and Source buffer pointers.
+NB there is no cloning as these buffers are 
+not distinct between Geant4 and Opticks
+
+**/
+
 void OpticksRun::passBaton()
 {
     NPY<float>* nopstep = m_g4evt->getNopstepData() ;
     NPY<float>* genstep = m_g4evt->getGenstepData() ;
     NPY<float>* source  = m_g4evt->getSourceData() ;
 
-    LOG(info) << "OpticksRun::passBaton"
-              << " nopstep " << nopstep
-              << " genstep " << genstep
-              << " source " << source
-              ;
+    LOG(debug)
+           << "OpticksRun::passBaton"
+           << " nopstep " << nopstep
+           << " genstep " << genstep
+           << " source " << source
+           ;
 
    // Not-cloning as these buffers are not actually distinct 
    // between G4 and OK.

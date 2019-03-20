@@ -960,7 +960,8 @@ void OpticksEvent::setBufferControl(NPYBase* data)
     if(isInterop()) ctrl.add(OpticksBufferControl::INTEROP_MODE_) ; 
 
     if(ctrl("VERBOSE_MODE"))
-     LOG(info) << std::setw(10) << name 
+     LOG(verbose) 
+               << std::setw(10) << name 
                << " : " << ctrl.description("(spec)") 
                << " : " << brief()
                ;
@@ -1581,12 +1582,16 @@ void OpticksEvent::save()
 {
     if(!CanAnalyse(this))
     {
-        LOG(error) << "skip as CanAnalyse returns false " ; 
+        LOG(error) << "skip as CanAnalyse returns false (no rec) : " << getRelDir() ; 
         // This avoids writing the G4 evt domains, when running without --okg4 
         // that leads to unhealthy mixed timestamp event loads in evt.py. 
         // Different timestamps for ab.py between A and B 
         // is tolerated, although if too much time divergence is to be expected.
         return ; 
+    }
+    else
+    {
+        LOG(info) << "proceed as CanAnalyse returns true (with rec) : " << getRelDir() ; 
     }
 
     (*m_timer)("_save");
@@ -1662,8 +1667,8 @@ void OpticksEvent::saveNopstepData()
     {
         unsigned num_nop = no->getNumItems(); 
         if(num_nop > 0)  no->save("no", m_typ,  m_tag, m_udet);
-        if(num_nop == 0) LOG(info) << "saveNopstepData zero nop " ;
-        no->dump("OpticksEvent::save (nopstep)");
+        if(num_nop == 0) LOG(debug) << "saveNopstepData zero nop " ;
+        if(num_nop > 0) no->dump("OpticksEvent::save (nopstep)");
     
         NPY<int>* idom = getIDomain();
         assert(idom && "OpticksEvent::save non-null nopstep BUT HAS NULL IDOM ");
@@ -2250,7 +2255,7 @@ void OpticksEvent::saveIndex()
     bool is_indexed = isIndexed();
     if(!is_indexed)
     {
-        LOG(warning) << "OpticksEvent::saveIndex SKIP as not indexed " ; 
+        LOG(warning) << "SKIP as not indexed " ; 
         return ; 
     }
 
@@ -2266,7 +2271,7 @@ void OpticksEvent::saveIndex()
     NPYBase::setGlobalVerbose(false);
 
     std::string tagdir = getTagDir();
-    LOG(info) << "OpticksEvent::saveIndex"
+    LOG(verbose) 
               << " tagdir " << tagdir
               << " seqhis " << m_seqhis
               << " seqmat " << m_seqmat
@@ -2276,17 +2281,17 @@ void OpticksEvent::saveIndex()
     if(m_seqhis)
         m_seqhis->save(tagdir.c_str());        
     else
-        LOG(warning) << "OpticksEvent::saveIndex no seqhis to save " ;
+        LOG(warning) << "no seqhis to save " ;
 
     if(m_seqmat)
         m_seqmat->save(tagdir.c_str());        
     else
-        LOG(warning) << "OpticksEvent::saveIndex no seqmat to save " ;
+        LOG(warning) << "no seqmat to save " ;
 
     if(m_bndidx)
         m_bndidx->save(tagdir.c_str());        
     else
-        LOG(warning) << "OpticksEvent::saveIndex no bndidx to save " ;
+        LOG(warning) << "no bndidx to save " ;
 }
 
 void OpticksEvent::loadIndex()
@@ -2299,7 +2304,7 @@ void OpticksEvent::loadIndex()
     m_seqmat = Index::load(tagdir, OpticksConst::SEQMAT_NAME_, reldir );  
     m_bndidx = Index::load(tagdir, OpticksConst::BNDIDX_NAME_, reldir );
 
-    LOG(debug) << "OpticksEvent::loadIndex"
+    LOG(debug) 
               << " tagdir " << tagdir 
               << " seqhis " << m_seqhis 
               << " seqmat " << m_seqmat 

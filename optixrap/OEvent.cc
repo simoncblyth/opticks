@@ -63,9 +63,19 @@ OEvent::OEvent(Opticks* ok, OContext* ocontext)
 }
 
 
+
+/**
+OEvent::createBuffers
+-----------------------
+
+Invoked by OEvent::upload when buffers not yet created.
+
+**/
+
+
 void OEvent::createBuffers(OpticksEvent* evt)
 {
-    LOG(info) << "OEvent::createBuffers " << evt->getShapeString() ; 
+    LOG(debug) << evt->getShapeString() ; 
     // NB in INTEROP mode the OptiX buffers for the evt data 
     // are actually references to the OpenGL buffers created 
     // with createBufferFromGLBO by Scene::uploadEvt Scene::uploadSelection
@@ -289,7 +299,7 @@ unsigned OEvent::uploadGensteps(OpticksEvent* evt)
 
     if(m_ocontext->isCompute()) 
     {
-        LOG(info) << "OEvent::uploadGensteps (COMPUTE) id " << evt->getId() << " " << gensteps->getShapeString() << " -> " << npho  ;
+        LOG(debug) << "OEvent::uploadGensteps (COMPUTE) id " << evt->getId() << " " << gensteps->getShapeString() << " -> " << npho  ;
         OContext::upload<float>(m_genstep_buffer, gensteps);
     }
     else if(m_ocontext->isInterop())
@@ -354,7 +364,7 @@ void OEvent::download(OpticksEvent* evt, unsigned mask)
     assert(evt) ;
 
    
-    LOG(info)<<"OEvent::download id " << evt->getId()  ;
+    LOG(debug)<<"OEvent::download id " << evt->getId()  ;
  
     if(mask & GENSTEP)
     {
@@ -395,9 +405,9 @@ unsigned OEvent::downloadHits(OpticksEvent* evt)
 
     NPY<float>* hit = evt->getHitData();
 
-    LOG(error) << "OEvent::downloadHits.cpho" ;
+    LOG(debug) << "OEvent::downloadHits.cpho" ;
     CBufSpec cpho = m_photon_buf->bufspec();  
-    LOG(error) << "OEvent::downloadHits.cpho DONE " ;
+    LOG(debug) << "OEvent::downloadHits.cpho DONE " ;
     assert( cpho.size % 4 == 0 );
     cpho.size /= 4 ;    //  decrease size by factor of 4, increases cpho "item" from 1*float4 to 4*float4 
 

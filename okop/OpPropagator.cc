@@ -54,7 +54,7 @@ void OpPropagator::propagate()
 
     assert(evt);
 
-    LOG(fatal) << "OpPropagator::propagate(" << evt->getId() << ") " << m_ok->brief()   ;
+    LOG(fatal) << "evtId(" << evt->getId() << ") " << m_ok->brief()   ;
 
     uploadEvent();
 
@@ -64,7 +64,7 @@ void OpPropagator::propagate()
 
     int nhit = m_ok->isSave() ? downloadEvent() : -1 ; 
 
-    LOG(fatal) << "OpPropagator::propagate(" << evt->getId() << ") DONE nhit: " << nhit    ;
+    LOG(fatal) << "evtId(" << evt->getId() << ") DONE nhit: " << nhit    ;
 
     OK_PROFILE("OpPropagator::propagate.END");
 }

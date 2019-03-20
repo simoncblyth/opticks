@@ -25,6 +25,19 @@ Only used from::
     okop/tests/OpSnapTest
     g4ok/G4Opticks
 
+Canonical OpMgr instance m_opmgr resides in G4Opticks and 
+is intanciated by G4Opticks::setGeometry.  Mainly used 
+from G4Opticks::propagateOpticalPhotons.
+
+Responsibilities:
+
+1. receive gensteps
+2. invoke lower level OpPropagator
+3. supply hits 
+
+
+DevNote
+--------
 
 Notice in propagate() repetition of the interplay between 
 OpPropagator.m_propagator and OpticksRun.m_run ... 

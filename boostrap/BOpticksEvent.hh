@@ -36,6 +36,7 @@ class BRAP_API  BOpticksEvent {
         static int       LAYOUT_VERSION ; 
         static const char* DEFAULT_DIR_TEMPLATE  ;
         static const char* DEFAULT_DIR_TEMPLATE_NOTAG  ;
+        static const char* DEFAULT_DIR_TEMPLATE_RELATIVE  ;
         static const char* OVERRIDE_EVENT_BASE ;
    public:
         virtual void Summary(const char* msg="BOpticksEvent::Summary");
@@ -45,6 +46,7 @@ class BRAP_API  BOpticksEvent {
        static void SetOverrideEventBase(const char* override_event_base); // NB remember to clear override by setting NULL after use
 
    public:
+       static std::string reldir(const char* top, const char* sub, const char* tag );
        static std::string directory(const char* top, const char* sub, const char* tag, const char* anno=NULL  );
        static std::string path(     const char* top, const char* sub, const char* tag, const char* stem, const char* ext=".npy");
        static const char* srctagdir( const char* det, const char* typ, const char* tag);

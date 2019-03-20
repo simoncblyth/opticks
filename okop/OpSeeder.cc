@@ -139,6 +139,8 @@ you need to write to it as well as read, whereas when
 seeding to the seed buffer the photon buffer becomes 
 read only from CPU side.
 
+Seeding to SEED BUF is the current default.
+
 **/
 
 void OpSeeder::seedPhotonsFromGenstepsViaOptiX()
@@ -149,14 +151,14 @@ void OpSeeder::seedPhotonsFromGenstepsViaOptiX()
     CBufSpec s_gs = genstep->bufspec();
 
 #ifdef WITH_SEED_BUFFER
-    LOG(debug) << "OpSeeder::seedPhotonsFromGenstepsViaOptiX : SEEDING TO SEED BUF  " ; 
+    LOG(info) << "SEEDING TO SEED BUF  " ; 
     OBuf* seed = m_oevt->getSeedBuf() ;
     CBufSpec s_se = seed->bufspec();   //  optix::Buffer::getDevicePointer happens here  ( CBufSpec just holder for devPtr, size, numBytes )
     seedPhotonsFromGenstepsImp(s_gs, s_se);
     //s_gs.Summary("OpSeeder::seedPhotonsFromGenstepsViaOptiX (CBufSpec)s_gs");
     //s_se.Summary("OpSeeder::seedPhotonsFromGenstepsViaOptiX (CBufSpec)s_se");
 #else
-    LOG(info) << "OpSeeder::seedPhotonsFromGenstepsViaOptiX : seeding to photon buf  " ; 
+    LOG(info) << "seeding to photon buf  " ; 
     OBuf* photon = m_oevt->getPhotonBuf() ;
     CBufSpec s_ox = photon->bufspec();
     seedPhotonsFromGenstepsImp(s_gs, s_ox);

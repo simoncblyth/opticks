@@ -34,4 +34,10 @@ std::string NLoad::directory(const char* det, const char* typ, const char* tag, 
    return tagdir ; 
 }
 
+std::string NLoad::reldir(const char* det, const char* typ, const char* tag )
+{
+   std::string rdir = BOpticksEvent::reldir(det, typ, tag );  
+   return rdir ; 
+}
+
 

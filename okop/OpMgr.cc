@@ -89,6 +89,8 @@ OpticksEvent* OpMgr::getG4Event() const
 
 void OpMgr::propagate()
 {
+    LOG(info) << "\n\n[[\n\n" ; 
+
     const Opticks& ok = *m_ok ; 
     
     if(ok("nopropagate")) return ; 
@@ -111,11 +113,20 @@ void OpMgr::propagate()
 
     if(ok("save")) 
     {
+        LOG(info) << "( save " ;  
         m_run->saveEvent();
+        LOG(info) << ") save " ;  
+
+        LOG(info) << "( ana " ;  
         if(!production) m_hub->anaEvent();
+        LOG(info) << ") ana " ;  
     }
 
+    LOG(info) << "( postpropagate " ;  
     m_ok->postpropagate();  // profiling 
+    LOG(info) << ") postpropagate " ;  
+
+    LOG(info) << "\n\n]]\n\n" ; 
 }
 
 

@@ -14,6 +14,7 @@
 
 const char* BOpticksEvent::DEFAULT_DIR_TEMPLATE_NOTAG = "$OPTICKS_EVENT_BASE/evt/$1/$2" ;  // formerly "$LOCAL_BASE/env/opticks/$1/$2"
 const char* BOpticksEvent::DEFAULT_DIR_TEMPLATE       = "$OPTICKS_EVENT_BASE/evt/$1/$2/$3" ;  // formerly "$LOCAL_BASE/env/opticks/$1/$2"
+const char* BOpticksEvent::DEFAULT_DIR_TEMPLATE_RELATIVE = "evt/$1/$2/$3" ;  // 
 const char* BOpticksEvent::OVERRIDE_EVENT_BASE = NULL ; 
 
 const int BOpticksEvent::DEFAULT_LAYOUT_VERSION = 2 ; 
@@ -70,6 +71,9 @@ std::string BOpticksEvent::directory_(const char* top, const char* sub, const ch
 
     bool notag = tag == NULL ; 
     std::string base = directory_template(notag);
+
+    //LOG(info) << " base " << base ; 
+
     boost::replace_first(base, "$1", top ); 
     boost::replace_first(base, "$2", sub ); 
     if(tag) boost::replace_first(base, "$3", tag ); 
@@ -82,6 +86,28 @@ std::string BOpticksEvent::directory_(const char* top, const char* sub, const ch
     std::string dir = BFile::FormPath( ubase.c_str() ); 
     return dir ; 
 }
+
+
+std::string BOpticksEvent::reldir(const char* top, const char* sub, const char* tag )
+{
+    std::string base = DEFAULT_DIR_TEMPLATE_RELATIVE ; 
+
+    //LOG(info) << " base " << base ; 
+
+    boost::replace_first(base, "$1", top ); 
+    boost::replace_first(base, "$2", sub ); 
+    if(tag) boost::replace_first(base, "$3", tag ); 
+
+    std::stringstream ss ; 
+    ss << base ;
+    //if(anno) ss << "/" << anno ; 
+    std::string ubase = ss.str();
+
+    return ubase ; 
+}
+
+
+
 
 std::string BOpticksEvent::directory(const char* top, const char* sub, const char* tag, const char* anno)
 {

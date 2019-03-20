@@ -1914,7 +1914,7 @@ const char* Opticks::getDirectGenstepPath() const
 
     const char* srctagdir = BOpticksEvent::srctagdir(det, typ, tag ); 
 
-    LOG(info) << "Opticks::getDirectGenstepPath"
+    LOG(debug) 
               << " det " << det 
               << " typ " << typ 
               << " tag " << tag
@@ -1934,7 +1934,7 @@ const char* Opticks::getLegacyGenstepPath() const
 
     std::string path = NLoad::GenstepsPath(det, typ, tag);
 
-    LOG(info) << "Opticks::getLegacyGenstepPath"
+    LOG(debug) 
               << " det " << det 
               << " typ " << typ 
               << " tag " << tag

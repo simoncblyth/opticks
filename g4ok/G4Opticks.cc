@@ -235,6 +235,7 @@ TODO: relocate direct events inside the geocache ?
       and place these direct gensteps and genphotons 
       within the OpticksEvent directory 
 
+      done already ?
 
 **/
 
@@ -265,7 +266,7 @@ int G4Opticks::propagateOpticalPhotons()
         m_hits = event->getHitData()->clone() ; 
 
         // minimal g4 side instrumentation in "1st executable" 
-        // do after propagate, so the event will be created
+        // do after propagate, so the event will have been created already
         m_g4hit = m_g4hit_collector->getPhoton();  
         m_g4evt = m_opmgr->getG4Event(); 
         m_g4evt->saveHitData( m_g4hit ) ; // pass thru to the dir, owned by m_g4hit_collector ?

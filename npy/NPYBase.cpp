@@ -801,7 +801,7 @@ void NPYBase::saveMeta( const char* path, const char* ext) const
     std::string metapath_ = BFile::ChangeExt(path, ext);  
     const char* metapath = metapath_.c_str(); 
 
-    LOG(info) << " save to " << metapath ;      
+    LOG(debug) << " save to " << metapath ;      
     m_meta->save(metapath); 
 }
 

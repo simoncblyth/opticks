@@ -25,7 +25,7 @@ TBuf::TBuf(const char* name, CBufSpec spec, const char* delim) :
         m_spec(spec),
         m_delim(strdup(delim))
 {
-    m_spec.Summary("TBuf::TBuf.m_spec"); 
+    //m_spec.Summary("TBuf::TBuf.m_spec"); 
 }
 
 CBufSlice TBuf::slice( unsigned int stride, unsigned int begin, unsigned int end ) const 
