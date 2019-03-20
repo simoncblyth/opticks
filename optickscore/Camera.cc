@@ -166,7 +166,7 @@ void Camera::aim(float basis)
    float a_far  = basis*5.f ;
    float a_scale = basis ; 
 
-   LOG(fatal) 
+   LOG(info) 
           << " basis " << basis
           << " a_near " << a_near
           << " a_far " << a_far

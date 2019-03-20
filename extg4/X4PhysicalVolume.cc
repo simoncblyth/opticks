@@ -146,16 +146,11 @@ Predecessor in old route is AssimpGGeo::convertSensors
 
 void X4PhysicalVolume::convertSensors()
 {
-    LOG(fatal) << "[" ; 
+    LOG(debug) << "[" ; 
 
     convertSensors_r(m_top, 0); 
 
     unsigned num_clv = m_ggeo->getNumCathodeLV();
-    LOG(error) 
-         << " m_lvsdname " << m_lvsdname 
-         << " num_clv " << num_clv 
-         ;
-     
     unsigned num_bds = m_ggeo->getNumBorderSurfaces() ; 
     unsigned num_sks0 = m_ggeo->getNumSkinSurfaces() ; 
 
@@ -164,13 +159,17 @@ void X4PhysicalVolume::convertSensors()
     unsigned num_sks1 = m_ggeo->getNumSkinSurfaces() ; 
     assert( num_bds == m_ggeo->getNumBorderSurfaces()  ); 
 
-    LOG(error) 
+    LOG(debug) << "]" ; 
+
+    LOG(info) 
+         << " m_lvsdname " << m_lvsdname 
+         << " num_clv " << num_clv 
          << " num_bds " << num_bds
          << " num_sks0 " << num_sks0
          << " num_sks1 " << num_sks1
          ; 
 
-    LOG(fatal) << "]" ; 
+
 }
 
 
@@ -228,7 +227,7 @@ void X4PhysicalVolume::convertSensors_r(const G4VPhysicalVolume* const pv, int d
 
 void X4PhysicalVolume::convertMaterials()
 {
-    LOG(fatal) << "[" ;
+    LOG(verbose) << "[" ;
 
     size_t num_materials0 = m_mlib->getNumMaterials() ;
     assert( num_materials0 == 0 );
@@ -238,28 +237,23 @@ void X4PhysicalVolume::convertMaterials()
     size_t num_materials = m_mlib->getNumMaterials() ;
     assert( num_materials > 0 );
 
-
-    LOG(fatal) << "."
-               << " num_materials " << num_materials
-               ;
-
-
     // Adding test materials only at Opticks level is a standardization
     // problem : TODO: implement creation of test materials at G4 level
     // then they will be present at all levels.
     // 
     //m_mlib->addTestMaterials() ;
 
-
     m_mlib->close();   // may change order if prefs dictate
 
-
-    LOG(fatal) << "]" ;
+    LOG(verbose) << "]" ;
+    LOG(info)
+          << " num_materials " << num_materials
+          ; 
 }
 
 void X4PhysicalVolume::convertSurfaces()
 {
-    LOG(fatal) << "[" ;
+    LOG(verbose) << "[" ;
 
     size_t num_surf0 = m_slib->getNumSurfaces() ; 
     assert( num_surf0 == 0 );
@@ -270,14 +264,15 @@ void X4PhysicalVolume::convertSurfaces()
     X4LogicalSkinSurfaceTable::Convert(m_slib);
     size_t num_sks = m_slib->getNumSurfaces() - num_lbs ; 
 
-    LOG(info) << "convertSurfaces"
-              << " num_lbs " << num_lbs
-              << " num_sks " << num_sks
-              ;
-
     m_slib->addPerfectSurfaces();
 
-    LOG(fatal) << "]" ;
+    LOG(verbose) << "]" ;
+
+    LOG(info) 
+           << " num_lbs " << num_lbs
+           << " num_sks " << num_sks
+           ;
+
 }
 
 void X4PhysicalVolume::closeSurfaces()
@@ -406,14 +401,16 @@ for the solid lvIdx.
 
 void X4PhysicalVolume::convertSolids()
 {
-    LOG(fatal) << "[" ; 
+    LOG(debug) << "[" ; 
 
     const G4VPhysicalVolume* pv = m_top ; 
     int depth = 0 ;
     convertSolids_r(pv, depth);
 
     if(m_verbosity > 5) dumpLV();
-    LOG(fatal) << "]" ; 
+    LOG(debug) << "]" ; 
+
+    LOG(info) << "." ; 
 }
 
 void X4PhysicalVolume::convertSolids_r(const G4VPhysicalVolume* const pv, int depth)
@@ -569,7 +566,7 @@ used.
 
 void X4PhysicalVolume::convertStructure()
 {
-    LOG(fatal) << "[" ; 
+    LOG(debug) << "[" ; 
     assert(m_top) ;
 
     m_ggeo->dumpCathodeLV("dumpCathodeLV"); 
@@ -588,7 +585,8 @@ void X4PhysicalVolume::convertStructure()
     NNodeNudger::SaveBuffer("$TMP/NNodeNudger.npy"); 
     X4Transform3D::SaveBuffer("$TMP/X4Transform3D.npy"); 
 
-    LOG(fatal) << "]" ; 
+    LOG(debug) << "]" ; 
+    LOG(info) << "." ;
 }
 
 

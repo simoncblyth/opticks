@@ -33,7 +33,7 @@
 
 GInstancer::GInstancer(GGeoLib* geolib, GNodeLib* nodelib, NSceneConfig* config) 
     : 
-    m_log(new SLog("GInstancer::GInstancer")),
+    m_log(new SLog("GInstancer::GInstancer","", verbose)),
     m_geolib(geolib),
     m_verbosity(geolib->getVerbosity()),
     m_nodelib(nodelib),

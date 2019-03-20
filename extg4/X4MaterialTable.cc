@@ -13,7 +13,7 @@
 #include "PLOG.hh"
 
 
-const plog::Severity X4MaterialTable::LEVEL = info ; 
+const plog::Severity X4MaterialTable::LEVEL = verbose ; 
 
 
 

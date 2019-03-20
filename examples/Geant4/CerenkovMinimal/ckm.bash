@@ -119,10 +119,14 @@ EON
 
 
 ckm-dbg(){
-  case $(uname) in
-     Darwin) echo lldb -- ;; 
-     Linux) echo gdb --args ;;
-  esac
+  if [ -n "$DEBUG" ] ; then
+     case $(uname) in
+        Darwin) echo lldb -- ;; 
+        Linux) echo gdb --args ;;
+     esac
+  else
+     echo -n
+  fi
 }
 
 ckm-load(){      OPTICKS_KEY=$(ckm-key) $(ckm-dbg) OKTest --load --natural --envkey ;}
@@ -133,6 +137,8 @@ ckm-okg4-load(){ OPTICKS_KEY=$(ckm-key) $(ckm-dbg) OKG4Test --load --envkey --em
 ckm-mlib(){      OPTICKS_KEY=$(ckm-key) CMaterialLibTest --envkey  ;}
 ckm-gentest(){   OPTICKS_KEY=$(ckm-key) $(ckm-dbg) CCerenkovGeneratorTest --natural --envkey ;}
 ckm-okt(){       OPTICKS_KEY=$(ckm-key) $(ckm-dbg) OpticksTest --natural --envkey ;}
+ckm-viz(){       OPTICKS_KEY=$(ckm-key) $(ckm-dbg) OKTest --natural --envkey --xanalytic ; }
+## why is natural needed ? shouldnt that be apparent from the geocache source dir ?
 
 
 ckm-gentest-notes(){ cat << EON

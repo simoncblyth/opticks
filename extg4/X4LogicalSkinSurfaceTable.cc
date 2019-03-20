@@ -29,7 +29,7 @@ void X4LogicalSkinSurfaceTable::init()
     unsigned num_src = G4LogicalSkinSurface::GetNumberOfSkinSurfaces() ; 
     assert( num_src == m_src->size() );
 
-    LOG(error) << " NumberOfSkinSurfaces num_src " << num_src ;  
+    LOG(debug) << " NumberOfSkinSurfaces num_src " << num_src ;  
     
     for(size_t i=0 ; i < m_src->size() ; i++)
     {

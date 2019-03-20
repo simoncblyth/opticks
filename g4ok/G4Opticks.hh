@@ -81,6 +81,7 @@ class G4OK_API G4Opticks
     private:
         GGeo* translateGeometry( const G4VPhysicalVolume* top );
         void standardizeGeant4MaterialProperties();
+        void createCollectors();
         void setupMaterialLookup();
     public:
         unsigned getNumPhotons() const ;

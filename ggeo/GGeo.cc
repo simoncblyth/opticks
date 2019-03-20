@@ -89,7 +89,7 @@ GGeo* GGeo::GetInstance()
 
 GGeo::GGeo(Opticks* ok)
   :
-   m_log(new SLog("GGeo::GGeo")),
+   m_log(new SLog("GGeo::GGeo","",verbose)),
    m_ok(ok), 
    m_analytic(false),
    m_gltf(m_ok->getGLTF()),   
@@ -406,9 +406,9 @@ Opticks* GGeo::getOpticks() const
 void GGeo::init()
 {
    const char* idpath = m_ok->getIdPath() ;
-   LOG(error) << "GGeo::init" 
-              << " idpath " << ( idpath ? idpath : "NULL" )
-              ; 
+   LOG(verbose)
+         << " idpath " << ( idpath ? idpath : "NULL" )
+         ; 
 
    assert(idpath && "GGeo::init idpath is required" );
 
@@ -418,12 +418,12 @@ void GGeo::init()
 
    m_loaded = cache_exists && cache_requested ;
 
-   LOG(error) << "GGeo::init"
-             << " idpath " << idpath
-             << " cache_exists " << cache_exists 
-             << " cache_requested " << cache_requested
-             << " m_loaded " << m_loaded 
-             ;
+   LOG(error) 
+        << " idpath " << idpath
+        << " cache_exists " << cache_exists 
+        << " cache_requested " << cache_requested
+        << " m_loaded " << m_loaded 
+        ;
 
    if(m_loaded) return ; 
 
@@ -636,14 +636,22 @@ Invoked from G4Opticks::translateGeometry after the X4PhysicalVolume conversion
 
 void GGeo::postDirectTranslation()
 {
-    LOG(fatal) << "[" ; 
+    LOG(debug) << "[" ; 
+
+    LOG(info) << "( GGeo::prepare " ; 
     prepare();         
+    LOG(info) << ") GGeo::prepare " ; 
+
+    LOG(info) << "( GBndLib::fillMaterialLineMap " ; 
     GBndLib* blib = getBndLib();
     blib->fillMaterialLineMap();
+    LOG(info) << ") GBndLib::fillMaterialLineMap " ; 
 
+    LOG(info) << "( GGeo::save " ; 
     save();
+    LOG(info) << ") GGeo::save " ; 
 
-    LOG(fatal) << "]" ; 
+    LOG(debug) << "]" ; 
 }
 
 bool GGeo::isPrepared() const { return m_prepared ; }
@@ -1224,6 +1232,14 @@ GMaterial* GGeo::getScintillatorMaterial(unsigned int index)
 
 
 
+/**
+GGeo::prepareMeshes
+--------------------
+
+Despite the name this also does the analytic combination,
+with GParts instances hitched to the created GMergedMesh.
+
+**/
 
 void GGeo::prepareMeshes()
 {

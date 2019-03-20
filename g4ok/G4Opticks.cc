@@ -124,11 +124,16 @@ void G4Opticks::setGeometry(const G4VPhysicalVolume* world, bool standardize_gea
 {
     LOG(fatal) << "[[[" ; 
 
+
+    LOG(fatal) << "( translateGeometry " ; 
     GGeo* ggeo = translateGeometry( world ) ;
+    LOG(fatal) << ") translateGeometry " ; 
 
     if( standardize_geant4_materials )
     {
+        LOG(fatal) << "( standardizeGeant4MaterialProperties " ; 
         standardizeGeant4MaterialProperties();
+        LOG(fatal) << ") standardizeGeant4MaterialProperties " ; 
     }
 
     m_world = world ; 
@@ -136,45 +141,60 @@ void G4Opticks::setGeometry(const G4VPhysicalVolume* world, bool standardize_gea
     m_blib = m_ggeo->getBndLib();  
     m_ok = m_ggeo->getOpticks(); 
 
-    const char* prefix = NULL ; 
-    m_mtab = new CMaterialTable(prefix); 
-
-    setupMaterialLookup();
-    m_genstep_collector = new CGenstepCollector(m_lookup);   // <-- CG4 holds an instance too : and they are singletons, so should not use G4Opticks and CG4 together
-    m_primary_collector = new CPrimaryCollector ; 
-    m_g4hit_collector = new CPhotonCollector ; 
-    m_g4photon_collector = new C4PhotonCollector ; 
+    LOG(fatal) << "( createCollectors " ; 
+    createCollectors(); 
+    LOG(fatal) << ") createCollectors " ; 
 
     CAlignEngine::Initialize(m_ok->getIdPath()) ;
 
     // OpMgr instanciates OpticksHub which adopts the pre-existing m_ggeo instance just translated
+    LOG(fatal) << "( OpMgr " ; 
     m_opmgr = new OpMgr(m_ok) ;   
+    LOG(fatal) << ") OpMgr " ; 
 
     LOG(fatal) << "]]]" ; 
 }
 
+
+
 GGeo* G4Opticks::translateGeometry( const G4VPhysicalVolume* top )
 {
+    LOG(verbose) << "( key" ;
     const char* keyspec = X4PhysicalVolume::Key(top) ; 
     BOpticksKey::SetKey(keyspec);
     LOG(error) << " SetKey " << keyspec  ;   
+    LOG(verbose) << ") key" ;
 
     const char* g4opticks_debug = SSys::getenvvar("G4OPTICKS_DEBUG") ; 
     std::string ecl = EmbeddedCommandLine(g4opticks_debug) ; 
     LOG(info) << "EmbeddedCommandLine : [" << ecl << "]" ; 
 
+    LOG(info) << "( Opticks" ;
     Opticks* ok = new Opticks(0,0, ecl.c_str() );  // Opticks instanciation must be after BOpticksKey::SetKey
+    LOG(info) << ") Opticks" ;
 
     const char* gdmlpath = ok->getGDMLPath();   // inside geocache, not SrcGDMLPath from opticksdata
+    LOG(info) << "( CGDML" ;
     CGDML::Export( gdmlpath, top ); 
+    LOG(info) << ") CGDML" ;
 
+    LOG(info) << "( GGeo instanciate" ;
     GGeo* gg = new GGeo(ok) ;
+    LOG(info) << ") GGeo instanciate " ;
+
+    LOG(info) << "( GGeo populate" ;
     X4PhysicalVolume xtop(gg, top) ;   // <-- populates gg 
+    LOG(info) << ") GGeo populate" ;
+
+    LOG(info) << "( GGeo::postDirectTranslation " ;
     gg->postDirectTranslation(); 
+    LOG(info) << ") GGeo::postDirectTranslation " ;
 
     int root = 0 ; 
     const char* gltfpath = ok->getGLTFPath();   // inside geocache
+    LOG(info) << "( gltf " ;
     GGeoGLTF::Save(gg, gltfpath, root );
+    LOG(info) << ") gltf " ;
 
     return gg ; 
 }
@@ -208,6 +228,30 @@ void G4Opticks::setupMaterialLookup()
     m_lookup->setB(B,"","GBndLib");    // shortname eg "GdDopedLS" to material line mapping 
     m_lookup->close(); 
 }
+
+
+void G4Opticks::createCollectors()
+{
+    const char* prefix = NULL ; 
+    m_mtab = new CMaterialTable(prefix); 
+
+    setupMaterialLookup();
+    m_genstep_collector = new CGenstepCollector(m_lookup);   // <-- CG4 holds an instance too : and they are singletons, so should not use G4Opticks and CG4 together
+    m_primary_collector = new CPrimaryCollector ; 
+    m_g4hit_collector = new CPhotonCollector ; 
+    m_g4photon_collector = new C4PhotonCollector ; 
+}
+
+
+
+
+
+
+
+
+
+
+
 
 
 unsigned G4Opticks::getNumPhotons() const 
