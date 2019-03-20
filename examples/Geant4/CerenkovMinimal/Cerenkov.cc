@@ -5,22 +5,22 @@
 using CLHEP::um ;
 
 
-#include "PLOG.hh"
-
 Cerenkov::Cerenkov( const G4String& processName, G4ProcessType type)
     :
     G4Cerenkov(processName, type)
 {
-    LOG(info) << "." ; 
+    G4cout << "Cerenkov::Cerenkov" << G4endl ; 
 } 
 
 G4bool Cerenkov::IsApplicable(const G4ParticleDefinition& aParticleType)
 {
     G4bool a = G4Cerenkov::IsApplicable(aParticleType);
-    LOG(info) 
+    G4cout 
+        << "Cerenkov::IsApplicable"
         << std::setw(30) << aParticleType.GetParticleName() 
         << " : "
         << a 
+        << G4endl 
         ;
     return a ;      
 }
@@ -28,8 +28,10 @@ G4bool Cerenkov::IsApplicable(const G4ParticleDefinition& aParticleType)
 void Cerenkov::BuildPhysicsTable(const G4ParticleDefinition& aParticleType)
 {
     G4Cerenkov::BuildPhysicsTable(aParticleType);
-    LOG(info) 
+    G4cout 
+        << "Cerenkov::BuildPhysicsTable"
         << std::setw(30) << aParticleType.GetParticleName() 
+        << G4endl
         ;
 
     //std::cout << *thePhysicsTable << std::endl ; 
@@ -39,7 +41,9 @@ void Cerenkov::BuildPhysicsTable(const G4ParticleDefinition& aParticleType)
 
 G4VParticleChange* Cerenkov::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
 {
-    LOG(info) << "." ; 
+    G4cout << "Cerenkov::PostStepDoIt"
+           << G4endl 
+            ; 
     return G4Cerenkov::PostStepDoIt(aTrack, aStep);  
 }
 
@@ -61,13 +65,13 @@ G4double Cerenkov::PostStepGetPhysicalInteractionLength(
     FV* CerenkovAngleIntegrals_1 = (FV*)((*thePhysicsTable)[materialIndex]);
     assert( CerenkovAngleIntegrals_0 == CerenkovAngleIntegrals_1 ); 
 
-    LOG(info) << "CAI:" << CerenkovAngleIntegrals_0 << " mtIdx " << materialIndex << " " << aMaterial->GetName()   ; 
+    G4cout << "CAI:" << CerenkovAngleIntegrals_0 << " mtIdx " << materialIndex << " " << aMaterial->GetName()   ; 
 
     G4double psgpil = G4Cerenkov::PostStepGetPhysicalInteractionLength(aTrack, ignored, condition);
 
     bool is_DBL_MAX = psgpil == DBL_MAX ; 
 
-    LOG(info) << "psgpil:" << psgpil << " is_DBL_MAX " << is_DBL_MAX ; 
+    G4cout << "psgpil:" << psgpil << " is_DBL_MAX " << is_DBL_MAX ; 
 
     return psgpil ;   
 }

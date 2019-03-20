@@ -7,7 +7,6 @@
 #ifdef WITH_OPTICKS
 #include "G4Opticks.hh"
 #include "CTrackInfo.hh"
-#include "PLOG.hh"
 #endif
 
 
@@ -64,13 +63,15 @@ void Ctx::setTrack(const G4Track* track)
         unsigned max_gs = 1 ;   // quick kill for fast dev cycle
         bool kill = num_gs >= max_gs ; 
 
-        LOG(fatal) 
+        G4cout 
+            << "Ctx::setTrack"   
             << " _track_particle_name " << _track_particle_name 
             << " _track_id " << _track_id 
             << " _step_id " << _step_id 
             << " num_gs " << num_gs 
             << " max_gs " << max_gs 
             << " kill " << kill
+            << G4endl
             ;  
 
         if(kill)
@@ -90,7 +91,11 @@ void Ctx::postTrack( const G4Track* track)
     }
     else
     {
-        LOG(fatal) << " _track_particle_name " << _track_particle_name ; 
+        G4cout 
+            << "Ctx::postTrack"
+            << " _track_particle_name : " << _track_particle_name
+            << G4endl 
+            ; 
     }
 }
 
@@ -121,7 +126,6 @@ void Ctx::postTrackOptical(const G4Track* track)
 
 void Ctx::setStep(const G4Step* step)
 {  
-    //LOG(error) << "." ; 
 
     assert( _track ) ; 
 
@@ -142,9 +146,11 @@ void Ctx::setStep(const G4Step* step)
 #ifdef WITH_OPTICKS
     if(!_track_optical)
     {
-        LOG(info) 
+        G4cout
+            << "Ctx::setStep" 
             << " _step_id " << _step_id 
             << " num_gs " << G4Opticks::GetOpticks()->getNumGensteps() 
+            << G4endl
             ;  
     }
 

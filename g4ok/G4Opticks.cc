@@ -62,7 +62,7 @@ std::string G4Opticks::desc() const
     BOpticksKey* key = m_ok ? m_ok->getKey() : NULL ; 
 
     std::stringstream ss ; 
-    ss << "G4Opticks"
+    ss << "G4Opticks.desc"
        << " ok " << m_ok 
        << " opmgr " << m_opmgr
        << std::endl 
@@ -83,6 +83,7 @@ G4Opticks* G4Opticks::GetOpticks()
 
 void G4Opticks::Finalize()
 {
+    LOG(info) << G4Opticks::GetOpticks()->desc();
     delete fOpticks ; 
     fOpticks = NULL ;
 }
@@ -114,9 +115,8 @@ G4Opticks::G4Opticks()
     m_gpu_propagate(true)
 {
     assert( fOpticks == NULL ); 
+    LOG(info) << "ctor : DISABLE FPE detection : as it breaks OptiX launches" ; 
     C4FPEDetection::InvalidOperationDetection_Disable();  // see notes/issues/OKG4Test_prelaunch_FPE_causing_fail.rst
-    std::cout << "DISABLE FPE detection : as it breaks OptiX launches" << std::endl ; 
-    std::cout << "G4Opticks::G4Opticks" << std::endl ; 
 }
 
 

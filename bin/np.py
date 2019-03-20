@@ -63,12 +63,13 @@ def dump_tree(base=".", verbose=0):
     """
     print(os.path.abspath(base))
     for root, dirs, files in os.walk(base):
-        for name in filter(is_txt_,files):
+        sfiles = sorted(files)
+        for name in filter(is_txt_,sfiles):
             path = os.path.join(root, name)
             lines = len(file(path, "r").readlines())
             print("%40s : %s " % ( path, lines))
         pass
-        for name in filter(is_npy_,files):
+        for name in filter(is_npy_,sfiles):
             path = os.path.join(root, name)
             a = np.load(path)
             ## 

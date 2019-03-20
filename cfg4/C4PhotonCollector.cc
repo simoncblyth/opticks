@@ -70,11 +70,6 @@ void C4PhotonCollector::collectSecondaryPhotons( const G4VParticleChange* pc, un
     LOG(info) << " numberOfSecondaries " << numberOfSecondaries ; 
 
 
-     
-
-
-
-
     for( G4int i=0 ; i < numberOfSecondaries ; i++)
     {
         G4Track* track =  pc->GetSecondary(i) ; 

@@ -151,9 +151,7 @@ std::string BOpticksKey::desc() const
 {
     std::stringstream ss ; 
     ss 
-       << "BOpticksKey " 
-       << ( isKeySource() ? " KEYSOURCE " : " " )
-       << std::endl 
+       << std::setw(25) << " BOpticksKey " << " : " << ( isKeySource() ? "KEYSOURCE" : " " ) << std::endl 
        << std::setw(25) << " spec "    << " : " << m_spec    << std::endl 
        << std::setw(25) << " exename " << " : " << m_exename << std::endl 
        << std::setw(25) << " current_exename " << " : " << m_current_exename << std::endl 

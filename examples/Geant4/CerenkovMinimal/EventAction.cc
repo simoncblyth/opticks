@@ -15,7 +15,6 @@
 #endif
 
 #include "Ctx.hh"
-#include "PLOG.hh"
 
 EventAction::EventAction(Ctx* ctx_)
     :
@@ -34,20 +33,31 @@ void EventAction::EndOfEventAction(const G4Event* event)
     assert(HCE); 
 
 #ifdef WITH_OPTICKS
+    G4cout << "\n###[ EventAction::EndOfEventAction G4Opticks.propagateOpticalPhotons\n" << G4endl ; 
+
     G4Opticks* ok = G4Opticks::GetOpticks() ;
     int num_hits = ok->propagateOpticalPhotons() ;  
     NPY<float>* hits = ok->getHits(); 
 
     assert( hits == NULL || hits->getNumItems() == unsigned(num_hits) ) ; 
-    LOG(error) << " num_hits " << num_hits 
-               << " hits " << hits 
-               ; 
+    G4cout 
+           << "EventAction::EndOfEventAction"
+           << " num_hits " << num_hits 
+           << " hits " << hits 
+           << G4endl 
+           ; 
 
     // TODO: feed the hits into the Hit collection 
 
+    G4cout << "\n###] EventAction::EndOfEventAction G4Opticks.propagateOpticalPhotons\n" << G4endl ; 
 #endif
 
     //addDummyHits(HCE);
+    G4cout 
+         << "EventAction::EndOfEventAction"
+         << " DumpHitCollections "
+         << G4endl 
+         ; 
     SensitiveDetector::DumpHitCollections(HCE);
 
     // A possible alternative location to invoke the GPU propagation

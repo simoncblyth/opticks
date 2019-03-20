@@ -44,8 +44,12 @@ addGenstep
    gensteps are propagated together in a single GPU launch when propagate
    is called
 
-propagate and getHits
+propagateOpticalPhotons and getHits
    called from EndOfEventAction 
+
+collectSecondaryPhotons
+   invoked for example from L4Cerenkov::PostStepDoIt 
+
 
 
 Notes

@@ -18,6 +18,34 @@ ckm-run
     just runs the CerenkovMinimal example   
 
 
+Objectives
+------------
+
+CerenkovMinimal is really intended to feature **Minimal** usage of Opticks. 
+Just enough to effect the acceleration of optical photons.  
+
+That means:
+
+* constrain the use of Opticks headers (even for things like logging/utilities)
+  to only where it is absolutely essential to do so 
+
+* CerenkovMinimal is NOT a place for debugging, the 2nd executable that 
+  adopts the CerenkovMinimal geocache and gensteps is where debugging is done
+
+* moving to not using PLOG in CerenkovMinimal makes a stark contrast
+  between user/framework code(and logging output)
+
+  * user code : G4cout 
+  * Opticks code : LOG(info) etc... 
+
+
+Hmm : this guideline on logging is broken quite a bit, lots of use of PLOG ???
+As intermediate step:
+  
+* start placing these inside WITH_OPTICKS 
+* minimize them
+
+
 EOU
 }
 ckm-dir(){ echo $(dirname $(ckm-source)) ; }

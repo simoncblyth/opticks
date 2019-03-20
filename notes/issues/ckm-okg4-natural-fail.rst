@@ -6,8 +6,9 @@ ckm-okg4-natural-fail
    ckm-okg4(){      OPTICKS_KEY=$(ckm-key) lldb -- OKG4Test --compute --envkey --embedded --save --natural ;}
 
 
-Added natural to *ckm-okg4* deal in the same gensteps as the others, but OKG4Test is 
-not expecting "genstep" source running. Thats a recent capability.::
+Added natural to *ckm-okg4* to deal in the same gensteps as the others, but OKG4Test is 
+not expecting "genstep" source running. Thats a recent capability.
+Fully instrumented bi-executable running demands this to be made to work.::
 
     2019-03-13 19:31:17.636 INFO  [1512502] [OpticksEvent::setBufferControl@963]    genstep : (spec) : OPTIX_INPUT_ONLY UPLOAD_WITH_CUDA BUFFER_COPY_ON_DIRTY COMPUTE_MODE VERBOSE_MODE  : Evt /usr/local/opticks/geocache/CerenkovMinimal_World_g4live/g4ok_gltf/792496b5e2cc08bdf5258cc12e63de9f/1/tmp/blyth/OKG4Test/evt/g4live/natural/-1 20190313_193117 OKG4Test
     2019-03-13 19:31:17.636 INFO  [1512502] [OpticksRun::passBaton@170] OpticksRun::passBaton nopstep 0x1119b5020 genstep 0x111904990 source 0x0
@@ -105,6 +106,9 @@ not expecting "genstep" source running. Thats a recent capability.::
 
 
 
+
+
+
 ::
 
     2019-03-14 14:49:53.634 INFO  [10744] [*CCerenkovGenerator::GeneratePhotonsFromGenstep@168]  Pmin 1.512e-06 Pmax 2.0664e-05 wavelength_min(nm) 60 wavelength_max(nm) 820 preVelocity 276.074 postVelocity 273.253
@@ -141,6 +145,7 @@ a standardized one. ckm::
 
     In [2]: 1240./4.136
     Out[2]: 299.80657640232107
+
 
 
 
@@ -193,6 +198,62 @@ a standardized one. ckm::
     148         frame #16: 0x00007fff528f9015 libdyld.dylib`start + 1
     149     (lldb) 
     150 
+
+
+
+
+Thoughts : March 19, 2019
+--------------------------
+
+Use of the standardized domain for the material properties is essential(?*) to being able 
+to use GPU textures.  Actually it is not essential, just highly convenient as it means can 
+put all material properties into a single GPU texture.  In principal could 
+be less stringent, for example could demand that all properties of a single material use the same domain and then have
+separate textures for each material. 
+
+The situation:
+
+* user defines some material properties in Geant4 way on some domain
+* opticks interpolates onto the standard domain and wavelength raster 
+* pre-standardized domain edges going into genstep ??
+* material sanity check assert is tripped by edge comparison
+
+Question:
+
+* why/where is genstep recording a pre-standardized domain ?
+
+From an alignment point of view where want Geant4 to be using precisely the
+same material properties. This behooves that some standardization processing 
+happens to Geant4 materials at initialization. Actually need 
+(when in aligment mode) to effectively recreate the Geant4 materials 
+from the Opticks standardized ones.  
+Hmm: vaguely recall doing something like this previously : 
+traversing and standardizing materials. Maybe that was in CFG4 approach ? 
+
+
+March 20, 2019
+-------------------
+
+G4Opticks has *standardize_geant4_materials* switch::
+
+     18 void RunAction::BeginOfRunAction(const G4Run*)
+     19 {
+     20 #ifdef WITH_OPTICKS
+     21     LOG(info) << "." ;
+     22     G4cout << "###[ RunAction::BeginOfRunAction G4Opticks.setGeometry" << G4endl ;       
+     23     G4VPhysicalVolume* world = G4TransportationManager::GetTransportationManager()->GetNavigatorForTracking()->GetWorldVolume() ;
+     24     assert( world ) ;
+     25     bool standardize_geant4_materials = true ;   // required for alignment 
+     26     G4Opticks::GetOpticks()->setGeometry(world, standardize_geant4_materials );
+     27     G4cout << "###] RunAction::BeginOfRunAction G4Opticks.setGeometry" << G4endl ;      
+     28 #endif
+     29 }
+
+
+
+ 
+
+
 
 
 

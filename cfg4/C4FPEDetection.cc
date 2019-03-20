@@ -12,13 +12,17 @@ void C4FPEDetection::InvalidOperationDetection_Disable()
 {
       std::cout 
               << std::endl
-              << "  C4FPEDetection::InvalidOperationDetection_Disable"
+              << "        "
+              << "C4FPEDetection::InvalidOperationDetection_Disable"
               << std::endl
+              << "        "
               << "############################################" << std::endl
               << "        "
               << "!!! WARNING - FPE detection is DISABLED  !!!" << std::endl
               << "        "
-              << "############################################" << std::endl;
+              << "############################################" << std::endl
+              << std::endl
+              ; 
 
     (void) fedisableexcept( FE_DIVBYZERO );
     (void) fedisableexcept( FE_INVALID );

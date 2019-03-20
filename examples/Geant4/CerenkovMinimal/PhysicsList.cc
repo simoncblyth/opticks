@@ -187,7 +187,7 @@ void PhysicsList<T>::ConstructOp()
 
         if (particleName == "opticalphoton") 
         {
-            G4cout << " AddDiscreteProcess to OpticalPhoton " << G4endl;
+            G4cout << "PhysicsList<T>::ConstructOp AddDiscreteProcess to OpticalPhoton " << G4endl;
             //pmanager->AddDiscreteProcess(fAbsorptionProcess);
             //pmanager->AddDiscreteProcess(fRayleighScatteringProcess);
             //pmanager->AddDiscreteProcess(fMieHGScatteringProcess);

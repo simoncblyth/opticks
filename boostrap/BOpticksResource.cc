@@ -423,7 +423,7 @@ void BOpticksResource::setupViaKey()
     m_setup = true ; 
     assert( m_key ) ; // BOpticksResource::setupViaKey called with a NULL key 
 
-    LOG(info) << m_key->desc()  ;  
+    LOG(info) << std::endl << m_key->desc()  ;  
 
     m_layout = m_key->getLayout(); 
 

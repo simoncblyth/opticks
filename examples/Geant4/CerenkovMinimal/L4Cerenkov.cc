@@ -64,13 +64,9 @@
 
 
 //#define L4LOG 1
-#ifdef L4LOG
-#include "PLOG.hh"
-#endif
 
 #ifdef WITH_OPTICKS
 #include "G4Opticks.hh"
-#include "PLOG.hh"
 #include "CTrackInfo.hh"    // naughty direct use of CFG4 
 #endif
 
@@ -243,12 +239,14 @@ L4Cerenkov::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
 	G4int NumPhotons = (G4int) G4Poisson(MeanNumberOfPhotons);
 
 #ifdef L4LOG
-    LOG(info) 
+    G4cout 
+         << "L4Cerenkov::PostStepDoIt"
          << " t0 " << t0
          << " x0 " << x0
          << " step_length " << step_length
          << " MeanNumberOfPhotons " << MeanNumberOfPhotons
          << " NumPhotons " << NumPhotons
+         << G4endl
          ;
 #endif
 
@@ -300,7 +298,10 @@ L4Cerenkov::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
         const G4ParticleDefinition* definition = aParticle->GetDefinition();
         G4ThreeVector deltaPosition = aStep.GetDeltaPosition();
         G4int materialIndex = aMaterial->GetIndex();
-        LOG(verbose) << dp ; 
+        G4cout << "L4Cerenkov::PostStepDoIt"
+               << " dp (Pmax-Pmin) " << dp
+               << G4endl
+               ; 
 
         opticks_photon_offset = G4Opticks::GetOpticks()->getNumPhotons(); 
         // total photons from all gensteps collected before this one
@@ -464,12 +465,17 @@ L4Cerenkov::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
 	}
 
 	if (verboseLevel>0) {
-	   G4cout <<"\n Exiting from L4Cerenkov::DoIt -- NumberOfSecondaries = "
+	   G4cout <<"L4Cerenkov::PostStepDoIt DONE -- NumberOfSecondaries = "
 	          << aParticleChange.GetNumberOfSecondaries() << G4endl;
 	}
 
 
 #ifdef WITH_OPTICKS
+       G4cout 
+           << "L4Cerenkov::PostStepDoIt G4Opticks.collectSecondaryPhotons"
+           << G4endl 
+           ;
+ 
         G4Opticks::GetOpticks()->collectSecondaryPhotons(pParticleChange) ; 
 #endif
 
@@ -602,9 +608,12 @@ G4double L4Cerenkov::PostStepGetPhysicalInteractionLength(
 	if(!(*thePhysicsTable)[materialIndex]) { return StepLimit; }
 
 #ifdef L4LOG
-       LOG(info) << "OK.0 : table  "
-                 << " materialIndex " << materialIndex
-                 ; 
+       G4cout 
+             << "L4Cerenkov::PostStepGetPhysicalInteractionLength"
+             << "OK.0 : table  "
+             << " materialIndex " << materialIndex
+             << G4endl
+             ; 
 #endif 
         const G4DynamicParticle* aParticle = aTrack.GetDynamicParticle();
         const G4MaterialCutsCouple* couple = aTrack.GetMaterialCutsCouple();
@@ -636,18 +645,25 @@ G4double L4Cerenkov::PostStepGetPhysicalInteractionLength(
 
 
 #ifdef L4LOG
-       LOG(info) << "OK.1 : rindex "
-                 << " nMax " << nMax 
-                 ; 
+
+       G4cout 
+             << "L4Cerenkov::PostStepGetPhysicalInteractionLength"
+             << "OK.1 : rindex "
+             << " nMax " << nMax 
+             << G4endl
+             ; 
 #endif 
 
         G4double BetaMin = 1./nMax;
         if ( BetaMin >= 1. ) return StepLimit;
 
 #ifdef L4LOG
-       LOG(info) << "OK.2 : BetaMin < 1 "
-                 << " BetaMin  " << BetaMin  
-                 ; 
+       G4cout 
+             << "L4Cerenkov::PostStepGetPhysicalInteractionLength"
+             << "OK.2 : BetaMin < 1 "
+             << " BetaMin  " << BetaMin  
+             << G4endl
+             ; 
 #endif 
 
 
@@ -656,10 +672,13 @@ G4double L4Cerenkov::PostStepGetPhysicalInteractionLength(
         if (gamma < GammaMin ) return StepLimit;
 
 #ifdef L4LOG
-       LOG(info) << "OK.3 :  gamma >= GammaMin "
-                 << " gamma " << gamma 
-                 << " GammaMin " << GammaMin 
-                 ; 
+       G4cout 
+             << "L4Cerenkov::PostStepGetPhysicalInteractionLength"
+             << "OK.3 :  gamma >= GammaMin "
+             << " gamma " << gamma 
+             << " GammaMin " << GammaMin 
+             << G4endl
+             ; 
 #endif 
 
 
@@ -679,13 +698,16 @@ G4double L4Cerenkov::PostStepGetPhysicalInteractionLength(
         G4double Step = Range - RangeMin;
 
 #ifdef L4LOG
-       LOG(info) << "??.4 : Step > 1um "
-                 << " Step " << Step 
-                 << " Range " << Range  
-                 << " kineticEnergy " << kineticEnergy
-                 << " RangeMin " << RangeMin  
-                 << " kinEmin " << kinEmin
-                 ; 
+       G4cout 
+             << "L4Cerenkov::PostStepGetPhysicalInteractionLength"
+             << "??.4 : Step > 1um "
+             << " Step " << Step 
+             << " Range " << Range  
+             << " kineticEnergy " << kineticEnergy
+             << " RangeMin " << RangeMin  
+             << " kinEmin " << kinEmin
+             << G4endl
+             ; 
 #endif 
 
 
@@ -693,11 +715,14 @@ G4double L4Cerenkov::PostStepGetPhysicalInteractionLength(
 
 
 #ifdef L4LOG
-       LOG(info) << "OK.4 : Step > 1um "
-                 << " Step " << Step 
-                 << " Range " << Range  
-                 << " RangeMin " << RangeMin  
-                 ; 
+       G4cout 
+             << "L4Cerenkov::PostStepGetPhysicalInteractionLength"
+             << "OK.4 : Step > 1um "
+             << " Step " << Step 
+             << " Range " << Range  
+             << " RangeMin " << RangeMin  
+             << G4endl
+             ; 
 #endif 
 
 

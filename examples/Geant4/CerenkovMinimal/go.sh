@@ -31,11 +31,13 @@ g4-export
 arch=$(uname) 
 exe=$(opticks-prefix)/lib/$name
 
-if [ "$arch" == "Linux" ]; then  
-    gdb $exe
-elif [ "$arch" == "Darwin" ]; then
-    lldb $exe
-else 
-    echo you are kidding : unexpected arch $arch  
+if [ -n "$DEBUG" ]; then 
+    case $arch in 
+        Linux)  gdb $exe ;;
+        Darwin) lldb $exe  ;;
+    esac
+else
+    $exe
 fi 
+
 
