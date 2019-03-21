@@ -24,7 +24,7 @@ const char* BOpticksResource::G4ENV_RELPATH = "externals/config/geant4.ini" ;
 const char* BOpticksResource::OKDATA_RELPATH = "opticksdata/config/opticksdata.ini" ; // TODO: relocate into geocache
 
 
-const plog::Severity BOpticksResource::LEVEL = error ; 
+const plog::Severity BOpticksResource::LEVEL = debug ; 
 
 BOpticksResource::BOpticksResource()
     :
@@ -84,7 +84,7 @@ BOpticksResource::~BOpticksResource()
 
 void BOpticksResource::init()
 {
-    LOG(error) << "layout : " << m_layout ; 
+    LOG(LEVEL) << "layout : " << m_layout ; 
 
     initInstallPrefix() ;
     initTopDownDirs();
@@ -423,7 +423,7 @@ void BOpticksResource::setupViaKey()
     m_setup = true ; 
     assert( m_key ) ; // BOpticksResource::setupViaKey called with a NULL key 
 
-    LOG(info) << std::endl << m_key->desc()  ;  
+    LOG(LEVEL) << std::endl << m_key->desc()  ;  
 
     m_layout = m_key->getLayout(); 
 
@@ -461,7 +461,7 @@ void BOpticksResource::setupViaKey()
 
     std::string idpath = getGeoCachePath( m_idname, m_idsubd, m_srcdigest, layout );
 
-    LOG(info)
+    LOG(LEVEL)
            <<  " idname " << m_idname 
            <<  " idfile " << m_idfile 
            <<  " srcdigest " << m_srcdigest

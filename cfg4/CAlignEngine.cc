@@ -8,6 +8,9 @@
 #include "SBacktrace.hh"
 #include "CAlignEngine.hh"
 
+
+const plog::Severity CAlignEngine::LEVEL = debug ; 
+
 const char* CAlignEngine::LOGNAME = "CAlignEngine.log" ; 
 CAlignEngine* CAlignEngine::INSTANCE = NULL ; 
 
@@ -82,7 +85,7 @@ CAlignEngine::CAlignEngine(const char* ssdir)
     if(m_sslogpath) 
     { 
         m_out = new std::ofstream(m_sslogpath) ;
-        LOG(info) << " simstream logpath " << m_sslogpath ; 
+        LOG(LEVEL) << " simstream logpath " << m_sslogpath ; 
     }
     else
     {

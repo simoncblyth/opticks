@@ -2,6 +2,7 @@
 
 
 #include "NQuad.hpp"
+#include "plog/Severity.h"
 
 class GNode ; 
 class OpticksColors ; 
@@ -50,6 +51,8 @@ Observations as change gl/nrm/vert.glsl and vertex colors
 
 #include "GGEO_API_EXPORT.hh"
 class GGEO_API GColorizer {
+   public:
+        static const plog::Severity LEVEL ; 
    public:
         typedef enum { SURFACE_INDEX, 
                        PSYCHEDELIC_VERTEX, 

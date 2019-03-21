@@ -13,6 +13,9 @@
 #include "PLOG.hh"
 
 
+const plog::Severity GGeoSensor::LEVEL = debug ;
+
+
 
 /**
 GGeoSensor::AddSensorSurfaces
@@ -57,7 +60,7 @@ void GGeoSensor::AddSensorSurfaces( GGeo* gg )
         // standard materials/surfaces use the originating aiMaterial index, 
         // extend that for fake SensorSurface by toting up all 
 
-        LOG(info) << "GGeoSensor::AddSensorSurfaces"
+        LOG(LEVEL) << "GGeoSensor::AddSensorSurfaces"
                   << " i " << i
                   << " sslv " << sslv
                   << " index " << index
@@ -71,7 +74,7 @@ void GGeoSensor::AddSensorSurfaces( GGeo* gg )
         gss->setSensor();
         gss->add(cathode_props); 
 
-        LOG(info) << " gss " << gss->description();
+        LOG(LEVEL) << " gss " << gss->description();
 
         gg->add(gss);
 
@@ -101,7 +104,7 @@ GOpticalSurface* GGeoSensor::MakeOpticalSurface( const char* sslv )
     std::string name = BStr::trimPointerSuffixPrefix(sslv, NULL );
     name += GSurfaceLib::SENSOR_SURFACE ;
 
-    LOG(fatal) 
+    LOG(LEVEL) 
            << " sslv " << sslv  
            << " name " << name
            ;  

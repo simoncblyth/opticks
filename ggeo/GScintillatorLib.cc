@@ -11,6 +11,9 @@
 
 #include "PLOG.hh"
 
+
+const plog::Severity GScintillatorLib::LEVEL = debug ; 
+
 const char* GScintillatorLib::slow_component    = "slow_component" ;
 const char* GScintillatorLib::fast_component    = "fast_component" ;
 
@@ -106,11 +109,11 @@ NPY<float>* GScintillatorLib::createBuffer()
     unsigned int nj = m_icdf_length ;
     unsigned int nk = 1 ; 
 
-    LOG(info) << "GScintillatorLib::createBuffer " 
-              << " ni " << ni 
-              << " nj " << nj 
-              << " nk " << nk 
-              ;  
+    LOG(LEVEL) 
+          << " ni " << ni 
+          << " nj " << nj 
+          << " nk " << nk 
+          ;  
 
     NPY<float>* buf = NPY<float>::make(ni, nj, nk); 
     buf->zero();

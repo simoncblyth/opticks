@@ -14,6 +14,7 @@ Opticks Development Notes
    production_requirements
    materials
    references
+   meetings
 
 
 

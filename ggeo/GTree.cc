@@ -7,8 +7,7 @@
 
 #include "PLOG.hh"
 
-
-
+const plog::Severity GTree::LEVEL = debug ; 
 
 
 NPY<float>* GTree::makeInstanceTransformsBuffer(const std::vector<GNode*>& placements)
@@ -60,7 +59,7 @@ NPY<unsigned int>* GTree::makeAnalyticInstanceIdentityBuffer(const std::vector<G
     // observe that each instance has only one sensor, so not need 
     // to repeat over the number of volumes just one entry per instance
 
-    LOG(info) << "GTree::makeAnalyticInstanceIdentityBuffer " 
+    LOG(LEVEL) 
               << " numPlacements " << numInstances
               << " numProgeny0 " << numProgeny0      
               << " numVolumes " << numVolumes      
@@ -80,7 +79,7 @@ NPY<unsigned int>* GTree::makeAnalyticInstanceIdentityBuffer(const std::vector<G
         //if(ridx > 0)
         {
             if(!progeny_match)
-               LOG(fatal) << "GTree::makeAnalyticInstanceIdentityBuffer"
+               LOG(fatal) 
                           << " progeny MISMATCH "
                           << " progeny.size() " << progeny.size() 
                           << " numProgeny " << numProgeny
@@ -105,7 +104,7 @@ NPY<unsigned int>* GTree::makeAnalyticInstanceIdentityBuffer(const std::vector<G
             unsigned int sid = ss && ss->isCathode() ? ss->getId() : 0 ;
 
             if(sid > 0)
-            LOG(debug) << "GTree::makeAnalyticInstanceIdentityBuffer " 
+            LOG(debug) 
                       << " s " << std::setw(3) << s 
                       << " sid " << std::setw(10) << std::hex << sid << std::dec 
                       << " ss " << (ss ? ss->description() : "NULL" )
@@ -182,7 +181,7 @@ NPY<unsigned int>* GTree::makeInstanceIdentityBuffer(const std::vector<GNode*>& 
         //if(ridx > 0)
         {
            if(!progeny_match)
-           LOG(fatal) << "GTree::makeInstanceIdentityBuffer"
+           LOG(fatal) 
                       << " progeny_match " << ( progeny_match ? " OK " : " MISMATCH " )
                       << " progeny.size() " << progeny.size() 
                       << " numProgeny " << numProgeny

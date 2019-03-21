@@ -25,6 +25,9 @@
 // trace/debug/info/warning/error/fatal
 
 
+const plog::Severity GSurfaceLib::LEVEL = debug ; 
+
+
 // surface
 const char* GSurfaceLib::detect            = "detect" ;
 const char* GSurfaceLib::absorb            = "absorb" ;
@@ -472,7 +475,7 @@ void GSurfaceLib::sort()
     bool asis = true ; 
     if(asis)
     {
-        LOG(error) << " not sorting ";
+        LOG(LEVEL) << " not sorting ";
         return  ;
     } 
 
@@ -1283,19 +1286,18 @@ GSkinSurface* GSurfaceLib::findSkinSurface(const char* lv) const
 
 void GSurfaceLib::dumpSkinSurface(const char* msg) const
 {
-    LOG(info) << msg ; 
+    LOG(LEVEL) << msg ; 
 
     for(unsigned i = 0 ; i < m_skin_surfaces.size() ; i++)
     {
         GSkinSurface* ss = m_skin_surfaces[i];
-        std::cout 
+        LOG(LEVEL)
             << " SS " 
             << std::setw(4) << i 
             << " : " 
             << std::setw(40) << ss->getShortName() 
             << " : " 
             << ss->getSkinSurfaceVol()
-            << std::endl 
             ;
     }
 }

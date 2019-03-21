@@ -31,6 +31,9 @@
 // the below criteria are finding fewer repeats, for DYB only the hemi pmt
 // TODO: retune
 
+
+const plog::Severity GInstancer::LEVEL = debug ; 
+
 GInstancer::GInstancer(GGeoLib* geolib, GNodeLib* nodelib, NSceneConfig* config) 
     : 
     m_log(new SLog("GInstancer::GInstancer","", verbose)),
@@ -54,10 +57,10 @@ unsigned GInstancer::getNumRepeats() const
     return m_repeat_candidates.size();
 }
 
-void GInstancer::setCSGSkipLV(unsigned csgskiplv)
+void GInstancer::setCSGSkipLV(int csgskiplv)
 {
     m_csgskiplv = csgskiplv  ; 
-    LOG(fatal) << " csgskiplv " << csgskiplv ; 
+    LOG((csgskiplv > -1 ? fatal : LEVEL)) << " csgskiplv " << csgskiplv ; 
 }
 
 void GInstancer::setRepeatMin(unsigned repeat_min)
@@ -97,12 +100,17 @@ void GInstancer::createInstancedMergedMeshes(bool delta, unsigned verbosity)
     labelTree();  // recursive setRepeatIndex on the GNode tree for each of the repeated bits of geometry
     t("labelTree"); 
 
+
+    LOG(LEVEL) << "( makeMergedMeshAndInstancedBuffers " ; 
     makeMergedMeshAndInstancedBuffers(verbosity);
     t("makeMergedMeshAndInstancedBuffers"); 
+    LOG(LEVEL) << ") makeMergedMeshAndInstancedBuffers " ; 
 
 
     t.stop();
-    t.dump();
+
+    if(t.deltaTime() > 0.1)
+    t.dump("GInstancer::createInstancedMergedMeshes deltaTime > cut ");
 }
 
 
@@ -124,6 +132,9 @@ void GInstancer::traverse()
    
     // collect digests of repeated pieces of geometry into  m_repeat_candidates
     findRepeatCandidates(m_repeat_min, m_vertex_min); 
+
+    unsigned num_reps = getNumRepeats();
+    if(num_reps > 0 )
     dumpRepeatCandidates(20u);
 }
 
@@ -259,6 +270,9 @@ void GInstancer::findRepeatCandidates(unsigned int repeat_min, unsigned int vert
         if(cand.candidate) m_repeat_candidates.push_back(pdig);        
     }
 
+    unsigned num_all = cands.size() ; 
+    assert( num_all == nall ); 
+
     // erase repeats that are enclosed within other repeats 
     // ie that have an ancestor which is also a repeat candidate
 
@@ -267,32 +281,36 @@ void GInstancer::findRepeatCandidates(unsigned int repeat_min, unsigned int vert
          m_repeat_candidates.end()
     ); 
 
+    unsigned num_repcan = m_repeat_candidates.size() ; 
 
-
-    unsigned num_cand = cands.size() ; 
-    unsigned dmax = 20u ;  
-
-
-    LOG(info) << "GInstancer::findRepeatCandidates"
+    LOG(info) 
               << " nall " << nall 
               << " repeat_min " << repeat_min 
               << " vertex_min " << vertex_min 
-              << " num_cand " << num_cand
-              << " reps " << m_repeat_candidates.size()
+              << " num_repcan " << num_repcan
               ;
 
-    std::cout << " (**) candidates fulfil repeat/vert cuts   "  << std::endl ;
-    std::cout << " (##) selected survive contained-repeat disqualification " << std::endl ;
-
-    for(unsigned i=0 ; i < std::min(num_cand, dmax) ; i++)
+    if(num_repcan > 0)
     {
-        GRepeat& cand = cands[i];
-        cand.select = cand.isListed(m_repeat_candidates) ;
-        std::cout << cand.desc() << std::endl; 
-    }
-    
+        unsigned dmax = 20u ;  
+        LOG(info) 
+                  << " num_repcan " << num_repcan 
+                  << " dmax " << dmax
+                  ;
+        std::cout << " (**) candidates fulfil repeat/vert cuts   "  << std::endl ;
+        std::cout << " (##) selected survive contained-repeat disqualification " << std::endl ;
 
+        for(unsigned i=0 ; i < std::min(num_all, dmax) ; i++)
+        {
+            GRepeat& cand = cands[i];
+            cand.select = cand.isListed(m_repeat_candidates) ;
+            std::cout << cand.desc() << std::endl; 
+        }
+    }
 }
+
+
+
 
 bool GInstancer::operator()(const std::string& dig)  
 {
@@ -335,7 +353,7 @@ bool GInstancer::isContainedRepeat( const std::string& pdig, unsigned int levels
 void GInstancer::dumpRepeatCandidates(unsigned dmax)
 {
     unsigned num_repcan = m_repeat_candidates.size() ; 
-    LOG(info) << "GInstancer::dumpRepeatCandidates" 
+    LOG(info) 
               << " num_repcan " << num_repcan
               << " dmax " << dmax
                ;
@@ -410,7 +428,8 @@ void GInstancer::labelTree()
          }
     }
 
-    LOG(info)
+
+    LOG((m_csgskiplv_count > 0 ? fatal : LEVEL))
         << " m_labels (count of non-zero setRepeatIndex) " << m_labels 
         << " m_csgskiplv " << m_csgskiplv     
         << " m_csgskiplv_count " << m_csgskiplv_count
@@ -494,6 +513,7 @@ Populates m_geolib with merged meshes including the instancing buffers.
 
 void GInstancer::makeMergedMeshAndInstancedBuffers(unsigned verbosity)
 {
+
     GNode* root = m_nodelib->getNode(0);
     assert(root); 
     GNode* base = NULL ; 
@@ -511,7 +531,7 @@ void GInstancer::makeMergedMeshAndInstancedBuffers(unsigned verbosity)
     unsigned numRepeats = getNumRepeats();
     unsigned numRidx = numRepeats + 1 ; 
  
-    LOG(info) << "GInstancer::makeMergedMeshAndInstancedBuffers"
+    LOG(info) 
               << " numRepeats " << numRepeats
               << " numRidx " << numRidx
               ;
@@ -521,7 +541,7 @@ void GInstancer::makeMergedMeshAndInstancedBuffers(unsigned verbosity)
          GNode*   rbase  = getRepeatExample(ridx) ;    // <--- why not the parent ? off-by-one confusion here as to which transforms to include
 
          if(m_verbosity > 2)
-         LOG(info) << "GInstancer::makeMergedMeshAndInstancedBuffers"
+         LOG(info) 
                    << " ridx " << ridx 
                    << " rbase " << rbase
                    ;
@@ -554,6 +574,7 @@ void GInstancer::dumpMeshset() const
     LOG(info) 
         << " numRepeats " << numRepeats 
         << " numRidx " << numRidx
+        << " (slot 0 for global non-instanced) "
         ;
 
     typedef std::set<unsigned> SU ; 

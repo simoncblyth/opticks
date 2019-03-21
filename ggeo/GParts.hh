@@ -5,6 +5,7 @@
 #include <vector>
 
 #include <glm/fwd.hpp>
+#include "plog/Severity.h"
 #include "OpticksCSG.h"
 
 struct npart ; 
@@ -158,6 +159,7 @@ class GGEO_API GParts {
        friend class GGeoTest ;
        friend class GPmt ; 
     public:
+       static const plog::Severity LEVEL ; 
        // conventional names for interfacing
        static const char* CONTAINING_MATERIAL ; 
        static const char* SENSOR_SURFACE ; 

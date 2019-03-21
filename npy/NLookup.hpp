@@ -2,6 +2,7 @@
 
 #include <map>
 #include <string>
+#include "plog/Severity.h"
 
 
 #include "NPY_API_EXPORT.hh"
@@ -24,6 +25,8 @@ See ggeo/tests/NLookupTest.cc for usage example
 **/
 
 class NPY_API NLookup {
+   public:  
+       static const plog::Severity LEVEL ;  
    public:  
        typedef std::map<unsigned,unsigned> NLookup_t ;
        typedef std::map<std::string, unsigned> MSU ;

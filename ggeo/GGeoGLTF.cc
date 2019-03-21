@@ -21,6 +21,9 @@ using YOG::Mh ;
 using YOG::Maker ; 
 
 
+const plog::Severity GGeoGLTF::LEVEL = debug ; 
+
+
 void GGeoGLTF::Save( const GGeo* ggeo, const char* path, int root ) // static
 {
     GGeoGLTF tf(ggeo); 
@@ -144,7 +147,7 @@ void GGeoGLTF::save(const char* path, int root )
 {
     m_sc->root = root ;
 
-    LOG(error) 
+    LOG(info) 
               << " path " << path 
               << " sc.root " << m_sc->root
               ;
@@ -173,7 +176,7 @@ void GGeoGLTF::dumpSolidRec(const char* msg) const
 void GGeoGLTF::writeSolidRec(const char* dir) const 
 {
     std::string path = BFile::preparePath( dir, "solids.txt", true ) ; 
-    LOG(error) << " writeSolidRec " 
+    LOG(LEVEL) << " writeSolidRec " 
                << " dir [" << dir << "]" 
                << " path [" << path << "]" ;   
     std::ofstream out(path.c_str());

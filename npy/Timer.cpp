@@ -40,6 +40,17 @@ void Timer::stamp(const char* mark)
     }
 }
 
+double Timer::deltaTime(int i0, int i1) const 
+{
+    int num = m_marks.size() ;
+    if(num < 2) return -999.0 ; 
+    unsigned j0 = i0 < 0 ? i0+num : i0 ;  
+    unsigned j1 = i1 < 0 ? i1+num : i1 ;  
+    const SD& m0 = m_marks[j0] ;   
+    const SD& m1 = m_marks[j1] ;   
+    double dt = m1.second - m0.second ;  
+    return dt ; 
+}
 
 void Timer::operator()(const char* mark)
 {
@@ -58,6 +69,9 @@ void Timer::stop()
 
 void Timer::dump(const char* msg)
 {
+    double dt = deltaTime() ; 
+    LOG(info) << "deltaTime " << dt ; 
+
     TimesTable* tt = makeTable();
     tt->dump(msg);
 }

@@ -2,6 +2,7 @@
 
 #include <string>
 #include <map>
+#include "plog/Severity.h"
 
 struct NLODConfig ; 
 class Opticks ; 
@@ -31,6 +32,7 @@ Instances::
 
 class GGEO_API GGeoLib {
     public:
+        static const plog::Severity LEVEL ;  
         static const char* GMERGEDMESH ; 
         static const char* GPARTS ; 
         enum { MAX_MERGED_MESH = 10 } ;

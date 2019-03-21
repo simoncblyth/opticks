@@ -32,6 +32,12 @@ namespace fs = boost::filesystem;
 template <typename T>
 const char* GPropertyMap<T>::NOT_DEFINED = "-" ;
 
+
+template <typename T>
+const plog::Severity GPropertyMap<T>::LEVEL = debug ;
+
+
+
 template <typename T>
 NMeta* GPropertyMap<T>::getMeta() const 
 {
@@ -275,7 +281,7 @@ void GPropertyMap<T>::setStandardDomain(GDomain<T>* standard_domain)
     if(standard_domain == NULL)
     {
         standard_domain = GDomain<T>::GetDefaultDomain();
-        LOG(error) << " setStandardDomain(NULL) -> default_domain " << standard_domain->desc() ;
+        LOG(LEVEL) << " setStandardDomain(NULL) -> default_domain " << standard_domain->desc() ;
     } 
     m_standard_domain = standard_domain ; 
 }

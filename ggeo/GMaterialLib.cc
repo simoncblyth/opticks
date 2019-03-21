@@ -16,6 +16,8 @@
 #include "PLOG.hh"
 
 
+const plog::Severity GMaterialLib::LEVEL = debug ;
+
 const GMaterialLib* GMaterialLib::INSTANCE = NULL ; 
 const GMaterialLib* GMaterialLib::GetInstance(){ return INSTANCE ; }
 
@@ -64,9 +66,9 @@ m_keys = size=8 {
 
 void GMaterialLib::save()
 {
-    LOG(fatal) << "[" ; 
+    LOG(LEVEL) << "[" ; 
     saveToCache();
-    LOG(fatal) << "]" ; 
+    LOG(LEVEL) << "]" ; 
 }
 
 GMaterialLib* GMaterialLib::load(Opticks* ok)
@@ -276,7 +278,7 @@ void GMaterialLib::add(GMaterial* mat)
 {
     if(mat->hasProperty("EFFICIENCY"))
     {
-        LOG(error) << " MATERIAL WITH EFFICIENCY " ; 
+        LOG(LEVEL) << " MATERIAL WITH EFFICIENCY " ; 
         setCathode(mat) ; 
     }
 
@@ -407,7 +409,7 @@ This is invoked from the base when the proplib is closed.
 **/
 void GMaterialLib::sort()
 {
-    LOG(fatal) << getMaterialOrdering() ; 
+    LOG(LEVEL) << getMaterialOrdering() ; 
 
     if( m_material_order == ORDER_ASIS )
     {
@@ -624,7 +626,7 @@ void GMaterialLib::import( GMaterial* mat, float* data, unsigned nj, unsigned nk
 
 void GMaterialLib::beforeClose()
 {
-    LOG(info) << "." ; 
+    LOG(LEVEL) << "." ; 
     bool debug = false ; 
     replaceGROUPVEL(debug); 
 }
@@ -651,7 +653,7 @@ void GMaterialLib::replaceGROUPVEL(bool debug)
     //unsigned ni = m_buffer->getShape(0);
     unsigned ni = getNumMaterials() ; // from the vector
 
-    LOG(info) << "GMaterialLib::replaceGROUPVEL " << " ni " << ni ;
+    LOG(LEVEL) << "GMaterialLib::replaceGROUPVEL " << " ni " << ni ;
 
     const char* base = "$TMP/replaceGROUPVEL" ;
 
@@ -959,10 +961,10 @@ std::vector<GMaterial*> GMaterialLib::getRawMaterialsWithProperties(const char* 
     std::vector<std::string> elem ;
     BStr::split(elem, props, delim);
 
-    LOG(error) << "GMaterialLib::getRawMaterialsWithProperties " 
-               << props 
-               << " m_materials_raw.size()  " << m_materials_raw.size() 
-               ; 
+    LOG(LEVEL)
+         << props 
+         << " m_materials_raw.size()  " << m_materials_raw.size() 
+         ; 
 
     std::vector<GMaterial*>  selected ; 
     for(unsigned int i=0 ; i < m_materials_raw.size() ; i++)
@@ -1070,11 +1072,12 @@ void GMaterialLib::setCathode(GMaterial* cathode)
                    ; 
         assert(0); 
     } 
-    LOG(fatal) << " setting cathode " 
-               << " GMaterial : " << cathode 
-               << " name : " << cathode->getName() ; 
+    LOG(LEVEL)
+           << " setting cathode " 
+           << " GMaterial : " << cathode 
+           << " name : " << cathode->getName() ; 
     //cathode->Summary();       
-    LOG(info) << cathode->prop_desc() ; 
+    LOG(LEVEL) << cathode->prop_desc() ; 
 
     assert( cathode->hasNonZeroProperty("EFFICIENCY") );  
 

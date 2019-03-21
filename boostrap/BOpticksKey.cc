@@ -12,6 +12,8 @@
 
 #include "PLOG.hh"
 
+const plog::Severity BOpticksKey::LEVEL = debug ; 
+
 BOpticksKey* BOpticksKey::fKey = NULL ; 
 
 const char* BOpticksKey::G4LIVE = "g4live" ; 
@@ -44,6 +46,9 @@ bool BOpticksKey::SetKey(const char* spec)
     } 
 
     fKey = spec ? new BOpticksKey(spec) : NULL  ; 
+
+    if(fKey) LOG(LEVEL) << std::endl << fKey->desc() ; 
+
     return true ; 
 }
 

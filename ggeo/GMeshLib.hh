@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include <ostream>
+#include "plog/Severity.h"
 
 class Opticks ; 
 
@@ -62,6 +63,7 @@ class GGEO_API GMeshLib
         friend class GGeo ; 
         friend class GScene ; 
     public:
+        static const plog::Severity LEVEL ;  
         static const unsigned MAX_MESH  ; 
 
         static const char*    GITEMINDEX ; 

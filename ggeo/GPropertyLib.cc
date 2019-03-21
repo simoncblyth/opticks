@@ -35,6 +35,11 @@
 #include "PLOG.hh"
 
 
+
+const plog::Severity GPropertyLib::LEVEL = debug ;
+
+
+
 unsigned int GPropertyLib::UNSET = UINT_MAX ; 
 unsigned int GPropertyLib::NUM_MATSUR = BOUNDARY_NUM_MATSUR  ;    // 4 material/surfaces that comprise a boundary om-os-is-im 
 unsigned int GPropertyLib::NUM_PROP = BOUNDARY_NUM_PROP  ; 
@@ -440,10 +445,10 @@ void GPropertyLib::close()
     NPY<float>* buf = createBuffer() ;  
     NMeta* meta = createMeta();
 
-    LOG(info) << "GPropertyLib::close"
-              << " type " << m_type 
-              << " buf " <<  ( buf ? buf->getShapeString() : "NULL" )
-              ; 
+    LOG(LEVEL)
+         << " type " << m_type 
+         << " buf " <<  ( buf ? buf->getShapeString() : "NULL" )
+         ; 
 
     //names->dump("GPropertyLib::close") ;
 
@@ -463,7 +468,7 @@ void GPropertyLib::saveToCache(NPYBase* buffer, const char* suffix)
     std::string name = getBufferName(suffix);
 
 
-    LOG(error) << "GPropertyLib::saveToCache"
+    LOG(LEVEL) 
                << " dir " << dir
                << " name " << name 
                << " type " << m_type 

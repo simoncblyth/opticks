@@ -20,6 +20,8 @@
 #include "PLOG.hh"
 // trace/debug/info/warning/error/fatal
 
+const plog::Severity GColorizer::LEVEL = debug ; 
+
 
 GColorizer::GColorizer(GNodeLib* nodelib, GGeoLib* geolib, GBndLib* blib, OpticksColors* colors, GColorizer::Style_t style ) 
        :
@@ -86,14 +88,14 @@ void GColorizer::traverse(GVolume* root)
 {
     if(!m_target)
     {
-        LOG(warning) << "GColorizer::traverse must setTarget before traverse " ;
+        LOG(fatal) << "GColorizer::traverse must setTarget before traverse " ;
         return ;  
     }
-    LOG(info) << "GColorizer::traverse START" ; 
+    LOG(LEVEL) << "GColorizer::traverse START" ; 
 
     traverse_r(root, 0);
 
-    LOG(info) << "GColorizer::traverse colorized nodes " << m_num_colorized ; 
+    LOG(LEVEL) << "GColorizer::traverse colorized nodes " << m_num_colorized ; 
 }
 
 void GColorizer::traverse_r( GNode* node, unsigned depth)

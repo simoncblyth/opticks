@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include "plog/Severity.h"
 
 class GNode ; 
 template<class T> class NPY ;
@@ -25,6 +26,7 @@ the instance placements lists.
 
 class GGEO_API GTree {
    public: 
+       static const plog::Severity LEVEL ; 
        static NPY<float>*    makeInstanceTransformsBuffer(const std::vector<GNode*>& placements);
        static NPY<unsigned>* makeAnalyticInstanceIdentityBuffer(const std::vector<GNode*>& placements)  ;
        static NPY<unsigned>* makeInstanceIdentityBuffer(const std::vector<GNode*>& placements)  ;

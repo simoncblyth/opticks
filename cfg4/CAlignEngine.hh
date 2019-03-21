@@ -2,6 +2,7 @@
 
 #include <string>
 #include <unordered_set>
+#include "plog/Severity.h"
 #include "CFG4_API_EXPORT.hh"
 #include "CFG4_HEAD.hh"
 template <typename T> class NPY ; 
@@ -38,6 +39,8 @@ so can switch between streams, resuming as appropriate.
 class CFG4_API CAlignEngine : public CLHEP::HepRandomEngine 
 {
         friend struct CAlignEngineTest ; 
+    public:
+        static const plog::Severity LEVEL ; 
     public:
         static bool Initialize(const char* ssdir); 
         static void Finalize(); 

@@ -2,7 +2,7 @@
 #include <map>
 #include <vector>
 #include <string>
-
+#include "plog/Severity.h"
 
 template <typename T> class NPY ;
 
@@ -26,21 +26,17 @@ GMergedMesh
 * general usage should target GMesh  
 * THAT MEANS : DO NOT ADD METHODS HERE THAT CAN LIVE IN GMesh
 
-
-
-
-
-
-
 **/
 
 class GGEO_API GMergedMesh : public GMesh {
+
     friend class GGeoLib ;         // for setParts hookup on loading 
     friend class GGeoTest ;         // for setParts analytic PMT kludge
     friend class OpticksGeometry ;  // for setParts analytic PMT kludge
 public:
     enum { PASS_COUNT, PASS_MERGE } ;
 public:
+    static const plog::Severity LEVEL ; 
     static std::string Desc(const GMergedMesh* mm);
     static GMergedMesh* create(unsigned ridx, GNode* base, GNode* root, unsigned verbosity);
 private:

@@ -60,6 +60,8 @@ template struct nxform<X4Nd> ;
 #include "OpticksQuery.hh"
 
 
+const plog::Severity X4PhysicalVolume::LEVEL = debug ;
+
 
 
 const G4VPhysicalVolume* const X4PhysicalVolume::Top()

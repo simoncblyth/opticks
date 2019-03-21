@@ -29,12 +29,14 @@ class NMeta ;
 class GMaterial ; 
 class GItemList ; 
 
+#include "plog/Severity.h"
 #include "GPropertyLib.hh"
 #include "GGEO_API_EXPORT.hh"
 #include "GGEO_HEAD.hh"
 
 class GGEO_API GMaterialLib : public GPropertyLib {
    public:
+       static const plog::Severity  LEVEL ;
        static const GMaterialLib* INSTANCE ; 
        static const GMaterialLib* GetInstance() ; 
    public:

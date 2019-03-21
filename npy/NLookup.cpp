@@ -10,6 +10,10 @@
 #include "NLookup.hpp"
 #include "PLOG.hh"
 
+
+const plog::Severity NLookup::LEVEL = debug ; 
+
+
 namespace fs = boost::filesystem;
 
 NLookup::NLookup()
@@ -150,14 +154,15 @@ void NLookup::close(const char* msg)
 {
     if(isClosed())
     {
-        LOG(info) << "NLookup::close " << msg 
+        LOG(info)
+                  << msg 
                   << " CLOSED ALREADY : SKIPPING "
                   ;
         return ; 
 
     }
 
-    LOG(info) << msg << brief() ;
+    LOG(LEVEL) << msg << brief() ;
 
     assert(m_alabel && m_blabel) ; // have to setA and setB before close
 

@@ -77,6 +77,10 @@ namespace fs = boost::filesystem;
 
 #define BSIZ 50
 
+
+const plog::Severity GGeo::LEVEL = debug ; 
+
+
 const char* GGeo::CATHODE_MATERIAL = "Bialkali" ; 
 const char* GGeo::PICKFACE = "pickface" ;
 
@@ -372,11 +376,14 @@ const char* GGeo::getCathodeLV(unsigned int index) const
 
 void GGeo::dumpCathodeLV(const char* msg) const 
 {
-    printf("%s\n", msg);
+    //printf("%s\n", msg);
+    LOG(LEVEL) << msg ; 
+
     typedef std::unordered_set<std::string>::const_iterator UCI ; 
     for(UCI it=m_cathode_lv.begin() ; it != m_cathode_lv.end() ; it++)
     {
-        printf("GGeo::dumpCathodeLV %s \n", it->c_str() ); 
+        //printf("GGeo::dumpCathodeLV %s \n", it->c_str() ); 
+        LOG(LEVEL) << it->c_str() ;  
     }
 }
  
@@ -418,7 +425,7 @@ void GGeo::init()
 
    m_loaded = cache_exists && cache_requested ;
 
-   LOG(error) 
+   LOG(LEVEL) 
         << " idpath " << idpath
         << " cache_exists " << cache_exists 
         << " cache_requested " << cache_requested
@@ -663,12 +670,17 @@ void GGeo::prepare()
 
     //TODO: implement prepareSensorSurfaces() and invoke from here 
 
+   
+    LOG(info) << "prepareScintillatorLib" ;  
     prepareScintillatorLib();
 
+    LOG(info) << "prepareSourceLib" ;  
     prepareSourceLib();
 
-    prepareMeshes();   // GInstancer::createInstancedMergedMeshes
+    LOG(info) << "prepareVolumes" ;  
+    prepareVolumes();   // GInstancer::createInstancedMergedMeshes
 
+    LOG(info) << "prepareVertexColors" ;  
     prepareVertexColors();  // writes colors into GMergedMesh mm0
 }
 
@@ -694,7 +706,7 @@ void GGeo::loadAnalyticFromGLTF()
 void GGeo::save()
 {
     const char* idpath = m_ok->getIdPath() ;
-    LOG(fatal) << "[" 
+    LOG(LEVEL) << "[" 
               << " idpath " << ( idpath ? idpath : "NULL" )
                ;
 
@@ -706,7 +718,7 @@ void GGeo::save()
     }   
 
 
-    m_geolib->dump("GGeo::save.geolib");
+    m_geolib->dump("GGeo::save");
 
     m_geolib->save();
     m_meshlib->save();
@@ -719,7 +731,7 @@ void GGeo::save()
 
     saveCacheMeta();
 
-    LOG(fatal) << "]" ;  
+    LOG(LEVEL) << "]" ;  
 }
 
 
@@ -751,7 +763,7 @@ void GGeo::loadCacheMeta()
 void GGeo::saveAnalytic()
 { 
     LOG(info) << "GGeo::saveAnalytic" ;
-    m_gscene->save();
+    m_gscene->save();   // HUH: still needed ???
 }
  
 void GGeo::loadFromCache()
@@ -1180,11 +1192,11 @@ void GGeo::prepareScintillatorLib()
 
     if(nscint == 0)
     {
-        LOG(error) << "GGeo::prepareScintillatorLib found no scintillator materials  " ; 
+        LOG(LEVEL) << " found no scintillator materials  " ; 
     }
     else
     {
-        LOG(info) << "GGeo::prepareScintillatorLib found " << nscint << " scintillator materials  " ; 
+        LOG(LEVEL) << " found " << nscint << " scintillator materials  " ; 
 
         GScintillatorLib* sclib = getScintillatorLib() ;
 
@@ -1233,15 +1245,16 @@ GMaterial* GGeo::getScintillatorMaterial(unsigned int index)
 
 
 /**
-GGeo::prepareMeshes
+GGeo::prepareVolumes
 --------------------
 
-Despite the name this also does the analytic combination,
-with GParts instances hitched to the created GMergedMesh.
+This was formerly mis-named as prepareMeshes which as it 
+also does the analytic combination, with analytic GParts 
+instances hitched to the created GMergedMesh.
 
 **/
 
-void GGeo::prepareMeshes()
+void GGeo::prepareVolumes()
 {
     bool instanced = m_ok->isInstanced();
     unsigned meshverbosity = m_ok->getMeshVerbosity() ; 
@@ -1249,7 +1262,8 @@ void GGeo::prepareMeshes()
     m_instancer->setCSGSkipLV(m_ok->getCSGSkipLV()) ;  
 
 
-    LOG(error) << "GGeo::prepareMeshes START" 
+    LOG(LEVEL) 
+               << "START" 
                << " instanced " << instanced 
                << " meshverbosity " << meshverbosity 
               ;
@@ -1261,7 +1275,7 @@ void GGeo::prepareMeshes()
     }
     else
     {
-        LOG(warning) << "GGeo::prepareMeshes instancing inhibited " ;
+        LOG(fatal) << "GGeo::prepareVolumes instancing inhibited " ;
         GNode* root = getNode(0);
         m_geolib->makeMergedMesh(0, NULL, root, meshverbosity);  // ridx:0 rbase:NULL 
         // ^^^^  precache never needs analytic geolib ?
@@ -1270,7 +1284,7 @@ void GGeo::prepareMeshes()
 
     m_instancer->dumpMeshset() ; 
 
-    LOG(error) << "GGeo::prepareMeshes DONE" ;
+    LOG(LEVEL) << "DONE" ;
 }
 
 

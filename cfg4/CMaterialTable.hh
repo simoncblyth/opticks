@@ -2,6 +2,7 @@
 
 #include <string>
 #include <map>
+#include "plog/Severity.h"
 
 class G4Material ; 
 
@@ -9,6 +10,8 @@ class G4Material ;
 #include "CFG4_HEAD.hh"
 
 class CFG4_API CMaterialTable {
+    public:
+         static const plog::Severity LEVEL ;  
     public:
          CMaterialTable(const char* prefix="/dd/Materials/");
          void dump(const char* msg="CMaterialMap::dump");

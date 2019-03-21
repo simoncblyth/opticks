@@ -3,6 +3,7 @@
 #include "X4_API_EXPORT.hh"
 #include <vector>
 #include <string>
+#include "plog/Severity.h"
 
 class G4Material ; 
 class G4MaterialPropertiesTable ; 
@@ -17,6 +18,7 @@ X4Material
 class X4_API X4Material
 {
     public:
+        static const plog::Severity LEVEL ; 
         static std::string Digest();
         static std::string Digest(const std::vector<G4Material*>& materials);
         static std::string Digest(const G4Material* material);

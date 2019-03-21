@@ -38,6 +38,9 @@ Used from X4Mesh::save
 
 **/
 
+const plog::Severity Maker::LEVEL = debug ; 
+
+
 void Maker::SaveToGLTF(const NPY<float>* vtx, const NPY<unsigned>* idx, const char* path)
 {
     YOG::Sc sc ;
@@ -570,14 +573,15 @@ void Maker::save(const char* path_, bool cat) const
 
     impl->save(path.c_str(), save_bin); 
 
-    LOG(info) << "writing " 
+    LOG(LEVEL)
+              << "writing " 
               << std::endl  
               << " path_ " << path_
               << std::endl  
               << " path  " << path
               ; 
 
-    LOG(info) << impl->desc() ; 
+    LOG(LEVEL) << impl->desc() ; 
 
     if(cat)
     {
@@ -595,7 +599,7 @@ void Maker::saveBuffers(const char* path) const
     // This can save buffers into non-existing subfolders, 
     // which it creates, unlike the ygltf buffer saving.
 
-    LOG(info) 
+    LOG(LEVEL) 
          << " path " << path 
          << " num_buffers " << specs.size()
          ;

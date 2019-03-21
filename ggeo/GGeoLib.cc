@@ -22,6 +22,8 @@
 #include "PLOG.hh"
 // trace/debug/info/warning/error/fatal
 
+const plog::Severity GGeoLib::LEVEL = debug ; 
+
 
 const char* GGeoLib::GMERGEDMESH = "GMergedMesh" ; 
 const char* GGeoLib::GPARTS = "GParts" ; 
@@ -261,7 +263,7 @@ void GGeoLib::saveConstituents(const char* idpath)
 
 GMergedMesh* GGeoLib::makeMergedMesh(unsigned index, GNode* base, GNode* root, unsigned verbosity )
 {
-    LOG(error) << " mm " << index ;  
+    LOG(LEVEL) << " mm " << index ;  
 
     if(m_merged_mesh.find(index) == m_merged_mesh.end())
     {
@@ -323,8 +325,7 @@ std::string GGeoLib::desc() const
 
 void GGeoLib::dump(const char* msg)
 {
-    LOG(info) << msg ; 
-    LOG(info) << desc() ; 
+    LOG(info) << msg << " " << desc() ; 
 
     unsigned nmm = getNumMergedMesh();
     unsigned num_total_volumes = 0 ; 

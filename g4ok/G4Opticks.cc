@@ -161,8 +161,8 @@ GGeo* G4Opticks::translateGeometry( const G4VPhysicalVolume* top )
 {
     LOG(verbose) << "( key" ;
     const char* keyspec = X4PhysicalVolume::Key(top) ; 
+    LOG(error) << "SetKey " << keyspec  ;   
     BOpticksKey::SetKey(keyspec);
-    LOG(error) << " SetKey " << keyspec  ;   
     LOG(verbose) << ") key" ;
 
     const char* g4opticks_debug = SSys::getenvvar("G4OPTICKS_DEBUG") ; 
@@ -171,7 +171,9 @@ GGeo* G4Opticks::translateGeometry( const G4VPhysicalVolume* top )
 
     LOG(info) << "( Opticks" ;
     Opticks* ok = new Opticks(0,0, ecl.c_str() );  // Opticks instanciation must be after BOpticksKey::SetKey
-    LOG(info) << ") Opticks" ;
+    const char* idpath = ok->getIdPath(); 
+    assert(idpath);
+    LOG(info) << ") Opticks " << idpath ;
 
     const char* gdmlpath = ok->getGDMLPath();   // inside geocache, not SrcGDMLPath from opticksdata
     LOG(info) << "( CGDML" ;
@@ -183,7 +185,7 @@ GGeo* G4Opticks::translateGeometry( const G4VPhysicalVolume* top )
     LOG(info) << ") GGeo instanciate " ;
 
     LOG(info) << "( GGeo populate" ;
-    X4PhysicalVolume xtop(gg, top) ;   // <-- populates gg 
+    X4PhysicalVolume xtop(gg, top) ;   
     LOG(info) << ") GGeo populate" ;
 
     LOG(info) << "( GGeo::postDirectTranslation " ;

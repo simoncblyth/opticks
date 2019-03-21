@@ -4,6 +4,7 @@
 #include <vector>
 #include <map>
 #include <set>
+#include "plog/Severity.h"
 
 class SLog ; 
 struct NSceneConfig ; 
@@ -39,6 +40,8 @@ This populates GGeo.m_geolib with GMergedMesh.
 #include "GGEO_HEAD.hh"
 
 class GGEO_API GInstancer {
+   public:
+        static const plog::Severity LEVEL ;  
    public:
         GInstancer(GGeoLib* geolib, GNodeLib* nodelib, NSceneConfig* config) ;
         void setRepeatMin(unsigned repeat_min);
@@ -76,7 +79,7 @@ class GGEO_API GInstancer {
         std::vector<GNode*> getPlacements(unsigned int ridx);  // all GNode with the ridx progeny digest
    public:
         void dumpMeshset() const ;
-        void setCSGSkipLV(unsigned csgskiplv);
+        void setCSGSkipLV(int csgskiplv);
    private:
         // recursive setRepeatIndex on the GNode tree for each of the repeated bits of geometry
         void           labelTree();

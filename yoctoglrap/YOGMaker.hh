@@ -2,6 +2,7 @@
 
 #include <string>
 #include <vector>
+#include "plog/Severity.h"
 
 #include "NBufferSpec.hpp"
 #include "YOG_API_EXPORT.hh"
@@ -51,6 +52,9 @@ typedef enum { POINTS, LINES, LINE_LOOP, LINE_STRIP, TRIANGLES, TRIANGLE_STRIP, 
 
 struct YOG_API Maker 
 {
+
+    static const plog::Severity LEVEL ; 
+
     static void SaveToGLTF(const NPY<float>* vtx, const NPY<unsigned>* idx, const char* path);
 
     void demo_create(const Geometry& geom );

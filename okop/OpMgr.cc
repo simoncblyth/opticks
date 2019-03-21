@@ -22,6 +22,9 @@ class NConfigurable ;
 #include "OpPropagator.hh"  // okop-
 
 
+const plog::Severity OpMgr::LEVEL = debug ; 
+
+
 #define TIMER(s) \
     { \
        if(m_ok)\

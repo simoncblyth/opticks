@@ -1,4 +1,3 @@
-#define LL info
 
 #include <cstring>
 #include <cassert>
@@ -84,7 +83,7 @@ const int OpticksResource::DEFAULT_FRAME_DYB = 3153 ;
 const int OpticksResource::DEFAULT_FRAME_JUNO = 62593 ; 
 
 
-const plog::Severity OpticksResource::LEVEL = error ; 
+const plog::Severity OpticksResource::LEVEL = debug ; 
 
 OpticksResource::OpticksResource(Opticks* opticks, const char* lastarg) 
     :
@@ -416,7 +415,7 @@ void OpticksResource::assignDetectorName()
 
    assert(m_detector);
 
-   LOG(info) << "OpticksResource::assignDetectorName"
+   LOG(LEVEL)
              << " m_detector " << m_detector
              ; 
 

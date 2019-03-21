@@ -31,6 +31,8 @@
 #include "PLOG.hh"
 
 
+const plog::Severity GParts::LEVEL = debug ; 
+
 const char* GParts::CONTAINING_MATERIAL = "CONTAINING_MATERIAL" ;  
 const char* GParts::SENSOR_SURFACE = "SENSOR_SURFACE" ;  
 
@@ -454,11 +456,11 @@ void GParts::save(const char* dir)
 
     // resource organization handled by GGeoLib, that invokes this
 
-    LOG(info) << "GParts::save dir " << dir ; 
+    LOG(LEVEL) << "dir " << dir ; 
 
     if(!isClosed())
     {
-        LOG(info) << "GParts::save pre-save closing, for primBuf   " ; 
+        LOG(LEVEL) << "pre-save closing, for primBuf   " ; 
         close();
     }    
 
@@ -868,9 +870,10 @@ void GParts::close()
 
 
     //if(m_verbosity > 1)
-    LOG(info) << "GParts::close START "
-              << " verbosity " << m_verbosity 
-               ; 
+    LOG(LEVEL) 
+          << "START "
+          << " verbosity " << m_verbosity 
+          ; 
 
     registerBoundaries();
 
@@ -884,9 +887,10 @@ void GParts::close()
     dumpPrimBuffer(); 
 
     //if(m_verbosity > 1)
-    LOG(info) << "GParts::close DONE " 
-              << " verbosity " << m_verbosity 
-              ; 
+    LOG(LEVEL) 
+          << "DONE " 
+          << " verbosity " << m_verbosity 
+          ; 
 }
 
 void GParts::registerBoundaries() // convert boundary spec names into integer codes using bndlib
@@ -896,11 +900,11 @@ void GParts::registerBoundaries() // convert boundary spec names into integer co
    assert( getNumParts() == nbnd );
 
    if(m_verbosity > 0)
-   LOG(info) << "GParts::registerBoundaries " 
-             << " verbosity " << m_verbosity
-             << " nbnd " << nbnd 
-             << " NumParts " << getNumParts() 
-             ;
+   LOG(LEVEL) 
+         << " verbosity " << m_verbosity
+         << " nbnd " << nbnd 
+         << " NumParts " << getNumParts() 
+         ;
 
    for(unsigned int i=0 ; i < nbnd ; i++)
    {
@@ -909,13 +913,13 @@ void GParts::registerBoundaries() // convert boundary spec names into integer co
        setBoundary(i, boundary);
 
        if(m_verbosity > 1)
-       LOG(info) << "GParts::registerBoundaries " 
-                 << " i " << std::setw(3) << i 
-                 << " " << std::setw(30) << spec
-                 << " --> "
-                 << std::setw(4) << boundary 
-                 << " " << std::setw(30) << m_bndlib->shortname(boundary)
-                 ;
+       LOG(LEVEL) 
+             << " i " << std::setw(3) << i 
+             << " " << std::setw(30) << spec
+             << " --> "
+             << std::setw(4) << boundary 
+             << " " << std::setw(30) << m_bndlib->shortname(boundary)
+             ;
 
    } 
 }

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include "plog/Severity.h"
 
 class NMeta ; 
 class Opticks ; 
@@ -13,6 +14,8 @@ template <typename T> class GPropertyMap ;
 #include "GGEO_HEAD.hh"
 
 class GGEO_API GScintillatorLib : public GPropertyLib {
+    public:
+        static const plog::Severity LEVEL ; 
     public:
         static const char* slow_component; 
         static const char* fast_component; 

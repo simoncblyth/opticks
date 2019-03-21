@@ -13,7 +13,7 @@
 #include <vector>
 
 #include <glm/fwd.hpp>
-
+#include "plog/Severity.h"
 
 class SLog ; 
 template <typename T> class NPY ;
@@ -93,6 +93,7 @@ Lifecycle of GPropertyLib subclasses
 #include "GGEO_HEAD.hh"
 class GGEO_API GPropertyLib {
     public:
+        static const plog::Severity LEVEL ;   
         static unsigned int UNSET ; 
         static unsigned int NUM_MATSUR ;    // number of material/surfaces in the boundary 
         static unsigned int NUM_PROP ; 

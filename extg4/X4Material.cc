@@ -10,6 +10,9 @@
 #include "PLOG.hh"
 
 
+const plog::Severity X4Material::LEVEL = debug ; 
+
+
 std::string X4Material::Digest()
 {
     const G4MaterialTable* mtab  = G4Material::GetMaterialTable();
@@ -73,12 +76,12 @@ bool X4Material::HasEfficiencyProperty(const G4MaterialPropertiesTable* mpt_) //
     bool ret = false ; 
     if(mpv) 
     {
-         LOG(error) << "found mpv for " << key ; 
+         LOG(LEVEL) << "found mpv for " << key ; 
          ret = true ; 
     }   
     else if( mpt->ConstPropertyExists(key) )
     {
-         LOG(error) << "found ConstProperty  " << key ; 
+         LOG(LEVEL) << "found ConstProperty  " << key ; 
          ret = true ; 
     }
     else 

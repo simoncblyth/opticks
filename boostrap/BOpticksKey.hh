@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include "plog/Severity.h"
 #include "BRAP_API_EXPORT.hh"
 
 /** 
@@ -19,7 +20,9 @@ where the geometry
 
 class BRAP_API BOpticksKey 
 {
-    public:
+     private:
+       static const plog::Severity  LEVEL ; 
+      public:
         static const char* G4LIVE ; 
         static const char* IDSTEM ; 
         static const char* IDFILE ; 

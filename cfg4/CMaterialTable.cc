@@ -13,6 +13,9 @@
 #include "CMaterialTable.hh"
 
 
+const plog::Severity CMaterialTable::LEVEL = debug ; 
+
+
 CMaterialTable::CMaterialTable(const char* prefix)
     :
     m_prefix(prefix ? strdup(prefix) : NULL)
@@ -29,7 +32,7 @@ void CMaterialTable::initNameIndex()
     const G4MaterialTable* mtab = G4Material::GetMaterialTable();
     unsigned nmat = G4Material::GetNumberOfMaterials();
 
-    LOG(info) << "CMaterialTable::init "
+    LOG(LEVEL)
               << " numOfMaterials " << nmat
               << " prefix " << ( m_prefix ? m_prefix : "NULL" ) 
               ;
@@ -41,7 +44,7 @@ void CMaterialTable::initNameIndex()
         const char* name = name_.c_str();
         const char* shortname =  m_prefix && strncmp(name, m_prefix, strlen(m_prefix)) == 0 ? name + strlen(m_prefix) : name ; 
 
-        LOG(debug) 
+        pLOG(LEVEL,+1) 
             << " index " << std::setw(3) << i 
             << " name " << std::setw(30) << name
             << " shortname " << std::setw(30) << shortname

@@ -4,6 +4,7 @@
 #include <string>
 #include <cstring>
 #include <vector>
+#include "plog/Severity.h"
 
 #include "NGLM.hpp"
 
@@ -82,6 +83,7 @@ class OKCORE_API Opticks {
        friend class CG4 ; 
        friend struct OpticksTest ; 
    public:
+       static const plog::Severity LEVEL ;  
        static const float F_SPEED_OF_LIGHT ;  // mm/ns
    public:
        // TODO: move into OpticksMode

@@ -35,6 +35,7 @@ class NPY_API Timer {
         static TimesTable* loadTable(const char* dir);
     public:
         const char*               getName();
+        double deltaTime(int i0=0, int i1=-1) const ;
     public:
         void dump(const char* msg="Timer::dump");
     private:

@@ -12,6 +12,8 @@
 
 #include "PLOG.hh"
 
+const plog::Severity GMeshLib::LEVEL = debug ; 
+
 
 const unsigned GMeshLib::MAX_MESH = 500 ; 
 const char* GMeshLib::GITEMINDEX = "GItemIndex" ; 
@@ -358,7 +360,7 @@ void GMeshLib::reportMeshUsage(const char* msg) const
 
 void GMeshLib::writeMeshUsage(const char* path) const 
 {
-    LOG(info) << " write to " << path ; 
+    LOG(LEVEL) << " write to " << path ; 
     std::ofstream out(path); 
     out << "GMeshLib::writeMeshUsage"  << std::endl ; 
     reportMeshUsage_(out); 

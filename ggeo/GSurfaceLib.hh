@@ -39,6 +39,7 @@ template<typename T> class GProperty ;
 
 class GGEO_API GSurfaceLib : public GPropertyLib {
    public:
+       static const plog::Severity LEVEL ; 
        static const char* propertyName(unsigned int k);
        // 4 standard surface property names : interleaved into float4 wavelength texture
   public:

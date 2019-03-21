@@ -17,6 +17,8 @@
 const unsigned int GSourceLib::icdf_length = 1024 ; 
 const char* GSourceLib::radiance_ = "radiance" ; 
 
+const plog::Severity GSourceLib::LEVEL = debug ; 
+
 
 void GSourceLib::save()
 {
@@ -85,7 +87,9 @@ NPY<float>* GSourceLib::createBuffer()
 {
     if(getNumSources() == 0)
     {
-        LOG(info) << "GSourceLib::createBuffer adding standard source " ;
+        LOG(LEVEL) 
+               << "adding standard D65 blackbody source "
+               ;
         GSource* bbs = GSource::make_blackbody_source("D65", 0, 6500.f );    
         add(bbs);
     } 

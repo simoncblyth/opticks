@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include "plog/Severity.h"
 #include "GGEO_API_EXPORT.hh"
 
 #include "GSolidRec.hh"
@@ -39,6 +40,8 @@ Issues
 
 class GGEO_API GGeoGLTF
 {
+    public:
+        static const plog::Severity LEVEL ; 
     public:
         static void Save( const GGeo* ggeo, const char* path, int root ) ; 
     public:

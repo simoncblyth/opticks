@@ -12,6 +12,8 @@ template <typename T> class GDomain ;
 class NMeta ; 
 class GOpticalSurface ; 
 
+#include "plog/Severity.h"
+
 #include "GGEO_API_EXPORT.hh"
 #include "GGEO_HEAD.hh"
 
@@ -30,6 +32,7 @@ TODO: const correctness would be good, although painful to implement
 template <class T>
 class GGEO_API GPropertyMap {
 
+  static const plog::Severity LEVEL ;
   static const char* NOT_DEFINED ;
   typedef std::map<std::string,GProperty<T>*> GPropertyMap_t ;
   public:

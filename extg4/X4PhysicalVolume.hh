@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 #include <map>
+#include "plog/Severity.h"
 
 class G4LogicalSurface ; 
 class G4LogicalVolume ; 
@@ -64,6 +65,7 @@ struct X4_API X4Nd
 class X4_API X4PhysicalVolume : public X4Named 
 {
     public:
+        static const plog::Severity  LEVEL ; 
         static const G4VPhysicalVolume* const Top();
         static GGeo* Convert(const G4VPhysicalVolume* const top);
     public:

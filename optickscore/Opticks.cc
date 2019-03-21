@@ -55,6 +55,7 @@
 #include "OpticksCfg.hh"
 
 
+const plog::Severity Opticks::LEVEL = debug ; 
 
 
 NPropNames* Opticks::G_MATERIAL_NAMES = NULL ; 
@@ -490,12 +491,12 @@ void Opticks::init()
     m_lastarg = m_argc > 1 ? strdup(m_argv[m_argc-1]) : NULL ;
 
 
-    LOG(verbose) << " Opticks::init start instanciate resource " ;
+    LOG(LEVEL) << "( OpticksResource " ;
     m_resource = new OpticksResource(this, m_lastarg);
-    LOG(verbose) << " Opticks::init done instanciate resource " ;
+    LOG(LEVEL) << ") OpticksResource " ;
     setDetector( m_resource->getDetector() );
 
-    LOG(debug) << "Opticks::init DONE " << m_resource->desc()  ;
+    LOG(LEVEL) << " DONE " << m_resource->desc()  ;
 
     //configure(); 
 }

@@ -6,6 +6,7 @@
 #include <iterator>
 
 #include <glm/fwd.hpp>
+#include "plog/Severity.h"
 
 // npy-
 #include "NConfigurable.hpp"
@@ -105,6 +106,7 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
         friend class  AssimpGGeo ; 
         friend struct GSceneTest ; 
     public:
+        static const plog::Severity LEVEL ; 
         static GGeo* GetInstance();  // statically provides the last instanciated GGeo instance
         static const char* CATHODE_MATERIAL ; 
     public:
@@ -184,7 +186,7 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
         void prepareSurfaceLib();
         void prepareScintillatorLib();
         void prepareSourceLib();
-        void prepareMeshes();
+        void prepareVolumes();   
         void prepareVertexColors();
     public:
 

@@ -7,6 +7,7 @@ class GItemList ;
 class GSource ; 
 template <typename T> class GPropertyMap ;
 
+#include "plog/Severity.h"
 #include "GPropertyLib.hh"
 #include "GGEO_API_EXPORT.hh"
 #include "GGEO_HEAD.hh"
@@ -40,6 +41,7 @@ oxrap/cu/wavelength_lookup.cu::
 
 class GGEO_API GSourceLib : public GPropertyLib {
     public:
+        static const plog::Severity LEVEL ; 
         static const unsigned int icdf_length ; 
         static const char* radiance_ ; 
         void save();

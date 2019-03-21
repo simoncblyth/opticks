@@ -76,12 +76,13 @@ NSceneConfig::NSceneConfig(const char* cfg)
 
 void NSceneConfig::env_override()
 {
-    int env_verbosity = SSys::getenvint("VERBOSITY", 1) ;
+    int env_verbosity = SSys::getenvint("VERBOSITY", 0) ;
     if(verbosity != env_verbosity) 
     {
         LOG(info) << "NSceneConfig"
-                  << " override verbosity from VERBOSITY envvar " 
-                  << env_verbosity 
+                  << " VERBOSITY envvar override " 
+                  << " env_verbosity " << env_verbosity 
+                  << " verbosity " << verbosity 
                   ;   
         verbosity = env_verbosity ; 
     }
