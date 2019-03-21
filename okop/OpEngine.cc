@@ -60,9 +60,10 @@ void OpEngine::init()
    bool is_load = m_ok->isLoad() ; 
    bool is_tracer = m_ok->isTracer() ;
 
-   LOG(error) << "OpEngine::init"
+   LOG(error) 
               << " is_load " << is_load 
               << " is_tracer " << is_tracer
+              << " OptiXVersion " << m_ok->getOptiXVersion()
               ; 
 
    if(is_load)

@@ -2,6 +2,7 @@
 
 #include <string>
 #include <glm/fwd.hpp>
+#include "plog/Severity.h"
 
 class GMergedMesh ; 
 
@@ -20,6 +21,8 @@ OpticksAim
 **/
 
 class OKGEO_API OpticksAim {
+    public:
+       static const plog::Severity LEVEL ; 
     public:
        OpticksAim(OpticksHub* hub);
        void registerGeometry(GMergedMesh* mm0);

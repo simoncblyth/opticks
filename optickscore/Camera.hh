@@ -104,6 +104,7 @@ zoom defined as apparent size of an object relative to the size for a 90 degree 
 #include <vector>
 #include <string>
 #include <glm/fwd.hpp>  
+#include "plog/Severity.h"
 
 #include "NConfigurable.hpp"
 #include "OKCORE_API_EXPORT.hh"
@@ -121,7 +122,9 @@ which in turn is a ctor resident of the top level OpticksHub m_hub.
 
 class OKCORE_API Camera : public NConfigurable  {
    public:
-       static const char* PREFIX ;
+     static const plog::Severity LEVEL ;   
+   public:
+     static const char* PREFIX ;
   public:
      static const char* PRINT ; 
      static const char* NEAR_ ; 

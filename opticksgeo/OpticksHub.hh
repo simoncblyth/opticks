@@ -3,6 +3,7 @@
 #include <string>
 #include <map>
 #include <glm/fwd.hpp>
+#include "plog/Severity.h"
 
 class SCtrl ; 
 class SLog ; 
@@ -98,6 +99,8 @@ class OKGEO_API OpticksHub : public SCtrl {
        friend class OEngineImp ; 
        friend class OpticksViz ; 
        friend class OpticksIdx ; 
+   public:
+       static const plog::Severity LEVEL ; 
    public:
        OpticksHub(Opticks* ok); 
 

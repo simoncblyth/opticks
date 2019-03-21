@@ -41,7 +41,7 @@ const plog::Severity OpMgr::LEVEL = debug ;
 
 OpMgr::OpMgr(Opticks* ok ) 
     :
-    m_log(new SLog("OpMgr::OpMgr","",info)),
+    m_log(new SLog("OpMgr::OpMgr","",LEVEL)),
     m_ok(ok ? ok : Opticks::GetInstance()),         
     m_hub(new OpticksHub(m_ok)),            // immediate configure and loadGeometry OR adopt a preexisting GGeo instance
     m_idx(new OpticksIdx(m_hub)),
@@ -68,7 +68,7 @@ void OpMgr::init()
          LOG(fatal) << "OpMgr doesnt support G4GUN, other that via loading (TO BE IMPLEMENTED) " ;
     assert(!g4gun);
 
-    m_ok->dumpParameters("OpMgr::init");
+    //m_ok->dumpParameters("OpMgr::init");
 }
 
 

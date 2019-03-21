@@ -64,6 +64,9 @@
 
 #include "PLOG.hh"
 
+const plog::Severity OpticksHub::LEVEL = debug ; 
+//const plog::Severity OpticksHub::LEVEL = error ; 
+
 
 //  hmm : the hub could be a GGeoBase ?
 
@@ -201,7 +204,7 @@ void OpticksHub::setCtrl(SCtrl* ctrl)
 
 void OpticksHub::init()
 {
-    LOG(fatal) << "[" ; 
+    pLOG(LEVEL,-1) << "[" ; 
 
     //m_composition->setCtrl(this); 
 
@@ -230,7 +233,7 @@ void OpticksHub::init()
 
     m_gen = new OpticksGen(this) ;
 
-    LOG(fatal) << "]" ; 
+    pLOG(LEVEL,-1) << "]" ; 
 }
 
 
@@ -255,21 +258,21 @@ std::string OpticksHub::desc() const
 
 void OpticksHub::configure()
 {
-    LOG(error) << "[" ; 
+    LOG(LEVEL) << "[" ; 
     m_composition->addConfig(m_cfg); 
     //m_cfg->dumpTree();
 
     int argc    = m_ok->getArgc();
     char** argv = m_ok->getArgv();
 
-    LOG(debug) << "OpticksHub::configure " << argv[0] ; 
+    LOG(debug) << "argv0 " << argv[0] ; 
 
     m_cfg->commandline(argc, argv);
     m_ok->configure();        // <--- dont like 
 
     if(m_fcfg->hasError())
     {
-        LOG(fatal) << "OpticksHub::config parse error " << m_fcfg->getErrorMessage() ; 
+        LOG(fatal) << "parse error " << m_fcfg->getErrorMessage() ; 
         m_fcfg->dump("OpticksHub::config m_fcfg");
         m_ok->setExit(true);
         return ; 
@@ -277,12 +280,12 @@ void OpticksHub::configure()
 
     m_gltf =  m_ok->getGLTF() ;
 
-    LOG(info) << "OpticksHub::configure"
-              << " argc " << argc 
-              << " argv[0] " << ( argv[0] ? argv[0] : "-" )
-              << " m_gltf " << m_gltf 
-              << " is_tracer " << m_ok->isTracer() ; 
-              ;
+    LOG(LEVEL)
+          << " argc " << argc 
+          << " argv[0] " << ( argv[0] ? argv[0] : "-" )
+          << " m_gltf " << m_gltf 
+          << " is_tracer " << m_ok->isTracer() ; 
+          ;
 
     //assert( m_ok->isTracer() ) ; 
 
@@ -309,7 +312,7 @@ void OpticksHub::configure()
         assert(0);
     }
 
-    LOG(error) << "]" ; 
+    LOG(LEVEL) << "]" ; 
 }
 
 
@@ -514,6 +517,7 @@ void OpticksHub::loadGeometry()
 
 void OpticksHub::adoptGeometry()
 {
+    LOG(LEVEL) << "[" ; 
     assert( m_ggeo ); 
     assert( m_ggeo->isPrepared() && "MUST GGeo::prepare() before geometry can be adopted, and uploaded to GPU " ) ;
 
@@ -523,7 +527,7 @@ void OpticksHub::adoptGeometry()
 
     m_ggeo->setComposition(m_composition);
 
-    LOG(info) << "OpticksHub::adoptGeometry DONE" ; 
+    LOG(LEVEL) << "]" ; 
 }
 
 
@@ -574,10 +578,11 @@ glm::mat4 OpticksHub::getTransform(int index)
 
 void OpticksHub::registerGeometry()
 {
-    LOG(fatal) << "OpticksHub::registerGeometry" ; 
+    LOG(LEVEL) << "[" ; 
     GMergedMesh* mm0 = getMergedMesh(0);
     assert(mm0);
     m_aim->registerGeometry( mm0 );
+    LOG(LEVEL) << "]" ; 
 }
 
 void OpticksHub::setupCompositionTargetting()

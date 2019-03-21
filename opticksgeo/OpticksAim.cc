@@ -17,6 +17,9 @@
 #include "PLOG.hh"
 
 
+const plog::Severity OpticksAim::LEVEL = debug ; 
+
+
 OpticksAim::OpticksAim(OpticksHub* hub) 
     :
     m_ok(hub->getOpticks()),
@@ -36,9 +39,10 @@ void OpticksAim::registerGeometry(GMergedMesh* mm0)
     glm::vec4 ce0 = getCenterExtent(); 
     m_ok->setSpaceDomain( ce0 );
 
-    LOG(info) << "OpticksAim::registerGeometry setting opticks SpaceDomain : " 
-              << " ce0 " << gformat(ce0) 
-              ; 
+    LOG(LEVEL)
+          << " setting SpaceDomain : " 
+          << " ce0 " << gformat(ce0) 
+          ; 
 }
 
 glm::vec4 OpticksAim::getCenterExtent() 

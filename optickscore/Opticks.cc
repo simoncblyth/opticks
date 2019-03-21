@@ -1309,9 +1309,9 @@ void Opticks::defineEventSpec()
 
 void Opticks::dumpArgs(const char* msg)
 {
-    LOG(info) << msg << " argc " << m_argc ;
+    LOG(LEVEL) << msg << " argc " << m_argc ;
     for(int i=0 ; i < m_argc ; i++) 
-          std::cout << std::setw(3) << i << " : " << m_argv[i] << std::endl ;
+         LOG(LEVEL) << std::setw(3) << i << " : " << m_argv[i] << std::endl ;
 
    // PLOG by default writes to stdout so for easy splitting write 
    // mostly to stdout and just messages to stderr
@@ -1392,11 +1392,11 @@ void Opticks::configure()
 
     std::string prefdir = getPreferenceDir(type, subtype);  
 
-    LOG(fatal) << "Opticks::configure " 
-               << " m_size " << gformat(m_size)
-               << " m_position " << gformat(m_position)
-               << " prefdir " << prefdir
-               ;
+    LOG(LEVEL) 
+          << " m_size " << gformat(m_size)
+          << " m_position " << gformat(m_position)
+          << " prefdir " << prefdir
+          ;
  
 
     // Below "state" is a placeholder name of the current state that never gets persisted, 

@@ -14,7 +14,7 @@ template <typename T> class NPY ;
 class OpPropagator ; 
 
 
-
+#include "plog/Severity.h"
 #include "OKOP_API_EXPORT.hh"
 #include "OKOP_HEAD.hh"
 
@@ -49,6 +49,8 @@ perhaps factor out into OpKernel ?
 
 
 class OKOP_API OpMgr {
+   public:
+       static const plog::Severity LEVEL ; 
    public:
        OpMgr(Opticks* ok );
        virtual ~OpMgr();

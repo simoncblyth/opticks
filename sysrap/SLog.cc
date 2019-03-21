@@ -10,6 +10,7 @@ SLog::SLog(const char* label, const char* extra, plog::Severity level)
    m_level(level)
 {
     pLOG(m_level,0) 
+        << " ( "
         << m_label 
         << " " 
         << m_extra 
@@ -25,6 +26,7 @@ const char* SLog::exename() // static
 void SLog::operator()(const char* msg)
 {
     pLOG(m_level,0) 
+        << " ) "
         << m_label 
         << " " 
         << m_extra 

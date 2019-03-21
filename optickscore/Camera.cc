@@ -14,6 +14,10 @@
 #include "Camera.hh"
 #include "PLOG.hh"
 
+
+const plog::Severity Camera::LEVEL = debug ; 
+
+
 // Unexplained interference between plog and Camera..
 // will not compile on MSVC unless change 
 //
@@ -166,7 +170,7 @@ void Camera::aim(float basis)
    float a_far  = basis*5.f ;
    float a_scale = basis ; 
 
-   LOG(info) 
+   LOG(LEVEL) 
           << " basis " << basis
           << " a_near " << a_near
           << " a_far " << a_far
