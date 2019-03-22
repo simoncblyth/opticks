@@ -37,7 +37,7 @@ class Interactor ;
 class Photons ; 
 class GUI ; 
 
-
+#include "plog/Severity.h"
 #include "OGLRAP_API_EXPORT.hh"
 #include "SCtrl.hh"
 
@@ -53,6 +53,8 @@ Canonical m_viz instances are residents of the top level managers: ok/OKMgr.hh o
 
 class OGLRAP_API OpticksViz : public SCtrl  {
          friend class AxisApp ; 
+    public:
+         static const plog::Severity LEVEL ; 
     public:
          OpticksViz(OpticksHub* hub, OpticksIdx* idx, bool immediate=false);
     public:

@@ -19,6 +19,9 @@ PPM uses 24 bits per pixel: 8 for red, 8 for green, 8 for blue.
 */
 
 
+const plog::Severity SPPM::LEVEL = debug ; 
+
+
 SPPM::SPPM()
     :   
     pixels(NULL),
@@ -53,7 +56,7 @@ void SPPM::resize( int width, int height, int scale )
         pscale = scale ; 
         int size = 4 * pwidth * pscale * pheight * pscale ;
         pixels = new unsigned char[size];
-        LOG(fatal) << "creating resized pixels buffer " << desc() ; 
+        LOG(LEVEL) << "creating resized pixels buffer " << desc() ; 
     }   
 }
 

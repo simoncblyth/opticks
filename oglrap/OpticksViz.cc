@@ -63,6 +63,7 @@
 #include "Interactor.hh"
 #include "InteractorCfg.hh"
 
+const plog::Severity OpticksViz::LEVEL = error ; 
 
 
 OpticksViz::OpticksViz(OpticksHub* hub, OpticksIdx* idx, bool immediate)
@@ -131,7 +132,7 @@ void OpticksViz::init()
 
         const char* renderMode = m_ok->getRenderMode();
 
-        LOG(fatal) << "OpticksViz::init " << renderMode ; 
+        LOG(LEVEL) << "renderMode " << renderMode ; 
 
         prepareScene(renderMode);      // setup OpenGL shaders and creates OpenGL context (the window)
  
@@ -423,7 +424,7 @@ void OpticksViz::prepareGUI()
     }
     else
     {
-        LOG(warning) << "App::prepareGUI NULL TimesTable " ; 
+        LOG(LEVEL) << "NULL TimesTable " ; 
     }  
 
     NParameters* parameters = evt ? evt->getParameters() : m_ok->getParameters() ; 
@@ -501,7 +502,7 @@ void OpticksViz::renderLoop()
 {
     if(m_interactivity == 0 )
     {
-        LOG(info) << "OpticksViz::renderLoop early exit due to InteractivityLevel 0  " ; 
+        LOG(LEVEL) << "OpticksViz::renderLoop early exit due to InteractivityLevel 0  " ; 
         return ;
     }
     LOG(info) << "enter runloop "; 
@@ -509,7 +510,7 @@ void OpticksViz::renderLoop()
     //m_frame->toggleFullscreen(true); causing blankscreen then segv
     m_frame->hintVisible(true);
     m_frame->show();
-    LOG(info) << "after frame.show() "; 
+    LOG(LEVEL) << "after frame.show() "; 
 
     unsigned int count ; 
 

@@ -99,6 +99,7 @@ SET(HEADERS
     Colors.hh
 
     gleq.h
+    old_gleq.h
     GLEQ.hh
     loadPPM.h
 )

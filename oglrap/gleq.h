@@ -1,6 +1,6 @@
 /*
- * GLEQ - An event queue for GLFW 3
- * Copyright © Camilla Berglund <dreda@glfw.org>
+ * GLEQ - A basic event queue for GLFW 3
+ * Copyright © Camilla Löwy <elmindreda@glfw.org>
  *
  * This software is provided 'as-is', without any express or implied
  * warranty. In no event will the authors be held liable for any damages
@@ -25,16 +25,12 @@
 #ifndef GLEQ_HEADER_FILE
 #define GLEQ_HEADER_FILE
 
-#if GLFW_VERSION_MAJOR != 3
-    #error "This version of GLEQ only supports GLFW 3"
-#endif
+#include <GLFW/glfw3.h>
 
-#if GLFW_VERSION_MINOR < 1
-    #error "This version of GLEQ requires GLFW 3.1 or later"
-#endif
-
-#if GLFW_VERSION_MINOR != 1
-    #warning "This version of GLEQ does not support events added after GLFW 3.1"
+#ifdef GLEQ_STATIC
+    #define GLEQDEF static
+#else
+    #define GLEQDEF extern
 #endif
 
 #ifdef __cplusplus
@@ -51,7 +47,7 @@ typedef enum
     GLEQ_WINDOW_FOCUSED,
     GLEQ_WINDOW_DEFOCUSED,
     GLEQ_WINDOW_ICONIFIED,
-    GLEQ_WINDOW_RESTORED,
+    GLEQ_WINDOW_UNICONIFIED,
     GLEQ_FRAMEBUFFER_RESIZED,
     GLEQ_BUTTON_PRESSED,
     GLEQ_BUTTON_RELEASED,
@@ -62,49 +58,74 @@ typedef enum
     GLEQ_KEY_PRESSED,
     GLEQ_KEY_REPEATED,
     GLEQ_KEY_RELEASED,
-    GLEQ_CHARACTER_INPUT,
-    GLEQ_FILE_DROPPED
-
+    GLEQ_CODEPOINT_INPUT,
+    GLEQ_MONITOR_CONNECTED,
+    GLEQ_MONITOR_DISCONNECTED,
+#if GLFW_VERSION_MINOR >= 1
+    GLEQ_FILE_DROPPED,
+#endif
+#if GLFW_VERSION_MINOR >= 2
+    GLEQ_JOYSTICK_CONNECTED,
+    GLEQ_JOYSTICK_DISCONNECTED,
+#endif
+#if GLFW_VERSION_MINOR >= 3
+    GLEQ_WINDOW_MAXIMIZED,
+    GLEQ_WINDOW_UNMAXIMIZED,
+    GLEQ_WINDOW_SCALE_CHANGED,
+#endif
 } GLEQtype;
 
-typedef struct
+typedef struct GLEQevent
 {
     GLEQtype type;
-    GLFWwindow* window;
+    union {
+        GLFWwindow* window;
+        GLFWmonitor* monitor;
+        int joystick;
+    };
     union {
         struct {
-            double x;
-            double y;
+            int x;
+            int y;
         } pos;
         struct {
             int width;
             int height;
         } size;
         struct {
+            double x;
+            double y;
+        } scroll;
+        struct {
             int key;
             int scancode;
             int mods;
-        } key;
+        } keyboard;
         struct {
             int button;
             int mods;
-        } button;
-        struct {
-            unsigned int codepoint;
-            int mods;
-        } character;
+        } mouse;
+        unsigned int codepoint;
+#if GLFW_VERSION_MINOR >= 1
         struct {
             char** paths;
             int count;
         } file;
+#endif
+#if GLFW_VERSION_MINOR >= 3
+        struct {
+            float x;
+            float y;
+        } scale;
+#endif
     };
-
 } GLEQevent;
 
-extern void gleqTrackWindow(GLFWwindow* window);
+GLEQDEF void gleqInit(void);
+GLEQDEF void gleqTrackWindow(GLFWwindow* window);
 
-extern int gleqNextEvent(GLEQevent* event);
-extern void gleqFreeEvent(GLEQevent* event);
+GLEQDEF int gleqNextEvent(GLEQevent* event);
+GLEQDEF void gleqFreeEvent(GLEQevent* event);
 
 #ifdef __cplusplus
 }
@@ -125,52 +146,60 @@ static struct
     GLEQevent events[GLEQ_CAPACITY];
     size_t head;
     size_t tail;
-} gleq = { {}, 0, 0 };
+} gleq_queue = { {}, 0, 0 };
 
-static GLEQevent* gleqNewEvent(void)
+static char* gleq_strdup(const char* string)
 {
-    GLEQevent* event = gleq.events + gleq.head;
-    gleq.head = (gleq.head + 1) % GLEQ_CAPACITY;
-    assert(gleq.head != gleq.tail);
+    const size_t size = strlen(string) + 1;
+    char* result = (char*) malloc(size);
+    memcpy(result, string, size);
+    return result;
+}
+
+static GLEQevent* gleq_new_event(void)
+{
+    GLEQevent* event = gleq_queue.events + gleq_queue.head;
+    gleq_queue.head = (gleq_queue.head + 1) % GLEQ_CAPACITY;
+    assert(gleq_queue.head != gleq_queue.tail);
     memset(event, 0, sizeof(GLEQevent));
     return event;
 }
 
-static void gleqWindowPosCallback(GLFWwindow* window, int x, int y)
+static void gleq_window_pos_callback(GLFWwindow* window, int x, int y)
 {
-    GLEQevent* event = gleqNewEvent();
+    GLEQevent* event = gleq_new_event();
     event->type = GLEQ_WINDOW_MOVED;
     event->window = window;
-    event->pos.x = (double) x;
-    event->pos.y = (double) y;
+    event->pos.x = x;
+    event->pos.y = y;
 }
 
-static void gleqWindowSizeCallback(GLFWwindow* window, int width, int height)
+static void gleq_window_size_callback(GLFWwindow* window, int width, int height)
 {
-    GLEQevent* event = gleqNewEvent();
+    GLEQevent* event = gleq_new_event();
     event->type = GLEQ_WINDOW_RESIZED;
     event->window = window;
     event->size.width = width;
     event->size.height = height;
 }
 
-static void gleqWindowCloseCallback(GLFWwindow* window)
+static void gleq_window_close_callback(GLFWwindow* window)
 {
-    GLEQevent* event = gleqNewEvent();
+    GLEQevent* event = gleq_new_event();
     event->type = GLEQ_WINDOW_CLOSED;
     event->window = window;
 }
 
-static void gleqWindowRefreshCallback(GLFWwindow* window)
+static void gleq_window_refresh_callback(GLFWwindow* window)
 {
-    GLEQevent* event = gleqNewEvent();
+    GLEQevent* event = gleq_new_event();
     event->type = GLEQ_WINDOW_REFRESH;
     event->window = window;
 }
 
-static void gleqWindowFocusCallback(GLFWwindow* window, int focused)
+static void gleq_window_focus_callback(GLFWwindow* window, int focused)
 {
-    GLEQevent* event = gleqNewEvent();
+    GLEQevent* event = gleq_new_event();
     event->window = window;
 
     if (focused)
@@ -179,32 +208,32 @@ static void gleqWindowFocusCallback(GLFWwindow* window, int focused)
         event->type = GLEQ_WINDOW_DEFOCUSED;
 }
 
-static void gleqWindowIconifyCallback(GLFWwindow* window, int iconified)
+static void gleq_window_iconify_callback(GLFWwindow* window, int iconified)
 {
-    GLEQevent* event = gleqNewEvent();
+    GLEQevent* event = gleq_new_event();
     event->window = window;
 
     if (iconified)
         event->type = GLEQ_WINDOW_ICONIFIED;
     else
-        event->type = GLEQ_WINDOW_RESTORED;
+        event->type = GLEQ_WINDOW_UNICONIFIED;
 }
 
-static void gleqFramebufferSizeCallback(GLFWwindow* window, int width, int height)
+static void gleq_framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
-    GLEQevent* event = gleqNewEvent();
+    GLEQevent* event = gleq_new_event();
     event->type = GLEQ_FRAMEBUFFER_RESIZED;
     event->window = window;
     event->size.width = width;
     event->size.height = height;
 }
 
-static void gleqMouseButtonCallback(GLFWwindow* window, int button, int action, int mods)
+static void gleq_mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 {
-    GLEQevent* event = gleqNewEvent();
+    GLEQevent* event = gleq_new_event();
     event->window = window;
-    event->button.button = button;
-    event->button.mods = mods;
+    event->mouse.button = button;
+    event->mouse.mods = mods;
 
     if (action == GLFW_PRESS)
         event->type = GLEQ_BUTTON_PRESSED;
@@ -212,18 +241,18 @@ static void gleqMouseButtonCallback(GLFWwindow* window, int button, int action, 
         event->type = GLEQ_BUTTON_RELEASED;
 }
 
-static void gleqCursorPosCallback(GLFWwindow* window, double x, double y)
+static void gleq_cursor_pos_callback(GLFWwindow* window, double x, double y)
 {
-    GLEQevent* event = gleqNewEvent();
+    GLEQevent* event = gleq_new_event();
     event->type = GLEQ_CURSOR_MOVED;
     event->window = window;
-    event->pos.x = x;
-    event->pos.y = y;
+    event->pos.x = (int) x;
+    event->pos.y = (int) y;
 }
 
-static void gleqCursorEnterCallback(GLFWwindow* window, int entered)
+static void gleq_cursor_enter_callback(GLFWwindow* window, int entered)
 {
-    GLEQevent* event = gleqNewEvent();
+    GLEQevent* event = gleq_new_event();
     event->window = window;
 
     if (entered)
@@ -232,22 +261,22 @@ static void gleqCursorEnterCallback(GLFWwindow* window, int entered)
         event->type = GLEQ_CURSOR_LEFT;
 }
 
-static void gleqScrollCallback(GLFWwindow* window, double x, double y)
+static void gleq_scroll_callback(GLFWwindow* window, double x, double y)
 {
-    GLEQevent* event = gleqNewEvent();
+    GLEQevent* event = gleq_new_event();
     event->type = GLEQ_SCROLLED;
     event->window = window;
-    event->pos.x = x;
-    event->pos.y = y;
+    event->scroll.x = x;
+    event->scroll.y = y;
 }
 
-static void gleqKeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
+static void gleq_key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
-    GLEQevent* event = gleqNewEvent();
+    GLEQevent* event = gleq_new_event();
     event->window = window;
-    event->key.key = key;
-    event->key.scancode = scancode;
-    event->key.mods = mods;
+    event->keyboard.key = key;
+    event->keyboard.scancode = scancode;
+    event->keyboard.mods = mods;
 
     if (action == GLFW_PRESS)
         event->type = GLEQ_KEY_PRESSED;
@@ -257,60 +286,122 @@ static void gleqKeyCallback(GLFWwindow* window, int key, int scancode, int actio
         event->type = GLEQ_KEY_REPEATED;
 }
 
-static void gleqCharModsCallback(GLFWwindow* window, unsigned int codepoint, int mods)
+static void gleq_char_callback(GLFWwindow* window, unsigned int codepoint)
 {
-    GLEQevent* event = gleqNewEvent();
-    event->type = GLEQ_CHARACTER_INPUT;
+    GLEQevent* event = gleq_new_event();
+    event->type = GLEQ_CODEPOINT_INPUT;
     event->window = window;
-    event->character.codepoint = codepoint;
-    event->character.mods = mods;
+    event->codepoint = codepoint;
 }
 
-static void gleqFileDropCallback(GLFWwindow* window, int count, const char** paths)
+static void gleq_monitor_callback(GLFWmonitor* monitor, int action)
 {
-    GLEQevent* event = gleqNewEvent();
+    GLEQevent* event = gleq_new_event();
+    event->monitor = monitor;
+
+    if (action == GLFW_CONNECTED)
+        event->type = GLEQ_MONITOR_CONNECTED;
+    else if (action == GLFW_DISCONNECTED)
+        event->type = GLEQ_MONITOR_DISCONNECTED;
+}
+
+#if GLFW_VERSION_MINOR >= 1
+static void gleq_file_drop_callback(GLFWwindow* window, int count, const char** paths)
+{
+    GLEQevent* event = gleq_new_event();
     event->type = GLEQ_FILE_DROPPED;
     event->window = window;
-    event->file.paths = (char**)malloc(count * sizeof(char*));
+    event->file.paths = (char**) malloc(count * sizeof(char*));
     event->file.count = count;
 
     while (count--)
-        event->file.paths[count] = strdup(paths[count]);
+        event->file.paths[count] = gleq_strdup(paths[count]);
 }
+#endif
 
-void gleqTrackWindow(GLFWwindow* window)
+#if GLFW_VERSION_MINOR >= 2
+static void gleq_joystick_callback(int jid, int action)
 {
-    glfwSetWindowPosCallback(window, gleqWindowPosCallback);
-    glfwSetWindowSizeCallback(window, gleqWindowSizeCallback);
-    glfwSetWindowCloseCallback(window, gleqWindowCloseCallback);
-    glfwSetWindowRefreshCallback(window, gleqWindowRefreshCallback);
-    glfwSetWindowFocusCallback(window, gleqWindowFocusCallback);
-    glfwSetWindowIconifyCallback(window, gleqWindowIconifyCallback);
-    glfwSetFramebufferSizeCallback(window, gleqFramebufferSizeCallback);
-    glfwSetMouseButtonCallback(window, gleqMouseButtonCallback);
-    glfwSetCursorPosCallback(window, gleqCursorPosCallback);
-    glfwSetCursorEnterCallback(window, gleqCursorEnterCallback);
-    glfwSetScrollCallback(window, gleqScrollCallback);
-    glfwSetKeyCallback(window, gleqKeyCallback);
-    glfwSetCharModsCallback(window, gleqCharModsCallback);
-    glfwSetDropCallback(window, gleqFileDropCallback);
+    GLEQevent* event = gleq_new_event();
+    event->joystick = jid;
+
+    if (action == GLFW_CONNECTED)
+        event->type = GLEQ_JOYSTICK_CONNECTED;
+    else if (action == GLFW_DISCONNECTED)
+        event->type = GLEQ_JOYSTICK_DISCONNECTED;
+}
+#endif
+
+#if GLFW_VERSION_MINOR >= 3
+static void gleq_window_maximize_callback(GLFWwindow* window, int maximized)
+{
+    GLEQevent* event = gleq_new_event();
+    event->window = window;
+
+    if (maximized)
+        event->type = GLEQ_WINDOW_MAXIMIZED;
+    else
+        event->type = GLEQ_WINDOW_UNMAXIMIZED;
 }
 
-int gleqNextEvent(GLEQevent* event)
+static void gleq_window_content_scale_callback(GLFWwindow* window, float xscale, float yscale)
+{
+    GLEQevent* event = gleq_new_event();
+    event->window = window;
+    event->type = GLEQ_WINDOW_SCALE_CHANGED;
+    event->scale.x = xscale;
+    event->scale.y = yscale;
+}
+#endif
+
+GLEQDEF void gleqInit(void)
+{
+    glfwSetMonitorCallback(gleq_monitor_callback);
+#if GLFW_VERSION_MINOR >= 2
+    glfwSetJoystickCallback(gleq_joystick_callback);
+#endif
+}
+
+GLEQDEF void gleqTrackWindow(GLFWwindow* window)
+{
+    glfwSetWindowPosCallback(window, gleq_window_pos_callback);
+    glfwSetWindowSizeCallback(window, gleq_window_size_callback);
+    glfwSetWindowCloseCallback(window, gleq_window_close_callback);
+    glfwSetWindowRefreshCallback(window, gleq_window_refresh_callback);
+    glfwSetWindowFocusCallback(window, gleq_window_focus_callback);
+    glfwSetWindowIconifyCallback(window, gleq_window_iconify_callback);
+    glfwSetFramebufferSizeCallback(window, gleq_framebuffer_size_callback);
+    glfwSetMouseButtonCallback(window, gleq_mouse_button_callback);
+    glfwSetCursorPosCallback(window, gleq_cursor_pos_callback);
+    glfwSetCursorEnterCallback(window, gleq_cursor_enter_callback);
+    glfwSetScrollCallback(window, gleq_scroll_callback);
+    glfwSetKeyCallback(window, gleq_key_callback);
+    glfwSetCharCallback(window, gleq_char_callback);
+#if GLFW_VERSION_MINOR >= 1
+    glfwSetDropCallback(window, gleq_file_drop_callback);
+#endif
+#if GLFW_VERSION_MINOR >= 3
+    glfwSetWindowMaximizeCallback(window, gleq_window_maximize_callback);
+    glfwSetWindowContentScaleCallback(window, gleq_window_content_scale_callback);
+#endif
+}
+
+GLEQDEF int gleqNextEvent(GLEQevent* event)
 {
     memset(event, 0, sizeof(GLEQevent));
 
-    if (gleq.head != gleq.tail)
+    if (gleq_queue.head != gleq_queue.tail)
     {
-        *event = gleq.events[gleq.tail];
-        gleq.tail = (gleq.tail + 1) % GLEQ_CAPACITY;
+        *event = gleq_queue.events[gleq_queue.tail];
+        gleq_queue.tail = (gleq_queue.tail + 1) % GLEQ_CAPACITY;
     }
 
     return event->type != GLEQ_NONE;
 }
 
-void gleqFreeEvent(GLEQevent* event)
+GLEQDEF void gleqFreeEvent(GLEQevent* event)
 {
+#if GLFW_VERSION_MINOR >= 1
     if (event->type == GLEQ_FILE_DROPPED)
     {
         while (event->file.count--)
@@ -318,6 +409,7 @@ void gleqFreeEvent(GLEQevent* event)
 
         free(event->file.paths);
     }
+#endif
 
     memset(event, 0, sizeof(GLEQevent));
 }

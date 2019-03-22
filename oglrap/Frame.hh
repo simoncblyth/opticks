@@ -2,6 +2,7 @@
 
 #include <string>
 #include <vector>
+#include "plog/Severity.h"
 
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
@@ -56,6 +57,8 @@ struct Pix ;
 
 #include "OGLRAP_API_EXPORT.hh"
 class OGLRAP_API Frame : public Touchable {
+   public:
+       static const plog::Severity LEVEL ; 
    public:
        Frame(Opticks* ok);
        virtual ~Frame();

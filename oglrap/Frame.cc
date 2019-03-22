@@ -25,6 +25,8 @@
 #define GLEQ_IMPLEMENTATION
 #include "GLEQ.hh"
 
+
+
 #include "NGLM.hpp"
 
 #include "Frame.hh"
@@ -33,6 +35,10 @@
 #include "Scene.hh"
 
 #include "Pix.hh"
+
+
+const plog::Severity Frame::LEVEL = debug ; 
+
 
 
 Frame::Frame(Opticks* ok) 
@@ -127,7 +133,6 @@ static void error_callback(int /*error*/, const char* description)
 
 Frame::~Frame()
 {
-    free((void*)m_title);
 }
 
 void Frame::setDumpevent(int dumpevent)
@@ -173,7 +178,7 @@ void Frame::setSize(std::string str)
         unsigned int height = boost::lexical_cast<unsigned int>(whf[1]);  
         unsigned int coord2pixel  = boost::lexical_cast<unsigned int>(whf[2]);  
 
-        LOG(debug)<< "Frame::setSize" 
+        LOG(LEVEL)
                  << " str " << str 
                  << " width " << width 
                  << " height " << height 
@@ -194,16 +199,19 @@ void Frame::setSize(std::string str)
 
 void Frame::setSize(unsigned int width, unsigned int height, unsigned int coord2pixel)
 {
-    LOG(debug) << "Frame::setSize "
-              << " width " << width 
-              << " height " << height 
-              << " coord2pixel " << coord2pixel 
-              ; 
+    LOG(LEVEL)
+          << " width " << width 
+          << " height " << height 
+          << " coord2pixel " << coord2pixel 
+          ; 
     m_width = width ;
     m_height = height ;
     m_coord2pixel = coord2pixel ;
 
     m_pix->resize(width, height, coord2pixel); 
+
+   //if(width < 1000 || height < 1000 ) assert(0) ; 
+
 }
 
 glm::uvec4 Frame::getSize()
@@ -247,7 +255,8 @@ void Frame::init()
     glfwWindowHint (GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
     glfwWindowHint (GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-    LOG(debug) << "Frame::init " << m_width << "," << m_height << " " << m_title ;
+    LOG(LEVEL) 
+          << "( " << m_width << "," << m_height << " ) " << m_title ;
 
     hintVisible(false);
 
@@ -549,7 +558,13 @@ void Frame::cursor_moved_ctrl_drag(GLEQevent& event)
         // Using ctrl+click to control
         if ( 1 ) {
             static bool flag_drag_begin = false;
+
+#ifdef NEWGLEQ
+            if (event.type == GLEQ_BUTTON_PRESSED && event.mouse.button == 0 && event.mouse.mods == GLFW_MOD_CONTROL) {
+#else
             if (event.type == GLEQ_BUTTON_PRESSED && event.button.button == 0 && event.button.mods == GLFW_MOD_CONTROL) {
+#endif
+
                 // printf("LT BUTTON PRESSED: mods: %d\n", event.button.mods);
                 // save first time
                 if (!flag_drag_begin) {
@@ -559,7 +574,11 @@ void Frame::cursor_moved_ctrl_drag(GLEQevent& event)
                     m_cursor_x = _cursor_x;
                     m_cursor_y = _cursor_y;
                 }
+#ifdef NEWGLEQ
+            } else if (event.type == GLEQ_BUTTON_RELEASED && event.mouse.button == 0 && event.mouse.mods == GLFW_MOD_CONTROL) {
+#else
             } else if (event.type == GLEQ_BUTTON_RELEASED && event.button.button == 0 && event.button.mods == GLFW_MOD_CONTROL) {
+#endif
                 if (flag_drag_begin) {
                 // printf("LT BUTTON RELEASED: mods: %d\n", event.button.mods);
                 flag_drag_done = true;
@@ -638,12 +657,14 @@ void Frame::handle_event(GLEQevent& event)
     switch (event.type)
     {
         case GLEQ_FRAMEBUFFER_RESIZED:
-            // printf("Frame::handle_event framebuffer resized to (%i %i)\n", event.size.width, event.size.height);
+            //printf("GLEQ_FRAMEBUFFER_RESIZED  (%i %i)\n", event.size.width, event.size.height);
             resize(event.size.width, event.size.height, m_coord2pixel);
             break;
         case GLEQ_WINDOW_MOVED:
+            //printf("GLEQ_WINDOW_MOVED (%i %i %i %i %f %f)\n", event.size.width, event.size.height, event.pos.x, event.pos.y, event.scroll.x, event.scroll.y);
+            break;
         case GLEQ_WINDOW_RESIZED:
-            // printf("Frame::handle_event window resized to (%i %i)\n", event.size.width, event.size.height);
+            //printf("GLEQ_WINDOW_RESIZED (%i %i %i %i %f %f)\n", event.size.width, event.size.height, event.pos.x, event.pos.y, event.scroll.x, event.scroll.y);
             resize(event.size.width, event.size.height, m_coord2pixel);
             break;
         case GLEQ_WINDOW_CLOSED:
@@ -651,7 +672,11 @@ void Frame::handle_event(GLEQevent& event)
         case GLEQ_WINDOW_FOCUSED:
         case GLEQ_WINDOW_DEFOCUSED:
         case GLEQ_WINDOW_ICONIFIED:
+#ifdef NEWGLEQ
+        case GLEQ_WINDOW_UNICONIFIED:
+#else
         case GLEQ_WINDOW_RESTORED:
+#endif
         case GLEQ_BUTTON_PRESSED:
         case GLEQ_BUTTON_RELEASED:
         case GLEQ_CURSOR_MOVED:
@@ -688,16 +713,51 @@ void Frame::handle_event(GLEQevent& event)
              break;
         // case GLEQ_SCROLLED:
         case GLEQ_KEY_PRESSED:
+#ifdef NEWGLEQ
+             key_pressed(event.keyboard.key);
+#else
              key_pressed(event.key.key);
+#endif
              break;
 
         case GLEQ_KEY_REPEATED:
         case GLEQ_KEY_RELEASED:
+#ifdef NEWGLEQ
+             key_released(event.keyboard.key);
+#else
              key_released(event.key.key);
+#endif
              break;
 
+#ifdef NEWGLEQ
+        case GLEQ_CODEPOINT_INPUT:
+#else
         case GLEQ_CHARACTER_INPUT:
+#endif
+
+#ifdef NEWGLEQ
+        case GLEQ_MONITOR_CONNECTED:
+        case GLEQ_MONITOR_DISCONNECTED:
+            break;
+#endif
+
+#if GLFW_VERSION_MINOR >= 1 
         case GLEQ_FILE_DROPPED:
+            break;
+#endif
+#ifdef NEWGLEQ
+#if GLFW_VERSION_MINOR >= 2                                                       
+        case GLEQ_JOYSTICK_CONNECTED:                                                      
+        case GLEQ_JOYSTICK_DISCONNECTED:                                                      
+            break;
+#endif
+#if GLFW_VERSION_MINOR >= 3                                                       
+        case GLEQ_WINDOW_MAXIMIZED: 
+        case GLEQ_WINDOW_UNMAXIMIZED: 
+        case GLEQ_WINDOW_SCALE_CHANGED: 
+            break;
+#endif
+#endif
         case GLEQ_NONE:
             break;
     }
@@ -734,7 +794,11 @@ void Frame::dump_event(GLEQevent& event)
     switch (event.type)
     {
         case GLEQ_WINDOW_MOVED:
+#ifdef NEWGLEQ
+            printf("Window moved to (%d %d)\n", event.pos.x, event.pos.y);
+#else
             printf("Window moved to (%.0f %.0f)\n", event.pos.x, event.pos.y);
+#endif
             break;
         case GLEQ_WINDOW_RESIZED:
             printf("Window resized to (%i %i)\n", event.size.width, event.size.height);
@@ -754,20 +818,38 @@ void Frame::dump_event(GLEQevent& event)
         case GLEQ_WINDOW_ICONIFIED:
             printf("Window iconified\n");
             break;
+#ifdef NEWGLEQ
+        case GLEQ_WINDOW_UNICONIFIED:
+            printf("Window uniconified\n");
+            break;
+#else
         case GLEQ_WINDOW_RESTORED:
             printf("Window restored\n");
             break;
+#endif
         case GLEQ_FRAMEBUFFER_RESIZED:
             printf("Framebuffer resized to (%i %i)\n", event.size.width, event.size.height);
             break;
         case GLEQ_BUTTON_PRESSED:
+#ifdef NEWGLEQ
+            printf("Button %i pressed\n", event.mouse.button);
+#else
             printf("Button %i pressed\n", event.button.button);
+#endif
             break;
         case GLEQ_BUTTON_RELEASED:
+#ifdef NEWGLEQ
+            printf("Button %i released\n", event.mouse.button);
+#else
             printf("Button %i released\n", event.button.button);
+#endif
             break;
         case GLEQ_CURSOR_MOVED:
+#ifdef NEWGLEQ
+            printf("Cursor moved to (%d %d)\n", event.pos.x, event.pos.y);
+#else
             printf("Cursor moved to (%0.2f %0.2f)\n", event.pos.x, event.pos.y);
+#endif
             break;
         case GLEQ_CURSOR_ENTERED:
             LOG(debug)<<"Cursor entered window\n";
@@ -776,25 +858,67 @@ void Frame::dump_event(GLEQevent& event)
             LOG(debug)<<"Cursor left window\n";
             break;
         case GLEQ_SCROLLED:
+#ifdef NEWGLEQ
+            printf("Scrolled (%d %d)\n", event.pos.x, event.pos.y);
+#else
             printf("Scrolled (%0.2f %0.2f)\n", event.pos.x, event.pos.y);
+#endif
             break;
         case GLEQ_KEY_PRESSED:
+#ifdef NEWGLEQ
+            printf("Key 0x%02x pressed\n", event.keyboard.key);
+#else
             printf("Key 0x%02x pressed\n", event.key.key);
+#endif
             break;
         case GLEQ_KEY_REPEATED:
+#ifdef NEWGLEQ
+            printf("Key 0x%02x repeated\n", event.keyboard.key);
+#else
             printf("Key 0x%02x repeated\n", event.key.key);
+#endif
             break;
         case GLEQ_KEY_RELEASED:
+#ifdef NEWGLEQ
+            printf("Key 0x%02x released\n", event.keyboard.key);
+#else
             printf("Key 0x%02x released\n", event.key.key);
+#endif
             break;
+#ifdef NEWGLEQ
+        case GLEQ_CODEPOINT_INPUT:
+            printf("Codepoint 0x%08x input\n", event.codepoint);
+            break;
+#else
         case GLEQ_CHARACTER_INPUT:
             printf("Character 0x%08x input\n", event.character.codepoint);
             break;
+#endif
         case GLEQ_FILE_DROPPED:
             printf("%i files dropped\n", event.file.count);
             for (int i = 0;  i < event.file.count;  i++)
                 printf("\t%s\n", event.file.paths[i]);
             break;
+#ifdef NEWGLEQ
+        case GLEQ_MONITOR_CONNECTED:
+            printf("Monitor connected\n");
+            break;
+        case GLEQ_MONITOR_DISCONNECTED:
+            printf("Monitor disconnected\n");
+            break;
+#endif
+
+#ifdef NEWGLEQ
+#if GLFW_VERSION_MINOR >= 2 
+        case GLEQ_JOYSTICK_CONNECTED:
+            printf("Joystick connected\n");
+            break;
+        case GLEQ_JOYSTICK_DISCONNECTED:
+            printf("Joystick disconnected\n");
+            break;
+#endif
+#endif
+
         case GLEQ_NONE:
             break;
     }

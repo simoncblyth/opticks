@@ -15,17 +15,18 @@ set(TEST_SOURCES
     InteractorKeys.cc
     AxisAppCheck.cc
     SceneCheck.cc
+
+    gleq_check.c
 )
 
 
-foreach(TEST_CC_SRC ${TEST_SOURCES})
-    get_filename_component(TGT ${TEST_CC_SRC} NAME_WE)
-    add_executable(${TGT} ${TEST_CC_SRC})
+foreach(SRC ${TEST_SOURCES})
+    get_filename_component(TGT ${SRC} NAME_WE)
+    add_executable(${TGT} ${SRC})
 
     if (${TGT} MATCHES ".*Test$")  
        set(testname ${name}.${TGT})
        add_test(${testname} ${TGT})
-       #add_dependencies(check ${TGT})
     endif()
 
     target_link_libraries(${TGT} OGLRap)

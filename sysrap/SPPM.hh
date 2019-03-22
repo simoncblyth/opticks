@@ -1,11 +1,14 @@
 #pragma once
 
 #include <string>
+#include "plog/Severity.h"
 
 #include "SYSRAP_API_EXPORT.hh"
 
 struct SYSRAP_API SPPM 
 {
+    static const plog::Severity LEVEL ; 
+
     SPPM(); 
 
     unsigned char* pixels ; 
