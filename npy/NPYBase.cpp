@@ -208,12 +208,14 @@ void NPYBase::setMeta(NMeta* meta)
 template <typename T>
 void NPYBase::setMeta(const char* key, T value)
 {
+    if(!m_meta) m_meta = new NMeta ; 
     m_meta->set<T>(key, value);
 }
 template <typename T>
 T NPYBase::getMeta(const char* key, const char* fallback) const 
 {
-    m_meta->get<T>(key,fallback);
+    assert(m_meta); 
+    return m_meta->get<T>(key,fallback);
 }
 
 
@@ -222,11 +224,13 @@ const char* NPYBase::ArrayContentVersion = "ArrayContentVersion" ;
 
 int NPYBase::getArrayContentVersion() const 
 {
-    return NMeta::Get<int>(m_meta, ArrayContentVersion, "0") ; 
+    //return NMeta::Get<int>(m_meta, ArrayContentVersion, "0") ; 
+    return getMeta<int>(ArrayContentVersion, "0");
 }
 void NPYBase::setArrayContentVersion(int acv)
 {
-    m_meta->set<int>(ArrayContentVersion, acv) ; 
+    //m_meta->set<int>(ArrayContentVersion, acv) ; 
+    setMeta<int>(ArrayContentVersion, acv) ;
 }
 
 
@@ -817,5 +821,13 @@ NMeta* NPYBase::LoadMeta( const char* path, const char* ext) // static
 
 
 
+
+template NPY_API void NPYBase::setMeta(const char* key, int value);
+template NPY_API void NPYBase::setMeta(const char* key, float value);
+template NPY_API void NPYBase::setMeta(const char* key, std::string value);
+
+template NPY_API int NPYBase::getMeta(const char* key, const char* fallback) const ; 
+template NPY_API float NPYBase::getMeta(const char* key, const char* fallback) const ; 
+template NPY_API std::string NPYBase::getMeta(const char* key, const char* fallback) const ; 
 
 

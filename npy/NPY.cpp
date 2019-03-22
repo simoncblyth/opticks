@@ -663,6 +663,9 @@ NPY<T>* NPY<T>::load(const char* path_, bool quietly)
     {
         NMeta* meta = NPYBase::LoadMeta( path.c_str(), ".json" ) ; 
         npy->setMeta(meta); 
+
+        //npy->setMeta<std::string>(
+
     }
 
     return npy ;

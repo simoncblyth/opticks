@@ -136,6 +136,29 @@ void test_u()
 }
 
 
+void test_setMeta()
+{
+    LOG(info) << "." ; 
+    NPY<unsigned>* idx = NPY<unsigned>::make(1,4);  
+    idx->zero();  
+    const char* path = "$TMP/setMeta.npy"; 
+    idx->save(path); 
+    NPY<unsigned>* idx2 = NPY<unsigned>::load(path) ; 
+
+    const char* key = "loadpath" ; 
+    std::string val = path ; 
+
+    idx2->setMeta(key, val);
+
+    std::string val2 = idx2->getMeta<std::string>(key, ""); 
+    LOG(info) << "val2 " << val2 ; 
+
+    assert( val2.compare(val) == 0 ) ; 
+}
+
+
+
+
 
 int main(int argc, char** argv )
 {
@@ -147,7 +170,8 @@ int main(int argc, char** argv )
 
     //test_cast();
     //test_add();
-    test_u();
+    //test_u();
+    test_setMeta();
 
     return 0 ; 
 }

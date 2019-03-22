@@ -136,8 +136,9 @@ void OpticksGen::initFromEmitter()
 
 void OpticksGen::initFromGensteps()
 {
-    LOG(info) << "." ; 
     assert( m_direct_gensteps ) ; 
+    std::string loadpath = m_direct_gensteps->getMeta<std::string>("loadpath",""); 
+    LOG(info) << loadpath ; 
     m_direct_gensteps->setBufferSpec(OpticksEvent::GenstepSpec(m_ok->isCompute()));
 }
 

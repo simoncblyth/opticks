@@ -1278,6 +1278,8 @@ void  Opticks::setVerbosity(unsigned verbosity)
 Opticks::defineEventSpec
 -------------------------
 
+Invoked from Opticks::configure after commandline parse.
+
 
 **/
 
@@ -1297,8 +1299,7 @@ void Opticks::defineEventSpec()
     m_spec  = new OpticksEventSpec(typ,  tag, det.c_str(), cat.c_str() );
     m_nspec = new OpticksEventSpec(typ, ntag, det.c_str(), cat.c_str() );
 
-
-    LOG(info) 
+    LOG(LEVEL) 
          << " typ " << typ
          << " tag " << tag
          << " det " << det 
@@ -1971,7 +1972,7 @@ bool Opticks::existsDirectGenstepPath() const
 {
     const char* path = getDirectGenstepPath();
     bool exists = path ? BFile::ExistsFile(path) : false ;
-    LOG(error) 
+    LOG(LEVEL) 
        << " path " << path 
        << " exists " << exists 
        ;
@@ -1999,6 +2000,12 @@ bool Opticks::existsLegacyGenstepPath() const
 NPY<float>* Opticks::load(const char* path) const 
 {
     NPY<float>* a = NPY<float>::load(path);
+    if(a)
+    {
+        std::string val = path ; 
+        a->setMeta<std::string>("loadpath", val ); 
+    }
+
     if(!a)
     {
         LOG(warning) << "Opticks::load"

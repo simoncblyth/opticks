@@ -204,7 +204,7 @@ void OpticksHub::setCtrl(SCtrl* ctrl)
 
 void OpticksHub::init()
 {
-    pLOG(LEVEL,-1) << "[" ; 
+    pLOG(LEVEL,0) << "[" ;   // -1 : one notch more easily seen than LEVEL
 
     //m_composition->setCtrl(this); 
 
@@ -233,7 +233,7 @@ void OpticksHub::init()
 
     m_gen = new OpticksGen(this) ;
 
-    pLOG(LEVEL,-1) << "]" ; 
+    pLOG(LEVEL,0) << "]" ; 
 }
 
 
@@ -604,6 +604,31 @@ unsigned OpticksHub::getTarget()
  
 
 
+
+
+/**
+OpticksHub::configureGeometry
+------------------------------
+
+TODO: 
+   see if can eliminate the tri/ana mess now, 
+   following adoption of unified tri+ana approach 
+   ... where the assumption is to always have both 
+   ... and then switch as picked by options 
+       at late stage (in OGeo) 
+
+   configureGeometryTri
+   configureGeometryTriAna
+        just setting geocode
+        BUT --xanalytic  isXAnalytic may trump this 
+      
+        opticks-if xanalytic
+              
+   Better to set the geocode in one place only... 
+   close to where they are used in OGeo ? 
+
+**/
+
 void OpticksHub::configureGeometry()
 {
     if(m_ok->isTest())
@@ -620,12 +645,14 @@ void OpticksHub::configureGeometry()
     }
 }
 
+
 void OpticksHub::configureGeometryTri()
 {
     int restrict_mesh = m_ok->getRestrictMesh() ;  
     int nmm = m_ggeo->getNumMergedMesh();
 
-    LOG(info) << "OpticksHub::configureGeometryTri" 
+    LOG(info) 
+              << "setting geocode" 
               << " restrict_mesh " << restrict_mesh
               << " nmm " << nmm
               ;
@@ -637,6 +664,7 @@ void OpticksHub::configureGeometryTri()
         if(restrict_mesh > -1 && i != restrict_mesh ) mm->setGeoCode(OpticksConst::GEOCODE_SKIP);      
     }
 }
+
 
 void OpticksHub::configureGeometryTriAna()
 {

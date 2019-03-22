@@ -992,6 +992,7 @@ opticks-t--()
 }
 
 
+opticks-ifind(){ opticks-find "$1" -Hi ; }
 opticks-findl(){ opticks-find "$1" -l ; }
 opticks-find(){
    local str="${1:-ENV_HOME}"
@@ -1015,6 +1016,8 @@ opticks-find(){
 }
 
 
+
+opticks-if(){ opticks-f "$1" -Hi ; }   
 opticks-f(){   
    local str="${1:-ENV_HOME}"
    local opt=${2:--H}
