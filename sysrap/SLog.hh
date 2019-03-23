@@ -1,11 +1,17 @@
 #pragma once
 
+/**
+SLog
+======
+
+Trivial logger enabling bracketing 
+of constructor initializer lists.
+
+**/
+
+
 #include "SYSRAP_API_EXPORT.hh"
 #include "plog/Severity.h"
-
-// enable brief logging from ctor init lines 
-// using a throwaway SLog instance 
-
 class SYSRAP_API SLog 
 {
     public:

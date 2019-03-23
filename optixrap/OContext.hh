@@ -1,5 +1,20 @@
 #pragma once
 
+/**
+OContext
+=========
+
+Wrapper for OptiX context providing numerous utilities including: 
+
+* upload/download using NPY arrays
+* program construction
+* output redirection 
+* snapping PPM image of output buffer
+* saving output buffer into NPY array
+
+**/
+
+
 #include <string>
 #include "OXPPNS.hh"
 #include "plog/Severity.h"

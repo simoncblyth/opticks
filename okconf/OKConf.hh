@@ -1,4 +1,13 @@
 #pragma once
+/**
+OKConf
+=======
+
+Static methods providing installation constants and 
+version number integers of externals. 
+
+
+**/
 
 #include "OKCONF_API_EXPORT.hh"
 

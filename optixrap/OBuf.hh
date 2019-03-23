@@ -1,9 +1,24 @@
 #pragma once
+
+/**
+OBuf
+=====
+
+Wrapper for OptiX buffers providing reduction and dumping 
+
+
+DevNotes
+-----------
+
+* anything not using or related to the method template types should go into OBufBase
+
+**/
+
+
 #include "OBufBase.hh"
+
+
 // NB implementation in OBuf_.cu as requires nvcc compilation
-
-
-// anything not using or related to template type should go in OBufBase
 
 // TODO: avoid the code duplication between TBuf and OBuf ?
 //  hmm OBuf could contain a TBuf ?

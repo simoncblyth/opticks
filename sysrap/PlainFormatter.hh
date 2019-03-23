@@ -1,4 +1,16 @@
 #pragma once
+
+/**
+plog::PlainFormatter
+=====================
+
+Controls output formatting of plog logger
+
+
+**/
+
+
+
 #include <plog/Log.h>
 
 namespace plog

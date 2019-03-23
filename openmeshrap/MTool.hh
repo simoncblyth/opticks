@@ -1,4 +1,13 @@
 #pragma once
+/**
+MTool
+========
+
+OpenMesh machinery for mesh traversal and mending cleaved meshes.
+
+
+**/
+
 
 #include <string>
 

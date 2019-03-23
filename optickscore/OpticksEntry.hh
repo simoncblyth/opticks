@@ -26,7 +26,8 @@ class OKCORE_API OpticksEntry
    public:
         unsigned      getIndex();
         const char*   getName();
-        std::string   description();
+        std::string   description() const ;
+        std::string   desc() const ;
         bool          isTrivial();
         bool          isNothing();
         bool          isTraceTest();

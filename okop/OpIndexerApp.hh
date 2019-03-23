@@ -1,5 +1,14 @@
 #pragma once
 
+/**
+OpIndexerApp
+===============
+
+For standalone indexing tests ?
+
+**/
+
+
 class Opticks ;   // okc-
 class OpticksEvent ; 
 template <typename T> class OpticksCfg ;

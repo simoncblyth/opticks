@@ -1,5 +1,14 @@
 #pragma once
 
+/**
+SBacktrace
+===========
+
+Utilities for dumping process backtraces.
+
+**/
+
+
 #include "SYSRAP_API_EXPORT.hh"
 #include <ostream>
 

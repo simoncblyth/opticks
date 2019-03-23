@@ -5,7 +5,11 @@
 
 #include "PlainFormatter.hh"
 
-/*
+/**
+
+PLOG_INIT : logging macros
+===========================--
+
 
 PLOG_INIT macros are used in two situations:
 
@@ -15,7 +19,7 @@ PLOG_INIT macros are used in two situations:
 * package logger 
 
 
-*/
+**/
 
 
 

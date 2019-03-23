@@ -1,4 +1,13 @@
 #pragma once
+/**
+G4OpticksCerenkovStep
+======================
+
+enum definition of the meanings of the 6*4 floats/integers 
+of Cerenkov gensteps
+
+**/
+
 
 #include "G4OK_API_EXPORT.hh"
 

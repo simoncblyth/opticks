@@ -1,5 +1,13 @@
 #pragma once
 
+/**
+TUtil
+========
+
+Bufspec utility.
+
+**/
+
 struct CBufSpec ; 
 #include <thrust/device_vector.h>
 

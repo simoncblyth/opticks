@@ -1,5 +1,15 @@
 #pragma once
 
+/**
+SPairVec<K,V>
+===============
+
+Utilities for sorting vectors of key value pairs.
+
+
+**/
+
+
 #include <map>
 #include <vector>
 

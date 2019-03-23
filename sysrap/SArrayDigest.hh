@@ -1,4 +1,13 @@
 #pragma once
+
+/**
+SArrayDigest<T>
+=================
+
+MD5 digest of an array by treating it as contiguous bytes. 
+
+**/
+
 #include <string>
 
 #include "SYSRAP_API_EXPORT.hh"

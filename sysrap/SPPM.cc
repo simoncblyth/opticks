@@ -6,19 +6,6 @@
 #include "SPPM.hh"
 
 
-/*
-
-PPM uses 24 bits per pixel: 8 for red, 8 for green, 8 for blue.
-
-  /Developer/OptiX_380/SDK/primeMultiGpu/primeCommon.cpp
-
-  https://en.wikipedia.org/wiki/Netpbm_format
-
-  opticks/examples/UseOpticksGLFWSnap/UseOpticksGLFWSnap.cc
-
-*/
-
-
 const plog::Severity SPPM::LEVEL = debug ; 
 
 

@@ -1,9 +1,19 @@
 #pragma once
 
-// usually thrus/device_vector only seen in .cu and 
-// compiled by nvcc ... so this is unusual 
-// standard compilers
+/**
+OptiXUtil
+============
 
+Device pointer utilities used for Thrust/OpenGL/OptiX/CUDA interop
+
+DevNotes
+----------
+
+Usually thrust/device_vector only seen in .cu and compiled by nvcc ?
+
+* not used ?
+
+**/
 #include "THRAP_PUSH.hh"
 #include <cuda.h>
 #include <thrust/device_vector.h>

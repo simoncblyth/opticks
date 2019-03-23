@@ -51,7 +51,6 @@ collectSecondaryPhotons
    invoked for example from L4Cerenkov::PostStepDoIt 
 
 
-
 Notes
 -------
 

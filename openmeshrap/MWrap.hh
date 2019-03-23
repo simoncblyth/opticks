@@ -1,5 +1,16 @@
 #pragma once
 
+/**
+MWrap
+======
+
+Wrapper for OpenMesh meshes to provide interfaces to npy/NTris and ggeo/GMesh 
+
+**/
+
+
+
+
 #include <vector>
 #include <map>
 #include "NGLM.hpp"

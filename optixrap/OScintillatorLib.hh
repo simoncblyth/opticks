@@ -1,5 +1,16 @@
 #pragma once
 
+/**
+OScintillatorLib
+===================
+
+Used to upload GScintillatorLib reemission data
+into GPU reemission texture.  
+
+
+**/
+
+
 #include "OXPPNS.hh"
 #include <optixu/optixu_math_namespace.h>
 

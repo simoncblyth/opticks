@@ -1,9 +1,21 @@
 #pragma once
 
-/*
-   http://stackoverflow.com/questions/7627723/how-to-create-a-md5-hash-of-a-string-in-c
-   hails from env/base/hash/md5digest.h
-*/
+/**
+SDigest
+========
+
+MD5 based hexdigest machinery, used throughout Opticks.
+Allows incremental update building of the digest.
+
+
+DevNotes
+----------
+   
+* http://stackoverflow.com/questions/7627723/how-to-create-a-md5-hash-of-a-string-in-c
+* hails from env/base/hash/md5digest.h
+
+**/
+
 
 #include <string>
 #include <vector>

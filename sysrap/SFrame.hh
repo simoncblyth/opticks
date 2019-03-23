@@ -1,4 +1,14 @@
 #pragma once
+
+/**
+SFrame
+========
+
+Used for stack frame introspection based on *cxxabi.h*
+
+**/
+
+
 #include "SYSRAP_API_EXPORT.hh"
 #include <ostream>
 

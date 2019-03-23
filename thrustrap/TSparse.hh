@@ -1,11 +1,18 @@
 #pragma once
 
+/**
+TSparse<T>
+============
+
+Utilities for rudimentatry GPU integer histogramming, used for 
+finding most frequent photon histories. 
+
+**/
+
+
 #include <string>
 
 #include "CBufSlice.hh"
-
-
-
 #include "THRAP_PUSH.hh"
 #include <thrust/device_vector.h>
 #include "THRAP_POP.hh"

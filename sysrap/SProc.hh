@@ -1,4 +1,13 @@
 #pragma once
+
+/**
+SProc
+=======
+
+macOS implementation of VirtualMemoryUsageMB of a process.
+
+**/
+
 #include <cstddef>
 
 #include "SYSRAP_API_EXPORT.hh"

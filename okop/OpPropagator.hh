@@ -20,6 +20,20 @@ OpPropagator : compute only propagator
 
 OpPropagator only used from OpMgr as m_propagator, ctor instanciated resident.
 
+Residents:
+
+* OpEngine
+* OpTracer
+
+
+
+
+
+
+
+
+DevNotes
+----------
 
 Contrast with the viz enabled ok/OKPropagator
 

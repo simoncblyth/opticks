@@ -1,5 +1,15 @@
 #pragma once
 
+/**
+OAccel
+========
+
+Persisting OptiX acceleration structures.
+
+* HMM: Is this still operational ?
+
+**/
+
 #include "OXPPNS.hh"
 
 #include "OXRAP_API_EXPORT.hh"

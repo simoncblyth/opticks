@@ -1,5 +1,13 @@
 #pragma once
 
+/**
+OColors
+==========
+
+OptiX GPU side color samplers.
+
+**/
+
 #include "OXPPNS.hh"
 #include <optixu/optixu_math_namespace.h>
 

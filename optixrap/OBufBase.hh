@@ -1,5 +1,20 @@
 #pragma once
-// NB implementation in OBufBase_.cu as requires nvcc compilation
+
+/**
+OBufBase
+==========
+
+Wrapped OptiX GPU buffer, providing non-type specific utilities such 
+as upload/download to NPY arrays. 
+
+
+DevNotes
+---------
+
+* implementation in OBufBase_.cu as requires nvcc compilation
+
+**/
+
 
 #include "OXRAP_PUSH.hh"
 #include <optix_world.h>
@@ -14,8 +29,6 @@ class NPYBase ;
 
 // non-view-type specifics
 #include "OXRAP_API_EXPORT.hh"
-
-// TODO: move optix::Buffer inside OBufBase to avoid some duplication
 
 class OXRAP_API OBufBase {
    public:

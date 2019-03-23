@@ -1,4 +1,13 @@
 #pragma once
+/**
+SMap
+=====
+
+Value counting and key matching utilities for maps.
+
+
+**/
+
 
 #include <map>
 #include <vector>

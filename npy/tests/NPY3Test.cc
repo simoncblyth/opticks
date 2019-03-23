@@ -1,7 +1,6 @@
 // om-;TEST=NPY3Test om-t
 
 #include "OPTICKS_LOG.hh"
-#include "SBufferSpec.hh"
 #include "SSys.hh"
 #include "BFile.hh"
 #include "NPY.hpp"

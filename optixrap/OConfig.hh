@@ -1,5 +1,15 @@
 #pragma once
 
+/**
+OConfig
+==========
+
+OptiX utilities for raytrace program creation.
+
+
+**/
+
+
 #include <string>
 #include <map>
 #include <vector>

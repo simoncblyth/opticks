@@ -1,5 +1,14 @@
 #pragma once
 
+/**
+G4OpticksScintillationStep
+============================
+
+enum definition of the 6*4 floats/integers of scintillation gensteps
+
+**/
+
+
 #include "G4OK_API_EXPORT.hh"
 
 class G4OK_API G4OpticksScintillationStep {

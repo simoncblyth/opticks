@@ -1,5 +1,14 @@
 #pragma once
 
+/**
+TRngBuf
+==========
+
+cuRAND GPU generation of random numbers using thrust and NPY 
+
+**/
+
+
 #include "TBuf.hh"
 #include "CBufSpec.hh"
 #include "CBufSlice.hh"

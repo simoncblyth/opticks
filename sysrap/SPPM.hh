@@ -1,5 +1,24 @@
 #pragma once
 
+/**
+SPPM
+======
+
+Implementation of the minimal(and uncompressed) PPM image file format. 
+
+* PPM uses 24 bits per pixel: 8 for red, 8 for green, 8 for blue.
+* https://en.wikipedia.org/wiki/Netpbm_format
+
+
+DevNotes
+----------
+
+* examples/UseOpticksGLFWSnap/UseOpticksGLFWSnap.cc
+* /Developer/OptiX_380/SDK/primeMultiGpu/primeCommon.cpp
+
+**/
+
+
 #include <string>
 #include "plog/Severity.h"
 

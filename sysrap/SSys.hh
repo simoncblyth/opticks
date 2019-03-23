@@ -1,4 +1,15 @@
 #pragma once
+/**
+SSys
+=====
+
+static functions for system level things
+such as accessing envvars, running external executables, 
+and detecting the interactivity level of the session.
+
+
+**/
+
 
 #include <cstddef>
 

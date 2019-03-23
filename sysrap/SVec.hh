@@ -1,5 +1,13 @@
 #pragma once
 
+/**
+SVec
+=====
+
+static vector<T> utilities 
+
+**/
+
 #include <vector>
 
 #include "SYSRAP_API_EXPORT.hh"

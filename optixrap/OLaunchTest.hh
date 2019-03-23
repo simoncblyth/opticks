@@ -1,5 +1,14 @@
 #pragma once
 
+/**
+OLaunchTest
+============
+
+OptiX program launcher
+
+**/
+
+
 #include "OXPPNS.hh"
 #include <string>
 class Opticks ; 

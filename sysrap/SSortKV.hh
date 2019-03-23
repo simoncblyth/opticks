@@ -1,5 +1,14 @@
 #pragma once
 
+/**
+SSortKV
+==========
+
+Utility struct for reordering a vector of string float pairs.
+
+**/
+
+
 #include <map>
 #include <string>
 #include <vector>

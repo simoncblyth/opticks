@@ -1,5 +1,14 @@
 #pragma once
 
+/**
+OAxisTest
+===========
+
+For standalone testing of OptiX and OpenGL integration.
+
+**/
+
+
 class OContext ; 
 template <typename T> class NPY ; 
 

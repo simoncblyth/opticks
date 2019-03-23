@@ -15,7 +15,7 @@ class OpSeeder ;
 class OpZeroer ; 
 class OpIndexer ; 
 
-
+#include "plog/Severity.h"
 #include "OKOP_API_EXPORT.hh"
 
 /**
@@ -44,6 +44,8 @@ class OKOP_API OpEngine {
        friend class OpIndexer ; 
        friend class OpSeeder ; 
        friend class OpZeroer ; 
+    public:
+       static const plog::Severity LEVEL ;  
     public:
        OpEngine(OpticksHub* hub);
     public:

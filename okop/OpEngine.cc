@@ -2,6 +2,7 @@
 #include "SLog.hh"
 
 #include "Opticks.hh"  // okc-
+#include "OpticksEntry.hh" 
 #include "OpticksHub.hh" // okg-
 #include "OpticksSwitches.h" 
 
@@ -19,6 +20,9 @@
 #include "OScene.hh"
 
 #include "PLOG.hh"
+
+
+const plog::Severity OpEngine::LEVEL = debug ; 
 
 
 unsigned OpEngine::getOptiXVersion()
@@ -60,7 +64,7 @@ void OpEngine::init()
    bool is_load = m_ok->isLoad() ; 
    bool is_tracer = m_ok->isTracer() ;
 
-   LOG(error) 
+   LOG(LEVEL) 
               << " is_load " << is_load 
               << " is_tracer " << is_tracer
               << " OptiXVersion " << m_ok->getOptiXVersion()
@@ -68,24 +72,24 @@ void OpEngine::init()
 
    if(is_load)
    {
-       LOG(warning) << "OpEngine::init skip initPropagation as just loading pre-cooked event " ;
+       LOG(LEVEL) << "skip initPropagation as just loading pre-cooked event " ;
    }
    else if(is_tracer)
    {
-       LOG(warning) << "OpEngine::init skip initPropagation as tracer mode is active  " ; 
+       LOG(LEVEL) << "skip initPropagation as tracer mode is active  " ; 
    }
    else
    {
-       LOG(warning) << "OpEngine::init initPropagation START" ;
+       pLOG(LEVEL,-1) << "(" ;
        initPropagation(); 
-       LOG(warning) << "OpEngine::init initPropagation DONE" ;
-
+       pLOG(LEVEL,-1) << ")" ;
    }
 }
 
 void OpEngine::initPropagation()
 {
     m_entry = m_ocontext->addEntry(m_ok->getEntryCode()) ;
+    LOG(info) << " entry " << m_entry->desc() ; 
     m_oevt = new OEvent(m_ok, m_ocontext);
     m_propagator = new OPropagator(m_ok, m_oevt, m_entry);
     m_seeder = new OpSeeder(m_ok, m_oevt) ;

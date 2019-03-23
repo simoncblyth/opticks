@@ -4,7 +4,13 @@ class Opticks ;
 class OEvent ; 
 class OContext ; 
 
-// zeroes on GPU record buffer via OptiX or OpenGL
+/**
+OpZeroer
+==========
+
+Zeroes on GPU record buffer via OptiX or OpenGL
+
+**/
 
 #include "OKOP_API_EXPORT.hh"
 

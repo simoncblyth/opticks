@@ -18,7 +18,7 @@ class OpPropagator ;
 #include "OKOP_API_EXPORT.hh"
 #include "OKOP_HEAD.hh"
 
-/*
+/**
 OpMgr : high level steering for compute only Opticks
 ======================================================
 
@@ -30,6 +30,10 @@ Only used from::
 Canonical OpMgr instance m_opmgr resides in G4Opticks and 
 is intanciated by G4Opticks::setGeometry.  Mainly used 
 from G4Opticks::propagateOpticalPhotons.
+
+Instanciation creates: OpticksHub, OpticksIdx and OpPropagator.
+OpticksHub instanciation will adopt the preexisting GGeo instance
+in direct running.
 
 Responsibilities:
 
@@ -45,7 +49,7 @@ Notice in propagate() repetition of the interplay between
 OpPropagator.m_propagator and OpticksRun.m_run ... 
 perhaps factor out into OpKernel ?  
 
-*/
+**/
 
 
 class OKOP_API OpMgr {

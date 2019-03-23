@@ -46,7 +46,6 @@ set(SOURCES
     SPairVec.cc
     md5.cc
     SPPM.cc
-    SBufferSpec.cc
     SId.cc
     SGDML.cc
 ) 
@@ -88,7 +87,6 @@ set(HEADERS
     SArgs.hh
     S_freopen_redirect.hh
     SPPM.hh
-    SBufferSpec.hh
     SId.hh
     SGDML.hh
 )

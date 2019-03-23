@@ -36,8 +36,7 @@ struct TIsHit : public thrust::unary_function<float4x4,bool>
 };
 
 
-/**
-
+ /**
 
 python -i $(which evt.py --tag 10)
 
@@ -80,5 +79,5 @@ Out[47]: 6240
 
 
 
-**/
+ **/
 

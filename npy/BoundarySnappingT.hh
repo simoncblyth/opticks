@@ -63,7 +63,7 @@
 
 //== CLASS DEFINITION =========================================================
 
-/** \brief Snaps selected vertices at boundaries
+ /** \brief Snaps selected vertices at boundaries
  *
  * Snaps selected boundary vertices together if they are closer than the given
  * distance. No new vertices will be introduced on either edge, so they are just

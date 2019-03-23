@@ -1,5 +1,16 @@
 // https://stackoverflow.com/questions/1908687/how-to-redirect-the-output-back-to-the-screen-after-freopenout-txt-a-stdo
 
+/**
+S_freopen_redirect
+===================
+
+struct for file descriptor gymnastics. 
+
+Used from :doc:`/optixrap/OContext` to redirect OptiX kernel debug stdout to a file.
+
+**/
+
+
 #include <cstdio>
 #include <cstring>
 #include <unistd.h>

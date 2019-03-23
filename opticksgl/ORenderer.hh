@@ -1,5 +1,15 @@
 #pragma once
 
+/**
+ORenderer
+==========
+
+Used from :doc:`OKGLTracer`
+
+**/
+
+
+
 class Renderer ; 
 class Texture ; 
 class OFrame ; 

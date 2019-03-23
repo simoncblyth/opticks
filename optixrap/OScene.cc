@@ -34,6 +34,9 @@
     }
 
 
+
+const plog::Severity OScene::LEVEL = info ; 
+
 OContext* OScene::getOContext()
 {
     return m_ocontext ; 
@@ -60,24 +63,24 @@ optix::Context OScene::getContext()
 
 
 OScene::OScene(OpticksHub* hub) 
-     :   
-      m_log(new SLog("OScene::OScene")),
-      m_timer(new Timer("OScene::")),
-      m_hub(hub),
-      m_ok(hub->getOpticks()),
-      m_cfg(m_ok->getCfg()),
-      m_ocontext(NULL),
-      m_osolve(NULL),
-      m_ocolors(NULL),
-      m_ogeo(NULL),
-      m_olib(NULL),
-      m_oscin(NULL),
-      m_osrc(NULL),
-      m_verbosity(m_ok->getVerbosity()),
-      m_use_osolve(false)
+    :   
+    m_log(new SLog("OScene::OScene","", debug)),
+    m_timer(new Timer("OScene::")),
+    m_hub(hub),
+    m_ok(hub->getOpticks()),
+    m_cfg(m_ok->getCfg()),
+    m_ocontext(NULL),
+    m_osolve(NULL),
+    m_ocolors(NULL),
+    m_ogeo(NULL),
+    m_olib(NULL),
+    m_oscin(NULL),
+    m_osrc(NULL),
+    m_verbosity(m_ok->getVerbosity()),
+    m_use_osolve(false)
 {
-      init();
-      (*m_log)("DONE");
+    init();
+    (*m_log)("DONE");
 }
 
 
@@ -102,8 +105,7 @@ OScene::Init
 
 void OScene::init()
 {
-    //if(m_verbosity > 0)
-    LOG(info) << "OScene::init START" ; 
+    LOG(LEVEL) << "[" ; 
 
     m_timer->setVerbose(true);
     m_timer->start();
@@ -113,9 +115,9 @@ void OScene::init()
     const char* builder   = builder_.empty() ? NULL : builder_.c_str() ;
     const char* traverser = traverser_.empty() ? NULL : traverser_.c_str() ;
 
-    LOG(verbose) << "OScene::init optix::Context::create() START " ; 
+    LOG(verbose) << "optix::Context::create() START " ; 
     optix::Context context = optix::Context::create();
-    LOG(verbose) << "OScene::init optix::Context::create() DONE " ; 
+    LOG(verbose) << "optix::Context::create() DONE " ; 
 
     m_ocontext = new OContext(context, m_ok);
 
@@ -128,17 +130,17 @@ void OScene::init()
         m_osolve->convert();
     }
 
-    LOG(info) << "OScene::init"
-              << " ggeobase identifier : " << m_hub->getIdentifier()
-              ;
+    LOG(LEVEL) 
+          << " ggeobase identifier : " << m_hub->getIdentifier()
+          ;
 
-    LOG(debug) << "OScene::init (OColors)" ;
+    LOG(debug) << "(OColors)" ;
     m_ocolors = new OColors(context, m_ok->getColors() );
     m_ocolors->convert();
 
     // formerly did OBndLib here, too soon
 
-    LOG(debug) << "OScene::init (OSourceLib)" ;
+    LOG(debug) << "(OSourceLib)" ;
     m_osrc = new OSourceLib(context, m_hub->getSourceLib());
     m_osrc->convert();
 
@@ -147,7 +149,7 @@ void OScene::init()
     unsigned num_scin = sclib->getNumScintillators(); 
     const char* slice = "0:1" ;
 
-    LOG(debug) << "OScene::init (OScintillatorLib)"
+    LOG(debug) << "(OScintillatorLib)"
                << " num_scin " << num_scin 
                << " slice " << slice  
                ;
@@ -157,16 +159,16 @@ void OScene::init()
     m_oscin->convert(slice);
 
 
-    LOG(debug) << "OScene::init (OGeo)" ;
+    LOG(debug) << "(OGeo)" ;
     m_ogeo = new OGeo(m_ocontext, m_ok, m_hub->getGeoLib(), builder, traverser);
-    LOG(debug) << "OScene::init (OGeo) -> setTop" ;
+    LOG(debug) << "(OGeo) -> setTop" ;
     m_ogeo->setTop(m_ocontext->getTop());
-    LOG(debug) << "OScene::init (OGeo) -> convert" ;
+    LOG(debug) << "(OGeo) -> convert" ;
     m_ogeo->convert();
-    LOG(debug) << "OScene::init (OGeo) done" ;
+    LOG(debug) << "(OGeo) done" ;
 
 
-    LOG(debug) << "OScene::init (OBndLib)" ;
+    LOG(debug) << "(OBndLib)" ;
     m_olib = new OBndLib(context,m_hub->getBndLib());
     m_olib->convert();
     // this creates the BndLib dynamic buffers, which needs to be after OGeo
@@ -175,8 +177,7 @@ void OScene::init()
 
     LOG(debug) << m_ogeo->description("OScene::init ogeo");
 
-    if(m_verbosity > 0)
-    LOG(info) << "OScene::init DONE" ;
+    LOG(LEVEL) << ")" ;
 
 }
 

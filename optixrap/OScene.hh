@@ -15,20 +15,25 @@ class OScintillatorLib ;
 class OSourceLib ; 
 
 /**
-
 OScene
 ========
 
 Canonical m_scene instance resides in okop-/OpEngine 
 
-OScene::init creates the OptiX context and populates
-it with geometry, boundary etc.. info 
+Instanciating an OScene creates the OptiX GPU context 
+and populates it with geometry, boundary info etc.. 
+effectively uploading the geometry obtained from
+the OpticksHub to the GPU.  This geometry info is 
+held in the O* libs: OGeo, OBndLib, OScintillatorLib, 
+OSourceLib.
 
 **/
 
-
+#include "plog/Severity.h"
 #include "OXRAP_API_EXPORT.hh"
 class OXRAP_API OScene {
+    public:
+       static const plog::Severity LEVEL ; 
     public:
        OScene(OpticksHub* hub);
     public:

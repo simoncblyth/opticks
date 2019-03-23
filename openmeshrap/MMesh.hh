@@ -1,5 +1,13 @@
 #pragma once
 
+/**
+
+MMesh
+=======
+
+Header to setup the OpenMesh Mesh class
+
+**/
 
 
 

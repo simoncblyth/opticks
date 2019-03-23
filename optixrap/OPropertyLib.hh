@@ -1,4 +1,17 @@
 #pragma once
+/**
+OPropertyLib
+===============
+
+Base class of property libs providing buffer upload and dumping.
+Subclasses include:
+
+* :doc:`OBndLib`
+* :doc:`OSourceLib`
+* :doc:`OScintillatorLib`
+
+**/
+
 
 #include "OXPPNS.hh"
 template <typename T> class NPY ;

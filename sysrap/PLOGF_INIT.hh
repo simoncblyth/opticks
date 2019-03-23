@@ -1,3 +1,12 @@
+/**
+PLOGF_INIT
+=============
+
+Color PLOG logging macros.
+
+**/
+
+
 #include <plog/Log.h>
 #include <plog/Appenders/ColorConsoleAppender.h>
 #include <plog/Appenders/ConsoleAppender.h>

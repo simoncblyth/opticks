@@ -1,5 +1,19 @@
 #pragma once
 
+/**
+MFixer
+=========
+
+Mending cleaved meshes. 
+
+DevNotes
+---------
+
+* no longer needed
+
+**/
+
+
 class GGeo ; 
 class GMeshLib ; 
 class MTool ; 

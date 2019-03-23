@@ -1,5 +1,15 @@
 #pragma once
 
+/**
+SStr
+======
+
+Static string utilities.
+
+
+
+**/
+
 
 #include <cstddef>
 

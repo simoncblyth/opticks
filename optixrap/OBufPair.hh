@@ -1,4 +1,12 @@
 #pragma once
+/**
+OBufPair
+===========
+
+A pair of GPU buffers, used for photon seeding using 
+thrust strided range iterators.
+
+**/
 
 #include "CBufSlice.hh"
 

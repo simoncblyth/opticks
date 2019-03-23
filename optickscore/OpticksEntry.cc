@@ -46,12 +46,27 @@ bool OpticksEntry::isTraceTest() { return m_code == 'R' ; }
 bool OpticksEntry::isTrivial() { return m_code == 'T' ; }
 bool OpticksEntry::isNothing() { return m_code == 'N' ; }
 
-std::string OpticksEntry::description()
+std::string OpticksEntry::description() const 
 {
     std::stringstream ss ; 
     ss << "OpticksEntry (" << m_index << ") " << m_code ;
     return ss.str();
 }
+
+
+std::string OpticksEntry::desc() const 
+{
+    std::stringstream ss ; 
+    ss 
+       << " index " << m_index 
+       << " code " << m_code
+       << " name " << Name(m_code)
+       ;
+    return ss.str();
+}
+
+
+
 
 unsigned OpticksEntry::getIndex()
 {

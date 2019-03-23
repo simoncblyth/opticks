@@ -1,5 +1,14 @@
 #pragma once
 
+/**
+OProg
+======
+
+Holder of the inputs for creating an OptiX program.
+
+**/
+
+
 #include "OXRAP_API_EXPORT.hh"
 
 struct OXRAP_API OProg {

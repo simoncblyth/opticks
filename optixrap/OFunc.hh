@@ -1,4 +1,12 @@
 #pragma once
+/**
+OFunc
+=======
+
+OptiX callable program handling.
+
+**/
+
 
 #include "OXPPNS.hh"
 #include <optixu/optixu_math_namespace.h>

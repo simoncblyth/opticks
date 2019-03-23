@@ -1,5 +1,12 @@
 #pragma once
+/**
+STimes
+=======
 
+struct to hold time measurements
+
+
+**/
 #include <string>
 #include "SYSRAP_API_EXPORT.hh"
 

@@ -17,7 +17,7 @@ class NEmitPhotonsNPY ;
 
 #include "OKGEO_API_EXPORT.hh"
 
-/*
+/**
 OpticksGen
 ============
 
@@ -26,7 +26,7 @@ Canonical m_gen instance is member of ok/OKMgr OR okg4/OKG4Mgr
 which is instanciated by OpticksHub::init after the geometry
 has been loaded.
 
-*/
+**/
 
 
 class OKGEO_API OpticksGen 

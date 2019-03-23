@@ -1,5 +1,20 @@
 #pragma once
 
+/**
+OptiXTest
+===========
+
+Used for standalone-ish OptiX tests providing minimal context setup.
+
+Usage examples: 
+
+* optixrap/tests/OOMinimalTest.cc
+* optixrap/tests/intersect_analytic_test.cc
+
+
+**/
+
+
 #include "OXRAP_PUSH.hh"
 #include <optixu/optixpp_namespace.h>
 #include "OXRAP_POP.hh"

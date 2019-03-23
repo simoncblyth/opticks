@@ -1,4 +1,14 @@
 
+/**
+SDirect
+========
+
+Stream redirection experiments.
+
+
+**/
+
+
 // http://stackoverflow.com/questions/5419356/redirect-stdout-stderr-to-a-string
 
 #include <iostream>

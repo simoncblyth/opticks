@@ -1,5 +1,15 @@
 #pragma once
 
+/**
+YOG::Geometry
+==============
+
+Holder of vertices and indices.
+
+
+**/
+
+
 #include "YOG_API_EXPORT.hh"
 #include <vector>
 

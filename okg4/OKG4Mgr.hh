@@ -1,5 +1,15 @@
 #pragma once
 
+/**
+OKG4Mgr
+=========
+
+Highest level manager class for full featured 
+Opticks running with Geant4 embedded. 
+
+**/
+
+
 class SLog ; 
 class Opticks ; 
 class OpticksHub ; 
