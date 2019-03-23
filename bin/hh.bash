@@ -23,7 +23,7 @@ hh-find(){  find . -name '*.hh' -exec grep -l "/\*\*" {} \; ; }
 hh--(){
    local hh
    hh-find | while read hh ; do 
-      local l=$(cat $hh | hh.py | wc -l)
+      local l=$(cat $hh | hh.py --stdin | wc -l)
 
       if [ $l -gt 30 ]; then 
           printf "%40s : %d \n" $hh $l
