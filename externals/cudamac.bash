@@ -15,6 +15,17 @@ eGPU
 -----
 
 * https://github.com/marnovo/macOS-eGPU-CUDA-guide
+* https://support.apple.com/en-us/HT208544#ntf
+
+  None of the supported GPUs are from NVIDIA
+
+
+Apple and NVIDIA : Why dont they like to play together ?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* https://appleinsider.com/articles/19/01/18/apples-management-doesnt-want-nvidia-support-in-macos-and-thats-a-bad-sign-for-the-mac-pro
+
+
 
 CUDA Driver 387.178
 ----------------------
