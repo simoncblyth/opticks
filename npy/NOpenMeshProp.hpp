@@ -6,6 +6,18 @@ struct nuv ;
 #include "SBase36.hh"
 #include "NOpenMeshType.hpp"
 
+/**
+NOpenMeshProp
+===============
+
+Wrapper for OpenMesh meshes, enabling 
+mesh traversal.
+
+
+**/
+
+
+
 template <typename T>
 struct NPY_API  NOpenMeshProp
 {

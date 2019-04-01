@@ -14,7 +14,7 @@ is instanciated when OpMgr::addGenstep is called.
 DevNote
 ---------
 
-* hmm :doc:`cfg4/CGenstepCollector` does all that this does and more (but not too much more)
+* hmm :doc:`/cfg4/CGenstepCollector` does all that this does and more (but not too much more)
 
 **/
 

@@ -7,13 +7,13 @@
 
 /**
 
-PLOG_INIT : logging macros
-===========================--
+PLOG\_INIT : logging macros
+==============================
 
 
-PLOG_INIT macros are used in two situations:
+PLOG\_INIT macros are used in two situations:
 
-* an executable main as a result of PLOG_ or PLOT_COLOR applied
+* an executable main as a result of PLOG\_ or PLOT\_COLOR applied
   to the arguments
 
 * package logger 

@@ -42,7 +42,7 @@ GPropertyLib
 Subclasses
 -----------
 
-delta:ggeo blyth$ grep public\ GPropertyLib *.hh
+delta:ggeo blyth$ grep public\ GPropertyLib \*.hh
 
 GBndLib.hh         :class GBndLib : public GPropertyLib {
 GMaterialLib.hh    :class GMaterialLib : public GPropertyLib {

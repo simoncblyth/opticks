@@ -6,8 +6,8 @@ SLauncher
 
 Protocol base used by 
 
-* :doc:`oglrap/AxisApp`
-* :doc:`oglrap/OpticksViz`
+* :doc:`/oglrap/AxisApp`
+* :doc:`/oglrap/OpticksViz`
 
 **/
 

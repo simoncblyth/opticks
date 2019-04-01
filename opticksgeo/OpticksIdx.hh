@@ -18,7 +18,7 @@ OpticksIdx
 Wrapper around hostside(only?) indexing functionality
 
 
-*/
+**/
 
 
 class OKGEO_API OpticksIdx {

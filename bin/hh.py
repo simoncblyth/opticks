@@ -16,45 +16,159 @@ hh.py : Extracting RST documentation embedded into header files
 import re, os, sys, logging, argparse
 log = logging.getLogger(__name__)
 
+def prepdir(odir):
+    if not os.path.exists(odir):
+        os.makedirs(odir)   
+    pass
 
-class Proj(object):
 
-    API_EXPORT_HH = "_API_EXPORT.hh"
+
+class Index(list):
+
+    TAIL = r"""
+
+Indices and tables
+==================
+
+* :ref:`genindex`
+* :ref:`modindex`
+* :ref:`search`
+
+"""
+
+
+    PFX = " " * 3
+    def __init__(self, *args, **kwa ):
+        title = kwa.pop("title", "no-title") 
+        maxdepth = kwa.pop("maxdepth", None) 
+        caption = kwa.pop("caption", None) 
+        top = kwa.pop("top", False) 
+        list.__init__(self, *args, **kwa)
+        self.title = title 
+        self.maxdepth = maxdepth 
+        self.caption = caption
+        self.top = top
+
+    def __str__(self):
+        tl = lambda _:self.PFX+_
+        head = [self.title, "=" * len(self.title), "", ".. toctree::"]
+
+        if not(self.maxdepth is None):
+            head.append(tl(":maxdepth: %s" % self.maxdepth))
+        pass
+        if not(self.caption is None):
+            head.append(tl(":caption: %s" % self.caption))
+        pass
+        body = map(tl, self ) 
+        space = [""] 
+        s = "\n".join( head + space + body + space )
+
+        if self.top:
+           s += self.TAIL 
+        pass
+        return s 
+
+
+    def save(self, path="index.rst"):
+        with open(path,"w") as fp:
+            fp.write(str(self))
+        pass
+
+
+    
+
+
+
+class Root(object):
 
     @classmethod
     def rootdir(cls):
+        """
+        :return: Opticks root directory, based on known depth of this script
+        """  
         root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         log.info("root %s " % root)    
         return root 
 
     @classmethod
-    def find_projs(cls):
+    def find_projs(cls, root):
         """
         Find project directories relative to root that contain 
         files with names like: OKGEO_API_EXPORT.hh
+
+        Create Proj instances for these directories.
         """ 
-        root = cls.rootdir() 
         projs=[]
         for dirpath, dirs, names in os.walk(root):
-            apiexports = filter(lambda name:name.endswith(cls.API_EXPORT_HH), names) 
+            apiexports = filter(lambda name:name.endswith(Proj.API_EXPORT_HH), names) 
             reldir = dirpath[len(root)+1:]
             if len(apiexports) > 0:
                 assert len(apiexports) == 1
-                name = apiexports[0][0:-len(cls.API_EXPORT_HH)]           
-                p = cls(reldir, name, root) 
+                name = apiexports[0][0:-len(Proj.API_EXPORT_HH)]           
+                p = Proj(reldir, name, root) 
                 print(repr(p))
                 projs.append(p) 
             pass
         pass
         return projs 
 
+
+    def __init__(self):
+        pass
+        self.root = self.rootdir()
+        self.projs = self.find_projs(self.root)
+
+    def __repr__(self):
+        return "Root %s %d " % ( self.root, len(self.projs)) 
+
+    def __str__(self):
+        return "\n".join( [repr(self), "" ] + map(repr, self.projs) )
+
+    def save(self, obase=None):
+        if obase is None:
+            obase = os.path.expandvars("/tmp/$USER/opticks/hh")
+        pass
+        log.info("obase %s " % obase)
+
+        title = os.path.basename(self.root)
+   
+        projs = filter( lambda p:len(p.hhd) > 0, self.projs )
+        stems = map(lambda p:"%s/index" % p.reldir, projs)
+        idx = Index(stems, title=title, maxdepth=1, caption="Contents:", top=True)
+
+        prepdir(obase)
+        os.chdir(obase)
+        idx.save(path="index.rst")
+
+        print(str(idx)) 
+
+        for p in projs:
+            odir = os.path.join(obase, p.reldir)
+            prepdir(odir)
+            os.chdir(odir)
+            p.save(odir) 
+        pass
+
+
+class Proj(object):
+
+    API_EXPORT_HH = "_API_EXPORT.hh"
+
     def __init__(self, reldir, name, root):
+        """
+        :param reldir: relative to Opticks root directory 
+        :param name: of project directory 
+        :param root: directory 
+        """
         self.reldir = reldir
         self.absdir = os.path.join(root, reldir)
         self.name = name   
         self.hhd = self.find_hhd() 
 
     def find_hhd(self):
+        """
+        :return hhd: dict keyed on header name holding header information held within HH instances
+        """
         names = filter(lambda hdrname:hdrname.endswith(".hh") or hdrname.endswith(".hpp"), os.listdir(self.absdir)) 
         names = filter(lambda hdrname:not hdrname.startswith(self.name+"_"), names)   
 
@@ -64,16 +178,31 @@ class Proj(object):
             lines = open(path, "r").readlines()   
             hh = HH(lines)
             if len(hh.content) == 0:
-                print("no docstring in %s " % path)
+                log.debug("no docstring in %s " % path)
+            else:
+                hhd[name] = hh  
             pass
-            hhd[name] = hh  
         pass 
         return hhd
 
     def __repr__(self):
         return " %30s : %15s : %d " % (self.reldir, self.name, len(self.hhd))
- 
 
+    def save(self, odir):
+        log.info("\nProj %s " % odir)
+
+        names = self.hhd.keys()
+        stems = map(lambda name:os.path.splitext(name)[0], names)
+        title = "%s : %s " % (self.name, self.reldir)
+        idx = Index(stems, title=title)
+        print(str(idx)) 
+        idx.save(path="index.rst")  
+
+        for k in names:
+            stem = os.path.splitext(k)[0]
+            hh = self.hhd[k]
+            hh.save("%s.rst" % stem)
+        pass
 
 
 class HH(object):
@@ -82,6 +211,9 @@ class HH(object):
     END = "**/"
 
     def __init__(self, lines):
+        """
+        :param lines: full header text
+        """ 
         self.lines = lines
         self.content = self.extract_content(lines) 
 
@@ -127,9 +259,10 @@ class HH(object):
     def __repr__(self):
         return "\n".join(self.content)
 
-
-
-
+    def save(self, path):
+        with open(path, "w") as fp:
+            fp.write("".join(self.content))
+        pass
 
 
 
@@ -145,7 +278,9 @@ if __name__ == '__main__':
         hh = HH(lines)
         print(repr(hh))
     else:
-        Proj.find_projs()
+        root = Root()
+        print(repr(root))
+        root.save()
     pass
 
 

@@ -14,7 +14,7 @@ Decision based on SURFACE_DETECT "SD" bit in photon flags
 * p.flags.f saved into photon buffer by oxrap-/cu/photon.h:psave
 
 Suspect a failure to rebuild dependency issue regards 
-updates to this header... so touch the principal user TBuf_.cu 
+updates to this header... so touch the principal user TBuf\_.cu 
 when changing this as workaround.
 
 Potentially a template instanciation and nvcc issue ? 

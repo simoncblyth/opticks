@@ -18,7 +18,7 @@ NPY buffer characters beyond 8 are truncated.
 OGLRap and OptiXRap are instrumented to record the buffer 
 usage.
 
-Options to configure  usage are::
+Options to configure  usage are:
 
 --gpumonpath
     path of the NPY buffer

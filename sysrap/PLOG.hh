@@ -56,7 +56,7 @@ Opticks executables follow the following pattern.
 *PLOG* parses command line arguments and configures the 
 logging level of each project, for example:
 
-.. code-block:: c
+.. code-block:: sh
 
    OpticksResourceTest --sysrap trace --npy info   # lower cased tags identify the projects
    GGeoViewTest --npy debug    

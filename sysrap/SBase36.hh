@@ -6,7 +6,7 @@ SBase36
 
 Base36 encoder converting an unsigned into a base36 string.
 
-Used in :doc:`npy/NOpenMeshProp`
+Used in :doc:`/npy/NOpenMeshProp`
 
 
 **/

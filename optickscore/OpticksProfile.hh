@@ -9,6 +9,10 @@ template <typename T> class NPY ;
 
 /**
 
+OpticksProfile
+===============
+
+Recording time and virtual memory as various points during Opticks running.
 
 
 **/

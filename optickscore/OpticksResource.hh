@@ -37,7 +37,6 @@ WHY PRIOR TO CONFIG ?
 * more convenient to be after, then can feed in some values
 
 
-
 TODO:
 
 * the split between whats in BOpticksResource and OpticksResource 
@@ -53,11 +52,8 @@ TODO:
 * relying on a set of envvars is annoying, as that divides config
   between scripts and here 
 
-* DONE : envprefix was never anything other than OPTICKS_ so get rid of the machinery 
-
 * need a better way to feed in metadata thru the keyhole, for live running 
   (probably a json string passed from user code ?) eg for OPTICKS_QUERY_LIVE 
-
 
 
 **/

@@ -37,7 +37,7 @@ CTestDetector
 
 *CTestDetector* is a :doc:`CDetector` subclass that
 constructs simple Geant4 detector test geometries based on commandline specifications
-parsed and represented by an instance of :doc:`../ggeo/GGeoTestConfig`.
+parsed and represented by an instance of :doc:`../npy/NGeoTestConfig`.
 
 Canonical instance resides in CGeometry and is instanciated by CGeometry::init
 when --test option is used. After the instanciation the CDetector::attachSurfaces

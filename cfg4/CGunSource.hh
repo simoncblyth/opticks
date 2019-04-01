@@ -10,7 +10,7 @@ CGunSource
 ============
 
 Converts NGunConfig into G4VPrimaryGenerator 
-with GeneratePrimaryVertex(G4Event *evt)
+with GeneratePrimaryVertex(G4Event \*evt)
 
 **/
 
