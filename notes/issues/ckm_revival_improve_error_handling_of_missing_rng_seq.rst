@@ -37,6 +37,7 @@ Improve the error handling of missing RNG
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ::
+
    cfg4--   ## rebuild just CFG4 lib
 
    epsilon:cfg4 blyth$ lldb CerenkovMinimal

@@ -15,6 +15,9 @@ Opticks Development Notes
    materials
    references
    meetings
+   visualization_of_photon_propagation
+
+ 
 
 
 

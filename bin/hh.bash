@@ -26,6 +26,34 @@ Deficiencies
 * links across to bitbucket ?
 
 
+Too much RST
+-------------
+
+I tend to write notes continuously while working on issues, these
+are mostly devnotes of interest only to me (or perhaps developers)
+and only for a short while after writing them.  
+
+There are too many notes/issues in one directory
+
+* thats real convenient for grepping to find issues that have resurfaced
+* dont want to split them up at source level, but could do at 
+  generated html level  
+
+Generally I only want to look at notes that were edited recently.  
+So need to make a selection of notes according to criteria.
+Also different categories of RST need to be split up into 
+separate trees for users and for developers. 
+
+Types of RST 
+-------------
+
+* "live" issues from notes/issues with timestamp within the past 3 months for example
+* "dead" issues from notes/issues with timestamp before cutoff
+* "other" notes outside "notes/issues"
+* "docstring" extracted from headers
+* "manual" from Opticks source tree, excluding those from notes
+
+
 Alt Tree
 ------------
 
