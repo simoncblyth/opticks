@@ -17,6 +17,9 @@
 #include "PLOG.hh"
 
 
+const plog::Severity OEvent::LEVEL = debug ; 
+
+
 OpticksEvent* OEvent::getEvent()
 {
     return m_evt ; 
@@ -37,7 +40,7 @@ OContext* OEvent::getOContext()
 
 OEvent::OEvent(Opticks* ok, OContext* ocontext)
    :
-   m_log(new SLog("OEvent::OEvent")),
+   m_log(new SLog("OEvent::OEvent", "", LEVEL)),
    m_ok(ok),
    m_mask(m_ok->getMaskBuffer()),
    m_ocontext(ocontext),

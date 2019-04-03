@@ -168,7 +168,7 @@ void OpticksHub::command(const char* cmd)
 OpticksHub::OpticksHub(Opticks* ok) 
    :
    SCtrl(),
-   m_log(new SLog("OpticksHub::OpticksHub")),
+   m_log(new SLog("OpticksHub::OpticksHub","", LEVEL)),
    m_ok(ok),
    m_gltf(-1),        // m_ok not yet configured, so defer getting the settings
    m_run(m_ok->getRun()),
@@ -651,7 +651,7 @@ void OpticksHub::configureGeometryTri()
     int restrict_mesh = m_ok->getRestrictMesh() ;  
     int nmm = m_ggeo->getNumMergedMesh();
 
-    LOG(info) 
+    LOG(LEVEL) 
               << "setting geocode" 
               << " restrict_mesh " << restrict_mesh
               << " nmm " << nmm

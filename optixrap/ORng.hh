@@ -5,6 +5,7 @@ class OContext ;
 
 #include <vector>
 #include "OXPPNS.hh"
+#include "plog/Severity.h"
 class cuRANDWrapper ; 
 
 #include "OXRAP_API_EXPORT.hh"
@@ -26,6 +27,8 @@ TODO: investigate Thrust based alternatives for curand initialization
 
 class OXRAP_API ORng 
 {
+   public:
+      static const plog::Severity LEVEL ; 
    public:
       ORng(Opticks* ok, OContext* ocontext);
    private:

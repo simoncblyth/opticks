@@ -45,7 +45,7 @@ G4Opticks* G4Opticks::fOpticks = NULL ;
 //  --bouncemax 0 historical for checking generation   ??
 //
 
-const char* G4Opticks::fEmbeddedCommandLine = " --gltf 3 --compute --save --embedded --natural --dbgtex --printenabled --pindex 0"  ; 
+const char* G4Opticks::fEmbeddedCommandLine = " --gltf 3 --compute --save --embedded --natural --printenabled --pindex 0"  ; 
 
 std::string G4Opticks::EmbeddedCommandLine(const char* extra)
 {
@@ -388,6 +388,7 @@ void G4Opticks::collectCerenkovStep
         G4double             postVelocity
     )
 {
+     LOG(info) << "[" ; 
      m_genstep_collector->collectCerenkovStep(
                        id, 
                        parentId,
@@ -419,6 +420,7 @@ void G4Opticks::collectCerenkovStep
                        meanNumberOfPhotons2,
                        postVelocity
                        ) ;
+     LOG(info) << "]" ; 
 }
   
 

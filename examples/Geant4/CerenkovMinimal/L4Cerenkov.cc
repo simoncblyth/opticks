@@ -67,7 +67,10 @@
 
 #ifdef WITH_OPTICKS
 #include "G4Opticks.hh"
-#include "CTrackInfo.hh"    // naughty direct use of CFG4 
+#include "CTrackInfo.hh"    
+// naughty direct use of CFG4.CTrackInfo 
+// CTrackInfo is a simple struct holding the photon_record_id integer
+// so could be reproduced here (but its just for validation)  
 #endif
 
 
@@ -304,7 +307,7 @@ L4Cerenkov::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
                ; 
 
         opticks_photon_offset = G4Opticks::GetOpticks()->getNumPhotons(); 
-        // total photons from all gensteps collected before this one
+        // total number of photons for all gensteps collected before this one
         // within this OpticksEvent (potentially crossing multiple G4Event) 
 
         G4Opticks::GetOpticks()->collectCerenkovStep(
@@ -340,6 +343,10 @@ L4Cerenkov::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
         ); 
     }    
 #endif
+
+
+    // NB eventually the below CPU photon generation loop 
+    //    will be skipped, it is kept for now to allow comparisons for validation
 
 	for (G4int i = 0; i < NumPhotons; i++) {
 
@@ -462,7 +469,7 @@ L4Cerenkov::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
 #endif
 
 
-	}
+	}  // CPU photon generation loop 
 
 	if (verboseLevel>0) {
 	   G4cout <<"L4Cerenkov::PostStepDoIt DONE -- NumberOfSecondaries = "

@@ -16,8 +16,13 @@ of the G4Cerenkov1042 photon generation loop.
 Getting the same photons as a prior run requires:
 
 1. same RINDEX property at the genstep recorded G4Material materialIndex
-2. arranging that the same RNG are provided, by controlling the engine  
+2. arranging that the same RNG are provided, by controlling the engine, this 
+   is done via CAlignEngine::SetSequenceIndex calls in the photon generation loop  
 
+
+Notice that the random alignment enables the Cerenkov photons 
+generated in a "full-physics" environment to match those generated 
+in an optical only environment. 
 
 This is used by CGenstepSource
 

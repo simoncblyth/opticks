@@ -120,6 +120,9 @@
 //     geometry.
 //
 
+
+const plog::Severity OGeo::LEVEL = debug ; 
+
 const char* OGeo::BUILDER = "Sbvh" ; 
 const char* OGeo::TRAVERSER = "Bvh" ; 
 
@@ -171,11 +174,13 @@ void OGeo::convert()
 {
     unsigned int nmm = m_geolib->getNumMergedMesh();
 
-    //if(m_verbosity > 0)
-    LOG(info) << "OGeo::convert START  numMergedMesh: " << nmm ;
+    LOG(LEVEL) << "OGeo::convert START  numMergedMesh: " << nmm ;
 
-    m_geolib->dump("OGeo::convert GGeoLib" );
-
+    if(m_verbosity > 1)
+    {
+        LOG(info) << " m_verbosity " << m_verbosity ; 
+        m_geolib->dump("OGeo::convert GGeoLib" );
+    }
 
     for(unsigned i=0 ; i < nmm ; i++)
     {
@@ -600,12 +605,21 @@ optix::GeometryGroup OGeo::makeGeometryGroup(optix::GeometryInstance gi, optix::
 }
 
 
+/**
+OGeo::makeGeometry : creating the OptiX GPU geometry
+-------------------------------------------------------
+
+NB the --xanalytic option switches to analytic geometry, ignoring 
+the 'T' or 'A' geocode of the mergedmesh 
+
+**/
+
 optix::Geometry OGeo::makeGeometry(GMergedMesh* mergedmesh, unsigned lod)
 {
     optix::Geometry geometry ; 
     const char geocode = m_ok->isXAnalytic() ? OpticksConst::GEOCODE_ANALYTIC : mergedmesh->getGeoCode() ;
 
-    LOG(info) << "OGeo::makeGeometry geocode " << geocode ; 
+    LOG(LEVEL) << "OGeo::makeGeometry geocode " << geocode ; 
 
     if(geocode == OpticksConst::GEOCODE_TRIANGULATED)
     {

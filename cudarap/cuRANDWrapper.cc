@@ -13,6 +13,9 @@
 #include "curand_kernel.h"
 
 
+const plog::Severity cuRANDWrapper::LEVEL = debug ; 
+
+
 // this is invoked from ORng::init
 cuRANDWrapper* cuRANDWrapper::instanciate(
          unsigned int num_items, 
@@ -25,7 +28,7 @@ cuRANDWrapper* cuRANDWrapper::instanciate(
      )
 {
 
-    LOG(error) << "cuRANDWrapper::instanciate"
+    LOG(LEVEL) << "cuRANDWrapper::instanciate"
                << " num_items " << num_items 
                ;
 

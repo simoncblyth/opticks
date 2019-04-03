@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include "plog/Severity.h"
 
 struct BConfig ; 
 
@@ -8,6 +9,8 @@ struct BConfig ;
 
 struct NPY_API NSnapConfig 
 {
+    static const plog::Severity LEVEL ; 
+
     NSnapConfig(const char* cfg);
     struct BConfig* bconfig ;  
     void dump(const char* msg="NSnapConfig::dump") const ; 

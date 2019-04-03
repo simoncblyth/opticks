@@ -19,12 +19,12 @@ Deficiencies
 
 * order of projects should be in dependency order (or reverse), not current "random" ordering
 * order of classes within subproj should be alphabetical
-* index is empty, some autogeneration ? 
+* Sphinx index is empty, some autogeneration ? 
 * back navigation is missing
 * many headers have no docstring
 * not much use of :doc: linkage between pages 
 * links across to bitbucket ?
-
+* what about including notes too ?
 
 Too much RST
 -------------

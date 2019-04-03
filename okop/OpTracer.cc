@@ -25,20 +25,21 @@
 #include "OpEngine.hh"
 #include "OpTracer.hh"
 
+const plog::Severity OpTracer::LEVEL = debug ; 
 
 OpTracer::OpTracer(OpEngine* ope, OpticksHub* hub, bool immediate) 
-   :
-      m_log(new SLog("OpTracer::OpTracer")),
-      m_ope(ope),
-      m_hub(hub),
-      m_ok(hub->getOpticks()),
-      m_snap_config(m_ok->getSnapConfig()),
-      m_immediate(immediate),
+    :
+    m_log(new SLog("OpTracer::OpTracer","",LEVEL)),
+    m_ope(ope),
+    m_hub(hub),
+    m_ok(hub->getOpticks()),
+    m_snap_config(m_ok->getSnapConfig()),
+    m_immediate(immediate),
 
-      m_ocontext(NULL),   // defer 
-      m_composition(m_hub->getComposition()),
-      m_otracer(NULL),
-      m_count(0)
+    m_ocontext(NULL),   // defer 
+    m_composition(m_hub->getComposition()),
+    m_otracer(NULL),
+    m_count(0)
 {
     init();
     (*m_log)("DONE");
@@ -73,7 +74,6 @@ void OpTracer::prepareTracer()
     context["output_buffer"]->set( output_buffer );
 
     m_otracer = new OTracer(m_ocontext, m_composition);
-
 }
 
 void OpTracer::render()
@@ -88,6 +88,15 @@ void OpTracer::render()
     m_count++ ; 
 }   
 
+
+/**
+OpTracer::snap
+----------------
+
+Takes one or more GPU raytrace snapshots of geometry
+at various positions configured via m_snap_config.  
+
+**/
 
 void OpTracer::snap()
 {

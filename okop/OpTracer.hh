@@ -20,8 +20,8 @@ class OpEngine ;
 template <typename T> class NPY ;
 
 
+#include "plog/Severity.h"
 #include "OKOP_API_EXPORT.hh"
-
 #include "SRenderer.hh"
 
 /**
@@ -36,6 +36,8 @@ see okop-
 **/
 
 class OKOP_API OpTracer : public SRenderer {
+    public:
+       static const plog::Severity LEVEL ;  
     public:
        OpTracer(OpEngine* ope, OpticksHub* hub, bool immediate);
     public:

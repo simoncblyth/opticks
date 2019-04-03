@@ -28,6 +28,8 @@
 #include "PLOG.hh"
 
 
+const plog::Severity GBndLib::LEVEL = debug ; 
+
 const GBndLib* GBndLib::INSTANCE = NULL ; 
 const GBndLib* GBndLib::GetInstance(){ return INSTANCE ; }
 
@@ -766,7 +768,7 @@ NPY<float>* GBndLib::createBufferForTex2d()
     NPY<float>* mat = m_mlib->getBuffer();
     NPY<float>* sur = m_slib->getBuffer();
 
-    LOG(error) << "GBndLib::createBufferForTex2d" 
+    LOG(LEVEL) << "GBndLib::createBufferForTex2d" 
                << " mat " << mat 
                << " sur " << sur
                ; 

@@ -10,7 +10,7 @@ template <typename T> class NPY ;
 OpticksGenstep
 ==================
 
-Wrapper for an (n,6,4) genstep buffer providing higher level
+Wrapper for an (n,6,4) NPY<float> genstep buffer providing higher level
 accessors and dumping. Only generic functionality working for all 
 types of gensteps is provided.  Types of gensteps::
 

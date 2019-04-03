@@ -18,13 +18,23 @@ class NEmitPhotonsNPY ;
 #include "OKGEO_API_EXPORT.hh"
 
 /**
-OpticksGen
-============
+OpticksGen : High level genstep control
+==========================================
 
-High level genstep control.
-Canonical m_gen instance is member of ok/OKMgr OR okg4/OKG4Mgr
-which is instanciated by OpticksHub::init after the geometry
-has been loaded.
+Canonical instance m_gen is member of OpticksHub
+and is instanciated by OpticksHub::init after 
+geometry has been loaded or adopted.
+
+m_gen copies are available in the principal users
+
+* okop/OpMgr
+* ok/OKMgr 
+* okg4/OKG4Mgr
+
+
+
+
+
 
 **/
 
@@ -32,30 +42,34 @@ has been loaded.
 class OKGEO_API OpticksGen 
 { 
         friend class OpMgr ;  // for setInputGensteps
+        friend class OpticksHub ; // for getTorchstep getGenstepNPY getG4GunConfig
+        friend class CGenerator ; // for getTorchstep getGenstepNPY getG4GunConfig
+        friend struct  OpSeederTest ; // for makeFabstep 
     public:
         OpticksGen(OpticksHub* hub);
     public:
         unsigned             getSourceCode() const ;
     public:
-    public:
         Opticks*             getOpticks() const ; 
         NPY<float>*          getInputPhotons() const ;    // currently only used for NCSG emitter testing 
         NPY<float>*          getInputGensteps() const ;
 
+
+    private:
         FabStepNPY*          getFabStep() const  ;
         TorchStepNPY*        getTorchstep() const ;
         GenstepNPY*          getGenstepNPY() const ;
         std::string          getG4GunConfig() const ;
-    public:
+    private:
         NEmitPhotonsNPY*     getEmitter() const ;
-    public:
+    private:
         FabStepNPY*          makeFabstep();  
     private:
         void                 init();
         unsigned             initSourceCode() const ;
         void                 initFromLegacyGensteps();
-        void                 initFromGensteps();
-        void                 initFromEmitter();
+        void                 initFromDirectGensteps();
+        void                 initFromEmitterGensteps();
     private:
         NPY<float>*          makeLegacyGensteps(unsigned code);
         NPY<float>*          loadLegacyGenstepFile(const char* label);

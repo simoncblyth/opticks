@@ -10,6 +10,7 @@ OptiX GPU side color samplers.
 
 #include "OXPPNS.hh"
 #include <optixu/optixu_math_namespace.h>
+#include "plog/Severity.h"
 
 class OpticksColors ; 
 template <typename T> class NPY ; 
@@ -19,6 +20,8 @@ template <typename T> class NPY ;
 
 class OXRAP_API OColors 
 {
+public:
+    static const plog::Severity LEVEL ;  
 public:
     OColors(optix::Context& ctx, OpticksColors* colors);
 public:

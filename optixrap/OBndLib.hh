@@ -26,6 +26,8 @@ Translates and uploads into OptiX GPU context:
 class OXRAP_API OBndLib  : public OPropertyLib 
 {
 public:
+    static const plog::Severity LEVEL ; 
+public:
     OBndLib(optix::Context& ctx, GBndLib* lib);
 public:
     unsigned getNumBnd();
@@ -48,7 +50,6 @@ private:
     NPY<float>*          m_debug_buffer ; 
     unsigned int         m_width ; 
     unsigned int         m_height ; 
-    plog::Severity       m_level ; 
 
 
 };

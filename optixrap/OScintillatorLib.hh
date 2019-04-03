@@ -12,6 +12,7 @@ into GPU reemission texture.
 
 
 #include "OXPPNS.hh"
+#include "plog/Severity.h"
 #include <optixu/optixu_math_namespace.h>
 
 class GScintillatorLib ;
@@ -21,6 +22,8 @@ template <typename T> class NPY ;
 #include "OXRAP_API_EXPORT.hh"
 
 class OXRAP_API OScintillatorLib : public OPropertyLib {
+    public:
+        static const plog::Severity LEVEL ; 
     public:
         OScintillatorLib(optix::Context& ctx, GScintillatorLib* lib);
     public:

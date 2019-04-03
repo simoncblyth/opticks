@@ -24,12 +24,13 @@ to the seq_idx.  When seq_idx is negative the engine in place previously
 is restored as theEngine and ordinary non-precooked random numbers
 are returned from G4UniformRand().
 
-Notes
-------
 
-Factor out the "kernel" of CRandomEngine and  
-generalize to maintain separate cursors for each stream, 
-so can switch between streams, resuming as appropriate. 
+Dev Notes
+----------
+
+CAlignEngine works by maintaining an integer cursor for each stream,
+which gets incremented by flat calls.  This allows  
+switching around between streams.
 
 **/
 

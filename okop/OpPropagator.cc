@@ -30,9 +30,11 @@
 
 
 
+const plog::Severity OpPropagator::LEVEL = debug ; 
+
 OpPropagator::OpPropagator(OpticksHub* hub, OpticksIdx* idx) 
     :
-    m_log(new SLog("OpPropagator::OpPropagator", "", info)),
+    m_log(new SLog("OpPropagator::OpPropagator", "", LEVEL)),
     m_hub(hub),    
     m_idx(idx),
     m_ok(m_hub->getOpticks()),

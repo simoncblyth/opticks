@@ -6,6 +6,10 @@
 #include "PLOG.hh"
 // trace/debug/info/warning/error/fatal
 
+
+const plog::Severity OScintillatorLib::LEVEL = debug ; 
+
+
 OScintillatorLib::OScintillatorLib(optix::Context& ctx, GScintillatorLib* lib)
     : 
     OPropertyLib(ctx, "OScintillatorLib"),
@@ -37,7 +41,7 @@ void OScintillatorLib::convert(const char* slice)
 
     if( ni == 0) 
     {
-        LOG(error) << " empty GScintillatorLib buffer : creating placeholder reemission texture " ; 
+        LOG(LEVEL) << " empty GScintillatorLib buffer : creating placeholder reemission texture " ; 
         makeReemissionTexture(m_placeholder);
     }
     else if( ni == 1 )
@@ -85,7 +89,7 @@ void OScintillatorLib::makeReemissionTexture(NPY<float>* buf)
     float step = 1.f/float(nx) ;
     optix::float4 domain = optix::make_float4(0.f , 1.f, step, 0.f );
 
-    LOG(error) << "OScintillatorLib::makeReemissionTexture "
+    LOG(LEVEL) << "OScintillatorLib::makeReemissionTexture "
               << " nx " << nx
               << " ny " << ny  
               << " ni " << ni  

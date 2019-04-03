@@ -35,7 +35,7 @@
 
 
 
-const plog::Severity OScene::LEVEL = info ; 
+const plog::Severity OScene::LEVEL = debug ; 
 
 OContext* OScene::getOContext()
 {
@@ -48,23 +48,9 @@ OBndLib*  OScene::getOBndLib()
 }
 
 
-
-/*
-//
-// dont do this it adds an optix dependency to the interface
-// are aiming to get rid of optix from interfaces for 
-// easier version hopping
-//
-optix::Context OScene::getContext()
-{
-     return m_ocontext->getContext() ; 
-}
-*/
-
-
 OScene::OScene(OpticksHub* hub) 
     :   
-    m_log(new SLog("OScene::OScene","", debug)),
+    m_log(new SLog("OScene::OScene","", LEVEL)),
     m_timer(new Timer("OScene::")),
     m_hub(hub),
     m_ok(hub->getOpticks()),
@@ -177,7 +163,7 @@ void OScene::init()
 
     LOG(debug) << m_ogeo->description("OScene::init ogeo");
 
-    LOG(LEVEL) << ")" ;
+    LOG(LEVEL) << "]" ;
 
 }
 

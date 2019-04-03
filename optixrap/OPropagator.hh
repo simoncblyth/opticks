@@ -13,16 +13,24 @@ template <typename T> class OpticksCfg ;
 class OpticksHub ; 
 
 #include "OXPPNS.hh"
+#include "plog/Severity.h"
 
 class OContext ; 
 class ORng ; 
 class OEvent ; 
 
 /**
-OPropagator
-=============
+OPropagator : Launch control 
+===============================
 
-Launch control 
+The name of this class is too similar to okop/OpPropagator.
+TODO: rename to OLauncher 
+
+
+Residents:
+
+m_orng:ORng 
+    hmm perhaps this should live in OScene, rather than here 
 
 
 **/
@@ -30,6 +38,8 @@ Launch control
 
 #include "OXRAP_API_EXPORT.hh"
 class OXRAP_API OPropagator {
+    public:
+        static const plog::Severity LEVEL ;   
     public:
         OPropagator( Opticks* ok, OEvent* oevt, OpticksEntry* entry); 
     public:
@@ -62,9 +72,9 @@ class OXRAP_API OPropagator {
         bool                 m_prelaunch ;
 
     private:
-        unsigned int     m_count ; 
-        unsigned int     m_width ; 
-        unsigned int     m_height ; 
+        unsigned             m_count ; 
+        unsigned             m_width ; 
+        unsigned             m_height ; 
 
  
 };

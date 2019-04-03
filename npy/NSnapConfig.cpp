@@ -4,7 +4,7 @@
 #include "PLOG.hh"
 #include "NSnapConfig.hpp"
 
-
+const plog::Severity NSnapConfig::LEVEL = debug ; 
 
 
 NSnapConfig::NSnapConfig(const char* cfg)  
@@ -18,7 +18,7 @@ NSnapConfig::NSnapConfig(const char* cfg)
     prefix("/tmp/snap"),
     postfix(".ppm")
 {
-    LOG(info) << "NSnapConfig::NSnapConfig"
+    LOG(LEVEL)
               << " cfg [" << ( cfg ? cfg : "NULL" ) << "]"
               ;
 

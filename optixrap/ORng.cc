@@ -13,6 +13,8 @@ using namespace optix ;
 #include "cuRANDWrapper.hh"
 
 
+const plog::Severity ORng::LEVEL = debug ; 
+
 ORng::ORng(Opticks* ok, OContext* ocontext) 
    :
    m_ok(ok),
@@ -38,7 +40,7 @@ void ORng::init()
     const char* rngCacheDir = m_ok->getRNGInstallCacheDir();
     unsigned num_mask = m_mask.size() ; 
 
-    LOG(error) << "ORng::init"
+    LOG(LEVEL) << "ORng::init"
                << " rng_max " << rng_max
                << " rngCacheDir " << rngCacheDir
                << " num_mask " << num_mask

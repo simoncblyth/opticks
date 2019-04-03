@@ -743,6 +743,7 @@ bool Opticks::isInterop()
 }
 bool Opticks::isCfG4()
 {
+    assert(0); 
     return m_mode->isCfG4(); 
 }
 

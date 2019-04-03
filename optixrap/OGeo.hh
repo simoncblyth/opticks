@@ -5,6 +5,7 @@
 #include "OXPPNS.hh"
 #include <optixu/optixu_math_namespace.h>
 #include <optixu/optixu_aabb_namespace.h>
+#include "plog/Severity.h"
 
 class RayTraceConfig ; 
 
@@ -56,6 +57,7 @@ Crucial OptiX geometrical members:
 class OXRAP_API  OGeo 
 {
 public:
+    static const plog::Severity LEVEL ; 
     static const char* BUILDER ; 
     static const char* TRAVERSER ; 
 

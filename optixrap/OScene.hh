@@ -27,6 +27,11 @@ the OpticksHub to the GPU.  This geometry info is
 held in the O* libs: OGeo, OBndLib, OScintillatorLib, 
 OSourceLib.
 
+NB there is no use of OptiX types in this interface header
+although these are used internally. This is as are aiming 
+to remove OptiX dependency in higher level interfaces 
+for easier OptiX version hopping.
+
 **/
 
 #include "plog/Severity.h"

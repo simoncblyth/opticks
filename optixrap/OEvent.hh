@@ -2,6 +2,7 @@
 
 #include "OXPPNS.hh"
 #include "OpticksSwitches.h"
+#include "plog/Severity.h"
 
 class SLog ; 
 class Opticks; 
@@ -69,10 +70,10 @@ Buffers During Debugging
 -------------------------
 
 *sequence*
-    (n_photon, 1, 2) uint64 : flag and material sequence (64 bits = 16*4 bits )
+    (n_photon, 1, 2) uint64 (unsigned long long) : flag and material sequence (64 bits = 16*4 bits )
 
 *record*
-    (n_photon, 16, 2, 4) int16
+    (n_photon, 16, 2, 4) int16 (shorts)
 
 
 
@@ -82,6 +83,8 @@ Buffers During Debugging
 #include "OXRAP_API_EXPORT.hh"
 class OXRAP_API OEvent 
 {
+    public:
+        static const plog::Severity LEVEL ;  
     public:
         enum {
             GENSTEP  = 0x1 << 1, 

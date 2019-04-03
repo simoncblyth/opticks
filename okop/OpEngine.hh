@@ -26,6 +26,9 @@ OpEngine takes a central role, it holds the OScene
 which creates the OptiX context holding the GPU geometry
 and all GPU buffers.
 
+Instanciating an OpEngine 
+
+
 Canonical OpEngine instance m_engine resides in ok-/OKPropagator 
 which resides as m_propagator at top level in ok-/OKMgr
 

@@ -3,6 +3,7 @@
 #include <map>
 #include <vector>
 #include <string>
+#include "plog/Severity.h"
 
 class NMeta ; 
 class Opticks ; 
@@ -57,6 +58,7 @@ in order to make the functionality available without doing a load.
 
 class GGEO_API GBndLib : public GPropertyLib {
   public:
+       static const plog::Severity LEVEL ; 
        static const GBndLib* INSTANCE ; 
        static const GBndLib* GetInstance() ; 
        static unsigned MaterialIndexFromLine( unsigned line ) ;

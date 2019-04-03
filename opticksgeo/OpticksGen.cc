@@ -83,16 +83,26 @@ unsigned OpticksGen::getSourceCode() const
     return m_source_code ;  
 }
 
+/**
+OpticksGen::init
+------------------
+
+Upshot is that one of the below gets set
+
+* m_direct_gensteps 
+* m_legacy_gensteps : for emitter as well as legacy gensteps
+
+**/
 
 void OpticksGen::init()
 {
     if(m_direct_gensteps)
     {
-        initFromGensteps();
+        initFromDirectGensteps();
     }  
     else if(m_emitter) 
     {
-        initFromEmitter();
+        initFromEmitterGensteps();
     }
     else
     { 
@@ -100,7 +110,7 @@ void OpticksGen::init()
     }
 }
 
-void OpticksGen::initFromEmitter()
+void OpticksGen::initFromEmitterGensteps()
 {
     // emitter bits and pieces get dressed up 
     // perhaps make a class to do this ?   
@@ -134,7 +144,7 @@ void OpticksGen::initFromEmitter()
 
 
 
-void OpticksGen::initFromGensteps()
+void OpticksGen::initFromDirectGensteps()
 {
     assert( m_direct_gensteps ) ; 
     std::string loadpath = m_direct_gensteps->getMeta<std::string>("loadpath",""); 
@@ -163,6 +173,16 @@ void OpticksGen::initFromLegacyGensteps()
     setLegacyGensteps(gs);
 }
 
+
+/**
+OpticksGen::makeLegacyGensteps
+-------------------------------
+
+Legacy gensteps can be FABRICATED, MACHINERY or TORCH 
+and are created directly OR they can be CERENKOV, SCINTILLATION, NATURAL, 
+G4GUN which are loaded fro files.
+
+**/
 
 NPY<float>* OpticksGen::makeLegacyGensteps(unsigned code)
 {

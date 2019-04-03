@@ -13,6 +13,8 @@
 #include "PLOG.hh"
 
 
+const plog::Severity OBndLib::LEVEL = debug ; 
+
 OBndLib::OBndLib(optix::Context& ctx, GBndLib* blib)
     : 
     OPropertyLib(ctx, "OBndLib"),
@@ -20,8 +22,7 @@ OBndLib::OBndLib(optix::Context& ctx, GBndLib* blib)
     m_ok(blib->getOpticks()),
     m_debug_buffer(NULL),  
     m_width(0),
-    m_height(0),
-    m_level(info)
+    m_height(0)
 {
 }
 
@@ -84,7 +85,7 @@ This keeps lookup simple.
 
 void OBndLib::convert()
 {
-    LOG(m_level) << "OBndLib::convert" ;
+    LOG(LEVEL) << "[" ;
 
     m_blib->createDynamicBuffers();
 
@@ -119,6 +120,7 @@ void OBndLib::convert()
         m_blib->saveNames(idpath, "dbgtex", "bnd.txt"); 
     }
 
+    LOG(LEVEL) << "]" ;
 }
 
 
@@ -158,7 +160,8 @@ void OBndLib::makeBoundaryTexture(NPY<float>* buf)
     unsigned int nx = nl ;           // wavelength samples
     unsigned int ny = ni*nj*nk ;     // total number of properties from all (two) float4 property groups of all (4) species in all (~123) boundaries 
    
-    LOG(m_level) << "OBndLib::makeBoundaryTexture buf " 
+    LOG(LEVEL)
+              << " buf "  
               << buf->getShapeString() 
               << " ---> "  
               << " nx " << nx
@@ -217,7 +220,7 @@ void OBndLib::makeBoundaryTexture(NPY<float>* buf)
     m_context["boundary_bounds"]->setUint(bounds); 
 
 
-    LOG(info) 
+    LOG(LEVEL) 
         << "boundary_domain_reciprocal "
         << gpresent("rdom", rdom )  
         << " rdom.x " << std::fixed << rdom.x

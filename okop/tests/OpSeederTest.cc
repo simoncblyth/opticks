@@ -29,81 +29,91 @@ OpSeederTest
 
 **/
 
+
+struct OpSeederTest 
+{
+    OpSeederTest( int argc, char** argv)
+    {
+        const char* forced = "--compute --trivial --multievent 2 --machinery" ;
+        Opticks ok(argc, argv, forced );
+
+        OpticksHub hub(&ok);
+        OpticksGen* gen = hub.getGen();
+
+        LOG(info) << " EntryCode: " << ok.getEntryCode() 
+                  << " EntryName: " << ok.getEntryName()
+                  << " ArgLine: " << ok.getArgLine()
+                  ;
+        
+        assert(ok.isCompute());
+
+        OScene scene(&hub);
+        OContext* octx = scene.getOContext();
+        OEvent oevt(&ok, octx );
+        OpSeeder  seeder(&ok, &oevt );
+        OPropagator propagator(&ok, &oevt, octx->addEntry(ok.getEntryCode()) );
+
+        FabStepNPY* fab = gen->makeFabstep();
+        NPY<float>* gs = fab->getNPY();
+
+        bool compute = true ; 
+        gs->setBufferSpec(OpticksEvent::GenstepSpec(compute));  
+     
+
+        int multi = ok.getMultiEvent();
+        char entryCode = ok.getEntryCode();
+
+        for(int i=0 ; i < multi ; i++)
+        {
+            hub.createEvent(i);
+
+            OpticksEvent* evt = hub.getEvent();
+            assert(evt->isMachineryType() && "--machinery type is forced as this writes non-standardOpticksEvents which would otherwise cause test failures for event reading tests" ); 
+
+            evt->setGenstepData(gs);   // <-- asserts in here, OpticksEvent::setBufferControl FATAL: BUFFER LACKS SPEC
+
+            oevt.upload();                        // uploads gensteps, creates buffers at 1st upload, resizes on subsequent uploads
+
+            //propagator.prelaunch();               // sticking a pre-launch here, succeeds to give OptiX the hint that smth changed
+                                                  // and Thrust reading of gensteps and writing of seeds manages to be 
+                                                  // seen by OptiX, otherwise the seeds are still written correctly by Thrust 
+                                                  // but OptiX doesnt notice
+                                                  // .... so this manages to get Thrust and OptiX to share the buffers 
+                                                  //
+                                                  //   HUH: now I remove this and still working ???
+
+
+            seeder.seedPhotonsFromGensteps() ;    // Thrust: seed photon buffer using the genstep numPhotons for each step
+
+            oevt.markDirty();                     // inform OptiX that must sync buffers that are using ctrl: BUFFER_COPY_ON_DIRTY
+
+            propagator.launch();                  // write the photon, record and sequence buffers
+
+            oevt.download();
+
+            if(entryCode == 'T' || entryCode == 'D') 
+            {
+                int sdc = evt->seedDebugCheck("OpSeederTest");
+                if(sdc != 0) LOG(fatal) << "seedDebugCheck FAIL " << sdc ;  
+                assert(sdc == 0); 
+            }
+
+            evt->save();
+
+           // TODO: arrange this to use standard anakey running of analysis scripts
+            SSys::npdump(evt->getPath("photon"), "np.int32");
+
+        }
+        ok.postpropagate();
+    }
+};
+
+
 int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv);    
 
-    const char* forced = "--compute --trivial --multievent 2 --machinery" ;
-    Opticks ok(argc, argv, forced );
-
-    OpticksHub hub(&ok);
-    OpticksGen* gen = hub.getGen();
-
-    LOG(info) << " EntryCode: " << ok.getEntryCode() 
-              << " EntryName: " << ok.getEntryName()
-              << " ArgLine: " << ok.getArgLine()
-              ;
-    
-    assert(ok.isCompute());
-
-    OScene scene(&hub);
-    OContext* octx = scene.getOContext();
-    OEvent oevt(&ok, octx );
-    OpSeeder  seeder(&ok, &oevt );
-    OPropagator propagator(&ok, &oevt, octx->addEntry(ok.getEntryCode()) );
-
-    FabStepNPY* fab = gen->makeFabstep();
-    NPY<float>* gs = fab->getNPY();
-
-    bool compute = true ; 
-    gs->setBufferSpec(OpticksEvent::GenstepSpec(compute));  
- 
-
-    int multi = ok.getMultiEvent();
-    char entryCode = ok.getEntryCode();
-
-    for(int i=0 ; i < multi ; i++)
-    {
-        hub.createEvent(i);
-
-        OpticksEvent* evt = hub.getEvent();
-        assert(evt->isMachineryType() && "--machinery type is forced as this writes non-standardOpticksEvents which would otherwise cause test failures for event reading tests" ); 
-
-        evt->setGenstepData(gs);   // <-- asserts in here, OpticksEvent::setBufferControl FATAL: BUFFER LACKS SPEC
-
-        oevt.upload();                        // uploads gensteps, creates buffers at 1st upload, resizes on subsequent uploads
-
-        //propagator.prelaunch();               // sticking a pre-launch here, succeeds to give OptiX the hint that smth changed
-                                              // and Thrust reading of gensteps and writing of seeds manages to be 
-                                              // seen by OptiX, otherwise the seeds are still written correctly by Thrust 
-                                              // but OptiX doesnt notice
-                                              // .... so this manages to get Thrust and OptiX to share the buffers 
-                                              //
-                                              //   HUH: now I remove this and still working ???
-
-
-        seeder.seedPhotonsFromGensteps() ;    // Thrust: seed photon buffer using the genstep numPhotons for each step
-
-        oevt.markDirty();                     // inform OptiX that must sync buffers that are using ctrl: BUFFER_COPY_ON_DIRTY
-
-        propagator.launch();                  // write the photon, record and sequence buffers
-
-        oevt.download();
-
-        if(entryCode == 'T' || entryCode == 'D') 
-        {
-            int sdc = evt->seedDebugCheck("OpSeederTest");
-            if(sdc != 0) LOG(fatal) << "seedDebugCheck FAIL " << sdc ;  
-            assert(sdc == 0); 
-        }
-
-        evt->save();
-
-       // TODO: arrange this to use standard anakey running of analysis scripts
-        SSys::npdump(evt->getPath("photon"), "np.int32");
-
-    }
-    ok.postpropagate();
+    OpSeederTest ost(argc, argv); 
 
     return 0 ;     
 }

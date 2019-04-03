@@ -119,6 +119,13 @@ parsed  kernel pindex log during lldb python scripted G4 debugging.
 Hmm it would be cleaner if m_gen was in charge if the branching 
 here as its kinda similar to initSourceCode.
 
+
+Notice the different genstep handling between this and OKMgr 
+because this has G4 available, so gensteps can come from the
+horses mouth.
+
+
+
 **/
 
 void OKG4Mgr::propagate_()

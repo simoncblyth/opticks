@@ -33,6 +33,7 @@ using namespace optix ;
 #include "PLOG.hh"
 
 
+const plog::Severity OPropagator::LEVEL = debug ; 
 
 void OPropagator::setOverride(unsigned int override_)
 {
@@ -45,7 +46,7 @@ void OPropagator::setEntry(unsigned int entry_index)
 
 OPropagator::OPropagator(Opticks* ok, OEvent* oevt, OpticksEntry* entry) 
    :
-    m_log(new SLog("OPropagator::OPropagator")),
+    m_log(new SLog("OPropagator::OPropagator","", LEVEL)),
     m_ok(ok),
     m_oevt(oevt),
     m_ocontext(m_oevt->getOContext()),
@@ -82,8 +83,6 @@ void OPropagator::init()
 
 void OPropagator::initParameters()
 {
-    //m_context = m_ocontext->getContext();
-
     m_context[ "propagate_epsilon"]->setFloat( m_ok->getEpsilon() );  // TODO: check impact of changing propagate_epsilon
     m_context[ "bounce_max" ]->setUint( m_ok->getBounceMax() );
     m_context[ "record_max" ]->setUint( m_ok->getRecordMax() );

@@ -51,7 +51,8 @@ const char* OContext::getModeName()
 
 OpticksEntry* OContext::addEntry(char code)
 {
-    LOG(fatal) << "OContext::addEntry " << code ; 
+    LOG(LEVEL) << "OContext::addEntry " << code ; 
+
     //assert(0);
     bool defer = true ; 
     unsigned index ;
@@ -134,7 +135,7 @@ void OContext::initPrint()
     m_context->setPrintEnabled(true);
     m_context->setPrintLaunchIndex(idx.x, idx.y, idx.z);
 
-    LOG(fatal) << "setPrintLaunchIndex "
+    LOG(LEVEL) << "setPrintLaunchIndex "
                << " idx.x " << idx.x
                << " idx.y " << idx.y
                << " idx.z " << idx.z
@@ -143,7 +144,7 @@ void OContext::initPrint()
     unsigned uindex = m_ok->hasMask() ? m_ok->getMaskIndex(idx.x) : idx.x ; 
     m_llogpath = m_ok->isPrintIndexLog() ?  LaunchLogPath(uindex) : NULL ; 
 
-    LOG(error) << "OContext::initPrint " 
+    LOG(LEVEL) << "OContext::initPrint " 
                << " idx " << gformat(idx) 
                << " llogpath " << ( m_llogpath ? m_llogpath : "-" )
                ;  

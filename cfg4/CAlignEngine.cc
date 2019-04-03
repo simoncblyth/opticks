@@ -10,6 +10,7 @@
 
 
 const plog::Severity CAlignEngine::LEVEL = debug ; 
+//const plog::Severity CAlignEngine::LEVEL = fatal ; 
 
 const char* CAlignEngine::LOGNAME = "CAlignEngine.log" ; 
 CAlignEngine* CAlignEngine::INSTANCE = NULL ; 
@@ -18,7 +19,6 @@ bool CAlignEngine::Initialize(const char* simstreamdir ) // static
 {
     if(INSTANCE == NULL ) 
     {
-        //const char* reldir = PLOG::instance->exename() ; 
         INSTANCE = new CAlignEngine(simstreamdir) ; 
     }
     return INSTANCE->isReady(); 
@@ -119,6 +119,8 @@ std::string CAlignEngine::desc() const
 
 void CAlignEngine::setSequenceIndex(int seq_index)
 {
+    LOG(LEVEL) << " seq_index " << seq_index ; 
+
     bool have_seq = seq_index < m_seq_ni ; 
     if(!have_seq) LOG(fatal) << "OUT OF RANGE : " << desc() ; 
     assert( have_seq );
@@ -184,7 +186,7 @@ double CAlignEngine::flat()
     else
     {
         // note that this does not change the value of the cursor 
-        // in the m_cur buffer : it just cycles the usage if it 
+        // in the m_cur buffer : it just cycles the usage of it 
 
         if(cursor >= m_seq_nv ) 
         {

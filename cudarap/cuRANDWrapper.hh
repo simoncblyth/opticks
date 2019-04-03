@@ -3,6 +3,7 @@
 class LaunchSequence ; 
 
 #include <vector>
+#include "plog/Severity.h"
 #include "cuda.h"
 #include "curand_kernel.h"
 
@@ -46,10 +47,13 @@ TODO:
 
 */
 
+
 #include "CUDARAP_API_EXPORT.hh"
 #include "CUDARAP_HEAD.hh"
 
 class CUDARAP_API cuRANDWrapper {
+  public: 
+     static const plog::Severity LEVEL ; 
   public: 
      cuRANDWrapper( LaunchSequence* launchseq, unsigned long long seed=0, unsigned long long offset=0, bool verbose=false);
  

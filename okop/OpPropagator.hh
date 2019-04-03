@@ -13,23 +13,25 @@ class OpTracer ;
 
 #include "OKOP_API_EXPORT.hh"
 #include "OKOP_HEAD.hh"
+#include "plog/Severity.h"
 
 /**
-OpPropagator : compute only propagator
-=========================================
+OpPropagator : compute only propagator, no viz
+==================================================
 
-OpPropagator only used from OpMgr as m_propagator, ctor instanciated resident.
+OpPropagator only used from OpMgr as m_propagator, which is used in
+the G4Opticks approach, ie Opticks embedded inside an unsuspecting 
+G4 example.   
 
-Residents:
+Residents which are instanciated in ctor:
 
-* OpEngine
-* OpTracer
+m_engine:OpEngine :
+   control of GPU optical photon propagation
 
-
-
-
-
-
+m_tracer:OpTracer 
+   can make sequences of raytrace snapshots of geometry
+   which can be saved to PPM files for subsequent conversion
+   into PNG images or MP4 movies 
 
 
 DevNotes
@@ -37,20 +39,25 @@ DevNotes
 
 Contrast with the viz enabled ok/OKPropagator
 
-
 **/
 
 
 class OKOP_API OpPropagator {
+   public:
+       static const plog::Severity LEVEL ; 
    public:
        OpPropagator(OpticksHub* hub, OpticksIdx* idx );
    public:
        void propagate();
        void cleanup();
        void snap();
-   public:
+
+   private:
+       // invoked internally by propagate
        int uploadEvent();
        int downloadEvent();
+   private:
+       // not yet used 
        void indexEvent();
    private:
        SLog*          m_log ; 

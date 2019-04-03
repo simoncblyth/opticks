@@ -13,11 +13,13 @@
 #include "PLOG.hh"
 // trace/debug/info/warning/error/fatal
 
+const plog::Severity OColors::LEVEL = debug ; 
+
 
 OColors::OColors(optix::Context& ctx, OpticksColors* colors)
-           : 
-           m_context(ctx),
-           m_colors(colors)
+    : 
+    m_context(ctx),
+    m_colors(colors)
 {
 }
 
@@ -28,7 +30,7 @@ void OColors::convert()
 
     if(npy == NULL)
     {
-        LOG(warning) << "OColors::convert SKIP no composite color buffer " ; 
+        LOG(LEVEL) << "OColors::convert SKIP no composite color buffer " ; 
         return ;  
     }
 

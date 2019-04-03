@@ -260,7 +260,15 @@ void OpticksRun::loadEvent()
 
 
 
+/**
+OpticksRun::importGenstepData
+--------------------------------
 
+The NPY<float> genstep buffer is wrapped in a G4StepNPY 
+and metadata and labelling checks are done  and any material
+translations performed.
+
+**/
 
 
 G4StepNPY* OpticksRun::importGenstepData(NPY<float>* gs, const char* oac_label)

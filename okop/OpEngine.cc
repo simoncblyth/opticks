@@ -42,7 +42,7 @@ OPropagator* OpEngine::getOPropagator()
 
 OpEngine::OpEngine(OpticksHub* hub) 
      : 
-      m_log(new SLog("OpEngine::OpEngine")),
+      m_log(new SLog("OpEngine::OpEngine","",LEVEL)),
       m_hub(hub),
       m_ok(m_hub->getOpticks()),
       m_scene(new OScene(m_hub)),
@@ -57,6 +57,7 @@ OpEngine::OpEngine(OpticksHub* hub)
    init();
    (*m_log)("DONE");
 }
+
 void OpEngine::init()
 {
    m_ok->setOptiXVersion(OConfig::OptiXVersion()); 
@@ -80,16 +81,17 @@ void OpEngine::init()
    }
    else
    {
-       pLOG(LEVEL,-1) << "(" ;
+       pLOG(LEVEL,0) << "(" ;  // -1 for one notch more logging 
        initPropagation(); 
-       pLOG(LEVEL,-1) << ")" ;
+       pLOG(LEVEL,0) << ")" ;
    }
 }
 
 void OpEngine::initPropagation()
 {
     m_entry = m_ocontext->addEntry(m_ok->getEntryCode()) ;
-    LOG(info) << " entry " << m_entry->desc() ; 
+    LOG(LEVEL) << " entry " << m_entry->desc() ; 
+
     m_oevt = new OEvent(m_ok, m_ocontext);
     m_propagator = new OPropagator(m_ok, m_oevt, m_entry);
     m_seeder = new OpSeeder(m_ok, m_oevt) ;
