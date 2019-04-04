@@ -1,13 +1,54 @@
 Ubuntu16.04.6-gcc5.4.0-npy-NNodeDumpTest-SEGV
 =================================================
 
-Succeed to reproduce what looks like the issue reported by Elias, 
-by installing virtualbox + Ubuntu 16.04.6 and doing a partial Opticks install.
 
-Note that with virtualbox + Ubuntu 18.04.2 the issue does not occur.  See vbx- 
+Mail of Thu April 4, 2019::
+
+
+    Hi Elias,
+
+    I succeeded to reproduce what looks like the issue you are seeing by installing
+    virtualbox+Ubuntu16.04.6 (gcc 5.4.0) and doing a partial Opticks install.
+    Has to be partial as I think CUDA doesnt work from virtualbox.
+
+    Interestingly trying with virtualbox+Ubuntu18.04.2 (gcc 7.3.0) does not have the
+    issue.    Also no such problem on macOS High Sierra (llvm 9.0.0) or Centos 7 (gcc 4.8.5)
+
+    Do you see the same three failing as below ?
+
+    blyth@blyth-VirtualBox:~/opticks/npy$ om-test
+    === om-test-one : npy             /home/blyth/opticks/npy                                      /usr/local/opticks/build/npy                                
+    Thu Apr  4 22:14:19 CST 2019
+    ...
+    97% tests passed, 3 tests failed out of 117
+
+    Total Test time (real) =   1.92 sec
+
+    The following tests FAILED:
+         67 - NPYTest.NNodeDumpTest (SEGFAULT)
+         82 - NPYTest.NLoadTest (Child aborted)
+         92 - NPYTest.NCSGRoundTripTest (SEGFAULT)
+    Errors while running CTest
+
+
+    Still no clue as to the cause, but at least the scope of the issue is narrowed :
+    and I can dissect it directly.
+    See my last few commits up to the below for the details.
+         https://bitbucket.org/simoncblyth/opticks/commits/3cde87d6f4ebb95754d2407ec655380c7e400fe9
+
+    Especially
+        bin/vbx.bash
+       notes/issues/Ubuntu16.04.6-gcc5.4.0-npy-NNodeDumpTest-SEGV.rst
+
+    I tried switching from reference to pointer in NNodeDump2 but it makes no difference.
+
+    Simon
+
+
+
+
 
 Table of Ubuntu release dates: https://wiki.ubuntu.com/Releases
-
 
 
 ::
