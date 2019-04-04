@@ -20,7 +20,7 @@ struct nbbox ;
 struct npart ; 
 struct NSceneConfig ; 
 
-class NNodeDump ; 
+class NNodeDump2 ; 
 class NNodePoints ; 
 class NParameters ;
 //struct nuv ; 
@@ -274,7 +274,7 @@ struct NPY_API nnode
     std::vector<nuv>       par_coords ; 
 
     NParameters*  meta ;
-    NNodeDump*    _dump ;
+    NNodeDump2*   _dump ;
     nbbox*        _bbox_model ; 
     const char*  g4code ; 
 

@@ -88,6 +88,7 @@ set(SOURCES
 
     NNodeEnum.cpp
     NNodeDump.cpp
+    NNodeDump2.cpp
     NNodePoints.cpp
     NNodeUncoincide.cpp
     NNodeNudger.cpp

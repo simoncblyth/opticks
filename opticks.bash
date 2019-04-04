@@ -1373,6 +1373,7 @@ ab-(){              . $(opticks-home)/bin/ab.bash      && ab-env $* ; }
 abe-(){             . $(opticks-home)/bin/abe.bash     && abe-env $* ; }
 ev-(){              . $(opticks-home)/bin/ev.bash      && ev-env $* ; }
 hh-(){              . $(opticks-home)/bin/hh.bash      && hh-env $* ; }
+vbx-(){             . $(opticks-home)/bin/vbx.bash     && vbx-env $* ; }
 
 # override old original from env, $(env-home)/nuwa/detdesc/pmt/pmt.bash
 
