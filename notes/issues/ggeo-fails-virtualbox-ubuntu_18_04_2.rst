@@ -1,6 +1,12 @@
 ggeo-fails-virtualbox-ubuntu_18_04_2
 ========================================
 
+
+Thoughts::
+
+   Need to split the geant4.ini loading out from OpticksResource ... so can do it much later 
+
+
 See vbx-vi for the setup of virtualbox and 
 Opticks install inside it.
 
@@ -97,6 +103,32 @@ Looks to all be unsurprising resource fails::
     GFlagsTest: /home/blyth/opticks/optickscore/OpticksResource.cc:626: void OpticksResource::readEnvironment(): Assertion `daepath' failed.
     Aborted (core dumped)
     blyth@blyth-VirtualBox:~/opticks/ggeo$ 
+
+
+
+
+
+Similar fails in OpticksGeo::
+
+        blyth@blyth-VirtualBox:~/opticks/opticksgeo$ OpticksGeoTest
+        2019-04-04 18:33:15.350 WARN  [9729] [OpticksResource::readG4Environment@508] OpticksResource::readG4Environment MISSING inipath /usr/local/opticks/externals/config/geant4.ini (create it with bash functions: g4-;g4-export-ini )
+        2019-04-04 18:33:15.350 WARN  [9729] [OpticksResource::readOpticksEnvironment@532] OpticksResource::readOpticksDataEnvironment MISSING inipath /usr/local/opticks/opticksdata/config/opticksdata.ini (create it with bash functions: opticksdata-;opticksdata-export-ini )
+        2019-04-04 18:33:15.350 WARN  [9729] [OpticksResource::readEnvironment@607] OpticksResource::readEnvironment NO DAEPATH  geokey OPTICKSDATA_DAEPATH_DYB lastarg NULL daepath NULL
+        OpticksGeoTest: /home/blyth/opticks/optickscore/OpticksResource.cc:626: void OpticksResource::readEnvironment(): Assertion `daepath' failed.
+        Aborted (core dumped)
+        blyth@blyth-VirtualBox:~/opticks/opticksgeo$ OpticksHubTest
+        2019-04-04 18:33:21.223 WARN  [9732] [OpticksResource::readG4Environment@508] OpticksResource::readG4Environment MISSING inipath /usr/local/opticks/externals/config/geant4.ini (create it with bash functions: g4-;g4-export-ini )
+        2019-04-04 18:33:21.223 WARN  [9732] [OpticksResource::readOpticksEnvironment@532] OpticksResource::readOpticksDataEnvironment MISSING inipath /usr/local/opticks/opticksdata/config/opticksdata.ini (create it with bash functions: opticksdata-;opticksdata-export-ini )
+        2019-04-04 18:33:21.223 WARN  [9732] [OpticksResource::readEnvironment@607] OpticksResource::readEnvironment NO DAEPATH  geokey OPTICKSDATA_DAEPATH_DYB lastarg --dbgbnd daepath NULL
+        OpticksHubTest: /home/blyth/opticks/optickscore/OpticksResource.cc:626: void OpticksResource::readEnvironment(): Assertion `daepath' failed.
+        Aborted (core dumped)
+        blyth@blyth-VirtualBox:~/opticks/opticksgeo$ OpenMeshRapTest
+        2019-04-04 18:33:27.575 WARN  [9734] [OpticksResource::readG4Environment@508] OpticksResource::readG4Environment MISSING inipath /usr/local/opticks/externals/config/geant4.ini (create it with bash functions: g4-;g4-export-ini )
+        2019-04-04 18:33:27.575 WARN  [9734] [OpticksResource::readOpticksEnvironment@532] OpticksResource::readOpticksDataEnvironment MISSING inipath /usr/local/opticks/opticksdata/config/opticksdata.ini (create it with bash functions: opticksdata-;opticksdata-export-ini )
+        2019-04-04 18:33:27.575 WARN  [9734] [OpticksResource::readEnvironment@607] OpticksResource::readEnvironment NO DAEPATH  geokey OPTICKSDATA_DAEPATH_DYB lastarg NULL daepath NULL
+        OpenMeshRapTest: /home/blyth/opticks/optickscore/OpticksResource.cc:626: void OpticksResource::readEnvironment(): Assertion `daepath' failed.
+        Aborted (core dumped)
+        blyth@blyth-VirtualBox:~/opticks/opticksgeo$
 
 
 

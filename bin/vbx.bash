@@ -84,6 +84,7 @@ Append to tail of .bashrc::
 
 
     o(){ opticks- ; cd $(opticks-home) ; hg st ; }
+    on(){ cd $OPTICKS_HOME/notes/issues ; }
     t(){ type $* ; }
 
     opticks-
@@ -128,15 +129,14 @@ Now can ssh in from the host with::
 
    ssh 127.0.0.1 -p 2222
 
-
-Maybe that easier by adding to ~/.ssh/config::
+Make that easier by adding to ~/.ssh/config::
 
     host V
         user blyth
         hostname 127.0.0.1
         port 2222
 
-Avoid passwords using by copying host public key into the vbx:: 
+Avoid passwords by copying host public key into the vbx (from env-):: 
 
     ssh--putkey V
 
@@ -237,6 +237,24 @@ Subs::
    om-test    ## notes/issues/ggeo-fails-virtualbox-ubuntu_18_04_2.rst   22/50 resource related fails
 
    assimp-;assimp--
+   cd ~/opticks/assimprap
+   om-install
+   om-test    ## all fail with resource problems, same as the GGeo fails
+
+   cd ../openmeshrap/
+   om-install 
+   om-test    ## passes
+
+
+   cd ../opticksgeo
+   om-install
+   om-test     ## fails similar to GGeo
+
+   om-subs   
+
+   ## next one is cudarap, so this as far as it goes inside the virtualbox
+   ##  without major efforts to get OpenGL going without CUDA+OptiX 
+
 
 
 Want to commit changes to bitbucket
