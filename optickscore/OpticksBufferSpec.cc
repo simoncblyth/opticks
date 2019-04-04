@@ -72,7 +72,13 @@ Photon spec
 
 **/
 
-#if OXRAP_OPTIX_VERSION == 3080 || OXRAP_OPTIX_VERSION == 3090 
+
+#if OXRAP_OPTIX_VERSION == 0 
+
+const char* OpticksBufferSpec::photon_compute_ = "DUMMY_FOR_OXRAP_OPTIX_VERSION_ZERO"  ;
+const char* OpticksBufferSpec::photon_interop_ = "DUMMY_FOR_OXRAP_OPTIX_VERSION_ZERO"  ;
+
+#elif OXRAP_OPTIX_VERSION == 3080 || OXRAP_OPTIX_VERSION == 3090 
 
 #ifdef WITH_SEED_BUFFER
 const char* OpticksBufferSpec::photon_compute_ = "OPTIX_OUTPUT_ONLY"  ;
@@ -95,7 +101,13 @@ const char* OpticksBufferSpec::photon_interop_ = "OPTIX_INPUT_OUTPUT,INTEROP_PTR
 #endif
 
 
-#if OXRAP_OPTIX_VERSION == 3080 || OXRAP_OPTIX_VERSION == 3090 
+
+#if OXRAP_OPTIX_VERSION == 0 
+
+const char* OpticksBufferSpec::genstep_compute_ = "DUMMY_FOR_OXRAP_OPTIX_VERSION_ZERO"  ;
+const char* OpticksBufferSpec::genstep_interop_ = "DUMMY_FOR_OXRAP_OPTIX_VERSION_ZERO"  ;
+
+#elif OXRAP_OPTIX_VERSION == 3080 || OXRAP_OPTIX_VERSION == 3090 
 
 const char* OpticksBufferSpec::genstep_compute_ = "OPTIX_NON_INTEROP,OPTIX_INPUT_ONLY"  ;
 const char* OpticksBufferSpec::genstep_interop_ = "OPTIX_INPUT_ONLY"  ; 
@@ -109,7 +121,13 @@ const char* OpticksBufferSpec::genstep_interop_ = "OPTIX_INPUT_ONLY"  ;
 
 
 
-#if OXRAP_OPTIX_VERSION == 3080 || OXRAP_OPTIX_VERSION == 3090 
+
+#if OXRAP_OPTIX_VERSION == 0 
+
+const char* OpticksBufferSpec::source_compute_ = "DUMMY_FOR_OXRAP_OPTIX_VERSION_ZERO"  ;
+const char* OpticksBufferSpec::source_interop_ = "DUMMY_FOR_OXRAP_OPTIX_VERSION_ZERO"  ;
+
+#elif OXRAP_OPTIX_VERSION == 3080 || OXRAP_OPTIX_VERSION == 3090 
 
 const char* OpticksBufferSpec::source_compute_ = "OPTIX_NON_INTEROP,OPTIX_INPUT_ONLY"  ;
 const char* OpticksBufferSpec::source_interop_ = "OPTIX_INPUT_ONLY"  ; 

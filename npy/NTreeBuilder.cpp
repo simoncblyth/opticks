@@ -69,7 +69,7 @@ int NTreeBuilder<T>::FindBinaryTreeHeight(unsigned num_leaves) // static
     for(int h=0 ; h < 10 ; h++ )
     {
         int tprim = 1 << h ;   
-        if( tprim >= num_leaves )
+        if( tprim >= int(num_leaves) )
         {
            height = h ;
            break ;

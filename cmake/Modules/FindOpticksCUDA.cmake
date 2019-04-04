@@ -1,6 +1,7 @@
 
 
-find_package(CUDA   REQUIRED MODULE) # eg /opt/local/share/cmake-3.12/Modules/FindCUDA.cmake
+#find_package(CUDA   REQUIRED MODULE) # eg /opt/local/share/cmake-3.12/Modules/FindCUDA.cmake
+find_package(CUDA   MODULE) # eg /opt/local/share/cmake-3.12/Modules/FindCUDA.cmake
 
 if(CUDA_LIBRARIES AND CUDA_INCLUDE_DIRS AND CUDA_curand_LIBRARY)
   set(OpticksCUDA_FOUND "YES")

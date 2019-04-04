@@ -40,7 +40,8 @@ If the below commandline gives errors, check your *.bash_profile* OR *.bashrc*
 
 ::
 
-    [blyth@localhost ~]$ bash -lc "opticks- ; opticks-info "
+    [blyth@localhost ~]$ bash -lc "opticks- ; opticks-info "    ## RHEL, Centos
+    [blyth@localhost ~]$ bash -ic "opticks- ; opticks-info "    ## Ubuntu
 
     opticks-locations
     ==================
@@ -62,6 +63,8 @@ only on login and *.bashrc* is run for every new terminal window, BUT with macOS
 the *.bash_profile* is run for every new terminal window.  Thus for compatibility 
 the best approach to put setup into *.bashrc* and source it from *.bash_profile* : giving 
 the same behaviour on both Linux and macOS.
+
+For background on dotfiles http://mywiki.wooledge.org/DotFiles
 
 
 

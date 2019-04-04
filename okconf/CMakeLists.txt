@@ -33,6 +33,7 @@ find_package(OptiX       MODULE QUIET)
 find_package(G4          MODULE QUIET) 
 
 message(STATUS "OKCONF_OPTIX_INSTALL_DIR : ${OKCONF_OPTIX_INSTALL_DIR}")
+message(STATUS "OptiX_VERSION_INTEGER : ${OptiX_VERSION_INTEGER}")
 
 # generate define header for hardcoding in the library 
 
@@ -56,6 +57,9 @@ set(OKConf_GENERATED_HEADER  "OKConf_Config.hh")
 
 #configure_file( OKCONF_OpticksCMakeConfig.hh.in inc/${OKCONF_GENERATED_HEADER} )
 configure_file( ${OKConf_GENERATED_HEADER}.in inc/${OKConf_GENERATED_HEADER} )
+
+
+
 
 # generate opticks-config sh script into lib dir
 #include(OpticksConfigureConfigScript)

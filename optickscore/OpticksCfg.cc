@@ -581,8 +581,8 @@ void OpticksCfg<Listener>::init()
    m_desc.add_options()
        ("modulo",  boost::program_options::value<int>(&m_modulo), modulo );
 
-   char override[128];
-   snprintf(override,128, "Override photons to generate/propagate for debugging, eg 1 for a single photon. Values less than 1 disable any override. Default %d", m_override);
+   char override[256];
+   snprintf(override,256, "Override photons to generate/propagate for debugging, eg 1 for a single photon. Values less than 1 disable any override. Default %d", m_override);
    m_desc.add_options()
        ("override",  boost::program_options::value<int>(&m_override), override );
 
@@ -733,8 +733,8 @@ void OpticksCfg<Listener>::init()
        ("seqmap",      boost::program_options::value<std::string>(&m_seqmap), "Debug photon history hex string value map, used eg for NCSGIntersect checks via OpticksAnaEvent." );
 
 
-   char lvsdname[256]; 
-   snprintf(lvsdname,256, 
+   char lvsdname[512]; 
+   snprintf(lvsdname,512, 
 "When lvsdname is blank logical volumes with an SD associated are used. "
 "As workaround for GDML not persisting the SD it is also possible to identify SD by their LV names, using this option. "
 "Provide a comma delimited string with substrings to search for in the logical volume names "
@@ -780,8 +780,8 @@ void OpticksCfg<Listener>::init()
        ("seed",  boost::program_options::value<unsigned>(&m_seed), seed );
 
 
-   char rngmax[128];
-   snprintf(rngmax,128, 
+   char rngmax[256];
+   snprintf(rngmax,256, 
 "Maximum number of photons that can be generated/propagated as limited by the number of pre-persisted curand streams. "
 "Value must match envvar CUDAWRAP_RNG_MAX and corresponding pre-cooked seeds, see cudawrap- for details. "
 "Default %d ", m_rngmax);

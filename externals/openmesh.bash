@@ -12,6 +12,34 @@ OpenMesh
 * https://www.openmesh.org/media/Documentations/OpenMesh-4.1-Documentation/index.html
 
 
+
+gcc 7.3 compilation failure on Ubuntu
+------------------------------------------
+
+OpenMesh compilation fail, add header to OpenMesh-6.3/src/OpenMesh/Tools/Utils/conio.cc::
+
+   #include <sys/time.h>  /* timeval struct */
+
+* https://bugs.archlinux.org/task/56522 
+
+::
+
+    [ 77%] Building CXX object src/OpenMesh/Tools/CMakeFiles/OpenMeshToolsStatic.dir/Utils/conio.cc.o
+    /usr/local/opticks/externals/openmesh/OpenMesh-6.3/src/OpenMesh/Tools/Utils/conio.cc: In function ‘int OpenMesh::Utils::kbhit()’:
+    /usr/local/opticks/externals/openmesh/OpenMesh-6.3/src/OpenMesh/Tools/Utils/conio.cc:122:20: error: aggregate ‘OpenMesh::Utils::kbhit()::timeval tv’ has incomplete type and cannot be defined
+         struct timeval tv;
+                        ^~
+    /usr/local/opticks/externals/openmesh/OpenMesh-6.3/src/OpenMesh/Tools/Utils/conio.cc:127:5: error: ‘select’ was not declared in this scope
+         select(1, NULL, NULL, NULL, &tv);
+         ^~~~~~
+    /usr/local/opticks/externals/openmesh/OpenMesh-6.3/src/OpenMesh/Tools/Utils/conio.cc:127:5: note: suggested alternative: ‘sleep’
+         select(1, NULL, NULL, NULL, &tv);
+         ^~~~~~
+         sleep
+
+
+
+
 Mailing List 
 ---------------
 
