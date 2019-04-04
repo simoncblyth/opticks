@@ -52,17 +52,15 @@ Virtualbox tips
 * There is no "host" button but the right control button "rctrl" takes its place
 * host+C switches between scaled and windowed mode
 * host+home to access virtualbox menus, which otherwise have somehow disappeared 
+* during Ubuntu install, if some buttons are off screen simply drag the window to make them visible 
 
 
-
-Getting Ubuntu 18.04 kitted out
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-* https://www.tecmint.com/install-virtualbox-guest-additions-in-ubuntu/
+Basic Tools
+~~~~~~~~~~~~~~~
 
 ::
 
-   sudo apt install gcc curl mercurial git vim cmake
+   sudo apt install openssh-server gcc curl mercurial git vim cmake
 
 
 .bashrc
@@ -70,31 +68,11 @@ Getting Ubuntu 18.04 kitted out
 
 Append to tail of .bashrc:: 
 
-    export LC_ALL=en_US.UTF-8
 
-    vip(){ vim $HOME/.bashrc ; }
-    ini(){ source $HOME/.bashrc ; }
+Ubuntu 18.04 : Guest Additions not showing up : so no copy/paste : so try to ssh in 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    export OPTICKS_HOME=$HOME/opticks
-    export LOCAL_BASE=/usr/local
-    opticks-(){ . $OPTICKS_HOME/opticks.bash && opticks-env $* && opticks-export ; }
-
-    export PYTHONPATH=$HOME
-    export PATH=$LOCAL_BASE/opticks/lib:$OPTICKS_HOME/bin:$OPTICKS_HOME/ana:$PATH
-
-
-    o(){ opticks- ; cd $(opticks-home) ; hg st ; }
-    on(){ cd $OPTICKS_HOME/notes/issues ; }
-    t(){ type $* ; }
-
-    opticks-
-
-
-
-
-Guest Additions not showing up : so no copy/paste : so try to ssh in 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
+* https://www.tecmint.com/install-virtualbox-guest-additions-in-ubuntu/
 
 Did the below in the hope of getting copy/paste to work 
 from host to virtualbox.  Didnt work, but inevitably many 
@@ -138,7 +116,7 @@ Make that easier by adding to ~/.ssh/config::
 
 Avoid passwords by copying host public key into the vbx (from env-):: 
 
-    ssh--putkey V
+    ssh-;ssh--putkey V
 
 Now can get in with "ssh V"::
 
@@ -152,6 +130,28 @@ Now can get in with "ssh V"::
     # gcc version 7.3.0 (Ubuntu 7.3.0-27ubuntu1~18.04)
 
 
+Ubuntu 16 : cannot ssh in ? FIXED
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Initially with the same network port forwarding as above are unable to ssh in,
+got "connection reset by peer". Succeed to ssh in after install openssh-server::
+
+    sudo apt update
+    sudo apt upgrade
+    sudo apt install openssh-server
+    ## remove old know_hosts line
+
+::
+
+    blyth@localhost Downloads]$ ssh V
+    Welcome to Ubuntu 16.04.6 LTS (GNU/Linux 4.15.0-45-generic x86_64)
+    ...
+    New release '18.04.2 LTS' available.
+    blyth@blyth-VirtualBox:~$ 
+
+
+
+
 Opticks preliminaries
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -159,13 +159,43 @@ Opticks preliminaries
 
     sudo mkdir /usr/local/opticks
     sudo chown blyth /usr/local/opticks
+    mkdir /usr/local/opticks/build
 
 ::
 
     apt-cache search libboost
     apt show libboost-all-dev
-
     sudo apt install libboost-all-dev
+
+
+Get Opticks
+~~~~~~~~~~~~~
+
+Want to be able to push, so using ssh.
+
+1. ssh-keygen
+2. copy/paste public key into bitbucket web interface
+
+::
+
+   hg clone ssh://hg@bitbucket.org/simoncblyth/opticks 
+
+
+Hookup Opticks to .bashrc
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+::
+
+   vbx-bashrc- >> .bashrc
+
+From host 
+~~~~~~~~~~
+
+::
+
+    scp .vimrc V:
+    scp .hgrc  V:
+
 
 
 Partial install of Opticks into virtualbox Ubuntu on DELL Precision
@@ -197,21 +227,29 @@ Subs::
    om-test     ## one failing test, SOKConfTest : expected FAIL as lack CUDA, OptiX, Geant4
 
    cd ../boostrap
-   om-install         ## finds Boost 1.65.1
+   om-install         ## finds Boost 1.65.1 (Ubu18)   1.58.0 (on Ubu16) 
    om-test            ## all tests pass
   
    cd ../npy       
 
-   om-install        ## fails, missing GLM
+   ## install the externals mandatory for npy
    glm-;glm--
-   om-install        ## fails, missing YoctoGL
    oyoctogl-;oyoctogl--         ## lots of sign compare warnings 
-
-   om-install        ## fails, missing OpenMesh
    openmesh-;openmesh--
+
+   om-install        
    
-   ## compilation fails, gcc 7.3 requires <sys/time.h> header in OpenMesh-6.3/src/OpenMesh/Tools/Utils/conio.cc see openmesh-vi
-   ## manually changed the external
+   ## With Ubuntu 18 
+   ##    1. OpenMesh compilation fails, 
+   ##       gcc 7.3 requires <sys/time.h> header in OpenMesh-6.3/src/OpenMesh/Tools/Utils/conio.cc see openmesh-vi
+   ##       manually changed the external
+   ##
+   ## With Ubuntu 16 
+   ##    1. fails to configure npy as stock CMake 3.5 is not new enough, 3.8+ is needed
+   ##       gets further after installing newer CMake with ocmake-;ocmake--
+   ##    2. the failure of oyoctogl-- to complete prevents npy configure, had to manually 
+   ##       change stb_image.h for the gcc, see oyoctogl-
+   ##
 
    cd ~/opticks/npy
    om-install
@@ -260,14 +298,40 @@ Subs::
 Want to commit changes to bitbucket
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-1. ssh-keygen 
-2. add the public key to my bitbucket account webinterface
-3. "hg commit" failed for lack of username, so copy over the config from host::
+"hg commit" failed for lack of username, so copy over the config from host::
 
    scp .hgrc V:
 
 
 
+Ubuntu 16 : cmake 3.5.1 fails to configure npy
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+::
+
+    - Configuring NPY
+    CMake Error at /usr/share/cmake-3.5/Modules/CMakeFindDependencyMacro.cmake:45 (message):
+      Invalid arguments to find_dependency
+    Call Stack (most recent call first):
+      /usr/local/opticks/lib/cmake/boostrap/boostrap-config.cmake:11 (find_dependency)
+      CMakeLists.txt:14 (find_package)
+
+/usr/local/opticks/lib/cmake/boostrap/boostrap-config.cmake::
+
+    # Library: Boost::system
+    find_dependency(Boost REQUIRED COMPONENTS system;program_options;filesystem;regex)
+
+Problem is that COMPONENTS is not supported until 3.8.0 according to 
+
+* https://github.com/pabloariasal/modern-cmake-sample/issues/5
+
+
+
+Ubuntu 16 : getting a newer CMake
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* added externals/ocmake.bash script for getting a newer cmake  
 
 
 
@@ -295,5 +359,47 @@ vbx-install()
     echo $msg $cmd
     eval $cmd
 }
+
+
+
+
+vbx-bashrc-(){ 
+
+cat << EOH
+###
+### Start $FUNCNAME $(date)
+###
+EOH
+
+cat << 'EOB'
+
+export LC_ALL=en_US.UTF-8
+
+vip(){ vim $HOME/.bashrc ; }
+ini(){ source $HOME/.bashrc ; }
+
+export OPTICKS_HOME=$HOME/opticks
+export LOCAL_BASE=/usr/local
+opticks-(){ . $OPTICKS_HOME/opticks.bash && opticks-env $* && opticks-export ; }
+
+export PYTHONPATH=$HOME
+export PATH=$LOCAL_BASE/opticks/lib:$OPTICKS_HOME/bin:$OPTICKS_HOME/ana:$PATH
+
+o(){ opticks- ; cd $(opticks-home) ; hg st ; }
+on(){ cd $OPTICKS_HOME/notes/issues ; }
+t(){ type $* ; }
+
+opticks-
+
+EOB
+
+cat << EOT
+###
+### End $FUNCNAME $(date)
+###
+EOT
+
+}
+
 
 

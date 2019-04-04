@@ -1,4 +1,5 @@
 boost-(){            . $(opticks-home)/externals/boost.bash             && boost-env $* ; }
+ocmake-(){           . $(opticks-home)/externals/ocmake.bash            && ocmake-env $* ; }
 glm-(){              . $(opticks-home)/externals/glm.bash               && glm-env $* ; }
 plog-(){             . $(opticks-home)/externals/plog.bash              && plog-env $* ; }
 gleq-(){             . $(opticks-home)/externals/gleq.bash              && gleq-env $* ; }

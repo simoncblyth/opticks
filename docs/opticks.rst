@@ -89,7 +89,7 @@ Opticks Installation Overview
 Opticks installation requires:
 
 * bash shell and build tools such as mercurial, git, curl, etc.. 
-* recent cmake 3.5+
+* recent cmake 3.8+
 * Boost C++ libraries 1.59+ 
 
 * installations of pre-requisites packages, see below for notes on versions
@@ -113,7 +113,7 @@ its externals requires unix tools including:
 * curl
 * tar
 * zip
-* cmake 3.5+
+* cmake 3.8+
 
 CMake
 -------
@@ -129,11 +129,12 @@ For example on OSX with macports update cmake with::
    port info cmake           # check the version the package manager proposes
    sudo port install cmake   # do the install
 
+
 If you or your system administrator are unable to update a tool via the system
 package manager then a local install of the tool must be done and your 
 login shell PATH modified to use the updated tool. The Opticks repository 
 includes bash functions for local installs of cmake with 
-precursor function *cmake-*.
+precursor function *ocmake-*.
 
 
 Boost C++ Libraries
