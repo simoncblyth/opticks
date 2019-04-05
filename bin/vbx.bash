@@ -27,6 +27,15 @@ It would be good for me to reproduce the problem in such a system
 But lets started with the latest Ubuntu 18.04.2 
 
 
+Containers Refs
+------------------
+
+* https://blog.risingstack.com/operating-system-containers-vs-application-containers/
+
+* https://hub.docker.com/_/ubuntu
+
+
+
 April 4, 2019
 --------------
 
@@ -53,6 +62,20 @@ Virtualbox tips
 * host+C switches between scaled and windowed mode
 * host+home to access virtualbox menus, which otherwise have somehow disappeared 
 * during Ubuntu install, if some buttons are off screen simply drag the window to make them visible 
+
+
+Virtualbox CUDA ? Maybe possible with new Linux kernels compiled with IOMMU support
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* https://superuser.com/questions/1388815/use-host-cuda-from-virtualbox
+
+* :google:`virtualbox pcipassthrough`
+* https://www.virtualbox.org/manual/ch09.html#pcipassthrough
+
+  * looks to be very experimental currently 
+
+* :google:`linux NVIDIA GPU virtualbox pcipassthrough`
+
 
 
 Basic Tools
