@@ -13,13 +13,10 @@
 #include "NSphere.hpp"
 #include "NBox.hpp"
 
-#include "PLOG.hh"
-#include "BRAP_LOG.hh"
-#include "NPY_LOG.hh"
+#include "OPTICKS_LOG.hh"
 
 
 std::function<float(float,float,float)> Density_Func = NULL ;
-
 
 
 void test_f_fff( std::function<float(float, float, float)> ff )
@@ -33,17 +30,12 @@ void test_f_vec( std::function<float(const glm::vec3&)> f_vec, const glm::vec3& 
 }
 
 
-
-
-
 int main(int argc, char** argv)
 {
-    PLOG_(argc, argv);
-    NPY_LOG__ ; 
+    OPTICKS_LOG(argc, argv);
 
-
-    nsphere* sph = new nsphere(make_sphere(0,0,0, 10)) ;
-    //nbox* box = new nbox(make_box(5,5,5, 10)) ;
+    nsphere* sph = make_sphere(0,0,0, 10) ;
+    //nbox* box = make_box(5,5,5, 10) ;
 
     NDualContouringSample dcs ;
     NTrianglesNPY* tris = dcs(sph) ;

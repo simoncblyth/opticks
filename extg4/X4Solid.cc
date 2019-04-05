@@ -248,7 +248,7 @@ void X4Solid::convertBooleanSolid()
 
     nnode* a = xleft->root(); 
     nnode* b = xright->root(); 
-    nnode* n = nnode::make_operator_ptr( _operator, a, b ); 
+    nnode* n = nnode::make_operator( _operator, a, b ); 
 
     setRoot(n); 
 
@@ -352,16 +352,16 @@ nnode* X4Solid::convertSphere_(bool only_inner)
         double zmin = radius*std::cos(lTheta*CLHEP::pi/180.) ;
         double zmax = radius*std::cos(rTheta*CLHEP::pi/180.) ;
         assert( zmax > zmin ) ; 
-        cn = new nzsphere(make_zsphere( x, y, z, radius, zmin, zmax )) ;
+        cn = make_zsphere( x, y, z, radius, zmin, zmax ) ;
         cn->label = BStr::concat(m_name, "_nzsphere", NULL) ; 
     }
     else
     {
-        cn = new nsphere(make_sphere( x, y, z, radius ));
+        cn = make_sphere( x, y, z, radius );
         cn->label = BStr::concat(m_name, "_nsphere", NULL ) ; 
     }
     
-    nnode* ret = has_inner ? nnode::make_operator_ptr(CSG_DIFFERENCE, cn, inner) : cn ; 
+    nnode* ret = has_inner ? nnode::make_operator(CSG_DIFFERENCE, cn, inner) : cn ; 
     if(has_inner) ret->label = BStr::concat(m_name, "_ndifference", NULL ) ; 
   
 
@@ -462,7 +462,7 @@ void X4Solid::convertOrb()
     float y = 0.f ; 
     float z = 0.f ; 
 
-    nnode* n =  new nsphere(make_sphere( x, y, z, radius ));
+    nnode* n =  make_sphere( x, y, z, radius );
     n->label = BStr::concat(m_name, "_sphere", NULL ) ; 
 
     setRoot(n); 
@@ -491,7 +491,7 @@ void X4Solid::convertBox()
     float y = 2.0*hy ; 
     float z = 2.0*hz ; 
 
-    nnode* n =  new nbox(make_box3( x, y, z));
+    nnode* n =  make_box3( x, y, z);
     n->label = BStr::concat(m_name, "_box3", NULL ) ; 
     setRoot(n); 
 
@@ -520,14 +520,14 @@ nnode* X4Solid::convertTubs_cylinder()
 
         float nudge_inner = 0.01f ; 
         float dz = hz*nudge_inner ;  
-        inner = new ncylinder(make_cylinder(rmin, -(hz+dz), (hz+dz) )); 
+        inner = make_cylinder(rmin, -(hz+dz), (hz+dz) ); 
         inner->label = BStr::concat( m_name, "_inner", NULL ); 
     }
 
-    nnode* outer = new ncylinder(make_cylinder(rmax, -hz, hz));
+    nnode* outer = make_cylinder(rmax, -hz, hz);
     outer->label = BStr::concat( m_name, "_outer", NULL ); 
 
-    nnode* tube = has_inner ? nnode::make_operator_ptr(CSG_DIFFERENCE, outer, inner) : outer ; 
+    nnode* tube = has_inner ? nnode::make_operator(CSG_DIFFERENCE, outer, inner) : outer ; 
     tube->label = BStr::concat( m_name, "_difference", NULL );
 
     return tube ; 
@@ -546,7 +546,7 @@ nnode* X4Solid::convertTubs_disc()
 
     assert( hz < hz_disc_cylinder_cut && "this is only applicable to very thin-in-z cylinders that can be regarded as discs" ) ; 
 
-    nnode* tube = new ndisc(make_disc(rmin,rmax, -hz, hz));
+    nnode* tube = make_disc(rmin,rmax, -hz, hz);
     tube->label = BStr::concat( m_name, "_disc", NULL ); 
 
     return tube ; 
@@ -632,7 +632,7 @@ nnode* X4Solid::intersectWithPhiSegment(nnode* whole, float startPhi, float delt
         float sy = bb.max.y - bb.min.y ; 
         float sz = bb.max.z - bb.min.z ; 
 
-        segment = new nbox(make_box3(sx,sy,sz));  
+        segment = make_box3(sx,sy,sz);  
         //segment.transform = nmat4triple::make_transform(
         segment->label = BStr::concat(m_name, "_segment_box", NULL); 
     }
@@ -644,7 +644,7 @@ nnode* X4Solid::intersectWithPhiSegment(nnode* whole, float startPhi, float delt
         segment->label = BStr::concat(m_name, "_segment_wedge", NULL); 
     }
 
-    nnode* result = nnode::make_operator_ptr(CSG_INTERSECTION, whole, segment); 
+    nnode* result = nnode::make_operator(CSG_INTERSECTION, whole, segment); 
     result->label = BStr::concat(m_name, "_intersection", NULL); 
 
     return result ;   
@@ -708,10 +708,10 @@ nnode* X4Solid::convertCons_(bool only_inner)
     float z1 = -z/2.0 ; 
     float z2 = z/2.0 ; 
 
-    nnode* cn = new ncone(make_cone(r1,z1,r2,z2)) ;
+    nnode* cn = make_cone(r1,z1,r2,z2) ;
     cn->label = BStr::concat(m_name, "_cn", NULL ) ; 
 
-    nnode* ret = has_inner ? nnode::make_operator_ptr(CSG_DIFFERENCE, cn, inner) : cn ; 
+    nnode* ret = has_inner ? nnode::make_operator(CSG_DIFFERENCE, cn, inner) : cn ; 
     if(has_inner) ret->label = BStr::concat(m_name, "_ndifference", NULL ) ; 
 
 
@@ -797,7 +797,7 @@ void X4Solid::convertTorus()
     float R = rtor ; 
     assert( R > r ); 
 
-    nnode* n = new ntorus(make_torus(R, r)) ;
+    nnode* n = make_torus(R, r) ;
     n->label = BStr::concat( m_name , "_torus" , NULL ); 
     setRoot(n); 
 
@@ -835,9 +835,9 @@ void X4Solid::convertEllipsoid()
     bool zslice = z1 > -cz || z2 < cz ;  
 
     nnode* cn = zslice ? 
-                          (nnode*)new nzsphere(make_zsphere( 0.f, 0.f, 0.f, cz, z1, z2 )) 
+                          (nnode*)make_zsphere( 0.f, 0.f, 0.f, cz, z1, z2 ) 
                        :
-                          (nnode*)new nsphere(make_sphere( 0.f, 0.f, 0.f, cz )) 
+                          (nnode*)make_sphere( 0.f, 0.f, 0.f, cz )
                        ;
 
     cn->label = BStr::concat(m_name, "_ellipsoid", NULL) ; 
@@ -893,12 +893,12 @@ void X4Solid::convertPolyconePrimitives( const std::vector<zplane>& zp,  std::ve
         nnode* n = NULL ; 
         if( r2 == r1 )
         { 
-            n = new ncylinder(make_cylinder(r2, z1, z2));
+            n = make_cylinder(r2, z1, z2);
             n->label = BStr::concat( m_name, i-1, "_zp_cylinder" ); 
         }
         else
         {
-            n = new ncone(make_cone(r1,z1,r2,z2)) ;
+            n = make_cone(r1,z1,r2,z2) ;
             n->label = BStr::concat<unsigned>(m_name, i-1 , "_zp_cone" ) ; 
         }
         prims.push_back(n); 
@@ -980,7 +980,7 @@ void X4Solid::convertPolycone()
     {
         double zmin = zp[0].z ; 
         double zmax = zp[nz-1].z ; 
-        inner = new ncylinder(make_cylinder(rmin, zmin, zmax));
+        inner = make_cylinder(rmin, zmin, zmax);
         inner->label = BStr::concat( m_name, "_inner_cylinder", NULL  ); 
     }
 
@@ -993,7 +993,7 @@ void X4Solid::convertPolycone()
         inner = NULL ;  
     }
 
-    nnode* result = inner ? nnode::make_operator_ptr(CSG_DIFFERENCE, cn, inner )  : cn ; 
+    nnode* result = inner ? nnode::make_operator(CSG_DIFFERENCE, cn, inner )  : cn ; 
     setRoot(result); 
 
     convertPolycone_g4code();
@@ -1102,10 +1102,10 @@ nnode* X4Solid::convertHype_(bool only_inner)
     float z2 =  z/2.0 ; 
     float z1 = -z/2.0 ;
  
-    nnode* cn = new nhyperboloid(make_hyperboloid( radius, zf, z1, z2 ));
+    nnode* cn = make_hyperboloid( radius, zf, z1, z2 );
     cn->label = BStr::concat(m_name, "_hyperboloid", NULL ) ; 
     
-    nnode* result = inner ? nnode::make_operator_ptr(CSG_DIFFERENCE, cn, inner )  : cn ; 
+    nnode* result = inner ? nnode::make_operator(CSG_DIFFERENCE, cn, inner )  : cn ; 
     return result ; 
 }
 

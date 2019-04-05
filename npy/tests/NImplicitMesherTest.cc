@@ -7,8 +7,7 @@
 #include "NBox.hpp"
 #include "NBBox.hpp"
 
-#include "PLOG.hh"
-#include "NPY_LOG.hh"
+#include "OPTICKS_LOG.hh"
 
 
 
@@ -42,7 +41,7 @@ struct sphere_functor
 
 NTrianglesNPY* test_sphere_node()
 {
-    nsphere* sph = new nsphere(make_sphere(0,0,0, 10)) ;
+    nsphere* sph = make_sphere(0,0,0, 10) ;
     nbbox bb = sph->bbox();
 
     LOG(info) << "test_sphere_node bb:" << bb.desc() ;
@@ -62,8 +61,7 @@ NTrianglesNPY* test_sphere_node()
 
 int main(int argc, char** argv)
 {
-    PLOG_(argc, argv);
-    NPY_LOG__ ; 
+    OPTICKS_LOG(argc, argv);
 
     test_sphere_node();
     //test_sphere_functor();

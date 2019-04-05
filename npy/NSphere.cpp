@@ -229,7 +229,7 @@ void nsphere::adjustToFit(const nbbox& bb, float scale, float delta)
 
 
 
-ndisk* nsphere::intersect(nsphere& a, nsphere& b)
+ndisk* nsphere::intersect(const nsphere* a, const nsphere* b)
 {
     // Find Z intersection disk of two Z offset spheres,
     // disk radius is set to zero when no intersection.
@@ -238,13 +238,13 @@ ndisk* nsphere::intersect(nsphere& a, nsphere& b)
     //
     // cf pmt-/ddpart.py 
 
-    float R = a.radius() ;
-    float r = b.radius() ; 
+    float R = a->radius() ;
+    float r = b->radius() ; 
 
     // operate in frame of Sphere a 
 
-    glm::vec3 a_center = a.center();
-    glm::vec3 b_center = b.center();
+    glm::vec3 a_center = a->center();
+    glm::vec3 b_center = b->center();
 
 
 

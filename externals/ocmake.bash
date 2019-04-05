@@ -19,6 +19,21 @@ Then get the new one with::
 
     ocmake-;ocmake--
 
+
+
+Version 3.12 : can do parallel builds 
+----------------------------------------
+
+* https://cmake.org/cmake/help/v3.12/release/3.12.html#command-line
+
+The cmake(1) Build Tool Mode (cmake --build) gained --parallel [<jobs>] and -j
+[<jobs>] options to specify a parallel build level. They map to corresponding
+options of the native build tool.
+
+
+
+
+
 EOU
 }
 

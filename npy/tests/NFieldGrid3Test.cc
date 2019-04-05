@@ -11,8 +11,7 @@
 #include "FGLite.h"
 
 
-#include "NPY_LOG.hh"
-#include "PLOG.hh"
+#include "OPTICKS_LOG.hh"
 
 #include "NBox.hpp"
 #include "NBBox.hpp"
@@ -91,19 +90,18 @@ void test_fieldgrid(const F3& field, const G3& grid, FG3* fg, FGLite* fgl)
 
 int main(int argc, char** argv)
 {
-    PLOG_(argc, argv);
-    NPY_LOG__ ; 
+    OPTICKS_LOG(argc, argv);
 
 
     int level = 3 ; 
 
 
-    nbox world = make_box(0,0,0,11) ; 
-    nbbox wbb = world.bbox() ;
+    nbox* world = make_box(0,0,0,11) ; 
+    nbbox wbb = world->bbox() ;
 
-    nbox obj = make_box(0,0,0,7) ; 
+    nbox* obj = make_box(0,0,0,7) ; 
 
-    std::function<float(float,float,float)> fn = obj.sdf();
+    std::function<float(float,float,float)> fn = obj->sdf();
 
 
     glm::vec3 wbb_min(wbb.min.x, wbb.min.y, wbb.min.z);

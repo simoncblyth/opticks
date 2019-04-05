@@ -35,10 +35,10 @@ void test_load_csg(CMaker& mk, int argc, char** argv)
 
 void test_make_csg(CMaker& mk)
 {
-    nsphere sp = make_sphere();
-    sp.set_boundary("Dummy"); 
+    nsphere* sp = make_sphere();
+    sp->set_boundary("Dummy"); 
 
-    NCSG* csg = NCSG::Adopt(&sp);
+    NCSG* csg = NCSG::Adopt(sp);
     if(!csg) return ; 
  
     csg->dump();

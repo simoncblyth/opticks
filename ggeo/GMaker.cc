@@ -395,29 +395,29 @@ GVolume* GMaker::makeZSphereIntersect_DEAD(glm::vec4& param, const char* spec)
     //       be moved into npy- and handled at a higher
     //       from here
 
-    nsphere a = make_sphere(0,0,a_zpos,a_radius);
-    nsphere b = make_sphere(0,0,b_zpos,b_radius);
-    ndisk d = nsphere::intersect(a,b) ;   // from NPlane.hpp, not same as ndisc (degenerated ncylinder)
-    float zd = d.z();
+    nsphere* a = make_sphere(0,0,a_zpos,a_radius);
+    nsphere* b = make_sphere(0,0,b_zpos,b_radius);
+    ndisk* d = nsphere::intersect(a,b) ;   // from NPlane.hpp, not same as ndisc (degenerated ncylinder)
+    float zd = d->z();
 
-    d.dump("ndisk from nsphere::intersect" ); 
+    d->dump("ndisk from nsphere::intersect" ); 
     LOG(info) << "ndisk::dump DONE " ; 
 
 
     // two CSG_SPHERE part
-    npart ar = a.zrhs(d); 
-    npart bl = b.zlhs(d);
+    npart ar = a->zrhs(d); 
+    npart bl = b->zlhs(d);
 
     ar.dump("ar: a.zrhs(d) ");
     bl.dump("bl: b.zlhs(d) ");
 
 
-    glm::vec3 a_center = a.center();
-    glm::vec3 b_center = b.center();
+    glm::vec3 a_center = a->center();
+    glm::vec3 b_center = b->center();
 
     // ctmin, ctmax, zpos, radius
-    glm::vec4 arhs_param( a.costheta(zd), 1.f, a_center.z, a.radius()) ;
-    glm::vec4 blhs_param( -1, b.costheta(zd),  b_center.z, b.radius()) ;
+    glm::vec4 arhs_param( a->costheta(zd), 1.f, a_center.z, a->radius()) ;
+    glm::vec4 blhs_param( -1, b->costheta(zd),  b_center.z, b->radius()) ;
 
     NTrianglesNPY* a_tris = NTrianglesNPY::sphere(arhs_param);
     NTrianglesNPY* b_tris = NTrianglesNPY::sphere(blhs_param);

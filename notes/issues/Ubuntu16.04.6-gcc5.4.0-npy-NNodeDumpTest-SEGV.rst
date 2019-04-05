@@ -51,6 +51,15 @@ Possible Workaround for the issue
 Workaround (it seems so far) is to rework the nnode primitives to avoid 
 relying on the implicit copy ctor for their creation.
 
+That means no more::
+
+    nsphere* sph = new nsphere(make_sphere(0,0,0, 10)) ;
+
+Now directly onto heap::
+
+    nsphere* sph = make_sphere(0,0,0, 10) ;
+
+
 ::
 
 
