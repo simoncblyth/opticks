@@ -14,7 +14,7 @@ nnode* test_UnionTree_box(unsigned nprim, unsigned verbosity)
     std::vector<nnode*> prims ; 
     for(unsigned i=0 ; i < nprim ; i++)
     {
-        nnode* a = new nbox(make_box3(400,400,400));
+        nnode* a = make_box3(400,400,400);
         a->verbosity = verbosity ; 
         prims.push_back(a);  
     }
@@ -31,11 +31,11 @@ nnode* test_UnionTree_box_Manual(unsigned nprim, unsigned verbosity)
     std::vector<nnode*> prims ; 
     for(unsigned i=0 ; i < nprim ; i++)
     {
-        nnode* a = new nbox(make_box3(400,400,400));
+        nnode* a = make_box3(400,400,400);
         a->verbosity = verbosity ; 
         prims.push_back(a);  
     }
-    nnode* root = new nunion( nunion::make_union( prims[0], prims[1]));
+    nnode* root = nunion::make_union( prims[0], prims[1]);
     assert( root ) ; 
     root->verbosity = verbosity ; 
     return root ; 
@@ -104,7 +104,7 @@ void test_UnionTree_sdf(unsigned nprim)
 
 void test_bbox()
 {
-    nnode* a = new nbox(make_box3(400,400,400));
+    nnode* a = make_box3(400,400,400);
     a->verbosity = 5 ; 
 
     nbbox a_bb = a->bbox();
@@ -126,9 +126,9 @@ void test_bbox()
 
 void test_bbox_2()
 {
-    nnode* o = new nbox(make_box3(200,200,200));
+    nnode* o = make_box3(200,200,200);
     o->verbosity = 5 ; 
-    nnode* a = new nbox(make_box3(400,400,400));
+    nnode* a = make_box3(400,400,400);
     a->verbosity = 5 ; 
 
     std::vector<nnode*> prims ; 

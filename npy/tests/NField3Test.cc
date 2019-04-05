@@ -4,8 +4,7 @@
 #include "NField3.hpp"
 #include "NGrid3.hpp"
 
-#include "NPY_LOG.hh"
-#include "PLOG.hh"
+#include "OPTICKS_LOG.hh"
 
 #include "NGLM.hpp"
 #include "NBox.hpp"
@@ -128,15 +127,14 @@ void test_cross_isosurface_2(const F3& field, const G3& grid)
 
 int main(int argc, char** argv)
 {
-    PLOG_(argc, argv);
-    NPY_LOG__ ; 
+    OPTICKS_LOG(argc, argv);
 
-    nbox world = make_box(0,0,0,11) ; 
-    nbbox wbb = world.bbox() ;
+    nbox* world = make_box(0,0,0,11) ; 
+    nbbox wbb = world->bbox() ;
 
-    nbox obj = make_box(0,0,0,7) ; 
+    nbox* obj = make_box(0,0,0,7) ; 
 
-    std::function<float(float,float,float)> fn = obj.sdf();
+    std::function<float(float,float,float)> fn = obj->sdf();
 
     glm::vec3 wbb_min(wbb.min.x, wbb.min.y, wbb.min.z );
     glm::vec3 wbb_max(wbb.max.x, wbb.max.y, wbb.max.z );

@@ -388,9 +388,9 @@ nnode* NCSG::import_operator( unsigned idx, OpticksCSG_t typecode )
     nnode* node = NULL ;   
     switch(typecode)
     {
-       case CSG_UNION:        node = new nunion(nunion::make_union(NULL, NULL )) ; break ; 
-       case CSG_INTERSECTION: node = new nintersection(nintersection::make_intersection(NULL, NULL )) ; break ; 
-       case CSG_DIFFERENCE:   node = new ndifference(ndifference::make_difference(NULL, NULL ))   ; break ; 
+       case CSG_UNION:        node = nunion::make_union(NULL, NULL ) ; break ; 
+       case CSG_INTERSECTION: node = nintersection::make_intersection(NULL, NULL ) ; break ; 
+       case CSG_DIFFERENCE:   node = ndifference::make_difference(NULL, NULL )   ; break ; 
        default:               node = NULL                                 ; break ; 
     }
     assert(node);
@@ -417,22 +417,22 @@ nnode* NCSG::import_primitive( unsigned idx, OpticksCSG_t typecode )
     nnode* node = NULL ;   
     switch(typecode)
     {
-       case CSG_SPHERE:         node = new nsphere(make_sphere(p0))           ; break ; 
-       case CSG_ZSPHERE:        node = new nzsphere(make_zsphere(p0,p1,p2))   ; break ; 
-       case CSG_BOX:            node = new nbox(make_box(p0))                 ; break ; 
-       case CSG_BOX3:           node = new nbox(make_box3(p0))                ; break ; 
-       case CSG_SLAB:           node = new nslab(make_slab(p0, p1))           ; break ; 
-       case CSG_PLANE:          node = new nplane(make_plane(p0))             ; break ; 
-       case CSG_CYLINDER:       node = new ncylinder(make_cylinder(p0, p1))   ; break ; 
-       case CSG_DISC:           node = new ndisc(make_disc(p0, p1))           ; break ; 
-       case CSG_CONE:           node = new ncone(make_cone(p0))               ; break ; 
-       case CSG_TORUS:          node = new ntorus(make_torus(p0))             ; break ; 
-       case CSG_CUBIC:          node = new ncubic(make_cubic(p0,p1))          ; break ; 
-       case CSG_HYPERBOLOID:    node = new nhyperboloid(make_hyperboloid(p0)) ; break ; 
+       case CSG_SPHERE:         node = make_sphere(p0)          ; break ; 
+       case CSG_ZSPHERE:        node = make_zsphere(p0,p1,p2)   ; break ; 
+       case CSG_BOX:            node = make_box(p0)             ; break ; 
+       case CSG_BOX3:           node = make_box3(p0)            ; break ; 
+       case CSG_SLAB:           node = make_slab(p0, p1)        ; break ; 
+       case CSG_PLANE:          node = make_plane(p0)           ; break ; 
+       case CSG_CYLINDER:       node = make_cylinder(p0, p1)    ; break ; 
+       case CSG_DISC:           node = make_disc(p0, p1)        ; break ; 
+       case CSG_CONE:           node = make_cone(p0)            ; break ; 
+       case CSG_TORUS:          node = make_torus(p0)           ; break ; 
+       case CSG_CUBIC:          node = make_cubic(p0,p1)        ; break ; 
+       case CSG_HYPERBOLOID:    node = make_hyperboloid(p0)     ; break ; 
        case CSG_TRAPEZOID:  
        case CSG_SEGMENT:  
        case CSG_CONVEXPOLYHEDRON:  
-                                node = new nconvexpolyhedron(make_convexpolyhedron(p0,p1,p2,p3))   ; break ; 
+                                node = make_convexpolyhedron(p0,p1,p2,p3)   ; break ; 
 
        case CSG_ELLIPSOID: assert(0 && "ellipsoid should be zsphere at this level" )   ; break ; 
        default:           node = NULL ; break ; 

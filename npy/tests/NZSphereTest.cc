@@ -6,7 +6,7 @@
 #include "NBBox.hpp"
 #include "Nuv.hpp"
 
-#include "PLOG.hh"
+#include "OPTICKS_LOG.hh"
 
 
 
@@ -14,24 +14,24 @@
 void test_dumpSurfacePointsAll()
 {
     LOG(info) << "test_dumpSurfacePointsAll" ;
-    nzsphere zs = make_zsphere();
-    zs.dumpSurfacePointsAll("zs.dumpSurfacePointsAll", FRAME_LOCAL);
+    nzsphere* zs = make_zsphere();
+    zs->dumpSurfacePointsAll("zs.dumpSurfacePointsAll", FRAME_LOCAL);
 }
 
 
 void test_part()
 {
-    nzsphere s = make_zsphere(0,0,0,10,-5,5);
-    npart p = s.part();
+    nzsphere* s = make_zsphere(0,0,0,10,-5,5);
+    npart p = s->part();
     p.dump("p");
 }
 
 void test_bbox()
 {
-    nzsphere a = make_zsphere(0.f,0.f,0.f,100.f, -50.f, 50.f);
-    a.dump("zsph");
+    nzsphere* a = make_zsphere(0.f,0.f,0.f,100.f, -50.f, 50.f);
+    a->dump("zsph");
 
-    nbbox bb = a.bbox();
+    nbbox bb = a->bbox();
     bb.dump("zbb");
 }
 
@@ -41,7 +41,8 @@ void test_sdf()
     float zdelta_min = -radius/2.f ; 
     float zdelta_max = radius/2.f ; 
 
-    nzsphere a = make_zsphere(0.f,0.f,0.f,radius,zdelta_min,zdelta_max);
+    nzsphere* _a = make_zsphere(0.f,0.f,0.f,radius,zdelta_min,zdelta_max);
+    const nzsphere& a = *_a ; 
 
     for(float v=-2*radius ; v <= 2*radius ; v+= radius/10.f ) 
         std::cout 
@@ -71,11 +72,11 @@ void test_parametric()
     float z1 = -radius/2.f ; 
     float z2 = radius/2.f ; 
 
-    nzsphere zs = make_zsphere(0.f,0.f,0.f,radius,z1,z2);
+    nzsphere* zs = make_zsphere(0.f,0.f,0.f,radius,z1,z2);
 
 
 
-    unsigned nsurf = zs.par_nsurf();
+    unsigned nsurf = zs->par_nsurf();
     assert(nsurf == 3);
 
     unsigned nu = 5 ; 
@@ -91,7 +92,7 @@ void test_parametric()
         {
             nuv uv = make_uv(s,u,v,nu,nv, prim_idx);
 
-            glm::vec3 p = zs.par_pos_model(uv);
+            glm::vec3 p = zs->par_pos_model(uv);
 
             std::cout 
                  << " s " << std::setw(3) << s  
@@ -107,15 +108,15 @@ void test_parametric()
 
 void test_deltaTheta(float radius, float z1, float z2)
 {
-    nzsphere zs = make_zsphere(0.f,0.f,0.f,radius,z1,z2 );
+    nzsphere* zs = make_zsphere(0.f,0.f,0.f,radius,z1,z2 );
      
     LOG(info) << "test_deltaTheta" 
              << " radius " << radius
              << " z1 " << z1
              << " z2 " << z2
-             << " startTheta " << zs.startTheta()  
-             << " endTheta " << zs.endTheta()  
-             << " deltaTheta " << zs.deltaTheta()  
+             << " startTheta " << zs->startTheta()  
+             << " endTheta " << zs->endTheta()  
+             << " deltaTheta " << zs->deltaTheta()  
              ;
 
 
@@ -135,7 +136,7 @@ void test_deltaTheta()
 
 int main(int argc, char** argv)
 {
-    PLOG_(argc, argv);
+    OPTICKS_LOG(argc, argv);
 
     //test_part();
     //test_bbox();

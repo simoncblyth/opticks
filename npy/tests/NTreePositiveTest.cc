@@ -43,16 +43,16 @@
 
 void test_positivize()
 {
-    nnode* a = new nsphere(make_sphere(0,0,-50,100)) ;  
-    nnode* b = new nsphere(make_sphere(0,0, 50,100)) ;  
-    nnode* c = new nbox(make_box(0,0, 50,100)) ;  
-    nnode* d = new nbox(make_box(0,0,  0,100)) ;  
-    nnode* e = new nbox(make_box(0,0,  0,100)) ;  
+    nnode* a = make_sphere(0,0,-50,100) ;  
+    nnode* b = make_sphere(0,0, 50,100) ;  
+    nnode* c = make_box(0,0, 50,100) ;  
+    nnode* d = make_box(0,0,  0,100) ;  
+    nnode* e = make_box(0,0,  0,100) ;  
 
-    nnode* ab = nnode::make_operator_ptr( CSG_UNION, a, b );
-    nnode* de = nnode::make_operator_ptr( CSG_DIFFERENCE, d, e );
-    nnode* cde = nnode::make_operator_ptr( CSG_DIFFERENCE, c, de );
-    nnode* abcde = nnode::make_operator_ptr( CSG_INTERSECTION, ab, cde );
+    nnode* ab = nnode::make_operator( CSG_UNION, a, b );
+    nnode* de = nnode::make_operator( CSG_DIFFERENCE, d, e );
+    nnode* cde = nnode::make_operator( CSG_DIFFERENCE, c, de );
+    nnode* abcde = nnode::make_operator( CSG_INTERSECTION, ab, cde );
 
     LOG(info) << abcde->desc() ; 
     LOG(info) << NTreeAnalyse<nnode>::Desc(abcde) ; 

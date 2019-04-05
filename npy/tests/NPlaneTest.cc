@@ -3,8 +3,7 @@
 #include "GLMFormat.hpp"
 #include "NGLMExt.hpp"
 
-#include "NPY_LOG.hh"
-#include "PLOG.hh"
+#include "OPTICKS_LOG.hh"
 
 
 
@@ -12,15 +11,15 @@ void test_sdf()
 {
     float distToOrigin = 10 ; 
 
-    nplane plane = make_plane( 0,0,1, distToOrigin) ; 
+    nplane* plane = make_plane( 0,0,1, distToOrigin) ; 
 
     for(int i=0 ; i < 30 ; i++)
-        std::cout << std::setw(4) << i << " " << plane(0.f,0.f,i) << std::endl ;  
+        std::cout << std::setw(4) << i << " " << (*plane)(0.f,0.f,i) << std::endl ;  
 }
 
 void test_intersect()
 {
-    nplane plane = make_plane( 0,0,1,10) ;
+    nplane* plane = make_plane( 0,0,1,10) ;
 
     float tmin = 0.f ; 
     glm::vec3 ray_origin(0,0,0);
@@ -35,7 +34,7 @@ void test_intersect()
         }
 
         glm::vec4 isect ; 
-        bool valid_intersect = plane.intersect( tmin, ray_origin, ray_direction, isect );
+        bool valid_intersect = plane->intersect( tmin, ray_origin, ray_direction, isect );
 
         std::cout 
             <<  " i " << std::setw(2) << i 
@@ -53,8 +52,8 @@ void test_make_transformed()
 {
     LOG(info) << "test_make_transformed" ; 
 
-    nplane pl = make_plane( 0,0,1,10) ;
-    pl.pdump("pl");
+    nplane* pl = make_plane( 0,0,1,10) ;
+    pl->pdump("pl");
 
     glm::mat4 r = nglmext::make_rotate(0,1,0,90); 
     glm::mat4 s = nglmext::make_scale(2,2,3); 
@@ -69,7 +68,7 @@ void test_make_transformed()
     {
         const glm::mat4& tr = tt[i] ;
         std::cout << gpresent("tr", tr) << std::endl  ; 
-        glm::vec4 tpl = pl.make_transformed(tr);
+        glm::vec4 tpl = pl->make_transformed(tr);
         std::cout << gpresent("tpl", tpl) << std::endl  ; 
     }
 }
@@ -102,8 +101,7 @@ void test_make_plane3()
 
 int main(int argc, char** argv)
 {
-    PLOG_(argc, argv);
-    NPY_LOG__ ; 
+    OPTICKS_LOG(argc, argv);
     //test_sdf();
     //test_intersect();
 

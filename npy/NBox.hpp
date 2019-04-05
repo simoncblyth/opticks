@@ -123,55 +123,51 @@ inline NPY_API glm::vec3 nbox::halfside() const
 
 
 
-inline NPY_API void init_box(nbox& b, const nquad& p )
+inline NPY_API void init_box(nbox* b, const nquad& p )
 {
-    b.param = p ; 
-    b.is_box = true ; 
-    b.is_box3 = false ; 
-    b._bbox_model = new nbbox(b.bbox_model()) ;   // bbox_model() has no transforms applied, so is available early
+    b->param = p ; 
+    b->is_box = true ; 
+    b->is_box3 = false ; 
+    b->_bbox_model = new nbbox(b->bbox_model()) ;   // bbox_model() has no transforms applied, so is available early
 
 }
-inline NPY_API void init_box3(nbox& b, const nquad& p )
+inline NPY_API void init_box3(nbox* b, const nquad& p )
 {
-    b.param = p ; 
-    b.is_box = false ; 
-    b.is_box3 = true ; 
-    b._bbox_model = new nbbox(b.bbox_model()) ;   // bbox_model() has no transforms applied, so is available early
+    b->param = p ; 
+    b->is_box = false ; 
+    b->is_box3 = true ; 
+    b->_bbox_model = new nbbox(b->bbox_model()) ;   // bbox_model() has no transforms applied, so is available early
 }
 
-inline NPY_API nbox make_box(const nquad& p)
+inline NPY_API nbox* make_box(const nquad& p)
 {
-    nbox n ; 
+    nbox* n = new nbox ; 
     nnode::Init(n,CSG_BOX) ; 
     init_box(n, p );
     return n ;
 }
-inline NPY_API nbox make_box3(const nquad& p)
+inline NPY_API nbox* make_box3(const nquad& p)
 {
-    nbox n ; 
+    nbox* n = new nbox ; 
     nnode::Init(n,CSG_BOX3) ; 
     init_box3(n, p );
     return n ;
 }
 
 
-inline NPY_API nbox make_box(float x, float y, float z, float w)  // center and halfside
+inline NPY_API nbox* make_box(float x, float y, float z, float w)  // center and halfside
 {
     nquad param ;
     param.f =  {x,y,z,w} ;
     return make_box( param ); 
 }
-inline NPY_API nbox make_box3(float x, float y, float z, float w=0.f) // three 
+inline NPY_API nbox* make_box3(float x, float y, float z, float w=0.f) // three 
 {
     assert( w == 0.f );  // used by code gen 
     nquad param ;
     param.f =  {x,y,z,0} ;
     return make_box3( param ); 
 }
-
-
-
-
 
 
 

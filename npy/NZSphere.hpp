@@ -114,23 +114,23 @@ inline float NPY_API nzsphere::deltaTheta() const { return endTheta() - startThe
 
 
 
-inline NPY_API void init_zsphere(nzsphere& s, const nquad& param, const nquad& param1, const nquad& param2)
+inline NPY_API void init_zsphere(nzsphere* s, const nquad& param, const nquad& param1, const nquad& param2)
 {
-    s.param = param ; 
-    s.param1 = param1 ; 
-    s.param2 = param2 ; 
-    s.check();
+    s->param = param ; 
+    s->param1 = param1 ; 
+    s->param2 = param2 ; 
+    s->check();
 }
 
-inline NPY_API nzsphere make_zsphere(const nquad& param, const nquad& param1, const nquad& param2)
+inline NPY_API nzsphere* make_zsphere(const nquad& param, const nquad& param1, const nquad& param2)
 {
-    nzsphere n ; 
+    nzsphere* n = new nzsphere ; 
     nnode::Init(n,CSG_ZSPHERE) ; 
     init_zsphere(n, param, param1, param2 );
     return n ; 
 }
 
-inline NPY_API nzsphere make_zsphere(float x, float y, float z, float radius, float z1, float z2 )
+inline NPY_API nzsphere* make_zsphere(float x, float y, float z, float radius, float z1, float z2 )
 {
     nquad p0, p1, p2  ; 
 
@@ -143,12 +143,12 @@ inline NPY_API nzsphere make_zsphere(float x, float y, float z, float radius, fl
     return make_zsphere(p0, p1, p2);
 }
 
-inline NPY_API nzsphere make_zsphere()
+inline NPY_API nzsphere* make_zsphere()
 {
     return make_zsphere(0.f, 0.f, 0.f, 100.f, -50.f, 70.f );
 }
 
-inline NPY_API nzsphere make_zsphere(float x0, float y0, float z0, float w0, float x1, float y1, float z1, float w1 )
+inline NPY_API nzsphere* make_zsphere(float x0, float y0, float z0, float w0, float x1, float y1, float z1, float w1 )
 {
     // used by code generation 
     assert( z1 == 0.f );

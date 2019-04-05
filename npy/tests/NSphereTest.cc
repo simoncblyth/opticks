@@ -1,3 +1,5 @@
+// TEST=NSphereTest om-t
+
 #include <cstdlib>
 #include "NGLMExt.hpp"
 
@@ -7,38 +9,38 @@
 #include "NPart.hpp"
 #include "NBBox.hpp"
 
-#include "PLOG.hh"
+#include "OPTICKS_LOG.hh"
 
 
 
 void test_dumpSurfacePointsAll()
 {
     LOG(info) << "test_dumpSurfacePointsAll" ;
-    nsphere sp = make_sphere();
-    sp.dumpSurfacePointsAll("sp.dumpSurfacePointsAll", FRAME_LOCAL);
+    nsphere* sp = make_sphere();
+    sp->dumpSurfacePointsAll("sp.dumpSurfacePointsAll", FRAME_LOCAL);
 }
 
 
 void test_part()
 {
-    nsphere s = make_sphere(0,0,3,10);
-    npart p = s.part();
+    nsphere* s = make_sphere(0,0,3,10);
+    npart p = s->part();
     p.dump("p");
 }
 
 void test_intersect()
 {
-    nsphere s1 = make_sphere(0,0,3,10);
-    nsphere s2 = make_sphere(0,0,1,10);
+    nsphere* s1 = make_sphere(0,0,3,10);
+    nsphere* s2 = make_sphere(0,0,1,10);
 
-    ndisk d12 = nsphere::intersect(s1,s2) ;
-    d12.dump("d12");
+    ndisk* d12 = nsphere::intersect(*s1,*s2) ;
+    d12->dump("d12");
 
 
-    npart s1l = s1.zlhs(d12);
+    npart s1l = s1->zlhs(d12);
     s1l.dump("s1l");
 
-    npart s1r = s1.zrhs(d12);
+    npart s1r = s1->zrhs(d12);
     s1r.dump("s1r");
 }
 
@@ -48,9 +50,9 @@ void test_sdf()
 {
     LOG(info) << "test_sdf" ; 
 
-    nsphere a = make_sphere(0.f,0.f,-50.f,100.f);
-    nsphere b = make_sphere(0.f,0.f,-50.f,100.f);
-    b.complement = true ; 
+    nsphere* a = make_sphere(0.f,0.f,-50.f,100.f);
+    nsphere* b = make_sphere(0.f,0.f,-50.f,100.f);
+    b->complement = true ; 
 
     float x = 0.f ; 
     float y = 0.f ; 
@@ -60,8 +62,8 @@ void test_sdf()
 
     for(int iz=-200 ; iz <= 200 ; iz+= 10, z=iz ) 
     {
-        float sd_a = a(x,y,z) ;
-        float sd_b = b(x,y,z) ;
+        float sd_a = (*a)(x,y,z) ;
+        float sd_b = (*b)(x,y,z) ;
 
         assert( abs( sd_a + sd_b) < epsilon );
 
@@ -78,13 +80,13 @@ void test_diff_DeMorgan_sdf()
 {
     LOG(info) << "test_diff_DeMorgan_sdf" ; 
 
-    nsphere a = make_sphere(0.f,0.f,-50.f,100.f);
-    nsphere b = make_sphere(0.f,0.f, 50.f,100.f);
-    nsphere c = make_sphere(0.f,0.f, 50.f,100.f);
-    c.complement = true ; 
+    nsphere* a = make_sphere(0.f,0.f,-50.f,100.f);
+    nsphere* b = make_sphere(0.f,0.f, 50.f,100.f);
+    nsphere* c = make_sphere(0.f,0.f, 50.f,100.f);
+    c->complement = true ; 
 
-    ndifference   d = ndifference::make_difference( &a, &b ); 
-    nintersection i = nintersection::make_intersection( &a, &c ); 
+    ndifference*   d = ndifference::make_difference( a, b ); 
+    nintersection* i = nintersection::make_intersection( a, c ); 
 
     float epsilon = 1e-5 ; 
     float x = 0.f ; 
@@ -93,8 +95,8 @@ void test_diff_DeMorgan_sdf()
 
     for(int iz=-200 ; iz <= 200 ; iz+= 10, z=iz ) 
     {
-        float sd_d = d(x,y,z) ;
-        float sd_i = i(x,y,z) ;
+        float sd_d = (*d)(x,y,z) ;
+        float sd_i = (*i)(x,y,z) ;
 
 
         std::cout 
@@ -112,25 +114,25 @@ void test_diff_DeMorgan_sdf()
 
 void test_csgsdf()
 {
-    nsphere a = make_sphere(0.f,0.f,-50.f,100.f);
-    nsphere b = make_sphere(0.f,0.f, 50.f,100.f);
+    nsphere* a = make_sphere(0.f,0.f,-50.f,100.f);
+    nsphere* b = make_sphere(0.f,0.f, 50.f,100.f);
 
-    nunion u = nunion::make_union( &a, &b );
-    nintersection i = nintersection::make_intersection( &a, &b ); 
-    ndifference d1 = ndifference::make_difference( &a, &b ); 
-    ndifference d2 = ndifference::make_difference( &b, &a ); 
-    nunion u2 = nunion::make_union( &d1, &d2 );
+    nunion* u = nunion::make_union( a, b );
+    nintersection* i = nintersection::make_intersection( a, b ); 
+    ndifference* d1 = ndifference::make_difference( a, b ); 
+    ndifference* d2 = ndifference::make_difference( b, a ); 
+    nunion* u2 = nunion::make_union( d1, d2 );
 
     typedef std::vector<nnode*> VN ;
 
     VN nodes ; 
-    nodes.push_back( (nnode*)&a );
-    nodes.push_back( (nnode*)&b );
-    nodes.push_back( (nnode*)&u );
-    nodes.push_back( (nnode*)&i );
-    nodes.push_back( (nnode*)&d1 );
-    nodes.push_back( (nnode*)&d2 );
-    nodes.push_back( (nnode*)&u2 );
+    nodes.push_back( (nnode*)a );
+    nodes.push_back( (nnode*)b );
+    nodes.push_back( (nnode*)u );
+    nodes.push_back( (nnode*)i );
+    nodes.push_back( (nnode*)d1 );
+    nodes.push_back( (nnode*)d2 );
+    nodes.push_back( (nnode*)u2 );
 
     for(VN::const_iterator it=nodes.begin() ; it != nodes.end() ; it++)
     {
@@ -152,14 +154,15 @@ void test_csgsdf()
 
     for(int iz=-200 ; iz <= 200 ; iz+= 10, z=iz ) 
     {
-        std::cout << " z  " << std::setw(10) << z 
-             << " a  " << std::setw(10) << std::fixed << std::setprecision(2) << a(x,y,z) 
-             << " b  " << std::setw(10) << std::fixed << std::setprecision(2) << b(x,y,z) 
-             << " u  " << std::setw(10) << std::fixed << std::setprecision(2) << u(x,y,z) 
-             << " i  " << std::setw(10) << std::fixed << std::setprecision(2) << i(x,y,z) 
-             << " d1 " << std::setw(10) << std::fixed << std::setprecision(2) << d1(x,y,z) 
-             << " d2 " << std::setw(10) << std::fixed << std::setprecision(2) << d2(x,y,z) 
-             << " u2 " << std::setw(10) << std::fixed << std::setprecision(2) << u2(x,y,z) 
+        std::cout 
+             << " z  " << std::setw(10) << z 
+             << " a  " << std::setw(10) << std::fixed << std::setprecision(2) << (*a)(x,y,z) 
+             << " b  " << std::setw(10) << std::fixed << std::setprecision(2) << (*b)(x,y,z) 
+             << " u  " << std::setw(10) << std::fixed << std::setprecision(2) << (*u)(x,y,z) 
+             << " i  " << std::setw(10) << std::fixed << std::setprecision(2) << (*i)(x,y,z) 
+             << " d1 " << std::setw(10) << std::fixed << std::setprecision(2) << (*d1)(x,y,z) 
+             << " d2 " << std::setw(10) << std::fixed << std::setprecision(2) << (*d2)(x,y,z) 
+             << " u2 " << std::setw(10) << std::fixed << std::setprecision(2) << (*u2)(x,y,z) 
              << std::endl 
              ; 
 
@@ -177,30 +180,30 @@ void test_csgsdf()
 
 void test_bbox()
 {
-    nsphere a = make_sphere(0.f,0.f,-50.f,100.f);
-    a.dump("sph");
+    nsphere* a = make_sphere(0.f,0.f,-50.f,100.f);
+    a->dump("sph");
 
-    nbbox bb = a.bbox();
+    nbbox bb = a->bbox();
     bb.dump("bb");
 }
 
 void test_bbox_u()
 {
-    nsphere a = make_sphere(0.f,0.f,-50.f,100.f);
-    nsphere b = make_sphere(0.f,0.f, 50.f,100.f);
-    nunion  u = nunion::make_union( &a, &b );
+    nsphere* a = make_sphere(0.f,0.f,-50.f,100.f);
+    nsphere* b = make_sphere(0.f,0.f, 50.f,100.f);
+    nunion*  u = nunion::make_union( a, b );
 
-    a.dump("(a) sph");
-    b.dump("(b) sph");
-    u.dump("(u) union(a,b)");
+    a->dump("(a) sph");
+    b->dump("(b) sph");
+    u->dump("(u) union(a,b)");
 
-    nbbox a_bb = a.bbox();
+    nbbox a_bb = a->bbox();
     a_bb.dump("(a) bb");
 
-    nbbox b_bb = b.bbox();
+    nbbox b_bb = b->bbox();
     b_bb.dump("(b) bb");
 
-    nbbox u_bb = u.bbox();
+    nbbox u_bb = u->bbox();
     u_bb.dump("(u) bb");
 }
 
@@ -230,14 +233,14 @@ void test_gtransform()
         if(verbose)
         std::cout << " gtransform " << triple << std::endl ; 
 
-        nsphere a = make_sphere(0.f,0.f,0.f,100.f);      
+        nsphere* a = make_sphere(0.f,0.f,0.f,100.f);      
         // untouched sphere at origin
 
-        nsphere b = make_sphere(0.f,0.f,0.f,100.f);      
-        b.gtransform = &triple ; 
+        nsphere* b = make_sphere(0.f,0.f,0.f,100.f);      
+        b->gtransform = &triple ; 
         // translated sphere via gtransform
 
-        nsphere c = make_sphere( tlate.x, tlate.y, tlate.z,100.f);  
+        nsphere* c = make_sphere( tlate.x, tlate.y, tlate.z,100.f);  
         // manually positioned sphere at tlate-d position 
 
 
@@ -248,9 +251,9 @@ void test_gtransform()
         for(int iz=-200 ; iz <= 200 ; iz+= 10 ) 
         {
            z = iz ;  
-           float a_ = a(x,y,z) ;
-           float b_ = b(x,y,z) ;
-           float c_ = c(x,y,z) ;
+           float a_ = (*a)(x,y,z) ;
+           float b_ = (*b)(x,y,z) ;
+           float c_ = (*c)(x,y,z) ;
       
            if(verbose) 
            std::cout 
@@ -271,9 +274,8 @@ void test_gtransform()
 
 int main(int argc, char** argv)
 {
-    PLOG_(argc, argv);
+    OPTICKS_LOG(argc, argv);
 
-/*
     test_part();
     test_intersect();
 
@@ -282,10 +284,9 @@ int main(int argc, char** argv)
     test_bbox();
     test_bbox_u();
     test_gtransform();
-*/
 
-    //test_sdf();
-    //test_diff_DeMorgan_sdf();
+    test_sdf();
+    test_diff_DeMorgan_sdf();
     test_dumpSurfacePointsAll();
 
     return 0 ; 

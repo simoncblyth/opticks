@@ -69,22 +69,22 @@ inline NPY_API void  ndisc::decrease_z1(float dz){ assert( dz >= 0.f) ; param1.f
 
 
 
-inline NPY_API void init_disc(ndisc& n, const nquad& param, const nquad& param1 )
+inline NPY_API void init_disc(ndisc* n, const nquad& param, const nquad& param1 )
 {
-    n.param = param ; 
-    n.param1 = param1 ;
-    assert( n.z2() > n.z1() );
+    n->param = param ; 
+    n->param1 = param1 ;
+    assert( n->z2() > n->z1() );
 }
 
-inline NPY_API ndisc make_disc(const nquad& param, const nquad& param1 )
+inline NPY_API ndisc* make_disc(const nquad& param, const nquad& param1 )
 {
-    ndisc n ; 
+    ndisc* n = new ndisc ; 
     nnode::Init(n,CSG_DISC) ; 
     init_disc(n, param, param1);
     return n ; 
 }
 
-inline NPY_API ndisc make_disc(float inner_, float radius_, float z1_, float z2_ )
+inline NPY_API ndisc* make_disc(float inner_, float radius_, float z1_, float z2_ )
 {
     nquad param, param1 ;
 
@@ -97,7 +97,7 @@ inline NPY_API ndisc make_disc(float inner_, float radius_, float z1_, float z2_
 
     return make_disc(param, param1 );
 }
-inline NPY_API ndisc make_disc(float radius_, float z1_, float z2_ )
+inline NPY_API ndisc* make_disc(float radius_, float z1_, float z2_ )
 {
     nquad param, param1 ;
 
@@ -111,7 +111,7 @@ inline NPY_API ndisc make_disc(float radius_, float z1_, float z2_ )
     return make_disc(param, param1 );
 }
 
-inline NPY_API ndisc make_disc()
+inline NPY_API ndisc* make_disc()
 {
     return make_disc(500.f, -0.01, 0.01 );
 }

@@ -224,13 +224,13 @@ T* NTreeBuilder<T>::build_r( int elevation )
     {
         T* left = build_r( elevation - 1 );
         T* right = build_r( elevation - 1 );
-        node = T::make_operator_ptr(m_operator, left, right ) ; 
+        node = T::make_operator(m_operator, left, right ) ; 
     }
     else
     {
-        T* left =  new T(T::make_node( CSG_ZERO )); 
-        T* right =  new T(T::make_node( CSG_ZERO )); 
-        node = T::make_operator_ptr(m_operator, left, right ) ; 
+        T* left =  T::make_node( CSG_ZERO ); 
+        T* right =  T::make_node( CSG_ZERO ); 
+        node = T::make_operator(m_operator, left, right ) ; 
     }
     return node ; 
 }
@@ -310,7 +310,7 @@ void NTreeBuilder<T>::prune_r(T* node)
 
         if(node->left->is_lrzero()) // left node is an operator which has both its left and right zero 
         {
-            node->left = new T(T::make_node(CSG_ZERO)) ;  // prune : ie replace operator with CSG_ZERO placeholder  
+            node->left = T::make_node(CSG_ZERO) ;  // prune : ie replace operator with CSG_ZERO placeholder  
         }
         else if( node->left->is_rzero() ) // left node is an operator with left non-zero and right zero   
         {
@@ -320,7 +320,7 @@ void NTreeBuilder<T>::prune_r(T* node)
 
         if(node->right->is_lrzero())  // right node is operator with both its left and right zero 
         {
-            node->right = new T(T::make_node(CSG_ZERO)) ;  // prune
+            node->right = T::make_node(CSG_ZERO) ;  // prune
         }
         else if( node->right->is_rzero() ) // right node is operator with its left non-zero and right zero
         {

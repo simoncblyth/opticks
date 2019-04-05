@@ -24,11 +24,11 @@ struct NPY_API nsphere : nnode {
     nbbox bbox() const ;
 
     npart part() const ;
-    static ndisk intersect(nsphere& a, nsphere& b);
+    static ndisk* intersect(nsphere& a, nsphere& b);
 
     // result of intersect allows partitioning 
-    npart zrhs(const ndisk& dsc); // +z to the right  
-    npart zlhs(const ndisk& dsc);  
+    npart zrhs(const ndisk* dsc); // +z to the right  
+    npart zlhs(const ndisk* dsc);  
 
     glm::vec3 gseedcenter() const ;
 
@@ -60,24 +60,24 @@ inline NPY_API glm::vec3 nsphere::center() const { return glm::vec3(x(),y(),z())
 
 
 
-inline NPY_API void init_sphere(nsphere& s, const nquad& param)
+inline NPY_API void init_sphere(nsphere* s, const nquad& param)
 {
-    s.param = param ; 
+    s->param = param ; 
 }
-inline NPY_API nsphere make_sphere(const nquad& param)
+inline NPY_API nsphere* make_sphere(const nquad& param)
 {
-    nsphere n ; 
+    nsphere* n = new nsphere ; 
     nnode::Init(n,CSG_SPHERE) ; 
     init_sphere(n, param);
     return n ; 
 }
-inline NPY_API nsphere make_sphere(float x, float y, float z, float w)
+inline NPY_API nsphere* make_sphere(float x, float y, float z, float w)
 {
     nquad param ; 
     param.f = {x,y,z,w} ;
     return make_sphere(param);
 }
-inline NPY_API nsphere make_sphere(float radius=100.f)
+inline NPY_API nsphere* make_sphere(float radius=100.f)
 {
     return make_sphere(0.f,0.f,0.f,radius);
 }

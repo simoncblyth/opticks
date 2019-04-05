@@ -1,5 +1,4 @@
-#include "PLOG.hh"
-#include "NPY_LOG.hh"
+#include "OPTICKS_LOG.hh"
 
 #include "NParameters.hpp"
 #include "NOpenMeshBoundary.hpp"
@@ -82,14 +81,14 @@ void test_sphere_parametric()
 {
     LOG(info) << "test_sphere_parametric" ;
 
-    nsphere sphere = make_sphere(0,0,0,10);
+    nsphere* sphere = make_sphere(0,0,0,10);
     for(int level=2 ; level < 7 ; level++)
     { 
         NParameters meta ; 
         meta.add<int>("level", level ); 
         meta.add<int>("verbosity", 1 ); 
 
-        MESH* m = MESH::Make(&sphere, &meta, NULL ) ;
+        MESH* m = MESH::Make(sphere, &meta, NULL ) ;
         m->dump("sphere");
     }
 }
@@ -98,14 +97,14 @@ void test_box_parametric()
 {
     LOG(info) << "test_box_parametric" ;
 
-    nbox box = make_box(0,0,0,100);
+    nbox* box = make_box(0,0,0,100);
     for(int level=1 ; level < 6 ; level++)
     { 
         NParameters meta ; 
         meta.add<int>("level", level ); 
         meta.add<int>("verbosity", 1 ); 
 
-        MESH* m = MESH::Make(&box, &meta, NULL );
+        MESH* m = MESH::Make(box, &meta, NULL );
         m->dump("box");
     }
 }
@@ -420,14 +419,14 @@ void test_manual_subdivide_face()
     LOG(info) << "test_manual_subdivide_face" ; 
 
 
-    nbox box = make_box(0,0,0, 100);
+    nbox* box = make_box(0,0,0, 100);
 
 
     NParameters meta ; 
     meta.add<int>("level", 4 ); 
     meta.add<int>("verbosity", 1 ); 
 
-    MESH* m = MESH::Make(&box, &meta, NULL) ;
+    MESH* m = MESH::Make(box, &meta, NULL) ;
 
     assert( m->find.find_boundary_loops() == 0 ) ;
  
@@ -443,8 +442,7 @@ void test_manual_subdivide_face()
 
 int main(int argc, char** argv)
 {
-    PLOG_(argc, argv);
-    NPY_LOG__ ; 
+    OPTICKS_LOG(argc, argv);
 
     //test_write(); 
     //test_cube(); 

@@ -750,8 +750,8 @@ void nglmext::transform_planes( NPY<float>* plan_buffer, const glm::mat4& placem
     for(unsigned i=0 ; i < num_plane ; i++ )
     {    
         glm::vec4 pl = plan_buffer->getQuad(i);
-        nplane  plane = make_plane(pl);
-        glm::vec4 tpl = plane.make_transformed(placement);
+        nplane*  plane = make_plane(pl);
+        glm::vec4 tpl = plane->make_transformed(placement);
 
         plan_buffer->setQuad( tpl, i ); 
     }    

@@ -69,7 +69,7 @@ void nnode::setPlaneNum(unsigned num)
 
 
 
-const unsigned nnode::desc_indent = 10 ; 
+unsigned nnode::desc_indent = 10 ; 
 
 std::string nnode::desc() const 
 {
@@ -184,42 +184,46 @@ void nnode::set_boundary( const char* boundary_)
 
 
 
-void nnode::Init( nnode& n , OpticksCSG_t type, nnode* left, nnode* right )
+void nnode::Init( nnode* n , OpticksCSG_t type, nnode* left, nnode* right )
 {
-    n.idx = 0 ; 
-    n.type = type ; 
+    n->idx = 0 ; 
+    n->type = type ; 
 
-    n.left = left ; 
-    n.right = right ; 
-    n.parent = NULL ; 
-    n.other  = NULL ;   // used by NOpenMesh 
+    n->left = left ; 
+    n->right = right ; 
+    n->parent = NULL ; 
+    n->other  = NULL ;   // used by NOpenMesh 
 
-    //n.label = NULL ;
     std::string tag = CSGTag(type) ; // 2-char 
-    n.label = strdup(tag.c_str()); 
+    n->label = strdup(tag.c_str()); 
  
-    n.treedir = NULL ; 
-    n.treeidx = -1 ; 
-    n.depth = 0 ; 
-    n.subdepth = 0 ; 
-    n.boundary = NULL ;  
-    n.meta = NULL ; 
-    n._dump = new NNodeDump2(&n) ; 
-    n._bbox_model = NULL ; 
-    n.g4code = NULL ;  
+    n->treedir = NULL ; 
+    n->treeidx = -1 ; 
+    n->depth = 0 ; 
+    n->subdepth = 0 ; 
+    n->boundary = NULL ;  
 
-    n.transform = NULL ; 
-    n.gtransform = NULL ; 
-    n.gtransform_idx = 0 ; 
-    n.itransform_idx = 0 ; 
-    n.complement = false ; 
-    n.verbosity = 0 ; 
+    n->transform = NULL ; 
+    n->gtransform = NULL ; 
+    n->gtransform_idx = 0 ; 
+    n->itransform_idx = 0 ; 
 
-    n.param.u  = {0u,0u,0u,0u};
-    n.param1.u = {0u,0u,0u,0u};
-    n.param2.u = {0u,0u,0u,0u};
-    n.param3.u = {0u,0u,0u,0u};
+    n->complement = false ; 
+    n->verbosity = 0 ; 
 
+    n->param.u  = {0u,0u,0u,0u};
+    n->param1.u = {0u,0u,0u,0u};
+    n->param2.u = {0u,0u,0u,0u};
+    n->param3.u = {0u,0u,0u,0u};
+
+    n->planes = {} ;
+    n->par_points = {};
+    n->par_coords = {};
+
+    n->meta = NULL ; 
+    n->_dump = new NNodeDump2(n) ; 
+    n->_bbox_model = NULL ; 
+    n->g4code = NULL ;  
 }
 
 
@@ -729,6 +733,9 @@ void nnode::get_primitive_bbox(nbbox& bb) const
     else if(node->type == CSG_SPHERE)
     { 
         const nsphere* n = dynamic_cast<const nsphere*>(node) ;
+        if(!n) LOG(fatal) << "failed to dynamic_cast a node of type CSG_SPHERE to const nsphere " ;  assert(n) ; 
+        //nsphere* n = (nsphere*)node ;
+        //if(!n) LOG(fatal) << "failed to cast a node of type CSG_SPHERE to nsphere " ;  assert(n) ; 
         nbbox pp = n->bbox() ;
         bb.copy_from(pp) ; 
     }

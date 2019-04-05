@@ -8,8 +8,7 @@
 #include "NBBox.hpp"
 #include "Nuv.hpp"
 
-#include "NPY_LOG.hh"
-#include "PLOG.hh"
+#include "OPTICKS_LOG.hh"
 
 
 void test_gtransform()
@@ -37,14 +36,14 @@ void test_gtransform()
         if(verbose)
         std::cout << " gtransform " << triple << std::endl ; 
 
-        nbox a = make_box(0.f,0.f,0.f,100.f);      
+        nbox* a = make_box(0.f,0.f,0.f,100.f);      
         // untouched box at origin
 
-        nbox b = make_box(0.f,0.f,0.f,100.f);      
-        b.gtransform = &triple ;  
+        nbox* b = make_box(0.f,0.f,0.f,100.f);      
+        b->gtransform = &triple ;  
         // translated box via gtransform
 
-        nbox c = make_box( tlate.x, tlate.y, tlate.z,100.f);  
+        nbox* c = make_box( tlate.x, tlate.y, tlate.z,100.f);  
         // manually positioned box at tlated position 
 
 
@@ -55,9 +54,9 @@ void test_gtransform()
         for(int iz=-200 ; iz <= 200 ; iz+= 10 ) 
         {
            z = iz ;  
-           float a_ = a(x,y,z) ;
-           float b_ = b(x,y,z) ;
-           float c_ = c(x,y,z) ;
+           float a_ = (*a)(x,y,z) ;
+           float b_ = (*b)(x,y,z) ;
+           float c_ = (*c)(x,y,z) ;
       
            if(verbose) 
            std::cout 
@@ -77,12 +76,12 @@ void test_gtransform()
 
 void test_sdf()
 {
-    nbox b = make_box(0,0,0,1);  // unit box centered at origin       
+    nbox* b = make_box(0,0,0,1);  // unit box centered at origin       
 
     for(float x=-2.f ; x < 2.f ; x+=0.01f )
     {
-        float sd1 = b.sdf1(x,0,0) ;
-        float sd2 = b.sdf2(x,0,0) ;
+        float sd1 = b->sdf1(x,0,0) ;
+        float sd2 = b->sdf2(x,0,0) ;
 
        /*
         std::cout
@@ -102,9 +101,9 @@ void test_parametric()
 {
     LOG(info) << "test_parametric" ;
 
-    nbox box = make_box(0,0,0,100); 
+    nbox* box = make_box(0,0,0,100); 
 
-    unsigned nsurf = box.par_nsurf();
+    unsigned nsurf = box->par_nsurf();
     assert(nsurf == 6);
 
     unsigned nu = 1 ; 
@@ -120,7 +119,7 @@ void test_parametric()
         {
             nuv uv = make_uv(s,u,v,nu,nv, p );
 
-            glm::vec3 p = box.par_pos_global(uv);
+            glm::vec3 p = box->par_pos_global(uv);
 
             std::cout 
                  << " s " << std::setw(3) << s  
@@ -140,13 +139,13 @@ void test_box_box3()
     LOG(info) << "test_box_box3" ;
 
 
-    nbox box = make_box(0,0,0,10);
-    box.verbosity = 3 ;  
-    box.pdump("make_box(0,0,0,10)");
+    nbox* box = make_box(0,0,0,10);
+    box->verbosity = 3 ;  
+    box->pdump("make_box(0,0,0,10)");
 
-    nbox box3 = make_box3(20,20,20);
-    box3.verbosity = 3 ;  
-    box3.pdump("make_box3(20,20,20)");
+    nbox* box3 = make_box3(20,20,20);
+    box3->verbosity = 3 ;  
+    box3->pdump("make_box3(20,20,20)");
 
 }
 
@@ -171,20 +170,20 @@ void test_nudge()
     int margin = 1 ;  
 
     float h = 10.f ;  
-    nbox box = make_box3(2*h,2*h,2*h); 
-    box.verbosity = 3 ;  
+    nbox* box = make_box3(2*h,2*h,2*h); 
+    box->verbosity = 3 ;  
 
     nmat4triple* start = make_triple() ;
-    box.gtransform = start ; 
+    box->gtransform = start ; 
 
-    box.pdump("make_box3(2*h,2*h,2*h)");
+    box->pdump("make_box3(2*h,2*h,2*h)");
 
 
     unsigned prim_idx = 0 ;   
  
-    box.collectParPoints( prim_idx, level, margin, FRAME_LOCAL, box.verbosity); 
+    box->collectParPoints( prim_idx, level, margin, FRAME_LOCAL, box->verbosity); 
 
-    const std::vector<glm::vec3>& before = box.par_points ;
+    const std::vector<glm::vec3>& before = box->par_points ;
 
     assert(before.size() == 6 ); 
 
@@ -203,11 +202,11 @@ void test_nudge()
     unsigned nudge_face = 1 ; // +Z nudge
 
     float delta = 1.f ; 
-    box.nudge(nudge_face, delta);
-    box.pdump("make_box3(2*h,2*h,2*h) NUDGED");
+    box->nudge(nudge_face, delta);
+    box->pdump("make_box3(2*h,2*h,2*h) NUDGED");
 
-    box.collectParPoints( prim_idx, level, margin, FRAME_LOCAL, box.verbosity ); 
-    const std::vector<glm::vec3>& after = box.par_points ;
+    box->collectParPoints( prim_idx, level, margin, FRAME_LOCAL, box->verbosity ); 
+    const std::vector<glm::vec3>& after = box->par_points ;
 
     assert(after.size() == 6 ); 
 
@@ -226,16 +225,16 @@ void test_nudge()
 void test_getParPoints()
 {
     float h = 10.f ;  
-    nbox box = make_box3(2*h,2*h,2*h); 
-    box.verbosity = 3 ;  
-    box.pdump("make_box3(2*h,2*h,2*h)");
+    nbox* box = make_box3(2*h,2*h,2*h); 
+    box->verbosity = 3 ;  
+    box->pdump("make_box3(2*h,2*h,2*h)");
 
     unsigned level = 1 ;  // +---+---+
     int margin = 1 ;      // o---*---o
     unsigned prim_idx = 0 ;   
 
-    box.collectParPoints( prim_idx, level, margin, FRAME_LOCAL, box.verbosity ); 
-    const std::vector<glm::vec3>& surf = box.par_points ; 
+    box->collectParPoints( prim_idx, level, margin, FRAME_LOCAL, box->verbosity ); 
+    const std::vector<glm::vec3>& surf = box->par_points ; 
 
     LOG(info) << "test_getParPoints"
               << " surf " << surf.size()
@@ -244,7 +243,7 @@ void test_getParPoints()
     for(unsigned i=0 ; i < surf.size() ; i++ ) std::cout << gpresent(surf[i]) << std::endl ; 
 
 
-    box.dumpSurfacePointsAll("box.dumpSurfacePointsAll", FRAME_LOCAL );
+    box->dumpSurfacePointsAll("box->dumpSurfacePointsAll", FRAME_LOCAL );
 
 
 }
@@ -255,8 +254,7 @@ void test_getParPoints()
 
 int main(int argc, char** argv)
 {
-    PLOG_(argc, argv);
-    NPY_LOG__ ; 
+    OPTICKS_LOG(argc, argv);
 
     //test_gtransform();
     //test_sdf();

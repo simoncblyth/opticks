@@ -72,33 +72,33 @@ inline NPY_API unsigned nslab::flags() const
 }
 
 
-inline NPY_API void init_slab(nslab& slab, const nquad& param, const nquad& param1 )
+inline NPY_API void init_slab(nslab* slab, const nquad& param, const nquad& param1 )
 {
     glm::vec3 n = glm::normalize(glm::vec3(param.f.x, param.f.y, param.f.z));
 
-    slab.param.f.x = n.x ; 
-    slab.param.f.y = n.y ; 
-    slab.param.f.z = n.z ; 
-    slab.param.u.w = SLAB_ACAP|SLAB_BCAP ; // caps are now always ON, as makes no-sense to be off
+    slab->param.f.x = n.x ; 
+    slab->param.f.y = n.y ; 
+    slab->param.f.z = n.z ; 
+    slab->param.u.w = SLAB_ACAP|SLAB_BCAP ; // caps are now always ON, as makes no-sense to be off
  
-    slab.param1.f.x = param1.f.x ; 
-    slab.param1.f.y = param1.f.y ; 
+    slab->param1.f.x = param1.f.x ; 
+    slab->param1.f.y = param1.f.y ; 
 
-    assert(slab.b() > slab.a() );
+    assert(slab->b() > slab->a() );
 
-    slab.define_uv_basis();
+    slab->define_uv_basis();
 
 }
 
-inline NPY_API nslab make_slab(const nquad& param, const nquad& param1)
+inline NPY_API nslab* make_slab(const nquad& param, const nquad& param1)
 {
-    nslab slab ; 
-    nnode::Init(slab,CSG_SLAB) ; 
-    init_slab(slab, param, param1 );
-    return slab ;
+    nslab* n = new nslab  ; 
+    nnode::Init(n,CSG_SLAB) ; 
+    init_slab(n, param, param1 );
+    return n ;
 }
 
-inline NPY_API nslab make_slab(float x, float y, float z, float a, float b  )
+inline NPY_API nslab* make_slab(float x, float y, float z, float a, float b  )
 {
     nquad param, param1 ; 
 
@@ -112,7 +112,7 @@ inline NPY_API nslab make_slab(float x, float y, float z, float a, float b  )
     return make_slab( param, param1 ); 
 }
 
-inline NPY_API nslab make_slab(float x0, float y0, float z0, float w0, float x1, float y1, float z1, float w1 )
+inline NPY_API nslab* make_slab(float x0, float y0, float z0, float w0, float x1, float y1, float z1, float w1 )
 {
     // 2-quad form used by codegen
     assert( w0 == 0.f );

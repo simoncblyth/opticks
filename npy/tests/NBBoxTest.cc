@@ -21,8 +21,7 @@ NBBoxTest /tmp/blyth/opticks/tboolean-csg-two-box-minus-sphere-interlocked-py-/1
 #include "NBBox.hpp"
 #include "NScan.hpp"
 
-#include "NPY_LOG.hh"
-#include "PLOG.hh"
+#include "OPTICKS_LOG.hh"
 
 
 glm::mat4 make_test_matrix()
@@ -46,8 +45,8 @@ void test_bbox_transform()
 {
      glm::mat4 tr = make_test_matrix();
 
-     nbox a = make_box(0.f,0.f,0.f,100.f);      
-     nbbox bb = a.bbox();
+     nbox* a = make_box(0.f,0.f,0.f,100.f);      
+     nbbox bb = a->bbox();
 
      nbbox tbb0 ;
      nbbox::transform_brute( tbb0, bb, tr );
@@ -80,8 +79,8 @@ void test_bbox_transform_loaded(const char* path)
     std::cout << gpresent("tr[2]",tr[2] ) << std::endl ; 
     std::cout << gpresent("tr[3]",tr[3] ) << std::endl ; 
 
-    nbox a = make_box(0.f,0.f,0.f,100.f);      
-    nbbox bb = a.bbox();
+    nbox* a = make_box(0.f,0.f,0.f,100.f);      
+    nbbox bb = a->bbox();
     std::cout << "bb " <<  bb.desc() << std::endl ; 
 
     nbbox tbb = bb.make_transformed(tr);
@@ -97,16 +96,16 @@ void test_overlap()
     {
         std::cout << std::endl << "totally not overlapping... " << std::endl ; 
 
-        nbox _a = make_box(0.f,0.f,0.f,1.f);      
-        _a.pdump("_a");
+        nbox* _a = make_box(0.f,0.f,0.f,1.f);      
+        _a->pdump("_a");
 
-        nbbox a = _a.bbox();
+        nbbox a = _a->bbox();
         a.dump("a");
 
-        nbox _b = make_box(3.f,3.f,3.f,1.f);      
-        _b.pdump("_b");
+        nbox* _b = make_box(3.f,3.f,3.f,1.f);      
+        _b->pdump("_b");
 
-        nbbox b = _b.bbox();
+        nbbox b = _b->bbox();
         b.dump("b");
 
         nbbox ab ;
@@ -118,16 +117,16 @@ void test_overlap()
     {
         std::cout << std::endl << "single point of overlap" << std::endl ; 
 
-        nbox _a = make_box(0.f,0.f,0.f,1.f);      
-        _a.pdump("_a");
+        nbox* _a = make_box(0.f,0.f,0.f,1.f);      
+        _a->pdump("_a");
 
-        nbbox a = _a.bbox();
+        nbbox a = _a->bbox();
         a.dump("a");
 
-        nbox _b = make_box(2.f,2.f,2.f,1.f);      
-        _b.pdump("_b");
+        nbox* _b = make_box(2.f,2.f,2.f,1.f);      
+        _b->pdump("_b");
 
-        nbbox b = _b.bbox();
+        nbbox b = _b->bbox();
         b.dump("b");
 
         nbbox ab ;
@@ -142,16 +141,16 @@ void test_overlap()
     {
         std::cout << std::endl << "b contained inside a" << std::endl ; 
 
-        nbox _a = make_box(0.f,0.f,0.f,1.f);      
-        _a.pdump("_a");
+        nbox* _a = make_box(0.f,0.f,0.f,1.f);      
+        _a->pdump("_a");
 
-        nbbox a = _a.bbox();
+        nbbox a = _a->bbox();
         a.dump("a");
 
-        nbox _b = make_box(0.5f,0.5f,0.5f,0.5f);      
-        _b.pdump("_b");
+        nbox* _b = make_box(0.5f,0.5f,0.5f,0.5f);      
+        _b->pdump("_b");
 
-        nbbox b = _b.bbox();
+        nbbox b = _b->bbox();
         b.dump("b");
 
         nbbox ab ;
@@ -167,16 +166,16 @@ void test_overlap()
     {
         std::cout << std::endl << "substantial overlap" << std::endl ; 
 
-        nbox _a = make_box(0.f,0.f,0.f,1.f);      
-        _a.pdump("_a");
+        nbox* _a = make_box(0.f,0.f,0.f,1.f);      
+        _a->pdump("_a");
 
-        nbbox a = _a.bbox();
+        nbbox a = _a->bbox();
         a.dump("a");
 
-        nbox _b = make_box(0.5f,0.5f,0.5f,1.f);      
-        _b.pdump("_b");
+        nbox* _b = make_box(0.5f,0.5f,0.5f,1.f);      
+        _b->pdump("_b");
 
-        nbbox b = _b.bbox();
+        nbbox b = _b->bbox();
         b.dump("b");
 
         nbbox ab ;
@@ -206,26 +205,26 @@ void test_positive_form()
 
     LOG(info) << "test_positive_form" ; 
 
-    nbox a = make_box(0.f,0.f,0.f,10.f);   a.label = "A" ;     
-    nbox b = make_box(5.f,0.f,0.f,0.01f);    b.label = "B" ;   
-    nbox c = make_box(0.f,5.f,0.f,0.01f);    c.label = "C" ;   
-    nbox d = make_box(0.f,0.f,5.f,0.01f);    d.label = "D" ;     
+    nbox* a = make_box(0.f,0.f,0.f,10.f);   a->label = "A" ;     
+    nbox* b = make_box(5.f,0.f,0.f,0.01f);    b->label = "B" ;   
+    nbox* c = make_box(0.f,5.f,0.f,0.01f);    c->label = "C" ;   
+    nbox* d = make_box(0.f,0.f,5.f,0.01f);    d->label = "D" ;     
 
-    a.pdump("a");
-    b.pdump("b");
-    c.pdump("c");
-    d.pdump("d");
+    a->pdump("a");
+    b->pdump("b");
+    c->pdump("c");
+    d->pdump("d");
 
-    nbbox a_bb = a.bbox();
-    nbbox b_bb = b.bbox();
-    nbbox c_bb = c.bbox();
-    nbbox d_bb = d.bbox();
+    nbbox a_bb = a->bbox();
+    nbbox b_bb = b->bbox();
+    nbbox c_bb = c->bbox();
+    nbbox d_bb = d->bbox();
 
 
-    std::cout << a.desc() << " " << a_bb.desc() << std::endl ; 
-    std::cout << b.desc() << " " << b_bb.desc() << std::endl ; 
-    std::cout << c.desc() << " " << c_bb.desc() << std::endl ; 
-    std::cout << d.desc() << " " << d_bb.desc() << std::endl ; 
+    std::cout << a->desc() << " " << a_bb.desc() << std::endl ; 
+    std::cout << b->desc() << " " << b_bb.desc() << std::endl ; 
+    std::cout << c->desc() << " " << c_bb.desc() << std::endl ; 
+    std::cout << d->desc() << " " << d_bb.desc() << std::endl ; 
 
 
     unsigned verbosity = 2 ; 
@@ -236,14 +235,14 @@ void test_positive_form()
     nbbox bb0 ; 
     std::vector<float> sd0 ; 
     {
-        ndifference ab = ndifference::make_difference( &a, &b ); 
-        ndifference abc = ndifference::make_difference( &ab, &c ); 
-        ndifference abcd = ndifference::make_difference( &abc, &d ); 
+        ndifference* ab = ndifference::make_difference( a, b ); 
+        ndifference* abc = ndifference::make_difference( ab, c ); 
+        ndifference* abcd = ndifference::make_difference( abc, d ); 
 
-        NScan scan(abcd, verbosity);
+        NScan scan(*abcd, verbosity);
         scan.scan(sd0, origin, direction, range );
 
-        abcd.get_composite_bbox(bb0);
+        abcd->get_composite_bbox(bb0);
     }
     std::cout << "bb0 " << bb0.description() << std::endl ; 
 
@@ -251,22 +250,22 @@ void test_positive_form()
     nbbox bb1 ; 
     std::vector<float> sd1 ; 
     {
-        b.complement = true ;  
-        c.complement = true ;  
-        d.complement = true ;  
+        b->complement = true ;  
+        c->complement = true ;  
+        d->complement = true ;  
 
-        nintersection ab = nintersection::make_intersection( &a, &b ); 
-        nintersection abc = nintersection::make_intersection( &ab, &c ); 
-        nintersection abcd = nintersection::make_intersection( &abc, &d ); 
+        nintersection* ab = nintersection::make_intersection( a, b ); 
+        nintersection* abc = nintersection::make_intersection( ab, c ); 
+        nintersection* abcd = nintersection::make_intersection( abc, d ); 
 
-        NScan scan(abcd, verbosity);
+        NScan scan(*abcd, verbosity);
         scan.scan(sd1, origin, direction, range );
 
-        abcd.get_composite_bbox(bb1);
+        abcd->get_composite_bbox(bb1);
 
-        b.complement = false ;  
-        c.complement = false ;  
-        d.complement = false ;  
+        b->complement = false ;  
+        c->complement = false ;  
+        d->complement = false ;  
     }
     std::cout << "bb1 " << bb1.description() << std::endl ; 
 
@@ -286,14 +285,14 @@ void test_difference_bbox()
     float z1 = -1.f ; 
     float z2 = 1.f ; 
 
-    ncylinder a = make_cylinder( radius     , z1, z2);   a.label = "A" ;     
-    ncylinder b = make_cylinder( radius-1.f , z1, z2);   b.label = "B" ;   
+    ncylinder* a = make_cylinder( radius     , z1, z2);   a->label = "A" ;     
+    ncylinder* b = make_cylinder( radius-1.f , z1, z2);   b->label = "B" ;   
 
-    a.pdump("a");
-    b.pdump("b");
+    a->pdump("a");
+    b->pdump("b");
 
-    ndifference ab = ndifference::make_difference( &a, &b ); 
-    ab.dump("a-b");
+    ndifference* ab = ndifference::make_difference( a, b ); 
+    ab->dump("a-b");
 }
 
 
@@ -302,10 +301,10 @@ void test_difference_bbox()
 
 nnode* make_placed_dicycy(float rmin, float rmax, float zmin, float zmax, float tx, float ty, float tz)
 {
-    ncylinder* a = new ncylinder(make_cylinder( rmax , zmin, zmax));   a->label = "A" ;     
-    ncylinder* b = new ncylinder(make_cylinder( rmin , zmin, zmax));   b->label = "B" ;   
+    ncylinder* a = make_cylinder( rmax , zmin, zmax);   a->label = "A" ;     
+    ncylinder* b = make_cylinder( rmin , zmin, zmax);   b->label = "B" ;   
 
-    ndifference* ab = new ndifference(ndifference::make_difference( a, b )); 
+    ndifference* ab = ndifference::make_difference( a, b ); 
 
     ab->transform  = nmat4triple::make_translate( tx, ty, tz );
 
@@ -372,25 +371,15 @@ void test_difference_chop_bbox()
     // lvid:247
     // generated by nnode_test_cpp.py : 20170705-1234 
 
-    nbox a = make_box3( 50000.000,50000.000,50000.000,0.000 ) ; a.label = "a" ;   
-    nbox b = make_box3( 50010.000,50010.000,12010.000,0.000 ) ; b.label = "b" ;   
-    b.transform = nmat4triple::make_transform(1.000,0.000,0.000,0.000,  0.000,1.000,0.000,0.000,  0.000,0.000,1.000,0.000,  0.000,0.000,-19000.000,1.000) ;
-    ndifference ab = ndifference::make_difference( &a, &b ) ; ab.label = "ab" ; a.parent = &ab ; b.parent = &ab ;   
+    nbox* a = make_box3( 50000.000,50000.000,50000.000,0.000 ) ; a->label = "a" ;   
+    nbox* b = make_box3( 50010.000,50010.000,12010.000,0.000 ) ; b->label = "b" ;   
+    b->transform = nmat4triple::make_transform(1.000,0.000,0.000,0.000,  0.000,1.000,0.000,0.000,  0.000,0.000,1.000,0.000,  0.000,0.000,-19000.000,1.000) ;
+    ndifference* ab = ndifference::make_difference( a, b ) ; ab->label = "ab" ; a->parent = ab ; b->parent = ab ;   
 
-    ab.update_gtransforms();
-    ab.verbosity = SSys::getenvint("VERBOSITY", 1) ; 
-
-
-    
-    ab.dump("=====") ; 
-
-
-
-
-
+    ab->update_gtransforms();
+    ab->verbosity = SSys::getenvint("VERBOSITY", 1) ; 
+    ab->dump("=====") ; 
 }
-
-
 
 
 void test_intersection_cone_difference_bbox()
@@ -401,14 +390,14 @@ void test_intersection_cone_difference_bbox()
     float radius = 10.f ; 
     float z1 = -1.f ; 
     float z2 = 1.f ; 
-    ncylinder a = make_cylinder( radius     , z1, z2);   a.label = "A" ;     
-    ncylinder b = make_cylinder( radius-1.f , z1, z2);   b.label = "B" ;   
+    ncylinder* a = make_cylinder( radius     , z1, z2);   a->label = "A" ;     
+    ncylinder* b = make_cylinder( radius-1.f , z1, z2);   b->label = "B" ;   
     // wide flat ring 
 
     //a.pdump("a");
     //b.pdump("b");
 
-    ndifference ab = ndifference::make_difference( &a, &b ); 
+    ndifference* ab = ndifference::make_difference( a, b ); 
     //ab.dump("a-b");
 
  
@@ -425,10 +414,10 @@ void test_intersection_cone_difference_bbox()
     float r2 = radius + 2.f ; 
 
 
-    ncone c = make_cone( r1, z1, r2, z2 );
+    ncone* c = make_cone( r1, z1, r2, z2 );
 
-    nintersection cab = nintersection::make_intersection( &c, &ab );
-    cab.dump("c*(a-b)");
+    nintersection* cab = nintersection::make_intersection( c, ab );
+    cab->dump("c*(a-b)");
 }
 
 
@@ -629,9 +618,7 @@ void test_SubtractOverlap_Above()
 
 int main(int argc, char** argv)
 {
-    PLOG_(argc, argv);
-
-    NPY_LOG__ ; 
+    OPTICKS_LOG(argc, argv);
 
 
     //const char* path = "$TMP/tboolean-csg-two-box-minus-sphere-interlocked-py-/1/transforms.npy" ;

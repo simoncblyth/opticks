@@ -1,7 +1,7 @@
 #include <iostream>
 #include <iomanip>
 
-#include "PLOG.hh"
+#include "OPTICKS_LOG.hh"
 #include "Nuv.hpp"
 #include "NDisc.hpp"
 
@@ -9,8 +9,8 @@
 void test_dumpSurfacePointsAll()
 {
     LOG(info) << "test_dumpSurfacePointsAll" ;
-    ndisc ds = make_disc();
-    ds.dumpSurfacePointsAll("ds.dumpSurfacePointsAll", FRAME_LOCAL);
+    ndisc* ds = make_disc();
+    ds->dumpSurfacePointsAll("ds.dumpSurfacePointsAll", FRAME_LOCAL);
 }
 
 
@@ -22,11 +22,11 @@ void test_parametric()
     float z1    = -0.1f ; 
     float z2    =  0.1f ; 
 
-    ndisc ds = make_disc(radius,z1,z2); 
+    ndisc* ds = make_disc(radius,z1,z2); 
 
     // hmm need flexibility wrt par steps, only need one step for body ?
 
-    unsigned nsurf = ds.par_nsurf();
+    unsigned nsurf = ds->par_nsurf();
     assert(nsurf == 3);
 
     unsigned nu = 5 ; 
@@ -42,7 +42,7 @@ void test_parametric()
         {
             nuv uv = make_uv(s,u,v,nu,nv, prim_idx );
 
-            glm::vec3 p = ds.par_pos_model(uv);
+            glm::vec3 p = ds->par_pos_model(uv);
 
             std::cout 
                  << " s " << std::setw(3) << s  
@@ -59,7 +59,7 @@ void test_parametric()
 
 int main(int argc, char** argv)
 {
-    PLOG_(argc, argv);
+    OPTICKS_LOG(argc, argv);
 
     //test_parametric();
     test_dumpSurfacePointsAll();

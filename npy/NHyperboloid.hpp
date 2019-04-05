@@ -51,28 +51,23 @@ inline NPY_API float nhyperboloid::z2() const { return param.f.w ; }
 inline NPY_API glm::vec3 nhyperboloid::center() const { return glm::vec3(0,0,0)  ; }
 
 
-inline NPY_API void init_hyperboloid(nhyperboloid& s, const nquad& param)
+inline NPY_API void init_hyperboloid(nhyperboloid* n, const nquad& param)
 {
-    s.param = param ; 
+    n->param = param ; 
 }
-inline NPY_API nhyperboloid make_hyperboloid(const nquad& param)
+inline NPY_API nhyperboloid* make_hyperboloid(const nquad& param)
 {
-    nhyperboloid n ; 
+    nhyperboloid* n = new nhyperboloid ; 
     nnode::Init(n,CSG_HYPERBOLOID) ; 
     init_hyperboloid(n, param);
     return n ; 
 }
 
-inline NPY_API nhyperboloid make_hyperboloid(float r0=100.f, float zf=100.f, float z1=-100.f, float z2=100.f)
+inline NPY_API nhyperboloid* make_hyperboloid(float r0=100.f, float zf=100.f, float z1=-100.f, float z2=100.f)
 {
     nquad param ; 
     param.f = {r0,zf,z1,z2} ;
     return make_hyperboloid(param);
 }
-
-
-
-
-
 
 

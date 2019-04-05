@@ -13,8 +13,7 @@
 #include "NBox.hpp"
 #include "Nuv.hpp"
 
-#include "NPY_LOG.hh"
-#include "PLOG.hh"
+#include "OPTICKS_LOG.hh"
 
 
 nmat4pair make_tlate_pair( const glm::vec3& tlate )
@@ -66,43 +65,43 @@ void test_node_transforms()
     */
   
     // lu
-    nsphere la = make_sphere(-500.f,0.f,-50.f,100.f); la.label = "la" ; 
-    nsphere lb = make_sphere(-500.f,0.f, 50.f,100.f); lb.label = "lb" ; 
-    nunion  lu = nunion::make_union( &la, &lb );
-    la.parent = &lu ; 
-    lb.parent = &lu ; 
+    nsphere* la = make_sphere(-500.f,0.f,-50.f,100.f); la->label = "la" ; 
+    nsphere* lb = make_sphere(-500.f,0.f, 50.f,100.f); lb->label = "lb" ; 
+    nunion*  lu = nunion::make_union( la, lb );
+    la->parent = lu ; 
+    lb->parent = lu ; 
 
     // ru
-    nsphere ra = make_sphere( 500.f,0.f,-50.f,100.f); ra.label = "ra" ; 
-    nsphere rb = make_sphere( 500.f,0.f, 50.f,100.f); rb.label = "rb" ; 
-    nunion  ru = nunion::make_union( &ra, &rb );
-    ra.parent = &ru ; 
-    rb.parent = &ru ; 
+    nsphere* ra = make_sphere( 500.f,0.f,-50.f,100.f); ra->label = "ra" ; 
+    nsphere* rb = make_sphere( 500.f,0.f, 50.f,100.f); rb->label = "rb" ; 
+    nunion*  ru = nunion::make_union( ra, rb );
+    ra->parent = ru ; 
+    rb->parent = ru ; 
 
     // u 
-    nunion u = nunion::make_union( &lu, &ru );
-    lu.parent = &u ; 
-    ru.parent = &u ; 
+    nunion* u = nunion::make_union( lu, ru );
+    lu->parent = u ; 
+    ru->parent = u ; 
  
 
-    u.transform = &mpx ; 
-    ru.transform = &mpy ; 
-    rb.transform = &mpz ;     
+    u->transform = &mpx ; 
+    ru->transform = &mpy ; 
+    rb->transform = &mpz ;     
      
 
     // setting gtransform on internal nodes does nothing ... need to do that to the leaves
-    u.update_gtransforms();
+    u->update_gtransforms();
 
-    assert(ra.gtransform);
-    assert(rb.gtransform);
-    assert(la.gtransform);
-    assert(lb.gtransform);
+    assert(ra->gtransform);
+    assert(rb->gtransform);
+    assert(la->gtransform);
+    assert(lb->gtransform);
 
-    std::cout << " rb.gt " << *rb.gtransform << std::endl ; 
+    std::cout << " rb->gt " << *(rb->gtransform) << std::endl ; 
 
     std::vector<glm::vec3> centers ; 
     std::vector<glm::vec3> dirs ; 
-    u.collect_prim_centers(centers, dirs);
+    u->collect_prim_centers(centers, dirs);
 
     unsigned ncen = centers.size();
     unsigned ndir = dirs.size();
@@ -110,25 +109,25 @@ void test_node_transforms()
 
     for(unsigned i=0 ; i < ncen ; i++) std::cout << i << " center:" << centers[i] << " dir:" << dirs[i] << std::endl ; 
 
-    u.verbosity = 1 ;  
-    u.dump("dump(v:1)"); 
+    u->verbosity = 1 ;  
+    u->dump("dump(v:1)"); 
 
     std::cout << std::endl ; 
-    u.verbosity = 2 ;  
-    u.dump("dump(v:2)"); 
+    u->verbosity = 2 ;  
+    u->dump("dump(v:2)"); 
 
     // hmm need to do this with rotations, as with translation order doesnt matter 
 }
 
 void test_node_bbox_unspsp()
 {
-    nsphere a = make_sphere(-50.f,0.f,0.f,100.f); a.label = "a" ; 
-    nsphere b = make_sphere( 50.f,0.f,0.f,100.f); b.label = "b" ; 
-    nunion  ab = nunion::make_union( &a, &b );
-    a.parent = &ab ; 
-    b.parent = &ab ; 
+    nsphere* a = make_sphere(-50.f,0.f,0.f,100.f); a->label = "a" ; 
+    nsphere* b = make_sphere( 50.f,0.f,0.f,100.f); b->label = "b" ; 
+    nunion*  ab = nunion::make_union( a, b );
+    a->parent = ab ; 
+    b->parent = ab ; 
 
-    nbbox bb = ab.bbox(); 
+    nbbox bb = ab->bbox(); 
 
     LOG(info) << bb.desc();  
 }
@@ -140,22 +139,22 @@ void test_node_bbox_uncyco()
     float cy_z1 = -50.f ; 
     float cy_z2 =  50.f ; 
 
-    ncylinder cy = make_cylinder(cy_radius,cy_z1,cy_z2); 
-    cy.label = "cy" ; 
+    ncylinder* cy = make_cylinder(cy_radius,cy_z1,cy_z2); 
+    cy->label = "cy" ; 
 
     float co_r1 = 100.f ; 
     float co_r2 =  10.f ; 
     float co_z1 =  50.f ; 
     float co_z2 = 100.f ; 
     
-    ncone co = make_cone(co_r1,co_z1,co_r2, co_z2); 
-    co.label = "co" ; 
+    ncone* co = make_cone(co_r1,co_z1,co_r2, co_z2); 
+    co->label = "co" ; 
 
-    nunion  uncyco = nunion::make_union( &cy, &co );
-    cy.parent = &uncyco ; 
-    co.parent = &uncyco ; 
+    nunion*  uncyco = nunion::make_union( cy, co );
+    cy->parent = uncyco ; 
+    co->parent = uncyco ; 
 
-    nbbox bb = uncyco.bbox(); 
+    nbbox bb = uncyco->bbox(); 
 
     LOG(info) << bb.desc();  
 }
@@ -169,34 +168,34 @@ void test_getSurfacePoints_difference()
 {
     LOG(info) << "test_getSurfacePoints_difference" ; 
 
-    nbox a = make_box3(400,400,100);
-    nbox b = make_box3(300,300,50);
+    nbox* a = make_box3(400,400,100);
+    nbox* b = make_box3(300,300,50);
 
     glm::vec3 tlate(0,0,25);
-    b.transform = nmat4triple::make_translate( tlate );    
+    b->transform = nmat4triple::make_translate( tlate );    
 
-    ndifference obj = ndifference::make_difference(&a, &b);
+    ndifference* obj = ndifference::make_difference(a, b);
 
-    a.parent = &obj ;  // parent hookup usually done by NCSG::import_r 
-    b.parent = &obj ;   
+    a->parent = obj ;  // parent hookup usually done by NCSG::import_r 
+    b->parent = obj ;   
     
-    obj.update_gtransforms();  // recurse over tree using parent links to set gtransforms
+    obj->update_gtransforms();  // recurse over tree using parent links to set gtransforms
     // without update_gtransforms they are all NULL so the dump shows un-translated bbox
 
-    obj.dump("before scaling obj");
+    obj->dump("before scaling obj");
 
 
     glm::vec3 tsca(2,2,2);
-    obj.transform = nmat4triple::make_scale( tsca );    
+    obj->transform = nmat4triple::make_scale( tsca );    
 
-    obj.update_gtransforms();  
+    obj->update_gtransforms();  
    
-    obj.dump("after scaling obj");
+    obj->dump("after scaling obj");
 
     // NOW HOW TO GET LOCALS ? WITHOUT THE OBJ TRANSFORM  
 
-    b.verbosity = 3 ; 
-    b.pdump("b.pdump");
+    b->verbosity = 3 ; 
+    b->pdump("b.pdump");
 
 
 }
@@ -204,9 +203,9 @@ void test_getSurfacePoints_difference()
 
 void test_getSurfacePoints()
 {
-     nbox bx = make_box3(20,20,20);
+     nbox* bx = make_box3(20,20,20);
 
-     unsigned ns = bx.par_nsurf();
+     unsigned ns = bx->par_nsurf();
      assert( ns == 6 );
 
      unsigned level = 1 ;
@@ -244,8 +243,8 @@ void test_getSurfacePoints()
                << " expect " << expect 
                 ; 
 
-     bx.collectParPoints(prim_idx, level, margin, FRAME_LOCAL, verbosity) ;
-     const std::vector<glm::vec3>& pts = bx.par_points ; 
+     bx->collectParPoints(prim_idx, level, margin, FRAME_LOCAL, verbosity) ;
+     const std::vector<glm::vec3>& pts = bx->par_points ; 
 
      assert( pts.size() == expect*ns );
 
@@ -276,10 +275,10 @@ void test_getCoincidentSurfacePoints()
 
   
 */
-     nbox bx = make_box(0,0,0,10);
-     nbox other = make_box(0,0,20,10) ;  
+     nbox* bx = make_box(0,0,0,10);
+     nbox* other = make_box(0,0,20,10) ;  
 
-     unsigned ns = bx.par_nsurf();
+     unsigned ns = bx->par_nsurf();
      assert( ns == 6 );
 
     
@@ -293,7 +292,7 @@ void test_getCoincidentSurfacePoints()
      {    
          std::vector<nuv> coincident ; 
 
-         bx.getCoincidentSurfacePoints(coincident, s, level, margin, &other, epsilon, FRAME_LOCAL ) ;
+         bx->getCoincidentSurfacePoints(coincident, s, level, margin, other, epsilon, FRAME_LOCAL ) ;
 
          std::cout << " s " 
                    << s 
@@ -308,11 +307,11 @@ void test_getCoincidentSurfacePoints()
 
 void test_getCoincident()
 {
-     nbox bx = make_box(0,0,0,10);
-     nbox other = make_box(20,0,0,10) ;  
+     nbox* bx = make_box(0,0,0,10);
+     nbox* other = make_box(20,0,0,10) ;  
 
      std::vector<nuv> coincident ; 
-     bx.getCoincident(coincident, &other ); 
+     bx->getCoincident(coincident, other ); 
 
      LOG(info) << "test_getCoincident" 
                << " coincident " << coincident.size()
@@ -322,7 +321,7 @@ void test_getCoincident()
      {
          nuv uv = coincident[i] ;
 
-         glm::vec3 pos = bx.par_pos_global(uv);
+         glm::vec3 pos = bx->par_pos_global(uv);
 
          std::cout 
               <<  " uv " << uv.desc() 
@@ -352,55 +351,55 @@ void test_getSurfacePointsAll_Composite()
 
 
     {
-        nbox a = make_box(aa.x,aa.y,aa.z,aa.w);
-        nbox b = make_box(bb.x,bb.y,bb.z,bb.w);
-        b.transform = nmat4triple::make_translate( tlate );    
+        nbox* a = make_box(aa.x,aa.y,aa.z,aa.w);
+        nbox* b = make_box(bb.x,bb.y,bb.z,bb.w);
+        b->transform = nmat4triple::make_translate( tlate );    
 
-        ndifference   ab = ndifference::make_difference(&a, &b); 
+        ndifference* ab = ndifference::make_difference(a, b); 
 
-        a.parent = &ab ;  // parent hookup usually done by NCSG::import_r 
-        b.parent = &ab ;   
-        ab.update_gtransforms();  // recurse over tree using parent links to set gtransforms
+        a->parent = ab ;  // parent hookup usually done by NCSG::import_r 
+        b->parent = ab ;   
+        ab->update_gtransforms();  // recurse over tree using parent links to set gtransforms
 
-        ab.dump();
+        ab->dump();
 
-        NNodePoints pts(&ab, NULL );
+        NNodePoints pts(ab, NULL );
         glm::uvec4 tot = pts.collect_surface_points();
         pts.dump();
         std::cout << "difference:(inside/surface/outside/select)  " << glm::to_string(tot) << std::endl ; 
     }
     {
-        nbox a = make_box(aa.x,aa.y,aa.z,aa.w);
-        nbox b = make_box(bb.x,bb.y,bb.z,bb.w);
-        b.transform = nmat4triple::make_translate( tlate );    
+        nbox* a = make_box(aa.x,aa.y,aa.z,aa.w);
+        nbox* b = make_box(bb.x,bb.y,bb.z,bb.w);
+        b->transform = nmat4triple::make_translate( tlate );    
 
-        nunion        ab = nunion::make_union(&a, &b); 
+        nunion*        ab = nunion::make_union(a, b); 
 
-        a.parent = &ab ;  // parent hookup usually done by NCSG::import_r 
-        b.parent = &ab ;   
-        ab.update_gtransforms();  // recurse over tree using parent links to set gtransforms
+        a->parent = ab ;  // parent hookup usually done by NCSG::import_r 
+        b->parent = ab ;   
+        ab->update_gtransforms();  // recurse over tree using parent links to set gtransforms
 
-        ab.dump();
+        ab->dump();
 
-        NNodePoints pts(&ab, NULL );
+        NNodePoints pts(ab, NULL );
         glm::uvec4 tot = pts.collect_surface_points();
         pts.dump();
         std::cout << "union: (inside/surface/outside/select)   " << glm::to_string(tot) << std::endl ; 
     }
     {
-        nbox a = make_box(aa.x,aa.y,aa.z,aa.w);
-        nbox b = make_box(bb.x,bb.y,bb.z,bb.w);
-        b.transform = nmat4triple::make_translate( tlate );    
+        nbox* a = make_box(aa.x,aa.y,aa.z,aa.w);
+        nbox* b = make_box(bb.x,bb.y,bb.z,bb.w);
+        b->transform = nmat4triple::make_translate( tlate );    
 
-        nintersection ab = nintersection::make_intersection(&a, &b); 
+        nintersection* ab = nintersection::make_intersection(a, b); 
 
-        a.parent = &ab ;  // parent hookup usually done by NCSG::import_r 
-        b.parent = &ab ;   
-        ab.update_gtransforms();  // recurse over tree using parent links to set gtransforms
+        a->parent = ab ;  // parent hookup usually done by NCSG::import_r 
+        b->parent = ab ;   
+        ab->update_gtransforms();  // recurse over tree using parent links to set gtransforms
 
-        ab.dump();
+        ab->dump();
 
-        NNodePoints pts(&ab, NULL );
+        NNodePoints pts(ab, NULL );
         glm::uvec4 tot = pts.collect_surface_points();
         pts.dump();
         std::cout << "intersection:  (inside/surface/outside/select)  " << glm::to_string(tot) << std::endl ; 
@@ -414,8 +413,7 @@ void test_getSurfacePointsAll_Composite()
 
 int main(int argc, char** argv)
 {
-    PLOG_(argc, argv);
-    NPY_LOG__ ; 
+    OPTICKS_LOG(argc, argv);
 
     //test_node_transforms();
     //test_node_bbox_unspsp();

@@ -86,18 +86,18 @@ bool no::is_lzero() const
 
 
 
-no no::make_node(OpticksCSG_t type, no* left, no* right )
+no* no::make_node(OpticksCSG_t type, no* left, no* right )
 {
-    no n ;   
+    no* n = new no ;   
 
     std::string tag = CSGTag(type) ;
-    n.label = strdup(tag.c_str()) ;    
-    n.left = left ; 
-    n.right = right ; 
-    n.parent = NULL ; 
-    n.depth = 0 ; 
-    n.type = type ; 
-    n.complement = false ; 
+    n->label = strdup(tag.c_str()) ;    
+    n->left = left ; 
+    n->right = right ; 
+    n->parent = NULL ; 
+    n->depth = 0 ; 
+    n->type = type ; 
+    n->complement = false ; 
 
     return n ;
 }

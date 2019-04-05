@@ -52,19 +52,19 @@ inline NPY_API float ncubic::rrz(float z) const { return (((A()*z+B())*z)+C())*z
 inline NPY_API float ncubic::rz(float z) const { return sqrt(rrz(z)) ;  }
 
 
-inline NPY_API void init_cubic(ncubic& s, const nquad& param, const nquad& param1)
+inline NPY_API void init_cubic(ncubic* n, const nquad& param, const nquad& param1)
 {
-    s.param = param ; 
-    s.param1 = param1 ; 
+    n->param = param ; 
+    n->param1 = param1 ; 
 }
-inline NPY_API ncubic make_cubic(const nquad& param, const nquad& param1 )
+inline NPY_API ncubic* make_cubic(const nquad& param, const nquad& param1 )
 {
-    ncubic n ; 
+    ncubic* n = new ncubic ; 
     nnode::Init(n,CSG_CUBIC) ; 
     init_cubic(n, param, param1);
     return n ; 
 }
-inline NPY_API ncubic make_cubic(float A=100.f, float B=100.f, float C=100.f, float D=100.f, float z1=-100.f, float z2=100.f, float zspare1=0.f, float zspare2=0.f)
+inline NPY_API ncubic* make_cubic(float A=100.f, float B=100.f, float C=100.f, float D=100.f, float z1=-100.f, float z2=100.f, float zspare1=0.f, float zspare2=0.f)
 {
     nquad param, param1 ; 
     param.f = {A,B,C,D} ;

@@ -2,6 +2,155 @@ Ubuntu16.04.6-gcc5.4.0-npy-NNodeDumpTest-SEGV
 =================================================
 
 
+
+Down to 1 expected fail with the workaround
+-----------------------------------------------
+
+::
+
+    99% tests passed, 1 tests failed out of 118
+
+    Total Test time (real) =   1.66 sec
+
+    The following tests FAILED:
+         83 - NPYTest.NLoadTest (Child aborted)
+    Errors while running CTest
+    Fri Apr  5 16:37:09 CST 2019
+    blyth@blyth-VirtualBox:~/opticks/npy$ NLoadTest 
+    2019-04-05 16:37:23.788 INFO  [2290] [NPY<T>::load@633] NPY<T>::load /usr/local/opticks/opticksdata/gensteps/dayabay/cerenkov/./1.npy
+    2019-04-05 16:37:23.797 WARN  [2290] [NPY<T>::load@658] NPY<T>::load failed for path [/usr/local/opticks/opticksdata/gensteps/dayabay/cerenkov/./1.npy] use debugload to see why
+    2019-04-05 16:37:23.798 INFO  [2290] [NPY<T>::load@633] NPY<T>::load /usr/local/opticks/opticksdata/gensteps/juno/cerenkov/./1.npy
+    2019-04-05 16:37:23.798 WARN  [2290] [NPY<T>::load@658] NPY<T>::load failed for path [/usr/local/opticks/opticksdata/gensteps/juno/cerenkov/./1.npy] use debugload to see why
+    2019-04-05 16:37:23.798 INFO  [2290] [NPY<T>::load@633] NPY<T>::load /usr/local/opticks/opticksdata/gensteps/dayabay/scintillation/./1.npy
+    2019-04-05 16:37:23.799 WARN  [2290] [NPY<T>::load@658] NPY<T>::load failed for path [/usr/local/opticks/opticksdata/gensteps/dayabay/scintillation/./1.npy] use debugload to see why
+    2019-04-05 16:37:23.799 INFO  [2290] [NPY<T>::load@633] NPY<T>::load /usr/local/opticks/opticksdata/gensteps/juno/scintillation/./1.npy
+    2019-04-05 16:37:23.799 WARN  [2290] [NPY<T>::load@658] NPY<T>::load failed for path [/usr/local/opticks/opticksdata/gensteps/juno/scintillation/./1.npy] use debugload to see why
+    NLoadTest: /home/blyth/opticks/npy/tests/NLoadTest.cc:21: int main(int, char**): Assertion `gs_0' failed.
+    Aborted (core dumped)
+    blyth@blyth-VirtualBox:~/opticks/npy$ 
+
+
+    blyth@blyth-VirtualBox:~/opticks/npy$ uname -a
+    Linux blyth-VirtualBox 4.15.0-45-generic #48~16.04.1-Ubuntu SMP Tue Jan 29 18:03:48 UTC 2019 x86_64 x86_64 x86_64 GNU/Linux
+    blyth@blyth-VirtualBox:~/opticks/npy$ gcc -v
+    Using built-in specs.
+    COLLECT_GCC=gcc
+    COLLECT_LTO_WRAPPER=/usr/lib/gcc/x86_64-linux-gnu/5/lto-wrapper
+    Target: x86_64-linux-gnu
+    Configured with: ../src/configure -v --with-pkgversion='Ubuntu 5.4.0-6ubuntu1~16.04.11' --with-bugurl=file:///usr/share/doc/gcc-5/README.Bugs --enable-languages=c,ada,c++,java,go,d,fortran,objc,obj-c++ --prefix=/usr --program-suffix=-5 --enable-shared --enable-linker-build-id --libexecdir=/usr/lib --without-included-gettext --enable-threads=posix --libdir=/usr/lib --enable-nls --with-sysroot=/ --enable-clocale=gnu --enable-libstdcxx-debug --enable-libstdcxx-time=yes --with-default-libstdcxx-abi=new --enable-gnu-unique-object --disable-vtable-verify --enable-libmpx --enable-plugin --with-system-zlib --disable-browser-plugin --enable-java-awt=gtk --enable-gtk-cairo --with-java-home=/usr/lib/jvm/java-1.5.0-gcj-5-amd64/jre --enable-java-home --with-jvm-root-dir=/usr/lib/jvm/java-1.5.0-gcj-5-amd64 --with-jvm-jar-dir=/usr/lib/jvm-exports/java-1.5.0-gcj-5-amd64 --with-arch-directory=amd64 --with-ecj-jar=/usr/share/java/eclipse-ecj.jar --enable-objc-gc --enable-multiarch --disable-werror --with-arch-32=i686 --with-abi=m64 --with-multilib-list=m32,m64,mx32 --enable-multilib --with-tune=generic --enable-checking=release --build=x86_64-linux-gnu --host=x86_64-linux-gnu --target=x86_64-linux-gnu
+    Thread model: posix
+    gcc version 5.4.0 20160609 (Ubuntu 5.4.0-6ubuntu1~16.04.11) 
+    blyth@blyth-VirtualBox:~/opticks/npy$ 
+
+
+
+
+Possible Workaround for the issue 
+-----------------------------------
+
+Workaround (it seems so far) is to rework the nnode primitives to avoid 
+relying on the implicit copy ctor for their creation.
+
+::
+
+
+    -void nnode::Init( nnode& n , OpticksCSG_t type, nnode* left, nnode* right )
+    +void nnode::Init( nnode* n , OpticksCSG_t type, nnode* left, nnode* right )
+     {
+    -    n.idx = 0 ; 
+    -    n.type = type ; 
+    +    n->idx = 0 ; 
+    +    n->type = type ; 
+     
+
+::
+
+    -inline nnode nnode::make_node(OpticksCSG_t operator_, nnode* left, nnode* right )
+    +inline nnode* nnode::make_node(OpticksCSG_t operator_, nnode* left, nnode* right )
+     {
+    -    nnode n ;    nnode::Init(n, operator_ , left, right ); return n ;
+    +    nnode* n = new nnode ;    nnode::Init(n, operator_ , left, right ); return n ;
+     }
+     
+     struct NPY_API nunion : nnode {
+         float operator()(float x, float y, float z) const ;
+    -    static nunion make_union(nnode* left=NULL, nnode* right=NULL);
+    +    static nunion* make_union(nnode* left=NULL, nnode* right=NULL);
+     };
+     struct NPY_API nintersection : nnode {
+         float operator()(float x, float y, float z) const ;
+    -    static nintersection make_intersection(nnode* left=NULL, nnode* right=NULL);
+    +    static nintersection* make_intersection(nnode* left=NULL, nnode* right=NULL);
+     };
+     struct NPY_API ndifference : nnode {
+         float operator()(float x, float y, float z) const ;
+    -    static ndifference make_difference(nnode* left=NULL, nnode* right=NULL);
+    +    static ndifference* make_difference(nnode* left=NULL, nnode* right=NULL);
+     };
+     
+    -inline nunion nunion::make_union(nnode* left, nnode* right)
+    +inline nunion* nunion::make_union(nnode* left, nnode* right)
+     {
+    -    nunion n ;         nnode::Init(n, CSG_UNION , left, right ); return n ; 
+    +    nunion* n = new nunion ;         nnode::Init(n, CSG_UNION , left, right ); return n ; 
+     }
+    -inline nintersection nintersection::make_intersection(nnode* left, nnode* right)
+    +inline nintersection* nintersection::make_intersection(nnode* left, nnode* right)
+     {
+    -    nintersection n ;  nnode::Init(n, CSG_INTERSECTION , left, right ); return n ;
+    +    nintersection* n = new nintersection ;  nnode::Init(n, CSG_INTERSECTION , left, right ); return n ;
+     }
+    -inline ndifference ndifference::make_difference(nnode* left, nnode* right)
+    +inline ndifference* ndifference::make_difference(nnode* left, nnode* right)
+     {
+    -    ndifference n ;    nnode::Init(n, CSG_DIFFERENCE , left, right ); return n ;
+    +    ndifference* n = new ndifference ;    nnode::Init(n, CSG_DIFFERENCE , left, right ); return n ;
+     }
+
+
+
+
+
+Investigate on virtualbox+Ubuntu16.04.6 (gcc 5.4.0) 
+------------------------------------------------------
+
+See npy/tests/NNodeDumpMinimalTest.cc especially::
+
+
+::
+
+    void t1c()  // works 
+    {
+        LOG(info); 
+        nsphere* o = make_sphere(0.f,0.f,-50.f,100.f);
+        nnode* n = o ; 
+        n->dump();
+    }
+
+
+    void t1d()  // fails : so the problem is related to the original object going out of scope : somehow handled different in gcc 5.4.0
+    {
+        LOG(info); 
+
+        nsphere* a = NULL ; 
+        {
+            nsphere o = make_sphere(0.f,0.f,-50.f,100.f);
+
+            // why should o going out of scope matter ? 
+            // perhaps implicit copy ctor is being overly lazy : overly agressive optimization  ??
+            // :google:`gcc 5.4 optimization bug` 
+
+            a = new nsphere(o) ;  // implicit copy ctor  
+        }
+        nnode* n = a ; 
+        n->dump();
+    }
+
+
+
+Isolating the issue
+-----------------------
+
 Mail of Thu April 4, 2019::
 
 

@@ -59,22 +59,23 @@ struct NPY_API nconvexpolyhedron : nnode
 
 };
 
-inline NPY_API void init_convexpolyhedron(nconvexpolyhedron& cpol, const nquad& param, const nquad& param1, const nquad& param2, const nquad& param3 )
+inline NPY_API void init_convexpolyhedron(nconvexpolyhedron* n, const nquad& param, const nquad& param1, const nquad& param2, const nquad& param3 )
 {
-    cpol.param = param ; 
-    cpol.param1 = param1 ; 
-    cpol.param2 = param2 ; 
-    cpol.param3 = param3 ; 
+    n->param = param ; 
+    n->param1 = param1 ; 
+    n->param2 = param2 ; 
+    n->param3 = param3 ; 
 }
 
-inline NPY_API nconvexpolyhedron make_convexpolyhedron(const nquad& param, const nquad& param1, const nquad& param2, const nquad& param3)
+inline NPY_API nconvexpolyhedron* make_convexpolyhedron(const nquad& param, const nquad& param1, const nquad& param2, const nquad& param3)
 {
-    nconvexpolyhedron cpol ; 
-    nnode::Init(cpol,CSG_CONVEXPOLYHEDRON) ; 
-    init_convexpolyhedron(cpol, param, param1, param2, param3 );
-    return cpol ;
+    nconvexpolyhedron* n = new nconvexpolyhedron ; 
+    nnode::Init(n,CSG_CONVEXPOLYHEDRON) ; 
+    init_convexpolyhedron(n, param, param1, param2, param3 );
+    return n ;
 }
 
+/*
 inline NPY_API nconvexpolyhedron* make_convexpolyhedron_ptr(const nquad& param, const nquad& param1, const nquad& param2, const nquad& param3)
 {
     nconvexpolyhedron* cpol = new nconvexpolyhedron ; 
@@ -82,8 +83,10 @@ inline NPY_API nconvexpolyhedron* make_convexpolyhedron_ptr(const nquad& param, 
     init_convexpolyhedron(*cpol, param, param1, param2, param3 );
     return cpol ;
 }
+*/
 
-inline NPY_API nconvexpolyhedron make_convexpolyhedron()
+
+inline NPY_API nconvexpolyhedron* make_convexpolyhedron()
 {
     nquad param, param1, param2, param3 ; 
     param.u = {0,0,0,0} ;
@@ -93,6 +96,7 @@ inline NPY_API nconvexpolyhedron make_convexpolyhedron()
     return make_convexpolyhedron(param, param1, param2, param3 );
 }
 
+/*
 inline NPY_API nconvexpolyhedron* make_convexpolyhedron_ptr()
 {
     nquad param, param1, param2, param3 ; 
@@ -102,5 +106,5 @@ inline NPY_API nconvexpolyhedron* make_convexpolyhedron_ptr()
     param3.u = {0,0,0,0} ;
     return make_convexpolyhedron_ptr(param, param1, param2, param3 );
 }
-
+*/
 

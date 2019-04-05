@@ -8,8 +8,7 @@
 #include "NGLMExt.hpp"
 #include "N.hpp"
 
-#include "NPY_LOG.hh"
-#include "PLOG.hh"
+#include "OPTICKS_LOG.hh"
 
 
 // This is transforming model surface points with transform->t 
@@ -44,36 +43,36 @@ void test_box_inscribed_in_sphere(const nmat4triple* tr, bool asrt)
     std::cout << gpresent("tr->t", tr->t) ;
 
     float r = 100.f ; 
-    nsphere sph_ = make_sphere(0,0,0,r);
-    sph_.label = "sph" ; 
+    nsphere* sph_ = make_sphere(0,0,0,r);
+    sph_->label = "sph" ; 
 
     float h = sqrt(r*r/3.0) ;      // inscribe a box inside a sphere :  3* x^2  = r^2
-    nbox box_ = make_box3(2*h,2*h,2*h); 
-    box_.label = "box" ; 
+    nbox* box_ = make_box3(2*h,2*h,2*h); 
+    box_->label = "box" ; 
 
 
-    nbox fox_ = make_box3(h,h,h); // half sized box to be relatively placed on "floor" of other one 
+    nbox* fox_ = make_box3(h,h,h); // half sized box to be relatively placed on "floor" of other one 
     const nmat4triple* floor = nmat4triple::make_translate(0,0,-h/2.0 ) ;
     const nmat4triple* tr_floor = nmat4triple::product( tr, floor, false ); 
-    fox_.label = "fox" ; 
+    fox_->label = "fox" ; 
 
 
     float epsilon = 1e-4 ; 
 
-    N box(&box_, tr );    // placed box
+    N box(box_, tr );    // placed box
     glm::uvec4 bbl = box.classify( box.local, epsilon, POINT_SURFACE );
 
     //if(bbl.w > 0) LOG(fatal) <<  "bbl.w fail " ; 
     if(asrt) assert( bbl.w == 0 );  // all points classified as POINT_SURFACE
 
 
-    N sph(&sph_, tr  );    // placed sphere  
+    N sph(sph_, tr  );    // placed sphere  
     glm::uvec4 sbl = sph.classify( box.local, epsilon, POINT_INSIDE|POINT_SURFACE );
     //if(sbl.w > 0)  LOG(fatal) <<  "sbl.w fail " ; 
     if(asrt) assert( sbl.w == 0 );  // all points as expected
 
 
-    N fox(&fox_, tr_floor );    // box placed on floor of other one
+    N fox(fox_, tr_floor );    // box placed on floor of other one
     glm::uvec4 fbl = fox.classify( fox.local, epsilon, POINT_SURFACE );
 
     //if(fbl.w > 0) LOG(fatal) <<  "fbl.w fail " ; 
@@ -98,26 +97,26 @@ void test_concentric_spheres(const nmat4triple* tr, bool asrt)
     std::cout << gpresent("tr->t", tr->t) ;
 
     float ra = 100.f ; 
-    nsphere a_ = make_sphere(0,0,0,ra);
-    a_.label = "a_sph" ; 
+    nsphere* a_ = make_sphere(0,0,0,ra);
+    a_->label = "a_sph" ; 
 
     float rb = 99.f ; 
-    nsphere b_ = make_sphere(0,0,0,rb);
-    b_.label = "b_sph" ; 
+    nsphere* b_ = make_sphere(0,0,0,rb);
+    b_->label = "b_sph" ; 
 
 
     
     assert(ra > rb);
     float rc = (ra - rb)/2.f ; 
-    nsphere c_ = make_sphere(0,0,0,rc);
-    c_.label = "c_sph" ; 
+    nsphere* c_ = make_sphere(0,0,0,rc);
+    c_->label = "c_sph" ; 
 
     const nmat4triple* between = nmat4triple::make_translate(0,0,rb+rc ) ;
     const nmat4triple* tr_between = nmat4triple::product( tr, between, false ); 
 
-    N a(&a_, tr  );    
-    N b(&b_, tr  );    
-    N c(&c_, tr_between );     // v.small sphere lodged between the concentric ones
+    N a(a_, tr  );    
+    N b(b_, tr  );    
+    N c(c_, tr_between );     // v.small sphere lodged between the concentric ones
 
 
     float epsilon = 1e-4 ; 
@@ -210,8 +209,7 @@ void test_concentric_spheres()
 
 int main(int argc, char** argv)
 {
-    PLOG_(argc, argv);
-    NPY_LOG__ ; 
+    OPTICKS_LOG(argc, argv);
 
     //test_box_inscribed_in_sphere();
     test_concentric_spheres(); 

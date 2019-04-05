@@ -31,7 +31,7 @@ nconvexpolyhedron* test_load(const char* path)
     return cpol ; 
 }
 
-nconvexpolyhedron test_make()
+nconvexpolyhedron* test_make()
 {
     nquad param ; 
     nquad param1 ; 
@@ -43,7 +43,7 @@ nconvexpolyhedron test_make()
     param2.u = {0,0,0,0} ;
     param3.u = {0,0,0,0} ;
 
-    nconvexpolyhedron cpol = make_convexpolyhedron(param, param1, param2, param3 );
+    nconvexpolyhedron* cpol = make_convexpolyhedron(param, param1, param2, param3 );
     return cpol ; 
 }
 

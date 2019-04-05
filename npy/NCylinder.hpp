@@ -63,17 +63,17 @@ inline NPY_API void  ncylinder::decrease_z1(float dz){ assert( dz >= 0.f) ; para
 
 
 
-NPY_API void init_cylinder(ncylinder& n, const nquad& param, const nquad& param1 );
+NPY_API void init_cylinder(ncylinder* n, const nquad& param, const nquad& param1 );
 
-inline NPY_API ncylinder make_cylinder(const nquad& param, const nquad& param1 )
+inline NPY_API ncylinder* make_cylinder(const nquad& param, const nquad& param1 )
 {
-    ncylinder n ; 
+    ncylinder* n = new ncylinder ; 
     nnode::Init(n,CSG_CYLINDER) ; 
     init_cylinder(n, param, param1);
     return n ; 
 }
 
-inline NPY_API ncylinder make_cylinder(float radius_, float z1_, float z2_)
+inline NPY_API ncylinder* make_cylinder(float radius_, float z1_, float z2_)
 {
     nquad param, param1 ;
 
@@ -87,7 +87,7 @@ inline NPY_API ncylinder make_cylinder(float radius_, float z1_, float z2_)
     return make_cylinder(param, param1 );
 }
 
-inline NPY_API ncylinder make_cylinder()
+inline NPY_API ncylinder* make_cylinder()
 {
     float radius = 10. ; 
     float z1 = -5.f ; 
@@ -95,7 +95,7 @@ inline NPY_API ncylinder make_cylinder()
     return make_cylinder(radius,z1,z2); 
 }
 
-inline NPY_API ncylinder make_cylinder(float x0, float y0, float z0, float w0, float x1, float y1, float z1, float w1 )
+inline NPY_API ncylinder* make_cylinder(float x0, float y0, float z0, float w0, float x1, float y1, float z1, float w1 )
 {
     // used by code generation 
     assert( x0 == 0.f );

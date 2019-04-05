@@ -3,8 +3,7 @@
 #include "NGLMExt.hpp"
 #include "NNode.hpp"
 
-#include "NPY_LOG.hh"
-#include "PLOG.hh"
+#include "OPTICKS_LOG.hh"
 
 
 void test_collect_ancestors(const nnode& prim, unsigned expect)
@@ -49,15 +48,15 @@ void test_uncycy()
 
     */
 
-    ncylinder a = make_cylinder(0.000,0.000,0.000,650.000,-23.500,23.500,0.000,0.000) ; a.label = "a" ;   
-    ncylinder b = make_cylinder(0.000,0.000,0.000,31.500,-17.500,17.500,0.000,0.000) ; b.label = "b" ;   
-    b.transform = nmat4triple::make_transform(1.000,0.000,0.000,0.000,  0.000,1.000,0.000,0.000,  0.000,0.000,1.000,0.000,  0.000,0.000,-41.000,1.000) ;
-    nunion ab = nunion::make_union(&a, &b) ; ab.label = "ab" ; a.parent = &ab ; b.parent = &ab ;  ;   
+    ncylinder* a = make_cylinder(0.000,0.000,0.000,650.000,-23.500,23.500,0.000,0.000) ; a->label = "a" ;   
+    ncylinder* b = make_cylinder(0.000,0.000,0.000,31.500,-17.500,17.500,0.000,0.000) ; b->label = "b" ;   
+    b->transform = nmat4triple::make_transform(1.000,0.000,0.000,0.000,  0.000,1.000,0.000,0.000,  0.000,0.000,1.000,0.000,  0.000,0.000,-41.000,1.000) ;
+    nunion* ab = nunion::make_union(a, b) ; ab->label = "ab" ; a->parent = ab ; b->parent = ab ;  ;   
 
-    test_collect_ancestors(a, 1);
-    test_collect_connectedtype_ancestors(a, 1);
-    test_collect_monogroup(a, 2);
-    test_is_same_union(a,b,true);
+    test_collect_ancestors(*a, 1);
+    test_collect_connectedtype_ancestors(*a, 1);
+    test_collect_monogroup(*a, 2);
+    test_is_same_union(*a,*b,true);
 }
 
 
@@ -74,21 +73,21 @@ void test_uncycycy()
     */
 
 
-    ncylinder a = make_cylinder(0.000,0.000,0.000,650.000,-23.500,23.500,0.000,0.000) ; a.label = "a" ;   
-    ncylinder b = make_cylinder(0.000,0.000,0.000,31.500,-17.500,17.500,0.000,0.000) ; b.label = "b" ;   
-    b.transform = nmat4triple::make_transform(1.000,0.000,0.000,0.000,  0.000,1.000,0.000,0.000,  0.000,0.000,1.000,0.000,  0.000,0.000,-41.000,1.000) ;
-    nunion ab = nunion::make_union(&a, &b) ; ab.label = "ab" ; a.parent = &ab ; b.parent = &ab ;  ;   
+    ncylinder* a = make_cylinder(0.000,0.000,0.000,650.000,-23.500,23.500,0.000,0.000) ; a->label = "a" ;   
+    ncylinder* b = make_cylinder(0.000,0.000,0.000,31.500,-17.500,17.500,0.000,0.000) ; b->label = "b" ;   
+    b->transform = nmat4triple::make_transform(1.000,0.000,0.000,0.000,  0.000,1.000,0.000,0.000,  0.000,0.000,1.000,0.000,  0.000,0.000,-41.000,1.000) ;
+    nunion* ab = nunion::make_union(a, b) ; ab->label = "ab" ; a->parent = ab ; b->parent = ab ;  ;   
 
-    ncylinder c = make_cylinder(0.000,0.000,0.000,31.500,-17.500,17.500,0.000,0.000) ; b.label = "b" ;   
-    nunion abc = nunion::make_union(&ab, &c) ; abc.label = "abc" ; ab.parent = &abc ; c.parent = &abc ;  ;   
+    ncylinder* c = make_cylinder(0.000,0.000,0.000,31.500,-17.500,17.500,0.000,0.000) ; c->label = "c" ;   
+    nunion* abc = nunion::make_union(ab, c) ; abc->label = "abc" ; ab->parent = abc ; c->parent = abc ;  ;   
 
-    test_collect_ancestors(a, 2);
-    test_collect_connectedtype_ancestors(a, 2);
+    test_collect_ancestors(*a, 2);
+    test_collect_connectedtype_ancestors(*a, 2);
 
-    test_collect_monogroup(a, 3);
-    test_is_same_union(a,b,true);
-    test_is_same_union(a,c,true);
-    test_is_same_union(b,c,true);
+    test_collect_monogroup(*a, 3);
+    test_is_same_union(*a,*b,true);
+    test_is_same_union(*a,*c,true);
+    test_is_same_union(*b,*c,true);
 }
 
 
@@ -107,25 +106,25 @@ void test_di_uncycycy_co()
     */
 
 
-    ncylinder a = make_cylinder(0.000,0.000,0.000,650.000,-23.500,23.500,0.000,0.000) ; a.label = "a" ;   
-    ncylinder b = make_cylinder(0.000,0.000,0.000,31.500,-17.500,17.500,0.000,0.000) ; b.label = "b" ;   
-    b.transform = nmat4triple::make_transform(1.000,0.000,0.000,0.000,  0.000,1.000,0.000,0.000,  0.000,0.000,1.000,0.000,  0.000,0.000,-41.000,1.000) ;
-    nunion ab = nunion::make_union(&a, &b) ; ab.label = "ab" ; a.parent = &ab ; b.parent = &ab ;  ;   
+    ncylinder* a = make_cylinder(0.000,0.000,0.000,650.000,-23.500,23.500,0.000,0.000) ; a->label = "a" ;   
+    ncylinder* b = make_cylinder(0.000,0.000,0.000,31.500,-17.500,17.500,0.000,0.000) ; b->label = "b" ;   
+    b->transform = nmat4triple::make_transform(1.000,0.000,0.000,0.000,  0.000,1.000,0.000,0.000,  0.000,0.000,1.000,0.000,  0.000,0.000,-41.000,1.000) ;
+    nunion* ab = nunion::make_union(a, b) ; ab->label = "ab" ; a->parent = ab ; b->parent = ab ;  ;   
 
-    ncylinder c = make_cylinder(0.000,0.000,0.000,31.500,-17.500,17.500,0.000,0.000) ; b.label = "b" ;   
-    nunion abc = nunion::make_union(&ab, &c) ; abc.label = "abc" ; ab.parent = &abc ; c.parent = &abc ;  ;   
+    ncylinder* c = make_cylinder(0.000,0.000,0.000,31.500,-17.500,17.500,0.000,0.000) ; b->label = "b" ;   
+    nunion* abc = nunion::make_union(ab, c) ; abc->label = "abc" ; ab->parent = abc ; c->parent = abc ;  ;   
 
-    ncone d = make_cone(650.,23.5,750.,33.5) ; d.label = "d" ;     // NB param dont make much sense, just testing tree
-    ndifference abcd = ndifference::make_difference(&abc, &d) ; abcd.label = "abcd" ; abc.parent = &abcd ; d.parent = &abcd ;  ;   
+    ncone* d = make_cone(650.,23.5,750.,33.5) ; d->label = "d" ;     // NB param dont make much sense, just testing tree
+    ndifference* abcd = ndifference::make_difference(abc, d) ; abcd->label = "abcd" ; abc->parent = abcd ; d->parent = abcd ;  ;   
 
 
-    test_collect_ancestors(a, 3);
-    test_collect_connectedtype_ancestors(a, 2);
+    test_collect_ancestors(*a, 3);
+    test_collect_connectedtype_ancestors(*a, 2);
 
-    test_collect_monogroup(a, 3);
-    test_is_same_union(a,b,true);
-    test_is_same_union(a,c,true);
-    test_is_same_union(b,c,true);
+    test_collect_monogroup(*a, 3);
+    test_is_same_union(*a,*b,true);
+    test_is_same_union(*a,*c,true);
+    test_is_same_union(*b,*c,true);
 }
 
 
@@ -144,36 +143,36 @@ void test_di_uncycycy_uncycy()
     */
 
 
-    ncylinder a = make_cylinder(0.000,0.000,0.000,650.000,-23.500,23.500,0.000,0.000) ; a.label = "a" ;   
-    ncylinder b = make_cylinder(0.000,0.000,0.000,31.500,-17.500,17.500,0.000,0.000) ; b.label = "b" ;   
+    ncylinder* a = make_cylinder(0.000,0.000,0.000,650.000,-23.500,23.500,0.000,0.000) ; a->label = "a" ;   
+    ncylinder* b = make_cylinder(0.000,0.000,0.000,31.500,-17.500,17.500,0.000,0.000) ; b->label = "b" ;   
 
-    b.transform = nmat4triple::make_transform(1.000,0.000,0.000,0.000,  0.000,1.000,0.000,0.000,  0.000,0.000,1.000,0.000,  0.000,0.000,-41.000,1.000) ;
-    nunion ab = nunion::make_union(&a, &b) ; ab.label = "ab" ; a.parent = &ab ; b.parent = &ab ;  ;   
+    b->transform = nmat4triple::make_transform(1.000,0.000,0.000,0.000,  0.000,1.000,0.000,0.000,  0.000,0.000,1.000,0.000,  0.000,0.000,-41.000,1.000) ;
+    nunion* ab = nunion::make_union(a, b) ; ab->label = "ab" ; a->parent = ab ; b->parent = ab ;  ;   
 
-    ncylinder c = make_cylinder(0.000,0.000,0.000,31.500,-17.500,17.500,0.000,0.000) ; b.label = "b" ;   
-    nunion abc = nunion::make_union(&ab, &c) ; abc.label = "abc" ; ab.parent = &abc ; c.parent = &abc ;  ;   
-
-
-
-    ncylinder d = make_cylinder(0.000,0.000,0.000,650.000,-23.500,23.500,0.000,0.000) ; d.label = "d" ;   
-    ncylinder e = make_cylinder(0.000,0.000,0.000,31.500,-17.500,17.500,0.000,0.000) ; e.label = "e" ;   
-    nunion de = nunion::make_union(&d, &e) ; de.label = "de" ; d.parent = &de ; e.parent = &de ;  ;   
-
-    ndifference abcde = ndifference::make_difference(&abc, &de) ; abcde.label = "abcde" ; abc.parent = &abcde ; de.parent = &abcde ;  ;   
+    ncylinder* c = make_cylinder(0.000,0.000,0.000,31.500,-17.500,17.500,0.000,0.000) ; b->label = "b" ;   
+    nunion* abc = nunion::make_union(ab, c) ; abc->label = "abc" ; ab->parent = abc ; c->parent = abc ;  ;   
 
 
-    test_collect_ancestors(a, 3);
-    test_collect_connectedtype_ancestors(a, 2);
 
-    test_collect_monogroup(a, 3);
-    test_is_same_union(a,b,true);
-    test_is_same_union(a,c,true);
-    test_is_same_union(b,c,true);
+    ncylinder* d = make_cylinder(0.000,0.000,0.000,650.000,-23.500,23.500,0.000,0.000) ; d->label = "d" ;   
+    ncylinder* e = make_cylinder(0.000,0.000,0.000,31.500,-17.500,17.500,0.000,0.000) ; e->label = "e" ;   
+    nunion* de = nunion::make_union(d, e) ; de->label = "de" ; d->parent = de ; e->parent = de ;  ;   
+
+    ndifference* abcde = ndifference::make_difference(abc, de) ; abcde->label = "abcde" ; abc->parent = abcde ; de->parent = abcde ;  ;   
 
 
-    test_is_same_union(a,d,false);
-    test_is_same_union(a,e,false);
-    test_is_same_union(d,e,true);
+    test_collect_ancestors(*a, 3);
+    test_collect_connectedtype_ancestors(*a, 2);
+
+    test_collect_monogroup(*a, 3);
+    test_is_same_union(*a,*b,true);
+    test_is_same_union(*a,*c,true);
+    test_is_same_union(*b,*c,true);
+
+
+    test_is_same_union(*a,*d,false);
+    test_is_same_union(*a,*e,false);
+    test_is_same_union(*d,*e,true);
 
 }
 
@@ -184,8 +183,7 @@ void test_di_uncycycy_uncycy()
 
 int main(int argc, char** argv)
 {
-    PLOG_(argc, argv);
-    NPY_LOG__ ; 
+    OPTICKS_LOG(argc, argv);
 
     test_uncycy();
     test_uncycycy();

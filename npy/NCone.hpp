@@ -70,21 +70,21 @@ inline NPY_API glm::vec2 ncone::cnormal() const { return glm::normalize( glm::ve
 inline NPY_API glm::vec2 ncone::csurface() const { glm::vec2 cn = cnormal() ; return glm::vec2( cn.y, -cn.x ) ; }      
 
 
-inline NPY_API void init_cone(ncone& n, const nquad& param)
+inline NPY_API void init_cone(ncone* n, const nquad& param)
 {
-    n.param = param ;
-    assert( n.z2() > n.z1() );
+    n->param = param ;
+    assert( n->z2() > n->z1() );
 }
 
-inline NPY_API ncone make_cone(const nquad& param)
+inline NPY_API ncone* make_cone(const nquad& param)
 {
-    ncone n ; 
+    ncone* n = new ncone ; 
     nnode::Init(n,CSG_CONE) ; 
     init_cone(n, param);
     return n ; 
 }
 
-inline NPY_API ncone make_cone(float r1, float z1, float r2, float z2)
+inline NPY_API ncone* make_cone(float r1, float z1, float r2, float z2)
 {
     nquad param ;
     param.f = {r1,z1,r2,z2} ;

@@ -487,7 +487,8 @@ void nbox::adjustToFit(const nbbox& bb, float scale, float delta )
         qce.f.y = scale*(fabs(bb.min.y) + fabs(bb.max.y)) + delta ; 
         qce.f.z = scale*(fabs(bb.min.z) + fabs(bb.max.z)) + delta ; 
         qce.f.w = 0.f ; 
-        init_box3( *this, qce );
+
+        init_box3( this, qce );
     }
     else
     {
@@ -495,7 +496,7 @@ void nbox::adjustToFit(const nbbox& bb, float scale, float delta )
         qce.f.w *= scale ; 
         qce.f.w += delta ; 
   
-        init_box( *this, qce );
+        init_box( this, qce );
     }
 
 }

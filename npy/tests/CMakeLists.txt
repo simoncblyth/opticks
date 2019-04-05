@@ -75,6 +75,7 @@ NConvexPolyhedronSegmentTest.cc
 
 NNodeTest.cc
 NNodeDumpTest.cc
+NNodeDumpMinimalTest.cc
 NNodeTreeTest.cc
 NNodePointsTest.cc
 

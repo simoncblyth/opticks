@@ -4,8 +4,7 @@
 #include "NBox.hpp"
 #include "NBBox.hpp"
 
-#include "NPY_LOG.hh"
-#include "PLOG.hh"
+#include "OPTICKS_LOG.hh"
 
 
 
@@ -13,12 +12,12 @@
 void test_adjustToFit()
 {
     float h = 10.f ; 
-    nbox box = make_box3(2*h,2*h,2*h); 
+    nbox* box = make_box3(2*h,2*h,2*h); 
 
-    box.verbosity = 3 ;  
-    box.pdump("original make_box3(2*h,2*h,2*h)");
+    box->verbosity = 3 ;  
+    box->pdump("original make_box3(2*h,2*h,2*h)");
 
-    nbbox bb = box.bbox_model();
+    nbbox bb = box->bbox_model();
 
     LOG(info) << " bb (natural bbox) " << bb.desc() ; 
 
@@ -26,17 +25,17 @@ void test_adjustToFit()
 
     LOG(info) << " cc ( enlarged bbox ) " << cc.desc() ; 
 
-    box.adjustToFit( cc , 1.f, 0.f );    
+    box->adjustToFit( cc , 1.f, 0.f );    
 
-    box.pdump("after adjustToFit make_box3(2*h,2*h,2*h)");
+    box->pdump("after adjustToFit make_box3(2*h,2*h,2*h)");
 
-    nbbox cc2 = box.bbox_model();
+    nbbox cc2 = box->bbox_model();
 
     assert( cc.is_equal(cc2) );
 
-    box.adjustToFit( cc , 1.f, 1.f );    
+    box->adjustToFit( cc , 1.f, 1.f );    
    
-    nbbox cc3 = box.bbox_model();
+    nbbox cc3 = box->bbox_model();
 
     assert( !cc.is_equal(cc3) );
  
@@ -50,8 +49,7 @@ void test_adjustToFit()
 
 int main(int argc, char** argv)
 {
-    PLOG_(argc, argv);
-    NPY_LOG__ ; 
+    OPTICKS_LOG(argc, argv);
 
     test_adjustToFit();
 

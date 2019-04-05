@@ -58,31 +58,31 @@ inline NPY_API glm::vec3 nplane::normal() const { return glm::vec3(param.f.x,par
 inline NPY_API glm::vec4 nplane::get() const {    return glm::vec4(normal(),distance_to_origin()) ; }
 
 
-inline NPY_API void init_plane(nplane& plane, const nquad& param )
+inline NPY_API void init_plane(nplane* n, const nquad& param )
 {
-    glm::vec3 n = glm::normalize(glm::vec3(param.f.x, param.f.y, param.f.z));
+    glm::vec3 nrm = glm::normalize(glm::vec3(param.f.x, param.f.y, param.f.z));
 
-    plane.param.f.x = n.x ;
-    plane.param.f.y = n.y ;
-    plane.param.f.z = n.z ;
-    plane.param.f.w = param.f.w  ;
+    n->param.f.x = nrm.x ;
+    n->param.f.y = nrm.y ;
+    n->param.f.z = nrm.z ;
+    n->param.f.w = param.f.w  ;
 
 }
-inline NPY_API nplane make_plane(const nquad& param)
+inline NPY_API nplane* make_plane(const nquad& param)
 {  
-    nplane plane ; 
-    nnode::Init(plane,CSG_PLANE) ; 
-    init_plane(plane, param );
-    return plane ;
+    nplane* n = new nplane ; 
+    nnode::Init(n,CSG_PLANE) ; 
+    init_plane(n, param );
+    return n ;
 }
-inline NPY_API nplane make_plane(float x, float y, float z, float w)
+inline NPY_API nplane* make_plane(float x, float y, float z, float w)
 {
     nquad param ;  
     param.f = {x,y,z,w} ;
     return make_plane( param ); 
 }
 
-inline NPY_API nplane make_plane(const glm::vec4& par)
+inline NPY_API nplane* make_plane(const glm::vec4& par)
 {
     nquad param ;  
     param.f = {par.x,par.y,par.z,par.w} ;
@@ -125,9 +125,10 @@ struct NPY_API ndisk { // NB *ndisk* is not the same as *ndisc* (degenerated ncy
 };
 
 
-inline NPY_API ndisk make_disk(const nplane& plane_, float radius_) 
+inline NPY_API ndisk* make_disk(const nplane* plane_, float radius_) 
 {
-   ndisk d ; d.plane = plane_ ; d.radius = radius_ ; return d ; 
+   assert( plane_ ); 
+   ndisk* n = new ndisk ; n->plane = *plane_ ; n->radius = radius_ ; return n ; 
 }
 
 

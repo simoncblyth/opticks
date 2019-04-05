@@ -470,7 +470,7 @@ nconvexpolyhedron* nconvexpolyhedron::make_trapezoid(float z, float x1, float y1
     p[4] = make_plane( v[5], v[7], v[6] ) ; // +Z
     p[5] = make_plane( v[3], v[1], v[0] ) ; // -Z
 
-    nconvexpolyhedron* cpol = make_convexpolyhedron_ptr();
+    nconvexpolyhedron* cpol = make_convexpolyhedron();
     cpol->set_planes( p) ; 
     cpol->set_bbox( bb) ; 
 
@@ -553,7 +553,7 @@ From ../analytic/prism.py:make_segment
     unsigned verbosity = 0 ; 
     nbbox bb = nbbox::from_points( v, verbosity );
 
-    nconvexpolyhedron* cpol = make_convexpolyhedron_ptr();
+    nconvexpolyhedron* cpol = make_convexpolyhedron();
     cpol->set_planes( p) ; 
     cpol->set_bbox( bb) ; 
 
@@ -564,12 +564,12 @@ From ../analytic/prism.py:make_segment
 
 nconvexpolyhedron* nconvexpolyhedron::make_transformed( const glm::mat4& t  ) const 
 {
-    nconvexpolyhedron* cpol = make_convexpolyhedron_ptr() ;
+    nconvexpolyhedron* cpol = make_convexpolyhedron() ;
 
     for(unsigned i=0 ; i < planes.size() ; i++ )
     {
-        nplane pl = make_plane(planes[i]);
-        glm::vec4 tpl = pl.make_transformed(t);
+        nplane* pl = make_plane(planes[i]);
+        glm::vec4 tpl = pl->make_transformed(t);
         cpol->planes.push_back(tpl);  
     }
 

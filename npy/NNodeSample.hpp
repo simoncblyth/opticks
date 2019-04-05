@@ -9,7 +9,6 @@ struct nnode ;
 struct NPY_API NNodeSample 
 {
     static void Tests(std::vector<nnode*>& nodes );
-    static void Tests_OLD_MESSY_WAY(std::vector<nnode*>& nodes );
     static nnode* Sphere1(); 
     static nnode* Sphere2(); 
     static nnode* Union1(); 

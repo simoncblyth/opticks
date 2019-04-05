@@ -21,16 +21,16 @@ void test_sdf()
     float far  =  10 ; 
     float mid = (near+far)/2.f ; 
 
-    nslab s = make_slab( 0,0,1, near, far) ; 
+    nslab* s = make_slab( 0,0,1, near, far) ; 
 
     for(int i=-20 ; i < 20 ; i++)
-        std::cout << std::setw(4) << i << " " << s(0,0,i) << std::endl ;  
+        std::cout << std::setw(4) << i << " " << (*s)(0,0,i) << std::endl ;  
 
-    assert( s(0,0,near) == 0.f );
-    assert( s(0,0,far)  == 0.f );
-    assert( s(0,0,mid)  < 0.f );
-    assert( s(0,0,far+1) > 0.f );
-    assert( s(0,0,near-1) > 0.f );
+    assert( (*s)(0,0,near) == 0.f );
+    assert( (*s)(0,0,far)  == 0.f );
+    assert( (*s)(0,0,mid)  < 0.f );
+    assert( (*s)(0,0,far+1) > 0.f );
+    assert( (*s)(0,0,near-1) > 0.f );
 }
 
 void test_intersect()
@@ -40,7 +40,7 @@ void test_intersect()
     float a = -10 ; 
     float b = 10 ; 
 
-    nslab slab = make_slab( 0,0,1, a, b) ; 
+    nslab* s = make_slab( 0,0,1, a, b) ; 
 
     glm::vec3 ray_origin(0,0,0);
     glm::vec3 ray_direction(0,0,0);
@@ -59,8 +59,8 @@ void test_intersect()
         // which is required to be greater than tmin eg 0., resulting in +ve t  
  
         glm::vec4 isect ; 
-        bool has_intersect = slab.intersect( tmin,  ray_origin, ray_direction, isect );
-        float sd = slab(ray_origin.x, ray_origin.y, ray_origin.z);
+        bool has_intersect = s->intersect( tmin,  ray_origin, ray_direction, isect );
+        float sd = (*s)(ray_origin.x, ray_origin.y, ray_origin.z);
 
         std::cout 
                   << " i " << i 
@@ -83,22 +83,24 @@ void test_intersect()
 
 void test_slab_sphere_intersection()
 {
-    nsphere a = make_sphere( 0.000,0.000,0.000,500.000 ) ; a.label = "a" ;   
-    nslab b = make_slab( 1.000,1.000,1.000,0.000,-500.000,100.000,0.000,0.000 ) ; b.label = "b" ;   
-    nintersection ab = nintersection::make_intersection( &a, &b ) ; ab.label = "ab" ; a.parent = &ab ; b.parent = &ab ;  ;   
+    nsphere* a = make_sphere( 0.000,0.000,0.000,500.000 ) ; a->label = "a" ;   
+    nslab* b = make_slab( 1.000,1.000,1.000,0.000,-500.000,100.000,0.000,0.000 ) ; b->label = "b" ;   
+    nintersection* ab = nintersection::make_intersection( a, b ) ; ab->label = "ab" ; a->parent = ab ; b->parent = ab ;  ;   
+    // hmm : why is the parenting not done within make_intersection ?
+
     
-    ab.update_gtransforms();
-    ab.verbosity = SSys::getenvint("VERBOSITY", 1) ; 
-    ab.dump() ; 
+    ab->update_gtransforms();
+    ab->verbosity = SSys::getenvint("VERBOSITY", 1) ; 
+    ab->dump() ; 
 
     const char* boundary = "Rock//perfectAbsorbSurface/Vacuum" ;
 
-    ab.set_boundary(boundary); 
+    ab->set_boundary(boundary); 
     const char* gltfconfig = "" ;  
     const NSceneConfig* config = new NSceneConfig(gltfconfig);
     unsigned soIdx = 0 ; 
     unsigned lvIdx = 0 ; 
-    NCSG* csg = NCSG::Adopt(&ab, config, soIdx, lvIdx);
+    NCSG* csg = NCSG::Adopt(ab, config, soIdx, lvIdx);
     csg->dump();
     csg->dump_surface_points("dsp", 20);
 
@@ -107,7 +109,7 @@ void test_slab_sphere_intersection()
 
 void test_slab_parsurf()
 {
-    nslab s = make_slab( 1.000,0.000,0.000,0.000,-500.000,100.000,0.000,0.000 ) ; s.label = "s" ;   
+    nslab* s = make_slab( 1.000,0.000,0.000,0.000,-500.000,100.000,0.000,0.000 ) ; s->label = "s" ;   
 
 
     unsigned verbosity = 1 ; 
@@ -117,13 +119,13 @@ void test_slab_parsurf()
 
     NNodeFrameType frty = FRAME_MODEL ; 
 
-    s.collectParPoints(prim_idx, level, margin, frty, verbosity );    // using the above branch
+    s->collectParPoints(prim_idx, level, margin, frty, verbosity );    // using the above branch
 
 
-    for(unsigned i=0 ; i < s.par_points.size() ; i++)
+    for(unsigned i=0 ; i < s->par_points.size() ; i++)
     { 
         std::cout << std::setw(5) << i 
-                  << " ps " << gpresent(s.par_points[i])
+                  << " ps " << gpresent(s->par_points[i])
                   << std::endl ; 
     }
     

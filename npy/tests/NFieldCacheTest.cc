@@ -10,12 +10,12 @@ int main(int argc, char** argv)
     PLOG_(argc, argv);
     NPY_LOG__ ; 
 
-    nbox world = make_box(0,0,0,100) ; 
-    nbbox wbb = world.bbox() ;
+    nbox* world = make_box(0,0,0,100) ; 
+    nbbox wbb = world->bbox() ;
     NGenerator gen(wbb);
-    nbox obj = make_box(0,0,0,10) ; 
+    nbox* obj = make_box(0,0,0,10) ; 
 
-    NFieldCache fc(obj, wbb) ; 
+    NFieldCache fc(*obj, wbb) ; 
 
     std::function<float(float,float,float)> fn = fc.func();
 
@@ -27,7 +27,7 @@ int main(int argc, char** argv)
 
         for(int j=0 ; j < 10 ; j++)
         {
-            float v0 = obj(p.x, p.y, p.z) ;
+            float v0 = (*obj)(p.x, p.y, p.z) ;
             float v1 = fn(p.x, p.y, p.z) ;
 
             if(i % 100 == 0)

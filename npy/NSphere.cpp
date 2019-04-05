@@ -219,7 +219,7 @@ void nsphere::adjustToFit(const nbbox& bb, float scale, float delta)
     qce.f.w *= scale ; 
     qce.f.w += delta ;
 
-    init_sphere( *this, qce );
+    init_sphere( this, qce );
 }
 
 
@@ -229,7 +229,7 @@ void nsphere::adjustToFit(const nbbox& bb, float scale, float delta)
 
 
 
-ndisk nsphere::intersect(nsphere& a, nsphere& b)
+ndisk* nsphere::intersect(nsphere& a, nsphere& b)
 {
     // Find Z intersection disk of two Z offset spheres,
     // disk radius is set to zero when no intersection.
@@ -261,8 +261,8 @@ ndisk nsphere::intersect(nsphere& a, nsphere& b)
     float y = yy > 0 ? sqrt(yy) : 0 ;   
 
 
-    nplane plane = make_plane(0,0,1,z + a_center.z) ;
-    ndisk  disk = make_disk(plane, y) ;
+    nplane* plane = make_plane(0,0,1,z + a_center.z) ;
+    ndisk*  disk = make_disk(plane, y) ;
 
     return disk ;      // return to original frame
 }
@@ -289,25 +289,25 @@ npart nsphere::part() const
 
 
 
-npart nsphere::zlhs(const ndisk& dsk)
+npart nsphere::zlhs(const ndisk* dsk)
 {
     npart p = part();
 
     float z_ = z() ;  
     float r  = radius() ; 
-    nbbox bb = make_bbox_zsymmetric(z_ - r, dsk.z(), -dsk.radius, dsk.radius);
+    nbbox bb = make_bbox_zsymmetric(z_ - r, dsk->z(), -dsk->radius, dsk->radius);
     p.setBBox(bb);
 
     return p ; 
 }
 
-npart nsphere::zrhs(const ndisk& dsk)
+npart nsphere::zrhs(const ndisk* dsk)
 {
     npart p = part();
 
     float z_ = z() ;  
     float r  = radius() ; 
-    nbbox bb = make_bbox_zsymmetric(dsk.z(), z_ + r, -dsk.radius, dsk.radius);
+    nbbox bb = make_bbox_zsymmetric(dsk->z(), z_ + r, -dsk->radius, dsk->radius);
     p.setBBox(bb);
 
     return p ; 

@@ -7,8 +7,7 @@
 #include "NBox.hpp"
 #include "NSphere.hpp"
 
-#include "NPY_LOG.hh"
-#include "PLOG.hh"
+#include "OPTICKS_LOG.hh"
 
 
 
@@ -46,18 +45,18 @@ void test_generateParPoints(const nnode* n, unsigned num_gen, unsigned sheetmask
 
 void test_generateParPoints_box()
 {
-    nbox n = make_box3(2.*1.f,2.*2.f,2.*3.f); 
-    n.verbosity = 3 ;  
-    n.pdump("make_box3(2.,4.,6.)");
-    test_generateParPoints(&n, 60u, 0x3f );  //  b11 1111    
+    nbox* n = make_box3(2.*1.f,2.*2.f,2.*3.f); 
+    n->verbosity = 3 ;  
+    n->pdump("make_box3(2.,4.,6.)");
+    test_generateParPoints(n, 60u, 0x3f );  //  b11 1111    
 }
 
 void test_generateParPoints_sphere()
 {
-    nsphere n = make_sphere(0.,0.,0.,10.); 
-    n.verbosity = 3 ;  
-    n.pdump("make_sphere(0,0,0,10)");
-    test_generateParPoints(&n, 20u, 0 );   
+    nsphere* n = make_sphere(0.,0.,0.,10.); 
+    n->verbosity = 3 ;  
+    n->pdump("make_sphere(0,0,0,10)");
+    test_generateParPoints(n, 20u, 0 );   
 }
 
 
@@ -65,8 +64,7 @@ void test_generateParPoints_sphere()
 
 int main(int argc, char** argv)
 {
-    PLOG_(argc, argv);
-    NPY_LOG__ ; 
+    OPTICKS_LOG(argc, argv);
 
     test_generateParPoints_box();
     //test_generateParPoints_sphere();

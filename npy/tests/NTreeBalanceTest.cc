@@ -17,16 +17,16 @@
 
 nnode* make_tree_0()
 {
-    nnode* a = new nsphere(make_sphere(0,0,-50,100)) ;  
-    nnode* b = new nsphere(make_sphere(0,0, 50,100)) ;  
-    nnode* c = new nbox(make_box(0,0, 50,100)) ;  
-    nnode* d = new nbox(make_box(0,0,  0,100)) ;  
-    nnode* e = new nbox(make_box(0,0,  0,100)) ;  
+    nnode* a = make_sphere(0,0,-50,100) ;  
+    nnode* b = make_sphere(0,0, 50,100) ;  
+    nnode* c = make_box(0,0, 50,100) ;  
+    nnode* d = make_box(0,0,  0,100) ;  
+    nnode* e = make_box(0,0,  0,100) ;  
 
-    nnode* ab = nnode::make_operator_ptr( CSG_UNION, a, b );
-    nnode* de = nnode::make_operator_ptr( CSG_DIFFERENCE, d, e );
-    nnode* cde = nnode::make_operator_ptr( CSG_DIFFERENCE, c, de );
-    nnode* abcde = nnode::make_operator_ptr( CSG_INTERSECTION, ab, cde );
+    nnode* ab = nnode::make_operator( CSG_UNION, a, b );
+    nnode* de = nnode::make_operator( CSG_DIFFERENCE, d, e );
+    nnode* cde = nnode::make_operator( CSG_DIFFERENCE, c, de );
+    nnode* abcde = nnode::make_operator( CSG_INTERSECTION, ab, cde );
 
     return abcde ; 
 }
@@ -34,20 +34,20 @@ nnode* make_tree_0()
 
 nnode* make_tree_1()
 {
-    nnode* a = new nsphere(make_sphere(0,0,-50,100)) ;  
-    nnode* b = new nsphere(make_sphere(0,0,-50,100)) ;  
-    nnode* c = new nsphere(make_sphere(0,0,-50,100)) ;  
-    nnode* d = new nsphere(make_sphere(0,0,-50,100)) ;  
-    nnode* e = new nsphere(make_sphere(0,0,-50,100)) ;  
-    nnode* f = new nsphere(make_sphere(0,0,-50,100)) ;  
-    nnode* g = new nsphere(make_sphere(0,0,-50,100)) ;  
+    nnode* a = make_sphere(0,0,-50,100) ;  
+    nnode* b = make_sphere(0,0,-50,100) ;  
+    nnode* c = make_sphere(0,0,-50,100) ;  
+    nnode* d = make_sphere(0,0,-50,100) ;  
+    nnode* e = make_sphere(0,0,-50,100) ;  
+    nnode* f = make_sphere(0,0,-50,100) ;  
+    nnode* g = make_sphere(0,0,-50,100) ;  
 
-    nnode* ab = nnode::make_operator_ptr( CSG_DIFFERENCE, a, b );
-    nnode* abc = nnode::make_operator_ptr( CSG_DIFFERENCE, ab, c );
-    nnode* abcd = nnode::make_operator_ptr( CSG_DIFFERENCE, abc, d );
-    nnode* abcde = nnode::make_operator_ptr( CSG_DIFFERENCE, abcd, e );
-    nnode* abcdef = nnode::make_operator_ptr( CSG_DIFFERENCE, abcde, f );
-    nnode* abcdefg = nnode::make_operator_ptr( CSG_DIFFERENCE, abcdef, g );
+    nnode* ab = nnode::make_operator( CSG_DIFFERENCE, a, b );
+    nnode* abc = nnode::make_operator( CSG_DIFFERENCE, ab, c );
+    nnode* abcd = nnode::make_operator( CSG_DIFFERENCE, abc, d );
+    nnode* abcde = nnode::make_operator( CSG_DIFFERENCE, abcd, e );
+    nnode* abcdef = nnode::make_operator( CSG_DIFFERENCE, abcde, f );
+    nnode* abcdefg = nnode::make_operator( CSG_DIFFERENCE, abcdef, g );
 
     return abcdefg ; 
 }
@@ -86,35 +86,35 @@ make_tree_2
 
 nnode* make_tree_2()
 {
-    nnode* a = new nsphere(make_sphere(0,0,-50,100)) ;  
-    nnode* b = new nsphere(make_sphere(0,0,-50,100)) ;  
-    nnode* c = new nsphere(make_sphere(0,0,-50,100)) ;  
-    nnode* d = new nsphere(make_sphere(0,0,-50,100)) ;  
-    nnode* e = new nsphere(make_sphere(0,0,-50,100)) ;  
-    nnode* f = new nsphere(make_sphere(0,0,-50,100)) ;  
-    nnode* g = new nsphere(make_sphere(0,0,-50,100)) ;  
-    nnode* h = new nsphere(make_sphere(0,0,-50,100)) ;  
-    nnode* i = new nsphere(make_sphere(0,0,-50,100)) ;  
-    nnode* j = new nsphere(make_sphere(0,0,-50,100)) ;  
-    nnode* k = new nsphere(make_sphere(0,0,-50,100)) ;  
-    nnode* l = new nsphere(make_sphere(0,0,-50,100)) ;  
-    nnode* m = new nsphere(make_sphere(0,0,-50,100)) ;  
+    nnode* a = make_sphere(0,0,-50,100) ;  
+    nnode* b = make_sphere(0,0,-50,100) ;  
+    nnode* c = make_sphere(0,0,-50,100) ;  
+    nnode* d = make_sphere(0,0,-50,100) ;  
+    nnode* e = make_sphere(0,0,-50,100) ;  
+    nnode* f = make_sphere(0,0,-50,100) ;  
+    nnode* g = make_sphere(0,0,-50,100) ;  
+    nnode* h = make_sphere(0,0,-50,100) ;  
+    nnode* i = make_sphere(0,0,-50,100) ;  
+    nnode* j = make_sphere(0,0,-50,100) ;  
+    nnode* k = make_sphere(0,0,-50,100) ;  
+    nnode* l = make_sphere(0,0,-50,100) ;  
+    nnode* m = make_sphere(0,0,-50,100) ;  
 
-    nnode* ab = nnode::make_operator_ptr( CSG_DIFFERENCE, a, b );
+    nnode* ab = nnode::make_operator( CSG_DIFFERENCE, a, b );
 
-    nnode* abc = nnode::make_operator_ptr( CSG_UNION, ab, c );
-    nnode* abcd = nnode::make_operator_ptr( CSG_UNION, abc, d );
-    nnode* abcde = nnode::make_operator_ptr( CSG_UNION, abcd, e );
-    nnode* abcdef = nnode::make_operator_ptr( CSG_UNION, abcde, f );
-    nnode* abcdefg = nnode::make_operator_ptr( CSG_UNION, abcdef, g );
-    nnode* abcdefgh = nnode::make_operator_ptr( CSG_UNION, abcdefg, h );
-    nnode* abcdefghi = nnode::make_operator_ptr( CSG_UNION, abcdefgh, i );
-    nnode* abcdefghij = nnode::make_operator_ptr( CSG_UNION, abcdefghi, j );
-    nnode* abcdefghijk = nnode::make_operator_ptr( CSG_UNION, abcdefghij, k );
+    nnode* abc = nnode::make_operator( CSG_UNION, ab, c );
+    nnode* abcd = nnode::make_operator( CSG_UNION, abc, d );
+    nnode* abcde = nnode::make_operator( CSG_UNION, abcd, e );
+    nnode* abcdef = nnode::make_operator( CSG_UNION, abcde, f );
+    nnode* abcdefg = nnode::make_operator( CSG_UNION, abcdef, g );
+    nnode* abcdefgh = nnode::make_operator( CSG_UNION, abcdefg, h );
+    nnode* abcdefghi = nnode::make_operator( CSG_UNION, abcdefgh, i );
+    nnode* abcdefghij = nnode::make_operator( CSG_UNION, abcdefghi, j );
+    nnode* abcdefghijk = nnode::make_operator( CSG_UNION, abcdefghij, k );
 
-    nnode* lm = nnode::make_operator_ptr( CSG_DIFFERENCE, l, m );
+    nnode* lm = nnode::make_operator( CSG_DIFFERENCE, l, m );
 
-    nnode* abcdefghijklm = nnode::make_operator_ptr( CSG_UNION, abcdefghijk, lm );
+    nnode* abcdefghijklm = nnode::make_operator( CSG_UNION, abcdefghijk, lm );
     nnode* root = abcdefghijklm  ; 
 
     return root ; 

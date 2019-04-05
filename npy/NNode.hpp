@@ -81,13 +81,13 @@ struct NPY_API nnode
     virtual unsigned maxdepth() const ;
     virtual unsigned _maxdepth(unsigned depth) const ;
 
-    static const unsigned desc_indent ; 
+    static unsigned desc_indent ; 
     virtual std::string desc() const ;
     std::string tag() const ;
     std::string id() const ;
 
 
-    static void Init(nnode& n, OpticksCSG_t type, nnode* left=NULL, nnode* right=NULL);
+    static void Init(nnode* n, OpticksCSG_t type, nnode* left=NULL, nnode* right=NULL);
 
     //unsigned uncoincide(unsigned verbosity);
     //bool can_uncoincide(const nnode* a, const nnode* b) const ;
@@ -279,8 +279,8 @@ struct NPY_API nnode
     const char*  g4code ; 
 
 
-    static nnode make_node(OpticksCSG_t operator_, nnode* left=NULL, nnode* right=NULL);
-    static nnode* make_operator_ptr(OpticksCSG_t operator_, nnode* left=NULL, nnode* right=NULL );
+    static nnode* make_node(OpticksCSG_t operator_, nnode* left=NULL, nnode* right=NULL);
+    static nnode* make_operator(OpticksCSG_t operator_, nnode* left=NULL, nnode* right=NULL );
 
     void dump_g4code() const ;
     void write_g4code(const char* path) const ;
@@ -288,45 +288,45 @@ struct NPY_API nnode
     static void to_g4code_r(const nnode* node, std::ostream& out, unsigned depth );
 
 };
-inline nnode nnode::make_node(OpticksCSG_t operator_, nnode* left, nnode* right )
+inline nnode* nnode::make_node(OpticksCSG_t operator_, nnode* left, nnode* right )
 {
-    nnode n ;    nnode::Init(n, operator_ , left, right ); return n ;
+    nnode* n = new nnode ;    nnode::Init(n, operator_ , left, right ); return n ;
 }
 
 struct NPY_API nunion : nnode {
     float operator()(float x, float y, float z) const ;
-    static nunion make_union(nnode* left=NULL, nnode* right=NULL);
+    static nunion* make_union(nnode* left=NULL, nnode* right=NULL);
 };
 struct NPY_API nintersection : nnode {
     float operator()(float x, float y, float z) const ;
-    static nintersection make_intersection(nnode* left=NULL, nnode* right=NULL);
+    static nintersection* make_intersection(nnode* left=NULL, nnode* right=NULL);
 };
 struct NPY_API ndifference : nnode {
     float operator()(float x, float y, float z) const ;
-    static ndifference make_difference(nnode* left=NULL, nnode* right=NULL);
+    static ndifference* make_difference(nnode* left=NULL, nnode* right=NULL);
 };
 
-inline nunion nunion::make_union(nnode* left, nnode* right)
+inline nunion* nunion::make_union(nnode* left, nnode* right)
 {
-    nunion n ;         nnode::Init(n, CSG_UNION , left, right ); return n ; 
+    nunion* n = new nunion ;         nnode::Init(n, CSG_UNION , left, right ); return n ; 
 }
-inline nintersection nintersection::make_intersection(nnode* left, nnode* right)
+inline nintersection* nintersection::make_intersection(nnode* left, nnode* right)
 {
-    nintersection n ;  nnode::Init(n, CSG_INTERSECTION , left, right ); return n ;
+    nintersection* n = new nintersection ;  nnode::Init(n, CSG_INTERSECTION , left, right ); return n ;
 }
-inline ndifference ndifference::make_difference(nnode* left, nnode* right)
+inline ndifference* ndifference::make_difference(nnode* left, nnode* right)
 {
-    ndifference n ;    nnode::Init(n, CSG_DIFFERENCE , left, right ); return n ;
+    ndifference* n = new ndifference ;    nnode::Init(n, CSG_DIFFERENCE , left, right ); return n ;
 }
 
-inline nnode* nnode::make_operator_ptr(OpticksCSG_t operator_, nnode* left, nnode* right )
+inline nnode* nnode::make_operator(OpticksCSG_t operator_, nnode* left, nnode* right )
 {
     nnode* node = NULL ; 
     switch(operator_) 
     {
-        case CSG_UNION        : node = new nunion(nunion::make_union(left , right ))                      ; break ;    
-        case CSG_INTERSECTION : node = new nintersection(nintersection::make_intersection(left , right )) ; break ;    
-        case CSG_DIFFERENCE   : node = new ndifference(ndifference::make_difference(left , right ))       ; break ;    
+        case CSG_UNION        : node = nunion::make_union(left , right )                      ; break ;    
+        case CSG_INTERSECTION : node = nintersection::make_intersection(left , right ) ; break ;    
+        case CSG_DIFFERENCE   : node = ndifference::make_difference(left , right )       ; break ;    
         default               : node = NULL ; break ; 
     }
     return node ; 

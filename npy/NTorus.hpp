@@ -43,35 +43,27 @@ inline NPY_API float ntorus::rmajor() const { return param.f.w  ; }
 
 
 
-inline NPY_API void init_torus(ntorus& s, const nquad& param)
+inline NPY_API void init_torus(ntorus* n, const nquad& param)
 {
-    s.param = param ; 
+    n->param = param ; 
 }
-inline NPY_API ntorus make_torus(const nquad& param)
+inline NPY_API ntorus* make_torus(const nquad& param)
 {
-    ntorus n ; 
+    ntorus* n = new ntorus ; 
     nnode::Init(n,CSG_TORUS) ; 
     init_torus(n, param);
     return n ; 
 }
-inline NPY_API ntorus make_torus(float x, float y, float z, float w)
+inline NPY_API ntorus* make_torus(float x, float y, float z, float w)
 {
     nquad param ; 
     param.f = {x,y,z,w} ;
     return make_torus(param);
 }
-inline NPY_API ntorus make_torus(float R=100.f, float r=10.f)
+inline NPY_API ntorus* make_torus(float R=100.f, float r=10.f)
 {
     return make_torus(0.f,0.f,r,R);
 }
-
-
-
-
-
-
-
-
 
 
 
