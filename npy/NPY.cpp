@@ -662,10 +662,14 @@ NPY<T>* NPY<T>::load(const char* path_, bool quietly)
     if( npy != NULL)
     {
         NMeta* meta = NPYBase::LoadMeta( path.c_str(), ".json" ) ; 
-        npy->setMeta(meta); 
-
-        //npy->setMeta<std::string>(
-
+        if(meta != NULL)
+        {
+            npy->setMeta(meta); 
+        }
+        else
+        {
+            LOG(debug) << " no .json metadata loaded for " << path ; 
+        }
     }
 
     return npy ;

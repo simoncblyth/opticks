@@ -118,6 +118,14 @@ std::string expandvar(const char* s)
 
                LOG(error) << "expandvar replacing IDPATH with " << evalue ; 
            }
+           else if(evalue.compare("DATADIR")==0 ) 
+           {
+               const char* datadir = BResource::Get("opticksdata_dir") ; 
+               assert( datadir ); 
+               evalue = datadir ;  
+
+               LOG(error) << "expandvar replacing DATADIR with " << evalue ; 
+           }
            else if(evalue.compare("OPTICKS_EVENT_BASE")==0) 
            {
                const char* evtbase = BResource::Get("evtbase") ; 

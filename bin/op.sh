@@ -380,7 +380,7 @@ op-geometry-desc()
 
 op-cmdline-geometry-match()
 {
-    local msg="=== $FUNCNAME : finds 1st argument with associated geometry :"
+    local msg="=== $FUNCNAME $VERBOSE :"
     local arg
     local geo
     unset OPTICKS_GEO
@@ -390,6 +390,7 @@ op-cmdline-geometry-match()
        #echo arg $arg geo $geo 
        if [ "$geo" != "" ]; then 
            export OPTICKS_GEO=$geo
+           [ -n "$VERBOSE" ] && echo $msg found OPTICKS_GEO : $OPTICKS_GEO
            return 
        fi
     done
@@ -399,13 +400,21 @@ op-cmdline-geometry-match()
 
 op-geometry-setup()
 {
+    local msg="=== $FUNCNAME $VERBOSE :"
     local geo=${OPTICKS_GEO:-DYB}
     op-geometry-unset 
+
     case $geo in 
      DYB|IDYB|JDYB|KDYB|LDYB|MDYB|DLIN|DFAR|DSST2|DLV*|DRV*) op-geometry-setup-dyb  $geo  ;;
                              JUNO|JPMT|JTST|J1707|J1808) op-geometry-setup-juno $geo  ;;
                               DPIB|DPMT|LXE) op-geometry-setup-misc $geo  ;;
     esac
+
+   [ -n "$VERBOSE" ] && echo $msg OPTICKS_GEO    : $OPTICKS_GEO 
+   [ -n "$VERBOSE" ] && echo $msg OPTICKS_GEOKEY : $OPTICKS_GEOKEY 
+   [ -n "$VERBOSE" ] && echo $msg OPTICKS_QUERY  : $OPTICKS_QUERY 
+   [ -n "$VERBOSE" ] && echo $msg OPTICKS_CTRL   : $OPTICKS_CTRL 
+
 }
 op-geometry-query-dyb()
 {
@@ -457,8 +466,9 @@ op-geometry-setup-juno()
    ## NB the geometry digest incorporates OPTICKS_QUERY value 
    ##    so changes to the query will necessitate a rebuild of the geocache
 
+   local msg="=== $FUNCNAME $VERBOSE :"
    local geo=${1:-JPMT}
-   [ -n "$VERBOSE" ] && echo $FUNCNAME : geo $geo 
+   [ -n "$VERBOSE" ] && echo $msg : geo $geo : expect one of JUNO/JPMT/JTST/J1707/J1808
 
    if [ "$geo" == "JUNO" ]; then 
        export OPTICKS_GEOKEY=OPTICKSDATA_DAEPATH_JUNO
@@ -481,8 +491,6 @@ op-geometry-setup-juno()
        export OPTICKS_QUERY="all" 
        export OPTICKS_CTRL=""
    fi
-
- 
 
 }
 op-geometry-setup-misc()
@@ -563,6 +571,9 @@ op-dump(){
 
 op-cmdline-specials()
 {
+   local msg="=== $FUNCNAME $VERBOSE :"
+   [ -n "$VERBOSE" ] && echo $msg 
+
    unset OPTICKS_DBG 
    unset OPTICKS_LOAD
    unset OPTIX_API_CAPTURE
@@ -592,7 +603,9 @@ op-cmdline-specials()
 
 op-cmdline-binary-match()
 {
-    local msg="=== $FUNCNAME : finds 1st argument with associated binary :"
+    local msg="=== $FUNCNAME $VERBOSE :"
+    [ -n "$VERBOSE" ] && echo $msg finding 1st argument with associated binary 
+
     local arg
     local bin
     unset OPTICKS_CMD
@@ -607,12 +620,19 @@ op-cmdline-binary-match()
            return 
        fi
     done
+
+    if [ -z "$OPTICKS_CMD" ]; then
+       echo $msg ERR UNSET 
+    fi 
+
 }
 
 
 op-binary-setup()
 {
-    local msg="=== $FUNCNAME :"
+    local msg="=== $FUNCNAME $VERBOSE :"
+    [ -n "$VERBOSE" ] && echo $msg setting OPTICKS_BINARY and OPTICKS_ARGS based on OPTICKS_CMD $OPTICKS_CMD
+
     local cfm=$OPTICKS_CMD
     local bin=$(op-binary-name $cfm) 
     local def=$(op-binary-name-default)
@@ -679,23 +699,28 @@ op-binary-setup()
         fi 
     fi
 
+    [ -n "$VERBOSE" ] && echo $msg OPTICKS_BINARY : $OPTICKS_BINARY
+    [ -n "$VERBOSE" ] && echo $msg OPTICKS_ARGS   : $OPTICKS_ARGS
+
 }
 
 
 op-cmdline-parse()
 {
-    #op-cmdline-dump
-    op-cmdline-specials
+   local msg="=== $FUNCNAME $VERBOSE :"
+   [ -n "$VERBOSE" ] && echo $msg START 
 
-    op-cmdline-binary-match
-    op-cmdline-geometry-match
-    [ -n "$VERBOSE" ] && echo $FUNCNAME OPTICKS_GEO : ${OPTICKS_GEO} 
+   #op-cmdline-dump
+   op-cmdline-specials
 
+   op-cmdline-binary-match
+   op-cmdline-geometry-match
+   [ -n "$VERBOSE" ] && echo $msg OPTICKS_GEO ${OPTICKS_GEO} 
 
-    op-binary-setup
-    op-geometry-setup
-
-    [ -n "$VERBOSE" ] && echo $FUNCNAME : OPTICKS_GEOKEY ${OPTICKS_GEOKEY}  
+   op-binary-setup
+   op-geometry-setup
+   [ -n "$VERBOSE" ] && echo $msg OPTICKS_GEOKEY ${OPTICKS_GEOKEY}  
+   [ -n "$VERBOSE" ] && echo $msg DONE
 }
 
 
@@ -825,9 +850,9 @@ op-ls()
 }
 
 
-#if [ -n "$OPTICKS_DEBUG_SCRIPT" ] ; then
-#   echo args $* 
-#fi 
+if [ -n "$VERBOSE" ] ; then
+   echo === $0 args $* 
+fi 
 
 
 #opticks-

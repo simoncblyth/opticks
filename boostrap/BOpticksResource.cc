@@ -124,7 +124,9 @@ void BOpticksResource::initInstallPrefix()
     m_install_prefix = strdup(OKCONF_OPTICKS_INSTALL_PREFIX) ; 
     m_res->addDir("install_prefix", m_install_prefix );
 
-    const char* key = "OPTICKS_INSTALL_PREFIX" ; 
+    const char* key = "OPTICKS_INSTALL_PREFIX" ;  
+    // Perhaps should follow convention that internal "envvars" are not OPTICKS_ prefixed.
+    // otherwise they look too much like envvars ?
 
     int rc = SSys::setenvvar(key, m_install_prefix, true );  
 

@@ -12,6 +12,23 @@ const BResource* BResource::GetInstance()
     return INSTANCE ; 
 }
 
+void BResource::Dump(const char* msg)
+{
+    LOG(info) << msg ;
+
+    const BResource* br = INSTANCE ;  
+
+    if(!br)
+    {
+        LOG(fatal) << " No BResource::INSTANCE " ; 
+        return ; 
+    } 
+
+    br->dumpNames("names");
+    br->dumpDirs("dirs");
+    br->dumpPaths("paths");
+}
+
 const char* BResource::Get(const char* label)
 {
     const BResource* br = GetInstance(); 
@@ -164,5 +181,6 @@ void BResource::dumpDirs(const char* msg) const
              ;
     } 
 }
+
 
 

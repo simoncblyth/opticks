@@ -20,6 +20,18 @@ When building for the first time it is necessary to
 use "om-install" as later subprojects cannot be configured 
 until earlier ones have been installed.
 
+Usage Examples
+---------------
+
+om-subs okconf:opticksgeo
+    list the subprojects in this inclusive range
+
+om-subs :opticksgeo
+    same as the above, as first is implicit
+
+om-test :opticksgeo
+    run the tests for all subprojects from the first okconf upto opticksgeo    
+
 
 SUBPROJ FUNCTIONS 
 -----------------
@@ -286,7 +298,14 @@ om-check()
     local msg="=== $FUNCNAME :"
     local bdir=$(om-bdir)
     local rc=0
-    [ ! -d "$bdir" ] && echo $msg top level bdir $bdir does not exist  && rc=1
+    if [ ! -d "$bdir" ]; then 
+        echo $msg top level bdir $bdir does not exist : creating it 
+        mkdir -p $bdir  
+    fi 
+    if [ ! -d "$bdir" ]; then 
+        echo $msg top level bdir $bdir does not exist : create failed 
+        rc=1
+    fi 
     return $rc 
 }
 
@@ -369,6 +388,11 @@ om-visit-one()
     local name=$(basename $iwd)
     local sdir=$(om-sdir $name)
     local bdir=$(om-bdir $name)
+
+    if [ ! -d "$bdir" ]; then
+         echo $msg bdir $bdir does not exist : creating it
+         mkdir -p $bdir
+    fi 
     cd $bdir
     printf "%s %-15s %-60s %-60s \n"  "$msg" $name $sdir $bdir
 }
@@ -480,6 +504,13 @@ om-make-one()
     local sdir=$(om-sdir $name)
     local bdir=$(om-bdir $name)
     printf "%s %-15s %-60s %-60s \n"  "$msg" $name $sdir $bdir
+
+    if [ ! -d $bdir ]; then
+       echo $msg ERROR bdir $bdir does not exist : you need to om-install OR om-conf once before using om-make or the om-- shortcut  
+       rc=1
+       return $rc
+    fi 
+
     cd $bdir
     local t0=$(date +"%s")
     cmake --build .  --target all

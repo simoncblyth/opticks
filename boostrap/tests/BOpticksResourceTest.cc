@@ -1,6 +1,7 @@
 #include <iostream>
 
 #include "SSys.hh"
+#include "BResource.hh"
 #include "BOpticksResource.hh"
 #include "OPTICKS_LOG.hh"
 
@@ -67,7 +68,11 @@ int main(int argc, char** argv)
     BOpticksResourceTest brt(idpath) ; 
     BOpticksResourceTest brt2(brt._res.getSrcPath(), brt._res.getSrcDigest()) ; 
 
+
     // the two setup approaches, should yield exactly the same paths 
+
+    BResource::Dump("BOpticksResourceTest"); 
+
 
     return 0 ; 
 }

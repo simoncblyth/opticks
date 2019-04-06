@@ -7,6 +7,18 @@
 #include "BRAP_API_EXPORT.hh"
 #include "BRAP_HEAD.hh"
 
+/**
+BResource
+==========
+
+Holds key,value string pairs in three categories
+
+* names
+* dirs
+* paths
+
+
+**/
 
 class BRAP_API BResource 
 {
@@ -15,6 +27,7 @@ class BRAP_API BResource
    public:
         static const BResource* GetInstance() ;
         static const char* Get(const char* label ) ;
+        static void Dump(const char* msg="BResource::Dump") ;
    public:
         BResource();
         virtual ~BResource();

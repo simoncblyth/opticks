@@ -27,12 +27,15 @@ It would be good for me to reproduce the problem in such a system
 But lets started with the latest Ubuntu 18.04.2 
 
 
-Containers Refs
+Alt Containers 
 ------------------
 
-* https://blog.risingstack.com/operating-system-containers-vs-application-containers/
+Investigations of containers which may allow full testing on alt Linux distros.
 
-* https://hub.docker.com/_/ubuntu
+* olvd-
+* odocker-
+
+* https://blog.risingstack.com/operating-system-containers-vs-application-containers/
 
 
 
@@ -107,11 +110,8 @@ of the installed packages are being used.
    sudo apt upgrade
    sudo apt install build-essential dkms linux-headers-$(uname -r)
 
-
-::
-
-    sudo apt install net-tools       # want to ssh into the virtualbox ubuntu, need ifconfig for address
-    sudo apt install openssh-server  # maybe not needed
+   sudo apt install net-tools       # want to ssh into the virtualbox ubuntu, need ifconfig for address
+   sudo apt install openssh-server  # maybe not needed
 
 
 Virtualbox : Settings > Network > Advanced > Port Forwarding
@@ -265,7 +265,7 @@ Subs::
    ## With Ubuntu 18 
    ##    1. OpenMesh compilation fails, 
    ##       gcc 7.3 requires <sys/time.h> header in OpenMesh-6.3/src/OpenMesh/Tools/Utils/conio.cc see openmesh-vi
-   ##       manually changed the external
+   ##       manually changed the external, see openmesh-
    ##
    ## With Ubuntu 16 
    ##    1. fails to configure npy as stock CMake 3.5 is not new enough, 3.8+ is needed
@@ -355,6 +355,47 @@ Ubuntu 16 : getting a newer CMake
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * added externals/ocmake.bash script for getting a newer cmake  
+
+
+Continue Ubuntu-16 install beyond NPY
+---------------------------------------
+
+::
+
+    cd ~/opticks/optickscore
+    om-install
+    om-test    # many fails from lack of resources
+    opticksdata-;opticksdata--
+
+
+
+Reproduces Elias failure of OpticksGenstepTest
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Fixed, details in notes/issues/Ubuntu16.04.6-gcc5.4.0-OpticksGenstepTest-m_meta-assert.rst
+
+
+Lots of ggeo test fails for lacking geocache
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Testing all packages before cudarap::
+
+   om-test :opticksgeo
+
+::
+
+   blyth@blyth-VirtualBox:~/opticks$ VERBOSE=1 op.sh --gdml2gltf  
+
+   ## missing numpy and lxml
+   sudo apt install python-numpy 
+   sudo apt install python-lxml
+
+
+
+
+
+
+
 
 
 
