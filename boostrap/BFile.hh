@@ -13,6 +13,8 @@ class BRAP_API BFile {
        static void SplitPath(std::vector<std::string>& elem, const char* path ) ; 
        static bool LooksLikePath(const char* path) ; 
    
+       static std::string expandvar(const char* s);
+       static std::string expandhome(const char* s);
 
        static std::string FormRelativePath(const char* a, const char* b=NULL, const char* c=NULL, const char* d=NULL, const char* e=NULL, const char* f=NULL);
        static std::string FormPath(const std::vector<std::string>& elem, unsigned i0, unsigned i1 ); 

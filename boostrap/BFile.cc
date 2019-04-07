@@ -80,8 +80,17 @@ std::string usertmpdir(const char* base, const char* sub, const char* rel )
 
 
 
+/**
+BFile::expandvar
+------------------
 
-std::string expandvar(const char* s)
+Expands dollar tokens in strings according 
+to envvars or internal BResource vars   
+
+**/
+
+
+std::string BFile::expandvar(const char* s)
 {
     fs::path p ; 
 
@@ -103,12 +112,14 @@ std::string expandvar(const char* s)
 
            std::string evalue = evalue_ ? evalue_ : key ; 
 
+           // if fails to find an external envvar 
+
            if(evalue.compare("TMP")==0) //  TMP is not an envvar, but this makes it seem like one
            {
                evalue = usertmpdir("/tmp","opticks", NULL);
                //evalue = BResource::Get("tmpuser_dir") ;   // bad access if returns NULL
 
-               LOG(verbose) << "expandvar replacing TMP with " << evalue ; 
+               LOG(verbose) << "replacing TMP with " << evalue ; 
            }
            else if(evalue.compare("KEYDIR")==0 ) 
            {
@@ -116,7 +127,7 @@ std::string expandvar(const char* s)
                assert( idpath ); 
                evalue = idpath ;  
 
-               LOG(error) << "expandvar replacing IDPATH with " << evalue ; 
+               LOG(error) << "replacing IDPATH with " << evalue ; 
            }
            else if(evalue.compare("DATADIR")==0 ) 
            {
@@ -124,7 +135,7 @@ std::string expandvar(const char* s)
                assert( datadir ); 
                evalue = datadir ;  
 
-               LOG(error) << "expandvar replacing DATADIR with " << evalue ; 
+               LOG(error) << "replacing DATADIR with " << evalue ; 
            }
            else if(evalue.compare("OPTICKS_EVENT_BASE")==0) 
            {
@@ -138,7 +149,7 @@ std::string expandvar(const char* s)
                    //evalue = BResource::Get("tmpuser_dir") ; 
                    evalue = usertmpdir("/tmp","opticks",NULL);
                } 
-               LOG(verbose) << "expandvar replacing OPTICKS_EVENT_BASE  with " << evalue ; 
+               LOG(verbose) << "replacing OPTICKS_EVENT_BASE  with " << evalue ; 
            }
 
 
@@ -162,7 +173,7 @@ std::string expandvar(const char* s)
 }
 
 
-std::string expandhome(const char* s)
+std::string BFile::expandhome(const char* s)
 {
     assert(strcmp(s,"~")==0);
 #ifdef _WIN32
