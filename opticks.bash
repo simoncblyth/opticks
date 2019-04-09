@@ -1376,6 +1376,7 @@ hh-(){              . $(opticks-home)/bin/hh.bash      && hh-env $* ; }
 vbx-(){             . $(opticks-home)/bin/vbx.bash     && vbx-env $* ; }
 odocker-(){         . $(opticks-home)/bin/odocker.bash && odocker-env $* ; }
 olxd-(){            . $(opticks-home)/bin/olxd.bash    && olxd-env $* ; }
+onvidia-(){         . $(opticks-home)/bin/onvidia.bash && onvidia-env $* ; }
 
 # override old original from env, $(env-home)/nuwa/detdesc/pmt/pmt.bash
 
