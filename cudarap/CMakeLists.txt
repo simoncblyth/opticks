@@ -3,9 +3,15 @@ set(name CUDARap)
 project(${name} VERSION 0.1.0)
 include(OpticksBuildOptions)      
 
+if(POLICY CMP0077)  # see note/issues/cmake-3.13.4-FindCUDA-warnings.rst
+    cmake_policy(SET CMP0077 OLD)
+endif()
+
+
 set(FLAGS_VERBOSE ON)
 
 find_package(SysRap REQUIRED CONFIG)
+set(OpticksCUDA_VERBOSE ON)
 find_package(OpticksCUDA REQUIRED MODULE)
 ## NB **NO BOOST** or pkgs with Boost ancestry : as nvcc barfs on it
 

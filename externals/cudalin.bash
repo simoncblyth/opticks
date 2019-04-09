@@ -52,10 +52,8 @@ Curious about how graphics drivers work
 * https://people.freedesktop.org/~marcheu/linuxgraphicsdrivers.pdf
 
 
-
 GPU Drivers
 -------------
-
 
 Linux x64 (AMD64/EM64T) Display Driver : 418.43
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -69,10 +67,61 @@ Language:   English (US)
 File Size:  101.71 MB
     
 
+CUDA Environment
+--------------------
 
+::
 
-
+    #export CUDA_VERSION=9.2
+    export CUDA_VERSION=10.1
+    export PATH=/usr/local/cuda-${CUDA_VERSION}/bin:${PATH}
+    export LD_LIBRARY_PATH=/usr/local/cuda-${CUDA_VERSION}/lib64:${LD_LIBRARY_PATH}
 
 EOU
 }
+
+cudalin-home(){  echo ${CUDALIN_HOME:-/usr/local/cuda} ; }
+cudalin-name(){  echo $(basename $(readlink $(cudalin-home))) ; }
+cudalin-vers(){  local name=$(cudalin-name) ; echo ${name/cuda-} ; }
+cudalin-samples-dir(){ echo $LOCAL_BASE/NVIDIA_CUDA-$(cudalin-vers)_Samples ; }
+
+cudalin-info(){ cat << EOI
+
+    cudalin-home        : $(cudalin-home)
+    cudalin-name        : $(cudalin-name)
+    cudalin-vers        : $(cudalin-vers)
+    cudalin-samples-dir : $(cudalin-samples-dir)
+
+EOI
+}
+
+cudalin-samples-install()
+{
+    local dir=$(cudalin-samples-dir)
+    local fold=$(dirname $dir)
+    [ -d "$dir" ] && echo $FUNCNAME : The samples are already installed in $dir && return 
+    [ -z "$fold" ] && echo $FUCNAME : ERROR no fold $fold && return
+
+    cuda-install-samples-$(cudalin-vers).sh $dst
+    ## hmm this is assuming the CUDA environment setup and the symbolic link match 
+}
+
+cudalin-scd(){ cd $(cudalin-samples-dir) ; }
+
+cudalin-make(){
+   cudalin-scd
+   make -j$(nproc)
+}
+
+cudalin--()
+{
+    cudalin-samples-install
+    cudalin-make
+}
+
+cudalin-sample(){ $(cudalin-samples-dir)/$* ; }
+cudalin-deviceQuery(){ cudalin-sample 1_Utilities/deviceQuery/deviceQuery ; }
+
+
+
 

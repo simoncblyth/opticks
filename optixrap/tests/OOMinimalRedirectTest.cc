@@ -20,8 +20,13 @@ int main( int argc, char** argv )
     OptiXTest* test = new OptiXTest(context, "minimalTest.cu", "minimal") ;
     test->Summary(argv[0]);
 
-    unsigned width = 512 ; 
-    unsigned height = 512 ; 
+    //unsigned width = 512 ; 
+    //unsigned height = 512 ; 
+
+    unsigned width = 16 ; 
+    unsigned height = 16 ; 
+
+
 
     // optix::Buffer buffer = context->createBuffer( RT_BUFFER_OUTPUT, RT_FORMAT_FLOAT4, width, height );
     optix::Buffer buffer = context->createBuffer( RT_BUFFER_OUTPUT, RT_FORMAT_FLOAT4, width*height );

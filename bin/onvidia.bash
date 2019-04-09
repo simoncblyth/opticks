@@ -44,6 +44,23 @@ NVIDIA Linux CUDA documentatation
 * https://docs.nvidia.com/cuda/cuda-installation-guide-linux/index.html
 
 
+nvidia-persistenced
+---------------------
+
+Minimum times of GPU using tests:
+
+oxrap
+   around 0.5s
+thrap
+   around 0.3s
+cudarap
+   around 0.3s
+
+Tried starting nvidia-persistenced to see if the minimum time would go down, 
+but dont see any difference with Titan V, CUDA 10.1, driver 418.56 and OptiX 5.1.0
+
+
+
 NVIDIA Linux : User written guides for various distros
 --------------------------------------------------------
 

@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.5 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.8 FATAL_ERROR)
 set(name OKConf)
 project(${name} VERSION 0.1.0)
 set(FLAGS_VERBOSE ON)
@@ -26,6 +26,7 @@ does not work for OKConfTest ? But the above does::
 
 #]=]
 
+set(OpticksCUDA_VERBOSE YES)
 find_package(OpticksCUDA MODULE QUIET) 
 
 set(OptiX_VERBOSE YES)
@@ -34,6 +35,8 @@ find_package(G4          MODULE QUIET)
 
 message(STATUS "OKCONF_OPTIX_INSTALL_DIR : ${OKCONF_OPTIX_INSTALL_DIR}")
 message(STATUS "OptiX_VERSION_INTEGER : ${OptiX_VERSION_INTEGER}")
+message(STATUS "OpticksCUDA_API_VERSION : ${OpticksCUDA_API_VERSION}")
+message(STATUS "G4_VERSION_INTEGER      : ${G4_VERSION_INTEGER}")
 
 # generate define header for hardcoding in the library 
 

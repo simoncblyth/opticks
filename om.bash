@@ -493,7 +493,8 @@ EOI
 }
 
 
-
+om-nproc(){ echo ${OM_NPROC:-$(nproc)} ; }
+    
 
 om-make-one()
 {
@@ -513,7 +514,15 @@ om-make-one()
 
     cd $bdir
     local t0=$(date +"%s")
-    cmake --build .  --target all
+
+    local pr=$(om-nproc)
+    
+    if [ $pr -gt 1 ]; then 
+        make all -j$pr
+    else
+        cmake --build .  --target all
+    fi
+
     rc=$?
     local t1=$(date +"%s")
     local d1=$(( t1 - t0 ))
@@ -522,7 +531,14 @@ om-make-one()
 
     #echo d1 $d1
     [ "$(uname)" == "Darwin" -a $d1 -lt 1 ] && echo $msg kludge sleep 2s : make time $d1 && sleep 2  
-    cmake --build .  --target install
+
+    if [ $pr -gt 1 ]; then 
+        make install -j$pr
+    else
+        cmake --build .  --target install
+    fi
+
+
     rc=$?
     return $rc
     [ "$rc" != "0" ] && cd $iwd && return $rc
@@ -557,12 +573,9 @@ om-clean-one()
     local sdir=$(om-sdir $name)
     local bdir=$(om-bdir $name)
     cd $sdir
-    local cmd="rm -rf $bdir" 
-
-    #local ans
-    #read -p "$FUNCNAME : Enter Y to \"$cmd\" : " ans
-    #[ "$ans" == "Y" ] && echo $cmd 
+    local cmd="rm -rf $bdir && mkdir -p $bdir" 
     echo $cmd
+    eval $cmd
 
     cd $iwd
 }

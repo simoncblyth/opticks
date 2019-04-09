@@ -1,4 +1,29 @@
 
+#[=[
+FindOpticksCUDA.cmake
+=======================
+
+In order to consistently pickup a new CUDA version have observed 
+that it is necessary to: 
+
+1. have a "clean" PATH and LD_LIBRARY_PATH with only one instance of CUDA binaries 
+   like nvcc and libraries within it. Check with::
+
+        echo $PATH | tr ":" "\n"
+        echo $LD_LIBRARY_PATH | tr ":" "\n"
+
+   An easy way to do this is to do the environment setup in .bashrc OR .bash_profile
+   and then logout and back in again.
+
+2. om-clean
+3. om-conf
+
+The reason for this black magic is that FindCUDA.cmake which comes 
+with CMake is being treated as a black box.   
+
+
+#]=]
+
 
 #find_package(CUDA   REQUIRED MODULE) # eg /opt/local/share/cmake-3.12/Modules/FindCUDA.cmake
 find_package(CUDA   MODULE) # eg /opt/local/share/cmake-3.12/Modules/FindCUDA.cmake

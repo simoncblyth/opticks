@@ -14,6 +14,7 @@ cudalin-(){          . $(opticks-home)/externals/cudalin.bash           && cudal
 cu-(){               . $(opticks-home)/externals/cuda.bash              && cuda-env $* ; }
 thrust-(){           . $(opticks-home)/externals/thrust.bash            && thrust-env $* ; }
 optix-(){            . $(opticks-home)/externals/optix.bash             && optix-env $* ; }
+optixnote-(){        . $(opticks-home)/externals/optixnote.bash         && optixnote-env $* ; }
 xercesc-(){          . $(opticks-home)/externals/xercesc.bash           && xercesc-env $* ; }
 g4-(){               . $(opticks-home)/externals/g4.bash                && g4-env $* ; }
 zmq-(){              . $(opticks-home)/externals/zmq.bash               && zmq-env $* ; }

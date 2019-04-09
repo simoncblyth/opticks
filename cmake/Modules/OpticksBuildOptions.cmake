@@ -30,6 +30,7 @@ RPATH setup docs
 #message(STATUS "OpticksBuildOptions.cmake Configuring ${name}")
 message(STATUS "Configuring ${name}")
 
+
 if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
    message(STATUS " CMAKE_SOURCE_DIR : ${CMAKE_SOURCE_DIR} ")
    message(STATUS " CMAKE_BINARY_DIR : ${CMAKE_BINARY_DIR} ")
