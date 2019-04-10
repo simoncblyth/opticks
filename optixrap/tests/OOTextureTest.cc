@@ -5,30 +5,18 @@
 #include "OContext.hh"
 #include "Opticks.hh"
 
-#include "OKCORE_LOG.hh"
-#include "GGEO_LOG.hh"
-#include "OXRAP_LOG.hh"
-
-#include "PLOG.hh"
+#include "OPTICKS_LOG.hh"
 
 int main(int argc, char** argv)
 {
-    PLOG_(argc, argv);    
-
-
-    OKCORE_LOG__ ; 
-    GGEO_LOG__ ; 
-    OXRAP_LOG__ ; 
-
+    OPTICKS_LOG(argc, argv);    
 
     Opticks* ok(NULL);
     ok = new Opticks(argc, argv, "--compute");
     ok->configure();
 
-
     GScintillatorLib* slib = GScintillatorLib::load(ok);
     slib->dump();
-
 
     optix::Context context = optix::Context::create();
 
@@ -57,6 +45,8 @@ int main(int argc, char** argv)
     m_ott->launch();
 
     LOG(info) << "DONE" ; 
+
+    optix::cudaDeviceSynchronize();
 
 
     return 0 ;     

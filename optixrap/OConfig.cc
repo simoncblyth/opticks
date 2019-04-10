@@ -36,6 +36,7 @@ unsigned OConfig::OptiXVersion()
 bool OConfig::DefaultWithTop()
 {
     unsigned version = OptiXVersion();
+    //LOG(info) << " version " << version ; 
     bool with_top = false ; 
     switch(version)
     {
@@ -45,6 +46,7 @@ bool OConfig::DefaultWithTop()
        case 40101: with_top = false ;break;      
        case 50001: with_top = false ;break;      
        case 50100: with_top = false ;break;      
+       case 60000: with_top = false ;break;      
        default: assert(0 && "unexpected OPTIX_VERSION") ;break;
     }
 /*

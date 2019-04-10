@@ -1,5 +1,7 @@
 #include <iostream>
+#include <sstream>
 #include <iomanip>
+#include <cstring>
 
 #include "OKConf.hh"
 #include "OKConf_Config.hh"
@@ -132,6 +134,17 @@ const char* OKConf::CMAKE_CXX_FLAGS()
 #endif    
 }
 
-
-
+const char* OKConf::PTXPath( const char* cmake_target, const char* cu_name )
+{
+    std::stringstream ss ; 
+    ss << OKConf::OpticksInstallPrefix()
+       << "/installcache/PTX/"
+       << cmake_target
+       << "_generated_"
+       << cu_name
+       << ".ptx" 
+       ;
+    std::string ptxpath = ss.str();
+    return strdup(ptxpath.c_str()); 
+}
 

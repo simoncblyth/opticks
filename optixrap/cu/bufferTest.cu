@@ -12,7 +12,7 @@ RT_PROGRAM void bufferTest()
 {
     unsigned long long index = launch_index.x ;
     float4 val = genstep_buffer[index] ; 
-//    rtPrintf("bufferTest.cu  %d  (%10.4f,%10.4f,%10.4f,%10.4f)  \n", index, val.x, val.y, val.z, val.w);
+    rtPrintf("bufferTest.cu  %d  (%10.4f,%10.4f,%10.4f,%10.4f)  \n", index, val.x, val.y, val.z, val.w);
     photon_buffer[index] = val ; 
 }
 

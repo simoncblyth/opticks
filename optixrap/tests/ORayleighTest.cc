@@ -11,13 +11,8 @@
 #include "ORng.hh"
 #include "OScene.hh"
 
+#include "OPTICKS_LOG.hh"
 
-#include "SYSRAP_LOG.hh"
-#include "OKCORE_LOG.hh"
-#include "GGEO_LOG.hh"
-#include "OXRAP_LOG.hh"
-
-#include "PLOG.hh"
 
 /**
 ORayleighTest
@@ -55,12 +50,7 @@ void rayleighTest( Opticks* ok, OContext* ocontext, optix::Context& context)
 
 int main(int argc, char** argv)
 {
-    PLOG_(argc, argv);    
-
-    SYSRAP_LOG__ ; 
-    OKCORE_LOG__ ; 
-    GGEO_LOG__ ; 
-    OXRAP_LOG__ ; 
+    OPTICKS_LOG(argc, argv);    
 
     Opticks ok(argc, argv);
     OpticksHub hub(&ok);

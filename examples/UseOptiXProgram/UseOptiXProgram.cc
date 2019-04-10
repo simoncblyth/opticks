@@ -3,7 +3,7 @@
 #include <cstring>
 #include <cassert>
 #include <optix.h>
-
+#include <iostream>
 #include "OKConf.hh"
 
 // from SDK/sutil/sutil.h
@@ -27,24 +27,8 @@ struct APIError
 
 
 
-std::string ptx_path(const char* target, const char* cu_name)
-{
-    std::stringstream ss ; 
-    ss << OKConf::OpticksInstallPrefix()
-       << "/installcache/PTX/"
-       << target
-       << "_generated_"
-       << cu_name
-       << ".ptx" 
-       ;
-    return ss.str();
-}
-
-
-
 int main()
 {
-
     // extracts from /Developer/OptiX/SDK/optixDeviceQuery/optixDeviceQuery.cpp
 
     unsigned num_devices;
@@ -73,38 +57,35 @@ int main()
     } 
 
 
-    RTcontext context = 0;
-
-    RTprogram raygen ;
-    RTbuffer  buffer;
-    RTvariable variable ; 
-
     int width = 1024u ; 
     int height = 768u ; 
 
+    RTcontext context = 0;
     RT_CHECK_ERROR( rtContextCreate( &context ) );
     RT_CHECK_ERROR( rtContextSetRayTypeCount( context, 1 ) );
+
+    RTbuffer  buffer;
     RT_CHECK_ERROR( rtBufferCreate( context, RT_BUFFER_OUTPUT, &buffer ) );
     RT_CHECK_ERROR( rtBufferSetFormat( buffer, RT_FORMAT_FLOAT4 ) );
     RT_CHECK_ERROR( rtBufferSetSize2D( buffer, width, height ) );
+
+    RTvariable variable ; 
     RT_CHECK_ERROR( rtContextDeclareVariable( context, "variable", &variable ) );
+
+
     RT_CHECK_ERROR( rtContextSetPrintEnabled( context, 1 ) );
     RT_CHECK_ERROR( rtContextSetPrintBufferSize( context, 4096 ) );
-
     RT_CHECK_ERROR( rtContextSetEntryPointCount( context, 1 ) ); 
 
     const char* cmake_target = "UseOptiXProgram" ;
     const char* cu_name = "UseOptiXProgram_minimal.cu" ; 
-
-    std::string ptx_filename = ptx_path(cmake_target, cu_name );  
-    const char* raygen_ptx_filename = ptx_filename.c_str();
-    
-    //const char* raygen_ptx_filename_2 = "/usr/local/opticks/installcache/PTX/UseOptiXProgram_generated_UseOptiXProgram_minimal.cu.ptx"  ;
-    //assert(strcmp( raygen_ptx_filename, raygen_ptx_filename_2) == 0 );
-
+    const char* raygen_ptx_filename = OKConf::PTXPath( cmake_target, cu_name ); 
     const char* raygen_program_name = "basicTest" ;
 
+    std::cout << "raygen_ptx_filename : [" << raygen_ptx_filename << "]" << std::endl ; 
+    //  eg /usr/local/opticks/installcache/PTX/UseOptiXProgram_generated_UseOptiXProgram_minimal.cu.ptx
 
+    RTprogram raygen ;
     RT_CHECK_ERROR( rtProgramCreateFromPTXFile(context, raygen_ptx_filename, raygen_program_name, &raygen )) ;
 
     unsigned entry_point_index = 0u ;  

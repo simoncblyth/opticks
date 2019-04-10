@@ -4,7 +4,7 @@ project(${name} VERSION 0.1.0)
 include(OpticksBuildOptions)
 
 set(TEST_SOURCES
-    OPropertyLibTest.cc
+    OContextCreateTest.cc
     OScintillatorLibTest.cc
     OOTextureTest.cc
     OOMinimalTest.cc

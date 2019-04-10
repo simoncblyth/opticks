@@ -119,27 +119,31 @@ void OContext::init()
 
 void OContext::initPrint()
 {
-
-    bool printenabled = m_ok->isPrintEnabled() ; // --printenabled option, useful for small test launches only  
-    m_context->setPrintEnabled(printenabled);  // enable for 1st photon with --pindex 0 
-    m_context->setPrintBufferSize(2*2*2*8192);
-    //m_context->setPrintLaunchIndex(0,0,0);
+    m_context->setPrintBufferSize(4096);
+    //m_context->setPrintBufferSize(2*2*2*8192);
 
     glm::ivec3 idx ; 
-    if(!m_ok->getPrintIndex(idx)) 
+    if(m_ok->getPrintIndex(idx))   // --pindex 0  : 1st index
     {
-        LOG(error) << "exit OContext::initPrint with print disabled " ; 
-        return ; 
+        m_context->setPrintEnabled(true);
+        m_context->setPrintLaunchIndex(idx.x, idx.y, idx.z);
+        LOG(LEVEL) << "setPrintLaunchIndex "
+                   << " idx.x " << idx.x
+                   << " idx.y " << idx.y
+                   << " idx.z " << idx.z
+                   ; 
+    } 
+    else if( m_ok->isPrintEnabled() )   // --printenabled 
+    {    
+         m_context->setPrintEnabled(true);
+         assert( m_context->getPrintEnabled() == true );  
+         LOG(info) << " --printenabled " ; 
     }
-
-    m_context->setPrintEnabled(true);
-    m_context->setPrintLaunchIndex(idx.x, idx.y, idx.z);
-
-    LOG(LEVEL) << "setPrintLaunchIndex "
-               << " idx.x " << idx.x
-               << " idx.y " << idx.y
-               << " idx.z " << idx.z
-               ; 
+    else
+    {
+         return ;  
+    }
+   
 
     unsigned uindex = m_ok->hasMask() ? m_ok->getMaskIndex(idx.x) : idx.x ; 
     m_llogpath = m_ok->isPrintIndexLog() ?  LaunchLogPath(uindex) : NULL ; 

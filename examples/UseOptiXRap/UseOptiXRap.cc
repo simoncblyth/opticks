@@ -4,7 +4,6 @@
 #include <string>
 #include <sstream>
 
-#include "PLOG.hh"
 #include "NPY.hpp"
 
 #include "OConfig.hh"
@@ -13,9 +12,7 @@
 #include "Opticks.hh"
 #include "OpticksBufferControl.hh"
 
-#include "OKCORE_LOG.hh"
-#include "OXRAP_LOG.hh"
-
+#include "OPTICKS_LOG.hh"
 
 
 struct Evt 
@@ -99,10 +96,8 @@ Test:
 
 int main(int argc, char** argv)
 {
-    PLOG_(argc, argv);    
+    OPTICKS_LOG(argc, argv);    
 
-    OKCORE_LOG__ ; 
-    OXRAP_LOG__ ; 
 
     Opticks ok(argc, argv, "--compute");
     ok.configure();

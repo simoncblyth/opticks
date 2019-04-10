@@ -51,6 +51,7 @@ RT_PROGRAM void ORayleighTest()
  
     rayleigh_scatter( p, rng );
 
+    rtPrintf("generate_id %llu \n", generate_id ); 
 
     uint2 u0 = make_uint2( unsigned(generate_id), 0u ) ;
     uint2 u1 = make_uint2( unsigned(generate_id), 1u ) ;
