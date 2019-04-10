@@ -4,8 +4,8 @@ project(${name} VERSION 0.1.0)
 include(OpticksBuildOptions)
 
 #[=[
-OpticksExamples built in integrated fashion
-==============================================
+Experimental : OpticksExamples built in integrated fashion
+============================================================
 
 Using to debug the thrap-t integrated build issue::
 

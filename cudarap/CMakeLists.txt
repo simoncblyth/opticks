@@ -72,7 +72,7 @@ if(CUDARap_VERBOSE)
   echo_target_std(${name})
 endif()
 
-install(TARGETS ${name} LIBRARY DESTINATION lib)
+#install(TARGETS ${name} LIBRARY DESTINATION lib)  see notes/issues/lib64-lib-install.rst
 install(FILES ${HEADERS} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
 bcm_deploy(TARGETS ${name} NAMESPACE Opticks:: SKIP_HEADER_INSTALL)

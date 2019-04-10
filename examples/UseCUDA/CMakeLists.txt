@@ -1,10 +1,14 @@
 #[=[
-
 UseCUDA
 =========
 
-Makes a CUDA using library.  
+Makes a library that uses CUDA.  
 
+CUDA_ADD_LIBRARY sets raw library path and linker args into target prop INTERFACE_LINK_LIBRARIES
+yielding '/Developer/NVIDIA/CUDA-9.1/lib/libcudart_static.a;-Wl,-rpath,/usr/local/cuda/lib;Opticks::CUDA'
+
+So kludge tidy that to just "Opticks::CUDA" (which is transitively friendly) 
+before exporting the target.
 
 #]=]
 set(OKConf_VERBOSE ON)
@@ -29,13 +33,6 @@ set_target_properties(${name}  PROPERTIES INTERFACE_LINK_LIBRARIES "Opticks::CUD
 get_target_property(CALILL ${name} INTERFACE_LINK_LIBRARIES )
 message(STATUS "${name} CAL.INTERFACE_LINK_LIBRARIES.aft : ${CALILL} ") 
 
-
-# CUDA_ADD_LIBRARY sets raw library path and linker args into target prop INTERFACE_LINK_LIBRARIES
-# yielding '/Developer/NVIDIA/CUDA-9.1/lib/libcudart_static.a;-Wl,-rpath,/usr/local/cuda/lib;Opticks::CUDA'
-#
-# So kludge tidy that to just "Opticks::CUDA" (which is transitively friendly) 
-# before exporting the target.
-#
 
 install(FILES ${HEADERS} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
