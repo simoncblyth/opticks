@@ -279,7 +279,7 @@ void RecordsNPY::tracePath(unsigned int photon_id, std::vector<NRec>& recs, floa
     unsigned int last = recs.size() - 1 ; 
     for(unsigned int i=1 ; i <= last ; i++)
     {
-        glm::vec4 step = recs[i].post - recs[i-1].post ;
+        //glm::vec4 step = recs[i].post - recs[i-1].post ;
         length += glm::distance( recs[i].post, recs[i-1].post );
     } 
 

@@ -809,3 +809,98 @@ EON
 
 }
 
+
+
+
+
+
+
+
+
+
+
+
+thrap-glm-test-notes(){ cat << EON
+
+The "dereferencing type-punned pointer will break strict-aliasing rules" warnings appear only with optimisation "-O2"
+
+home/blyth/local/opticks/externals/glm/glm/glm/detail/func_packing.inl: In function ‘glm::uint glm::packUnorm2x16(const vec2&)’:
+/home/blyth/local/opticks/externals/glm/glm/glm/detail/func_packing.inl:42:46: warning: dereferencing type-punned pointer will break strict-aliasing rules [-Wstrict-aliasing]
+   return reinterpret_cast<uint const &>(Topack);
+  
+See also glm-nvcc and 
+
+* notes/issues/glm-0.9.6.3-nvcc-warnings-dereferencing-type-punned-pointer-will-break-strict-aliasing-rules.rst
+
+EON
+}
+
+
+thrap-glm-warning(){ cat << EOW
+
+/usr/local/cuda-10.1/bin/nvcc /home/blyth/opticks/thrustrap/TBuf_.cu -c -o /home/blyth/local/opticks/build/thrustrap/CMakeFiles/ThrustRap.dir//./ThrustRap_generated_TBuf_.cu.o -ccbin /usr/bin/cc \
+       -m64 \
+         -DThrustRap_EXPORTS -DOPTICKS_THRAP -DOPTICKS_OKCORE -DOPTICKS_NPY -DOPTICKS_YoctoGL -DOPTICKS_ImplicitMesher -DOPTICKS_DualContouringSample -DOPTICKS_SYSRAP -DOPTICKS_OKCONF -DOPTICKS_BRAP -DOPTICKS_CUDARAP \
+         -Xcompiler ,\"-fvisibility=hidden\",\"-fvisibility-inlines-hidden\",\"-Wall\",\"-Wno-unused-function\",\"-Wno-comment\",\"-Wno-deprecated\",\"-Wno-shadow\",\"-fPIC\",\"-g\" \
+          -Xcompiler -fPIC -gencode=arch=compute_70,code=sm_70 -O2 \
+         --use_fast_math -DNVCC \
+             -I/usr/local/cuda-10.1/include \
+             -I/home/blyth/opticks/thrustrap \
+             -I/home/blyth/local/opticks/include/OpticksCore \
+             -I/home/blyth/local/opticks/include/NPY \
+             -I/home/blyth/local/opticks/externals/glm/glm \
+             -I/home/blyth/local/opticks/include/SysRap \
+             -I/home/blyth/local/opticks/externals/plog/include \
+             -I/home/blyth/local/opticks/include/OKConf \
+             -I/home/blyth/local/opticks/include/BoostRap \
+             -I/usr/include \
+             -I/home/blyth/local/opticks/externals/include \
+             -I/home/blyth/local/opticks/externals/include/YoctoGL \
+             -I/home/blyth/local/opticks/externals/include/DualContouringSample \
+             -I/home/blyth/local/opticks/include/CUDARap \
+             -I/usr/local/cuda-10.1/samples/common/inc
+
+EOW
+}
+
+
+thrap-glm-test-(){ cat << EOT
+
+#include <iostream>
+#include <glm/glm.hpp>
+
+int main(int argc, char** argv)
+{
+    //glm::vec2 v(1.f, 2.f) ; 
+    //glm::uint u = glm::packUnorm2x16(v) ;  
+    //std::cout << " u " << u << std::endl ; 
+    return 0 ; 
+}
+
+EOT
+} 
+
+thrap-glm-test(){ 
+   local tmp=/tmp/$USER/opticks/$FUNCNAME
+   local iwd=$PWD
+   rm -rf $tmp && mkdir -p $tmp && cd $tmp
+
+   $FUNCNAME- > $FUNCNAME.cu
+
+    nvcc $FUNCNAME.cu \
+       -m64 \
+         -Xcompiler ,\"-fvisibility=hidden\",\"-fvisibility-inlines-hidden\",\"-Wall\",\"-Wno-unused-function\",\"-Wno-comment\",\"-Wno-deprecated\",\"-Wno-shadow\",\"-fPIC\",\"-g\" \
+          -Xcompiler -fPIC \
+            -O2 \
+          -gencode=arch=compute_70,code=sm_70 \
+         --use_fast_math -DNVCC \
+        -I$LOCAL_BASE/opticks/externals/glm/glm
+}
+
+
+
+
+
+
+
+

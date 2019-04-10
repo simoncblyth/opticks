@@ -844,7 +844,7 @@ void NCSG::export_itransform( nnode* node, NPY<float>* _dest )
     assert( _dest ) ; 
 
     const nmat4triple* trs = node->transform ; 
-    const glm::mat4 identity ;  
+    const glm::mat4 identity(1.f) ;  
     const glm::mat4& t = trs ? trs->t : identity ; 
 
     unsigned itransform1 = _dest->getNumItems() + 1 ;  // 1-based transform idx

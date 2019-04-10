@@ -779,7 +779,7 @@ void Renderer::update_uniforms()
         glUniform4fv(m_param_location, 1, m_composition->getParamPtr());
 
         glUniform4fv(m_scanparam_location, 1, m_composition->getScanParamPtr());
-        glm::vec4 sp = m_composition->getScanParam(); 
+        //glm::vec4 sp = m_composition->getScanParam(); 
 
         glm::ivec4 np = m_composition->getNrmParam(); 
         glUniform4i(m_nrmparam_location, np.x, np.y, np.z, np.w);

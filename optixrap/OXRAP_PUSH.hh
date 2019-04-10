@@ -10,6 +10,9 @@
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wshadow"
 #pragma GCC diagnostic ignored "-Woverloaded-virtual"
+// #pragma GCC diagnostic ignored "-Wcpp"
+// https://gcc.gnu.org/onlinedocs/gcc/Diagnostic-Pragmas.html
+
 
 #elif defined(_MSC_VER)
 

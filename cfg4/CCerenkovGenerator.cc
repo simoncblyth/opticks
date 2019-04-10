@@ -117,7 +117,7 @@ G4VParticleChange* CCerenkovGenerator::GeneratePhotonsFromGenstep( const Opticks
     glm::vec4 post = gs->getPositionTime(idx); 
     glm::vec4 dpsl = gs->getDeltaPositionStepLength(idx); 
     glm::vec4 q3   = gs->getQ3(idx); 
-    glm::vec4 i3   = gs->getI3(idx); 
+    //glm::vec4 i3   = gs->getI3(idx); 
     glm::vec4 q4   = gs->getQ4(idx); 
     glm::vec4 q5   = gs->getQ5(idx); 
 

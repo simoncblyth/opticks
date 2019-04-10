@@ -21,6 +21,46 @@ Python prototype:
 * /usr/local/env/chroma_env/src/chroma/chroma/gpu/photon_hit.py
 
 
+OptiX 510 CUDA 10.1 internal header warning for host_defines.h
+-----------------------------------------------------------------
+
+
+::
+
+    [ 83%] Building CXX object CMakeFiles/OpticksGL.dir/OKGLTracer.cc.o
+    In file included from /usr/local/OptiX_510/include/optixu/../internal/optix_datatypes.h:33:0,
+                     from /usr/local/OptiX_510/include/optixu/optixu_math_namespace.h:57,
+                     from /usr/local/OptiX_510/include/optix_world.h:71,
+                     from /home/blyth/local/opticks/include/OptiXRap/OXPPNS.hh:13,
+                     from /home/blyth/local/opticks/include/OptiXRap/OContext.hh:19,
+                     from /home/blyth/opticks/opticksgl/OAxisTest.cc:10:
+    /usr/local/cuda-10.1/include/host_defines.h:54:2: warning: #warning "host_defines.h is an internal header file and must not be used directly.  This file will be removed in a future CUDA release.  Please use cuda_runtime_api.h or cuda_runtime.h instead." [-Wcpp]
+     #warning "host_defines.h is an internal header file and must not be used directly.  This file will be removed in a future CUDA release.  Please use cuda_runtime_api.h or cuda_runtime.h instead."
+      ^
+    In
+
+
+
+* https://gcc.gnu.org/onlinedocs/gcc-4.8.4/gcc/Warning-Options.html
+
+-Wno-cpp
+    (C, Objective-C, C++, Objective-C++ and Fortran only)
+
+    Suppress warning messages emitted by #warning directives. 
+
+
+
+* https://gcc.gnu.org/onlinedocs/gcc/Diagnostic-Pragmas.html
+
+    #pragma GCC diagnostic kind option
+
+    Modifies the disposition of a diagnostic. Note that not all diagnostics are
+    modifiable; at the moment only warnings (normally controlled by ‘-W…’) can be
+    controlled, and not all of them. Use -fdiagnostics-show-option to determine
+    which diagnostics are controllable and which option controls them. 
+
+
+
 
 OptiX 501 CUDA 9.1 macOS 10.13.4 Xcode 9.2
 ----------------------------------------------

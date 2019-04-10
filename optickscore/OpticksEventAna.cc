@@ -87,6 +87,7 @@ void OpticksEventAna::countPointExcursions()
 
         std::vector<NRec> recs ; 
         glm::vec4 ldd = m_records->getLengthDistanceDurationRecs(recs, photon_id ); 
+        assert( ldd.x >= 0.f ); 
 
         for(unsigned p=0 ; p < recs.size() ; p++)
         {         

@@ -146,7 +146,7 @@ void PhotonsNPY::dumpPhoton(unsigned int i, const char* msg)
     std::string phistory = m_types->getHistoryString( history );
 
     glm::vec4 post = m_photons->getQuad(i,0);
-    glm::vec4 dirw = m_photons->getQuad(i,1);
+    //glm::vec4 dirw = m_photons->getQuad(i,1);
     glm::vec4 polw = m_photons->getQuad(i,2);
 
     std::string seqmat = m_recs->getSequenceString(i, Types::MATERIAL) ;

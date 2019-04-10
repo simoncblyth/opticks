@@ -16,8 +16,14 @@ NPY_API void print(const glm::vec3& v, const char* msg);
 NPY_API void print(const glm::vec4& v, const char* msg);
 NPY_API void print(const glm::vec4& v0, const char* msg0, const glm::vec4& v1, const char* msg1);
 NPY_API void print(const glm::vec4& v, const char* tmpl, unsigned int incl);
-NPY_API void print_i(const glm::ivec4& v, const char* msg);
-NPY_API void print_u(const glm::uvec4& v, const char* msg);
+//NPY_API void print_i(const glm::ivec4& v, const char* msg);
+//NPY_API void print_u(const glm::uvec4& v, const char* msg);
+
+NPY_API void print(const glm::ivec4& v, const char* msg);
+NPY_API void print(const glm::uvec4& v, const char* msg);
+
+
+
 NPY_API void print(const glm::vec4& a, const glm::vec4& b, const glm::vec4& c, const char* msg);
 NPY_API void print(const glm::vec3& a, const glm::vec3& b, const glm::vec3& c, const glm::vec3& d, const char* msg);
 NPY_API void print(const glm::quat& q, const char* msg);

@@ -154,29 +154,83 @@ glm-scd(){  cd $(glm-sdir) ; }
 
 glm-edit(){  vi $(opticks-home)/cmake/Modules/FindGLM.cmake ; }
 
-glm-version(){ echo 0.9.6.3 ; }
+#glm-version(){ echo 0.9.6.3 ; }
+glm-version(){ echo 0.9.9.5 ; }
+
+glm-current(){ echo $(readlink $(opticks-prefix)/externals/glm/glm) ; }
+
+glm-releases(){ open https://github.com/g-truc/glm/releases ; } ## on Linux : define open in shell  eg for Gnome : open(){ gio open $* ; } 
+glm-releases-notes(){ cat << EON
+
+0.9.9.5
+    
+
+0.9.6.3
+    used until CUDA 10.1 update see 
+
+    * notes/issues/glm-0.9.6.3-nvcc-warnings-dereferencing-type-punned-pointer-will-break-strict-aliasing-rules.rst
+
+EON
+}
+
 glm-name(){    echo glm-$(glm-version) ; }
-glm-url(){     echo http://downloads.sourceforge.net/project/ogl-math/$(glm-name)/$(glm-name).zip ; }
+#glm-url(){     echo http://downloads.sourceforge.net/project/ogl-math/$(glm-name)/$(glm-name).zip ; }
+glm-url(){    echo https://github.com/g-truc/glm/releases/download/$(glm-version)/$(glm-name).zip ; }
 glm-dist(){    echo $(dirname $(glm-dir))/$(basename $(glm-url)) ; }
 
 glm-get(){
    local dir=$(dirname $(glm-dir)) &&  mkdir -p $dir && cd $dir
    local url=$(glm-url)
    local zip=$(basename $url)
-   local nam="glm"
+   local nam=$(glm-name)
    local opt=$( [ -n "${VERBOSE}" ] && echo "" || echo "-q" )
 
    [ ! -f "$zip" ] && curl -L -O $url
-   [ ! -d "$nam" ] && unzip $opt $zip
-   ln -sfnv $nam $(glm-name) 
-   echo symbolic link to take note of the version
+   [ ! -d "$nam" ] && unzip $opt $zip -d $nam
+   ln -sfnv $(glm-name)/glm glm 
+   echo symbolic link for access without version in path
+}
+
+glm-get-notes(){ cat << 'EON'
+
+The zip contains top directory glm without version, so extract into a versioned dir
+and then symbolic link to it : this is to allow easier version switching when updating  
+
+Note that when the zips and versioned dirs are already present changing the 
+glm-version and rerunning glm-- just changes the symbolic link
+
+
+Need to use consistent glm version across everything to avoid::
+
+     62%] Linking CXX executable NYJSONTest
+    ../libNPY.so: undefined reference to `ImplicitMesherBase::setParam(int, glm::vec<3, float, (glm::qualifier)0> const&, glm::vec<3, float, (glm::qualifier)0> const&, int)'
+    ../libNPY.so: undefined reference to `OctreeNode::GenerateVertexIndices(OctreeNode*, std::vector<glm::vec<3, float, (glm::qualifier)0>, std::allocator<glm::vec<3, float, (glm::qualifier)0> > >&, std::vector<glm::vec<3, float, (glm::qualifier)0>, std::allocator<glm::vec<3, float, (glm::qualifier)0> > >&, FGLite*)'
+
+
+That means on changing glm version must::
+
+    oimplictmesher-;oimplicitmesher--
+    odcs-;odcs--    
+
+
+EON
+}
+
+
+glm-info(){ cat << EOI
+
+glm-name  : $(glm-name)
+glm-url   : $(glm-url)
+glm-dist  : $(glm-dist)
+glm-dir   : $(glm-dir)
+glm-idir  : $(glm-idir)
+glm-sdir  : $(glm-sdir)
+
+EOI
 }
 
 glm-doc(){ open file://$(glm-dir)/doc/api/modules.html ; }
 glm-pdf(){ open file://$(glm-dir)/doc/glm.pdf ; }
-
-
-
 
 
 glm-find()
@@ -225,5 +279,74 @@ glm-find(){ find $(glm-idir) -type f -exec grep -H ${1:-rotate} {} \; ; }
 glm-lfind(){ find $(glm-idir) -type f -exec grep -l ${1:-rotate} {} \; ; }
 
 
+
+
+
+
+
+
+
+glm-nvcc-notes(){ cat << EON
+
+New compilation warnings with CUDA 10.1 nvcc and glm when optimization is switched on
+=======================================================================================
+
+See also 
+
+* thrap-glm-test 
+* notes/issues/glm-0.9.6.3-nvcc-warnings-dereferencing-type-punned-pointer-will-break-strict-aliasing-rules.rst
+
+
+/usr/local/cuda-10.1/bin/nvcc
+/home/blyth/local/opticks/externals/glm/glm/glm/detail/func_packing.inl: In function ‘glm::uint glm::packUnorm2x16(const vec2&)’:
+/home/blyth/local/opticks/externals/glm/glm/glm/detail/func_packing.inl:42:46: warning: dereferencing type-punned pointer will break strict-aliasing rules [-Wstrict-aliasing]
+   return reinterpret_cast<uint const &>(Topack);
+
+EON
+}
+
+glm-nvcc-(){ cat << EOC
+#include <iostream>
+//#include <glm/glm.hpp>
+#include <glm/packing.hpp>
+
+int main(int argc, char** argv)
+{
+
+/*
+    std::cout << argv[0] << std::endl ; 
+    std::cout << "$FUNCNAME" << std::endl ; 
+
+    glm::ivec2 iv2(1,2);
+
+    glm::vec2 v2(0.f,1.f) ; 
+    glm::vec4 v4(0.f,1.f,2.f,3.f) ; 
+    assert( v2.y == 1.f );  
+    assert( v4.y == 1.f );  
+*/
+    return 42 ; 
+}
+EOC
+}
+
+glm-nvcc(){
+   local iwd=$PWD 
+   local tmp=/tmp/$USER/opticks/$FUNCNAME
+   rm -rf $tmp && mkdir -p $tmp && cd $tmp
+
+   $FUNCNAME- 
+   $FUNCNAME- > $FUNCNAME.cu
+
+   which nvcc
+
+   #nvcc -I$LOCAL_BASE/opticks/externals/glm/glm $FUNCNAME.cu -o $FUNCNAME -O2 -Xcompiler "-Wall,-Wno-comment,-Wno-strict-aliasing"
+   nvcc -I$LOCAL_BASE/opticks/externals/glm/glm $FUNCNAME.cu -o $FUNCNAME -O2 -Xcompiler "-Wall,-Wno-comment"
+
+   # switching off strict-aliasing warnings makes it go away 
+
+   ./$FUNCNAME
+
+   cd $iwd
+}
 
 

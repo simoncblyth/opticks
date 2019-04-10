@@ -40,7 +40,7 @@ void test_InstancedMergedMesh(GMergedMesh* mm)
     {
         printf("%d\n", i);
         glm::uvec4 q = aii->getQuadU(i, 0) ;
-        print_u(q, "aii");
+        print(q, "aii"); // _u
     }
 }
 
