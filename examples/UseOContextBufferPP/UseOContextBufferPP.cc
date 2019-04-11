@@ -1,9 +1,8 @@
 /**
-UseOptiXBufferPP
+UseOContextBufferPP
 ===================
 
-NB no oxrap : aiming to operate at lower level in here
-as preliminary to finding whats going wrong with 6.0.0
+Higher level variant of UseOptiXBufferPP
 
 **/
 
@@ -15,6 +14,9 @@ as preliminary to finding whats going wrong with 6.0.0
 #include "OKConf.hh"
 #include "NPY.hpp"
 #include "SSys.hh"
+#include "OContext.hh"
+#include "OpticksBufferControl.hh"
+#include "Opticks.hh"
 
 
 void printUsageAndExit(const char* name)
@@ -34,7 +36,11 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv) ; 
 
-    const char* cmake_target = "UseOptiXBufferPP" ; 
+    Opticks ok(argc, argv, "--compute --printenabled" ); 
+    ok.configure();
+
+
+    const char* cmake_target = "UseOContextBufferPP" ; 
     const char* cu_name = NULL ;  
     const char* progname = NULL  ;
 
@@ -80,58 +86,101 @@ int main(int argc, char** argv)
     out_npy->fill(0.f);
 
 
+    OpticksBufferControl::Add( in_npy->getBufferControlPtr(), "OPTIX_INPUT_ONLY" );
+    OpticksBufferControl::Add( out_npy->getBufferControlPtr(), "OPTIX_OUTPUT_ONLY,COMPUTE_MODE" );  // COMPUTE_MODE needed to effect the download : poor name ?
+
+
+    bool with_top = false ; 
+    bool verbose = true ; 
+
     optix::Context context = optix::Context::create();
-
-    context->setRayTypeCount(1); 
-
-    context->setPrintEnabled(true); 
-    //context->setPrintLaunchIndex(5,0,0); 
-    context->setPrintBufferSize(4096); 
-    context->setEntryPointCount(1); 
-
-
-    optix::Program program = context->createProgramFromPTXFile( ptx_path , progname );  
-    unsigned entry_point_index = 0u ;
-    context->setRayGenerationProgram( entry_point_index, program ); 
+    OContext ctx(context, &ok, with_top, verbose, cmake_target );
 
 
 /*
+    context->setRayTypeCount(1); 
+    context->setPrintEnabled(true); 
+    //context->setPrintLaunchIndex(5,0,0); 
+    context->setPrintBufferSize(4096); 
+*/
+
+
+   /*
+    optix::Program program = context->createProgramFromPTXFile( ptx_path , progname );  
+    unsigned entry_point_index = 0u ;
+    context->setRayGenerationProgram( entry_point_index, program ); 
+   */
+
+   bool defer = true ; 
+   unsigned entry_point_index = ctx.addEntry( cu_name, progname, "exception", defer ); 
+    
+
+   if(defer)
+   {
+       ctx.close();   
+   }
+   else
+   {
+       context->setEntryPointCount(1); 
+   }
+
+
+
     // create and configure in_buffer
+
+    optix::Buffer in_buffer = ctx.createBuffer<float>( in_npy, "in_buffer");
+   /*
     unsigned int in_type =  RT_BUFFER_INPUT ; 
     RTformat in_format = RT_FORMAT_FLOAT4 ;
     optix::Buffer in_buffer = context->createBuffer(in_type);
     in_buffer->setFormat( in_format ) ; 
     in_buffer->setSize( size ) ;   // number of quads
+  */ 
     context["in_buffer"]->set( in_buffer );
-*/
-
 
     // create and configure out_buffer
+
+   /* 
     unsigned int out_type =  RT_BUFFER_OUTPUT ; 
     RTformat out_format = RT_FORMAT_FLOAT4 ;
     optix::Buffer out_buffer = context->createBuffer(out_type);
     out_buffer->setFormat( out_format ) ; 
     out_buffer->setSize( size ) ;   // number of quads
+   */
+
+    optix::Buffer out_buffer = ctx.createBuffer<float>( out_npy, "out_buffer");
     context["out_buffer"]->set( out_buffer );
 
 
-/*
     // upload in_buffer
+    /*
     unsigned numBytes = in_npy->getNumBytes(0) ;
     memcpy( in_buffer->map(), in_npy->getBytes(), numBytes );
     in_buffer->unmap() ; 
-*/
+    */
+    ctx.upload<float>(in_buffer, in_npy) ; 
+
+
 
     // launch the kernel, that just copies from in to out 
     unsigned width = size ; 
-    context->launch( entry_point_index , width  ); 
+    //context->launch( entry_point_index , width  ); 
+
+    ctx.launch( OContext::LAUNCH, entry_point_index,  width, 1, NULL );
+
+
+
 
     // download out_buffer
+  /*
     void* out_ptr = out_buffer->map() ;
     out_npy->read( out_ptr );
     out_buffer->unmap();
+  */
+    ctx.download<float>( out_buffer, out_npy ); 
 
-    const char* out_path = "$TMP/UseOptiXBufferPP/out.npy"; 
+
+    const char* out_path = "$TMP/UseOContextBufferPP/out.npy"; 
     out_npy->save(out_path);
     SSys::npdump(out_path, "np.float32");
 

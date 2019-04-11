@@ -6,17 +6,15 @@
 
 #include "NPY.hpp"
 
-#include "OXRAP_LOG.hh"
-#include "PLOG.hh"
+#include "OPTICKS_LOG.hh"
 
 
 int main( int argc, char** argv ) 
 {
-    PLOG_(argc, argv);
-    OXRAP_LOG__ ; 
+    OPTICKS_LOG(argc, argv);
 
-    Opticks* ok = new Opticks(argc, argv, "--compute");
-    ok->configure();
+    Opticks ok(argc, argv, "--compute --printenabled");
+    ok.configure();
 
     optix::Context context = optix::Context::create();
 
@@ -24,27 +22,36 @@ int main( int argc, char** argv )
     //OContext::Mode_t mode = OContext::INTEROP ;
     //OContext::Mode_t mode = OContext::COMPUTE ;
 
-    OContext* m_ocontext = new OContext(context, ok, false );
+    OContext* ctx = new OContext(context, &ok, false );
 
-    unsigned entry = m_ocontext->addEntry("minimalTest.cu.ptx", "minimal", "exception");
+    unsigned entry = ctx->addEntry("minimalTest.cu", "minimal", "exception");
 
     unsigned ni = 100 ; 
     unsigned nj = 4 ; 
     unsigned nk = 4 ; 
 
     NPY<float>* npy = NPY<float>::make(ni, nj, nk) ;
-    npy->setBufferControl(OpticksBufferControl::Parse("OPTIX_SETSIZE,OPTIX_INPUT_OUTPUT"));
+    npy->zero();
 
-    optix::Buffer buffer = m_ocontext->createBuffer<float>( npy, "demo");
+    //const char* ctrl = "OPTIX_SETSIZE,OPTIX_INPUT_OUTPUT" ;  //  coming out zeros ??
+    const char* ctrl = "OPTIX_OUTPUT_ONLY" ;
+ 
+    npy->setBufferControl(OpticksBufferControl::Parse(ctrl));
+
+    optix::Buffer buffer = ctx->createBuffer<float>( npy, "demo");
 
     context["output_buffer"]->set(buffer);
 
-    m_ocontext->launch( OContext::VALIDATE,  entry, ni, 1);
-    m_ocontext->launch( OContext::COMPILE,   entry, ni, 1);
-    m_ocontext->launch( OContext::PRELAUNCH, entry, ni, 1);
-    m_ocontext->launch( OContext::LAUNCH,    entry, ni, 1);
+/*
+    ctx->launch( OContext::VALIDATE,  entry, ni, 1);
+    ctx->launch( OContext::COMPILE,   entry, ni, 1);
+    ctx->launch( OContext::PRELAUNCH, entry, ni, 1);
+    ctx->launch( OContext::LAUNCH,    entry, ni, 1);
+*/
 
-    npy->zero();
+    ctx->launch( OContext::VALIDATE | OContext::COMPILE | OContext::PRELAUNCH | OContext::LAUNCH ,    entry, ni, 1);
+
+
 
     OContext::download( buffer, npy );
 

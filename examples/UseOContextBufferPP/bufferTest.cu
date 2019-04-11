@@ -1,30 +1,19 @@
 #include <optix_world.h>
 using namespace optix;
 
-//rtBuffer<float4> in_buffer ; 
+rtBuffer<float4> in_buffer ; 
 rtBuffer<float4> out_buffer ; 
 rtDeclareVariable(uint2, launch_index, rtLaunchIndex, );
 rtDeclareVariable(uint2, launch_dim,   rtLaunchDim, );
 
 
-RT_PROGRAM void bufferTest_readWrite()
-{
-    unsigned long long index = launch_index.x ;
-    float4 val = in_buffer[index] ; 
-    rtPrintf("//bufferTest llu:%llu x %10.3f y %10.3f z %10.3f w %10.3f \n", index, val.x, val.y, val.z, val.w   );
-    out_buffer[index] = val ; 
-}
-
-RT_PROGRAM void bufferTest_readOnly()
+RT_PROGRAM void bufferTest()
 {
      unsigned long long index = launch_index.x ;
-    // float4 val = in_buffer[index] ; 
-    // rtPrintf("//bufferTest llu:%llu x %10.3f y %10.3f z %10.3f w %10.3f \n", index, val.x, val.y, val.z, val.w   );
-    // out_buffer[index] = val ; 
-    out_buffer[index] = make_float4( 1.f, 2.f, 3.f, 4.f );   
+     float4 val = in_buffer[index] ; 
+     rtPrintf("//bufferTest llu:%llu x %10.3f y %10.3f z %10.3f w %10.3f \n", index, val.x, val.y, val.z, val.w   );
+     out_buffer[index] = val ; 
 }
-
-
 
 RT_PROGRAM void printTest0()
 {

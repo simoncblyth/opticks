@@ -43,8 +43,12 @@ Evt::Evt(unsigned size_)
    //    OpticksEvent::createSpec
    //    OPropagator::initEventBuffers
 
-   const char* genstep_ctrl = "OPTIX_INPUT_ONLY,UPLOAD_WITH_CUDA,BUFFER_COPY_ON_DIRTY" ;
-   const char* photon_ctrl  = "OPTIX_INPUT_OUTPUT,INTEROP_PTR_FROM_OPENGL" ;
+   //const char* genstep_ctrl = "OPTIX_INPUT_ONLY,UPLOAD_WITH_CUDA,BUFFER_COPY_ON_DIRTY" ;
+   //const char* photon_ctrl  = "OPTIX_INPUT_OUTPUT,INTEROP_PTR_FROM_OPENGL" ;
+
+   const char* genstep_ctrl = "OPTIX_INPUT_ONLY" ;
+   const char* photon_ctrl  = "OPTIX_OUTPUT_ONLY" ;
+ 
  
    OpticksBufferControl c_genstep(genstep->getBufferControlPtr()); 
    c_genstep.add(genstep_ctrl); 
@@ -129,13 +133,20 @@ int main(int argc, char** argv)
 
     OContext ctx(context, &ok, with_top);
 
+    context->setPrintEnabled(true); 
+
+
     //const char* progname = "bufferTest" ; 
     //const char* progname = "bufferTest_0" ; 
-    const char* progname = SSys::getenvvar("USEOPTIXRAP_PROGNAME", "bufferTest") ; 
 
-    int entry = ctx.addEntry("bufferTest.cu.ptx", progname, "exception");
+    const char* ekey = "USEOPTIXRAP_PROGNAME" ;
+    const char* edef = "bufferTest" ; 
+    const char* progname = SSys::getenvvar(ekey, edef) ; 
 
-    //context->setPrintEnabled(true); 
+    int entry = ctx.addEntry("bufferTest.cu", progname, "exception");
+
+
+
 
 
     // using zero sized buffers allows to prelaunch in initialization
@@ -175,6 +186,14 @@ int main(int argc, char** argv)
 
          LOG(info) <<  evt->brief() ;
     }
+
+    std::cout << std::endl ; 
+    std::cout << ekey << "=" << edef << " " << argv[0] << " ## to modify the program funcname launched " << std::endl ; 
+    std::cout << std::endl ; 
+    std::cout << "also use VERBOSE=1 envvar to see the oxrap buffer setup " << std::endl ; 
+
+
+
     return 0 ;     
 }
 

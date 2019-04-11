@@ -1,6 +1,32 @@
 OptiX_600_CUDA_10.1_test_fails
 =================================
 
+
+
+
+Titan RTX
+----------
+
+::
+
+    FAILS:
+      4  /18  Test #4  : OptiXRapTest.OOMinimalTest                    ***Exception: SegFault         1.55   
+      5  /18  Test #5  : OptiXRapTest.OOMinimalRedirectTest            ***Exception: SegFault         1.14   
+      11 /18  Test #11 : OptiXRapTest.OOtex0Test                       ***Exception: SegFault         1.58   
+      12 /18  Test #12 : OptiXRapTest.OOtexTest                        ***Exception: SegFault         1.53   
+      17 /18  Test #17 : OptiXRapTest.intersect_analytic_test          ***Exception: SegFault         2.04   
+      18 /18  Test #18 : OptiXRapTest.Roots3And4Test                   ***Exception: SegFault         1.66   
+
+      14 /18  Test #14 : OptiXRapTest.OEventTest                       Child aborted***Exception:     1.37   
+      2  /5   Test #2  : OKOPTest.OpSeederTest                         Child aborted***Exception:     4.63   
+      2  /5   Test #2  : OKTest.OKTest                                 Child aborted***Exception:     6.38   
+      1  /1   Test #1  : OKG4Test.OKG4Test                             Child aborted***Exception:     21.63  
+    [blyth@localhost opticks]$ 
+
+
+Titan V
+---------
+
 ::
 
     FAILS:
@@ -23,8 +49,8 @@ OptiX_600_CUDA_10.1_test_fails
 
 
 
-oxrap tests
---------------
+oxrap tests : Wed
+-------------------
 
 ::
 
@@ -109,29 +135,8 @@ launch SEGV : OOMinimalTest, OOMinimalRedirectTest, OOtex0Test, OOtexTest, Roots
 
 
 
-unexpected OptiX version : bufferTest, OEventTest
-----------------------------------------------------
-
-::
-
-    [blyth@localhost issues]$ bufferTest
-    2019-04-10 17:32:51.265 INFO  [343791] [main@106] bufferTest OPTIX_VERSION 60000
-    bufferTest: /home/blyth/opticks/optixrap/OConfig.cc:48: static bool OConfig::DefaultWithTop(): Assertion `0 && "unexpected OPTIX_VERSION"' failed.
-    Aborted (core dumped)
-    [blyth@localhost issues]$ 
-
-
-::
-
-    2019-04-10 17:31:15.744 ERROR [341425] [OpticksGen::makeLegacyGensteps@194]  code 131072 srctype MACHINERY
-    2019-04-10 17:31:15.744 INFO  [341425] [OpticksGen::targetGenstep@303] OpticksGen::targetGenstep setting frame -1 0.0000,0.0000,0.0000,0.0000 -613481534200571583953557782528.0000,-nan,0.0000,0.0000 0.0000,0.0000,0.0000,0.0000 0.0000,0.0000,0.0000,0.0000
-    2019-04-10 17:31:15.745 INFO  [341425] [main@41] OEventTest OPTIX_VERSION 60000
-    OEventTest: /home/blyth/opticks/optixrap/OConfig.cc:48: static bool OConfig::DefaultWithTop(): Assertion `0 && "unexpected OPTIX_VERSION"' failed.
-    Aborted (core dumped)
-
-
-examineBufferFormat assert : OKTest, OKG4Test, OpSeederTest
---------------------------------------------------------------
+examineBufferFormat assert : OKTest, OKG4Test, OpSeederTest + OEventTest after avoiding version assert
+--------------------------------------------------------------------------------------------------------
 
 OKTest and OKG4Test some buffer issue::
 

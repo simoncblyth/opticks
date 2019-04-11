@@ -59,14 +59,14 @@ OpticksEntry* OContext::addEntry(char code)
     unsigned index ;
     switch(code)
     { 
-        case 'G': index = addEntry("generate.cu.ptx", "generate", "exception", defer) ; break ;
-        case 'T': index = addEntry("generate.cu.ptx", "trivial",  "exception", defer) ; break ;
-        case 'Z': index = addEntry("generate.cu.ptx", "zrngtest",  "exception", defer) ; break ;
-        case 'N': index = addEntry("generate.cu.ptx", "nothing",  "exception", defer) ; break ;
-        case 'R': index = addEntry("generate.cu.ptx", "tracetest",  "exception", defer) ; break ;
-        case 'D': index = addEntry("generate.cu.ptx", "dumpseed", "exception", defer) ; break ;
-        case 'S': index = addEntry("seedTest.cu.ptx", "seedTest", "exception", defer) ; break ;
-        case 'P': index = addEntry("pinhole_camera.cu.ptx", "pinhole_camera" , "exception", defer);  break;
+        case 'G': index = addEntry("generate.cu", "generate", "exception", defer) ; break ;
+        case 'T': index = addEntry("generate.cu", "trivial",  "exception", defer) ; break ;
+        case 'Z': index = addEntry("generate.cu", "zrngtest",  "exception", defer) ; break ;
+        case 'N': index = addEntry("generate.cu", "nothing",  "exception", defer) ; break ;
+        case 'R': index = addEntry("generate.cu", "tracetest",  "exception", defer) ; break ;
+        case 'D': index = addEntry("generate.cu", "dumpseed", "exception", defer) ; break ;
+        case 'S': index = addEntry("seedTest.cu", "seedTest", "exception", defer) ; break ;
+        case 'P': index = addEntry("pinhole_camera.cu", "pinhole_camera" , "exception", defer);  break;
     }
     return new OpticksEntry(index, code) ; 
 }
@@ -78,7 +78,7 @@ unsigned OContext::getDebugPhoton() const
 }
 
 
-OContext::OContext(optix::Context context, Opticks* ok, bool with_top, bool verbose) 
+OContext::OContext(optix::Context context, Opticks* ok, bool with_top, bool verbose, const char* cmake_target) 
     : 
     m_context(context),
     m_ok(ok),
@@ -88,6 +88,7 @@ OContext::OContext(optix::Context context, Opticks* ok, bool with_top, bool verb
     m_closed(false),
     m_with_top(with_top),
     m_verbose(verbose),
+    m_cmake_target(strdup(cmake_target)),
     m_llogpath(NULL)
 {
     init();
@@ -96,7 +97,7 @@ OContext::OContext(optix::Context context, Opticks* ok, bool with_top, bool verb
 
 void OContext::init()
 {
-    m_cfg = new OConfig(m_context);
+    m_cfg = new OConfig(m_context, m_cmake_target);
 
     unsigned int num_ray_type = getNumRayType() ;
     m_context->setRayTypeCount( num_ray_type );   // more static than entry type count
@@ -225,16 +226,18 @@ optix::Program OContext::createProgram(const char* filename, const char* prognam
     return prog ; 
 }
 
-unsigned int OContext::addEntry(const char* filename, const char* raygen, const char* exception, bool defer)
+unsigned int OContext::addEntry(const char* cu_filename, const char* raygen, const char* exception, bool defer)
 {
-    return m_cfg->addEntry(filename, raygen, exception, defer ); 
+    return m_cfg->addEntry(cu_filename, raygen, exception, defer ); 
 }
 unsigned int OContext::addRayGenerationProgram( const char* filename, const char* progname, bool defer)
 {
+    assert(0);
     return m_cfg->addRayGenerationProgram(filename, progname, defer);
 }
 unsigned int OContext::addExceptionProgram( const char* filename, const char* progname, bool defer)
 {
+    assert(0);
     return m_cfg->addExceptionProgram(filename, progname, defer);
 }
 

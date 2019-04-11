@@ -733,22 +733,24 @@ std::string BOpticksResource::BuildProduct(const char* proj, const char* name)
 
 
 
-std::string BOpticksResource::PTXName(const char* name, const char* target)
+std::string BOpticksResource::PTXName(const char* cu_name, const char* cmake_target)
 {
     std::stringstream ss ; 
-    ss << target << "_generated_" << name ; 
+    ss << cmake_target << "_generated_" << cu_name << ".ptx" ;    
+    // formerly the user had to suppliy the name with ".ptx" appended
+    // adjusting to cu_name for conformity with OKConf::PTXPath
     return ss.str();
 }
-std::string BOpticksResource::getPTXPath(const char* name, const char* target)
+std::string BOpticksResource::getPTXPath(const char* cu_name, const char* cmake_target)
 {
-    return PTXPath(name, target, m_ptx_installcache_dir);
+    return PTXPath(cu_name, cmake_target, m_ptx_installcache_dir);
 }
 
 
-std::string BOpticksResource::PTXPath(const char* name, const char* target, const char* prefix)
+std::string BOpticksResource::PTXPath(const char* cu_name, const char* cmake_target, const char* prefix)
 {
     fs::path ptx(prefix);   
-    std::string ptxname = PTXName(name, target);
+    std::string ptxname = PTXName(cu_name, cmake_target);
     ptx /= ptxname ;
     std::string path = ptx.string(); 
     return path ;

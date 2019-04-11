@@ -111,6 +111,14 @@ OpticksBufferControl::OpticksBufferControl(unsigned long long* ctrl)
 {
 }
 
+
+void OpticksBufferControl::Add( unsigned long long* ctrl , const char* add )
+{
+    OpticksBufferControl obc(ctrl) ; 
+    obc.add(add); 
+}
+
+
 void OpticksBufferControl::add(const char* ctrl)
 {
     *m_ctrl |= Parse(ctrl) ;

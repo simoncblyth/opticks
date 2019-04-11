@@ -70,6 +70,7 @@ class OKCORE_API OpticksBufferControl {
         static unsigned long long ParseTag(const char* ctrl);
         static bool isSet(unsigned long long ctrl, const char* mask);
         static std::vector<const char*> Tags();
+        static void Add( unsigned long long* ctrl , const char* add );
     public:
         OpticksBufferControl(unsigned long long* ctrl); 
         void add(const char* mask);

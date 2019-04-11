@@ -88,7 +88,17 @@ const char* OpticksBufferSpec::photon_compute_ = "OPTIX_INPUT_OUTPUT,BUFFER_COPY
 const char* OpticksBufferSpec::photon_interop_ = "OPTIX_INPUT_OUTPUT,BUFFER_COPY_ON_DIRTY,INTEROP_PTR_FROM_OPENGL"  ;
 #endif
 
-#elif OXRAP_OPTIX_VERSION == 400000 || OXRAP_OPTIX_VERSION == 40000 ||  OXRAP_OPTIX_VERSION == 40101 || OXRAP_OPTIX_VERSION == 50001 || OXRAP_OPTIX_VERSION == 50100
+#elif OXRAP_OPTIX_VERSION == 400000 || OXRAP_OPTIX_VERSION == 40000 ||  OXRAP_OPTIX_VERSION == 40101 || OXRAP_OPTIX_VERSION == 50001 || OXRAP_OPTIX_VERSION == 50100 
+
+#ifdef WITH_SEED_BUFFER
+const char* OpticksBufferSpec::photon_compute_ = "OPTIX_OUTPUT_ONLY"  ;
+const char* OpticksBufferSpec::photon_interop_ = "OPTIX_OUTPUT_ONLY,INTEROP_PTR_FROM_OPENGL"  ;
+#else
+const char* OpticksBufferSpec::photon_compute_ = "OPTIX_INPUT_OUTPUT,BUFFER_COPY_ON_DIRTY"  ;
+const char* OpticksBufferSpec::photon_interop_ = "OPTIX_INPUT_OUTPUT,INTEROP_PTR_FROM_OPENGL,BUFFER_COPY_ON_DIRTY"  ;
+#endif
+
+#elif OXRAP_OPTIX_VERSION == 60000 
 
 #ifdef WITH_SEED_BUFFER
 const char* OpticksBufferSpec::photon_compute_ = "OPTIX_OUTPUT_ONLY"  ;
@@ -117,6 +127,11 @@ const char* OpticksBufferSpec::genstep_interop_ = "OPTIX_INPUT_ONLY"  ;
 const char* OpticksBufferSpec::genstep_compute_ = "OPTIX_INPUT_ONLY,UPLOAD_WITH_CUDA,BUFFER_COPY_ON_DIRTY"  ;   // ,VERBOSE_MODE
 const char* OpticksBufferSpec::genstep_interop_ = "OPTIX_INPUT_ONLY"  ; 
 
+#elif OXRAP_OPTIX_VERSION == 60000 
+
+const char* OpticksBufferSpec::genstep_compute_ = "OPTIX_INPUT_ONLY,UPLOAD_WITH_CUDA,BUFFER_COPY_ON_DIRTY"  ;   // ,VERBOSE_MODE
+const char* OpticksBufferSpec::genstep_interop_ = "OPTIX_INPUT_ONLY"  ; 
+
 #endif
 
 
@@ -133,6 +148,11 @@ const char* OpticksBufferSpec::source_compute_ = "OPTIX_NON_INTEROP,OPTIX_INPUT_
 const char* OpticksBufferSpec::source_interop_ = "OPTIX_INPUT_ONLY"  ; 
 
 #elif OXRAP_OPTIX_VERSION == 400000 || OXRAP_OPTIX_VERSION == 40000 ||  OXRAP_OPTIX_VERSION == 40101 || OXRAP_OPTIX_VERSION == 50001 || OXRAP_OPTIX_VERSION == 50100
+
+const char* OpticksBufferSpec::source_compute_ = "OPTIX_INPUT_ONLY,UPLOAD_WITH_CUDA,BUFFER_COPY_ON_DIRTY,VERBOSE_MODE"  ;   // 
+const char* OpticksBufferSpec::source_interop_ = "OPTIX_INPUT_ONLY"  ; 
+
+#elif OXRAP_OPTIX_VERSION == 60000 
 
 const char* OpticksBufferSpec::source_compute_ = "OPTIX_INPUT_ONLY,UPLOAD_WITH_CUDA,BUFFER_COPY_ON_DIRTY,VERBOSE_MODE"  ;   // 
 const char* OpticksBufferSpec::source_interop_ = "OPTIX_INPUT_ONLY"  ; 

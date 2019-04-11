@@ -57,7 +57,7 @@ class OXRAP_API OContext {
             static const char* LaunchLogPath(unsigned index); 
             const char* getPrintIndexLogPath() const  ; 
      public:
-            OContext(optix::Context context, Opticks* ok, bool with_top=true, bool verbose=false);
+            OContext(optix::Context context, Opticks* ok, bool with_top=true, bool verbose=false, const char* cmake_target="OptiXRap");
             void cleanUp();
      public:
             const char* getModeName();
@@ -83,8 +83,8 @@ class OXRAP_API OContext {
             void close();
      public:
             OpticksEntry*  addEntry(char code='G');
+            unsigned int   addEntry(const char* cu_filename="generate.cu", const char* raygen="generate", const char* exception="exception", bool defer=true);
             void setMissProgram( unsigned int index, const char* filename, const char* progname, bool defer=true);
-            unsigned int addEntry(const char* filename="generate.cu.ptx", const char* raygen="generate", const char* exception="exception", bool defer=true);
      private:
             unsigned int addRayGenerationProgram( const char* filename, const char* progname, bool defer=true);
             unsigned int addExceptionProgram( const char* filename, const char* progname, bool defer=true);
@@ -129,6 +129,7 @@ class OXRAP_API OContext {
             bool              m_closed ; 
             bool              m_with_top ; 
             bool              m_verbose ; 
+            const char*       m_cmake_target ; 
             const char*       m_llogpath ; 
 };
 

@@ -10,6 +10,7 @@ set(TEST_SOURCES
     OOMinimalTest.cc
     OOMinimalRedirectTest.cc
     OOContextTest.cc
+    OOContextLowTest.cc
     OOContextUploadDownloadTest.cc
     LTOOContextUploadDownloadTest.cc
 

@@ -122,17 +122,31 @@ UseOptiXProgramPP
    OptiX C++ API variant of the above : provides a command line interface to quickly run 
    simple OptiX code (no buffers in context).
 
+UseOptiXBuffer
+    OptiX C API creates raygen program that just writes constant values to a buffer
+
 UseOptiXBufferPP
    OptiX C++ API : creates in and out buffers from NPY arrays and launches a program that 
    simply copies from in to out.  Provides a command line interface to quickly run variants
    of the buffer accessing GPU code. 
+
+UseOContextBufferPP
+   Use the OptiXRap.OContext to reimplement UseOptiXBufferPP in a higher level style, 
+   hoping to approach close enough to UseOptiXRap for the problem to manifest.  
+   But it hasnt.
 
 UseOptiXRap
    Uses Opticks higher level OptiXRap API to test changing the sizes of buffers.  
 
    Issue with OptiX 6.0.0 : the buffer manipulations seem to work but the rtPrintf 
    output does not appear unless the buffer writing is commented out.
-   Huh, now seems to be working without any clear fix.  
+
+   Huh, now rtPrintf seems to be working without any clear fix.  
+   Now not working.
+   Now working again, immediately after an oxrap--  
+
+   Perhaps a problem of host code being updated and PTX not, because the
+   PTX is from oxrap ?
 
    Can change the progname via envvar::
 

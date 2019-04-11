@@ -41,6 +41,14 @@ RT_PROGRAM void bufferTest_2()
     rtPrintf("bufferTest.cu:bufferTest_2  llu : %llu  ph (%10.4f,%10.4f,%10.4f,%10.4f)  \n", index, val.x, val.y, val.z, val.w);
 }
 
+RT_PROGRAM void bufferTest_3()
+{
+    unsigned long long index = launch_index.x ;
+    float4 val = genstep_buffer[index] ; 
+    rtPrintf("bufferTest.cu:bufferTest_3  llu : %llu    \n", index );
+    photon_buffer[index] = make_float4( val.x, val.y, val.z, val.w ) ; 
+}
+
 
 
 

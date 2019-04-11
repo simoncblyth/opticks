@@ -87,8 +87,8 @@ class BRAP_API  BOpticksResource {
         static const char* RNGInstallPath();
         static const char* OKCInstallPath();
    private:
-        static std::string PTXPath(const char* name, const char* target, const char* prefix);
-        static std::string PTXName(const char* name, const char* target);
+        static std::string PTXPath(const char* cu_name, const char* cmake_target, const char* prefix);
+        static std::string PTXName(const char* cu_name, const char* cmake_target);
         static const char* makeInstallPath( const char* prefix, const char* main, const char* sub );
    public:       
         const char* getInstallPrefix();
@@ -107,7 +107,7 @@ class BRAP_API  BOpticksResource {
         const char* getTmpUserDir() const ;
 
         const char* getDebuggingTreedir(int argc, char** argv);
-        std::string getPTXPath(const char* name, const char* target="OptiXRap");
+        std::string getPTXPath(const char* cu_name, const char* cmake_target="OptiXRap");
    public:       
         const char* getDebuggingIDPATH();
         const char* getDebuggingIDFOLD();

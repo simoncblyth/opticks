@@ -8,13 +8,15 @@
 #include "OProg.hh"
 #include "OConfig.hh"
 
+#include "OKConf.hh"
 #include "PLOG.hh"
 
 
 
-OConfig::OConfig(optix::Context context )
+OConfig::OConfig(optix::Context context, const char* cmake_target )
         : 
         m_context(context),
+        m_cmake_target(strdup(cmake_target)),
         m_index_max(-1),
         m_raygen_index(0),
         m_exception_index(0)
@@ -69,12 +71,27 @@ bool OConfig::DefaultWithTop()
 }
 
 
-optix::Program OConfig::createProgram(const char* filename, const char* progname )
+optix::Program OConfig::createProgram(const char* cu_name, const char* progname )
 {
-  std::string path = BOpticksResource::PTXPath(filename); 
-  std::string key = path + ":" + progname ; 
+    std::string path = BOpticksResource::PTXPath(cu_name, m_cmake_target); 
+    std::string path2 = OKConf::PTXPath(  m_cmake_target, cu_name ); 
 
-  LOG(verbose) << "OConfig::createProgram"
+    bool match = strcmp(path.c_str(), path2.c_str()) == 0 ; 
+    if(!match)
+    {
+        LOG(fatal)
+             << " paths do not match " 
+             << " path  " << path 
+             << " path2 " << path2 
+             ;   
+    }
+    assert( match ); 
+
+
+    std::string key = path + ":" + progname ; 
+
+
+  LOG(debug) << "OConfig::createProgram"
              << " path " << path 
              ;
 
@@ -93,37 +110,33 @@ optix::Program OConfig::createProgram(const char* filename, const char* progname
 
 
 
-unsigned int OConfig::addEntry(const char* filename, const char* raygen, const char* exception, bool defer)
+unsigned int OConfig::addEntry(const char* cu_name, const char* raygen, const char* exception, bool defer)
 {
-    int raygen_index = addRayGenerationProgram( filename, raygen, defer );
-    int exception_index = addExceptionProgram( filename, exception, defer );
+    int raygen_index = addRayGenerationProgram( cu_name, raygen, defer);
+    int exception_index = addExceptionProgram( cu_name, exception, defer);
     assert(raygen_index == exception_index && raygen_index > -1);
     return raygen_index ; 
 }
 
-
-unsigned int OConfig::addRayGenerationProgram( const char* filename, const char* progname, bool defer)
+unsigned int OConfig::addRayGenerationProgram( const char* cu_name, const char* progname, bool defer)
 {
-    OProg* prog = new OProg('R', m_raygen_index, filename, progname);
+    OProg* prog = new OProg('R', m_raygen_index, cu_name, progname);
     addProg(prog, defer);
     unsigned int index = m_raygen_index ;  
     m_raygen_index += 1 ;
     return index ; 
 }
-
-unsigned int OConfig::addExceptionProgram( const char* filename, const char* progname, bool defer)
+unsigned int OConfig::addExceptionProgram( const char* cu_name, const char* progname, bool defer)
 {
-    OProg* prog = new OProg('E', m_exception_index, filename, progname);
+    OProg* prog = new OProg('E', m_exception_index, cu_name, progname);
     addProg(prog, defer);
     unsigned int index = m_exception_index ;  
     m_exception_index += 1 ;
     return index ; 
 }
-
-
-void OConfig::setMissProgram( unsigned int raytype , const char* filename, const char* progname, bool defer)
+void OConfig::setMissProgram( unsigned int raytype , const char* cu_name, const char* progname, bool defer)
 {
-    OProg* prog = new OProg('M', raytype, filename, progname);
+    OProg* prog = new OProg('M', raytype, cu_name, progname);
     addProg(prog, defer);
 }
 
@@ -165,7 +178,7 @@ void OConfig::apply(OProg* prog)
 {
     unsigned int index = prog->index ; 
     char type = prog->type ; 
-    optix::Program program = createProgram(prog->filename, prog->progname);
+    optix::Program program = createProgram(prog->filename, prog->progname );
     switch(type)
     {
         case 'R':
@@ -291,6 +304,30 @@ unsigned int OConfig::getMultiplicity(RTformat format)
       case RT_FORMAT_USER:       mul=0 ; break ;
       case RT_FORMAT_BUFFER_ID:  mul=0 ; break ;
       case RT_FORMAT_PROGRAM_ID: mul=0 ; break ; 
+
+#if OPTIX_VERSION >= 60000
+       case RT_FORMAT_LONG_LONG:   mul=1 ; break ; 
+       case RT_FORMAT_LONG_LONG2:  mul=2 ; break ; 
+       case RT_FORMAT_LONG_LONG3:  mul=3 ; break ; 
+       case RT_FORMAT_LONG_LONG4:  mul=4 ; break ; 
+   
+       case RT_FORMAT_UNSIGNED_LONG_LONG:   mul=1 ; break ; 
+       case RT_FORMAT_UNSIGNED_LONG_LONG2:  mul=2 ; break ; 
+       case RT_FORMAT_UNSIGNED_LONG_LONG3:  mul=3 ; break ; 
+       case RT_FORMAT_UNSIGNED_LONG_LONG4:  mul=4 ; break ; 
+
+       case RT_FORMAT_UNSIGNED_BC1:  mul=1 ; break ; 
+       case RT_FORMAT_UNSIGNED_BC2:  mul=2 ; break ; 
+       case RT_FORMAT_UNSIGNED_BC3:  mul=3 ; break ; 
+       case RT_FORMAT_UNSIGNED_BC4:  mul=4 ; break ; 
+       case RT_FORMAT_UNSIGNED_BC5:  mul=5 ; break ; 
+       case RT_FORMAT_UNSIGNED_BC6H:  mul=6 ; break ; 
+       case RT_FORMAT_UNSIGNED_BC7:   mul=7 ; break ; 
+
+       case RT_FORMAT_BC4:  mul=4 ; break ; 
+       case RT_FORMAT_BC5:  mul=5 ; break ; 
+       case RT_FORMAT_BC6H: mul=6 ; break ; 
+#endif
    }
    return mul ; 
 }
@@ -350,6 +387,30 @@ const char* OConfig::getFormatName(RTformat format)
       case RT_FORMAT_USER:       name=_RT_FORMAT_USER ; break ;
       case RT_FORMAT_BUFFER_ID:  name=_RT_FORMAT_BUFFER_ID ; break ;
       case RT_FORMAT_PROGRAM_ID: name=_RT_FORMAT_PROGRAM_ID ; break ; 
+
+#if OPTIX_VERSION >= 60000
+       case RT_FORMAT_LONG_LONG:    name=_RT_FORMAT_LONG_LONG ; break ; 
+       case RT_FORMAT_LONG_LONG2:   name=_RT_FORMAT_LONG_LONG2 ; break ; 
+       case RT_FORMAT_LONG_LONG3:   name=_RT_FORMAT_LONG_LONG3 ; break ; 
+       case RT_FORMAT_LONG_LONG4:   name=_RT_FORMAT_LONG_LONG4 ; break ; 
+
+       case RT_FORMAT_UNSIGNED_LONG_LONG:    name=_RT_FORMAT_UNSIGNED_LONG_LONG ; break ; 
+       case RT_FORMAT_UNSIGNED_LONG_LONG2:   name=_RT_FORMAT_UNSIGNED_LONG_LONG2 ; break ; 
+       case RT_FORMAT_UNSIGNED_LONG_LONG3:   name=_RT_FORMAT_UNSIGNED_LONG_LONG3 ; break ; 
+       case RT_FORMAT_UNSIGNED_LONG_LONG4:   name=_RT_FORMAT_UNSIGNED_LONG_LONG4 ; break ; 
+   
+       case RT_FORMAT_UNSIGNED_BC1:  name = _RT_FORMAT_UNSIGNED_BC1 ; break ; 
+       case RT_FORMAT_UNSIGNED_BC2:  name = _RT_FORMAT_UNSIGNED_BC2 ; break ; 
+       case RT_FORMAT_UNSIGNED_BC3:  name = _RT_FORMAT_UNSIGNED_BC3 ; break ; 
+       case RT_FORMAT_UNSIGNED_BC4:  name = _RT_FORMAT_UNSIGNED_BC4 ; break ; 
+       case RT_FORMAT_UNSIGNED_BC5:  name = _RT_FORMAT_UNSIGNED_BC5 ; break ; 
+       case RT_FORMAT_UNSIGNED_BC6H:  name = _RT_FORMAT_UNSIGNED_BC6H ; break ; 
+       case RT_FORMAT_UNSIGNED_BC7:  name = _RT_FORMAT_UNSIGNED_BC7 ; break ; 
+
+       case RT_FORMAT_BC4:  name = _RT_FORMAT_BC4 ; break ; 
+       case RT_FORMAT_BC5:  name = _RT_FORMAT_BC5 ; break ; 
+       case RT_FORMAT_BC6H: name = _RT_FORMAT_BC6H ; break ; 
+#endif
    }
    return name ; 
 }
@@ -404,6 +465,30 @@ const char* OConfig::getFormatName(RTformat format)
    const char* OConfig::_RT_FORMAT_USER = "USER" ;
    const char* OConfig::_RT_FORMAT_BUFFER_ID = "BUFFER_ID" ;
    const char* OConfig::_RT_FORMAT_PROGRAM_ID = "PROGRAM_ID" ;
+
+#if OPTIX_VERSION >= 60000
+    const char* OConfig::_RT_FORMAT_LONG_LONG  = "LONG_LONG" ;  
+    const char* OConfig::_RT_FORMAT_LONG_LONG2 = "LONG_LONG2" ; 
+    const char* OConfig::_RT_FORMAT_LONG_LONG3 = "LONG_LONG3" ; 
+    const char* OConfig::_RT_FORMAT_LONG_LONG4 = "LONG_LONG4" ; 
+
+    const char* OConfig::_RT_FORMAT_UNSIGNED_LONG_LONG  = "UNSIGNED_LONG_LONG" ; 
+    const char* OConfig::_RT_FORMAT_UNSIGNED_LONG_LONG2 = "UNSIGNED_LONG_LONG2" ; 
+    const char* OConfig::_RT_FORMAT_UNSIGNED_LONG_LONG3 = "UNSIGNED_LONG_LONG3" ; 
+    const char* OConfig::_RT_FORMAT_UNSIGNED_LONG_LONG4 = "UNSIGNED_LONG_LONG4" ; 
+   
+    const char* OConfig::_RT_FORMAT_UNSIGNED_BC1  = "UNSIGNED_BC1" ; 
+    const char* OConfig::_RT_FORMAT_UNSIGNED_BC2  = "UNSIGNED_BC2" ; 
+    const char* OConfig::_RT_FORMAT_UNSIGNED_BC3  = "UNSIGNED_BC3" ; 
+    const char* OConfig::_RT_FORMAT_UNSIGNED_BC4  = "UNSIGNED_BC4" ; 
+    const char* OConfig::_RT_FORMAT_UNSIGNED_BC5  = "UNSIGNED_BC5" ; 
+    const char* OConfig::_RT_FORMAT_UNSIGNED_BC6H  = "UNSIGNED_BC6H" ; 
+    const char* OConfig::_RT_FORMAT_UNSIGNED_BC7  = "UNSIGNED_BC7" ; 
+
+    const char* OConfig::_RT_FORMAT_BC4  = "BC4" ; 
+    const char* OConfig::_RT_FORMAT_BC5  = "BC5" ; 
+    const char* OConfig::_RT_FORMAT_BC6H = "BC6H" ; 
+#endif
 
 
 

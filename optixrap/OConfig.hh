@@ -73,6 +73,31 @@ public:
   static const char* _RT_FORMAT_BUFFER_ID;
   static const char* _RT_FORMAT_PROGRAM_ID;
 
+#if OPTIX_VERSION >= 60000
+  static const char* _RT_FORMAT_LONG_LONG ;  
+  static const char* _RT_FORMAT_LONG_LONG2 ; 
+  static const char* _RT_FORMAT_LONG_LONG3 ; 
+  static const char* _RT_FORMAT_LONG_LONG4 ; 
+
+  static const char* _RT_FORMAT_UNSIGNED_LONG_LONG  ; 
+  static const char* _RT_FORMAT_UNSIGNED_LONG_LONG2 ; 
+  static const char* _RT_FORMAT_UNSIGNED_LONG_LONG3 ; 
+  static const char* _RT_FORMAT_UNSIGNED_LONG_LONG4 ; 
+   
+  static const char* _RT_FORMAT_UNSIGNED_BC1 ; 
+  static const char* _RT_FORMAT_UNSIGNED_BC2 ; 
+  static const char* _RT_FORMAT_UNSIGNED_BC3 ; 
+  static const char* _RT_FORMAT_UNSIGNED_BC4 ; 
+  static const char* _RT_FORMAT_UNSIGNED_BC5 ; 
+  static const char* _RT_FORMAT_UNSIGNED_BC6H ; 
+  static const char* _RT_FORMAT_UNSIGNED_BC7 ; 
+
+  static const char* _RT_FORMAT_BC4 ; 
+  static const char* _RT_FORMAT_BC5 ; 
+  static const char* _RT_FORMAT_BC6H ; 
+#endif
+
+
 
 public:
   // static const char* RngDir();
@@ -85,16 +110,16 @@ public:
    static unsigned OptiXVersion();
    static bool DefaultWithTop();
 public:
-    OConfig(optix::Context context);
+    OConfig(optix::Context context, const char* cmake_target="OptiXRap");
     void dump(const char* msg="OConfig::dump");
 
-    optix::Program createProgram(const char* filename, const char* progname );
+    optix::Program createProgram(const char* cu_name, const char* progname) ;
 
-    unsigned int addEntry(const char* filename, const char* raygen, const char* exception, bool defer=false);
-    unsigned int addRayGenerationProgram( const char* filename, const char* progname, bool defer=false);
-    unsigned int addExceptionProgram( const char* filename, const char* progname, bool defer=false);
+    unsigned int addEntry(const char* cu_name, const char* raygen, const char* exception, bool defer=false);
+    unsigned int addRayGenerationProgram( const char* cu_name, const char* progname, bool defer=false);
+    unsigned int addExceptionProgram( const char* cu_name, const char* progname, bool defer=false);
 
-    void setMissProgram( unsigned int raytype , const char* filename, const char* progname, bool defer=false);
+    void setMissProgram( unsigned int raytype , const char* cu_name, const char* progname, bool defer=false);
     void apply();
     void addProg(OProg* prog, bool defer);
     void apply(OProg* prog);
@@ -103,6 +128,7 @@ public:
 private:
 
     optix::Context m_context ;
+    const char*  m_cmake_target ;  
     int          m_index_max ; 
     unsigned int m_raygen_index ;  
     unsigned int m_exception_index ;  
