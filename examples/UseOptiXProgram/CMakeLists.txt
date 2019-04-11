@@ -12,7 +12,7 @@ set(SOURCES
 )
 
 set(OPTIX_SOURCES
-    UseOptiXProgram_minimal.cu
+    minimal.cu
 )
 
 CUDA_WRAP_SRCS( ${name} PTX _generated_PTX_files ${OPTIX_SOURCES} )

@@ -111,5 +111,33 @@ UseNPY(needs-revisit)
 
 
 
+UseOptiX
+   really minimal usage of OptiX C API, checking creation of context and buffer, 
+   no kernel launching
+
+UseOptiXProgram
+   OptiX C API creates raygen program and launches it, just dumping launch index  
+
+UseOptiXProgramPP
+   OptiX C++ API variant of the above : provides a command line interface to quickly run 
+   simple OptiX code (no buffers in context).
+
+UseOptiXBufferPP
+   OptiX C++ API : creates in and out buffers from NPY arrays and launches a program that 
+   simply copies from in to out.  Provides a command line interface to quickly run variants
+   of the buffer accessing GPU code. 
+
+UseOptiXRap
+   Uses Opticks higher level OptiXRap API to test changing the sizes of buffers.  
+
+   Issue with OptiX 6.0.0 : the buffer manipulations seem to work but the rtPrintf 
+   output does not appear unless the buffer writing is commented out.
+   Huh, now seems to be working without any clear fix.  
+
+   Can change the progname via envvar::
+
+       USEOPTIXRAP_PROGNAME="bufferTest_2" UseOptiXRap   
+
+
 
 

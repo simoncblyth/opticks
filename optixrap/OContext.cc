@@ -8,6 +8,7 @@
 
 // sysrap-
 #include "S_freopen_redirect.hh"
+#include "SSys.hh"
 
 // brap-
 #include "BStr.hh"
@@ -391,7 +392,7 @@ void OContext::upload(optix::Buffer& buffer, NPY<T>* npy)
     unsigned int numBytes = npy->getNumBytes(0) ;
 
     OpticksBufferControl ctrl(npy->getBufferControlPtr());
-    bool verbose = ctrl("VERBOSE_MODE") ;
+    bool verbose = ctrl("VERBOSE_MODE") || SSys::IsVERBOSE() ;
 
     if(ctrl(OpticksBufferControl::OPTIX_OUTPUT_ONLY_))
     { 
@@ -427,7 +428,7 @@ void OContext::download(optix::Buffer& buffer, NPY<T>* npy)
 {
     assert(npy);
     OpticksBufferControl ctrl(npy->getBufferControlPtr());
-    bool verbose = ctrl("VERBOSE_MODE") ;
+    bool verbose = ctrl("VERBOSE_MODE") || SSys::IsVERBOSE() ;
 
     bool proceed = false ; 
     if(ctrl(OpticksBufferControl::OPTIX_INPUT_ONLY_))
@@ -483,7 +484,7 @@ optix::Buffer OContext::createBuffer(NPY<T>* npy, const char* name)
 {
     assert(npy);
     OpticksBufferControl ctrl(npy->getBufferControlPtr());
-    bool verbose = ctrl("VERBOSE_MODE") ;
+    bool verbose = ctrl("VERBOSE_MODE") || SSys::IsVERBOSE() ;
 
     bool compute = isCompute()  ; 
 
@@ -508,6 +509,7 @@ optix::Buffer OContext::createBuffer(NPY<T>* npy, const char* name)
 
  
     if( ctrl("BUFFER_COPY_ON_DIRTY") )     type |= RT_BUFFER_COPY_ON_DIRTY ;
+    // p170 of OptiX_600 optix-api 
 
 
     optix::Buffer buffer ; 

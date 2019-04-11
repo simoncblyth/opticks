@@ -134,6 +134,40 @@ const char* OKConf::CMAKE_CXX_FLAGS()
 #endif    
 }
 
+
+/**
+OKConf::PTXPath
+-----------------
+
+The path elements configured here must match those from the CMakeLists.txt 
+that compiles the <name>.cu to <target>_generated_<name>.cu.ptx eg in optixrap/CMakeLists.txt::
+
+    091 set(CU_SOURCES
+    092 
+    093     cu/pinhole_camera.cu
+    094     cu/constantbg.cu
+    ...
+    120     cu/intersect_analytic_test.cu
+    121     cu/Roots3And4Test.cu
+    122 )
+    ...
+    131 CUDA_WRAP_SRCS( ${name} PTX _generated_PTX_files ${CU_SOURCES} )
+    132 CUDA_WRAP_SRCS( ${name} OBJ _generated_OBJ_files ${SOURCES} )
+    133 
+    134 
+    135 add_library( ${name} SHARED ${_generated_OBJ_files} ${_generated_PTX_files} ${SOURCES} )
+    136 #[=[
+    137 The PTX are not archived in the lib, it is just expedient to list them as sources
+    138 of the lib target so they get hooked up as dependencies, and thus are generated before
+    139 they need to be installed
+    140 #]=]
+    ...
+    170 install(FILES ${_generated_PTX_files} DESTINATION installcache/PTX)
+
+The form of the PTX filename comes from the FindCUDA.cmake file for example at
+/usr/share/cmake3/Modules/FindCUDA.cmake 
+
+**/
 const char* OKConf::PTXPath( const char* cmake_target, const char* cu_name )
 {
     std::stringstream ss ; 
@@ -147,4 +181,8 @@ const char* OKConf::PTXPath( const char* cmake_target, const char* cu_name )
     std::string ptxpath = ss.str();
     return strdup(ptxpath.c_str()); 
 }
+
+
+
+
 

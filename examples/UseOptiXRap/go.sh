@@ -6,7 +6,8 @@ sdir=$(pwd)
 name=$(basename $sdir)
 bdir=/tmp/$USER/opticks/$name/build 
 
-rm -rf $bdir && mkdir -p $bdir && cd $bdir && pwd 
+#rm -rf $bdir && mkdir -p $bdir 
+cd $bdir && pwd 
 
 
 thoughts(){ cat << EOT

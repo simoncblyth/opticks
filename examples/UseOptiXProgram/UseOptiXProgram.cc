@@ -78,12 +78,12 @@ int main()
     RT_CHECK_ERROR( rtContextSetEntryPointCount( context, 1 ) ); 
 
     const char* cmake_target = "UseOptiXProgram" ;
-    const char* cu_name = "UseOptiXProgram_minimal.cu" ; 
+    const char* cu_name = "minimal.cu" ; 
     const char* raygen_ptx_filename = OKConf::PTXPath( cmake_target, cu_name ); 
     const char* raygen_program_name = "basicTest" ;
 
     std::cout << "raygen_ptx_filename : [" << raygen_ptx_filename << "]" << std::endl ; 
-    //  eg /usr/local/opticks/installcache/PTX/UseOptiXProgram_generated_UseOptiXProgram_minimal.cu.ptx
+    //  eg /usr/local/opticks/installcache/PTX/UseOptiXProgram_generated_minimal.cu.ptx
 
     RTprogram raygen ;
     RT_CHECK_ERROR( rtProgramCreateFromPTXFile(context, raygen_ptx_filename, raygen_program_name, &raygen )) ;

@@ -9,6 +9,7 @@
 #include "OConfig.hh"
 #include "OContext.hh"
 #include "STimes.hh"
+#include "SSys.hh"
 #include "Opticks.hh"
 #include "OpticksBufferControl.hh"
 
@@ -20,6 +21,7 @@ struct Evt
    Evt(unsigned size_);
    void check();
    std::string description();
+   std::string brief();
 
    unsigned size ; 
    STimes* times ; 
@@ -79,9 +81,25 @@ std::string Evt::description()
 }
 
 
+std::string Evt::brief()
+{
+    std::stringstream ss ; 
+    ss << "evt:" 
+        << size  
+        << times->brief(" ") 
+        ;
+    return ss.str();
+}
+
+
+
+
 /**
 bufferTest
 ============
+
+Simply copies float4 values from the "genstep" buffer
+into the "photon" buffer.
 
 Test:
 
@@ -108,8 +126,17 @@ int main(int argc, char** argv)
     bool with_top = OConfig::DefaultWithTop() ;  // must set false with 3080, seemingly doesnt matter with 40000
 
     optix::Context context = optix::Context::create();
+
     OContext ctx(context, &ok, with_top);
-    int entry = ctx.addEntry("bufferTest.cu.ptx", "bufferTest", "exception");
+
+    //const char* progname = "bufferTest" ; 
+    //const char* progname = "bufferTest_0" ; 
+    const char* progname = SSys::getenvvar("USEOPTIXRAP_PROGNAME", "bufferTest") ; 
+
+    int entry = ctx.addEntry("bufferTest.cu.ptx", progname, "exception");
+
+    //context->setPrintEnabled(true); 
+
 
     // using zero sized buffers allows to prelaunch in initialization
     // so once have real events can just do the much faster launch 
@@ -127,6 +154,7 @@ int main(int argc, char** argv)
     LOG(info) <<  evt0->description() ;
 
 
+
     for(unsigned i=0 ; i < 10 ; i++)
     {
          unsigned size = 100+i*100 ; 
@@ -138,13 +166,14 @@ int main(int argc, char** argv)
 
          OContext::upload<float>(m_genstep_buffer, evt->genstep);  // compute mode style
 
+
          ctx.launch( OContext::LAUNCH, entry,  evt->size, 1, evt->times);
 
          OContext::download<float>( m_photon_buffer, evt->photon );
 
          evt->check();
 
-         LOG(info) <<  evt->description() ;
+         LOG(info) <<  evt->brief() ;
     }
     return 0 ;     
 }

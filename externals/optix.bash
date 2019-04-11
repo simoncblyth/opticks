@@ -27,7 +27,17 @@ Changing OptiX version
 
 3. run the OKConfTest executable and check the expected versions appear
 
+4. rebuild optickscore with changes to 
+
+   om-clean optickscore
+   om-install optickscore   
+       ## link errors from OpticksBufferSpec are expected
+       ## modify OpticksBufferSpec.hh for the new version
+
+
+
 4. clean and install all subs from optixrap onwards::
+
 
    om-visit optixrap:      # just lists the subs, note the colon 
    om-clean optixrap:     
