@@ -21,6 +21,7 @@ DevNotes
 #include <optixu/optixpp_namespace.h>
 #include "OXRAP_POP.hh"
 
+#include <string>
 
 // cudawrap- struct 
 #include "CBufSlice.hh"
@@ -41,26 +42,26 @@ class OXRAP_API OBufBase {
    private:
       void init();
       void examineBufferFormat(RTformat format);
-      static unsigned int getElementSizeInBytes(RTformat format); // eg sizeof(RT_FORMAT_FLOAT4) = 4*4 = 16 
-      static unsigned int getNumBytes(const optix::Buffer& buffer);
+      static unsigned int NumBytes(const optix::Buffer& buffer);
+   public:
+      static unsigned int Size(const optix::Buffer& buffer);
    public:
       CBufSpec  bufspec();
       CBufSlice slice( unsigned int stride, unsigned int begin=0u , unsigned int end=0u );
-      void*        getDevicePtr();
-      unsigned int getMultiplicity(); // typically 4, for RT_FORMAT_FLOAT4/RT_FORMAT_UINT4
-      unsigned int getSize();         // width*depth*height of OptiX buffer, ie the number of typed elements (often float4) 
-      unsigned int getNumAtoms();     // Multiplicity * Size, giving number of atoms, eg number of floats or ints
-      unsigned int getSizeOfAtom();   // in bytes, eg 4 for any of the RT_FORMAT_FLOAT4 RT_FORMAT_FLOAT3 ... formats 
-      unsigned int getNumBytes();     // total buffer size in bytes
+      void*        getDevicePtr() ;
+      unsigned int getMultiplicity() const ; // typically 4, for RT_FORMAT_FLOAT4/RT_FORMAT_UINT4
+      unsigned int getSize() const ;         // width*depth*height of OptiX buffer, ie the number of typed elements (often float4) 
+      unsigned int getNumAtoms() const ;     // Multiplicity * Size, giving number of atoms, eg number of floats or ints
+      unsigned int getSizeOfAtom() const ;   // in bytes, eg 4 for any of the RT_FORMAT_FLOAT4 RT_FORMAT_FLOAT3 ... formats 
+      unsigned int getNumBytes() const ;     // total buffer size in bytes
 
    public:
       // usually set in ctor by examineBufferFormat, but RT_FORMAT_USER needs to be set manually 
       void setSizeOfAtom(unsigned int soa);
       void setMultiplicity(unsigned int mul);
    public:
-      void Summary(const char* msg="OBufBase::Summary");
-   public:
-      static unsigned int getSize(const optix::Buffer& buffer);
+      void Summary(const char* msg="OBufBase::Summary") const ;
+      std::string desc() const ; 
    protected:
       optix::Buffer  m_buffer  ;
       const char*    m_name ; 

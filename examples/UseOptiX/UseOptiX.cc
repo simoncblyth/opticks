@@ -1,5 +1,6 @@
 #include <string>
-#include <optix.h>
+//#include <optix.h>
+#include <optix_world.h>
 
 // from SDK/sutil/sutil.h
 
@@ -68,6 +69,16 @@ int main()
     RT_CHECK_ERROR( rtBufferSetFormat( buffer, RT_FORMAT_FLOAT4 ) );
     RT_CHECK_ERROR( rtBufferSetSize2D( buffer, width, height ) );
     RT_CHECK_ERROR( rtContextDeclareVariable( context, "variable", &variable ) );
+
+
+    RTformat format = RT_FORMAT_FLOAT4 ; 
+    size_t size = 0 ; 
+    RT_CHECK_ERROR( rtuGetSizeForRTformat( format, &size) ); 
+
+    std::cout << " RT_FORMAT_FLOAT4 size " << size << std::endl ; 
+    assert( size == sizeof(float)*4 ) ; 
+
+
 
     return 0 ; 
 }

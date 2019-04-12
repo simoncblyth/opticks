@@ -3,6 +3,100 @@ OptiX_600_CUDA_10.1_test_fails
 
 
 
+Now down to four FAILs and note wierd OpenGL projection issue with OKTest 
+---------------------------------------------------------------------------
+
+::
+
+    FAILS:
+      12 /19  Test #12 : OptiXRapTest.OOtex0Test                       ***Exception: SegFault         1.13   
+      13 /19  Test #13 : OptiXRapTest.OOtexTest                        ***Exception: SegFault         1.10   
+
+      2 with SEGV at launch (presumably tex changes again)   
+
+      18 /19  Test #18 : OptiXRapTest.intersect_analytic_test          Child aborted***Exception:     1.14   
+      19 /19  Test #19 : OptiXRapTest.Roots3And4Test                   Child aborted***Exception:     1.13   
+
+      2 with optix::Exception misaligned address
+
+
+
+OBufBase assert : fixed by avoiding crazies from rtuGetSizeForRTformat for RT_FORMAT_USER in OptiX_600
+--------------------------------------------------------------------------------------------------------
+
+OEventTest::
+
+    [New Thread 0x7ffef9ffb700 (LWP 131961)]
+    element_size_bytes 3966490464 soa 0 mul 0 soa*mul 0OEventTest: /home/blyth/opticks/optixrap/OBufBase_.cu:160: void OBufBase::examineBufferFormat(RTformat): Assertion `expected' failed.
+
+    Program received signal SIGABRT, Aborted.
+    ...
+    #1  0x00007fffec32e8f8 in abort () from /lib64/libc.so.6
+    #2  0x00007fffec326026 in __assert_fail_base () from /lib64/libc.so.6
+    #3  0x00007fffec3260d2 in __assert_fail () from /lib64/libc.so.6
+    #4  0x00007ffff7accbba in OBufBase::examineBufferFormat(RTformat) () from /home/blyth/local/opticks/lib64/libOptiXRap.so
+    #5  0x00007ffff7accc28 in OBufBase::init() () from /home/blyth/local/opticks/lib64/libOptiXRap.so
+    #6  0x00007ffff7accc94 in OBufBase::OBufBase(char const*, optix::Handle<optix::BufferObj>&) () from /home/blyth/local/opticks/lib64/libOptiXRap.so
+    #7  0x00007ffff7abdf49 in OBuf::OBuf(char const*, optix::Handle<optix::BufferObj>&) () from /home/blyth/local/opticks/lib64/libOptiXRap.so
+    #8  0x00007ffff7aad21a in OEvent::createBuffers (this=0x1bc2420, evt=0x1bc5ff0) at /home/blyth/opticks/optixrap/OEvent.cc:150
+    #9  0x00007ffff7aadd2d in OEvent::upload (this=0x1bc2420, evt=0x1bc5ff0) at /home/blyth/opticks/optixrap/OEvent.cc:275
+    #10 0x00007ffff7aadbdf in OEvent::upload (this=0x1bc2420) at /home/blyth/opticks/optixrap/OEvent.cc:264
+    #11 0x000000000040614f in main (argc=1, argv=0x7fffffffda98) at /home/blyth/opticks/optixrap/tests/OEventTest.cc:69
+    (gdb) f 11
+    #11 0x000000000040614f in main (argc=1, argv=0x7fffffffda98) at /home/blyth/opticks/optixrap/tests/OEventTest.cc:69
+    69           oevt->upload();
+    (gdb) f 10
+    #10 0x00007ffff7aadbdf in OEvent::upload (this=0x1bc2420) at /home/blyth/opticks/optixrap/OEvent.cc:264
+    264     return upload(evt) ;  
+    (gdb) p evt
+    $1 = (OpticksEvent *) 0x1bc5ff0
+    (gdb) f 9
+    #9  0x00007ffff7aadd2d in OEvent::upload (this=0x1bc2420, evt=0x1bc5ff0) at /home/blyth/opticks/optixrap/OEvent.cc:275
+    275         createBuffers(evt);
+    (gdb) f 8
+    #8  0x00007ffff7aad21a in OEvent::createBuffers (this=0x1bc2420, evt=0x1bc5ff0) at /home/blyth/opticks/optixrap/OEvent.cc:150
+    150     m_sequence_buf = new OBuf("sequence", m_sequence_buffer);
+    (gdb) 
+    (gdb) f 7
+    #7  0x00007ffff7abdf49 in OBuf::OBuf(char const*, optix::Handle<optix::BufferObj>&) () from /home/blyth/local/opticks/lib64/libOptiXRap.so
+    (gdb) f 6
+    #6  0x00007ffff7accc94 in OBufBase::OBufBase(char const*, optix::Handle<optix::BufferObj>&) () from /home/blyth/local/opticks/lib64/libOptiXRap.so
+    (gdb) f 5
+    #5  0x00007ffff7accc28 in OBufBase::init() () from /home/blyth/local/opticks/lib64/libOptiXRap.so
+    (gdb) f 4
+    #4  0x00007ffff7accbba in OBufBase::examineBufferFormat(RTformat) () from /home/blyth/local/opticks/lib64/libOptiXRap.so
+    (gdb) f 3
+    #3  0x00007fffec3260d2 in __assert_fail () from /lib64/libc.so.6
+    (gdb) 
+
+
+::
+
+    078 
+     79 void OEvent::createBuffers(OpticksEvent* evt)
+     80 {
+    ...
+    139 #ifdef WITH_RECORD
+    140     NPY<short>* rx = evt->getRecordData() ;
+    141     assert(rx);
+    142     m_record_buffer = m_ocontext->createBuffer<short>( rx, "record");
+    143     m_context["record_buffer"]->set( m_record_buffer );
+    144     m_record_buf = new OBuf("record", m_record_buffer);
+    145 
+    146     NPY<unsigned long long>* sq = evt->getSequenceData() ;
+    147     assert(sq);
+    148     m_sequence_buffer = m_ocontext->createBuffer<unsigned long long>( sq, "sequence");
+    149     m_context["sequence_buffer"]->set( m_sequence_buffer );
+    150     m_sequence_buf = new OBuf("sequence", m_sequence_buffer);
+    151     m_sequence_buf->setMultiplicity(1u);
+    152     m_sequence_buf->setHexDump(true);
+    153 #endif
+    154 
+    155 }
+
+
+
+
 Getting better after adding setRayTypeCount
 ----------------------------------------------
 

@@ -581,7 +581,6 @@ void OContext::configureBuffer(optix::Buffer& buffer, NPY<T>* npy, const char* n
 
     unsigned size = determineBufferSize(npy, name);
 
-
     const char* label ; 
     if(     format == RT_FORMAT_USER) label = "USER";
     else if(is_seed)                  label = "SEED";

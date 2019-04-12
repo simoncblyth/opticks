@@ -1,5 +1,8 @@
+#include <iostream>
+#include <sstream>
 #include "NPYBase.hpp"
 #include "OBufBase.hh"
+#include "OFormat.hh"
 
 OBufBase::OBufBase(const char* name, optix::Buffer& buffer) 
    :
@@ -29,8 +32,24 @@ CBufSpec OBufBase::bufspec()
    return CBufSpec( getDevicePtr(), getSize(), getNumBytes()) ;
 }
 
+std::string OBufBase::desc() const 
+{
+   std::stringstream ss ;  
+   ss << "OBufBase" 
+      << " name: " << m_name
+      << " size: " << getSize()
+      << " multiplicity: " << m_multiplicity
+      << " sizeofatom: " << m_sizeofatom
+      << " NumAtoms: " << getNumAtoms()
+      << " NumBytes: " << getNumBytes()
+      ; 
+ 
+   return ss.str(); 
+}
 
-void OBufBase::Summary(const char* msg)
+
+
+void OBufBase::Summary(const char* msg) const 
 {
     printf("%s name %s size %u multiplicity %u sizeofatom %u NumAtoms %u NumBytes %u \n", 
          msg, 
@@ -62,27 +81,26 @@ void OBufBase::setHexDump(bool hexdump)
 */
 
 
-unsigned int OBufBase::getSize()  
+unsigned int OBufBase::getSize() const 
 {
-    return getSize(m_buffer) ; 
+    return Size(m_buffer) ; 
 }
 
-
-unsigned int OBufBase::getMultiplicity()
+unsigned int OBufBase::getMultiplicity() const 
 {
     return m_multiplicity ; 
 }
-unsigned int OBufBase::getNumAtoms()
+unsigned int OBufBase::getNumAtoms() const  
 {
     return getSize()*m_multiplicity ; 
 }
-unsigned int OBufBase::getSizeOfAtom()
+unsigned int OBufBase::getSizeOfAtom() const 
 {
     return m_sizeofatom ; 
 }
-unsigned int OBufBase::getNumBytes()
+unsigned int OBufBase::getNumBytes() const 
 {
-    return getNumBytes(m_buffer) ; 
+    return NumBytes(m_buffer) ; 
 }
 
 void OBufBase::init()
@@ -94,6 +112,9 @@ void OBufBase::examineBufferFormat(RTformat format)
 {
    unsigned int mul(0) ;
    unsigned int soa(0) ;
+   bool unknown(false); 
+   std::cout << "OBufBase::examineBufferFormat " << format << std::endl ; 
+
    switch(format)
    {   
       case RT_FORMAT_UNKNOWN: mul=0 ;soa=0 ;  break ; 
@@ -143,11 +164,23 @@ void OBufBase::examineBufferFormat(RTformat format)
       case RT_FORMAT_HALF3 : mul=3 ; soa=sizeof(float)/2 ; break ; 
       case RT_FORMAT_HALF4 : mul=4 ; soa=sizeof(float)/2 ; break ; 
 #endif
-
+      default:   unknown = true  ;  
    }   
 
-    unsigned int element_size_bytes = getElementSizeInBytes(format);
-    assert(element_size_bytes == soa*mul );
+    unsigned int element_size_bytes = OFormat::ElementSizeInBytes(format);
+
+    bool expected = element_size_bytes == soa*mul && !unknown  ; 
+    if(!expected ) 
+          std::cerr 
+              << " format " << OFormat::FormatName(format)
+              << " element_size_bytes " << element_size_bytes
+              << " soa " << soa
+              << " mul " << mul
+              << " soa*mul " << soa*mul
+              << " unknown " << unknown 
+              << std::endl 
+              ;
+    assert(expected );
 
     setMultiplicity(mul)  ;
     setSizeOfAtom(soa) ;
@@ -165,14 +198,7 @@ void OBufBase::setMultiplicity(unsigned int mul)
 } 
 
 
-unsigned int OBufBase::getElementSizeInBytes(RTformat format)
-{
-    size_t element_size ; 
-    rtuGetSizeForRTformat( format, &element_size);
-    return element_size ; 
-}
-
-void* OBufBase::getDevicePtr()
+void* OBufBase::getDevicePtr() 
 {
     //printf("OBufBase::getDevicePtr %s \n", ( m_name ? m_name : "-") ) ;
     //return (void*) m_buffer->getDevicePointer(m_device); 
@@ -181,7 +207,7 @@ void* OBufBase::getDevicePtr()
     return (void*)cu_ptr ; 
 }
 
-unsigned int OBufBase::getSize(const optix::Buffer& buffer)
+unsigned int OBufBase::Size(const optix::Buffer& buffer) // static
 {
     RTsize width, height, depth ; 
     buffer->getSize(width, height, depth);
@@ -189,12 +215,12 @@ unsigned int OBufBase::getSize(const optix::Buffer& buffer)
     return size ; 
 }
 
-unsigned int OBufBase::getNumBytes(const optix::Buffer& buffer)
+unsigned int OBufBase::NumBytes(const optix::Buffer& buffer) // static
 {
-    unsigned int size = getSize(buffer);
+    unsigned int size = Size(buffer);
 
     RTformat format = buffer->getFormat() ;
-    unsigned int element_size = getElementSizeInBytes(format);
+    unsigned int element_size = OFormat::ElementSizeInBytes(format);
     if(element_size == 0u && format == RT_FORMAT_USER)
     {
         element_size = buffer->getElementSize();

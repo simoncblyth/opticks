@@ -1,30 +1,22 @@
 #pragma once
 
 /**
-OConfig
+OFormat
 ==========
-
-OptiX utilities for raytrace program creation.
-
 
 **/
 
-
-#include <string>
-#include <map>
-#include <vector>
-
 #include "OXPPNS.hh"
-#include <optixu/optixu_math_namespace.h>
-
-struct OProg ; 
 
 #include "OXRAP_API_EXPORT.hh"
 #include "OXRAP_HEAD.hh"
 
-class OXRAP_API OConfig {
+class OXRAP_API OFormat {
 public:
-
+  static unsigned    ElementSizeInBytes(RTformat format); // eg sizeof(RT_FORMAT_FLOAT4) = 4*4 = 16 
+  static unsigned    Multiplicity(RTformat format);
+  static const char* FormatName(RTformat format);
+public:
   static const char* _RT_FORMAT_UNKNOWN;
 
   static const char* _RT_FORMAT_FLOAT;
@@ -96,45 +88,6 @@ public:
   static const char* _RT_FORMAT_BC5 ; 
   static const char* _RT_FORMAT_BC6H ; 
 #endif
-
-
-
-public:
-  // static const char* RngDir();
-
-   static void Print(const char* msg="OConfig::Print");
-   static optix::float3 make_contrast_color(int tag);
-   static unsigned Multiplicity(RTformat format);
-   static const char* FormatName(RTformat format);
-   static void configureSampler(optix::TextureSampler& sampler, optix::Buffer& buffer);
-   static unsigned OptiXVersion();
-   static bool DefaultWithTop();
-public:
-    OConfig(optix::Context context, const char* cmake_target="OptiXRap");
-    void dump(const char* msg="OConfig::dump");
-
-    optix::Program createProgram(const char* cu_name, const char* progname) ;
-
-    unsigned int addEntry(const char* cu_name, const char* raygen, const char* exception, bool defer=false);
-    unsigned int addRayGenerationProgram( const char* cu_name, const char* progname, bool defer=false);
-    unsigned int addExceptionProgram( const char* cu_name, const char* progname, bool defer=false);
-
-    void setMissProgram( unsigned int raytype , const char* cu_name, const char* progname, bool defer=false);
-    void apply();
-    void addProg(OProg* prog, bool defer);
-    void apply(OProg* prog);
-    unsigned int getNumEntryPoint();
-
-private:
-
-    optix::Context m_context ;
-    const char*  m_cmake_target ;  
-    int          m_index_max ; 
-    unsigned int m_raygen_index ;  
-    unsigned int m_exception_index ;  
-
-    std::map<std::string,optix::Program> m_programs;
-    std::vector<OProg*> m_progs ; 
 
 };
 

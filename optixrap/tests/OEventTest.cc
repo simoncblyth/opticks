@@ -63,18 +63,28 @@ int main(int argc, char** argv)
          evt->addBufferControl("photon", OpticksBufferControl::COMPUTE_MODE_ );
          evt->addBufferControl("record", OpticksBufferControl::COMPUTE_MODE_ );
          // defaults to INTEROP, need to set to COMPUTE to get OContext::download to not skip
-         
+        
+          
+         LOG(info) << "( upload " ;  
          oevt->upload();
+         LOG(info) << ") upload " ;  
 
          if(!prelaunch)
          {
+             LOG(info) << "( prelaunch " ;  
              ctx.launch( OContext::VALIDATE|OContext::COMPILE|OContext::PRELAUNCH,  entry,  0, 0, evt->getPrelaunchTimes() );
+             LOG(info) << ") prelaunch " ;  
+
              prelaunch = true ; 
          } 
 
+         LOG(info) << "( launch " ;  
          ctx.launch( OContext::LAUNCH, entry,  evt->getNumPhotons(), 1, evt->getLaunchTimes());
+         LOG(info) << ") launch " ;  
 
+         LOG(info) << "( download " ;  
          oevt->download();
+         LOG(info) << ") download " ;  
 
          evt->save();
 

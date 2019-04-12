@@ -21,6 +21,7 @@
 // optixrap-
 #include "OContext.hh"
 #include "OConfig.hh"
+#include "OFormat.hh"
 
 //#include "GGeo.hh"
 //#include "GGeoBase.hh"
@@ -930,14 +931,14 @@ optix::Buffer OGeo::createInputBuffer(GBuffer* buf, RTformat format, unsigned in
    unsigned int bit = buf->getNumItems() ; 
    unsigned int nit = bit/fold ; 
    unsigned int nel = buf->getNumElements();
-   unsigned int mul = OConfig::getMultiplicity(format) ;
+   unsigned int mul = OFormat::Multiplicity(format) ;
 
    int buffer_id = buf->getBufferId() ;
 
 
    if(m_verbosity > 2)
    LOG(info)<<"OGeo::createInputBuffer [GBuffer]"
-            << " fmt " << std::setw(20) << OConfig::getFormatName(format)
+            << " fmt " << std::setw(20) << OFormat::FormatName(format)
             << " name " << std::setw(20) << name
             << " bytes " << std::setw(8) << bytes
             << " bit " << std::setw(7) << bit 
@@ -992,7 +993,7 @@ optix::Buffer OGeo::createInputBuffer(NPY<S>* buf, RTformat format, unsigned int
    unsigned int nel = buf->getNumElements();    // size of the last dimension
    unsigned int bit = buf->getNumItems(0,-1) ;  // (ifr,ito) -> size of all but the last dimension
    unsigned int nit = bit/fold ; 
-   unsigned int mul = OConfig::getMultiplicity(format) ; // eg multiplicity of FLOAT4 is 4
+   unsigned int mul = OFormat::Multiplicity(format) ; // eg multiplicity of FLOAT4 is 4
 
    int buffer_id = buf->getBufferId() ;
 
@@ -1001,7 +1002,7 @@ optix::Buffer OGeo::createInputBuffer(NPY<S>* buf, RTformat format, unsigned int
    if(m_verbosity > 3 || strcmp(name,"tranBuffer") == 0)
    LOG(info)<<"OGeo::createInputBuffer [NPY<T>] "
             << " sh " << buf->getShapeString()
-            << " fmt " << std::setw(20) << OConfig::getFormatName(format)
+            << " fmt " << std::setw(20) << OFormat::FormatName(format)
             << " name " << std::setw(20) << name
             << " bytes " << std::setw(8) << bytes
             << " bit " << std::setw(7) << bit 

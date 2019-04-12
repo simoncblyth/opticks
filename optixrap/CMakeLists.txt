@@ -28,6 +28,7 @@ set(SOURCES
     OAccel.cc
     OProg.cc
     OConfig.cc
+    OFormat.cc
     OContext.cc
     OColors.cc
     OPropertyLib.cc
@@ -66,6 +67,7 @@ set(HEADERS
     OptiXTest.hh
     OContext.hh
     OConfig.hh
+    OFormat.hh
     OProg.hh
     OGeo.hh
     OTracer.hh
