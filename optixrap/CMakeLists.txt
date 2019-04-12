@@ -119,7 +119,12 @@ set(CU_SOURCES
     cu/OInterpolationTest.cu
     cu/ORayleighTest.cu
 
-    cu/intersect_analytic_test.cu
+    cu/intersect_analytic_dummy_test.cu
+    cu/intersect_analytic_torus_test.cu
+    cu/intersect_analytic_sphere_test.cu
+    cu/intersect_analytic_cone_test.cu
+    cu/intersect_analytic_convexpolyhedron_test.cu
+
     cu/Roots3And4Test.cu
 )
 

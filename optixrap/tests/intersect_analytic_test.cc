@@ -1,4 +1,13 @@
+/**
+::
 
+    intersect_analytic_test --cu intersect_analytic_dummy_test.cu
+    intersect_analytic_test --cu intersect_analytic_torus_test.cu            
+    intersect_analytic_test --cu intersect_analytic_sphere_test.cu
+    intersect_analytic_test --cu intersect_analytic_cone_test.cu
+    intersect_analytic_test --cu intersect_analytic_convexpolyhedron_test.cu
+
+**/
 #include "OptiXTest.hh"
 
 #include "SPath.hh"
@@ -13,20 +22,19 @@ int main( int argc, char** argv )
     const SAr& args = PLOG::instance->args ; 
     args.dump(); 
 
-    optix::Context context = optix::Context::create();
-
-    RTsize stack_size = context->getStackSize(); 
-    LOG(info) << " stack_size " << stack_size ; 
-
-    //context->setStackSize(6000);
-
-    const char* cu_name = args.get_arg_after("--cu", "intersect_analytic_test.cu" ); 
+    const char* cu_name = args.get_arg_after("--cu", "intersect_analytic_torus_test.cu" ); 
     const char* progname = SPath::Stem(cu_name) ;        
 
     LOG(info) 
          << " cu_name " << cu_name 
          << " progname " << progname 
          ;
+
+    optix::Context context = optix::Context::create();
+
+    RTsize stack_size = context->getStackSize(); 
+    LOG(info) << " stack_size " << stack_size ; 
+    //context->setStackSize(6000);
 
     OptiXTest* test = new OptiXTest(context, cu_name, progname ) ;
 

@@ -11,7 +11,16 @@ OptiX_600_CUDA_10.1_test_fails
   that users issue was avoided by increasing stack size : i tried 5000, 10000 without success
 
 
-Down to two FAILs both are the double heavy tests, and still the wierd OpenGL projection
+Another issue is OpenGL wierd projection in OKTest
+---------------------------------------------------
+
+TODO: 
+
+* clean out bookmarks
+* try other geometry 
+
+
+Down to two FAILs both are the double heavy tests : looks like the torus strikes yet again
 ---------------------------------------------------------------------------------------------
 
 ::
@@ -20,7 +29,14 @@ Down to two FAILs both are the double heavy tests, and still the wierd OpenGL pr
 
     FAILS:
       18 /19  Test #18 : OptiXRapTest.intersect_analytic_test          Child aborted***Exception:     1.16   
+
+      splitting out into separate tests for: dummy, sphere, cone, convexpolyhedron, torus
+      shows that only torus has the problem (which uses SolveQuartic)  
+
       19 /19  Test #19 : OptiXRapTest.Roots3And4Test                   Child aborted***Exception:     1.19   
+
+      the problem is inside SolveQuartic   
+
 
 
 

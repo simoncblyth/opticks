@@ -19,8 +19,7 @@
 #include "boolean_solid.h"
 //#include "hemi-pmt.h"
 
-// CUDART_ defines
-#include "math_constants.h"
+#include "math_constants.h"   // CUDART_ defines
 
 using namespace optix;
 

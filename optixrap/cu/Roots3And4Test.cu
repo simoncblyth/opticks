@@ -27,7 +27,17 @@ RT_PROGRAM void Roots3And4Test()
 
     double roots[4] ; 
 
+
     int num_roots = SolveQuartic(a, roots ); 
+
+/*
+    int num_roots = 4 ; 
+    roots[0] = 1. ; 
+    roots[1] = 2. ; 
+    roots[2] = 3. ; 
+    roots[3] = 4. ; 
+*/
+
 
     float4 cand = make_float4(RT_DEFAULT_MAX) ;  
     int num_cand = 0 ;  
