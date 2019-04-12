@@ -325,7 +325,7 @@ optix::Group OGeo::makeRepeatedGroup(GMergedMesh* mm, bool raylod)
     gmm = geocode == OpticksConst::GEOCODE_TRIANGULATED ? tri[0]  : ana[0] ; 
 
     optix::Material mat = makeMaterial();
-    optix::Program visit = m_ocontext->createProgram("visit_instance.cu.ptx", "visit_instance");
+    optix::Program visit = m_ocontext->createProgram("visit_instance.cu", "visit_instance");
 
     visit["instance_bounding_radius"]->setFloat( instance_bounding_radius*2.f );
     // radius of outermost solid origin centered bounding sphere with safety margin
@@ -580,8 +580,8 @@ optix::Material OGeo::makeMaterial()
                ; 
 
     optix::Material material = m_context->createMaterial();
-    material->setClosestHitProgram(OContext::e_radiance_ray, m_ocontext->createProgram("material1_radiance.cu.ptx", "closest_hit_radiance"));
-    material->setClosestHitProgram(OContext::e_propagate_ray, m_ocontext->createProgram("material1_propagate.cu.ptx", "closest_hit_propagate"));
+    material->setClosestHitProgram(OContext::e_radiance_ray, m_ocontext->createProgram("material1_radiance.cu", "closest_hit_radiance"));
+    material->setClosestHitProgram(OContext::e_propagate_ray, m_ocontext->createProgram("material1_propagate.cu", "closest_hit_propagate"));
     return material ; 
 }
 
@@ -735,8 +735,8 @@ optix::Geometry OGeo::makeAnalyticGeometry(GMergedMesh* mm, unsigned lod)
     geometry["primitive_count"]->setUint( numPrim );       // needed GPU side, for instanced offset into buffers 
     geometry["analytic_version"]->setUint(analytic_version);
 
-    optix::Program intersectProg = m_ocontext->createProgram("intersect_analytic.cu.ptx", "intersect") ;
-    optix::Program boundsProg  =  m_ocontext->createProgram("intersect_analytic.cu.ptx", "bounds") ;
+    optix::Program intersectProg = m_ocontext->createProgram("intersect_analytic.cu", "intersect") ;
+    optix::Program boundsProg  =  m_ocontext->createProgram("intersect_analytic.cu", "bounds") ;
 
     geometry->setIntersectionProgram(intersectProg );
     geometry->setBoundingBoxProgram( boundsProg );
@@ -834,8 +834,8 @@ optix::Geometry OGeo::makeTriangulatedGeometry(GMergedMesh* mm, unsigned lod)
     m_lodidx = lod ; 
 
     optix::Geometry geometry = m_context->createGeometry();
-    geometry->setIntersectionProgram(m_ocontext->createProgram("TriangleMesh.cu.ptx", "mesh_intersect"));
-    geometry->setBoundingBoxProgram(m_ocontext->createProgram("TriangleMesh.cu.ptx", "mesh_bounds"));
+    geometry->setIntersectionProgram(m_ocontext->createProgram("TriangleMesh.cu", "mesh_intersect"));
+    geometry->setBoundingBoxProgram(m_ocontext->createProgram("TriangleMesh.cu", "mesh_bounds"));
 
 
     unsigned numVolumes = mm->getNumVolumes();

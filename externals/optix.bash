@@ -10,7 +10,7 @@ See Also
 ------------
 
 * optixnote-  thousands of lines of lots of notes on OptiX versions and usage, that used to be here
-
+    
 
 Changing OptiX version
 -------------------------
@@ -59,6 +59,12 @@ optix-api-(){ echo $(optix-install-dir)/doc/OptiX_API_Reference_$(optix-version)
 optix-pdf-(){ echo $(optix-install-dir)/doc/OptiX_Programming_Guide_$(optix-version).pdf ; }
 optix-api(){ open $(optix-api-) ; }
 optix-pdf(){ open $(optix-pdf-) ; }
+
+optix-api-html-(){ echo https://raytracing-docs.nvidia.com/optix/api/html/index.html ; }
+optix-api-html(){ open $(optix-api-html-) ; }
+
+
+
 
 optix-dir(){          echo $(optix-install-dir) ; }
 optix-idir(){         echo $(optix-install-dir)/include ; }

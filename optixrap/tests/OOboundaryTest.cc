@@ -9,20 +9,13 @@
 #include "OContext.hh"
 #include "Opticks.hh"
 
-#include "OKCORE_LOG.hh"
-#include "GGEO_LOG.hh"
-#include "OXRAP_LOG.hh"
+#include "OPTICKS_LOG.hh"
 
-#include "PLOG.hh"
 
 int main(int argc, char** argv)
 {
 
-    PLOG_(argc, argv);    
-
-    OKCORE_LOG__ ; 
-    GGEO_LOG__ ; 
-    OXRAP_LOG__ ; 
+    OPTICKS_LOG(argc, argv);    
 
     Opticks ok(argc, argv, "--compute");
     ok.configure();
@@ -96,7 +89,7 @@ int main(int argc, char** argv)
     optix::Acceleration acceleration = context->createAcceleration(builder, traverser);
     top->setAcceleration(acceleration);
 
-    OLaunchTest ott(m_ocontext, &ok, "boundaryTest.cu.ptx", "boundaryTest", "exception");
+    OLaunchTest ott(m_ocontext, &ok, "boundaryTest.cu", "boundaryTest", "exception");
     ott.setWidth( nx);
     ott.setHeight(ny);
 

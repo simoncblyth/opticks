@@ -16,6 +16,11 @@ Resources
 * http://docs.nvidia.com/gameworks/index.html#gameworkslibrary/optix/optix_programming_guide.htm
 
 
+
+
+
+
+
 GTC 2018 : Whats new in 5.0, Whats coming in 5.1
 --------------------------------------------------
 
@@ -44,6 +49,75 @@ OptiX RTX
 * https://devblogs.nvidia.com/nvidia-optix-ray-tracing-powered-rtx/
 
 
+:google:`RT_GLOBAL_ATTRIBUTE_ENABLE_RTX`
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+https://devtalk.nvidia.com/default/topic/1047292/optix/no-performance-difference-on-2080ti-no-matter-if-rtx-is-enabled/
+
+    Detlef Roettger: 
+    The OptiX SDK path tracer example is not going to show a lot of benefit.
+
+    First, because the scene size is super small, and second, because all geometric
+    primitives are custom types with own bounding box and intersection programs.
+    Only the BVH traversal itself would run in hardware on that scene setup with
+    the RTX execution strategy and since the scene is small, the limit will be more
+    on the shading side, which is always running on the streaming multi-processors.
+
+    Please have a look at the optixGeometryTriangles example which shows how to
+    move the triangle intersection onto the hardware RT cores as well.
+
+
+/usr/local/OptiX_600/SDK-src/optixGeometryTriangles/optixGeometryTriangles.cpp::
+
+    377     // Create a GeometryTriangles object.
+    378     optix::GeometryTriangles geom_tri = context->createGeometryTriangles();
+    379 
+    380     geom_tri->setPrimitiveCount( num_faces );
+    381     geom_tri->setTriangleIndices( index_buffer, RT_FORMAT_UNSIGNED_INT3 );
+    382     geom_tri->setVertices( num_vertices, vertex_buffer, RT_FORMAT_FLOAT3 );
+    383     geom_tri->setBuildFlags( RTgeometrybuildflags( 0 ) );
+    384 
+    385     // Set an attribute program for the GeometryTriangles, which will compute
+    386     // things like normals and texture coordinates based on the barycentric
+    387     // coordindates of the intersection.
+    388     const char* ptx = sutil::getPtxString( SAMPLE_NAME, "optixGeometryTriangles.cu" );
+    389     geom_tri->setAttributeProgram( context->createProgramFromPTXString( ptx, "triangle_attributes" ) );
+    390 
+    391     geom_tri["index_buffer"]->setBuffer( index_buffer );
+    392     geom_tri["vertex_buffer"]->setBuffer( vertex_buffer );
+    393     geom_tri["normal_buffer"]->setBuffer( normal_buffer );
+    394     geom_tri["texcoord_buffer"]->setBuffer( texcoord_buffer );
+    395 
+        
+
+* https://devtalk.nvidia.com/default/topic/1047076/optix/on-optix6-0-my-2080ti-is-4x-faster-than-titanv/
+
+  Detlef Roettger : The hardware RT cores accelerate both BVH traversal and the actual triangle intersection. 
+
+
+
+OptiX_600 optix-pdf p14
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+As of OptiX version 5.2, RTX mode can be enabled to take advantage of RT Cores,
+accelerating ray tracing by computing traversal and triangle intersection in hardware.
+RTX mode is not enabled by default. RTX mode can be enabled with the
+RT_GLOBAL_ATTRIBUTE_ENABLE_RTX attribute using rtGlobalSetAttribute when creating the
+OptiX context. However, certain features of OptiX will not be available.
+
+
+::
+
+   This begs some questions
+
+   1. is this limited to triagles somehow ? 
+
+
+
+
+
+
+
 TODO: rearrange OptiX use to facilitate easier version switching
 ------------------------------------------------------------------
 
@@ -54,6 +128,23 @@ TODO: rearrange OptiX use to facilitate easier version switching
 
 OptiX Advanced Samples 
 ------------------------
+
+* https://devtalk.nvidia.com/default/topic/998546/optix/optix-advanced-samples-on-github/
+
+In case you're missing some of the more advanced samples like "glass" that were
+removed from the SDK in OptiX 4.0, we've put a handful of them on github:
+
+OptiX Advanced Samples
+
+https://github.com/nvpro-samples/optix_advanced_samples
+
+Along the way we switched from GLUT to GLFW and added UIs with the imgui
+library; for example, the new "optixGlass" sample has sliders for glass color
+and other things.
+
+Build instructions for Linux and Windows are in the top level directory.
+
+-Dylan 
 
 
 * https://github.com/nvpro-samples/optix_advanced_samples

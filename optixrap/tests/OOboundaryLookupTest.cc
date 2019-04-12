@@ -103,7 +103,7 @@ int main(int argc, char** argv)
     unsigned eight = BOUNDARY_NUM_MATSUR*BOUNDARY_NUM_FLOAT4 ; 
     assert(ny % eight == 0 );
 
-    OLaunchTest ott(m_ocontext, &ok, "boundaryLookupTest.cu.ptx", "boundaryLookupTest", "exception");
+    OLaunchTest ott(m_ocontext, &ok, "boundaryLookupTest.cu", "boundaryLookupTest", "exception");
     ott.setWidth( nx);
     ott.setHeight(ny / 8);
     ott.launch();

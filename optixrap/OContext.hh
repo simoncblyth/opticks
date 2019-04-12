@@ -78,7 +78,7 @@ class OXRAP_API OContext {
             double launch_redirected_(unsigned entry, unsigned width, unsigned height=1 );
      public:
             // pass thru to OConfig
-            optix::Program createProgram(const char* filename, const char* progname );
+            optix::Program createProgram(const char* cu_filename, const char* progname );
             void dump(const char* msg="OContext::dump");
             void close();
      public:

@@ -16,9 +16,7 @@ RT_PROGRAM void Roots3And4Test()
     unsigned long long photon_id = launch_index.x ;  
     unsigned int photon_offset = photon_id*4 ; 
 
-
     float t_min = 4.f ; 
-
 
     double a[5] ; 
     a[4] = 1. ; 
@@ -42,14 +40,13 @@ RT_PROGRAM void Roots3And4Test()
     }
     float t_cand = num_cand > 0 ? fminf(cand) : t_min ;   // smallest root bigger than t_min
 
-    rtPrintf("Roots3And4Test photon_offset %d num_roots %d num_cand %d cand %10.3f %10.3f %10.3f %10.3f t_cand %10.3f  \n",
+    rtPrintf("//Roots3And4Test photon_offset %d num_roots %d num_cand %d cand %10.3f %10.3f %10.3f %10.3f t_cand %10.3f  \n",
          photon_offset, num_roots, num_cand, cand.x, cand.y, cand.z, cand.w, t_cand );
     
     output_buffer[photon_offset+0] = make_float4(40.f, 40.f, 40.f, 40.f);
     output_buffer[photon_offset+1] = make_float4(41.f, 41.f, 41.f, 41.f);
     output_buffer[photon_offset+2] = make_float4(42.f, 42.f, 42.f, 42.f);
     output_buffer[photon_offset+3] = make_float4(43.f, 43.f, 43.f, 43.f);
-
 }
 
 RT_PROGRAM void exception()

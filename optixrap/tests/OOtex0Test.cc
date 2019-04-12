@@ -85,7 +85,7 @@ int main(int argc, char** argv)
     OConfig* cfg = new OConfig(context); 
 
     bool defer = true ;
-    unsigned int entry = cfg->addEntry("tex0Test.cu.ptx", "tex0Test", "exception", defer);
+    unsigned int entry = cfg->addEntry("tex0Test.cu", "tex0Test", "exception", defer);
 
     context->setEntryPointCount(1) ;
 

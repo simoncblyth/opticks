@@ -112,7 +112,7 @@ void OScene::init()
     // as just pure functions : so place them accordingly 
     if(m_use_osolve)
     {  
-        m_osolve = new OFunc(m_ocontext, "solve_callable.cu.ptx", "solve_callable", "SolveCubicCallable" ) ; 
+        m_osolve = new OFunc(m_ocontext, "solve_callable.cu", "solve_callable", "SolveCubicCallable" ) ; 
         m_osolve->convert();
     }
 

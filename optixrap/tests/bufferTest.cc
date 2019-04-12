@@ -108,7 +108,7 @@ int main(int argc, char** argv)
 
     optix::Context context = optix::Context::create();
     OContext ctx(context, &ok, with_top);
-    int entry = ctx.addEntry("bufferTest.cu.ptx", "bufferTest", "exception");
+    int entry = ctx.addEntry("bufferTest.cu", "bufferTest", "exception");
 
     // using zero sized buffers allows to prelaunch in initialization
     // so once have real events can just do the much faster launch 

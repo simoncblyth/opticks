@@ -43,7 +43,7 @@ int main(int argc, char** argv)
 
     optix::Context context = optix::Context::create();
     OContext ctx(context, &ok, with_top);
-    int entry = ctx.addEntry("OEventTest.cu.ptx", "OEventTest", "exception");
+    int entry = ctx.addEntry("OEventTest.cu", "OEventTest", "exception");
 
     OEvent* oevt = new OEvent(&ok, &ctx);   
  

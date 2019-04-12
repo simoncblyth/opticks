@@ -35,7 +35,7 @@ void rayleighTest( Opticks* ok, OContext* ocontext, optix::Context& context)
     context["rayleigh_buffer"]->setBuffer(rayleighBuffer);   
 
 
-    OLaunchTest ott(ocontext, ok, "ORayleighTest.cu.ptx", "ORayleighTest", "exception");
+    OLaunchTest ott(ocontext, ok, "ORayleighTest.cu", "ORayleighTest", "exception");
     ott.setWidth(  nx );   
     ott.setHeight( ny/4 );   // each thread writes 4*float4 
     ott.launch();

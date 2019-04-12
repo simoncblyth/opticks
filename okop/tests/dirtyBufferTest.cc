@@ -7,11 +7,7 @@
 #include "TBuf.hh"
 #include "OXPPNS.hh"
 
-#include "PLOG.hh"
-
-#include "OXRAP_LOG.hh"
-#include "NPY_LOG.hh"
-
+#include "OPTICKS_LOG.hh"
 
 /**
 
@@ -224,10 +220,7 @@ void dirty_upload_launch_download( unsigned ntest,
 
 int main(int argc, char** argv)
 {
-    PLOG_(argc, argv);
-
-    OXRAP_LOG__ ; 
-    NPY_LOG__ ; 
+    OPTICKS_LOG(argc, argv);
 
     unsigned ntest = 10 ; 
     unsigned size = 100 ; 
@@ -241,7 +234,7 @@ int main(int argc, char** argv)
 
     bool with_top = false ; 
     OContext ctx(context, &ok, with_top);
-    int entry = ctx.addEntry("dirtyBufferTest.cu.ptx", "dirtyBufferTest", "exception");
+    int entry = ctx.addEntry("dirtyBufferTest.cu", "dirtyBufferTest", "exception");
 
     ctx.launch( OContext::VALIDATE|OContext::COMPILE|OContext::PRELAUNCH,  entry,  0, 0, NULL);
 

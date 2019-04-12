@@ -96,7 +96,7 @@ void OInterpolationTest::launch(optix::Context& context)
     optix::Buffer buffer = context->createBuffer(RT_BUFFER_OUTPUT, RT_FORMAT_FLOAT4, m_nx, m_ny);
     context["out_buffer"]->setBuffer(buffer);   
 
-    OLaunchTest olt(m_ocontext, m_ok, "OInterpolationTest.cu.ptx", m_progname, "exception");
+    OLaunchTest olt(m_ocontext, m_ok, "OInterpolationTest.cu", m_progname, "exception");
     olt.setWidth(  m_nx );   
     olt.setHeight( m_ny/8 );   // kernel loops over eight for matsur and num_float4
     olt.launch();

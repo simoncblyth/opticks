@@ -24,7 +24,7 @@ int main( int argc, char** argv )
 
     OContext* m_ocontext = new OContext(context, ok, false );
 
-    unsigned entry = m_ocontext->addEntry("minimalTest.cu.ptx", "minimal", "exception");
+    unsigned entry = m_ocontext->addEntry("minimalTest.cu", "minimal", "exception");
 
     unsigned ni = 100 ; 
     unsigned nj = 4 ; 

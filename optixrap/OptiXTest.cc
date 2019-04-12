@@ -40,6 +40,9 @@ void OptiXTest::init(optix::Context& context)
               << description()
                ; 
 
+    unsigned num_ray_types = 1; 
+    context->setRayTypeCount(num_ray_types);  
+    // without setRayTypeCount get SEGV at launch in OptiX_600, changed default or stricter ? an assert would have been nice !
     context->setEntryPointCount( 1 );
 
     optix::Program raygenProg    = context->createProgramFromPTXFile(m_ptxpath, m_raygen_name);

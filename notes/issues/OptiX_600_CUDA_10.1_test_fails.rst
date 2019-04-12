@@ -3,6 +3,107 @@ OptiX_600_CUDA_10.1_test_fails
 
 
 
+Getting better after adding setRayTypeCount
+----------------------------------------------
+
+Some of the fails fixed by::
+
+    [blyth@localhost opticks]$ hg diff optixrap/OptiXTest.cc
+    diff -r 396804bcf0a5 optixrap/OptiXTest.cc
+    --- a/optixrap/OptiXTest.cc Thu Apr 11 23:47:08 2019 +0800
+    +++ b/optixrap/OptiXTest.cc Fri Apr 12 13:50:17 2019 +0800
+    @@ -40,6 +40,9 @@
+                   << description()
+                    ; 
+     
+    +    unsigned num_ray_types = 1; 
+    +    context->setRayTypeCount(num_ray_types);  
+    +    // without setRayTypeCount get SEGV at launch in OptiX_600, changed default or stricter ? an assert would have been nice !
+         context->setEntryPointCount( 1 );
+     
+         optix::Program raygenProg    = context->createProgramFromPTXFile(m_ptxpath, m_raygen_name);
+    [blyth@localhost opticks]$ 
+
+
+
+Now down to 3 modes of failure::
+
+
+    FAILS:
+      12 /19  Test #12 : OptiXRapTest.OOtex0Test                       ***Exception: SegFault         1.18   
+      13 /19  Test #13 : OptiXRapTest.OOtexTest                        ***Exception: SegFault         1.16   
+             
+      2 with SEGV at launch (presumably tex changes again)   
+
+      18 /19  Test #18 : OptiXRapTest.intersect_analytic_test          Child aborted***Exception:     1.17   
+      19 /19  Test #19 : OptiXRapTest.Roots3And4Test                   Child aborted***Exception:     1.14   
+
+      2 with optix::Exception misaligned address
+
+      15 /19  Test #15 : OptiXRapTest.OEventTest                       Child aborted***Exception:     1.40   
+      2  /5   Test #2  : OKOPTest.OpSeederTest                         Child aborted***Exception:     3.85      
+      2  /5   Test #2  : OKTest.OKTest                                 Child aborted***Exception:     5.31   
+      1  /1   Test #1  : OKG4Test.OKG4Test                             Child aborted***Exception:     21.78  
+
+      Four with OBufBase assert
+      OBufBase::examineBufferFormat(RTformat): Assertion `element_size_bytes == soa*mul' 
+
+      [blyth@localhost opticks]$ date
+      Fri Apr 12 13:52:31 CST 2019
+  
+
+OOtex0Test::
+
+    (gdb) bt
+    #0  0x00007fffe5b0a387 in ?? () from /lib64/libnvoptix.so.1
+    #1  0x00007fffe5e3f5d9 in ?? () from /lib64/libnvoptix.so.1
+    #2  0x00007fffe5ad8d0e in ?? () from /lib64/libnvoptix.so.1
+    #3  0x00007fffe5ad9551 in ?? () from /lib64/libnvoptix.so.1
+    #4  0x00007fffe5ad9ffb in ?? () from /lib64/libnvoptix.so.1
+    #5  0x00007fffe5ff9094 in ?? () from /lib64/libnvoptix.so.1
+    #6  0x00007fffe5f9d996 in ?? () from /lib64/libnvoptix.so.1
+    #7  0x000000000040794b in optix::ContextObj::launch (this=0x745a40, entry_point_index=0, image_width=16, image_height=16) at /usr/local/OptiX_600/include/optixu/optixpp_namespace.h:2901
+    #8  0x0000000000406463 in main (argc=1, argv=0x7fffffffdaa8) at /home/blyth/opticks/optixrap/tests/OOtex0Test.cc:102
+    (gdb) 
+
+     
+OOtexTest::
+    (gdb) bt
+    #0  0x00007fffdf5e0387 in ?? () from /lib64/libnvoptix.so.1
+    #1  0x00007fffdf9155d9 in ?? () from /lib64/libnvoptix.so.1
+    #2  0x00007fffdf5aed0e in ?? () from /lib64/libnvoptix.so.1
+    #3  0x00007fffdf5af551 in ?? () from /lib64/libnvoptix.so.1
+    #4  0x00007fffdf5afffb in ?? () from /lib64/libnvoptix.so.1
+    #5  0x00007fffdfacf094 in ?? () from /lib64/libnvoptix.so.1
+    #6  0x00007fffdfa73996 in ?? () from /lib64/libnvoptix.so.1
+    #7  0x000000000040771d in optix::ContextObj::launch (this=0x74b6e0, entry_point_index=0, image_width=16, image_height=16) at /usr/local/OptiX_600/include/optixu/optixpp_namespace.h:2901
+    #8  0x000000000040631b in main (argc=1, argv=0x7fffffffdaa8) at /home/blyth/opticks/optixrap/tests/OOtexTest.cc:94
+    (gdb) 
+
+
+intersect_analytic_test::
+
+    // pid 0 
+    // csg_intersect_torus_test  r R rmax (10 100 110) ray_origin (-0.646 0.005311 3.947) ray_direction (0.00059 0.0007738 -0.009953) 
+    // csg_intersect_torus R r unit (99.9955 9.99955 0.0100005)  oxyz (-64.5971 0.531076 394.682) sxyz (0.0589973 0.0773765 -0.995255 ) t_min (0)   
+    // csg_intersect_torus HGIJKL (-301570 378.678 1.66907e+08 1 -793.158 169846)  ABCDE (1 -1586.32 968414 -2.69128e+08 2.86808e+10 ) 
+    // csg_intersect_torus qn (-1586.32 968414 -2.69128e+08 2.86808e+10) reverse 0 
+    terminate called after throwing an instance of 'optix::Exception'
+      what():  Unknown error (Details: Function "RTresult _rtContextLaunch2D(RTcontext, unsigned int, RTsize, RTsize)" caught exception: Encountered a CUDA error: cudaDriver().CuEventSynchronize( m_event ) returned (716): Misaligned address)
+    Aborted (core dumped)
+
+Roots3And4Test::
+
+    [blyth@localhost okop]$ Roots3And4Test
+    2019-04-12 14:14:34.014 INFO  [124780] [OptiXTest::init@39] OptiXTest::init cu Roots3And4Test.cu ptxpath /home/blyth/local/opticks/build/optixrap/OptiXRap_generated_Roots3And4Test.cu.ptx raygen Roots3And4Test exception exception
+    2019-04-12 14:14:34.016 INFO  [124780] [OptiXTest::Summary@75] Roots3And4Test cu Roots3And4Test.cu ptxpath /home/blyth/local/opticks/build/optixrap/OptiXRap_generated_Roots3And4Test.cu.ptx raygen Roots3And4Test exception exception
+    terminate called after throwing an instance of 'optix::Exception'
+      what():  Unknown error (Details: Function "RTresult _rtContextLaunch2D(RTcontext, unsigned int, RTsize, RTsize)" caught exception: Encountered a CUDA error: cudaDriver().CuEventSynchronize( m_event ) returned (716): Misaligned address)
+    Aborted (core dumped)
+
+
+
+
 
 Titan RTX
 ----------

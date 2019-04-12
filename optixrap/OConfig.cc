@@ -61,7 +61,7 @@ bool OConfig::DefaultWithTop()
 
 
     if(version != 3080)
-        LOG(warning) << "OConfig::DefaultWithTop"
+        LOG(debug) << "OConfig::DefaultWithTop"
                      << " proceeding with untested config " 
                      << " OPTIX_VERSION " << version 
                      << " with_top " << with_top

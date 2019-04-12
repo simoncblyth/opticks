@@ -41,7 +41,7 @@ int main(int argc, char** argv)
     top->setAcceleration(acceleration);
 
     OLaunchTest* m_ott(NULL);
-    m_ott = new OLaunchTest(m_ocontext, ok, "textureTest.cu.ptx", "textureTest", "exception");
+    m_ott = new OLaunchTest(m_ocontext, ok, "textureTest.cu", "textureTest", "exception");
     m_ott->launch();
 
     LOG(info) << "DONE" ; 

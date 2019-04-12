@@ -19,7 +19,7 @@ RT_PROGRAM void minimal()
     unsigned photon_id = launch_index.x ;  
     unsigned photon_offset = photon_id*4 ; 
  
-    rtPrintf("// minimal %d \n", photon_id );
+    rtPrintf("// minimalTest.cu:minimal %d \n", photon_id );
    
     output_buffer[photon_offset+0] = make_float4(40.f, 40.f, 40.f, 40.f);
     output_buffer[photon_offset+1] = make_float4(41.f, 41.f, 41.f, 41.f);

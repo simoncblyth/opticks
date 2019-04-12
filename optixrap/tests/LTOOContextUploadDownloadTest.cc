@@ -41,7 +41,7 @@ int main( int argc, char** argv )
 
     OContext* m_ocontext = new OContext(context, ok, false );
 
-    unsigned entry = m_ocontext->addEntry("LTminimalTest.cu.ptx", "minimal", "exception");
+    unsigned entry = m_ocontext->addEntry("LTminimalTest.cu", "minimal", "exception");
 
 
     optix::Buffer buffer = m_ocontext->createBuffer<float>( npy, "demo");

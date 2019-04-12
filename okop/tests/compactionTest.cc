@@ -58,7 +58,7 @@ int main(int argc, char** argv)
 
     OContext ctx(context, &ok, false );  // with_top:false
 
-    int entry = ctx.addEntry("compactionTest.cu.ptx", "compactionTest", "exception");
+    int entry = ctx.addEntry("compactionTest.cu", "compactionTest", "exception");
 
     optix::Buffer photon_buffer = context->createBuffer( RT_BUFFER_INPUT );
     photon_buffer->setFormat(RT_FORMAT_FLOAT4);
