@@ -12,6 +12,14 @@ int main(int argc, char** argv)
 
     optix::Context context = optix::Context::create();
 
+    unsigned num_ray_type = context->getRayTypeCount(); 
+    assert( num_ray_type == 0 ); 
+    context->setRayTypeCount(1);  // not setting this OR setting it to zero  
+    num_ray_type = context->getRayTypeCount(); 
+    assert( num_ray_type == 1 ); 
+
+
+
     int nx = 16 ; 
     int ny = 16 ; 
 

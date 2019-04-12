@@ -18,7 +18,8 @@ int main(int argc, char** argv)
     std::cout << "a dumped " << std::endl ; 
 
     const char* option = "--gdmlpath" ; 
-    const char* value = a.get_arg_after(option) ; 
+    const char* fallback = NULL ; 
+    const char* value = a.get_arg_after(option, fallback) ; 
     std::cout 
         << " option " << option
         << " value " << ( value ? value : "-" ) 

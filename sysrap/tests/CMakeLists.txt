@@ -12,6 +12,7 @@ set(TEST_SOURCES
    SEnvTest.cc
    SSysTest.cc
    SStrTest.cc
+   SPathTest.cc
    STrancheTest.cc
    SVecTest.cc
    SMapTest.cc

@@ -24,6 +24,12 @@ does not work for OKConfTest ? But the above does::
 
    set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE) 
 
+
+On Linux could extract driver version
+
+    nvidia-smi --query-gpu=driver_version --format=csv,noheader
+    418.56
+
 #]=]
 
 set(OpticksCUDA_VERBOSE YES)

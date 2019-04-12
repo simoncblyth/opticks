@@ -1085,7 +1085,7 @@ optix::Buffer OGeo::createInputUserBuffer(NPY<T>* src, unsigned elementSize, con
 
 
 template<typename T>
-optix::Buffer OGeo::CreateInputUserBuffer(optix::Context& ctx, NPY<T>* src, unsigned elementSize, const char* name, const char* ctxname, unsigned verbosity)
+optix::Buffer OGeo::CreateInputUserBuffer(optix::Context& ctx, NPY<T>* src, unsigned elementSize, const char* name, const char* ctxname_informational, unsigned verbosity)
 {
     unsigned numBytes = src->getNumBytes() ;
     assert( numBytes % elementSize == 0 );
@@ -1094,7 +1094,7 @@ optix::Buffer OGeo::CreateInputUserBuffer(optix::Context& ctx, NPY<T>* src, unsi
     if(verbosity > 2)
     LOG(info) << "OGeo::CreateInputUserBuffer"
               << " name " << name
-              << " ctxname " << ctxname
+              << " ctxname " << ctxname_informational
               << " src shape " << src->getShapeString()
               << " numBytes " << numBytes
               << " elementSize " << elementSize
@@ -1110,7 +1110,7 @@ optix::Buffer OGeo::CreateInputUserBuffer(optix::Context& ctx, NPY<T>* src, unsi
     memcpy( buffer->map(), src->getPointer(), numBytes );
     buffer->unmap();
 
-    NGPU::GetInstance()->add(numBytes, name, ctxname, "ciubNPY" ); 
+    NGPU::GetInstance()->add(numBytes, name, ctxname_informational, "ciubNPY" ); 
 
     return buffer ; 
 }

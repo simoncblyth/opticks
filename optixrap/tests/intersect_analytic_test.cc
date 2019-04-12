@@ -1,22 +1,36 @@
 
 #include "OptiXTest.hh"
 
+#include "SPath.hh"
 #include "OGeo.hh"
 #include "NPY.hpp"
-#include "OXRAP_LOG.hh"
-#include "PLOG.hh"
+#include "OPTICKS_LOG.hh"
 
 
 int main( int argc, char** argv ) 
 {
-    PLOG_(argc, argv);
-    OXRAP_LOG__ ; 
+    OPTICKS_LOG(argc, argv);
+    const SAr& args = PLOG::instance->args ; 
+    args.dump(); 
 
     optix::Context context = optix::Context::create();
-    OptiXTest* test = new OptiXTest(context, "intersect_analytic_test.cu", "intersect_analytic_test") ;
+
+    RTsize stack_size = context->getStackSize(); 
+    LOG(info) << " stack_size " << stack_size ; 
+
+    //context->setStackSize(6000);
+
+    const char* cu_name = args.get_arg_after("--cu", "intersect_analytic_test.cu" ); 
+    const char* progname = SPath::Stem(cu_name) ;        
+
+    LOG(info) 
+         << " cu_name " << cu_name 
+         << " progname " << progname 
+         ;
+
+    OptiXTest* test = new OptiXTest(context, cu_name, progname ) ;
 
     std::cout << test->description() << std::endl ; 
-
 
     unsigned width = 1 ; 
     unsigned height = 1 ; 
@@ -24,7 +38,6 @@ int main( int argc, char** argv )
     // optix::Buffer buffer = context->createBuffer( RT_BUFFER_OUTPUT, RT_FORMAT_FLOAT4, width, height );
     optix::Buffer buffer = context->createBuffer( RT_BUFFER_OUTPUT, RT_FORMAT_FLOAT4, width*height );
     context["output_buffer"]->set(buffer);
-
 
 
     NPY<float>* planBuf = NPY<float>::make(6, 4) ;  
@@ -41,17 +54,14 @@ int main( int argc, char** argv )
 
     unsigned verbosity = 3 ; 
 
-    const char* ctxname = "intersect_analytic_test" ; 
+    const char* ctxname = progname ;  // just informational
 
     optix::Buffer planBuffer = OGeo::CreateInputUserBuffer<float>( context, planBuf,  4*4, "planBuffer", ctxname, verbosity); 
     context["planBuffer"]->setBuffer(planBuffer);
 
-
-
     context->validate();
     context->compile();
     context->launch(0, width, height);
-
 
 
     NPY<float>* npy = NPY<float>::make(width, height, 4) ;

@@ -97,7 +97,7 @@ std::string SAr::argline() const
     return ss.str(); 
 }
 
-const char* SAr::get_arg_after(const char* option) const
+const char* SAr::get_arg_after(const char* option, const char* fallback) const
 {
     for(int i=1 ; i < _argc - 1 ; i++ ) 
     {
@@ -105,7 +105,7 @@ const char* SAr::get_arg_after(const char* option) const
         const char* a1 = _argv[i+1] ;
         if(a0 && strcmp(a0, option) == 0) return a1 ;   
     }
-    return NULL ; 
+    return fallback ; 
 }
 
 

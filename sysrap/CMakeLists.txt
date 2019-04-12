@@ -26,6 +26,7 @@ set(SOURCES
     SProc.cc
     SSys.cc
     SStr.cc
+    SPath.cc
     SSeq.cc
     STranche.cc
     SAr.cc
@@ -65,6 +66,7 @@ set(HEADERS
     SFrame.hh
     SSys.hh
     SStr.hh
+    SPath.hh
     SSeq.hh
     STranche.hh
     SVec.hh

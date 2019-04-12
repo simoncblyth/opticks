@@ -42,6 +42,9 @@ int main(int argc, char** argv)
     inp->save("$TMP/OOtexTest_inp.npy");
 
     optix::Context context = optix::Context::create();
+    context->setRayTypeCount(1); 
+    context->setExceptionEnabled( RT_EXCEPTION_ALL , true ); 
+
     optix::Buffer outBuffer = context->createBuffer(RT_BUFFER_OUTPUT, RT_FORMAT_FLOAT4, nx, ny);
     optix::Buffer texBuffer = context->createBuffer(RT_BUFFER_INPUT, RT_FORMAT_FLOAT4, nx, ny);
 

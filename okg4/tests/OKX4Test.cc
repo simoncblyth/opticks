@@ -64,7 +64,7 @@ int main(int argc, char** argv)
 
     //G4VPhysicalVolume* top = make_top(argc, argv); 
 
-    const char* gdmlpath = PLOG::instance->get_arg_after("--gdmlpath") ; 
+    const char* gdmlpath = PLOG::instance->get_arg_after("--gdmlpath", NULL) ; 
     if( gdmlpath == NULL )
     {
         LOG(fatal) << " --gdmlpath existing-path : is required " ; 

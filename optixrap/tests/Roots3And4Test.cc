@@ -25,6 +25,16 @@ int main( int argc, char** argv )
     optix::Buffer buffer = context->createBuffer( RT_BUFFER_OUTPUT, RT_FORMAT_FLOAT4, width*height );
     context["output_buffer"]->set(buffer);
 
+   
+
+    context->setStackSize( 0xF000 );   // default was 2688, increasi
+
+    RTsize stack_size = context->getStackSize() ; 
+    LOG(info) << " stack_size " << stack_size ; 
+
+
+
+
     context->validate();
     context->compile();
     context->launch(0, width, height);

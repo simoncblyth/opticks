@@ -194,9 +194,9 @@ const char* PLOG::exename() const
     return args.exename(); 
 }
 
-const char* PLOG::get_arg_after(const char* option) const 
+const char* PLOG::get_arg_after(const char* option, const char* fallback) const 
 {
-    return args.get_arg_after(option); 
+    return args.get_arg_after(option, fallback); 
 }
 
 

@@ -109,6 +109,9 @@ bool SStr::EndsWith( const char* s, const char* q)
     return pos > 0 && strncmp(s + pos, q, strlen(q)) == 0 ;
 }
 
+
+
+
 /**
 
 SStr::HasPointerSuffix

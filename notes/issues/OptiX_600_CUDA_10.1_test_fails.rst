@@ -3,6 +3,27 @@ OptiX_600_CUDA_10.1_test_fails
 
 
 
+:google:`optix::Exception misaligned address`
+-----------------------------------------------
+
+* https://devtalk.nvidia.com/default/topic/988562/optix/-resolved-problem-misaligned-address-and-invalid-addres/
+
+  that users issue was avoided by increasing stack size : i tried 5000, 10000 without success
+
+
+Down to two FAILs both are the double heavy tests, and still the wierd OpenGL projection
+---------------------------------------------------------------------------------------------
+
+::
+
+    totals  2   / 377 
+
+    FAILS:
+      18 /19  Test #18 : OptiXRapTest.intersect_analytic_test          Child aborted***Exception:     1.16   
+      19 /19  Test #19 : OptiXRapTest.Roots3And4Test                   Child aborted***Exception:     1.19   
+
+
+
 Now down to four FAILs and note wierd OpenGL projection issue with OKTest 
 ---------------------------------------------------------------------------
 
@@ -12,12 +33,13 @@ Now down to four FAILs and note wierd OpenGL projection issue with OKTest
       12 /19  Test #12 : OptiXRapTest.OOtex0Test                       ***Exception: SegFault         1.13   
       13 /19  Test #13 : OptiXRapTest.OOtexTest                        ***Exception: SegFault         1.10   
 
-      2 with SEGV at launch (presumably tex changes again)   
+      2 with SEGV at launch (presumably tex changes again)  : NOPE it was omitting the context.setNumRayType(1) again 
 
       18 /19  Test #18 : OptiXRapTest.intersect_analytic_test          Child aborted***Exception:     1.14   
       19 /19  Test #19 : OptiXRapTest.Roots3And4Test                   Child aborted***Exception:     1.13   
 
       2 with optix::Exception misaligned address
+      These two are heavy users of doubles ...
 
 
 
@@ -127,7 +149,7 @@ Now down to 3 modes of failure::
       12 /19  Test #12 : OptiXRapTest.OOtex0Test                       ***Exception: SegFault         1.18   
       13 /19  Test #13 : OptiXRapTest.OOtexTest                        ***Exception: SegFault         1.16   
              
-      2 with SEGV at launch (presumably tex changes again)   
+      2 with SEGV at launch (presumably tex changes again)  : NOPE it was omitting the context.setNumRayType(1) again 
 
       18 /19  Test #18 : OptiXRapTest.intersect_analytic_test          Child aborted***Exception:     1.17   
       19 /19  Test #19 : OptiXRapTest.Roots3And4Test                   Child aborted***Exception:     1.14   
