@@ -155,3 +155,18 @@ UseOptiXRap
 
 
 
+
+UseOpticksGLFW
+   minimal use of OpenGL via GLFW, pops up a window and renders a colorful rotating triangle. 
+   Key presses cause the GLFW_KEY_XX enum name to be emitted to stdout. Press ESCAPE to exit.
+
+UseOpticksGLFWSnap
+   variant of UseOpticksGLFW adding the capability to save screen images to PPM files
+
+UseOpticksGLFWSPPM
+   variant of UseOpticksGLFWSnap with the PPM handling from reusable sysrap/SPPM 
+
+
+
+
+

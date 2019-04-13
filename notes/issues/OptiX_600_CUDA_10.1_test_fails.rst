@@ -11,13 +11,11 @@ OptiX_600_CUDA_10.1_test_fails
   that users issue was avoided by increasing stack size : i tried 5000, 10000 without success
 
 
-Another issue is OpenGL wierd projection in OKTest
+Another issue is OGLRap wierd projection in OKTest
 ---------------------------------------------------
 
-TODO: 
+* :doc:`OGLRap_GLFW_OpenGL_Linux_display_issue_with_new_driver`
 
-* clean out bookmarks
-* try other geometry 
 
 
 Down to two FAILs both are the double heavy tests : looks like the torus strikes yet again

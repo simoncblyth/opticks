@@ -59,6 +59,10 @@ void SPPM::save(const char* path)
 
 void SPPM::save(const char* path, int width, int height, const unsigned char* image, bool yflip)
 {
+
+    //LOG(info) << "saving to " << path ; 
+    std::cout << "SPPM::save " << path << std::endl ;  
+
     FILE * fp;
     fp = fopen(path, "wb");
 

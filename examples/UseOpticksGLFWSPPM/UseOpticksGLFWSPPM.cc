@@ -37,7 +37,7 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
         glfwSetWindowShouldClose(window, GL_TRUE);
 
 #ifdef SNAP
-    if (key == GLFW_KEY_SPACE && action == GLFW_PRESS) pix->snap() ;
+    if (key == GLFW_KEY_SPACE && action == GLFW_PRESS) pix->snap("/tmp/UseOpticksGLFWSPPM.ppm") ;
 #endif
 
 }
@@ -48,7 +48,7 @@ int main(void)
     glfwSetErrorCallback(error_callback);
     if (!glfwInit())
         exit(EXIT_FAILURE);
-    window = glfwCreateWindow(640, 480, "Simple example", NULL, NULL);
+    window = glfwCreateWindow(640, 480, "UseOpticksGLFWSPPM : SPACE to save snapshot, ESCAPE to exit", NULL, NULL);
     if (!window)
     {
         glfwTerminate();

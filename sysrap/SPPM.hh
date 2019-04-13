@@ -14,6 +14,7 @@ DevNotes
 ----------
 
 * examples/UseOpticksGLFWSnap/UseOpticksGLFWSnap.cc
+* examples/UseOpticksGLFWSPPM/UseOpticksGLFWSPPM.cc
 * /Developer/OptiX_380/SDK/primeMultiGpu/primeCommon.cpp
 
 **/

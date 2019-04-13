@@ -1,6 +1,5 @@
-# === func-gen- : graphics/glfw/glfw fgp externals/glfw.bash fgn glfw fgh graphics/glfw
 glfw-src(){      echo externals/glfw.bash ; }
-glfw-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(glfw-src)} ; }
+glfw-source(){   echo ${BASH_SOURCE} ; }
 glfw-vi(){       vi $(glfw-source) ; }
 glfw-usage(){ cat << EOU
 
@@ -385,12 +384,24 @@ $FUNCNAME
 
 See examples/UseOpticksGLFW/UseOpticksGLFW.cc
 
+For system installs /usr/include/GLFW/glfw3.h
+
+
 EON
+}
+
+
+glfw-header(){
+   ## assume system installs on Linux 
+   case $(uname) in 
+      Linux)  echo /usr/include/GLFW/glfw3.h ;; 
+      Darwin) echo $(glfw-dir)/include/GLFW/glfw3.h ;; 
+   esac
 }
 
 glfw-keyname-()
 {
-    grep \#define\ GLFW_KEY $(glfw-dir)/include/GLFW/glfw3.h 
+    grep \#define\ GLFW_KEY $(glfw-header)
 }
 glfw-keyname()
 {

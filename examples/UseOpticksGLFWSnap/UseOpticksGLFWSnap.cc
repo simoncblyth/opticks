@@ -4,6 +4,7 @@
 #include <GLFW/glfw3.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <cstring>
 
 #define SNAP 1
 
@@ -13,8 +14,9 @@ struct Pix
     unsigned char* pixels ; 
     int pwidth ; 
     int pheight ; 
+    const char* ppath ; 
 
-    Pix(int width, int height);
+    Pix(int width, int height, const char* path);
 
     void resize(int width, int height);
     void download();
@@ -25,11 +27,12 @@ struct Pix
 };
 
 
-Pix::Pix(int width, int height )
+Pix::Pix(int width, int height, const char* path )
     :
     pixels(NULL),
     pwidth(width),
-    pheight(height)
+    pheight(height),
+    ppath(strdup(path))
 {
 }
 
@@ -51,18 +54,18 @@ void Pix::download()
 {
     glPixelStorei(GL_PACK_ALIGNMENT,1); // byte aligned output   https://www.khronos.org/opengl/wiki/GLAPI/glPixelStore
     glReadPixels(0,0,pwidth,pheight,GL_RGBA, GL_UNSIGNED_BYTE, pixels );
-    printf("snap\n");
+    //printf("download\n");
 }
 void Pix::save(const char* path)
 {
     saveppm(path, pwidth, pheight, pixels );  
-    printf("save\n");
+    printf("save snap: %s \n", path);
 }
 
 void Pix::snap()
 {
     download(); 
-    save("/tmp/pix.ppm");  
+    save(ppath);  
 }
 
 
@@ -107,7 +110,7 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
 
     if (key == GLFW_KEY_SPACE && action == GLFW_PRESS)
     {
-        printf("space\n"); 
+        //printf("space\n"); 
         pix->snap(); 
     }
 
@@ -122,7 +125,7 @@ int main(void)
     if (!glfwInit())
         exit(EXIT_FAILURE);
 
-    window = glfwCreateWindow(640, 480, "Simple example", NULL, NULL);
+    window = glfwCreateWindow(640, 480, "UseOpticksGLFWSnap : press SPACE to save ppm snapshot, ESCAPE to exit", NULL, NULL);
     if (!window)
     {
         glfwTerminate();
@@ -133,7 +136,7 @@ int main(void)
     glfwSetKeyCallback(window, key_callback);
 
 #ifdef SNAP
-    pix = new Pix(0,0); 
+    pix = new Pix(0,0, "/tmp/UseOpticksGLFWSnap.ppm"); 
 #endif
 
     while (!glfwWindowShouldClose(window))
