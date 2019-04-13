@@ -493,7 +493,12 @@ EOI
 }
 
 
-om-nproc(){ echo ${OM_NPROC:-$(nproc)} ; }
+om-nproc(){ 
+   case $(uname) in
+      Linux) echo ${OM_NPROC:-$(nproc)} ;;
+      Darwin) echo 2 ;;
+   esac
+}
     
 
 om-make-one()

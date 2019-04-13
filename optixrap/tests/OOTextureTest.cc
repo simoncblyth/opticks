@@ -46,7 +46,7 @@ int main(int argc, char** argv)
 
     LOG(info) << "DONE" ; 
 
-    optix::cudaDeviceSynchronize();
+    //optix::cudaDeviceSynchronize();
 
 
     return 0 ;     
