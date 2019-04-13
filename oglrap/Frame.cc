@@ -303,8 +303,8 @@ void Frame::initContext()
     // get version info
     const GLubyte* renderer = glGetString (GL_RENDERER); // get renderer string
     const GLubyte* version = glGetString (GL_VERSION); // version as a string
-    LOG(debug) << "Frame::gl_init_window Renderer: " << renderer ;
-    LOG(debug) << "Frame::gl_init_window OpenGL version supported " <<  version ;
+    LOG(error) << "Frame::gl_init_window Renderer: " << renderer ;
+    LOG(error) << "Frame::gl_init_window OpenGL version supported " <<  version ;
 
     int width, height;
     glfwGetFramebufferSize(m_window, &width, &height);

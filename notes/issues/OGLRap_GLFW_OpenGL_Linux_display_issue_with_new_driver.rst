@@ -9,6 +9,14 @@ Launch::
    OKTest 
 
 
+The OpenGL version reported is coming out as 3.2.0::
+
+    2019-04-13 16:50:16.923 ERROR [258331] [Frame::initContext@306] Frame::gl_init_window Renderer: TITAN RTX/PCIe/SSE2
+    2019-04-13 16:50:16.923 ERROR [258331] [Frame::initContext@307] Frame::gl_init_window OpenGL version supported 3.2.0 NVIDIA 418.56
+
+That aint going to work with my shaders.
+
+
 * Window pops up, pressing Q twice to makes the geometry 
   appear in a mangled form : only along a narrow horizonal band. 
 
@@ -135,6 +143,19 @@ Darwin : renders a window filling blue triangle::
     epsilon:UseInstance blyth$ DYLD_LIBRARY_PATH=$LOCAL_BASE/opticks/lib OneTriangleTest
     Frame::gl_init_window Renderer: NVIDIA GeForce GT 750M OpenGL Engine
     Frame::gl_init_window OpenGL version supported 4.1 NVIDIA-10.33.0 387.10.10.10.40.105
+
+
+Linux renders as above, curiously comes back with OpenGL 3.2.0::
+
+    [blyth@localhost UseInstance]$ LD_LIBRARY_PATH=~/local/opticks/lib64 UseInstanceTest
+    Frame::gl_init_window Renderer: TITAN RTX/PCIe/SSE2
+    Frame::gl_init_window OpenGL version supported 3.2.0 NVIDIA 418.56
+    [blyth@localhost UseInstance]$ LD_LIBRARY_PATH=~/local/opticks/lib64 OneTriangleTest
+    Frame::gl_init_window Renderer: TITAN RTX/PCIe/SSE2
+    Frame::gl_init_window OpenGL version supported 3.2.0 NVIDIA 418.56
+    [blyth@localhost UseInstance]$ 
+
+
 
 
 

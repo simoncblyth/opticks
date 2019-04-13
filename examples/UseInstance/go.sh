@@ -21,7 +21,7 @@ echo executing ${name}Test
 
 
 case $(uname) in
-  Linux) ${mame}Test ;;
+  Linux) ${name}Test ;;
   Darwin) DYLD_LIBRARY_PATH=$LOCAL_BASE/opticks/lib ${name}Test ;;
 esac
 
