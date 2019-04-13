@@ -23,3 +23,98 @@ Launch::
 * Pressing G for GUI brings it up, and it displays and works normally
   on top of the bizarre geometry render
 
+
+
+* same code running on macOS with GLFW 3.1.1 and NVIDIA Web Driver 387.10.10.10.40.105
+  displays normally 
+
+* pressing the Camera::Summary button on Linux and macOS shows the matrices
+  agree as well as might aspect from the somwwhat different aspect ratios
+
+
+
+Axis App Check
+----------------
+
+Try the axis app check::
+
+   cd ~/opticks/examples/UseOGLRap
+   ./go.sh
+
+  
+* macOS: black window pops up with small red-green-blue axis lines in the center, 
+  these rotate in response to mouse movement after pressing R 
+
+* Linux: black window starts empty, a single blue line can be made to appear by
+  pressing R and moving mouse around 
+
+
+
+UseOpticksGLFW : Primordial minimal GLFW OpenGL (no shaders)
+---------------------------------------------------------------
+
+* works as expected on macOS and Linux, showing the colorful rotating triangle
+
+
+UseOpticksGLFWShaders : Need a minimal GLFW example with shaders 
+-------------------------------------------------------------------
+
+Start from the GLFW example https://www.glfw.org/docs/latest/quick.html#quick_example
+
+* modify it to use GLEW and GLM.
+
+SEGV at glGenBuffers, when omitted to glewInit() following window creation::
+
+    gdb) bt
+    #0  0x0000000000000000 in ?? ()
+    #1  0x0000000000401276 in main () at /home/blyth/opticks/examples/UseOpticksGLFWShader/UseOpticksGLFWShader.cc:73
+    (gdb) f 1
+    #1  0x0000000000401276 in main () at /home/blyth/opticks/examples/UseOpticksGLFWShader/UseOpticksGLFWShader.cc:73
+    73      glGenBuffers(1, &vertex_buffer);
+    (gdb) 
+
+
+The example succeed to draw a triangle using a shader::
+
+    executing UseOpticksGLFWShader
+     renderer TITAN RTX/PCIe/SSE2 
+     version 4.6.0 NVIDIA 418.56 
+
+
+
+Hmm : perhaps the driver update and Linux kernel update conspired to push to newer OpenGL version ?
+-----------------------------------------------------------------------------------------------------------
+
+* do my shaders need some version spec ? 
+
+::
+
+    [blyth@localhost issues]$ glxinfo | grep NVIDIA
+    server glx vendor string: NVIDIA Corporation
+    client glx vendor string: NVIDIA Corporation
+    OpenGL vendor string: NVIDIA Corporation
+    OpenGL core profile version string: 4.6.0 NVIDIA 418.56
+    OpenGL core profile shading language version string: 4.60 NVIDIA
+    OpenGL version string: 4.6.0 NVIDIA 418.56
+    OpenGL shading language version string: 4.60 NVIDIA
+    OpenGL ES profile version string: OpenGL ES 3.2 NVIDIA 418.56
+    [blyth@localhost issues]$ 
+
+
+    [blyth@localhost issues]$ glxinfo | grep version
+    server glx version string: 1.4
+    client glx version string: 1.4
+    GLX version: 1.4
+    OpenGL core profile version string: 4.6.0 NVIDIA 418.56
+    OpenGL core profile shading language version string: 4.60 NVIDIA
+    OpenGL version string: 4.6.0 NVIDIA 418.56
+    OpenGL shading language version string: 4.60 NVIDIA
+    OpenGL ES profile version string: OpenGL ES 3.2 NVIDIA 418.56
+    OpenGL ES profile shading language version string: OpenGL ES GLSL ES 3.20
+        GL_EXT_shader_implicit_conversions, GL_EXT_shader_integer_mix, 
+    [blyth@localhost issues]$ 
+
+
+
+
+

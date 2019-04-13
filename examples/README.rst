@@ -168,5 +168,14 @@ UseOpticksGLFWSPPM
 
 
 
+UseOGLRap
+   same as OGLRap AxisAppCheck 
+
+UseOpticksGL
+   OAxisTest appears to be trying to change things with OptiX launches whilsy displaying with OpenGL
+
+UseOpticksGLEW
+    Just dumping version numbers from header. CMake machinery test.
+
 
 

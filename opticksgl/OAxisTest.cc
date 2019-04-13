@@ -31,7 +31,7 @@ OAxisTest::OAxisTest(OContext* ocontext, NPY<float>* axis_data)
 
 void OAxisTest::init()
 {
-    m_entry = m_ocontext->addEntry( "axisTest.cu.ptx", "axisModify", "exception");
+    m_entry = m_ocontext->addEntry( "axisTest.cu", "axisModify", "exception");
 
     m_axis_data->setBufferControl(OpticksBufferControl::Parse("OPTIX_SETSIZE,OPTIX_INPUT_ONLY"));
 
