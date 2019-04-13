@@ -1,4 +1,4 @@
-#version 400 core
+#version 410 core
 //#pragma debug(on)
 
 in vec3 colour;

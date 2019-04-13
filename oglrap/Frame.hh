@@ -80,6 +80,7 @@ class OGLRAP_API Frame : public Touchable {
        void init();
 
    private:
+       void initHinting();
        void initContext();
 
    private:

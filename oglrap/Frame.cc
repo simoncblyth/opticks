@@ -250,10 +250,7 @@ void Frame::init()
 
     if (!glfwInit()) ::exit(EXIT_FAILURE);
 
-    glfwWindowHint (GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint (GLFW_CONTEXT_VERSION_MINOR, 2);
-    glfwWindowHint (GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-    glfwWindowHint (GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    initHinting(); 
 
     LOG(LEVEL) 
           << "( " << m_width << "," << m_height << " ) " << m_title ;
@@ -279,6 +276,32 @@ void Frame::init()
     initContext();  
 }
 
+void Frame::initHinting()
+{
+    // see notes/issues/OGLRap_GLFW_OpenGL_Linux_display_issue_with_new_driver.rst
+
+#if defined __APPLE__
+    glfwWindowHint (GLFW_CONTEXT_VERSION_MAJOR, 3); 
+    glfwWindowHint (GLFW_CONTEXT_VERSION_MINOR, 2); 
+    glfwWindowHint (GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+    glfwWindowHint (GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    // this incantation gives
+    //    Renderer: NVIDIA GeForce GT 750M OpenGL Engine
+    //    OpenGL version supported 4.1 NVIDIA-10.33.0 387.10.10.10.40.105
+
+#elif defined _MSC_VER
+    glfwWindowHint (GLFW_CONTEXT_VERSION_MAJOR, 4); 
+    glfwWindowHint (GLFW_CONTEXT_VERSION_MINOR, 1); 
+ 
+#elif __linux
+    glfwWindowHint (GLFW_CONTEXT_VERSION_MAJOR, 4); 
+    glfwWindowHint (GLFW_CONTEXT_VERSION_MINOR, 1); 
+
+    //  executing UseInstanceTest
+    // Frame::gl_init_window Renderer: TITAN RTX/PCIe/SSE2
+    // Frame::gl_init_window OpenGL version supported 4.1.0 NVIDIA 418.56
+#endif
+}
 
 void Frame::initContext()
 {

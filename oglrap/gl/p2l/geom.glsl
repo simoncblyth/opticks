@@ -1,4 +1,4 @@
-#version 400
+#version 410 core
 
 uniform mat4 ModelViewProjection ;
 uniform vec4 Param ; 

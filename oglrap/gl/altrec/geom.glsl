@@ -1,4 +1,4 @@
-#version 400
+#version 410 core
 //   altrec/geom.glsl : long line 
 
 #incl dynamic.h

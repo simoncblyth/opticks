@@ -35,10 +35,28 @@ void Frame::init()
         exit(EXIT_FAILURE);
     }
 
+#if defined __APPLE__
     glfwWindowHint (GLFW_CONTEXT_VERSION_MAJOR, 3); 
     glfwWindowHint (GLFW_CONTEXT_VERSION_MINOR, 2); 
     glfwWindowHint (GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
     glfwWindowHint (GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    // this incantation gives
+    //    Renderer: NVIDIA GeForce GT 750M OpenGL Engine
+    //    OpenGL version supported 4.1 NVIDIA-10.33.0 387.10.10.10.40.105
+
+#elif defined _MSC_VER
+    glfwWindowHint (GLFW_CONTEXT_VERSION_MAJOR, 4); 
+    glfwWindowHint (GLFW_CONTEXT_VERSION_MINOR, 1); 
+ 
+#elif __linux
+    glfwWindowHint (GLFW_CONTEXT_VERSION_MAJOR, 4); 
+    glfwWindowHint (GLFW_CONTEXT_VERSION_MINOR, 1); 
+
+    //  executing UseInstanceTest
+    // Frame::gl_init_window Renderer: TITAN RTX/PCIe/SSE2
+    // Frame::gl_init_window OpenGL version supported 4.1.0 NVIDIA 418.56
+#endif
+
 
     window = glfwCreateWindow(640, 480, "Simple example", NULL, NULL);
     if (!window)

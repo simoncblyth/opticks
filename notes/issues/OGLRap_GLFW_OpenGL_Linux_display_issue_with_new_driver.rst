@@ -9,14 +9,6 @@ Launch::
    OKTest 
 
 
-The OpenGL version reported is coming out as 3.2.0::
-
-    2019-04-13 16:50:16.923 ERROR [258331] [Frame::initContext@306] Frame::gl_init_window Renderer: TITAN RTX/PCIe/SSE2
-    2019-04-13 16:50:16.923 ERROR [258331] [Frame::initContext@307] Frame::gl_init_window OpenGL version supported 3.2.0 NVIDIA 418.56
-
-That aint going to work with my shaders.
-
-
 * Window pops up, pressing Q twice to makes the geometry 
   appear in a mangled form : only along a narrow horizonal band. 
 
@@ -144,8 +136,7 @@ Darwin : renders a window filling blue triangle::
     Frame::gl_init_window Renderer: NVIDIA GeForce GT 750M OpenGL Engine
     Frame::gl_init_window OpenGL version supported 4.1 NVIDIA-10.33.0 387.10.10.10.40.105
 
-
-Linux renders as above, curiously comes back with OpenGL 3.2.0::
+Linux renders as above, but suspiciously reports OpenGL 3.2.0::
 
     [blyth@localhost UseInstance]$ LD_LIBRARY_PATH=~/local/opticks/lib64 UseInstanceTest
     Frame::gl_init_window Renderer: TITAN RTX/PCIe/SSE2
@@ -156,13 +147,51 @@ Linux renders as above, curiously comes back with OpenGL 3.2.0::
     [blyth@localhost UseInstance]$ 
 
 
+Modify the hinting for different platforms
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+::
+
+    #if defined __APPLE__
+        glfwWindowHint (GLFW_CONTEXT_VERSION_MAJOR, 3); 
+        glfwWindowHint (GLFW_CONTEXT_VERSION_MINOR, 2); 
+        glfwWindowHint (GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+        glfwWindowHint (GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+        // this incantation gives
+        //    Renderer: NVIDIA GeForce GT 750M OpenGL Engine
+        //    OpenGL version supported 4.1 NVIDIA-10.33.0 387.10.10.10.40.105
+
+    #elif defined _MSC_VER
+        glfwWindowHint (GLFW_CONTEXT_VERSION_MAJOR, 4); 
+        glfwWindowHint (GLFW_CONTEXT_VERSION_MINOR, 1); 
+     
+    #elif __linux
+        glfwWindowHint (GLFW_CONTEXT_VERSION_MAJOR, 4); 
+        glfwWindowHint (GLFW_CONTEXT_VERSION_MINOR, 1); 
+
+        //  executing UseInstanceTest
+        // Frame::gl_init_window Renderer: TITAN RTX/PCIe/SSE2
+        // Frame::gl_init_window OpenGL version supported 4.1.0 NVIDIA 418.56
+    #endif
+
+
+
+This succeeds to get the needed version reported on Linux, but still have the issue::
+
+    2019-04-13 17:16:03.759 ERROR [299660] [Frame::initContext@329] Frame::gl_init_window Renderer: TITAN RTX/PCIe/SSE2
+    2019-04-13 17:16:03.759 ERROR [299660] [Frame::initContext@330] Frame::gl_init_window OpenGL version supported 4.1.0 NVIDIA 418.56
 
 
 Hmm : perhaps the driver update and Linux kernel update conspired to push to newer OpenGL version ?
 -----------------------------------------------------------------------------------------------------------
 
+* actually it seems the converse, the GLFW hinting incantation needs to be modified to get at least 
+  OpenGL 4.1 on Linux : in current form get 3.2.0  
+
 * do my shaders need some version spec ? 
+
+
+
 
 ::
 
@@ -192,6 +221,28 @@ Hmm : perhaps the driver update and Linux kernel update conspired to push to new
     [blyth@localhost issues]$ 
 
 
+
+
+
+
+OKTest again, shows 
+-----------------------------------
+
+On Linux, the OpenGL version reported is coming out as 3.2.0::
+
+    2019-04-13 16:50:16.923 ERROR [258331] [Frame::initContext@306] Frame::gl_init_window Renderer: TITAN RTX/PCIe/SSE2
+    2019-04-13 16:50:16.923 ERROR [258331] [Frame::initContext@307] Frame::gl_init_window OpenGL version supported 3.2.0 NVIDIA 418.56
+
+But on Darwin OpenGL 4.1 is reported::
+
+    2019-04-13 16:54:58.139 ERROR [7478368] [Frame::initContext@306] Frame::gl_init_window Renderer: NVIDIA GeForce GT 750M OpenGL Engine
+    2019-04-13 16:54:58.139 ERROR [7478368] [Frame::initContext@307] Frame::gl_init_window OpenGL version supported 4.1 NVIDIA-10.33.0 387.10.10.10.40.105
+
+The OGLRap shaders aint going to work with 3.2.0
+
+
+This looks smoky, seems that with the new driver + GLX the GLFW hinting incantation needs to be changed to pick up a new enough OpenGL 4.1 minimum 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
 

@@ -1,4 +1,4 @@
-#version 400
+#version 410 core
 //  rec/geom.glsl : flying point 
 
 #incl dynamic.h

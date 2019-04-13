@@ -1,4 +1,4 @@
-#version 400
+#version 410 core
 // devrec/geom.glsl    shortline or vector presentation, control length with param.y
 
 #incl dynamic.h
