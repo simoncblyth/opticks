@@ -241,8 +241,22 @@ But on Darwin OpenGL 4.1 is reported::
 The OGLRap shaders aint going to work with 3.2.0
 
 
-This looks smoky, seems that with the new driver + GLX the GLFW hinting incantation needs to be changed to pick up a new enough OpenGL 4.1 minimum 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+This looks smoky, seems that with the new driver + GLX the GLFW hinting
+incantation needs to be changed to pick up a new enough OpenGL 4.1 minimum.
+
+But after fixing this the render is still mangled. 
+
+
+About OpenGL core profile
+-----------------------------
+
+* https://retokoradi.com/2014/03/30/opengl-transition-to-core-profile/
+
+Perusing the oglrap Renderers they are compilcated : so focus on AxisAppCheck aka UseOGLRap
+which is also afflicted.
+
+macOS: small red, gree, blue axis
+Linux: starts black, a blue line appears on mousing around
 
 
 

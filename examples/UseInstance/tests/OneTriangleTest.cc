@@ -10,7 +10,7 @@
 
 const char* vertSrc = R"glsl(
 
-    #version 400 core
+    #version 410 core
 
     layout(location = 0) in vec4 vPosition ;
     void main()
@@ -23,7 +23,7 @@ const char* vertSrc = R"glsl(
 
 const char* fragSrc = R"glsl(
 
-    #version 400 core
+    #version 410 core
    
     out vec4 fColor ; 
 
@@ -55,19 +55,23 @@ int main()
     prog.create();
     prog.link();
 
+    GLint vPosition = prog.getAttribLocation("vPosition");
+    std::cout << "vPosition " << vPosition << std::endl ; 
+
 
     GLuint vao;
     glGenVertexArrays(1, &vao);
     glBindVertexArray(vao);
+    std::cout << "vao " << vao << std::endl ; 
 
     GLuint vbo;
     glGenBuffers(1, &vbo);
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
     glBufferData(GL_ARRAY_BUFFER, sizeof(verts), verts, GL_STATIC_DRAW);
 
-    GLint vPosition = prog.getAttribLocation("vPosition");
-    glEnableVertexAttribArray(vPosition);
+    glEnableVertexAttribArray(vPosition);   
     glVertexAttribPointer(vPosition, NUM_VERT, GL_FLOAT, GL_FALSE, 0, 0);
+    // https://alfonse.bitbucket.io/oldtut/Basics/Tut01%20Dissecting%20Display.html
 
     while (!glfwWindowShouldClose(frame.window))
     {

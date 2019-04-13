@@ -19,11 +19,10 @@ make install
 
 echo executing ${name}Test
 
+om-
+#om-run UseInstanceTest
+om-run OneTriangleTest 
 
-case $(uname) in
-  Linux) ${name}Test ;;
-  Darwin) DYLD_LIBRARY_PATH=$LOCAL_BASE/opticks/lib ${name}Test ;;
-esac
 
 notes(){ cat << EON
 

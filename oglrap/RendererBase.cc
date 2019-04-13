@@ -4,6 +4,7 @@
 #include "BStr.hh"
 #include "RendererBase.hh"
 #include "Prog.hh"
+#include "G.hh"
 
 #include "PLOG.hh"
 

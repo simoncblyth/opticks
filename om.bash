@@ -827,3 +827,30 @@ int main(int argc, char** argv)
 EOT
 
 }
+
+
+om-run()
+{
+   case $(uname) in 
+     Linux)  LD_LIBRARY_PATH=$LOCAL_BASE/opticks/lib64 $* ;; 
+     Darwin)  DYLD_LIBRARY_PATH=$LOCAL_BASE/opticks/lib $* ;; 
+   esac
+}
+
+om-run-notes(){ cat << EON
+om-run 
+   workaround a failure to setup RPATH for some executables. 
+   Of order 375 Opticks executables do not need this... 
+   but some executables made in examples do for unkown reasons.
+   This temorarily sets the library path to enable them to find 
+   the Opticks libs.
+
+Usage::
+
+    om-run OneTriangleTest
+    om-run UseInstanceTest
+
+EON
+}
+
+

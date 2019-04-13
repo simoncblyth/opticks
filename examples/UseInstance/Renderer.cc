@@ -18,7 +18,10 @@ GLuint _upload(GLenum target, unsigned num_bytes, void* ptr, GLenum usage )
 Renderer::Renderer()
 {
     glGenVertexArrays(1, &vao);
-    glBindVertexArray(vao);
+    glBindVertexArray(vao); // no target argument, because there is only one target for VAO 
+   /*
+    https://www.khronos.org/opengl/wiki/Vertex_Specification#Vertex_Array_Object
+   */
 }
 
 void Renderer::upload(Buf* buf)

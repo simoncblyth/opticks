@@ -25,19 +25,18 @@
 
 
 AxisApp::AxisApp(Opticks* ok)
-        :
-         m_ok(ok),
-         m_hub(new OpticksHub(m_ok)),
-         m_viz(new OpticksViz(m_hub, NULL)),
-         m_composition(m_hub->getComposition()),
-         m_scene(m_viz->getScene()), 
-         m_axis_renderer(NULL),
-         m_axis_attr(NULL),
-         m_axis_data(NULL)
+    :
+    m_ok(ok),
+    m_hub(new OpticksHub(m_ok)),
+    m_viz(new OpticksViz(m_hub, NULL)),
+    m_composition(m_hub->getComposition()),
+    m_scene(m_viz->getScene()), 
+    m_axis_renderer(NULL),
+    m_axis_attr(NULL),
+    m_axis_data(NULL)
 {
-   init();
+    init();
 }
-
 
 void AxisApp::init()
 {

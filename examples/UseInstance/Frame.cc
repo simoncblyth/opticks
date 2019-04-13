@@ -51,6 +51,7 @@ void Frame::init()
 #elif __linux
     glfwWindowHint (GLFW_CONTEXT_VERSION_MAJOR, 4); 
     glfwWindowHint (GLFW_CONTEXT_VERSION_MINOR, 1); 
+    glfwWindowHint (GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
     //  executing UseInstanceTest
     // Frame::gl_init_window Renderer: TITAN RTX/PCIe/SSE2
