@@ -28,6 +28,14 @@ set(TEST_SOURCES
     Roots3And4Test.cc
 )
 
+#[=[
+see ~/opticks/ok/tests/CMakeLists.txt for 
+hints at how to add tests for the same executable
+with different arguments for different shapes:
+intersect_analytic_test --cu intersect_analytic_sphere_test.cu 
+#]=]
+
+
 foreach(SRC ${TEST_SOURCES})
     get_filename_component(TGT ${SRC} NAME_WE)
     add_executable(${TGT} ${SRC})

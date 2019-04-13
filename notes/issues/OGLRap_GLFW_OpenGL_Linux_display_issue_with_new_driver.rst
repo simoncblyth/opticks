@@ -74,11 +74,67 @@ SEGV at glGenBuffers, when omitted to glewInit() following window creation::
     (gdb) 
 
 
-The example succeed to draw a triangle using a shader::
+With the hinting::
+
+     65     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
+     66     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
+     67   /*
+     68     By default, the OpenGL context GLFW creates may have any version. You can
+     69     require a minimum OpenGL version by setting the GLFW_CONTEXT_VERSION_MAJOR and
+     70     GLFW_CONTEXT_VERSION_MINOR hints before creation. If the required minimum
+     71     version is not supported on the machine, context (and window) creation fails.
+     72   */
+     73     window = glfwCreateWindow(640, 480, "Simple example", NULL, NULL);
+
+
+Linux succeeds to draw a triangle using a shader::
 
     executing UseOpticksGLFWShader
      renderer TITAN RTX/PCIe/SSE2 
      version 4.6.0 NVIDIA 418.56 
+
+Darwin also ::
+
+    executing UseOpticksGLFWShader
+     renderer NVIDIA GeForce GT 750M OpenGL Engine 
+     version 2.1 NVIDIA-10.33.0 387.10.10.10.40.105 
+
+Changing hinting to::
+
+     70     glfwWindowHint (GLFW_CONTEXT_VERSION_MAJOR, 3);
+     71     glfwWindowHint (GLFW_CONTEXT_VERSION_MINOR, 2);
+     72     glfwWindowHint (GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+     73     glfwWindowHint (GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+     74 
+
+Darwin fails to draw the triangle, just a black window::
+
+    executing UseOpticksGLFWShader
+     renderer NVIDIA GeForce GT 750M OpenGL Engine 
+     version 4.1 NVIDIA-10.33.0 387.10.10.10.40.105 
+
+
+This example does not use vao (vertex-attribute-object) so 
+it is not really modern OpenGL.
+
+
+UseInstance : shaders, vao, glDrawArraysInstanced
+---------------------------------------------------
+
+Bring env- instance- ~/env/graphics/opengl/instance/ into 
+Opticks CMake environment.
+
+Darwin : renders a diagonal line of blue instanced triangles::
+
+    epsilon:UseInstance blyth$ DYLD_LIBRARY_PATH=$LOCAL_BASE/opticks/lib UseInstanceTest
+    Frame::gl_init_window Renderer: NVIDIA GeForce GT 750M OpenGL Engine
+    Frame::gl_init_window OpenGL version supported 4.1 NVIDIA-10.33.0 387.10.10.10.40.105
+
+Darwin : renders a window filling blue triangle::
+
+    epsilon:UseInstance blyth$ DYLD_LIBRARY_PATH=$LOCAL_BASE/opticks/lib OneTriangleTest
+    Frame::gl_init_window Renderer: NVIDIA GeForce GT 750M OpenGL Engine
+    Frame::gl_init_window OpenGL version supported 4.1 NVIDIA-10.33.0 387.10.10.10.40.105
 
 
 

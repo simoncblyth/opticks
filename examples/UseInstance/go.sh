@@ -17,6 +17,21 @@ cmake $sdir -DCMAKE_BUILD_TYPE=Debug \
 make
 make install   
 
-echo executing $name
-$name
+echo executing ${name}Test
+
+
+case $(uname) in
+  Linux) ${mame}Test ;;
+  Darwin) DYLD_LIBRARY_PATH=$LOCAL_BASE/opticks/lib ${name}Test ;;
+esac
+
+notes(){ cat << EON
+
+Why RPATH not working here on Darwin, it works for tests from Opticks subs ?
+
+   DYLD_LIBRARY_PATH=/usr/local/opticks/lib OneTriangleTest
+
+EON
+}
+
 

@@ -5,6 +5,11 @@
 
 #include <GLFW/glfw3.h>
 
+#ifndef GLFW_TRUE
+#define GLFW_TRUE true
+#endif
+
+
 //#include "linmath.h"
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>  
@@ -57,8 +62,23 @@ int main(void)
     glfwSetErrorCallback(error_callback);
     if (!glfwInit())
         exit(EXIT_FAILURE);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
+
+
+    //glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
+    //glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
+
+    glfwWindowHint (GLFW_CONTEXT_VERSION_MAJOR, 3); 
+    glfwWindowHint (GLFW_CONTEXT_VERSION_MINOR, 2); 
+    glfwWindowHint (GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+    glfwWindowHint (GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+
+
+  /*
+    By default, the OpenGL context GLFW creates may have any version. You can
+    require a minimum OpenGL version by setting the GLFW_CONTEXT_VERSION_MAJOR and
+    GLFW_CONTEXT_VERSION_MINOR hints before creation. If the required minimum
+    version is not supported on the machine, context (and window) creation fails.
+  */
     window = glfwCreateWindow(640, 480, "Simple example", NULL, NULL);
     if (!window)
     {
