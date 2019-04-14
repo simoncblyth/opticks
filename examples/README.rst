@@ -166,7 +166,13 @@ UseOpticksGLFWSnap
 UseOpticksGLFWSPPM
    variant of UseOpticksGLFWSnap with the PPM handling from reusable sysrap/SPPM 
 
+UseOpticksGLFWShader
 
+   * adapted example from GLFW site, modified to use GLEW and GLM : it ran giving a black screen.
+   * adding a VAO makes the coloured triangle appear      
+   * added error checking and compilation log output 
+
+   This is a good starting point for creating self contained minimal reproducers. 
 
 UseOGLRap
    same as OGLRap AxisAppCheck 

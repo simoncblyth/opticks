@@ -65,7 +65,6 @@ void Shdr::createAndCompile()
     G::ErrCheck("Shdr::createAndCompile.2", true);
 
     int params = -1;
-
     glGetShaderiv (m_id, GL_COMPILE_STATUS, &params);
     G::ErrCheck("Shdr::createAndCompile.3", true);
 

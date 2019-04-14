@@ -54,6 +54,7 @@ set(SOURCES
     SceneCfg.cc
 
     G.cc
+    E.cc
     Frame.cc
     Pix.cc
 
@@ -92,6 +93,7 @@ SET(HEADERS
     Demo.hh
     Prog.hh
     G.hh
+    E.hh
     Shdr.hh
     Touchable.hh
     GUI.hh

@@ -221,10 +221,6 @@ Hmm : perhaps the driver update and Linux kernel update conspired to push to new
     [blyth@localhost issues]$ 
 
 
-
-
-
-
 OKTest again, shows 
 -----------------------------------
 

@@ -80,7 +80,7 @@ int main(int argc, char** argv)
 
 /**
 On mac this succeeds to pop up a window with an off-centered (why?) RGB axis 
-
+On Linux : the issue manifests : only the blue line appears
 
 **/
 
