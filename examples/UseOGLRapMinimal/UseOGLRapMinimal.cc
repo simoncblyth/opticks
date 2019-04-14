@@ -7,7 +7,6 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
-
 #include "Frame.hh"
 #include "Interactor.hh"
 #include "Composition.hh"
@@ -18,12 +17,9 @@
 
 #include "OKConf.hh"
 
-
-
 int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv);
-
     LOG(info) << argv[0] ; 
 
     Composition* m_composition = new Composition ; 
@@ -35,7 +31,6 @@ int main(int argc, char** argv)
     Interactor* m_interactor  = new Interactor(m_composition) ;
     m_interactor->setFrame(m_frame);
     m_frame->setInteractor(m_interactor);
-
 
     // AxisApp::init
     // Scene::initRenderers
@@ -51,13 +46,17 @@ int main(int argc, char** argv)
     // Scene::hookupRenderers
     m_axis_renderer->setComposition( m_composition ) ; 
 
-    // Scene::uploadAxis
-    m_axis_renderer->upload(m_composition->getAxisAttr());
+    glm::vec4 ce(0,0,0, 1000.); 
+    bool autocam = true ; 
+    m_composition->setCenterExtent( ce, autocam );  
+    m_composition->update();
 
+    // Scene::uploadAxis
+    bool dbg = true ; 
+    m_axis_renderer->upload(m_composition->getAxisAttr(), dbg);
 
     m_frame->hintVisible(true);
     m_frame->show();
-
 
     GLFWwindow* window = m_frame->getWindow();
 
@@ -74,12 +73,16 @@ int main(int argc, char** argv)
 
     m_frame->exit();  //  
 
-
     //AxisApp aa(&ok); 
     //aa.renderLoop();
-
     return 0 ; 
 }
+
+/**
+On mac this succeeds to pop up a window with an off-centered (why?) RGB axis 
+
+
+**/
 
 
 
