@@ -246,7 +246,7 @@ void Rdr::upload(MultiViewNPY* mvn, bool debug)
 
 void Rdr::log(const char* msg, int value)
 {
-    LOG(debug)
+    LOG(fatal)
                  << "Rdr::log " 
                  << std::setw(10) << getShaderTag() 
                  << " "
@@ -267,7 +267,6 @@ void Rdr::prepare_vao()
    }
 
     log("prepare_vao : bind m_vao:", m_vao);
-
 
     glBindVertexArray (m_vao);     
     G::ErrCheck("Rdr::prepare_vao.]", true);

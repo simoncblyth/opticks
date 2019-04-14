@@ -35,14 +35,13 @@ const char* Interactor::DRAGFACTOR = "dragfactor" ;
 const char* Interactor::OPTIXMODE  = "optixmode" ; 
 
 
-Interactor::Interactor(OpticksHub* hub) 
+Interactor::Interactor(Composition* com) 
    :
-   m_hub(hub),
-   m_composition(NULL),
+   m_composition(com),
    m_bookmarks(NULL),  // defer, as my be NULL at this point
-   m_camera(NULL),
-   m_view(NULL),
-   m_trackball(NULL),
+   m_camera(com->getCamera()),
+   m_view(com->getView()),
+   m_trackball(com->getTrackball()),
    m_touchable(NULL),
    m_frame(NULL),
    m_scene(NULL),
@@ -65,13 +64,23 @@ Interactor::Interactor(OpticksHub* hub)
    m_changed(true),
    m_gui_style(NONE)
 {
-   setComposition(m_hub->getComposition()) ; 
+   //setComposition(m_hub->getComposition()) ; 
 
    for(unsigned int i=0 ; i < NUM_KEYS ; i++) m_keys_down[i] = false ; 
    m_status[0] = '\0' ;
 }
 
 
+/*
+void Interactor::setComposition(Composition* composition)
+{
+    m_composition = composition ;
+    m_camera = composition->getCamera() ;
+    m_view   = composition->getView();
+    m_trackball = composition->getTrackball();
+    m_animator = NULL ;  // defer
+}
+*/
 
 
 
@@ -216,16 +225,6 @@ void Interactor::configureI(const char* /*name*/, std::vector<int> values)
     LOG(debug) << "Interactor::configureI";
     if(values.empty()) return ;
 
-}
-
-
-void Interactor::setComposition(Composition* composition)
-{
-    m_composition = composition ;
-    m_camera = composition->getCamera() ;
-    m_view   = composition->getView();
-    m_trackball = composition->getTrackball();
-    m_animator = NULL ;  // defer
 }
 
 
@@ -611,15 +610,22 @@ void Interactor::key_released(unsigned int key)
 }
 
 
+void Interactor::setBookmarks( Bookmarks* bookmarks)
+{
+    m_bookmarks = bookmarks ; 
+}
+
 Bookmarks* Interactor::getBookmarks()
 {
-    if(m_bookmarks == NULL) m_bookmarks = m_hub->getBookmarks();
+    //if(m_bookmarks == NULL) m_bookmarks = m_hub->getBookmarks();
     return m_bookmarks ; 
 }
 
 
 void Interactor::number_key_pressed(unsigned int number)
 {
+    if(!m_bookmarks) return ; 
+
     m_bookmark_mode = true ; 
 
     unsigned int modifiers = getModifiers() ;
@@ -640,6 +646,8 @@ void Interactor::tab_pressed()
 
 void Interactor::space_pressed()
 {
+    if(!m_bookmarks) return ; 
+
     Bookmarks* bookmarks = getBookmarks();
 
     unsigned int current = bookmarks->getCurrent();
@@ -653,6 +661,7 @@ void Interactor::space_pressed()
 
 void Interactor::number_key_released(unsigned int number)
 {
+    if(!m_bookmarks) return ; 
     m_bookmarks->number_key_released(number);
     m_bookmark_mode = false ; 
 }
@@ -676,7 +685,7 @@ void Interactor::updateStatus()
            m_container,
            m_composition->getColorStyleName(),          
            m_composition->getGeometryStyleName(),          
-           m_scene->getRecordStyleName()
+           m_scene ? m_scene->getRecordStyleName() : "-"
            );
 }
 

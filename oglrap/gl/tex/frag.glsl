@@ -1,7 +1,7 @@
 #version 410 core
 //#pragma debug(on)
 
-in vec3 colour;
+//in vec3 colour;
 in vec2 texcoord;
 
 out vec4 frag_colour;
@@ -26,6 +26,10 @@ void main ()
    } 
 }
 
+
+//
+//  the input color is ignored 
+//
 //
 // http://www.roxlu.com/2014/036/rendering-the-depth-buffer
 //

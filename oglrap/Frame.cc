@@ -16,7 +16,7 @@
 //  C:\Program Files (x86)\Windows Kits\8.1\Include\shared\minwindef.h(130): warning C4005: 'APIENTRY': macro redefinition
 // when PLOG is after glfw3
 
-#include "Opticks.hh"
+//#include "Opticks.hh"
 
 
 #include <GL/glew.h>
@@ -42,9 +42,8 @@ const plog::Severity Frame::LEVEL = debug ;
 
 
 
-Frame::Frame(Opticks* ok) 
+Frame::Frame() 
     :
-     m_ok(ok), 
      m_fullscreen(false),
      m_is_fullscreen(false),
      m_width(0),
@@ -52,7 +51,7 @@ Frame::Frame(Opticks* ok)
      m_width_prior(0),
      m_height_prior(0),
      m_coord2pixel(1),
-     m_title(NULL),
+     m_title("Frame::Frame"),
      m_window(NULL),
      m_interactor(NULL),
      m_composition(NULL),
@@ -65,9 +64,12 @@ Frame::Frame(Opticks* ok)
      m_pixel_factor(1),
      m_pos_x(0),
      m_pos_y(0),
-     m_cursor_moved_mode(ok->hasOpt("ctrldrag") ? CTRL_DRAG : JUST_MOVE)
+     m_cursor_moved_mode(JUST_MOVE)
 {
 }
+
+ // m_cursor_moved_mode(ok->hasOpt("ctrldrag") ? CTRL_DRAG : JUST_MOVE)
+
 
 
 GLFWwindow* Frame::getWindow()

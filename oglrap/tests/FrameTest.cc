@@ -11,8 +11,6 @@ Use oglrap-frametest
 
    * was missing the show 
 
-
-
 */
 
 #include "NGLM.hpp"
@@ -26,14 +24,12 @@ Use oglrap-frametest
 #include "Interactor.hh"
 #include "Texture.hh"
 
-#include "OGLRAP_LOG.hh"
-#include "PLOG.hh"
+#include "OPTICKS_LOG.hh"
 
 int main(int argc, char** argv)
 {
-    PLOG_(argc, argv);
+    OPTICKS_LOG(argc, argv);
 
-    OGLRAP_LOG__ ; 
 
     if(argc < 2)  
     {   
@@ -47,9 +43,10 @@ int main(int argc, char** argv)
     Opticks ok(argc, argv);
     OpticksHub hub(&ok);
 
-    Frame frame(&ok) ; 
+    Frame frame ; 
     Composition composition ; 
-    Interactor interactor(&hub) ;
+    //Interactor interactor(&hub) ;  // why the interactor needs the hub ?
+    Interactor interactor(&composition) ; 
     Renderer renderer("tex") ; 
 
     // canonical wiring in OpticksViz::init

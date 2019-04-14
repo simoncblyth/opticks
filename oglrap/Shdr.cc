@@ -37,13 +37,12 @@ GLuint Shdr::getId()
 
 void Shdr::createAndCompile()
 {
-    std::string err = G::ErrCheck("Shdr::createAndCompile.-1", false);
+    bool ok = G::ErrCheck("Shdr::createAndCompile.-1", true);
 
-    if(!err.empty())
+    if(!ok)
     {
         LOG(info) << "Shdr::createAndCompile"
                   << " m_type " << G::Shader(m_type)
-                  << " err " << err
                   << " path " << m_path 
                   ;
   

@@ -57,6 +57,7 @@ void OKConf::Dump(const char* msg)
     std::cout << std::setw(50) << "OKConf::OptiXInstallDir() "         << OKConf::OptiXInstallDir() << std::endl ; 
     std::cout << std::setw(50) << "OKConf::Geant4VersionInteger() "    << OKConf::Geant4VersionInteger() << std::endl ; 
     std::cout << std::setw(50) << "OKConf::OpticksInstallPrefix() "    << OKConf::OpticksInstallPrefix() << std::endl ; 
+    std::cout << std::setw(50) << "OKConf::ShaderDir()            "    << OKConf::ShaderDir() << std::endl ; 
     std::cout << std::endl ; 
 }
 
@@ -181,6 +182,20 @@ const char* OKConf::PTXPath( const char* cmake_target, const char* cu_name )
     std::string ptxpath = ss.str();
     return strdup(ptxpath.c_str()); 
 }
+
+
+const char* OKConf::ShaderDir()
+{
+    std::stringstream ss ; 
+    ss << OKConf::OpticksInstallPrefix()
+       << "/gl"
+       ;
+    std::string shaderdir = ss.str();
+    return strdup(shaderdir.c_str()); 
+}
+
+
+
 
 
 

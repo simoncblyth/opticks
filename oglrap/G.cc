@@ -50,44 +50,23 @@ const char* G::Err( GLenum err )
 }
 
 
-std::string G::ErrCheck(const char* msg, bool harikari )
+bool G::ErrCheck(const char* msg, bool harikari )
 {
-
     LOG(fatal) << msg ; 
-
-    std::stringstream ss ; 
-
     GLenum err = glGetError()  ;
     bool ok = err == GL_NO_ERROR ; 
-
     if (!ok)
     {          
-        ss
+        LOG(fatal)
             << "G::ErrCheck " 
             << msg 
             << " : "
             << std::hex << err << std::dec
             << " err " << Err(err) 
             ;
+
+        if(harikari) assert(0); 
     }   
-
-    std::string err_ = ss.str();
-
-    bool ignore_invalid_enum = false ; 
-
-    std::string empty ; 
-    if(err == GL_INVALID_ENUM && ignore_invalid_enum ) 
-    {
-         LOG(warning) << "G::ErrCheck ignoring " << err_  ; 
-         return empty ; 
-    } 
-
-    if(!err_.empty() && harikari)
-    {
-        LOG(fatal) << err_ ; 
-        assert(0);
-    } 
-
-    return err_ ;
+    return ok ;
 }
 

@@ -16,8 +16,7 @@
 #include "Frame.hh"
 #include "Scene.hh"
 
-#include "OGLRAP_LOG.hh"
-#include "PLOG.hh"
+#include "OPTICKS_LOG.hh"
 
 
 GGeo*        m_ggeo = NULL ;
@@ -40,8 +39,7 @@ void render()
 
 int main(int argc, char** argv)
 {
-    PLOG_(argc, argv);
-    OGLRAP_LOG__ ; 
+    OPTICKS_LOG(argc, argv);
     LOG(info) << argv[0] ; 
 
     Opticks* m_opticks = new Opticks(argc, argv);
@@ -59,8 +57,9 @@ int main(int argc, char** argv)
     m_composition = new Composition ; 
 
     m_scene = new Scene(m_hub) ; 
-    m_frame = new Frame(m_opticks) ; 
-    m_interactor = new Interactor(m_hub) ; 
+    m_frame = new Frame() ; 
+    //m_interactor = new Interactor(m_hub) ; 
+    m_interactor = new Interactor(m_composition) ; 
 
     m_interactor->setFrame(m_frame);
     m_interactor->setScene(m_scene);

@@ -315,6 +315,17 @@ Avoid avoiding this problem, succeeded to prosecute the invalid enum on macOS
 
 
 
+UseOGLRapMinimal
+------------------
+
+AxisAppCheck aka UseOGLRap operate at too high a level for debugging, just via AxisApp.
+Need to tease that apart into the critical objects to see whats happening more clearly.
+
+Aiming for something similar to oglrap/tests/SceneCheck but at a lower level inside the Scene 
+(perhaps to become RdrCheck)
+and focussing only on displaying the axis : so avoids geometry handling.
+ 
+
 
 
 

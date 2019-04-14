@@ -17,6 +17,7 @@ class Opticks ;
 class OpticksRun ; 
 class OpticksEvent ; 
 class Composition ; 
+class Bookmarks ; 
 
 class ContentStyle ; 
 class GlobalStyle ; 
@@ -106,6 +107,7 @@ class OGLRAP_API OpticksViz : public SCtrl  {
          bool          m_immediate ; 
          int           m_interactivity ; 
          Composition*  m_composition ;
+         Bookmarks*    m_bookmarks ;
 
          ContentStyle* m_content_style ; 
          GlobalStyle*  m_global_style ; 

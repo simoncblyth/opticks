@@ -19,8 +19,4 @@ int main(int argc, char** argv)
 }
 
 
-//
-// runs, but currently producing a black window ... maybe missing the color buffer
-// in current OpticksViz without geometry 
-//
 

@@ -5,16 +5,14 @@
 
 
 class Opticks ; 
-class OpticksHub ; 
+//class OpticksHub ; 
 
 class Composition ;
-//class ContentStyle ; 
 class Bookmarks ; 
 
 class Camera ; 
 class View ; 
 class Trackball ;
-//class Clipper ;
 class Touchable ; 
 class Frame ;   
 class Scene ;   
@@ -31,21 +29,20 @@ class OGLRAP_API Interactor {
        static const char* DRAGFACTOR ; 
        static const char* OPTIXMODE ; 
 
-       Interactor(OpticksHub* hub); 
+       Interactor(Composition* composition); 
 
        void gui();
 
 
        Bookmarks* getBookmarks();
        void setTouchable(Touchable* touchable);
+       void setBookmarks( Bookmarks* bookmarks);
        void setScene(Scene* scene);
        void setFrame(Frame* frame);
        void setContainer(unsigned int container);
 
   private:
-        //  Composition and Bookmarks now set internally  from hub 
-       void setComposition(Composition* composition);
-       void setBookmarks(Bookmarks* bookmarks);
+       //void setComposition(Composition* composition);
   public:
        bool isOptiXMode();
        void setOptiXMode(int optix_mode);
@@ -97,7 +94,7 @@ class OGLRAP_API Interactor {
        const char* getStatus();  // this feeds into Frame title, visible on window surround 
 
   private:
-       OpticksHub*  m_hub ; 
+       //OpticksHub*  m_hub ; 
        Composition* m_composition ; 
        Bookmarks*   m_bookmarks ; 
        Camera*      m_camera ; 

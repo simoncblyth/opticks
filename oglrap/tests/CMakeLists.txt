@@ -16,6 +16,8 @@ set(TEST_SOURCES
     AxisAppCheck.cc
     SceneCheck.cc
 
+    FrameTest.cc
+
     gleq_check.c
 )
 

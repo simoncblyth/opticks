@@ -13,7 +13,7 @@
 
 #include "Touchable.hh"
 
-class Opticks ; 
+//class Opticks ; 
 
 class Config ;
 class Interactor ; 
@@ -60,7 +60,7 @@ class OGLRAP_API Frame : public Touchable {
    public:
        static const plog::Severity LEVEL ; 
    public:
-       Frame(Opticks* ok);
+       Frame();
        virtual ~Frame();
        
        void configureI(const char* name, std::vector<int> values);
@@ -132,7 +132,7 @@ class OGLRAP_API Frame : public Touchable {
         void cursor_moved_just_move(GLEQevent& event);
         void cursor_moved_ctrl_drag(GLEQevent& event);
    private:
-       Opticks*      m_ok ;
+       //Opticks*      m_ok ;
        bool          m_fullscreen ;
        bool          m_is_fullscreen ;
 

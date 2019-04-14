@@ -78,6 +78,7 @@ OpticksViz::OpticksViz(OpticksHub* hub, OpticksIdx* idx, bool immediate)
     m_immediate(immediate),
     m_interactivity(m_ok->getInteractivityLevel()),
     m_composition(hub->getComposition()),
+    m_bookmarks(NULL),
     m_content_style(m_composition->getContentStyle()),
     m_global_style(m_composition->getGlobalStyle()),
     m_types(m_ok->getTypes()),
@@ -108,8 +109,8 @@ void OpticksViz::init()
     // envvars normally not defined, using cmake configure_file values instead
 
     m_scene      = new Scene(m_hub, shader_dir, shader_incl_path, shader_dynamic_dir ) ;
-    m_frame       = new Frame(m_ok) ; 
-    m_interactor  = new Interactor(m_hub) ;  // perhaps treat m_viz as the "hub" here ??
+    m_frame       = new Frame ; 
+    m_interactor  = new Interactor(m_composition) ;  
 
     m_interactor->setFrame(m_frame);
     m_interactor->setScene(m_scene);
@@ -129,6 +130,7 @@ void OpticksViz::init()
     {
         
         m_hub->configureState(getSceneConfigurable()) ;    // loads/creates Bookmarks
+        m_bookmarks = m_hub->getBookmarks();
 
         const char* renderMode = m_ok->getRenderMode();
 

@@ -28,6 +28,7 @@ class OKCONF_API OKConf
        static unsigned CUDAVersionInteger() ; 
 
        static const char* PTXPath( const char* cmake_target, const char* cu_name );
+       static const char* ShaderDir();
 
 };
 

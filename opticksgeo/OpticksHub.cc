@@ -382,6 +382,12 @@ OpticksHub::configureState
 
 Invoked from oglrap/OpticksViz.cc
 
+TODO:
+
+Extracate the bookmarks, move to Composition ? 
+they dont need to be together with geometry
+OpticksHub should only be for geometry needing things.
+
 
 **/
 
