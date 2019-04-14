@@ -15,6 +15,9 @@ cmake $sdir -DCMAKE_BUILD_TYPE=Debug \
             -DCMAKE_MODULE_PATH=$(opticks-home)/cmake/Modules 
 
 make
+[ $? -ne 0 ] && exit 1
+
+
 make install   
 
 echo executing $name

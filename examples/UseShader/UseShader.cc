@@ -1,6 +1,5 @@
 // https://www.glfw.org/docs/latest/quick.html#quick_example
 
-//#include <glad/glad.h>
 #include <GL/glew.h>
 
 #include <GLFW/glfw3.h>
@@ -9,13 +8,10 @@
 #define GLFW_TRUE true
 #endif
 
-
-//#include "linmath.h"
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>  
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/transform.hpp>
-
 
 
 #include <stdlib.h>

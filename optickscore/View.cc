@@ -428,8 +428,22 @@ void View::getTransforms(const glm::mat4& m2w, glm::mat4& world2camera, glm::mat
     glm::vec3 forward = glm::normalize(gze);                        // -Z
     glm::vec3 right   = glm::normalize(glm::cross(forward,up));     // +X
     glm::vec3 top     = glm::normalize(glm::cross(right,forward));  // +Y
-       
-    glm::mat4 r ; 
+      
+
+    /*
+          glm::mat4 r ;         // <-- DONT DO THIS  
+          glm::mat4 r(1.0f) ;  // DO THIS 
+
+     The uninitialized fourth row was the cause of several days of 
+     driver reinstalls and bug hunting and development of minimal reproducers
+     that never did.
+             OGLRap_GLFW_OpenGL_Linux_display_issue_with_new_driver.rst
+
+    */
+ 
+    //glm::mat4 r ;   // THIS WAS THE CAUSE OF : OGLRap_GLFW_OpenGL_Linux_display_issue_with_new_driver.rst
+    glm::mat4 r(1.0f) ; //    
+
     r[0] = glm::vec4( right, 0.f );  
     r[1] = glm::vec4( top  , 0.f );  
     r[2] = glm::vec4( -forward, 0.f );  

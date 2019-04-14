@@ -166,13 +166,37 @@ UseOpticksGLFWSnap
 UseOpticksGLFWSPPM
    variant of UseOpticksGLFWSnap with the PPM handling from reusable sysrap/SPPM 
 
-UseOpticksGLFWShader
+UseShader
+   Formerly named UseOpticksGLFWShader
 
-   * adapted example from GLFW site, modified to use GLEW and GLM : it ran giving a black screen.
+   * adapted GLFW example, modified to use GLEW and GLM : it ran giving a black screen.
    * adding a VAO makes the coloured triangle appear      
    * added error checking and compilation log output 
 
    This is a good starting point for creating self contained minimal reproducers. 
+
+UseOGLRapMinimal
+   Creates red-green-blue axes that can interact with using the usual controls. 
+   Tests the Rdr axis renderer in isolation using just Composition, Frame and Interactor
+   (no Scene).
+
+UseGeometryShader
+   Creates red-green-blue axes
+
+   Implemented in standalone single file fashion that sets up a geometry shader 
+   pipeline using the same shader strings as the Rdr axis renderer 
+   as used by UseOGLRapMinimal.  All the mat4 have been matched with
+   UseOGLRapMinimal.
+
+   Actually it was the comparison of the mat4 between
+   UseOGLRapMinimal which uses View::getTransforms 
+   and my standalone reimplementation of the matrix manipulations 
+   in UseGeometryShader that led to finding the "uninitialized forth row bug" 
+   that has been lurking for years ready to bite just at the wrong time 
+   following a Linux kernel and driver update and OptiX update.
+    
+   See the mis-named: notes/issues/OGLRap_GLFW_OpenGL_Linux_display_issue_with_new_driver.rst 
+
 
 UseOGLRap
    same as OGLRap AxisAppCheck 

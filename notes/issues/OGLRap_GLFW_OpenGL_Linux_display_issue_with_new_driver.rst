@@ -1,5 +1,69 @@
-OGLRap_GLFW_OpenGL_Linux_display_issue_with_new_driver
+OGLRap_GLFW_OpenGL_Linux_display_issue_with_new_driver 
 =========================================================
+
+FIXED : it was nothing to do with the driver
+-------------------------------------------------------
+
+* simply an uninitialized fourth row of mat4 bug in View::getTransforms 
+
+Actually it was the comparison of the mat4 between
+UseOGLRapMinimal which uses View::getTransforms 
+and my standalone reimplementation in UseGeometryShader 
+of the matrix manipulations that led to finding the 
+"uninitialized forth row bug" that has been lurking for years ready to  
+bite just at the wrong time following updates of Linux kernel, NVIDIA driver 
+and OptiX.
+
+
+::
+
+    396 void View::getTransforms(const glm::mat4& m2w, glm::mat4& world2camera, glm::mat4& camera2world, glm::vec4& gaze )
+    397 {
+    ... 
+    423     glm::vec3 eye  = glm::vec3(getEye(m2w));
+    424     glm::vec3 up   = glm::vec3(getUp(m2w));
+    425     glm::vec3 gze  = glm::vec3(getGaze(m2w));  // look - eye
+    426     
+    427     glm::vec3 forward = glm::normalize(gze);                        // -Z
+    428     glm::vec3 right   = glm::normalize(glm::cross(forward,up));     // +X
+    429     glm::vec3 top     = glm::normalize(glm::cross(right,forward));  // +Y
+    430       
+    431     /*
+    432           glm::mat4 r ;        // <-- DONT DO THIS  
+    433           glm::mat4 r(1.0f) ;  // DO THIS 
+    434 
+    435      The uninitialized fourth row was the cause of several days of 
+    436      driver reinstalls and bug hunting and development of minimal reproducers that never did.
+    437 
+    438      * see notes/issues/OGLRap_GLFW_OpenGL_Linux_display_issue_with_new_driver.rst
+    439     */
+    440  
+    441     //glm::mat4 r ;      // DONT DO THIS, UNLESS YOU IMMEDIATELY SET ALL THE ROWS 
+    442     glm::mat4 r(1.0f) ;  // INITIALIZES TO IDENTITY IS NEEDED AS WANT TO      
+    443  
+    444     r[0] = glm::vec4( right, 0.f );
+    445     r[1] = glm::vec4( top  , 0.f );
+    446     r[2] = glm::vec4( -forward, 0.f );
+    447     
+    448     glm::mat4 ti(glm::translate(glm::vec3(eye)));
+    449     glm::mat4 t(glm::translate(glm::vec3(-eye)));  // eye to origin
+    450 
+    451     world2camera = glm::transpose(r) * t  ;
+    452     //
+    453     //  must translate first putting the eye at the origin
+    454     //  then rotate to point -Z forward
+    455     //  this is equivalent to lookAt as used by OpenGL ModelView
+    456 
+    457     camera2world = ti * r ;
+    458     //
+    459     // un-rotate first (eye already at origin)
+    460     // then translate back to world  
+    461     // 
+    462 
+    463     gaze = glm::vec4( gze, 0.f );
+
+
+
 
 Issue : Linux NVIDIA driver 418.56 glfw-3.2.1 from yum
 ---------------------------------------------------------------

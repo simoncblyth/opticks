@@ -60,15 +60,19 @@ int main(int argc, char** argv)
 
     GLFWwindow* window = m_frame->getWindow();
 
+    int count(0) ; 
+
     while (!glfwWindowShouldClose(window))
     {   
         m_frame->listen();
         m_frame->viewport();
         m_frame->clear();
         m_composition->update();
+        if(count == 0 ) m_composition->Details("Details"); 
 
         m_axis_renderer->render();
         glfwSwapBuffers(window);
+        count++ ; 
     }   
 
     m_frame->exit();  //  
