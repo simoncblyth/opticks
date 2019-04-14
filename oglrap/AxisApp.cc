@@ -20,6 +20,7 @@
 #include "Rdr.hh"
 #include "Scene.hh"
 #include "AxisApp.hh"
+#include "G.hh"
 
 #include "PLOG.hh"
 
@@ -66,6 +67,10 @@ void AxisApp::upload()
 
     m_axis_attr = m_composition->getAxisAttr(); 
     m_axis_data = m_composition->getAxisData(); 
+
+    LOG(info) << " axis_data " << m_axis_data->getShapeString() ; 
+    m_axis_data->dump(); 
+
 
     bool debug = true ; 
     m_axis_renderer->upload(m_axis_attr, debug ); 

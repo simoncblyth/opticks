@@ -50,17 +50,22 @@ const char* G::Err( GLenum err )
 }
 
 
-std::string G::ErrCheck(const char* msg, bool harikari)
+std::string G::ErrCheck(const char* msg, bool harikari )
 {
+
+    LOG(fatal) << msg ; 
+
     std::stringstream ss ; 
 
-    GLenum err ;
-    if ((err = glGetError()) != GL_NO_ERROR)
+    GLenum err = glGetError()  ;
+    bool ok = err == GL_NO_ERROR ; 
+
+    if (!ok)
     {          
-          ss
+        ss
             << "G::ErrCheck " 
             << msg 
-            << " WARNING : OpenGL error code: "
+            << " : "
             << std::hex << err << std::dec
             << " err " << Err(err) 
             ;
@@ -68,8 +73,10 @@ std::string G::ErrCheck(const char* msg, bool harikari)
 
     std::string err_ = ss.str();
 
+    bool ignore_invalid_enum = false ; 
+
     std::string empty ; 
-    if(err == GL_INVALID_ENUM ) 
+    if(err == GL_INVALID_ENUM && ignore_invalid_enum ) 
     {
          LOG(warning) << "G::ErrCheck ignoring " << err_  ; 
          return empty ; 

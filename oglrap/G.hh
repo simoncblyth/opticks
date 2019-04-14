@@ -18,7 +18,7 @@ struct OGLRAP_API G
 
 
      static const char* Err( GLenum err );
-     static std::string ErrCheck(const char* msg, bool harikari) ;
+     static std::string ErrCheck(const char* msg, bool harikari ) ;
 
 
      static const char* GL_VERTEX_SHADER_ ; 

@@ -139,28 +139,33 @@ void Prog::linkAndValidate()
 void Prog::createAndLink()
 {
     if(m_verbosity > 1) LOG(info) << "Prog::createAndlink" << desc()  ; 
+    G::ErrCheck("Prog::createAndLink.[", true);
 
     create();
     link();
     validate();
     collectLocations();
     //Print("Prog::createAndLink");
+    G::ErrCheck("Prog::createAndLink.]", true);
 }
 
 
 void Prog::create()
 {
+    G::ErrCheck("Prog::create.[", true);
     m_id = glCreateProgram();
+    G::ErrCheck("Prog::create.m_id", true);
 
     for(unsigned int i=0 ; i<m_shaders.size() ; i++)
     {
+        G::ErrCheck("Prog::create.loop.0", true);
         Shdr* shdr = m_shaders[i];
         shdr->createAndCompile();           
         glAttachShader (m_id, shdr->getId());
-        G::ErrCheck("Prog::create.loop", true);
+        G::ErrCheck("Prog::create.loop.1", true);
     }
 
-    G::ErrCheck("Prog::create", true);
+    G::ErrCheck("Prog::create.]", true);
 }
 
 void Prog::link()

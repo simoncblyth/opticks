@@ -66,6 +66,7 @@ RendererBase::RendererBase(const char* tag, const char* dir, const char* incl_pa
     m_name(NULL)
 {
     // no OpenGL context needed, just reads sources
+    // so cannot errcheck here (gives bad access)
     m_shader = new Prog(m_shaderdir, m_shadertag, m_incl_path, ubo ); 
 }
 
@@ -77,6 +78,8 @@ void RendererBase::make_shader()
               << " shadertag " << getShaderTag()
               ;
 
+    G::ErrCheck("RendererBase::make_shader.[", true);
+
     m_shader->createAndLink();
     //m_shader->Summary("RendererBase::make_shader");
     m_program = m_shader->getId(); 
@@ -86,18 +89,23 @@ void RendererBase::make_shader()
               << " shadertag " << getShaderTag()
               << " program " <<  m_program ;
 
+    G::ErrCheck("RendererBase::make_shader.]", true);
 }
 
 
 void RendererBase::create_shader()
 {
+    G::ErrCheck("RendererBase::create_shader.[", true);
     m_shader->createOnly();
     m_program = m_shader->getId(); 
+    G::ErrCheck("RendererBase::create_shader.]", true);
 }
 
 void RendererBase::link_shader()
 {
+    G::ErrCheck("RendererBase::link_shader.[", true);
     m_shader->linkAndValidate();
+    G::ErrCheck("RendererBase::link_shader.]", true);
 }
 
 

@@ -86,7 +86,7 @@ class OGLRAP_API Frame : public Touchable {
    private:
        //void setPixelFactor(unsigned int factor);
        unsigned int getPixelFactor();
-       void stipple();
+       //void stipple();
 
    public:
        void setInteractor(Interactor* interactor);

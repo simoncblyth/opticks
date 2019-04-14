@@ -28,6 +28,7 @@
 #include "Prog.hh"
 #include "Composition.hh"
 #include "Texture.hh"
+#include "G.hh"
 
 // ggeo
 #include "GArray.hh"
@@ -313,6 +314,8 @@ void Renderer::setDrawable(GDrawable* drawable) // CPU side buffer setup
 
 void Renderer::upload()
 {
+    G::ErrCheck("Renderer::upload.[", true );
+
     unsigned num_instances = m_ibuf ? m_ibuf->getNumItems() : 0 ;
 
     m_instlodcull_enabled = m_instlodcull && m_num_lod > 0 && num_instances > InstLODCull::INSTANCE_MINIMUM ;
@@ -337,6 +340,7 @@ void Renderer::upload()
         m_vao[0] = createVertexArray(m_ibuf);
     }
 
+
     make_shader();  // requires VAO bound to pass validation
 
     glUseProgram(m_program);  // moved prior to check uniforms following Rdr::upload
@@ -344,6 +348,8 @@ void Renderer::upload()
     glEnable(GL_CLIP_DISTANCE0); 
  
     check_uniforms();
+
+    G::ErrCheck("Renderer::upload.]", true );
 }
 
 

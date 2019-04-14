@@ -252,11 +252,69 @@ About OpenGL core profile
 
 * https://retokoradi.com/2014/03/30/opengl-transition-to-core-profile/
 
+
+AxisAppCheck aka UseOGLRap
+----------------------------
+
 Perusing the oglrap Renderers they are compilcated : so focus on AxisAppCheck aka UseOGLRap
 which is also afflicted.
 
 macOS: small red, gree, blue axis
 Linux: starts black, a blue line appears on mousing around
+
+
+Composition::update setups the axis data
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+::
+
+    0146   m_light_position(0,0,0,1),   // avoid it ever being undefined
+    0147   m_light_direction(0,0,1,0),
+    ...
+    0186   m_axis_x(1000.f,    0.f,    0.f, 0.f),
+     187   m_axis_y(0.f   , 1000.f,    0.f, 0.f),
+     188   m_axis_z(0.f   ,    0.f, 1000.f, 0.f),
+     189   m_axis_x_color(1.f,0.f,0.f,1.f),
+     190   m_axis_y_color(0.f,1.f,0.f,1.f),
+     191   m_axis_z_color(0.f,0.f,1.f,1.f),
+    ...
+    1761     m_axis_data->setQuad(m_light_position, 0,0 );
+    1762     m_axis_data->setQuad(m_axis_x        , 0,1 );
+    1763     m_axis_data->setQuad(m_axis_x_color  , 0,2 );
+    1764 
+    1765     m_axis_data->setQuad(m_light_position, 1,0 );
+    1766     m_axis_data->setQuad(m_axis_y        , 1,1 );
+    1767     m_axis_data->setQuad(m_axis_y_color  , 1,2 );
+    1768 
+    1769     m_axis_data->setQuad(m_light_position, 2,0 );
+    1770     m_axis_data->setQuad(m_axis_z        , 2,1 );
+    1771     m_axis_data->setQuad(m_axis_z_color  , 2,2 );
+    1772 
+
+
+
+Debugging Refs : Chasing the INVALID_ENUM 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* https://learnopengl.com/In-Practice/Debugging
+
+One important thing left to mention is that GLEW has a long-existing bug where
+calling glewInit() always sets the GL_INVALID_ENUM error flag and thus the
+first glGetError will always return an error code which can throw you
+completely off guard. To fix this it's advised to simply call glGetError after
+glewInit to clear the flag: 
+
+::
+
+    glewInit();
+    glGetError();
+
+
+Avoid avoiding this problem, succeeded to prosecute the invalid enum on macOS
+(it was GL_POLYGON_STIPPLE) and just removed the not working and not needed stipple method.
+
+
+
 
 
 

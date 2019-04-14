@@ -29,6 +29,7 @@
 
 #include "NGLM.hpp"
 
+#include "G.hh"
 #include "Frame.hh"
 #include "Interactor.hh"
 #include "Composition.hh"
@@ -295,7 +296,10 @@ void Frame::initHinting()
  
 #elif __linux
     glfwWindowHint (GLFW_CONTEXT_VERSION_MAJOR, 4); 
-    glfwWindowHint (GLFW_CONTEXT_VERSION_MINOR, 1); 
+    glfwWindowHint (GLFW_CONTEXT_VERSION_MINOR, 6); 
+    glfwWindowHint( GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE);   
+    // disable this when working : https://learnopengl.com/In-Practice/Debugging
+    // Debug output is core since OpenGL version 4.3,   
 
     //  executing UseInstanceTest
     // Frame::gl_init_window Renderer: TITAN RTX/PCIe/SSE2
@@ -308,30 +312,51 @@ void Frame::initContext()
     // hookup the callbacks and arranges outcomes into event queue 
     gleqTrackWindow(m_window);
 
+
+
     // start GLEW extension handler, segfaults if done before glfwCreateWindow
     glewExperimental = GL_TRUE;
-    glewInit ();
+    glewInit ();  
+   
+    GLenum err = glGetError();   // getting the error should clear it 
+    assert( err == GL_INVALID_ENUM ) ; // long standing glew bug, see https://learnopengl.com/In-Practice/Debugging
+    err = glGetError(); 
+    assert( err == GL_NO_ERROR ); 
+
+   
+    G::ErrCheck("Frame::initContext.[", true); 
+    G::ErrCheck("Frame::initContext.1", true); 
+
 
     glEnable(GL_DEPTH_TEST);
+    G::ErrCheck("Frame::initContext.2", true); 
+
     glDepthFunc(GL_LESS);  // overwrite if distance to camera is less
+    G::ErrCheck("Frame::initContext.3", true); 
 
     glClearColor(0.0,0.0,0.0,0.0);
+    G::ErrCheck("Frame::initContext.4", true); 
 
-    stipple();
+    //stipple();
+    G::ErrCheck("Frame::initContext.5", true); 
 
     glEnable(GL_VERTEX_PROGRAM_POINT_SIZE);
+    G::ErrCheck("Frame::initContext.6", true); 
 
     glfwSwapInterval(1);  // vsync hinting
 
     // get version info
     const GLubyte* renderer = glGetString (GL_RENDERER); // get renderer string
+    G::ErrCheck("Frame::initContext.7", true); 
     const GLubyte* version = glGetString (GL_VERSION); // version as a string
+    G::ErrCheck("Frame::initContext.8", true); 
     LOG(error) << "Frame::gl_init_window Renderer: " << renderer ;
     LOG(error) << "Frame::gl_init_window OpenGL version supported " <<  version ;
 
     int width, height;
     glfwGetFramebufferSize(m_window, &width, &height);
     LOG(debug)<<"Frame::gl_init_window glfwGetFramebufferSize " << width << "," << height ;  
+    G::ErrCheck("Frame::initContext.]", true ); 
 }
 
 
@@ -399,7 +424,7 @@ void Frame::toggleFullscreen_NOT_WORKING(bool fullscreen)
 
 
 
-
+/*
 void Frame::stipple()
 {
     //https://www.opengl.org/archives/resources/faq/technical/transparency.htm#blen0025
@@ -427,6 +452,8 @@ void Frame::stipple()
     glEnable(GL_POLYGON_STIPPLE);
     glPolygonStipple(halftone);
 }
+*/
+
 
 void Frame::listen()
 {

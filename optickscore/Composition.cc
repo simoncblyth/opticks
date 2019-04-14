@@ -143,8 +143,8 @@ Composition::Composition()
   m_domain_isnorm(),
   m_domain_time(),
   m_domain_color(),
-  m_light_position(),
-  m_light_direction(),
+  m_light_position(0,0,0,1),   // avoid them being uninitialized
+  m_light_direction(0,0,1,0),
   m_pickphoton(0,0,0,0), 
   m_pickface(0,0,0,0), 
   m_recselect(), 

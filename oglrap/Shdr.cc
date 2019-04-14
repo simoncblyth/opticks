@@ -44,7 +44,9 @@ void Shdr::createAndCompile()
         LOG(info) << "Shdr::createAndCompile"
                   << " m_type " << G::Shader(m_type)
                   << " err " << err
+                  << " path " << m_path 
                   ;
+  
 
         Print("Shdr::createAndCompile ERR"); 
 
