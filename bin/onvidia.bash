@@ -44,6 +44,200 @@ NVIDIA Linux CUDA documentatation
 * https://docs.nvidia.com/cuda/cuda-installation-guide-linux/index.html
 
 
+Try to downgrade to the CUDA 10.1 driver
+-----------------------------------------
+
+From laptop ssh into the GPU machine, for copy/paste-ability::
+
+    epsilon:opticks blyth$ ssh I
+    Last login: Tue Apr  9 22:04:40 2019
+    [root@localhost ~]# 
+    [root@localhost ~]# systemctl isolate multi-user.target    
+    ## immediately Desktop GUI processes get killed, and is dropped to console
+
+Verify that the GPU is not used::
+
+    [root@localhost ~]# ps aux | grep X
+    root      13024  0.0  0.0 225724  4824 ?        Ss   Apr11   0:00 /usr/bin/abrt-watch-log -F Backtrace /var/log/Xorg.0.log -- /usr/bin/abrt-dump-xorg -xD
+    root      89798  0.0  0.0 112712   964 pts/0    S+   14:44   0:00 grep --color=auto X
+    [root@localhost ~]# nvidia-smi 
+    Sun Apr 14 14:45:07 2019       
+    +-----------------------------------------------------------------------------+
+    | NVIDIA-SMI 418.56       Driver Version: 418.56       CUDA Version: 10.1     |
+    |-------------------------------+----------------------+----------------------+
+    | GPU  Name        Persistence-M| Bus-Id        Disp.A | Volatile Uncorr. ECC |
+    | Fan  Temp  Perf  Pwr:Usage/Cap|         Memory-Usage | GPU-Util  Compute M. |
+    |===============================+======================+======================|
+    |   0  TITAN RTX           Off  | 00000000:73:00.0 Off |                  N/A |
+    | 21%   35C    P0     1W / 280W |      0MiB / 24189MiB |      0%      Default |
+    +-------------------------------+----------------------+----------------------+
+                                                                                   
+    +-----------------------------------------------------------------------------+
+    | Processes:                                                       GPU Memory |
+    |  GPU       PID   Type   Process name                             Usage      |
+    |=============================================================================|
+    |  No running processes found                                                 |
+    +-----------------------------------------------------------------------------+
+    [root@localhost ~]# 
+
+
+::
+
+    [root@localhost ~]# cd /home/blyth/Downloads/
+    [root@localhost Downloads]# ls -l 
+    total 6046500
+    -rw-r--r--. 1 blyth blyth 2423314285 Apr  8 14:24 cuda_10.1.105_418.39_linux.run
+    -rw-rw-r--. 1 blyth blyth  107195640 Apr  8 14:15 NVIDIA-Linux-x86_64-418.56.run
+
+    [root@localhost Downloads]# sh cuda_10.1.105_418.39_linux.run   ## in the curses interface, select only the driver
+    ===========
+    = Summary =
+    ===========
+
+    Driver:   Installed
+    Toolkit:  Not Selected
+    Samples:  Not Selected
+
+    To uninstall the NVIDIA Driver, run nvidia-uninstall
+    Logfile is /var/log/cuda-installer.log
+    [root@localhost Downloads]# 
+
+    From that log::
+
+        [INFO]: Install NVIDIA's 32-bit compatibility libraries? (Answer: Yes)
+        [INFO]: Will install GLVND GLX client libraries.
+        [INFO]: Will install GLVND EGL client libraries.
+        [INFO]: Skipping GLX non-GLVND file: "libGL.so.418.39"
+        [INFO]: Skipping GLX non-GLVND file: "libGL.so.1"
+        [INFO]: Skipping GLX non-GLVND file: "libGL.so"
+        [INFO]: Skipping EGL non-GLVND file: "libEGL.so.418.39"
+        [INFO]: Skipping EGL non-GLVND file: "libEGL.so"
+        [INFO]: Skipping EGL non-GLVND file: "libEGL.so.1"
+        [INFO]: Skipping GLX non-GLVND file: "./32/libGL.so.418.39"
+        [INFO]: Skipping GLX non-GLVND file: "libGL.so.1"
+        [INFO]: Skipping GLX non-GLVND file: "libGL.so"
+        [INFO]: Skipping EGL non-GLVND file: "./32/libEGL.so.418.39"
+        [INFO]: Skipping EGL non-GLVND file: "libEGL.so"
+        [INFO]: Skipping EGL non-GLVND file: "libEGL.so.1"
+        [INFO]: Uninstalling the previous installation with /usr/bin/nvidia-uninstall.
+
+
+    [root@localhost Downloads]# nvidia-smi
+    Sun Apr 14 14:54:51 2019       
+    +-----------------------------------------------------------------------------+
+    | NVIDIA-SMI 418.39       Driver Version: 418.39       CUDA Version: 10.1     |
+    |-------------------------------+----------------------+----------------------+
+    | GPU  Name        Persistence-M| Bus-Id        Disp.A | Volatile Uncorr. ECC |
+    | Fan  Temp  Perf  Pwr:Usage/Cap|         Memory-Usage | GPU-Util  Compute M. |
+    |===============================+======================+======================|
+    |   0  TITAN RTX           Off  | 00000000:73:00.0 Off |                  N/A |
+    | 22%   41C    P0    65W / 280W |      0MiB / 24189MiB |      0%      Default |
+    +-------------------------------+----------------------+----------------------+
+                                                                                   
+    +-----------------------------------------------------------------------------+
+    | Processes:                                                       GPU Memory |
+    |  GPU       PID   Type   Process name                             Usage      |
+    |=============================================================================|
+    |  No running processes found                                                 |
+    +-----------------------------------------------------------------------------+
+    [root@localhost Downloads]# 
+
+    [root@localhost Downloads]# systemctl isolate runlevel5   ## back to GUI : throws up the login menu
+    
+    ## same problem 
+
+
+    Try old driver
+
+    accept/decline/quit: accept
+
+    Install NVIDIA Accelerated Graphics Driver for Linux-x86_64 396.26?
+    (y)es/(n)o/(q)uit: y
+
+    Do you want to install the OpenGL libraries?
+    (y)es/(n)o/(q)uit [ default is yes ]: y
+
+    Do you want to run nvidia-xconfig?
+    This will update the system X configuration file so that the NVIDIA X driver
+    is used. The pre-existing X configuration file will be backed up.
+    This option should not be used on systems that require a custom
+    X configuration, such as systems with multiple GPU vendors.
+    (y)es/(n)o/(q)uit [ default is no ]: 
+
+    Installing the NVIDIA display driver...
+    The driver installation is unable to locate the kernel source. Please make sure that the kernel source packages are installed and set up correctly.
+    If you know that the kernel source packages are installed and set up correctly, you may pass the location of the kernel source with the '--kernel-source-path' flag.
+
+    ===========
+    = Summary =
+    ===========
+
+    Driver:   Installation Failed
+    Toolkit:  Not Selected
+    Samples:  Not Selected
+
+
+    Logfile is /tmp/cuda_install_100422.log
+
+
+::
+
+    [254264.910720] nvidia-modeset: Unloading
+    [254264.919620] nvidia-uvm: Unloaded the UVM driver in 8 mode
+    [254264.927519] nvidia-nvlink: Unregistered the Nvlink Core, major device number 237
+    -> Install NVIDIA's 32-bit compatibility libraries? (Answer: Yes)
+    -> Will install GLVND GLX client libraries.
+    -> Will install GLVND EGL client libraries.
+    -> Skipping GLX non-GLVND file: "libGL.so.418.56"
+    -> Skipping GLX non-GLVND file: "libGL.so.1"
+    -> Skipping GLX non-GLVND file: "libGL.so"
+    -> Skipping EGL non-GLVND file: "libEGL.so.418.56"
+    -> Skipping EGL non-GLVND file: "libEGL.so"
+    -> Skipping EGL non-GLVND file: "libEGL.so.1"
+    -> Skipping GLX non-GLVND file: "./32/libGL.so.418.56"
+    -> Skipping GLX non-GLVND file: "libGL.so.1"
+    -> Skipping GLX non-GLVND file: "libGL.so"
+    -> Skipping EGL non-GLVND file: "./32/libEGL.so.418.56"
+    -> Skipping EGL non-GLVND file: "libEGL.so"
+    -> Skipping EGL non-GLVND file: "libEGL.so.1"
+    Looking for install checker script at ./libglvnd_install_checker/check-libglvnd-install.sh
+       executing: '/bin/sh ./libglvnd_install_checker/check-libglvnd-install.sh'...
+       Checking for libglvnd installation.
+       Checking libGLdispatch...
+       Checking libGLdispatch dispatch table
+       Checking call through libGLdispatch
+       All OK
+       libGLdispatch is OK
+       Checking for libGLX
+       libGLX is OK
+       Checking for libEGL
+       libEGL is OK
+       Checking entrypoint library libOpenGL.so.0
+       Checking call through libGLdispatch
+       Checking call through library libOpenGL.so.0
+       All OK
+       Entrypoint library libOpenGL.so.0 is OK
+       Checking entrypoint library libGL.so.1
+       Checking call through libGLdispatch
+       Checking call through library libGL.so.1
+       All OK
+       Entrypoint library libGL.so.1 is OK
+
+       Found libglvnd libraries: libGL.so.1 libOpenGL.so.0 libEGL.so.1 libGLX.so.0 libGLdispatch.so.0
+       Missing libglvnd libraries:
+
+       libglvnd appears to be installed.
+    Will not install libglvnd libraries.
+    -> Skipping GLVND file: "libOpenGL.so.0"
+    -> Skipping GLVND file: "libOpenGL.so"
+    -> Skipping GLVND file: "libGLESv1_CM.so.1.2.0"
+    -> Skipping GLVND file: "libGLESv1_CM.so.1"
+
+
+
+    /var/log/nvidia-installer.log
+
+
 nvidia-persistenced
 ---------------------
 
