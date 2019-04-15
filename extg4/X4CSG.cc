@@ -44,9 +44,10 @@ const char* X4CSG::GenerateTestPath( const char* prefix, unsigned lvidx ) // sta
 void X4CSG::GenerateTest( const G4VSolid* solid, const char* prefix, unsigned lvidx )  // static
 {
     const char* path = GenerateTestPath(prefix, lvidx) ; 
+    LOG(debug) << "( " << lvidx << " " << path ; 
     X4CSG xcsg(solid);
-    LOG(info) << "writeTestMain : " << path ; 
     xcsg.writeTestMain(path); 
+    LOG(debug) << ") " << lvidx ; 
 }
 
 G4VSolid* X4CSG::MakeContainer(const G4VSolid* solid, float scale ) // static

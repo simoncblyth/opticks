@@ -72,7 +72,7 @@ struct DrawElements
 
 };
 
-const plog::Severity Renderer::LEVEL = fatal ; 
+const plog::Severity Renderer::LEVEL = debug ; 
 
 const char* Renderer::PRINT = "print" ; 
 

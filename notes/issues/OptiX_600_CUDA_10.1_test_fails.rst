@@ -2,20 +2,14 @@ OptiX_600_CUDA_10.1_test_fails
 =================================
 
 
-
 :google:`optix::Exception misaligned address`
 -----------------------------------------------
 
 * https://devtalk.nvidia.com/default/topic/988562/optix/-resolved-problem-misaligned-address-and-invalid-addres/
 
-  that users issue was avoided by increasing stack size : i tried 5000, 10000 without success
+  somes users report succeeding to avoid "misaligned address" by increasing stack size : i tried 5000, 10000 without success
 
-
-Another issue is OGLRap wierd projection in OKTest
----------------------------------------------------
-
-* :doc:`OGLRap_GLFW_OpenGL_Linux_display_issue_with_new_driver`
-
+* :doc:`quartic_solve_optix_600_misaligned_address_exception`
 
 
 Down to two FAILs both are the double heavy tests : looks like the torus strikes yet again
@@ -34,6 +28,13 @@ Down to two FAILs both are the double heavy tests : looks like the torus strikes
       19 /19  Test #19 : OptiXRapTest.Roots3And4Test                   Child aborted***Exception:     1.19   
 
       the problem is inside SolveQuartic   
+
+
+
+Now FIXED : OGLRap wierd projection from an undefined fourth row of glm::mat4 in View::getTransforms
+--------------------------------------------------------------------------------------------------------
+
+* :doc:`OGLRap_GLFW_OpenGL_Linux_display_issue_with_new_driver`
 
 
 

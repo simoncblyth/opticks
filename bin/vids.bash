@@ -1,6 +1,4 @@
-# === func-gen- : graphics/ggeoview/vids fgp graphics/ggeoview/vids.bash fgn vids fgh graphics/ggeoview
-vids-src(){      echo graphics/ggeoview/vids.bash ; }
-vids-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(vids-src)} ; }
+vids-source(){   echo $BASH_SOURCE ; }
 vids-vi(){       vi $(vids-source) ; }
 vids-env(){      olocal- ; }
 vids-usage(){ cat << \EOU
@@ -16,9 +14,10 @@ See also
 * ffmpeg-
 * x264- 
 * obs-
+* geocache- : ana/geocache.bash for the end of 2018 movie making 
 
-Capture Procedure
---------------------
+Capture Procedure on macOS using Quicktime
+--------------------------------------------
 
 1. Exit all apps, leaving just Terminal.app and Finder.app 
 

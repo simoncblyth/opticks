@@ -31,6 +31,8 @@ class G4VPhysicalVolume ;
 OKX4Test : checking direct from G4 conversion, starting from a GDML loaded geometry
 =======================================================================================
 
+* TODO: update these notes, looks like now using pure G4 GDML parsing to init the geometry
+
 The first Opticks is there just to work with CGDMLDetector
 to load the GDML and apply fixups for missing material property tables
 to provide the G4VPhysicalVolume world volume for checking 
@@ -46,6 +48,7 @@ See :doc:`../../notes/issues/OKX4Test`
 
 G4VPhysicalVolume* make_top(int argc, char** argv)
 {
+
     Opticks* ok = new Opticks(argc, argv); 
     OpticksHub* hub = new OpticksHub(ok);
     OpticksQuery* query = ok->getQuery();

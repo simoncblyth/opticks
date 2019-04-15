@@ -224,7 +224,6 @@ class OKCORE_API Opticks {
        unsigned long long getDbgSeqmat();
        int   getDebugIdx() const ;
        int   getDbgNode() const ;
-       int   getCSGSkipLV() const ;
        int   getStack() const ;
        int getMeshVerbosity() const ;
        const char* getFlightPathDir() const ;
@@ -330,6 +329,7 @@ class OKCORE_API Opticks {
        bool isOtherPhoton(unsigned record_id) const ;
        bool isMaskPhoton(unsigned record_id) const ;
        bool isX4PolySkip(unsigned lvIdx) const ;
+       bool isCSGSkipLV(unsigned lvIdx) const ;
 
        bool isDbgPhoton(int event_id, int track_id);
        bool isOtherPhoton(int event_id, int track_id);

@@ -55,6 +55,7 @@ class OKCORE_API OpticksCfg : public BCfg {
      const std::string& getOtherIndex();
      const std::string& getMask() const ;
      const std::string& getX4PolySkip() const ;
+     const std::string& getCSGSkipLV() const ;  
      const std::string& getBuilder();
      const std::string& getTraverser();
 
@@ -97,7 +98,6 @@ class OKCORE_API OpticksCfg : public BCfg {
 
      int          getDebugIdx() const ; 
      int          getDbgNode() const ;  
-     int          getCSGSkipLV() const ;  
      int          getStack() const ; 
 
      int          getNumPhotonsPerG4Event(); 
@@ -166,6 +166,7 @@ private:
      std::string m_oindex ;
      std::string m_mask ;
      std::string m_x4polyskip ;
+     std::string m_csgskiplv ; 
      std::string m_builder ;
      std::string m_traverser  ;
      std::string m_seqmap ;
@@ -202,7 +203,6 @@ private:
      int         m_override ; 
      int         m_debugidx ; 
      int         m_dbgnode ; 
-     int         m_csgskiplv ; 
      int         m_stack ; 
      int         m_num_photons_per_g4event;
      int         m_loadverbosity ; 

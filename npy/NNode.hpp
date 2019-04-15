@@ -214,9 +214,16 @@ struct NPY_API nnode
     unsigned    get_prim_mask() const ;
     unsigned    get_oper_mask() const ;
 
+    // type composition mask for the tree with input NNodeType to select ALL,OPERATORS,PRIMITIVES 
     unsigned get_mask(NNodeType ntyp) const ;
     static void get_mask_r(const nnode* node, NNodeType ntyp, unsigned& msk);
     std::string get_mask_string(NNodeType ntyp) const ;
+
+    // type count for the tree : eg to give the number of CSG_TORUS present in the tree
+    bool has_torus() const ; 
+    unsigned get_count(OpticksCSG_t typ) const ;
+    static void get_count_r(const nnode* node, OpticksCSG_t typ, unsigned& count);
+ 
 
     void set_treeidx(int idx) ; 
     void set_treedir(const char* treedir) ; 

@@ -452,7 +452,7 @@ void GGeo::init()
    m_geolib = new GGeoLib(m_ok, m_analytic, m_bndlib );
    m_nodelib = new GNodeLib(m_ok, m_analytic, testgeo ); 
 
-   m_instancer = new GInstancer(m_geolib, m_nodelib, m_ok->getSceneConfig() ) ;
+   m_instancer = new GInstancer(m_ok, m_geolib, m_nodelib, m_ok->getSceneConfig() ) ;
 
 
    GColorizer::Style_t style = GColorizer::PSYCHEDELIC_NODE ;
@@ -1259,8 +1259,6 @@ void GGeo::prepareVolumes()
     bool instanced = m_ok->isInstanced();
     unsigned meshverbosity = m_ok->getMeshVerbosity() ; 
 
-    m_instancer->setCSGSkipLV(m_ok->getCSGSkipLV()) ;  
-
 
     LOG(LEVEL) 
                << "START" 
@@ -1282,7 +1280,7 @@ void GGeo::prepareVolumes()
     }
 
 
-    m_instancer->dumpMeshset() ; 
+    m_instancer->dump("GGeo::prepareVolumes") ; 
 
     LOG(LEVEL) << "DONE" ;
 }

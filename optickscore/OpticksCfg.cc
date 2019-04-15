@@ -51,6 +51,8 @@ OpticksCfg<Listener>::OpticksCfg(const char* name, Listener* listener, bool live
        m_dindex(""),
        m_oindex(""),
        m_mask(""),
+       m_x4polyskip(""),
+       m_csgskiplv(""),
        m_builder(""),
        m_traverser(""),
        m_seqmap(""),
@@ -85,7 +87,6 @@ OpticksCfg<Listener>::OpticksCfg(const char* name, Listener* listener, bool live
        m_override(-1),
        m_debugidx(0),
        m_dbgnode(-1),
-       m_csgskiplv(-1),
        m_stack(2180),
        m_num_photons_per_g4event(10000),
        m_loadverbosity(0),
@@ -604,12 +605,6 @@ void OpticksCfg<Listener>::init()
        ("dbgmesh",  boost::program_options::value<std::string>(&m_dbgmesh), dbgmesh );
 
 
-   char csgskiplv[128];
-   snprintf(csgskiplv,128, "Index of LV to kludge skip from geometry, see GInstancer. Default %d", m_csgskiplv );
-   m_desc.add_options()
-       ("csgskiplv",  boost::program_options::value<int>(&m_csgskiplv), csgskiplv );
-
-
 
    char stack[128];
    snprintf(stack,128, "OptiX stack size, smaller the faster util get overflows. Default %d", m_stack);
@@ -714,6 +709,10 @@ void OpticksCfg<Listener>::init()
  
          );
 
+   char csgskiplv[256];
+   snprintf(csgskiplv,256, "comma delimited string listing lvIdx indices to skip in direct geometry conversion. Default %s", m_csgskiplv.c_str() );
+   m_desc.add_options()
+       ("csgskiplv",  boost::program_options::value<std::string>(&m_csgskiplv), csgskiplv );
 
 
    m_desc.add_options()
@@ -1273,6 +1272,16 @@ const std::string& OpticksCfg<Listener>::getX4PolySkip() const
     return m_x4polyskip ;
 }
 
+template <class Listener>
+const std::string& OpticksCfg<Listener>::getCSGSkipLV() const 
+{
+    return m_csgskiplv ; 
+}
+
+
+
+
+
 
 template <class Listener>
 const std::string& OpticksCfg<Listener>::getBuilder()
@@ -1497,13 +1506,6 @@ template <class Listener>
 int OpticksCfg<Listener>::getDbgNode() const 
 {
     return m_dbgnode ; 
-}
-
-
-template <class Listener>
-int OpticksCfg<Listener>::getCSGSkipLV() const 
-{
-    return m_csgskiplv ; 
 }
 
 

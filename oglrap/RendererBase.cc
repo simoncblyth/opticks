@@ -11,7 +11,7 @@
 #include "OGLRAP_BODY.hh"
 
 
-const plog::Severity RendererBase::LEVEL = fatal ; 
+const plog::Severity RendererBase::LEVEL = debug ; 
 
 
 const char* RendererBase::getShaderTag() const 

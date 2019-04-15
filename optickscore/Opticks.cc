@@ -386,7 +386,10 @@ bool Opticks::isX4PolySkip(unsigned lvIdx) const
 {
    return m_dbg->isX4PolySkip(lvIdx);
 }
-
+bool Opticks::isCSGSkipLV(unsigned lvIdx) const 
+{
+   return m_dbg->isCSGSkipLV(lvIdx);
+}
 
 
 
@@ -443,10 +446,7 @@ int Opticks::getDbgNode() const
 {
    return m_cfg->getDbgNode();
 }
-int Opticks::getCSGSkipLV() const 
-{
-   return m_cfg->getCSGSkipLV();
-}
+
 int Opticks::getStack() const 
 {
    return m_cfg->getStack();

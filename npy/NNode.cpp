@@ -463,6 +463,15 @@ std::string nnode::get_prim_mask_string() const { return get_mask_string(NODE_PR
 std::string nnode::get_oper_mask_string() const { return get_mask_string(NODE_OPERATOR) ; }
 
 
+
+/**
+nnode::get_mask
+----------------
+
+returns a mask integer holding the types of all nodes in the tree
+that meet the NNodeType criteria allowing selection of all/operators/primitives
+
+**/
 unsigned nnode::get_mask(NNodeType ntyp) const 
 {
     unsigned msk = 0 ;   
@@ -494,6 +503,31 @@ std::string nnode::get_mask_string(NNodeType ntyp) const
     for(unsigned i=0 ; i < 32 ; i++) if(msk & (0x1 << i)) ss << CSGName((OpticksCSG_t)i) << " " ;   
     return ss.str();
 }
+
+
+
+bool nnode::has_torus() const
+{
+    return get_count(CSG_TORUS) > 0 ; 
+}
+unsigned nnode::get_count(OpticksCSG_t typ) const 
+{
+    unsigned count = 0 ;
+    get_count_r(this, typ, count );  
+    return count ;  
+}
+void nnode::get_count_r(const nnode* node, OpticksCSG_t typ, unsigned& count) // static
+{
+    if( node->type == typ ) count += 1 ; 
+
+    if(node->left && node->right)
+    {
+        get_count_r(node->left, typ, count);
+        get_count_r(node->right, typ, count);
+    }
+}
+ 
+
 
 
 

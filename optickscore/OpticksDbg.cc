@@ -37,6 +37,13 @@ unsigned OpticksDbg::getNumX4PolySkip() const
 {
     return m_x4polyskip.size() ; 
 }
+unsigned OpticksDbg::getNumCSGSkipLV() const 
+{
+    return m_csgskiplv.size() ; 
+}
+
+
+
 
 
 NPY<unsigned>* OpticksDbg::getMaskBuffer() const
@@ -87,11 +94,13 @@ void OpticksDbg::postconfigure()
 
    const std::string& mask = m_cfg->getMask() ;
    const std::string& x4polyskip = m_cfg->getX4PolySkip() ;
+   const std::string& csgskiplv = m_cfg->getCSGSkipLV() ;
 
    postconfigure( dindex, m_debug_photon );
    postconfigure( oindex, m_other_photon );
    postconfigure( mask, m_mask );
    postconfigure( x4polyskip, m_x4polyskip );
+   postconfigure( csgskiplv, m_csgskiplv );
 
    if(m_mask.size() > 0)
    {
@@ -140,6 +149,10 @@ bool OpticksDbg::isMaskPhoton(unsigned record_id) const
 bool OpticksDbg::isX4PolySkip(unsigned lvIdx) const 
 {
     return std::find(m_x4polyskip.begin(), m_x4polyskip.end(), lvIdx ) != m_x4polyskip.end() ; 
+}
+bool OpticksDbg::isCSGSkipLV(unsigned lvIdx) const 
+{
+    return std::find(m_csgskiplv.begin(), m_csgskiplv.end(), lvIdx ) != m_csgskiplv.end() ; 
 }
 
 

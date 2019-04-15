@@ -9,7 +9,8 @@
 class SLog ; 
 struct NSceneConfig ; 
 
-//class GGeo ; 
+class Opticks ;
+
 class GGeoLib ;    // merged meshes 
 class GNodeLib ;   // GVolume nodes
 class GNode ; 
@@ -43,7 +44,7 @@ class GGEO_API GInstancer {
    public:
         static const plog::Severity LEVEL ;  
    public:
-        GInstancer(GGeoLib* geolib, GNodeLib* nodelib, NSceneConfig* config) ;
+        GInstancer(Opticks* ok, GGeoLib* geolib, GNodeLib* nodelib, NSceneConfig* config) ;
         void setRepeatMin(unsigned repeat_min);
         void setVertexMin(unsigned vertex_min);
    public:
@@ -78,18 +79,22 @@ class GGEO_API GInstancer {
         GNode*              getRepeatExample(unsigned int ridx);    // first node that matches the ridx progeny digest
         std::vector<GNode*> getPlacements(unsigned int ridx);  // all GNode with the ridx progeny digest
    public:
+        void dump(const char* msg) const ;
+   private:
         void dumpMeshset() const ;
-        void setCSGSkipLV(int csgskiplv);
+        void dumpCSGSkips() const ;
    private:
         // recursive setRepeatIndex on the GNode tree for each of the repeated bits of geometry
         void           labelTree();
-        void           labelTree_r( GNode* node, unsigned int ridx );  // recursive labelling starting from the placements
+        void           labelRepeats_r( GNode* node, unsigned ridx );  // recursive labelling starting from the placements
+        void           traverseGlobals_r( GNode* node, unsigned depth );  // recursive labelling starting from root of only ridx 0 nodes
    private:
         // output side, operates via GGeo::makeMergedMesh, GGeoLib::makeMergedMesh, GMergedMesh::create
         //   GMergedMesh::traverse uses the repeat index ridx labels written into the node tree
         void           makeMergedMeshAndInstancedBuffers(unsigned verbosity);
    private:
        SLog*                     m_log ; 
+       Opticks*                  m_ok ; 
        GGeoLib*                  m_geolib ; 
        unsigned                  m_verbosity ; 
        GNodeLib*                 m_nodelib ; 
@@ -103,10 +108,19 @@ class GGEO_API GInstancer {
        Counts<unsigned int>*     m_digest_count ; 
        std::vector<std::string>  m_repeat_candidates ; 
 
-       std::map<unsigned, std::set<unsigned> >   m_meshset ;   // collect unique mesh indices (LVs) for each ridx     
-       int                       m_csgskiplv ;
-       unsigned                  m_csgskiplv_count ;
+   
 
+       typedef std::set<unsigned> SU ; 
+       typedef std::vector<unsigned> VU ; 
+       typedef std::map<unsigned, SU> MUSU ; 
+       typedef std::map<unsigned, VU> MUVU ; 
+
+       MUSU        m_meshset ;   // collect unique mesh indices (LVs) for each ridx     
+       MUVU        m_csgskiplv ;   // collect node indices for each skipped LVIdx     
+       unsigned    m_csgskiplv_count ;
+
+       unsigned    m_repeats_count ; 
+       unsigned    m_globals_count ; 
  
 };
 

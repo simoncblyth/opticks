@@ -399,11 +399,17 @@ tail after the recursive call, to match the traverse used
 by GDML, and hence giving the same "postorder" indices
 for the solid lvIdx.
 
+The entire tree volume tree is recursed, but only the 
+first occurence of each LV solid gets converted 
+(because they are all the same).
+Done this way to have consistent lvIdx soIdx indexing with GDML ?
+
+
 **/
 
 void X4PhysicalVolume::convertSolids()
 {
-    LOG(debug) << "[" ; 
+    LOG(info) << "[" ; 
 
     const G4VPhysicalVolume* pv = m_top ; 
     int depth = 0 ;
@@ -412,7 +418,9 @@ void X4PhysicalVolume::convertSolids()
     if(m_verbosity > 5) dumpLV();
     LOG(debug) << "]" ; 
 
-    LOG(info) << "." ; 
+    dumpTorusLV();
+    LOG(info) << "]" ;
+
 }
 
 void X4PhysicalVolume::convertSolids_r(const G4VPhysicalVolume* const pv, int depth)
@@ -433,9 +441,20 @@ void X4PhysicalVolume::convertSolids_r(const G4VPhysicalVolume* const pv, int de
         m_lvlist.push_back(lv);  
 
         const G4VSolid* const solid = lv->GetSolid(); 
+        const std::string& lvname = lv->GetName() ; 
 
-        GMesh* mesh = convertSolid( lvIdx, soIdx, solid, lv->GetName() ) ;  
+        GMesh* mesh = convertSolid( lvIdx, soIdx, solid, lvname ) ;  
         mesh->setIndex( lvIdx ) ;   
+
+        const nnode* root = mesh->getRoot(); 
+        assert( root ); 
+
+        if( root->has_torus() )
+        {
+            LOG(fatal) << " has_torus lvIdx " << lvIdx << " " << lvname ;  
+            m_lv_with_torus.push_back( lvIdx ); 
+            m_lvname_with_torus.push_back( lvname ); 
+        }
 
         m_ggeo->add( mesh ) ; 
     }  
@@ -443,15 +462,26 @@ void X4PhysicalVolume::convertSolids_r(const G4VPhysicalVolume* const pv, int de
 
 GMesh* X4PhysicalVolume::convertSolid( int lvIdx, int soIdx, const G4VSolid* const solid, const std::string& lvname) const 
 {
+     assert( lvIdx == soIdx );  
+     LOG(info) << " [ " << lvIdx << " " << lvname ; 
+ 
      nnode* raw = X4Solid::Convert(solid)  ; 
+
      if(m_g4codegen) 
      {
+         LOG(info) 
+             << "[--g4codegen]"
+             << " lvIdx " << lvIdx
+             << " soIdx " << soIdx
+             << " lvname " << lvname 
+             ;
          raw->dump_g4code();  // just for debug 
          X4CSG::GenerateTest( solid, m_g4codegendir , lvIdx ) ; 
      }
 
      nnode* root = NTreeProcess<nnode>::Process(raw, soIdx, lvIdx);  // balances deep trees
      root->other = raw ; 
+
 
      const NSceneConfig* config = NULL ; 
      NCSG* csg = NCSG::Adopt( root, config, soIdx, lvIdx );   // Adopt exports nnode tree to m_nodes buffer in NCSG instance
@@ -468,6 +498,7 @@ GMesh* X4PhysicalVolume::convertSolid( int lvIdx, int soIdx, const G4VSolid* con
      GMesh* mesh =  is_x4polyskip ? X4Mesh::Placeholder(solid ) : X4Mesh::Convert(solid ) ; 
      mesh->setCSG( csg ); 
 
+     LOG(info) << " ] " << lvIdx ; 
      return mesh ; 
 }
 
@@ -503,7 +534,7 @@ used instead of he real shape.
 
 
 
-void X4PhysicalVolume::dumpLV()
+void X4PhysicalVolume::dumpLV() const 
 {
    LOG(info)
         << " m_lvidx.size() " << m_lvidx.size() 
@@ -515,12 +546,32 @@ void X4PhysicalVolume::dumpLV()
        const G4LogicalVolume* lv = m_lvlist[i] ; 
        std::cout 
            << " i " << std::setw(5) << i
-           << " idx " << std::setw(5) << m_lvidx[lv]  
+           << " idx " << std::setw(5) << m_lvidx.at(lv)  
            << " lv "  << lv->GetName()
            << std::endl ;  
    }
 }
 
+void X4PhysicalVolume::dumpTorusLV() const 
+{
+    assert( m_lv_with_torus.size() == m_lvname_with_torus.size() ); 
+    unsigned num_afflicted = m_lv_with_torus.size() ;  
+
+    LOG(info) << " num_afflicted " << num_afflicted ; 
+    std::cout << " lvIdx ( " ; 
+    for(unsigned i=0 ; i < num_afflicted ; i++) std::cout << m_lv_with_torus[i] << " " ; 
+    std::cout << " ) " << std::endl ;  
+
+    for(unsigned i=0 ; i < num_afflicted ; i++) 
+    {
+        std::cout 
+            << m_lv_with_torus[i] << " "  
+            << m_lvname_with_torus[i] 
+            << std::endl 
+            ; 
+    }
+
+}
 
 std::string X4PhysicalVolume::brief() const 
 {
@@ -568,7 +619,7 @@ used.
 
 void X4PhysicalVolume::convertStructure()
 {
-    LOG(debug) << "[" ; 
+    LOG(info) << "[" ; 
     assert(m_top) ;
 
     m_ggeo->dumpCathodeLV("dumpCathodeLV"); 
@@ -587,8 +638,7 @@ void X4PhysicalVolume::convertStructure()
     NNodeNudger::SaveBuffer("$TMP/NNodeNudger.npy"); 
     X4Transform3D::SaveBuffer("$TMP/X4Transform3D.npy"); 
 
-    LOG(debug) << "]" ; 
-    LOG(info) << "." ;
+    LOG(info) << "]" ;
 }
 
 

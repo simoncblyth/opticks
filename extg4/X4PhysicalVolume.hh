@@ -37,8 +37,7 @@ materials, surfaces and structure from the passed world volume::
 
     X4PhysicalVolume(GGeo* ggeo, const G4VPhysicalVolume* const pv); 
 
-
-Hmm this shoud probably be named X4Scene or X4Tree, 
+TODO: rename to something like X4Scene/X4Tree/X4Top/X4Root
 as it forcusses on the tree not the PhysicalVolume node.
 
 CAUTION regarding geometry digests
@@ -88,7 +87,8 @@ class X4_API X4PhysicalVolume : public X4Named
         void convertCheck() const ;
     private:
         void convertSolids_r(const G4VPhysicalVolume* const pv, int depth);
-        void dumpLV();
+        void dumpLV() const ;
+        void dumpTorusLV() const ;
         GMesh* convertSolid( int lvIdx, int soIdx, const G4VSolid* const solid, const std::string& lvname) const ;
     private:
         void convertSensors_r(const G4VPhysicalVolume* const pv, int depth);
@@ -122,8 +122,8 @@ class X4_API X4PhysicalVolume : public X4Named
         std::map<const G4LogicalVolume*, int> m_lvidx ; 
 
         std::vector<const G4LogicalVolume*> m_lvlist ; 
-
-
+        std::vector<unsigned>        m_lv_with_torus ; 
+        std::vector<std::string>     m_lvname_with_torus ; 
 
 
 };

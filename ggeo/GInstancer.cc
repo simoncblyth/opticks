@@ -9,6 +9,7 @@
 #include "Counts.hpp"
 #include "Timer.hpp"
 
+#include "Opticks.hh"
 
 #include "GTreePresent.hh"
 #include "GMergedMesh.hh"
@@ -34,9 +35,10 @@
 
 const plog::Severity GInstancer::LEVEL = debug ; 
 
-GInstancer::GInstancer(GGeoLib* geolib, GNodeLib* nodelib, NSceneConfig* config) 
+GInstancer::GInstancer(Opticks* ok, GGeoLib* geolib, GNodeLib* nodelib, NSceneConfig* config) 
     : 
     m_log(new SLog("GInstancer::GInstancer","", verbose)),
+    m_ok(ok),
     m_geolib(geolib),
     m_verbosity(geolib->getVerbosity()),
     m_nodelib(nodelib),
@@ -47,8 +49,9 @@ GInstancer::GInstancer(GGeoLib* geolib, GNodeLib* nodelib, NSceneConfig* config)
     m_count(0),
     m_labels(0),
     m_digest_count(new Counts<unsigned>("progenyDigest")),
-    m_csgskiplv(-1),
-    m_csgskiplv_count(0)
+    m_csgskiplv_count(0),
+    m_repeats_count(0),
+    m_globals_count(0)
 {
 }
 
@@ -57,11 +60,6 @@ unsigned GInstancer::getNumRepeats() const
     return m_repeat_candidates.size();
 }
 
-void GInstancer::setCSGSkipLV(int csgskiplv)
-{
-    m_csgskiplv = csgskiplv  ; 
-    LOG((csgskiplv > -1 ? fatal : LEVEL)) << " csgskiplv " << csgskiplv ; 
-}
 
 void GInstancer::setRepeatMin(unsigned repeat_min)
 {
@@ -410,7 +408,7 @@ unsigned int GInstancer::getRepeatIndex(const std::string& pdig )
 
 
 
-void GInstancer::labelTree()
+void GInstancer::labelTree()   // hmm : doesnt label global volumes ?
 {
     m_labels = 0 ; 
 
@@ -424,51 +422,74 @@ void GInstancer::labelTree()
          // recursive labelling starting from the placements
          for(unsigned int p=0 ; p < placements.size() ; p++)
          {
-             labelTree_r(placements[p], ridx);
+             labelRepeats_r(placements[p], ridx);
          }
     }
 
+    
+    assert(m_root);
+    traverseGlobals_r(m_root, 0);
 
     LOG((m_csgskiplv_count > 0 ? fatal : LEVEL))
         << " m_labels (count of non-zero setRepeatIndex) " << m_labels 
-        << " m_csgskiplv " << m_csgskiplv     
         << " m_csgskiplv_count " << m_csgskiplv_count
+        << " m_repeats_count " << m_repeats_count
+        << " m_globals_count " << m_globals_count
+        << " total_count : " << ( m_globals_count + m_repeats_count ) 
         ;     
 }
 
-void GInstancer::labelTree_r( GNode* node, unsigned int ridx)
+void GInstancer::labelRepeats_r( GNode* node, unsigned int ridx)
 {
     node->setRepeatIndex(ridx);
+    m_repeats_count += 1 ; 
 
     unsigned lvidx = node->getMeshIndex();  
     m_meshset[ridx].insert( lvidx ) ; 
 
-
-    // kludge attempt to skip a volume 
-    if( m_csgskiplv > -1 && int(lvidx) == m_csgskiplv ) 
+    if( m_ok->isCSGSkipLV(lvidx) )
     {
         GVolume* vol = dynamic_cast<GVolume*>(node); 
         vol->setCSGSkip(true);      
+
+        m_csgskiplv[lvidx].push_back( node->getIndex() ); 
         m_csgskiplv_count += 1 ; 
     }
 
-
     if(ridx > 0)
     {
-         LOG(debug)<<"GInstancer::labelTree "
-                  << " ridx " << std::setw(5) << ridx
-                  << " n " << node->getName()
-                  ;
+         LOG(debug)
+             << " ridx " << std::setw(5) << ridx
+             << " n " << node->getName()
+             ;
          m_labels++ ; 
     }
-    for(unsigned int i = 0; i < node->getNumChildren(); i++) labelTree_r(node->getChild(i), ridx );
+    for(unsigned int i = 0; i < node->getNumChildren(); i++) labelRepeats_r(node->getChild(i), ridx );
 }
 
 
+void GInstancer::traverseGlobals_r( GNode* node, unsigned depth )
+{
+    unsigned ridx = node->getRepeatIndex() ; 
+    if( ridx > 0 ) return ; 
+    // only recurse whilst in global territory with ridx == 0, as soon as hit a repeated volume stop recursing 
+    assert( ridx == 0 ); 
+    m_globals_count += 1 ; 
 
+    unsigned lvidx = node->getMeshIndex();  
+    m_meshset[ridx].insert( lvidx ) ; 
 
+    if( m_ok->isCSGSkipLV(lvidx) )
+    {
+        GVolume* vol = dynamic_cast<GVolume*>(node); 
+        vol->setCSGSkip(true);      
 
-
+        m_csgskiplv[lvidx].push_back( node->getIndex() ); 
+        m_csgskiplv_count += 1 ; 
+    }
+   
+    for(unsigned int i = 0; i < node->getNumChildren(); i++) traverseGlobals_r(node->getChild(i), depth + 1 );
+}
 
 
 
@@ -597,6 +618,42 @@ void GInstancer::dumpMeshset() const
 
     }
 }
+
+
+
+
+void GInstancer::dumpCSGSkips() const 
+{
+    LOG(info) ;
+    for( MUVU::const_iterator i = m_csgskiplv.begin() ; i != m_csgskiplv.end() ; i++ )
+    {
+        unsigned lvIdx = i->first ; 
+        const VU& v = i->second ; 
+
+        std::cout << " lvIdx " << lvIdx 
+                  << " skip total : " << v.size()
+                  << " nodeIdx ( " 
+                  ; 
+
+        unsigned nj = v.size() ; 
+
+
+        //for(VU::const_iterator j=v.begin() ; j != v.end() ; j++ ) std::cout << *j << " " ;
+
+        for( unsigned j=0 ; j < std::min( nj, 20u ) ; j++ ) std::cout << v[j] << " " ;  
+        if( nj > 20u ) std::cout << " ... " ; 
+        std::cout << " ) " << std::endl ; 
+    }  
+}
+
+void GInstancer::dump(const char* msg) const 
+{
+    LOG(info) << msg ; 
+    dumpMeshset();
+    dumpCSGSkips(); 
+}
+
+
 
 
 
