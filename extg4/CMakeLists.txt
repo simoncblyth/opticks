@@ -26,8 +26,13 @@ very focussed converter classes.
 
 #]=]
 
+set(G4_VERBOSE ON)
 find_package(G4         REQUIRED MODULE)
 find_package(GGeo       REQUIRED CONFIG)   
+
+# just for X4GDMLWrite
+find_package(OpticksXercesC REQUIRED MODULE)
+
 
 set(SOURCES
      
@@ -42,6 +47,9 @@ set(SOURCES
     X4SolidExtent.cc
     X4Mesh.cc
     X4SolidList.cc
+
+    X4GDMLWrite.cc
+
 
     X4Material.cc
     X4MaterialTable.cc
@@ -67,6 +75,8 @@ set(SOURCES
     X4PhysicalVolume.cc
     X4Sample.cc
 
+    
+
     X4OpNoviceMaterials.cc
     OpNoviceDetectorConstruction.cc
     LXe_Materials.cc 
@@ -88,6 +98,8 @@ set(HEADERS
     X4SolidExtent.hh
     X4Mesh.hh
     X4SolidList.hh
+
+    X4GDMLWrite.hh
 
     X4Material.hh
     X4MaterialTable.hh
@@ -128,6 +140,7 @@ add_library( ${name}  SHARED ${SOURCES} ${HEADERS} )
 target_link_libraries( ${name} PUBLIC 
     Opticks::G4
     Opticks::GGeo
+    Opticks::OpticksXercesC
 )
 
 target_include_directories( ${name} PUBLIC 

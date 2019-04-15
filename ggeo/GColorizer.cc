@@ -24,17 +24,17 @@ const plog::Severity GColorizer::LEVEL = debug ;
 
 
 GColorizer::GColorizer(GNodeLib* nodelib, GGeoLib* geolib, GBndLib* blib, OpticksColors* colors, GColorizer::Style_t style ) 
-       :
-       m_target(NULL),
-       m_nodelib(nodelib),
-       m_geolib(geolib),
-       m_blib(blib),
-       m_slib(blib->getSurfaceLib()),
-       m_colors(colors),
-       m_style(style),
-       m_cur_vertices(0),
-       m_num_colorized(0),
-       m_repeat_index(0)
+    :
+    m_target(NULL),
+    m_nodelib(nodelib),
+    m_geolib(geolib),
+    m_blib(blib),
+    m_slib(blib->getSurfaceLib()),
+    m_colors(colors),
+    m_style(style),
+    m_cur_vertices(0),
+    m_num_colorized(0),
+    m_repeat_index(0)
 {
      init();
 }
@@ -49,7 +49,7 @@ void GColorizer::setTarget(nvec3* target)
 {
     m_target =  target ; 
 }
-void GColorizer::setRepeatIndex(unsigned int ridx)
+void GColorizer::setRepeatIndex(unsigned ridx)
 {
     m_repeat_index = ridx ; 
 }

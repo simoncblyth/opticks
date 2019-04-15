@@ -187,13 +187,38 @@ geocache-keydir()
 geocache-kcd(){ cd $(geocache-keydir) ; }
 
 
+geocache-tmp(){ echo /tmp/$USER/opticks/$1 ; }
 geocache-j1808()
 {
+    local iwd=$PWD
+    local tmp=$(geocache-tmp $FUNCNAME)
+    mkdir -p $tmp && cd $tmp
+         
     type $FUNCNAME
     opticksdata- 
     #gdb --args OKX4Test --gdmlpath $(opticksdata-j) --g4codegen --csgskiplv 22,32,33
-    gdb --args OKX4Test --gdmlpath $(opticksdata-j) --g4codegen --csgskiplv 22,32
+    #gdb --args OKX4Test --gdmlpath $(opticksdata-j) --g4codegen --csgskiplv 22,32
+    gdb --args OKX4Test --gdmlpath $(opticksdata-j) --g4codegen --csgskiplv 22
+
+    cd $iwd
 }
+
+geocache-j1808-v2()
+{
+    local iwd=$PWD
+    local tmp=$(geocache-tmp $FUNCNAME)
+    mkdir -p $tmp && cd $tmp
+
+    type $FUNCNAME
+    opticksdata- 
+    gdb --args OKX4Test --gdmlpath $(opticksdata-jv2) --g4codegen --csgskiplv 22
+
+    cd $iwd
+}
+
+
+
+
 
 geocache-j1808-notes(){ cat << EON
 $FUNCNAME

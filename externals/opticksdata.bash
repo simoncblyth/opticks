@@ -126,6 +126,9 @@ opticksdata-url-ssh(){ echo ssh://hg@bitbucket.org/simoncblyth/opticksdata ; }
 
 opticksdata-j(){ echo $(opticksdata-xpath j1808).gdml ; }
 
+opticksdata-jv2(){ echo $(opticksdata-xpath j1808)_v2.gdml ; }  ## manually remove guide tube torus
+
+
 opticksdata-info(){ cat << EOM
 
    opticksdata-url       : $(opticksdata-url)

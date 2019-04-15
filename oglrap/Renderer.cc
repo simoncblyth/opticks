@@ -318,6 +318,9 @@ void Renderer::upload()
     unsigned num_instances = m_ibuf ? m_ibuf->getNumItems() : 0 ;
 
     m_instlodcull_enabled = m_instlodcull && m_num_lod > 0 && num_instances > InstLODCull::INSTANCE_MINIMUM ;
+
+    assert( m_instlodcull_enabled == false ) ; // just checkin
+
     // Renderer::upload(GMergedMesh*) sets num_lod from mm components, >0 only for instanced mm
       
     // (June 2018) IS THIS DUPLICATING THE UPLOADS WITH THE m_vao_all

@@ -3,14 +3,12 @@
 #include <string>
 #include <vector>
 
-//#include <glm/glm.hpp>
 #include "NGLM.hpp"
 
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
 #include "OGLRAP_API_EXPORT.hh"
-
 
 #define MAKE_RBUF(buf) ((buf) ? new RBuf((buf)->getNumItems(), (buf)->getNumBytes(), (buf)->getNumElements(), (buf)->getPointer(), (buf)->getName() ) : NULL )
 
@@ -41,7 +39,6 @@ struct OGLRAP_API RBuf
     unsigned getNumItems() const { return num_items ; } ;
     unsigned getNumBytes() const { return num_bytes ; } ;
     unsigned getNumElements() const { return num_elements ; } ;
-
 
     RBuf(unsigned num_items_, unsigned num_bytes_, unsigned num_elements_, void* ptr_, const char* name_=NULL) ;
 

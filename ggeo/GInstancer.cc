@@ -484,6 +484,13 @@ void GInstancer::traverseGlobals_r( GNode* node, unsigned depth )
         GVolume* vol = dynamic_cast<GVolume*>(node); 
         vol->setCSGSkip(true);      
 
+        // Currently trying to skip global lv at this rather late juncture 
+        // leads to inconsistencies manifesting in a corrupted color buffer 
+        // (i recall that all global volumes are retained for index consistency in the merge of GMergedMesh GGeoLib)
+        // so moved to simply editing the input GDML
+        // Presumably could also do this by moving the skip earlier to the Geant4 X4 traverse
+        // see notes/issues/torus_replacement_on_the_fly.rst
+
         m_csgskiplv[lvidx].push_back( node->getIndex() ); 
         m_csgskiplv_count += 1 ; 
     }

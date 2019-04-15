@@ -24,7 +24,6 @@
 #include "GMergedMesh.hh"
 #include "GBBoxMesh.hh"
 
-
 #include "PLOG.hh"
 
 const plog::Severity GMergedMesh::LEVEL = debug ; 
@@ -43,25 +42,24 @@ bool GMergedMesh::isTriangulated() const
 }
 
 
-
 // expedient pass-thru ctor
 GMergedMesh::GMergedMesh(
-             unsigned index, 
-             gfloat3* vertices, 
-             unsigned num_vertices, 
-             guint3*  faces, 
-             unsigned num_faces, 
-             gfloat3* normals, 
-             gfloat2* texcoords
-         )
-       : 
-       GMesh(index, vertices, num_vertices, faces, num_faces, normals, texcoords),
-       m_cur_vertices(0),
-       m_cur_faces(0),
-       m_cur_volume(0),
-       m_cur_mergedmesh(0),
-       m_num_csgskip(0),
-       m_cur_base(NULL)
+    unsigned index, 
+    gfloat3* vertices, 
+    unsigned num_vertices, 
+    guint3*  faces, 
+    unsigned num_faces, 
+    gfloat3* normals, 
+    gfloat2* texcoords
+    )
+    : 
+    GMesh(index, vertices, num_vertices, faces, num_faces, normals, texcoords),
+    m_cur_vertices(0),
+    m_cur_faces(0),
+    m_cur_volume(0),
+    m_cur_mergedmesh(0),
+    m_num_csgskip(0),
+    m_cur_base(NULL)
 {
 } 
 

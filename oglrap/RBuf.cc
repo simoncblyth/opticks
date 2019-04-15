@@ -58,9 +58,6 @@ RBuf* RBuf::clone() const
 
 
 
-
-
-
 void RBuf::dump(const char* msg) const 
 {
     std::cout << msg << std::endl ; 
@@ -188,9 +185,6 @@ void RBuf::bind(unsigned stream )
 {
     glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, stream, this->id ); 
 }
-
-
-
 
 
 

@@ -610,14 +610,11 @@ void Scene::uploadGeometry()
     assert(m_geolib && "must setGeometry first");
     unsigned int nmm = m_geolib->getNumMergedMesh();
 
-    LOG(info) << "Scene::uploadGeometry"
-              << " nmm " << nmm
-              ;
+    LOG(info) << " nmm " << nmm ;
 
     m_geolib->dump("Scene::uploadGeometry GGeoLib" );
 
     m_context->init();  // UBO setup
-
 
 
     for(unsigned int i=0 ; i < nmm ; i++)
@@ -625,9 +622,7 @@ void Scene::uploadGeometry()
         GMergedMesh* mm = m_geolib->getMergedMesh(i);
         if(!mm) continue ; 
 
-        LOG(debug) << "Scene::uploadGeometry " 
-                  << i 
-                  << " geoCode " << mm->getGeoCode() ; 
+        LOG(debug) << i << " geoCode " << mm->getGeoCode() ; 
 
         if( i == 0 )  // first mesh assumed to be **the one and only** non-instanced global mesh
         {
