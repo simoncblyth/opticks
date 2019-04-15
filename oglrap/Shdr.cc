@@ -53,20 +53,13 @@ void Shdr::createAndCompile()
     }
 
 
-    m_id = glCreateShader(m_type);
-    G::ErrCheck("Shdr::createAndCompile.0", true);
-
+    m_id = glCreateShader(m_type);                     G::ErrCheck("Shdr::createAndCompile.0", true);
     const char* content_c = m_content.c_str();
-
-    glShaderSource (m_id, 1, &content_c, NULL);
-    G::ErrCheck("Shdr::createAndCompile.1", true);
-
-    glCompileShader (m_id);
-    G::ErrCheck("Shdr::createAndCompile.2", true);
+    glShaderSource (m_id, 1, &content_c, NULL);        G::ErrCheck("Shdr::createAndCompile.1", true);
+    glCompileShader (m_id);                            G::ErrCheck("Shdr::createAndCompile.2", true);
 
     int params = -1;
-    glGetShaderiv (m_id, GL_COMPILE_STATUS, &params);
-    G::ErrCheck("Shdr::createAndCompile.3", true);
+    glGetShaderiv (m_id, GL_COMPILE_STATUS, &params);  G::ErrCheck("Shdr::createAndCompile.3", true);
 
     if (GL_TRUE != params) 
     {
@@ -88,8 +81,7 @@ void Shdr::_print_shader_info_log()
     int actual_length = 0;
     char log[2048];
 
-    glGetShaderInfoLog(m_id, max_length, &actual_length, log);
-    G::ErrCheck("Shdr::_print_shader_info_log", true);
+    glGetShaderInfoLog(m_id, max_length, &actual_length, log);     G::ErrCheck("Shdr::_print_shader_info_log", true);
 
     printf ("shader info log for GL index %u:\n%s\n", m_id, log);
 }
@@ -98,7 +90,6 @@ void Shdr::_print_shader_info_log()
 
 void Shdr::setInclPath(const char* incl_path, char delim)
 {
-    //boost::split(m_incl_dirs,incl_path,boost::is_any_of(delim));
     BStr::split(m_incl_dirs,incl_path,delim);
 
     LOG(verbose) << "Shdr::setInclPath "

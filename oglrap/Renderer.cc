@@ -41,7 +41,6 @@
 
 
 
-
 struct DrawElements
 {
     DrawElements( GLenum mode_ , GLsizei count_ , GLenum  type_ , void* indices_ , GLsizei  primcount_ )
@@ -73,7 +72,7 @@ struct DrawElements
 
 };
 
-
+const plog::Severity Renderer::LEVEL = fatal ; 
 
 const char* Renderer::PRINT = "print" ; 
 
@@ -431,14 +430,12 @@ GLuint Renderer::createVertexArray(RBuf* instanceBuffer)
     GLuint instanceBO = instanceBuffer ? instanceBuffer->getBufferId() : 0u ;
     m_itransform_count = instanceBuffer ? instanceBuffer->getNumItems() : 0 ;
 
-    if(m_verbosity > 3)
-    std::cout << "Renderer::createVertexArray"
-              << " vao " << vao 
-              << " itransform_count " << m_itransform_count 
-              << " instanceBO  " << instanceBO  
-              << " desc " << desc()
-              << std::endl
-               ;
+    LOG(LEVEL)
+          << " vao " << vao 
+          << " itransform_count " << m_itransform_count 
+          << " instanceBO  " << instanceBO  
+          << " desc " << desc()
+          ;
 
 
     GLboolean normalized = GL_FALSE ; 
@@ -706,13 +703,13 @@ void Renderer::check_uniforms()
     bool inrm = tag.compare("inrm") == 0 ; 
     bool tex = tag.compare("tex") == 0 ; 
 
-    LOG(verbose) << "Renderer::check_uniforms " 
-              << " tag " << tag  
-              << " nrm " << nrm  
-              << " nrmvec " << nrmvec  
-              << " inrm " << inrm
-              << " tex " << tex
-              ;  
+    LOG(LEVEL)
+        << " tag " << tag  
+        << " nrm " << nrm  
+        << " nrmvec " << nrmvec  
+        << " inrm " << inrm
+        << " tex " << tex
+        ;  
 
     assert( nrm ^ inrm ^ tex ^ nrmvec );
 

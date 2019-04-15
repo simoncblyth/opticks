@@ -11,6 +11,7 @@
 #include "OGLRAP_BODY.hh"
 
 
+const plog::Severity RendererBase::LEVEL = fatal ; 
 
 
 const char* RendererBase::getShaderTag() const 
@@ -73,10 +74,10 @@ RendererBase::RendererBase(const char* tag, const char* dir, const char* incl_pa
 
 void RendererBase::make_shader()
 {
-    LOG(debug) << "RendererBase::make_shader " 
-              << " shaderdir " << getShaderDir()
-              << " shadertag " << getShaderTag()
-              ;
+    LOG(LEVEL)
+         << " shaderdir " << getShaderDir()
+         << " shadertag " << getShaderTag()
+         ;
 
     G::ErrCheck("RendererBase::make_shader.[", true);
 

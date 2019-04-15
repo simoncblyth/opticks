@@ -19,6 +19,8 @@ const char* G::GL_VERTEX_SHADER_ = "GL_VERTEX_SHADER" ;
 const char* G::GL_GEOMETRY_SHADER_ = "GL_GEOMETRY_SHADER" ; 
 const char* G::GL_FRAGMENT_SHADER_ = "GL_FRAGMENT_SHADER" ; 
 
+bool G::VERBOSE = false ; 
+
 const char* G::Shader( GLenum type )
 {
     const char* s = OTHER_ ; 
@@ -52,7 +54,7 @@ const char* G::Err( GLenum err )
 
 bool G::ErrCheck(const char* msg, bool harikari )
 {
-    LOG(fatal) << msg ; 
+    if(G::VERBOSE) LOG(fatal) << msg ; 
     GLenum err = glGetError()  ;
     bool ok = err == GL_NO_ERROR ; 
     if (!ok)

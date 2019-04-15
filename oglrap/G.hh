@@ -5,6 +5,8 @@
 
 struct OGLRAP_API G
 {
+     static bool VERBOSE ; 
+
      static const char* GL_INVALID_ENUM_ ; 
      static const char* GL_INVALID_VALUE_ ; 
      static const char* GL_INVALID_OPERATION_ ; 

@@ -3,7 +3,7 @@
 #include <cstddef>
 #include <string>
 #include <vector>
-
+#include "plog/Severity.h"
 
 #define QUERY_WORKAROUND 1
 
@@ -46,6 +46,7 @@ Multiple flavors of Renderer are residents of Scene.
 class OGLRAP_API Renderer : public RendererBase  {
   public:
 
+  static const plog::Severity LEVEL ;  
   static const char* PRINT ;  
   static const char* GMergedMesh_ ;
   static const char* GBBoxMesh_ ;

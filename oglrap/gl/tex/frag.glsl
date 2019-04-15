@@ -1,5 +1,5 @@
 #version 410 core
-//#pragma debug(on)
+#pragma debug(on)
 
 //in vec3 colour;
 in vec2 texcoord;

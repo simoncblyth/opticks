@@ -3,9 +3,7 @@ set(name OGLRapTest)
 project(${name} VERSION 0.1.0)
 include(OpticksBuildOptions)
 
-set(FRAGILE_TEST_SOURCES
-    FrameTest.cc
-) 
+
 
 set(TEST_SOURCES
 
@@ -13,10 +11,10 @@ set(TEST_SOURCES
     ProgTest.cc
 
     InteractorKeys.cc
+
     AxisAppCheck.cc
     SceneCheck.cc
-
-    FrameTest.cc
+    TexCheck.cc
 
     gleq_check.c
 )

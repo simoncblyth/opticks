@@ -23,6 +23,8 @@ Use oglrap-frametest
 #include "Renderer.hh"
 #include "Interactor.hh"
 #include "Texture.hh"
+#include "G.hh"
+
 
 #include "OPTICKS_LOG.hh"
 
@@ -43,6 +45,9 @@ int main(int argc, char** argv)
     Opticks ok(argc, argv);
     OpticksHub hub(&ok);
 
+
+    G::VERBOSE = true ; 
+
     Frame frame ; 
     Composition composition ; 
     //Interactor interactor(&hub) ;  // why the interactor needs the hub ?
@@ -60,9 +65,10 @@ int main(int argc, char** argv)
     composition.setSize(texture.getWidth(), texture.getHeight(),2 );
 
     frame.setComposition(&composition);
-    frame.setTitle("FrameTest");
+    frame.setTitle("TexTest");
     frame.init(); // creates OpenGL context 
 
+    frame.hintVisible(true); 
     frame.show();
 
     //composition.setModelToWorld(texture.getModelToWorldPtr(0));   // point at the geometry 
@@ -99,3 +105,32 @@ int main(int argc, char** argv)
 
     return 0 ;
 }
+
+
+/**
+
+The above code is missing something (that is done in standard running) that prevents linking of shaders.
+First guess would be tex setup::
+
+    [blyth@localhost oglrap]$ TexCheck /tmp/pix.ppm 
+    2019-04-15 10:12:16.073 INFO  [87193] [main@43] TexCheck ppmpath /tmp/pix.ppm
+    ...
+    2019-04-15 10:23:20.080 FATAL [104897] [G::ErrCheck@57] Prog::create.m_id
+    2019-04-15 10:23:20.080 FATAL [104897] [G::ErrCheck@57] Prog::create.]
+    ERROR: linking GL shader program index 1 
+    2019-04-15 10:23:20.080 INFO  [104897] [Prog::_print_program_info_log@275] Prog::_print_program_info_log Prog  tag:tex verbosity:0
+    2019-04-15 10:23:20.080 INFO  [104897] [ProgLog::dump@21] Prog::_print_program_info_log
+    ProgLog::dump id 1:
+    []2019-04-15 10:23:20.080 INFO  [104897] [Prog::_print_program_info_log@280]  NO_FRAGMENT_SHADER 0
+    Prog::link ERROR
+    GL_LINK_STATUS = 0
+    GL_ATTACHED_SHADERS = 0
+    GL_ACTIVE_ATTRIBUTES = 0
+    GL_ACTIVE_UNIFORMS = 0
+    GL_VALIDATE_STATUS = 0
+    [blyth@localhost tests]$ 
+
+
+**/
+
+
