@@ -16,6 +16,52 @@ See also
 * examples/UseOpticksXercesC
 
 
+Note bizarre inheritance chain
+-----------------------------------
+
+::
+
+    [blyth@localhost gdml]$ grep class include/*.hh | grep -v \; | grep -v // | grep Write  ## manually reordered
+    include/G4GDMLWrite.hh:class G4GDMLWrite
+    include/G4GDMLWriteDefine.hh:class G4GDMLWriteDefine : public G4GDMLWrite
+    include/G4GDMLWriteMaterials.hh:class G4GDMLWriteMaterials : public G4GDMLWriteDefine
+    include/G4GDMLWriteSolids.hh:class G4GDMLWriteSolids : public G4GDMLWriteMaterials
+    include/G4GDMLWriteSetup.hh:class G4GDMLWriteSetup : public G4GDMLWriteSolids
+    include/G4GDMLWriteParamvol.hh:class G4GDMLWriteParamvol : public G4GDMLWriteSetup
+    include/G4GDMLWriteStructure.hh:class G4GDMLWriteStructure : public G4GDMLWriteParamvol
+
+
+In X4GDMLParser X4GDMLWriter hack it to enable writing out solids
+---------------------------------------------------------------------
+
+::
+
+    [blyth@localhost extg4]$ X4GDMLParserTest
+    G4GDML: Writing solids...
+    [blyth@localhost extg4]$ cat /tmp/out.gdml 
+    <?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+    <gdml xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="SchemaLocation">
+
+      <solids>
+        <ellipsoid ax="249" by="249" cz="179" lunit="mm" name="PMT_20inch_inner_solid_1_Ellipsoid0x4c911300xab40e0" zcut1="-179" zcut2="179"/>
+        <cone aunit="deg" deltaphi="360" lunit="mm" name="cons0xab44a0" rmax1="44.99" rmax2="83.9935" rmin1="0" rmin2="0" startphi="0" z="50.4914051404128"/>
+        <union name="PMT_20inch_inner_solid_1_20x4cb30f00xab45e0">
+          <first ref="PMT_20inch_inner_solid_1_Ellipsoid0x4c911300xab40e0"/>
+          <second ref="cons0xab44a0"/>
+          <position name="PMT_20inch_inner_solid_1_20x4cb30f00xab45e0_pos" unit="mm" x="0" y="0" z="-193.7543"/>
+        </union>
+        <tube aunit="deg" deltaphi="360" lunit="mm" name="PMT_20inch_inner_solid_3_EndTube0x4cb2fc00xab4820" rmax="45.01" rmin="0" startphi="0" z="115.02"/>
+        <union name="PMT_20inch_inner_solid0x4cb32e00xab4940">
+          <first ref="PMT_20inch_inner_solid_1_20x4cb30f00xab45e0"/>
+          <second ref="PMT_20inch_inner_solid_3_EndTube0x4cb2fc00xab4820"/>
+          <position name="PMT_20inch_inner_solid0x4cb32e00xab4940_pos" unit="mm" x="0" y="0" z="-276.5"/>
+        </union>
+      </solids>
+
+    </gdml>
+
+
+
 g4-;g4-cls G4GDMLWriteSolids
 ---------------------------------
 

@@ -487,8 +487,8 @@ G4GDML
 ----------
 
 * hmm actually just want to write the solid, can G4 GDML be persuaded/tricked into doing that 
+* hacked GDML writing of solids in X4GDMLParser X4GDMLWriter, notes in review. 
 * :doc:`G4GDML_review`
-
 
 
 

@@ -48,8 +48,8 @@ set(SOURCES
     X4Mesh.cc
     X4SolidList.cc
 
-    X4GDMLWrite.cc
-
+    X4GDMLParser.cc
+    X4GDMLWriteStructure.cc
 
     X4Material.cc
     X4MaterialTable.cc
@@ -99,7 +99,8 @@ set(HEADERS
     X4Mesh.hh
     X4SolidList.hh
 
-    X4GDMLWrite.hh
+    X4GDMLParser.hh
+    X4GDMLWriteStructure.hh
 
     X4Material.hh
     X4MaterialTable.hh

@@ -339,7 +339,7 @@ g4-bdir(){ echo $(g4-dir).$(g4-config).build ; }
 
 g4-cmake-dir(){     echo $(g4-prefix)/lib$(g4-libsuffix)/$(g4-nom) ; }
 g4-examples-dir(){  echo $(g4-prefix)/share/$(g4-nom)/examples ; }
-g4-gdml-dir(){      echo $(g4-dir)/source/persistency/gdml/src ; }
+g4-gdml-dir(){      echo $(g4-dir)/source/persistency/gdml ; }
 g4-optical-dir(){   echo $(g4-dir)/source/processes/optical/src ; }
 
 g4-ecd(){  cd $(g4-edir); }

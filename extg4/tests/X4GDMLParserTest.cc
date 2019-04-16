@@ -6,7 +6,7 @@
 
 **/
 
-#include "X4GDMLWrite.hh"
+#include "X4GDMLParser.hh"
 
 #include "OPTICKS_LOG.hh"
 #include "BFile.hh"
@@ -88,9 +88,16 @@ int main( int argc , char** argv )
 
     G4VSolid* solid = make_solid() ; 
 
-    std::string csgpath = BFile::FormPath(X4::X4GEN_DIR, exename) ; 
+    //std::string csgpath = BFile::FormPath(X4::X4GEN_DIR, exename) ; 
+    //
+    //X4CSG::Serialize( solid, csgpath.c_str() ) ;
 
-    X4CSG::Serialize( solid, csgpath.c_str() ) ;
+
+
+    G4String fname("/tmp/out.gdml"); 
+    X4GDMLParser parser ;  
+    parser.write( fname, solid ); 
+
 
     return 0 ; 
 }
