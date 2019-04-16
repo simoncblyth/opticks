@@ -20,12 +20,12 @@ g4-;g4-cls G4GDMLParser
 class X4_API X4GDMLParser  
 {
     public:
-        static void Write( const G4VSolid* solid, const char* path=NULL );  // NULL path writes to stdout
-        static std::string ToString( const G4VSolid* solid ) ;  
+        static void Write( const G4VSolid* solid, const char* path, bool refs );  // NULL path writes to stdout
+        static std::string ToString( const G4VSolid* solid, bool refs ) ;  
     private:
-        X4GDMLParser() ; 
-        void write(const G4VSolid* solid, const char* path=NULL );
-        std::string to_string( const G4VSolid* solid );
+        X4GDMLParser(bool refs) ; 
+        void write(const G4VSolid* solid, const char* path);
+        std::string to_string( const G4VSolid* solid);
     private:
         X4GDMLWriteStructure* writer ;  
 

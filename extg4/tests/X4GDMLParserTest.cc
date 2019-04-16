@@ -84,17 +84,18 @@ int main( int argc , char** argv )
 {
     OPTICKS_LOG(argc, argv);
 
-    const char* exename = PLOG::instance->args.exename() ; 
+    //const char* exename = PLOG::instance->args.exename() ; 
 
     G4VSolid* solid = make_solid() ; 
 
     //std::string csgpath = BFile::FormPath(X4::X4GEN_DIR, exename) ; 
     //X4CSG::Serialize( solid, csgpath.c_str() ) ;
 
+    bool refs = false ; // add pointer refs : false because already present
  
-    X4GDMLParser::Write( solid ) ; // to stdout 
-    X4GDMLParser::Write( solid, "/tmp/out.gdml" ) ; // to file
-    std::string gdml = X4GDMLParser::ToString(solid) ; 
+    X4GDMLParser::Write( solid, NULL, refs ) ; // to stdout 
+    X4GDMLParser::Write( solid, "/tmp/out.gdml", refs ) ; // to file
+    std::string gdml = X4GDMLParser::ToString(solid, refs) ; 
     LOG(fatal) << gdml ; 
 
 

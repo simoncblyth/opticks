@@ -47,6 +47,7 @@ void X4CSG::GenerateTest( const G4VSolid* solid, const char* prefix, unsigned lv
     const char* path = GenerateTestPath(prefix, lvidx, ".cc" ) ; 
     LOG(debug) << "( " << lvidx << " " << path ; 
     X4CSG xcsg(solid);
+    xcsg.setIndex(lvidx);
     xcsg.writeTestMain(path); 
     LOG(debug) << ") " << lvidx ; 
 }
@@ -98,16 +99,17 @@ X4CSG::X4CSG(const G4VSolid* solid_)
     :
     verbosity(SSys::getenvint("VERBOSITY",0)),
     solid(solid_),
-    gdml(X4GDMLParser::ToString(solid)),
+    gdml(X4GDMLParser::ToString(solid, false )),    // do not add pointer refs to names  
     container(MakeContainer(solid, 1.5f)),
     solid_boundary("Vacuum///GlassSchottF2"),
     container_boundary("Rock//perfectAbsorbSurface/Vacuum"),
     nraw(X4Solid::Convert(solid, solid_boundary)),
-    nsolid(X4Solid::Balance(nraw)),
+    nsolid(X4Solid::Balance(nraw)),                  // lvIdx 16 has an empty test .cc generated as being balanced looses the g4code see npy/NTreeProcess.cc
     ncontainer(X4Solid::Convert(container, container_boundary)),
     csolid( NCSG::Adopt(nsolid) ),
     ccontainer( NCSG::Adopt(ncontainer) ),
-    ls(NULL)
+    ls(NULL),
+    index(-1)
 {
     init();
 }
@@ -121,6 +123,11 @@ void X4CSG::init()
 
     trees.push_back( ccontainer ); 
     trees.push_back( csolid ); 
+}
+
+void X4CSG::setIndex(unsigned index_)
+{
+    index = index_ ; 
 }
 
 
@@ -235,6 +242,7 @@ void X4CSG::generateTestMain( std::ostream& out ) const
     out << gdml << std::endl ; 
     out << ")\" ; " << std::endl ;
 
+    if( index > -1 ) out << "// LV=" << index << std::endl ; 
     nnode::to_g4code(nsolid, out,  0 ) ;  
     out << TAIL ; 
 }

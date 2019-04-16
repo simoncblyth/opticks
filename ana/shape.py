@@ -2,7 +2,7 @@
 """
 TODO: get this to work with python3
 """
-import logging
+import logging, copy 
 
 import numpy as np, math 
 import matplotlib.pyplot as plt
@@ -10,6 +10,115 @@ from matplotlib.patches import Rectangle, Circle, Ellipse, PathPatch
 import matplotlib.lines as mlines
 import matplotlib.path as mpath
 
+
+def ellipse_closest_approach_to_point( ex, ez, _c ):
+    """ 
+    Ellipse natural frame, semi axes ex, ez.  _c coordinates of point
+
+    :param ex: semi-major axis 
+    :param ez: semi-major axis 
+    :param c: xz coordinates of point 
+
+    :return p: point on ellipse of closest approach to center of torus circle
+
+    Closest approach on the bulb ellipse to the center of torus "circle" 
+    is a good point to target for hype/cone/whatever neck, 
+    as are aiming to eliminate the cylinder neck anyhow
+
+    equation of RHS torus circle, in ellipse frame
+
+        (x - R)^2 + (z - z0)^2 - r^2 = 0  
+
+    equation of ellipse
+
+        (x/ex)^2 + (z/ez)^2 - 1 = 0 
+
+    """
+    c = np.asarray( _c )   # center of RHS torus circle
+    assert c.shape == (2,)
+
+    t = np.linspace( 0, 2*np.pi, 1000000 )
+    e = np.zeros( [len(t), 2] )
+    e[:,0] = ex*np.cos(t) 
+    e[:,1] = ez*np.sin(t)   # 1M parametric points on the ellipse 
+
+    p = e[np.sum(np.square(e-c), 1).argmin()]   # point on ellipse closest to c 
+    return p 
+
+
+
+class X(object):
+    def __repr__(self):
+        return "\n".join( map(repr, self.constituents()))
+
+    def find(self, shape):
+        return self.root.find(shape) 
+
+    def find_one(self, shape):
+        ff = self.root.find(shape)
+        assert len(ff) == 1
+        return ff[0]  
+
+    def constituents(self):
+        return self.root.constituents() 
+
+
+    def replacement_cons(self):
+        """
+        """ 
+        i = self.find_one("Torus")
+        r = i.param[0]
+        R = i.param[1]
+
+        d = self.find_one("Ellipsoid")
+        ex = d.param[0]
+        ez = d.param[1]
+
+        print("r %s R %s ex %s ez %s " % (r,R,ex,ez))
+        print(" Ellipsoid d.xy %s " % repr(d.xy) ) 
+        print(" Torus     i.xy %s " % repr(i.xy) ) 
+
+        z0 = i.xy[1]
+
+        p = ellipse_closest_approach_to_point( ex, ez, [R,z0] )
+
+        pr, pz = p    # at torus/ellipse closest point : no guarantee of intersection 
+        print(" ellipse closest approach to torus  %s " % repr(p) )
+        
+        r2 = pr
+        r1 = R - r
+        mz = (z0 + pz)/2.   # mid-z cone coordinate (ellipsoid frame)
+        hz = (pz - z0)/2.   # cons galf height 
+
+        f = Cons( "f", [r1,r2,hz] )
+        B = np.array( [0, mz] )  
+
+        print(" replacment Cons %s offset %s " % (repr(f),repr(B)))
+
+        return f, B  
+
+
+    def spawn_rationalized(self):
+        name = self.__class__.__name__
+        x = copy.deepcopy(self) 
+        
+        e = x.find_one("Ellipsoid")
+        ss = x.find_one("Torus").parent
+        assert ss is not None and ss.shape == "SubtractionSolid"
+        us = ss.parent  
+        assert us is not None and us.shape == "UnionSolid"
+        assert us.left is not None and us.left == e 
+        assert us.right is not None and us.right == ss 
+
+        # replacing the SubtractionSolid in the copied tree
+        cons, offset =  x.replacement_cons()
+        us.right = cons
+        cons.parent = us
+        cons.ltransform = offset 
+
+        return x 
+
+        
 
 class Shape(object):
     """
@@ -63,6 +172,7 @@ class Shape(object):
         pass
 
 
+    is_primitive = property(lambda self:self.left is None and self.right is None)
     is_composite = property(lambda self:self.left is not None and self.right is not None)
 
     def _get_xy(self):
@@ -78,6 +188,21 @@ class Shape(object):
         return xy 
 
     xy = property(_get_xy)
+
+    def constituents(self):
+        if self.is_primitive:
+            return [self]
+        else: 
+            assert self.is_composite
+            cts = []
+            cts.extend( self.left.constituents() )
+            cts.extend( self.right.constituents() )
+            return cts
+        pass
+
+    def find(self, shape):
+        cts = self.constituents()
+        return filter( lambda ct:ct.shape == shape, cts ) 
 
     def patches(self):
         if self.shape == "Ellipsoid":

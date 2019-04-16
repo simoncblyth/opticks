@@ -68,9 +68,10 @@ nnode* X4Solid::Convert(const G4VSolid* solid, const char* boundary)
 
 nnode* X4Solid::Balance(nnode* raw, unsigned soIdx , unsigned lvIdx )
 {
-    nnode* root = NTreeProcess<nnode>::Process(raw, soIdx, lvIdx);  // balances deep trees
+    nnode* root = NTreeProcess<nnode>::Process(raw, soIdx, lvIdx);  // balances deep trees, or if not deep retuns raw
     root->other = raw ; 
     root->boundary = raw->boundary ? strdup(raw->boundary) : NULL ; 
+    // note that g4code is not passed, as its inconsistent with the balanced tree presumably 
     return root ; 
 }
 

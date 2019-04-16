@@ -1,13 +1,15 @@
 #include "X4GDMLWriteStructure.hh"
+#include "X4GDMLParser.hh"
+
 #include <cstring>
 
 #include <xercesc/framework/StdOutFormatTarget.hpp>
 #include <xercesc/framework/MemBufFormatTarget.hpp>
 
 
-X4GDMLWriteStructure::X4GDMLWriteStructure()
+X4GDMLWriteStructure::X4GDMLWriteStructure(bool refs)
 {
-    init(); 
+    init(refs); 
 }
 
 // /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/persistency/gdml/src/G4GDMLWrite.cc
@@ -29,11 +31,11 @@ std::string X4GDMLWriteStructure::to_string( const G4VSolid* solid )
 
 
 
-void X4GDMLWriteStructure::init()
+void X4GDMLWriteStructure::init(bool refs)
 {
 
    SchemaLocation = "SchemaLocation";
-   addPointerToName = true ;
+   addPointerToName = refs ;
 
    xercesc::XMLString::transcode("LS", tempStr, 9999);
    xercesc::DOMImplementationRegistry::getDOMImplementation(tempStr);

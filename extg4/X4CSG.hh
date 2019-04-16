@@ -40,6 +40,7 @@ struct X4_API X4CSG
 
     void init();
     void checkTree() const ;
+    void setIndex(unsigned index_);
 
     void configure( NPYMeta* meta );
     void dump(const char* msg="X4CSG::dump");
@@ -63,6 +64,7 @@ struct X4_API X4CSG
     NCSG*            ccontainer ; 
     NCSGList*        ls ; 
     std::vector<NCSG*> trees ;
+    int              index ; 
 
 };
 

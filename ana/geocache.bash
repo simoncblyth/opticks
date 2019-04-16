@@ -166,6 +166,7 @@ geocache-info(){ cat << EOI
 
   OPTICKS_KEY     :  ${OPTICKS_KEY}
   geocache-keydir : $(geocache-keydir)
+  geocache-tstdir : $(geocache-tstdir)
       directory derived from the OPTICKS_KEY envvar 
 
 EOI
@@ -184,7 +185,10 @@ geocache-keydir()
     #echo $LOCAL_BASE/opticks/geocache/OKX4Test_lWorld0x4bc2710_PV_g4live/g4ok_gltf/528f4cefdac670fffe846377973af10a/1
 }
 
+geocache-tstdir(){ echo $(geocache-keydir)/g4codegen/tests ; }
+
 geocache-kcd(){ cd $(geocache-keydir) ; }
+geocache-tcd(){ cd $(geocache-tstdir) ; }
 
 
 geocache-tmp(){ echo /tmp/$USER/opticks/$1 ; }
@@ -211,7 +215,9 @@ geocache-j1808-v2()
 
     type $FUNCNAME
     opticksdata- 
-    gdb --args OKX4Test --gdmlpath $(opticksdata-jv2) --g4codegen --csgskiplv 22
+
+    #gdb --args 
+    OKX4Test --gdmlpath $(opticksdata-jv2) --g4codegen --csgskiplv 22
 
     cd $iwd
 }

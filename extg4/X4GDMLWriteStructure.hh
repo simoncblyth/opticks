@@ -20,13 +20,12 @@ g4-;g4-cls G4GDMLWrite
 class X4_API X4GDMLWriteStructure : public G4GDMLWriteStructure 
 {
     public:
-        X4GDMLWriteStructure() ; 
+        X4GDMLWriteStructure(bool refs) ; 
 
         void write(const G4VSolid* solid, const char* path=NULL ); // to file or stdout when path is NULL
-
         std::string to_string( const G4VSolid* solid ); 
    private:
-        void init();
+        void init(bool refs);
         void add( const G4VSolid* solid ); 
         std::string write( const char* path=NULL ) ; 
   

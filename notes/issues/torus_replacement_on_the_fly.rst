@@ -344,7 +344,23 @@ That leaves the four instanced PMT volumes which have torii
 
 
 
+
+Comparing lvIdx 18 : PMT_20inch_inner1_log0x4cb3cc0 
+------------------------------------------------------
+
+Compare the original GDML with the GDML snippet written by X4GDMLParser into the generated x018.cc,
+by eye they look to be a perfect match. The GDML was read by OKX4Test and the G4VSolid trees 
+written out again as per-lvIdx GDML snippets.   
+
+
 ::
+
+   [blyth@localhost issues]$ opticksdata-
+   [blyth@localhost issues]$ opticksdata-jv2
+   /home/blyth/local/opticks/opticksdata/export/juno1808/g4_00_v2.gdml
+
+
+   vi /home/blyth/local/opticks/opticksdata/export/juno1808/g4_00_v2.gdml
 
 
    665     <ellipsoid ax="249" by="249" cz="179" lunit="mm" name="PMT_20inch_inner_solid_1_Ellipsoid0x4c91130" zcut1="-179" zcut2="179"/>
@@ -372,6 +388,52 @@ That leaves the four instanced PMT volumes which have torii
    687       <second ref="Inner_Separator0x4cb3530"/>
    688       <position name="PMT_20inch_inner1_solid0x4cb3610_pos" unit="mm" x="0" y="0" z="91.999999999"/>
    689     </intersection>
+
+
+
+/home/blyth/local/opticks/geocache/OKX4Test_lWorld0x4bc2710_PV_g4live/g4ok_gltf/528f4cefdac670fffe846377973af10a/1/g4codegen/tests/x018.cc::
+
+     27 // gdml from X4GDMLParser::ToString(G4VSolid*)  
+     28 const std::string gdml = R"( 
+     29 <?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+     30 <gdml xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="SchemaLocation">
+     31 
+     32   <solids>
+     33     <ellipsoid ax="249" by="249" cz="179" lunit="mm" name="PMT_20inch_inner_solid_1_Ellipsoid0x4c91130" zcut1="-179" zcut2="179"/>
+     34     <tube aunit="deg" deltaphi="360" lunit="mm" name="PMT_20inch_inner_solid_2_Tube0x4c91210" rmax="75.95124689239" rmin="0" startphi="0" z="47.5650199027483"/>
+     35     <torus aunit="deg" deltaphi="360" lunit="mm" name="PMT_20inch_inner_solid_2_Torus0x4c91340" rmax="52.01" rmin="0" rtor="97" startphi="-0.00999999999999938"/>
+     36     <subtraction name="PMT_20inch_inner_solid_part20x4cb2d80">
+     37       <first ref="PMT_20inch_inner_solid_2_Tube0x4c91210"/>
+     38       <second ref="PMT_20inch_inner_solid_2_Torus0x4c91340"/>
+     39       <position name="PMT_20inch_inner_solid_part20x4cb2d80_pos" unit="mm" x="0" y="0" z="-23.7725099513741"/>
+     40     </subtraction>
+     41     <union name="PMT_20inch_inner_solid_1_20x4cb30f0">
+     42       <first ref="PMT_20inch_inner_solid_1_Ellipsoid0x4c91130"/>
+     43       <second ref="PMT_20inch_inner_solid_part20x4cb2d80"/>
+     44       <position name="PMT_20inch_inner_solid_1_20x4cb30f0_pos" unit="mm" x="0" y="0" z="-195.227490048626"/>
+     45     </union>
+     46     <tube aunit="deg" deltaphi="360" lunit="mm" name="PMT_20inch_inner_solid_3_EndTube0x4cb2fc0" rmax="45.01" rmin="0" startphi="0" z="115.02"/>
+     47     <union name="PMT_20inch_inner_solid0x4cb32e0">
+     48       <first ref="PMT_20inch_inner_solid_1_20x4cb30f0"/>
+     49       <second ref="PMT_20inch_inner_solid_3_EndTube0x4cb2fc0"/>
+     50       <position name="PMT_20inch_inner_solid0x4cb32e0_pos" unit="mm" x="0" y="0" z="-276.5"/>
+     51     </union>
+     52     <tube aunit="deg" deltaphi="360" lunit="mm" name="Inner_Separator0x4cb3530" rmax="254.000000001" rmin="0" startphi="0" z="184.000000002"/>
+     53     <intersection name="PMT_20inch_inner1_solid0x4cb3610">
+     54       <first ref="PMT_20inch_inner_solid0x4cb32e0"/>
+     55       <second ref="Inner_Separator0x4cb3530"/>
+     56       <position name="PMT_20inch_inner1_solid0x4cb3610_pos" unit="mm" x="0" y="0" z="91.999999999"/>
+     57     </intersection>
+     58   </solids>
+     59 
+     60 </gdml>
+     61 
+     62 )" ;
+
+
+
+
+
 
 
 
@@ -471,6 +533,8 @@ Did the solid previously in ana/x019.cc ana/x018_torus_hyperboloid_plt.py  how t
 Something analogous to X4CSG::Serialize that writes GDML
 ----------------------------------------------------------
 
+* implemented this in X4GDMLParser
+
 * wrap the G4VSolid into a Geant4 jacket, with names for the volumes passed as arguments
 
 ::
@@ -491,5 +555,219 @@ G4GDML
 * :doc:`G4GDML_review`
 
 
+
+Making sense of 18,19,20,21
+------------------------------
+
+::
+
+    18 PMT_20inch_inner1_log0x4cb3cc0
+    19 PMT_20inch_inner2_log0x4c9a6e0
+    20 PMT_20inch_body_log0x4cb3aa0
+    21 PMT_20inch_log0x4cb3bb0
+ 
+
+
+
+Compare 18 and 19 : 18 intersects with the separator cylinder, 19 subtracts it 
+---------------------------------------------------------------------------------------
+
+The solids are identical : just a very few name changes and flipping from an intersection to a subtraction.
+So the constituent solids are mostly the same between 18 and 19.
+
+* it would be cute if it were not such an expensive way of modelling the cathode and the rest 
+
+::
+
+    geocache-tcd
+    [blyth@localhost tests]$ diff -y x018.cc x019.cc 
+    ... too wide to appear here 
+
+::
+
+
+    [blyth@localhost tests]$ diff x018.cc x019.cc 
+    53c53
+    <     <intersection name="PMT_20inch_inner1_solid0x4cb3610">
+    ---
+    >     <subtraction name="PMT_20inch_inner2_solid0x4cb3870">
+    56,57c56,57
+    <       <position name="PMT_20inch_inner1_solid0x4cb3610_pos" unit="mm" x="0" y="0" z="91.999999999"/>
+    <     </intersection>
+    ---
+    >       <position name="PMT_20inch_inner2_solid0x4cb3870_pos" unit="mm" x="0" y="0" z="91.999999999"/>
+    >     </subtraction>
+    63c63
+    < // LV=18
+    ---
+    > // LV=19
+    83c83
+    <     G4VSolid* a = new G4IntersectionSolid("PMT_20inch_inner1_solid0x4cb3610", b, m, NULL, D) ; // 0
+    ---
+    >     G4VSolid* a = new G4SubtractionSolid("PMT_20inch_inner2_solid0x4cb3870", b, m, NULL, D) ; // 0
+    [blyth@localhost tests]$ 
+
+
+
+Compare 20 and 21 : many more differences in all names, numbers but CSG structure is the same
+------------------------------------------------------------------------------------------------
+
+* dimensions of 21 are very slightly enlarged over 20
+
+::
+
+    geocache-tcd
+    vimdiff x020.cc x021.cc  // clearer in macOS Terminal than on linux
+
+
+Volumes
+-------------
+
+::
+
+    18 PMT_20inch_inner1_log0x4cb3cc0
+    19 PMT_20inch_inner2_log0x4c9a6e0
+    20 PMT_20inch_body_log0x4cb3aa0
+    21 PMT_20inch_log0x4cb3bb0
+
+::
+
+      1447     <volume name="PMT_20inch_inner1_log0x4cb3cc0">
+      1448       <materialref ref="Vacuum0x4b9b630"/>
+      1449       <solidref ref="PMT_20inch_inner1_solid0x4cb3610"/>            // 18 : intersection to give the cap
+      1450     </volume>
+
+      1451     <volume name="PMT_20inch_inner2_log0x4c9a6e0">
+      1452       <materialref ref="Vacuum0x4b9b630"/>
+      1453       <solidref ref="PMT_20inch_inner2_solid0x4cb3870"/>            // 19 : subtraction to give the remainder
+      1454     </volume>
+
+      1455     <volume name="PMT_20inch_body_log0x4cb3aa0">               // 20    
+      1456       <materialref ref="Pyrex0x4bae2a0"/>
+      1457       <solidref ref="PMT_20inch_body_solid0x4c90e50"/>               
+      1458       <physvol name="PMT_20inch_inner1_phys0x4c9a870">             // 18 : cap (cathode) vacuum
+      1459         <volumeref ref="PMT_20inch_inner1_log0x4cb3cc0"/>
+      1460       </physvol>
+      1461       <physvol name="PMT_20inch_inner2_phys0x4c9a920">             // 19 : remainder vacuum
+      1462         <volumeref ref="PMT_20inch_inner2_log0x4c9a6e0"/>
+      1463       </physvol>
+      1464     </volume>
+
+      1465     <volume name="PMT_20inch_log0x4cb3bb0">                    // 21   
+      1466       <materialref ref="Pyrex0x4bae2a0"/>
+      1467       <solidref ref="PMT_20inch_pmt_solid0x4c81b40"/>
+      1468       <physvol name="PMT_20inch_body_phys0x4c9a7f0">             // 20 inside (very slightly smaller dimension) : outer coating attempt 
+      1469         <volumeref ref="PMT_20inch_body_log0x4cb3aa0"/>
+      1470       </physvol>
+      1471     </volume>
+
+
+
+ana/x018.py x019.py x020.py x021.py xplt.py
+-------------------------------------------------
+
+Manually translated the generated g4code into python (in a style that 
+can be generated if necessary)::
+
+     09 class x021(X):
+     10     """ 
+     11     // LV=21 
+     12     // start portion generated by nnode::to_g4code 
+     13     G4VSolid* make_solid()  
+     14     { 
+     15         G4VSolid* c = new G4Ellipsoid("PMT_20inch_pmt_solid_1_Ellipsoid0x4c3bc00", 254.001000, 254.001000, 184.001000, -184.001000, 184.001000) ; // 2
+     16         G4VSolid* f = new G4Tubs("PMT_20inch_pmt_solid_2_Tube0x4c3bc90", 0.000000, 77.976532, 21.496235, 0.000000, CLHEP::twopi) ; // 3
+     17         G4VSolid* h = new G4Torus("PMT_20inch_pmt_solid_2_Torus0x4c84bd0", 0.000000, 47.009000, 97.000000, -0.000175, CLHEP::twopi) ; // 3
+     18         
+     19         G4ThreeVector A(0.000000,0.000000,-21.486235);
+     20         G4VSolid* e = new G4SubtractionSolid("PMT_20inch_pmt_solid_part20x4c84c70", f, h, NULL, A) ; // 2
+     21            
+     22         G4ThreeVector B(0.000000,0.000000,-197.513765);
+     23         G4VSolid* b = new G4UnionSolid("PMT_20inch_pmt_solid_1_20x4c84f90", c, e, NULL, B) ; // 1
+     24         G4VSolid* j = new G4Tubs("PMT_20inch_pmt_solid_3_EndTube0x4c84e60", 0.000000, 50.011000, 60.010500, 0.000000, CLHEP::twopi) ; // 1
+     25            
+     26         G4ThreeVector C(0.000000,0.000000,-279.000500);
+     27         G4VSolid* a = new G4UnionSolid("PMT_20inch_pmt_solid0x4c81b40", b, j, NULL, C) ; // 0
+     28         return a ; 
+     29     }       
+     30     // end portion generated by nnode::to_g4code 
+     31     """     
+     32     def __init__(self):
+     33         c = Ellipsoid( "c", [254.001000, 184.001000] )
+     34         f = Tubs(     "f", [77.976532, 21.496235] )
+     35         h = Torus(    "h", [47.009000, 97.000000] )
+     36 
+     37         A = np.array( [0.000000,-21.486235] )
+     38         e = SubtractionSolid( "e" , [f, h, A] )
+     39 
+     40         B = np.array( [0.000000,-197.513765])
+     41         b = UnionSolid( "b", [c, e, B] )
+     42 
+     43         j = Tubs( "j", [50.011000, 60.010500] )
+     44         C = np.array( [0.000000,-279.000500] )
+     45         a = UnionSolid( "a", [b, j, C] )
+     46 
+     47         self.root = a
+
+
+
+
+Cutting Ellipsoid
+---------------------
+
+::
+
+     g4-cls G4Ellipsoid
+
+     37 //   A G4Ellipsoid is an ellipsoidal solid, optionally cut at a given z.
+     38 //
+     39 //   Member Data:
+     40 //
+     41 //      xSemiAxis       semi-axis, x
+     42 //      ySemiAxis       semi-axis, y
+     43 //      zSemiAxis       semi-axis, z
+     44 //      zBottomCut      lower cut plane level, z (solid lies above this plane)
+     45 //      zTopCut         upper cut plane level, z (solid lies below this plane)
+     46 
+
+
+
+How to rationalize : starting in ana/x018.py x019.py x020.py 
+---------------------------------------------------------------
+
+::
+
+    18 : cap : single ellipsoid only with zBottomCut
+    19 : rest :  ellipsoid with zTopCut (=zBottomCut above) + (polycone) + tubs
+    20 : ellipsoid + (polycone) + tubs
+    21 : ellipsoid + (polycone) + tubs
+
+* where the polycone replaces cylinder-torus
+
+
+Maths to calculate the cons to replace the Subtraction Solid (tubs - torus)
+------------------------------------------------------------------------------
+
+Are generalizing the initial imp of ana/x018_torus_hyperboloid_plt.py into ana/shape.py
+
+* have replaced the tubs-torus bileaf with cons
+* used tree surgery on a copy
+
+Remaining:
+
+* x018 x019 need more surgery to remove root level intersect or subtraction
+  replacing with ellipsoid z cuts 
+
+  * 18 : ellipsoid becomes root with zrange upper half
+  * 19 : root.left becomes root and ellipsoid zrange lower half 
+  * the cuts are both zero in ellipsoid frame (on equator)
+   
+* given rationalized python trees,  need to then generate 
+  corresponding G4 code (will need to propagate the original names in, 
+  so can do that with generated x018.py etc)
+  
+* running the G4 code to make a rationalized solid can then 
+  be converted to GDML snippets for manual inclusion 
+  into the opticksdata-jv2 GDML 
 
 

@@ -2,36 +2,20 @@
 """
 Continuing from tboolean-12
 
-Next:
+See also
 
-1. ad-hoc overlay hyperboloid curves
+x018.py x019.py x020.py x021.py 
+    these were manually created from the generated g4code 
+    but could be generated too
 
-2. consider ellipse tangent matching in addition to intersect : 
-   looking at shape of the hyperboloid neck when targetting 
-   closest approach point vs the torus neck : there seems to 
-   be no point in fiddling more : also probably not possible
-   as no other parameter to diddle 
+shape.py
+    rationalizations replacing tubs-torus with cons
 
-3. Hype following the pattern of Ellipsoid etc.. hmm not so easy no
-   nice patch ready to use : would have to approximate with a parametrically 
-   defined path : so dont bother
+notes/issues/torus_replacement_on_the_fly.rst
 
-4. Come up with G4Hype arguments and test how it looks in 3D, by changing x019.cc
-  
-::
 
-     79 
-     80   G4Hype(const G4String& pName,
-     81                G4double  newInnerRadius,
-     82                G4double  newOuterRadius,
-     83                G4double  newInnerStereo,
-     84                G4double  newOuterStereo,
-     85                G4double  newHalfLenZ);
-     86 
-
-    // arghh : G4Hype cannot be z-cut : so would have to intersect with cylinder 
-    // this makes me want to use a cone for the neck instead 
-
+// arghh : G4Hype cannot be z-cut : so would have to intersect with cylinder 
+// this makes me want to use a cone for the neck instead 
 
 """
 
@@ -43,7 +27,7 @@ import numpy as np, math
 import matplotlib.pyplot as plt
 from opticks.ana.torus_hyperboloid import Tor, Hyp
 
-from opticks.ana.shape import Shape
+from opticks.ana.shape import Shape, ellipse_closest_approach_to_point
 
 class Ellipsoid(Shape):pass
 class Tubs(Shape):pass
@@ -58,6 +42,8 @@ class IntersectionSolid(Shape):pass
 
 class X018(object):
     """
+    AIMING TO PHASE THIS OUT, use instead x018.py 
+
     G4VSolid* make_solid()
     { 
         G4ThreeVector A(0.000000,0.000000,-23.772510);
@@ -102,6 +88,8 @@ class X018(object):
         B0 = np.array( [0, -195.227490] )
         z0 = B0[1] + A[1]    ## offset of torus (ellipsoid frame)
 
+        print("z0 %s offset of torus (ellipsoid frame)" % z0 )
+
         self.z0 = z0
 
         i = Torus("i", [ 52.010000, 97.000000] )   
@@ -125,6 +113,8 @@ class X018(object):
 
 
         p = ellipse_closest_approach_to_point( ex, ez, [R,z0] ) # center of torus RHS circle 
+        print(" p %s " % repr(p) )
+
         pr = p[0]
         pz = p[1]    # z of ellipse to torus-circle closest approach point (ellipsoid frame) 
 
@@ -136,7 +126,7 @@ class X018(object):
             f = SubtractionSolid("f", [g,i,A] )
             B = B0
         elif mode == 1:
-            r2 = 83.9935              # at torus/ellipse closest approach point 
+            r2 = 83.9935              # at torus/ellipse closest approach point : huh same as pr no (maybe not quite)
             r1 = R - r               
 
             mz = (z0 + pz)/2.         # mid-z cone coordinate (ellipsoid frame) 
@@ -144,6 +134,8 @@ class X018(object):
 
             f = Cons("f", [r1,r2,hz ] )
             B = np.array( [0, mz] )
+
+            print(" replacment Cons %s offset %s " % (repr(f),repr(B)))
 
         elif mode == 2:
 
@@ -179,45 +171,11 @@ class X018(object):
     pass
 
 
-def ellipse_closest_approach_to_point( ex, ez, _c ):
-    """ 
-    Ellipse natural frame, semi axes ex, ez.  _c coordinates of point
-
-    :param ex: semi-major axis 
-    :param ez: semi-major axis 
-    :param c: xz coordinates of point 
-
-    :return p: point on ellipse of closest approach to center of torus circle
-
-    Closest approach on the bulb ellipse to the center of torus "circle" 
-    is a good point to target for hype/cone/whatever neck, 
-    as are aiming to eliminate the cylinder neck anyhow
-
-    equation of RHS torus circle, in ellipse frame
-
-        (x - R)^2 + (z - z0)^2 - r^2 = 0  
-
-    equation of ellipse
-
-        (x/ex)^2 + (z/ez)^2 - 1 = 0 
-
-    """
-    c = np.asarray( _c )   # center of RHS torus circle
-    assert c.shape == (2,)
-
-    t = np.linspace( 0, 2*np.pi, 1000000 )
-    e = np.zeros( [len(t), 2] )
-    e[:,0] = ex*np.cos(t) 
-    e[:,1] = ez*np.sin(t)   # 1M parametric points on the ellipse 
-
-    p = e[np.sum(np.square(e-c), 1).argmin()]   # point on ellipse closest to c 
-    return p 
-
 
 if __name__ == '__main__':
 
-    x = X018(mode=0)  # crazy cylinder-torus neck
-    #x = X018(mode=1)  # cone neck 
+    #x = X018(mode=0)  # crazy cylinder-torus neck
+    x = X018(mode=1)  # cone neck 
     #x = X018(mode=2)  # hype neck 
 
     print "x.f ", x.f
@@ -228,6 +186,9 @@ if __name__ == '__main__':
     r = x.r
     R = x.R
     z0 = x.z0   # natural torus frame offset in ellipse frame
+
+    
+
 
     #ch = x.cyneck.param[1]*2   # full-height of cylinder neck 
     #cr = x.cyneck.param[0]     # half-width of cylinder neck, ie the radius 
@@ -275,8 +236,8 @@ if __name__ == '__main__':
 
     ax = fig.add_subplot(111)
 
-    #zoom = False
-    zoom = True
+    zoom = False
+    #zoom = True
 
     if zoom:
         zmp = np.array( [R, z0, 1.5*r, 1.5*r] )

@@ -1,5 +1,12 @@
+#!/usr/bin/env python
+"""
+Aiming for this to be generated, so keep it simple
+"""
+import numpy as np
+from opticks.ana.shape import X, Ellipsoid, Tubs, Torus, Cons, SubtractionSolid, UnionSolid, IntersectionSolid
 
-class X019(object):
+
+class x019(X):
     """
     G4VSolid* make_solid()
     { 
@@ -41,25 +48,34 @@ class X019(object):
 
 
     """
+
     def __init__(self):
-         
-        A = np.array( [0, -23.772510], dtype=np.float32 )
-        B = np.array( [0, -195.227490], dtype=np.float32 )
-        C = np.array( [0, -276.500000], dtype=np.float32 )
-        D = np.array( [0, 92.000000], dtype=np.float32 )
+        d = Ellipsoid( "d", [249.000, 179.000 ] )
+        g = Tubs(      "g", [75.951247,23.782510] )
+        i = Torus(     "i", [ 52.010000, 97.000000] )
 
-        d = Ellipsoid( [249.000, 179.000 ], fill=False )
-        g = Tubs(    [75.951247,23.782510], fill=False )
-        i = Torus( [ 52.010000, 97.000000], fill=False )
-        k = Tubs( [45.010000, 57.510000], fill=True )
-        m = Tubs( [254.000000, 92.000000], fill=False )
+        A = np.array( [0, -23.772510] )
+        f = SubtractionSolid( "f", [g,i, A ] )
 
-        i.xy += A+B 
-        g.xy += B 
-        k.xy += C 
-        m.xy += D 
+        B = np.array( [0, -195.227490] )
+        c = UnionSolid( "c",  [d, f, B] )
+
+        k = Tubs(      "k", [45.010000, 57.510000] )
+
+        C = np.array( [0, -276.500000] )
+        b = UnionSolid( "b", [c, k, C] ) 
+        m = Tubs(      "m", [254.000000, 92.000000] )
+
+        D = np.array( [0, 92.000000] )
+        a = SubtractionSolid( "a", [b, m, D ] )
+
+        self.root = a        
 
         self.sz = 400
         self.prims = [d,g,i,k,m]
 
+
+if __name__ == '__main__':
+    x = x019()
+    print(repr(x))
 
