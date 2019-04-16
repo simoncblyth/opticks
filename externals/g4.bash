@@ -655,13 +655,14 @@ g4-cls-(){
    local hh=$(find $base -name "$name.hh")
    local cc=$(find $base -name "$name.cc")
    local icc=$(find $base -name "$name.icc")
+   local src=$(find $base -name "$name.src")
 
    local cc2=""
    if [ "$name" == "G4SteppingManager" ] ; then
        cc2=$(find $base -name "${name}2.cc")
    fi  
 
-   local vcmd="vi -R $h $hh $icc $cc $cc2"
+   local vcmd="vi -R $h $hh $icc $cc $src $cc2"
    echo $vcmd
    eval $vcmd
 }

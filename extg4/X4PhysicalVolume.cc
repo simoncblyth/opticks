@@ -21,6 +21,7 @@
 #include "X4LogicalSkinSurfaceTable.hh"
 #include "X4Solid.hh"
 #include "X4CSG.hh"
+//#include "X4GDMLParser.hh"
 #include "X4Mesh.hh"
 #include "X4Transform3D.hh"
 
@@ -469,6 +470,9 @@ GMesh* X4PhysicalVolume::convertSolid( int lvIdx, int soIdx, const G4VSolid* con
 
      if(m_g4codegen) 
      {
+         //const char* gdmlpath = X4CSG::GenerateTestPath( m_g4codegendir, lvIdx, ".gdml" ) ;  
+         //X4GDMLParser::Write( solid, gdmlpath ); 
+
          LOG(info) 
              << "[--g4codegen]"
              << " lvIdx " << lvIdx
@@ -477,6 +481,7 @@ GMesh* X4PhysicalVolume::convertSolid( int lvIdx, int soIdx, const G4VSolid* con
              ;
          raw->dump_g4code();  // just for debug 
          X4CSG::GenerateTest( solid, m_g4codegendir , lvIdx ) ; 
+
      }
 
      nnode* root = NTreeProcess<nnode>::Process(raw, soIdx, lvIdx);  // balances deep trees

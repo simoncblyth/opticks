@@ -109,7 +109,7 @@ class OKCORE_API Opticks {
    public:
        static BOpticksKey* GetKey();
        static bool         SetKey(const char* keyspec);
-       BOpticksKey*        getKey();  // non-static : the key actually in use, usually the same as GetKey()
+       BOpticksKey*        getKey() const ;  // non-static : the key actually in use, usually the same as GetKey()
    private:
        static Opticks*     fInstance ;  
    public:
@@ -182,8 +182,8 @@ class OKCORE_API Opticks {
        const char* getCurrentGDMLPath() const ;
    public:
        NSensorList* getSensorList();
-       const char* getIdPath();
-       const char* getIdFold();
+       const char* getIdPath() const ;
+       const char* getIdFold() const ;
        const char* getDetectorBase();
        const char* getMaterialMap();
        const char* getLastArg();
@@ -416,7 +416,8 @@ class OKCORE_API Opticks {
    public:
        void setSpaceDomain(float x, float y, float z, float w);  // triggers configureDomains setting time and wavelength domains too
        void setSpaceDomain(const glm::vec4& pd); 
-       std::string description();
+       std::string description() const ;
+       std::string desc() const ;
    private:
        void defineEventSpec();
        void configureDomains();

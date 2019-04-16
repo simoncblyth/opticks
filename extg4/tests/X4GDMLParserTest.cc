@@ -89,14 +89,13 @@ int main( int argc , char** argv )
     G4VSolid* solid = make_solid() ; 
 
     //std::string csgpath = BFile::FormPath(X4::X4GEN_DIR, exename) ; 
-    //
     //X4CSG::Serialize( solid, csgpath.c_str() ) ;
 
-
-
-    G4String fname("/tmp/out.gdml"); 
-    X4GDMLParser parser ;  
-    parser.write( fname, solid ); 
+ 
+    X4GDMLParser::Write( solid ) ; // to stdout 
+    X4GDMLParser::Write( solid, "/tmp/out.gdml" ) ; // to file
+    std::string gdml = X4GDMLParser::ToString(solid) ; 
+    LOG(fatal) << gdml ; 
 
 
     return 0 ; 

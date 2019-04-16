@@ -2,12 +2,13 @@
 
 #include "G4String.hh"
 #include "G4Sphere.hh"
-#include "PLOG.hh"
+#include "G4Polyhedron.hh"
+#include "OPTICKS_LOG.hh"
 
 
 int main(int argc, char** argv)
 {
-    PLOG_(argc, argv);
+    OPTICKS_LOG(argc, argv);
 
 
     G4String name("sphere");
@@ -23,8 +24,12 @@ int main(int argc, char** argv)
 
     G4Sphere sp(name, pRmin, pRmax, pSPhi, pDPhi, pSTheta, pDTheta );
 
-
     std::cout << sp << std::endl ; 
+
+    
+    G4Polyhedron* poly = sp.CreatePolyhedron() ;
+
+    G4cout << *poly << G4endl ;  
 
 
 

@@ -46,6 +46,7 @@ See :doc:`../../notes/issues/OKX4Test`
 
 **/
 
+/*
 G4VPhysicalVolume* make_top(int argc, char** argv)
 {
 
@@ -59,6 +60,7 @@ G4VPhysicalVolume* make_top(int argc, char** argv)
     G4VPhysicalVolume* top = detector->Construct();
     return top ; 
 }
+*/
 
 
 int main(int argc, char** argv)

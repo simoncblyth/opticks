@@ -227,67 +227,66 @@ Opticks* Opticks::GetInstance()
 
 
 Opticks::Opticks(int argc, char** argv, const char* argforced )
-     :
-       m_log(new SLog("Opticks::Opticks","",debug)),
-       m_ok(this),
-       m_sargs(new SArgs(argc, argv, argforced)), 
-       m_argc(m_sargs->argc),
-       m_argv(m_sargs->argv),
-       m_dumpenv(m_sargs->hasArg("--dumpenv")),
-       m_envkey(m_sargs->hasArg("--envkey") ? BOpticksKey::SetKey(NULL) : false),  // see tests/OpticksEventDumpTest.cc makes sensitive to OPTICKS_KEY
-       m_production(m_sargs->hasArg("--production")),
-       m_profile(new OpticksProfile("Opticks",m_sargs->hasArg("--stamp"))),
-       m_materialprefix(NULL),
-       m_photons_per_g4event(0), 
+    :
+    m_log(new SLog("Opticks::Opticks","",debug)),
+    m_ok(this),
+    m_sargs(new SArgs(argc, argv, argforced)), 
+    m_argc(m_sargs->argc),
+    m_argv(m_sargs->argv),
+    m_dumpenv(m_sargs->hasArg("--dumpenv")),
+    m_envkey(m_sargs->hasArg("--envkey") ? BOpticksKey::SetKey(NULL) : false),  // see tests/OpticksEventDumpTest.cc makes sensitive to OPTICKS_KEY
+    m_production(m_sargs->hasArg("--production")),
+    m_profile(new OpticksProfile("Opticks",m_sargs->hasArg("--stamp"))),
+    m_materialprefix(NULL),
+    m_photons_per_g4event(0), 
 
-       m_spec(NULL),
-       m_nspec(NULL),
-       m_resource(NULL),
-       m_state(NULL),
-       m_apmtslice(NULL),
-       m_apmtmedium(NULL),
+    m_spec(NULL),
+    m_nspec(NULL),
+    m_resource(NULL),
+    m_state(NULL),
+    m_apmtslice(NULL),
+    m_apmtmedium(NULL),
 
-       m_exit(false),
-       m_compute(false),
-       m_geocache(false),
-       m_instanced(true),
+    m_exit(false),
+    m_compute(false),
+    m_geocache(false),
+    m_instanced(true),
 
-       m_lastarg(NULL),
+    m_lastarg(NULL),
 
-       m_configured(false),
-       m_cfg(NULL),
-       m_timer(NULL),
-       m_parameters(NULL),
-       m_scene_config(NULL),
-       m_lod_config(NULL),
-       m_snap_config(NULL),
-       m_detector(NULL),
-       m_event_count(0),
-       m_domains_configured(false),
-       m_mode(NULL),
-       m_run(new OpticksRun(this)),
-       m_evt(NULL),
-       m_ana(new OpticksAna(this)),
-       m_dbg(new OpticksDbg(this)),
-       m_rc(0),
-       m_rcmsg(NULL),
-       m_tagoffset(0),
-       m_verbosity(0),
-       m_internal(false)
+    m_configured(false),
+    m_cfg(NULL),
+    m_timer(NULL),
+    m_parameters(NULL),
+    m_scene_config(NULL),
+    m_lod_config(NULL),
+    m_snap_config(NULL),
+    m_detector(NULL),
+    m_event_count(0),
+    m_domains_configured(false),
+    m_mode(NULL),
+    m_run(new OpticksRun(this)),
+    m_evt(NULL),
+    m_ana(new OpticksAna(this)),
+    m_dbg(new OpticksDbg(this)),
+    m_rc(0),
+    m_rcmsg(NULL),
+    m_tagoffset(0),
+    m_verbosity(0),
+    m_internal(false)
 {
-       OK_PROFILE("Opticks::Opticks");
+    OK_PROFILE("Opticks::Opticks");
 
+    if(fInstance != NULL)
+    {
+        LOG(fatal) << " SECOND OPTICKS INSTANCE " ;  
+    }
+    //assert( fInstance == NULL ); // should only ever be one instance 
 
-       if(fInstance != NULL)
-       {
-          LOG(fatal) << " SECOND OPTICKS INSTANCE " ;  
-       }
-       //assert( fInstance == NULL ); // should only ever be one instance 
+    fInstance = this ; 
 
-       fInstance = this ; 
-
-       init();
-       (*m_log)("DONE");
+    init();
+    (*m_log)("DONE");
 }
 
 
@@ -1589,7 +1588,7 @@ void Opticks::configureDomains()
    //assert(e_rng_max == x_rng_max && "Configured RngMax must match envvar CUDAWRAP_RNG_MAX and corresponding files, see cudawrap- ");    
 }
 
-std::string Opticks::description()
+std::string Opticks::description() const 
 {
     std::stringstream ss ; 
     ss << "Opticks"
@@ -1599,6 +1598,21 @@ std::string Opticks::description()
        ;
     return ss.str();
 }
+
+std::string Opticks::desc() const 
+{
+    std::stringstream ss ; 
+    BOpticksKey* key = getKey() ;
+    ss << "Opticks.desc"
+       << std::endl 
+       << ( key ? key->desc() : "NULL-key?" )
+       << std::endl
+       << "IdPath : " << getIdPath() 
+       << std::endl
+       ; 
+    return ss.str();
+}
+
 
 
 const char* Opticks::getUDet()
@@ -2203,8 +2217,8 @@ Typ*            Opticks::getTyp() {       return m_resource->getTyp(); }
 
 
 NSensorList*    Opticks::getSensorList(){ return m_resource ? m_resource->getSensorList() : NULL ; }
-const char*     Opticks::getIdPath() {    return m_resource ? m_resource->getIdPath() : NULL ; }
-const char*     Opticks::getIdFold() {    return m_resource ? m_resource->getIdFold() : NULL ; }
+const char*     Opticks::getIdPath() const { return m_resource ? m_resource->getIdPath() : NULL ; }
+const char*     Opticks::getIdFold() const { return m_resource ? m_resource->getIdFold() : NULL ; }
 const char*     Opticks::getDetectorBase() {    return m_resource ? m_resource->getDetectorBase() : NULL ; }
 const char*     Opticks::getMaterialMap() {  return m_resource ? m_resource->getMaterialMap() : NULL ; }
 const char*     Opticks::getDAEPath() {   return m_resource ? m_resource->getDAEPath() : NULL ; }
@@ -2212,7 +2226,7 @@ const char*     Opticks::getInstallPrefix() { return m_resource ? m_resource->ge
 
 bool             Opticks::SetKey(const char* spec) { return BOpticksKey::SetKey(spec) ; }
 BOpticksKey*     Opticks::GetKey() {                 return BOpticksKey::GetKey() ; }
-BOpticksKey*     Opticks::getKey() {                 return m_resource->getKey() ; }
+BOpticksKey*     Opticks::getKey() const {           return m_resource->getKey() ; }
 
 const char*     Opticks::getSrcGDMLPath() const {  return m_resource ? m_resource->getSrcGDMLPath() : NULL ; }
 const char*     Opticks::getGDMLPath()    const {  return m_resource ? m_resource->getGDMLPath() : NULL ; }
@@ -2260,6 +2274,7 @@ void Opticks::setIdPathOverride(const char* idpath_tmp) // used for saves into n
 void Opticks::cleanup()
 {
     LOG(info) << "Opticks::cleanup" ;
+    LOG(info) << desc() ; 
 }
 
 

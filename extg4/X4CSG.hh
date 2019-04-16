@@ -30,7 +30,7 @@ struct X4_API X4CSG
 
     static void Serialize( const G4VSolid* solid, const char* csgpath );
     static void GenerateTest( const G4VSolid* solid, const char* prefix, unsigned lvidx );  
-    static const char* GenerateTestPath( const char* prefix, unsigned lvidx ) ; 
+    static const char* GenerateTestPath( const char* prefix, unsigned lvidx, const char* ext ) ; 
 
     static G4VSolid* MakeContainer(const G4VSolid* solid, float scale) ; 
     std::string desc() const ;
@@ -52,6 +52,7 @@ struct X4_API X4CSG
 
     int              verbosity ; 
     const G4VSolid*  solid ; 
+    std::string      gdml ; 
     const G4VSolid*  container ; 
     const char*      solid_boundary ; 
     const char*      container_boundary ; 
@@ -61,7 +62,6 @@ struct X4_API X4CSG
     NCSG*            csolid ; 
     NCSG*            ccontainer ; 
     NCSGList*        ls ; 
-
     std::vector<NCSG*> trees ;
 
 };

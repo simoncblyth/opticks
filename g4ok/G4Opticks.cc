@@ -59,17 +59,13 @@ std::string G4Opticks::EmbeddedCommandLine(const char* extra)
 std::string G4Opticks::desc() const 
 {
 
-    BOpticksKey* key = m_ok ? m_ok->getKey() : NULL ; 
-
     std::stringstream ss ; 
     ss << "G4Opticks.desc"
        << " ok " << m_ok 
        << " opmgr " << m_opmgr
        << std::endl 
-       << ( key ? key->desc() : "NULL-key?" )
-       << std::endl
-       << ( m_ok ? m_ok->getIdPath() : "-" )
-       << std::endl
+       << ( m_ok ? m_ok->desc() : "-" ) 
+       << std::endl 
        ;
     return ss.str() ; 
 }

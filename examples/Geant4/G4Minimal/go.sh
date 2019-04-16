@@ -23,6 +23,6 @@ make install
 g4-
 g4-export
 
-$(opticks-prefix)/lib/$name
+$name
 
 
