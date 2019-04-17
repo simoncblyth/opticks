@@ -12,6 +12,7 @@ NPY_API std::string format(float f);
 NPY_API std::string format(const glm::vec3& v );
 
 NPY_API void print(const glm::mat4& m, const char* msg);
+NPY_API void print(const glm::vec2& v, const char* msg);
 NPY_API void print(const glm::vec3& v, const char* msg);
 NPY_API void print(const glm::vec4& v, const char* msg);
 NPY_API void print(const glm::vec4& v0, const char* msg0, const glm::vec4& v1, const char* msg1);

@@ -216,11 +216,14 @@ class Shape(object):
     is_composite = property(lambda self:self.left is not None and self.right is not None)
 
     def _get_xy(self):
+        """
+        Assumes only translations, which are just added 
+        """
         xy = np.array([0,0], dtype=self.dtype )
         node = self
         while node is not None:
             if node.ltransform is not None:
-                #print("adding ltransform ", node)
+                print("adding ltransform ", node.ltransform)
                 xy += node.ltransform
             pass
             node = node.parent 

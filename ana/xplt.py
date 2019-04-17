@@ -38,7 +38,7 @@ if __name__ == '__main__':
     ax.set_ylim([-350,200])
     ax.set_xlim([-300,300])
 
-    for x in yy:
+    for x in xx+yy:
         for pt in x.root.patches():
             print "pt ", pt
             ax.add_patch(pt)

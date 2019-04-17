@@ -156,6 +156,7 @@ struct NPY_API nglmext
 
     static glm::mat4 average_to_inverse_transpose( const glm::mat4& m );
     static ndeco polar_decomposition( const glm::mat4& trs, bool verbose=false );
+    static glm::vec3 pluck_translation( const glm::mat4& t ); 
 
     static glm::mat4 invert_trs( const glm::mat4& trs ); 
     static glm::mat4 make_transform(const std::string& order, const glm::vec3& tlat, const glm::vec4& axis_angle, const glm::vec3& scal );
@@ -170,6 +171,7 @@ struct NPY_API nglmext
     static glm::mat4 make_translate(const float x, const float y, const float z);
     static glm::mat4 make_rotate(const float x, const float y, const float z, const float w);
     static glm::mat4 make_scale(const float x, const float y, const float z);
+
 
     static void transform_planes( NPY<float>* plan_buffer, const glm::mat4& placement );
 

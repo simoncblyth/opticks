@@ -86,6 +86,14 @@ void print(const glm::quat& q, const char* msg)
 }
 
 
+
+void print(const glm::vec2& v, const char* msg)
+{
+    printf("%15s vec2  %10.3f %10.3f \n", msg, v.x, v.y );
+}
+
+
+
 void print(const glm::vec4& v, const char* msg)
 {
     printf("%15s vec4  %10.3f %10.3f %10.3f %10.3f \n", msg, v.x, v.y, v.z, v.w);

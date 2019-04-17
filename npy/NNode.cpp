@@ -11,6 +11,7 @@
 #include "NGLM.hpp"
 #include "NGLMExt.hpp"
 #include "GLMFormat.hpp"
+#include "GLMPrint.hpp"
 
 #include "NCSG.hpp"
 #include "NNode.hpp"
@@ -274,6 +275,9 @@ const nmat4triple* nnode::global_transform(nnode* n)
 
 
 
+
+
+
 void nnode::check_tree(unsigned mask) const 
 {
     check_tree_r(this, NULL, 0, mask); 
@@ -355,6 +359,46 @@ void nnode::collect_connectedtype_ancestors_( const nnode* n, std::vector<const 
 
 
 
+const nnode* nnode::find_one( OpticksCSG_t qtyp ) const   // returns NULL if exactly one node is not found
+{
+    std::vector<OpticksCSG_t> typ = { qtyp } ; 
+    return find_one(typ);
+}
+const nnode* nnode::find_one( OpticksCSG_t qtyp1, OpticksCSG_t qtyp2 ) const   // returns NULL if exactly one node is not found
+{
+    std::vector<OpticksCSG_t> typ = { qtyp1, qtyp2 } ; 
+    return find_one(typ);
+}
+const nnode* nnode::find_one( std::vector<OpticksCSG_t>& qtyp ) const   // returns NULL if exactly one node is not found
+{
+    std::vector<const nnode*> nodes ; 
+    collect_nodes( nodes, qtyp );
+    return nodes.size() == 1 ? nodes[0] : NULL  ; 
+}
+void nnode::collect_nodes( std::vector<const nnode*>& nodes, std::vector<OpticksCSG_t>& qtyp ) const 
+{
+    collect_nodes_r(this, nodes, qtyp );
+}
+void nnode::collect_nodes_r( const nnode* n, std::vector<const nnode*>& nodes, std::vector<OpticksCSG_t>& qtyp  ) // static
+{
+    if(std::find(qtyp.begin(), qtyp.end(), n->type ) != qtyp.end() )
+    { 
+        nodes.push_back(n) ; 
+    }
+
+    if(n->left && n->right)
+    {
+        collect_nodes_r(n->left, nodes, qtyp);
+        collect_nodes_r(n->right, nodes, qtyp);
+    }   
+}
+
+
+
+
+
+
+
 
 void nnode::collect_progeny( std::vector<const nnode*>& progeny, OpticksCSG_t xtyp ) const 
 {
@@ -366,7 +410,7 @@ void nnode::collect_progeny( std::vector<const nnode*>& progeny, OpticksCSG_t xt
 }
 void nnode::collect_progeny_r( const nnode* n, std::vector<const nnode*>& progeny, OpticksCSG_t xtyp ) // static
 {
-    if(n->type != xtyp || xtyp == CSG_ZERO)
+    if(n->type != xtyp || xtyp == CSG_ZERO)  // huh why != xtyp,  excluded type perhaps ?
     {
         if(std::find(progeny.begin(), progeny.end(), n) == progeny.end()) progeny.push_back(n);
     }
@@ -977,6 +1021,23 @@ nnode* nnode::make_copy() const
 {
     return nnode::copy(this); 
 }
+
+
+
+
+nnode* nnode::deepcopy_r( const nnode* n ) // static 
+{
+    if( n == NULL ) return NULL ; 
+    nnode* c = nnode::copy(n) ;       // ARE TRANSFORMS COPIED  ?
+    c->left = deepcopy_r(n->left) ; 
+    c->right = deepcopy_r(n->right) ;  
+    return c ; 
+}
+nnode* nnode::make_deepcopy() const  
+{
+    return nnode::deepcopy_r(this); 
+}
+
 
 
 
@@ -1748,4 +1809,63 @@ void nnode::dumpPointsSDF(const std::vector<glm::vec3>& points, float epsilon) c
 
 }
 */
+
+
+
+
+
+
+
+
+void nnode::reconstruct_ellipsoid( const nnode* n, glm::vec3& axes, glm::vec2& zcut ) // static
+{
+    // G4Ellipsoid gets translated into either an nzsphere or an nsphere 
+    // (depending on there being zcuts) with a scaling transform associated
+
+    const nsphere* sp = dynamic_cast<const nsphere*>(n) ;   
+    const nzsphere* zs = dynamic_cast<const nzsphere*>(n) ;   
+
+    bool is_sphere = sp != NULL ; 
+    bool is_zsphere = zs != NULL ; 
+    assert( is_sphere ^ is_zsphere ); 
+    float radius = is_sphere ? sp->radius() : zs->radius() ; 
+
+    const nnode* e = sp ? (nnode*)sp : (nnode*)zs ; 
+
+    const nmat4triple* txf = e->transform ; 
+    assert( txf );
+
+    //LOG(info) << " txf " << txf ; 
+    //print(txf->t , "t" ) ; 
+
+    ndeco d = nglmext::polar_decomposition( txf->t ); 
+    //print(d.t , "t" ) ; 
+    //print(d.r , "r" ) ; 
+    //print(d.s , "s" ) ; 
+
+    float sx = d.s[0][0] ; 
+    float sy = d.s[1][1] ; 
+    float sz = d.s[2][2] ;
+
+    LOG(info) 
+         << " sx " << sx  
+         << " sy " << sy  
+         << " sz " << sz 
+         << " radius " << radius 
+         ;
+
+    axes.x = sx*radius ; 
+    axes.y = sy*radius ; 
+    axes.z = sz*radius ; 
+
+    zcut.x = is_sphere ? -axes.z : zs->z1() ;  
+    zcut.y = is_sphere ?  axes.z : zs->z2() ; 
+
+    //print(axes, "axes" ); 
+    //print(zcut, "zcut" ); 
+
+}
+
+
+
 

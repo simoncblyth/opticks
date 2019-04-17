@@ -229,8 +229,8 @@ glm-sdir  : $(glm-sdir)
 EOI
 }
 
-glm-doc(){ open file://$(glm-dir)/doc/api/modules.html ; }
-glm-pdf(){ open file://$(glm-dir)/doc/glm.pdf ; }
+glm-doc(){ open file://$(glm-dir)/glm/doc/api/modules.html ; }
+glm-pdf(){ open file://$(glm-dir)/glm/doc/manual.pdf ; }
 
 
 glm-find()

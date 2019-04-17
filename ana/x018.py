@@ -96,8 +96,14 @@ if __name__ == '__main__':
 
     z0 = i.xy[1]
 
+    torus_rhs = [R,z0]
+
+
+    print(" z0  %s " % z0 )
+    print(" torus_rhs  %s " % repr(torus_rhs) )
+
     from opticks.ana.shape import ellipse_closest_approach_to_point
-    p = ellipse_closest_approach_to_point( ex, ez, [R,z0] )
+    p = ellipse_closest_approach_to_point( ex, ez, torus_rhs  )
 
     pr, pz = p    # at torus/ellipse closest point : no guarantee of intersection 
     print(" p %s " % repr(p) )

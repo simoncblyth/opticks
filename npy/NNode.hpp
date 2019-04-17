@@ -61,6 +61,10 @@ struct NPY_API nnode
     static nnode* copy( const nnode* a ); // retaining vtable of subclass instances 
     nnode* make_copy() const ;  // retaining vtable of subclass instances
 
+    static nnode* deepcopy_r( const nnode* a ); 
+    nnode* make_deepcopy() const ;     // probably not deep enough 
+
+
     //virtual float operator()(const glm::vec3& p) const ;
     virtual float operator()(float px, float py, float pz) const  ;
     virtual float sdf_(const glm::vec3& pos, NNodeFrameType fr) const ;
@@ -164,6 +168,7 @@ struct NPY_API nnode
     const nmat4triple* global_transform(); 
     static const nmat4triple* global_transform(nnode* n); 
 
+
     void check_tree(unsigned mask) const ;
     static void check_tree_r(const nnode* node, const nnode* parent, unsigned depth, unsigned mask);
 
@@ -192,6 +197,17 @@ struct NPY_API nnode
 
     void collect_prim_for_edit(std::vector<nnode*>& prim) ;
     static void collect_prim_for_edit_r(std::vector<nnode*>& prim, nnode* node) ;
+
+
+
+    static void reconstruct_ellipsoid( const nnode* n, glm::vec3& axes, glm::vec2& zcut ); 
+
+
+    const nnode* find_one( OpticksCSG_t qtyp ) const ; 
+    const nnode* find_one( OpticksCSG_t qtyp1, OpticksCSG_t qtyp2 ) const ; 
+    const nnode* find_one( std::vector<OpticksCSG_t>& qtyp ) const ;  // returns NULL if none or more than one are found
+    void collect_nodes( std::vector<const nnode*>& nodes, std::vector<OpticksCSG_t>& qtyp ) const ;
+    static void collect_nodes_r( const nnode* n, std::vector<const nnode*>& nodes, std::vector<OpticksCSG_t>& qtyp );
 
 
     void collect_monogroup( std::vector<const nnode*>& monogroup ) const ;
@@ -224,6 +240,10 @@ struct NPY_API nnode
     bool has_torus() const ; 
     unsigned get_count(OpticksCSG_t typ) const ;
     static void get_count_r(const nnode* node, OpticksCSG_t typ, unsigned& count);
+
+
+
+
  
 
     void set_treeidx(int idx) ; 

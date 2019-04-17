@@ -3,11 +3,17 @@
 #include <string>
 #include "NPY_API_EXPORT.hh"
 struct nnode ; 
+struct ncone ; 
 
 struct NPY_API NTreeJUNO
 {
-    NTreeJUNO(const nnode* orig_) ;
-    const nnode* orig ; 
+    NTreeJUNO(nnode* root_) ;
+    nnode* root ; 
+    ncone* cone ; 
+
+    ncone* replacement_cone() const ; 
+    void rationalize(); 
+
 
 };
 

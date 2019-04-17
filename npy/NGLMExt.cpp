@@ -173,6 +173,17 @@ ndeco nglmext::polar_decomposition( const glm::mat4& trs, bool verbose )
 } 
 
 
+glm::vec3 nglmext::pluck_translation( const glm::mat4& t )
+{
+    glm::vec3 tla(0,0,0); 
+    tla.x = t[3].x ; 
+    tla.y = t[3].y ; 
+    tla.z = t[3].z ; 
+    return tla ; 
+}
+
+
+
 glm::mat4 nglmext::invert_trs( const glm::mat4& trs )
 {
     /**
