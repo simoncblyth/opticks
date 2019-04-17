@@ -202,7 +202,7 @@ geocache-j1808()
     opticksdata- 
     #gdb --args OKX4Test --gdmlpath $(opticksdata-j) --g4codegen --csgskiplv 22,32,33
     #gdb --args OKX4Test --gdmlpath $(opticksdata-j) --g4codegen --csgskiplv 22,32
-    gdb --args OKX4Test --gdmlpath $(opticksdata-j) --g4codegen --csgskiplv 22
+    #gdb --args OKX4Test --gdmlpath $(opticksdata-j) --g4codegen --csgskiplv 22 --X4 debug --NPY debug  
 
     cd $iwd
 }
@@ -216,8 +216,7 @@ geocache-j1808-v2()
     type $FUNCNAME
     opticksdata- 
 
-    #gdb --args 
-    OKX4Test --gdmlpath $(opticksdata-jv2) --g4codegen --csgskiplv 22
+    gdb --args OKX4Test --gdmlpath $(opticksdata-jv2) --g4codegen --csgskiplv 22 --X4 debug --NPY debug
 
     cd $iwd
 }

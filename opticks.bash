@@ -1566,10 +1566,12 @@ opticks-cls-()
     local name=${2:-DsG4OpBoundaryProcess};
     local h=$(find $base -name "$name.h");
     local hh=$(find $base -name "$name.hh");
+    local hpp=$(find $base -name "$name.hpp");
     local cc=$(find $base -name "$name.cc");
+    local cpp=$(find $base -name "$name.cpp");
     local icc=$(find $base -name "$name.icc");
     local tcc=$(find $base -name "${name}Test.cc");
-    local vcmd="vi  $h $hh $icc $cc $tcc";
+    local vcmd="vi  $h $hh $hpp $icc $cpp $cc $tcc";
     echo $vcmd;
     eval $vcmd;
     cd $iwd
