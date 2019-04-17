@@ -33,15 +33,24 @@ class x018(X):
     } 
 
 
-                           a
+                           a                                            Intersection
+                                                                       /            \
+                      b             m(D)                          Union             m:Tubs
+                                                                  /    \  
+                c          k(C)                             Union       Tubs
+                                                           /     \
+            d     f(B)                            Ellipsoid   Subtraction    
+                                                              /          \ 
+                g(B)  i(B+A)                                Tubs         Torus
 
-                      b             m(D)
-                 
-                c          k(C)
 
-            d     f(B) 
 
-                g(B)  i(B+A)
+    * intersection with m:Tubs blows away the rest of the tree leaving 
+      just the top half of the ellipsoid 
+
+    * x019 is almost identical to this just with "Intersection" -> "Subtraction"
+      so for that root.left becomes root
+
 
     """
     def __init__(self, mode=0):

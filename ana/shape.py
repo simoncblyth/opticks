@@ -78,9 +78,9 @@ class X(object):
         print(" Ellipsoid d.xy %s " % repr(d.xy) ) 
         print(" Torus     i.xy %s " % repr(i.xy) ) 
 
-        z0 = i.xy[1]
+        z0 = i.xy[1]   # torus z-plane in ellipsoid frame
 
-        p = ellipse_closest_approach_to_point( ex, ez, [R,z0] )
+        p = ellipse_closest_approach_to_point( ex, ez, [R,z0] )    # [R,z0] is center of torus circle 
 
         pr, pz = p    # at torus/ellipse closest point : no guarantee of intersection 
         print(" ellipse closest approach to torus  %s " % repr(p) )
@@ -88,7 +88,7 @@ class X(object):
         r2 = pr
         r1 = R - r
         mz = (z0 + pz)/2.   # mid-z cone coordinate (ellipsoid frame)
-        hz = (pz - z0)/2.   # cons galf height 
+        hz = (pz - z0)/2.   # cons half height 
 
         f = Cons( "f", [r1,r2,hz] )
         B = np.array( [0, mz] )  
@@ -99,22 +99,62 @@ class X(object):
 
 
     def spawn_rationalized(self):
-        name = self.__class__.__name__
-        x = copy.deepcopy(self) 
+        """
+
+        ::
         
+                   UnionSolid
+                   /         \ 
+           Ellipsoid          Subtraction
+                              /         \
+                            Tubs        Torus
+
+
+                   UnionSolid
+                   /         \ 
+           Ellipsoid           Cons
+
+
+
+        """
+        name = self.__class__.__name__
+
+        x = copy.deepcopy(self) 
+
+        # establish expectations for tree
         e = x.find_one("Ellipsoid")
-        ss = x.find_one("Torus").parent
+        t = x.find_one("Torus")
+        ss = t.parent
         assert ss is not None and ss.shape == "SubtractionSolid"
         us = ss.parent  
         assert us is not None and us.shape == "UnionSolid"
-        assert us.left is not None and us.left == e 
+        assert us.left is not None and us.left == e and us.right == ss and ss.right == t
         assert us.right is not None and us.right == ss 
 
-        # replacing the SubtractionSolid in the copied tree
-        cons, offset =  x.replacement_cons()
-        us.right = cons
-        cons.parent = us
-        cons.ltransform = offset 
+
+        if name == "x018":   # cathode vacuum cap
+            assert x.root.shape == "IntersectionSolid"
+            x.root = e 
+            e.parent = None
+        elif name == "x019":  # remainder vacuum 
+            assert x.root.shape == "SubtractionSolid"
+            left = x.root.left 
+            assert left.shape == "UnionSolid" 
+            left.parent = None 
+            x.root = left 
+        else:
+            pass
+        pass
+
+        if name in ["x019","x020","x021"]: 
+            # calculate the parameters of the replacement cons
+            cons, offset =  x.replacement_cons()
+
+            # tree surgery : replacing the right child of UnionSolid  
+            us.right = cons
+            cons.parent = us
+            cons.ltransform = offset 
+        pass
 
         return x 
 

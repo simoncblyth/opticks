@@ -753,21 +753,35 @@ Are generalizing the initial imp of ana/x018_torus_hyperboloid_plt.py into ana/s
 * have replaced the tubs-torus bileaf with cons
 * used tree surgery on a copy
 
-Remaining:
-
-* x018 x019 need more surgery to remove root level intersect or subtraction
-  replacing with ellipsoid z cuts 
+* surgery is applied to x018 x019 in ana/shape.py removing root level intersect/subtraction
 
   * 18 : ellipsoid becomes root with zrange upper half
   * 19 : root.left becomes root and ellipsoid zrange lower half 
-  * the cuts are both zero in ellipsoid frame (on equator)
-   
+  * z-cuts just need to select upper and lower halfs of the ellipsoid 
+
+
+Getting the post-op solids into the main GDML file
+----------------------------------------------------
+
+Remaining:
+
+* simple python model missing ellipsoid z-cuts and a matplotlib presentation of these
+
 * given rationalized python trees,  need to then generate 
   corresponding G4 code (will need to propagate the original names in, 
   so can do that with generated x018.py etc)
-  
+
 * running the G4 code to make a rationalized solid can then 
   be converted to GDML snippets for manual inclusion 
   into the opticksdata-jv2 GDML 
+
+Better way, do the surgery at NNode level : avoids some steps.
+
+* actually implementing the rationalization tree surgery of shape.py on nnode trees in C++
+  rather than in python would allow the G4VSolid trees to be reconstructed live 
+  (already have all the G4VSolid parameters for the g4codegen so can just turn around 
+  and recreate the G4 objects) from the nnode trees after their surgery. 
+  Then the G4VSolids can be directly written out to GDML using X4GDMLParser 
+  for inclusion into the full GDML file.
 
 

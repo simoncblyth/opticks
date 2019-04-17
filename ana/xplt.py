@@ -32,6 +32,7 @@ if __name__ == '__main__':
 
     xx = [x_018, x_019, x_020, x_021 ]
     yy = [y_018, y_019, y_020, y_021 ]
+    #yy = [y_020]
 
     ax = fig.add_subplot(111)
     ax.set_ylim([-350,200])

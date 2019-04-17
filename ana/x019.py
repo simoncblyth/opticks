@@ -71,9 +71,6 @@ class x019(X):
 
         self.root = a        
 
-        self.sz = 400
-        self.prims = [d,g,i,k,m]
-
 
 if __name__ == '__main__':
     x = x019()
