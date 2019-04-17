@@ -269,7 +269,9 @@ void X4Solid::convertBooleanSolid()
     */
 
     std::vector<std::string> param ;
+    std::vector<std::string> keys ;
     param.push_back( xleft->getIdentifier() ); 
+    keys.push_back( "left_id" );  
 
     if(is_right_displaced)
     {
@@ -295,14 +297,20 @@ void X4Solid::convertBooleanSolid()
         param.push_back( xright_displaced->getIdentifier() ); 
         param.push_back( rot_id ) ; 
         param.push_back( tla_id ) ; 
+        keys.push_back( "right_id" );  
+        keys.push_back( "rotation_id" );  
+        keys.push_back( "translation_id" );  
     } 
     else
     {
         param.push_back( xright->getIdentifier() ); 
+        keys.push_back( "right_id" );  
     }
 
 
-    setG4Param(param); 
+    const std::vector<std::string> cparam(param); 
+    const std::vector<std::string> ckeys(keys); 
+    setG4Param(cparam, ckeys); 
 }
 
 
@@ -447,7 +455,16 @@ void X4Solid::convertSphere()
                                  solid->GetDeltaThetaAngle()
                                } ;
 
-    setG4Param(param);
+    std::vector<std::string> keys = {
+                                      "innerRadius",
+                                      "outerRadius",
+                                      "startPhiAngle",
+                                      "deltaPhiAngle",
+                                      "startThetaAngle",
+                                      "deltaThetaAngle"
+                                  } ;  
+
+    setG4Param(param, keys);
 }
 
 
@@ -469,7 +486,9 @@ void X4Solid::convertOrb()
     setRoot(n); 
 
     std::vector<double> param  = { solid->GetRadius() } ;
-    setG4Param(param); 
+    std::vector<std::string> keys  = { "radius" } ;
+
+    setG4Param(param, keys); 
 }
 
 
@@ -497,7 +516,10 @@ void X4Solid::convertBox()
     setRoot(n); 
 
     std::vector<double> param = { hx, hy, hz } ;
-    setG4Param(param);
+    std::vector<std::string> keys  = { "xHalfLength", "yHalfLength", "zHalfLength" } ;
+
+
+    setG4Param(param, keys);
 }
 
 
@@ -603,7 +625,16 @@ void X4Solid::convertTubs()
                                   solid->GetStartPhiAngle(),
                                   solid->GetDeltaPhiAngle() 
                                } ;
-    setG4Param(param);
+
+    std::vector<std::string> keys = { 
+                                  "innerRadius", 
+                                  "outerRadius", 
+                                  "zHalfLength", 
+                                  "startPhiAngle",
+                                  "deltaPhiAngle" 
+                               } ;
+
+    setG4Param(param, keys);
 }
 
 
@@ -680,7 +711,16 @@ Following
                                  solid->GetYHalfLength1() ,
                                  solid->GetYHalfLength2() ,
                                  solid->GetZHalfLength()  } ;  
-    setG4Param(param);
+
+    std::vector<std::string> keys = {
+                                    "xHalfLength1",  
+                                    "xHalfLength2",  
+                                    "yHalfLength1",  
+                                    "yHalfLength2",  
+                                    "zHalfLength"
+                                   } ;   
+
+    setG4Param(param, keys);
 }
 
 
@@ -758,7 +798,18 @@ void X4Solid::convertCons()
                                   solid->GetStartPhiAngle() , 
                                   solid->GetDeltaPhiAngle() 
                                } ;
-    setG4Param(param);
+
+    std::vector<std::string> keys = {
+                                  "innerRadiusMinusZ" ,  
+                                  "outerRadiusMinusZ" ,  
+                                  "innerRadiusPlusZ"  ,  
+                                  "outerRadiusPlusZ"  ,
+                                  "zHalfLength" , 
+                                  "startPhiAngle" , 
+                                  "deltaPhiAngle"
+                                   } ; 
+
+    setG4Param(param, keys );
 }
 
 void X4Solid::convertTorus()
@@ -809,7 +860,16 @@ void X4Solid::convertTorus()
                                   solid->GetSPhi()  ,
                                   solid->GetDPhi()  
                                } ;
-    setG4Param(param);
+
+    std::vector<std::string> keys = {
+                                  "rmin" ,  
+                                  "rmax" ,  
+                                  "rtor"  ,  
+                                  "sPhi"  ,
+                                  "dPhi"  
+                                 } ; 
+
+    setG4Param(param, keys);
 }
 
 void X4Solid::convertEllipsoid()
@@ -863,7 +923,16 @@ void X4Solid::convertEllipsoid()
                                   solid->GetZBottomCut()  ,
                                   solid->GetZTopCut()  
                                } ;
-    setG4Param(param);
+
+    std::vector<std::string> keys = {
+                                  "semiAxisMaxX" ,  
+                                  "semiAxisMaxY" ,  
+                                  "semiAxisMaxZ" ,  
+                                  "zBottomCut"  ,
+                                  "zTopCut"
+                                  } ;  
+
+    setG4Param(param, keys);
 }
 
 
@@ -1037,7 +1106,9 @@ void X4Solid::convertPolycone_g4code()
     param.push_back( rInner_id ) ;  
     param.push_back( rOuter_id ) ;  
 
-    setG4Param(param);
+    std::vector<std::string> keys = { "zPlane_id", "rInner_id", "rOuter_id" } ; 
+
+    setG4Param(param, keys );
 } 
 
 
@@ -1058,8 +1129,16 @@ void X4Solid::convertHype()
                                   solid->GetOuterStereo(),
                                   solid->GetZHalfLength()
                                 } ;
-                               
-    setG4Param(param);
+
+    std::vector<std::string> keys = {
+                                  "innerRadius",
+                                  "outerRadius",
+                                  "innerStereo",
+                                  "outerStereo",
+                                  "zHalfLength"
+                                } ;
+ 
+    setG4Param(param, keys);
 }
 
 nnode* X4Solid::convertHype_(bool only_inner)

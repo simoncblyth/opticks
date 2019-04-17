@@ -784,4 +784,58 @@ Better way, do the surgery at NNode level : avoids some steps.
   Then the G4VSolids can be directly written out to GDML using X4GDMLParser 
   for inclusion into the full GDML file.
 
+  * :google:`C++11 dynamic arguments to method call` 
+
+  * this way is not easy because of C++ lack of dynamism
+  * workarounds (variadic templates) not applicable when cannot change the target code
+    G4VSolid ctors
+  * so are back to generating strings for the code, which has the advantage
+    of being simple and fully flexible at the cost of having to compile that code 
+  * hmm but need to change parameter, so need a type signature for each 
+
+G4VSolid type signatures
+--------------------------
+
+Actually not so difficult, only need this for a very small subset 
+of G4VSolids used in JUNO PMT so can just use an if statement.
+
+NNode.hpp::
+
+        const char*  g4code ; 
+    +    const char*  g4name ; 
+    +    std::map<std::string, double>* g4args ; 
+     
+
+::
+
+
+    G4Sphere(const G4String& pName,
+                   G4double pRmin, G4double pRmax,
+                   G4double pSPhi, G4double pDPhi,
+                   G4double pSTheta, G4double pDTheta);
+
+
+   G4Ellipsoid(const G4String& pName,
+                      G4double  pxSemiAxis,
+                      G4double  pySemiAxis,
+                      G4double  pzSemiAxis,
+                      G4double  pzBottomCut=0,
+                      G4double  pzTopCut=0);
+
+    G4Cons(const G4String& pName,
+                 G4double pRmin1, G4double pRmax1,
+                 G4double pRmin2, G4double pRmax2,
+                 G4double pDz,
+                 G4double pSPhi, G4double pDPhi);
+
+    G4Tubs( const G4String& pName,
+                  G4double pRMin,
+                  G4double pRMax,
+                  G4double pDz,
+                  G4double pSPhi,
+                  G4double pDPhi );
+
+
+ 
+
 

@@ -211,9 +211,11 @@ template std::string X4SolidBase::GenInstanciate<std::string>(const char*, const
 
 
 template<typename T>
-void X4SolidBase::setG4Param(const std::vector<T>& param, const char* identifier_ )
+void X4SolidBase::setG4Param(const std::vector<T>& param, const std::vector<std::string>& keys, const char* identifier_ )
 {
     assert( m_root && "must setG4Param after setRoot " ); 
+
+    assert( param.size() == keys.size() );  
 
     unsigned npar =param.size() ; 
     if( npar == 0)
@@ -229,13 +231,13 @@ void X4SolidBase::setG4Param(const std::vector<T>& param, const char* identifier
     ss << GenInstanciate( m_entityName, identifier, m_name, param ) ;
     std::string g4code = ss.str();
 
-    addG4Code( g4code.c_str() ); 
-    setG4Code();
+    addG4Code( g4code.c_str() );  // can be multi-line eg with a translation argument and a ctor that refers to it by identifier 
+    setG4Code();                  // tack the string onto root node
 }
 
-template void X4SolidBase::setG4Param<float>(const std::vector<float>&, const char* );
-template void X4SolidBase::setG4Param<double>(const std::vector<double>&, const char* );
-template void X4SolidBase::setG4Param<std::string>(const std::vector<std::string>&, const char* );
+template void X4SolidBase::setG4Param<float>(const std::vector<float>&, const std::vector<std::string>&, const char* );
+template void X4SolidBase::setG4Param<double>(const std::vector<double>&, const std::vector<std::string>&, const char* );
+template void X4SolidBase::setG4Param<std::string>(const std::vector<std::string>&, const std::vector<std::string>&, const char* );
 
 const char* X4SolidBase::getIdentifier() const 
 {

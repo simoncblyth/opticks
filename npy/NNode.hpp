@@ -2,6 +2,7 @@
 
 #include <string>
 #include <vector>
+#include <map>
 #include <functional>
 #include <ostream>
 #include <fstream>
@@ -283,7 +284,10 @@ struct NPY_API nnode
     NParameters*  meta ;
     NNodeDump2*   _dump ;
     nbbox*        _bbox_model ; 
+
     const char*  g4code ; 
+    const char*  g4name ; 
+    std::map<std::string, double>* g4args ; 
 
 
     static nnode* make_node(OpticksCSG_t operator_, nnode* left=NULL, nnode* right=NULL);
@@ -293,6 +297,9 @@ struct NPY_API nnode
     void write_g4code(const char* path) const ;
     static void to_g4code(const nnode* root, std::ostream& out, unsigned depth );
     static void to_g4code_r(const nnode* node, std::ostream& out, unsigned depth );
+
+
+
 
 };
 inline nnode* nnode::make_node(OpticksCSG_t operator_, nnode* left, nnode* right )

@@ -224,6 +224,8 @@ void nnode::Init( nnode* n , OpticksCSG_t type, nnode* left, nnode* right )
     n->_dump = new NNodeDump2(n) ; 
     n->_bbox_model = NULL ; 
     n->g4code = NULL ;  
+    n->g4name = NULL ;  
+    n->g4args = NULL ;  
 }
 
 
