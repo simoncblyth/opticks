@@ -45,6 +45,68 @@ Changing OptiX version
    om-test optixrap:    
 
 
+OptiX with multiple GPU
+------------------------
+
+::
+
+    [blyth@localhost UseOptiX]$ CUDA_VISIBLE_DEVICES=0 UseOptiX
+    OptiX 6.0.0
+    Number of Devices = 1
+
+    Device 0: TITAN V
+      Compute Support: 7 0
+      Total Memory: 12621381632 bytes
+
+    [blyth@localhost UseOptiX]$ CUDA_VISIBLE_DEVICES=1 UseOptiX
+    OptiX 6.0.0
+    Number of Devices = 1
+
+    Device 0: TITAN RTX
+      Compute Support: 7 5
+      Total Memory: 25364987904 bytes
+
+
+    [blyth@localhost UseOptiX]$ CUDA_VISIBLE_DEVICES=0,1 UseOptiX
+    OptiX 6.0.0
+    Number of Devices = 2
+
+    Device 0: TITAN V
+      Compute Support: 7 0
+      Total Memory: 12621381632 bytes
+    Device 1: TITAN RTX
+      Compute Support: 7 5
+      Total Memory: 25364987904 bytes
+
+
+OptiX device ordinal not same as listed in nvidia-smi::
+
+    blyth@localhost UseOptiX]$ nvidia-smi
+    Wed Apr 17 15:43:12 2019       
+    +-----------------------------------------------------------------------------+
+    | NVIDIA-SMI 418.56       Driver Version: 418.56       CUDA Version: 10.1     |
+    |-------------------------------+----------------------+----------------------+
+    | GPU  Name        Persistence-M| Bus-Id        Disp.A | Volatile Uncorr. ECC |
+    | Fan  Temp  Perf  Pwr:Usage/Cap|         Memory-Usage | GPU-Util  Compute M. |
+    |===============================+======================+======================|
+    |   0  TITAN RTX           Off  | 00000000:73:00.0  On |                  N/A |
+    | 41%   32C    P8    18W / 280W |    225MiB / 24189MiB |      1%      Default |
+    +-------------------------------+----------------------+----------------------+
+    |   1  TITAN V             Off  | 00000000:A6:00.0 Off |                  N/A |
+    | 32%   47C    P8    28W / 250W |      0MiB / 12036MiB |      0%      Default |
+    +-------------------------------+----------------------+----------------------+
+                                                                                   
+    +-----------------------------------------------------------------------------+
+    | Processes:                                                       GPU Memory |
+    |  GPU       PID   Type   Process name                             Usage      |
+    |=============================================================================|
+    |    0     13810      G   /usr/bin/X                                   149MiB |
+    |    0     15683      G   /usr/bin/gnome-shell                          74MiB |
+    +-----------------------------------------------------------------------------+
+
+
+
+
 EOU
 }
 

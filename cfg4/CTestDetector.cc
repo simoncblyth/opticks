@@ -54,8 +54,7 @@ CTestDetector::CTestDetector(OpticksHub* hub, OpticksQuery* query, CSensitiveDet
     : 
     CDetector(hub, query, sd),
     m_geotest(hub->getGGeoTest()),
-    m_config(m_geotest->getConfig()),
-    m_maker(new CMaker(m_ok))
+    m_config(m_geotest->getConfig())
 {
     init();
 }
@@ -99,7 +98,7 @@ G4VPhysicalVolume* CTestDetector::makeDetector()
 CTestDetector::makeChildVolume
 -------------------------------
 
-Convert an NCSG into G4VSolid within LV, PV structure, using CMaker/m_maker for shape specifics.
+Convert an NCSG into G4VSolid within LV, PV structure, using CMaker::MakeSolid for shape specifics.
 
 **/
 
@@ -125,7 +124,7 @@ G4VPhysicalVolume* CTestDetector::makeChildVolume(const NCSG* csg, const char* l
 
     const G4Material* material = m_mlib->convertMaterial(imat);
 
-    G4VSolid* solid = m_maker->makeSolid( csg ); 
+    G4VSolid* solid = CMaker::MakeSolid( csg ); 
 
     G4LogicalVolume* lv = new G4LogicalVolume(solid, const_cast<G4Material*>(material), strdup(lvn), 0,0,0);
 

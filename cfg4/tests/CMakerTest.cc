@@ -19,7 +19,7 @@
 
 
 
-void test_load_csg(CMaker& mk, int argc, char** argv)
+void test_load_csg(int argc, char** argv)
 {
     BOpticksResource okr ;  
     std::string treedir = okr.getDebuggingTreedir(argc, argv);
@@ -29,11 +29,11 @@ void test_load_csg(CMaker& mk, int argc, char** argv)
 
     csg->dump();
 
-    G4VSolid* solid = mk.makeSolid(csg);
+    G4VSolid* solid = CMaker::MakeSolid(csg);
     assert(solid); 
 }
 
-void test_make_csg(CMaker& mk)
+void test_make_csg()
 {
     nsphere* sp = make_sphere();
     sp->set_boundary("Dummy"); 
@@ -43,7 +43,7 @@ void test_make_csg(CMaker& mk)
  
     csg->dump();
 
-    G4VSolid* solid = mk.makeSolid(csg);
+    G4VSolid* solid = CMaker::MakeSolid(csg);
     assert(solid); 
 
     G4Sphere* sp_ = dynamic_cast<G4Sphere*>(solid);
@@ -63,13 +63,12 @@ int main(int argc, char** argv)
 
     LOG(info) << argv[0] ; 
 
-    unsigned verbosity = SSys::getenvint("VERBOSITY", 1);
+    //unsigned verbosity = SSys::getenvint("VERBOSITY", 1);
 
     Opticks ok(argc, argv);
-    CMaker mk(&ok, verbosity );
 
-    //test_load_csg(mk, argc, argv);
-    test_make_csg(mk);
+    //test_load_csg(argc, argv);
+    test_make_csg();
 
 
     return 0 ; 

@@ -41,6 +41,7 @@ struct NPY_API nsphere : nnode {
     unsigned  par_nvertices(unsigned nu, unsigned nv) const ; 
 
     static void _par_pos_body(glm::vec3& pos,  const nuv& uv, const float r_ ) ;
+    static glm::vec3 ellipse_closest_approach_to_point( float ex, float ey , float px, float py );
 
     void pdump(const char* msg="nsphere::pdump") const ;
  

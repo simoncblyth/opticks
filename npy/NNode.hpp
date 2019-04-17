@@ -287,7 +287,10 @@ struct NPY_API nnode
 
     const char*  g4code ; 
     const char*  g4name ; 
-    std::map<std::string, double>* g4args ; 
+
+    typedef std::pair<std::string, double> SD ; 
+    typedef std::vector<SD> VSD ; 
+    VSD* g4args ; 
 
 
     static nnode* make_node(OpticksCSG_t operator_, nnode* left=NULL, nnode* right=NULL);

@@ -40,10 +40,7 @@
 
 
 
-CMaker::CMaker(Opticks* ok, int verbosity) 
-   :
-   m_ok(ok),
-   m_verbosity(verbosity)
+CMaker::CMaker() 
 {
 }   
 
@@ -64,16 +61,23 @@ std::string CMaker::PVName(const char* shapename, int idx)
 }
 
 
-G4VSolid* CMaker::makeSolid(const NCSG* csg)
+G4VSolid* CMaker::MakeSolid(const NCSG* csg)
 {
     nnode* root_ = csg->getRoot();
 
-    G4VSolid* root = makeSolid_r(root_);
+    G4VSolid* root = MakeSolid(root_);
 
     return root  ; 
 }
 
-G4VSolid* CMaker::makeSolid_r(const nnode* node)
+G4VSolid* CMaker::MakeSolid(const nnode* root)
+{
+    G4VSolid* so = MakeSolid_r(root, 0 );
+    return so ; 
+}
+
+
+G4VSolid* CMaker::MakeSolid_r(const nnode* node, unsigned depth )  //static
 {
     // hmm rmin/rmax is handled as a CSG subtraction
     // so could collapse some operators into primitives
@@ -88,8 +92,8 @@ G4VSolid* CMaker::makeSolid_r(const nnode* node)
     }
     else if(node->is_operator())
     {
-        G4VSolid* left = makeSolid_r(node->left);
-        G4VSolid* right = makeSolid_r(node->right);
+        G4VSolid* left = MakeSolid_r(node->left, depth+1);
+        G4VSolid* right = MakeSolid_r(node->right, depth+1);
 
         bool left_transform = node->left->gtransform ? !node->left->gtransform->is_identity() : false ;  
         if(left_transform)
@@ -376,20 +380,6 @@ G4VSolid* CMaker::ConvertPrimitive(const nnode* node) // static
     }
     return result ; 
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

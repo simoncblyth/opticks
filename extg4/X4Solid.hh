@@ -24,8 +24,12 @@ code to create the G4 solids. This g4code is tacked onto the nnode.
 TODO: see if the g4code survives tree balancing, probably cases 
 without one-to-one model match will not work. 
 
-Note that cfg4/CMaker can do the opposite conversion, 
-creating a G4VSolid from nnode.
+Note that cfg4/CMaker can do the opposite conversion::
+
+    G4VSolid* CMaker::MakeSolid(const nnode*)
+
+Contrary to my recollection CMaker is rather complete 
+unlike a primordial class of the same name.
 
 NB the results of X4Solid conversions are **not visible in the glTF**
 renders, as those are based on the G4Polyhedron polgonization 

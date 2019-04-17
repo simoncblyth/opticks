@@ -464,7 +464,8 @@ void X4Solid::convertSphere()
                                       "deltaThetaAngle"
                                   } ;  
 
-    setG4Param(param, keys);
+    setG4Param(param,keys);
+    setG4Args(param, keys);
 }
 
 
@@ -489,6 +490,7 @@ void X4Solid::convertOrb()
     std::vector<std::string> keys  = { "radius" } ;
 
     setG4Param(param, keys); 
+    setG4Args(param, keys);
 }
 
 
@@ -520,6 +522,7 @@ void X4Solid::convertBox()
 
 
     setG4Param(param, keys);
+    setG4Args(param, keys);
 }
 
 
@@ -635,6 +638,7 @@ void X4Solid::convertTubs()
                                } ;
 
     setG4Param(param, keys);
+    setG4Args(param, keys);
 }
 
 
@@ -721,6 +725,7 @@ Following
                                    } ;   
 
     setG4Param(param, keys);
+    setG4Args(param, keys);
 }
 
 
@@ -810,6 +815,7 @@ void X4Solid::convertCons()
                                    } ; 
 
     setG4Param(param, keys );
+    setG4Args(param, keys);
 }
 
 void X4Solid::convertTorus()
@@ -870,6 +876,7 @@ void X4Solid::convertTorus()
                                  } ; 
 
     setG4Param(param, keys);
+    setG4Args(param, keys);
 }
 
 void X4Solid::convertEllipsoid()
@@ -933,6 +940,7 @@ void X4Solid::convertEllipsoid()
                                   } ;  
 
     setG4Param(param, keys);
+    setG4Args(param, keys);
 }
 
 
@@ -1109,6 +1117,7 @@ void X4Solid::convertPolycone_g4code()
     std::vector<std::string> keys = { "zPlane_id", "rInner_id", "rOuter_id" } ; 
 
     setG4Param(param, keys );
+    // no setG4args for the string ones
 } 
 
 
@@ -1139,6 +1148,7 @@ void X4Solid::convertHype()
                                 } ;
  
     setG4Param(param, keys);
+    setG4Args(param, keys);
 }
 
 nnode* X4Solid::convertHype_(bool only_inner)

@@ -17,7 +17,6 @@ class GMaterial ;
 class GCSG ; 
 
 // cfg4-
-class CMaker ; 
 class CPropLib ; 
 class CSensitiveDetector ; 
 
@@ -62,7 +61,6 @@ class CFG4_API CTestDetector : public CDetector
   private:
     GGeoTest*          m_geotest ; 
     NGeoTestConfig*    m_config ; 
-    CMaker*            m_maker ; 
 
 };
 

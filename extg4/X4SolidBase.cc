@@ -233,7 +233,27 @@ void X4SolidBase::setG4Param(const std::vector<T>& param, const std::vector<std:
 
     addG4Code( g4code.c_str() );  // can be multi-line eg with a translation argument and a ctor that refers to it by identifier 
     setG4Code();                  // tack the string onto root node
+
+    // because of the template argument it is unclear how to 
+    // stuff keys and params into g4args map from here 
 }
+
+void X4SolidBase::setG4Args(const std::vector<double>& param, const std::vector<std::string>& keys )
+{
+    assert( param.size() == keys.size() );  
+    typedef std::pair<std::string, double> SD ; 
+    typedef std::vector<SD> VSD ; 
+    
+    VSD* g4args = new VSD ; 
+    for(unsigned i=0 ; i < param.size() ; i++)
+    {
+        (*g4args).push_back( SD(keys[i], param[i]) ) ; 
+    }
+    assert( m_root ); 
+    m_root->g4args = g4args  ; 
+}
+
+
 
 template void X4SolidBase::setG4Param<float>(const std::vector<float>&, const std::vector<std::string>&, const char* );
 template void X4SolidBase::setG4Param<double>(const std::vector<double>&, const std::vector<std::string>&, const char* );

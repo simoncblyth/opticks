@@ -115,7 +115,7 @@ NScanTest.cc
 
 NCSGPolygonizeTest.cc 
 
-
+EllipseTest.cc
 
 
 NOctNodeTest.cc

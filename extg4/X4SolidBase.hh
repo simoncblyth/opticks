@@ -76,6 +76,8 @@ class X4_API X4SolidBase
         template<typename T>
         void setG4Param(const std::vector<T>& param, const std::vector<std::string>& keys, const char* identifier=NULL );  // sets ordered parameters used by g4code instanciation generation
         void addG4Code( const char* g4code ); 
+
+        void setG4Args(const std::vector<double>& param, const std::vector<std::string>& keys ) ;
     private:
         void setG4Code(); // only invoked by setG4Param 
 

@@ -41,17 +41,15 @@ class CFG4_API CMaker
         static std::string PVName(const char* shapename, int idx=-1);
         static std::string LVName(const char* shapename, int idx=-1);
     public:
-        CMaker(Opticks* ok, int verbosity=0);
+        CMaker();
     public:
-        G4VSolid* makeSolid(const NCSG* csg);                  
+        static G4VSolid* MakeSolid(const NCSG* csg);                  
+        static G4VSolid* MakeSolid(const nnode* node);
     private:
-        G4VSolid* makeSolid_r(const nnode* node);
+        static G4VSolid* MakeSolid_r(const nnode* node, unsigned depth );
         static G4Transform3D* ConvertTransform(const glm::mat4& t);
         static G4VSolid*      ConvertPrimitive(const nnode* node);
         static G4VSolid*      ConvertConvexPolyhedron(const nnode* node);
-    private:
-        Opticks* m_ok ; 
-        int      m_verbosity ; 
 
 };
 

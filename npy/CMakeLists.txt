@@ -93,6 +93,7 @@ set(SOURCES
     NNodeUncoincide.cpp
     NNodeNudger.cpp
     NNodeCoincidence.cpp
+    NTreeJUNO.cpp
 
     NBox.cpp
     NSlab.cpp
@@ -203,6 +204,7 @@ set(SOURCES
     NRngDiffuse.cpp
 
     NGeometry.cpp
+    Ellipse.cpp
 
 )
 
@@ -345,6 +347,8 @@ NFieldGrid3.hpp
 
 NNodeNudger.hpp
 NNodeCoincidence.hpp
+NTreeJUNO.hpp
+
 
 NTreeBuilder.hpp
 NTreePositive.hpp
@@ -372,6 +376,7 @@ NTris.hpp
 NEmitPhotonsNPY.hpp
 
 NGeometry.hpp
+Ellipse.hpp
 
 
 )

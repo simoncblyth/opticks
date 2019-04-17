@@ -809,7 +809,7 @@ NNode.hpp::
 ::
 
 
-    G4Sphere(const G4String& pName,
+   G4Sphere(const G4String& pName,
                    G4double pRmin, G4double pRmax,
                    G4double pSPhi, G4double pDPhi,
                    G4double pSTheta, G4double pDTheta);
@@ -836,6 +836,23 @@ NNode.hpp::
                   G4double pDPhi );
 
 
- 
+X4Solid X4SolidBase NNode : g4args
+----------------------------------------
+
+Collecting the ctor keys and params into 
+std::vector<std::pair<std::string,double>> 
+
+
+But seems g4args not needed, find CMaker
+--------------------------------------------
+
+Find the below to be rather complete, so its 
+partly done already::
+
+   G4VSolid* CMaker::MakeSolid(const nnode* root) ;  
+
+
+NTreeJUNO for the surgery
+------------------------------------
 
 
