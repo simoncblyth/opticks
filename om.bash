@@ -812,8 +812,11 @@ EOT
 
 
 
-om-tst-(){ cat << EOT
+om-tst-(){ local cls=$1 ; cat << EOT
 
+// TEST=${cls}Test om-test
+
+#include "${cls}.hh"
 #include "OPTICKS_LOG.hh"
 
 int main(int argc, char** argv)
@@ -852,5 +855,18 @@ Usage::
 
 EON
 }
+
+om-cls()
+{
+    local cls=${1:-NTreeJUNO}
+    local hdr=$(find . \( -name {cls}.hh -or -name ${cls}.hpp -or -name ${cls}.h  \) )
+    local imp=$(find . \( -name ${cls}Test.cc -or -name ${cls}.cpp \) )
+    local tst=$(find . \( -name ${cls}Test.cc -or -name ${cls}.txt -or -name ${cls}.py \) )
+    local cmd="vi $hdr $imp $tst"
+    echo $cmd
+    eval $cmd
+}
+
+
 
 

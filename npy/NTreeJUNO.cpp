@@ -2,6 +2,7 @@
 #include <iomanip>
 #include "NNode.hpp"
 #include "NTreeJUNO.hpp"
+#include "NSolid.hpp"
 
 #include "NGLMExt.hpp"
 #include "GLMPrint.hpp"
@@ -94,10 +95,10 @@ void NTreeJUNO::rationalize()   // cf ana/shape.py ana/x018.py
 
      assert( root->label ); 
 
-     bool is_x018 = strcmp(root->label, "x018") == 0 ; 
-     bool is_x019 = strcmp(root->label, "x019") == 0 ; 
-     bool is_x020 = strcmp(root->label, "x020") == 0 ; 
-     bool is_x021 = strcmp(root->label, "x021") == 0 ; 
+     bool is_x018 = strcmp(root->label, NSolid::x018_label) == 0 ; 
+     bool is_x019 = strcmp(root->label, NSolid::x019_label) == 0 ; 
+     bool is_x020 = strcmp(root->label, NSolid::x020_label) == 0 ; 
+     bool is_x021 = strcmp(root->label, NSolid::x021_label) == 0 ; 
 
      LOG(info)
            << " label " << root->label 
@@ -115,8 +116,7 @@ void NTreeJUNO::rationalize()   // cf ana/shape.py ana/x018.py
      }
      else if( is_x019 )  // vacuum remainder
      {
-         //assert( root->type == CSG_DIFFERENCE ); 
-         assert( root->type == CSG_INTERSECTION );  // mis-label x018 temporarily  
+         assert( root->type == CSG_DIFFERENCE ); 
          nnode* left = root->left ; 
          assert( left->type == CSG_UNION ); 
          left->parent = NULL ;
@@ -130,5 +130,8 @@ void NTreeJUNO::rationalize()   // cf ana/shape.py ana/x018.py
           us->right = cone ;           
      }
 }
+
+
+
 
 

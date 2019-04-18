@@ -93,6 +93,8 @@ set(SOURCES
     NNodeUncoincide.cpp
     NNodeNudger.cpp
     NNodeCoincidence.cpp
+    
+    NSolid.cpp
     NTreeJUNO.cpp
 
     NBox.cpp
@@ -347,6 +349,8 @@ NFieldGrid3.hpp
 
 NNodeNudger.hpp
 NNodeCoincidence.hpp
+
+NSolid.hpp
 NTreeJUNO.hpp
 
 
