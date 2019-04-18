@@ -958,4 +958,114 @@ After switching to local transforms in CMaker, transforms are matching
 
 
 
+After detecting and reconstructing the ellipsoid differences are minor
+-----------------------------------------------------------------------------
+
+::
+
+     1008  geocache-tcd
+     1009  diff  x018.gdml /tmp/blyth/opticks/CTreeJUNOTest/p018.gdml
+     1010  diff  x019.gdml /tmp/blyth/opticks/CTreeJUNOTest/p019.gdml
+     1011  diff  x020.gdml /tmp/blyth/opticks/CTreeJUNOTest/p020.gdml
+     1012  diff  x021.gdml /tmp/blyth/opticks/CTreeJUNOTest/p021.gdml
+
+
+* some torus startphi that NNode doesnt cover
+
+
+Are missing the rationalized zcuts 
+---------------------------------------
+
+::
+
+    blyth@localhost tests]$ cat /tmp/blyth/opticks/CTreeJUNOTest/n018.gdml
+    <?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+    <gdml xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="SchemaLocation">
+
+      <solids>
+        <ellipsoid ax="249" by="249" cz="179" lunit="mm" name="PMT_20inch_inner_solid_1_Ellipsoid0x4c91130" zcut1="-179" zcut2="179"/>
+      </solids>
+
+    </gdml>
+    [blyth@localhost tests]$ 
+
+
+
+Result of these labors
+---------------------------
+
+Rationalized GDML snippets for the four solids::
+
+     CTreeJUNOTest -18
+     CTreeJUNOTest -19
+     CTreeJUNOTest -20
+     CTreeJUNOTest -21
+
+Emitted to stdout and to file::
+
+    [blyth@localhost opticks]$ ll /tmp/blyth/opticks/CTreeJUNOTest/n*
+    -rw-rw-r--. 1 blyth blyth 1272 Apr 18 21:26 /tmp/blyth/opticks/CTreeJUNOTest/n019.gdml
+    -rw-rw-r--. 1 blyth blyth 1261 Apr 18 21:26 /tmp/blyth/opticks/CTreeJUNOTest/n020.gdml
+    -rw-rw-r--. 1 blyth blyth 1327 Apr 18 21:26 /tmp/blyth/opticks/CTreeJUNOTest/n021.gdml
+    -rw-rw-r--. 1 blyth blyth  325 Apr 18 21:28 /tmp/blyth/opticks/CTreeJUNOTest/n018.gdml
+
+
+Incorporated the 4 rationalized trees into opticksdata-jv3, BUT get some reference issue
+--------------------------------------------------------------------------------------------
+
+Ahha : yes have to copy the labels of all replaced roots to the new roots 
+to avoid changes elsewhere in the GDML.
+
+::
+
+    blyth@localhost tests]$ geocache-;geocache-j1808-v3
+    geocache-j1808-v3 is a function
+    geocache-j1808-v3 () 
+    { 
+        local iwd=$PWD;
+        local tmp=$(geocache-tmp $FUNCNAME);
+        mkdir -p $tmp && cd_func $tmp;
+        type $FUNCNAME;
+        opticksdata-;
+        gdb --args OKX4Test --gdmlpath $(opticksdata-jv3) --csgskiplv 22;
+        cd_func $iwd
+    }
+    GNU gdb (GDB) Red Hat Enterprise Linux 7.6.1-114.el7
+    ...
+    (gdb) r
+    Starting program: /home/blyth/local/opticks/lib/OKX4Test --gdmlpath /home/blyth/local/opticks/opticksdata/export/juno1808/g4_00_v3.gdml --csgskiplv 22
+    ...
+    2019-04-18 21:48:41.829 INFO  [376226] [main@79]  parsing /home/blyth/local/opticks/opticksdata/export/juno1808/g4_00_v3.gdml
+    G4GDML: Reading '/home/blyth/local/opticks/opticksdata/export/juno1808/g4_00_v3.gdml'...
+    G4GDML: Reading definitions...
+    G4GDML: Reading materials...
+    G4GDML: Reading solids...
+    G4GDML: Reading structure...
+
+    -------- EEEE ------- G4Exception-START -------- EEEE -------
+
+    *** ExceptionHandler is not defined ***
+    *** G4Exception : ReadError
+          issued by : G4GDMLReadSolids::GetSolid()
+    Referenced solid 'PMT_20inch_inner1_solid0x4cb3610' was not found!
+    *** Fatal Exception ***
+    -------- EEEE -------- G4Exception-END --------- EEEE -------
+
+
+    *** G4Exception: Aborting execution ***
+
+
+
+After fixing that, still in opticksdata-jv3 succeed to raytrace a torus-less juno geometry with OptiX 6.0.0
+----------------------------------------------------------------------------------------------------------------
+
+Observe :doc:`opticks_key_digest_no_updating_for_changed_geometry`
+
+
+Next : fix digest updating and get running off geocache working  
+--------------------------------------------------------------------
+
+
+
+
 

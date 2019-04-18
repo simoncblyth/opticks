@@ -17,13 +17,21 @@ nnode* NSolid::createEllipsoid( const char* name, float ax, float by, float cz, 
 
     glm::vec3 scale( ax/cz, by/cz, 1.f) ;
 
-    bool zslice = z1 > -cz || z2 < cz ; 
 
+    /*
+    // for subsequent setting of zcuts its easier to always use zsphere
+    // otherwise would need to promote sphere to zsphere
+  
+    bool zslice = z1 > -cz || z2 < cz ; 
     nnode* n = zslice ? 
                           (nnode*)make_zsphere( 0.f, 0.f, 0.f, cz, z1, z2 ) 
                        :
                           (nnode*)make_sphere( 0.f, 0.f, 0.f, cz ) 
                        ;
+    */
+
+    nnode* n = (nnode*)make_zsphere( 0.f, 0.f, 0.f, cz, z1, z2 ) ;
+
 
     n->label = strdup(name) ; 
     n->transform = nmat4triple::make_scale( scale );

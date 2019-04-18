@@ -20,6 +20,7 @@
 #include "G4Cons.hh"
 #include "G4Trd.hh"
 #include "G4Torus.hh"
+#include "G4Ellipsoid.hh"
 
 #include "G4TriangularFacet.hh"
 #include "G4QuadrangularFacet.hh"
@@ -40,7 +41,7 @@
 
 
 
-const plog::Severity CMaker::LEVEL = info ; 
+const plog::Severity CMaker::LEVEL = debug ; 
 
 
 CMaker::CMaker() 
@@ -118,7 +119,7 @@ G4VSolid* CMaker::MakeSolid_r(const nnode* node, unsigned depth )  //static
         G4VSolid* right = MakeSolid_r(node->right, depth+1);
 
         // transforms handled at the operator rather than the 
-        // nodes so it is easy to see left from right
+        // nodes level so can easily see left from right
 
         bool left_transform = node->left->transform ? !node->left->transform->is_identity() : false ;  
         bool left_sphere = node->left->type == CSG_SPHERE || node->left->type == CSG_ZSPHERE ; 
@@ -144,24 +145,38 @@ G4VSolid* CMaker::MakeSolid_r(const nnode* node, unsigned depth )  //static
         }  
 
 
+
         const nmat4triple* right_transform = node->right->transform ;
+        glm::mat4* tr = new glm::mat4(1.f) ;; 
+
         if(right_transform == NULL )
         {
             right_transform = nmat4triple::make_identity() ;
-            /*
-            LOG(info) << " expecting right gtransform "
-                      << " depth " << depth
-                      << " csgname " << name 
-                      << " label " << ( node->label ? node->label : "-" )
-                      ;
-            */
-
+            *tr = right_transform->t ; 
             // from nnode::update_gtransforms nnode::global_transform
-            // it is apparent that only primitives always have gtransforms not 
-            // operator nodes 
+            // only primitives always have gtransforms not operator nodes 
+        }
+        else
+        {
+            bool right_ellipsoid = node->right->is_ellipsoid() ; 
+            // An ellipsoid will always have a transform.
+            // BUT it needs to be transform un-scaled  (trs -> tr)
+            // as Geant4 models that scaling in the G4Ellipsoid axes parameters.
+
+            if( right_ellipsoid )
+            {
+                // hmm nasty that have to do this both for the primitive and then again
+                // for the parent : but alternatives seem complicated
+                glm::vec3 e_axes ;
+                glm::vec2 e_zcut ; 
+                node->right->reconstruct_ellipsoid( e_axes, e_zcut, *tr ) ;   
+            }
+            else
+            {
+                *tr = right_transform->t ;    
+            }
         } 
-        assert( right_transform );   
-        G4Transform3D* rtransform = ConvertTransform(right_transform->t);
+        G4Transform3D* rtransform = ConvertTransform(*tr);
 
         if(node->type == CSG_UNION)
         {
@@ -286,51 +301,78 @@ G4VSolid* CMaker::ConvertConvexPolyhedron(const nnode* node) // static
 }
 
 
+
 G4VSolid* CMaker::ConvertPrimitive(const nnode* node) // static
 {
     /*
     G4 has inner imps that would allow some Opticks operators to be
     expressed as G4 primitives. 
+
+    cf NCSG::import_primitive
     */
 
     G4VSolid* result = NULL ; 
     const char* name = node->label ;
     assert(name);
 
+    bool is_ellipsoid = node->is_ellipsoid()  ;
+    glm::vec3 e_axes ;
+    glm::vec2 e_zcut ; 
+    glm::mat4 e_trs_unscaled ; 
+    if( is_ellipsoid )
+    {
+        node->reconstruct_ellipsoid( e_axes, e_zcut, e_trs_unscaled ) ;   
+    }
 
-    // cf NCSG::import_primitive
     if(node->type == CSG_SPHERE )
     {
-        nsphere* n = (nsphere*)node ; 
-        G4Sphere* sp = new G4Sphere( name, 0., n->radius(), 0., twopi, 0., pi);  
-        result = sp ; 
+        if( is_ellipsoid ) 
+        {
+             G4Ellipsoid* el = new G4Ellipsoid( name, e_axes.x, e_axes.y, e_axes.z, e_zcut.x, e_zcut.y );  
+             result = el ; 
+        }
+        else
+        {
+            nsphere* n = (nsphere*)node ; 
+            G4Sphere* sp = new G4Sphere( name, 0., n->radius(), 0., twopi, 0., pi);  
+            result = sp ;
+        } 
     }
     else if(node->type == CSG_ZSPHERE)
     {
-        nzsphere* n = (nzsphere*)node ; 
 
-        double innerRadius = 0. ;
-        double outerRadius = n->radius() ;
-        double startPhi = 0. ; 
-        double deltaPhi = twopi ; 
-        double startTheta = n->startTheta() ; 
-        double deltaTheta = n->deltaTheta() ; 
-        double endTheta = startTheta + deltaTheta ; 
+        if( is_ellipsoid )
+        {
+             G4Ellipsoid* el = new G4Ellipsoid( name, e_axes.x, e_axes.y, e_axes.z, e_zcut.x, e_zcut.y );  
+             result = el ; 
+        }
+        else
+        {
+            nzsphere* n = (nzsphere*)node ; 
 
-        LOG(error) << "CSG_ZSPHERE"
-                   << " pi " << pi
-                   << " innerRadius " << innerRadius
-                   << " outerRadius " << outerRadius
-                   << " startTheta " << startTheta
-                   << " deltaTheta " << deltaTheta
-                   << " endTheta " << endTheta
-                   ;
-        assert( startTheta <= pi && startTheta >= 0.);
-        assert( deltaTheta <= pi && deltaTheta >= 0.);
-        assert( endTheta <= pi && endTheta >= 0.);
+            double innerRadius = 0. ;
+            double outerRadius = n->radius() ;
+            double startPhi = 0. ; 
+            double deltaPhi = twopi ; 
+            double startTheta = n->startTheta() ; 
+            double deltaTheta = n->deltaTheta() ; 
+            double endTheta = startTheta + deltaTheta ; 
 
-        G4Sphere* sp = new G4Sphere( name, innerRadius, outerRadius, startPhi, deltaPhi, startTheta, deltaTheta);  
-        result = sp ; 
+            LOG(error) << "CSG_ZSPHERE"
+                       << " pi " << pi
+                       << " innerRadius " << innerRadius
+                       << " outerRadius " << outerRadius
+                       << " startTheta " << startTheta
+                       << " deltaTheta " << deltaTheta
+                       << " endTheta " << endTheta
+                       ;
+            assert( startTheta <= pi && startTheta >= 0.);
+            assert( deltaTheta <= pi && deltaTheta >= 0.);
+            assert( endTheta <= pi && endTheta >= 0.);
+
+            G4Sphere* sp = new G4Sphere( name, innerRadius, outerRadius, startPhi, deltaPhi, startTheta, deltaTheta);  
+            result = sp ; 
+        }
     }
     else if(node->type == CSG_BOX || node->type == CSG_BOX3)
     {

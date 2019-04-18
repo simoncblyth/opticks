@@ -129,6 +129,19 @@ opticksdata-j(){ echo $(opticksdata-xpath j1808).gdml ; }
 opticksdata-jv2(){ echo $(opticksdata-xpath j1808)_v2.gdml ; }  ## manually remove guide tube torus
 opticksdata-jv2-vi(){ vi $(opticksdata-jv2) ; }
 
+opticksdata-jv3(){ echo $(opticksdata-xpath j1808)_v3.gdml ; }  
+opticksdata-jv3-vi(){ vi $(opticksdata-jv3) ; }
+
+opticksdata-j-info(){ cat << EOI
+
+   opticksdata-j   : $(opticksdata-j)
+   opticksdata-jv2 : $(opticksdata-jv2)
+   opticksdata-jv3 : $(opticksdata-jv3)
+
+EOI
+}
+
+
 
 opticksdata-info(){ cat << EOM
 

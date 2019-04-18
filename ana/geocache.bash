@@ -224,6 +224,20 @@ geocache-j1808-v2()
     cd $iwd
 }
 
+geocache-j1808-v3()
+{
+    local iwd=$PWD
+    local tmp=$(geocache-tmp $FUNCNAME)
+    mkdir -p $tmp && cd $tmp
+
+    type $FUNCNAME
+    opticksdata- 
+
+    gdb --args OKX4Test --gdmlpath $(opticksdata-jv3) --csgskiplv 22 
+
+    cd $iwd
+}
+
 
 
 
@@ -236,7 +250,7 @@ With OptiX_600 CUDA 10.1 this parses the gdml, creates geocache, pops up OpenGL 
 switching to ray trace works but as soon as navigate into region where torus is needed
 get the Misaligned address issue, presumably quartic double problem.
 
-Torus strikes::
+Torus strikes, see notes/issues/torus_replacement_on_the_fly.rst for the fix::
 
     [blyth@localhost issues]$ geocache-j1808
     geocache-j1808 is a function
@@ -259,6 +273,9 @@ Torus strikes::
       what():  Unknown error (Details: Function "RTresult _rtContextLaunch2D(RTcontext, unsigned int, RTsize, RTsize)" caught exception: Encountered a CUDA error: cudaDriver().CuEventSynchronize( m_event ) returned (716): Misaligned address)
     ^CKilled
     [blyth@localhost issues]$ 
+
+
+
 
 
 EON

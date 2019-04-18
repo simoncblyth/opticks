@@ -62,6 +62,7 @@ struct NPY_API nzsphere : nnode {
 
     void increase_z2(float dz);
     void decrease_z1(float dz);
+    void set_zcut(float z1, float z2);
 
 
 };
@@ -88,6 +89,7 @@ inline NPY_API unsigned nzsphere::flags() const { return param2.u.x ; }
 // grow the zsphere upwards on upper side (z2) or downwards on down side (z1)
 inline NPY_API void  nzsphere::increase_z2(float dz){ assert( dz >= 0.f) ; param1.f.y += dz ; check() ; } // z2 > z1
 inline NPY_API void  nzsphere::decrease_z1(float dz){ assert( dz >= 0.f) ; param1.f.x -= dz ; check() ; }
+inline NPY_API void  nzsphere::set_zcut(float z1, float z2){  param1.f.x = z1 ; param1.f.y = z2 ; check() ; }
 
 inline NPY_API void nzsphere::check() const 
 {

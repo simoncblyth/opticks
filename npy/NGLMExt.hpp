@@ -128,6 +128,7 @@ struct NPY_API ndeco
 
     glm::mat4 rs ;
 
+    glm::mat4 tr ;
     glm::mat4 trs ;
     glm::mat4 isirit ;
 };
@@ -151,11 +152,18 @@ struct NPY_API nglmext
 
     static float compDiff2(const glm::mat4& a , const glm::mat4& b, bool fractional=false, float epsilon=1e-5, float epsilon_translation=1e-3);
     static float compDiff2(const float a_     , const float b_    , bool fractional=false, float epsilon=1e-5);
+
+    // maximum absolute componentwise difference between a and b 
     static float compDiff(const glm::mat4& a , const glm::mat4& b );
     static float compDiff(const glm::vec4& a , const glm::vec4& b );
+    static float compDiff(const glm::vec3& a , const glm::vec3& b );
+    static float compDiff(const glm::vec2& a , const glm::vec2& b );
 
     static glm::mat4 average_to_inverse_transpose( const glm::mat4& m );
-    static ndeco polar_decomposition( const glm::mat4& trs, bool verbose=false );
+    static void polar_decomposition( const glm::mat4& trs, ndeco& deco, bool verbose=false );
+    static glm::vec3 pluck_scale( const ndeco& d );
+    static bool has_scale( const glm::vec3& scale, float epsilon=1e-3 ); 
+
     static glm::vec3 pluck_translation( const glm::mat4& t ); 
 
     static glm::mat4 invert_trs( const glm::mat4& trs ); 

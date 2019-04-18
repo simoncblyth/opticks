@@ -43,7 +43,7 @@ NTreeJUNO::NTreeJUNO(nnode* root_ )
 {
 }
 
-ncone* NTreeJUNO::replacement_cone() const 
+ncone* NTreeJUNO::replacement_cone() 
 {
     // ana/shape.py ana/x018.py 
 
@@ -67,13 +67,12 @@ ncone* NTreeJUNO::replacement_cone() const
 
     const nnode* sp = root->find_one(CSG_SPHERE, CSG_ZSPHERE) ; 
 
-    glm::vec3 axes ; 
-    glm::vec2 zcut ; 
-    nnode::reconstruct_ellipsoid( sp , axes, zcut );  
-    assert( axes.x == axes.y && "rotational symmetry about z is assumed" );  
-    LOG(info) << " ellipsoid axes " << glm::to_string( axes ) << " zcut " << glm::to_string(zcut)  ; 
+    sp->reconstruct_ellipsoid( e_axes, e_zcut, e_trs_unscaled );  
 
-    ellipse e(axes.x, axes.z) ; 
+    assert( e_axes.x == e_axes.y && "rotational symmetry about z is assumed" );  
+    LOG(info) << " ellipsoid e_axes " << glm::to_string( e_axes ) << " e_zcut " << glm::to_string(e_zcut)  ; 
+
+    ellipse e(e_axes.x, e_axes.z) ; 
     glm::dvec2 ca = e.closest_approach_to_point( torus_rhs );
     
     LOG(info) << " ca " << glm::to_string(ca) ; 
@@ -104,6 +103,10 @@ NTreeJUNO::rationalize
 19,20,21
     tubs-torus replaced with cone    
 
+
+Hmm for setting zcuts it needs to be CSG_ZSPHERE
+
+
 **/
 
 
@@ -114,7 +117,10 @@ void NTreeJUNO::rationalize()   // cf ana/shape.py ana/x018.py
      const nnode* e = root->find_one(CSG_ZSPHERE, CSG_SPHERE);
      assert(e); 
      nnode* ellipsoid = const_cast<nnode*>(e) ; 
+     assert( ellipsoid->type == CSG_ZSPHERE );   // need to set_zcut
+     nzsphere* zs = dynamic_cast<nzsphere*>(ellipsoid) ; 
 
+     float zsplit = 0.f ;   // ellipsoid frame z when to chop
 
      const nnode* t = root->find_one(CSG_TORUS);
      assert(t); 
@@ -146,22 +152,32 @@ void NTreeJUNO::rationalize()   // cf ana/shape.py ana/x018.py
      {
          assert( root->type == CSG_INTERSECTION ); 
          ellipsoid->parent = NULL ;
+         zs->set_zcut( zsplit, e_axes.z ) ;    // upper ellipsoid
 
-         root = ellipsoid ;              // copy/steal ?
+         root = ellipsoid ;         
+         root->label = strdup( NSolid::x018_label ) ; // must  keep root label same for reference integrity  
      }
-     else if( is_x019 )  // vacuum remainder
+     else if( is_x019 )  // vacuum remainder : promote root.left to root
      {
          assert( root->type == CSG_DIFFERENCE ); 
          nnode* left = root->left ; 
          assert( left->type == CSG_UNION ); 
          left->parent = NULL ;
 
+         zs->set_zcut( -e_axes.z, zsplit ) ;   // lower ellipsoid
+
          root = left ; 
+         root->label = strdup( NSolid::x019_label ) ; // must  keep root label same for reference integrity  
      }
 
      if( is_x019 || is_x020 || is_x021 )
      {
           cone->parent = us ; 
+          cone->label = strdup(ss->label);  
+          // copy the label of the subtraction solid that it is replacing 
+          // not needed for reference integrity within the solid : but perhaps 
+          // multiple solids constituents of the same name eg the default "co" would cause problems
+
           us->right = cone ;           
      }
 }

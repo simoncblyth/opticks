@@ -142,7 +142,8 @@ const nmat4triple* nd::make_triple( const float* data)
     // spell out nglmext::invert_trs for debugging discrepancies
 
     glm::mat4 T = glm::make_mat4(data) ;
-    ndeco d = nglmext::polar_decomposition( T ) ;
+    ndeco d ;
+    nglmext::polar_decomposition( T, d ) ;
 
     glm::mat4 isirit = d.isirit ; 
     glm::mat4 i_trs = glm::inverse( T ) ; 

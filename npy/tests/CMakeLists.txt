@@ -117,6 +117,7 @@ NCSGPolygonizeTest.cc
 
 EllipseTest.cc
 NSolidTest.cc
+NSolid2Test.cc
 NTreeJUNOTest.cc
 
 

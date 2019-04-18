@@ -1817,16 +1817,52 @@ void nnode::dumpPointsSDF(const std::vector<glm::vec3>& points, float epsilon) c
 
 
 
+/**
+nnode::is_ellipsoid
+---------------------
 
+A CSG_SPHERE or CSG_ZSPHERE with non-identity scale is an ellipsoid.
 
+**/
 
-
-
-void nnode::reconstruct_ellipsoid( const nnode* n, glm::vec3& axes, glm::vec2& zcut ) // static
+bool nnode::is_ellipsoid(bool verbose) const 
 {
-    // G4Ellipsoid gets translated into either an nzsphere or an nsphere 
-    // (depending on there being zcuts) with a scaling transform associated
+    if(!(type == CSG_SPHERE || type == CSG_ZSPHERE ))  return false ;
+    if(transform == NULL) return false ; 
 
+   
+    ndeco d ;
+    nglmext::polar_decomposition( transform->t, d );
+
+    glm::vec3 dsca = nglmext::pluck_scale( d ); 
+
+    float epsilon = 1e-3 ; 
+
+    bool has_scale = nglmext::has_scale( dsca, epsilon ); 
+
+    if(verbose)
+    { 
+        LOG(info) ; 
+        std::cout << gpresent( "dsca", dsca ) << std::endl ;
+        std::cout << " has_scale " << has_scale << std::endl ; 
+    }
+    return has_scale ; 
+}
+
+
+/**
+nnode::reconstruct_ellipsoid
+------------------------------
+
+G4Ellipsoid gets translated into either an nzsphere or an nsphere 
+(depending on there being zcuts) with a scaling transform associated
+
+**/
+
+void nnode::reconstruct_ellipsoid( glm::vec3& axes, glm::vec2& zcut, glm::mat4& trs_unscaled ) const 
+{
+    const nnode* n = this ; 
+ 
     const nsphere* sp = dynamic_cast<const nsphere*>(n) ;   
     const nzsphere* zs = dynamic_cast<const nzsphere*>(n) ;   
 
@@ -1843,7 +1879,8 @@ void nnode::reconstruct_ellipsoid( const nnode* n, glm::vec3& axes, glm::vec2& z
     //LOG(info) << " txf " << txf ; 
     //print(txf->t , "t" ) ; 
 
-    ndeco d = nglmext::polar_decomposition( txf->t ); 
+    ndeco d ;
+    nglmext::polar_decomposition( txf->t, d ); 
     //print(d.t , "t" ) ; 
     //print(d.r , "r" ) ; 
     //print(d.s , "s" ) ; 
@@ -1865,6 +1902,8 @@ void nnode::reconstruct_ellipsoid( const nnode* n, glm::vec3& axes, glm::vec2& z
 
     zcut.x = is_sphere ? -axes.z : zs->z1() ;  
     zcut.y = is_sphere ?  axes.z : zs->z2() ; 
+
+    trs_unscaled = d.tr ; 
 
     //print(axes, "axes" ); 
     //print(zcut, "zcut" ); 

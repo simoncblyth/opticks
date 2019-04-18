@@ -128,10 +128,19 @@ glm::mat4 nglmext::average_to_inverse_transpose( const glm::mat4& m )
     return (m + it)/2.f ;
 }
 
-ndeco nglmext::polar_decomposition( const glm::mat4& trs, bool verbose )
-{
-    ndeco d ; 
+/**
+nglmext::polar_decomposition
+-----------------------------
 
+Decompose a 4x4 TRS (translate-rotate-scale) matrix 
+into T,R and S component matrices and their inverses
+held within the ndeco struct.
+
+**/
+
+
+void nglmext::polar_decomposition( const glm::mat4& trs, ndeco& d,  bool verbose )
+{
     d.t = glm::translate(glm::mat4(1.f), glm::vec3(trs[3])) ; 
     d.it = glm::translate(glm::mat4(1.f), -glm::vec3(trs[3])) ; 
 
@@ -168,9 +177,25 @@ ndeco nglmext::polar_decomposition( const glm::mat4& trs, bool verbose )
 
     d.isirit = d.is * d.ir * d.it ; 
     d.trs = d.t * d.r * d.s  ; 
-
-    return d ; 
+    d.tr = d.t * d.r ;
 } 
+
+glm::vec3 nglmext::pluck_scale( const ndeco& d )
+{
+    glm::vec3 scale(0,0,0); 
+    scale.x = d.s[0][0] ; 
+    scale.y = d.s[1][1] ; 
+    scale.z = d.s[2][2] ; 
+    return scale ; 
+}
+
+bool nglmext::has_scale( const glm::vec3& scale, float epsilon )
+{ 
+    glm::vec3 identity(1.f) ; 
+    glm::vec3 delta(scale - identity); 
+    return glm::length( delta ) > epsilon ;  
+}
+
 
 
 glm::vec3 nglmext::pluck_translation( const glm::mat4& t )
@@ -181,6 +206,9 @@ glm::vec3 nglmext::pluck_translation( const glm::mat4& t )
     tla.z = t[3].z ; 
     return tla ; 
 }
+
+
+
 
 
 
@@ -209,7 +237,8 @@ glm::mat4 nglmext::invert_trs( const glm::mat4& trs )
  
     **/
 
-    ndeco d = polar_decomposition( trs ) ;
+    ndeco d ;
+    polar_decomposition( trs, d ) ;
     glm::mat4 isirit = d.isirit ; 
     glm::mat4 i_trs = glm::inverse( trs ) ; 
 
@@ -224,6 +253,28 @@ glm::mat4 nglmext::invert_trs( const glm::mat4& trs )
 }
 
 
+/**
+nglmext::compDiff
+------------------
+
+Maximum absolute componentwise difference 
+
+**/
+
+
+float nglmext::compDiff(const glm::vec2& a , const glm::vec2& b )
+{
+    glm::vec2 amb = a - b ; 
+    glm::vec2 aamb = glm::abs(amb) ; 
+    return glm::compMax(aamb) ; 
+}
+
+float nglmext::compDiff(const glm::vec3& a , const glm::vec3& b )
+{
+    glm::vec3 amb = a - b ; 
+    glm::vec3 aamb = glm::abs(amb) ; 
+    return glm::compMax(aamb) ; 
+}
 float nglmext::compDiff(const glm::vec4& a , const glm::vec4& b )
 {
     glm::vec4 amb = a - b ; 
@@ -233,8 +284,6 @@ float nglmext::compDiff(const glm::vec4& a , const glm::vec4& b )
 
 float nglmext::compDiff(const glm::mat4& a , const glm::mat4& b )
 {
-    // maximum absolute componentwise difference 
-
     glm::mat4 amb = a - b ; 
 
     glm::mat4 aamb ; 
@@ -245,6 +294,9 @@ float nglmext::compDiff(const glm::mat4& a , const glm::mat4& b )
 
     return glm::compMax(colmax) ; 
 }
+
+
+
 
 
 /*

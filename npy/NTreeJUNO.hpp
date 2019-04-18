@@ -2,6 +2,7 @@
 
 #include <string>
 #include <vector>
+#include "NGLM.hpp"
 #include "NPY_API_EXPORT.hh"
 struct nnode ; 
 struct ncone ; 
@@ -24,10 +25,15 @@ struct NPY_API NTreeJUNO
     static nnode* Rationalize(nnode* a);
 
     NTreeJUNO(nnode* root_) ;
+
     nnode* root ; 
     ncone* cone ; 
 
-    ncone* replacement_cone() const ; 
+    glm::vec3 e_axes ; 
+    glm::vec2 e_zcut ; 
+    glm::mat4 e_trs_unscaled ; 
+
+    ncone* replacement_cone() ; 
     void rationalize();
 
     static nnode* create(int lv);  

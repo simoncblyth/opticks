@@ -200,8 +200,8 @@ struct NPY_API nnode
     static void collect_prim_for_edit_r(std::vector<nnode*>& prim, nnode* node) ;
 
 
-
-    static void reconstruct_ellipsoid( const nnode* n, glm::vec3& axes, glm::vec2& zcut ); 
+    bool is_ellipsoid(bool verbose=false) const ;
+    void reconstruct_ellipsoid( glm::vec3& axes, glm::vec2& zcut, glm::mat4& trs_unscaled ) const ; 
 
 
     const nnode* find_one( OpticksCSG_t qtyp ) const ; 

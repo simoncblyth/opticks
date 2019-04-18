@@ -8,6 +8,16 @@ ellipse::ellipse( double ex, double ey )
     hemi.y = ey ; 
 }
 
+/**
+ellipse::closest_approach_to_point
+------------------------------------
+
+Returns a 2d coordinate of the point on the 
+ellipse that is closest to the 2d point provided 
+in the argument.
+
+**/
+
 glm::dvec2 ellipse::closest_approach_to_point( const glm::dvec2& p )
 {
     const double pi = glm::pi<double>() ;
