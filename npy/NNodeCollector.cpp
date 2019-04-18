@@ -1,4 +1,6 @@
 #include <iostream>
+#include <iomanip>
+#include <sstream>
 #include <cstring>
 #include "NNodeCollector.hpp"
 
@@ -56,14 +58,29 @@ template <typename T>
 void NNodeCollector<T>::dump(const char* msg, std::vector<const T*>& order ) 
 {
     std::cout << msg  ; 
+    std::cout << desc(order); 
+}
+
+template <typename T>
+std::string NNodeCollector<T>::desc(std::vector<const T*>& order ) 
+{
+    std::stringstream ss ; 
     for(auto n: order) 
     {
+        ss << std::setw(10) << n->tag() << " "  ; 
         const char* label = n->label ; 
-        std::cout << label << " " ; 
-        if(strlen(label) > 4) std::cout << std::endl ; 
+        ss << label << " " ; 
+        //if(strlen(label) > 4) ss << std::endl ; 
+        ss << std::endl ; 
     }
-    std::cout << std::endl ; 
+    ss << std::endl ; 
+    return ss.str();
 }
+
+template <typename T> std::string NNodeCollector<T>::desc_inorder() {   return desc(inorder); }
+template <typename T> std::string NNodeCollector<T>::desc_preorder() {  return desc(preorder); }
+template <typename T> std::string NNodeCollector<T>::desc_postorder() { return desc(postorder); }
+
 
 template <typename T>
 void NNodeCollector<T>::dump(const char* msg ) 

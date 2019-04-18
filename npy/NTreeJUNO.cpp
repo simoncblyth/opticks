@@ -16,6 +16,26 @@
 #include "PLOG.hh"
 
 
+const NTreeJUNO::VI NTreeJUNO::LVS = { 18,-18, 19,-19, 20,-20, 21,-21  } ; 
+
+nnode* NTreeJUNO::create(int lv)   // static
+{
+    //assert( std::find( LVS.begin(), LVS.end(), lv ) != LVS.end() );  
+
+    nnode* a = NSolid::create( lv < 0 ? -lv : lv ) ; 
+    nnode* b = lv < 0 ? NTreeJUNO::Rationalize( a ) : a ; 
+    return b ;  
+}
+
+
+nnode* NTreeJUNO::Rationalize(nnode* a)   // static
+{
+    NTreeJUNO tj(a) ; 
+    tj.rationalize(); 
+    return tj.root ; 
+}
+
+
 NTreeJUNO::NTreeJUNO(nnode* root_ ) 
     :
     root(root_),
@@ -73,6 +93,20 @@ ncone* NTreeJUNO::replacement_cone() const
 }
 
 
+/**
+NTreeJUNO::rationalize
+-----------------------
+
+18
+    root gets replaced with ellipsoid
+19
+    root->left becomes root
+19,20,21
+    tubs-torus replaced with cone    
+
+**/
+
+
 void NTreeJUNO::rationalize()   // cf ana/shape.py ana/x018.py 
 {
      LOG(info); 
@@ -107,12 +141,13 @@ void NTreeJUNO::rationalize()   // cf ana/shape.py ana/x018.py
            << " is_x020 " << is_x020 
            << " is_x021 " << is_x021
            ; 
- 
+
      if( is_x018 )  // cathode vacuum cap
      {
          assert( root->type == CSG_INTERSECTION ); 
          ellipsoid->parent = NULL ;
-         root = ellipsoid ;              // should be copying ?
+
+         root = ellipsoid ;              // copy/steal ?
      }
      else if( is_x019 )  // vacuum remainder
      {

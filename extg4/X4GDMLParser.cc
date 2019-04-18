@@ -1,5 +1,20 @@
+#include "BStr.hh"
+#include "BFile.hh"
+
 #include "X4GDMLParser.hh"
 #include "X4GDMLWriteStructure.hh"
+
+
+
+const char* X4GDMLParser::PreparePath( const char* prefix, int lvidx, const char* ext  ) // static
+{ 
+    //std::string dir = BFile::FormPath( prefix, "tests" ); 
+    const char* x = lvidx < 0 ? "n" : "p" ; 
+    std::string name = BStr::concat(x, BStr::utoa(lvidx < 0 ? -lvidx : lvidx, 3, true), ext ) ; 
+    bool create = true ; 
+    std::string path = BFile::preparePath( prefix, name.c_str(), create); 
+    return strdup(path.c_str()); 
+}
 
 void X4GDMLParser::Write( const G4VSolid* solid, const char* path, bool refs )  // static
 {

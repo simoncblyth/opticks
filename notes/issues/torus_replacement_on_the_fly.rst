@@ -856,3 +856,106 @@ NTreeJUNO for the surgery
 ------------------------------------
 
 
+Comparing GDML snippets from two routes
+---------------------------------------------
+
+This is testing machinery to check that the NNode model can hold the same
+geometry info and that translations are valid. The first route is direct 
+from the horses mouth (that is Geant4)  and the second comes from the 
+NNode geometry model.
+
+::
+
+    1) GDML -> G4VSolid -> GDML snippets
+
+    2) C++ Code NNode -> G4VSolid -> GDML snippets
+   
+
+
+1. directly dumped from X4Solid::convert with *geocache-j1808-v2* ie OKX4Test with --g4codegen
+
+   * the geometry is loaded from a GDML file into G4VSolid model and directly written to GDML snippets per solid 
+   * snippets written to geocache-tcd
+
+2. *CTreeJUNOTest* NSolid::create generated NNode solids (the numbers came from the above codegen)  
+   converted into G4VSolid with CMaker::MakeSolid and then dumped to GDML with X4GDMLParser
+   
+   * NNode geometry is implemented manually (but rather mechanically) into NSolid
+     with numbers from the above codegen 
+   * the NSolid nnode trees are converted into G4VSolid with CMaker::MakeSolid  
+     and written to $TMP/CTreeJUNOTest/
+  
+::
+
+    geocache-j1808-v2()
+    {
+        local iwd=$PWD
+        local tmp=$(geocache-tmp $FUNCNAME)
+        mkdir -p $tmp && cd $tmp
+
+        type $FUNCNAME
+        opticksdata- 
+
+        #gdb --args 
+        OKX4Test --gdmlpath $(opticksdata-jv2) --g4codegen --csgskiplv 22  
+
+        ## --X4 debug --NPY debug
+
+        cd $iwd
+    }
+
+
+differences
+~~~~~~~~~~~~~
+
+1. ellipsoid/sphere as expected, need to check for a scale matrix to recover the G4Ellipsoid
+2. small parameter differences : expected from the codegen formatting
+3. SOME MISSING AND DIFFERENT TRANSFORMS
+
+   * hmm suspect need to use local transforms in CMaker, not the global ones that see up the tree
+
+
+After switching to local transforms in CMaker, transforms are matching
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+::
+
+
+    [blyth@localhost ~]$ geocache-tcd
+    [blyth@localhost tests]$ pwd
+    /home/blyth/local/opticks/geocache/OKX4Test_lWorld0x4bc2710_PV_g4live/g4ok_gltf/528f4cefdac670fffe846377973af10a/1/g4codegen/tests
+    [blyth@localhost tests]$ 
+    [blyth@localhost tests]$ diff  x018.gdml /tmp/blyth/opticks/CTreeJUNOTest/p018.gdml
+    5,7c5,7
+    <     <ellipsoid ax="249" by="249" cz="179" lunit="mm" name="PMT_20inch_inner_solid_1_Ellipsoid0x4c91130" zcut1="-179" zcut2="179"/>
+    <     <tube aunit="deg" deltaphi="360" lunit="mm" name="PMT_20inch_inner_solid_2_Tube0x4c91210" rmax="75.95124689239" rmin="0" startphi="0" z="47.5650199027483"/>
+    <     <torus aunit="deg" deltaphi="360" lunit="mm" name="PMT_20inch_inner_solid_2_Torus0x4c91340" rmax="52.01" rmin="0" rtor="97" startphi="-0.00999999999999938"/>
+    ---
+    >     <sphere aunit="deg" deltaphi="360" deltatheta="180" lunit="mm" name="PMT_20inch_inner_solid_1_Ellipsoid0x4c91130" rmax="179" rmin="0" startphi="0" starttheta="0"/>
+    >     <tube aunit="deg" deltaphi="360" lunit="mm" name="PMT_20inch_inner_solid_2_Tube0x4c91210" rmax="75.9512481689453" rmin="0" startphi="0" z="47.5650215148926"/>
+    >     <torus aunit="deg" deltaphi="360" lunit="mm" name="PMT_20inch_inner_solid_2_Torus0x4c91340" rmax="52.0099983215332" rmin="0" rtor="97" startphi="0"/>
+    11c11
+    <       <position name="PMT_20inch_inner_solid_part20x4cb2d80_pos" unit="mm" x="0" y="0" z="-23.7725099513741"/>
+    ---
+    >       <position name="PMT_20inch_inner_solid_part20x4cb2d80_pos" unit="mm" x="0" y="0" z="-23.7725105285645"/>
+    16c16
+    <       <position name="PMT_20inch_inner_solid_1_20x4cb30f0_pos" unit="mm" x="0" y="0" z="-195.227490048626"/>
+    ---
+    >       <position name="PMT_20inch_inner_solid_1_20x4cb30f0_pos" unit="mm" x="0" y="0" z="-195.227493286133"/>
+    18c18
+    <     <tube aunit="deg" deltaphi="360" lunit="mm" name="PMT_20inch_inner_solid_3_EndTube0x4cb2fc0" rmax="45.01" rmin="0" startphi="0" z="115.02"/>
+    ---
+    >     <tube aunit="deg" deltaphi="360" lunit="mm" name="PMT_20inch_inner_solid_3_EndTube0x4cb2fc0" rmax="45.0099983215332" rmin="0" startphi="0" z="115.019996643066"/>
+    24c24
+    <     <tube aunit="deg" deltaphi="360" lunit="mm" name="Inner_Separator0x4cb3530" rmax="254.000000001" rmin="0" startphi="0" z="184.000000002"/>
+    ---
+    >     <tube aunit="deg" deltaphi="360" lunit="mm" name="Inner_Separator0x4cb3530" rmax="254" rmin="0" startphi="0" z="184"/>
+    28c28
+    <       <position name="PMT_20inch_inner1_solid0x4cb3610_pos" unit="mm" x="0" y="0" z="91.999999999"/>
+    ---
+    >       <position name="PMT_20inch_inner1_solid0x4cb3610_pos" unit="mm" x="0" y="0" z="92"/>
+    [blyth@localhost tests]$ 
+
+
+
+

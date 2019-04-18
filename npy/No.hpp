@@ -21,6 +21,7 @@ struct NPY_API no
     OpticksCSG_t type ; 
     bool    complement ; 
  
+    std::string tag() const ;
     std::string id() const ;
     std::string desc() const ;
     unsigned maxdepth() const ;

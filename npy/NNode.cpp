@@ -23,6 +23,7 @@
 #include "NNodeDump2.hpp"
 #include "NNodePoints.hpp"
 #include "NNodeUncoincide.hpp"
+#include "NTreeAnalyse.hpp"
 
 #include "NPrimitives.hpp"
 
@@ -65,10 +66,10 @@ void nnode::setPlaneNum(unsigned num)
 }
 
 
-
-
-
-
+std::string nnode::ana_desc() const
+{
+    return NTreeAnalyse<nnode>::Desc(this) ; 
+}
 
 unsigned nnode::desc_indent = 10 ; 
 
@@ -468,9 +469,9 @@ bool nnode::is_same_union(const nnode* a, const nnode* b) // static
 nnode::update_gtransforms
 --------------------------
 
-Sets global transforms for every node, by multiplying the
-level transforms for each.  If no level transforms are collected
-the gtransform is set to NULL. 
+Sets global transforms for all primitives, by multiplying the
+level transforms for parent nodes.  If no level transforms are collected
+the gtransform is set to the identity matrix. 
 
 **/
 
@@ -1431,19 +1432,23 @@ gtransforms.
 **/
 void nnode::Set_parent_links_r(nnode* node, nnode* parent) // static 
 {
-    if(node->parent == NULL)
+    if(node->parent == NULL && parent != NULL)
     {
-        //LOG(error) << " setting parent link " ; 
+        LOG(error) << " change parent link from NULL for  " << ( node->label ? node->label : "-")  ; 
         node->parent = parent ; 
     }
-    else
+    else if( node->parent == parent )
     {
-        LOG(error) << " changing parent links "
+        LOG(verbose) << " unchanged parent link  " ; 
+    }
+    else if( node->parent != parent )
+    {
+        LOG(fatal) << " NOT changing parent links "
                    << "\n node         : " << node 
                    << "\n parent       : " << parent
                    << "\n node->parent : " << node->parent
                    ;
-        //assert( node->parent == parent && "not expecting to change parent links") ; 
+        assert( 0 && "not expecting to change parent links") ; 
     }
 
     if(node->left && node->right)

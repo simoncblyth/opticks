@@ -20,6 +20,8 @@ g4-;g4-cls G4GDMLParser
 class X4_API X4GDMLParser  
 {
     public:
+        static const char* PreparePath( const char* prefix, int lvidx, const char* ext=".gdml"  ); 
+    public:
         static void Write( const G4VSolid* solid, const char* path, bool refs );  // NULL path writes to stdout
         static std::string ToString( const G4VSolid* solid, bool refs ) ;  
     private:

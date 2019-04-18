@@ -215,7 +215,19 @@ void X4SolidBase::setG4Param(const std::vector<T>& param, const std::vector<std:
 {
     assert( m_root && "must setG4Param after setRoot " ); 
 
-    assert( param.size() == keys.size() );  
+    bool match = param.size() == keys.size() ; 
+    if( !match )
+    {
+        LOG(fatal)
+            << "MISMATCH" 
+            << " num params " << param.size()
+            << " num keys " << keys.size()
+            << " m_entityType " << m_entityType
+            << " m_entityName " << m_entityName
+            << " m_identifier " << m_identifier
+            ;
+    }
+    assert( match );  
 
     unsigned npar =param.size() ; 
     if( npar == 0)

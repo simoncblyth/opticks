@@ -154,6 +154,9 @@ class NPY_API NCSG {
         static NCSG* Adopt(nnode* root, const char* config        , unsigned soIdx, unsigned lvIdx );
         static NCSG* Adopt(nnode* root);
 
+        static void PrepTree(nnode* root);  
+
+
         static NCSG* Load(const char* treedir);
         static NCSG* Load(const char* treedir, const char* gltfconfig);
         static NCSG* Load(const char* treedir, const NSceneConfig* config );

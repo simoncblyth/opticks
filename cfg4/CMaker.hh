@@ -2,6 +2,7 @@
 
 #include <glm/fwd.hpp>
 #include <string>
+#include "plog/Severity.h"
 
 #include "OpticksCSG.h"
 #include <glm/fwd.hpp>
@@ -37,6 +38,8 @@ An earlier implementation from prior to NCSG/nnode is in CMaker.cc.old
 
 class CFG4_API CMaker 
 {
+    public:
+        static const plog::Severity LEVEL ; 
     public:
         static std::string PVName(const char* shapename, int idx=-1);
         static std::string LVName(const char* shapename, int idx=-1);

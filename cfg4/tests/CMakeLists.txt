@@ -37,6 +37,8 @@ set(TEST_SOURCES
     CGROUPVELTest.cc 
 
     CMakerTest.cc
+    CTreeJUNOTest.cc
+
     CPhotonTest.cc
     CRandomEngineTest.cc
     CAlignEngineTest.cc

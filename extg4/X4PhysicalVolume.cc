@@ -21,7 +21,7 @@
 #include "X4LogicalSkinSurfaceTable.hh"
 #include "X4Solid.hh"
 #include "X4CSG.hh"
-//#include "X4GDMLParser.hh"
+#include "X4GDMLParser.hh"
 #include "X4Mesh.hh"
 #include "X4Transform3D.hh"
 
@@ -470,8 +470,9 @@ GMesh* X4PhysicalVolume::convertSolid( int lvIdx, int soIdx, const G4VSolid* con
 
      if(m_g4codegen) 
      {
-         //const char* gdmlpath = X4CSG::GenerateTestPath( m_g4codegendir, lvIdx, ".gdml" ) ;  
-         //X4GDMLParser::Write( solid, gdmlpath ); 
+         const char* gdmlpath = X4CSG::GenerateTestPath( m_g4codegendir, lvIdx, ".gdml" ) ;  
+         bool refs = false ;  
+         X4GDMLParser::Write( solid, gdmlpath, refs ); 
 
          LOG(info) 
              << "[--g4codegen]"

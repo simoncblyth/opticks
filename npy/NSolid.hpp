@@ -19,9 +19,10 @@ struct NPY_API NSolid
     static nnode* createUnionSolid(         const char* name, nnode* left , nnode* right, void* rot, glm::vec3 tlate ) ;
     static nnode* createIntersectionSolid(  const char* name, nnode* left , nnode* right, void* rot, glm::vec3 tlate ) ;
 
-    static nnode* create_x018_or_x019_old(int lv);
-
     static nnode* create_x018();
+    static nnode* create_x018_f();
+    static nnode* create_x018_c();
+
     static nnode* create_x019();
     static nnode* create_x020();
     static nnode* create_x021();

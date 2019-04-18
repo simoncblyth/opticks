@@ -86,6 +86,7 @@ struct NPY_API nnode
     virtual unsigned maxdepth() const ;
     virtual unsigned _maxdepth(unsigned depth) const ;
 
+    std::string ana_desc() const ; 
     static unsigned desc_indent ; 
     virtual std::string desc() const ;
     std::string tag() const ;

@@ -88,9 +88,9 @@ nnode* NSolid::create(int lv)
     nnode* n = NULL ; 
     switch(lv)   
     {
-        case -18:  n = create_x018_or_x019_old(-18) ; break ; 
-        case -19:  n = create_x018_or_x019_old(-19) ; break ; 
-        case 18:  n = create_x018()                 ; break ; 
+        case 18:     n = create_x018()               ; break ; 
+        case 18001:  n = create_x018_f()             ; break ; 
+        case 18002:  n = create_x018_c()             ; break ; 
         case 19:  n = create_x019()                 ; break ; 
         case 20:  n = create_x020()                 ; break ; 
         case 21:  n = create_x021()                 ; break ; 
@@ -146,8 +146,6 @@ nnode* NSolid::create_x020()
     return a ; 
 }
 const char* NSolid::x020_label = "PMT_20inch_body_solid0x4c90e50" ; 
-
-
 
 
 nnode* NSolid::create_x019()
@@ -206,36 +204,30 @@ const char* NSolid::x018_label = "PMT_20inch_inner1_solid0x4cb3610" ;
 
 
 
-
-nnode* NSolid::create_x018_or_x019_old(int lv)
+nnode* NSolid::create_x018_f()
 {
-    nnode* d = createEllipsoid("d", 249.000000, 249.000000, 179.000000, -179.000000, 179.000000 ) ;        
-    nnode* g = createTubs("g", 0.000000, 75.951247, 23.782510 );
-    nnode* i = createTorus("i", 0.000, 52.010000, 97.000000 ); 
-
+    nnode* g = createTubs("PMT_20inch_inner_solid_2_Tube0x4c91210", 0.000000, 75.951247, 23.782510 ) ; // 4
+    nnode* i = createTorus("PMT_20inch_inner_solid_2_Torus0x4c91340", 0.000000, 52.010000, 97.000000 ) ; // 4
+    
     glm::vec3 A(0.000000,0.000000,-23.772510);
-    nnode* f = createSubtractionSolid("f",  g, i, NULL, A ); 
+    nnode* f = createSubtractionSolid("PMT_20inch_inner_solid_part20x4cb2d80", g, i, NULL, A) ; // 3
 
-    glm::vec3 B(0.000000,0.000000,-195.227490);
-    nnode* c = createUnionSolid("c", d, f, NULL, B ) ;  
-
-    nnode* k = createTubs("k", 0.000000, 45.010000, 57.510000 );
-
-    glm::vec3 C(0.000000,0.000000,-276.500000);
-    nnode* b = createUnionSolid("b", c, k, NULL, C );      
-
-    nnode* m = createTubs("m", 0.000000, 254.000000, 92.000000 );
-        
-    glm::vec3 D(0.000000,0.000000,92.000000);
-    nnode* a = NULL ; 
-    switch(lv)   // 
-    {
-        case -18: a = createIntersectionSolid("a", b, m, NULL, D )  ; break ;  
-        case -19: a = createSubtractionSolid(  "a", b, m, NULL, D ) ; break ;  
-        default:  assert(0)                                         ; break ; 
-    }
-    return a ; 
+    return f ;  
 }
+
+nnode* NSolid::create_x018_c()
+{
+    nnode* d = createEllipsoid("PMT_20inch_inner_solid_1_Ellipsoid0x4c91130", 249.000000, 249.000000, 179.000000, -179.000000, 179.000000) ; // 3
+    nnode* f = create_x018_f() ;
+    glm::vec3 B(0.000000,0.000000,-195.227490);
+    nnode* c = createUnionSolid("PMT_20inch_inner_solid_1_20x4cb30f0", d, f, NULL, B) ; // 2
+    return c ;  
+}
+
+
+
+
+
 
 /*
 

@@ -81,6 +81,10 @@ std::string NTreeAnalyse<T>::desc() const
        << " count " << count 
        << std::endl 
        << grid->desc()
+       << std::endl
+       << "inorder (left-to-right) " 
+       << std::endl
+       << nodes->desc_inorder() 
        ;
 
     return ss.str(); 

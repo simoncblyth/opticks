@@ -216,7 +216,10 @@ geocache-j1808-v2()
     type $FUNCNAME
     opticksdata- 
 
-    gdb --args OKX4Test --gdmlpath $(opticksdata-jv2) --g4codegen --csgskiplv 22 --X4 debug --NPY debug
+    #gdb --args 
+    OKX4Test --gdmlpath $(opticksdata-jv2) --g4codegen --csgskiplv 22 
+
+    ## --X4 debug --NPY debug
 
     cd $iwd
 }

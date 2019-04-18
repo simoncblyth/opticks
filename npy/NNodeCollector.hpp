@@ -2,6 +2,7 @@
 
 #include "NPY_API_EXPORT.hh"
 #include <vector>
+#include <string>
 
 /**
 NNodeCollector
@@ -32,6 +33,12 @@ struct NPY_API NNodeCollector
 
     void dump( const char* msg, std::vector<const T*>& order ) ;
     void dump( const char* msg="NNodeCollector::dump" ) ;
+
+    std::string desc( std::vector<const T*>& order ) ;
+    std::string desc_inorder() ;
+    std::string desc_preorder() ;
+    std::string desc_postorder() ;
+
 
     const T* root ; 
     std::vector<const T*> inorder ; 

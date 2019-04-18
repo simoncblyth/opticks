@@ -1114,7 +1114,14 @@ void X4Solid::convertPolycone_g4code()
     param.push_back( rInner_id ) ;  
     param.push_back( rOuter_id ) ;  
 
-    std::vector<std::string> keys = { "zPlane_id", "rInner_id", "rOuter_id" } ; 
+    std::vector<std::string> keys = { 
+                "phiStart",
+                "phiTotal",
+                "numZPlanes",
+                "zPlane_id", 
+                "rInner_id", 
+                "rOuter_id" 
+               } ; 
 
     setG4Param(param, keys );
     // no setG4args for the string ones

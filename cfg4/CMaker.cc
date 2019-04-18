@@ -40,6 +40,9 @@
 
 
 
+const plog::Severity CMaker::LEVEL = info ; 
+
+
 CMaker::CMaker() 
 {
 }   
@@ -72,19 +75,38 @@ G4VSolid* CMaker::MakeSolid(const NCSG* csg)
 
 G4VSolid* CMaker::MakeSolid(const nnode* root)
 {
+    LOG(LEVEL) << "[[[ " << ( root->label ? root->label : "-" ) ;   
+
     G4VSolid* so = MakeSolid_r(root, 0 );
+
+    LOG(LEVEL) << "]]] " << ( root->label ? root->label : "-" ) ;   
     return so ; 
 }
 
+
+/**
+CMaker::MakeSolid_r
+--------------------
+
+This was formerly (before April 18, 2019) taking NNode global transforms 
+and placing them into the G4VSolid tree. That is clearly wrong. 
+Should directly migrate across the local transforms.
+
+This was observed from GDML roundtrip differences, 
+see notes/issues/torus_replacement_on_the_fly.rst
+
+**/
 
 G4VSolid* CMaker::MakeSolid_r(const nnode* node, unsigned depth )  //static
 {
     // hmm rmin/rmax is handled as a CSG subtraction
     // so could collapse some operators into primitives
+    LOG(LEVEL) << "( " << ( node->label ? node->label : "-" ) << " depth " << depth  ;   
 
     G4VSolid* result = NULL ; 
 
-    const char* name = node->csgname();
+    const char* name = node->label ;
+    assert(name); 
 
     if( node->is_primitive() )
     {
@@ -95,16 +117,51 @@ G4VSolid* CMaker::MakeSolid_r(const nnode* node, unsigned depth )  //static
         G4VSolid* left = MakeSolid_r(node->left, depth+1);
         G4VSolid* right = MakeSolid_r(node->right, depth+1);
 
-        bool left_transform = node->left->gtransform ? !node->left->gtransform->is_identity() : false ;  
+        // transforms handled at the operator rather than the 
+        // nodes so it is easy to see left from right
+
+        bool left_transform = node->left->transform ? !node->left->transform->is_identity() : false ;  
+        bool left_sphere = node->left->type == CSG_SPHERE || node->left->type == CSG_ZSPHERE ; 
+                  
         if(left_transform)
         {
-            LOG(info) << " unexpected non-identity left transform "
-                      << gformat(node->left->gtransform->t )
+            if(left_sphere)
+            { 
+                LOG(error) << " non-identity left transform on sphere (an ellipsoid perhaps) " ; 
+            }
+            else
+            {
+                LOG(fatal) 
+                      << " unexpected non-identity left transform "
+                      << " depth " << depth
+                      << " name " << name 
+                      << " label " << ( node->label ? node->label : "-" )
+                      << std::endl 
+                      << gformat(node->left->transform->t )
                       ;
-        }
-        assert(left_transform == false);
+                 assert(0);
+            }
+        }  
 
-        G4Transform3D* rtransform = ConvertTransform(node->right->gtransform->t);
+
+        const nmat4triple* right_transform = node->right->transform ;
+        if(right_transform == NULL )
+        {
+            right_transform = nmat4triple::make_identity() ;
+            /*
+            LOG(info) << " expecting right gtransform "
+                      << " depth " << depth
+                      << " csgname " << name 
+                      << " label " << ( node->label ? node->label : "-" )
+                      ;
+            */
+
+            // from nnode::update_gtransforms nnode::global_transform
+            // it is apparent that only primitives always have gtransforms not 
+            // operator nodes 
+        } 
+        assert( right_transform );   
+        G4Transform3D* rtransform = ConvertTransform(right_transform->t);
 
         if(node->type == CSG_UNION)
         {
@@ -122,6 +179,7 @@ G4VSolid* CMaker::MakeSolid_r(const nnode* node, unsigned depth )  //static
             result = sso ; 
         }
     }
+    LOG(LEVEL) << ") " << ( node->label ? node->label : "-" ) << " depth " << depth ;   
     return result  ; 
 }
 
@@ -236,7 +294,7 @@ G4VSolid* CMaker::ConvertPrimitive(const nnode* node) // static
     */
 
     G4VSolid* result = NULL ; 
-    const char* name = node->csgname();
+    const char* name = node->label ;
     assert(name);
 
 

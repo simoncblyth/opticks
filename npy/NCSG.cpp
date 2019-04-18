@@ -111,15 +111,18 @@ NCSG* NCSG::Adopt(nnode* root, const char* config_, unsigned soIdx, unsigned lvI
     return Adopt( root, config, soIdx , lvIdx ); 
 }
 
-NCSG* NCSG::Adopt(nnode* root, const NSceneConfig* config, unsigned soIdx, unsigned lvIdx )
+void NCSG::PrepTree(nnode* root)  // static
 {
     nnode::Set_parent_links_r(root, NULL);
     root->check_tree( FEATURE_PARENT_LINKS ); 
-
     root->update_gtransforms() ;  // sets node->gtransform (not gtransform_idx) parent links are required 
     root->check_tree( FEATURE_GTRANSFORMS ); 
     root->check_tree( FEATURE_PARENT_LINKS | FEATURE_GTRANSFORMS ); 
+}
 
+NCSG* NCSG::Adopt(nnode* root, const NSceneConfig* config, unsigned soIdx, unsigned lvIdx )
+{
+    PrepTree(root);
 
     root->set_treeidx(lvIdx) ;  // without this no nudging is done
 

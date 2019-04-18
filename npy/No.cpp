@@ -15,6 +15,10 @@ no* no::make_copy() const
     return no::copy(this); 
 }
 
+std::string no::tag() const 
+{
+    return id(); 
+}
 
 std::string no::id() const 
 {
