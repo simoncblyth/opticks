@@ -1,6 +1,6 @@
 #include <climits>
 
-#include "Timer.hpp"
+#include "BTimeKeeper.hh"
 
 #include "BTimes.hh"
 #include "BTimesTable.hh"
@@ -8,19 +8,18 @@
 
 int main()
 {
-
-    Timer t ; 
-    t.start();
+    BTimeKeeper tk ; 
+    tk.start();
 
     for(int i=0 ; i < INT_MAX/100 ; i++) if(i%1000000 == 0 ) printf(".");
     printf("\n");
  
-    t("after loop");
+    tk("after loop");
 
-    t.stop();
+    tk.stop();
 
 
-    BTimesTable* tt = t.makeTable();
+    BTimesTable* tt = tk.makeTable();
     tt->save("$TMP");
 
     tt->dump();

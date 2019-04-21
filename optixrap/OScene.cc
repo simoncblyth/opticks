@@ -2,7 +2,7 @@
 
 #include "OKConf_Config.hh"
 
-#include "Timer.hpp"
+#include "BTimeKeeper.hh"
 
 #include "SSys.hh"
 #include "SLog.hh"
@@ -57,7 +57,7 @@ OBndLib*  OScene::getOBndLib()
 OScene::OScene(OpticksHub* hub) 
     :   
     m_log(new SLog("OScene::OScene","", LEVEL)),
-    m_timer(new Timer("OScene::")),
+    m_timer(new BTimeKeeper("OScene::")),
     m_hub(hub),
     m_ok(hub->getOpticks()),
     m_cfg(m_ok->getCfg()),

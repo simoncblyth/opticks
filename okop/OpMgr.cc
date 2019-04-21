@@ -7,7 +7,7 @@ class NConfigurable ;
 
 
 #include "SLog.hh"
-#include "Timer.hpp"
+#include "BTimeKeeper.hh"
 
 #include "Opticks.hh"       // okc-
 #include "OpticksEvent.hh"
@@ -29,7 +29,7 @@ const plog::Severity OpMgr::LEVEL = debug ;
     { \
        if(m_ok)\
        {\
-          Timer& t = *(m_ok->getTimer()) ;\
+          BTimeKeeper& t = *(m_ok->getTimer()) ;\
           t((s)) ;\
        }\
     }

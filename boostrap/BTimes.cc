@@ -14,9 +14,9 @@
 
 
 BTimes::BTimes(const char* label)  
-   : 
-     m_scale(1.0) , 
-     m_label(strdup(label)) 
+    : 
+    m_scale(1.0) , 
+    m_label(strdup(label)) 
 {
 }
 
@@ -46,11 +46,11 @@ void BTimes::add(const char* name_, double t )
     m_times.push_back(SD(name_, t));
 }
 
-void BTimes::add(const char* name_, unsigned index, double t )
+void BTimes::add(const char* name_, int idx, double t )
 {
     std::stringstream ss ; 
     ss << name_ 
-       << std::setw(3) << std::setfill('0') << index 
+       << std::setw(3) << std::setfill('0') << idx 
        ;
 
     std::string s = ss.str(); 
@@ -75,15 +75,10 @@ void BTimes::setScale(double scale)
     m_scale = scale  ; 
 }
 
-
 const char* BTimes::getLabel()
 {
     return m_label ; 
 }
-
-
-
-
 
 void BTimes::save(const char* dir)
 {
@@ -136,7 +131,17 @@ std::string BTimes::name(const char* typ, const char* tag)
     return ss.str();
 }
 
-void BTimes::compare(const std::vector<BTimes*>& vt, unsigned int nwid, unsigned int twid, unsigned int tprec)
+
+/*
+void BTimes::compare(const BTimes* a, const BTimes* b, unsigned int nwid, unsigned int twid, unsigned int tprec) // static
+{
+    const std::vector<BTimes*> vt = { a, b } ;
+    compare( vt, nwid, twid, tprec );
+}
+*/
+
+
+void BTimes::compare(const std::vector<BTimes*>& vt, unsigned int nwid, unsigned int twid, unsigned int tprec) // static
 {
     unsigned int n = vt.size();
 

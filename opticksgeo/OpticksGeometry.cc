@@ -1,6 +1,7 @@
+// brap-
+#include "BTimeKeeper.hh"
 
 // npy-
-#include "Timer.hpp"
 #include "NGLM.hpp"
 #include "GLMFormat.hpp"
 #include "GLMPrint.hpp"
@@ -49,7 +50,7 @@
     { \
        if(m_ok)\
        {\
-          Timer& t = *(m_ok->getTimer()) ;\
+          BTimeKeeper& t = *(m_ok->getTimer()) ;\
           t((s)) ;\
        }\
     }

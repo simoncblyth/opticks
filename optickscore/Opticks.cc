@@ -11,6 +11,7 @@
 #include "SArgs.hh"
 #include "SSys.hh"
 // brap-
+#include "BTimeKeeper.hh"
 #include "BDynamicDefine.hh"
 #include "BOpticksEvent.hh"
 #include "BOpticksKey.hh"
@@ -23,7 +24,6 @@
 
 
 // npy-
-#include "Timer.hpp"
 #include "NParameters.hpp"
 #include "TorchStepNPY.hpp"
 #include "GLMFormat.hpp"
@@ -479,7 +479,7 @@ void Opticks::init()
 
     m_cfg = new OpticksCfg<Opticks>("opticks", this,false);
 
-    m_timer = new Timer("Opticks::");
+    m_timer = new BTimeKeeper("Opticks::");
 
     m_timer->setVerbose(true);
 
@@ -681,7 +681,7 @@ OpticksEvent* Opticks::getEvent() const
     return m_run->getEvent()  ; 
 }
 
-Timer* Opticks::getTimer()
+BTimeKeeper* Opticks::getTimer()
 {
     OpticksEvent* evt = m_run->getEvent();
     return evt ? evt->getTimer() : m_timer ; 

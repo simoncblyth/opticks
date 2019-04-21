@@ -38,6 +38,7 @@ set(TEST_SOURCES
    BRAP_OPTICKS_LOG_Test.cc
 
 
+   BTimeKeeperTest.cc
    BTimeStampTest.cc
    BTimesTest.cc
    BTimesTableTest.cc

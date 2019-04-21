@@ -1,4 +1,4 @@
-#include "Timer.hpp"
+#include "BTimeKeeper.hh"
 
 #include "BTimes.hh"
 #include "BTimesTable.hh"
@@ -10,28 +10,28 @@
 
 #include "PLOG.hh"
 
-const char* Timer::COLUMNS = "t_absolute,t_delta" ;
-const char* Timer::START = "START" ;
-const char* Timer::STOP  = "STOP" ;
+const char* BTimeKeeper::COLUMNS = "t_absolute,t_delta" ;
+const char* BTimeKeeper::START = "START" ;
+const char* BTimeKeeper::STOP  = "STOP" ;
 
 
-Timer::Timer(const char* name) 
+BTimeKeeper::BTimeKeeper(const char* name) 
     : 
     m_name(strdup(name)),
     m_verbose(false)
 {
 }
 
-void Timer::setVerbose(bool verbose)
+void BTimeKeeper::setVerbose(bool verbose)
 {
     m_verbose = verbose ; 
 }
-const char* Timer::getName()
+const char* BTimeKeeper::getName()
 {
     return m_name ; 
 }
 
-void Timer::stamp(const char* mark)
+void BTimeKeeper::stamp(const char* mark)
 {
     m_marks.push_back(SD(mark, BTimeStamp::RealTime() ));
     if(m_verbose) 
@@ -40,21 +40,21 @@ void Timer::stamp(const char* mark)
     }
 }
 
-void Timer::operator()(const char* mark)
+void BTimeKeeper::operator()(const char* mark)
 {
     stamp(mark);
 }
-void Timer::start()
+void BTimeKeeper::start()
 {
    (*this)(START);
 }
-void Timer::stop()
+void BTimeKeeper::stop()
 {
    (*this)(STOP);
 }
 
 
-double Timer::deltaTime(int i0, int i1) const 
+double BTimeKeeper::deltaTime(int i0, int i1) const 
 {
     int num = m_marks.size() ;
     if(num < 2) return -999.0 ; 
@@ -68,7 +68,7 @@ double Timer::deltaTime(int i0, int i1) const
 
 
 
-void Timer::dump(const char* msg)
+void BTimeKeeper::dump(const char* msg)
 {
     double dt = deltaTime() ; 
     LOG(info) << "deltaTime " << dt ; 
@@ -78,14 +78,14 @@ void Timer::dump(const char* msg)
 }
 
 
-BTimesTable* Timer::loadTable(const char* dir)
+BTimesTable* BTimeKeeper::loadTable(const char* dir)
 {
     BTimesTable* tt = new BTimesTable(COLUMNS) ; 
     tt->load(dir);
     return tt ;
 }
 
-BTimesTable* Timer::makeTable()
+BTimesTable* BTimeKeeper::makeTable()
 {
     BTimesTable* tt = new BTimesTable(COLUMNS) ; 
 

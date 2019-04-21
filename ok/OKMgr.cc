@@ -3,7 +3,7 @@
 class NConfigurable ; 
 
 #include "SLog.hh"
-#include "Timer.hpp"
+#include "BTimeKeeper.hh"
 
 #include "Opticks.hh"       // okc-
 #include "OpticksEvent.hh"
@@ -25,7 +25,7 @@ class NConfigurable ;
     { \
        if(m_hub)\
        {\
-          Timer& t = *(m_hub->getTimer()) ;\
+          BTimeKeeper& t = *(m_hub->getTimer()) ;\
           t((s)) ;\
        }\
     }

@@ -64,7 +64,6 @@ set(SOURCES
     NPropNames.cpp
 
     
-    Timer.cpp
 
 
     Types.cpp
@@ -269,7 +268,6 @@ NLookup.hpp
 Types.hpp
 Typ.hpp
 Index.hpp
-Timer.hpp
 
 NCache.hpp
 NSensor.hpp

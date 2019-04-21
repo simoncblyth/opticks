@@ -5,9 +5,9 @@
 #include <iomanip>
 
 #include "BFile.hh"
+#include "BTimeKeeper.hh"
 
 // npy-
-#include "Timer.hpp"
 #include "NSensor.hpp"
 #include "NPY.hpp"
 
@@ -194,7 +194,7 @@ GMergedMesh* GMergedMesh::create(unsigned ridx, GNode* base, GNode* root, unsign
         << " verbosity " << verbosity
         ;
 
-    Timer t("GMergedMesh::create") ; 
+    BTimeKeeper t("GMergedMesh::create") ; 
     t.setVerbose(false);
     t.start();
 

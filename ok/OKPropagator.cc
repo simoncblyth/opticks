@@ -4,7 +4,7 @@
 #include "NGLM.hpp"
 #include "NPY.hpp"
 
-#include "Timer.hpp"
+#include "BTimeKeeper.hh"
 
 #include "Opticks.hh"       // okc-
 #include "OpticksEvent.hh"
@@ -28,7 +28,7 @@
     { \
        if(m_hub)\
        {\
-          Timer& t = *(m_hub->getTimer()) ;\
+          BTimeKeeper& t = *(m_hub->getTimer()) ;\
           t((s)) ;\
        }\
     }

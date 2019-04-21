@@ -11,7 +11,7 @@
 
 // npy-
 #include "PLOG.hh"
-#include "Timer.hpp"
+#include "BTimeKeeper.hh"
 #include "NPY.hpp"  
 
 // thrustrap-
@@ -43,7 +43,7 @@
     { \
        if(m_ok)\
        {\
-          Timer& t = *(m_ok->getTimer()) ;\
+          BTimeKeeper& t = *(m_ok->getTimer()) ;\
           t((s)) ;\
        }\
     }

@@ -5,14 +5,16 @@
 
 void load_dump()
 {
+    LOG(info) ; 
     const char* dir = "$TMP/evt/dayabay/torch/1" ; 
     BTimesTable* tt = new BTimesTable("t_absolute,t_delta"); 
-    tt->load(dir);
+    tt->load(dir);  // attempts to load t_absolute.ini and t_delta.ini from the directory : corresponding to table columns
     tt->dump();
 }
 
 void quad_add()
 {
+    LOG(info) ; 
     const char* columns = "A,B,C,D" ; 
 
     BTimesTable* tt = new BTimesTable(columns); 
@@ -22,8 +24,6 @@ void quad_add()
 
     const char* check = "check" ;
     tt->add(check, 43, 43, 43, 43 );
-
-
 
     tt->dump();
     const char* dir = "$TMP/BTimesTableTest/quad_add" ;
@@ -36,6 +36,7 @@ void quad_add()
 
 void filter_dump()
 {
+    LOG(info) ; 
     const char* columns = "A,B,C,D" ; 
     BTimesTable* tt = new BTimesTable(columns); 
 

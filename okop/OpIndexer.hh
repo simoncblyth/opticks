@@ -94,7 +94,7 @@ struct CBufSpec ;
 template <typename T> class NPY ;
 template <typename T> class TSparse ;
 
-class Timer ; 
+class BTimeKeeper ; 
 
 
 

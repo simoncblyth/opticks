@@ -26,7 +26,7 @@ struct NSnapConfig ;
 
 class NParameters ; 
 class NPropNames ; 
-class Timer ; 
+class BTimeKeeper ; 
 class Types ;
 class Typ ;
 class Index ; 
@@ -345,7 +345,7 @@ class OKCORE_API Opticks {
        Types*               getTypes();
        Typ*                 getTyp();
    public:
-       Timer*               getTimer();
+       BTimeKeeper*               getTimer();
        NParameters*          getParameters();
        NState*              getState();
    public:
@@ -510,7 +510,7 @@ class OKCORE_API Opticks {
    private:
        bool                 m_configured ; 
        OpticksCfg<Opticks>* m_cfg ; 
-       Timer*               m_timer ; 
+       BTimeKeeper*               m_timer ; 
        NParameters*          m_parameters ; 
        NSceneConfig*        m_scene_config ; 
        NLODConfig*          m_lod_config ; 

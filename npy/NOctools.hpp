@@ -20,7 +20,7 @@ typedef NField<glm::vec3,glm::ivec3,3>    F3 ;
 typedef NGrid<glm::vec3,glm::ivec3,3 >    G3 ; 
 
 
-class Timer ; 
+class BTimeKeeper ; 
 class NTrianglesNPY ; 
 
 #include "NPY_API_EXPORT.hh"
@@ -110,7 +110,7 @@ class NPY_API NManager
 {
     public:
    public:
-        NManager(const unsigned ctrl, const int nominal, const int coarse, const int verbosity, const float threshold, FG3* fieldgrid, FGLite* fglite, const nbbox& bb, Timer* timer);
+        NManager(const unsigned ctrl, const int nominal, const int coarse, const int verbosity, const float threshold, FG3* fieldgrid, FGLite* fglite, const nbbox& bb, BTimeKeeper* timer);
 
         void buildOctree();
         void simplifyOctree();
@@ -130,7 +130,7 @@ class NPY_API NManager
         FGLite*  m_fglite ; 
 
         nbbox    m_bb ; 
-        Timer*   m_timer ;    
+        BTimeKeeper*   m_timer ;    
 
         nvec4        m_ce ; 
         NConstructor<T>* m_ctor ; 

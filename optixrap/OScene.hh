@@ -1,7 +1,7 @@
 #pragma once
 
 class SLog ; 
-class Timer ; 
+class BTimeKeeper ; 
 class Opticks ;
 class OpticksHub ;
 template <typename> class OpticksCfg ;
@@ -51,7 +51,7 @@ class OXRAP_API OScene {
        void initRTX();
     private:
        SLog*                m_log ; 
-       Timer*               m_timer ;
+       BTimeKeeper*         m_timer ;
        OpticksHub*          m_hub ; 
        Opticks*             m_ok ; 
        OpticksCfg<Opticks>* m_cfg ;   

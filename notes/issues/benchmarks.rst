@@ -44,6 +44,11 @@ Found a good viewpoint, looking up at chimney::
     CUDA_VISIBLE_DEVICES=1 OPTICKS_RTX=1 OKTest --envkey --xanalytic --target 352851 --eye -1,-1,-1        ## analytic
     CUDA_VISIBLE_DEVICES=1 OPTICKS_RTX=1 OKTest --envkey --target 352851 --eye -1,-1,-1                    ## tri 
 
+
+    CUDA_VISIBLE_DEVICES=1 OPTICKS_RTX=-1 OpSnapTest --envkey --xanalytic --target 352851 --eye -1,-1,-1 :w
+
+
+
 * target is 0-based 
 * numbers listed in PVNames.txt from *vi* in the below are 1-based 
 * 352851 is pLowerChimneyLS0x5b317e0 

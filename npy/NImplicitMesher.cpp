@@ -10,7 +10,7 @@
 #include "NGLMExt.hpp"
 #include "GLMFormat.hpp"
 
-#include "Timer.hpp"
+#include "BTimeKeeper.hh"
 #include "BTimesTable.hh"
 
 #include "NSphere.hpp"
@@ -22,7 +22,7 @@
 
 NImplicitMesher::NImplicitMesher(nnode* node, int resolution, int verbosity, float expand_bb, int ctrl, std::string seedstr)
     :
-    m_timer(new Timer),
+    m_timer(new BTimeKeeper),
     m_node(node),
     m_bbox( new nbbox(node->bbox()) ), 
     m_sdf( node->sdf() ),

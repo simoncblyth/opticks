@@ -9,7 +9,7 @@
 
 #include "NPY_API_EXPORT.hh"
 
-class Timer ; 
+class BTimeKeeper ; 
 class NTrianglesNPY ; 
 class ImplicitMesherF ;
 struct nnode ; 
@@ -38,7 +38,7 @@ class NPY_API NImplicitMesher
         NTrianglesNPY* collectTriangles(const std::vector<glm::vec3>& verts, const std::vector<glm::vec3>& norms, const std::vector<glm::ivec3>& tris );
 
     private:
-        Timer*           m_timer ; 
+        BTimeKeeper*     m_timer ; 
         nnode*           m_node ; 
         nbbox*           m_bbox ; 
         FUNC             m_sdf ;  

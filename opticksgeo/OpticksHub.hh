@@ -8,7 +8,7 @@
 class SCtrl ; 
 class SLog ; 
 class BCfg ; 
-class Timer ; 
+class BTimeKeeper ; 
 
 class Opticks ; 
 class OpticksGeometry ; 
@@ -216,7 +216,7 @@ class OKGEO_API OpticksHub : public SCtrl {
        Bookmarks*           getBookmarks() const ;
        FlightPath*          getFlightPath() const ;
        NPY<unsigned char>*  getColorBuffer();
-       Timer*               getTimer(); 
+       BTimeKeeper*         getTimer(); 
 
        OpticksAttrSeq*      getFlagNames();
 

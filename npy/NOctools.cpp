@@ -13,7 +13,7 @@
 #include "NTrianglesNPY.hpp"
 
 
-#include "Timer.hpp"
+#include "BTimeKeeper.hh"
 
 #include "PLOG.hh"
 
@@ -622,7 +622,7 @@ void NConstructor<T>::corner_scan(const char* msg, int depth, int limit) const
 
 
 template<typename T>
-NManager<T>::NManager( const unsigned ctrl,  const int nominal, const int coarse, const int verbosity, const float threshold, FG3* fieldgrid, FGLite* fglite, const nbbox& bb, Timer* timer )
+NManager<T>::NManager( const unsigned ctrl,  const int nominal, const int coarse, const int verbosity, const float threshold, FG3* fieldgrid, FGLite* fglite, const nbbox& bb, BTimeKeeper* timer )
     :
     m_ctrl(ctrl),
     m_nominal_size( 1 << nominal ),

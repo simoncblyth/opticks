@@ -6,7 +6,7 @@
 
 #include "NPY_API_EXPORT.hh"
 
-class Timer ; 
+class BTimeKeeper ; 
 class NTrianglesNPY ; 
 struct nnode ; 
 
@@ -19,7 +19,7 @@ class NPY_API NDualContouringSample
         void profile(const char* s);
         void report(const char* msg="NDualContouringSample::report");
     private:
-        Timer* m_timer ; 
+        BTimeKeeper* m_timer ; 
         int    m_nominal; 
         int    m_coarse; 
         int    m_verbosity ; 

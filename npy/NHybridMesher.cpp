@@ -2,7 +2,6 @@
 
 #include "BFile.hh"
 
-#include "Timer.hpp"
 #include "NHybridMesher.hpp"
 #include "NTrianglesNPY.hpp"
 #include "NOpenMesh.hpp"

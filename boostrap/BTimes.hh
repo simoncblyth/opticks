@@ -15,8 +15,7 @@ BTimes
 
 Formerly npy/Times
 
-Labeled vector of (string,double) pairs corresponding to 
-a table "column".
+Labeled vector of (string,double) pairs corresponding to a table "column".
 
 The string identifies to what the number refers and 
 allows matching with quantities in other *Times* instances.
@@ -45,6 +44,7 @@ class BRAP_API BTimes {
      typedef std::pair<std::string, double>  SD ; 
      typedef std::vector<SD>                VSD ; 
   public:
+     //static void compare(const BTimes* a, const BTimes* b,  unsigned int nwid=25, unsigned int twid=10, unsigned int tprec=3);
      static void compare(const std::vector<BTimes*>&, unsigned int nwid=25, unsigned int twid=10, unsigned int tprec=3);
      static std::string name(const char* type, const char* tag);
      std::string name();
@@ -53,7 +53,7 @@ class BRAP_API BTimes {
      void setLabel(const char* label);
      BTimes* clone(const char* label);
      void add(const char* name, double t );
-     void add(const char* name_, unsigned index, double t );
+     void add(const char* name_, int idx, double t );
      unsigned int getNumEntries();
   public:
      void setScale(double s);

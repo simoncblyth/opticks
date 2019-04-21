@@ -9,7 +9,7 @@
 #include "DualContouringSample/FGLite.h"
 #include "DualContouringSample/octree.h"
 
-#include "Timer.hpp"
+#include "BTimeKeeper.hh"
 #include "BTimesTable.hh"
 
 #include "NSphere.hpp"
@@ -25,7 +25,7 @@
 
 NDualContouringSample::NDualContouringSample(int nominal, int coarse, int verbosity, float threshold, float scale_bb)
   :
-   m_timer(new Timer),
+   m_timer(new BTimeKeeper),
    m_nominal(nominal),
    m_coarse(coarse),
    m_verbosity(verbosity),

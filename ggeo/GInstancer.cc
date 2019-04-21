@@ -1,5 +1,6 @@
 
 #include "SLog.hh"
+#include "BTimeKeeper.hh"
 
 // npy-
 #include "NSceneConfig.hpp"
@@ -7,7 +8,6 @@
 #include "NPY.hpp"
 #include "NSensor.hpp"
 #include "Counts.hpp"
-#include "Timer.hpp"
 
 #include "Opticks.hh"
 
@@ -81,8 +81,7 @@ Canonical invokation from GGeo::prepareMeshes
 
 void GInstancer::createInstancedMergedMeshes(bool delta, unsigned verbosity)
 {
-    //assert(0);  
-    Timer t("GInstancer::createInstancedMergedMeshes") ; 
+    BTimeKeeper t("GInstancer::createInstancedMergedMeshes") ; 
     t.setVerbose(true);
     t.start();
 

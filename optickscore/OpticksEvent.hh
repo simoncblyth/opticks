@@ -10,7 +10,7 @@ struct STimes ;
 
 class BTimesTable ; 
 
-class Timer ; 
+class BTimeKeeper ; 
 class NParameters ;
 class Report ;
 
@@ -199,7 +199,7 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec
    public:
        const char* getPath(const char* xx);  // accepts abbreviated or full constituent names
        NParameters* getParameters();
-       Timer*      getTimer();
+       BTimeKeeper*      getTimer();
        BTimesTable* getTimesTable();
    public:
        void makeReport(bool verbose=false);
@@ -381,7 +381,7 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec
        bool                  m_noload ; 
        bool                  m_loaded ; 
 
-       Timer*                m_timer ;
+       BTimeKeeper*          m_timer ;
        NParameters*          m_versions ;
        NParameters*          m_parameters ;
        Report*               m_report ;

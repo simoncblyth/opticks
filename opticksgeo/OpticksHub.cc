@@ -3,6 +3,7 @@
 #include "SCtrl.hh"
 
 // brap-
+#include "BTimeKeeper.hh"
 #include "BCfg.hh"
 #include "BStr.hh"
 #include "BMap.hh"
@@ -21,7 +22,6 @@
 #include "GLMFormat.hpp"
 
 // npy-
-#include "Timer.hpp"
 #include "TorchStepNPY.hpp"
 #include "G4StepNPY.hpp"
 #include "Index.hpp"
@@ -897,7 +897,7 @@ FlightPath* OpticksHub::getFlightPath() const
 
 
 
-Timer* OpticksHub::getTimer()  // timer is from current evt if exists already  
+BTimeKeeper* OpticksHub::getTimer()  // timer is from current evt if exists already  
 {
     return m_ok->getTimer(); 
 }

@@ -7,7 +7,7 @@
 #include "OpticksEvent.hh"   // okc-
 
 // npy-
-#include "Timer.hpp"
+#include "BTimeKeeper.hh"
 #include "PLOG.hh"
 #include "NPY.hpp"
 
@@ -28,7 +28,7 @@
     { \
        if(m_ok)\
        {\
-          Timer& t = *(m_ok->getTimer()) ;\
+          BTimeKeeper& t = *(m_ok->getTimer()) ;\
           t((s)) ;\
        }\
     }

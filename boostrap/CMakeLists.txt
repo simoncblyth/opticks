@@ -69,10 +69,13 @@ set(SOURCES
   BLocSeq.cc
   BLocSeqDigest.cc
 
+  BTimeKeeper.cc
   BTimeStamp.cc
-  BTime.cc
   BTimes.cc
   BTimesTable.cc
+
+  BTime.cc
+
 ) 
 
 set(HEADERS
@@ -108,10 +111,13 @@ set(HEADERS
   BLocSeq.hh
   BLocSeqDigest.hh
 
+  BTimeKeeper.hh
   BTimeStamp.hh
-  BTime.hh
   BTimes.hh
   BTimesTable.hh
+
+  BTime.hh
+
 )
 
 set(TOXIC_SOURCES

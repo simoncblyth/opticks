@@ -1,20 +1,51 @@
 multi_gpu_opticks_interop_mode_requires_one_visible_device
 =============================================================
 
-
-
 Overview
 ----------
 
-When doing interop dev, simply set to use TITAN RTX (which graphics is using)::
+When doing interop dev, simply use TITAN RTX (which graphics is using) with 
 
-    export CUDA_VISIBLE_DEVICES=1
-
-
+    CUDA_VISIBLE_DEVICES=1 OKTest ... 
 
 
-Observations
---------------
+opticks-t with TITAN V and TITAN RTX
+---------------------------------------------
+
+With CUDA_VISIBLE_DEVICES unset or set to 0,1 get 8 additional fails 
+in addition to the 2 know quartic problems.::
+
+    FAILS:
+      9  /19  Test #9  : OptiXRapTest.LTOOContextUploadDownloadTest    Child aborted***Exception:     1.22   
+      14 /19  Test #14 : OptiXRapTest.bufferTest                       Child aborted***Exception:     1.33   
+      15 /19  Test #15 : OptiXRapTest.OEventTest                       Child aborted***Exception:     1.62   
+
+      18 /19  Test #18 : OptiXRapTest.intersect_analytic_test          Child aborted***Exception:     1.34   
+      19 /19  Test #19 : OptiXRapTest.Roots3And4Test                   Child aborted***Exception:     1.36   
+                           known quartic problem 
+
+      2  /5   Test #2  : OKOPTest.OpSeederTest                         Child aborted***Exception:     3.92   
+      3  /5   Test #3  : OKOPTest.dirtyBufferTest                      Child aborted***Exception:     1.35   
+      4  /5   Test #4  : OKOPTest.compactionTest                       Child aborted***Exception:     1.36   
+      2  /5   Test #2  : OKTest.OKTest                                 Child aborted***Exception:     6.79   
+      1  /1   Test #1  : OKG4Test.OKG4Test                             Child aborted***Exception:     21.02  
+    [blyth@localhost opticks]$ 
+
+
+Picking TITAN RTX are down to the known two quartic fails::
+
+    [blyth@localhost okg4]$ CUDA_VISIBLE_DEVICES=1 opticks-t
+    === om-test-one : okconf          /home/blyth/opticks/okconf                                   /home/blyth/local/opticks/build/okconf                       
+    Sun Apr 21 13:15:45 CST 2019
+    ...
+    FAILS:
+      18 /19  Test #18 : OptiXRapTest.intersect_analytic_test          Child aborted***Exception:     1.29   
+      19 /19  Test #19 : OptiXRapTest.Roots3And4Test                   Child aborted***Exception:     1.19   
+    [blyth@localhost build]$ 
+
+
+OKTest 
+-------
 
 With CUDA_VISIBLE_DEVICES unset or "0,1" and the OpenGL context being handled by TITAN RTX
 (because thats the one connected to the display!) OKTest fails with *Cannot get device pointers from non-enabled device*::

@@ -7,7 +7,7 @@
 #include "OpticksEvent.hh"  
 //#include "OpticksHub.hh"    // okg-
 
-#include "Timer.hpp"   // npy-
+#include "BTimeKeeper.hh"   // npy-
 #include "NPY.hpp"
 
 // cudarap-

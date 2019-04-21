@@ -40,7 +40,6 @@ IndexTest.cc
 NPropNamesTest.cc
 CountsTest.cc
 
-TimerTest.cc
 
 NTxtTest.cc
 

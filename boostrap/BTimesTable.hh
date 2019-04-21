@@ -13,8 +13,15 @@ class BTimes ;
 BTimesTable
 ===========
 
-A vector of labelled "columns" each of which 
-holds a *BTimes* instance. 
+A vector of labelled "columns" each of which holds a *BTimes* instance.  
+The table can be saved/loaded to/from a directory where it is stored 
+as individual ".ini" files named after the column labels. 
+
+*BTimeKeeper* is the canonical user of *BTimesTable*
+
+
+
+
 
 ::
 

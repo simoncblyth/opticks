@@ -40,7 +40,7 @@
 #include "Index.hpp"
 
 #include "Report.hpp"
-#include "Timer.hpp"
+#include "BTimeKeeper.hh"
 #include "BTimes.hh"
 #include "BTimesTable.hh"
 
@@ -70,7 +70,7 @@
     { \
        if(m_timer)\
        {\
-          Timer& t = *(m_timer) ;\
+          BTimeKeeper& t = *(m_timer) ;\
           t((s)) ;\
        }\
     }
@@ -563,7 +563,7 @@ NParameters* OpticksEvent::getParameters()
 {
     return m_parameters ;
 }
-Timer* OpticksEvent::getTimer()
+BTimeKeeper* OpticksEvent::getTimer()
 {
     return m_timer ;
 }
@@ -590,7 +590,7 @@ void OpticksEvent::pushNames(std::vector<std::string>& names)
 
 void OpticksEvent::init()
 {
-    m_timer = new Timer("OpticksEvent"); 
+    m_timer = new BTimeKeeper("OpticksEvent"); 
     m_timer->setVerbose(false);
     m_timer->start();
 
@@ -1818,7 +1818,7 @@ void OpticksEvent::saveReport(const char* dir)
 void OpticksEvent::loadReport()
 {
     std::string tagdir = getTagDir();
-    m_ttable = Timer::loadTable(tagdir.c_str());
+    m_ttable = BTimeKeeper::loadTable(tagdir.c_str());
     m_report = Report::load(tagdir.c_str());
 }
 

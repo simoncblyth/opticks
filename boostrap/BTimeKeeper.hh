@@ -7,10 +7,10 @@
 
 class BTimesTable ; 
 
-#include "NPY_API_EXPORT.hh"
-#include "NPY_HEAD.hh"
+#include "BRAP_API_EXPORT.hh"
+#include "BRAP_HEAD.hh"
 
-class NPY_API Timer {
+class BRAP_API BTimeKeeper {
     public:
         static const char* COLUMNS ; 
     public:
@@ -22,7 +22,7 @@ class NPY_API Timer {
         static const char* START ; 
         static const char* STOP  ; 
     public:
-        Timer(const char* name="");
+        BTimeKeeper(const char* name="");
     public:
         void start();
         void operator()(const char* mark);
@@ -30,13 +30,13 @@ class NPY_API Timer {
         void stop();
     public:
         void setVerbose(bool verbose);
-        BTimesTable* makeTable();
+        BTimesTable*        makeTable();
         static BTimesTable* loadTable(const char* dir);
     public:
         const char*               getName();
         double deltaTime(int i0=0, int i1=-1) const ;
     public:
-        void dump(const char* msg="Timer::dump");
+        void dump(const char* msg="BTimeKeeper::dump");
     private:
         VSD         m_marks ;  
         const char* m_name ; 
@@ -44,5 +44,5 @@ class NPY_API Timer {
 
 };
 
-#include "NPY_TAIL.hh"
+#include "BRAP_TAIL.hh"
 
