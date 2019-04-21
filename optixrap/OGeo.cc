@@ -175,7 +175,7 @@ void OGeo::convert()
 {
     unsigned int nmm = m_geolib->getNumMergedMesh();
 
-    LOG(LEVEL) << "OGeo::convert START  numMergedMesh: " << nmm ;
+    LOG(info) << "[  numMergedMesh: " << nmm ;
 
     if(m_verbosity > 1)
     {
@@ -212,19 +212,20 @@ void OGeo::convert()
     m_top->setAcceleration( makeAcceleration() );
 
 
-    
-
     if(m_verbosity > 0)
     {
         LOG(info) << "OGeo::convert DONE  numMergedMesh: " << nmm ;
         dumpStats();
     }
+
+    LOG(info) << "]" ; 
 }
 
 
 void OGeo::convertMergedMesh(unsigned i)
 {
     m_mmidx = i ; 
+    LOG(info) << i ; 
 
     if(m_verbosity > 2)
     LOG(info) << "OGeo::convertMesh START " << i ; 

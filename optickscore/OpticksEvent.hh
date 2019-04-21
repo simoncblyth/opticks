@@ -6,8 +6,8 @@
 //template <typename T> class NPY ; 
 #include "NPY.hpp"
 
-struct STimes ; 
 
+class BTimes ; 
 class BTimesTable ; 
 
 class BTimeKeeper ; 
@@ -134,8 +134,8 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec
        bool isTorchType();
        bool isMachineryType();
 
-       STimes* getPrelaunchTimes();
-       STimes* getLaunchTimes();
+       BTimes* getPrelaunchTimes();
+       BTimes* getLaunchTimes();
    public:
        void postPropagateGeant4(); // called following dynamic photon/record/sequence collection
    public:
@@ -450,8 +450,8 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec
        NPYSpec* m_seed_spec ;  
        NPYSpec* m_hit_spec ;  
 
-       STimes*  m_prelaunch_times ; 
-       STimes*  m_launch_times ; 
+       BTimes*  m_prelaunch_times ; 
+       BTimes*  m_launch_times ; 
 
        OpticksEvent*   m_sibling ; 
        const char*     m_geopath ; 

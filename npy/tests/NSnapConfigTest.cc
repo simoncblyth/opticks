@@ -1,20 +1,25 @@
+/**
 
-#include "PLOG.hh"
-#include "NPY_LOG.hh"
+NSnapConfigTest --snapconfig "numsteps=10,eyestartz=-1,eyestopz=1" 
+NSnapConfigTest --snapconfig "numsteps=5,eyestartz=-1,eyestopz=-1" 
 
+
+**/
+
+#include "OPTICKS_LOG.hh"
 #include "NSnapConfig.hpp"
+
+#include "S_get_option.hh"
 
 int main(int argc, char** argv)
 {
-    PLOG_(argc, argv);
-    NPY_LOG__ ; 
+    OPTICKS_LOG(argc, argv);
 
-    const char* snapconfig = "steps=5,prefix=/some/dir/base,postfix=.ppm" ; 
+    const char* fallback = "steps=5,prefix=/some/dir/base,postfix=.ppm" ; 
+    std::string snapconfig = get_option<std::string>(argc, argv, "--snapconfig", fallback ) ;
 
-    NSnapConfig cfg(snapconfig);
+    NSnapConfig cfg(snapconfig.c_str());
     cfg.dump();
-
-    assert( cfg.steps == 5 );
   
     for(int i=0 ; i < cfg.steps ; i++)
     {

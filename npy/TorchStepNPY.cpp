@@ -278,9 +278,19 @@ void TorchStepNPY::set(Param_t p, const char* s)
 
 
 
+
+// set the below defaults to avoid a messy undefined polarization with OpSnapTest
+
 TorchStepNPY::TorchStepNPY(unsigned genstep_type, unsigned int num_step, const char* config) 
     :  
     GenstepNPY(genstep_type,  num_step, config ? strdup(config) : DEFAULT_CONFIG, config == NULL ),
+    m_source_local(0,0,0,1),
+    m_target_local(0,0,0,1),
+    m_polarization_local(0,0,1,0),
+    m_src(0,0,1,1),
+    m_tgt(0,0,0,1),
+    m_pol(0,0,1,1),
+    m_dir(0,0,1),
     m_level(debug)
 {
     init();

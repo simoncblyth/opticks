@@ -6,8 +6,6 @@
 
 
 
-
-
 int main(int argc, char** argv)
 {
     std::cout << "start" << std::endl ; 
@@ -44,6 +42,7 @@ int main(int argc, char** argv)
     std::cout << " exepath() " << a.exepath() << std::endl ; 
     std::cout << " exename() " << a.exename() << std::endl ; 
 
+    std::cout << " cmdline() " << a.cmdline() << std::endl ; 
 
 
     return 0 ; 

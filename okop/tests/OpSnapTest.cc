@@ -22,7 +22,7 @@ Loads geometry from cache, creates sequence of ppm raytrace snapshots of geometr
 int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv);
-    Opticks ok(argc, argv, "--tracer"); 
+    Opticks ok(argc, argv, "--tracer");   // tempted to put --embedded here 
     OpMgr op(&ok);
     op.snap();
     return 0 ; 

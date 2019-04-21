@@ -75,6 +75,24 @@ void Map<K,V>::add(K key, V value)
 }
 
 template <typename K, typename V>
+bool Map<K,V>::hasKey(K key) const 
+{
+    return m_map.count(key) == 1 ; 
+}
+
+template <typename K, typename V>
+V Map<K,V>::get(K key, V fallback) const 
+{
+    return hasKey(key) ? m_map.at(key) : fallback ; 
+}
+
+
+
+
+
+
+
+template <typename K, typename V>
 void Map<K,V>::save(const char* dir, const char* name)
 {
     BMap<K, V>::save( &m_map, dir, name);
@@ -93,11 +111,11 @@ void Map<K,V>::save(const char* path)
 
 
 template <typename K, typename V>
-void Map<K,V>::dump(const char* msg)
+void Map<K,V>::dump(const char* msg) const 
 {
     LOG(info) << msg ; 
     typedef std::map<K, V> MKV ; 
-    for(typename MKV::iterator it=m_map.begin() ; it != m_map.end() ; it++ ) 
+    for(typename MKV::const_iterator it=m_map.begin() ; it != m_map.end() ; it++ ) 
     {
         std::cout << std::setw(5) << it->second 
                   << std::setw(30) << it->first 

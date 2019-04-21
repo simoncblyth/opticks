@@ -63,4 +63,7 @@ std::string NSnapConfig::getSnapPath(unsigned index)
     return ss.str();
 }
 
-
+std::string NSnapConfig::desc() const 
+{
+    return bconfig->desc(); 
+}

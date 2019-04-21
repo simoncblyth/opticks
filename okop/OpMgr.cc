@@ -154,7 +154,7 @@ void OpMgr::cleanup()
 
 void OpMgr::snap()
 {
-    LOG(info) << "OpMgr::snap" ; 
+    LOG(LEVEL) ; 
     m_propagator->snap(); 
 }
 

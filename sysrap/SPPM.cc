@@ -71,7 +71,6 @@ void SPPM::save(const char* path, int width, int height, const unsigned char* im
 
     unsigned size = height*width*3 ; 
     unsigned char* data = new unsigned char[size] ;
-
  
     for( int h=0 ; h < height ; h++ ) 
     {
@@ -96,7 +95,7 @@ void SPPM::snap(const char* path)
 }
 
 
-void SPPM::write( const char* filename, const float* image, int width, int height, int ncomp )
+void SPPM::write( const char* filename, const float* image, int width, int height, int ncomp, bool yflip )
 {
 
     std::ofstream out( filename, std::ios::out | std::ios::binary );
@@ -108,21 +107,23 @@ void SPPM::write( const char* filename, const float* image, int width, int heigh
 
     out << "P6\n" << width << " " << height << "\n255" << std::endl;
 
-    for( int y=height-1; y >= 0; --y ) // flip vertically
+    //for( int y=height-1; y >= 0; --y ) // flip vertically
+    for( int h=0; h < height ; h++ ) // flip vertically
     {   
+        int y = yflip ? height - 1 - h : h ; 
+
         for( int x = 0; x < width*ncomp; ++x ) 
         {   
-            float val = image[y*width*ncomp + x]; 
+            float val = image[y*width*ncomp + x];    // double flip ?
             unsigned char cval = val < 0.0f ? 0u : val > 1.0f ? 255u : static_cast<unsigned char>( val*255.0f );
             out.put( cval );
         }   
     }
-    std::cout << "Wrote file " << filename << std::endl;
+    LOG(LEVEL) << "Wrote file (float*)" << filename ;
 }
 
 
-
-void SPPM::write( const char* filename, const unsigned char* image, int width, int height, int ncomp )
+void SPPM::write( const char* filename, const unsigned char* image, int width, int height, int ncomp, bool yflip )
 {
     FILE * fp;
     fp = fopen(filename, "wb");
@@ -132,18 +133,21 @@ void SPPM::write( const char* filename, const unsigned char* image, int width, i
     unsigned size = height*width*3 ; 
     unsigned char* data = new unsigned char[size] ; 
 
-    for( int y=height-1; y >= 0; --y ) // flip vertically
+    //for( int y=height-1; y >= 0; --y ) // flip vertically
+    for( int h=0; h < height ; h++ ) // flip vertically
     {   
+        int y = yflip ? height - 1 - h : h ; 
+
         for( int x=0; x < width ; ++x ) 
         {   
-            *(data + (y*width+x)*3+0) = image[(y*width+x)*ncomp+0] ;   
-            *(data + (y*width+x)*3+1) = image[(y*width+x)*ncomp+1] ;   
-            *(data + (y*width+x)*3+2) = image[(y*width+x)*ncomp+2] ;   
+            *(data + (y*width+x)*3+0) = image[(h*width+x)*ncomp+0] ;   
+            *(data + (y*width+x)*3+1) = image[(h*width+x)*ncomp+1] ;   
+            *(data + (y*width+x)*3+2) = image[(h*width+x)*ncomp+2] ;   
         }
     } 
     fwrite(data, sizeof(unsigned char)*size, 1, fp);
     fclose(fp);  
-    std::cout << "Wrote file " << filename << std::endl;
+    LOG(LEVEL) << "Wrote file (unsigned char*) " << filename  ;
     delete[] data;
 }
 

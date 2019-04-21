@@ -58,13 +58,30 @@ void test_create_and_compare()
     BTimes::compare(vt); 
 }
 
+void test_add_average()
+{
+    BTimes* a = new BTimes("a"); 
+    a->add("validate", 0, 0.054583 ) ; 
+    a->add("compile",  0, 7e-06 ); 
+    a->add("prelaunch", 0, 6.60362 ); 
+    a->add("launch", 0 ,  0.018193 ); 
+    a->add("launch", 1 ,  0.026475 ); 
+    a->add("launch", 2 ,  0.023186 ); 
+    a->add("launch", 3 ,  0.025039 ); 
+    a->add("launch", 4 ,  0.020913 ); 
+    a->addAverage("launch"); 
+
+    a->dump(); 
+}
+
 
 int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv);
 
     //test_load_and_compare();
-    test_create_and_compare();
+    //test_create_and_compare();
+    test_add_average();
 
     return 0 ; 
 }

@@ -13,7 +13,8 @@ SAr* SAr::Instance = NULL ;
 SAr::SAr( int argc_ , char** argv_ , const char* envvar, char delim ) 
     :
     _argc( argc_ ),
-    _argv( argc_ > 0 ? new char*[argc_] : NULL )
+    _argv( argc_ > 0 ? new char*[argc_] : NULL ), 
+    _cmdline(NULL)
 {
     if(argc_ == 0 )  // 0 means in-code not giving args
     {
@@ -25,6 +26,9 @@ SAr::SAr( int argc_ , char** argv_ , const char* envvar, char delim )
         assert( argc_ < 100 && "argc_ sanity check " );
         for(int i=0 ; i < argc_ ; i++ ) _argv[i] = strdup(argv_[i]) ; 
     }
+
+    std::string aline = argline();
+    _cmdline = strdup(aline.c_str());    
 
 
     if(Instance)
@@ -44,6 +48,11 @@ const char* SAr::exename() const
 {
    return Basename(exepath()); 
 }
+const char* SAr::cmdline() const 
+{
+   return _cmdline ;  
+}
+
 const char* SAr::Basename(const char* path)
 {
     if(!path) return NULL ; 

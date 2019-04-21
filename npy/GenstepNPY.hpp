@@ -1,6 +1,8 @@
 #pragma once
 
 #include <string>
+
+#include "plog/Severity.h"
 #include "NGLM.hpp"
 
 template<typename T> class NPY ; 
@@ -34,6 +36,8 @@ Base class of FabStepNPY and TorchStepNPY
 
 
 class NPY_API GenstepNPY {
+   public:  
+       static const plog::Severity LEVEL ; 
    public:  
        GenstepNPY(unsigned genstep_type, unsigned num_step=1, const char* config=NULL, bool is_default=false); 
        void addStep(bool verbose=false); // increments m_step_index

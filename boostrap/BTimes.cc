@@ -3,9 +3,11 @@
 #include <cassert>
 #include <sstream>
 #include <iostream>
+#include <sstream>
 #include <iomanip>
 
 // brap-
+#include "BStr.hh"
 #include "BFile.hh"
 #include "BList.hh"
 #include "BTimes.hh"
@@ -58,6 +60,7 @@ void BTimes::add(const char* name_, int idx, double t )
 }
 
 
+
 unsigned int BTimes::getSize()
 {
     return m_times.size();
@@ -104,6 +107,31 @@ void BTimes::load(const char* dir)
     std::string nam = name();
     load(dir, nam.c_str()) ; 
 }
+
+
+void BTimes::addAverage(const char* prefix )
+{
+   int count(0); 
+
+   double sum(0.); 
+   for(VSD::const_iterator it=m_times.begin() ; it != m_times.end() ; it++)
+   {
+       const std::string& name = it->first ; 
+       double t = it->second ; 
+       if( BStr::StartsWith(name.c_str(), prefix))
+       { 
+           count += 1 ;
+           sum += t ;  
+       } 
+   } 
+
+   double avg = count > 0 ? sum/count : sum ;   
+   std::stringstream ss ;  
+   ss << prefix << "AVG" ;  
+   std::string s = ss.str(); 
+   add( s.c_str(), avg );  
+}
+
 
 void BTimes::dump(const char* msg)
 {

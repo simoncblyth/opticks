@@ -15,6 +15,10 @@ template <typename> class NPY ;
 template <typename> class OpticksCfg ;
 
 class BDynamicDefine ; 
+class BTimeKeeper ; 
+class BMeta ; 
+
+
 class TorchStepNPY ; 
 class NState ;
 class NSensorList ;
@@ -26,7 +30,6 @@ struct NSnapConfig ;
 
 class NParameters ; 
 class NPropNames ; 
-class BTimeKeeper ; 
 class Types ;
 class Typ ;
 class Index ; 
@@ -130,7 +133,8 @@ class OKCORE_API Opticks {
        void dump(const char* msg="Opticks::dump") ;
        void Summary(const char* msg="Opticks::Summary");
        void dumpArgs(const char* msg="Opticks::dumpArgs");
-       void dumpParameters(const char* msg="Opticks::dumpParameters");
+       void dumpMeta(const char* msg="Opticks::dumpMeta") const ;
+       void dumpParameters(const char* msg="Opticks::dumpParameters") const ;
        bool hasOpt(const char* name) const ;
        bool operator()(const char* name) const ; 
        void cleanup();
@@ -345,9 +349,10 @@ class OKCORE_API Opticks {
        Types*               getTypes();
        Typ*                 getTyp();
    public:
-       BTimeKeeper*               getTimer();
-       NParameters*          getParameters();
-       NState*              getState();
+       BTimeKeeper*         getTimer() const ;
+       BMeta*               getMeta() const ;
+       NParameters*         getParameters() const ;
+       NState*              getState() const ;
    public:
        int                  getMultiEvent();
        int                  getRestrictMesh();
@@ -466,6 +471,7 @@ class OKCORE_API Opticks {
        bool isRecCf() const ; 
        bool isDbgTorch() const ; 
        bool isDbgSource() const ; 
+       bool isDbgAim() const ; 
        bool isDbgClose() const ; 
    public:
        bool isInternal() const ; 
@@ -510,8 +516,9 @@ class OKCORE_API Opticks {
    private:
        bool                 m_configured ; 
        OpticksCfg<Opticks>* m_cfg ; 
-       BTimeKeeper*               m_timer ; 
-       NParameters*          m_parameters ; 
+       BTimeKeeper*         m_timer ; 
+       BMeta*               m_meta ;  
+       NParameters*         m_parameters ; 
        NSceneConfig*        m_scene_config ; 
        NLODConfig*          m_lod_config ; 
        NSnapConfig*         m_snap_config ; 

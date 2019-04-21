@@ -6,7 +6,31 @@
 
 #include "BRAP_API_EXPORT.hh"
 
-// intended as simple alternative to BCfg, for usage example see NSceneConfig
+
+/**
+
+BConfig
+==========
+
+Intended as simple alternative to BCfg, for usage examples
+see NSnapConfig, NSceneConfig
+
+
+Lifecycle:
+
+1. instanciated as ctor member of a configuration class, 
+   such as NSnapConfig, with a const char* argument
+2. the holding class invokes the addInt/addFloat/addString 
+   methods with key names and pointers to corresponding member variables.
+3. BConfig::parse is invoked which looks for keys that 
+   correspond to those setup with the add methods, and thus 
+   BConfig sets the corresponding member variables using the pointers  
+
+
+Note that BConfig does not store any values only their key strings
+and pointers to where the values can be found.
+
+**/
 
 struct BRAP_API BConfig
 {

@@ -4,7 +4,8 @@
 
 class OContext ; 
 class Composition ; 
-struct STimes ; 
+//struct STimes ; 
+class BTimes ; 
 
 /**
 OTracer
@@ -59,8 +60,9 @@ class OXRAP_API OTracer {
        void trace_();
        void report(const char* msg="OTracer::report");
        void setResolutionScale(unsigned int resolution_scale);
-       unsigned int getResolutionScale();
-       unsigned int getTraceCount();
+       unsigned getResolutionScale() const ;
+       unsigned getTraceCount() const ;
+       BTimes* getTraceTimes() const ;  
    private:
        void init();
 
@@ -68,14 +70,14 @@ class OXRAP_API OTracer {
        OContext*       m_ocontext ; 
        Composition*    m_composition ; 
        optix::Context  m_context ; 
-       unsigned int    m_resolution_scale ; 
+       unsigned        m_resolution_scale ; 
 
-       STimes*          m_trace_times ; 
-       unsigned int     m_trace_count ; 
-       double           m_trace_prep ; 
-       double           m_trace_time ; 
+       BTimes*         m_trace_times ; 
+       unsigned        m_trace_count ; 
+       double          m_trace_prep ; 
+       double          m_trace_time ; 
 
-       int              m_entry_index ; 
+       int             m_entry_index ; 
 
 };
 

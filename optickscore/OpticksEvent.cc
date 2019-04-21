@@ -13,10 +13,9 @@
 #include <cstring>
 #include <iomanip>
 
-// sysrap-
-#include "STimes.hh"
 
 // brap-
+#include "BTimes.hh"
 #include "BStr.hh"
 #include "BTime.hh"
 #include "BFile.hh"
@@ -190,8 +189,8 @@ OpticksEvent::OpticksEvent(OpticksEventSpec* spec)
           m_recsel_spec(NULL),
           m_sequence_spec(NULL),
 
-          m_prelaunch_times(new STimes),
-          m_launch_times(new STimes),
+          m_prelaunch_times(new BTimes("OpticksEvent:prelaunch")),
+          m_launch_times(new BTimes("OpticksEvent::launch")),
           m_sibling(NULL),
           m_geopath(NULL),
           m_geotestconfig(NULL)
@@ -207,11 +206,11 @@ OpticksEvent::~OpticksEvent()
 } 
 
 
-STimes* OpticksEvent::getPrelaunchTimes()
+BTimes* OpticksEvent::getPrelaunchTimes()
 {
     return m_prelaunch_times ; 
 }
-STimes* OpticksEvent::getLaunchTimes()
+BTimes* OpticksEvent::getLaunchTimes()
 {
     return m_launch_times ; 
 }

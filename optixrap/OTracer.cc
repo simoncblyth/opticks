@@ -3,6 +3,8 @@
 #include <optixu/optixu_math_stream_namespace.h>
 
 // brap-
+//#include "STimes.hh"
+#include "BTimes.hh"
 #include "BTimeStamp.hh"
 
 // npy-
@@ -16,7 +18,6 @@
 
 #include "OTracer.hh"
 #include "OContext.hh"
-#include "STimes.hh"
 
 
 #include "PLOG.hh"
@@ -42,19 +43,18 @@ void OTracer::setResolutionScale(unsigned int resolution_scale)
 {
     m_resolution_scale = resolution_scale ; 
 }
-unsigned int OTracer::getResolutionScale()
+unsigned OTracer::getResolutionScale() const
 {
     return m_resolution_scale ; 
 }
-unsigned int OTracer::getTraceCount()
+unsigned OTracer::getTraceCount() const
 {
     return m_trace_count ; 
 }
-
-
-
-
-
+BTimes* OTracer::getTraceTimes() const
+{
+    return m_trace_times ; 
+}
 
 
 void OTracer::init()
@@ -79,7 +79,7 @@ void OTracer::init()
     m_context[ "bg_color" ]->setFloat(  0.34f, 0.55f, 0.85f, 1.0f ); // map(int,np.array([0.34,0.55,0.85])*255) -> [86, 140, 216]
     m_context[ "bad_color" ]->setFloat( 1.0f, 0.0f, 0.0f, 1.0f );
 
-    m_trace_times = new STimes ; 
+    m_trace_times = new BTimes("OTra") ; 
 }
 
 
@@ -147,7 +147,7 @@ void OTracer::trace_()
     m_trace_prep += t1 - t0 ; 
     m_trace_time += t2 - t1 ; 
 
-    LOG(info) << m_trace_times->description("OTracer::trace m_trace_times") ;
+    //LOG(info) << m_trace_times->description("OTracer::trace m_trace_times") ;
 
 }
 
@@ -163,6 +163,9 @@ void OTracer::report(const char* msg)
           << " trace_time      " << std::setw(10) << m_trace_time   << " avg " << std::setw(10) << m_trace_time/m_trace_count  << std::endl
           << std::endl 
            ;
+
+    m_trace_times->addAverage("launch"); 
+    m_trace_times->dump("OTracer::report"); 
 }
 
 

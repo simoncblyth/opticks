@@ -11,6 +11,7 @@
 #include "PLOG.hh"
 
 
+const plog::Severity GenstepNPY::LEVEL = debug ; 
 
 
 GenstepNPY::GenstepNPY(unsigned genstep_type, unsigned num_step, const char* config, bool is_default ) 
@@ -259,12 +260,13 @@ void GenstepNPY::setPolarization(const glm::vec4& pol)
     m_polw.y = npol.y ; 
     m_polw.z = npol.z ; 
 
-    LOG(fatal) << "GenstepNPY::setPolarization"
-              << " pol " << gformat(pol)
-              << " npol " << gformat(npol)
-              << " m_polw " << gformat(m_polw)
-              ;
+    LOG(LEVEL)
+        << " pol " << gformat(pol)
+        << " npol " << gformat(npol)
+        << " m_polw " << gformat(m_polw)
+        ;
 
+    //assert(0); 
 }
 void GenstepNPY::setWavelength(const char* s)
 {

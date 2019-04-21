@@ -1,7 +1,7 @@
 #include <sstream>
 
 #include "SLog.hh"
-#include "STimes.hh"
+#include "BTimes.hh"
 
 // optickscore-
 #include "Opticks.hh"
@@ -143,7 +143,7 @@ void OPropagator::prelaunch()
     setSize( m_override > 0 ? m_override : numPhotons ,  1 );
     setNoPropagate(m_ok->hasOpt("nopropagate"));
 
-    STimes* prelaunch_times = evt->getPrelaunchTimes() ;
+    BTimes* prelaunch_times = evt->getPrelaunchTimes() ;
 
     OK_PROFILE("_OPropagator::prelaunch");
     m_ocontext->launch( OContext::VALIDATE|OContext::COMPILE|OContext::PRELAUNCH,  m_entry_index ,  0, 0, prelaunch_times ); 
@@ -151,7 +151,8 @@ void OPropagator::prelaunch()
 
     m_count += 1 ; 
 
-    LOG(info) << brief() << prelaunch_times->brief("prelaunch_times");
+    LOG(info) << brief()  ;
+    prelaunch_times->dump("OPropagator::prelaunch");
 }
 
 void OPropagator::launch()
@@ -165,7 +166,7 @@ void OPropagator::launch()
     }
 
     OpticksEvent* evt = m_oevt->getEvent(); 
-    STimes* launch_times = evt->getLaunchTimes() ;
+    BTimes* launch_times = evt->getLaunchTimes() ;
 
     OK_PROFILE("_OPropagator::launch");
 
@@ -176,6 +177,7 @@ void OPropagator::launch()
     LOG(error) << "LAUNCH DONE" ; 
     OK_PROFILE("OPropagator::launch");
 
-    LOG(info) << brief() << launch_times->brief("launch_times");
+    LOG(info) << brief() ;
+    launch_times->dump("OPropagator::launch");
 }
 

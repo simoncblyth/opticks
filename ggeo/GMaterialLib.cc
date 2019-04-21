@@ -96,18 +96,18 @@ void GMaterialLib::postLoadFromCache()
 
     //bool groupvel = !m_ok->hasOpt("nogroupvel") ;
 
-    LOG(info) << "GMaterialLib::postLoadFromCache " 
-              << " nore " << nore 
-              << " noab " << noab 
-              << " nosc " << nosc 
-              << " xxre " << xxre 
-              << " xxab " << xxab 
-              << " xxsc " << xxsc 
-              << " fxre " << fxre 
-              << " fxab " << fxab 
-              << " fxsc " << fxsc 
-      //        << " groupvel " << groupvel 
-              ; 
+    LOG(LEVEL)
+        << " nore " << nore 
+        << " noab " << noab 
+        << " nosc " << nosc 
+        << " xxre " << xxre 
+        << " xxab " << xxab 
+        << " xxsc " << xxsc 
+        << " fxre " << fxre 
+        << " fxab " << fxab 
+        << " fxsc " << fxsc 
+    //  << " groupvel " << groupvel 
+        ; 
 
     if(nore || xxre || fxre)
     {    

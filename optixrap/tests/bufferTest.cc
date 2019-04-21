@@ -2,18 +2,15 @@
 #include <string>
 #include <sstream>
 
+#include "BTimes.hh"
 #include "NPY.hpp"
 
 #include "OConfig.hh"
 #include "OContext.hh"
-#include "STimes.hh"
 #include "Opticks.hh"
 #include "OpticksBufferControl.hh"
 
 #include "OPTICKS_LOG.hh"
-
-#include "PLOG.hh"
-
 
 struct Evt 
 {
@@ -22,7 +19,7 @@ struct Evt
    std::string description();
 
    unsigned size ; 
-   STimes* times ; 
+   BTimes* times ; 
    NPY<float>* genstep ;
    NPY<float>* photon  ;
 
@@ -32,7 +29,7 @@ struct Evt
 Evt::Evt(unsigned size_) 
    :
    size(size_),
-   times(new STimes),  
+   times(new BTimes),  
    genstep(NPY<float>::make(size,1,4)),  
    photon(NPY<float>::make(size,1,4))  
 {
@@ -73,7 +70,6 @@ std::string Evt::description()
     std::stringstream ss ; 
     ss << "evt:" 
         << size  
-        << times->description(" ") 
         ;
     return ss.str();
 }

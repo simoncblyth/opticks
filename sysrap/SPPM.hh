@@ -47,8 +47,8 @@ struct SYSRAP_API SPPM
 
     static void save( const char* path, int width, int height, const unsigned char* image, bool yflip ) ;
 
-    static void write( const char* filename, const unsigned char* image, int width, int height, int ncomp ) ;
-    static void write( const char* filename, const         float* image, int width, int height, int ncomp ) ;
+    static void write( const char* filename, const unsigned char* image, int width, int height, int ncomp, bool yflip) ;
+    static void write( const char* filename, const         float* image, int width, int height, int ncomp, bool yflip) ;
 
 };
 

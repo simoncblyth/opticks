@@ -7,12 +7,23 @@ struct BConfig ;
 
 #include "NPY_API_EXPORT.hh"
 
+/**
+NSnapConfig
+============
+
+Principal consumer is OpTracer::snap
+
+
+**/
+
+
+
 struct NPY_API NSnapConfig 
 {
     static const plog::Severity LEVEL ; 
 
     NSnapConfig(const char* cfg);
-    struct BConfig* bconfig ;  
+    BConfig* bconfig ;  
     void dump(const char* msg="NSnapConfig::dump") const ; 
 
     int verbosity ; 
@@ -26,6 +37,7 @@ struct NPY_API NSnapConfig
 
     std::string getSnapPath(unsigned index);
     static std::string SnapIndex(unsigned index, unsigned width);
+    std::string desc() const ; 
 
 
 

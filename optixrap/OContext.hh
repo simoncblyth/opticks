@@ -24,7 +24,8 @@ template <typename T> class NPY ;
 class OConfig ; 
 class OpticksEntry ; 
 class Opticks ; 
-struct STimes ; 
+class BTimes ; 
+//struct STimes ; 
 
 #include "OXRAP_API_EXPORT.hh"
 class OXRAP_API OContext {
@@ -70,7 +71,7 @@ class OXRAP_API OContext {
             void init();
             void initPrint();
      public:
-            void launch(unsigned lmode, unsigned entry, unsigned width, unsigned height=1, STimes* times=NULL);
+            void launch(unsigned lmode, unsigned entry, unsigned width, unsigned height=1, BTimes* times=NULL);
      private:
             double validate_();
             double compile_();
@@ -125,12 +126,13 @@ class OXRAP_API OContext {
             OConfig*          m_cfg ; 
             Mode_t            m_mode ; 
             int               m_debug_photon ; 
-            unsigned int      m_entry ; 
+            unsigned          m_entry ; 
             bool              m_closed ; 
             bool              m_with_top ; 
             bool              m_verbose ; 
             const char*       m_cmake_target ; 
             const char*       m_llogpath ; 
+            unsigned          m_launch_count ; 
 };
 
 

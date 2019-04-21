@@ -43,6 +43,8 @@
 
 #include "PLOG.hh"
 
+const plog::Severity OpticksGeometry::LEVEL = debug ; 
+
 
 
 // TODO: move to OK_PROFILE 
@@ -85,7 +87,7 @@ void OpticksGeometry::init()
 void OpticksGeometry::loadGeometry()
 {
 
-    LOG(info) << "OpticksGeometry::loadGeometry START "  ; 
+    LOG(LEVEL) << "["  ; 
 
     loadGeometryBase(); //  usually from cache
 
@@ -110,14 +112,14 @@ void OpticksGeometry::loadGeometry()
     }
 
 
-    LOG(info) << "OpticksGeometry::loadGeometry DONE " ; 
+    LOG(LEVEL) << "]" ; 
     TIMER("loadGeometry");
 }
 
 
 void OpticksGeometry::loadGeometryBase()
 {
-    LOG(error) << "OpticksGeometry::loadGeometryBase START " ; 
+    LOG(LEVEL) << "[" ; 
     OpticksResource* resource = m_ok->getResource();
 
     if(m_ok->hasOpt("qe1"))
@@ -149,7 +151,7 @@ void OpticksGeometry::loadGeometryBase()
         }
     }
 
-    LOG(error) << "OpticksGeometry::loadGeometryBase DONE " ; 
+    LOG(LEVEL) << "]" ; 
     TIMER("loadGeometryBase");
 }
 

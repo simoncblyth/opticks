@@ -14,6 +14,8 @@
 #include "BStr.hh"
 #include "BFile.hh"
 #include "BTimeStamp.hh"
+//#include "STimes.hh"
+#include "BTimes.hh"
 
 // npy-
 #include "NGLM.hpp"
@@ -26,7 +28,6 @@
 #include "OpticksBufferControl.hh"
 
 // optixrap-
-#include "STimes.hh"
 #include "SPPM.hh"
 #include "OConfig.hh"
 #include "OContext.hh"
@@ -89,7 +90,8 @@ OContext::OContext(optix::Context context, Opticks* ok, bool with_top, bool verb
     m_with_top(with_top),
     m_verbose(verbose),
     m_cmake_target(strdup(cmake_target)),
-    m_llogpath(NULL)
+    m_llogpath(NULL),
+    m_launch_count(0)
 {
     init();
     initPrint();
@@ -281,7 +283,7 @@ unsigned int OContext::getNumEntryPoint()
 }
 
 
-void OContext::launch(unsigned int lmode, unsigned int entry, unsigned int width, unsigned int height, STimes* times )
+void OContext::launch(unsigned int lmode, unsigned int entry, unsigned int width, unsigned int height, BTimes* times )
 {
     if(!m_closed) close();
 
@@ -291,35 +293,36 @@ void OContext::launch(unsigned int lmode, unsigned int entry, unsigned int width
               << " height " << height 
               ;
 
-    if(times) times->count     += 1 ; 
 
     if(lmode & VALIDATE)
     {
         double dt = validate_();
         LOG(LEVEL) << "VALIDATE time: " << dt ;
-        if(times) times->validate  += dt  ;
+        if(times) times->add("validate", m_launch_count,  dt) ;
     }
 
     if(lmode & COMPILE)
     {
         double dt = compile_();
         LOG(LEVEL) << "COMPILE time: " << dt ;
-        if(times) times->compile  += dt ;
+        if(times) times->add("compile", m_launch_count,  dt) ;
     }
 
     if(lmode & PRELAUNCH)
     {
-        double dt = launch_(entry, width, height );
+        double dt = launch_(entry, 0u, 0u );
         LOG(LEVEL) << "PRELAUNCH time: " << dt ;
-        if(times) times->prelaunch  += dt ;
+        if(times) times->add("prelaunch", m_launch_count,  dt) ;
     }
 
     if(lmode & LAUNCH)
     {
         double dt = m_llogpath ? launch_redirected_(entry, width, height ) : launch_(entry, width, height );
         LOG(LEVEL) << "LAUNCH time: " << dt  ;
-        if(times) times->launch  += dt  ;
+        if(times) times->add("launch", m_launch_count,  dt) ;
     }
+
+    m_launch_count += 1 ; 
 }
 
 
@@ -678,19 +681,19 @@ void OContext::snap(const char* path)
     RTsize width, height, depth ;
     output_buffer->getSize(width, height, depth);
 
-    LOG(info) 
+    bool yflip = true ; 
+    LOG(LEVEL) 
          << " path " << path 
          << " width " << width
-         << " width " << (int)width
          << " height " << height
-         << " height " << (int)height
          << " depth " << depth
+         << " yflip " << yflip
          ;   
 
     void* ptr = output_buffer->map() ; 
 
     int ncomp = 4 ;   
-    SPPM::write(path,  (unsigned char*)ptr , width, height, ncomp );
+    SPPM::write(path,  (unsigned char*)ptr , width, height, ncomp, yflip );
 
     output_buffer->unmap(); 
 }

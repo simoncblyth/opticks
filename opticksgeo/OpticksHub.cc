@@ -436,6 +436,11 @@ OpticksHub::configureLookupA
 
 Invoked in init 
 
+
+This is trying and failing to load from 
+   /home/blyth/local/opticks/opticksdata/export/OKX4Test/ChromaMaterialMap.json
+in direct mode when everything should be from geocache ?
+
 **/
 
 void OpticksHub::configureLookupA()
@@ -443,11 +448,11 @@ void OpticksHub::configureLookupA()
     const char* path = m_ok->getMaterialMap(); 
     const char* prefix = m_ok->getMaterialPrefix(); 
 
-    LOG(debug) << "OpticksHub::configureLookupA"
-              << " loading genstep material index map "
-              << " path " << path
-              << " prefix " << prefix
-              ;
+    LOG(debug)
+        << " loading genstep material index map "
+        << " path " << path
+        << " prefix " << prefix
+        ;
 
     std::map<std::string, unsigned> A ; 
     BMap<std::string, unsigned int>::load(&A, path ); 
@@ -472,7 +477,7 @@ void OpticksHub::loadGeometry()
 {
     assert(m_geometry == NULL && "OpticksHub::loadGeometry should only be called once");
 
-    LOG(info) << "OpticksHub::loadGeometry START" ; 
+    LOG(info) << "[ " << m_ok->getIdPath()  ; 
 
     m_geometry = new OpticksGeometry(this);   // m_lookup is set into m_ggeo here 
 
@@ -490,7 +495,7 @@ void OpticksHub::loadGeometry()
 
     if(m_ok->isTest())
     {
-        LOG(info) << "OpticksHub::loadGeometry --test modifying geometry" ; 
+        LOG(info) << "--test modifying geometry" ; 
 
         assert(m_geotest == NULL);
 
@@ -507,7 +512,7 @@ void OpticksHub::loadGeometry()
     }
     else
     {
-        LOG(info) << "OpticksHub::loadGeometry NOT modifying geometry" ; 
+        LOG(LEVEL) << "NOT modifying geometry" ; 
     }
 
     registerGeometry();
@@ -516,7 +521,7 @@ void OpticksHub::loadGeometry()
 
     m_ggeo->close();  // mlib and slib  (June 2018, following remove the auto-trigger-close on getIndex in the proplib )
 
-    LOG(info) << "OpticksHub::loadGeometry DONE" ; 
+    LOG(info) << "]" ; 
 }
 
 
@@ -542,11 +547,11 @@ GGeoTest* OpticksHub::createTestGeometry(GGeoBase* basis)
 {
     assert(m_ok->isTest());
 
-    LOG(info) << "OpticksHub::createTestGeometry START" ;
+    LOG(info) << "[" ;
 
     GGeoTest* testgeo = new GGeoTest(m_ok, basis);
 
-    LOG(info) << "OpticksHub::createTestGeometry DONE" ;
+    LOG(info) << "]" ;
 
     return testgeo ; 
 }
@@ -988,11 +993,11 @@ void OpticksHub::cleanup()
     if(m_server) m_server->stop();
 #endif
 
-    LOG(error) << "OpticksHub::cleanup" ; 
+    LOG(LEVEL) << "OpticksHub::cleanup" ; 
     if(m_ok->isGPUMon())
     {
         const char* path = m_ok->getGPUMonPath(); 
-        LOG(error) << "OpticksHub::cleanup GPUMon saving to " << path  ; 
+        LOG(error) << "GPUMon saving to " << path  ; 
         NGPU* gpu = NGPU::GetInstance() ;
         gpu->saveBuffer(path);
         gpu->dump();
@@ -1002,6 +1007,7 @@ void OpticksHub::cleanup()
 
 void OpticksHub::dumpVolumes(unsigned cursor, GMergedMesh* mm, const char* msg )  
 {
+    //assert(0); 
     assert( mm );
     unsigned num_volumes = mm->getNumVolumes();
 

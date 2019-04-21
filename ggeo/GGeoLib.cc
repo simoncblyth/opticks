@@ -91,7 +91,6 @@ GMergedMesh* GGeoLib::getMergedMesh(unsigned index) const
 {
     if(m_merged_mesh.find(index) == m_merged_mesh.end()) return NULL ;
 
-    //GMergedMesh* mm = m_merged_mesh[index] ;
     GMergedMesh* mm = m_merged_mesh.at(index) ;
 
     return mm ; 
@@ -100,11 +99,8 @@ GMergedMesh* GGeoLib::getMergedMesh(unsigned index) const
 void GGeoLib::loadFromCache()
 {
     const char* idpath = m_ok->getIdPath() ;
-    LOG(debug) << "GGeoLib::loadFromCache" ;
     loadConstituents(idpath);
 }
-
-
 
 
 void GGeoLib::save()
@@ -167,19 +163,17 @@ GGeoLib::loadConstituents
 
   * this is kinda funny because GParts is always analytic 
 
-
 **/
 
 void GGeoLib::loadConstituents(const char* idpath )
 {
-   LOG(info) 
-             << "GGeoLib::loadConstituents"
-             << " mm.reldir " << getRelDir(GMERGEDMESH)
-             << " gp.reldir " << getRelDir(GPARTS)
-             << " MAX_MERGED_MESH  " << MAX_MERGED_MESH 
-             ; 
+   LOG(LEVEL) 
+       << " mm.reldir " << getRelDir(GMERGEDMESH)
+       << " gp.reldir " << getRelDir(GPARTS)
+       << " MAX_MERGED_MESH  " << MAX_MERGED_MESH 
+       ; 
 
-   LOG(info) << idpath ;
+   LOG(LEVEL) << idpath ;
 
    std::stringstream ss ; 
 
@@ -228,7 +222,7 @@ void GGeoLib::loadConstituents(const char* idpath )
                        ;
         }
    }
-   LOG(info) << "GGeoLib::loadConstituents" 
+   LOG(LEVEL) 
              << " loaded "  << m_merged_mesh.size()
              << " ridx (" << ss.str() << ")" 
              ;

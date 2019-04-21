@@ -316,3 +316,24 @@ geocache-movie-()
 geocache-movie(){ $FUNCNAME- 2>&1 > /tmp/$FUNCNAME.log ; }
 
 
+
+geocache-bench-()
+{
+   type $FUNCNAME
+   local dbg
+   [ -n "$DBG" ] && dbg="gdb --args" || dbg=""
+   $dbg OpSnapTest --envkey --target 352851 --eye -1,-1,-1 --snapconfig "steps=5,eyestartz=-1,eyestopz=-0.5" --size 5120,2880,1 --embedded  $* 
+}
+
+geocache-bench()
+{
+   echo "TITAN RTX"
+   CUDA_VISIBLE_DEVICES=1 OPTICKS_RTX=0 $FUNCNAME- 
+   CUDA_VISIBLE_DEVICES=1 OPTICKS_RTX=1 $FUNCNAME- 
+   echo "TITAN V" 
+   CUDA_VISIBLE_DEVICES=0 OPTICKS_RTX=0 $FUNCNAME- 
+   CUDA_VISIBLE_DEVICES=0 OPTICKS_RTX=1 $FUNCNAME- 
+}
+
+
+

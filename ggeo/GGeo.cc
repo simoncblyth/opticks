@@ -566,10 +566,11 @@ void GGeo::loadGeometry()
 
     int gltf = m_ok->getGLTF(); 
 
-    LOG(info) << "GGeo::loadGeometry START" 
-              << " loaded " << loaded 
-              << " gltf " << gltf
-              ; 
+    LOG(LEVEL)
+        << "["
+        << " loaded " << loaded 
+        << " gltf " << gltf
+        ; 
 
     if(!loaded)
     {
@@ -609,7 +610,7 @@ void GGeo::loadGeometry()
     setupColors();
     setupTyp();
 
-    LOG(info) << "GGeo::loadGeometry DONE" ; 
+    LOG(LEVEL) << "]" ; 
 }
 
 void GGeo::loadFromG4DAE()
@@ -768,7 +769,7 @@ void GGeo::saveAnalytic()
  
 void GGeo::loadFromCache()
 {   
-    LOG(error) << "GGeo::loadFromCache START" ; 
+    LOG(LEVEL) << "[ " << m_ok->getIdPath()  ; 
 
     bool constituents = true ; 
     m_bndlib = GBndLib::load(m_ok, constituents);    // interpolation potentially happens in here
@@ -789,11 +790,12 @@ void GGeo::loadFromCache()
 
     loadCacheMeta();
 
-    LOG(error) << "GGeo::loadFromCache DONE" ; 
+    LOG(LEVEL) << "]" ; 
 }
 
 void GGeo::loadAnalyticFromCache()
 {
+    assert(0) ; // THIS IS THE OLD WAY ?
     LOG(info) << "GGeo::loadAnalyticFromCache START" ; 
     m_gscene = GScene::Load(m_ok, this); // GGeo needed for m_bndlib 
     LOG(info) << "GGeo::loadAnalyticFromCache DONE" ; 
@@ -1160,7 +1162,7 @@ void GGeo::prepareSourceLib()
 
 void GGeo::close()
 {
-    LOG(fatal) << "[" ; 
+    LOG(LEVEL) << "[" ; 
     // this needs to be invoked after all Opticks materials and surfaces have been
     // created, and before boundaries are formed : typically in the recursive structure traverse
 
@@ -1176,7 +1178,7 @@ void GGeo::close()
     blib->createDynamicBuffers(); 
 
 
-    LOG(fatal) << "]" ; 
+    LOG(LEVEL) << "]" ; 
 }
 
 

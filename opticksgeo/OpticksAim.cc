@@ -85,16 +85,17 @@ void OpticksAim::setupCompositionTargetting()
 {
     // used from OpticksViz::uploadGeometry
 
+    //assert(0); 
     bool autocam = true ; 
 
     // handle commandline --target option that needs loaded geometry 
     unsigned deferred_target = getTargetDeferred();   // default to 0 
     unsigned cmdline_target = m_ok->getTarget();
 
-    LOG(info) << "OpticksAim::setupCompositionTargetting"
-              << " deferred_target " << deferred_target
-              << " cmdline_target " << cmdline_target
-               ;   
+    LOG(LEVEL)
+        << " deferred_target " << deferred_target
+        << " cmdline_target " << cmdline_target
+        ;   
 
     setTarget(cmdline_target, autocam);
 }
@@ -112,18 +113,22 @@ void  OpticksAim::setTarget(unsigned target, bool aim)
     }    
     m_target = target ; 
 
-    dumpTarget("OpticksAim::setTarget");
 
+    if(m_ok->isDbgAim())
+    {
+        dumpTarget("OpticksAim::setTarget");
+    } 
 
     glm::vec4 ce = m_mesh0->getCE(target);
 
 
-    LOG(fatal)<<"OpticksAim::setTarget " 
-             << " based on CenterExtent from m_mesh0 "
-             << " target " << target 
-             << " aim " << aim
-             << " ce " << gformat(ce) 
-             ;    
+    LOG(info)
+        << " using CenterExtent from m_mesh0 "
+        << " target " << target 
+        << " aim " << aim
+        << " ce " << gformat(ce) 
+        << " for details : --aimdbg" 
+        ;    
 
     m_composition->setCenterExtent(ce, aim); 
 }

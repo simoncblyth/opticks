@@ -2,9 +2,9 @@
 
 #include "BMap.hh"
 
-#include "BRAP_LOG.hh"
-#include "PLOG.hh"
+#include "OPTICKS_LOG.hh"
 #include <boost/property_tree/ptree.hpp>
+
 #include "BJSONParser.hh"
 
 const char* pathSU = "$TMP/BMapTestSU.json" ; 
@@ -122,9 +122,8 @@ void test_LoadJSONString()
 
 int main(int argc, char** argv)
 {
-    PLOG_(argc, argv);
+    OPTICKS_LOG(argc, argv);
 
-    BRAP_LOG__ ;
 
     LOG(info) << argv[0] ;
 

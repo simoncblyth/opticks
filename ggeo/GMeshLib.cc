@@ -220,7 +220,7 @@ void GMeshLib::removeMeshes(const char* idpath ) const
 
 void GMeshLib::loadMeshes(const char* idpath )
 {
-   LOG(info) << "idpath "  << idpath ;  
+   LOG(LEVEL) << "idpath "  << idpath ;  
 
    // TODO: read the directory instead of just checking existance of MAX_MESH paths ?
    //       (or use the index ?)

@@ -100,21 +100,33 @@ void OScene::initRTX()
 {
     const char* key = "OPTICKS_RTX" ;
     int rtx = SSys::getenvint(key, -1 ); 
-    if(rtx != -1)
+
+    if(rtx == -1)
     {
-        RTglobalattribute att = RT_GLOBAL_ATTRIBUTE_ENABLE_RTX ;
-        RT_CHECK_ERROR(rtGlobalSetAttribute(att, sizeof(rtx), &rtx));
-        int rtx2 ; 
-        RT_CHECK_ERROR(rtGlobalGetAttribute(att, sizeof(rtx2), &rtx2));
+        LOG(fatal) << key << "=" << rtx << " leaving ASIS "  ;   
+    }
+    else
+    { 
+        int rtx0(-1) ;
+        RT_CHECK_ERROR( rtGlobalGetAttribute(RT_GLOBAL_ATTRIBUTE_ENABLE_RTX, sizeof(rtx0), &rtx0) );
+        assert( rtx0 == 0 );
+
+        LOG(fatal) << key << "=" << rtx << " setting  " << ( rtx == 1 ? "ON" : "OFF" )  ; 
+        RT_CHECK_ERROR( rtGlobalSetAttribute(RT_GLOBAL_ATTRIBUTE_ENABLE_RTX, sizeof(rtx), &rtx));
+
+        int rtx2(-1) ; 
+        RT_CHECK_ERROR(rtGlobalGetAttribute(RT_GLOBAL_ATTRIBUTE_ENABLE_RTX, sizeof(rtx2), &rtx2));
         assert( rtx2 == rtx );
-        LOG(fatal) << "enabling RTX execution mode by envvar " << key << "=1" ;   
     }
 }
 
 
 void OScene::init()
 {
-    LOG(LEVEL) << "[" ; 
+    LOG(info) << "[" ; 
+
+    plog::Severity level = LEVEL ; 
+
 
     m_timer->setVerbose(true);
     m_timer->start();
@@ -146,13 +158,13 @@ void OScene::init()
           << " ggeobase identifier : " << m_hub->getIdentifier()
           ;
 
-    LOG(debug) << "(OColors)" ;
+    LOG(level) << "(OColors)" ;
     m_ocolors = new OColors(context, m_ok->getColors() );
     m_ocolors->convert();
 
     // formerly did OBndLib here, too soon
 
-    LOG(debug) << "(OSourceLib)" ;
+    LOG(level) << "(OSourceLib)" ;
     m_osrc = new OSourceLib(context, m_hub->getSourceLib());
     m_osrc->convert();
 
@@ -161,7 +173,7 @@ void OScene::init()
     unsigned num_scin = sclib->getNumScintillators(); 
     const char* slice = "0:1" ;
 
-    LOG(debug) << "(OScintillatorLib)"
+    LOG(level) << "(OScintillatorLib)"
                << " num_scin " << num_scin 
                << " slice " << slice  
                ;
@@ -171,16 +183,15 @@ void OScene::init()
     m_oscin->convert(slice);
 
 
-    LOG(debug) << "(OGeo)" ;
+    LOG(level) << "(OGeo)" ;
     m_ogeo = new OGeo(m_ocontext, m_ok, m_hub->getGeoLib(), builder, traverser);
-    LOG(debug) << "(OGeo) -> setTop" ;
     m_ogeo->setTop(m_ocontext->getTop());
-    LOG(debug) << "(OGeo) -> convert" ;
+    LOG(level) << "(OGeo) convert" ;
     m_ogeo->convert();
-    LOG(debug) << "(OGeo) done" ;
+    LOG(level) << "(OGeo) done" ;
 
 
-    LOG(debug) << "(OBndLib)" ;
+    LOG(level) << "(OBndLib)" ;
     m_olib = new OBndLib(context,m_hub->getBndLib());
     m_olib->convert();
     // this creates the BndLib dynamic buffers, which needs to be after OGeo
@@ -189,7 +200,7 @@ void OScene::init()
 
     LOG(debug) << m_ogeo->description("OScene::init ogeo");
 
-    LOG(LEVEL) << "]" ;
+    LOG(info) << "]" ;
 
 }
 

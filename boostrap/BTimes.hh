@@ -54,6 +54,7 @@ class BRAP_API BTimes {
      BTimes* clone(const char* label);
      void add(const char* name, double t );
      void add(const char* name_, int idx, double t );
+     void addAverage(const char* prefix );
      unsigned int getNumEntries();
   public:
      void setScale(double s);

@@ -31,6 +31,7 @@ void BConfig::addString(const char* k, std::string* ptr)
 }
 
 
+
 void BConfig::parse()
 {
     if(!cfg) return ; 
@@ -46,28 +47,56 @@ void BConfig::parse()
     }
     assert( valid );
 
-
-
     for(unsigned i=0 ; i < ekv.size() ; i++)
     {   
         KV kv = ekv[i] ; 
+
+        const char* k = kv.first.c_str(); 
+        const char* v = kv.second.c_str(); 
+
+        int found(0); 
+
         for(unsigned j=0 ; j < eki.size() ; j++)
         {   
             KI ki = eki[j] ; 
-            if(strcmp(ki.first.c_str(),kv.first.c_str()) == 0) *ki.second = BStr::atoi(kv.second.c_str()) ; 
+            if(strcmp(ki.first.c_str(),k) == 0)
+            { 
+                found += 1 ; 
+                *ki.second = BStr::atoi(v) ; 
+            }
         }   
 
         for(unsigned j=0 ; j < ekf.size() ; j++)
         {   
             KF kf = ekf[j] ; 
-            if(strcmp(kf.first.c_str(),kv.first.c_str()) == 0) *kf.second = BStr::atof(kv.second.c_str()) ; 
+            if(strcmp(kf.first.c_str(),k) == 0) 
+            { 
+                found += 1 ; 
+                *kf.second = BStr::atof(v) ; 
+            }
         }   
 
         for(unsigned j=0 ; j < eks.size() ; j++)
         {   
             KS ks = eks[j] ; 
-            if(strcmp(ks.first.c_str(),kv.first.c_str()) == 0) *ks.second = kv.second.c_str() ; 
+            if(strcmp(ks.first.c_str(),k) == 0) 
+            {
+                found += 1 ; 
+                *ks.second = v ; 
+            }
         }   
+
+
+        if(found != 1)
+        {
+            LOG(fatal) 
+               << " UNKNOWN/DUPLICATE KEY " << k << " : " << v 
+               << " found " << found 
+               << " in config " << cfg
+               ;
+        } 
+        assert( found == 1);
+
 
 
     }   
@@ -129,17 +158,17 @@ void BConfig::dump_eks() const
 std::string BConfig::desc() const 
 {
     std::stringstream ss ; 
-
     ss
-       << " cfg " << ( cfg ? cfg : "-" )
+       << " BConfig.initial " << ( cfg ? cfg : "-" )
        << " ekv " << ekv.size()
        << " eki " << eki.size()
        << " ekf " << ekf.size()
        << " eks " << eks.size()
        ;
- 
     return ss.str();
 }
+
+
 
 
 

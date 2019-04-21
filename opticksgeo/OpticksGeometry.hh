@@ -3,6 +3,7 @@
 #include <string>
 #include <map>
 #include <glm/fwd.hpp>
+#include "plog/Severity.h"
 
 class OpticksHub ; 
 class Opticks ; 
@@ -38,6 +39,8 @@ Dev History
 
 #include "OKGEO_API_EXPORT.hh"
 class OKGEO_API OpticksGeometry {
+   public:
+       static const plog::Severity LEVEL ; 
    public:
        OpticksGeometry(OpticksHub* hub);
   public:

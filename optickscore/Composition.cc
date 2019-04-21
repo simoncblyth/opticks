@@ -1177,7 +1177,7 @@ void Composition::setCenterExtent(const glm::vec4& ce, bool autocam)
     m_world2model = glm::translate( glm::scale(glm::mat4(1.0), isc), -tr);   // see tests/CompositionTest.cc
 
 
-    LOG(info) << "Composition::setCenterExtent"
+    LOG(debug) << "Composition::setCenterExtent"
               << " ce " << gformat(m_center_extent) 
               ;
 

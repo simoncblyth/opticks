@@ -22,12 +22,15 @@ struct SYSRAP_API SAr
     const char* exename() const ;
     static const char* Basename(const char* path);
     std::string argline() const ;
+    const char* cmdline() const ;
     const char* get_arg_after(const char* arg, const char* fallback) const ;
 
     void dump() const ;
 
     int    _argc ;
     char** _argv ; 
+
+    const char* _cmdline ; 
 };
 
 

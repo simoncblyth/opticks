@@ -7,9 +7,12 @@ set(TEST_SOURCES
 
    BFooTest.cc
    BDirTest.cc
+
    BMapTest.cc
-   BHexTest.cc
+   BMetaTest.cc
    MapTest.cc
+
+   BHexTest.cc
    BListTest.cc
    BRegexTest.cc
    BStrTest.cc

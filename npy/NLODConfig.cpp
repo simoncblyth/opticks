@@ -21,7 +21,6 @@ NLODConfig::NLODConfig(const char* cfg)
 
     bconfig->addInt("verbosity", &verbosity );
     bconfig->addInt("levels", &levels );
-    bconfig->addInt("levels", &levels );
     bconfig->addInt("instanced_lodify_onload", &instanced_lodify_onload );
 
     bconfig->parse();

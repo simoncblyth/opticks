@@ -63,6 +63,7 @@ void OpTracer::prepareTracer()
     LOG(debug) << "OpTracer::prepareTracer" 
                << " width " << width 
                << " height " << height 
+               << " immediate " << m_immediate
                 ;
 
     m_ocontext = m_ope->getOContext();
@@ -94,14 +95,13 @@ OpTracer::snap
 ----------------
 
 Takes one or more GPU raytrace snapshots of geometry
-at various positions configured via m_snap_config.  
+at various positions configured via --snapconfig
 
 **/
 
-void OpTracer::snap()
+void OpTracer::snap()   // --snapconfig="steps=5,eyestartz=0,eyestopz=0"
 {
-    LOG(info) << "OpTracer::snap START" ;
-    m_snap_config->dump();
+    LOG(info) << "(" << m_snap_config->desc();
 
     int num_steps = m_snap_config->steps ; 
     float eyestartz = m_snap_config->eyestartz ; 
@@ -113,20 +113,23 @@ void OpTracer::snap()
 
         float frac = num_steps > 1 ? float(i)/float(num_steps-1) : 0.f ; 
         float eyez = eyestartz + (eyestopz-eyestartz)*frac ; 
+  
+        m_composition->setEyeZ( eyez ); 
+
+        render();
 
         std::cout << " i " << std::setw(5) << i 
                   << " eyez " << std::setw(10) << eyez
                   << " path " << path 
                   << std::endl ;         
-   
-        m_composition->setEyeZ( eyez ); 
-
-        render();
 
         m_ocontext->snap(path.c_str());
     }
-   
-    LOG(info) << "OpTracer::snap DONE " ;
+
+    m_otracer->report("OpTracer::snap"); 
+    m_ok->dumpMeta("OpTracer::snap");
+
+    LOG(info) << ")" ;
 }
   
 
