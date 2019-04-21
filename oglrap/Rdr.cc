@@ -246,7 +246,7 @@ void Rdr::upload(MultiViewNPY* mvn, bool debug)
 
 void Rdr::log(const char* msg, int value)
 {
-    LOG(fatal)
+    LOG(debug)
                  << "Rdr::log " 
                  << std::setw(10) << getShaderTag() 
                  << " "

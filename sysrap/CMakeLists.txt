@@ -49,6 +49,7 @@ set(SOURCES
     SPPM.cc
     SId.cc
     SGDML.cc
+    S_get_option.cc
 ) 
 
 set(HEADERS
@@ -88,6 +89,7 @@ set(HEADERS
     SAr.hh
     SArgs.hh
     S_freopen_redirect.hh
+    S_get_option.hh
     SPPM.hh
     SId.hh
     SGDML.hh

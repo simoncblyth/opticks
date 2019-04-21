@@ -22,6 +22,7 @@ find_package(ThrustRap  REQUIRED CONFIG )
 set(SOURCES
      
     OXRAP_LOG.cc
+    OError.cc
 
     OptiXUtil.cc
     OptiXTest.cc
@@ -62,6 +63,7 @@ set(HEADERS
     OXRAP_POP.hh
 
     OXPPNS.hh
+    OError.hh
 
     OptiXUtil.hh
     OptiXTest.hh

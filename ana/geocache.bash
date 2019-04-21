@@ -288,8 +288,9 @@ geocache-view()
 {
     type $FUNCNAME
     env | grep OPTICKS_KEY
-    OKTest --envkey --xanalytic  --tracer --target $(geocache-target)
-    #OKTest --envkey --xanalytic 
+    env | grep CUDA
+    #OKTest --envkey --xanalytic  --tracer --target $(geocache-target)
+    OKTest --envkey --xanalytic 
 }
 
 geocache-movie-()

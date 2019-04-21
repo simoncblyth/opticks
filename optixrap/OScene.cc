@@ -1,7 +1,13 @@
+
+
+#include "OKConf_Config.hh"
+
 #include "Timer.hpp"
 
+#include "SSys.hh"
 #include "SLog.hh"
 #include "OXPPNS.hh"
+#include "OError.hh"
 
 #include "Opticks.hh"
 #include "OpticksEvent.hh"
@@ -89,6 +95,23 @@ OScene::Init
 
 **/
 
+
+void OScene::initRTX()
+{
+    const char* key = "OPTICKS_RTX" ;
+    int rtx = SSys::getenvint(key, -1 ); 
+    if(rtx != -1)
+    {
+        RTglobalattribute att = RT_GLOBAL_ATTRIBUTE_ENABLE_RTX ;
+        RT_CHECK_ERROR(rtGlobalSetAttribute(att, sizeof(rtx), &rtx));
+        int rtx2 ; 
+        RT_CHECK_ERROR(rtGlobalGetAttribute(att, sizeof(rtx2), &rtx2));
+        assert( rtx2 == rtx );
+        LOG(fatal) << "enabling RTX execution mode by envvar " << key << "=1" ;   
+    }
+}
+
+
 void OScene::init()
 {
     LOG(LEVEL) << "[" ; 
@@ -100,6 +123,9 @@ void OScene::init()
     std::string traverser_ = m_cfg->getTraverser();
     const char* builder   = builder_.empty() ? NULL : builder_.c_str() ;
     const char* traverser = traverser_.empty() ? NULL : traverser_.c_str() ;
+
+    initRTX();
+
 
     LOG(verbose) << "optix::Context::create() START " ; 
     optix::Context context = optix::Context::create();

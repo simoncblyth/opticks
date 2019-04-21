@@ -147,7 +147,7 @@ void OTracer::trace_()
     m_trace_prep += t1 - t0 ; 
     m_trace_time += t2 - t1 ; 
 
-    LOG(debug) << m_trace_times->description("OTracer::trace m_trace_times") ;
+    LOG(info) << m_trace_times->description("OTracer::trace m_trace_times") ;
 
 }
 

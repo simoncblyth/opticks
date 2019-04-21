@@ -1,6 +1,4 @@
-# === func-gen- : cuda/cuda fgp externals/cuda.bash fgn cuda fgh cuda
-cuda-src(){      echo externals/cuda.bash ; }
-cuda-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(cuda-src)} ; }
+cuda-source(){   echo $BASH_SOURCE ; }
 cuda-vi(){       vi $(cuda-source) ; }
 cuda-env(){      olocal- ; cuda-path ; }
 cuda-usage(){ cat << EOU
@@ -19,6 +17,36 @@ Samples
 ---------
 
 * https://github.com/NVIDIA/cuda-samples
+
+
+
+
+
+
+CUDA envvars
+-------------
+
+* https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#env-vars
+
+CUDA_VISIBLE_DEVICES : A comma-separated sequence of GPU identifiers 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+GPU identifiers are given as integer indices or as UUID strings. GPU UUID
+strings should follow the same format as given by nvidia-smi, such as
+GPU-8932f937-d72c-4106-c12f-20bd9faed9f6.
+
+Only the devices whose index is present in the sequence are visible to CUDA
+applications and they are enumerated in the order of the sequence. If one of
+the indices is invalid, only the devices whose index precedes the invalid index
+are visible to CUDA applications.
+
+CUDA_DEVICE_ORDER : FASTEST_FIRST, PCI_BUS_ID, (default is FASTEST_FIRST) 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+FASTEST_FIRST causes CUDA to guess which device is fastest using a simple
+heuristic, and make that device 0, leaving the order of the rest of the devices
+unspecified. PCI_BUS_ID orders devices by PCI bus ID in ascending order. 
+
 
 
 Measuring Bandwidth

@@ -48,6 +48,9 @@ Changing OptiX version
 OptiX with multiple GPU
 ------------------------
 
+CUDA_VISIBLE_DEVICES is honoured by OptiX
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 ::
 
     [blyth@localhost UseOptiX]$ CUDA_VISIBLE_DEVICES=0 UseOptiX
@@ -79,6 +82,10 @@ OptiX with multiple GPU
       Total Memory: 25364987904 bytes
 
 
+nvidia-smi ignore CUDA_VISIBLE_DEVICES
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
 OptiX device ordinal not same as listed in nvidia-smi::
 
     blyth@localhost UseOptiX]$ nvidia-smi
@@ -103,6 +110,81 @@ OptiX device ordinal not same as listed in nvidia-smi::
     |    0     13810      G   /usr/bin/X                                   149MiB |
     |    0     15683      G   /usr/bin/gnome-shell                          74MiB |
     +-----------------------------------------------------------------------------+
+
+
+
+OptiX_600 optix-pdf : looking for new things
+-----------------------------------------------
+
+
+p9,10 : multi-GPU
+~~~~~~~~~~~~~~~~~~~~
+
+As of OptiX 4.0, mixed multi-GPU setups are available on all supported GPU architectures
+which are Kepler, Maxwell, Pascal, and Volta GPUs.
+
+By default all compatible GPU devices in a system will be selected in an OptiX context when
+not explicitly using the function rtContextSetDevices to specify which devices should be
+made available. If incompatible devices are selected an error is returned from
+rtContextSetDevices.
+
+In mixed GPU configurations, the kernel will be compiled for each streaming multiprocessor
+(SM) architecture, extending the initial start-up time.
+
+For best performance, use multi-GPU configurations consisting of the same GPU type. Also
+prefer PCI-E slots in the system with the highest number of electrical PCI-E lanes (x16 Gen3
+recommended).
+
+On system configurations without NVLINK support, the board with the smallest VRAM
+amount will be the limit for on-device resources in the OptiX context. In homogeneous
+multi-GPU systems with NVLINK bridges and the driver running in the Tesla Compute
+Cluster (TCC) mode, OptiX will automatically use peer-to-peer access across the NVLINK
+connections to use the combined VRAM of the individual boards together which allows
+bigger scene sizes.
+
+
+p14 : Enabling RTX mode 
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+As of OptiX version 5.2, RTX mode can be enabled to take advantage of RT Cores,
+accelerating ray tracing by computing traversal and triangle intersection in hardware.
+RTX mode is not enabled by default. RTX mode can be enabled with the
+RT_GLOBAL_ATTRIBUTE_ENABLE_RTX attribute using rtGlobalSetAttribute when creating the
+OptiX context. However, certain features of OptiX will not be available.
+
+
+:google:`RT_GLOBAL_ATTRIBUTE_ENABLE_RTX`
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* https://www.ks.uiuc.edu/Research/vmd/doxygen/OptiXRenderer_8C-source.html
+* https://raytracing-docs.nvidia.com/optix/api/html/group___context_free_functions.html
+
+
+p27 : Selector nodes are deprecated in RTX mode
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Note: Selector nodes are deprecated in RTX mode. Future updates to RTX mode will
+provide a mechanism to support most of the use cases that required Selector nodes. See
+Enabling RTX mode (page 14).
+
+
+p33 : RTgeometrytriangles
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The RTgeometrytriangles type provides OptiX with built-in support for triangles.
+RTgeometrytriangles complements the RTgeometry type, with functions that can explicitly
+define the triangle data. Custom intersection and bounding box programs are not required by
+RTgeometrytriangles; the application only needs to provide the triangle data to OptiX.
+
+
+p133 : Choose types that optimize writing to buffers.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+In multi-GPU environments INPUT_OUTPUT and OUTPUT buffers are stored on the host. In
+order to optimize writes to these buffers, types of either 4 bytes or 16 bytes (for example,
+float, uint, or float4) should be used when possible. One might be tempted to make an
+output buffer used for the screen float3 for an RGB image. However, using a float4
+buffer instead will result in improved performance.
 
 
 
@@ -171,10 +253,43 @@ optix-samples-setup
 
 
 
+use_tri_api
+-----------
+
+::
+
+    [blyth@localhost SDK-src]$ find . -type f -exec grep -H use_tri_api {} \;
+    ./optixMDLDisplacement/optixMDLDisplacement.cpp:    mesh.use_tri_api  = false;
+    ./optixMotionBlur/optixMotionBlur.cpp:bool           use_tri_api = false;
+    ./optixMotionBlur/optixMotionBlur.cpp:    mesh.use_tri_api = use_tri_api;
+    ./optixMotionBlur/optixMotionBlur.cpp:        if( use_tri_api )
+    ./optixMotionBlur/optixMotionBlur.cpp:            use_tri_api = true;
+    ./sutil/OptiXMesh.h:    : use_tri_api( true )
+    ./sutil/OptiXMesh.h:  bool                         use_tri_api;   // optional
+    ./sutil/OptiXMesh.cpp:  if( optix_mesh.use_tri_api )
+    ./optixMeshViewer/optixMeshViewer.cpp:bool           use_tri_api = true;
+    ./optixMeshViewer/optixMeshViewer.cpp:    mesh.use_tri_api = use_tri_api;
+    ./optixMeshViewer/optixMeshViewer.cpp:            use_tri_api = false;
+    [blyth@localhost SDK-src]$ 
+
+
+::
+
+    239   if( optix_mesh.use_tri_api )
+    240   {
+    241     optix::GeometryTriangles geom_tri = ctx->createGeometryTriangles();
+    242     geom_tri->setPrimitiveCount( mesh.num_triangles );
+    243     geom_tri->setTriangleIndices( buffers.tri_indices, RT_FORMAT_UNSIGNED_INT3 );
+    24
+
+
+
 EON
 }
 
 optix-sfind(){    optix-samples-scd ; find . \( -name '*.cu' -or -name '*.h' -or -name '*.cpp'  \) -exec grep ${2:--H} "${1:-rtReport}" {} \; ; }
+
+optix-scd(){ optix-samples-scd  ; }
 
 optix-samples-sdir(){ echo $(optix-install-dir)/SDK-src ; }
 optix-samples-bdir(){ echo $(optix-install-dir)/SDK-src.build ; }

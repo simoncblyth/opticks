@@ -38,6 +38,7 @@ set(TEST_SOURCES
    hash_define_without_value.cc
    SDirectTest.cc 
    S_freopen_redirect_test.cc
+   S_get_option_Test.cc
 
    SIdTest.cc
    ArrayTest.cc
