@@ -5,13 +5,15 @@
 #include <map>
 #include <cstring>
 
-#include "NPY_API_EXPORT.hh"
-#include "NPY_HEAD.hh"
+#include "BRAP_API_EXPORT.hh"
+#include "BRAP_HEAD.hh"
 
 /**
 
-Times
+BTimes
 =======
+
+Formerly npy/Times
 
 Labeled vector of (string,double) pairs corresponding to 
 a table "column".
@@ -38,26 +40,27 @@ The vector is persisted to json::
 **/
 
 
-class NPY_API Times {
+class BRAP_API BTimes {
   public:
      typedef std::pair<std::string, double>  SD ; 
      typedef std::vector<SD>                VSD ; 
   public:
-     static void compare(const std::vector<Times*>&, unsigned int nwid=25, unsigned int twid=10, unsigned int tprec=3);
+     static void compare(const std::vector<BTimes*>&, unsigned int nwid=25, unsigned int twid=10, unsigned int tprec=3);
      static std::string name(const char* type, const char* tag);
      std::string name();
   public:
-     Times(const char* label="nolabel");
+     BTimes(const char* label="nolabel");
      void setLabel(const char* label);
-     Times* clone(const char* label);
+     BTimes* clone(const char* label);
      void add(const char* name, double t );
+     void add(const char* name_, unsigned index, double t );
      unsigned int getNumEntries();
   public:
      void setScale(double s);
      double getScale(); 
      const char* getLabel();
   public:
-     void dump(const char* msg="Times::dump");
+     void dump(const char* msg="BTimes::dump");
      unsigned int getSize();
      std::vector<std::pair<std::string, double> >& getTimes();
      std::pair<std::string, double>&  getEntry(unsigned int i);
@@ -66,7 +69,7 @@ class NPY_API Times {
      void load(const char* dir);
      void load(const char* dir, const char* name);
   public:
-     static Times* load(const char* label, const char* dir, const char* name);
+     static BTimes* load(const char* label, const char* dir, const char* name);
   private:
      VSD         m_times ;  
      double      m_scale ; 
@@ -74,6 +77,6 @@ class NPY_API Times {
 
 };
 
-#include "NPY_TAIL.hh"
+#include "BRAP_TAIL.hh"
 
 

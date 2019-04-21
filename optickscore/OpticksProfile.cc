@@ -2,13 +2,13 @@
 #include <sstream>
 
 #include "SProc.hh"
-#include "BTimer.hh"
+#include "BTimeStamp.hh"
+#include "BTimesTable.hh"
 #include "BFile.hh"
 #include "BStr.hh"
 
 #include "NGLM.hpp"
 #include "NPY.hpp"
-#include "TimesTable.hpp"
 
 #include "OpticksProfile.hh"
 
@@ -19,7 +19,7 @@ OpticksProfile::OpticksProfile(const char* name, bool stamp_out)
    m_dir(NULL),
    m_name(BStr::concat(NULL,name,".npy")),
    m_columns("Time,DeltaTime,VM,DeltaVM"),
-   m_tt(new TimesTable(m_columns)),
+   m_tt(new BTimesTable(m_columns)),
    m_npy(NPY<float>::make(0,1,m_tt->getNumColumns())),
 
    m_t0(0),
@@ -71,7 +71,7 @@ void OpticksProfile::setVM(float vm)
 template <typename T>
 void OpticksProfile::stamp(T row, int count)
 {
-   setT(BTimer::RealTime()) ;
+   setT(BTimeStamp::RealTime()) ;
    setVM(SProc::VirtualMemoryUsageMB()) ;
    m_num_stamp += 1 ; 
 

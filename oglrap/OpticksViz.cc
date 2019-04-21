@@ -10,8 +10,7 @@
 // npy-
 #include "Types.hpp"
 #include "NParameters.hpp"
-#include "Timer.hpp"
-#include "TimesTable.hpp"
+#include "BTimesTable.hh"
 #include "NGLM.hpp"
 #include "NPY.hpp"
 
@@ -419,7 +418,7 @@ void OpticksViz::prepareGUI()
 
     OpticksEvent* evt = m_run->getCurrentEvent();
 
-    TimesTable* tt = evt ? evt->getTimesTable() : NULL ; 
+    BTimesTable* tt = evt ? evt->getTimesTable() : NULL ; 
     if(tt)
     {
         m_gui->setupStats(tt->getLines());

@@ -13,7 +13,7 @@
 // brap-
 #include "BStr.hh"
 #include "BFile.hh"
-#include "BTimer.hh"
+#include "BTimeStamp.hh"
 
 // npy-
 #include "NGLM.hpp"
@@ -326,33 +326,33 @@ void OContext::launch(unsigned int lmode, unsigned int entry, unsigned int width
 double OContext::validate_()
 {
     double t0, t1 ; 
-    t0 = BTimer::RealTime();
+    t0 = BTimeStamp::RealTime();
 
     m_context->validate(); 
 
-    t1 = BTimer::RealTime();
+    t1 = BTimeStamp::RealTime();
     return t1 - t0 ; 
 }
 
 double OContext::compile_()
 {
     double t0, t1 ; 
-    t0 = BTimer::RealTime();
+    t0 = BTimeStamp::RealTime();
 
     m_context->compile(); 
 
-    t1 = BTimer::RealTime();
+    t1 = BTimeStamp::RealTime();
     return t1 - t0 ; 
 }
 
 double OContext::launch_(unsigned entry, unsigned width, unsigned height)
 {
     double t0, t1 ; 
-    t0 = BTimer::RealTime();
+    t0 = BTimeStamp::RealTime();
 
     m_context->launch( entry, width, height ); 
 
-    t1 = BTimer::RealTime();
+    t1 = BTimeStamp::RealTime();
     return t1 - t0 ; 
 }
 

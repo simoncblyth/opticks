@@ -1,7 +1,7 @@
 #pragma once
 
 #include <string>
-class TimesTable ; 
+class BTimesTable ; 
 template <typename T> class NPY ; 
 
 #include "OKCORE_API_EXPORT.hh"
@@ -42,7 +42,7 @@ class OKCORE_API OpticksProfile
        const char* m_dir ; 
        const char* m_name ; 
        const char* m_columns ; 
-       TimesTable* m_tt ; 
+       BTimesTable* m_tt ; 
        NPY<float>* m_npy ;
  
        float       m_t0 ; 

@@ -13,7 +13,6 @@ set(TEST_SOURCES
    BListTest.cc
    BRegexTest.cc
    BStrTest.cc
-   BTimerTest.cc
    BBitTest.cc
    BLogTest.cc
    BFileTest.cc
@@ -37,6 +36,14 @@ set(TEST_SOURCES
 
    BConverterTest.cc 
    BRAP_OPTICKS_LOG_Test.cc
+
+
+   BTimeStampTest.cc
+   BTimesTest.cc
+   BTimesTableTest.cc
+
+
+
 )
 
 # BTimeTest.cc requires boost components : thread timer 

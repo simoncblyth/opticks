@@ -1,3 +1,5 @@
+// formerly npy/Times.cpp
+
 #include <cassert>
 #include <sstream>
 #include <iostream>
@@ -6,65 +8,75 @@
 // brap-
 #include "BFile.hh"
 #include "BList.hh"
-
-#include "Times.hpp"
-
-
+#include "BTimes.hh"
 
 #include "PLOG.hh"
 
 
-Times::Times(const char* label)  
+BTimes::BTimes(const char* label)  
    : 
      m_scale(1.0) , 
      m_label(strdup(label)) 
 {
 }
 
-void Times::setLabel(const char* label)
+void BTimes::setLabel(const char* label)
 {
     m_label = strdup(label);
 }
 
-Times* Times::clone(const char* label)
+BTimes* BTimes::clone(const char* label)
 {
-    Times* ts = new Times(label) ; 
+    BTimes* ts = new BTimes(label) ; 
     for(VSD::const_iterator it=m_times.begin() ; it != m_times.end() ; it++) ts->add(it->first.c_str(), it->second) ;
     return ts ; 
 }
 
-unsigned int Times::getNumEntries()
+unsigned int BTimes::getNumEntries()
 {
     return m_times.size();
 }
-std::pair<std::string, double>&  Times::getEntry(unsigned int i)
+std::pair<std::string, double>&  BTimes::getEntry(unsigned int i)
 {
     return m_times[i] ;
 }
 
-void Times::add(const char* name_, double t )
+void BTimes::add(const char* name_, double t )
 {
     m_times.push_back(SD(name_, t));
 }
-unsigned int Times::getSize()
+
+void BTimes::add(const char* name_, unsigned index, double t )
+{
+    std::stringstream ss ; 
+    ss << name_ 
+       << std::setw(3) << std::setfill('0') << index 
+       ;
+
+    std::string s = ss.str(); 
+    add( s.c_str(), t );     
+}
+
+
+unsigned int BTimes::getSize()
 {
     return m_times.size();
 }
-std::vector<std::pair<std::string, double> >& Times::getTimes()
+std::vector<std::pair<std::string, double> >& BTimes::getTimes()
 {
     return m_times ;
 }
-double Times::getScale()
+double BTimes::getScale()
 {
     return m_scale ; 
 }
-void Times::setScale(double scale)
+void BTimes::setScale(double scale)
 {
     m_scale = scale  ; 
 }
 
 
-const char* Times::getLabel()
+const char* BTimes::getLabel()
 {
     return m_label ; 
 }
@@ -73,32 +85,32 @@ const char* Times::getLabel()
 
 
 
-void Times::save(const char* dir)
+void BTimes::save(const char* dir)
 {
     std::string nam = name();
     std::string path = BFile::preparePath(dir, nam.c_str(), true);
-    LOG(debug) << "Times::save to " << path ;
+    LOG(debug) << "BTimes::save to " << path ;
     BList<std::string, double>::save( &m_times, dir, nam.c_str());
 }
 
 
-Times* Times::load(const char* label, const char* dir, const char* name_)
+BTimes* BTimes::load(const char* label, const char* dir, const char* name_)
 {
-    Times* t = new Times(label) ;
+    BTimes* t = new BTimes(label) ;
     t->load(dir, name_);
     return t ; 
 }
-void Times::load(const char* dir, const char* name_)
+void BTimes::load(const char* dir, const char* name_)
 {
     BList<std::string, double>::load( &m_times, dir, name_);
 }
-void Times::load(const char* dir)
+void BTimes::load(const char* dir)
 {
     std::string nam = name();
     load(dir, nam.c_str()) ; 
 }
 
-void Times::dump(const char* msg)
+void BTimes::dump(const char* msg)
 {
    LOG(info) << msg ; 
    for(VSD::const_iterator it=m_times.begin() ; it != m_times.end() ; it++)
@@ -110,21 +122,21 @@ void Times::dump(const char* msg)
    } 
 }
 
-std::string Times::name()
+std::string BTimes::name()
 {
     std::stringstream ss ; 
     ss << m_label << ".ini" ;
     return ss.str();
 }
 
-std::string Times::name(const char* typ, const char* tag)
+std::string BTimes::name(const char* typ, const char* tag)
 {
     std::stringstream ss ; 
     ss << typ << "_" << tag << ".ini" ;
     return ss.str();
 }
 
-void Times::compare(const std::vector<Times*>& vt, unsigned int nwid, unsigned int twid, unsigned int tprec)
+void BTimes::compare(const std::vector<BTimes*>& vt, unsigned int nwid, unsigned int twid, unsigned int tprec)
 {
     unsigned int n = vt.size();
 

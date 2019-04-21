@@ -4,12 +4,12 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/lexical_cast.hpp>
 
-#include "TimesTable.hpp"
-#include "Times.hpp"
+#include "BTimesTable.hh"
+#include "BTimes.hh"
 
 #include "PLOG.hh"
 
-TimesTable::TimesTable(const std::vector<std::string>& columns)
+BTimesTable::BTimesTable(const std::vector<std::string>& columns)
     :
     m_tx(NULL),
     m_ty(NULL),
@@ -20,7 +20,7 @@ TimesTable::TimesTable(const std::vector<std::string>& columns)
     init(columns);
 }
 
-TimesTable::TimesTable(const char* cols, const char* delim)
+BTimesTable::BTimesTable(const char* cols, const char* delim)
     :
     m_tx(NULL),
     m_ty(NULL),
@@ -34,10 +34,10 @@ TimesTable::TimesTable(const char* cols, const char* delim)
 }
 
 
-void TimesTable::init(const std::vector<std::string>& columns)
+void BTimesTable::init(const std::vector<std::string>& columns)
 {
     unsigned numcol = columns.size() ;
-    for(unsigned int j=0 ; j < numcol ; j++) m_table.push_back(new Times(columns[j].c_str()));
+    for(unsigned int j=0 ; j < numcol ; j++) m_table.push_back(new BTimes(columns[j].c_str()));
 
     m_tx = numcol > 0 ? getColumn(0) : NULL  ; 
     m_ty = numcol > 1 ? getColumn(1) : NULL  ; 
@@ -46,16 +46,16 @@ void TimesTable::init(const std::vector<std::string>& columns)
 }
 
 
-unsigned TimesTable::getNumColumns()
+unsigned BTimesTable::getNumColumns()
 {
     return m_table.size() ; 
 }
-Times* TimesTable::getColumn(unsigned int j)
+BTimes* BTimesTable::getColumn(unsigned int j)
 {
     unsigned numcol = getNumColumns();
     return j < numcol ? m_table[j] : NULL ; 
 }
-std::vector<std::string>& TimesTable::getLines()
+std::vector<std::string>& BTimesTable::getLines()
 {
     makeLines(); 
     return m_lines ;  
@@ -63,7 +63,7 @@ std::vector<std::string>& TimesTable::getLines()
 
 
 template <typename T>
-const char* TimesTable::makeLabel( T row_, int count )
+const char* BTimesTable::makeLabel( T row_, int count )
 {
     std::stringstream ss ; 
     ss << boost::lexical_cast<std::string>(row_) ;
@@ -75,7 +75,7 @@ const char* TimesTable::makeLabel( T row_, int count )
 
 
 template <typename T>
-void TimesTable::add( T row_, double x, double y, double z, double w, int count )
+void BTimesTable::add( T row_, double x, double y, double z, double w, int count )
 {
     const char* label = makeLabel( row_ , count );
     setLabel(label);
@@ -86,18 +86,18 @@ void TimesTable::add( T row_, double x, double y, double z, double w, int count 
     if(m_tw) m_tw->add(m_label, w );
 } 
 
-void TimesTable::setLabel(const char* label)
+void BTimesTable::setLabel(const char* label)
 {
     free((void*)m_label);
     m_label = label ; 
 }
-const char* TimesTable::getLabel()
+const char* BTimesTable::getLabel()
 {
     return m_label ;
 }
 
 
-void TimesTable::dump(const char* msg, const char* startswith, const char* spacewith, double tcut )
+void BTimesTable::dump(const char* msg, const char* startswith, const char* spacewith, double tcut )
 {
     makeLines();
     LOG(info) << msg 
@@ -136,26 +136,26 @@ void TimesTable::dump(const char* msg, const char* startswith, const char* space
     }
 }
 
-void TimesTable::save(const char* dir)
+void BTimesTable::save(const char* dir)
 {
     for(unsigned int j=0 ; j < m_table.size() ; j++)
     {  
-        Times* ts = m_table[j];
+        BTimes* ts = m_table[j];
         ts->save(dir);
     }
 }
 
-void TimesTable::load(const char* dir)
+void BTimesTable::load(const char* dir)
 {
     for(unsigned int j=0 ; j < m_table.size() ; j++)
     {  
-        Times* ts = m_table[j];
+        BTimes* ts = m_table[j];
         ts->load(dir);
     }
 }
 
 
-void TimesTable::makeLines()
+void BTimesTable::makeLines()
 {
     unsigned wid = 15 ; 
 
@@ -169,7 +169,7 @@ void TimesTable::makeLines()
     std::stringstream ll ;  
     for(unsigned int j=0 ; j < numcol ; j++)
     {  
-        Times* ts = m_table[j];
+        BTimes* ts = m_table[j];
         if(nrow == 0)
             nrow = ts->getNumEntries();
         else
@@ -189,7 +189,7 @@ void TimesTable::makeLines()
         double first = 0 ; 
         for(unsigned int j=0 ; j < numcol ; j++)
         { 
-            Times* ts = m_table[j];
+            BTimes* ts = m_table[j];
             std::pair<std::string, double>& entry = ts->getEntry(i);
 
             if(rowname.empty()) 
@@ -211,14 +211,14 @@ void TimesTable::makeLines()
 }
 
 
-template NPY_API void TimesTable::add(int           , double, double, double, double, int);
-template NPY_API void TimesTable::add(unsigned      , double, double, double, double, int);
-template NPY_API void TimesTable::add(char*         , double, double, double, double, int);
-template NPY_API void TimesTable::add(const char*   , double, double, double, double, int);
+template BRAP_API void BTimesTable::add(int           , double, double, double, double, int);
+template BRAP_API void BTimesTable::add(unsigned      , double, double, double, double, int);
+template BRAP_API void BTimesTable::add(char*         , double, double, double, double, int);
+template BRAP_API void BTimesTable::add(const char*   , double, double, double, double, int);
 
-template NPY_API const char* TimesTable::makeLabel( int          , int count );
-template NPY_API const char* TimesTable::makeLabel( unsigned     , int count );
-template NPY_API const char* TimesTable::makeLabel( char*        , int count );
-template NPY_API const char* TimesTable::makeLabel( const char*  , int count );
+template BRAP_API const char* BTimesTable::makeLabel( int          , int count );
+template BRAP_API const char* BTimesTable::makeLabel( unsigned     , int count );
+template BRAP_API const char* BTimesTable::makeLabel( char*        , int count );
+template BRAP_API const char* BTimesTable::makeLabel( const char*  , int count );
 
 

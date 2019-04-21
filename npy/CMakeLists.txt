@@ -63,9 +63,9 @@ set(SOURCES
     NTxt.cpp
     NPropNames.cpp
 
+    
     Timer.cpp
-    Times.cpp
-    TimesTable.cpp
+
 
     Types.cpp
     Typ.cpp
@@ -270,8 +270,7 @@ Types.hpp
 Typ.hpp
 Index.hpp
 Timer.hpp
-Times.hpp
-TimesTable.hpp
+
 NCache.hpp
 NSensor.hpp
 NSensorList.hpp

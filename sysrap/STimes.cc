@@ -51,7 +51,7 @@ const char* STimes::description(const char* msg)
 
 std::string STimes::desc() const 
 {
-    if( count ==  0_ return "" ; 
+    if( count ==  0) return "" ; 
     std::stringstream ss ; 
     ss 
        << std::setw(11) << ""

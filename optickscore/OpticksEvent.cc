@@ -41,8 +41,8 @@
 
 #include "Report.hpp"
 #include "Timer.hpp"
-#include "Times.hpp"
-#include "TimesTable.hpp"
+#include "BTimes.hh"
+#include "BTimesTable.hh"
 
 
 #include "OKConf.hh"
@@ -567,7 +567,7 @@ Timer* OpticksEvent::getTimer()
 {
     return m_timer ;
 }
-TimesTable* OpticksEvent::getTimesTable()
+BTimesTable* OpticksEvent::getTimesTable()
 {
     return m_ttable ;
 }

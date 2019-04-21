@@ -1,8 +1,9 @@
 #include <climits>
 
 #include "Timer.hpp"
-#include "Times.hpp"
-#include "TimesTable.hpp"
+
+#include "BTimes.hh"
+#include "BTimesTable.hh"
 
 
 int main()
@@ -19,7 +20,7 @@ int main()
     t.stop();
 
 
-    TimesTable* tt = t.makeTable();
+    BTimesTable* tt = t.makeTable();
     tt->save("$TMP");
 
     tt->dump();

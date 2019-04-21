@@ -3,23 +3,23 @@
 #include <vector>
 #include <string>
 
-class Times ; 
+class BTimes ; 
 
-#include "NPY_API_EXPORT.hh"
-#include "NPY_HEAD.hh"
+#include "BRAP_API_EXPORT.hh"
+#include "BRAP_HEAD.hh"
 
 /**
 
-TimesTable
+BTimesTable
 ===========
 
 A vector of labelled "columns" each of which 
-holds a *Times* instance. 
+holds a *BTimes* instance. 
 
 ::
 
-    simon:1 blyth$ TimesTableTest 
-    2016-09-15 11:11:08.829 INFO  [342255] [TimesTable::dump@43] TimesTable::dump
+    simon:1 blyth$ BTimesTableTest 
+    2016-09-15 11:11:08.829 INFO  [342255] [BTimesTable::dump@43] BTimesTable::dump
          t_absolute        t_delta
               5.944          5.944 : _seqhisMakeLookup
               5.951          0.007 : seqhisMakeLookup
@@ -35,14 +35,14 @@ holds a *Times* instance.
 
 **/
 
-class NPY_API TimesTable {
+class BRAP_API BTimesTable {
     public:
-        TimesTable(const char* columns, const char* delim=","); 
-        TimesTable(const std::vector<std::string>& columns);
-        void dump(const char* msg="TimesTable::dump", const char* startswith=NULL, const char* spacewith=NULL, double tcut=0.0 );
+        BTimesTable(const char* columns, const char* delim=","); 
+        BTimesTable(const std::vector<std::string>& columns);
+        void dump(const char* msg="BTimesTable::dump", const char* startswith=NULL, const char* spacewith=NULL, double tcut=0.0 );
 
         unsigned getNumColumns();
-        Times* getColumn(unsigned int j);
+        BTimes* getColumn(unsigned int j);
 
         template <typename T> void add( T row, double x, double y, double z, double w, int count=-1 );
         template <typename T> const char* makeLabel( T row_, int count=-1 );
@@ -57,19 +57,19 @@ class NPY_API TimesTable {
         void init(const std::vector<std::string>& columns);
         void setLabel(const char* label);
     private:
-        Times*   m_tx ; 
-        Times*   m_ty ; 
-        Times*   m_tz ; 
-        Times*   m_tw ; 
+        BTimes*   m_tx ; 
+        BTimes*   m_ty ; 
+        BTimes*   m_tz ; 
+        BTimes*   m_tw ; 
         const char* m_label ; 
 
-        std::vector<Times*>      m_table ; 
+        std::vector<BTimes*>     m_table ; 
         std::vector<std::string> m_lines ; 
         std::vector<std::string> m_names ; 
         std::vector<double>      m_first ; 
 };
 
-#include "NPY_TAIL.hh"
+#include "BRAP_TAIL.hh"
 
 
 

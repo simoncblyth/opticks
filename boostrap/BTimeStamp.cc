@@ -1,10 +1,9 @@
-#include "BTimer.hh"
-//#include <iostream>
+#include "BTimeStamp.hh"
 #include <boost/date_time/posix_time/posix_time.hpp>
 
 using namespace boost::posix_time ; 
 
-double BTimer::RealTime()
+double BTimeStamp::RealTime()
 {
     ptime t(microsec_clock::universal_time());
     time_duration d = t.time_of_day();

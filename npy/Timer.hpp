@@ -5,8 +5,7 @@
 #include <cstring>
 #include <map>
 
-class Times ; 
-class TimesTable ; 
+class BTimesTable ; 
 
 #include "NPY_API_EXPORT.hh"
 #include "NPY_HEAD.hh"
@@ -31,8 +30,8 @@ class NPY_API Timer {
         void stop();
     public:
         void setVerbose(bool verbose);
-        TimesTable* makeTable();
-        static TimesTable* loadTable(const char* dir);
+        BTimesTable* makeTable();
+        static BTimesTable* loadTable(const char* dir);
     public:
         const char*               getName();
         double deltaTime(int i0=0, int i1=-1) const ;

@@ -3,7 +3,7 @@
 #include <optixu/optixu_math_stream_namespace.h>
 
 // brap-
-#include "BTimer.hh"
+#include "BTimeStamp.hh"
 
 // npy-
 #include "NGLM.hpp"
@@ -87,7 +87,7 @@ void OTracer::trace_()
 {
     LOG(debug) << "OTracer::trace_ " << m_trace_count ; 
 
-    double t0 = BTimer::RealTime();
+    double t0 = BTimeStamp::RealTime();  // THERE IS A HIGHER LEVEL WAY TO DO THIS
 
     glm::vec3 eye ;
     glm::vec3 U ;
@@ -134,14 +134,14 @@ void OTracer::trace_()
                    << " front " <<  gformat(front) 
                    ;
 
-    double t1 = BTimer::RealTime();
+    double t1 = BTimeStamp::RealTime();
 
     unsigned int lmode = m_trace_count == 0 ? OContext::VALIDATE|OContext::COMPILE|OContext::PRELAUNCH|OContext::LAUNCH : OContext::LAUNCH ;
 
     //OContext::e_pinhole_camera_entry
     m_ocontext->launch( lmode,  m_entry_index,  width, height, m_trace_times );
 
-    double t2 = BTimer::RealTime();
+    double t2 = BTimeStamp::RealTime();
 
     m_trace_count += 1 ; 
     m_trace_prep += t1 - t0 ; 

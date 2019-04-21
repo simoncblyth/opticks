@@ -31,7 +31,7 @@ struct SYSRAP_API STimes {
 
    const char* description(const char* msg="STimes::description");
    std::string brief(const char* msg="STimes::brief");
-   std::string desc();
+   std::string desc() const ;
 
 };
 

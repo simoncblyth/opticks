@@ -41,8 +41,7 @@ NPropNamesTest.cc
 CountsTest.cc
 
 TimerTest.cc
-TimesTableTest.cc
-TimesTest.cc
+
 NTxtTest.cc
 
 TypesTest.cc

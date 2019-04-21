@@ -44,8 +44,6 @@ set(SOURCES
   BBufSpec.cc 
   BDemo.cc 
   BFoo.cc 
-  BTime.cc
-  BTimer.cc
   BCfg.cc
   BDir.cc
   BMap.cc
@@ -70,6 +68,11 @@ set(SOURCES
   BConverter.cc
   BLocSeq.cc
   BLocSeqDigest.cc
+
+  BTimeStamp.cc
+  BTime.cc
+  BTimes.cc
+  BTimesTable.cc
 ) 
 
 set(HEADERS
@@ -81,8 +84,6 @@ set(HEADERS
 
   BBufSpec.hh 
   BDemo.hh 
-  BTime.hh
-  BTimer.hh
   BCfg.hh
   BDir.hh
   BMap.hh
@@ -106,6 +107,11 @@ set(HEADERS
   BConverter.hh
   BLocSeq.hh
   BLocSeqDigest.hh
+
+  BTimeStamp.hh
+  BTime.hh
+  BTimes.hh
+  BTimesTable.hh
 )
 
 set(TOXIC_SOURCES

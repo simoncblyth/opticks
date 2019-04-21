@@ -1,13 +1,13 @@
 #include "Timer.hpp"
 
-#include "Times.hpp"
-#include "TimesTable.hpp"
+#include "BTimes.hh"
+#include "BTimesTable.hh"
+#include "BTimeStamp.hh"
 
 #include <iostream>
 #include <iomanip>
 #include <sstream>
 
-#include "BTimer.hh"
 #include "PLOG.hh"
 
 const char* Timer::COLUMNS = "t_absolute,t_delta" ;
@@ -16,9 +16,9 @@ const char* Timer::STOP  = "STOP" ;
 
 
 Timer::Timer(const char* name) 
-       : 
-       m_name(strdup(name)),
-       m_verbose(false)
+    : 
+    m_name(strdup(name)),
+    m_verbose(false)
 {
 }
 
@@ -33,12 +33,26 @@ const char* Timer::getName()
 
 void Timer::stamp(const char* mark)
 {
-    m_marks.push_back(SD(mark, BTimer::RealTime() ));
+    m_marks.push_back(SD(mark, BTimeStamp::RealTime() ));
     if(m_verbose) 
     {
        LOG(debug) << m_name << " " << mark ; 
     }
 }
+
+void Timer::operator()(const char* mark)
+{
+    stamp(mark);
+}
+void Timer::start()
+{
+   (*this)(START);
+}
+void Timer::stop()
+{
+   (*this)(STOP);
+}
+
 
 double Timer::deltaTime(int i0, int i1) const 
 {
@@ -52,19 +66,6 @@ double Timer::deltaTime(int i0, int i1) const
     return dt ; 
 }
 
-void Timer::operator()(const char* mark)
-{
-    stamp(mark);
-}
-
-void Timer::start()
-{
-   (*this)(START);
-}
-void Timer::stop()
-{
-   (*this)(STOP);
-}
 
 
 void Timer::dump(const char* msg)
@@ -72,32 +73,34 @@ void Timer::dump(const char* msg)
     double dt = deltaTime() ; 
     LOG(info) << "deltaTime " << dt ; 
 
-    TimesTable* tt = makeTable();
+    BTimesTable* tt = makeTable();
     tt->dump(msg);
 }
 
 
-TimesTable* Timer::loadTable(const char* dir)
+BTimesTable* Timer::loadTable(const char* dir)
 {
-    TimesTable* tt = new TimesTable(COLUMNS) ; 
+    BTimesTable* tt = new BTimesTable(COLUMNS) ; 
     tt->load(dir);
     return tt ;
 }
 
-TimesTable* Timer::makeTable()
+BTimesTable* Timer::makeTable()
 {
-    TimesTable* tt = new TimesTable(COLUMNS) ; 
+    BTimesTable* tt = new BTimesTable(COLUMNS) ; 
 
     double t0(0.);
     double tp(0.);
 
     for(VSDI it=m_marks.begin() ; it != m_marks.end() ; it++)
     {
-        std::string mark = it->first ; 
+        const std::string& mark = it->first ; 
         double         t = it->second ; 
 
-        bool start_ = strcmp(mark.c_str(), START)==0 ;
-        bool stop_  = strcmp(mark.c_str(), STOP)==0 ;
+        const char* mk = mark.c_str() ; 
+
+        bool start_ = strcmp(mk, START)==0 ;
+        bool stop_  = strcmp(mk, STOP)==0 ;
 
         if(start_) t0 = t ; 
         
@@ -106,8 +109,8 @@ TimesTable* Timer::makeTable()
 
         if(!start_ && !stop_)
         {
-           tt->getColumn(0)->add(it->first.c_str(), d0);
-           tt->getColumn(1)->add(it->first.c_str(), dp);
+           tt->getColumn(0)->add(mk, d0);
+           tt->getColumn(1)->add(mk, dp);
         }
         tp = t ; 
     }

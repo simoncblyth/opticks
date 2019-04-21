@@ -11,7 +11,7 @@
 #include "GLMFormat.hpp"
 
 #include "Timer.hpp"
-#include "TimesTable.hpp"
+#include "BTimesTable.hh"
 
 #include "NSphere.hpp"
 #include "NNode.hpp"
@@ -234,7 +234,7 @@ void NImplicitMesher::report(const char* msg)
  
     LOG(info) << msg ; 
     LOG(info) << desc() ; 
-    TimesTable* tt = m_timer->makeTable();
+    BTimesTable* tt = m_timer->makeTable();
     tt->dump();
     //tt->save("$TMP");
 }
