@@ -244,11 +244,11 @@ void OpticksResource::init()
 
 void OpticksResource::initRunResultsDir()
 {
-    const char* runfolder = m_ok->getRunFolder(); 
-    //const char* runstamp = BStr::itoa( m_ok->getRunStamp() );  
-    const char* rundate = m_ok->getRunDate() ;  
+    const char* runfolder = m_ok->getRunFolder();  // eg geocache-bench 
+    const char* runlabel = m_ok->getRunLabel();    // eg OFF_TITAN_V_AND_TITAN_RTX
+    const char* rundate = m_ok->getRunDate() ;     // eg 20190422_162401 
 
-    std::string runresultsdir = getResultsPath( runfolder, rundate ) ; 
+    std::string runresultsdir = getResultsPath( runfolder, runlabel, rundate ) ;  // eg /usr/local/opticks/results/geocache-bench/OFF_TITAN_V_AND_TITAN_RTX/20190422_162401
 
     m_runresultsdir = strdup(runresultsdir.c_str());
     LOG(error) << runresultsdir ; 

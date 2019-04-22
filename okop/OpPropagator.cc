@@ -107,6 +107,7 @@ void OpPropagator::snap()
 {
     LOG(info) << "OpPropagator::snap" ; 
     m_tracer->snap();
+
 }
 
 

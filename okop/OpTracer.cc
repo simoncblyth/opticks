@@ -127,7 +127,9 @@ void OpTracer::snap()   // --snapconfig="steps=5,eyestartz=0,eyestopz=0"
     }
 
     m_otracer->report("OpTracer::snap");   // saves for runresultsdir
-    m_ok->dumpMeta("OpTracer::snap");
+    //m_ok->dumpMeta("OpTracer::snap");
+
+    m_ok->saveParameters(); 
 
     LOG(info) << ")" ;
 }

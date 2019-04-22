@@ -55,6 +55,9 @@ class BRAP_API BParameters {
        template <typename T> 
        T get_fallback(const char* fallback) const ;
 
+
+       void addEnvvar( const char* key ) ;
+
    public:
        unsigned getNumItems();
        void dump();

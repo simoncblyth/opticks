@@ -1,47 +1,47 @@
 benchmarks
 ==============
 
-Principals
 
-* need running from cache : DONE
+With my triangles, ie no --xanalytic
+-----------------------------------------
 
-* "--compute" mode is what matters 
-* time for raytrace snapshots is an obvious metric, eg start from okop/tests/OpSnapTest.cc 
-
-  * need to automate viewpoint and camera params in a non-fragile way (bookmarks are fragile)
-    commandline arguments less so
-
-* possibly running without GUI (runlevel 3) can avoid any OpenGL involvement
-
-* use CUDA_VISIBLE_DEVICES 
-
-  1. unset
-  2. 0,1   # expect same as unset
-  3. 1,0   # expect same as unset
-  4. 0
-  5. 1
-
-* implement sensitivity to OPTICKS_RTX=0,1 for switching the attribute 
-* currently there is an OpenGL way of detecting the GPU for the context, 
-  instead need a compute version of that (see UseOptiX) that OContext 
-  perhaps holds onto and reports into metadata
+* This is with the torus-less GDML j1808 v3. 
+* Note the 14.7M pixels. 
+* The metric is launchAVG of five launch times.  
+* OFF/ON refers to RTX execution approach
+* OPTICKS_KEY OKX4Test.X4PhysicalVolume.lWorld0x4bc2710_PV.528f4cefdac670fffe846377973af10a
+* commandline for the first of each group of runs is given as it was the same, the 
+  differnence coming from envvars CUDA_VISIBLE_DEVICES and OPTICKS_RTX
 
 
+::
 
-First in interop for dev
-----------------------------
+    [blyth@localhost opticks]$ bench.py $LOCAL_BASE/opticks/results/geocache-bench
+     OpSnapTest --envkey --target 352851 --eye -1,-1,-1 --snapconfig steps=5,eyestartz=-1,eyestopz=-0.5 --size 5120,2880,1 --embedded --runfolder geocache-bench --runstamp 1555926978 --runlabel ON_TITAN_RTX
+                    20190422_175618     metric      rfast      rslow 
+                       ON_TITAN_RTX      0.056      1.000      0.391 
+          OFF_TITAN_V_AND_TITAN_RTX      0.080      1.431      0.560 
+                      OFF_TITAN_RTX      0.108      1.923      0.752 
+                         ON_TITAN_V      0.117      2.083      0.815 
+                        OFF_TITAN_V      0.143      2.557      1.000 
 
-No obvious change in interop::
+     OpSnapTest --envkey --target 352851 --eye -1,-1,-1 --snapconfig steps=5,eyestartz=-1,eyestopz=-0.5 --size 5120,2880,1 --embedded --runfolder geocache-bench --runstamp 1555940309 --runlabel ON_TITAN_RTX
+                    20190422_213829     metric      rfast      rslow 
+                       ON_TITAN_RTX      0.073      1.000      0.503 
+          OFF_TITAN_V_AND_TITAN_RTX      0.081      1.109      0.557 
+                         ON_TITAN_V      0.116      1.589      0.799 
+                      OFF_TITAN_RTX      0.117      1.607      0.808 
+                        OFF_TITAN_V      0.145      1.990      1.000 
 
-    [blyth@localhost optixrap]$ CUDA_VISIBLE_DEVICES=1 OPTICKS_RTX=1 OKTest --envkey --xanalytic --target 10000
-    [blyth@localhost optixrap]$ OPTICKS_RTX=0 OKTest --envkey --xanalytic --target 10000
 
+
+Finding target volume to snap
+-------------------------------
 
 Found a good viewpoint, looking up at chimney::
 
     CUDA_VISIBLE_DEVICES=1 OPTICKS_RTX=1 OKTest --envkey --xanalytic --target 352851 --eye -1,-1,-1        ## analytic
     CUDA_VISIBLE_DEVICES=1 OPTICKS_RTX=1 OKTest --envkey --target 352851 --eye -1,-1,-1                    ## tri 
-
 
     CUDA_VISIBLE_DEVICES=1 OPTICKS_RTX=-1 OpSnapTest --envkey --xanalytic --target 352851 --eye -1,-1,-1 
 

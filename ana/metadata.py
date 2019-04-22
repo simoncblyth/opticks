@@ -16,34 +16,8 @@ log = logging.getLogger(__name__)
 
 from opticks.ana.base import opticks_main
 from opticks.ana.base import ini_, json_, splitlines_
-
+from opticks.ana.datedfolder import DatedFolder, dateparser
 from opticks.ana.nload import tagdir_
-
-
-class DateParser(object):
-    ptn = re.compile("(\d{4})(\d{2})(\d{2})_(\d{2})(\d{2})(\d{2})")
-    def __call__(self, txt):
-        m = self.ptn.match(txt)
-        if m is None:return None
-        if len(m.groups()) != 6:return None
-        dt = datetime(*map(int, m.groups()))
-        return dt 
-
-dateparser = DateParser() 
-
-def finddir(base, dirfilter=lambda _:True):
-    for root, dirs, files in os.walk(base):
-        for name in dirs:
-            path = os.path.join(root,name)
-            d = dirfilter(path)
-            if d is not None:
-                yield path
-
-
-class DatedFolder(object):
-    def __call__(self, path):
-        name = os.path.basename(path) 
-        return dateparser(name)
 
 
 
@@ -197,11 +171,11 @@ class Catdir(object):
         Path should be the folder above the tagdir in order
         to allow comparisons between equivalent (ie G4 negated) tags 
         """
-        df = DatedFolder()
+        dirs, dfolds = DatedFolder.find(path)
 
         log.info("Catdir searching for date stamped folders beneath : %s " % path)
         metamap = {}
-        for p in finddir(path, df):
+        for p in dirs:
              
             log.debug("%s", p)
             md = Metadata(p)

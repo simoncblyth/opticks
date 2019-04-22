@@ -16,7 +16,7 @@ template <typename> class OpticksCfg ;
 
 class BDynamicDefine ; 
 class BTimeKeeper ; 
-class BMeta ; 
+//class BMeta ; 
 
 
 class TorchStepNPY ; 
@@ -136,6 +136,7 @@ class OKCORE_API Opticks {
        void dumpArgs(const char* msg="Opticks::dumpArgs");
        void dumpMeta(const char* msg="Opticks::dumpMeta") const ;
        void dumpParameters(const char* msg="Opticks::dumpParameters") const ;
+       void saveParameters() const ;  // into RunResultsDir
        bool hasOpt(const char* name) const ;
        bool operator()(const char* name) const ; 
        void cleanup();
@@ -357,7 +358,7 @@ class OKCORE_API Opticks {
        Typ*                 getTyp();
    public:
        BTimeKeeper*         getTimer() const ;
-       BMeta*               getMeta() const ;
+       //BMeta*               getMeta() const ;
        BParameters*         getParameters() const ;
        NState*              getState() const ;
    public:
@@ -524,7 +525,7 @@ class OKCORE_API Opticks {
        bool                 m_configured ; 
        OpticksCfg<Opticks>* m_cfg ; 
        BTimeKeeper*         m_timer ; 
-       BMeta*               m_meta ;  
+       //BMeta*               m_meta ;  
        BParameters*         m_parameters ; 
        NSceneConfig*        m_scene_config ; 
        NLODConfig*          m_lod_config ; 

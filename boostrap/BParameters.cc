@@ -6,9 +6,11 @@
 #include <algorithm>
 #include <iterator>
 
+#include "SSys.hh"
 #include "BFile.hh"
 #include "BList.hh"
 #include "PLOG.hh"
+
 
 
 BParameters::BParameters()
@@ -178,6 +180,18 @@ void BParameters::add(const char* name, T value)
 {
     m_parameters.push_back(SS(name, boost::lexical_cast<std::string>(value) ));
 }
+
+
+void BParameters::addEnvvar( const char* key ) 
+{
+    const char* val = SSys::getenvvar(key) ; 
+    if( val ) 
+    {
+        std::string s = val ; 
+        add<std::string>(key, s) ; 
+
+    } 
+} 
 
 
 template <typename T>

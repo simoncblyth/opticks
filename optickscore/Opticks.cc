@@ -259,7 +259,7 @@ Opticks::Opticks(int argc, char** argv, const char* argforced )
     m_configured(false),
     m_cfg(NULL),
     m_timer(NULL),
-    m_meta(NULL),
+    //m_meta(NULL),
     m_parameters(NULL),
     m_scene_config(NULL),
     m_lod_config(NULL),
@@ -488,13 +488,20 @@ void Opticks::init()
 
     m_timer->start();
 
+    /*
     m_meta = new BMeta("Opticks");
     m_meta->addEnvvar("CUDA_VISIBLE_DEVICES");
     m_meta->addEnvvar("OPTICKS_RTX");
     m_meta->addEnvvar("OPTICKS_KEY");
     m_meta->add("CMDLINE", PLOG::instance->cmdline() ); 
+    */
 
     m_parameters = new BParameters ;  
+    m_parameters->addEnvvar("CUDA_VISIBLE_DEVICES");
+    m_parameters->addEnvvar("OPTICKS_RTX");
+    m_parameters->addEnvvar("OPTICKS_KEY");
+    m_parameters->add<std::string>("CMDLINE", PLOG::instance->cmdline() ); 
+
 
     m_lastarg = m_argc > 1 ? strdup(m_argv[m_argc-1]) : NULL ;
 
@@ -686,6 +693,8 @@ BTimeKeeper* Opticks::getTimer() const
     return evt ? evt->getTimer() : m_timer ; 
 }
 
+
+/*
 BMeta* Opticks::getMeta() const 
 {
     return m_meta ; 
@@ -694,7 +703,7 @@ void Opticks::dumpMeta(const char* msg) const
 {
     m_meta->dump(msg);
 }
-
+*/
 
 
 
@@ -707,6 +716,15 @@ void Opticks::dumpParameters(const char* msg) const
 {
     m_parameters->dump(msg);
 }
+void Opticks::saveParameters() const 
+{
+    const char* dir = getRunResultsDir(); 
+    const char* name = "parameters.json" ; 
+    LOG(info) << name << " into " << dir ; 
+    m_parameters->save( dir, name);
+}
+
+
 
 
 OpticksResource* Opticks::getResource()
