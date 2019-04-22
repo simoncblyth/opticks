@@ -9,6 +9,7 @@
 
 #include "SLog.hh"
 #include "SArgs.hh"
+#include "STime.hh"
 #include "SSys.hh"
 // brap-
 #include "BTimeKeeper.hh"
@@ -1072,6 +1073,11 @@ int Opticks::getDefaultFrame() const
     return m_resource->getDefaultFrame() ; 
 }
 
+const char* Opticks::getRunResultsDir() const 
+{
+    return m_resource ? m_resource->getRunResultsDir() : NULL ; 
+}
+
 
 NSlice* Opticks::getAnalyticPMTSlice()
 {
@@ -1189,6 +1195,12 @@ bool Opticks::isGPUMon() const
 int Opticks::getRunStamp() const 
 {
     return m_cfg->getRunStamp() ;
+}
+const char* Opticks::getRunDate() const 
+{
+    int t = getRunStamp();
+    std::string s = STime::Format(t); 
+    return strdup(s.c_str());
 }
 const char* Opticks::getRunLabel() const 
 {

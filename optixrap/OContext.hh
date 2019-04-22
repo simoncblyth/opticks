@@ -61,7 +61,9 @@ class OXRAP_API OContext {
             OContext(optix::Context context, Opticks* ok, bool with_top=true, bool verbose=false, const char* cmake_target="OptiXRap");
             void cleanUp();
      public:
-            const char* getModeName();
+            const char* getRunLabel() const ;
+            const char* getRunResultsDir() const ;
+            const char* getModeName() const ;
             OContext::Mode_t getMode();
             bool isCompute();
             bool isInterop();
@@ -133,6 +135,9 @@ class OXRAP_API OContext {
             const char*       m_cmake_target ; 
             const char*       m_llogpath ; 
             unsigned          m_launch_count ; 
+            const char*       m_runlabel ; 
+            const char*       m_runresultsdir ; 
+     
 };
 
 

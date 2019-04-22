@@ -244,14 +244,19 @@ void OpticksResource::init()
 
 void OpticksResource::initRunResultsDir()
 {
-   const char* runfolder = m_ok->getRunFolder(); 
-   const char* runstamp = BStr::itoa( m_ok->getRunStamp() );  
+    const char* runfolder = m_ok->getRunFolder(); 
+    //const char* runstamp = BStr::itoa( m_ok->getRunStamp() );  
+    const char* rundate = m_ok->getRunDate() ;  
 
-   std::string runresultsdir = getResultsPath( runfolder, runstamp ) ; 
+    std::string runresultsdir = getResultsPath( runfolder, rundate ) ; 
 
-   LOG(error) << runresultsdir ; 
+    m_runresultsdir = strdup(runresultsdir.c_str());
+    LOG(error) << runresultsdir ; 
 }
-
+const char* OpticksResource::getRunResultsDir() const 
+{
+    return m_runresultsdir ;
+}
 
 bool OpticksResource::isDetectorType(const char* type_)
 {

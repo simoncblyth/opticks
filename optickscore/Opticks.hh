@@ -264,9 +264,11 @@ class OKCORE_API Opticks {
        const char* getGPUMonPath() const ;   
        bool        isGPUMon() const ;  
    public:
-       int getRunStamp() const ; 
+       int         getRunStamp() const ; 
+       const char* getRunDate() const ; 
        const char* getRunLabel() const ; 
        const char* getRunFolder() const ; 
+       const char* getRunResultsDir() const ; // eg /usr/local/opticks/results/OpticksResourceTest/20190422_155146 
    public:
        bool        isTest() const ;
        bool        isTestAuto() const ;

@@ -92,6 +92,9 @@ class OKCORE_API OpticksResource : public BOpticksResource {
        const char* getExampleMaterialNames();  // comma delimited list of short material names
        const char* getSensorSurface(); 
        int         getDefaultFrame() const ; 
+
+    public:
+       const char* getRunResultsDir() const ;
     public:
        std::string getRelativePath(const char* path); 
        std::string getRelativePath(const char* name, unsigned int ridx);

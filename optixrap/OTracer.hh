@@ -62,7 +62,7 @@ class OXRAP_API OTracer {
        void setResolutionScale(unsigned int resolution_scale);
        unsigned getResolutionScale() const ;
        unsigned getTraceCount() const ;
-       BTimes* getTraceTimes() const ;  
+       BTimes*  getTraceTimes() const ;  
    private:
        void init();
 

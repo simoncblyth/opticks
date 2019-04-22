@@ -1,8 +1,6 @@
 #include <cassert>
-#include "PLOG.hh"
+#include "OPTICKS_LOG.hh"
 #include "NParameters.hpp"
-
-
 
 void test_basic()
 {
@@ -106,7 +104,7 @@ void test_append()
 
 int main(int argc, char** argv)
 {
-    PLOG_(argc, argv);
+    OPTICKS_LOG(argc, argv);
     /*
     test_basic();
     test_save_load();

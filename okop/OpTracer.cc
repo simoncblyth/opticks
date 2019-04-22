@@ -126,7 +126,7 @@ void OpTracer::snap()   // --snapconfig="steps=5,eyestartz=0,eyestopz=0"
         m_ocontext->snap(path.c_str());
     }
 
-    m_otracer->report("OpTracer::snap"); 
+    m_otracer->report("OpTracer::snap");   // saves for runresultsdir
     m_ok->dumpMeta("OpTracer::snap");
 
     LOG(info) << ")" ;

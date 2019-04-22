@@ -41,7 +41,7 @@ const char* OContext::INTEROP_ = "INTEROP" ;
 plog::Severity OContext::LEVEL = debug ; 
 
 
-const char* OContext::getModeName()
+const char* OContext::getModeName() const 
 {
     switch(m_mode)
     {
@@ -50,6 +50,17 @@ const char* OContext::getModeName()
     }
     assert(0);
 }
+const char* OContext::getRunLabel() const 
+{
+    return m_runlabel ; 
+}
+const char* OContext::getRunResultsDir() const 
+{
+    return m_runresultsdir ; 
+}
+
+
+
 
 OpticksEntry* OContext::addEntry(char code)
 {
@@ -91,7 +102,9 @@ OContext::OContext(optix::Context context, Opticks* ok, bool with_top, bool verb
     m_verbose(verbose),
     m_cmake_target(strdup(cmake_target)),
     m_llogpath(NULL),
-    m_launch_count(0)
+    m_launch_count(0),
+    m_runlabel(m_ok->getRunLabel()),
+    m_runresultsdir(m_ok->getRunResultsDir())
 {
     init();
     initPrint();

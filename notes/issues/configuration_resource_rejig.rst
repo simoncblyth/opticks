@@ -16,9 +16,8 @@ Overview
 
 
 
-
-Why is configuration deferred anyhow ?
--------------------------------------------
+Why is configuration deferred anyhow ? It looks like it needs to stay being deferred although could use Opticks ctor arg  (dont like those though)
+---------------------------------------------------------------------------------------------------------------------------------------------------
 
 * twas for distributed config so that Cfg classes from higher level projects 
   get a chance to run their "addOptionS" etc before the commandline gets parsed 
@@ -26,6 +25,9 @@ Why is configuration deferred anyhow ?
 
   * BUT : I note that most of the Cfg classes are in optickscore, possibly 
     the others could be moved there too ? Would that allow immediate configuration ?
+
+    * cannot do this because boost::bind need the instances to 
+      be notified of live config changes 
 
 * in pre-history Opticks ran a UDP server(or was that g4daeview.py) that could pick up commandlines during running,
   did that have any bearing on this ?

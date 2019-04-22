@@ -7,6 +7,19 @@
 #include "NPY_API_EXPORT.hh"
 #include "NPY_HEAD.hh"
 
+/**
+NParameters
+==============
+
+Simple (key,value) parameter collection and persisting based on brap/BList. 
+Underlying storage of everything as strings which are 
+lexically cast/converted at input/output.
+
+See also NMeta based on nlohmann json for 
+more complicated storage of objects.
+
+**/
+
 class NPY_API NParameters {
    public:
        static NParameters* Load(const char* path);   // returns NULL for non-existing
