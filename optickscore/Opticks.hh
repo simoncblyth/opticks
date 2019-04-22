@@ -16,7 +16,6 @@ template <typename> class OpticksCfg ;
 
 class BDynamicDefine ; 
 class BTimeKeeper ; 
-//class BMeta ; 
 
 
 class TorchStepNPY ; 
@@ -358,7 +357,6 @@ class OKCORE_API Opticks {
        Typ*                 getTyp();
    public:
        BTimeKeeper*         getTimer() const ;
-       //BMeta*               getMeta() const ;
        BParameters*         getParameters() const ;
        NState*              getState() const ;
    public:
@@ -525,7 +523,6 @@ class OKCORE_API Opticks {
        bool                 m_configured ; 
        OpticksCfg<Opticks>* m_cfg ; 
        BTimeKeeper*         m_timer ; 
-       //BMeta*               m_meta ;  
        BParameters*         m_parameters ; 
        NSceneConfig*        m_scene_config ; 
        NLODConfig*          m_lod_config ; 

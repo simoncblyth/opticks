@@ -9,7 +9,6 @@ set(TEST_SOURCES
    BDirTest.cc
 
    BMapTest.cc
-   BMetaTest.cc
    MapTest.cc
 
    BListTest.cc

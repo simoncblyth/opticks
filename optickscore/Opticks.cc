@@ -13,7 +13,6 @@
 #include "SSys.hh"
 // brap-
 #include "BTimeKeeper.hh"
-#include "BMeta.hh"
 #include "BParameters.hh"
 #include "BDynamicDefine.hh"
 #include "BOpticksEvent.hh"
@@ -488,13 +487,6 @@ void Opticks::init()
 
     m_timer->start();
 
-    /*
-    m_meta = new BMeta("Opticks");
-    m_meta->addEnvvar("CUDA_VISIBLE_DEVICES");
-    m_meta->addEnvvar("OPTICKS_RTX");
-    m_meta->addEnvvar("OPTICKS_KEY");
-    m_meta->add("CMDLINE", PLOG::instance->cmdline() ); 
-    */
 
     m_parameters = new BParameters ;  
     m_parameters->addEnvvar("CUDA_VISIBLE_DEVICES");
@@ -693,17 +685,6 @@ BTimeKeeper* Opticks::getTimer() const
     return evt ? evt->getTimer() : m_timer ; 
 }
 
-
-/*
-BMeta* Opticks::getMeta() const 
-{
-    return m_meta ; 
-}
-void Opticks::dumpMeta(const char* msg) const 
-{
-    m_meta->dump(msg);
-}
-*/
 
 
 

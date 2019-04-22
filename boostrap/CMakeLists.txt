@@ -48,7 +48,6 @@ set(SOURCES
   BDir.cc
   BMap.cc
   Map.cc
-  BMeta.cc 
   BParameters.cc 
 
   BList.cc
@@ -94,7 +93,6 @@ set(HEADERS
   BDir.hh
   BMap.hh
   Map.hh
-  BMeta.hh
   BParameters.hh 
 
 
