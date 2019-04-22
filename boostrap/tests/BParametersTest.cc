@@ -1,10 +1,10 @@
 #include <cassert>
 #include "OPTICKS_LOG.hh"
-#include "NParameters.hpp"
+#include "BParameters.hh"
 
 void test_basic()
 {
-    NParameters p ;
+    BParameters p ;
     p.add<int>("hello", 1);
     p.add<int>("world", 2);
     p.dump();
@@ -13,7 +13,7 @@ void test_basic()
 
 void test_save_load()
 {
-    NParameters p ;
+    BParameters p ;
     p.add<int>("hello", 1);
     p.add<int>("world", 2);
     p.dump();
@@ -22,7 +22,7 @@ void test_save_load()
     const char* path = "$TMP/parameters.json" ;
     p.save(path);
 
-    NParameters* q = NParameters::Load(path);
+    BParameters* q = BParameters::Load(path);
     if(!q) return ; 
     q->dump("q");
 }
@@ -30,7 +30,7 @@ void test_save_load()
 
 void test_set()
 {
-    NParameters p ;
+    BParameters p ;
     p.add<std::string>("red", "g");
     p.add<std::string>("green", "g");
     p.add<std::string>("blue", "b");
@@ -43,7 +43,7 @@ void test_set()
 
 void test_bool_nonexisting()
 {
-    NParameters p ;
+    BParameters p ;
 
     bool non = p.get<bool>("NonExisting","0");
     assert(non == false); 
@@ -52,12 +52,12 @@ void test_bool_nonexisting()
 }
 void test_bool()
 {
-    NParameters a ;
+    BParameters a ;
     a.add<bool>("Existing",true);
     bool yes = a.get<bool>("Existing","0");
     assert(yes == true); 
 
-    NParameters b ;
+    BParameters b ;
     b.add<bool>("Existing",false);
     bool no1 = b.get<bool>("Existing","0");
     assert(no1 == false); 
@@ -69,20 +69,20 @@ void test_bool()
 
 void test_default_copy_ctor()
 {
-    NParameters a ;
+    BParameters a ;
     a.add<std::string>("red", "g");
     a.add<std::string>("green", "g");
     a.add<std::string>("blue", "b");
     a.dump("a");
 
-    NParameters b(a) ;
+    BParameters b(a) ;
     b.dump("b");
 }
 
 
 void test_append()
 {
-    NParameters a ;
+    BParameters a ;
     a.add<std::string>("red", "g");
     a.add<std::string>("green", "g");
     a.add<std::string>("blue", "b");

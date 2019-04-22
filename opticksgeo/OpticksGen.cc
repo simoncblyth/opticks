@@ -1,11 +1,12 @@
 
+#include "BParameters.hh"
+
 #include "NCSG.hpp"
 #include "NPY.hpp"
 #include "FabStepNPY.hpp"
 #include "TorchStepNPY.hpp"
 #include "NEmitPhotonsNPY.hpp"
 
-#include "NParameters.hpp"
 #include "GLMFormat.hpp"
 
 #include "GGeoBase.hh"
@@ -408,7 +409,7 @@ NPY<float>* OpticksGen::loadLegacyGenstepFile(const char* label)
 
     int modulo = m_cfg->getModulo();
 
-    NParameters* parameters = gs->getParameters();
+    BParameters* parameters = gs->getParameters();
     parameters->add<int>("Modulo", modulo );
     if(modulo > 0) 
     {    

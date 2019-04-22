@@ -49,6 +49,7 @@ set(SOURCES
   BMap.cc
   Map.cc
   BMeta.cc 
+  BParameters.cc 
 
   BList.cc
   BStr.cc
@@ -94,6 +95,7 @@ set(HEADERS
   BMap.hh
   Map.hh
   BMeta.hh
+  BParameters.hh 
 
 
   BList.hh

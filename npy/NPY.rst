@@ -100,7 +100,6 @@ Others::
     NPYMeta
     NPYSpec
     NPYSpecList
-    NParameters
     NPart
 
 

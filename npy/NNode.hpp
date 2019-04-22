@@ -23,7 +23,7 @@ struct NSceneConfig ;
 
 class NNodeDump2 ; 
 class NNodePoints ; 
-class NParameters ;
+class BParameters ;
 //struct nuv ; 
 
 // NGLMExt
@@ -302,7 +302,7 @@ struct NPY_API nnode
     std::vector<glm::vec3> par_points ; 
     std::vector<nuv>       par_coords ; 
 
-    NParameters*  meta ;
+    BParameters*  meta ;
     NNodeDump2*   _dump ;
     nbbox*        _bbox_model ; 
 

@@ -34,7 +34,6 @@ ViewNPYTest.cc
 
 
 NStateTest.cc
-NParametersTest.cc
 ReportTest.cc
 IndexTest.cc
 NPropNamesTest.cc

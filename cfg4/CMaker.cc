@@ -6,7 +6,7 @@
 #include "NGLMExt.hpp"
 #include "NCSG.hpp"
 #include "NNode.hpp"
-#include "NParameters.hpp"
+#include "BParameters.hh"
 #include "NPrimitives.hpp"
 #include "GLMFormat.hpp"
 
@@ -234,7 +234,7 @@ g4-;g4-cls G4VFacet
  
 G4VSolid* CMaker::ConvertConvexPolyhedron(const nnode* node) // static
 {
-    NParameters* meta = node->meta ;  
+    BParameters* meta = node->meta ;  
     assert(meta);
     std::string src_type = meta->getStringValue("src_type");
    
@@ -453,7 +453,7 @@ G4VSolid* CMaker::ConvertPrimitive(const nnode* node) // static
     }
     else if(node->type == CSG_TRAPEZOID || node->type == CSG_SEGMENT || node->type == CSG_CONVEXPOLYHEDRON)
     {
-        NParameters* meta = node->meta ;  
+        BParameters* meta = node->meta ;  
         assert(meta);
         std::string src_type = meta->getStringValue("src_type");
 

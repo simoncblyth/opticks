@@ -11,7 +11,7 @@
 #include <glm/fwd.hpp>
 
 
-class NParameters ; 
+class BParameters ; 
 class NMeta ; 
 class NLookup ; 
 class NPYSpec ; 
@@ -96,11 +96,11 @@ class NPY_API NPYBase {
        unsigned int getValueIndex(unsigned i, unsigned j, unsigned k, unsigned l=0, unsigned m=0) const ;
        unsigned int getNumValues(unsigned int from_dim=0) const ;
 
-       NParameters*  getParameters() const ;
+       BParameters*  getParameters() const ;
        template <typename T> void setParameter(const char* key, T value);
        template <typename T> T getParameter(const char* key, const char* fallback) const ;
 
-       // TODO: switch over to NMeta from NParameters
+       // TODO: switch over to NMeta from BParameters
        void setMeta(NMeta* meta); 
        template <typename T> void setMeta(const char* key, T value);
        template <typename T> T getMeta(const char* key, const char* fallback) const ;
@@ -221,7 +221,7 @@ class NPY_API NPYBase {
    private:
        bool               m_dynamic ;
        NLookup*           m_lookup ;   // only needed for legacy gensteps 
-       NParameters*       m_parameters ;  // for keeping notes, especially for gensteps
+       BParameters*       m_parameters ;  // for keeping notes, especially for gensteps
        NMeta*             m_meta ; 
 
        const char*        m_name ; 

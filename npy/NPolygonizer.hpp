@@ -6,7 +6,7 @@
 struct nnode ; 
 struct nbbox ; 
 
-class NParameters ; 
+class BParameters ; 
 class NCSG ; 
 class NTrianglesNPY ; 
 
@@ -47,7 +47,7 @@ class NPY_API NPolygonizer {
          NCSG*             m_csg ;
          nnode*            m_root ; 
          nbbox*            m_bbox ; 
-         NParameters*      m_meta ;  
+         BParameters*      m_meta ;  
          int               m_verbosity ; 
          int               m_index ; 
          const char*       m_poly ; 

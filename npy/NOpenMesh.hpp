@@ -17,7 +17,7 @@ struct nuv ;
 #include "NOpenMeshCfg.hpp"
 
 
-class NParameters ; 
+class BParameters ; 
 
 template <typename T> struct NOpenMeshZipper ; 
 
@@ -43,7 +43,7 @@ struct NPY_API  NOpenMesh : NTriSource
     typedef typename T::VertexHandle   VH ; 
     typedef typename T::FaceHandle     FH ; 
 
-    static NOpenMesh<T>* Make( const nnode* node, const NParameters* meta, const char* treedir );
+    static NOpenMesh<T>* Make( const nnode* node, const BParameters* meta, const char* treedir );
 
     NOpenMesh<T>* make_submesh(   const nnode* subnode);
     NOpenMesh<T>* make_selection( NOpenMeshPropType select );

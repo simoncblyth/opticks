@@ -11,7 +11,7 @@ class BTimes ;
 class BTimesTable ; 
 
 class BTimeKeeper ; 
-class NParameters ;
+class BParameters ;
 class Report ;
 
 
@@ -198,7 +198,7 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec
 
    public:
        const char* getPath(const char* xx);  // accepts abbreviated or full constituent names
-       NParameters* getParameters();
+       BParameters* getParameters();
        BTimeKeeper*      getTimer();
        BTimesTable* getTimesTable();
    public:
@@ -382,8 +382,8 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec
        bool                  m_loaded ; 
 
        BTimeKeeper*          m_timer ;
-       NParameters*          m_versions ;
-       NParameters*          m_parameters ;
+       BParameters*          m_versions ;
+       BParameters*          m_parameters ;
        Report*               m_report ;
        BTimesTable*          m_ttable ;
 

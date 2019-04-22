@@ -5,14 +5,14 @@
 #include "NHybridMesher.hpp"
 #include "NTrianglesNPY.hpp"
 #include "NOpenMesh.hpp"
-#include "NParameters.hpp"
+#include "BParameters.hh"
 #include "NNode.hpp"
 
 #include "PLOG.hh"
 
 
 
-NHybridMesher::NHybridMesher(const nnode* node, NParameters* meta, const char* treedir)
+NHybridMesher::NHybridMesher(const nnode* node, BParameters* meta, const char* treedir)
     :
     m_mesh(MESH::Make(node, meta, treedir)),
     m_bbox( new nbbox(node->bbox()) ), 

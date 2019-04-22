@@ -50,7 +50,6 @@ set(SOURCES
     NState.cpp
     NConfigurable.cpp
 
-    NParameters.cpp
     Report.cpp
 
     NLookup.cpp
@@ -327,7 +326,6 @@ NPropNames.hpp
 NSpectral.hpp
 NState.hpp
 NConfigurable.hpp
-NParameters.hpp
 Report.hpp
 
 PyMCubes/marchingcubes.hpp

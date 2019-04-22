@@ -5,6 +5,7 @@
 
 #include "BStr.hh"
 #include "BFile.hh"
+#include "BParameters.hh"
 
 
 #include "GLMFormat.hpp"
@@ -13,7 +14,6 @@
 #include "Counts.hpp"
 #include "NTrianglesNPY.hpp"
 #include "NGeometry.hpp"
-#include "NParameters.hpp"
 #include "NPY.hpp"
 #include "NNode.hpp"
 #include "NBBox.hpp"
@@ -180,7 +180,7 @@ void NScene::init()
     }
 
 
-    load_csg_metadata();  // populate mesh_id keyed map of NParameters coming from json for each NCSG 
+    load_csg_metadata();  // populate mesh_id keyed map of BParameters coming from json for each NCSG 
 
     import();  // recursive traverse of ygltf nodes creating Nd tree, and saving Nd into nd::_register with node_idx keys
 
@@ -365,7 +365,7 @@ void NScene::load_csg_metadata()
         //std::string soName = m_source->getMeshExtras<std::string>(mesh_id, "soName"); 
         //int lvIdx          = m_source->getMeshExtras<int>(mesh_id, "lvIdx" );  
         //std::string csgpath = m_source->getCSGPath(mesh_id); 
-        //NParameters* meta = NCSG::LoadMetadata(csgpath.c_str());
+        //BParameters* meta = NCSG::LoadMetadata(csgpath.c_str());
 
 
         std::string  soName = m_source->getSolidName(mesh_id);
@@ -374,7 +374,7 @@ void NScene::load_csg_metadata()
 
         m_csg_lvIdx[mesh_id] = lvIdx ; 
 
-        NParameters* meta = m_source->getCSGMetadata(mesh_id);
+        BParameters* meta = m_source->getCSGMetadata(mesh_id);
         
         //assert( meta ) ; 
 
@@ -419,7 +419,7 @@ void NScene::load_csg_metadata()
 template<typename T>
 T NScene::getCSGMeta(unsigned mesh_id, const char* key, const char* fallback ) const 
 {
-    const NParameters* meta = m_csg_metadata.at(mesh_id) ;   // operator[] can change the map if no such key
+    const BParameters* meta = m_csg_metadata.at(mesh_id) ;   // operator[] can change the map if no such key
 
     if( meta == NULL )
         LOG(warning) << " missing ALL metadata for mesh_id  " << mesh_id ;

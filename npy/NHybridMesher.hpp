@@ -9,7 +9,7 @@
 
 template <typename T> struct NOpenMesh ; 
 
-class NParameters ; 
+class BParameters ; 
 class NTrianglesNPY ; 
 struct nnode ; 
 struct nbbox ; 
@@ -19,7 +19,7 @@ class NPY_API NHybridMesher
     public:
          typedef NOpenMesh<NOpenMeshType> MESH ; 
      public:
-        NHybridMesher(const nnode* node, NParameters* meta, const char* treedir=NULL );
+        NHybridMesher(const nnode* node, BParameters* meta, const char* treedir=NULL );
         NTrianglesNPY* operator()();
         std::string desc();
     private:

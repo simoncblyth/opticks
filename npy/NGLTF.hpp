@@ -12,7 +12,7 @@
 template<class T> class NPY ;
 
 struct nd ; 
-class NParameters ; 
+class BParameters ; 
 
 namespace ygltf 
 {
@@ -84,7 +84,7 @@ class NPY_API NGLTF : public NGeometry {
         const char*                  getName() const ; 
         std::string                  getSolidName(int mesh_id);
         int                          getLogicalVolumeIndex(int mesh_id);
-        NParameters*                 getCSGMetadata( int mesh_id );
+        BParameters*                 getCSGMetadata( int mesh_id );
         NCSG*                        getCSG(int mesh_id) ; 
         std::string                  getMeshName(unsigned mesh_id);
         unsigned                     getMeshNumPrimitives(unsigned mesh_id);

@@ -1,6 +1,6 @@
 #include "OPTICKS_LOG.hh"
 
-#include "NParameters.hpp"
+#include "BParameters.hh"
 #include "NOpenMeshBoundary.hpp"
 #include "NOpenMesh.hpp"
 
@@ -25,7 +25,7 @@ void test_write()
     const char* path = "/tmp/test_write.off" ;
     LOG(info) << "test_write " << path  ; 
 
-    NParameters meta ; 
+    BParameters meta ; 
     meta.add<int>("ctrl", CUBE ); 
 
     MESH* mesh = MESH::Make( NULL, &meta, NULL );
@@ -39,7 +39,7 @@ void test_hexpatch()
 {
     LOG(info) << "test_hexpatch" ; 
 
-    NParameters meta ; 
+    BParameters meta ; 
     meta.add<int>("ctrl", HEXPATCH ); 
 
     MESH* mesh = MESH::Make( NULL, &meta, NULL );
@@ -53,7 +53,7 @@ void test_cube()
 {
     LOG(info) << "test_cube" ; 
 
-    NParameters meta ; 
+    BParameters meta ; 
     meta.add<int>("ctrl", CUBE ); 
 
     MESH* mesh = MESH::Make( NULL, &meta, NULL );
@@ -66,7 +66,7 @@ void test_tetrahedron()
 {
     LOG(info) << "test_tetrahedron" ; 
 
-    NParameters meta ; 
+    BParameters meta ; 
     meta.add<int>("ctrl", TETRAHEDRON ); 
 
     MESH* mesh = MESH::Make( NULL, &meta, NULL );
@@ -84,7 +84,7 @@ void test_sphere_parametric()
     nsphere* sphere = make_sphere(0,0,0,10);
     for(int level=2 ; level < 7 ; level++)
     { 
-        NParameters meta ; 
+        BParameters meta ; 
         meta.add<int>("level", level ); 
         meta.add<int>("verbosity", 1 ); 
 
@@ -100,7 +100,7 @@ void test_box_parametric()
     nbox* box = make_box(0,0,0,100);
     for(int level=1 ; level < 6 ; level++)
     { 
-        NParameters meta ; 
+        BParameters meta ; 
         meta.add<int>("level", level ); 
         meta.add<int>("verbosity", 1 ); 
 
@@ -118,7 +118,7 @@ void test_add_vertex()
     typedef T::VertexHandle VH ; 
 
 
-    NParameters meta ; 
+    BParameters meta ; 
     meta.add<int>("level", 4 ); 
     meta.add<int>("verbosity", 1 ); 
 
@@ -159,7 +159,7 @@ void test_add_vertex_unique()
     typedef T::Point        P ; 
     typedef T::VertexHandle VH ; 
 
-    NParameters meta ; 
+    BParameters meta ; 
     meta.add<int>("level", 4 ); 
     meta.add<int>("verbosity", 1 ); 
 
@@ -275,7 +275,7 @@ void test_add_face()
     typedef T::VertexHandle VH ; 
 
 
-    NParameters meta ; 
+    BParameters meta ; 
     meta.add<int>("level", 4 ); 
     meta.add<int>("verbosity", 1 ); 
 
@@ -339,7 +339,7 @@ void test_add_two_face()
 
 
 
-    NParameters meta ; 
+    BParameters meta ; 
     meta.add<int>("level", 4 ); 
     meta.add<int>("verbosity", 1 ); 
 
@@ -422,7 +422,7 @@ void test_manual_subdivide_face()
     nbox* box = make_box(0,0,0, 100);
 
 
-    NParameters meta ; 
+    BParameters meta ; 
     meta.add<int>("level", 4 ); 
     meta.add<int>("verbosity", 1 ); 
 

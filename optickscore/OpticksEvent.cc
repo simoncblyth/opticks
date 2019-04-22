@@ -21,6 +21,7 @@
 #include "BFile.hh"
 #include "BOpticksResource.hh"
 #include "BOpticksEvent.hh"
+#include "BParameters.hh"
 
 // npy-
 #include "uif.h"
@@ -34,7 +35,6 @@
 #include "ViewNPY.hpp"
 #include "MultiViewNPY.hpp"
 #include "TrivialCheckNPY.hpp"
-#include "NParameters.hpp"
 #include "GLMFormat.hpp"
 #include "Index.hpp"
 
@@ -558,7 +558,7 @@ Index* OpticksEvent::getBoundaryIndex()
 
 
 
-NParameters* OpticksEvent::getParameters()
+BParameters* OpticksEvent::getParameters()
 {
     return m_parameters ;
 }
@@ -593,8 +593,8 @@ void OpticksEvent::init()
     m_timer->setVerbose(false);
     m_timer->start();
 
-    m_versions = new NParameters ;
-    m_parameters = new NParameters ;
+    m_versions = new BParameters ;
+    m_parameters = new BParameters ;
     m_report = new Report ; 
     m_domain = new OpticksDomain ; 
 
@@ -940,7 +940,7 @@ void OpticksEvent::setBufferControl(NPYBase* data)
                      << " AS NO spec "
                      ;
 
-        NParameters* param = data->getParameters();
+        BParameters* param = data->getParameters();
         if(param)
             param->dump("OpticksEvent::setBufferControl FATAL: BUFFER LACKS SPEC"); 
         assert(0);

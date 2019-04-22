@@ -127,7 +127,7 @@ struct nbbox ;
 struct NSceneConfig ; 
 struct NNodeNudger ; 
 
-class NParameters ; 
+class BParameters ; 
 
 class NCSGData ; 
 class NPYMeta ; 
@@ -161,7 +161,7 @@ class NPY_API NCSG {
         static NCSG* Load(const char* treedir, const char* gltfconfig);
         static NCSG* Load(const char* treedir, const NSceneConfig* config );
 
-        static NParameters* LoadMetadata( const char* treedir, int item=-1 );  // -1 for global
+        static BParameters* LoadMetadata( const char* treedir, int item=-1 );  // -1 for global
 
         NNodeUncoincide* make_uncoincide() const ;
         NNodeNudger*     make_nudger(const char* msg) const ;
@@ -259,14 +259,14 @@ class NPY_API NCSG {
         */
     public:
         // from NPYMeta.m_meta 
-        NParameters*   getMeta(int idx) const ;
+        BParameters*   getMeta(int idx) const ;
 
 
         nnode*       getRoot() const ;
         OpticksCSG_t getRootType() const ;  
         unsigned getNumTriangles() const ;
     private:
-        //NParameters* getNodeMetadata(unsigned idx) const ;
+        //BParameters* getNodeMetadata(unsigned idx) const ;
     public:
         void check() const ;
     private:

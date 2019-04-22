@@ -3,7 +3,7 @@
 #include <string>
 #include <map>
 
-class NParameters ; 
+class BParameters ; 
 
 #include "NPY_API_EXPORT.hh"
 
@@ -16,7 +16,7 @@ NPYMeta
 class NPY_API NPYMeta
 {
     public:
-        static NParameters* LoadMetadata(const char* treedir, int item=-1);
+        static BParameters* LoadMetadata(const char* treedir, int item=-1);
         static bool         ExistsMeta(const char* treedir, int item=-1);
     private:
         static const char*  META ; 
@@ -26,7 +26,7 @@ class NPY_API NPYMeta
     public:
         // item -1 corresponds to global metadata 
         NPYMeta(); 
-        NParameters*  getMeta(int item=-1) const ;   
+        BParameters*  getMeta(int item=-1) const ;   
         bool          hasMeta(int idx) const ;
     public:
         template<typename T> T    getValue(const char* key, const char* fallback, int item=-1 ) const ;
@@ -35,7 +35,7 @@ class NPY_API NPYMeta
         void load(const char* dir, int num_item = NUM_ITEM ) ;
         void save(const char* dir) const ;
     private:
-        std::map<int, NParameters*>    m_meta ;    
+        std::map<int, BParameters*>    m_meta ;    
         // could be a complete binary tree with loada nodes, so std::array not appropriate
 
 };

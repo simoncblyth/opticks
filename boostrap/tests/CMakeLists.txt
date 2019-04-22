@@ -12,8 +12,10 @@ set(TEST_SOURCES
    BMetaTest.cc
    MapTest.cc
 
-   BHexTest.cc
    BListTest.cc
+   BParametersTest.cc
+
+   BHexTest.cc
    BRegexTest.cc
    BStrTest.cc
    BBitTest.cc

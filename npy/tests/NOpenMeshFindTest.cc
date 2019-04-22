@@ -1,7 +1,6 @@
-#include "PLOG.hh"
-#include "NPY_LOG.hh"
+#include "OPTICKS_LOG.hh"
 
-#include "NParameters.hpp"
+#include "BParameters.hh"
 #include "NOpenMesh.hpp"
 
 
@@ -16,7 +15,7 @@ void test_find_faces(int ctrl, NOpenMeshFindType sel)
 {
     LOG(info) << "test_find_faces" ; 
     
-    NParameters* meta = new NParameters ; 
+    BParameters* meta = new BParameters ; 
     meta->add<int>("ctrl", ctrl );
 
     MESH* mesh = MESH::Make(NULL, meta, NULL);
@@ -32,7 +31,7 @@ void test_are_contiguous(int ctrl)
 {
     LOG(info) << "test_are_contiguous" ; 
 
-    NParameters* meta = new NParameters ; 
+    BParameters* meta = new BParameters ; 
     meta->add<int>("ctrl", ctrl );
     meta->add<std::string>("poly", "HY" );
     meta->add<std::string>("polycfg", "sortcontiguous=0" );
@@ -51,7 +50,7 @@ void test_sort_contiguous(int ctrl)
 {
     LOG(info) << "test_sort_contiguous" ; 
 
-    NParameters* meta = new NParameters ; 
+    BParameters* meta = new BParameters ; 
     meta->add<int>("ctrl", ctrl );
     meta->add<std::string>("poly", "HY" );
     meta->add<std::string>("polycfg", "sortcontiguous=1" );
@@ -98,8 +97,7 @@ void test_sort_contiguous(int ctrl)
 
 int main(int argc, char** argv)
 {
-    PLOG_(argc, argv);
-    NPY_LOG__ ; 
+    OPTICKS_LOG(argc, argv);
 
     static const int N = 2 ; 
     int ctrl[N] = {3, 666 } ;

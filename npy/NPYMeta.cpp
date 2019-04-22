@@ -1,8 +1,8 @@
 #include "BFile.hh"
+#include "BParameters.hh"
 #include "BStr.hh"
 
 #include "NPYMeta.hpp"
-#include "NParameters.hpp"
 
 #include "PLOG.hh"
 
@@ -19,10 +19,10 @@ bool NPYMeta::ExistsMeta(const char* dir, int idx)  // static
     std::string path = MetaPath(dir, idx) ;
     return BFile::ExistsFile(path.c_str()) ;
 }
-NParameters* NPYMeta::LoadMetadata(const char* dir, int idx ) // static
+BParameters* NPYMeta::LoadMetadata(const char* dir, int idx ) // static
 {
     std::string path = MetaPath(dir, idx) ;
-    return NParameters::Load(path.c_str()) ; 
+    return BParameters::Load(path.c_str()) ; 
 }
 
 
@@ -30,7 +30,7 @@ NPYMeta::NPYMeta()
 {
 }
 
-NParameters* NPYMeta::getMeta(int idx) const
+BParameters* NPYMeta::getMeta(int idx) const
 {
     return m_meta.count(idx) == 1 ? m_meta.at(idx) : NULL ; 
 }
@@ -42,15 +42,15 @@ bool NPYMeta::hasMeta(int idx) const
 template<typename T>
 T NPYMeta::getValue(const char* key, const char* fallback, int item) const 
 {
-    NParameters* meta = getMeta(item);  
+    BParameters* meta = getMeta(item);  
     return meta ? meta->get<T>(key, fallback) : BStr::LexicalCast<T>(fallback) ;
 }
 
 template<typename T>
 void NPYMeta::setValue(const char* key, T value, int item)
 {
-    if(!hasMeta(item)) m_meta[item] = new NParameters ; 
-    NParameters* meta = getMeta(item);  
+    if(!hasMeta(item)) m_meta[item] = new BParameters ; 
+    BParameters* meta = getMeta(item);  
     assert( meta ) ; 
     return meta->set<T>(key, value) ;
 }
@@ -59,17 +59,17 @@ void NPYMeta::load(const char* dir, int num_item)
 {
     for(int item=-1 ; item < num_item ; item++)
     {
-        NParameters* meta = LoadMetadata(dir, item);
+        BParameters* meta = LoadMetadata(dir, item);
         if(meta) m_meta[item] = meta ; 
     } 
 }
 void NPYMeta::save(const char* dir) const 
 {
-    typedef std::map<int, NParameters*> MIP ; 
+    typedef std::map<int, BParameters*> MIP ; 
     for(MIP::const_iterator it=m_meta.begin() ; it != m_meta.end() ; it++)
     {
         int item = it->first ; 
-        NParameters* meta = it->second ; 
+        BParameters* meta = it->second ; 
         std::string metapath = MetaPath(dir, item) ;
         assert(meta); 
         meta->save(metapath.c_str()); 

@@ -6,10 +6,10 @@
 #include "SRenderer.hh"
 
 #include "BStr.hh"
+#include "BParameters.hh"
 
 // npy-
 #include "Types.hpp"
-#include "NParameters.hpp"
 #include "BTimesTable.hh"
 #include "NGLM.hpp"
 #include "NPY.hpp"
@@ -428,7 +428,7 @@ void OpticksViz::prepareGUI()
         LOG(LEVEL) << "NULL TimesTable " ; 
     }  
 
-    NParameters* parameters = evt ? evt->getParameters() : m_ok->getParameters() ; 
+    BParameters* parameters = evt ? evt->getParameters() : m_ok->getParameters() ; 
 
     m_gui->setupParams(parameters->getLines());
 

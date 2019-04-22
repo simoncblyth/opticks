@@ -1,15 +1,13 @@
-#include "NParameters.hpp"
+#include "BParameters.hh"
 #include "NOpenMeshCfg.hpp"
 
-#include "NPY_LOG.hh"
-#include "PLOG.hh"
+#include "OPTICKS_LOG.hh"
 
 int main(int argc, char** argv)
 {
-    PLOG_(argc, argv);
-    NPY_LOG__ ; 
+    OPTICKS_LOG(argc, argv);
 
-    NParameters meta ; 
+    BParameters meta ; 
     meta.add<std::string>("poly", "BSP");
     meta.add<std::string>("polycfg", "contiguous=1,reversed=0,numsubdiv=3,offsave=1");
 

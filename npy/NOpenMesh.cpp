@@ -12,7 +12,7 @@
 #include "NGLM.hpp"
 #include "Nuv.hpp"
 #include "NNode.hpp"
-#include "NParameters.hpp"
+#include "BParameters.hh"
 
 #ifdef OPTICKS_CSGBSP
 #include "NCSGBSP.hpp"
@@ -30,7 +30,7 @@
 
 
 template <typename T>
-NOpenMesh<T>* NOpenMesh<T>::Make( const nnode* node, const NParameters* meta, const char* treedir )
+NOpenMesh<T>* NOpenMesh<T>::Make( const nnode* node, const BParameters* meta, const char* treedir )
 {
     NOpenMeshCfg* cfg = new NOpenMeshCfg(meta, treedir) ; 
     bool partial = false ; 

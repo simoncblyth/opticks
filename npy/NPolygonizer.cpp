@@ -1,6 +1,6 @@
-#include "NPolygonizer.hpp"
+#include "BParameters.hh"
 
-#include "NParameters.hpp"
+#include "NPolygonizer.hpp"
 #include "NSphere.hpp"
 #include "NPlane.hpp"
 #include "NPrism.hpp"

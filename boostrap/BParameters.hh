@@ -4,11 +4,11 @@
 #include <string>
 #include <vector>
 
-#include "NPY_API_EXPORT.hh"
-#include "NPY_HEAD.hh"
+#include "BRAP_API_EXPORT.hh"
+#include "BRAP_HEAD.hh"
 
 /**
-NParameters
+BParameters
 ==============
 
 Simple (key,value) parameter collection and persisting based on brap/BList. 
@@ -20,21 +20,21 @@ more complicated storage of objects.
 
 **/
 
-class NPY_API NParameters {
+class BRAP_API BParameters {
    public:
-       static NParameters* Load(const char* path);   // returns NULL for non-existing
-       static NParameters* Load(const char* dir, const char* name);
+       static BParameters* Load(const char* path);   // returns NULL for non-existing
+       static BParameters* Load(const char* dir, const char* name);
    public:
        typedef std::pair<std::string, std::string>   SS ; 
        typedef std::vector<SS>                      VSS ; 
        typedef std::vector<std::string>              VS ; 
    public:
-       NParameters();
+       BParameters();
       const std::vector<std::pair<std::string,std::string> >& getVec() ;
 
        std::string getStringValue(const char* name) const ;
    public:
-       void append(NParameters* other);
+       void append(BParameters* other);
    public:
 
        template <typename T> 
@@ -74,6 +74,6 @@ class NPY_API NParameters {
 
 };
 
-#include "NPY_TAIL.hh"
+#include "BRAP_TAIL.hh"
 
 

@@ -9,7 +9,7 @@
 
 #include "NGLMExt.hpp"
 #include "GLMFormat.hpp"
-#include "NParameters.hpp"
+#include "BParameters.hh"
 
 #include "NTrianglesNPY.hpp"
 #include "NPolygonizer.hpp"
@@ -367,7 +367,7 @@ nnode* NCSG::import_r(unsigned idx, nnode* parent)
     }
     assert(node); 
 
-    NParameters* nodemeta = m_meta->getMeta(idx);
+    BParameters* nodemeta = m_meta->getMeta(idx);
     if(nodemeta) node->meta = nodemeta ; 
 
     // Avoiding duplication between the operator and primitive branches 
@@ -877,7 +877,7 @@ void NCSG::dump(const char* msg)
 
     m_root->dump("NCSG::dump");   
 
-    NParameters* _meta = m_meta->getMeta(-1) ;
+    BParameters* _meta = m_meta->getMeta(-1) ;
     if(_meta) _meta->dump(); 
 
 }
@@ -1099,7 +1099,7 @@ void NCSG::postimport_autoscan()
 }
 
 
-NParameters* NCSG::LoadMetadata( const char* treedir, int item )
+BParameters* NCSG::LoadMetadata( const char* treedir, int item )
 {
     return NPYMeta::LoadMetadata(treedir, item); 
 } 
@@ -1228,7 +1228,7 @@ std::string NCSG::smry() const
     return ss.str();
 }
 
-NParameters* NCSG::getMeta(int idx) const 
+BParameters* NCSG::getMeta(int idx) const 
 {
     return m_meta->getMeta(idx); 
 }
