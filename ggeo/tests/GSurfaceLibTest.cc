@@ -12,20 +12,16 @@
 #include "GSurfaceLib.hh"
 
 #include "GGEO_BODY.hh"
-#include "GGEO_LOG.hh"
-#include "NPY_LOG.hh"
-#include "PLOG.hh"
+#include "OPTICKS_LOG.hh"
 
 int main(int argc, char** argv)
 {
-    PLOG_(argc, argv);
+    OPTICKS_LOG(argc, argv);
 
-    GGEO_LOG__ ; 
-    NPY_LOG__ ; 
+    Opticks* ok = new Opticks(argc, argv);
+    ok->configure();
 
-    Opticks* opticks = new Opticks(argc, argv);
-
-    GSurfaceLib* m_slib = GSurfaceLib::load(opticks);
+    GSurfaceLib* m_slib = GSurfaceLib::load(ok);
 
     m_slib->dump();
 

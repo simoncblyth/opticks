@@ -62,49 +62,14 @@ TODO:
 class OKCORE_API OpticksResource : public BOpticksResource {
     public:
        static const plog::Severity LEVEL ;  
-    private:
-       static const char* EMPTY ; 
-       static const char* G4LIVE ; 
-       static const char* JUNO ; 
-       static const char* DAYABAY ; 
-       static const char* DPIB ; 
-       static const char* OTHER ; 
-    private:
-       static const char* PREFERENCE_BASE  ;
-    public:
-       static const char* DEFAULT_GEOKEY ;
-       static const char* DEFAULT_QUERY ;
-       static const char* DEFAULT_QUERY_LIVE ;
-       static const char* DEFAULT_CTRL ;
-       static const char* DEFAULT_MESHFIX ;
-       static const char* DEFAULT_MESHFIX_CFG ;
-    public:
-       static const char* DEFAULT_MATERIAL_DYB ;
-       static const char* DEFAULT_MATERIAL_JUNO ;
-       static const char* DEFAULT_MATERIAL_OTHER ;
-    public:
-       static const char* DEFAULT_MEDIUM_DYB ;
-       static const char* DEFAULT_MEDIUM_JUNO ;
-       static const char* DEFAULT_MEDIUM_OTHER ;
-    public:
-       static const int DEFAULT_FRAME_DYB ;
-       static const int DEFAULT_FRAME_JUNO ;
-       static const int DEFAULT_FRAME_OTHER ;
-    public:
-       static const char* SENSOR_SURFACE_DYB ;
-       static const char* SENSOR_SURFACE_JUNO ;
-       static const char* SENSOR_SURFACE_OTHER ;
-    public:
-       static const char* EXAMPLE_MATNAMES_DYB ;
-       static const char* EXAMPLE_MATNAMES_JUNO ;
-       static const char* EXAMPLE_MATNAMES_OTHER ;
- 
+
+
     public:
        static bool existsFile(const char* path);
        static bool existsFile(const char* dir, const char* name);
        static bool existsDir(const char* path);
     public:
-       OpticksResource(Opticks* opticks=NULL, const char* lastarg=NULL);
+       OpticksResource(Opticks* ok=NULL);
        bool isValid();
     private:
        void init();
@@ -116,6 +81,7 @@ class OKCORE_API OpticksResource : public BOpticksResource {
        void identifyGeometry();
        void assignDetectorName();
        void assignDefaultMaterial();
+       void initRunResultsDir();
        void setValid(bool valid);
     public:
 
@@ -197,7 +163,6 @@ class OKCORE_API OpticksResource : public BOpticksResource {
    private:
        SLog*       m_log ; 
        Opticks*    m_ok ; 
-       const char* m_lastarg ; 
 
    private:
        OpticksQuery*  m_query ;
@@ -238,6 +203,8 @@ class OKCORE_API OpticksResource : public BOpticksResource {
        const char*  m_testcsgpath ;
        const char*  m_testconfig ;
        NSensorList* m_sensor_list ; 
+   private:
+       const char* m_runresultsdir ;  
        
    private:
        std::map<std::string, std::string> m_metadata ;  

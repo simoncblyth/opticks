@@ -1,11 +1,12 @@
+// TEST=OpticksFlagsTest om-t
+
 #include "BStr.hh"
 #include "Opticks.hh"
 #include "OpticksFlags.hh"
 #include "Index.hpp"
 #include "Types.hpp"
 
-#include "OKCORE_LOG.hh"
-#include "PLOG.hh"
+#include "OPTICKS_LOG.hh"
 
 
 void test_ctor()
@@ -160,10 +161,10 @@ void test_cfTypes(Opticks* ok)
 
 int main(int argc, char** argv)
 {
-    PLOG_(argc, argv);
-    OKCORE_LOG__ ;   
+    OPTICKS_LOG(argc, argv);
 
     Opticks ok(argc, argv);
+    ok.configure();
 
     /*
     test_ctor();

@@ -109,7 +109,7 @@ void OScene::initRTX()
     { 
         int rtx0(-1) ;
         RT_CHECK_ERROR( rtGlobalGetAttribute(RT_GLOBAL_ATTRIBUTE_ENABLE_RTX, sizeof(rtx0), &rtx0) );
-        assert( rtx0 == 0 );
+        assert( rtx0 == 0 );  // despite being zero performance suggests it is enabled
 
         LOG(fatal) << key << "=" << rtx << " setting  " << ( rtx == 1 ? "ON" : "OFF" )  ; 
         RT_CHECK_ERROR( rtGlobalSetAttribute(RT_GLOBAL_ATTRIBUTE_ENABLE_RTX, sizeof(rtx), &rtx));

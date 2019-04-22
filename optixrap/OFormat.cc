@@ -17,13 +17,7 @@ unsigned int OFormat::ElementSizeInBytes(RTformat format) // static
     }
 
 
-    std::cout 
-         << "OFormat::ElementSizeInBytes"
-         << " " << FormatName(format)
-         << " : " << element_size
-         << std::endl 
-         ;
-
+    //std::cout << "OFormat::ElementSizeInBytes" << " " << FormatName(format) << " : " << element_size << std::endl ; 
     return element_size ; 
 }
 

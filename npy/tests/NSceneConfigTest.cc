@@ -1,16 +1,14 @@
+// TEST=NSceneConfigTest om-t
 
-#include "PLOG.hh"
-#include "NPY_LOG.hh"
-
+#include "OPTICKS_LOG.hh"
 #include "NSceneConfig.hpp"
 
 int main(int argc, char** argv)
 {
-    PLOG_(argc, argv);
-    NPY_LOG__ ; 
+    OPTICKS_LOG(argc, argv);
 
-    //const char* gltfconfig = "check_surf_containment=3,other=1,check_aabb_containment=214,csg_bbox_poly=1" ; 
-    const char* gltfconfig = "check_surf_containment=3,other=1,check_aabb_containment=214,parsurf_epsilon=-4" ; 
+    //const char* gltfconfig = "check_surf_containment=3,check_aabb_containment=214,csg_bbox_poly=1" ; 
+    const char* gltfconfig = "check_surf_containment=3,check_aabb_containment=214,parsurf_epsilon=-4" ; 
 
     NSceneConfig cfg(gltfconfig);
     cfg.dump();

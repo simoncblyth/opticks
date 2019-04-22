@@ -8,8 +8,7 @@
 #include "GSurfaceLib.hh"
 #include "GMergedMesh.hh"
 
-#include "PLOG.hh"
-#include "GGEO_LOG.hh"
+#include "OPTICKS_LOG.hh"
 #include "GGEO_BODY.hh"
 
 void misc(GGeo* m_ggeo)
@@ -161,10 +160,11 @@ void test_GGeo(GGeo* gg)
 
 int main(int argc, char** argv)
 {
-    PLOG_(argc, argv);
-    GGEO_LOG__ ;
+    OPTICKS_LOG(argc, argv);
 
     Opticks ok(argc, argv);
+    ok.configure(); 
+
     GGeo gg(&ok);
     gg.loadFromCache();
     gg.dumpStats();

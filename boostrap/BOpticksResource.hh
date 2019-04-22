@@ -54,10 +54,51 @@ BRANCHES OF OPERATION : USING RELATIVE APPROACH
 
 class BRAP_API  BOpticksResource {
        
-    private:
+    public:
        static const plog::Severity  LEVEL ; 
+
+    protected:
        static const char* G4ENV_RELPATH ; 
        static const char* OKDATA_RELPATH ;
+    protected:
+       static const char* EMPTY ; 
+       static const char* G4LIVE ; 
+       static const char* JUNO ; 
+       static const char* DAYABAY ; 
+       static const char* DPIB ; 
+       static const char* OTHER ; 
+    protected:
+       static const char* PREFERENCE_BASE  ;
+
+    public:
+       static const char* DEFAULT_GEOKEY ;
+       static const char* DEFAULT_QUERY ;
+       static const char* DEFAULT_QUERY_LIVE ;
+       static const char* DEFAULT_CTRL ;
+       static const char* DEFAULT_MESHFIX ;
+       static const char* DEFAULT_MESHFIX_CFG ;
+    public:
+       static const char* DEFAULT_MATERIAL_DYB ;
+       static const char* DEFAULT_MATERIAL_JUNO ;
+       static const char* DEFAULT_MATERIAL_OTHER ;
+    public:
+       static const char* DEFAULT_MEDIUM_DYB ;
+       static const char* DEFAULT_MEDIUM_JUNO ;
+       static const char* DEFAULT_MEDIUM_OTHER ;
+    public:
+       static const int DEFAULT_FRAME_DYB ;
+       static const int DEFAULT_FRAME_JUNO ;
+       static const int DEFAULT_FRAME_OTHER ;
+    public:
+       static const char* SENSOR_SURFACE_DYB ;
+       static const char* SENSOR_SURFACE_JUNO ;
+       static const char* SENSOR_SURFACE_OTHER ;
+    public:
+       static const char* EXAMPLE_MATNAMES_DYB ;
+       static const char* EXAMPLE_MATNAMES_JUNO ;
+       static const char* EXAMPLE_MATNAMES_OTHER ;
+ 
+
     protected:
        static const char* InstallPathOKDATA() ;
        static const char* InstallPathG4ENV() ;
@@ -79,6 +120,7 @@ class BRAP_API  BOpticksResource {
 
         static const char* OpticksDataDir();
         static const char* GeoCacheDir();
+        static const char* ResultsDir();
         static const char* ResourceDir();
         static const char* GenstepsDir();
         static const char* ExportDir();
@@ -96,6 +138,7 @@ class BRAP_API  BOpticksResource {
 
         const char* getOpticksDataDir();
         const char* getGeoCacheDir();
+        const char* getResultsDir();
         const char* getInstallCacheDir();
         const char* getResourceDir();
         const char* getGenstepsDir();
@@ -114,6 +157,7 @@ class BRAP_API  BOpticksResource {
    public:       
        std::string getIdPathPath(const char* rela, const char* relb=NULL, const char* relc=NULL, const char* reld=NULL ) const ; 
        std::string getGeoCachePath(const char* rela, const char* relb=NULL, const char* relc=NULL, const char* reld=NULL) const ;
+       std::string getResultsPath(const char* rela, const char* relb=NULL, const char* relc=NULL, const char* reld=NULL) const ;
        std::string getPropertyLibDir(const char* name) const ;
 
        std::string getInstallPath(const char* relpath) const ;
@@ -178,6 +222,7 @@ class BRAP_API  BOpticksResource {
         const char* m_install_prefix ;   // from BOpticksResourceCMakeConfig header
         const char* m_opticksdata_dir ; 
         const char* m_geocache_dir ; 
+        const char* m_results_dir ; 
         const char* m_resource_dir ; 
         const char* m_gensteps_dir ; 
         const char* m_export_dir ; 

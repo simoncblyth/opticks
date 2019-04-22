@@ -14,10 +14,7 @@ GSceneTest --okcore debug --gltfname hello.gltf
 
 #include "GScene.hh"
 
-#include "PLOG.hh"
-#include "OKCORE_LOG.hh"
-#include "NPY_LOG.hh"
-#include "GGEO_LOG.hh"
+#include "OPTICKS_LOG.hh"
 
 
 struct GSceneTest
@@ -43,11 +40,7 @@ struct GSceneTest
 
 int main(int argc, char** argv)
 {
-    PLOG_COLOR(argc, argv);
-
-    OKCORE_LOG__ ;
-    NPY_LOG__ ;
-    GGEO_LOG__ ;
+    OPTICKS_LOG(argc, argv);
 
     Opticks ok(argc, argv, "--gltf 3");
     ok.configure();

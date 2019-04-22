@@ -50,6 +50,8 @@ void test_solid(G4VSolid* so)
 
 
     Opticks* ok = new Opticks(0,0);
+    ok->configure();
+
     GMaterialLib* mlib = new GMaterialLib(ok); 
     GSurfaceLib* slib = new GSurfaceLib(ok); 
     GBndLib* blib = new GBndLib(ok, mlib, slib);

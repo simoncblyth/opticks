@@ -9,18 +9,17 @@
 
 #include "NPY.hpp"
 
-#include "PLOG.hh"
-#include "GGEO_LOG.hh"
+#include "OPTICKS_LOG.hh"
 #include "GGEO_BODY.hh"
 
 int main(int argc, char** argv)
 {
-    PLOG_(argc, argv);
-    GGEO_LOG_ ;
+    OPTICKS_LOG(argc, argv);
 
-    Opticks* opticks = new Opticks(argc, argv);
+    Opticks* ok = new Opticks(argc, argv);
+    ok->configure(); 
 
-    GSourceLib* sl = new GSourceLib(opticks);
+    GSourceLib* sl = new GSourceLib(ok);
 
     sl->generateBlackBodySample();
 

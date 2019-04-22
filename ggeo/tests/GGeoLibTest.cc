@@ -12,8 +12,7 @@
 #include "GGeoLib.hh"
 
 #include "GGEO_BODY.hh"
-#include "PLOG.hh"
-#include "GGEO_LOG.hh"
+#include "OPTICKS_LOG.hh"
 
 
 void test_InstancedMergedMesh(GMergedMesh* mm)
@@ -130,10 +129,10 @@ void test_GGeoLib(GGeoLib* geolib)
 
 int main(int argc, char** argv)
 {
-    PLOG_(argc, argv);
-    GGEO_LOG__ ;
+    OPTICKS_LOG(argc, argv);
 
     Opticks ok(argc, argv);
+    ok.configure();
 
 
     bool constituents = true ; 

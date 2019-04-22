@@ -7,8 +7,7 @@
 #include "GScintillatorLib.hh"
 
 
-#include "PLOG.hh"
-#include "GGEO_LOG.hh"
+#include "OPTICKS_LOG.hh"
 #include "GGEO_BODY.hh"
 
 
@@ -114,13 +113,13 @@ Out[9]: (1, 4096, 1)
 
 int main(int argc, char** argv)
 {
-    PLOG_(argc,argv);
-    GGEO_LOG_ ; 
+    OPTICKS_LOG(argc,argv);
 
 
-    Opticks* opticks = new Opticks(argc, argv);
+    Opticks* ok = new Opticks(argc, argv);
+    ok->configure();
 
-    GScintillatorLib* slib = GScintillatorLib::load(opticks);
+    GScintillatorLib* slib = GScintillatorLib::load(ok);
     slib->dump();
 
     const char* name = "LiquidScintillator" ;

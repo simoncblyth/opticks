@@ -137,7 +137,8 @@ T* NPY<T>::grow(unsigned int nitems)
     unsigned int itemvals = getNumValues(1); 
     unsigned int growvals = nitems*itemvals ; 
 
-    LOG(debug) << "NPY<T>::grow with space for"
+    LOG(verbose)
+              << "with space for"
               << " nitems " << nitems
               << " itemvals " << itemvals
               << " origvals " << origvals   

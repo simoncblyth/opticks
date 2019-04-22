@@ -113,7 +113,7 @@ void OBufBase::examineBufferFormat(RTformat format)
    unsigned int mul(0) ;
    unsigned int soa(0) ;
    bool unknown(false); 
-   std::cout << "OBufBase::examineBufferFormat " << format << std::endl ; 
+   //std::cout << "OBufBase::examineBufferFormat " << format << std::endl  ; 
 
    switch(format)
    {   

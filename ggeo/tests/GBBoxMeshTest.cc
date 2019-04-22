@@ -4,16 +4,15 @@
 #include "GMergedMesh.hh"
 #include "GBBoxMesh.hh"
 
-#include "PLOG.hh"
-#include "GGEO_LOG.hh"
+#include "OPTICKS_LOG.hh"
 
 int main(int argc, char** argv)
 {
-    PLOG_(argc, argv);
-    GGEO_LOG_ ;
-
+    OPTICKS_LOG(argc, argv);
 
     Opticks ok(argc, argv);
+    ok.configure();
+
     unsigned int ridx = 1 ;  
 
     OpticksResource* resource = ok.getResource();

@@ -45,6 +45,7 @@ int main(int argc, char** argv, char** envp)
 
 
     Opticks ok(argc, argv) ;
+    ok.configure();
     ok.dumpResource(); 
 
     return 0 ; 

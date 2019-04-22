@@ -795,7 +795,7 @@ void GGeo::loadFromCache()
 
 void GGeo::loadAnalyticFromCache()
 {
-    assert(0) ; // THIS IS THE OLD WAY ?
+    //assert(0) ; // THIS IS THE OLD WAY ? YES : USED BY GSceneTest
     LOG(info) << "GGeo::loadAnalyticFromCache START" ; 
     m_gscene = GScene::Load(m_ok, this); // GGeo needed for m_bndlib 
     LOG(info) << "GGeo::loadAnalyticFromCache DONE" ; 

@@ -11,9 +11,7 @@
 #include "GBndLib.hh"
 #include "BoundariesNPY.hpp"
 
-#include "PLOG.hh"
-#include "GGEO_LOG.hh"
-#include "NPY_LOG.hh"
+#include "OPTICKS_LOG.hh"
 
 #include "GGEO_BODY.hh"
 
@@ -22,13 +20,12 @@
 
 int main(int argc, char** argv)
 {
-    PLOG_(argc, argv);
-    GGEO_LOG__ ; 
-    NPY_LOG__ ; 
+    OPTICKS_LOG(argc, argv);
 
-    Opticks* opticks = new Opticks(argc, argv);
+    Opticks* ok = new Opticks(argc, argv);
+    ok->configure();
 
-    GBndLib* blib = GBndLib::load(opticks, true );
+    GBndLib* blib = GBndLib::load(ok, true );
     OpticksAttrSeq* qbnd = blib->getAttrNames();
     blib->close();     //  BndLib is dynamic so requires a close before setNames is called setting the sequence for OpticksAttrSeq
     std::map<unsigned int, std::string> nm = qbnd->getNamesMap(OpticksAttrSeq::ONEBASED) ;

@@ -7,8 +7,7 @@
 
 #include "GVector.hh"
 #include "GMergedMesh.hh"
-#include "PLOG.hh"
-#include "GGEO_LOG.hh"
+#include "OPTICKS_LOG.hh"
 
 
 
@@ -86,10 +85,10 @@ void test_GMergedMesh_MakeLODComposite(GMergedMesh* mm, unsigned levels)
 
 int main(int argc, char** argv)
 {
-    PLOG_(argc, argv);
-    GGEO_LOG__ ;
+    OPTICKS_LOG(argc, argv);
 
     Opticks ok(argc, argv);
+    ok.configure(); 
 
     // hmm geometry and mesh index dependant, 
     // changes to repeat finding algo GInstancer will change 

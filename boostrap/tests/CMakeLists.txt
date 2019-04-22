@@ -47,10 +47,17 @@ set(TEST_SOURCES
    BTimesTableTest.cc
 
 
-
 )
 
-# BTimeTest.cc requires boost components : thread timer 
+#[=[
+BTimeTest.cc requires boost components : thread timer, linking gives 
+
+    CMakeFiles/BTimeTest.dir/BTimeTest.cc.o: In function `boost::this_thread::sleep(boost::posix_time::ptime const&)':
+    /usr/include/boost/thread/pthread/thread_data.hpp:247: undefined reference to `boost::this_thread::hiden::sleep_until(timespec const&)'
+
+#]=]
+
+
 set(_TEST_SOURCES
    BTimeTest.cc
    boost_random_Test.cc

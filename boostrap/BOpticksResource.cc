@@ -24,6 +24,69 @@ const char* BOpticksResource::G4ENV_RELPATH = "externals/config/geant4.ini" ;
 const char* BOpticksResource::OKDATA_RELPATH = "opticksdata/config/opticksdata.ini" ; // TODO: relocate into geocache
 
 
+
+const char* BOpticksResource::EMPTY  = "" ; 
+
+const char* BOpticksResource::G4LIVE  = "g4live" ; 
+const char* BOpticksResource::JUNO    = "juno1707" ; 
+const char* BOpticksResource::DAYABAY = "dayabay" ; 
+const char* BOpticksResource::DPIB    = "PmtInBox" ; 
+const char* BOpticksResource::OTHER   = "other" ; 
+
+const char* BOpticksResource::PREFERENCE_BASE = "$HOME/.opticks" ; 
+
+
+// TODO: having these defaults compiled in is problematic, better to read in from
+//       json/ini so they are available at python level
+
+const char* BOpticksResource::DEFAULT_GEOKEY = "OPTICKSDATA_DAEPATH_DYB" ; 
+const char* BOpticksResource::DEFAULT_QUERY = "range:3153:12221" ; 
+const char* BOpticksResource::DEFAULT_QUERY_LIVE = "all" ;
+//const char* BOpticksResource::DEFAULT_QUERY_LIVE = "range:3153:12221" ;  // <-- EXPEDIENT ASSUMPTION THAT G4LIVE GEOMETRY IS DYB  
+const char* BOpticksResource::DEFAULT_CTRL = "" ; 
+const char* BOpticksResource::DEFAULT_MESHFIX = "iav,oav" ; 
+const char* BOpticksResource::DEFAULT_MESHFIX_CFG = "100,100,10,-0.999" ; 
+
+const char* BOpticksResource::DEFAULT_MATERIAL_DYB  = "GdDopedLS" ; 
+const char* BOpticksResource::DEFAULT_MATERIAL_JUNO = "LS" ; 
+const char* BOpticksResource::DEFAULT_MATERIAL_OTHER = "Water" ; 
+
+const char* BOpticksResource::DEFAULT_MEDIUM_DYB  = "MineralOil" ; 
+const char* BOpticksResource::DEFAULT_MEDIUM_JUNO = "Water" ; 
+const char* BOpticksResource::DEFAULT_MEDIUM_OTHER = "Water" ; 
+
+const char* BOpticksResource::EXAMPLE_MATNAMES_DYB = "GdDopedLS,Acrylic,LiquidScintillator,MineralOil,Bialkali" ;
+const char* BOpticksResource::EXAMPLE_MATNAMES_JUNO = "LS,Acrylic" ; 
+const char* BOpticksResource::EXAMPLE_MATNAMES_OTHER = "LS,Acrylic" ; 
+
+const char* BOpticksResource::SENSOR_SURFACE_DYB = "lvPmtHemiCathodeSensorSurface" ;
+const char* BOpticksResource::SENSOR_SURFACE_JUNO = "SS-JUNO-UNKNOWN" ; 
+const char* BOpticksResource::SENSOR_SURFACE_OTHER = "SS-OTHER-UNKNOWN" ; 
+
+const int BOpticksResource::DEFAULT_FRAME_OTHER = 0 ; 
+const int BOpticksResource::DEFAULT_FRAME_DYB = 3153 ; 
+const int BOpticksResource::DEFAULT_FRAME_JUNO = 62593 ; 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 const plog::Severity BOpticksResource::LEVEL = debug ; 
 
 BOpticksResource::BOpticksResource()
@@ -164,6 +227,13 @@ std::string BOpticksResource::getGeoCachePath(const char* rela, const char* relb
     return path ;
 }
 
+std::string BOpticksResource::getResultsPath(const char* rela, const char* relb, const char* relc, const char* reld ) const 
+{
+    std::string path = BFile::FormPath(m_results_dir, rela, relb, relc, reld ) ;
+    return path ;
+}
+
+
 std::string BOpticksResource::getIdPathPath(const char* rela, const char* relb, const char* relc, const char* reld ) const 
 {
     const char* idpath = getIdPath(); 
@@ -182,6 +252,7 @@ void BOpticksResource::initTopDownDirs()
 { 
     m_opticksdata_dir      = OpticksDataDir() ;   // eg /usr/local/opticks/opticksdata
     m_geocache_dir         = GeoCacheDir() ;      // eg /usr/local/opticks/geocache
+    m_results_dir          = ResultsDir() ;       // eg /usr/local/opticks/results
     m_resource_dir         = ResourceDir() ;      // eg /usr/local/opticks/opticksdata/resource
     m_gensteps_dir         = GenstepsDir() ;      // eg /usr/local/opticks/opticksdata/gensteps
     m_export_dir           = ExportDir() ;        // eg /usr/local/opticks/opticksdata/export
@@ -194,6 +265,7 @@ void BOpticksResource::initTopDownDirs()
 
     m_res->addDir("opticksdata_dir", m_opticksdata_dir);
     m_res->addDir("geocache_dir",    m_geocache_dir );
+    m_res->addDir("results_dir",     m_results_dir );
     m_res->addDir("resource_dir",    m_resource_dir );
     m_res->addDir("gensteps_dir",    m_gensteps_dir );
     m_res->addDir("export_dir",      m_export_dir);
@@ -256,6 +328,7 @@ const char* BOpticksResource::getDebuggingTreedir(int argc, char** argv)
 const char* BOpticksResource::InstallCacheDir(){return makeInstallPath(OKCONF_OPTICKS_INSTALL_PREFIX, "installcache",  NULL); }
 const char* BOpticksResource::OpticksDataDir(){ return makeInstallPath(OKCONF_OPTICKS_INSTALL_PREFIX, "opticksdata",  NULL); }
 const char* BOpticksResource::GeoCacheDir(){    return makeInstallPath(OKCONF_OPTICKS_INSTALL_PREFIX, "geocache",  NULL); }
+const char* BOpticksResource::ResultsDir(){     return makeInstallPath(OKCONF_OPTICKS_INSTALL_PREFIX, "results",  NULL); }
 const char* BOpticksResource::ResourceDir(){    return makeInstallPath(OKCONF_OPTICKS_INSTALL_PREFIX, "opticksdata", "resource" ); }
 const char* BOpticksResource::GenstepsDir(){    return makeInstallPath(OKCONF_OPTICKS_INSTALL_PREFIX, "opticksdata", "gensteps" ); }
 const char* BOpticksResource::ExportDir(){      return makeInstallPath(OKCONF_OPTICKS_INSTALL_PREFIX, "opticksdata", "export" ); }
@@ -273,13 +346,10 @@ std::string BOpticksResource::PTXPath(const char* name, const char* target)
 }
 
 
-
-
-
-
 const char* BOpticksResource::getInstallDir() {         return m_install_prefix ; }   
 const char* BOpticksResource::getOpticksDataDir() {     return m_opticksdata_dir ; }   
 const char* BOpticksResource::getGeoCacheDir() {        return m_geocache_dir ; }   
+const char* BOpticksResource::getResultsDir() {         return m_results_dir ; }   
 const char* BOpticksResource::getResourceDir() {        return m_resource_dir ; } 
 const char* BOpticksResource::getExportDir() {          return m_export_dir ; } 
 

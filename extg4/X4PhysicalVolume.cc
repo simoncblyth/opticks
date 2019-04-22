@@ -81,6 +81,8 @@ GGeo* X4PhysicalVolume::Convert(const G4VPhysicalVolume* const top)
 
     Opticks* ok = new Opticks(0,0);  // Opticks instanciation must be after BOpticksKey::SetKey
 
+    ok->configure();   // see notes/issues/configuration_resource_rejig.rst
+
     GGeo* gg = new GGeo(ok) ;
 
     X4PhysicalVolume xtop(gg, top) ;   // <-- populates gg 

@@ -497,25 +497,18 @@ void Opticks::init()
 
     m_lastarg = m_argc > 1 ? strdup(m_argv[m_argc-1]) : NULL ;
 
+    // initResource();  TRYING TO MOVE THIS TO configure
+}
 
+
+void Opticks::initResource()
+{
     LOG(LEVEL) << "( OpticksResource " ;
-    m_resource = new OpticksResource(this, m_lastarg);
+    m_resource = new OpticksResource(this);
     LOG(LEVEL) << ") OpticksResource " ;
     setDetector( m_resource->getDetector() );
-
     LOG(LEVEL) << " DONE " << m_resource->desc()  ;
-
-    //configure(); 
 }
-
-/*
-void Opticks::setupResource()
-{
-
-
-}
-*/
-
 
 
 int Opticks::getArgc()
@@ -530,9 +523,6 @@ char* Opticks::getArgv0()
 {
     return m_argc > 0 && m_argv ? m_argv[0] : NULL ; 
 }
-
-
-
 
 
 bool Opticks::hasArg(const char* arg)
@@ -1188,10 +1178,30 @@ const char* Opticks::getGPUMonPath() const
     const std::string& gpumonpath = m_cfg->getGPUMonPath() ;
     return gpumonpath.c_str() ;
 }
+
+
+
 bool Opticks::isGPUMon() const 
 {
     return m_cfg->hasOpt("gpumon");
 }
+
+int Opticks::getRunStamp() const 
+{
+    return m_cfg->getRunStamp() ;
+}
+const char* Opticks::getRunLabel() const 
+{
+    const std::string& runlabel = m_cfg->getRunLabel() ;
+    return runlabel.c_str() ;
+}
+const char* Opticks::getRunFolder() const 
+{
+    const std::string& runfolder = m_cfg->getRunFolder() ;
+    return runfolder.c_str() ;
+}
+
+
 
 
 bool Opticks::isTest() const 
@@ -1369,6 +1379,10 @@ void Opticks::configure()
     m_cfg->commandline(m_argc, m_argv);
 
     checkOptionValidity();
+
+
+    initResource();   // <-- RECENT ATTEMPT TO MOVE OpticksResource setup after commandline parsing done
+
 
     defineEventSpec();
 

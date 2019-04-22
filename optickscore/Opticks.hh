@@ -123,6 +123,7 @@ class OKCORE_API Opticks {
        Opticks(int argc=0, char** argv=NULL, const char* argforced=NULL );
    private:
        void init();
+       void initResource();
    public:
        void configure();  // invoked after commandline parsed
    private:
@@ -262,6 +263,10 @@ class OKCORE_API Opticks {
    public:
        const char* getGPUMonPath() const ;   
        bool        isGPUMon() const ;  
+   public:
+       int getRunStamp() const ; 
+       const char* getRunLabel() const ; 
+       const char* getRunFolder() const ; 
    public:
        bool        isTest() const ;
        bool        isTestAuto() const ;

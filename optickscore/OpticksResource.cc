@@ -39,91 +39,54 @@ namespace fs = boost::filesystem;
 #include "OpticksAttrSeq.hh"
 
 
-const char* OpticksResource::EMPTY  = "" ; 
-
-const char* OpticksResource::G4LIVE  = "g4live" ; 
-const char* OpticksResource::JUNO    = "juno1707" ; 
-const char* OpticksResource::DAYABAY = "dayabay" ; 
-const char* OpticksResource::DPIB    = "PmtInBox" ; 
-const char* OpticksResource::OTHER   = "other" ; 
-
-const char* OpticksResource::PREFERENCE_BASE = "$HOME/.opticks" ; 
-
-
-// TODO: having these defaults compiled in is problematic, better to read in from
-//       json/ini so they are available at python level
-
-const char* OpticksResource::DEFAULT_GEOKEY = "OPTICKSDATA_DAEPATH_DYB" ; 
-const char* OpticksResource::DEFAULT_QUERY = "range:3153:12221" ; 
-const char* OpticksResource::DEFAULT_QUERY_LIVE = "all" ;
-//const char* OpticksResource::DEFAULT_QUERY_LIVE = "range:3153:12221" ;  // <-- EXPEDIENT ASSUMPTION THAT G4LIVE GEOMETRY IS DYB  
-const char* OpticksResource::DEFAULT_CTRL = "" ; 
-const char* OpticksResource::DEFAULT_MESHFIX = "iav,oav" ; 
-const char* OpticksResource::DEFAULT_MESHFIX_CFG = "100,100,10,-0.999" ; 
-
-const char* OpticksResource::DEFAULT_MATERIAL_DYB  = "GdDopedLS" ; 
-const char* OpticksResource::DEFAULT_MATERIAL_JUNO = "LS" ; 
-const char* OpticksResource::DEFAULT_MATERIAL_OTHER = "Water" ; 
-
-const char* OpticksResource::DEFAULT_MEDIUM_DYB  = "MineralOil" ; 
-const char* OpticksResource::DEFAULT_MEDIUM_JUNO = "Water" ; 
-const char* OpticksResource::DEFAULT_MEDIUM_OTHER = "Water" ; 
-
-
-const char* OpticksResource::EXAMPLE_MATNAMES_DYB = "GdDopedLS,Acrylic,LiquidScintillator,MineralOil,Bialkali" ;
-const char* OpticksResource::EXAMPLE_MATNAMES_JUNO = "LS,Acrylic" ; 
-const char* OpticksResource::EXAMPLE_MATNAMES_OTHER = "LS,Acrylic" ; 
-
-const char* OpticksResource::SENSOR_SURFACE_DYB = "lvPmtHemiCathodeSensorSurface" ;
-const char* OpticksResource::SENSOR_SURFACE_JUNO = "SS-JUNO-UNKNOWN" ; 
-const char* OpticksResource::SENSOR_SURFACE_OTHER = "SS-OTHER-UNKNOWN" ; 
-
-const int OpticksResource::DEFAULT_FRAME_OTHER = 0 ; 
-const int OpticksResource::DEFAULT_FRAME_DYB = 3153 ; 
-const int OpticksResource::DEFAULT_FRAME_JUNO = 62593 ; 
-
-
 const plog::Severity OpticksResource::LEVEL = debug ; 
 
-OpticksResource::OpticksResource(Opticks* opticks, const char* lastarg) 
+/*
+TODO:
+   migrate everything that does not need the Opticks instance (ie the commandline arguments) 
+   down into the base class  BOpticksResource
+
+*/
+
+OpticksResource::OpticksResource(Opticks* ok) 
     :
-       BOpticksResource(),
-       m_log(new SLog("OpticksResource::OpticksResource","",debug)),
-       m_ok(opticks),
-       m_lastarg(lastarg ? strdup(lastarg) : NULL),
-       m_query(new OpticksQuery(SSys::getenvvar(
+    BOpticksResource(),
+    m_log(new SLog("OpticksResource::OpticksResource","",debug)),
+    m_ok(ok),
+    m_query(new OpticksQuery(SSys::getenvvar(
                       m_key ? "OPTICKS_QUERY_LIVE" : "OPTICKS_QUERY" ,
                       m_key ? DEFAULT_QUERY_LIVE : DEFAULT_QUERY 
               ))), 
-       m_geokey(NULL),
-       m_ctrl(NULL),
-       m_meshfix(NULL),
-       m_meshfixcfg(NULL),
-       m_valid(true),
-       m_colors(NULL),
-       m_flags(NULL),
-       m_flagnames(NULL),
-       m_types(NULL),
-       m_typ(NULL),
-       m_g4env(NULL),
-       m_okenv(NULL),
-       m_dayabay(false),
-       m_juno(false),
-       m_dpib(false),
-       m_other(false),
-       m_detector(NULL),
-       m_detector_name(NULL),
-       m_detector_base(NULL),
-       m_resource_base(NULL),
-       m_material_map(NULL),
-       m_default_material(NULL),
-       m_default_medium(NULL),
-       m_example_matnames(NULL),
-       m_sensor_surface(NULL),
-       m_default_frame(DEFAULT_FRAME_OTHER),
-       m_testcsgpath(NULL),
-       m_testconfig(NULL),
-       m_sensor_list(NULL)
+    m_geokey(NULL),
+    m_ctrl(NULL),
+    m_meshfix(NULL),
+    m_meshfixcfg(NULL),
+    m_valid(true),
+    m_colors(NULL),
+    m_flags(NULL),
+    m_flagnames(NULL),
+    m_types(NULL),
+    m_typ(NULL),
+    m_g4env(NULL),
+    m_okenv(NULL),
+    m_dayabay(false),
+    m_juno(false),
+    m_dpib(false),
+    m_other(false),
+    m_detector(NULL),
+    m_detector_name(NULL),
+    m_detector_base(NULL),
+    m_resource_base(NULL),
+    m_material_map(NULL),
+    m_default_material(NULL),
+    m_default_medium(NULL),
+    m_example_matnames(NULL),
+    m_sensor_surface(NULL),
+    m_default_frame(DEFAULT_FRAME_OTHER),
+    m_testcsgpath(NULL),
+    m_testconfig(NULL),
+    m_sensor_list(NULL),
+    m_runresultsdir(NULL)
 {
     init();
     (*m_log)("DONE"); 
@@ -274,9 +237,20 @@ void OpticksResource::init()
    assignDetectorName(); 
    assignDefaultMaterial(); 
 
+   initRunResultsDir(); 
+
    LOG(LEVEL) << "OpticksResource::init DONE" ; 
 }
 
+void OpticksResource::initRunResultsDir()
+{
+   const char* runfolder = m_ok->getRunFolder(); 
+   const char* runstamp = BStr::itoa( m_ok->getRunStamp() );  
+
+   std::string runresultsdir = getResultsPath( runfolder, runstamp ) ; 
+
+   LOG(error) << runresultsdir ; 
+}
 
 
 bool OpticksResource::isDetectorType(const char* type_)
@@ -287,6 +261,10 @@ bool OpticksResource::isResourceType(const char* type_)
 {
     return std::find(m_resource_types.begin(),m_resource_types.end(), type_) != m_resource_types.end()  ; 
 }
+
+
+
+
 
 
 
@@ -589,25 +567,9 @@ OPTICKS_GEOKEY
 
     if(daepath == NULL)
     {
-        if(m_lastarg && existsFile(m_lastarg))
-        {
-            daepath = m_lastarg ; 
-            LOG(warning) << "OpticksResource::readEnvironment"
-                         << " MISSING ENVVAR "
-                         << " geokey " << m_geokey 
-                         << " lastarg " << m_lastarg
-                         << " daepath " << daepath
-                         ;
-        }
-    }
-
-
-    if(daepath == NULL)
-    {
         LOG(warning) << "OpticksResource::readEnvironment"
                      << " NO DAEPATH "
                      << " geokey " << m_geokey 
-                     << " lastarg " << ( m_lastarg ? m_lastarg : "NULL" )
                      << " daepath " << ( daepath ? daepath : "NULL" )
                      ;
  

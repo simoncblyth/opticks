@@ -327,12 +327,15 @@ geocache-bench-()
 
 geocache-bench()
 {
-   echo "TITAN RTX"
-   CUDA_VISIBLE_DEVICES=1 OPTICKS_RTX=0 $FUNCNAME- 
-   CUDA_VISIBLE_DEVICES=1 OPTICKS_RTX=1 $FUNCNAME- 
-   echo "TITAN V" 
-   CUDA_VISIBLE_DEVICES=0 OPTICKS_RTX=0 $FUNCNAME- 
-   CUDA_VISIBLE_DEVICES=0 OPTICKS_RTX=1 $FUNCNAME- 
+   local stamp=$(date +%s)
+
+   CUDA_VISIBLE_DEVICES=1 OPTICKS_RTX=0 $FUNCNAME- --runfolder $FUNCNAME --runstamp $stamp --runlabel "OFF_TITAN_RTX" $*
+   CUDA_VISIBLE_DEVICES=1 OPTICKS_RTX=1 $FUNCNAME- --runfolder $FUNCNAME --runstamp $stamp --runlabel "ON_TITAN_RTX"  $*
+   CUDA_VISIBLE_DEVICES=0 OPTICKS_RTX=0 $FUNCNAME- --runfolder $FUNCNAME --runstamp $stamp --runlabel "OFF_TITAN_V"  $*
+   CUDA_VISIBLE_DEVICES=0 OPTICKS_RTX=1 $FUNCNAME- --runfolder $FUNCNAME --runstamp $stamp --runlabel "ON_TITAN_V"   $*
+   CUDA_VISIBLE_DEVICES=0,1 OPTICKS_RTX=0 $FUNCNAME- --runfolder $FUNCNAME --runstamp $stamp --runlabel "OFF_TITAN_V_AND_TITAN_RTX" $*
+
+
 }
 
 

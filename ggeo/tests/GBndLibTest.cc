@@ -15,10 +15,7 @@
 #include "GItemList.hh"
 
 
-#include "PLOG.hh"
-#include "BRAP_LOG.hh"
-#include "NPY_LOG.hh"
-#include "GGEO_LOG.hh"
+#include "OPTICKS_LOG.hh"
 
 
 class GBndLibTest 
@@ -44,14 +41,12 @@ void GBndLibTest::test_add()
 
 int main(int argc, char** argv)
 {
-    PLOG_(argc, argv);
-    BRAP_LOG__ ;
-    NPY_LOG__ ;
-    GGEO_LOG__ ;
+    OPTICKS_LOG(argc, argv);
 
     LOG(info) << argv[0] ; 
 
-    Opticks ok ;
+    Opticks ok(argc, argv) ;
+    ok.configure(); 
 
     LOG(info) << " ok " ; 
 

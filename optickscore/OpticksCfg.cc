@@ -4,6 +4,7 @@
 
 
 #include "SAr.hh"
+#include "STime.hh"
 #include "BStr.hh"
 #include "NGLM.hpp"
 #include "OpticksCfg.hh"
@@ -107,7 +108,10 @@ OpticksCfg<Listener>::OpticksCfg(const char* name, Listener* listener, bool live
        m_target(0),
        m_alignlevel(0),
        m_exename(SAr::Instance->exename()), 
-       m_gpumonpath(BStr::concat("$TMP/",m_exename ? m_exename : "OpticksCfg","_GPUMon.npy"))
+       m_gpumonpath(BStr::concat("$TMP/",m_exename ? m_exename : "OpticksCfg","_GPUMon.npy")),
+       m_runstamp(STime::EpochSeconds()),
+       m_runlabel(""),
+       m_runfolder("")
 {   
    init();  
    m_listener->setCfg(this); 
@@ -1002,6 +1006,30 @@ void OpticksCfg<Listener>::init()
 
    m_desc.add_options()
        ("gpumon", "Switch on GPU buffer usage recording. ");   
+
+
+
+   char runstamp[256];
+   snprintf(runstamp,256, "Integer seconds from the epoch. Overriding the default of now %d "
+                          "enables grouping together related runs under the same stamp. Use \"date +%%s\" in the shell.", m_runstamp );
+   m_desc.add_options()
+       ("runstamp",   boost::program_options::value<int>(&m_runstamp), runstamp );
+
+
+   char runlabel[128];
+   snprintf(runlabel,128, "Short string used for result identification. Default %s ", m_runlabel.c_str() );
+   m_desc.add_options()
+       ("runlabel",   boost::program_options::value<std::string>(&m_runlabel), runlabel );
+
+   char runfolder[128];
+   snprintf(runfolder,128, "Short string used organizing result output in the filesystem. Default %s ", m_runfolder.c_str() );
+   m_desc.add_options()
+       ("runfolder",   boost::program_options::value<std::string>(&m_runfolder), runfolder );
+
+
+
+
+
            
 
 
@@ -1568,6 +1596,27 @@ const std::string& OpticksCfg<Listener>::getGPUMonPath() const
 {
     return m_gpumonpath ;  
 }
+
+
+
+template <class Listener>
+int OpticksCfg<Listener>::getRunStamp() const 
+{
+    return m_runstamp ; 
+}
+template <class Listener>
+const std::string& OpticksCfg<Listener>::getRunLabel() const 
+{
+    return m_runlabel ;  
+}
+template <class Listener>
+const std::string& OpticksCfg<Listener>::getRunFolder() const 
+{
+    return m_runfolder ;  
+}
+
+
+
 
 
 

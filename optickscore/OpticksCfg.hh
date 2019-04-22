@@ -122,6 +122,9 @@ class OKCORE_API OpticksCfg : public BCfg {
 
      const std::string& getGPUMonPath() const ;
 
+     int                getRunStamp() const ; 
+     const std::string& getRunLabel() const ;
+     const std::string& getRunFolder() const ;
 
 
 private:
@@ -230,6 +233,9 @@ private:
      const char* m_exename ; 
      std::string m_gpumonpath ;
 
+     int          m_runstamp ; 
+     std::string  m_runlabel ; 
+     std::string  m_runfolder ; 
 
 };
 

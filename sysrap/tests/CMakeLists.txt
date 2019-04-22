@@ -47,6 +47,7 @@ set(TEST_SOURCES
    SGDMLTest.cc
 
    SSetTest.cc
+   STimeTest.cc
 )
 
 set(_TEST_SOURCES

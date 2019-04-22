@@ -632,13 +632,13 @@ void NPYBase::setNumItems(unsigned int ni)
 
     if(ni >= orig)
     {
-       LOG(debug) << "NPYBase::setNumItems"
+       LOG(verbose)
                   << " increase from " << orig << " to " << ni 
                   ; 
     }
     else
     {
-       LOG(debug) << "NPYBase::setNumItems"
+       LOG(verbose)
                   << " decrease from " << orig << " to " << ni 
                   ; 
     }

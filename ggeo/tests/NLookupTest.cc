@@ -11,7 +11,6 @@
 #include "OPTICKS_LOG.hh"
 
 #include "GGEO_BODY.hh"
-#include "PLOG.hh"
 
 /*
 
@@ -75,6 +74,8 @@ int main(int argc, char** argv)
 
     // load GBndLib from cache and dump
     Opticks* ok = new Opticks(argc, argv);
+    ok->configure(); 
+
     GBndLib* blib = GBndLib::load(ok, true );
     blib->dump();
     blib->dumpMaterialLineMap("GBndLib.MaterialLineMap : texline to material name correspondence");
