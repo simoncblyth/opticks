@@ -1,5 +1,6 @@
 #include <cassert>
 #include <cstring>
+#include <sstream>
 #include <iostream>
 #include <algorithm>
 #include "SStr.hh"
@@ -193,6 +194,16 @@ bool SStr::HasPointerSuffix( const char* name, unsigned min_hexdigits, unsigned 
     return  num_hexdigits > -1 && num_hexdigits >= int(min_hexdigits) && num_hexdigits <= int(max_hexdigits) ; 
 }
 
+
+const char* SStr::Concat( const char* a, const char* b, const char* c  )
+{
+    std::stringstream ss ; 
+    if(a) ss << a ; 
+    if(b) ss << b ; 
+    if(c) ss << c ; 
+    std::string s = ss.str();
+    return strdup(s.c_str());
+}
 
 
 

@@ -94,6 +94,7 @@ private:
 private:
     optix::Geometry         makeAnalyticGeometry(GMergedMesh* mergedmesh, unsigned lod);
     optix::Geometry         makeTriangulatedGeometry(GMergedMesh* mergedmesh, unsigned lod);
+    optix::Geometry         makeRTXTrianglesGeometry(GMergedMesh* mm, unsigned lod);
 private:
     void dump(const char* msg, const float* m);
 

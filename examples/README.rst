@@ -130,6 +130,17 @@ UseOptiXBufferPP
    simply copies from in to out.  Provides a command line interface to quickly run variants
    of the buffer accessing GPU code. 
 
+UseOptiXGeometry
+   Minimally demonstrate OptiX geometry without using OXRAP, performs a "standalone" raytrace
+   of a box with normal shader coloring.
+ 
+UseOptiXGeometryTriangles
+   Minimally demonstrate the use of optix::GeometryTriangles introduced in OptiX 6.0.0. 
+   Raytraces an octahedron writing a PPM file. 
+   Based on NPY and SYSRAP for buffer and PPM handling. No OXRAP.
+
+   * https://raytracing-docs.nvidia.com/optix/api/html/group___geometry_triangles.html
+
 UseOContextBufferPP
    Use the OptiXRap.OContext to reimplement UseOptiXBufferPP in a higher level style, 
    hoping to approach close enough to UseOptiXRap for the problem to manifest.  
@@ -187,6 +198,11 @@ UseGeometryShader
    pipeline using the same shader strings as the Rdr axis renderer 
    as used by UseOGLRapMinimal.  All the mat4 have been matched with
    UseOGLRapMinimal.
+
+   Features a monolithic standalone getMVP, providing the ModelViewProjection matrix, which 
+   is useful for demo code.::
+
+       glm::mat4 getMVP(int width, int height, bool verbose)
 
    Actually it was the comparison of the mat4 between
    UseOGLRapMinimal which uses View::getTransforms 

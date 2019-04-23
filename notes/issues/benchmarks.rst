@@ -35,6 +35,17 @@ With my triangles, ie no --xanalytic
 
 
 
+* RTX speedup should be more by using  optix::GeometryTriangles
+
+
+
+
+/usr/local/OptiX_600/SDK-src/optixGeometryTriangles
+--------------------------------------------------------
+
+
+
+
 Finding target volume to snap
 -------------------------------
 

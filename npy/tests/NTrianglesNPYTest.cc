@@ -1,3 +1,5 @@
+// TEST=NTrianglesNPYTest om-t
+
 
 #include "NBBox.hpp"
 #include "NPY.hpp"
@@ -81,8 +83,8 @@ void test_to_from_vtxidx()
     NVtxIdx vtxidx ;
     tris->to_vtxidx(vtxidx);
 
-    vtxidx.vtx->dump();
-    vtxidx.idx->dump();
+    vtxidx.vtx->dump("vtxidx.vtx");
+    vtxidx.idx->dump("vtxidx.idx");
 
     NTrianglesNPY* tris2 = NTrianglesNPY::from_indexed(vtxidx.vtx, vtxidx.idx);
     tris2->dump("tris2");

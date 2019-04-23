@@ -26,6 +26,7 @@ bool OpticksConst::isControl(unsigned int modifiers) { return 0 != (modifiers & 
 
 const char OpticksConst::GEOCODE_ANALYTIC = 'A';
 const char OpticksConst::GEOCODE_TRIANGULATED = 'T' ;
+const char OpticksConst::GEOCODE_RTXTRIANGLES = 'R' ;
 const char OpticksConst::GEOCODE_SKIP = 'K' ;
 
 

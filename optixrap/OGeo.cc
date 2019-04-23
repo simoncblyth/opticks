@@ -631,6 +631,10 @@ optix::Geometry OGeo::makeGeometry(GMergedMesh* mergedmesh, unsigned lod)
     {
         geometry = makeAnalyticGeometry(mergedmesh, lod);
     }
+    else if(geocode == OpticksConst::GEOCODE_RTXTRIANGLES)
+    {
+        geometry = makeRTXTrianglesGeometry(mergedmesh, lod);
+    }
     else
     {
         LOG(fatal) << "OGeo::makeGeometry geocode must be triangulated or analytic, not [" << (char)geocode  << "]" ;
@@ -818,6 +822,18 @@ void OGeo::dumpVolumes(const char* msg, GMergedMesh* mm)
 }
 
 
+
+
+optix::Geometry OGeo::makeRTXTrianglesGeometry(GMergedMesh* mm, unsigned lod)
+{
+    assert(0);
+    optix::Geometry geometry = m_context->createGeometry();
+    return geometry  ; 
+}
+
+
+
+
 optix::Geometry OGeo::makeTriangulatedGeometry(GMergedMesh* mm, unsigned lod)
 {
     // index buffer items are the indices of every triangle vertex, so divide by 3 to get faces 
@@ -860,7 +876,7 @@ optix::Geometry OGeo::makeTriangulatedGeometry(GMergedMesh* mm, unsigned lod)
     // needed for instanced offsets into buffers, so must describe the buffer, NOT the intent 
 
     GBuffer* id = NULL ; 
-    if(numITransforms > 0)  //  formerly 0 
+    if(numITransforms > 0)  //  formerly 0   : HUH: perhaps should be 1,  always using friid even for globals ?
     {
         id = mm->getFaceRepeatedInstancedIdentityBuffer();
         assert(id);
@@ -885,12 +901,12 @@ optix::Geometry OGeo::makeTriangulatedGeometry(GMergedMesh* mm, unsigned lod)
    optix::Buffer identityBuffer = createInputBuffer<optix::uint4>( id, RT_FORMAT_UNSIGNED_INT4, 1 , "identityBuffer"); 
    geometry["identityBuffer"]->setBuffer(identityBuffer);
 
- 
-    // TODO: purloin the OpenGL buffers to avoid duplicating the geometry info on GPU 
-    // TODO : attempt to isolate this bad behavior 
-    // TODO : float3 is a known to be problematic, maybe try with float4
-    // TODO : consolidate the three RT_FORMAT_UNSIGNED_INT into one UINT4
-    // setting reuse to true causes OptiX launch failure : bad enum 
+
+   /**
+    *reuse* was an unsuccessful former attempt to "purloin the OpenGL buffers" avoid duplicating geometry info between OpenGL and OptiX
+    setting reuse to true causes OptiX launch failure : bad enum 
+    **/
+
     bool reuse = false ;  
 
     optix::Buffer vertexBuffer = createInputBuffer<optix::float3>( mm->getVerticesBuffer(), RT_FORMAT_FLOAT3, 1, "vertexBuffer", reuse ); 

@@ -169,7 +169,7 @@ void X4Mesh::collect()
     m_vtx = NPY<float>::make(nv, 3) ; 
     m_vtx->zero();
 
-    m_raw = NPY<unsigned>::make(nf, 4) ; 
+    m_raw = NPY<unsigned>::make(nf, 4) ;  // 4 slots available to handle quads
     m_raw->zero();
 
     for (int i = 0 ; i < nv ; i++) collect_vtx(i+1) ; 
@@ -186,6 +186,7 @@ void X4Mesh::collect_vtx(int ivert)
     m_vtx->setValue( ivert-1, 0, 0, 0, vtx.x() );    
     m_vtx->setValue( ivert-1, 0, 0, 1, vtx.y() );    
     m_vtx->setValue( ivert-1, 0, 0, 2, vtx.z() );    
+    //                        ^^^^ are these zeros a hangover from former different shape of m_vtx 
 }
 
 void X4Mesh::collect_raw(int iface)
@@ -237,7 +238,7 @@ void X4Mesh::collect_tri()
     for(unsigned i=0 ; i < nf ; i++)
     {
          glm::uvec4 raw = m_raw->getQuadU(i, 0) ; 
-         ntri += ( raw.w == 0 ? 1 : 2 ) ; 
+         ntri += ( raw.w == 0 ? 1 : 2 ) ;     // 2 tri for a quad
     }
 
     m_tri = NPY<unsigned>::make( ntri, 3 ) ;  

@@ -335,8 +335,7 @@ geocache-bench()
    CUDA_VISIBLE_DEVICES=0 OPTICKS_RTX=1 $FUNCNAME- --runfolder $FUNCNAME --runstamp $stamp --runlabel "ON_TITAN_V"   $*
    CUDA_VISIBLE_DEVICES=0,1 OPTICKS_RTX=0 $FUNCNAME- --runfolder $FUNCNAME --runstamp $stamp --runlabel "OFF_TITAN_V_AND_TITAN_RTX" $*
 
-
-   bench.py $LOCAL_BASE/opticks/results/geocache-bench 
+   bench.py $LOCAL_BASE/opticks/results/$FUNCNAME
 
 }
 
