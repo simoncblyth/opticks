@@ -256,7 +256,7 @@ class GGEO_API GMesh : public GDrawable {
       const nnode* getRoot() const ; 
       const GMesh* getAlt() const ; 
 
-      NSlice* getInstanceSlice();
+      NSlice* getInstanceSlice() const ;
       NSlice* getFaceSlice();
       NSlice* getPartSlice();
 
@@ -411,16 +411,16 @@ class GGEO_API GMesh : public GDrawable {
       virtual unsigned int*  getSensors() const ;
 
       virtual guint4*        getNodeInfo() const ;
-      virtual guint4         getNodeInfo(unsigned int index);
+      virtual guint4         getNodeInfo(unsigned int index) const ; 
 
       virtual guint4*        getIdentity() const ;
-      virtual guint4         getIdentity(unsigned int index);
+      virtual guint4         getIdentity(unsigned int index) const ;
 
-      virtual guint4*        getInstancedIdentity();
-      virtual guint4         getInstancedIdentity(unsigned int index);
+      virtual guint4*        getInstancedIdentity() const ;
+      virtual guint4         getInstancedIdentity(unsigned int index) const ;
 
-      virtual unsigned int*  getMeshIndice();
-      virtual unsigned int   getMeshIndice(unsigned int index);
+      virtual unsigned int*  getMeshIndice() const ;
+      virtual unsigned int   getMeshIndice(unsigned int index) const ;
 
 
       virtual GBuffer* getNodesBuffer();

@@ -10,6 +10,8 @@
 // npy-
 #include "NSensor.hpp"
 #include "NPY.hpp"
+#include "NSlice.hpp"
+#include "GLMFormat.hpp"
 
 // opticks-
 #include "Opticks.hh"
@@ -767,6 +769,82 @@ void GMergedMesh::dumpVolumes(const char* msg) const
              ;
     }
 }
+
+
+void GMergedMesh::dumpVolumesFaces(const char* msg) const  // migrated from OGeo
+{
+    const GMergedMesh* mm = this ; 
+    unsigned numVolumes = mm->getNumVolumes();
+    unsigned numFaces = mm->getNumFaces();
+
+    LOG(info) << msg 
+              << " numVolumes " << numVolumes
+              << " numFaces " << numFaces
+              << " mmIndex " << mm->getIndex()
+             ; 
+
+    unsigned numFacesTotal = 0 ;  
+    for(unsigned i=0 ; i < numVolumes ; i++)
+    {
+         guint4 ni = mm->getNodeInfo(i) ;
+         numFacesTotal += ni.x ; 
+         guint4 id = mm->getIdentity(i) ;
+         guint4 ii = mm->getInstancedIdentity(i) ;
+         glm::vec4 ce = mm->getCE(i) ; 
+
+         std::cout 
+             << std::setw(5)  << i     
+             << " ni[nf/nv/nidx/pidx]"  << ni.description()
+             << " id[nidx,midx,bidx,sidx] " << id.description() 
+             << " ii[] " << ii.description() 
+             << " " << gpresent("ce", ce ) 
+             ;    
+    }
+    assert( numFacesTotal == numFaces ) ; 
+}
+
+
+
+
+void GMergedMesh::dumpTransforms( const char* msg) const  // migrated from OGeo
+{
+    const GMergedMesh* mm = this ; 
+
+    LOG(info) << msg ; 
+
+    NPY<float>* itransforms = mm->getITransformsBuffer();
+
+    NSlice* islice = mm->getInstanceSlice(); 
+
+    unsigned numTransforms = islice->count();
+
+    if(!islice) islice = new NSlice(0, itransforms->getNumItems()) ;
+
+    for(unsigned i=islice->low ; i<islice->high ; i+=islice->step)
+    {
+        glm::mat4 m4 = itransforms->getMat4(i) ; 
+
+        //const float* tdata = glm::value_ptr(m4) ;  
+        
+        glm::vec4 ipos = m4[3] ; 
+
+        if(islice->isMargin(i,5))
+        std::cout
+             << "[" 
+             << std::setw(2) << mm->getIndex() 
+             << "]" 
+             << " (" 
+             << std::setw(6) << i << "/" << std::setw(6) << numTransforms 
+             << " ) "   
+             << gpresent(" ip",ipos) 
+             ;
+     }
+}
+
+
+
+
+
 
 
 

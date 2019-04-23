@@ -455,15 +455,15 @@ unsigned* GMesh::getNodes() const    // CAUTION ONLY MAKES SENSE FROM GMergedMes
 }
 
 
-
-unsigned int* GMesh::getMeshIndice()  
+unsigned int* GMesh::getMeshIndice() const
 {
     return m_meshes ;
 }
-unsigned int GMesh::getMeshIndice(unsigned int index)  
+unsigned int GMesh::getMeshIndice(unsigned int index) const
 {
     return m_meshes[index] ;
 }
+
 
 
 
@@ -471,7 +471,7 @@ guint4* GMesh::getNodeInfo() const
 {
     return m_nodeinfo ; 
 }
-guint4 GMesh::getNodeInfo(unsigned int index)
+guint4 GMesh::getNodeInfo(unsigned int index) const
 {
     return m_nodeinfo[index] ; 
 }
@@ -480,16 +480,16 @@ guint4* GMesh::getIdentity() const
 {
     return m_identity ; 
 }
-guint4 GMesh::getIdentity(unsigned int index)
+guint4 GMesh::getIdentity(unsigned int index) const 
 {
     return m_identity[index] ; 
 }
 
-guint4* GMesh::getInstancedIdentity()
+guint4* GMesh::getInstancedIdentity() const
 {
     return m_iidentity ; 
 }
-guint4 GMesh::getInstancedIdentity(unsigned int index)
+guint4 GMesh::getInstancedIdentity(unsigned int index) const
 {
     return m_iidentity[index] ; 
 }
@@ -618,7 +618,7 @@ void GMesh::setInstanceSlice(NSlice* slice)
 {
     m_islice = slice ; 
 }
-NSlice* GMesh::getInstanceSlice()
+NSlice* GMesh::getInstanceSlice() const
 {
     return m_islice ; 
 }

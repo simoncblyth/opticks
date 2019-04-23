@@ -325,6 +325,12 @@ geocache-bench-()
    $dbg OpSnapTest --envkey --target 352851 --eye -1,-1,-1 --snapconfig "steps=5,eyestartz=-1,eyestopz=-0.5" --size 5120,2880,1 --embedded  $* 
 }
 
+geocache-check()
+{
+   local stamp=$(date +%s)
+   CUDA_VISIBLE_DEVICES=1 OPTICKS_RTX=0 geocache-bench- --runfolder $FUNCNAME --runstamp $stamp --runlabel "OFF_TITAN_RTX" $*
+}
+
 geocache-bench()
 {
    local stamp=$(date +%s)
@@ -338,6 +344,12 @@ geocache-bench()
    bench.py $LOCAL_BASE/opticks/results/$FUNCNAME
 
 }
+
+
+
+
+
+
 
 
 

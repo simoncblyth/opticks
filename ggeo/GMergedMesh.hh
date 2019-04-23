@@ -94,6 +94,9 @@ public:
     void reportMeshUsage(GGeo* ggeo, const char* msg="GMergedMesh::reportMeshUsage");
 public:
     void dumpVolumes(const char* msg="GMergedMesh::dumpVolumes") const ;
+    void dumpVolumesFaces(const char* msg="GMergedMesh::dumpVolumesFaces") const  ;  // migrated from OGeo
+    void dumpTransforms( const char* msg="GMergedMesh::dumpTransforms") const ; // migrated from OGeo
+
 public:
     // used when obtaining relative transforms for flattening sub-trees of repeated geometry
     void   setCurrentBase(GNode* base);

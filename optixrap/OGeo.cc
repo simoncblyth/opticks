@@ -41,93 +41,97 @@
 
 #include "OConfig.hh"
 
+/**
 
-//  Prior to instancing 
-//  ~~~~~~~~~~~~~~~~~~~~~~~~
-//
-//  Simplest possible node tree
-//
-//         geometry_group 
-//             acceleration  
-//             geometry_instance 0
-//             geometry_instance 1
-//             ...            
-//
-//         1 to 1 mapping of GMergedMesh to "geometry_instance" 
-//         each of which comprises one "geometry" with a single "material"
-//         which refers to boundary lib properties lodged in the context by OBoundaryLib
-//
-//  Preparing for instancing
-//  ~~~~~~~~~~~~~~~~~~~~~~~~~
-//
-//   Transforms can only be contained in "group" so 
-//   add top level group with another acceleration structure
-//
-//        group (top)
-//           acceleration
-//           geometry_group
-//                acceleration
-//                geometry_instance 0
-//                geometry_instance 1
-//                 
-//
-// With instancing
-// ~~~~~~~~~~~~~~~~~
-//
-//         m_top (Group)
-//             acceleration
-//
-//             m_geometry_group (GeometryGroup)
-//                 acceleration
-//                 geometry_instance 0
-//                 geometry_instance 1
-//
-//             m_repeated_group (Group)
-//                 acceleration 
-//
-//                 group 0
-//                     acceleration
-//                     xform_0 
-//                           repeated (GeometryGroup)
-//                     xform_1
-//                           repeated (GeometryGroup)
-//                     ...
-// 
-//                 group 1
-//                      acceleration
-//                      xform_0
-//                           repeated
-//                      ...
-//
-//
-//                  where repeated contains single gi (GeometryInstance) 
-//
-//
-//  With instancing and ability to identify the intersected instance
-//  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-//
-//   Need to be able to assign an index to each instance ...
-//   means need a GeometryInstance beneath the xform ? 
-//
-//   The transform must be assigned exactly one child of type rtGroup, rtGeometryGroup, rtTransform, or rtSelector,
-//
-//
-//
-//
-//  TODO:
-//     Currently all the accelerations are using Sbvh/Bvh.
-//     Investigate if container groups might be better as "pass through" 
-//     NoAccel as the geometryGroup and groups they contain have all the 
-//     geometry.
-//
+OGeo
+=====
+
+
+Prior to instancing 
+---------------------
+
+Simplest possible node tree::
+
+   geometry_group 
+       acceleration  
+       geometry_instance 0
+       geometry_instance 1
+       ...            
+
+1 to 1 mapping of GMergedMesh to "geometry_instance" 
+each of which comprises one "geometry" with a single "material"
+which refers to boundary lib properties lodged in the context by OBoundaryLib
+
+Preparing for instancing
+---------------------------
+
+Transforms can only be contained in "group" so 
+add top level group with another acceleration structure::
+
+   group (top)
+       acceleration
+       geometry_group
+             acceleration
+             geometry_instance 0
+             geometry_instance 1
+                 
+
+With instancing
+------------------
+
+::
+
+     m_top (Group)
+     acceleration
+
+             m_geometry_group (GeometryGroup)
+                 acceleration
+                 geometry_instance 0
+                 geometry_instance 1
+
+             m_repeated_group (Group)
+                 acceleration 
+
+                 group 0
+                     acceleration
+                     xform_0 
+                           repeated (GeometryGroup)
+                     xform_1
+                           repeated (GeometryGroup)
+                     ...
+ 
+                 group 1
+                      acceleration
+                      xform_0
+                           repeated
+                      ...
+
+
+                  where repeated contains single gi (GeometryInstance) 
+
+
+With instancing and ability to identify the intersected instance
+---------------------------------------------------------------------
+
+Need to be able to assign an index to each instance ...
+means need a GeometryInstance beneath the xform ? 
+
+The transform must be assigned exactly one child of type rtGroup, rtGeometryGroup, rtTransform, or rtSelector,
+
+
+TODO:
+Currently all the accelerations are using Sbvh/Bvh.
+Investigate if container groups might be better as "pass through" 
+NoAccel as the geometryGroup and groups they contain have all the 
+geometry.
+
+**/
 
 
 const plog::Severity OGeo::LEVEL = debug ; 
 
 const char* OGeo::BUILDER = "Sbvh" ; 
 const char* OGeo::TRAVERSER = "Bvh" ; 
-
-
 
 
 OGeo::OGeo(OContext* ocontext, Opticks* ok, GGeoLib* geolib, const char* builder, const char* traverser)
@@ -145,15 +149,12 @@ OGeo::OGeo(OContext* ocontext, Opticks* ok, GGeoLib* geolib, const char* builder
     init();
 }
 
-
 void OGeo::init()
 {
     m_context = m_ocontext->getContext();
-    m_geometry_group = m_context->createGeometryGroup();
-    m_repeated_group = m_context->createGroup();
+    m_geometry_group = m_context->createGeometryGroup();  // global frame geometry
+    m_repeated_group = m_context->createGroup();          // instanced geometry
 }
-
-
 
 void OGeo::setTop(optix::Group top)
 {
@@ -227,14 +228,12 @@ void OGeo::convertMergedMesh(unsigned i)
     m_mmidx = i ; 
     LOG(info) << i ; 
 
-    if(m_verbosity > 2)
-    LOG(info) << "OGeo::convertMesh START " << i ; 
+    LOG(info) << "( " << i ; 
 
     GMergedMesh* mm = m_geolib->getMergedMesh(i); 
 
     bool raylod = m_ok->isRayLOD() ; 
-    if(raylod) 
-        LOG(warning) << " RayLOD enabled " ; 
+    if(raylod) LOG(warning) << " RayLOD enabled " ; 
     
     bool is_null = mm == NULL ; 
     bool is_skip = mm->isSkip() ;  
@@ -257,9 +256,16 @@ void OGeo::convertMergedMesh(unsigned i)
 
     if( i == 0 )
     {
-        optix::Geometry gmm = makeGeometry(mm, 0);   // tri or ana depending on mm.geocode
+        unsigned lod = 0u ;  
+
+        /*
+        optix::Geometry gmm = makeGeometry(mm, lod);   // tri or ana depending on mm.geocode
         optix::Material mat = makeMaterial();
         optix::GeometryInstance gi = makeGeometryInstance(gmm,mat);
+        */
+
+        optix::GeometryInstance gi = makeGeometryInstance(mm, lod);
+
         gi["instance_index"]->setUint( 0u );  // so same code can run Instanced or not 
         gi["primitive_count"]->setUint( 0u ); // not needed for non-instanced
         m_geometry_group->addChild(gi);
@@ -271,8 +277,7 @@ void OGeo::convertMergedMesh(unsigned i)
         m_repeated_group->addChild(group); 
     }
 
-    if(m_verbosity > 2)
-    LOG(info) << "OGeo::convertMesh DONE " << i ; 
+    LOG(info) << ") " << i ; 
 }
 
 
@@ -352,7 +357,9 @@ optix::Group OGeo::makeRepeatedGroup(GMergedMesh* mm, bool raylod)
         if(raylod == false)
         {
             // proliferating *pergi* so can assign an instance index to it 
+
             optix::GeometryInstance pergi = makeGeometryInstance(gmm, mat); 
+
             pergi["instance_index"]->setUint( i );  
             optix::GeometryGroup perxform = makeGeometryGroup(pergi, accel[0]);    
 
@@ -383,6 +390,25 @@ optix::Group OGeo::makeRepeatedGroup(GMergedMesh* mm, bool raylod)
     }
     return assembly ;
 }
+
+
+/*
+
+   Where to put Selector ? 
+   ~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+   Given that the same gmm is used for all pergi... 
+   it would seem most appropriate to arrange the selector in common also, 
+   as all instances have the same simplified version of their geometry too..
+   BUT: selector needs to house 
+
+
+   *  Group contains : rtGroup, rtGeometryGroup, rtTransform, or rtSelector
+   *  Transform houses single child : rtGroup, rtGeometryGroup, rtTransform, or rtSelector   (NB not GeometryInstance)
+   *  GeometryGroup is a container for an arbitrary number of geometry instances, and must be assigned an Acceleration
+   *  Selector contains : rtGroup, rtGeometryGroup, rtTransform, and rtSelector
+
+*/
 
 
 
@@ -422,67 +448,6 @@ void OGeo::setTransformMatrix(optix::Transform& xform, const float* tdata )
     xform->setMatrix(transpose, m.getData(), 0); 
     //dump("OGeo::setTransformMatrix", m.getData());
 }
-
-
-void OGeo::dumpTransforms( const char* msg, GMergedMesh* mm )
-{
-    LOG(info) << msg ; 
-
-    NPY<float>* itransforms = mm->getITransformsBuffer();
-
-    NSlice* islice = mm->getInstanceSlice(); 
-
-    unsigned numTransforms = islice->count();
-
-    if(!islice) islice = new NSlice(0, itransforms->getNumItems()) ;
-
-    for(unsigned i=islice->low ; i<islice->high ; i+=islice->step)
-    {
-        glm::mat4 m4 = itransforms->getMat4(i) ; 
-
-        //const float* tdata = glm::value_ptr(m4) ;  
-        
-        glm::vec4 ipos = m4[3] ; 
-
-        if(islice->isMargin(i,5))
-        std::cout
-             << "[" 
-             << std::setw(2) << mm->getIndex() 
-             << "]" 
-             << " (" 
-             << std::setw(6) << i << "/" << std::setw(6) << numTransforms 
-             << " ) "   
-             << gpresent(" ip",ipos) 
-             ;
-     }
-}
-
-
-
-
-/*
-
-   Where to put Selector ? 
-   ~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-   Given that the same gmm is used for all pergi... 
-   it would seem most appropriate to arrange the selector in common also, 
-   as all instances have the same simplified version of their geometry too..
-   BUT: selector needs to house 
-
-
-   *  Group contains : rtGroup, rtGeometryGroup, rtTransform, or rtSelector
-   *  Transform houses single child : rtGroup, rtGeometryGroup, rtTransform, or rtSelector   (NB not GeometryInstance)
-   *  GeometryGroup is a container for an arbitrary number of geometry instances, and must be assigned an Acceleration
-   *  Selector contains : rtGroup, rtGeometryGroup, rtTransform, and rtSelector
-
-   How to form a simplified analytic instance ?
-   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-
-*/
-
-
 
 
 
@@ -587,6 +552,7 @@ optix::Material OGeo::makeMaterial()
     return material ; 
 }
 
+
 optix::GeometryInstance OGeo::makeGeometryInstance(optix::Geometry geometry, optix::Material material)
 {
     // LOG(debug) << "OGeo::makeGeometryInstance material1  " ; 
@@ -598,6 +564,7 @@ optix::GeometryInstance OGeo::makeGeometryInstance(optix::Geometry geometry, opt
     return gi ;
 }
 
+
 optix::GeometryGroup OGeo::makeGeometryGroup(optix::GeometryInstance gi, optix::Acceleration accel )
 {
     optix::GeometryGroup gg = m_context->createGeometryGroup();
@@ -608,13 +575,66 @@ optix::GeometryGroup OGeo::makeGeometryGroup(optix::GeometryInstance gi, optix::
 
 
 /**
+OGeo::makeGeometryInstance
+----------------------------
+
+
+
+**/
+
+
+optix::GeometryInstance OGeo::makeGeometryInstance(GMergedMesh* mm, unsigned lod)
+{
+    const char geocode = m_ok->isXAnalytic() ? OpticksConst::GEOCODE_ANALYTIC : mm->getGeoCode() ;
+
+    LOG(LEVEL) << "geocode " << geocode ; 
+
+    optix::Material mat = makeMaterial();   // can the material be shared by all ?
+    optix::GeometryInstance gi = m_context->createGeometryInstance() ;
+    gi->setMaterialCount(1); 
+    gi->setMaterial(0, mat ); 
+
+
+    if(geocode == OpticksConst::GEOCODE_TRIANGULATED)
+    {
+        optix::Geometry geo = makeTriangulatedGeometry(mm, lod);
+        gi->setGeometry( geo );     
+    }
+    else if(geocode == OpticksConst::GEOCODE_ANALYTIC)
+    {
+        optix::Geometry geo = makeAnalyticGeometry(mm, lod);
+        gi->setGeometry( geo );     
+    }
+    else if(geocode == OpticksConst::GEOCODE_RTXTRIANGLES)
+    {
+#if OPTIX_VERSION >= 60000
+        optix::GeometryTriangles geotri = makeRTXTrianglesGeometry(mm, lod);
+        gi->setGeometryTriangles( geotri );     
+#else
+        assert(0);  
+#endif
+    }
+    else
+    {
+        LOG(fatal) << "OGeo::makeGeometry geocode must be triangulated or analytic, not [" << (char)geocode  << "]" ;
+        assert(0);
+    }
+    return gi ; 
+}
+
+
+/**
 OGeo::makeGeometry : creating the OptiX GPU geometry
 -------------------------------------------------------
 
 NB the --xanalytic option switches to analytic geometry, ignoring 
 the 'T' or 'A' geocode of the mergedmesh 
 
+Hmm returning optix::Geometry is problematic as want to
+sometimes provide optix::GeometryTriangles.
+
 **/
+
 
 optix::Geometry OGeo::makeGeometry(GMergedMesh* mergedmesh, unsigned lod)
 {
@@ -631,10 +651,12 @@ optix::Geometry OGeo::makeGeometry(GMergedMesh* mergedmesh, unsigned lod)
     {
         geometry = makeAnalyticGeometry(mergedmesh, lod);
     }
+/*
     else if(geocode == OpticksConst::GEOCODE_RTXTRIANGLES)
     {
         geometry = makeRTXTrianglesGeometry(mergedmesh, lod);
     }
+*/
     else
     {
         LOG(fatal) << "OGeo::makeGeometry geocode must be triangulated or analytic, not [" << (char)geocode  << "]" ;
@@ -642,6 +664,7 @@ optix::Geometry OGeo::makeGeometry(GMergedMesh* mergedmesh, unsigned lod)
     }
     return geometry ; 
 }
+
 
 
 optix::Geometry OGeo::makeAnalyticGeometry(GMergedMesh* mm, unsigned lod)
@@ -659,28 +682,20 @@ optix::Geometry OGeo::makeAnalyticGeometry(GMergedMesh* mm, unsigned lod)
 
     GParts* pts = mm->getParts(); assert(pts && "GMergedMesh with GEOCODE_ANALYTIC must have associated GParts, see GGeo::modifyGeometry "); 
 
-
-
-
     if(pts->getPrimBuffer() == NULL)
     {
-        if(m_verbosity > 4) 
-        LOG(warning) << "OGeo::makeAnalyticGeometry GParts::close START " ; 
-
+        LOG(debug) << "( GParts::close " ; 
         pts->close();
-
-        if(m_verbosity > 4) 
-        LOG(warning) << "OGeo::makeAnalyticGeometry GParts::close DONE " ; 
+        LOG(debug) << ") GParts::close " ; 
     }
     else
     {
-        if(m_verbosity > 2)
-        LOG(warning) << "OGeo::makeAnalyticGeometry GParts::close NOT NEEDED " ; 
+        LOG(debug) << " skip GParts::close " ; 
     }
     
-    LOG(info) << "OGeo::makeAnalyticGeometry pts: " << pts->desc() ; 
+    LOG(info) << "pts: " << pts->desc() ; 
 
-    if(m_verbosity > 3 || m_ok->hasOpt("dbganalytic")) pts->fulldump("OGeo::makeAnalyticGeometry --dbganalytic", 10) ;
+    if(m_verbosity > 3 || m_ok->hasOpt("dbganalytic")) pts->fulldump("--dbganalytic", 10) ;
 
     NPY<float>*     partBuf = pts->getPartBuffer(); assert(partBuf && partBuf->hasShape(-1,4,4));    // node buffer
     NPY<float>*     tranBuf = pts->getTranBuffer(); assert(tranBuf && tranBuf->hasShape(-1,3,4,4));  // transform triples (t,v,q) 
@@ -697,7 +712,6 @@ optix::Geometry OGeo::makeAnalyticGeometry(GMergedMesh* mm, unsigned lod)
 
     unsigned int numVolumes = mm->getNumVolumes();
     unsigned int numVolumesSelected = mm->getNumVolumesSelected();
-
 
     if( pts->isNodeTree() )
     {
@@ -728,7 +742,6 @@ optix::Geometry OGeo::makeAnalyticGeometry(GMergedMesh* mm, unsigned lod)
 
     if(m_verbosity > 2)
     LOG(info) 
-                 << "OGeo::makeAnalyticGeometry " 
                  << stat.desc()
                  << " analytic_version " << analytic_version
                  ;
@@ -789,72 +802,39 @@ void OGeo::dumpStats(const char* msg)
 }
 
 
-void OGeo::dumpVolumes(const char* msg, GMergedMesh* mm)
-{
-    assert(mm);
-    unsigned numVolumes = mm->getNumVolumes();
-    unsigned numFaces = mm->getNumFaces();
-
-    LOG(info) << msg 
-              << " numVolumes " << numVolumes
-              << " numFaces " << numFaces
-              << " mmIndex " << mm->getIndex()
-             ; 
-
-    unsigned numFacesTotal = 0 ;  
-    for(unsigned i=0 ; i < numVolumes ; i++)
-    {
-         guint4 ni = mm->getNodeInfo(i) ;
-         numFacesTotal += ni.x ; 
-         guint4 id = mm->getIdentity(i) ;
-         guint4 ii = mm->getInstancedIdentity(i) ;
-         glm::vec4 ce = mm->getCE(i) ; 
-
-         std::cout 
-             << std::setw(5)  << i     
-             << " ni[nf/nv/nidx/pidx]"  << ni.description()
-             << " id[nidx,midx,bidx,sidx] " << id.description() 
-             << " ii[] " << ii.description() 
-             << " " << gpresent("ce", ce ) 
-             ;    
-    }
-    assert( numFacesTotal == numFaces ) ; 
-}
-
-
-
-
-optix::Geometry OGeo::makeRTXTrianglesGeometry(GMergedMesh* mm, unsigned lod)
+#if OPTIX_VERSION >= 60000
+optix::GeometryTriangles OGeo::makeRTXTrianglesGeometry(GMergedMesh* mm, unsigned lod)
 {
     assert(0);
-    optix::Geometry geometry = m_context->createGeometry();
-    return geometry  ; 
+    optix::GeometryTriangles geotri = m_context->createGeometryTriangles();
+    return geotri  ; 
 }
+#endif
 
 
+/**
+OGeo::makeTriangulatedGeometry
+---------------------------------
 
+Index buffer items are the indices of every triangle vertex, so divide by 3 to get faces 
+and use folding by 3 in createInputBuffer.
+    
+For instanced geometry this just sees (for DYB near) the 5 solids of the repeated instance 
+and numFaces is the sum of the face counts of those, and numITransforms is 672
+    
+In order to provide identity to the instances need to repeat the iidentity to the triangles
+    
+* Hmm this is really treating each triangle as a primitive each with its own bounds...
+
+**/
 
 optix::Geometry OGeo::makeTriangulatedGeometry(GMergedMesh* mm, unsigned lod)
 {
-    // index buffer items are the indices of every triangle vertex, so divide by 3 to get faces 
-    // and use folding by 3 in createInputBuffer
-    //
-    // DYB: for instanced geometry this just sees the 5 solids of the repeated instance 
-    //      and numFaces is the sum of the face counts of those, and numITransforms is 672
-    // 
-    //  in order to provide identity to the instances need to repeat the iidentity to the
-    //  triangles
-    //
-    //
-    // Hmm this is really treating each triangle as a primitive each with its own bounds...
-    //  
-
     m_lodidx = lod ; 
 
     optix::Geometry geometry = m_context->createGeometry();
     geometry->setIntersectionProgram(m_ocontext->createProgram("TriangleMesh.cu", "mesh_intersect"));
     geometry->setBoundingBoxProgram(m_ocontext->createProgram("TriangleMesh.cu", "mesh_bounds"));
-
 
     unsigned numVolumes = mm->getNumVolumes();
     unsigned numFaces = mm->getNumFaces();
@@ -872,43 +852,33 @@ optix::Geometry OGeo::makeTriangulatedGeometry(GMergedMesh* mm, unsigned lod)
              
     geometry->setPrimitiveCount(lod > 0 ? numFaces0 : numFaces ); // lazy LOD, ie dont change buffer, just ignore most of it for lod > 0 
 
-    geometry["primitive_count"]->setUint( numFaces );  
-    // needed for instanced offsets into buffers, so must describe the buffer, NOT the intent 
+    geometry["primitive_count"]->setUint( numFaces );  // needed for instanced offsets into buffers, so must describe the buffer, NOT the intent 
 
     GBuffer* id = NULL ; 
     if(numITransforms > 0)  //  formerly 0   : HUH: perhaps should be 1,  always using friid even for globals ?
     {
         id = mm->getFaceRepeatedInstancedIdentityBuffer();
         assert(id);
-        LOG(verbose) << "OGeo::makeTriangulatedGeometry using FaceRepeatedInstancedIdentityBuffer"
-                  << " friid items " << id->getNumItems() 
-                  << " numITransforms*numFaces " << numITransforms*numFaces
-                  ;
-
+        LOG(verbose) << "using FaceRepeatedInstancedIdentityBuffer" << " friid items " << id->getNumItems() << " numITransforms*numFaces " << numITransforms*numFaces ; 
         assert( id->getNumItems() == numITransforms*numFaces );
    }
    else
    {
         id = mm->getFaceRepeatedIdentityBuffer();
         assert(id);
-        LOG(verbose) << "OGeo::makeTriangulatedGeometry using FaceRepeatedIdentityBuffer"
-                  << " frid items " << id->getNumItems() 
-                  << " numFaces " << numFaces
-                  ;
+        LOG(verbose) << "using FaceRepeatedIdentityBuffer" << " frid items " << id->getNumItems() << " numFaces " << numFaces ; 
         assert( id->getNumItems() == numFaces );
    }  
 
    optix::Buffer identityBuffer = createInputBuffer<optix::uint4>( id, RT_FORMAT_UNSIGNED_INT4, 1 , "identityBuffer"); 
    geometry["identityBuffer"]->setBuffer(identityBuffer);
 
-
    /**
     *reuse* was an unsuccessful former attempt to "purloin the OpenGL buffers" avoid duplicating geometry info between OpenGL and OptiX
-    setting reuse to true causes OptiX launch failure : bad enum 
+    setting reuse to true causes OptiX/OpenGL launch failure : bad enum 
     **/
 
     bool reuse = false ;  
-
     optix::Buffer vertexBuffer = createInputBuffer<optix::float3>( mm->getVerticesBuffer(), RT_FORMAT_FLOAT3, 1, "vertexBuffer", reuse ); 
     geometry["vertexBuffer"]->setBuffer(vertexBuffer);
 
@@ -1135,7 +1105,6 @@ optix::Buffer OGeo::CreateInputUserBuffer(optix::Context& ctx, NPY<T>* src, unsi
 
 template
 optix::Buffer OGeo::CreateInputUserBuffer<float>(optix::Context& ctx, NPY<float>* src, unsigned elementSize, const char* name, const char* ctxname, unsigned verbosity) ;
-
 
 
 
