@@ -38,14 +38,12 @@
 #include "NSlice.hpp"
 #include "GLMFormat.hpp"
 
-
 #include "OConfig.hh"
 
 /**
 
 OGeo
 =====
-
 
 Prior to instancing 
 ---------------------
@@ -84,12 +82,12 @@ With instancing
      m_top (Group)
      acceleration
 
-             m_geometry_group (GeometryGroup)
+             m_global (GeometryGroup)
                  acceleration
                  geometry_instance 0
                  geometry_instance 1
 
-             m_repeated_group (Group)
+             m_repeated (Group)
                  acceleration 
 
                  group 0
@@ -152,8 +150,8 @@ OGeo::OGeo(OContext* ocontext, Opticks* ok, GGeoLib* geolib, const char* builder
 void OGeo::init()
 {
     m_context = m_ocontext->getContext();
-    m_geometry_group = m_context->createGeometryGroup();  // global frame geometry
-    m_repeated_group = m_context->createGroup();          // instanced geometry
+    m_global = m_context->createGeometryGroup();  
+    m_repeated = m_context->createGroup();          // instanced geometry
 }
 
 void OGeo::setTop(optix::Group top)
@@ -176,64 +174,42 @@ void OGeo::convert()
 {
     unsigned int nmm = m_geolib->getNumMergedMesh();
 
-    LOG(info) << "[  numMergedMesh: " << nmm ;
+    LOG(info) << "[ nmm " << nmm ;
 
-    if(m_verbosity > 1)
+    if(m_verbosity > 1) m_geolib->dump("OGeo::convert GGeoLib" ); 
+
+    for(unsigned i=0 ; i < nmm ; i++) convertMergedMesh(i); 
+
+    unsigned globalCount = m_global->getChildCount() ;
+    unsigned repeatedCount = m_repeated->getChildCount() ;
+
+    if(globalCount > 0)  // all Group and GeometryGroup need distinct acceleration structures
     {
-        LOG(info) << " m_verbosity " << m_verbosity ; 
-        m_geolib->dump("OGeo::convert GGeoLib" );
-    }
-
-    for(unsigned i=0 ; i < nmm ; i++)
-    {
-        convertMergedMesh(i);
-    }
-
-    // all group and geometry_group need to have distinct acceleration structures
-    unsigned int geometryGroupCount = m_geometry_group->getChildCount() ;
-    unsigned int repeatedGroupCount = m_repeated_group->getChildCount() ;
-   
-    LOG(verbose) << "OGeo::convert"
-              << " geometryGroupCount(global) " << geometryGroupCount
-              << " repeatedGroupCount(instanced) " << repeatedGroupCount
-              ;
-
-    if(geometryGroupCount > 0)  
-    {
-         m_top->addChild(m_geometry_group);
-         m_geometry_group->setAcceleration( makeAcceleration() );
+         m_top->addChild(m_global);
+         m_global->setAcceleration( makeAcceleration() );
     } 
 
-    if(repeatedGroupCount > 0)
+    if(repeatedCount > 0)
     {
-         m_top->addChild(m_repeated_group);
-         m_repeated_group->setAcceleration( makeAcceleration() );
+         m_top->addChild(m_repeated);
+         m_repeated->setAcceleration( makeAcceleration() );
     } 
 
     m_top->setAcceleration( makeAcceleration() );
 
-
-    if(m_verbosity > 0)
-    {
-        LOG(info) << "OGeo::convert DONE  numMergedMesh: " << nmm ;
-        dumpStats();
-    }
-
-    LOG(info) << "]" ; 
+    if(m_verbosity > 0) dumpStats(); 
+    LOG(info) << "] nmm " << nmm << " global " << globalCount << " repeated " << repeatedCount ; 
 }
-
 
 void OGeo::convertMergedMesh(unsigned i)
 {
     m_mmidx = i ; 
-    LOG(info) << i ; 
-
     LOG(info) << "( " << i ; 
 
     GMergedMesh* mm = m_geolib->getMergedMesh(i); 
 
     bool raylod = m_ok->isRayLOD() ; 
-    if(raylod) LOG(warning) << " RayLOD enabled " ; 
+    if(raylod) LOG(fatal) << " RayLOD enabled " ; 
     
     bool is_null = mm == NULL ; 
     bool is_skip = mm->isSkip() ;  
@@ -241,53 +217,101 @@ void OGeo::convertMergedMesh(unsigned i)
     
     if( is_null || is_skip || is_empty )
     {
-        LOG(warning) << "OGeo::convertMesh"
-                     << " not converting mesh " << i 
-                     << " is_null " << is_null
-                     << " is_skip " << is_skip
-                     << " is_empty " << is_empty
-                     ;
+        LOG(error) << " not converting mesh " << i << " is_null " << is_null << " is_skip " << is_skip << " is_empty " << is_empty ; 
         return  ; 
     }
 
-    // 1st merged mesh is the global non-instanced one
-    // subsequent merged meshes contain repeated PMT geometry
-    // that typically has analytic primitive intersection implementations  
-
-    if( i == 0 )
+    if( i == 0 )         // global non-instanced geometry in slot 0
     {
         unsigned lod = 0u ;  
-
-        /*
-        optix::Geometry gmm = makeGeometry(mm, lod);   // tri or ana depending on mm.geocode
         optix::Material mat = makeMaterial();
-        optix::GeometryInstance gi = makeGeometryInstance(gmm,mat);
-        */
+        OGeometry* omm = makeOGeometry( mm, lod ); 
 
-        optix::GeometryInstance gi = makeGeometryInstance(mm, lod);
+        unsigned instance_index = 0u ;  // so same code can run Instanced or not
+        optix::GeometryInstance gi = makeGeometryInstance(omm, mat, instance_index );
 
-        gi["instance_index"]->setUint( 0u );  // so same code can run Instanced or not 
         gi["primitive_count"]->setUint( 0u ); // not needed for non-instanced
-        m_geometry_group->addChild(gi);
+        m_global->addChild(gi);
     }
-    else
+    else        // repeated geometry
     {
-        optix::Group group = makeRepeatedGroup(mm, raylod);
+        optix::Group group = makeRepeatedGroup(mm, raylod) ;
         group->setAcceleration( makeAcceleration() );
-        m_repeated_group->addChild(group); 
+        m_repeated->addChild(group); 
     }
-
     LOG(info) << ") " << i ; 
 }
 
 
 
 
+/**
+OGeo::makeRepeatedGroup
+--------------------------
 
-optix::Group OGeo::makeRepeatedGroup(GMergedMesh* mm, bool raylod)
+Geometry tree that allows instance identity
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+::
+
+          assembly        (Group)                1:1 with instanced merged mesh
+             xform.0      (Transform)
+               perxform   (GeometryGroup)
+                 pergi    (GeometryInstance)       distinct pergi for every instance, with instance_index assigned  
+                     omm  (Geometry)               the same omm and mat are child of all xform/perxform/pergi
+                     mat  (Material) 
+             xform.1       (Transform)
+               perxform   (GeometryGroup)
+                  pergi   (GeometryInstance)      
+                     omm  (Geometry)
+                     mat  (Material) 
+
+             ... for all the many thousands of instances of repeated geometry ...
+
+
+Why proliferate the *pergi* ? So can assign an instance index to it : ie know which PMT gets hit
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* What other geo types can hold variables ? 
+      
+  * "Geometry" and "Material" can, but doesnt help for instance_index as only one of those
+  
+Could the perxform GeometryGroup be common to all ?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+NO, needs to be a separate GeometryGroup into which to place 
+the distinct pergi GeometryInstance required for instanced identity   
+
+Where to put the RayLOD Selector ? 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* NOTE THAT RAYLOD IS NOT CURRENTLY IN USE
+* LOD : Level Of Detail 
+
+  * level0 : most precise/expensive used for ray.origin inside instance sphere
+  * level1 : cheaper alternative used for ray.origin outside instance sphere
+
+
+The RayLOD idea is to switch geometry based on the distance from it, using 
+radius of outermost solid origin centered bounding sphere with safety margin
+see notes/issues/can-optix-selector-defer-expensive-csg.rst
+
+Given that the same omm is used for all pergi... 
+it would seem most appropriate to arrange the selector in common also, 
+as all instances have the same simplified version of their geometry too..
+BUT: selector needs to house 
+
+*  Group contains : rtGroup, rtGeometryGroup, rtTransform, or rtSelector
+*  Transform houses single child : rtGroup, rtGeometryGroup, rtTransform, or rtSelector   (NB not GeometryInstance)
+*  GeometryGroup is a container for an arbitrary number of geometry instances, and must be assigned an Acceleration
+*  Selector contains : rtGroup, rtGeometryGroup, rtTransform, and rtSelector
+
+**/
+
+optix::Group OGeo::makeRepeatedGroup(GMergedMesh* mm, bool raylod )
 {
     const char geocode = m_ok->isXAnalytic() ? OpticksConst::GEOCODE_ANALYTIC : mm->getGeoCode();
-    assert( geocode == OpticksConst::GEOCODE_TRIANGULATED || geocode == OpticksConst::GEOCODE_ANALYTIC ) ;
+    assert( geocode == OpticksConst::GEOCODE_TRIANGULATED || geocode == OpticksConst::GEOCODE_ANALYTIC || geocode == OpticksConst::GEOCODE_RTXTRIANGLES ) ;
 
     float instance_bounding_radius = mm->getBoundingRadiusCE(0) ; 
 
@@ -313,38 +337,30 @@ optix::Group OGeo::makeRepeatedGroup(GMergedMesh* mm, bool raylod)
               << " instance_bounding_radius " << instance_bounding_radius
               ; 
 
+
+    OGeometry* omm[2] ; 
+
+    omm[0] = makeOGeometry( mm, 0u ); 
+    omm[1] = raylod ? makeOGeometry( mm, 1u ) : NULL ; 
+
+    optix::Material mat = makeMaterial();
+    optix::Program visit ; 
+    if(raylod)
+    {
+        visit = m_ocontext->createProgram("visit_instance.cu", "visit_instance");
+        visit["instance_bounding_radius"]->setFloat( instance_bounding_radius*2.f );
+    }
+
+
     optix::Group assembly = m_context->createGroup();
     assembly->setChildCount(islice->count());
 
-    optix::Geometry tri[2], ana[2], gmm ; 
-
-    // TODO: avoid making tri when use ana ?
-
-    tri[0] = makeTriangulatedGeometry(mm, 0u );
-    tri[1] = makeTriangulatedGeometry(mm, 1u );
-
-    if(m_gltf > 0 || m_ok->isXAnalytic() )
-    {
-        ana[0] = makeAnalyticGeometry(mm, 0u ) ; 
-        ana[1] = makeAnalyticGeometry(mm, 1u ) ; 
-    }
-
-    gmm = geocode == OpticksConst::GEOCODE_TRIANGULATED ? tri[0]  : ana[0] ; 
-
-    optix::Material mat = makeMaterial();
-    optix::Program visit = m_ocontext->createProgram("visit_instance.cu", "visit_instance");
-
-    visit["instance_bounding_radius"]->setFloat( instance_bounding_radius*2.f );
-    // radius of outermost solid origin centered bounding sphere with safety margin
-    // see notes/issues/can-optix-selector-defer-expensive-csg.rst
-
     optix::Acceleration accel[2] ;
-    accel[0] = makeAcceleration() ;
-    accel[1] = makeAcceleration() ;
-    // common accel for all instances : so long as the same geometry 
+    accel[0] = makeAcceleration() ;  //  common accel for all instances as same geometry
+    accel[1] = makeAcceleration() ;  //  NB accel is not created inside the loop 
 
     unsigned ichild = 0 ; 
-    for(unsigned int i=islice->low ; i<islice->high ; i+=islice->step)
+    for(unsigned int i=islice->low ; i<islice->high ; i+=islice->step) //  CAUTION HEAVY LOOP eg 20k PMTs 
     {
         optix::Transform xform = m_context->createTransform();
         glm::mat4 m4 = itransforms->getMat4(i) ; 
@@ -353,29 +369,21 @@ optix::Group OGeo::makeRepeatedGroup(GMergedMesh* mm, bool raylod)
         setTransformMatrix(xform, tdata); 
         assembly->setChild(ichild, xform);
         ichild++ ;
+        unsigned instance_index = i ; 
 
         if(raylod == false)
         {
-            // proliferating *pergi* so can assign an instance index to it 
-
-            optix::GeometryInstance pergi = makeGeometryInstance(gmm, mat); 
-
-            pergi["instance_index"]->setUint( i );  
-            optix::GeometryGroup perxform = makeGeometryGroup(pergi, accel[0]);    
-
+            optix::GeometryInstance pergi = makeGeometryInstance(omm[0], mat, instance_index); 
+            optix::GeometryGroup perxform = makeGeometryGroup(pergi, accel[0] );    
             xform->setChild(perxform);  
         }
         else
         {
             optix::GeometryInstance gi[2] ; 
+            gi[0] = makeGeometryInstance( omm[0] , mat, instance_index ); 
+            gi[1] = makeGeometryInstance( omm[1] , mat, instance_index );  
+
             optix::GeometryGroup    gg[2] ; 
-
-            gi[0] = makeGeometryInstance( ana[0] , mat );  // level0 : most precise/expensive used for ray.origin inside instance sphere
-            gi[1] = makeGeometryInstance( ana[1] , mat );  // level1 : cheaper alternative used for ray.origin outside instance sphere
-
-            gi[0]["instance_index"]->setUint( i );  
-            gi[1]["instance_index"]->setUint( i );  
-
             gg[0] = makeGeometryGroup(gi[0], accel[0]);    
             gg[1] = makeGeometryGroup(gi[1], accel[1]);    
          
@@ -392,54 +400,6 @@ optix::Group OGeo::makeRepeatedGroup(GMergedMesh* mm, bool raylod)
 }
 
 
-/*
-
-   Where to put Selector ? 
-   ~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-   Given that the same gmm is used for all pergi... 
-   it would seem most appropriate to arrange the selector in common also, 
-   as all instances have the same simplified version of their geometry too..
-   BUT: selector needs to house 
-
-
-   *  Group contains : rtGroup, rtGeometryGroup, rtTransform, or rtSelector
-   *  Transform houses single child : rtGroup, rtGeometryGroup, rtTransform, or rtSelector   (NB not GeometryInstance)
-   *  GeometryGroup is a container for an arbitrary number of geometry instances, and must be assigned an Acceleration
-   *  Selector contains : rtGroup, rtGeometryGroup, rtTransform, and rtSelector
-
-*/
-
-
-
-/*
-   Instance ID supporting structure
-   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-          assembly        (Group)                1:1 with instanced merged mesh
-             xform        (Transform)
-               perxform   (GeometryGroup)
-                 pergi    (GeometryInstance)       distinct pergi for every instance, with instance_index assigned  
-                     gmm  (Geometry)               the same gmm and mat are child of all xform/perxform/pergi
-                     mat  (Material) 
-             xform        (Transform)
-               perxform   (GeometryGroup)
-                  pergi   (GeometryInstance)      
-                     gmm  (Geometry)
-                     mat  (Material) 
-             ...
-
-
-   What other geo types can hold variables ? 
-       "Geometry" and "Material" can, 
-       but doesnt help for instance_index as only one of those
-  
-   Could the perxform GeometryGroup be common to all ?
-       NO, needs to be a separate GeometryGroup into which to place 
-       the distinct pergi GeometryInstance required for instanced identity   
-
-*/
-
 
 void OGeo::setTransformMatrix(optix::Transform& xform, const float* tdata ) 
 {
@@ -448,70 +408,6 @@ void OGeo::setTransformMatrix(optix::Transform& xform, const float* tdata )
     xform->setMatrix(transpose, m.getData(), 0); 
     //dump("OGeo::setTransformMatrix", m.getData());
 }
-
-
-
-
-
-/*
-optix::Group OGeo::PRIOR_makeRepeatedGroup(GMergedMesh* mm, unsigned int limit)
-{
-    assert(0);
-    NPY<float>* tbuf = mm->getITransformsBuffer();
-    unsigned int numTransforms = limit > 0 ? std::min(tbuf->getNumItems(), limit) : tbuf->getNumItems() ;
-    assert(tbuf && numTransforms > 0);
-
-    LOG(info) << "OGeo::makeRepeatedGroup numTransforms " << numTransforms ; 
-
-    float* tptr = (float*)tbuf->getPointer(); 
-
-    optix::Group assembly = m_context->createGroup();
-    assembly->setChildCount(numTransforms);
-
-    optix::GeometryGroup repeated = m_context->createGeometryGroup();
-    optix::Geometry gmm = makeGeometry(mm);
-    optix::Material mat = makeMaterial();
-    optix::GeometryInstance gi = makeGeometryInstance(gmm, mat); 
-    repeated->addChild(gi);
-    repeated->setAcceleration( makeAcceleration() );
-
-    for(unsigned int i=0 ; i<numTransforms ; i++)
-    {
-        optix::Transform xform = m_context->createTransform();
-        assembly->setChild(i, xform);
-
-        xform->setChild(repeated);
-        const float* tdata = tptr + 16*i ; 
-        setTransformMatrix(xform, tdata); 
-    }
-    return assembly ;
-
-}
-*/
-
-   /*
-   Before instance ID possible
-   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-          assembly        (Group) 
-             xform_0      (Transform)
-
-               repeated   (GeometryGroup)         exact same repeated group is child of all xform
-                  gi      (GeometryInstance)     
-                     gmm  (Geometry)
-                     mat  (Material) 
-
-             xform_1      (Transform)
-
-               repeated   (GeometryGroup)
-                  gi      (GeometryInstance)    
-                     gmm  (Geometry)
-                     mat  (Material) 
-             ...
-
-   */
-
-
 
 
 void OGeo::dump(const char* msg, const float* f)
@@ -553,18 +449,6 @@ optix::Material OGeo::makeMaterial()
 }
 
 
-optix::GeometryInstance OGeo::makeGeometryInstance(optix::Geometry geometry, optix::Material material)
-{
-    // LOG(debug) << "OGeo::makeGeometryInstance material1  " ; 
-
-    std::vector<optix::Material> materials ;
-    materials.push_back(material);
-    optix::GeometryInstance gi = m_context->createGeometryInstance( geometry, materials.begin(), materials.end()  );  
-
-    return gi ;
-}
-
-
 optix::GeometryGroup OGeo::makeGeometryGroup(optix::GeometryInstance gi, optix::Acceleration accel )
 {
     optix::GeometryGroup gg = m_context->createGeometryGroup();
@@ -574,97 +458,74 @@ optix::GeometryGroup OGeo::makeGeometryGroup(optix::GeometryInstance gi, optix::
 }
 
 
-/**
-OGeo::makeGeometryInstance
-----------------------------
 
-
-
-**/
-
-
-optix::GeometryInstance OGeo::makeGeometryInstance(GMergedMesh* mm, unsigned lod)
+optix::GeometryInstance OGeo::makeGeometryInstance(OGeometry* ogeom, optix::Material mat, unsigned instance_index)
 {
-    const char geocode = m_ok->isXAnalytic() ? OpticksConst::GEOCODE_ANALYTIC : mm->getGeoCode() ;
-
-    LOG(LEVEL) << "geocode " << geocode ; 
-
-    optix::Material mat = makeMaterial();   // can the material be shared by all ?
     optix::GeometryInstance gi = m_context->createGeometryInstance() ;
     gi->setMaterialCount(1); 
     gi->setMaterial(0, mat ); 
 
-
-    if(geocode == OpticksConst::GEOCODE_TRIANGULATED)
+    if( ogeom->g.get() != NULL )
     {
-        optix::Geometry geo = makeTriangulatedGeometry(mm, lod);
-        gi->setGeometry( geo );     
+        gi->setGeometry( ogeom->g ); 
     }
-    else if(geocode == OpticksConst::GEOCODE_ANALYTIC)
+#if OPTIX_VERSION >= 60000 
+    else if ( ogeom->gt.get() != NULL )
     {
-        optix::Geometry geo = makeAnalyticGeometry(mm, lod);
-        gi->setGeometry( geo );     
+        gi->setGeometryTriangles( ogeom->gt ); 
     }
-    else if(geocode == OpticksConst::GEOCODE_RTXTRIANGLES)
-    {
-#if OPTIX_VERSION >= 60000
-        optix::GeometryTriangles geotri = makeRTXTrianglesGeometry(mm, lod);
-        gi->setGeometryTriangles( geotri );     
-#else
-        assert(0);  
-#endif
-    }
+#endif  
     else
     {
-        LOG(fatal) << "OGeo::makeGeometry geocode must be triangulated or analytic, not [" << (char)geocode  << "]" ;
-        assert(0);
+        LOG(fatal) << " given OGeometry instance holding no geometry " ; 
+        assert(0);  
     }
-    return gi ; 
+    gi["instance_index"]->setUint(instance_index);  
+    return gi ;
 }
 
 
 /**
-OGeo::makeGeometry : creating the OptiX GPU geometry
+OGeo::makeOGeometry : creating the OptiX GPU geometry
 -------------------------------------------------------
 
-NB the --xanalytic option switches to analytic geometry, ignoring 
-the 'T' or 'A' geocode of the mergedmesh 
+* NB --xanalytic option switches to analytic geometry, ignoring the 'T' or 'A' geocode of the mergedmesh 
 
-Hmm returning optix::Geometry is problematic as want to
-sometimes provide optix::GeometryTriangles.
+The OGeo::OGeometry internal struct is returned to enable optix::Geometry and optix::GeometryTriangles
+to be handled uniformly.  Initially tried returning optix::GeometryInstance to effect such a
+uniform jandling but that was too slow as it forced recreation of optix geometry 
+for every instance.
 
 **/
 
 
-optix::Geometry OGeo::makeGeometry(GMergedMesh* mergedmesh, unsigned lod)
+OGeo::OGeometry* OGeo::makeOGeometry(GMergedMesh* mergedmesh, unsigned lod)
 {
-    optix::Geometry geometry ; 
+    OGeometry* ogeom = new OGeometry ; 
+    
     const char geocode = m_ok->isXAnalytic() ? OpticksConst::GEOCODE_ANALYTIC : mergedmesh->getGeoCode() ;
 
-    LOG(LEVEL) << "OGeo::makeGeometry geocode " << geocode ; 
+    LOG(LEVEL) << "geocode " << geocode ; 
 
     if(geocode == OpticksConst::GEOCODE_TRIANGULATED)
     {
-        geometry = makeTriangulatedGeometry(mergedmesh, lod);
+        ogeom->g = makeTriangulatedGeometry(mergedmesh, lod);
     }
     else if(geocode == OpticksConst::GEOCODE_ANALYTIC)
     {
-        geometry = makeAnalyticGeometry(mergedmesh, lod);
+        ogeom->g = makeAnalyticGeometry(mergedmesh, lod);
     }
-/*
     else if(geocode == OpticksConst::GEOCODE_RTXTRIANGLES)
     {
-        geometry = makeRTXTrianglesGeometry(mergedmesh, lod);
+        ogeom->gt = makeRTXTrianglesGeometry(mergedmesh, lod);
     }
-*/
     else
     {
-        LOG(fatal) << "OGeo::makeGeometry geocode must be triangulated or analytic, not [" << (char)geocode  << "]" ;
+        LOG(fatal) << "geocode must be triangulated or analytic, not [" << (char)geocode  << "]" ;
         assert(0);
     }
-    return geometry ; 
+    return ogeom ; 
 }
-
 
 
 optix::Geometry OGeo::makeAnalyticGeometry(GMergedMesh* mm, unsigned lod)
@@ -1059,8 +920,6 @@ optix::Buffer OGeo::createInputBuffer(NPY<S>* buf, RTformat format, unsigned int
 
    return buffer ; 
 }
-
-
 
 
 template<typename T>

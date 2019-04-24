@@ -53,10 +53,24 @@ Crucial OptiX geometrical members:
 
 #include "OGeoStat.hh"
 
+
+
+
+
+
 #include "OXRAP_API_EXPORT.hh"
 class OXRAP_API  OGeo 
 {
 public:
+    struct OGeometry 
+    {
+       optix::Geometry           g ; 
+#if OPTIX_VERSION >= 60000
+       optix::GeometryTriangles  gt ; 
+#endif
+    };
+
+
     static const plog::Severity LEVEL ; 
     static const char* BUILDER ; 
     static const char* TRAVERSER ; 
@@ -81,17 +95,17 @@ public:
     template <typename T>            optix::Buffer createInputUserBuffer(NPY<T>* src, unsigned elementSize, const char* name);
 public:
     optix::Group   makeRepeatedGroup(GMergedMesh* mm, bool lod );
-    //void dumpTransforms( const char* msg, GMergedMesh* mm );
-    //void dumpVolumes(const char* msg, GMergedMesh* mm);
 
 private:
     void                     setTransformMatrix(optix::Transform& xform, const float* tdata ) ;
     optix::Acceleration      makeAcceleration(const char* builder=NULL, const char* traverser=NULL);
     optix::Material          makeMaterial();
-    optix::Geometry          makeGeometry(GMergedMesh* mergedmesh, unsigned lod);
-    optix::GeometryInstance  makeGeometryInstance(GMergedMesh* mergedmesh, unsigned lod);  // for geotri 
-    optix::GeometryInstance  makeGeometryInstance(optix::Geometry geometry, optix::Material material);
+
+    OGeometry*               makeOGeometry(GMergedMesh* mergedmesh, unsigned lod);
+    optix::GeometryInstance  makeGeometryInstance(OGeometry* geometry, optix::Material material, unsigned instance_index);
     optix::GeometryGroup     makeGeometryGroup(optix::GeometryInstance gi, optix::Acceleration accel );
+
+    //optix::GeometryInstance  makeGeometryInstance(GMergedMesh* mergedmesh, optix::Material& material, unsigned lod);  
 private:
     optix::Geometry         makeAnalyticGeometry(GMergedMesh* mergedmesh, unsigned lod);
     optix::Geometry         makeTriangulatedGeometry(GMergedMesh* mergedmesh, unsigned lod);
@@ -123,8 +137,8 @@ private:
     unsigned             m_lodidx ; 
 private:
     // locals 
-    optix::GeometryGroup  m_geometry_group ; 
-    optix::Group          m_repeated_group ; 
+    optix::GeometryGroup  m_global ; 
+    optix::Group          m_repeated ; 
     RayTraceConfig*       m_cfg ; 
     std::vector<OGeoStat> m_stats ; 
 

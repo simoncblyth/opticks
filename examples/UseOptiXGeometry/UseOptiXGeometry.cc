@@ -91,7 +91,16 @@ int main(int argc, char** argv)
     context->setMissProgram(   entry_point_index, context->createProgramFromPTXFile( ptx , "miss" )); 
  
     const char* box_ptx = OKConf::PTXPath( cmake_target, "box.cu" ) ; 
-    optix::Geometry box = context->createGeometry();
+
+
+
+    optix::Geometry box ; 
+    assert( box.get() == NULL ); 
+
+    box = context->createGeometry();
+    assert( box.get() != NULL ); 
+
+
     box->setPrimitiveCount( 1u );
     box->setBoundingBoxProgram( context->createProgramFromPTXFile( box_ptx , "box_bounds" ) );
     box->setIntersectionProgram( context->createProgramFromPTXFile( box_ptx , "box_intersect" ) ) ;
