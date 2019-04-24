@@ -71,6 +71,7 @@ OpticksCfg<Listener>::OpticksCfg(const char* name, Listener* listener, bool live
        m_scintillationclass("C4Scintillation1042"),
        m_epsilon(0.1f),     
        m_seed(42),     
+       m_rtx(0),
        m_rngmax(3000000),     
        m_bouncemax(9),     
        m_recordmax(10),
@@ -141,6 +142,19 @@ void OpticksCfg<Listener>::init()
 
    m_desc.add_options()
        ("xanalytic",  "try switching on analytic ray tracing from GGeo without the analytic toggle from GScene etc...") ;
+
+   m_desc.add_options()
+       ("xgeometrytriangles",  
+        "switches on use of optix::GeometryTriangles utilizing RT Cores in Turing and later GPUs."
+        "This requires OptiX 6.0.0 or later, and RTX mode must be enabled. "
+        "This option is slated for removal, instead use \"--rtx 2\" to enable RTX with GeometryTriangles ") ;
+
+   char rtx[128];
+   snprintf(rtx,128, "OptiX RTX execution mode, -1:ASIS 0:OFF 1:ON 2:ON with GeometryTriangles. Default %d", m_rtx );
+   m_desc.add_options()
+       ("rtx",  boost::program_options::value<int>(&m_rtx), rtx );
+
+
 
    m_desc.add_options()
        ("dumpenv",  
@@ -1428,6 +1442,11 @@ template <class Listener>
 unsigned OpticksCfg<Listener>::getSeed() const 
 {
     return m_seed ; 
+}
+template <class Listener>
+int OpticksCfg<Listener>::getRTX() const 
+{
+    return m_rtx ; 
 }
 
 

@@ -328,24 +328,53 @@ geocache-bench-()
 geocache-check()
 {
    local stamp=$(date +%s)
-   CUDA_VISIBLE_DEVICES=1 OPTICKS_RTX=0 geocache-bench- --runfolder $FUNCNAME --runstamp $stamp --runlabel "OFF_TITAN_RTX" $*
+   local rtx=2 
+  
+   CUDA_VISIBLE_DEVICES=0 geocache-bench- --rtx $rtx --runfolder $FUNCNAME --runstamp $stamp --runlabel "R${rtx}_TITAN_V"  $*
 }
+
 
 geocache-bench()
 {
    local stamp=$(date +%s)
 
-   CUDA_VISIBLE_DEVICES=1 OPTICKS_RTX=0 $FUNCNAME- --runfolder $FUNCNAME --runstamp $stamp --runlabel "OFF_TITAN_RTX" $*
-   CUDA_VISIBLE_DEVICES=1 OPTICKS_RTX=1 $FUNCNAME- --runfolder $FUNCNAME --runstamp $stamp --runlabel "ON_TITAN_RTX"  $*
-   CUDA_VISIBLE_DEVICES=0 OPTICKS_RTX=0 $FUNCNAME- --runfolder $FUNCNAME --runstamp $stamp --runlabel "OFF_TITAN_V"  $*
-   CUDA_VISIBLE_DEVICES=0 OPTICKS_RTX=1 $FUNCNAME- --runfolder $FUNCNAME --runstamp $stamp --runlabel "ON_TITAN_V"   $*
-   CUDA_VISIBLE_DEVICES=0,1 OPTICKS_RTX=0 $FUNCNAME- --runfolder $FUNCNAME --runstamp $stamp --runlabel "OFF_TITAN_V_AND_TITAN_RTX" $*
+   CUDA_VISIBLE_DEVICES=1   $FUNCNAME- --rtx 0 --runfolder $FUNCNAME --runstamp $stamp --runlabel "R0_TITAN_RTX" $*
+   CUDA_VISIBLE_DEVICES=1   $FUNCNAME- --rtx 1 --runfolder $FUNCNAME --runstamp $stamp --runlabel "R1_TITAN_RTX"  $*
+   CUDA_VISIBLE_DEVICES=1   $FUNCNAME- --rtx 2 --runfolder $FUNCNAME --runstamp $stamp --runlabel "R2_TITAN_RTX"  $*
+
+   CUDA_VISIBLE_DEVICES=0   $FUNCNAME- --rtx 0 --runfolder $FUNCNAME --runstamp $stamp --runlabel "R0_TITAN_V"  $*
+   CUDA_VISIBLE_DEVICES=0   $FUNCNAME- --rtx 1 --runfolder $FUNCNAME --runstamp $stamp --runlabel "R1_TITAN_V"   $*
+   CUDA_VISIBLE_DEVICES=0   $FUNCNAME- --rtx 2 --runfolder $FUNCNAME --runstamp $stamp --runlabel "R2_TITAN_V"   $*
+
+   CUDA_VISIBLE_DEVICES=0,1 $FUNCNAME- --rtx 0 --runfolder $FUNCNAME --runstamp $stamp --runlabel "R0_TITAN_V_AND_TITAN_RTX" $*
 
    bench.py $LOCAL_BASE/opticks/results/$FUNCNAME
-
 }
 
+geocache-bench-notes(){ cat << EON
+$FUNCNAME
+=======================
 
+========  ====================================
+  rtx       action 
+========  ====================================
+   -1       ASIS
+    0       OFF
+    1       ON  
+    2       ON with optix::GeometryTriangles
+========  ====================================
+
+
+* cannot enable RTX when simultaneously using both TITAN V(Volta) 
+  and TITAN RTX(Turing) as only Turing has the RT Cores.
+
+* it is possible to enable RTX on Volta, sometimes resulting in a small speedup
+  see notes/issues/benchmarks.rst
+
+
+
+EON
+}
 
 
 

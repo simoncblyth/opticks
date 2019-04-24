@@ -392,6 +392,7 @@ class GGEO_API GMesh : public GDrawable {
 
   public:
       // transient buffers, not persisted : providing node level info in a face level buffer by repetition
+      GBuffer* getAppropriateRepeatedIdentityBuffer();
       GBuffer* getFaceRepeatedInstancedIdentityBuffer(); 
       GBuffer* getFaceRepeatedIdentityBuffer(); 
       GBuffer* getAnalyticGeometryBuffer();

@@ -112,15 +112,14 @@ optix::GeometryGroup createGeometryTriangles(optix::Context& context, unsigned e
     gtri->setTriangleIndices( index_buffer, RT_FORMAT_UNSIGNED_INT3 );
     gtri->setVertices( num_vertices, vertex_buffer, RT_FORMAT_FLOAT3 );
     gtri->setBuildFlags( RTgeometrybuildflags( 0 ) );
-
     
     gtri["index_buffer"]->setBuffer( index_buffer );
     gtri["vertex_buffer"]->setBuffer( vertex_buffer );
 
+    gtri->setAttributeProgram( context->createProgramFromPTXFile( ptx, "triangle_attributes" ) ); 
+
     optix::Material mat = context->createMaterial();
     mat->setClosestHitProgram( entry_point_index, context->createProgramFromPTXFile( ptx, "closest_hit_radiance0" ));
-
-    gtri->setAttributeProgram( context->createProgramFromPTXFile( ptx, "triangle_attributes" ) ); 
     optix::GeometryInstance gi = context->createGeometryInstance( gtri, mat  ) ;  
 
     optix::GeometryGroup gg = context->createGeometryGroup();

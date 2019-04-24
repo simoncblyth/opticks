@@ -603,6 +603,11 @@ bool Opticks::isXAnalytic() const
 {
     return m_cfg->hasOpt("xanalytic") ;
 }
+bool Opticks::isXGeometryTriangles() const 
+{
+    return m_cfg->hasOpt("xgeometrytriangles") ;
+}
+
 
 
 
@@ -656,6 +661,13 @@ unsigned Opticks::getSeed() const
 {
     return m_cfg->getSeed();
 }
+
+int Opticks::getRTX() const 
+{
+    return m_cfg->getRTX();
+}
+
+
 
 int Opticks::getLoadVerbosity() const 
 {

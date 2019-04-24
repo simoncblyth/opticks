@@ -203,8 +203,8 @@ void OGeo::convert()
 
 void OGeo::convertMergedMesh(unsigned i)
 {
+    LOG(info) << "( " << i  ; 
     m_mmidx = i ; 
-    LOG(info) << "( " << i ; 
 
     GMergedMesh* mm = m_geolib->getMergedMesh(i); 
 
@@ -221,6 +221,8 @@ void OGeo::convertMergedMesh(unsigned i)
         return  ; 
     }
 
+    unsigned numInstances = 0 ; 
+
     if( i == 0 )         // global non-instanced geometry in slot 0
     {
         unsigned lod = 0u ;  
@@ -230,16 +232,18 @@ void OGeo::convertMergedMesh(unsigned i)
         unsigned instance_index = 0u ;  // so same code can run Instanced or not
         optix::GeometryInstance gi = makeGeometryInstance(omm, mat, instance_index );
 
-        gi["primitive_count"]->setUint( 0u ); // not needed for non-instanced
+        gi["primitive_count"]->setUint( 0u );  // non-instanced
         m_global->addChild(gi);
+        numInstances = 1 ; 
     }
     else        // repeated geometry
     {
         optix::Group group = makeRepeatedGroup(mm, raylod) ;
         group->setAcceleration( makeAcceleration() );
+        numInstances = group->getChildCount() ; 
         m_repeated->addChild(group); 
     }
-    LOG(info) << ") " << i ; 
+    LOG(info) << ") " << i << " numInstances " << numInstances ; 
 }
 
 
@@ -310,11 +314,6 @@ BUT: selector needs to house
 
 optix::Group OGeo::makeRepeatedGroup(GMergedMesh* mm, bool raylod )
 {
-    const char geocode = m_ok->isXAnalytic() ? OpticksConst::GEOCODE_ANALYTIC : mm->getGeoCode();
-    assert( geocode == OpticksConst::GEOCODE_TRIANGULATED || geocode == OpticksConst::GEOCODE_ANALYTIC || geocode == OpticksConst::GEOCODE_RTXTRIANGLES ) ;
-
-    float instance_bounding_radius = mm->getBoundingRadiusCE(0) ; 
-
     NPY<float>* itransforms = mm->getITransformsBuffer();
 
     NSlice* islice = mm->getInstanceSlice(); 
@@ -334,7 +333,6 @@ optix::Group OGeo::makeRepeatedGroup(GMergedMesh* mm, bool raylod )
               << " numIdentity " << numIdentity  
               << " numSolids " << numSolids  
               << " islice " << islice->description() 
-              << " instance_bounding_radius " << instance_bounding_radius
               ; 
 
 
@@ -348,6 +346,7 @@ optix::Group OGeo::makeRepeatedGroup(GMergedMesh* mm, bool raylod )
     if(raylod)
     {
         visit = m_ocontext->createProgram("visit_instance.cu", "visit_instance");
+        float instance_bounding_radius = mm->getBoundingRadiusCE(0) ; 
         visit["instance_bounding_radius"]->setFloat( instance_bounding_radius*2.f );
     }
 
@@ -493,7 +492,7 @@ OGeo::makeOGeometry : creating the OptiX GPU geometry
 
 The OGeo::OGeometry internal struct is returned to enable optix::Geometry and optix::GeometryTriangles
 to be handled uniformly.  Initially tried returning optix::GeometryInstance to effect such a
-uniform jandling but that was too slow as it forced recreation of optix geometry 
+uniform handling but that was too slow as it forced recreation of optix geometry 
 for every instance.
 
 **/
@@ -502,26 +501,42 @@ for every instance.
 OGeo::OGeometry* OGeo::makeOGeometry(GMergedMesh* mergedmesh, unsigned lod)
 {
     OGeometry* ogeom = new OGeometry ; 
-    
-    const char geocode = m_ok->isXAnalytic() ? OpticksConst::GEOCODE_ANALYTIC : mergedmesh->getGeoCode() ;
 
-    LOG(LEVEL) << "geocode " << geocode ; 
+    int rtxmode = m_ok->getRTX(); 
 
-    if(geocode == OpticksConst::GEOCODE_TRIANGULATED)
+    char ugeocode ; 
+
+    if( m_ok->isXAnalytic() )
     {
-        ogeom->g = makeTriangulatedGeometry(mergedmesh, lod);
-    }
-    else if(geocode == OpticksConst::GEOCODE_ANALYTIC)
+         ugeocode = OpticksConst::GEOCODE_ANALYTIC ;  
+    } 
+    else if(  m_ok->isXGeometryTriangles() || rtxmode == 2 )
     {
-        ogeom->g = makeAnalyticGeometry(mergedmesh, lod);
-    }
-    else if(geocode == OpticksConst::GEOCODE_RTXTRIANGLES)
-    {
-        ogeom->gt = makeRTXTrianglesGeometry(mergedmesh, lod);
+         ugeocode = OpticksConst::GEOCODE_GEOMETRYTRIANGLES ;  
     }
     else
     {
-        LOG(fatal) << "geocode must be triangulated or analytic, not [" << (char)geocode  << "]" ;
+         ugeocode = mergedmesh->getGeoCode() ;  
+    }
+    
+
+    LOG(info) << "ugeocode [" << (char)ugeocode << "]" ; 
+
+    if(ugeocode == OpticksConst::GEOCODE_TRIANGULATED)
+    {
+        ogeom->g = makeTriangulatedGeometry(mergedmesh, lod);
+    }
+    else if(ugeocode == OpticksConst::GEOCODE_ANALYTIC)
+    {
+        ogeom->g = makeAnalyticGeometry(mergedmesh, lod);
+    }
+    else if(ugeocode == OpticksConst::GEOCODE_GEOMETRYTRIANGLES)
+    {
+        ogeom->gt = makeGeometryTriangles(mergedmesh, lod);
+    }
+    else
+    {
+        LOG(fatal) << "geocode must be triangulated or analytic, not [" << (char)ugeocode  << "]" ;
         assert(0);
     }
     return ogeom ; 
@@ -662,13 +677,63 @@ void OGeo::dumpStats(const char* msg)
     for(unsigned i=0 ; i < m_stats.size() ; i++) std::cout << m_stats[i].desc() << std::endl ; 
 }
 
+/**
+OGeo::makeGeometryTriangles
+-----------------------------
+
+Cannot use int3 index format::
+
+    what():  Invalid context (Details: Function "RTresult _rtContextValidate(RTcontext)" caught exception: 
+       Validation error: GeometryTriangles has invalid index format, must be RT_FORMAT_UNSIGNED_INT3, or RT_FORMAT_UNSIGNED_SHORT3)
+
+
+**/
 
 #if OPTIX_VERSION >= 60000
-optix::GeometryTriangles OGeo::makeRTXTrianglesGeometry(GMergedMesh* mm, unsigned lod)
+optix::GeometryTriangles OGeo::makeGeometryTriangles(GMergedMesh* mm, unsigned lod)
 {
-    assert(0);
-    optix::GeometryTriangles geotri = m_context->createGeometryTriangles();
-    return geotri  ; 
+    optix::GeometryTriangles gtri = m_context->createGeometryTriangles();
+
+    unsigned numFaces = mm->getNumFaces();
+    unsigned numFaces0 = mm->getNodeInfo(0).x ; 
+    unsigned uFaces = lod > 0 ? numFaces0 : numFaces ; // lazy LOD, ie dont change buffer, just ignore most of it for lod > 0 
+
+
+    optix::Buffer identityBuffer = createInputBuffer<optix::uint4>( mm->getAppropriateRepeatedIdentityBuffer(), RT_FORMAT_UNSIGNED_INT4, 1 , "identityBuffer"); 
+    gtri["identityBuffer"]->setBuffer(identityBuffer);
+
+
+    GBuffer* vtx = mm->getVerticesBuffer() ;
+    unsigned numVertices = mm->getNumVertices(); 
+    
+
+    RTformat vertexFormat = RT_FORMAT_FLOAT3 ;
+    optix::Buffer vertexBuffer = createInputBuffer<optix::float3>( vtx , vertexFormat, 1, "vertexBuffer"); 
+    gtri["vertexBuffer"]->setBuffer(vertexBuffer);
+
+    RTformat indexFormat = RT_FORMAT_UNSIGNED_INT3 ;   // are "coercing" from underlying int buffer 
+    optix::Buffer indexBuffer = createInputBuffer<optix::uint3>( mm->getIndicesBuffer(), indexFormat, 3 , "indexBuffer");  // need the 3 to fold for faces
+    gtri["indexBuffer"]->setBuffer(indexBuffer);
+
+
+
+    optix::Buffer emptyBuffer = m_context->createBuffer(RT_BUFFER_INPUT_OUTPUT, RT_FORMAT_FLOAT3, 0);
+    gtri["tangentBuffer"]->setBuffer(emptyBuffer);
+    gtri["bitangentBuffer"]->setBuffer(emptyBuffer);
+    gtri["normalBuffer"]->setBuffer(emptyBuffer);
+    gtri["texCoordBuffer"]->setBuffer(emptyBuffer);
+ 
+    gtri["primitive_count"]->setUint( numFaces );  // needed for instanced offsets into buffers, so must describe the buffer, NOT the intent 
+
+    gtri->setPrimitiveCount( uFaces );
+    gtri->setTriangleIndices( indexBuffer, indexFormat );
+    gtri->setVertices( numVertices, vertexBuffer, vertexFormat ); 
+    gtri->setBuildFlags( RTgeometrybuildflags( 0 ) );
+
+    optix::Program gtri_att = m_ocontext->createProgram("GeometryTriangles.cu", "triangle_attributes");
+    gtri->setAttributeProgram( gtri_att );  
+
+    return gtri  ; 
 }
 #endif
 
@@ -686,7 +751,6 @@ and numFaces is the sum of the face counts of those, and numITransforms is 672
 In order to provide identity to the instances need to repeat the iidentity to the triangles
     
 * Hmm this is really treating each triangle as a primitive each with its own bounds...
-
 **/
 
 optix::Geometry OGeo::makeTriangulatedGeometry(GMergedMesh* mm, unsigned lod)
@@ -699,48 +763,26 @@ optix::Geometry OGeo::makeTriangulatedGeometry(GMergedMesh* mm, unsigned lod)
 
     unsigned numVolumes = mm->getNumVolumes();
     unsigned numFaces = mm->getNumFaces();
-    unsigned numITransforms = mm->getNumITransforms();
     unsigned numFaces0 = mm->getNodeInfo(0).x ; 
+    unsigned uFaces = lod > 0 ? numFaces0 : numFaces ; // lazy LOD, ie dont change buffer, just ignore most of it for lod > 0 
+
+    unsigned numITransforms = mm->getNumITransforms();
 
     LOG(debug) 
               << " lod " << lod
               << " mmIndex " << mm->getIndex() 
               << " numFaces (PrimitiveCount) " << numFaces
               << " numFaces0 (Outermost) " << numFaces0
+              << " uFaces " << uFaces
               << " numVolumes " << numVolumes
               << " numITransforms " << numITransforms 
               ;
              
-    geometry->setPrimitiveCount(lod > 0 ? numFaces0 : numFaces ); // lazy LOD, ie dont change buffer, just ignore most of it for lod > 0 
+    GBuffer* id = mm->getAppropriateRepeatedIdentityBuffer();
+    optix::Buffer identityBuffer = createInputBuffer<optix::uint4>( id, RT_FORMAT_UNSIGNED_INT4, 1 , "identityBuffer"); 
+    geometry["identityBuffer"]->setBuffer(identityBuffer);
 
-    geometry["primitive_count"]->setUint( numFaces );  // needed for instanced offsets into buffers, so must describe the buffer, NOT the intent 
-
-    GBuffer* id = NULL ; 
-    if(numITransforms > 0)  //  formerly 0   : HUH: perhaps should be 1,  always using friid even for globals ?
-    {
-        id = mm->getFaceRepeatedInstancedIdentityBuffer();
-        assert(id);
-        LOG(verbose) << "using FaceRepeatedInstancedIdentityBuffer" << " friid items " << id->getNumItems() << " numITransforms*numFaces " << numITransforms*numFaces ; 
-        assert( id->getNumItems() == numITransforms*numFaces );
-   }
-   else
-   {
-        id = mm->getFaceRepeatedIdentityBuffer();
-        assert(id);
-        LOG(verbose) << "using FaceRepeatedIdentityBuffer" << " frid items " << id->getNumItems() << " numFaces " << numFaces ; 
-        assert( id->getNumItems() == numFaces );
-   }  
-
-   optix::Buffer identityBuffer = createInputBuffer<optix::uint4>( id, RT_FORMAT_UNSIGNED_INT4, 1 , "identityBuffer"); 
-   geometry["identityBuffer"]->setBuffer(identityBuffer);
-
-   /**
-    *reuse* was an unsuccessful former attempt to "purloin the OpenGL buffers" avoid duplicating geometry info between OpenGL and OptiX
-    setting reuse to true causes OptiX/OpenGL launch failure : bad enum 
-    **/
-
-    bool reuse = false ;  
-    optix::Buffer vertexBuffer = createInputBuffer<optix::float3>( mm->getVerticesBuffer(), RT_FORMAT_FLOAT3, 1, "vertexBuffer", reuse ); 
+    optix::Buffer vertexBuffer = createInputBuffer<optix::float3>( mm->getVerticesBuffer(), RT_FORMAT_FLOAT3, 1, "vertexBuffer" ); 
     geometry["vertexBuffer"]->setBuffer(vertexBuffer);
 
     optix::Buffer indexBuffer = createInputBuffer<optix::int3>( mm->getIndicesBuffer(), RT_FORMAT_INT3, 3 , "indexBuffer");  // need the 3 to fold for faces
@@ -751,6 +793,11 @@ optix::Geometry OGeo::makeTriangulatedGeometry(GMergedMesh* mm, unsigned lod)
     geometry["bitangentBuffer"]->setBuffer(emptyBuffer);
     geometry["normalBuffer"]->setBuffer(emptyBuffer);
     geometry["texCoordBuffer"]->setBuffer(emptyBuffer);
+
+
+    geometry->setPrimitiveCount( uFaces ); 
+    geometry["primitive_count"]->setUint( numFaces );  // needed for instanced offsets into buffers, so must describe the buffer, NOT the intent 
+
  
     return geometry ; 
 }
@@ -769,17 +816,26 @@ const char* OGeo::getContextName() const
 }
 
 
+
+
+/**
+
+*reuse* was an unsuccessful former attempt to "purloin the OpenGL buffers" avoid duplicating geometry 
+info between OpenGL and OptiX setting reuse to true causes OptiX/OpenGL launch failure : bad enum 
+
+**/
+
 template <typename T>
 optix::Buffer OGeo::createInputBuffer(GBuffer* buf, RTformat format, unsigned int fold, const char* name, bool reuse)
 {
    //TODO: eliminate use of this, moving to NPY buffers instead
 
-   unsigned int bytes = buf->getNumBytes() ;
+   unsigned bytes = buf->getNumBytes() ;
 
-   unsigned int bit = buf->getNumItems() ; 
-   unsigned int nit = bit/fold ; 
-   unsigned int nel = buf->getNumElements();
-   unsigned int mul = OFormat::Multiplicity(format) ;
+   unsigned bit = buf->getNumItems() ; 
+   unsigned nit = bit/fold ; 
+   unsigned nel = buf->getNumElements();
+   unsigned mul = OFormat::Multiplicity(format) ;
 
    int buffer_id = buf->getBufferId() ;
 

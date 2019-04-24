@@ -98,12 +98,14 @@ OScene::Init
 
 void OScene::initRTX()
 {
-    const char* key = "OPTICKS_RTX" ;
-    int rtx = SSys::getenvint(key, -1 ); 
+    //const char* key = "OPTICKS_RTX" ;
+    //int rtx = SSys::getenvint(key, -1 ); 
 
-    if(rtx == -1)
+    int rtxmode = m_ok->getRTX();
+
+    if(rtxmode == -1)
     {
-        LOG(fatal) << key << "=" << rtx << " leaving ASIS "  ;   
+        LOG(fatal) << " --rtx " << rtxmode << " leaving ASIS "  ;   
     }
     else
     { 
@@ -111,7 +113,8 @@ void OScene::initRTX()
         RT_CHECK_ERROR( rtGlobalGetAttribute(RT_GLOBAL_ATTRIBUTE_ENABLE_RTX, sizeof(rtx0), &rtx0) );
         assert( rtx0 == 0 );  // despite being zero performance suggests it is enabled
 
-        LOG(fatal) << key << "=" << rtx << " setting  " << ( rtx == 1 ? "ON" : "OFF" )  ; 
+        int rtx = rtxmode > 0 ? 1 : 0 ;       
+        LOG(fatal) << " --rtx " << rtxmode << " setting  " << ( rtx == 1 ? "ON" : "OFF" )  ; 
         RT_CHECK_ERROR( rtGlobalSetAttribute(RT_GLOBAL_ATTRIBUTE_ENABLE_RTX, sizeof(rtx), &rtx));
 
         int rtx2(-1) ; 

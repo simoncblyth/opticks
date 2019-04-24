@@ -29,7 +29,7 @@ class OKCORE_API OpticksConst {
    public:
        static const char GEOCODE_ANALYTIC ;
        static const char GEOCODE_TRIANGULATED ;
-       static const char GEOCODE_RTXTRIANGLES ;
+       static const char GEOCODE_GEOMETRYTRIANGLES ;
        static const char GEOCODE_SKIP  ;
 
 };

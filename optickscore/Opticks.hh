@@ -307,10 +307,12 @@ class OKCORE_API Opticks {
        bool                 isG4CodeGen() const ;
        bool                 isPrintEnabled() const ;
        bool                 isXAnalytic() const ;
+       bool                 isXGeometryTriangles() const ;
    public:
        const char*          getDbgIndex() const ;
        const char*          getDbgCSGPath();
        unsigned             getSeed() const ; 
+       int                  getRTX() const ; 
        int                  getLoadVerbosity() const ; 
        int                  getImportVerbosity() const ; 
    public:

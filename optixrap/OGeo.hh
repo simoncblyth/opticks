@@ -111,7 +111,7 @@ private:
     optix::Geometry         makeTriangulatedGeometry(GMergedMesh* mergedmesh, unsigned lod);
 
 #if OPTIX_VERSION >= 60000
-    optix::GeometryTriangles  makeRTXTrianglesGeometry(GMergedMesh* mm, unsigned lod);
+    optix::GeometryTriangles  makeGeometryTriangles(GMergedMesh* mm, unsigned lod);
 #endif
 
 private:

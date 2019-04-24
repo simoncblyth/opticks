@@ -2128,6 +2128,45 @@ GBuffer* GMesh::makeFaceRepeatedInstancedIdentityBuffer()
 
 
 
+
+/**
+GMesh::getAppropriateRepeatedIdentityBuffer
+---------------------------------------------
+
+Migrated here from OGeo::makeTriangulatedGeometry
+
+
+**/
+
+GBuffer*  GMesh::getAppropriateRepeatedIdentityBuffer()
+{
+    GMesh* mm = this ; 
+
+    unsigned numITransforms = mm->getNumITransforms();
+    unsigned numFaces = mm->getNumFaces();
+
+    GBuffer* id = NULL ;  
+    if(numITransforms > 0)  //  formerly 0   : HUH: perhaps should be 1,  always using friid even for globals ?
+    {
+        id = mm->getFaceRepeatedInstancedIdentityBuffer(); 
+        assert(id);
+        LOG(verbose) << "using FaceRepeatedInstancedIdentityBuffer" << " friid items " << id->getNumItems() << " numITransforms*numFaces " << numITransforms*numFaces ;     
+        assert( id->getNumItems() == numITransforms*numFaces );
+    }
+    else
+    {
+        id = mm->getFaceRepeatedIdentityBuffer();
+        assert(id);
+        LOG(verbose) << "using FaceRepeatedIdentityBuffer" << " frid items " << id->getNumItems() << " numFaces " << numFaces ;
+        assert( id->getNumItems() == numFaces );
+    }
+    return id ; 
+}
+
+
+
+
+
 GBuffer*  GMesh::getFaceRepeatedInstancedIdentityBuffer()
 {
     if(m_facerepeated_iidentity_buffer == NULL)
@@ -2136,9 +2175,6 @@ GBuffer*  GMesh::getFaceRepeatedInstancedIdentityBuffer()
     }
     return m_facerepeated_iidentity_buffer ;
 }
-
-
-
 
 
 

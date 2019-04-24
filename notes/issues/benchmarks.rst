@@ -2,6 +2,97 @@ benchmarks
 ==============
 
 
+Titan V and Titan RTX : Effect of RTX execution mode
+----------------------------------------------------------------
+
+Comparing raytrace performance of Titan V and Titan RTX 
+with a modified JUNO geometry with Torus removed
+from PMTs and guidetube by changing the input GDML. 
+(OptiX 6.0.0 crashes when attempting to use my quartic 
+root finding for the Torus.)
+
+My benchmark metric is the average of five very high resolution 
+5120x2880 ~15M pixels raytrace launch times near the JUNO 
+chimney with a large number of PMTs in view.
+
+I use three RTX mode variations:
+
+   R0
+       RTX off : ordinary software BVH traversal and intersection
+   R1
+       RTX on : only BVH traversal using RT Cores, intersection in software
+   R2
+       RTX on + intersection handled with RT Cores using GeometryTriangles (new in OptiX 6) 
+
+
+Times for triangulated geometry in seconds:
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+::
+
+       .        20190424_203832     metric      rfast      rslow 
+
+                   R2_TITAN_RTX      0.037      1.000      0.250 
+                   R1_TITAN_RTX      0.074      2.018      0.505 
+       R0_TITAN_V_AND_TITAN_RTX      0.078      2.129      0.533 
+                     R2_TITAN_V      0.100      2.722      0.682 
+                   R0_TITAN_RTX      0.103      2.810      0.704 
+                     R1_TITAN_V      0.116      3.149      0.789 
+                     R0_TITAN_V      0.147      3.993      1.000 
+
+Example commandline::
+
+   OpSnapTest --envkey --target 352851 --eye -1,-1,-1 --snapconfig steps=5,eyestartz=-1,eyestopz=-0.5 --size 5120,2880,1 \
+              --embedded --rtx 2 --runfolder geocache-bench --runstamp 1556109512 --runlabel R2_TITAN_RTX
+
+
+Observations:
+
+* fractions of a second for 15M pixels bodes well 
+* TITAN RTX gains a factor of ~3 from R0 to R2 
+* TITAN V doesnt have RT cores, but RTX mode still improves its times
+
+
+Times for analytic geometry in seconsds 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+::
+
+       .        20190424_204442     metric      rfast      rslow 
+
+       R0_TITAN_V_AND_TITAN_RTX      0.122      1.000      0.188   
+                   R0_TITAN_RTX      0.188      1.537      0.289 
+                     R0_TITAN_V      0.219      1.790      0.337    
+                   R1_TITAN_RTX      0.540      4.420      0.831     
+                     R1_TITAN_V      0.650      5.319      1.000 
+
+Example commandline::
+
+     OpSnapTest --envkey --target 352851 --eye -1,-1,-1 --snapconfig steps=5,eyestartz=-1,eyestopz=-0.5 --size 5120,2880,1 \
+                --embedded --rtx 0 --runfolder geocache-bench --runstamp 1556109882 --runlabel R0_TITAN_V_AND_TITAN_RTX --xanalytic
+
+Observations:
+
+* cost for the exact geometry is about a factor 4 over the approximate triangulated ones
+  (I'm happy that my CSG processing does not cost more that that)
+
+* analytic really benefits from the core counts (TITAN V + TITAN RTX) 5120+4680 CUDA cores
+  getting into the ballpark of triangulated geometries
+  
+  * i look forward to trying this benchmark on the GPU cluster nodes  
+  
+* RTX mode makes analytic times worse : by a factor of 2-3 
+
+  * without using triangles, the only way the RT cores can help
+    is with the BVH traversal being done in hardware : the fact 
+    that timings get worse by as much as a factor of 3 suggests I should
+    try some alternative OptiX acceleration/geometry setups  
+
+
+
+
+
+
 With my triangles, ie no --xanalytic
 -----------------------------------------
 

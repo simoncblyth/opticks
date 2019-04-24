@@ -95,6 +95,7 @@ set(HEADERS
 set(CU_SOURCES
 
     cu/pinhole_camera.cu
+    cu/GeometryTriangles.cu
     cu/constantbg.cu
     cu/material1_radiance.cu 
     cu/material1_propagate.cu 
