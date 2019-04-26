@@ -35,6 +35,20 @@ unsigned OConfig::OptiXVersion()
    return OPTIX_VERSION ; 
 }
 
+/*
+OConfig::DefaultWithTop
+=============================
+
+TODO: get rid of this : its just handling an 
+      inconsistency observed in an ancient OptiX version
+      when doing geometry-less buffer testing 
+
+most OptiX version branching is done in okc-/OpticksBufferSpec.cc
+via strings that are interpreted later : see if something similar
+can be used for with_top ? In order to focus the OptiX version
+branching into one place.
+
+
 bool OConfig::DefaultWithTop()
 {
     unsigned version = OptiXVersion();
@@ -51,14 +65,6 @@ bool OConfig::DefaultWithTop()
        case 60000: with_top = false ;break;      
        default: assert(0 && "unexpected OPTIX_VERSION") ;break;
     }
-/*
-   TODO: 
-      most OptiX version branching is done in okc-/OpticksBufferSpec.cc
-      via strings that are interpreted later : see if something similar
-      can be used for with_top ? In order to focus the OptiX version
-      branching into one place.
-*/
-
 
     if(version != 3080)
         LOG(debug) << "OConfig::DefaultWithTop"
@@ -69,6 +75,7 @@ bool OConfig::DefaultWithTop()
 
     return with_top ;
 }
+*/
 
 
 optix::Program OConfig::createProgram(const char* cu_name, const char* progname )

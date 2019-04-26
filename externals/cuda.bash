@@ -9,6 +9,9 @@ CUDA
 See Also
 ---------
 
+
+* FOR MORE RECENT INSTALL SEE cudalin-
+
 * cudatoolkit-
 * cudamac-
 

@@ -90,7 +90,7 @@ unsigned OContext::getDebugPhoton() const
 }
 
 
-OContext::OContext(optix::Context context, Opticks* ok, bool with_top, bool verbose, const char* cmake_target) 
+OContext::OContext(optix::Context context, Opticks* ok, const char* cmake_target) 
     : 
     m_context(context),
     m_ok(ok),
@@ -98,8 +98,7 @@ OContext::OContext(optix::Context context, Opticks* ok, bool with_top, bool verb
     m_debug_photon(m_ok->getDebugIdx()),
     m_entry(0),
     m_closed(false),
-    m_with_top(with_top),
-    m_verbose(verbose),
+    m_verbose(false),
     m_cmake_target(strdup(cmake_target)),
     m_llogpath(NULL),
     m_launch_count(0),
@@ -117,13 +116,10 @@ void OContext::init()
     unsigned int num_ray_type = getNumRayType() ;
     m_context->setRayTypeCount( num_ray_type );   // more static than entry type count
 
-    if(m_with_top)
-    {
-        m_top = m_context->createGroup();
-        m_context[ "top_object" ]->set( m_top );
-    }
-
     unsigned stacksize_bytes = m_ok->getStack() ;
+    m_context->setStackSize(stacksize_bytes);
+
+
 
     LOG(LEVEL) << "OContext::init " 
               << " mode " << getModeName()
@@ -131,8 +127,39 @@ void OContext::init()
               << " stacksize_bytes " << stacksize_bytes
               ; 
 
-    m_context->setStackSize(stacksize_bytes);
 }
+
+
+
+bool OContext::hasTopGroup() const 
+{
+    return m_top.get() != NULL ;  
+}
+
+void OContext::createTopGroup()
+{
+    if(hasTopGroup()) 
+    {
+        LOG(error) << " already have m_top Group " ; 
+        return ; 
+    }
+
+    m_top = m_context->createGroup();
+    m_context[ "top_object" ]->set( m_top );
+}
+
+optix::Group OContext::getTopGroup()
+{
+    if(!hasTopGroup())
+    {
+        createTopGroup();
+    }
+    return m_top ; 
+}
+
+
+
+
 
 void OContext::initPrint()
 {
@@ -196,10 +223,6 @@ optix::Context& OContext::getContextRef()
      return m_context ; 
 }
 
-optix::Group OContext::getTop()
-{
-     return m_top ; 
-}
 unsigned int OContext::getNumRayType()
 {
     return e_rayTypeCount ;

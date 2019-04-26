@@ -108,7 +108,7 @@ public:
    static const char* FormatName(RTformat format);
    static void configureSampler(optix::TextureSampler& sampler, optix::Buffer& buffer);
    static unsigned OptiXVersion();
-   static bool DefaultWithTop();
+   //static bool DefaultWithTop();
 public:
     OConfig(optix::Context context, const char* cmake_target="OptiXRap");
     void dump(const char* msg="OConfig::dump");

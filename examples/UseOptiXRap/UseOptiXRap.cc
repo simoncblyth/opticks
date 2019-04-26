@@ -120,18 +120,17 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv);    
 
-
     Opticks ok(argc, argv, "--compute");
     ok.configure();
 
-
     unsigned version = OConfig::OptiXVersion()  ;
     LOG(info) << argv[0] << " OPTIX_VERSION " << version ; 
-    bool with_top = OConfig::DefaultWithTop() ;  // must set false with 3080, seemingly doesnt matter with 40000
+    //bool with_top = OConfig::DefaultWithTop() ;  // must set false with 3080, seemingly doesnt matter with 40000
 
     optix::Context context = optix::Context::create();
 
-    OContext ctx(context, &ok, with_top);
+    //OContext ctx(context, &ok, with_top);
+    OContext ctx(context, &ok );
 
     context->setPrintEnabled(true); 
 

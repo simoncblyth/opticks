@@ -188,7 +188,7 @@ void OScene::init()
 
     LOG(level) << "(OGeo)" ;
     m_ogeo = new OGeo(m_ocontext, m_ok, m_hub->getGeoLib(), builder, traverser);
-    m_ogeo->setTop(m_ocontext->getTop());
+    m_ogeo->setTopGroup(m_ocontext->getTopGroup());
     LOG(level) << "(OGeo) convert" ;
     m_ogeo->convert();
     LOG(level) << "(OGeo) done" ;

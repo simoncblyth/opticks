@@ -3,6 +3,9 @@ set(name UseOptiX)
 project(${name})
 include(OpticksBuildOptions)
 
+set(CMAKE_BUILD_RPATH_USE_ORIGIN ON)
+
+
 set(OptiX_VERBOSE ON)
 find_package(OptiX MODULE QUIET)   
 find_package(OpticksCUDA  MODULE QUIET)   

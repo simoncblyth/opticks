@@ -32,7 +32,7 @@ int main(int argc, char** argv)
     OContext* m_ocontext(NULL);
     m_ocontext = new OContext(context, ok);
 
-    optix::Group top = m_ocontext->getTop();
+    optix::Group top = m_ocontext->getTopGroup();
 
 
     const char* builder = "NoAccel" ;

@@ -4,6 +4,9 @@
 OContext
 =========
 
+Canonical instance m_ocontext is resident of OScene 
+and is instanciated in OScene::init
+
 Wrapper for OptiX context providing numerous utilities including: 
 
 * upload/download using NPY arrays
@@ -58,7 +61,7 @@ class OXRAP_API OContext {
             static const char* LaunchLogPath(unsigned index); 
             const char* getPrintIndexLogPath() const  ; 
      public:
-            OContext(optix::Context context, Opticks* ok, bool with_top=true, bool verbose=false, const char* cmake_target="OptiXRap");
+            OContext(optix::Context context, Opticks* ok, const char* cmake_target="OptiXRap");
             void cleanUp();
      public:
             const char* getRunLabel() const ;
@@ -72,6 +75,10 @@ class OXRAP_API OContext {
      private:
             void init();
             void initPrint();
+     public:
+            bool         hasTopGroup() const ;
+            optix::Group getTopGroup();    // creates if not existing 
+            void         createTopGroup();
      public:
             void launch(unsigned lmode, unsigned entry, unsigned width, unsigned height=1, BTimes* times=NULL);
      private:
@@ -97,7 +104,6 @@ class OXRAP_API OContext {
             unsigned          getDebugPhoton() const ;
             optix::Context&   getContextRef();
             optix::Context    getContext();
-            optix::Group      getTop();
      public:
             static RTformat       getFormat(NPYBase::Type_t type, bool seed);
 
@@ -130,7 +136,7 @@ class OXRAP_API OContext {
             int               m_debug_photon ; 
             unsigned          m_entry ; 
             bool              m_closed ; 
-            bool              m_with_top ; 
+            bool              m_default_top ; 
             bool              m_verbose ; 
             const char*       m_cmake_target ; 
             const char*       m_llogpath ; 

@@ -76,7 +76,7 @@ public:
     static const char* TRAVERSER ; 
 
     OGeo(OContext* ocontext, Opticks* ok, GGeoLib* geolib, const char* builder=NULL, const char* traverser=NULL);
-    void setTop(optix::Group top);
+    void setTopGroup(optix::Group top);
     void setVerbose(bool verbose=true);
     const char* description(const char* msg="OGeo::description");
 public:
@@ -94,7 +94,7 @@ public:
     
     template <typename T>            optix::Buffer createInputUserBuffer(NPY<T>* src, unsigned elementSize, const char* name);
 public:
-    optix::Group   makeRepeatedGroup(GMergedMesh* mm, bool lod );
+    optix::Group   makeRepeatedAssembly(GMergedMesh* mm, bool lod );
 
 private:
     void                     setTransformMatrix(optix::Transform& xform, const float* tdata ) ;
@@ -104,12 +104,9 @@ private:
     OGeometry*               makeOGeometry(GMergedMesh* mergedmesh, unsigned lod);
     optix::GeometryInstance  makeGeometryInstance(OGeometry* geometry, optix::Material material, unsigned instance_index);
     optix::GeometryGroup     makeGeometryGroup(optix::GeometryInstance gi, optix::Acceleration accel );
-
-    //optix::GeometryInstance  makeGeometryInstance(GMergedMesh* mergedmesh, optix::Material& material, unsigned lod);  
 private:
     optix::Geometry         makeAnalyticGeometry(GMergedMesh* mergedmesh, unsigned lod);
     optix::Geometry         makeTriangulatedGeometry(GMergedMesh* mergedmesh, unsigned lod);
-
 #if OPTIX_VERSION >= 60000
     optix::GeometryTriangles  makeGeometryTriangles(GMergedMesh* mm, unsigned lod);
 #endif

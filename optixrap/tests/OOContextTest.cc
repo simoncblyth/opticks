@@ -22,7 +22,7 @@ int main( int argc, char** argv )
     //OContext::Mode_t mode = OContext::INTEROP ;
     //OContext::Mode_t mode = OContext::COMPUTE ;
 
-    OContext* ctx = new OContext(context, &ok, false );
+    OContext* ctx = new OContext(context, &ok );
 
     unsigned entry = ctx->addEntry("minimalTest.cu", "minimal", "exception");
 

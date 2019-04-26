@@ -38,12 +38,17 @@ so what to do ?
 
 EOT
 }
-  
+ 
+
+#optix_prefix=$(opticks-optix-install-dir)
+optix_prefix=$LOCAL_BASE/opticks/externals/optix
+ 
 cmake $sdir -DCMAKE_BUILD_TYPE=Debug \
             -DCMAKE_PREFIX_PATH=$(opticks-prefix)/externals \
             -DCMAKE_INSTALL_PREFIX=$(opticks-prefix) \
             -DCMAKE_MODULE_PATH=$(opticks-home)/cmake/Modules \
-            -DOptiX_INSTALL_DIR=$(opticks-optix-install-dir) 
+            -DOptiX_INSTALL_DIR=$optix_prefix  
+
 
 make
 make install   

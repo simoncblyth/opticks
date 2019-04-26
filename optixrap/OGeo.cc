@@ -154,7 +154,7 @@ void OGeo::init()
     m_repeated = m_context->createGroup();          // instanced geometry
 }
 
-void OGeo::setTop(optix::Group top)
+void OGeo::setTopGroup(optix::Group top)
 {
     m_top = top ; 
 }
@@ -172,6 +172,13 @@ const char* OGeo::description(const char* msg)
 
 void OGeo::convert()
 {
+    /**
+           m_top           (Group)
+              m_global     (GeometryGroup)
+              m_repeated   (Group)  
+
+    **/
+
     unsigned int nmm = m_geolib->getNumMergedMesh();
 
     LOG(info) << "[ nmm " << nmm ;
@@ -225,6 +232,11 @@ void OGeo::convertMergedMesh(unsigned i)
 
     if( i == 0 )         // global non-instanced geometry in slot 0
     {
+
+        
+
+
+
         unsigned lod = 0u ;  
         optix::Material mat = makeMaterial();
         OGeometry* omm = makeOGeometry( mm, lod ); 
@@ -238,10 +250,10 @@ void OGeo::convertMergedMesh(unsigned i)
     }
     else        // repeated geometry
     {
-        optix::Group group = makeRepeatedGroup(mm, raylod) ;
-        group->setAcceleration( makeAcceleration() );
-        numInstances = group->getChildCount() ; 
-        m_repeated->addChild(group); 
+        optix::Group assembly = makeRepeatedAssembly(mm, raylod) ;
+        assembly->setAcceleration( makeAcceleration() );
+        numInstances = assembly->getChildCount() ; 
+        m_repeated->addChild(assembly); 
     }
     LOG(info) << ") " << i << " numInstances " << numInstances ; 
 }
@@ -250,25 +262,35 @@ void OGeo::convertMergedMesh(unsigned i)
 
 
 /**
-OGeo::makeRepeatedGroup
+OGeo::makeRepeatedAssembly
 --------------------------
 
 Geometry tree that allows instance identity
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+JUNO has ~6 repeated pieces of geometry.  
+The two different types of photomultiplier tubes (PMTs) are 
+by far the most prolific with ~20k of one type (20inch) 
+and ~30k of another (3inch)
+
+The geometry tree follows that show in OptiX 6.0.0 manual Fig 3.4 
+~6 times  
+
 ::
 
-          assembly        (Group)                1:1 with instanced merged mesh
-             xform.0      (Transform)
-               perxform   (GeometryGroup)
-                 pergi    (GeometryInstance)       distinct pergi for every instance, with instance_index assigned  
-                     omm  (Geometry)               the same omm and mat are child of all xform/perxform/pergi
-                     mat  (Material) 
+          assembly         (Group)                  1:1 with instanced merged mesh (order 6 of these for JUNO)
+             xform.0       (Transform)              (at most 20k/30k different transforms)
+               perxform    (GeometryGroup)
+                  accel[0]                          common accel within each assembly 
+                  pergi    (GeometryInstance)       distinct pergi for every instance, with instance_index assigned  
+                     omm   (Geometry)               the same omm and mat are child of all xform/perxform/pergi
+                     mat   (Material) 
              xform.1       (Transform)
-               perxform   (GeometryGroup)
-                  pergi   (GeometryInstance)      
-                     omm  (Geometry)
-                     mat  (Material) 
+               perxform    (GeometryGroup)
+                  pergi    (GeometryInstance)      
+                  accel[0]
+                     omm   (Geometry)
+                     mat   (Material) 
 
              ... for all the many thousands of instances of repeated geometry ...
 
@@ -312,7 +334,7 @@ BUT: selector needs to house
 
 **/
 
-optix::Group OGeo::makeRepeatedGroup(GMergedMesh* mm, bool raylod )
+optix::Group OGeo::makeRepeatedAssembly(GMergedMesh* mm, bool raylod )
 {
     NPY<float>* itransforms = mm->getITransformsBuffer();
 
@@ -372,6 +394,13 @@ optix::Group OGeo::makeRepeatedGroup(GMergedMesh* mm, bool raylod )
 
         if(raylod == false)
         {
+            /*    
+             assembly             (Group) 
+                xform             (Transform)
+                   perxform       (GeometryGroup)
+                       pergi      (GeometryInstance)  
+                       accel[0]   (Acceleration)   
+            */  
             optix::GeometryInstance pergi = makeGeometryInstance(omm[0], mat, instance_index); 
             optix::GeometryGroup perxform = makeGeometryGroup(pergi, accel[0] );    
             xform->setChild(perxform);  

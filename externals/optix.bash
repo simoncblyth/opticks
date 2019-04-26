@@ -210,6 +210,8 @@ optix-api-html(){ open $(optix-api-html-) ; }
 
 
 
+
+
 optix-dir(){          echo $(optix-install-dir) ; }
 optix-idir(){         echo $(optix-install-dir)/include ; }
 
@@ -370,6 +372,20 @@ This warning is for project developers.  Use -Wno-dev to suppress it.
 
 
 EON
+}
+
+
+
+
+
+optix600-install-experimental()
+{
+    ## for packaging purposes need to try treating OptiX more like any other external
+    cd /usr/local
+    local prefix=$LOCAL_BASE/opticks/externals/optix
+    mkdir -p $prefix
+    echo need to say yes then no to the installer
+    sh NVIDIA-OptiX-SDK-6.0.0-linux64-25650775.sh --prefix=$prefix
 }
 
 
