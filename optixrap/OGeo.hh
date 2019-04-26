@@ -56,8 +56,6 @@ Crucial OptiX geometrical members:
 
 
 
-
-
 #include "OXRAP_API_EXPORT.hh"
 class OXRAP_API  OGeo 
 {
@@ -73,12 +71,11 @@ public:
 
     static const plog::Severity LEVEL ; 
     static const char* BUILDER ; 
-    static const char* TRAVERSER ; 
 
-    OGeo(OContext* ocontext, Opticks* ok, GGeoLib* geolib, const char* builder=NULL, const char* traverser=NULL);
+    OGeo(OContext* ocontext, Opticks* ok, GGeoLib* geolib, const char* builder=NULL );
     void setTopGroup(optix::Group top);
     void setVerbose(bool verbose=true);
-    const char* description(const char* msg="OGeo::description");
+    std::string description() const ;
 public:
     void convert();
 
@@ -94,11 +91,12 @@ public:
     
     template <typename T>            optix::Buffer createInputUserBuffer(NPY<T>* src, unsigned elementSize, const char* name);
 public:
-    optix::Group   makeRepeatedAssembly(GMergedMesh* mm, bool lod );
+    optix::GeometryGroup   makeGlobalGeometryGroup(GMergedMesh* mm);
+    optix::Group           makeRepeatedAssembly(GMergedMesh* mm, bool lod );
 
 private:
     void                     setTransformMatrix(optix::Transform& xform, const float* tdata ) ;
-    optix::Acceleration      makeAcceleration(const char* builder=NULL, const char* traverser=NULL);
+    optix::Acceleration      makeAcceleration(bool accel_props=false, const char* builder=NULL);
     optix::Material          makeMaterial();
 
     OGeometry*               makeOGeometry(GMergedMesh* mergedmesh, unsigned lod);
@@ -124,7 +122,6 @@ private:
     int                  m_gltf ; 
     GGeoLib*             m_geolib ;  
     const char*          m_builder ; 
-    const char*          m_traverser ; 
     const char*          m_description ; 
     unsigned             m_verbosity ; 
 private:
@@ -134,8 +131,6 @@ private:
     unsigned             m_lodidx ; 
 private:
     // locals 
-    optix::GeometryGroup  m_global ; 
-    optix::Group          m_repeated ; 
     RayTraceConfig*       m_cfg ; 
     std::vector<OGeoStat> m_stats ; 
 

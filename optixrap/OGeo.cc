@@ -129,17 +129,16 @@ geometry.
 const plog::Severity OGeo::LEVEL = debug ; 
 
 const char* OGeo::BUILDER = "Sbvh" ; 
-const char* OGeo::TRAVERSER = "Bvh" ; 
 
 
-OGeo::OGeo(OContext* ocontext, Opticks* ok, GGeoLib* geolib, const char* builder, const char* traverser)
+OGeo::OGeo(OContext* ocontext, Opticks* ok, GGeoLib* geolib, const char* builder )
     : 
     m_ocontext(ocontext),
+    m_context(m_ocontext->getContext()),
     m_ok(ok),
     m_gltf(ok->getGLTF()),
     m_geolib(geolib),
     m_builder(builder ? strdup(builder) : BUILDER),
-    m_traverser(traverser ? strdup(traverser) : TRAVERSER),
     m_description(NULL),
     m_verbosity(m_ok->getVerbosity()),
     m_mmidx(0)
@@ -149,9 +148,7 @@ OGeo::OGeo(OContext* ocontext, Opticks* ok, GGeoLib* geolib, const char* builder
 
 void OGeo::init()
 {
-    m_context = m_ocontext->getContext();
-    m_global = m_context->createGeometryGroup();  
-    m_repeated = m_context->createGroup();          // instanced geometry
+    setTopGroup(m_ocontext->getTopGroup());
 }
 
 void OGeo::setTopGroup(optix::Group top)
@@ -159,53 +156,131 @@ void OGeo::setTopGroup(optix::Group top)
     m_top = top ; 
 }
 
-const char* OGeo::description(const char* msg)
+std::string OGeo::description() const 
 {
-    if(!m_description)
-    {
-        char desc[128];
-        snprintf(desc, 128, "%s %s %s ", msg, m_builder, m_traverser );
-        m_description = strdup(desc); 
-    }
-    return m_description ;
+    std::stringstream ss ; 
+    ss 
+        << " default builder : " << m_builder
+        ;
+    return ss.str(); 
 }
+
+
+
+/**
+OGeo::Convert
+--------------------------
+
+Table 2, OptiX Manual
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+=================   ================================   =========================
+Parent Node Type     Child Node Types                   Associated Node Types
+=================   ================================   =========================
+Geometry               None                               Material
+Acceleration           None                                     
+GeometryInstance       Geometry                           Material
+Transform              GeometryGroup         
+Selector               Transform
+Group                  GeometryGroup                      Acceleration    
+=================   ================================   =========================
+
+
+Geometry tree that allows instance identity
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+JUNO has ~6 repeated pieces of geometry.  
+The two different types of photomultiplier tubes (PMTs) are 
+by far the most prolific with ~20k of one type (20inch) 
+and ~30k of another (3inch)
+
+The geometry tree follows that show in OptiX 6.0.0 manual Fig 3.4 
+~6 times  
+
+::
+
+    m_top                  (Group)
+       ggg                 (GeometryGroup)          global non-instanced geometry from merged mesh 0  
+          ggi              (GeometryInstance)        
+          accel 
+
+       assembly.0          (Group)                  1:1 with instanced merged mesh (~6 of these for JUNO)
+             xform.0       (Transform)              (at most 20k/36k different transforms)
+               perxform    (GeometryGroup)
+                  accel[0]                          common accel within each assembly 
+                  pergi    (GeometryInstance)       distinct pergi for every instance, with instance_index assigned  
+                     omm   (Geometry)               the same omm and mat are child of all xform/perxform/pergi
+                     mat   (Material) 
+             xform.1       (Transform)
+               perxform    (GeometryGroup)
+                  pergi    (GeometryInstance)      
+                  accel[0]
+                     omm   (Geometry)
+                     mat   (Material) 
+
+             ... for all the many thousands of instances of repeated geometry ...
+
+
+       assembly.1          (Group)                  (order ~6 repeated assemblies for JUNO)
+            xform.0  
+            ... just like above ...
+
+
+Why proliferate the *pergi* ? So can assign an instance index to it : ie know which PMT gets hit
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* What types other than GeometryInstance can hold variables ? 
+      
+  * "Geometry" and "Material" can, but doesnt help for instance_index as only one of those
+  
+Could the perxform GeometryGroup be common to all ?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+NO, needs to be a separate GeometryGroup into which to place 
+the distinct pergi GeometryInstance required for instanced identity   
+
+Where to put the RayLOD Selector ? RAYLOD IS NOT CURRENTLY IN USE
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* LOD : Level Of Detail 
+
+  * level0 : most precise/expensive used for ray.origin inside instance sphere
+  * level1 : cheaper alternative used for ray.origin outside instance sphere
+
+The RayLOD idea is to switch geometry based on the distance from it, using 
+radius of outermost solid origin centered bounding sphere with safety margin
+see notes/issues/can-optix-selector-defer-expensive-csg.rst
+
+Given that the same omm is used for all pergi... 
+it would seem most appropriate to arrange the selector in common also, 
+as all instances have the same simplified version of their geometry too..
+BUT: selector needs to house 
+
+*  Group contains : rtGroup, rtGeometryGroup, rtTransform, or rtSelector
+*  Transform houses single child : rtGroup, rtGeometryGroup, rtTransform, or rtSelector   (NB not GeometryInstance)
+*  GeometryGroup is a container for an arbitrary number of geometry instances, and must be assigned an Acceleration
+*  Selector contains : rtGroup, rtGeometryGroup, rtTransform, and rtSelector
+
+**/
 
 void OGeo::convert()
 {
-    /**
-           m_top           (Group)
-              m_global     (GeometryGroup)
-              m_repeated   (Group)  
-
-    **/
-
     unsigned int nmm = m_geolib->getNumMergedMesh();
 
     LOG(info) << "[ nmm " << nmm ;
 
     if(m_verbosity > 1) m_geolib->dump("OGeo::convert GGeoLib" ); 
 
-    for(unsigned i=0 ; i < nmm ; i++) convertMergedMesh(i); 
-
-    unsigned globalCount = m_global->getChildCount() ;
-    unsigned repeatedCount = m_repeated->getChildCount() ;
-
-    if(globalCount > 0)  // all Group and GeometryGroup need distinct acceleration structures
+    for(unsigned i=0 ; i < nmm ; i++) 
     {
-         m_top->addChild(m_global);
-         m_global->setAcceleration( makeAcceleration() );
-    } 
-
-    if(repeatedCount > 0)
-    {
-         m_top->addChild(m_repeated);
-         m_repeated->setAcceleration( makeAcceleration() );
-    } 
+        convertMergedMesh(i); 
+    }
 
     m_top->setAcceleration( makeAcceleration() );
 
     if(m_verbosity > 0) dumpStats(); 
-    LOG(info) << "] nmm " << nmm << " global " << globalCount << " repeated " << repeatedCount ; 
+
+    LOG(info) << "] nmm " << nmm  ; 
 }
 
 void OGeo::convertMergedMesh(unsigned i)
@@ -229,110 +304,36 @@ void OGeo::convertMergedMesh(unsigned i)
     }
 
     unsigned numInstances = 0 ; 
-
-    if( i == 0 )         // global non-instanced geometry in slot 0
+    if( i == 0 )   // global non-instanced geometry in slot 0
     {
-
-        
-
-
-
-        unsigned lod = 0u ;  
-        optix::Material mat = makeMaterial();
-        OGeometry* omm = makeOGeometry( mm, lod ); 
-
-        unsigned instance_index = 0u ;  // so same code can run Instanced or not
-        optix::GeometryInstance gi = makeGeometryInstance(omm, mat, instance_index );
-
-        gi["primitive_count"]->setUint( 0u );  // non-instanced
-        m_global->addChild(gi);
+        optix::GeometryGroup ggg = makeGlobalGeometryGroup(mm);
+        m_top->addChild(ggg); 
         numInstances = 1 ; 
     }
-    else        // repeated geometry
+    else           // repeated geometry
     {
         optix::Group assembly = makeRepeatedAssembly(mm, raylod) ;
         assembly->setAcceleration( makeAcceleration() );
         numInstances = assembly->getChildCount() ; 
-        m_repeated->addChild(assembly); 
+        m_top->addChild(assembly); 
     }
     LOG(info) << ") " << i << " numInstances " << numInstances ; 
 }
 
+optix::GeometryGroup OGeo::makeGlobalGeometryGroup(GMergedMesh* mm)
+{
+    unsigned lod = 0u ;  
+    optix::Material mat = makeMaterial();
+    OGeometry* omm = makeOGeometry( mm, lod ); 
 
+    unsigned instance_index = 0u ;  // so same code can run Instanced or not
+    optix::GeometryInstance ggi = makeGeometryInstance(omm, mat, instance_index );
+    ggi["primitive_count"]->setUint( 0u );  // non-instanced
 
-
-/**
-OGeo::makeRepeatedAssembly
---------------------------
-
-Geometry tree that allows instance identity
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-JUNO has ~6 repeated pieces of geometry.  
-The two different types of photomultiplier tubes (PMTs) are 
-by far the most prolific with ~20k of one type (20inch) 
-and ~30k of another (3inch)
-
-The geometry tree follows that show in OptiX 6.0.0 manual Fig 3.4 
-~6 times  
-
-::
-
-          assembly         (Group)                  1:1 with instanced merged mesh (order 6 of these for JUNO)
-             xform.0       (Transform)              (at most 20k/30k different transforms)
-               perxform    (GeometryGroup)
-                  accel[0]                          common accel within each assembly 
-                  pergi    (GeometryInstance)       distinct pergi for every instance, with instance_index assigned  
-                     omm   (Geometry)               the same omm and mat are child of all xform/perxform/pergi
-                     mat   (Material) 
-             xform.1       (Transform)
-               perxform    (GeometryGroup)
-                  pergi    (GeometryInstance)      
-                  accel[0]
-                     omm   (Geometry)
-                     mat   (Material) 
-
-             ... for all the many thousands of instances of repeated geometry ...
-
-
-Why proliferate the *pergi* ? So can assign an instance index to it : ie know which PMT gets hit
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-* What other geo types can hold variables ? 
-      
-  * "Geometry" and "Material" can, but doesnt help for instance_index as only one of those
-  
-Could the perxform GeometryGroup be common to all ?
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-NO, needs to be a separate GeometryGroup into which to place 
-the distinct pergi GeometryInstance required for instanced identity   
-
-Where to put the RayLOD Selector ? 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-* NOTE THAT RAYLOD IS NOT CURRENTLY IN USE
-* LOD : Level Of Detail 
-
-  * level0 : most precise/expensive used for ray.origin inside instance sphere
-  * level1 : cheaper alternative used for ray.origin outside instance sphere
-
-
-The RayLOD idea is to switch geometry based on the distance from it, using 
-radius of outermost solid origin centered bounding sphere with safety margin
-see notes/issues/can-optix-selector-defer-expensive-csg.rst
-
-Given that the same omm is used for all pergi... 
-it would seem most appropriate to arrange the selector in common also, 
-as all instances have the same simplified version of their geometry too..
-BUT: selector needs to house 
-
-*  Group contains : rtGroup, rtGeometryGroup, rtTransform, or rtSelector
-*  Transform houses single child : rtGroup, rtGeometryGroup, rtTransform, or rtSelector   (NB not GeometryInstance)
-*  GeometryGroup is a container for an arbitrary number of geometry instances, and must be assigned an Acceleration
-*  Selector contains : rtGroup, rtGeometryGroup, rtTransform, and rtSelector
-
-**/
+    optix::Acceleration accel = makeAcceleration() ;
+    optix::GeometryGroup ggg = makeGeometryGroup(ggi, accel );    
+    return ggg ; 
+}
 
 optix::Group OGeo::makeRepeatedAssembly(GMergedMesh* mm, bool raylod )
 {
@@ -446,21 +447,22 @@ void OGeo::dump(const char* msg, const float* f)
 }
 
 
-optix::Acceleration OGeo::makeAcceleration(const char* builder, const char* traverser)
+optix::Acceleration OGeo::makeAcceleration(bool accel_props, const char* builder)
 {
     const char* ubuilder = builder ? builder : m_builder ;
-    const char* utraverser = traverser ? traverser : m_traverser ;
 
-    LOG(debug) << "OGeo::makeAcceleration " 
+    LOG(debug)
+              << " accel_props " << accel_props
               << " ubuilder " << ubuilder 
-              << " utraverser " << utraverser
               ; 
  
-    optix::Acceleration acceleration = m_context->createAcceleration(ubuilder, utraverser );
-    acceleration->setProperty( "vertex_buffer_name", "vertexBuffer" );
-    acceleration->setProperty( "index_buffer_name", "indexBuffer" );
-    //acceleration->markDirty();
-    return acceleration ; 
+    optix::Acceleration accel = m_context->createAcceleration(ubuilder);
+    if(accel_props == true)
+    {
+        accel->setProperty( "vertex_buffer_name", "vertexBuffer" );
+        accel->setProperty( "index_buffer_name", "indexBuffer" );
+    }
+    return accel ; 
 }
 
 optix::Material OGeo::makeMaterial()

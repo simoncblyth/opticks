@@ -54,7 +54,6 @@ class OXRAP_API OScene {
        BTimeKeeper*         m_timer ;
        OpticksHub*          m_hub ; 
        Opticks*             m_ok ; 
-       OpticksCfg<Opticks>* m_cfg ;   
 
        OContext*         m_ocontext ; 
        OFunc*            m_osolve ; 

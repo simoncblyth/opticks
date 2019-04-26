@@ -2,7 +2,7 @@
 """
 
 """
-import os, re, logging, sys
+import os, re, logging, sys, argparse
 import numpy as np
 log = logging.getLogger(__name__)
 
@@ -10,20 +10,29 @@ from opticks.ana.datedfolder import DatedFolder, dateparser
 from opticks.ana.meta import Meta
 
 if __name__ == '__main__':
-     logging.basicConfig(level=logging.INFO)
+    logging.basicConfig(level=logging.INFO)
 
-     base = sys.argv[1] if len(sys.argv) > 1 else "." 
-     dirs, dfolds = DatedFolder.find(base)
+    parser = argparse.ArgumentParser(__doc__)
+    parser.add_argument(    "base", default=None, help="Directory below which to look for results")
+    parser.add_argument(     "--include", default=None, help="Select result groups with commandline containing the string provided" )
+    parser.add_argument(     "--exclude", default=None, help="Select result groupd with commandline not containing the string provided" )
+    args = parser.parse_args()
+
+    print(args)
+
+    base = args.base if args.base is not None else "."
+    print(base)
+
+    dirs, dfolds = DatedFolder.find(base)
+
+    for df in sorted(dfolds):
+        udirs = filter(lambda _:_.endswith(df),dirs)
+        #print("\n".join(udirs))
 
 
-     for df in sorted(dfolds):
-         udirs = filter(lambda _:_.endswith(df),dirs)
-         #print("\n".join(udirs))
+        mm = [Meta(p, base) for p in udirs]
 
-
-         mm = [Meta(p, base) for p in udirs]
-
-         dtype = [ 
+        dtype = [ 
               ("index", np.int32),
               ("label", "|S30"),
               ("metric", np.float32),
@@ -31,33 +40,43 @@ if __name__ == '__main__':
               ("rslow", np.float32)
                 ]
 
-         a = np.recarray((len(mm),), dtype=dtype )
+        a = np.recarray((len(mm),), dtype=dtype )
 
-         labfmt_ = lambda lab:" %30s %10s %10s %10s " % lab
-         rowfmt_ = lambda row:" %30s %10.3f %10.3f %10.3f " % ( row.label, row.metric, row.rfast, row.rslow )
+        labfmt_ = lambda lab:" %30s %10s %10s %10s " % lab
+        rowfmt_ = lambda row:" %30s %10.3f %10.3f %10.3f " % ( row.label, row.metric, row.rfast, row.rslow )
 
-         lab = ( df,"metric","rfast", "rslow")
+        lab = ( df,"metric","rfast", "rslow")
 
-         metric_ = lambda m:float(m.d["OTracerTimes"]["launchAVG"])
+        metric_ = lambda m:float(m.d["OTracerTimes"]["launchAVG"])
 
-         smm = sorted(mm, key=metric_)  
-         ffast = metric_(smm[0])
-         fslow = metric_(smm[-1])
+        smm = sorted(mm, key=metric_)  
+        ffast = metric_(smm[0])
+        fslow = metric_(smm[-1])
 
-         print(smm[0].d["parameters"]["CMDLINE"])
+        cmdline = smm[0].d["parameters"]["CMDLINE"]
 
-         print(labfmt_(lab))
-         for i, m in enumerate(smm):
+        if args.include is not None and cmdline.find(args.include) == -1:
+            continue   
+        elif args.exclude is not None and cmdline.find(args.exclude) > -1:
+            continue   
+        else:
+            pass
+        pass
 
-             f = metric_(m)
-             rfast = f/ffast
-             rslow = f/fslow
+
+        print(cmdline)
+        print(labfmt_(lab))
+        for i, m in enumerate(smm):
+
+            f = metric_(m)
+            rfast = f/ffast
+            rslow = f/fslow
                
-             a[i] = (i, m.parentfold, f, rfast, rslow )  
+            a[i] = (i, m.parentfold, f, rfast, rslow )  
 
-             print(rowfmt_(a[i]))
-         pass
-     pass 
+            print(rowfmt_(a[i]))
+        pass
+    pass 
 
 
 

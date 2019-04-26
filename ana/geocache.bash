@@ -328,7 +328,7 @@ geocache-bench-()
 geocache-check()
 {
    local stamp=$(date +%s)
-   local rtx=2 
+   local rtx=0 
   
    CUDA_VISIBLE_DEVICES=0 geocache-bench- --rtx $rtx --runfolder $FUNCNAME --runstamp $stamp --runlabel "R${rtx}_TITAN_V"  $*
 }
@@ -351,6 +351,11 @@ geocache-bench()
    bench.py $LOCAL_BASE/opticks/results/$FUNCNAME
 }
 
+geocache-bench-results()
+{
+   bench.py $LOCAL_BASE/opticks/results/${FUNCNAME/-results} $*
+}
+
 geocache-bench-notes(){ cat << EON
 $FUNCNAME
 =======================
@@ -370,6 +375,12 @@ $FUNCNAME
 
 * it is possible to enable RTX on Volta, sometimes resulting in a small speedup
   see notes/issues/benchmarks.rst
+
+::
+
+    geocache-bench-results --include xanalytic
+    geocache-bench-results --exclude xanalytic
+
 
 
 

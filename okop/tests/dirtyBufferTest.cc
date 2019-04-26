@@ -232,8 +232,7 @@ int main(int argc, char** argv)
 
     OEvt oevt(context, size );
 
-    bool with_top = false ; 
-    OContext ctx(context, &ok, with_top);
+    OContext ctx(context, &ok );
     int entry = ctx.addEntry("dirtyBufferTest.cu", "dirtyBufferTest", "exception");
 
     ctx.launch( OContext::VALIDATE|OContext::COMPILE|OContext::PRELAUNCH,  entry,  0, 0, NULL);

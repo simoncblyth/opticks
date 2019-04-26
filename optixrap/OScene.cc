@@ -60,7 +60,6 @@ OScene::OScene(OpticksHub* hub)
     m_timer(new BTimeKeeper("OScene::")),
     m_hub(hub),
     m_ok(hub->getOpticks()),
-    m_cfg(m_ok->getCfg()),
     m_ocontext(NULL),
     m_osolve(NULL),
     m_ocolors(NULL),
@@ -130,17 +129,10 @@ void OScene::init()
 
     plog::Severity level = LEVEL ; 
 
-
     m_timer->setVerbose(true);
     m_timer->start();
 
-    std::string builder_   = m_cfg->getBuilder();
-    std::string traverser_ = m_cfg->getTraverser();
-    const char* builder   = builder_.empty() ? NULL : builder_.c_str() ;
-    const char* traverser = traverser_.empty() ? NULL : traverser_.c_str() ;
-
     initRTX();
-
 
     LOG(verbose) << "optix::Context::create() START " ; 
     optix::Context context = optix::Context::create();
@@ -187,8 +179,7 @@ void OScene::init()
 
 
     LOG(level) << "(OGeo)" ;
-    m_ogeo = new OGeo(m_ocontext, m_ok, m_hub->getGeoLib(), builder, traverser);
-    m_ogeo->setTopGroup(m_ocontext->getTopGroup());
+    m_ogeo = new OGeo(m_ocontext, m_ok, m_hub->getGeoLib(), m_ok->getBuilder() );
     LOG(level) << "(OGeo) convert" ;
     m_ogeo->convert();
     LOG(level) << "(OGeo) done" ;
@@ -201,7 +192,7 @@ void OScene::init()
     // as that may add boundaries when using analytic geometry
 
 
-    LOG(debug) << m_ogeo->description("OScene::init ogeo");
+    LOG(debug) << m_ogeo->description();
 
     LOG(info) << "]" ;
 

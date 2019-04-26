@@ -56,7 +56,7 @@ int main(int argc, char** argv)
     optix::Context context = optix::Context::create();
     //context[ "PNUMQUAD" ]->setUint( PNUMQUAD );   // quads per photon
 
-    OContext ctx(context, &ok, false );  // with_top:false
+    OContext ctx(context, &ok ); 
 
     int entry = ctx.addEntry("compactionTest.cu", "compactionTest", "exception");
 

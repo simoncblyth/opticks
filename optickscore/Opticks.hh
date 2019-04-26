@@ -232,6 +232,7 @@ class OKCORE_API Opticks {
        int   getStack() const ;
        int getMeshVerbosity() const ;
        const char* getFlightPathDir() const ;
+       const char* getBuilder() const ;
        const char* getDbgMesh() const ;
        float getFxRe();
        float getFxAb();

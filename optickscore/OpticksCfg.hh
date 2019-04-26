@@ -57,7 +57,6 @@ class OKCORE_API OpticksCfg : public BCfg {
      const std::string& getX4PolySkip() const ;
      const std::string& getCSGSkipLV() const ;  
      const std::string& getBuilder();
-     const std::string& getTraverser();
 
      const std::string& getSeqMap() const ;
      void setSeqMap(const char* seqmap);    // used from OpticksEventAna
@@ -172,7 +171,6 @@ private:
      std::string m_x4polyskip ;
      std::string m_csgskiplv ; 
      std::string m_builder ;
-     std::string m_traverser  ;
      std::string m_seqmap ;
      std::string m_dbgseqhis ;
      std::string m_dbgseqmat ;

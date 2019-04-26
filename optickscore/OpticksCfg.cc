@@ -55,7 +55,6 @@ OpticksCfg<Listener>::OpticksCfg(const char* name, Listener* listener, bool live
        m_x4polyskip(""),
        m_csgskiplv(""),
        m_builder(""),
-       m_traverser(""),
        m_seqmap(""),
        m_dbgseqhis("0"),
        m_dbgseqmat("0"),
@@ -736,10 +735,7 @@ void OpticksCfg<Listener>::init()
 
 
    m_desc.add_options()
-       ("builder",        boost::program_options::value<std::string>(&m_builder), "OptiX Accel structure builder, CAUTION case sensitive ");
-
-   m_desc.add_options()
-       ("traverser",      boost::program_options::value<std::string>(&m_traverser), "OptiX Accel structure traverser, CAUTION case sensitive ");
+       ("builder",        boost::program_options::value<std::string>(&m_builder), "OptiX Accel structure builder, CAUTION case sensitive Bvh/Trbvh/Sbvh/NoAccel  ");
 
    m_desc.add_options()
        ("dbgseqhis",      boost::program_options::value<std::string>(&m_dbgseqhis), "Debug photon history hex string" );
@@ -1332,13 +1328,6 @@ const std::string& OpticksCfg<Listener>::getBuilder()
 {
     return m_builder ;
 }
-
-template <class Listener>
-const std::string& OpticksCfg<Listener>::getTraverser()
-{
-    return m_traverser ;
-}
-
 
 
 template <class Listener>

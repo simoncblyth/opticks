@@ -258,7 +258,6 @@ Opticks::Opticks(int argc, char** argv, const char* argforced )
     m_configured(false),
     m_cfg(NULL),
     m_timer(NULL),
-    //m_meta(NULL),
     m_parameters(NULL),
     m_scene_config(NULL),
     m_lod_config(NULL),
@@ -456,6 +455,15 @@ int Opticks::getMeshVerbosity() const
 {
    return m_cfg->getMeshVerbosity();
 }
+
+
+const char* Opticks::getBuilder() const 
+{
+   const std::string& bld = m_cfg->getBuilder();
+   return bld.empty() ? NULL : bld.c_str() ;
+}
+
+
 
 
 const char* Opticks::getFlightPathDir() const 
