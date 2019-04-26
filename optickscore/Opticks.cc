@@ -457,14 +457,11 @@ int Opticks::getMeshVerbosity() const
 }
 
 
-const char* Opticks::getBuilder() const 
+const char* Opticks::getAccel() const 
 {
-   const std::string& bld = m_cfg->getBuilder();
-   return bld.empty() ? NULL : bld.c_str() ;
+   const std::string& accel = m_cfg->getAccel();
+   return accel.empty() ? NULL : accel.c_str() ; 
 }
-
-
-
 
 const char* Opticks::getFlightPathDir() const 
 {
@@ -2212,7 +2209,10 @@ unsigned Opticks::getRngMax(){       return m_cfg->getRngMax(); }
 unsigned Opticks::getBounceMax() {   return m_cfg->getBounceMax(); }
 unsigned Opticks::getRecordMax() {   return m_cfg->getRecordMax() ; }
 
-float Opticks::getEpsilon() {            return m_cfg->getEpsilon()  ; }
+float Opticks::getEpsilon() const {            return m_cfg->getEpsilon()  ; }
+float Opticks::getTimeTracerScale() const {    return m_cfg->getTimeTracerScale()  ; }
+bool  Opticks::isTimeTracer() const {          return m_cfg->hasOpt("timetracer") ; }
+
 bool Opticks::hasOpt(const char* name) const { return m_cfg->hasOpt(name); }
 
 bool Opticks::operator()(const char* name) const 

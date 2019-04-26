@@ -63,8 +63,6 @@ void OKGLTracer::init()
     }
 }
 
-
-
 /**
 OKGLTracer::prepareTracer
 ---------------------------

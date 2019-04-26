@@ -76,6 +76,7 @@ class OXRAP_API OContext {
             void init();
             void initPrint();
      public:
+            Opticks*     getOpticks() const ; 
             bool         hasTopGroup() const ;
             optix::Group getTopGroup();    // creates if not existing 
             void         createTopGroup();

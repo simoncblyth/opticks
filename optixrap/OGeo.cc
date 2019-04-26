@@ -1,4 +1,4 @@
-
+ 
 #include "OGeo.hh"
 #include "OGeoStat.hh"
 #include "OContext.hh"
@@ -23,8 +23,6 @@
 #include "OConfig.hh"
 #include "OFormat.hh"
 
-//#include "GGeo.hh"
-//#include "GGeoBase.hh"
 #include "GGeoLib.hh"
 #include "GMergedMesh.hh"
 #include "GParts.hh"
@@ -41,135 +39,8 @@
 #include "OConfig.hh"
 
 /**
-
-OGeo
-=====
-
-Prior to instancing 
----------------------
-
-Simplest possible node tree::
-
-   geometry_group 
-       acceleration  
-       geometry_instance 0
-       geometry_instance 1
-       ...            
-
-1 to 1 mapping of GMergedMesh to "geometry_instance" 
-each of which comprises one "geometry" with a single "material"
-which refers to boundary lib properties lodged in the context by OBoundaryLib
-
-Preparing for instancing
----------------------------
-
-Transforms can only be contained in "group" so 
-add top level group with another acceleration structure::
-
-   group (top)
-       acceleration
-       geometry_group
-             acceleration
-             geometry_instance 0
-             geometry_instance 1
-                 
-
-With instancing
-------------------
-
-::
-
-     m_top (Group)
-     acceleration
-
-             m_global (GeometryGroup)
-                 acceleration
-                 geometry_instance 0
-                 geometry_instance 1
-
-             m_repeated (Group)
-                 acceleration 
-
-                 group 0
-                     acceleration
-                     xform_0 
-                           repeated (GeometryGroup)
-                     xform_1
-                           repeated (GeometryGroup)
-                     ...
- 
-                 group 1
-                      acceleration
-                      xform_0
-                           repeated
-                      ...
-
-
-                  where repeated contains single gi (GeometryInstance) 
-
-
-With instancing and ability to identify the intersected instance
----------------------------------------------------------------------
-
-Need to be able to assign an index to each instance ...
-means need a GeometryInstance beneath the xform ? 
-
-The transform must be assigned exactly one child of type rtGroup, rtGeometryGroup, rtTransform, or rtSelector,
-
-
-TODO:
-Currently all the accelerations are using Sbvh/Bvh.
-Investigate if container groups might be better as "pass through" 
-NoAccel as the geometryGroup and groups they contain have all the 
-geometry.
-
-**/
-
-
-const plog::Severity OGeo::LEVEL = debug ; 
-
-const char* OGeo::BUILDER = "Sbvh" ; 
-
-
-OGeo::OGeo(OContext* ocontext, Opticks* ok, GGeoLib* geolib, const char* builder )
-    : 
-    m_ocontext(ocontext),
-    m_context(m_ocontext->getContext()),
-    m_ok(ok),
-    m_gltf(ok->getGLTF()),
-    m_geolib(geolib),
-    m_builder(builder ? strdup(builder) : BUILDER),
-    m_description(NULL),
-    m_verbosity(m_ok->getVerbosity()),
-    m_mmidx(0)
-{
-    init();
-}
-
-void OGeo::init()
-{
-    setTopGroup(m_ocontext->getTopGroup());
-}
-
-void OGeo::setTopGroup(optix::Group top)
-{
-    m_top = top ; 
-}
-
-std::string OGeo::description() const 
-{
-    std::stringstream ss ; 
-    ss 
-        << " default builder : " << m_builder
-        ;
-    return ss.str(); 
-}
-
-
-
-/**
-OGeo::Convert
---------------------------
+OGeo Details
+-----------------
 
 Table 2, OptiX Manual
 ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -180,36 +51,41 @@ Parent Node Type     Child Node Types                   Associated Node Types
 Geometry               None                               Material
 Acceleration           None                                     
 GeometryInstance       Geometry                           Material
+GeometryGroup          GeometryInstance                   Acceleration
 Transform              GeometryGroup         
 Selector               Transform
 Group                  GeometryGroup                      Acceleration    
 =================   ================================   =========================
 
+*  Group contains : rtGroup, rtGeometryGroup, rtTransform, or rtSelector
+*  Transform houses single child : rtGroup, rtGeometryGroup, rtTransform, or rtSelector   (NB not GeometryInstance)
+*  GeometryGroup is a container for an arbitrary number of geometry instances, and must be assigned an Acceleration
+*  Selector contains : rtGroup, rtGeometryGroup, rtTransform, and rtSelector
+
+
 
 Geometry tree that allows instance identity
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-JUNO has ~6 repeated pieces of geometry.  
+JUNO has 6 repeated pieces of geometry.  
 The two different types of photomultiplier tubes (PMTs) are 
-by far the most prolific with ~20k of one type (20inch) 
-and ~30k of another (3inch)
+by far the most prolific with 20k of one type (20inch) 
+and 36k of another (3inch)
 
-The geometry tree follows that show in OptiX 6.0.0 manual Fig 3.4 
-~6 times  
+The geometry tree follows that show in OptiX 6.0.0 manual Fig 3.4 x6 
 
 ::
 
-    m_top                  (Group)
-       ggg                 (GeometryGroup)          global non-instanced geometry from merged mesh 0  
+    m_top                  (Group)             m_top_accel
+       ggg                 (GeometryGroup)        m_ggg_accel           global non-instanced geometry from merged mesh 0  
           ggi              (GeometryInstance)        
-          accel 
 
-       assembly.0          (Group)                  1:1 with instanced merged mesh (~6 of these for JUNO)
-             xform.0       (Transform)              (at most 20k/36k different transforms)
+       assembly.0          (Group)                m_assembly_accel      1:1 with instanced merged mesh (~6 of these for JUNO)
+             xform.0       (Transform)                                  (at most 20k/36k different transforms)
                perxform    (GeometryGroup)
-                  accel[0]                          common accel within each assembly 
-                  pergi    (GeometryInstance)       distinct pergi for every instance, with instance_index assigned  
-                     omm   (Geometry)               the same omm and mat are child of all xform/perxform/pergi
+                  accel[0]                            m_instance_accel  common accel within each assembly 
+                  pergi    (GeometryInstance)                           distinct pergi for every instance, with instance_index assigned  
+                     omm   (Geometry)                                   the same omm and mat are child of all xform/perxform/pergi
                      mat   (Material) 
              xform.1       (Transform)
                perxform    (GeometryGroup)
@@ -226,12 +102,21 @@ The geometry tree follows that show in OptiX 6.0.0 manual Fig 3.4
             ... just like above ...
 
 
+
+* transforms can only be contained in "group" or another transform so add top level group with 
+  another acceleration structure
+
+* transforms must be assigned exactly one child of type rtGroup, rtGeometryGroup, rtTransform, or rtSelector,
+
+
 Why proliferate the *pergi* ? So can assign an instance index to it : ie know which PMT gets hit
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-* What types other than GeometryInstance can hold variables ? 
-      
-  * "Geometry" and "Material" can, but doesnt help for instance_index as only one of those
+* Need to assign an index to each instance means need a GeometryInstance beneath the xform ? 
+
+* "Geometry" and "Material" can also hold variables, but that doesnt help for instance_index 
+   as there is only geometry and material instance for each assembly
+
   
 Could the perxform GeometryGroup be common to all ?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -254,14 +139,73 @@ see notes/issues/can-optix-selector-defer-expensive-csg.rst
 Given that the same omm is used for all pergi... 
 it would seem most appropriate to arrange the selector in common also, 
 as all instances have the same simplified version of their geometry too..
-BUT: selector needs to house 
 
-*  Group contains : rtGroup, rtGeometryGroup, rtTransform, or rtSelector
-*  Transform houses single child : rtGroup, rtGeometryGroup, rtTransform, or rtSelector   (NB not GeometryInstance)
-*  GeometryGroup is a container for an arbitrary number of geometry instances, and must be assigned an Acceleration
-*  Selector contains : rtGroup, rtGeometryGroup, rtTransform, and rtSelector
+TODO:
+Currently all the accelerations are using Sbvh/Bvh.
+Investigate if container groups might be better as "pass through" 
+NoAccel as the geometryGroup and groups they contain have all the 
+geometry.
 
 **/
+
+
+const plog::Severity OGeo::LEVEL = debug ; 
+
+
+const char* OGeo::ACCEL = "Sbvh" ; 
+
+OGeo::OGeo(OContext* ocontext, Opticks* ok, GGeoLib* geolib )
+    : 
+    m_ocontext(ocontext),
+    m_context(m_ocontext->getContext()),
+    m_ok(ok),
+    m_gltf(ok->getGLTF()),
+    m_geolib(geolib),
+    m_verbosity(m_ok->getVerbosity()),
+    m_mmidx(0),
+    m_lodidx(0),
+    m_top_accel(ACCEL),
+    m_ggg_accel(ACCEL),
+    m_assembly_accel(ACCEL),
+    m_instance_accel(ACCEL)
+{
+    init();
+}
+
+void OGeo::init()
+{
+    const char* accel = m_ok->getAccel(); 
+
+    std::vector<std::string> elem ; 
+    BStr::split(elem, accel, ','); 
+    unsigned nelem = elem.size(); 
+
+    if(nelem > 0) m_top_accel = strdup(elem[0].c_str()) ; 
+    if(nelem > 1) m_ggg_accel = strdup(elem[1].c_str()) ; 
+    if(nelem > 2) m_assembly_accel = strdup(elem[2].c_str()) ; 
+    if(nelem > 3) m_instance_accel = strdup(elem[3].c_str()) ; 
+
+    setTopGroup(m_ocontext->getTopGroup());
+
+    LOG(info) << description() ; 
+}
+
+void OGeo::setTopGroup(optix::Group top)
+{
+    m_top = top ; 
+}
+
+std::string OGeo::description() const 
+{
+    std::stringstream ss ; 
+    ss << "OGeo "
+       << " top " << m_top_accel 
+       << " ggg " << m_ggg_accel
+       << " assembly " << m_assembly_accel
+       << " instance " << m_instance_accel
+       ;
+    return ss.str(); 
+}
 
 void OGeo::convert()
 {
@@ -276,7 +220,7 @@ void OGeo::convert()
         convertMergedMesh(i); 
     }
 
-    m_top->setAcceleration( makeAcceleration() );
+    m_top->setAcceleration( makeAcceleration(m_top_accel, false) );
 
     if(m_verbosity > 0) dumpStats(); 
 
@@ -313,7 +257,7 @@ void OGeo::convertMergedMesh(unsigned i)
     else           // repeated geometry
     {
         optix::Group assembly = makeRepeatedAssembly(mm, raylod) ;
-        assembly->setAcceleration( makeAcceleration() );
+        assembly->setAcceleration( makeAcceleration(m_assembly_accel, false) );
         numInstances = assembly->getChildCount() ; 
         m_top->addChild(assembly); 
     }
@@ -330,7 +274,7 @@ optix::GeometryGroup OGeo::makeGlobalGeometryGroup(GMergedMesh* mm)
     optix::GeometryInstance ggi = makeGeometryInstance(omm, mat, instance_index );
     ggi["primitive_count"]->setUint( 0u );  // non-instanced
 
-    optix::Acceleration accel = makeAcceleration() ;
+    optix::Acceleration accel = makeAcceleration(m_ggg_accel, false) ;
     optix::GeometryGroup ggg = makeGeometryGroup(ggi, accel );    
     return ggg ; 
 }
@@ -378,8 +322,8 @@ optix::Group OGeo::makeRepeatedAssembly(GMergedMesh* mm, bool raylod )
     assembly->setChildCount(islice->count());
 
     optix::Acceleration accel[2] ;
-    accel[0] = makeAcceleration() ;  //  common accel for all instances as same geometry
-    accel[1] = makeAcceleration() ;  //  NB accel is not created inside the loop 
+    accel[0] = makeAcceleration(m_instance_accel, false) ;  //  common accel for all instances as same geometry
+    accel[1] = makeAcceleration(m_instance_accel, false) ;                         //  NB accel is not created inside the loop 
 
     unsigned ichild = 0 ; 
     for(unsigned int i=islice->low ; i<islice->high ; i+=islice->step) //  CAUTION HEAVY LOOP eg 20k PMTs 
@@ -447,22 +391,21 @@ void OGeo::dump(const char* msg, const float* f)
 }
 
 
-optix::Acceleration OGeo::makeAcceleration(bool accel_props, const char* builder)
+optix::Acceleration OGeo::makeAcceleration(const char* accel, bool accel_props)
 {
-    const char* ubuilder = builder ? builder : m_builder ;
 
     LOG(debug)
+              << " accel " << accel 
               << " accel_props " << accel_props
-              << " ubuilder " << ubuilder 
               ; 
  
-    optix::Acceleration accel = m_context->createAcceleration(ubuilder);
+    optix::Acceleration acceleration = m_context->createAcceleration(accel);
     if(accel_props == true)
     {
-        accel->setProperty( "vertex_buffer_name", "vertexBuffer" );
-        accel->setProperty( "index_buffer_name", "indexBuffer" );
+        acceleration->setProperty( "vertex_buffer_name", "vertexBuffer" );
+        acceleration->setProperty( "index_buffer_name", "indexBuffer" );
     }
-    return accel ; 
+    return acceleration ; 
 }
 
 optix::Material OGeo::makeMaterial()
@@ -486,8 +429,6 @@ optix::GeometryGroup OGeo::makeGeometryGroup(optix::GeometryInstance gi, optix::
     gg->setAcceleration( accel );
     return gg ;
 }
-
-
 
 optix::GeometryInstance OGeo::makeGeometryInstance(OGeometry* ogeom, optix::Material mat, unsigned instance_index)
 {
@@ -825,10 +766,8 @@ optix::Geometry OGeo::makeTriangulatedGeometry(GMergedMesh* mm, unsigned lod)
     geometry["normalBuffer"]->setBuffer(emptyBuffer);
     geometry["texCoordBuffer"]->setBuffer(emptyBuffer);
 
-
     geometry->setPrimitiveCount( uFaces ); 
     geometry["primitive_count"]->setUint( numFaces );  // needed for instanced offsets into buffers, so must describe the buffer, NOT the intent 
-
  
     return geometry ; 
 }
@@ -847,13 +786,9 @@ const char* OGeo::getContextName() const
 }
 
 
-
-
 /**
-
 *reuse* was an unsuccessful former attempt to "purloin the OpenGL buffers" avoid duplicating geometry 
 info between OpenGL and OptiX setting reuse to true causes OptiX/OpenGL launch failure : bad enum 
-
 **/
 
 template <typename T>
@@ -993,8 +928,6 @@ optix::Buffer OGeo::createInputBuffer(NPY<S>* buf, RTformat format, unsigned int
 #else
         assert(0); // not compiled WITH_OPENGL 
 #endif
-
-
    } 
    else
    {

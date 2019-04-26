@@ -26,7 +26,7 @@ rtDeclareVariable(unsigned int,  resolution_scale, , );
 rtDeclareVariable(uint2, launch_index, rtLaunchIndex, );
 rtDeclareVariable(uint2, launch_dim,   rtLaunchDim, );
 
-rtDeclareVariable(float, time_view_scale, , ) = 1e-6f;
+rtDeclareVariable(float, timetracerscale, , ) = 1e-6f;
 
 
 rtDeclareVariable(unsigned int,  touch_mode, , );
@@ -35,15 +35,50 @@ rtDeclareVariable(uint2,         touch_index,  , );
 rtDeclareVariable(uint2,         touch_dim,  , );
 rtBuffer<uint4,2>         touch_buffer;
 
-// BGRA
-#define BLUE  make_uchar4(255u,  0u,  0u,255u)
-#define GREEN make_uchar4(  0u,255u,  0u,255u)
-#define RED   make_uchar4(  0u,  0u,255u,255u)
+
+#define RED    make_uchar4(255u,  0u,  0u,255u)
+#define GREEN  make_uchar4(  0u,255u,  0u,255u)
+#define BLUE   make_uchar4(  0u,  0u,255u,255u)
+
+
+
+RT_PROGRAM void pinhole_camera_timetracer()
+{
+
+  PerRayData_radiance prd;
+  prd.flag = 0u ; 
+  prd.result = bad_color ;
+
+  float2 d = make_float2(launch_index) / make_float2(launch_dim) * 2.f - 1.f ;
+
+  optix::Ray ray = parallel == 0 ? 
+                       optix::make_Ray( eye                 , normalize(d.x*U + d.y*V + W), radiance_ray_type, scene_epsilon, RT_DEFAULT_MAX)
+                     :
+                       optix::make_Ray( eye + d.x*U + d.y*V , normalize(W)                , radiance_ray_type, scene_epsilon, RT_DEFAULT_MAX)
+                     ;
+
+  clock_t t0 = clock(); 
+
+  rtTrace(top_object, ray, prd);
+
+  clock_t t1 = clock(); 
+
+  float dt = ( t1 - t0 ) ; 
+
+  float pixel_time  = dt * timetracerscale ;
+
+  uchar4  color = make_color( make_float3( pixel_time )); 
+
+  rtPrintf("//pinhole_camera_timetracer dt %10.3f pixel_time %10.3f timetracerscale %10.3g color (%d %d %d) \n", dt, pixel_time, timetracerscale, color.x, color.y, color.z );  
+
+  //uchar4  color = RED ;  
+
+  output_buffer[launch_index] = color ; 
+}
 
 
 RT_PROGRAM void pinhole_camera()
 {
-
   PerRayData_radiance prd;
   prd.flag = 0u ; 
   prd.result = bad_color ;
@@ -89,9 +124,8 @@ RT_PROGRAM void pinhole_camera()
 
 #if RAYTRACE_TIMEVIEW
   clock_t t1 = clock(); 
-  float expected_fps   = 1.0f;
-  float pixel_time     = ( t1 - t0 ) * time_view_scale * expected_fps;
-  uchar4  color = = make_color( make_float3(  pixel_time ) ); 
+  float pixel_time     = ( t1 - t0 ) * time_view_scale ;
+  uchar4  color = make_color( make_float3( pixel_time )); 
 #else
   uchar4 color = make_color( prd.result ) ; // BGRA
 #endif
@@ -99,7 +133,6 @@ RT_PROGRAM void pinhole_camera()
   if( resolution_scale == 1)  
   { 
       output_buffer[launch_index] = color ; 
-     // depth_buffer[launch_index] = zHit_clip ; 
   }
   else if( resolution_scale == 2)
   {
@@ -116,11 +149,6 @@ RT_PROGRAM void pinhole_camera()
       output_buffer[idx01] = color ; 
       output_buffer[idx11] = color ; 
 
-      //depth_buffer[idx00] = zHit_clip ; 
-      //depth_buffer[idx10] = zHit_clip ; 
-      //depth_buffer[idx01] = zHit_clip ; 
-      //depth_buffer[idx11] = zHit_clip ; 
-
   }
   else if( resolution_scale > 2)
   {
@@ -130,7 +158,6 @@ RT_PROGRAM void pinhole_camera()
       for(unsigned int j=0 ; j < resolution_scale ; j++){
           uint2 idx = make_uint2(wx+i, wy+j) ; 
           output_buffer[idx] = color ; 
-          //depth_buffer[idx] = zHit_clip ; 
       }
       }
   }

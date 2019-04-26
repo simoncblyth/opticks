@@ -56,7 +56,7 @@ class OKCORE_API OpticksCfg : public BCfg {
      const std::string& getMask() const ;
      const std::string& getX4PolySkip() const ;
      const std::string& getCSGSkipLV() const ;  
-     const std::string& getBuilder();
+     const std::string& getAccel();
 
      const std::string& getSeqMap() const ;
      void setSeqMap(const char* seqmap);    // used from OpticksEventAna
@@ -76,7 +76,8 @@ class OKCORE_API OpticksCfg : public BCfg {
 
      const std::string& getFlightPathDir();
 
-     float        getEpsilon(); 
+     float        getEpsilon() const ; 
+     float        getTimeTracerScale() const ; 
 
      unsigned     getSeed() const ; 
      int          getRTX() const ; 
@@ -170,7 +171,7 @@ private:
      std::string m_mask ;
      std::string m_x4polyskip ;
      std::string m_csgskiplv ; 
-     std::string m_builder ;
+     std::string m_accel ;
      std::string m_seqmap ;
      std::string m_dbgseqhis ;
      std::string m_dbgseqmat ;
@@ -187,6 +188,7 @@ private:
      std::string m_scintillationclass ;
 
      float       m_epsilon ; 
+     float       m_timetracerscale ; 
      unsigned    m_seed ; 
      int         m_rtx ; 
      int         m_rngmax ; 

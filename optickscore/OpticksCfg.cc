@@ -54,7 +54,7 @@ OpticksCfg<Listener>::OpticksCfg(const char* name, Listener* listener, bool live
        m_mask(""),
        m_x4polyskip(""),
        m_csgskiplv(""),
-       m_builder(""),
+       m_accel(""),
        m_seqmap(""),
        m_dbgseqhis("0"),
        m_dbgseqmat("0"),
@@ -69,6 +69,7 @@ OpticksCfg<Listener>::OpticksCfg(const char* name, Listener* listener, bool live
        m_cerenkovclass("C4Cerenkov1042"),
        m_scintillationclass("C4Scintillation1042"),
        m_epsilon(0.1f),     
+       m_timetracerscale(1e-6f),     
        m_seed(42),     
        m_rtx(0),
        m_rngmax(3000000),     
@@ -231,6 +232,15 @@ void OpticksCfg<Listener>::init()
 
    m_desc.add_options()
        ("tracer",   "used to argforced signal from OTracerTest that progagator should not be setup avoiding issue tracer_crash.rst") ; 
+
+   m_desc.add_options()
+       ("timetracer",   "raytrace heat image showing trace time") ; 
+
+   char timetracerscale[128];
+   snprintf(timetracerscale,128, "Adhoc scaling of trace times to form a color . Default %10.4f", m_timetracerscale);
+   m_desc.add_options()
+       ("timetracerscale",  boost::program_options::value<float>(&m_timetracerscale), timetracerscale );
+
 
 
    m_desc.add_options()
@@ -735,7 +745,7 @@ void OpticksCfg<Listener>::init()
 
 
    m_desc.add_options()
-       ("builder",        boost::program_options::value<std::string>(&m_builder), "OptiX Accel structure builder, CAUTION case sensitive Bvh/Trbvh/Sbvh/NoAccel  ");
+       ("accel",        boost::program_options::value<std::string>(&m_accel), "OptiX Accel structure builder, comma delimited list. See OGeo. CAUTION case sensitive Bvh/Trbvh/Sbvh/NoAccel  ");
 
    m_desc.add_options()
        ("dbgseqhis",      boost::program_options::value<std::string>(&m_dbgseqhis), "Debug photon history hex string" );
@@ -1324,9 +1334,9 @@ const std::string& OpticksCfg<Listener>::getCSGSkipLV() const
 
 
 template <class Listener>
-const std::string& OpticksCfg<Listener>::getBuilder()
+const std::string& OpticksCfg<Listener>::getAccel()
 {
-    return m_builder ;
+    return m_accel ;
 }
 
 
@@ -1422,10 +1432,16 @@ const std::string& OpticksCfg<Listener>::getScintillationClass()
 
 
 template <class Listener>
-float OpticksCfg<Listener>::getEpsilon()
+float OpticksCfg<Listener>::getEpsilon() const
 {
     return m_epsilon ; 
 }
+template <class Listener>
+float OpticksCfg<Listener>::getTimeTracerScale() const
+{
+    return m_timetracerscale ; 
+}
+
 
 template <class Listener>
 unsigned OpticksCfg<Listener>::getSeed() const 

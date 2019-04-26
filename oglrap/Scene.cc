@@ -416,6 +416,9 @@ void Scene::initRenderers()
     m_global_renderer = new Renderer("nrm", m_shader_dir, m_shader_incl_path );
     m_globalvec_renderer = new Renderer("nrmvec", m_shader_dir, m_shader_incl_path );
     m_raytrace_renderer = new Renderer("tex", m_shader_dir, m_shader_incl_path );
+    // m_raytrace_renderer just presents textures passed to it 
+    // to follow how this gets fed, see opticksgl/OKGLTracer.cc::render
+
 
    // small array of instance renderers to handle multiple assemblies of repeats 
     for( unsigned int i=0 ; i < MAX_INSTANCE_RENDERER ; i++)

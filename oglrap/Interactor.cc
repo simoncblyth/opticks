@@ -469,7 +469,6 @@ void Interactor::key_pressed(unsigned int key)
             m_near_mode = !m_near_mode ; 
             break;
         case GLFW_KEY_O:
-            //m_composition->nextRenderStyle(modifiers);
             nextRenderStyle(modifiers);
             break;
         case GLFW_KEY_P:

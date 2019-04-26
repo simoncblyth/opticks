@@ -2,9 +2,9 @@
 
 #include "OXPPNS.hh"
 
+class Opticks ; 
 class OContext ; 
 class Composition ; 
-//struct STimes ; 
 class BTimes ; 
 
 /**
@@ -12,6 +12,8 @@ OTracer
 =========
 
 Instance m_otracer is resident of opticksgl/OKGLTracer.hh 
+which coordinates with oglrap/OpticksViz using SRenderer
+protocol base.
 
 
 output_buffer
@@ -30,7 +32,6 @@ OTracer relies on, externally setup
 * a few tests also "manually" setup an output_buffer 
   eg optixrap/tests/intersect_analytic_test.cc
   but that is not the same format a the pinhole output buffer
-
 
 oxrap/cu/pinhole_camera.cu
 ----------------------------
@@ -68,6 +69,7 @@ class OXRAP_API OTracer {
 
    private:
        OContext*       m_ocontext ; 
+       Opticks*        m_ok ; 
        Composition*    m_composition ; 
        optix::Context  m_context ; 
        unsigned        m_resolution_scale ; 

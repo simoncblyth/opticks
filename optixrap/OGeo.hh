@@ -34,20 +34,7 @@ GMergedMesh is assumed to be non-instanced, the remainder
 are expected to be instanced with appropriate 
 transform and identity buffers.
 
-
-
-Crucial OptiX geometrical members:
-
-
-*(optix::Group)m_top*
-     group holding the below
-
-*(optix::GeometryGroup)m_geometry_group*
-     single child converted from merged mesh zero, with global geometry
-
-*(optix::Group)m_repeated_group*
-     usually multiple children (order ~5) converted from merged mesh > 0, with instanced geometry 
-
+Details of geometry tree are documented with the OGeo::convert method.
 
 **/
 
@@ -70,9 +57,10 @@ public:
 
 
     static const plog::Severity LEVEL ; 
-    static const char* BUILDER ; 
 
-    OGeo(OContext* ocontext, Opticks* ok, GGeoLib* geolib, const char* builder=NULL );
+    static const char* ACCEL ; 
+
+    OGeo(OContext* ocontext, Opticks* ok, GGeoLib* geolib );
     void setTopGroup(optix::Group top);
     void setVerbose(bool verbose=true);
     std::string description() const ;
@@ -96,7 +84,7 @@ public:
 
 private:
     void                     setTransformMatrix(optix::Transform& xform, const float* tdata ) ;
-    optix::Acceleration      makeAcceleration(bool accel_props=false, const char* builder=NULL);
+    optix::Acceleration      makeAcceleration(const char* accel, bool accel_props=false);
     optix::Material          makeMaterial();
 
     OGeometry*               makeOGeometry(GMergedMesh* mergedmesh, unsigned lod);
@@ -121,14 +109,16 @@ private:
     Opticks*             m_ok ; 
     int                  m_gltf ; 
     GGeoLib*             m_geolib ;  
-    const char*          m_builder ; 
-    const char*          m_description ; 
     unsigned             m_verbosity ; 
 private:
     // for giving "context names" to GPU buffer uploads
     const char*          getContextName() const ;
     unsigned             m_mmidx ; 
     unsigned             m_lodidx ; 
+    const char*          m_top_accel ; 
+    const char*          m_ggg_accel ; 
+    const char*          m_assembly_accel ; 
+    const char*          m_instance_accel ; 
 private:
     // locals 
     RayTraceConfig*       m_cfg ; 

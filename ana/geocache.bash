@@ -317,6 +317,14 @@ geocache-movie(){ $FUNCNAME- 2>&1 > /tmp/$FUNCNAME.log ; }
 
 
 
+geocache-gui()
+{
+   local dbg
+   [ -n "$DBG" ] && dbg="gdb --args" || dbg=""
+   $dbg OKTest --envkey --target 352851 --eye -1,-1,-1  
+}
+
+
 geocache-bench-()
 {
    type $FUNCNAME
@@ -325,17 +333,51 @@ geocache-bench-()
    $dbg OpSnapTest --envkey --target 352851 --eye -1,-1,-1 --snapconfig "steps=5,eyestartz=-1,eyestopz=-0.5" --size 5120,2880,1 --embedded  $* 
 }
 
+
+geocache-tour-()
+{
+   type $FUNCNAME
+   local dbg
+   [ -n "$DBG" ] && dbg="gdb --args" || dbg=""
+   $dbg OpSnapTest --envkey --target 352851 --eye -1,-1,-1 --snapconfig "steps=100,eyestartz=-1,eyestopz=5" --size 2560,1440,1 --embedded  $* 
+}
+
+
+
+
+
+geocache-cvd()
+{
+   case $CUDA_VISIBLE_DEVICES in 
+      0) echo TITAN_V ;; 
+      1) echo TITAN_RTX ;; 
+      "0,1") echo TITAN_V_AND_TITAN_RTX ;; 
+      "1,0") echo TITAN_RTX_AND_TITAN_V ;; 
+   esac
+}
+
+
 geocache-check()
 {
    local stamp=$(date +%s)
    local rtx=0 
   
-   CUDA_VISIBLE_DEVICES=0 geocache-bench- --rtx $rtx --runfolder $FUNCNAME --runstamp $stamp --runlabel "R${rtx}_TITAN_V"  $*
+   CUDA_VISIBLE_DEVICES=1 geocache-bench- --rtx $rtx --runfolder $FUNCNAME --runstamp $stamp --runlabel "R${rtx}_$(geocache-cvd)"  $*
 }
+
+geocache-tour()
+{
+   local stamp=$(date +%s)
+   local rtx=0 
+   CUDA_VISIBLE_DEVICES=1 geocache-tour- --rtx $rtx --runfolder $FUNCNAME --runstamp $stamp --runlabel "R${rtx}_$(geocache-cvd)"  $*
+}
+
+
 
 
 geocache-bench()
 {
+   #set -eu
    local stamp=$(date +%s)
 
    CUDA_VISIBLE_DEVICES=1   $FUNCNAME- --rtx 0 --runfolder $FUNCNAME --runstamp $stamp --runlabel "R0_TITAN_RTX" $*

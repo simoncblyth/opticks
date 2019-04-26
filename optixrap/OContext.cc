@@ -1,4 +1,3 @@
-
 #include <iomanip>
 #include <sstream>
 #include <cstring>
@@ -66,7 +65,6 @@ OpticksEntry* OContext::addEntry(char code)
 {
     LOG(LEVEL) << "OContext::addEntry " << code ; 
 
-    //assert(0);
     bool defer = true ; 
     unsigned index ;
     switch(code)
@@ -79,6 +77,7 @@ OpticksEntry* OContext::addEntry(char code)
         case 'D': index = addEntry("generate.cu", "dumpseed", "exception", defer) ; break ;
         case 'S': index = addEntry("seedTest.cu", "seedTest", "exception", defer) ; break ;
         case 'P': index = addEntry("pinhole_camera.cu", "pinhole_camera" , "exception", defer);  break;
+        case 'Q': index = addEntry("pinhole_camera.cu", "pinhole_camera_timetracer" , "exception", defer);  break;
     }
     return new OpticksEntry(index, code) ; 
 }
@@ -88,6 +87,12 @@ unsigned OContext::getDebugPhoton() const
 {
     return m_debug_photon ; 
 }
+
+Opticks* OContext::getOpticks() const 
+{
+    return m_ok ; 
+}
+
 
 
 OContext::OContext(optix::Context context, Opticks* ok, const char* cmake_target) 
@@ -119,16 +124,12 @@ void OContext::init()
     unsigned stacksize_bytes = m_ok->getStack() ;
     m_context->setStackSize(stacksize_bytes);
 
-
-
     LOG(LEVEL) << "OContext::init " 
               << " mode " << getModeName()
               << " num_ray_type " << num_ray_type 
               << " stacksize_bytes " << stacksize_bytes
               ; 
-
 }
-
 
 
 bool OContext::hasTopGroup() const 

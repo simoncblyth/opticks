@@ -13,6 +13,7 @@
 #include "GLMFormat.hpp"
 
 // okc-
+#include "Opticks.hh"
 #include "OpticksEntry.hh"
 #include "Composition.hh"
 
@@ -27,6 +28,7 @@ using namespace optix ;
 OTracer::OTracer(OContext* ocontext, Composition* composition) 
     :
     m_ocontext(ocontext),
+    m_ok(ocontext->getOpticks()),
     m_composition(composition),
     m_resolution_scale(1),
     m_trace_times(NULL),
@@ -64,13 +66,22 @@ void OTracer::init()
     // OContext::e_pinhole_camera_entry
     bool defer = true ; 
 
-    //m_entry_index = m_ocontext->addEntry("pinhole_camera.cu", "pinhole_camera" , "exception", defer);
-    OpticksEntry* entry =  m_ocontext->addEntry('P');
+    char code = m_ok->isTimeTracer() ? 'Q' : 'P' ; 
+    OpticksEntry* entry =  m_ocontext->addEntry(code);
     m_entry_index = entry->getIndex();
 
     m_ocontext->setMissProgram(           OContext::e_radiance_ray , "constantbg.cu", "miss", defer );
 
     m_context[ "scene_epsilon"]->setFloat(m_composition->getNear());
+
+    float timetracerscale = m_ok->getTimeTracerScale(); 
+
+    LOG(error)
+          << " isTimeTracer " << ( m_ok->isTimeTracer() ? "YES" : "NO" ) 
+          << " timetracerscale " << timetracerscale 
+          ;
+    m_context[ "timetracerscale"]->setFloat(timetracerscale);
+
 
     m_context[ "radiance_ray_type"   ]->setUint( OContext::e_radiance_ray );
     m_context[ "touch_ray_type"      ]->setUint( OContext::e_touch_ray );
