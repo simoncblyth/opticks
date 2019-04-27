@@ -50,7 +50,20 @@ include(BCMSetupVersion)  # not yet used in anger, see examples/UseGLM
 include(EchoTarget)
 
 set(BUILD_SHARED_LIBS ON)
-set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+
+
+# add the automatically determined parts of the RPATH
+# which point to directories outside the build tree to the install RPATH
+# set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+#
+# the RPATH to be used when installing, like this forces users to set LD_LIBRARY_PATH as well as PATH
+# SET(CMAKE_INSTALL_RPATH "")
+#
+# install RPATH is prefixed with $ORIGIN/.. to simplify deployment of Opticks binaries 
+# users then only need to set PATH and the executables are able to find the libs relative to themselves  
+# see notes/issues/packaging-opticks-and-externals-for-use-on-gpu-cluster.rst 
+#
+set(CMAKE_INSTALL_RPATH "$ORIGIN/../lib:$ORIGIN/../lib64:$ORIGIN/../externals/lib:$ORIGIN/../externals/lib64:$ORIGIN/../externals/optix/lib64")
 
 include(OpticksCXXFlags)   
 

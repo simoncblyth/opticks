@@ -55,69 +55,73 @@ BRANCHES OF OPERATION : USING RELATIVE APPROACH
 class BRAP_API  BOpticksResource {
        
     public:
-       static const plog::Severity  LEVEL ; 
+        static const plog::Severity  LEVEL ; 
 
     protected:
-       static const char* G4ENV_RELPATH ; 
-       static const char* OKDATA_RELPATH ;
+        static const char* INSTALL_PREFIX_KEY  ; 
+        static const char* INSTALL_PREFIX_KEY2  ; 
     protected:
-       static const char* EMPTY ; 
-       static const char* G4LIVE ; 
-       static const char* JUNO ; 
-       static const char* DAYABAY ; 
-       static const char* DPIB ; 
-       static const char* OTHER ; 
+        static const char* G4ENV_RELPATH ; 
+        static const char* OKDATA_RELPATH ;
     protected:
-       static const char* PREFERENCE_BASE  ;
+        static const char* EMPTY ; 
+        static const char* G4LIVE ; 
+        static const char* JUNO ; 
+        static const char* DAYABAY ; 
+        static const char* DPIB ; 
+        static const char* OTHER ; 
+    protected:
+        static const char* PREFERENCE_BASE  ;
 
     public:
-       static const char* DEFAULT_GEOKEY ;
-       static const char* DEFAULT_QUERY ;
-       static const char* DEFAULT_QUERY_LIVE ;
-       static const char* DEFAULT_CTRL ;
-       static const char* DEFAULT_MESHFIX ;
-       static const char* DEFAULT_MESHFIX_CFG ;
+        static const char* DEFAULT_GEOKEY ;
+        static const char* DEFAULT_QUERY ;
+        static const char* DEFAULT_QUERY_LIVE ;
+        static const char* DEFAULT_CTRL ;
+        static const char* DEFAULT_MESHFIX ;
+        static const char* DEFAULT_MESHFIX_CFG ;
     public:
-       static const char* DEFAULT_MATERIAL_DYB ;
-       static const char* DEFAULT_MATERIAL_JUNO ;
-       static const char* DEFAULT_MATERIAL_OTHER ;
+        static const char* DEFAULT_MATERIAL_DYB ;
+        static const char* DEFAULT_MATERIAL_JUNO ;
+        static const char* DEFAULT_MATERIAL_OTHER ;
     public:
-       static const char* DEFAULT_MEDIUM_DYB ;
-       static const char* DEFAULT_MEDIUM_JUNO ;
-       static const char* DEFAULT_MEDIUM_OTHER ;
+        static const char* DEFAULT_MEDIUM_DYB ;
+        static const char* DEFAULT_MEDIUM_JUNO ;
+        static const char* DEFAULT_MEDIUM_OTHER ;
     public:
-       static const int DEFAULT_FRAME_DYB ;
-       static const int DEFAULT_FRAME_JUNO ;
-       static const int DEFAULT_FRAME_OTHER ;
+        static const int DEFAULT_FRAME_DYB ;
+        static const int DEFAULT_FRAME_JUNO ;
+        static const int DEFAULT_FRAME_OTHER ;
     public:
-       static const char* SENSOR_SURFACE_DYB ;
-       static const char* SENSOR_SURFACE_JUNO ;
-       static const char* SENSOR_SURFACE_OTHER ;
+        static const char* SENSOR_SURFACE_DYB ;
+        static const char* SENSOR_SURFACE_JUNO ;
+        static const char* SENSOR_SURFACE_OTHER ;
     public:
-       static const char* EXAMPLE_MATNAMES_DYB ;
-       static const char* EXAMPLE_MATNAMES_JUNO ;
-       static const char* EXAMPLE_MATNAMES_OTHER ;
+        static const char* EXAMPLE_MATNAMES_DYB ;
+        static const char* EXAMPLE_MATNAMES_JUNO ;
+        static const char* EXAMPLE_MATNAMES_OTHER ;
  
 
     protected:
-       static const char* InstallPathOKDATA() ;
-       static const char* InstallPathG4ENV() ;
-       static const char* InstallPath(const char* relpath) ;
+        static const char* InstallPathOKDATA() ;
+        static const char* InstallPathG4ENV() ;
+        static const char* InstallPath(const char* relpath) ;
    public:
-       static const char* MakeSrcPath(const char* srcpath, const char* ext) ;
-       static const char* MakeSrcDir(const char* srcpath, const char* sub) ;
-       static const char* MakeTmpUserDir(const char* sub, const char* rel) ;
+        static const char* MakeSrcPath(const char* srcpath, const char* ext) ;
+        static const char* MakeSrcDir(const char* srcpath, const char* sub) ;
+        static const char* MakeTmpUserDir(const char* sub, const char* rel) ;
 
-       const char* makeIdPathPath(const char* rela, const char* relb=NULL, const char* relc=NULL, const char* reld=NULL) ;
+        const char* makeIdPathPath(const char* rela, const char* relb=NULL, const char* relc=NULL, const char* reld=NULL) ;
    public:
         BOpticksResource();
         virtual ~BOpticksResource();
         virtual void Summary(const char* msg="BOpticksResource::Summary");
 
+   public:
         static std::string BuildDir(const char* proj);
         static std::string BuildProduct(const char* proj, const char* name);
         static std::string PTXPath(const char* name, const char* target="OptiXRap");
-
+        static const char* ResolveInstallPrefix();
         static const char* OpticksDataDir();
         static const char* GeoCacheDir();
         static const char* ResultsDir();
@@ -131,7 +135,7 @@ class BRAP_API  BOpticksResource {
    private:
         static std::string PTXPath(const char* cu_name, const char* cmake_target, const char* prefix);
         static std::string PTXName(const char* cu_name, const char* cmake_target);
-        static const char* makeInstallPath( const char* prefix, const char* main, const char* sub );
+        static const char* MakeInstallPath( const char* prefix, const char* main, const char* sub );
    public:       
         const char* getInstallPrefix();
         const char* getInstallDir();
@@ -155,40 +159,40 @@ class BRAP_API  BOpticksResource {
         const char* getDebuggingIDPATH();
         const char* getDebuggingIDFOLD();
    public:       
-       std::string getIdPathPath(const char* rela, const char* relb=NULL, const char* relc=NULL, const char* reld=NULL ) const ; 
-       std::string getGeoCachePath(const char* rela, const char* relb=NULL, const char* relc=NULL, const char* reld=NULL) const ;
-       std::string getResultsPath(const char* rela, const char* relb=NULL, const char* relc=NULL, const char* reld=NULL) const ;
-       std::string getPropertyLibDir(const char* name) const ;
+        std::string getIdPathPath(const char* rela, const char* relb=NULL, const char* relc=NULL, const char* reld=NULL ) const ; 
+        std::string getGeoCachePath(const char* rela, const char* relb=NULL, const char* relc=NULL, const char* reld=NULL) const ;
+        std::string getResultsPath(const char* rela, const char* relb=NULL, const char* relc=NULL, const char* reld=NULL) const ;
+        std::string getPropertyLibDir(const char* name) const ;
 
-       std::string getInstallPath(const char* relpath) const ;
-       const char* getIdPath() const ;
-       const char* getIdFold() const ;  // parent directory of idpath containing g4_00.dae
-       void setIdPathOverride(const char* idpath_tmp=NULL);  // used for test saves into non-standard locations
+        std::string getInstallPath(const char* relpath) const ;
+        const char* getIdPath() const ;
+        const char* getIdFold() const ;  // parent directory of idpath containing g4_00.dae
+        void setIdPathOverride(const char* idpath_tmp=NULL);  // used for test saves into non-standard locations
 
     public:
-       const char* getSrcPath() const ;
-       const char* getSrcDigest() const ;
-       const char* getDAEPath() const ;
-       const char* getGDMLPath() const ;
-       const char* getSrcGDMLPath() const ;
-       const char* getSrcGLTFPath() const ;
-       const char* getSrcGLTFBase() const ;
-       const char* getSrcGLTFName() const ;
+        const char* getSrcPath() const ;
+        const char* getSrcDigest() const ;
+        const char* getDAEPath() const ;
+        const char* getGDMLPath() const ;
+        const char* getSrcGDMLPath() const ;
+        const char* getSrcGLTFPath() const ;
+        const char* getSrcGLTFBase() const ;
+        const char* getSrcGLTFName() const ;
     public:
-       const char* getG4CodeGenDir() const ;
-       const char* getCacheMetaPath() const ;
-       const char* getPrimariesPath() const ;
-       //const char* getDirectGenstepPath() const ;
-       //const char* getDirectPhotonsPath() const ;
-       const char* getGLTFPath() const ;     // output path 
-       const char* getMetaPath() const ;
-       const char* getIdMapPath() const ;
+        const char* getG4CodeGenDir() const ;
+        const char* getCacheMetaPath() const ;
+        const char* getPrimariesPath() const ;
+        //const char* getDirectGenstepPath() const ;
+        //const char* getDirectPhotonsPath() const ;
+        const char* getGLTFPath() const ;     // output path 
+        const char* getMetaPath() const ;
+        const char* getIdMapPath() const ;
     public:
-       const char* getEventBase() const ; 
+        const char* getEventBase() const ; 
     public:
-       BOpticksKey* getKey() const ; 
-       bool         hasKey() const ;   // distinguishes direct from legacy 
-       bool         isKeySource() const ; 
+        BOpticksKey* getKey() const ; 
+        bool         hasKey() const ;   // distinguishes direct from legacy 
+        bool         isKeySource() const ; 
   private:
         void init();
         void initInstallPrefix();
@@ -249,18 +253,18 @@ class BRAP_API  BOpticksResource {
         const char* m_debugging_idpath ; 
         const char* m_debugging_idfold ; 
    protected:
-       const char* m_daepath ;
-       const char* m_gdmlpath ;
-       const char* m_srcgdmlpath ;
-       const char* m_srcgltfpath ;
-       const char* m_metapath ;
-       const char* m_idmappath ;
-       const char* m_g4codegendir ;
-       const char* m_cachemetapath ; 
-       const char* m_primariespath ; 
-       const char* m_directgensteppath ; 
-       const char* m_directphotonspath ; 
-       const char* m_gltfpath ;
+        const char* m_daepath ;
+        const char* m_gdmlpath ;
+        const char* m_srcgdmlpath ;
+        const char* m_srcgltfpath ;
+        const char* m_metapath ;
+        const char* m_idmappath ;
+        const char* m_g4codegendir ;
+        const char* m_cachemetapath ; 
+        const char* m_primariespath ; 
+        const char* m_directgensteppath ; 
+        const char* m_directphotonspath ; 
+        const char* m_gltfpath ;
 };
 
 #include "BRAP_TAIL.hh"

@@ -3,7 +3,13 @@ set(name UseOptiX)
 project(${name})
 include(OpticksBuildOptions)
 
-set(CMAKE_BUILD_RPATH_USE_ORIGIN ON)
+#set(CMAKE_BUILD_RPATH_USE_ORIGIN ON)
+#set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+
+#[=[
+opticks-llp '$ORIGIN/..'
+#]=]
+set(CMAKE_INSTALL_RPATH "$ORIGIN/../lib:$ORIGIN/../lib64:$ORIGIN/../externals/lib:$ORIGIN/../externals/lib64:$ORIGIN/../externals/optix/lib64")
 
 
 set(OptiX_VERBOSE ON)
@@ -28,7 +34,6 @@ else()
     message(STATUS "OptiX not found")
 endif()
 
-#set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 add_executable(${name} ${name}.cc)
 target_link_libraries(${name} 
      PUBLIC 

@@ -46,6 +46,11 @@ TODO:
    migrate everything that does not need the Opticks instance (ie the commandline arguments) 
    down into the base class  BOpticksResource
 
+
+   Ideally want to slim this class... to almost nothing 
+    
+
+
 */
 
 OpticksResource::OpticksResource(Opticks* ok) 
@@ -102,10 +107,6 @@ bool OpticksResource::isValid()
 {
    return m_valid ; 
 }
-
-
-
-
 const char* OpticksResource::getDetectorBase()
 {
     return m_detector_base ;
@@ -114,15 +115,10 @@ const char* OpticksResource::getMaterialMap()
 {
     return m_material_map ;
 }
-
-
-
 OpticksQuery* OpticksResource::getQuery()
 {
     return m_query ;
 }
-
-
 const char* OpticksResource::getCtrl()
 {
     return m_ctrl ;
@@ -189,7 +185,7 @@ bool OpticksResource::idNameContains(const char* s)
     }
     else
     {
-        LOG(warning) << " idname NULL " ; 
+        LOG(error) << " idname NULL " ; 
     }
 
     return ret ; 
@@ -212,6 +208,18 @@ std::string OpticksResource::getRelativePath(const char* path)
     }
 }
 
+
+/**
+OpticksResource::init
+-----------------------
+
+For booting via key to come into effect (necessary when trying to run without opticksdata) 
+still need to provide "--envkey" argument to all Opticks executables::
+
+    OPTICKS_INSTALL_PREFIX=/tmp/tt OpticksResourceTest --envkey
+
+
+**/
 
 void OpticksResource::init()
 {
@@ -488,7 +496,7 @@ void OpticksResource::readG4Environment()
     }
     else
     {
-        LOG(warning) << "OpticksResource::readG4Environment"
+        LOG(error)
                      << " MISSING inipath " << inipath
                      << " (create it with bash functions: g4-;g4-export-ini ) " 
                      ;
@@ -512,7 +520,7 @@ void OpticksResource::readOpticksEnvironment()
     }
     else
     {
-        LOG(warning) << "OpticksResource::readOpticksDataEnvironment"
+        LOG(error)
                      << " MISSING inipath " << inipath 
                      << " (create it with bash functions: opticksdata-;opticksdata-export-ini ) " 
                      ;
@@ -572,7 +580,7 @@ OPTICKS_GEOKEY
 
     if(daepath == NULL)
     {
-        LOG(warning) << "OpticksResource::readEnvironment"
+        LOG(error)
                      << " NO DAEPATH "
                      << " geokey " << m_geokey 
                      << " daepath " << ( daepath ? daepath : "NULL" )
@@ -590,13 +598,13 @@ OPTICKS_GEOKEY
     // allowing to benefit from caching as vary geometry selection 
     // while still only having a single source geometry file.
 
-    assert(daepath);
-
-    setupViaSrc(daepath, m_query->getQueryDigest() );  // this sets m_idbase, m_idfold, m_idname done in base BOpticksResource
-
-    assert(m_idpath) ; 
-    assert(m_idname) ; 
-    assert(m_idfold) ; 
+    if(daepath)
+    {
+        setupViaSrc(daepath, m_query->getQueryDigest() );  // this sets m_idbase, m_idfold, m_idname done in base BOpticksResource
+        assert(m_idpath) ; 
+        assert(m_idname) ; 
+        assert(m_idfold) ; 
+    }
 }
 
 

@@ -1,5 +1,6 @@
 #include "SLog.hh"
 #include "SPPM.hh"
+#include "BFile.hh"
 #include "PLOG.hh"
 // npy-
 #include "NGLM.hpp"
@@ -109,7 +110,10 @@ void OpTracer::snap()   // --snapconfig="steps=5,eyestartz=0,eyestopz=0"
 
     for(int i=0 ; i < num_steps ; i++)
     {
-        std::string path = m_snap_config->getSnapPath(i) ; 
+        std::string path_ = m_snap_config->getSnapPath(i) ; 
+        bool create = true ; 
+        std::string path = BFile::preparePath(path_.c_str(), create);  
+
 
         float frac = num_steps > 1 ? float(i)/float(num_steps-1) : 0.f ; 
         float eyez = eyestartz + (eyestopz-eyestartz)*frac ; 

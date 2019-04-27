@@ -64,7 +64,9 @@ int main()
     int width = 1024u ; 
     int height = 768u ; 
 
+    std::cout << "( creating context " << std::endl ; 
     RT_CHECK_ERROR( rtContextCreate( &context ) );
+    std::cout << ") creating context " << std::endl ; 
     RT_CHECK_ERROR( rtContextSetRayTypeCount( context, 1 ) );
     RT_CHECK_ERROR( rtBufferCreate( context, RT_BUFFER_OUTPUT, &buffer ) );
     RT_CHECK_ERROR( rtBufferSetFormat( buffer, RT_FORMAT_FLOAT4 ) );

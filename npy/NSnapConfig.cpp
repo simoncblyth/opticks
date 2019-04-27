@@ -15,7 +15,7 @@ NSnapConfig::NSnapConfig(const char* cfg)
     fmtwidth(5),
     eyestartz(0.85),
     eyestopz(0.75),
-    prefix("/tmp/snap"),
+    prefix("$TMP/snap"),
     postfix(".ppm")
 {
     LOG(LEVEL)

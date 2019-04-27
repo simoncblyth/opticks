@@ -30,6 +30,10 @@ On Linux could extract driver version
     nvidia-smi --query-gpu=driver_version --format=csv,noheader
     418.56
 
+BUT the assumption that the build machine is the same as the 
+running one is a bad one.  So paths need to be overridden.
+
+
 #]=]
 
 set(OpticksCUDA_VERBOSE YES)

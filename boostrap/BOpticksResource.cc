@@ -72,21 +72,6 @@ const int BOpticksResource::DEFAULT_FRAME_JUNO = 62593 ;
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 const plog::Severity BOpticksResource::LEVEL = debug ; 
 
 BOpticksResource::BOpticksResource()
@@ -161,7 +146,7 @@ const char* BOpticksResource::getInstallPrefix() // canonically /usr/local/optic
 
 const char* BOpticksResource::InstallPath(const char* relpath) 
 {
-    std::string path = BFile::FormPath(OKCONF_OPTICKS_INSTALL_PREFIX, relpath) ;
+    std::string path = BFile::FormPath(ResolveInstallPrefix(), relpath) ;
     return strdup(path.c_str()) ;
 }
 
@@ -182,27 +167,35 @@ std::string BOpticksResource::getInstallPath(const char* relpath) const
 }
 
 
+const char* BOpticksResource::ResolveInstallPrefix()  // static
+{
+    const char* evalue = SSys::getenvvar(INSTALL_PREFIX_KEY);  
+    return evalue == NULL ?  strdup(OKCONF_OPTICKS_INSTALL_PREFIX) : evalue ; 
+}
+
+
+const char* BOpticksResource::INSTALL_PREFIX_KEY = "OPTICKS_INSTALL_PREFIX" ; 
+const char* BOpticksResource::INSTALL_PREFIX_KEY2 = "OPTICKSINSTALLPREFIX" ; 
+
 void BOpticksResource::initInstallPrefix()
 {
-    m_install_prefix = strdup(OKCONF_OPTICKS_INSTALL_PREFIX) ; 
+    m_install_prefix = ResolveInstallPrefix();
     m_res->addDir("install_prefix", m_install_prefix );
 
-    const char* key = "OPTICKS_INSTALL_PREFIX" ;  
-    // Perhaps should follow convention that internal "envvars" are not OPTICKS_ prefixed.
-    // otherwise they look too much like envvars ?
-
-    int rc = SSys::setenvvar(key, m_install_prefix, true );  
+    bool overwrite = true ; 
+    int rc = SSys::setenvvar(INSTALL_PREFIX_KEY, m_install_prefix, overwrite );  
+    // always set for uniformity 
 
     LOG(verbose) << "OpticksResource::adoptInstallPrefix " 
                << " install_prefix " << m_install_prefix  
-               << " key " << key 
+               << " key " << INSTALL_PREFIX_KEY
                << " rc " << rc
               ;   
  
     assert(rc==0); 
 
     // for test geometry config underscore has special meaning, so duplicate the envvar without underscore in the key
-    int rc2 = SSys::setenvvar("OPTICKSINSTALLPREFIX", m_install_prefix, true );  
+    int rc2 = SSys::setenvvar(INSTALL_PREFIX_KEY2 , m_install_prefix, true );  
     assert(rc2==0); 
 
 
@@ -325,17 +318,19 @@ const char* BOpticksResource::getDebuggingTreedir(int argc, char** argv)
 
 
 
-const char* BOpticksResource::InstallCacheDir(){return makeInstallPath(OKCONF_OPTICKS_INSTALL_PREFIX, "installcache",  NULL); }
-const char* BOpticksResource::OpticksDataDir(){ return makeInstallPath(OKCONF_OPTICKS_INSTALL_PREFIX, "opticksdata",  NULL); }
-const char* BOpticksResource::GeoCacheDir(){    return makeInstallPath(OKCONF_OPTICKS_INSTALL_PREFIX, "geocache",  NULL); }
-const char* BOpticksResource::ResultsDir(){     return makeInstallPath(OKCONF_OPTICKS_INSTALL_PREFIX, "results",  NULL); }
-const char* BOpticksResource::ResourceDir(){    return makeInstallPath(OKCONF_OPTICKS_INSTALL_PREFIX, "opticksdata", "resource" ); }
-const char* BOpticksResource::GenstepsDir(){    return makeInstallPath(OKCONF_OPTICKS_INSTALL_PREFIX, "opticksdata", "gensteps" ); }
-const char* BOpticksResource::ExportDir(){      return makeInstallPath(OKCONF_OPTICKS_INSTALL_PREFIX, "opticksdata", "export" ); }
+const char* BOpticksResource::InstallCacheDir(){return MakeInstallPath(ResolveInstallPrefix(), "installcache",  NULL); }
+const char* BOpticksResource::OpticksDataDir(){ return MakeInstallPath(ResolveInstallPrefix(), "opticksdata",  NULL); }
+const char* BOpticksResource::GeoCacheDir(){    return MakeInstallPath(ResolveInstallPrefix(), "geocache",  NULL); }
+const char* BOpticksResource::ResourceDir(){    return MakeInstallPath(ResolveInstallPrefix(), "opticksdata", "resource" ); }
+const char* BOpticksResource::GenstepsDir(){    return MakeInstallPath(ResolveInstallPrefix(), "opticksdata", "gensteps" ); }
+const char* BOpticksResource::ExportDir(){      return MakeInstallPath(ResolveInstallPrefix(), "opticksdata", "export" ); }
 
-const char* BOpticksResource::PTXInstallPath(){ return makeInstallPath(OKCONF_OPTICKS_INSTALL_PREFIX, "installcache", "PTX"); }
-const char* BOpticksResource::RNGInstallPath(){ return makeInstallPath(OKCONF_OPTICKS_INSTALL_PREFIX, "installcache", "RNG"); }
-const char* BOpticksResource::OKCInstallPath(){ return makeInstallPath(OKCONF_OPTICKS_INSTALL_PREFIX, "installcache", "OKC"); }
+const char* BOpticksResource::PTXInstallPath(){ return MakeInstallPath(ResolveInstallPrefix(), "installcache", "PTX"); }
+const char* BOpticksResource::RNGInstallPath(){ return MakeInstallPath(ResolveInstallPrefix(), "installcache", "RNG"); }
+const char* BOpticksResource::OKCInstallPath(){ return MakeInstallPath(ResolveInstallPrefix(), "installcache", "OKC"); }
+
+// problematic in readonly installs : because results do not belong with install paths 
+const char* BOpticksResource::ResultsDir(){     return MakeInstallPath(ResolveInstallPrefix(), "results",  NULL); }
 
 
 
@@ -781,7 +776,7 @@ void BOpticksResource::Summary(const char* msg)
 
 }
 
-const char* BOpticksResource::makeInstallPath( const char* prefix, const char* main, const char* sub )
+const char* BOpticksResource::MakeInstallPath( const char* prefix, const char* main, const char* sub )  // static
 {
     fs::path ip(prefix);   
     if(main) ip /= main ;        
@@ -793,7 +788,7 @@ const char* BOpticksResource::makeInstallPath( const char* prefix, const char* m
 
 std::string BOpticksResource::BuildDir(const char* proj)
 {
-    return BFile::FormPath(OKCONF_OPTICKS_INSTALL_PREFIX, "build", proj );
+    return BFile::FormPath(ResolveInstallPrefix(), "build", proj );
 }
 std::string BOpticksResource::BuildProduct(const char* proj, const char* name)
 {

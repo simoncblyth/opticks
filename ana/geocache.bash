@@ -339,7 +339,7 @@ geocache-tour-()
    type $FUNCNAME
    local dbg
    [ -n "$DBG" ] && dbg="gdb --args" || dbg=""
-   $dbg OpSnapTest --envkey --target 352851 --eye -1,-1,-1 --snapconfig "steps=100,eyestartz=-1,eyestopz=5" --size 2560,1440,1 --embedded  $* 
+   $dbg OpSnapTest --envkey --target 352851 --eye -1,-1,-1 --snapconfig "steps=10,eyestartz=-1,eyestopz=5" --size 2560,1440,1 --embedded  $* 
 }
 
 

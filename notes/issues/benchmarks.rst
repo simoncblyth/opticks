@@ -2,6 +2,19 @@ benchmarks
 ==============
 
 
+Things to try to speedup analytic
+---------------------------------------
+
+1. simplifiy geometry tree : DONE, NO SIGNIFICANT CHANGE
+2. change accel builders : DONE, NO SIGNIFICANT CHANGE
+3. review the analytic buffers 
+
+   * especially the prismBuffer, why is it INPUT_OUTPUT 
+   * its very small : just try to get rid of it 
+
+
+
+
 Titan V and Titan RTX : Effect of RTX execution mode
 ----------------------------------------------------------------
 

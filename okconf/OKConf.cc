@@ -2,6 +2,8 @@
 #include <sstream>
 #include <iomanip>
 #include <cstring>
+#include <cstdlib>
+
 
 #include "OKConf.hh"
 #include "OKConf_Config.hh"
@@ -100,7 +102,8 @@ unsigned OKConf::ComputeCapabilityInteger()
 const char* OKConf::OpticksInstallPrefix()
 {
 #ifdef OKCONF_OPTICKS_INSTALL_PREFIX
-   return OKCONF_OPTICKS_INSTALL_PREFIX ;
+   const char* evalue = getenv("OPTICKS_INSTALL_PREFIX") ;  
+   return evalue ? evalue : OKCONF_OPTICKS_INSTALL_PREFIX ;
 #else 
    return "MISSING" ; 
 #endif    
