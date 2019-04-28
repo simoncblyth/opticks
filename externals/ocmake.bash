@@ -42,6 +42,7 @@ ocmake-nam(){ echo cmake-$(ocmake-vers) ; }
 ocmake-url(){ echo https://github.com/Kitware/CMake/releases/download/v$(ocmake-vers)/cmake-$(ocmake-vers).tar.gz ; }
 ocmake-dir(){ echo $LOCAL_BASE/opticks/externals/cmake/$(ocmake-nam) ; }
 ocmake-cd(){  cd $(ocmake-dir) ; } 
+ocmake-prefix(){ echo $LOCAL_BASE ; }
 
 ocmake-info(){ cat << EOI
 $FUNCNAME
@@ -67,8 +68,9 @@ ocmake-get(){
 ocmake-install()
 {
    ocmake-cd
-    ./bootstrap && make && sudo make install
+    ./bootstrap --prefix=$(ocmake-prefix) && make && $SUDO make install
 }
+
 
 ocmake--()
 {

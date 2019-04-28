@@ -407,7 +407,7 @@ g4-configure()
 }
 
 g4-configure-msg(){ cat << EOM
-g4 has been configured already, to change configuration use: g4-cmake-modify 
+g4 has been configured already, to change configuration use eg: g4-cmake-modify-xercesc 
 or to start over use : g4-wipe then g4-configure 
 EOM
 }
@@ -441,8 +441,21 @@ $FUNCNAME
 ===============
 
    opticks-cmake-generator : $(opticks-cmake-generator)
+
+Expected locations:
+
+   xercesc-library-        : $(xercesc-library-)
+   xercesc-include-dir-    : $(xercesc-include-dir-)
+
+Possibly overridden results using the below envvars:
+
    xercesc-library         : $(xercesc-library)
    xercesc-include-dir     : $(xercesc-include-dir)
+ 
+   OPTICKS_XERCESC_LIBRARY     : $OPTICKS_XERCESC_LIBRARY  
+   OPTICKS_XERCESC_INCLUDE_DIR : $OPTICKS_XERCESC_INCLUDE_DIR
+
+
    g4-prefix               : $(g4-prefix) 
    g4-bdir                 : $(g4-bdir) 
    g4-dir                  : $(g4-dir) 

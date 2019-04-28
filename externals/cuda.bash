@@ -1065,7 +1065,7 @@ cuda-uninstall()
 cuda-uninstall-driver()
 {
     cd /usr/local/bin
-    sudo perl uninstall_cuda_drv.pl 
+    $SUDO perl uninstall_cuda_drv.pl 
 }
 
 
@@ -1079,7 +1079,7 @@ cuda-uninstall-()
     [ ! -d "$dir" ] && echo $msg no dir $dir && return 
 
     cd $dir 
-    sudo perl uninstall_cuda_$(cuda-version).pl  --manifest=.${comp}_uninstall_manifest_do_not_delete.txt
+    $SUDO perl uninstall_cuda_$(cuda-version).pl  --manifest=.${comp}_uninstall_manifest_do_not_delete.txt
 }
 
 

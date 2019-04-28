@@ -458,6 +458,18 @@ EON
 }
 
 
+
+
+opticks-cmake-version(){  cmake --version | perl -ne 'm/(\d*\.\d*\.\d*)/ && print "$1" ' - ; }
+opticks-externals-info(){  cat << EOI
+$FUNCNAME
+============================
+
+    opticks-cmake-version  : $(opticks-cmake-version)
+
+EOI
+}
+
 opticks-externals-install(){ echo $FUNCNAME ; opticks-externals | -opticks-installer ; }
 opticks-externals-url(){     echo $FUNCNAME ; opticks-externals | -opticks-url ; }
 opticks-externals-dist(){    echo $FUNCNAME ; opticks-externals | -opticks-dist ; }
@@ -629,6 +641,7 @@ EOL
 
 
 opticks-info(){
+   opticks-externals-info
    opticks-locations
    opticks-env-info
    opticks-externals-url

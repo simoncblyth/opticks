@@ -37,8 +37,18 @@ float SProc::VirtualMemoryUsageMB()
 
 
 #else
+    
+// https://stackoverflow.com/questions/63166/how-to-determine-cpu-and-memory-consumption-from-inside-a-process
+
+#include <sys/resource.h>
+
 float SProc::VirtualMemoryUsageMB()
 {
+   /*
+    int who = RUSAGE_SELF ; 
+    rusage usage ;   
+    int rc = getrusage(who, &usage);
+   */
     return 0 ; 
 }
 #endif

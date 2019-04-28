@@ -7,6 +7,8 @@
 #endif
 
 
+#include <sstream>
+
 #include "SLog.hh"
 #include "SArgs.hh"
 #include "STime.hh"
@@ -1222,10 +1224,27 @@ const char* Opticks::getRunDate() const
     std::string s = STime::Format(t); 
     return strdup(s.c_str());
 }
+
+
+const char* Opticks::AutoRunLabel(int rtx)
+{
+    const char* cvd = SSys::getenvvar("CUDA_VISIBLE_DEVICES", "") ; 
+    std::stringstream ss ; 
+    ss 
+          << "R" << rtx
+          << "_"
+          << "cvd_" << cvd 
+          ;
+
+    std::string s = ss.str();  
+    return strdup(s.c_str()); 
+}
+
 const char* Opticks::getRunLabel() const 
 {
     const std::string& runlabel = m_cfg->getRunLabel() ;
-    return runlabel.c_str() ;
+    return runlabel.empty() ? AutoRunLabel(getRTX()) : runlabel.c_str() ;
+
 }
 const char* Opticks::getRunFolder() const 
 {

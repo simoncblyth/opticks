@@ -393,6 +393,33 @@ geocache-bench()
    bench.py $LOCAL_BASE/opticks/results/$FUNCNAME
 }
 
+
+geocache-cluster-cvd(){ cat << EOC
+0
+0,1
+0,1,2
+0,1,2,3
+0,1,2,3,4
+0,1,2,3,4,5
+0,1,2,3,4,5,6
+0,1,2,3,4,5,6,7
+EOC
+}
+
+
+geocache-cluster()
+{
+   local stamp=$(date +%s)
+   local cvd 
+   geocache-cluster-cvd | head -1 | while read cvd ; do
+       CUDA_VISIBLE_DEVICES=$cvd geocache-bench- --rtx 0 --runfolder $FUNCNAME --runstamp $stamp  $*   
+   done  
+   bench.py $LOCAL_BASE/opticks/results/$FUNCNAME
+
+}
+
+
+
 geocache-bench-results()
 {
    bench.py $LOCAL_BASE/opticks/results/${FUNCNAME/-results} $*

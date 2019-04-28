@@ -307,7 +307,7 @@ optix-samples-setup(){
    [ -d "$sdir" ] && echo $msg already setup in $sdir && return
 
    cd $idir
-   local cmd="sudo cp -R SDK SDK-src && sudo chown $USER SDK-src && sudo mkdir SDK-src.build && sudo chown $USER SDK-src.build "
+   local cmd="$SUDO cp -R SDK SDK-src && $SUDO chown $USER SDK-src && $SUDO mkdir SDK-src.build && $SUDO chown $USER SDK-src.build "
    echo $cmd
    eval $cmd
 

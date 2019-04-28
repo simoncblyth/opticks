@@ -1,9 +1,11 @@
 #include "NState.hpp"
-#include "PLOG.hh"
+#include "OPTICKS_LOG.hh"
 
 int main(int argc, char** argv)
 {
-    PLOG_(argc, argv);
+    OPTICKS_LOG(argc, argv);
+
+    LOG(info) << argv[0] ; 
 
     for(unsigned i=0 ; i < 16 ; i++)
         LOG(info)
@@ -17,5 +19,5 @@ int main(int argc, char** argv)
     state->Summary();
     state->load();
 
-
+    return 0 ; 
 }

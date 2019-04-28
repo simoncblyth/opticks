@@ -268,6 +268,7 @@ class OKCORE_API Opticks {
        int         getRunStamp() const ; 
        const char* getRunDate() const ; 
        const char* getRunLabel() const ; 
+       static const char* AutoRunLabel(int rtx);
        const char* getRunFolder() const ; 
        const char* getRunResultsDir() const ; // eg /usr/local/opticks/results/OpticksResourceTest/20190422_155146 
    public:

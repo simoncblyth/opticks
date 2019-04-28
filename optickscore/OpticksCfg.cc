@@ -112,7 +112,7 @@ OpticksCfg<Listener>::OpticksCfg(const char* name, Listener* listener, bool live
        m_exename(SAr::Instance->exename()), 
        m_gpumonpath(BStr::concat("$TMP/",m_exename ? m_exename : "OpticksCfg","_GPUMon.npy")),
        m_runstamp(STime::EpochSeconds()),
-       m_runlabel("runlabel"),
+       m_runlabel(""),
        m_runfolder(strdup(m_exename))
 {   
    init();  
