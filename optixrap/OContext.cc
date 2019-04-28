@@ -30,12 +30,21 @@
 #include "SPPM.hh"
 #include "OConfig.hh"
 #include "OContext.hh"
+#include "OError.hh"
 
 #include "PLOG.hh"
 using namespace optix ; 
 
 const char* OContext::COMPUTE_ = "COMPUTE" ; 
 const char* OContext::INTEROP_ = "INTEROP" ; 
+
+const char* OContext::OPTIX_CACHE_LINUX = "/var/tmp/OptixCache" ; 
+const char* OContext::CacheDir()  // static
+{
+   return OPTIX_CACHE_LINUX ;  
+}
+
+
 
 plog::Severity OContext::LEVEL = debug ; 
 
@@ -92,6 +101,44 @@ Opticks* OContext::getOpticks() const
 {
     return m_ok ; 
 }
+
+OContext* OContext::Create(Opticks* ok, const char* cmake_target)
+{
+    int rtxmode = ok->getRTX();
+    InitRTX( rtxmode ); 
+
+    LOG(verbose) << "optix::Context::create() START " ; 
+    optix::Context context = optix::Context::create();
+    LOG(verbose) << "optix::Context::create() DONE " ; 
+
+    OContext* ocontext = new OContext(context, ok, cmake_target);
+
+    return ocontext ; 
+}
+
+
+void OContext::InitRTX(int rtxmode)  // static
+{
+    if(rtxmode == -1)
+    {
+        LOG(fatal) << " --rtx " << rtxmode << " leaving ASIS "  ;   
+    }
+    else
+    { 
+        int rtx0(-1) ;
+        RT_CHECK_ERROR( rtGlobalGetAttribute(RT_GLOBAL_ATTRIBUTE_ENABLE_RTX, sizeof(rtx0), &rtx0) );
+        assert( rtx0 == 0 );  // despite being zero performance suggests it is enabled
+
+        int rtx = rtxmode > 0 ? 1 : 0 ;       
+        LOG(fatal) << " --rtx " << rtxmode << " setting  " << ( rtx == 1 ? "ON" : "OFF" )  ; 
+        RT_CHECK_ERROR( rtGlobalSetAttribute(RT_GLOBAL_ATTRIBUTE_ENABLE_RTX, sizeof(rtx), &rtx));
+
+        int rtx2(-1) ; 
+        RT_CHECK_ERROR(rtGlobalGetAttribute(RT_GLOBAL_ATTRIBUTE_ENABLE_RTX, sizeof(rtx2), &rtx2));
+        assert( rtx2 == rtx );
+    }
+}
+
 
 
 
@@ -243,11 +290,58 @@ bool OContext::isInterop()
     return m_mode == INTEROP ; 
 }
 
+OContext::~OContext()
+{
+    cleanUp(); 
+}
+
 void OContext::cleanUp()
 {
     m_context->destroy();
     m_context = 0;
+
+    cleanUpCache();
 }
+
+
+/**
+OContext::cleanUpCache
+--------------------------
+
+The cache directory on Linux uses a common
+path for all users /var/tmp/OptixCache 
+which presents a permissons problem on multi-user systems.
+
+OContext::cleanUpCache is a workaround that deletes the 
+cache directory at termination so subsequent users can create 
+(and delete) their own such directory.
+
+Note that crashes that prevent the running of cleanupCache 
+will cause context creation to fail for subsequent users with::
+
+    terminate called after throwing an instance of 'optix::Exception'
+    what():  OptiX was unable to open the disk cache with sufficient privileges. Please make sure the database file is writeable by the current user.
+
+**/
+
+void OContext::cleanUpCache()
+{
+    const char* key = "OPTICKS_KEEPCACHE" ; 
+    int keepcache = SSys::getenvint( key, 0 ); 
+    const char* cachedir = CacheDir(); 
+    if( keepcache > 0 ) 
+    {
+        LOG(fatal) << " keeping cache " << cachedir 
+                  << " as envvar set " << key 
+                  ;  
+    }
+    else
+    {
+        LOG(info) << " RemoveDir " << cachedir ; 
+        BFile::RemoveDir( cachedir ); 
+    }
+}
+
 
 optix::Program OContext::createProgram(const char* cu_filename, const char* progname )
 {  

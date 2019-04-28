@@ -18,7 +18,9 @@ int main(int argc, char** argv)
     GScintillatorLib* slib = GScintillatorLib::load(ok);
     slib->dump();
 
-    optix::Context context = optix::Context::create();
+
+    OContext* m_ocontext = OContext::Create( ok );  
+    optix::Context context = m_ocontext->getContext() ; 
 
     OScintillatorLib* oscin ;  
     oscin = new OScintillatorLib(context, slib );
@@ -26,11 +28,6 @@ int main(int argc, char** argv)
     //const char* slice = NULL ; 
     const char* slice = "0:1" ; 
     oscin->convert(slice);
-
-    //OContext::Mode_t mode = ok->isCompute() ? OContext::COMPUTE : OContext::INTEROP ;
-
-    OContext* m_ocontext(NULL);
-    m_ocontext = new OContext(context, ok);
 
     optix::Group top = m_ocontext->getTopGroup();
 
@@ -45,6 +42,9 @@ int main(int argc, char** argv)
     m_ott->launch();
 
     LOG(info) << "DONE" ; 
+
+
+    delete m_ocontext ; 
 
     //optix::cudaDeviceSynchronize();
 

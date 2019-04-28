@@ -6,25 +6,21 @@
 
 #include "NPY.hpp"
 
-#include "OXRAP_LOG.hh"
-#include "PLOG.hh"
+#include "OPTICKS_LOG.hh"
 
 
 int main( int argc, char** argv ) 
 {
-    PLOG_(argc, argv);
-    OXRAP_LOG__ ; 
+    OPTICKS_LOG(argc, argv);
 
     Opticks* ok = new Opticks(argc, argv, "--compute");
     ok->configure();
 
-    optix::Context context = optix::Context::create();
 
-    //OContext::Mode_t mode = OContext::COMPUTE ;
+    OContext* ctx = OContext::Create(ok );
+    optix::Context context = ctx->getContext(); 
 
-    OContext* m_ocontext = new OContext(context, ok );
-
-    unsigned entry = m_ocontext->addEntry("minimalTest.cu", "minimal", "exception");
+    unsigned entry = ctx->addEntry("minimalTest.cu", "minimal", "exception");
 
     unsigned ni = 100 ; 
     unsigned nj = 4 ; 
@@ -35,13 +31,13 @@ int main( int argc, char** argv )
     npy->save("$TMP/OOContextUploadDownloadTest_0.npy");
     npy->setBufferControl(OpticksBufferControl::Parse("OPTIX_SETSIZE,OPTIX_INPUT_OUTPUT"));
 
-    optix::Buffer buffer = m_ocontext->createBuffer<float>( npy, "demo");
+    optix::Buffer buffer = ctx->createBuffer<float>( npy, "demo");
     context["output_buffer"]->set(buffer);
 
-    m_ocontext->launch( OContext::VALIDATE,  entry, ni, 1);
-    m_ocontext->launch( OContext::COMPILE,   entry, ni, 1);
-    m_ocontext->launch( OContext::PRELAUNCH, entry, ni, 1);
-    m_ocontext->launch( OContext::LAUNCH,    entry, ni, 1);
+    ctx->launch( OContext::VALIDATE,  entry, ni, 1);
+    ctx->launch( OContext::COMPILE,   entry, ni, 1);
+    ctx->launch( OContext::PRELAUNCH, entry, ni, 1);
+    ctx->launch( OContext::LAUNCH,    entry, ni, 1);
 
     npy->zero();
 
@@ -51,6 +47,9 @@ int main( int argc, char** argv )
 
     npy->dump();
     npy->save("$TMP/OOContextUploadDownloadTest_1.npy");
+
+    delete ctx ; 
+
 
     return 0;
 }

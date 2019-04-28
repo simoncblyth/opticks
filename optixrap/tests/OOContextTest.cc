@@ -16,13 +16,9 @@ int main( int argc, char** argv )
     Opticks ok(argc, argv, "--compute --printenabled");
     ok.configure();
 
-    optix::Context context = optix::Context::create();
 
-    //OContext::Mode_t mode = ok->isCompute() ? OContext::COMPUTE : OContext::INTEROP ;
-    //OContext::Mode_t mode = OContext::INTEROP ;
-    //OContext::Mode_t mode = OContext::COMPUTE ;
-
-    OContext* ctx = new OContext(context, &ok );
+    OContext* ctx = OContext::Create(&ok );
+    optix::Context context = ctx->getContext(); 
 
     unsigned entry = ctx->addEntry("minimalTest.cu", "minimal", "exception");
 
@@ -59,6 +55,9 @@ int main( int argc, char** argv )
 
     npy->dump();
     npy->save("$TMP/OOContextTest.npy");
+
+    delete ctx ; 
+
 
     return 0;
 }

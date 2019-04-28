@@ -53,12 +53,12 @@ int main(int argc, char** argv)
     pho->save("$TMP/DummyPhotonsNPY.npy"); 
 
 
-    optix::Context context = optix::Context::create();
     //context[ "PNUMQUAD" ]->setUint( PNUMQUAD );   // quads per photon
 
-    OContext ctx(context, &ok ); 
+    OContext* ctx = OContext::Create(&ok); 
+    optix::Context context = ctx->getContext(); 
 
-    int entry = ctx.addEntry("compactionTest.cu", "compactionTest", "exception");
+    int entry = ctx->addEntry("compactionTest.cu", "compactionTest", "exception");
 
     optix::Buffer photon_buffer = context->createBuffer( RT_BUFFER_INPUT );
     photon_buffer->setFormat(RT_FORMAT_FLOAT4);
@@ -70,11 +70,11 @@ int main(int argc, char** argv)
     context["photon_buffer"]->setBuffer(photon_buffer);  
     context["compaction_param"]->setUint(optix::make_uint2(PNUMQUAD, 0));
 
-    ctx.launch( OContext::VALIDATE|OContext::COMPILE|OContext::PRELAUNCH,  entry,  0, 0, NULL);
+    ctx->launch( OContext::VALIDATE|OContext::COMPILE|OContext::PRELAUNCH,  entry,  0, 0, NULL);
 
     OContext::upload<float>( photon_buffer, pho );
 
-    ctx.launch( OContext::LAUNCH, entry, num_photons , 1, NULL ); 
+    ctx->launch( OContext::LAUNCH, entry, num_photons , 1, NULL ); 
 
     LOG(error) << " launch DONE " ; 
 
@@ -114,6 +114,8 @@ int main(int argc, char** argv)
     hit->save(path);
     SSys::npdump(path, "np.int32");
     SSys::npdump(path, "np.float32");
+
+    delete ctx ; 
 
     return 0 ; 
 }

@@ -95,33 +95,6 @@ OScene::Init
 **/
 
 
-void OScene::initRTX()
-{
-    //const char* key = "OPTICKS_RTX" ;
-    //int rtx = SSys::getenvint(key, -1 ); 
-
-    int rtxmode = m_ok->getRTX();
-
-    if(rtxmode == -1)
-    {
-        LOG(fatal) << " --rtx " << rtxmode << " leaving ASIS "  ;   
-    }
-    else
-    { 
-        int rtx0(-1) ;
-        RT_CHECK_ERROR( rtGlobalGetAttribute(RT_GLOBAL_ATTRIBUTE_ENABLE_RTX, sizeof(rtx0), &rtx0) );
-        assert( rtx0 == 0 );  // despite being zero performance suggests it is enabled
-
-        int rtx = rtxmode > 0 ? 1 : 0 ;       
-        LOG(fatal) << " --rtx " << rtxmode << " setting  " << ( rtx == 1 ? "ON" : "OFF" )  ; 
-        RT_CHECK_ERROR( rtGlobalSetAttribute(RT_GLOBAL_ATTRIBUTE_ENABLE_RTX, sizeof(rtx), &rtx));
-
-        int rtx2(-1) ; 
-        RT_CHECK_ERROR(rtGlobalGetAttribute(RT_GLOBAL_ATTRIBUTE_ENABLE_RTX, sizeof(rtx2), &rtx2));
-        assert( rtx2 == rtx );
-    }
-}
-
 
 void OScene::init()
 {
@@ -132,14 +105,9 @@ void OScene::init()
     m_timer->setVerbose(true);
     m_timer->start();
 
-    initRTX();
-
-    LOG(verbose) << "optix::Context::create() START " ; 
-    optix::Context context = optix::Context::create();
-    LOG(verbose) << "optix::Context::create() DONE " ; 
-
-    m_ocontext = new OContext(context, m_ok);
-
+    m_ocontext = OContext::Create(m_ok);
+    optix::Context context = m_ocontext->getContext(); 
+    
 
     // solvers despite being used for geometry intersects have no dependencies
     // as just pure functions : so place them accordingly 
@@ -201,7 +169,7 @@ void OScene::init()
 
 void OScene::cleanup()
 {
-   if(m_ocontext) m_ocontext->cleanUp();
+    delete m_ocontext ;
 }
 
 

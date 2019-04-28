@@ -58,6 +58,8 @@ class BRAP_API  BOpticksResource {
         static const plog::Severity  LEVEL ; 
 
     protected:
+        static const char* RESULTS_PREFIX_KEY  ; 
+        static const char* RESULTS_PREFIX_DEFAULT  ; 
         static const char* INSTALL_PREFIX_KEY  ; 
         static const char* INSTALL_PREFIX_KEY2  ; 
     protected:
@@ -121,6 +123,7 @@ class BRAP_API  BOpticksResource {
         static std::string BuildDir(const char* proj);
         static std::string BuildProduct(const char* proj, const char* name);
         static std::string PTXPath(const char* name, const char* target="OptiXRap");
+        static const char* ResolveResultsPrefix();
         static const char* ResolveInstallPrefix();
         static const char* OpticksDataDir();
         static const char* GeoCacheDir();
@@ -135,7 +138,7 @@ class BRAP_API  BOpticksResource {
    private:
         static std::string PTXPath(const char* cu_name, const char* cmake_target, const char* prefix);
         static std::string PTXName(const char* cu_name, const char* cmake_target);
-        static const char* MakeInstallPath( const char* prefix, const char* main, const char* sub );
+        static const char* MakePath( const char* prefix, const char* main, const char* sub );
    public:       
         const char* getInstallPrefix();
         const char* getInstallDir();

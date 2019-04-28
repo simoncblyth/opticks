@@ -41,12 +41,10 @@ int main(int argc, char** argv)
     LOG(info) << argv[0] << " OPTIX_VERSION " << version ; 
     //bool with_top = OConfig::DefaultWithTop() ;  // must set false with 3080, seemingly doesnt matter with 40000
 
-    optix::Context context = optix::Context::create();
-    //OContext ctx(context, &ok, with_top);
-    OContext ctx(context, &ok);
-    int entry = ctx.addEntry("OEventTest.cu", "OEventTest", "exception");
+    OContext* ctx = OContext::Create(&ok);
+    int entry = ctx->addEntry("OEventTest.cu", "OEventTest", "exception");
 
-    OEvent* oevt = new OEvent(&ok, &ctx);   
+    OEvent* oevt = new OEvent(&ok, ctx);   
  
     bool prelaunch = false ; 
 
@@ -73,14 +71,14 @@ int main(int argc, char** argv)
          if(!prelaunch)
          {
              LOG(info) << "( prelaunch " ;  
-             ctx.launch( OContext::VALIDATE|OContext::COMPILE|OContext::PRELAUNCH,  entry,  0, 0, evt->getPrelaunchTimes() );
+             ctx->launch( OContext::VALIDATE|OContext::COMPILE|OContext::PRELAUNCH,  entry,  0, 0, evt->getPrelaunchTimes() );
              LOG(info) << ") prelaunch " ;  
 
              prelaunch = true ; 
          } 
 
          LOG(info) << "( launch " ;  
-         ctx.launch( OContext::LAUNCH, entry,  evt->getNumPhotons(), 1, evt->getLaunchTimes());
+         ctx->launch( OContext::LAUNCH, entry,  evt->getNumPhotons(), 1, evt->getLaunchTimes());
          LOG(info) << ") launch " ;  
 
          LOG(info) << "( download " ;  
@@ -91,6 +89,8 @@ int main(int argc, char** argv)
 
          LOG(info) <<  evt->description() ;
     }
+
+    delete ctx ; 
 
     return 0 ;     
 }

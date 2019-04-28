@@ -15,14 +15,12 @@
 #include "OpticksBufferControl.hh"
 #include "BOpticksResource.hh"
 
-#include "OXRAP_LOG.hh"
-#include "PLOG.hh"
+#include "OPTICKS_LOG.hh"
 
 
 int main( int argc, char** argv ) 
 {
-    PLOG_(argc, argv);
-    OXRAP_LOG__ ; 
+    OPTICKS_LOG(argc, argv);
 
     Opticks* ok = new Opticks(argc, argv, "--compute" );
     ok->configure();
@@ -35,16 +33,15 @@ int main( int argc, char** argv )
     // manual buffer control, normally done via spec in okc-/OpticksEvent 
     npy->setBufferControl(OpticksBufferControl::Parse("OPTIX_INPUT_OUTPUT"));
 
-    optix::Context context = optix::Context::create();
-
-    //OContext::Mode_t mode = OContext::COMPUTE ;
-
-    OContext* m_ocontext = new OContext(context, ok );
-
-    unsigned entry = m_ocontext->addEntry("LTminimalTest.cu", "minimal", "exception");
 
 
-    optix::Buffer buffer = m_ocontext->createBuffer<float>( npy, "demo");
+    OContext* ctx = OContext::Create( ok );
+    optix::Context context = ctx->getContext(); 
+
+    unsigned entry = ctx->addEntry("LTminimalTest.cu", "minimal", "exception");
+
+
+    optix::Buffer buffer = ctx->createBuffer<float>( npy, "demo");
     context["output_buffer"]->set(buffer);
     OBuf* genstep_buf = new OBuf("genstep", buffer);
 
@@ -59,13 +56,13 @@ int main( int argc, char** argv )
     LOG(info) << "check OBuf end.";
 
     unsigned ni = 10 ; 
-    m_ocontext->launch( OContext::VALIDATE,  entry, ni, 1);
+    ctx->launch( OContext::VALIDATE,  entry, ni, 1);
     genstep_buf->dump<unsigned int>("LT::OBuf test after VALIDATE: ", 6*4, 3, 6*4*10);
-    m_ocontext->launch( OContext::COMPILE,   entry, ni, 1);
+    ctx->launch( OContext::COMPILE,   entry, ni, 1);
     genstep_buf->dump<unsigned int>("LT::OBuf test after COMPILE: ", 6*4, 3, 6*4*10);
-    m_ocontext->launch( OContext::PRELAUNCH, entry, ni, 1);
+    ctx->launch( OContext::PRELAUNCH, entry, ni, 1);
     genstep_buf->dump<unsigned int>("LT::OBuf test after PRELAUNCH: ", 6*4, 3, 6*4*10);
-    m_ocontext->launch( OContext::LAUNCH,    entry, ni, 1);
+    ctx->launch( OContext::LAUNCH,    entry, ni, 1);
     genstep_buf->dump<unsigned int>("LT::OBuf test after LAUNCH: ", 6*4, 3, 6*4*10);
 
     npy->zero();
@@ -76,6 +73,9 @@ int main( int argc, char** argv )
 
     // npy->dump();
     npy->save("$TMP/OOContextUploadDownloadTest_1.npy");
+
+    delete ctx ; 
+
 
     return 0;
 }

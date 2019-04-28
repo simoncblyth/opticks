@@ -9,20 +9,11 @@
 #include "OContext.hh"
 #include "Opticks.hh"
 
-#include "OKCORE_LOG.hh"
-#include "GGEO_LOG.hh"
-#include "OXRAP_LOG.hh"
-
-#include "PLOG.hh"
+#include "OPTICKS_LOG.hh"
 
 int main(int argc, char** argv)
 {
-
-    PLOG_(argc, argv);    
-
-    OKCORE_LOG__ ; 
-    GGEO_LOG__ ; 
-    OXRAP_LOG__ ; 
+    OPTICKS_LOG(argc, argv);    
 
     Opticks ok(argc, argv, "--compute");
     ok.configure();
@@ -45,7 +36,8 @@ int main(int argc, char** argv)
     blib->setSurfaceLib(slib);
     blib->dump();
 
-    optix::Context context = optix::Context::create();
+    OContext* ctx = OContext::Create( &ok ) ; 
+    optix::Context context = ctx->getContext() ;
 
     unsigned args_x = argc > 1 ? atoi(argv[1]) : 13 ; 
     unsigned args_y = argc > 2 ? atoi(argv[2]) :  0 ; 
@@ -90,10 +82,8 @@ int main(int argc, char** argv)
 
     //OContext::Mode_t mode = ok.isCompute() ? OContext::COMPUTE : OContext::INTEROP ;
 
-    OContext* m_ocontext(NULL);
-    m_ocontext = new OContext(context, &ok);
 
-    optix::Group top = m_ocontext->getTopGroup();
+    optix::Group top = ctx->getTopGroup();
 
     const char* builder = "NoAccel" ;
     const char* traverser = "NoAccel" ; 
@@ -103,7 +93,7 @@ int main(int argc, char** argv)
     unsigned eight = BOUNDARY_NUM_MATSUR*BOUNDARY_NUM_FLOAT4 ; 
     assert(ny % eight == 0 );
 
-    OLaunchTest ott(m_ocontext, &ok, "boundaryLookupTest.cu", "boundaryLookupTest", "exception");
+    OLaunchTest ott(ctx, &ok, "boundaryLookupTest.cu", "boundaryLookupTest", "exception");
     ott.setWidth( nx);
     ott.setHeight(ny / 8);
     ott.launch();
@@ -120,6 +110,8 @@ int main(int argc, char** argv)
     LOG(info) << "maxdiff " << maxdiff  ;
     assert(maxdiff < 1e-6 ); 
 
+
+    delete ctx ; 
 
     return 0 ;     
 }

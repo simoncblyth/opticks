@@ -97,28 +97,26 @@ int main(int argc, char** argv)
     Opticks ok(argc, argv, "--compute");
     ok.configure();
 
-
     unsigned version = OConfig::OptiXVersion()  ;
     LOG(info) << argv[0] << " OPTIX_VERSION " << version ; 
     //bool with_top = OConfig::DefaultWithTop() ;  // must set false with 3080, seemingly doesnt matter with 40000
 
-    optix::Context context = optix::Context::create();
-    //OContext ctx(context, &ok, with_top);
-    OContext ctx(context, &ok );
-    int entry = ctx.addEntry("bufferTest.cu", "bufferTest", "exception");
+    OContext* ctx = OContext::Create(&ok);
+    optix::Context context = ctx->getContext();
+    int entry = ctx->addEntry("bufferTest.cu", "bufferTest", "exception");
 
     // using zero sized buffers allows to prelaunch in initialization
     // so once have real events can just do the much faster launch 
  
     Evt* evt0 = new Evt(0) ;
 
-    optix::Buffer m_genstep_buffer = ctx.createBuffer<float>( evt0->genstep, "genstep");
+    optix::Buffer m_genstep_buffer = ctx->createBuffer<float>( evt0->genstep, "genstep");
     context["genstep_buffer"]->set( m_genstep_buffer );
 
-    optix::Buffer m_photon_buffer = ctx.createBuffer<float>( evt0->photon, "photon");
+    optix::Buffer m_photon_buffer = ctx->createBuffer<float>( evt0->photon, "photon");
     context["photon_buffer"]->set( m_photon_buffer );
 
-    ctx.launch( OContext::VALIDATE|OContext::COMPILE|OContext::PRELAUNCH,  entry,  0, 0, evt0->times);
+    ctx->launch( OContext::VALIDATE|OContext::COMPILE|OContext::PRELAUNCH,  entry,  0, 0, evt0->times);
 
     LOG(info) <<  evt0->description() ;
 
@@ -134,7 +132,7 @@ int main(int argc, char** argv)
 
          OContext::upload<float>(m_genstep_buffer, evt->genstep);  // compute mode style
 
-         ctx.launch( OContext::LAUNCH, entry,  evt->size, 1, evt->times);
+         ctx->launch( OContext::LAUNCH, entry,  evt->size, 1, evt->times);
 
          OContext::download<float>( m_photon_buffer, evt->photon );
 
@@ -142,6 +140,9 @@ int main(int argc, char** argv)
 
          LOG(info) <<  evt->description() ;
     }
+
+    delete ctx ; 
+
     return 0 ;     
 }
 

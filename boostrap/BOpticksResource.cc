@@ -167,15 +167,21 @@ std::string BOpticksResource::getInstallPath(const char* relpath) const
 }
 
 
+const char* BOpticksResource::RESULTS_PREFIX_DEFAULT = "$TMP" ; 
+const char* BOpticksResource::RESULTS_PREFIX_KEY = "OPTICKS_RESULTS_PREFIX" ; 
+const char* BOpticksResource::ResolveResultsPrefix()  // static
+{
+    return SSys::getenvvar(RESULTS_PREFIX_KEY, RESULTS_PREFIX_DEFAULT);  
+}
+
+const char* BOpticksResource::INSTALL_PREFIX_KEY = "OPTICKS_INSTALL_PREFIX" ; 
+const char* BOpticksResource::INSTALL_PREFIX_KEY2 = "OPTICKSINSTALLPREFIX" ; 
+
 const char* BOpticksResource::ResolveInstallPrefix()  // static
 {
     const char* evalue = SSys::getenvvar(INSTALL_PREFIX_KEY);  
     return evalue == NULL ?  strdup(OKCONF_OPTICKS_INSTALL_PREFIX) : evalue ; 
 }
-
-
-const char* BOpticksResource::INSTALL_PREFIX_KEY = "OPTICKS_INSTALL_PREFIX" ; 
-const char* BOpticksResource::INSTALL_PREFIX_KEY2 = "OPTICKSINSTALLPREFIX" ; 
 
 void BOpticksResource::initInstallPrefix()
 {
@@ -318,19 +324,19 @@ const char* BOpticksResource::getDebuggingTreedir(int argc, char** argv)
 
 
 
-const char* BOpticksResource::InstallCacheDir(){return MakeInstallPath(ResolveInstallPrefix(), "installcache",  NULL); }
-const char* BOpticksResource::OpticksDataDir(){ return MakeInstallPath(ResolveInstallPrefix(), "opticksdata",  NULL); }
-const char* BOpticksResource::GeoCacheDir(){    return MakeInstallPath(ResolveInstallPrefix(), "geocache",  NULL); }
-const char* BOpticksResource::ResourceDir(){    return MakeInstallPath(ResolveInstallPrefix(), "opticksdata", "resource" ); }
-const char* BOpticksResource::GenstepsDir(){    return MakeInstallPath(ResolveInstallPrefix(), "opticksdata", "gensteps" ); }
-const char* BOpticksResource::ExportDir(){      return MakeInstallPath(ResolveInstallPrefix(), "opticksdata", "export" ); }
+const char* BOpticksResource::InstallCacheDir(){return MakePath(ResolveInstallPrefix(), "installcache",  NULL); }
+const char* BOpticksResource::OpticksDataDir(){ return MakePath(ResolveInstallPrefix(), "opticksdata",  NULL); }
+const char* BOpticksResource::GeoCacheDir(){    return MakePath(ResolveInstallPrefix(), "geocache",  NULL); }
+const char* BOpticksResource::ResourceDir(){    return MakePath(ResolveInstallPrefix(), "opticksdata", "resource" ); }
+const char* BOpticksResource::GenstepsDir(){    return MakePath(ResolveInstallPrefix(), "opticksdata", "gensteps" ); }
+const char* BOpticksResource::ExportDir(){      return MakePath(ResolveInstallPrefix(), "opticksdata", "export" ); }
 
-const char* BOpticksResource::PTXInstallPath(){ return MakeInstallPath(ResolveInstallPrefix(), "installcache", "PTX"); }
-const char* BOpticksResource::RNGInstallPath(){ return MakeInstallPath(ResolveInstallPrefix(), "installcache", "RNG"); }
-const char* BOpticksResource::OKCInstallPath(){ return MakeInstallPath(ResolveInstallPrefix(), "installcache", "OKC"); }
+const char* BOpticksResource::PTXInstallPath(){ return MakePath(ResolveInstallPrefix(), "installcache", "PTX"); }
+const char* BOpticksResource::RNGInstallPath(){ return MakePath(ResolveInstallPrefix(), "installcache", "RNG"); }
+const char* BOpticksResource::OKCInstallPath(){ return MakePath(ResolveInstallPrefix(), "installcache", "OKC"); }
 
 // problematic in readonly installs : because results do not belong with install paths 
-const char* BOpticksResource::ResultsDir(){     return MakeInstallPath(ResolveInstallPrefix(), "results",  NULL); }
+const char* BOpticksResource::ResultsDir(){     return MakePath(ResolveResultsPrefix(), "results",  NULL); }
 
 
 
@@ -776,7 +782,7 @@ void BOpticksResource::Summary(const char* msg)
 
 }
 
-const char* BOpticksResource::MakeInstallPath( const char* prefix, const char* main, const char* sub )  // static
+const char* BOpticksResource::MakePath( const char* prefix, const char* main, const char* sub )  // static
 {
     fs::path ip(prefix);   
     if(main) ip /= main ;        

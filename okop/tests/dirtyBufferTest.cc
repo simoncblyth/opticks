@@ -148,7 +148,7 @@ void OEvt::resize(unsigned size)
 
 void pure_upload_launch_download( unsigned ntest, 
                                   int entry, 
-                                  OContext& ctx, 
+                                  OContext* ctx, 
                                   OEvt& oevt
                                 )
 
@@ -161,7 +161,7 @@ void pure_upload_launch_download( unsigned ntest,
 
         OContext::upload<unsigned>( oevt.in_buffer, evt->in_data );
 
-        ctx.launch( OContext::LAUNCH, entry, evt->size, 1, NULL ); 
+        ctx->launch( OContext::LAUNCH, entry, evt->size, 1, NULL ); 
 
         OContext::download<unsigned>( oevt.out_buffer, evt->out_data ); 
 
@@ -185,7 +185,7 @@ void pure_upload_launch_download( unsigned ntest,
 
 void dirty_upload_launch_download( unsigned ntest, 
                                    int entry, 
-                                   OContext& ctx, 
+                                   OContext* ctx, 
                                    OEvt& oevt
  )
 {
@@ -206,7 +206,7 @@ void dirty_upload_launch_download( unsigned ntest,
         t_in.fill(evt->val);           // ALSO WORKS 
 
 
-        ctx.launch( OContext::LAUNCH, entry, evt->size, 1, NULL ); 
+        ctx->launch( OContext::LAUNCH, entry, evt->size, 1, NULL ); 
 
         OContext::download<unsigned>( oevt.out_buffer, evt->out_data ); 
 
@@ -227,19 +227,23 @@ int main(int argc, char** argv)
 
     Opticks ok(argc, argv, "--compute");
     ok.configure() ;
+
+   
+    
+    OContext* ctx = OContext::Create(&ok );
  
-    optix::Context context = optix::Context::create();
+    optix::Context context = ctx->getContext() ;
 
     OEvt oevt(context, size );
 
-    OContext ctx(context, &ok );
-    int entry = ctx.addEntry("dirtyBufferTest.cu", "dirtyBufferTest", "exception");
+    int entry = ctx->addEntry("dirtyBufferTest.cu", "dirtyBufferTest", "exception");
 
-    ctx.launch( OContext::VALIDATE|OContext::COMPILE|OContext::PRELAUNCH,  entry,  0, 0, NULL);
+    ctx->launch( OContext::VALIDATE|OContext::COMPILE|OContext::PRELAUNCH,  entry,  0, 0, NULL);
 
     //pure_upload_launch_download( ntest, entry, ctx, oevt );
     dirty_upload_launch_download( ntest, entry, ctx, oevt );
 
+    delete ctx ; 
 
 
     return 0 ; 

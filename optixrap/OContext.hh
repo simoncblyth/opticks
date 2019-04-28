@@ -38,6 +38,9 @@ class OXRAP_API OContext {
         friend class LTOOContextUploadDownloadTest ;
         friend class OAxisTest ;
     public:
+        static const char* OPTIX_CACHE_LINUX ;   
+        static const char* CacheDir() ;   
+    public:
         enum {
                 e_propagate_ray,
                 e_radiance_ray,
@@ -60,9 +63,16 @@ class OXRAP_API OContext {
      public:
             static const char* LaunchLogPath(unsigned index); 
             const char* getPrintIndexLogPath() const  ; 
+
      public:
-            OContext(optix::Context context, Opticks* ok, const char* cmake_target="OptiXRap");
+            static OContext* Create(Opticks* ok, const char* cmake_target="OptiXRap") ; 
+            static void InitRTX(int rtxmode);
+            ~OContext();
+     private:
+            OContext(optix::Context context, Opticks* ok, const char* cmake_target);
+     private:
             void cleanUp();
+            void cleanUpCache();
      public:
             const char* getRunLabel() const ;
             const char* getRunResultsDir() const ;

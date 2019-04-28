@@ -14,7 +14,6 @@
 
 int main(int argc, char** argv)
 {
-
     OPTICKS_LOG(argc, argv);    
 
     Opticks ok(argc, argv, "--compute");
@@ -38,8 +37,10 @@ int main(int argc, char** argv)
     blib->setSurfaceLib(slib);
     blib->dump();
 
-    optix::Context context = optix::Context::create();
 
+    OContext* ctx = OContext::Create(&ok);
+    optix::Context context = ctx->getContext();
+    
     unsigned args_x = argc > 1 ? atoi(argv[1]) : 13 ; 
     unsigned args_y = argc > 2 ? atoi(argv[2]) :  0 ; 
     unsigned args_z = argc > 3 ? atoi(argv[3]) : 42 ; 
@@ -79,17 +80,15 @@ int main(int argc, char** argv)
 
     //OContext::Mode_t mode = ok.isCompute() ? OContext::COMPUTE : OContext::INTEROP ;
 
-    OContext* m_ocontext(NULL);
-    m_ocontext = new OContext(context, &ok);
 
-    optix::Group top = m_ocontext->getTopGroup();
+    optix::Group top = ctx->getTopGroup();
 
     const char* builder = "NoAccel" ;
     const char* traverser = "NoAccel" ; 
     optix::Acceleration acceleration = context->createAcceleration(builder, traverser);
     top->setAcceleration(acceleration);
 
-    OLaunchTest ott(m_ocontext, &ok, "boundaryTest.cu", "boundaryTest", "exception");
+    OLaunchTest ott(ctx, &ok, "boundaryTest.cu", "boundaryTest", "exception");
     ott.setWidth( nx);
     ott.setHeight(ny);
 
@@ -108,6 +107,8 @@ int main(int argc, char** argv)
     LOG(info) << "maxdiff " << maxdiff  ;
     assert(maxdiff < 1e-6 ); 
 
+    delete ctx ; 
+    
 
     return 0 ;     
 }
