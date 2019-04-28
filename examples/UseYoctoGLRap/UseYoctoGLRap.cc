@@ -8,7 +8,7 @@
 
 int main(int argc, char** argv)
 {
-    auto gltf = YOGMaker::make_gltf_example() ; 
+    auto gltf = YOG::Maker::make_gltf_example() ; 
 
     std::string path = "/tmp/YOGMaker.gltf" ; 
     bool save_bin = false ; 

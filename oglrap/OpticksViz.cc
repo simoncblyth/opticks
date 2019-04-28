@@ -513,9 +513,12 @@ void OpticksViz::renderLoop()
     m_frame->show();
     LOG(LEVEL) << "after frame.show() "; 
 
-    unsigned int count ; 
+    unsigned count(0) ; 
+    bool exitloop(false); 
 
-    while (!glfwWindowShouldClose(m_window))
+    int renderlooplimit = m_ok->getRenderLoopLimit(); 
+
+    while (!glfwWindowShouldClose(m_window) && !exitloop  )
     {
         m_frame->listen(); 
 
@@ -539,7 +542,17 @@ void OpticksViz::renderLoop()
             m_interactor->setChanged(false);  
             m_composition->setChanged(false);   // sets camera, view, trackball dirty status 
         }
+
+        exitloop = renderlooplimit > 0 && int(count) > renderlooplimit ; 
     }
+
+    //if(exitloop)
+    {
+        LOG(info) << " renderlooplimit " << renderlooplimit 
+                  << " count " << count 
+                  ;
+    }
+
 }
 
 

@@ -19,7 +19,10 @@ Issues
 
 5. now OpSnapTest runs, BUT for real usage on GPU cluster have to 
    strictly divide read-only and writeable locations : I suspect Opticks 
-   tends to write liberally : test using another user 
+   tends to write liberally : test using another user "simon"
+
+6. how to run tests on GPU cluster ? that requires the build directory and cmake+ctest ?
+   no easy way to "simulate" this, so need to get compiled on sl7  
 
 
 

@@ -314,6 +314,7 @@ class OKCORE_API Opticks {
        const char*          getDbgCSGPath();
        unsigned             getSeed() const ; 
        int                  getRTX() const ; 
+       int                  getRenderLoopLimit() const ; 
        int                  getLoadVerbosity() const ; 
        int                  getImportVerbosity() const ; 
    public:

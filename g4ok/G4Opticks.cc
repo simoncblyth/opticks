@@ -167,6 +167,8 @@ GGeo* G4Opticks::translateGeometry( const G4VPhysicalVolume* top )
 
     LOG(info) << "( Opticks" ;
     Opticks* ok = new Opticks(0,0, ecl.c_str() );  // Opticks instanciation must be after BOpticksKey::SetKey
+    ok->configure();       // parses args and does resource setup
+ 
     const char* idpath = ok->getIdPath(); 
     assert(idpath);
     LOG(info) << ") Opticks " << idpath ;
@@ -177,7 +179,8 @@ GGeo* G4Opticks::translateGeometry( const G4VPhysicalVolume* top )
     LOG(info) << ") CGDML" ;
 
     LOG(info) << "( GGeo instanciate" ;
-    GGeo* gg = new GGeo(ok) ;
+    bool live = true ;       // <--- for now this ignores preexisting cache in GGeo::init 
+    GGeo* gg = new GGeo(ok, live) ;
     LOG(info) << ") GGeo instanciate " ;
 
     LOG(info) << "( GGeo populate" ;

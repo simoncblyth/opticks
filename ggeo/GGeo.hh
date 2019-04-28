@@ -152,10 +152,11 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
         typedef std::map<unsigned int, std::string> Index_t ;
 
     public:
-        GGeo(Opticks* opticks); 
+        GGeo(Opticks* opticks, bool live=false); 
     public:
         const char* getIdPath();
-        bool isValid();
+        bool isValid() const ;
+        bool isLive() const ;
     public:
         Composition* getComposition();
         void setComposition(Composition* composition);
@@ -364,6 +365,7 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
         static GGeo*                  fInstance ; 
         SLog*                         m_log ; 
         Opticks*                      m_ok ;  
+        bool                          m_live ;   
         bool                          m_analytic ; 
         int                           m_gltf ; 
         Composition*                  m_composition ; 

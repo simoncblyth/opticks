@@ -1,0 +1,270 @@
+Notes on SL75 install
+========================
+
+Customize bash environment 
+-----------------------------
+
+Symbolic link to the GPU node accessible directory::
+
+     g -> /hpcfs/juno/junogpu/blyth
+
+
+::
+
+    this(){ echo $BASH_SOURCE ; }
+    vip(){  vim $(this); }
+    ini(){  source $(this) ; } 
+    path(){ echo $PATH | tr ":" "\n" ; } 
+
+    export PS1="\u@\h\w "
+
+    export LOCAL_BASE=$HOME/g/local
+    export OPTICKS_HOME=$HOME/g/opticks
+
+    makepath(){ cat << EOP
+    $HOME/bin
+    $LOCAL_BASE/opticks/lib
+    $OPTICKS_HOME/bin
+    $OPTICKS_HOME/ana
+    /usr/lib64/qt-3.3/bin
+    /usr/bin
+    /usr/externals/bin
+    /usr/sbin
+    /usr/local/bin
+    /usr/bin
+    /usr/local/sbin
+    /usr/sbin
+    /usr/java/latest/bin
+    /opt/puppetlabs/bin
+    EOP
+    }
+    join(){ local ifs=$IFS ; IFS="$1"; shift; echo "$*" ; IFS=$ifs ;  }
+    PATH=$(join : $(makepath))   ## absolute setting of PATH, to avoid growth 
+
+    export LC_CTYPE=en_US.UTF-8
+    export LC_ALL=en_US.UTF-8
+
+
+
+Assess Versions
+-----------------
+
+::
+
+    blyth@lxslc701~ cat /etc/redhat-release 
+    Scientific Linux release 7.5 (Nitrogen)
+
+    blyth@lxslc701~ uname -a
+    Linux lxslc701.ihep.ac.cn 3.10.0-862.14.4.el7.x86_64 #1 SMP Tue Sep 25 14:32:52 CDT 2018 x86_64 x86_64 x86_64 GNU/Linux
+
+    blyth@lxslc701~ gcc --version
+    gcc (GCC) 4.8.5 20150623 (Red Hat 4.8.5-28)
+    Copyright (C) 2015 Free Software Foundation, Inc.
+    This is free software; see the source for copying conditions.  There is NO
+    warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+
+    blyth@lxslc701~ cmake --version    ## this is too old
+    cmake version 2.8.12.2
+
+    blyth@lxslc701~ cmake3 --version   ## this is OK, but annoyingly called cmake3 
+    cmake3 version 3.13.4
+
+    CMake suite maintained and supported by Kitware (kitware.com/cmake).
+
+
+Shell fixup to find cmake3 with cmake
+----------------------------------------
+
+::
+
+    blyth@lxslc701~ which cmake cmake3
+    /usr/bin/cmake
+    /usr/bin/cmake3
+
+
+Create $HOME/bin and place a symbolic link in there::
+
+     ln -s $(which cmake3) cmake
+
+Add $HOME/bin to your PATH. Check::
+
+    blyth@lxslc701~ cmake --version   ## huh still the old one
+    cmake version 2.8.12.2
+
+    blyth@lxslc701~ hash -r           ## remove the hash, enables getting to the new one
+    blyth@lxslc701~ cmake --version
+    cmake3 version 3.13.4
+    ..
+    ## for background see https://www.cyberciti.biz/tips/an-example-how-shell-understand-which-program-to-run-part-ii.html
+
+
+Bizarre, return a few days later and cmake3 has gone, so grab and build 3.14.1::
+   
+   ocmake-
+   ocmake--
+
+Adjust PATH to pick up the new version::
+
+    blyth@lxslc701~/g/opticks/externals cmake --version
+    cmake version 3.14.1
+
+    CMake suite maintained and supported by Kitware (kitware.com/cmake).
+
+
+boost 1.53 looks new enough
+------------------------------
+
+
+::
+
+    blyth@lxslc701~ rpm -qa | grep boost
+    boost-atomic-1.53.0-27.el7.x86_64
+    boost-serialization-1.53.0-27.el7.x86_64
+    boost-iostreams-1.53.0-27.el7.x86_64
+    boost-python-1.53.0-27.el7.x86_64
+    boost-regex-1.53.0-27.el7.x86_64
+    boost-random-1.53.0-27.el7.x86_64
+    ...
+
+install the externals
+------------------------
+
+::
+
+    blyth@lxslc701~/g/opticks/externals opticks-externals
+    bcm
+    glm
+    glfw
+    glew
+    gleq
+    imgui
+    assimp
+    openmesh
+    plog
+    opticksdata
+    oimplicitmesher
+    odcs
+    oyoctogl
+    ocsgbsp
+    xercesc
+    g4
+
+
+g4 issue : finding xercesc/parsers/XercesDOMParser.hpp
+-----------------------------------------------------------
+
+::
+
+    [ 86%] Building CXX object source/persistency/CMakeFiles/G4persistency.dir/gdml/src/G4GDMLEvaluator.cc.o
+    [ 86%] Building CXX object source/persistency/CMakeFiles/G4persistency.dir/gdml/src/G4GDMLMessenger.cc.o
+    In file included from /afs/ihep.ac.cn/users/b/blyth/g/local/opticks/externals/g4/geant4.10.04.p02/source/persistency/gdml/include/G4GDMLReadDefine.hh:45:0,
+                     from /afs/ihep.ac.cn/users/b/blyth/g/local/opticks/externals/g4/geant4.10.04.p02/source/persistency/gdml/include/G4GDMLReadMaterials.hh:45,
+                     from /afs/ihep.ac.cn/users/b/blyth/g/local/opticks/externals/g4/geant4.10.04.p02/source/persistency/gdml/include/G4GDMLReadSolids.hh:44,
+                     from /afs/ihep.ac.cn/users/b/blyth/g/local/opticks/externals/g4/geant4.10.04.p02/source/persistency/gdml/include/G4GDMLReadSetup.hh:47,
+                     from /afs/ihep.ac.cn/users/b/blyth/g/local/opticks/externals/g4/geant4.10.04.p02/source/persistency/gdml/include/G4GDMLReadParamvol.hh:43,
+                     from /afs/ihep.ac.cn/users/b/blyth/g/local/opticks/externals/g4/geant4.10.04.p02/source/persistency/gdml/include/G4GDMLReadStructure.hh:46,
+                     from /afs/ihep.ac.cn/users/b/blyth/g/local/opticks/externals/g4/geant4.10.04.p02/source/persistency/gdml/include/G4GDMLParser.hh:43,
+                     from /afs/ihep.ac.cn/users/b/blyth/g/local/opticks/externals/g4/geant4.10.04.p02/source/persistency/gdml/src/G4GDMLMessenger.cc:35:
+    /afs/ihep.ac.cn/users/b/blyth/g/local/opticks/externals/g4/geant4.10.04.p02/source/persistency/gdml/include/G4GDMLRead.hh:42:47: fatal error: xercesc/parsers/XercesDOMParser.hpp: No such file or directory
+     #include <xercesc/parsers/XercesDOMParser.hpp>
+                                                   ^
+    compilation terminated.
+    gmake[2]: *** [source/persistency/CMakeFiles/G4persistency.dir/gdml/src/G4GDMLMessenger.cc.o] Error 1
+    gmake[1]: *** [source/persistency/CMakeFiles/G4persistency.dir/all] Error 2
+    gmake: *** [all] Error 2
+    Sun Apr 28 16:10:37 CST 2019
+    -bash: /afs/ihep.ac.cn/users/b/blyth/g/local/opticks/externals/bin/geant4.sh: No such file or directory
+
+
+::
+
+    blyth@lxslc701~/g/opticks/externals ll /afs/ihep.ac.cn/users/b/blyth/g/local/opticks/externals/include/xercesc/parsers/
+    total 336
+    -rw-r--r--  1 blyth dyw 25661 Apr 28 14:57 XercesDOMParser.hpp
+    -rw-r--r--  1 blyth dyw 81518 Apr 28 14:57 SAXParser.hpp
+    -rw-r--r--  1 blyth dyw 67310 Apr 28 14:57 SAX2XMLReaderImpl.hpp
+    -rw-r--r--  1 blyth dyw 55372 Apr 28 14:57 SAX2XMLFilterImpl.hpp
+    -rw-r--r--  1 blyth dyw 26729 Apr 28 14:57 DOMLSParserImpl.hpp
+    -rw-r--r--  1 blyth dyw 68745 Apr 28 14:57 AbstractDOMParser.hpp
+    drwxr-xr-x 11 blyth dyw  4096 Apr 28 14:57 ..
+    drwxr-xr-x  2 blyth dyw  4096 Apr 28 14:57 .
+
+
+::
+
+    blyth@lxslc701~/g/opticks/externals g4-cmake-info
+    g4-cmake-info
+    ===============
+
+       opticks-cmake-generator : Unix Makefiles
+       xercesc-library         : /usr/lib64/libxerces-c-3.1.so
+       xercesc-include-dir     : /usr/include
+       g4-prefix               : /afs/ihep.ac.cn/users/b/blyth/g/local/opticks/externals 
+       g4-bdir                 : /afs/ihep.ac.cn/users/b/blyth/g/local/opticks/externals/g4/geant4.10.04.p02.Debug.build 
+       g4-dir                  : /afs/ihep.ac.cn/users/b/blyth/g/local/opticks/externals/g4/geant4.10.04.p02 
+
+
+Had some stray envvars.
+
+
+
+install OptiX 6.0.0
+----------------------
+
+Use the runfile approach::
+
+    optix-runfile-vers(){ echo 600 ; }
+    optix-runfile()
+    {
+        case $(optix-runfile-vers) in
+           600) echo NVIDIA-OptiX-SDK-6.0.0-linux64-25650775.sh ;;
+        esac
+    }
+
+    optix-runfile-prefix-abs(){ echo $LOCAL_BASE/opticks/externals/OptiX_$(optix-runfile-vers) ; }
+    optix-runfile-prefix(){     echo $LOCAL_BASE/opticks/externals/optix ; }
+    optix-runfile-install()
+    {
+        local msg="=== $FUNCNAME : "
+        local iwd=$PWD
+
+        cd $LOCAL_BASE
+        local runfile=$(optix-runfile)
+        [ -f "$runfile" ] && echo NO runfile $runfile in $PWD && return 
+
+        local prefix=$(optix-runfile-prefix-abs)
+        mkdir -p $prefix
+
+        local name=$(basename $prefix)
+
+        if [ -d "$prefix"  ]; then
+            echo $msg already installed to $prefix  
+        else
+            echo $msg need to say yes then no to the installer
+            local ans
+            read -p "SPACE to continue " ans
+            sh $runfile --prefix=$prefix
+            cd $(dirname $prefix)
+            ln -s $name optix
+        fi
+
+        cd $iwd
+    }
+    opticks-runfile-info(){ cat << EOI
+    $FUNCNAME
+    ========================
+
+       optix-runfile-vers        : $(optix-runfile-vers)
+       optix-runfile             : $(optix-runfile)
+       optix-runfile-prefix      : $(optix-runfile-prefix)
+       optix-runfile-prefix-abs  : $(optix-runfile-prefix-abs)
+
+       OPTICKS_OPTIX_INSTALL_DIR : $OPTICKS_OPTIX_INSTALL_DIR
+
+       export OPTICKS_OPTIX_INSTALL_DIR=\$LOCAL_BASE/opticks/externals/optix
+
+    EOI
+    }
+
+
+

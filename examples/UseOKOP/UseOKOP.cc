@@ -1,4 +1,5 @@
-// okop/tests/OpTest.cc
+#include "OPTICKS_LOG.hh"
+#include "Opticks.hh"
 #include "OpMgr.hh"
 
 /**
@@ -8,7 +9,9 @@ OpTest
 
 int main(int argc, char** argv)
 {
-    OpMgr op(argc, argv, "--tracer");
+    OPTICKS_LOG(argc, argv); 
+    Opticks ok(argc, argv, "--tracer");
+    OpMgr op(&ok);
     op.snap();
     return 0 ; 
 }

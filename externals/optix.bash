@@ -377,15 +377,57 @@ EON
 
 
 
-
-optix600-install-experimental()
+optix-runfile-vers(){ echo 600 ; }
+optix-runfile()
 {
-    ## for packaging purposes need to try treating OptiX more like any other external
-    cd /usr/local
-    local prefix=$LOCAL_BASE/opticks/externals/optix
+    case $(optix-runfile-vers) in
+       600) echo NVIDIA-OptiX-SDK-6.0.0-linux64-25650775.sh ;;
+    esac
+}
+
+optix-runfile-prefix-abs(){ echo $LOCAL_BASE/opticks/externals/OptiX_$(optix-runfile-vers) ; }
+optix-runfile-prefix(){     echo $LOCAL_BASE/opticks/externals/optix ; }
+optix-runfile-install()
+{
+    local msg="=== $FUNCNAME : "
+    local iwd=$PWD
+
+    cd $LOCAL_BASE
+    local runfile=$(optix-runfile)
+    [ -f "$runfile" ] && echo NO runfile $runfile in $PWD && return 
+
+    local prefix=$(optix-runfile-prefix-abs)
     mkdir -p $prefix
-    echo need to say yes then no to the installer
-    sh NVIDIA-OptiX-SDK-6.0.0-linux64-25650775.sh --prefix=$prefix
+
+    local name=$(basename $prefix)
+
+    if [ -d "$prefix"  ]; then
+        echo $msg already installed to $prefix  
+    else
+        echo $msg need to say yes then no to the installer
+        local ans  
+        read -p "SPACE to continue " ans
+        sh $runfile --prefix=$prefix
+        cd $(dirname $prefix)
+        ln -s $name optix
+    fi
+
+    cd $iwd
+}
+opticks-runfile-info(){ cat << EOI
+$FUNCNAME
+========================
+
+   optix-runfile-vers        : $(optix-runfile-vers)
+   optix-runfile             : $(optix-runfile)
+   optix-runfile-prefix      : $(optix-runfile-prefix)
+   optix-runfile-prefix-abs  : $(optix-runfile-prefix-abs)
+
+   OPTICKS_OPTIX_INSTALL_DIR : $OPTICKS_OPTIX_INSTALL_DIR
+
+   export OPTICKS_OPTIX_INSTALL_DIR=\$LOCAL_BASE/opticks/externals/optix
+
+EOI
 }
 
 

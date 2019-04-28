@@ -671,6 +671,10 @@ int Opticks::getRTX() const
 {
     return m_cfg->getRTX();
 }
+int Opticks::getRenderLoopLimit() const 
+{
+    return m_cfg->getRenderLoopLimit();
+}
 
 
 

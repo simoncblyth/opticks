@@ -91,10 +91,11 @@ GGeo* GGeo::GetInstance()
     return fInstance ;    
 }
 
-GGeo::GGeo(Opticks* ok)
+GGeo::GGeo(Opticks* ok, bool live)
   :
    m_log(new SLog("GGeo::GGeo","",verbose)),
    m_ok(ok), 
+   m_live(live),
    m_analytic(false),
    m_gltf(m_ok->getGLTF()),   
    m_composition(NULL), 
@@ -425,14 +426,15 @@ void GGeo::init()
 
    m_loaded = cache_exists && cache_requested ;
 
-   LOG(LEVEL) 
+   LOG(error) 
         << " idpath " << idpath
         << " cache_exists " << cache_exists 
         << " cache_requested " << cache_requested
         << " m_loaded " << m_loaded 
+        << " m_live " << m_live 
         ;
 
-   if(m_loaded) return ; 
+   if(m_loaded && !m_live) return ; 
 
    //////////////  below only when operating pre-cache //////////////////////////
 
@@ -472,7 +474,6 @@ void GGeo::init()
 
 void GGeo::add(GMaterial* material)
 {
-
     m_materiallib->add(material);
     //addToIndex((GPropertyMap<float>*)material);
 }
@@ -801,8 +802,12 @@ void GGeo::loadAnalyticFromCache()
     LOG(info) << "GGeo::loadAnalyticFromCache DONE" ; 
 }
 
+bool GGeo::isLive() const 
+{
+    return m_live ; 
+}
 
-bool GGeo::isValid()
+bool GGeo::isValid() const 
 {
     return m_bndlib->isValid() && m_materiallib->isValid() && m_surfacelib->isValid() ; 
 }

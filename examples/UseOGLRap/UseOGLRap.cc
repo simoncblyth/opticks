@@ -9,7 +9,9 @@ int main(int argc, char** argv)
 
     LOG(info) << argv[0] ; 
 
-    Opticks ok(argc, argv);
+    Opticks ok(argc, argv, "--renderlooplimit 100000");
+
+    ok.configure(); 
 
     AxisApp aa(&ok); 
 

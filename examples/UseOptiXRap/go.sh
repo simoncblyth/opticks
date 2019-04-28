@@ -6,7 +6,7 @@ sdir=$(pwd)
 name=$(basename $sdir)
 bdir=/tmp/$USER/opticks/$name/build 
 
-#rm -rf $bdir && mkdir -p $bdir 
+rm -rf $bdir && mkdir -p $bdir 
 cd $bdir && pwd 
 
 
@@ -38,6 +38,12 @@ so what to do ?
 
      vimdiff /Developer/OptiX/SDK/CMake/FindOptiX.cmake $(opticks-home)/cmake/Modules/FindOptiX.cmake
 
+
+This is no longer needed::
+
+            -DOptiX_INSTALL_DIR=$(opticks-optix-install-dir) 
+
+
 EOT
 }
 
@@ -45,8 +51,7 @@ EOT
 cmake $sdir -DCMAKE_BUILD_TYPE=Debug \
             -DCMAKE_PREFIX_PATH=$(opticks-prefix)/externals \
             -DCMAKE_INSTALL_PREFIX=$(opticks-prefix) \
-            -DCMAKE_MODULE_PATH=$(opticks-home)/cmake/Modules \
-            -DOptiX_INSTALL_DIR=$(opticks-optix-install-dir) 
+            -DCMAKE_MODULE_PATH=$(opticks-home)/cmake/Modules 
 
 make
 make install   

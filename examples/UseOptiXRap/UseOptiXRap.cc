@@ -8,7 +8,7 @@
 
 #include "OConfig.hh"
 #include "OContext.hh"
-#include "STimes.hh"
+#include "BTimes.hh"
 #include "SSys.hh"
 #include "Opticks.hh"
 #include "OpticksBufferControl.hh"
@@ -24,7 +24,7 @@ struct Evt
    std::string brief();
 
    unsigned size ; 
-   STimes* times ; 
+   BTimes* times ; 
    NPY<float>* genstep ;
    NPY<float>* photon  ;
 
@@ -34,7 +34,7 @@ struct Evt
 Evt::Evt(unsigned size_) 
    :
    size(size_),
-   times(new STimes),  
+   times(new BTimes),  
    genstep(NPY<float>::make(size,1,4)),  
    photon(NPY<float>::make(size,1,4))  
 {
@@ -79,7 +79,6 @@ std::string Evt::description()
     std::stringstream ss ; 
     ss << "evt:" 
         << size  
-        << times->description(" ") 
         ;
     return ss.str();
 }
@@ -90,7 +89,6 @@ std::string Evt::brief()
     std::stringstream ss ; 
     ss << "evt:" 
         << size  
-        << times->brief(" ") 
         ;
     return ss.str();
 }
@@ -127,10 +125,9 @@ int main(int argc, char** argv)
     LOG(info) << argv[0] << " OPTIX_VERSION " << version ; 
     //bool with_top = OConfig::DefaultWithTop() ;  // must set false with 3080, seemingly doesnt matter with 40000
 
-    optix::Context context = optix::Context::create();
 
-    //OContext ctx(context, &ok, with_top);
-    OContext ctx(context, &ok );
+    OContext* ctx = OContext::Create(&ok );
+    optix::Context context = ctx->getContext(); 
 
     context->setPrintEnabled(true); 
 
@@ -142,7 +139,7 @@ int main(int argc, char** argv)
     const char* edef = "bufferTest" ; 
     const char* progname = SSys::getenvvar(ekey, edef) ; 
 
-    int entry = ctx.addEntry("bufferTest.cu", progname, "exception");
+    int entry = ctx->addEntry("bufferTest.cu", progname, "exception");
 
 
 
@@ -153,13 +150,13 @@ int main(int argc, char** argv)
  
     Evt* evt0 = new Evt(0) ;
 
-    optix::Buffer m_genstep_buffer = ctx.createBuffer<float>( evt0->genstep, "genstep");
+    optix::Buffer m_genstep_buffer = ctx->createBuffer<float>( evt0->genstep, "genstep");
     context["genstep_buffer"]->set( m_genstep_buffer );
 
-    optix::Buffer m_photon_buffer = ctx.createBuffer<float>( evt0->photon, "photon");
+    optix::Buffer m_photon_buffer = ctx->createBuffer<float>( evt0->photon, "photon");
     context["photon_buffer"]->set( m_photon_buffer );
 
-    ctx.launch( OContext::VALIDATE|OContext::COMPILE|OContext::PRELAUNCH,  entry,  0, 0, evt0->times);
+    ctx->launch( OContext::VALIDATE|OContext::COMPILE|OContext::PRELAUNCH,  entry,  0, 0, evt0->times);
 
     LOG(info) <<  evt0->description() ;
 
@@ -177,7 +174,7 @@ int main(int argc, char** argv)
          OContext::upload<float>(m_genstep_buffer, evt->genstep);  // compute mode style
 
 
-         ctx.launch( OContext::LAUNCH, entry,  evt->size, 1, evt->times);
+         ctx->launch( OContext::LAUNCH, entry,  evt->size, 1, evt->times);
 
          OContext::download<float>( m_photon_buffer, evt->photon );
 
@@ -191,7 +188,8 @@ int main(int argc, char** argv)
     std::cout << std::endl ; 
     std::cout << "also use VERBOSE=1 envvar to see the oxrap buffer setup " << std::endl ; 
 
-
+    delete ctx ; 
+  
 
     return 0 ;     
 }

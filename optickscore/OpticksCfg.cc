@@ -72,6 +72,7 @@ OpticksCfg<Listener>::OpticksCfg(const char* name, Listener* listener, bool live
        m_timetracerscale(1e-6f),     
        m_seed(42),     
        m_rtx(0),
+       m_renderlooplimit(0),
        m_rngmax(3000000),     
        m_bouncemax(9),     
        m_recordmax(10),
@@ -153,6 +154,14 @@ void OpticksCfg<Listener>::init()
    snprintf(rtx,128, "OptiX RTX execution mode, -1:ASIS 0:OFF 1:ON 2:ON with GeometryTriangles. Default %d", m_rtx );
    m_desc.add_options()
        ("rtx",  boost::program_options::value<int>(&m_rtx), rtx );
+
+
+
+   char renderlooplimit[128];
+   snprintf(renderlooplimit,128, "When greater than zero limits the number of turns of the renderloop. Default %d", m_renderlooplimit );
+   m_desc.add_options()
+       ("renderlooplimit",  boost::program_options::value<int>(&m_renderlooplimit), renderlooplimit );
+
 
 
 
@@ -1454,6 +1463,11 @@ int OpticksCfg<Listener>::getRTX() const
     return m_rtx ; 
 }
 
+template <class Listener>
+int OpticksCfg<Listener>::getRenderLoopLimit() const 
+{
+    return m_renderlooplimit ; 
+}
 
 template <class Listener>
 int OpticksCfg<Listener>::getRngMax()

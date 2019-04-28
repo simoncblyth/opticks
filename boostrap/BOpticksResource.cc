@@ -68,11 +68,7 @@ const int BOpticksResource::DEFAULT_FRAME_DYB = 3153 ;
 const int BOpticksResource::DEFAULT_FRAME_JUNO = 62593 ; 
 
 
-
-
-
-
-const plog::Severity BOpticksResource::LEVEL = debug ; 
+const plog::Severity BOpticksResource::LEVEL = info ; 
 
 BOpticksResource::BOpticksResource()
     :

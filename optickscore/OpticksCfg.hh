@@ -81,6 +81,7 @@ class OKCORE_API OpticksCfg : public BCfg {
 
      unsigned     getSeed() const ; 
      int          getRTX() const ; 
+     int          getRenderLoopLimit() const ; 
      int          getRngMax(); 
      int          getBounceMax(); 
      int          getRecordMax(); 
@@ -191,6 +192,7 @@ private:
      float       m_timetracerscale ; 
      unsigned    m_seed ; 
      int         m_rtx ; 
+     int         m_renderlooplimit ; 
      int         m_rngmax ; 
      int         m_bouncemax ; 
      int         m_recordmax ; 
