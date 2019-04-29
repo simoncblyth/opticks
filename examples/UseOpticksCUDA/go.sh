@@ -3,7 +3,8 @@
 opticks-
 
 sdir=$(pwd)
-bdir=/tmp/$USER/opticks/$(basename $sdir)/build 
+name=$(basename $sdir)
+bdir=/tmp/$USER/opticks/$name/build 
 
 rm -rf $bdir && mkdir -p $bdir && cd $bdir && pwd 
 
@@ -15,4 +16,7 @@ cmake $sdir -DCMAKE_BUILD_TYPE=Debug \
 
 make
 make install   
+
+$name
+
 
