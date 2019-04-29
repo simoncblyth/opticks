@@ -142,6 +142,29 @@ For what goes wrong if you use an older CMake version see:
 * ``notes/issues/cmake_target_link_libraries_for_imported_target.rst``
 
 
+To install CMake 3.14.1::
+
+    [blyth@localhost opticks]$ ocmake-     ## run precursor function that defines the others
+    [blyth@localhost opticks]$ ocmake-vi   ## take a look at the bash functions 
+    [blyth@localhost opticks]$ ocmake-info  
+    ocmake-info
+    ============
+
+    ocmake-vers : 3.14.1
+    ocmake-nam  : cmake-3.14.1
+    ocmake-url  : https://github.com/Kitware/CMake/releases/download/v3.14.1/cmake-3.14.1.tar.gz
+    ocmake-dir  : /home/blyth/local/opticks/externals/cmake/cmake-3.14.1
+
+    [blyth@localhost opticks]$ ocmake--    ## downloads, configures, builds, installs
+
+After installation you will need to adjust you PATH to 
+use the newer *cmake* binary. Check with::
+
+    which cmake
+    cmake --version 
+
+
+
 Boost C++ Libraries
 ----------------------
 
