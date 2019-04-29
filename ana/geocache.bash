@@ -185,6 +185,10 @@ geocache-keydir()
     #echo $LOCAL_BASE/opticks/geocache/OKX4Test_lWorld0x4bc2710_PV_g4live/g4ok_gltf/528f4cefdac670fffe846377973af10a/1
 }
 
+geocache-dir(){ echo $LOCAL_BASE/opticks/geocache ; }
+geocache-cd(){ cd $(geocache-dir) ; }
+
+
 geocache-tstdir(){ echo $(geocache-keydir)/g4codegen/tests ; }
 
 geocache-kcd(){ cd $(geocache-keydir) ; }
@@ -233,7 +237,8 @@ geocache-j1808-v3()
     type $FUNCNAME
     opticksdata- 
 
-    gdb --args OKX4Test --gdmlpath $(opticksdata-jv3) --csgskiplv 22 
+    gdb --args \
+    OKX4Test --gdmlpath $(opticksdata-jv3) --csgskiplv 22 
 
     cd $iwd
 }
@@ -328,6 +333,7 @@ geocache-gui()
 geocache-bench-()
 {
    type $FUNCNAME
+   UseOptiX
    local dbg
    [ -n "$DBG" ] && dbg="gdb --args" || dbg=""
    $dbg OpSnapTest --envkey --target 352851 --eye -1,-1,-1 --snapconfig "steps=5,eyestartz=-1,eyestopz=-0.5" --size 5120,2880,1 --embedded  $* 
@@ -377,7 +383,6 @@ geocache-tour()
 
 geocache-bench()
 {
-   #set -eu
    local stamp=$(date +%s)
 
    CUDA_VISIBLE_DEVICES=1   $FUNCNAME- --rtx 0 --runfolder $FUNCNAME --runstamp $stamp --runlabel "R0_TITAN_RTX" $*
@@ -406,13 +411,20 @@ geocache-cluster-cvd(){ cat << EOC
 EOC
 }
 
+geocache-cluster-check()
+{
+   local cvd 
+   geocache-cluster-cvd | while read cvd ; do
+       CUDA_VISIBLE_DEVICES=$cvd UseOptiX
+   done  
+}
 
 geocache-cluster()
 {
    local stamp=$(date +%s)
    local cvd 
-   geocache-cluster-cvd | head -1 | while read cvd ; do
-       CUDA_VISIBLE_DEVICES=$cvd geocache-bench- --rtx 0 --runfolder $FUNCNAME --runstamp $stamp  $*   
+   geocache-cluster-cvd | head -8 | while read cvd ; do
+       CUDA_VISIBLE_DEVICES=$cvd geocache-bench- --rtx 2 --runfolder $FUNCNAME --runstamp $stamp  $*   
    done  
    bench.py $LOCAL_BASE/opticks/results/$FUNCNAME
 

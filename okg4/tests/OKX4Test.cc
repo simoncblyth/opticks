@@ -108,12 +108,14 @@ int main(int argc, char** argv)
 
     X4PhysicalVolume xtop(gg2, top) ;    // populates gg2 
 
-    int root = SSys::getenvint( "GLTF_ROOT", 3147 ); 
 
-
-    const char* gltfpath = ok2->getGLTFPath(); 
-
-    GGeoGLTF::Save(gg2, gltfpath, root ); 
+    bool save_gltf = false ; 
+    if(save_gltf)
+    {
+        int root = SSys::getenvint( "GLTF_ROOT", 3147 ); 
+        const char* gltfpath = ok2->getGLTFPath(); 
+        GGeoGLTF::Save(gg2, gltfpath, root ); 
+    }
 
 
     gg2->prepare();   // merging meshes, closing libs
