@@ -113,28 +113,33 @@ its externals requires unix tools including:
 * curl
 * tar
 * zip
-* cmake 3.8+
+* cmake 3.12+
 
-CMake
--------
+CMake Version 3.12+
+----------------------
 
-A rather recent cmake version is required. Check your version with::
+* **I recommend use of at least 3.12 for building Opticks**.
+* **The most common Opticks build issues arise from using older CMake versions.** 
+
+Check your version with::
 
     simon:~ blyth$ cmake --version
-    cmake version 3.11.0
+    cmake version 3.12.0
 
-Updating build tools is best done via your system package manager.  
-For example on OSX with macports update cmake with::
+Although usually preferable to get build tools using your system 
+package manager, the system cmake version will almost certainly 
+not be recent enough. 
 
-   port info cmake           # check the version the package manager proposes
-   sudo port install cmake   # do the install
+Opticks CMake infrastructure makes heavy use of recent CMake target 
+import/export features used by BCM (Boost CMake Modules).
+The current Opticks CMake infrastructure was developed in May 2018 
+using CMake 3.11 and 3.12 (I am currently using 3.14.1)
+The Opticks repository includes bash functions for local installs of 
+cmake with precursor function *ocmake-* which will install 3.14.1
 
+For what goes wrong if you use an older CMake version see:
 
-If you or your system administrator are unable to update a tool via the system
-package manager then a local install of the tool must be done and your 
-login shell PATH modified to use the updated tool. The Opticks repository 
-includes bash functions for local installs of cmake with 
-precursor function *ocmake-*.
+* ``notes/issues/cmake_target_link_libraries_for_imported_target.rst``
 
 
 Boost C++ Libraries
@@ -708,6 +713,7 @@ The permission denied error is not a problem.
     100% tests passed, 0 tests failed out of 155
 
     Total Test time (real) =  48.30 sec
+
 
 
 

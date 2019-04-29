@@ -1,6 +1,56 @@
 cmake_target_link_libraries_for_imported_target
 ==================================================
 
+Background
+-------------
+
+Opticks CMake infrastructure is based on my fork of BCM (Boost CMake Modules) which 
+makes heavy use of recent CMake target import/export features.  My original
+development of the current Opticks CMake infrastructure was done in May 2018 
+using CMake 3.11 or CMake 3.12 and I am currently using 3.14.1
+
+* **I now recommend use of at least 3.12 for building Opticks**.
+
+I formerly recommended at least 3.8 but now following problem reports 
+up the ante to 3.12 which the development was done with. 
+Clearly relying on documented support of something in an earlier version 
+is not a good thing to do, testing is what matters.
+
+
+
+
+CMake Releases and Tags 
+----------------------------
+
+* https://github.com/Kitware/CMake/releases
+* https://github.com/Kitware/CMake/tags
+
+::
+
+   v3.14.1   Mar 30, 2019
+   v3.13.3   Jan 14, 2019
+   v3.12.1   Aug 9,  2018
+   v3.11.1   Apr 17, 2018 
+
+
+
+Something similar reported by Ako (RHEL 7.5, gcc 5.2.0, CMake 3.9.6, Boost 1.66.0)
+-------------------------------------------------------------------------------------
+
+::
+
+    CMake Error at /home/opticks/cmake/Modules/FindOpticksCUDA.cmake:98 (target_link_libraries):
+    Cannot specify link libraries for target "Opticks::CUDA" which is not built
+
+
+Reading the below merge requests again makes me think that imported targets didnt stabilise in CMake 
+perhaps as late as 3.11
+
+
+* https://gitlab.kitware.com/cmake/cmake/merge_requests/1264
+* https://gitlab.kitware.com/cmake/cmake/merge_requests/1839
+
+
 
 Issue reported by Elias 
 -----------------------
