@@ -45,6 +45,15 @@ Changing OptiX version
    om-test optixrap:    
 
 
+nvrtc : runtime compilation for OptiX
+--------------------------------------
+
+30min in see options needed for runtime compilation with nvrtc from Detlef::
+
+   http://on-demand.gputechconf.com/gtc/2017/video/s7185-mank-roettger-leveraging-nvrtc-runtime-compliation-for-dynamically-building-optix-shaders-from-mdl.mp4
+
+
+
 OptiX with multiple GPU
 ------------------------
 
