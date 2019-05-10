@@ -40,16 +40,35 @@ float SProc::VirtualMemoryUsageMB()
     
 // https://stackoverflow.com/questions/63166/how-to-determine-cpu-and-memory-consumption-from-inside-a-process
 
-#include <sys/resource.h>
+#include "stdlib.h"
+#include "stdio.h"
+#include "string.h"
+
+int parseLine(char* line){
+    // This assumes that a digit will be found and the line ends in " Kb".
+    int i = strlen(line);
+    const char* p = line;
+    while (*p <'0' || *p > '9') p++;
+    line[i-3] = '\0';
+    i = atoi(p);
+    return i;
+}
 
 float SProc::VirtualMemoryUsageMB()
 {
-   /*
-    int who = RUSAGE_SELF ; 
-    rusage usage ;   
-    int rc = getrusage(who, &usage);
-   */
-    return 0 ; 
+    FILE* file = fopen("/proc/self/status", "r");
+    float result = 0.f ;
+    char line[128];
+
+    while (fgets(line, 128, file) != NULL){
+        if (strncmp(line, "VmSize:", 7) == 0){
+            result = parseLine(line);   // value in Kb 
+            result /= 1000.f ;          // convert to MB
+            break;
+        }
+    }
+    fclose(file);
+    return result;
 }
 #endif
 

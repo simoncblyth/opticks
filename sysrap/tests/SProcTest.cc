@@ -1,3 +1,5 @@
+// TEST=SProcTest om-t
+
 #include <cassert>
 #include <iomanip>
 #include "SProc.hh"
@@ -7,20 +9,37 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv);
 
-    int M = 1000000 ; 
-    unsigned nleak = 25 ;    
+    typedef unsigned long long ULL ; 
+
+    //ULL MB = 1000000 ; 
+    ULL MB = 1 << 20 ;   // 1048576  
+
+    ULL MB128 = 1 << 20 << 7 ; 
+
+    int nleak = argc > 1 ? atoi(argv[1]) : 25 ;   // reduced default from 100, to prevent std::bad_alloc fail at ~5GB on lxslc702
 
     char** leaks = new char*[nleak] ; 
 
     float vmb0 = SProc::VirtualMemoryUsageMB();
 
-    LOG(info) << " vmb0 " << vmb0 ; 
+    LOG(info) 
+        << " nleak " << nleak
+        << " vmb0 " << vmb0 
+        ; 
 
-    for(unsigned i=0 ; i < nleak ; i++)
+    ULL increment = MB128 ;  
+
+    ULL total = 0ull ; 
+
+    for(int i=0 ; i < nleak ; i++)
     {
-        leaks[i] = new char[100*M] ; 
+        leaks[i] = new char[increment] ;
+
+        total += increment ;    
 
         float dvmb = SProc::VirtualMemoryUsageMB() - vmb0 ;
+
+        float x_dvmb = float(total/MB) ;  
 
         assert(leaks[i]); 
 
@@ -28,6 +47,11 @@ int main(int argc, char** argv)
               << std::setw(10) << i 
               << " vm " 
               << std::setw(10) << dvmb 
+              << " x_vm " 
+              << std::setw(10) << x_dvmb 
+              << " vm/x_vm " 
+              << std::setw(10) << std::fixed << std::setprecision(4) << dvmb/x_dvmb 
+ 
               ;
 
         //delete [] leaks[i] ; 
