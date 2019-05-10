@@ -2212,9 +2212,10 @@ TorchStepNPY* Opticks::makeSimpleTorchStep()
 
     const char* cfg = config.empty() ? NULL : config.c_str() ;
 
-    LOG(info) << "Opticks::makeSimpleTorchStep" 
-              << " config " << config 
-              << " cfg " << ( cfg ? cfg : "NULL" )
+    LOG(info)
+              << " enable : --torch (the default) "
+              << " configure : --torchconfig [" << ( cfg ? cfg : "NULL" ) << "]" 
+              << " dump details : --torchdbg " 
               ;
 
     TorchStepNPY* torchstep = new TorchStepNPY(TORCH, 1, cfg );

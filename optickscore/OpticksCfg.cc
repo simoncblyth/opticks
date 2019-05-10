@@ -847,15 +847,15 @@ void OpticksCfg<Listener>::init()
        ("recordmax,r",  boost::program_options::value<int>(&m_recordmax), recordmax );
 
    char timemax[128];
-   snprintf(timemax,128, "Maximum time in nanoseconds. Default %d ", m_timemax);
+   snprintf(timemax,128, "Maximum time in nanoseconds. Default %f ", m_timemax);
    m_desc.add_options()
-       ("timemax",  boost::program_options::value<int>(&m_timemax), timemax );
+       ("timemax",  boost::program_options::value<float>(&m_timemax), timemax );
 
 
    char animtimemax[128];
-   snprintf(animtimemax,128, "Maximum animation time in nanoseconds. Default %d ", m_animtimemax);
+   snprintf(animtimemax,128, "Maximum animation time in nanoseconds. Default %f ", m_animtimemax);
    m_desc.add_options()
-       ("animtimemax",  boost::program_options::value<int>(&m_animtimemax), animtimemax );
+       ("animtimemax",  boost::program_options::value<float>(&m_animtimemax), animtimemax );
 
    char animator_period[128];
    snprintf(animator_period,128, "Event Animator Period, typically in range 200 to 400 controlling the number of steps of the animation. Default %d ", m_animator_period);
@@ -1487,13 +1487,13 @@ int OpticksCfg<Listener>::getRecordMax()
     return m_recordmax ; 
 }
 template <class Listener>
-int OpticksCfg<Listener>::getTimeMax()
+float OpticksCfg<Listener>::getTimeMax() const 
 {
     return m_timemax ; 
 }
 
 template <class Listener>
-int OpticksCfg<Listener>::getAnimTimeMax()
+float OpticksCfg<Listener>::getAnimTimeMax() const 
 {
     return m_animtimemax ; 
 }

@@ -113,6 +113,7 @@ void OpticksProfile::load()
 void OpticksProfile::save(const char* dir)
 {
    assert(dir);
+   LOG(error) << brief() ; 
    m_tt->save(dir);
    m_npy->save(dir, m_name);
 }
