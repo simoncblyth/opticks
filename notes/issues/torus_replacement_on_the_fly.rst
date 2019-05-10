@@ -328,6 +328,36 @@ Looks like skipping global volumes with csgskiplv causes inconsistencies : so ne
     [blyth@localhost juno1808]$ 
 
 
+May 9, 2019 : the replacement little boxes are catching photons from torch sources, so shunt it to the nadir 
+-----------------------------------------------------------------------------------------------------------------
+
+See :doc:`how-to-find-a-shy-photon-propagation-visualization`
+
+opticksdata-jv4-vi::
+
+      1621     <volume name="lvacSurftube0x5b3c020">
+      1622       <materialref ref="Vacuum0x4b9b630"/>
+      1623       <solidref ref="svacSurftube0x5b3bf50"/>
+      1624     </volume>
+      1625     <volume name="lSurftube0x5b3ac50">
+      1626       <materialref ref="Teflon0x4b859e0"/>
+      1627       <solidref ref="sSurftube0x5b3ab80"/>
+      1628       <physvol name="pvacSurftube0x5b3c120">
+      1629         <volumeref ref="lvacSurftube0x5b3c020"/>
+      1630       </physvol>
+      1631     </volume>
+
+::
+
+    277997       <physvol name="lSurftube_phys0x5b3c810">
+    277998         <volumeref ref="lSurftube0x5b3ac50"/>
+    277999         <!--rotation name="lSurftube_phys0x5b3c810_rot" unit="deg" x="-90" y="-4" z="0"/-->
+    278000         <!-- see notes/issues/torus_replacement_on_the_fly.rst shunt the torus replacement to the nadir  -->
+    278001         <position name="lSurftube_phys0x5b3c810_rot" unit="mm" x="0" y="0" z="-17836"/>
+    278002       </physvol>
+
+
+
 
 That leaves the four instanced PMT volumes which have torii
 --------------------------------------------------------------

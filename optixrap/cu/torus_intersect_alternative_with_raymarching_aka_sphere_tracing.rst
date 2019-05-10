@@ -7,6 +7,33 @@ torus_intersect_alternative_with_raymarching_aka_sphere_tracing
 
 
 
+Torus Intersect : Iterative
+-------------------------------
+
+A comparison of different iterative techniques for torus intersection
+(Newton wins).
+
+
+
+* https://www.academia.edu/15919363/Iterative_Methods_for_Visualization_of_Implicit_Surfaces_On_GPU
+
+Iterative Methods for Visualization of Implicit Surfaces On GPU
+International Symposium on Visual Computing, 2007
+Jean-claude Paul
+Rodrigo de Toledo
+
+The ray-casting of implicit surfaces on GPU has been ex- plored in the last few
+years. However, until recently, they were restricted to second degree
+(quadrics). We present an iterative solution to ray cast cubics and quartics on
+GPU. Our solution targets ecient implementa- tion, obtaining interactive
+rendering for thousands of surfaces per frame. We have given special attention
+to
+
+
+Publication Date: 2007
+
+* ~/opticks_refs/torus_Iterative_Methods_for_Visualization_of_I.pdf
+
 
 
 Matt Zucker
@@ -164,6 +191,7 @@ bisection refinement
 Sphere tracing: a geometric method for the antialiased ray tracing of implicit surfaces, John C. Hart, 1996.
 
 * http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.48.3825&rep=rep1&type=pdf
+*  ~/opticks_refs/sphere_tracing_ray_marching_hart.pdf 
 
 
 
@@ -189,6 +217,11 @@ With distance field::
 
 
 * https://www.shadertoy.com/view/Xds3zN
+
+* https://www.shadertoy.com/view/XllGW4
+
+  Tutorial in SDF using Shadertoy LESSON defines
+
 
 
 Ray Marching : an approximate approach to find intersect with distance field geometry

@@ -244,6 +244,23 @@ geocache-j1808-v3()
 }
 
 
+geocache-j1808-v4()
+{
+    local iwd=$PWD
+    local tmp=$(geocache-tmp $FUNCNAME)
+    mkdir -p $tmp && cd $tmp
+
+    type $FUNCNAME
+    opticksdata- 
+
+    gdb --args \
+    OKX4Test --gdmlpath $(opticksdata-jv4) --csgskiplv 22 
+
+    cd $iwd
+}
+
+
+
 
 
 
@@ -326,8 +343,68 @@ geocache-gui()
 {
    local dbg
    [ -n "$DBG" ] && dbg="gdb --args" || dbg=""
-   $dbg OKTest --envkey --target 352851 --eye -1,-1,-1  
+
+   ## NB cvd slots can change between reboots
+   ## for interop to work have to see only the GPU being used for display (TITAN RTX)
+
+   CUDA_VISIBLE_DEVICES=0 OKTest \
+                --envkey \
+                --xanalytic \
+                --timemax 400 \
+                --animtimemax 400 \
+                --target 352851 \
+                --eye -1,-1,-1  
 }
+
+
+geocache-save()
+{
+   local dbg
+   [ -n "$DBG" ] && dbg="gdb --args" || dbg=""
+   CUDA_VISIBLE_DEVICES=1 OKTest \
+                --envkey \
+                --xanalytic \
+                --compute \
+                --save
+}
+
+
+geocache-load()
+{
+   local dbg
+   [ -n "$DBG" ] && dbg="gdb --args" || dbg=""
+
+
+   CUDA_VISIBLE_DEVICES=0 OKTest --envkey \
+                --xanalytic \
+                --timemax 400 \
+                --animtimemax 400 \
+                --load
+}
+
+
+
+
+geocache-gui-notes(){ cat << EON
+
+
+Adding --save option fails even after setting CUDA_VISIBLE_DEVICES=1::
+
+    2019-05-09 15:26:57.701 INFO  [67138] [OpEngine::downloadEvent@149] .
+    2019-05-09 15:26:57.701 INFO  [67138] [OContext::download@587] OContext::download PROCEED for sequence as OPTIX_NON_INTEROP
+    terminate called after throwing an instance of 'optix::Exception'
+      what():  Invalid value (Details: Function "RTresult _rtBufferGetDevicePointer(RTbuffer, int, void**)" caught exception: Cannot get device pointers from non-CUDA interop buffers.)
+    Aborted (core dumped)
+    [blyth@localhost opticks]$ 
+
+
+Adding "--compute" with the "--save" succeeds to save 
+
+
+
+EON
+}
+
 
 
 geocache-bench-()

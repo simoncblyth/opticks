@@ -8,8 +8,12 @@ include(OpticksBuildOptions)
 
 #[=[
 opticks-llp '$ORIGIN/..'
+
+set(CMAKE_INSTALL_RPATH "$ORIGIN/../lib:$ORIGIN/../lib64:$ORIGIN/../externals/lib:$ORIGIN/../externals/lib64:$ORIGIN/../externals/OptiX/lib64")
+ 
+This setting is now done as standard by OpticksBuildOptions.cmake
+
 #]=]
-set(CMAKE_INSTALL_RPATH "$ORIGIN/../lib:$ORIGIN/../lib64:$ORIGIN/../externals/lib:$ORIGIN/../externals/lib64:$ORIGIN/../externals/optix/lib64")
 
 
 set(OptiX_VERBOSE ON)

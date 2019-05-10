@@ -376,23 +376,7 @@ opticks-xcd(){  cd $(opticks-xdir); }
 
 
 
-
-opticks-optix-install-dir(){ echo ${OPTICKS_OPTIX_INSTALL_DIR:-$($FUNCNAME-)} ; }
-opticks-optix-install-dir-(){
-   local t=$NODE_TAG
-   case $t in 
-      E) echo /Developer/OptiX_501 ;;
-      D_400) echo /Developer/OptiX_400 ;;
-      D) echo /Developer/OptiX_380 ;;
-   RYAN) echo /Developer/OptiX_380 ;;
-    GTL) echo ${MYENVTOP}/OptiX ;;
-   H5H2) echo ${MYENVTOP}/OptiX ;;
-      X) echo /usr/local/optix-3.8.0/NVIDIA-OptiX-SDK-3.8.0-linux64 ;;
-   #SDUGPU) echo /root/NVIDIA-OptiX-SDK-4.1.1-linux64 ;;
-   SDUGPU) echo /home/simon/NVIDIA-OptiX-SDK-4.1.1-linux64 ;;
-      *) echo /tmp ;;
-   esac
-} 
+opticks-optix-install-dir(){ echo ${OPTICKS_OPTIX_INSTALL_DIR:-$(opticks-prefix)/externals/OptiX} ; }
 
 
 opticks-compute-capability(){ echo ${OPTICKS_COMPUTE_CAPABILITY:-$($FUNCNAME-)} ; }
@@ -1024,6 +1008,7 @@ opticks-find(){
    find . -name '*.h' -exec grep $opt "$str" {} \;
    find . -name '*.txt' -exec grep $opt "$str" {} \;
    find . -name '*.py' -exec grep $opt "$str" {} \;
+   find . -name '*.cmake' -exec grep $opt "$str" {} \;
 
    #cd $iwd
 }
@@ -1049,6 +1034,7 @@ opticks-f(){
        -name '*.hpp' -or \
        -name '*.h' -or \
        -name '*.txt' -or \
+       -name '*.cmake' -or \
        -name '*.py' \
         \) \
        -exec grep $opt "$str" {} \;
