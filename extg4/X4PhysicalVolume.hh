@@ -53,6 +53,7 @@ a name for the geometry cache.
 **/
 
 struct nmat4triple ; 
+class SDigest ; 
 
 struct X4_API X4Nd 
 {
@@ -65,12 +66,13 @@ class X4_API X4PhysicalVolume : public X4Named
 {
     public:
         static const plog::Severity  LEVEL ; 
+        static const bool            DBG ; 
         static const G4VPhysicalVolume* const Top();
         static GGeo* Convert(const G4VPhysicalVolume* const top);
     public:
         static const char* Key(const G4VPhysicalVolume* const top);
         static std::string Digest( const G4VPhysicalVolume* const top);
-        static std::string Digest( const G4LogicalVolume* const lv, const G4int depth );
+        static void        Digest( const G4LogicalVolume* const lv, const G4int depth, SDigest* dig );
         std::string brief() const ;
     public:
         X4PhysicalVolume(GGeo* ggeo, const G4VPhysicalVolume* const pv); 

@@ -62,6 +62,7 @@ template struct nxform<X4Nd> ;
 
 
 const plog::Severity X4PhysicalVolume::LEVEL = debug ;
+const bool           X4PhysicalVolume::DBG = true ;
 
 
 
@@ -232,6 +233,7 @@ void X4PhysicalVolume::convertSensors_r(const G4VPhysicalVolume* const pv, int d
 
 void X4PhysicalVolume::convertMaterials()
 {
+    OK_PROFILE("_X4PhysicalVolume::convertMaterials");
     LOG(verbose) << "[" ;
 
     size_t num_materials0 = m_mlib->getNumMaterials() ;
@@ -254,6 +256,7 @@ void X4PhysicalVolume::convertMaterials()
     LOG(info)
           << " num_materials " << num_materials
           ; 
+    OK_PROFILE("X4PhysicalVolume::convertMaterials");
 }
 
 void X4PhysicalVolume::convertSurfaces()
@@ -286,9 +289,17 @@ void X4PhysicalVolume::closeSurfaces()
 }
 
 
-std::string X4PhysicalVolume::Digest( const G4LogicalVolume* const lv, const G4int depth )
+/**
+X4PhysicalVolume::Digest
+--------------------------
+
+Looks like not succeeding to spot changes.
+
+**/
+
+
+void X4PhysicalVolume::Digest( const G4LogicalVolume* const lv, const G4int depth, SDigest* dig )
 {
-    SDigest dig ;
 
     for (unsigned i=0; i < unsigned(lv->GetNoDaughters()) ; i++)
     {
@@ -302,7 +313,7 @@ std::string X4PhysicalVolume::Digest( const G4LogicalVolume* const lv, const G4i
            invrot = rot.inverse();
         }
 
-        std::string d_dig = Digest(d_pv->GetLogicalVolume(),depth+1);
+        Digest(d_pv->GetLogicalVolume(),depth+1, dig);
 
         // postorder visit region is here after the recursive call
 
@@ -310,8 +321,7 @@ std::string X4PhysicalVolume::Digest( const G4LogicalVolume* const lv, const G4i
 
         std::string p_dig = X4Transform3D::Digest(P) ; 
     
-        dig.update( const_cast<char*>(d_dig.data()), d_dig.size() );  
-        dig.update( const_cast<char*>(p_dig.data()), p_dig.size() );  
+        dig->update( const_cast<char*>(p_dig.data()), p_dig.size() );  
     }
 
     // Avoid pointless repetition of full material digests for every 
@@ -322,20 +332,18 @@ std::string X4PhysicalVolume::Digest( const G4LogicalVolume* const lv, const G4i
 
     G4Material* material = lv->GetMaterial();
     const G4String& name = material->GetName();    
-    dig.update( const_cast<char*>(name.data()), name.size() );  
+    dig->update( const_cast<char*>(name.data()), name.size() );  
 
-    return dig.finalize();
 }
 
 
 std::string X4PhysicalVolume::Digest( const G4VPhysicalVolume* const top)
 {
+    SDigest dig ;
     const G4LogicalVolume* lv = top->GetLogicalVolume() ;
-    std::string tree = Digest(lv, 0 ); 
+    Digest(lv, 0, &dig ); 
     std::string mats = X4Material::Digest(); 
 
-    SDigest dig ;
-    dig.update( const_cast<char*>(tree.data()), tree.size() );  
     dig.update( const_cast<char*>(mats.data()), mats.size() );  
     return dig.finalize();
 }
@@ -412,6 +420,7 @@ Done this way to have consistent lvIdx soIdx indexing with GDML ?
 
 void X4PhysicalVolume::convertSolids()
 {
+    OK_PROFILE("_X4PhysicalVolume::convertSolids");
     LOG(info) << "[" ; 
 
     const G4VPhysicalVolume* pv = m_top ; 
@@ -423,6 +432,7 @@ void X4PhysicalVolume::convertSolids()
 
     dumpTorusLV();
     LOG(info) << "]" ;
+    OK_PROFILE("X4PhysicalVolume::convertSolids");
 
 }
 
@@ -627,6 +637,7 @@ used.
 
 void X4PhysicalVolume::convertStructure()
 {
+    OK_PROFILE("_X4PhysicalVolume::convertStructure");
     LOG(info) << "[" ; 
     assert(m_top) ;
 
@@ -647,6 +658,7 @@ void X4PhysicalVolume::convertStructure()
     X4Transform3D::SaveBuffer("$TMP/X4Transform3D.npy"); 
 
     LOG(info) << "]" ;
+    OK_PROFILE("X4PhysicalVolume::convertStructure");
 }
 
 

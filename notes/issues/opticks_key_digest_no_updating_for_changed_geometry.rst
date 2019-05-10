@@ -9,6 +9,14 @@ Context
 
 
 
+Fix Attempt
+---------------
+
+Get the SDigest pointer passed along recursive heirarchy in
+the hope of making it a full tree digest.
+
+
+
 Issue : removed torus but still same digest
 -----------------------------------------------
 
