@@ -2,7 +2,6 @@ geocache-j1808-v3-bad-alloc-late-on
 ====================================
 
 
-
 Workaround : copy over from workstation
 ------------------------------------------
 
@@ -10,6 +9,21 @@ Workaround : copy over from workstation
 
     [blyth@localhost~ ]$ geocache-cd
     [blyth@localhost geocache]$ scp -r OKX4Test_lWorld0x4bc2710_PV_g4live L7:g/local/opticks/geocache/
+
+
+:google:`linux profile virtual memory from within process`
+--------------------------------------------------------------
+
+* https://stackoverflow.com/search?q=reading+%2Fproc%2Fself%2Fstatus+
+
+Reading /proc/self/status
+
+* https://github.com/TysonRayJones/CTools/blob/master/memory/memorymeasure.c 
+
+See:
+
+* sysrap/SProc.cc 
+* sysrap/tests/SProcTest.cc 
 
 
 

@@ -95,51 +95,60 @@ int main(int argc, char** argv)
     const char* argforce = "--tracer --nogeocache --xanalytic" ;
     // --nogeoache to prevent GGeo booting from cache 
 
-    Opticks* ok2 = new Opticks(argc, argv, argforce);  // Opticks instanciation must be after Opticks::SetKey
-    ok2->configure();
+    Opticks* ok = new Opticks(argc, argv, argforce);  // Opticks instanciation must be after Opticks::SetKey
+    ok->configure();
 
-    GGeo* gg2 = new GGeo(ok2) ;
-    assert(gg2->getMaterialLib());
+    ok->profile("OKX4Test.GGeo.INI"); 
 
-    LOG(info) << " gg2 " << gg2 
-              << " gg2.mlib " << gg2->getMaterialLib()
+    GGeo* gg = new GGeo(ok) ;
+    assert(gg->getMaterialLib());
+
+    LOG(info) << " gg " << gg 
+              << " gg.mlib " << gg->getMaterialLib()
               ;
 
+    ok->profile("_OKX4Test.X4PhysicalVolume"); 
 
-    X4PhysicalVolume xtop(gg2, top) ;    // populates gg2 
+    X4PhysicalVolume xtop(gg, top) ;    // populates gg
 
+    ok->profile("OKX4Test.X4PhysicalVolume"); 
 
     bool save_gltf = false ; 
     if(save_gltf)
     {
         int root = SSys::getenvint( "GLTF_ROOT", 3147 ); 
-        const char* gltfpath = ok2->getGLTFPath(); 
-        GGeoGLTF::Save(gg2, gltfpath, root ); 
+        const char* gltfpath = ok->getGLTFPath(); 
+        ok->profile("_OKX4Test.GGeoGLTF"); 
+        GGeoGLTF::Save(gg, gltfpath, root ); 
+        ok->profile("OKX4Test.GGeoGLTF"); 
     }
 
 
-    gg2->prepare();   // merging meshes, closing libs
+    gg->prepare();   // merging meshes, closing libs
 
    // not OKG4Mgr as no need for CG4 
 
-    OKMgr mgr(argc, argv);  // OpticksHub inside here picks up the gg2 (last GGeo instanciated) via GGeo::GetInstance 
+    ok->profile("_OKX4Test.OKMgr"); 
+    OKMgr mgr(argc, argv);  // OpticksHub inside here picks up the gg (last GGeo instanciated) via GGeo::GetInstance 
+    ok->profile("OKX4Test.OKMgr"); 
     //mgr.propagate();
     mgr.visualize();   
 
-    assert( GGeo::GetInstance() == gg2 );
-    gg2->reportMeshUsage();
-    gg2->save();
+    assert( GGeo::GetInstance() == gg );
+    gg->reportMeshUsage();
+    gg->save();
 
     Opticks* oki = Opticks::GetInstance() ; 
+    ok->saveProfile();
 
-    assert( oki == ok2 ) ; 
+    assert( oki == ok ) ; 
 
     std::cout << " oki " << oki
-              << " ok2 " << ok2 
+              << " ok " << ok 
               << std::endl ; 
 
     LOG(info) << " oki.idpath " << oki->getIdPath() ; 
-    LOG(info) << " ok2.idpath " << ok2->getIdPath() ; 
+    LOG(info) << " ok.idpath " << ok->getIdPath() ; 
 
  
 
