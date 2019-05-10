@@ -63,7 +63,9 @@ set(BUILD_SHARED_LIBS ON)
 # users then only need to set PATH and the executables are able to find the libs relative to themselves  
 # see notes/issues/packaging-opticks-and-externals-for-use-on-gpu-cluster.rst 
 #
-set(CMAKE_INSTALL_RPATH "$ORIGIN/../lib:$ORIGIN/../lib64:$ORIGIN/../externals/lib:$ORIGIN/../externals/lib64:$ORIGIN/../externals/optix/lib64")
+# to check the RPATH of a library or executable use chrpath on it, eg: chrpath $(which OKTest) 
+#
+set(CMAKE_INSTALL_RPATH "$ORIGIN/../lib:$ORIGIN/../lib64:$ORIGIN/../externals/lib:$ORIGIN/../externals/lib64:$ORIGIN/../externals/OptiX/lib64")
 
 include(OpticksCXXFlags)   
 
