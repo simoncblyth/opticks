@@ -25,6 +25,7 @@ OpticksCfg<Listener>::OpticksCfg(const char* name, Listener* listener, bool live
        : 
        BCfg(name, live),
        m_listener(listener),
+       m_cvd(""),
        m_size(""),
        m_position(""),
        m_dbgcsgpath(""),
@@ -937,8 +938,13 @@ void OpticksCfg<Listener>::init()
 
 
 
-
    ///////////////
+
+   m_desc.add_options()
+       ("cvd",  boost::program_options::value<std::string>(&m_cvd),
+            "String CUDA_VISIBLE_DEVICES to be set as an envvar internally within Opticks resource setup."
+            "Useful when using an external envvar is inconvenient, such as when using gdb ");
+
 
    m_desc.add_options()
        ("size",  boost::program_options::value<std::string>(&m_size),
@@ -1109,6 +1115,15 @@ const std::string& OpticksCfg<Listener>::getLogName()
 {
     return m_logname ;
 }
+
+template <class Listener>
+const std::string& OpticksCfg<Listener>::getCVD()
+{
+    return m_cvd ;
+}
+
+
+
 
 template <class Listener>
 const std::string& OpticksCfg<Listener>::getSize()

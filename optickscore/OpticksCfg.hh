@@ -13,6 +13,7 @@ class OKCORE_API OpticksCfg : public BCfg {
      void dump(const char* msg="OpticksCfg::dump");
 
 
+     const std::string& getCVD();
      const std::string& getSize();
      const std::string& getPosition();
      const std::string& getDbgCSGPath();
@@ -133,6 +134,7 @@ private:
      void init();
 private:
      Listener*   m_listener ; 
+     std::string m_cvd ;
      std::string m_size ;
      std::string m_position ;
      std::string m_dbgcsgpath ;

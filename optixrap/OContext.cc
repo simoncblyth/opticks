@@ -1,6 +1,7 @@
 #include <iomanip>
 #include <sstream>
 #include <cstring>
+#include <vector>
 
 #include <cuda.h>
 #include <cuda_runtime_api.h>
@@ -8,6 +9,7 @@
 // sysrap-
 #include "S_freopen_redirect.hh"
 #include "SSys.hh"
+#include "SStr.hh"
 
 // brap-
 #include "BStr.hh"
@@ -102,10 +104,90 @@ Opticks* OContext::getOpticks() const
     return m_ok ; 
 }
 
+
+
+struct Device
+{
+   int index ; 
+   char name[256] ;  
+   int computeCaps[2];
+   RTsize total_mem;
+
+   Device(unsigned index_)
+      :
+      index(index_)
+   {
+        RT_CHECK_ERROR(rtDeviceGetAttribute(index, RT_DEVICE_ATTRIBUTE_NAME, sizeof(name), name));
+        RT_CHECK_ERROR(rtDeviceGetAttribute(index, RT_DEVICE_ATTRIBUTE_COMPUTE_CAPABILITY, sizeof(computeCaps), &computeCaps));
+        RT_CHECK_ERROR(rtDeviceGetAttribute(index, RT_DEVICE_ATTRIBUTE_TOTAL_MEMORY, sizeof(total_mem), &total_mem));
+   } 
+
+   std::string desc() const 
+   {
+       std::stringstream ss ;  
+       ss <<  "Device " << index << " " << std::setw(30) << name 
+          <<  " Compute Support: " << computeCaps[0] << " " << computeCaps[1] 
+          <<  " Total Memory: " <<  (unsigned long long)total_mem
+          ;
+       return ss.str();
+   }   
+};
+
+
+struct VisibleDevices 
+{
+    unsigned num_devices;
+    unsigned version;
+    std::vector<Device> devices ; 
+
+    VisibleDevices()
+    {
+        RT_CHECK_ERROR(rtDeviceGetDeviceCount(&num_devices));
+        RT_CHECK_ERROR(rtGetVersion(&version));
+        for(unsigned i = 0; i < num_devices; ++i) 
+        {
+            Device d(i); 
+            devices.push_back(d);     
+        }  
+    }
+
+    std::string desc() const 
+    {
+       std::stringstream ss ;  
+       for(unsigned i = 0; i < num_devices; ++i) ss << devices[i].desc() << std::endl ; 
+       return ss.str();
+    }
+};
+
+
+void OContext::CheckDevices()
+{
+    VisibleDevices vdev ; 
+    LOG(info) << vdev.desc(); 
+
+    const char* frame_renderer = Opticks::Instance()->getFrameRenderer();
+    if( frame_renderer != NULL)
+    {
+        assert( vdev.num_devices == 1 && "expecting only a single visible device, the one driving the display, in interop mode") ; 
+        const char* optix_device = vdev.devices[0].name ;
+        LOG(info) << " frame_renderer " << frame_renderer ; 
+        LOG(info) << " optix_device " << optix_device  ; 
+        bool interop_device_match = SStr::Contains( frame_renderer, optix_device )  ; 
+        assert( interop_device_match && "OpenGL and OptiX must be taking to the same single device in interop mode"  ); 
+    }
+    else
+    {
+        LOG(info) << " NULL frame_renderer : compute mode ? " ;  
+    }
+}
+
+
+
 OContext* OContext::Create(Opticks* ok, const char* cmake_target)
 {
     int rtxmode = ok->getRTX();
     InitRTX( rtxmode ); 
+    CheckDevices();
 
     LOG(verbose) << "optix::Context::create() START " ; 
     optix::Context context = optix::Context::create();
@@ -115,6 +197,13 @@ OContext* OContext::Create(Opticks* ok, const char* cmake_target)
 
     return ocontext ; 
 }
+
+
+
+
+
+
+
 
 
 void OContext::InitRTX(int rtxmode)  // static

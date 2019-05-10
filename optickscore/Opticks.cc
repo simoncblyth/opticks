@@ -216,6 +216,10 @@ bool Opticks::HasKey()
     return fInstance->hasKey() ; 
 }
 
+Opticks* Opticks::Instance()
+{
+    return fInstance ;  
+}
 Opticks* Opticks::GetInstance()
 {
      if(fInstance == NULL )
@@ -276,7 +280,8 @@ Opticks::Opticks(int argc, char** argv, const char* argforced )
     m_rcmsg(NULL),
     m_tagoffset(0),
     m_verbosity(0),
-    m_internal(false)
+    m_internal(false),
+    m_frame_renderer(NULL)
 {
     OK_PROFILE("Opticks::Opticks");
 
@@ -305,6 +310,22 @@ void Opticks::setInternal(bool internal)
 {
     m_internal = internal ; 
 }
+
+void  Opticks::SetFrameRenderer(const char* renderer)  // static 
+{ 
+    assert(fInstance) ; 
+    fInstance->setFrameRenderer(renderer) ;  
+}
+void Opticks::setFrameRenderer(const char* renderer)  
+{
+    m_frame_renderer = strdup(renderer) ; 
+}
+const char* Opticks::getFrameRenderer() const
+{
+    return m_frame_renderer ; 
+}
+
+
 
 
 
@@ -497,8 +518,7 @@ void Opticks::init()
 
     m_parameters = new BParameters ;  
     m_parameters->addEnvvar("CUDA_VISIBLE_DEVICES");
-    m_parameters->addEnvvar("OPTICKS_RTX");
-    m_parameters->addEnvvar("OPTICKS_KEY");
+    if(m_envkey) m_parameters->addEnvvar("OPTICKS_KEY");  // only revelant when are use --envkey to switch on sensitivity to the envvar
     m_parameters->add<std::string>("CMDLINE", PLOG::instance->cmdline() ); 
 
 
@@ -1432,6 +1452,17 @@ void Opticks::configure()
     checkOptionValidity();
 
 
+    const std::string& cvd = m_cfg->getCVD();
+    if(!cvd.empty())
+    { 
+        const char* ek = "CUDA_VISIBLE_DEVICES" ; 
+        LOG(info) << " setting " << ek << " envvar internally to " << cvd ; 
+        SSys::setenvvar(ek, cvd.c_str(), true ); 
+    }
+
+
+
+
     initResource();   // <-- RECENT ATTEMPT TO MOVE OpticksResource setup after commandline parsing done
 
 
@@ -2319,6 +2350,7 @@ const char*     Opticks::getInstallPrefix() { return m_resource ? m_resource->ge
 bool             Opticks::SetKey(const char* spec) { return BOpticksKey::SetKey(spec) ; }
 BOpticksKey*     Opticks::GetKey() {                 return BOpticksKey::GetKey() ; }
 BOpticksKey*     Opticks::getKey() const {           return m_resource->getKey() ; }
+const char*      Opticks::getKeySpec() const {       BOpticksKey* key = getKey(); return key ? key->getSpec() : "no-key-spec" ; }
 
 const char*     Opticks::getSrcGDMLPath() const {  return m_resource ? m_resource->getSrcGDMLPath() : NULL ; }
 const char*     Opticks::getGDMLPath()    const {  return m_resource ? m_resource->getGDMLPath() : NULL ; }

@@ -33,6 +33,8 @@
 #include "Frame.hh"
 #include "Interactor.hh"
 #include "Composition.hh"
+#include "Opticks.hh"
+
 #include "Scene.hh"
 
 #include "Pix.hh"
@@ -355,6 +357,9 @@ void Frame::initContext()
     G::ErrCheck("Frame::initContext.8", true); 
     LOG(error) << "Frame::gl_init_window Renderer: " << renderer ;
     LOG(error) << "Frame::gl_init_window OpenGL version supported " <<  version ;
+
+    Opticks::SetFrameRenderer((const char*)renderer);
+
 
     int width, height;
     glfwGetFramebufferSize(m_window, &width, &height);

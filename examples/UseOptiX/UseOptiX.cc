@@ -1,5 +1,6 @@
+#include <cstring>
+#include <cstdlib>
 #include <string>
-//#include <optix.h>
 #include <optix_world.h>
 
 // from SDK/sutil/sutil.h
@@ -24,19 +25,36 @@ struct APIError
 
 
 
-int main()
+int main(int argc, char** argv)
 {
+
+    bool ctx(false); 
+
+    char buf[256] ; 
+    for(int i=1 ; i < argc ; i++)
+    {
+        if(i < argc - 1 && strcmp(argv[i], "--cvd") == 0) 
+        {
+            snprintf(buf, 256, "CUDA_VISIBLE_DEVICES=%s", argv[i+1]) ; 
+            printf("setting envvar internally : %s\n", buf );
+            putenv(buf);  
+        }
+        else if( i < argc && strcmp(argv[i], "--ctx" ) == 0)
+        {
+            ctx = true ;    
+        } 
+    }
 
     // extracts from /Developer/OptiX/SDK/optixDeviceQuery/optixDeviceQuery.cpp
 
     unsigned num_devices;
     unsigned version;
 
+
     RT_CHECK_ERROR(rtDeviceGetDeviceCount(&num_devices));
     RT_CHECK_ERROR(rtGetVersion(&version));
 
-    printf("OptiX %d.%d.%d\n", version / 10000, (version % 10000) / 100, version % 100); // major.minor.micro
-    printf("Number of Devices = %d\n\n", num_devices);
+    printf("OptiX version %d major.minor.micro %d.%d.%d   Number of devices = %d \n\n", version, version / 10000, (version % 10000) / 100, version % 100, num_devices ); // major.minor.micro
 
     for(unsigned i = 0; i < num_devices; ++i) 
     {
@@ -45,15 +63,17 @@ int main()
             RTsize total_mem;
 
             RT_CHECK_ERROR(rtDeviceGetAttribute(i, RT_DEVICE_ATTRIBUTE_NAME, sizeof(name), name));
-            printf("Device %d: %s\n", i, name);
-
             RT_CHECK_ERROR(rtDeviceGetAttribute(i, RT_DEVICE_ATTRIBUTE_COMPUTE_CAPABILITY, sizeof(computeCaps), &computeCaps));
-            printf("  Compute Support: %d %d\n", computeCaps[0], computeCaps[1]);
-
             RT_CHECK_ERROR(rtDeviceGetAttribute(i, RT_DEVICE_ATTRIBUTE_TOTAL_MEMORY, sizeof(total_mem), &total_mem));
-            printf("  Total Memory: %llu bytes\n", (unsigned long long)total_mem);
+
+            printf(" Device %d: %30s ", i, name);
+            printf(" Compute Support: %d %d ", computeCaps[0], computeCaps[1]);
+            printf(" Total Memory: %llu bytes \n", (unsigned long long)total_mem);
     } 
 
+
+
+    if(!ctx) return 0 ; 
 
     RTcontext context = 0;
 
@@ -63,7 +83,8 @@ int main()
 
     int width = 1024u ; 
     int height = 768u ; 
-
+   
+    std::cout << std::endl << std::endl ; 
     std::cout << "( creating context " << std::endl ; 
     RT_CHECK_ERROR( rtContextCreate( &context ) );
     std::cout << ") creating context " << std::endl ; 

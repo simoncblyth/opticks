@@ -86,11 +86,11 @@ int main(int argc, char** argv)
     LOG(info) << "///////////////////////////////// " ; 
 
 
-    const char* key = X4PhysicalVolume::Key(top) ; 
+    const char* spec = X4PhysicalVolume::Key(top) ; 
 
-    Opticks::SetKey(key);
+    Opticks::SetKey(spec);
 
-    LOG(error) << " SetKey " << key  ;   
+    LOG(error) << " SetKey " << spec  ;   
 
     const char* argforce = "--tracer --nogeocache --xanalytic" ;
     // --nogeoache to prevent GGeo booting from cache 
@@ -144,14 +144,11 @@ int main(int argc, char** argv)
 
     assert( oki == ok ) ; 
 
-    std::cout << " oki " << oki
-              << " ok " << ok 
-              << std::endl ; 
-
-    LOG(info) << " oki.idpath " << oki->getIdPath() ; 
-    LOG(info) << " ok.idpath " << ok->getIdPath() ; 
-
- 
+    LOG(info) << " ok.idpath  " << ok->getIdPath() ; 
+    LOG(info) << " ok.keyspec " << ok->getKeySpec() ; 
+    LOG(info) << " To reuse this geometry: " ; 
+    LOG(info) << "   1. set envvar OPTICKS_KEY=" << ok->getKeySpec() ;  
+    LOG(info) << "   2. enable envvar sensitivity with --envkey argument to Opticks executables " ; 
 
     return mgr.rc() ;
 

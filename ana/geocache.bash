@@ -346,8 +346,13 @@ geocache-gui()
 
    ## NB cvd slots can change between reboots
    ## for interop to work have to see only the GPU being used for display (TITAN RTX)
+   ## BUT beware nvidia-smi and UseOptiX sometimes disagree on the slots : its UseOptiX that matters
 
-   CUDA_VISIBLE_DEVICES=0 OKTest \
+   local cvd=1
+   UseOptiX --cvd $cvd 
+
+   $dbg OKTest \
+                --cvd $cvd \
                 --envkey \
                 --xanalytic \
                 --timemax 400 \
@@ -361,25 +366,30 @@ geocache-save()
 {
    local dbg
    [ -n "$DBG" ] && dbg="gdb --args" || dbg=""
-   CUDA_VISIBLE_DEVICES=1 OKTest \
-                --envkey \
-                --xanalytic \
-                --compute \
-                --save
+   $dbg OKTest \
+       --cvd 0,1 \
+       --envkey \
+       --xanalytic \
+       --compute \
+       --save
 }
-
 
 geocache-load()
 {
    local dbg
    [ -n "$DBG" ] && dbg="gdb --args" || dbg=""
 
+   local cvd=1
+   UseOptiX --cvd $cvd 
 
-   CUDA_VISIBLE_DEVICES=0 OKTest --envkey \
-                --xanalytic \
-                --timemax 400 \
-                --animtimemax 400 \
-                --load
+   $dbg OKTest \
+        --cvd $cvd \
+        --rtx 0 \
+        --envkey \
+        --xanalytic \
+        --timemax 400 \
+        --animtimemax 400 \
+        --load
 }
 
 

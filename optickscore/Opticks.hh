@@ -112,10 +112,12 @@ class OKCORE_API Opticks {
        static BOpticksKey* GetKey();
        static bool         SetKey(const char* keyspec);
        BOpticksKey*        getKey() const ;  // non-static : the key actually in use, usually the same as GetKey()
+       const char*         getKeySpec() const ; 
    private:
        static Opticks*     fInstance ;  
    public:
-       static Opticks* GetInstance();
+       static Opticks* Instance();
+       static Opticks* GetInstance();  // creates if not existing 
        static bool     HasInstance();
        static bool     HasKey();
    public:
@@ -489,6 +491,11 @@ class OKCORE_API Opticks {
    public:
        bool isInternal() const ; 
        bool isDumpEnv() const ; 
+   public:
+       // set by OGLRap.Frame 
+       static void SetFrameRenderer(const char* renderer); 
+       void setFrameRenderer(const char* renderer); 
+       const char* getFrameRenderer() const ; 
    private:
        void setInternal(bool internal=true); 
    public:
@@ -564,6 +571,8 @@ class OKCORE_API Opticks {
        glm::uvec4           m_position ; 
        unsigned             m_verbosity ; 
        bool                 m_internal ; 
+       const char*          m_frame_renderer ; 
+     
 
 };
 

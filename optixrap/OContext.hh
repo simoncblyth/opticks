@@ -67,6 +67,7 @@ class OXRAP_API OContext {
      public:
             static OContext* Create(Opticks* ok, const char* cmake_target="OptiXRap") ; 
             static void InitRTX(int rtxmode);
+            static void CheckDevices();
             ~OContext();
      private:
             OContext(optix::Context context, Opticks* ok, const char* cmake_target);

@@ -76,6 +76,27 @@ EOI
 
 opticks-pretty(){  cat ${1:-some.json} | python -m json.tool ; }
 
+opticks-key2idpath(){ local dir=$(OpticksIDPATH --envkey --fatal 2>&1) ; echo $dir ; } 
+opticks-kcd(){  local dir=$(opticks-key2idpath) && cd $dir && pwd && echo OPTICKS_KEY=$OPTICKS_KEY ; }
+
+opticks-key2idpath-notes(){ cat << EON
+
+[blyth@localhost opticks]$ OPTICKS_KEY=OKX4Test.X4PhysicalVolume.lWorld0x4bc2710_PV.699463ea0065185a7ffaf10d4935fc61 opticks-key2idpath
+/home/blyth/local/opticks/geocache/OKX4Test_lWorld0x4bc2710_PV_g4live/g4ok_gltf/699463ea0065185a7ffaf10d4935fc61/1
+[blyth@localhost opticks]$ l /home/blyth/local/opticks/geocache/OKX4Test_lWorld0x4bc2710_PV_g4live/g4ok_gltf/699463ea0065185a7ffaf10d4935fc61/1/
+total 8
+-rw-rw-r--.  1 blyth blyth  177 May 10 16:13 cachemeta.json
+drwxrwxr-x. 42 blyth blyth 4096 May 10 16:13 GMeshLib
+drwxrwxr-x.  8 blyth blyth   60 May 10 16:13 GParts
+drwxrwxr-x.  8 blyth blyth   60 May 10 16:13 GMergedMesh
+drwxrwxr-x.  2 blyth blyth   30 May 10 15:34 GBndLib
+
+EON
+}
+
+
+
+
 opticks-idfold(){ echo $(dirname $IDPATH) ; }
 opticks-srcpath(){ echo $(opticks-idpath2srcpath $IDPATH) ; }
 opticks-srcfold(){ echo $(dirname $(opticks-srcpath)) ; }
@@ -88,6 +109,8 @@ opticks-paths(){ cat << EON
 
 $FUNCNAME
 ===============================
+
+NB THIS IS THE DEPRECATED OLD WAY OF DOING THINGS
 
 The srcpath if obtained from the IDPATH envvar using 
 opticks-idpath2srcpath  which is the bash equivalant 
