@@ -203,8 +203,9 @@ EOU
 
 optix-export(){  echo -n ; }
 
-optix-install-dir(){  echo $OPTICKS_OPTIX_INSTALL_DIR ; }
-optix-name(){ echo $(basename $(optix-install-dir)) ; } 
+#optix-install-dir(){  echo $OPTICKS_OPTIX_INSTALL_DIR ; }
+optix-install-dir(){  echo $(opticks-prefix)/externals/OptiX  ; }
+optix-name(){ echo $(readlink $(optix-install-dir)) ; } 
 optix-vers(){ local name=$(optix-name) ; echo ${name/OptiX_} ; }
 optix-version(){ local vers=$(optix-vers) ; echo ${vers:0:1}.${vers:1:1}.${vers:2:1} ; }  ## assumes vers like 510 or 600 
 
@@ -386,44 +387,90 @@ EON
 
 
 
-optix-runfile-vers(){ echo 600 ; }
+optix-runfile-vers(){ echo ${OPTIX_RUNFILE_VERS:-600}  ; }
 optix-runfile()
 {
     case $(optix-runfile-vers) in
+       510) echo NVIDIA-OptiX-SDK-5.1.0-linux64_24109458.sh ;;
+       511) echo NVIDIA-OptiX-SDK-5.1.1-linux64-25109142.sh ;;
        600) echo NVIDIA-OptiX-SDK-6.0.0-linux64-25650775.sh ;;
     esac
 }
 
 optix-runfile-prefix-abs(){ echo $LOCAL_BASE/opticks/externals/OptiX_$(optix-runfile-vers) ; }
-optix-runfile-prefix(){     echo $LOCAL_BASE/opticks/externals/optix ; }
+optix-runfile-prefix(){     echo $LOCAL_BASE/opticks/externals/OptiX ; }
 optix-runfile-install()
 {
-    local msg="=== $FUNCNAME : "
+    local msg="=== $FUNCNAME :"
     local iwd=$PWD
 
-    cd $LOCAL_BASE
     local runfile=$(optix-runfile)
-    [ -f "$runfile" ] && echo NO runfile $runfile in $PWD && return 
+    [ ! -f "$runfile" ] && echo NO runfile $runfile in $PWD && return 
 
     local prefix=$(optix-runfile-prefix-abs)
-    mkdir -p $prefix
-
     local name=$(basename $prefix)
 
     if [ -d "$prefix"  ]; then
-        echo $msg already installed to $prefix  
+        echo $msg name $name already installed to prefix $prefix  
     else
-        echo $msg need to say yes then no to the installer
+        echo $msg runfile $runfile 
+        echo $msg name $name
+        echo $msg prefix $prefix
+        echo $msg Install using runfile ? 
         local ans  
-        read -p "SPACE to continue " ans
+        read -p "$msg You will need to enter \"y\" to accept the licence and then \"n\" to not include subdirectory name to the runfile installer. Press ENTER to proceed. " ans
+        [ "$ans" != "" ] && echo abort && return
+
+        mkdir -p $prefix
         sh $runfile --prefix=$prefix
-        cd $(dirname $prefix)
-        ln -s $name optix
+
+        optix-runfile-link 
     fi
 
     cd $iwd
 }
-opticks-runfile-info(){ cat << EOI
+
+optix-runfile-link()
+{
+    local iwd=$PWD
+    local absprefix=$(optix-runfile-prefix-abs)
+    local absname=$(basename $absprefix)
+
+    local stdprefix=$(optix-runfile-prefix)
+    local stdname=$(basename $stdprefix)
+
+
+    cd $(dirname $absprefix)
+    [ ! -d $absname ] && echo $msg ERR no directory $absname && return 
+
+    ln -svfn $absname $stdname
+
+    cd $iwd
+}
+
+
+
+
+optix-runfile-install-notes(){ cat << EON
+$FUNCNAME
+=============================
+
+optix-runfile-install
+    run this from the directory in which you keep the runfile installers
+    to install the OptiX SDK into a directory named after the version, such as
+    $LOCAL_BASE/opticks/externals/OptiX_600
+
+optix-runfile-link
+    changes the symbolic link indicating which of the installed OptiX SDKs to use
+
+    #OPTIX_RUNFILE_VERS=511 optix-runfile-link 
+    OPTIX_RUNFILE_VERS=600 optix-runfile-link 
+
+EON
+}
+
+
+optix-runfile-info(){ cat << EOI
 $FUNCNAME
 ========================
 
@@ -432,6 +479,7 @@ $FUNCNAME
    optix-runfile-prefix      : $(optix-runfile-prefix)
    optix-runfile-prefix-abs  : $(optix-runfile-prefix-abs)
 
+   OPTIX_RUNFILE_VERS        : $OPTIX_RUNFILE_VERS 
    OPTICKS_OPTIX_INSTALL_DIR : $OPTICKS_OPTIX_INSTALL_DIR
 
    export OPTICKS_OPTIX_INSTALL_DIR=\$LOCAL_BASE/opticks/externals/optix
