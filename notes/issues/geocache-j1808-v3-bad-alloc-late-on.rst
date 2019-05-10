@@ -27,6 +27,60 @@ See:
 
 
 
+
+Profiling : convertStructure 3GB, OKMgr 14G 
+-----------------------------------------------
+
+::
+
+    [blyth@localhost torch]$ cat VM.ini
+    OpticksRun::OpticksRun_1166210908=0
+    Opticks::Opticks_0=0
+    _OKX4Test:GGeo_0=103.7239990234375
+    OKX4Test:GGeo_0=103.7239990234375
+    _OKX4Test:X4PhysicalVolume_0=103.7239990234375
+    _X4PhysicalVolume::convertMaterials_0=103.7239990234375
+    X4PhysicalVolume::convertMaterials_0=103.98797607421875
+    _X4PhysicalVolume::convertSolids_0=104.2559814453125
+    X4PhysicalVolume::convertSolids_0=108.1400146484375
+    _X4PhysicalVolume::convertStructure_0=108.1400146484375
+    X4PhysicalVolume::convertStructure_0=3270.152099609375
+    OKX4Test:X4PhysicalVolume_0=3270.152099609375
+    _OKX4Test:OKMgr_0=5525.77587890625
+    OKX4Test:OKMgr_0=19514.85546875
+
+    [blyth@localhost torch]$ cat DeltaVM.ini
+    OpticksRun::OpticksRun_1166210908=484.04400634765625
+    Opticks::Opticks_0=0
+    _OKX4Test:GGeo_0=103.7239990234375
+    OKX4Test:GGeo_0=0
+    _OKX4Test:X4PhysicalVolume_0=0
+    _X4PhysicalVolume::convertMaterials_0=0
+    X4PhysicalVolume::convertMaterials_0=0.26397705078125
+    _X4PhysicalVolume::convertSolids_0=0.26800537109375
+    X4PhysicalVolume::convertSolids_0=3.884033203125
+    _X4PhysicalVolume::convertStructure_0=0
+    X4PhysicalVolume::convertStructure_0=3162.011962890625
+    OKX4Test:X4PhysicalVolume_0=0
+    _OKX4Test:OKMgr_0=2255.623779296875
+    OKX4Test:OKMgr_0=13989.080078125
+
+    [blyth@localhost torch]$ pwd
+    /home/blyth/local/opticks/geocache/OKX4Test_lWorld0x4bc2710_PV_g4live/g4ok_gltf/699463ea0065185a7ffaf10d4935fc61/1/source/evt/g4live/torch
+
+    [blyth@localhost torch]$ l
+    total 20
+    -rw-rw-r--. 1 blyth blyth 547 May 10 16:13 DeltaVM.ini
+    -rw-rw-r--. 1 blyth blyth 304 May 10 16:13 Opticks.npy
+    -rw-rw-r--. 1 blyth blyth 614 May 10 16:13 VM.ini
+    -rw-rw-r--. 1 blyth blyth 512 May 10 16:13 DeltaTime.ini
+    -rw-rw-r--. 1 blyth blyth 533 May 10 16:13 Time.ini
+    [blyth@localhost torch]$ 
+
+
+
+
+
 Issue : geocache creation runs of of memory on lxslc L7
 ----------------------------------------------------------
 

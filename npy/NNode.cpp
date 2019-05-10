@@ -1434,7 +1434,7 @@ void nnode::Set_parent_links_r(nnode* node, nnode* parent) // static
 {
     if(node->parent == NULL && parent != NULL)
     {
-        LOG(error) << " change parent link from NULL for  " << ( node->label ? node->label : "-")  ; 
+        LOG(verbose) << " change parent link from NULL for  " << ( node->label ? node->label : "-")  ; 
         node->parent = parent ; 
     }
     else if( node->parent == parent )

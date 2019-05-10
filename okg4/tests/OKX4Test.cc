@@ -98,29 +98,30 @@ int main(int argc, char** argv)
     Opticks* ok = new Opticks(argc, argv, argforce);  // Opticks instanciation must be after Opticks::SetKey
     ok->configure();
 
-    ok->profile("OKX4Test.GGeo.INI"); 
+    ok->profile("_OKX4Test:GGeo"); 
 
     GGeo* gg = new GGeo(ok) ;
     assert(gg->getMaterialLib());
 
+    ok->profile("OKX4Test:GGeo"); 
     LOG(info) << " gg " << gg 
               << " gg.mlib " << gg->getMaterialLib()
               ;
 
-    ok->profile("_OKX4Test.X4PhysicalVolume"); 
+    ok->profile("_OKX4Test:X4PhysicalVolume"); 
 
     X4PhysicalVolume xtop(gg, top) ;    // populates gg
 
-    ok->profile("OKX4Test.X4PhysicalVolume"); 
+    ok->profile("OKX4Test:X4PhysicalVolume"); 
 
     bool save_gltf = false ; 
     if(save_gltf)
     {
         int root = SSys::getenvint( "GLTF_ROOT", 3147 ); 
         const char* gltfpath = ok->getGLTFPath(); 
-        ok->profile("_OKX4Test.GGeoGLTF"); 
+        ok->profile("_OKX4Test:GGeoGLTF"); 
         GGeoGLTF::Save(gg, gltfpath, root ); 
-        ok->profile("OKX4Test.GGeoGLTF"); 
+        ok->profile("OKX4Test:GGeoGLTF"); 
     }
 
 
@@ -128,9 +129,9 @@ int main(int argc, char** argv)
 
    // not OKG4Mgr as no need for CG4 
 
-    ok->profile("_OKX4Test.OKMgr"); 
+    ok->profile("_OKX4Test:OKMgr"); 
     OKMgr mgr(argc, argv);  // OpticksHub inside here picks up the gg (last GGeo instanciated) via GGeo::GetInstance 
-    ok->profile("OKX4Test.OKMgr"); 
+    ok->profile("OKX4Test:OKMgr"); 
     //mgr.propagate();
     mgr.visualize();   
 

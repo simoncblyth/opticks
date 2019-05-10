@@ -23,6 +23,7 @@ set(TEST_SOURCES
     OpticksBufferSpecTest.cc
     OpticksActionControlTest.cc
 
+    OpticksProfileTest.cc
     OpticksIDPATH.cc
     OpticksPrepareInstallCache_OKC.cc
     OpticksAnaTest.cc
