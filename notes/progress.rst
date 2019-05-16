@@ -8,6 +8,7 @@ Updating
 Use *hg-;hg-month n* to review commits for the numbered month, 
 negative n eg -12 for December of last year.
 
+
 `notes-progress` summaries
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -19,10 +20,59 @@ to work with that parser follow some rules:
 3. bullet lines to be included in the summary should be in bold
 
 
+2019 May 
+--------
+
+* Taiwan trip 4/1-8 
+
+  * mulling over sphere tracing SDF implicits as workaround for Torus (guidetube)
+    and perhaps optimization for PMT 
+  * reading on deep learning 
+  * working with NEXO user 
+
+* add Linux time/memory profiling : to start investigating the memory hungry translation 
+
+* resume writing 
+
+
+2019 April
+-----------
+
+* work with user to fix issue on Ubuntu 18.04.2 with gcc 7.3.0 
+
+  * virtualbox proved very handy for reproducing user issues
+
+* failed to get Linux containers LXD working on Precision (snap problem with SELinux)
+
+* updating to OptiX 6.0.0. in a hurry to profit from borrowed NVIDIA RTX, proved eventful
+
+  * NVIDIA driver update somehow conspired with long dormant "sleeper" visualization bug 
+    to wakeup at just the wrong moment : causing a week of frenzied debugging 
+    due to limited time to borrow the 
+
+  * resulted in a development of quite a few OpenGL + OptiX minimal test case examples 
+  * optix::GeometryTriangles 
+  * GDML editing to remove torus : as causes crash with OptiX 6.0.0
+  * ended up buying the RTX GPU 
+
+* developed tarball distribution opticks-dist-*  adopted ORIGIN/.. RPATH
+* setup opticks area of cvmfs : for when am ready to make a release
+* Opticks installed onto GPU cluster
+
+  * got bad alloc memory issue on lxslc, workaround is to do translation where have more memory 
+
+* raycast benchmark to test NVIDIA RTX 
+  
+
 2019 March
 -----------
 
+* getting back in saddle after ~5 months hiatus
+* redtape : not as bad as last year 
 * improve CAlignEngine error handling of missing seq
+* getting logging under control 
+* Qingdao 2nd Geant4 school in China 3/25-29
+
 
 2018 October
 -------------
@@ -451,14 +501,12 @@ CSG Engine ; python prototyping, recursive into iterative
 * CHEP proceedings 
 * GPU CSG research 
 
-
 2016 Nov : G4/Opticks optical physics chisq minimization
 ---------------------------------------------------------
 
 * scatter debug
 * groupvel debug 
 * high volume histo chisq numpy comparisons machinery 
-
 
 2016 Oct : G4/Opticks optical physics chisq minimization
 -----------------------------------------------------------
@@ -471,7 +519,6 @@ CSG Engine ; python prototyping, recursive into iterative
 * tlaser testing 
 * tconcentric chisq guided iteration 
 
-
 2016 Sep : mostly G4/Opticks interop
 ----------------------------------------
 
@@ -480,7 +527,6 @@ CSG Engine ; python prototyping, recursive into iterative
 * intro OKMgr and OKG4Mgr the slimmed down replacements for the old App
 * Integrated Geant4/Opticks running allowing G4GUN steps to be directly Opticks GPU propagated
 * OptiX buffer control worked out for multi-event running, using buffer control flags system  
-
 
 2016 Aug : OpticksEvent handling, high level app restructure along lines of dependency
 -----------------------------------------------------------------------------------------
@@ -502,7 +548,6 @@ CSG Engine ; python prototyping, recursive into iterative
 * rework for simultaneous Opticks, G4 simulation - OpticksEvent pairs held in OpticksHub
 * integration genstep handoff form G4 to Opticks
 
-
 2016 Jul : porting to Windows and Linux, Linux interop debug
 ----------------------------------------------------------------
 
@@ -515,7 +560,6 @@ CSG Engine ; python prototyping, recursive into iterative
 * documenting Opticks and organizing the analysis scripts in prep for school
 * inconclusive attempts to address Linux interop buffer overwrite issue
 
-
 2016 Jun : porting to Windows
 ----------------------------------
 
@@ -525,7 +569,6 @@ CSG Engine ; python prototyping, recursive into iterative
 * windows port stymied by g4 not supporting MSYS2/MINGW64  
 * rejig to get glew, glfw, imgui, openmesh built and installed on windows with VS2015
 * boost too
-
 
 2016 May : CTests, CFG4 GDML handling, non-GPU photon indexing
 ------------------------------------------------------------------
@@ -538,7 +581,6 @@ CSG Engine ; python prototyping, recursive into iterative
 * integrating with G4 using CG4 
 * CPU Indexer and Sparse, for non-GPU node indexing
 * rework event data handling into OpticksEvent
-
 
 2016 Apr : build structure make to CMake superbuild, spawn Opticks repo
 ---------------------------------------------------------------------------
@@ -559,7 +601,6 @@ CSG Engine ; python prototyping, recursive into iterative
 * screen capture movie making 
 * GTC presentation
 
-
 2016 Feb : partitioned analytic geometry, compositing raytrace and rasterized viz
 -----------------------------------------------------------------------------------
 
@@ -577,26 +618,47 @@ CSG Engine ; python prototyping, recursive into iterative
 * PSROC meeting presentation 
 
 
+2015 : First year of Opticks, based on NVIDIA OptiX
+-----------------------------------------------------
 
-2015 Dec : matching against theory for prism, rainbow
-----------------------------------------------------------
+**Year Executive Summary**
+
+Develop Opticks based on the NVIDIA OptiX ray tracing framework, replacing Chroma.
+Achieve match between Opticks and Geant4 for simple geometries with speedup 
+factor of 200x with a mobile GPU. Performance factor expected to exceed 1000x 
+with multi-GPU workstations.  
+
+**Year Summary**
+
+* realize lack of multi-GPU is showstopper for Chroma 
+* find that NVIDIA OptiX ray tracing framework exposes accelerated geometry intersection 
+* develop Opticks (~15 C++ packages: GGeo, AssimpWrap, OptiXRap, ThrustRap, OGLRap,...) 
+  built around NVIDIA OptiX to replace Chroma : effectively 
+  recreating part of the Geant4 context on the GPU 
+* port Geant4 optical physics into Opticks
+* achieve match between Opticks and Geant4 for simple geometries, 
+  with speedup factor of 200x with laptop GPU with only 384 cores
+
+
+2015 Dec : matching against theory for prism, rainbow, 200x performance with 384 cores
+------------------------------------------------------------------------------------------
 
 * prism test with Plankian light source using GPU texture
-* rainbow comparisons against expectation
+* rainbow comparisons against expectation : achieve Geant4/Opticks match with rainbow geometry
 * cfg4, new package for comparison against standalone geant4
 * cfg4 G4StepPoint recording - creating opticks format photon/step/history records with cfg4-
 * Opticks/Geant4 rainbow scatter matching achieved
 * enable loading of photons/records into ggv, in pricipal enables visualizing both Opticks and G4 cfg4- generated/propagated events on non-CUDA machines
-* begin revival of compute mode
+* revive compute mode reveals 200x faster performance than Geant4 with only 384 CUDA cores 
 
 2015 Nov : refactor for dynamic boundaries, Fresnel reflection matching, PMT uncoincidence
 ---------------------------------------------------------------------------------------------
 
 * overhaul material/surface/boundary handling to allow dynamic boundary creation post geocache
+  (ie geometry configurable from commandline)
 * implement dynamic test geometry creation controlled by commandline argument, using "--test" option 
 * npy analysis for Fresnel reflection testing
 * adopt more rational PMT partitioning surfaces (not a direct translation)
-
 
 2015 Oct : meshfixing, instanced identity, start analytic partitioning
 --------------------------------------------------------------------------
@@ -605,17 +667,17 @@ CSG Engine ; python prototyping, recursive into iterative
 * IAV and OAV mesh surgery
 * sensor handling
 * identity with instancing
-* analytic geometry description of DYB PMT via detdesc parsing and geometrical partitioning
+* develop analytic PMT approach : via detdesc parsing and geometrical partitioning
 * flexible boundary creation
-
 
 2015 Sep : thrust for GPU resident photons, OpenMesh for meshfixing
 --------------------------------------------------------------------
 
-* use interop Thrust/CUDA/OptiX to make photons fully GPU resident, eliminating overheads
+* use interop Thrust/CUDA/OptiX to make **photons fully GPU resident**, eliminating overheads
+* finally(?) nail majority of CUDA/Thrust/OpenGL/OptiX interop issues
 * add Torch for testing
 * investigate bad material for upwards going photons, find cause is bad geometry
-* integrate OpenMesh to enable mesh fixing
+* uncover issue with DYB cleaved meshes, develop fix using OpenMesh
 
 2015 Aug : big geometry handling with Instancing
 --------------------------------------------------
@@ -632,13 +694,15 @@ CSG Engine ; python prototyping, recursive into iterative
 * auto-finding repeated geometry assemblies by progeny transform/mesh-index digests in GTreeCheck
 * interim Linux compatibility working with Tao
 * 4-GPU machine testing with Tao
-* OpenGL instancing 
-* trying to get JUNO geometry to work
+* OpenGL/OptiX instancing 
+* trying to get JUNO (big) geometry to work with instancing 
 * computeTest timings for Juno Scintillation as vary CUDA core counts
-
 
 2015 Jun : develop compressed photon record, learn Thrust 
 ------------------------------------------------------------
+
+* Cerenkov and Scintillation generated photons match to Geant4 achieved within OptiX machinery
+* implement Fresnel reflection/refraction with OptiX
 
 * develop highly compressed photon records
 * ViewNPY machinery for OpenGL uploading 
@@ -649,19 +713,212 @@ CSG Engine ; python prototyping, recursive into iterative
 
 
 2015 May : GPU textures for materials, geocache, ImGui
-----------------------------------------------------------
+---------------------------------------------------------
 
+* bring NPY persistency to GGeo : introducing the geocache
+* implement geocache loading to avoid XML parsing on every launch 
+  (turned out to be a luxury for DayaBay [saving only a few seconds per launch], 
+   but 6 months hence it is a necessity for JUNO [saving several minutes for every launch])
+* GSubstanceLib infrastructure
 * start bringing materials to GPU via textures
-* introduce the geocache
 * material code translation in Lookup
-* adopt ImGui
+* reemission handling, inverse CDF texture creation
+* Cerenkov and Scintillation generated photons match to Geant4 achieved within OptiX machinery
+* pick ImGui immediate mode GUI renderer
+* GUI adoption by the oglrap classes
+* prepare presentation 
+
+  * Why not Chroma ? Progress report on migrating to OptiX 
+  * http://simoncblyth.bitbucket.io/env/presentation/optical_photon_simulation_with_nvidia_optix.html
+
+2015 April 
+------------
+
+* reuse NumpyServer infrastructure for UDP messaging allowing live reconfig of objects 
+  with boost::program_option text parsing 
+* add quaternion Trackball for interactive control
+* avoid duplication with OptiXRap
+* arrange OptiX output buffer to be a PBO which is rendered as texture by OpenGL
+* create OpenGL visualization package: OGLRap (Prog/Shdr infrastructure) and OptiXEngine ray tracer
+* OptiXEngine starting point for propagation, previously focussed on OptiX ray tracing 
+* ported Cerenkov generation from Chroma to OptiX
+
+2015 March 
+-----------
+
+* encounter OptiX/cuRAND resource issue, workaround using pure CUDA to initialize and persist state
+* fail to find suitable C++ higher level OpenGL package, start own oglrap- on top of GLFW, GLEW
+* integrate ZMQ messaging with NPY serialization using Boost.ASIO ASIO-ZMQ to create NumpyServer
 
 
-Earlier
+2015 February 
+----------------
+
+* fork Assimp https://github.com/simoncblyth/assimp/commits/master
+* benchmarks with using CUDA_VISIBLE_DEVICES to control how many K20m GPUs are used
+* fork Assimp for Opticks geometry loading
+* test OptiX scaling with IHEP GPU machine
+* great GGeo package, intermediary geometry model
+* experiment with GPU textures for interpolated material property access 
+
+2015 January 
+-------------
+
+* https://bitbucket.org/simoncblyth/env/src/2373bb7245ca3c1b8fb06718d4add402805eab93/presentation/gpu_accelerated_geant4_simulation.txt?fileviewer=file-view-default
+* https://simoncblyth.bitbucket.io/env/presentation/gpu_accelerated_geant4_simulation.html
+
+  * G4 Geometry model implications 
+  * G4DAE Geometry Exporter
+  * G4DAEChroma bridge
+
+* realize lack of multi-GPU support is showstopper for Chroma
+* find NVIDIA OptiX, initial tests suggest drastically 50x faster than Chroma
+* first look at OptiX immediately after making the above presentation
+* fork Assimp for geometry loading into GGeo model
+* succeed to strike geometry with Assimp and OptiX
+
+
+2014 : Year of G4DAEChroma : Geant4 to Chroma runtime bridge
+----------------------------------------------------------------
+
+**Year Executive Summary**
+
+Get G4DAE exported geometries into Chroma and integrate Geant4 
+and Chroma event data via G4DAEChroma runtime bridge.  
+
+**Year Summary**
+
+* Get Chroma to operate with G4DAE exported geometries. 
+* Develop G4DAEView visualization using CUDA/OpenGL interoperation techniques
+  and OpenGL shaders for geometry and photon visualization.
+* Develop G4DAEChroma runtime bridge interfacing Geant4 with external optical photon propagation.
+* Realize that photon transport is too large an overhead, so implement GPU Scintillation/Cerenkov
+  generation within Chroma based in transported gensteps
+
+**December 2014**
+
+* realize photon transport has too much overhead, "gensteps" are born 
+* implement Cerenkov and Scintillation step transport and photon generation on GPU 
+
+**October/November 2014**
+
+* develop G4DAEChroma (photon transport over ZMQ): Geant4 to Chroma runtime bridge 
+
+**September 2014**
+
+* present G4DAE geometry exporter at: 19th Geant4 Collaboration Meeting, Okinawa, Sept 2014
+
+**August 2014**
+
+* export Daya Bay PMT identifiers
+* develop non-graphical propagator
+
+**June/July 2014**
+
+* create GLSL shader visualizations of photon propagations 
+* reemission debug 
+
+**May 2014**
+
+* develop ChromaZMQRoot approach to transporting photons from NuWa to Chroma 
+
+**Mar-Apr 2014**
+
+* forked Chroma, adding G4DAE integration and efficient interop buffers
+* develop g4daeview geometry viewer (based on pyopengl, glumpy)  
+
+**Jan-Feb 2014**
+
+* December 16th 2013 : purchase Macbook Pro laptop GPU: NVIDIA GeForce GT 750M 
+  (in Hong Kong while on trip for DayaBay shifts) 
+* integrate G4DAE geometry with Chroma 
+
+
+2013 Aug-Dec : Initial look, G4DAE geometry exporter 
+-----------------------------------------------------
+
+Develop G4DAE Geant4 exporter that liberates tesselated G4 geometries
+into COLLADA DAE files, including all material and surface properties.
+
+* study Geant4 and Chroma optical photon propagation
+* develop C++ Geant4 geometry exporter : G4DAE 
+* experiment with geometry visualizations (webgl, meshlab)
+
+December 2013 (G4DAE visualization 2nd try: meshlab)
+-------------------------------------------------------
+
+* meshlab- hijacked for COLLADA viewing
+* meshlab COLLADA import terribly slow, and meshlab code is a real mess 
+* forked meshlab https://bitbucket.org/simoncblyth/meshlab
+* investigate openscenegraph- colladadom- osg-
+  (clearly decided meshlab far to messy to be a basis for anything)
+
+November 2013 (G4DAE visualization 1st try: webgl)
+----------------------------------------------------
+
+* webgl threejs daeserver.py 
+
+Status report coins G4DAE, were validating G4DAE against VRML2
+
+* https://bitbucket.org/simoncblyth/env/src/9f0c188a8bb2042eb9ad58d95dadf9338e08c634/muon_simulation/nov2013/nov2013_gpu_nuwa.txt?fileviewer=file-view-default
+
+Oct 2013 (G4DAE approach born)
+--------------------------------
+
+* translate Geant4 volume tree into COLLADA DAE
+* webpy server of DAE subtrees
+
+Sept 2013
 ----------
 
-* see okc- okc-vi 
-* TODO-SOMETIME: integrate that in here
+* sqlite3 based debugging of VRML exports 
+* try reality player VRML viewer
+* end Sept, start looking into GDML and COLLADA pycollada-
+ 
+Although VRML was a dead end, it provided the G4Polyhedron 
+triangulation approach used later in G4DAE.
 
+Sep 24 2013
+~~~~~~~~~~~~~
+
+The only real progress so far is with the geometry aspect
+where I have made Geant4 exports of VRML2 and GDML
+versions of the Dayabay geometry and examined how those
+exporters operate. From that experience, I think that
+development of a Geant4 Collada exporter (a common 3D file format)
+is the most convenient way to proceed in order to
+extract the Chroma needed triangles+materials from Geant4.
+For developing the new exporter, I need to learn the relevant
+parts of the Collada format and can borrow much code
+from the VRML2 and GDML exporters.
+
+August 2013 (geometry exporter study)
+---------------------------------------
+
+* Geant4 Muon simulation profiling, fast-
+* studing Geant4 and Geant4/Chroma integration
+* looking into Geant4 exporters and visualization
+* study meshlab-
+* trying VRML exports
+* try blender
+* study Chroma operation
+
+* https://bitbucket.org/simoncblyth/env/commits/e7cb3c9353775de29bade841b171f7a7682cbe9c
+
+
+July 2013 (surveying landscape)
+-----------------------------------
+
+Looked into muon simulation optimization techniques
+
+* photon weighting
+
+
+
+
+Notes
+----------
+
+Early years copied here from okc-vi there is more detail over there than here.
 
 
