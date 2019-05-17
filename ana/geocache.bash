@@ -358,7 +358,8 @@ geocache-gui()
                 --timemax 400 \
                 --animtimemax 400 \
                 --target 352851 \
-                --eye -1,-1,-1  
+                --eye -1,-1,-1  \
+                 $*   
 }
 
 

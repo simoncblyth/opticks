@@ -659,12 +659,12 @@ void OpticksHub::configureGeometry()
 
 void OpticksHub::configureGeometryTri()
 {
-    int restrict_mesh = m_ok->getRestrictMesh() ;  
+    int restrictmesh = m_ok->getRestrictMesh() ;  
     int nmm = m_ggeo->getNumMergedMesh();
 
     LOG(LEVEL) 
               << "setting geocode" 
-              << " restrict_mesh " << restrict_mesh
+              << " restrictmesh " << restrictmesh
               << " nmm " << nmm
               ;
 
@@ -672,17 +672,17 @@ void OpticksHub::configureGeometryTri()
     {
         GMergedMesh* mm = m_ggeo->getMergedMesh(i);
         if(!mm) continue ; 
-        if(restrict_mesh > -1 && i != restrict_mesh ) mm->setGeoCode(OpticksConst::GEOCODE_SKIP);      
+        if(restrictmesh > -1 && i != restrictmesh ) mm->setGeoCode(OpticksConst::GEOCODE_SKIP);      
     }
 }
 
 
 void OpticksHub::configureGeometryTriAna()
 {
-    int restrict_mesh = m_ok->getRestrictMesh() ;  
+    int restrictmesh = m_ok->getRestrictMesh() ;  
 
     LOG(info) << "OpticksHub::configureGeometryTriAna" 
-              << " restrict_mesh " << restrict_mesh
+              << " restrictmesh " << restrictmesh
               << " desc " << desc() 
               ;
 
@@ -713,7 +713,7 @@ void OpticksHub::configureGeometryTriAna()
         GMergedMesh* mm_t = tri->getMergedMesh(i);
         assert( mm_a && mm_t );  
 
-        if(restrict_mesh > -1 && i != restrict_mesh ) 
+        if(restrictmesh > -1 && i != restrictmesh ) 
         {
             mm_a->setGeoCode(OpticksConst::GEOCODE_SKIP);      
             mm_t->setGeoCode(OpticksConst::GEOCODE_SKIP);      
@@ -723,7 +723,7 @@ void OpticksHub::configureGeometryTriAna()
 
 void OpticksHub::configureGeometryTest()
 {
-    int restrict_mesh = m_ok->getRestrictMesh() ;  
+    int restrictmesh = m_ok->getRestrictMesh() ;  
     GGeoBase* ggb = getGGeoBase();   // either ana or tri depending on gltf
     GGeoLib*  lib = ggb->getGeoLib() ; 
     int nmm = lib->getNumMergedMesh();
@@ -733,7 +733,7 @@ void OpticksHub::configureGeometryTest()
         GMergedMesh* mm = lib->getMergedMesh(i);
         assert( mm );  
 
-        if(restrict_mesh > -1 && i != restrict_mesh ) 
+        if(restrictmesh > -1 && i != restrictmesh ) 
         {
             mm->setGeoCode(OpticksConst::GEOCODE_SKIP);      
         }

@@ -119,6 +119,134 @@ Observations:
 
 
 
+volumes
+~~~~~~~~~
+
+===============   =================  ================
+mm index            gui label          notes
+===============   =================  ================
+   1                  in0              small PMT
+   2                  in1              large PMT
+   3                  in2              some TT plate, that manages to be 130 volumes 
+   4                  in3              support stick
+   5                  in4              support temple
+===============   =================  ================
+
+
+
+
+
+
+restrict to mm5 : support temple
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* really fast : and its quite a deep CSG tree 
+* RTX mode helps T-rex and V
+
+::
+
+     OpSnapTest --envkey --target 352851 --eye -1,-1,-1 --snapconfig steps=5,eyestartz=-1,eyestopz=-0.5 --size 5120,2880,1 --embedded --cvd 0 --rtx 2 --runfolder geocache-bench --runstamp 1558093822 --runlabel R2_TITAN_V --restrictmesh 5 --xanalytic
+                    20190517_195022     metric      rfast      rslow 
+                         R2_TITAN_V      0.003      1.000      0.162 
+                         R1_TITAN_V      0.003      1.013      0.165 
+                       R1_TITAN_RTX      0.003      1.126      0.183 
+                       R2_TITAN_RTX      0.003      1.133      0.184 
+           R0_TITAN_V_AND_TITAN_RTX      0.011      3.645      0.592 
+                         R0_TITAN_V      0.016      5.566      0.904 
+                       R0_TITAN_RTX      0.018      6.155      1.000 
+
+
+restrict to mm4 : support sticks (just cylinders)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* RTX mode helps alot (with TITAN V too)
+
+::
+
+     OpSnapTest --envkey --target 352851 --eye -1,-1,-1 --snapconfig steps=5,eyestartz=-1,eyestopz=-0.5 --size 5120,2880,1 --embedded --cvd 1 --rtx 1 --runfolder geocache-bench --runstamp 1558093581 --runlabel R1_TITAN_RTX --restrictmesh 4 --xanalytic
+                    20190517_194621     metric      rfast      rslow 
+                       R1_TITAN_RTX      0.004      1.000      0.162 
+                       R2_TITAN_RTX      0.004      1.056      0.171 
+                         R1_TITAN_V      0.004      1.071      0.173 
+                         R2_TITAN_V      0.004      1.072      0.173 
+           R0_TITAN_V_AND_TITAN_RTX      0.013      3.317      0.536 
+                         R0_TITAN_V      0.021      5.409      0.875 
+                       R0_TITAN_RTX      0.024      6.185      1.000 
+
+
+restrict to mm3 : TT plates, times very similar to SPMT
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* RTX mode gives some speedup on T-rex
+
+::
+
+    OpSnapTest --envkey --target 352851 --eye -1,-1,-1 --snapconfig steps=5,eyestartz=-1,eyestopz=-0.5 --size 5120,2880,1 --embedded --cvd 0,1 --rtx 0 --runfolder geocache-bench --runstamp 1558092977 --runlabel R0_TITAN_V_AND_TITAN_RTX --restrictmesh 3 --xanalytic
+                    20190517_193617     metric      rfast      rslow 
+           R0_TITAN_V_AND_TITAN_RTX      0.018      1.000      0.523 
+                       R2_TITAN_RTX      0.022      1.221      0.639 
+                       R1_TITAN_RTX      0.022      1.252      0.655 
+                         R0_TITAN_V      0.029      1.647      0.862 
+                         R2_TITAN_V      0.031      1.727      0.904 
+                         R1_TITAN_V      0.031      1.736      0.909 
+                       R0_TITAN_RTX      0.034      1.911      1.000 
+
+
+
+restrict to mm2 : 20k 20-inch PMT
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* RTX mode not helping 
+
+::
+
+     OpSnapTest --envkey --target 352851 --eye -1,-1,-1 --snapconfig steps=5,eyestartz=-1,eyestopz=-0.5 --size 5120,2880,1 --embedded --cvd 0,1 --rtx 0 --runfolder geocache-bench --runstamp 1558092492 --runlabel R0_TITAN_V_AND_TITAN_RTX --restrictmesh 2 --xanalytic
+                    20190517_192812     metric      rfast      rslow 
+           R0_TITAN_V_AND_TITAN_RTX      0.073      1.000      0.225 
+                       R0_TITAN_RTX      0.121      1.668      0.376 
+                         R0_TITAN_V      0.133      1.831      0.413 
+                         R2_TITAN_V      0.310      4.262      0.961 
+                         R1_TITAN_V      0.311      4.273      0.963 
+                       R1_TITAN_RTX      0.320      4.397      0.991 
+                       R2_TITAN_RTX      0.322      4.436      1.000 
+
+
+restrict to mm1 : 36k instanced small PMT
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* looks really fast for 36k small PMT
+* RTX mode gives some speedup on T-rex and V 
+
+
+::
+
+     OpSnapTest --envkey --target 352851 --eye -1,-1,-1 --snapconfig steps=5,eyestartz=-1,eyestopz=-0.5 --size 5120,2880,1 --embedded --cvd 0 --rtx 1 --runfolder geocache-bench --runstamp 1558092010 --runlabel R1_TITAN_V --restrictmesh 1 --xanalytic
+                    20190517_192010     metric      rfast      rslow 
+                         R1_TITAN_V      0.018      1.000      0.502 
+                         R2_TITAN_V      0.018      1.002      0.503 
+                       R1_TITAN_RTX      0.021      1.131      0.568 
+           R0_TITAN_V_AND_TITAN_RTX      0.021      1.135      0.570 
+                       R2_TITAN_RTX      0.021      1.156      0.580 
+                         R0_TITAN_V      0.032      1.766      0.887 
+                       R0_TITAN_RTX      0.036      1.992      1.000 
+
+
+restrict to global mm0
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* RTX mode not helping 
+
+::
+
+     OpSnapTest --envkey --target 352851 --eye -1,-1,-1 --snapconfig steps=5,eyestartz=-1,eyestopz=-0.5 --size 5120,2880,1 --embedded --cvd 0,1 --rtx 0 --runfolder geocache-bench --runstamp 1558091640 --runlabel R0_TITAN_V_AND_TITAN_RTX --restrictmesh 0 --xanalytic
+                    20190517_191400     metric      rfast      rslow 
+           R0_TITAN_V_AND_TITAN_RTX      0.045      1.000      0.220 
+                         R0_TITAN_V      0.080      1.768      0.389 
+                       R0_TITAN_RTX      0.086      1.908      0.419 
+                       R2_TITAN_RTX      0.201      4.456      0.980 
+                       R1_TITAN_RTX      0.202      4.489      0.987 
+                         R1_TITAN_V      0.205      4.548      1.000 
+                         R2_TITAN_V      0.205      4.549      1.000 
 
 
 
