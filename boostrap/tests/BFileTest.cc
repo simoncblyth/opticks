@@ -30,6 +30,21 @@ void test_FindFile()
    test_FindFile_( dirlist, "OpticksResource", "OpticksColors.json");
 }
 
+void test_IsAllowedEnvvar()
+{
+    assert( BFile::IsAllowedEnvvar("TMP") == true ) ; 
+}
+
+void test_ResolveKey()
+{
+    const char* key = "TMP" ; 
+    assert( BFile::IsAllowedEnvvar(key) == true ) ; 
+    std::string evalue = BFile::ResolveKey(key) ; 
+
+    LOG(info) << " key " << key << " evalue " << evalue ; 
+}
+
+
 
 void test_ExistsDir()
 {
@@ -440,7 +455,7 @@ int main(int argc, char** argv)
    //test_ExistsDir();
    //test_CreateDir();
    //test_ParentDir();
-   test_FormPath();
+   //test_FormPath();
    //test_Name_ParentDir();
    //test_ChangeExt();
 
@@ -465,6 +480,8 @@ int main(int argc, char** argv)
 
    //test_FormPath_edge();
 
+   //test_IsAllowedEnvvar();
+   test_ResolveKey();
 
    return 0 ; 
 }

@@ -452,17 +452,13 @@ geocache-cvd()
 
 geocache-check()
 {
-   local stamp=$(date +%s)
-   local rtx=0 
-  
-   CUDA_VISIBLE_DEVICES=1 geocache-bench- --rtx $rtx --runfolder $FUNCNAME --runstamp $stamp --runlabel "R${rtx}_$(geocache-cvd)"  $*
+   geocache-bench- --cvd 1 --rtx 0 --runfolder $FUNCNAME --runstamp $(date +%s)  $*
 }
 
 geocache-tour()
 {
    local stamp=$(date +%s)
-   local rtx=0 
-   CUDA_VISIBLE_DEVICES=1 geocache-tour- --rtx $rtx --runfolder $FUNCNAME --runstamp $stamp --runlabel "R${rtx}_$(geocache-cvd)"  $*
+   geocache-tour- --cvd 1 --rtx 1 --runfolder $FUNCNAME --runstamp $stamp --runlabel "R${rtx}_$(geocache-cvd)"  $*
 }
 
 
@@ -472,15 +468,15 @@ geocache-bench()
 {
    local stamp=$(date +%s)
 
-   CUDA_VISIBLE_DEVICES=1   $FUNCNAME- --rtx 0 --runfolder $FUNCNAME --runstamp $stamp --runlabel "R0_TITAN_RTX" $*
-   CUDA_VISIBLE_DEVICES=1   $FUNCNAME- --rtx 1 --runfolder $FUNCNAME --runstamp $stamp --runlabel "R1_TITAN_RTX"  $*
-   CUDA_VISIBLE_DEVICES=1   $FUNCNAME- --rtx 2 --runfolder $FUNCNAME --runstamp $stamp --runlabel "R2_TITAN_RTX"  $*
+   $FUNCNAME- --cvd 1 --rtx 0 --runfolder $FUNCNAME --runstamp $stamp --runlabel "R0_TITAN_RTX" $*
+   $FUNCNAME- --cvd 1 --rtx 1 --runfolder $FUNCNAME --runstamp $stamp --runlabel "R1_TITAN_RTX"  $*
+   $FUNCNAME- --cvd 1 --rtx 2 --runfolder $FUNCNAME --runstamp $stamp --runlabel "R2_TITAN_RTX"  $*
 
-   CUDA_VISIBLE_DEVICES=0   $FUNCNAME- --rtx 0 --runfolder $FUNCNAME --runstamp $stamp --runlabel "R0_TITAN_V"  $*
-   CUDA_VISIBLE_DEVICES=0   $FUNCNAME- --rtx 1 --runfolder $FUNCNAME --runstamp $stamp --runlabel "R1_TITAN_V"   $*
-   CUDA_VISIBLE_DEVICES=0   $FUNCNAME- --rtx 2 --runfolder $FUNCNAME --runstamp $stamp --runlabel "R2_TITAN_V"   $*
+   $FUNCNAME- --cvd 0 --rtx 0 --runfolder $FUNCNAME --runstamp $stamp --runlabel "R0_TITAN_V"  $*
+   $FUNCNAME- --cvd 0 --rtx 1 --runfolder $FUNCNAME --runstamp $stamp --runlabel "R1_TITAN_V"   $*
+   $FUNCNAME- --cvd 0 --rtx 2 --runfolder $FUNCNAME --runstamp $stamp --runlabel "R2_TITAN_V"   $*
 
-   CUDA_VISIBLE_DEVICES=0,1 $FUNCNAME- --rtx 0 --runfolder $FUNCNAME --runstamp $stamp --runlabel "R0_TITAN_V_AND_TITAN_RTX" $*
+   $FUNCNAME- --cvd 0,1 --rtx 0 --runfolder $FUNCNAME --runstamp $stamp --runlabel "R0_TITAN_V_AND_TITAN_RTX" $*
 
    bench.py $LOCAL_BASE/opticks/results/$FUNCNAME
 }
@@ -502,7 +498,7 @@ geocache-cluster-check()
 {
    local cvd 
    geocache-cluster-cvd | while read cvd ; do
-       CUDA_VISIBLE_DEVICES=$cvd UseOptiX
+       UseOptiX --cvd $cvd
    done  
 }
 

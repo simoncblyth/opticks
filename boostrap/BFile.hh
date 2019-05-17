@@ -15,6 +15,10 @@ class BRAP_API BFile {
    
        static std::string expandvar(const char* s);
        static std::string expandhome(const char* s);
+       static std::string usertmpdir(const char* base, const char* sub, const char* rel );
+
+       static bool IsAllowedEnvvar(const char* key);
+       static std::string ResolveKey( const char* key );
 
        static std::string FormRelativePath(const char* a, const char* b=NULL, const char* c=NULL, const char* d=NULL, const char* e=NULL, const char* f=NULL);
        static std::string FormPath(const std::vector<std::string>& elem, unsigned i0, unsigned i1 ); 
@@ -55,6 +59,9 @@ class BRAP_API BFile {
        static void dumpOpticksPathPrefix(const char* msg="BFile::dumpOpticksPathPrefix");
     private:
        static char* OPTICKS_PATH_PREFIX ; 
+       static const std::vector<std::string>  envvars ;
+
+
 };
 
 

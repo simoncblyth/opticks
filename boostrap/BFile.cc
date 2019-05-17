@@ -62,7 +62,7 @@ void dump(boost::cmatch& m)
 }
 
 
-std::string usertmpdir(const char* base, const char* sub, const char* rel )
+std::string BFile::usertmpdir(const char* base, const char* sub, const char* rel )
 {
     fs::path p(base) ; 
 
@@ -89,7 +89,6 @@ to envvars or internal BResource vars
 
 **/
 
-
 std::string BFile::expandvar(const char* s)
 {
     fs::path p ; 
@@ -108,50 +107,7 @@ std::string BFile::expandvar(const char* s)
         {
            std::string key = m[2] ;  
 
-           const char* evalue_ = SSys::getenvvar(key.c_str()) ;
-
-           std::string evalue = evalue_ ? evalue_ : key ; 
-
-           // if fails to find an external envvar 
-
-           if(evalue.compare("TMP")==0) //  TMP is not an envvar, but this makes it seem like one
-           {
-               evalue = usertmpdir("/tmp","opticks", NULL);
-               //evalue = BResource::Get("tmpuser_dir") ;   // bad access if returns NULL
-
-               LOG(verbose) << "replacing TMP with " << evalue ; 
-           }
-           else if(evalue.compare("KEYDIR")==0 ) 
-           {
-               const char* idpath = BResource::Get("idpath") ; 
-               assert( idpath ); 
-               evalue = idpath ;  
-
-               LOG(error) << "replacing IDPATH with " << evalue ; 
-           }
-           else if(evalue.compare("DATADIR")==0 ) 
-           {
-               const char* datadir = BResource::Get("opticksdata_dir") ; 
-               assert( datadir ); 
-               evalue = datadir ;  
-
-               LOG(error) << "replacing DATADIR with " << evalue ; 
-           }
-           else if(evalue.compare("OPTICKS_EVENT_BASE")==0) 
-           {
-               const char* evtbase = BResource::Get("evtbase") ; 
-               if( evtbase != NULL )
-               {
-                   evalue = evtbase ; 
-               }
-               else
-               {
-                   //evalue = BResource::Get("tmpuser_dir") ; 
-                   evalue = usertmpdir("/tmp","opticks",NULL);
-               } 
-               LOG(verbose) << "replacing OPTICKS_EVENT_BASE  with " << evalue ; 
-           }
-
+           std::string evalue = ResolveKey(key.c_str()); 
 
            p /= evalue ;
 
@@ -171,6 +127,101 @@ std::string BFile::expandvar(const char* s)
     std::string x = p.string() ; 
     return x ; 
 }
+
+
+
+
+const std::vector<std::string> BFile::envvars = { 
+   "TMP", 
+   "HOME",
+   "OPTICKS_INSTALL_PREFIX",    // needed for OpticksFlags to find the enum header, set internally at resource init
+   "OPTICKS_HOME"              // needed by OInterpolationTest to find a python script
+} ; 
+
+bool BFile::IsAllowedEnvvar(const char* key_)
+{
+    std::string key(key_); 
+    return std::find( envvars.begin(), envvars.end(), key ) != envvars.end() ;  
+}
+
+
+
+/**
+BFile::ResolveKey
+---------------------
+
+NB no longer replacing any envvar, better to restrict for clarity + control 
+
+**/
+
+
+std::string BFile::ResolveKey( const char* key )
+{
+
+    const char* envvar = SSys::getenvvar(key) ;
+    std::string evalue ; 
+
+    if( IsAllowedEnvvar(key) )
+    {
+        if( envvar != NULL )  
+        {
+            evalue = envvar ; 
+            LOG(verbose) << "replacing allowed envvar token " << key << " with value of tenvvar " << evalue ; 
+        }   
+        else
+        {
+            evalue = usertmpdir("/tmp","opticks", NULL);
+            LOG(error) << "replacing allowed envvar token " << key << " with default value " << evalue << " as envvar not defined " ; 
+        }
+    }
+    else if(strcmp(key,"KEYDIR")==0 ) 
+    {
+        const char* idpath = BResource::Get("idpath") ; 
+        assert( idpath ); 
+        evalue = idpath ;  
+        LOG(error) << "replacing $IDPATH with " << evalue ; 
+    }
+    else if(strcmp(key,"DATADIR")==0 ) 
+    {
+        const char* datadir = BResource::Get("opticksdata_dir") ; 
+        assert( datadir ); 
+        evalue = datadir ;  
+        LOG(error) << "replacing $DATADIR with " << evalue ; 
+    }
+    else if(strcmp(key,"OPTICKS_EVENT_BASE")==0) 
+    {
+        const char* evtbase = BResource::Get("evtbase") ; 
+        if( evtbase != NULL )
+        {
+            evalue = evtbase ; 
+        }
+        else
+        {
+            //evalue = BResource::Get("tmpuser_dir") ; 
+            evalue = usertmpdir("/tmp","opticks",NULL);
+        } 
+        LOG(verbose) << "replacing $OPTICKS_EVENT_BASE  with " << evalue ; 
+    }
+    else
+    {
+        evalue = key ; 
+    }  
+    return evalue ; 
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 std::string BFile::expandhome(const char* s)
