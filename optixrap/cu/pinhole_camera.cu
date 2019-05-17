@@ -3,6 +3,11 @@
 #include "color_lookup.h"
 #include "PerRayData_radiance.h"
 
+#define OPTIX_VERSION_MAJOR (OPTIX_VERSION / 10000)
+#define OPTIX_VERSION_MINOR ((OPTIX_VERSION % 10000) / 100)
+#define OPTIX_VERSION_MICRO (OPTIX_VERSION % 100)
+
+
 using namespace optix;
 
 rtDeclareVariable(float3,        eye, , );
@@ -79,6 +84,11 @@ RT_PROGRAM void pinhole_camera_timetracer()
 
 RT_PROGRAM void pinhole_camera()
 {
+
+
+    
+
+
   PerRayData_radiance prd;
   prd.flag = 0u ; 
   prd.result = bad_color ;
@@ -120,7 +130,14 @@ RT_PROGRAM void pinhole_camera()
   clock_t t0 = clock(); 
 #endif
 
+#if OPTIX_VERSION_MAJOR >= 6
+  RTvisibilitymask mask = RT_VISIBILITY_ALL ;
+  //RTrayflags      flags = RT_RAY_FLAG_NONE ;  
+  RTrayflags      flags = RT_RAY_FLAG_DISABLE_ANYHIT ;  
+  rtTrace(top_object, ray, prd, mask, flags);
+#else
   rtTrace(top_object, ray, prd);
+#endif
 
 #if RAYTRACE_TIMEVIEW
   clock_t t1 = clock(); 
@@ -129,6 +146,12 @@ RT_PROGRAM void pinhole_camera()
 #else
   uchar4 color = make_color( prd.result ) ; // BGRA
 #endif
+
+
+#if OPTIX_VERSION_MAJOR >= 6
+   color.x = 0xff ;  
+#endif
+
 
   if( resolution_scale == 1)  
   { 

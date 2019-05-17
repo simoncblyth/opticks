@@ -54,6 +54,114 @@ nvrtc : runtime compilation for OptiX
 
 
 
+VisRTX : C++ rendering framework developed by the HPC Visualization Developer Technology team at NVIDIA
+----------------------------------------------------------------------------------------------------------
+
+* https://github.com/NVIDIA/VisRTX
+* https://gitmemory.com/tbiedert
+* https://hpcvis.org/
+
+* https://developer.nvidia.com/mdl-sdk
+
+The MDL wrapper provided by VisRTX is self-contained and can be of interest to
+anyone who wants to access the MDL SDK from an OptiX-based application.
+
+
+Found this project by 
+
+* :google:`optix DISABLE_ANYHIT`
+
+See env- visrtx-
+
+
+disabling ANYHIT : seems OptiX 6 has gained lots of flags and visibilityMasks 
+------------------------------------------------------------------------------------
+
+David::
+
+    > => In OptiX 6, for best performance, you can actively disable anyhit, using one 
+    > of the *_DISABLE_ANYHIT instance or ray flags. (Meaning, you can disable anyhit
+    > on geometry, or alternatively, you can disable anyhit during trace.) If you 
+    > aren't using an anyhit program, please try disabling anyhit and see if that
+    > helps.
+
+
+* https://github.com/NVIDIA/VisRTX/blob/10bbc184fa4d6dfc40154901ccb12461d779ca2d/src/Pathtracer/Pathtracer.cu
+
+::
+
+    #if OPTIX_VERSION_MAJOR >= 6
+    const RTrayflags rayFlags = (launchParameters[0].disableAnyHit > 0) ? RT_RAY_FLAG_DISABLE_ANYHIT : RT_RAY_FLAG_NONE;
+    rtTrace(/*launchParameters[0].*/topObject, ray, prd, RT_VISIBILITY_ALL, rayFlags);
+    #else
+    rtTrace(/*launchParameters[0].*/topObject, ray, prd);
+    #endi
+
+
+8.12.4.14
+optix_declarations.h File Reference
+enum RTgeometryflags
+Material-dependent flags set on Geometry/GeometryTriangles.
+Enumerator
+RT_GEOMETRY_FLAG_NONE No special flags set.
+RT_GEOMETRY_FLAG_DISABLE_ANYHIT Opaque flag, any hit program will be skipped.
+RT_GEOMETRY_FLAG_NO_SPLITTING Disable primitive splitting to avoid potential duplicate
+any hit program execution for a single intersection.
+
+
+enum RTinstanceflags
+Instance flags which override the behavior of geometry.
+
+RT_INSTANCE_FLAG_DISABLE_ANYHIT Disable any-hit programs. This may yield
+significantly higher performance even in cases where no any-hit programs are set.
+
+
+8.12.4.23
+enum RTrayflags
+Ray flags.
+Enumerator
+RT_RAY_FLAG_NONE
+RT_RAY_FLAG_DISABLE_ANYHIT Disables any-hit programs for the ray.
+RT_RAY_FLAG_ENFORCE_ANYHIT Forces any-hit program execution for the ray.
+RT_RAY_FLAG_TERMINATE_ON_FIRST_HIT Terminates the ray after the first hit.
+RT_RAY_FLAG_DISABLE_CLOSESTHIT Disables closest-hit programs for the ray.
+RT_RAY_FLAG_CULL_BACK_FACING_TRIANGLES Do not intersect triangle back faces.
+RT_RAY_FLAG_CULL_FRONT_FACING_TRIANGLES Do not intersect triangle front faces.
+RT_RAY_FLAG_CULL_DISABLED_ANYHIT Do not intersect geometry which disables any-hit
+programs.
+RT_RAY_FLAG_CULL_ENFORCED_ANYHIT Do not intersect geometry which enforces
+any-hit programs.
+
+
+
+
+
+
+
+::
+
+    [blyth@localhost include]$ optix-ifind ANYHIT
+    /home/blyth/local/opticks/externals/OptiX/include/internal/optix_declarations.h:  RT_GEOMETRY_FLAG_DISABLE_ANYHIT  = 0x01, /*!< Opaque flag, any hit program will be skipped */
+    /home/blyth/local/opticks/externals/OptiX/include/internal/optix_declarations.h:  RT_INSTANCE_FLAG_DISABLE_ANYHIT           = 1u << 2,  /*!< Disable any-hit programs.
+    /home/blyth/local/opticks/externals/OptiX/include/internal/optix_declarations.h:  RT_INSTANCE_FLAG_ENFORCE_ANYHIT           = 1u << 3   /*!< Override @ref RT_GEOMETRY_FLAG_DISABLE_ANYHIT */
+    /home/blyth/local/opticks/externals/OptiX/include/internal/optix_declarations.h:  RT_RAY_FLAG_DISABLE_ANYHIT                = 1u << 0, /*!< Disables any-hit programs for the ray. */
+    /home/blyth/local/opticks/externals/OptiX/include/internal/optix_declarations.h:  RT_RAY_FLAG_ENFORCE_ANYHIT                = 1u << 1, /*!< Forces any-hit program execution for the ray. */
+    /home/blyth/local/opticks/externals/OptiX/include/internal/optix_declarations.h:  RT_RAY_FLAG_CULL_DISABLED_ANYHIT          = 1u << 6, /*!< Do not intersect geometry which disables any-hit programs. */
+    /home/blyth/local/opticks/externals/OptiX/include/internal/optix_declarations.h:  RT_RAY_FLAG_CULL_ENFORCED_ANYHIT          = 1u << 7  /*!< Do not intersect geometry which enforces any-hit programs. */
+    /home/blyth/local/opticks/externals/OptiX/include/optix_host.h:  * Setting the flags RT_GEOMETRY_FLAG_NO_SPLITTING and/or RT_GEOMETRY_FLAG_DISABLE_ANYHIT should be dependent on the 
+    /home/blyth/local/opticks/externals/OptiX/include/optix_host.h:  * RT_GEOMETRY_FLAG_DISABLE_ANYHIT should be set for material index 0, if M0 and M2 allow it. 
+    /home/blyth/local/opticks/externals/OptiX/include/optix_host.h:  * RT_GEOMETRY_FLAG_DISABLE_ANYHIT should be set for material index 1, if M1 and M3 allow it. 
+    /home/blyth/local/opticks/externals/OptiX/include/optix_host.h:  * RT_GEOMETRY_FLAG_DISABLE_ANYHIT is an optimization due to which the execution of the any hit program is skipped.
+    [blyth@localhost include]$ 
+
+
+
+
+
+
+
+
+
 OptiX with multiple GPU
 ------------------------
 

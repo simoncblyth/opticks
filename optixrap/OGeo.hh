@@ -42,18 +42,25 @@ Details of geometry tree are documented with the OGeo::convert method.
 
 
 
+struct OGeometry ; 
 
 #include "OXRAP_API_EXPORT.hh"
 class OXRAP_API  OGeo 
 {
 public:
+
+
+/*
     struct OGeometry 
     {
        optix::Geometry           g ; 
 #if OPTIX_VERSION >= 60000
        optix::GeometryTriangles  gt ; 
 #endif
+       bool isGeometry() const ;  
+       bool isGeometryTriangles() const ;  
     };
+*/
 
 
     static const plog::Severity LEVEL ; 

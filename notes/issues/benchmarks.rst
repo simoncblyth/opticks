@@ -13,8 +13,6 @@ Things to try to speedup analytic
    * its very small : just try to get rid of it 
 
 
-
-
 Titan V and Titan RTX : Effect of RTX execution mode
 ----------------------------------------------------------------
 
@@ -36,6 +34,59 @@ I use three RTX mode variations:
        RTX on : only BVH traversal using RT Cores, intersection in software
    R2
        RTX on + intersection handled with RT Cores using GeometryTriangles (new in OptiX 6) 
+
+
+
+
+
+Disabling ANYHIT for the ray and geometry and geometrygroup
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+::
+
+    OpSnapTest --envkey --target 352851 --eye -1,-1,-1 --snapconfig steps=5,eyestartz=-1,eyestopz=-0.5 --size 5120,2880,1 --embedded --cvd 1 --rtx 2 --runfolder geocache-bench --runstamp 1558081500 --runlabel R2_TITAN_RTX
+                    20190517_162500     metric      rfast      rslow 
+                       R2_TITAN_RTX      0.023      1.000      0.164 
+                       R1_TITAN_RTX      0.071      3.063      0.501 
+           R0_TITAN_V_AND_TITAN_RTX      0.077      3.319      0.543 
+                         R2_TITAN_V      0.091      3.910      0.640 
+                       R0_TITAN_RTX      0.102      4.369      0.715 
+                         R1_TITAN_V      0.127      5.461      0.894 
+                         R0_TITAN_V      0.142      6.109      1.000 
+
+Disabling ANYHIT for the ray
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+::
+
+     OpSnapTest --envkey --target 352851 --eye -1,-1,-1 --snapconfig steps=5,eyestartz=-1,eyestopz=-0.5 --size 5120,2880,1 --embedded --cvd 1 --rtx 2 --runfolder geocache-bench --runstamp 1558077851 --runlabel R2_TITAN_RTX
+                    20190517_152411     metric      rfast      rslow 
+                       R2_TITAN_RTX      0.025      1.000      0.175 
+                       R1_TITAN_RTX      0.072      2.857      0.499 
+           R0_TITAN_V_AND_TITAN_RTX      0.079      3.159      0.552 
+                         R2_TITAN_V      0.091      3.608      0.630 
+                       R0_TITAN_RTX      0.103      4.083      0.713 
+                         R1_TITAN_V      0.126      5.013      0.876 
+                         R0_TITAN_V      0.144      5.726      1.000 
+
+
+Reproducibilioty check of triangulated, few weeks later
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+::
+
+    blyth@localhost opticks]$ bench.py $TMP/results/geocache-bench
+    Namespace(base='/tmp/blyth/location/results/geocache-bench', exclude=None, include=None)
+    /tmp/blyth/location/results/geocache-bench
+     OpSnapTest --envkey --target 352851 --eye -1,-1,-1 --snapconfig steps=5,eyestartz=-1,eyestopz=-0.5 --size 5120,2880,1 --embedded --cvd 1 --rtx 2 --runfolder geocache-bench --runstamp 1558074625 --runlabel R2_TITAN_RTX
+                    20190517_143025     metric      rfast      rslow 
+                       R2_TITAN_RTX      0.031      1.000      0.219 
+                       R1_TITAN_RTX      0.060      1.909      0.419 
+           R0_TITAN_V_AND_TITAN_RTX      0.081      2.563      0.562 
+                       R0_TITAN_RTX      0.101      3.220      0.707 
+                         R2_TITAN_V      0.118      3.760      0.825 
+                         R1_TITAN_V      0.130      4.139      0.908 
+                         R0_TITAN_V      0.143      4.557      1.000 
 
 
 Times for triangulated geometry in seconds:
@@ -64,6 +115,73 @@ Observations:
 * fractions of a second for 15M pixels bodes well 
 * TITAN RTX gains a factor of ~3 from R0 to R2 
 * TITAN V doesnt have RT cores, but RTX mode still improves its times
+
+
+
+
+
+
+
+
+
+Disably ANYHIT for the ray and geometry and geometrygroup
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Nudges in right direction, but note by much.
+
+::
+
+    OpSnapTest --envkey --target 352851 --eye -1,-1,-1 --snapconfig steps=5,eyestartz=-1,eyestopz=-0.5 --size 5120,2880,1 --embedded --cvd 0,1 --rtx 0 --runfolder geocache-bench --runstamp 1558081121 --runlabel R0_TITAN_V_AND_TITAN_RTX --xanalytic
+                    20190517_161841     metric      rfast      rslow 
+           R0_TITAN_V_AND_TITAN_RTX      0.121      1.000      0.197 
+                       R0_TITAN_RTX      0.190      1.577      0.311 
+                         R0_TITAN_V      0.215      1.784      0.351 
+                       R2_TITAN_RTX      0.485      4.022      0.792 
+                       R1_TITAN_RTX      0.485      4.026      0.792 
+                         R1_TITAN_V      0.611      5.072      0.998 
+                         R2_TITAN_V      0.612      5.080      1.000 
+
+Disably ANYHIT for the ray alone
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+With RT_RAY_FLAG_DISABLE_ANYHIT::
+
+    +#if OPTIX_VERSION_MAJOR >= 6
+    +  RTvisibilitymask mask = RT_VISIBILITY_ALL ;
+    +  //RTrayflags      flags = RT_RAY_FLAG_NONE ;  
+    +  RTrayflags      flags = RT_RAY_FLAG_DISABLE_ANYHIT ;  
+    +  rtTrace(top_object, ray, prd, mask, flags);
+    +#else
+       rtTrace(top_object, ray, prd);
+    +#endif
+
+::
+
+     OpSnapTest --envkey --target 352851 --eye -1,-1,-1 --snapconfig steps=5,eyestartz=-1,eyestopz=-0.5 --size 5120,2880,1 --embedded --cvd 0,1 --rtx 0 --runfolder geocache-bench --runstamp 1558077419 --runlabel R0_TITAN_V_AND_TITAN_RTX --xanalytic
+                    20190517_151659     metric      rfast      rslow 
+           R0_TITAN_V_AND_TITAN_RTX      0.122      1.000      0.199 
+                       R0_TITAN_RTX      0.188      1.542      0.307 
+                         R0_TITAN_V      0.216      1.775      0.354 
+                       R2_TITAN_RTX      0.490      4.028      0.802 
+                       R1_TITAN_RTX      0.491      4.032      0.803 
+                         R2_TITAN_V      0.611      5.017      0.999 
+                         R1_TITAN_V      0.611      5.021      1.000 
+
+
+Reproducibilioty check of analytic, few weeks later
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+::
+
+     OpSnapTest --envkey --target 352851 --eye -1,-1,-1 --snapconfig steps=5,eyestartz=-1,eyestopz=-0.5 --size 5120,2880,1 --embedded --cvd 0,1 --rtx 0 --runfolder geocache-bench --runstamp 1558076076 --runlabel R0_TITAN_V_AND_TITAN_RTX --xanalytic
+                    20190517_145436     metric      rfast      rslow 
+           R0_TITAN_V_AND_TITAN_RTX      0.123      1.000      0.190 
+                       R0_TITAN_RTX      0.190      1.547      0.294 
+                         R0_TITAN_V      0.218      1.776      0.338 
+                       R2_TITAN_RTX      0.523      4.261      0.810 
+                       R1_TITAN_RTX      0.523      4.265      0.811 
+                         R1_TITAN_V      0.645      5.256      0.999 
+                         R2_TITAN_V      0.645      5.260      1.000 
 
 
 Times for analytic geometry in seconsds 

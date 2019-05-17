@@ -435,10 +435,6 @@ geocache-tour-()
    $dbg OpSnapTest --envkey --target 352851 --eye -1,-1,-1 --snapconfig "steps=10,eyestartz=-1,eyestopz=5" --size 2560,1440,1 --embedded  $* 
 }
 
-
-
-
-
 geocache-cvd()
 {
    case $CUDA_VISIBLE_DEVICES in 
@@ -468,6 +464,8 @@ geocache-bench()
 {
    local stamp=$(date +%s)
 
+   # hmm the default runlabel from Opticks::AutoRunLabel just gives the cvd
+
    $FUNCNAME- --cvd 1 --rtx 0 --runfolder $FUNCNAME --runstamp $stamp --runlabel "R0_TITAN_RTX" $*
    $FUNCNAME- --cvd 1 --rtx 1 --runfolder $FUNCNAME --runstamp $stamp --runlabel "R1_TITAN_RTX"  $*
    $FUNCNAME- --cvd 1 --rtx 2 --runfolder $FUNCNAME --runstamp $stamp --runlabel "R2_TITAN_RTX"  $*
@@ -478,7 +476,9 @@ geocache-bench()
 
    $FUNCNAME- --cvd 0,1 --rtx 0 --runfolder $FUNCNAME --runstamp $stamp --runlabel "R0_TITAN_V_AND_TITAN_RTX" $*
 
-   bench.py $LOCAL_BASE/opticks/results/$FUNCNAME
+   #bench.py $LOCAL_BASE/opticks/results/$FUNCNAME
+
+   bench.py $TMP/results/$FUNCNAME
 }
 
 
@@ -507,7 +507,7 @@ geocache-cluster()
    local stamp=$(date +%s)
    local cvd 
    geocache-cluster-cvd | head -8 | while read cvd ; do
-       CUDA_VISIBLE_DEVICES=$cvd geocache-bench- --rtx 2 --runfolder $FUNCNAME --runstamp $stamp  $*   
+        geocache-bench- --cvd $cvd --rtx 2 --runfolder $FUNCNAME --runstamp $stamp  $*   
    done  
    bench.py $LOCAL_BASE/opticks/results/$FUNCNAME
 
@@ -547,13 +547,16 @@ $FUNCNAME
 
 
 
+Former default location to write results was $LOCAL_BASE/opticks/results
+but that doesnt make sense for multiple users running from the same 
+install, so shift default to $TMP/results ie /tmp/$USER/opticks/results
+
+Can write results elsewhere by setting envvar OPTICKS_RESULTS_PREFIX 
+see BOpticksResource::ResolveResultsPrefix
+
 
 EON
 }
-
-
-
-
 
 
 

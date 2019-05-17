@@ -47,6 +47,7 @@ set(SOURCES
     OEvent.cc
     OLaunchTest.cc
 
+    OGeometry.cc
     OGeo.cc
     OGeoStat.cc
     OFunc.cc
@@ -71,6 +72,7 @@ set(HEADERS
     OConfig.hh
     OFormat.hh
     OProg.hh
+    OGeometry.hh
     OGeo.hh
     OTracer.hh
     OScene.hh

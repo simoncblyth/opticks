@@ -22,6 +22,9 @@
 #include "OContext.hh"
 #include "OConfig.hh"
 #include "OFormat.hh"
+#include "OGeometry.hh"
+
+
 
 #include "GGeoLib.hh"
 #include "GMergedMesh.hh"
@@ -276,6 +279,12 @@ optix::GeometryGroup OGeo::makeGlobalGeometryGroup(GMergedMesh* mm)
 
     optix::Acceleration accel = makeAcceleration(m_ggg_accel, false) ;
     optix::GeometryGroup ggg = makeGeometryGroup(ggi, accel );    
+
+#if OPTIX_VERSION_MAJOR >= 6
+    RTinstanceflags instflags = RT_INSTANCE_FLAG_DISABLE_ANYHIT ;  
+    ggg->setFlags(instflags);
+#endif
+
     return ggg ; 
 }
 
@@ -349,9 +358,15 @@ optix::Group OGeo::makeRepeatedAssembly(GMergedMesh* mm, bool raylod )
             optix::GeometryInstance pergi = makeGeometryInstance(omm[0], mat, instance_index); 
             optix::GeometryGroup perxform = makeGeometryGroup(pergi, accel[0] );    
             xform->setChild(perxform);  
+
+#if OPTIX_VERSION_MAJOR >= 6
+            RTinstanceflags instflags = RT_INSTANCE_FLAG_DISABLE_ANYHIT ;  
+            perxform->setFlags(instflags);
+#endif
         }
         else
         {
+            assert(0);  
             optix::GeometryInstance gi[2] ; 
             gi[0] = makeGeometryInstance( omm[0] , mat, instance_index ); 
             gi[1] = makeGeometryInstance( omm[1] , mat, instance_index );  
@@ -470,7 +485,7 @@ for every instance.
 **/
 
 
-OGeo::OGeometry* OGeo::makeOGeometry(GMergedMesh* mergedmesh, unsigned lod)
+OGeometry* OGeo::makeOGeometry(GMergedMesh* mergedmesh, unsigned lod)
 {
     OGeometry* ogeom = new OGeometry ; 
 
@@ -494,7 +509,7 @@ OGeo::OGeometry* OGeo::makeOGeometry(GMergedMesh* mergedmesh, unsigned lod)
 
     LOG(info) << "ugeocode [" << (char)ugeocode << "]" ; 
 
-    if(ugeocode == OpticksConst::GEOCODE_TRIANGULATED)
+    if(ugeocode == OpticksConst::GEOCODE_TRIANGULATED )
     {
         ogeom->g = makeTriangulatedGeometry(mergedmesh, lod);
     }
@@ -511,6 +526,23 @@ OGeo::OGeometry* OGeo::makeOGeometry(GMergedMesh* mergedmesh, unsigned lod)
         LOG(fatal) << "geocode must be triangulated or analytic, not [" << (char)ugeocode  << "]" ;
         assert(0);
     }
+
+
+#if OPTIX_VERSION_MAJOR >= 6 
+    LOG(fatal) << " DISABLE_ANYHIT " ; 
+
+    RTgeometryflags flags = RT_GEOMETRY_FLAG_DISABLE_ANYHIT ;  
+    if(ogeom->isGeometry())
+    {
+        ogeom->g->setFlags( flags ); 
+    }
+    else if( ogeom->isGeometryTriangles())
+    {
+        unsigned int material_index = 0u ;   
+        ogeom->gt->setFlagsPerMaterial( material_index, flags ); 
+    }
+#endif
+
     return ogeom ; 
 }
 
@@ -638,6 +670,11 @@ optix::Geometry OGeo::makeAnalyticGeometry(GMergedMesh* mm, unsigned lod)
                  << " verbosity " << m_verbosity 
                  << " mm " << mm->getIndex()
                  ; 
+
+
+
+
+
 
     return geometry ; 
 }

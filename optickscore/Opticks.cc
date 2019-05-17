@@ -1246,6 +1246,14 @@ const char* Opticks::getRunDate() const
 }
 
 
+/*
+Opticks::AutoRunLabel
+-----------------------
+
+TODO: More friendly label with name of the GPU ?
+
+*/
+
 const char* Opticks::AutoRunLabel(int rtx)
 {
     const char* cvd = SSys::getenvvar("CUDA_VISIBLE_DEVICES", "") ; 
