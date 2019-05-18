@@ -18,7 +18,11 @@ rtDeclareVariable(float3,        front, , );
 
 rtDeclareVariable(float4,        bad_color, , );
 rtDeclareVariable(float,         scene_epsilon, , );
-rtDeclareVariable(unsigned int,  parallel, , );
+rtDeclareVariable(unsigned,      parallel, , );
+
+rtDeclareVariable(float,         pixeltimescale_cfg, , ) = 1e-10f;     // command line argument --pixeltimescale 
+rtDeclareVariable(float,         pixeltime_scale, , );                 // adjustment that can be made from live GUI
+rtDeclareVariable(unsigned,      pixeltime_style, , );
 
 rtBuffer<uchar4, 2>              output_buffer;
 //rtBuffer<float, 2>               depth_buffer;
@@ -31,7 +35,6 @@ rtDeclareVariable(unsigned int,  resolution_scale, , );
 rtDeclareVariable(uint2, launch_index, rtLaunchIndex, );
 rtDeclareVariable(uint2, launch_dim,   rtLaunchDim, );
 
-rtDeclareVariable(float, timetracerscale, , ) = 1e-6f;
 
 
 rtDeclareVariable(unsigned int,  touch_mode, , );
@@ -47,59 +50,55 @@ rtBuffer<uint4,2>         touch_buffer;
 
 
 
-RT_PROGRAM void pinhole_camera_timetracer()
-{
-
-  PerRayData_radiance prd;
-  prd.flag = 0u ; 
-  prd.result = bad_color ;
-
-  float2 d = make_float2(launch_index) / make_float2(launch_dim) * 2.f - 1.f ;
-
-  optix::Ray ray = parallel == 0 ? 
-                       optix::make_Ray( eye                 , normalize(d.x*U + d.y*V + W), radiance_ray_type, scene_epsilon, RT_DEFAULT_MAX)
-                     :
-                       optix::make_Ray( eye + d.x*U + d.y*V , normalize(W)                , radiance_ray_type, scene_epsilon, RT_DEFAULT_MAX)
-                     ;
-
-  clock_t t0 = clock(); 
-
-  rtTrace(top_object, ray, prd);
-
-  clock_t t1 = clock(); 
-
-  float dt = ( t1 - t0 ) ; 
-
-  float pixel_time  = dt * timetracerscale ;
-
-  uchar4  color = make_color( make_float3( pixel_time )); 
-
-  rtPrintf("//pinhole_camera_timetracer dt %10.3f pixel_time %10.3f timetracerscale %10.3g color (%d %d %d) \n", dt, pixel_time, timetracerscale, color.x, color.y, color.z );  
-
-  //uchar4  color = RED ;  
-
-  output_buffer[launch_index] = color ; 
-}
-
 
 RT_PROGRAM void pinhole_camera()
 {
 
-
-    
-
-
   PerRayData_radiance prd;
   prd.flag = 0u ; 
   prd.result = bad_color ;
 
   float2 d = make_float2(launch_index) / make_float2(launch_dim) * 2.f - 1.f ;
 
-  optix::Ray ray = parallel == 0 ? 
-                       optix::make_Ray( eye                 , normalize(d.x*U + d.y*V + W), radiance_ray_type, scene_epsilon, RT_DEFAULT_MAX)
-                     :
-                       optix::make_Ray( eye + d.x*U + d.y*V , normalize(W)                , radiance_ray_type, scene_epsilon, RT_DEFAULT_MAX)
-                     ;
+
+  optix::Ray ray ;
+
+  if( parallel == 0u ) // PERSPECTIVE_CAMERA
+  {
+      float3 ray_origin    = eye                          ; 
+      float3 ray_direction = normalize(d.x*U + d.y*V + W) ;
+      ray = optix::make_Ray( ray_origin , ray_direction, radiance_ray_type, scene_epsilon, RT_DEFAULT_MAX) ;
+  } 
+  else if ( parallel == 1u )  // ORTHOGRAPHIC_CAMERA
+  {
+      float3 ray_origin    = eye + d.x*U + d.y*V ; 
+      float3 ray_direction = normalize(W)        ;
+      ray = optix::make_Ray( ray_origin , ray_direction, radiance_ray_type, scene_epsilon, RT_DEFAULT_MAX) ;
+  }  
+  else if ( parallel == 2u ) // EQUIRECT_CAMERA
+  {
+      // OptiX/SDK/optixTutorial/tutorial11.cu:env_camera
+      // https://www.shadertoy.com/view/XsBSDR
+      //
+      //
+      // azimuthal angle "phi"   :  -pi   -> pi
+      // polar angle     "theta" :  -pi/2 -> pi/2
+ 
+      float2 azipol = make_float2(launch_index) / make_float2(launch_dim) * make_float2(M_PIf , M_PIf/2.0f ) ; // + make_float2( M_PIf, M_PIf/2.0f ) ; 
+      float3 angle = make_float3(cos(azipol.x) * sin(azipol.y), -cos(azipol.y), sin(azipol.x) * sin(azipol.y));
+      //                     cos(azi) sin(pol) , -cos(pol),   sin(azi)cos(pol) 
+
+      //float3 angle = make_float3( sin(azipol.y) * cos(azipol.x), sin(azipol.y) * sin(azipol.x),  cos(azipol.y) ) ;
+      // conventional spherical to cartesian 
+
+ 
+      float3 ray_origin    = eye ; 
+      float3 ray_direction = normalize(angle.x*normalize(U) + angle.y*normalize(V) + angle.z*normalize(W));
+
+      ray = optix::make_Ray( ray_origin , ray_direction, radiance_ray_type, scene_epsilon, RT_DEFAULT_MAX) ;
+  }
+
+
 
 
   // (d.x,d.y) spans screen pixels (-1:1,-1:1) 
@@ -126,9 +125,7 @@ RT_PROGRAM void pinhole_camera()
   //
 
 
-#if RAYTRACE_TIMEVIEW
   clock_t t0 = clock(); 
-#endif
 
 #if OPTIX_VERSION_MAJOR >= 6
   RTvisibilitymask mask = RT_VISIBILITY_ALL ;
@@ -139,19 +136,27 @@ RT_PROGRAM void pinhole_camera()
   rtTrace(top_object, ray, prd);
 #endif
 
-#if RAYTRACE_TIMEVIEW
   clock_t t1 = clock(); 
-  float pixel_time     = ( t1 - t0 ) * time_view_scale ;
-  uchar4  color = make_color( make_float3( pixel_time )); 
-#else
-  uchar4 color = make_color( prd.result ) ; // BGRA
-#endif
 
+  float dt = t1 - t0 ;  
+  float pixeltime     = dt * pixeltime_scale * pixeltimescale_cfg ;  // CLI: --pixeltimescale 1e-10   GUI: G/composition/pixeltime to adjust 
+
+  float4 result = prd.result ;   
+  if( pixeltime_style == 1u )
+  {
+      result.x = pixeltime ;  
+      result.y = pixeltime ;  
+      result.z = pixeltime ;  
+      // must not touch the depth in w for visibility see cu/material1_radiance.cu
+  } 
+  uchar4 color = make_color( result ) ;  
 
 #if OPTIX_VERSION_MAJOR >= 6
-   color.x = 0xff ;  
+   //color.x = 0xff ;  
 #endif
 
+  rtPrintf("//pinhole_camera dt %10.3f pixeltime_scale %10.3f pixeltimescale_cfg %10.3g pixeltime %10.3f color (%3d %3d %3d %3d)  \n",
+          dt, pixeltime_scale, pixeltimescale_cfg, pixeltime, color.x, color.y, color.z, color.w  ); 
 
   if( resolution_scale == 1)  
   { 
@@ -189,7 +194,7 @@ RT_PROGRAM void pinhole_camera()
 RT_PROGRAM void exception()
 {
   const unsigned int code = rtGetExceptionCode();
-  //rtPrintf( "Caught exception 0x%X at launch index (%d,%d)\n", code, launch_index.x, launch_index.y );
+  rtPrintf( "Caught exception 0x%X at launch index (%d,%d)\n", code, launch_index.x, launch_index.y );
   output_buffer[launch_index] = make_color( bad_color );
 }
 

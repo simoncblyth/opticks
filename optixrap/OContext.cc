@@ -88,7 +88,6 @@ OpticksEntry* OContext::addEntry(char code)
         case 'D': index = addEntry("generate.cu", "dumpseed", "exception", defer) ; break ;
         case 'S': index = addEntry("seedTest.cu", "seedTest", "exception", defer) ; break ;
         case 'P': index = addEntry("pinhole_camera.cu", "pinhole_camera" , "exception", defer);  break;
-        case 'Q': index = addEntry("pinhole_camera.cu", "pinhole_camera_timetracer" , "exception", defer);  break;
     }
     return new OpticksEntry(index, code) ; 
 }

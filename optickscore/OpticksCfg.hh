@@ -78,7 +78,7 @@ class OKCORE_API OpticksCfg : public BCfg {
      const std::string& getFlightPathDir();
 
      float        getEpsilon() const ; 
-     float        getTimeTracerScale() const ; 
+     float        getPixelTimeScale() const ; 
 
      unsigned     getSeed() const ; 
      int          getRTX() const ; 
@@ -191,7 +191,7 @@ private:
      std::string m_scintillationclass ;
 
      float       m_epsilon ; 
-     float       m_timetracerscale ; 
+     float       m_pixeltimescale ; 
      unsigned    m_seed ; 
      int         m_rtx ; 
      int         m_renderlooplimit ; 

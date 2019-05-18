@@ -306,6 +306,35 @@ EON
 
 geocache-target(){ echo 352854 ; }
 
+geocache-target-notes(){ cat << EON
+
+Find targets by geocache-kcd and looking at GNodeLib/GTreePresent.txt eg::
+
+    62588     62587 [  9:   0/   1]    0 ( 3)            pBar0x5b3a400  sBar0x5b34ab0
+    62589     62588 [  1:   1/   2]    1 ( 0)    pBtmRock0x4bd2650  sBottomRock0x4bcd770
+    62590     62589 [  2:   0/   1]    1 ( 0)     pPoolLining0x4bd25b0  sPoolLining0x4bd1eb0
+    62591     62590 [  3:   0/   1] 2308 ( 0)      pOuterWaterPool0x4bd2b70  sOuterWaterPool0x4bd2960
+    62592     62591 [  4:   0/2308]    1 ( 0)       pCentralDetector0x4bd4930  sReflectorInCD0x4bd3040
+    62593     62592 [  5:   0/   1] 55274 ( 0)        pInnerWater0x4bd4700  sInnerWater0x4bd3660
+    62594     62593 [  6:   0/55274]    1 ( 0)         pAcylic0x4bd47a0  sAcrylic0x4bd3cd0
+    62595     62594 [  7:   0/   1]    0 ( 0)          pTarget0x4bd4860  sTarget0x4bd4340
+    62596     62595 [  6:   1/55274]    0 ( 4)         lSteel_phys0x4bd4d60  sStrut0x4bd4b80
+    62597     62596 [  6:   2/55274]    0 ( 4)         lSteel_phys0x4bd4ec0  sStrut0x4bd4b80
+    62598     62597 [  6:   3/55274]    0 ( 4)         lSteel_phys0x4bd4fe0  sStrut0x4bd4b80
+    62599     62598 [  6:   4/55274]    0 ( 4)         lSteel_phys0x4bd50d0  sStrut0x4bd4b80
+    ...
+    65589    352852 [  7:   2/   3]    0 ( 0)          pLowerChimneySteel0x5b318b0  sChimneySteel0x5b314f0
+    65590    352853 [  6:55273/55274]    1 ( 0)         lSurftube_phys0x5b3c810  sSurftube0x5b3ab80
+    65591    352854 [  7:   0/   1]    0 ( 0)          pvacSurftube0x5b3c120  svacSurftube0x5b3bf50
+    65592    352855 [  4:   1/2308]    2 ( 2)       lMaskVirtual_phys0x5cc1ac0  sMask_virtual0x4c36e10
+    65593    352856 [  5:   0/   2]    0 ( 2)        pMask0x4c3bf20  sMask0x4ca38d0
+    65594    352857 [  5:   1/   2]    1 ( 2)        PMT_20inch_log_phys0x4ca16b0  PMT_20inch_pmt_solid0x4c81b40
+
+EON
+}
+
+
+
 geocache-view()
 {
     type $FUNCNAME
@@ -361,6 +390,25 @@ geocache-gui()
                 --eye -1,-1,-1  \
                  $*   
 }
+
+geocache-360()
+{
+   local dbg
+   [ -n "$DBG" ] && dbg="gdb --args" || dbg=""
+
+   $dbg OKTest \
+                --cvd $cvd \
+                --envkey \
+                --xanalytic \
+                --tracer \
+                --target 62594  \
+                --eye 0,0,0  \
+                --look 1,0,0  \
+                --up 0,0,1 \
+                --restrictmesh 2 \
+                 $*   
+}
+
 
 
 geocache-save()

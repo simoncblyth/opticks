@@ -537,7 +537,10 @@ void Interactor::key_pressed(unsigned int key)
         case GLFW_KEY_TAB:
             tab_pressed();
             break;
-
+        case GLFW_KEY_BACKSLASH:
+            m_composition->nextPixelTimeStyle(modifiers);  
+            break;
+        // find more GLFW_KEY_* enums on keyboard by running UseOpticksGLFW and pressing some keys 
     } 
     updateStatus();
 }

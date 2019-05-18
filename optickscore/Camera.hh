@@ -148,11 +148,11 @@ class OKCORE_API Camera : public NConfigurable  {
      void setChanged(bool changed); 
 
    public:
-       typedef enum { PERSPECTIVE_CAMERA, OTHOGRAPHIC_CAMERA, NUM_CAMERA_STYLE } Style_t ;
+       typedef enum { PERSPECTIVE_CAMERA, ORTHOGRAPHIC_CAMERA, EQUIRECT_CAMERA, NUM_CAMERA_STYLE } Style_t ;
        void nextStyle(unsigned modifiers);
        void setStyle(Camera::Style_t style);
        Camera::Style_t getStyle();
-
+       bool isOrthographic() const ; 
    public:
        void commandNear( const char* cmd );
 
@@ -182,7 +182,7 @@ class OKCORE_API Camera : public NConfigurable  {
      void scale_to( float x, float y, float dx, float dy );
   public:
      // infrequent inputs 
-     void setParallel(bool parallel);
+     void setParallel(unsigned parallel);
      void setSize(int width, int height );
      void setPixelFactor(unsigned int factor);
   public:
@@ -197,7 +197,7 @@ class OKCORE_API Camera : public NConfigurable  {
      void setZoomClip(float _min, float _max);
      void setScaleClip(float _min, float _max);
   public:
-     bool getParallel();
+     unsigned getParallel();
      float getAspect(); // width/height (> 1 for landscape)
   public:
      // sets near, far and the ortho scale 
@@ -234,7 +234,7 @@ class OKCORE_API Camera : public NConfigurable  {
      float* getFarPtr();
      float* getZoomPtr();
      float* getScalePtr();
-     bool* getParallelPtr();
+     unsigned* getParallelPtr();
   public:
      float getDepth() const ;
   public:
@@ -266,7 +266,7 @@ class OKCORE_API Camera : public NConfigurable  {
      float m_zoom ;
      float m_scale ; 
 
-     bool m_parallel ; 
+     unsigned m_parallel ; 
      bool m_changed ; 
 
 };

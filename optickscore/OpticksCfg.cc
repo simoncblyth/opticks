@@ -70,7 +70,7 @@ OpticksCfg<Listener>::OpticksCfg(const char* name, Listener* listener, bool live
        m_cerenkovclass("C4Cerenkov1042"),
        m_scintillationclass("C4Scintillation1042"),
        m_epsilon(0.1f),     
-       m_timetracerscale(1e-6f),     
+       m_pixeltimescale(1e-10f),     
        m_seed(42),     
        m_rtx(0),
        m_renderlooplimit(0),
@@ -243,13 +243,12 @@ void OpticksCfg<Listener>::init()
    m_desc.add_options()
        ("tracer",   "used to argforced signal from OTracerTest that progagator should not be setup avoiding issue tracer_crash.rst") ; 
 
-   m_desc.add_options()
-       ("timetracer",   "raytrace heat image showing trace time") ; 
 
-   char timetracerscale[128];
-   snprintf(timetracerscale,128, "Adhoc scaling of trace times to form a color . Default %10.4f", m_timetracerscale);
+
+   char pixeltimescale[128];
+   snprintf(pixeltimescale,128, "Adhoc scaling of trace times to form a color . Default %10.4f", m_pixeltimescale);
    m_desc.add_options()
-       ("timetracerscale",  boost::program_options::value<float>(&m_timetracerscale), timetracerscale );
+       ("pixeltimescale",  boost::program_options::value<float>(&m_pixeltimescale), pixeltimescale );
 
 
 
@@ -1461,9 +1460,9 @@ float OpticksCfg<Listener>::getEpsilon() const
     return m_epsilon ; 
 }
 template <class Listener>
-float OpticksCfg<Listener>::getTimeTracerScale() const
+float OpticksCfg<Listener>::getPixelTimeScale() const
 {
-    return m_timetracerscale ; 
+    return m_pixeltimescale ; 
 }
 
 

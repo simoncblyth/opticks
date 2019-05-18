@@ -153,7 +153,7 @@ void Camera::configureF(const char* name, std::vector<float> values)
 Camera::Camera(int width, int height, float basis ) 
        :
          m_zoom(1.0f),
-         m_parallel(false),
+         m_parallel(0u),
          m_changed(true)
 {
     setSize(width, height);
@@ -247,29 +247,34 @@ void Camera::nextStyle(unsigned modifiers)
     {
         Summary("Camera::nextStyle Summary from D+shift");
     }
-    int next = (getStyle() + 1) % NUM_CAMERA_STYLE ; 
+    unsigned next = (getStyle() + 1) % NUM_CAMERA_STYLE ; 
     setStyle( (Style_t)next ) ; 
 }
+
+bool Camera::isOrthographic() const 
+{
+    return (Style_t)m_parallel == ORTHOGRAPHIC_CAMERA ; 
+} 
+
 void Camera::setStyle(Style_t style)
 {
-    bool para = (int(style) == 1) ;
-    setParallel( para );   
+    setParallel( unsigned(style) );   
 
 }
 Camera::Style_t Camera::getStyle()
 {
-    return (Style_t)(m_parallel ? 1 : 0 ) ;
+    return (Style_t)(m_parallel) ;
 }
 
 
 
-void Camera::setParallel(bool parallel)
+void Camera::setParallel(unsigned parallel)
 {
     m_parallel = parallel ;
     m_changed = true ; 
     LOG(info) << " parallel " << m_parallel ; 
 }
-bool Camera::getParallel(){ return m_parallel ; }
+unsigned Camera::getParallel(){ return m_parallel ; }
 
 void Camera::setSize(int width, int height )
 {
@@ -356,7 +361,7 @@ float Camera::getNear() const  {  return m_near ; }
 float Camera::getFar() const {   return m_far ;  }
 float Camera::getQ()  const {  return m_far/m_near  ; }
 float Camera::getZoom() const {  return m_zoom ; } 
-float Camera::getScale() const { return m_parallel ? m_scale  : m_near ; }
+float Camera::getScale() const { return isOrthographic() ? m_scale  : m_near ; }
 
 float Camera::getDepth() const {   return m_far - m_near ; }
 float Camera::getTanYfov() const { return 1.f/m_zoom ; }  // actually tan(Yfov/2)
@@ -428,7 +433,7 @@ float* Camera::getScalePtr()
 {
     return &m_scale ;
 }
-bool* Camera::getParallelPtr()
+unsigned* Camera::getParallelPtr()
 {
     return &m_parallel ;
 }
@@ -522,7 +527,7 @@ void Camera::Summary(const char* msg)
 
 glm::mat4 Camera::getProjection()
 {
-    return m_parallel ? getOrtho() : getFrustum() ; 
+    return isOrthographic() ? getOrtho() : getFrustum() ; 
 }
 
 

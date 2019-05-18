@@ -445,8 +445,7 @@ class OKCORE_API Opticks {
        unsigned getBounceMax();
        unsigned getRecordMax();
        float    getEpsilon() const ;
-       float    getTimeTracerScale() const ;
-       bool     isTimeTracer() const ; 
+       float    getPixelTimeScale() const ;
    public:
        void setExit(bool exit=true);
    public:

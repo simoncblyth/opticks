@@ -1,6 +1,36 @@
-timetracer_gives_black_in_interop
-===================================
+timetracer_gives_black_in_interop FIXED
+========================================================
 
+
+FIXED
+----------
+
+The problem was that was stomping on the depth information in result.w
+resulting in it being skipped in the composite.
+
+
+How to see pixel timings 
+----------------------------
+
+For example with just the 20-inch PMTs::
+
+   geocache-;geocache-gui  --pindex 0 --restrictmesh 2 --pixeltimescale 1e-10 
+
+    geocache-;geocache-gui --restrictmesh 2 --rtx 2
+
+
+Keys:
+
+B: enable the instances
+O: switch to raytrace
+\: backslash, toggle pixeltime raytrace view
+G: in GUI composition can adjust the "pixeltime" slider to avoid blowouts 
+
+
+
+
+Inconclusive first look
+----------------------------
 
 optixrap/cu/pinhole_camera.cu::
 

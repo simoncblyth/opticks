@@ -190,7 +190,11 @@ Composition::Composition()
   m_axis_y_color(0.f,1.f,0.f,1.f),
   m_axis_z_color(0.f,0.f,1.f,1.f),
   m_command_length(256),
-  m_frame_position(0,0,0,0)
+  m_frame_position(0,0,0,0),
+  m_pixeltime(0u), 
+  m_pixeltime_scale(1000.f), 
+  m_pixeltime_scale_min(1.f), 
+  m_pixeltime_scale_max(10000.f)
 {
     init();
 }
@@ -520,6 +524,38 @@ const char* Composition::getGeometryStyleName()
 }
 
 
+void Composition::nextPixelTimeStyle(unsigned /*modifiers*/)
+{
+    unsigned pixeltime = (m_pixeltime + 1) % NUM_PIXELTIME_STYLE ; 
+    LOG(info) << " pixeltime " << pixeltime ;   
+    m_pixeltime = pixeltime ; 
+    m_camera->setChanged(true); 
+}
+unsigned Composition::getPixelTimeStyle() const 
+{
+    return m_pixeltime ; 
+}
+float Composition::getPixelTimeScale() const 
+{
+    return m_pixeltime_scale ;  
+}
+float* Composition::getPixelTimeScalePtr() 
+{
+    return &m_pixeltime_scale ;  
+}
+float Composition::getPixelTimeScaleMin() const 
+{
+    return m_pixeltime_scale_min ;  
+}
+float Composition::getPixelTimeScaleMax() const 
+{
+    return m_pixeltime_scale_max ;  
+}
+
+
+
+
+
 //////////////// U_KEY
 
 void Composition::nextViewType(unsigned int /*modifiers*/)
@@ -744,6 +780,7 @@ void Composition::nextCameraStyle(unsigned modifiers)
 {
     m_camera->nextStyle(modifiers);
 }
+
 
 
 void Composition::commandAnimatorMode(const char* cmd)
@@ -1381,10 +1418,13 @@ void Composition::aim(glm::vec4& ce, bool verbose)
 
 
 
-bool Composition::getParallel()
+unsigned Composition::getParallel()
 {
     return m_camera->getParallel();
 }
+
+
+
 float Composition::getNear()
 {
     return m_camera->getNear();

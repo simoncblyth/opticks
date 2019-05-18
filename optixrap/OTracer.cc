@@ -66,7 +66,7 @@ void OTracer::init()
     // OContext::e_pinhole_camera_entry
     bool defer = true ; 
 
-    char code = m_ok->isTimeTracer() ? 'Q' : 'P' ; 
+    char code = 'P' ; 
     OpticksEntry* entry =  m_ocontext->addEntry(code);
     m_entry_index = entry->getIndex();
 
@@ -74,13 +74,9 @@ void OTracer::init()
 
     m_context[ "scene_epsilon"]->setFloat(m_composition->getNear());
 
-    float timetracerscale = m_ok->getTimeTracerScale(); 
-
-    LOG(error)
-          << " isTimeTracer " << ( m_ok->isTimeTracer() ? "YES" : "NO" ) 
-          << " timetracerscale " << timetracerscale 
-          ;
-    m_context[ "timetracerscale"]->setFloat(timetracerscale);
+    float pixeltimescale_cfg = m_ok->getPixelTimeScale(); 
+    LOG(error) << " pixeltimescale_cfg " << pixeltimescale_cfg ;
+    m_context[ "pixeltimescale_cfg"]->setFloat(pixeltimescale_cfg);
 
 
     m_context[ "radiance_ray_type"   ]->setUint( OContext::e_radiance_ray );
@@ -109,12 +105,16 @@ void OTracer::trace_()
 
     m_composition->getEyeUVW(eye, U, V, W, ZProj); // must setModelToWorld in composition first
 
-    bool parallel = m_composition->getParallel();
-    float scene_epsilon = m_composition->getNear();
+    unsigned parallel = m_composition->getParallel();  // 0:PERSP, 1:ORTHO, 2:EQUIRECT
+    unsigned pixeltime_style = m_composition->getPixelTimeStyle() ; 
+    float    pixeltime_scale = m_composition->getPixelTimeScale() ; 
+    float      scene_epsilon = m_composition->getNear();
 
     const glm::vec3 front = glm::normalize(W); 
 
-    m_context[ "parallel"]->setUint( parallel ? 1u : 0u); 
+    m_context[ "parallel"]->setUint( parallel ); 
+    m_context[ "pixeltime_style"]->setUint( pixeltime_style ); 
+    m_context[ "pixeltime_scale"]->setFloat( pixeltime_scale ); 
     m_context[ "scene_epsilon"]->setFloat(scene_epsilon); 
     m_context[ "eye"]->setFloat( make_float3( eye.x, eye.y, eye.z ) );
     m_context[ "U"  ]->setFloat( make_float3( U.x, U.y, U.z ) );
@@ -141,6 +141,7 @@ void OTracer::trace_()
                    << " entry_index " << m_entry_index 
                    << " trace_count " << m_trace_count 
                    << " resolution_scale " << m_resolution_scale 
+                   << " pixeltime_scale " << pixeltime_scale 
                    << " size(" <<  width << "," <<  height << ")"
                    << " ZProj.zw (" <<  ZProj.z << "," <<  ZProj.w << ")"
                    << " front " <<  gformat(front) 

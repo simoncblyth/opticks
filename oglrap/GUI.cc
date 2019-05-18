@@ -382,7 +382,7 @@ void GUI::camera_gui(Camera* camera)
     ImGui::SliderFloat("far",  camera->getFarPtr(),  camera->getFarMin(),  camera->getFarMax() , "%.3f", power );
     ImGui::SliderFloat("zoom", camera->getZoomPtr(), camera->getZoomMin(), camera->getZoomMax(), "%.3f", power);
     ImGui::SliderFloat("scale",camera->getScalePtr(),camera->getScaleMin(),camera->getScaleMax(), "%.3f", power);
-    ImGui::Checkbox("parallel", camera->getParallelPtr() );
+    //ImGui::Checkbox("parallel", camera->getParallelPtr() );  have changed to 3 way: PERSPECTIVE/ORTHOGRAPHIC/EQUIRECTANGULAR 
     if (ImGui::Button("Camera Summary")) camera->Summary();
     if (ImGui::Button("Camera setChanged")) camera->setChanged(true);
 }
@@ -444,6 +444,8 @@ void GUI::bookmarks_gui(Bookmarks* bookmarks)
 
 void GUI::composition_gui(Composition* composition)
 {
+    ImGui::SliderFloat( "pixeltime", composition->getPixelTimeScalePtr(), composition->getPixelTimeScaleMin(), composition->getPixelTimeScaleMax() , "%10.3f");
+
     ImGui::SliderFloat( "lookPhi", composition->getLookAnglePtr(),  -180.f, 180.0f, "%0.3f");
     ImGui::SameLine();
     if(ImGui::Button("zeroPhi")) composition->setLookAngle(0.f) ;

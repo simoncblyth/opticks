@@ -208,6 +208,14 @@ class OKCORE_API Composition : public NConfigurable {
         void nextClipperStyle(); 
         void commandClipper(const char* cmd);  // C0:off C1:on 
    public:
+        typedef enum { NONE, ENABLED, NUM_PIXELTIME_STYLE } PixelTimeStyle_t ; 
+        void nextPixelTimeStyle(unsigned modifiers);
+        unsigned getPixelTimeStyle() const ; 
+        float*   getPixelTimeScalePtr() ; 
+        float    getPixelTimeScale() const ; 
+        float    getPixelTimeScaleMin() const ; 
+        float    getPixelTimeScaleMax() const ; 
+   public:
         void commandCameraNear(const char* cmd);  // N0:default N1:def/2 N2:def/4 
    public:
         // ContentStyle : B_KEY
@@ -331,7 +339,8 @@ class OKCORE_API Composition : public NConfigurable {
 
   public: 
       void test_getEyeUVW();
-      bool getParallel();
+      unsigned getParallel();
+      unsigned getTimeTrace() const ;
       void getEyeUVW(glm::vec3& eye, glm::vec3& U, glm::vec3& V, glm::vec3& W, glm::vec4& ZProj);
       void getEyeUVW_no_trackball(glm::vec3& eye, glm::vec3& U, glm::vec3& V, glm::vec3& W);
       void getLookAt(glm::mat4& lookat);
@@ -546,7 +555,11 @@ class OKCORE_API Composition : public NConfigurable {
 
   private:
       glm::uvec4 m_frame_position ; 
-
+  private:
+      unsigned  m_pixeltime ; 
+      float     m_pixeltime_scale ; 
+      float     m_pixeltime_scale_min ; 
+      float     m_pixeltime_scale_max ; 
   public: 
       void Summary(const char* msg);
       void Details(const char* msg);

@@ -2273,8 +2273,7 @@ unsigned Opticks::getBounceMax() {   return m_cfg->getBounceMax(); }
 unsigned Opticks::getRecordMax() {   return m_cfg->getRecordMax() ; }
 
 float Opticks::getEpsilon() const {            return m_cfg->getEpsilon()  ; }
-float Opticks::getTimeTracerScale() const {    return m_cfg->getTimeTracerScale()  ; }
-bool  Opticks::isTimeTracer() const {          return m_cfg->hasOpt("timetracer") ; }
+float Opticks::getPixelTimeScale() const {    return m_cfg->getPixelTimeScale()  ; }
 
 bool Opticks::hasOpt(const char* name) const { return m_cfg->hasOpt(name); }
 
