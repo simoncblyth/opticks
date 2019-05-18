@@ -413,6 +413,15 @@ bool Opticks::isCSGSkipLV(unsigned lvIdx) const
 {
    return m_dbg->isCSGSkipLV(lvIdx);
 }
+bool Opticks::isEnabledMergedMesh(unsigned mm) const 
+{
+   return m_dbg->isEnabledMergedMesh(mm);
+}
+
+unsigned Opticks::getInstanceModulo(unsigned mm) const 
+{
+   return m_dbg->getInstanceModulo(mm);
+}
 
 
 
@@ -1439,6 +1448,12 @@ void Opticks::checkOptionValidity()
         LOG(fatal) << "INTEROP mode with --multievent greater than 1 is not supported " ;  
         setExit(true);
     }
+
+   if(isXAnalytic() && getRTX() == 2)
+   {
+        LOG(fatal) << " --xanalytic --rtx 2 : no point doing that as rtx 2 and 1 are the same when not dealing with triangles " ;  
+        setExit(true);
+   }
 }
 
 
@@ -1664,11 +1679,6 @@ int Opticks::getMultiEvent()
 {    
     return m_cfg->getMultiEvent();
 }
-int Opticks::getRestrictMesh()
-{    
-    return m_cfg->getRestrictMesh();
-}
-
 
 
 

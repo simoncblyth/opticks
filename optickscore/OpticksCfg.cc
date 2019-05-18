@@ -49,6 +49,7 @@ OpticksCfg<Listener>::OpticksCfg(const char* name, Listener* listener, bool live
        m_islice(""),
        m_fslice(""),
        m_pslice(""),
+       m_instancemodulo(""),
        m_pindex(""),
        m_dindex(""),
        m_oindex(""),
@@ -85,7 +86,7 @@ OpticksCfg<Listener>::OpticksCfg(const char* name, Listener* listener, bool live
        m_tvperiod(100),
        m_repeatidx(-1),
        m_multievent(1),
-       m_restrictmesh(-1),
+       m_enabledmergedmesh(""),
        m_analyticmesh(-1),
        m_modulo(-1),
        m_override(-1),
@@ -707,6 +708,8 @@ void OpticksCfg<Listener>::init()
    m_desc.add_options()
        ("pslice",        boost::program_options::value<std::string>(&m_pslice), "debug only option for selecting parts of analytic geometry, specified by python slice style colon delimited ints " );
 
+   m_desc.add_options()
+       ("instancemodulo",  boost::program_options::value<std::string>(&m_instancemodulo), "debug only option for selecting modulo scaledowns of analytic geometry instance counts eg 1:5,2:10 for mm1 and mm2 modulo scaledowns of 5 and 10 " );
 
 
 
@@ -902,10 +905,10 @@ void OpticksCfg<Listener>::init()
 
 
 
-   char restrictmesh[128];
-   snprintf(restrictmesh,128, "Restrict meshes converted to OptiX geometry to the one identitied by index eg 0,1,2. Or -1 for no restriction. Default %d ", m_restrictmesh);
+   char enabledmergedmesh[128];
+   snprintf(enabledmergedmesh,128, "(former restrictmesh) Comma delimited string giving list of mesh indices to convert into OptiX geometry eg \"0,2,5\". Or blank for all. Default %s ", m_enabledmergedmesh.c_str() );
    m_desc.add_options()
-       ("restrictmesh",  boost::program_options::value<int>(&m_restrictmesh), restrictmesh );
+       ("enabledmergedmesh",  boost::program_options::value<std::string>(&m_enabledmergedmesh), enabledmergedmesh );
 
    char analyticmesh[128];
    snprintf(analyticmesh,128, "Index of instanced mesh with which to attempt analytic OptiX geometry eg 1,2. Or -1 for no analytic geometry. Default %d ", m_analyticmesh);
@@ -1304,6 +1307,11 @@ const std::string& OpticksCfg<Listener>::getPSlice()
     return m_pslice ;
 }
 
+template <class Listener>
+const std::string& OpticksCfg<Listener>::getInstanceModulo()
+{
+    return m_instancemodulo ;
+}
 
 
 template <class Listener>
@@ -1550,9 +1558,9 @@ int OpticksCfg<Listener>::getMultiEvent()
 
 
 template <class Listener>
-int OpticksCfg<Listener>::getRestrictMesh()
+const std::string& OpticksCfg<Listener>::getEnabledMergedMesh() const 
 {
-    return m_restrictmesh ; 
+    return m_enabledmergedmesh ; 
 }
 template <class Listener>
 int OpticksCfg<Listener>::getAnalyticMesh()

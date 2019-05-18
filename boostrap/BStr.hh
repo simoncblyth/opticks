@@ -78,6 +78,9 @@ class BRAP_API BStr {
      static std::vector<std::pair<std::string, std::string> > ekv_split( const char* line, char edelim=' ', const char* kvdelim=":" );
      static int ekv_split(std::vector<std::pair<std::string, std::string> >& ekv, const char* line, char edelim=' ', const char* kvdelim=":" );
 
+     static void pair_split(std::vector<std::pair<int, int> >& ekv, const char* line, char edelim=',', const char* pairdelim=":" );  // "1:5,2:10" -> (1,5),(2,10)
+
+
      static std::string join(std::vector<std::string>& elem, char delim );
      static void removeField(char* dest, const char* line, char delim, int index );
      static std::string insertField(const char* line, char delim, int index, const char* field);

@@ -269,6 +269,9 @@ void OGeo::convertMergedMesh(unsigned i)
 
 optix::GeometryGroup OGeo::makeGlobalGeometryGroup(GMergedMesh* mm)
 {
+
+    mm->dumpVolumesSelected("OGeo::makeGlobalGeometryGroup"); 
+
     unsigned lod = 0u ;  
     optix::Material mat = makeMaterial();
     OGeometry* omm = makeOGeometry( mm, lod ); 
@@ -290,6 +293,15 @@ optix::GeometryGroup OGeo::makeGlobalGeometryGroup(GMergedMesh* mm)
 
 optix::Group OGeo::makeRepeatedAssembly(GMergedMesh* mm, bool raylod )
 {
+    unsigned mmidx = mm->getIndex(); 
+    unsigned imodulo = m_ok->getInstanceModulo( mmidx ); 
+
+    LOG(info) 
+         << " mmidx " << mmidx 
+         << " imodulo " << imodulo
+         ;
+
+
     NPY<float>* itransforms = mm->getITransformsBuffer();
 
     NSlice* islice = mm->getInstanceSlice(); 
@@ -327,16 +339,34 @@ optix::Group OGeo::makeRepeatedAssembly(GMergedMesh* mm, bool raylod )
     }
 
 
+   
+    unsigned count(0); 
+    if(imodulo == 0u)
+    {
+        count = islice->count() ; 
+    }
+    else
+    {
+        for(unsigned int i=islice->low ; i<islice->high ; i+=islice->step) //  CAUTION HEAVY LOOP eg 20k PMTs 
+        {
+            if( i % imodulo != 0u ) continue ;   
+            count++ ; 
+        }
+    }
+
+
     optix::Group assembly = m_context->createGroup();
-    assembly->setChildCount(islice->count());
+    assembly->setChildCount( count );
 
     optix::Acceleration accel[2] ;
     accel[0] = makeAcceleration(m_instance_accel, false) ;  //  common accel for all instances as same geometry
-    accel[1] = makeAcceleration(m_instance_accel, false) ;                         //  NB accel is not created inside the loop 
+    accel[1] = makeAcceleration(m_instance_accel, false) ;  //  NB accel is not created inside the below instance loop 
 
     unsigned ichild = 0 ; 
     for(unsigned int i=islice->low ; i<islice->high ; i+=islice->step) //  CAUTION HEAVY LOOP eg 20k PMTs 
     {
+        if( imodulo > 0u && i % imodulo != 0u ) continue ;     // modulo scaledown for debugging
+
         optix::Transform xform = m_context->createTransform();
         glm::mat4 m4 = itransforms->getMat4(i) ; 
         const float* tdata = glm::value_ptr(m4) ;  
@@ -384,6 +414,9 @@ optix::Group OGeo::makeRepeatedAssembly(GMergedMesh* mm, bool raylod )
             xform->setChild(selector);   
         }
     }
+
+    assert( ichild == count );
+
     return assembly ;
 }
 

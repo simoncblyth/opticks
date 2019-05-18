@@ -39,6 +39,59 @@ I use three RTX mode variations:
 
 
 
+
+
+Note RTX mode one has much faster prelaunch ?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* any possibility of cache effects between runs ? dont think so : as delete /var/tmp/OptiXCache between runs
+  BUT could be some other cache, TODO: look for dependency on order of runs
+
+
+::
+
+    OpSnapTest --envkey --target 352851 --eye -1,-1,-1 --snapconfig steps=5,eyestartz=-1,eyestopz=-0.5 --size 5120,2880,1 --embedded --cvd 0,1 --rtx 0 --runfolder geocache-bench --runstamp 1558185347 --runlabel R0_TITAN_V_AND_TITAN_RTX --xanalytic --enabledmergedmesh 2 --instancemodulo 2:10
+                    20190518_211547  launchAVG      rfast      rslow      prelaunch000 
+           R0_TITAN_V_AND_TITAN_RTX      0.022      1.000      0.393          24.104 
+                         R0_TITAN_V      0.040      1.799      0.707          10.931 
+                       R0_TITAN_RTX      0.041      1.858      0.730          13.423 
+                         R1_TITAN_V      0.051      2.294      0.901           0.365 
+                         R2_TITAN_V      0.051      2.296      0.902           0.172 
+                       R2_TITAN_RTX      0.055      2.487      0.978           0.151 
+                       R1_TITAN_RTX      0.057      2.544      1.000           0.369 
+     OpSnapTest --envkey --target 352851 --eye -1,-1,-1 --snapconfig steps=5,eyestartz=-1,eyestopz=-0.5 --size 5120,2880,1 --embedded --cvd 0,1 --rtx 0 --runfolder geocache-bench --runstamp 1558185811 --runlabel R0_TITAN_V_AND_TITAN_RTX --xanalytic --enabledmergedmesh 2 --instancemodulo 2:5
+                    20190518_212331  launchAVG      rfast      rslow      prelaunch000 
+           R0_TITAN_V_AND_TITAN_RTX      0.035      1.000      0.306          23.992 
+                       R0_TITAN_RTX      0.061      1.767      0.541          13.343 
+                         R0_TITAN_V      0.063      1.832      0.560          10.666 
+                         R2_TITAN_V      0.102      2.938      0.899           0.195 
+                         R1_TITAN_V      0.102      2.940      0.899           0.389 
+                       R1_TITAN_RTX      0.110      3.190      0.976           0.422 
+                       R2_TITAN_RTX      0.113      3.269      1.000           0.201 
+     OpSnapTest --envkey --target 352851 --eye -1,-1,-1 --snapconfig steps=5,eyestartz=-1,eyestopz=-0.5 --size 5120,2880,1 --embedded --cvd 0,1 --rtx 0 --runfolder geocache-bench --runstamp 1558186475 --runlabel R0_TITAN_V_AND_TITAN_RTX --xanalytic --enabledmergedmesh 2 --instancemodulo 2:2
+                    20190518_213435  launchAVG      rfast      rslow      prelaunch000 
+           R0_TITAN_V_AND_TITAN_RTX      0.057      1.000      0.251          23.973 
+                       R0_TITAN_RTX      0.092      1.624      0.407          13.276 
+                         R0_TITAN_V      0.105      1.851      0.464          10.858 
+                         R1_TITAN_V      0.210      3.700      0.928           0.496 
+                       R1_TITAN_RTX      0.227      3.987      1.000           0.529 
+     OpSnapTest --envkey --target 352851 --eye -1,-1,-1 --snapconfig steps=5,eyestartz=-1,eyestopz=-0.5 --size 5120,2880,1 --embedded --cvd 0,1 --rtx 0 --runfolder geocache-bench --runstamp 1558187531 --runlabel R0_TITAN_V_AND_TITAN_RTX --xanalytic --enabledmergedmesh 2
+                    20190518_215211  launchAVG      rfast      rslow      prelaunch000 
+           R0_TITAN_V_AND_TITAN_RTX      0.074      1.000      0.220          12.375 
+                       R0_TITAN_RTX      0.120      1.611      0.354           6.397 
+                         R0_TITAN_V      0.136      1.834      0.403           6.479 
+                         R1_TITAN_V      0.314      4.229      0.928           0.439 
+                       R1_TITAN_RTX      0.338      4.555      1.000           0.645 
+    [blyth@localhost opticks]$ 
+
+
+
+
+
+
+
+
+
 Disabling ANYHIT for the ray and geometry and geometrygroup
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -125,6 +178,7 @@ volumes
 ===============   =================  ================
 mm index            gui label          notes
 ===============   =================  ================
+   0                                   global non-instanced
    1                  in0              small PMT
    2                  in1              large PMT
    3                  in2              some TT plate, that manages to be 130 volumes 
@@ -134,6 +188,36 @@ mm index            gui label          notes
 
 
 
+modulo scaledown the 20k instances
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+::
+
+     geocache-;geocache-gui --enabledmergedmesh 2 --instancemodulo 2:10 
+
+
+combination of the fast ones : --xanalytic --enabledmergedmesh 1,3,4,5
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* stays fast, and RTX helps a little
+
+::
+
+     geocache-;geocache-gui --enabledmergedmesh 1,3,4,5                    ## changed name of restrictmesh after generalize to accepting a command delimited list 
+     geocache-;geocache-bench --xanalytic --enabledmergedmesh 1,3,4,5      ## changed name of restrictmesh after generalize to accepting a command delimited list 
+
+::
+
+     OpSnapTest --envkey --target 352851 --eye -1,-1,-1 --snapconfig steps=5,eyestartz=-1,eyestopz=-0.5 --size 5120,2880,1 --embedded --cvd 0,1 --rtx 0 --runfolder geocache-bench --runstamp 1558179690 --runlabel R0_TITAN_V_AND_TITAN_RTX --xanalytic --enabledmergedmesh 1,3,4,5
+                    20190518_194130     metric      rfast      rslow 
+           R0_TITAN_V_AND_TITAN_RTX      0.042      1.000      0.649 
+                       R2_TITAN_RTX      0.049      1.145      0.743 
+                       R1_TITAN_RTX      0.049      1.149      0.746 
+                         R2_TITAN_V      0.051      1.191      0.773 
+                         R1_TITAN_V      0.051      1.204      0.781 
+                         R0_TITAN_V      0.061      1.447      0.939 
+                       R0_TITAN_RTX      0.065      1.541      1.000 
 
 
 
@@ -193,12 +277,75 @@ restrict to mm3 : TT plates, times very similar to SPMT
 
 
 
+
+restrict to mm2 : 20k 20-inch PMT  with 1 in 10 modulo scaledown
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* even with only 2k RTX mode not helping for 20-inchers
+
+::
+
+     geocache-;geocache-bench --xanalytic --enabledmergedmesh 2  --instancemodulo 2:10   ## scaledown 1 in 10 
+
+     OpSnapTest --envkey --target 352851 --eye -1,-1,-1 --snapconfig steps=5,eyestartz=-1,eyestopz=-0.5 --size 5120,2880,1 --embedded --cvd 0,1 --rtx 0 --runfolder geocache-bench --runstamp 1558185347 --runlabel R0_TITAN_V_AND_TITAN_RTX --xanalytic --enabledmergedmesh 2 --instancemodulo 2:10
+                    20190518_211547     metric      rfast      rslow 
+           R0_TITAN_V_AND_TITAN_RTX      0.022      1.000      0.393 
+                         R0_TITAN_V      0.040      1.799      0.707 
+                       R0_TITAN_RTX      0.041      1.858      0.730 
+                         R1_TITAN_V      0.051      2.294      0.901 
+                         R2_TITAN_V      0.051      2.296      0.902 
+                       R2_TITAN_RTX      0.055      2.487      0.978 
+                       R1_TITAN_RTX      0.057      2.544      1.000 
+
+
+* with RTX mode on, looks like the time is scaling with the number of instances of mm2 
+
+::
+
+    OpSnapTest --envkey --target 352851 --eye -1,-1,-1 --snapconfig steps=5,eyestartz=-1,eyestopz=-0.5 --size 5120,2880,1 --embedded --cvd 0,1 --rtx 0 --runfolder geocache-bench --runstamp 1558185811 --runlabel R0_TITAN_V_AND_TITAN_RTX --xanalytic --enabledmergedmesh 2 --instancemodulo 2:5
+                    20190518_212331     metric      rfast      rslow 
+           R0_TITAN_V_AND_TITAN_RTX      0.035      1.000      0.306 
+                       R0_TITAN_RTX      0.061      1.767      0.541 
+                         R0_TITAN_V      0.063      1.832      0.560 
+                         R2_TITAN_V      0.102      2.938      0.899 
+                         R1_TITAN_V      0.102      2.940      0.899 
+                       R1_TITAN_RTX      0.110      3.190      0.976 
+                       R2_TITAN_RTX      0.113      3.269      1.000 
+
+
+::
+
+     geocache-;geocache-bench --xanalytic --enabledmergedmesh 2  --instancemodulo 2:2   ## scaledown 1 in 2 + skip doing R2 for xanalytic
+
+     OpSnapTest --envkey --target 352851 --eye -1,-1,-1 --snapconfig steps=5,eyestartz=-1,eyestopz=-0.5 --size 5120,2880,1 --embedded --cvd 0,1 --rtx 0 --runfolder geocache-bench --runstamp 1558186475 --runlabel R0_TITAN_V_AND_TITAN_RTX --xanalytic --enabledmergedmesh 2 --instancemodulo 2:2
+                    20190518_213435     metric      rfast      rslow 
+           R0_TITAN_V_AND_TITAN_RTX      0.057      1.000      0.251 
+                       R0_TITAN_RTX      0.092      1.624      0.407 
+                         R0_TITAN_V      0.105      1.851      0.464 
+                         R1_TITAN_V      0.210      3.700      0.928 
+                       R1_TITAN_RTX      0.227      3.987      1.000 
+
+
 restrict to mm2 : 20k 20-inch PMT
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * RTX mode not helping 
 
-::
+
+
+     geocache-;geocache-bench --xanalytic --enabledmergedmesh 2        ## reproducibility check 
+
+     OpSnapTest --envkey --target 352851 --eye -1,-1,-1 --snapconfig steps=5,eyestartz=-1,eyestopz=-0.5 --size 5120,2880,1 --embedded --cvd 0,1 --rtx 0 --runfolder geocache-bench --runstamp 1558185148 --runlabel R0_TITAN_V_AND_TITAN_RTX --xanalytic --enabledmergedmesh 2
+                    20190518_211228     metric      rfast      rslow 
+           R0_TITAN_V_AND_TITAN_RTX      0.073      1.000      0.217 
+                       R0_TITAN_RTX      0.119      1.615      0.350 
+                         R0_TITAN_V      0.136      1.859      0.403 
+                         R2_TITAN_V      0.314      4.274      0.927 
+                         R1_TITAN_V      0.315      4.288      0.930 
+                       R1_TITAN_RTX      0.338      4.610      0.999 
+                       R2_TITAN_RTX      0.339      4.612      1.000 
+
+
 
      OpSnapTest --envkey --target 352851 --eye -1,-1,-1 --snapconfig steps=5,eyestartz=-1,eyestopz=-0.5 --size 5120,2880,1 --embedded --cvd 0,1 --rtx 0 --runfolder geocache-bench --runstamp 1558092492 --runlabel R0_TITAN_V_AND_TITAN_RTX --restrictmesh 2 --xanalytic
                     20190517_192812     metric      rfast      rslow 
@@ -209,6 +356,25 @@ restrict to mm2 : 20k 20-inch PMT
                          R1_TITAN_V      0.311      4.273      0.963 
                        R1_TITAN_RTX      0.320      4.397      0.991 
                        R2_TITAN_RTX      0.322      4.436      1.000 
+
+::
+
+     geocache-;geocache-bench --xanalytic --restrictmesh 2
+     geocache-;geocache-bench --xanalytic --enabledmergedmesh 2  ## changed name of restrictmesh after generalize to accepting a command delimited list 
+
+::
+
+    /tmp/blyth/opticks/results/geocache-bench
+     OpSnapTest --envkey --target 352851 --eye -1,-1,-1 --snapconfig steps=5,eyestartz=-1,eyestopz=-0.5 --size 5120,2880,1 --embedded --cvd 0,1 --rtx 0 --runfolder geocache-bench --runstamp 1558178928 --runlabel R0_TITAN_V_AND_TITAN_RTX --xanalytic --enabledmergedmesh 2
+                    20190518_192848     metric      rfast      rslow 
+           R0_TITAN_V_AND_TITAN_RTX      0.075      1.000      0.220 
+                       R0_TITAN_RTX      0.118      1.564      0.344 
+                         R0_TITAN_V      0.136      1.810      0.399 
+                         R2_TITAN_V      0.314      4.177      0.919 
+                         R1_TITAN_V      0.314      4.178      0.920 
+                       R2_TITAN_RTX      0.341      4.534      0.998 
+                       R1_TITAN_RTX      0.342      4.543      1.000 
+
 
 
 restrict to mm1 : 36k instanced small PMT
@@ -250,12 +416,49 @@ restrict to global mm0
 
 
 
+combination of the slow ones : --xanalytic --enabledmergedmesh 0,2
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* times are close to all 
+
+::
+
+    OpSnapTest --envkey --target 352851 --eye -1,-1,-1 --snapconfig steps=5,eyestartz=-1,eyestopz=-0.5 --size 5120,2880,1 --embedded --cvd 0,1 --rtx 0 --runfolder geocache-bench --runstamp 1558180048 --runlabel R0_TITAN_V_AND_TITAN_RTX --xanalytic --enabledmergedmesh 0,2
+                    20190518_194728     metric      rfast      rslow 
+           R0_TITAN_V_AND_TITAN_RTX      0.099      1.000      0.194 
+                       R0_TITAN_RTX      0.165      1.668      0.323 
+                         R0_TITAN_V      0.185      1.878      0.363 
+                       R1_TITAN_RTX      0.488      4.943      0.957 
+                       R2_TITAN_RTX      0.488      4.945      0.957 
+                         R2_TITAN_V      0.508      5.153      0.998 
+                         R1_TITAN_V      0.510      5.166      1.000 
+
+
+Reprodicibility check, after pixeltime fixes
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* matches within 0.020
+
+::
+     geocache-;geocache-bench --xanalytic
+
+
+     OpSnapTest --envkey --target 352851 --eye -1,-1,-1 --snapconfig steps=5,eyestartz=-1,eyestopz=-0.5 --size 5120,2880,1 --embedded --cvd 0,1 --rtx 0 --runfolder geocache-bench --runstamp 1558176275 --runlabel R0_TITAN_V_AND_TITAN_RTX --xanalytic
+                    20190518_184435     metric      rfast      rslow 
+           R0_TITAN_V_AND_TITAN_RTX      0.122      1.000      0.202 
+                       R0_TITAN_RTX      0.190      1.561      0.315 
+                         R0_TITAN_V      0.217      1.785      0.360 
+                       R2_TITAN_RTX      0.509      4.179      0.844 
+                       R1_TITAN_RTX      0.513      4.217      0.852 
+                         R2_TITAN_V      0.602      4.948      0.999 
+                         R1_TITAN_V      0.603      4.952      1.000 
+
 
 
 Disably ANYHIT for the ray and geometry and geometrygroup
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Nudges in right direction, but note by much.
+Nudges in right direction, but not by much.
 
 ::
 

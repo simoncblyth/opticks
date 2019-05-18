@@ -95,12 +95,19 @@ void OpticksDbg::postconfigure()
    const std::string& mask = m_cfg->getMask() ;
    const std::string& x4polyskip = m_cfg->getX4PolySkip() ;
    const std::string& csgskiplv = m_cfg->getCSGSkipLV() ;
+   const std::string& enabledmm = m_cfg->getEnabledMergedMesh() ;
+
+
 
    postconfigure( dindex, m_debug_photon );
    postconfigure( oindex, m_other_photon );
    postconfigure( mask, m_mask );
    postconfigure( x4polyskip, m_x4polyskip );
    postconfigure( csgskiplv, m_csgskiplv );
+   postconfigure( enabledmm, m_enabledmergedmesh );
+
+   const std::string& instancemodulo = m_cfg->getInstanceModulo() ;
+   postconfigure( instancemodulo,   m_instancemodulo ) ;  
 
    if(m_mask.size() > 0)
    {
@@ -111,6 +118,11 @@ void OpticksDbg::postconfigure()
 }
 
 
+void OpticksDbg::postconfigure(const std::string& spec, std::vector<std::pair<int, int> >& pairs )
+{
+    // "1:5,2:10" -> (1,5),(2,10)
+    BStr::pair_split( pairs, spec.c_str(), ',', ":" ); 
+}
 
 
 void OpticksDbg::postconfigure(const std::string& spec, std::vector<unsigned>& ls)
@@ -130,34 +142,48 @@ void OpticksDbg::postconfigure(const std::string& spec, std::vector<unsigned>& l
    }
 }
 
+unsigned OpticksDbg::getInstanceModulo(unsigned mm) const 
+{
+    unsigned size = m_instancemodulo.size() ; 
+    if( size == 0u ) return 0u ; 
+    typedef std::pair<int, int> II ; 
+    for(unsigned i=0 ; i < size ; i++)
+    {
+        const II& ii = m_instancemodulo[i] ; 
+        if( unsigned(ii.first) == mm ) return unsigned(ii.second) ;   
+    }
+    return 0u ; 
+}
 
-
-
+bool OpticksDbg::IsListed(unsigned idx, const std::vector<unsigned>& ls, bool emptylistdefault )  // static
+{
+    return ls.size() == 0 ? emptylistdefault : std::find(ls.begin(), ls.end(), idx ) != ls.end() ; 
+}
 
 bool OpticksDbg::isDbgPhoton(unsigned record_id) const 
 {
-    return std::find(m_debug_photon.begin(), m_debug_photon.end(), record_id ) != m_debug_photon.end() ; 
+    return IsListed(record_id, m_debug_photon,  false); 
 }
 bool OpticksDbg::isOtherPhoton(unsigned record_id) const 
 {
-    return std::find(m_other_photon.begin(), m_other_photon.end(), record_id ) != m_other_photon.end() ; 
+    return IsListed(record_id, m_other_photon, false); 
 }
-bool OpticksDbg::isMaskPhoton(unsigned record_id) const
+bool OpticksDbg::isMaskPhoton(unsigned record_id) const 
 {
-    return std::find(m_mask.begin(), m_mask.end(), record_id ) != m_mask.end() ; 
+    return IsListed(record_id, m_mask, false); 
 }
 bool OpticksDbg::isX4PolySkip(unsigned lvIdx) const 
 {
-    return std::find(m_x4polyskip.begin(), m_x4polyskip.end(), lvIdx ) != m_x4polyskip.end() ; 
+    return IsListed(lvIdx, m_x4polyskip, false); 
 }
 bool OpticksDbg::isCSGSkipLV(unsigned lvIdx) const 
 {
-    return std::find(m_csgskiplv.begin(), m_csgskiplv.end(), lvIdx ) != m_csgskiplv.end() ; 
+    return IsListed(lvIdx, m_csgskiplv, false); 
 }
-
-
-
-
+bool OpticksDbg::isEnabledMergedMesh(unsigned mm) const 
+{
+    return IsListed(mm, m_enabledmergedmesh, true ); 
+}
 
 
 

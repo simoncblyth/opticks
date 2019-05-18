@@ -560,6 +560,28 @@ std::string BStr::join( const char* a, const char* b, const char* c, const char*
 }
 
 
+void BStr::pair_split(std::vector<std::pair<int, int> >& vii, const char* line, char edelim, const char* pairdelim )  // "1:5,2:10" -> (1,5),(2,10)
+{
+    typedef std::pair<int,int> II ;  
+    std::istringstream f(line);
+    std::string s;
+    while (getline(f, s, edelim))
+    {
+        std::vector<std::string> ii ;
+        boost::split(ii, s, boost::is_any_of(pairdelim));
+        assert(ii.size() == 2);
+        int i0 = BStr::atoi(ii[0].c_str()); 
+        int i1 = BStr::atoi(ii[1].c_str()); 
+
+        LOG(verbose)
+             << " i0 " << i0 
+             << " i1 " << i1
+             ;
+        vii.push_back(II(i0,i1)) ;  
+    }
+}
+
+
 int BStr::ekv_split( std::vector<std::pair<std::string, std::string> > & ekv, const char* line_, char edelim, const char* kvdelim)
 {
     //LOG(error) << " line_ " << line_ ; 

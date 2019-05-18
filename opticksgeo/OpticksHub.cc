@@ -659,12 +659,10 @@ void OpticksHub::configureGeometry()
 
 void OpticksHub::configureGeometryTri()
 {
-    int restrictmesh = m_ok->getRestrictMesh() ;  
     int nmm = m_ggeo->getNumMergedMesh();
 
     LOG(LEVEL) 
               << "setting geocode" 
-              << " restrictmesh " << restrictmesh
               << " nmm " << nmm
               ;
 
@@ -672,17 +670,20 @@ void OpticksHub::configureGeometryTri()
     {
         GMergedMesh* mm = m_ggeo->getMergedMesh(i);
         if(!mm) continue ; 
-        if(restrictmesh > -1 && i != restrictmesh ) mm->setGeoCode(OpticksConst::GEOCODE_SKIP);      
+
+        if(!m_ok->isEnabledMergedMesh(i)) 
+        {
+            LOG(info) << "setting  OpticksConst::GEOCODE_SKIP for mm " << i ; 
+            mm->setGeoCode(OpticksConst::GEOCODE_SKIP);      
+        }
     }
 }
 
 
 void OpticksHub::configureGeometryTriAna()
 {
-    int restrictmesh = m_ok->getRestrictMesh() ;  
 
     LOG(info) << "OpticksHub::configureGeometryTriAna" 
-              << " restrictmesh " << restrictmesh
               << " desc " << desc() 
               ;
 
@@ -713,8 +714,9 @@ void OpticksHub::configureGeometryTriAna()
         GMergedMesh* mm_t = tri->getMergedMesh(i);
         assert( mm_a && mm_t );  
 
-        if(restrictmesh > -1 && i != restrictmesh ) 
+        if(!m_ok->isEnabledMergedMesh(i)) 
         {
+            LOG(info) << "setting  OpticksConst::GEOCODE_SKIP for mm " << i ; 
             mm_a->setGeoCode(OpticksConst::GEOCODE_SKIP);      
             mm_t->setGeoCode(OpticksConst::GEOCODE_SKIP);      
         }
@@ -723,7 +725,6 @@ void OpticksHub::configureGeometryTriAna()
 
 void OpticksHub::configureGeometryTest()
 {
-    int restrictmesh = m_ok->getRestrictMesh() ;  
     GGeoBase* ggb = getGGeoBase();   // either ana or tri depending on gltf
     GGeoLib*  lib = ggb->getGeoLib() ; 
     int nmm = lib->getNumMergedMesh();
@@ -732,9 +733,9 @@ void OpticksHub::configureGeometryTest()
     {
         GMergedMesh* mm = lib->getMergedMesh(i);
         assert( mm );  
-
-        if(restrictmesh > -1 && i != restrictmesh ) 
+        if(!m_ok->isEnabledMergedMesh(i)) 
         {
+            LOG(info) << "setting  OpticksConst::GEOCODE_SKIP for mm " << i ; 
             mm->setGeoCode(OpticksConst::GEOCODE_SKIP);      
         }
     }

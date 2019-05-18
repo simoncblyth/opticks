@@ -130,6 +130,33 @@ void test_usplit()
 }
 
 
+void test_pair_split()
+{
+     const char* s = "0:0,1:10,2:20,3:30,4:40,5:-50" ; 
+
+     typedef std::pair<int,int> II ; 
+     typedef std::vector<II> VII ; 
+
+     VII vii ; 
+     BStr::pair_split( vii, s, ',', ":" ); 
+     assert( vii.size() == 6 );
+
+    
+     for(unsigned i=0 ; i < vii.size() ; i++)
+     {
+         LOG(info) 
+               << "( " 
+               << std::setw(3) << i
+               << ") "   
+               << std::setw(10) << vii[i].first 
+               << " : " 
+               << std::setw(10) << vii[i].second 
+               ;
+     }
+
+
+}
+
 
 
 
@@ -431,9 +458,10 @@ int main(int argc, char** argv)
     test_Contains();
     test_WithoutEnding();
     test_GetField();
-*/
-
     test_ctoi();
+*/
+    test_pair_split();
+
 
     return 0 ; 
 }

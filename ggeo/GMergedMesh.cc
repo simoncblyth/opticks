@@ -743,7 +743,13 @@ GMergedMesh* GMergedMesh::load(const char* dir, unsigned int index, const char* 
 void GMergedMesh::dumpVolumes(const char* msg) const 
 {
     gfloat4 ce0 = getCenterExtent(0) ;
-    LOG(info) << msg << " ce0 " << ce0.description() ; 
+    LOG(info) 
+         << msg 
+         << " ce0 " << ce0.description() 
+         << " NumVolumes " << getNumVolumes()
+         << " NumVolumesSelected " << getNumVolumesSelected()
+         ; 
+
 
     for(unsigned int index=0 ; index < getNumVolumes() ; ++index)
     {
@@ -769,6 +775,57 @@ void GMergedMesh::dumpVolumes(const char* msg) const
              ;
     }
 }
+
+
+
+
+
+
+void GMergedMesh::dumpVolumesSelected(const char* msg) const 
+{
+    gfloat4 ce0 = getCenterExtent(0) ;
+    LOG(info) 
+         << msg 
+         << " ce0 " << ce0.description() 
+         << " NumVolumes " << getNumVolumes()
+         << " NumVolumesSelected " << getNumVolumesSelected()
+         ; 
+
+    unsigned count(0u) ;  
+    for(unsigned int index=0 ; index < getNumVolumes() ; ++index)
+    {
+        gfloat4 ce = getCenterExtent(index) ;
+        //gbbox bb = getBBox(index) ; 
+        guint4* ni = getNodeInfo() + index ; 
+        guint4* id = getIdentity() + index ; 
+
+        unsigned nf = ni->x ; 
+        unsigned nv = ni->y ; 
+        if( nf == 0 && nv == 0 ) continue ; 
+
+        
+
+        std::cout 
+             << " count " << std::setw(5) << count 
+             << " idx " << std::setw(5)  << index         
+             << " ce " << std::setw(64) << ce.description()       
+           // << " bb " << std::setw(64) << bb.description()       
+             << " ni[nf/nv/nidx/pidx]"  << std::setw(30) << ni->description()
+             << " id[nidx,midx,bidx,sidx] " << std::setw(30) << id->description() 
+             << std::endl 
+             ;
+
+        count += 1 ;  
+    }
+
+
+}
+
+
+
+
+
+
 
 
 void GMergedMesh::dumpVolumesFaces(const char* msg) const  // migrated from OGeo

@@ -396,17 +396,26 @@ geocache-360()
    local dbg
    [ -n "$DBG" ] && dbg="gdb --args" || dbg=""
 
+   local cvd=1
+   UseOptiX --cvd $cvd 
+
    $dbg OKTest \
                 --cvd $cvd \
                 --envkey \
                 --xanalytic \
-                --tracer \
                 --target 62594  \
                 --eye 0,0,0  \
+                --tracer \
                 --look 1,0,0  \
                 --up 0,0,1 \
-                --restrictmesh 2 \
+                --enabledmergedmesh 2 \
                  $*   
+}
+
+geocache-360-notes(){ cat << EON
+
+
+EON
 }
 
 
@@ -466,6 +475,44 @@ EON
 
 
 
+
+geocache-tour-()
+{
+   type $FUNCNAME
+   local dbg
+   [ -n "$DBG" ] && dbg="gdb --args" || dbg=""
+   $dbg OpSnapTest --envkey --target 352851 --eye -1,-1,-1 --snapconfig "steps=10,eyestartz=-1,eyestopz=5" --size 2560,1440,1 --embedded  $* 
+}
+
+
+geocache-check()
+{
+   geocache-bench- --cvd 1 --rtx 0 --runfolder $FUNCNAME --runstamp $(date +%s)  $*
+}
+
+
+
+
+geocache-bench2(){ geocache-rtxcheck $FUNCNAME $* ; }
+geocache-bench2-()
+{
+   type $FUNCNAME
+   UseOptiX
+   local dbg
+   [ -n "$DBG" ] && dbg="gdb --args" || dbg=""
+   $dbg OpSnapTest --envkey \
+                   --target 62594  \
+                   --eye 0,0,0  \
+                   --look 1,0,0  \
+                   --up 0,0,1 \
+                   --snapconfig "steps=5,eyestartz=0,eyestopz=0" \
+                   --size 5120,2880,1 \
+                   --embedded \
+                   $* 
+}
+
+
+geocache-bench(){ geocache-rtxcheck $FUNCNAME $* ; }
 geocache-bench-()
 {
    type $FUNCNAME
@@ -476,58 +523,30 @@ geocache-bench-()
 }
 
 
-geocache-tour-()
+
+
+geocache-rtxcheck()
 {
-   type $FUNCNAME
-   local dbg
-   [ -n "$DBG" ] && dbg="gdb --args" || dbg=""
-   $dbg OpSnapTest --envkey --target 352851 --eye -1,-1,-1 --snapconfig "steps=10,eyestartz=-1,eyestopz=5" --size 2560,1440,1 --embedded  $* 
-}
+   local name=${1:-geocache-bench}
+   shift
 
-geocache-cvd()
-{
-   case $CUDA_VISIBLE_DEVICES in 
-      0) echo TITAN_V ;; 
-      1) echo TITAN_RTX ;; 
-      "0,1") echo TITAN_V_AND_TITAN_RTX ;; 
-      "1,0") echo TITAN_RTX_AND_TITAN_V ;; 
-   esac
-}
-
-
-geocache-check()
-{
-   geocache-bench- --cvd 1 --rtx 0 --runfolder $FUNCNAME --runstamp $(date +%s)  $*
-}
-
-geocache-tour()
-{
-   local stamp=$(date +%s)
-   geocache-tour- --cvd 1 --rtx 1 --runfolder $FUNCNAME --runstamp $stamp --runlabel "R${rtx}_$(geocache-cvd)"  $*
-}
-
-
-
-
-geocache-bench()
-{
    local stamp=$(date +%s)
 
    # hmm the default runlabel from Opticks::AutoRunLabel just gives the cvd
+   # note that --rtx 2 gets skipped for --xanalytic as its the same as --rtx 1
 
-   $FUNCNAME- --cvd 1 --rtx 0 --runfolder $FUNCNAME --runstamp $stamp --runlabel "R0_TITAN_RTX" $*
-   $FUNCNAME- --cvd 1 --rtx 1 --runfolder $FUNCNAME --runstamp $stamp --runlabel "R1_TITAN_RTX"  $*
-   $FUNCNAME- --cvd 1 --rtx 2 --runfolder $FUNCNAME --runstamp $stamp --runlabel "R2_TITAN_RTX"  $*
+   $name- --cvd 1 --rtx 0 --runfolder $name --runstamp $stamp --runlabel "R0_TITAN_RTX" $*
+   $name- --cvd 1 --rtx 1 --runfolder $name --runstamp $stamp --runlabel "R1_TITAN_RTX"  $*
+   $name- --cvd 1 --rtx 2 --runfolder $name --runstamp $stamp --runlabel "R2_TITAN_RTX"  $*
 
-   $FUNCNAME- --cvd 0 --rtx 0 --runfolder $FUNCNAME --runstamp $stamp --runlabel "R0_TITAN_V"  $*
-   $FUNCNAME- --cvd 0 --rtx 1 --runfolder $FUNCNAME --runstamp $stamp --runlabel "R1_TITAN_V"   $*
-   $FUNCNAME- --cvd 0 --rtx 2 --runfolder $FUNCNAME --runstamp $stamp --runlabel "R2_TITAN_V"   $*
+   $name- --cvd 0 --rtx 0 --runfolder $name --runstamp $stamp --runlabel "R0_TITAN_V"  $*
+   $name- --cvd 0 --rtx 1 --runfolder $name --runstamp $stamp --runlabel "R1_TITAN_V"   $*
+   $name- --cvd 0 --rtx 2 --runfolder $name --runstamp $stamp --runlabel "R2_TITAN_V"   $*
 
-   $FUNCNAME- --cvd 0,1 --rtx 0 --runfolder $FUNCNAME --runstamp $stamp --runlabel "R0_TITAN_V_AND_TITAN_RTX" $*
+   $name- --cvd 0,1 --rtx 0 --runfolder $name --runstamp $stamp --runlabel "R0_TITAN_V_AND_TITAN_RTX" $*
 
-   #bench.py $LOCAL_BASE/opticks/results/$FUNCNAME
-
-   bench.py $TMP/results/$FUNCNAME
+   #bench.py $LOCAL_BASE/opticks/results/$name
+   bench.py $TMP/results/$name
 }
 
 

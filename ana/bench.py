@@ -16,6 +16,8 @@ if __name__ == '__main__':
     parser.add_argument(    "base", default=None, help="Directory below which to look for results")
     parser.add_argument(     "--include", default=None, help="Select result groups with commandline containing the string provided" )
     parser.add_argument(     "--exclude", default=None, help="Select result groupd with commandline not containing the string provided" )
+    parser.add_argument(     "--metric", default="launchAVG" );
+    parser.add_argument(     "--other", default="prelaunch000" );
     args = parser.parse_args()
 
     print(args)
@@ -24,6 +26,8 @@ if __name__ == '__main__':
     print(base)
 
     dirs, dfolds = DatedFolder.find(base)
+    metric = args.metric 
+    other = args.other  
 
     for df in sorted(dfolds):
         udirs = filter(lambda _:_.endswith(df),dirs)
@@ -37,17 +41,20 @@ if __name__ == '__main__':
               ("label", "|S30"),
               ("metric", np.float32),
               ("rfast", np.float32),
-              ("rslow", np.float32)
+              ("rslow", np.float32),
+              ("other", np.float32),
                 ]
 
         a = np.recarray((len(mm),), dtype=dtype )
 
-        labfmt_ = lambda lab:" %30s %10s %10s %10s " % lab
-        rowfmt_ = lambda row:" %30s %10.3f %10.3f %10.3f " % ( row.label, row.metric, row.rfast, row.rslow )
+        labfmt_ = lambda lab:" %30s %10s %10s %10s      %10s " %  lab
+        rowfmt_ = lambda row:" %30s %10.3f %10.3f %10.3f      %10.3f " % ( row.label, row.metric, row.rfast, row.rslow, row.other )
 
-        lab = ( df,"metric","rfast", "rslow")
+        lab = ( df,metric,"rfast", "rslow", other)
 
-        metric_ = lambda m:float(m.d["OTracerTimes"]["launchAVG"])
+        metric_ = lambda m:float(m.d["OTracerTimes"][metric])
+        other_ = lambda m:float(m.d["OTracerTimes"][other])
+
 
         smm = sorted(mm, key=metric_)  
         ffast = metric_(smm[0])
@@ -71,8 +78,9 @@ if __name__ == '__main__':
             f = metric_(m)
             rfast = f/ffast
             rslow = f/fslow
+            o = other_(m)
                
-            a[i] = (i, m.parentfold, f, rfast, rslow )  
+            a[i] = (i, m.parentfold, f, rfast, rslow, o )  
 
             print(rowfmt_(a[i]))
         pass

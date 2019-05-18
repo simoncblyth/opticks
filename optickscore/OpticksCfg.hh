@@ -48,6 +48,7 @@ class OKCORE_API OpticksCfg : public BCfg {
      const std::string& getISlice();
      const std::string& getFSlice();
      const std::string& getPSlice();
+     const std::string& getInstanceModulo();
 
      const std::string& getPrintIndex() const ;
      const std::string& getDbgIndex() const ;
@@ -94,7 +95,7 @@ class OKCORE_API OpticksCfg : public BCfg {
      int          getAnimatorPeriod(); 
      int          getRepeatIndex(); 
      int          getMultiEvent(); 
-     int          getRestrictMesh(); 
+     const std::string& getEnabledMergedMesh() const ; 
      int          getAnalyticMesh(); 
      int          getModulo(); 
      int          getOverride(); 
@@ -168,6 +169,7 @@ private:
      std::string m_islice ;
      std::string m_fslice ;
      std::string m_pslice ;
+     std::string m_instancemodulo ;
      std::string m_pindex ;
      std::string m_dindex ;
      std::string m_oindex ;
@@ -206,7 +208,7 @@ private:
      int         m_tvperiod ; 
      int         m_repeatidx ; 
      int         m_multievent ; 
-     int         m_restrictmesh; 
+     std::string m_enabledmergedmesh; 
      int         m_analyticmesh; 
      int         m_modulo ; 
      int         m_override ; 

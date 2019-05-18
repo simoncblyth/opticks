@@ -93,6 +93,7 @@ public:
     // TODO: below is only usage of GGeo here, move this elsewhere... into GGeo ?
     void reportMeshUsage(GGeo* ggeo, const char* msg="GMergedMesh::reportMeshUsage");
 public:
+    void dumpVolumesSelected(const char* msg="GMergedMesh::dumpVolumesSelected") const ;
     void dumpVolumes(const char* msg="GMergedMesh::dumpVolumes") const ;
     void dumpVolumesFaces(const char* msg="GMergedMesh::dumpVolumesFaces") const  ;  // migrated from OGeo
     void dumpTransforms( const char* msg="GMergedMesh::dumpTransforms") const ; // migrated from OGeo

@@ -348,6 +348,9 @@ class OKCORE_API Opticks {
        bool isMaskPhoton(unsigned record_id) const ;
        bool isX4PolySkip(unsigned lvIdx) const ;
        bool isCSGSkipLV(unsigned lvIdx) const ;
+       bool isEnabledMergedMesh(unsigned mm) const ;
+       unsigned getInstanceModulo(unsigned mm) const ;
+
 
        bool isDbgPhoton(int event_id, int track_id);
        bool isOtherPhoton(int event_id, int track_id);
@@ -368,7 +371,6 @@ class OKCORE_API Opticks {
        NState*              getState() const ;
    public:
        int                  getMultiEvent();
-       int                  getRestrictMesh();
    public:
        unsigned int         getSourceCode() const ;
        const char*          getSourceType() const ;
