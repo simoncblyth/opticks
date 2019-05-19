@@ -18,7 +18,7 @@ rtDeclareVariable(float3,        front, , );
 
 rtDeclareVariable(float4,        bad_color, , );
 rtDeclareVariable(float,         scene_epsilon, , );
-rtDeclareVariable(unsigned,      parallel, , );
+rtDeclareVariable(unsigned,      cameratype, , );
 
 rtDeclareVariable(float,         pixeltimescale_cfg, , ) = 1e-10f;     // command line argument --pixeltimescale 
 rtDeclareVariable(float,         pixeltime_scale, , );                 // adjustment that can be made from live GUI
@@ -58,24 +58,24 @@ RT_PROGRAM void pinhole_camera()
   prd.flag = 0u ; 
   prd.result = bad_color ;
 
-  float2 d = make_float2(launch_index) / make_float2(launch_dim) * 2.f - 1.f ;
+  float2 d = make_float2(launch_index) / make_float2(launch_dim) * 2.f - 1.f ;  // (-1:1, -1:1 )
 
 
   optix::Ray ray ;
 
-  if( parallel == 0u ) // PERSPECTIVE_CAMERA
+  if( cameratype == 0u ) // PERSPECTIVE_CAMERA
   {
       float3 ray_origin    = eye                          ; 
       float3 ray_direction = normalize(d.x*U + d.y*V + W) ;
       ray = optix::make_Ray( ray_origin , ray_direction, radiance_ray_type, scene_epsilon, RT_DEFAULT_MAX) ;
   } 
-  else if ( parallel == 1u )  // ORTHOGRAPHIC_CAMERA
+  else if ( cameratype == 1u )  // ORTHOGRAPHIC_CAMERA
   {
       float3 ray_origin    = eye + d.x*U + d.y*V ; 
       float3 ray_direction = normalize(W)        ;
       ray = optix::make_Ray( ray_origin , ray_direction, radiance_ray_type, scene_epsilon, RT_DEFAULT_MAX) ;
   }  
-  else if ( parallel == 2u ) // EQUIRECT_CAMERA
+  else if ( cameratype == 2u ) // EQUIRECTANGULAR_CAMERA
   {
       // OptiX/SDK/optixTutorial/tutorial11.cu:env_camera
       // https://www.shadertoy.com/view/XsBSDR
@@ -83,9 +83,13 @@ RT_PROGRAM void pinhole_camera()
       //
       // azimuthal angle "phi"   :  -pi   -> pi
       // polar angle     "theta" :  -pi/2 -> pi/2
+
+      float2 azipol = make_float2(launch_index) / make_float2(launch_dim) * make_float2(2.0f * M_PIf , M_PIf) + make_float2(M_PIf, 0.0f );
  
-      float2 azipol = make_float2(launch_index) / make_float2(launch_dim) * make_float2(M_PIf , M_PIf/2.0f ) ; // + make_float2( M_PIf, M_PIf/2.0f ) ; 
+      //float2 azipol = make_float2(launch_index) / make_float2(launch_dim) * make_float2(2.0f*M_PIf , M_PIf ) ;
+      //float2 azipol = d * make_float2(M_PIf , M_PIf/2.0f ) ;   // <- puts most distortion along horizontal center line
       float3 angle = make_float3(cos(azipol.x) * sin(azipol.y), -cos(azipol.y), sin(azipol.x) * sin(azipol.y));
+
       //                     cos(azi) sin(pol) , -cos(pol),   sin(azi)cos(pol) 
 
       //float3 angle = make_float3( sin(azipol.y) * cos(azipol.x), sin(azipol.y) * sin(azipol.x),  cos(azipol.y) ) ;

@@ -23,7 +23,7 @@ CameraCfg<Listener>::CameraCfg(const char* name, Listener* listener, bool live)
        addOptionF<Listener>(listener, Listener::SCALE,    "Screen Scale");
        addOptionF<Listener>(listener, Listener::NEAR_,     "Near distance");
        addOptionF<Listener>(listener, Listener::FAR_,      "Far distance" );
-       addOptionF<Listener>(listener, Listener::PARALLEL, "Parallel or perspective");
+       addOptionF<Listener>(listener, Listener::TYPE,      "Perspective/Orthographic/Equirectangular");
 }
 
 

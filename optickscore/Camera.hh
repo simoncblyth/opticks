@@ -132,7 +132,7 @@ class OKCORE_API Camera : public NConfigurable  {
      static const char* ZOOM ; 
      static const char* SCALE ; 
 
-     static const char* PARALLEL ; 
+     static const char* TYPE ; 
 
      Camera(int width=1024, int height=768, float basis=1000.f ) ;
 
@@ -143,7 +143,6 @@ class OKCORE_API Camera : public NConfigurable  {
 
      void fillZProjection(glm::vec4& zProj);
 
-
      bool hasChanged();
      void setChanged(bool changed); 
 
@@ -151,7 +150,12 @@ class OKCORE_API Camera : public NConfigurable  {
        typedef enum { PERSPECTIVE_CAMERA, ORTHOGRAPHIC_CAMERA, EQUIRECTANGULAR_CAMERA, NUM_CAMERA_STYLE } Style_t ;
        void nextStyle(unsigned modifiers);
        void setStyle(Camera::Style_t style);
-       Camera::Style_t getStyle();
+
+       void setPerspective() ; 
+       void setOrthographic() ; 
+       void setEquirectangular() ; 
+
+       Camera::Style_t getStyle() const ;
        bool isOrthographic() const ; 
        bool hasNoRasterizedRender() const ;  
    public:
@@ -183,7 +187,7 @@ class OKCORE_API Camera : public NConfigurable  {
      void scale_to( float x, float y, float dx, float dy );
   public:
      // infrequent inputs 
-     void setParallel(unsigned parallel);
+     void setType(unsigned type);
      void setSize(int width, int height );
      void setPixelFactor(unsigned int factor);
   public:
@@ -198,7 +202,7 @@ class OKCORE_API Camera : public NConfigurable  {
      void setZoomClip(float _min, float _max);
      void setScaleClip(float _min, float _max);
   public:
-     unsigned getParallel();
+     unsigned getType() const ;
      float getAspect(); // width/height (> 1 for landscape)
   public:
      // sets near, far and the ortho scale 
@@ -235,7 +239,7 @@ class OKCORE_API Camera : public NConfigurable  {
      float* getFarPtr();
      float* getZoomPtr();
      float* getScalePtr();
-     unsigned* getParallelPtr();
+     unsigned* getTypePtr();
   public:
      float getDepth() const ;
   public:
@@ -267,7 +271,7 @@ class OKCORE_API Camera : public NConfigurable  {
      float m_zoom ;
      float m_scale ; 
 
-     unsigned m_parallel ; 
+     unsigned m_type ; 
      bool m_changed ; 
 
 };

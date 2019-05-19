@@ -35,7 +35,7 @@ const char* Camera::FAR_      = "far" ;
 const char* Camera::ZOOM     = "zoom" ;
 const char* Camera::SCALE     = "scale" ;
 
-const char* Camera::PARALLEL = "parallel" ;
+const char* Camera::TYPE   = "type" ;         // formerly PARALLEL/parallel
 
 
 const char* Camera::getPrefix()
@@ -100,11 +100,11 @@ void Camera::configure(const char* name, const char* val_)
 
 void Camera::configure(const char* name, float value)
 {
-    if( strcmp(name, ZOOM) ==  0)      setZoom(value);
-    else if( strcmp(name, SCALE) ==  0)     setScale(value);
-    else if( strcmp(name, NEAR_) ==  0)      setNear(value);
-    else if( strcmp(name, FAR_) ==  0)       setFar(value);
-    else if( strcmp(name, PARALLEL) ==  0)  setParallel( value==0.f ? false : true );
+    if( strcmp(name, ZOOM) ==  0)        setZoom(value);
+    else if( strcmp(name, SCALE) ==  0)  setScale(value);
+    else if( strcmp(name, NEAR_) ==  0)  setNear(value);
+    else if( strcmp(name, FAR_) ==  0)   setFar(value);
+    else if( strcmp(name, TYPE) ==  0)   setType(unsigned(value));
     else
         printf("Camera::configure ignoring unknown parameter %s : %10.3f \n", name, value); 
 }
@@ -153,7 +153,7 @@ void Camera::configureF(const char* name, std::vector<float> values)
 Camera::Camera(int width, int height, float basis ) 
        :
          m_zoom(1.0f),
-         m_parallel(0u),
+         m_type(0u),
          m_changed(true)
 {
     setSize(width, height);
@@ -253,35 +253,35 @@ void Camera::nextStyle(unsigned modifiers)
 
 bool Camera::isOrthographic() const 
 {
-    return (Style_t)m_parallel == ORTHOGRAPHIC_CAMERA ; 
+    return (Style_t)m_type == ORTHOGRAPHIC_CAMERA ; 
 } 
 
 bool Camera::hasNoRasterizedRender() const 
 {
-    return (Style_t)m_parallel == EQUIRECTANGULAR_CAMERA ;    // equirect is easy wih a ray tracer, difficult with a rasterizer : currently only have for 
+    return (Style_t)m_type == EQUIRECTANGULAR_CAMERA ;    // equirect is easy wih a ray tracer, difficult with a rasterizer : currently only have for 
 } 
-
-
 
 void Camera::setStyle(Style_t style)
 {
-    setParallel( unsigned(style) );   
-
+    setType( unsigned(style) );   
 }
-Camera::Style_t Camera::getStyle()
+Camera::Style_t Camera::getStyle() const 
 {
-    return (Style_t)(m_parallel) ;
+    return (Style_t)(m_type) ;
 }
-
-
-
-void Camera::setParallel(unsigned parallel)
+void Camera::setType(unsigned type)
 {
-    m_parallel = parallel ;
+    m_type = type  ;
     m_changed = true ; 
-    LOG(info) << " parallel " << m_parallel ; 
+    LOG(info) << " type " << m_type ; 
 }
-unsigned Camera::getParallel(){ return m_parallel ; }
+
+void Camera::setPerspective(){  setStyle(PERSPECTIVE_CAMERA) ; }
+void Camera::setOrthographic(){ setStyle(ORTHOGRAPHIC_CAMERA) ; }
+void Camera::setEquirectangular(){ setStyle(EQUIRECTANGULAR_CAMERA) ; }
+
+
+unsigned Camera::getType() const { return m_type ; }
 
 void Camera::setSize(int width, int height )
 {
@@ -440,9 +440,9 @@ float* Camera::getScalePtr()
 {
     return &m_scale ;
 }
-unsigned* Camera::getParallelPtr()
+unsigned* Camera::getTypePtr()
 {
-    return &m_parallel ;
+    return &m_type ;
 }
 
 
@@ -496,13 +496,13 @@ float Camera::getScaleMax()
 
 void Camera::Print(const char* msg)
 {
-    printf("%s parallel %d  near %10.3f far %10.3f zoom %10.3f scale %10.3f \n", msg, m_parallel, m_near, m_far, m_zoom, getScale() );
+    printf("%s type %d  near %10.3f far %10.3f zoom %10.3f scale %10.3f \n", msg, m_type, m_near, m_far, m_zoom, getScale() );
 }
 
 
 void Camera::Summary(const char* msg)
 {
-    printf("%s  parallel %d \n", msg, m_parallel );
+    printf("%s  type %d \n", msg, m_type );
     printf(" width %5d height %5d  aspect %10.3f \n", m_size[0], m_size[1], getAspect() );
     printf(" near %10.3f  clip %10.3f %10.3f \n", m_near, m_nearclip[0], m_nearclip[1] );
     printf(" far  %10.3f  clip %10.3f %10.3f \n", m_far , m_farclip[0], m_farclip[1] );
@@ -595,7 +595,6 @@ void Camera::getFrustumVert(std::vector<glm::vec4>& vert, std::vector<std::strin
     vert.push_back( glm::vec4( q*getLeft(),  q*getTop(),    -far_  , 1.f ) );
     labels.push_back("far-top-left");
 }
-
 
 
 

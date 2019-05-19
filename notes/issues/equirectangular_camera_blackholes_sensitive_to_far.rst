@@ -30,11 +30,6 @@ issue 1
     }
 
 
-issue 2
------------
-
-
-I think its not a full 360 view, as can only see one pole (maybe just 180).
 
 
 
@@ -50,6 +45,17 @@ First try to fix
    I was thinking that mismatched camera style depth information from the rasterized frame was having 
    an effect in the compositing 
    
+
+Second try worked, simply use fixed depth for the raytrace
+-------------------------------------------------------------
+
+Simply use fixed depth for the raytrace with EQUIRECTANGULAR_CAMERA as there is no rasterized equivalent to composite with anyhow
+
+::
+
+   36     prd.result = make_float4(intensity, intensity, intensity, parallel == 2u ? 0.5f : zHit_clip ); // hijack .w for the depth, see notes/issues/equirectangular_camera_blackholes_sensitive_to_far.rst  
+
+
 
 
 Review the depth calculation and how compositing works

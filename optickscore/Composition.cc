@@ -1033,7 +1033,7 @@ unsigned int Composition::getPixelFactor()
 
 void Composition::setSize(const glm::uvec4& size)
 {
-    LOG(debug) << "Composition::setSize "
+    LOG(error)
               << " x " << size.x 
               << " y " << size.y 
               << " z " << size.z
@@ -1421,9 +1421,9 @@ void Composition::aim(glm::vec4& ce, bool verbose)
 
 
 
-unsigned Composition::getParallel()
+unsigned Composition::getCameraType() const 
 {
-    return m_camera->getParallel();
+    return m_camera->getType();
 }
 
 
@@ -1976,18 +1976,18 @@ float Composition::getNDCDepth(const glm::vec4& position_world)
     float eyeDist = position_eye.z ;   // from eye frame definition, this is general
     assert(eyeDist <= 0.f ); 
 
-    bool parallel = m_camera->getParallel() ;
-    
-    // un-homogenizing divides by -z in perspective case
-
     glm::vec4 zproj ; 
     m_camera->fillZProjection(zproj);
-
-    float ndc_z = parallel ?
-                              zproj.z*eyeDist + zproj.w
-                           :
-                             -zproj.z - zproj.w/eyeDist
-                           ;     
+        
+    Camera::Style_t camstyle = m_camera->getStyle() ;
+    float ndc_z(0.f) ;
+    switch( camstyle )
+    { 
+        case Camera::PERSPECTIVE_CAMERA:      ndc_z = -zproj.z - zproj.w/eyeDist ; break ;  // un-homogenizing divides by -z in perspective case
+        case Camera::ORTHOGRAPHIC_CAMERA:     ndc_z = zproj.z*eyeDist + zproj.w  ; break ;
+        case Camera::EQUIRECTANGULAR_CAMERA:  ndc_z = zproj.z*eyeDist + zproj.w  ; break ; 
+        default:                              assert(0) ; 
+    }
 
 
     if(0)
@@ -1999,9 +1999,6 @@ float Composition::getNDCDepth(const glm::vec4& position_world)
               << " ndc_z " << ndc_z
               << " proj " << gformat(m_projection)
               ;
-
-
-
 
     // range -1:1 for visibles
     return ndc_z ; 
@@ -2020,16 +2017,23 @@ void Composition::getEyeUVW(glm::vec3& eye, glm::vec3& U, glm::vec3& V, glm::vec
 {
     update();
 
-
-    bool parallel = m_camera->getParallel();  
+    Camera::Style_t camstyle = m_camera->getStyle() ;
     float scale = m_camera->getScale(); 
-    float length   = parallel ? scale : m_gazelength ; 
+
+    float length(0.f) ; 
+    switch( camstyle )
+    { 
+        case Camera::PERSPECTIVE_CAMERA:      length = m_gazelength ; break ;  
+        case Camera::ORTHOGRAPHIC_CAMERA:     length = scale        ; break ;
+        case Camera::EQUIRECTANGULAR_CAMERA:  length = m_gazelength ; break ;   // placeholder, as dont know what to put 
+        default:                              assert(0) ; 
+    }
 
    /*
     float near  = m_camera->getNear();  
     float basis = m_camera->getBasis() ; 
     LOG(info) 
-         << " parallel " << parallel 
+         << " camstyle " << camstyle 
          << " scale " << scale 
          << " basis " << basis 
          << " near " << near 
@@ -2054,7 +2058,7 @@ void Composition::getEyeUVW(glm::vec3& eye, glm::vec3& U, glm::vec3& V, glm::vec
 
     glm::vec4 right( 1., 0., 0., 0.);
     glm::vec4   top( 0., 1., 0., 0.);
-    glm::vec4  gaze( 0., 0.,-1., 0.);
+    glm::vec4  gaze( 0., 0.,-1., 0.);   // towards -Z
 
     glm::vec4 origin(0., 0., 0., 1.);
 

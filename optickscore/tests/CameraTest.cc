@@ -14,7 +14,7 @@ int main()
 
     c->setNear(n);
     c->setFar(f);
-    c->setParallel(false) ;
+    c->setPerspective() ;  
 
     c->Summary();
 
@@ -23,7 +23,7 @@ int main()
 
     c->fillZProjection(zpers);
 
-    c->setParallel(true) ;
+    c->setOrthographic() ;   
     c->fillZProjection(zpara);
 
 
@@ -56,8 +56,6 @@ int main()
     float ndcDepth_para_f = zpara.z*(-f) + zpara.w ;    
 
     printf("(parallel)    at eyeDist=-n or -f, ndcDepth %10.4f %10.4f \n", ndcDepth_para_n, ndcDepth_para_f  );
-
-
 
 
 

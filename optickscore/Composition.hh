@@ -340,7 +340,7 @@ class OKCORE_API Composition : public NConfigurable {
 
   public: 
       void test_getEyeUVW();
-      unsigned getParallel();
+      unsigned getCameraType() const ;   // formerly getParallel
       unsigned getTimeTrace() const ;
       void getEyeUVW(glm::vec3& eye, glm::vec3& U, glm::vec3& V, glm::vec3& W, glm::vec4& ZProj);
       void getEyeUVW_no_trackball(glm::vec3& eye, glm::vec3& U, glm::vec3& V, glm::vec3& W);

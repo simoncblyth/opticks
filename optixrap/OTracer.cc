@@ -105,14 +105,14 @@ void OTracer::trace_()
 
     m_composition->getEyeUVW(eye, U, V, W, ZProj); // must setModelToWorld in composition first
 
-    unsigned parallel = m_composition->getParallel();  // 0:PERSP, 1:ORTHO, 2:EQUIRECT
+    unsigned cameratype = m_composition->getCameraType();  // 0:PERSP, 1:ORTHO, 2:EQUIRECT
     unsigned pixeltime_style = m_composition->getPixelTimeStyle() ; 
     float    pixeltime_scale = m_composition->getPixelTimeScale() ; 
     float      scene_epsilon = m_composition->getNear();
 
     const glm::vec3 front = glm::normalize(W); 
 
-    m_context[ "parallel"]->setUint( parallel ); 
+    m_context[ "cameratype"]->setUint( cameratype ); 
     m_context[ "pixeltime_style"]->setUint( pixeltime_style ); 
     m_context[ "pixeltime_scale"]->setFloat( pixeltime_scale ); 
     m_context[ "scene_epsilon"]->setFloat(scene_epsilon); 

@@ -865,7 +865,7 @@ void Scene::render()
             m_raytrace_renderer->render() ;
   
         if(raytraced) return ; 
-        if(composite && norasterized) return ;    // avoid depth black holes with EQUIRECTANGULAR_CAMERA 
+        if(composite && norasterized) return ;  // didnt fix notes/issues/equirectangular_camera_blackholes_sensitive_to_far.rst
     }
 
 
