@@ -84,7 +84,7 @@ RT_PROGRAM void pinhole_camera()
       // azimuthal angle "phi"   :  -pi   -> pi
       // polar angle     "theta" :  -pi/2 -> pi/2
 
-      float2 azipol = make_float2(launch_index) / make_float2(launch_dim) * make_float2(2.0f * M_PIf , M_PIf) + make_float2(M_PIf, 0.0f );
+      float2 azipol = make_float2(launch_index) / make_float2(launch_dim) * make_float2(2.0f * M_PIf , M_PIf) ; // + make_float2(M_PIf, 0.0f );
  
       //float2 azipol = make_float2(launch_index) / make_float2(launch_dim) * make_float2(2.0f*M_PIf , M_PIf ) ;
       //float2 azipol = d * make_float2(M_PIf , M_PIf/2.0f ) ;   // <- puts most distortion along horizontal center line

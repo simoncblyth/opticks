@@ -382,7 +382,6 @@ void GUI::camera_gui(Camera* camera)
     ImGui::SliderFloat("far",  camera->getFarPtr(),  camera->getFarMin(),  camera->getFarMax() , "%.3f", power );
     ImGui::SliderFloat("zoom", camera->getZoomPtr(), camera->getZoomMin(), camera->getZoomMax(), "%.3f", power);
     ImGui::SliderFloat("scale",camera->getScalePtr(),camera->getScaleMin(),camera->getScaleMax(), "%.3f", power);
-    //ImGui::Checkbox("parallel", camera->getParallelPtr() );  have changed to 3 way: PERSPECTIVE/ORTHOGRAPHIC/EQUIRECTANGULAR 
     if (ImGui::Button("Camera Summary")) camera->Summary();
     if (ImGui::Button("Camera setChanged")) camera->setChanged(true);
 }
