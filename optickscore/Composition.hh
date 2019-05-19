@@ -176,6 +176,7 @@ class OKCORE_API Composition : public NConfigurable {
    public:
        // D_KEY
        void nextCameraStyle(unsigned modifiers);
+       bool hasNoRasterizedRender() const ;    // EQUIRECTANGULAR camera currently only works in raytrace
    public:
        typedef enum { DEF_NORMAL, FLIP_NORMAL, NUM_NORMAL_STYLE } NormalStyle_t ;
        void nextNormalStyle();   // changes m_nrmparam.x

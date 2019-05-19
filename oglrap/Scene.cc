@@ -857,6 +857,7 @@ void Scene::render()
 
     bool raytraced = m_composition->isRaytracedRender() ;
     bool composite = m_composition->isCompositeRender() ;
+    bool norasterized = m_composition->hasNoRasterizedRender() ;
 
     if(raytraced || composite)
     {
@@ -864,6 +865,7 @@ void Scene::render()
             m_raytrace_renderer->render() ;
   
         if(raytraced) return ; 
+        if(composite && norasterized) return ;    // avoid depth black holes with EQUIRECTANGULAR_CAMERA 
     }
 
 

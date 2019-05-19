@@ -256,6 +256,13 @@ bool Camera::isOrthographic() const
     return (Style_t)m_parallel == ORTHOGRAPHIC_CAMERA ; 
 } 
 
+bool Camera::hasNoRasterizedRender() const 
+{
+    return (Style_t)m_parallel == EQUIRECTANGULAR_CAMERA ;    // equirect is easy wih a ray tracer, difficult with a rasterizer : currently only have for 
+} 
+
+
+
 void Camera::setStyle(Style_t style)
 {
     setParallel( unsigned(style) );   

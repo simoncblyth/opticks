@@ -148,11 +148,12 @@ class OKCORE_API Camera : public NConfigurable  {
      void setChanged(bool changed); 
 
    public:
-       typedef enum { PERSPECTIVE_CAMERA, ORTHOGRAPHIC_CAMERA, EQUIRECT_CAMERA, NUM_CAMERA_STYLE } Style_t ;
+       typedef enum { PERSPECTIVE_CAMERA, ORTHOGRAPHIC_CAMERA, EQUIRECTANGULAR_CAMERA, NUM_CAMERA_STYLE } Style_t ;
        void nextStyle(unsigned modifiers);
        void setStyle(Camera::Style_t style);
        Camera::Style_t getStyle();
        bool isOrthographic() const ; 
+       bool hasNoRasterizedRender() const ;  
    public:
        void commandNear( const char* cmd );
 

@@ -780,7 +780,10 @@ void Composition::nextCameraStyle(unsigned modifiers)
 {
     m_camera->nextStyle(modifiers);
 }
-
+bool Composition::hasNoRasterizedRender() const 
+{
+    return m_camera->hasNoRasterizedRender() ; 
+}
 
 
 void Composition::commandAnimatorMode(const char* cmd)
