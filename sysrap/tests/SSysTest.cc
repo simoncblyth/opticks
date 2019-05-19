@@ -43,6 +43,15 @@ void test_DumpEnv()
     SSys::DumpEnv("OPTICKS"); 
 }
 
+void test_IsNegativeZero()
+{
+    float f = -0.f ; 
+    float z = 0.f ; 
+
+    assert( SSys::IsNegativeZero(f) == true ); 
+    assert( SSys::IsNegativeZero(z) == false ); 
+    assert( SSys::IsNegativeZero(-1.f) == false ); 
+}
 
 
 int main(int argc , char** argv )
@@ -59,7 +68,9 @@ int main(int argc , char** argv )
 
     //LOG(info) << argv[0] << " rc " << rc ; 
    
-    test_DumpEnv();
+    //test_DumpEnv();
+
+    test_IsNegativeZero(); 
 
     return rc  ; 
 }

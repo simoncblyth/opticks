@@ -156,7 +156,8 @@ Camera::Camera(int width, int height, float basis )
          m_type(0u),
          m_changed(true)
 {
-    setSize(width, height);
+    bool internal = true ; 
+    setSize(width, height, internal);
     setPixelFactor(1); 
 
     aim(basis);
@@ -283,8 +284,9 @@ void Camera::setEquirectangular(){ setStyle(EQUIRECTANGULAR_CAMERA) ; }
 
 unsigned Camera::getType() const { return m_type ; }
 
-void Camera::setSize(int width, int height )
+void Camera::setSize(int width, int height, bool internal )
 {
+    // externally invoked by OpticksHub::configureCompositionSize/Composition::setSize
     m_size[0] = width ;
     m_size[1] = height ;
     m_aspect  = (float)width/(float)height ;   // (> 1 for landscape) 

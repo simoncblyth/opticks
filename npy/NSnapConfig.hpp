@@ -29,8 +29,15 @@ struct NPY_API NSnapConfig
     int verbosity ; 
     int steps ; 
     int fmtwidth ; 
-    float eyestartz ; 
+
+    float eyestartx ; 
+    float eyestarty ; 
+    float eyestartz ;
+ 
+    float eyestopx ; 
+    float eyestopy ; 
     float eyestopz ; 
+
     std::string prefix ; 
     std::string postfix ; 
 

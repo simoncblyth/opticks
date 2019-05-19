@@ -446,7 +446,7 @@ void GInstancer::labelRepeats_r( GNode* node, unsigned int ridx)
     unsigned lvidx = node->getMeshIndex();  
     m_meshset[ridx].insert( lvidx ) ; 
 
-    if( m_ok->isCSGSkipLV(lvidx) )
+    if( m_ok->isCSGSkipLV(lvidx) )   // --csgskiplv
     {
         GVolume* vol = dynamic_cast<GVolume*>(node); 
         vol->setCSGSkip(true);      
@@ -478,7 +478,7 @@ void GInstancer::traverseGlobals_r( GNode* node, unsigned depth )
     unsigned lvidx = node->getMeshIndex();  
     m_meshset[ridx].insert( lvidx ) ; 
 
-    if( m_ok->isCSGSkipLV(lvidx) )
+    if( m_ok->isCSGSkipLV(lvidx) )   // --csgskiplv
     {
         GVolume* vol = dynamic_cast<GVolume*>(node); 
         vol->setCSGSkip(true);      

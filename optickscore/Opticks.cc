@@ -413,6 +413,12 @@ bool Opticks::isCSGSkipLV(unsigned lvIdx) const
 {
    return m_dbg->isCSGSkipLV(lvIdx);
 }
+unsigned Opticks::getNumCSGSkipLV() const 
+{
+   return m_dbg->getNumCSGSkipLV() ; 
+}
+
+
 bool Opticks::isEnabledMergedMesh(unsigned mm) const 
 {
    return m_dbg->isEnabledMergedMesh(mm);
@@ -478,6 +484,14 @@ int Opticks::getDbgNode() const
 {
    return m_cfg->getDbgNode();
 }
+int Opticks::getDbgMM() const 
+{
+   return m_cfg->getDbgMM();
+}
+
+
+
+
 
 int Opticks::getStack() const 
 {
@@ -587,6 +601,16 @@ const char* Opticks::getRenderCmd() const
     const std::string& s = m_cfg->getRenderCmd();
     return s.empty() ? NULL : s.c_str();
 }
+
+const char* Opticks::getCSGSkipLV() const 
+{
+    const std::string& s = m_cfg->getCSGSkipLV();
+    return s.empty() ? NULL : s.c_str();
+}
+
+
+
+
 
 
 const char* Opticks::getLVSDName() const 
@@ -1456,8 +1480,10 @@ void Opticks::checkOptionValidity()
    }
 }
 
-
-
+bool Opticks::isConfigured() const
+{
+    return m_configured ; 
+}
 void Opticks::configure()
 {
     if(m_configured) 
@@ -1501,7 +1527,11 @@ void Opticks::configure()
     }
     else if(m_cfg->hasOpt("fullscreen"))
     {
+#ifdef __APPLE__
         m_size = glm::uvec4(2880,1800,2,0) ;
+#else
+        m_size = glm::uvec4(2560,1440,1,0) ;
+#endif
     } 
     else
     {
@@ -1554,6 +1584,9 @@ void Opticks::configure()
 
     m_photons_per_g4event = m_cfg->getNumPhotonsPerG4Event();
     m_dbg->postconfigure();
+
+
+
 
     m_verbosity = m_cfg->getVerbosity(); 
 
@@ -1675,9 +1708,14 @@ void Opticks::setSpaceDomain(float x, float y, float z, float w)
     configureDomains();
 }
 
-int Opticks::getMultiEvent()
+int Opticks::getMultiEvent() const 
 {    
     return m_cfg->getMultiEvent();
+}
+
+int Opticks::getCameraType() const 
+{    
+    return m_cfg->getCameraType();
 }
 
 

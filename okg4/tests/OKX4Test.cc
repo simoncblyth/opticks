@@ -67,6 +67,11 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv);
 
+    for(int i=0 ; i < argc ; i++)  
+        LOG(info) << i << " " << argv[i] ; 
+
+
+
     //G4VPhysicalVolume* top = make_top(argc, argv); 
 
     const char* gdmlpath = PLOG::instance->get_arg_after("--gdmlpath", NULL) ; 
@@ -97,6 +102,11 @@ int main(int argc, char** argv)
 
     Opticks* ok = new Opticks(argc, argv, argforce);  // Opticks instanciation must be after Opticks::SetKey
     ok->configure();
+
+    const char* csgskiplv = ok->getCSGSkipLV();
+    LOG(info) << " csgskiplv " << ( csgskiplv ? csgskiplv : "NONE" ) ;  
+    //assert( csgskiplv );  
+
 
     ok->profile("_OKX4Test:GGeo"); 
 

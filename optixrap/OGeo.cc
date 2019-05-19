@@ -584,6 +584,7 @@ optix::Geometry OGeo::makeAnalyticGeometry(GMergedMesh* mm, unsigned lod)
 {
     m_lodidx = lod ; 
 
+
     if(m_verbosity > 2)
     LOG(warning) << "OGeo::makeAnalyticGeometry START" 
                  << " verbosity " << m_verbosity 
@@ -606,7 +607,16 @@ optix::Geometry OGeo::makeAnalyticGeometry(GMergedMesh* mm, unsigned lod)
         LOG(debug) << " skip GParts::close " ; 
     }
     
-    LOG(info) << "pts: " << pts->desc() ; 
+    LOG(info) << "mm " << mm->getIndex() << " pts: " << pts->desc() ; 
+
+    int dbgmm =  m_ok->getDbgMM() ; 
+    if(dbgmm > -1 && mm->getIndex() == unsigned(dbgmm))
+    {
+        LOG(fatal) << "dumping as instructed by : --dbgmm " << dbgmm ;   
+        mm->dumpVolumesSelected("OGeo::makeAnalyticGeometry"); 
+    }
+
+
 
     if(m_verbosity > 3 || m_ok->hasOpt("dbganalytic")) pts->fulldump("--dbganalytic", 10) ;
 

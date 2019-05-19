@@ -30,6 +30,10 @@ const char* RenderStyle::RenderStyleName(RenderStyle_t style) // static
        case R_COMPOSITE:  s = R_COMPOSITE_  ; break ; 
        case NUM_RENDER_STYLE: s = NULL      ; break ; 
     }
+    if(s == NULL)
+    {
+        LOG(fatal) << "invalid render style " << style ;  
+    }
     assert(s);  
     return s ; 
 }

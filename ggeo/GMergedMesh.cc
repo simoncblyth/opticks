@@ -260,9 +260,10 @@ void GMergedMesh::traverse_r( GNode* node, unsigned int depth, unsigned int pass
     unsigned ridx = volume->getRepeatIndex() ;
 
     bool repsel =  idx == -1 || ridx == uidx ;
-    bool csgskip = volume->isCSGSkip() ; 
+    bool csgskip = volume->isCSGSkip() ;     // --csgskiplv
     bool selected_ =  volume->isSelected() && repsel ;
-    bool selected = selected_ && !csgskip ;
+    bool selected = selected_ && !csgskip ;     // selection honoured by both triangulated and analytic 
+
 
     if(pass == PASS_COUNT)
     {
@@ -299,7 +300,6 @@ void GMergedMesh::traverse_r( GNode* node, unsigned int depth, unsigned int pass
 void GMergedMesh::countVolume( GVolume* volume, bool selected, unsigned verbosity )
 {
     const GMesh* mesh = volume->getMesh();
-
     m_num_volumes += 1 ; 
 
     if(selected)

@@ -321,6 +321,11 @@ class OKCORE_API Composition : public NConfigurable {
       void setLookW(const glm::vec4& lookw);
       void setLookW(std::string lookw);
   public:
+      void setEye(float _x, float _y, float _z);
+  public:
+      float getEyeX() const ;  
+      float getEyeY() const ;  
+      float getEyeZ() const ;  
       void setEyeX(float _x);
       void setEyeY(float _y);
       void setEyeZ(float _z);
@@ -362,6 +367,7 @@ class OKCORE_API Composition : public NConfigurable {
       Light*     getLight(); 
       Clipper*   getClipper(); 
      
+      void setCameraType(unsigned cameratype);
       void setCamera(Camera* camera);
       void setView(View* view);
       void resetView();

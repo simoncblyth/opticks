@@ -1,14 +1,15 @@
+// TEST=OpticksCfgTest om-t
+
 #include "NSnapConfig.hpp"
 
 #include "Opticks.hh"
 #include "OpticksCfg.hh"
 
-#include "OKCORE_BODY.hh"
-#include "PLOG.hh"
+#include "OPTICKS_LOG.hh"
 
 int main(int argc, char** argv)
 {
-    PLOG_(argc, argv);
+    OPTICKS_LOG(argc, argv);
 
     LOG(info) << argv[0] ;
 
@@ -34,6 +35,16 @@ int main(int argc, char** argv)
 
     NSnapConfig* sc = ok->getSnapConfig();
     sc->dump("SnapConfig");
+
+
+
+
+
+
+    //const std::string& csgskiplv = ocfg->getCSGSkipLV(); 
+    //LOG(info) << " csgskiplv " << csgskiplv ; 
+
+
 
     LOG(info) << "DONE "  ;
 

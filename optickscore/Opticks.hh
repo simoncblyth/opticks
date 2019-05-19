@@ -127,6 +127,7 @@ class OKCORE_API Opticks {
        void initResource();
    public:
        void configure();  // invoked after commandline parsed
+       bool isConfigured() const ;  
    private:
        void configureCheckGeometryFiles()  ; // non-const may setExit 
        void configureGeometryHandling() ; 
@@ -231,6 +232,7 @@ class OKCORE_API Opticks {
        unsigned long long getDbgSeqmat();
        int   getDebugIdx() const ;
        int   getDbgNode() const ;
+       int   getDbgMM() const ;
        int   getStack() const ;
        int getMeshVerbosity() const ;
        const char* getFlightPathDir() const ;
@@ -299,6 +301,8 @@ class OKCORE_API Opticks {
        OpticksCfg<Opticks>* getCfg() const ;
        const char*          getRenderMode() const ;
        const char*          getRenderCmd() const ;
+       const char*          getCSGSkipLV() const ;
+
        const char*          getLVSDName() const ;
        const char*          getCathode() const ;
        const char*          getCerenkovClass() const ;
@@ -348,6 +352,8 @@ class OKCORE_API Opticks {
        bool isMaskPhoton(unsigned record_id) const ;
        bool isX4PolySkip(unsigned lvIdx) const ;
        bool isCSGSkipLV(unsigned lvIdx) const ;
+       unsigned getNumCSGSkipLV() const ;
+
        bool isEnabledMergedMesh(unsigned mm) const ;
        unsigned getInstanceModulo(unsigned mm) const ;
 
@@ -370,7 +376,8 @@ class OKCORE_API Opticks {
        BParameters*         getParameters() const ;
        NState*              getState() const ;
    public:
-       int                  getMultiEvent();
+       int                  getMultiEvent() const ;
+       int                  getCameraType() const ;
    public:
        unsigned int         getSourceCode() const ;
        const char*          getSourceType() const ;

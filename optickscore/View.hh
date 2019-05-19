@@ -78,6 +78,9 @@ public:
    void setEyeY( float _y);
    void setEyeZ( float _z);
 
+   float getEyeX() const ; 
+   float getEyeY() const ; 
+   float getEyeZ() const ; 
 
    void setLook(float _x, float _y, float _z);
    void setUp(  float _x, float _y, float _z);

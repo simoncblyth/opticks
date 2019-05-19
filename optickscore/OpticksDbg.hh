@@ -43,7 +43,7 @@ class OKCORE_API OpticksDbg
        bool isOtherPhoton(unsigned record_id) const ;
        bool isMaskPhoton(unsigned record_id) const ;
        bool isX4PolySkip(unsigned lvIdx) const ;
-       bool isCSGSkipLV(unsigned lvIdx) const ;
+       bool isCSGSkipLV(unsigned lvIdx) const ;   // --csgskiplv
        bool isEnabledMergedMesh(unsigned mm) const ;
     public:
        unsigned getInstanceModulo(unsigned mm) const ; 

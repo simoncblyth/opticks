@@ -1263,6 +1263,11 @@ instances hitched to the created GMergedMesh.
 
 void GGeo::prepareVolumes()
 {
+    unsigned numcsgskiplv = m_ok->getNumCSGSkipLV() ; 
+
+    LOG(fatal) << " numcsgskiplv " << numcsgskiplv ; 
+    //assert( numcsgskiplv > 0 && "temporary" ); 
+
     bool instanced = m_ok->isInstanced();
     unsigned meshverbosity = m_ok->getMeshVerbosity() ; 
 

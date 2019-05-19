@@ -57,7 +57,7 @@ class OKCORE_API OpticksCfg : public BCfg {
      const std::string& getOtherIndex();
      const std::string& getMask() const ;
      const std::string& getX4PolySkip() const ;
-     const std::string& getCSGSkipLV() const ;  
+     const std::string& getCSGSkipLV() const ;    // --csgskiplv
      const std::string& getAccel();
 
      const std::string& getSeqMap() const ;
@@ -94,14 +94,16 @@ class OKCORE_API OpticksCfg : public BCfg {
      int          getTrackViewPeriod(); 
      int          getAnimatorPeriod(); 
      int          getRepeatIndex(); 
-     int          getMultiEvent(); 
+     int          getMultiEvent() const ; 
      const std::string& getEnabledMergedMesh() const ; 
-     int          getAnalyticMesh(); 
+     int          getAnalyticMesh() const ; 
+     int          getCameraType() const ; 
      int          getModulo(); 
      int          getOverride(); 
 
      int          getDebugIdx() const ; 
      int          getDbgNode() const ;  
+     int          getDbgMM() const ;  
      int          getStack() const ; 
 
      int          getNumPhotonsPerG4Event(); 
@@ -210,10 +212,12 @@ private:
      int         m_multievent ; 
      std::string m_enabledmergedmesh; 
      int         m_analyticmesh; 
+     int         m_cameratype; 
      int         m_modulo ; 
      int         m_override ; 
      int         m_debugidx ; 
      int         m_dbgnode ; 
+     int         m_dbgmm ; 
      int         m_stack ; 
      int         m_num_photons_per_g4event;
      int         m_loadverbosity ; 

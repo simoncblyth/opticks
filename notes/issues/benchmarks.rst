@@ -332,6 +332,7 @@ restrict to mm2 : 20k 20-inch PMT
 * RTX mode not helping 
 
 
+::
 
      geocache-;geocache-bench --xanalytic --enabledmergedmesh 2        ## reproducibility check 
 
@@ -374,6 +375,23 @@ restrict to mm2 : 20k 20-inch PMT
                          R1_TITAN_V      0.314      4.178      0.920 
                        R2_TITAN_RTX      0.341      4.534      0.998 
                        R1_TITAN_RTX      0.342      4.543      1.000 
+
+
+
+
+test with simplified mm2 : much faster, and RTX does not hinder
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
+
+With the geocache-j1808-v4-t1 geometry ie with --csgskiplv 22,17,20,18,19     ## leave just 21, see notes/issues/review-analytic-geometry.rst  
+are much faster and RTX does not hinder::
+
+     OpSnapTest --envkey --target 352851 --eye -1,-1,-1 --snapconfig steps=5,eyestartz=-1,eyestopz=-0.5 --size 5120,2880,1 --embedded --cvd 0,1 --rtx 0 --runfolder geocache-bench --runstamp 1558280460 --runlabel R0_TITAN_V_AND_TITAN_RTX --xanalytic --enabledmergedmesh 2
+                    20190519_234100  launchAVG      rfast      rslow      prelaunch000 
+           R0_TITAN_V_AND_TITAN_RTX      0.045      1.000      0.546          24.067 
+                         R1_TITAN_V      0.066      1.471      0.803           2.823 
+                         R0_TITAN_V      0.078      1.741      0.951          11.123 
+                       R1_TITAN_RTX      0.080      1.798      0.981           2.928 
+                       R0_TITAN_RTX      0.082      1.832      1.000          13.503 
 
 
 

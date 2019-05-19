@@ -21,6 +21,7 @@ class SYSRAP_API SSys {
      static const unsigned SIGNBIT32 ;
      static const unsigned OTHERBIT32 ; 
 
+     static bool IsNegativeZero(float f);
      static void DumpEnv(const char* pfx="OPTICKS" ); // static
 
      static const char* fmt(const char* tmpl="hello%u.npy", unsigned val=0);

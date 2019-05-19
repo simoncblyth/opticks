@@ -8,13 +8,18 @@ Context
 * :doc:`torus_replacement_on_the_fly`
 
 
+REOPEN : Changing csgskiplv not changing digest
+----------------------------------------------------
+
+* :doc:`review-analytic-geometry`
+
+
 
 Fix Attempt
 ---------------
 
 Get the SDigest pointer passed along recursive heirarchy in
 the hope of making it a full tree digest.
-
 
 
 Issue : removed torus but still same digest

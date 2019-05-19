@@ -188,7 +188,7 @@ class OKCORE_API Camera : public NConfigurable  {
   public:
      // infrequent inputs 
      void setType(unsigned type);
-     void setSize(int width, int height );
+     void setSize(int width, int height, bool internal=false);
      void setPixelFactor(unsigned int factor);
   public:
      unsigned int getWidth();

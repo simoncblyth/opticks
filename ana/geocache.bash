@@ -260,6 +260,22 @@ geocache-j1808-v4()
 }
 
 
+geocache-j1808-v4-t1()
+{
+    local iwd=$PWD
+    local tmp=$(geocache-tmp $FUNCNAME)
+    mkdir -p $tmp && cd $tmp
+
+    type $FUNCNAME
+    opticksdata- 
+
+    gdb --args \
+    OKX4Test --cvd 1 --gdmlpath $(opticksdata-jv4) --csgskiplv 22,17,20,18,19     ## leave just 21, see notes/issues/review-analytic-geometry.rst  
+
+    cd $iwd
+}
+
+
 
 
 
@@ -399,6 +415,8 @@ geocache-360()
    local cvd=1
    UseOptiX --cvd $cvd 
 
+   local cameratype=2  # EQUIRECTANGULAR
+
    $dbg OKTest \
                 --cvd $cvd \
                 --envkey \
@@ -406,17 +424,133 @@ geocache-360()
                 --target 62594  \
                 --eye 0,0,0  \
                 --tracer \
-                --look 1,0,0  \
-                --up 0,0,1 \
-                --enabledmergedmesh 2 \
+                --look 0,0,1  \
+                --up 1,0,0 \
+                --cameratype $cameratype \
+                --enabledmergedmesh 1,2,3,4,5 \
+                --rendercmd O1 \
+                --rtx 1 \
                  $*   
 }
 
 geocache-360-notes(){ cat << EON
 
+     --enabledmergedmesh 1,2,3,4,5 \
+           list of mesh indices to include : note that global 0 is excluded in order to see PMTs
+
+     --fullscreen \
+
+     --rendercmd O1 \
+           directly to composite : but actually there is is no projective for EQUIRECTANGULAR
+
+
+360 degree view of all PMTs from the center of the 
+scintillator (raytrace only as distinctly non-trivial to do 
+using the rasterization pipeline).
+
+Uses an equirectangular "projection" : actually 
+just a mapping from pixels (x,y) to 
+azimuthal (-pi:pi) and polar(-pi/2:pi/2) angles. 
 
 EON
 }
+
+geocache-size-notes(){ cat << EON
+
+   factor 4: 58.98 M pixels
+   factor 2: 14.75 M pixels
+
+EON
+}
+
+geocache-size()
+{ 
+   local factor=${1:-2}
+   local width=$((  2560*factor ))
+   local height=$(( 1440*factor ))
+   echo $width,$height,1
+}
+geocache-pixels()
+{
+   local factor=${1:-2}
+   local width=$((  2560*factor ))
+   local height=$(( 1440*factor ))
+   echo $(( $width * $height / 1000000 ))
+}
+
+
+geocache-bench360(){ geocache-rtxcheck $FUNCNAME $* ; }
+geocache-bench360-()
+{
+   type $FUNCNAME
+   UseOptiX $*
+
+   local factor=4
+   local cameratype=2  # EQUIRECTANGULAR : all PMTs in view 
+   local dbg
+   [ -n "$DBG" ] && dbg="gdb --args" || dbg=""
+   $dbg OpSnapTest --envkey \
+                   --target 62594  \
+                   --eye 0,0,0  \
+                   --look 0,0,1  \
+                   --up 1,0,0 \
+                   --snapconfig "steps=5,eyestartx=0.25,eyestopx=0.25,eyestarty=0.25,eyestopy=0.25,eyestartz=0.25,eyestopz=0.25" \
+                   --size $(geocache-size $factor) \
+                   --enabledmergedmesh 1,2,3,4,5 \
+                   --cameratype $cameratype \
+                   --embedded \
+                   $* 
+}
+
+geocache-bench360-notes(){ cat << EON
+
+ geocache-rtxcheck 
+       feeds in arguments : --cvd  --rtx  --run*  
+
+EON
+}
+
+
+
+geocache-snap360()
+{
+   local cvd=1
+   UseOptiX --cvd $cvd 
+
+   local cameratype=2  # EQUIRECTANGULAR : all PMTs in view 
+   #local factor=4   # 4: 58.98 M pixels
+   local factor=2    # 2: 14.75 M pixels
+
+   local dbg
+   [ -n "$DBG" ] && dbg="gdb --args" || dbg=""
+   $dbg OpSnapTest \
+                   --cvd $cvd \
+                   --rtx 1 \
+                   --envkey \
+                   --target 62594  \
+                   --xanalytic \
+                   --eye 0,0,0  \
+                   --look 0,0,1  \
+                   --up 1,0,0 \
+                   --enabledmergedmesh 2 \
+                   --cameratype $cameratype \
+                   --snapconfig "steps=5,eyestartx=0.25,eyestopx=0.25,eyestarty=0.25,eyestopy=0.25,eyestartz=0.25,eyestopz=0.25" \
+                   --size $(geocache-size $factor) \
+                   --embedded \
+                   $* 
+
+}
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -493,24 +627,6 @@ geocache-check()
 
 
 
-geocache-bench2(){ geocache-rtxcheck $FUNCNAME $* ; }
-geocache-bench2-()
-{
-   type $FUNCNAME
-   UseOptiX
-   local dbg
-   [ -n "$DBG" ] && dbg="gdb --args" || dbg=""
-   $dbg OpSnapTest --envkey \
-                   --target 62594  \
-                   --eye 0,0,0  \
-                   --look 1,0,0  \
-                   --up 0,0,1 \
-                   --snapconfig "steps=5,eyestartz=0,eyestopz=0" \
-                   --size 5120,2880,1 \
-                   --embedded \
-                   $* 
-}
-
 
 geocache-bench(){ geocache-rtxcheck $FUNCNAME $* ; }
 geocache-bench-()
@@ -523,6 +639,11 @@ geocache-bench-()
 }
 
 
+geocache-machinery(){ geocache-rtxcheck $FUNCNAME $* ; }
+geocache-machinery-()
+{
+   UseOptiX $* 
+}
 
 
 geocache-rtxcheck()

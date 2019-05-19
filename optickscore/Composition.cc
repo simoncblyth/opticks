@@ -298,8 +298,11 @@ void Composition::nextClipperStyle(){ m_clipper->next(); }
 void Composition::commandClipper(const char* cmd) { m_clipper->command(cmd);  }
 
 
-
-
+void Composition::setCameraType(unsigned cameratype)
+{
+    LOG(info) << " cameratype " << cameratype ; 
+    m_camera->setType(cameratype); 
+}
 
 void Composition::setCamera(Camera* camera)
 {
@@ -1378,18 +1381,38 @@ void Composition::setEyeGUI(const glm::vec3& gui)
 
 }
 
+void Composition::setEye(float x, float y, float z)
+{
+    m_view->setEye(x, y, z);
+}
 
-void Composition::setEyeX(float _x)
+
+float Composition::getEyeX() const
 {
-    m_view->setEyeX(_x);
+    return m_view->getEyeX();
 }
-void Composition::setEyeY(float _y)
+float Composition::getEyeY() const
 {
-    m_view->setEyeY(_y);
+    return m_view->getEyeY();
 }
-void Composition::setEyeZ(float _z)
+float Composition::getEyeZ() const
 {
-    m_view->setEyeZ(_z);
+    return m_view->getEyeZ();
+}
+
+
+
+void Composition::setEyeX(float x)
+{
+    m_view->setEyeX(x);
+}
+void Composition::setEyeY(float y)
+{
+    m_view->setEyeY(y);
+}
+void Composition::setEyeZ(float z)
+{
+    m_view->setEyeZ(z);
 }
 
 

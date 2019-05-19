@@ -271,6 +271,22 @@ void View::setEyeZ(float _z)
 }
 
 
+float View::getEyeX() const
+{
+    return m_eye.x ;   
+}
+float View::getEyeY() const
+{
+    return m_eye.y ;   
+}
+float View::getEyeZ() const
+{
+    return m_eye.z ;   
+}
+
+
+
+
 void View::setLook(float _x, float _y, float _z)
 {
     m_look.x = _x ;  

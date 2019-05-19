@@ -39,6 +39,12 @@ const unsigned SSys::SIGNBIT32  = 0x80000000 ;
 const unsigned SSys::OTHERBIT32 = 0x7fffffff ;
 
 
+bool SSys::IsNegativeZero(float f)
+{
+   return std::signbit(f) && f == -0.f ;  
+}
+
+
 const char* SSys::fmt(const char* tmpl, unsigned val)
 {
     char buf[100] ; 

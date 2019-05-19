@@ -106,6 +106,11 @@ void OpticksDbg::postconfigure()
    postconfigure( csgskiplv, m_csgskiplv );
    postconfigure( enabledmm, m_enabledmergedmesh );
 
+
+   LOG(info) << " m_csgskiplv  " << m_csgskiplv.size() ; 
+   //assert(  m_csgskiplv.size() > 0 );  
+
+
    const std::string& instancemodulo = m_cfg->getInstanceModulo() ;
    postconfigure( instancemodulo,   m_instancemodulo ) ;  
 
@@ -176,7 +181,7 @@ bool OpticksDbg::isX4PolySkip(unsigned lvIdx) const
 {
     return IsListed(lvIdx, m_x4polyskip, false); 
 }
-bool OpticksDbg::isCSGSkipLV(unsigned lvIdx) const 
+bool OpticksDbg::isCSGSkipLV(unsigned lvIdx) const   // --csgskiplv
 {
     return IsListed(lvIdx, m_csgskiplv, false); 
 }

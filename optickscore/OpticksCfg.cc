@@ -88,10 +88,12 @@ OpticksCfg<Listener>::OpticksCfg(const char* name, Listener* listener, bool live
        m_multievent(1),
        m_enabledmergedmesh(""),
        m_analyticmesh(-1),
+       m_cameratype(0),
        m_modulo(-1),
        m_override(-1),
        m_debugidx(0),
        m_dbgnode(-1),
+       m_dbgmm(-1),
        m_stack(2180),
        m_num_photons_per_g4event(10000),
        m_loadverbosity(0),
@@ -638,6 +640,12 @@ void OpticksCfg<Listener>::init()
        ("dbgnode",  boost::program_options::value<int>(&m_dbgnode), dbgnode );
 
 
+   char dbgmm[128];
+   snprintf(dbgmm,128, "Index of merged mesh for debugging. Default %d", m_dbgmm);
+   m_desc.add_options()
+       ("dbgmm",  boost::program_options::value<int>(&m_dbgmm), dbgmm );
+
+
    char dbgmesh[128];
    snprintf(dbgmesh,128, "Name of mesh solid for debugging, see GMeshLibTest, invoke inside environment with --gmeshlib option. Default %s", m_dbgmesh.c_str());
    m_desc.add_options()
@@ -914,6 +922,14 @@ void OpticksCfg<Listener>::init()
    snprintf(analyticmesh,128, "Index of instanced mesh with which to attempt analytic OptiX geometry eg 1,2. Or -1 for no analytic geometry. Default %d ", m_analyticmesh);
    m_desc.add_options()
        ("analyticmesh",  boost::program_options::value<int>(&m_analyticmesh), analyticmesh );
+
+
+   char cameratype[128];
+   snprintf(cameratype,128, "Initial cameratype 0:PERSPECTIVE,1:ORTHOGRAPHIC,2:EQUIRECTANGULAR (only raytrace). Default %d ", m_cameratype);
+   m_desc.add_options()
+       ("cameratype",  boost::program_options::value<int>(&m_cameratype), cameratype );
+
+
 
 
    char loadverbosity[128];
@@ -1354,7 +1370,7 @@ const std::string& OpticksCfg<Listener>::getX4PolySkip() const
 }
 
 template <class Listener>
-const std::string& OpticksCfg<Listener>::getCSGSkipLV() const 
+const std::string& OpticksCfg<Listener>::getCSGSkipLV() const   // --csgskiplv
 {
     return m_csgskiplv ; 
 }
@@ -1551,7 +1567,7 @@ int OpticksCfg<Listener>::getRepeatIndex()
     return m_repeatidx ; 
 }
 template <class Listener>
-int OpticksCfg<Listener>::getMultiEvent()
+int OpticksCfg<Listener>::getMultiEvent() const
 {
     return m_multievent ; 
 }
@@ -1563,9 +1579,15 @@ const std::string& OpticksCfg<Listener>::getEnabledMergedMesh() const
     return m_enabledmergedmesh ; 
 }
 template <class Listener>
-int OpticksCfg<Listener>::getAnalyticMesh()
+int OpticksCfg<Listener>::getAnalyticMesh() const 
 {
     return m_analyticmesh ; 
+}
+
+template <class Listener>
+int OpticksCfg<Listener>::getCameraType() const 
+{
+    return m_cameratype ; 
 }
 
 
@@ -1597,6 +1619,14 @@ int OpticksCfg<Listener>::getDbgNode() const
 {
     return m_dbgnode ; 
 }
+
+template <class Listener>
+int OpticksCfg<Listener>::getDbgMM() const 
+{
+    return m_dbgmm ; 
+}
+
+
 
 
 

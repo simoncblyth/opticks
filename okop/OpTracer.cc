@@ -1,4 +1,5 @@
 #include "SLog.hh"
+#include "SSys.hh"
 #include "SPPM.hh"
 #include "BFile.hh"
 #include "PLOG.hh"
@@ -105,7 +106,13 @@ void OpTracer::snap()   // --snapconfig="steps=5,eyestartz=0,eyestopz=0"
     LOG(info) << "(" << m_snap_config->desc();
 
     int num_steps = m_snap_config->steps ; 
+
+    float eyestartx = m_snap_config->eyestartx ; 
+    float eyestarty = m_snap_config->eyestarty ; 
     float eyestartz = m_snap_config->eyestartz ; 
+
+    float eyestopx = m_snap_config->eyestopx ; 
+    float eyestopy = m_snap_config->eyestopy ; 
     float eyestopz = m_snap_config->eyestopz ; 
 
     for(int i=0 ; i < num_steps ; i++)
@@ -116,13 +123,32 @@ void OpTracer::snap()   // --snapconfig="steps=5,eyestartz=0,eyestopz=0"
 
 
         float frac = num_steps > 1 ? float(i)/float(num_steps-1) : 0.f ; 
-        float eyez = eyestartz + (eyestopz-eyestartz)*frac ; 
-  
-        m_composition->setEyeZ( eyez ); 
+
+        float eyex = m_composition->getEyeX();
+        float eyey = m_composition->getEyeY();
+        float eyez = m_composition->getEyeZ();
+
+        if(!SSys::IsNegativeZero(eyestartx))
+        { 
+            eyex = eyestartx + (eyestopx-eyestartx)*frac ; 
+            m_composition->setEyeX( eyex ); 
+        }
+        if(!SSys::IsNegativeZero(eyestarty))
+        { 
+            eyey = eyestarty + (eyestopy-eyestarty)*frac ; 
+            m_composition->setEyeY( eyey ); 
+        }
+        if(!SSys::IsNegativeZero(eyestartz))
+        { 
+            eyez = eyestartz + (eyestopz-eyestartz)*frac ; 
+            m_composition->setEyeZ( eyez ); 
+        }
 
         render();
 
         std::cout << " i " << std::setw(5) << i 
+                  << " eyex " << std::setw(10) << eyex
+                  << " eyey " << std::setw(10) << eyey
                   << " eyez " << std::setw(10) << eyez
                   << " path " << path 
                   << std::endl ;         
