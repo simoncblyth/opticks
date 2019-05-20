@@ -7,7 +7,7 @@
 
 class NCSG ; 
 class NGeoTestConfig ; 
-class NTxt ; 
+class BTxt ; 
 
 #include "NBBox.hpp"
 
@@ -57,7 +57,7 @@ class NPY_API NCSGList
         const char*        m_csgpath ; 
         const char*        m_txtpath ; 
         int                m_verbosity ; 
-        NTxt*              m_bndspec ; 
+        BTxt*              m_bndspec ; 
         NCSG*              m_universe ; 
         std::vector<NCSG*> m_trees ; 
         nbbox              m_container_bbox ; 

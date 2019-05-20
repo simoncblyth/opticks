@@ -7,7 +7,7 @@
 #include <string>
 
 class NCSG ; 
-class NTxt ; 
+class BTxt ; 
 class BParameters ; 
 class NGeometry ;
  
@@ -182,8 +182,8 @@ class NPY_API NScene
         unsigned                          m_num_global ; 
         unsigned                          m_num_csgskip ; 
         unsigned                          m_num_placeholder ; 
-        NTxt*                             m_csgskip_lvlist ; 
-        NTxt*                             m_placeholder_lvlist ; 
+        BTxt*                             m_csgskip_lvlist ; 
+        BTxt*                             m_placeholder_lvlist ; 
         unsigned                          m_node_count ; 
         unsigned                          m_label_count ; 
         Counts<unsigned>*                 m_digest_count ;

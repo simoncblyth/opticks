@@ -22,6 +22,7 @@
 #include "BFile.hh"
 #include "BHex.hh"
 #include "BStr.hh"
+#include "BPropNames.hh"
 #include "BEnv.hh"
 #include "PLOG.hh"
 #include "Map.hh"
@@ -31,7 +32,6 @@
 #include "TorchStepNPY.hpp"
 #include "GLMFormat.hpp"
 #include "NState.hpp"
-#include "NPropNames.hpp"
 #include "NGLTF.hpp"
 #include "NScene.hpp"
 #include "NLoad.hpp"
@@ -61,7 +61,7 @@
 const plog::Severity Opticks::LEVEL = debug ; 
 
 
-NPropNames* Opticks::G_MATERIAL_NAMES = NULL ; 
+BPropNames* Opticks::G_MATERIAL_NAMES = NULL ; 
 
 
 
@@ -1194,6 +1194,7 @@ const char* Opticks::getGLTFPath() const { return m_resource->getGLTFPath() ; }
 const char* Opticks::getSrcGLTFPath() const { return m_resource->getSrcGLTFPath() ; }
 const char* Opticks::getG4CodeGenDir() const { return m_resource->getG4CodeGenDir() ; }
 const char* Opticks::getCacheMetaPath() const { return m_resource->getCacheMetaPath() ; } 
+const char* Opticks::getRunCommentPath() const { return m_resource->getRunCommentPath() ; } 
 
 
 
@@ -1267,6 +1268,13 @@ bool Opticks::isGPUMon() const
     return m_cfg->hasOpt("gpumon");
 }
 
+
+const char* Opticks::getRunComment() const 
+{
+    const std::string& runcomment = m_cfg->getRunComment() ;  
+    return runcomment.empty() ? NULL : runcomment.c_str() ; 
+}
+
 int Opticks::getRunStamp() const 
 {
     return m_cfg->getRunStamp() ;
@@ -1338,6 +1346,8 @@ bool Opticks::isG4Snap() const
 {
     return m_cfg->hasOpt("g4snap");
 }
+
+
 const char* Opticks::getG4SnapConfigString()  const 
 {
     return m_cfg->getG4SnapConfig().c_str() ; 
@@ -2269,7 +2279,7 @@ const char* Opticks::Material(const unsigned int mat)
     if(G_MATERIAL_NAMES == NULL)
     {
         LOG(info) << "Opticks::Material populating global G_MATERIAL_NAMES " ;
-        G_MATERIAL_NAMES = new NPropNames("GMaterialLib") ;
+        G_MATERIAL_NAMES = new BPropNames("GMaterialLib") ;
     }
     return G_MATERIAL_NAMES ? G_MATERIAL_NAMES->getLine(mat) : "Opticks::Material-ERROR-NO-GMaterialLib" ;
 }

@@ -13,7 +13,7 @@ int main(int,char**)
     types.dumpFlags();
 
    // material names have moved to GItemList control see $IDPATH/GItemList/GMaterialLib.txt
-   // lower level version in NPropNames
+   // lower level version in BPropNames
 
 
     types.readMaterials(idpath, "GMaterialLib"); // sets the Index

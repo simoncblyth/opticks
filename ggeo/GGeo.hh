@@ -318,6 +318,7 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
         void updateBounds(GNode* node); 
     private:
         void saveCacheMeta();
+        void saveRunComment() const ;
         void loadCacheMeta();
     public:
         // TODO: contrast with this earlier way 

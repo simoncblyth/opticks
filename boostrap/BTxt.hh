@@ -4,18 +4,18 @@
 #include <vector>
 
 
-#include "NPY_API_EXPORT.hh"
-#include "NPY_HEAD.hh"
+#include "BRAP_API_EXPORT.hh"
+#include "BRAP_HEAD.hh"
 
-class NPY_API NTxt {
+class BRAP_API BTxt {
    public:
        typedef std::vector<std::string> VS_t ; 
    public:
-       NTxt(const char* path); 
+       BTxt(const char* path); 
        void read();
    public:
        std::string desc() const ; 
-       void dump(const char* msg="NTxt::dump") const ;
+       void dump(const char* msg="BTxt::dump") const ;
        const char* getLine(unsigned int num) const ; 
        unsigned int getNumLines() const ;
        unsigned int getIndex(const char* line) const ; // index of line or UINT_MAX if not found
@@ -30,5 +30,5 @@ class NPY_API NTxt {
 
 };
 
-#include "NPY_TAIL.hh"
+#include "BRAP_TAIL.hh"
 

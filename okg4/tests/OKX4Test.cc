@@ -78,13 +78,19 @@ int main(int argc, char** argv)
         return 0 ; 
     } 
 
+    const char* csgskiplv = PLOG::instance->get_arg_after("--csgskiplv", NULL) ; 
+    LOG(info) << " csgskiplv " << ( csgskiplv ? csgskiplv : "NONE" ) ;  
+    // need this prior to Opticks instanciation 
+
+
     LOG(info) << " parsing " << gdmlpath ; 
     G4VPhysicalVolume* top = CGDML::Parse( gdmlpath ) ; 
     assert(top);
     LOG(info) << "///////////////////////////////// " ; 
 
 
-    const char* spec = X4PhysicalVolume::Key(top) ; 
+    const char* digestextra = csgskiplv ;  
+    const char* spec = X4PhysicalVolume::Key(top, digestextra) ; 
 
     Opticks::SetKey(spec);
 
@@ -96,8 +102,8 @@ int main(int argc, char** argv)
     Opticks* ok = new Opticks(argc, argv, argforce);  // Opticks instanciation must be after Opticks::SetKey
     ok->configure();
 
-    const char* csgskiplv = ok->getCSGSkipLV();
-    LOG(info) << " csgskiplv " << ( csgskiplv ? csgskiplv : "NONE" ) ;  
+    const char* csgskiplv2 = ok->getCSGSkipLV();
+    assert( strcmp(csgskiplv, csgskiplv2) == 0 );  
 
 
     ok->profile("_OKX4Test:GGeo"); 

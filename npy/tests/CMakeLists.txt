@@ -36,11 +36,9 @@ ViewNPYTest.cc
 NStateTest.cc
 ReportTest.cc
 IndexTest.cc
-NPropNamesTest.cc
 CountsTest.cc
 
 
-NTxtTest.cc
 
 TypesTest.cc
 readFlagsTest.cc

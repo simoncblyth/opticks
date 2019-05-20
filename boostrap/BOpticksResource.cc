@@ -112,6 +112,7 @@ BOpticksResource::BOpticksResource()
     m_idmappath(NULL),
     m_g4codegendir(NULL),
     m_cachemetapath(NULL),
+    m_runcommentpath(NULL),
     m_primariespath(NULL),
     m_directgensteppath(NULL),
     m_directphotonspath(NULL),
@@ -553,6 +554,10 @@ void BOpticksResource::setupViaKey()
     m_cachemetapath = makeIdPathPath("cachemeta.json");  
     m_res->addPath("cachemetapath", m_cachemetapath ); 
 
+    m_runcommentpath = makeIdPathPath("runcomment.txt");  
+    m_res->addPath("runcommentpath", m_runcommentpath ); 
+
+
     m_primariespath = makeIdPathPath("primaries.npy");  
     m_res->addPath("primariespath", m_primariespath ); 
 
@@ -654,6 +659,12 @@ void BOpticksResource::setupViaSrc(const char* srcpath, const char* srcdigest)
     m_cachemetapath = makeIdPathPath("cachemeta.json");  
     m_res->addPath("cachemetapath", m_cachemetapath ); 
 
+    m_runcommentpath = makeIdPathPath("runcomment.txt");  
+    m_res->addPath("runcommentpath", m_runcommentpath ); 
+
+
+
+
 
 /**
 Legacy mode equivalents for resource dirs:
@@ -701,6 +712,7 @@ const char* BOpticksResource::getSrcGLTFName() const
 
 const char* BOpticksResource::getG4CodeGenDir() const { return m_g4codegendir ; }
 const char* BOpticksResource::getCacheMetaPath() const { return m_cachemetapath ; }
+const char* BOpticksResource::getRunCommentPath() const { return m_runcommentpath ; }
 const char* BOpticksResource::getPrimariesPath() const { return m_primariespath ; } 
 //const char* BOpticksResource::getDirectGenstepPath() const { return m_directgensteppath ; } 
 //const char* BOpticksResource::getDirectPhotonsPath() const { return m_directphotonspath ; } 

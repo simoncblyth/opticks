@@ -4,9 +4,9 @@
 #include "BBnd.hh"
 #include "BStr.hh"
 #include "BFile.hh"
+#include "BTxt.hh"
 
 #include "NBBox.hpp"
-#include "NTxt.hpp"
 #include "NCSG.hpp"
 #include "NCSGList.hpp"
 #include "NGeoTestConfig.hpp"
@@ -80,7 +80,7 @@ NCSGList::NCSGList(const char* csgpath, int verbosity)
     m_csgpath(strdup(csgpath)),
     m_txtpath(strdup(BFile::FormPath(m_csgpath, FILENAME).c_str())),
     m_verbosity(verbosity),
-    m_bndspec(new NTxt(m_txtpath)),
+    m_bndspec(new BTxt(m_txtpath)),
     m_universe(NULL),
     m_container_bbox()  
 {

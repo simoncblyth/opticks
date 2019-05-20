@@ -6,6 +6,7 @@
 
 #include "BStr.hh"
 #include "BFile.hh"
+//#include "BTxt.hh"
 
 #include "NGLMExt.hpp"
 #include "GLMFormat.hpp"
@@ -27,7 +28,6 @@
 #include "NCSG.hpp"
 #include "NCSGData.hpp"
 #include "NPYMeta.hpp"
-#include "NTxt.hpp"
 
 #include "PLOG.hh"
 

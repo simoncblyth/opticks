@@ -5,6 +5,7 @@
 
 #include "BStr.hh"
 #include "BFile.hh"
+#include "BTxt.hh"
 #include "BParameters.hh"
 
 
@@ -21,7 +22,6 @@
 
 
 #include "NSDF.hpp"
-#include "NTxt.hpp"
 #include "NCSG.hpp"
 #include "NGLMExt.hpp"
 
@@ -276,8 +276,8 @@ void NScene::init_lvlists()
     BFile::preparePath( csgskip_path.c_str(), true);
     BFile::preparePath( placeholder_path.c_str(), true);
 
-    m_csgskip_lvlist     = new NTxt(csgskip_path.c_str());
-    m_placeholder_lvlist = new NTxt(placeholder_path.c_str());
+    m_csgskip_lvlist     = new BTxt(csgskip_path.c_str());
+    m_placeholder_lvlist = new BTxt(placeholder_path.c_str());
 
 
     if(m_verbosity > 2)

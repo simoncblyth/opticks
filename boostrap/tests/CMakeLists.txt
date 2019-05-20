@@ -13,6 +13,8 @@ set(TEST_SOURCES
 
    BListTest.cc
    BParametersTest.cc
+   BTxtTest.cc
+   BPropNamesTest.cc
 
    BHexTest.cc
    BRegexTest.cc

@@ -1,10 +1,11 @@
-#include "NPropNames.hpp"
-#include "NTxt.hpp"
+#include "BPropNames.hh"
+#include "BTxt.hh"
 
 #include <iostream>
 #include <iomanip>
 #include <cassert>
 #include <climits>
+
 
 int main(int, char**)
 {
@@ -12,14 +13,14 @@ int main(int, char**)
     //const char* lib = "GMaterialLib.txt" ;   // requires geocache 
     const char* lib = "$TMP/GMaterialLib.txt" ;  // absolute path mode for testing
 
-    NTxt txt(lib);
+    BTxt txt(lib);
     txt.addLine("red");
     txt.addLine("green");
     txt.addLine("blue");
     txt.write();
 
 
-    NPropNames pn(lib);
+    BPropNames pn(lib);
 
     for(unsigned int i=0 ; i < pn.getNumLines() ; i++)
     {

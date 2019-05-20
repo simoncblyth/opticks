@@ -49,6 +49,8 @@ set(SOURCES
   BMap.cc
   Map.cc
   BParameters.cc 
+  BTxt.cc
+  BPropNames.cc
 
   BList.cc
   BStr.cc
@@ -94,6 +96,8 @@ set(HEADERS
   BMap.hh
   Map.hh
   BParameters.hh 
+  BTxt.hh
+  BPropNames.hh
 
 
   BList.hh

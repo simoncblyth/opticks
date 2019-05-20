@@ -4,12 +4,12 @@
 
 #include "BFile.hh"
 
-#include "NTxt.hpp"
-#include "NPropNames.hpp"
+#include "BTxt.hh"
+#include "BPropNames.hh"
 
 #include "PLOG.hh"
 
-NPropNames::NPropNames(const char* libname)
+BPropNames::BPropNames(const char* libname)
    :
    m_libname(strdup(libname)),
    m_txt(NULL) 
@@ -18,16 +18,16 @@ NPropNames::NPropNames(const char* libname)
 }
 
 
-std::string NPropNames::libpath(const char* libname)
+std::string BPropNames::libpath(const char* libname)
 {
     std::string path = BFile::FormPath("$IDPATH", "GItemList", libname ); 
     return path ; 
 }
 
 
-void NPropNames::read()
+void BPropNames::read()
 {
-    LOG(verbose) << "NPropNames::read" 
+    LOG(verbose) << "BPropNames::read" 
                << " libname " << ( m_libname ? m_libname : "NULL" )
                ;
 
@@ -37,32 +37,32 @@ void NPropNames::read()
         if(strlen(m_libname) > 0 && m_libname[0] == '/' )
         {
             // absolute path for testing  
-            m_txt = new NTxt(m_libname);
+            m_txt = new BTxt(m_libname);
         } 
         else
         {
             // GItemList name like GMaterialLib 
             std::string path = libpath(m_libname) ; 
-            LOG(verbose) << "NPropNames::read"
+            LOG(verbose) << "BPropNames::read"
                        << " path " << path ; 
 
-            m_txt = new NTxt(path.c_str());
+            m_txt = new BTxt(path.c_str());
         }
     }
     m_txt->read();
 }
 
 
-const char* NPropNames::getLine(unsigned int num)
+const char* BPropNames::getLine(unsigned int num)
 {
    return m_txt ? m_txt->getLine(num) : NULL ; 
 }
-unsigned int  NPropNames::getNumLines()
+unsigned int  BPropNames::getNumLines()
 {
    return m_txt ? m_txt->getNumLines() : 0 ;
 }
 
-unsigned int  NPropNames::getIndex(const char* line)
+unsigned int  BPropNames::getIndex(const char* line)
 {
    assert(m_txt); 
    return m_txt->getIndex(line) ;

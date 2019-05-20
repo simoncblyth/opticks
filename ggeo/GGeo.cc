@@ -11,6 +11,7 @@ namespace fs = boost::filesystem;
 #include "SLog.hh"
 #include "BStr.hh"
 #include "BMap.hh"
+#include "BTxt.hh"
 
 // npy-
 #include "NGLM.hpp"
@@ -732,6 +733,7 @@ void GGeo::save()
     m_bndlib->save();  
 
     saveCacheMeta();
+    saveRunComment();
 
     LOG(LEVEL) << "]" ;  
 }
@@ -749,10 +751,32 @@ void GGeo::saveCacheMeta()
     std::string argline = PLOG::instance->args.argline() ; 
     m_cachemeta->set<std::string>("argline", argline ); 
 
+
+    const char* comment = m_ok->getRunComment(); 
+    if(comment)
+        m_cachemeta->set<std::string>("runcomment", comment ); 
+
     if(m_lv2sd) m_cachemeta->setObj("lv2sd", m_lv2sd ); 
-    const char* path = m_ok->getCacheMetaPath(); 
-    m_cachemeta->save(path); 
+    const char* cachemetapath = m_ok->getCacheMetaPath(); 
+    m_cachemeta->save(cachemetapath); 
 }
+
+
+void GGeo::saveRunComment() const   // --runcomment
+{
+    const char* path = m_ok->getRunCommentPath(); 
+    const char* comment = m_ok->getRunComment(); 
+    if(comment && path)
+    {
+        LOG(info) << "[" << comment << "] to path " << path  ; 
+        BTxt txt(path) ; 
+        txt.addLine(comment);
+        txt.write();  
+    }
+}
+
+
+
 void GGeo::loadCacheMeta()
 {
     const char* path = m_ok->getCacheMetaPath(); 

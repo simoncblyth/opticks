@@ -115,6 +115,7 @@ OpticksCfg<Listener>::OpticksCfg(const char* name, Listener* listener, bool live
        m_alignlevel(0),
        m_exename(SAr::Instance->exename()), 
        m_gpumonpath(BStr::concat("$TMP/",m_exename ? m_exename : "OpticksCfg","_GPUMon.npy")),
+       m_runcomment(""),
        m_runstamp(STime::EpochSeconds()),
        m_runlabel(""),
        m_runfolder(strdup(m_exename))
@@ -1061,6 +1062,11 @@ void OpticksCfg<Listener>::init()
        ("gpumon", "Switch on GPU buffer usage recording. ");   
 
 
+   char runcomment[128];
+   snprintf(runcomment,128, "Informational comment used for run intent identification. Default %s ", m_runcomment.c_str() );
+   m_desc.add_options()
+       ("runcomment",   boost::program_options::value<std::string>(&m_runcomment), runcomment );
+
 
    char runstamp[256];
    snprintf(runstamp,256, "Integer seconds from the epoch. Overriding the default of now %d "
@@ -1687,13 +1693,17 @@ const std::string& OpticksCfg<Listener>::getGPUMonPath() const
     return m_gpumonpath ;  
 }
 
-
-
+template <class Listener>
+const std::string& OpticksCfg<Listener>::getRunComment() const 
+{
+    return m_runcomment ;  
+}
 template <class Listener>
 int OpticksCfg<Listener>::getRunStamp() const 
 {
     return m_runstamp ; 
 }
+
 template <class Listener>
 const std::string& OpticksCfg<Listener>::getRunLabel() const 
 {

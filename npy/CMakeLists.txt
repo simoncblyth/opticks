@@ -59,8 +59,6 @@ set(SOURCES
     Index.cpp
     Counts.cpp
 
-    NTxt.cpp
-    NPropNames.cpp
 
     
 
@@ -321,8 +319,6 @@ NTriSource.hpp
 NTrianglesNPY.hpp
 NPlanck.hpp
 NCIE.hpp
-NTxt.hpp
-NPropNames.hpp
 NSpectral.hpp
 NState.hpp
 NConfigurable.hpp

@@ -8,6 +8,7 @@
 // brap-
 #include "BMap.hh" 
 #include "BStr.hh" 
+#include "BPropNames.hh"
 #include "BHex.hh" 
 #include "BRegex.hh"
 #include "BBit.hh"
@@ -15,7 +16,6 @@
 // npy-
 #include "Types.hpp"
 #include "Index.hpp"
-#include "NPropNames.hpp"
 
 #include "PLOG.hh"
 
@@ -122,7 +122,7 @@ void Types::readMaterials(const char* /*idpath*/, const char* name, const char* 
 {
     assert(strcmp(name, "GMaterialLib")==0);
 
-    NPropNames pn("GMaterialLib");
+    BPropNames pn("GMaterialLib");
 
     //Index* index = Index::load( idpath, name );
 

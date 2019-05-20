@@ -1,4 +1,4 @@
-#include "NTxt.hpp"
+#include "BTxt.hh"
 
 #include <cstdlib>
 #include <cstring>
@@ -13,7 +13,7 @@ void test_read()
     char path[256];
     snprintf(path, 256, "%s/GItemList/GMaterialLib.txt", idp );
 
-    NTxt txt(path);
+    BTxt txt(path);
     txt.read();
 }
 
@@ -23,13 +23,13 @@ void test_write()
     std::string y = BFile::FormPath("$TMP", "some/deep/reldir", "y.txt");
     LOG(info) << "test_write " << x ; 
 
-    NTxt tx(x.c_str());
+    BTxt tx(x.c_str());
     tx.addLine("one-x");
     tx.addLine("two");
     tx.addLine("three");
     tx.write();
 
-    NTxt ty(y.c_str());
+    BTxt ty(y.c_str());
     ty.addLine("one-y");
     ty.addLine("two");
     ty.addLine("three");

@@ -28,7 +28,7 @@ struct NLODConfig ;
 struct NSnapConfig ; 
 
 class BParameters ; 
-class NPropNames ; 
+class BPropNames ; 
 class Types ;
 class Typ ;
 class Index ; 
@@ -92,7 +92,7 @@ class OKCORE_API Opticks {
        static const char* COMPUTE_ARG_ ; 
 
    public:
-       static NPropNames* G_MATERIAL_NAMES ;
+       static BPropNames* G_MATERIAL_NAMES ;
        static const char* Material(const unsigned int mat);
        static std::string MaterialSequence(const unsigned long long seqmat);
    public:
@@ -253,6 +253,7 @@ class OKCORE_API Opticks {
    public:
        const char* getG4CodeGenDir() const ;  // search for g4code
        const char* getCacheMetaPath() const ;
+       const char* getRunCommentPath() const ;
 
        const char* getGLTFPath() const ;      // output GLTF path
    public:
@@ -269,6 +270,7 @@ class OKCORE_API Opticks {
        const char* getGPUMonPath() const ;   
        bool        isGPUMon() const ;  
    public:
+       const char* getRunComment() const ;
        int         getRunStamp() const ; 
        const char* getRunDate() const ; 
        const char* getRunLabel() const ; 
@@ -279,7 +281,6 @@ class OKCORE_API Opticks {
        bool        isTest() const ;
        bool        isTestAuto() const ;
        const char* getTestConfig() const ;
-
    public:
        bool        isG4Snap() const ; 
        const char* getG4SnapConfigString() const ;
