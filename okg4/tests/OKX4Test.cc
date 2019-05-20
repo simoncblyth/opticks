@@ -89,7 +89,7 @@ int main(int argc, char** argv)
     LOG(info) << "///////////////////////////////// " ; 
 
 
-    const char* digestextra = csgskiplv ;  
+    const char* digestextra = csgskiplv ;    // kludge the digest to be sensitive to csgskiplv
     const char* spec = X4PhysicalVolume::Key(top, digestextra) ; 
 
     Opticks::SetKey(spec);
@@ -101,6 +101,26 @@ int main(int argc, char** argv)
 
     Opticks* ok = new Opticks(argc, argv, argforce);  // Opticks instanciation must be after Opticks::SetKey
     ok->configure();
+
+
+    // hmm where should this cache mangement code go ?
+    // its needed here because OKX4Test is explicitly intended to write geocaches  
+    if(ok->hasGeoCache()) 
+    {
+        LOG(fatal) << "geocache exists already " << ok->getIdPath() ;
+        if(!ok->canDeleteGeoCache())
+        {
+            LOG(fatal) << "delete this externally OR rerun with --deletegeocache option " ;   
+        }
+        else
+        {
+            ok->deleteGeoCache(); 
+        } 
+    }  
+    assert(!ok->hasGeoCache()); 
+
+
+
 
     const char* csgskiplv2 = ok->getCSGSkipLV();
     assert( strcmp(csgskiplv, csgskiplv2) == 0 );  
@@ -149,14 +169,8 @@ int main(int argc, char** argv)
 
     Opticks* oki = Opticks::GetInstance() ; 
     ok->saveProfile();
-
     assert( oki == ok ) ; 
-
-    LOG(info) << " ok.idpath  " << ok->getIdPath() ; 
-    LOG(info) << " ok.keyspec " << ok->getKeySpec() ; 
-    LOG(info) << " To reuse this geometry: " ; 
-    LOG(info) << "   1. set envvar OPTICKS_KEY=" << ok->getKeySpec() ;  
-    LOG(info) << "   2. enable envvar sensitivity with --envkey argument to Opticks executables " ; 
+    ok->reportGeoCacheCoordinates(); 
 
     return mgr.rc() ;
 

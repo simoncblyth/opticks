@@ -651,6 +651,48 @@ bool Opticks::isG4CodeGen() const
 {
     return m_cfg->hasOpt("g4codegen") ;
 }
+bool Opticks::canDeleteGeoCache() const   // --deletegeocache
+{
+    return m_cfg->hasOpt("deletegeocache") ;
+}
+void Opticks::deleteGeoCache() const 
+{
+    assert( canDeleteGeoCache() ); 
+    const char* idpath = getIdPath(); 
+    assert( idpath ); 
+    LOG(info) << "removing " << idpath << " (as permitted by option : --deletegeocache )" ; 
+    BFile::RemoveDir(idpath); 
+}
+void Opticks::reportGeoCacheCoordinates() const
+{
+    const Opticks* ok = this ; 
+
+    const char* kspec = ok->getKeySpec() ; 
+    const char* espec = SSys::getenvvar("OPTICKS_KEY", "NONE" ); 
+
+    LOG(info) << " ok.idpath  " << ok->getIdPath() ; 
+    LOG(info) << " ok.keyspec " << kspec  ; 
+    LOG(info) << " To reuse this geometry: " ; 
+    LOG(info) << "   1. set envvar OPTICKS_KEY=" << kspec ;   
+    LOG(info) << "   2. enable envvar sensitivity with --envkey argument to Opticks executables " ; 
+
+   if(strcmp(kspec, espec) == 0) 
+   {
+       LOG(info) << "This keyspec matches that of the current envvar " ; 
+   }
+   else
+   {
+       LOG(fatal) << "THE LIVE keyspec DOES NOT MATCH THAT OF THE CURRENT ENVVAR " ; 
+       LOG(info) << " (envvar) OPTICKS_KEY=" <<  espec ; 
+       LOG(info) << " (live)   OPTICKS_KEY=" <<  kspec ; 
+   }
+}
+
+
+
+
+
+
 
 bool Opticks::isPrintEnabled() const 
 {
@@ -2461,8 +2503,18 @@ Types*          Opticks::getTypes() {     return m_resource->getTypes(); }
 Typ*            Opticks::getTyp() {       return m_resource->getTyp(); }
 
 
+
+bool            Opticks::hasGeoCache() const 
+{
+    const char* idpath = getIdPath(); 
+    return BFile::ExistsDir(idpath); 
+} 
+
+
 NSensorList*    Opticks::getSensorList(){ return m_resource ? m_resource->getSensorList() : NULL ; }
 const char*     Opticks::getIdPath() const { return m_resource ? m_resource->getIdPath() : NULL ; }
+
+
 const char*     Opticks::getIdFold() const { return m_resource ? m_resource->getIdFold() : NULL ; }
 const char*     Opticks::getDetectorBase() {    return m_resource ? m_resource->getDetectorBase() : NULL ; }
 const char*     Opticks::getMaterialMap() {  return m_resource ? m_resource->getMaterialMap() : NULL ; }

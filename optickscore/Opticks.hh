@@ -191,6 +191,8 @@ class OKCORE_API Opticks {
        const char* getCurrentGDMLPath() const ;
    public:
        NSensorList* getSensorList();
+   public:
+       bool        hasGeoCache() const ; 
        const char* getIdPath() const ;
        const char* getIdFold() const ;
        const char* getDetectorBase();
@@ -322,6 +324,10 @@ class OKCORE_API Opticks {
        bool                 isPrintEnabled() const ;
        bool                 isXAnalytic() const ;
        bool                 isXGeometryTriangles() const ;
+   public:
+       bool                 canDeleteGeoCache() const ; 
+       void                 deleteGeoCache() const ; 
+       void                 reportGeoCacheCoordinates() const ; 
    public:
        const char*          getDbgIndex() const ;
        const char*          getDbgCSGPath();

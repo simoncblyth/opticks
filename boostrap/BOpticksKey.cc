@@ -41,7 +41,7 @@ bool BOpticksKey::SetKey(const char* spec)
 
     if(spec == NULL)
     {
-        spec = SSys::getenvvar("OPTICKS_KEY");   // envvar intended for debugging, not usual usage
+        spec = SSys::getenvvar("OPTICKS_KEY");  
         LOG(info) << "from OPTICKS_KEY envvar " << spec ; 
     } 
 
@@ -59,96 +59,94 @@ bool BOpticksKey::isKeySource() const  // current executable is geocache creator
 }
 
 BOpticksKey::BOpticksKey(const char* spec)
-   :
-   m_spec( spec ? strdup(spec) : NULL ),
-   m_exename( NULL ),
-   m_class( NULL ),
-   m_volname( NULL ),
-   m_digest( NULL ),
-   m_idname( NULL ),
-   m_idfile( StemName("gltf", ".") ),
-   m_idgdml( StemName("gdml", ".") ),
-   m_idsubd( IDSUBD ),
-   m_layout( LAYOUT ),
-   m_current_exename( SAr::Instance->exename() )
+    :
+    m_spec( spec ? strdup(spec) : NULL ),
+    m_exename( NULL ),
+    m_class( NULL ),
+    m_volname( NULL ),
+    m_digest( NULL ),
+    m_idname( NULL ),
+    m_idfile( StemName("gltf", ".") ),
+    m_idgdml( StemName("gdml", ".") ),
+    m_idsubd( IDSUBD ),
+    m_layout( LAYOUT ),
+    m_current_exename( SAr::Instance->exename() )
 {
-   std::vector<std::string> elem ; 
-   BStr::split(elem, spec, '.' ); 
+    std::vector<std::string> elem ; 
+    BStr::split(elem, spec, '.' ); 
 
-   bool four = elem.size() == 4  ;
-   if(!four) LOG(fatal) << " expecting 4 element spec delimited by dot " << spec ;  
-   assert( four ); 
+    bool four = elem.size() == 4  ;
+    if(!four) LOG(fatal) << " expecting 4 element spec delimited by dot " << spec ;  
+    assert( four ); 
     
-   m_exename = strdup(elem[0].c_str()); 
-   m_class = strdup(elem[1].c_str()); 
-   m_volname   = strdup(elem[2].c_str()); 
-   m_digest = strdup(elem[3].c_str()); 
+    m_exename = strdup(elem[0].c_str()); 
+    m_class = strdup(elem[1].c_str()); 
+    m_volname   = strdup(elem[2].c_str()); 
+    m_digest = strdup(elem[3].c_str()); 
 
+    assert( SDigest::IsDigest(m_digest) ); 
 
+    std::stringstream ss ; 
+    ss 
+        << m_exename 
+        << "_"
+        << m_volname 
+        << "_"
+        << G4LIVE 
+        ;
 
-   assert( SDigest::IsDigest(m_digest) ); 
+    std::string idname = ss.str();
 
-   std::stringstream ss ; 
-   ss 
-       << m_exename 
-       << "_"
-       << m_volname 
-       << "_"
-       << G4LIVE 
-       ;
-
-   std::string idname = ss.str();
-
-   m_idname = strdup(idname.c_str()); 
+    m_idname = strdup(idname.c_str()); 
 }
 
 
 const char* BOpticksKey::getSpec() const 
 {
-   return m_spec ;  
+    return m_spec ;  
 }
 const char* BOpticksKey::getExename() const 
 {
-   return m_exename ;  
+    return m_exename ;  
 }
 const char* BOpticksKey::getClass() const 
 {
-   return m_class ;  
+    return m_class ;  
 }
 const char* BOpticksKey::getVolname() const 
 {
-   return m_volname ;  
+    return m_volname ;  
 }
 const char* BOpticksKey::getDigest() const 
 {
-   return m_digest ;  
+    return m_digest ;  
 }
 
 
 const char* BOpticksKey::getIdname() const 
 {
-   return m_idname ;  
+    return m_idname ;  
 }
 
 const char* BOpticksKey::getIdfile() const 
 {
-   return m_idfile ;  
+    return m_idfile ;  
 }
 const char* BOpticksKey::getIdGDML() const 
 {
-   return m_idgdml ;  
+    return m_idgdml ;  
 }
 
 
 const char* BOpticksKey::getIdsubd() const 
 {
-   return m_idsubd ;  
+    return m_idsubd ;  
 }
 
 
 int BOpticksKey::getLayout() const 
 {
-   return m_layout ;  
+    return m_layout ;  
 }
 
 
@@ -156,18 +154,18 @@ std::string BOpticksKey::desc() const
 {
     std::stringstream ss ; 
     ss 
-       << std::setw(25) << " BOpticksKey " << " : " << ( isKeySource() ? "KEYSOURCE" : " " ) << std::endl 
-       << std::setw(25) << " spec (OPTICKS_KEY) " << " : " << m_spec    << std::endl 
-       << std::setw(25) << " exename " << " : " << m_exename << std::endl 
-       << std::setw(25) << " current_exename " << " : " << m_current_exename << std::endl 
-       << std::setw(25) << " class "   << " : " << m_class   << std::endl 
-       << std::setw(25) << " volname " << " : " << m_volname << std::endl 
-       << std::setw(25) << " digest "  << " : " << m_digest  << std::endl 
-       << std::setw(25) << " idname "  << " : " << m_idname  << std::endl 
-       << std::setw(25) << " idfile "  << " : " << m_idfile  << std::endl 
-       << std::setw(25) << " idgdml "  << " : " << m_idgdml  << std::endl 
-       << std::setw(25) << " layout "  << " : " << m_layout  << std::endl 
-       ;
+        << std::setw(25) << " BOpticksKey " << " : " << ( isKeySource() ? "KEYSOURCE" : " " ) << std::endl 
+        << std::setw(25) << " spec (OPTICKS_KEY) " << " : " << m_spec    << std::endl 
+        << std::setw(25) << " exename " << " : " << m_exename << std::endl 
+        << std::setw(25) << " current_exename " << " : " << m_current_exename << std::endl 
+        << std::setw(25) << " class "   << " : " << m_class   << std::endl 
+        << std::setw(25) << " volname " << " : " << m_volname << std::endl 
+        << std::setw(25) << " digest "  << " : " << m_digest  << std::endl 
+        << std::setw(25) << " idname "  << " : " << m_idname  << std::endl 
+        << std::setw(25) << " idfile "  << " : " << m_idfile  << std::endl 
+        << std::setw(25) << " idgdml "  << " : " << m_idgdml  << std::endl 
+        << std::setw(25) << " layout "  << " : " << m_layout  << std::endl 
+        ;
     return ss.str(); 
 }
 

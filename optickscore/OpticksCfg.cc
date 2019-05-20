@@ -144,6 +144,11 @@ void OpticksCfg<Listener>::init()
        ("nogeocache,G",  "inhibit use of the geocache") ;
 
    m_desc.add_options()
+       ("deletegeocache",  "deletes the geocache before recreating") ;
+
+
+
+   m_desc.add_options()
        ("nopropagate,P",  "inhibit generation/propagation") ;
 
    m_desc.add_options()

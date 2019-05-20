@@ -3,10 +3,10 @@
 #include <cstring>
 #include <iomanip>
 
-#include <boost/lexical_cast.hpp>
-#include <boost/algorithm/string.hpp>
-#include <boost/filesystem.hpp>
-namespace fs = boost::filesystem;
+//#include <boost/lexical_cast.hpp>
+//#include <boost/algorithm/string.hpp>
+//#include <boost/filesystem.hpp>
+//namespace fs = boost::filesystem;
 
 #include "SLog.hh"
 #include "BStr.hh"
@@ -421,10 +421,13 @@ void GGeo::init()
 
    assert(idpath && "GGeo::init idpath is required" );
 
+   /*
    fs::path geocache(idpath); 
    bool cache_exists = fs::exists(geocache) && fs::is_directory(geocache) ;
-   bool cache_requested = m_ok->isGeocache() ; 
+   */
 
+   bool cache_exists = m_ok->hasGeoCache(); 
+   bool cache_requested = m_ok->isGeocache() ; 
    m_loaded = cache_exists && cache_requested ;
 
    LOG(error) 

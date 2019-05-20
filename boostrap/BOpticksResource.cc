@@ -174,9 +174,19 @@ const char* BOpticksResource::ResolveResultsPrefix()  // static
 const char* BOpticksResource::INSTALL_PREFIX_KEY = "OPTICKS_INSTALL_PREFIX" ; 
 const char* BOpticksResource::INSTALL_PREFIX_KEY2 = "OPTICKSINSTALLPREFIX" ; 
 
+/**
+BOpticksResource::ResolveInstallPrefix
+----------------------------------------
+
+1. sensitive to envvar OPTICKS_INSTALL_PREFIX
+2. if envvar not defined uses the compiled in OKCONF_OPTICKS_INSTALL_PREFIX from CMake
+3. the envvar is subsequently internally set by BOpticksResource::initInstallPrefix
+
+**/
+
 const char* BOpticksResource::ResolveInstallPrefix()  // static
 {
-    const char* evalue = SSys::getenvvar(INSTALL_PREFIX_KEY);  
+    const char* evalue = SSys::getenvvar(INSTALL_PREFIX_KEY);    
     return evalue == NULL ?  strdup(OKCONF_OPTICKS_INSTALL_PREFIX) : evalue ; 
 }
 
@@ -530,6 +540,9 @@ void BOpticksResource::setupViaKey()
     m_res->addDir("idfold", m_idfold ); 
 
     std::string idpath = getGeoCachePath( m_idname, m_idsubd, m_srcdigest, layout );
+    // HMM IT WOULD BE GOOD TO ARRANGE FOR THIS TO BE STATICALLY AVAILABLE FROM THE KEY ?
+    // BUT ITS A LITTLE INVOLVED DUE TO DIFFERENT POSSIBILITES FOR THE OPTICKS_INSTALL_PREFIX
+
 
     LOG(LEVEL)
            <<  " idname " << m_idname 

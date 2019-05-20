@@ -7,6 +7,13 @@ X4Gen Usage
 ===================
 
 
+TODO:
+
+* perhaps more useful to generate a library with an executable that
+  takes an argument to the index, rather than executables for every index
+
+
+
 1. *OKX4Test --g4codegen* 
 
     Runinng OKX4Test with --g4codegen option generates an 
