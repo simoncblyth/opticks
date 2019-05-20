@@ -218,6 +218,10 @@ GNodeLib/PVNames.txt 1-based index from vim, first 20inch::
 
      In geocache-j1808-v4-t1  try --csgskiplv 22,17,20,18,19   ## leaving just 21
      In geocache-j1808-v4-t5  try --csgskiplv 22,17,21,20,19   ## leaving just 18 : the cathode cap
+     In geocache-j1808-v4-t6  try --csgskiplv 22,17,21,20,18   ## leaving just 19 : vacuum remainder 
+     In geocache-j1808-v4-t7  try --csgskiplv 22,17,21,20      ## leaving just 18,19 : vacuum cap+remainder 
+     In geocache-j1808-v4-t8  try --csgskiplv 22,17,20         ## leaving just 21,18,19 : outer-pyrex+vacuum cap+remainder 
+
                                                
      63562 lMaskVirtual_phys0x4c9a590
      63563 pMask0x4c3bf20
@@ -537,7 +541,7 @@ cache-j1808-v4-t3 : skip the shield too
 
 
 
-cache-j1808-v4-t4 : skip the remainder vacuum too
+cache-j1808-v4-t4 : skip the remainder vacuum too 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
@@ -566,7 +570,7 @@ cache-j1808-v4-t4 : skip the remainder vacuum too
 
 
 
-cache-j1808-v4-t5 : skip all except cathode cap : should be a hemi-ellipsoid : SMOKING GUN : RAYTRACE IS FULL ELLIPSOID
+geocache-j1808-v4-t5 : skip all except cathode cap : should be a hemi-ellipsoid : SMOKING GUN : RAYTRACE IS FULL ELLIPSOID
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ::
@@ -590,8 +594,133 @@ cache-j1808-v4-t5 : skip all except cathode cap : should be a hemi-ellipsoid : S
                          R0_TITAN_V      0.065      1.622      0.899           6.433 
                        R0_TITAN_RTX      0.073      1.805      1.000           6.414 
 
-
 * no RTX inversion with ellipsoid
+
+
+FIXED BUG WITH LV 18 : HEMI-ELLIPSOIDS BEING MISTRANSLATED INTO ELLIPSOIDS
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* see below for details 
+
+Viz check::
+
+    OPTICKS_GEOFUNC  : geocache-j1808-v4-t5 
+    OPTICKS_KEY      : OKX4Test.X4PhysicalVolume.lWorld0x4bc2710_PV.732c52dd2f92338b4c570163ede44230 
+    OPTICKS_COMMENT  : just-18-hemi-ellipsoid-cathode-cap-see-notes/issues/review-analytic-geometry.rst 
+
+
+    [blyth@localhost opticks]$ geocache-gui --enabledmergedmesh 2
+
+
+::
+
+     geocache-;geocache-bench --xanalytic --enabledmergedmesh 2 
+
+     OpSnapTest --envkey --target 352851 --eye -1,-1,-1 --snapconfig steps=5,eyestartz=-1,eyestopz=-0.5 --size 5120,2880,1 --embedded --cvd 0,1 --rtx 0 --runfolder geocache-bench --runstamp 1558364094 --runlabel R0_TITAN_V_AND_TITAN_RTX --xanalytic --enabledmergedmesh 2
+                    20190520_225454  launchAVG      rfast      rslow      prelaunch000 
+           R0_TITAN_V_AND_TITAN_RTX      0.038      1.000      0.552          12.946 
+                         R1_TITAN_V      0.046      1.210      0.668           2.844 
+                       R1_TITAN_RTX      0.060      1.598      0.882           3.147 
+                         R0_TITAN_V      0.062      1.631      0.901           6.539 
+                       R0_TITAN_RTX      0.068      1.811      1.000           6.380 
+
+
+* no RTX inversion with hemi-ellipsoid either
+
+
+
+geocache-j1808-v4-t6 : just 19 the vacuum remainder
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+::
+
+    OPTICKS_GEOFUNC  : geocache-j1808-v4-t6 
+    OPTICKS_KEY      : OKX4Test.X4PhysicalVolume.lWorld0x4bc2710_PV.d4157cb873000b4e19f77654134c3196 
+    OPTICKS_COMMENT  : just-19-vacuum-remainder-see-notes/issues/review-analytic-geometry.rst 
+    [blyth@localhost ~]$ geocache-gui --enabledmergedmesh 2
+    ## expected shape 
+
+::
+
+     geocache-;geocache-bench --xanalytic --enabledmergedmesh 2 
+
+     OpSnapTest --envkey --target 352851 --eye -1,-1,-1 --snapconfig steps=5,eyestartz=-1,eyestopz=-0.5 --size 5120,2880,1 --embedded --cvd 0,1 --rtx 0 --runfolder geocache-bench --runstamp 1558365269 --runlabel R0_TITAN_V_AND_TITAN_RTX --xanalytic --enabledmergedmesh 2
+                    20190520_231429  launchAVG      rfast      rslow      prelaunch000 
+           R0_TITAN_V_AND_TITAN_RTX      0.039      1.000      0.529          12.416 
+                         R1_TITAN_V      0.051      1.331      0.704           2.809 
+                         R0_TITAN_V      0.066      1.716      0.907           6.476 
+                       R1_TITAN_RTX      0.067      1.737      0.919           2.947 
+                       R0_TITAN_RTX      0.073      1.891      1.000           6.728 
+
+* fast, no RTX inversion
+
+
+geocache-j1808-v4-t7 : just 18,19 the vacuum cap+remainder
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+::
+
+    geocache-;geocache-bench --xanalytic --enabledmergedmesh 2 
+
+    OPTICKS_GEOFUNC  : geocache-j1808-v4-t7 
+    OPTICKS_KEY      : OKX4Test.X4PhysicalVolume.lWorld0x4bc2710_PV.e13cbdbe8782ca4ca000b735f0c4d61a 
+    OPTICKS_COMMENT  : just-18-19-vacuum-cap-and-remainder-see-notes/issues/review-analytic-geometry.rst 
+    [blyth@localhost opticks]$ geocache-gui --enabledmergedmesh 2
+
+
+::
+
+     OpSnapTest --envkey --target 352851 --eye -1,-1,-1 --snapconfig steps=5,eyestartz=-1,eyestopz=-0.5 --size 5120,2880,1 --embedded --cvd 0,1 --rtx 0 --runfolder geocache-bench --runstamp 1558365964 --runlabel R0_TITAN_V_AND_TITAN_RTX --xanalytic --enabledmergedmesh 2
+                    20190520_232604  launchAVG      rfast      rslow      prelaunch000 
+           R0_TITAN_V_AND_TITAN_RTX      0.047      1.000      0.541          12.490 
+                       R1_TITAN_RTX      0.073      1.557      0.843           2.936 
+                         R1_TITAN_V      0.077      1.622      0.878           2.864 
+                         R0_TITAN_V      0.085      1.808      0.979           6.395 
+                       R0_TITAN_RTX      0.087      1.848      1.000           6.323 
+
+
+* fast, no RTX inversion
+* note there is a coincideent face between the two split hemispheres of the vacuum ellipsoid
+
+
+
+geocache-j1808-v4-t8 : just 21,18,19,  outer-pyrex+vacuum-cap+remainder
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+::
+
+    OPTICKS_GEOFUNC  : geocache-j1808-v4-t8 
+    OPTICKS_KEY      : OKX4Test.X4PhysicalVolume.lWorld0x4bc2710_PV.52e273e4ad5423fe2fc8aa44bbf055ec 
+    OPTICKS_COMMENT  : just-21-18-19-outer-pyrex+vacuum-cap-and-remainder-see-notes/issues/review-analytic-geometry.rst 
+    [blyth@localhost opticks]$ 
+    [blyth@localhost opticks]$ 
+    [blyth@localhost opticks]$ geocache-gui --enabledmergedmesh 2
+
+
+
+     geocache-;geocache-bench --xanalytic --enabledmergedmesh 2 
+
+::
+
+     OpSnapTest --envkey --target 352851 --eye -1,-1,-1 --snapconfig steps=5,eyestartz=-1,eyestopz=-0.5 --size 5120,2880,1 --embedded --cvd 0,1 --rtx 0 --runfolder geocache-bench --runstamp 1558367315 --runlabel R0_TITAN_V_AND_TITAN_RTX --xanalytic --enabledmergedmesh 2
+                    20190520_234835  launchAVG      rfast      rslow      prelaunch000 
+           R0_TITAN_V_AND_TITAN_RTX      0.055      1.000      0.388          12.250 
+                       R0_TITAN_RTX      0.097      1.774      0.687           6.340 
+                         R0_TITAN_V      0.101      1.847      0.716           6.315 
+                       R1_TITAN_RTX      0.140      2.564      0.994           2.907 
+                         R1_TITAN_V      0.141      2.580      1.000           2.786 
+
+
+* RTX inversion starts
+
+* contrast the R1 numbers between t8 and t7, to see the effect of adding the pyrex
+
+  * R0 : little change
+  * R1 : doubled RTX ON times for both V and T-rex
+
+* RTX mode really dislikes tightly contained analytic volumes 
+
+
 
 
 

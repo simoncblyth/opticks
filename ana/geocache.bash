@@ -305,12 +305,23 @@ geocache-j1808-v4-t5-key(){     echo OKX4Test.X4PhysicalVolume.lWorld0x4bc2710_P
 geocache-j1808-v4-t5-export(){  geocache-export ${FUNCNAME/-export} ; }
 geocache-j1808-v4-t5(){ geocache-j1808-v4- --csgskiplv 22,17,21,20,19 --runfolder $FUNCNAME --runcomment $(${FUNCNAME}-comment) $* ; }
 
+geocache-j1808-v4-t6-comment(){ echo just-19-vacuum-remainder-see-notes/issues/review-analytic-geometry.rst ; }
+geocache-j1808-v4-t6-key(){     echo OKX4Test.X4PhysicalVolume.lWorld0x4bc2710_PV.d4157cb873000b4e19f77654134c3196 ; }
+geocache-j1808-v4-t6-export(){  geocache-export ${FUNCNAME/-export} ; }
+geocache-j1808-v4-t6(){ geocache-j1808-v4- --csgskiplv 22,17,21,20,18 --runfolder $FUNCNAME --runcomment $(${FUNCNAME}-comment) $* ; }
+
+geocache-j1808-v4-t7-comment(){ echo just-18-19-vacuum-cap-and-remainder-see-notes/issues/review-analytic-geometry.rst ; }
+geocache-j1808-v4-t7-key(){     echo OKX4Test.X4PhysicalVolume.lWorld0x4bc2710_PV.e13cbdbe8782ca4ca000b735f0c4d61a ; }
+geocache-j1808-v4-t7-export(){  geocache-export ${FUNCNAME/-export} ; }
+geocache-j1808-v4-t7(){ geocache-j1808-v4- --csgskiplv 22,17,21,20 --runfolder $FUNCNAME --runcomment $(${FUNCNAME}-comment) $* ; }
+
+geocache-j1808-v4-t8-comment(){ echo just-21-18-19-outer-pyrex+vacuum-cap-and-remainder-see-notes/issues/review-analytic-geometry.rst ; }
+geocache-j1808-v4-t8-key(){     echo OKX4Test.X4PhysicalVolume.lWorld0x4bc2710_PV.52e273e4ad5423fe2fc8aa44bbf055ec ; }       ## NB this matches geocache-j1808-v4-t3
+geocache-j1808-v4-t8-export(){  geocache-export ${FUNCNAME/-export} ; }
+geocache-j1808-v4-t8(){ geocache-j1808-v4- --csgskiplv 22,17,20 --runfolder $FUNCNAME --runcomment $(${FUNCNAME}-comment) $* ; }
 
 
-
-geocache-bashrc-export(){   geocache-j1808-v4-t5-export ; }
-
-
+geocache-bashrc-export(){   geocache-j1808-v4-t8-export ; }
 
 
 
