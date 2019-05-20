@@ -337,7 +337,7 @@ void X4PhysicalVolume::Digest( const G4LogicalVolume* const lv, const G4int dept
 }
 
 
-std::string X4PhysicalVolume::Digest( const G4VPhysicalVolume* const top)
+std::string X4PhysicalVolume::Digest( const G4VPhysicalVolume* const top, const char* digestextra)
 {
     SDigest dig ;
     const G4LogicalVolume* lv = top->GetLogicalVolume() ;
@@ -345,13 +345,20 @@ std::string X4PhysicalVolume::Digest( const G4VPhysicalVolume* const top)
     std::string mats = X4Material::Digest(); 
 
     dig.update( const_cast<char*>(mats.data()), mats.size() );  
+
+    if(digestextra)
+    {
+        LOG(info) << "digestextra " << digestextra ; 
+        dig.update_str( digestextra );  
+    }
+
     return dig.finalize();
 }
 
 
-const char* X4PhysicalVolume::Key(const G4VPhysicalVolume* const top )
+const char* X4PhysicalVolume::Key(const G4VPhysicalVolume* const top, const char* digestextra )
 {
-    std::string digest = Digest(top);
+    std::string digest = Digest(top, digestextra);
     const char* exename = PLOG::instance->args.exename() ; 
     std::stringstream ss ; 
     ss 

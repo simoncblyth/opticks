@@ -66,7 +66,7 @@ resulting from the translation.
 
 
 
-Hmm : at what level to form the digest ? 
+Hmm : at what level to form the digest ? Especially in OKX4Test 
 ---------------------------------------------------------------------------------------------------------------------------------
 
 Can digest at multiple levels:
@@ -99,6 +99,14 @@ Thoughts
 
 * seems like need to have digests at each level for maximal usefulness and clarity, and 
   to minimize processing    
+
+* **actually the most important digest is that of the geocache** 
+
+  * hmm but need to be able to quickly know if can reuse a geocache without recreating it, 
+    thinking of G4Opticks usecase  
+  * there are multiple uses 
+  * csgskiplv is a temporary kludge thing : so do a hybrid fake digest 
+    (did this with digestextra args to X4PhysicalVolume) 
 
 
 
