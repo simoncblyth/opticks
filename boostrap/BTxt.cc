@@ -17,7 +17,7 @@
 
 BTxt::BTxt(const char* path)
    :
-   m_path(strdup(path))
+   m_path(path ? strdup(path) : NULL)
 {
 }
 
@@ -81,9 +81,10 @@ void BTxt::read()
 }
 
 
-void BTxt::prepDir() const 
+void BTxt::prepDir(const char* path_) const 
 {
-    std::string pdir = BFile::ParentDir(m_path);
+    const char* path = path_ ? path_ : m_path ; 
+    std::string pdir = BFile::ParentDir(path);
     BFile::CreateDir(pdir.c_str()); 
 
     LOG(debug) << "BTxt::prepDir"
@@ -91,14 +92,17 @@ void BTxt::prepDir() const
               ;
 }
 
-void BTxt::write() const 
+void BTxt::write(const char* path_) const 
 {
-    prepDir();
+    const char* path = path_ ? path_ : m_path ; 
+    assert(path); 
 
-    std::ofstream out(m_path, std::ios::out);
+    prepDir(path);
+
+    std::ofstream out(path, std::ios::out);
     if(!out.is_open()) 
     {   
-        LOG(fatal) << "BTxt::write failed to open " << m_path ; 
+        LOG(fatal) << "failed to open " << path ; 
         return ;
     }   
 
@@ -119,4 +123,23 @@ void BTxt::addLine(const char* line)
 {
     m_lines.push_back(line);
 }
+
+template<typename T>
+void BTxt::addValue(T value)
+{
+    std::stringstream ss ; 
+    ss << value ; 
+    std::string s = ss.str(); 
+    m_lines.push_back(s);
+}
+
+
+
+
+template BRAP_API void BTxt::addValue(int );
+template BRAP_API void BTxt::addValue(unsigned );
+template BRAP_API void BTxt::addValue(float );
+template BRAP_API void BTxt::addValue(double );
+
+
 

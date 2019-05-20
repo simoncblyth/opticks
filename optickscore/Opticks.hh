@@ -27,6 +27,7 @@ struct NSceneConfig ;
 struct NLODConfig ; 
 struct NSnapConfig ; 
 
+class BTxt ; 
 class BParameters ; 
 class BPropNames ; 
 class Types ;
@@ -270,6 +271,10 @@ class OKCORE_API Opticks {
        const char* getGPUMonPath() const ;   
        bool        isGPUMon() const ;  
    public:
+       void        updateRunTxt() ; 
+       BTxt*       getRunTxt() const ; 
+       void        saveRunTxt() const ; 
+
        const char* getRunComment() const ;
        int         getRunStamp() const ; 
        const char* getRunDate() const ; 
@@ -547,6 +552,7 @@ class OKCORE_API Opticks {
        OpticksCfg<Opticks>* m_cfg ; 
        BTimeKeeper*         m_timer ; 
        BParameters*         m_parameters ; 
+       BTxt*                m_runtxt ;  
        NSceneConfig*        m_scene_config ; 
        NLODConfig*          m_lod_config ; 
        NSnapConfig*         m_snap_config ; 

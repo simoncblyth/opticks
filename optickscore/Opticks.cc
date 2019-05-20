@@ -20,6 +20,7 @@
 #include "BOpticksEvent.hh"
 #include "BOpticksKey.hh"
 #include "BFile.hh"
+#include "BTxt.hh"
 #include "BHex.hh"
 #include "BStr.hh"
 #include "BPropNames.hh"
@@ -265,6 +266,7 @@ Opticks::Opticks(int argc, char** argv, const char* argforced )
     m_cfg(NULL),
     m_timer(NULL),
     m_parameters(NULL),
+    m_runtxt(NULL),
     m_scene_config(NULL),
     m_lod_config(NULL),
     m_snap_config(NULL),
@@ -544,6 +546,7 @@ void Opticks::init()
     if(m_envkey) m_parameters->addEnvvar("OPTICKS_KEY");  // only revelant when are use --envkey to switch on sensitivity to the envvar
     m_parameters->add<std::string>("CMDLINE", PLOG::instance->cmdline() ); 
 
+    m_runtxt = new BTxt ; 
 
     m_lastarg = m_argc > 1 ? strdup(m_argv[m_argc-1]) : NULL ;
 
@@ -1287,6 +1290,58 @@ const char* Opticks::getRunDate() const
 }
 
 
+void Opticks::updateRunTxt()  
+{
+    m_runtxt->addLine("rundate") ;  
+    m_runtxt->addLine( getRunDate() ) ;  
+
+    m_runtxt->addLine("runstamp" ) ;  
+    m_runtxt->addValue( getRunStamp() );  
+
+    std::string argline = PLOG::instance->args.argline() ;
+    m_runtxt->addLine("argline" ) ;  
+    m_runtxt->addLine( argline) ;  
+
+    const char* runcomment = getRunComment() ; 
+    if(runcomment)
+    {
+        m_runtxt->addLine("runcomment" ) ;  
+        m_runtxt->addLine( runcomment) ;  
+    }
+
+    const char* runlabel = getRunLabel() ; 
+    if(runlabel)
+    {
+        m_runtxt->addLine("runlabel" ) ;  
+        m_runtxt->addLine( runlabel) ;  
+    }
+
+    const char* runfolder = getRunFolder() ; 
+    if(runfolder)
+    {
+        m_runtxt->addLine("runfolder" ) ;  
+        m_runtxt->addLine( runfolder) ;  
+    }
+
+
+
+}
+
+BTxt* Opticks::getRunTxt() const
+{
+    return m_runtxt ; 
+}  
+
+void Opticks::saveRunTxt() const 
+{
+    const char* path = getRunCommentPath(); 
+    assert( m_runtxt) ; 
+    m_runtxt->write(path);    
+}
+
+
+
+
 /*
 Opticks::AutoRunLabel
 -----------------------
@@ -1523,6 +1578,8 @@ void Opticks::configure()
 
 
     initResource();   // <-- RECENT ATTEMPT TO MOVE OpticksResource setup after commandline parsing done
+
+    updateRunTxt(); 
 
 
     defineEventSpec();

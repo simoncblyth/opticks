@@ -735,6 +735,7 @@ void GGeo::save()
     saveCacheMeta();
     saveRunComment();
 
+
     LOG(LEVEL) << "]" ;  
 }
 
@@ -762,17 +763,9 @@ void GGeo::saveCacheMeta()
 }
 
 
-void GGeo::saveRunComment() const   // --runcomment
+void GGeo::saveRunComment() const 
 {
-    const char* path = m_ok->getRunCommentPath(); 
-    const char* comment = m_ok->getRunComment(); 
-    if(comment && path)
-    {
-        LOG(info) << "[" << comment << "] to path " << path  ; 
-        BTxt txt(path) ; 
-        txt.addLine(comment);
-        txt.write();  
-    }
+    m_ok->saveRunTxt(); 
 }
 
 

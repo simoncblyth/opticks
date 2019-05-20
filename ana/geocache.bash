@@ -254,7 +254,7 @@ geocache-j1808-v4()
     opticksdata- 
 
     gdb --args \
-    OKX4Test --gdmlpath $(opticksdata-jv4) --csgskiplv 22 
+    OKX4Test --cvd 1 --gdmlpath $(opticksdata-jv4) --csgskiplv 22  --runfolder $FUNCNAME --runcomment "$FUNCNAME : aim to reproduce the old misbehaviour under its own digest, skipping just lv 22" 
 
     cd $iwd
 }
