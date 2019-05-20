@@ -269,8 +269,8 @@ void OGeo::convertMergedMesh(unsigned i)
 
 optix::GeometryGroup OGeo::makeGlobalGeometryGroup(GMergedMesh* mm)
 {
-
-    mm->dumpVolumesSelected("OGeo::makeGlobalGeometryGroup"); 
+    int dbgmm =  m_ok->getDbgMM() ; 
+    if(dbgmm == 0) mm->dumpVolumesSelected("OGeo::makeGlobalGeometryGroup [--dbgmm 0] "); 
 
     unsigned lod = 0u ;  
     optix::Material mat = makeMaterial();

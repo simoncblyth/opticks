@@ -483,7 +483,11 @@ void X4PhysicalVolume::convertSolids_r(const G4VPhysicalVolume* const pv, int de
 GMesh* X4PhysicalVolume::convertSolid( int lvIdx, int soIdx, const G4VSolid* const solid, const std::string& lvname) const 
 {
      assert( lvIdx == soIdx );  
-     LOG(info) << " [ " << lvIdx << " " << lvname ; 
+
+     bool dbglv = lvIdx == m_ok->getDbgLV() ; 
+     LOG(info) << " [ " 
+               << ( dbglv ? " --dbglv " : "" ) 
+                << lvIdx << " " << lvname ;  
  
      nnode* raw = X4Solid::Convert(solid)  ; 
 
@@ -492,14 +496,16 @@ GMesh* X4PhysicalVolume::convertSolid( int lvIdx, int soIdx, const G4VSolid* con
          const char* gdmlpath = X4CSG::GenerateTestPath( m_g4codegendir, lvIdx, ".gdml" ) ;  
          bool refs = false ;  
          X4GDMLParser::Write( solid, gdmlpath, refs ); 
-
-         LOG(info) 
-             << "[--g4codegen]"
-             << " lvIdx " << lvIdx
-             << " soIdx " << soIdx
-             << " lvname " << lvname 
-             ;
-         raw->dump_g4code();  // just for debug 
+         if(dbglv)
+         { 
+             LOG(info) 
+                 << "[--g4codegen]"
+                 << " lvIdx " << lvIdx
+                 << " soIdx " << soIdx
+                 << " lvname " << lvname 
+                 ;
+             raw->dump_g4code();  // just for debug 
+         }
          X4CSG::GenerateTest( solid, m_g4codegendir , lvIdx ) ; 
 
      }

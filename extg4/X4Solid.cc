@@ -896,11 +896,29 @@ void X4Solid::convertEllipsoid()
     float zcut1 = solid->GetZBottomCut()/mm ; 
     float zcut2 = solid->GetZTopCut()/mm ;
 
-    float z1 = zcut1 != 0.f && zcut1 > -cz ? zcut1 : -cz ; 
-    float z2 = zcut2 != 0.f && zcut2 <  cz ? zcut2 :  cz ; 
+
+    // float z1 = zcut1 != 0.f && zcut1 > -cz ? zcut1 : -cz ; 
+    // float z2 = zcut2 != 0.f && zcut2 <  cz ? zcut2 :  cz ; 
+
+    //       HUH ^^^^^^^^^^^^^ WHATS SPECIAL ABOUT ZERO
+    //       see notes/issues/review-analytic-geometry.rst    
+
+    float z1 = zcut1 > -cz ? zcut1 : -cz ; 
+    float z2 = zcut2 <  cz ? zcut2 :  cz ; 
+
     assert( z2 > z1 ) ;  
 
     bool zslice = z1 > -cz || z2 < cz ;  
+
+    LOG(info) 
+         << " zcut1 " << zcut1 
+         << " zcut2 " << zcut2
+         << " z1 " << z1
+         << " z2 " << z2
+         << " cz " << cz
+         << " zslice " << zslice
+         ;
+
 
     nnode* cn = zslice ? 
                           (nnode*)make_zsphere( 0.f, 0.f, 0.f, cz, z1, z2 ) 

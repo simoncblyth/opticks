@@ -101,30 +101,8 @@ int main(int argc, char** argv)
 
     Opticks* ok = new Opticks(argc, argv, argforce);  // Opticks instanciation must be after Opticks::SetKey
     ok->configure();
-
-
-    // hmm where should this cache mangement code go ?
-    // its needed here because OKX4Test is explicitly intended to write geocaches  
-    if(ok->hasGeoCache()) 
-    {
-        LOG(fatal) << "geocache exists already " << ok->getIdPath() ;
-        if(!ok->canDeleteGeoCache())
-        {
-            LOG(fatal) << "delete this externally OR rerun with --deletegeocache option " ;   
-        }
-        else
-        {
-            ok->deleteGeoCache(); 
-        } 
-    }  
-    assert(!ok->hasGeoCache()); 
-
-
-
-
-    const char* csgskiplv2 = ok->getCSGSkipLV();
-    assert( strcmp(csgskiplv, csgskiplv2) == 0 );  
-
+    ok->enforceNoGeoCache(); 
+ 
 
     ok->profile("_OKX4Test:GGeo"); 
 

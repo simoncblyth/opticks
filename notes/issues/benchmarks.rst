@@ -90,6 +90,20 @@ Note RTX mode one has much faster prelaunch ?
 
 
 
+Reproducibility after moving to better digest and geocache handling
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+::
+
+    OpSnapTest --envkey --target 352851 --eye -1,-1,-1 --snapconfig steps=5,eyestartz=-1,eyestopz=-0.5 --size 5120,2880,1 --embedded --cvd 1 --rtx 2 --runfolder geocache-bench --runstamp 1558344243 --runlabel R2_TITAN_RTX
+                    20190520_172403  launchAVG      rfast      rslow      prelaunch000 
+                       R2_TITAN_RTX      0.032      1.000      0.223           2.334 
+                       R1_TITAN_RTX      0.073      2.259      0.504           2.803 
+           R0_TITAN_V_AND_TITAN_RTX      0.082      2.533      0.566           3.221 
+                         R2_TITAN_V      0.093      2.892      0.646           2.238 
+                       R0_TITAN_RTX      0.108      3.358      0.750           2.147 
+                         R1_TITAN_V      0.126      3.899      0.871           2.399 
+                         R0_TITAN_V      0.144      4.478      1.000           1.827 
 
 
 Disabling ANYHIT for the ray and geometry and geometrygroup
@@ -452,6 +466,21 @@ combination of the slow ones : --xanalytic --enabledmergedmesh 0,2
                          R1_TITAN_V      0.510      5.166      1.000 
 
 
+
+Reproducibily after improve digest and cache handling : for easier management of multiple geocaches
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+:: 
+
+
+     OpSnapTest --envkey --target 352851 --eye -1,-1,-1 --snapconfig steps=5,eyestartz=-1,eyestopz=-0.5 --size 5120,2880,1 --embedded --cvd 0,1 --rtx 0 --runfolder geocache-bench --runstamp 1558344585 --runlabel R0_TITAN_V_AND_TITAN_RTX --xanalytic
+                    20190520_172945  launchAVG      rfast      rslow      prelaunch000 
+           R0_TITAN_V_AND_TITAN_RTX      0.121      1.000      0.201          24.596 
+                       R0_TITAN_RTX      0.195      1.608      0.324           6.399 
+                         R0_TITAN_V      0.217      1.787      0.360          11.275 
+                       R1_TITAN_RTX      0.502      4.137      0.833           3.422 
+                         R1_TITAN_V      0.602      4.967      1.000           3.244 
+
+
 Reprodicibility check, after pixeltime fixes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -466,9 +495,7 @@ Reprodicibility check, after pixeltime fixes
            R0_TITAN_V_AND_TITAN_RTX      0.122      1.000      0.202 
                        R0_TITAN_RTX      0.190      1.561      0.315 
                          R0_TITAN_V      0.217      1.785      0.360 
-                       R2_TITAN_RTX      0.509      4.179      0.844 
                        R1_TITAN_RTX      0.513      4.217      0.852 
-                         R2_TITAN_V      0.602      4.948      0.999 
                          R1_TITAN_V      0.603      4.952      1.000 
 
 

@@ -125,16 +125,15 @@ EOU
 }
 
 geocache-env(){ echo -n ; }
-geocache-export()
-{
-   export IDPATH2=/usr/local/opticks-cmake-overhaul/geocache/CX4GDMLTest_World0xc15cfc0_PV_g4live/g4ok_gltf/828722902b5e94dab05ac248329ffebe/1
-}
+#geocache-export()
+#{
+#}
 
 geocache-paths(){  echo $IDPATH/$1 $IDPATH2/$1 ; }
 geocache-diff-(){  printf "\n======== $1 \n\n" ; diff -y $(geocache-paths $1) ; }
 geocache-diff()
 {
-   geocache-export 
+   export IDPATH2=/usr/local/opticks-cmake-overhaul/geocache/CX4GDMLTest_World0xc15cfc0_PV_g4live/g4ok_gltf/828722902b5e94dab05ac248329ffebe/1
    geocache-diff- GItemList/GMaterialLib.txt 
    geocache-diff- GItemList/GSurfaceLib.txt 
    geocache-diff- GNodeLib/PVNames.txt
@@ -191,8 +190,8 @@ geocache-cd(){ cd $(geocache-dir) ; }
 
 geocache-tstdir(){ echo $(geocache-keydir)/g4codegen/tests ; }
 
-geocache-kcd(){ cd $(geocache-keydir) ; }
-geocache-tcd(){ cd $(geocache-tstdir) ; }
+geocache-kcd(){ cd $(geocache-keydir) ; pwd ; cat runcomment.txt ;  }
+geocache-tcd(){ cd $(geocache-tstdir) ; pwd ; }
 
 
 geocache-tmp(){ echo /tmp/$USER/opticks/$1 ; }
@@ -244,37 +243,72 @@ geocache-j1808-v3()
 }
 
 
-geocache-j1808-v4()
+
+geocache-j1808-v4-()
 {
     local iwd=$PWD
     local tmp=$(geocache-tmp $FUNCNAME)
     mkdir -p $tmp && cd $tmp
-
-    type $FUNCNAME
     opticksdata- 
-
-    gdb --args \
-    OKX4Test --cvd 1 --g4codegen --deletegeocache --gdmlpath $(opticksdata-jv4) --csgskiplv 22  --runfolder $FUNCNAME --runcomment "$FUNCNAME : aim to reproduce the old misbehaviour under its own digest, skipping just lv 22" 
-
+    local dbg
+    [ -n "$DBG" ] && dbg="gdb --args"  
+    $dbg OKX4Test --cvd 1 --g4codegen --deletegeocache --gdmlpath $(opticksdata-jv4) $*
     cd $iwd
 }
 
 
-geocache-j1808-v4-t1()
+
+geocache-export()
 {
-    local iwd=$PWD
-    local tmp=$(geocache-tmp $FUNCNAME)
-    mkdir -p $tmp && cd $tmp
+    local geofunc=$1
+    export OPTICKS_GEOFUNC=$geofunc
+    export OPTICKS_KEY=$(${geofunc}-key)
+    export OPTICKS_COMMENT=$(${geofunc}-comment)
 
-    type $FUNCNAME
-    opticksdata- 
-
-    gdb --args \
-    OKX4Test --cvd 1 --gdmlpath $(opticksdata-jv4) --csgskiplv 22,17,20,18,19     ## leave just 21, see notes/issues/review-analytic-geometry.rst  
-
-    cd $iwd
+    geocache-desc
+}
+geocache-desc()
+{
+    printf "%-16s : %s \n" "OPTICKS_GEOFUNC" $OPTICKS_GEOFUNC
+    printf "%-16s : %s \n" "OPTICKS_KEY"     $OPTICKS_KEY
+    printf "%-16s : %s \n" "OPTICKS_COMMENT" $OPTICKS_COMMENT
 }
 
+
+geocache-j1808-v4-comment(){ echo reproduce-rtx-inversion-skipping-just-lv-22-maskVirtual ; }
+geocache-j1808-v4-key(){     echo OKX4Test.X4PhysicalVolume.lWorld0x4bc2710_PV.f6cc352e44243f8fa536ab483ad390ce ; }
+geocache-j1808-v4-export(){  geocache-export ${FUNCNAME/-export} ; }
+geocache-j1808-v4(){  geocache-j1808-v4- --csgskiplv 22 --runfolder $FUNCNAME --runcomment $(${FUNCNAME}-comment) $* ; }  
+
+geocache-j1808-v4-t1-comment(){ echo leave-just-21-see-notes/issues/review-analytic-geometry.rst ; }
+geocache-j1808-v4-t1-key(){     echo OKX4Test.X4PhysicalVolume.lWorld0x4bc2710_PV.5cc3de75a98f405a4e483bad34be348f ; }
+geocache-j1808-v4-t1-export(){  geocache-export ${FUNCNAME/-export} ; }
+geocache-j1808-v4-t1(){ geocache-j1808-v4- --csgskiplv 22,17,20,18,19 --runfolder $FUNCNAME --runcomment $(${FUNCNAME}-comment) $* ; }
+
+geocache-j1808-v4-t2-comment(){ echo skip-22-virtualMask+20-almost-degenerate-inner-pyrex-see-notes/issues/review-analytic-geometry.rst ; }
+geocache-j1808-v4-t2-key(){     echo OKX4Test.X4PhysicalVolume.lWorld0x4bc2710_PV.781dc285412368f18465809232634d52 ; }
+geocache-j1808-v4-t2-export(){  geocache-export ${FUNCNAME/-export} ; }
+geocache-j1808-v4-t2(){ geocache-j1808-v4- --csgskiplv 22,20 --runfolder $FUNCNAME --runcomment $(${FUNCNAME}-comment) $* ; }
+
+geocache-j1808-v4-t3-comment(){ echo skip-22-virtualMask+17-mask+20-almost-degenerate-inner-pyrex-see-notes/issues/review-analytic-geometry.rst ; }
+geocache-j1808-v4-t3-key(){     echo OKX4Test.X4PhysicalVolume.lWorld0x4bc2710_PV.52e273e4ad5423fe2fc8aa44bbf055ec ; }
+geocache-j1808-v4-t3-export(){  geocache-export ${FUNCNAME/-export} ; }
+geocache-j1808-v4-t3(){ geocache-j1808-v4- --csgskiplv 22,17,20 --runfolder $FUNCNAME --runcomment $(${FUNCNAME}-comment) $*  ; }
+
+geocache-j1808-v4-t4-comment(){ echo skip-22-virtualMask+17-mask+20-almost-degenerate-inner-pyrex+19-remainder-vacuum-see-notes/issues/review-analytic-geometry.rst ; }
+geocache-j1808-v4-t4-key(){     echo OKX4Test.X4PhysicalVolume.lWorld0x4bc2710_PV.078714e5894f31953fc9afce731c77f3 ; }
+geocache-j1808-v4-t4-export(){  geocache-export ${FUNCNAME/-export} ; }
+geocache-j1808-v4-t4(){ geocache-j1808-v4- --csgskiplv 22,17,20,19 --runfolder $FUNCNAME --runcomment $(${FUNCNAME}-comment) $* ; }
+
+geocache-j1808-v4-t5-comment(){ echo just-18-hemi-ellipsoid-cathode-cap-see-notes/issues/review-analytic-geometry.rst ; }
+geocache-j1808-v4-t5-key(){     echo OKX4Test.X4PhysicalVolume.lWorld0x4bc2710_PV.732c52dd2f92338b4c570163ede44230 ; }
+geocache-j1808-v4-t5-export(){  geocache-export ${FUNCNAME/-export} ; }
+geocache-j1808-v4-t5(){ geocache-j1808-v4- --csgskiplv 22,17,21,20,19 --runfolder $FUNCNAME --runcomment $(${FUNCNAME}-comment) $* ; }
+
+
+
+
+geocache-bashrc-export(){   geocache-j1808-v4-t5-export ; }
 
 
 
@@ -619,12 +653,6 @@ geocache-tour-()
 }
 
 
-geocache-check()
-{
-   geocache-bench- --cvd 1 --rtx 0 --runfolder $FUNCNAME --runstamp $(date +%s)  $*
-}
-
-
 
 
 
@@ -632,11 +660,12 @@ geocache-bench(){ geocache-rtxcheck $FUNCNAME $* ; }
 geocache-bench-()
 {
    type $FUNCNAME
-   UseOptiX
+   UseOptiX $*
    local dbg
    [ -n "$DBG" ] && dbg="gdb --args" || dbg=""
    $dbg OpSnapTest --envkey --target 352851 --eye -1,-1,-1 --snapconfig "steps=5,eyestartz=-1,eyestopz=-0.5" --size 5120,2880,1 --embedded  $* 
 }
+geocache-bench-check(){  geocache-bench- --cvd 1 --rtx 0 --runfolder $FUNCNAME --runstamp $(date +%s)  --xanalytic ; }
 
 
 geocache-machinery(){ geocache-rtxcheck $FUNCNAME $* ; }

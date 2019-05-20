@@ -236,6 +236,7 @@ class OKCORE_API Opticks {
        int   getDebugIdx() const ;
        int   getDbgNode() const ;
        int   getDbgMM() const ;
+       int   getDbgLV() const ;
        int   getStack() const ;
        int getMeshVerbosity() const ;
        const char* getFlightPathDir() const ;
@@ -327,6 +328,7 @@ class OKCORE_API Opticks {
    public:
        bool                 canDeleteGeoCache() const ; 
        void                 deleteGeoCache() const ; 
+       void                 enforceNoGeoCache() const ; 
        void                 reportGeoCacheCoordinates() const ; 
    public:
        const char*          getDbgIndex() const ;

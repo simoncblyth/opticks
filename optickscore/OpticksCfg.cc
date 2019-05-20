@@ -94,6 +94,7 @@ OpticksCfg<Listener>::OpticksCfg(const char* name, Listener* listener, bool live
        m_debugidx(0),
        m_dbgnode(-1),
        m_dbgmm(-1),
+       m_dbglv(-1),
        m_stack(2180),
        m_num_photons_per_g4event(10000),
        m_loadverbosity(0),
@@ -650,6 +651,13 @@ void OpticksCfg<Listener>::init()
    snprintf(dbgmm,128, "Index of merged mesh for debugging. Default %d", m_dbgmm);
    m_desc.add_options()
        ("dbgmm",  boost::program_options::value<int>(&m_dbgmm), dbgmm );
+
+   char dbglv[128];
+   snprintf(dbglv,128, "Index of solid/LV for debugging. Default %d", m_dbglv);
+   m_desc.add_options()
+       ("dbglv",  boost::program_options::value<int>(&m_dbglv), dbglv );
+
+
 
 
    char dbgmesh[128];
@@ -1636,6 +1644,13 @@ int OpticksCfg<Listener>::getDbgMM() const
 {
     return m_dbgmm ; 
 }
+
+template <class Listener>
+int OpticksCfg<Listener>::getDbgLV() const 
+{
+    return m_dbglv ; 
+}
+
 
 
 

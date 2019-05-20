@@ -490,6 +490,12 @@ int Opticks::getDbgMM() const
 {
    return m_cfg->getDbgMM();
 }
+int Opticks::getDbgLV() const 
+{
+   return m_cfg->getDbgLV();
+}
+
+
 
 
 
@@ -663,6 +669,27 @@ void Opticks::deleteGeoCache() const
     LOG(info) << "removing " << idpath << " (as permitted by option : --deletegeocache )" ; 
     BFile::RemoveDir(idpath); 
 }
+
+void Opticks::enforceNoGeoCache() const
+{
+    const Opticks* ok = this ; 
+    // used by OKX4Test as that is explicitly intended to write geocaches  
+    if(ok->hasGeoCache()) 
+    {   
+        LOG(fatal) << "geocache exists already " << ok->getIdPath() ;
+        if(!ok->canDeleteGeoCache())
+        {
+            LOG(fatal) << "delete this externally OR rerun with --deletegeocache option " ;   
+        }
+        else
+        {
+            ok->deleteGeoCache(); 
+        }
+    }   
+    assert(!ok->hasGeoCache()); 
+}
+
+
 void Opticks::reportGeoCacheCoordinates() const
 {
     const Opticks* ok = this ; 

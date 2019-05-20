@@ -108,6 +108,60 @@ GNodeLib/LVNames.txt::
 
 
 
+mm3 : TT plate
+-----------------
+
+::
+
+    2019-05-19 20:03:43.436 INFO  [300826] [OGeo::convertMergedMesh@235] ( 3
+    2019-05-19 20:03:43.436 INFO  [300826] [OGeo::makeRepeatedAssembly@299]  mmidx 3 imodulo 0
+    2019-05-19 20:03:43.436 INFO  [300826] [OGeo::makeOGeometry@543] ugeocode [A]
+    2019-05-19 20:03:43.436 INFO  [300826] [OGeo::makeAnalyticGeometry@609] mm 3 pts:  GParts  primflag         flagnodetree numParts  130 numPrim  130
+    2019-05-19 20:03:43.436 FATAL [300826] [OGeo::makeOGeometry@565]  DISABLE_ANYHIT 
+    2019-05-19 20:03:43.450 INFO  [300826] [OGeo::convertMergedMesh@267] ) 3 numInstances 480
+
+
+mm4 : support stick
+-----------------------
+
+::
+
+    2019-05-19 20:03:43.450 INFO  [300826] [OGeo::convertMergedMesh@235] ( 4
+    2019-05-19 20:03:43.450 INFO  [300826] [OGeo::makeRepeatedAssembly@299]  mmidx 4 imodulo 0
+    2019-05-19 20:03:43.450 INFO  [300826] [OGeo::makeOGeometry@543] ugeocode [A]
+    2019-05-19 20:03:43.450 INFO  [300826] [OGeo::makeAnalyticGeometry@609] mm 4 pts:  GParts  primflag         flagnodetree numParts    3 numPrim    1
+    2019-05-19 20:03:43.450 FATAL [300826] [OGeo::makeOGeometry@565]  DISABLE_ANYHIT 
+    2019-05-19 20:03:43.464 INFO  [300826] [OGeo::convertMergedMesh@267] ) 4 numInstances 480
+
+
+mm5 : support temple "fastener"
+--------------------------------------
+
+::
+
+    2019-05-19 20:03:43.464 INFO  [300826] [OGeo::convertMergedMesh@235] ( 5
+    2019-05-19 20:03:43.464 INFO  [300826] [OGeo::makeRepeatedAssembly@299]  mmidx 5 imodulo 0
+    2019-05-19 20:03:43.464 INFO  [300826] [OGeo::makeOGeometry@543] ugeocode [A]
+    2019-05-19 20:03:43.464 INFO  [300826] [OGeo::makeAnalyticGeometry@609] mm 5 pts:  GParts  primflag         flagnodetree numParts   31 numPrim    1
+    2019-05-19 20:03:43.465 FATAL [300826] [OGeo::makeOGeometry@565]  DISABLE_ANYHIT 
+    2019-05-19 20:03:43.479 INFO  [300826] [OGeo::convertMergedMesh@267] ) 5 numInstances 480
+    2019-05-19 20:03:43.479 INFO  [300826] [OGeo::convert@230] ] nmm 6
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 mm2 : large PMT
 --------------------
@@ -159,7 +213,11 @@ GNodeLib/PVNames.txt 1-based index from vim, first 20inch::
                                                       29 parts 
                                                    ------------------------------------
 
+        
+     22,17,21,20,19 
+
      In geocache-j1808-v4-t1  try --csgskiplv 22,17,20,18,19   ## leaving just 21
+     In geocache-j1808-v4-t5  try --csgskiplv 22,17,21,20,19   ## leaving just 18 : the cathode cap
                                                
      63562 lMaskVirtual_phys0x4c9a590
      63563 pMask0x4c3bf20
@@ -298,50 +356,377 @@ are much faster and RTX does not hinder::
 
 
 
+Exercise improved digest+geocache handling for easier jumping between geometries
+----------------------------------------------------------------------------------
+
+
+Setup back functions for changing 20inch PMT csgskiplv::
+
+    geocache-export()
+    {
+        local geofunc=$1
+        export OPTICKS_GEOFUNC=$geofunc
+        export OPTICKS_KEY=$(${geofunc}-key)
+        export OPTICKS_COMMENT=$(${geofunc}-comment)
+
+        geocache-desc
+    }
+    geocache-desc()
+    {
+        printf "%-16s : %s \n" "OPTICKS_GEOFUNC" $OPTICKS_GEOFUNC
+        printf "%-16s : %s \n" "OPTICKS_KEY"     $OPTICKS_KEY
+        printf "%-16s : %s \n" "OPTICKS_COMMENT" $OPTICKS_COMMENT
+    }
+
+
+    geocache-j1808-v4-comment(){ echo reproduce-rtx-inversion-skipping-just-lv-22-maskVirtual ; }
+    geocache-j1808-v4-key(){     echo OKX4Test.X4PhysicalVolume.lWorld0x4bc2710_PV.f6cc352e44243f8fa536ab483ad390ce ; }
+    geocache-j1808-v4-export(){  geocache-export ${FUNCNAME/-export} ; }
+    geocache-j1808-v4(){  geocache-j1808-v4- --csgskiplv 22 --runfolder $FUNCNAME --runcomment $(${FUNCNAME}-comment) ; }   
+
+    geocache-j1808-v4-t1-comment(){ echo leave-just-21-see-notes/issues/review-analytic-geometry.rst ; }
+    geocache-j1808-v4-t1-key(){     echo OKX4Test.X4PhysicalVolume.lWorld0x4bc2710_PV.5cc3de75a98f405a4e483bad34be348f ; }
+    geocache-j1808-v4-t1-export(){  geocache-export ${FUNCNAME/-export} ; }
+    geocache-j1808-v4-t1(){ geocache-j1808-v4- --csgskiplv 22,17,20,18,19 --runfolder $FUNCNAME --runcomment $(${FUNCNAME}-comment)  ; } 
+
+    geocache-j1808-v4-t2-comment(){ echo skip-22-virtualMask+20-almost-degenerate-inner-pyrex-see-notes/issues/review-analytic-geometry.rst ; }
+    geocache-j1808-v4-t2-key(){     echo OKX4Test.X4PhysicalVolume.lWorld0x4bc2710_PV.781dc285412368f18465809232634d52 ; }
+    geocache-j1808-v4-t2-export(){  geocache-export ${FUNCNAME/-export} ; }
+    geocache-j1808-v4-t2(){ geocache-j1808-v4- --csgskiplv 22,20 --runfolder $FUNCNAME --runcomment $(${FUNCNAME}-comment)  ; } 
+
+    geocache-j1808-v4-t3-comment(){ echo skip-22-virtualMask+17-mask+20-almost-degenerate-inner-pyrex-see-notes/issues/review-analytic-geometry.rst ; }
+    geocache-j1808-v4-t3-key(){     echo OKX4Test.X4PhysicalVolume.lWorld0x4bc2710_PV.52e273e4ad5423fe2fc8aa44bbf055ec ; }
+    geocache-j1808-v4-t3-export(){  geocache-export ${FUNCNAME/-export} ; }
+    geocache-j1808-v4-t3(){ geocache-j1808-v4- --csgskiplv 22,17,20 --runfolder $FUNCNAME --runcomment $(${FUNCNAME}-comment)  ; } 
+
+    geocache-j1808-v4-t4-comment(){ echo skip-22-virtualMask+17-mask+20-almost-degenerate-inner-pyrex+19-remainder-vacuum-see-notes/issues/review-analytic-geometry.rst ; }
+    geocache-j1808-v4-t4-key(){     echo OKX4Test.X4PhysicalVolume.lWorld0x4bc2710_PV.078714e5894f31953fc9afce731c77f3 ; }
+    geocache-j1808-v4-t4-export(){  geocache-export ${FUNCNAME/-export} ; }
+    geocache-j1808-v4-t4(){ geocache-j1808-v4- --csgskiplv 22,17,20,19 --runfolder $FUNCNAME --runcomment $(${FUNCNAME}-comment)  ; } 
+
+    geocache-j1808-v4-t5-comment(){ echo just-18-hemi-ellipsoid-cathode-cap-see-notes/issues/review-analytic-geometry.rst ; }
+    geocache-j1808-v4-t5-key(){     echo OKX4Test.X4PhysicalVolume.lWorld0x4bc2710_PV.732c52dd2f92338b4c570163ede44230 ; }
+    geocache-j1808-v4-t5-export(){  geocache-export ${FUNCNAME/-export} ; }
+    geocache-j1808-v4-t5(){ geocache-j1808-v4- --csgskiplv 22,17,21,20,19 --runfolder $FUNCNAME --runcomment $(${FUNCNAME}-comment)  ; } 
+
+    geocache-bashrc-export(){   geocache-j1808-v4-t5-export ; }
 
 
 
 
-mm3 : TT plate
------------------
+
+
+
+
+
+Tee up the geocache via OPTICKS_KEY::
+
+    [blyth@localhost 1]$ geocache-;geocache-j1808-v4-t1-export
+              OPTICKS_GEOFUNC : geocache-j1808-v4-t1 
+                  OPTICKS_KEY : OKX4Test.X4PhysicalVolume.lWorld0x4bc2710_PV.5cc3de75a98f405a4e483bad34be348f 
+              OPTICKS_COMMENT : leave-just-21-see-notes/issues/review-analytic-geometry.rst 
+
+::
+
+    geocache-;geocache-bench --xanalytic --enabledmergedmesh 2 
+
+    OpSnapTest --envkey --target 352851 --eye -1,-1,-1 --snapconfig steps=5,eyestartz=-1,eyestopz=-0.5 --size 5120,2880,1 --embedded --cvd 0,1 --rtx 0 --runfolder geocache-bench --runstamp 1558355800 --runlabel R0_TITAN_V_AND_TITAN_RTX --xanalytic --enabledmergedmesh 2
+                    20190520_203640  launchAVG      rfast      rslow      prelaunch000 
+           R0_TITAN_V_AND_TITAN_RTX      0.046      1.000      0.548          12.270 
+                         R1_TITAN_V      0.066      1.453      0.796           2.789 
+                         R0_TITAN_V      0.078      1.709      0.936           6.343 
+                       R0_TITAN_RTX      0.083      1.808      0.991           6.334 
+                       R1_TITAN_RTX      0.083      1.824      1.000           2.815 
+
+
+* reproduces the same good behaviour with PMT unsheathed as seen above 20190519_234100
+
 
 
 ::
 
-    2019-05-19 20:03:43.436 INFO  [300826] [OGeo::convertMergedMesh@235] ( 3
-    2019-05-19 20:03:43.436 INFO  [300826] [OGeo::makeRepeatedAssembly@299]  mmidx 3 imodulo 0
-    2019-05-19 20:03:43.436 INFO  [300826] [OGeo::makeOGeometry@543] ugeocode [A]
-    2019-05-19 20:03:43.436 INFO  [300826] [OGeo::makeAnalyticGeometry@609] mm 3 pts:  GParts  primflag         flagnodetree numParts  130 numPrim  130
-    2019-05-19 20:03:43.436 FATAL [300826] [OGeo::makeOGeometry@565]  DISABLE_ANYHIT 
-    2019-05-19 20:03:43.450 INFO  [300826] [OGeo::convertMergedMesh@267] ) 3 numInstances 480
+     geocache-gui --enabledmergedmesh 2 
+     ## just the simplified 20 inch PMT with only LV:21  with good 30fps raytrace performance
 
 
-mm4 : support stick
------------------------
+
+geocache-j1808-v4-export : back to bad behavior
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 
 ::
 
-    2019-05-19 20:03:43.450 INFO  [300826] [OGeo::convertMergedMesh@235] ( 4
-    2019-05-19 20:03:43.450 INFO  [300826] [OGeo::makeRepeatedAssembly@299]  mmidx 4 imodulo 0
-    2019-05-19 20:03:43.450 INFO  [300826] [OGeo::makeOGeometry@543] ugeocode [A]
-    2019-05-19 20:03:43.450 INFO  [300826] [OGeo::makeAnalyticGeometry@609] mm 4 pts:  GParts  primflag         flagnodetree numParts    3 numPrim    1
-    2019-05-19 20:03:43.450 FATAL [300826] [OGeo::makeOGeometry@565]  DISABLE_ANYHIT 
-    2019-05-19 20:03:43.464 INFO  [300826] [OGeo::convertMergedMesh@267] ) 4 numInstances 480
+    [blyth@localhost 1]$ geocache-;geocache-j1808-v4-export
+              OPTICKS_GEOFUNC : geocache-j1808-v4 
+                  OPTICKS_KEY : OKX4Test.X4PhysicalVolume.lWorld0x4bc2710_PV.f6cc352e44243f8fa536ab483ad390ce 
+              OPTICKS_COMMENT : reproduce-rtx-inversion-skipping-just-lv-22-maskVirtual 
+    [blyth@localhost 1]$ 
 
 
-mm5 : support temple "fastener"
---------------------------------------
+    geocache-gui --enabledmergedmesh 2   ## back to the shielded PMT 
+
+    geocache-;geocache-bench --xanalytic --enabledmergedmesh 2 
+
 
 ::
 
-    2019-05-19 20:03:43.464 INFO  [300826] [OGeo::convertMergedMesh@235] ( 5
-    2019-05-19 20:03:43.464 INFO  [300826] [OGeo::makeRepeatedAssembly@299]  mmidx 5 imodulo 0
-    2019-05-19 20:03:43.464 INFO  [300826] [OGeo::makeOGeometry@543] ugeocode [A]
-    2019-05-19 20:03:43.464 INFO  [300826] [OGeo::makeAnalyticGeometry@609] mm 5 pts:  GParts  primflag         flagnodetree numParts   31 numPrim    1
-    2019-05-19 20:03:43.465 FATAL [300826] [OGeo::makeOGeometry@565]  DISABLE_ANYHIT 
-    2019-05-19 20:03:43.479 INFO  [300826] [OGeo::convertMergedMesh@267] ) 5 numInstances 480
-    2019-05-19 20:03:43.479 INFO  [300826] [OGeo::convert@230] ] nmm 6
+     OpSnapTest --envkey --target 352851 --eye -1,-1,-1 --snapconfig steps=5,eyestartz=-1,eyestopz=-0.5 --size 5120,2880,1 --embedded --cvd 0,1 --rtx 0 --runfolder geocache-bench --runstamp 1558356618 --runlabel R0_TITAN_V_AND_TITAN_RTX --xanalytic --enabledmergedmesh 2
+                    20190520_205018  launchAVG      rfast      rslow      prelaunch000 
+           R0_TITAN_V_AND_TITAN_RTX      0.072      1.000      0.212          12.141 
+                       R0_TITAN_RTX      0.121      1.675      0.355           6.296 
+                         R0_TITAN_V      0.135      1.875      0.397           6.520 
+                         R1_TITAN_V      0.315      4.361      0.924           2.859 
+                       R1_TITAN_RTX      0.341      4.721      1.000           3.065 
+
+* bad behavior when just skip 22
 
 
+
+
+geocache-j1808-v4-t2 : looks identical have just skipped the near degenererate 20 as well
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+::
+
+       OPTICKS_GEOFUNC : geocache-j1808-v4-t2 
+       OPTICKS_KEY     : OKX4Test.X4PhysicalVolume.lWorld0x4bc2710_PV.781dc285412368f18465809232634d52 
+       OPTICKS_COMMENT : skip-22-virtualMask+20-almost-degenerate-inner-pyrex-see-notes/issues/review-analytic-geometry.rst 
+
+       [blyth@localhost 1]$ geocache-gui --enabledmergedmesh 2   ## looks identical to above, impossible to see the near degenerate 20 that is skipped
+
+
+::
+     geocache-;geocache-bench --xanalytic --enabledmergedmesh 2 
+
+     OpSnapTest --envkey --target 352851 --eye -1,-1,-1 --snapconfig steps=5,eyestartz=-1,eyestopz=-0.5 --size 5120,2880,1 --embedded --cvd 0,1 --rtx 0 --runfolder geocache-bench --runstamp 1558357731 --runlabel R0_TITAN_V_AND_TITAN_RTX --xanalytic --enabledmergedmesh 2
+                    20190520_210851  launchAVG      rfast      rslow      prelaunch000 
+           R0_TITAN_V_AND_TITAN_RTX      0.068      1.000      0.254          12.126 
+                       R0_TITAN_RTX      0.111      1.643      0.417           6.187 
+                         R0_TITAN_V      0.123      1.814      0.460           6.114 
+                         R1_TITAN_V      0.246      3.640      0.923           2.828 
+                       R1_TITAN_RTX      0.267      3.944      1.000           2.926 
+
+
+* skipping the degenerate helps a bit, but its not all of the problem : R1 is factor of 2 slower
+
+
+cache-j1808-v4-t3 : skip the shield too
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+::
+
+    OPTICKS_GEOFUNC  : geocache-j1808-v4-t3 
+    OPTICKS_KEY      : OKX4Test.X4PhysicalVolume.lWorld0x4bc2710_PV.52e273e4ad5423fe2fc8aa44bbf055ec 
+    OPTICKS_COMMENT  : skip-22-virtualMask+17-mask+20-almost-degenerate-inner-pyrex-see-notes/issues/review-analytic-geometry.rst 
+    [blyth@localhost 1]$ 
+    [blyth@localhost 1]$ geocache-gui --enabledmergedmesh 2
+
+
+::
+
+     geocache-;geocache-bench --xanalytic --enabledmergedmesh 2 
+
+     OpSnapTest --envkey --target 352851 --eye -1,-1,-1 --snapconfig steps=5,eyestartz=-1,eyestopz=-0.5 --size 5120,2880,1 --embedded --cvd 0,1 --rtx 0 --runfolder geocache-bench --runstamp 1558358830 --runlabel R0_TITAN_V_AND_TITAN_RTX --xanalytic --enabledmergedmesh 2
+                    20190520_212710  launchAVG      rfast      rslow      prelaunch000 
+           R0_TITAN_V_AND_TITAN_RTX      0.053      1.000      0.259          12.301 
+                       R0_TITAN_RTX      0.097      1.830      0.475           6.302 
+                         R0_TITAN_V      0.100      1.891      0.490           6.445 
+                         R1_TITAN_V      0.172      3.240      0.840           2.858 
+                       R1_TITAN_RTX      0.205      3.857      1.000           2.986 
+
+
+
+
+cache-j1808-v4-t4 : skip the remainder vacuum too
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+::
+
+    OPTICKS_GEOFUNC  : geocache-j1808-v4-t4 
+    OPTICKS_KEY      : OKX4Test.X4PhysicalVolume.lWorld0x4bc2710_PV.078714e5894f31953fc9afce731c77f3 
+    OPTICKS_COMMENT  : skip-22-virtualMask+17-mask+20-almost-degenerate-inner-pyrex+19-remainder-vacuum-see-notes/issues/review-analytic-geometry.rst 
+    [blyth@localhost ~]$ 
+    [blyth@localhost ~]$ 
+    [blyth@localhost ~]$ geocache-gui --enabledmergedmesh 2
+    ## smth odd here : do not see the ellipsoid z-cut in the raytrace : it looks like a full ellipsoid, but it looks as expected in the rasterized   
+
+
+::
+
+     geocache-;geocache-bench --xanalytic --enabledmergedmesh 2 
+
+     OpSnapTest --envkey --target 352851 --eye -1,-1,-1 --snapconfig steps=5,eyestartz=-1,eyestopz=-0.5 --size 5120,2880,1 --embedded --cvd 0,1 --rtx 0 --runfolder geocache-bench --runstamp 1558359862 --runlabel R0_TITAN_V_AND_TITAN_RTX --xanalytic --enabledmergedmesh 2
+                    20190520_214422  launchAVG      rfast      rslow      prelaunch000 
+           R0_TITAN_V_AND_TITAN_RTX      0.050      1.000      0.374          12.372 
+                         R0_TITAN_V      0.088      1.740      0.651           6.410 
+                       R0_TITAN_RTX      0.090      1.787      0.668           6.354 
+                         R1_TITAN_V      0.109      2.173      0.813           2.835 
+                       R1_TITAN_RTX      0.134      2.673      1.000           2.948 
+
+
+
+cache-j1808-v4-t5 : skip all except cathode cap : should be a hemi-ellipsoid : SMOKING GUN : RAYTRACE IS FULL ELLIPSOID
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+::
+
+    OPTICKS_GEOFUNC  : geocache-j1808-v4-t5 
+    OPTICKS_KEY      : OKX4Test.X4PhysicalVolume.lWorld0x4bc2710_PV.732c52dd2f92338b4c570163ede44230 
+    OPTICKS_COMMENT  : just-18-hemi-ellipsoid-cathode-cap-see-notes/issues/review-analytic-geometry.rst 
+    [blyth@localhost ~]$ 
+    [blyth@localhost ~]$ geocache-gui --enabledmergedmesh 2
+
+
+::
+
+     geocache-;geocache-bench --xanalytic --enabledmergedmesh 2 
+
+     OpSnapTest --envkey --target 352851 --eye -1,-1,-1 --snapconfig steps=5,eyestartz=-1,eyestopz=-0.5 --size 5120,2880,1 --embedded --cvd 0,1 --rtx 0 --runfolder geocache-bench --runstamp 1558361030 --runlabel R0_TITAN_V_AND_TITAN_RTX --xanalytic --enabledmergedmesh 2
+                    20190520_220350  launchAVG      rfast      rslow      prelaunch000 
+           R0_TITAN_V_AND_TITAN_RTX      0.040      1.000      0.554          12.563 
+                         R1_TITAN_V      0.049      1.210      0.670           2.841 
+                       R1_TITAN_RTX      0.063      1.558      0.863           2.901 
+                         R0_TITAN_V      0.065      1.622      0.899           6.433 
+                       R0_TITAN_RTX      0.073      1.805      1.000           6.414 
+
+
+* no RTX inversion with ellipsoid
+
+
+
+LV 18 : why is the raytrace ellipsoid uncut ? FIXED BUG WITH TRANSLATION OF HEMI-ELLIPSOIDS NOT BECOMING ZSPHERE
+------------------------------------------------------------------------------------------------------------------
+
+::
+
+    [blyth@localhost ~]$ CTreeJUNOTest -18
+    torus->t mat4
+         1.000      0.000      0.000      0.000 
+         0.000      1.000      0.000      0.000 
+         0.000      0.000      1.000   -219.000 
+         0.000      0.000      0.000      1.000 
+               tla  vec3       0.000      0.000   -219.000  
+    2019-05-20 22:07:24.827 INFO  [239139] [NTreeJUNO::replacement_cone@63]  torus_rhs dvec2(97.000000, -219.000000)
+    2019-05-20 22:07:24.827 INFO  [239139] [NTreeJUNO::replacement_cone@66] torus R 97 r 52.01
+    2019-05-20 22:07:24.827 INFO  [239139] [nnode::reconstruct_ellipsoid@1892]  sx 1.39106 sy 1.39106 sz 1 radius 179
+    2019-05-20 22:07:24.827 INFO  [239139] [NTreeJUNO::replacement_cone@73]  ellipsoid e_axes vec3(249.000000, 249.000000, 179.000000) e_zcut vec2(-179.000000, 179.000000)
+    2019-05-20 22:07:24.939 INFO  [239139] [NTreeJUNO::replacement_cone@78]  ca dvec2(83.993834, -168.508521)
+    2019-05-20 22:07:24.939 INFO  [239139] [NTreeJUNO::rationalize@115] 
+    2019-05-20 22:07:24.939 INFO  [239139] [NTreeJUNO::rationalize@143]  label PMT_20inch_inner1_solid0x4cb3610 is_x018 1 is_x019 0 is_x020 0 is_x021 0
+    2019-05-20 22:07:24.939 FATAL [239139] [test_lv@30] LV=-18 label PMT_20inch_inner1_solid0x4cb3610
+    2019-05-20 22:07:24.939 ERROR [239139] [test_lv@31] NTreeAnalyse height 0 count 1
+      zs
+
+
+    inorder (left-to-right) 
+     [ 0:zs] P PMT_20inch_inner1_solid0x4cb3610 
+
+
+    2019-05-20 22:07:24.939 INFO  [239139] [nnode::reconstruct_ellipsoid@1892]  sx 1.39106 sy 1.39106 sz 1 radius 179
+    G4GDML: Writing solids...
+    2019-05-20 22:07:24.942 FATAL [239139] [test_lv@39] <?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+    <gdml xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="SchemaLocation">
+
+      <solids>
+        <ellipsoid ax="249" by="249" cz="179" lunit="mm" name="PMT_20inch_inner1_solid0x4cb3610" zcut1="0" zcut2="179"/>
+      </solids>
+
+    </gdml>
+
+    2019-05-20 22:07:24.943 INFO  [239139] [test_lv@42] writing gdml to /tmp/blyth/location/CTreeJUNOTest/n018.gdml
+    G4GDML: Writing solids...
+
+
+::
+
+    geocache-;geocache-gui --enabledmergedmesh 2 --dbgmm 2
+
+
+Add some ellipsoid debug in x4 and recreate::
+
+     geocache-j1808-v4-t5 --dbglv 18
+
+::
+
+    2019-05-20 22:35:02.887 INFO  [286941] [X4PhysicalVolume::convertSolid@488]  [  --dbglv 18 PMT_20inch_inner1_log0x4cb3cc0
+    2019-05-20 22:35:02.887 INFO  [286941] [X4Solid::convertEllipsoid@907]  zcut1 0 zcut2 179 z1 -179 z2 179 cz 179 zslice 0
+    G4GDML: Writing solids...
+    2019-05-20 22:35:02.887 INFO  [286941] [X4PhysicalVolume::convertSolid@501] [--g4codegen] lvIdx 18 soIdx 18 lvname PMT_20inch_inner1_log0x4cb3cc0
+    // start portion generated by nnode::to_g4code 
+    G4VSolid* make_solid()
+    { 
+        G4VSolid* a = new G4Ellipsoid("PMT_20inch_inner1_solid0x4cb3610", 249.000000, 249.000000, 179.000000, 0.000000, 179.000000) ; // 0
+        return a ; 
+    } 
+    // end portion generated by nnode::to_g4code 
+    G4GDML: Writing solids...
+    2019-05-20 22:35:02.888 INFO  [286941] [X4Solid::convertEllipsoid@907]  zcut1 0 zcut2 179 z1 -179 z2 179 cz 179 zslice 0
+    2019-05-20 22:35:02.890 INFO  [286941] [NTreeProcess<T>::Process@39] before
+    NTreeAnalyse height 0 count 1
+      sp
+
+
+    inorder (left-to-right) 
+     [ 0:sp] P PMT_20inch_inner1_solid0x4cb3610_ellipsoid 
+
+
+    2019-05-20 22:35:02.890 INFO  [286941] [NTreeProcess<T>::Process@54] after
+    NTreeAnalyse height 0 count 1
+      sp
+
+
+    inorder (left-to-right) 
+     [ 0:sp] P PMT_20inch_inner1_solid0x4cb3610_ellipsoid 
+
+
+    2019-05-20 22:35:02.890 INFO  [286941] [NTreeProcess<T>::Process@55]  soIdx 18 lvIdx 18 height0 0 height1 0 ### LISTED
+    2019-05-20 22:35:02.891 INFO  [286941] [X4PhysicalVolume::convertSolid@532]  ] 18
+
+
+::
+
+     882 void X4Solid::convertEllipsoid()
+     883 {
+     884     const G4Ellipsoid* const solid = static_cast<const G4Ellipsoid*>(m_solid);
+     885     assert(solid);
+     886 
+     887     // G4GDMLWriteSolids::EllipsoidWrite
+     888 
+     889     float ax = solid->GetSemiAxisMax(0)/mm ;
+     890     float by = solid->GetSemiAxisMax(1)/mm ;
+     891     float cz = solid->GetSemiAxisMax(2)/mm ;
+     892 
+     893     glm::vec3 scale( ax/cz, by/cz, 1.f) ;
+     894     // unity scaling in z, so z-coords are unaffected  
+     895 
+     896     float zcut1 = solid->GetZBottomCut()/mm ;
+     897     float zcut2 = solid->GetZTopCut()/mm ;
+     898 
+     899 
+     900 
+     901     float z1 = zcut1 != 0.f && zcut1 > -cz ? zcut1 : -cz ;
+     902     float z2 = zcut2 != 0.f && zcut2 <  cz ? zcut2 :  cz ;
+     ///                ^^^^^^^^^^^^ WHATS SPECIAL ABOUT ZERO ???
+
+     903     assert( z2 > z1 ) ;
+     904 
+     905     bool zslice = z1 > -cz || z2 < cz ;
+     906 
+     907     LOG(info)
+     908          << " zcut1 " << zcut1
+     909          << " zcut2 " << zcut2
+     910          << " z1 " << z1
+     911          << " z2 " << z2
+     912          << " cz " << cz
+     913          << " zslice " << zslice
+     914          ;
+     915 
+     916 
+     917     nnode* cn = zslice ?
+     918                           (nnode*)make_zsphere( 0.f, 0.f, 0.f, cz, z1, z2 )
+     919                        :
+     920                           (nnode*)make_sphere( 0.f, 0.f, 0.f, cz )
+     921                        ;
 
 
