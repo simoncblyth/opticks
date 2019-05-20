@@ -3,10 +3,6 @@
 python -c "import numpy as np, sys ; np.set_printoptions(suppress=True) ; print np.load(sys.argv[1]) " 
 """
 import sys, fnmatch, os, logging, numpy as np, commands
-try: 
-    from hashlib import md5
-except ImportError: 
-    from md5 import md5
 
 log = logging.getLogger(__name__)
 
@@ -15,40 +11,7 @@ is_npy_ = lambda _:fnmatch.fnmatch(_,"*.npy")
 is_txt_ = lambda _:fnmatch.fnmatch(_,"*.txt")
 
 
-cumulative = None
-
-def digest_(path):
-    """
-    :param path:
-    :return: md5 hexdigest of the content of the path or None if non-existing path
-
-    http://stackoverflow.com/questions/1131220/get-md5-hash-of-a-files-without-open-it-in-python
-
-    Confirmed to give same hexdigest as commandline /sbin/md5::
-
-        md5 /Users/blyth/workflow/notes/php/property/colliers-4q2011.pdf 
-        MD5 (/Users/blyth/workflow/notes/php/property/colliers-4q2011.pdf) = 3a63b5232ff7cb6fa6a7c241050ceeed
-
-    """
-    global cumulative
-
-    if not os.path.exists(path):return None
-    if os.path.isdir(path):return None
-    dig = md5()
-
-    if cumulative is None:
-        cumulative = md5() 
-
-    with open(path,'rb') as f: 
-        for chunk in iter(lambda: f.read(8192),''): 
-            dig.update(chunk)
-            cumulative.update(chunk)
-        pass
-    return dig.hexdigest()
-
-
-
-
+from opticks.bin.md5 import digest_
 
 
 def dump_one(a, verbose):

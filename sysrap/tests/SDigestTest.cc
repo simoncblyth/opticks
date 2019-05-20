@@ -3,8 +3,9 @@
 #include <cassert>
 #include <iostream>
 
+#include "SSys.hh"
 #include "SDigest.hh"
-#include "PLOG.hh"
+#include "OPTICKS_LOG.hh"
 
 void test_static()
 {
@@ -76,19 +77,33 @@ void test_IsDigest()
     assert( SDigest::IsDigest("0123456789abcdef0123456789abcdef") == true );
 }
 
+void test_DigestPath(const char* path)
+{
+    std::string d0 = SDigest::DigestPath(path) ; 
+    std::string d1 = SDigest::DigestPath2(path) ; 
+    assert( d0.compare(d1) == 0 ); 
 
+    if(SSys::getenvint("VERBOSE",0) == 1)
+    { 
+        std::cout << "SDigest::DigestPath  "  << d0 << std::endl ; 
+        std::cout << "SDigest::DigestPath2 "  << d1 << std::endl ; 
+    }
+    std::cout << d0 << std::endl ;
+}
 
 
 int main(int argc, char** argv)
 {
-    PLOG_(argc, argv);
+    OPTICKS_LOG(argc, argv);
 
     //test_static();
     //test_update();
 
     //test_digest_vec();
+    //test_IsDigest();
 
-    test_IsDigest();
+    const char* path = argc > 1 ? argv[1] : argv[0] ; 
+    test_DigestPath(path);
 
     return 0 ; 
 }

@@ -3,6 +3,61 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <cassert>
+
+#include <iostream>
+
+
+std::string SDigest::DigestPath(const char* path, unsigned bufsize)
+{
+    FILE* fp = fopen(path, "rb");
+    if (fp == NULL) 
+    {
+        std::cerr << "failed to open path [" << path << "]" <<  std::endl ; 
+        return "" ; 
+    }
+    SDigest dig ; 
+    char* data = new char[bufsize] ; 
+    int bytes ; 
+    while ((bytes = fread (data, 1, bufsize, fp)) != 0) dig.update(data, bytes);   
+    // NB must update just with the bytes read, not the bufsize
+    delete[] data ; 
+    return dig.finalize();
+}
+
+// https://stackoverflow.com/questions/10324611/how-to-calculate-the-md5-hash-of-a-large-file-in-c
+
+
+std::string SDigest::DigestPath2(const char* path)
+{
+    int i;
+    FILE* fp = fopen (path, "rb");
+    MD5_CTX mdContext;
+    int bytes;
+    char data[8192];
+
+    if (fp == NULL) {
+        printf ("%s can't be opened.\n", path);
+        return "";
+    }
+
+    MD5_Init (&mdContext);
+    while ((bytes = fread (data, 1, 8192, fp)) != 0)
+        MD5_Update (&mdContext, data, bytes);
+
+    fclose (fp);
+ 
+    assert( MD5_DIGEST_LENGTH == 16 ); 
+    unsigned char digest[MD5_DIGEST_LENGTH];
+    MD5_Final (digest,&mdContext);
+    char *out = (char*)malloc(MD5_DIGEST_LENGTH*2+1);
+    for(i = 0; i < MD5_DIGEST_LENGTH; i++) snprintf(&(out[i*2]), MD5_DIGEST_LENGTH*2, "%02x", (unsigned int)digest[i]);
+    out[MD5_DIGEST_LENGTH*2] = '\0' ; 
+ 
+    return out ;
+}
+
+
 
 
 char* md5digest_str2md5_monolithic(const char *buffer, int length) 

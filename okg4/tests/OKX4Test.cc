@@ -71,9 +71,6 @@ int main(int argc, char** argv)
         LOG(info) << i << " " << argv[i] ; 
 
 
-
-    //G4VPhysicalVolume* top = make_top(argc, argv); 
-
     const char* gdmlpath = PLOG::instance->get_arg_after("--gdmlpath", NULL) ; 
     if( gdmlpath == NULL )
     {
@@ -83,10 +80,6 @@ int main(int argc, char** argv)
 
     LOG(info) << " parsing " << gdmlpath ; 
     G4VPhysicalVolume* top = CGDML::Parse( gdmlpath ) ; 
-
-    //char c = 's' ; 
-    //G4VPhysicalVolume* top = X4Sample::Sample(c) ; 
-
     assert(top);
     LOG(info) << "///////////////////////////////// " ; 
 
@@ -105,7 +98,6 @@ int main(int argc, char** argv)
 
     const char* csgskiplv = ok->getCSGSkipLV();
     LOG(info) << " csgskiplv " << ( csgskiplv ? csgskiplv : "NONE" ) ;  
-    //assert( csgskiplv );  
 
 
     ok->profile("_OKX4Test:GGeo"); 

@@ -2,8 +2,8 @@ opticks_key_digest_no_updating_for_changed_geometry
 =========================================================
 
 
-Context
-----------
+Original Context
+----------------------
 
 * :doc:`torus_replacement_on_the_fly`
 
@@ -11,7 +11,95 @@ Context
 REOPEN : Changing csgskiplv not changing digest
 ----------------------------------------------------
 
-* :doc:`review-analytic-geometry`
+* Context :doc:`review-analytic-geometry`
+
+Currently the spec geometry digest (aka the OPTICKS_KEY) 
+depends only on the input GDML geometry or rather the in-memory geometry tree 
+that G4 constructs from the GDML. So its an input geometry digest, not 
+an output one : as arguments such as csgskiplv can change the output geometry
+resulting from the translation. 
+
+:: 
+
+    066 int main(int argc, char** argv)
+     67 {
+     68     OPTICKS_LOG(argc, argv);
+     69 
+     70     for(int i=0 ; i < argc ; i++)
+     71         LOG(info) << i << " " << argv[i] ;
+     72 
+     73 
+     74     const char* gdmlpath = PLOG::instance->get_arg_after("--gdmlpath", NULL) ;
+     75     if( gdmlpath == NULL ) 
+     76     {
+     77         LOG(fatal) << " --gdmlpath existing-path : is required " ;
+     78         return 0 ; 
+     79     }   
+     80 
+     81     LOG(info) << " parsing " << gdmlpath ;
+     82     G4VPhysicalVolume* top = CGDML::Parse( gdmlpath ) ;
+     83     assert(top);
+     84     LOG(info) << "///////////////////////////////// " ;
+     85     
+     86 
+     87     const char* spec = X4PhysicalVolume::Key(top) ;
+     88     
+     89     Opticks::SetKey(spec);
+     90     
+     91     LOG(error) << " SetKey " << spec  ;
+     92 
+     93     const char* argforce = "--tracer --nogeocache --xanalytic" ;
+     94     // --nogeoache to prevent GGeo booting from cache 
+     95 
+     96     Opticks* ok = new Opticks(argc, argv, argforce);  // Opticks instanciation must be after Opticks::SetKey
+     97     ok->configure();
+     98     
+     99     const char* csgskiplv = ok->getCSGSkipLV();
+    100     LOG(info) << " csgskiplv " << ( csgskiplv ? csgskiplv : "NONE" ) ;
+    101     
+    102 
+    103     ok->profile("_OKX4Test:GGeo");
+    104     
+    105     GGeo* gg = new GGeo(ok) ;
+    106     assert(gg->getMaterialLib());
+
+
+
+
+Hmm : at what level to form the digest ? 
+---------------------------------------------------------------------------------------------------------------------------------
+
+Can digest at multiple levels:
+
+1. GDML file with SDigest::DigestPath
+2. in memory Geant4 tree (**currently used**, being created by traversing the Geant4 geometry tree)
+3. GGeo level, bunch of mergedmesh and analytic GParts 
+4. geocache level : the GParts analytic serialization buffers 
+5. OGeo level, analytic GPU buffers  (THIS LOOKS THE BEST WAY : IT IS WHAT REALLY MATTERS )
+6. hybrid fake : combine the current digest with digest of geometry changing arguments such as --csgskiplv 
+
+   * this makes the distinctly flawed assumption that the code of the translation is fixed
+
+
+Practical issues
+
+1. need to be able to reconstruct the digest from a loaded geocache, 
+   to check integrity (as the filepath will have the digest too) : this would suggest doing 
+  
+2. hmm to be able to rapidly identify a changed/or-not GDML file 
+
+
+What is the digest for ?
+
+1. to identify if some processing stage needs to be done again because the 
+   input to that stage has changed
+
+
+Thoughts
+
+* seems like need to have digests at each level for maximal usefulness and clarity, and 
+  to minimize processing    
+
 
 
 
