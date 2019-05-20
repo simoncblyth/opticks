@@ -27,6 +27,8 @@ SAr::SAr( int argc_ , char** argv_ , const char* envvar, char delim )
         for(int i=0 ; i < argc_ ; i++ ) _argv[i] = strdup(argv_[i]) ; 
     }
 
+    sanitycheck();
+
     std::string aline = argline();
     _cmdline = strdup(aline.c_str());    
 
@@ -37,6 +39,21 @@ SAr::SAr( int argc_ , char** argv_ , const char* envvar, char delim )
     Instance = this ; 
 
     //dump();
+}
+
+
+void SAr::sanitycheck() const
+{
+    for(int i=0 ; i < _argc ; i++) 
+    {
+        const char* s = _argv[i] ; 
+        if(strlen(s) > 3 && strncmp(s, "---", 3) == 0)
+        {
+            std::cout << "SAr::sanitycheck FAILURE for argument " << i << "[" << s << "]" << std::endl ; 
+            assert(0 && "arguments starting with three dashes --- are not allowed ");    
+        }  
+    }
+
 }
 
 
