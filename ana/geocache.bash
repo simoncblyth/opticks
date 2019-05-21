@@ -321,7 +321,8 @@ geocache-j1808-v4-t8-export(){  geocache-export ${FUNCNAME/-export} ; }
 geocache-j1808-v4-t8(){ geocache-j1808-v4- --csgskiplv 22,17,20 --runfolder $FUNCNAME --runcomment $(${FUNCNAME}-comment) $* ; }
 
 
-geocache-bashrc-export(){   geocache-j1808-v4-t8-export ; }
+#geocache-bashrc-export(){   geocache-j1808-v4-t8-export ; }
+geocache-bashrc-export(){   geocache-j1808-v4-export ; }
 
 
 

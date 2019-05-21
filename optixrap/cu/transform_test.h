@@ -154,6 +154,30 @@ __device__ void transform_test()
     float4 ZV = Z * V ; 
     float4 VZ = V * Z ; 
 
+    // using the transpose of the inverse transform
+
+
+    float4 OQ = O * Q ;  // <-ok
+    float4 QO = Q * O ; 
+
+
+    float4 PQ = P * Q ;   // <-ok 
+    float4 QP = Q * P ; 
+
+    float4 NQ = N * Q ;   // <-ok
+    float4 QN = Q * N ; 
+
+    float4 XQ = X * Q ; 
+    float4 QX = Q * X ; 
+
+    float4 YQ = Y * Q ; 
+    float4 QY = Q * Y ; 
+
+    float4 ZQ = Z * Q ; 
+    float4 QZ = Q * Z ; 
+
+
+
 
     rtPrintf(" O %8.3f %8.3f %8.3f %8.3f  O*V %8.3f %8.3f %8.3f %8.3f    V*O %8.3f %8.3f %8.3f %8.3f  \n",
           O.x,   O.y,  O.z,  O.w,  
@@ -187,38 +211,29 @@ __device__ void transform_test()
 
 
 
-    // using the transpose of the inverse transform
-
-
-
-    float4 OQ = O * Q ;  // <-ok
-    float4 QO = Q * O ; 
-
-    float4 PQ = P * Q ;   // <-ok 
-    float4 QP = Q * P ; 
-
-    float4 NQ = N * Q ;   // <-ok
-    float4 QN = Q * N ; 
-
-    float4 XQ = X * Q ; 
-    float4 QX = Q * X ; 
-
-    float4 YQ = Y * Q ; 
-    float4 QY = Q * Y ; 
-
-    float4 ZQ = Z * Q ; 
-    float4 QZ = Q * Z ; 
-
 
     rtPrintf(" O %8.3f %8.3f %8.3f %8.3f  O*Q %8.3f %8.3f %8.3f %8.3f    Q*O %8.3f %8.3f %8.3f %8.3f  \n",
           O.x,   O.y,  O.z,  O.w,  
           OQ.x, OQ.y, OQ.z, OQ.w,
           QO.x, QO.y, QO.z, QO.w);
 
+    rtPrintf(" O %8.3f %8.3f %8.3f %8.3f  V*O %8.3f %8.3f %8.3f %8.3f   O*V %8.3f %8.3f %8.3f %8.3f  #\n",
+          O.x,   O.y,  O.z,  O.w,  
+          VO.x, VO.y, VO.z, VO.w,
+          OV.x, OV.y, OV.z, OV.w);
+
+
     rtPrintf(" P %8.3f %8.3f %8.3f %8.3f  P*Q %8.3f %8.3f %8.3f %8.3f    Q*P %8.3f %8.3f %8.3f %8.3f  \n",
           P.x,   P.y,  P.z,  P.w,  
           PQ.x, PQ.y, PQ.z, PQ.w,
           QP.x, QP.y, QP.z, QP.w);
+
+    rtPrintf(" P %8.3f %8.3f %8.3f %8.3f  V*P %8.3f %8.3f %8.3f %8.3f    P*V %8.3f %8.3f %8.3f %8.3f  #\n",
+          P.x,   P.y,  P.z,  P.w,  
+          VP.x, VP.y, VP.z, VP.w,
+          PV.x, PV.y, PV.z, PV.w);
+
+
 
     rtPrintf(" N %8.3f %8.3f %8.3f %8.3f  N*Q %8.3f %8.3f %8.3f %8.3f    Q*N %8.3f %8.3f %8.3f %8.3f  \n",
           N.x,   N.y,  N.z,  N.w,  

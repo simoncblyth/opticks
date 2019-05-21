@@ -1398,9 +1398,9 @@ void GParts::setUInt(unsigned int i, unsigned int j, unsigned int k, unsigned in
 
 
 
-unsigned int GParts::getNodeIndex(unsigned int part)
+unsigned int GParts::getNodeIndex(unsigned int part)   
 {
-    return getUInt(part, NODEINDEX_J, NODEINDEX_K);
+    return getUInt(part, NODEINDEX_J, NODEINDEX_K);  // hmm NODEINDEX slot is used for GTRANSFORM 
 }
 unsigned int GParts::getTypeCode(unsigned int part)
 {
@@ -1420,7 +1420,7 @@ unsigned int GParts::getBoundary(unsigned int part)
 
 void GParts::setNodeIndex(unsigned int part, unsigned int nodeindex)
 {
-    setUInt(part, NODEINDEX_J, NODEINDEX_K, nodeindex);
+    setUInt(part, NODEINDEX_J, NODEINDEX_K, nodeindex);  // hmm NODEINDEX slot is used for GTRANSFORM 
 }
 void GParts::setTypeCode(unsigned int part, unsigned int typecode)
 {

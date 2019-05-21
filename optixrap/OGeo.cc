@@ -562,7 +562,7 @@ OGeometry* OGeo::makeOGeometry(GMergedMesh* mergedmesh, unsigned lod)
 
 
 #if OPTIX_VERSION_MAJOR >= 6 
-    LOG(fatal) << " DISABLE_ANYHIT " ; 
+    LOG(verbose) << " DISABLE_ANYHIT " ; 
 
     RTgeometryflags flags = RT_GEOMETRY_FLAG_DISABLE_ANYHIT ;  
     if(ogeom->isGeometry())
@@ -583,14 +583,16 @@ OGeometry* OGeo::makeOGeometry(GMergedMesh* mergedmesh, unsigned lod)
 optix::Geometry OGeo::makeAnalyticGeometry(GMergedMesh* mm, unsigned lod)
 {
     m_lodidx = lod ; 
+    bool dbgmm = m_ok->getDbgMM() == int(mm->getIndex()) ;  
 
 
-    if(m_verbosity > 2)
-    LOG(warning) << "OGeo::makeAnalyticGeometry START" 
-                 << " verbosity " << m_verbosity 
-                 << " lod " << lod
-                 << " mm " << mm->getIndex()
-                 ; 
+    if(m_verbosity > 2 || dbgmm)
+    LOG(info) 
+         << "["
+         << " verbosity " << m_verbosity 
+         << " lod " << lod
+         << " mm " << mm->getIndex()
+         ; 
 
     // when using --test eg PmtInBox or BoxInBox the mesh is fabricated in GGeoTest
 
@@ -609,16 +611,14 @@ optix::Geometry OGeo::makeAnalyticGeometry(GMergedMesh* mm, unsigned lod)
     
     LOG(info) << "mm " << mm->getIndex() << " pts: " << pts->desc() ; 
 
-    int dbgmm =  m_ok->getDbgMM() ; 
-    if(dbgmm > -1 && mm->getIndex() == unsigned(dbgmm))
+    if(dbgmm)
     {
-        LOG(fatal) << "dumping as instructed by : --dbgmm " << dbgmm ;   
+        LOG(fatal) << "dumping as instructed by : --dbgmm " << m_ok->getDbgMM() ;   
         mm->dumpVolumesSelected("OGeo::makeAnalyticGeometry"); 
     }
 
 
-
-    if(m_verbosity > 3 || m_ok->hasOpt("dbganalytic")) pts->fulldump("--dbganalytic", 10) ;
+    if(m_verbosity > 3 || m_ok->hasOpt("dbganalytic") || dbgmm ) pts->fulldump("--dbganalytic/--dbgmm", 10) ;
 
     NPY<float>*     partBuf = pts->getPartBuffer(); assert(partBuf && partBuf->hasShape(-1,4,4));    // node buffer
     NPY<float>*     tranBuf = pts->getTranBuffer(); assert(tranBuf && tranBuf->hasShape(-1,3,4,4));  // transform triples (t,v,q) 
@@ -633,8 +633,8 @@ optix::Geometry OGeo::makeAnalyticGeometry(GMergedMesh* mm, unsigned lod)
     unsigned numTran = tranBuf->getNumItems();
     unsigned numPlan = planBuf->getNumItems();
 
-    unsigned int numVolumes = mm->getNumVolumes();
-    unsigned int numVolumesSelected = mm->getNumVolumesSelected();
+    unsigned numVolumes = mm->getNumVolumes();
+    unsigned numVolumesSelected = mm->getNumVolumesSelected();
 
     if( pts->isNodeTree() )
     {
@@ -642,6 +642,7 @@ optix::Geometry OGeo::makeAnalyticGeometry(GMergedMesh* mm, unsigned lod)
         if(!match)
         {
             LOG(fatal) << " NodeTree : MISMATCH (numPrim != numVolumes) "
+                       << " (this happens when using --csgskiplv) " 
                        << " numVolumes " << numVolumes 
                        << " numVolumesSelected " << numVolumesSelected 
                        << " numPrim " << numPrim 
@@ -708,16 +709,12 @@ optix::Geometry OGeo::makeAnalyticGeometry(GMergedMesh* mm, unsigned lod)
     prismBuffer->setSize(5);
     geometry["prismBuffer"]->setBuffer(prismBuffer);
 
-    if(m_verbosity > 2)
-    LOG(warning) << "OGeo::makeAnalyticGeometry DONE" 
-                 << " verbosity " << m_verbosity 
-                 << " mm " << mm->getIndex()
-                 ; 
-
-
-
-
-
+    if(m_verbosity > 2 || dbgmm)
+    LOG(info)
+        << "]" 
+        << " verbosity " << m_verbosity 
+        << " mm " << mm->getIndex()
+        ; 
 
     return geometry ; 
 }

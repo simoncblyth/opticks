@@ -107,15 +107,29 @@ typedef double Cubic_t ;
 #include "intersect_prism.h"
 #endif
 
-//#include "transform_test.h"
-//#include "solve_callable_test.h"
+
+#define TRANSFORM_TEST 1
+
+#ifdef TRANSFORM_TEST
+#include "transform_test.h"
+#endif
+
+//#define CALLABLE_TEST 1
+#ifdef CALLABLE_TEST
+#include "solve_callable_test.h"
+#endif
 
 
 
 RT_PROGRAM void bounds (int primIdx, float result[6])
 {
-    //if(primIdx == 0) transform_test();
-    //if(primIdx == 0) solve_callable_test();
+
+#ifdef TRANSFORM_TEST
+    if(primIdx == 0) transform_test();
+#endif
+#ifdef CALLABLE_TEST
+    if(primIdx == 0) solve_callable_test();
+#endif
 
     if(primIdx == 0)
     {
@@ -123,7 +137,7 @@ RT_PROGRAM void bounds (int primIdx, float result[6])
         unsigned planBuffer_size = planBuffer.size() ;
         unsigned tranBuffer_size = tranBuffer.size() ;
 
-        rtPrintf("// intersect_analytic.cu:bounds buffer sizes pts:%4d pln:%4d trs:%4d \n", partBuffer_size, planBuffer_size, tranBuffer_size ); 
+        rtPrintf("// intersect_analytic.cu:bounds buffer sizes pts:%4d pln:%4d trs:%4d (3x NumTVQ) \n", partBuffer_size, planBuffer_size, tranBuffer_size ); 
     }
 
 

@@ -787,11 +787,13 @@ void csg_bounds_zsphere(const quad& q0, const quad& q1, const quad& q2, optix::A
     const float zmax = q0.f.z + q1.f.y ;   
     const float zmin = q0.f.z + q1.f.x ;   
 
-    const unsigned flags = q2.u.x ;
-    const bool QCAP = flags & ZSPHERE_QCAP ;  
-    const bool PCAP = flags & ZSPHERE_PCAP ; 
+    // these flags no longer used, CSG must be CLOSED SOLID
+    //const unsigned flags = q2.u.x ;
+    //const bool QCAP = flags & ZSPHERE_QCAP ;  
+    //const bool PCAP = flags & ZSPHERE_PCAP ; 
+    //rtPrintf("## csg_bounds_zsphere  zmin %7.3f zmax %7.3f flags %u QCAP(zmin) %d PCAP(zmax) %d  \n", zmin, zmax, flags, QCAP, PCAP );
 
-    rtPrintf("## csg_bounds_zsphere  zmin %7.3f zmax %7.3f flags %u QCAP(zmin) %d PCAP(zmax) %d  \n", zmin, zmax, flags, QCAP, PCAP );
+    rtPrintf("## csg_bounds_zsphere  zmin %7.3f zmax %7.3f  \n", zmin, zmax );
 
     float3 mx = make_float3( q0.f.x + radius, q0.f.y + radius, zmax );
     float3 mn = make_float3( q0.f.x - radius, q0.f.y - radius, zmin );

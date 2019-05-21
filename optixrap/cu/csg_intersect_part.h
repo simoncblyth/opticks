@@ -4,7 +4,7 @@
 
 
 static __device__
-void csg_bounds_prim(int primIdx, const Prim& prim, optix::Aabb* aabb )
+void csg_bounds_prim(int primIdx, const Prim& prim, optix::Aabb* aabb )  // NB OptiX primitive, but can be CSG tree for Opticks
 {
     unsigned partBuffer_size = partBuffer.size() ;
     unsigned planBuffer_size = planBuffer.size() ;
@@ -228,7 +228,8 @@ void csg_intersect_part(const Prim& prim, const unsigned partIdx, const float& t
             float4 ttn = make_float4( tt.x, tt.y, tt.z , 0.f );
 
             ttn = ttn * Q   ;  // primitive frame normal into world frame, using inverse transform transposed
-            
+            // TODO: try "V * ttn" as way to avoid the Q ???    
+        
             tt.x = ttn.x ; 
             tt.y = ttn.y ; 
             tt.z = ttn.z ; 

@@ -159,8 +159,11 @@ RT_PROGRAM void pinhole_camera()
    //color.x = 0xff ;  
 #endif
 
-  rtPrintf("//pinhole_camera dt %10.3f pixeltime_scale %10.3f pixeltimescale_cfg %10.3g pixeltime %10.3f color (%3d %3d %3d %3d)  \n",
-          dt, pixeltime_scale, pixeltimescale_cfg, pixeltime, color.x, color.y, color.z, color.w  ); 
+
+#ifdef DEBUG_PIXELTIME
+   rtPrintf("//pinhole_camera dt %10.3f pixeltime_scale %10.3f pixeltimescale_cfg %10.3g pixeltime %10.3f color (%3d %3d %3d %3d)  \n",
+           dt, pixeltime_scale, pixeltimescale_cfg, pixeltime, color.x, color.y, color.z, color.w  ); 
+#endif
 
   if( resolution_scale == 1)  
   { 

@@ -244,7 +244,7 @@ class GGEO_API GParts {
    public:
         void setIndex(unsigned int part, unsigned int index);
         void setTypeCode(unsigned int part, unsigned int typecode);
-        void setNodeIndex(unsigned int part, unsigned int nodeindex);
+        void setNodeIndex(unsigned int part, unsigned int nodeindex);  // caution slot is used for GTRANFORM index GPU side
         void setBoundary(unsigned int part, unsigned int boundary);
    public:
         void setBoundaryAll(unsigned int boundary);

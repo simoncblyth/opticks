@@ -201,7 +201,7 @@ GNodeLib/PVNames.txt 1-based index from vim, first 20inch::
 
      63555 lFasteners_phys0x4c31eb0
 
-     63556 lMaskVirtual_phys0x4c9a510          22      <<< this was csgskiplv : could that cause a problem ?
+     63556 lMaskVirtual_phys0x4c9a510          22      csgskipped
      63557 pMask0x4c3bf20                      17 *   7 parts : difference of two ellipsoid cylinder unions 
 
      63558 PMT_20inch_log_phys0x4ca16b0        21 *   7 parts : union of el+co+cy  (5 parts, but seven as complete tree)
@@ -719,6 +719,363 @@ geocache-j1808-v4-t8 : just 21,18,19,  outer-pyrex+vacuum-cap+remainder
   * R1 : doubled RTX ON times for both V and T-rex
 
 * RTX mode really dislikes tightly contained analytic volumes 
+
+
+geocache-j1808-v4-t8 : LV 21,18,19 : check the bbox, how close are they
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+::
+
+    OPTICKS_GEOFUNC  : geocache-j1808-v4-t8 
+    OPTICKS_KEY      : OKX4Test.X4PhysicalVolume.lWorld0x4bc2710_PV.52e273e4ad5423fe2fc8aa44bbf055ec 
+    OPTICKS_COMMENT  : just-21-18-19-outer-pyrex+vacuum-cap-and-remainder-see-notes/issues/review-analytic-geometry.rst 
+    [blyth@localhost optixrap]$ geocache-gui --enabledmergedmesh 2 --dbgmm 2 
+
+
+::
+
+    2019-05-21 09:33:39.404 WARN  [414826] [OGeo::makeAnalyticGeometry@590] [ verbosity 0 lod 0 mm 2
+    2019-05-21 09:33:39.404 INFO  [414826] [OGeo::makeAnalyticGeometry@612] mm 2 pts:  GParts  primflag         flagnodetree numParts   15 numPrim    3
+    2019-05-21 09:33:39.404 FATAL [414826] [OGeo::makeAnalyticGeometry@616] dumping as instructed by : --dbgmm 2
+    2019-05-21 09:33:39.404 INFO  [414826] [GMergedMesh::dumpVolumesSelected@787] OGeo::makeAnalyticGeometry ce0 gfloat4      0.000      0.000    -77.506    261.507  NumVolumes 6 NumVolumesSelected 0
+     count     0 idx     2 ce             gfloat4      0.000      0.000    -77.506    261.507  ni[nf/nv/nidx/pidx]         (864,434,63557,63555) id[nidx,midx,bidx,sidx]            (63557, 21, 20,  0)
+     count     1 idx     4 ce             gfloat4      0.000      0.000     89.500    249.000  ni[nf/nv/nidx/pidx]         (336,171,63559,63558) id[nidx,midx,bidx,sidx]            (63559, 18, 22,  0)
+     count     2 idx     5 ce             gfloat4      0.000      0.000   -167.006    249.000  ni[nf/nv/nidx/pidx]         (624,314,63560,63558) id[nidx,midx,bidx,sidx]            (63560, 19, 23,  0)
+    2019-05-21 09:33:39.404 INFO  [414826] [GParts::fulldump@1463] --dbganalytic/--dbgmm lim 10
+    2019-05-21 09:33:39.404 INFO  [414826] [GParts::dump@1481] --dbganalytic/--dbgmm lim 10 pbuf 15,4,4
+    2019-05-21 09:33:39.404 INFO  [414826] [GParts::dumpPrimInfo@1252] --dbganalytic/--dbgmm (part_offset, parts_for_prim, tran_offset, plan_offset)  numPrim: 3 ulim: 3
+    2019-05-21 09:33:39.404 INFO  [414826] [GParts::dumpPrimInfo@1263]  (   0    7    0    0) 
+    2019-05-21 09:33:39.404 INFO  [414826] [GParts::dumpPrimInfo@1263]  (   7    1    3    0) 
+    2019-05-21 09:33:39.404 INFO  [414826] [GParts::dumpPrimInfo@1263]  (   8    7    4    0) 
+    2019-05-21 09:33:39.404 INFO  [414826] [GParts::dump@1498] GParts::dump ni 15 lim 10 ulim 10
+         0.0000      0.0000      0.0000      0.0000 
+         0.0000      0.0000      20 <-bnd        0 <-INDEX    bn Water///Pyrex 
+         0.0000      0.0000      0.0000           1 (union) TYPECODE 
+         0.0000      0.0000      0.0000           0 (nodeIndex)               ## nodeIndex is mis-labelled : now used 
+
+         0.0000      0.0000      0.0000      0.0000 
+         0.0000      0.0000      20 <-bnd        1 <-INDEX    bn Water///Pyrex 
+         0.0000      0.0000      0.0000           1 (union) TYPECODE 
+         0.0000      0.0000      0.0000           0 (nodeIndex) 
+
+         0.0000      0.0000      0.0000     50.0110 
+       -60.0105     60.0105      20 <-bnd        2 <-INDEX    bn Water///Pyrex 
+         0.0000      0.0000      0.0000          12 (cylinder) TYPECODE 
+         0.0000      0.0000      0.0000           3 (nodeIndex) 
+
+         0.0000      0.0000      0.0000    184.0010 
+         0.0000      0.0000      20 <-bnd        3 <-INDEX    bn Water///Pyrex 
+         0.0000      0.0000      0.0000           5 (sphere) TYPECODE 
+         0.0000      0.0000      0.0000           1 (nodeIndex) 
+
+        49.9910    -22.8321     85.2194     22.8321 
+         0.0000      0.0000      20 <-bnd        4 <-INDEX    bn Water///Pyrex 
+         0.0000      0.0000      0.0000          15 (cone) TYPECODE 
+         0.0000      0.0000      0.0000           2 (nodeIndex) 
+
+         0.0000      0.0000      0.0000      0.0000 
+         0.0000      0.0000      20 <-bnd        5 <-INDEX    bn Water///Pyrex 
+         0.0000      0.0000      0.0000           0 (zero) TYPECODE 
+         0.0000      0.0000      0.0000           0 (nodeIndex) 
+
+         0.0000      0.0000      0.0000      0.0000 
+         0.0000      0.0000      20 <-bnd        6 <-INDEX    bn Water///Pyrex 
+         0.0000      0.0000      0.0000           0 (zero) TYPECODE 
+         0.0000      0.0000      0.0000           0 (nodeIndex) 
+
+         0.0000      0.0000      0.0000    179.0000 
+         0.0000    179.0000      22 <-bnd        7 <-INDEX    bn Pyrex/PMT_20inch_photocathode_logsurf2/PMT_20inch_photocathode_logsurf1/Vacuum 
+         0.0000      0.0000      0.0000           7 (zsphere) TYPECODE 
+         0.0000      0.0000      0.0000           1 (nodeIndex) 
+
+         0.0000      0.0000      0.0000      0.0000 
+         0.0000      0.0000      23 <-bnd        8 <-INDEX    bn Pyrex//PMT_20inch_mirror_logsurf1/Vacuum 
+         0.0000      0.0000      0.0000           1 (union) TYPECODE 
+         0.0000      0.0000      0.0000           0 (nodeIndex) 
+
+         0.0000      0.0000      0.0000      0.0000 
+         0.0000      0.0000      23 <-bnd        9 <-INDEX    bn Pyrex//PMT_20inch_mirror_logsurf1/Vacuum 
+         0.0000      0.0000      0.0000           1 (union) TYPECODE 
+         0.0000      0.0000      0.0000           0 (nodeIndex) 
+
+         0.0000      0.0000      0.0000     45.0100 
+       -57.5100     57.5100      23 <-bnd       10 <-INDEX    bn Pyrex//PMT_20inch_mirror_logsurf1/Vacuum 
+         0.0000      0.0000      0.0000          12 (cylinder) TYPECODE 
+         0.0000      0.0000      0.0000           3 (nodeIndex) 
+
+         0.0000      0.0000      0.0000    179.0000 
+      -179.0000      0.0000      23 <-bnd       11 <-INDEX    bn Pyrex//PMT_20inch_mirror_logsurf1/Vacuum 
+         0.0000      0.0000      0.0000           7 (zsphere) TYPECODE 
+         0.0000      0.0000      0.0000           1 (nodeIndex) 
+
+        44.9900    -25.2457     83.9938     25.2457 
+         0.0000      0.0000      23 <-bnd       12 <-INDEX    bn Pyrex//PMT_20inch_mirror_logsurf1/Vacuum 
+         0.0000      0.0000      0.0000          15 (cone) TYPECODE 
+         0.0000      0.0000      0.0000           2 (nodeIndex) 
+
+         0.0000      0.0000      0.0000      0.0000 
+         0.0000      0.0000      23 <-bnd       13 <-INDEX    bn Pyrex//PMT_20inch_mirror_logsurf1/Vacuum 
+         0.0000      0.0000      0.0000           0 (zero) TYPECODE 
+         0.0000      0.0000      0.0000           0 (nodeIndex) 
+
+         0.0000      0.0000      0.0000      0.0000 
+         0.0000      0.0000      23 <-bnd       14 <-INDEX    bn Pyrex//PMT_20inch_mirror_logsurf1/Vacuum 
+         0.0000      0.0000      0.0000           0 (zero) TYPECODE 
+         0.0000      0.0000      0.0000           0 (nodeIndex) 
+
+    2019-05-21 09:33:39.405 INFO  [414826] [GParts::Summary@1270] --dbganalytic/--dbgmm num_parts 15 num_prim 3
+     part  0 : node  0 type  1 boundary [ 20] Water///Pyrex  
+     part  1 : node  0 type  1 boundary [ 20] Water///Pyrex  
+     part  2 : node  3 type 12 boundary [ 20] Water///Pyrex  
+     part  3 : node  1 type  5 boundary [ 20] Water///Pyrex  
+     part  4 : node  2 type 15 boundary [ 20] Water///Pyrex  
+     part  5 : node  0 type  0 boundary [ 20] Water///Pyrex  
+     part  6 : node  0 type  0 boundary [ 20] Water///Pyrex  
+     part  7 : node  1 type  7 boundary [ 22] Pyrex/PMT_20inch_photocathode_logsurf2/PMT_20inch_photocathode_logsurf1/Vacuum  
+     part  8 : node  0 type  1 boundary [ 23] Pyrex//PMT_20inch_mirror_logsurf1/Vacuum  
+     part  9 : node  0 type  1 boundary [ 23] Pyrex//PMT_20inch_mirror_logsurf1/Vacuum  
+     part 10 : node  3 type 12 boundary [ 23] Pyrex//PMT_20inch_mirror_logsurf1/Vacuum  
+     part 11 : node  1 type  7 boundary [ 23] Pyrex//PMT_20inch_mirror_logsurf1/Vacuum  
+     part 12 : node  2 type 15 boundary [ 23] Pyrex//PMT_20inch_mirror_logsurf1/Vacuum  
+     part 13 : node  0 type  0 boundary [ 23] Pyrex//PMT_20inch_mirror_logsurf1/Vacuum  
+     part 14 : node  0 type  0 boundary [ 23] Pyrex//PMT_20inch_mirror_logsurf1/Vacuum  
+    2019-05-21 09:33:39.405 INFO  [414826] [NPY<T>::dump@1717] partBuf (15,4,4) 
+
+    (  0)       0.000       0.000       0.000       0.000 
+    (  0)       0.000       0.000       0.000       0.000 
+    (  0)       0.000       0.000       0.000       0.000 
+    (  0)       0.000       0.000       0.000       0.000 
+    (  1)       0.000       0.000       0.000       0.000 
+    (  1)       0.000       0.000       0.000       0.000 
+    (  1)       0.000       0.000       0.000       0.000 
+    (  1)       0.000       0.000       0.000       0.000 
+    (  2)       0.000       0.000       0.000      50.011 
+    (  2)     -60.011      60.011       0.000       0.000 
+    (  2)       0.000       0.000       0.000       0.000 
+    (  2)       0.000       0.000       0.000       0.000 
+    (  3)       0.000       0.000       0.000     184.001 
+    (  3)       0.000       0.000       0.000       0.000 
+    (  3)       0.000       0.000       0.000       0.000 
+    (  3)       0.000       0.000       0.000       0.000 
+    (  4)      49.991     -22.832      85.219      22.832 
+    (  4)       0.000       0.000       0.000       0.000 
+    (  4)       0.000       0.000       0.000       0.000 
+    (  4)       0.000       0.000       0.000       0.000 
+    (  5)       0.000       0.000       0.000       0.000 
+    (  5)       0.000       0.000       0.000       0.000 
+    (  5)       0.000       0.000       0.000       0.000 
+    (  5)       0.000       0.000       0.000       0.000 
+    (  6)       0.000       0.000       0.000       0.000 
+    (  6)       0.000       0.000       0.000       0.000 
+    (  6)       0.000       0.000       0.000       0.000 
+    (  6)       0.000       0.000       0.000       0.000 
+    (  7)       0.000       0.000       0.000     179.000 
+    (  7)       0.000     179.000       0.000       0.000 
+    (  7)       0.000       0.000       0.000       0.000 
+    (  7)       0.000       0.000       0.000       0.000 
+    (  8)       0.000       0.000       0.000       0.000 
+    (  8)       0.000       0.000       0.000       0.000 
+    (  8)       0.000       0.000       0.000       0.000 
+    (  8)       0.000       0.000       0.000       0.000 
+    (  9)       0.000       0.000       0.000       0.000 
+    (  9)       0.000       0.000       0.000       0.000 
+    (  9)       0.000       0.000       0.000       0.000 
+    (  9)       0.000       0.000       0.000       0.000 
+    ( 10)       0.000       0.000       0.000      45.010 
+    ( 10)     -57.510      57.510       0.000       0.000 
+    ( 10)       0.000       0.000       0.000       0.000 
+    ( 10)       0.000       0.000       0.000       0.000 
+    ( 11)       0.000       0.000       0.000     179.000 
+    ( 11)    -179.000       0.000       0.000       0.000 
+    ( 11)       0.000       0.000       0.000       0.000 
+    ( 11)       0.000       0.000       0.000       0.000 
+    ( 12)      44.990     -25.246      83.994      25.246 
+    ( 12)       0.000       0.000       0.000       0.000 
+    ( 12)       0.000       0.000       0.000       0.000 
+    ( 12)       0.000       0.000       0.000       0.000 
+    ( 13)       0.000       0.000       0.000       0.000 
+    ( 13)       0.000       0.000       0.000       0.000 
+    ( 13)       0.000       0.000       0.000       0.000 
+    ( 13)       0.000       0.000       0.000       0.000 
+    ( 14)       0.000       0.000       0.000       0.000 
+    ( 14)       0.000       0.000       0.000       0.000 
+    ( 14)       0.000       0.000       0.000       0.000 
+    ( 14)       0.000       0.000       0.000       0.000 
+    2019-05-21 09:33:39.406 INFO  [414826] [NPY<T>::dump@1717] primBuf:partOffset/numParts/primIndex/0 (3,4) 
+
+    (  0)           0           7           0           0 
+    (  1)           7           1           3           0 
+    (  2)           8           7           4           0 
+    2019-05-21 09:33:39.406 FATAL [414826] [OGeo::makeAnalyticGeometry@644]  NodeTree : MISMATCH (numPrim != numVolumes)  numVolumes 6 numVolumesSelected 0 numPrim 3 numPart 15 numTran 7 numPlan 0
+    2019-05-21 09:33:39.410 INFO  [414826] [OGeo::makeAnalyticGeometry@712] ] verbosity 0 mm 2
+
+
+
+Hmm bounds being calculated::
+
+    115 RT_PROGRAM void bounds (int primIdx, float result[6])
+    116 {
+    117     //if(primIdx == 0) transform_test();
+    118     //if(primIdx == 0) solve_callable_test();
+    119 
+    120     if(primIdx == 0)
+    121     {
+    122         unsigned partBuffer_size = partBuffer.size() ;
+    123         unsigned planBuffer_size = planBuffer.size() ;
+    124         unsigned tranBuffer_size = tranBuffer.size() ;
+    125 
+    126         rtPrintf("// intersect_analytic.cu:bounds buffer sizes pts:%4d pln:%4d trs:%4d \n", partBuffer_size, planBuffer_size, tranBuffer_size );
+    127     }
+    128 
+    129 
+    130     optix::Aabb* aabb = (optix::Aabb*)result;
+    131     *aabb = optix::Aabb();
+    132 
+    133     uint4 identity = identityBuffer[instance_index] ;  // instance_index from OGeo is 0 for non-instanced
+    134 
+    135     const Prim& prim    = primBuffer[primIdx];
+    136 
+    137     unsigned primFlag    = prim.primFlag() ;
+    138     unsigned partOffset  = prim.partOffset() ;
+    139     unsigned numParts    = prim.numParts() ;
+    140 
+    141 
+    142     if(primFlag == CSG_FLAGNODETREE || primFlag == CSG_FLAGINVISIBLE )
+    143     {
+    144         // identity not strictly needed for bounds, but repeating whats done in intersect for debug convenience
+    145         Part pt0 = partBuffer[partOffset + 0] ;
+    146         unsigned typecode0 = pt0.typecode() ;
+    147         unsigned boundary0 = pt0.boundary() ;
+    148 
+    149         csg_bounds_prim(primIdx, prim, aabb);
+    150 
+    151         rtPrintf("// intersect_analytic.cu:bounds.NODETREE primIdx:%2d  bnd0:%3d typ0:%3d "
+    152                  " min %10.4f %10.4f %10.4f max %10.4f %10.4f %10.4f \n",
+    153                     primIdx,
+    154                     boundary0,
+    155                     typecode0,
+    156                     result[0],
+    157                     result[1],
+    158                     result[2],
+    159                     result[3],
+    160                     result[4],
+    161                     result[5]
+    162                 );
+    163 
+    164     }
+
+
+
+::
+
+    geocache-gui --enabledmergedmesh 2 --dbgmm 2 --pindex 1
+
+         ## "--pindex 1" gave rtPrintf output just for the 2nd OptiX primIdx (which is the vacuum-cathode-cap ellipsoid/zsphere)
+
+    geocache-gui --enabledmergedmesh 2 --dbgmm 2 --printenabled --tracer --rtx 1
+
+         ## "--printenabled" as want to see rtPrintf output for all mm2 (20-inch PMT) OptiX primIdx
+         ## "--rtx 1" as it initializes faster, with much shorter prelaunch time
+         ## "--tracer" as just interested in geometry, not the propagation : this means takes only a few seconds initialization until see geometry
+
+::
+
+    2019-05-21 10:19:35.594 INFO  [30271] [OTracer::trace_@140]  entry_index 0 trace_count 0 resolution_scale 1 pixeltime_scale 1000 size(1920,1080) ZProj.zw (-1.04082,-694.588) front 0.5774,0.5774,0.5774
+
+    // intersect_analytic.cu:bounds buffer sizes pts:  15 pln:   0 trs:  21 
+    //csg_bounds_prim CSG_FLAGNODETREE  primIdx   0 partOffset   0  numParts   7 -> height  2 -> numNodes  7  tranBuffer_size  21 
+    //csg_bounds_prim CSG_FLAGNODETREE  primIdx   1 partOffset   7  numParts   1 -> height  0 -> numNodes  1  tranBuffer_size  21 
+    //csg_bounds_prim CSG_FLAGNODETREE  primIdx   2 partOffset   8  numParts   7 -> height  2 -> numNodes  7  tranBuffer_size  21 
+    // csg_intersect_primitive.h:csg_bounds_sphere  tbb.min (  -254.0010  -254.0010  -184.0010 )  tbb.max (   254.0010   254.0010   184.0010 ) 
+    ## csg_bounds_zsphere  zmin   0.000 zmax 179.000  
+    ## csg_bounds_zsphere  zmin -179.000 zmax   0.000  
+    ## csg_bounds_cone r1:    49.991 z1:   -22.832 r2:    85.219 z2:    22.832 rmax:    85.219 tan_theta:     0.771 z_apex:   -87.632  
+    ## csg_bounds_cone r1:    44.990 z1:   -25.246 r2:    83.994 z2:    25.246 rmax:    83.994 tan_theta:     0.772 z_apex:   -83.486  
+    ## csg_bounds_cylinder center   0.000   0.000 (  0.000 =0)  radius  50.011 z1 -60.011 z2  60.011 
+    ## csg_bounds_cylinder center   0.000   0.000 (  0.000 =0)  radius  45.010 z1 -57.510 z2  57.510 
+    // intersect_analytic.cu:bounds.NODETREE primIdx: 0  bnd0: 20 typ0:  1  min  -254.0010  -254.0010  -339.0110 max   254.0010   254.0010   184.0010     ## 5mm bigger containing bbox union (ellipsoid,cone,cylinder)
+    // intersect_analytic.cu:bounds.NODETREE primIdx: 1  bnd0: 22 typ0:  7  min  -249.0000  -249.0000     0.0000 max   249.0000   249.0000   179.0000     ## bbox of upper hemi-ellipsoid 
+    // intersect_analytic.cu:bounds.NODETREE primIdx: 2  bnd0: 23 typ0:  1  min  -249.0000  -249.0000  -334.0100 max   249.0000   249.0000     0.0000     ## bbox of union (lower hemi-ellipsoid,cone,cylinder)
+
+
+
+check the transforms : how many are used 
+-----------------------------------------
+
+::
+
+    147 static __device__
+    148 void csg_intersect_part(const Prim& prim, const unsigned partIdx, const float& tt_min, float4& tt  )
+    149 {
+    150     unsigned tranOffset = prim.tranOffset();
+    151     unsigned planOffset = prim.planOffset();
+    152     Part pt = partBuffer[partIdx] ;
+    153 
+    154     unsigned typecode = pt.typecode() ;
+    155     unsigned gtransformIdx = pt.gtransformIdx() ;  //  gtransformIdx is 1-based, 0 meaning None
+    156     bool complement = pt.complement();
+    157 
+    158     bool valid_intersect = false ;
+    159 
+    160     if(gtransformIdx == 0)
+    161     {
+    162         switch(typecode)
+
+
+Part.h::
+
+     05 struct Part 
+      6 {
+      7 
+      8     quad q0 ; 
+      9     quad q1 ;
+     10     quad q2 ;
+     11     quad q3 ;
+     12 
+     13     __device__ unsigned gtransformIdx() const { return q3.u.w & 0x7fffffff ; }  //  gtransformIdx is 1-based, 0 meaning None 
+     14     __device__ bool        complement() const { return q3.u.w & 0x80000000 ; }
+     15 
+
+
+
+geocache-j1808-v4 : back to original, check total number of transforms
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+::
+
+    geocache-gui --enabledmergedmesh 2 --dbgmm 2 --printenabled --tracer --rtx 1
+
+
+::
+
+    2019-05-21 11:29:46.234 INFO  [143946] [OTracer::trace_@140]  entry_index 0 trace_count 0 resolution_scale 1 pixeltime_scale 1000 size(1920,1080) ZProj.zw (-1.04082,-694.588) front 0.6602,0.5064,0.5547
+    // intersect_analytic.cu:bounds buffer sizes pts:  29 pln:   0 trs:  42 
+    //csg_bounds_prim CSG_FLAGNODETREE  primIdx   0 partOffset   0  numParts   7 -> height  2 -> numNodes  7  tranBuffer_size  42 
+    //csg_bounds_prim CSG_FLAGNODETREE  primIdx   1 partOffset   7  numParts   7 -> height  2 -> numNodes  7  tranBuffer_size  42 
+    //csg_bounds_prim CSG_FLAGNODETREE  primIdx   2 partOffset  14  numParts   7 -> height  2 -> numNodes  7  tranBuffer_size  42 
+    //csg_bounds_prim CSG_FLAGNODETREE  primIdx   3 partOffset  21  numParts   1 -> height  0 -> numNodes  1  tranBuffer_size  42 
+    //csg_bounds_prim CSG_FLAGNODETREE  primIdx   4 partOffset  22  numParts   7 -> height  2 -> numNodes  7  tranBuffer_size  42 
+    ## csg_bounds_zsphere  zmin   0.000 zmax 179.000  
+    ## csg_bounds_zsphere  zmin -179.000 zmax   0.000  
+    // csg_intersect_primitive.h:csg_bounds_sphere  tbb.min (  -264.0000  -264.0000  -196.0000 )  tbb.max (   264.0000   264.0000   196.0000 ) 
+    // csg_intersect_primitive.h:csg_bounds_sphere  tbb.min (  -254.0010  -254.0010  -184.0010 )  tbb.max (   254.0010   254.0010   184.0010 ) 
+    // csg_intersect_primitive.h:csg_bounds_sphere  tbb.min (  -254.0000  -254.0000  -184.0000 )  tbb.max (   254.0000   254.0000   184.0000 ) 
+    ## csg_bounds_cylinder center   0.000   0.000 (  0.000 =0)  radius 264.000 z1 -177.000 z2 177.000 
+    ## csg_bounds_cone r1:    49.991 z1:   -22.832 r2:    85.219 z2:    22.832 rmax:    85.219 tan_theta:     0.771 z_apex:   -87.632  
+    ## csg_bounds_cone r1:    49.990 z1:   -22.833 r2:    85.219 z2:    22.833 rmax:    85.219 tan_theta:     0.771 z_apex:   -87.631  
+    ## csg_bounds_cone r1:    44.990 z1:   -25.246 r2:    83.994 z2:    25.246 rmax:    83.994 tan_theta:     0.772 z_apex:   -83.486  
+    // csg_intersect_primitive.h:csg_bounds_sphere  tbb.min (  -256.0000  -256.0000  -186.0000 )  tbb.max (   256.0000   256.0000   186.0000 ) 
+    ## csg_bounds_cylinder center   0.000   0.000 (  0.000 =0)  radius 256.000 z1 -172.000 z2 172.000 
+    ## csg_bounds_cylinder center   0.000   0.000 (  0.000 =0)  radius  50.011 z1 -60.011 z2  60.011 
+    ## csg_bounds_cylinder center   0.000   0.000 (  0.000 =0)  radius  50.010 z1 -60.010 z2  60.010 
+    ## csg_bounds_cylinder center   0.000   0.000 (  0.000 =0)  radius  45.010 z1 -57.510 z2  57.510 
+    // intersect_analytic.cu:bounds.NODETREE primIdx: 0  bnd0: 15 typ0:  3  min  -264.0000  -264.0000  -353.9000 max   264.0000   264.0000   196.0000 
+    // intersect_analytic.cu:bounds.NODETREE primIdx: 1  bnd0: 20 typ0:  1  min  -254.0010  -254.0010  -339.0110 max   254.0010   254.0010   184.0010 
+    // intersect_analytic.cu:bounds.NODETREE primIdx: 2  bnd0: 21 typ0:  1  min  -254.0000  -254.0000  -339.0100 max   254.0000   254.0000   184.0000 
+    // intersect_analytic.cu:bounds.NODETREE primIdx: 3  bnd0: 22 typ0:  7  min  -249.0000  -249.0000     0.0000 max   249.0000   249.0000   179.0000 
+    // intersect_analytic.cu:bounds.NODETREE primIdx: 4  bnd0: 23 typ0:  1  min  -249.0000  -249.0000  -334.0100 max   249.0000   249.0000     0.0000 
+
 
 
 
