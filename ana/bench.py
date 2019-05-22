@@ -13,7 +13,9 @@ if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
 
     parser = argparse.ArgumentParser(__doc__)
-    parser.add_argument(    "base", default=None, help="Directory below which to look for results")
+
+    parser.add_argument(     "--resultsdir", default="$TMP/results", help="Directory path to results" )
+    parser.add_argument(     "--name",    default="geocache-bench", help="Name of directory beneath resultsdir in which to look for results")
     parser.add_argument(     "--include", default=None, help="Select result groups with commandline containing the string provided" )
     parser.add_argument(     "--exclude", default=None, help="Select result groupd with commandline not containing the string provided" )
     parser.add_argument(     "--metric", default="launchAVG" );
@@ -21,8 +23,8 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     print(args)
-
-    base = args.base if args.base is not None else "."
+    base = os.path.join( args.resultsdir, args.name )
+    base = os.path.expandvars(base)
     print(base)
 
     dirs, dfolds = DatedFolder.find(base)
@@ -32,7 +34,6 @@ if __name__ == '__main__':
     for df in sorted(dfolds):
         udirs = filter(lambda _:_.endswith(df),dirs)
         #print("\n".join(udirs))
-
 
         mm = [Meta(p, base) for p in udirs]
 
@@ -48,7 +49,7 @@ if __name__ == '__main__':
         a = np.recarray((len(mm),), dtype=dtype )
 
         labfmt_ = lambda lab:" %30s %10s %10s %10s      %10s " %  lab
-        rowfmt_ = lambda row:" %30s %10.3f %10.3f %10.3f      %10.3f " % ( row.label, row.metric, row.rfast, row.rslow, row.other )
+        rowfmt_ = lambda row:" %30s %10.3f %10.3f %10.3f      %10.3f   " % ( row.label, row.metric, row.rfast, row.rslow, row.other )
 
         lab = ( df,metric,"rfast", "rslow", other)
 
@@ -82,7 +83,7 @@ if __name__ == '__main__':
                
             a[i] = (i, m.parentfold, f, rfast, rslow, o )  
 
-            print(rowfmt_(a[i]))
+            print(" %s : %s " % ( rowfmt_(a[i]), m.absdir) )
         pass
     pass 
 

@@ -7,6 +7,7 @@
 #include "G4RotationMatrix.hh"
 #include "X4SolidBase.hh"
 class G4VSolid ; 
+class Opticks ; 
 struct nnode ; 
 
 /**
@@ -58,10 +59,10 @@ class X4_API X4Solid : public X4SolidBase
     };
     public:
         static void SetVerbosity(unsigned verbosity);
-        static nnode* Convert(const G4VSolid* solid, const char* boundary=NULL);
+        static nnode* Convert(const G4VSolid* solid, Opticks* ok, const char* boundary=NULL);
         static nnode* Balance(nnode* raw, unsigned soIdx=0 , unsigned lvIdx=0 );  // cannot be const due to inplace positivization
     public:
-        X4Solid(const G4VSolid* solid, bool top); 
+        X4Solid(const G4VSolid* solid, Opticks* ok, bool top); 
 
         bool hasDisplaced() const ; 
         X4Solid* getDisplaced() const ; 

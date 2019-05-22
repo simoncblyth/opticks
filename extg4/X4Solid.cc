@@ -2,6 +2,8 @@
 #include <iterator>
 #include <algorithm>
 
+#include "Opticks.hh"
+
 #include "G4Hype.hh"
 #include "G4Polycone.hh"
 #include "G4Ellipsoid.hh"
@@ -51,12 +53,12 @@ void X4Solid::SetVerbosity(unsigned verbosity) // static
     fVerbosity = verbosity ; 
 }
 
-nnode* X4Solid::Convert(const G4VSolid* solid, const char* boundary)
+nnode* X4Solid::Convert(const G4VSolid* solid, Opticks* ok, const char* boundary)
 {
     if(fVerbosity > 0) LOG(error) << " convert " << solid->GetName() ; 
 
     bool top = true ; 
-    X4Solid xs(solid, top);
+    X4Solid xs(solid, ok, top);
     nnode* root = xs.root(); 
 
     root->update_gtransforms(); 
@@ -76,9 +78,9 @@ nnode* X4Solid::Balance(nnode* raw, unsigned soIdx , unsigned lvIdx )
 }
 
 
-X4Solid::X4Solid(const G4VSolid* solid, bool top)
+X4Solid::X4Solid(const G4VSolid* solid, Opticks* ok, bool top)
    :
-   X4SolidBase(solid, top),
+   X4SolidBase(solid, ok, top),
    m_displaced(NULL)
 {
    init(); 
@@ -212,7 +214,7 @@ void X4Solid::convertDisplacedSolid()
     assert( dynamic_cast<G4DisplacedSolid*>(moved) == NULL ); // only a single displacement is handled
 
     bool top = false ;  // never top of tree : expect to always be a boolean RHS
-    X4Solid* xmoved = new X4Solid(moved, top);
+    X4Solid* xmoved = new X4Solid(moved, m_ok, top);
     setDisplaced(xmoved); 
 
     nnode* a = xmoved->root();
@@ -244,8 +246,8 @@ void X4Solid::convertBooleanSolid()
 
     assert( !is_left_displaced && "not expecting left displacement " ); 
 
-    X4Solid* xleft = new X4Solid(left, false); 
-    X4Solid* xright = new X4Solid(right, false); 
+    X4Solid* xleft = new X4Solid(left, m_ok, false); 
+    X4Solid* xright = new X4Solid(right, m_ok, false); 
 
     nnode* a = xleft->root(); 
     nnode* b = xright->root(); 
@@ -896,15 +898,26 @@ void X4Solid::convertEllipsoid()
     float zcut1 = solid->GetZBottomCut()/mm ; 
     float zcut2 = solid->GetZTopCut()/mm ;
 
+    bool dbg_with_hemi_ellipsoid_bug = m_ok->hasOpt("dbg_with_hemi_ellipsoid_bug") ; 
+    assert( dbg_with_hemi_ellipsoid_bug == true );
 
-    // float z1 = zcut1 != 0.f && zcut1 > -cz ? zcut1 : -cz ; 
-    // float z2 = zcut2 != 0.f && zcut2 <  cz ? zcut2 :  cz ; 
 
-    //       HUH ^^^^^^^^^^^^^ WHATS SPECIAL ABOUT ZERO
-    //       see notes/issues/review-analytic-geometry.rst    
-
-    float z1 = zcut1 > -cz ? zcut1 : -cz ; 
-    float z2 = zcut2 <  cz ? zcut2 :  cz ; 
+    float z1 ; 
+    float z2 ; 
+ 
+    if(dbg_with_hemi_ellipsoid_bug)
+    {
+        LOG(fatal) << " reproducing old bug : --dbg_with_hemi_ellipsoid_bug  " ; 
+        z1 = zcut1 != 0.f && zcut1 > -cz ? zcut1 : -cz ; 
+        z2 = zcut2 != 0.f && zcut2 <  cz ? zcut2 :  cz ; 
+        //       HUH ^^^^^^^^^^^^^ WHATS SPECIAL ABOUT ZERO
+        //       see notes/issues/review-analytic-geometry.rst    
+    }
+    else
+    { 
+        z1 = zcut1 > -cz ? zcut1 : -cz ; 
+        z2 = zcut2 <  cz ? zcut2 :  cz ; 
+    }
 
     assert( z2 > z1 ) ;  
 

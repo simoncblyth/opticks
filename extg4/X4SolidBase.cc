@@ -160,9 +160,10 @@ G4Sphere* X4SolidBase::MakeSphere(const char* name, float rmax, float rmin)
 
 }
 
-X4SolidBase::X4SolidBase( const G4VSolid* solid, bool top )  
+X4SolidBase::X4SolidBase( const G4VSolid* solid, Opticks* ok, bool top )  
    :
    m_solid(solid),
+   m_ok(ok),
    m_top(top),
    m_name(strdup(solid->GetName().c_str())),
    m_entityType(X4Entity::Type(solid->GetEntityType())),

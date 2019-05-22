@@ -1,4 +1,6 @@
 #include "OPTICKS_LOG.hh"
+
+#include "Opticks.hh"
 #include "G4Polycone.hh"
 #include "X4Solid.hh"
 #include "X4.hh"
@@ -29,11 +31,13 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv);
 
+    Opticks ok(argc, argv); 
+
     G4VSolid* so = make_Polycone() ; 
 
     std::cout << *so << std::endl ; 
 
-    X4Solid xs(so, true) ; 
+    X4Solid xs(so, &ok, true) ; 
 
     nnode* root = xs.root(); 
 

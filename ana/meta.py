@@ -24,13 +24,15 @@ class Meta(object):
         """
         self.path = path
         self.base = base
+        absdir = os.path.join(base, path) 
+        self.absdir = absdir 
+
         self.datefold = os.path.basename(path)
         self.timestamp = dateparser(self.datefold)
         self.parentfold = os.path.basename(os.path.dirname(path))        
         assert self.timestamp is not None, "expected datedfolder argument %s " % path 
 
         self.d = {}
-        absdir = os.path.join(base, path) 
         for n in os.listdir(absdir):
             p = os.path.join(absdir,n)
             if not os.path.isfile(p): continue

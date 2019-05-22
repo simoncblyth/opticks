@@ -35,8 +35,11 @@ void test_solid(G4VSolid* so)
     G4VisExtent vx = so->GetExtent() ; 
     std::cout << vx << std::endl ; 
 
+    Opticks* ok = new Opticks(0,0);
+    ok->configure();
+
     bool top = true ; 
-    X4Solid* xs = new X4Solid(so, top) ; 
+    X4Solid* xs = new X4Solid(so, ok, top) ; 
     LOG(info) << xs->desc() ; 
     nnode* root = xs->root(); 
     assert( root ) ; 
@@ -49,8 +52,8 @@ void test_solid(G4VSolid* so)
     NCSG* csg = NCSG::Adopt( root ); 
 
 
-    Opticks* ok = new Opticks(0,0);
-    ok->configure();
+    //Opticks* ok = new Opticks(0,0);
+    //ok->configure();
 
     GMaterialLib* mlib = new GMaterialLib(ok); 
     GSurfaceLib* slib = new GSurfaceLib(ok); 

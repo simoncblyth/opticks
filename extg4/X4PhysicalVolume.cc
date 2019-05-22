@@ -489,7 +489,7 @@ GMesh* X4PhysicalVolume::convertSolid( int lvIdx, int soIdx, const G4VSolid* con
                << ( dbglv ? " --dbglv " : "" ) 
                 << lvIdx << " " << lvname ;  
  
-     nnode* raw = X4Solid::Convert(solid)  ; 
+     nnode* raw = X4Solid::Convert(solid, m_ok)  ; 
 
      if(m_g4codegen) 
      {
@@ -506,7 +506,7 @@ GMesh* X4PhysicalVolume::convertSolid( int lvIdx, int soIdx, const G4VSolid* con
                  ;
              raw->dump_g4code();  // just for debug 
          }
-         X4CSG::GenerateTest( solid, m_g4codegendir , lvIdx ) ; 
+         X4CSG::GenerateTest( solid, m_ok, m_g4codegendir , lvIdx ) ; 
 
      }
 

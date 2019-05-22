@@ -1,4 +1,5 @@
 #include "OPTICKS_LOG.hh"
+#include "Opticks.hh"
 #include "X4CSG.hh"
 
 // start of portion to be generated ----------------
@@ -24,6 +25,9 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv);
 
+    Opticks ok(argc, argv); 
+    ok.configure(); 
+
     G4VSolid* solid = make_solid() ; 
 
     //const char* csgpath = "$TMP/X4CSGTest" ; 
@@ -31,7 +35,7 @@ int main(int argc, char** argv)
      
     const char* prefix = "$TMP/x4gen/tests" ; 
     unsigned lvidx = 1 ; 
-    X4CSG::GenerateTest( solid, prefix, lvidx ) ;
+    X4CSG::GenerateTest( solid, &ok, prefix, lvidx ) ;
 
     return 0 ; 
 }

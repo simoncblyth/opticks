@@ -40,6 +40,7 @@
 #include "NSceneConfig.hpp"
 #include "NLODConfig.hpp"
 #include "NSnapConfig.hpp"
+#include "NMeta.hpp"
 
 // okc-
 #include "OpticksPhoton.h"
@@ -267,6 +268,7 @@ Opticks::Opticks(int argc, char** argv, const char* argforced )
     m_timer(NULL),
     m_parameters(NULL),
     m_runtxt(NULL),
+    m_cachemeta(NULL),
     m_scene_config(NULL),
     m_lod_config(NULL),
     m_snap_config(NULL),
@@ -546,13 +548,18 @@ void Opticks::init()
 
     m_timer->start();
 
-
     m_parameters = new BParameters ;  
     m_parameters->addEnvvar("CUDA_VISIBLE_DEVICES");
-    if(m_envkey) m_parameters->addEnvvar("OPTICKS_KEY");  // only revelant when are use --envkey to switch on sensitivity to the envvar
     m_parameters->add<std::string>("CMDLINE", PLOG::instance->cmdline() ); 
 
+    if( m_envkey )
+    {
+        m_parameters->addEnvvar("OPTICKS_KEY");  // only revelant when are use --envkey to switch on sensitivity to the envvar
+    }
+
     m_runtxt = new BTxt ; 
+    m_cachemeta = new NMeta ; 
+
 
     m_lastarg = m_argc > 1 ? strdup(m_argv[m_argc-1]) : NULL ;
 
@@ -566,6 +573,11 @@ void Opticks::initResource()
     m_resource = new OpticksResource(this);
     LOG(LEVEL) << ") OpticksResource " ;
     setDetector( m_resource->getDetector() );
+
+    const char* idpath = m_resource->getIdPath();
+    m_parameters->add<std::string>("idpath", idpath); 
+
+
     LOG(LEVEL) << " DONE " << m_resource->desc()  ;
 }
 
@@ -645,9 +657,6 @@ const char* Opticks::getScintillationClass() const
     const std::string& s = m_cfg->getScintillationClass();
     return s.c_str();
 }
-
-
-
 
 
 
@@ -1358,54 +1367,62 @@ const char* Opticks::getRunDate() const
     return strdup(s.c_str());
 }
 
-
-void Opticks::updateRunTxt()  
+void Opticks::appendCacheMeta(const char* key, NMeta* obj)
 {
-    m_runtxt->addLine("rundate") ;  
-    m_runtxt->addLine( getRunDate() ) ;  
-
-    m_runtxt->addLine("runstamp" ) ;  
-    m_runtxt->addValue( getRunStamp() );  
-
+     m_cachemeta->setObj(key, obj); 
+}
+void Opticks::updateCacheMeta()  
+{
     std::string argline = PLOG::instance->args.argline() ;
+
+    int runstamp = getRunStamp() ;
+    const char* rundate = getRunDate() ;
+    const char* runcomment = getRunComment() ; 
+    const char* runlabel = getRunLabel() ; 
+    const char* runfolder = getRunFolder() ; 
+
+    m_runtxt->addLine("rundate") ;  
+    m_runtxt->addLine( rundate ) ;  
+    m_runtxt->addLine("runstamp" ) ;  
+    m_runtxt->addValue( runstamp);  
     m_runtxt->addLine("argline" ) ;  
     m_runtxt->addLine( argline) ;  
 
-    const char* runcomment = getRunComment() ; 
+    m_cachemeta->set<std::string>("location", "Opticks::updateCacheMeta"); 
+    m_cachemeta->set<std::string>("argline",  argline ); 
+    m_cachemeta->set<std::string>("rundate", rundate ); 
+    m_cachemeta->set<int>("runstamp", runstamp ); 
+
     if(runcomment)
     {
         m_runtxt->addLine("runcomment" ) ;  
         m_runtxt->addLine( runcomment) ;  
+        m_cachemeta->set<std::string>("runcomment", runcomment ); 
     }
 
-    const char* runlabel = getRunLabel() ; 
     if(runlabel)
     {
         m_runtxt->addLine("runlabel" ) ;  
         m_runtxt->addLine( runlabel) ;  
+        m_cachemeta->set<std::string>("runlabel", runlabel ); 
     }
 
-    const char* runfolder = getRunFolder() ; 
     if(runfolder)
     {
         m_runtxt->addLine("runfolder" ) ;  
         m_runtxt->addLine( runfolder) ;  
+        m_cachemeta->set<std::string>("runfolder", runfolder ); 
     }
-
-
 
 }
 
-BTxt* Opticks::getRunTxt() const
-{
-    return m_runtxt ; 
-}  
-
-void Opticks::saveRunTxt() const 
+void Opticks::saveCacheMeta() const 
 {
     const char* path = getRunCommentPath(); 
     assert( m_runtxt) ; 
     m_runtxt->write(path);    
+    const char* cachemetapath = getCacheMetaPath();
+    m_cachemeta->save(cachemetapath);
 }
 
 
@@ -1648,7 +1665,7 @@ void Opticks::configure()
 
     initResource();   // <-- RECENT ATTEMPT TO MOVE OpticksResource setup after commandline parsing done
 
-    updateRunTxt(); 
+    updateCacheMeta(); 
 
 
     defineEventSpec();

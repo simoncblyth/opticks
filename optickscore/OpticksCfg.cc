@@ -147,6 +147,9 @@ void OpticksCfg<Listener>::init()
    m_desc.add_options()
        ("deletegeocache",  "deletes the geocache before recreating") ;
 
+   m_desc.add_options()
+       ("dbg_with_hemi_ellipsoid_bug",  "checking the effect of putting the bug back in X4Solid::convertEllipsoid") ;
+
 
 
    m_desc.add_options()

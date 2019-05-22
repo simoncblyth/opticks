@@ -103,7 +103,7 @@ GGeo::GGeo(Opticks* ok, bool live)
    m_instancer(NULL), 
    m_loaded(false), 
    m_prepared(false), 
-   m_cachemeta(NULL),
+   m_loadedcachemeta(NULL),
    m_lv2sd(NULL),
    m_lookup(NULL), 
    m_meshlib(NULL),
@@ -726,7 +726,7 @@ void GGeo::save()
 
     m_geolib->dump("GGeo::save");
 
-    m_geolib->save();
+    m_geolib->save(); // in here GGeoLib::saveConstituents invokes the save of both triangulated GMergedMesh and analytic GParts 
     m_meshlib->save();
     m_nodelib->save();
     m_materiallib->save();
@@ -736,56 +736,30 @@ void GGeo::save()
     m_bndlib->save();  
 
     saveCacheMeta();
-    saveRunComment();
-
 
     LOG(LEVEL) << "]" ;  
 }
 
 
-void GGeo::saveCacheMeta()
+void GGeo::saveCacheMeta() const 
 {
-    if(m_cachemeta == NULL ) m_cachemeta = new NMeta ; 
-
-    m_cachemeta->set<int>("answer", 42) ; 
-    m_cachemeta->set<std::string>("question", "huh?");
-
-    //LOG(error) << " PLOG::instance " << PLOG::instance ; 
-
-    std::string argline = PLOG::instance->args.argline() ; 
-    m_cachemeta->set<std::string>("argline", argline ); 
-
-
-    const char* comment = m_ok->getRunComment(); 
-    if(comment)
-        m_cachemeta->set<std::string>("runcomment", comment ); 
-
-    if(m_lv2sd) m_cachemeta->setObj("lv2sd", m_lv2sd ); 
-    const char* cachemetapath = m_ok->getCacheMetaPath(); 
-    m_cachemeta->save(cachemetapath); 
+    m_ok->saveCacheMeta(); 
 }
 
 
-void GGeo::saveRunComment() const 
-{
-    m_ok->saveRunTxt(); 
-}
-
-
-
-void GGeo::loadCacheMeta()
+void GGeo::loadCacheMeta() // loads metadata that the process that created the geocache persisted into the geocache
 {
     const char* path = m_ok->getCacheMetaPath(); 
-    assert( m_cachemeta == NULL ); 
-    m_cachemeta = NMeta::Load(path);
-    m_lv2sd = m_cachemeta->getObj("lv2sd"); 
+    assert( m_loadedcachemeta == NULL ); 
+    m_loadedcachemeta = NMeta::Load(path);
+    m_lv2sd = m_loadedcachemeta->getObj("lv2sd"); 
 }
 
 
 void GGeo::saveAnalytic()
 { 
     LOG(info) << "GGeo::saveAnalytic" ;
-    m_gscene->save();   // HUH: still needed ???
+    m_gscene->save();   // HUH: still needed ???   THIS IS VESTIGIAL SURELY 
 }
  
 void GGeo::loadFromCache()

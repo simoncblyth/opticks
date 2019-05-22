@@ -8,6 +8,8 @@
 #include <string>
 
 
+class Opticks ; 
+
 class G4Hype ; 
 class G4Ellipsoid ; 
 class G4Torus ; 
@@ -64,7 +66,7 @@ class X4_API X4SolidBase
         template<typename T>
         static std::string GenInstanciate(const char* cls, const char* identifier, const char* name, const std::vector<T>& param);
     public:
-        X4SolidBase(const G4VSolid* solid, bool top=false); 
+        X4SolidBase(const G4VSolid* solid, Opticks* ok, bool top=false); 
         nnode* root() const ;
         std::string desc() const  ; 
         std::string brief() const  ; 
@@ -115,6 +117,7 @@ class X4_API X4SolidBase
 
     protected:
         const G4VSolid* m_solid ;  
+        Opticks*        m_ok ;  
         bool            m_top ; 
         const char*     m_name ; 
         X4Entity_t      m_entityType ; 

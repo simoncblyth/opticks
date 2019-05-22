@@ -26,9 +26,9 @@
 #include "X4SolidExtent.hh"
 
 
-void X4CSG::Serialize( const G4VSolid* solid, const char* csgpath ) // static
+void X4CSG::Serialize( const G4VSolid* solid, Opticks* ok, const char* csgpath ) // static
 {
-    X4CSG xcsg(solid);
+    X4CSG xcsg(solid, ok);
     std::cerr << xcsg.save(csgpath) << std::endl ;   // NB only stderr emission to be captured by bash 
     xcsg.dumpTestMain();  
 }
@@ -42,11 +42,11 @@ const char* X4CSG::GenerateTestPath( const char* prefix, unsigned lvidx, const c
     return strdup(path.c_str()); 
 }
 
-void X4CSG::GenerateTest( const G4VSolid* solid, const char* prefix, unsigned lvidx )  // static
+void X4CSG::GenerateTest( const G4VSolid* solid, Opticks* ok, const char* prefix, unsigned lvidx )  // static
 {
     const char* path = GenerateTestPath(prefix, lvidx, ".cc" ) ; 
     LOG(debug) << "( " << lvidx << " " << path ; 
-    X4CSG xcsg(solid);
+    X4CSG xcsg(solid, ok);
     xcsg.setIndex(lvidx);
     xcsg.writeTestMain(path); 
     LOG(debug) << ") " << lvidx ; 
@@ -95,17 +95,18 @@ std::string X4CSG::desc() const
     return "X4CSG" ; 
 }
 
-X4CSG::X4CSG(const G4VSolid* solid_)
+X4CSG::X4CSG(const G4VSolid* solid_, Opticks* ok_)
     :
     verbosity(SSys::getenvint("VERBOSITY",0)),
     solid(solid_),
+    ok(ok_), 
     gdml(X4GDMLParser::ToString(solid, false )),    // do not add pointer refs to names  
     container(MakeContainer(solid, 1.5f)),
     solid_boundary("Vacuum///GlassSchottF2"),
     container_boundary("Rock//perfectAbsorbSurface/Vacuum"),
-    nraw(X4Solid::Convert(solid, solid_boundary)),
+    nraw(X4Solid::Convert(solid, ok, solid_boundary)),
     nsolid(X4Solid::Balance(nraw)),                  // lvIdx 16 has an empty test .cc generated as being balanced looses the g4code see npy/NTreeProcess.cc
-    ncontainer(X4Solid::Convert(container, container_boundary)),
+    ncontainer(X4Solid::Convert(container, ok, container_boundary)),
     csolid( NCSG::Adopt(nsolid) ),
     ccontainer( NCSG::Adopt(ncontainer) ),
     ls(NULL),

@@ -3,8 +3,6 @@ review-analytic-geometry
 
 
 
-
-
 ===============   =================  ================
 mm index            gui label          notes
 ===============   =================  ================
@@ -17,12 +15,34 @@ mm index            gui label          notes
 ===============   =================  ================
 
 
+optimization ideas 
+---------------------
+
+* currently the transforms are taking up quite a lot of buffer realestate, 
+  for several reasons
+
+   1. T,V,Q : expect could just use T,V 
+   2. suspect there is transform duplication that could be exploited by 
+      treating all transforms from all volumes in the MergedMesh assembly
+      of volumes together : rather than the current way to dealing with 
+      each volume separately 
+   3. often the transforms are just translations, even just z-shifts, 
+      but still they occupy 4x4x3  
+
+* many node types have quite a lot floats to spare (check this), 
+  could a three float translation and a flag to indicate that it is being 
+  used avoid referencing to separate transform buffer 
+
+  * historically the space was from when the bbox was stored with the node
+
+
+* combining sibling instances : in3 and in4 could be combined into one instance
+* suspect some of the 201 global volumes must be instanceable
+
 
 
 geocache-;geocache-360  whilst looking into geometry
 ------------------------------------------------------
-
-
 
 ::
 
@@ -719,6 +739,104 @@ geocache-j1808-v4-t8 : just 21,18,19,  outer-pyrex+vacuum-cap+remainder
   * R1 : doubled RTX ON times for both V and T-rex
 
 * RTX mode really dislikes tightly contained analytic volumes 
+
+
+
+geocache-j1808-v4-t8 : after fixing ellipsoid bug and doing cleaninstall for OptiX 511 build test, the R1 times are drastically faster ???
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* RTX ON : x3.6 TITAN RTX 
+* RTX ON : x2.3 TITAN V 
+
+
+* but there was a full clean install too : and the prelaunch times are high : it is as if 
+  some cache was cleared and afterwards things are going better 
+
+* there were other changes the ptx too : need to examine all changes over past 24hrs too 
+
+* :doc:`suspect-rtx-performance-improved-following-cleaninstall-why`
+
+* TODO: revert to an earlier commit and check times back then
+
+
+::
+
+     geocache-bench --xanalytic --enabledmergedmesh 2
+
+
+     OpSnapTest --envkey --target 352851 --eye -1,-1,-1 --snapconfig steps=5,eyestartz=-1,eyestopz=-0.5 --size 5120,2880,1 --embedded --cvd 1 --rtx 1 --runfolder geocache-bench --runstamp 1558516754 --runlabel R1_TITAN_RTX --xanalytic --enabledmergedmesh 2
+                    20190522_171914  launchAVG      rfast      rslow      prelaunch000 
+                       R1_TITAN_RTX      0.033      1.000      0.275           2.024 
+                         R1_TITAN_V      0.044      1.332      0.366           2.123 
+           R0_TITAN_V_AND_TITAN_RTX      0.065      1.972      0.542          21.124 
+                         R0_TITAN_V      0.101      3.080      0.847           9.986 
+                       R0_TITAN_RTX      0.120      3.638      1.000          11.311 
+
+
+Rerun reproduces same numbers::
+
+     geocache-bench --xanalytic --enabledmergedmesh 2
+
+     OpSnapTest --envkey --target 352851 --eye -1,-1,-1 --snapconfig steps=5,eyestartz=-1,eyestopz=-0.5 --size 5120,2880,1 --embedded --cvd 1 --rtx 1 --runfolder geocache-bench --runstamp 1558517866 --runlabel R1_TITAN_RTX --xanalytic --enabledmergedmesh 2
+                    20190522_173746  launchAVG      rfast      rslow      prelaunch000 
+                       R1_TITAN_RTX      0.033      1.000      0.273           0.665 
+                         R1_TITAN_V      0.040      1.220      0.333           0.418 
+           R0_TITAN_V_AND_TITAN_RTX      0.065      1.988      0.543          11.575 
+                         R0_TITAN_V      0.102      3.102      0.847           5.838 
+                       R0_TITAN_RTX      0.120      3.660      1.000           5.933 
+
+
+
+
+geocache-j1808-v4-t8 : create the geocache again putting the bug back : as difficult to believe it had such a big effect
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Yep something else caused the big change, 
+
+* the bug has only a minor performance effect on RTX ON
+
+::
+
+     geocache-bench --xanalytic --enabledmergedmesh 2
+
+     OpSnapTest --envkey --target 352851 --eye -1,-1,-1 --snapconfig steps=5,eyestartz=-1,eyestopz=-0.5 --size 5120,2880,1 --embedded --cvd 1 --rtx 1 --runfolder geocache-bench --runstamp 1558537209 --runlabel R1_TITAN_RTX --xanalytic --enabledmergedmesh 2
+                    20190522_230009  launchAVG      rfast      rslow      prelaunch000 
+                       R1_TITAN_RTX      0.041      1.000      0.333           2.115 
+                         R1_TITAN_V      0.047      1.165      0.388           2.059 
+           R0_TITAN_V_AND_TITAN_RTX      0.065      1.586      0.529          12.111 
+                         R0_TITAN_V      0.101      2.486      0.829           6.109 
+                       R0_TITAN_RTX      0.122      3.000      1.000           6.153 
+
+
+     OpSnapTest --envkey --target 352851 --eye -1,-1,-1 --snapconfig steps=5,eyestartz=-1,eyestopz=-0.5 --size 5120,2880,1 --embedded --cvd 1 --rtx 1 --runfolder geocache-bench --runstamp 1558538135 --runlabel R1_TITAN_RTX --xanalytic --enabledmergedmesh 2
+                    20190522_231535  launchAVG      rfast      rslow      prelaunch000 
+                       R1_TITAN_RTX      0.040      1.000      0.330           0.507 
+                         R1_TITAN_V      0.044      1.094      0.362           0.470 
+           R0_TITAN_V_AND_TITAN_RTX      0.063      1.570      0.519          11.464 
+                         R0_TITAN_V      0.102      2.521      0.833           5.781 
+                       R0_TITAN_RTX      0.122      3.026      1.000           5.914 
+
+
+
+
+
+
+bookeeping thoughts
+~~~~~~~~~~~~~~~~~~~~~
+
+Need to capture the below envars and report them with bench results 
+for changing geometry tests. Also need to filter by geometry.
+
+::
+
+    OPTICKS_GEOFUNC  : geocache-j1808-v4-t8 
+    OPTICKS_KEY      : OKX4Test.X4PhysicalVolume.lWorld0x4bc2710_PV.52e273e4ad5423fe2fc8aa44bbf055ec 
+    OPTICKS_COMMENT  : just-21-18-19-outer-pyrex+vacuum-cap-and-remainder-see-notes/issues/review-analytic-geometry.rst 
+    [blyth@localhost ~]$ geocache-
+    [blyth@localhost ~]$ geocache-bench --xanalytic 
+
+
+
 
 
 geocache-j1808-v4-t8 : LV 21,18,19 : check the bbox, how close are they

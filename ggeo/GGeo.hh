@@ -317,8 +317,7 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
         void setHigh(const gfloat3& high);
         void updateBounds(GNode* node); 
     private:
-        void saveCacheMeta();
-        void saveRunComment() const ;
+        void saveCacheMeta() const ;
         void loadCacheMeta();
     public:
         // TODO: contrast with this earlier way 
@@ -374,7 +373,7 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
         bool                          m_loaded ;  
         bool                          m_prepared ;  
 
-        NMeta*                        m_cachemeta ; 
+        NMeta*                        m_loadedcachemeta ; 
         NMeta*                        m_lv2sd ; 
 
 

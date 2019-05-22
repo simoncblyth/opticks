@@ -159,8 +159,6 @@ geocache-py()
    ipython -i geocache.py 
 }
 
-
-
 geocache-info(){ cat << EOI
 
   OPTICKS_KEY     :  ${OPTICKS_KEY}
@@ -181,82 +179,69 @@ geocache-keydir()
     local top=${arr[2]}
     local dig=${arr[3]}
     echo $LOCAL_BASE/opticks/geocache/${exe}_${top}_g4live/g4ok_gltf/$dig/1 
-    #echo $LOCAL_BASE/opticks/geocache/OKX4Test_lWorld0x4bc2710_PV_g4live/g4ok_gltf/528f4cefdac670fffe846377973af10a/1
 }
 
 geocache-dir(){ echo $LOCAL_BASE/opticks/geocache ; }
 geocache-cd(){ cd $(geocache-dir) ; }
-
-
 geocache-tstdir(){ echo $(geocache-keydir)/g4codegen/tests ; }
-
 geocache-kcd(){ cd $(geocache-keydir) ; pwd ; cat runcomment.txt ;  }
 geocache-tcd(){ cd $(geocache-tstdir) ; pwd ; }
 
-
 geocache-tmp(){ echo /tmp/$USER/opticks/$1 ; }
-geocache-j1808()
+
+
+geocache-create-()
 {
     local iwd=$PWD
     local tmp=$(geocache-tmp $FUNCNAME)
     mkdir -p $tmp && cd $tmp
          
     type $FUNCNAME
-    opticksdata- 
-    #gdb --args OKX4Test --gdmlpath $(opticksdata-j) --g4codegen --csgskiplv 22,32,33
-    #gdb --args OKX4Test --gdmlpath $(opticksdata-j) --g4codegen --csgskiplv 22,32
-    #gdb --args OKX4Test --gdmlpath $(opticksdata-j) --g4codegen --csgskiplv 22 --X4 debug --NPY debug  
-
-    cd $iwd
-}
-
-geocache-j1808-v2()
-{
-    local iwd=$PWD
-    local tmp=$(geocache-tmp $FUNCNAME)
-    mkdir -p $tmp && cd $tmp
-
-    type $FUNCNAME
-    opticksdata- 
-
-    #gdb --args 
-    OKX4Test --gdmlpath $(opticksdata-jv2) --g4codegen --csgskiplv 22 
-
-    ## --X4 debug --NPY debug
-
-    cd $iwd
-}
-
-geocache-j1808-v3()
-{
-    local iwd=$PWD
-    local tmp=$(geocache-tmp $FUNCNAME)
-    mkdir -p $tmp && cd $tmp
-
-    type $FUNCNAME
-    opticksdata- 
-
-    gdb --args \
-    OKX4Test --gdmlpath $(opticksdata-jv3) --csgskiplv 22 
-
-    cd $iwd
-}
-
-
-
-geocache-j1808-v4-()
-{
-    local iwd=$PWD
-    local tmp=$(geocache-tmp $FUNCNAME)
-    mkdir -p $tmp && cd $tmp
-    opticksdata- 
     local dbg
     [ -n "$DBG" ] && dbg="gdb --args"  
-    $dbg OKX4Test --cvd 1 --g4codegen --deletegeocache --gdmlpath $(opticksdata-jv4) $*
+
+    $dbg  OKX4Test --cvd 1 --g4codegen --deletegeocache $*
+
     cd $iwd
 }
 
+geocache-create-notes(){ cat << EON
+$FUNCNAME
+----------------------
 
+This parses the gdml, creates geocache, pops up OpenGL gui, 
+
+EON
+}
+
+
+geocache-j1808(){     opticksdata- ; geocache-create- --gdmlpath $(opticksdata-j)  --X4 debug --NPY debug $*  ; }
+geocache-j1808-v2(){  opticksdata- ; geocache-create- --gdmlpath $(opticksdata-jv2) --csgskiplv 22  ; }
+geocache-j1808-v3(){  opticksdata- ; geocache-create- --gdmlpath $(opticksdata-jv3) --csgskiplv 22  ; }
+geocache-j1808-v3(){  opticksdata- ; geocache-create- --gdmlpath $(opticksdata-jv3) --csgskiplv 22  ; }
+geocache-j1808-v4-(){ opticksdata- ; geocache-create- --gdmlpath $(opticksdata-jv4) $* ; }
+
+geocache-j1808-v4-notes(){ cat << EON
+
+$FUNCNAME
+=========================
+
+The below geocache-j1808-v4-.. functions use the v4 (torus-less) JUNO j1808 GDML geometry
+using OKX4Test to directly create the geocache from the GDML.
+The t1,t2 etc functions vary the volumes of the 20inch PMT by using different csgskiplv, 
+allowing benchmark checks of RTX mode on TITAN V and TITAN RTX with different geometry.  
+
+The export functions setup the OPTICKS_KEY envvar in order to use the geometry. 
+To switch geometry edit the below geocache-bashrc-export function and start a new shell
+by opening a tab. 
+
+See:
+
+    notes/issues/review-analytic-geometry.rst 
+    notes/issues/benchmarks.rst 
+
+EON
+}
 
 geocache-export()
 {
@@ -265,7 +250,7 @@ geocache-export()
     export OPTICKS_KEY=$(${geofunc}-key)
     export OPTICKS_COMMENT=$(${geofunc}-comment)
 
-    #geocache-desc
+    [ -t 1 ] && geocache-desc     ## only when connected to terminal 
 }
 geocache-desc()
 {
@@ -273,6 +258,9 @@ geocache-desc()
     printf "%-16s : %s \n" "OPTICKS_KEY"     $OPTICKS_KEY
     printf "%-16s : %s \n" "OPTICKS_COMMENT" $OPTICKS_COMMENT
 }
+
+geocache-bashrc-export(){   geocache-j1808-v4-t8-export ; }
+#geocache-bashrc-export(){   geocache-j1808-v4-export ; }
 
 
 geocache-j1808-v4-comment(){ echo reproduce-rtx-inversion-skipping-just-lv-22-maskVirtual ; }
@@ -318,52 +306,10 @@ geocache-j1808-v4-t7(){ geocache-j1808-v4- --csgskiplv 22,17,21,20 --runfolder $
 geocache-j1808-v4-t8-comment(){ echo just-21-18-19-outer-pyrex+vacuum-cap-and-remainder-see-notes/issues/review-analytic-geometry.rst ; }
 geocache-j1808-v4-t8-key(){     echo OKX4Test.X4PhysicalVolume.lWorld0x4bc2710_PV.52e273e4ad5423fe2fc8aa44bbf055ec ; }       ## NB this matches geocache-j1808-v4-t3
 geocache-j1808-v4-t8-export(){  geocache-export ${FUNCNAME/-export} ; }
-geocache-j1808-v4-t8(){ geocache-j1808-v4- --csgskiplv 22,17,20 --runfolder $FUNCNAME --runcomment $(${FUNCNAME}-comment) $* ; }
-
-
-#geocache-bashrc-export(){   geocache-j1808-v4-t8-export ; }
-geocache-bashrc-export(){   geocache-j1808-v4-export ; }
+geocache-j1808-v4-t8(){ geocache-j1808-v4- --csgskiplv 22,17,20 --runfolder $FUNCNAME --runcomment $(${FUNCNAME}-comment) --dbg_with_hemi_ellipsoid_bug ; }
 
 
 
-geocache-j1808-notes(){ cat << EON
-$FUNCNAME
-----------------------
-
-With OptiX_600 CUDA 10.1 this parses the gdml, creates geocache, pops up OpenGL gui, 
-switching to ray trace works but as soon as navigate into region where torus is needed
-get the Misaligned address issue, presumably quartic double problem.
-
-Torus strikes, see notes/issues/torus_replacement_on_the_fly.rst for the fix::
-
-    [blyth@localhost issues]$ geocache-j1808
-    geocache-j1808 is a function
-    geocache-j1808 () 
-    { 
-        type \$FUNCNAME;
-        opticksdata-;
-        OKX4Test --gdmlpath \$(opticksdata-j) --g4codegen --csgskiplv 22
-    }
-    2019-04-15 10:45:36.211 INFO  [150689] [main@74]  parsing /home/blyth/local/opticks/opticksdata/export/juno1808/g4_00.gdml
-    G4GDML: Reading '/home/blyth/local/opticks/opticksdata/export/juno1808/g4_00.gdml'...
-    G4GDML: Reading definitions...
-    G4GDML: Reading materials...
-    ...
-
-    019-04-15 10:47:27.086 FATAL [150689] [ContentStyle::setContentStyle@98] ContentStyle norm inst 1 bbox 0 wire 0 asis 0 m_num_content_style 0 NUM_CONTENT_STYLE 5
-    2019-04-15 10:47:32.590 INFO  [150689] [RenderStyle::setRenderStyle@95] RenderStyle R_COMPOSITE
-    2019-04-15 10:47:32.820 INFO  [150689] [OTracer::trace_@128] OTracer::trace  entry_index 0 trace_count 0 resolution_scale 1 size(1920,1080) ZProj.zw (-1.04082,-17316.9) front 0.5824,0.8097,-0.0719
-    terminate called after throwing an instance of 'optix::Exception'
-      what():  Unknown error (Details: Function "RTresult _rtContextLaunch2D(RTcontext, unsigned int, RTsize, RTsize)" caught exception: Encountered a CUDA error: cudaDriver().CuEventSynchronize( m_event ) returned (716): Misaligned address)
-    ^CKilled
-    [blyth@localhost issues]$ 
-
-
-
-
-
-EON
-}
 
 
 geocache-target(){ echo 352854 ; }
@@ -394,7 +340,6 @@ Find targets by geocache-kcd and looking at GNodeLib/GTreePresent.txt eg::
 
 EON
 }
-
 
 
 geocache-view()
@@ -429,7 +374,6 @@ geocache-movie-()
 geocache-movie(){ $FUNCNAME- 2>&1 > /tmp/$FUNCNAME.log ; }
 
 
-
 geocache-gui()
 {
    local dbg
@@ -444,6 +388,7 @@ geocache-gui()
 
    $dbg OKTest \
                 --cvd $cvd \
+                --rtx 1 \
                 --envkey \
                 --xanalytic \
                 --timemax 400 \
@@ -556,8 +501,6 @@ geocache-bench360-notes(){ cat << EON
 EON
 }
 
-
-
 geocache-snap360()
 {
    local cvd=1
@@ -586,16 +529,6 @@ geocache-snap360()
                    $* 
 
 }
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -668,24 +601,23 @@ geocache-tour-()
 
 
 
-geocache-bench(){ geocache-rtxcheck $FUNCNAME $* ; }
+geocache-bench(){          geocache-rtxcheck $FUNCNAME $* ; }
 geocache-bench-()
 {
    type $FUNCNAME
    UseOptiX $*
    local dbg
    [ -n "$DBG" ] && dbg="gdb --args" || dbg=""
-   $dbg OpSnapTest --envkey --target 352851 --eye -1,-1,-1 --snapconfig "steps=5,eyestartz=-1,eyestopz=-0.5" --size 5120,2880,1 --embedded  $* 
+   $dbg OpSnapTest --envkey --target $(geocache-bench-target) --eye -1,-1,-1 --snapconfig "steps=5,eyestartz=-1,eyestopz=-0.5" --size 5120,2880,1 --embedded  $* 
 }
+geocache-bench-target(){ echo ${GEOCACHE_BENCH_TARGET:-352851} ; }   # chimney region default
 geocache-bench-check(){  geocache-bench- --cvd 1 --rtx 0 --runfolder $FUNCNAME --runstamp $(date +%s)  --xanalytic ; }
-
 
 geocache-machinery(){ geocache-rtxcheck $FUNCNAME $* ; }
 geocache-machinery-()
 {
    UseOptiX $* 
 }
-
 
 geocache-rtxcheck()
 {
@@ -707,8 +639,7 @@ geocache-rtxcheck()
 
    $name- --cvd 0,1 --rtx 0 --runfolder $name --runstamp $stamp --runlabel "R0_TITAN_V_AND_TITAN_RTX" $*
 
-   #bench.py $LOCAL_BASE/opticks/results/$name
-   bench.py $TMP/results/$name
+   bench.py --resultsdir $TMP/results --name $name
 }
 
 

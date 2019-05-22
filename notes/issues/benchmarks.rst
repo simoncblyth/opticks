@@ -90,8 +90,8 @@ Note RTX mode one has much faster prelaunch ?
 
 
 
-Reproducibility after moving to better digest and geocache handling
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+triangulated : Reproducibility after moving to better digest and geocache handling
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ::
 
@@ -106,8 +106,8 @@ Reproducibility after moving to better digest and geocache handling
                          R0_TITAN_V      0.144      4.478      1.000           1.827 
 
 
-Disabling ANYHIT for the ray and geometry and geometrygroup
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+triangulated : Disabling ANYHIT for the ray and geometry and geometrygroup
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ::
 
@@ -121,8 +121,8 @@ Disabling ANYHIT for the ray and geometry and geometrygroup
                          R1_TITAN_V      0.127      5.461      0.894 
                          R0_TITAN_V      0.142      6.109      1.000 
 
-Disabling ANYHIT for the ray
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+triangulated : Disabling ANYHIT for the ray
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ::
 
@@ -464,6 +464,26 @@ combination of the slow ones : --xanalytic --enabledmergedmesh 0,2
                        R2_TITAN_RTX      0.488      4.945      0.957 
                          R2_TITAN_V      0.508      5.153      0.998 
                          R1_TITAN_V      0.510      5.166      1.000 
+
+
+
+
+
+
+
+
+Huh : not reproducing issue after fixing the ellipsoid bug : and doing full clean rebuild
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+::
+
+     OpSnapTest --envkey --target 352851 --eye -1,-1,-1 --snapconfig steps=5,eyestartz=-1,eyestopz=-0.5 --size 5120,2880,1 --embedded --cvd 1 --rtx 1 --runfolder geocache-bench --runstamp 1558513009 --runlabel R1_TITAN_RTX --xanalytic
+                    20190522_161649  launchAVG      rfast      rslow      prelaunch000 
+                       R1_TITAN_RTX      0.091      1.000      0.360           2.955 
+           R0_TITAN_V_AND_TITAN_RTX      0.134      1.464      0.527          20.670 
+                         R1_TITAN_V      0.153      1.679      0.604           2.537 
+                         R0_TITAN_V      0.225      2.465      0.887           9.744 
+                       R0_TITAN_RTX      0.254      2.779      1.000          11.203 
 
 
 

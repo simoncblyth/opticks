@@ -21,6 +21,7 @@ class BTimeKeeper ;
 class TorchStepNPY ; 
 class NState ;
 class NSensorList ;
+class NMeta ; 
 
 struct NSlice ;
 struct NSceneConfig ; 
@@ -274,9 +275,9 @@ class OKCORE_API Opticks {
        const char* getGPUMonPath() const ;   
        bool        isGPUMon() const ;  
    public:
-       void        updateRunTxt() ; 
-       BTxt*       getRunTxt() const ; 
-       void        saveRunTxt() const ; 
+       void        updateCacheMeta() ; 
+       void        appendCacheMeta(const char* key, NMeta* obj);
+       void        saveCacheMeta() const ; 
 
        const char* getRunComment() const ;
        int         getRunStamp() const ; 
@@ -561,6 +562,7 @@ class OKCORE_API Opticks {
        BTimeKeeper*         m_timer ; 
        BParameters*         m_parameters ; 
        BTxt*                m_runtxt ;  
+       NMeta*               m_cachemeta ;  
        NSceneConfig*        m_scene_config ; 
        NLODConfig*          m_lod_config ; 
        NSnapConfig*         m_snap_config ; 
