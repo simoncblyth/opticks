@@ -5,7 +5,9 @@
 #include <boost/filesystem.hpp>
 namespace fs = boost::filesystem;
 
-#include "OKConf_Config.hh"
+
+// for the OKCONF_OPTICKS_INSTALL_PREFIX define from OKConf_Config.hh
+#include "OKConf.hh"
 
 #include "SLog.hh"
 #include "SSys.hh"

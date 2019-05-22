@@ -39,7 +39,7 @@ running one is a bad one.  So paths need to be overridden.
 set(OpticksCUDA_VERBOSE YES)
 find_package(OpticksCUDA MODULE QUIET) 
 
-set(OptiX_VERBOSE YES)
+set(OptiX_VERBOSE ON)
 find_package(OptiX       MODULE QUIET) 
 find_package(G4          MODULE QUIET) 
 
@@ -61,10 +61,6 @@ set(OKCONF_COMPUTE_CAPABILITY_INTEGER "${COMPUTE_CAPABILITY}")
 #set(OKCONF_CUDA_NVCC_FLAGS     "${CUDA_NVCC_FLAGS}")
 set(OKCONF_CMAKE_CXX_FLAGS     "${CMAKE_CXX_FLAGS}")
 
-
-# TODO:get rid of the below : adopt the above names
-set(OXRAP_OPTIX_VERSION   "${OptiX_VERSION_INTEGER}")
-set(CFG4_G4VERSION_NUMBER "${G4_VERSION_INTEGER}")
 
 set(OKConf_GENERATED_HEADER  "OKConf_Config.hh")
 

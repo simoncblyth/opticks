@@ -22,10 +22,6 @@
 #cmakedefine OKCONF_CMAKE_CXX_FLAGS   "@OKCONF_CMAKE_CXX_FLAGS@"
 
 
-// backward compat  TODO: adopt the new OKCONF names and remove these
-#cmakedefine OXRAP_OPTIX_VERSION @OXRAP_OPTIX_VERSION@
-#cmakedefine CFG4_G4VERSION_NUMBER @CFG4_G4VERSION_NUMBER@
-
 
 
 

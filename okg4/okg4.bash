@@ -1,5 +1,4 @@
-okg4-src(){      echo okg4/okg4.bash ; }
-okg4-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(okg4-src)} ; }
+okg4-source(){   echo $BASH_SOURCE ; }
 okg4-vi(){       vi $(okg4-source) ; }
 okg4-usage(){ cat << EOU
 

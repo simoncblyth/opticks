@@ -1,7 +1,8 @@
+
+#include "OKConf.hh"
+
 #include "OpticksBufferSpec.hh"
 #include "OpticksEvent.hh"
-//#include "OpticksCMakeConfig.hh"
-#include "OKConf_Config.hh"
 #include "OpticksSwitches.h"
 
 #include "OPTICKS_LOG.hh"
@@ -11,22 +12,15 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv);
 
-#ifdef OXRAP_OPTIX_VERSION    
-    LOG(info) << "OXRAP_OPTIX_VERSION : " << OXRAP_OPTIX_VERSION ;
-#endif
+    LOG(info) << "OKCONF_OPTIX_VERSION_INTEGER : " << OKCONF_OPTIX_VERSION_INTEGER ;
+    LOG(info) << "OKCONF_OPTIX_VERSION_MAJOR   : " << OKCONF_OPTIX_VERSION_MAJOR ;
+    LOG(info) << "OKCONF_OPTIX_VERSION_MINOR   : " << OKCONF_OPTIX_VERSION_MINOR ;
+    LOG(info) << "OKCONF_OPTIX_VERSION_MICRO   : " << OKCONF_OPTIX_VERSION_MICRO ;
 
-#ifdef CFG4_G4VERSION_NUMBER
-    LOG(info) << "CFG4_G4VERSION_NUMBER : " << CFG4_G4VERSION_NUMBER ;
-#endif
-
-#ifdef OKCONF_OPTIX_VERSION_INTEGER
-    LOG(info) << "OKCONF_OPTIX_VERSION_INTEGER  : " << OKCONF_OPTIX_VERSION_INTEGER ; 
-#endif
 
 #ifdef OKCONF_GEANT4_VERSION_INTEGER
     LOG(info) << "OKCONF_GEANT4_VERSION_INTEGER : " << OKCONF_GEANT4_VERSION_INTEGER ; 
 #endif
-
 
 #ifdef WITH_SEED_BUFFER
     LOG(info) << "WITH_SEED_BUFFER" ;

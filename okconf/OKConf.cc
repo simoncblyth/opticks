@@ -51,14 +51,24 @@ int OKConf::Check()
 void OKConf::Dump(const char* msg)
 {
     std::cout << msg << std::endl ; 
+    std::cout << std::setw(50) << "OKConf::OpticksInstallPrefix() "    << OKConf::OpticksInstallPrefix() << std::endl ; 
+    std::cout << std::setw(50) << "OKConf::CMAKE_CXX_FLAGS() "         << OKConf::CMAKE_CXX_FLAGS() << std::endl ; 
     std::cout << std::setw(50) << "OKConf::CUDAVersionInteger() "      << OKConf::CUDAVersionInteger() << std::endl ; 
-    std::cout << std::setw(50) << "OKConf::OptiXVersionInteger() "     << OKConf::OptiXVersionInteger() << std::endl ; 
     std::cout << std::setw(50) << "OKConf::ComputeCapabilityInteger() "<< OKConf::ComputeCapabilityInteger() << std::endl ; 
     //std::cout << std::setw(50) << "OKConf::CUDA_NVCC_FLAGS() "         << OKConf::CUDA_NVCC_FLAGS() << std::endl ; 
-    std::cout << std::setw(50) << "OKConf::CMAKE_CXX_FLAGS() "         << OKConf::CMAKE_CXX_FLAGS() << std::endl ; 
+
     std::cout << std::setw(50) << "OKConf::OptiXInstallDir() "         << OKConf::OptiXInstallDir() << std::endl ; 
+    std::cout << std::setw(50) << "OKCONF_OPTIX_VERSION_INTEGER "      << OKCONF_OPTIX_VERSION_INTEGER << std::endl ; 
+    std::cout << std::setw(50) << "OKConf::OptiXVersionInteger() "     << OKConf::OptiXVersionInteger() << std::endl ; 
+    std::cout << std::setw(50) << "OKCONF_OPTIX_VERSION_MAJOR   "      << OKCONF_OPTIX_VERSION_MAJOR << std::endl ; 
+    std::cout << std::setw(50) << "OKConf::OptiXVersionMajor() "       << OKConf::OptiXVersionMajor() << std::endl ; 
+    std::cout << std::setw(50) << "OKCONF_OPTIX_VERSION_MINOR   "      << OKCONF_OPTIX_VERSION_MINOR << std::endl ; 
+    std::cout << std::setw(50) << "OKConf::OptiXVersionMinor() "       << OKConf::OptiXVersionMinor() << std::endl ; 
+    std::cout << std::setw(50) << "OKCONF_OPTIX_VERSION_MICRO   "      << OKCONF_OPTIX_VERSION_MICRO << std::endl ; 
+    std::cout << std::setw(50) << "OKConf::OptiXVersionMicro() "       << OKConf::OptiXVersionMicro() << std::endl ; 
+
+
     std::cout << std::setw(50) << "OKConf::Geant4VersionInteger() "    << OKConf::Geant4VersionInteger() << std::endl ; 
-    std::cout << std::setw(50) << "OKConf::OpticksInstallPrefix() "    << OKConf::OpticksInstallPrefix() << std::endl ; 
     std::cout << std::setw(50) << "OKConf::ShaderDir()            "    << OKConf::ShaderDir() << std::endl ; 
     std::cout << std::endl ; 
 }
@@ -72,7 +82,7 @@ unsigned OKConf::CUDAVersionInteger()
 #endif    
 }
 
-unsigned OKConf::OptiXVersionInteger()
+int OKConf::OptiXVersionInteger()
 {
 #ifdef OKCONF_OPTIX_VERSION_INTEGER
    return OKCONF_OPTIX_VERSION_INTEGER ;
@@ -80,6 +90,35 @@ unsigned OKConf::OptiXVersionInteger()
    return 0 ; 
 #endif    
 }
+int OKConf::OptiXVersionMajor()
+{
+#ifdef OKCONF_OPTIX_VERSION_MAJOR
+   return OKCONF_OPTIX_VERSION_MAJOR ;
+#else 
+   return 0 ; 
+#endif    
+}
+int OKConf::OptiXVersionMinor()
+{
+#ifdef OKCONF_OPTIX_VERSION_MINOR
+   return OKCONF_OPTIX_VERSION_MINOR ;
+#else 
+   return 0 ; 
+#endif    
+}
+int OKConf::OptiXVersionMicro()
+{
+#ifdef OKCONF_OPTIX_VERSION_MICRO
+   return OKCONF_OPTIX_VERSION_MICRO ;
+#else 
+   return 0 ; 
+#endif    
+}
+
+
+
+
+
 
 unsigned OKConf::Geant4VersionInteger()
 {

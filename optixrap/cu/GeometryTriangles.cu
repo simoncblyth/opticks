@@ -1,6 +1,8 @@
 #include <optix.h>
 #include <optixu/optixu_math_namespace.h>
 
+#if OPTIX_VERSION >= 60000
+
 using namespace optix;
 
 // inputs from OGeo
@@ -34,5 +36,7 @@ RT_PROGRAM void triangle_attributes()
     instanceIdentity = identity ;
 }
 
+
+#endif
 
 

@@ -52,7 +52,6 @@ set(TEST_SOURCES
 
 set(_TEST_SOURCES
    UnwindTest.cc
-   OpticksCMakeConfigTest.cc
 )
 
 

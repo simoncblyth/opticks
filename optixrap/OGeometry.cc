@@ -6,6 +6,11 @@ bool OGeometry::isGeometry() const
 }
 bool OGeometry::isGeometryTriangles() const
 {
+#if OPTIX_VERSION_MAJOR >= 6 
     return gt.get() != NULL ; 
+#else
+    return false ; 
+#endif
+
 }
 

@@ -66,7 +66,10 @@ class OXRAP_API OContext {
 
      public:
             static OContext* Create(Opticks* ok, const char* cmake_target="OptiXRap") ; 
+
+#if OPTIX_VERSION_MAJOR >= 6
             static void InitRTX(int rtxmode);
+#endif
             static void CheckDevices();
             ~OContext();
      private:

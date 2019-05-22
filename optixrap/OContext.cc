@@ -185,7 +185,12 @@ void OContext::CheckDevices()
 OContext* OContext::Create(Opticks* ok, const char* cmake_target)
 {
     int rtxmode = ok->getRTX();
+#if OPTIX_VERSION_MAJOR >= 6
     InitRTX( rtxmode ); 
+#else
+    assert( rtxmode == 0 && "Cannot use --rtx 1/2/-1 options prior to OptiX 6.0.0 " ) ;
+#endif
+
     CheckDevices();
 
     LOG(verbose) << "optix::Context::create() START " ; 
@@ -204,7 +209,7 @@ OContext* OContext::Create(Opticks* ok, const char* cmake_target)
 
 
 
-
+#if OPTIX_VERSION_MAJOR >= 6
 void OContext::InitRTX(int rtxmode)  // static
 {
     if(rtxmode == -1)
@@ -226,7 +231,7 @@ void OContext::InitRTX(int rtxmode)  // static
         assert( rtx2 == rtx );
     }
 }
-
+#endif
 
 
 

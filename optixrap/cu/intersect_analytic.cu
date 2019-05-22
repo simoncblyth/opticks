@@ -72,7 +72,7 @@ rtDeclareVariable(float3, shading_normal, attribute shading_normal, );
 
 #define WITH_PARTLIST 1 
 //#define WITH_CUBIC 1 
-#define WITH_TORUS 1 
+//#define WITH_TORUS 1 
 
 // some resource issue, canna handle both cubic + torus together 
 //  currently have only 2 geometry types "analytic" and "triangulated"

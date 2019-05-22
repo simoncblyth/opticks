@@ -283,11 +283,20 @@ use an older OptiX version contemporary with the CUDA version that your kernel s
 
 Version combinations that have been used:
 
-current
-   CUDA 9.1, OptiX 5.0.1
+*current*
+   CUDA 10.1, OptiX 6.0.0
 
-earlier
+*previous*
+   CUDA 9.1, OptiX 5.1.1
+   CUDA 9.1, OptiX 5.1.0
+
+*earlier* 
    CUDA 7.0, OptiX 3.80
+
+
+The *current* version combination is regularly tested, the *previous* one
+relies on your bug reports https://groups.io/g/opticks/topics to keep it working. 
+Any issues with *earlier* version combinations will not be addressed.  
 
 
 The reason for the extremes of caution regarding version combinations of drivers 
@@ -295,8 +304,46 @@ is that the interface to the GPU is via kernel extensions where if anything goes
 wrong there is no safety net. A bad kernel extension will cause kernel panics, 
 your machine crashes and continue to crash until the bad driver is removed 
 (on macOS the removal can be done by resetting NVRAM).
+
+
+Using a non-standard OptiX version
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Opticks tends to adopt new OptiX versions very soon after they become
+available approximately twice per year. This is because OptiX continues 
+to improve rapidly. Updating OptiX typically also requires an update of 
+the CUDA version and the NVIDIA driver.  
+
+Sometimes due to the suitable NVIDIA driver not yet being installed by 
+your system admin it is necessary to use older OptiX+CUDA versions.  
+Opticks aims to allow this for recent version combinations only.
+
+Extract from .bashrc::
+
+    # The location to look for OptiX libs defaults to $(opticks-prefix)/externals/OptiX
+    # to override that while testing a non-standard OptiX version set the OPTICKS_OPTIX_INSTALL_DIR envvar 
+    # which overrides the default in bash function opticks-optix-install-dir
+    #
+    unset OPTICKS_OPTIX_INSTALL_DIR
+    export OPTICKS_OPTIX_INSTALL_DIR=/usr/local/OptiX_511  
+
+    export CUDA_VERSION=10.1
+    unset LD_LIBRARY_PATH
+    export LD_LIBRARY_PATH=/usr/local/cuda-${CUDA_VERSION}/lib64
+
+    # Normally Opticks executables find the OptiX libs via the RPATH 
+    #  "$ORIGIN/../lib:$ORIGIN/../lib64:$ORIGIN/../externals/lib:$ORIGIN/../externals/lib64:$ORIGIN/../externals/OptiX/lib64"
+    #
+    # when using a non-standard OptiX version (older or newer) 
+    # it is necessary to append to LD_LIBRARY_PATH as penance for being non-standard
+    #
+    [ -n "$OPTICKS_OPTIX_INSTALL_DIR" ] && LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${OPTICKS_OPTIX_INSTALL_DIR}/lib64
+
+     
+
+
  
-Testing CUDA and OptiX Installs and nvcc toolchain
+Testin CUDA and OptiX Installs and nvcc toolchain
 -------------------------------------------------------
 
 Before trying to install Opticks check your CUDA and OptiX installs:

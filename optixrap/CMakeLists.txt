@@ -12,6 +12,7 @@ endif()
 
 find_package(OKConf     REQUIRED CONFIG)  
 
+
 set(OptiX_VERBOSE ON)
 find_package(OptiX      REQUIRED MODULE)   
 
@@ -139,6 +140,12 @@ set(CU_HEADERS
     cu/photon.h
 )
 
+
+
+
+
+
+
 # setup nvcc compilation of OptiX RTProgram sources into PTX and CUDA sources into OBJ
 CUDA_WRAP_SRCS( ${name} PTX _generated_PTX_files ${CU_SOURCES} )
 CUDA_WRAP_SRCS( ${name} OBJ _generated_OBJ_files ${SOURCES} )  
@@ -168,6 +175,10 @@ generated config which is used by consumers of the exported target.:
 Thus as finding OKConf has the side effect of defining the 
 OptiX_INSTALL_DIR that is needed to find OptiX the OKConf must 
 come before the OptiX.
+
+
+
+
 #]=]
 
 target_compile_definitions( ${name} PUBLIC OPTICKS_OXRAP )

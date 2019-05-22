@@ -552,7 +552,11 @@ OGeometry* OGeo::makeOGeometry(GMergedMesh* mergedmesh, unsigned lod)
     }
     else if(ugeocode == OpticksConst::GEOCODE_GEOMETRYTRIANGLES)
     {
+#if OPTIX_VERSION_MAJOR >= 6
         ogeom->gt = makeGeometryTriangles(mergedmesh, lod);
+#else
+        assert(0 && "Require at least OptiX 6.0.0 to use GeometryTriangles "); 
+#endif
     }
     else
     {

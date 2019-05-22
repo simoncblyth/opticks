@@ -1,13 +1,13 @@
 #include "cuda.h"
 
-#include "OKConf_Config.hh"
+#include "OKConf.hh"
 
-#include "PLOG.hh"
+#include "OPTICKS_LOG.hh"
 #include "SSys.hh"
 
 int main(int argc, char** argv)
 {
-    PLOG_(argc, argv);
+    OPTICKS_LOG(argc, argv);
 
 #if CUDA_VERSION != OKCONF_CUDA_API_VERSION_INTEGER
    #error FATAL CUDA VERSION INCONSISTENCY 

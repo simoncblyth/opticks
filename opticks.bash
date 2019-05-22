@@ -1532,6 +1532,7 @@ opnovice-(){ . $(opticks-home)/notes/geant4/opnovice.bash      && opnovice-env $
 
 ### opticks CMake projects all residing in top level folders ##
 
+okconf-(){          . $(opticks-home)/okconf/okconf.bash && okconf-env $* ; }
 sysrap-(){          . $(opticks-home)/sysrap/sysrap.bash && sysrap-env $* ; }
 brap-(){            . $(opticks-home)/boostrap/brap.bash && brap-env $* ; }
 npy-(){             . $(opticks-home)/npy/npy.bash && npy-env $* ; }

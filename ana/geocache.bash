@@ -265,7 +265,7 @@ geocache-export()
     export OPTICKS_KEY=$(${geofunc}-key)
     export OPTICKS_COMMENT=$(${geofunc}-comment)
 
-    geocache-desc
+    #geocache-desc
 }
 geocache-desc()
 {
