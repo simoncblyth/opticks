@@ -49,7 +49,10 @@ om--
    shorter name for om-make
 
 om-install
-    configures, builds and installs by doing both om-conf and om-make 
+   configures, builds and installs by doing both om-conf and om-make 
+
+om-cleaninstall
+   cleans, configures, builds and installs by doing om-clean, om-conf and om-make 
 
 om-test
    runs ctests
@@ -269,6 +272,7 @@ om-visit-all(){     om-all ${FUNCNAME/-all} $* ; }
 om-conf-all(){      om-all ${FUNCNAME/-all} $* ; }
 om-make-all(){      om-all ${FUNCNAME/-all} $* ; }
 om-install-all(){   om-all ${FUNCNAME/-all} $* ; }
+om-cleaninstall-all(){   om-all ${FUNCNAME/-all} $* ; }
 om-test-all(){      om-all ${FUNCNAME/-all} $* ; om-testlog ; }
 om-echo-all(){      om-all ${FUNCNAME/-all} $* ; }
 om-clean-all(){     om-all ${FUNCNAME/-all} $* ; }
@@ -282,6 +286,7 @@ om-conf-xcode(){ OPTICKS_CMAKE_GENERATOR=Xcode om-conf ; }
 om-conf(){    om-one-or-all conf $* ; }
 om-make(){    om-one-or-all make $* ; }
 om-install(){ om-one-or-all install $* ; }
+om-cleaninstall(){ om-one-or-all cleaninstall $* ; }
 om-visit(){   om-one-or-all visit $* ; }
 om-test(){    om-one-or-all test $* ; }
 om-echo(){    om-one-or-all echo $* ; }
@@ -380,6 +385,17 @@ om-install-one()
     om-conf-one $*
     om-make-one $*
 }
+
+om-cleaninstall-one()
+{
+    om-clean-one $*
+    om-visit-one $*
+    om-conf-one $*
+    om-make-one $*
+}
+
+
+
 
 om-visit-one()
 {

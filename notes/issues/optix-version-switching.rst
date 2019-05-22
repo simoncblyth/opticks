@@ -10,7 +10,10 @@ scratch instructions
     ## the location to look for OptiX defaults to $(opticks-prefix)/externals/OptiX
     ## to override that while testing another OptiX version set the below envvar 
     unset OPTICKS_OPTIX_INSTALL_DIR
-    export OPTICKS_OPTIX_INSTALL_DIR=/usr/local/OptiX_511  ## override opticks-optix-install-dir 
+    export OPTICKS_OPTIX_INSTALL_DIR=/usr/local/OptiX_511   
+    [ -n "$OPTICKS_OPTIX_INSTALL_DIR" ] && LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${OPTICKS_OPTIX_INSTALL_DIR}/lib64
+
+* if returning to standard OptiX version can comment the above lines  
 
 
 2. start new shell, and do a clean OKConf reconfigure::
@@ -45,9 +48,15 @@ scratch instructions
 ::
 
     cd ~/opticks
-    om-clean
-    om-conf
-    om-make
+    om-cleaninstall
+
+
+* NB trying to do the faster om-- fails to recompile and link the executables 
+  to use the different OptiX libraries
+
+* actually it is sufficient to just do steps 1 and 4 
+  however following the above steps allows fast cycling on OKConf to make sure 
+  you are getting the correct version prior to the full build
 
 
 
