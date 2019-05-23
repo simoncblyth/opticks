@@ -98,6 +98,7 @@ __device__ void csdump( CerenkovStep& cs )
        cs.NumPhotons 
        );
 
+#ifdef WITH_PRINT
     rtPrintf("x0 %f %f %f  t0 %f \n", 
        cs.x0.x, 
        cs.x0.y, 
@@ -139,6 +140,7 @@ __device__ void csdump( CerenkovStep& cs )
        cs.p0.y, 
        cs.p0.z
        );
+#endif
 }
 
 
@@ -148,16 +150,21 @@ __device__ void cscheck(CerenkovStep& cs)
     float nmmi = boundary_sample_reciprocal_domain(0.5f);   
     float nmhi = boundary_sample_reciprocal_domain(1.0f);
 
+#ifdef WITH_PRINT
     rtPrintf("cscheck sample wavelength lo/mi/hi   %f %f %f \n", nmlo,nmmi,nmhi);   
+#endif
 
     float4 prlo = boundary_lookup(nmlo, cs.MaterialIndex, 0);
     float4 prmi = boundary_lookup(nmmi, cs.MaterialIndex, 0);
     float4 prhi = boundary_lookup(nmhi, cs.MaterialIndex, 0);
 
+
+#ifdef WITH_PRINT
     rtPrintf("cscheck sample rindex lo/mi/hi   %f %f %f \n", prlo.x,prmi.x,prhi.x);   
     rtPrintf("cscheck sample abslen lo/mi/hi   %f %f %f \n", prlo.y,prmi.y,prhi.y);   
     rtPrintf("cscheck sample scalen lo/mi/hi   %f %f %f \n", prlo.z,prmi.z,prhi.z);   
     rtPrintf("cscheck sample reempr lo/mi/hi   %f %f %f \n", prlo.w,prmi.w,prhi.w);   
+#endif
 
 /*
     float c[3];
@@ -189,7 +196,7 @@ __device__ void csdebug( CerenkovStep& cs )
 }
 
 
-#define ALIGN_DEBUG 1 
+//#define ALIGN_DEBUG 1 
 
 __device__ void
 generate_cerenkov_photon(Photon& p, CerenkovStep& cs, curandState &rng)
@@ -235,7 +242,9 @@ generate_cerenkov_photon(Photon& p, CerenkovStep& cs, curandState &rng)
 
         sampledRI = props.x ; 
 
+#ifdef ALIGN_DEBUG
         rtPrintf("gcp.u0 %10.5f wavelength %10.5f sampledRI %10.5f \n", u, wavelength, sampledRI  ); 
+#endif
 
         cosTheta = cs.BetaInverse / sampledRI;  
 
@@ -245,7 +254,9 @@ generate_cerenkov_photon(Photon& p, CerenkovStep& cs, curandState &rng)
 
         u_maxSin2 = u*cs.maxSin2 ;
 
+#ifdef ALIGN_DEBUG
         rtPrintf("gcp.u1 %10.5f u_maxSin2 %10.5f sin2Theta %10.5f \n", u, u_maxSin2, sin2Theta  ); 
+#endif
 
   
       } while ( u_maxSin2 > sin2Theta);
@@ -278,10 +289,12 @@ generate_cerenkov_photon(Photon& p, CerenkovStep& cs, curandState &rng)
       rotateUz(photonPolarization, cs.p0);
       p.polarization = photonPolarization ;
 
+#ifdef ALIGN_DEBUG
       rtPrintf("gcp.u2   %10.5f phi %10.5f dir ( %10.5f %10.5f %10.5f ) pol ( %10.5f %10.5f %10.5f )  \n", u, phi, 
               p.direction.x, p.direction.y, p.direction.z ,
               p.polarization.x, p.polarization.y, p.polarization.z
            );   
+#endif
      
       float fraction ; 
       float delta ;
@@ -298,13 +311,17 @@ generate_cerenkov_photon(Photon& p, CerenkovStep& cs, curandState &rng)
 
           NumberOfPhotons = cs.MeanNumberOfPhotons1 - fraction * DeltaN  ;
 
+#ifdef ALIGN_DEBUG
           rtPrintf("gcp.u3 %10.5f delta %10.5f NumberOfPhotons %10.5f  \n", fraction, delta, NumberOfPhotons  ) ;
+#endif
 
           u = curand_uniform(&rng) ; 
 
           N = u * cs.MeanNumberOfPhotonsMax ;
 
+#ifdef ALIGN_DEBUG
           rtPrintf("gcp.u4 %10.5f N %10.5f  \n", u, N  ); 
+#endif
 
 
       }  while (N > NumberOfPhotons);
@@ -317,7 +334,9 @@ generate_cerenkov_photon(Photon& p, CerenkovStep& cs, curandState &rng)
 
       p.position = cs.x0 + fraction * cs.DeltaPosition ; 
 
+#ifdef ALIGN_DEBUG
       rtPrintf("gcp.post ( %10.5f %10.5f %10.5f : %10.5f )  \n", p.position.x, p.position.y, p.position.z, p.time  ); 
+#endif
 
 
       p.weight = cs.weight ;
@@ -326,8 +345,6 @@ generate_cerenkov_photon(Photon& p, CerenkovStep& cs, curandState &rng)
       p.flags.u.y = 0 ;
       p.flags.u.z = 0 ;
       p.flags.u.w = 0 ;
-
-
 
 }
 

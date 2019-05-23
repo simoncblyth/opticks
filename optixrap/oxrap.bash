@@ -545,7 +545,7 @@ oxrap---(){     touch $(oxrap-apihh) ; oxrap--  ; }
 
 oxrap-wipe(){ local bdir=$(oxrap-bdir) ; rm -rf $bdir ; } 
 
-oxrap--(){                   opticks-- $(oxrap-bdir) ; } 
+oxrap--(){                   opticks-- $(oxrap-bdir) ; oxrap-f64 ; } 
 oxrap-t(){                   opticks-t $(oxrap-bdir) $* ; } 
 oxrap-genproj() { oxrap-scd ; opticks-genproj $(oxrap-name) $(oxrap-tag) ; } 
 oxrap-gentest() { oxrap-tcd ; opticks-gentest ${1:-OExample} $(oxrap-tag) ; } 
@@ -563,6 +563,18 @@ oxrap-rmptx(){
    rm $(opticks-prefix)/ptx/*.ptx
 }
 
+
+oxrap-f64-notes(){ cat << EON
+$FUNCNAME
+====================
+
+see ptx- ptx-vi
+
+
+EON
+}
+
+oxrap-f64(){ ptx.py $(opticks-prefix)/installcache/PTX --exclude exception $* | c++filt ; }
 
 
 ################# OLD FUNCS ####################
@@ -596,6 +608,15 @@ oxrap-run(){
    oxrap-export
    $bin $*
 }
+
+
+
+
+
+
+
+
+
 
 
 oxrap-ptxs(){

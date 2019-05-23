@@ -28,8 +28,6 @@ static __device__ __inline__ float boundary_sample_reciprocal_domain_v3(const fl
 }
 
 
-
-
 static __device__ __inline__ float boundary_sample_domain(const float& u)
 {
     // return wavelength, from uniform sampling of wavelength domain

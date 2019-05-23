@@ -699,7 +699,9 @@ void evaluative_csg( const Prim& prim, const uint4& identity )
 
                 if(!(firstLeft ^ secondLeft))
                 {
+#ifdef WITH_PRINT
                     rtPrintf("[%5d]evaluative_csg ERROR_XOR_SIDE nodeIdx %4d typecode %d tl %10.3f tr %10.3f sl %d sr %d \n", launch_index.x, nodeIdx, typecode, csg.data[csg.curr].w, csg.data[csg.curr-1].w, firstLeft, secondLeft );
+#endif
                     ierr |= ERROR_XOR_SIDE ; 
                     break ; 
                 }
@@ -1100,11 +1102,23 @@ void intersect_csg( const Prim& prim, const uint4& identity )
 
     //rtPrintf("intersect_csg partOffset %u numParts %u numInternalNodes %u primIdx_ %u height %u postorder %llx ierr %x \n", partOffset, numParts, numInternalNodes, primIdx_, height, postorder, ierr );
     if(ierr != 0)
-    rtPrintf("intersect_csg u ierr %4x tloop %3d launch_index (%5d,%5d) li.x(26) %2d ray.direction (%10.3f,%10.3f,%10.3f) ray.origin (%10.3f,%10.3f,%10.3f)   \n",
-          ierr, tloop, launch_index.x, launch_index.y,  launch_index.x % 26,
-          ray.direction.x, ray.direction.y, ray.direction.z,
-          ray.origin.x, ray.origin.y, ray.origin.z
-      );
+    {
+
+
+        rtPrintf("intersect_csg u ierr %4x tloop %3d launch_index (%5d,%5d) li.x(26) %2d  \n",
+              ierr, tloop, launch_index.x, launch_index.y,  launch_index.x % 26
+          );
+
+#ifdef WITH_PRINT
+        rtPrintf("intersect_csg u ierr %4x tloop %3d launch_index (%5d,%5d) li.x(26) %2d ray.direction (%10.3f,%10.3f,%10.3f) ray.origin (%10.3f,%10.3f,%10.3f)   \n",
+              ierr, tloop, launch_index.x, launch_index.y,  launch_index.x % 26,
+              ray.direction.x, ray.direction.y, ray.direction.z,
+              ray.origin.x, ray.origin.y, ray.origin.z
+          );
+#endif
+
+    } 
+
 
 }   // intersect_csg
 

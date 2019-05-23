@@ -1,7 +1,5 @@
 #pragma once
 
-
-
 /*
 propagate_to_boundary absorb/scatter/sail ? 
 =============================================
@@ -67,9 +65,16 @@ __device__ int propagate_to_boundary( Photon& p, State& s, curandState &rng)
     float u_scattering = curand_uniform(&rng) ;
     float u_absorption = curand_uniform(&rng) ;
 
+#ifdef WITH_LOGDOUBLE
+    //  these two doubles brings about 100 lines of PTX with .f64
+    //  see notes/issues/AB_SC_Position_Time_mismatch.rst      
     float scattering_distance = -s.material1.z*log(double(u_scattering)) ;   // .z:scattering_length
     float absorption_distance = -s.material1.y*log(double(u_absorption)) ;   // .y:absorption_length 
-    //  see notes/issues/AB_SC_Position_Time_mismatch.rst
+#else
+    float scattering_distance = -s.material1.z*logf(u_scattering) ;   // .z:scattering_length
+    float absorption_distance = -s.material1.y*logf(u_absorption) ;   // .y:absorption_length 
+#endif
+
 #else
     float scattering_distance = -s.material1.z*logf(curand_uniform(&rng));   // .z:scattering_length
     float absorption_distance = -s.material1.y*logf(curand_uniform(&rng));   // .y:absorption_length
@@ -640,12 +645,5 @@ propagate_at_surface(Photon &p, State &s, curandState &rng)
         return CONTINUE;
     }
 }
-
-
-
-
-
-
-
 
 

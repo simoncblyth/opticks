@@ -1,14 +1,11 @@
 #pragma once
 
 /**
-
 http://www.nat.vu.nl/en/sec/atom/Publications/pdf/rayleigh.pdf
 
  Lord Rayleigh, Philos. Mag. 47, 375 (1899).
 
-
 **/
-
 
 #include "random.h"
 #include "rotateUz.h"
@@ -38,6 +35,7 @@ __device__ void rayleigh_scatter_align(Photon &p, curandState &rng)
         float u4 = curand_uniform(&rng) ;  
 
 #ifdef WITH_ALIGN_DEV_DEBUG
+
         rtPrintf("rayleigh_scatter_align.do u_OpRayleigh:%.9g \n", u0);
         rtPrintf("rayleigh_scatter_align.do u_OpRayleigh:%.9g \n", u1);
         rtPrintf("rayleigh_scatter_align.do u_OpRayleigh:%.9g \n", u2);

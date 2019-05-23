@@ -7,11 +7,19 @@ rtDeclareVariable(uint2, launch_index, rtLaunchIndex, );
 rtDeclareVariable(uint2, launch_dim,   rtLaunchDim, );
 
 
+#define WITH_PRINT 1
+
+
 RT_PROGRAM void bufferTest()
 {
      unsigned long long index = launch_index.x ;
      float4 val = in_buffer[index] ; 
-     rtPrintf("//bufferTest llu:%llu x %10.3f y %10.3f z %10.3f w %10.3f \n", index, val.x, val.y, val.z, val.w   );
+
+#ifdef WITH_PRINT
+     rtPrintf("//bufferTest llu:%llu  \n", index );   // <-- no .f64 from this
+     //rtPrintf("//bufferTest llu:%llu x %10.3f y %10.3f z %10.3f w %10.3f \n", index, val.x, val.y, val.z, val.w   );  // <-- this causes .f64 in the PTX
+#endif
+
      out_buffer[index] = val ; 
 }
 
@@ -30,6 +38,8 @@ RT_PROGRAM void printTest1()
 RT_PROGRAM void exception()
 {
     rtPrintExceptionDetails();
+
+
 }
 
 

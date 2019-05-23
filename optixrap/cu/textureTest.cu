@@ -7,6 +7,8 @@ using namespace optix;
 
 //#include "wavelength_lookup.h"
 
+//#define WITH_PRINT 1
+
 
 rtTextureSampler<float, 2>  reemission_texture ;
 rtDeclareVariable(float4, reemission_domain, , );
@@ -31,11 +33,13 @@ static __device__ __inline__ void reemission_check()
     float nm_8 = reemission_lookup(0.008f); 
     float nm_9 = reemission_lookup(0.009f); 
 
-    
+#ifdef WITH_PRINT
     rtPrintf("reemission_check nm_0:9    %10.3f %10.3f %10.3f %10.3f %10.3f    %10.3f %10.3f %10.3f %10.3f %10.3f  \n", 
            nm_0, nm_1, nm_2, nm_3, nm_4,
            nm_5, nm_6, nm_7, nm_7, nm_9
          );
+#endif
+
 
 /*
 OptiX 400 : forced different texture params, access needs debug... getting crazy:
@@ -57,7 +61,9 @@ static __device__ __inline__ void reemission_lookup_test(float u0, float u1, flo
     {
         float nm0 = reemission_lookup(u);
         float nm1 = reemission_lookup(u);
+#ifdef WITH_PRINT
         rtPrintf("  reemission_lookup(%10.3f) ->  %10.3f nm0   %10.3f nm1  \n", u, nm0, nm1 );
+#endif
     }
 }
 

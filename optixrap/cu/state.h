@@ -69,12 +69,14 @@ __device__ void fill_state( State& s, int boundary, uint4 identity, float wavele
 
 __device__ void  dump_state( State& s)
 {
+#ifdef WITH_PRINT
     rtPrintf(" dump_state:material1       %10.4f %10.4f %10.4f %10.4f ri/al/sl/rp \n", s.material1.x, s.material1.y, s.material1.z, s.material1.w );
     rtPrintf(" dump_state:material2       %10.4f %10.4f %10.4f %10.4f ri/al/sl/rp \n", s.material2.x, s.material2.y, s.material2.z, s.material2.w );
     rtPrintf(" dump_state:surface         %10.4f %10.4f %10.4f %10.4f dt/ab/rs/rd \n", s.surface.x, s.surface.y, s.surface.z, s.surface.w );
     rtPrintf(" dump_state:optical         %10u %10u %10u %10i ix/ty/fi/va \n", s.optical.x, s.optical.y, s.optical.z, s.optical.w );
     rtPrintf(" dump_state:index           %10u %10u %10u %10i m1/m2/su/se \n", s.index.x  , s.index.y,   s.index.z,   s.index.w );
     rtPrintf(" dump_state:identity        %10u %10u %10u %10i no/me/bd/se \n", s.identity.x  , s.identity.y,   s.identity.z,   s.identity.w );
+#endif
 }
 
 

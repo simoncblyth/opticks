@@ -92,6 +92,8 @@ __device__ void ssdump( ScintillationStep& ss )
        ss.NumPhotons 
        );
 
+#ifdef WITH_PRINT
+
     rtPrintf("x0 %f %f %f  t0 %f \n", 
        ss.x0.x, 
        ss.x0.y, 
@@ -132,17 +134,20 @@ __device__ void ssdump( ScintillationStep& ss )
        ss.p0.y, 
        ss.p0.z
        );
+
+#endif
 }
 
 
 __device__ void sscheck(ScintillationStep& ss)
 {
-
+#ifdef WITH_PRINT
     float nmlo = boundary_sample_domain(0.f);
     float nmmi = boundary_sample_domain(0.5f);   
     float nmhi = boundary_sample_domain(1.0f);
 
     rtPrintf("sscheck sample wavelength lo/mi/hi   %f %f %f \n", nmlo,nmmi,nmhi);   
+#endif
 }
 
 

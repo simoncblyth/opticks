@@ -90,11 +90,9 @@ int main(int argc, char** argv)
     OpticksBufferControl::Add( out_npy->getBufferControlPtr(), "OPTIX_OUTPUT_ONLY,COMPUTE_MODE" );  // COMPUTE_MODE needed to effect the download : poor name ?
 
 
-    bool with_top = false ; 
-    bool verbose = true ; 
 
-    optix::Context context = optix::Context::create();
-    OContext ctx(context, &ok, with_top, verbose, cmake_target );
+    OContext* ctx = OContext::Create(&ok, cmake_target );
+    optix::Context context = ctx->getContext();
 
 
 /*
@@ -112,12 +110,12 @@ int main(int argc, char** argv)
    */
 
    bool defer = true ; 
-   unsigned entry_point_index = ctx.addEntry( cu_name, progname, "exception", defer ); 
+   unsigned entry_point_index = ctx->addEntry( cu_name, progname, "exception", defer ); 
     
 
    if(defer)
    {
-       ctx.close();   
+       ctx->close();   
    }
    else
    {
@@ -128,7 +126,7 @@ int main(int argc, char** argv)
 
     // create and configure in_buffer
 
-    optix::Buffer in_buffer = ctx.createBuffer<float>( in_npy, "in_buffer");
+    optix::Buffer in_buffer = ctx->createBuffer<float>( in_npy, "in_buffer");
    /*
     unsigned int in_type =  RT_BUFFER_INPUT ; 
     RTformat in_format = RT_FORMAT_FLOAT4 ;
@@ -148,7 +146,7 @@ int main(int argc, char** argv)
     out_buffer->setSize( size ) ;   // number of quads
    */
 
-    optix::Buffer out_buffer = ctx.createBuffer<float>( out_npy, "out_buffer");
+    optix::Buffer out_buffer = ctx->createBuffer<float>( out_npy, "out_buffer");
     context["out_buffer"]->set( out_buffer );
 
 
@@ -158,7 +156,7 @@ int main(int argc, char** argv)
     memcpy( in_buffer->map(), in_npy->getBytes(), numBytes );
     in_buffer->unmap() ; 
     */
-    ctx.upload<float>(in_buffer, in_npy) ; 
+    ctx->upload<float>(in_buffer, in_npy) ; 
 
 
 
@@ -166,7 +164,7 @@ int main(int argc, char** argv)
     unsigned width = size ; 
     //context->launch( entry_point_index , width  ); 
 
-    ctx.launch( OContext::LAUNCH, entry_point_index,  width, 1, NULL );
+    ctx->launch( OContext::LAUNCH, entry_point_index,  width, 1, NULL );
 
 
 
@@ -177,7 +175,7 @@ int main(int argc, char** argv)
     out_npy->read( out_ptr );
     out_buffer->unmap();
   */
-    ctx.download<float>( out_buffer, out_npy ); 
+    ctx->download<float>( out_buffer, out_npy ); 
 
 
     const char* out_path = "$TMP/UseOContextBufferPP/out.npy"; 

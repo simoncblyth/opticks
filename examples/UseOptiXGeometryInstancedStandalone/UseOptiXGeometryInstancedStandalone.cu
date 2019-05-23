@@ -56,7 +56,6 @@ rtDeclareVariable(PerRayData_radiance, prd_radiance, rtPayload, );
 
 RT_PROGRAM void raygen()
 {
-
     PerRayData_radiance prd;
     prd.result = make_float3( 1.f, 0.f, 0.f ) ;
 
@@ -76,31 +75,66 @@ RT_PROGRAM void closest_hit_radiance0()
 {
   prd_radiance.result = normalize(rtTransformNormal(RT_OBJECT_TO_WORLD, shading_normal))*0.5f + 0.5f;
 }
-
 RT_PROGRAM void miss()
 {
   prd_radiance.result = make_float3(1.f, 1.f, 1.f) ;
 }
-
-
-
 RT_PROGRAM void printTest0()
 {
      unsigned long long index = launch_index.x ;
      rtPrintf("//printTest0 d:%d launch_index.x %u launch_index.y %u launch_dim.x %u launch_dim.y %u \n", index, launch_index.x , launch_index.y, launch_dim.x , launch_dim.y   );
 }
-
 RT_PROGRAM void printTest1()
 {
      unsigned long long index = launch_index.x ;
      rtPrintf("//printTest1 llu:%llu launch_index.x %u launch_index.y %u launch_dim.x %u launch_dim.y %u \n", index, launch_index.x , launch_index.y, launch_dim.x , launch_dim.y   );
 }
-
-
-
 RT_PROGRAM void exception()
 {
-    rtPrintExceptionDetails();
+    //rtPrintExceptionDetails();
 }
+
+
+/*
+Commenting out "rtPrintExceptionDetails()" gets rid of the .f64 in the ptx
+
+    [blyth@localhost UseOptiXGeometryInstancedStandalone]$ grep .f64 /tmp/blyth/opticks/UseOptiXGeometryInstancedStandalone/ptx/UseOptiXGeometryInstancedStandalone_generated_UseOptiXGeometryInstancedStandalone.cu.ptx
+    [blyth@localhost UseOptiXGeometryInstancedStandalone]$ 
+
+    [blyth@localhost UseOptiXGeometryInstancedStandalone]$ grep f64 /tmp/blyth/opticks/UseOptiXGeometryInstancedStandalone/ptx/UseOptiXGeometryInstancedStandalone_generated_UseOptiXGeometryInstancedStandalone.cu.ptx
+        .reg .f64   %fd<9>;
+        cvt.ftz.f64.f32 %fd1, %f1;
+        cvt.ftz.f64.f32 %fd2, %f6;
+        cvt.ftz.f64.f32 %fd3, %f3;
+        cvt.ftz.f64.f32 %fd4, %f2;
+        st.local.v2.f64     [%rd52+32], {%fd4, %fd3};
+        cvt.ftz.f64.f32 %fd5, %f5;
+        cvt.ftz.f64.f32 %fd6, %f4;
+        st.local.v2.f64     [%rd52+48], {%fd6, %fd5};
+        st.local.f64    [%rd52+64], %fd2;
+        cvt.ftz.f64.f32 %fd7, %f8;
+        cvt.ftz.f64.f32 %fd8, %f7;
+        st.local.v2.f64     [%rd52+80], {%fd8, %fd7};
+    [blyth@localhost UseOptiXGeometryInstancedStandalone]$ 
+
+
+
+[blyth@localhost UseOptiXGeometryInstancedStandalone]$ grep .visible /tmp/blyth/opticks/UseOptiXGeometryInstancedStandalone/ptx/UseOptiXGeometryInstancedStandalone_generated_UseOptiXGeometryInstancedStandalone.cu.ptx | c++filt
+.visible .entry raygen()(
+.visible .entry closest_hit_radiance0()(
+.visible .entry miss()(
+.visible .entry printTest0()(
+.visible .entry printTest1()(
+.visible .entry exception()(
+[blyth@localhost UseOptiXGeometryInstancedStandalone]$ 
+
+
+
+
+
+*/
+
+
+
 
 

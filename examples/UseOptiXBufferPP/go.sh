@@ -25,5 +25,7 @@ make install
 $name --help
 
 
-
+ptx=$(opticks-prefix)/installcache/PTX/${name}_generated_bufferTest.cu.ptx
+ls -l $ptx
+ptx.py $ptx --all | c++filt
 

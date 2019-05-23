@@ -748,15 +748,20 @@ geocache-j1808-v4-t8 : after fixing ellipsoid bug and doing cleaninstall for Opt
 * RTX ON : x3.6 TITAN RTX 
 * RTX ON : x2.3 TITAN V 
 
-
 * but there was a full clean install too : and the prelaunch times are high : it is as if 
   some cache was cleared and afterwards things are going better 
 
-* there were other changes the ptx too : need to examine all changes over past 24hrs too 
+  * :doc:`nv-ComputeCache`
 
-* :doc:`suspect-rtx-performance-improved-following-cleaninstall-why`
+* there were other changes the ptx too : need to examine all changes over past 24hrs too,
+  doing do revealed the cause :doc:`rtxmode-performance-jumps-by-factor-3-or-4-after-flipping-with-torus-switch-off`
 
-* TODO: revert to an earlier commit and check times back then
+* attempt to get more of a good thing by eradicating almost all .f64 :doc:`oxrap-hunt-for-f64-in-ptx`
+  have so far not moved the needle 
+
+* TODO : really eradicate ALL the .f64 using WITH_EXCEPTION to see if going f64-less 
+  changes anything 
+
 
 
 ::
@@ -791,7 +796,7 @@ Rerun reproduces same numbers::
 geocache-j1808-v4-t8 : create the geocache again putting the bug back : as difficult to believe it had such a big effect
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Yep something else caused the big change, 
+Yep something else caused the big change, (WITH_TORUS)
 
 * the bug has only a minor performance effect on RTX ON
 
@@ -817,23 +822,58 @@ Yep something else caused the big change,
                        R0_TITAN_RTX      0.122      3.026      1.000           5.914 
 
 
+*repro check*::
+
+    [blyth@localhost ~]$ bench.py --include xanalytic --digest 52e --since May23
+    Namespace(digest='52e', exclude=None, include='xanalytic', metric='launchAVG', name='geocache-bench', other='prelaunch000', resultsdir='$TMP/results', since='May23')
+    since : 2019-05-23 00:00:00 
+
+    ---
+     OpSnapTest --envkey --target 352851 --eye -1,-1,-1 --snapconfig steps=5,eyestartz=-1,eyestopz=-0.5 --size 5120,2880,1 --embedded --cvd 1 --rtx 1 --runfolder geocache-bench --runstamp 1558577742 --runlabel R1_TITAN_RTX --xanalytic --enabledmergedmesh 2
+    OKX4Test.X4PhysicalVolume.lWorld0x4bc2710_PV.52e273e4ad5423fe2fc8aa44bbf055ec
+    /home/blyth/local/opticks/geocache/OKX4Test_lWorld0x4bc2710_PV_g4live/g4ok_gltf/52e273e4ad5423fe2fc8aa44bbf055ec/1
+                    20190523_101542  launchAVG      rfast      rslow      prelaunch000 
+                        R1_TITAN_RTX      0.040      1.000      0.340           0.490    : /tmp/blyth/location/results/geocache-bench/R1_TITAN_RTX/20190523_101542  
+                          R1_TITAN_V      0.043      1.077      0.366           0.443    : /tmp/blyth/location/results/geocache-bench/R1_TITAN_V/20190523_101542  
+            R0_TITAN_V_AND_TITAN_RTX      0.064      1.596      0.542          11.661    : /tmp/blyth/location/results/geocache-bench/R0_TITAN_V_AND_TITAN_RTX/20190523_101542  
+                          R0_TITAN_V      0.102      2.516      0.855           5.930    : /tmp/blyth/location/results/geocache-bench/R0_TITAN_V/20190523_101542  
+                        R0_TITAN_RTX      0.119      2.942      1.000           5.956    : /tmp/blyth/location/results/geocache-bench/R0_TITAN_RTX/20190523_101542  
+    Namespace(digest='52e', exclude=None, include='xanalytic', metric='launchAVG', name='geocache-bench', other='prelaunch000', resultsdir='$TMP/results', since='May23')
+
+
+*repro check again* after removing all those f64, no difference::
+
+    ---
+     OpSnapTest --envkey --target 352851 --eye -1,-1,-1 --snapconfig steps=5,eyestartz=-1,eyestopz=-0.5 --size 5120,2880,1 --embedded --cvd 1 --rtx 1 --runfolder geocache-bench --runstamp 1558620718 --runlabel R1_TITAN_RTX --xanalytic --enabledmergedmesh 2
+    OKX4Test.X4PhysicalVolume.lWorld0x4bc2710_PV.52e273e4ad5423fe2fc8aa44bbf055ec
+    /home/blyth/local/opticks/geocache/OKX4Test_lWorld0x4bc2710_PV_g4live/g4ok_gltf/52e273e4ad5423fe2fc8aa44bbf055ec/1
+                    20190523_221158  launchAVG      rfast      rslow      prelaunch000 
+                        R1_TITAN_RTX      0.037      1.000      0.342           1.580    : /tmp/blyth/location/results/geocache-bench/R1_TITAN_RTX/20190523_221158  
+                          R1_TITAN_V      0.045      1.214      0.416           1.501    : /tmp/blyth/location/results/geocache-bench/R1_TITAN_V/20190523_221158  
+            R0_TITAN_V_AND_TITAN_RTX      0.058      1.550      0.531           2.408    : /tmp/blyth/location/results/geocache-bench/R0_TITAN_V_AND_TITAN_RTX/20190523_221158  
+                          R0_TITAN_V      0.090      2.425      0.830           1.511    : /tmp/blyth/location/results/geocache-bench/R0_TITAN_V/20190523_221158  
+                        R0_TITAN_RTX      0.109      2.920      1.000           1.400    : /tmp/blyth/location/results/geocache-bench/R0_TITAN_RTX/20190523_221158  
 
 
 
+*changed geometry to remove the hemi ellipsoid bug that has artificially put back*::
 
-bookeeping thoughts
-~~~~~~~~~~~~~~~~~~~~~
+* only appreciated a little by TITAN RTX
 
-Need to capture the below envars and report them with bench results 
-for changing geometry tests. Also need to filter by geometry.
 
 ::
+    ---
+     OpSnapTest --envkey --target 352851 --eye -1,-1,-1 --snapconfig steps=5,eyestartz=-1,eyestopz=-0.5 --size 5120,2880,1 --embedded --cvd 1 --rtx 1 --runfolder geocache-bench --runstamp 1558621167 --runlabel R1_TITAN_RTX --xanalytic --enabledmergedmesh 2
+    OKX4Test.X4PhysicalVolume.lWorld0x4bc2710_PV.52e273e4ad5423fe2fc8aa44bbf055ec
+    /home/blyth/local/opticks/geocache/OKX4Test_lWorld0x4bc2710_PV_g4live/g4ok_gltf/52e273e4ad5423fe2fc8aa44bbf055ec/1
+                    20190523_221927  launchAVG      rfast      rslow      prelaunch000 
+                        R1_TITAN_RTX      0.030      1.000      0.280           1.548    : /tmp/blyth/location/results/geocache-bench/R1_TITAN_RTX/20190523_221927  
+                          R1_TITAN_V      0.041      1.358      0.380           1.500    : /tmp/blyth/location/results/geocache-bench/R1_TITAN_V/20190523_221927  
+            R0_TITAN_V_AND_TITAN_RTX      0.058      1.917      0.537           1.717    : /tmp/blyth/location/results/geocache-bench/R0_TITAN_V_AND_TITAN_RTX/20190523_221927  
+                          R0_TITAN_V      0.091      3.005      0.841           1.093    : /tmp/blyth/location/results/geocache-bench/R0_TITAN_V/20190523_221927  
+                        R0_TITAN_RTX      0.109      3.573      1.000           0.996    : /tmp/blyth/location/results/geocache-bench/R0_TITAN_RTX/20190523_221927  
+    Namespace(digest='52', exclude=None, include=None, metric='launchAVG', name='geocache-bench', other='prelaunch000', resultsdir='$TMP/results', since='6pm')
 
-    OPTICKS_GEOFUNC  : geocache-j1808-v4-t8 
-    OPTICKS_KEY      : OKX4Test.X4PhysicalVolume.lWorld0x4bc2710_PV.52e273e4ad5423fe2fc8aa44bbf055ec 
-    OPTICKS_COMMENT  : just-21-18-19-outer-pyrex+vacuum-cap-and-remainder-see-notes/issues/review-analytic-geometry.rst 
-    [blyth@localhost ~]$ geocache-
-    [blyth@localhost ~]$ geocache-bench --xanalytic 
 
 
 

@@ -7,6 +7,9 @@ using namespace optix;
 rtDeclareVariable(optix::Ray, ray, rtCurrentRay, );
 rtDeclareVariable(float, instance_bounding_radius , , );
 
+//#define WITH_PRINT 1
+
+
 RT_PROGRAM void visit_instance()
 {
     const float distance = length( ray.origin ) ;  // Visit program ray.origin is in OBJECT frame
@@ -37,6 +40,7 @@ RT_PROGRAM void visit_instance_WORLD()
     const float distance1 = length( ray.origin ) ; 
     const unsigned level = distance < instance_bounding_radius ? 0u : 1u ;  
 
+#ifdef WITH_PRINT
     rtPrintf("visit_instance_WORLD: level %d instance_bounding_radius %10.3f distance %10.3f distance1 %10.3f  orig (%10.3f %10.3f %10.3f) ipos (%10.3f %10.3f %10.3f)  \n", 
           level, 
           instance_bounding_radius,
@@ -46,6 +50,8 @@ RT_PROGRAM void visit_instance_WORLD()
           ipos.x, ipos.y, ipos.z
        ); 
     
+#endif
+
     rtIntersectChild( level );
 }
 

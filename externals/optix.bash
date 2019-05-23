@@ -413,16 +413,58 @@ optix-scd(){ optix-samples-scd  ; }
 
 optix-samples-sdir(){ echo $(optix-install-dir)/SDK-src ; }
 optix-samples-bdir(){ echo $(optix-install-dir)/SDK-src.build ; }
+optix-samples-pdir(){ echo $(optix-install-dir)/SDK-src.build/lib/ptx ; }
 optix-samples-scd(){ cd $(optix-samples-sdir) ; }
 optix-samples-bcd(){ cd $(optix-samples-bdir) ; }
+optix-samples-pcd(){ cd $(optix-samples-pdir) ; }
+
+optix-samples-f64(){ ptx.py $(optix-samples-pdir) $* ; }
+
+
+
+optix-samples--()
+{
+   optix-samples-setup
+   optix-samples-cmake    
+   optix-samples-make
+}
+
+optix-samples-notes(){ cat << EOI
+
+   With CUDA_NVRTC_ENABLED=OFF in order to look at the PTX 
+   find that had to copy one of the order 10 common.h up to 
+   top level for it to be found.
+
+
+EOI
+}
+
+optix-samples-info(){ cat << EOI
+
+    optix-install-dir   : $(optix-install-dir)
+    optix-samples-sdir  : $(optix-samples-sdir)
+    optix-samples-bdir  : $(optix-samples-bdir)
+    optix-samples-pdir  : $(optix-samples-pdir)
+
+EOI
+}
+
 optix-samples-setup(){
 
    local msg="=== $FUNCNAME :"
+
    local iwd=$PWD
    local idir=$(optix-install-dir)
    local sdir=$(optix-samples-sdir)
-
    [ -d "$sdir" ] && echo $msg already setup in $sdir && return
+
+   type $FUNCNAME
+
+   optix-samples-info
+   local ans
+   read -p "$msg enter Y to continue "  ans
+   [ "$ans" != "Y" ] && echo skip && return 
+
 
    cd $idir
    local cmd="$SUDO cp -R SDK SDK-src && $SUDO chown $USER SDK-src && $SUDO mkdir SDK-src.build && $SUDO chown $USER SDK-src.build "
@@ -432,15 +474,23 @@ optix-samples-setup(){
    cd $iwd
 }
 
+optix-samples-clean(){
+    local bdir=$(optix-samples-bdir)
+    rm -rf $bdir   # starting clean 
+}
 optix-samples-cmake(){
     local iwd=$PWD
     local bdir=$(optix-samples-bdir)
+
+    [ -f "$bdir/CMakeCache.txt" ] && echo $msg already configured && return 
+
     #rm -rf $bdir   # starting clean 
     mkdir -p $bdir
     cd $bdir
 
     cmake -DOptiX_INSTALL_DIR=$(optix-install-dir) \
           -DCUDA_NVCC_FLAGS="$(optix-cuda-nvcc-flags)" \
+          -DCUDA_NVRTC_ENABLED=OFF \
            "$(optix-samples-sdir)"
 
     cd $iwd

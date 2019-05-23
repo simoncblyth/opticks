@@ -50,7 +50,11 @@
 #include <optix_world.h>
 #include <optixu/optixu_math_namespace.h>
 
+
+//#define WITH_PRINT 1 
 //#define DEBUG 1 
+
+
 #include "PerRayData_propagate.h"
 #include "OpticksSwitches.h"
 
@@ -278,7 +282,7 @@ RT_PROGRAM void zrngtest()
     photon_buffer[photon_offset+2] = make_float4(  curand_uniform(&rng) , curand_uniform(&rng) , curand_uniform(&rng), curand_uniform(&rng) );
     photon_buffer[photon_offset+3] = make_float4(  curand_uniform(&rng) , curand_uniform(&rng) , curand_uniform(&rng), curand_uniform(&rng) );
 
-    rng_states[photon_id] = rng ;  // suspect this does nothing in my usage
+    //rng_states[photon_id] = rng ;  // suspect this does nothing in my usage  <-- and it plants 3 f64 in the PTX
 }
 
 
@@ -384,9 +388,8 @@ RT_PROGRAM void generate()
     {
        rtPrintf("generate debug photon_id %d genstep_id %d ghead.i.x %d \n", photon_id, genstep_id, ghead.i.x );
     } 
-#endif 
-
     rtPrintf("generate photon_id %d \n", photon_id );
+#endif 
 
     curandState rng = rng_states[photon_id];
 
@@ -483,7 +486,6 @@ RT_PROGRAM void generate()
     slot = 0 ; 
     record_offset = 0 ; 
 #endif
-
 
 
 
@@ -610,7 +612,7 @@ RT_PROGRAM void generate()
 #endif
 
 
-    rng_states[photon_id] = rng ;
+    //rng_states[photon_id] = rng ;  // <-- brings 3 lines with .f64 : is it needed ???
 }
 
 

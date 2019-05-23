@@ -28,10 +28,12 @@ static __device__ __inline__ float reemission_lookup(float u)
 
 static __device__ __inline__ void reemission_check()
 {
+#ifdef WITH_PRINT
     float nm_a = reemission_lookup(0.0f); 
     float nm_b = reemission_lookup(0.5f); 
     float nm_c = reemission_lookup(1.0f); 
     rtPrintf("reemission_check nm_a %10.3f %10.3f %10.3f  \n",  nm_a, nm_b, nm_c );
+#endif
 }
 
 static __device__ __inline__ float comb_lookup(float u)
@@ -56,10 +58,12 @@ static __device__ __inline__ float source_lookup(float u)
 
 static __device__ __inline__ void source_check()
 {
+#ifdef WITH_PRINT
     float nm_a = source_lookup(0.0f); 
     float nm_b = source_lookup(0.5f); 
     float nm_c = source_lookup(1.0f); 
     rtPrintf("source_check nm_a %10.3f %10.3f %10.3f  \n",  nm_a, nm_b, nm_c );
+#endif
 }
 
 /*
@@ -157,3 +161,6 @@ static __device__ __inline__ void wavelength_check()
   }
 }
 */
+
+
+

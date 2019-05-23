@@ -58,7 +58,8 @@ class DatedFolder(object):
         dirs = finddir(base, df)
 
         dfolds = list(set(map(os.path.basename, dirs))) 
-        return dirs, dfolds 
+        dtimes = map(dateparser, dfolds ) 
+        return dirs, dfolds, dtimes 
  
     def __call__(self, path):
         name = os.path.basename(path) 

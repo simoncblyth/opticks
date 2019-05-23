@@ -70,21 +70,29 @@ rtDeclareVariable(float3, geometric_normal, attribute geometric_normal, );
 rtDeclareVariable(float3, shading_normal, attribute shading_normal, ); 
 
 
-#define WITH_PARTLIST 1 
+#include "bbox.h"
+#include "postorder.h"
+#include "csg_intersect_primitive.h"
+#include "csg_intersect_part.h"
+#include "csg_intersect_boolean.h"
+
+
+//#define WITH_PRINT 1
+//#define WITH_SOLVE 1 
+//#define WITH_PARTLIST 1 
 //#define WITH_CUBIC 1 
 //#define WITH_TORUS 1 
+//#define TRANSFORM_TEST 1
+//#define CALLABLE_TEST 1
 
 // some resource issue, canna handle both cubic + torus together 
 //  currently have only 2 geometry types "analytic" and "triangulated"
 //  maybe split off more ??
 
-#include "bbox.h"
-#include "postorder.h"
-
-#include "csg_intersect_primitive.h"
-
+#ifdef WITH_SOLVE
 typedef double Solve_t ;
 #include "Solve.h"
+#endif
 
 #ifdef WITH_TORUS
 typedef double Torus_t ;
@@ -96,10 +104,6 @@ typedef double Cubic_t ;
 #include "csg_intersect_cubic.h"
 #endif
 
-#include "csg_intersect_part.h"
-#include "csg_intersect_boolean.h"
-
-
 #ifdef WITH_PARTLIST
 #include "intersect_ztubs.h"
 #include "intersect_zsphere.h"
@@ -107,14 +111,10 @@ typedef double Cubic_t ;
 #include "intersect_prism.h"
 #endif
 
-
-//#define TRANSFORM_TEST 1
-
 #ifdef TRANSFORM_TEST
 #include "transform_test.h"
 #endif
 
-//#define CALLABLE_TEST 1
 #ifdef CALLABLE_TEST
 #include "solve_callable_test.h"
 #endif
@@ -137,7 +137,9 @@ RT_PROGRAM void bounds (int primIdx, float result[6])
         unsigned planBuffer_size = planBuffer.size() ;
         unsigned tranBuffer_size = tranBuffer.size() ;
 
+#ifdef WITH_PRINT
         rtPrintf("// intersect_analytic.cu:bounds buffer sizes pts:%4d pln:%4d trs:%4d (3x NumTVQ) \n", partBuffer_size, planBuffer_size, tranBuffer_size ); 
+#endif
     }
 
 
@@ -162,6 +164,7 @@ RT_PROGRAM void bounds (int primIdx, float result[6])
 
         csg_bounds_prim(primIdx, prim, aabb); 
 
+#ifdef WITH_PRINT
         rtPrintf("// intersect_analytic.cu:bounds.NODETREE primIdx:%2d  bnd0:%3d typ0:%3d "
                  " min %10.4f %10.4f %10.4f max %10.4f %10.4f %10.4f \n", 
                     primIdx,
@@ -174,6 +177,7 @@ RT_PROGRAM void bounds (int primIdx, float result[6])
                     result[4],
                     result[5]
                 );
+#endif
 
     }
 #ifdef WITH_PARTLIST
@@ -188,6 +192,7 @@ RT_PROGRAM void bounds (int primIdx, float result[6])
 
             identity.z = boundary ;  // boundary from partBuffer (see ggeo-/GPmt)
 
+#ifdef WITH_PRINT
             rtPrintf("// intersect_analytic.cu:bounds.PARTLIST primIdx:%2d  p:%2d bnd:%3d typ:%3d pt.q2.f ( %10.4f %10.4f %10.4f %10.4f ) pt.q3.f ( %10.4f %10.4f %10.4f %10.4f ) \n", 
                     primIdx,
                     p,
@@ -204,6 +209,7 @@ RT_PROGRAM void bounds (int primIdx, float result[6])
                     pt.q3.f.z,
                     pt.q3.f.w
                     );
+#endif
 
             if(typecode == CSG_PRISM) 
             {

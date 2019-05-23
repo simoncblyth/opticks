@@ -12,6 +12,8 @@ rtDeclareVariable(int4,  tex_param, , );
 
 rtBuffer<float4,2>           out_buffer;
 
+//#define WITH_PRINT 1
+
 
 RT_PROGRAM void texTest()
 {
@@ -30,7 +32,9 @@ RT_PROGRAM void texTest()
     int tex_id = tex_param.x ; 
     float4 val = rtTex2D<float4>( tex_id, x, y ); 
 
+#ifdef WITH_PRINT
     rtPrintf("texTest (%d,%d) (%10.4f,%10.4f) -> (%10.4f,%10.4f,%10.4f,%10.4f)  \n", ix, iy, x, y, val.x, val.y, val.z, val.w);
+#endif
 
     out_buffer[launch_index] = val ; 
 

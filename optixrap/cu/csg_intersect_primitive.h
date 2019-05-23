@@ -7,6 +7,11 @@
 
 #define CSG_BOUNDS_DBG 1
 
+//#define WITH_PRINT 1 
+
+// TODO: restructure to separate tests that really need to print into a separate PTX from the thing being tested
+//  currentlt this gives lots of unused warnings without WITH_PRINT defined
+
 
 using namespace optix;
 
@@ -27,7 +32,9 @@ void csg_bounds_convexpolyhedron(const Part& pt, optix::Aabb* aabb, optix::Matri
     for(unsigned i=0 ; i < planeNum ; i++)
     {
         float4 plane = planBuffer[planeBase+i] ;
+#ifdef WITH_PRINT
         rtPrintf("## csg_bounds_convexpolyhedron plane i:%u plane: %10.3f %10.3f %10.3f %10.3f  \n", i, plane.x, plane.y, plane.z, plane.w );
+#endif
     } 
 
     float3 mn = make_float3( q2.f.x, q2.f.y,  q2.f.z );
@@ -52,8 +59,10 @@ bool csg_intersect_convexpolyhedron(const Part& pt, const float& t_min, float4& 
 #ifdef CSG_INTERSECT_CONVEXPOLYHEDRON_TEST
     const float3& o = ray_origin ;
     const float3& d = ray_direction ;
+#ifdef WITH_PRINT
     rtPrintf("\n## csg_intersect_convexpolyhedron planeIdx %u planeNum %u planeOffset %u planeBase %u  \n", planeIdx, planeNum, planeOffset, planeBase );
     rtPrintf("## csg_intersect_convexpolyhedron o: %10.3f %10.3f %10.3f  d: %10.3f %10.3f %10.3f \n", o.x, o.y, o.z, d.x, d.y, d.z );
+#endif
 #endif
 
     float t0 = -CUDART_INF_F ; 
@@ -168,8 +177,10 @@ void csg_intersect_convexpolyhedron_test(unsigned long long photon_id)
         float t = isect.w ;  
         float3 p = ray_origin + t*ray_direction ; 
 
+#ifdef CSG_INTERSECT_CONVEXPOLYHEDRON_TEST
         rtPrintf("## csg_intersect_convexpolyhedron_test pid:%llu i:%u has_isect:%d isect:(%10.3f %10.3f %10.3f %10.3f) p:(%10.3f %10.3f %10.3f) \n",
                      photon_id, i, has_isect, isect.x, isect.y, isect.z, isect.w, p.x, p.y, p.z ); 
+#endif
 
         if(has_isect != expect_has_isect) rtPrintf("## csg_intersect_convexpolyhedron_test FAILURE \n"); 
     }
@@ -189,12 +200,15 @@ void csg_bounds_cone(const quad& q0, optix::Aabb* aabb, optix::Matrix4x4* tr  )
 
     float rmax = fmaxf(r1, r2) ;
 
+ 
+#ifdef WITH_PRINT
     float tan_theta = (r2-r1)/(z2-z1) ;
     float z_apex = (z2*r1-z1*r2)/(r1-r2) ; 
- 
+
     rtPrintf("## csg_bounds_cone r1:%10.3f z1:%10.3f r2:%10.3f z2:%10.3f rmax:%10.3f tan_theta:%10.3f z_apex:%10.3f  \n", r1,z1,r2,z2, rmax, tan_theta, z_apex) ; 
 
     if(z2 < z1) rtPrintf("## csg_bounds_cone z2 < z1, z1: %10.3f z2 %10.3f \n", z1, z2 );
+#endif
 
     float3 mx = make_float3(  rmax,  rmax,  z2 );
     float3 mn = make_float3( -rmax, -rmax,  z1 );
@@ -366,6 +380,82 @@ unsigned classify_x( const float x, const float r1, const float r2)
 }
 
 
+
+static __device__
+void csg_intersect_cone_test_expectations( bool& expect_valid_isect, 
+                                           float& expect_z,  
+                                           const unsigned j, 
+                                           const float x, 
+                                           const float r1, 
+                                           const float r2, 
+                                           const float z1, 
+                                           const float z2, 
+                                           const float ray_origin_z )
+{
+    if( j == 0)
+    {
+        // rays down -z from apex plane expecting: miss, cone, endcap, cone, miss
+
+        if( x < -r1 )
+        {
+            expect_valid_isect = false ; 
+            expect_z = ray_origin_z ; 
+        }
+        else if( x > -r1 && x < -r2 )
+        {
+            expect_valid_isect = true ; 
+            expect_z = x ; 
+        } 
+        else if( x > -r2 && x < r2 )
+        {
+            expect_valid_isect = true ; 
+            expect_z = z2 ; 
+        }
+        else if( x > r2  && x < r1 )
+        {
+            expect_valid_isect = true ; 
+            expect_z = -x ; 
+        }
+        else if(x > r1)
+        {
+            expect_valid_isect = false ; 
+            expect_z = ray_origin_z ; 
+        } 
+    }
+    else if( j == 1)
+    {
+        // rays up +z from below z=z1 expecting: miss, endcap, endcap, endcap, miss
+
+        if( x < -r1 )
+        {
+            expect_valid_isect = false ; 
+            expect_z = ray_origin_z ; 
+        }
+        else if( x > -r1 && x < -r2 )
+        {
+            expect_valid_isect = true ; 
+            expect_z = z1 ; 
+        } 
+        else if( x > -r2 && x < r2 )
+        {
+            expect_valid_isect = true ; 
+            expect_z = z1 ; 
+        }
+        else if( x > r2  && x < r1 )
+        {
+            expect_valid_isect = true ; 
+            expect_z = z1 ; 
+        }
+        else if(x > r1)
+        {
+            expect_valid_isect = false ; 
+            expect_z = ray_origin_z ; 
+        } 
+    } 
+}
+
+
+
 static __device__
 void csg_intersect_cone_test(unsigned long long photon_id)
 {
@@ -400,7 +490,9 @@ void csg_intersect_cone_test(unsigned long long photon_id)
     float z0 = (z2*r1-z1*r2)/(r1-r2) ;  // apex
     
 
+#ifdef WITH_PRINT
     rtPrintf("## csg_intersect_cone_test z0:%10.3f \n", z0 );
+#endif
 
     if(z1 > z2) rtPrintf("## csg_intersect_cone_test ERROR: z1>z2  (fundamental error) \n");
     if(r2 > r1) rtPrintf("## csg_intersect_cone_test ERROR: r2>r1  (violates assumption used in this test) \n");
@@ -452,75 +544,21 @@ void csg_intersect_cone_test(unsigned long long photon_id)
             float t = isect.w ;  
             float3 p = ray_origin + t*ray_direction ; 
 
+#ifdef WITH_PRINT
             rtPrintf("## csg_intersect_cone_test j:%d i:%d x:%10.3f valid_isect:%d isect:(%10.3f %10.3f %10.3f %10.3f) p:(%10.3f %10.3f %10.3f) \n",
                  j,i,x, valid_isect, isect.x, isect.y, isect.z, isect.w, p.x, p.y, p.z ); 
+#endif
 
-            bool expect_valid_isect = false ; 
-            float expect_z = 0.f ; 
-
-            if( j == 0)
-            {
-                // rays down -z from apex plane expecting: miss, cone, endcap, cone, miss
-
-                if( x < -r1 )
-                {
-                    expect_valid_isect = false ; 
-                    expect_z = ray_origin.z ; 
-                }
-                else if( x > -r1 && x < -r2 )
-                {
-                    expect_valid_isect = true ; 
-                    expect_z = x ; 
-                } 
-                else if( x > -r2 && x < r2 )
-                {
-                    expect_valid_isect = true ; 
-                    expect_z = z2 ; 
-                }
-                else if( x > r2  && x < r1 )
-                {
-                    expect_valid_isect = true ; 
-                    expect_z = -x ; 
-                }
-                else if(x > r1)
-                {
-                    expect_valid_isect = false ; 
-                    expect_z = ray_origin.z ; 
-                } 
-            }
-            else if( j == 1)
-            {
-                // rays up +z from below z=z1 expecting: miss, endcap, endcap, endcap, miss
-
-                if( x < -r1 )
-                {
-                    expect_valid_isect = false ; 
-                    expect_z = ray_origin.z ; 
-                }
-                else if( x > -r1 && x < -r2 )
-                {
-                    expect_valid_isect = true ; 
-                    expect_z = z1 ; 
-                } 
-                else if( x > -r2 && x < r2 )
-                {
-                    expect_valid_isect = true ; 
-                    expect_z = z1 ; 
-                }
-                else if( x > r2  && x < r1 )
-                {
-                    expect_valid_isect = true ; 
-                    expect_z = z1 ; 
-                }
-                else if(x > r1)
-                {
-                    expect_valid_isect = false ; 
-                    expect_z = ray_origin.z ; 
-                } 
-            } 
+            bool expect_valid_isect ; 
+            float expect_z ;     
+            csg_intersect_cone_test_expectations( expect_valid_isect, expect_z,  j, x, r1, r2, z1, z2, ray_origin.z ) ;
 
             if(expect_valid_isect != valid_isect) rtPrintf("## ERROR valid_isect \n"); 
+
+#ifdef WITH_PRINT
             if(fabsf(expect_z - p.z) > 1e-4f ) rtPrintf("## ERROR z %10.3f expect: %10.3f \n", p.z, expect_z );
+#endif
+
         }
     }
 } 
@@ -545,7 +583,9 @@ void csg_bounds_hyperboloid(const quad& q0, optix::Aabb* aabb, optix::Matrix4x4*
     const float rr2 = rr0 * ( z2s*z2s + 1.f ) ;
     const float rmx = sqrtf(fmaxf( rr1, rr2 )) ; 
 
+#ifdef WITH_PRINT
     rtPrintf("// csg_bounds_hyperboloid r0 zf z1 z2 (%g %g %g %g)  rr0 z1s z2s (%g %g %g)  rr1 rr2 rmx (%g %g %g)  \n", r0,zf,z1,z2, rr0, z1s, z2s, rr1, rr2, rmx );
+#endif
  
     float3 mn = make_float3(  -rmx,  -rmx,  z1 );
     float3 mx = make_float3(   rmx,   rmx,  z2 );
@@ -671,7 +711,7 @@ void csg_bounds_sphere(const quad& q0, optix::Aabb* aabb, optix::Matrix4x4* tr  
     Aabb tbb(mn, mx);
     if(tr) transform_bbox( &tbb, tr );  
 
-#ifdef CSG_BOUNDS_DBG
+#ifdef WITH_PRINT
     rtPrintf("// csg_intersect_primitive.h:csg_bounds_sphere "
              " tbb.min ( %10.4f %10.4f %10.4f ) "
              " tbb.max ( %10.4f %10.4f %10.4f ) "
@@ -736,7 +776,9 @@ void csg_intersect_sphere_test(unsigned long long photon_id)
     const float3& o = ray_origin ;
     const float3& d = ray_direction ;
 
+#ifdef WITH_PRINT
     rtPrintf("//csg_intersect_sphere_test  o (%g %g %g) d (%g %g %g) \n", o.x, o.y, o.z, d.x, d.y, d.z ); 
+#endif
 
     float t_min = 0.f ; 
     float4 isect = make_float4(0.f,0.f,0.f,0.f);
@@ -760,17 +802,23 @@ void csg_intersect_sphere_test(unsigned long long photon_id)
 
     if(fabsf( p.x - x.x) > 0.01f )
     {
+#ifdef WITH_PRINT
         rtPrintf("ERROR x_expect deviation %g %g \n",  p.x, x.x );
+#endif
         return ; 
     }
 
     if(fabsf( t_expect - t) > 0.0001f )
     {
+#ifdef WITH_PRINT
         rtPrintf("ERROR t_expect deviation %g %g \n",  t, t_expect );
+#endif
         return ; 
     }
 
+#ifdef WITH_PRINT
     rtPrintf("//csg_intersect_sphere_test  p (%g %g %g) t %g s %g t_expect %g \n", p.x,p.y,p.z, t, s, t_expect ); 
+#endif
 }
 
 
@@ -793,7 +841,9 @@ void csg_bounds_zsphere(const quad& q0, const quad& q1, const quad& q2, optix::A
     //const bool PCAP = flags & ZSPHERE_PCAP ; 
     //rtPrintf("## csg_bounds_zsphere  zmin %7.3f zmax %7.3f flags %u QCAP(zmin) %d PCAP(zmax) %d  \n", zmin, zmax, flags, QCAP, PCAP );
 
+#ifdef WITH_PRINT
     rtPrintf("## csg_bounds_zsphere  zmin %7.3f zmax %7.3f  \n", zmin, zmax );
+#endif
 
     float3 mx = make_float3( q0.f.x + radius, q0.f.y + radius, zmax );
     float3 mn = make_float3( q0.f.x - radius, q0.f.y - radius, zmin );
@@ -1068,9 +1118,12 @@ bool csg_intersect_box(const quad& q0, const float& tt_min, float4& tt, const fl
 static __device__
 void csg_bounds_plane(const quad& q0, optix::Aabb* /*aabb*/, optix::Matrix4x4* /*tr*/  )
 {
+   // planes are unbounded, so this does nothing 
+#ifdef WITH_PRINT
    const float3 n = make_float3(q0.f.x, q0.f.y, q0.f.z) ;    
    const float d = q0.f.w ; 
    rtPrintf("## csg_bounds_plane n %7.3f %7.3f %7.3f  d %7.3f  \n", n.x, n.y, n.z, d );
+#endif
 }
 static __device__
 bool csg_intersect_plane(const quad& q0, const float& t_min, float4& isect, const float3& ray_origin, const float3& ray_direction )
@@ -1098,6 +1151,8 @@ bool csg_intersect_plane(const quad& q0, const float& t_min, float4& isect, cons
 static __device__
 void csg_bounds_slab(const quad& q0, const quad& q1, optix::Aabb* /*aabb*/, optix::Matrix4x4* /*tr*/  )
 {
+   // slabs are unbounded, so this does nothing 
+#ifdef WITH_PRINT
    const float3 n = make_float3(q0.f.x, q0.f.y, q0.f.z) ;    
    const float a = q1.f.x ; 
    const float b = q1.f.y ; 
@@ -1107,6 +1162,7 @@ void csg_bounds_slab(const quad& q0, const quad& q1, optix::Aabb* /*aabb*/, opti
    bool BCAP = flags & SLAB_BCAP ; // b > a by construction
 
    rtPrintf("## csg_bounds_slab n %7.3f %7.3f %7.3f  a %7.3f b %7.3f flags %u ACAP %d BCAP %d  \n", n.x, n.y, n.z, a, b, flags, ACAP, BCAP );
+#endif
 }
 
 static __device__
@@ -1166,8 +1222,10 @@ void csg_bounds_cylinder(const quad& q0, const quad& q1, optix::Aabb* aabb, opti
     const float    z2 = q1.f.y  ; 
 
 
+#ifdef WITH_PRINT
     rtPrintf("## csg_bounds_cylinder center %7.3f %7.3f (%7.3f =0)  radius %7.3f z1 %7.3f z2 %7.3f \n",
           center.x, center.y, center.z, radius, z1, z2 );
+#endif
 
     const float3 bbmin = make_float3( center.x - radius, center.y - radius, z1 );
     const float3 bbmax = make_float3( center.x + radius, center.y + radius, z2 );
@@ -1183,14 +1241,16 @@ static __device__
 void csg_bounds_disc(const quad& q0, const quad& q1, optix::Aabb* aabb, optix::Matrix4x4* tr  )
 {
     const float3  center = make_float3(q0.f.x, q0.f.y, 0.f ) ;    // 2017-10-27 center.z was formerly zeroed
-    const float   inner  = q0.f.z ;   // NB usurped z for inner radius
     const float   radius = q0.f.w ; 
 
     const float    z1 = q1.f.x  ; 
     const float    z2 = q1.f.y  ; 
 
+#ifdef WITH_PRINT
+    const float   inner  = q0.f.z ;   // NB usurped z for inner radius
     rtPrintf("## csg_bounds_disc center %7.3f %7.3f no-z inner %7.3f radius %7.3f  z1 %7.3f z2 %7.3f \n",
           center.x, center.y, inner, radius, z1, z2 );
+#endif
 
     const float3 bbmin = make_float3( center.x - radius, center.y - radius,  z1 );
     const float3 bbmax = make_float3( center.x + radius, center.y + radius,  z2 );
@@ -1425,7 +1485,7 @@ bool csg_intersect_cylinder(const quad& q0, const quad& q1, const float& t_min, 
     float t_cand = t_min ; 
 
 
-#ifdef CSG_DEBUG_CYLINDER_AXIAL
+#ifdef WITH_PRINT
     rtPrintf("// csg_intersect_cylinder "
                " tmin %10.4f abc (%10.4f %10.4f %10.4f) "
                " m (%10.4f %10.4f %10.4f) " 
@@ -1477,7 +1537,7 @@ bool csg_intersect_cylinder(const quad& q0, const quad& q1, const float& t_min, 
         }
 
 
-#ifdef CSG_DEBUG_CYLINDER_AXIAL
+#ifdef WITH_PRINT
         rtPrintf("// csg_intersect_cylinder "
                  " tmin %10.4f tcan %10.4f  md %10.4f dd %10.4f t_pcap_ax %10.4f t_qcap_ax %10.4f endcap %u has_axial_intersect %d "
                  " isect (%10.4f %10.4f %10.4f %10.4f) "

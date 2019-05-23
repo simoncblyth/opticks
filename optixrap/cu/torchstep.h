@@ -83,14 +83,14 @@ __device__ void tsdump( TorchStep& ts )
        ts.NumPhotons 
        );
 
+#ifdef WITH_PRINT
     rtPrintf("x0 %f %f %f  t0 %f \n", 
        ts.x0.x, 
        ts.x0.y, 
        ts.x0.z, 
        ts.t0 
        );
-
-
+#endif
 }
 
 

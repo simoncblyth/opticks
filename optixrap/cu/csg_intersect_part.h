@@ -1,6 +1,6 @@
 
 
-#define CSG_BOUNDS_DEBUG 1
+//#define CSG_BOUNDS_DEBUG 1
 
 
 static __device__
@@ -17,16 +17,17 @@ void csg_bounds_prim(int primIdx, const Prim& prim, optix::Aabb* aabb )  // NB O
 
     const unsigned primFlag   = prim.primFlag() ;  
 
+    unsigned height = TREE_HEIGHT(numParts) ; // 1->0, 3->1, 7->2, 15->3, 31->4 
+
+#ifdef CSG_BOUNDS_DEBUG
+    unsigned numNodes = TREE_NODES(height) ;      
+
     if(primFlag != CSG_FLAGNODETREE)  
     {
         rtPrintf("## csg_bounds_prim ABORT expecting primFlag CSG_FLAGNODETREE \n");
         return ;  
     }
 
-    unsigned height = TREE_HEIGHT(numParts) ; // 1->0, 3->1, 7->2, 15->3, 31->4 
-    unsigned numNodes = TREE_NODES(height) ;      
-
-#ifdef CSG_BOUNDS_DEBUG
     rtPrintf("//csg_bounds_prim CSG_FLAGNODETREE "
              " primIdx %3d partOffset %3d "
              " numParts %3d -> height %2d -> numNodes %2d "

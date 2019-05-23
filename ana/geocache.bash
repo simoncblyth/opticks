@@ -306,7 +306,12 @@ geocache-j1808-v4-t7(){ geocache-j1808-v4- --csgskiplv 22,17,21,20 --runfolder $
 geocache-j1808-v4-t8-comment(){ echo just-21-18-19-outer-pyrex+vacuum-cap-and-remainder-see-notes/issues/review-analytic-geometry.rst ; }
 geocache-j1808-v4-t8-key(){     echo OKX4Test.X4PhysicalVolume.lWorld0x4bc2710_PV.52e273e4ad5423fe2fc8aa44bbf055ec ; }       ## NB this matches geocache-j1808-v4-t3
 geocache-j1808-v4-t8-export(){  geocache-export ${FUNCNAME/-export} ; }
-geocache-j1808-v4-t8(){ geocache-j1808-v4- --csgskiplv 22,17,20 --runfolder $FUNCNAME --runcomment $(${FUNCNAME}-comment) --dbg_with_hemi_ellipsoid_bug ; }
+geocache-j1808-v4-t8(){ geocache-j1808-v4- --csgskiplv 22,17,20 --runfolder $FUNCNAME --runcomment $(${FUNCNAME}-comment) ; }
+
+geocache-j1808-v4-t8-notes(){ cat << EON
+For a while put back a bug with : --dbg_with_hemi_ellipsoid_bug
+EON
+}
 
 
 

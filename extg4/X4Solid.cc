@@ -899,8 +899,6 @@ void X4Solid::convertEllipsoid()
     float zcut2 = solid->GetZTopCut()/mm ;
 
     bool dbg_with_hemi_ellipsoid_bug = m_ok->hasOpt("dbg_with_hemi_ellipsoid_bug") ; 
-    assert( dbg_with_hemi_ellipsoid_bug == true );
-
 
     float z1 ; 
     float z2 ; 
