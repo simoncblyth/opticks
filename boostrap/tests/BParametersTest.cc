@@ -1,3 +1,6 @@
+// TEST=BParametersTest om-t
+
+
 #include <cassert>
 #include "OPTICKS_LOG.hh"
 #include "BParameters.hh"
@@ -100,6 +103,14 @@ void test_append()
     LOG(info) << " a.get(red) " << v ; 
 }
 
+void test_addEnvvarsWithPrefix()
+{
+    BParameters a ;
+    const char* pfx = "OPTICKS_" ; 
+    a.addEnvvarsWithPrefix(pfx);
+    a.dump("test_addEnvvarsWithPrefix");
+}
+
 
 
 int main(int argc, char** argv)
@@ -112,9 +123,10 @@ int main(int argc, char** argv)
     test_bool_nonexisting();
     test_bool();
     test_default_copy_ctor();
+    test_append();
     */
 
-    test_append();
+    test_addEnvvarsWithPrefix();
 
     return 0 ; 
 }

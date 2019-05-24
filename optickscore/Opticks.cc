@@ -15,7 +15,14 @@
 #include "SSys.hh"
 // brap-
 #include "BTimeKeeper.hh"
-#include "BParameters.hh"
+
+#ifdef OLD_PARAMETERS
+#include "X_BParameters.hh"
+#else
+#include "NMeta.hpp"
+#endif
+
+
 #include "BDynamicDefine.hh"
 #include "BOpticksEvent.hh"
 #include "BOpticksKey.hh"
@@ -40,7 +47,6 @@
 #include "NSceneConfig.hpp"
 #include "NLODConfig.hpp"
 #include "NSnapConfig.hpp"
-#include "NMeta.hpp"
 
 // okc-
 #include "OpticksPhoton.h"
@@ -548,14 +554,17 @@ void Opticks::init()
 
     m_timer->start();
 
-    m_parameters = new BParameters ;  
+#ifdef OLD_PARAMETERS
+    m_parameters = new X_BParameters ;  
+#else
+    m_parameters = new NMeta ;  
+#endif
+
     m_parameters->addEnvvar("CUDA_VISIBLE_DEVICES");
     m_parameters->add<std::string>("CMDLINE", PLOG::instance->cmdline() ); 
+    if(m_envkey) m_parameters->add<int>("--envkey", 1 ); // OPTICKS_KEY envvar is only relevant when use --envkey to switch on sensitivity 
+    m_parameters->addEnvvarsWithPrefix("OPTICKS_"); 
 
-    if( m_envkey )
-    {
-        m_parameters->addEnvvar("OPTICKS_KEY");  // only revelant when are use --envkey to switch on sensitivity to the envvar
-    }
 
     m_runtxt = new BTxt ; 
     m_cachemeta = new NMeta ; 
@@ -846,7 +855,11 @@ BTimeKeeper* Opticks::getTimer() const
 
 
 
-BParameters* Opticks::getParameters() const 
+#ifdef OLD_PARAMETERS
+X_BParameters* Opticks::getParameters() const 
+#else
+NMeta*       Opticks::getParameters() const 
+#endif
 {
     return m_parameters ; 
 }
@@ -2203,7 +2216,11 @@ OpticksEvent* Opticks::makeEvent(bool ok, unsigned tagoffset)
     // other params are best keep in m_parameters where they get saved/loaded  
     // with the evt 
 
-    BParameters* parameters = evt->getParameters();
+#ifdef OLD_PARAMETERS
+    X_BParameters* parameters = evt->getParameters();
+#else
+    NMeta*       parameters = evt->getParameters();
+#endif
     parameters->add<unsigned int>("RngMax",    rng_max );
     parameters->add<unsigned int>("BounceMax", bounce_max );
     parameters->add<unsigned int>("RecordMax", record_max );

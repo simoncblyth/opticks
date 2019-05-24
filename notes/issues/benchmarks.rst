@@ -37,10 +37,6 @@ I use three RTX mode variations:
 
 
 
-
-
-
-
 Note RTX mode one has much faster prelaunch ?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -83,8 +79,6 @@ Note RTX mode one has much faster prelaunch ?
                          R1_TITAN_V      0.314      4.229      0.928           0.439 
                        R1_TITAN_RTX      0.338      4.555      1.000           0.645 
     [blyth@localhost opticks]$ 
-
-
 
 
 

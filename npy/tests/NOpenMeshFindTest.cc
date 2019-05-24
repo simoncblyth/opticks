@@ -1,6 +1,11 @@
 #include "OPTICKS_LOG.hh"
 
-#include "BParameters.hh"
+#ifdef OLD_PARAMETERS
+#include "X_BParameters.hh"
+#else
+#include "NMeta.hpp"
+#endif
+
 #include "NOpenMesh.hpp"
 
 
@@ -14,9 +19,15 @@ typedef NOpenMesh<T> MESH ;
 void test_find_faces(int ctrl, NOpenMeshFindType sel)
 {
     LOG(info) << "test_find_faces" ; 
-    
-    BParameters* meta = new BParameters ; 
+   
+#ifdef OLD_PARAMETERS 
+    X_BParameters* meta = new X_BParameters ; 
+#else
+    NMeta* meta = new NMeta ; 
+#endif
+
     meta->add<int>("ctrl", ctrl );
+
 
     MESH* mesh = MESH::Make(NULL, meta, NULL);
     const NOpenMeshFind<T>& find = mesh->find ; 
@@ -31,7 +42,12 @@ void test_are_contiguous(int ctrl)
 {
     LOG(info) << "test_are_contiguous" ; 
 
-    BParameters* meta = new BParameters ; 
+#ifdef OLD_PARAMETERS 
+    X_BParameters* meta = new X_BParameters ; 
+#else
+    NMeta* meta = new NMeta ; 
+#endif
+
     meta->add<int>("ctrl", ctrl );
     meta->add<std::string>("poly", "HY" );
     meta->add<std::string>("polycfg", "sortcontiguous=0" );
@@ -50,7 +66,13 @@ void test_sort_contiguous(int ctrl)
 {
     LOG(info) << "test_sort_contiguous" ; 
 
-    BParameters* meta = new BParameters ; 
+#ifdef OLD_PARAMETERS 
+    X_BParameters* meta = new X_BParameters ; 
+#else
+    NMeta* meta = new NMeta ; 
+#endif
+
+
     meta->add<int>("ctrl", ctrl );
     meta->add<std::string>("poly", "HY" );
     meta->add<std::string>("polycfg", "sortcontiguous=1" );

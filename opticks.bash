@@ -910,6 +910,8 @@ opticks-check-installcache()
 
 opticks-ti(){ opticks-t- $* --interactive-debug-mode 1 ; }
 opticks-t(){  opticks-t- $* --interactive-debug-mode 0 ; }
+opticks-t0(){ CUDA_VISIBLE_DEVICES=0 opticks-t $* ; }
+opticks-t1(){ CUDA_VISIBLE_DEVICES=1 opticks-t $* ; }
 
 opticks-t-()
 {
@@ -1039,6 +1041,7 @@ opticks-find(){
 
 
 opticks-if(){ opticks-f "$1" -Hi ; }   
+opticks-fl(){ opticks-f "$1" -l ; }   
 opticks-f(){   
    local str="${1:-ENV_HOME}"
    local opt=${2:--H}

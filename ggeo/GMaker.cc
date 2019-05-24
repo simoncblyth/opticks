@@ -6,7 +6,7 @@
 #include "NTrianglesNPY.hpp"
 #include "NCSG.hpp"
 
-#include "BParameters.hh"
+
 #include "NSphere.hpp"
 #include "NPlane.hpp"
 #include "NPrism.hpp"

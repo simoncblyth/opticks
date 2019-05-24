@@ -29,7 +29,13 @@ struct NLODConfig ;
 struct NSnapConfig ; 
 
 class BTxt ; 
-class BParameters ; 
+
+
+#ifdef OLD_PARAMETERS
+class X_BParameters ; 
+#endif
+
+
 class BPropNames ; 
 class Types ;
 class Typ ;
@@ -388,7 +394,14 @@ class OKCORE_API Opticks {
        Typ*                 getTyp();
    public:
        BTimeKeeper*         getTimer() const ;
-       BParameters*         getParameters() const ;
+
+#ifdef OLD_PARAMETERS
+       X_BParameters*         getParameters() const ;
+#else
+       NMeta*               getParameters() const ;
+#endif
+
+
        NState*              getState() const ;
    public:
        int                  getMultiEvent() const ;
@@ -560,7 +573,13 @@ class OKCORE_API Opticks {
        bool                 m_configured ; 
        OpticksCfg<Opticks>* m_cfg ; 
        BTimeKeeper*         m_timer ; 
-       BParameters*         m_parameters ; 
+
+#ifdef OLD_PARAMETERS
+       X_BParameters*         m_parameters ; 
+#else
+       NMeta*               m_parameters ; 
+#endif
+
        BTxt*                m_runtxt ;  
        NMeta*               m_cachemeta ;  
        NSceneConfig*        m_scene_config ; 

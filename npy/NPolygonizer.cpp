@@ -1,4 +1,4 @@
-#include "BParameters.hh"
+
 
 #include "NPolygonizer.hpp"
 #include "NSphere.hpp"
@@ -21,6 +21,13 @@
 #endif
 
 #include "NHybridMesher.hpp"
+
+
+#ifdef OLD_PARAMETERS
+#include "X_BParameters.hh"
+#else
+#include "NMeta.hpp"
+#endif
 
 
 
@@ -72,7 +79,11 @@ NPolygonizer::NPolygonizer(NCSG* csg)
     m_root(csg->getRoot()),
     m_bbox(new nbbox(m_root->bbox())),
     m_meta(csg->getMeta(-1)),
+#ifdef OLD_PARAMETERS
     m_verbosity(m_meta->get<int>("verbosity", "0" )),
+#else
+    m_verbosity(m_meta->getIntFromString("verbosity", "0" )),
+#endif
     m_index(m_csg->getIndex()),
     m_poly(NULL),
     m_polymode(POLY_NONE)
@@ -215,7 +226,12 @@ NTrianglesNPY* NPolygonizer::implicitMesher()
 {
     NTrianglesNPY* tris = NULL ; 
 #ifdef OPTICKS_ImplicitMesher
+
+#ifdef OLD_PARAMETERS
     int   resolution = m_meta->get<int>("resolution", "100" );
+#else
+    int   resolution = m_meta->getIntFromString("resolution", "100" );
+#endif
     int   ctrl = m_meta->get<int>("ctrl", "0" );
     float expand_bb = 1e-4 ; 
     std::string seeds = m_meta->get<std::string>("seeds", "" );

@@ -19,8 +19,13 @@
 //#include "BOpticksEvent.hh"
 
 
-#include "BParameters.hh"
+#ifdef OLD_PARAMETERS
+#include "X_BParameters.hh"
+#else
 #include "NMeta.hpp"
+#endif
+
+
 #include "NPYSpec.hpp"
 #include "PLOG.hh"
 
@@ -152,11 +157,14 @@ NLookup* NPYBase::getLookup() const
 
 
 
-// TODO: move from BParameters to NMeta : which is composable and is persisted
+// TODO: move from X_BParameters to NMeta : which is composable and is persisted
 
 
-
-BParameters* NPYBase::getParameters() const 
+#ifdef OLD_PARAMETERS
+X_BParameters* NPYBase::getParameters() const 
+#else
+NMeta* NPYBase::getParameters() const 
+#endif
 {
     return m_parameters ;
 }
@@ -262,7 +270,11 @@ NPYBase::NPYBase(const std::vector<int>& shape, unsigned char sizeoftype, Type_t
     m_allow_prealloc(false),
     m_dynamic(false),
     m_lookup(NULL),
-    m_parameters(new BParameters),
+#ifdef OLD_PARAMETERS
+    m_parameters(new X_BParameters),
+#else
+    m_parameters(new NMeta),
+#endif
     m_meta(new NMeta),
     m_name(NULL)
 {

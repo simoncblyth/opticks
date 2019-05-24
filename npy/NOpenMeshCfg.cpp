@@ -10,12 +10,23 @@
 
 #include "BStr.hh"
 
-#include "BParameters.hh"
+
+#ifdef OLD_PARAMETERS
+#include "X_BParameters.hh"
+#else
+#include "NMeta.hpp"
+#endif
+
+
 #include "NOpenMeshEnum.hpp"
 #include "NOpenMeshCfg.hpp"
 
 
-NOpenMeshCfg::NOpenMeshCfg(const BParameters* meta, const char* treedir) 
+#ifdef OLD_PARAMETERS
+NOpenMeshCfg::NOpenMeshCfg(const X_BParameters* meta, const char* treedir) 
+#else
+NOpenMeshCfg::NOpenMeshCfg(const NMeta* meta, const char* treedir) 
+#endif
      : 
      meta(meta),
      treedir(treedir ? strdup(treedir) : NULL),

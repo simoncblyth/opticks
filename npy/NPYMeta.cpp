@@ -1,5 +1,12 @@
 #include "BFile.hh"
-#include "BParameters.hh"
+
+#ifdef OLD_PARAMETERS
+#include "X_BParameters.hh"
+#else
+#include "NMeta.hpp"
+#endif
+
+
 #include "BStr.hh"
 
 #include "NPYMeta.hpp"
@@ -19,18 +26,31 @@ bool NPYMeta::ExistsMeta(const char* dir, int idx)  // static
     std::string path = MetaPath(dir, idx) ;
     return BFile::ExistsFile(path.c_str()) ;
 }
-BParameters* NPYMeta::LoadMetadata(const char* dir, int idx ) // static
+
+#ifdef OLD_PARAMETERS
+X_BParameters* NPYMeta::LoadMetadata(const char* dir, int idx ) // static
 {
     std::string path = MetaPath(dir, idx) ;
-    return BParameters::Load(path.c_str()) ; 
+    return X_BParameters::Load(path.c_str()) ; 
 }
+#else
+NMeta* NPYMeta::LoadMetadata(const char* dir, int idx ) // static
+{
+    std::string path = MetaPath(dir, idx) ;
+    return NMeta::Load(path.c_str()) ; 
+}
+#endif
 
 
 NPYMeta::NPYMeta()
 {
 }
 
-BParameters* NPYMeta::getMeta(int idx) const
+#ifdef OLD_PARAMETERS
+X_BParameters* NPYMeta::getMeta(int idx) const
+#else
+NMeta* NPYMeta::getMeta(int idx) const
+#endif
 {
     return m_meta.count(idx) == 1 ? m_meta.at(idx) : NULL ; 
 }
@@ -42,15 +62,38 @@ bool NPYMeta::hasMeta(int idx) const
 template<typename T>
 T NPYMeta::getValue(const char* key, const char* fallback, int item) const 
 {
-    BParameters* meta = getMeta(item);  
+#ifdef OLD_PARAMETERS
+    X_BParameters* meta = getMeta(item);  
+#else
+    NMeta* meta = getMeta(item);  
+#endif
     return meta ? meta->get<T>(key, fallback) : BStr::LexicalCast<T>(fallback) ;
 }
+
+
+int NPYMeta::getIntFromString(const char* key, const char* fallback, int item) const
+{
+#ifdef OLD_PARAMETERS
+    X_BParameters* meta = getMeta(item);  
+#else
+    NMeta* meta = getMeta(item);  
+#endif
+    return meta ? meta->getIntFromString(key,fallback) : BStr::LexicalCast<int>(fallback) ;
+}
+
+
 
 template<typename T>
 void NPYMeta::setValue(const char* key, T value, int item)
 {
-    if(!hasMeta(item)) m_meta[item] = new BParameters ; 
-    BParameters* meta = getMeta(item);  
+#ifdef OLD_PARAMETERS
+    if(!hasMeta(item)) m_meta[item] = new X_BParameters ; 
+    X_BParameters* meta = getMeta(item);  
+#else
+    if(!hasMeta(item)) m_meta[item] = new NMeta ; 
+    NMeta* meta = getMeta(item);  
+#endif
+
     assert( meta ) ; 
     return meta->set<T>(key, value) ;
 }
@@ -59,17 +102,29 @@ void NPYMeta::load(const char* dir, int num_item)
 {
     for(int item=-1 ; item < num_item ; item++)
     {
-        BParameters* meta = LoadMetadata(dir, item);
+#ifdef OLD_PARAMETERS
+        X_BParameters* meta = LoadMetadata(dir, item);
+#else
+        NMeta* meta = LoadMetadata(dir, item);
+#endif
         if(meta) m_meta[item] = meta ; 
     } 
 }
 void NPYMeta::save(const char* dir) const 
 {
-    typedef std::map<int, BParameters*> MIP ; 
+#ifdef OLD_PARAMETERS
+    typedef std::map<int, X_BParameters*> MIP ; 
+#else
+    typedef std::map<int, NMeta*> MIP ; 
+#endif
     for(MIP::const_iterator it=m_meta.begin() ; it != m_meta.end() ; it++)
     {
         int item = it->first ; 
-        BParameters* meta = it->second ; 
+#ifdef OLD_PARAMETERS
+        X_BParameters* meta = it->second ; 
+#else
+        NMeta* meta = it->second ; 
+#endif
         std::string metapath = MetaPath(dir, item) ;
         assert(meta); 
         meta->save(metapath.c_str()); 

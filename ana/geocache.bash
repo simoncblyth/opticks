@@ -1,5 +1,5 @@
 geocache-source(){ echo $BASH_SOURCE ; }
-geocache-vi(){ vi $(geocache-source) ; }
+geocache-vi(){ vi $(geocache-source) ; geocache- ; }
 geocache-sdir(){ echo $(dirname $(geocache-source)) ; }
 geocache-scd(){  cd $(geocache-dir) ; }
 geocache-usage(){ cat << EOU
@@ -603,10 +603,8 @@ geocache-tour-()
 }
 
 
-
-
-
-geocache-bench(){          geocache-rtxcheck $FUNCNAME $* ; }
+# preserving spaces through multiple levels of argument passing is painful but its trivial to do via envvar 
+geocache-bench(){  OPTICKS_METACOMMAND="$FUNCNAME $*" geocache-rtxcheck $FUNCNAME $* ; } 
 geocache-bench-()
 {
    type $FUNCNAME

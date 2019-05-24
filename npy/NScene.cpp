@@ -6,7 +6,13 @@
 #include "BStr.hh"
 #include "BFile.hh"
 #include "BTxt.hh"
-#include "BParameters.hh"
+
+
+#ifdef OLD_PARAMETERS
+#include "X_BParameters.hh"
+#else
+#include "NMeta.hpp"
+#endif
 
 
 #include "GLMFormat.hpp"
@@ -180,7 +186,7 @@ void NScene::init()
     }
 
 
-    load_csg_metadata();  // populate mesh_id keyed map of BParameters coming from json for each NCSG 
+    load_csg_metadata();  // populate mesh_id keyed map of parameters coming from json for each NCSG 
 
     import();  // recursive traverse of ygltf nodes creating Nd tree, and saving Nd into nd::_register with node_idx keys
 
@@ -362,19 +368,17 @@ void NScene::load_csg_metadata()
 
     for(std::size_t mesh_id = 0; mesh_id < num_meshes; ++mesh_id)
     {
-        //std::string soName = m_source->getMeshExtras<std::string>(mesh_id, "soName"); 
-        //int lvIdx          = m_source->getMeshExtras<int>(mesh_id, "lvIdx" );  
-        //std::string csgpath = m_source->getCSGPath(mesh_id); 
-        //BParameters* meta = NCSG::LoadMetadata(csgpath.c_str());
-
-
         std::string  soName = m_source->getSolidName(mesh_id);
 
         int lvIdx = m_source->getLogicalVolumeIndex(mesh_id); 
 
         m_csg_lvIdx[mesh_id] = lvIdx ; 
 
-        BParameters* meta = m_source->getCSGMetadata(mesh_id);
+#ifdef OLD_PARAMETERS
+        X_BParameters* meta = m_source->getCSGMetadata(mesh_id);
+#else
+        NMeta* meta = m_source->getCSGMetadata(mesh_id);
+#endif
         
         //assert( meta ) ; 
 
@@ -419,7 +423,11 @@ void NScene::load_csg_metadata()
 template<typename T>
 T NScene::getCSGMeta(unsigned mesh_id, const char* key, const char* fallback ) const 
 {
-    const BParameters* meta = m_csg_metadata.at(mesh_id) ;   // operator[] can change the map if no such key
+#ifdef OLD_PARAMETERS
+    const X_BParameters* meta = m_csg_metadata.at(mesh_id) ;   // operator[] can change the map if no such key
+#else
+    const NMeta* meta = m_csg_metadata.at(mesh_id) ;   // operator[] can change the map if no such key
+#endif
 
     if( meta == NULL )
         LOG(warning) << " missing ALL metadata for mesh_id  " << mesh_id ;

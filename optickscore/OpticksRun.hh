@@ -7,7 +7,13 @@ class OpticksEvent ;
 template <typename T> class NPY ; 
 class NPYBase ; 
 class G4StepNPY ; 
-class BParameters ;
+
+#ifdef OLD_PARAMETERS
+class X_BParameters ;
+#else
+class NMeta ; 
+#endif
+
 
 /**
 OpticksRun
@@ -54,7 +60,11 @@ class OKCORE_API OpticksRun
         OpticksEvent*    m_g4evt ; 
         OpticksEvent*    m_evt ; 
         G4StepNPY*       m_g4step ; 
-        BParameters*     m_parameters ;
+#ifdef OLD_PARAMETERS
+        X_BParameters*     m_parameters ;
+#else
+        NMeta*           m_parameters ;
+#endif
 
 
 };

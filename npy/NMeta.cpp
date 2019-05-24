@@ -5,9 +5,18 @@
 #include <fstream>
 #include <cstring>
 
+
+#ifdef _MSC_VER
+#else
+#include <unistd.h>
+extern char **environ;
+#endif
+
 #include <boost/lexical_cast.hpp>
 
+#include "SSys.hh"
 #include "BFile.hh"
+#include "BStr.hh"
 #include "NMeta.hpp"
 
 #include "PLOG.hh"
@@ -74,12 +83,46 @@ void NMeta::save(const char* dir, const char* name) const
 }
 
 
+std::vector<std::string>& NMeta::getLines()
+{
+    if(m_lines.size() == 0 ) prepLines();
+    return m_lines ;
+}
+
+void NMeta::dumpLines(const char* msg) 
+{
+    LOG(info) << msg ; 
+    const std::vector<std::string>& lines = getLines(); 
+    for(unsigned i=0 ; i < lines.size(); i++)
+    {
+        std::cout << lines[i] << std::endl ;   
+    }
+}
+
+void NMeta::prepLines()
+{
+    m_lines.clear();
+    for (nlohmann::json::const_iterator it = m_js.begin(); it != m_js.end(); ++it) 
+    {
+        std::string name = it.key(); 
+        std::stringstream ss ;  
+        ss 
+             << std::fixed
+             << std::setw(15) << name
+             << " : " 
+             << std::setw(15) << m_js[name.c_str()] 
+             ;
+        
+        m_lines.push_back(ss.str());
+    }
+}
+
+
 
 void NMeta::dump() const 
 {
-    LOG(info) << m_js.dump(4) ; 
+    LOG(info) << std::endl << m_js.dump(4) ; 
 }
-
 void NMeta::dump(const char* msg) const 
 {
     LOG(info) << msg ; 
@@ -87,6 +130,12 @@ void NMeta::dump(const char* msg) const
 }
 
 
+
+void NMeta::append(NMeta* other) 
+{
+    if(!other) return ; 
+    for (const auto &j : nlohmann::json::iterator_wrapper(other->js())) m_js[j.key()] = j.value();
+}
 
 
 void NMeta::setObj(const char* name, NMeta* obj)
@@ -141,12 +190,54 @@ void NMeta::set(const char* name, T value)
 {
     m_js[name] = value ; 
 }
+template <typename T>
+void NMeta::add(const char* name, T value)
+{
+    m_js[name] = value ; 
+}
+
+
+
+
+
 
 template <typename T>
 T NMeta::get(const char* name, const char* fallback) const 
 {
     return m_js.count(name) == 1 ? m_js[name].get<T>() : boost::lexical_cast<T>(fallback);
 }
+
+/**
+
+NMeta::getIntFromString
+=========================
+
+Many python stored verbosity appear as strings in the json, eg 248/meta.json:: 
+
+    {"lvname": "World0xc15cfc0", "soname": "WorldBox0xc15cf40", "lvIdx": 248, "verbosity": "0", "resolution": "20", "poly": "IM", "height": 0}
+                                                                                           ^^^
+                                                                                           ^^^
+
+But metadata reading code expects an int. This causes no problem for the untyped BParameter which stored 
+everything as strings, but it does cause a problem with NMeta. Causing test fails of   
+NCSGLoadTest, NScanTest, NSceneTest.
+
+This method is a workaround for this.
+
+**/
+
+int NMeta::getIntFromString(const char* name, const char* fallback) const 
+{
+    // workaround for many verbosity being encoded as string
+    std::string s = get<std::string>(name, "0");
+    int f = BStr::atoi(fallback, 0);    
+    int v = BStr::atoi(s.c_str(), f);    
+    return v ;
+}
+
+
+
+
 
 template <typename T>
 T NMeta::Get(const NMeta* meta, const char* name, const char* fallback) // static
@@ -166,6 +257,72 @@ bool NMeta::hasItem(const char* name) const
 {
     return m_js.count(name) == 1 ;
 }
+
+
+void NMeta::addEnvvar( const char* key ) 
+{
+    const char* val = SSys::getenvvar(key) ; 
+    if( val ) 
+    {
+        std::string s = val ; 
+        set<std::string>(key, s) ; 
+
+    } 
+} 
+
+void NMeta::addEnvvarsWithPrefix( const char* prefix, bool trim ) 
+{
+    int i=0 ; 
+    while(*(environ+i))
+    {
+       char* kv_ = environ[i++] ;  
+       if(strncmp(kv_, prefix, strlen(prefix))==0)
+       { 
+           std::string kv = kv_ ; 
+
+           size_t p = kv.find('=');  
+           assert( p != std::string::npos) ; 
+
+           std::string k = kv.substr(0,p); 
+           std::string v = kv.substr(p+1);   
+
+           std::string t = k.substr(strlen(prefix)); 
+  
+           LOG(info) << k << " : " << t << " : " << v   ;   
+
+           set<std::string>( trim ? t.c_str() : k.c_str(), v) ; 
+       }
+    }      
+}
+
+
+void NMeta::appendString(const char* name, const std::string& value, const char* delim)
+{
+    bool found = false ; 
+    std::string avalue ; 
+
+    for (nlohmann::json::const_iterator it = m_js.begin(); it != m_js.end(); ++it) 
+    {
+        std::string n = it.key() ;
+        if(n.compare(name)==0) 
+        {
+            found = true ; 
+            std::stringstream ss ; 
+            ss << m_js[n.c_str()].get<std::string>()  << delim  << value ; 
+            avalue = ss.str(); 
+            break ; 
+        }
+    }
+
+    std::string v = found ? avalue : value ;     
+
+    set<std::string>(name, v) ;
+}
+
+
+
+
+
 
 
 
@@ -226,8 +383,19 @@ template NPY_API void NMeta::set(const char* name, int value);
 template NPY_API void NMeta::set(const char* name, unsigned int value);
 template NPY_API void NMeta::set(const char* name, std::string value);
 template NPY_API void NMeta::set(const char* name, float value);
+template NPY_API void NMeta::set(const char* name, double  value);
 template NPY_API void NMeta::set(const char* name, char value);
 //template NPY_API void NMeta::set(const char* name, const char* value);
+
+
+template NPY_API void NMeta::add(const char* name, bool value);
+template NPY_API void NMeta::add(const char* name, int value);
+template NPY_API void NMeta::add(const char* name, unsigned int value);
+template NPY_API void NMeta::add(const char* name, std::string value);
+template NPY_API void NMeta::add(const char* name, float value);
+template NPY_API void NMeta::add(const char* name, double value);
+template NPY_API void NMeta::add(const char* name, char value);
+//template NPY_API void NMeta::add(const char* name, const char* value);
 
 
 template NPY_API bool         NMeta::get(const char* name) const ;
@@ -235,6 +403,7 @@ template NPY_API int          NMeta::get(const char* name) const ;
 template NPY_API unsigned int NMeta::get(const char* name) const ;
 template NPY_API std::string  NMeta::get(const char* name) const ;
 template NPY_API float        NMeta::get(const char* name) const ;
+template NPY_API double       NMeta::get(const char* name) const ;
 template NPY_API char         NMeta::get(const char* name) const ;
 //template NPY_API const char*  NMeta::get(const char* name) const ;
 
@@ -244,6 +413,7 @@ template NPY_API int          NMeta::get(const char* name, const char* fallback)
 template NPY_API unsigned int NMeta::get(const char* name, const char* fallback) const ;
 template NPY_API std::string  NMeta::get(const char* name, const char* fallback) const ;
 template NPY_API float        NMeta::get(const char* name, const char* fallback) const ;
+template NPY_API double       NMeta::get(const char* name, const char* fallback) const ;
 template NPY_API char         NMeta::get(const char* name, const char* fallback) const ;
 //template NPY_API const char*  NMeta::get(const char* name, const char* fallback) const ;
 
@@ -253,6 +423,7 @@ template NPY_API int          NMeta::Get(const NMeta*, const char* name, const c
 template NPY_API unsigned int NMeta::Get(const NMeta*, const char* name, const char* fallback) ; 
 template NPY_API std::string  NMeta::Get(const NMeta*, const char* name, const char* fallback) ; 
 template NPY_API float        NMeta::Get(const NMeta*, const char* name, const char* fallback) ; 
+template NPY_API double       NMeta::Get(const NMeta*, const char* name, const char* fallback) ; 
 template NPY_API char         NMeta::Get(const NMeta*, const char* name, const char* fallback) ; 
 //template NPY_API const char*  NMeta::Get(const NMeta*,const char* name, const char* fallback) ; 
 

@@ -5,7 +5,14 @@
 #include <string>
 #include <glm/fwd.hpp>
 struct nd ; 
-class BParameters ; 
+
+#ifdef OLD_PARAMETERS
+class X_BParameters ; 
+#else
+class NMeta ; 
+#endif
+
+
 class NCSG ; 
 struct NSceneConfig ; 
 
@@ -35,7 +42,14 @@ class NPY_API NGeometry
        virtual const char*              getName() const = 0 ; 
        virtual std::string              getSolidName(int mesh_id) = 0 ; 
        virtual int                      getLogicalVolumeIndex(int mesh_id) = 0 ; 
-       virtual BParameters*             getCSGMetadata(int mesh_id) = 0 ;
+
+
+#ifdef OLD_PARAMETERS
+       virtual X_BParameters*           getCSGMetadata(int mesh_id) = 0 ;
+#else
+       virtual NMeta*                   getCSGMetadata(int mesh_id) = 0 ;
+#endif
+
        virtual NCSG*                    getCSG(int mesh_id) = 0 ; 
 
        virtual std::string              getMeshName(unsigned mesh_id) = 0 ;

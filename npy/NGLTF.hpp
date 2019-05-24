@@ -12,7 +12,12 @@
 template<class T> class NPY ;
 
 struct nd ; 
-class BParameters ; 
+
+#ifdef OLD_PARAMETERS
+class X_BParameters ; 
+#else
+class NMeta ; 
+#endif
 
 namespace ygltf 
 {
@@ -84,7 +89,11 @@ class NPY_API NGLTF : public NGeometry {
         const char*                  getName() const ; 
         std::string                  getSolidName(int mesh_id);
         int                          getLogicalVolumeIndex(int mesh_id);
-        BParameters*                 getCSGMetadata( int mesh_id );
+#ifdef OLD_PARAMETERS
+        X_BParameters*                 getCSGMetadata( int mesh_id );
+#else
+        NMeta*                       getCSGMetadata( int mesh_id );
+#endif
         NCSG*                        getCSG(int mesh_id) ; 
         std::string                  getMeshName(unsigned mesh_id);
         unsigned                     getMeshNumPrimitives(unsigned mesh_id);

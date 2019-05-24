@@ -354,10 +354,18 @@ int NGLTF::getLogicalVolumeIndex(int mesh_id)
 }
 
 
-BParameters* NGLTF::getCSGMetadata( int mesh_id )
+#ifdef OLD_PARAMETERS
+X_BParameters* NGLTF::getCSGMetadata( int mesh_id )
+#else
+NMeta* NGLTF::getCSGMetadata( int mesh_id )
+#endif
 {
     std::string csgpath = getCSGPath(mesh_id); 
-    BParameters* meta = NCSG::LoadMetadata(csgpath.c_str());
+#ifdef OLD_PARAMETERS
+    X_BParameters* meta = NCSG::LoadMetadata(csgpath.c_str());
+#else
+    NMeta* meta = NCSG::LoadMetadata(csgpath.c_str());
+#endif
     return meta ; 
 }
 

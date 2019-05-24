@@ -636,7 +636,7 @@ def make_trapezoid( z, x1, y1, x2, y2, dtype=np.float32 ):
              src_y1=y1,
              src_x2=x2,
              src_y2=y2
-           )         # prefix as BParameters/BList not supporting multilevel ? But NMeta does
+           )         # prefix as BParameters/BList did not supporting multilevel ? Now are moving to NMeta which does
 
     v = np.zeros( (8,3), dtype=dtype)   # verts
                                     # ZYX

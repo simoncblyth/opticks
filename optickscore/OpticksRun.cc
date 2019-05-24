@@ -1,4 +1,11 @@
-#include "BParameters.hh"
+
+
+#ifdef OLD_PARAMETERS
+#include "X_BParameters.hh"
+#else
+#include "NMeta.hpp"
+#endif
+
 #include "NLookup.hpp"
 
 #include "Opticks.hh"
@@ -17,7 +24,11 @@ OpticksRun::OpticksRun(Opticks* ok)
    m_g4evt(NULL),
    m_evt(NULL),
    m_g4step(NULL),
-   m_parameters(new BParameters) 
+#ifdef OLD_PARAMETERS
+   m_parameters(new X_BParameters) 
+#else
+   m_parameters(new NMeta) 
+#endif
 {
     OK_PROFILE("OpticksRun::OpticksRun");
 }
@@ -273,7 +284,11 @@ translations performed.
 
 G4StepNPY* OpticksRun::importGenstepData(NPY<float>* gs, const char* oac_label)
 {
-    BParameters* gsp = gs->getParameters();
+#ifdef OLD_PARAMETERS
+    X_BParameters* gsp = gs->getParameters();
+#else
+    NMeta* gsp = gs->getParameters();
+#endif
     m_parameters->append(gsp);
 
     gs->setBufferSpec(OpticksEvent::GenstepSpec(m_ok->isCompute()));

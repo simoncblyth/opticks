@@ -6,7 +6,13 @@
 #include "SRenderer.hh"
 
 #include "BStr.hh"
-#include "BParameters.hh"
+
+#ifdef OLD_PARAMETERS
+#include "X_BParameters.hh"
+#else
+#include "NMeta.hpp"
+#endif
+
 
 // npy-
 #include "Types.hpp"
@@ -428,7 +434,11 @@ void OpticksViz::prepareGUI()
         LOG(LEVEL) << "NULL TimesTable " ; 
     }  
 
-    BParameters* parameters = evt ? evt->getParameters() : m_ok->getParameters() ; 
+#ifdef OLD_PARAMETERS
+    X_BParameters* parameters = evt ? evt->getParameters() : m_ok->getParameters() ; 
+#else
+    NMeta* parameters = evt ? evt->getParameters() : m_ok->getParameters() ; 
+#endif
 
     m_gui->setupParams(parameters->getLines());
 

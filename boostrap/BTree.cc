@@ -17,7 +17,17 @@
 namespace fs = boost::filesystem;
 namespace pt = boost::property_tree;
 
+/**
 
+https://stackoverflow.com/questions/10260688/boostproperty-treejson-parser-and-two-byte-wide-characters
+
+find that this is escaping slashes in the output json
+and there seems no way to avoid this
+
+https://www.boost.org/doc/libs/1_70_0/boost/property_tree/json_parser/detail/write.hpp
+
+
+**/
 
 void BTree::saveTree(const pt::ptree& t , const char* path_)
 {

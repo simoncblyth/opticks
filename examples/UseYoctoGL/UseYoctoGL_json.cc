@@ -7,6 +7,8 @@
 using ygltf::json ; 
 
 
+// https://github.com/nlohmann/json/
+
 struct sphere
 {
     std::string name ; 
@@ -14,40 +16,45 @@ struct sphere
     float rmax ; 
 };
 
+
+#ifdef FUTURE
 /*
 This autoconv doesnt work, maybe the 
 version of the json with ygltf is behind a bit ?
+*/
 
+namespace ns 
+{
+// a simple struct to model a person
+struct person {
+    std::string name;
+    std::string address;
+    int age;
+};
 
-namespace ns {
-    // a simple struct to model a person
-    struct person {
-        std::string name;
-        std::string address;
-        int age;
-    };
+void to_json(json& j, const person& p) {
+    j = json{{"name", p.name}, {"address", p.address}, {"age", p.age}};
+}
 
-    void to_json(json& j, const person& p) {
-        j = json{{"name", p.name}, {"address", p.address}, {"age", p.age}};
-    }
-
-    void from_json(const json& j, person& p) {
-        p.name = j.at("name").get<std::string>();
-        p.address = j.at("address").get<std::string>();
-        p.age = j.at("age").get<int>();
-    }
+void from_json(const json& j, person& p) {
+    p.name = j.at("name").get<std::string>();
+    p.address = j.at("address").get<std::string>();
+    p.age = j.at("age").get<int>();
+}
 
 } // namespace ns
 
-    ns::person p {"Ned Flanders", "744 Evergreen Terrace", 60};
 
-*/
-
-
-int main(int argc, char** argv)
+void test_autoconv()
 {
-    // https://github.com/nlohmann/json/
+    ns::person p {"Ned Flanders", "744 Evergreen Terrace", 60};
+}
+#endif
 
+
+
+void test_create()
+{
     json j = {} ; 
     
     j["name"] = "hello" ;  
@@ -73,6 +80,35 @@ int main(int argc, char** argv)
     };
 
     std::cout << "j2\n" << std::setw(4) <<   j2 << std::endl ; 
+}
+
+
+void test_append()
+{
+    json a = {} ; 
+    a["name"] = "hello" ;  
+    a["red"] = {1,2,3} ;  
+    a["green"] = {4,5,6} ;  
+    a["blue"] = {7,8,9} ;  
+ 
+    json b = {} ; 
+    b["cyan"] = 10 ;  
+    b["magenta"] = 20 ;  
+    b["yellow"] = 30 ;  
+
+    for (const auto &j : json::iterator_wrapper(b)) a[j.key()] = j.value();
+
+    std::cout << "a\n" << std::setw(4) << a << std::endl ; 
+
+}
+
+
+int main(int argc, char** argv)
+{
+    /**
+    test_create();
+    **/
+    test_append();
 
     return 0 ; 
 }

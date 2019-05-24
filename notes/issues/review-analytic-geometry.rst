@@ -168,21 +168,6 @@ mm5 : support temple "fastener"
     2019-05-19 20:03:43.479 INFO  [300826] [OGeo::convert@230] ] nmm 6
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 mm2 : large PMT
 --------------------
 
@@ -337,12 +322,8 @@ opticksdata-jv4-vi::
 
 
 
-
-
 SUSPECT NEAR_DEGENERACY OF LV:20 AND LV:21 pyrex inside pyrex AS POTENTIAL PROBLEM
 -----------------------------------------------------------------------------------------
-
-
 
 with the complicated mm2
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -378,11 +359,8 @@ are much faster and RTX does not hinder::
                        R0_TITAN_RTX      0.082      1.832      1.000          13.503 
 
 
-
-
 Exercise improved digest+geocache handling for easier jumping between geometries
 ----------------------------------------------------------------------------------
-
 
 Setup back functions for changing 20inch PMT csgskiplv::
 
@@ -434,11 +412,6 @@ Setup back functions for changing 20inch PMT csgskiplv::
     geocache-j1808-v4-t5(){ geocache-j1808-v4- --csgskiplv 22,17,21,20,19 --runfolder $FUNCNAME --runcomment $(${FUNCNAME}-comment)  ; } 
 
     geocache-bashrc-export(){   geocache-j1808-v4-t5-export ; }
-
-
-
-
-
 
 
 

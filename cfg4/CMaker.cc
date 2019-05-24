@@ -6,7 +6,14 @@
 #include "NGLMExt.hpp"
 #include "NCSG.hpp"
 #include "NNode.hpp"
-#include "BParameters.hh"
+
+#ifdef OLD_PARAMETERS
+#include "X_BParameters.hh"
+#else
+#include "NMeta.hpp"
+#endif
+
+
 #include "NPrimitives.hpp"
 #include "GLMFormat.hpp"
 
@@ -234,9 +241,15 @@ g4-;g4-cls G4VFacet
  
 G4VSolid* CMaker::ConvertConvexPolyhedron(const nnode* node) // static
 {
-    BParameters* meta = node->meta ;  
+#ifdef OLD_PARAMETERS
+    X_BParameters* meta = node->meta ;  
     assert(meta);
     std::string src_type = meta->getStringValue("src_type");
+#else
+    NMeta* meta = node->meta ;  
+    assert(meta);
+    std::string src_type = meta->get<std::string>("src_type");
+#endif
    
     // see src_type args of the ConvexPolyhedronSrc in opticks/analytic/prism.py 
     bool prism = src_type.compare("prism")==0 ;
@@ -453,9 +466,15 @@ G4VSolid* CMaker::ConvertPrimitive(const nnode* node) // static
     }
     else if(node->type == CSG_TRAPEZOID || node->type == CSG_SEGMENT || node->type == CSG_CONVEXPOLYHEDRON)
     {
-        BParameters* meta = node->meta ;  
+#ifdef OLD_PARAMETERS
+        X_BParameters* meta = node->meta ;  
         assert(meta);
         std::string src_type = meta->getStringValue("src_type");
+#else
+        NMeta* meta = node->meta ;  
+        assert(meta);
+        std::string src_type = meta->get<std::string>("src_type");
+#endif
 
         if(src_type.compare("trapezoid")==0)
         {

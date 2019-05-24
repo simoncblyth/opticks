@@ -8,7 +8,7 @@
 class NPYBase ; 
 class NPYSpec ; 
 class NPYSpecList ; 
-class BParameters ; 
+
 
 #include "NPY_API_EXPORT.hh"
 

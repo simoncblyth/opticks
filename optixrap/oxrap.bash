@@ -574,8 +574,8 @@ see ptx- ptx-vi
 EON
 }
 
-oxrap-f64(){ ptx.py $(opticks-prefix)/installcache/PTX --exclude exception $* | c++filt ; }
-
+oxrap-f64-(){ ptx.py $(opticks-prefix)/installcache/PTX $*  | c++filt ; }
+oxrap-f64(){  $FUNCNAME- --exclude exception $*  ; }
 
 ################# OLD FUNCS ####################
 

@@ -22,7 +22,12 @@ typedef enum
 
 //  .,+10s/\s*\(CFG\w*\).*$/static const char* \1_ ;/g
 
-class BParameters ; 
+
+#ifdef OLD_PARAMETERS
+class X_BParameters ; 
+#else
+class NMeta ; 
+#endif
 
 
 struct NPY_API NOpenMeshCfg 
@@ -41,7 +46,11 @@ struct NPY_API NOpenMeshCfg
     static const char* CFG_NUMSUBDIV_ ;
     static const char* CFG_OFFSAVE_ ;
 
-    NOpenMeshCfg(const BParameters* meta, const char* treedir);
+#ifdef OLD_PARAMETERS
+    NOpenMeshCfg(const X_BParameters* meta, const char* treedir);
+#else
+    NOpenMeshCfg(const NMeta* meta, const char* treedir);
+#endif
     void dump(const char* msg="NOpenMeshCfg::dump");
 
     void init();
@@ -58,7 +67,11 @@ struct NPY_API NOpenMeshCfg
 
 
     // args
-    const BParameters* meta ; 
+#ifdef OLD_PARAMETERS
+    const X_BParameters* meta ; 
+#else
+    const NMeta* meta ; 
+#endif
     const char* treedir ; 
 
     // direct from meta 

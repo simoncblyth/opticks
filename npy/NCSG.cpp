@@ -10,7 +10,13 @@
 
 #include "NGLMExt.hpp"
 #include "GLMFormat.hpp"
-#include "BParameters.hh"
+
+#ifdef OLD_PARAMETERS
+#include "X_BParameters.hh"
+#else
+#include "NMeta.hpp"
+#endif
+
 
 #include "NTrianglesNPY.hpp"
 #include "NPolygonizer.hpp"
@@ -246,7 +252,13 @@ void NCSG::postload()
     std::string gpuoffset = m_meta->getValue<std::string>("gpuoffset", "0,0,0" );
     m_gpuoffset = gvec3(gpuoffset);  
 
-    int verbosity     = m_meta->getValue<int>("verbosity", "0");
+
+#ifdef OLD_PARAMETERS
+    int verbosity  = m_meta->getValue<int>("verbosity", "0");
+#else
+    int verbosity = m_meta->getIntFromString("verbosity", "0") ;
+#endif
+
     increaseVerbosity(verbosity);
 }
 
@@ -367,7 +379,12 @@ nnode* NCSG::import_r(unsigned idx, nnode* parent)
     }
     assert(node); 
 
-    BParameters* nodemeta = m_meta->getMeta(idx);
+#ifdef OLD_PARAMETERS
+    X_BParameters* nodemeta = m_meta->getMeta(idx);
+#else
+    NMeta* nodemeta = m_meta->getMeta(idx);
+#endif
+
     if(nodemeta) node->meta = nodemeta ; 
 
     // Avoiding duplication between the operator and primitive branches 
@@ -877,7 +894,12 @@ void NCSG::dump(const char* msg)
 
     m_root->dump("NCSG::dump");   
 
-    BParameters* _meta = m_meta->getMeta(-1) ;
+#ifdef OLD_PARAMETERS
+    X_BParameters* _meta = m_meta->getMeta(-1) ;
+#else
+    NMeta* _meta = m_meta->getMeta(-1) ;
+#endif
+
     if(_meta) _meta->dump(); 
 
 }
@@ -1099,7 +1121,11 @@ void NCSG::postimport_autoscan()
 }
 
 
-BParameters* NCSG::LoadMetadata( const char* treedir, int item )
+#ifdef OLD_PARAMETERS
+X_BParameters* NCSG::LoadMetadata( const char* treedir, int item )
+#else
+NMeta* NCSG::LoadMetadata( const char* treedir, int item )
+#endif
 {
     return NPYMeta::LoadMetadata(treedir, item); 
 } 
@@ -1228,7 +1254,11 @@ std::string NCSG::smry() const
     return ss.str();
 }
 
-BParameters* NCSG::getMeta(int idx) const 
+#ifdef OLD_PARAMETERS
+X_BParameters* NCSG::getMeta(int idx) const 
+#else
+NMeta* NCSG::getMeta(int idx) const 
+#endif
 {
     return m_meta->getMeta(idx); 
 }

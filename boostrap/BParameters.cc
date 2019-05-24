@@ -6,6 +6,15 @@
 #include <algorithm>
 #include <iterator>
 
+#ifdef _MSC_VER
+#else
+#include <unistd.h>
+extern char **environ;
+#endif
+
+
+
+
 #include "SSys.hh"
 #include "BFile.hh"
 #include "BList.hh"
@@ -192,6 +201,30 @@ void BParameters::addEnvvar( const char* key )
 
     } 
 } 
+
+void BParameters::addEnvvarsWithPrefix( const char* prefix ) 
+{
+    int i=0 ; 
+    while(*(environ+i))
+    {
+       char* kv_ = environ[i++] ;  
+       if(strncmp(kv_, prefix, strlen(prefix))==0)
+       { 
+           std::string kv = kv_ ; 
+
+           size_t p = kv.find('=');  
+           assert( p != std::string::npos) ; 
+
+           std::string k = kv.substr(0,p); 
+           std::string v = kv.substr(p+1);   
+   
+           //std::cout << k << " : " << v << std::endl ;   
+
+           add<std::string>(k.c_str(), v );   
+       }
+    }      
+}
+
 
 
 template <typename T>

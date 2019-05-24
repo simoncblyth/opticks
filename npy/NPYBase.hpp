@@ -11,8 +11,12 @@
 #include <glm/fwd.hpp>
 
 
-class BParameters ; 
+#ifdef OLD_PARAMETERS
+class X_BParameters ; 
+#else
 class NMeta ; 
+#endif
+
 class NLookup ; 
 class NPYSpec ; 
 #include "NPY_API_EXPORT.hh"
@@ -96,11 +100,16 @@ class NPY_API NPYBase {
        unsigned int getValueIndex(unsigned i, unsigned j, unsigned k, unsigned l=0, unsigned m=0) const ;
        unsigned int getNumValues(unsigned int from_dim=0) const ;
 
-       BParameters*  getParameters() const ;
+#ifdef OLD_PARAMETERS
+       X_BParameters*  getParameters() const ;
+#else
+       NMeta*        getParameters() const ;
+#endif
+
        template <typename T> void setParameter(const char* key, T value);
        template <typename T> T getParameter(const char* key, const char* fallback) const ;
 
-       // TODO: switch over to NMeta from BParameters
+       // TODO: switch over to NMeta from X_BParameters
        void setMeta(NMeta* meta); 
        template <typename T> void setMeta(const char* key, T value);
        template <typename T> T getMeta(const char* key, const char* fallback) const ;
@@ -221,7 +230,13 @@ class NPY_API NPYBase {
    private:
        bool               m_dynamic ;
        NLookup*           m_lookup ;   // only needed for legacy gensteps 
-       BParameters*       m_parameters ;  // for keeping notes, especially for gensteps
+
+#ifdef OLD_PARAMETESR
+       X_BParameters*     m_parameters ;  // for keeping notes, especially for gensteps
+#else
+       NMeta*             m_parameters ;  // for keeping notes, especially for gensteps
+#endif
+
        NMeta*             m_meta ; 
 
        const char*        m_name ; 

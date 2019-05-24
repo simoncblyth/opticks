@@ -34,7 +34,7 @@ void test_scene_scenes(const ygltf::glTF_t* gltf )
     std::cout << "gltf.scene " << gltf->scene << std::endl ; 
 
     auto scenes = std::vector<int>();
-    for (auto i = 0; i < gltf->scenes.size(); i++) scenes.push_back(i);
+    for (unsigned i = 0; i < gltf->scenes.size(); i++) scenes.push_back(i);
 
     std::cout 
               << " scenes.size " << scenes.size()
@@ -48,12 +48,7 @@ void test_scene_scenes(const ygltf::glTF_t* gltf )
             std::cout << " node_id " << node_id << std::endl ; 
         }
     }
-
-
-
 }
-
-
 
 
 void test_walk(const ygltf::glTF_t* gltf, int scene_idx=-1)
@@ -65,7 +60,7 @@ void test_walk(const ygltf::glTF_t* gltf, int scene_idx=-1)
     // get scene names
     auto scenes = std::vector<int>();
     if (scene_idx < 0) {
-        for (auto i = 0; i < gltf->scenes.size(); i++) scenes.push_back(i);
+        for (unsigned i = 0; i < gltf->scenes.size(); i++) scenes.push_back(i);
     } else {
         scenes.push_back(scene_idx);
     }
@@ -120,6 +115,24 @@ void test_walk(const ygltf::glTF_t* gltf, int scene_idx=-1)
 }
 
 
+void test_load_gltf( const char* path )
+{
+    std::cout << "load_gltf " << path << std::endl ; 
+
+    bool load_bin = true ; 
+    bool load_shaders = true ; 
+    bool load_img = false ; 
+    bool skip_missing = true  ; 
+
+    //auto gltf = std::unique_ptr<ygltf::glTF_t>(ygltf::load_gltf(path, load_bin, load_shaders, load_img, skip_missing )) ;
+    const ygltf::glTF_t* gltf = ygltf::load_gltf(path, load_bin, load_shaders, load_img, skip_missing ) ;
+
+    test_scene_scenes(gltf);
+    test_walk(gltf, gltf->scene) ;
+
+}
+
+
 
 int main(int argc, char** argv)
 {
@@ -129,24 +142,6 @@ int main(int argc, char** argv)
         std::cout << "Usage: expecting path to .gltf file " << std::endl ; 
         return 0 ; 
     }
-
-    const std::string filename = argv[1] ; 
-    std::cout << "load_gltf " << filename << std::endl ; 
-
-
-    bool load_bin = true ; 
-    bool load_shaders = true ; 
-    bool load_img = false ; 
-    bool skip_missing = true  ; 
-
-    auto gltf = std::unique_ptr<ygltf::glTF_t>(ygltf::load_gltf(filename, load_bin, load_shaders, load_img, skip_missing )) ;
-
-
-    test_scene_scenes(gltf.get());
-
-
-    test_walk(gltf.get(), gltf->scene) ;
-
 
     return 0 ; 
 }

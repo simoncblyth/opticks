@@ -21,7 +21,13 @@
 #include "BFile.hh"
 #include "BOpticksResource.hh"
 #include "BOpticksEvent.hh"
-#include "BParameters.hh"
+
+#ifdef OLD_PARAMETERS
+#include "X_BParameters.hh"
+#else
+#include "NMeta.hpp"
+#endif
+
 
 // npy-
 #include "uif.h"
@@ -556,9 +562,11 @@ Index* OpticksEvent::getBoundaryIndex()
 }
 
 
-
-
-BParameters* OpticksEvent::getParameters()
+#ifdef OLD_PARAMETERS
+X_BParameters* OpticksEvent::getParameters()
+#else
+NMeta*      OpticksEvent::getParameters()
+#endif
 {
     return m_parameters ;
 }
@@ -593,8 +601,15 @@ void OpticksEvent::init()
     m_timer->setVerbose(false);
     m_timer->start();
 
-    m_versions = new BParameters ;
-    m_parameters = new BParameters ;
+
+#ifdef OLD_PARAMETERS
+    m_versions = new X_BParameters ;
+    m_parameters = new X_BParameters ;
+#else
+    m_versions = new NMeta ;
+    m_parameters = new NMeta ;
+#endif
+
     m_report = new Report ; 
     m_domain = new OpticksDomain ; 
 
@@ -741,7 +756,13 @@ void OpticksEvent::setNote(const char* note)
 }
 void OpticksEvent::appendNote(const char* note)
 {
+
+#ifdef OLD_PARAMETERS
     m_parameters->append<std::string>("Note", note ? note : "" );
+#else
+    std::string n = note ? note : "" ; 
+    m_parameters->appendString("Note", n );
+#endif
 }
 
 
@@ -939,8 +960,11 @@ void OpticksEvent::setBufferControl(NPYBase* data)
                      << " SKIPPED FOR " << name 
                      << " AS NO spec "
                      ;
-
-        BParameters* param = data->getParameters();
+#ifdef OLD_PARAMETERS
+        X_BParameters* param = data->getParameters();
+#else
+        NMeta*       param = data->getParameters();
+#endif
         if(param)
             param->dump("OpticksEvent::setBufferControl FATAL: BUFFER LACKS SPEC"); 
         assert(0);
@@ -1790,7 +1814,12 @@ void OpticksEvent::saveParameters()
 void OpticksEvent::loadParameters()
 {
     std::string tagdir = getTagDir();
+#ifdef OLD_PARAMETERS
     m_parameters->load_(tagdir.c_str(), PARAMETERS_NAME );
+#else
+    m_parameters->load(tagdir.c_str(), PARAMETERS_NAME );
+#endif
+
 }
 
 void OpticksEvent::importParameters()

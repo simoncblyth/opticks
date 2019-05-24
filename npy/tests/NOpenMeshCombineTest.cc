@@ -27,7 +27,11 @@ int main(int argc, char** argv)
 
     const nnode* root = tree->getRoot();
 
-    BParameters* meta = tree->getMeta(-1) ;
+#ifdef OLD_PARAMETERS
+    X_BParameters* meta = tree->getMeta(-1) ;
+#else
+    NMeta* meta = tree->getMeta(-1) ;
+#endif
 
     typedef NOpenMesh<NOpenMeshType> MESH ; 
 

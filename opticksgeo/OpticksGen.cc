@@ -1,5 +1,9 @@
 
-#include "BParameters.hh"
+#ifdef OLD_PARAMETERS
+#include "X_BParameters.hh"
+#else
+#include "NMeta.hpp"
+#endif
 
 #include "NCSG.hpp"
 #include "NPY.hpp"
@@ -409,7 +413,11 @@ NPY<float>* OpticksGen::loadLegacyGenstepFile(const char* label)
 
     int modulo = m_cfg->getModulo();
 
-    BParameters* parameters = gs->getParameters();
+#ifdef OLD_PARAMETERS
+    X_BParameters* parameters = gs->getParameters();
+#else
+    NMeta* parameters = gs->getParameters();
+#endif
     parameters->add<int>("Modulo", modulo );
     if(modulo > 0) 
     {    

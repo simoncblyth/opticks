@@ -57,6 +57,7 @@ class BRAP_API BParameters {
 
 
        void addEnvvar( const char* key ) ;
+       void addEnvvarsWithPrefix( const char* prefix="OPTICKS_" );  
 
    public:
        unsigned getNumItems();

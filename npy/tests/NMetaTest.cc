@@ -95,15 +95,84 @@ void test_copy_ctor()
 
     assert( mc.getNumKeys() == 5 );
 }
- 
+
+
+void test_addEnvvarsWithPrefix()
+{
+    NMeta m ; 
+    m.addEnvvarsWithPrefix("OPTICKS_");
+    m.dump("addEnvvarsWithPrefix") ; 
+
+    std::vector<std::string> lines = m.getLines(); 
+    for(unsigned i=0 ; i < lines.size() ; i++) 
+    {
+        std::cout << lines[i] << std::endl ; 
+    }
+}
+
+void test_appendString()
+{
+
+    NMeta m ; 
+    m.set<std::string>("name", "yo");
+    m.dump();  
+
+    m.appendString("name","yo");
+    m.appendString("name","yo");
+    m.appendString("name","yo");
+    m.appendString("name","yo");
+
+    m.dump();  
+}
+
+void test_prepLines()
+{
+
+    NMeta m ; 
+    m.set<std::string>("name", "yo");
+    m.set<int>("cyan", 7);
+    m.set<int>("red", 100);
+    m.dump();  
+
+    m.dumpLines();
+}
+
+void test_append()
+{
+
+    NMeta a ; 
+    a.set<std::string>("name", "yo");
+    a.set<int>("cyan", 7);
+    a.set<int>("red", 100);
+    a.dump();  
+
+    NMeta b ; 
+    b.set<std::string>("name", "yo2");
+    b.set<int>("green", 7);
+    b.set<int>("blue", 100);
+    b.dump();  
+
+
+    a.append(&b);
+    a.dump();  
+}
+
+
+
 
 int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv);
 
+/*
     test_write_read();
     test_composable();
     test_copy_ctor();
+    test_addEnvvarsWithPrefix();  
+    test_appendString();  
+    test_prepLines();  
+*/
+    test_append();  
 
     return 0 ; 
 }
