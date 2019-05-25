@@ -2,8 +2,82 @@ om-test-gpu-cluster-fails
 ============================
 
 
-After gdml2gltf, geocache prep and RNG prep down to the familiar 2 fails
----------------------------------------------------------------------------
+
+
+
+
+
+
+
+2019-05-25 : lots of fails again
+-------------------------------------
+
+
+::
+
+    FAILS:
+      1  /5   Test #1  : OKOPTest.OpIndexerTest                        ***Failed                      0.03   
+      2  /5   Test #2  : OKOPTest.OpSeederTest                         ***Failed                      0.01   
+      3  /5   Test #3  : OKOPTest.dirtyBufferTest                      ***Failed                      0.01   
+      4  /5   Test #4  : OKOPTest.compactionTest                       ***Failed                      0.01   
+      5  /5   Test #5  : OKOPTest.OpSnapTest                           ***Failed                      0.01   
+      1  /19  Test #1  : OptiXRapTest.OContextCreateTest               ***Failed                      0.03   
+      2  /19  Test #2  : OptiXRapTest.OScintillatorLibTest             ***Failed                      0.01   
+      3  /19  Test #3  : OptiXRapTest.LTOOContextUploadDownloadTest    ***Failed                      0.01   
+      4  /19  Test #4  : OptiXRapTest.intersectAnalyticTest            ***Failed                      0.01   
+      5  /19  Test #5  : OptiXRapTest.Roots3And4Test                   ***Failed                      0.01   
+      6  /19  Test #6  : OptiXRapTest.bufferTest                       ***Failed                      0.01   
+      7  /19  Test #7  : OptiXRapTest.textureTest                      ***Failed                      0.01   
+      8  /19  Test #8  : OptiXRapTest.boundaryTest                     ***Failed                      0.01   
+      9  /19  Test #9  : OptiXRapTest.boundaryLookupTest               ***Failed                      0.01   
+      10 /19  Test #10 : OptiXRapTest.texTest                          ***Failed                      0.01   
+      11 /19  Test #11 : OptiXRapTest.tex0Test                         ***Failed                      0.01   
+      12 /19  Test #12 : OptiXRapTest.minimalTest                      ***Failed                      0.01   
+      13 /19  Test #13 : OptiXRapTest.rayleighTest                     ***Failed                      0.01   
+      14 /19  Test #14 : OptiXRapTest.writeBufferTest                  ***Failed                      0.01   
+      15 /19  Test #15 : OptiXRapTest.writeBufferLowLevelTest          ***Failed                      0.01   
+      16 /19  Test #16 : OptiXRapTest.redirectLogTest                  ***Failed                      0.01   
+      17 /19  Test #17 : OptiXRapTest.downloadTest                     ***Failed                      0.01   
+      18 /19  Test #18 : OptiXRapTest.eventTest                        ***Failed                      0.01   
+      19 /19  Test #19 : OptiXRapTest.interpolationTest                ***Failed                      0.01   
+      1  /5   Test #1  : OKTest.flagsTest                              ***Failed                      0.06   
+      2  /5   Test #2  : OKTest.OKTest                                 ***Failed                      0.02   
+      3  /5   Test #3  : OKTest.OTracerTest                            ***Failed                      0.02   
+      4  /5   Test #4  : OKTest.LogTest                                ***Failed                      0.02   
+      5  /5   Test #5  : OKTest.TrivialTest                            ***Failed                      0.02   
+      1  /1   Test #1  : OKG4Test.OKG4Test                             ***Failed                      0.03   
+      1  /1   Test #1  : G4OKTest.G4OKTest                             ***Failed                      0.08   
+    rc 0
+    gpu020.ihep.ac.cn
+    blyth@lxslc701~/g/opticks/examples/UseOptiX date
+    Sat May 25 21:58:22 CST 2019
+
+
+
+Hmm memory failures with "srun" but not "sbatch" ? Or is it just depending on which node it runs::
+
+    2019-05-25 22:00:00.219 INFO  [239203] [Camera::setType@277]  type 0
+    2019-05-25 22:00:01.296 INFO  [239203] [Opticks::makeSimpleTorchStep@2476]  enable : --torch (the default)  configure : --torchconfig [NULL] dump details : --torchdbg 
+    terminate called after throwing an instance of 'optix::Exception'
+      what():  Memory allocation failed (Details: Function "RTresult _rtBufferCreate(RTcontext, unsigned int, RTbuffer_api**)" caught exception: Encountered a CUDA error: cudaDriver().CuDevicePrimaryCtxRetain( &context, dev.get() ) returned (2): Out of memory)
+    /afs/ihep.ac.cn/users/b/blyth/g/job.sh: line 37: 239203 Aborted                 (core dumped) OpIndexerTest
+    rc 134
+    gpu020.ihep.ac.cn
+    blyth@lxslc701~/g/opticks/examples/UseOptiX 
+
+
+
+
+
+
+
+
+
+
+
+
+2019-04-28 After gdml2gltf, geocache prep and RNG prep down to the familiar 2 fails
+------------------------------------------------------------------------------------------
 
 ::
 
@@ -17,8 +91,6 @@ After gdml2gltf, geocache prep and RNG prep down to the familiar 2 fails
       19 /19  Test #19 : OptiXRapTest.Roots3And4Test                   Child aborted***Exception:     3.16   
     rc 0
     gpu019.ihep.ac.cn
-
-
 
 
 fresh install fails

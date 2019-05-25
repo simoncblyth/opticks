@@ -538,6 +538,20 @@ oxrap-bcd(){  cd $(oxrap-bdir); }
 oxrap-name(){ echo OptiXRap ; }
 oxrap-tag(){  echo OXRAP ; }
 
+oxrap-tests(){ tests.py $(oxrap-tdir)/CMakeLists.txt ; }
+
+oxrap-tests-run(){
+    local t
+    local rc 
+    oxrap-tests | while read t ; do
+        which $t 
+        $t 2>&1 1>/dev/null
+        rc=$?
+        echo $rc
+    done
+}
+
+
 
 oxrap-apihh(){  echo $(oxrap-sdir)/$(oxrap-tag)_API_EXPORT.hh ; }
 oxrap---(){     touch $(oxrap-apihh) ; oxrap--  ; } 
@@ -550,6 +564,8 @@ oxrap-t(){                   opticks-t $(oxrap-bdir) $* ; }
 oxrap-genproj() { oxrap-scd ; opticks-genproj $(oxrap-name) $(oxrap-tag) ; } 
 oxrap-gentest() { oxrap-tcd ; opticks-gentest ${1:-OExample} $(oxrap-tag) ; } 
 oxrap-txt(){ vi $(oxrap-sdir)/CMakeLists.txt $(oxrap-tdir)/CMakeLists.txt ; } 
+
+
 
 
 
