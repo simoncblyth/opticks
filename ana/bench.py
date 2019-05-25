@@ -52,7 +52,9 @@ if __name__ == '__main__':
     print(argline)
 
     parser = argparse.ArgumentParser(__doc__)
-    parser.add_argument( "--resultsdir", default="$TMP/results", help="Directory path to results" )
+
+    resultsprefix = "$OPTICKS_RESULTS_PREFIX" if os.environ.has_key("OPTICKS_RESULTS_PREFIX") else "$TMP"  ## equivalent to BOpticksResource::ResolveResultsPrefix
+    parser.add_argument( "--resultsdir", default=os.path.join(resultsprefix, "results"), help="Directory path to results" )
     parser.add_argument( "--name", default="geocache-bench", help="Name of directory beneath resultsdir in which to look for results")
     parser.add_argument( "--digest", default=None, help="Select result groups using geocaches with digests that start with the option string")
     parser.add_argument( "--since", default=None, help="Select results from dated folders following the date string provided, eg May22_1030 or 20190522_173746")

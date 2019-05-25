@@ -673,7 +673,7 @@ geocache-rtxcheck()
 
    $name- --cvd 0,1 --rtx 0 --runfolder $name --runstamp $stamp --runlabel "R0_TITAN_V_AND_TITAN_RTX" $*
 
-   bench.py --resultsdir $TMP/results --name $name
+   bench.py --name $name
 }
 
 
@@ -704,7 +704,7 @@ geocache-cluster()
    geocache-cluster-cvd | head -8 | while read cvd ; do
         geocache-bench- --cvd $cvd --rtx 2 --runfolder $FUNCNAME --runstamp $stamp  $*   
    done  
-   bench.py $LOCAL_BASE/opticks/results/$FUNCNAME
+   bench.py 
 
 }
 

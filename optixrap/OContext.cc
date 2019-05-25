@@ -896,6 +896,13 @@ RTformat OContext::getFormat(NPYBase::Type_t type, bool is_seed)
 
 void OContext::snap(const char* path)
 {
+    if(m_ok->isNoSavePPM())
+    {
+        LOG(fatal) << " --nosaveppm " << path ; 
+        return ;  
+    }
+
+
     optix::Buffer output_buffer = m_context["output_buffer"]->getBuffer() ; 
 
     RTsize width, height, depth ;

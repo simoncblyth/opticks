@@ -241,6 +241,9 @@ void OpticksCfg<Listener>::init()
    m_desc.add_options()
        ("ctrldrag",   "use alternative cursor interaction approach, see Frame::cursor_moved ") ; 
 
+   m_desc.add_options()
+       ("nosaveppm",   "skip the saving of PPM files from compute snaps") ; 
+
 
 
    m_desc.add_options()

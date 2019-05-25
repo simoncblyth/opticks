@@ -329,6 +329,7 @@ class OKCORE_API Opticks {
        int                  getPrintIndex(unsigned dim=0) const ; 
        bool                 isPrintIndexLog() const ; 
        bool                 isG4CodeGen() const ;
+       bool                 isNoSavePPM() const ; // --nosaveppm
        bool                 isPrintEnabled() const ;
        bool                 isXAnalytic() const ;
        bool                 isXGeometryTriangles() const ;

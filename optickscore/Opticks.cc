@@ -675,6 +675,10 @@ bool Opticks::isG4CodeGen() const
 {
     return m_cfg->hasOpt("g4codegen") ;
 }
+bool Opticks::isNoSavePPM() const  // --nosaveppm
+{
+    return m_cfg->hasOpt("nosaveppm") ;
+}
 bool Opticks::canDeleteGeoCache() const   // --deletegeocache
 {
     return m_cfg->hasOpt("deletegeocache") ;
