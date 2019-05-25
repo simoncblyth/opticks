@@ -16,11 +16,13 @@ int main( int argc, char** argv )
     Opticks* ok = new Opticks(argc, argv, "--compute");
     ok->configure();
 
+    const char* cmake_target = "downloadTest" ;  
+    const char* ptxrel = "tests" ; 
 
-    OContext* ctx = OContext::Create(ok );
+    OContext* ctx = OContext::Create(ok, cmake_target, ptxrel );
     optix::Context context = ctx->getContext(); 
 
-    unsigned entry = ctx->addEntry("minimalTest.cu", "minimal", "exception");
+    unsigned entry = ctx->addEntry("downloadTest.cu", "minimal", "exception");
 
     unsigned ni = 100 ; 
     unsigned nj = 4 ; 
@@ -28,8 +30,14 @@ int main( int argc, char** argv )
 
     NPY<float>* npy = NPY<float>::make(ni, nj, nk) ;
     npy->fill(42.);
-    npy->save("$TMP/OOContextUploadDownloadTest_0.npy");
-    npy->setBufferControl(OpticksBufferControl::Parse("OPTIX_SETSIZE,OPTIX_INPUT_OUTPUT"));
+    npy->save("$TMP/downloadTest_0.npy");
+
+
+    //const char* ctrl = "OPTIX_SETSIZE,OPTIX_INPUT_OUTPUT" ;  <-- all zeros in OptiX 600 ?
+    const char* ctrl = "OPTIX_OUTPUT_ONLY" ;    // <-- all zeros too ?
+
+    npy->setBufferControl(OpticksBufferControl::Parse(ctrl));
+
 
     optix::Buffer buffer = ctx->createBuffer<float>( npy, "demo");
     context["output_buffer"]->set(buffer);
@@ -46,7 +54,7 @@ int main( int argc, char** argv )
     NPYBase::setGlobalVerbose();
 
     npy->dump();
-    npy->save("$TMP/OOContextUploadDownloadTest_1.npy");
+    npy->save("$TMP/downloadTest_1.npy");
 
     delete ctx ; 
 

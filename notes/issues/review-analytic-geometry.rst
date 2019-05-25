@@ -1,8 +1,6 @@
 review-analytic-geometry
 =========================
 
-
-
 ===============   =================  ================
 mm index            gui label          notes
 ===============   =================  ================
@@ -325,6 +323,8 @@ opticksdata-jv4-vi::
 SUSPECT NEAR_DEGENERACY OF LV:20 AND LV:21 pyrex inside pyrex AS POTENTIAL PROBLEM
 -----------------------------------------------------------------------------------------
 
+
+
 with the complicated mm2
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -341,6 +341,44 @@ with the complicated mm2
                          R1_TITAN_V      0.315      4.288      0.930 
                        R1_TITAN_RTX      0.338      4.610      0.999 
                        R2_TITAN_RTX      0.339      4.612      1.000 
+
+
+
+
+with the complicated mm2, 1 week later
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* the near degeneracy may well be a problem for validity, but it seems not for performance
+  after removing WITH_TORUS
+
+
+R1/R0 now 3x faster rather than 3x slower::
+
+    ---  METACOMMAND : geocache-bench --xanalytic --enabledmergedmesh 2  GEOFUNC : geocache-j1808-v4 
+     OpSnapTest --envkey --target 352851 --eye -1,-1,-1 --snapconfig steps=5,eyestartz=-1,eyestopz=-0.5 --size 5120,2880,1 --embedded --cvd 1 --rtx 1 --runfolder geocache-bench --runstamp 1558753034 --runlabel R1_TITAN_RTX --xanalytic --enabledmergedmesh 2
+    OKX4Test.X4PhysicalVolume.lWorld0x4bc2710_PV.f6cc352e44243f8fa536ab483ad390ce
+    /home/blyth/local/opticks/geocache/OKX4Test_lWorld0x4bc2710_PV_g4live/g4ok_gltf/f6cc352e44243f8fa536ab483ad390ce/1
+                    20190525_105714  launchAVG      rfast      rslow      prelaunch000 
+                        R1_TITAN_RTX      0.050      1.000      0.338           1.592    : /tmp/blyth/location/results/geocache-bench/R1_TITAN_RTX/20190525_105714  
+                          R1_TITAN_V      0.065      1.302      0.440           1.677    : /tmp/blyth/location/results/geocache-bench/R1_TITAN_V/20190525_105714  
+            R0_TITAN_V_AND_TITAN_RTX      0.080      1.599      0.540           1.698    : /tmp/blyth/location/results/geocache-bench/R0_TITAN_V_AND_TITAN_RTX/20190525_105714  
+                          R0_TITAN_V      0.129      2.590      0.876           1.039    : /tmp/blyth/location/results/geocache-bench/R0_TITAN_V/20190525_105714  
+                        R0_TITAN_RTX      0.148      2.958      1.000           1.070    : /tmp/blyth/location/results/geocache-bench/R0_TITAN_RTX/20190525_105714  
+    Namespace(digest=None, exclude=None, include=None, metric='launchAVG', name='geocache-bench', other='prelaunch000', resultsdir='/tmp/blyth/location/results', since=None)
+
+Stable timings::
+
+    ---  METACOMMAND : geocache-bench --xanalytic --enabledmergedmesh 2  GEOFUNC : geocache-j1808-v4 
+     OpSnapTest --envkey --target 352851 --eye -1,-1,-1 --snapconfig steps=5,eyestartz=-1,eyestopz=-0.5 --size 5120,2880,1 --embedded --cvd 1 --rtx 1 --runfolder geocache-bench --runstamp 1558753306 --runlabel R1_TITAN_RTX --xanalytic --enabledmergedmesh 2
+    OKX4Test.X4PhysicalVolume.lWorld0x4bc2710_PV.f6cc352e44243f8fa536ab483ad390ce
+    /home/blyth/local/opticks/geocache/OKX4Test_lWorld0x4bc2710_PV_g4live/g4ok_gltf/f6cc352e44243f8fa536ab483ad390ce/1
+                    20190525_110146  launchAVG      rfast      rslow      prelaunch000 
+                        R1_TITAN_RTX      0.049      1.000      0.331           0.494    : /tmp/blyth/location/results/geocache-bench/R1_TITAN_RTX/20190525_110146  
+                          R1_TITAN_V      0.065      1.321      0.437           0.454    : /tmp/blyth/location/results/geocache-bench/R1_TITAN_V/20190525_110146  
+            R0_TITAN_V_AND_TITAN_RTX      0.080      1.629      0.539           1.749    : /tmp/blyth/location/results/geocache-bench/R0_TITAN_V_AND_TITAN_RTX/20190525_110146  
+                          R0_TITAN_V      0.129      2.618      0.867           1.084    : /tmp/blyth/location/results/geocache-bench/R0_TITAN_V/20190525_110146  
+                        R0_TITAN_RTX      0.148      3.020      1.000           1.001    : /tmp/blyth/location/results/geocache-bench/R0_TITAN_RTX/20190525_110146  
+    Namespace(digest=None, exclude=None, include=None, metric='launchAVG', name='geocache-bench', other='prelaunch000', resultsdir='/tmp/blyth/location/results', since=None)
 
 
 

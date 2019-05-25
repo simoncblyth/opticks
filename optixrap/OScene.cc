@@ -54,13 +54,13 @@ OBndLib*  OScene::getOBndLib()
 }
 
 
-OScene::OScene(OpticksHub* hub) 
+OScene::OScene(OpticksHub* hub, const char* cmake_target, const char* ptxrel) 
     :   
     m_log(new SLog("OScene::OScene","", LEVEL)),
     m_timer(new BTimeKeeper("OScene::")),
     m_hub(hub),
     m_ok(hub->getOpticks()),
-    m_ocontext(NULL),
+    m_ocontext(OContext::Create(m_ok, cmake_target, ptxrel)),
     m_osolve(NULL),
     m_ocolors(NULL),
     m_ogeo(NULL),
@@ -105,7 +105,6 @@ void OScene::init()
     m_timer->setVerbose(true);
     m_timer->start();
 
-    m_ocontext = OContext::Create(m_ok);
     optix::Context context = m_ocontext->getContext(); 
     
 

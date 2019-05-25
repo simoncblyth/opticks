@@ -211,11 +211,16 @@ The form of the PTX filename comes from the FindCUDA.cmake file for example at
 /usr/share/cmake3/Modules/FindCUDA.cmake 
 
 **/
-const char* OKConf::PTXPath( const char* cmake_target, const char* cu_name )
+const char* OKConf::PTXPath( const char* cmake_target, const char* cu_name, const char* ptxrel )
 {
     std::stringstream ss ; 
     ss << OKConf::OpticksInstallPrefix()
        << "/installcache/PTX/"
+       ;
+
+    if(ptxrel) ss << ptxrel << "/" ;   
+
+    ss
        << cmake_target
        << "_generated_"
        << cu_name

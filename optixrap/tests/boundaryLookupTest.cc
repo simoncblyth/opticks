@@ -36,7 +36,10 @@ int main(int argc, char** argv)
     blib->setSurfaceLib(slib);
     blib->dump();
 
-    OContext* ctx = OContext::Create( &ok ) ; 
+    const char* cmake_target = "boundaryLookupTest" ; 
+    const char* ptxrel = "tests" ; 
+    OContext* ctx = OContext::Create( &ok, cmake_target, ptxrel ) ;
+ 
     optix::Context context = ctx->getContext() ;
 
     unsigned args_x = argc > 1 ? atoi(argv[1]) : 13 ; 
@@ -51,20 +54,20 @@ int main(int argc, char** argv)
     blib->createDynamicBuffers();
 
     NPY<float>* ori = blib->getBuffer() ; 
-    ori->save("$TMP/OOboundaryLookupTest/ori.npy");
+    ori->save("$TMP/boundaryLookupTest/ori.npy");
 
     //bool use_debug_buffer = true ;  
     bool use_debug_buffer = false ; 
 
     NPY<float>* inp = use_debug_buffer ? NPY<float>::make_dbg_like(ori, 0) : ori ; 
     //inp->dump();
-    inp->save("$TMP/OOboundaryLookupTest/inp.npy");
+    inp->save("$TMP/boundaryLookupTest/inp.npy");
 
 
     OBndLib obnd(context, blib );
     if(use_debug_buffer)
     {
-        LOG(warning) << "OOboundaryTest replacing real properties buffer with debug buffer, with an index" ; 
+        LOG(warning) << "boundaryLookupTest replacing real properties buffer with debug buffer, with an index" ; 
         obnd.setDebugBuffer(inp);
     }
     obnd.convert();     // places boundary_texture, boundary_domain  into OptiX context 
@@ -102,7 +105,7 @@ int main(int argc, char** argv)
     outBuffer->unmap(); 
 
     //out->dump();
-    out->save("$TMP/OOboundaryLookupTest/out.npy");
+    out->save("$TMP/boundaryLookupTest/out.npy");
 
     //bool dump = true ;  
     bool dump = false ;  

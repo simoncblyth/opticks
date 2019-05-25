@@ -89,7 +89,7 @@ BOpticksResource::BOpticksResource()
     m_installcache_dir(NULL),
     m_rng_installcache_dir(NULL),
     m_okc_installcache_dir(NULL),
-    m_ptx_installcache_dir(NULL),
+  //  m_ptx_installcache_dir(NULL),
     m_tmpuser_dir(NULL),
     m_srcpath(NULL),
     m_srcfold(NULL),
@@ -268,7 +268,8 @@ void BOpticksResource::initTopDownDirs()
 
     m_rng_installcache_dir = RNGInstallPath() ;   // eg /usr/local/opticks/installcache/RNG
     m_okc_installcache_dir = OKCInstallPath() ;   // eg /usr/local/opticks/installcache/OKC
-    m_ptx_installcache_dir = PTXInstallPath() ;   // eg /usr/local/opticks/installcache/PTX
+
+    //m_ptx_installcache_dir = PTXInstallPath() ;   // eg /usr/local/opticks/installcache/PTX
 
 
     m_res->addDir("opticksdata_dir", m_opticksdata_dir);
@@ -281,7 +282,9 @@ void BOpticksResource::initTopDownDirs()
 
     m_res->addDir("rng_installcache_dir", m_rng_installcache_dir );
     m_res->addDir("okc_installcache_dir", m_okc_installcache_dir );
-    m_res->addDir("ptx_installcache_dir", m_ptx_installcache_dir );
+
+    //m_res->addDir("ptx_installcache_dir", m_ptx_installcache_dir );
+
 
     m_tmpuser_dir = MakeTmpUserDir("opticks", NULL) ; 
     m_res->addDir( "tmpuser_dir", m_tmpuser_dir ); 
@@ -340,20 +343,12 @@ const char* BOpticksResource::ResourceDir(){    return MakePath(ResolveInstallPr
 const char* BOpticksResource::GenstepsDir(){    return MakePath(ResolveInstallPrefix(), "opticksdata", "gensteps" ); }
 const char* BOpticksResource::ExportDir(){      return MakePath(ResolveInstallPrefix(), "opticksdata", "export" ); }
 
-const char* BOpticksResource::PTXInstallPath(){ return MakePath(ResolveInstallPrefix(), "installcache", "PTX"); }
 const char* BOpticksResource::RNGInstallPath(){ return MakePath(ResolveInstallPrefix(), "installcache", "RNG"); }
 const char* BOpticksResource::OKCInstallPath(){ return MakePath(ResolveInstallPrefix(), "installcache", "OKC"); }
 
 // problematic in readonly installs : because results do not belong with install paths 
 const char* BOpticksResource::ResultsDir(){     return MakePath(ResolveResultsPrefix(), "results",  NULL); }
 
-
-
-std::string BOpticksResource::PTXPath(const char* name, const char* target)
-{
-    const char* ptx_installcache_dir = PTXInstallPath();
-    return PTXPath(name, target, ptx_installcache_dir);
-}
 
 
 const char* BOpticksResource::getInstallDir() {         return m_install_prefix ; }   
@@ -366,7 +361,7 @@ const char* BOpticksResource::getExportDir() {          return m_export_dir ; }
 const char* BOpticksResource::getInstallCacheDir() {    return m_installcache_dir ; } 
 const char* BOpticksResource::getRNGInstallCacheDir() { return m_rng_installcache_dir ; } 
 const char* BOpticksResource::getOKCInstallCacheDir() { return m_okc_installcache_dir ; } 
-const char* BOpticksResource::getPTXInstallCacheDir() { return m_ptx_installcache_dir ; } 
+//const char* BOpticksResource::getPTXInstallCacheDir() { return m_ptx_installcache_dir ; } 
 const char* BOpticksResource::getTmpUserDir() const {   return m_tmpuser_dir ; } 
 
 
@@ -782,12 +777,15 @@ void BOpticksResource::Summary(const char* msg)
 
     std::cerr << "prefix   : " <<  (prefix ? prefix : "NULL" ) << std::endl ; 
 
+/*
     const char* name = "generate.cu.ptx" ;
     std::string ptxpath = getPTXPath(name); 
     std::cerr << "getPTXPath(" << name << ") = " << ptxpath << std::endl ;   
 
     std::string ptxpath_static = PTXPath(name); 
     std::cerr << "PTXPath(" << name << ") = " << ptxpath_static << std::endl ;   
+*/
+
 
     std::cerr << "debugging_idpath  " << ( m_debugging_idpath ? m_debugging_idpath : "-" )<< std::endl ; 
     std::cerr << "debugging_idfold  " << ( m_debugging_idfold ? m_debugging_idfold : "-" )<< std::endl ; 
@@ -826,6 +824,7 @@ std::string BOpticksResource::BuildProduct(const char* proj, const char* name)
 }
 
 
+/*
 
 std::string BOpticksResource::PTXName(const char* cu_name, const char* cmake_target)
 {
@@ -850,5 +849,15 @@ std::string BOpticksResource::PTXPath(const char* cu_name, const char* cmake_tar
     return path ;
 }
 
+const char* BOpticksResource::PTXInstallPath(){ return MakePath(ResolveInstallPrefix(), "installcache", "PTX"); }
+std::string BOpticksResource::PTXPath(const char* name, const char* target)
+{
+    const char* ptx_installcache_dir = PTXInstallPath();
+    return PTXPath(name, target, ptx_installcache_dir);
+}
 
+
+
+
+*/
 

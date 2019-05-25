@@ -51,7 +51,7 @@ class OKCONF_API OKConf
        static unsigned Geant4VersionInteger() ; 
        static unsigned CUDAVersionInteger() ; 
 
-       static const char* PTXPath( const char* cmake_target, const char* cu_name );
+       static const char* PTXPath( const char* cmake_target, const char* cu_name, const char* ptxrel=nullptr );
        static const char* ShaderDir();
 
 };

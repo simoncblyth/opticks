@@ -9,13 +9,13 @@ rtDeclareVariable(uint2, launch_index, rtLaunchIndex, );
 rtDeclareVariable(uint2, launch_dim,   rtLaunchDim, );
 
 rtDeclareVariable(int4,  tex_param, , );
+rtBuffer<float,2>           out_buffer;
 
-rtBuffer<float4,2>           out_buffer;
-
-//#define WITH_PRINT 1
+// contrast with texTest which uses float4 access to the texture
 
 
-RT_PROGRAM void texTest()
+
+RT_PROGRAM void tex0Test()
 {
     // texture indexing for (nx, ny)
     //      array type indexing:   0:nx-1 , 0:ny-1
@@ -27,14 +27,10 @@ RT_PROGRAM void texTest()
     float x = (float(ix)+0.5f)/float(launch_dim.x) ; 
     float y = (float(iy)+0.5f)/float(launch_dim.y) ; 
     
- //   float val = tex2D(some_texture, x, y );
-
     int tex_id = tex_param.x ; 
-    float4 val = rtTex2D<float4>( tex_id, x, y ); 
+    float val = rtTex2D<float>( tex_id, x, y ); 
 
-#ifdef WITH_PRINT
-    rtPrintf("texTest (%d,%d) (%10.4f,%10.4f) -> (%10.4f,%10.4f,%10.4f,%10.4f)  \n", ix, iy, x, y, val.x, val.y, val.z, val.w);
-#endif
+    //rtPrintf("tex0Test (%d,%d) (%10.4f,%10.4f) -> %10.4f  \n", ix, iy, x, y, val);
 
     out_buffer[launch_index] = val ; 
 

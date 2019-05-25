@@ -3,14 +3,11 @@
 
 using namespace optix;
 
-//#include "numquad.h"
-
-//rtDeclareVariable(float,         SPEED_OF_LIGHT, , );
 rtDeclareVariable(unsigned int,  PNUMQUAD, , );
 rtDeclareVariable(unsigned int,  RNUMQUAD, , );
 rtDeclareVariable(unsigned int,  GNUMQUAD, , );
 
-#include "quad.h"
+#include "cu/quad.h"
 
 rtBuffer<float4>               genstep_buffer ;
 rtBuffer<float4>               photon_buffer;
@@ -22,19 +19,12 @@ rtDeclareVariable(uint2, launch_dim,   rtLaunchDim, );
 rtDeclareVariable(unsigned int,  record_max, , );
 
 
-RT_PROGRAM void OEventTest()
+RT_PROGRAM void eventTest()
 {
     unsigned long long photon_id = launch_index.x ;  
-    unsigned int photon_offset = photon_id*PNUMQUAD ;   // 4
-    //union quad phead ;
-    //phead.f = photon_buffer[photon_offset+0] ;
+    unsigned int photon_offset = photon_id*4 ;   // 4
 
-    //unsigned int genstep_id = phead.u.x ; 
-    //unsigned int genstep_offset = genstep_id*GNUMQUAD ; 
-    //union quad ghead ; 
-    //ghead.f = genstep_buffer[genstep_offset+0]; 
-
-//    rtPrintf("(OEventTest) photon_id %d photon_offset %d genstep_id %d GNUMQUAD %d genstep_offset %d \n", photon_id, photon_offset, genstep_id, GNUMQUAD, genstep_offset  );
+    rtPrintf("//eventTest %d \n", PNUMQUAD ); 
 
 
     unsigned int MAXREC = record_max ; 

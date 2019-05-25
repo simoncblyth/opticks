@@ -2,6 +2,27 @@ Ideas
 =======
 
 
+
+
+
+
+
+
+
+
+Mirror from bitbucket/mercurial to github/git ?
+----------------------------------------------------
+
+
+* https://github.com/felipec/git-remote-hg
+
+* https://github.com/felipec/git/wiki/Comparison-of-git-remote-hg-alternatives
+
+* http://geekswithblogs.net/gregorymalcolm/archive/2012/03/17/mirroring-mercurial-and-git-changes-the-lazy-way.aspx
+
+* https://help.github.com/en/articles/duplicating-a-repository
+
+
 Sampling
 ---------
 

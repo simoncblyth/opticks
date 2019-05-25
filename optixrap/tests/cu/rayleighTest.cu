@@ -16,17 +16,17 @@ rtBuffer<float4,2>  rayleigh_buffer;
 
 // HMM : NOT GOOD THAT SO MUCH BAGGAGE NEEDED TO TEST rayleigh.h
 
-#include "quad.h"
-#include "boundary_lookup.h"
+#include "cu/quad.h"
+#include "cu/boundary_lookup.h"
 
 rtBuffer<uint4>                optical_buffer; 
 
-#include "state.h"
-#include "photon.h"
-#include "rayleigh.h"
+#include "cu/state.h"
+#include "cu/photon.h"
+#include "cu/rayleigh.h"
 
 
-RT_PROGRAM void ORayleighTest()
+RT_PROGRAM void rayleighTest()
 {
     unsigned long long generate_id = launch_index.x ;
     //unsigned long long generate_offset = unsigned(generate_id)*4 ;
@@ -51,7 +51,7 @@ RT_PROGRAM void ORayleighTest()
  
     rayleigh_scatter( p, rng );
 
-    rtPrintf("generate_id %llu \n", generate_id ); 
+    rtPrintf("//rayleighTest generate_id %llu \n", generate_id ); 
 
     uint2 u0 = make_uint2( unsigned(generate_id), 0u ) ;
     uint2 u1 = make_uint2( unsigned(generate_id), 1u ) ;

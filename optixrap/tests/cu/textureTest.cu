@@ -3,7 +3,7 @@
 
 using namespace optix;
 
-#include "quad.h"
+#include "cu/quad.h"
 
 //#include "wavelength_lookup.h"
 

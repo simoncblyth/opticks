@@ -4,7 +4,7 @@
 
 using namespace optix;
 
-#include "boundary_lookup.h"
+#include "cu/boundary_lookup.h"
 
 rtDeclareVariable(uint2, launch_index, rtLaunchIndex, );
 rtDeclareVariable(uint2, launch_dim,   rtLaunchDim, );

@@ -19,7 +19,9 @@ int main(int argc, char** argv)
     slib->dump();
 
 
-    OContext* m_ocontext = OContext::Create( ok );  
+    const char* cmake_target = "textureTest" ;
+    const char* ptxrel = "tests" ;  
+    OContext* m_ocontext = OContext::Create( ok, cmake_target, ptxrel );  
     optix::Context context = m_ocontext->getContext() ; 
 
     OScintillatorLib* oscin ;  

@@ -119,10 +119,18 @@ class BRAP_API  BOpticksResource {
         virtual ~BOpticksResource();
         virtual void Summary(const char* msg="BOpticksResource::Summary");
 
+/*
+   public:
+        const char* getPTXInstallCacheDir();
+        static std::string PTXPath(const char* cu_name, const char* cmake_target, const char* prefix);
+        static std::string PTXName(const char* cu_name, const char* cmake_target);
+        static std::string PTXPath(const char* name, const char* target="OptiXRap");
+        static const char* PTXInstallPath();
+        std::string getPTXPath(const char* cu_name, const char* cmake_target="OptiXRap");
+*/
    public:
         static std::string BuildDir(const char* proj);
         static std::string BuildProduct(const char* proj, const char* name);
-        static std::string PTXPath(const char* name, const char* target="OptiXRap");
         static const char* ResolveResultsPrefix();
         static const char* ResolveInstallPrefix();
         static const char* OpticksDataDir();
@@ -132,12 +140,10 @@ class BRAP_API  BOpticksResource {
         static const char* GenstepsDir();
         static const char* ExportDir();
         static const char* InstallCacheDir();
-        static const char* PTXInstallPath();
         static const char* RNGInstallPath();
         static const char* OKCInstallPath();
    private:
-        static std::string PTXPath(const char* cu_name, const char* cmake_target, const char* prefix);
-        static std::string PTXName(const char* cu_name, const char* cmake_target);
+
         static const char* MakePath( const char* prefix, const char* main, const char* sub );
    public:       
         const char* getInstallPrefix();
@@ -153,11 +159,9 @@ class BRAP_API  BOpticksResource {
 
         const char* getRNGInstallCacheDir();
         const char* getOKCInstallCacheDir();
-        const char* getPTXInstallCacheDir();
         const char* getTmpUserDir() const ;
 
         const char* getDebuggingTreedir(int argc, char** argv);
-        std::string getPTXPath(const char* cu_name, const char* cmake_target="OptiXRap");
    public:       
         const char* getDebuggingIDPATH();
         const char* getDebuggingIDFOLD();
@@ -186,8 +190,6 @@ class BRAP_API  BOpticksResource {
         const char* getCacheMetaPath() const ;
         const char* getRunCommentPath() const ;
         const char* getPrimariesPath() const ;
-        //const char* getDirectGenstepPath() const ;
-        //const char* getDirectPhotonsPath() const ;
         const char* getGLTFPath() const ;     // output path 
         const char* getMetaPath() const ;
         const char* getIdMapPath() const ;
@@ -237,7 +239,7 @@ class BRAP_API  BOpticksResource {
         const char* m_installcache_dir ; 
         const char* m_rng_installcache_dir ; 
         const char* m_okc_installcache_dir ; 
-        const char* m_ptx_installcache_dir ; 
+        //const char* m_ptx_installcache_dir ; 
         const char* m_tmpuser_dir ; 
    protected:
         const char* m_srcpath ; 

@@ -101,7 +101,10 @@ int main(int argc, char** argv)
     LOG(info) << argv[0] << " OPTIX_VERSION " << version ; 
     //bool with_top = OConfig::DefaultWithTop() ;  // must set false with 3080, seemingly doesnt matter with 40000
 
-    OContext* ctx = OContext::Create(&ok);
+
+    const char* cmake_target = "bufferTest"  ;
+    const char* ptxrel = "tests" ; 
+    OContext* ctx = OContext::Create(&ok, cmake_target, ptxrel);
     optix::Context context = ctx->getContext();
     int entry = ctx->addEntry("bufferTest.cu", "bufferTest", "exception");
 

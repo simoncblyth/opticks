@@ -28,8 +28,12 @@ int main( int argc, char** argv )
 
     context["output_buffer"]->set(buffer);
 
-    const char* ptx_path = OKConf::PTXPath("OptiXRap", "minimalTest.cu" ); 
-    const char* progname = "minimal" ; 
+
+    const char* cmake_target = "writeBufferLowLevelTest" ; 
+    const char* cu_name = "writeBufferLowLevelTest.cu" ;
+    const char* ptxrel = "tests" ; 
+    const char* ptx_path = OKConf::PTXPath(cmake_target, cu_name, ptxrel ); 
+    const char* progname = "writeBuffer" ; 
     optix::Program program = context->createProgramFromPTXFile( ptx_path , progname ); 
 
     unsigned entry = 0 ; 
@@ -41,7 +45,7 @@ int main( int argc, char** argv )
     NPYBase::setGlobalVerbose();
 
     npy->dump();
-    npy->save("$TMP/OOContextTest.npy");
+    npy->save("$TMP/writeBufferLowLevelTest.npy");
 
     return 0;
 }

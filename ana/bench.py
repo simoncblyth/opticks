@@ -96,15 +96,32 @@ if __name__ == '__main__':
 
         metric_ = lambda m:float(m.d["OTracerTimes"][metric])
         other_ = lambda m:float(m.d["OTracerTimes"][other])
-        key_ = lambda m:m.d["parameters"]["OPTICKS_KEY"]
+        metacommand_ = lambda m:m.d["parameters"].get("METACOMMAND","-")
+        geofunc_ = lambda m:m.d["parameters"].get("GEOFUNC","-")
+
+        def key_(m):
+            d = m.d["parameters"]
+            k0 = d.get("OPTICKS_KEY",None)
+            k1 = d.get("KEY",None)
+            kk = list(set(filter(None, [k0,k1])))
+            assert len(kk) == 1, d
+            return kk[0]
 
         smm = sorted(mm, key=metric_)  
         ffast = metric_(smm[0])
         fslow = metric_(smm[-1])
 
         keys = map(key_, smm)
+        mcmds = map(metacommand_, smm)
+        geofs = map(geofunc_, smm)
+
+        assert len(set(mcmds)) == 1, "all OPTICKS_METACOMMAND for a group of runs with same dated folder should be identical" 
+        assert len(set(geofs)) == 1, "all OPTICKS_GEOFUNC for a group of runs with same dated folder should be identical" 
         assert len(set(keys)) == 1, "all OPTICKS_KEY for a group of runs with same dated folder should be identical " 
+        mcmd = mcmds[0]
+        geof = geofs[0]
         key = keys[0]
+
         digest = key.split(".")[-1]
         idpath = keydir(key) 
 
@@ -124,7 +141,7 @@ if __name__ == '__main__':
         pass
 
 
-        print("\n---")
+        print("\n---  METACOMMAND : %s  GEOFUNC : %s " % (mcmd, geof) )
         print(cmdline)
         print(key)
         print(idpath)

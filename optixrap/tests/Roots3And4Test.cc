@@ -11,7 +11,7 @@ int main( int argc, char** argv )
 
     optix::Context context = optix::Context::create();
 
-    OptiXTest* test = new OptiXTest(context, "Roots3And4Test.cu", "Roots3And4Test") ;
+    OptiXTest* test = new OptiXTest(context, "Roots3And4Test.cu", "Roots3And4Test",  "exception", "optixrap", "OptiXRap" ) ;
     test->Summary(argv[0]);
 
     //unsigned width = 512 ; 

@@ -221,47 +221,6 @@ geocache-j1808-v3(){  opticksdata- ; geocache-create- --gdmlpath $(opticksdata-j
 geocache-j1808-v3(){  opticksdata- ; geocache-create- --gdmlpath $(opticksdata-jv3) --csgskiplv 22  ; }
 geocache-j1808-v4-(){ opticksdata- ; geocache-create- --gdmlpath $(opticksdata-jv4) $* ; }
 
-geocache-j1808-v4-notes(){ cat << EON
-
-$FUNCNAME
-=========================
-
-The below geocache-j1808-v4-.. functions use the v4 (torus-less) JUNO j1808 GDML geometry
-using OKX4Test to directly create the geocache from the GDML.
-The t1,t2 etc functions vary the volumes of the 20inch PMT by using different csgskiplv, 
-allowing benchmark checks of RTX mode on TITAN V and TITAN RTX with different geometry.  
-
-The export functions setup the OPTICKS_KEY envvar in order to use the geometry. 
-To switch geometry edit the below geocache-bashrc-export function and start a new shell
-by opening a tab. 
-
-See:
-
-    notes/issues/review-analytic-geometry.rst 
-    notes/issues/benchmarks.rst 
-
-EON
-}
-
-geocache-export()
-{
-    local geofunc=$1
-    export OPTICKS_GEOFUNC=$geofunc
-    export OPTICKS_KEY=$(${geofunc}-key)
-    export OPTICKS_COMMENT=$(${geofunc}-comment)
-
-    [ -t 1 ] && geocache-desc     ## only when connected to terminal 
-}
-geocache-desc()
-{
-    printf "%-16s : %s \n" "OPTICKS_GEOFUNC" $OPTICKS_GEOFUNC
-    printf "%-16s : %s \n" "OPTICKS_KEY"     $OPTICKS_KEY
-    printf "%-16s : %s \n" "OPTICKS_COMMENT" $OPTICKS_COMMENT
-}
-
-geocache-bashrc-export(){   geocache-j1808-v4-t8-export ; }
-#geocache-bashrc-export(){   geocache-j1808-v4-export ; }
-
 
 geocache-j1808-v4-comment(){ echo reproduce-rtx-inversion-skipping-just-lv-22-maskVirtual ; }
 geocache-j1808-v4-key(){     echo OKX4Test.X4PhysicalVolume.lWorld0x4bc2710_PV.f6cc352e44243f8fa536ab483ad390ce ; }
@@ -308,17 +267,89 @@ geocache-j1808-v4-t8-key(){     echo OKX4Test.X4PhysicalVolume.lWorld0x4bc2710_P
 geocache-j1808-v4-t8-export(){  geocache-export ${FUNCNAME/-export} ; }
 geocache-j1808-v4-t8(){ geocache-j1808-v4- --csgskiplv 22,17,20 --runfolder $FUNCNAME --runcomment $(${FUNCNAME}-comment) ; }
 
-geocache-j1808-v4-t8-notes(){ cat << EON
-For a while put back a bug with : --dbg_with_hemi_ellipsoid_bug
+#geocache-bashrc-export(){   geocache-j1808-v4-t8-export ; }
+geocache-bashrc-export(){   geocache-j1808-v4-export ; }
+
+geocache-j1808-v4-notes(){ cat << EON
+
+$FUNCNAME : varying the volumes of the 20-inch PMT
+==================================================================
+
+The above geocache-j1808-v4-.. functions use the v4 (torus-less) JUNO j1808 GDML geometry
+using OKX4Test to directly create the geocache from the GDML.
+The t1,t2 etc functions vary the volumes of the 20inch PMT by using different csgskiplv, 
+allowing benchmark checks of RTX mode on TITAN V and TITAN RTX with different geometry.  
+
+NB geo digests still not trusted here, so that means rerun geocache conversions 
+
+
+======================    ====================  ===============   ============================================================ 
+ func                       --csgskiplv           leaving 
+======================    ====================  ===============   ============================================================ 
+geocache-j1808-v4           22                                      full 5 volumes   
+geocache-j1808-v4-t1        22,17,20,18,19         21               outer pyrex
+geocache-j1808-v4-t2        22,20                  17,21,18,19      acrylic mask + outer pyrex + vacuum cap + remainder  
+geocache-j1808-v4-t3        22,17,20               21,18,19         outer pyrex + cathode cap + remainder 
+geocache-j1808-v4-t4        22,17,20,19            21,18            outer pyrex + cathode cap
+geocache-j1808-v4-t5        22,17,21,20,19         18               just-18-hemi-ellipsoid-cathode-cap
+geocache-j1808-v4-t6        22,17,21,20,18         19               just-19-vacuum-remainder
+geocache-j1808-v4-t7        22,17,21,20            18,19            just-18-19-vacuum-cap-and-remainder 
+geocache-j1808-v4-t8        22,17,20               21,18,19         just-21-18-19-outer-pyrex+vacuum-cap-and-remainder
+======================    ====================  ===============   ============================================================ 
+
+
+GNodeLib/PVNames.txt 1-based index from vim, first 20inch::
+
+     63555 lFasteners_phys0x4c31eb0
+
+     63556 lMaskVirtual_phys0x4c9a510          22      csgskipped
+     63557 pMask0x4c3bf20                      17 *   7 parts : difference of two ellipsoid cylinder unions 
+
+     63558 PMT_20inch_log_phys0x4ca16b0        21 *   7 parts : union of el+co+cy  (5 parts, but seven as complete tree)
+     63559 PMT_20inch_body_phys0x4c9a7f0       20 *   7 parts : union of el+co+cy  (ditto)
+                 
+     63560 PMT_20inch_inner1_phys0x4c9a870     18 *   1 part  : el                               cathode vacuum cap
+     63561 PMT_20inch_inner2_phys0x4c9a920     19 *   7 parts : union of el+co+cy  (ditto)       remainder vacuum 
+                                                   -----------------------------------
+                                                      29 parts 
+                                                   ------------------------------------
+
+geocache-j1808-v4-t8
+     for a while used this t8 geometry to put back a bug : --dbg_with_hemi_ellipsoid_bug 
+     in order see its performance impact
+
+
+The export functions setup the OPTICKS_KEY envvar in order to use the geometry. 
+To switch geometry edit the below geocache-bashrc-export function and start a new shell
+by opening a tab. 
+
+See:
+
+    notes/issues/review-analytic-geometry.rst 
+    notes/issues/benchmarks.rst 
+
 EON
+}
+
+geocache-export()
+{
+    local geofunc=$1
+    export OPTICKS_GEOFUNC=$geofunc
+    export OPTICKS_KEY=$(${geofunc}-key)
+    export OPTICKS_COMMENT=$(${geofunc}-comment)
+
+    [ -t 1 ] && geocache-desc     ## only when connected to terminal 
+}
+geocache-desc()
+{
+    printf "%-16s : %s \n" "OPTICKS_GEOFUNC" $OPTICKS_GEOFUNC
+    printf "%-16s : %s \n" "OPTICKS_KEY"     $OPTICKS_KEY
+    printf "%-16s : %s \n" "OPTICKS_COMMENT" $OPTICKS_COMMENT
 }
 
 
 
-
-
 geocache-target(){ echo 352854 ; }
-
 geocache-target-notes(){ cat << EON
 
 Find targets by geocache-kcd and looking at GNodeLib/GTreePresent.txt eg::

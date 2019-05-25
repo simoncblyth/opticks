@@ -8,10 +8,7 @@ if(POLICY CMP0077)  # see note/issues/cmake-3.13.4-FindCUDA-warnings.rst
 endif()
 
 
-
-
 find_package(OKConf     REQUIRED CONFIG)  
-
 
 set(OptiX_VERBOSE ON)
 find_package(OptiX      REQUIRED MODULE)   
@@ -108,22 +105,14 @@ set(CU_SOURCES
     cu/intersect_analytic.cu 
     cu/solve_callable.cu 
     cu/generate.cu
-    cu/textureTest.cu
-    cu/bufferTest.cu
+
+
     cu/dirtyBufferTest.cu
     cu/compactionTest.cu
-    cu/minimalTest.cu
-    cu/cbrtTest.cu
     cu/LTminimalTest.cu
     cu/axisTest.cu
     cu/seedTest.cu
-    cu/boundaryTest.cu
-    cu/boundaryLookupTest.cu
-    cu/tex0Test.cu
-    cu/texTest.cu
-    cu/OEventTest.cu
     cu/OInterpolationTest.cu
-    cu/ORayleighTest.cu
 
     cu/intersect_analytic_dummy_test.cu
     cu/intersect_analytic_torus_test.cu
@@ -131,8 +120,25 @@ set(CU_SOURCES
     cu/intersect_analytic_cone_test.cu
     cu/intersect_analytic_convexpolyhedron_test.cu
 
+    cu/cbrtTest.cu
     cu/Roots3And4Test.cu
 )
+
+
+set( CU_SOURCES_MIGRATED_TO_TESTS
+
+    cu/bufferTest.cu
+    cu/textureTest.cu
+    cu/boundaryTest.cu
+    cu/boundaryLookupTest.cu
+    cu/texTest.cu
+    cu/tex0Test.cu
+    cu/minimalTest.cu
+    cu/ORayleighTest.cu
+    cu/OEventTest.cu
+
+)
+
 
 set(CU_HEADERS
 
@@ -142,14 +148,9 @@ set(CU_HEADERS
 
 
 
-
-
-
-
 # setup nvcc compilation of OptiX RTProgram sources into PTX and CUDA sources into OBJ
 CUDA_WRAP_SRCS( ${name} PTX _generated_PTX_files ${CU_SOURCES} )
 CUDA_WRAP_SRCS( ${name} OBJ _generated_OBJ_files ${SOURCES} )  
-
 
 add_library( ${name} SHARED ${_generated_OBJ_files} ${_generated_PTX_files} ${SOURCES} )
 #[=[

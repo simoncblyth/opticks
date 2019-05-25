@@ -65,7 +65,7 @@ class OXRAP_API OContext {
             const char* getPrintIndexLogPath() const  ; 
 
      public:
-            static OContext* Create(Opticks* ok, const char* cmake_target="OptiXRap") ; 
+            static OContext* Create(Opticks* ok, const char* cmake_target="OptiXRap", const char* ptxrel=nullptr) ; 
 
 #if OPTIX_VERSION_MAJOR >= 6
             static void InitRTX(int rtxmode);
@@ -73,7 +73,7 @@ class OXRAP_API OContext {
             static void CheckDevices();
             ~OContext();
      private:
-            OContext(optix::Context context, Opticks* ok, const char* cmake_target);
+            OContext(optix::Context context, Opticks* ok, const char* cmake_target, const char* ptxrel );
      private:
             void cleanUp();
             void cleanUpCache();
@@ -101,6 +101,9 @@ class OXRAP_API OContext {
             double compile_();
             double launch_(unsigned entry, unsigned width, unsigned height=1 );
             double launch_redirected_(unsigned entry, unsigned width, unsigned height=1 );
+     private:
+            friend struct rayleighTest ; 
+            OConfig* getConfig() const ; 
      public:
             // pass thru to OConfig
             optix::Program createProgram(const char* cu_filename, const char* progname );
@@ -151,9 +154,7 @@ class OXRAP_API OContext {
             int               m_debug_photon ; 
             unsigned          m_entry ; 
             bool              m_closed ; 
-            bool              m_default_top ; 
             bool              m_verbose ; 
-            const char*       m_cmake_target ; 
             const char*       m_llogpath ; 
             unsigned          m_launch_count ; 
             const char*       m_runlabel ; 

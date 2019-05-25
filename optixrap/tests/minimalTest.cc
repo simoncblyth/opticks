@@ -1,7 +1,5 @@
 #include "OptiXTest.hh"
-
 #include "NPY.hpp"
-
 #include "OPTICKS_LOG.hh"
 
 
@@ -11,7 +9,9 @@ int main( int argc, char** argv )
 
     optix::Context context = optix::Context::create();
 
-    OptiXTest* test = new OptiXTest(context, "minimalTest.cu", "minimal") ;
+    const char* buildrel = "optixrap/tests" ; 
+    const char* cmake_target = "minimalTest" ; 
+    OptiXTest* test = new OptiXTest(context, "minimalTest.cu", "minimal", "exception", buildrel, cmake_target ) ;
     test->Summary(argv[0]);
 
     // for inknown reasons this has become slow, taking 30s for 512x512
@@ -40,7 +40,7 @@ int main( int argc, char** argv )
     npy->read( ptr );
     buffer->unmap(); 
 
-    const char* path = "$TMP/OOMinimalTest.npy";
+    const char* path = "$TMP/minimalTest.npy";
     std::cerr << "save result npy to " << path << std::endl ; 
  
     npy->save(path);

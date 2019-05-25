@@ -69,9 +69,6 @@ const char* OContext::getRunResultsDir() const
     return m_runresultsdir ; 
 }
 
-
-
-
 OpticksEntry* OContext::addEntry(char code)
 {
     LOG(LEVEL) << "OContext::addEntry " << code ; 
@@ -101,6 +98,13 @@ unsigned OContext::getDebugPhoton() const
 Opticks* OContext::getOpticks() const 
 {
     return m_ok ; 
+}
+
+
+// needed by rayleighTest
+OConfig* OContext::getConfig() const 
+{
+    return m_cfg ; 
 }
 
 
@@ -182,7 +186,7 @@ void OContext::CheckDevices()
 
 
 
-OContext* OContext::Create(Opticks* ok, const char* cmake_target)
+OContext* OContext::Create(Opticks* ok, const char* cmake_target, const char* ptxrel )
 {
     int rtxmode = ok->getRTX();
 #if OPTIX_VERSION_MAJOR >= 6
@@ -197,16 +201,10 @@ OContext* OContext::Create(Opticks* ok, const char* cmake_target)
     optix::Context context = optix::Context::create();
     LOG(verbose) << "optix::Context::create() DONE " ; 
 
-    OContext* ocontext = new OContext(context, ok, cmake_target);
+    OContext* ocontext = new OContext(context, ok, cmake_target, ptxrel );
 
     return ocontext ; 
 }
-
-
-
-
-
-
 
 
 #if OPTIX_VERSION_MAJOR >= 6
@@ -234,17 +232,16 @@ void OContext::InitRTX(int rtxmode)  // static
 #endif
 
 
-
-OContext::OContext(optix::Context context, Opticks* ok, const char* cmake_target) 
+OContext::OContext(optix::Context context, Opticks* ok, const char* cmake_target, const char* ptxrel ) 
     : 
     m_context(context),
     m_ok(ok),
+    m_cfg(new OConfig(m_context, cmake_target, ptxrel)),
     m_mode(m_ok->isCompute() ? COMPUTE : INTEROP),
     m_debug_photon(m_ok->getDebugIdx()),
     m_entry(0),
     m_closed(false),
     m_verbose(false),
-    m_cmake_target(strdup(cmake_target)),
     m_llogpath(NULL),
     m_launch_count(0),
     m_runlabel(m_ok->getRunLabel()),
@@ -256,7 +253,6 @@ OContext::OContext(optix::Context context, Opticks* ok, const char* cmake_target
 
 void OContext::init()
 {
-    m_cfg = new OConfig(m_context, m_cmake_target);
 
     unsigned int num_ray_type = getNumRayType() ;
     m_context->setRayTypeCount( num_ray_type );   // more static than entry type count

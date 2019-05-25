@@ -17,20 +17,29 @@ std::string OptiXTest::ptxname_( const char* projname, const char* name)
    return ss.str();
 }
 
-const char* OptiXTest::ptxpath_( const char* cu, const char* projdir, const char* projname)
+const char* OptiXTest::buildptxpath_( const char* cu, const char* buildrel, const char* cmake_target)
 {
-   std::string ptxname = ptxname_(projname, cu) ; 
-   std::string ptxpath = BOpticksResource::BuildProduct(projdir, ptxname.c_str());
+   std::string ptxname = ptxname_(cmake_target, cu) ; 
+   std::string ptxpath = BOpticksResource::BuildProduct(buildrel, ptxname.c_str());
    return strdup(ptxpath.c_str()) ; 
+
+   // projdir is needed as build products have paths like
+   //      /home/blyth/local/opticks/build/optixrap/tests/tex0Test_generated_tex0Test.cu.ptx 
+   //
+   // cmake_target
+   //      formerly misnamed as projname
+   //
+   // BUT : what was the reason to get PTX from the build dir ??? rather than install dir 
 }
 
-OptiXTest::OptiXTest(optix::Context& context, const char* cu, const char* raygen_name, const char* exception_name)
+OptiXTest::OptiXTest(optix::Context& context, const char* cu, const char* raygen_name, const char* exception_name, const char* buildrel, const char* cmake_target)
     :
     m_cu(strdup(cu)),
-    m_ptxpath(ptxpath_(cu)),
+    m_ptxpath(buildptxpath_(cu, buildrel, cmake_target)),
     m_raygen_name(strdup(raygen_name)),
     m_exception_name(strdup(exception_name))
 {
+    LOG(fatal) << m_ptxpath ; 
     init(context);
 }
 
@@ -68,7 +77,6 @@ std::string OptiXTest::description()
 
     return ss.str(); 
 }
-
 
 void OptiXTest::Summary(const char* msg)
 {

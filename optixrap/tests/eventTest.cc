@@ -41,8 +41,12 @@ int main(int argc, char** argv)
     LOG(info) << argv[0] << " OPTIX_VERSION " << version ; 
     //bool with_top = OConfig::DefaultWithTop() ;  // must set false with 3080, seemingly doesnt matter with 40000
 
-    OContext* ctx = OContext::Create(&ok);
-    int entry = ctx->addEntry("OEventTest.cu", "OEventTest", "exception");
+
+    const char* cmake_target = "eventTest" ; 
+    const char* ptxrel = "tests" ;   
+    OContext* ctx = OContext::Create(&ok, cmake_target, ptxrel );
+
+    int entry = ctx->addEntry("eventTest.cu", "eventTest", "exception");
 
     OEvent* oevt = new OEvent(&ok, ctx);   
  

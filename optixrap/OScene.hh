@@ -40,7 +40,7 @@ class OXRAP_API OScene {
     public:
        static const plog::Severity LEVEL ; 
     public:
-       OScene(OpticksHub* hub);
+       OScene(OpticksHub* hub, const char* cmake_target="OptiXRap", const char* ptxrel=nullptr); 
     public:
        OContext*    getOContext();
        OBndLib*     getOBndLib();

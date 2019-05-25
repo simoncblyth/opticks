@@ -6,18 +6,18 @@
 #include "SDirect.hh"
 #include "NPY.hpp"
 
-#include "OXRAP_LOG.hh"
-#include "PLOG.hh"
+#include "OPTICKS_LOG.hh"
 
 
 int main( int argc, char** argv ) 
 {
-    PLOG_(argc, argv);
-    OXRAP_LOG__ ; 
+    OPTICKS_LOG(argc, argv);
 
     optix::Context context = optix::Context::create();
 
-    OptiXTest* test = new OptiXTest(context, "minimalTest.cu", "minimal") ;
+    const char* buildrel = "optixrap/tests" ; 
+    const char* cmake_target = "redirectLogTest" ; 
+    OptiXTest* test = new OptiXTest(context, "redirectLogTest.cu", "minimal", "exception", buildrel, cmake_target ) ;
     test->Summary(argv[0]);
 
     //unsigned width = 512 ; 
@@ -58,7 +58,7 @@ int main( int argc, char** argv )
 */
 
 
-    const char* path = "/tmp/OOMinimalRedirectTest.log" ; 
+    const char* path = "/tmp/redirectLogTest.log" ; 
 
     SSys::Dump(path);
     {
@@ -77,7 +77,7 @@ int main( int argc, char** argv )
     npy->read( ptr );
     buffer->unmap(); 
 
-    const char* bufpath = "$TMP/OOMinimalRedirectTest.npy";
+    const char* bufpath = "$TMP/redirectLogTest.npy";
     std::cerr << "save result npy to " << bufpath << std::endl ; 
  
     npy->save(bufpath);

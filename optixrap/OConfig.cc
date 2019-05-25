@@ -3,7 +3,7 @@
 #include <cstdio>
 #include <cstdlib>
 
-#include "BOpticksResource.hh"
+//#include "BOpticksResource.hh"
 
 #include "OProg.hh"
 #include "OConfig.hh"
@@ -12,17 +12,29 @@
 #include "PLOG.hh"
 
 
-
-OConfig::OConfig(optix::Context context, const char* cmake_target )
+OConfig::OConfig(optix::Context context, const char* cmake_target, const char* ptxrel )
         : 
         m_context(context),
         m_cmake_target(strdup(cmake_target)),
+        m_ptxrel(ptxrel ? strdup(ptxrel) : nullptr),
         m_index_max(-1),
         m_raygen_index(0),
         m_exception_index(0)
 {
-    
 }
+
+void OConfig::setCMakeTarget(const char* cmake_target)
+{
+    m_cmake_target = cmake_target ? strdup(cmake_target) : nullptr ; 
+}
+void OConfig::setPTXRel(const char* ptxrel)
+{
+    m_ptxrel = ptxrel ? strdup(ptxrel) : nullptr ; 
+}
+
+
+
+
 
 void OConfig::Print(const char* msg)
 {
@@ -80,39 +92,21 @@ bool OConfig::DefaultWithTop()
 
 optix::Program OConfig::createProgram(const char* cu_name, const char* progname )
 {
-    std::string path = BOpticksResource::PTXPath(cu_name, m_cmake_target); 
-    std::string path2 = OKConf::PTXPath(  m_cmake_target, cu_name ); 
-
-    bool match = strcmp(path.c_str(), path2.c_str()) == 0 ; 
-    if(!match)
-    {
-        LOG(fatal)
-             << " paths do not match " 
-             << " path  " << path 
-             << " path2 " << path2 
-             ;   
-    }
-    assert( match ); 
-
+    std::string path = OKConf::PTXPath(  m_cmake_target, cu_name, m_ptxrel ); 
 
     std::string key = path + ":" + progname ; 
 
+    bool create = m_programs.find(key) == m_programs.end() ; 
 
-  LOG(debug) << "OConfig::createProgram"
-             << " path " << path 
-             ;
+    LOG(fatal) << create << " key " << key ;
 
-  if(m_programs.find(key) == m_programs.end())
-  { 
-       LOG(debug) << "OConfig::createProgram " << key ;
-       optix::Program program = m_context->createProgramFromPTXFile( path.c_str(), progname ); 
-       m_programs[key] = program ; 
-  } 
-  else
-  {
-       //printf("createProgram cached key %s \n", key.c_str() );
-  } 
-  return m_programs[key];
+    if(create)
+    { 
+        LOG(debug) << key ;
+        optix::Program program = m_context->createProgramFromPTXFile( path.c_str(), progname ); 
+        m_programs[key] = program ; 
+    } 
+    return m_programs[key];
 }
 
 

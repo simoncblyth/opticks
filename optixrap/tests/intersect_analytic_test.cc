@@ -36,7 +36,7 @@ int main( int argc, char** argv )
     LOG(info) << " stack_size " << stack_size ; 
     //context->setStackSize(6000);
 
-    OptiXTest* test = new OptiXTest(context, cu_name, progname ) ;
+    OptiXTest* test = new OptiXTest(context, cu_name, progname, "exception", "optixrap", "OptiXRap" ) ;
 
     std::cout << test->description() << std::endl ; 
 

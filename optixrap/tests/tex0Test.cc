@@ -1,4 +1,4 @@
-// TEST=OOtex0Test om-t
+// TEST=tex0Test om-t
 
 #include "NPY.hpp"
 #include "OXPPNS.hh"
@@ -89,8 +89,9 @@ int main(int argc, char** argv)
     int tex_id = tex->getId();
     context["tex_param"]->setInt(optix::make_int4(tex_id, 0, 0, 0 ));
 
-
-    OConfig* cfg = new OConfig(context); 
+    const char* cmake_target = "tex0Test" ; 
+    const char* ptxrel = "tests" ; 
+    OConfig* cfg = new OConfig(context, cmake_target, ptxrel ); 
 
     bool defer = true ;
     unsigned int entry = cfg->addEntry("tex0Test.cu", "tex0Test", "exception", defer);

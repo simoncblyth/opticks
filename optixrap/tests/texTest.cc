@@ -7,7 +7,7 @@
 
 
 /**
-OOtexTest
+texTest
 ==========
 
 Technical tex roundtrip test.
@@ -39,7 +39,7 @@ int main(int argc, char** argv)
     }
     }
     //inp->dump();
-    inp->save("$TMP/OOtexTest_inp.npy");
+    inp->save("$TMP/texTest_inp.npy");
 
     optix::Context context = optix::Context::create();
     context->setRayTypeCount(1); 
@@ -77,7 +77,10 @@ int main(int argc, char** argv)
     context["out_buffer"]->setBuffer(outBuffer);   
     context["tex_param"]->setInt(optix::make_int4(tex->getId(), 0, 0, 0 ));
 
-    OConfig* cfg = new OConfig(context); 
+
+    const char* cmake_target = "texTest" ; 
+    const char* ptxrel = "tests" ; 
+    OConfig* cfg = new OConfig(context, cmake_target, ptxrel ); 
 
     bool defer = true ;
     unsigned int entry = cfg->addEntry("texTest.cu", "texTest", "exception", defer);
@@ -102,7 +105,7 @@ int main(int argc, char** argv)
     outBuffer->unmap(); 
 
     //out->dump();
-    out->save("$TMP/OOtexTest_out.npy");
+    out->save("$TMP/texTest_out.npy");
 
     float maxdiff = inp->maxdiff(out);
     LOG(info) << "maxdiff " << maxdiff  ; 

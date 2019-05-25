@@ -16,11 +16,12 @@ int main( int argc, char** argv )
     Opticks ok(argc, argv, "--compute --printenabled");
     ok.configure();
 
-
-    OContext* ctx = OContext::Create(&ok );
+    const char* cmake_target = "writeBufferTest" ;
+    const char* ptxrel = "tests" ; 
+    OContext* ctx = OContext::Create(&ok, cmake_target, ptxrel );
     optix::Context context = ctx->getContext(); 
 
-    unsigned entry = ctx->addEntry("minimalTest.cu", "minimal", "exception");
+    unsigned entry = ctx->addEntry("writeBufferTest.cu", "writeBuffer", "exception");
 
     unsigned ni = 100 ; 
     unsigned nj = 4 ; 
@@ -38,15 +39,7 @@ int main( int argc, char** argv )
 
     context["output_buffer"]->set(buffer);
 
-/*
-    ctx->launch( OContext::VALIDATE,  entry, ni, 1);
-    ctx->launch( OContext::COMPILE,   entry, ni, 1);
-    ctx->launch( OContext::PRELAUNCH, entry, ni, 1);
-    ctx->launch( OContext::LAUNCH,    entry, ni, 1);
-*/
-
     ctx->launch( OContext::VALIDATE | OContext::COMPILE | OContext::PRELAUNCH | OContext::LAUNCH ,    entry, ni, 1);
-
 
 
     OContext::download( buffer, npy );
@@ -54,7 +47,7 @@ int main( int argc, char** argv )
     NPYBase::setGlobalVerbose();
 
     npy->dump();
-    npy->save("$TMP/OOContextTest.npy");
+    npy->save("$TMP/writeBufferTest.npy");
 
     delete ctx ; 
 

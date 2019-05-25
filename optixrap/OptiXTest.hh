@@ -25,9 +25,9 @@ Usage examples:
 class OXRAP_API OptiXTest {
    public:
       static std::string ptxname_(const char* projname, const char* name);
-      static const char* ptxpath_( const char* cu, const char* projdir="optixrap", const char* projname="OptiXRap") ;
+      static const char* buildptxpath_( const char* cu, const char* buildrel, const char* cmake_target) ;
    public:
-      OptiXTest(optix::Context& context, const char* cu, const char* raygen_name, const char* exception_name="exception"); 
+      OptiXTest(optix::Context& context, const char* cu, const char* raygen_name, const char* exception_name, const char* buildrel, const char* cmake_target);
       std::string description();
       void Summary(const char* msg="OptiXTest::Summary");
    private:

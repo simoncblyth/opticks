@@ -22,7 +22,19 @@ struct OProg ;
 #include "OXRAP_API_EXPORT.hh"
 #include "OXRAP_HEAD.hh"
 
+/**
+OConfig
+==========
+
+ptxrel 
+    relative directory beneath installcache/PTX, this defaults to nullptr 
+    for PTX used only by tests set this to "tests"
+
+**/
+
+
 class OXRAP_API OConfig {
+
 public:
 
   static const char* _RT_FORMAT_UNKNOWN;
@@ -110,7 +122,7 @@ public:
    static unsigned OptiXVersion();
    //static bool DefaultWithTop();
 public:
-    OConfig(optix::Context context, const char* cmake_target="OptiXRap");
+    OConfig(optix::Context context, const char* cmake_target="OptiXRap", const char* ptxrel=nullptr );
     void dump(const char* msg="OConfig::dump");
 
     optix::Program createProgram(const char* cu_name, const char* progname) ;
@@ -125,10 +137,16 @@ public:
     void apply(OProg* prog);
     unsigned int getNumEntryPoint();
 
+
+private:
+    friend struct rayleighTest ; 
+    void setPTXRel(const char* ptxrel); 
+    void setCMakeTarget(const char* cmake_target);
 private:
 
     optix::Context m_context ;
     const char*  m_cmake_target ;  
+    const char*  m_ptxrel ;  
     int          m_index_max ; 
     unsigned int m_raygen_index ;  
     unsigned int m_exception_index ;  
