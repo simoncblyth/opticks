@@ -506,7 +506,7 @@ geocache-pixels()
 }
 
 
-geocache-bench360(){ geocache-rtxcheck $FUNCNAME $* ; }
+geocache-bench360(){ OPTICKS_GROUPCOMMAND="$FUNCNAME $*" geocache-rtxcheck $FUNCNAME $* ; }
 geocache-bench360-()
 {
    type $FUNCNAME
@@ -543,8 +543,8 @@ geocache-snap360()
    UseOptiX --cvd $cvd 
 
    local cameratype=2  # EQUIRECTANGULAR : all PMTs in view 
-   #local factor=4   # 4: 58.98 M pixels
-   local factor=2    # 2: 14.75 M pixels
+   local factor=4   # 4: 58.98 M pixels
+   #local factor=2    # 2: 14.75 M pixels
 
    local dbg
    [ -n "$DBG" ] && dbg="gdb --args" || dbg=""
@@ -635,7 +635,7 @@ geocache-tour-()
 
 
 # preserving spaces through multiple levels of argument passing is painful but its trivial to do via envvar 
-geocache-bench(){  OPTICKS_METACOMMAND="$FUNCNAME $*" geocache-rtxcheck $FUNCNAME $* ; } 
+geocache-bench(){  OPTICKS_GROUPCOMMAND="$FUNCNAME $*" geocache-rtxcheck $FUNCNAME $* ; } 
 geocache-bench-()
 {
    type $FUNCNAME
