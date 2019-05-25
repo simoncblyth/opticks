@@ -112,7 +112,6 @@ set(CU_SOURCES
     cu/LTminimalTest.cu
     cu/axisTest.cu
     cu/seedTest.cu
-    cu/OInterpolationTest.cu
 
     cu/intersect_analytic_dummy_test.cu
     cu/intersect_analytic_torus_test.cu
@@ -125,7 +124,7 @@ set(CU_SOURCES
 )
 
 
-set( CU_SOURCES_MIGRATED_TO_TESTS
+set( FORMER_CU_SOURCES_NOW_MIGRATED_TO_TESTS
 
     cu/bufferTest.cu
     cu/textureTest.cu
@@ -136,6 +135,7 @@ set( CU_SOURCES_MIGRATED_TO_TESTS
     cu/minimalTest.cu
     cu/ORayleighTest.cu
     cu/OEventTest.cu
+    cu/OInterpolationTest.cu
 
 )
 

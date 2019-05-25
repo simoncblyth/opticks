@@ -4,7 +4,7 @@
 
 using namespace optix;
 
-#include "boundary_lookup.h"
+#include "cu/boundary_lookup.h"
 
 rtDeclareVariable(uint2, launch_index, rtLaunchIndex, );
 rtDeclareVariable(uint2, launch_dim,   rtLaunchDim, );
@@ -13,7 +13,7 @@ rtBuffer<float4,2>  out_buffer;
 
 
 
-RT_PROGRAM void OInterpolationTest()
+RT_PROGRAM void interpolationTest()
 {
     unsigned nj = BOUNDARY_NUM_MATSUR ;
     unsigned nk = BOUNDARY_NUM_FLOAT4 ;
@@ -43,7 +43,7 @@ RT_PROGRAM void OInterpolationTest()
 
 
 
-RT_PROGRAM void OIdentityTest()
+RT_PROGRAM void identityTest()
 {
     unsigned nj = BOUNDARY_NUM_MATSUR ;
     unsigned nk = BOUNDARY_NUM_FLOAT4 ;

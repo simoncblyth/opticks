@@ -103,6 +103,7 @@ class OXRAP_API OContext {
             double launch_redirected_(unsigned entry, unsigned width, unsigned height=1 );
      private:
             friend struct rayleighTest ; 
+            friend class interpolationTest ; 
             OConfig* getConfig() const ; 
      public:
             // pass thru to OConfig

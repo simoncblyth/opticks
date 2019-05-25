@@ -36,7 +36,11 @@ int main( int argc, char** argv )
     LOG(info) << " stack_size " << stack_size ; 
     //context->setStackSize(6000);
 
-    OptiXTest* test = new OptiXTest(context, cu_name, progname, "exception", "optixrap", "OptiXRap" ) ;
+
+    const char* buildrel = "optixrap/tests" ; 
+    const char* cmake_target = "intersectAnalyticTest" ;  
+
+    OptiXTest* test = new OptiXTest(context, cu_name, progname, "exception", buildrel, cmake_target ) ;
 
     std::cout << test->description() << std::endl ; 
 
@@ -79,7 +83,7 @@ int main( int argc, char** argv )
     npy->read( ptr );
     buffer->unmap(); 
 
-    const char* path = "$TMP/oxrap/intersect_analytic_test.npy";
+    const char* path = "$TMP/oxrap/intersectAnalyticTest.npy";
     std::cerr << "save result npy to " << path << std::endl ; 
  
     npy->save(path);

@@ -9,9 +9,7 @@ set(TEST_SOURCES
     OScintillatorLibTest.cc
 
     LTOOContextUploadDownloadTest.cc
-    OInterpolationTest.cc
-
-    intersect_analytic_test.cc
+    intersectAnalyticTest.cc
     Roots3And4Test.cc
 )
 
@@ -31,6 +29,7 @@ set(PAIRED_TEST_SOURCES  # tests with paired cc and cu
     redirectLogTest.cc
     downloadTest.cc
     eventTest.cc
+    interpolationTest.cc
 
 )
 

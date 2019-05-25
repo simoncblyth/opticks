@@ -8,54 +8,50 @@
 
 #include "OBndLib.hh"
 #include "OLaunchTest.hh"
+#include "OConfig.hh"
 #include "OContext.hh"
 #include "Opticks.hh"
 #include "OpticksHub.hh"
 
 #include "OScene.hh"
 
+#include "OPTICKS_LOG.hh"
 
-#include "SYSRAP_LOG.hh"
-#include "OKCORE_LOG.hh"
-#include "GGEO_LOG.hh"
-#include "OXRAP_LOG.hh"
-
-#include "PLOG.hh"
 
 /**
-OInterpolationTest
+interpolationTest
 ===================
 
 **/
 
-class OInterpolationTest 
+class interpolationTest 
 {
     public:
-         OInterpolationTest(Opticks* ok, OContext* ocontext, OBndLib* obnd, const char* base);
-         void launch(optix::Context& context);
-         int ana();
+        interpolationTest(Opticks* ok, OContext* ocontext, OBndLib* obnd, const char* base);
+        void launch(optix::Context& context);
+        int ana();
     private:
-         Opticks*    m_ok ;
-         bool        m_interpol ; 
-         const char* m_progname ; 
-         const char* m_name ; 
-         const char* m_ana ; 
-         OContext*   m_ocontext;
-         OBndLib*    m_obnd ;
-         const char* m_base ;  
-         unsigned    m_nb ; 
-         unsigned    m_nx ; 
-         unsigned    m_ny ; 
-         NPY<float>* m_out ; 
+        Opticks*    m_ok ;
+        bool        m_interpol ; 
+        const char* m_progname ; 
+        const char* m_name ; 
+        const char* m_ana ; 
+        OContext*   m_ocontext;
+        OBndLib*    m_obnd ;
+        const char* m_base ;  
+        unsigned    m_nb ; 
+        unsigned    m_nx ; 
+        unsigned    m_ny ; 
+        NPY<float>* m_out ; 
 };
 
 
 
-OInterpolationTest::OInterpolationTest(Opticks* ok, OContext* ocontext, OBndLib* obnd, const char* base)
+interpolationTest::interpolationTest(Opticks* ok, OContext* ocontext, OBndLib* obnd, const char* base)
    :
      m_ok(ok),
      m_interpol(!ok->hasOpt("nointerpol")),
-     m_progname( m_interpol ? "OInterpolationTest" : "OIdentityTest" ),
+     m_progname( m_interpol ? "interpolationTest" : "identityTest" ),
      m_name(NULL),
      m_ana(NULL),
      m_ocontext(ocontext),
@@ -67,24 +63,24 @@ OInterpolationTest::OInterpolationTest(Opticks* ok, OContext* ocontext, OBndLib*
      
     if(m_interpol)
     {
-        m_name = "OInterpolationTest_interpol.npy" ;
-        m_ana = "$OPTICKS_HOME/optixrap/tests/OInterpolationTest_interpol.py" ;
+        m_name = "interpolationTest_interpol.npy" ;
+        m_ana = "$OPTICKS_HOME/optixrap/tests/interpolationTest_interpol.py" ;
         m_nx = 820 - 60 + 1 ;     // 761 : 1 nm steps 
         m_ny = m_obnd->getHeight();  // total number of float4 props
     }
     else  // identity 
     {
-        m_name = "OInterpolationTest_identity.npy" ;
-        m_ana = "$OPTICKS_HOME/optixrap/tests/OInterpolationTest_identity.py" ;
+        m_name = "interpolationTest_identity.npy" ;
+        m_ana = "$OPTICKS_HOME/optixrap/tests/interpolationTest_identity.py" ;
         m_nx = m_obnd->getWidth();   // number of wavelength samples
         m_ny = m_obnd->getHeight();  // total number of float4 props
     } 
 }
 
 
-void OInterpolationTest::launch(optix::Context& context)
+void interpolationTest::launch(optix::Context& context)
 {
-    LOG(info) << "OInterpolationTest::launch"
+    LOG(info) 
               << " nb " << std::setw(5) << m_nb
               << " nx " << std::setw(5) << m_nx
               << " ny " << std::setw(5) << m_ny
@@ -96,7 +92,14 @@ void OInterpolationTest::launch(optix::Context& context)
     optix::Buffer buffer = context->createBuffer(RT_BUFFER_OUTPUT, RT_FORMAT_FLOAT4, m_nx, m_ny);
     context["out_buffer"]->setBuffer(buffer);   
 
-    OLaunchTest olt(m_ocontext, m_ok, "OInterpolationTest.cu", m_progname, "exception");
+    // rayleighTest uses standard PTX (for loading geometry, materials etc..)
+    // as well as test PTX. Hence need to shift the PTX sourcing. 
+    OConfig* cfg = m_ocontext->getConfig();
+    cfg->setCMakeTarget("interpolationTest");
+    cfg->setPTXRel("tests");
+
+
+    OLaunchTest olt(m_ocontext, m_ok, "interpolationTest.cu", m_progname, "exception");
     olt.setWidth(  m_nx );   
     olt.setHeight( m_ny/8 );   // kernel loops over eight for matsur and num_float4
     olt.launch();
@@ -108,7 +111,7 @@ void OInterpolationTest::launch(optix::Context& context)
 }
 
 
-int OInterpolationTest::ana()
+int interpolationTest::ana()
 {
     std::string path = BFile::FormPath(m_ana);
     return SSys::exec("python",path.c_str());
@@ -117,12 +120,7 @@ int OInterpolationTest::ana()
 
 int main(int argc, char** argv)
 {
-    PLOG_(argc, argv);    
-
-    SYSRAP_LOG__ ; 
-    OKCORE_LOG__ ; 
-    GGEO_LOG__ ; 
-    OXRAP_LOG__ ; 
+    OPTICKS_LOG(argc, argv);    
 
     Opticks ok(argc, argv);
     OpticksHub hub(&ok);
@@ -133,7 +131,7 @@ int main(int argc, char** argv)
     OContext* ocontext = sc.getOContext();
     optix::Context context = ocontext->getContext();
 
-    const char* base = "$TMP/InterpolationTest"  ; 
+    const char* base = "$TMP/interpolationTest"  ; 
 
     OBndLib* obnd = sc.getOBndLib();
 
@@ -144,7 +142,7 @@ int main(int argc, char** argv)
     // BUT ok to override write into $TMP, allowing 
     // python analysis to pick up the potentially dynamic boundary names
 
-    OInterpolationTest tst(&ok , ocontext, obnd, base);
+    interpolationTest tst(&ok , ocontext, obnd, base);
     tst.launch(context);
     return tst.ana();
 

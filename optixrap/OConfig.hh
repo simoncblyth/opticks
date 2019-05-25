@@ -140,6 +140,7 @@ public:
 
 private:
     friend struct rayleighTest ; 
+    friend class interpolationTest ; 
     void setPTXRel(const char* ptxrel); 
     void setCMakeTarget(const char* cmake_target);
 private:
