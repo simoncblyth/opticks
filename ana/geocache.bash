@@ -647,13 +647,62 @@ geocache-bench-()
 geocache-bench-target(){ echo ${GEOCACHE_BENCH_TARGET:-352851} ; }   # chimney region default
 geocache-bench-check(){  geocache-bench- --cvd 1 --rtx 0 --runfolder $FUNCNAME --runstamp $(date +%s)  --xanalytic ; }
 
+
+geocache-machinery-notes(){ cat << EON
+
+Check the bach function preparation of arguments for a 
+group of runs using and with the UseOptiX executable.
+
+EON
+}
+
 geocache-machinery(){ geocache-rtxcheck $FUNCNAME $* ; }
 geocache-machinery-()
 {
-   UseOptiX $* 
+   UseOptiX $* --cmdline 
 }
 
+
+
 geocache-rtxcheck()
+{
+   local name=${1:-geocache-bench}
+   shift
+
+   local stamp=$(date +%s)
+   local ndev=$(UseOptiX --num)
+
+   local uniqrec
+   local uniqname
+   local ordinal
+
+   UseOptiX --uniqrec | while read uniqrec ; do 
+       ordinal=$(basename $uniqrec)
+       uniqname=$(dirname $uniqrec)
+
+       $name- --cvd $ordinal --rtx 0 --runfolder $name --runstamp $stamp --runlabel "R0_$uniqname" $*
+       $name- --cvd $ordinal --rtx 1 --runfolder $name --runstamp $stamp --runlabel "R1_$uniqname" $*
+       $name- --cvd $ordinal --rtx 2 --runfolder $name --runstamp $stamp --runlabel "R2_$uniqname" $*
+   done
+
+   if [ $ndev -eq 2 ]; then
+       local dev0=$(dirname $(UseOptiX --cvd 0 --uniqrec))
+       local dev1=$(dirname $(UseOptiX --cvd 1 --uniqrec))
+       $name- --cvd 0,1 --rtx 0 --runfolder $name --runstamp $stamp --runlabel "R0_${dev0}_AND_${dev1}" $*
+   fi 
+
+   if [ $ndev -gt 2 ]; then
+       local cvd
+       geocache-cvd $ndev | while read cvd ; do
+           $name- --cvd $cvd --rtx 0 --runfolder $name --runstamp $stamp $*
+       done 
+   fi 
+
+   bench.py --name $name
+}
+
+
+geocache-rtxcheck-manual()
 {
    local name=${1:-geocache-bench}
    shift
@@ -677,42 +726,23 @@ geocache-rtxcheck()
 }
 
 
-geocache-cluster-cvd(){ cat << EOC
-0
-0,1
-0,1,2
-0,1,2,3
-0,1,2,3,4
-0,1,2,3,4,5
-0,1,2,3,4,5,6
-0,1,2,3,4,5,6,7
-EOC
-}
-
-geocache-cluster-check()
+geocache-cvd()
 {
-   local cvd 
-   geocache-cluster-cvd | while read cvd ; do
-       UseOptiX --cvd $cvd
-   done  
-}
-
-geocache-cluster()
-{
-   local stamp=$(date +%s)
-   local cvd 
-   geocache-cluster-cvd | head -8 | while read cvd ; do
-        geocache-bench- --cvd $cvd --rtx 2 --runfolder $FUNCNAME --runstamp $stamp  $*   
-   done  
-   bench.py 
-
+   local ndev=${1:-8}
+   local cvd
+   local i=0
+   while [ $i -lt $ndev ]; do
+      [ -n "$cvd" ] &&  cvd=${cvd},$i || cvd=$i
+      echo $cvd
+      i=$(( $i + 1 )) 
+   done
 }
 
 
 
 geocache-bench-results()
 {
-   bench.py $LOCAL_BASE/opticks/results/${FUNCNAME/-results} $*
+   bench.py $*
 }
 
 geocache-bench-notes(){ cat << EON
@@ -739,8 +769,6 @@ $FUNCNAME
 
     geocache-bench-results --include xanalytic
     geocache-bench-results --exclude xanalytic
-
-
 
 Former default location to write results was $LOCAL_BASE/opticks/results
 but that doesnt make sense for multiple users running from the same 
