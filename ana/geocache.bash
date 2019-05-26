@@ -676,14 +676,17 @@ geocache-rtxcheck()
    local uniqname
    local ordinal
 
-   UseOptiX --uniqrec | while read uniqrec ; do 
-       ordinal=$(basename $uniqrec)
-       uniqname=$(dirname $uniqrec)
+   local scan=0
+   if [ $scan -eq 1 ]; then
+       UseOptiX --uniqrec | while read uniqrec ; do 
+           ordinal=$(basename $uniqrec)
+           uniqname=$(dirname $uniqrec)
 
-       $name- --cvd $ordinal --rtx 0 --runfolder $name --runstamp $stamp --runlabel "R0_$uniqname" $*
-       $name- --cvd $ordinal --rtx 1 --runfolder $name --runstamp $stamp --runlabel "R1_$uniqname" $*
-       $name- --cvd $ordinal --rtx 2 --runfolder $name --runstamp $stamp --runlabel "R2_$uniqname" $*
-   done
+           $name- --cvd $ordinal --rtx 0 --runfolder $name --runstamp $stamp --runlabel "R0_$uniqname" $*
+           $name- --cvd $ordinal --rtx 1 --runfolder $name --runstamp $stamp --runlabel "R1_$uniqname" $*
+           $name- --cvd $ordinal --rtx 2 --runfolder $name --runstamp $stamp --runlabel "R2_$uniqname" $*
+       done
+   fi
 
    if [ $ndev -eq 2 ]; then
        local dev0=$(dirname $(UseOptiX --cvd 0 --uniqrec))
@@ -695,6 +698,7 @@ geocache-rtxcheck()
        local cvd
        geocache-cvd $ndev | while read cvd ; do
            $name- --cvd $cvd --rtx 0 --runfolder $name --runstamp $stamp $*
+           $name- --cvd $cvd --rtx 1 --runfolder $name --runstamp $stamp $*
        done 
    fi 
 
@@ -702,31 +706,23 @@ geocache-rtxcheck()
 }
 
 
-geocache-rtxcheck-manual()
-{
-   local name=${1:-geocache-bench}
-   shift
 
-   local stamp=$(date +%s)
+geocache-cvd(){ geocache-cvd-even ; }
 
-   # hmm the default runlabel from Opticks::AutoRunLabel just gives the cvd
-   # note that --rtx 2 gets skipped for --xanalytic as its the same as --rtx 1
-
-   $name- --cvd 1 --rtx 0 --runfolder $name --runstamp $stamp --runlabel "R0_TITAN_RTX" $*
-   $name- --cvd 1 --rtx 1 --runfolder $name --runstamp $stamp --runlabel "R1_TITAN_RTX"  $*
-   $name- --cvd 1 --rtx 2 --runfolder $name --runstamp $stamp --runlabel "R2_TITAN_RTX"  $*
-
-   $name- --cvd 0 --rtx 0 --runfolder $name --runstamp $stamp --runlabel "R0_TITAN_V"  $*
-   $name- --cvd 0 --rtx 1 --runfolder $name --runstamp $stamp --runlabel "R1_TITAN_V"   $*
-   $name- --cvd 0 --rtx 2 --runfolder $name --runstamp $stamp --runlabel "R2_TITAN_V"   $*
-
-   $name- --cvd 0,1 --rtx 0 --runfolder $name --runstamp $stamp --runlabel "R0_TITAN_V_AND_TITAN_RTX" $*
-
-   bench.py --name $name
+geocache-cvd-even(){  cat << EOC
+0
+0,1
+2,3
+0,1,2,3
+4
+4,5
+6,7
+4,5,6,7
+0,1,2,3,4,5,6,7
+EOC
 }
 
-
-geocache-cvd()
+geocache-cvd-linear()
 {
    local ndev=${1:-8}
    local cvd

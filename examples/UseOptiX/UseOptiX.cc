@@ -35,6 +35,7 @@ struct Args
     bool cmdline ; 
     char* cvd ; 
     bool names ; 
+    bool bus ; 
     bool uniqnames ; 
     bool uniqrec ; 
     bool ordinals ; 
@@ -47,6 +48,7 @@ struct Args
         cmdline(false),
         cvd(NULL),
         names(false),
+        bus(false),
         uniqnames(false),
         uniqrec(false),
         ordinals(false),
@@ -72,6 +74,10 @@ struct Args
             else if( i < argc && strcmp(argv[i], "--names" ) == 0)
             {
                 names  = true ; 
+            }
+            else if( i < argc && strcmp(argv[i], "--bus" ) == 0)
+            {
+                bus  = true ; 
             }
             else if( i < argc && strcmp(argv[i], "--ordinals" ) == 0)
             {
@@ -104,7 +110,7 @@ struct Args
     }  
     bool quiet() const 
     {
-        return verbose ? false : names || uniqnames || uniqrec || num || ordinals || cmdline ; 
+        return verbose ? false : names || uniqnames || uniqrec || num || ordinals || cmdline || bus ; 
     }
 
          
@@ -123,6 +129,7 @@ struct Devices
 
     std::vector<std::string> names ; 
     std::vector<std::string> uniqs ; 
+    std::vector<std::string> bus ; 
     std::vector<int> ordinals ; 
     std::vector<std::string> uniqified ; 
     std::vector<std::string> uniqrec ; 
@@ -150,14 +157,14 @@ struct Devices
         for(unsigned i = 0; i < num_devices; ++i) 
         {
             char name[256];
-            char bus[256];
+            char busid[256];
             int computeCaps[2];
             int compat[MAX_DEVICES+1];
             int ordinal ; 
             RTsize total_mem;
 
             RT_CHECK_ERROR(rtDeviceGetAttribute(i, RT_DEVICE_ATTRIBUTE_NAME, sizeof(name), name));
-            RT_CHECK_ERROR(rtDeviceGetAttribute(i, RT_DEVICE_ATTRIBUTE_PCI_BUS_ID, sizeof(bus), bus));
+            RT_CHECK_ERROR(rtDeviceGetAttribute(i, RT_DEVICE_ATTRIBUTE_PCI_BUS_ID, sizeof(busid), busid));
             RT_CHECK_ERROR(rtDeviceGetAttribute(i, RT_DEVICE_ATTRIBUTE_COMPUTE_CAPABILITY, sizeof(computeCaps), &computeCaps));
             RT_CHECK_ERROR(rtDeviceGetAttribute(i, RT_DEVICE_ATTRIBUTE_TOTAL_MEMORY, sizeof(total_mem), &total_mem));
             RT_CHECK_ERROR(rtDeviceGetAttribute(i, RT_DEVICE_ATTRIBUTE_CUDA_DEVICE_ORDINAL, sizeof(ordinal), &ordinal));
@@ -174,9 +181,11 @@ struct Devices
             names.push_back(name); 
             if(std::find(uniqs.begin(),uniqs.end(), name) == uniqs.end())  uniqs.push_back(name);
 
+            bus.push_back(busid);   
+
             if(!args.quiet())
             {
-                printf(" Device %d: %30s %15s ordinal:%d compat[0]:%d ", i, name, bus, ordinal, compat[0] );
+                printf(" Device %d: %30s %15s ordinal:%d compat[0]:%d ", i, name, busid, ordinal, compat[0] );
                 printf(" Compute Support: %d %d ", computeCaps[0], computeCaps[1]);
                 printf(" Total Memory: %llu bytes \n", (unsigned long long)total_mem);
             }
@@ -238,6 +247,7 @@ struct Devices
     void dump_ordinals() const { dump_vec(ordinals) ; } 
     void dump_uniqnames() const { dump_vec(uniqified) ; } 
     void dump_uniqrec()  const { dump_vec(uniqrec) ; } 
+    void dump_bus() const { dump_vec(bus) ; } 
 
 };
 
@@ -261,6 +271,7 @@ int main(int argc, char** argv)
     if( args.ordinals ) devs.dump_ordinals(); 
     if( args.uniqnames ) devs.dump_uniqnames(); 
     if( args.uniqrec ) devs.dump_uniqrec() ; 
+    if( args.bus ) devs.dump_bus() ; 
 
     if(!args.ctx) return 0 ; 
 
