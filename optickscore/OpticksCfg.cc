@@ -744,6 +744,8 @@ void OpticksCfg<Listener>::init()
    m_desc.add_options()
        ("printenabled",  "default to enabling rtPrint,  see oxrap-/OContext") ; 
 
+   m_desc.add_options()
+       ("exceptionenabled",  "enable exceptions, but only when printenabled or pindex is also enabled, see oxrap-/OContext::initPrint ") ; 
 
    m_desc.add_options()
        ("pindexlog",  "Use redirect to write stdout rtPrintf from OptiX launch to a logfile, see oxrap-/OContext") ; 

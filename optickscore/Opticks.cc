@@ -747,6 +747,10 @@ bool Opticks::isPrintEnabled() const
 {
     return m_cfg->hasOpt("printenabled") ;
 }
+bool Opticks::isExceptionEnabled() const 
+{
+    return m_cfg->hasOpt("exceptionenabled") ;
+}
 
 bool Opticks::isPrintIndexLog() const 
 {
@@ -2664,10 +2668,28 @@ void Opticks::configureF(const char* name, std::vector<float> values)
  
 
 
+template <typename T>
+void Opticks::set(const char* name, T value)
+{
+    m_parameters->set<T>(name, value); 
+}
+
+
+
 template OKCORE_API void Opticks::profile<unsigned>(unsigned);
 template OKCORE_API void Opticks::profile<int>(int);
 template OKCORE_API void Opticks::profile<char*>(char*);
 template OKCORE_API void Opticks::profile<const char*>(const char*);
+
+
+template OKCORE_API void Opticks::set(const char* name, bool value);
+template OKCORE_API void Opticks::set(const char* name, int value);
+template OKCORE_API void Opticks::set(const char* name, unsigned int value);
+template OKCORE_API void Opticks::set(const char* name, std::string value);
+template OKCORE_API void Opticks::set(const char* name, float value);
+template OKCORE_API void Opticks::set(const char* name, double  value);
+template OKCORE_API void Opticks::set(const char* name, char value);
+
 
 
 

@@ -258,13 +258,15 @@ void OContext::init()
     m_context->setRayTypeCount( num_ray_type );   // more static than entry type count
 
     unsigned stacksize_bytes = m_ok->getStack() ;
-    m_context->setStackSize(stacksize_bytes);
+    m_ok->set("stacksize", stacksize_bytes );
 
+    m_context->setStackSize(stacksize_bytes);
     LOG(LEVEL) << "OContext::init " 
               << " mode " << getModeName()
               << " num_ray_type " << num_ray_type 
               << " stacksize_bytes " << stacksize_bytes
               ; 
+
 }
 
 
@@ -303,6 +305,11 @@ void OContext::initPrint()
     m_context->setPrintBufferSize(4096);
     //m_context->setPrintBufferSize(2*2*2*8192);
 
+    m_context->setExceptionEnabled(RT_EXCEPTION_ALL, false );  
+    // disable all exceptions 
+    // this is different from the default of leaving STACKOVERFLOW exception enabled
+
+
     glm::ivec3 idx ; 
     if(m_ok->getPrintIndex(idx))   // --pindex 0  : 1st index
     {
@@ -324,7 +331,14 @@ void OContext::initPrint()
     {
          return ;  
     }
-   
+
+
+    // only enable exceptions when print also enabled
+    if( m_ok->isExceptionEnabled() )
+    {
+        m_context->setExceptionEnabled(RT_EXCEPTION_ALL, false );  
+    }
+
 
     unsigned uindex = m_ok->hasMask() ? m_ok->getMaskIndex(idx.x) : idx.x ; 
     m_llogpath = m_ok->isPrintIndexLog() ?  LaunchLogPath(uindex) : NULL ; 

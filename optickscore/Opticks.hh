@@ -281,6 +281,9 @@ class OKCORE_API Opticks {
        const char* getGPUMonPath() const ;   
        bool        isGPUMon() const ;  
    public:
+       // NMeta parameters 
+       template <typename T> void set(const char* name, T value);
+   public:
        void        updateCacheMeta() ; 
        void        appendCacheMeta(const char* key, NMeta* obj);
        void        saveCacheMeta() const ; 
@@ -331,6 +334,7 @@ class OKCORE_API Opticks {
        bool                 isG4CodeGen() const ;
        bool                 isNoSavePPM() const ; // --nosaveppm
        bool                 isPrintEnabled() const ;
+       bool                 isExceptionEnabled() const ;
        bool                 isXAnalytic() const ;
        bool                 isXGeometryTriangles() const ;
    public:
