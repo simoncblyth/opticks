@@ -45,6 +45,61 @@ Changing OptiX version
    om-test optixrap:    
 
 
+
+
+
+Stack Size
+---------------
+
+* https://devtalk.nvidia.com/default/topic/1004649/optix/code-work-well-in-optix-3-9-1-but-fail-in-optix-4-0-2/post/5130084/#5130084
+
+
+ No, it's quite the opposite. Your stack size is much too big and you're running out of VRAM on the board just for that.
+
+To find out which stack size is enough do the following:
+1.) Add an exception program which prints the exception code and enable it for the whole launch size.
+You'll find links to my code doing that when searching this forum for "rtAssert", and here: https://devtalk.nvidia.com/default/topic/936762/?comment=4882450
+2.) Maybe add a command line variable to your application to set the OptiX stack size. That will make the following iterations quicker.
+3.) Shrink the stack size to a small value, like 1024 or even less.
+4.) Run the program in a configuration which uses the maximum intended number of recursions and check for stack overflow exceptions. (Start with a small stack size which throws some.)
+5.) Increase the stack size until the exceptions in step 4. do not happen anymore.
+
+Use the minimal stack size which doesn't show stack overflow exceptions anymore and still runs the program.
+
+When reporting OptiX issues please always list the following system information:
+OS version, installed GPU(s) (=> how much VRAM?), display driver version, OptiX version, CUDA toolkit version.
+
+#2
+Posted 04/18/2017 08:04 AM   
+
+
+Exceptions
+----------
+
+* https://devtalk.nvidia.com/default/topic/936762/optix/distance-field-camera-clipping-issue-julia-demo-/post/4882450/#4882450
+
+
+    #if USE_DEBUG_EXCEPTIONS
+        // Disable this by default for performance, otherwise the stitched PTX code will have lots of exception handling inside. 
+        m_context->setPrintEnabled(true);
+        m_context->setPrintLaunchIndex(256, 256); // Launch index (0,0) at lower left.
+        m_context->setExceptionEnabled(RT_EXCEPTION_ALL, true);
+    #endif
+
+    rtDeclareVariable(uint2, launchIndex, rtLaunchIndex, );
+
+    RT_PROGRAM void exception()
+    {
+    #if USE_DEBUG_EXCEPTIONS
+      const unsigned int code = rtGetExceptionCode();
+      rtPrintf("Exception code 0x%X at (%d, %d)\n", code, launchIndex.x, launchIndex.y);
+    #endif
+    }
+
+
+
+
+
 nvrtc : runtime compilation for OptiX
 --------------------------------------
 

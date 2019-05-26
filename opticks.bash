@@ -908,8 +908,7 @@ opticks-check-installcache()
 }
 
 
-opticks-ti(){ opticks-t- $* --interactive-debug-mode 1 ; }
-opticks-t(){  opticks-t- $* --interactive-debug-mode 0 ; }
+opticks-t(){  opticks-t- $* ; }   ## see om-test-one for details of ctest arguments
 opticks-t0(){ CUDA_VISIBLE_DEVICES=0 opticks-t $* ; }
 opticks-t1(){ CUDA_VISIBLE_DEVICES=1 opticks-t $* ; }
 

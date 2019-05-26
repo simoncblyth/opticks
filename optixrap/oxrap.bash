@@ -542,10 +542,13 @@ oxrap-tests(){ tests.py $(oxrap-tdir)/CMakeLists.txt ; }
 
 oxrap-tests-run(){
     local t
-    local rc 
+    local rc
+    local log 
     oxrap-tests | while read t ; do
-        which $t 
-        $t 2>&1 1>/dev/null
+        which $t
+        log=otr_$t.log 
+        which $t > $log
+        $t >> $log 2>&1
         rc=$?
         echo $rc
     done

@@ -18,6 +18,14 @@ of the geocache used.
 
     bench.py --digest 52 --since 6pm
 
+    bench.py --name geocache-bench360
+         fullname of the results dir
+
+    bench.py --name 360
+         also works with just a tail string, so long as it selects 
+         one of the results dirs 
+
+
 
 """
 import os, re, logging, sys, argparse
@@ -55,15 +63,16 @@ if __name__ == '__main__':
 
     resultsprefix = "$OPTICKS_RESULTS_PREFIX" if os.environ.has_key("OPTICKS_RESULTS_PREFIX") else "$TMP"  ## equivalent to BOpticksResource::ResolveResultsPrefix
     parser.add_argument( "--resultsdir", default=os.path.join(resultsprefix, "results"), help="Directory path to results" )
-    parser.add_argument( "--name", default="geocache-bench", help="Name of directory beneath resultsdir in which to look for results")
+    parser.add_argument( "--name", default="bench", help="String at the end of the directory names beneath resultsdir in which to look for results")
     parser.add_argument( "--digest", default=None, help="Select result groups using geocaches with digests that start with the option string")
     parser.add_argument( "--since", default=None, help="Select results from dated folders following the date string provided, eg May22_1030 or 20190522_173746")
     parser.add_argument( "--include", default=None, action='append', nargs='*', help="Select result groups with commandline containing the string provided. ALL the strings when repeated" )
     parser.add_argument( "--exclude", default=None, action='append', nargs='*', help="Select result groupd with commandline NOT containing the string. NOT containing ANY of the strings when repeated" )
     parser.add_argument( "--metric", default="launchAVG" );
     parser.add_argument( "--other", default="prelaunch000" );
+    parser.add_argument( "--nodirs", dest="dirs", action="store_false", default=True );
+    parser.add_argument( "--splay",  action="store_true", default=False, help="Display the example commandline in a more readable but space consuming form." );
     args = parser.parse_args()
-
     print(args)
 
 
@@ -73,7 +82,13 @@ if __name__ == '__main__':
     ratios["R1/0_TITAN_V"] = "R1_TITAN_V R0_TITAN_V".split()
     ratios["R1/0_TITAN_RTX"] = "R1_TITAN_RTX R0_TITAN_RTX".split()
 
-    base = os.path.join( args.resultsdir, args.name )
+    rnames = filter( lambda rname:rname.endswith(args.name),  os.listdir(os.path.expandvars(args.resultsdir)) )
+    print(rnames)
+
+    assert len(rnames) == 1, rnames
+    rname = rnames[0]
+
+    base = os.path.join( args.resultsdir, rname )
     base = os.path.expandvars(base)
 
     if args.since is not None:
@@ -186,7 +201,13 @@ if __name__ == '__main__':
         print("\n---  GROUPCOMMAND : %s  GEOFUNC : %s " % (mcmd, geof) )
         #print("includes %s " % repr(includes))
         #print("excludes %s " % repr(excludes))
-        print(cmdline)
+
+        if args.splay:
+            print("\\\n    --".join(cmdline.split("--")))
+        else:
+            print(cmdline)
+        pass
+
         print(key)
         print(idpath)
         print(labfmt_(lab))
@@ -203,9 +224,9 @@ if __name__ == '__main__':
 
             d[m.parentfold] = f 
 
-            print(" %s : %s  " % ( rowfmt_(a[i]), m.absdir) )
+            print(" %s : %s  " % ( rowfmt_(a[i]), m.absdir if args.dirs else ""  )  )
         pass
-        #print(a)      
+        print("")
         r = odict()
         for k,v in ratios.items():
             assert len(v) == 2, v
@@ -221,7 +242,7 @@ if __name__ == '__main__':
     pass 
 
     #print(args)
-    print()
+    print("")
     print(argline)
 
 

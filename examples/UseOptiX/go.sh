@@ -56,8 +56,6 @@ fi
 make
 make install   
 
-$name
-
 
 
 
