@@ -947,7 +947,21 @@ opticks-t-()
 
    om-
    om-test 
+
+   cd $iwd
 }
+
+opticks-t-notes(){ cat << EON
+$FUNCNAME
+=====================
+
+*opticks-t-* is invoked by the subproj test functions such as *oxrap-t* 
+with the corresponding build dir as the first argument.
+
+
+EON
+}
+
 
 
 opticks-t-old-approach(){  cat << EOA

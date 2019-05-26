@@ -677,7 +677,8 @@ geocache-rtxcheck()
    local ordinal
 
    local scan=0
-   if [ $scan -eq 1 ]; then
+   if [ $scan -eq 1 ] || [ $ndev -eq 2 ] 
+   then
        UseOptiX --uniqrec | while read uniqrec ; do 
            ordinal=$(basename $uniqrec)
            uniqname=$(dirname $uniqrec)
@@ -688,13 +689,15 @@ geocache-rtxcheck()
        done
    fi
 
-   if [ $ndev -eq 2 ]; then
+   if [ $ndev -eq 2 ]
+   then
        local dev0=$(dirname $(UseOptiX --cvd 0 --uniqrec))
        local dev1=$(dirname $(UseOptiX --cvd 1 --uniqrec))
        $name- --cvd 0,1 --rtx 0 --runfolder $name --runstamp $stamp --runlabel "R0_${dev0}_AND_${dev1}" $*
    fi 
 
-   if [ $ndev -gt 2 ]; then
+   if [ $ndev -gt 2 ]
+   then
        local cvd
        geocache-cvd $ndev | while read cvd ; do
            $name- --cvd $cvd --rtx 0 --runfolder $name --runstamp $stamp $*
