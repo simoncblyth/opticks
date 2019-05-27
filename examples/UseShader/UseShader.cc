@@ -212,7 +212,13 @@ int main(void)
     glVertexAttribPointer(vpos_location, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 5, (void*) 0);  check(__FILE__, __LINE__);
     glEnableVertexAttribArray(vcol_location);                                                   check(__FILE__, __LINE__);
     glVertexAttribPointer(vcol_location, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 5, (void*) (sizeof(float) * 2));  check(__FILE__, __LINE__);
-    while (!glfwWindowShouldClose(window))
+
+
+    int count(0);
+    int renderlooplimit(200); 
+    bool exitloop(false); 
+
+    while (!glfwWindowShouldClose(window) && !exitloop)
     {
         int width, height;
         glfwGetFramebufferSize(window, &width, &height);
@@ -229,6 +235,8 @@ int main(void)
         glDrawArrays(GL_TRIANGLES, 0, 3);
         glfwSwapBuffers(window);
         glfwPollEvents();
+
+        exitloop = renderlooplimit > 0 && count++ > renderlooplimit ;   
     }
     glfwDestroyWindow(window);
     glfwTerminate();

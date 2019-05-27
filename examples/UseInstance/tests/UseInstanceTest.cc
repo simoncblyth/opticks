@@ -108,7 +108,11 @@ int main()
         glVertexAttribDivisor(index, 1 );
     }
 
-    while (!glfwWindowShouldClose(frame.window))
+    bool exitloop(false); 
+    int count(0); 
+    int renderlooplimit(200); 
+
+    while (!glfwWindowShouldClose(frame.window) && !exitloop)
     {
         int width, height;
         glfwGetFramebufferSize(frame.window, &width, &height);
@@ -126,6 +130,9 @@ int main()
 
         glfwSwapBuffers(frame.window);
         glfwPollEvents();
+
+        count++ ; 
+        exitloop = renderlooplimit > 0 && count > renderlooplimit ; 
     }
 
     prog.destroy();

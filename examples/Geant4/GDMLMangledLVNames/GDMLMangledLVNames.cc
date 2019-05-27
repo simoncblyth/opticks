@@ -20,6 +20,8 @@ this was a useful check even though it didnt reproduce the problem
 #include "G4VPhysicalVolume.hh"
 #include "G4LogicalVolume.hh"
 
+#include "BFile.hh"
+
 #include "OPTICKS_LOG.hh"
 #include "G4GDMLParser.hh"
 
@@ -57,12 +59,14 @@ int main(int argc, char** argv)
     LOG(info) << " pv " << pv->GetName() ; 
     LOG(info) << " lv " << lv->GetName() ; 
 
-    const char* path = "/tmp/GDMLMangledLVNames.gdml" ; 
+    const char* path = "$TMP/examples/Geant4/GDMLMangledLVNames.gdml" ; 
+    BFile::RemoveFile(path); 
+    std::string apath = BFile::preparePath(path);
 
-    write_gdml( pv, path ); 
+    write_gdml( pv, apath.c_str() ); 
 
 
-    G4VPhysicalVolume* pv2 = read_gdml( path ) ;
+    G4VPhysicalVolume* pv2 = read_gdml( apath.c_str() ) ;
     G4LogicalVolume* lv2 = pv2->GetLogicalVolume(); 
 
     LOG(info) << " pv2 " << pv2->GetName() ; 

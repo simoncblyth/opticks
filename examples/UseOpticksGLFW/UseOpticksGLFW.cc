@@ -96,7 +96,11 @@ int main(void)
     glfwSwapInterval(1);
     glfwSetKeyCallback(window, key_callback);
 
-    while (!glfwWindowShouldClose(window))
+    int count(0);
+    bool exitloop(false);
+    int renderlooplimit(200); 
+
+    while (!glfwWindowShouldClose(window) && !exitloop)
     {
         float ratio;
         int width, height;
@@ -120,6 +124,11 @@ int main(void)
         glEnd();
         glfwSwapBuffers(window);
         glfwPollEvents();
+
+        count++ ; 
+        //std::cout << count << std::endl ;  
+
+        exitloop = renderlooplimit > 0 && count > renderlooplimit ;
     }
     glfwDestroyWindow(window);
     glfwTerminate();

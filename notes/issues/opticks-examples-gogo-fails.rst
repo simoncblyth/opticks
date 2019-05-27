@@ -6,7 +6,7 @@ opticks-examples-gogo-fails
     blyth@localhost examples]$ ./gogo.sh 
     ./Geant4/G4Minimal/go.sh                 SKIP 
     ./Geant4/CerenkovMinimal/go.sh           0 
-    ./Geant4/GDMLMangledLVNames/go.sh        0 
+    ./Geant4/GDMLMangledLVNames/go.sh        0   FIXED: preexisting path handling  
     ./UseGGeo/go.sh                          0 
     ./UseUseCUDA/go.sh                       0 
     ./UseGLM/go.sh                           0 
@@ -41,7 +41,7 @@ opticks-examples-gogo-fails
     ./UseOpticksGL/go.sh                     139     FIXED : Add OPTICKS_DEFAULT_INTEROP_CVD to avoid cvd fail, also needed argforced    --renderlooplimit 2000    
     ./UseOpticksGLEW/go.sh                   0 
     ./UseBoostOld/go.sh                      2       FIXED : missed -DCMAKE_PREFIX_PATH=$(opticks-prefix)/externals  causing cmake to fail to find BCM 
-    ./UseOpticksGLFW/go.sh                   0 
+    ./UseOpticksGLFW/go.sh (renderlooplimit) 0 
     ./UseBoostRap/go.sh                      2       FIXED : ditto
     ./UseOpticksGeo/go.sh                    0 
     ./UseCFG4/go.sh                          2       FIXED : old CGeometry interface, missed CSensitiveDetector 
@@ -53,7 +53,7 @@ opticks-examples-gogo-fails
     ./UseCUDARap/go.sh                       0 
     ./UseThrustRap/go.sh                     0 
     ./UseCUDARapThrust/go.sh                 0 
-    ./UseUseBoost/go.sh                      127     FIXED : boost finding cmake command line : less is more 
+    ./UseUseBoost/go.sh                      127     FIXED : boost finding cmake command line : less is more   + rc 
     ./UseDualContouringSample/go.sh          0 
     ./UseG4/go.sh                            0 
     ./UseG4DAE/go.sh                         2       SKIP : this is legacy now 
@@ -63,8 +63,8 @@ opticks-examples-gogo-fails
     ./UseUseSymbol/go.sh                     0 
     ./ThrustOpenGLInterop/go.sh              2       nvcc not finding gl symbols
     ./UseOptiXProgram/go.sh                  0 
-    ./UseOpticksGLFWSPPM/go.sh               0 
-    ./UseOpticksGLFWSnap/go.sh               0 
+    ./UseOpticksGLFWSPPM/go.sh   (rll)       0 
+    ./UseOpticksGLFWSnap/go.sh   (rll)       0 
     ./UseOptiXProgramPP/go.sh                0 
     ./UseOptiXBufferPP/go.sh                 0 
     ./UseOptiXGeometryStandalone/go.sh       0 

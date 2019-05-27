@@ -73,7 +73,12 @@ int main()
     glVertexAttribPointer(vPosition, NUM_VERT, GL_FLOAT, GL_FALSE, 0, 0);
     // https://alfonse.bitbucket.io/oldtut/Basics/Tut01%20Dissecting%20Display.html
 
-    while (!glfwWindowShouldClose(frame.window))
+
+    bool exitloop(false); 
+    int count(0); 
+    int renderlooplimit(200); 
+
+    while (!glfwWindowShouldClose(frame.window) && !exitloop)
     {
         int width, height;
         glfwGetFramebufferSize(frame.window, &width, &height);
@@ -83,6 +88,9 @@ int main()
         glDrawArrays(GL_TRIANGLES, 0, NUM_VERT );
         glfwSwapBuffers(frame.window);
         glfwPollEvents();
+
+        count++ ; 
+        exitloop = renderlooplimit > 0 && count > renderlooplimit ; 
     }
 
     prog.destroy();

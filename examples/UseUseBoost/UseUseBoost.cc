@@ -12,7 +12,7 @@ int main(int argc, char** argv)
     {
         std::cout << "Usage: UseUseBoost path elememts to be joined into a path to file.txt\n";
         UseBoost::dump_file_size(argv[0]);
-        return 1;
+        return 0 ;
     }
 
     const char* path = UseBoost::concat_path( argc, argv ); 

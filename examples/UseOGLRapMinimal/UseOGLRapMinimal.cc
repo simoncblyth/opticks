@@ -23,7 +23,7 @@ int main(int argc, char** argv)
     OPTICKS_LOG(argc, argv);
     LOG(info) << argv[0] ; 
 
-    Opticks ok(argc, argv); 
+    Opticks ok(argc, argv, "--renderlooplimit 1000"); 
     ok.configure(); 
 
 
@@ -65,9 +65,12 @@ int main(int argc, char** argv)
 
     GLFWwindow* window = m_frame->getWindow();
 
-    int count(0) ; 
 
-    while (!glfwWindowShouldClose(window))
+    int count(0) ; 
+    bool exitloop(false); 
+    int renderlooplimit = ok.getRenderLoopLimit();
+
+    while (!glfwWindowShouldClose(window) && !exitloop)
     {   
         m_frame->listen();
         m_frame->viewport();
@@ -78,6 +81,8 @@ int main(int argc, char** argv)
         m_axis_renderer->render();
         glfwSwapBuffers(window);
         count++ ; 
+
+         exitloop = renderlooplimit > 0 && count > renderlooplimit ; 
     }   
 
     m_frame->exit();  //  

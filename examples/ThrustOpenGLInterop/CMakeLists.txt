@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.5 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.8 FATAL_ERROR)
 set(name ThrustOpenGLInterop)
 project(${name} VERSION 0.1.0)
 include(OpticksBuildOptions)
@@ -8,9 +8,12 @@ if(POLICY CMP0077)  # see note/issues/cmake-3.13.4-FindCUDA-warnings.rst
 endif()
 
 
-
 set(FLAGS_VERBOSE ON) 
 find_package(OKConf REQUIRED CONFIG)   
+
+
+find_package(OpticksGLEW REQUIRED MODULE)
+
 
 set(OpticksGLFW_VERBOSE ON)
 find_package(OpticksGLFW REQUIRED MODULE)   
@@ -24,7 +27,17 @@ message(STATUS "OpticksCUDA_MODULE  : ${OpticksCUDA_MODULE} ")
 
 cuda_add_executable( ${name} thrust_opengl_interop.cu ) 
 
-target_link_libraries( ${name} Opticks::OpticksGLFW Opticks::CUDA)
+#set(SRC thrust_opengl_interop.cc)
+#CUDA_WRAP_SRCS( ${name} OBJ _generated_OBJ_files ${SRC} )
+#add_executable( ${name} ${_generated_OBJ_files} ${SRC} )
+
+
+target_link_libraries( ${name} 
+     Opticks::OpticksGLEW
+     Opticks::OpticksGLFW 
+     Opticks::CUDA
+)
+
 
 install(TARGETS ${name} DESTINATION lib)
 
