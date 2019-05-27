@@ -48,6 +48,7 @@ set(TEST_SOURCES
 
    SSetTest.cc
    STimeTest.cc
+
 )
 
 set(_TEST_SOURCES
@@ -77,6 +78,34 @@ foreach(SRC ${TEST_SOURCES})
     target_link_libraries(${TGT} SysRap)
     install(TARGETS ${TGT} DESTINATION lib)
 endforeach()
+
+
+
+set(TEST_COLORS 
+    red
+    green
+    blue
+)
+
+foreach(COLOR ${TEST_COLORS})
+    set(TGT SEnvTest)
+    set(TEST ${name}.${TGT}.${COLOR})
+    add_test(${TEST} ${TGT} SEnvTest_C --info )  # arguments for the executable, the envvar prefix and debug level
+    set_tests_properties(${TEST} PROPERTIES ENVIRONMENT "SEnvTest_COLOR=${COLOR}")
+endforeach()
+
+
+#[=[
+Debug these "fabricated" tests with::
+
+   ctest -R SysRapTest.SEnvTest. -V
+
+
+CTest fixtures
+
+https://crascit.com/2016/10/18/test-fixtures-with-cmake-ctest/
+
+#]=]
 
 
 #foreach(SRC ${OBJC_TEST_SOURCES})

@@ -106,22 +106,16 @@ set(CU_SOURCES
     cu/solve_callable.cu 
     cu/generate.cu
 
-
     cu/dirtyBufferTest.cu
     cu/compactionTest.cu
     cu/LTminimalTest.cu
     cu/axisTest.cu
     cu/seedTest.cu
 
-    cu/intersect_analytic_dummy_test.cu
-    cu/intersect_analytic_torus_test.cu
-    cu/intersect_analytic_sphere_test.cu
-    cu/intersect_analytic_cone_test.cu
-    cu/intersect_analytic_convexpolyhedron_test.cu
-
     cu/cbrtTest.cu
     cu/Roots3And4Test.cu
 )
+
 
 
 set( FORMER_CU_SOURCES_NOW_MIGRATED_TO_TESTS
@@ -137,6 +131,11 @@ set( FORMER_CU_SOURCES_NOW_MIGRATED_TO_TESTS
     cu/OEventTest.cu
     cu/OInterpolationTest.cu
 
+    cu/intersect_analytic_dummy_test.cu
+    cu/intersect_analytic_torus_test.cu
+    cu/intersect_analytic_sphere_test.cu
+    cu/intersect_analytic_cone_test.cu
+    cu/intersect_analytic_convexpolyhedron_test.cu
 )
 
 
@@ -176,9 +175,6 @@ generated config which is used by consumers of the exported target.:
 Thus as finding OKConf has the side effect of defining the 
 OptiX_INSTALL_DIR that is needed to find OptiX the OKConf must 
 come before the OptiX.
-
-
-
 
 #]=]
 

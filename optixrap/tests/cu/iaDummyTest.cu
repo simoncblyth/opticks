@@ -4,12 +4,12 @@ using namespace optix;
 rtDeclareVariable(uint2, launch_index, rtLaunchIndex, );
 rtBuffer<float4>  output_buffer;
 
-RT_PROGRAM void intersect_analytic_test_dummy()
+RT_PROGRAM void iaDummyTest()
 {
     unsigned long long photon_id = launch_index.x ;  
     unsigned int photon_offset = photon_id*4 ; 
 
-    rtPrintf("// intersect_analytic_test_dummy %llu\n", photon_id);
+    rtPrintf("// iaDummyTest %llu\n", photon_id);
    
     output_buffer[photon_offset+0] = make_float4(40.f, 40.f, 40.f, 40.f);
     output_buffer[photon_offset+1] = make_float4(41.f, 41.f, 41.f, 41.f);

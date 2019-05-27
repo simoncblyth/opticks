@@ -7,14 +7,12 @@
 #include "NZSphere.h"
 
 #include <optix_world.h>
-
-#include "quad.h"
-#include "Part.h"
-#include "bbox.h"
-
 #include "math_constants.h"   // CUDART_ defines
 
-#include "csg_intersect_primitive.h"
+#include "cu/quad.h"
+#include "cu/Part.h"
+#include "cu/bbox.h"
+#include "cu/csg_intersect_primitive.h"
 
 
 using namespace optix;
@@ -23,12 +21,12 @@ rtDeclareVariable(uint2, launch_index, rtLaunchIndex, );
 
 rtBuffer<float4>  output_buffer;
 
-RT_PROGRAM void intersect_analytic_convexpolyhedron_test()
+RT_PROGRAM void iaConvexpolyhedronTest()
 {
     unsigned long long photon_id = launch_index.x ;  
     unsigned int photon_offset = photon_id*4 ; 
 
-    rtPrintf("// intersect_analytic_convexpolyhedron_test %llu\n", photon_id);
+    rtPrintf("// iaConvexpolyhedronTest %llu\n", photon_id);
 
     csg_intersect_convexpolyhedron_test(photon_id);
     

@@ -1,11 +1,11 @@
 /**
 ::
 
-    intersect_analytic_test --cu intersect_analytic_dummy_test.cu
-    intersect_analytic_test --cu intersect_analytic_torus_test.cu            
-    intersect_analytic_test --cu intersect_analytic_sphere_test.cu
-    intersect_analytic_test --cu intersect_analytic_cone_test.cu
-    intersect_analytic_test --cu intersect_analytic_convexpolyhedron_test.cu
+    intersectAnalyticTest --cu dummyTest.cu
+    intersectAnalyticTest --cu torusTest.cu            
+    intersectAnalyticTest --cu sphereTest.cu
+    intersectAnalyticTest --cu coneTest.cu
+    intersectAnalyticTest --cu convexpolyhedronTest.cu
 
 **/
 #include "OptiXTest.hh"
@@ -22,7 +22,14 @@ int main( int argc, char** argv )
     const SAr& args = PLOG::instance->args ; 
     args.dump(); 
 
-    const char* cu_name = args.get_arg_after("--cu", "intersect_analytic_torus_test.cu" ); 
+    const char* cu_name = args.get_arg_after("--cu", NULL ); 
+
+    if(cu_name == NULL)
+    {
+        LOG(fatal) << " require \"--cu name.cu\" argument " ; 
+        return 0 ; 
+    } 
+
     const char* progname = SPath::Stem(cu_name) ;        
 
     LOG(info) 

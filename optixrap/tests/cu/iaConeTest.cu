@@ -1,15 +1,18 @@
+
+
+// shape flag enums from npy-
+#include "NPart.h"
+#include "NCylinder.h"
+#include "NSlab.h"
+#include "NZSphere.h"
+
 #include <optix_world.h>
-rtBuffer<rtCallableProgramId<unsigned(double,double,double,double*,unsigned)> > solve_callable ;
+#include "math_constants.h"   // CUDART_ defines
 
-#include "quad.h"
-#include "bbox.h"
-
-typedef double Solve_t ;
-#include "Solve.h"
-
-#define CSG_INTERSECT_TORUS_TEST 1
-typedef double Torus_t ;
-#include "csg_intersect_torus.h"
+#include "cu/quad.h"
+#include "cu/Part.h"
+#include "cu/bbox.h"
+#include "cu/csg_intersect_primitive.h"
 
 
 using namespace optix;
@@ -18,21 +21,14 @@ rtDeclareVariable(uint2, launch_index, rtLaunchIndex, );
 
 rtBuffer<float4>  output_buffer;
 
-RT_PROGRAM void intersect_analytic_torus_test()
+RT_PROGRAM void iaConeTest()
 {
     unsigned long long photon_id = launch_index.x ;  
     unsigned int photon_offset = photon_id*4 ; 
 
-#ifdef CSG_INTERSECT_TORUS_TEST
-    rtPrintf("// intersect_analytic_torus_test %llu\n", photon_id);
-#endif
+    rtPrintf("// iaConeTest %llu\n", photon_id);
 
-
-
-    //  calling the below double laden function twice is prone to segv in createPTXFromFile
-    //csg_intersect_torus_scale_test(photon_id, false);
-    csg_intersect_torus_scale_test(photon_id, true );
-
+    csg_intersect_cone_test(photon_id);
     
     output_buffer[photon_offset+0] = make_float4(40.f, 40.f, 40.f, 40.f);
     output_buffer[photon_offset+1] = make_float4(41.f, 41.f, 41.f, 41.f);
