@@ -406,7 +406,6 @@ class OKCORE_API Opticks {
        NMeta*               getParameters() const ;
 #endif
 
-
        NState*              getState() const ;
    public:
        int                  getMultiEvent() const ;
@@ -418,7 +417,12 @@ class OKCORE_API Opticks {
        bool                 isFabricatedGensteps() const ;       // TORCH or MACHINERY source
        bool                 isNoInputGensteps() const ;          // eg when loading a prior propagation
        bool                 isLiveGensteps() const ;             // --live option indicating get gensteps from G4 directly
-       bool                 isEmbedded() const ;          // --embedded option indicating get gensteps via OpMgr API 
+   public:
+       bool                 isEmbedded() const ;    // --embedded option indicating get gensteps via OpMgr API 
+       bool                 hasKey() const ;       // distinguishes direct from legacy mode
+       bool                 isDirect() const ; 
+       bool                 isLegacy() const ; 
+       std::string          getLegacyDesc() const ; 
    public:
        char                 getEntryCode() const ;    // G:generate S:seedTest T:trivial
        const char*          getEntryName() const ;    
@@ -434,7 +438,6 @@ class OKCORE_API Opticks {
        const char*          getUDet()  ;
        std::string          getPreferenceDir(const char* type, const char* subtype);
    public:
-       bool                 hasKey() const ;  // distinguishes direct from legacy mode
        //const char*          getGenstepPath() const ;  // either direct or legacy depending on mode : as distinguished by hasKey 
        //bool                 existsGenstepPath() const ;
        bool                 existsDirectGenstepPath() const ;

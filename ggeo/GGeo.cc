@@ -752,6 +752,10 @@ void GGeo::loadCacheMeta() // loads metadata that the process that created the g
     const char* path = m_ok->getCacheMetaPath(); 
     assert( m_loadedcachemeta == NULL ); 
     m_loadedcachemeta = NMeta::Load(path);
+    if( m_loadedcachemeta )
+    {
+        m_loadedcachemeta->dump("GGeo::loadCacheMeta");  
+    }
     m_lv2sd = m_loadedcachemeta->getObj("lv2sd"); 
 }
 

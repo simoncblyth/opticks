@@ -215,7 +215,12 @@ void OpticksHub::init()
     configureServer();
     configureCompositionSize();
 
-    if(!m_ok->isEmbedded()) configureLookupA();
+
+    if(m_ok->isLegacy()) 
+    { 
+        LOG(fatal) << m_ok->getLegacyDesc(); 
+        configureLookupA();
+    }
 
     m_aim = new OpticksAim(this) ; 
 
@@ -442,7 +447,6 @@ OpticksHub::configureLookupA
 
 Invoked in init 
 
-
 This is trying and failing to load from 
    /home/blyth/local/opticks/opticksdata/export/OKX4Test/ChromaMaterialMap.json
 in direct mode when everything should be from geocache ?
@@ -451,7 +455,7 @@ in direct mode when everything should be from geocache ?
 
 void OpticksHub::configureLookupA()
 {
-    const char* path = m_ok->getMaterialMap(); 
+    const char* path = m_ok->getMaterialMap();   // eg "/home/blyth/local/opticks/opticksdata/export/CerenkovMinimal/ChromaMaterialMap.json"
     const char* prefix = m_ok->getMaterialPrefix(); 
 
     LOG(debug)

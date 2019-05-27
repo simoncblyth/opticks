@@ -1620,7 +1620,7 @@ void OpticksEvent::save()
     (*m_timer)("_save");
 
 
-    LOG(info) << description("OpticksEvent::save") << getShapeString() << " dir " << m_event_spec->getDir() ;    
+    LOG(info) << description("") << getShapeString() << " dir " << m_event_spec->getDir() ;    
 
     if(m_ok->isProduction())
     {

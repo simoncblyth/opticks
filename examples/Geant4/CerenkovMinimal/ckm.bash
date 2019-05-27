@@ -56,8 +56,8 @@ ckm-c(){  cd $(ckm-dir) ; }
 
 
 #ckm-dig(){ echo c250d41454fba7cb19f3b83815b132c2 ; }
-ckm-dig(){ echo 792496b5e2cc08bdf5258cc12e63de9f ; }
-
+#ckm-dig(){ echo 792496b5e2cc08bdf5258cc12e63de9f ; }
+ckm-dig(){ echo 27d088654714cda61096045ff5eacc02 ; }
 
 ckm-key(){ echo CerenkovMinimal.X4PhysicalVolume.World.$(ckm-dig) ; }
 ckm-idpath(){ echo $LOCAL_BASE/opticks/geocache/CerenkovMinimal_World_g4live/g4ok_gltf/$(ckm-dig)/1 ; }
@@ -117,11 +117,10 @@ ckm-dbg(){
 
 
 
-ckm--(){ ckm-go ; }
 ckm-go(){ ckm-cd ; ./go.sh ; }
 
-ckm-run()
-{
+ckm--()
+{ 
     g4-
     g4-export        # internal envvar stuff is not done here 
     CerenkovMinimal  # NB the Opticks is embedded via G4OK : so commandline doesnt get thru 

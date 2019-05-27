@@ -2034,7 +2034,34 @@ bool Opticks::isFabricatedGensteps() const
     return code == TORCH || code == MACHINERY ;  
 }
 
-bool Opticks::isEmbedded() const { return hasOpt("embedded"); }
+bool Opticks::isEmbedded() const { return hasOpt("embedded"); }   
+// HMM CAN isEmbedded BE EQUATED WITH hasKey ? no the initial run which creates the geocache is
+// not run with "--envkey" although it does create a key : at what juncture ? If it 
+// is early enough (or can be moved early) could equate them.
+
+
+
+bool Opticks::hasKey() const { return m_resource->hasKey() ; }
+bool Opticks::isDirect() const { return isEmbedded() || hasKey() ; }
+bool Opticks::isLegacy() const { return !isDirect() ; } 
+
+std::string Opticks::getLegacyDesc() const 
+{
+    std::stringstream ss ; 
+    ss 
+        << " hasKey " << hasKey() 
+        << " isEmbedded " << isEmbedded()
+        << " isDirect " << isDirect()
+        << " isLegacy " << isLegacy()
+        ;  
+  
+    return ss.str(); 
+}
+
+
+
+
+
 bool Opticks::isLiveGensteps() const {  return hasOpt("live"); }
 bool Opticks::isNoInputGensteps() const { return hasOpt("load|nopropagate") ; } 
 
@@ -2329,7 +2356,6 @@ const char* Opticks::getLegacyGenstepPath() const
 
 
 
-bool Opticks::hasKey() const { return m_resource->hasKey() ; }
 
 
 /**

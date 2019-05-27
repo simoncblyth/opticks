@@ -60,7 +60,7 @@ int BTree::loadTree(pt::ptree& t , const char* path)
         LOG(warning) << "BTree.loadTree: "
                      << "can't find file " << path;
 
-        //assert(0); 
+        assert(0); 
         return 1;
     }
     std::string ext = fpath.extension().string();

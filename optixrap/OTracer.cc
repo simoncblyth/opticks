@@ -75,7 +75,7 @@ void OTracer::init()
     m_context[ "scene_epsilon"]->setFloat(m_composition->getNear());
 
     float pixeltimescale_cfg = m_ok->getPixelTimeScale(); 
-    LOG(error) << " pixeltimescale_cfg " << pixeltimescale_cfg ;
+    LOG(debug) << " pixeltimescale_cfg " << pixeltimescale_cfg ;
     m_context[ "pixeltimescale_cfg"]->setFloat(pixeltimescale_cfg);
 
 

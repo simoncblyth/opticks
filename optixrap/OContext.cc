@@ -169,7 +169,7 @@ struct VisibleDevices
 void OContext::CheckDevices()
 {
     VisibleDevices vdev ; 
-    LOG(info) << vdev.desc(); 
+    LOG(info) << std::endl << vdev.desc(); 
 
     const char* frame_renderer = Opticks::Instance()->getFrameRenderer();
     if( frame_renderer != NULL)
@@ -224,7 +224,7 @@ void OContext::InitRTX(int rtxmode)  // static
         assert( rtx0 == 0 );  // despite being zero performance suggests it is enabled
 
         int rtx = rtxmode > 0 ? 1 : 0 ;       
-        LOG(fatal) << " --rtx " << rtxmode << " setting  " << ( rtx == 1 ? "ON" : "OFF" )  ; 
+        LOG(info) << " --rtx " << rtxmode << " setting  " << ( rtx == 1 ? "ON" : "OFF" )  ; 
         RT_CHECK_ERROR( rtGlobalSetAttribute(RT_GLOBAL_ATTRIBUTE_ENABLE_RTX, sizeof(rtx), &rtx));
 
         int rtx2(-1) ; 

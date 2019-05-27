@@ -288,7 +288,7 @@ void NMeta::addEnvvarsWithPrefix( const char* prefix, bool trim )
 
            std::string t = k.substr(strlen(prefix)); 
   
-           LOG(info) << k << " : " << t << " : " << v   ;   
+           LOG(debug) << k << " : " << t << " : " << v   ;   
 
            set<std::string>( trim ? t.c_str() : k.c_str(), v) ; 
        }
