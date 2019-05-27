@@ -715,13 +715,12 @@ geocache-cvd(){ geocache-cvd-even ; }
 geocache-cvd-even(){  cat << EOC
 0
 0,1
-2,3
+0,1,2
 0,1,2,3
 4
 4,5
-6,7
+4,5,6
 4,5,6,7
-0,1,2,3,4,5,6,7
 EOC
 }
 
@@ -743,6 +742,34 @@ geocache-bench-results()
 {
    bench.py $*
 }
+
+
+geocache-runfolder-names(){ cat << EON
+geocache-bench
+geocache-bench360
+EON
+}
+
+geocache-runfolder-collect()
+{
+   local rnode=${1:-L7}
+   local rdir=$OPTICKS_RESULTS_PREFIX/results
+   [ ! -d "$rdir" ] && echo $msg missing rdir $rdir && return 
+
+   local rfn
+   local gdir
+   geocache-runfolder-names | while read rfn 
+   do 
+      gdir=$rdir/$rfn  
+      [ ! -d "$gdir" ] && echo $msg missing $gdir && return 
+      cd 
+      scp -r $rnode:g/local/opticks/results/$rfn/* $gdir
+   done
+   ## hmm simple when no name overlap between the cluster and workstation rungroup names  
+   ## hmm better to rsync
+}
+
+
 
 geocache-bench-notes(){ cat << EON
 $FUNCNAME

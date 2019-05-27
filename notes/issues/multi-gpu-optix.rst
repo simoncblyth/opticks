@@ -20,9 +20,6 @@ as random number seed buffers and variance buffers.
 TODO: review my buffers
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-
-
-
 OptiX Forum 
 ---------------
 
@@ -47,7 +44,6 @@ increase the multi-GPU scaling drastically.
 Find some more information when digging through all links in this and the
 referenced threads:
 https://devtalk.nvidia.com/default/topic/1036340/?comment=5264830
-
 
 
 Posted 06/08/2018 12:09 PM   Detlef Roettger
@@ -104,7 +100,7 @@ different architecture).
 **Input buffers are uploaded to all GPUs**.  Input_output and output buffers are
 put into host memory and all GPUs access that via the PCI-E directly (see
 Chapter 7 and 11), which adds a limit on the possible scaling progression. I
-would not recommend to use more than four GPUs per context.  The workload
+*would not recommend to use more than four GPUs per context*.  The workload
 balancing does not take the number of PCI-E lanes into account. Best scaling
 happens with symmetrical setups, e.g. all boards in 16x lanes slots.
 
@@ -128,6 +124,9 @@ Guidelines which contains some more notes about multi-GPU behavior.
 Then there is remote multi-GPU rendering via OptiX' progressive API available
 on NVIDIA VCA clusters, which is a separate topic. You shouldn't care about
 that unless you have access to a VCA.
+
+
+
 
 
 

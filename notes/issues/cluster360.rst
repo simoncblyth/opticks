@@ -80,9 +80,15 @@ Cluster::
 * reasonable scaling from 1 -> 2 -> 3 -> 4  but not beyond 4::
 
                     0.570/0.156 = 3.653  0.570/0.570 = 1.000 
-                    0.299/0.156 = 1.916  0.299/0.570 = 0.524
+                    0.299/0.156 = 1.916  0.299/0.570 = 0.524      
                     0.204/0.156 = 1.307  0.204/0.570 = 0.357
                     0.156/0.156 = 1.000  0.156/0.570 = 0.273 
+
+
+* https://timdettmers.com/2019/04/03/which-gpu-for-deep-learning/
+
+* *you can expect a speedup of about 1.9x/2.8x/3.5x for 2/3/4 GPUs*
+
 
 ::
 
@@ -124,6 +130,58 @@ Cluster::
 
 
 
+Take a closer look at the scaling 1,2,4 GPUs
+----------------------------------------------
+
+::
+
+    bench.py --name 360 --runlabel R0_cvd_0 --xrunlabel R0_cvd_0,1,2,3,4,5,6,7
+
+    ---  GROUPCOMMAND : geocache-bench360 --xanalytic --nosaveppm  GEOFUNC : - 
+     OpSnapTest --envkey --target 62594 --eye 0,0,0 --look 0,0,1 --up 1,0,0 --snapconfig steps=5,eyestartx=0.25,eyestopx=0.25,eyestarty=0.25,eyestopy=0.25,eyestartz=0.25,eyestopz=0.25 --size 10240,5760,1 --enabledmergedmesh 1,2,3,4,5 --cameratype 2 --embedded --cvd 0,1,2,3 --rtx 0 --runfolder geocache-bench360 --runstamp 1558852688 --xanalytic --nosaveppm
+    OKX4Test.X4PhysicalVolume.lWorld0x4bc2710_PV.528f4cefdac670fffe846377973af10a
+    /home/blyth/local/opticks/geocache/OKX4Test_lWorld0x4bc2710_PV_g4live/g4ok_gltf/528f4cefdac670fffe846377973af10a/1
+                    20190526_143808  launchAVG      rfast      rslow      prelaunch000 
+                      R0_cvd_0,1,2,3      0.152      1.000      0.266           2.861    : /home/blyth/local/opticks/results/geocache-bench360/R0_cvd_0,1,2,3/20190526_143808  
+                          R0_cvd_0,1      0.295      1.948      0.518           1.877    : /home/blyth/local/opticks/results/geocache-bench360/R0_cvd_0,1/20190526_143808  
+                            R0_cvd_0      0.570      3.761      1.000           1.397    : /home/blyth/local/opticks/results/geocache-bench360/R0_cvd_0/20190526_143808  
+
+
+    bench.py --name 360 --runlabel R0_cvd_4
+
+    ---  GROUPCOMMAND : geocache-bench360 --xanalytic --nosaveppm  GEOFUNC : - 
+     OpSnapTest --envkey --target 62594 --eye 0,0,0 --look 0,0,1 --up 1,0,0 --snapconfig steps=5,eyestartx=0.25,eyestopx=0.25,eyestarty=0.25,eyestopy=0.25,eyestartz=0.25,eyestopz=0.25 --size 10240,5760,1 --enabledmergedmesh 1,2,3,4,5 --cameratype 2 --embedded --cvd 4,5,6,7 --rtx 0 --runfolder geocache-bench360 --runstamp 1558852688 --xanalytic --nosaveppm
+    OKX4Test.X4PhysicalVolume.lWorld0x4bc2710_PV.528f4cefdac670fffe846377973af10a
+    /home/blyth/local/opticks/geocache/OKX4Test_lWorld0x4bc2710_PV_g4live/g4ok_gltf/528f4cefdac670fffe846377973af10a/1
+                    20190526_143808  launchAVG      rfast      rslow      prelaunch000 
+                      R0_cvd_4,5,6,7      0.152      1.000      0.265           2.948    : /home/blyth/local/opticks/results/geocache-bench360/R0_cvd_4,5,6,7/20190526_143808  
+                          R0_cvd_4,5      0.300      1.978      0.525           1.924    : /home/blyth/local/opticks/results/geocache-bench360/R0_cvd_4,5/20190526_143808  
+                            R0_cvd_4      0.572      3.770      1.000           1.460    : /home/blyth/local/opticks/results/geocache-bench360/R0_cvd_4/20190526_143808  
+
+
+
+    bench.py --name 360 --runlabel R1_cvd_0 --xrunlabel R1_cvd_0,1,2,3,4,5,6,7
+
+    ---  GROUPCOMMAND : geocache-bench360 --xanalytic --nosaveppm  GEOFUNC : - 
+     OpSnapTest --envkey --target 62594 --eye 0,0,0 --look 0,0,1 --up 1,0,0 --snapconfig steps=5,eyestartx=0.25,eyestopx=0.25,eyestarty=0.25,eyestopy=0.25,eyestartz=0.25,eyestopz=0.25 --size 10240,5760,1 --enabledmergedmesh 1,2,3,4,5 --cameratype 2 --embedded --cvd 0,1,2,3 --rtx 1 --runfolder geocache-bench360 --runstamp 1558852688 --xanalytic --nosaveppm
+    OKX4Test.X4PhysicalVolume.lWorld0x4bc2710_PV.528f4cefdac670fffe846377973af10a
+    /home/blyth/local/opticks/geocache/OKX4Test_lWorld0x4bc2710_PV_g4live/g4ok_gltf/528f4cefdac670fffe846377973af10a/1
+                    20190526_143808  launchAVG      rfast      rslow      prelaunch000 
+                      R1_cvd_0,1,2,3      0.121      1.000      0.265           3.978    : /home/blyth/local/opticks/results/geocache-bench360/R1_cvd_0,1,2,3/20190526_143808  
+                          R1_cvd_0,1      0.234      1.931      0.513           2.190    : /home/blyth/local/opticks/results/geocache-bench360/R1_cvd_0,1/20190526_143808  
+                            R1_cvd_0      0.457      3.767      1.000           0.865    : /home/blyth/local/opticks/results/geocache-bench360/R1_cvd_0/20190526_143808  
+
+
+    bench.py --name 360 --runlabel R1_cvd_4
+
+    ---  GROUPCOMMAND : geocache-bench360 --xanalytic --nosaveppm  GEOFUNC : - 
+     OpSnapTest --envkey --target 62594 --eye 0,0,0 --look 0,0,1 --up 1,0,0 --snapconfig steps=5,eyestartx=0.25,eyestopx=0.25,eyestarty=0.25,eyestopy=0.25,eyestartz=0.25,eyestopz=0.25 --size 10240,5760,1 --enabledmergedmesh 1,2,3,4,5 --cameratype 2 --embedded --cvd 4,5,6,7 --rtx 1 --runfolder geocache-bench360 --runstamp 1558852688 --xanalytic --nosaveppm
+    OKX4Test.X4PhysicalVolume.lWorld0x4bc2710_PV.528f4cefdac670fffe846377973af10a
+    /home/blyth/local/opticks/geocache/OKX4Test_lWorld0x4bc2710_PV_g4live/g4ok_gltf/528f4cefdac670fffe846377973af10a/1
+                    20190526_143808  launchAVG      rfast      rslow      prelaunch000 
+                      R1_cvd_4,5,6,7      0.123      1.000      0.269           3.467    : /home/blyth/local/opticks/results/geocache-bench360/R1_cvd_4,5,6,7/20190526_143808  
+                          R1_cvd_4,5      0.237      1.927      0.518           1.638    : /home/blyth/local/opticks/results/geocache-bench360/R1_cvd_4,5/20190526_143808  
+                            R1_cvd_4      0.458      3.717      1.000           0.924    : /home/blyth/local/opticks/results/geocache-bench360/R1_cvd_4/20190526_143808  
 
 
 

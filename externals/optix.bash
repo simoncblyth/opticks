@@ -10,6 +10,13 @@ See Also
 ------------
 
 * optixnote-  thousands of lines of lots of notes on OptiX versions and usage, that used to be here
+
+
+* https://devtalk.nvidia.com/default/board/254/optix/
+* http://raytracing-docs.nvidia.com/optix/index.html
+* https://raytracing-docs.nvidia.com/optix_6_0/index.html
+* https://raytracing-docs.nvidia.com/optix_6_0/tutorials_6_0/index.html#preface#
+
     
 
 Changing OptiX version
@@ -43,8 +50,6 @@ Changing OptiX version
    om-clean optixrap:     
    om-install optixrap:    
    om-test optixrap:    
-
-
 
 
 
@@ -100,13 +105,31 @@ Exceptions
 
 
 
-nvrtc : runtime compilation for OptiX
---------------------------------------
+
+nvrtc : runtime compilation for OptiX 
+---------------------------------------------------------------------------------------------------------------
+
+* thinking about geometry time dynamic code generation of SDF functions, for use 
+  in raymarching/sphere tracing 
+
+* OptiX 6.0.0 SDK samples use NVRTC
 
 30min in see options needed for runtime compilation with nvrtc from Detlef::
 
    http://on-demand.gputechconf.com/gtc/2017/video/s7185-mank-roettger-leveraging-nvrtc-runtime-compliation-for-dynamically-building-optix-shaders-from-mdl.mp4
 
+
+Dome Camera (180 degree)
+-------------------------
+
+* http://on-demand.gputechconf.com/gtc/2015/presentation/S5246-David-McAllister.pdf
+
+::
+
+    float2 d = make_float2(launch_index)/make_float2(screen)*make_float2(2.0f,2.0f)-make_float2(1.0f, 1.0f); 
+    float3 angle = make_float3 ( d.x , d.y , sqrtf(1.0f - ( d.x*d.x + d.y*d.y))); 
+    float3 ray_direction = normalize( angle.x*normalize(U) + angle.y*normalize(V) + angle.z*normalize(W)); 
+    optix::Ray ray(ray_origin,ray_direction,radiance_ray_type,scene_epsilon); 
 
 
 VisRTX : C++ rendering framework developed by the HPC Visualization Developer Technology team at NVIDIA

@@ -26,6 +26,9 @@ of the geocache used.
          one of the results dirs 
 
 
+    bench.py --name 360 --runlabel R1
+          select runs with runlabel starting R1
+
 
 """
 import os, re, logging, sys, argparse
@@ -68,10 +71,13 @@ if __name__ == '__main__':
     parser.add_argument( "--since", default=None, help="Select results from dated folders following the date string provided, eg May22_1030 or 20190522_173746")
     parser.add_argument( "--include", default=None, action='append', nargs='*', help="Select result groups with commandline containing the string provided. ALL the strings when repeated" )
     parser.add_argument( "--exclude", default=None, action='append', nargs='*', help="Select result groupd with commandline NOT containing the string. NOT containing ANY of the strings when repeated" )
+    parser.add_argument( "--runlabel", default=None, help="Select result groups with runlabel starting with the string provided." )
+    parser.add_argument( "--xrunlabel", default=None, help="Exclude result groups with runlabel starting with the string provided." )
     parser.add_argument( "--metric", default="launchAVG" );
     parser.add_argument( "--other", default="prelaunch000" );
     parser.add_argument( "--nodirs", dest="dirs", action="store_false", default=True );
     parser.add_argument( "--splay",  action="store_true", default=False, help="Display the example commandline in a more readable but space consuming form." );
+    parser.add_argument( "--nosort",  action="store_true", default=False, help="Dont display time sorted." );
     args = parser.parse_args()
     print(args)
 
@@ -108,7 +114,7 @@ if __name__ == '__main__':
 
     ## arrange into groups of runs with the same runstamp/datedfolder
     assert len(dfolds) == len(dtimes) 
-    order = sorted(range(len(dfolds)), key=lambda i:dtimes[i])
+    order = sorted(range(len(dfolds)), key=lambda i:dtimes[i])   ## sorted by run datetimes
 
     for i in order:
 
@@ -117,6 +123,14 @@ if __name__ == '__main__':
 
         udirs = filter(lambda _:_.endswith(df),dirs)
         #print("\n".join(udirs))
+        if args.runlabel is not None:
+            udirs = filter(lambda udir:os.path.dirname(udir).startswith(args.runlabel),  udirs)
+        pass 
+        if args.xrunlabel is not None:
+            udirs = filter(lambda udir:not os.path.dirname(udir).startswith(args.xrunlabel),  udirs)
+        pass 
+        if len(udirs) == 0: continue
+
 
         mm = [Meta(p, base) for p in udirs]
 
@@ -149,7 +163,9 @@ if __name__ == '__main__':
             assert len(kk) == 1, d
             return kk[0]
 
+
         smm = sorted(mm, key=metric_)  
+
         ffast = metric_(smm[0])
         fslow = metric_(smm[-1])
 
@@ -157,7 +173,7 @@ if __name__ == '__main__':
         mcmds = map(groupcommand_, smm)
         geofs = map(geofunc_, smm)
 
-        assert len(set(mcmds)) == 1, "all OPTICKS_METACOMMAND for a group of runs with same dated folder should be identical" 
+        assert len(set(mcmds)) == 1, "all OPTICKS_GROUPCOMMAND for a group of runs with same dated folder should be identical" 
         assert len(set(geofs)) == 1, "all OPTICKS_GEOFUNC for a group of runs with same dated folder should be identical" 
         assert len(set(keys)) == 1, "all OPTICKS_KEY for a group of runs with same dated folder should be identical " 
         mcmd = mcmds[0]
@@ -212,8 +228,10 @@ if __name__ == '__main__':
         print(idpath)
         print(labfmt_(lab))
 
+        umm = mm if args.nosort else smm
+
         d = odict() 
-        for i, m in enumerate(smm):
+        for i, m in enumerate(umm):
 
             f = metric_(m)
             rfast = f/ffast
