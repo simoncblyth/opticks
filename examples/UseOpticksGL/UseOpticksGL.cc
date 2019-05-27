@@ -21,7 +21,7 @@ int main(int argc, char** argv)
     OPTICKS_LOG(argc, argv);
 
 
-    Opticks ok(argc, argv, "--interop");
+    Opticks ok(argc, argv, "--interop --renderlooplimit 2000");
     ok.configure();
 
     LOG(info) << argv[0] ; 
@@ -38,11 +38,13 @@ int main(int argc, char** argv)
     */
    
     //OContext::Mode_t mode = OContext::INTEROP ;
-    optix::Context context = optix::Context::create();
 
-    OContext* m_ocontext = new OContext(context, &ok, false );
+    const char* cmake_target = "OptiXRap" ; 
+    const char* ptxrel = NULL ; 
 
-    OAxisTest* oat = new OAxisTest(m_ocontext, npy);
+    OContext* ocontext = OContext::Create(&ok, cmake_target, ptxrel );
+
+    OAxisTest* oat = new OAxisTest(ocontext, npy);
     oat->prelaunch();
 
     axa.setLauncher(oat);

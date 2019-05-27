@@ -4,30 +4,30 @@ project(${name} VERSION 0.1.0)
 include(OpticksBuildOptions)
 
 
-set(dep UseBoost)
+
+#[=[
+
+The BCM approach generally manages to prevent having to 
+worry about dependencies of your dependencies.
+But boost itself appears to be special 
+perhaps because its imported targets are "foreign" ones, 
+not being created by BCM, and not having the expected properties.
+
+See ../README.rst for the kludge done upstream in UseBoost
+that tries to do the below find automatically 
+#]=]
+
+set(COMPONENTS system program_options filesystem regex )
+find_package(Boost REQUIRED COMPONENTS ${COMPONENTS} )
+set_target_properties(Boost::system  PROPERTIES INTERFACE_FIND_PACKAGE_NAME "Boost REQUIRED COMPONENTS ${COMPONENTS}")
 
 
-# the below fixes it, but the whole point of the BCM approach
-# is to avoid having to be concerned with the deps of your deps
-# ... is this just a problem just for Boost ? Because its imported
-# targets are "foreign" ones, not being created by BCM. 
-#
-#find_package(Boost REQUIRED COMPONENTS filesystem)
-#find_package(Boost COMPONENTS filesystem)
-#
-# see ../README.rst for the kludge done upstream in UseBoost
-# that enables this to be done automatically 
-#
+find_package(UseBoost 0.1.0 REQUIRED)
 
-find_package(${dep} 0.1.0 REQUIRED)
-
-echo_target_std(Opticks::${dep})
-
-#set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
+echo_target_std(Opticks::UseBoost)
 
 add_executable(${name} ${name}.cc)
-target_link_libraries( ${name} PUBLIC Opticks::${dep})
-
+target_link_libraries( ${name} PUBLIC Opticks::UseBoost )
 
 install(TARGETS ${name} DESTINATION lib)
 

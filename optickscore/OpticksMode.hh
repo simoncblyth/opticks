@@ -3,6 +3,16 @@
 #include "OKCORE_API_EXPORT.hh"
 #include "OKCORE_HEAD.hh"
 
+/**
+OpticksMode
+===============
+
+Is resident of Opticks and is set early in Opticks::init
+
+
+**/
+
+
 class OKCORE_API OpticksMode {
     public:
        static unsigned int Parse(const char* tag);

@@ -115,6 +115,7 @@ struct Device
    char name[256] ;  
    int computeCaps[2];
    RTsize total_mem;
+   int ordinal ;  
 
    Device(unsigned index_)
       :
@@ -123,12 +124,14 @@ struct Device
         RT_CHECK_ERROR(rtDeviceGetAttribute(index, RT_DEVICE_ATTRIBUTE_NAME, sizeof(name), name));
         RT_CHECK_ERROR(rtDeviceGetAttribute(index, RT_DEVICE_ATTRIBUTE_COMPUTE_CAPABILITY, sizeof(computeCaps), &computeCaps));
         RT_CHECK_ERROR(rtDeviceGetAttribute(index, RT_DEVICE_ATTRIBUTE_TOTAL_MEMORY, sizeof(total_mem), &total_mem));
+        RT_CHECK_ERROR(rtDeviceGetAttribute(index, RT_DEVICE_ATTRIBUTE_CUDA_DEVICE_ORDINAL, sizeof(ordinal), &ordinal));
    } 
 
    std::string desc() const 
    {
        std::stringstream ss ;  
        ss <<  "Device " << index << " " << std::setw(30) << name 
+          << " ordinal " << ordinal 
           <<  " Compute Support: " << computeCaps[0] << " " << computeCaps[1] 
           <<  " Total Memory: " <<  (unsigned long long)total_mem
           ;

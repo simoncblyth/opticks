@@ -7,6 +7,7 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
+#include "Opticks.hh"
 #include "Frame.hh"
 #include "Interactor.hh"
 #include "Composition.hh"
@@ -21,6 +22,10 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv);
     LOG(info) << argv[0] ; 
+
+    Opticks ok(argc, argv); 
+    ok.configure(); 
+
 
     Composition* m_composition = new Composition ; 
 

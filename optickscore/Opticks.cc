@@ -1673,14 +1673,27 @@ void Opticks::configure()
     checkOptionValidity();
 
 
-    const std::string& cvd = m_cfg->getCVD();
-    if(!cvd.empty())
+    const std::string& cvdcfg = m_cfg->getCVD();
+    const char* cvd = cvdcfg.empty() ? NULL : cvdcfg.c_str() ; 
+
+    // Instead of just failing in interop mode with no cvd argument offer a reprieve :  
+    // set envvar OPTICKS_DEFAULT_INTEROP_CVD when using multi-gpu workstations, 
+    // it should point to the GPU driving the monitor.
+
+    const char* dk = "OPTICKS_DEFAULT_INTEROP_CVD" ; 
+    const char* dcvd = SSys::getenvvar(dk) ;  
+    if( cvd == NULL && isInterop() && dcvd != NULL )
+    {
+        LOG(fatal) << " --interop mode with no cvd specified, adopting OPTICKS_DEFAULT_INTEROP_CVD hinted by envvar [" << dcvd << "]" ;   
+        cvd = strdup(dcvd);   
+    }
+
+    if(cvd)
     { 
         const char* ek = "CUDA_VISIBLE_DEVICES" ; 
         LOG(info) << " setting " << ek << " envvar internally to " << cvd ; 
-        SSys::setenvvar(ek, cvd.c_str(), true ); 
+        SSys::setenvvar(ek, cvd, true );    // Opticks::configure setting CUDA_VISIBLE_DEVICES
     }
-
 
 
 

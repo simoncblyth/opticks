@@ -28,22 +28,21 @@
 #include "G4VPhysicalVolume.hh"
 
 
-#include "GGEO_LOG.hh"
-#include "CFG4_LOG.hh"
-#include "PLOG.hh"
+#include "OPTICKS_LOG.hh"
 
 
 int main(int argc, char** argv)
 {
-    PLOG_(argc, argv);
+    OPTICKS_LOG(argc, argv);
 
-    CFG4_LOG__ ; 
-    GGEO_LOG__ ; 
 
     LOG(info) << argv[0] ;
     Opticks ok(argc, argv);
     OpticksHub hub(&ok) ;
-    CGeometry cg(&hub);
+
+    CSensitiveDetector* sd = NULL ; 
+
+    CGeometry cg(&hub, sd);
 
     CDetector* detector = cg.getDetector();
 

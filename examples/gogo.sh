@@ -27,7 +27,7 @@ gogo-one(){
     printf "%-40s \n" $go 
 
     if [ -f "SKIP" ]; then
-        printf "%-40s %s %s \n" $go "SKIP" $(head -1 SKIP)
+        printf "%-40s %s %s \n" $go "SKIP" "$(head -1 SKIP)"
     else 
         gogo-one-  
     fi 

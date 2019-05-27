@@ -52,6 +52,8 @@ void OAxisTest::prelaunch()
 void OAxisTest::launch(unsigned count)
 {
   //  if(count < 1000) return ; 
+
+    if( count % 100 == 0 )
     LOG(info) << "OAxisTest::launch " << count ; 
 
 

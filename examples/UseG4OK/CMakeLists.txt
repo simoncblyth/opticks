@@ -3,6 +3,11 @@ set(name UseG4OK)
 project(${name} VERSION 0.1.0)
 include(OpticksBuildOptions)
 
+if(POLICY CMP0077)  # see note/issues/cmake-3.13.4-FindCUDA-warnings.rst
+    cmake_policy(SET CMP0077 OLD)
+endif()
+
+
 find_package(G4OK CONFIG REQUIRED)   
 
 
@@ -14,7 +19,8 @@ echo_target(Opticks::G4OK "INTERFACE_LINK_LIBRARIES;INTERFACE_INCLUDE_DIRECTORIE
 add_executable(${name} ${name}.cc)
 target_link_libraries(${name} PUBLIC Opticks::G4OK)
 
-install(TARGETS ${name}  DESTINATION ${CMAKE_INSTALL_LIBDIR}) 
+#install(TARGETS ${name}  DESTINATION ${CMAKE_INSTALL_LIBDIR})   this goes into lib64 which is not my standard
+install(TARGETS ${name}  DESTINATION lib) 
 
 
 

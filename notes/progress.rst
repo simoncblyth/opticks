@@ -27,12 +27,42 @@ to work with that parser follow some rules:
 
   * mulling over sphere tracing SDF implicits as workaround for Torus (guidetube)
     and perhaps optimization for PMT 
+  * idea : flatten CSG trees for each solid into SDF functions via CUDA code generation 
+    at geometry translation time, compiled into PTX using NVRTC (runtime compilation)  
   * reading on deep learning 
   * working with NEXO user 
 
 * add Linux time/memory profiling : to start investigating the memory hungry translation 
-
 * resume writing 
+
+* develop benchmark machinery and metadata handling
+* OptiX 6.0.0 RTX mode debuugging
+
+  * immediate good RTX speedup with triangles
+  * analytic started as being 3x slower in RTX mode
+
+    * eventually find the problem as f64 in PTX, even when unused
+      causes large performance slowdown with analytic geometry
+    
+    * eventually using geocache-bench360 reach RTX mode speedups 
+      of 3.4x with TITAN RTX (due to its RT cores) and 1.25x with TITAN V 
+
+    * ptx.py : hunting the f64
+
+* develop equirectangular bench360 as a benchmark for raytrace 
+  performance using a view that sees all PMTs at once
+
+* start cleanup of optixrap, formerly had all .cu together 
+  (mainly because of the CMake setup pain) 
+
+  * now migrating tests from "production" cu into tests/cu 
+
+  * lessons from the RTX performance scare : need to care about whats in the ptx,  
+    things permissable in test code are not appropriate in production code 
+
+* use benchmark machinery to measure scaling performance on 8 GPU cluster nodes,
+  scales well up to 4 GPUs 
+  
 
 
 2019 April
@@ -52,7 +82,8 @@ to work with that parser follow some rules:
 
   * resulted in a development of quite a few OpenGL + OptiX minimal test case examples 
   * optix::GeometryTriangles 
-  * GDML editing to remove torus : as causes crash with OptiX 6.0.0
+  * torus causes "misaligned address" crash with OptiX 6.0.0 
+  * GDML editing to remove torus using CTreeJUNOTest 
   * ended up buying the RTX GPU 
 
 * developed tarball distribution opticks-dist-*  adopted ORIGIN/.. RPATH

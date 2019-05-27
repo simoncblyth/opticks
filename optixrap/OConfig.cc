@@ -98,7 +98,7 @@ optix::Program OConfig::createProgram(const char* cu_name, const char* progname 
 
     bool create = m_programs.find(key) == m_programs.end() ; 
 
-    LOG(fatal) << create << " key " << key ;
+    //LOG(fatal) << create << " key " << key ;
 
     if(create)
     { 

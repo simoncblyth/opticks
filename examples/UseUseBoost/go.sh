@@ -15,10 +15,18 @@ cmake $sdir \
     -DCMAKE_BUILD_TYPE=Debug \
     -DCMAKE_INSTALL_PREFIX=$(opticks-prefix) \
     -DCMAKE_PREFIX_PATH=$(opticks-prefix)/externals \
-    -DCMAKE_MODULE_PATH=$(opticks-home)/cmake/Modules \
+    -DCMAKE_MODULE_PATH=$(opticks-home)/cmake/Modules
+
+
+cat << EON > /dev/null
+Need to know basis, the below confuses finding boost
+
     -DBOOST_INCLUDEDIR=$(opticks-boost-includedir) \
     -DBOOST_LIBRARYDIR=$(opticks-boost-libdir) \
     -DBoost_NO_SYSTEM_PATHS=1 
+
+EON
+
 
 
 make

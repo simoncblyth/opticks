@@ -7,8 +7,7 @@
 #include "OpticksResource.hh"
 
 
-#include "OKCORE_LOG.hh"
-#include "PLOG.hh"
+#include "OPTICKS_LOG.hh"
 
 void dumpenv_0(char** envp)
 {
@@ -31,15 +30,21 @@ void dumpenv_1(char** envp)
 
 int main(int argc, char** argv, char** /*envp*/)
 {
-    PLOG_(argc, argv);
-    OKCORE_LOG__ ; 
+    OPTICKS_LOG(argc, argv);
 
     Opticks ok(argc, argv) ;
+    ok.configure();       // <-- resource setup now done in here 
 
     LOG(info) << " ok.getExampleMaterialNames() " << ok.getExampleMaterialNames() ;
 
+/*
+   resource setup is now 
     OpticksResource res(&ok) ;  // TODO: remove duplication of envprefix beween both these
     res.Dump();
+*/
+
+    OpticksResource* res = ok.getResource(); 
+    res->Dump(); 
 
     return 0 ; 
 }

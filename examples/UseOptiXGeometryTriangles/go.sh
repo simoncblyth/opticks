@@ -8,7 +8,7 @@ bdir=/tmp/$USER/opticks/$name/build
 
 echo bdir $bdir name $name
 
-#rm -rf $bdir && mkdir -p $bdir 
+rm -rf $bdir && mkdir -p $bdir 
 cd $bdir && pwd 
 #ls -l 
 
