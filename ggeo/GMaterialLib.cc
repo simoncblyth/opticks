@@ -1,7 +1,9 @@
 
 #include <limits>
 
+#include "SAbbrev.hh"
 #include "BStr.hh"
+#include "NMeta.hpp"
 #include "NPY.hpp"
 #include "Opticks.hh"
 
@@ -450,9 +452,35 @@ unsigned int GMaterialLib::getMaterialIndex(const GMaterial* qmaterial)
 }
 
 
+
 NMeta* GMaterialLib::createMeta()
 {
-    return NULL ; 
+    LOG(LEVEL) << "." ; 
+    NMeta* libmeta = new NMeta ; 
+    unsigned int ni = getNumMaterials();
+
+    std::vector<std::string> names ; 
+    for(unsigned int i=0 ; i < ni ; i++)
+    {
+        GMaterial* mat = m_materials[i] ;
+        const char* name = mat->getShortName();
+        names.push_back(name); 
+    }
+
+    SAbbrev abbrev(names); 
+    assert( abbrev.abbrev.size() == names.size() ); 
+    assert( abbrev.abbrev.size() == ni ); 
+
+    NMeta* abbrevmeta = new NMeta ; 
+    for(unsigned i=0 ; i < ni ; i++)
+    {
+        const std::string& nm = names[i] ; 
+        const std::string& ab = abbrev.abbrev[i] ; 
+        abbrevmeta->set<std::string>(nm.c_str(), ab ) ; 
+    }
+
+    libmeta->setObj("abbrev", abbrevmeta );  
+    return libmeta ; 
 }
 
 

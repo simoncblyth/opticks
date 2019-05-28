@@ -413,7 +413,7 @@ std::string GPropertyLib::getBufferName(const char* suffix)
 GPropertyLib::close
 ---------------------
 
-After sorting the subclass implementations of createNames, createBuffer, createMeta
+After sorting,  the subclass implementations of createNames, createBuffer, createMeta
 are invoked : getting the lib ready to be persisted by for example copying the 
 properties of the individual instances (eg GMaterial) into the buffer.
 

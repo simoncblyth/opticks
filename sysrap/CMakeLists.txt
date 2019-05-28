@@ -51,6 +51,8 @@ set(SOURCES
     SGDML.cc
     S_get_option.cc
     STime.cc
+    SASCII.cc
+    SAbbrev.cc
 ) 
 
 set(HEADERS
@@ -95,6 +97,8 @@ set(HEADERS
     SPPM.hh
     SId.hh
     SGDML.hh
+    SASCII.hh
+    SAbbrev.hh
 )
 
 

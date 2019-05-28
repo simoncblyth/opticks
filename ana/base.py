@@ -189,6 +189,9 @@ class OpticksEnv(object):
         return idname
 
     def _detector(self):
+        """
+        does not make any sense in direct approach
+        """
         idname = self._idname()
         dbeg = idname.split("_")[0]
         if dbeg in ["DayaBay","LingAo","Far"]:
@@ -208,11 +211,15 @@ class OpticksEnv(object):
         return os.path.join(self.env["OPTICKS_EXPORT_DIR"], detector)
 
 
-    def __init__(self):
+    def __init__(self, legacy=False):
         self.ext = {}
         self.env = {}
 
-        self.direct_init()
+        if legacy:
+            self.legacy_init()
+        else:
+            self.direct_init()
+        pass
 
 
     def direct_init(self): 
@@ -232,7 +239,10 @@ class OpticksEnv(object):
 
         keydir = self.key.keydir 
         assert os.path.isdir(keydir), "keydir %s is required to exist " % keydir  
-        os.environ["IDPATH"] = keydir       ## not a default 
+
+        ## not defaults 
+        os.environ["IDPATH"] = keydir   ## <-- to be removed, switch to GEOCACHE signally direct workflow 
+        os.environ["GEOCACHE"] = keydir    
 
         self.install_prefix = _dirname(keydir, 5)
 
@@ -247,6 +257,7 @@ class OpticksEnv(object):
         assert not os.environ.has_key("OPTICKS_KEY"), "OPTICKS_KEY envvar is forbidden, for legacy running"
 
         IDPATH = os.environ["IDPATH"] 
+        os.environ["GEOCACHE"] = IDPATH   ## so can use in legacy approach too    
 
         self.idpath = IDPATH
 
@@ -349,7 +360,6 @@ def isIPython():
         return False
     else:
         return True
-
 
 class OK(argparse.Namespace):
     pass

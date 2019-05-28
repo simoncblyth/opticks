@@ -99,10 +99,15 @@ class MatType(SeqType):
     ./resource/GFlags/abbrev.json
     simon:opticksdata blyth$ 
 
+
+    Formerly used "$OPTICKS_DETECTOR_DIR/GMaterialLib/abbrev.json"
+    but that makes no sense in direct workflow, so now
+    "$GEOCACHE/GMaterialLib/GPropertyLibMetadata.json"
+
     """
     def __init__(self, reldir=None):
         material_names = ItemList("GMaterialLib", reldir=reldir)
-        material_abbrev = Abbrev("$OPTICKS_DETECTOR_DIR/GMaterialLib/abbrev.json")
+        material_abbrev = Abbrev("$GEOCACHE/GMaterialLib/GPropertyLibMetadata.json")
         SeqType.__init__(self, material_names, material_abbrev)
 
 

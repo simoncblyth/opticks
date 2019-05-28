@@ -48,6 +48,8 @@ set(TEST_SOURCES
 
    SSetTest.cc
    STimeTest.cc
+   SASCIITest.cc
+   SAbbrevTest.cc
 
 )
 

@@ -57,12 +57,13 @@ Ana scripts currently unaware of geocache evt saving
 
 
 
-
-GFlags/abbrev.json coming from OPTICKS_DATA_DIR ?
---------------------------------------------------------
+GFlags/abbrev.json coming from OPTICKS_DATA_DIR ?  FIXED
+----------------------------------------------------------------
 
 * lifecycle of the abbrev.json should follow that of the enum flags, and 
   be persisted beside each other 
+
+  * DONE : moved into installcache/OKC
 
 
 hismask.py::
@@ -292,5 +293,247 @@ Added OpticksFlags::getAbbrevMeta, now where to persist the json ?
 
 
 * save the OpticksFlagsAbbrevMeta.json together with flags
+
+
+
+mattype.py reading from "$OPTICKS_DETECTOR_DIR/GMaterialLib/abbrev.json"
+----------------------------------------------------------------------------
+
+* added GEOCACHE metadata to OpticksEvent, can assert on this matching IDPATH
+* thence can read the abbrev from the GEOCACHE
+
+
+::
+
+    /home/blyth/opticks/ana/mattype.pyc in __init__(self, reldir)
+        103     def __init__(self, reldir=None):
+        104         material_names = ItemList("GMaterialLib", reldir=reldir)
+    --> 105         material_abbrev = Abbrev("$OPTICKS_DETECTOR_DIR/GMaterialLib/abbrev.json")
+        106         SeqType.__init__(self, material_names, material_abbrev)
+        107 
+
+
+
+detector detector_dir OPTICKS_DETECTOR_DIR make no sense in direct workflow
+-------------------------------------------------------------------------------------------
+
+The main useful thing I recall was the ordering of materials
+so that relevant materials occupy the low numbers, allowing history recording 
+with 4 bits per material.
+
+BUT : can just say they need to change the Geant4 ordering to change the Opticks
+ordering 
+
+
+base.py::
+
+    140 class OpticksEnv(object):
+    ...
+    191     def _detector(self):
+    192         """
+    193         does not make any sense in direct approach
+    194         """
+    195         idname = self._idname()
+    196         dbeg = idname.split("_")[0]
+    197         if dbeg in ["DayaBay","LingAo","Far"]:
+    198             detector =  "DayaBay"
+    199         else:
+    200             detector = dbeg
+    201         pass
+    202         log.debug("_opticks_detector idpath %s -> detector %s " % (self.idpath, detector))
+    203         return detector
+    204 
+    205     def _detector_dir(self):
+    206         """
+    207         in layout 1, this yields /usr/local/opticks/opticksdata/export/juno1707/
+    208         but should be looking in IDPATH ?
+    209         """
+    210         detector = self._detector()
+    211         return os.path.join(self.env["OPTICKS_EXPORT_DIR"], detector)
+    212 
+
+
+
+::
+
+    [blyth@localhost export]$ cd DayaBay
+    [blyth@localhost DayaBay]$ l
+    total 4
+    drwxrwxr-x. 2 blyth blyth  42 Jul  5  2018 GSurfaceLib
+    drwxrwxr-x. 3 blyth blyth  15 Jul  5  2018 GPmt
+    drwxrwxr-x. 2 blyth blyth  61 Jul  5  2018 GMaterialLib
+    -rw-rw-r--. 1 blyth blyth 862 Jul  5  2018 ChromaMaterialMap.json
+    [blyth@localhost DayaBay]$ 
+    [blyth@localhost DayaBay]$ 
+    [blyth@localhost DayaBay]$ l GSurfaceLib/
+    total 8
+    -rw-rw-r--. 1 blyth blyth  317 Jul  5  2018 color.json
+    -rw-rw-r--. 1 blyth blyth 1466 Jul  5  2018 order.json
+    [blyth@localhost DayaBay]$ l GPmt/
+    total 0
+    drwxrwxr-x. 2 blyth blyth 223 Jul  5  2018 0
+    [blyth@localhost DayaBay]$ l GPmt/0/
+    total 40
+    -rw-rw-r--. 1 blyth blyth   74 Jul  5  2018 GPmt_lvnames.txt
+    -rw-rw-r--. 1 blyth blyth   47 Jul  5  2018 GPmt_materials.txt
+    -rw-rw-r--. 1 blyth blyth   74 Jul  5  2018 GPmt_pvnames.txt
+    -rw-rw-r--. 1 blyth blyth  289 Jul  5  2018 GPmt_check.txt
+    -rw-rw-r--. 1 blyth blyth 1168 Jul  5  2018 GPmt_csg.npy
+    -rw-rw-r--. 1 blyth blyth   47 Jul  5  2018 GPmt_csg.txt
+    -rw-rw-r--. 1 blyth blyth  289 Jul  5  2018 GPmt_boundaries.txt
+    -rw-rw-r--. 1 blyth blyth  848 Jul  5  2018 GPmt_check.npy
+    -rw-rw-r--. 1 blyth blyth  848 Jul  5  2018 GPmt.npy
+    -rw-rw-r--. 1 blyth blyth  289 Jul  5  2018 GPmt.txt
+    [blyth@localhost DayaBay]$ l GMaterialLib/
+    total 12
+    -rw-rw-r--. 1 blyth blyth 660 Jul  5  2018 color.json
+    -rw-rw-r--. 1 blyth blyth 795 Jul  5  2018 order.json
+    -rw-rw-r--. 1 blyth blyth 612 Jul  5  2018 abbrev.json
+    [blyth@localhost DayaBay]$ pwd
+    /home/blyth/local/opticks/opticksdata/export/DayaBay
+    [blyth@localhost DayaBay]$ 
+    [blyth@localhost DayaBay]$ 
+    [blyth@localhost DayaBay]$ cd ..
+
+
+
+Two character Material Abbreviation in direct workflow ?
+----------------------------------------------------------
+
+* automated abbrev 
+
+  * when mix of upper and lower case use 1st 2 uppers  
+  * 1st two uppercased chars
+  * with fallback to 1st and last, or 1st 2 
+
+* perhaps with option to use own abbreviations given to Opticks with  
+
+  * G4Opticks::setMaterialAbbreviations(path_to_abbrev.json)
+
+
+::
+
+    [blyth@localhost DayaBay]$ cat GMaterialLib/abbrev.json 
+    {
+        "ADTableStainlessSteel": "AS",
+        "Acrylic": "Ac",
+        "Air": "Ai",
+        "Aluminium": "Al",
+        "Bialkali": "Bk",
+        "DeadWater": "Dw",
+        "ESR": "ES",
+        "Foam": "Fo",
+        "GdDopedLS": "Gd",
+        "IwsWater": "Iw",
+        "LiquidScintillator": "LS",
+        "MineralOil": "MO",
+        "Nitrogen": "Ni",
+        "NitrogenGas": "NG",
+        "Nylon": "Ny",
+        "OwsWater": "Ow",
+        "PPE": "PP",
+        "PVC": "PV",
+        "Pyrex": "Py",
+        "Rock": "Rk",
+        "StainlessSteel": "SS",
+        "Tyvek": "Ty",
+        "UnstStainlessSteel": "US",
+        "Vacuum": "Vm",
+        "OpaqueVacuum": "OV",
+        "Water": "Wt",
+        "GlassSchottF2": "F2"
+    }
+
+
+
+Implemented automated abbrev with two sysrap classes::
+
+    SASCII
+    SAbbrev
+
+Now that its automated, should be applied in X4 together 
+with other material translation as part of the population
+of GGeo.
+
+Just needs material names, so better to do internally 
+inside GMaterialLib.
+
+
+::
+
+    234 void X4PhysicalVolume::convertMaterials()
+    235 {
+    236     OK_PROFILE("_X4PhysicalVolume::convertMaterials");
+    237     LOG(verbose) << "[" ;
+    238 
+    239     size_t num_materials0 = m_mlib->getNumMaterials() ;
+    240     assert( num_materials0 == 0 );
+    241 
+    242     X4MaterialTable::Convert(m_mlib);
+    243 
+    244     size_t num_materials = m_mlib->getNumMaterials() ;
+    245     assert( num_materials > 0 );
+    246 
+    247     // Adding test materials only at Opticks level is a standardization
+    248     // problem : TODO: implement creation of test materials at G4 level
+    249     // then they will be present at all levels.
+    250     // 
+    251     //m_mlib->addTestMaterials() ;
+    252 
+    253     m_mlib->close();   // may change order if prefs dictate
+    254 
+    255     LOG(verbose) << "]" ;
+    256     LOG(info)
+    257           << " num_materials " << num_materials
+    258           ;
+    259     OK_PROFILE("X4PhysicalVolume::convertMaterials");
+    260 }
+
+
+
+::
+
+     456 NMeta* GMaterialLib::createMeta()
+     457 {
+     458     LOG(LEVEL) << "." ;
+     459     NMeta* libmeta = new NMeta ;
+     460     unsigned int ni = getNumMaterials();
+     461 
+     462     std::vector<std::string> names ;
+     463     for(unsigned int i=0 ; i < ni ; i++)
+     464     {
+     465         GMaterial* mat = m_materials[i] ;
+     466         const char* name = mat->getShortName();
+     467         names.push_back(name);
+     468     }
+     469 
+     470     SAbbrev abbrev(names);
+     471     assert( abbrev.abbrev.size() == names.size() );
+     472     assert( abbrev.abbrev.size() == ni );
+     473 
+     474     NMeta* abbrevmeta = new NMeta ;
+     475     for(unsigned i=0 ; i < ni ; i++)
+     476     {
+     477         const std::string& nm = names[i] ;
+     478         const std::string& ab = abbrev.abbrev[i] ;
+     479         abbrevmeta->set<std::string>(nm.c_str(), ab ) ;
+     480     }
+     481 
+     482     libmeta->setObj("abbrev", abbrevmeta );
+     483     return libmeta ;
+     484 }
+
+
+::
+
+    [blyth@localhost 1]$ l GMaterialLib/
+    total 8
+    -rw-rw-r--. 1 blyth blyth 3824 May 28 18:57 GMaterialLib.npy
+    -rw-rw-r--. 1 blyth blyth   49 May 28 18:57 GPropertyLibMetadata.json
+    [blyth@localhost 1]$ jsn.py GMaterialLib/GPropertyLibMetadata.json
+    {u'abbrev': {u'Air': u'Ai', u'Glass': u'Gl', u'Water': u'Wa'}}
+    [blyth@localhost 1]$ 
+
+
 
 
