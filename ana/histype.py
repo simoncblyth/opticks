@@ -14,7 +14,7 @@ log = logging.getLogger(__name__)
 import numpy as np
 
 from opticks.ana.base import opticks_main
-from opticks.ana.base import Abbrev, IniFlags
+from opticks.ana.base import PhotonFlags
 from opticks.ana.seq import SeqType, SeqTable, SeqAna
 from opticks.ana.nbase import count_unique_sorted
 from opticks.ana.nload import A
@@ -42,10 +42,8 @@ def test_roundtrip(af):
 
 class HisType(SeqType):
     def __init__(self):
-        flags = IniFlags()
-        abbrev = Abbrev("$OPTICKS_DATA_DIR/resource/GFlags/abbrev.json")
-        SeqType.__init__(self, flags, abbrev)
-
+        flags = PhotonFlags() 
+        SeqType.__init__(self, flags, flags.abbrev)
 
 
 if __name__ == '__main__':

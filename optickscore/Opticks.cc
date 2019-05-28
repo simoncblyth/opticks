@@ -10,6 +10,7 @@
 #include <sstream>
 
 #include "SLog.hh"
+#include "SProc.hh"
 #include "SArgs.hh"
 #include "STime.hh"
 #include "SSys.hh"
@@ -2279,7 +2280,11 @@ OpticksEvent* Opticks::makeEvent(bool ok, unsigned tagoffset)
     parameters->add<std::string>("EntryCode", BStr::ctoa(getEntryCode()) );
     parameters->add<std::string>("EntryName", getEntryName() );
 
-    evt->setCreator(getArgv0()) ;  
+    parameters->add<std::string>("KEY",  getKeySpec() ); 
+    parameters->add<std::string>("GEOCACHE",  getIdPath() ); 
+    // formerly would have called this IDPATH, now using GEOCACHE to indicate new approach 
+
+    evt->setCreator(SProc::ExecutablePath()) ; // no access to argv[0] for embedded running 
 
     assert( parameters->get<unsigned int>("RngMax") == rng_max );
     assert( parameters->get<unsigned int>("BounceMax") == bounce_max );
@@ -2598,7 +2603,7 @@ std::string Opticks::getRelativePath(const char* path) { return m_resource->getR
 
 OpticksQuery*   Opticks::getQuery() {     return m_resource->getQuery(); }
 OpticksColors*  Opticks::getColors() {    return m_resource->getColors(); }
-OpticksFlags*   Opticks::getFlags() {     return m_resource->getFlags(); }
+OpticksFlags*   Opticks::getFlags() const { return m_resource->getFlags(); }
 OpticksAttrSeq* Opticks::getFlagNames() { return m_resource->getFlagNames(); }
 
 std::map<unsigned int, std::string> Opticks::getFlagNamesMap()
@@ -2644,28 +2649,26 @@ const char*     Opticks::getCurrentGDMLPath() const
 }
 
 
+/**
+Opticks::prepareInstallCache
+-----------------------------
+
+Moved save directory from IdPath to ResourceDir as
+the IdPath is not really appropriate  
+for things such as the flags that are a feature of an 
+Opticks installation, not a feature of the geometry.
+
+But ResourceDir is not appropriate either as that requires 
+manual management via opticksdata repo.
+
+
+**/
+
+
 void Opticks::prepareInstallCache(const char* dir)
 {
-    // Moved save directory from IdPath to ResourceDir as
-    // the IdPath is not really appropriate  
-    // for things such as the flags that are a feature of an 
-    // Opticks installation, not a feature of the geometry.
-    // 
-    // But ResourceDir is not appropriate either as that requires 
-    // manual management via opticksdata repo.
-    //
-    //  So 
-    // 
-    //  TODO:
-    //     incorporate resources saving into 
-    //     the build process 
-    //     ... currently this is done manually by 
-    //
-    //         OpticksSaveResources 
-    //
-
     if(dir == NULL) dir = m_resource->getOKCInstallCacheDir() ;
-    LOG(info) << "Opticks::saveResources " << ( dir ? dir : "NULL" )  ; 
+    LOG(info) << ( dir ? dir : "NULL" )  ; 
     m_resource->saveFlags(dir);
     m_resource->saveTypes(dir);
 }

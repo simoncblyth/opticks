@@ -8,6 +8,7 @@ import os, logging, json, ctypes, subprocess, argparse, sys, datetime, re
 from opticks.ana.OpticksQuery import OpticksQuery 
 from opticks.ana.enum import Enum 
 from opticks.ana.bpath import BPath 
+from opticks.ana.key import Key 
 
 log = logging.getLogger(__name__) 
 
@@ -18,10 +19,9 @@ try:
 except OSError:
     pass
 
-IDPATH = os.path.expandvars("$IDPATH")
 
-idp_ = lambda _:"%s/%s" % (IDPATH,_) 
-uidp_ = lambda _:_.replace(IDPATH,"$IDPATH")
+idp_ = lambda _:"%s/%s" % (os.environ["IDPATH"],_) 
+uidp_ = lambda _:_.replace(os.environ["IDPATH"],"$IDPATH")
 
 
 def translate_xml_identifier_(name):
@@ -110,7 +110,6 @@ def _dirname(path, n):
     for _ in range(n):
         path = os.path.dirname(path)
     return path
-
 
 
 def _subprocess_output(args):
@@ -209,18 +208,46 @@ class OpticksEnv(object):
         return os.path.join(self.env["OPTICKS_EXPORT_DIR"], detector)
 
 
-
     def __init__(self):
         self.ext = {}
         self.env = {}
 
-        if IDPATH == "$IDPATH":
-            print("ana/base.py:OpticksEnv missing IDPATH envvar [%s] " % IDPATH)
-            sys.exit(1)  
+        self.direct_init()
 
-        if not os.path.isdir(IDPATH): 
-            print("ana/base.py:OpticksEnv warning IDPATH directory does not exist [%s] " % IDPATH)
-        pass  
+
+    def direct_init(self): 
+        """
+        Direct approach
+
+        * IDPATH is not allowed as an input, it is an internal envvar only 
+
+        TODO:
+
+        * extracate use of OPTICKS_DATA_DIR, used by hismask.py for flag abbreviations
+
+        """ 
+        assert not os.environ.has_key("IDPATH"), "IDPATH envvar as input is forbidden"
+        assert os.environ.has_key("OPTICKS_KEY"), "OPTICKS_KEY envvar is required"
+        self.key = Key(os.environ["OPTICKS_KEY"])
+
+        keydir = self.key.keydir 
+        assert os.path.isdir(keydir), "keydir %s is required to exist " % keydir  
+        os.environ["IDPATH"] = keydir       ## not a default 
+
+        self.install_prefix = _dirname(keydir, 5)
+
+        self.setdefault("OPTICKS_INSTALL_PREFIX",  self.install_prefix)
+        self.setdefault("OPTICKS_INSTALL_CACHE",   os.path.join(self.install_prefix, "installcache"))
+        #self.setdefault("OPTICKS_DATA_DIR",        os.path.join(self.install_prefix, "opticksdata"))   
+        self.setdefault("OPTICKS_EVENT_BASE",      os.path.join(keydir, "source" ))
+
+
+    def legacy_init(self): 
+        assert os.environ.has_key("IDPATH"), "IDPATH envvar is required, for legacy running"
+        assert not os.environ.has_key("OPTICKS_KEY"), "OPTICKS_KEY envvar is forbidden, for legacy running"
+
+        IDPATH = os.environ["IDPATH"] 
+
         self.idpath = IDPATH
 
         self.idp = BPath(IDPATH)
@@ -246,9 +273,10 @@ class OpticksEnv(object):
             self.setdefault("OPTICKS_DAEPATH",         self.srcpath)
             self.setdefault("OPTICKS_GDMLPATH",        self.srcpath.replace(".dae",".gdml"))
             self.setdefault("OPTICKS_GLTFPATH",        self.srcpath.replace(".dae",".gltf"))
-            self.setdefault("OPTICKS_DATA_DIR",        _dirname(self.srcpath,3))
+            self.setdefault("OPTICKS_DATA_DIR",        _dirname(self.srcpath,3))     ## HUH thats a top down dir, why go from bottom up for it ?
             self.setdefault("OPTICKS_EXPORT_DIR",      _dirname(self.srcpath,2))
         pass
+
         self.setdefault("OPTICKS_INSTALL_PREFIX",  self.install_prefix)
         self.setdefault("OPTICKS_INSTALL_CACHE",   os.path.join(self.install_prefix, "installcache"))
         log.debug("install_prefix : %s " % self.install_prefix ) 
@@ -298,10 +326,13 @@ class OpticksEnv(object):
 
 
 def opticks_environment(dump=False):
+
+   log.info(" ( opticks_environment") 
    env = OpticksEnv()
    if dump:
        env.dump()
    env.bash_export() 
+   log.info(" ) opticks_environment") 
 
 
 def opticks_main(**kwa):
@@ -596,6 +627,7 @@ def json_(path):
         _json[path] = json.load(file(os.path.expandvars(os.path.expanduser(path))))
     except IOError:
         log.warning("failed to load json from %s" % path)
+        assert 0
         _json[path] = {}
     pass
     return _json[path] 
@@ -692,6 +724,8 @@ class IniFlags(object):
         ini = ini_(path)
         assert len(ini) > 0, "IniFlags bad path/flags %s " % path 
 
+        assert 0, "who uses this ?" 
+
         ini = dict(zip(ini.keys(),map(int,ini.values())))  # convert values to int 
         names = map(str,ini.keys())
         codes = map(int,ini.values())
@@ -702,7 +736,7 @@ class IniFlags(object):
         self.code2name = dict(zip(codes, names))
 
 class EnumFlags(object):
-    def __init__(self, path="$OPTICKS_HOME/optickscore/OpticksPhoton.h"): 
+    def __init__(self, path): 
         d = enum_(path) 
         ini = dict(zip(d.keys(),map(int,d.values())))  
 
@@ -713,6 +747,19 @@ class EnumFlags(object):
         self.codes = codes
         self.name2code = dict(zip(names, codes)) 
         self.code2name = dict(zip(codes, names))
+
+   
+class PhotonFlags(EnumFlags):
+    """
+    Note this is partially duplicating optickscore/OpticksFlags.cc 
+
+    Abbrev used to come "$OPTICKS_DATA_DIR/resource/GFlags/abbrev.json"
+
+    """
+    def __init__(self):
+        EnumFlags.__init__(self, path="$OPTICKS_HOME/optickscore/OpticksPhoton.h") 
+        self.abbrev = Abbrev("$OPTICKS_INSTALL_CACHE/OKC/OpticksFlagsAbbrevMeta.json")
+
 
 
 if __name__ == '__main__':
@@ -728,8 +775,8 @@ if __name__ == '__main__':
     print("IniFlags(photon flags)")
     print("\n".join([" %s : %s " % (k,v) for k,v in inif.name2code.items()]))
 
-    enuf = EnumFlags()
-    print("EnumFlags(photon flags)")
-    print("\n".join([" %s : %s " % (k,v) for k,v in enuf.name2code.items()]))
+    phof = PhotonFlags()
+    print("PhotonFlags()")
+    print("\n".join([" %s : %s " % (k,v) for k,v in phof.name2code.items()]))
 
 

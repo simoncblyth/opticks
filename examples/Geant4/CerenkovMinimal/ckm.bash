@@ -62,12 +62,16 @@ ckm-dig(){ echo 27d088654714cda61096045ff5eacc02 ; }
 ckm-key(){ echo CerenkovMinimal.X4PhysicalVolume.World.$(ckm-dig) ; }
 ckm-idpath(){ echo $LOCAL_BASE/opticks/geocache/CerenkovMinimal_World_g4live/g4ok_gltf/$(ckm-dig)/1 ; }
 
-ckm-export(){  export OPTICKS_KEYDIR=$(ckm-idpath) ; }
+ckm-key-export(){ export OPTICKS_KEY=$(ckm-key) ;  }
+
+
 ckm-kcd(){ cd $(ckm-idpath) ; }
 ckm-ls(){  ls -l $(ckm-idpath) ; }
 
 ckm-evpath0(){ echo $TMP/evt/g4live/natural ; }
 ckm-evpath1(){ echo $TMP/evt/g4live/torch ; }    # now moved from TMP inside the keydir ?
+
+ckm-ip(){  ipython --pdb $(which ckm.py) $* ; }
 
 
 ckm-ecd0(){ cd $(ckm-evpath0) ; }

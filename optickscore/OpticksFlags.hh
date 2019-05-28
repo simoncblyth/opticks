@@ -5,10 +5,15 @@
 #include <map>
 
 class Index ; 
+class NMeta ; 
 
 /**
 OpticksFlags
 =============
+
+Canonical m_flags resides in OpticksResource and is 
+instanciated with it.
+
 
 OpticksPhoton.h enum header is parsed at instanciation, loading 
 names and enum values into an Index m_index instance
@@ -35,6 +40,7 @@ TODO : Repositioning
 
 class OKCORE_API OpticksFlags {
     public:
+       static const char* ABBREV_META_NAME ;  
        static const char* ENUM_HEADER_PATH ;  
     public:
        static const char* CERENKOV_ ;
@@ -121,14 +127,16 @@ class OKCORE_API OpticksFlags {
        static std::string FlagMask(const unsigned mskhis, bool abbrev=true);
     public:
         OpticksFlags(const char* path=ENUM_HEADER_PATH);
-        void save(const char* idpath);
+        void save(const char* installcachedir);
     private:
-        void init(const char* path);
         Index* parseFlags(const char* path);
+        NMeta* makeAbbrevMeta(); 
     public:
-        Index*             getIndex();  
+        Index*             getIndex() const ;  
+        NMeta*             getAbbrevMeta() const ; 
     private:
         Index*             m_index ; 
+        NMeta*             m_abbrev_meta ;  
 };
 
  

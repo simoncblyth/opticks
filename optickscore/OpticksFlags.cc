@@ -6,6 +6,9 @@
 #include "BStr.hh"
 #include "BBit.hh"
 #include "BRegex.hh"
+
+#include "NMeta.hpp"
+
 #include "PLOG.hh"
 
 #include "Index.hpp"
@@ -16,6 +19,9 @@
 //const char* OpticksFlags::ENUM_HEADER_PATH = "$ENV_HOME/graphics/optixrap/cu/photon.h" ;
 //const char* OpticksFlags::ENUM_HEADER_PATH = "$ENV_HOME/opticks/OpticksPhoton.h" ;
 //const char* OpticksFlags::ENUM_HEADER_PATH = "$ENV_HOME/optickscore/OpticksPhoton.h" ;
+
+const char* OpticksFlags::ABBREV_META_NAME = "OpticksFlagsAbbrevMeta.json" ;
+
 
 const char* OpticksFlags::ENUM_HEADER_PATH = "$OPTICKS_INSTALL_PREFIX/include/OpticksCore/OpticksPhoton.h" ;
 //  envvar OPTICKS_INSTALL_PREFIX is set internally by OpticksResource based on cmake config 
@@ -76,6 +82,27 @@ const char* OpticksFlags::_BOUNDARY_TRANSMIT = "BT" ;
 const char* OpticksFlags::_NAN_ABORT         = "NA" ; 
 const char* OpticksFlags::_G4GUN             = "GN" ; 
 const char* OpticksFlags::_BAD_FLAG          = "XX" ; 
+
+
+NMeta* OpticksFlags::makeAbbrevMeta()
+{
+    NMeta* m = new NMeta ; 
+    m->set<std::string>(CERENKOV_ , _CERENKOV); 
+    m->set<std::string>(SCINTILLATION_ , _SCINTILLATION); 
+    m->set<std::string>(TORCH_ , _TORCH); 
+    m->set<std::string>(MISS_ , _MISS); 
+    m->set<std::string>(BULK_ABSORB_ , _BULK_ABSORB); 
+    m->set<std::string>(BULK_REEMIT_ , _BULK_REEMIT); 
+    m->set<std::string>(BULK_SCATTER_ , _BULK_SCATTER); 
+    m->set<std::string>(SURFACE_DETECT_ , _SURFACE_DETECT); 
+    m->set<std::string>(SURFACE_ABSORB_ , _SURFACE_ABSORB); 
+    m->set<std::string>(SURFACE_DREFLECT_ , _SURFACE_DREFLECT); 
+    m->set<std::string>(SURFACE_SREFLECT_ , _SURFACE_SREFLECT); 
+    m->set<std::string>(BOUNDARY_REFLECT_ , _BOUNDARY_REFLECT); 
+    m->set<std::string>(BOUNDARY_TRANSMIT_ , _BOUNDARY_TRANSMIT); 
+    m->set<std::string>(NAN_ABORT_ , _NAN_ABORT); 
+    return m ; 
+}
 
 
 const char* OpticksFlags::natural_           = "natural" ;
@@ -379,43 +406,23 @@ unsigned int OpticksFlags::SourceCode(const char* type)
 
 
 
-
-
-
+Index* OpticksFlags::getIndex()     const { return m_index ;  } 
+NMeta* OpticksFlags::getAbbrevMeta() const { return m_abbrev_meta ;  } 
 
 OpticksFlags::OpticksFlags(const char* path) 
     :
-    m_index(NULL)
+    m_index(parseFlags(path)),
+    m_abbrev_meta(makeAbbrevMeta())
 {
-    init(path);
 }
 
 
-
-Index* OpticksFlags::getIndex()
+void OpticksFlags::save(const char* installcachedir)
 {
-    return m_index ; 
-} 
-
-void OpticksFlags::init(const char* path)
-{
-    m_index = parseFlags(path);
-    unsigned int num_flags = m_index ? m_index->getNumItems() : 0 ;
-
-    LOG(verbose) << "OpticksFlags::init"
-              << " path " << path 
-              << " num_flags " << num_flags 
-              << " " << ( m_index ? m_index->description() : "NULL index" )
-              ;
-    
-    assert(num_flags > 0 && "missing flags header : you need to update OpticksFlags::ENUM_HEADER_PATH ");
-}
-
-
-void OpticksFlags::save(const char* idpath)
-{
+    LOG(info) << installcachedir ; 
     m_index->setExt(".ini"); 
-    m_index->save(idpath);    
+    m_index->save(installcachedir);
+    m_abbrev_meta->save( installcachedir, ABBREV_META_NAME ); 
 }
 
 Index* OpticksFlags::parseFlags(const char* path)
@@ -445,6 +452,18 @@ Index* OpticksFlags::parseFlags(const char* path)
    
         //  OpticksFlagsTest --OKCORE debug 
     }
+
+    unsigned int num_flags = index->getNumItems() ;
+    if(num_flags == 0)
+    { 
+        LOG(fatal)
+             << " path " << path 
+             << " num_flags " << num_flags 
+             << " " << ( index ? index->description() : "NULL index" )
+             ;
+    }
+    assert(num_flags > 0 && "missing flags header ? : you need to update OpticksFlags::ENUM_HEADER_PATH ");
+
     return index ; 
 }
 

@@ -195,7 +195,6 @@ void OpticksAttrSeq::dump(const char* keys, const char* msg)
     {
         typedef std::vector<std::string> VS ; 
         VS elem ; 
-        //boost::split(elem, keys, boost::is_any_of(","));
         BStr::split(elem, keys, ',');
 
         for(VS::const_iterator it=elem.begin() ; it != elem.end() ; it++)

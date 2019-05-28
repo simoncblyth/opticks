@@ -1,15 +1,9 @@
 #include "Opticks.hh"
+#include "OPTICKS_LOG.hh"
 
-#include "BRAP_LOG.hh"
-#include "OKCORE_LOG.hh"
-#include "PLOG.hh"
-
-int main(int argc, char** argv, char** /*envp*/)
+int main(int argc, char** argv )
 {
-    PLOG_(argc, argv);
-
-    BRAP_LOG__ ;
-    OKCORE_LOG__ ;
+    OPTICKS_LOG(argc, argv);
 
     Opticks ok(argc, argv) ;
     ok.configure();

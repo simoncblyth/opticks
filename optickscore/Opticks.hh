@@ -362,7 +362,7 @@ class OKCORE_API Opticks {
    public:
        OpticksQuery*        getQuery(); 
        OpticksColors*       getColors(); 
-       OpticksFlags*        getFlags(); 
+       OpticksFlags*        getFlags() const ; 
        OpticksAttrSeq*      getFlagNames();
        std::map<unsigned int, std::string> getFlagNamesMap();
    public:

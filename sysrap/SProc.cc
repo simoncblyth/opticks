@@ -74,3 +74,31 @@ float SProc::VirtualMemoryUsageMB()
 
 
 
+
+
+#ifdef _MSC_VER
+const char* SProc::ExecutablePath()
+{
+    return NULL ; 
+}
+#elif defined(__APPLE__)
+const char* SProc::ExecutablePath()
+{
+    return NULL ; 
+}
+#else
+
+
+#include <unistd.h>
+#include <limits.h>
+
+const char* SProc::ExecutablePath()
+{
+    char buf[PATH_MAX];
+    ssize_t len = ::readlink("/proc/self/exe", buf, sizeof(buf)-1);
+    if (len != -1) buf[len] = '\0';
+    return strdup(buf); 
+}
+
+#endif
+

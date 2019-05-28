@@ -10,18 +10,21 @@ log = logging.getLogger(__name__)
 import numpy as np
 
 from opticks.ana.base import opticks_main
-from opticks.ana.base import Abbrev, EnumFlags
+from opticks.ana.base import PhotonFlags
 from opticks.ana.seq import MaskType, SeqTable, SeqAna
 from opticks.ana.nbase import count_unique_sorted
 from opticks.ana.nload import A
 
 
 class HisMask(MaskType):
+    """ 
+    Formerly the abbrev came from $OPTICKS_DATA_DIR/resource/GFlags/abbrev.json
+    now from the muck more appropriate installcache/OKC
+    """ 
     def __init__(self):
         log.debug("HisMask.__init__")
-        flags = EnumFlags()
-        abbrev = Abbrev("$OPTICKS_DATA_DIR/resource/GFlags/abbrev.json")
-        MaskType.__init__(self, flags, abbrev)
+        flags = PhotonFlags()
+        MaskType.__init__(self, flags, flags.abbrev)
         log.debug("HisMask.__init__ DONE")
 
 

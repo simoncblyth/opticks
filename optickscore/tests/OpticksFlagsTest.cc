@@ -1,6 +1,7 @@
 // TEST=OpticksFlagsTest om-t
 
 #include "BStr.hh"
+#include "NMeta.hpp"
 #include "Opticks.hh"
 #include "OpticksFlags.hh"
 #include "Index.hpp"
@@ -156,7 +157,12 @@ void test_cfTypes(Opticks* ok)
     }
 }
 
-
+void test_getAbbrevMeta(Opticks* ok)
+{
+    OpticksFlags* f = ok->getFlags(); 
+    NMeta* m = f->getAbbrevMeta(); 
+    m->dump();
+}
 
 
 int main(int argc, char** argv)
@@ -174,9 +180,10 @@ int main(int argc, char** argv)
     test_AbbrevToFlagValSequence();
     test_PointAbbrev();
     test_PointVal1();
-    */
-
     test_cfTypes(&ok);
+    */
+    test_getAbbrevMeta(&ok);
+
 
     return 0 ; 
 }

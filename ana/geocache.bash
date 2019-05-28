@@ -125,9 +125,6 @@ EOU
 }
 
 geocache-env(){ echo -n ; }
-#geocache-export()
-#{
-#}
 
 geocache-paths(){  echo $IDPATH/$1 $IDPATH2/$1 ; }
 geocache-diff-(){  printf "\n======== $1 \n\n" ; diff -y $(geocache-paths $1) ; }
@@ -145,14 +142,6 @@ geocache-paths-pv(){ geocache-paths GNodeLib/PVNames.txt ; }
 geocache-diff-pv(){ geocache-diff- GNodeLib/PVNames.txt ; }
 geocache-diff-lv(){ geocache-diff- GNodeLib/LVNames.txt ; }
 
-geocache-info(){  cat << EOI
-
-   IDPATH  : $IDPATH
-   IDPATH2 : $IDPATH2
-
-EOI
-}
-
 geocache-py()
 {
    geocache-scd
@@ -161,12 +150,27 @@ geocache-py()
 
 geocache-info(){ cat << EOI
 
-  OPTICKS_KEY     :  ${OPTICKS_KEY}
-  geocache-keydir : $(geocache-keydir)
-  geocache-tstdir : $(geocache-tstdir)
+
+  IDPATH  : $IDPATH
+  IDPATH2 : $IDPATH2
+       dependency on IDPATH on way out 
+
+  OPTICKS_KEY        :  ${OPTICKS_KEY}
+  geocache-keydir    : $(geocache-keydir)
+  geocache-keydir-py : $(geocache-keydir-py)
+  geocache-tstdir    : $(geocache-tstdir)
       directory derived from the OPTICKS_KEY envvar 
 
 EOI
+
+  geocache-keydir-test 
+}
+
+geocache-keydir-test()
+{
+   local a=$(geocache-keydir)
+   local b=$(geocache-keydir-py)
+   [ "$a" != "$b" ] && echo $msg MISMATCH $a $b && sleep 1000000000000
 }
 
 geocache-keydir()
@@ -180,6 +184,10 @@ geocache-keydir()
     local dig=${arr[3]}
     echo $LOCAL_BASE/opticks/geocache/${exe}_${top}_g4live/g4ok_gltf/$dig/1 
 }
+
+geocache-keydir-py(){ key.py ; }
+
+
 
 geocache-dir(){ echo $LOCAL_BASE/opticks/geocache ; }
 geocache-cd(){ cd $(geocache-dir) ; }
@@ -267,8 +275,8 @@ geocache-j1808-v4-t8-key(){     echo OKX4Test.X4PhysicalVolume.lWorld0x4bc2710_P
 geocache-j1808-v4-t8-export(){  geocache-export ${FUNCNAME/-export} ; }
 geocache-j1808-v4-t8(){ geocache-j1808-v4- --csgskiplv 22,17,20 --runfolder $FUNCNAME --runcomment $(${FUNCNAME}-comment) ; }
 
-#geocache-bashrc-export(){   geocache-j1808-v4-t8-export ; }
-geocache-bashrc-export(){   geocache-j1808-v4-export ; }
+#geocache-key-export(){   geocache-j1808-v4-t8-export ; }
+geocache-key-export(){   geocache-j1808-v4-export ; }
 
 geocache-j1808-v4-notes(){ cat << EON
 

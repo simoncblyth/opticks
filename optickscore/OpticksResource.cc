@@ -68,7 +68,7 @@ OpticksResource::OpticksResource(Opticks* ok)
     m_meshfixcfg(NULL),
     m_valid(true),
     m_colors(NULL),
-    m_flags(NULL),
+    m_flags(new OpticksFlags),
     m_flagnames(NULL),
     m_types(NULL),
     m_typ(NULL),
@@ -1032,23 +1032,15 @@ OpticksColors* OpticksResource::getColors()
     return m_colors ;
 }
 
-OpticksFlags* OpticksResource::getFlags()
+OpticksFlags* OpticksResource::getFlags() const 
 {
-    if(!m_flags)
-    {
-        m_flags = new OpticksFlags(); 
-    }
     return m_flags ;
 }
 
 void OpticksResource::saveFlags(const char* dir)
 {
     OpticksFlags* flags = getFlags();
-
-    LOG(info) << "OpticksResource::saveFlags"
-              << " dir " << dir
-              ;
-
+    LOG(info) << " dir " << dir ;
     flags->save(dir);
 }
 

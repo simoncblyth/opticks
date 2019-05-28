@@ -15,5 +15,7 @@ macOS implementation of VirtualMemoryUsageMB of a process.
 class SYSRAP_API SProc {
   public:
       static float VirtualMemoryUsageMB();
+      static const char* ExecutablePath(); 
+
 
 };

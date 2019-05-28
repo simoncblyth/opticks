@@ -139,7 +139,7 @@ class OKCORE_API OpticksResource : public BOpticksResource {
     public:
        OpticksQuery* getQuery();
        OpticksColors* getColors();
-       OpticksFlags*  getFlags();
+       OpticksFlags*  getFlags() const ;
        OpticksAttrSeq* getFlagNames();
        std::map<unsigned int, std::string> getFlagNamesMap();
    public:

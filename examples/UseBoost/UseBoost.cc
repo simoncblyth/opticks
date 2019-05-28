@@ -31,3 +31,23 @@ const char* UseBoost::concat_path(int argc, char** argv)
 }
 
 
+/*
+const char* UseBoost::program_location()
+{
+
+//#include <boost/dll/runtime_symbol_info.hpp>
+
+   
+https://www.boost.org/doc/libs/1_70_0/doc/html/boost_dll/reference.html#header.boost.dll.runtime_symbol_info_hpp    
+
+https://stackoverflow.com/questions/1528298/get-path-of-executable
+
+
+
+    std::string x = p.string() ;
+    return strdup(x.c_str());
+}
+
+*/  
+
+

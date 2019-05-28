@@ -5,10 +5,9 @@
 #include "SProc.hh"
 #include "OPTICKS_LOG.hh"
 
-int main(int argc, char** argv)
-{
-    OPTICKS_LOG(argc, argv);
 
+void test_leaking(int argc, char** argv)
+{
     typedef unsigned long long ULL ; 
 
     //ULL MB = 1000000 ; 
@@ -56,6 +55,26 @@ int main(int argc, char** argv)
 
         //delete [] leaks[i] ; 
     } 
+}
+
+
+
+void test_ExecutablePath(int argc, char** argv)
+{
+    const char* p = SProc::ExecutablePath();
+    std::cout << "argv[0]:                 " << argv[0] << std::endl ;  
+    std::cout << "SProc::ExecutablePath(): " << p << std::endl ;  
+}
+
+
+
+int main(int argc, char** argv)
+{
+    OPTICKS_LOG(argc, argv);
+
+    //test_leaking(argc, argv); 
+    test_ExecutablePath(argc, argv); 
+
     return 0 ; 
 }
 

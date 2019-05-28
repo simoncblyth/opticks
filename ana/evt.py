@@ -282,7 +282,8 @@ class Evt(object):
         self.tagdir = tagdir_(det, src, tag)
 
         metadata = Metadata(self.tagdir)
-        log.debug("loaded metadata from %s : %s " % (self.tagdir, repr(metadata)))
+        log.info("loaded metadata from %s " % self.tagdir)
+        log.info("metadata %s " % repr(metadata))
         self.metadata = metadata  
 
         fdom = A.load_("fdom",src,tag,det, dbg=dbg) 
