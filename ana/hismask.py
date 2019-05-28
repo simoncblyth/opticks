@@ -10,7 +10,7 @@ log = logging.getLogger(__name__)
 import numpy as np
 
 from opticks.ana.base import opticks_main
-from opticks.ana.base import PhotonFlags
+from opticks.ana.base import PhotonMaskFlags
 from opticks.ana.seq import MaskType, SeqTable, SeqAna
 from opticks.ana.nbase import count_unique_sorted
 from opticks.ana.nload import A
@@ -23,7 +23,7 @@ class HisMask(MaskType):
     """ 
     def __init__(self):
         log.debug("HisMask.__init__")
-        flags = PhotonFlags()
+        flags = PhotonMaskFlags()
         MaskType.__init__(self, flags, flags.abbrev)
         log.debug("HisMask.__init__ DONE")
 

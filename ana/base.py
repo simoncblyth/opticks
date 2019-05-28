@@ -23,6 +23,9 @@ except OSError:
 idp_ = lambda _:"%s/%s" % (os.environ["IDPATH"],_) 
 uidp_ = lambda _:_.replace(os.environ["IDPATH"],"$IDPATH")
 
+gcp_ = lambda _:"%s/%s" % (os.environ["GEOCACHE"],_) 
+
+
 
 def translate_xml_identifier_(name):
     return name.replace("__","/").replace("--","#").replace("..",":") 
@@ -595,8 +598,6 @@ def opticks_args(**kwa):
 
     return ok 
 
-    
- 
 
 
 def ihex_(i):
@@ -734,7 +735,7 @@ class IniFlags(object):
         ini = ini_(path)
         assert len(ini) > 0, "IniFlags bad path/flags %s " % path 
 
-        assert 0, "who uses this ?" 
+        #assert 0, "who uses this ?" 
 
         ini = dict(zip(ini.keys(),map(int,ini.values())))  # convert values to int 
         names = map(str,ini.keys())
@@ -746,12 +747,30 @@ class IniFlags(object):
         self.code2name = dict(zip(codes, names))
 
 class EnumFlags(object):
-    def __init__(self, path): 
+    """
+    With the default of mask2int False the values are::
+    
+        1 << 0, 1 << 1, 1 << 2, ...
+
+    Otherwise with mask2int True they are::
+
+        1,2,3,...
+ 
+    """
+    def __init__(self, path, mask2int=False): 
         d = enum_(path) 
         ini = dict(zip(d.keys(),map(int,d.values())))  
 
         names = map(str,ini.keys())
         codes = map(int,ini.values())
+
+        if mask2int:
+            mask2int = {}
+            for i in range(32):
+                mask2int[1 << i] = i + 1 
+            pass 
+            codes = map(lambda _:mask2int.get(_,-1), codes)
+        pass
 
         self.names = names
         self.codes = codes
@@ -759,16 +778,27 @@ class EnumFlags(object):
         self.code2name = dict(zip(codes, names))
 
    
-class PhotonFlags(EnumFlags):
+class PhotonMaskFlags(EnumFlags):
     """
     Note this is partially duplicating optickscore/OpticksFlags.cc 
 
     Abbrev used to come "$OPTICKS_DATA_DIR/resource/GFlags/abbrev.json"
-
     """
     def __init__(self):
-        EnumFlags.__init__(self, path="$OPTICKS_HOME/optickscore/OpticksPhoton.h") 
+        EnumFlags.__init__(self, path="$OPTICKS_HOME/optickscore/OpticksPhoton.h", mask2int=False) 
         self.abbrev = Abbrev("$OPTICKS_INSTALL_CACHE/OKC/OpticksFlagsAbbrevMeta.json")
+
+
+class PhotonCodeFlags(EnumFlags):
+    """
+    """
+    def __init__(self):
+        EnumFlags.__init__(self, path="$OPTICKS_HOME/optickscore/OpticksPhoton.h", mask2int=True) 
+        self.abbrev = Abbrev("$OPTICKS_INSTALL_CACHE/OKC/OpticksFlagsAbbrevMeta.json")
+
+
+
+
 
 
 
@@ -779,14 +809,25 @@ if __name__ == '__main__':
 
     lf = ItemList("GMaterialLib")
     print("ItemList(GMaterialLib).name2code")
-    print("\n".join([" %s : %s " % (k,v) for k,v in lf.name2code.items()]))
+    print("\n".join([" %30s : %s " % (k,v) for k,v in sorted(lf.name2code.items(),key=lambda kv:kv[1])]))
 
     inif = IniFlags()
     print("IniFlags(photon flags)")
-    print("\n".join([" %s : %s " % (k,v) for k,v in inif.name2code.items()]))
+    print("\n".join([" %30s : %s " % (k,v) for k,v in sorted(inif.name2code.items(),key=lambda kv:kv[1])]))
 
-    phof = PhotonFlags()
-    print("PhotonFlags()")
-    print("\n".join([" %s : %s " % (k,v) for k,v in phof.name2code.items()]))
+    phmf = PhotonMaskFlags()
+    print("PhotonMaskFlags()")
+    print("\n".join([" %30s : %s " % (k,v) for k,v in sorted(phmf.name2code.items(),key=lambda kv:kv[1])]))
+
+    phcf = PhotonCodeFlags()
+    print("PhotonCodeFlags()")
+    print("\n".join([" %30s : %s " % (k,v) for k,v in sorted(phcf.name2code.items(),key=lambda kv:kv[1])]))
+
+
+
+
+
+
+
 
 

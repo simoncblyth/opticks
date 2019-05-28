@@ -8,7 +8,7 @@ try:
 except ImportError:
     plt = None
 
-from collections import OrderedDict 
+from collections import OrderedDict as odict
 
 from opticks.ana.base import opticks_environment
 from opticks.ana.base import opticks_main, stamp_
@@ -196,7 +196,7 @@ class Evt(object):
 
         self.label = label
         self.rec = rec
-        self.desc = OrderedDict()
+        self.desc = odict()
 
         ok = self.init_metadata(tag, src, det, dbg)
 
@@ -212,6 +212,7 @@ class Evt(object):
         if rec:
             self.init_records(tag, src, det, dbg)
             self.init_sequence(tag, src, det, dbg)
+            self.init_npoint()
             self.init_source(tag, src, det, dbg)
 
             if len(seqs) == 0:
@@ -564,6 +565,24 @@ class Evt(object):
             setattr(self, "seqhis_ana_%d" % imsk, SeqAna(seqhis & msk, self.histype, cnames=[cn])) 
 
         log.debug("init_sequence DONE")
+
+
+    def init_npoint(self):
+        """
+        Bit shifting the seqhis to the right by 4,8,12,16,... bits
+        and looking for surviving 1s gives all entries with that number of record points
+        """
+        log.debug(" ( init_npoint")
+        wnpoint = odict() 
+        npoint = np.zeros(len(self.seqhis), dtype=np.int32)
+        for i in range(10):
+            wnpoint[i] = np.where( self.seqhis >> (4*i) != 0 )
+            npoint[wnpoint[i]] = i+1 
+        pass
+        self.wnpoint = wnpoint
+        self.npoint = npoint
+        log.debug(" ) init_npoint")
+
 
     his = property(lambda self:self.seqhis_ana.table)
     mat = property(lambda self:self.seqmat_ana.table)
@@ -1426,6 +1445,7 @@ class Evt(object):
         return self.rpost_(recs)
 
 
+
     def rdir(self, fr=0, to=1, nrm=True):
         """
         :param fr:
@@ -1467,6 +1487,20 @@ class Evt(object):
         center, extent = self.post_center_extent()
         p = self.rx[:,recs,0].astype(np.float32)*extent/32767.0 + center 
         return p 
+
+    def rposti(self, i):
+        """
+        Returns all step points of photon i 
+        """  
+        return self.rpost_(slice(0,self.npoint[i]))[i] 
+
+    def rpostn(self, n):
+        """
+        Returns record points of all photons with n record points  
+        """  
+        wnp = self.wnpoint[n]   # indices of photons with n points
+        return self.rpost_(slice(0,n))[wnp] 
+
 
 
     @classmethod
