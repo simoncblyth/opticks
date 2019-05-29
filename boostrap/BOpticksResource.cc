@@ -70,7 +70,7 @@ const int BOpticksResource::DEFAULT_FRAME_DYB = 3153 ;
 const int BOpticksResource::DEFAULT_FRAME_JUNO = 62593 ; 
 
 
-const plog::Severity BOpticksResource::LEVEL = info ; 
+const plog::Severity BOpticksResource::LEVEL = debug ; 
 
 BOpticksResource::BOpticksResource()
     :
@@ -131,7 +131,7 @@ BOpticksResource::~BOpticksResource()
 
 void BOpticksResource::init()
 {
-    LOG(LEVEL) << "layout : " << m_layout ; 
+    LOG(LEVEL) << " layout  : " << m_layout ; 
 
     initInstallPrefix() ;
     initTopDownDirs();
@@ -500,7 +500,7 @@ void BOpticksResource::setupViaKey()
     m_setup = true ; 
     assert( m_key ) ; // BOpticksResource::setupViaKey called with a NULL key 
 
-    LOG(LEVEL) << std::endl << m_key->desc()  ;  
+    LOG(info) << std::endl << m_key->desc()  ;  
 
     m_layout = m_key->getLayout(); 
 

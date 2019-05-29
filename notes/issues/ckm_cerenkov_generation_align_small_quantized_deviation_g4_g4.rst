@@ -7,7 +7,7 @@ ckm_cerenkov_generation_align_small_quantized_deviation_g4_g4
 
    ckm--        
        G4 example style CerenkovMinimal, with Opticks embedded via G4OK, 
-       collecting gensteps 
+       collecting gensteps and going GPU propagation
 
        * bi-simulation, OK using bouncemax 0 making ox.npy comparable with so.npy  
 
@@ -17,14 +17,151 @@ ckm_cerenkov_generation_align_small_quantized_deviation_g4_g4
        C4PhotonCollector::collectSecondaryPhotons
 
        * mono-simulation "G4" only 
+         (why not bi-simulation ? : same gensteps so should be identical presumably)
+
 
    ckm-so 
        compare the photons from the above two 
 
 
 
-FIXED : G4-G4 wavelength deviations of genstep 0 at 1e-5 level 
-------------------------------------------------------------------
+HOW TO EXTEND THESE COMPARISONS TO PROPAGATION ? ALIGNED RUNNING 
+---------------------------------------------------------------------
+
+
+* Opticks record buffer is deeply compressed, so it is 
+  not good for such comparisons 
+
+* instead count try incrementing bouncemax such that the ox.npy 
+  is available at float precision for each step 
+
+  * hmm bookkeeping would be easier if the persisting was
+    aware of bouncemax and copied ox.npy to oxN.npy for 
+    bouncemax N
+
+  * hmm need G4 to honour bouncemax too ? It does in CFG4 already.
+    Thats non-trivial. 
+
+
+
+REVISIT G4-OK generation : 6e-5 level
+-----------------------------------------------------------
+
+* matching between Opticks GPU photon generation (bouncemax zero) and Geant4 "standalone" photon generation
+
+::
+
+    1526*2 = 3052  
+
+* small quantized difference in wavelength, look like float travel precision effect 
+* wavelength more susceptible due to reciprocations ? G4 operating in energies 
+  and Opticks in wavelength and using the Opticks photon persistency format 
+  which uses wavelength in nm 
+
+
+ckm-so::
+
+    Wed May 29 16:03:53 CST 2019
+    a  -rw-rw-r--. 1 blyth blyth 14224 May 29 15:28 source/evt/g4live/natural/1/ox.npy
+    b  -rw-rw-r--. 1 blyth blyth 14224 May 29 15:19 tests/CCerenkovGeneratorTest/so.npy
+    a (221, 4, 4) 
+    b (221, 4, 4) 
+    max deviation 6.1035156e-05 
+     deviations above cut 0.0001 num_wh 0 wh[c][:10] array([], dtype=int64)  
+     deviations above cut 1e-05 num_wh 39 wh[c][:10] array([11, 18, 22, 23, 30, 36, 37, 38, 42, 61])  
+     deviations above cut 1e-06 num_wh 100 wh[c][:10] array([ 0,  1,  2,  7,  8, 11, 18, 22, 23, 25])  
+    --
+     deviations above cut 0.0001 num_wh 0 : showing first few 
+     deviations above cut 1e-05 num_wh 39 : showing first few 
+    11 1.5258789e-05 
+    [[  0.3260626   -0.06534123  -0.0131429    0.0012349    0.           0.           0.           0.           0.3260626   -0.06534123  -0.0131429    0.0012349 ]
+     [  0.8373358    0.19576803  -0.5104346    1.           0.          -0.00000004   0.00000006   0.           0.8373358    0.19576807  -0.5104347    1.        ]
+     [ -0.5159417    0.5916958   -0.61943525 173.22609      0.          -0.00000012   0.00000006   0.00001526  -0.5159417    0.5916959   -0.6194353  173.22607   ]]
+    18 3.0517578e-05 
+    [[  0.29626545  -0.05937004  -0.01194184   0.00112155   0.           0.           0.          -0.           0.29626545  -0.05937004  -0.01194184   0.00112155]
+     [  0.8951957    0.41467538  -0.16330601   1.           0.          -0.00000009   0.           0.           0.8951957    0.41467547  -0.16330601   1.        ]
+     [ -0.43823022   0.8857096   -0.153208   277.76993      0.00000003  -0.00000006  -0.00000001  -0.00003052  -0.43823025   0.88570964  -0.15320799 277.76996   ]]
+     deviations above cut 1e-06 num_wh 100 : showing first few 
+    0 7.6293945e-06 
+    [[ 0.05399423 -0.01082016 -0.00217639  0.00020367  0.          0.          0.          0.          0.05399423 -0.01082016 -0.00217639  0.00020367]
+     [ 0.7963178  -0.22455975  0.56165004  1.          0.          0.00000004 -0.00000006  0.          0.7963178  -0.2245598   0.5616501   1.        ]
+     [-0.57103276  0.02715504  0.82047796 79.02767     0.00000006  0.00000003  0.         -0.00000763 -0.5710328   0.02715501  0.82047796 79.02768   ]]
+    1 7.6293945e-06 
+    [[ 0.12812364 -0.0256753  -0.0051644   0.00048381  0.          0.          0.          0.          0.12812364 -0.0256753  -0.0051644   0.00048381]
+     [ 0.89899653  0.34706625  0.26711446  1.         -0.00000006 -0.00000003 -0.00000003  0.          0.8989966   0.34706628  0.2671145   1.        ]
+     [-0.43312532  0.794904    0.42488822 64.74065     0.00000003  0.         -0.00000006 -0.00000763 -0.43312535  0.794904    0.42488828 64.740654  ]]
+    [[[  0.3260626   -0.06534123  -0.0131429    0.0012349 ]
+      [  0.8373358    0.19576803  -0.5104346    1.        ]
+      [ -0.5159417    0.5916958   -0.61943525 173.22609   ]
+      [  0.3260626   -0.06534123  -0.0131429    0.0012349 ]
+      [  0.8373358    0.19576807  -0.5104347    1.        ]
+      [ -0.5159417    0.5916959   -0.6194353  173.22607   ]
+      [  0.           0.           0.           0.        ]
+      [  0.          -0.00000004   0.00000006   0.        ]
+      [  0.          -0.00000012   0.00000006   0.00001526]]
+
+     [[  0.29626545  -0.05937004  -0.01194184   0.00112155]
+      [  0.8951957    0.41467538  -0.16330601   1.        ]
+      [ -0.43823022   0.8857096   -0.153208   277.76993   ]
+      [  0.29626545  -0.05937004  -0.01194184   0.00112155]
+      [  0.8951957    0.41467547  -0.16330601   1.        ]
+      [ -0.43823025   0.88570964  -0.15320799 277.76996   ]
+      [  0.           0.           0.          -0.        ]
+      [  0.          -0.00000009   0.           0.        ]
+      [  0.00000003  -0.00000006  -0.00000001  -0.00003052]]
+
+
+
+
+REVISIT : G4-G4 : 1e-8 level 
+--------------------------------
+
+::
+
+    [blyth@localhost 1]$ ckm-;ckm-so 
+
+     ckm-xx- comparing so.npy and so.npy between two dirs 
+    pwd /home/blyth/local/opticks/geocache/CerenkovMinimal_World_g4live/g4ok_gltf/27d088654714cda61096045ff5eacc02/1
+       Wed May 29 16:33:10 CST 2019
+    a  -rw-rw-r--. 1 blyth blyth 14224 May 29 15:28 source/evt/g4live/natural/-1/so.npy
+    b  -rw-rw-r--. 1 blyth blyth 14224 May 29 15:19 tests/CCerenkovGeneratorTest/so.npy
+    a (221, 4, 4) 
+    b (221, 4, 4) 
+    max deviation 5.9604645e-08 
+     deviations above cut 0.0001 num_wh 0 wh[c][:10] array([], dtype=int64)  
+     deviations above cut 1e-05 num_wh 0 wh[c][:10] array([], dtype=int64)  
+     deviations above cut 1e-06 num_wh 0 wh[c][:10] array([], dtype=int64)  
+     deviations above cut 1e-07 num_wh 0 wh[c][:10] array([], dtype=int64)  
+     deviations above cut 1e-08 num_wh 182 wh[c][:10] array([ 0,  1,  2,  4,  5,  6,  7,  8,  9, 10])  
+    --
+     deviations above cut 0.0001 num_wh 0 : showing first few 
+     deviations above cut 1e-05 num_wh 0 : showing first few 
+     deviations above cut 1e-06 num_wh 0 : showing first few 
+     deviations above cut 1e-07 num_wh 0 : showing first few 
+     deviations above cut 1e-08 num_wh 182 : showing first few 
+    0 1.4901161e-08 
+    [[ 0.05399423 -0.01082016 -0.00217639  0.00020367  0.          0.          0.          0.          0.05399423 -0.01082016 -0.00217639  0.00020367]
+     [ 0.7963178  -0.22455978  0.5616501   1.          0.          0.00000001  0.          0.          0.7963178  -0.2245598   0.5616501   1.        ]
+     [-0.5710328   0.027155    0.82047796 79.02768     0.         -0.00000001  0.          0.         -0.5710328   0.02715501  0.82047796 79.02768   ]]
+    1 5.9604645e-08 
+    [[ 0.12812366 -0.0256753  -0.0051644   0.00048381  0.00000001  0.          0.          0.          0.12812364 -0.0256753  -0.0051644   0.00048381]
+     [ 0.89899653  0.3470663   0.26711452  1.         -0.00000006  0.00000003  0.00000003  0.          0.8989966   0.34706628  0.2671145   1.        ]
+     [-0.43312538  0.794904    0.42488828 64.740654   -0.00000003  0.          0.          0.         -0.43312535  0.794904    0.42488828 64.740654  ]]
+    [[[  0.05399423  -0.01082016  -0.00217639   0.00020367]
+      [  0.7963178   -0.22455978   0.5616501    1.        ]
+      [ -0.5710328    0.027155     0.82047796  79.02768   ]
+      [  0.05399423  -0.01082016  -0.00217639   0.00020367]
+      [  0.7963178   -0.2245598    0.5616501    1.        ]
+      [ -0.5710328    0.02715501   0.82047796  79.02768   ]
+      [  0.           0.           0.           0.        ]
+      [  0.           0.00000001   0.           0.        ]
+      [  0.          -0.00000001   0.           0.        ]]
+
+
+
+
+FIXED : G4-G4 wavelength deviations of genstep 0 at 1e-5 level : now stands at 1e-8 level
+--------------------------------------------------------------------------------------------
 
 * fixed by replacing dp (Pmax-Pmin) whicg dp2 (Pmax2-Pmin2) which 
   avoids loss of precision from difference of two float travelled small numbers

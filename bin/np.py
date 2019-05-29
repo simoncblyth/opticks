@@ -4,6 +4,8 @@ python -c "import numpy as np, sys ; np.set_printoptions(suppress=True) ; print 
 """
 import sys, fnmatch, os, logging, numpy as np, commands
 
+
+
 log = logging.getLogger(__name__)
 
 np.set_printoptions(suppress=True, precision=4, linewidth=200)
@@ -12,6 +14,8 @@ is_txt_ = lambda _:fnmatch.fnmatch(_,"*.txt")
 
 
 from opticks.bin.md5 import digest_
+from opticks.ana.base import stamp_
+
 
 
 def dump_one(a, verbose):
@@ -35,10 +39,6 @@ def dump_tree(base=".", verbose=0):
         for name in filter(is_npy_,sfiles):
             path = os.path.join(root, name)
             a = np.load(path)
-            ## 
-            ##fdig = commands.getoutput("md5 %s" % path).split()[-1]   
-            ## md5 on macOS, md5sum on Linux : so use python for consistency
-            ## 
             fdig = digest_(path)
             print("%40s : %20s : %s " % ( path, repr(a.shape), fdig ))
             if verbose > 0:
@@ -53,7 +53,6 @@ if __name__ == '__main__':
     args = sys.argv[1:]
     verbose = os.environ.get("VERBOSE", 0)
  
-    #log.info("args : %s " % repr(args))
     if len(args) == 1:
         p = args[0]
         if os.path.isdir(p):
@@ -65,7 +64,16 @@ if __name__ == '__main__':
     elif len(args) == 0:
         dump_tree(".", verbose)
     else:
+        log.info("args : %s " % repr(args))
+        for path in filter(is_npy_, args):
+            a = np.load(path)
+            fdig = digest_(path)
+            stmp = stamp_(path)
+            print("%40s : %20s : %s : %s " % ( path, repr(a.shape), fdig, stmp ))
+            if verbose > 0:
+                dump_one(a, verbose)
+            pass
         pass
-
+    pass
         
 

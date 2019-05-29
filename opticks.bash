@@ -1851,3 +1851,11 @@ opticks-cmake-check(){
 opticks-pdoc(){ o ; vi okop/OKOP.rst opticksgeo/OKGEO.rst optixrap/OXRAP.rst thrustrap/THRAP.rst g4ok/G4OK.rst ; }
 
 
+
+opticks-linecount(){
+
+   opticks-scd
+   find . -path ./.hg -prune -o -name '*.*'  | xargs wc -l 
+
+}
+

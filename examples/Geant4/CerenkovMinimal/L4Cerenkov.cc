@@ -67,10 +67,8 @@
 
 #ifdef WITH_OPTICKS
 #include "G4Opticks.hh"
-#include "CTrackInfo.hh"    
-// naughty direct use of CFG4.CTrackInfo 
-// CTrackInfo is a simple struct holding the photon_record_id integer
-// so could be reproduced here (but its just for validation)  
+#include "TrackInfo.hh"    
+// TrackInfo is a simple struct holding the photon_record_id integer
 #endif
 
 
@@ -353,6 +351,7 @@ L4Cerenkov::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
 		// Determine photon energy
 #ifdef WITH_OPTICKS
         unsigned record_id = opticks_photon_offset+i ; 
+        std::cout << "(photon gen loop) " << record_id << std::endl ;
         G4Opticks::GetOpticks()->setAlignIndex(record_id); 
 #endif
 
@@ -464,7 +463,7 @@ L4Cerenkov::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
 
 
 #ifdef WITH_OPTICKS
-        aSecondaryTrack->SetUserInformation(new CTrackInfo( record_id ) );
+        aSecondaryTrack->SetUserInformation(new TrackInfo( record_id ) );
         G4Opticks::GetOpticks()->setAlignIndex(-1); 
 #endif
 

@@ -47,7 +47,7 @@ int main(int argc, char** argv)
     Opticks ok(argc, argv);
     ok.setModeOverride( OpticksMode::CFG4_MODE );  // override the typical COMPUTE/INTEROP , how used ?
 
-    OpticksHub hub(&ok) ; 
+    OpticksHub hub(&ok) ;    // GGeo geometry is loaded in here
     CMaterialLib* clib = new CMaterialLib(&hub);
     clib->convert();
 

@@ -42,7 +42,7 @@ bool BOpticksKey::SetKey(const char* spec)
     if(spec == NULL)
     {
         spec = SSys::getenvvar("OPTICKS_KEY");  
-        LOG(info) << "from OPTICKS_KEY envvar " << spec ; 
+        LOG(LEVEL) << "from OPTICKS_KEY envvar " << spec ; 
     } 
 
     fKey = spec ? new BOpticksKey(spec) : NULL  ; 

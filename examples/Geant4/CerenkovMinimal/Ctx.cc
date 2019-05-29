@@ -6,7 +6,7 @@
 
 #ifdef WITH_OPTICKS
 #include "G4Opticks.hh"
-#include "CTrackInfo.hh"
+#include "TrackInfo.hh"
 #endif
 
 
@@ -105,9 +105,10 @@ void Ctx::setTrackOptical(const G4Track* track)
     const_cast<G4Track*>(track)->UseGivenVelocity(true);
 
 #ifdef WITH_OPTICKS
-    CTrackInfo* info=dynamic_cast<CTrackInfo*>(track->GetUserInformation()); 
+    TrackInfo* info=dynamic_cast<TrackInfo*>(track->GetUserInformation()); 
     assert(info) ; 
     _record_id = info->photon_record_id ;  
+    std::cout << "Ctx::setTrackOptical.setAlignIndex " << _record_id << std::endl ;
     G4Opticks::GetOpticks()->setAlignIndex(_record_id);
 #endif
 }
@@ -115,9 +116,10 @@ void Ctx::setTrackOptical(const G4Track* track)
 void Ctx::postTrackOptical(const G4Track* track)
 {
 #ifdef WITH_OPTICKS
-    CTrackInfo* info=dynamic_cast<CTrackInfo*>(track->GetUserInformation()); 
+    TrackInfo* info=dynamic_cast<TrackInfo*>(track->GetUserInformation()); 
     assert(info) ; 
     assert( _record_id == info->photon_record_id ) ;  
+    std::cout << "Ctx::postTrackOptical " << _record_id << std::endl ;
     G4Opticks::GetOpticks()->setAlignIndex(-1);
 #endif
 }
