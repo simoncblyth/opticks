@@ -33,7 +33,13 @@ ntile_ = lambda vec,N:np.tile(vec, N).reshape(-1, len(vec))
 cross_ = lambda a,b:np.cross(a,b)/np.repeat(vnorm(a),3).reshape(-1,3)/np.repeat(vnorm(b),3).reshape(-1,3)
 norm_ = lambda a:a/np.repeat(vnorm(a), 3).reshape(-1,3)
 
-msk_ = lambda n:(1 << 4*n) - 1  # msk_(0)=0x0 msk_(1)=0xf msk_(2)=0xff msk_(3)=0xfff  
+
+from opticks.ana.nibble import msk_, nib_, make_msk, make_nib
+
+msk = make_msk(16)
+nib = make_nib(16)
+
+
 
 deg = np.pi/180.
 
@@ -569,18 +575,36 @@ class Evt(object):
 
     def init_npoint(self):
         """
+        self.npo[i]
+             number of points for photon index i 
+
+        self.wpo[n]
+             photon indices with for photons with n points (n < 16)
+
+        The wpo and npo are used by rpostn and rposti 
+
+        See ana/nibble.py for exploration of various bit twiddling approaches
+        to counting occupied nibbles
+
         Bit shifting the seqhis to the right by 4,8,12,16,... bits
         and looking for surviving 1s gives all entries with that number of record points
+
         """
         log.debug(" ( init_npoint")
-        wnpoint = odict() 
-        npoint = np.zeros(len(self.seqhis), dtype=np.int32)
-        for i in range(10):
-            wnpoint[i] = np.where( self.seqhis >> (4*i) != 0 )
-            npoint[wnpoint[i]] = i+1 
+
+        x = self.seqhis
+
+        qpo = odict() 
+        wpo = odict() 
+        npo = np.zeros(len(x), dtype=np.int32)
+
+        for i in range(16):
+            qpo[i] = np.where( x >> (4*i) != 0 )
+            npo[qpo[i]] = i+1
+            wpo[i] = np.where( (x & ~msk[i] == 0) & (x & nib[i] != 0) )
         pass
-        self.wnpoint = wnpoint
-        self.npoint = npoint
+        self.wpo = wpo
+        self.npo = npo
         log.debug(" ) init_npoint")
 
 
@@ -1492,14 +1516,17 @@ class Evt(object):
         """
         Returns all step points of photon i 
         """  
-        return self.rpost_(slice(0,self.npoint[i]))[i] 
+        return self.rpost_(slice(0,self.npo[i]))[i] 
 
     def rpostn(self, n):
         """
         Returns record points of all photons with n record points  
+
+        Hmm rpostn(1) giving all ? 
+
         """  
-        wnp = self.wnpoint[n]   # indices of photons with n points
-        return self.rpost_(slice(0,n))[wnp] 
+        wpo = self.wpo[n]   # indices of photons with n points
+        return self.rpost_(slice(0,n))[wpo] 
 
 
 

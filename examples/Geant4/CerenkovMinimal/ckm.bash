@@ -72,6 +72,7 @@ ckm-evpath0(){ echo $TMP/evt/g4live/natural ; }
 ckm-evpath1(){ echo $TMP/evt/g4live/torch ; }    # now moved from TMP inside the keydir ?
 
 ckm-ip(){  ipython --pdb $(which ckm.py) -i $* ; }
+ckm-ipl(){  ipython --pdb $(which ckmplot.py) -i $* ; }
 
 
 ckm-ecd0(){ cd $(ckm-evpath0) ; }

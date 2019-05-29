@@ -7,6 +7,9 @@
 class BRAP_API BBit {
     public:
         static int ffs(int msk);
+        static unsigned long long count_nibbles(unsigned long long x); 
+
+
 
 }; 
 

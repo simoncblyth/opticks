@@ -32,3 +32,38 @@ int BBit::ffs(int i)
 #endif
 
 
+
+/**
+ana/nibble.py:: 
+
+    def count_nibbles(x):
+        """
+        NB: x can be an np.array
+
+        https://stackoverflow.com/questions/38225571/count-number-of-zero-nibbles-in-an-unsigned-64-bit-integer
+        """
+
+        ## gather the zeroness (the OR of all 4 bits)
+        x |= x >> 1               # or-with-1bit-right-shift-self is or-of-each-consequtive-2-bits 
+        x |= x >> 2               # or-with-2bit-right-shift-self is or-of-each-consequtive-4-bits in the lowest slot 
+        x &= 0x1111111111111111   # pluck the zeroth bit of each of the 16 nibbles
+
+        x = (x + (x >> 4)) & 0xF0F0F0F0F0F0F0F    # sum occupied counts of consequtive nibbles, and pluck them 
+        count = (x * 0x101010101010101) >> 56     #  add up byte totals into top byte,  and shift that down to pole 64-8 = 56 
+
+        return count
+**/
+
+unsigned long long BBit::count_nibbles(unsigned long long x)
+{
+    x |= x >> 1 ;
+    x |= x >> 2 ;
+    x &= 0x1111111111111111ull ; 
+
+    x = (x + (x >> 4)) & 0xF0F0F0F0F0F0F0Full ; 
+
+    unsigned long long count = (x * 0x101010101010101ull) >> 56 ; 
+    return count ; 
+}
+
+

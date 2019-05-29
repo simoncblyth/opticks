@@ -21,7 +21,7 @@ from opticks.ana.evt import Evt
 
 
 
-def plot(evt, fig, rec=True, ox=False, mesh=True):
+def plot(evt, fig, rposti=False, rpostn=True, ox=False, mesh=True):
     """
     This will not work for millions of photons like Opticks geometry shaders do
     but handy anyway for an alternative interface to the record points 
@@ -38,7 +38,7 @@ def plot(evt, fig, rec=True, ox=False, mesh=True):
         pass
     pass
 
-    if rec:
+    if rposti:
         for i in range(min(300, len(evt.seqhis))):
             xyzt = evt.rposti(i) 
             x = xyzt[:,0]
@@ -47,6 +47,21 @@ def plot(evt, fig, rec=True, ox=False, mesh=True):
             ax.plot(x, y, z )
         pass
     pass
+
+    if rpostn:
+        for n in range(16):  
+            rpn = evt.rpostn(n)
+            if len(rpn) == 0:continue
+            for i in range(n-1):
+                x = rpn[:,i,0]
+                y = rpn[:,i,1]
+                z = rpn[:,i,2]
+                u = rpn[:,i+1,0] - rpn[:,i,0]
+                v = rpn[:,i+1,1] - rpn[:,i,1]
+                w = rpn[:,i+1,2] - rpn[:,i,2]
+                ax.quiver(x, y, z, u, v, w )
+            pass
+        pass
 
     if ox:
         xs = evt.ox[:,0,0]
