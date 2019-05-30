@@ -1754,7 +1754,7 @@ void OpticksEvent::saveSourceData(NPY<float>* so) const
 
 void OpticksEvent::makeReport(bool verbose)
 {
-    LOG(info) << "OpticksEvent::makeReport " << getTagDir()  ; 
+    LOG(info) << "tagdir " << getTagDir()  ; 
 
     if(verbose)
     m_parameters->dump();

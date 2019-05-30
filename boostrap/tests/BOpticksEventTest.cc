@@ -70,7 +70,6 @@ void test_notag()
 }
 
 
-/*
 void test_srctagdir()
 {
     // needs resources loaded which is done from okc- : so cannot test at this level
@@ -83,16 +82,15 @@ void test_srctagdir()
     LOG(info) << p ; 
 
 }
-*/
 
 
 int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv);
 
-/*
     BOpticksResource res ; 
     res.Summary();
+/*
 
     BOpticksEventTest oet ; 
     oet.check_base_override( "det",   "source","tag", "stem", "ext") ;
@@ -103,7 +101,7 @@ int main(int argc, char** argv)
 
     test_notag();
 */
-    //test_srctagdir(); 
+    test_srctagdir(); 
 
 
     return 0 ; 

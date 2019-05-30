@@ -9,9 +9,13 @@
 
 
 OpticksDomain::OpticksDomain()
-          :
-          m_fdom(NULL),
-          m_idom(NULL)
+    :
+    m_fdom(NULL),
+    m_idom(NULL),
+    m_space_domain(0.f,0.f,0.f,0.f),
+    m_time_domain(0.f,0.f,0.f,0.f),
+    m_wavelength_domain(0.f,0.f,0.f,0.f),
+    m_settings(0,0,0,0)
 {
     init();
 }
