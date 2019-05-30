@@ -31,6 +31,7 @@ CGenerator::CGenerator(OpticksGen* gen, CG4* g4)
     m_cfg(m_ok->getCfg()),
     m_g4(g4),
     m_source_code(m_gen->getSourceCode()),
+    m_source_type(OpticksFlags::SourceType(m_source_code)),
     m_gensteps(NULL),
     m_dynamic(true),
     m_num_g4evt(1),
@@ -48,8 +49,6 @@ void CGenerator::init()
 
 CSource* CGenerator::initSource(unsigned code)
 {
-    const char* sourceType = OpticksFlags::SourceType(code);
-
     CSource* source = NULL ;  
 
     if(     code == G4GUN)      source = initG4GunSource();
@@ -62,7 +61,7 @@ CSource* CGenerator::initSource(unsigned code)
 
     LOG(fatal) 
         << " code " << code
-        << " type " << sourceType
+        << " type " << m_source_type
         << " " << ( m_dynamic ? "DYNAMIC" : "STATIC" ) 
         ; 
 
@@ -71,6 +70,7 @@ CSource* CGenerator::initSource(unsigned code)
 
 
 unsigned CGenerator::getSourceCode() const { return m_source_code ; }
+const char* CGenerator::getSourceType() const { return m_source_type ; }
 CSource* CGenerator::getSource() const { return m_source ; }
 unsigned CGenerator::getNumG4Event() const { return m_num_g4evt ;  }
 unsigned CGenerator::getNumPhotonsPerG4Event() const { return m_photons_per_g4evt ;  }
@@ -101,9 +101,10 @@ void CGenerator::configureEvent(OpticksEvent* evt)
 {
    if(hasGensteps())
    {
-        LOG(info) << "CGenerator:configureEvent"
-                  << " fabricated TORCH genstep (STATIC RUNNING) "
-                  ;
+        LOG(info) 
+            << " pre-existing gensteps (STATIC RUNNING) "
+            << " type " << m_source_type
+            ;
 
         evt->setNumG4Event(getNumG4Event());
         evt->setNumPhotonsPerG4Event(getNumPhotonsPerG4Event()) ; 

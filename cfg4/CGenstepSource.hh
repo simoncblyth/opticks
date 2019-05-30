@@ -75,6 +75,7 @@ class CFG4_API CGenstepSource: public CSource
         unsigned getNumGenstepsPerG4Event() const ; 
         unsigned getNumG4Event() const ;
         G4VParticleChange* generatePhotonsFromOneGenstep();
+        unsigned getCurrentGencode() const ;  
     public:
         void GeneratePrimaryVertex(G4Event *event);    // G4VPrimaryGenerator interface
     private:

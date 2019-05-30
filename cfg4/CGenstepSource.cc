@@ -26,6 +26,7 @@
 #include "CCerenkovGenerator.hh"
 #include "CGenstepSource.hh"
 #include "C4PhotonCollector.hh"
+#include "CEventInfo.hh"
 
 #include "STranche.hh"
 #include "PLOG.hh"
@@ -64,13 +65,42 @@ NPY<float>* CGenstepSource::getSourcePhotons() const
 
 void CGenstepSource::GeneratePrimaryVertex(G4Event *event) 
 {
+    std::vector<unsigned> gencodes ; 
+
     for(unsigned i=0 ; i < m_num_genstep_per_g4event ; i++ )
     {
         if( m_idx == m_num_genstep ) break ;    // all gensteps done
+
+        unsigned gencode = getCurrentGencode() ;
+
+        // collect unique gencodes  
+        if(std::find(gencodes.begin(), gencodes.end(), gencode ) == gencodes.end() ) gencodes.push_back(gencode) ;  
+
         G4VParticleChange* pc = generatePhotonsFromOneGenstep() ; 
+
         addPrimaryVertices( event, pc ); 
     }
+
+    assert( gencodes.size() == 1 && "expecting only a single type of gencode within each G4Event" ); 
+
+    unsigned event_gencode = gencodes[0] ; 
+
+    LOG(info)
+        << " event_gencode " << event_gencode
+        << " : " << OpticksFlags::Flag(event_gencode)
+        ; 
+
+    event->SetUserInformation( new CEventInfo(event_gencode)) ;   
+
     m_generate_count += 1 ; 
+}
+
+
+
+unsigned CGenstepSource::getCurrentGencode() const 
+{
+    unsigned gencode = m_gs->getGencode(m_idx) ; 
+    return gencode ; 
 }
 
 
@@ -86,7 +116,7 @@ each individual genstep is always of one particular type.
 G4VParticleChange* CGenstepSource::generatePhotonsFromOneGenstep()
 {
     assert( m_idx < m_num_genstep ); 
-    unsigned gencode = m_gs->getGencode(m_idx) ; 
+    unsigned gencode = getCurrentGencode() ; 
     LOG(info)
         << " gencode " << gencode
         << " OpticksFlags::Flag(gencode) " << OpticksFlags::Flag(gencode)
@@ -113,6 +143,7 @@ G4VParticleChange* CGenstepSource::generatePhotonsFromOneGenstep()
     m_photon_collector->collectSecondaryPhotons( pc, m_idx );  // "Secondary" : but this makes them primary 
 
     m_idx += 1 ; 
+
     return pc ; 
 }
 

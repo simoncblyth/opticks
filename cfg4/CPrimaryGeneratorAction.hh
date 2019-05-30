@@ -16,6 +16,7 @@ CPrimaryGeneratorAction
 =========================
 
 Main method *GeneratePrimaries* invoked by Geant4 beamOn within CG4::propagate
+invokes CSource::GeneratePrimaryVertex(G4Event*)
 
 **/
 

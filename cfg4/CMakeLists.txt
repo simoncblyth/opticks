@@ -26,6 +26,7 @@ set(SOURCES
     DsPhotonTrackInfo.cc
     DsG4CompositeTrackInfo.cc
     CTrackInfo.cc
+    CEventInfo.cc
 
     CCerenkov.cc
     G4Cerenkov1042.cc
@@ -158,6 +159,7 @@ set(HEADERS
     DsPhotonTrackInfo.h
     DsG4CompositeTrackInfo.h
     CTrackInfo.hh
+    CEventInfo.hh
 
     CCerenkov.hh
     G4Cerenkov1042.hh

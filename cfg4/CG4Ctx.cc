@@ -12,6 +12,7 @@
 #include "CProcessManager.hh"
 #include "CTrack.hh"
 #include "CG4Ctx.hh"
+#include "CEventInfo.hh"
 
 #include "PLOG.hh"
 
@@ -145,19 +146,15 @@ void CG4Ctx::initEvent(const OpticksEvent* evt)
     _bounce_max = evt->getBounceMax();
 
     const char* typ = evt->getTyp();
-    _gen = OpticksFlags::SourceCode(typ);
+    //  _gen = OpticksFlags::SourceCode(typ);   MOVED TO FINER LEVEL OF BELOW setEvent 
 
     LOG(info) << "CG4Ctx::initEvent"
               << " _record_max (numPhotons from genstep summation) " << _record_max 
               << " photons_per_g4event " << _photons_per_g4event
               << " steps_per_photon " << _steps_per_photon
               << " typ " << typ
-              << " gen " << _gen
-              << " SourceType " << OpticksFlags::SourceType(_gen)
               ;
 
-    //assert( _gen == TORCH || _gen == G4GUN || _gen == NATURAL );  // what is needed to add NATURAL ?
-    assert( _gen == TORCH || _gen == G4GUN || _gen == CERENKOV || _gen == SCINTILLATION );
 }
 
 std::string CG4Ctx::desc_event() const 
@@ -175,10 +172,6 @@ std::string CG4Ctx::desc_event() const
 
 
 
-
-
-
-
 void CG4Ctx::setEvent(const G4Event* event) // invoked by CEventAction::setEvent
 {
     _event = const_cast<G4Event*>(event) ; 
@@ -186,6 +179,19 @@ void CG4Ctx::setEvent(const G4Event* event) // invoked by CEventAction::setEvent
 
     _event_total += 1 ; 
     _event_track_count = 0 ; 
+
+
+    CEventInfo* eui = (CEventInfo*)event->GetUserInformation(); 
+    assert(eui && "expecting event UserInfo set by eg CGenstepSource "); 
+
+    _gen = eui->gencode ;
+
+    LOG(info) 
+        << " gen " << _gen
+        << " SourceType " << OpticksFlags::SourceType(_gen)
+        ;
+
+    assert( _gen == TORCH || _gen == G4GUN || _gen == CERENKOV || _gen == SCINTILLATION );
 }
 
 void CG4Ctx::setTrack(const G4Track* track) // invoked by CTrackingAction::setTrack

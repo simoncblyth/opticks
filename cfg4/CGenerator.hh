@@ -50,6 +50,7 @@ class CFG4_API CGenerator
        void        configureEvent(OpticksEvent* evt);
    public:
        unsigned    getSourceCode() const ;
+       const char* getSourceType() const ;
        CSource*    getSource() const ;
        bool        isDynamic() const ;
        unsigned    getNumG4Event() const ;
@@ -77,6 +78,7 @@ class CFG4_API CGenerator
        CG4*                  m_g4 ; 
    private:
        unsigned              m_source_code ; 
+       const char*           m_source_type ; 
        NPY<float>*           m_gensteps ; 
        bool                  m_dynamic ; 
        unsigned              m_num_g4evt ; 

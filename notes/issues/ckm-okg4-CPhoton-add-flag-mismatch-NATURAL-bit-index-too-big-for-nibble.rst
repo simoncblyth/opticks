@@ -4,15 +4,28 @@ ckm-okg4-CPhoton-add-flag-mismatch-NATURAL-bit-index-too-big-for-nibble
 
 Context :doc:`ckm-okg4-material-rindex-mismatch`
 
-::
+
+FIXED
+-------
+
+* solution was to change how the gencode is communicated using 
+  Geant4 UserInformation on the G4Event to pass the gencode between the 
+  generation and propagation
+
+
+Issue : flag mismatch in propagation recording
+--------------------------------------------------------------
+
+* the problem was preemptive nibble truncation
+  due to too large NATURAL ffs bit index   
+
+
+ckm-okg4::
 
     ckm-okg4 () 
     { 
         OPTICKS_KEY=$(ckm-key) $(ckm-dbg) OKG4Test --compute --envkey --embedded --save --natural
     }
-
-
-ckm-okg4::
 
     2019-05-30 15:17:15.149 INFO  [445621] [SLog::operator@28]  ) OKPropagator::OKPropagator  DONE
     2019-05-30 15:17:15.149 INFO  [445621] [SLog::operator@28]  ) OKG4Mgr::OKG4Mgr  DONE
@@ -168,6 +181,12 @@ CRecorder.cc::
 
 CAUSE : expecting CERENKOV but getting NATURAL 
 ---------------------------------------------------
+
+* not quite, the problem was preemptive nibble truncation
+  due to too large NATURAL ffs bit index   
+
+* solution was to change how the gencode is communicated
+
 
 :: 
 
@@ -345,6 +364,25 @@ Multiple genstep of different types per event ?
      46 {   
      47     init();
      48 }      
+
+
+
+
+Need to communicate the generator code from generation to propagation
+------------------------------------------------------------------------
+
+
+Seems very wasteful to give every photon G4Track UseInfo with the "sourcecode".
+BUT as this is a pure optical environment and are at liberty to split up the photons
+into separate G4Event convenient, can arrange one genstep per G4Event and set the
+genstep type in event UserInfo
+
+ 
+Used Geant4 UserInformation mechanism with CEventInfo to communicate the gencode 
+between generation in CGenstepSource::GeneratePrimaryVertex and propagation 
+recording in CG4Ctx::setEvent. 
+
+
 
 
 

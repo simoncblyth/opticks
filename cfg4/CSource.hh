@@ -21,6 +21,16 @@ The specialized prime method GeneratePrimaryVertex
 is invoked from CPrimaryGeneratorAction::GeneratePrimaries
 by the Geant4 framework.
 
+::
+
+    [blyth@localhost cfg4]$ grep public\ CSource *.hh
+    CGenstepSource.hh     :class CFG4_API CGenstepSource: public CSource
+    CGunSource.hh         :class CFG4_API CGunSource: public CSource
+    CInputPhotonSource.hh :class CFG4_API CInputPhotonSource: public CSource
+    CPrimarySource.hh     :class CFG4_API CPrimarySource: public CSource
+    CTorchSource.hh       :class CFG4_API CTorchSource: public CSource
+
+
 **/
 
 #include "G4VPrimaryGenerator.hh"
