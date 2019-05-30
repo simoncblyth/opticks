@@ -18,6 +18,7 @@ the standardized domain properties from the Opticks GMaterialLib
 class X4_API X4MaterialLib
 {
     public:
+        static void Standardize(); 
         static void Standardize( G4MaterialTable* mtab, const GMaterialLib* mlib ); 
     public:
         X4MaterialLib(G4MaterialTable* mtab,  const GMaterialLib* mlib) ; 

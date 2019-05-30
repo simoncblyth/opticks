@@ -20,9 +20,8 @@ class CSensitiveDetector ;
 CGeometry
 ===========
 
-1. init with CTestDetector or CGDMLDetector
+1. init with CGDMLDetector or CTestDetector when using "--test" option 
 2. relies on creator(CG4) to call CGeometry::hookup(CG4* g4) giving the geometry to Geant4 
-
 
 
 **/

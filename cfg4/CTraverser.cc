@@ -56,41 +56,41 @@ void CTraverser::init()
 }
 
 
-unsigned int CTraverser::getNumMaterials()
+unsigned int CTraverser::getNumMaterials() const 
 {
    return m_materials.size();
 }
-unsigned int CTraverser::getNumSelected()
+unsigned int CTraverser::getNumSelected() const 
 {
    return m_selection.size();
 }
 
-unsigned int CTraverser::getNumMaterialsWithoutMPT()
+unsigned int CTraverser::getNumMaterialsWithoutMPT() const 
 {
    return m_materials_without_mpt.size();
 }
-const G4Material* CTraverser::getMaterial(unsigned int index)
+const G4Material* CTraverser::getMaterial(unsigned index) const 
 {
-   return m_materials[index];
+   return m_materials.at(index);
 }
-G4Material* CTraverser::getMaterialWithoutMPT(unsigned int index)
+G4Material* CTraverser::getMaterialWithoutMPT(unsigned index) const
 {
-   return m_materials_without_mpt[index];
+   return m_materials_without_mpt.at(index);
 }
 void CTraverser::setVerbosity(unsigned int verbosity)
 {
     m_verbosity = verbosity ; 
 }
 
-NPY<float>* CTraverser::getGlobalTransforms()
+NPY<float>* CTraverser::getGlobalTransforms() const 
 {
     return m_gtransforms ; 
 }
-NPY<float>* CTraverser::getLocalTransforms()
-{
+NPY<float>* CTraverser::getLocalTransforms() const
+{ 
     return m_ltransforms ; 
 }
-NPY<float>* CTraverser::getCenterExtent()
+NPY<float>* CTraverser::getCenterExtent() const
 {
     return m_center_extent  ; 
 }
@@ -101,7 +101,7 @@ NPY<float>* CTraverser::getCenterExtent()
 
 
 
-void CTraverser::Summary(const char* msg)
+void CTraverser::Summary(const char* msg) const
 {
     LOG(info) << msg 
               << " numMaterials " << getNumMaterials() 
@@ -110,7 +110,7 @@ void CTraverser::Summary(const char* msg)
 }
 
 
-std::string CTraverser::description()
+std::string CTraverser::description() const
 {   
     std::stringstream ss ; 
 
@@ -244,7 +244,7 @@ void CTraverser::AncestorVisit(std::vector<const G4VPhysicalVolume*> ancestors, 
 
 
 
-void CTraverser::dumpLV(const char* msg)
+void CTraverser::dumpLV(const char* msg) const
 {
     LOG(info) << msg ; 
     typedef std::map<std::string, const G4LogicalVolume*> SV ; 
@@ -293,21 +293,21 @@ void CTraverser::updateBoundingBox(const G4VSolid* solid, const G4Transform3D& t
 
 
 
-unsigned CTraverser::getNumPV()
+unsigned CTraverser::getNumPV() const
 {
     return m_pvs.size();
 }
 
-const G4VPhysicalVolume* CTraverser::getTop()
+const G4VPhysicalVolume* CTraverser::getTop() const
 {
     return m_top ; 
 }
-const G4VPhysicalVolume* CTraverser::getPV(unsigned index)
+const G4VPhysicalVolume* CTraverser::getPV(unsigned index) const
 {
-    return index < m_pvs.size() ? m_pvs[index] : NULL ;  
+    return index < m_pvs.size() ? m_pvs.at(index) : NULL ;  
 }
 
-const G4VPhysicalVolume* CTraverser::getPV(const char* name)
+const G4VPhysicalVolume* CTraverser::getPV(const char* name) const
 {
     int index = BStr::index_first(m_pvnames, name) ;
 
@@ -343,33 +343,33 @@ const G4VPhysicalVolume* CTraverser::getPV(const char* name)
 
 
 
-unsigned CTraverser::getNumLV()
+unsigned CTraverser::getNumLV() const
 {
     return m_lvs.size();
 }
-const G4LogicalVolume* CTraverser::getLV(unsigned index)
+const G4LogicalVolume* CTraverser::getLV(unsigned index) const
 {
-    return index < m_lvs.size() ? m_lvs[index] : NULL ;  
+    return index < m_lvs.size() ? m_lvs.at(index) : NULL ;  
 }
 
-const G4LogicalVolume* CTraverser::getLV(const char* name)
+const G4LogicalVolume* CTraverser::getLV(const char* name) const
 {
-   return m_lvm.count(name) == 1 ? m_lvm[name] : NULL ; 
+   return m_lvm.count(name) == 1 ? m_lvm.at(name) : NULL ; 
 }
 
 
 
 
 
-glm::mat4 CTraverser::getGlobalTransform(unsigned int index)
+glm::mat4 CTraverser::getGlobalTransform(unsigned int index) const
 {
     return m_gtransforms->getMat4(index);
 }
-glm::mat4 CTraverser::getLocalTransform(unsigned int index)
+glm::mat4 CTraverser::getLocalTransform(unsigned int index) const
 {
     return m_ltransforms->getMat4(index);
 }
-glm::vec4 CTraverser::getCenterExtent(unsigned int index)
+glm::vec4 CTraverser::getCenterExtent(unsigned int index) const
 {
     return m_center_extent->getQuad(index);
 }
@@ -377,20 +377,20 @@ glm::vec4 CTraverser::getCenterExtent(unsigned int index)
 
 
 
-unsigned int CTraverser::getNumGlobalTransforms()
+unsigned int CTraverser::getNumGlobalTransforms() const
 {
     return m_gtransforms->getShape(0);
 }
-unsigned int CTraverser::getNumLocalTransforms()
+unsigned int CTraverser::getNumLocalTransforms() const
 {
     return m_ltransforms->getShape(0);
 }
 
 
 
-const char* CTraverser::getPVName(unsigned int index)
+const char* CTraverser::getPVName(unsigned int index) const
 {
-    return m_pvnames[index].c_str();
+    return m_pvnames.at(index).c_str();
 }
 
 
@@ -537,12 +537,12 @@ void CTraverser::Visit(const G4LogicalVolume* const lv)
 }
 
 
-bool CTraverser::hasMaterial(const G4Material* material)
+bool CTraverser::hasMaterial(const G4Material* material) const
 {
      return std::find(m_materials.begin(), m_materials.end(), material) != m_materials.end()  ;
 }
 
-bool CTraverser::hasMaterialWithoutMPT(G4Material* material)
+bool CTraverser::hasMaterialWithoutMPT(G4Material* material) const
 {
      return std::find(m_materials_without_mpt.begin(), m_materials_without_mpt.end(), material) != m_materials_without_mpt.end()  ;
 }
@@ -568,7 +568,7 @@ void CTraverser::addMaterialWithoutMPT(G4Material* material)
 
 
 
-unsigned CTraverser::getNumSurfaces()
+unsigned CTraverser::getNumSurfaces() const
 {
    return 0 ;
 }
@@ -590,12 +590,12 @@ void CTraverser::addOpticalSurface(const G4OpticalSurface*)
 
 
 
-void CTraverser::dumpMaterials(const char* msg)
+void CTraverser::dumpMaterials(const char* msg) const
 {
     LOG(info) << msg ; 
     for(unsigned int i=0 ; i < m_materials.size() ; i++)
     {
-        const G4Material* material = m_materials[i];
+        const G4Material* material = m_materials.at(i);
         dumpMaterial(material);
     } 
 }
@@ -629,7 +629,7 @@ void CTraverser::createGroupVel()
 }
 
 
-void CTraverser::dumpMaterial(const G4Material* material)
+void CTraverser::dumpMaterial(const G4Material* material) const
 {
     LOG(info) << material->GetName() ;
     G4MaterialPropertiesTable* mpt = material->GetMaterialPropertiesTable();
@@ -656,7 +656,7 @@ void CTraverser::dumpMaterial(const G4Material* material)
 }
 
 
-void CTraverser::dumpMaterialProperty(const G4String& name, const G4MaterialPropertyVector* pvec)
+void CTraverser::dumpMaterialProperty(const G4String& name, const G4MaterialPropertyVector* pvec) const
 {
     unsigned int len = pvec->GetVectorLength() ;
 

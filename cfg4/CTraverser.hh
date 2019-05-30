@@ -66,13 +66,13 @@ class CFG4_API CTraverser {
         void Traverse();
         void createGroupVel();
         void setVerbosity(unsigned int verbosity);
-        void Summary(const char* msg="CTraverser::Summary"); 
-        std::string description();
+        void Summary(const char* msg="CTraverser::Summary") const ; 
+        std::string description() const ;
     private:
          void AncestorTraverse();
          void VolumeTreeTraverse();
     public:
-        unsigned int getNumSurfaces();
+        unsigned int getNumSurfaces() const ;
     private:
         // these surface methods are not implemented, they just assert
         void addBorderSurface(const G4LogicalBorderSurface*);
@@ -80,35 +80,35 @@ class CFG4_API CTraverser {
         void addOpticalSurface(const G4OpticalSurface*);
     public:
         // TODO: split material collection into another class ?
-        void     dumpMaterials(const char* msg="CTraverser::dumpMaterials");
-        void     dumpLV(const char* msg="CTraverser::dumpLV");
-        unsigned getNumMaterials();
-        unsigned getNumMaterialsWithoutMPT();
+        void     dumpMaterials(const char* msg="CTraverser::dumpMaterials") const ;
+        void     dumpLV(const char* msg="CTraverser::dumpLV") const ;
+        unsigned getNumMaterials() const ;
+        unsigned getNumMaterialsWithoutMPT() const ;
     public:
-        const G4Material* getMaterial(unsigned int index);
-        G4Material*       getMaterialWithoutMPT(unsigned int index);
+        const G4Material* getMaterial(unsigned int index) const ;
+        G4Material*       getMaterialWithoutMPT(unsigned int index) const ;
     public:
-        const char*  getPVName(unsigned int index);
-        glm::mat4    getGlobalTransform(unsigned int index);
-        glm::mat4    getLocalTransform(unsigned int index);
-        glm::vec4    getCenterExtent(unsigned int index);
+        const char*  getPVName(unsigned int index) const ;
+        glm::mat4    getGlobalTransform(unsigned int index) const ;
+        glm::mat4    getLocalTransform(unsigned int index) const ;
+        glm::vec4    getCenterExtent(unsigned int index) const ;
 
     public:
-        unsigned getNumPV();
-        unsigned getNumLV();
-        const G4VPhysicalVolume* getTop(); 
-        const G4VPhysicalVolume* getPV(const char* name); // find index from m_pvnames, then use below
-        const G4VPhysicalVolume* getPV(unsigned index); // index lookup of m_pvs vector
-        const G4LogicalVolume*   getLV(unsigned index); // index lookup of m_lvs vector
-        const G4LogicalVolume*   getLV(const char* name);
+        unsigned getNumPV() const ;
+        unsigned getNumLV() const ; 
+        const G4VPhysicalVolume* getTop() const ; 
+        const G4VPhysicalVolume* getPV(const char* name) const ; // find index from m_pvnames, then use below
+        const G4VPhysicalVolume* getPV(unsigned index) const ; // index lookup of m_pvs vector
+        const G4LogicalVolume*   getLV(unsigned index) const ; // index lookup of m_lvs vector
+        const G4LogicalVolume*   getLV(const char* name) const ;
     public:
-        NPY<float>*  getGlobalTransforms();
-        NPY<float>*  getLocalTransforms();
-        NPY<float>*  getCenterExtent();
+        NPY<float>*  getGlobalTransforms() const ;
+        NPY<float>*  getLocalTransforms() const ;
+        NPY<float>*  getCenterExtent() const ;
     public:
-        unsigned getNumGlobalTransforms();
-        unsigned getNumLocalTransforms();
-        unsigned getNumSelected();
+        unsigned getNumGlobalTransforms() const ;
+        unsigned getNumLocalTransforms() const ;
+        unsigned getNumSelected() const ;
     private:
         void collectTransformT(NPY<float>* buffer, const G4Transform3D& T);
         void collectTransform(NPY<float>* buffer, const G4Transform3D& T);
@@ -122,13 +122,14 @@ class CFG4_API CTraverser {
         void Visit(const G4LogicalVolume* const lv);
         void VisitPV(const G4VPhysicalVolume* const pv, const G4Transform3D& T );
 
-        bool hasMaterial(const G4Material* material) ; 
-        void addMaterial(const G4Material* material) ; 
-        void dumpMaterial(const G4Material* material);
-        void dumpMaterialProperty(const G4String& name, const G4MaterialPropertyVector* pvec);
     private:
-        bool hasMaterialWithoutMPT(G4Material* material) ; 
+        void addMaterial(const G4Material* material) ; 
         void addMaterialWithoutMPT(G4Material* material) ; 
+    private:
+        bool hasMaterial(const G4Material* material) const ; 
+        bool hasMaterialWithoutMPT(G4Material* material) const ; 
+        void dumpMaterial(const G4Material* material) const ;
+        void dumpMaterialProperty(const G4String& name, const G4MaterialPropertyVector* pvec) const ;
     private:
         Opticks*                       m_ok ; 
         G4VPhysicalVolume*             m_top ; 

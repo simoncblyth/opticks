@@ -7,6 +7,8 @@ OKG4Mgr
 Highest level manager class for full featured 
 Opticks running with Geant4 embedded. 
 
+When "--load" option is not used OKG4Mgr holds a CG4 instance.
+
 **/
 
 

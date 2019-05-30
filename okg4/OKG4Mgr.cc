@@ -29,6 +29,39 @@ int OKG4Mgr::rc() const
     return m_ok->rc();
 }
 
+/**
+OKG4Mgr::OKG4Mgr
+------------------
+
+m_hub(OpticksHub)
+    loads geometry from geocache into GGeo 
+
+m_g4(CG4)
+    when "--load" option is NOT used (TODO:change "--load" to "--loadevent" ) 
+    geometry is loaded from GDML into Geant4 model by CGeometry/CGDMLDetector
+    The .gdml file was persisted into geocache at its creation, from
+    G4Opticks::translateGeometry with CGDML::Export prior to populating GGeo
+
+m_viz(OpticksViz)
+    when "--compute" option is NOT used instanciate from m_hub    
+
+
+Note frailty of having two sources of geometry here. I recall previous
+bi-simulation matching activity where I avoided this by creating the Geant4 geometry 
+from the Opticks one : but I think that was just for simple test geometries. 
+
+Of course the geocache was created from the same initial source Geant4 geometry,
+but still this means more layers of code, but its inevitable for bi-simulation
+which is the point of OKG4Mgr. 
+
+*Perhaps a more direct way...*
+
+Hmm do I need OKX4Mgr ?  To encapsulate whats done in OKX4Test and make it reusable.
+That starts from GDML uses G4GDMLParser to get G4VPhysicalVolume 
+does the direct X4 conversion to populate a GGeo, persists to cache and 
+then uses OKMgr to pop the geometry up to GPU for propagation.
+ 
+**/
 
 OKG4Mgr::OKG4Mgr(int argc, char** argv) 
     :

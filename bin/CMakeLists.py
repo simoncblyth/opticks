@@ -22,6 +22,15 @@ class CMakeLists(object):
    find_ptn = re.compile("^find_package\((?P<findargs>.*)\).*")
    obo_txt = "include(OpticksBuildOptions)"
 
+   @classmethod
+   def HasOpticksBuildOptions(cls, lines): 
+       obo_found = False
+       for line in lines:
+           if line.startswith(cls.obo_txt):
+               obo_found = True 
+           pass
+       return obo_found
+
    def __init__(self, lines, reldir=None, path=None, tag=None):
        self.lines = lines 
        self.reldir = reldir
@@ -116,6 +125,13 @@ class Opticks(object):
                 path = os.path.join(dirpath, CMakeLists.NAME)
                 tag = cls.find_export_tag(names)
                 lines = map(str.strip, file(path,"r").readlines() ) 
+
+                has_obo = CMakeLists.HasOpticksBuildOptions(lines)
+                if not has_obo:
+                    log.info("skipping %s as does not have OpticksBuildOptions" % path )
+                    continue
+                pass
+
                 ls = CMakeLists(lines, reldir=reldir, path=path, tag=tag)
                 pkgs[ls.name] = ls
                 #print path

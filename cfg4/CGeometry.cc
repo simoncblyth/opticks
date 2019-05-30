@@ -36,6 +36,15 @@ const std::map<std::string, unsigned>& CGeometry::getMaterialMap() const
     return m_material_table->getMaterialMap();
 }
 
+
+/**
+CGeometry::CGeometry
+----------------------
+
+
+
+**/
+
 CGeometry::CGeometry(OpticksHub* hub, CSensitiveDetector* sd) 
     :
     m_hub(hub),

@@ -48,7 +48,8 @@ class GGEO_API GItemList : public NSequence {
        bool operator()(const std::string& a_, const std::string& b_);
        void setOrder(std::map<std::string, unsigned int>& order);
        void sort();
-
+   public:
+       void getCurrentOrder( std::map<std::string, unsigned int>& order );
    private:
        void save_(const char* txtpath);
        void read_(const char* txtpath);

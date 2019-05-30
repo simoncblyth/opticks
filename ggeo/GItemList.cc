@@ -176,6 +176,15 @@ void GItemList::setOrder(std::map<std::string, unsigned int>& order)
 }
 
 
+void GItemList::getCurrentOrder( std::map<std::string, unsigned int>& order )
+{
+    for(unsigned i=0 ; i < m_list.size() ; i++)
+    {
+        const std::string& k = m_list[i] ; 
+        order[k] = i ; 
+    }
+} 
+
 
 
 

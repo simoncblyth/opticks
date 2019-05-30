@@ -131,6 +131,8 @@ class GGEO_API GPropertyLib {
     public:
         //void setOrder(std::map<std::string, unsigned int>& order);
         std::map<std::string, unsigned int>& getOrder(); 
+    public:
+        void getCurrentOrder(std::map<std::string, unsigned>& order ) ; 
     private:
         void init();
         void initOrder();

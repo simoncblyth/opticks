@@ -357,6 +357,11 @@ std::map<unsigned int, std::string> GPropertyLib::getNamesMap()
     return m_attrnames->getNamesMap() ; 
 }
 
+void GPropertyLib::getCurrentOrder(std::map<std::string, unsigned>& order ) 
+{
+    assert(m_names);
+    m_names->getCurrentOrder(order); 
+}
 
 
 std::string GPropertyLib::getCacheDir()

@@ -205,7 +205,12 @@ GGeo* G4Opticks::translateGeometry( const G4VPhysicalVolume* top )
 G4Opticks::standardizeGeant4MaterialProperties
 -----------------------------------------------
 
-Standardize G4 material properties to use the Opticks standard domain 
+Invoked by G4Opticks::setGeometry when argument requests.
+
+Standardize G4 material properties to use the Opticks standard domain, 
+this works by replacing existing Geant4 MPT 
+with one converted from the Opticks property map, which are 
+standardized on material collection.
 
 **/
 

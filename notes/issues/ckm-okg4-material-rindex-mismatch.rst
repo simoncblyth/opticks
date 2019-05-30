@@ -1,6 +1,16 @@
 ckm-okg4-material-rindex-mismatch
 ======================================
 
+ckm-okg4
+-----------
+
+::
+
+    ckm-okg4 () 
+    { 
+        OPTICKS_KEY=$(ckm-key) $(ckm-dbg) OKG4Test --compute --envkey --embedded --save --natural
+    }
+
 
 
 Issue : material energy range persisted in the genstep mismatches that read from the G4 material, tripping an assert
@@ -44,17 +54,8 @@ Issue : material energy range persisted in the genstep mismatches that read from
 
 
 
-ckm-okg4
------------
-
-::
-
-    ckm-okg4 () 
-    { 
-        OPTICKS_KEY=$(ckm-key) $(ckm-dbg) OKG4Test --compute --envkey --embedded --save --natural
-    }
-
-
+OKG4Test
+------------
 
 ::
 
@@ -132,5 +133,331 @@ ckm-okg4
     (gdb) p Pmax
     $4 = 2.0664030671468936e-05
     (gdb) 
+
+
+Review OKG4Test which is just OKG4Mgr instanciatiom, propagate, visualize
+----------------------------------------------------------------------------
+
+::
+
+    ckm-okg4 () 
+    { 
+        OPTICKS_KEY=$(ckm-key) $(ckm-dbg) OKG4Test --compute --envkey --embedded --save --natural
+    }
+
+
+OKG4Mgr::OKG4Mgr as used by OKG4test 
+------------------------------------------
+    
+m_hub(OpticksHub)
+    loads geometry from geocache into GGeo 
+    
+m_g4(CG4)
+    when "--load" option is NOT used (TODO:change "--load" to "--loadevent" ) 
+    geometry is loaded from GDML into Geant4 model by  
+    The .gdml file was persisted into geocache at its creation. 
+
+m_viz(OpticksViz)
+    when "--compute" option is NOT used instanciate from m_hub    
+
+
+Note frailty of having two sources of geometry here. I recall previous
+matching activity where I avoided this by creating the Geant4 geometry 
+from the Opticks one : but I think that was just for simple test geometries. 
+
+Of course the geocache was created from the same initial source Geant4 geometry,
+but still there are more layers of code.
+
+
+Perhaps a more direct way...
+-------------------------------
+
+Hmm do I need OKX4Mgr ?  To encapsulate whats done in OKX4Test and make it reusable.
+That starts from GDML uses G4GDMLParser to get G4VPhysicalVolume 
+does the direct X4 conversion to populate a GGeo, persists to cache and 
+then uses OKMgr to pop the geometry up to GPU for propagation.
+
+This OKX4Test direct way is intended to be the same as what G4Opticks::TranslateGeometry is doing.
+
+* BUT do not want to complicate the CerenkovMinimal or other example with 
+  the CFG4 gorilla instrumentation : hence the desire to split that into 2nd executable
+
+
+Back translation from Opticks to Geant4 geometry ? 
+-----------------------------------------------------
+
+* too much effort (and not needed) to do fully, but code that back translates materials 
+  already exists (CMaterial/CMaterialLib/CMaterialBridge?) and can avoid the mismatch 
+  problem
+
+* having two sets of geometry, means two sets of materials but they are in different lingo 
+
+
+Compare Material Information Flow with various executables
+-------------------------------------------------------------
+
+Direct : OKX4Test
+~~~~~~~~~~~~~~~~~~
+
+* read from GDML into G4Material instances
+* convertd by X4PhysicalVolume::convertMaterials X4MaterialTable::Convert
+  populating m_mlib(GMaterialLib) in GGeo 
+
+* conversion adds both standardized and as-is materials into GMaterialLib
+
+::
+
+     55 void X4MaterialTable::init()
+     56 {
+     57     unsigned nmat = G4Material::GetNumberOfMaterials();
+     ...
+     61     for(unsigned i=0 ; i < nmat ; i++)
+     62     {   
+     63         G4Material* material = Get(i) ; 
+     64         G4MaterialPropertiesTable* mpt = material->GetMaterialPropertiesTable();
+     ...
+     76         GMaterial* mat = X4Material::Convert( material );
+     ...
+     80         m_mlib->add(mat) ;    // creates standardized material
+     81         m_mlib->addRaw(mat) ; // stores as-is
+     82     }
+     83 }
+
+
+
+Within OKMgr:
+
+* m_hub(OpticksHub) instanciation adopts GGeo
+* m_propagator(OKPropagator) m_engine(OpEngine) m_scene(OScene) instanciation 
+
+* GBndLib::load can trigger interpolation of properties with "--finebndtex" option
+* GBndLib::createBufferForTex2d does memcpy zip of material and surface properties 
+* OBndLib instanciation uploads properties into GPU texture
+
+
+Direct : CerenkovMinimal via G4Opticks::TranslateGeometry
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* RunAction::BeginOfRunAction 
+
+::
+
+     23     bool standardize_geant4_materials = true ;   // required for alignment 
+     24     G4Opticks::GetOpticks()->setGeometry(world, standardize_geant4_materials );
+
+
+* X4PhysicalVolume instanciation invokes X4PhysicalVolume::convertMaterials, just like above 
+
+
+
+G4Opticks::standardizeGeant4MaterialProperties
+-----------------------------------------------
+
+Invoked by G4Opticks::setGeometry when argument requests.
+
+Standardize G4 material properties to use the Opticks standard domain, 
+this works by replacing existing Geant4 MPT 
+with one converted from the Opticks property map, which are 
+standardized on material collection.
+
+
+X4MaterialLib::Standardize
+----------------------------
+
+* requires: both Geant4 G4MaterialTable and Opticks GMaterialLib 
+
+* must be same number/names/order of the materials from both 
+
+* for Geant4 materials with MPT (G4MaterialPropertiesTable) replaces it
+  with an MPT converted from the Opticks GMaterial property map
+
+* "Standardize" not a good name, its more "AdoptOpticksMaterialProperties"
+  
+   * BUT on the other hand it does standardize, because Opticks standardizes 
+     materials to common wavelength domain when they are added to the GMaterialLib
+
+* this is currently invoked ONLY BY G4Opticks::TranslateGeometry
+
+
+
+Add standardizarion in CGDMLDetector::init
+------------------------------------------------
+
+
+::
+
+    -    addMPT();
+    +    addMPTLegacyGDML(); 
+    +    standardizeGeant4MaterialProperties();
+     
+
+
+    +void CGDMLDetector::standardizeGeant4MaterialProperties()   
+    +{
+    +    LOG(info) << "[" ;
+    +    X4MaterialLib::Standardize() ;
+    +    LOG(info) << "]" ;
+    +}
+
+
+
+
+Material Ordering difference
+-----------------------------
+
+Formerly the material order was a user input, thats not appropriate in direct workflow. 
+
+Where does the order get changed ? 
+
+
+
+
+
+::
+
+    ckm-okg4
+    ...
+
+    2019-05-30 14:04:54.697 INFO  [319555] [CGDMLDetector::init@69] parse /home/blyth/local/opticks/geocache/CerenkovMinimal_World_g4live/g4ok_gltf/27d088654714cda61096045ff5eacc02/1/g4ok.gdml
+    G4GDML: Reading '/home/blyth/local/opticks/geocache/CerenkovMinimal_World_g4live/g4ok_gltf/27d088654714cda61096045ff5eacc02/1/g4ok.gdml'...
+    G4GDML: Reading definitions...
+    G4GDML: Reading materials...
+    G4GDML: Reading solids...
+    G4GDML: Reading structure...
+    G4GDML: Reading setup...
+    G4GDML: Reading '/home/blyth/local/opticks/geocache/CerenkovMinimal_World_g4live/g4ok_gltf/27d088654714cda61096045ff5eacc02/1/g4ok.gdml' done!
+    2019-05-30 14:04:54.785 INFO  [319555] [CMaterialSort::dump@37] after size : 3
+    2019-05-30 14:04:54.785 INFO  [319555] [CMaterialSort::dump@41]  i   0 name Glass
+    2019-05-30 14:04:54.785 INFO  [319555] [CMaterialSort::dump@41]  i   1 name Water
+    2019-05-30 14:04:54.785 INFO  [319555] [CMaterialSort::dump@41]  i   2 name Air
+    2019-05-30 14:04:54.785 INFO  [319555] [CDetector::setTop@94] .
+    2019-05-30 14:04:54.785 INFO  [319555] [CTraverser::Summary@106] CDetector::traverse numMaterials 3 numMaterialsWithoutMPT 0
+    2019-05-30 14:04:54.785 ERROR [319555] [CGDMLDetector::addMPTLegacyGDML@144]  Looks like GDML has succeded to load material MPTs   nmat 3 nmat_without_mpt 0 skipping the fixup 
+    2019-05-30 14:04:54.785 INFO  [319555] [CGDMLDetector::standardizeGeant4MaterialProperties@209] [
+    2019-05-30 14:04:54.786 FATAL [319555] [X4MaterialLib::init@77]  MATERIAL NAME MISMATCH  index 0 pmap_name Air m4_name Glass
+    OKG4Test: /home/blyth/opticks/extg4/X4MaterialLib.cc:84: void X4MaterialLib::init(): Assertion `name_match' failed.
+
+    Program received signal SIGABRT, Aborted.
+
+
+
+ckm : DetectorConstruction::Construct creation of G4 Materials in order : Air, Water, Glass
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* Geant4 reversed materials order after taking a trip thru the GDML ?
+
+::
+
+    171 G4VPhysicalVolume* DetectorConstruction::Construct()
+    172 {
+    173     G4Material* air = MakeAir();
+    174     G4Box* so_0 = new G4Box("World",1000.,1000.,1000.);
+    175     G4LogicalVolume* lv_0 = new G4LogicalVolume(so_0,air,"World",0,0,0);
+    176 
+    177     G4VPhysicalVolume* pv_0 = new G4PVPlacement(0,G4ThreeVector(),lv_0 ,"World",0,false,0);
+    178 
+    179     G4Material* water = MakeWater();
+    180     G4Box* so_1 = new G4Box("Obj",500.,500.,500.);
+    181     G4LogicalVolume* lv_1 = new G4LogicalVolume(so_1,water,"Obj",0,0,0);
+    182     G4VPhysicalVolume* pv_1 = new G4PVPlacement(0,G4ThreeVector(),lv_1 ,"Obj",lv_0,false,0);
+    183     assert( pv_1 );
+    184 
+    185     G4Material* glass = MakeGlass();    // slab of sensitive glass in the water 
+    186     AddProperty(glass, "EFFICIENCY", MakeConstantProperty(0.5));
+    187 
+
+
+
+Opticks order in geocache matches the creation order::
+
+    [blyth@localhost ~]$ kcd
+    /home/blyth/local/opticks/geocache/CerenkovMinimal_World_g4live/g4ok_gltf/27d088654714cda61096045ff5eacc02/1
+    rundate
+    20190529_220906
+    runstamp
+    1559138946
+    argline
+     /home/blyth/local/opticks/lib/CerenkovMinimal
+    runlabel
+    R0_cvd_
+    runfolder
+    CerenkovMinimal
+
+    [blyth@localhost 1]$ cat GItemList/GMaterialLib.txt 
+    Air
+    Water
+    Glass
+        
+
+
+Fix Geant4 GDML loaded material ordering using the Opticks order
+--------------------------------------------------------------------
+
+::
+
+     void CGDMLDetector::sortMaterials()
+     {
+         GMaterialLib* mlib = getGMaterialLib();     
+    -    const std::map<std::string, unsigned>& order = mlib->getOrder(); 
+    +
+    +    //const std::map<std::string, unsigned>& order = mlib->getOrder();  
+    +    //  old order was from preferences
+    +
+    +    std::map<std::string, unsigned> order ;  
+    +    mlib->getCurrentOrder(order); 
+    +    // new world order, just use the current Opticks material order : which should correspond to Geant4 creation order
+    +    // unlike following a trip thru  GDML that reverses the material order 
+    +    // see notes/issues/ckm-okg4-material-rindex-mismatch.rst
+    + 
+         CMaterialSort msort(order);  
+     }
+     
+
+
+
+::
+
+    2019-05-30 15:02:51.385 INFO  [422891] [CGDMLDetector::CGDMLDetector@42] [
+    2019-05-30 15:02:51.385 INFO  [422891] [CGDMLDetector::init@69] parse /home/blyth/local/opticks/geocache/CerenkovMinimal_World_g4live/g4ok_gltf/27d088654714cda61096045ff5eacc02/1/g4ok.gdml
+    G4GDML: Reading '/home/blyth/local/opticks/geocache/CerenkovMinimal_World_g4live/g4ok_gltf/27d088654714cda61096045ff5eacc02/1/g4ok.gdml'...
+    G4GDML: Reading definitions...
+    G4GDML: Reading materials...
+    G4GDML: Reading solids...
+    G4GDML: Reading structure...
+    G4GDML: Reading setup...
+    G4GDML: Reading '/home/blyth/local/opticks/geocache/CerenkovMinimal_World_g4live/g4ok_gltf/27d088654714cda61096045ff5eacc02/1/g4ok.gdml' done!
+    2019-05-30 15:02:51.395 INFO  [422891] [CMaterialSort::dumpOrder@26] order from ctor argument
+     v     0 k                            Air
+     v     2 k                          Glass
+     v     1 k                          Water
+    2019-05-30 15:02:51.395 INFO  [422891] [CMaterialSort::dump@37] before size : 3 G4 materials from G4Material::GetMaterialTable 
+    2019-05-30 15:02:51.395 INFO  [422891] [CMaterialSort::dump@41]  i   0 name Glass
+    2019-05-30 15:02:51.395 INFO  [422891] [CMaterialSort::dump@41]  i   1 name Water
+    2019-05-30 15:02:51.395 INFO  [422891] [CMaterialSort::dump@41]  i   2 name Air
+    2019-05-30 15:02:51.395 FATAL [422891] [CMaterialSort::sort@55]  sorting G4MaterialTable using order kv 3
+    2019-05-30 15:02:51.395 INFO  [422891] [CMaterialSort::dump@37] after size : 3 G4 materials from G4Material::GetMaterialTable 
+    2019-05-30 15:02:51.395 INFO  [422891] [CMaterialSort::dump@41]  i   0 name Air
+    2019-05-30 15:02:51.395 INFO  [422891] [CMaterialSort::dump@41]  i   1 name Water
+    2019-05-30 15:02:51.395 INFO  [422891] [CMaterialSort::dump@41]  i   2 name Glass
+    2019-05-30 15:02:51.395 INFO  [422891] [CDetector::setTop@94] .
+    2019-05-30 15:02:51.395 INFO  [422891] [CTraverser::Summary@106] CDetector::traverse numMaterials 3 numMaterialsWithoutMPT 0
+    2019-05-30 15:02:51.395 ERROR [422891] [CGDMLDetector::addMPTLegacyGDML@153]  Looks like GDML has succeded to load material MPTs   nmat 3 nmat_without_mpt 0 skipping the fixup 
+    2019-05-30 15:02:51.395 INFO  [422891] [CGDMLDetector::standardizeGeant4MaterialProperties@218] [
+    2019-05-30 15:02:51.396 INFO  [422891] [CGDMLDetector::standardizeGeant4MaterialProperties@220] ]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 

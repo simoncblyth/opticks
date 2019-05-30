@@ -9,23 +9,23 @@ CMaterialSort::CMaterialSort(const std::map<std::string, unsigned>& order )
     m_order(order),
     m_mtab(G4Material::GetMaterialTable())
 {
-   init();
+    init();
 }
 
 void CMaterialSort::init()
 {
-   //dumpOrder(); 
-   //dump("before");
-   sort(); 
-   //dump("after");
+    dumpOrder("order from ctor argument"); 
+    dump("before");
+    sort(); 
+    dump("after");
 }
 
 
 void CMaterialSort::dumpOrder(const char* msg) const
 {
-   LOG(info) << msg ; 
-   for( MSU::const_iterator it=m_order.begin() ; it != m_order.end() ; it++) 
-       std::cout 
+    LOG(info) << msg ; 
+    for( MSU::const_iterator it=m_order.begin() ; it != m_order.end() ; it++) 
+        std::cout 
            << " v " << std::setw(5) << it->second   
            << " k " << std::setw(30) << it->first   
            << std::endl ; 
@@ -34,23 +34,25 @@ void CMaterialSort::dumpOrder(const char* msg) const
 
 void CMaterialSort::dump(const char* msg) const 
 {
-   LOG(info) << msg << " size : " << m_mtab->size() ;  
-   for( unsigned i=0 ; i < m_mtab->size() ; i++)
-   {
-       std::string name = (*m_mtab)[i]->GetName() ; 
-       LOG(info) 
+    LOG(info) << msg << " size : " << m_mtab->size() << " G4 materials from G4Material::GetMaterialTable " ;  
+    for( unsigned i=0 ; i < m_mtab->size() ; i++)
+    {
+        std::string name = (*m_mtab)[i]->GetName() ; 
+        LOG(info) 
            << " i " << std::setw(3) << i 
            << " name " << std::setw(3) << name
            ;
-   }
-
-
+    }
 }
 
 void CMaterialSort::sort()
 {
+    if(m_order.size() == 0) 
+    {
+        LOG(verbose) << " SKIP sorting G4MaterialTable as order.size() zero " << m_order.size()  ; 
+        return ;
+    }
     LOG(fatal) << " sorting G4MaterialTable using order kv " << m_order.size()  ; 
-    if(m_order.size() == 0) return ;
     std::stable_sort( m_mtab->begin(), m_mtab->end(), *this );
 }
 

@@ -8,6 +8,39 @@
 
 #include "PLOG.hh"
 
+/**
+X4MaterialLib::Standardize
+----------------------------
+
+* requires: both Geant4 G4MaterialTable and Opticks GMaterialLib 
+
+* must be same number/names/order of the materials from both 
+
+* for Geant4 materials with MPT (G4MaterialPropertiesTable) replaces it
+  with an MPT converted from the Opticks GMaterial property map
+
+* "Standardize" not a good name, its more "AdoptOpticksMaterialProperties"
+  
+   * BUT on the other hand it does standardize, because Opticks standardizes 
+     materials to common wavelength domain when they are added to the GMaterialLib
+
+* looks like this is not currently invoked by OKX4Test, only G4Opticks::TranslateGeometry
+
+* Convertion with::
+
+   G4MaterialPropertiesTable* mpt = X4PropertyMap::Convert( pmap ) ;
+
+
+
+**/
+
+
+void X4MaterialLib::Standardize()
+{
+    G4MaterialTable* mtab = G4Material::GetMaterialTable();
+    const GMaterialLib* mlib = GMaterialLib::GetInstance();
+    X4MaterialLib::Standardize( mtab, mlib ) ; 
+}
 
 void X4MaterialLib::Standardize( G4MaterialTable* mtab, const GMaterialLib* mlib )
 {
@@ -55,14 +88,5 @@ void X4MaterialLib::init()
         m4->SetMaterialPropertiesTable( mpt ) ; 
     }
 }
-
-
-
-
-
-
-
-
-
 
 

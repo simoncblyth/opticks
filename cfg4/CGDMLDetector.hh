@@ -35,7 +35,10 @@ class CFG4_API CGDMLDetector : public CDetector
     G4VPhysicalVolume* parseGDML(const char* path) const ;
 
     void sortMaterials();
-    void addMPT();
+    void addMPTLegacyGDML();
+    void standardizeGeant4MaterialProperties(); // by adoption of those from Opticks  
+
+
     //void addSD();    <-- too early SD only gets created later at CG4 
     void addSurfaces();
     //void kludge_cathode_efficiency();

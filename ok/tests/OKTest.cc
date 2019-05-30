@@ -1,5 +1,5 @@
 #include "OKMgr.hh"
-#include "NGPU.hpp"
+//#include "NGPU.hpp"
 #include "OPTICKS_LOG.hh"
 
 /**

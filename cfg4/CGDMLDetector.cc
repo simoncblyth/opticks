@@ -23,6 +23,9 @@
 #include "CTraverser.hh"    // m_traverser resides in base 
 #include "CGDMLDetector.hh"
 
+// hmm not much use of X4 from CGF4 yet, this might be the first
+#include "X4MaterialLib.hh"
+
 #include "G4LogicalVolume.hh"
 #include "G4Material.hh"
 #include "G4GDMLParser.hh"
@@ -36,8 +39,9 @@ CGDMLDetector::CGDMLDetector(OpticksHub* hub, OpticksQuery* query, CSensitiveDet
     CDetector(hub, query, sd),
     m_level(info)
 {
-    LOG(m_level) << "." ; 
+    LOG(m_level) << "[" ; 
     init();
+    LOG(m_level) << "]" ; 
 }
 
 CGDMLDetector::~CGDMLDetector()
@@ -70,7 +74,8 @@ void CGDMLDetector::init()
 
     setTop(world);   // invokes *CDetector::traverse*
 
-    addMPT();
+    addMPTLegacyGDML(); 
+    standardizeGeant4MaterialProperties();
 
     attachSurfaces();
     // kludge_cathode_efficiency(); 
@@ -92,7 +97,16 @@ G4VPhysicalVolume* CGDMLDetector::parseGDML(const char* path) const
 void CGDMLDetector::sortMaterials()
 {
     GMaterialLib* mlib = getGMaterialLib();     
-    const std::map<std::string, unsigned>& order = mlib->getOrder(); 
+
+    //const std::map<std::string, unsigned>& order = mlib->getOrder();  
+    //  old order was from preferences
+
+    std::map<std::string, unsigned> order ;  
+    mlib->getCurrentOrder(order); 
+    // new world order, just use the current Opticks material order : which should correspond to Geant4 creation order
+    // unlike following a trip thru  GDML that reverses the material order 
+    // see notes/issues/ckm-okg4-material-rindex-mismatch.rst
+ 
     CMaterialSort msort(order);  
 }
 
@@ -122,42 +136,48 @@ EFFICIENCY gets planted onto the fake SensorSurfaces::
 **/
 
 
-void CGDMLDetector::addMPT()
+
+
+void CGDMLDetector::addMPTLegacyGDML()
 {
     // GDML exported by geant4 that comes with nuwa lack material properties 
     // so use the properties from the G4DAE export 
 
-    unsigned int nmat = m_traverser->getNumMaterials();
-    unsigned int nmat_without_mpt = m_traverser->getNumMaterialsWithoutMPT();
+    unsigned nmat = m_traverser->getNumMaterials();
+    unsigned nmat_without_mpt = m_traverser->getNumMaterialsWithoutMPT();
+    //assert( nmat > 0 && nmat_without_mpt == 0 );  // hmm this will prevent use of old GDML   
+
 
     if(nmat > 0 && nmat_without_mpt == 0 )
     {
-        LOG(error) << "CGDMLDetector::addMPT" 
-                     << " Looks like GDML has succeded to load material MPTs  "
-                     << " skipping the fixup " 
+        LOG(error) 
+            << " Looks like GDML has succeded to load material MPTs  "
+            << " nmat " << nmat
+            << " nmat_without_mpt " << nmat_without_mpt 
+            << " skipping the fixup " 
                      ;
         return ; 
  
     }
     if(nmat > 0 && nmat_without_mpt == nmat )
     {
-        LOG(warning) << "CGDMLDetector::addMPT" 
-                     << " ALL G4 MATERIALS LACK MPT "
-                     << " FIXING USING G4DAE MATERIALS " 
-                     ;
+        LOG(warning) 
+            << " ALL G4 MATERIALS LACK MPT "
+            << " FIXING USING Opticks MATERIALS " 
+            ;
     } 
     else
     {
-        LOG(fatal) << "CGDMLDetector::addMPT UNEXPECTED"
-                   << " nmat " << nmat 
-                   << " nmat_without_mpt " << nmat_without_mpt
-                   ;
+        LOG(fatal) 
+            << " UNEXPECTED TO SEE ONLY SOME Geant4 MATERIALS WITHOUT MPT " 
+            << " nmat " << nmat 
+            << " nmat_without_mpt " << nmat_without_mpt
+            ;
         assert(0);
     }
  
 
-    unsigned int ng4mat = m_traverser->getNumMaterialsWithoutMPT() ;
-    for(unsigned int i=0 ; i < ng4mat ; i++)
+    for(unsigned int i=0 ; i < nmat_without_mpt ; i++)
     {
         G4Material* g4mat = m_traverser->getMaterialWithoutMPT(i) ;
         const char* name = g4mat->GetName() ;
@@ -165,14 +185,13 @@ void CGDMLDetector::addMPT()
         const std::string base = BFile::Name(name);
         const char* shortname = base.c_str();
 
-
         const GMaterial* ggmat = m_mlib->getMaterial(shortname);          
         assert(ggmat && strcmp(ggmat->getShortName(), shortname)==0 && "failed to find corresponding G4DAE material") ;
 
-        LOG(verbose) << "CGDMLDetector::addMPT" 
-                  << " g4mat " << std::setw(45) << name
-                  << " shortname " << std::setw(25) << shortname
-                   ;
+        LOG(verbose) 
+            << " g4mat " << std::setw(45) << name
+            << " shortname " << std::setw(25) << shortname
+            ;
 
         G4MaterialPropertiesTable* mpt = m_mlib->makeMaterialPropertiesTable(ggmat);
         g4mat->SetMaterialPropertiesTable(mpt);
@@ -180,10 +199,26 @@ void CGDMLDetector::addMPT()
          
     }
 
-    LOG(info) << "CGDMLDetector::addMPT added MPT to " <<  ng4mat << " g4 materials " ; 
+    LOG(info) << "CGDMLDetector::addMPT added MPT to " <<  nmat_without_mpt << " g4 materials " ; 
+
 
 }
 
+/**
+CGDMLDetector::standardizeGeant4MaterialProperties
+-----------------------------------------------------
+
+Duplicates G4Opticks::standardizeGeant4MaterialProperties
+
+**/
+
+
+void CGDMLDetector::standardizeGeant4MaterialProperties()   
+{
+    LOG(info) << "[" ;
+    X4MaterialLib::Standardize() ;
+    LOG(info) << "]" ;
+}
 
 
 
