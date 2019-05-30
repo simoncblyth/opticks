@@ -21,8 +21,13 @@ CMaterialLib
 ===============
 
 CMaterialLib is a constituent of CDetector (eg CTestDector and CGDMLDetector)
+that is instanciated with it.
 that converts GGeo (ie Opticks G4DAE) materials and surfaces into G4 materials and surfaces.
 G4The GGeo gets loaded on initializing base class CPropLib.
+
+SUSPECT THIS CAN BE REMOVED, IN DIRECT APPROACH THERE SHOULD NOT
+BE MUCH NEED FOR IT 
+
 
 WAS SURPRISED TO FIND THAT THE CONVERSION IS NOT DONE BY STANDARD LAUNCH
 INSTEAD THE INDIVIDUAL convertMaterial ARE CALLED FROM EG CTestDetector 
@@ -55,12 +60,11 @@ class CFG4_API CMaterialLib : public CPropLib
 
        void dumpGroupvelMaterial(const char* msg, float wavelength, float groupvel, float tdiff, int step_id, const char* qwn="" );
        std::string firstMaterialWithGroupvelAt430nm(float groupvel, float delta=0.0001f);
-       void fillMaterialValueMap();
+       void fillMaterialValueMap(const char* matnames);
        void fillMaterialValueMap(std::map<std::string,float>& vmp,  const char* matnames, const char* key, float nm);
        static void dumpMaterialValueMap(const char* msg, std::map<std::string,float>& vmp);
        static std::string firstKeyForValue(float val, std::map<std::string,float>& vmp, float delta=0.0001f );
        
-
 
        const G4Material* getG4Material(unsigned index);
        NPY<float>* makeArray(const char* name, const char* keys, bool reverse=true);

@@ -156,7 +156,8 @@ void CG4Ctx::initEvent(const OpticksEvent* evt)
               << " SourceType " << OpticksFlags::SourceType(_gen)
               ;
 
-    assert( _gen == TORCH || _gen == G4GUN || _gen == NATURAL );  // what is needed to add NATURAL ?
+    //assert( _gen == TORCH || _gen == G4GUN || _gen == NATURAL );  // what is needed to add NATURAL ?
+    assert( _gen == TORCH || _gen == G4GUN || _gen == CERENKOV || _gen == SCINTILLATION );
 }
 
 std::string CG4Ctx::desc_event() const 

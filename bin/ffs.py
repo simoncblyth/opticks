@@ -62,8 +62,18 @@ From one of the many libs of libSystem::
 """
 import ctypes
 
-cpp = ctypes.cdll.LoadLibrary('libc++.1.dylib')
-rt = ctypes.cdll.LoadLibrary('/usr/lib/system/libcompiler_rt.dylib')
+try:
+    cpp = ctypes.cdll.LoadLibrary('libc++.1.dylib')
+except OSError:
+    # /usr/lib64/libstdc++.so.6
+    cpp = ctypes.cdll.LoadLibrary('libstdc++.so.6')
+pass     
+
+
+try:
+    rt = ctypes.cdll.LoadLibrary('/usr/lib/system/libcompiler_rt.dylib')
+except OSError:
+    rt = ctypes.cdll.LoadLibrary('librt.so.1')
 
 cppffs_ = lambda _:cpp.ffs(_)
 cppfls_ = lambda _:cpp.fls(_)
@@ -90,12 +100,12 @@ def test_clz():
         print " %10x : %6u %6u %6u " % (i, c, 32-c, f) 
 
 def test_ffs():
-    for i in range(-1,16):
+    for i in range(-1,17):
         n = 0x1 << i if i > -1 else 0
-        print " i %2d n:%5d  n:0x%4x cpp.ffs_: %2d ffs_: %2d " % (i, n, n, cppffs_(n), ffs_(n) )   
+        print " i %2d n:%8d  n:0x%5x cpp.ffs_: %2d ffs_: %2d " % (i, n, n, cppffs_(n), ffs_(n) )   
 
 
 
 if __name__ == '__main__':
     test_ffs()
-    test_clz()
+    #test_clz()

@@ -87,6 +87,11 @@ G4VParticleChange* CGenstepSource::generatePhotonsFromOneGenstep()
 {
     assert( m_idx < m_num_genstep ); 
     unsigned gencode = m_gs->getGencode(m_idx) ; 
+    LOG(info)
+        << " gencode " << gencode
+        << " OpticksFlags::Flag(gencode) " << OpticksFlags::Flag(gencode)
+        ; 
+
     G4VParticleChange* pc = NULL ; 
 
     switch( gencode )

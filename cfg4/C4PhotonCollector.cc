@@ -21,6 +21,7 @@ C4PhotonCollector::C4PhotonCollector()
 {
     NPY<float>* photon = m_photon_collector->getPhoton();
     photon->setArrayContentVersion(G4VERSION_NUMBER);
+    // could include type of generator info in metadata ?
 }
 
 void C4PhotonCollector::savePhotons(const char* path) const 

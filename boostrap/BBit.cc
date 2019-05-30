@@ -24,10 +24,16 @@ int BBit::ffs(int i)
 
 #else
 
-int BBit::ffs(int i)
+int BBit::ffs(int i)     
 {
    return ::ffs(i);
 }
+
+long long BBit::ffsll(long long i)   
+{
+   return ::ffsll(i);
+}
+
 
 #endif
 

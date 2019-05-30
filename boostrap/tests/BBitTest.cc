@@ -12,14 +12,31 @@ void test_ffs()
         int msk = 0x1 << i ; 
         int chk = BBit::ffs(msk) - 1;   
         std::cout 
-                  << " msk ( 0x1 << " << std::setw(2) << std::dec << i << ") = "  << std::hex << std::setw(10) << msk  
-                  << " BBit::ffs(msk) - 1 =  " << std::dec << std::setw(10) << chk
+                  << " msk ( 0x1 << " << std::setw(2) << std::dec << i << ") = "  << std::hex << std::setw(16) << msk  
+                  << " BBit::ffs(msk) - 1 =  " << std::dec << std::setw(4) << chk
                   << std::endl ;   
 
          if(i < 32 ) assert(  chk == i );
-
     } 
 }
+
+void test_ffsll()
+{
+    typedef long long LL ; 
+
+    for(LL i=0 ; i < 64 ; i++ )
+    {
+        LL msk = 0x1ll << i ; 
+        LL chk = BBit::ffsll(msk) - 1ll ;   
+        std::cout 
+                  << " msk ( 0x1 << " << std::setw(2) << std::dec << i << ") = "  << std::hex << std::setw(16) << msk  
+                  << " BBit::ffsll(msk) - 1 =  " << std::dec << std::setw(4) << chk
+                  << std::endl ;   
+
+        assert(  chk == i );
+    } 
+}
+
 
 void test_count_nibbles()
 {
@@ -43,8 +60,9 @@ void test_count_nibbles()
 
 int main()
 {
-    //test_ffs(); 
-    test_count_nibbles(); 
+    test_ffs(); 
+    test_ffsll(); 
+    //test_count_nibbles(); 
 
     return 0 ; 
 }

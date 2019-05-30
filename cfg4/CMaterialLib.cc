@@ -47,11 +47,17 @@ void CMaterialLib::dumpGroupvelMaterial(const char* msg, float wavelength, float
     }
 }
 
-void CMaterialLib::fillMaterialValueMap()
-{
-    const char* matnames = "GdDopedLS,Acrylic,LiquidScintillator,MineralOil,Bialkali" ;
+/**
+CMaterialLib::fillMaterialValueMap
+------------------------------------
 
-   // Bialkali for debug injection black ops 
+* vague recollection, just used for debugging 
+
+
+**/
+
+void CMaterialLib::fillMaterialValueMap(const char* matnames)
+{
     fillMaterialValueMap(m_groupvel_430nm, matnames, "GROUPVEL", 430.f );
     dumpMaterialValueMap(matnames, m_groupvel_430nm);
 }
@@ -84,7 +90,8 @@ std::string CMaterialLib::firstMaterialWithGroupvelAt430nm(float groupvel, float
 void CMaterialLib::postinitialize()
 {
    // invoked from CGeometry::postinitialize
-    fillMaterialValueMap(); 
+   //const char* matnames = "GdDopedLS,Acrylic,LiquidScintillator,MineralOil,Bialkali" ;
+   // fillMaterialValueMap(matnames); 
 }
 
 bool CMaterialLib::isConverted()
@@ -112,6 +119,8 @@ void CMaterialLib::convert()
    //  assert(0) ; 
     assert(m_converted == false);
     m_converted = true ; 
+
+    LOG(fatal) << "[" ; 
 
     unsigned int ngg = getNumMaterials() ;
     for(unsigned int i=0 ; i < ngg ; i++)
@@ -151,6 +160,7 @@ void CMaterialLib::convert()
             ;  
     }
     LOG(info) << "CMaterialLib::convert : converted " << ngg << " ggeo materials to G4 materials " ; 
+    LOG(fatal) << "]" ; 
 }
 
 

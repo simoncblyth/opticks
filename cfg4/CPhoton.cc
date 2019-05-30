@@ -77,18 +77,32 @@ void CPhoton::add(unsigned flag, unsigned  material)
     unsigned long long  msk = 0xFull << shift ; 
 
     _slot_constrained = slot ; 
+
     _his = BBit::ffs(flag) & 0xFull ; 
+
+    //  BBit::ffs result is a 1-based bit index of least significant set bit 
+    //  so anding with 0xF although looking like a bug, as the result of ffs is not a nibble, 
+    //  is actually providing a warning as are constructing seqhis from nibbles : 
+    //  this is showing that NATURAL is too big to fit in its nibble   
+    //
+    //  BUT NATURAL is an input flag meaning either CERENKOV or SCINTILATION, thus
+    //  it should not be here at the level of a photon.  It needs to be set 
+    //  at genstep level to the appropriate thing. 
+    //
+    //  See notes/issues/ckm-okg4-CPhoton-add-flag-mismatch-NATURAL-bit-index-too-big-for-nibble.rst      
+    //
 
     _flag = 0x1 << (_his - 1) ; 
 
     bool flag_match = _flag == flag  ; 
     if(!flag_match)
        LOG(fatal) << "flag mismatch "
+                  << " MAYBE TOO BIG TO FIT IN THE NIBBLE " 
                   << " _flag " << _flag 
                   << " _his " << _his 
                   << " flag " << flag 
                   ; 
-    //assert( flag_match ); 
+     assert( flag_match ); 
 
     _mat = material < 0xFull ? material : 0xFull ; 
     _material = material ; 
