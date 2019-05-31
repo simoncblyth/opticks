@@ -92,13 +92,31 @@ const char* SProc::ExecutablePath()
 #include <unistd.h>
 #include <limits.h>
 
-const char* SProc::ExecutablePath()
+const char* SProc::ExecutablePath(bool basename)
 {
     char buf[PATH_MAX];
     ssize_t len = ::readlink("/proc/self/exe", buf, sizeof(buf)-1);
     if (len != -1) buf[len] = '\0';
-    return strdup(buf); 
+
+    const char* s = basename ? strrchr(buf, '/') : NULL ;  
+    return s ? strdup(s+1) : buf ; 
 }
 
 #endif
+
+
+const char* SProc::ExecutableName()
+{
+    bool basename = true ; 
+    return ExecutablePath(basename); 
+}
+
+
+
+
+
+
+
+
+
 

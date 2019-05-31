@@ -1,9 +1,20 @@
-ckm-okg4-tmp-user-paths-unwieldy-in-geocache
-===============================================
+ckm-okg4-tmp-user-paths-unwieldy-in-geocache FIXED 
+========================================================
+
+Context
+-----------
+
+* :doc:`ckm-okg4-initial-comparisons`
 
 
-issue : 2nd executable event paths are unweildy
--------------------------------------------------
+FIXED : move to just using exename as prefix inside the geocache 
+-------------------------------------------------------------------
+
+* to prevent stomping on geocache content require that exenames end with "Test" 
+
+
+issue : 2nd executable event paths are unweildy  : FIXED 
+-----------------------------------------------------------------
 
 The below is relative to geocache::
 
@@ -30,21 +41,6 @@ messing with rest of geocache::
           source/evt/g4live/natural/1/ps.npy :          (221, 1, 4) : ad7498e182d8df1bf720c0ba0e72736c 
           source/evt/g4live/natural/1/rs.npy :      (221, 10, 1, 4) : ce59ba752de205fb16062260c6383503 
           source/evt/g4live/natural/1/rx.npy :      (221, 10, 2, 4) : c085570c57f4749d13475312fcd16fb5 
-    source/evt/g4live/natural/1/20190527_153801/report.txt : 37 
-    source/evt/g4live/natural/1/20190527_173616/report.txt : 37 
-    source/evt/g4live/natural/1/20190527_200301/report.txt : 37 
-    source/evt/g4live/natural/1/20190527_205604/report.txt : 37 
-    source/evt/g4live/natural/1/20190527_211410/report.txt : 37 
-    source/evt/g4live/natural/1/20190527_213651/report.txt : 37 
-    source/evt/g4live/natural/1/20190527_215438/report.txt : 37 
-    source/evt/g4live/natural/1/20190528_145542/report.txt : 38 
-    source/evt/g4live/natural/1/20190528_145945/report.txt : 38 
-    source/evt/g4live/natural/1/20190528_185729/report.txt : 39 
-    source/evt/g4live/natural/1/20190529_152823/report.txt : 39 
-    source/evt/g4live/natural/1/20190529_213220/report.txt : 39 
-    source/evt/g4live/natural/1/20190529_220841/report.txt : 39 
-    source/evt/g4live/natural/1/20190529_220911/report.txt : 39 
-
 
     [blyth@localhost 1]$ np.py tmp/blyth/OKG4Test/evt/g4live/natural/1
     /home/blyth/local/opticks/geocache/CerenkovMinimal_World_g4live/g4ok_gltf/27d088654714cda61096045ff5eacc02/1/tmp/blyth/OKG4Test/evt/g4live/natural/1
@@ -58,13 +54,6 @@ messing with rest of geocache::
     tmp/blyth/OKG4Test/evt/g4live/natural/1/ps.npy :          (221, 1, 4) : ad7498e182d8df1bf720c0ba0e72736c 
     tmp/blyth/OKG4Test/evt/g4live/natural/1/rs.npy :      (221, 10, 1, 4) : ce59ba752de205fb16062260c6383503 
     tmp/blyth/OKG4Test/evt/g4live/natural/1/rx.npy :      (221, 10, 2, 4) : c085570c57f4749d13475312fcd16fb5 
-    tmp/blyth/OKG4Test/evt/g4live/natural/1/20190530_150253/report.txt : 39 
-    tmp/blyth/OKG4Test/evt/g4live/natural/1/20190530_151658/report.txt : 39 
-    tmp/blyth/OKG4Test/evt/g4live/natural/1/20190530_151715/report.txt : 39 
-    tmp/blyth/OKG4Test/evt/g4live/natural/1/20190530_194634/report.txt : 39 
-    tmp/blyth/OKG4Test/evt/g4live/natural/1/20190530_195703/report.txt : 39 
-    [blyth@localhost 1]$ 
-
 
 
 Wow resource handling needs a sledgehammer

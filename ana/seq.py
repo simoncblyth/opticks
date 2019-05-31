@@ -220,6 +220,20 @@ class SeqType(BaseType):
 
 
 
+class SeqList(object):
+    def __init__(self, ls, af, sli ):
+        self.ls = ls
+        self.afl = af.label
+        self.sli = sli
+
+    def __repr__(self):
+        return "\n".join(map(lambda _:self.afl(_), self.ls[self.sli]))
+
+    def __getitem__(self, sli):
+         self.sli = sli
+         return self
+
+
 
  
 class SeqTable(object):
@@ -407,10 +421,14 @@ class SeqTable(object):
         return "\n".join(map(lambda _:self.label2line.get(_,None), ll )) 
 
     def __repr__(self):
-
+        """
+        title is externally set from evt.present_table
+        """
         spacer_ = lambda _:"%1s%3s %22s " % (".","",_)
         space = spacer_("")
         title = spacer_(getattr(self,'title',""))
+
+        #print("title:[%s]" % title) 
 
         body_ = lambda _:" %7s " % _
         head = title + " ".join(map(body_, self.cnames ))
@@ -476,8 +494,8 @@ class SeqAna(object):
 
     """
     @classmethod 
-    def for_evt(cls, af, tag="1", src="torch", det="dayabay", offset=0):
-        ph = A.load_("ph",src,tag,det)
+    def for_evt(cls, af, tag="1", src="torch", det="dayabay", pfx="source", offset=0):
+        ph = A.load_("ph",src,tag,det, pfx=pfx)
         aseq = ph[:,0,offset]
         return cls(aseq, af, cnames=[tag])
     

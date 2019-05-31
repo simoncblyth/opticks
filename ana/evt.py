@@ -15,7 +15,7 @@ from opticks.ana.base import opticks_main, stamp_
 from opticks.ana.ctx import Ctx
 from opticks.ana.nbase import count_unique, vnorm
 from opticks.ana.nload import A, I, II, tagdir_
-from opticks.ana.seq import SeqAna, seq2msk
+from opticks.ana.seq import SeqAna, seq2msk, SeqList
 from opticks.ana.histype import HisType
 from opticks.ana.hismask import HisMask
 from opticks.ana.mattype import MatType 
@@ -174,13 +174,14 @@ class Evt(object):
         self.align = None
         self.warn_empty = True
 
-        log.info("pfx:%s" % pfx)
+        log.debug("pfx:%s" % pfx)
 
         self.tag = str(tag)
         self.src = src
         self.det = det
         self.pfx = pfx 
         self.tagdir = tagdir_(det, src, tag, pfx=pfx)
+        self.cn = "%s:%s:%s" % (str(self.tag), self.det, self.pfx)
 
         self.dbg = dbg
 
@@ -202,7 +203,7 @@ class Evt(object):
         log.debug(" dbgseqhis %x dbgmskhis %x dbgseqmat %x dbgmskmat %x " % (args.dbgseqhis, args.dbgmskhis, args.dbgseqmat, args.dbgmskmat ))
  
         if label is None:
-            label = "%s/%s/%3s : %s" % (det, src, tag, ",".join(self.seqs)) 
+            label = "%s/%s/%s/%3s : %s" % (pfx, det, src, tag, ",".join(self.seqs)) 
 
         self.label = label
         self.rec = rec
@@ -284,6 +285,13 @@ class Evt(object):
         return _flvana
     flvana = property(_get_flvana)
 
+
+    def _get_seqhis_labels(self):
+        af = self.histype 
+        return "\n".join(map(lambda _:af.label(_), self.seqhis[:100] ))
+    seqhis_labels = property(_get_seqhis_labels)
+
+
     def aload(self, stem, optional=False):
         a = A.load_(stem, self.src, self.tag, self.det, optional=optional, dbg=self.dbg, pfx=self.pfx ) 
         return a 
@@ -344,8 +352,7 @@ class Evt(object):
 
 
     def make_pflags_ana(self, pflags):
-        cn = "%s:%s" % (str(self.tag), self.det)
-        return SeqAna( pflags, self.hismask, cnames=[cn], dbgseq=self.dbgmskhis, dbgzero=self.dbgzero, cmx=self.cmx, smry=self.smry )
+        return SeqAna( pflags, self.hismask, cnames=[self.cn], dbgseq=self.dbgmskhis, dbgzero=self.dbgzero, cmx=self.cmx, smry=self.smry )
 
 
     def init_photons(self):
@@ -443,8 +450,7 @@ class Evt(object):
         self.hflags = ht.view(np.uint32)[:,3,3]
         self.hc4 = hc4
 
-        cn = "%s:%s" % (str(self.tag), self.det)
-        self.hflags_ana = SeqAna( self.hflags, self.hismask, cnames=[cn], dbgseq=self.dbgmskhis, dbgzero=self.dbgzero, cmx=self.cmx, smry=self.smry)
+        self.hflags_ana = SeqAna( self.hflags, self.hismask, cnames=[self.cn], dbgseq=self.dbgmskhis, dbgzero=self.dbgzero, cmx=self.cmx, smry=self.smry)
  
         self.desc['hwl'] = "(hits) wavelength"
         self.desc['hpost'] = "(hits) final photon step: position, time"
@@ -473,7 +479,7 @@ class Evt(object):
         log.debug("init_source")
         so = self.aload("so",optional=True)
         self.so = so
-        self.desc['so'] = "(source) input CPU side emitconfig photons"
+        self.desc['so'] = "(source) input CPU side emitconfig photons, or initial cerenkov/scintillation"
 
         if so.missing:return 
        
@@ -499,12 +505,16 @@ class Evt(object):
 
 
     def make_seqhis_ana(self, seqhis):
-        cn = "%s:%s" % (str(self.tag), self.det)
-        return SeqAna( seqhis, self.histype, cnames=[cn], dbgseq=self.dbgseqhis, dbgmsk=self.dbgmskhis, dbgzero=self.dbgzero, cmx=self.cmx, smry=self.smry)
+        return SeqAna( seqhis, self.histype, cnames=[self.cn], dbgseq=self.dbgseqhis, dbgmsk=self.dbgmskhis, dbgzero=self.dbgzero, cmx=self.cmx, smry=self.smry)
 
     def make_seqmat_ana(self, seqmat):
-        cn = "%s:%s" % (str(self.tag), self.det)
-        return SeqAna( seqmat, self.mattype, cnames=[cn], dbgseq=self.dbgseqmat, dbgmsk=self.dbgmskmat, dbgzero=self.dbgzero, cmx=self.cmx, smry=self.smry)
+        return SeqAna( seqmat, self.mattype, cnames=[self.cn], dbgseq=self.dbgseqmat, dbgmsk=self.dbgmskmat, dbgzero=self.dbgzero, cmx=self.cmx, smry=self.smry)
+
+    def make_seqhis_ls(self):
+        return SeqList( self.seqhis, self.histype, slice(0,50) )
+
+    def make_seqmat_ls(self):
+        return SeqList( self.seqmat, self.mattype, slice(0,50) )
 
 
     def init_sequence(self):
@@ -539,12 +549,13 @@ class Evt(object):
         seqhis = ph[:,0,0]
         seqmat = ph[:,0,1]
 
-        cn = "%s:%s" % (str(self.tag), self.det)
         # full history without selection
         all_seqhis_ana = self.make_seqhis_ana(seqhis)
         all_seqmat_ana = self.make_seqmat_ana(seqmat)
 
+
         self.seqhis = seqhis
+        self.seqhis_ls = self.make_seqhis_ls()
         self.pflags2 = seq2msk(seqhis) # 16 seq nibbles OR-ed into mask 
 
         self.msk_mismatch = self.pflags != self.pflags2
@@ -557,6 +568,7 @@ class Evt(object):
         pass
 
         self.seqmat = seqmat
+        self.seqmat_ls = self.make_seqmat_ls()
 
         useqhis = len(np.unique(seqhis))
         useqmat = len(np.unique(seqmat))
@@ -573,9 +585,11 @@ class Evt(object):
         self.all_seqmat_ana = all_seqmat_ana
         self.seqmat_ana = all_seqmat_ana
 
+
+
         for imsk in range(1,10):
             msk = msk_(imsk) 
-            setattr(self, "seqhis_ana_%d" % imsk, SeqAna(seqhis & msk, self.histype, cnames=[cn])) 
+            setattr(self, "seqhis_ana_%d" % imsk, SeqAna(seqhis & msk, self.histype, cnames=[self.cn])) 
 
         log.debug("init_sequence DONE")
 
@@ -742,6 +756,9 @@ class Evt(object):
 
         with a single label selection such as "TO BT AB" nrec would return  3
         If there is no single label selection return -1  
+
+        See init_npoint for a much more efficient way of doing this for all 
+        photons by counting occupied nibbles in seqhis
         """ 
         lab0 = self.label0
         if lab0 is None:
@@ -1112,7 +1129,7 @@ class Evt(object):
     t = property(lambda self:self.ox[:,0,3])
 
 
-    description = property(lambda self:"\n".join(["%5s : %20s : %s " % (k, repr(getattr(self,k).shape),  label) for k,label in self.desc.items()]))
+    description = property(lambda self:"\n".join(["%7s : %20s : %s " % (k, repr(getattr(self,k).shape),  label) for k,label in self.desc.items()]))
     paths = property(lambda self:"\n".join(["%5s : %s " % (k, repr(getattr(getattr(self,k),'path','-'))) for k,label in self.desc.items()]))
 
     def _path(self):
@@ -1153,14 +1170,14 @@ class Evt(object):
              return "%s %s" % (self.label, "EVT LOAD FAILED")
 
     brief = property(_brief)
-    summary = property(lambda self:"Evt(%3s,\"%s\",\"%s\",\"%s\", seqs=\"%s\") %s %s" % 
-            (self.tag, self.src, self.det,self.label, repr(self.seqs), self.stamp, self.tagdir))
+    summary = property(lambda self:"Evt(%3s,\"%s\",\"%s\",pfx=\"%s\", seqs=\"%s\") %s " % 
+            (self.tag, self.src, self.det,self.pfx, repr(self.seqs), self.stamp ))
 
     def __repr__(self):
         if self.terse:
-            elem = [self.summary]
+            elem = [self.summary, self.tagdir]
         else:
-            elem = [self.summary, self.description]
+            elem = [self.summary, self.tagdir, self.description]
         pass
         return "\n".join(elem)
 
@@ -1410,8 +1427,6 @@ class Evt(object):
         #lb = np.linspace(lo, hi, 255+1+1)
         lb = np.linspace(-1, 1, 255+1)   # 
         return lb 
-
-        
 
 
     def recflags(self, recs):
@@ -1756,7 +1771,7 @@ if __name__ == '__main__':
 
 
     a = Evt(tag="%s"%ok.utag, src=ok.src, det=ok.det, args=ok)
-    print a.seqhis_ana.table[0:20]
+    print(a.seqhis_ana.table[0:20])
 
     # b = Evt(tag="-%s"%ok.utag, src=ok.src, det=ok.det, args=ok)
 

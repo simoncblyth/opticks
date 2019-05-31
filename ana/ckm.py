@@ -15,18 +15,30 @@ from opticks.ana.evt import Evt
 
 if __name__ == '__main__':
 
-    args = opticks_main(tag="1",src="natural", det="g4live", pfx="tmp/blyth/OKG4Test", doc=__doc__)
+    args = opticks_main(tag="1",src="natural", det="g4live", pfx="OKG4Test", doc=__doc__)
     np.set_printoptions(suppress=True, precision=3)
 
     print("pfx:%s" % args.pfx ) 
 
-    evt = Evt(tag=args.tag, src=args.src, det=args.det, pfx=args.pfx, seqs=[], args=args)
+    a = Evt(tag=args.tag, src=args.src, det=args.det, pfx=args.pfx, seqs=[], args=args)
+    print("a")
+    print(a)
 
-    log.debug("evt") 
-    print evt
+    #a2 = Evt(tag=args.tag, src=args.src, det=args.det, pfx="source", seqs=[], args=args)
+    #print("a2")
+    #print(a2)
+ 
 
-    log.debug("evt.history_table") 
-    evt.history_table(slice(0,20))
-    log.debug("evt.history_table DONE") 
+    b = Evt(tag="-%s"%args.tag, src=args.src, det=args.det, pfx=args.pfx, seqs=[], args=args)
+    print("b")
+    print(b)
+
+    print("a")
+    a.history_table(slice(0,5))
+    #print("a2")
+    #a2.history_table(slice(0,5))
+
+    print("b")
+    b.history_table(slice(0,5))
        
 

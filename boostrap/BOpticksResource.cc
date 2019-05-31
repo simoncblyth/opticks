@@ -11,6 +11,8 @@ namespace fs = boost::filesystem;
 
 #include "SLog.hh"
 #include "SSys.hh"
+#include "SStr.hh"
+#include "SProc.hh"
 #include "SAr.hh"
 
 #include "BFile.hh"
@@ -577,12 +579,22 @@ void BOpticksResource::setupViaKey()
     m_directphotonspath = makeIdPathPath("directphotons.npy");  
     m_res->addPath("directphotonspath", m_directphotonspath ); 
 
-    const char* user = SSys::username(); 
     m_srcevtbase = makeIdPathPath("source"); 
     m_res->addDir( "srcevtbase", m_srcevtbase ); 
 
-    const char* exename = SAr::Instance->exename(); 
-    m_evtbase = isKeySource() ? strdup(m_srcevtbase) : makeIdPathPath("tmp", user, exename ) ;  
+    //const char* exename = SAr::Instance->exename(); 
+    const char* exename = SProc::ExecutableName() ;
+    bool exe_endswith_test = SStr::EndsWith(exename, "Test") ;  
+    if(!exe_endswith_test)
+    {
+        LOG(fatal) << "exename must end with Test " << exename << " (this is to prevent stomping on geocache content) " ; 
+    }   
+    assert( exe_endswith_test ); 
+
+    //const char* user = SSys::username(); 
+    //m_evtbase = isKeySource() ? strdup(m_srcevtbase) : makeIdPathPath("tmp", user, exename ) ;  
+
+    m_evtbase = isKeySource() ? strdup(m_srcevtbase) : makeIdPathPath(exename ) ;  
     ///  should this always be KeySource ???
     ///      NO : KeySource means that the current executable is same as the exename 
     ///           enshrined into the geocache : ie the geocache creator  

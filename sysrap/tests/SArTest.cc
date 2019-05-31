@@ -1,3 +1,5 @@
+// TEST=SArTest om-t
+
 #include <iostream>
 #include <cassert>
 
@@ -41,7 +43,6 @@ int main(int argc, char** argv)
 
     std::cout << " exepath() " << a.exepath() << std::endl ; 
     std::cout << " exename() " << a.exename() << std::endl ; 
-
     std::cout << " cmdline() " << a.cmdline() << std::endl ; 
 
 

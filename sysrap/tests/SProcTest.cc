@@ -64,6 +64,13 @@ void test_ExecutablePath(int argc, char** argv)
     const char* p = SProc::ExecutablePath();
     std::cout << "argv[0]:                 " << argv[0] << std::endl ;  
     std::cout << "SProc::ExecutablePath(): " << p << std::endl ;  
+
+    const char* n = SProc::ExecutableName();
+    std::cout << "SProc::ExecutableName(): " << n << std::endl ;  
+
+    const char* l4 = strdup( n + strlen(n) - 4 ); 
+    std::cout << " l4 " << l4 << std::endl ; 
+    assert( strlen(n) > 4 && strncmp( n + strlen(n) - 4 ,  "Test", 4) == 0 );  
 }
 
 
