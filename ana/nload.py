@@ -13,7 +13,8 @@ import numpy as np
 from opticks.ana.base import opticks_main, ini_
 
 #DEFAULT_BASE = "$LOCAL_BASE/env/opticks"
-DEFAULT_BASE = "$OPTICKS_EVENT_BASE/evt"
+#DEFAULT_BASE = "$OPTICKS_EVENT_BASE/evt"
+DEFAULT_BASE = "$OPTICKS_EVENT_BASE/$0/evt"
 
 DEFAULT_DIR_TEMPLATE = DEFAULT_BASE + "/$1/$2/$3"  ## cf C++  brap- BOpticksEvent
 
@@ -61,7 +62,7 @@ txt_ = lambda _:np.loadtxt(StringIO(_))
 #    tmpl = os.path.expandvars(DEFAULT_DIR_TEMPLATE.replace("$1", det).replace("$2",typ).replace("$3",tag)) 
 #    return tmpl
 
-def tagdir_(det, typ, tag, layout=2):
+def tagdir_(det, typ, tag, pfx="source", layout=2):
     """
     layout version 1 (which is still used for source gensteps) does
     not have the tag in the directory 
@@ -72,11 +73,13 @@ def tagdir_(det, typ, tag, layout=2):
     if layout == 1: 
         utag = "."
         tmpl = DEFAULT_DIR_TEMPLATE
+        tmpl = tmpl.replace("$0", pfx)
         tmpl = tmpl.replace("$1", det)
         tmpl = tmpl.replace("$2", typ)
         tmpl = tmpl.replace("$3",utag)
     elif layout == 2:
         tmpl = DEFAULT_DIR_TEMPLATE
+        tmpl = tmpl.replace("$0", pfx)
         tmpl = tmpl.replace("$1", det)
         tmpl = tmpl.replace("$2", typ)
         tmpl = tmpl.replace("$3", str(tag))
@@ -108,7 +111,7 @@ def typdirs_(evtdir=None):
 
 
 
-def path_(typ, tag, det="dayabay", name=None):
+def path_(typ, tag, det="dayabay", name=None, pfx="source" ):
     """
     :param typ:
     :param tag:
@@ -134,7 +137,7 @@ def path_(typ, tag, det="dayabay", name=None):
     else:
         layout = 2
     pass
-    tagdir = tagdir_(det, typ, tag, layout=layout)
+    tagdir = tagdir_(det, typ, tag, layout=layout, pfx=pfx )
     if layout == 1:
         tmpl = os.path.join(tagdir, "%s.npy" % tag) 
     elif layout == 2:
@@ -148,20 +151,21 @@ def path_(typ, tag, det="dayabay", name=None):
 
 
 
-def tpaths_(typ, tag, det="dayabay", name=None):
+def tpaths_(typ, tag, det="dayabay", name=None, pfx="source"):
     """
     :return tnams: paths of files named *name* that are contained in directories within the tagdir 
                    typically these are time stamped dirs 
     """
     assert name is not None 
 
-    tagdir = tagdir_(det, typ, tag)
+    tagdir = tagdir_(det, typ, tag, pfx=pfx)
    
     if os.path.isdir(tagdir): 
         names = os.listdir(tagdir)
     else:
         log.warning("tpaths_ tagdir %s does not exist" % tagdir)
         names = []
+    pass
 
     tdirs = filter( os.path.isdir, map(lambda name:os.path.join(tagdir, name), names))
     tdirs = sorted(tdirs, reverse=True)  # paths of dirs within tagdir
@@ -178,13 +182,25 @@ def gspath_(typ, tag, det, gsbase=None):
 
 class A(np.ndarray):
     @classmethod
-    def load_(cls, stem, typ, tag, det="dayabay", dbg=False, optional=False):
-        """ 
+    def load_(cls, stem, typ, tag, det="dayabay", pfx="source", dbg=False, optional=False):
         """
+        :param stem: gs,ox,ht,rs,so,ph,fdom,idom
+        :param typ: natural
+        :param tag: 1,-1
+        :param det: g4live 
+        :param pfx: source for 1st executable, the name of the executable for subsequent ones eg OKG4Test 
+        :param dbg: 
+        :param optional: 
+        """
+        if dbg:
+            print("stem:%s typ:%s tag:%s det:%s pfx:%s dbg:%s optional:%s" % (stem, typ, tag, det, pfx, dbg, optional))
+        pass
+
         if stem == "gensteps":
             path = gspath_(typ, tag, det)
+            assert 0, "suspect these paths are now wrong"
         else:
-            path = path_(typ,tag, det, name="%s.npy" % stem)
+            path = path_(typ,tag, det, name="%s.npy" % stem, pfx=pfx)
         pass
 
         a = None
@@ -206,6 +222,7 @@ class A(np.ndarray):
         a.typ = typ
         a.tag = tag
         a.det = det 
+        a.pfx = pfx
         a.stamp = stamp_(path)
         a.missing = missing
 
@@ -247,8 +264,8 @@ class I(dict):
         return d  
 
     @classmethod
-    def load_(cls, typ, tag, det="dayabay", name="t_delta.ini", dbg=False):
-        path = path_(typ, tag, det, name=name)
+    def load_(cls, typ, tag, det="dayabay", pfx="source", name="t_delta.ini", dbg=False):
+        path = path_(typ, tag, det, name=name, pfx=pfx )
         i = cls(path, typ=typ, tag=tag, det=det, name=name)
         return i
 
@@ -273,8 +290,8 @@ class II(list):
     event metadata
     """
     @classmethod
-    def load_(cls, typ, tag, det="dayabay", name="t_delta.ini", dbg=False):
-        tpaths = tpaths_(typ, tag, det, name=name)
+    def load_(cls, typ, tag, det="dayabay", pfx="source", name="t_delta.ini", dbg=False):
+        tpaths = tpaths_(typ, tag, det, pfx=pfx, name=name)
         ii = map(lambda path:I(path, typ=typ, tag=tag, det=det, name=name, dbg=dbg), tpaths) 
         return cls(ii)
 
@@ -297,7 +314,7 @@ if __name__ == '__main__':
     args = opticks_main(src="torch", tag="10", det="PmtInBox")
 
     try:
-        i = I.load_(typ=args.src, tag=args.tag, det=args.det, name="t_delta.ini")
+        i = I.load_(typ=args.src, tag=args.tag, det=args.det, pfx="source", name="t_delta.ini")
     except IOError as err:
         log.fatal(err)
         sys.exit(args.mrc)

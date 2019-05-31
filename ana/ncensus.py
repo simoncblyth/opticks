@@ -94,7 +94,7 @@ if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
     opticks_environment() 
 
-    c = Census("$OPTICKS_EVENT_BASE/evt")
+    c = Census("$OPTICKS_EVENT_BASE/source/evt")
 
     c.dump("rs")
     c.dump("ps")

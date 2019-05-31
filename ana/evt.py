@@ -164,7 +164,7 @@ class Evt(object):
         return sel 
 
 
-    def __init__(self, tag="1", src="torch", det="dayabay", args=None, maxrec=10, rec=True, dbg=False, label=None, seqs=[], not_=False, nom="?", smry=False):
+    def __init__(self, tag="1", src="natural", det="g4live", pfx="source", args=None, maxrec=10, rec=True, dbg=False, label=None, seqs=[], not_=False, nom="?", smry=False):
         log.debug("%s.__init__ START " % nom)
         self.nom = nom
         self.smry = smry
@@ -174,11 +174,15 @@ class Evt(object):
         self.align = None
         self.warn_empty = True
 
-        self.tag = tag
+        log.info("pfx:%s" % pfx)
+
+        self.tag = str(tag)
         self.src = src
         self.det = det
-        self.dbg = dbg
+        self.pfx = pfx 
+        self.tagdir = tagdir_(det, src, tag, pfx=pfx)
 
+        self.dbg = dbg
 
         self.valid = True   ## load failures signalled by setting False
         self.maxrec = maxrec
@@ -204,22 +208,22 @@ class Evt(object):
         self.rec = rec
         self.desc = odict()
 
-        ok = self.init_metadata(tag, src, det, dbg)
+        ok = self.init_metadata()
 
         if not ok:
            log.warning("FAILED TO LOAD EVT %s " % label )
            return   
 
         self.init_types()
-        self.init_gensteps(tag, src, det, dbg)
+        self.init_gensteps()
         self.init_photons()
-        self.init_hits(tag, src, det, dbg)
+        self.init_hits()
 
         if rec:
-            self.init_records(tag, src, det, dbg)
-            self.init_sequence(tag, src, det, dbg)
+            self.init_records()
+            self.init_sequence()
             self.init_npoint()
-            self.init_source(tag, src, det, dbg)
+            self.init_source()
 
             if len(seqs) == 0:
                 psel = None
@@ -280,21 +284,19 @@ class Evt(object):
         return _flvana
     flvana = property(_get_flvana)
 
+    def aload(self, stem, optional=False):
+        a = A.load_(stem, self.src, self.tag, self.det, optional=optional, dbg=self.dbg, pfx=self.pfx ) 
+        return a 
 
-    def init_metadata(self, tag, src, det, dbg):
+    def init_metadata(self):
         log.debug("init_metadata")
-        self.tag = str(tag)
-        self.src = src
-        self.det = det  
-        self.tagdir = tagdir_(det, src, tag)
-
         metadata = Metadata(self.tagdir)
         log.info("loaded metadata from %s " % self.tagdir)
         log.info("metadata %s " % repr(metadata))
         self.metadata = metadata  
 
-        fdom = A.load_("fdom",src,tag,det, dbg=dbg) 
-        idom = A.load_("idom",src,tag,det, dbg=dbg) 
+        fdom = self.aload("fdom")
+        idom = self.aload("idom")
 
         if idom is None and fdom is None:
             log.warning("failed to load idom and fdom")
@@ -303,8 +305,8 @@ class Evt(object):
             self.valid = False
             return False
 
-        td = I.load_(src,tag,det, name="t_delta.ini", dbg=dbg)
-        tdii = II.load_(src,tag,det, name="t_delta.ini", dbg=dbg)
+        td = I.load_(self.src,self.tag,self.det, pfx=self.pfx, name="t_delta.ini", dbg=self.dbg)
+        tdii = II.load_(self.src,self.tag,self.det, pfx=self.pfx, name="t_delta.ini", dbg=self.dbg)
 
         self.td = td
         self.tdii = tdii
@@ -320,7 +322,8 @@ class Evt(object):
                         'ymax':fdom[0,0,1]+fdom[0,0,3],
                         'zmin':fdom[0,0,2]-fdom[0,0,3],
                         'zmax':fdom[0,0,2]+fdom[0,0,3],
-                     }
+                     }  ## hmm epsilon enlarge for precision sneakers ?
+                      
         self.idom = idom
         self.idomd = dict(maxrec=idom[0,0,3],maxbounce=idom[0,0,2],maxrng=idom[0,0,1])
 
@@ -331,15 +334,13 @@ class Evt(object):
 
 
 
-    def init_gensteps(self, tag, src, det, dbg):
+    def init_gensteps(self):
         """
         """
         log.debug("init_gensteps")
-        gs = A.load_("gs",src,tag,det, optional=True) 
-
+        gs = self.aload("gs", optional=True) 
         self.gs = gs
         self.desc['gs'] = "(gensteps)"
-
 
 
     def make_pflags_ana(self, pflags):
@@ -352,7 +353,7 @@ class Evt(object):
         #. c4 uses shape changing dtype splitting the 32 bits into 4*8 bits  
         """
         log.debug("init_photons")
-        ox = A.load_("ox",self.src,self.tag, self.det, optional=True ) 
+        ox = self.aload("ox",optional=True) 
         self.ox = ox
         self.desc['ox'] = "(photons) final photon step"
 
@@ -386,6 +387,11 @@ class Evt(object):
 
 
     def check_ox_fdom(self):
+        """
+        Checking final photon positions with respect to the space and time domains
+
+        * Observe precision sneakers beyond the domains.
+        """
         chks = [ 
                   [ 'x', self.ox[:,0,0], self.fdomd["xmin"], self.fdomd["xmax"] ],
                   [ 'y', self.ox[:,0,1], self.fdomd["ymin"], self.fdomd["ymax"] ],
@@ -419,9 +425,9 @@ class Evt(object):
         return tot
 
 
-    def init_hits(self, tag, src, det, dbg):
+    def init_hits(self):
         log.debug("init_hits")
-        ht = A.load_("ht",src,tag,det, optional=True) 
+        ht = self.aload("ht",optional=True) 
         self.ht = ht
         self.desc['ht'] = "(hits) surface detect SD final photon steps"
 
@@ -437,7 +443,7 @@ class Evt(object):
         self.hflags = ht.view(np.uint32)[:,3,3]
         self.hc4 = hc4
 
-        cn = "%s:%s" % (str(tag), det)
+        cn = "%s:%s" % (str(self.tag), self.det)
         self.hflags_ana = SeqAna( self.hflags, self.hismask, cnames=[cn], dbgseq=self.dbgmskhis, dbgzero=self.dbgzero, cmx=self.cmx, smry=self.smry)
  
         self.desc['hwl'] = "(hits) wavelength"
@@ -448,11 +454,12 @@ class Evt(object):
         self.desc['hc4'] = "(hits) final photon step: dtype split uint8 view of ox flags"
 
 
-    def init_records(self, tag, src, det, dbg):
+    def init_records(self):
         """
         """
         log.debug("init_records")
-        rx = A.load_("rx",src,tag,det,dbg, optional=True)
+        
+        rx = self.aload("rx",optional=True)
         self.rx = rx
         self.desc['rx'] = "(records) photon step records"
 
@@ -460,11 +467,11 @@ class Evt(object):
        
         log.debug("rx shape %s " % str(rx.shape))
 
-    def init_source(self, tag, src, det, dbg):
+    def init_source(self):
         """
         """
         log.debug("init_source")
-        so = A.load_("so",src,tag,det,dbg, optional=True)
+        so = self.aload("so",optional=True)
         self.so = so
         self.desc['so'] = "(source) input CPU side emitconfig photons"
 
@@ -500,7 +507,7 @@ class Evt(object):
         return SeqAna( seqmat, self.mattype, cnames=[cn], dbgseq=self.dbgseqmat, dbgmsk=self.dbgmskmat, dbgzero=self.dbgzero, cmx=self.cmx, smry=self.smry)
 
 
-    def init_sequence(self, tag, src, det, dbg):
+    def init_sequence(self):
         """
         Sequence values seqhis and seqmat for each photon::
 
@@ -522,7 +529,7 @@ class Evt(object):
         """
         log.debug("init_sequence START")
 
-        ph = A.load_("ph",src,tag,det,dbg, optional=True)
+        ph = self.aload("ph",optional=True)
         self.ph = ph
         self.desc['ph'] = "(records) photon history flag/material sequence"
         if ph.missing:
@@ -532,7 +539,7 @@ class Evt(object):
         seqhis = ph[:,0,0]
         seqmat = ph[:,0,1]
 
-        cn = "%s:%s" % (str(tag), det)
+        cn = "%s:%s" % (str(self.tag), self.det)
         # full history without selection
         all_seqhis_ana = self.make_seqhis_ana(seqhis)
         all_seqmat_ana = self.make_seqmat_ana(seqmat)

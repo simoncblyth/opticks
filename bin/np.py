@@ -19,8 +19,16 @@ Keep this general.
 
    inp tmp/blyth/OKG4Test/evt/g4live/natural/-1/so.npy source/evt/g4live/natural/-1/so.npy -v
 
+Comparing directories containing npy::
 
-python -c "import numpy as np, sys ; np.set_printoptions(suppress=True) ; print np.load(sys.argv[1]) " 
+   np.py tmp/blyth/OKG4Test/evt/g4live/natural/{-1,1} 
+
+Even more minimal::
+
+   python -c "import numpy as np, sys ; np.set_printoptions(suppress=True) ; print np.load(sys.argv[1]) " 
+
+
+
 """
 import sys, fnmatch, os, logging, numpy as np, commands, argparse
 from collections import OrderedDict as odict
@@ -30,7 +38,7 @@ log = logging.getLogger(__name__)
 np.set_printoptions(suppress=True, precision=4, linewidth=200)
 is_npy_ = lambda _:fnmatch.fnmatch(_,"*.npy")
 is_txt_ = lambda _:fnmatch.fnmatch(_,"*.txt")
-
+is_dir_ = lambda _:os.path.isdir(_)
 
 from opticks.bin.md5 import digest_
 from opticks.ana.base import stamp_
@@ -52,9 +60,11 @@ def dump_tree(base, args):
     print(os.path.abspath(base))
     for root, dirs, files in os.walk(base):
         sfiles = sorted(files)
-        for name in filter(is_txt_,sfiles):
-            path = os.path.join(root, name)
-            txt_brief(path)
+        if args.txt:
+            for name in filter(is_txt_,sfiles):
+                path = os.path.join(root, name)
+                txt_brief(path)
+            pass
         pass
         for name in filter(is_npy_,sfiles):
             path = os.path.join(root, name)
@@ -92,26 +102,38 @@ if __name__ == '__main__':
     parser.add_argument("-v","--verbose", action="store_true", default=False )
     parser.add_argument("-f","--float", action="store_true", default=True )
     parser.add_argument("-F","--nofloat", dest="float", action="store_false" )
+    parser.add_argument("-T","--notxt", dest="txt", action="store_false", default=True )
     parser.add_argument("-i","--int", action="store_true", default=False )
+    parser.add_argument("-d","--debug", action="store_true", default=False )
+
     args = parser.parse_args()
 
-    if len(args.paths) == 1:
-        p = args.paths[0]
-        if os.path.isdir(p):
+
+    dirs = filter(is_dir_, args.paths)
+    npys = filter(is_npy_, args.paths)
+
+    if args.debug:
+        print("dirs:%s" % repr(dirs))
+        print("npys:%s" % repr(npys))
+    pass
+
+    if len(dirs) > 0:
+        for p in dirs: 
             dump_tree(p, args)
-        else:
-            npy_brief(p, args)
-        pass 
-    elif len(args.paths) == 0:
+        pass
+    elif len(dirs) == 0 and len(npys) == 0:
         dump_tree(".", args)
     else:
-        npy = filter(is_npy_, args.paths)
+        pass
+    pass
+
+    if len(npys) > 0:
         n = odict()
         labels = "abcd"
-        for i,path in enumerate(npy):
+        for i,path in enumerate(npys):
             n[i] = npy_brief(path, args, label=labels[i])
         pass
-        ln = len(npy)
+        ln = len(npys)
 
         if ln > 0: a=n[0]
         if ln > 1: b=n[1]

@@ -231,10 +231,6 @@ class OpticksEnv(object):
 
         * IDPATH is not allowed as an input, it is an internal envvar only 
 
-        TODO:
-
-        * extracate use of OPTICKS_DATA_DIR, used by hismask.py for flag abbreviations
-
         """ 
         assert not os.environ.has_key("IDPATH"), "IDPATH envvar as input is forbidden"
         assert os.environ.has_key("OPTICKS_KEY"), "OPTICKS_KEY envvar is required"
@@ -251,8 +247,8 @@ class OpticksEnv(object):
 
         self.setdefault("OPTICKS_INSTALL_PREFIX",  self.install_prefix)
         self.setdefault("OPTICKS_INSTALL_CACHE",   os.path.join(self.install_prefix, "installcache"))
-        #self.setdefault("OPTICKS_DATA_DIR",        os.path.join(self.install_prefix, "opticksdata"))   
-        self.setdefault("OPTICKS_EVENT_BASE",      os.path.join(keydir, "source" ))
+        #self.setdefault("OPTICKS_EVENT_BASE",      os.path.join(keydir, "source" ))
+        self.setdefault("OPTICKS_EVENT_BASE",       keydir )
 
 
     def legacy_init(self): 
@@ -378,13 +374,14 @@ class OK(argparse.Namespace):
 def opticks_args(**kwa):
 
     oad_key = "OPTICKS_ANA_DEFAULTS"
-    oad = os.environ.get(oad_key,"det=dayabay,src=torch,tag=1")
+    oad = os.environ.get(oad_key,"det=g4live,src=natural,tag=1,pfx=source")
     defaults = dict(map(lambda ekv:ekv.split("="), oad.split(","))) 
     log.info("envvar %s -> defaults %s " % (oad_key, repr(defaults)))
 
     det = kwa.get("det", defaults["det"])
     src = kwa.get("src", defaults["src"])
     tag = kwa.get("tag", defaults["tag"])
+    pfx = kwa.get("pfx", defaults["pfx"])
 
     llv = kwa.get("loglevel", "info")
     llv2 = kwa.get("log-level", "info")
@@ -458,8 +455,9 @@ def opticks_args(**kwa):
     parser = argparse.ArgumentParser(doc)
 
     parser.add_argument(     "--tag",  default=tag, help="tag identifiying a simulation within a specific source and detector geometry, negated tag for Geant4 equivalent. Default %(default)s" )
-    parser.add_argument(     "--det",  default=det, help="detector geometry: eg PmtInBox, dayabay. Default %(default)s. "  )
-    parser.add_argument(     "--src",  default=src, help="photon source: torch, scintillation OR cerenkov. Default %(default)s " )
+    parser.add_argument(     "--det",  default=det, help="detector geometry: eg g4live, PmtInBox, dayabay. Default %(default)s. "  )
+    parser.add_argument(     "--src",  default=src, help="photon source: torch, natural, scintillation OR cerenkov. Default %(default)s " )
+    parser.add_argument(     "--pfx",  default=pfx, help="either \"source\" for 1st executable or the name of the executable for subsequent eg \"OKG4Test\". Default %(default)s " )
 
     parser.add_argument(     "--noshow",  dest="show", default=show, action="store_false", help="switch off dumping commandline "  )
     parser.add_argument(     "--noplot",  dest="plot", default=plot, action="store_false", help="switch off plotting"  )

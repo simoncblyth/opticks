@@ -14,10 +14,13 @@ from opticks.ana.base import opticks_main
 from opticks.ana.evt import Evt
 
 if __name__ == '__main__':
-    args = opticks_main(tag="1",src="natural", det="g4live", doc=__doc__)
+
+    args = opticks_main(tag="1",src="natural", det="g4live", pfx="tmp/blyth/OKG4Test", doc=__doc__)
     np.set_printoptions(suppress=True, precision=3)
 
-    evt = Evt(tag=args.tag, src=args.src, det=args.det, seqs=[], args=args)
+    print("pfx:%s" % args.pfx ) 
+
+    evt = Evt(tag=args.tag, src=args.src, det=args.det, pfx=args.pfx, seqs=[], args=args)
 
     log.debug("evt") 
     print evt
