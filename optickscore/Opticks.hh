@@ -287,6 +287,7 @@ class OKCORE_API Opticks {
        void        updateCacheMeta() ; 
        void        appendCacheMeta(const char* key, NMeta* obj);
        void        saveCacheMeta() const ; 
+       void        dumpCacheMeta(const char* msg="Opticks::dumpCacheMeta") const ; 
 
        const char* getRunComment() const ;
        int         getRunStamp() const ; 

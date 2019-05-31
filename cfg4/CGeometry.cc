@@ -65,14 +65,14 @@ void CGeometry::init()
     CDetector* detector = NULL ; 
     if(m_ok->hasOpt("test"))
     {
-        LOG(fatal) << "CGeometry::init G4 simple test geometry " ; 
+        LOG(fatal) << "G4 simple test geometry " ; 
         OpticksQuery* query = NULL ;  // normally no OPTICKS_QUERY geometry subselection with test geometries
         detector  = static_cast<CDetector*>(new CTestDetector(m_hub, query, m_sd)) ; 
     }
     else
     {
         // no options here: will load the .gdml sidecar of the geocache .dae 
-        LOG(fatal) << "CGeometry::init G4 GDML geometry " ; 
+        LOG(fatal) << "G4 GDML geometry " ; 
         OpticksQuery* query = m_ok->getQuery();
         detector  = static_cast<CDetector*>(new CGDMLDetector(m_hub, query, m_sd)) ; 
     }
@@ -90,9 +90,9 @@ bool CGeometry::hookup(CG4* g4)
 
 
     glm::vec4 ce = m_detector->getCenterExtent();
-    LOG(info) << "CGeometry::hookup"
-              << " center_extent " << gformat(ce) 
-              ;    
+    LOG(info) 
+        << " center_extent " << gformat(ce) 
+        ;    
 
     m_ok->setSpaceDomain(ce); // triggers Opticks::configureDomains
 

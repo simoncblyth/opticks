@@ -300,7 +300,7 @@ void Composition::commandClipper(const char* cmd) { m_clipper->command(cmd);  }
 
 void Composition::setCameraType(unsigned cameratype)
 {
-    LOG(info) << " cameratype " << cameratype ; 
+    LOG(debug) << " cameratype " << cameratype ; 
     m_camera->setType(cameratype); 
 }
 
@@ -1036,7 +1036,7 @@ unsigned int Composition::getPixelFactor()
 
 void Composition::setSize(const glm::uvec4& size)
 {
-    LOG(error)
+    LOG(debug)
               << " x " << size.x 
               << " y " << size.y 
               << " z " << size.z

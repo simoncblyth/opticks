@@ -582,14 +582,17 @@ void BOpticksResource::setupViaKey()
     m_srcevtbase = makeIdPathPath("source"); 
     m_res->addDir( "srcevtbase", m_srcevtbase ); 
 
-    //const char* exename = SAr::Instance->exename(); 
     const char* exename = SProc::ExecutableName() ;
-    bool exe_endswith_test = SStr::EndsWith(exename, "Test") ;  
-    if(!exe_endswith_test)
+    bool exename_allowed = SStr::EndsWith(exename, "Test") || SStr::EndsWith(exename, "Minimal") ;  
+    if(!exename_allowed)
     {
-        LOG(fatal) << "exename must end with Test " << exename << " (this is to prevent stomping on geocache content) " ; 
+        LOG(fatal) << "exename " << exename
+                   << " is not allowed "  
+                   << " (this is to prevent stomping on geocache content). " 
+                   << " Names ending with Test or Minimal are permitted" 
+                   ; 
     }   
-    assert( exe_endswith_test ); 
+    assert( exename_allowed ); 
 
     //const char* user = SSys::username(); 
     //m_evtbase = isKeySource() ? strdup(m_srcevtbase) : makeIdPathPath("tmp", user, exename ) ;  

@@ -54,6 +54,8 @@ class CFG4_API CPhysicsList : public G4VUserPhysicsList
         G4VProcess*  m_cerenkovProcess ; 
         G4VProcess*  m_scintillationProcess ; 
         G4VProcess*  m_boundaryProcess ; 
+        G4VProcess*  m_absorptionProcess ; 
+        G4VProcess*  m_rayleighProcess ; 
 
         typedef std::vector<G4ParticleDefinition*> VP ; 
         VP m_particles ; 

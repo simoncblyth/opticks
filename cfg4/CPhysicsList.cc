@@ -4,6 +4,10 @@
 #include "G4ProcessManager.hh"
 
 #include "CG4.hh"
+
+#include "G4OpAbsorption.hh"
+#include "G4OpRayleigh.hh"
+
 #include "DsG4OpBoundaryProcess.h"
 #include "Opticks.hh"
 
@@ -22,7 +26,9 @@ CPhysicsList::CPhysicsList(CG4* g4)
     m_cerenkov(NULL),
     m_cerenkovProcess(NULL),
     m_scintillationProcess(NULL),
-    m_boundaryProcess(NULL)
+    m_boundaryProcess(NULL),
+    m_absorptionProcess(NULL),
+    m_rayleighProcess(NULL)
 {
     INSTANCE = this ; 
 }
@@ -220,6 +226,10 @@ void CPhysicsList::constructOp()
     m_cerenkov = new CCerenkov(m_g4); 
     m_cerenkovProcess = m_cerenkov->getProcess() ; 
 
+    m_absorptionProcess = new G4OpAbsorption();
+    m_rayleighProcess = new G4OpRayleigh();
+
+
 #ifdef USE_CUSTOM_BOUNDARY
     m_boundaryProcess = new DsG4OpBoundaryProcess(m_g4) ;
 #else
@@ -248,9 +258,15 @@ void CPhysicsList::constructOp( G4ParticleDefinition* particle )
 
     if (particleName == "opticalphoton")
     {
-        //pmanager->AddDiscreteProcess(fAbsorptionProcess);
-        //pmanager->AddDiscreteProcess(fRayleighScatteringProcess);
+        if(m_absorptionProcess) 
+        pmanager->AddDiscreteProcess(m_absorptionProcess);
+
+        if(m_rayleighProcess)
+        pmanager->AddDiscreteProcess(m_rayleighProcess);
+
         //pmanager->AddDiscreteProcess(fMieHGScatteringProcess);
+
+        assert(m_boundaryProcess); 
         pmanager->AddDiscreteProcess(m_boundaryProcess);
     }
 }

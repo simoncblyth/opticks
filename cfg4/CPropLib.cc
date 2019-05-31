@@ -65,7 +65,7 @@ GSurfaceLib* CPropLib::getSurfaceLib()
 
 void CPropLib::init()
 {
-    pLOG(m_level,-2) << "CPropLib::init" ; 
+    pLOG(m_level,-2) << "[" ; 
 
     LOG(info) << m_slib->desc(); 
     //m_slib->dump(); 
@@ -75,8 +75,6 @@ void CPropLib::init()
     if(m_sensor_surface == NULL)
     {
         LOG(fatal) << " surface lib sensor_surface NULL " ;
-
-
         //assert(0);   // this happens with test running such as tboolean-box 
     }
     else
@@ -92,6 +90,7 @@ void CPropLib::init()
     initSetupOverrides();
  
     //convert();
+    pLOG(m_level,-2) << "]" ; 
 }
 
 

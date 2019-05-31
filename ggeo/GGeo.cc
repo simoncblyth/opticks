@@ -743,6 +743,11 @@ void GGeo::save()
 
 void GGeo::saveCacheMeta() const 
 {
+    if(m_lv2sd)
+    {
+        m_ok->appendCacheMeta("lv2sd", m_lv2sd); 
+    } 
+    m_ok->dumpCacheMeta("GGeo::saveCacheMeta"); 
     m_ok->saveCacheMeta(); 
 }
 
@@ -750,6 +755,9 @@ void GGeo::saveCacheMeta() const
 void GGeo::loadCacheMeta() // loads metadata that the process that created the geocache persisted into the geocache
 {
     const char* path = m_ok->getCacheMetaPath(); 
+
+    LOG(error) << path ; 
+
     assert( m_loadedcachemeta == NULL ); 
     m_loadedcachemeta = NMeta::Load(path);
     if( m_loadedcachemeta )
@@ -757,6 +765,17 @@ void GGeo::loadCacheMeta() // loads metadata that the process that created the g
         m_loadedcachemeta->dump("GGeo::loadCacheMeta");  
     }
     m_lv2sd = m_loadedcachemeta->getObj("lv2sd"); 
+
+    if( m_lv2sd )
+    {
+        m_lv2sd->dump("GGeo::loadCacheMeta.m_lv2sd"); 
+    }
+    else
+    {
+        LOG(error) << " NULL m_lv2sd " ;  
+    }
+
+
 }
 
 

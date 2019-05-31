@@ -3,6 +3,13 @@ ckm-okg4-initial-comparisons
 
 Context :doc:`ckm-okg4-initial-comparisons-reveal-idom-bug`
 
+Issues
+----------
+
+* :doc:`ckm-okg4-initial-comparisons-sensor-matching-yet-again`
+
+  * G4 missing SD/SA : resulting in history divergence 
+  * Seen this kinda problem before several times before : sensitivity fails to travel OR be translated  
 
 
 ckm-- source events
@@ -35,7 +42,6 @@ ckm-- source events
     . :                           source/evt/g4live/natural/1/ps.npy :          (221, 1, 4) : ad7498e182d8df1bf720c0ba0e72736c : 20190530-2247 
     . :                           source/evt/g4live/natural/1/rs.npy :      (221, 10, 1, 4) : ce59ba752de205fb16062260c6383503 : 20190530-2247 
     . :                           source/evt/g4live/natural/1/rx.npy :      (221, 10, 2, 4) : c085570c57f4749d13475312fcd16fb5 : 20190530-2247 
-
 
 
 
@@ -91,7 +97,6 @@ Observations:
     a :                          source/evt/g4live/natural/-1/so.npy :          (221, 4, 4) : d1b4242225f7ffc7f0ad38a9669562a4 : 20190530-2247 
     b :                        OKG4Test/evt/g4live/natural/-1/so.npy :          (221, 4, 4) : 882f44b7864bfcde55fe2ebe922895e5 : 20190531-1448 
      max(a-b)   5.96e-08  min(a-b)  -5.96e-08 
-
 
 
 * G4 : ht.npy getting zero hits in 2nd executable 
@@ -216,7 +221,6 @@ happens for 1(OK) but not -1(G4).::
     A([[   0.336,   -0.061,    0.   ,    0.   ],
        [ 500.015,  206.915, -149.327,    2.576],
        [1000.   ,  521.104, -376.019,    4.682]])
-
 
 
 

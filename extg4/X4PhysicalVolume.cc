@@ -165,10 +165,13 @@ void X4PhysicalVolume::convertSensors()
     unsigned num_sks1 = m_ggeo->getNumSkinSurfaces() ; 
     assert( num_bds == m_ggeo->getNumBorderSurfaces()  ); 
 
+    unsigned num_lvsd = m_ggeo->getNumLVSD() ; 
+
     LOG(debug) << "]" ; 
 
     LOG(info) 
          << " m_lvsdname " << m_lvsdname 
+         << " num_lvsd " << num_lvsd 
          << " num_clv " << num_clv 
          << " num_bds " << num_bds
          << " num_sks0 " << num_sks0
@@ -182,6 +185,8 @@ void X4PhysicalVolume::convertSensors()
 /**
 X4PhysicalVolume::convertSensors_r
 -----------------------------------
+
+Recurses over the geometry looking for volumes with associated SensitiveDetector.
 
 Sensors are identified by two approaches:
 

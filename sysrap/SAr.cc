@@ -32,6 +32,11 @@ SAr::SAr( int argc_ , char** argv_ , const char* envvar, char delim )
     std::string aline = argline();
     _cmdline = strdup(aline.c_str());    
 
+    if(has_arg("--args"))
+    {
+        std::cout << _cmdline << std::endl ;     
+    }
+
 
     if(Instance)
         std::cout << "SAr::SAr replacing Instance " << std::endl ; 
@@ -119,7 +124,7 @@ void SAr::dump() const
 std::string SAr::argline() const 
 {
     std::stringstream ss ; 
-    for(int i=0 ; i < _argc ; i++ ) ss << " " << ( _argv[i] ? _argv[i] : "NULL" ) ; 
+    for(int i=0 ; i < _argc ; i++ ) ss << ( _argv[i] ? _argv[i] : "NULL" ) << " "  ; 
     return ss.str(); 
 }
 
@@ -134,4 +139,11 @@ const char* SAr::get_arg_after(const char* option, const char* fallback) const
     return fallback ; 
 }
 
-
+bool SAr::has_arg( const char* arg ) const 
+{
+    for(int i=1 ; i < _argc ; i++ ) 
+    {
+        if(_argv[i] && strcmp(_argv[i], arg) == 0) return true ;   
+    }    
+    return false ; 
+}

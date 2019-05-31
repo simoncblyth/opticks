@@ -124,11 +124,15 @@ void CDetector::hookupSD()
 {
     unsigned nlvsd = m_ggeo->getNumLVSD() ;
     const std::string sdname = m_sd ? m_sd->GetName() : "noSD" ; 
-    LOG(error) 
-        << " nlvsd " << nlvsd
-        << " sd " << m_sd 
-        << " sdname " << sdname
-        ;  
+    if(nlvsd == 0 || m_sd == NULL )
+    {
+        LOG(error) 
+            << " NOT INVOKING SetSensitiveDetector ON ANY VOLUMES AS nlvsd is zero or m_sd NULL " 
+            << " nlvsd " << nlvsd
+            << " m_sd " << m_sd 
+            << " sdname " << sdname
+            ;  
+    }
 
 
     if(!m_sd) return ; 
@@ -313,12 +317,11 @@ in GSurfaceLib.
 
 void CDetector::attachSurfaces()
 {
-    LOG(m_level) << "." ; 
-
     int num_bs = G4LogicalBorderSurface::GetNumberOfBorderSurfaces();
     int num_sk = G4LogicalSkinSurface::GetNumberOfSkinSurfaces();
 
     LOG(info) 
+         << "["
          << " num_bs " << num_bs
          << " num_sk " << num_sk
          ;
@@ -326,17 +329,15 @@ void CDetector::attachSurfaces()
     if(num_bs > 0 || num_sk > 0)
     {
         LOG(error) << " some surfaces were found : so assume there is nothing to do " ; 
-        return ; 
+    }
+    else
+    {
+        LOG(error) << " no surfaces found : try to convert some from Opticks model " ; 
+        bool exclude_sensors = true ; 
+        m_slib->convert(this, exclude_sensors );
     }
 
-    //if(m_dbgsurf)
-        LOG(info) << "[--dbgsurf] CDetector::attachSurfaces START" ;
-
-    bool exclude_sensors = true ; 
-    m_slib->convert(this, exclude_sensors );
-
-    //if(m_dbgsurf)
-        LOG(info) << "[--dbgsurf] CDetector::attachSurfaces DONE " ;
+    LOG(info) << "]" ;
 
 } 
 

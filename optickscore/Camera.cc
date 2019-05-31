@@ -274,7 +274,7 @@ void Camera::setType(unsigned type)
 {
     m_type = type  ;
     m_changed = true ; 
-    LOG(info) << " type " << m_type ; 
+    LOG(debug) << " type " << m_type ; 
 }
 
 void Camera::setPerspective(){  setStyle(PERSPECTIVE_CAMERA) ; }

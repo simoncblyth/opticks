@@ -4,6 +4,8 @@
 
 class G4Scintillation ;
 class G4OpBoundaryProcess ;
+class G4OpAbsorption ;
+class G4OpRayleigh ;
 
 template <typename T>
 struct PhysicsList : public G4VUserPhysicsList
@@ -20,6 +22,8 @@ struct PhysicsList : public G4VUserPhysicsList
     G4int                fVerboseLevel ;  
     T*                   fCerenkovProcess ; 
     G4Scintillation*     fScintillationProcess ; 
+    G4OpAbsorption*      fAbsorptionProcess;
+    G4OpRayleigh*        fRayleighProcess;
     G4OpBoundaryProcess* fBoundaryProcess ; 
 };
 

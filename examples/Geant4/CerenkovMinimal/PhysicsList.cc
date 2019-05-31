@@ -7,6 +7,8 @@
 
 #include "G4Version.hh"
 #include "G4Scintillation.hh"
+#include "G4OpAbsorption.hh"
+#include "G4OpRayleigh.hh"
 #include "G4OpBoundaryProcess.hh"
 
 
@@ -152,9 +154,9 @@ void PhysicsList<T>::ConstructOp()
     fCerenkovProcess->SetTrackSecondariesFirst(true);   
     fCerenkovProcess->SetVerboseLevel(fVerboseLevel);
 
+    fAbsorptionProcess = new G4OpAbsorption();
+    fRayleighProcess = new G4OpRayleigh();
     fBoundaryProcess = new G4OpBoundaryProcess();
-
-
 
 
 #if ( G4VERSION_NUMBER >= 1042 )
@@ -188,8 +190,8 @@ void PhysicsList<T>::ConstructOp()
         if (particleName == "opticalphoton") 
         {
             G4cout << "PhysicsList<T>::ConstructOp AddDiscreteProcess to OpticalPhoton " << G4endl;
-            //pmanager->AddDiscreteProcess(fAbsorptionProcess);
-            //pmanager->AddDiscreteProcess(fRayleighScatteringProcess);
+            pmanager->AddDiscreteProcess(fAbsorptionProcess);
+            pmanager->AddDiscreteProcess(fRayleighProcess);
             //pmanager->AddDiscreteProcess(fMieHGScatteringProcess);
             pmanager->AddDiscreteProcess(fBoundaryProcess);
         }

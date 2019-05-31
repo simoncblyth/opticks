@@ -20,7 +20,10 @@ class CSensitiveDetector ;
 CGeometry
 ===========
 
-1. init with CGDMLDetector or CTestDetector when using "--test" option 
+Canonical m_geometry instance is ctor resident of CG4.
+
+
+1. init with CGDMLDetector, or CTestDetector when using "--test" option 
 2. relies on creator(CG4) to call CGeometry::hookup(CG4* g4) giving the geometry to Geant4 
 
 

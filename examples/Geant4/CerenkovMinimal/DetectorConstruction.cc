@@ -170,6 +170,8 @@ G4MaterialPropertyVector* DetectorConstruction::MakeAirRI()
 
 G4VPhysicalVolume* DetectorConstruction::Construct()
 {
+    G4cout << "[ DetectorConstruction::Construct " << G4endl ; 
+
     G4Material* air = MakeAir(); 
     G4Box* so_0 = new G4Box("World",1000.,1000.,1000.);
     G4LogicalVolume* lv_0 = new G4LogicalVolume(so_0,air,"World",0,0,0);
@@ -199,7 +201,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
     //std::cout << " lv_1_name " << lv_1_name << std::endl ; 
     assert( strcmp( lv_1_name.c_str(), "Obj" ) == 0 ); 
 
-    G4cout << "DetectorConstruction::Construct DONE " << G4endl ; 
+    G4cout << "] DetectorConstruction::Construct " << G4endl ; 
 
     return pv_0 ; 
 }

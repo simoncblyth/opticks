@@ -351,7 +351,7 @@ L4Cerenkov::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
 		// Determine photon energy
 #ifdef WITH_OPTICKS
         unsigned record_id = opticks_photon_offset+i ; 
-        std::cout << "(photon gen loop) " << record_id << std::endl ;
+        //std::cout << "(photon gen loop) " << record_id << std::endl ;
         G4Opticks::GetOpticks()->setAlignIndex(record_id); 
 #endif
 

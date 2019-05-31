@@ -1,14 +1,79 @@
 G4OK_SD_Matching
 =================
 
+Making G4 do SD/SA how Opticks does
+-------------------------------------
+
+* need to set status in the corresponding way and fStopAndKill the track 
+
+
+Geant4 Hits
+--------------
+
+Planting an assert in CSensitiveDetector::ProcessHits::
+
+    (gdb) bt
+    #0  0x00007fffe2035207 in raise () from /usr/lib64/libc.so.6
+    #1  0x00007fffe20368f8 in abort () from /usr/lib64/libc.so.6
+    #2  0x00007fffe202e026 in __assert_fail_base () from /usr/lib64/libc.so.6
+    #3  0x00007fffe202e0d2 in __assert_fail () from /usr/lib64/libc.so.6
+    #4  0x00007fffefd6d1b3 in CSensitiveDetector::ProcessHits (this=0x8ef800, step=0x88a800) at /home/blyth/opticks/cfg4/CSensitiveDetector.cc:49
+    #5  0x00007fffec12d431 in G4VSensitiveDetector::Hit (this=0x8ef800, aStep=0x88a800) at /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/digits_hits/detector/include/G4VSensitiveDetector.hh:122
+    #6  0x00007fffec12b6df in G4SteppingManager::Stepping (this=0x88a660) at /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/tracking/src/G4SteppingManager.cc:237
+    #7  0x00007fffec137236 in G4TrackingManager::ProcessOneTrack (this=0x88a620, apValueG4Track=0x2243bd0) at /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/tracking/src/G4TrackingManager.cc:126
+    #8  0x00007fffec3afd46 in G4EventManager::DoProcessing (this=0x88a590, anEvent=0x216f2a0) at /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/event/src/G4EventManager.cc:185
+    #9  0x00007fffec3b0572 in G4EventManager::ProcessOneEvent (this=0x88a590, anEvent=0x216f2a0) at /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/event/src/G4EventManager.cc:338
+    #10 0x00007fffec6b2665 in G4RunManager::ProcessOneEvent (this=0x701520, i_event=0) at /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/run/src/G4RunManager.cc:399
+    #11 0x00007fffec6b24d7 in G4RunManager::DoEventLoop (this=0x701520, n_event=1, macroFile=0x0, n_select=-1) at /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/run/src/G4RunManager.cc:367
+    #12 0x00007fffec6b1d2d in G4RunManager::BeamOn (this=0x701520, n_event=1, macroFile=0x0, n_select=-1) at /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/run/src/G4RunManager.cc:273
+    #13 0x00007fffefded44d in CG4::propagate (this=0x708570) at /home/blyth/opticks/cfg4/CG4.cc:331
+    #14 0x00007ffff7bd570f in OKG4Mgr::propagate_ (this=0x7fffffffd280) at /home/blyth/opticks/okg4/OKG4Mgr.cc:177
+    #15 0x00007ffff7bd55cf in OKG4Mgr::propagate (this=0x7fffffffd280) at /home/blyth/opticks/okg4/OKG4Mgr.cc:117
+    #16 0x00000000004039a7 in main (argc=7, argv=0x7fffffffd5b8) at /home/blyth/opticks/okg4/tests/OKG4Test.cc:9
+
+
+All it takes to trigger a hit is for the prestep point to be from a sensitive volume, g4-;g4-cls G4SteppingManager::
+
+    115 //////////////////////////////////////////
+    116 G4StepStatus G4SteppingManager::Stepping()
+    117 //////////////////////////////////////////
+    118 {
+    119 
+    ...
+    230 // Send G4Step information to Hit/Dig if the volume is sensitive
+    231    fCurrentVolume = fStep->GetPreStepPoint()->GetPhysicalVolume();
+    232    StepControlFlag =  fStep->GetControlFlag();
+    233    if( fCurrentVolume != 0 && StepControlFlag != AvoidHitInvocation) {
+    234       fSensitive = fStep->GetPreStepPoint()->
+    235                                    GetSensitiveDetector();
+    236       if( fSensitive != 0 ) {
+    237         fSensitive->Hit(fStep);
+    238       }
+    239    }
+    240 
+    241 // User intervention process.
+    242    if( fUserSteppingAction != 0 ) {
+    243       fUserSteppingAction->UserSteppingAction(fStep);
+    244    }
+    245    G4UserSteppingAction* regionalAction
+    246     = fStep->GetPreStepPoint()->GetPhysicalVolume()->GetLogicalVolume()->GetRegion()
+    247       ->GetRegionalSteppingAction();
+    248    if( regionalAction ) regionalAction->UserSteppingAction(fStep);
+    249 
+    250 // Stepping process finish. Return the value of the StepStatus.
+    251    return fStepStatus;
+    252 
+    253 }
+
 
 Geant4
 --------
 
 Approach to optical Detection is based on EFFICIENCY value, only 
 once the dice falls the right way for detection (as a fraction of absorption)
-is the SD associated to LV looked for, and if present a hit is formed.
+is the SD associated to poststep looked for, and if present the Hit method is called.
 
+Contrast this with the above, which just needs a sensitive prestep volume.
 
 ::
 

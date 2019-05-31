@@ -107,7 +107,7 @@ void OpticksDbg::postconfigure()
    postconfigure( enabledmm, m_enabledmergedmesh );
 
 
-   LOG(info) << " m_csgskiplv  " << m_csgskiplv.size() ; 
+   LOG(debug) << " m_csgskiplv  " << m_csgskiplv.size() ; 
    //assert(  m_csgskiplv.size() > 0 );  
 
 

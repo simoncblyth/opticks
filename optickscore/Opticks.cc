@@ -1391,7 +1391,7 @@ const char* Opticks::getRunDate() const
 
 void Opticks::appendCacheMeta(const char* key, NMeta* obj)
 {
-     m_cachemeta->setObj(key, obj); 
+    m_cachemeta->setObj(key, obj); 
 }
 void Opticks::updateCacheMeta()  
 {
@@ -1438,6 +1438,11 @@ void Opticks::updateCacheMeta()
 
 }
 
+
+void Opticks::dumpCacheMeta(const char* msg) const 
+{
+    m_cachemeta->dump(msg) ;
+}
 void Opticks::saveCacheMeta() const 
 {
     const char* path = getRunCommentPath(); 

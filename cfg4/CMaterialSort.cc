@@ -7,17 +7,26 @@
 CMaterialSort::CMaterialSort(const std::map<std::string, unsigned>& order )
     :
     m_order(order),
-    m_mtab(G4Material::GetMaterialTable())
+    m_mtab(G4Material::GetMaterialTable()),
+    m_dbg(false)
 {
     init();
 }
 
 void CMaterialSort::init()
 {
-    dumpOrder("order from ctor argument"); 
-    dump("before");
+    if(m_dbg)
+    {
+        dumpOrder("order from ctor argument"); 
+        dump("before");
+    }
+
     sort(); 
-    dump("after");
+
+    if(m_dbg)
+    {
+        dump("after");
+    }
 }
 
 

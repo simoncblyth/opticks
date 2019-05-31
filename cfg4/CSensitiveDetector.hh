@@ -7,6 +7,14 @@ class G4Step ;
 class G4TouchableHistory ;
 class G4HCofThisEvent ; 
 
+/**
+CSensitiveDetector
+====================
+
+Canonical m_sd instance is ctor resident of CG4 
+
+**/
+
 class CSensitiveDetector : public G4VSensitiveDetector
 {
     public:

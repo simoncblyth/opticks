@@ -56,10 +56,11 @@ void misc(GGeo* m_ggeo)
 
 
 
-void test_GGeo(GGeo* gg)
+void test_GGeo(const GGeo* gg)
 {
     GMergedMesh* mm = gg->getMergedMesh(0);
     unsigned numVolumes = mm->getNumVolumes();
+    LOG(info) << " numVolumes " << numVolumes ; 
 
     GBndLib* blib = gg->getBndLib();
 
@@ -154,6 +155,11 @@ void test_GGeo(GGeo* gg)
 } 
 
 
+void test_GGeo_sd(const GGeo* m_ggeo)
+{
+    unsigned nlvsd = m_ggeo->getNumLVSD() ;
+    LOG(info) << " nlvsd " << nlvsd ; 
+}
 
 
 
@@ -169,7 +175,10 @@ int main(int argc, char** argv)
     gg.loadFromCache();
     gg.dumpStats();
 
-    test_GGeo(&gg);
+    //test_GGeo(&gg);
+
+    test_GGeo_sd(&gg);
+
 
 
     return 0 ;

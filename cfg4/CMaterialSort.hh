@@ -44,6 +44,7 @@ class CFG4_API CMaterialSort {
    private:
         const std::map<std::string, unsigned>&  m_order  ;
         G4MaterialTable*                        m_mtab ; 
+        bool                                    m_dbg ; 
 };
 
  
