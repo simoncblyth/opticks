@@ -11,6 +11,7 @@ class BRAP_API BConverter {
 
      static short shortnorm( float v, float center, float extent ); 
      static unsigned char my__float2uint_rn( float fv ) ;
+     static unsigned char my__float2uint_rn_kludge( float fv ) ;
     
      static short shortnorm_old( float v, float center, float extent ); 
      static unsigned char my__float2uint_rn_old( float fv ) ;

@@ -97,6 +97,17 @@ void test_to_from_vtxidx()
 }
 
 
+void test_getTransform()
+{
+    nbbox bb = make_bbox( -100,-100,-100, 100, 100, 100 ); 
+    NTrianglesNPY* tris = NTrianglesNPY::box(bb);
+
+    glm::mat4 txf = tris->getTransform(); 
+    LOG(info) << "txf: " << glm::to_string(txf) ; 
+
+}
+
+
 int main(int argc, char**argv)
 {
     OPTICKS_LOG(argc, argv);
@@ -106,9 +117,10 @@ int main(int argc, char**argv)
     test_transform();
     test_latlon();
     test_icosahedron();
-*/
-    //test_box();
+    test_box();
     test_to_from_vtxidx();
+*/
+    test_getTransform(); 
 }
 
 

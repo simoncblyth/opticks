@@ -102,9 +102,10 @@ glm::mat4 NTrianglesNPY::getTransform()
 
 
 NTrianglesNPY::NTrianglesNPY(const NTriSource* tris)
-    :
-    m_tris(NPY<float>::make(0,3,3)),
-    m_normals(NPY<float>::make(0,3,3))
+   :
+   m_tris(NPY<float>::make(0,3,3)),
+   m_normals(NPY<float>::make(0,3,3)),
+   m_transform(1.0f) 
 {
     glm::uvec3 t ; 
     glm::vec3 a ; 
@@ -122,15 +123,17 @@ NTrianglesNPY::NTrianglesNPY(const NTriSource* tris)
 
 NTrianglesNPY::NTrianglesNPY() 
    :
-    m_tris(NPY<float>::make(0,3,3)),
-    m_normals(NPY<float>::make(0,3,3))
+   m_tris(NPY<float>::make(0,3,3)),
+   m_normals(NPY<float>::make(0,3,3)),
+   m_transform(1.0f) 
 {
 }
 
 NTrianglesNPY::NTrianglesNPY(NPY<float>* tris, NPY<float>* normals)
    :
    m_tris(tris),
-   m_normals(normals)
+   m_normals(normals),
+   m_transform(1.0f) 
 {
 }
 

@@ -12,10 +12,12 @@
 #include "GenstepNPY.hpp"
 
 #include "Opticks.hh"
+#include "OpticksFlags.hh"
 #include "GConstant.hh"
 
 // cfg4-
 #include "CInputPhotonSource.hh"
+#include "CEventInfo.hh"
 #include "CRecorder.hh"
 
 // g4-
@@ -150,6 +152,22 @@ void CInputPhotonSource::GeneratePrimaryVertex(G4Event *evt)
     LOG(info) << "CInputPhotonSource::GeneratePrimaryVertex"
               << " num_photons " << num_photons
                ;
+
+
+
+    unsigned event_gencode = TORCH ;   // no 1-based ffs indexable space for a new code 
+    evt->SetUserInformation( new CEventInfo(event_gencode)) ;
+
+    LOG(info)
+        << " event_gencode " << event_gencode
+        << " : " << OpticksFlags::Flag(event_gencode)
+        ; 
+
+
+
+
+
+
 
 	for (unsigned i = 0; i < num_photons ; i++) 
     {

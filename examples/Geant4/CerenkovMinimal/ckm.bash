@@ -128,8 +128,11 @@ ckm-run-lvsdname(){ G4OPTICKS_DEBUG="--lvsdname Det --args" ckm-- ; }
 ckm-load(){      OPTICKS_KEY=$(ckm-key) $(ckm-dbg) OKTest --load --natural --envkey ;}
 ckm-dump(){      OPTICKS_KEY=$(ckm-key) OpticksEventDumpTest --natural --envkey  ;}
 ckm-res(){       OPTICKS_KEY=$(ckm-key) $(ckm-dbg) OpticksResourceTest --natural --envkey ;}
-ckm-okg4(){      OPTICKS_KEY=$(ckm-key) $(ckm-dbg) OKG4Test --compute --envkey --embedded --save --natural --args ;}
-ckm-okg4-dbg(){  DEBUG=1 ckm-okg4 ; } 
+ckm-okg4(){      OPTICKS_KEY=$(ckm-key) $(ckm-dbg) OKG4Test --compute --envkey --embedded --save --natural  --args $*  ;}
+ckm-okg4-dbg(){  DEBUG=1 ckm-okg4 $* ; } 
+
+
+
 
 ckm-okg4-load(){ OPTICKS_KEY=$(ckm-key) $(ckm-dbg) OKG4Test --load --envkey --embedded --natural ;}
 ckm-mlib(){      OPTICKS_KEY=$(ckm-key) CMaterialLibTest --envkey  ;}

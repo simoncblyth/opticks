@@ -4,6 +4,16 @@ struct CG4Ctx ;
 #include <string>
 #include "CFG4_API_EXPORT.hh"
 
+/**
+CRecState
+=============
+
+m_state member of CRecorder
+
+
+
+**/
+
 struct CFG4_API CRecState
 {
     const CG4Ctx& _ctx ; 

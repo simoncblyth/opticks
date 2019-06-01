@@ -51,10 +51,12 @@ class OKCORE_API OpticksCfg : public BCfg {
      const std::string& getInstanceModulo();
 
      const std::string& getPrintIndex() const ;
+
      const std::string& getDbgIndex() const ;
+     const std::string& getGenIndex() const ;
+     const std::string& getOtherIndex();
 
      const std::string& getDbgMesh() const ;
-     const std::string& getOtherIndex();
      const std::string& getMask() const ;
      const std::string& getX4PolySkip() const ;
      const std::string& getCSGSkipLV() const ;    // --csgskiplv
@@ -177,6 +179,7 @@ private:
      std::string m_pindex ;
      std::string m_dindex ;
      std::string m_oindex ;
+     std::string m_gindex ;
      std::string m_mask ;
      std::string m_x4polyskip ;
      std::string m_csgskiplv ; 

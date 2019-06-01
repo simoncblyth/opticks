@@ -150,11 +150,22 @@ G4VParticleChange* CGenstepSource::generatePhotonsFromOneGenstep()
 
 void CGenstepSource::addPrimaryVertices(G4Event *event,  const G4VParticleChange* pc) const 
 {
+
+    unsigned ngp = m_ok->getNumGenPhoton();
+    if(ngp > 0u)
+    {
+        LOG(fatal) << "restricting photons via --gindex option, ngp: " << ngp ;  
+    }
+
+
     G4int numberOfSecondaries = pc->GetNumberOfSecondaries(); 
     LOG(info) << " numberOfSecondaries " << numberOfSecondaries ; 
 
     for( G4int i=0 ; i < numberOfSecondaries ; i++)
     {
+        if( ngp > 0u && !m_ok->isGenPhoton(i) ) continue ; 
+
+
         G4Track* track =  pc->GetSecondary(i) ; 
         const G4ParticleDefinition* definition = track->GetParticleDefinition() ; 
         assert( definition == G4OpticalPhoton::Definition() );  

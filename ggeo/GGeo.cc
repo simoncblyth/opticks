@@ -764,16 +764,29 @@ void GGeo::loadCacheMeta() // loads metadata that the process that created the g
     {
         m_loadedcachemeta->dump("GGeo::loadCacheMeta");  
     }
-    m_lv2sd = m_loadedcachemeta->getObj("lv2sd"); 
+    NMeta* lv2sd = m_loadedcachemeta->getObj("lv2sd"); 
 
-    if( m_lv2sd )
+
+    if( lv2sd )
     {
-        m_lv2sd->dump("GGeo::loadCacheMeta.m_lv2sd"); 
+        lv2sd->dump("GGeo::loadCacheMeta.lv2sd"); 
     }
     else
     {
-        LOG(error) << " NULL m_lv2sd " ;  
+        LOG(error) << " NULL lv2sd " ;  
     }
+
+
+    if( m_ok->isTest() )
+    {
+         LOG(error) << "NOT USING the lv2sd association as --test is active " ;  
+    }
+    else
+    {
+         m_lv2sd = lv2sd ;  
+    }
+
+
 
 
 }

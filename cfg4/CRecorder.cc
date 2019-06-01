@@ -150,10 +150,16 @@ void CRecorder::postTrack() // invoked from CTrackingAction::PostUserTrackingAct
 
 /**
 CRecorder::Record
-===================
+--------------------
+
+Invoked by CSteppingAction::setStep
+stage is set by CG4Ctx::setStepOptical from CSteppingAction::setStep
+
+The "done" bool returned, when true causes the track to be killed, 
+which is how truncation is effected.
 
 Not-zeroing m_slot for REJOINders 
-----------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * see notes/issues/reemission_review.rst
 
@@ -173,14 +179,13 @@ By virtue of the Cerenkov/Scintillation process setting:
      SetTrackSecondariesFirst(true)
   
 If not so, this will "join" unrelated tracks ?
+(Really? remember it has random access into record buffer
+using record_id)
 
-TODO: assert on this 
-
+TODO: find how to check this is the case and assert on it
 
 **/
 
-// invoked by CSteppingAction::setStep
-// stage is set by CG4Ctx::setStepOptical from CSteppingAction::setStep
 #ifdef USE_CUSTOM_BOUNDARY
 bool CRecorder::Record(Ds::DsG4OpBoundaryProcessStatus boundary_status)
 #else
@@ -190,7 +195,6 @@ bool CRecorder::Record(G4OpBoundaryProcessStatus boundary_status)
     m_state._step_action = 0 ; 
 
     assert(!m_live);
-
 
     if(m_ctx._stage == CStage::START)
     { 
@@ -206,10 +210,6 @@ bool CRecorder::Record(G4OpBoundaryProcessStatus boundary_status)
     } 
 
     bool done = m_crec->add(boundary_status) ; // collecting steps (recstp) or points (recpoi)
-
-    // when done=true is returnd the track is killed
-    // effecting truncation of big bouncers
-
 
     if(m_ctx._dbgrec)
         LOG(info) << "crec.add "
@@ -270,12 +270,29 @@ void CRecorder::postTrackWritePoints()
 }
 
 
+
+
+
+/**
+CRecorder::postTrackWriteSteps
+-------------------------------
+
+CRecorder::postTrackWriteSteps is invoked from CRecorder::postTrack, 
+once for the primary photon track and then for 0 or more reemtracks
+via the record_id (which survives reemission) the info is written 
+onto the correct place in the photon record buffer
+
+
+The steps recorded into m_crec(CRec) are used to determine 
+flags and the m_state(CRecState) is updated enabling 
+appropriate step points are to be saved with RecordStepPoint.
+
+
+
+**/
+
 void CRecorder::postTrackWriteSteps()
 {
-   // CRecorder::postTrackWriteSteps is invoked from CRecorder::postTrack, 
-   // once for the primary photon track and then for 0 or more reemtracks
-   // via the record_id the info is written onto the correct place 
-   // in the photon record buffer
     assert(!m_live) ;
 
 #ifdef USE_CUSTOM_BOUNDARY
@@ -295,7 +312,7 @@ void CRecorder::postTrackWriteSteps()
 
     if(m_ctx._dbgrec)
     {
-        LOG(info) << "CRecorder::postTrackWriteSteps"
+        LOG(info) 
                   << " [--dbgrec] "
                   << " num " << num
                   << " m_slot " << m_state._slot

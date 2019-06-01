@@ -65,6 +65,9 @@
 //
 ////////////////////////////////////////////////////////////////////////
 
+
+#include <sstream>
+
 #include "G4ios.hh"
 #include "G4OpProcessSubType.hh"
 
@@ -72,7 +75,7 @@
 #include "G4GeometryTolerance.hh"
 #include "G4Version.hh"
 
-#ifdef SCB_BND_DEBUG
+#ifdef SCB_DEBUG
 #include "G4Event.hh"
 #include "G4RunManager.hh"
 #endif
@@ -105,6 +108,28 @@ using CLHEP::twopi ;
         // Constructors
         /////////////////
 
+
+
+
+
+
+std::string DsG4OpBoundaryProcess::description() const
+{
+    std::stringstream ss ; 
+    ss << "DsG4OpBoundaryProcess " ; 
+    ss << GetProcessName() ; 
+    ss << " (" ; 
+#ifdef SCB_REFLECT_CHEAT
+    ss << "SCB_REFLECT_CHEAT " ; 
+#endif
+#ifdef SCB_BND_DEBUG
+    ss << "SCB_BND_DEBUG " ; 
+#endif
+    ss << ")" ; 
+    return ss.str(); 
+}
+
+
 DsG4OpBoundaryProcess::DsG4OpBoundaryProcess(CG4* g4, const G4String& processName, G4ProcessType type)
              : 
              G4VDiscreteProcess(processName, type),
@@ -114,7 +139,7 @@ DsG4OpBoundaryProcess::DsG4OpBoundaryProcess(CG4* g4, const G4String& processNam
 #ifdef SCB_REFLECT_CHEAT
              m_reflectcheat(m_ok->isReflectCheat()),
 #endif
-#ifdef SCB_BND_DEBUG
+#ifdef SCB_DEBUG
              m_dbg(false),
              m_other(false),
              m_event_id(0),
@@ -124,15 +149,14 @@ DsG4OpBoundaryProcess::DsG4OpBoundaryProcess(CG4* g4, const G4String& processNam
              m_DielectricMetal_LambertianReflection(0) 
 {
 
-    LOG(info) << "DsG4OpBoundaryProcess::DsG4OpBoundaryProcess" 
-              << " processName " << processName 
-              ;
 
         if ( verboseLevel > 0) {
            G4cout << GetProcessName() << " is created " << G4endl;
         }
 
         SetProcessSubType(fOpBoundary);
+
+    LOG(info) << description() ; 
 
 	theStatus = Ds::Undefined;
 	theModel = glisur;
@@ -172,7 +196,6 @@ DsG4OpBoundaryProcess::~DsG4OpBoundaryProcess(){}
 G4VParticleChange*
 DsG4OpBoundaryProcess::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
 {
-
     theStatus = Ds::Undefined;
 
     aParticleChange.Initialize(aTrack);
@@ -183,9 +206,7 @@ DsG4OpBoundaryProcess::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
     //     NB the proposal is trumped by G4Track::CalculateVelocity unless
     //     G4Track::UseGivenVelocity is in force, that is done in CTrackingAction
 
-
 #ifdef SCB_BND_DEBUG
-
     {
          //  confirmed wrong material groupvel bug
         float wavelength = CTrack::Wavelength(&aTrack);
@@ -194,7 +215,10 @@ DsG4OpBoundaryProcess::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
         G4double calcVelocity = aTrack.CalculateVelocityForOpticalPhoton();
         m_mlib->dumpGroupvelMaterial("bndary.PSDIP.beg", wavelength, calcVelocity,0.f, m_g4->getStepId(), "calcVelocity");
     }
+#endif    
 
+
+#ifdef SCB_DEBUG
     {
         // TODO: move below stuff into CEventAction/CTrackAction and access via m_g4 like above
         const G4Event* event = G4RunManager::GetRunManager()->GetCurrentEvent() ;
@@ -204,7 +228,7 @@ DsG4OpBoundaryProcess::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
 
         // debugging via record_id lists with --dindex and --oindex options
         // has the advantage of "knowing the future"
-        // so using a single line selection like "TO BT BT BT BT SA" 
+        // so using a single line selection like "TO BT BT BT BT SA" with ana/evt.py 
         // can just dump a single code path 
         //
         //     tconcentric-i::
@@ -214,20 +238,21 @@ DsG4OpBoundaryProcess::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
         //        In [3]: ab.b.psel_dindex(limit=10, reverse=True)
         //        Out[3]: '--dindex=999999,999997,999996,999995,999994,999993,999992,999991,999990,999989'
         //
-        //
 
-        m_dbg   = m_ok->isDbgPhoton(m_event_id, m_photon_id);
-        m_other = m_ok->isOtherPhoton(m_event_id, m_photon_id);
+        m_dbg   = m_ok->isDbgPhoton(m_event_id, m_photon_id);     // eg --dindex=10,11,12
+        m_other = m_ok->isOtherPhoton(m_event_id, m_photon_id);   // eg --oindex=15,16,17
 
-        if(m_dbg || m_other)
-            LOG(info) << "DsG4OpBoundaryProcess::PostStepDoIt" 
-                      << " event_id " << std::setw(7) << m_event_id
-                      << " photon_id " << std::setw(7) << m_photon_id
-                      << " step_id " << std::setw(4) << m_step_id 
-                      ;
- 
+        if(m_dbg || m_other) 
+        LOG(info) 
+            << " event_id " << std::setw(7) << m_event_id
+            << " photon_id " << std::setw(7) << m_photon_id
+            << " step_id " << std::setw(4) << m_step_id 
+            << ( m_dbg ? "DBG " : " " )
+            << ( m_other ? "OTHER " : " " )
+            ;
     }
 #endif    
+
 
 
     G4StepPoint* pPreStepPoint  = aStep.GetPreStepPoint();

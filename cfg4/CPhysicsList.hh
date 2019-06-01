@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <string>
 #include "CFG4_API_EXPORT.hh"
 #include "CFG4_HEAD.hh"
 
@@ -39,6 +40,7 @@ class CFG4_API CPhysicsList : public G4VUserPhysicsList
         void setupEmVerbosity(unsigned verbosity);
         void setProcessVerbosity(int verbosity);
         void setProcessVerbosity(G4ParticleDefinition* particle, int verbosity);
+        std::string description() const ; 
     private:
         void initParticles();
         void constructDecay();

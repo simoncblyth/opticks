@@ -63,6 +63,7 @@
 // SCB
 #define SCB_REFLECT_CHEAT 1
 #define GEANT4_BT_GROUPVEL_FIX 1
+#define SCB_DEBUG 1
 //#define SCB_BND_DEBUG 1
 
 
@@ -75,7 +76,7 @@
 #include "geomdefs.hh"
 #include "Randomize.hh"
 
-
+#include <string>
 
 #include "G4RandomTools.hh"
 #include "G4RandomDirection.hh"
@@ -125,6 +126,7 @@ public: // Without description
         ////////////////////////////////
         // Constructors and Destructor
         ////////////////////////////////
+        std::string description() const ; 
 
         DsG4OpBoundaryProcess(       CG4* g4 = NULL,
                                      const G4String& processName = "OpBoundary",
@@ -202,7 +204,7 @@ private:
     bool          m_reflectcheat ; 
 #endif
 
-#ifdef SCB_BND_DEBUG
+#ifdef SCB_DEBUG
     bool     m_dbg ; 
     bool     m_other ; 
     int      m_event_id ; 

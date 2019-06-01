@@ -192,8 +192,22 @@ void CRec::clear()
 }
 
 
-// this is step-by-step invoked from CRecorder::Record
-// returning true kills the track, as needed for truncation of big bouncers
+/**
+CRec::add
+-----------
+
+CRec::add is step-by-step invoked from CRecorder::Record
+returning true kills the track, as needed for truncation of big bouncers
+
+*m_recpoialign*
+    aligns recpoi truncation according to step limit so both recpoi and recstp
+    kill the track at same juncture  
+
+    This spins G4 wheels with the more efficient recpoi 
+    in order to keep random sequence aligned with the less efficient !recpoi(aka recstp)
+    see notes/issues/cfg4-recpoi-recstp-insidious-difference.rst
+
+**/
 
 #ifdef USE_CUSTOM_BOUNDARY
 bool CRec::add(Ds::DsG4OpBoundaryProcessStatus boundary_status )
@@ -215,21 +229,19 @@ bool CRec::add(G4OpBoundaryProcessStatus boundary_status )
         m_point_terminated = addPoi(stp) ;
     }
 
-    bool done = m_recpoialign || !m_recpoi ? m_step_limited : ( m_point_terminated || m_point_limited ) ;
+    bool done = ( m_recpoialign || !m_recpoi ) ? m_step_limited : ( m_point_terminated || m_point_limited ) ;
 
     return done ;  // (*lldb*) add
 }
 
 
-// *m_recpoialign*
-//      aligns recpoi truncation according to step limit so both recpoi and recstp
-//      kill the track at same juncture  
-//
-//      This spins G4 wheels with the more efficient recpoi 
-//      in order to keep random sequence aligned with the less efficient !recpoi(aka recstp)
-//      see notes/issues/cfg4-recpoi-recstp-insidious-difference.rst
+/**
+CRec::addPoi
+--------------
 
+Invoked by CRec::add when using the alternative m_recpoi mode 
 
+**/
 
 bool CRec::addPoi(CStp* stp )
 {

@@ -110,7 +110,7 @@ void CPhoton::add(unsigned flag, unsigned  material)
 
     _mat_prior = ( _seqmat & msk ) >> shift ;
     _his_prior = ( _seqhis & msk ) >> shift ;
-    _flag_prior = _his_prior > 0 ? 0x1 << (_his_prior - 1) : 0 ;
+    _flag_prior = _his_prior > 0 ? 0x1 << (_his_prior - 1) : 0 ;  // turning the 1-based bit index into a flag 
 
     _seqhis =  (_seqhis & (~msk)) | (_his << shift) ; 
     _seqmat =  (_seqmat & (~msk)) | (_mat << shift) ; 
@@ -125,34 +125,37 @@ void CPhoton::increment_slot()
 }
 
 
+/**
+CPhoton::scrub_mskhis
+------------------------
+
+Decrementing slot and running again does not scrub the AB from the mask
+so need to scrub the AB (BULK_ABSORB) when a RE (BULK_REEMIT) from rejoining
+occurs.  
+
+This should always be correct as AB is a terminating flag, 
+so any REJOINed photon will have an AB in the mask
+that needs to be a RE instead.
+
+What about SA/SD ... those should never REjoin ?
+
+**/
+
 void CPhoton::scrub_mskhis( unsigned flag )
 {
     _mskhis = _mskhis & (~flag)  ;
-
-    //  Decrementing slot and running again does not scrub the AB from the mask
-    //  so need to scrub the AB (BULK_ABSORB) when a RE (BULK_REEMIT) from rejoining
-    //  occurs.  
-    //
-    //  This should always be correct as AB is a terminating flag, 
-    //  so any REJOINed photon will have an AB in the mask
-    //  that needs to be a RE instead.
-    //
-    //  What about SA/SD ... those should never REjoin ?
 }
-
 
 bool CPhoton::is_rewrite_slot() const  // smth already layed down in current seqmat/seqhis bitfield slot
 {
     return _his_prior != 0 && _mat_prior != 0 ;
 }
 
-
 bool CPhoton::is_flag_done() const 
 {
     bool flag_done = ( _flag & (BULK_ABSORB | SURFACE_ABSORB | SURFACE_DETECT | MISS)) != 0 ;
     return flag_done ;  
 }
-
 
 bool CPhoton::is_done() const 
 {

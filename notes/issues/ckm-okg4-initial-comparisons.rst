@@ -224,3 +224,262 @@ happens for 1(OK) but not -1(G4).::
 
 
 
+
+Dumping record_id 0 using --dbgseqhis 0x3ccc1
+----------------------------------------------
+
+::
+
+    ckm-okg4 --dbgseqhis 0x3ccc1
+
+    ckm-okg4 () 
+    { 
+        OPTICKS_KEY=$(ckm-key) $(ckm-dbg) OKG4Test --compute --envkey --embedded --save --natural --args $*
+    }
+
+    ...
+
+    2019-06-01 14:02:10.530 INFO  [428380] [CRec::dump@162] CDebug::dump record_id 0  origin[ 0.054-0.011-0.002]   Ori[ 0.054-0.011-0.002] 
+    2019-06-01 14:02:10.530 INFO  [428380] [CRec::dump@168]  nstp 4
+    ( 0)  CK/BT     FrT                       PRE_SAVE POST_SAVE STEP_START 
+    [   0](Stp ;opticalphoton stepNum    4(tk ;opticalphoton tid 1 pid 0 nm 79.0277 mm  ori[    0.054  -0.011  -0.002]  pos[  977.731-398.0881000.002]  )
+      pre              Obj0x1899da0           Water          noProc           Undefined pos[      0.000     0.000     0.000]  dir[    0.796  -0.225   0.562]  pol[   -0.571   0.027   0.820]  ns  0.000 nm 79.028 mm/ns 220.306
+     post              Det0x189c420           Glass  Transportation        GeomBoundary pos[    127.607   -35.985    90.002]  dir[    0.727  -0.205   0.655]  pol[   -0.660   0.053   0.749]  ns  0.728 nm 79.028 mm/ns 201.203
+     )
+    ( 1)  BT/BT     FrT                                           POST_SAVE 
+    [   1](Stp ;opticalphoton stepNum    4(tk ;opticalphoton tid 1 pid 0 nm 79.0277 mm  ori[    0.054  -0.011  -0.002]  pos[  977.731-398.0881000.002]  )
+      pre              Det0x189c420           Glass  Transportation        GeomBoundary pos[    127.607   -35.985    90.002]  dir[    0.727  -0.205   0.655]  pol[   -0.660   0.053   0.749]  ns  0.728 nm 79.028 mm/ns 201.203
+     post              Obj0x1899da0           Water  Transportation        GeomBoundary pos[    149.814   -42.247   110.002]  dir[    0.796  -0.225   0.562]  pol[   -0.571   0.029   0.821]  ns  0.879 nm 79.028 mm/ns 220.306
+     )
+    ( 2)  BT/BT     FrT                                           POST_SAVE 
+    [   2](Stp ;opticalphoton stepNum    4(tk ;opticalphoton tid 1 pid 0 nm 79.0277 mm  ori[    0.054  -0.011  -0.002]  pos[  977.731-398.0881000.002]  )
+      pre              Obj0x1899da0           Water  Transportation        GeomBoundary pos[    149.814   -42.247   110.002]  dir[    0.796  -0.225   0.562]  pol[   -0.571   0.029   0.821]  ns  0.879 nm 79.028 mm/ns 220.306
+     post         World0x188d190_PV             Air  Transportation        GeomBoundary pos[    499.946  -140.984   356.954]  dir[    0.568  -0.306   0.764]  pol[    0.781   0.494  -0.383]  ns  2.875 nm 79.028 mm/ns 299.792
+     )
+    ( 3)  BT/MI     FrT                       POST_SAVE POST_DONE LAST_POST 
+    [   3](Stp ;opticalphoton stepNum    4(tk ;opticalphoton tid 1 pid 0 nm 79.0277 mm  ori[    0.054  -0.011  -0.002]  pos[  977.731-398.0881000.002]  )
+      pre         World0x188d190_PV             Air  Transportation        GeomBoundary pos[    499.946  -140.984   356.954]  dir[    0.568  -0.306   0.764]  pol[    0.781   0.494  -0.383]  ns  2.875 nm 79.028 mm/ns 299.792
+     post                                noMaterial  Transportation       WorldBoundary pos[    977.731  -398.088  1000.002]  dir[    0.568  -0.306   0.764]  pol[    0.781   0.494  -0.383]  ns  5.682 nm 79.028 mm/ns 299.792
+     )
+    2019-06-01 14:02:10.530 INFO  [428380] [CRec::dump@172]  npoi 0
+    2019-06-01 14:02:10.531 INFO  [428380] [CDebug::dump_brief@176] CRecorder::dump_brief m_ctx._record_id        0 m_photon._badflag     0 --dbgseqhis  sas: POST_SAVE POST_DONE LAST_POST 
+    2019-06-01 14:02:10.531 INFO  [428380] [CDebug::dump_brief@185]  seqhis            3ccc1    CK BT BT BT MI                                  
+    2019-06-01 14:02:10.531 INFO  [428380] [CDebug::dump_brief@190]  mskhis              805    CK|MI|BT
+    2019-06-01 14:02:10.531 INFO  [428380] [CDebug::dump_brief@195]  seqmat            11232    Water Glass Water Air Air - - - - - - - - - - - 
+    2019-06-01 14:02:10.531 INFO  [428380] [CDebug::dump_sequence@203] CDebug::dump_sequence
+
+
+
+What would it take to raise an SA/SD from Geant4 ?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* need boundary status Ds::Absorption or Ds::Detection
+
+* examining DsG4OpBoundaryProcess.cc (gdb next "n" stepping) 
+  looks like no way 
+
+
+::
+
+    201 #ifdef USE_CUSTOM_BOUNDARY
+    202 unsigned int OpStatus::OpBoundaryFlag(const Ds::DsG4OpBoundaryProcessStatus status)
+    203 {
+    204     unsigned flag = 0 ;
+    205     switch(status)
+    206     {
+    207         case Ds::FresnelRefraction:
+    208         case Ds::SameMaterial:
+    209                                flag=BOUNDARY_TRANSMIT;
+    210                                break;
+    211         case Ds::TotalInternalReflection:
+    212         case Ds::FresnelReflection:
+    213                                flag=BOUNDARY_REFLECT;
+    214                                break;
+    215         case Ds::StepTooSmall:
+    216                                flag=NAN_ABORT;
+    217                                break;
+    218         case Ds::Absorption:
+    219                                flag=SURFACE_ABSORB ;
+    220                                break;
+    221         case Ds::Detection:
+    222                                flag=SURFACE_DETECT ;
+    223                                break;
+    224         case Ds::SpikeReflection:
+    225                                flag=SURFACE_SREFLECT ;
+    226                                break;
+    227         case Ds::LobeReflection:
+    228         case Ds::LambertianReflection:
+    229                                flag=SURFACE_DREFLECT ;
+    230                                break;
+    231         case Ds::Undefined:
+    232         case Ds::BackScattering:
+    233         case Ds::NotAtBoundary:
+    234         case Ds::NoRINDEX:
+    235                       flag=0;
+    236                       break;
+    237     }
+    238     return flag ;
+    239 }
+
+
+
+
+::
+
+     ckm-okg4-dbg --dbgseqhis 0x3ccc1
+    
+    (gdb) b "DsG4OpBoundaryProcess::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)"
+
+
+
+
+
+generate.cu  only gives SD/SA with associated optical surface at the boundary
+---------------------------------------------------------------------------------
+
+::
+
+    548 
+    549         slot++ ;
+    550 
+    551         command = propagate_to_boundary( p, s, rng );
+    552         if(command == BREAK)    break ;           // BULK_ABSORB
+    553         if(command == CONTINUE) continue ;        // BULK_REEMIT/BULK_SCATTER
+    554         // PASS : survivors will go on to pick up one of the below flags, 
+    555 
+    556 
+    557         if(s.optical.x > 0 )       // x/y/z/w:index/type/finish/value
+    558         {
+    559             command = propagate_at_surface(p, s, rng);
+    560             if(command == BREAK)    break ;       // SURFACE_DETECT/SURFACE_ABSORB
+    561             if(command == CONTINUE) continue ;    // SURFACE_DREFLECT/SURFACE_SREFLECT
+    562         }
+    563         else
+    564         {
+    565             //propagate_at_boundary(p, s, rng);     // BOUNDARY_RELECT/BOUNDARY_TRANSMIT
+    566             propagate_at_boundary_geant4_style(p, s, rng);     // BOUNDARY_RELECT/BOUNDARY_TRANSMIT
+    567             // tacit CONTINUE
+    568         }
+    569 
+    570     }   // bounce < bounce_max
+
+
+
+
+DsG4OpBoundaryProcess::DoAbsorption raises Ds::Detection depending on efficiency and random throw
+---------------------------------------------------------------------------------------------------
+
+
+
+
+
+gdb aint lldb
+------------------
+
+* seems it can find breakpoints better without arguments in the signature
+
+
+::
+
+    (gdb) b "DsG4OpBoundaryProcess::DsG4OpBoundaryProcess"
+    Breakpoint 3 at 0x7fffefd59087: file /home/blyth/opticks/cfg4/DsG4OpBoundaryProcess.cc, line 149.
+    (gdb) b
+    No default breakpoint address now.
+    (gdb) info breakpoints
+    Num     Type           Disp Enb Address            What
+    1       breakpoint     keep y   <PENDING>          "DsG4OpBoundaryProcess::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)"
+    2       breakpoint     keep y   <PENDING>          DsG4OpBoundaryProcess.cc +245
+    3       breakpoint     keep y   0x00007fffefd59087 in DsG4OpBoundaryProcess::DsG4OpBoundaryProcess(CG4*, G4String const&, G4ProcessType) at /home/blyth/opticks/cfg4/DsG4OpBoundaryProcess.cc:149
+    (gdb) b "DsG4OpBoundaryProcess::PostStepDoIt"
+    Breakpoint 4 at 0x7fffefd595d1: file /home/blyth/opticks/cfg4/DsG4OpBoundaryProcess.cc, line 199.
+    (gdb) 
+
+
+
+covered this ground before
+-------------------------------
+
+::
+
+    [blyth@localhost issues]$ grep -l " SD " *.rst */*.rst
+    ckm-okg4-initial-comparisons-sensor-matching-yet-again.rst
+    direct_route_needs_AssimpGGeo_convertSensors_equivalent.rst
+    g4ok_direct_conversion_of_sensors_review.rst
+    g4ok_investigate_zero_hits.rst
+    G4OK.rst
+    G4OK_SD_Matching.rst
+    odd_photon_flag_history.rst
+    OKG4Test_no_G4_hits.rst
+    OKG4Test_no_OK_hits_again.rst
+    OKTest-compute-save.rst
+    pmt_distrib.rst
+    pmttest.rst
+    stratification.rst
+    geant4_opticks_integration/broken_pmttest.rst
+    geant4_opticks_integration/gui_photon_flag_names_null.rst
+    geant4_opticks_integration/missing_cfg4_surface_detect.rst
+    geant4_opticks_integration/okg4_tpmt_revisit.rst
+    geant4_opticks_integration/optical_step_collection.rst
+    groupvel/generational.rst
+    [blyth@localhost issues]$ 
+
+
+
+* :doc:`geant4_opticks_integration/missing_cfg4_surface_detect`
+
+   Concluded : CGDMLDetector missing Optical Surfaces whereas the CTestDetector has them 
+
+* :doc:`geant4_opticks_integration/okg4_tpmt_revisit`
+
+   tpmt- seqhis_ana 10:PmtInBox statistical comparison with "TO BT SA" and "TO BT SD" matched, 
+
+   Notable quotes:
+ 
+   1. FIXED : CTestDetector::kludgePhotoCathode was incorrectly using dielectric_dielectric
+   2. Need cathode optical surface with EFFICIENC, where did it go ?Y
+
+
+* :doc:`OKG4Test_no_G4_hits`
+
+  lv2sd via cache development while testing with CerenkovMinimal
+
+* :doc:`OKG4Test_no_OK_hits_again`
+
+   X4PhysicalVolume::addBoundary critical for translatin G4 surface into Opticks boundary
+
+* :doc:`ab-blib`
+
+   X4PhysicalVolume::findSurface is attempting to mimic G4OpBoundaryProcess 
+
+
+* :doc:`g4ok_direct_conversion_of_sensors_review`
+
+   // X4PhysicalVolume::init 
+   convertSensors();  // before closeSurfaces as may add some SensorSurfaces"
+
+   GGeoSensor::AddSensorSurfaces
+        springs into life GGeo GSkinSurface, GOpticalSurface with the 
+        properties of the cathode material (esp EFFICIENCY)
+
+
+
+
+
+::
+
+     278 // invoked pre-cache by GGeo::add(GMaterial* material) AssimpGGeo::convertMaterials
+     279 void GMaterialLib::add(GMaterial* mat)
+     280 {
+     281     if(mat->hasProperty("EFFICIENCY"))
+     282     {
+     283         LOG(LEVEL) << " MATERIAL WITH EFFICIENCY " ;
+     284         setCathode(mat) ;
+     285     }
+     286 
+     287     bool with_lowercase_efficiency = mat->hasProperty("efficiency") ;
+     288     assert( !with_lowercase_efficiency );
+     289 
+     290     assert(!isClosed());
+     291     m_materials.push_back(createStandardMaterial(mat));
+     292 }
+

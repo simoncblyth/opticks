@@ -139,6 +139,8 @@ GVolume* GMaker::makeFromCSG(NCSG* csg, GBndLib* /*bndlib*/, unsigned verbosity 
 
     glm::mat4 txf = tris->getTransform(); 
 
+    //LOG(info) << "txf " << glm::to_string(txf) ; 
+
     GMatrixF* transform = new GMatrix<float>(glm::value_ptr(txf));
 
     GVolume* volume = new GVolume(index, transform, mesh, UINT_MAX, NULL );     
@@ -165,7 +167,7 @@ GVolume* GMaker::makeFromCSG(NCSG* csg, GBndLib* /*bndlib*/, unsigned verbosity 
     volume->setParts( pts );
 
 
-    LOG(info) << "GMaker::makeFromCSG" 
+    LOG(info) 
               << " verbosity " << verbosity 
               << " index " << index 
               << " boundary-spec " << spec 

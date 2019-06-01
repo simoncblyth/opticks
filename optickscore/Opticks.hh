@@ -389,11 +389,15 @@ class OKCORE_API Opticks {
        bool isOtherPhoton(int event_id, int track_id);
        bool isMaskPhoton(int event_id, int track_id);
 
+       bool isGenPhoton(int gen_id);
+
        const std::vector<unsigned>&  getDbgIndex();
        const std::vector<unsigned>&  getOtherIndex();
+       const std::vector<unsigned>&  getGenIndex();
 
        unsigned getNumDbgPhoton() const ;
        unsigned getNumOtherPhoton() const ; 
+       unsigned getNumGenPhoton() const ;
        unsigned getNumMaskPhoton() const ; 
    public:
        Types*               getTypes();

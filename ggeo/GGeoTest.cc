@@ -121,8 +121,6 @@ GGeoTest::GGeoTest(Opticks* ok, GGeoBase* basis)
     m_solist(new GVolumeList()),
     m_err(0)
 {
-    LOG(fatal) << "GGeoTest::GGeoTest" ; 
-
     assert(m_basis); 
 
     init();
@@ -132,7 +130,7 @@ GGeoTest::GGeoTest(Opticks* ok, GGeoBase* basis)
 
 void GGeoTest::init()
 {
-    LOG(info) << "GGeoTest::init START " ;
+    LOG(info) << "[" ;
 
     GMergedMesh* tmm_ = m_config->isNCSG() ? initCreateCSG() : initCreateBIB() ;
 
@@ -157,7 +155,7 @@ void GGeoTest::init()
 
     m_geolib->setMergedMesh( 0, tmm );  // TODO: create via standard GGeoLib::create ?
 
-    LOG(info) << "GGeoTest::init DONE " ;
+    LOG(info) << "]" ;
 }
 
 
@@ -232,7 +230,7 @@ GMergedMesh* GGeoTest::initCreateBIB()
     }
     else 
     { 
-        LOG(fatal) << "GGeoTest::initCreateBIB mode not recognized [" << mode << "]" ; 
+        LOG(fatal) << "mode not recognized [" << mode << "]" ; 
         assert(0);
     }
 
@@ -338,7 +336,7 @@ void GGeoTest::importCSG(std::vector<GVolume*>& volumes)
 
     unsigned numTree = m_csglist->getNumTrees() ;
 
-    LOG(info) << "GGeoTest::importCSG START " 
+    LOG(info) << "[" 
              << " csgpath " << m_csgpath 
              << " numTree " << numTree 
              << " verbosity " << m_verbosity
@@ -395,6 +393,12 @@ void GGeoTest::importCSG(std::vector<GVolume*>& volumes)
         }
         pts->setBndLib(m_bndlib);
 
+
+        //glm::mat4 tr = volume->getTransformMat4(); 
+        //LOG(info) << " tr " << glm::to_string(tr);  
+
+
+
         volumes.push_back(volume);  // <-- TODO: eliminate 
         m_nodelib->add(volume);
     }
@@ -443,7 +447,7 @@ void GGeoTest::importCSG(std::vector<GVolume*>& volumes)
     } 
     
 
-    LOG(info) << "GGeoTest::importCSG DONE " ; 
+    LOG(info) << "]" ; 
 }
 
 void GGeoTest::labelPartList( std::vector<GVolume*>& volumes )
@@ -594,7 +598,7 @@ GMergedMesh* GGeoTest::combineVolumes(std::vector<GVolume*>& volumes, GMergedMes
 {
     // TODO: eliminate, instead use GNodeLib::createMergeMesh 
 
-    LOG(info) << "GGeoTest::combineVolumes START " ; 
+    LOG(info) << "[" ; 
 
     unsigned verbosity = 3 ; 
     GMergedMesh* tri = GMergedMesh::combine( 0, mm0, volumes, verbosity );
@@ -627,7 +631,7 @@ GMergedMesh* GGeoTest::combineVolumes(std::vector<GVolume*>& volumes, GMergedMes
     // collected pts are converted into primitives in GParts::makePrimBuffer
 
 
-    LOG(info) << "GGeoTest::combineVolumes DONE " ; 
+    LOG(info) << "]" ; 
 
     return tri ; 
 }

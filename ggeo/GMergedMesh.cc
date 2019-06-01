@@ -663,6 +663,7 @@ void GMergedMesh::mergeVolumeAnalytic( GParts* pts, GMatrixF* transform, unsigne
 
     if(transform && !transform->isIdentity())
     {
+        LOG(info) << "applyPlacementTransform" ; 
         pts->applyPlacementTransform(transform, verbosity );
     }
 

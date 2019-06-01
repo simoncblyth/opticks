@@ -16,10 +16,10 @@ class CStep ;     // cg4-
 #include "CFG4_HEAD.hh"
 
 /** 
-CStepRec : Records non-optical particle steps 
-================================================
+CStepRec : Records non-optical particle step points 
+=====================================================
 
-Non-optical steps are serialized into the nopstep buffer of the 
+Non-optical step points are serialized into the nopstep buffer of the 
 current G4 event.  As the nopstep pointer is updated by 
 OpticksHub as each G4 event is created this class needs
 to take no action on changing event. It just keeps

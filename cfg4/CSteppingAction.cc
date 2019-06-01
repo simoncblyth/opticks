@@ -1,9 +1,5 @@
-// g4-
 
 #include "CFG4_PUSH.hh"
-
-
-
 
 // cg4-
 #include "CBoundaryProcess.hh"
@@ -51,14 +47,6 @@
 // npy-
 #include "PLOG.hh"
 
-
-/**
-CSteppingAction
-=================
-
-Canonical instance (m_sa) is ctor resident of CG4 
-
-**/
 
 CSteppingAction::CSteppingAction(CG4* g4, bool dynamic)
    : 

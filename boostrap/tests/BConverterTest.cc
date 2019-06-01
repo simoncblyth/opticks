@@ -1,9 +1,13 @@
+// TEST=BConverterTest om-t
+
 //  https://stackoverflow.com/questions/485525/round-for-float-in-c
 //  http://www.boost.org/doc/libs/1_65_1/libs/numeric/conversion/doc/html/boost_numericconversion/converter___function_object.html
 
 #include <cassert>
 #include <iostream>
 #include <iomanip>
+#include <vector>
+#include <boost/numeric/conversion/converter.hpp>
 
 #include "BConverter.hh"
 
@@ -107,8 +111,7 @@ struct ShortCompressor
 
 
 
-
-int main() 
+void test_ShortCompressor()
 {
     int d0 = 3440 ; 
     int h0 = 3450 ; 
@@ -118,7 +121,44 @@ int main()
 
     ShortCompressor<float> fcomp(0., 451.); 
     fcomp.dump( d0, d0+20, h0, h0+3 ) ; 
+}
 
+
+
+void test_BConverter()
+{
+    std::vector<float> fvs = { -1.5f, 0.f, 0.5f, 100.5f, 200.5f, 254.5f, 254.5f , 255.5f , 256.5f , 300.5f } ; 
+
+    for(unsigned i=0 ; i < fvs.size() ; i++)
+    {
+        float fv = fvs[i] ; 
+        unsigned char uc(0);  
+        try 
+        {
+            uc = BConverter::my__float2uint_rn(fv ) ;
+        }     
+        catch( boost::numeric::positive_overflow& e  )
+        {
+            std::cout << e.what() << std::endl ;  
+        }
+        catch( boost::numeric::negative_overflow& e  )
+        {
+            std::cout << e.what() << std::endl ;  
+        }
+
+        std::cout 
+            << " fv " << fv  
+            << " uc " << (int)uc
+            << std::endl ; 
+    }
+}
+
+
+int main() 
+{
+    //test_ShortCompressor(); 
+   
+    test_BConverter(); 
 
     return 0 ; 
 }

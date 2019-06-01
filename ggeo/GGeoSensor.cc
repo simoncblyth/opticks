@@ -24,6 +24,12 @@ GGeoSensor::AddSensorSurfaces
 See the similar AssimpGGeo::convertSensors from the old route
 This is invoked by X4PhysicalVolume::convertSensors in direct route.
 
+This springs into life GGeo GSkinSurface/GOpticalSurface
+with the material properties of the cathode material. 
+This is done so sensitivity can survive the transition betweem
+models.
+
+
 Hmm the material properties of the sensor are irrelevant currently, 
 but the surface properties are relevant (see oxrap/cu/propagate.h) 
 with 4 possibilities, with probabilities depending on the surface props:
@@ -48,6 +54,13 @@ void GGeoSensor::AddSensorSurfaces( GGeo* gg )
 
     unsigned nclv = gg->getNumCathodeLV();
 
+
+    if(nclv == 0)
+    {
+        LOG(error) << "NO CathodeLV : so not adding any GSkinSurface to translate sensitivity between models " ; 
+    }
+
+
     for(unsigned i=0 ; i < nclv ; i++)
     {
         const char* sslv = gg->getCathodeLV(i);
@@ -60,7 +73,7 @@ void GGeoSensor::AddSensorSurfaces( GGeo* gg )
         // standard materials/surfaces use the originating aiMaterial index, 
         // extend that for fake SensorSurface by toting up all 
 
-        LOG(LEVEL) << "GGeoSensor::AddSensorSurfaces"
+        LOG(LEVEL)
                   << " i " << i
                   << " sslv " << sslv
                   << " index " << index

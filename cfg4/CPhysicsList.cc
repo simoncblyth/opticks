@@ -1,3 +1,4 @@
+#include <sstream>
 
 #include "G4Version.hh"
 #include "CPhysicsList.hh"
@@ -235,6 +236,10 @@ void CPhysicsList::constructOp()
 #else
     m_boundaryProcess = new G4OpBoundaryProcess() ;
 #endif
+
+    LOG(info) << description() ; 
+
+
     for(VP::iterator it=m_particles.begin() ; it != m_particles.end() ; it++ ) constructOp(*it) ; 
 }
 
@@ -272,7 +277,20 @@ void CPhysicsList::constructOp( G4ParticleDefinition* particle )
 }
 
 
-
+std::string CPhysicsList::description() const
+{
+    std::stringstream ss ; 
+    ss << "CPhysicsList ( "  ; 
+#ifdef USE_CUSTOM_BOUNDARY
+    ss << "USE_CUSTOM_BOUNDARY DsG4OpBoundaryProcess " ;  
+#else
+    ss << "G4OpBoundaryProcess " ; 
+#endif
+    if(m_absorptionProcess) ss << "G4OpAbsorption " ; 
+    if(m_rayleighProcess) ss << "G4OpRayleigh " ; 
+    ss << ")" ; 
+    return ss.str(); 
+}
 
 
 void CPhysicsList::setProcessVerbosity(int verbosity)

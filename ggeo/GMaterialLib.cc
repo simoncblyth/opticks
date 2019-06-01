@@ -280,7 +280,8 @@ void GMaterialLib::add(GMaterial* mat)
 {
     if(mat->hasProperty("EFFICIENCY"))
     {
-        LOG(LEVEL) << " MATERIAL WITH EFFICIENCY " ; 
+        //LOG(LEVEL) << " MATERIAL WITH EFFICIENCY " ; 
+        LOG(error) << " MATERIAL WITH EFFICIENCY " ; 
         setCathode(mat) ; 
     }
 

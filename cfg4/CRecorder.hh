@@ -80,6 +80,22 @@ the step limit as G4 "BR" "StepTooSmall" turnarounds really burn
 thru steps.
 
 
+Debugging
+-------------
+
+--dbgseqhis 0x3ccc1
+    switch on debug output for photons with a particular history, 
+    showing steps, points, flags, volume names  
+    get the seqhis hexstring from eg ana/evt.py:evt.seqhis_ana.table 
+
+--dbgseqmat 0x11232
+    switch on debug output for photons with a particular material history
+
+--dbgrec
+    machinery debugging, only useful for dumping machinery actions with small of photons
+
+
+
 **/
 
 #include "CFG4_API_EXPORT.hh"

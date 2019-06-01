@@ -4,6 +4,7 @@
 #include <cassert>
 #include <sstream>
 #include <climits>
+#include <csignal>
 
 
 #include "BStr.hh"
@@ -193,6 +194,9 @@ GParts* GParts::make( const NCSG* tree, const char* spec, unsigned verbosity )
     NPY<float>* tree_tranbuf = tree->getGTransformBuffer() ;
     NPY<float>* tree_planbuf = tree->getPlaneBuffer() ;
     assert( tree_tranbuf );
+
+    //LOG(info) << "tree_tranbuf " << tree_tranbuf->getShapeString() ; 
+
 
     NPY<unsigned>* idxbuf = tree->getIdxBuffer() ; //  (1,4) identity indices (index,soIdx,lvIdx,height)
     NPY<float>* nodebuf = tree->getNodeBuffer();       // serialized binary tree
@@ -695,6 +699,12 @@ void GParts::applyPlacementTransform(GMatrix<float>* gtransform, unsigned verbos
     nmat4triple::dump(data, "GParts::applyPlacementTransform gtransform:" ); 
 
     glm::mat4 placement = glm::make_mat4( data ) ;  
+
+
+    LOG(info) << "placement " << glm::to_string( placement ) ; 
+
+    std::raise(SIGINT); 
+
 
     assert(m_tran_buffer->hasShape(-1,3,4,4));
 

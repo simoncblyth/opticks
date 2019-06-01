@@ -15,6 +15,8 @@ OpticksDbg
 ============
 
 Canonical m_dbg instance is ctor resident of Opticks.
+The postconfigure method converts strings from OpticksCfg into 
+vectors of unsigned integers.
 
 The list of mask indices is used with aligned bi-simulation, to 
 allow rerunning of single photons.
@@ -30,6 +32,7 @@ class OKCORE_API OpticksDbg
 
        unsigned getNumDbgPhoton() const ;
        unsigned getNumOtherPhoton() const ;
+       unsigned getNumGenPhoton() const ;
        unsigned getNumMaskPhoton() const ;
        unsigned getNumX4PolySkip() const ;
        unsigned getNumCSGSkipLV() const ;
@@ -41,6 +44,7 @@ class OKCORE_API OpticksDbg
        static bool IsListed(unsigned idx, const std::vector<unsigned>& ls, bool emptylistdefault);
        bool isDbgPhoton(unsigned record_id) const ;
        bool isOtherPhoton(unsigned record_id) const ;
+       bool isGenPhoton(unsigned record_id) const ;
        bool isMaskPhoton(unsigned record_id) const ;
        bool isX4PolySkip(unsigned lvIdx) const ;
        bool isCSGSkipLV(unsigned lvIdx) const ;   // --csgskiplv
@@ -51,6 +55,7 @@ class OKCORE_API OpticksDbg
        void loadNPY1(std::vector<unsigned>& vec, const char* path );
        const std::vector<unsigned>&  getDbgIndex();
        const std::vector<unsigned>&  getOtherIndex();
+       const std::vector<unsigned>&  getGenIndex();
        std::string description();
    private:
        void postconfigure();
@@ -62,6 +67,7 @@ class OKCORE_API OpticksDbg
        NPY<unsigned>*        m_mask_buffer ; 
        std::vector<unsigned> m_debug_photon ; 
        std::vector<unsigned> m_other_photon ; 
+       std::vector<unsigned> m_gen_photon ; 
        std::vector<unsigned> m_mask ; 
        std::vector<unsigned> m_x4polyskip ; 
        std::vector<unsigned> m_csgskiplv ; 

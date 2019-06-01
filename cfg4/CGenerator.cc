@@ -191,7 +191,7 @@ CGenerator::initInputGenstepSource
 
 CSource* CGenerator::initInputGenstepSource()
 {
-    LOG(info) << "CGenerator::initInputGenstepSource " ; 
+    LOG(info) ; 
     //NPY<float>* dgs = m_gen->getDirectGensteps();
     NPY<float>* dgs = m_gen->getInputGensteps();
 

@@ -35,7 +35,7 @@ class CFG4_API CRec
 
         bool is_limited() const ; 
         bool is_step_limited() const ; 
-        bool is_point_limited() const ; 
+        bool is_point_limited() const ;    // relevant to recpoi mode only
         std::string desc() const ;
 
         void setOrigin(const G4ThreeVector& origin);

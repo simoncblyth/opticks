@@ -798,6 +798,13 @@ op-lldb-runline()
    fi 
 }
 
+op-runline-notes(){ cat << EON
+
+Use "--debugger" option to set the intername envvar OPTICKS_DBG
+
+EON
+}
+
 op-runline()
 {
    local runline

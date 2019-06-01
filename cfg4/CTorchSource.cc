@@ -9,9 +9,11 @@
 #include "GLMFormat.hpp"
 
 #include "Opticks.hh"
+#include "OpticksFlags.hh"
 
 // cfg4-
 #include "CTorchSource.hh"
+#include "CEventInfo.hh"
 #include "CRecorder.hh"
 
 // g4-
@@ -259,6 +261,16 @@ void CTorchSource::GeneratePrimaryVertex(G4Event *event)
 				  << m_num_photons
                   << " verbosityLevel " << m_verbosity 
                    ;
+
+
+    unsigned event_gencode = TORCH ; 
+    event->SetUserInformation( new CEventInfo(event_gencode)) ;
+
+   LOG(info)
+        << " event_gencode " << event_gencode
+        << " : " << OpticksFlags::Flag(event_gencode)
+        ; 
+
 
     float _t = m_torch->getTime();
     G4double time = _t*ns ; 

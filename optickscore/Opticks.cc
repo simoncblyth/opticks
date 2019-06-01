@@ -454,6 +454,12 @@ bool Opticks::isOtherPhoton(int event_id, int track_id)
     unsigned record_id = event_id*m_photons_per_g4event + track_id ; 
     return m_dbg->isOtherPhoton(record_id);
 }
+bool Opticks::isGenPhoton(int gen_id)
+{
+    return m_dbg->isGenPhoton(gen_id);
+}
+
+
 bool Opticks::isMaskPhoton(int event_id, int track_id)
 {
     unsigned record_id = event_id*m_photons_per_g4event + track_id ; 
@@ -472,6 +478,13 @@ unsigned Opticks::getNumOtherPhoton() const
 {
     return m_dbg->getNumOtherPhoton();
 }
+unsigned Opticks::getNumGenPhoton() const 
+{
+    return m_dbg->getNumGenPhoton();
+}
+
+
+
 unsigned Opticks::getNumMaskPhoton() const 
 {
     return m_dbg->getNumMaskPhoton();
@@ -485,6 +498,15 @@ const std::vector<unsigned>&  Opticks::getOtherIndex()
 {
     return m_dbg->getOtherIndex();
 }
+const std::vector<unsigned>&  Opticks::getGenIndex()
+{
+    return m_dbg->getGenIndex();
+}
+
+
+
+
+
 
 
 int Opticks::getDebugIdx() const 

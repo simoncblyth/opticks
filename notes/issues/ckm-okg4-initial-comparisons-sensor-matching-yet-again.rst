@@ -39,6 +39,93 @@ Very nearly same generated photons, but no hits with 2nd executable::
 
 
 
+
+ckm-- CerenkovMinimal SensitiveDetector::ProcessHits calls G4Opticks::collectHit 
+----------------------------------------------------------------------------------------------
+
+::
+
+     34 G4bool SensitiveDetector::ProcessHits(G4Step* step,G4TouchableHistory* )
+     35 {
+     36     G4Track* track = step->GetTrack();
+     37     if (track->GetDefinition() != G4OpticalPhoton::Definition()) return false ;
+     38 
+     39     G4double ene = step->GetTotalEnergyDeposit();
+     40     G4StepPoint* point = step->GetPreStepPoint();
+     41     G4double time = point->GetGlobalTime();
+     42     const G4ThreeVector& pos = point->GetPosition();
+     43     const G4ThreeVector& dir = point->GetMomentumDirection();
+     44     const G4ThreeVector& pol = point->GetPolarization();
+     45 
+     46     m_hit_count += 1 ;
+     47 
+     48 #ifdef WITH_OPTICKS
+     49     {
+     50         G4double energy = point->GetKineticEnergy();
+     51         G4double wavelength = h_Planck*c_light/energy ;
+     52         G4double weight = 1.0 ;
+     53         G4int flags_x = 0 ;
+     54         G4int flags_y = 0 ;
+     55         G4int flags_z = 0 ;
+     56         G4int flags_w = 0 ;
+     57  
+     58         G4Opticks::GetOpticks()->collectHit(
+     59              pos.x()/mm,
+     60              pos.y()/mm,
+     61              pos.z()/mm,
+     62              time/ns,
+     63 
+     64              dir.x(),
+
+
+Uses::
+
+     m_g4hit_collector = new CPhotonCollector ;
+
+
+
+The below are from the GPU propagation::
+
+     30 void EventAction::EndOfEventAction(const G4Event* event)
+     31 {
+     32     G4HCofThisEvent* HCE = event->GetHCofThisEvent() ;
+     33     assert(HCE);
+     34 
+     35 #ifdef WITH_OPTICKS
+     36     G4cout << "\n###[ EventAction::EndOfEventAction G4Opticks.propagateOpticalPhotons\n" << G4endl ;
+     37 
+     38     G4Opticks* ok = G4Opticks::GetOpticks() ;
+     39     int num_hits = ok->propagateOpticalPhotons() ;
+     40     NPY<float>* hits = ok->getHits();
+     41 
+     42     assert( hits == NULL || hits->getNumItems() == unsigned(num_hits) ) ;
+     43     G4cout
+     44            << "EventAction::EndOfEventAction"
+     45            << " num_hits " << num_hits
+     46            << " hits " << hits
+     47            << G4endl
+     48            ;
+     49 
+     50     // TODO: feed the hits into the Hit collection 
+     51 
+     52     G4cout << "\n###] EventAction::EndOfEventAction G4Opticks.propagateOpticalPhotons\n" << G4endl ;
+     53 #endif
+     54 
+     55     //addDummyHits(HCE);
+     56     G4cout
+     57          << "EventAction::EndOfEventAction"
+     58          << " DumpHitCollections "
+     59          << G4endl
+     60          ;
+     61     SensitiveDetector::DumpHitCollections(HCE);
+     62 
+     63     // A possible alternative location to invoke the GPU propagation
+     64     // and add hits in bulk to hit collections would be SensitiveDetector::EndOfEvent  
+     65 }
+
+
+
+
 This is a model matching problem that I've jousted with before : review notes
 ---------------------------------------------------------------------------------
 
@@ -48,6 +135,19 @@ This is a model matching problem that I've jousted with before : review notes
 
    * G4 forms hits only on a material with EFFICIENCY 
    * OK yields SA/SD with propagate_at_surface
+
+* :doc:`stepping_process_review`
+
+   Low level look at G4SteppingManager and CSteppingAction tricks to align RNG consumption, 
+   including lldb python scripted breakpointing 
+
+* :doc:`cfg4-bouncemax-not-working`
+
+   Getting hall-of-mirrors tboolean-truncate to agree 
+
+* :doc:`geant4_opticks_integration/tconcentric_post_recording_has_seqmat_zeros`
+
+   Fixing bugs with the switch from live to canned mode in CRecorder
 
 
 * :doc:`direct_route_needs_AssimpGGeo_convertSensors_equivalent` 2018-08-03  (during direct dev summer)

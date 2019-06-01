@@ -12,8 +12,12 @@ struct CRecState ;
 CPhoton
 =========
 
-Used CPU side only for Geant4 recording in OpticksEvent format
+Used CPU side only for Geant4 recording in OpticksEvent format.
 
+Canonical m_photon instance is resident of CRecorder and a reference 
+is held by CWriter and CDebug.
+
+Builds seqhis, seqmat nibble by nibble just like GPU side generate.cu
 
 
 **/
@@ -42,7 +46,6 @@ struct CFG4_API CPhoton
     unsigned long long _flag_prior ; 
 
 
-    //CPhoton(const CPhoton& other);
     CPhoton(const CG4Ctx& ctx, CRecState& state);
 
     void clear();

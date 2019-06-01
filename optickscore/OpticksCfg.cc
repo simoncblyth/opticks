@@ -53,6 +53,7 @@ OpticksCfg<Listener>::OpticksCfg(const char* name, Listener* listener, bool live
        m_pindex(""),
        m_dindex(""),
        m_oindex(""),
+       m_gindex(""),
        m_mask(""),
        m_x4polyskip(""),
        m_csgskiplv(""),
@@ -761,6 +762,12 @@ void OpticksCfg<Listener>::init()
        ("dindex",        boost::program_options::value<std::string>(&m_dindex), "debug photon_id indices in comma delimited list of ints, no size limit" );
    m_desc.add_options()
        ("oindex",        boost::program_options::value<std::string>(&m_oindex), "other debug photon_id indices in comma delimited list of ints, no size limit" );
+   m_desc.add_options()
+       ("gindex",        boost::program_options::value<std::string>(&m_gindex), 
+               "generate debug photon_id indices in comma delimited list of ints, no size limit"
+               "Used to CPU side restrict photons to generate in CGenstepSource::addPrimaryVertices "    
+       );
+
 
 
    m_desc.add_options()
@@ -1368,6 +1375,12 @@ const std::string& OpticksCfg<Listener>::getDbgIndex() const
 {
     return m_dindex ;
 }
+template <class Listener>
+const std::string& OpticksCfg<Listener>::getGenIndex() const
+{
+    return m_gindex ;
+}
+
 
 
 

@@ -29,6 +29,12 @@ unsigned OpticksDbg::getNumOtherPhoton() const
 {
     return m_other_photon.size() ; 
 }
+unsigned OpticksDbg::getNumGenPhoton() const 
+{
+    return m_gen_photon.size() ; 
+}
+
+
 unsigned OpticksDbg::getNumMaskPhoton() const 
 {
     return m_mask.size() ; 
@@ -91,6 +97,7 @@ void OpticksDbg::postconfigure()
 
    const std::string& dindex = m_cfg->getDbgIndex() ;
    const std::string& oindex = m_cfg->getOtherIndex() ;
+   const std::string& gindex = m_cfg->getGenIndex() ;
 
    const std::string& mask = m_cfg->getMask() ;
    const std::string& x4polyskip = m_cfg->getX4PolySkip() ;
@@ -98,9 +105,10 @@ void OpticksDbg::postconfigure()
    const std::string& enabledmm = m_cfg->getEnabledMergedMesh() ;
 
 
-
    postconfigure( dindex, m_debug_photon );
    postconfigure( oindex, m_other_photon );
+   postconfigure( gindex, m_gen_photon );
+
    postconfigure( mask, m_mask );
    postconfigure( x4polyskip, m_x4polyskip );
    postconfigure( csgskiplv, m_csgskiplv );
@@ -173,6 +181,12 @@ bool OpticksDbg::isOtherPhoton(unsigned record_id) const
 {
     return IsListed(record_id, m_other_photon, false); 
 }
+bool OpticksDbg::isGenPhoton(unsigned record_id) const 
+{
+    return IsListed(record_id, m_gen_photon, false); 
+}
+
+
 bool OpticksDbg::isMaskPhoton(unsigned record_id) const 
 {
     return IsListed(record_id, m_mask, false); 
@@ -202,6 +216,9 @@ std::string OpticksDbg::description()
        << " other_photon "
        << " size: " << m_other_photon.size()
        << " elem: (" << BStr::ujoin(m_other_photon, ',') << ")" 
+       << " gen_photon "
+       << " size: " << m_gen_photon.size()
+       << " elem: (" << BStr::ujoin(m_gen_photon, ',') << ")" 
        ;
     return ss.str(); 
 }
@@ -215,5 +232,10 @@ const std::vector<unsigned>&  OpticksDbg::getOtherIndex()
 {
    return m_other_photon ;
 }
+const std::vector<unsigned>&  OpticksDbg::getGenIndex()
+{
+   return m_gen_photon ;
+}
+
 
 

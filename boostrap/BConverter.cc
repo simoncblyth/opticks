@@ -1,7 +1,10 @@
 
 #include <climits>
+//#include <iostream>
+
 #include <boost/numeric/conversion/converter.hpp>
 #include "BConverter.hh"
+
 
 template<typename T, typename S> T BConverter::round_to_even(const S& x) 
 {
@@ -43,6 +46,24 @@ unsigned char BConverter::my__float2uint_rn( float fv ) // static
     return BConverter::round_to_even<unsigned char, float>( fv ) ; 
 }
 
+
+unsigned char BConverter::my__float2uint_rn_kludge( float fv ) // static
+{
+    unsigned char uc(0);  
+    try 
+    {
+        uc = BConverter::my__float2uint_rn(fv ) ;
+    }     
+    catch( boost::numeric::positive_overflow& e  )
+    {
+        //std::cout << e.what() << std::endl ;  
+    }
+    catch( boost::numeric::negative_overflow& e  )
+    {
+        //std::cout << e.what() << std::endl ;  
+    }
+    return uc ; 
+}
 
 
 

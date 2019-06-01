@@ -23,6 +23,13 @@ class CG4 ;
 
 #include "CFG4_HEAD.hh"
 
+/**
+CDebug
+=========
+
+
+**/
+
 class CFG4_API CDebug {
     public:
         CDebug(CG4* g4, const CPhoton& photon, CRecorder* recorder);
