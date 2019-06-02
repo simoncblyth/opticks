@@ -104,7 +104,7 @@ class GGEO_API GPropertyLib {
         static const char* source ; 
         static const char* bnd_ ;
     public:
-        static NMeta* CreateMeta(const std::vector<std::string>& names ); 
+        static NMeta* CreateAbbrevMeta(const std::vector<std::string>& names ); 
     public:
         const char*  getName(unsigned index) const ;
         unsigned getIndex(const char* shortname);  // 0-based index of first matching name, UINT_MAX when no match

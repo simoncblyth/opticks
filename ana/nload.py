@@ -91,6 +91,7 @@ def tagdir_(det, typ, tag, pfx="source", layout=2):
 
     if not os.path.exists(xdir):
         log.error("NON EXISTING tagdir : %s  expanded from %s " % (xdir, DEFAULT_DIR_TEMPLATE))
+        log.error("As relative paths are used with test geometry running, subsequent scripts or executables that intend to reuse data should be invoked from the same directory." )
         assert 0 
     pass
     return xdir

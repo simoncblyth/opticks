@@ -80,14 +80,14 @@ if __name__ == '__main__':
     ab.aselhis = None    # dev aligned comparisons
   
 
-    path = "$TMP/CRandomEngine_jump_photons.npy"
-    jp = np_load(path)
-    if jp is None:
-        log.warning("failed to load %s " % path)
-    else:
-        a_jpsc = ab.a.pflags_subsample_where(jp, "SC")
-        b_jpsc = ab.b.pflags_subsample_where(jp, "SC")
-    pass
+    #path = "$TMP/CRandomEngine_jump_photons.npy"
+    #jp = np_load(path)
+    #if jp is None:
+    #    log.warning("failed to load %s " % path)
+    #else:
+    #    a_jpsc = ab.a.pflags_subsample_where(jp, "SC")
+    #    b_jpsc = ab.b.pflags_subsample_where(jp, "SC")
+    #pass
     
        
 

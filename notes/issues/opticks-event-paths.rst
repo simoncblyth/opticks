@@ -154,3 +154,96 @@ Missing::
 Created it with GMaterialLibTest:create_Meta
 
 
+Added capability to change evtbase, used this for test geometry  
+-----------------------------------------------------------------
+
+::
+
+    162 GMergedMesh* GGeoTest::initCreateCSG()
+    163 {
+    164     assert(m_csgpath && "misconfigured");
+    165     assert(strlen(m_csgpath) > 3 && "unreasonable csgpath strlen");
+    166 
+    167     m_resource->setTestCSGPath(m_csgpath); // take note of path, for inclusion in event metadata
+    168     m_resource->setTestConfig(m_config_); // take note of config, for inclusion in event metadata
+    169     m_resource->setEventBase(m_csgpath);   // BResource("evtbase") yields OPTICKS_EVENT_BASE 
+    170 
+
+
+
+Profile saving is using OpticksEventSpec::getEventFold which doesnt honour evtbase changes : FIXED
+-------------------------------------------------------------------------------------------------------
+
+Fixed by moving Opticks::defineEventSpec from configure which was too early 
+into a new Opticks::postgeometry 
+
+
+
+::
+
+    1735     m_profile->setDir(getEventFold());  // from Opticks::configure (from m_spec (OpticksEventSpec)
+
+    [blyth@localhost optickscore]$ OpticksEventSpecTest
+    2019-06-02 21:16:24.784 INFO  [362461] [OpticksEventSpec::Summary@148] s0 (no cat) typ typ tag tag itag 0 det det cat (null) dir /tmp/blyth/opticks/evt/det/typ/tag
+    2019-06-02 21:16:24.784 INFO  [362461] [OpticksEventSpec::Summary@148] s1 (with cat) typ typ tag tag itag 0 det det cat cat dir /tmp/blyth/opticks/evt/cat/typ/tag
+
+
+::
+
+     60 void OpticksEventSpec::init()
+     61 {
+     62     const char* udet = getUDet();
+     63     std::string tagdir = NLoad::directory(udet, m_typ, m_tag ) ;
+     64     std::string reldir = NLoad::reldir(udet, m_typ, m_tag ) ;
+     65     std::string typdir = NLoad::directory(udet, m_typ, NULL ) ;
+     66     m_dir = strdup(tagdir.c_str());
+     67     m_reldir = strdup(reldir.c_str());
+     68     m_fold = strdup(typdir.c_str());
+     69 }
+     70 
+
+
+::
+
+    NLoadTest
+
+    2019-06-02 21:46:56.564 INFO  [410962] [test_directory@31]  NLoad::directory("det", "typ", "tag", "anno" ) /tmp/blyth/opticks/evt/det/typ/tag/anno
+    2019-06-02 21:46:56.564 INFO  [410962] [test_reldir@37]  NLoad::reldir("det", "typ", "tag" ) evt/det/typ/tag
+    [blyth@localhost tests]$ 
+
+
+
+Hmm but that causes a problem for tboolean-box-a loadEvent in OpticksEventCompareTest::
+
+    [blyth@localhost tmp]$ tboolean-box-a
+    GNU gdb (GDB) Red Hat Enterprise Linux 7.6.1-114.el7
+    Copyright (C) 2013 Free Software Foundation, Inc.
+    License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>
+    This is free software: you are free to change and redistribute it.
+    There is NO WARRANTY, to the extent permitted by law.  Type "show copying"
+    and "show warranty" for details.
+    This GDB was configured as "x86_64-redhat-linux-gnu".
+    For bug reporting instructions, please see:
+    <http://www.gnu.org/software/gdb/bugs/>...
+    Reading symbols from /home/blyth/local/opticks/lib/OpticksEventCompareTest...done.
+    (gdb) r
+    Starting program: /home/blyth/local/opticks/lib/OpticksEventCompareTest --torch --tag 1 --cat tboolean-box --dbgnode 0 --dbgseqhis 0x8bd
+    [Thread debugging using libthread_db enabled]
+    Using host libthread_db library "/lib64/libthread_db.so.1".
+    2019-06-02 22:36:10.514 FATAL [48764] [Opticks::configure@1717]  --interop mode with no cvd specified, adopting OPTICKS_DEFAULT_INTEROP_CVD hinted by envvar [1]
+    2019-06-02 22:36:10.514 INFO  [48764] [Opticks::configure@1724]  setting CUDA_VISIBLE_DEVICES envvar internally to 1
+    2019-06-02 22:36:10.526 ERROR [48764] [OpticksResource::initRunResultsDir@260] /home/blyth/local/opticks/results/OpticksEventCompareTest/R0_cvd_1/20190602_223610
+
+    Program received signal SIGSEGV, Segmentation fault.
+    0x00007ffff7b0b5f0 in OpticksEventSpec::getITag (this=0x0) at /home/blyth/opticks/optickscore/OpticksEventSpec.cc:80
+    80      return m_itag ; 
+    Missing separate debuginfos, use: debuginfo-install boost-filesystem-1.53.0-27.el7.x86_64 boost-program-options-1.53.0-27.el7.x86_64 boost-regex-1.53.0-27.el7.x86_64 boost-system-1.53.0-27.el7.x86_64 glibc-2.17-260.el7_6.3.x86_64 keyutils-libs-1.5.8-3.el7.x86_64 krb5-libs-1.15.1-37.el7_6.x86_64 libcom_err-1.42.9-13.el7.x86_64 libgcc-4.8.5-36.el7_6.1.x86_64 libicu-50.1.2-17.el7.x86_64 libselinux-2.5-14.1.el7.x86_64 libstdc++-4.8.5-36.el7_6.1.x86_64 openssl-libs-1.0.2k-16.el7_6.1.x86_64 pcre-8.32-17.el7.x86_64 zlib-1.2.7-18.el7.x86_64
+    (gdb) bt
+    #0  0x00007ffff7b0b5f0 in OpticksEventSpec::getITag (this=0x0) at /home/blyth/opticks/optickscore/OpticksEventSpec.cc:80
+    #1  0x00007ffff7b0b3e2 in OpticksEventSpec::clone (this=0x0, tagoffset=0) at /home/blyth/opticks/optickscore/OpticksEventSpec.cc:53
+    #2  0x00007ffff7b14f03 in OpticksEvent::make (spec=0x0, tagoffset=0) at /home/blyth/opticks/optickscore/OpticksEvent.cc:122
+    #3  0x00007ffff7b38fe2 in Opticks::loadEvent (this=0x7fffffffd3c0, ok=true, tagoffset=0) at /home/blyth/opticks/optickscore/Opticks.cc:2212
+    #4  0x0000000000403770 in main (argc=10, argv=0x7fffffffd9d8) at /home/blyth/opticks/optickscore/tests/OpticksEventCompareTest.cc:30
+    (gdb) 
+
+

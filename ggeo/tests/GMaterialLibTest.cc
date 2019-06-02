@@ -154,16 +154,16 @@ void test_load(int argc, char** argv)
 
 
 
-void test_createMeta()
+void test_createAbbrevMeta()
 {
     std::string path = BFile::FormPath("$IDPATH/GItemList/GMaterialLib.txt");
     LOG(info) << path ;
 
     BTxt bt(path.c_str());
     bt.read();
-    bt.dump("test_create");
+    bt.dump("test_createAbbrevMeta");
 
-    NMeta* abbrevmeta = GPropertyLib::CreateMeta( bt.getLines() );
+    NMeta* abbrevmeta = GPropertyLib::CreateAbbrevMeta( bt.getLines() );
     abbrevmeta->dump(); 
 
     NMeta* libmeta = new NMeta ; 
@@ -185,7 +185,7 @@ int main(int argc, char** argv)
     OPTICKS_LOG(argc, argv);
 
     //test_load(argc, argv); 
-    test_createMeta(); 
+    test_createAbbrevMeta(); 
 
     return 0 ;
 }

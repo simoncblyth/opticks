@@ -68,6 +68,13 @@ void OpticksEventSpec::init()
     m_fold = strdup(typdir.c_str());
 }
 
+
+
+
+
+
+
+
 int OpticksEventSpec::getITag() const 
 {
     return m_itag ; 

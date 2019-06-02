@@ -42,9 +42,26 @@ Examining the deviation::
 import os, sys, logging, numpy as np
 
 class Dv(object):
-   def __init__(self, idx, sel, av, bv, lcu, eps, msg=""):
 
-       label = " %0.4d %10s : %30s : %7d  %7d " % ( idx, msg, sel, lcu[1], lcu[2] )
+   FMT  = "  %7d %7d/%7d:%6.3f  mx/mn/av %6.4g/%6.4g/%6.4g  eps:%g  "
+   CFMT = "  %7s %7s/%7s:%6s  mx/mn/av %6s/%6s/%6s  eps:%s  "
+
+   LMT  = " %0.4d %10s : %30s : %7d  %7d " 
+   CLMT = " %4s %10s : %30s : %7s  %7s " 
+
+   clabel = CLMT % ( "idx", "msg", "sel", "lcu1", "lcu2" )
+
+   def __init__(self, idx, sel, av, bv, lcu, eps, msg=""):
+       """
+       :param idx: 
+       :param sel: 
+       :param av: 
+       :param bv: 
+       :param lcu: 
+       :param eps: 
+       """
+       label = self.LMT % ( idx, msg, sel, lcu[1], lcu[2] )
+
        dv = np.abs( av - bv )
        nitem = len(dv)
        nelem = dv.size   
@@ -82,9 +99,16 @@ class Dv(object):
        self.eps = eps
        self.msg = msg
 
+   @classmethod  
+   def columns(cls):
+       cdesc = cls.CFMT % ( "nitem", "nelem", "ndisc", "fdisc", "mx", "mn", "avg", "eps" )
+       clabel = cls.clabel ; 
+       return "%s : %s  " % (clabel, cdesc )
+
+
    def __repr__(self):
        if self.nelem>0:
-           desc =  "  %7d %7d/%7d:%6.3f  mx/mn/av %6.4g/%6.4g/%6.4g  eps:%g  " % ( self.nitem, self.nelem, self.ndiscrep, self.fdiscrep, self.mx, self.mn, self.avg, self.eps )
+           desc =  self.FMT % ( self.nitem, self.nelem, self.ndiscrep, self.fdiscrep, self.mx, self.mn, self.avg, self.eps )
        else:
            desc = ""
        pass
@@ -191,7 +215,7 @@ class DvTab(object):
     brief = property(_get_brief)
 
     def __repr__(self):
-        return "\n".join( [self.brief] + map(repr, filter(None,self.dvs) ))
+        return "\n".join( [self.brief, Dv.columns()] + map(repr, filter(None,self.dvs) ))
 
 
 

@@ -585,6 +585,9 @@ op-cmdline-specials()
    if [ "${cmdline/--debugger}" != "${cmdline}" ]; then
        export OPTICKS_DBG=1
    fi
+   if [ "${cmdline/--strace}" != "${cmdline}" ]; then
+       export OPTICKS_DBG=2
+   fi
 
    if [ "${cmdline/-DD}" != "${cmdline}" ]; then
        export OPTICKS_DBG=1
@@ -816,6 +819,8 @@ op-runline()
            MING*) runline="     ${OPTICKS_BINARY} -- ${OPTICKS_ARGS} " ;; 
                *) runline="gdb  --args ${OPTICKS_BINARY} ${OPTICKS_ARGS} " ;;
       esac
+   elif [ "${OPTICKS_DBG}" == "2" ]; then 
+      runline="strace -o /tmp/strace.log -e open ${OPTICKS_BINARY} ${OPTICKS_ARGS}" 
    else
       runline="${OPTICKS_BINARY} ${OPTICKS_ARGS}" 
    fi

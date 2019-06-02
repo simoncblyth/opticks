@@ -854,7 +854,7 @@ void GPropertyLib::dumpNames(const char* msg) const
 
 
 
-NMeta* GPropertyLib::CreateMeta(const std::vector<std::string>& names )
+NMeta* GPropertyLib::CreateAbbrevMeta(const std::vector<std::string>& names )
 {
     SAbbrev abbrev(names); 
     assert( abbrev.abbrev.size() == names.size() ); 

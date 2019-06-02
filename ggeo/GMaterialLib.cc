@@ -473,7 +473,7 @@ NMeta* GMaterialLib::createMeta()
         names.push_back(name); 
     }
 
-    NMeta* abbrevmeta = GPropertyLib::CreateMeta(names); 
+    NMeta* abbrevmeta = GPropertyLib::CreateAbbrevMeta(names); 
 
     libmeta->setObj("abbrev", abbrevmeta );  
     return libmeta ; 

@@ -500,3 +500,23 @@ after the FUNCNAME and events within it.
 
 
 
+Issue 7 : resource generalizations to work with relative event paths
+-----------------------------------------------------------------------------
+
+* :doc:`strace-monitor-file-opens`
+
+
+
+Issue 8 : tboolean-box-ip polarizations are totally off
+------------------------------------------------------------
+
+* :doc:`tboolean-box-ip-polarization-mismatch`
+
+
+
+
+
+
+
+
+

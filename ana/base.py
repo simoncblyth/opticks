@@ -341,12 +341,12 @@ class OpticksEnv(object):
 
 def opticks_environment(dump=False):
 
-   log.info(" ( opticks_environment") 
+   log.debug(" ( opticks_environment") 
    env = OpticksEnv()
    if dump:
        env.dump()
    env.bash_export() 
-   log.info(" ) opticks_environment") 
+   log.debug(" ) opticks_environment") 
 
 
 def opticks_main(**kwa):

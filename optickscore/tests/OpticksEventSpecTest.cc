@@ -1,14 +1,12 @@
+// TEST=OpticksEventSpecTest om-t
+
 #include "OpticksEventSpec.hh"
 
-#include "OKCORE_LOG.hh"
-#include "PLOG.hh"
+#include "OPTICKS_LOG.hh"
 
 int main(int argc, char** argv)
 {
-    PLOG_(argc, argv);
-
-    OKCORE_LOG_ ; 
-
+    OPTICKS_LOG(argc, argv);
 
     OpticksEventSpec s0("typ","tag","det") ; 
     s0.Summary("s0 (no cat)");

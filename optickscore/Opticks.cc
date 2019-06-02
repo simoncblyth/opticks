@@ -1623,7 +1623,9 @@ void  Opticks::setVerbosity(unsigned verbosity)
 Opticks::defineEventSpec
 -------------------------
 
-Invoked from Opticks::configure after commandline parse.
+Formerly invoked from Opticks::configure after commandline parse.
+Now try moving to Opticks::postgeometry so BResource evtbase changes
+are honoured. 
 
 
 **/
@@ -1730,9 +1732,11 @@ void Opticks::configure()
     updateCacheMeta(); 
 
 
-    defineEventSpec();
-
+/*
+    defineEventSpec();  // <-- too soon for test geometry that adjusts evtbase 
     m_profile->setDir(getEventFold());
+
+*/
 
     const std::string& ssize = m_cfg->getSize();
 
@@ -1920,7 +1924,7 @@ void Opticks::setSpaceDomain(float x, float y, float z, float w)
     m_space_domain.z = z  ; 
     m_space_domain.w = w  ; 
 
-    configureDomains();
+    postgeometry();  
 }
 
 int Opticks::getMultiEvent() const 
@@ -1950,6 +1954,13 @@ float Opticks::getAnimTimeMax()
 
 
 
+void Opticks::postgeometry()
+{
+    configureDomains();
+
+    defineEventSpec();  // <-- configure was too soon for test geometry that adjusts evtbase, so try here 
+    m_profile->setDir(getEventFold());
+}
 
 
 void Opticks::configureDomains()
