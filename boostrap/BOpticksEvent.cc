@@ -52,27 +52,38 @@ std::string BOpticksEvent::directory_template(bool notag)
     return deftmpl ; 
 }
 
+
+/**
+BOpticksEvent::directory_
+----------------------------
+
+top (geometry)
+    old and new: BoxInBox,PmtInBox,dayabay,prism,reflect,juno,... 
+sub 
+    old: cerenkov,oxcerenkov,oxtorch,txtorch   (constituent+source)
+    new: cerenkov,scintillation,natural,torch  (source only)
+    
+tag
+    old: tag did not contribute to directory 
+    
+anno
+    normally NULL, used for example with metadata for a timestamp folder
+    within the tag folder
+
+**/
+
 std::string BOpticksEvent::directory_(const char* top, const char* sub, const char* tag, const char* anno)
 {
-    // top (geometry)
-    //     old and new: BoxInBox,PmtInBox,dayabay,prism,reflect,juno,... 
-    //
-    // sub 
-    //     old: cerenkov,oxcerenkov,oxtorch,txtorch   (constituent+source)
-    //     new: cerenkov,scintillation,natural,torch  (source only)
-    //
-    // tag
-    //     old: tag did not contribute to directory 
-    //
-    // anno
-    //     normally NULL, used for example with metadata for a timestamp folder
-    //     within the tag folder
-    //  
-
     bool notag = tag == NULL ; 
     std::string base = directory_template(notag);
 
-    //LOG(info) << " base " << base ; 
+    LOG(verbose) 
+            << " top " << top
+            << " sub " << sub
+            << " tag " << ( tag ? tag : "NULL" )
+            << " anno " << ( anno ? anno : "NULL" )
+            << " base (directory_template) " << base
+            ; 
 
     boost::replace_first(base, "$1", top ); 
     boost::replace_first(base, "$2", sub ); 
@@ -130,6 +141,7 @@ std::string BOpticksEvent::path_(const char* top, const char* sub, const char* t
 
 std::string BOpticksEvent::path(const char* top, const char* sub, const char* tag, const char* stem, const char* ext)
 {
+
     std::string p_ ; 
     if(LAYOUT_VERSION == 1)
     {
@@ -161,6 +173,16 @@ std::string BOpticksEvent::path(const char* top, const char* sub, const char* ta
                   ;    
     }    
 
+    LOG(debug)
+          << " top " << top 
+          << " sub " << sub 
+          << " tag " << tag 
+          << " stem " << stem 
+          << " ext " << ext 
+          << " p " << p
+          ;
+    // eg top tboolean-box sub torch tag 1 stem so ext .npy p /tmp/blyth/opticks/evt/tboolean-box/torch/1/so.npy
+
     return p ; 
 }
 
@@ -178,8 +200,8 @@ srcevtbase
 
 const char* BOpticksEvent::srctagdir( const char* det, const char* typ, const char* tag) // static
 {
-    const char* srcevtbase = BResource::Get("srcevtbase");   
-    if( srcevtbase == NULL ) srcevtbase = BResource::Get("tmpuser_dir") ;   
+    const char* srcevtbase = BResource::GetDir("srcevtbase");   
+    if( srcevtbase == NULL ) srcevtbase = BResource::GetDir("tmpuser_dir") ;   
     assert( srcevtbase ); 
 
     std::string path = BFile::FormPath(srcevtbase, "evt", det, typ, tag ); 

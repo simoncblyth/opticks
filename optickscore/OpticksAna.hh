@@ -33,6 +33,7 @@ class OKCORE_API OpticksAna
        bool isKeyEnabled(const char* anakey) const ;
        const char* getScript(const char* anakey);
        std::string getArgs(const char* anakey);
+       void setEnv();
    private:
        Opticks*             m_ok ; 
        OpticksCfg<Opticks>* m_cfg ; 

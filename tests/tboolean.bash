@@ -702,6 +702,7 @@ tboolean-testobject(){ echo Vacuum///GlassSchottF2 ; }
 
 
 
+tboolean-box-dbg(){ cd /tmp/tt ; OPTICKS_EVENT_BASE=tboolean-box-- ipython --pdb $(which tboolean.py) -i -- --tag 1 --tagoffset 0 --det tboolean-box --src torch ; }
 
 tboolean-box-ip(){ TESTNAME=${FUNCNAME/-ip} tboolean-ipy- $* ; } 
 tboolean-box-p(){ TESTNAME=${FUNCNAME/-p} tboolean-py- $* ; } 
@@ -717,7 +718,7 @@ from opticks.analytic.csg import CSG
 
 # 0x3f is all 6 
 autoemitconfig="photons:600000,wavelength:380,time:0.2,posdelta:0.1,sheetmask:0x1,umin:0.45,umax:0.55,vmin:0.45,vmax:0.55,diffuse:1,ctmindiffuse:0.5,ctmaxdiffuse:1.0"
-args = opticks_main(csgpath="$TMP/$FUNCNAME", autoemitconfig=autoemitconfig)
+args = opticks_main(csgpath="$FUNCNAME", autoemitconfig=autoemitconfig)
 
 #emitconfig = "photons:100000,wavelength:380,time:0.2,posdelta:0.1,sheetmask:0x1,umin:0.25,umax:0.75,vmin:0.25,vmax:0.75" 
 #emitconfig = "photons:1,wavelength:380,time:0.2,posdelta:0.1,sheetmask:0x1,umin:0.25,umax:0.75,vmin:0.25,vmax:0.75" 

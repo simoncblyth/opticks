@@ -134,12 +134,12 @@ class AB(object):
             btag = "-%s" % args.utag
         pass
 
-        try:
-            a = Evt(tag=atag, src=args.src, det=args.det, args=args, nom="A", smry=args.smry)
-            b = Evt(tag=btag, src=args.src, det=args.det, args=args, nom="B", smry=args.smry)
-        except IOError as err:
-            log.fatal(err)
-            sys.exit(args.mrc)
+        #try:
+        a = Evt(tag=atag, src=args.src, det=args.det, pfx=args.pfx, args=args, nom="A", smry=args.smry)
+        b = Evt(tag=btag, src=args.src, det=args.det, pfx=args.pfx, args=args, nom="B", smry=args.smry)
+        #except IOError as err:
+        #    log.fatal(err)
+        #    sys.exit(args.mrc)
         pass
         self.a = a
         self.b = b 
@@ -166,7 +166,7 @@ class AB(object):
         assert acsgp == bcsgp
 
         #aNote = "A:%s" % self.a.metadata.Note
-        #bNote = "B:%s" % self.b.metadata.Note
+        ##bNote = "B:%s" % self.b.metadata.Note
  
         return "\n".join(filter(None,[abn, abr,bbr, amd, acsgp ]))
 

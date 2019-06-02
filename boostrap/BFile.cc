@@ -136,7 +136,8 @@ const std::vector<std::string> BFile::envvars = {
    "TMP", 
    "HOME",
    "OPTICKS_INSTALL_PREFIX",    // needed for OpticksFlags to find the enum header, set internally at resource init
-   "OPTICKS_HOME"              // needed by OInterpolationTest to find a python script
+   "OPTICKS_HOME",              // needed by OInterpolationTest to find a python script
+   "IDPATH"
 } ; 
 
 bool BFile::IsAllowedEnvvar(const char* key_)
@@ -177,21 +178,21 @@ std::string BFile::ResolveKey( const char* key )
     }
     else if(strcmp(key,"KEYDIR")==0 ) 
     {
-        const char* idpath = BResource::Get("idpath") ; 
+        const char* idpath = BResource::GetDir("idpath") ; 
         assert( idpath ); 
         evalue = idpath ;  
         LOG(error) << "replacing $IDPATH with " << evalue ; 
     }
     else if(strcmp(key,"DATADIR")==0 ) 
     {
-        const char* datadir = BResource::Get("opticksdata_dir") ; 
+        const char* datadir = BResource::GetDir("opticksdata_dir") ; 
         assert( datadir ); 
         evalue = datadir ;  
         LOG(error) << "replacing $DATADIR with " << evalue ; 
     }
     else if(strcmp(key,"OPTICKS_EVENT_BASE")==0) 
     {
-        const char* evtbase = BResource::Get("evtbase") ; 
+        const char* evtbase = BResource::GetDir("evtbase") ; 
         if( evtbase != NULL )
         {
             evalue = evtbase ; 
@@ -213,14 +214,40 @@ std::string BFile::ResolveKey( const char* key )
 
 
 
+std::string BFile::CWD()
+{
+    fs::path p = fs::current_path();  
+    return p.string();
+}
 
+std::string BFile::Absolute(const char* rela, const char* relb, const char* relc)
+{
+    fs::path r(rela);
+    if(relb) r /= relb ; 
+    if(relc) r /= relc ; 
+ 
+    const fs::path base = fs::current_path() ;  
+    fs::path a = fs::absolute(r, base);    
+    return a.string();
+}
 
+std::string BFile::AbsoluteCanonical(const char* relpath)
+{
+    fs::path r(relpath); 
+    const fs::path base = fs::current_path() ;  
+    fs::path a = fs::absolute(r, base);    
 
+    try 
+    {
+        a = fs::canonical(a); 
+    }
+    catch( fs::filesystem_error& e  )
+    {
+        LOG(error) << e.what() ; 
+    }
 
-
-
-
-
+    return a.string();
+}
 
 
 

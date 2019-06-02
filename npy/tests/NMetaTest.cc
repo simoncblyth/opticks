@@ -3,6 +3,7 @@
 #include <string>
 
 #include "NMeta.hpp"
+
 #include "OPTICKS_LOG.hh"
 
 void test_composable()
@@ -156,7 +157,6 @@ void test_append()
     a.append(&b);
     a.dump();  
 }
-
 
 
 

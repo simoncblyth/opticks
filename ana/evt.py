@@ -164,7 +164,7 @@ class Evt(object):
         return sel 
 
 
-    def __init__(self, tag="1", src="natural", det="g4live", pfx="source", args=None, maxrec=10, rec=True, dbg=False, label=None, seqs=[], not_=False, nom="?", smry=False):
+    def __init__(self, tag="1", src="natural", det="g4live", pfx=".", args=None, maxrec=10, rec=True, dbg=False, label=None, seqs=[], not_=False, nom="?", smry=False):
         log.debug("%s.__init__ START " % nom)
         self.nom = nom
         self.smry = smry
@@ -181,6 +181,7 @@ class Evt(object):
         self.det = det
         self.pfx = pfx 
         self.tagdir = tagdir_(det, src, tag, pfx=pfx)
+
         self.cn = "%s:%s:%s" % (str(self.tag), self.det, self.pfx)
 
         self.dbg = dbg
@@ -250,7 +251,7 @@ class Evt(object):
 
         testcsgpath = self.metadata.TestCSGPath
         if testcsgpath is not None:
-            mattype = MatType(reldir=os.path.join(testcsgpath,"GItemList"))
+            mattype = MatType(reldir=os.path.abspath(os.path.join(testcsgpath,"GItemList")))
         else:
             mattype = MatType()
         pass

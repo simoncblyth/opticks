@@ -166,6 +166,8 @@ GMergedMesh* GGeoTest::initCreateCSG()
 
     m_resource->setTestCSGPath(m_csgpath); // take note of path, for inclusion in event metadata
     m_resource->setTestConfig(m_config_); // take note of config, for inclusion in event metadata
+    m_resource->setEventBase(m_csgpath);   // BResource("evtbase") yields OPTICKS_EVENT_BASE 
+    
 
     if(!m_csglist) return NULL ; 
 

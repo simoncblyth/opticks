@@ -13,6 +13,10 @@ class BRAP_API BFile {
        static void SplitPath(std::vector<std::string>& elem, const char* path ) ; 
        static bool LooksLikePath(const char* path) ; 
    
+       static std::string CWD();
+       static std::string Absolute(const char* rela, const char* relb=NULL, const char* relc=NULL);   
+       static std::string AbsoluteCanonical(const char* relpath);  // paths must exist to be canonicalized, otherwise the .. dots remain 
+
        static std::string expandvar(const char* s);
        static std::string expandhome(const char* s);
        static std::string usertmpdir(const char* base, const char* sub, const char* rel );

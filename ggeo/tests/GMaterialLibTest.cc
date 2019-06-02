@@ -10,7 +10,13 @@
 
 
 #include "SSys.hh"
+#include "SAbbrev.hh"
+
+#include "BFile.hh"
+#include "BTxt.hh"
 #include "BStr.hh"
+
+#include "NMeta.hpp"
 
 #include "Opticks.hh"
 #include "OpticksAttrSeq.hh"
@@ -20,6 +26,8 @@
 #include "GMaterial.hh"
 #include "GMaterialLib.hh"
 #include "GDomain.hh"
+
+
 
 #include "OPTICKS_LOG.hh"
 
@@ -112,9 +120,10 @@ void test_getLocalKey(GMaterialLib* mlib)
 }
 
 
-int main(int argc, char** argv)
+
+
+void test_load(int argc, char** argv)
 {
-    OPTICKS_LOG(argc, argv);
 
     SSys::setenvvar("IDPATH", "$TMP", true );
 
@@ -136,9 +145,47 @@ int main(int argc, char** argv)
 
 
     //test_interpolatingCopyCtor(mlib);
-
     test_getLocalKey(mlib) ; 
+}
 
+
+
+
+
+
+
+void test_createMeta()
+{
+    std::string path = BFile::FormPath("$IDPATH/GItemList/GMaterialLib.txt");
+    LOG(info) << path ;
+
+    BTxt bt(path.c_str());
+    bt.read();
+    bt.dump("test_create");
+
+    NMeta* abbrevmeta = GPropertyLib::CreateMeta( bt.getLines() );
+    abbrevmeta->dump(); 
+
+    NMeta* libmeta = new NMeta ; 
+    libmeta->setObj("abbrev", abbrevmeta );  
+
+    libmeta->dump() ; 
+
+    //libmeta->save("$IDPATH/GMaterialLib/GPropertyLibMetadata.json");
+    libmeta->save("$TMP/GMaterialLib/GPropertyLibMetadata.json");
+
+}
+
+
+
+
+
+int main(int argc, char** argv)
+{
+    OPTICKS_LOG(argc, argv);
+
+    //test_load(argc, argv); 
+    test_createMeta(); 
 
     return 0 ;
 }

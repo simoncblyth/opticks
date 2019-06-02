@@ -25,6 +25,7 @@ class BRAP_API BTxt {
        void addLine(const std::string& line); 
        void addLine(const char* line); 
        template<typename T> void addValue(T value); 
+       const std::vector<std::string>& getLines() const ; 
    private:
        const char* m_path ; 
        VS_t m_lines ; 

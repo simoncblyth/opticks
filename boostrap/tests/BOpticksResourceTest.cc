@@ -60,7 +60,6 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv);
 
-
     const char* idpath  = SSys::getenvvar("IDPATH");
     if(!idpath) return 0 ;     
 
@@ -68,9 +67,7 @@ int main(int argc, char** argv)
     BOpticksResourceTest brt(idpath) ; 
     BOpticksResourceTest brt2(brt._res.getSrcPath(), brt._res.getSrcDigest()) ; 
 
-
     // the two setup approaches, should yield exactly the same paths 
-
     BResource::Dump("BOpticksResourceTest"); 
 
 

@@ -118,16 +118,6 @@ class BRAP_API  BOpticksResource {
         BOpticksResource();
         virtual ~BOpticksResource();
         virtual void Summary(const char* msg="BOpticksResource::Summary");
-
-/*
-   public:
-        const char* getPTXInstallCacheDir();
-        static std::string PTXPath(const char* cu_name, const char* cmake_target, const char* prefix);
-        static std::string PTXName(const char* cu_name, const char* cmake_target);
-        static std::string PTXPath(const char* name, const char* target="OptiXRap");
-        static const char* PTXInstallPath();
-        std::string getPTXPath(const char* cu_name, const char* cmake_target="OptiXRap");
-*/
    public:
         static std::string BuildDir(const char* proj);
         static std::string BuildProduct(const char* proj, const char* name);
@@ -195,10 +185,18 @@ class BRAP_API  BOpticksResource {
         const char* getIdMapPath() const ;
     public:
         const char* getEventBase() const ; 
+        void setEventBase(const char* rela, const char* relb=NULL) ; 
     public:
         BOpticksKey* getKey() const ; 
         bool         hasKey() const ;   // distinguishes direct from legacy 
         bool         isKeySource() const ; 
+    public:
+       // used to communicate test geometry config from geometry loading to test event writing 
+       // see GGeoTest::initCreateCSG 
+       void        setTestCSGPath(const char* testcsgpath);
+       const char* getTestCSGPath() const ; 
+       void        setTestConfig(const char* testconfig);
+       const char* getTestConfig() const ; 
   private:
         void init();
         void initInstallPrefix();
@@ -226,8 +224,9 @@ class BRAP_API  BOpticksResource {
         bool         m_setup ; 
         BOpticksKey* m_key ; 
         BPath*       m_id ; 
-        BResource*   m_res ;
+        BResource*   m_res ;   
  
+   protected:
         int         m_layout ; 
         const char* m_install_prefix ;   // from BOpticksResourceCMakeConfig header
         const char* m_opticksdata_dir ; 
@@ -272,6 +271,9 @@ class BRAP_API  BOpticksResource {
         const char* m_directgensteppath ; 
         const char* m_directphotonspath ; 
         const char* m_gltfpath ;
+   protected:
+        const char* m_testcsgpath ;
+        const char* m_testconfig ;
 };
 
 #include "BRAP_TAIL.hh"

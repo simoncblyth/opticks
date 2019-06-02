@@ -5,7 +5,7 @@
 #include "BFile.hh"
 #include "PLOG.hh"
 
-const BResource* BResource::INSTANCE = NULL ; 
+BResource* BResource::INSTANCE = NULL ; 
 
 const BResource* BResource::GetInstance()
 {
@@ -29,24 +29,14 @@ void BResource::Dump(const char* msg)
     br->dumpPaths("paths");
 }
 
-const char* BResource::Get(const char* label)
-{
-    const BResource* br = GetInstance(); 
-    const char* ret = NULL ; 
-    if( !br ) return ret ;  
 
-    if( ret == NULL ) ret = br->getPath(label); 
-    if( ret == NULL ) ret = br->getDir(label); 
-    if( ret == NULL ) ret = br->getName(label); 
+const char* BResource::GetPath(const char* label){ return INSTANCE ? INSTANCE->getPath(label) : NULL ; }
+const char* BResource::GetDir(const char* label){  return INSTANCE ? INSTANCE->getDir(label) : NULL ; }
+const char* BResource::GetName(const char* label){ return INSTANCE ? INSTANCE->getName(label) : NULL ; }
 
-    LOG(debug)
-         << " label " << label 
-         << " ret " << ret 
-         ;
- 
-
-    return ret ;
-}
+void BResource::SetPath(const char* label, const char* value){ if(!INSTANCE) INSTANCE=new BResource ; INSTANCE->setPath(label, value) ; }
+void BResource::SetDir(const char* label, const char* value){  if(!INSTANCE) INSTANCE=new BResource ; INSTANCE->setDir(label, value) ; }
+void BResource::SetName(const char* label, const char* value){ if(!INSTANCE) INSTANCE=new BResource ; INSTANCE->setName(label, value) ; }
 
 
 BResource::BResource()
@@ -62,8 +52,15 @@ const char* BResource::getPath(const char* label) const { return get(label, m_pa
 const char* BResource::getDir(const char* label) const { return get(label, m_dirs); }
 const char* BResource::getName(const char* label) const { return get(label, m_names); }
 
+bool BResource::hasPath(const char* label) const { return count(label, m_paths) > 0u ;  }
+bool BResource::hasDir(const char* label) const { return count(label, m_dirs) > 0u ;  }
+bool BResource::hasName(const char* label) const { return count(label, m_names) > 0u ;  }
 
-const char* BResource::get(const char* label, const std::vector<std::pair<std::string, std::string>>& vss) const 
+void BResource::setPath( const char* label, const char* value ){   set(label, value, m_paths) ; }
+void BResource::setDir( const char* label, const char* value ){    set(label, value, m_dirs) ; }
+void BResource::setName( const char* label, const char* value ){   set(label, value, m_names) ; }
+
+const char* BResource::get(const char* label, const std::vector<std::pair<std::string, std::string>>& vss) // static  
 {
     typedef std::pair<std::string, std::string> SS ; 
     typedef std::vector<SS> VSS ; 
@@ -81,21 +78,59 @@ const char* BResource::get(const char* label, const std::vector<std::pair<std::s
     return path ; 
 }
 
-void BResource::addName( const char* label, const char* name)
+
+
+void BResource::set(const char* label, const char* value, std::vector<std::pair<std::string, std::string>>& vss) // static  
+{
+    if(count(label, vss) == 0u) 
+    {
+        add(label, value, vss ); 
+    }
+    else
+    {
+        typedef std::pair<std::string, std::string> SS ; 
+        typedef std::vector<SS> VSS ; 
+
+        for(VSS::iterator it=vss.begin() ; it != vss.end() ; it++)
+        {
+            SS& ss = *it ;
+            if(ss.first.compare(label) == 0)  
+            {
+                LOG(info) << label << " change " << ss.second << " to " << value ;   
+                ss.second = value ;    
+            }
+        }
+    }
+}
+
+
+unsigned BResource::count(const char* label, const std::vector<std::pair<std::string, std::string>>& vss) // static  
 {
     typedef std::pair<std::string, std::string> SS ; 
-    m_names.push_back( SS(label, name ? name : "") );
+    typedef std::vector<SS> VSS ; 
+
+    unsigned count(0); 
+    for(VSS::const_iterator it=vss.begin() ; it != vss.end() ; it++)
+    {
+        const SS& ss = *it ;
+        if(ss.first.compare(label) == 0)  count += 1 ; 
+    }
+    return count ; 
 }
-void BResource::addPath( const char* label, const char* path)
+
+
+void BResource::addName( const char* label, const char* value) { add( label, value, m_names ) ; } 
+void BResource::addPath( const char* label, const char* value) { add( label, value, m_paths ) ; } 
+void BResource::addDir(  const char* label, const char* value) { add( label, value, m_dirs ) ; } 
+
+
+void BResource::add( const char* label, const char* value,  std::vector<std::pair<std::string, std::string>>& vss   )
 {
+    assert(count(label,vss) == 0u);     
     typedef std::pair<std::string, std::string> SS ; 
-    m_paths.push_back( SS(label, path ? path : "") );
+    vss.push_back( SS(label, value ? value : "") );
 }
-void BResource::addDir( const char* label, const char* dir)
-{
-    typedef std::pair<std::string, std::string> SS ; 
-    m_dirs.push_back( SS(label, dir ? dir : "" ) );
-}
+
 
 void BResource::dumpNames(const char* msg) const 
 {
@@ -152,11 +187,8 @@ void BResource::dumpPaths(const char* msg) const
                     ;
 
         assert( match );
-
-
     } 
 }
-
 
 void BResource::dumpDirs(const char* msg) const 
 {
@@ -181,6 +213,5 @@ void BResource::dumpDirs(const char* msg) const
              ;
     } 
 }
-
 
 

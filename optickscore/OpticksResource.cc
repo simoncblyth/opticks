@@ -88,8 +88,6 @@ OpticksResource::OpticksResource(Opticks* ok)
     m_example_matnames(NULL),
     m_sensor_surface(NULL),
     m_default_frame(DEFAULT_FRAME_OTHER),
-    m_testcsgpath(NULL),
-    m_testconfig(NULL),
     m_sensor_list(NULL),
     m_runresultsdir(NULL)
 {
@@ -458,27 +456,6 @@ void OpticksResource::assignDetectorName()
 
 
 
-// note taking from GGeoTest::initCreateCSG for inclusion in evt metadata
-
-void OpticksResource::setTestCSGPath(const char* testcsgpath)
-{
-    m_testcsgpath = testcsgpath ? strdup(testcsgpath) : NULL ; 
-}
-const char* OpticksResource::getTestCSGPath() const 
-{
-    return m_testcsgpath  ;
-}
-void OpticksResource::setTestConfig(const char* testconfig)
-{
-    m_testconfig = testconfig ? strdup(testconfig) : NULL ; 
-}
-const char* OpticksResource::getTestConfig() const 
-{
-    return m_testconfig  ;
-}
-
-
-
 
 
 void OpticksResource::readG4Environment()
@@ -622,15 +599,34 @@ void OpticksResource::Dump(const char* msg)
     Summary(msg);
 
     std::string mmsp = getMergedMeshPath(0);
-    std::string pmtp = getPmtPath(0);
+    std::cout 
+           << std::setw(40) << " getMergedMeshPath(0) " 
+           << " : " 
+           << mmsp
+           << std::endl ; 
 
-    std::cerr << "mmsp(0) :" << mmsp << std::endl ;  
-    std::cerr << "pmtp(0) :" << pmtp << std::endl ;  
+    std::string pmtp = getPmtPath(0);
+    std::cout 
+           << std::setw(40) << " getPmtPath(0) " 
+           << " : " 
+           << pmtp
+           << std::endl ; 
+
 
     std::string bndlib = getPropertyLibDir("GBndLib");
-    std::cout << " getPropertyLibDir " << bndlib << std::endl ; 
-    
+    std::cout 
+           << std::setw(40) << " getPropertyLibDir(\"GBndLib\") " 
+           << " : " 
+           << bndlib 
+           << std::endl ; 
 
+    const char* testcsgpath = getTestCSGPath() ; 
+    std::cout 
+           << std::setw(40) << " getTestCSGPath() " 
+           << " : " 
+           <<  ( testcsgpath ? testcsgpath : "NULL" )
+           << std::endl ; 
+    
 }
 
 

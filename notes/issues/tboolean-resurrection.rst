@@ -457,9 +457,8 @@ Issue 5 : interop downloadHits : ye olde chestnut : usual workaround succeeded :
      tboolean-;tboolean-box --okg4 --load
 
 
-Issue 6 : tboolean-box-p looking in OPTICKS_KEY geocache 
-------------------------------------------------------------
-
+Issue 6 : tboolean-box-p looking in OPTICKS_KEY geocache : FIXED with resource generalizations
+-------------------------------------------------------------------------------------------------
 
 ::
 
@@ -489,7 +488,14 @@ Issue 6 : tboolean-box-p looking in OPTICKS_KEY geocache
     [blyth@localhost cfg4]$ 
 
 
+Hmm where should things (geometry, events, metadata) be saved for test running.
+As test geometry has a basis geometry, first impulse is to put it within the corresponding 
+geocache.  But in a multiuser environment will have a split in responsibilities, a small
+number of administrators will create the basis geocaches and users who will not have 
+write permission to the geocache will want to run tests using the materials from it. 
 
+This makes me plump for CWD eg "tboolean-box--" directory named in the CSG csgpath argument 
+after the FUNCNAME and events within it.
 
 
 

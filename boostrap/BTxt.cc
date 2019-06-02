@@ -21,6 +21,13 @@ BTxt::BTxt(const char* path)
 {
 }
 
+const std::vector<std::string>& BTxt::getLines() const 
+{
+    return m_lines ; 
+}
+
+
+
 std::string BTxt::desc() const 
 {  
     std::stringstream ss ;

@@ -126,13 +126,6 @@ class OKCORE_API OpticksResource : public BOpticksResource {
        const char* getCtrl();
        bool hasCtrlKey(const char* key) const ;
     public:
-       // used to communicate test geometry config from geometry loading to test event writing 
-       // see GGeoTest::initCreateCSG 
-       void        setTestCSGPath(const char* testcsgpath);
-       const char* getTestCSGPath() const ; 
-       void        setTestConfig(const char* testconfig);
-       const char* getTestConfig() const ; 
-    public:
        // split these off as cannot assume users can write into geocache
        void saveFlags(const char* dir);
        void saveTypes(const char* dir);
@@ -203,8 +196,6 @@ class OKCORE_API OpticksResource : public BOpticksResource {
        const char* m_sensor_surface  ;
        int         m_default_frame ; 
    private:
-       const char*  m_testcsgpath ;
-       const char*  m_testconfig ;
        NSensorList* m_sensor_list ; 
    private:
        const char* m_runresultsdir ;  

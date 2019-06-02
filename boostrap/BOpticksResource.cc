@@ -91,7 +91,6 @@ BOpticksResource::BOpticksResource()
     m_installcache_dir(NULL),
     m_rng_installcache_dir(NULL),
     m_okc_installcache_dir(NULL),
-  //  m_ptx_installcache_dir(NULL),
     m_tmpuser_dir(NULL),
     m_srcpath(NULL),
     m_srcfold(NULL),
@@ -120,7 +119,9 @@ BOpticksResource::BOpticksResource()
     m_primariespath(NULL),
     m_directgensteppath(NULL),
     m_directphotonspath(NULL),
-    m_gltfpath(NULL)
+    m_gltfpath(NULL),
+    m_testcsgpath(NULL),
+    m_testconfig(NULL)
 {
     init();
     (*m_log)("DONE"); 
@@ -373,6 +374,44 @@ const char* BOpticksResource::getDebuggingIDFOLD() {    return m_debugging_idfol
 
 
 
+
+
+// note taking from GGeoTest::initCreateCSG for inclusion in evt metadata
+
+void BOpticksResource::setTestCSGPath(const char* testcsgpath)
+{
+    m_testcsgpath = testcsgpath ? strdup(testcsgpath) : NULL ; 
+}
+const char* BOpticksResource::getTestCSGPath() const 
+{
+    return m_testcsgpath  ;
+}
+void BOpticksResource::setTestConfig(const char* testconfig)
+{
+    m_testconfig = testconfig ? strdup(testconfig) : NULL ; 
+}
+const char* BOpticksResource::getTestConfig() const 
+{
+    return m_testconfig  ;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 const char* BOpticksResource::MakeSrcPath(const char* srcpath, const char* ext) 
 {
     std::string path = BFile::ChangeExt(srcpath, ext ); 
@@ -618,6 +657,10 @@ void BOpticksResource::setupViaKey()
 }
 
 
+
+
+
+
 /**
 BOpticksResource::setupViaSrc  LEGACY approach to resource setup, based on envvars pointing at src dae
 ------------------------------------------------------------------------------------------------------------
@@ -739,14 +782,26 @@ const char* BOpticksResource::getG4CodeGenDir() const { return m_g4codegendir ; 
 const char* BOpticksResource::getCacheMetaPath() const { return m_cachemetapath ; }
 const char* BOpticksResource::getRunCommentPath() const { return m_runcommentpath ; }
 const char* BOpticksResource::getPrimariesPath() const { return m_primariespath ; } 
-//const char* BOpticksResource::getDirectGenstepPath() const { return m_directgensteppath ; } 
-//const char* BOpticksResource::getDirectPhotonsPath() const { return m_directphotonspath ; } 
 const char* BOpticksResource::getGLTFPath() const { return m_gltfpath ; } 
 const char* BOpticksResource::getMetaPath() const { return m_metapath ; }
 const char* BOpticksResource::getIdMapPath() const { return m_idmappath ; } 
 
 //const char* BOpticksResource::getSrcEventBase() const { return m_srcevtbase ; } 
 const char* BOpticksResource::getEventBase() const { return m_evtbase ; } 
+
+
+
+void BOpticksResource::setEventBase(const char* rela, const char* relb)
+{
+    std::string abs = BFile::Absolute( rela, relb );  
+    m_evtbase = strdup(abs.c_str()); 
+    m_res->setDir( "evtbase", m_evtbase ); 
+}
+
+
+
+
+
 
 
 bool  BOpticksResource::hasKey() const
@@ -838,41 +893,4 @@ std::string BOpticksResource::BuildProduct(const char* proj, const char* name)
     return BFile::FormPath(builddir.c_str(), name);
 }
 
-
-/*
-
-std::string BOpticksResource::PTXName(const char* cu_name, const char* cmake_target)
-{
-    std::stringstream ss ; 
-    ss << cmake_target << "_generated_" << cu_name << ".ptx" ;    
-    // formerly the user had to suppliy the name with ".ptx" appended
-    // adjusting to cu_name for conformity with OKConf::PTXPath
-    return ss.str();
-}
-std::string BOpticksResource::getPTXPath(const char* cu_name, const char* cmake_target)
-{
-    return PTXPath(cu_name, cmake_target, m_ptx_installcache_dir);
-}
-
-
-std::string BOpticksResource::PTXPath(const char* cu_name, const char* cmake_target, const char* prefix)
-{
-    fs::path ptx(prefix);   
-    std::string ptxname = PTXName(cu_name, cmake_target);
-    ptx /= ptxname ;
-    std::string path = ptx.string(); 
-    return path ;
-}
-
-const char* BOpticksResource::PTXInstallPath(){ return MakePath(ResolveInstallPrefix(), "installcache", "PTX"); }
-std::string BOpticksResource::PTXPath(const char* name, const char* target)
-{
-    const char* ptx_installcache_dir = PTXInstallPath();
-    return PTXPath(name, target, ptx_installcache_dir);
-}
-
-
-
-
-*/
 

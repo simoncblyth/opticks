@@ -9,6 +9,7 @@
 #include <boost/algorithm/string.hpp>
 
 #include "SLog.hh"
+#include "SAbbrev.hh"
 // brap-
 #include "BDir.hh"
 #include "Map.hh"
@@ -850,5 +851,27 @@ void GPropertyLib::dumpNames(const char* msg) const
         names_->dump("names_"); 
     } 
 }
+
+
+
+NMeta* GPropertyLib::CreateMeta(const std::vector<std::string>& names )
+{
+    SAbbrev abbrev(names); 
+    assert( abbrev.abbrev.size() == names.size() ); 
+
+    NMeta* abbrevmeta = new NMeta ; 
+    for(unsigned i=0 ; i < names.size() ; i++)
+    {
+        const std::string& nm = names[i] ; 
+        const std::string& ab = abbrev.abbrev[i] ; 
+        abbrevmeta->set<std::string>(nm.c_str(), ab ) ; 
+    }
+    return abbrevmeta ; 
+}
+
+
+
+
+
 
 

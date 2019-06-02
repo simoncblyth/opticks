@@ -218,7 +218,7 @@ class OpticksEnv(object):
         self.ext = {}
         self.env = {}
 
-        if legacy:
+        if os.environ.has_key("IDPATH"):
             self.legacy_init()
         else:
             self.direct_init()
@@ -247,13 +247,17 @@ class OpticksEnv(object):
 
         self.setdefault("OPTICKS_INSTALL_PREFIX",  self.install_prefix)
         self.setdefault("OPTICKS_INSTALL_CACHE",   os.path.join(self.install_prefix, "installcache"))
+
         #self.setdefault("OPTICKS_EVENT_BASE",      os.path.join(keydir, "source" ))
         self.setdefault("OPTICKS_EVENT_BASE",       keydir )
 
 
     def legacy_init(self): 
         assert os.environ.has_key("IDPATH"), "IDPATH envvar is required, for legacy running"
-        assert not os.environ.has_key("OPTICKS_KEY"), "OPTICKS_KEY envvar is forbidden, for legacy running"
+        if os.environ.has_key("OPTICKS_KEY"):
+            del os.environ['OPTICKS_KEY']
+            log.warning("legacy_init : OPTICKS_KEY envvar deleted for legacy running, unset IDPATH to use direct_init" )
+        pass
 
         IDPATH = os.environ["IDPATH"] 
         os.environ["GEOCACHE"] = IDPATH   ## so can use in legacy approach too    
@@ -364,7 +368,7 @@ class OK(argparse.Namespace):
     pass
     #ipython = property(lambda self:sys.argv[0].endswith("ipython"))
     ipython = isIPython()
-    brief = property(lambda self:"tag %s src %s det %s c2max %s ipython %s " % (self.utag,self.src,self.det, self.c2max, self.ipython))
+    brief = property(lambda self:"pfx %s tag %s src %s det %s c2max %s ipython %s " % (self.pfx, self.utag,self.src,self.det, self.c2max, self.ipython))
 
     def _get_ctx(self):
         return dict(tag=self.tag, utag=self.utag, src=self.src, det=self.det)
@@ -374,7 +378,7 @@ class OK(argparse.Namespace):
 def opticks_args(**kwa):
 
     oad_key = "OPTICKS_ANA_DEFAULTS"
-    oad = os.environ.get(oad_key,"det=g4live,src=natural,tag=1,pfx=source")
+    oad = os.environ.get(oad_key,"det=g4live,src=natural,tag=1,pfx=.")
     defaults = dict(map(lambda ekv:ekv.split("="), oad.split(","))) 
     log.info("envvar %s -> defaults %s " % (oad_key, repr(defaults)))
 
@@ -633,9 +637,10 @@ def json_(path):
         return _json[path] 
     try: 
         log.debug("parsing json for key %s" % path)
-        _json[path] = json.load(file(os.path.expandvars(os.path.expanduser(path))))
+        xpath = os.path.expandvars(os.path.expanduser(path))
+        _json[path] = json.load(file(xpath))
     except IOError:
-        log.warning("failed to load json from %s" % path)
+        log.warning("failed to load json from %s : %s " % (path,xpath))
         assert 0
         _json[path] = {}
     pass
@@ -701,6 +706,7 @@ class ItemList(object): # formerly ListFlags
         """
         :param reldir: when starts with "/" an absolute path is assumed
         """
+        log.info("txt %s reldir  %s " % (txt, reldir))
         npath=self.Path(txt, reldir)
         names = map(lambda _:_[:-1],file(npath).readlines())
         if translate_ is not None:

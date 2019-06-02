@@ -1,3 +1,5 @@
+// TEST=BOpticksEventTest om-t
+
 #include <cassert>
 
 #include "BOpticksResource.hh"
@@ -80,8 +82,20 @@ void test_srctagdir()
     std::string p = BOpticksEvent::srctagdir(det, typ, tag ); 
 
     LOG(info) << p ; 
-
 }
+
+void test_path()
+{
+    const char* tfmt = "so" ; 
+    const char* det = "tboolean-box" ; 
+    const char* typ = "torch" ; 
+    const char* tag = "1" ; 
+
+    std::string p = BOpticksEvent::path(det, typ, tag, tfmt  ); 
+
+    LOG(info) << p ; 
+}
+
 
 
 int main(int argc, char** argv)
@@ -100,9 +114,10 @@ int main(int argc, char** argv)
     oet.check_layout_version("det",   "source","tag", "stem", "ext") ;
 
     test_notag();
-*/
     test_srctagdir(); 
+*/
 
+    test_path(); 
 
     return 0 ; 
 }

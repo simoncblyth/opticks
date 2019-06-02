@@ -87,7 +87,14 @@ def tagdir_(det, typ, tag, pfx="source", layout=2):
         assert 0, "bad layout"
 
     log.debug("tagdir_ tmpl %s " % tmpl )
-    return os.path.expandvars(tmpl)
+    xdir = os.path.expandvars(tmpl)
+
+    if not os.path.exists(xdir):
+        log.error("NON EXISTING tagdir : %s  expanded from %s " % (xdir, DEFAULT_DIR_TEMPLATE))
+        assert 0 
+    pass
+    return xdir
+
 
 
 def typdirs_(evtdir=None):

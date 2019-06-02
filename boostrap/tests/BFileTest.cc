@@ -435,9 +435,30 @@ void test_FileSize()
               << " path1 " << path1
               << " FileSize1 " << BFile::FileSize( path1 ) 
               ;
+}
 
 
+void test_CWD()
+{
+    std::string cwd = BFile::CWD(); 
+    LOG(info) << cwd ; 
+}
 
+
+void test_Absolute()
+{
+    std::vector<std::string> rr = {"tests", ".", "..", "../.." , "../../.." } ; 
+    for(unsigned i=0 ; i < rr.size() ; i++)
+    {
+         std::string r = rr[i] ; 
+         std::string a = BFile::Absolute(r.c_str()); 
+         std::string c = BFile::AbsoluteCanonical(r.c_str()); 
+         LOG(info) 
+               << " r " << std::setw(15) << r 
+               << " a " << std::setw(50) << a
+               << " c " << std::setw(50) << c
+               ; 
+    } 
 }
 
 
@@ -481,7 +502,10 @@ int main(int argc, char** argv)
    //test_FormPath_edge();
 
    //test_IsAllowedEnvvar();
-   test_ResolveKey();
+   //test_ResolveKey();
+
+   test_CWD(); 
+   test_Absolute(); 
 
    return 0 ; 
 }

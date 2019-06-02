@@ -1,6 +1,7 @@
 #include <sstream>
 
 #include "SSys.hh"
+#include "BResource.hh"
 
 #include "Opticks.hh"
 #include "OpticksCfg.hh"
@@ -59,6 +60,18 @@ std::string OpticksAna::getCommandline(const char* anakey)
     return ss.str();
 }
 
+void OpticksAna::setEnv()
+{
+    if(m_ok->isTest())
+    {
+        const char* key = "OPTICKS_EVENT_BASE" ;  
+        const char* evtbase = BResource::GetDir("evtbase"); 
+        LOG(info) << " setting envvar key " << key << " evtbase " << evtbase ; 
+        SSys::setenvvar(key, evtbase ); 
+    }
+}
+
+
 void OpticksAna::run()
 {
    const char* anakey = m_ok->getAnaKey();
@@ -69,6 +82,8 @@ void OpticksAna::run()
              ; 
 
    if(!enabled) return ; 
+
+   setEnv(); 
 
    std::string cmdline = getCommandline(anakey);
 
