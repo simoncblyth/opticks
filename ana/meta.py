@@ -21,6 +21,10 @@ class Meta(object):
     def __init__(self, path, base):
         """
         :param path: relative path beneath base of dated folder
+        :param base: directory 
+
+        Reads json and ini files from the directory identified
+        ito the d dict keyed on file stem names.
         """
         self.path = path
         self.base = base

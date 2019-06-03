@@ -52,13 +52,18 @@ def finddir(base, dirfilter=lambda _:True, relative=True):
 class DatedFolder(object):
     @classmethod
     def find(cls, base):
+        """
+        Groups of executable runs are grouped together by them using 
+        the same datestamp datedfolder name.
+        So there can be more dirs that corresponding dfolds and dtimes.
+        """
         df = cls()
         log.debug("DatedFolder.find searching for date stamped folders beneath : %s " % base)
         metamap = {}
-        dirs = finddir(base, df)
+        dirs = finddir(base, df)                       
 
-        dfolds = list(set(map(os.path.basename, dirs))) 
-        dtimes = map(dateparser, dfolds ) 
+        dfolds = list(set(map(os.path.basename, dirs))) # list of unique basenames of the dated folders
+        dtimes = map(dateparser, dfolds )               # list of datetimes
         return dirs, dfolds, dtimes 
  
     def __call__(self, path):

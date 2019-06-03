@@ -40,7 +40,7 @@ from dateutil.parser import parse
 from datetime import datetime
 from opticks.ana.datedfolder import DatedFolder, dateparser
 from opticks.ana.meta import Meta
-from opticks.ana.geocache import keydir
+from opticks.ana.key import Key
 
 
 def lol2l(lol):
@@ -66,16 +66,16 @@ if __name__ == '__main__':
 
     resultsprefix = "$OPTICKS_RESULTS_PREFIX" if os.environ.has_key("OPTICKS_RESULTS_PREFIX") else "$TMP"  ## equivalent to BOpticksResource::ResolveResultsPrefix
     parser.add_argument( "--resultsdir", default=os.path.join(resultsprefix, "results"), help="Directory path to results" )
-    parser.add_argument( "--name", default="bench", help="String at the end of the directory names beneath resultsdir in which to look for results")
+    parser.add_argument( "--name", default="bench", help="String at the end of the directory names beneath resultsdir in which to look for results. Default %(default)s.")
     parser.add_argument( "--digest", default=None, help="Select result groups using geocaches with digests that start with the option string")
     parser.add_argument( "--since", default=None, help="Select results from dated folders following the date string provided, eg May22_1030 or 20190522_173746")
     parser.add_argument( "--include", default=None, action='append', nargs='*', help="Select result groups with commandline containing the string provided. ALL the strings when repeated" )
     parser.add_argument( "--exclude", default=None, action='append', nargs='*', help="Select result groupd with commandline NOT containing the string. NOT containing ANY of the strings when repeated" )
     parser.add_argument( "--runlabel", default=None, help="Select result groups with runlabel starting with the string provided." )
     parser.add_argument( "--xrunlabel", default=None, help="Exclude result groups with runlabel starting with the string provided." )
-    parser.add_argument( "--metric", default="launchAVG" );
-    parser.add_argument( "--other", default="prelaunch000" );
-    parser.add_argument( "--nodirs", dest="dirs", action="store_false", default=True );
+    parser.add_argument( "--metric", default="launchAVG", help="Quantity key to present in comparison tables. Default %(default)s." );
+    parser.add_argument( "--other", default="prelaunch000", help="Another quantity key to list in tables. Default %(default)s." );
+    parser.add_argument( "--nodirs", dest="dirs", action="store_false", default=True, help="Skip the listing of results dirs, for more compact output." );
     parser.add_argument( "--splay",  action="store_true", default=False, help="Display the example commandline in a more readable but space consuming form." );
     parser.add_argument( "--nosort",  action="store_true", default=False, help="Dont display time sorted." );
     args = parser.parse_args()
@@ -180,9 +180,9 @@ if __name__ == '__main__':
         geof = geofs[0]
         key = keys[0]
 
-        digest = key.split(".")[-1]
-        idpath = keydir(key) 
-
+        k = Key(key=key)
+        digest = k.digest
+        idpath = k.keydir 
 
         includes = lol2l(args.include)
         excludes = lol2l(args.exclude)

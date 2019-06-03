@@ -18,6 +18,8 @@ import os, logging, numpy as np, argparse
 log = logging.getLogger(__name__)
 
 
+
+
 class Key(object):
     @classmethod
     def Keydir(cls, key):
@@ -40,6 +42,8 @@ class Key(object):
         self.key = key
         self.keydir = keydir
         self.exists = exists
+        self.digest = key.split(".")[-1]
+
         assert exists, "keydir does not exist %s " % str(self)
     
 
@@ -55,7 +59,7 @@ if __name__ == '__main__':
     parser.add_argument( "-v", "--verbose", action="store_true", help="Report key and keydir" )
     args = parser.parse_args()
 
-    key= Key()
+    key = Key()
     if args.verbose:
         print(key)
     else:
