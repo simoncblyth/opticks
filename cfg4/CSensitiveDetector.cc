@@ -45,7 +45,7 @@ G4bool CSensitiveDetector::ProcessHits(G4Step* step,G4TouchableHistory* )
     CHitCollection* hc = pos.x() > 0 ? hitCollectionA : hitCollectionB ; 
     hc->insert(hit); 
 
-    LOG(info) ; 
+    //LOG(info) ; 
     //std::raise(SIGINT);
 
 

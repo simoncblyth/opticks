@@ -364,7 +364,7 @@ void CPropLib::addConstProperty(G4MaterialPropertiesTable* mpt, const char* matn
 {
     if(!prop->isConstant())
     { 
-        LOG(warning) << "CPropLib::addConstProperty " << matname << "." << lkey << " SKIP NON-CONSTANT PROP " ; 
+        LOG(error) << matname << "." << lkey << " SKIP NON-CONSTANT PROP " ; 
         return  ;
     }
 
@@ -373,7 +373,7 @@ void CPropLib::addConstProperty(G4MaterialPropertiesTable* mpt, const char* matn
           
     if( value != uvalue )
     {
-        LOG(warning) << "CPropLib::addConstProperty"
+        LOG(error)
                      << " OVERRIDE "  
                      << matname << "." << lkey 
                      << " from " << value

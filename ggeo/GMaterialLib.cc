@@ -1,5 +1,6 @@
 
 #include <limits>
+#include <csignal>
 
 
 #include "BStr.hh"
@@ -1040,8 +1041,25 @@ GMaterial* GMaterialLib::makeRaw(const char* name)
     return raw ; 
 }
 
+/**
+GMaterialLib::addTestMaterials
+--------------------------------
+
+Invoked by::
+
+    GGeo::prepareMaterialLib 
+    GGeo::afterConvertMaterials
+    AssimpGGeo::convert
+    AssimpGGeo::load
+    GGeo::loadFromG4DAE  
+
+
+**/
+
 void GMaterialLib::addTestMaterials()
 {
+    //std::raise(SIGINT); 
+
     typedef std::pair<std::string, std::string> SS ; 
     typedef std::vector<SS> VSS ; 
 
@@ -1064,7 +1082,7 @@ void GMaterialLib::addTestMaterials()
         std::string name = it->first ; 
         std::string path = it->second ; 
 
-        LOG(info) << "GMaterialLib::addTestMaterials" 
+        LOG(info) 
                   << " name " << std::setw(30) << name 
                   << " path " << path 
                   ;

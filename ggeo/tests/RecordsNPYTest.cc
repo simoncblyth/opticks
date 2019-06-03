@@ -17,18 +17,12 @@
 
 #include "GGEO_BODY.hh"
 
-#include "GGEO_LOG.hh"
-#include "NPY_LOG.hh"
-#include "OKCORE_LOG.hh"
-#include "PLOG.hh"
+#include "OPTICKS_LOG.hh"
 
 int main(int argc, char** argv)
 {
-    PLOG_(argc, argv);
+    OPTICKS_LOG(argc, argv);
 
-    NPY_LOG__ ; 
-    GGEO_LOG__ ; 
-    OKCORE_LOG__ ; 
 
     LOG(info) << argv[0] ; 
 
@@ -54,7 +48,9 @@ int main(int argc, char** argv)
     OpticksEvent* evt = ok.loadEvent();
     if(evt->isNoLoad())
     {
-        LOG(error) << "failed to load evt from " << evt->getDir()  ;
+        LOG(error) << "failed to load evt " 
+                  // << evt->getDir() 
+                   ;
         return 0 ;  
     }    
 

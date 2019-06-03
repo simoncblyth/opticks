@@ -31,6 +31,12 @@ X4MaterialLib::Standardize
    G4MaterialPropertiesTable* mpt = X4PropertyMap::Convert( pmap ) ;
 
 
+For legacy GDML this has some issues
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+1. 2 extra OK materials (GlassSchottF2, MainH2OHale)  : the test glass comes after Air in the middle 
+2. g4 material names are prefixed /dd/Materials/GdDopedLS
+
 
 **/
 
@@ -57,11 +63,21 @@ X4MaterialLib::X4MaterialLib(G4MaterialTable* mtab, const GMaterialLib* mlib)
 }
 
 
+
 void X4MaterialLib::init()
 {
     unsigned num_materials = m_mlib->getNumMaterials();
     unsigned num_m4 = G4Material::GetNumberOfMaterials() ;  
-    assert( num_materials == num_m4 ); 
+    bool match = num_materials == num_m4 ; 
+
+    if(!match)
+       LOG(fatal) 
+           << " num_materials MISMATCH "
+           << " G4Material::GetNumberOfMaterials " << num_m4
+           << " m_mlib->getNumMaterials " << num_materials
+           ;
+
+    assert( match ); 
 
     for(unsigned i=0 ; i < num_materials ; i++)
     {
@@ -72,6 +88,13 @@ void X4MaterialLib::init()
         const char* pmap_name = pmap->getName(); 
         const std::string& m4_name = m4->GetName();  
         bool name_match = strcmp( m4_name.c_str(), pmap_name) == 0 ;
+
+        LOG(info) 
+             << std::setw(5) << i 
+             << " okmat " << std::setw(30) << pmap_name
+             << " g4mat " << std::setw(30) << m4_name
+             ;     
+
 
         if(!name_match)
             LOG(fatal) 

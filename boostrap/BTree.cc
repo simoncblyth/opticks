@@ -57,10 +57,10 @@ int BTree::loadTree(pt::ptree& t , const char* path)
 
     if (!(fs::exists(fpath ) && fs::is_regular_file(fpath))) 
     {
-        LOG(warning) << "BTree.loadTree: "
-                     << "can't find file " << path;
+        LOG(error)
+             << "can't find file " << path;
 
-        assert(0); 
+        //assert(0); 
         return 1;
     }
     std::string ext = fpath.extension().string();

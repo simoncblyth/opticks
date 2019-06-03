@@ -39,6 +39,44 @@ This still works::
 
 
 
+found an ill effect of valid zero times : from zero to the start of time at 0.2ns, the photon representation "gets into position" starting from origin 
+--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+* fix ideas : adjust time domain to start from the emitconfig time
+
+::
+
+   tbooleanviz.sh box
+
+
+::
+
+    [blyth@localhost cfg4]$ tboolean-box--
+    import logging
+    log = logging.getLogger(__name__)
+    from opticks.ana.base import opticks_main
+    from opticks.analytic.polyconfig import PolyConfig
+    from opticks.analytic.csg import CSG  
+
+    # 0x3f is all 6 
+    autoemitconfig="photons:600000,wavelength:380,time:0.2,posdelta:0.1,sheetmask:0x1,umin:0.45,umax:0.55,vmin:0.45,vmax:0.55,diffuse:1,ctmindiffuse:0.5,ctmaxdiffuse:1.0"
+    args = opticks_main(csgpath="tboolean-box", autoemitconfig=autoemitconfig)
+
+    #emitconfig = "photons:100000,wavelength:380,time:0.2,posdelta:0.1,sheetmask:0x1,umin:0.25,umax:0.75,vmin:0.25,vmax:0.75" 
+    #emitconfig = "photons:1,wavelength:380,time:0.2,posdelta:0.1,sheetmask:0x1,umin:0.25,umax:0.75,vmin:0.25,vmax:0.75" 
+    emitconfig = "photons:100000,wavelength:380,time:0.2,posdelta:0.1,sheetmask:0x1,umin:0.45,umax:0.55,vmin:0.45,vmax:0.55" 
+
+    CSG.kwa = dict(poly="IM",resolution="20", verbosity="0", ctrl=0, containerscale=3.0, emitconfig=emitconfig  )
+
+    container = CSG("box", emit=-1, boundary='Rock//perfectAbsorbSurface/Vacuum', container=1 )  # no param, container="1" switches on auto-sizing
+
+    box = CSG("box3", param=[300,300,200,0], emit=0,  boundary="Vacuum///GlassSchottF2" )
+
+    CSG.Serialize([container, box], args )
+
+
+
+
 
 Permitting zero times as valid, seems to fix with no ill effects so far
 -------------------------------------------------------------------------
