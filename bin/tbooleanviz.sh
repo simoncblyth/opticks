@@ -7,13 +7,10 @@ cd /tmp
 echo ====== $0 $* ====== PWD $PWD ========= arg $arg ========
 
 tboolean-
-cmd="tboolean-$arg --okg4 --compute --strace --dbgemit --args"
+cmd="tboolean-$arg --okg4 --load --args"
 echo $cmd
 eval $cmd
 rc=$?
-
-strace.py -f O_CREAT
-
 
 echo ====== $0 $* ====== PWD $PWD ========= arg $arg ======== RC $rc =======
 
