@@ -912,6 +912,17 @@ opticks-t(){  opticks-t- $* ; }   ## see om-test-one for details of ctest argume
 opticks-t0(){ CUDA_VISIBLE_DEVICES=0 opticks-t $* ; }
 opticks-t1(){ CUDA_VISIBLE_DEVICES=1 opticks-t $* ; }
 
+opticks-i(){  
+   local iwd=$PWD
+   om-
+   local bdir=$(om-bdir integration)
+   cd $bdir
+   om-test -V
+   cd $iwd
+}
+
+
+
 opticks-t-()
 {
    # 
