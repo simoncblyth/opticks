@@ -291,6 +291,20 @@ appropriate step points are to be saved with RecordStepPoint.
 
 **/
 
+void CRecorder::pointDump( const char* msg, const G4StepPoint* point ) const 
+{
+    const G4ThreeVector& pos = point->GetPosition();
+    const G4ThreeVector& pol = point->GetPolarization();
+
+    LOG(info) << msg 
+              << " pos " << std::setw(30) << pos
+              << " pol " << std::setw(30) << pol
+              ;
+
+}
+
+
+
 void CRecorder::postTrackWriteSteps()
 {
     assert(!m_live) ;
@@ -337,6 +351,10 @@ void CRecorder::postTrackWriteSteps()
         const G4Step* step = stp->getStep();
         const G4StepPoint* pre  = step->GetPreStepPoint() ; 
         const G4StepPoint* post = step->GetPostStepPoint() ; 
+
+        //pointDump("CRecorder::postTrackWriteSteps.pre",  pre ); 
+        //pointDump("CRecorder::postTrackWriteSteps.post", post ); 
+
 
 #ifdef USE_CUSTOM_BOUNDARY
         prior_boundary_status = i == 0 ? Ds::Undefined : boundary_status ; 

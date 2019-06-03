@@ -25,7 +25,10 @@ TODO:
 
 * dependency sink gencode (OpticksPhoton.h) 
   to avoid the gencode EMITSOURCE having to be passed 
-  down from higher levels (perhaps a lowest level OpticksBase package ?)
+  down from higher levels 
+  
+* perhaps a lowest level OpticksBase package ? to hold enums and such like.
+  Hmm but on other hand generality of NPY is good.
 
 **/
 

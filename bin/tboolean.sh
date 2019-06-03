@@ -1,10 +1,13 @@
 #!/bin/bash -l
 
 arg=${1:-box}
+
+cd /tmp
+
 echo ====== $0 $* ====== PWD $PWD ========= arg $arg ========
 
 tboolean-
-cmd="tboolean-$arg --okg4 --compute --strace"
+cmd="tboolean-$arg --okg4 --compute --strace --dbgemit --args"
 echo $cmd
 eval $cmd
 rc=$?

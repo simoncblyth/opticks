@@ -87,6 +87,17 @@ std::string NEmitPhotonsNPY::desc() const
     return ss.str();
 }
 
+/**
+NEmitPhotonsNPY::init
+-----------------------
+
+* Generates points and normals to the geometry surface within the
+  uv domain and sheets configured.
+
+* Uses these to generate initial photon positions and polarizations 
+  with nglmext::pick_transverse_direction( dir, dump )
+
+**/
 
 void NEmitPhotonsNPY::init()
 {
@@ -145,22 +156,20 @@ void NEmitPhotonsNPY::init()
             pos += dir*fposdelta ; 
         }
 
-        //bool dump = i < 10 ; 
-        bool dump = false ; 
-        glm::vec3 pol = nglmext::pick_transverse_direction( dir, dump );
+        bool dump = i < 10 && m_emitdbg ; 
+        glm::vec3 pol = nglmext::pick_transverse_direction( dir, false );
+        glm::vec3 posnrm = glm::normalize( pos ); 
 
-/*
-        if(i<10)
+        if(dump)
         {
-            std::cout << " i " << std::setw(6) << i 
+            LOG(info) << " i " << std::setw(6) << i 
                       << " pos " << gpresent(pos)
                       << " nrm " << gpresent(nrm)
                       << " dir " << gpresent(dir)
                       << " pol " << gpresent(pol)
-                      << std::endl 
+                      << " posnrm " << gpresent(posnrm)
                       ;
         }
-*/  
 
         glm::vec4 q0(     pos.x,      pos.y,      pos.z,  ftime );
         glm::vec4 q1(     dir.x,      dir.y,      dir.z,  fweight );

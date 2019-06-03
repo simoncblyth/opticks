@@ -185,10 +185,7 @@ void CWriter::writeStepPoint_(const G4StepPoint* point, const CPhoton& photon )
 
     const G4ThreeVector& pos = point->GetPosition();
     const G4ThreeVector& pol = point->GetPolarization();
-
-    //LOG(info) << " pos " <<  pos ; 
-    //LOG(info) << " pol " <<  pol ; 
-
+    //LOG(info) << " pos " <<  std::setw(30) << pos << " pol " <<  std::setw(30) << pol ; 
 
     G4double time = point->GetGlobalTime();
     G4double energy = point->GetKineticEnergy();
@@ -209,10 +206,10 @@ void CWriter::writeStepPoint_(const G4StepPoint* point, const CPhoton& photon )
     // see oxrap/cu/photon.h
     // tboolean-box : for first steppoint the pol is same as pos causing out-of-range
     // notes/issues/tboolean-resurrection.rst
-    unsigned char polx = BConverter::my__float2uint_rn_kludge( (pol.x()+1.f)*127.f );
-    unsigned char poly = BConverter::my__float2uint_rn_kludge( (pol.y()+1.f)*127.f );
-    unsigned char polz = BConverter::my__float2uint_rn_kludge( (pol.z()+1.f)*127.f );
-    unsigned char wavl = BConverter::my__float2uint_rn_kludge( wfrac*255.f );
+    unsigned char polx = BConverter::my__float2uint_rn( (pol.x()+1.f)*127.f );
+    unsigned char poly = BConverter::my__float2uint_rn( (pol.y()+1.f)*127.f );
+    unsigned char polz = BConverter::my__float2uint_rn( (pol.z()+1.f)*127.f );
+    unsigned char wavl = BConverter::my__float2uint_rn( wfrac*255.f );
 
 /*
     LOG(info) << "CWriter::RecordStepPoint"

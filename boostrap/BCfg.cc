@@ -151,7 +151,8 @@ void BCfg::commandline(int argc, char** argv)
     if(m_others.size() == 0)
     {
         std::vector<std::string> unrecognized = parse_commandline(argc, argv);
-        if(m_verbose) dump(unrecognized, "unrecognized after parse_commandline"); 
+        if(m_verbose) 
+        dump(unrecognized, "unrecognized after parse_commandline"); 
     }
     else
     {
@@ -223,6 +224,18 @@ std::vector<std::string> BCfg::parse_liveline(const char* _line)
      
    return parse_tokens(tokens);
 }
+
+
+/**
+BCfg::parse_commandline
+---------------------------
+
+This is called multiple times as there are several cfg objects, 
+making it difficult to assert on unrecognized. As there will be
+many unrecognized by some cfg objects.
+
+
+**/
 
 
 std::vector<std::string> BCfg::parse_commandline(int argc, char** argv, bool verbose)

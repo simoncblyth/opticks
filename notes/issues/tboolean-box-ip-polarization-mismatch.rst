@@ -1,12 +1,11 @@
-tboolean-box-ip-polarization-mismatch
-==========================================
+tboolean-box-ip-polarization-mismatch FIXED bug in CInputPhotonSource
+========================================================================
 
 * context :doc:`tboolean-resurrection` 
 
 
 issue : Non-aligned history matching looks ok, but polarizations totally off.
 ---------------------------------------------------------------------------------
-
 
 ::
 
@@ -158,5 +157,166 @@ issue : Non-aligned history matching looks ok, but polarizations totally off.
 
 
 
+After fixed bug in CInputPhotonSource, the deviations are back where they should be
+---------------------------------------------------------------------------------------
+
+::
+
+    ab.a.metadata:                     tboolean-box/./evt/tboolean-box/torch/1 1362486dd26c8761b615260e66bbcdb5 481c2dd37d4d0c5641ef2411a6cdac12  100000    -1.0000 COMPUTE_MODE 
+    ab.a.metadata.csgmeta0:{u'containerscale': 3.0, u'container': 1, u'ctrl': 0, u'verbosity': u'0', u'poly': u'IM', u'emitconfig': u'photons:100000,wavelength:380,time:0.2,posdelta:0.1,sheetmask:0x1,umin:0.45,umax:0.55,vmin:0.45,vmax:0.55', u'resolution': u'20', u'emit': -1}
+    rpost_dv maxdvmax:0.0137638477737 maxdv:[0.013763847773677895, 0.0, 0.0] 
+      idx        msg :                            sel :    lcu1     lcu2  :     nitem   nelem/  ndisc: fdisc  mx/mn/av     mx/    mn/   avg  eps:eps    
+     0000            :                    TO BT BT SA :   87777    87940  :     77193 1235088/     44: 0.000  mx/mn/av 0.01376/     0/4.903e-07  eps:0.0002    
+     0001            :                       TO BR SA :    6312     6069  :       399    4788/      0: 0.000  mx/mn/av      0/     0/     0  eps:0.0002    
+     0002            :                 TO BT BR BT SA :    5420     5478  :       295    5900/      0: 0.000  mx/mn/av      0/     0/     0  eps:0.0002    
+    rpol_dv maxdvmax:0.0 maxdv:[0.0, 0.0, 0.0] 
+      idx        msg :                            sel :    lcu1     lcu2  :     nitem   nelem/  ndisc: fdisc  mx/mn/av     mx/    mn/   avg  eps:eps    
+     0000            :                    TO BT BT SA :   87777    87940  :     77193  926316/      0: 0.000  mx/mn/av      0/     0/     0  eps:0.0002    
+     0001            :                       TO BR SA :    6312     6069  :       399    3591/      0: 0.000  mx/mn/av      0/     0/     0  eps:0.0002    
+     0002            :                 TO BT BR BT SA :    5420     5478  :       295    4425/      0: 0.000  mx/mn/av      0/     0/     0  eps:0.0002    
+    ox_dv maxdvmax:4.76837158203e-07 maxdv:[2.384185791015625e-07, 0.0, 4.76837158203125e-07] 
+      idx        msg :                            sel :    lcu1     lcu2  :     nitem   nelem/  ndisc: fdisc  mx/mn/av     mx/    mn/   avg  eps:eps    
+     0000            :                    TO BT BT SA :   87777    87940  :     77193  926316/      0: 0.000  mx/mn/av 2.384e-07/     0/2.484e-08  eps:0.0002    
+     0001            :                       TO BR SA :    6312     6069  :       399    4788/      0: 0.000  mx/mn/av      0/     0/     0  eps:0.0002    
+     0002            :                 TO BT BR BT SA :    5420     5478  :       295    3540/      0: 0.000  mx/mn/av 4.768e-07/     0/4.47e-08  eps:0.0002    
+    c2p : {'seqmat_ana': 1.1208101425498735, 'pflags_ana': 1.6975355284382387, 'seqhis_ana': 1.0496205532998364} c2pmax: 1.6975355284382387  CUT ok.c2max 2.0  RC:0 
+    rmxs_ : {'rpol_dv': 0.0, 'rpost_dv': 0.013763847773677895} rmxs_max_: 0.0137638477737  CUT ok.rdvmax 0.1  RC:0 
+    pmxs_ : {'ox_dv': 4.76837158203125e-07} pmxs_max_: 4.76837158203e-07  CUT ok.pdvmax 0.001  RC:0 
+
+
+
+
+
+
+
+trace polarization for emitconfig input photons 
+-------------------------------------------------
+
+::
+
+    [blyth@localhost opticks]$ tboolean-box--
+    import logging
+    log = logging.getLogger(__name__)
+    from opticks.ana.base import opticks_main
+    from opticks.analytic.polyconfig import PolyConfig
+    from opticks.analytic.csg import CSG  
+
+    # 0x3f is all 6 
+    autoemitconfig="photons:600000,wavelength:380,time:0.2,posdelta:0.1,sheetmask:0x1,umin:0.45,umax:0.55,vmin:0.45,vmax:0.55,diffuse:1,ctmindiffuse:0.5,ctmaxdiffuse:1.0"
+    args = opticks_main(csgpath="tboolean-box", autoemitconfig=autoemitconfig)
+
+    #emitconfig = "photons:100000,wavelength:380,time:0.2,posdelta:0.1,sheetmask:0x1,umin:0.25,umax:0.75,vmin:0.25,vmax:0.75" 
+    #emitconfig = "photons:1,wavelength:380,time:0.2,posdelta:0.1,sheetmask:0x1,umin:0.25,umax:0.75,vmin:0.25,vmax:0.75" 
+    emitconfig = "photons:100000,wavelength:380,time:0.2,posdelta:0.1,sheetmask:0x1,umin:0.45,umax:0.55,vmin:0.45,vmax:0.55" 
+
+    CSG.kwa = dict(poly="IM",resolution="20", verbosity="0", ctrl=0, containerscale=3.0, emitconfig=emitconfig  )
+
+    container = CSG("box", emit=-1, boundary='Rock//perfectAbsorbSurface/Vacuum', container=1 )  # no param, container="1" switches on auto-sizing
+
+    box = CSG("box3", param=[300,300,200,0], emit=0,  boundary="Vacuum///GlassSchottF2" )
+
+    CSG.Serialize([container, box], args )
+    [blyth@localhost opticks]$ 
+
+
+
+* emitconfig sheetmask:0x1 picks the sheets (ie sides) of the box to be emissive and the (umin umax vmin vmax) 
+  is the (u,v) size of the emissive patch in range (0:1,0:1) 
+* emit=-1 on the container means directed opposite to the outwards normal, ie inwards
+* *NEmitConfig* parses the emitconfig string 
+* *NEmitPhotonsNPY::init* 
+
+::
+
+     20 glm::vec3 nglmext::least_parallel_axis( const glm::vec3& dir )
+     21 {
+     22     glm::vec3 adir(glm::abs(dir));
+     23     glm::vec3 lpa(0) ;
+     24 
+     25     if( adir.x <= adir.y && adir.x <= adir.z )
+     26     {
+     27         lpa.x = 1.f ;
+     28     }
+     29     else if( adir.y <= adir.x && adir.y <= adir.z )
+     30     {
+     31         lpa.y = 1.f ;
+     32     }
+     33     else
+     34     {
+     35         lpa.z = 1.f ;
+     36     }
+     37     return lpa ;
+     38 }
+     39 
+     40 glm::vec3 nglmext::pick_transverse_direction( const glm::vec3& dir, bool dump)
+     41 {
+     42     glm::vec3 lpa = least_parallel_axis(dir) ;
+     43     glm::vec3 trd = glm::normalize( glm::cross( lpa, dir )) ;
+     44 
+     45     if(dump)
+     46     {
+     47         std::cout
+     48                   << "nglext::pick_transverse_direction"
+     49                   << " dir " << gpresent(dir)
+     50                   << " lpa " << gpresent(lpa)
+     51                   << " trd " << gpresent(trd)
+     52                   << std::endl
+     53                   ;
+     54     }
+     55     return trd ;
+     56 }
+
+
+
+::
+
+    nglext::pick_transverse_direction dir (     -0.000    -0.000     1.000) lpa (      1.000     0.000     0.000) trd (      0.000    -1.000     0.000)
+    nglext::pick_transverse_direction dir (     -0.000    -0.000     1.000) lpa (      1.000     0.000     0.000) trd (      0.000    -1.000     0.000)
+    nglext::pick_transverse_direction dir (     -0.000    -0.000     1.000) lpa (      1.000     0.000     0.000) trd (      0.000    -1.000     0.000)
+    nglext::pick_transverse_direction dir (     -0.000    -0.000     1.000) lpa (      1.000     0.000     0.000) trd (      0.000    -1.000     0.000)
+    nglext::pick_transverse_direction dir (     -0.000    -0.000     1.000) lpa (      1.000     0.000     0.000) trd (      0.000    -1.000     0.000)
+     i      0 pos (     11.291   -34.645  -449.900) nrm (      0.000     0.000    -1.000) dir (     -0.000    -0.000     1.000) pol (      0.000    -1.000     0.000)
+     i      1 pos (    -26.689    -0.283  -449.900) nrm (      0.000     0.000    -1.000) dir (     -0.000    -0.000     1.000) pol (      0.000    -1.000     0.000)
+     i      2 pos (    -40.564     9.816  -449.900) nrm (      0.000     0.000    -1.000) dir (     -0.000    -0.000     1.000) pol (      0.000    -1.000     0.000)
+     i      3 pos (     28.491   -35.738  -449.900) nrm (      0.000     0.000    -1.000) dir (     -0.000    -0.000     1.000) pol (      0.000    -1.000     0.000)
+     i      4 pos (    -20.879   -32.995  -449.900) nrm (      0.000     0.000    -1.000) dir (     -0.000    -0.000     1.000) pol (      0.000    -1.000     0.000)
+
+    // bottom face of box, normal -Z downwards, pol in -Y : as reported in OpticksEvent
+
+::
+
+    2019-06-03 10:31:06.140 INFO  [287782] [NEmitPhotonsNPY::init@165]  i      0 pos (     11.291   -34.645  -449.900) nrm (      0.000     0.000    -1.000) dir (     -0.000    -0.000     1.000) pol (      0.000    -1.000     0.000) posnrm (      0.025    -0.077    -0.997)
+    2019-06-03 10:31:06.140 INFO  [287782] [NEmitPhotonsNPY::init@165]  i      1 pos (    -26.689    -0.283  -449.900) nrm (      0.000     0.000    -1.000) dir (     -0.000    -0.000     1.000) pol (      0.000    -1.000     0.000) posnrm (     -0.059    -0.001    -0.998)
+    2019-06-03 10:31:06.141 INFO  [287782] [NEmitPhotonsNPY::init@165]  i      2 pos (    -40.564     9.816  -449.900) nrm (      0.000     0.000    -1.000) dir (     -0.000    -0.000     1.000) pol (      0.000    -1.000     0.000) posnrm (     -0.090     0.022    -0.996)
+    2019-06-03 10:31:06.141 INFO  [287782] [NEmitPhotonsNPY::init@165]  i      3 pos (     28.491   -35.738  -449.900) nrm (      0.000     0.000    -1.000) dir (     -0.000    -0.000     1.000) pol (      0.000    -1.000     0.000) posnrm (      0.063    -0.079    -0.995)
+    2019-06-03 10:31:06.141 INFO  [287782] [NEmitPhotonsNPY::init@165]  i      4 pos (    -20.879   -32.995  -449.900) nrm (      0.000     0.000    -1.000) dir (     -0.000    -0.000     1.000) pol (      0.000    -1.000     0.000) posnrm (     -0.046    -0.073    -0.996)
+    2019-06-03 10:31:06.141 INFO  [287782] [NEmitPhotonsNPY::init@165]  i      5 pos (    -25.172   -31.610  -449.900) nrm (      0.000     0.000    -1.000) dir (     -0.000    -0.000     1.000) pol (      0.000    -1.000     0.000) posnrm (     -0.056    -0.070    -0.996)
+    2019-06-03 10:31:06.141 INFO  [287782] [NEmitPhotonsNPY::init@165]  i      6 pos (     -8.879   -23.347  -449.900) nrm (      0.000     0.000    -1.000) dir (     -0.000    -0.000     1.000) pol (      0.000    -1.000     0.000) posnrm (     -0.020    -0.052    -0.998)
+    2019-06-03 10:31:06.141 INFO  [287782] [NEmitPhotonsNPY::init@165]  i      7 pos (     -8.717   -29.508  -449.900) nrm (      0.000     0.000    -1.000) dir (     -0.000    -0.000     1.000) pol (      0.000    -1.000     0.000) posnrm (     -0.019    -0.065    -0.998)
+    2019-06-03 10:31:06.141 INFO  [287782] [NEmitPhotonsNPY::init@165]  i      8 pos (     30.958   -15.557  -449.900) nrm (      0.000     0.000    -1.000) dir (     -0.000    -0.000     1.000) pol (      0.000    -1.000     0.000) posnrm (      0.069    -0.034    -0.997)
+    2019-06-03 10:31:06.142 INFO  [287782] [NEmitPhotonsNPY::init@165]  i      9 pos (      4.875    27.993  -449.900) nrm (      0.000     0.000    -1.000) dir (     -0.000    -0.000     1.000) pol (      0.000    -1.000     0.000) posnrm (      0.011     0.062    -0.998)
+    2019-06-03 10:31:06.236 ERROR [287782] [OpticksGen::setInputPhotons@277] OpticksGen::setInputPhotons ox 100000,4,4 ox.hasMsk N
+
+
+
+Hmm bizarre, G4 reported pol are posnrm (normalized position) : that looks like a to be implemented placeholder::
+
+    In [2]: b.polw[:10]
+    Out[2]: 
+    A()sliced
+    A([[  0.025 ,  -0.0768,  -0.9967, 380.    ],
+       [ -0.0592,  -0.0006,  -0.9982, 380.    ],
+       [ -0.0898,   0.0217,  -0.9957, 380.    ],
+       [  0.063 ,  -0.079 ,  -0.9949, 380.    ],
+       [ -0.0462,  -0.0731,  -0.9963, 380.    ],
+       [ -0.0557,  -0.07  ,  -0.996 , 380.    ],
+       [ -0.0197,  -0.0518,  -0.9985, 380.    ],
+       [ -0.0193,  -0.0654,  -0.9977, 380.    ],
+       [  0.0686,  -0.0345,  -0.997 , 380.    ],
+       [  0.0108,   0.0621,  -0.998 , 380.    ]], dtype=float32)
+
+
+
+FIXED polarization bug in cfg4/CInputPhotonSource.cc
 
 

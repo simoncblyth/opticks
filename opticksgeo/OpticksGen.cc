@@ -45,8 +45,8 @@ OpticksGen::OpticksGen(OpticksHub* hub)
     m_torchstep(NULL),
     m_fabstep(NULL),
     m_csg_emit(hub->findEmitter()),
-    m_emitter_dbg(false),
-    m_emitter(m_csg_emit ? new NEmitPhotonsNPY(m_csg_emit, EMITSOURCE, m_ok->getSeed(), m_emitter_dbg, m_ok->getMaskBuffer()) : NULL ),
+    m_dbgemit(m_ok->isDbgEmit()),  
+    m_emitter(m_csg_emit ? new NEmitPhotonsNPY(m_csg_emit, EMITSOURCE, m_ok->getSeed(), m_dbgemit, m_ok->getMaskBuffer()) : NULL ),
     m_input_photons(NULL),
     m_direct_gensteps(m_ok->hasKey() && m_ok->existsDirectGenstepPath() ? m_ok->loadDirectGenstep() : NULL ),
     m_legacy_gensteps(NULL),
@@ -101,6 +101,8 @@ Upshot is that one of the below gets set
 
 void OpticksGen::init()
 {
+
+
     if(m_direct_gensteps)
     {
         initFromDirectGensteps();
@@ -141,7 +143,8 @@ void OpticksGen::initFromEmitterGensteps()
     OpticksActionControl oac(gs->getActionControlPtr());
     setLegacyGensteps(gs);
 
-    LOG(info) << "OpticksGen::initFromEmitter getting input photons and shim genstep "
+    LOG(fatal) << "getting input photons and shim genstep "
+              << " --dbgemit " << m_dbgemit
               << " input_photons " << m_input_photons->getNumItems()
               << " oac : " << oac.description("oac") 
               ; 

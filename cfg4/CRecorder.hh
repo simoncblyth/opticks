@@ -135,6 +135,10 @@ class CFG4_API CRecorder {
         bool RecordStepPoint(const G4StepPoint* point, unsigned int flag, unsigned int material, G4OpBoundaryProcessStatus boundary_status, const char* label);
 #endif
         void checkTopSlotRewrite(unsigned flag);
+
+   private:
+         // debugging 
+        void pointDump( const char* msg, const G4StepPoint* point ) const ; 
   public:
         void Summary(const char* msg);
         void dump(const char* msg="CRecorder::dump");

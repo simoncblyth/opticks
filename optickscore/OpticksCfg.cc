@@ -497,6 +497,10 @@ void OpticksCfg<Listener>::init()
        ("emitsource",  "indicates use of photons obtained from emissive geometry ") ;
 
    m_desc.add_options()
+       ("dbgemit",  "enable OpticksGen/NEmitPhotonsNPY debugging  ") ;
+
+
+   m_desc.add_options()
        ("primarysource",  "indicates use of primary non-optical particles as source, simular to g4gun  ") ;
 
 

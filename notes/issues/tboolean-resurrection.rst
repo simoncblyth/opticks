@@ -330,8 +330,8 @@ Transforms on both volumes look gibberish::
 
 
  
-Issue 4:  crazy pol values causing overflows : KLUDGED IT TO GIVE ZEROS FOR OVERFLOWS  
----------------------------------------------------------------------------------------------
+Issue 4:  crazy pol values causing overflows : KLUDGED IT TO GIVE ZEROS FOR OVERFLOWS  : kludge removed, NOW FIXED PROPERLY
+--------------------------------------------------------------------------------------------------------------------------------
 
 * problem of the 1st point (and 2nd point?, trying to skip slot zero didnt work) 
 
@@ -507,8 +507,8 @@ Issue 7 : resource generalizations to work with relative event paths
 
 
 
-Issue 8 : tboolean-box-ip polarizations are totally off
-------------------------------------------------------------
+Issue 8 : tboolean-box-ip polarizations are totally off : FIXED 
+-------------------------------------------------------------------
 
 * :doc:`tboolean-box-ip-polarization-mismatch`
 

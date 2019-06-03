@@ -980,6 +980,11 @@ bool Opticks::isDbgTex() const  // --dbgtex
    return m_cfg->hasOpt("dbgtex");
 }
 
+bool Opticks::isDbgEmit() const  // --dbgemit
+{
+   return m_cfg->hasOpt("dbgemit");
+}
+
 
 
 

@@ -79,8 +79,7 @@ G4PrimaryVertex* CInputPhotonSource::convertPhoton(unsigned pho_index)
     direction = direction.unit() ;  
     // double precision normalize to avoid notes/issues/G4_barfs_tboolean_sphere_emitter.rst
 
-    G4ThreeVector polarization(post.x, post.y, post.z); 
-
+    G4ThreeVector polarization(polw.x, polw.y, polw.z);   //
 
     G4double wavelength_nm = polw.w ;  // nm 
     G4double energy_eV = GConstant::hc_eVnm/wavelength_nm ;   // GConstant::hc_eVnm = 1239.841875  (see GConstantTest) 
