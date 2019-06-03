@@ -19,16 +19,6 @@
 #include "PLOG.hh"
 #include "OKOP_BODY.hh"
 
-#define TIMER(s) \
-    { \
-       if(m_hub)\
-       {\
-          BTimeKeeper& t = *(m_hub->getTimer()) ;\
-          t((s)) ;\
-       }\
-    }
-
-
 
 const plog::Severity OpPropagator::LEVEL = debug ; 
 

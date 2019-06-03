@@ -34,13 +34,6 @@
 #include "PLOG.hh"
 
 
-#define TIMER(s) \
-    { \
-       (*m_timer)((s)); \
-    }
-
-
-
 const plog::Severity OScene::LEVEL = debug ; 
 
 OContext* OScene::getOContext()

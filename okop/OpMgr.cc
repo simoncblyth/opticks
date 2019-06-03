@@ -25,16 +25,6 @@ class NConfigurable ;
 const plog::Severity OpMgr::LEVEL = debug ; 
 
 
-#define TIMER(s) \
-    { \
-       if(m_ok)\
-       {\
-          BTimeKeeper& t = *(m_ok->getTimer()) ;\
-          t((s)) ;\
-       }\
-    }
-
-
 
 // even though may end up doing the geocache check inside OpticksHub tis 
 // convenient to have the Opticks instance outside OpMgr 

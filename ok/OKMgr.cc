@@ -21,15 +21,6 @@ class NConfigurable ;
 #include "PLOG.hh"
 #include "OK_BODY.hh"
 
-#define TIMER(s) \
-    { \
-       if(m_hub)\
-       {\
-          BTimeKeeper& t = *(m_hub->getTimer()) ;\
-          t((s)) ;\
-       }\
-    }
-
 
 int OKMgr::rc() const 
 {

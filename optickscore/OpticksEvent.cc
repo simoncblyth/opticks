@@ -71,17 +71,6 @@
 
 
 
-#define TIMER(s) \
-    { \
-       if(m_timer)\
-       {\
-          BTimeKeeper& t = *(m_timer) ;\
-          t((s)) ;\
-       }\
-    }
-
-
-
 
 
 const char* OpticksEvent::TIMEFORMAT = "%Y%m%d_%H%M%S" ;
@@ -1920,7 +1909,7 @@ void OpticksEvent::importGenstepDataLoaded(NPY<float>* gs)
 
 void OpticksEvent::loadBuffers(bool verbose)
 {
-    TIMER("_load");
+    OK_PROFILE("_OpticksEvent::loadBuffers"); 
 
     const char* udet = getUDet(); // cat overrides det if present 
 
@@ -2059,8 +2048,7 @@ void OpticksEvent::loadBuffers(bool verbose)
     setSeedData(se);
     setHitData(ht);
 
-    (*m_timer)("load");
-
+    OK_PROFILE("OpticksEvent::loadBuffers"); 
 
     LOG(info) << "OpticksEvent::load " << getShapeString() ; 
 
