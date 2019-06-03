@@ -8,6 +8,7 @@
 
 class OpticksEventSpec ; 
 
+
 class OKCORE_API OpticksEventSpec {
    public:
         static const char* OK_ ; 
@@ -30,9 +31,14 @@ class OKCORE_API OpticksEventSpec {
         const char*  getDet() const ;
         const char*  getCat() const ;
         const char*  getUDet() const ;
-        const char*  getDir() const ;
-        const char*  getRelDir() const ; // without the base, ie returns directory portion starting "evt/"
-        const char*  getFold() const ;   // one level above Dir without the tag 
+   private:
+        const char*  formDir() const ; 
+        const char*  formFold() const ; 
+        const char*  formRelDir() const ; 
+   public:
+        const char*  getDir() ;
+        const char*  getRelDir() ; // without the base, ie returns directory portion starting "evt/"
+        const char*  getFold() ;   // one level above Dir without the tag 
    public:
         int          getITag() const ;
    protected:
@@ -45,6 +51,7 @@ class OKCORE_API OpticksEventSpec {
         const char*  m_dir ; 
         const char*  m_reldir ; 
         const char*  m_fold ; 
+
         int          m_itag ; 
 };
 

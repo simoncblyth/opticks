@@ -15,7 +15,6 @@ template <typename> class NPY ;
 template <typename> class OpticksCfg ;
 
 class BDynamicDefine ; 
-class BTimeKeeper ; 
 
 
 class TorchStepNPY ; 
@@ -30,10 +29,6 @@ struct NSnapConfig ;
 
 class BTxt ; 
 
-
-#ifdef OLD_PARAMETERS
-class X_BParameters ; 
-#endif
 
 
 class BPropNames ; 
@@ -403,14 +398,7 @@ class OKCORE_API Opticks {
        Types*               getTypes();
        Typ*                 getTyp();
    public:
-       BTimeKeeper*         getTimer() const ;
-
-#ifdef OLD_PARAMETERS
-       X_BParameters*         getParameters() const ;
-#else
        NMeta*               getParameters() const ;
-#endif
-
        NState*              getState() const ;
    public:
        int                  getMultiEvent() const ;
@@ -587,14 +575,8 @@ class OKCORE_API Opticks {
    private:
        bool                 m_configured ; 
        OpticksCfg<Opticks>* m_cfg ; 
-       BTimeKeeper*         m_timer ; 
 
-#ifdef OLD_PARAMETERS
-       X_BParameters*         m_parameters ; 
-#else
        NMeta*               m_parameters ; 
-#endif
-
        BTxt*                m_runtxt ;  
        NMeta*               m_cachemeta ;  
        NSceneConfig*        m_scene_config ; 

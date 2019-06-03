@@ -259,6 +259,14 @@ void OpticksResource::initRunResultsDir()
     m_runresultsdir = strdup(runresultsdir.c_str());
     LOG(error) << runresultsdir ; 
 }
+
+/**
+OpticksResource::getRunResultsDir
+-----------------------------------
+
+Used from OTracer::report 
+
+**/
 const char* OpticksResource::getRunResultsDir() const 
 {
     return m_runresultsdir ;

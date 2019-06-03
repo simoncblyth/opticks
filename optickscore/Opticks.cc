@@ -26,6 +26,7 @@
 
 #include "BDynamicDefine.hh"
 #include "BOpticksEvent.hh"
+#include "BResource.hh"
 #include "BOpticksKey.hh"
 #include "BFile.hh"
 #include "BTxt.hh"
@@ -272,7 +273,6 @@ Opticks::Opticks(int argc, char** argv, const char* argforced )
 
     m_configured(false),
     m_cfg(NULL),
-    m_timer(NULL),
     m_parameters(NULL),
     m_runtxt(NULL),
     m_cachemeta(NULL),
@@ -375,9 +375,9 @@ void Opticks::postpropagate()
 
 void Opticks::ana()
 {
-   LOG(error) << "Opticks::ana START" ; 
+   LOG(error) << "[" ; 
    m_ana->run();
-   LOG(error) << "Opticks::ana DONE" ; 
+   LOG(error) << "]" ; 
 }
 
 
@@ -394,7 +394,7 @@ unsigned Opticks::getMaskIndex(unsigned idx) const
 {
     bool mask = hasMask();  
     if(!mask)
-        LOG(warning) << "Opticks::getMaskIndex BUT there is no mask " ; 
+        LOG(warning) << "BUT there is no mask " ; 
 
     return mask ? m_dbg->getMaskIndex(idx) : idx ;
 }
@@ -571,17 +571,8 @@ void Opticks::init()
 
     m_cfg = new OpticksCfg<Opticks>("opticks", this,false);
 
-    m_timer = new BTimeKeeper("Opticks::");
 
-    m_timer->setVerbose(true);
-
-    m_timer->start();
-
-#ifdef OLD_PARAMETERS
-    m_parameters = new X_BParameters ;  
-#else
     m_parameters = new NMeta ;  
-#endif
 
     m_parameters->addEnvvar("CUDA_VISIBLE_DEVICES");
     m_parameters->add<std::string>("CMDLINE", PLOG::instance->cmdline() ); 
@@ -876,21 +867,10 @@ OpticksEvent* Opticks::getEvent() const
     return m_run->getEvent()  ; 
 }
 
-BTimeKeeper* Opticks::getTimer() const 
-{
-    OpticksEvent* evt = m_run->getEvent();
-    return evt ? evt->getTimer() : m_timer ; 
-}
 
 
 
-
-
-#ifdef OLD_PARAMETERS
-X_BParameters* Opticks::getParameters() const 
-#else
 NMeta*       Opticks::getParameters() const 
-#endif
 {
     return m_parameters ; 
 }
@@ -1632,6 +1612,8 @@ Formerly invoked from Opticks::configure after commandline parse.
 Now try moving to Opticks::postgeometry so BResource evtbase changes
 are honoured. 
 
+Actually better to remove absolute dir reponsibility from this.
+
 
 **/
 
@@ -1736,10 +1718,10 @@ void Opticks::configure()
 
     updateCacheMeta(); 
 
+    defineEventSpec();  
 
 /*
-    defineEventSpec();  // <-- too soon for test geometry that adjusts evtbase 
-    m_profile->setDir(getEventFold());
+    m_profile->setDir(getEventFold());  // <-- too soon for test geometry that adjusts evtbase
 
 */
 
@@ -1963,7 +1945,6 @@ void Opticks::postgeometry()
 {
     configureDomains();
 
-    defineEventSpec();  // <-- configure was too soon for test geometry that adjusts evtbase, so try here 
     m_profile->setDir(getEventFold());
 }
 
@@ -2137,13 +2118,16 @@ bool Opticks::isSeedtest() const
 
 const char* Opticks::getEventFold() const
 {
-    return m_spec ? m_spec->getFold() : NULL ;
+   return m_spec ? m_spec->getFold() : NULL ;
 }
 
 const char* Opticks::getEventDir() const 
 {
     return m_spec ? m_spec->getDir() : NULL ;
 }
+
+
+
 const char* Opticks::getEventTag() const
 {
     return m_spec->getTag();

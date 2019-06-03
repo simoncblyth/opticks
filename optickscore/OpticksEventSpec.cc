@@ -17,6 +17,8 @@ const char* OpticksEventSpec::OK_ = "OK" ;
 const char* OpticksEventSpec::NO_ = "NO" ; 
 
 
+
+
 OpticksEventSpec::OpticksEventSpec(OpticksEventSpec* spec) 
     :
     m_typ(spec->getTyp()),
@@ -59,6 +61,7 @@ OpticksEventSpec* OpticksEventSpec::clone(unsigned tagoffset) const
 
 void OpticksEventSpec::init()
 {
+/*
     const char* udet = getUDet();    
     std::string tagdir = NLoad::directory(udet, m_typ, m_tag ) ; 
     std::string reldir = NLoad::reldir(udet, m_typ, m_tag ) ; 
@@ -66,6 +69,7 @@ void OpticksEventSpec::init()
     m_dir = strdup(tagdir.c_str());
     m_reldir = strdup(reldir.c_str());
     m_fold = strdup(typdir.c_str());
+*/
 }
 
 
@@ -117,20 +121,56 @@ const char* OpticksEventSpec::getUDet() const
 {
     return m_udet ; 
 }
-const char* OpticksEventSpec::getDir() const
+
+
+
+
+
+const char* OpticksEventSpec::formDir() const  
 {
+    const char* top = m_udet ; 
+    const char* sub = m_typ ; 
+    const char* tag = m_tag ; 
+    const char* anno = NULL ; 
+    std::string dir = BOpticksEvent::directory(top, sub, tag, anno);    
+    return strdup(dir.c_str()) ; 
+}
+const char* OpticksEventSpec::formRelDir() const  
+{
+    const char* top = m_udet ; 
+    const char* sub = m_typ ; 
+    const char* tag = m_tag ; 
+    std::string dir = BOpticksEvent::reldir(top, sub, tag);    
+    return strdup(dir.c_str()) ; 
+}
+const char* OpticksEventSpec::formFold() const  
+{
+    const char* top = m_udet ; 
+    const char* sub = m_typ ; 
+    const char* tag = NULL ; 
+    const char* anno = NULL ; 
+    std::string dir = BOpticksEvent::directory(top, sub, tag, anno);    
+    return strdup(dir.c_str()) ; 
+}
+
+
+const char* OpticksEventSpec::getDir() 
+{
+    if(m_dir == NULL) m_dir = formDir(); 
     return m_dir ; 
 }
-const char* OpticksEventSpec::getRelDir() const
+const char* OpticksEventSpec::getRelDir() 
 {
+    if(m_reldir == NULL) m_reldir = formRelDir(); 
     return m_reldir ; 
 }
-
-
-const char* OpticksEventSpec::getFold() const
+const char* OpticksEventSpec::getFold() 
 {
+    if(m_fold == NULL) m_fold = formFold(); 
     return m_fold ; 
 }
+
+
 
 
 std::string OpticksEventSpec::brief() const 
@@ -142,7 +182,6 @@ std::string OpticksEventSpec::brief() const
        << " itag " << getITag()
        << " det " << m_det
        << " cat " << m_cat
-       << " dir " << m_dir
        << " eng " << getEngine()
        ;
 
@@ -158,6 +197,5 @@ void OpticksEventSpec::Summary(const char* msg) const
               << " itag " << getITag()
               << " det " << m_det
               << " cat " << m_cat
-              << " dir " << m_dir
               ;
 }

@@ -47,17 +47,6 @@ const plog::Severity OpticksGeometry::LEVEL = debug ;
 
 
 
-// TODO: move to OK_PROFILE 
-#define TIMER(s) \
-    { \
-       if(m_ok)\
-       {\
-          BTimeKeeper& t = *(m_ok->getTimer()) ;\
-          t((s)) ;\
-       }\
-    }
-
-
 OpticksGeometry::OpticksGeometry(OpticksHub* hub)
    :
    m_hub(hub),
@@ -88,6 +77,7 @@ void OpticksGeometry::loadGeometry()
 {
 
     LOG(LEVEL) << "["  ; 
+    OK_PROFILE("_OpticksGeometry::loadGeometry");
 
     loadGeometryBase(); //  usually from cache
 
@@ -112,8 +102,8 @@ void OpticksGeometry::loadGeometry()
     }
 
 
+    OK_PROFILE("OpticksGeometry::loadGeometry");
     LOG(LEVEL) << "]" ; 
-    TIMER("loadGeometry");
 }
 
 
@@ -152,7 +142,6 @@ void OpticksGeometry::loadGeometryBase()
     }
 
     LOG(LEVEL) << "]" ; 
-    TIMER("loadGeometryBase");
 }
 
 
@@ -179,7 +168,6 @@ void OpticksGeometry::fixGeometry()
         GMergedMesh* mesh0 = m_ggeo->getMergedMesh(0);
         mesh0->explodeZVertices(zexplodeconfig.y, zexplodeconfig.x ); 
     }
-    TIMER("fixGeometry"); 
 }
 
 

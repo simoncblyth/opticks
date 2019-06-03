@@ -1605,7 +1605,9 @@ void OpticksEvent::save()
 {
     if(!CanAnalyse(this))
     {
-        LOG(error) << "skip as CanAnalyse returns false (no rec) : " << getRelDir() ; 
+        LOG(error) << "skip as CanAnalyse returns false (no rec) : " 
+                   //<< getRelDir() 
+                   ; 
         // This avoids writing the G4 evt domains, when running without --okg4 
         // that leads to unhealthy mixed timestamp event loads in evt.py. 
         // Different timestamps for ab.py between A and B 
@@ -1614,13 +1616,18 @@ void OpticksEvent::save()
     }
     else
     {
-        LOG(info) << "proceed as CanAnalyse returns true (with rec) : " << getRelDir() ; 
+        LOG(info) << "proceed as CanAnalyse returns true (with rec) : " 
+                  //<< getRelDir()
+                   ; 
     }
 
-    (*m_timer)("_save");
+
+    OK_PROFILE("_OpticksEvent::save"); 
 
 
-    LOG(info) << description("") << getShapeString() << " dir " << m_event_spec->getDir() ;    
+    LOG(info) << description("") << getShapeString() 
+              << " dir " << m_event_spec->getDir()
+               ;    
 
     if(m_ok->isProduction())
     {
@@ -1643,7 +1650,7 @@ void OpticksEvent::save()
     saveDomains();
     saveParameters();
 
-    (*m_timer)("save");
+    OK_PROFILE("OpticksEvent::save"); 
 
     makeReport(false);  // after timer save, in order to include that in the report
     saveReport();
@@ -1980,12 +1987,13 @@ void OpticksEvent::loadBuffers(bool verbose)
     NPY<float>*              ht = NPY<float>::load("ht", m_typ,  m_tag, udet, qload );
 
     if(ph == NULL || ps == NULL || rs == NULL )
-        LOG(warning) << "OpticksEvent::loadBuffers " << getDir()
-                     << " MISSING INDEX BUFFER(S) " 
-                     << " ph " << ph
-                     << " ps " << ps
-                     << " rs " << rs
-                     ;
+        LOG(warning) 
+             << " " << getDir()
+             << " MISSING INDEX BUFFER(S) " 
+             << " ph " << ph
+             << " ps " << ps
+             << " rs " << rs
+             ;
 
 
     if(gs) loadBuffersImportSpec(gs,m_genstep_spec) ;
