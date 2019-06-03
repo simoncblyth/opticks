@@ -24,16 +24,6 @@
 #include "OBuf.hh"
 
 
-#define TIMER(s) \
-    { \
-       if(m_ok)\
-       {\
-          BTimeKeeper& t = *(m_ok->getTimer()) ;\
-          t((s)) ;\
-       }\
-    }
-
-
 
 
 OpZeroer::OpZeroer(Opticks* ok, OEvent* oevt)  
@@ -65,6 +55,8 @@ void OpZeroer::zeroRecords()
 void OpZeroer::zeroRecordsViaOpenGL()
 {
 #ifdef WITH_RECORD
+    OK_PROFILE("_OpZeroer::zeroRecordsViaOpenGL"); 
+
     OpticksEvent* evt = m_ok->getEvent();
 
     NPY<short>* record = evt->getRecordData(); 
@@ -81,7 +73,7 @@ void OpZeroer::zeroRecordsViaOpenGL()
 
     r_rec.unmapGLToCUDA();
 
-    TIMER("zeroRecordsViaOpenGL"); 
+    OK_PROFILE("OpZeroer::zeroRecordsViaOpenGL"); 
 #endif
 }
 
@@ -89,6 +81,8 @@ void OpZeroer::zeroRecordsViaOpenGL()
 void OpZeroer::zeroRecordsViaOptiX()
 {
 #ifdef WITH_RECORD
+    OK_PROFILE("_OpZeroer::zeroRecordsViaOptiX"); 
+
     OBuf* record = m_oevt->getRecordBuf() ;
 
     CBufSpec s_rec = record->bufspec();
@@ -99,7 +93,7 @@ void OpZeroer::zeroRecordsViaOptiX()
 
     trec.zero();
 
-    TIMER("zeroRecordsViaOptiX"); 
+    OK_PROFILE("OpZeroer::zeroRecordsViaOptiX"); 
 #endif
 }
 

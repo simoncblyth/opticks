@@ -913,12 +913,6 @@ FlightPath* OpticksHub::getFlightPath() const
 
 
 
-BTimeKeeper* OpticksHub::getTimer()  // timer is from current evt if exists already  
-{
-    return m_ok->getTimer(); 
-}
-
-
 OpticksGen* OpticksHub::getGen()
 {
     return m_gen ; 

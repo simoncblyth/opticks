@@ -10,6 +10,41 @@ class BTimesTable ;
 #include "BRAP_API_EXPORT.hh"
 #include "BRAP_HEAD.hh"
 
+/**
+BTimeKeeper
+================
+
+m_marks
+    vector of string double pairs 
+
+
+Instances of BTimeKeeper, typically m_timer are held by several 
+objects:: 
+
+    [blyth@localhost opticks]$ opticks-f new\ BTimeKeeper
+    ./boostrap/BTimeKeeper.hh:     574     m_timer = new BTimeKeeper("Opticks::");
+    ./npy/NDualContouringSample.cpp:   m_timer(new BTimeKeeper),
+    ./npy/NImplicitMesher.cpp:    m_timer(new BTimeKeeper),
+    ./optickscore/Opticks.cc:    m_timer = new BTimeKeeper("Opticks::");
+    ./optickscore/OpticksEvent.cc:    m_timer = new BTimeKeeper("OpticksEvent"); 
+    ./optixrap/OScene.cc:    m_timer(new BTimeKeeper("OScene::")),
+
+::
+
+     568 void Opticks::init()
+     569 {
+     ...
+     574     m_timer = new BTimeKeeper("Opticks::");
+     575 
+     576     m_timer->setVerbose(true);
+     577 
+     578     m_timer->start();
+
+
+
+**/
+
+
 class BRAP_API BTimeKeeper {
     public:
         static const char* COLUMNS ; 

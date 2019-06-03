@@ -39,16 +39,6 @@
 
 
 
-#define TIMER(s) \
-    { \
-       if(m_ok)\
-       {\
-          BTimeKeeper& t = *(m_ok->getTimer()) ;\
-          t((s)) ;\
-       }\
-    }
-
-
 OpIndexer::OpIndexer(Opticks* ok, OEvent* oevt)  
    :
      m_ok(ok),
@@ -129,6 +119,8 @@ void OpIndexer::setNumPhotons(unsigned int num_photons)
 
 void OpIndexer::indexBoundaries()
 {
+    OK_PROFILE("_OpIndexer::indexBoundaries"); 
+
     update();
 
     if(!m_pho)
@@ -165,7 +157,8 @@ void OpIndexer::indexBoundaries()
          assert(0 && "NO BUFFER CONTROL");
     }
 
-    TIMER("indexBoundaries"); 
+
+    OK_PROFILE("OpIndexer::indexBoundaries"); 
 }
 
 
@@ -212,6 +205,8 @@ void OpIndexer::indexSequence()
 
 void OpIndexer::indexSequenceCompute()
 {
+    OK_PROFILE("_OpIndexer::indexSequenceCompute"); 
+
     if(!m_seq)
         LOG(fatal) << "OpIndexer::indexSequenceCompute"
                    << " m_seq NULL " ; 
@@ -230,18 +225,25 @@ void OpIndexer::indexSequenceCompute()
 
     indexSequenceViaThrust(seqhis, seqmat, m_verbose );
 
-    TIMER("indexSequenceCompute"); 
+    OK_PROFILE("OpIndexer::indexSequenceCompute"); 
 }
 
 
+/**
+OpIndexer::indexSequenceInterop
+----------------------------------
+
+Used by standard indexing with OptiX OpenGL and Thrust all in play 
+
+OptiX OBuf provides access to the sequence buffer
+and OpenGL mapping to CUDA gives access to the output recsel/phosel
+as these are used by OpenGL
+
+**/
+
 void OpIndexer::indexSequenceInterop()
 {
-    // used by standard indexing from ggv- ie with OptiX OpenGL and Thrust all in play 
-    //
-    // OptiX OBuf provides access to the sequence buffer
-    // and OpenGL mapping to CUDA gives access to the output recsel/phosel
-    // as these are used by OpenGL
-
+    OK_PROFILE("_OpIndexer::indexSequenceInterop"); 
 
     if(!m_seq)
         LOG(fatal) << "OpIndexer::indexSequenceInterop"
@@ -261,12 +263,13 @@ void OpIndexer::indexSequenceInterop()
 
     indexSequenceViaOpenGL(seqhis, seqmat, m_verbose );
 
-    TIMER("indexSequenceInterop"); 
+    OK_PROFILE("OpIndexer::indexSequenceInterop"); 
 }
 
 
 void OpIndexer::indexSequenceLoaded()
 {
+    OK_PROFILE("_OpIndexer::indexSequenceLoaded"); 
     // starts from host based index
 
     LOG(info) << "OpIndexer::indexSequenceLoaded" ; 
@@ -303,7 +306,7 @@ void OpIndexer::indexSequenceLoaded()
 
     indexSequenceViaThrust(seqhis, seqmat, m_verbose );
 
-    TIMER("indexSequenceLoaded"); 
+    OK_PROFILE("OpIndexer::indexSequenceLoaded"); 
 
 }
 

@@ -30,16 +30,6 @@
 #include <thrust/device_vector.h>
 
 
-#define TIMER(s) \
-    { \
-       if(m_ok)\
-       {\
-          BTimeKeeper& t = *(m_ok->getTimer()) ;\
-          t((s)) ;\
-       }\
-    }
-
-
 #ifdef WITH_RECORD
 
 void OpIndexer::indexSequenceViaThrust(
@@ -120,32 +110,33 @@ void OpIndexer::indexSequenceImp(
     CBufSlice tp_mat = tphosel.slice(4,1) ; 
  
 
-    TIMER("_seqhisMakeLookup");
+    OK_PROFILE("_OpIndexer::seqhisMakeLookup");
     seqhis.make_lookup(); 
-    TIMER("seqhisMakeLookup");
+    OK_PROFILE("OpIndexer::seqhisMakeLookup");
     seqhis.apply_lookup<unsigned char>(tp_his); 
-    TIMER("seqhisApplyLookup");
+    OK_PROFILE("OpIndexer::seqhisApplyLookup");
 
     if(verbose) dumpHis(tphosel, seqhis) ;
 
-    TIMER("_seqmatMakeLookup");
+    OK_PROFILE("_OpIndexer::seqmatMakeLookup");
     seqmat.make_lookup();
-    TIMER("seqmatMakeLookup");
+    OK_PROFILE("OpIndexer::seqmatMakeLookup");
     seqmat.apply_lookup<unsigned char>(tp_mat);
-    TIMER("seqmatApplyLookup");
+    OK_PROFILE("OpIndexer::seqmatApplyLookup");
 
     if(verbose) dumpMat(tphosel, seqmat) ;
 
     tphosel.repeat_to<unsigned char>( &trecsel, 4, 0, tphosel.getSize(), m_maxrec );  // other, stride, begin, end, repeats
 
 
-
     NPY<unsigned char>* phosel = m_evt->getPhoselData() ;
     NPY<unsigned char>* recsel = m_evt->getRecselData() ;
 
     // hmm: this pull back to host might not be necessary : only used on GPU ?
+    OK_PROFILE("_OpIndexer::download");
     tphosel.download<unsigned char>( phosel );  // cudaMemcpyDeviceToHost
     trecsel.download<unsigned char>( recsel );
+    OK_PROFILE("OpIndexer::download");
 }
 
 
