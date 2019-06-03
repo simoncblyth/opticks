@@ -75,7 +75,16 @@ void CGDMLDetector::init()
     setTop(world);   // invokes *CDetector::traverse*
 
     addMPTLegacyGDML(); 
-    standardizeGeant4MaterialProperties();
+
+
+    if(m_ok->isLegacy())
+    {
+        LOG(error) << " skip standardizeGeant4MaterialProperties in legacy running " ; 
+    } 
+    else
+    {
+        standardizeGeant4MaterialProperties();
+    }
 
     attachSurfaces();
     // kludge_cathode_efficiency(); 
@@ -161,7 +170,7 @@ void CGDMLDetector::addMPTLegacyGDML()
     }
     if(nmat > 0 && nmat_without_mpt == nmat )
     {
-        LOG(warning) 
+        LOG(error) 
             << " ALL G4 MATERIALS LACK MPT "
             << " FIXING USING Opticks MATERIALS " 
             ;
