@@ -60,7 +60,7 @@ OKPropagator::OKPropagator(OpticksHub* hub, OpticksIdx* idx, OpticksViz* viz)
 
 void OKPropagator::propagate()
 {
-    OK_PROFILE("OKPropagator::propagate.BEG");
+    OK_PROFILE("_OKPropagator::propagate");
 
 
     OpticksEvent* evt = m_hub->getEvent();
@@ -75,7 +75,7 @@ void OKPropagator::propagate()
 
     m_engine->propagate();        //  seedPhotonsFromGensteps, zeroRecords, propagate, indexSequence, indexBoundaries
 
-    OK_PROFILE("OKPropagator::propagate.MID");
+    OK_PROFILE("OKPropagator::propagate");
 
     if(m_viz) m_viz->indexPresentationPrep();
 
@@ -83,7 +83,7 @@ void OKPropagator::propagate()
 
     LOG(fatal) << "OKPropagator::propagate(" << evt->getId() << ") DONE nhit: " << nhit    ;
 
-    OK_PROFILE("OKPropagator::propagate.END");
+    OK_PROFILE("OKPropagator::propagate-download");
 }
 
 

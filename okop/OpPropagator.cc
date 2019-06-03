@@ -49,7 +49,7 @@ OpPropagator::OpPropagator(OpticksHub* hub, OpticksIdx* idx)
 
 void OpPropagator::propagate()
 {
-    OK_PROFILE("OpPropagator::propagate.BEG");
+    OK_PROFILE("_OpPropagator::propagate");
 
 
     OpticksEvent* evt = m_hub->getEvent();
@@ -62,13 +62,13 @@ void OpPropagator::propagate()
 
     m_engine->propagate();        //  seedPhotonsFromGensteps, zeroRecords, propagate, indexSequence, indexBoundaries
 
-    OK_PROFILE("OpPropagator::propagate.MID");
+    OK_PROFILE("OpPropagator::propagate");
 
     int nhit = m_ok->isSave() ? downloadEvent() : -1 ; 
 
     LOG(fatal) << "evtId(" << evt->getId() << ") DONE nhit: " << nhit    ;
 
-    OK_PROFILE("OpPropagator::propagate.END");
+    OK_PROFILE("OpPropagator::propagate-download");
 }
 
 

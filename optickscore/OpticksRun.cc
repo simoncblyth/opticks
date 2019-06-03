@@ -52,7 +52,7 @@ void OpticksRun::createEvent(unsigned tagoffset)
     m_ok->setTagOffset(tagoffset);
     // tagoffset is recorded with Opticks::setTagOffset within the makeEvent, but need it here before that 
 
-    OK_PROFILE("OpticksRun::createEvent.BEG");
+    OK_PROFILE("_OpticksRun::createEvent");
 
     m_g4evt = m_ok->makeEvent(false, tagoffset) ;
     m_evt = m_ok->makeEvent(true, tagoffset) ;
@@ -81,7 +81,7 @@ void OpticksRun::createEvent(unsigned tagoffset)
 
     annotateEvent();
 
-    OK_PROFILE("OpticksRun::createEvent.END");
+    OK_PROFILE("OpticksRun::createEvent");
 }
 
 void OpticksRun::annotateEvent()
@@ -109,10 +109,10 @@ void OpticksRun::annotateEvent()
 }
 void OpticksRun::resetEvent()
 {
-    OK_PROFILE("OpticksRun::resetEvent.BEG");
+    OK_PROFILE("_OpticksRun::resetEvent");
     m_g4evt->reset();
     m_evt->reset();
-    OK_PROFILE("OpticksRun::resetEvent.END");
+    OK_PROFILE("OpticksRun::resetEvent");
 }
 
 
@@ -217,7 +217,7 @@ bool OpticksRun::hasGensteps()
 
 void OpticksRun::saveEvent()
 {
-    OK_PROFILE("OpticksRun::saveEvent.BEG");
+    OK_PROFILE("_OpticksRun::saveEvent");
     // they skip if no photon data
     if(m_g4evt)
     {
@@ -227,17 +227,17 @@ void OpticksRun::saveEvent()
     {
         m_evt->save();
     } 
-    OK_PROFILE("OpticksRun::saveEvent.END");
+    OK_PROFILE("OpticksRun::saveEvent");
 }
 
 void OpticksRun::anaEvent()
 {
-    OK_PROFILE("OpticksRun::anaEvent.BEG");
+    OK_PROFILE("_OpticksRun::anaEvent");
     if(m_g4evt && m_evt )
     {
         m_ok->ana();
     }
-    OK_PROFILE("OpticksRun::anaEvent.END");
+    OK_PROFILE("OpticksRun::anaEvent");
 }
 
 
