@@ -1,9 +1,60 @@
 profiling-machinery-review
 ===============================
 
+ana/metadata.py 
+-----------------
 
-geocache-bench geocache-bench360 bench.py
----------------------------------------------
+::
+
+    [blyth@localhost ana]$ grep metadata *.py 
+    ab.py:        self.print_("ab.a.metadata:%s" % self.a.metadata)
+    ab.py:        self.print_("ab.a.metadata:%s" % self.a.metadata)
+    ab.py:        self.print_("ab.a.metadata.csgmeta0:%s" % self.a.metadata.csgmeta0 )
+    ab.py:        amd = ",".join(self.a.metadata.csgbnd)
+    ab.py:        bmd = ",".join(self.b.metadata.csgbnd)
+    ab.py:        acsgp = self.a.metadata.TestCSGPath
+    ab.py:        bcsgp = self.b.metadata.TestCSGPath
+    ab.py:        #aNote = "A:%s" % self.a.metadata.Note
+    ab.py:        ##bNote = "B:%s" % self.b.metadata.Note
+    ab.py:        :return point: recarray for holding point level metadata
+    cfg4_speedplot.py:from opticks.ana.metadata import Metadata, Catdir
+    cfg4_speedplot.py:        log.warning("no metadata skipping")
+    evt.py:from opticks.ana.metadata import Metadata
+    evt.py:        ok = self.init_metadata()
+    evt.py:        testcsgpath = self.metadata.TestCSGPath
+    evt.py:    def init_metadata(self):
+    evt.py:        log.debug("init_metadata")
+    evt.py:        metadata = Metadata(self.tagdir)
+    evt.py:        log.info("loaded metadata from %s " % self.tagdir)
+    evt.py:        log.info("metadata %s " % repr(metadata))
+    evt.py:        self.metadata = metadata  
+    evt.py:        fdom.desc = "(metadata) 3*float4 domains of position, time, wavelength (used for compression)"
+    evt.py:        self.desc['idom'] = "(metadata) %s " % pdict_(self.idomd)
+    evt.py:             return "%s %s %s %s (%s)" % (self.label, self.stamp, pdict_(self.idomd), self.path, self.metadata.Note)
+    metadata.py:Access the metadata json files written by Opticks runs, 
+    metadata.py:TODO: extract the good stuff from here as migrate from metadata.py to meta.py
+    metadata.py:    timestamp folders contain just metadata for prior runs not full evt::
+    metadata.py:    Reads in metadata from dated folders corresponding to runs of::
+    metadata.py:        log.info("times metadata for tag %s " % tag + "\n".join(map(str,mds)))
+    metadata.py:            log.warning("no metadata found")
+    metadata.py:            log.warning("skipped metadata with inconsistent photon count n %s nc %s " % (n, nc)) 
+    metadata.py:def test_metadata():
+    meta.py:Attempt at more general metadata handling than metadata.py.
+    nload.py:    event metadata
+    nodelib.py:            # This is handled C++ side with gltftarget (config) and NScene targetnode GLTF asset metadata
+    tevt.py:     fdom :            (3, 1, 4) : (metadata) 3*float4 domains of position, time, wavelength (used for compression) 
+    tevt.py:     idom :            (1, 1, 4) : (metadata) int domain 
+    tmeta.py:tmeta.py : Load a single events metadata
+    tmeta.py:    [2016-08-19 15:51:42,378] p23598 {/Users/blyth/opticks/ana/tmeta.py:21} INFO - loaded metadata from /tmp/blyth/opticks/evt/dayabay/torch/1 :                       /tmp/blyth/opticks/evt/dayabay/torch/1 571d76cd06acc1e992c211d6833dd0ff a32520a5215239cf54ee03d61ed154f6  100000     4.2878 CFG4_MODE  
+    tmeta.py:from opticks.ana.metadata import Metadata
+    tmeta.py:    log.info("loaded metadata from %s : %s " % (mdir, repr(md)))
+    [blyth@localhost ana]$ 
+
+
+
+
+geocache-bench geocache-bench360 bench.py : based on simple meta.py
+--------------------------------------------------------------------------------------
 
 
 bench.py lists run metadata from dated folders found beneath $OPTICKS_RESULTS_PREFIX/results::
@@ -326,7 +377,7 @@ VM and Time stamps are collected from all over the place into m_profile::
     ./okop/OpSeeder.cc:    OK_PROFILE("OpSeeder::seedPhotonsFromGenstepsViaOptiX");
     [blyth@localhost opticks]$ 
 
-Note the splitting into ini sections when dots are used in profile labels (unintended?)::
+Note the splitting into ini sections when dots are used in profile labels (unintended?) NOW FIXED::
 
     [blyth@localhost optickscore]$ cat /tmp/tboolean-box/evt/tboolean-box/torch/DeltaTime.ini
     OpticksRun::OpticksRun_0=19839.74609375
@@ -428,8 +479,7 @@ Note the splitting into ini sections when dots are used in profile labels (unint
 TIMER : m_timer looks to be from an earlier epoch being replaced by m_profile
 -----------------------------------------------------------------------------------
 
-* but i like the dated folder copies : not yet in OK_PROFILE : where done ?
-
+* but i like the dated folder copies : not yet in OK_PROFILE : where done ?  NOW ADDED
 
 
 okop/OpIndexer_.cu::
@@ -511,8 +561,11 @@ okop/OpIndexer_.cu::
     save=0.077373000000079628
 
 
-TIMER reportage
+TIMER reportage 
 ---------------------
+
+* adopted the same pattern with m_profile
+
 
 ::
 

@@ -272,7 +272,7 @@ class I(dict):
         return d  
 
     @classmethod
-    def load_(cls, typ, tag, det="dayabay", pfx="source", name="t_delta.ini", dbg=False):
+    def load_(cls, typ, tag, det="dayabay", pfx="source", name="DeltaTime.ini", dbg=False):
         path = path_(typ, tag, det, name=name, pfx=pfx )
         i = cls(path, typ=typ, tag=tag, det=det, name=name)
         return i
@@ -298,7 +298,7 @@ class II(list):
     event metadata
     """
     @classmethod
-    def load_(cls, typ, tag, det="dayabay", pfx="source", name="t_delta.ini", dbg=False):
+    def load_(cls, typ, tag, det="dayabay", pfx="source", name="DeltaTime.ini", dbg=False):
         tpaths = tpaths_(typ, tag, det, pfx=pfx, name=name)
         ii = map(lambda path:I(path, typ=typ, tag=tag, det=det, name=name, dbg=dbg), tpaths) 
         return cls(ii)

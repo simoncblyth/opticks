@@ -12,11 +12,7 @@ class BTimesTable ;
 
 class BTimeKeeper ; 
 
-#ifdef OLD_PARAMETERS
-class X_BParameters ;
-#else
 class NMeta ; 
-#endif
 
 
 class Report ;
@@ -34,6 +30,7 @@ class NPYSpec ;
 class NGeoTestConfig ; 
 
 class Opticks ; 
+class OpticksProfile ; 
 class OpticksMode ; 
 class OpticksBufferControl ; 
 class OpticksDomain ; 
@@ -126,10 +123,11 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec
        void resetBuffers();
    public:
        // set by Opticks::makeEvent OpticksRun::createEvent
-       void           setSibling(OpticksEvent* sibling);
-       void           setOpticks(Opticks* ok);
-       Opticks*       getOpticks() const ;
-       void           setId(int id);
+       void             setSibling(OpticksEvent* sibling);
+       void             setOpticks(Opticks* ok);
+       Opticks*         getOpticks() const ;
+       OpticksProfile*  getProfile() const ;
+       void             setId(int id);
    public:
        OpticksEvent*  getSibling();
        int  getId();
@@ -206,13 +204,11 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec
    public:
        const char* getPath(const char* xx);  // accepts abbreviated or full constituent names
 
-#ifdef OLD_PARAMETERS
-       X_BParameters* getParameters();
-#else
        NMeta*       getParameters();
-#endif
+#ifdef OLD_TIMER
        BTimeKeeper*      getTimer();
        BTimesTable* getTimesTable();
+#endif
    public:
        void makeReport(bool verbose=false);
        void saveReport();
@@ -388,24 +384,20 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec
    private:
        OpticksEventSpec*     m_event_spec ; 
        Opticks*              m_ok ;  
+       OpticksProfile*       m_profile ;  
        OpticksMode*          m_mode ; 
 
        bool                  m_noload ; 
        bool                  m_loaded ; 
 
+#ifdef OLD_TIMER
        BTimeKeeper*          m_timer ;
-
-
-#ifdef OLD_PARAMETERS
-       X_BParameters*          m_versions ;
-       X_BParameters*          m_parameters ;
-#else
+       BTimesTable*          m_ttable ;
+#endif
        NMeta*                m_versions ;
        NMeta*                m_parameters ;
-#endif
 
        Report*               m_report ;
-       BTimesTable*          m_ttable ;
 
        NPY<float>*           m_primary_data ; 
        NPY<float>*           m_genstep_data ;

@@ -398,6 +398,7 @@ class OKCORE_API Opticks {
        Types*               getTypes();
        Typ*                 getTyp();
    public:
+       OpticksProfile*      getProfile() const ;
        NMeta*               getParameters() const ;
        NState*              getState() const ;
    public:

@@ -36,6 +36,12 @@ OpticksProfile::OpticksProfile(const char* name, bool stamp_out)
 }
 
 
+std::vector<std::string>&  OpticksProfile::getLines()
+{
+    return m_tt->getLines(); 
+}
+
+
 void OpticksProfile::setDir(const char* dir)
 {
     m_dir = strdup(dir);
@@ -117,6 +123,20 @@ void OpticksProfile::save(const char* dir)
    m_tt->save(dir);
    m_npy->save(dir, m_name);
 }
+
+
+const char* OpticksProfile::NAME = "Opticks" ; 
+
+OpticksProfile* OpticksProfile::Load( const char* dir, const char* name )
+{
+    bool stamp_verbose = false ; 
+    OpticksProfile* profile = new OpticksProfile( name ? name : NAME, stamp_verbose );
+    profile->setDir(dir); 
+    profile->load(); 
+    return profile ;  
+}
+
+
 void OpticksProfile::load(const char* dir)
 {
    assert(dir);

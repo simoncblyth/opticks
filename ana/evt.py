@@ -314,8 +314,8 @@ class Evt(object):
             self.valid = False
             return False
 
-        td = I.load_(self.src,self.tag,self.det, pfx=self.pfx, name="t_delta.ini", dbg=self.dbg)
-        tdii = II.load_(self.src,self.tag,self.det, pfx=self.pfx, name="t_delta.ini", dbg=self.dbg)
+        td = I.load_(self.src,self.tag,self.det, pfx=self.pfx, name="DeltaTime.ini", dbg=self.dbg)
+        tdii = II.load_(self.src,self.tag,self.det, pfx=self.pfx, name="DeltaTime.ini", dbg=self.dbg)
 
         self.td = td
         self.tdii = tdii

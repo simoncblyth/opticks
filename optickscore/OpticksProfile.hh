@@ -1,5 +1,6 @@
 #pragma once
 
+#include <vector>
 #include <string>
 class BTimesTable ; 
 template <typename T> class NPY ; 
@@ -20,9 +21,15 @@ Recording time and virtual memory as various points during Opticks running.
 
 class OKCORE_API OpticksProfile 
 {
+    private:
+       static const char* NAME ; 
+    public:
+       static OpticksProfile* Load( const char* dir, const char* name=NULL ); 
     public:
        OpticksProfile(const char* name="OpticksProfile", bool stamp_out=false);
        template <typename T> void stamp(T row, int count);
+
+       std::vector<std::string>&  getLines(); 
        void save();
        void load();
        void dump(const char* msg="OpticksProfile::dump", const char* startswith=NULL, const char* spacewith=NULL, double tcut=0.0);
@@ -33,10 +40,12 @@ class OKCORE_API OpticksProfile
        std::string getPath();
 
        std::string brief();
+
+    public:
+       void save(const char* dir);
     private:
        void setT(float t);
        void setVM(float vm);
-       void save(const char* dir);
        void load(const char* dir);
     private:
        const char* m_dir ; 

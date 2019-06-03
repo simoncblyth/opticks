@@ -22,13 +22,6 @@
 #include "BOpticksResource.hh"
 #include "BOpticksEvent.hh"
 
-#ifdef OLD_PARAMETERS
-#include "X_BParameters.hh"
-#else
-#include "NMeta.hpp"
-#endif
-
-
 // npy-
 #include "uif.h"
 #include "NGLM.hpp"
@@ -37,6 +30,7 @@
 #include "NPYSpec.hpp"
 #include "NLookup.hpp"
 #include "NGeoTestConfig.hpp"
+#include "NMeta.hpp"
 
 #include "ViewNPY.hpp"
 #include "MultiViewNPY.hpp"
@@ -54,6 +48,7 @@
 
 // okc-
 #include "Opticks.hh"
+#include "OpticksProfile.hh"
 #include "OpticksSwitches.h"
 #include "OpticksPhoton.h"
 #include "OpticksConst.hh"
@@ -113,21 +108,26 @@ OpticksEvent* OpticksEvent::make(OpticksEventSpec* spec, unsigned tagoffset)
 }
 
 Opticks* OpticksEvent::getOpticks() const { return m_ok ; }
+OpticksProfile* OpticksEvent::getProfile() const { return m_profile ; }
 
 OpticksEvent::OpticksEvent(OpticksEventSpec* spec) 
           :
           OpticksEventSpec(spec),
           m_event_spec(spec),
           m_ok(NULL),   // set by Opticks::makeEvent
+          m_profile(NULL),
 
           m_noload(false),
           m_loaded(false),
 
+#ifdef OLD_TIMER
           m_timer(NULL),
+          m_ttable(NULL),
+#endif
+
           m_versions(NULL),
           m_parameters(NULL),
           m_report(NULL),
-          m_ttable(NULL),
 
           m_primary_data(NULL),
           m_genstep_data(NULL),
@@ -551,14 +551,12 @@ Index* OpticksEvent::getBoundaryIndex()
 }
 
 
-#ifdef OLD_PARAMETERS
-X_BParameters* OpticksEvent::getParameters()
-#else
 NMeta*      OpticksEvent::getParameters()
-#endif
 {
     return m_parameters ;
 }
+
+#ifdef OLD_TIMER
 BTimeKeeper* OpticksEvent::getTimer()
 {
     return m_timer ;
@@ -567,7 +565,7 @@ BTimesTable* OpticksEvent::getTimesTable()
 {
     return m_ttable ;
 }
-
+#endif
 
 
 void OpticksEvent::pushNames(std::vector<std::string>& names)
@@ -586,19 +584,16 @@ void OpticksEvent::pushNames(std::vector<std::string>& names)
 
 void OpticksEvent::init()
 {
+
+#ifdef OLD_TIMER
     m_timer = new BTimeKeeper("OpticksEvent"); 
     m_timer->setVerbose(false);
     m_timer->start();
-
-
-#ifdef OLD_PARAMETERS
-    m_versions = new X_BParameters ;
-    m_parameters = new X_BParameters ;
-#else
-    m_versions = new NMeta ;
-    m_parameters = new NMeta ;
 #endif
 
+
+    m_versions = new NMeta ;
+    m_parameters = new NMeta ;
     m_report = new Report ; 
     m_domain = new OpticksDomain ; 
 
@@ -683,6 +678,7 @@ std::string OpticksEvent::getShapeString()
 void OpticksEvent::setOpticks(Opticks* ok)
 {
     m_ok = ok ; 
+    m_profile = ok->getProfile(); 
 }
 
 int OpticksEvent::getId()
@@ -1755,18 +1751,19 @@ void OpticksEvent::makeReport(bool verbose)
     if(verbose)
     m_parameters->dump();
 
-    m_timer->stop();
+    m_report->add(m_versions->getLines());
+    m_report->add(m_parameters->getLines());
+    m_report->add(m_profile->getLines());
 
+
+#ifdef OLD_TIMER
+    m_timer->stop();
     m_ttable = m_timer->makeTable();
     if(verbose)
     m_ttable->dump("OpticksEvent::makeReport");
-
-    // TODO: add some context lines in the report  eg 
-    //       OS uname, NODE_TAG, hostname, OptiX version, CUDA version, G4 Version etc..
-
-    m_report->add(m_versions->getLines());
-    m_report->add(m_parameters->getLines());
     m_report->add(m_ttable->getLines());
+#endif
+
 }
 
 
@@ -1785,6 +1782,7 @@ void OpticksEvent::saveReport()
 std::string OpticksEvent::TagDir(const char* det, const char* typ, const char* tag, const char* anno)
 {
     std::string tagdir = BOpticksEvent::directory(det, typ, tag, anno ? anno : NULL );
+ 
     return tagdir ; 
 
 }
@@ -1792,6 +1790,14 @@ std::string OpticksEvent::getTagDir(const char* anno)
 {
     const char* udet = getUDet();
     std::string tagdir = TagDir(udet, m_typ, m_tag, anno ? anno : NULL );
+
+
+    if( anno == NULL )
+    {
+        const char* tagdir2 = getDir(); 
+        assert( strcmp( tagdir.c_str(), tagdir2) == 0 );  
+    }
+
     return tagdir ;
 }
 
@@ -1832,17 +1838,25 @@ void OpticksEvent::importParameters()
 
 void OpticksEvent::saveReport(const char* dir)
 {
-    if(!m_ttable || !m_report) return ; 
+    if(!m_report) return ; 
     LOG(debug) << "OpticksEvent::saveReport to " << dir  ; 
 
+#ifdef OLD_TIMER
     m_ttable->save(dir);
+#endif
+
+    m_profile->save(dir); 
     m_report->save(dir);  
 }
 
 void OpticksEvent::loadReport()
 {
     std::string tagdir = getTagDir();
+#ifdef OLD_TIMER
     m_ttable = BTimeKeeper::loadTable(tagdir.c_str());
+#endif
+
+    m_profile = OpticksProfile::Load( tagdir.c_str() );  
     m_report = Report::load(tagdir.c_str());
 }
 

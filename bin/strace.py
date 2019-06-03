@@ -49,7 +49,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(__doc__)
     parser.add_argument(     "path", nargs='?', default="/tmp/strace.log", help="Strace logfile, eg created with \"strace -o /tmp/strace.log -e open /path/to/executable args\" " )
     parser.add_argument(     "--exclude", default=None, help="Dont collect from lines containing the string provided" )
-    parser.add_argument( "-f", "--flagfilter", default=None, help="Report only lines containing the string provided in the flags eg O_CREAT" )
+    parser.add_argument( "-f", "--flagfilter", default="O_CREAT", help="Report only lines containing the string provided in the flags eg O_CREAT. Default %(default)s " )
     args = parser.parse_args()
     cmdline = " ".join(["strace.py"]+sys.argv[1:])
     print(cmdline)

@@ -7,16 +7,19 @@
 
 #include "BStr.hh"
 
-#ifdef OLD_PARAMETERS
-#include "X_BParameters.hh"
-#else
 #include "NMeta.hpp"
-#endif
 
 
 // npy-
 #include "Types.hpp"
+
+#ifdef OLD_TIMER
 #include "BTimesTable.hh"
+#else
+#include "OpticksProfile.hh"
+#endif
+
+
 #include "NGLM.hpp"
 #include "NPY.hpp"
 
@@ -424,6 +427,8 @@ void OpticksViz::prepareGUI()
 
     OpticksEvent* evt = m_run->getCurrentEvent();
 
+
+#ifdef OLD_TIMER
     BTimesTable* tt = evt ? evt->getTimesTable() : NULL ; 
     if(tt)
     {
@@ -433,13 +438,20 @@ void OpticksViz::prepareGUI()
     {
         LOG(LEVEL) << "NULL TimesTable " ; 
     }  
-
-#ifdef OLD_PARAMETERS
-    X_BParameters* parameters = evt ? evt->getParameters() : m_ok->getParameters() ; 
 #else
-    NMeta* parameters = evt ? evt->getParameters() : m_ok->getParameters() ; 
+    OpticksProfile* profile = evt->getProfile(); 
+    if(profile)
+    {
+        m_gui->setupStats(profile->getLines());
+    }
+    else
+    {
+        LOG(LEVEL) << "NULL profile " ; 
+    }  
 #endif
 
+
+    NMeta* parameters = evt ? evt->getParameters() : m_ok->getParameters() ; 
     m_gui->setupParams(parameters->getLines());
 
 #endif

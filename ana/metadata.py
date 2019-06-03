@@ -6,6 +6,11 @@ Metadata
 Access the metadata json files written by Opticks runs, 
 allowing evt digests and run times to be compared. 
 
+See also meta.py a more generalized version of this, but 
+not so fleshed out.
+
+TODO: extract the good stuff from here as migrate from metadata.py to meta.py
+
 
 """
 

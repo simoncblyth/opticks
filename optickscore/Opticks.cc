@@ -869,11 +869,17 @@ OpticksEvent* Opticks::getEvent() const
 
 
 
+OpticksProfile* Opticks::getProfile() const 
+{
+    return m_profile ; 
+}
+
 
 NMeta*       Opticks::getParameters() const 
 {
     return m_parameters ; 
 }
+
 void Opticks::dumpParameters(const char* msg) const 
 {
     m_parameters->dump(msg);
