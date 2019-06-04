@@ -16,7 +16,7 @@
 #include "PLOG.hh"
 
 
-NEmitPhotonsNPY::NEmitPhotonsNPY(NCSG* csg, unsigned gencode, unsigned seed, bool emitdbg, NPY<unsigned>* mask)
+NEmitPhotonsNPY::NEmitPhotonsNPY(NCSG* csg, unsigned gencode, unsigned seed, bool emitdbg, NPY<unsigned>* mask, int num_photons )
     :
     m_csg(csg),
     m_gencode(gencode),
@@ -26,10 +26,11 @@ NEmitPhotonsNPY::NEmitPhotonsNPY(NCSG* csg, unsigned gencode, unsigned seed, boo
     m_emit( csg->getEmit() ),
     m_emitcfg_( csg->getEmitConfig() ),
     m_emitcfg( new NEmitConfig( m_emitcfg_ )),
+    m_num_photons( num_photons > 0 ? num_photons : m_emitcfg->photons ),
     m_root( csg->getRoot()),
-    m_photons(NPY<float>::make(m_emitcfg->photons, 4, 4)),
+    m_photons(NPY<float>::make(m_num_photons, 4, 4)),
     m_photons_masked(NULL),
-    m_fabstep(new FabStepNPY(gencode, 1, m_emitcfg->photons)),  // code, num_step, num_photons_per_step
+    m_fabstep(new FabStepNPY(gencode, 1, m_num_photons)),  // code, num_step, num_photons_per_step
     m_fabstep_masked(NULL),
     m_diffuse( m_emitcfg->diffuse ? new NRngDiffuse(m_seed+100,m_emitcfg->ctmindiffuse, m_emitcfg->ctmaxdiffuse) : NULL )  
 {

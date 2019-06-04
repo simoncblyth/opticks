@@ -45,6 +45,16 @@ tboolean-name-ip
 
 
 
+Debugging Example
+--------------------
+
+::
+
+    cd /tmp  # eg 
+    tboolean-box --debugger
+
+
+
 ISSUE : emitconfig cfg4 chisq too good as not indep
 ------------------------------------------------------
 
@@ -485,7 +495,7 @@ tboolean-ana-(){
 }
 
 # TODO: how to pick a profile without being explicit about it ? so this doesnt depend on having it 
-tboolean-ipy-(){ ipython  -i -- $(which tboolean.py) --det ${TESTNAME} --tag $(tboolean-tag) $* ; }
+tboolean-ipy-(){ ipython  --pdb  $(which tboolean.py) -i -- --det ${TESTNAME} --tag $(tboolean-tag) $* ; }
 tboolean-py-(){ tboolean.py --det ${TESTNAME} --tag $(tboolean-tag)  $* ; }
 tboolean-m-(){  metadata.py --det ${TESTNAME} --tag $(tboolean-tag) ; }
 tboolean-g-(){  lldb -- CTestDetectorTest --test --testconfig "$TESTCONFIG" $* ; }
@@ -581,13 +591,22 @@ tboolean--(){
             --geocenter \
             --stack $stack \
             --eye 1,0,0 \
-            --dbganalytic \
             --test --testconfig "$testconfig" \
             --torch --torchconfig "$torchconfig" \
             --torchdbg \
             --tag $(tboolean-tag) --cat $testname \
             --anakey tboolean \
             --save 
+
+    cat << EON > /dev/null
+            --dbganalytic \
+            --dbgemit \
+            --strace \
+            --args \
+
+
+EON
+
 }
 
 tboolean-tracetest()
@@ -712,7 +731,7 @@ tboolean-box-(){  $FUNCNAME- | python $* ; }
 tboolean-box--(){ cat << EOP 
 import logging
 log = logging.getLogger(__name__)
-from opticks.ana.base import opticks_main
+from opticks.ana.main import opticks_main
 from opticks.analytic.polyconfig import PolyConfig
 from opticks.analytic.csg import CSG  
 
@@ -779,7 +798,7 @@ tboolean-box3-(){  $FUNCNAME- | python $* ; }
 tboolean-box3--(){ cat << EOP 
 import logging
 log = logging.getLogger(__name__)
-from opticks.ana.base import opticks_main
+from opticks.ana.main import opticks_main
 from opticks.analytic.polyconfig import PolyConfig
 from opticks.analytic.csg import CSG  
 
@@ -821,7 +840,7 @@ tboolean-truncate-(){  $FUNCNAME- | python $* ; }
 tboolean-truncate--(){ cat << EOP 
 import logging
 log = logging.getLogger(__name__)
-from opticks.ana.base import opticks_main
+from opticks.ana.main import opticks_main
 from opticks.analytic.polyconfig import PolyConfig
 from opticks.analytic.csg import CSG  
 
@@ -881,7 +900,7 @@ tboolean-cone(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null)    tboo
 tboolean-cone-(){  $FUNCNAME- | python $* ; }
 tboolean-cone--(){ cat << EOP 
 
-from opticks.ana.base import opticks_main
+from opticks.ana.main import opticks_main
 from opticks.analytic.polyconfig import PolyConfig
 from opticks.analytic.csg import CSG  
 
@@ -938,7 +957,7 @@ tboolean-prism(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null) &&  tb
 tboolean-prism-(){  $FUNCNAME- | python $* ; }
 tboolean-prism--(){ cat << EOP 
 
-from opticks.ana.base import opticks_main
+from opticks.ana.main import opticks_main
 from opticks.analytic.csg import CSG  
 
 args = opticks_main(csgpath="$TMP/$FUNCNAME")
@@ -992,7 +1011,7 @@ tboolean-icosahedron(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null) 
 tboolean-icosahedron-(){  $FUNCNAME- | python $* ; }
 tboolean-icosahedron--(){ cat << EOP 
 
-from opticks.ana.base import opticks_main
+from opticks.ana.main import opticks_main
 from opticks.analytic.csg import CSG  
 
 args = opticks_main(csgpath="$TMP/$FUNCNAME")
@@ -1031,7 +1050,7 @@ tboolean-cubeplanes(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null) &
 tboolean-cubeplanes-(){  $FUNCNAME- | python $* ; }
 tboolean-cubeplanes--(){ cat << EOP 
 
-from opticks.ana.base import opticks_main
+from opticks.ana.main import opticks_main
 from opticks.analytic.csg import CSG  
 
 args = opticks_main(csgpath="$TMP/$FUNCNAME")
@@ -1088,7 +1107,7 @@ tboolean-trapezoid(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null)   
 tboolean-trapezoid-(){  $FUNCNAME- | python $* ; }
 tboolean-trapezoid--(){ cat << EOP 
 
-from opticks.ana.base import opticks_main
+from opticks.ana.main import opticks_main
 from opticks.analytic.csg import CSG  
 
 args = opticks_main(csgpath="$TMP/$FUNCNAME")
@@ -1128,7 +1147,7 @@ tboolean-uniontree-(){  $FUNCNAME- | python $* ; }
 tboolean-uniontree--(){ cat << EOP 
 
 import numpy as np
-from opticks.ana.base import opticks_main
+from opticks.ana.main import opticks_main
 from opticks.analytic.polyconfig import PolyConfig
 from opticks.analytic.csg import CSG  
 from opticks.analytic.treebuilder import TreeBuilder 
@@ -1269,7 +1288,7 @@ tboolean-parade--(){ cat << EOP
 
 import logging, numpy as np
 log = logging.getLogger(__name__)
-from opticks.ana.base import opticks_main
+from opticks.ana.main import opticks_main
 from opticks.analytic.csg import CSG  
         
 args = opticks_main(csgpath="$TMP/$FUNCNAME")
@@ -1355,7 +1374,7 @@ tboolean-complement--(){ cat << EOP
 
 import logging
 log = logging.getLogger(__name__)
-from opticks.ana.base import opticks_main
+from opticks.ana.main import opticks_main
 from opticks.analytic.csg import CSG  
 
 args = opticks_main(csgpath="$TMP/$FUNCNAME")
@@ -1422,7 +1441,7 @@ tboolean-zsphere0(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null)    
 tboolean-zsphere0-(){ $FUNCNAME- | python $* ; } 
 tboolean-zsphere0--(){ cat << EOP 
 
-from opticks.ana.base import opticks_main
+from opticks.ana.main import opticks_main
 from opticks.analytic.csg import CSG  
 args = opticks_main(csgpath="$TMP/$FUNCNAME")
 
@@ -1483,7 +1502,7 @@ tboolean-zsphere1(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null)    
 tboolean-zsphere1-(){ $FUNCNAME- | python $* ; } 
 tboolean-zsphere1--(){ cat << EOP 
 
-from opticks.ana.base import opticks_main
+from opticks.ana.main import opticks_main
 from opticks.analytic.csg import CSG  
 args = opticks_main(csgpath="$TMP/$FUNCNAME")
 
@@ -1547,7 +1566,7 @@ tboolean-zsphere2(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null)    
 tboolean-zsphere2-(){ $FUNCNAME- | python $* ; } 
 tboolean-zsphere2--(){ cat << EOP 
 
-from opticks.ana.base import opticks_main
+from opticks.ana.main import opticks_main
 from opticks.analytic.csg import CSG  
 args = opticks_main(csgpath="$TMP/$FUNCNAME")
 CSG.kwa = dict(poly="IM", resolution="40", verbosity="0", ctrl="0" )
@@ -1582,7 +1601,7 @@ tboolean-union-zsphere-(){ $FUNCNAME- | python $* ; }
 tboolean-union-zsphere--(){ cat << EOP 
 
 import numpy as np
-from opticks.ana.base import opticks_main
+from opticks.ana.main import opticks_main
 from opticks.analytic.csg import CSG  
 args = opticks_main(csgpath="$TMP/$FUNCNAME")
 
@@ -1633,7 +1652,7 @@ tboolean-difference-zsphere-(){ $FUNCNAME- | python $* ; }
 tboolean-difference-zsphere--(){ cat << EOP 
 
 import numpy as np
-from opticks.ana.base import opticks_main
+from opticks.ana.main import opticks_main
 from opticks.analytic.csg import CSG  
 
 args = opticks_main(csgpath="$TMP/$FUNCNAME")
@@ -1683,7 +1702,7 @@ tboolean-hybrid(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME-) tboolean-- $* ; }
 tboolean-hybrid-combinetest(){ lldb NOpenMeshCombineTest -- $TMP/${FUNCNAME/-combinetest}--/1 ; }
 tboolean-hybrid-(){ $FUNCNAME- | python $* ; } 
 tboolean-hybrid--(){ cat << EOP
-from opticks.ana.base import opticks_main
+from opticks.ana.main import opticks_main
 from opticks.analytic.csg import CSG  
 
 args = opticks_main(csgpath="$TMP/$FUNCNAME")
@@ -1728,7 +1747,7 @@ tboolean-hyctrl-polytest-lldb(){ lldb NPolygonizerTest -- $TMP/${FUNCNAME/-polyt
 tboolean-hyctrl-polytest(){           NPolygonizerTest    $TMP/${FUNCNAME/-polytest}--/1 ; }
 tboolean-hyctrl-(){ $FUNCNAME- | python $* ; } 
 tboolean-hyctrl--(){ cat << EOP
-from opticks.ana.base import opticks_main
+from opticks.ana.main import opticks_main
 from opticks.analytic.csg import CSG  
 
 args = opticks_main(csgpath="$TMP/$FUNCNAME")
@@ -1769,7 +1788,7 @@ tboolean-boxsphere-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; }
 tboolean-boxsphere(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME-) tboolean-- $* ; }
 tboolean-boxsphere-(){ $FUNCNAME- | python $* ; } 
 tboolean-boxsphere--(){ cat << EOP
-from opticks.ana.base import opticks_main
+from opticks.ana.main import opticks_main
 from opticks.analytic.csg import CSG  
 
 args = opticks_main(csgpath="$TMP/$FUNCNAME")
@@ -1797,7 +1816,7 @@ tboolean-uncoincide--(){ cat << EOP
 import logging
 log = logging.getLogger(__name__)
 
-from opticks.ana.base import opticks_main
+from opticks.ana.main import opticks_main
 from opticks.analytic.csg import CSG  
 
 args = opticks_main(csgpath="$TMP/$FUNCNAME")
@@ -1927,7 +1946,7 @@ tboolean-disc--(){ cat << EOP
 
 import logging
 log = logging.getLogger(__name__)
-from opticks.ana.base import opticks_main
+from opticks.ana.main import opticks_main
 from opticks.analytic.csg import CSG  
 
 args = opticks_main(csgpath="$TMP/$FUNCNAME")
@@ -1966,7 +1985,7 @@ con_ = "$(tboolean-container)"
 
 import logging
 log = logging.getLogger(__name__)
-from opticks.ana.base import opticks_main
+from opticks.ana.main import opticks_main
 from opticks.analytic.csg import CSG  
 
 args = opticks_main(csgpath="$TMP/$FUNCNAME")
@@ -2088,7 +2107,7 @@ tboolean-sc--(){ cat << EOP
 
 import logging
 log = logging.getLogger(__name__)
-from opticks.ana.base import opticks_main
+from opticks.ana.main import opticks_main
 
 from opticks.analytic.csg import CSG  
 from opticks.analytic.gdml import GDML
@@ -2171,7 +2190,7 @@ tboolean-positivize--(){ cat << EOP
 
 import logging
 log = logging.getLogger(__name__)
-from opticks.ana.base import opticks_main
+from opticks.ana.main import opticks_main
 
 from opticks.analytic.csg import CSG  
 
@@ -2255,7 +2274,7 @@ tboolean-bsi(){ TESTNAME=$FUNCNAME TESTCONFIG=$(tboolean-boxsphere- intersection
 tboolean-boxsphere-(){ $FUNCNAME- $* | python  ; } 
 tboolean-boxsphere--(){ cat << EOP 
 import math
-from opticks.ana.base import opticks_main
+from opticks.ana.main import opticks_main
 from opticks.analytic.csg import CSG  
 
 args = opticks_main(csgpath="$TMP/$FUNCNAME")
@@ -2312,7 +2331,7 @@ tboolean-segment(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null)    t
 tboolean-segment-(){  $FUNCNAME- | python $* ; }
 tboolean-segment--(){ cat << EOP 
 
-from opticks.ana.base import opticks_main
+from opticks.ana.main import opticks_main
 from opticks.analytic.prism import make_segment
 from opticks.analytic.csg import CSG  
 
@@ -2347,7 +2366,7 @@ tboolean-cysegment(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null)   
 tboolean-cysegment-(){  $FUNCNAME- | python $* ; }
 tboolean-cysegment--(){ cat << EOP 
 
-from opticks.ana.base import opticks_main
+from opticks.ana.main import opticks_main
 from opticks.analytic.prism import make_segment
 from opticks.analytic.csg import CSG  
 
@@ -2390,7 +2409,7 @@ tboolean-cyslab(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null)    tb
 tboolean-cyslab-(){  $FUNCNAME- | python $* ; } 
 tboolean-cyslab--(){ cat << EOP 
 import numpy as np
-from opticks.ana.base import opticks_main
+from opticks.ana.main import opticks_main
 from opticks.analytic.csg import CSG  
 from opticks.analytic.gdml import Primitive  
 args = opticks_main(csgpath="$TMP/$FUNCNAME")
@@ -2467,7 +2486,7 @@ tboolean-undefined(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null)   
 tboolean-undefined-(){  $FUNCNAME- | python $* ; } 
 tboolean-undefined--(){ cat << EOP 
 
-from opticks.ana.base import opticks_main
+from opticks.ana.main import opticks_main
 from opticks.analytic.csg import CSG  
 
 args = opticks_main(csgpath="$TMP/$FUNCNAME")
@@ -2494,7 +2513,7 @@ tboolean-empty(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null) tboole
 tboolean-empty-(){  $FUNCNAME- | python $* ; } 
 tboolean-empty--(){ cat << EOP 
 
-from opticks.ana.base import opticks_main
+from opticks.ana.main import opticks_main
 from opticks.analytic.csg import CSG  
 
 args = opticks_main(csgpath="$TMP/$FUNCNAME")
@@ -2518,7 +2537,7 @@ tboolean-media(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null) tboole
 tboolean-media-(){  $FUNCNAME- | python $* ; } 
 tboolean-media--(){ cat << EOP 
 
-from opticks.ana.base import opticks_main
+from opticks.ana.main import opticks_main
 from opticks.analytic.csg import CSG  
 
 args = opticks_main(csgpath="$TMP/$FUNCNAME")
@@ -2632,7 +2651,7 @@ tboolean-sphere(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null) tbool
 tboolean-sphere-(){  $FUNCNAME- | python $* ; } 
 tboolean-sphere--(){ cat << EOP 
 
-from opticks.ana.base import opticks_main
+from opticks.ana.main import opticks_main
 from opticks.analytic.csg import CSG  
 args = opticks_main(csgpath="$TMP/$FUNCNAME")
 
@@ -2680,7 +2699,7 @@ tboolean-torus--(){ cat << EOP
 
 import logging
 log = logging.getLogger("$FUNCNAME")
-from opticks.ana.base import opticks_main
+from opticks.ana.main import opticks_main
 from opticks.analytic.csg import CSG  
 
 args = opticks_main(csgpath="$TMP/$FUNCNAME")
@@ -2713,7 +2732,7 @@ tboolean-hyperboloid(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null) 
 tboolean-hyperboloid-(){  $FUNCNAME- | python $* ; } 
 tboolean-hyperboloid--(){ cat << EOP 
 
-from opticks.ana.base import opticks_main
+from opticks.ana.main import opticks_main
 from opticks.analytic.csg import CSG  
 
 args = opticks_main(csgpath="$TMP/$FUNCNAME")
@@ -2740,7 +2759,7 @@ tboolean-cubic(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null)    tbo
 tboolean-cubic-(){  $FUNCNAME- | python $* ; } 
 tboolean-cubic--(){ cat << EOP 
 
-from opticks.ana.base import opticks_main
+from opticks.ana.main import opticks_main
 from opticks.analytic.csg import CSG  
 
 args = opticks_main(csgpath="$TMP/$FUNCNAME")
@@ -2816,7 +2835,7 @@ torus:
 """
 
 import math
-from opticks.ana.base import opticks_main
+from opticks.ana.main import opticks_main
 from opticks.analytic.csg import CSG  
 from opticks.analytic.sc import Sc
 
@@ -2979,7 +2998,7 @@ tboolean-ellipsoid(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null)   
 tboolean-ellipsoid-(){  $FUNCNAME- | python $* ; } 
 tboolean-ellipsoid--(){ cat << EOP 
 import numpy as np
-from opticks.ana.base import opticks_main
+from opticks.ana.main import opticks_main
 from opticks.analytic.csg import CSG  
 from opticks.analytic.gdml import Primitive  
 args = opticks_main(csgpath="$TMP/$FUNCNAME")
@@ -3023,7 +3042,7 @@ tboolean-spseg(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null)    tbo
 tboolean-spseg-(){  $FUNCNAME- | python $* ; } 
 tboolean-spseg--(){ cat << EOP 
 import numpy as np
-from opticks.ana.base import opticks_main
+from opticks.ana.main import opticks_main
 from opticks.analytic.csg import CSG  
 from opticks.analytic.gdml import Primitive  
 args = opticks_main(csgpath="$TMP/$FUNCNAME")
@@ -3059,7 +3078,7 @@ tboolean-sphereslab(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null)  
 tboolean-sphereslab-(){  $FUNCNAME- | python $* ; } 
 tboolean-sphereslab--(){ cat << EOP 
 import numpy as np
-from opticks.ana.base import opticks_main
+from opticks.ana.main import opticks_main
 from opticks.analytic.csg import CSG  
 args = opticks_main(csgpath="$TMP/$FUNCNAME")
 
@@ -3112,7 +3131,7 @@ tboolean-sphereplane-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; }
 tboolean-sphereplane(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME-) tboolean-- $* ; }
 tboolean-sphereplane-(){  $FUNCNAME- | python $* ; } 
 tboolean-sphereplane--(){ cat << EOP 
-from opticks.ana.base import opticks_main
+from opticks.ana.main import opticks_main
 from opticks.analytic.csg import CSG  
 args = opticks_main(csgpath="$TMP/$FUNCNAME")
 
@@ -3146,7 +3165,7 @@ tboolean-boxplane-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; }
 tboolean-boxplane(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null)    tboolean-- $* ; }
 tboolean-boxplane-(){  $FUNCNAME- | python $* ; } 
 tboolean-boxplane--(){ cat << EOP 
-from opticks.ana.base import opticks_main
+from opticks.ana.main import opticks_main
 from opticks.analytic.csg import CSG  
 args = opticks_main(csgpath="$TMP/$FUNCNAME")
 
@@ -3170,7 +3189,7 @@ tboolean-plane-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; }
 tboolean-plane(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null)    tboolean-- $* ; }
 tboolean-plane-(){ $FUNCNAME- | python $* ; } 
 tboolean-plane--(){ cat << EOP 
-from opticks.ana.base import opticks_main
+from opticks.ana.main import opticks_main
 from opticks.analytic.csg import CSG  
 args = opticks_main(csgpath="$TMP/$FUNCNAME")
 
@@ -3208,7 +3227,7 @@ tboolean-cy(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME-) tboolean-- $* ; }
 tboolean-cy-(){  $FUNCNAME- | python $* ; } 
 tboolean-cy--(){ cat << EOP 
 import numpy as np
-from opticks.ana.base import opticks_main
+from opticks.ana.main import opticks_main
 from opticks.analytic.csg import CSG  
 args = opticks_main(csgpath="$TMP/$FUNCNAME")
 
@@ -3247,7 +3266,7 @@ tboolean-cyd(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME-) TORCHCONFIG=$($FUNCN
 tboolean-cyd-(){  $FUNCNAME- | python $* ; } 
 tboolean-cyd--(){ cat << EOP 
 import numpy as np
-from opticks.ana.base import opticks_main
+from opticks.ana.main import opticks_main
 from opticks.analytic.csg import CSG  
 args = opticks_main(csgpath="$TMP/$FUNCNAME")
 
@@ -3298,7 +3317,7 @@ tboolean-cylinder(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME-) tboolean-- $* ;
 tboolean-cylinder-(){  $FUNCNAME- | python $* ; } 
 tboolean-cylinder--(){ cat << EOP 
 import numpy as np
-from opticks.ana.base import opticks_main
+from opticks.ana.main import opticks_main
 from opticks.analytic.csg import CSG  
 
 args = opticks_main(csgpath="$TMP/$FUNCNAME")
@@ -3345,7 +3364,7 @@ tboolean-fromstring(){  TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME-) tboolean-- $
 tboolean-fromstring-(){ $FUNCNAME- | python ; }
 tboolean-fromstring--(){ cat << EOP
 
-from opticks.ana.base import opticks_main
+from opticks.ana.main import opticks_main
 from opticks.analytic.csg import CSG  
 from opticks.analytic.gdml import Primitive
 
@@ -3375,7 +3394,7 @@ tboolean-unbalanced-(){ $FUNCNAME- | python $*  ; }
 tboolean-unbalanced--(){  cat << EOP 
 import math, logging
 log = logging.getLogger(__name__)
-from opticks.ana.base import opticks_main
+from opticks.ana.main import opticks_main
 from opticks.analytic.csg import CSG  
 
 args = opticks_main(csgpath="$TMP/$FUNCNAME")
@@ -3481,7 +3500,7 @@ tboolean-gds-(){ $FUNCNAME- | python $* ; }
 tboolean-gds--(){ cat << EOP
 import logging
 log = logging.getLogger(__name__)
-from opticks.ana.base import opticks_main
+from opticks.ana.main import opticks_main
 from opticks.analytic.csg import CSG  
 
 args = opticks_main(csgpath="$TMP/$FUNCNAME")
@@ -3587,7 +3606,7 @@ tboolean-interlocked(){  TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME-) tboolean-- 
 tboolean-interlocked-(){ $FUNCNAME- | python $* ; }
 tboolean-interlocked--(){ cat << EOP 
 import math
-from opticks.ana.base import opticks_main
+from opticks.ana.main import opticks_main
 from opticks.analytic.csg import CSG  
 
 args = opticks_main(csgpath="$TMP/$FUNCNAME")

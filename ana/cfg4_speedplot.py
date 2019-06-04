@@ -10,8 +10,9 @@ log = logging.getLogger(__name__)
 
 import matplotlib.pyplot as plt
 
-from opticks.ana.base import opticks_environment
-from opticks.ana.metadata import Metadata, Catdir
+from opticks.ana.metadata import Metadata
+from opticks.ana.catdir import Catdir
+
 
 
 def speedplot(cat, tag, a, landscape=False, ylim=None, log_=False):
@@ -90,17 +91,14 @@ def speedplot(cat, tag, a, landscape=False, ylim=None, log_=False):
 
 
 if __name__ == '__main__':
-    logging.basicConfig(level=logging.INFO)    
-    opticks_environment()
+    from opticks.ana.main import opticks_main
+    ok = opticks_main() 
 
-    #cat, tag = "rainbow", "6"
-    cat, tag = "PmtInBox", "4"
-    
-    catd = Catdir(cat)
-    a = catd.times(tag)
+    cat = Catdir(ok.catdir)
+    a = cat.times(ok.tag)
 
 
 if 1:
-    speedplot(cat, tag, a, landscape=True, ylim=[0.1, 60], log_=True)
+    speedplot(cat, ok.tag, a, landscape=True, ylim=[0.1, 60], log_=True)
     
 

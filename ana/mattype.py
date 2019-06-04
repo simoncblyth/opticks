@@ -48,7 +48,6 @@ import os, sys, datetime, logging
 log = logging.getLogger(__name__)
 import numpy as np
 
-from opticks.ana.base import opticks_main
 from opticks.ana.base import Abbrev, ItemList 
 from opticks.ana.seq import SeqType, SeqAna
 from opticks.ana.proplib import PropLib
@@ -64,11 +63,12 @@ def test_roundtrip(mt):
        MO Py MO MO Py OV Vm MO : 4dbe44e4 : MO Py MO MO Py OV Vm MO
 
     """
-    s = "MO Py MO MO Py OV Vm MO"
+    #s = "MO Py MO MO Py OV Vm MO"
+    s = "Ml Px Ml Ml Px Om Vm Ml"   ## huh why the capital casing not working ? These are first last 
     i = mt.code(s)
     l = mt.label(i)
     print "%s : %x : %s" % (s, i, l )
-    assert l == s 
+    assert l == s, (l,s) 
 
 class MatType(SeqType):
     """
@@ -112,7 +112,8 @@ class MatType(SeqType):
 
 
 if __name__ == '__main__':
-    args = opticks_main(det="PmtInBox", src="torch", tag="10")
+    from opticks.ana.main import opticks_main
+    ok = opticks_main()
 
     #mn = ItemList("GMaterialLib")
     #ab = Abbrev("$OPTICKS_DETECTOR_DIR/GMaterialLib/abbrev.json")
@@ -121,7 +122,7 @@ if __name__ == '__main__':
     test_roundtrip(mt)
 
     try:
-        ph = A.load_("ph",args.src,args.tag,args.det)
+        ph = A.load_("ph",ok.src,ok.tag,ok.det, pfx=ok.pfx)
     except IOError as err:
         log.fatal(err)
         sys.exit(1) 
@@ -129,8 +130,8 @@ if __name__ == '__main__':
     log.info("loaded ph %s %s %s " % ( ph.path, ph.stamp, repr(ph.shape)))
 
     seqmat = ph[:,0,1]
-    ma = SeqAna.for_evt(mt, args.tag, args.src, args.det, offset=SEQMAT)
-    print ma.table
+    ma = SeqAna.for_evt(mt, ok.tag, ok.src, ok.det, pfx=ok.pfx, offset=SEQMAT)
+    print(ma.table)
 
 
 

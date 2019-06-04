@@ -70,7 +70,8 @@ class BRAP_API BTimes {
      void load(const char* dir);
      void load(const char* dir, const char* name);
   public:
-     static BTimes* load(const char* label, const char* dir, const char* name);
+     static BTimes* Load(const char* label, const char* dir, const char* name);
+     static BTimes* Load(const char* label, const char* dir );
   private:
      VSD         m_times ;  
      double      m_scale ; 

@@ -7,7 +7,6 @@
 #include "Opticks.hh"
 #include "OpticksEvent.hh"
 #include "OpticksBufferControl.hh"
-#include "OpticksCfg.hh"
 
 // opticksgeo-
 #include "OpticksHub.hh"
@@ -37,7 +36,7 @@ const plog::Severity OPropagator::LEVEL = debug ;
 
 void OPropagator::setOverride(unsigned int override_)
 {
-    m_override = override_ ; 
+    m_propagateoverride = override_ ; 
 }
 void OPropagator::setEntry(unsigned int entry_index)
 {
@@ -51,9 +50,8 @@ OPropagator::OPropagator(Opticks* ok, OEvent* oevt, OpticksEntry* entry)
     m_oevt(oevt),
     m_ocontext(m_oevt->getOContext()),
     m_context(m_ocontext->getContext()),
-    m_cfg(m_ok->getCfg()),
     m_orng(new ORng(m_ok, m_ocontext)),
-    m_override(m_cfg->getOverride()),
+    m_propagateoverride(m_ok->getPropagateOverride()),
     m_nopropagate(false),
     m_entry(entry),
     m_entry_index(entry->getIndex()),
@@ -140,7 +138,7 @@ void OPropagator::prelaunch()
     OpticksEvent* evt = m_oevt->getEvent(); 
 
     unsigned numPhotons = evt->getNumPhotons(); 
-    setSize( m_override > 0 ? m_override : numPhotons ,  1 );
+    setSize( m_propagateoverride > 0 ? m_propagateoverride : numPhotons ,  1 );
     setNoPropagate(m_ok->hasOpt("nopropagate"));
 
     BTimes* prelaunch_times = evt->getPrelaunchTimes() ;
@@ -168,14 +166,15 @@ void OPropagator::launch()
     OpticksEvent* evt = m_oevt->getEvent(); 
     BTimes* launch_times = evt->getLaunchTimes() ;
 
-    OK_PROFILE("_OPropagator::launch");
-
     const char* llogpath = m_ocontext->getPrintIndexLogPath() ; 
 
     LOG(error) << "LAUNCH NOW " << ( llogpath ? llogpath : "-" ) ; 
+
+    OK_PROFILE("_OPropagator::launch");
     m_ocontext->launch( OContext::LAUNCH,  m_entry_index,  m_width, m_height, launch_times);
-    LOG(error) << "LAUNCH DONE" ; 
     OK_PROFILE("OPropagator::launch");
+
+    LOG(error) << "LAUNCH DONE" ; 
 
     LOG(info) << brief() ;
     launch_times->dump("OPropagator::launch");

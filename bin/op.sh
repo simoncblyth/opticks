@@ -828,6 +828,18 @@ op-runline()
 }
 
 
+op-postline()
+{
+   local postline
+   if [ "${OPTICKS_DBG}" == "2" ]; then 
+       postline="strace.py -f O_CREAT"  
+   else
+       postline="echo $FUNCNAME : dummy"
+   fi
+   echo $postline 
+}
+
+
 op-malloc()
 {
    export MallocStackLoggingNoCompact=1   # all allocations are logged
@@ -873,6 +885,7 @@ op-cmdline-parse
 op-lldb-update
 
 runline=$(op-runline)
+postline=$(op-postline)
 
 
 op-export
@@ -914,6 +927,11 @@ else
 
    RC=$?
    echo $0 RC $RC
+
+   #[ $RC -eq 0 ] && eval $postline 
+   eval $postline 
+
+
    exit $RC
 
    cat << EOC

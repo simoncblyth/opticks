@@ -101,7 +101,8 @@ class OKCORE_API OpticksCfg : public BCfg {
      int          getAnalyticMesh() const ; 
      int          getCameraType() const ; 
      int          getModulo(); 
-     int          getOverride(); 
+     int          getGenerateOverride(); 
+     int          getPropagateOverride(); 
 
      int          getDebugIdx() const ; 
      int          getDbgNode() const ;  
@@ -219,7 +220,8 @@ private:
      int         m_analyticmesh; 
      int         m_cameratype; 
      int         m_modulo ; 
-     int         m_override ; 
+     int         m_generateoverride ; 
+     int         m_propagateoverride ; 
      int         m_debugidx ; 
      int         m_dbgnode ; 
      int         m_dbgmm ; 

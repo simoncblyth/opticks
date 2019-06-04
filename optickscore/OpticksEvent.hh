@@ -92,6 +92,8 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec
       // saveIndex
       friend class OpIndexerApp ; 
    public:
+      static const char* PRELAUNCH_LABEL ;  
+      static const char* LAUNCH_LABEL ;  
       static const char* PARAMETERS_NAME ;  
       static const char* PARAMETERS_STEM ;  
       static const char* PARAMETERS_EXT ;  

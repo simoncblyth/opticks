@@ -9,7 +9,6 @@ import os, datetime, logging, sys
 log = logging.getLogger(__name__)
 import numpy as np
 
-from opticks.ana.base import opticks_main
 from opticks.ana.base import PhotonMaskFlags
 from opticks.ana.seq import MaskType, SeqTable, SeqAna
 from opticks.ana.nbase import count_unique_sorted
@@ -47,13 +46,15 @@ def test_HisMask_SeqAna(aa, af):
 
 
 if __name__ == '__main__':
-     args = opticks_main(src="torch", tag="10", det="PmtInBox")
+     from opticks.ana.main import opticks_main
+     #ok = opticks_main(src="torch", tag="10", det="PmtInBox")
+     ok = opticks_main()
 
      af = HisMask()
      test_HisMask(af)
 
      try:
-         ht = A.load_("ht",args.src,args.tag,args.det)
+         ht = A.load_("ht",ok.src,ok.tag,ok.det, pfx=ok.pfx)
          log.info("loaded ht %s %s shape %s " %  (ht.path, ht.stamp, repr(ht.shape)))
          #test_HisMask_SeqTable(ht, af)
          test_HisMask_SeqAna(ht, af)
@@ -61,7 +62,7 @@ if __name__ == '__main__':
          log.warning("no ht")
 
      try:
-         ox = A.load_("ox",args.src,args.tag,args.det)
+         ox = A.load_("ox",ok.src,ok.tag,ok.det, pfx=ok.pfx)
          log.info("loaded ox %s %s shape %s " %  (ox.path, ox.stamp, repr(ox.shape)))
          #test_HisMask_SeqTable(ox, af)
          test_HisMask_SeqAna(ox, af)

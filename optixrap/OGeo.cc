@@ -588,6 +588,7 @@ optix::Geometry OGeo::makeAnalyticGeometry(GMergedMesh* mm, unsigned lod)
 {
     m_lodidx = lod ; 
     bool dbgmm = m_ok->getDbgMM() == int(mm->getIndex()) ;  
+    bool dbganalytic = m_ok->hasOpt("dbganalytic") ; 
 
 
     if(m_verbosity > 2 || dbgmm)
@@ -613,8 +614,13 @@ optix::Geometry OGeo::makeAnalyticGeometry(GMergedMesh* mm, unsigned lod)
         LOG(debug) << " skip GParts::close " ; 
     }
     
-    LOG(info) << "mm " << mm->getIndex() << " pts: " << pts->desc() ; 
-
+    LOG(info) << "mm " << mm->getIndex() 
+              << " verbosity: " << m_verbosity   
+              << ( dbgmm ? " --dbgmm " : " " )
+              << ( dbganalytic ? " --dbganalytic " : " " )
+              << " pts: " << pts->desc() 
+              ;  
+ 
     if(dbgmm)
     {
         LOG(fatal) << "dumping as instructed by : --dbgmm " << m_ok->getDbgMM() ;   
@@ -622,7 +628,7 @@ optix::Geometry OGeo::makeAnalyticGeometry(GMergedMesh* mm, unsigned lod)
     }
 
 
-    if(m_verbosity > 3 || m_ok->hasOpt("dbganalytic") || dbgmm ) pts->fulldump("--dbganalytic/--dbgmm", 10) ;
+    if(m_verbosity > 3 || dbganalytic || dbgmm ) pts->fulldump("--dbganalytic/--dbgmm", 10) ;
 
     NPY<float>*     partBuf = pts->getPartBuffer(); assert(partBuf && partBuf->hasShape(-1,4,4));    // node buffer
     NPY<float>*     tranBuf = pts->getTranBuffer(); assert(tranBuf && tranBuf->hasShape(-1,3,4,4));  // transform triples (t,v,q) 

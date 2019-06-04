@@ -1,7 +1,16 @@
 #!/usr/bin/env python
+"""
+nload.py
+==========
+
+::
+
+   cd /tmp
+   OPTICKS_EVENT_BASE=tboolean-box nload.py
+
+"""
 import os, sys, logging, datetime
 log = logging.getLogger(__name__)
-
 
 try:
     from StringIO import StringIO
@@ -10,15 +19,7 @@ except ImportError:
 pass
 
 import numpy as np
-from opticks.ana.base import opticks_main, ini_
-
-#DEFAULT_BASE = "$LOCAL_BASE/env/opticks"
-#DEFAULT_BASE = "$OPTICKS_EVENT_BASE/evt"
-DEFAULT_BASE = "$OPTICKS_EVENT_BASE/$0/evt"
-
-DEFAULT_DIR_TEMPLATE = DEFAULT_BASE + "/$1/$2/$3"  ## cf C++  brap- BOpticksEvent
-
-
+from opticks.ana.base import ini_
 
 
 def stmp_(st, fmt="%Y%m%d-%H%M"): 
@@ -37,6 +38,7 @@ def x_(_):
     log.info( " %s -> %s (%s) " % (_, p, st))
     return p  
 
+txt_ = lambda _:np.loadtxt(StringIO(_))
 
 
 def np_load(base,sub=None,rel=None):
@@ -55,17 +57,22 @@ def np_load(base,sub=None,rel=None):
     return a
 
 
-txt_ = lambda _:np.loadtxt(StringIO(_))
+DEFAULT_BASE = "$OPTICKS_EVENT_BASE/$0/evt"
+DEFAULT_DIR_TEMPLATE = DEFAULT_BASE + "/$1/$2/$3"  ## cf C++  brap- BOpticksEvent
 
-
-#def adir_(typ, tag, det="dayabay", name=None):
-#    tmpl = os.path.expandvars(DEFAULT_DIR_TEMPLATE.replace("$1", det).replace("$2",typ).replace("$3",tag)) 
-#    return tmpl
-
-def tagdir_(det, typ, tag, pfx="source", layout=2):
+def tagdir_(det, typ, tag, pfx=".", layout=2):
     """
     layout version 1 (which is still used for source gensteps) does
     not have the tag in the directory 
+
+    OPTICKS_EVENT_BASE
+        in direct running this is the geocache directory, with "$0" pfx
+        being the name of the executable or "source" for the primary (geocache creating)
+        executable
+
+        for test running from legacy basis geometry this is for example /tmp
+        with pfx being the name of the test eg "tboolean-box"      
+
     """
     log.debug("tagdir_ det %s typ %s tag %s layout %s DEFAULT_DIR_TEMPLATE %s " % (det,typ,tag,layout, DEFAULT_DIR_TEMPLATE))
     log.debug("tagdir_ type(tag) %s " % type(tag)) 
@@ -82,20 +89,24 @@ def tagdir_(det, typ, tag, pfx="source", layout=2):
         tmpl = tmpl.replace("$0", pfx)
         tmpl = tmpl.replace("$1", det)
         tmpl = tmpl.replace("$2", typ)
-        tmpl = tmpl.replace("$3", str(tag))
+        if tag is not None:  
+            tmpl = tmpl.replace("$3", str(tag))
+        else:
+            tmpl = tmpl.replace("$3", "/")
+        pass
     else:
         assert 0, "bad layout"
 
     log.debug("tagdir_ tmpl %s " % tmpl )
     xdir = os.path.expandvars(tmpl)
+    while xdir.endswith("/"):xdir = xdir[:-1]
 
     if not os.path.exists(xdir):
         log.error("NON EXISTING tagdir : %s  expanded from %s " % (xdir, DEFAULT_DIR_TEMPLATE))
         log.error("As relative paths are used with test geometry running, subsequent scripts or executables that intend to reuse data should be invoked from the same directory." )
-        assert 0 
+        assert 0, (xdir, tmpl, DEFAULT_DIR_TEMPLATE)
     pass
     return xdir
-
 
 
 def typdirs_(evtdir=None):
@@ -116,8 +127,6 @@ def typdirs_(evtdir=None):
         pass
     pass
     return typdirs
-
-
 
 def path_(typ, tag, det="dayabay", name=None, pfx="source" ):
     """
@@ -154,9 +163,6 @@ def path_(typ, tag, det="dayabay", name=None, pfx="source" ):
         assert 0, "bad layout"
     pass
     return tmpl 
-
-
-
 
 
 def tpaths_(typ, tag, det="dayabay", name=None, pfx="source"):
@@ -318,14 +324,15 @@ class II(list):
 
 
 if __name__ == '__main__':
-
-    args = opticks_main(src="torch", tag="10", det="PmtInBox")
+    from opticks.ana.main import opticks_main
+    #ok = opticks_main(src="torch", tag="10", det="PmtInBox")
+    ok = opticks_main()
 
     try:
-        i = I.load_(typ=args.src, tag=args.tag, det=args.det, pfx="source", name="t_delta.ini")
+        i = I.load_(typ=ok.src, tag=ok.tag, det=ok.det, pfx=ok.pfx, name="DeltaTime.ini")
     except IOError as err:
         log.fatal(err)
-        sys.exit(args.mrc)
+        sys.exit(ok.mrc)
 
     log.info(" loaded i %s %s " % (i.path, i.stamp))
     print("\n".join([" %20s : %s " % (k,v) for k,v in i.items()]))

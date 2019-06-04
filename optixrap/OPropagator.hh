@@ -9,7 +9,6 @@ template <typename T> class NPY ;
 class OpticksEvent ; 
 class OpticksEntry ; 
 class Opticks ; 
-template <typename T> class OpticksCfg ;
 class OpticksHub ; 
 
 #include "OXPPNS.hh"
@@ -60,10 +59,9 @@ class OXRAP_API OPropagator {
         OEvent*              m_oevt ; 
         OContext*            m_ocontext ; 
         optix::Context       m_context ;
-        OpticksCfg<Opticks>* m_cfg ; 
         ORng*                m_orng ; 
 
-        int                  m_override ; 
+        int                  m_propagateoverride ; 
         bool                 m_nopropagate ; 
 
         OpticksEntry*        m_entry ; 

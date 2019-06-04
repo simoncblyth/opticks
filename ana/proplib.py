@@ -36,7 +36,7 @@ Example data shapes::
 """
 import os, logging, numpy as np
 log = logging.getLogger(__name__)
-from opticks.ana.base import opticks_environment, stamp_
+from opticks.ana.base import stamp_
 from opticks.ana.dat import Dat
 from opticks.ana.nload import np_load
 
@@ -202,7 +202,9 @@ class PropLib(object):
         return "\n".join([self.brief] + self.paths + map(stamp_, self.paths)) 
 
     def index(self, name):
-        return self.names.index(name)
+        #return self.names.index(name)
+        return np.where( self._names == name )[0][0]
+
 
     def interp(self, name, wavelengths, k=0):
         idx = list(self.names).index(name)
@@ -271,17 +273,14 @@ class PropLib(object):
 
 
 if __name__ == '__main__':
-
-    logging.basicConfig(level=logging.INFO)
-    opticks_environment()
+    from opticks.ana.main import opticks_main
+    ok = opticks_main()
 
     mlib = PropLib("GMaterialLib") 
     slib = PropLib("GSurfaceLib") 
-    #blib = PropLib("GBndLib") 
 
-
-if 0:
     idx = mlib.index("Water")
+    print("idx:%s " % idx)
 
     m1 = "Water"
     wavelength = 442  
@@ -289,7 +288,10 @@ if 0:
 
     print "m1 %s wl %s ri %s " % (m1, wavelength, ri)
 
-
-    op = blib.optical
+   
+    # not working , perhaps due to the move to dynamic long ago 
+    #blib = PropLib("GBndLib") 
+    #op = blib.optical
+    #print("op:%s" % op)
 
 

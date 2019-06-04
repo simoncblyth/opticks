@@ -35,7 +35,7 @@ TODO:
 class NPY_API NEmitPhotonsNPY 
 {
    public:
-      NEmitPhotonsNPY(NCSG* csg, unsigned gencode, unsigned seed, bool emitdbg, NPY<unsigned>* mask);
+      NEmitPhotonsNPY(NCSG* csg, unsigned gencode, unsigned seed, bool emitdbg, NPY<unsigned>* mask, int num_photons=-1 );
 
       NPY<float>* getPhotons() const ;
       NPY<float>* getPhotonsRaw() const  ;
@@ -60,6 +60,7 @@ class NPY_API NEmitPhotonsNPY
       int            m_emit ; 
       const char*    m_emitcfg_ ;
       NEmitConfig*   m_emitcfg  ;       
+      int            m_num_photons ;  
       nnode*         m_root ; 
    private:
       // products 

@@ -64,10 +64,20 @@ void OpticksAna::setEnv()
 {
     if(m_ok->isTest())
     {
+
+        /*
         const char* key = "OPTICKS_EVENT_BASE" ;  
         const char* evtbase = BResource::GetDir("evtbase"); 
         LOG(info) << " setting envvar key " << key << " evtbase " << evtbase ; 
         SSys::setenvvar(key, evtbase ); 
+
+        formerly thought should be example specific /tmp/tboolean-box
+        but now think that is a mistake, much better for OPTICKS_EVENT_BASE 
+        to be more stable than that and not include specifics, 
+        eg /tmp OR /tmp/$USER/opticks
+
+        */ 
+
     }
 }
 

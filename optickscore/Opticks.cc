@@ -1930,6 +1930,17 @@ int Opticks::getCameraType() const
     return m_cfg->getCameraType();
 }
 
+int Opticks::getGenerateOverride() const 
+{
+    return m_cfg->getGenerateOverride();
+}
+int Opticks::getPropagateOverride() const 
+{
+    return m_cfg->getPropagateOverride();
+}
+
+
+
 
 
 float Opticks::getTimeMin()

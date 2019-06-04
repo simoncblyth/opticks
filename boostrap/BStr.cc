@@ -2,6 +2,7 @@
 #include <sstream>
 #include <sstream>
 #include <iostream>
+#include <csignal>
 
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string.hpp>
@@ -605,9 +606,12 @@ int BStr::ekv_split( std::vector<std::pair<std::string, std::string> > & ekv, co
         else
         {
             if(warn)
-                LOG(warning) << "ignoring malformed kv [" << s.c_str() << "]" ; 
+            {
+                LOG(error) << "ignoring malformed kv [" << s.c_str() << "]" ; 
+                LOG(error) << "line [" << line << "]" ; 
+            }
             err++ ; 
-            //assert(0); 
+            std::raise(SIGINT);
         }
     }
     return err ; 

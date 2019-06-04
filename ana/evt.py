@@ -1,5 +1,13 @@
 #!/usr/bin/env python
+"""
 
+::
+
+    export OPTICKS_ANA_DEFAULTS="det=tboolean-box,src=torch,tag=1,pfx=tboolean-box"
+    export OPTICKS_EVENT_BASE=/tmp       # <-- set this to the test invokation directory 
+
+
+"""
 import os, logging, stat, datetime
 import numpy as np
 
@@ -10,8 +18,7 @@ except ImportError:
 
 from collections import OrderedDict as odict
 
-from opticks.ana.base import opticks_environment
-from opticks.ana.base import opticks_main, stamp_
+from opticks.ana.base import stamp_
 from opticks.ana.ctx import Ctx
 from opticks.ana.nbase import count_unique, vnorm
 from opticks.ana.nload import A, I, II, tagdir_
@@ -20,6 +27,10 @@ from opticks.ana.histype import HisType
 from opticks.ana.hismask import HisMask
 from opticks.ana.mattype import MatType 
 from opticks.ana.metadata import Metadata
+from opticks.ana.nibble import msk_, nib_, make_msk, make_nib
+
+msk = make_msk(16)
+nib = make_nib(16)
 
 
 def count_nonzero(a):
@@ -32,13 +43,6 @@ costheta_ = lambda a,b:np.sum(a * b, axis = 1)/(vnorm(a)*vnorm(b))
 ntile_ = lambda vec,N:np.tile(vec, N).reshape(-1, len(vec))
 cross_ = lambda a,b:np.cross(a,b)/np.repeat(vnorm(a),3).reshape(-1,3)/np.repeat(vnorm(b),3).reshape(-1,3)
 norm_ = lambda a:a/np.repeat(vnorm(a), 3).reshape(-1,3)
-
-
-from opticks.ana.nibble import msk_, nib_, make_msk, make_nib
-
-msk = make_msk(16)
-nib = make_nib(16)
-
 
 
 deg = np.pi/180.
@@ -250,8 +254,18 @@ class Evt(object):
         self.histype = HisType()
 
         testcsgpath = self.metadata.TestCSGPath
+        log.info("testcsgpath %s " %  testcsgpath)
+
         if testcsgpath is not None:
-            mattype = MatType(reldir=os.path.abspath(os.path.join(testcsgpath,"GItemList")))
+            #reldir=os.path.abspath(os.path.join(testcsgpath,"GItemList"))  
+            # ^^^^^^^^^^^^^^^^^^^^^^^^^ this assumes invoking dir is OPTICKS_EVENT_BASE wghen testcsgpath is relative
+            if testcsgpath[0] == "/":
+                reldir = os.path.join(testcsgpath, "GItemList")
+            else:
+                reldir = os.path.expandvars(os.path.join("$OPTICKS_EVENT_BASE", testcsgpath, "GItemList" ))
+            pass
+            log.info("reldir %s " % reldir) 
+            mattype = MatType(reldir=reldir)
         else:
             mattype = MatType()
         pass
@@ -1768,10 +1782,11 @@ def deviation_plt(evt):
 
 
 if __name__ == '__main__':
-    ok = opticks_main(tag="1", src="torch", det="tboolean-box", smry=False)
+    from opticks.ana.main import opticks_main
+    #ok = opticks_main(tag="1", src="torch", det="tboolean-box", smry=False)
+    ok = opticks_main()
 
-
-    a = Evt(tag="%s"%ok.utag, src=ok.src, det=ok.det, args=ok)
+    a = Evt(tag="%s"%ok.utag, src=ok.src, det=ok.det, pfx=ok.pfx, args=ok)
     print(a.seqhis_ana.table[0:20])
 
     # b = Evt(tag="-%s"%ok.utag, src=ok.src, det=ok.det, args=ok)

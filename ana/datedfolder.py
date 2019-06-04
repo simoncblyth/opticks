@@ -57,8 +57,12 @@ class DatedFolder(object):
         the same datestamp datedfolder name.
         So there can be more dirs that corresponding dfolds and dtimes.
         """
+        while base.endswith("/"):
+            base = base[:-1]
+        pass
+
         df = cls()
-        log.debug("DatedFolder.find searching for date stamped folders beneath : %s " % base)
+        log.info("DatedFolder.find searching for date stamped folders beneath : %s " % base)
         metamap = {}
         dirs = finddir(base, df)                       
 
@@ -68,13 +72,14 @@ class DatedFolder(object):
  
     def __call__(self, path):
         name = os.path.basename(path) 
+        #log.info(name)
         return dateparser(name)
 
 
 if __name__ == '__main__':
      logging.basicConfig(level=logging.INFO)
      base = sys.argv[1] if len(sys.argv) > 1 else "." 
-     dirs, dfolds = DatedFolder.find(base)
+     dirs, dfolds, dtimes = DatedFolder.find(base)
 
      print("\n".join(dfolds))
      for df in sorted(dfolds):

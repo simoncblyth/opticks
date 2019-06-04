@@ -1,20 +1,18 @@
 #!/bin/bash -l
 
 arg=${1:-box}
+shift
 
 cd /tmp
 
-echo ====== $0 $* ====== PWD $PWD ========= arg $arg ========
+echo ====== $0 $arg $* ====== PWD $PWD =================
 
 tboolean-
-cmd="tboolean-$arg --okg4 --compute --strace --dbgemit --args"
+cmd="tboolean-$arg --okg4 --compute $*"
+
 echo $cmd
 eval $cmd
-rc=$?
 
-strace.py -f O_CREAT
-
-
-echo ====== $0 $* ====== PWD $PWD ========= arg $arg ======== RC $rc =======
+echo ====== $0 $arg $* ====== PWD $PWD ============ RC $rc =======
 
 exit $rc

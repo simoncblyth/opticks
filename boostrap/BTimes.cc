@@ -92,12 +92,20 @@ void BTimes::save(const char* dir)
 }
 
 
-BTimes* BTimes::load(const char* label, const char* dir, const char* name_)
+BTimes* BTimes::Load(const char* label, const char* dir, const char* name_)
 {
     BTimes* t = new BTimes(label) ;
     t->load(dir, name_);
     return t ; 
 }
+BTimes* BTimes::Load(const char* label, const char* dir )
+{
+    BTimes* t = new BTimes(label) ;
+    t->load(dir);
+    return t ; 
+}
+
+
 void BTimes::load(const char* dir, const char* name_)
 {
     BList<std::string, double>::load( &m_times, dir, name_);

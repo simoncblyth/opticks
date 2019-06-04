@@ -1,12 +1,15 @@
 #!/usr/bin/env python
 """
+dat.py
+========
+
+
+
+
 """
 
 import os, logging, numpy as np
 log = logging.getLogger(__name__)
-
-from opticks.ana.base import opticks_main 
-
 
 
 class Dat(object):
@@ -81,9 +84,12 @@ class Dat(object):
 
 
 if __name__ == '__main__':
+    from opticks.ana.main import opticks_main 
     ok = opticks_main()
 
     a = np.load(os.path.expandvars("$IDPATH/GBndLib/GBndLib.npy"))
-
     d = Dat(a, None, "omat osur isur imat".split(), "g0 g1".split())
+
+    print(d)
+
 

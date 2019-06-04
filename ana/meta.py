@@ -13,7 +13,6 @@ import os, re, logging, sys
 import numpy as np
 log = logging.getLogger(__name__)
 
-from opticks.ana.base import opticks_main
 from opticks.ana.base import ini_, json_, splitlines_
 from opticks.ana.datedfolder import DatedFolder, dateparser
 
@@ -28,6 +27,8 @@ class Meta(object):
         """
         self.path = path
         self.base = base
+         
+
         absdir = os.path.join(base, path) 
         self.absdir = absdir 
 
@@ -50,18 +51,28 @@ class Meta(object):
             pass
         pass
 
+
+    def __getitem__(self, kspec):
+        elem = kspec.split(".")
+        assert len(elem) == 2
+        top, key = elem 
+        assert top in self.d, (top, d.keys())
+        p = self.d[top]
+        return p.get(key, -1)
+
     def __repr__(self):
         return "%50s : %30s : %20s : %s " % ( self.path, self.parentfold, self.timestamp, repr(self.d.keys()) )
 
 
 if __name__ == '__main__':
-     logging.basicConfig(level=logging.INFO)
-     base = sys.argv[1] if len(sys.argv) > 1 else "." 
-     dirs = DatedFolder.find(base)
+    base = sys.argv[1] if len(sys.argv) > 1 else "." 
+    dirs, dfolds, dtimes = DatedFolder.find(base)
+    assert len(dfolds) == len(dtimes)
 
-     for p in dirs:
-         m = Meta(p, base)
-         print(m)
+    for p in dirs:
+        m = Meta(p, base)
+        print(m)
+    pass
 
     
     

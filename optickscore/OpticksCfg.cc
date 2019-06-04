@@ -91,7 +91,8 @@ OpticksCfg<Listener>::OpticksCfg(const char* name, Listener* listener, bool live
        m_analyticmesh(-1),
        m_cameratype(0),
        m_modulo(-1),
-       m_override(-1),
+       m_generateoverride(-1),
+       m_propagateoverride(-1),
        m_debugidx(0),
        m_dbgnode(-1),
        m_dbgmm(-1),
@@ -641,10 +642,20 @@ void OpticksCfg<Listener>::init()
    m_desc.add_options()
        ("modulo",  boost::program_options::value<int>(&m_modulo), modulo );
 
-   char override[256];
-   snprintf(override,256, "Override photons to generate/propagate for debugging, eg 1 for a single photon. Values less than 1 disable any override. Default %d", m_override);
+   char propagateoverride[256];
+   snprintf(propagateoverride,256, 
+          "Override photons to propagate for debugging, eg 1 for a single photon. Values less than 1 disable any override. Default %d", m_propagateoverride);
    m_desc.add_options()
-       ("override",  boost::program_options::value<int>(&m_override), override );
+       ("propagateoverride",  boost::program_options::value<int>(&m_propagateoverride), propagateoverride );
+
+
+   char generateoverride[256];
+   snprintf(generateoverride,256, 
+          "Override photons to generate for debugging, eg 1 for a single photon. Values less than 1 disable any override. Default %d", m_generateoverride);
+   m_desc.add_options()
+       ("generateoverride",  boost::program_options::value<int>(&m_generateoverride), generateoverride );
+
+
 
    char debugidx[128];
    snprintf(debugidx,128, "Index of item eg Photon for debugging. Default %d", m_debugidx);
@@ -961,6 +972,7 @@ void OpticksCfg<Listener>::init()
    snprintf(cameratype,128, "Initial cameratype 0:PERSPECTIVE,1:ORTHOGRAPHIC,2:EQUIRECTANGULAR (only raytrace). Default %d ", m_cameratype);
    m_desc.add_options()
        ("cameratype",  boost::program_options::value<int>(&m_cameratype), cameratype );
+
 
 
 
@@ -1643,11 +1655,19 @@ int OpticksCfg<Listener>::getModulo()
 {
     return m_modulo ; 
 }
+
 template <class Listener>
-int OpticksCfg<Listener>::getOverride()
+int OpticksCfg<Listener>::getGenerateOverride()
 {
-    return m_override ; 
+    return m_generateoverride ; 
 }
+
+template <class Listener>
+int OpticksCfg<Listener>::getPropagateOverride()
+{
+    return m_propagateoverride ; 
+}
+
 
 
 

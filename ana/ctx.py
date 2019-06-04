@@ -3,7 +3,6 @@
 
 """
 import os, logging, numpy as np
-from opticks.ana.base import opticks_main
 log = logging.getLogger(__name__)
 
 class Ctx(dict):
@@ -19,7 +18,7 @@ class Ctx(dict):
     def __init__(self, *args, **kwa):
         dict.__init__(self, *args, **kwa) 
 
-    QWNS = property(lambda self:os.environ["OPTICKS_MAIN_QWNS"])
+    QWNS = os.environ.get("OPTICKS_MAIN_QWNS", "XYZTABCR")
     qwn = property(lambda self:self.get("qwn",self.QWNS))
     det = property(lambda self:self.get("det",self.DET))
     tag = property(lambda self:self.get("tag",self.TAG))
@@ -296,7 +295,7 @@ def test_reclab2ctx_():
          ctx = Ctx.reclab2ctx_(k)
          qctx = ctx.qctx
          log.info(" %50s -> %50r -> %s " % (k, ctx, qctx ))
-         assert qctx == qctx_x 
+         assert qctx == qctx_x, ( qctx, qctx_x ) 
 
 
 def test_pctx2ctx_5():
@@ -328,23 +327,18 @@ def test_pctx2ctx_2():
              log.info( " %r -> %s " % (ctx, ctx.pctx))
 
 
-
-
-
-     
-
-
     
 if __name__ == '__main__':
+     from opticks.ana.main import opticks_main
      ok = opticks_main()
 
      reclab = "[TO] AB"
 
      ctx = Ctx.reclab2ctx_(reclab, det=ok.det, tag=ok.tag)
       
-     print ctx
+     print(ctx)
  
-     #test_reclab2ctx_()
+     test_reclab2ctx_()
 
      #test_pctx2ctx_5()
      #test_pctx2ctx_2()

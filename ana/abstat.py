@@ -40,7 +40,6 @@ Lookup a line via reclab::
 import os, logging, numpy as np
 import numpy.lib.recfunctions as rf
 
-from opticks.ana.base import opticks_main
 from opticks.ana.make_rst_table import recarray_as_rst
 
 log = logging.getLogger(__name__)
@@ -183,6 +182,7 @@ class ABStat(object):
 
 
 if __name__ == '__main__':
+    from opticks.ana.main import opticks_main
     ok = opticks_main()
     st = ABStat.load(ok)
     

@@ -8,12 +8,20 @@ histype.py: HisType
     histype.py --det PmtInBox --tag 10 --src torch 
     histype.py --det dayabay  --tag 1  --src torch 
 
+::
+
+    export OPTICKS_ANA_DEFAULTS="det=tboolean-box,src=torch,tag=1,pfx=."
+
+    cd /tmp
+    OPTICKS_EVENT_BASE=tboolean-box histype.py
+
+
+
 """
 import os, datetime, logging, sys
 log = logging.getLogger(__name__)
 import numpy as np
 
-from opticks.ana.base import opticks_main
 from opticks.ana.base import PhotonCodeFlags
 from opticks.ana.seq import SeqType, SeqTable, SeqAna
 from opticks.ana.nbase import count_unique_sorted
@@ -47,12 +55,14 @@ class HisType(SeqType):
 
 
 if __name__ == '__main__':
-     args = opticks_main(src="torch", tag="10", det="PmtInBox")
+     from opticks.ana.main import opticks_main
+     #args = opticks_main(src="torch", tag="10", det="PmtInBox")
+     ok = opticks_main()
 
      af = HisType()
 
      try:
-         ph = A.load_("ph",args.src,args.tag,args.det)
+         ph = A.load_("ph",ok.src,ok.tag,ok.det, pfx=ok.pfx)
      except IOError as err:
          log.fatal(err) 
          sys.exit(args.mrc)

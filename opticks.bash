@@ -1599,6 +1599,7 @@ pmt-(){             . $(opticks-home)/ana/pmt/pmt.bash && pmt-env $* ; }
 ab-(){              . $(opticks-home)/bin/ab.bash      && ab-env $* ; }
 abe-(){             . $(opticks-home)/bin/abe.bash     && abe-env $* ; }
 ev-(){              . $(opticks-home)/bin/ev.bash      && ev-env $* ; }
+scan-(){            . $(opticks-home)/bin/scan.bash    && scan-env $* ; }
 hh-(){              . $(opticks-home)/bin/hh.bash      && hh-env $* ; }
 vbx-(){             . $(opticks-home)/bin/vbx.bash     && vbx-env $* ; }
 ptx-(){             . $(opticks-home)/bin/ptx.bash     && ptx-env $* ; }

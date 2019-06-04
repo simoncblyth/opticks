@@ -6,7 +6,6 @@ from __future__ import print_function
 import os, sys, logging, numpy as np
 from collections import OrderedDict as odict
 
-from opticks.ana.base import opticks_main
 from opticks.ana.ctx import Ctx
 from opticks.ana.cfh import CFH
 from opticks.ana.nbase import chi2, vnorm
@@ -1125,10 +1124,9 @@ class AB(object):
 
 
 if __name__ == '__main__':
-    ok = opticks_main(tag="1", src="torch", det="tboolean-box", smry=False)
+    from opticks.ana.main import opticks_main
+    ok = opticks_main()
     ab = AB(ok)
-
     ab.dump()
-
 
     

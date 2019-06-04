@@ -110,6 +110,11 @@ OpticksEvent* OpticksEvent::make(OpticksEventSpec* spec, unsigned tagoffset)
 Opticks* OpticksEvent::getOpticks() const { return m_ok ; }
 OpticksProfile* OpticksEvent::getProfile() const { return m_profile ; }
 
+
+const char* OpticksEvent::PRELAUNCH_LABEL = "OpticksEvent_prelaunch" ;
+const char* OpticksEvent::LAUNCH_LABEL = "OpticksEvent_launch" ; 
+ 
+
 OpticksEvent::OpticksEvent(OpticksEventSpec* spec) 
           :
           OpticksEventSpec(spec),
@@ -184,8 +189,8 @@ OpticksEvent::OpticksEvent(OpticksEventSpec* spec)
           m_recsel_spec(NULL),
           m_sequence_spec(NULL),
 
-          m_prelaunch_times(new BTimes("OpticksEvent:prelaunch")),
-          m_launch_times(new BTimes("OpticksEvent::launch")),
+          m_prelaunch_times(new BTimes(PRELAUNCH_LABEL)),
+          m_launch_times(new BTimes(LAUNCH_LABEL)),
           m_sibling(NULL),
           m_geopath(NULL),
           m_geotestconfig(NULL)
@@ -1847,6 +1852,9 @@ void OpticksEvent::saveReport(const char* dir)
 
     m_profile->save(dir); 
     m_report->save(dir);  
+    m_launch_times->save(dir);
+    m_prelaunch_times->save(dir);
+
 }
 
 void OpticksEvent::loadReport()
@@ -1858,6 +1866,9 @@ void OpticksEvent::loadReport()
 
     m_profile = OpticksProfile::Load( tagdir.c_str() );  
     m_report = Report::load(tagdir.c_str());
+    m_launch_times = BTimes::Load(tagdir.c_str(), LAUNCH_LABEL );
+    m_prelaunch_times = BTimes::Load(tagdir.c_str(), PRELAUNCH_LABEL );
+
 }
 
 void OpticksEvent::setFakeNopstepPath(const char* path)

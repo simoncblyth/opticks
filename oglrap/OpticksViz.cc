@@ -439,7 +439,7 @@ void OpticksViz::prepareGUI()
         LOG(LEVEL) << "NULL TimesTable " ; 
     }  
 #else
-    OpticksProfile* profile = evt->getProfile(); 
+    OpticksProfile* profile = evt ? evt->getProfile() : NULL ; 
     if(profile)
     {
         m_gui->setupStats(profile->getLines());

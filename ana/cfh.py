@@ -26,7 +26,7 @@ CFH random access for debugging::
 
 """
 import os, sys, json, logging, numpy as np
-from opticks.ana.base import opticks_main, json_
+from opticks.ana.base import json_
 from opticks.ana.ctx import Ctx 
 from opticks.ana.nbase import chi2
 from opticks.ana.abstat import ABStat
@@ -330,6 +330,7 @@ def test_load():
 
 
 if __name__ == '__main__':
+    from opticks.ana.main import opticks_main
     ok = opticks_main()
     print ok
 

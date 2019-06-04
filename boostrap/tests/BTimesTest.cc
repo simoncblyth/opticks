@@ -18,8 +18,8 @@ void test_load_and_compare()
         return ; 
     }
 
-    BTimes* ck = BTimes::load("ck", "$IDPATH/times", "cerenkov_1.ini");
-    BTimes* sc = BTimes::load("sc", "$IDPATH/times", "scintillation_1.ini") ;
+    BTimes* ck = BTimes::Load("ck", "$IDPATH/times", "cerenkov_1.ini");
+    BTimes* sc = BTimes::Load("sc", "$IDPATH/times", "scintillation_1.ini") ;
     BTimes* cks = ck->clone("cks");
     cks->setScale( 2817543./612841. );   // scale up according to photon count 
 

@@ -3,7 +3,9 @@
 tboolean.py 
 =============================================
 
-
+This is invoked by Opticks bi-simulation executables such as OKG4Test 
+when using the option  "--anakey tboolean".  See optickscore/OpticksAna.cc.
+It compares Opticks and G4 event history categories and deviations.
 
 
 ::
@@ -49,7 +51,7 @@ from __future__ import print_function
 import os, sys, logging, numpy as np
 log = logging.getLogger(__name__)
 
-from opticks.ana.base import opticks_main
+from opticks.ana.main import opticks_main
 from opticks.ana.nload import np_load
 from opticks.ana.ab   import AB
 from opticks.ana.seq import seq2msk
@@ -57,7 +59,8 @@ from opticks.ana.seq import seq2msk
 
 
 if __name__ == '__main__':
-    ok = opticks_main(doc=__doc__, tag="1", src="torch", pfx=".", det="tboolean-torus", smry=False)  
+    #ok = opticks_main(doc=__doc__, tag="1", src="torch", pfx=".", det="tboolean-torus", smry=False)  
+    ok = opticks_main(doc=__doc__)  
 
 
     log.info(ok.brief)

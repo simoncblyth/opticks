@@ -404,6 +404,8 @@ class OKCORE_API Opticks {
    public:
        int                  getMultiEvent() const ;
        int                  getCameraType() const ;
+       int                  getGenerateOverride() const ;
+       int                  getPropagateOverride() const ;
    public:
        unsigned int         getSourceCode() const ;
        const char*          getSourceType() const ;

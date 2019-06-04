@@ -17,8 +17,13 @@ ana/metadata.py
     ab.py:        #aNote = "A:%s" % self.a.metadata.Note
     ab.py:        ##bNote = "B:%s" % self.b.metadata.Note
     ab.py:        :return point: recarray for holding point level metadata
+
+    // ab.py uses metadata attribute of evt instances
+
+
     cfg4_speedplot.py:from opticks.ana.metadata import Metadata, Catdir
     cfg4_speedplot.py:        log.warning("no metadata skipping")
+
     evt.py:from opticks.ana.metadata import Metadata
     evt.py:        ok = self.init_metadata()
     evt.py:        testcsgpath = self.metadata.TestCSGPath
@@ -31,6 +36,10 @@ ana/metadata.py
     evt.py:        fdom.desc = "(metadata) 3*float4 domains of position, time, wavelength (used for compression)"
     evt.py:        self.desc['idom'] = "(metadata) %s " % pdict_(self.idomd)
     evt.py:             return "%s %s %s %s (%s)" % (self.label, self.stamp, pdict_(self.idomd), self.path, self.metadata.Note)
+
+
+
+
     metadata.py:Access the metadata json files written by Opticks runs, 
     metadata.py:TODO: extract the good stuff from here as migrate from metadata.py to meta.py
     metadata.py:    timestamp folders contain just metadata for prior runs not full evt::

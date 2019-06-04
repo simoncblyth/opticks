@@ -97,7 +97,6 @@ import os, sys, logging, numpy as np
 log = logging.getLogger(__name__)
 
 import matplotlib.pyplot as plt 
-from opticks.ana.base import opticks_main
 #from opticks.ana.nbase import count_unique_sorted  # doenst work with signed
 from opticks.ana.nbase import count_unique
 from opticks.ana.evt import Evt
@@ -107,12 +106,14 @@ X,Y,Z,W = 0,1,2,3
 
 
 if __name__ == '__main__':
-    args = opticks_main(tag="1", det="boolean", src="torch")
+    from opticks.ana.main import opticks_main
+    #args = opticks_main(tag="1", det="boolean", src="torch")
+    ok = opticks_main()
 
 
     blib = PropLib("GBndLib")
 
-    evt = Evt(tag=args.tag, det=args.det, src=args.src, args=args)
+    evt = Evt(tag=ok.tag, det=ok.det, src=ok.src, pfx=ok.pfx, args=ok)
 
     if not evt.valid:
        log.fatal("failed to load evt %s " % repr(args))
