@@ -318,8 +318,8 @@ class AB(object):
         self.warn_empty = False
         seqtab = self.ahis
 
-        #skips = "SC AB RE" 
-        skips = "RE" 
+        skips = "SC AB RE" 
+        #skips = "RE" 
 
         dv_tab = DvTab(ana, seqtab, self, skips) 
         self.dvtabs.append(dv_tab)

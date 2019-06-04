@@ -22,6 +22,12 @@ class BaseType(object):
            G4GUN -> GN
 
         """
+
+        log.info("flags.names %s " % repr(flags.names) )
+        log.info("abbrev.name2abbr %s " % abbrev.name2abbr )
+        log.info("abbrev %s " % repr(map(lambda _:abbrev.name2abbr.get(_,None),flags.names)))
+
+
         abbrs = map(lambda name:abbrev.name2abbr.get(name,firstlast_(name)), flags.names )
         self.abbr2code = dict(zip(abbrs, flags.codes))
         self.code2abbr = dict(zip(flags.codes, abbrs))
@@ -139,6 +145,7 @@ class MaskType(BaseType):
 
 class SeqType(BaseType):
     def __init__(self, flags, abbrev):
+
          BaseType.__init__(self, flags, abbrev, delim=" ")
 
     def code(self, s):

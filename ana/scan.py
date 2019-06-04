@@ -20,6 +20,9 @@ from opticks.ana.meta import Meta
 
 if __name__ == '__main__':
     base = sys.argv[1] if len(sys.argv) > 1 else "." 
+    cmdline = " ".join([os.path.basename(sys.argv[0])]+sys.argv[1:])
+    print(cmdline)
+
     dirs, dfolds, dtimes = DatedFolder.find(base)
     assert len(dfolds) == len(dtimes)
     print( "dirs : %d  dtimes : %d " % (len(dirs), len(dtimes) ))
@@ -34,9 +37,16 @@ if __name__ == '__main__':
     photons_ = lambda m:m["parameters.NumPhotons"]
 
     q=odict()
-    q["ok1"] = lambda m:m["OpticksEvent_launch.launch001"]
-    q["ok2"] = lambda m:m["DeltaTime.OPropagator::launch_0"]
-    q["g4"]  = lambda m:m["DeltaTime.CG4::propagate_0"]
+    q["ok1"] = "OpticksEvent_launch.launch001"
+    q["ok2"] = "DeltaTime.OPropagator::launch_0"
+    q["ok3"] = "OpticksEvent_prelaunch.prelaunch000"
+    q["ok4"] = "DeltaTime.OpSeeder::seedPhotonsFromGenstepsViaOptiX_0"
+    q["g4"]  = "DeltaTime.CG4::propagate_0"
+
+    for k,v in q.items():
+        print(" %4s : %s " % (k,v)) 
+    pass
+
         
     for i in order:
         df = dfolds[i] 
@@ -65,13 +75,17 @@ if __name__ == '__main__':
 
         vq = odict()
         for k,v in q.items():
-            vq[k] = float(v(mm[ok if k.startswith("ok") else g4]))
+            vq[k] = float(mm[ok if k.startswith("ok") else g4][v])
         pass
 
-        vq["g4/ok1"] = vq["g4"]/vq["ok1"]
-        vq["g4/ok2"] = vq["g4"]/vq["ok2"]
+        divi_ = lambda num,den:num/den if den != 0 else 0
 
-        print(" tag0:%-3d tag1:%-3d  n:%-7d     %s     " % (tag0, tag1, n,  " ok1:%(ok1)10.4f  ok2:%(ok2)10.4f  g4:%(g4)10.4f   g4/ok1:%(g4/ok1)10.1f  g4/ok2:%(g4/ok2)10.1f    " % vq  )  )
+        vq["g4/ok1"] = divi_(vq["g4"],vq["ok1"])
+        vq["g4/ok2"] = divi_(vq["g4"],vq["ok2"])
+
+        svq = " ok1:%(ok1)10.4f  ok2:%(ok2)10.4f  g4:%(g4)10.4f   g4/ok1:%(g4/ok1)10.1f  g4/ok2:%(g4/ok2)10.1f   ok3:%(ok3)10.4f ok4:%(ok4)10.4f  " % vq  
+
+        print(" %s   tag0:%-3d tag1:%-3d  n:%-7d     %s     " % (df, tag0, tag1, n, svq  )  )
 
         #print(dump_(mm[0],"parameters"))
         #print(dump_(mm[1],"OpticksEvent_launch"))

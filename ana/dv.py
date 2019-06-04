@@ -1,4 +1,4 @@
-#!usr/bin/env python
+#!/usr/bin/env python
 """
 Examining the deviation::
 
@@ -43,8 +43,8 @@ import os, sys, logging, numpy as np
 
 class Dv(object):
 
-   FMT  = "  %7d %7d/%7d:%6.3f  mx/mn/av %6.4g/%6.4g/%6.4g  eps:%g  "
-   CFMT = "  %7s %7s/%7s:%6s  mx/mn/av %6s/%6s/%6s  eps:%s  "
+   FMT  = "  %9d %9d/%9d:%6.3f  mx/mn/av %9.4g/%9.4g/%9.4g  eps:%g  "
+   CFMT = "  %9s %9s/%9s:%6s  mx/mn/av %9s/%9s/%9s  eps:%s  "
 
    LMT  = " %0.4d %10s : %30s : %7d  %7d " 
    CLMT = " %4s %10s : %30s : %7s  %7s " 
@@ -154,9 +154,9 @@ class DvTab(object):
         for i in range(nsel):
             sel = labels[i]
 
-            #if self.is_skip(sel):
-            #    continue
-            #pass
+            if self.is_skip(sel):
+                continue
+            pass
 
             lcu = cu[i]
             assert len(lcu) == 3
@@ -207,11 +207,13 @@ class DvTab(object):
 
 
     def _get_smry(self):
-        return "%s fdiscmax:%s fdiscreps:%r maxdvmax:%s maxdv:%r " % ( self.name, self.fdiscmax, self.fdiscreps, self.maxdvmax, self.maxdv )
+        return "%s fdiscmax:%s fdiscreps:%r maxdvmax:%s maxdv:%r  " % ( self.name, self.fdiscmax, self.fdiscreps, self.maxdvmax, self.maxdv  )
     smry = property(_get_smry)
 
     def _get_brief(self):
-        return "%s maxdvmax:%s maxdv:%r " % ( self.name, self.maxdvmax, self.maxdv )
+        skips = " ".join(self.skips)
+        gfmt_ = lambda _:"%8.4g" % float(_) 
+        return "%s maxdvmax:%s maxdv:%s  skip:%s" % ( self.name, gfmt_(self.maxdvmax), " ".join(map(gfmt_,self.maxdv)), skips )
     brief = property(_get_brief)
 
     def __repr__(self):

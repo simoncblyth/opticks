@@ -57,11 +57,8 @@ from opticks.ana.ab   import AB
 from opticks.ana.seq import seq2msk
 
 
-
 if __name__ == '__main__':
-    #ok = opticks_main(doc=__doc__, tag="1", src="torch", pfx=".", det="tboolean-torus", smry=False)  
     ok = opticks_main(doc=__doc__)  
-
 
     log.info(ok.brief)
 

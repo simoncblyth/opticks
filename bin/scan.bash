@@ -13,19 +13,22 @@ EOU
 
 
 scan-photons(){ cat << EOS | tr -d " ,"  | grep -v \#
-#         1
-#      1000
-#    10,000
-#   100,000
-#   200,000
-#   500,000
-# 1,000,000
+          1
+       1000
+     10,000
+#    50,000
+    100,000
+    200,000
+    500,000
+  1,000,000
   2,000,000
   3,000,000
 EOS
 }
 
-scan-cmd(){ printf "tboolean.sh box --generateoverride %s --error\n" $1 ; }
+#scan-cmd(){ printf "tboolean.sh box --generateoverride %s --error\n" $1 ; }
+scan-cmd(){ printf "tboolean.sh box --generateoverride %s --error --cvd 1 --rtx 1\n" $1 ; }
+
 scan-post(){  scan.py /tmp/tboolean-box ; }
 
 scan-cmds(){

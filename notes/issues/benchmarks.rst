@@ -1,6 +1,17 @@
 benchmarks
 ==============
 
+hindsight
+------------
+
+The cause of RTX mode not helping was eventually identified to be 
+from an extreme sensitivity to f64 in the PTX 
+(some of the double heavy torus code was accidentally left in the PTX).
+After removing the f64 with the help of ptx.py the 
+RTX mode started flying.   See :doc:`bench360`
+
+
+
 
 Things to try to speedup analytic
 ---------------------------------------

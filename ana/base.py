@@ -165,6 +165,8 @@ def json_(path):
     try: 
         log.debug("parsing json for key %s" % path)
         xpath = os.path.expandvars(os.path.expanduser(path))
+        #log.info("xpath:%s"%xpath)
+
         _json[path] = json.load(file(xpath))
     except IOError:
         log.warning("failed to load json from %s : %s " % (path,xpath))
@@ -202,6 +204,11 @@ class Abbrev(object):
     """
     def __init__(self, path):
         js = json_(path)
+    
+        if "abbrev" in js:
+            js = js["abbrev"]
+        pass
+        #log.info("js:%s" % js.keys() )
 
         names = map(str,js.keys())
         abbrs = map(str,js.values())

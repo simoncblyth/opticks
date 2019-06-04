@@ -63,8 +63,8 @@ def test_roundtrip(mt):
        MO Py MO MO Py OV Vm MO : 4dbe44e4 : MO Py MO MO Py OV Vm MO
 
     """
-    #s = "MO Py MO MO Py OV Vm MO"
-    s = "Ml Px Ml Ml Px Om Vm Ml"   ## huh why the capital casing not working ? These are first last 
+    s = "MO Py MO MO Py OV Va MO"
+    #s = "Ml Px Ml Ml Px Om Vm Ml"   ## huh why the capital casing not working ? These are first last 
     i = mt.code(s)
     l = mt.label(i)
     print "%s : %x : %s" % (s, i, l )
