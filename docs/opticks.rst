@@ -206,8 +206,9 @@ Platform Support
 A recent Scientific Linux is the target platform for production running of Opticks, 
 but I am happy to try to help with installations on any Linux supported by CUDA.
 
-Most development has been done on macOS (late 2013 MacBook pro : the last Mac laptop with an NVIDIA GPU) 
-with occasional ports to keep thinks working on Scientific Linux.
+Initial development was done on macOS (late 2013 MacBook pro : the last Mac laptop with an NVIDIA GPU) 
+with occasional ports to keep thinks working on Scientific Linux. But now due to the lack of Macs 
+with NVIDIA GPUs development has moved to Linux CentOS 7 and Scientific Linux.
 
 
 
