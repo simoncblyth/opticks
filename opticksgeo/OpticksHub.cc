@@ -503,7 +503,7 @@ void OpticksHub::loadGeometry()
     //      B : on GGeo loading in GGeo::setupLookup
 
 
-    if(m_ok->isTest())
+    if(m_ok->isTest())  // --test : instanciate GGeoTest 
     {
         LOG(info) << "--test modifying geometry" ; 
 
@@ -555,7 +555,7 @@ void OpticksHub::adoptGeometry()
 
 GGeoTest* OpticksHub::createTestGeometry(GGeoBase* basis)
 {
-    assert(m_ok->isTest());
+    assert(m_ok->isTest());  // --test  : instanciate GGeoTest using the basis
 
     LOG(info) << "[" ;
 
@@ -652,7 +652,7 @@ TODO:
 
 void OpticksHub::configureGeometry()
 {
-    if(m_ok->isTest())
+    if(m_ok->isTest())  // --test : configure mesh skips  
     {
         configureGeometryTest();
     }
@@ -1021,7 +1021,7 @@ void OpticksHub::dumpVolumes(unsigned cursor, GMergedMesh* mm, const char* msg )
               << " num_volumes " << num_volumes 
               ;
 
-    bool test = m_ok->isTest() ; 
+    bool test = m_ok->isTest() ;    // --test : dumping volumes
 
     GNodeLib* nodelib = getNodeLib();
     for(unsigned i=0 ; i < std::min(num_volumes, 20u) ; i++)

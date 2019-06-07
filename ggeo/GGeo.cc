@@ -777,7 +777,7 @@ void GGeo::loadCacheMeta() // loads metadata that the process that created the g
     }
 
 
-    if( m_ok->isTest() )
+    if( m_ok->isTest() )   // --test : skip lv2sd association
     {
          LOG(error) << "NOT USING the lv2sd association as --test is active " ;  
     }
@@ -785,10 +785,6 @@ void GGeo::loadCacheMeta() // loads metadata that the process that created the g
     {
          m_lv2sd = lv2sd ;  
     }
-
-
-
-
 }
 
 

@@ -62,7 +62,7 @@ std::string OpticksAna::getCommandline(const char* anakey)
 
 void OpticksAna::setEnv()
 {
-    if(m_ok->isTest())
+    if(m_ok->isTest())  // --test : unused
     {
 
         /*

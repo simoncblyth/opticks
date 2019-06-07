@@ -1505,11 +1505,11 @@ const char* Opticks::getRunFolder() const
 
 
 
-bool Opticks::isTest() const 
+bool Opticks::isTest() const   // --test
 {
     return m_cfg->hasOpt("test");
 }
-bool Opticks::isTestAuto() const 
+bool Opticks::isTestAuto() const  // --testauto
 {
     return m_cfg->hasOpt("testauto");
 }
@@ -1523,7 +1523,7 @@ const char* Opticks::getTestConfig() const
 
 
 
-bool Opticks::isG4Snap() const 
+bool Opticks::isG4Snap() const   // --g4snap
 {
     return m_cfg->hasOpt("g4snap");
 }

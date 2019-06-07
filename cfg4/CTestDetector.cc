@@ -98,19 +98,20 @@ G4VPhysicalVolume* CTestDetector::makeDetector()
 CTestDetector::makeChildVolume
 -------------------------------
 
-Convert an NCSG into G4VSolid within LV, PV structure, using CMaker::MakeSolid for shape specifics.
+Convert an NCSG tree into G4VSolid within LV, PV structure, using CMaker::MakeSolid for shape specifics.
+
+1. converts GMaterial into G4Material
+2. makes G4VSolid from NCSG using CMaker
+3. wraps the solid into Geant4 LV, PV structure
+
+
+m_blib 
+    CBndLib instance from CDetector base that contains a GBndLib instance
 
 **/
 
 G4VPhysicalVolume* CTestDetector::makeChildVolume(const NCSG* csg, const char* lvn, const char* pvn, G4LogicalVolume* mother )
 {
-    // m_blib is CBndLib instance from CDetector base
-    //        that contains a GBndLib instance
-    //
-    // test geometry often uses dynamic omat/osur/isur/imat 
-    // combinations that are not persisted to the bndlib
-    // so must add the spec : in order to make the boundary index valid
-    //
     assert( csg );
     assert( lvn );
     assert( pvn );
@@ -156,8 +157,8 @@ G4VPhysicalVolume* CTestDetector::makeVolumeUniverse(const NCSG* csg)
 CTestDetector::makeDetector_NCSG
 ---------------------------------
 
-Converts a list of GVolume from GNodeLib, assumed 
-to have a simple Russian-doll geometry into a Geant4
+Converts the list of GVolumes obtained from GNodeLib, 
+which are assumed to have a simple Russian-doll geometry into a Geant4
 volume "tree" structure. 
 
 **/
@@ -204,8 +205,5 @@ G4VPhysicalVolume* CTestDetector::makeDetector_NCSG()
     }
     return top ; 
 }
-
-
-
 
 

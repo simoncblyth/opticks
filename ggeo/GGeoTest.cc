@@ -1,6 +1,4 @@
 #include <iomanip>
-#include <boost/lexical_cast.hpp>
-#include <boost/algorithm/string.hpp>
 
 #include "BBnd.hh"
 #include "BStr.hh"
@@ -252,6 +250,20 @@ unsigned GGeoTest::getNumTrees() const
 }
 
 
+/**
+GGeoTest::relocateSurfaces
+----------------------------
+
+1. if the inner and outer surfaces referenced by name in the spec string 
+   are already present in m_slib then there is nothing to do 
+
+2. otherwise relocate surfaces using volume names of the test geometry, this 
+   "steals" surface pointers from the basis library.  And it modifies the
+   metadata of the surfaces using test geometry names.
+   
+   * Hmm: so it is breaking the basis surface lib.
+
+**/
 
 void GGeoTest::relocateSurfaces(GVolume* volume, const char* spec)
 {
@@ -277,7 +289,7 @@ void GGeoTest::relocateSurfaces(GVolume* volume, const char* spec)
               << " parent_pv " << parent_pv
               ;
 
-        if( b.osur && b.isur && strcmp(b.osur, b.isur) == 0 ) // skin 
+        if( b.osur && b.isur && strcmp(b.osur, b.isur) == 0 ) // skin  : same outer and inner surface name indicates skin
         {
             m_slib->relocateBasisSkinSurface( b.osur, self_lv );
         }
@@ -319,7 +331,7 @@ void GGeoTest::reuseMaterials(const char* spec)
 
     BBnd b(spec);
 
-    if(strcmp(b.omat, b.imat) == 0)
+    if(strcmp(b.omat, b.imat) == 0)     // same inner and outer material
     {
         if(!m_mlib->hasMaterial(b.omat)) m_mlib->reuseBasisMaterial( b.omat );
     } 
@@ -330,6 +342,28 @@ void GGeoTest::reuseMaterials(const char* spec)
     }
 }
 
+
+/**
+GGeoTest::importCSG
+--------------------
+
+1. add test materials to m_mlib
+2. reuse materials mentioned in test geometry boundary specification strings 
+   by "stealing" material pointers from the basis lib and adding them to m_mlib
+3. for each NCSG tree in the test geometry make a corresponding GVolume (with GMaker), 
+
+   * parent/child links are set assuming simple Russian doll containment 
+     with outermost volume being the first in the list of NCSG trees
+
+   * surfaces referenced by boundaries of the test geometry are collected 
+     into m_slib (stealing pointers) and surface metadata changed for test volume
+     names
+
+4. boundaries used in the test geometry are added to m_bndlib and the 
+   boundary index is assigned to GVolume
+
+
+**/
 
 void GGeoTest::importCSG(std::vector<GVolume*>& volumes)
 {
@@ -452,15 +486,27 @@ void GGeoTest::importCSG(std::vector<GVolume*>& volumes)
     LOG(info) << "]" ; 
 }
 
+
+/**
+GGeoTest::labelPartList
+---------------------------
+
+PartList geometry is implemented by allowing a single "primitive" to be composed of multiple
+"parts", the association from part to prim being 
+controlled via the primIdx attribute of each part.
+
+collected pts are converted into primitives in GParts::makePrimBuffer
+
+
+NB Partlist test geometry was created 
+   via simple simple commandline strings. 
+   It is the precursor to proper CSG Trees, which are implemented 
+   with NCSG and created using python opticks.analytic.csg.CSG.
+
+**/
+
 void GGeoTest::labelPartList( std::vector<GVolume*>& volumes )
 {
-    // PartList geometry (the precursor to proper CSG Trees, usually defined in python CSG) 
-    // is implemented by allowing a single "primitive" to be composed of multiple
-    // "parts", the association from part to prim being 
-    // controlled via the primIdx attribute of each part.
-    //
-    // collected pts are converted into primitives in GParts::makePrimBuffer
-  
     for(unsigned i=0 ; i < volumes.size() ; i++)
     {
         GVolume* volume = volumes[i];
@@ -492,6 +538,14 @@ void GGeoTest::labelPartList( std::vector<GVolume*>& volumes )
                   ;
     }
 }
+
+/**
+GGeoTest::makeVolumeFromConfig
+---------------------------------
+
+* partlist geometry from commandline strings
+
+**/
 
 GVolume* GGeoTest::makeVolumeFromConfig( unsigned i ) // setup nodeIndex here ?
 {
@@ -539,6 +593,16 @@ void GGeoTest::createBoxInBox(std::vector<GVolume*>& volumes)
     }
 }
 
+
+
+/**
+GGeoTest::createPmtInBox
+--------------------------
+
+* hmm : suspect this was a dirty hack
+
+
+**/
 
 GMergedMesh* GGeoTest::createPmtInBox()
 {

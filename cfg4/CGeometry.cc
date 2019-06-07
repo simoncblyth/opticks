@@ -63,7 +63,7 @@ CGeometry::CGeometry(OpticksHub* hub, CSensitiveDetector* sd)
 void CGeometry::init()
 {
     CDetector* detector = NULL ; 
-    if(m_ok->hasOpt("test"))
+    if(m_ok->isTest())  // --test  : branch between CTestDetector and CGDMLDetector
     {
         LOG(fatal) << "G4 simple test geometry " ; 
         OpticksQuery* query = NULL ;  // normally no OPTICKS_QUERY geometry subselection with test geometries
