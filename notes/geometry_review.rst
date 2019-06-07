@@ -487,7 +487,7 @@ ggeo-/GMergedMesh
 
 
 
-Above bb z range looks correct -30 to 56.131, but the offset is stubbornly still there::
+Above bb z range looks correct -30 to 56.131, but the offset is stubbornly still there.
 
 
 With testverbosity enabled, it looks like `GGeoTest::createPmtInBox` is stomping on 

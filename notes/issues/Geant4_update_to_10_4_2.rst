@@ -5,7 +5,7 @@ Geant4_update_to_10_4_2
 
 
 DONE : Compilation
---------------
+--------------------
 
 * theParticleIterator
 * needed to const_cast G4MaterialPropertiesTable

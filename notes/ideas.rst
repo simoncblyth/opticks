@@ -1,15 +1,6 @@
 Ideas
 =======
 
-
-
-
-
-
-
-
-
-
 Mirror from bitbucket/mercurial to github/git ?
 ----------------------------------------------------
 
@@ -151,7 +142,10 @@ Thin Gaussian Lens
 p138 Hecht, spherical lens assuming small angles from optical axis (paraxial rays)
 
 
-                   /|\
+::
+
+
+     .             /|\
                   / | \ 
                  /  |  \
         C2      V1  |  V2       C1 
@@ -171,6 +165,7 @@ p138 Hecht, spherical lens assuming small angles from optical axis (paraxial ray
               d  = R2 + R1 - (C2 - C1)  
 
 
+::
 
 
     nm      nm                /  1     1   \         nl d
@@ -274,7 +269,7 @@ How to define a symmetric prism
                                       
      AB direction : ( 0, h) - (a/2, 0)  = (-a/2, h)    ON direction (h, a/2)
      AC direction : ( 0, h) - (-a/2, 0) = ( a/2, h)    OM direction (h, -a/2)
- 
+
      (-a/2, h ).( h, a/2 ) = 0 
 
 
@@ -312,14 +307,6 @@ How to define a symmetric prism
 
 
          
-
-
-     
-
-
-
-
-
 
 
 Dispersion

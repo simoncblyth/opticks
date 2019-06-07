@@ -280,7 +280,7 @@ lvidx83 (6) + lvidx81 (7) both coincidence artifacts between cylinders and cones
 
 
 lvidx31 (14) lvidx30 (20):  difference of large thin-z cones intersecting with cylinder : worst case for parsurf bb precision
---------------------------------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------------------------------------
 
 * :doc:`lvidx31`
 
