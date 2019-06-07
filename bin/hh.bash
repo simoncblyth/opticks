@@ -88,7 +88,7 @@ Setup of Sphinx docs generated from Opticks header "docstrings"
 EOU
 }
 
-hh-dir(){   echo  /tmp/$USER/opticks/hh ; }
+hh-dir(){   echo  $TMP/hh ; }
 hh-cd(){ cd $(hh-dir) ; }
 hh-find(){  find . -name '*.hh' -exec grep -l "/\*\*" {} \; ; }
 hh-edit(){  vi $(opticks-home)/bin/hh.py ; }

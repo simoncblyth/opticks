@@ -165,6 +165,18 @@ class Proj(object):
         self.name = name   
         self.hhd = self.find_hhd() 
 
+    def find_cc(self, hhpath):
+        assert os.path.exists(hhpath), hhpath
+        if hhpath.endswith(".hh"):
+            ccpath = hhpath[:-3]+".cc"
+        elif hhpath.endswith(".hpp"):
+            ccpath = hhpath[:-4]+".cpp"
+        else:
+            pass  
+        pass
+        exists = os.path.exists(ccpath)
+        return ccpath if exists else None
+
     def find_hhd(self):
         """
         :return hhd: dict keyed on header name holding header information held within HH instances
@@ -174,11 +186,19 @@ class Proj(object):
 
         hhd = {}
         for name in names:
-            path = os.path.join(self.absdir, name)
-            lines = open(path, "r").readlines()   
+            hdr = os.path.join(self.absdir, name)
+            imp = self.find_cc(hdr)
+
+            lines = []
+            lines += open(hdr, "r").readlines()   
+
+            if imp is not None:
+                lines += open(imp, "r").readlines(); 
+            pass
+
             hh = HH(lines)
             if len(hh.content) == 0:
-                log.debug("no docstring in %s " % path)
+                log.debug("no docstring in hdr %s imp %s  " % (hdr, imp) )
             else:
                 hhd[name] = hh  
             pass
