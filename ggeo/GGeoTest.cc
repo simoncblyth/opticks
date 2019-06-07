@@ -113,7 +113,7 @@ GGeoTest::GGeoTest(Opticks* ok, GGeoBase* basis)
     m_slib(new GSurfaceLib(m_ok, basis->getSurfaceLib())),
     m_bndlib(new GBndLib(m_ok, m_mlib, m_slib)),
     m_geolib(new GGeoLib(m_ok,m_analytic,m_bndlib)),
-    m_nodelib(new GNodeLib(m_ok, m_analytic, m_test)),
+    m_nodelib(new GNodeLib(m_ok, m_analytic, m_test, basis->getNodeLib() )),
     m_maker(new GMaker(m_ok, m_bndlib)),
     m_csglist(m_csgpath ? NCSGList::Load(m_csgpath, m_verbosity ) : NULL),
     m_solist(new GVolumeList()),
@@ -192,6 +192,15 @@ GMergedMesh* GGeoTest::initCreateCSG()
         m_ok->setSeqMapString(autoseqmap);
         m_csglist->autoTestSetup(m_config);
     }
+
+
+
+    {
+        GNodeLib* basis = m_nodelib->getBasis(); 
+        basis->dump("basis nodeLib");    
+    }  
+
+
 
     std::vector<GVolume*>& volumes = m_solist->getList();
 

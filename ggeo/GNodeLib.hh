@@ -8,6 +8,7 @@ class Opticks ;
 
 class GVolume ; 
 class GNode ; 
+class GNodeLib ; 
 class GItemList ; 
 
 class GTreePresent ; 
@@ -63,15 +64,16 @@ class GGEO_API GNodeLib
         static GNodeLib* Load(Opticks* ok, bool analytic, bool test);
         void loadFromCache();
     public:
-        GNodeLib(Opticks* opticks, bool analytic, bool test); 
+        GNodeLib(Opticks* opticks, bool analytic, bool test, GNodeLib* basis=NULL ); 
         std::string desc() const ; 
+        void dump(const char* msg="GNodeLib::dump") const ;
     private:
         void save() const ;
         void init();
         GItemList*   getPVList(); 
         GItemList*   getLVList(); 
     public:
-        //unsigned getTargetNodeOffset() const ;
+        GNodeLib* getBasis() const ;    
         unsigned getNumPV() const ;
         unsigned getNumLV() const ;
         void add(GVolume*    volume);
@@ -86,6 +88,7 @@ class GGEO_API GNodeLib
         Opticks*                           m_ok ;  
         bool                               m_analytic ; 
         bool                               m_test ; 
+        GNodeLib*                          m_basis ; 
         const char*                        m_reldir ; 
 
         GItemList*                         m_pvlist ; 

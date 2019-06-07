@@ -12,8 +12,161 @@ How to do this ?
 
 * means that the CSG nodetree coming in from the python must act as a proxy for the basis nodetree
 * actually just a single node is needed, hmm could use a box that is used to contain the proxied tree
+
+  * can just look for "proxylvid" on root nodes of CSG trees
+
 * am not changing the russian doll assumption, just need to insert a volume or volumes into the list 
  
+  * but will I need to create corresponding NCSG ?
+
+
+Resolve proxy in GGeoTest::importCSG ?
+--------------------------------------------
+
+
+
+GNodeLib persists only names
+-----------------------------------
+
+* GNodeLib in memory stores GVolume (which have associated GParts), 
+  but when persisted to file is just name lists 
+
+::
+
+    [blyth@localhost 1]$ l GNodeLib/
+    total 24428
+    -rw-rw-r--. 1 blyth blyth 6052728 May 25 10:54 GTreePresent.txt
+    -rw-rw-r--. 1 blyth blyth 9152343 May 25 10:54 LVNames.txt
+    -rw-rw-r--. 1 blyth blyth 9804263 May 25 10:54 PVNames.txt
+
+* GMergedMesh combines volumes and GParts and persists 
+
+::
+
+     23 GVolume::GVolume( unsigned int index, GMatrix<float>* transform, const GMesh* mesh, unsigned int boundary, NSensor* sensor)
+     24     :
+     25     GNode(index, transform, mesh ),
+     26     m_boundary(boundary),
+     27     m_csgflag(CSG_PARTLIST),
+     28     m_csgskip(false),
+     29     m_sensor(sensor),
+     30     m_pvname(NULL),
+     31     m_lvname(NULL),
+     32     m_sensor_surface_index(0),
+     33     m_parts(NULL),
+     34     m_parallel_node(NULL)
+     35 {
+     36 }
+
+
+
+Hmm have to reconstitue the GVolume from GMergedMesh ?
+----------------------------------------------------------
+
+* GMergedMesh m_nodeinfo has volume level information 
+
+
+::
+
+     551 void GMergedMesh::mergeVolumeIdentity( GVolume* volume, bool selected )
+     552 {
+     553     const GMesh* mesh = volume->getMesh();
+     554 
+     555     unsigned nvert = mesh->getNumVertices();
+     556     unsigned nface = mesh->getNumFaces();
+     557 
+     558     guint4 _identity = volume->getIdentity();
+     559 
+     560     unsigned nodeIndex = volume->getIndex();
+     561     unsigned meshIndex = mesh->getIndex();
+     562     unsigned boundary = volume->getBoundary();
+     563 
+     564     NSensor* sensor = volume->getSensor();
+     565     unsigned sensorIndex = NSensor::RefIndex(sensor) ;
+     566 
+     567     assert(_identity.x == nodeIndex);
+     568     assert(_identity.y == meshIndex);
+     569     assert(_identity.z == boundary);
+     570     //assert(_identity.w == sensorIndex);   this is no longer the case, now require SensorSurface in the identity
+     571 
+     572     LOG(debug) << "GMergedMesh::mergeVolumeIdentity"
+     573               << " m_cur_volume " << m_cur_volume
+     574               << " nodeIndex " << nodeIndex
+     575               << " boundaryIndex " << boundary
+     576               << " sensorIndex " << sensorIndex
+     577               << " sensor " << ( sensor ? sensor->description() : "NULL" )
+     578               ;
+     579 
+     580 
+     581     GNode* parent = volume->getParent();
+     582     unsigned int parentIndex = parent ? parent->getIndex() : UINT_MAX ;
+     583 
+
+     584     m_meshes[m_cur_volume] = meshIndex ;
+     585 
+     586     // face and vertex counts must use same selection as above to be usable 
+     587     // with the above filled vertices and indices 
+     588 
+     589     m_nodeinfo[m_cur_volume].x = selected ? nface : 0 ;
+     590     m_nodeinfo[m_cur_volume].y = selected ? nvert : 0 ;
+     591     m_nodeinfo[m_cur_volume].z = nodeIndex ;
+     592     m_nodeinfo[m_cur_volume].w = parentIndex ;
+     593 
+
+
+For global mm0 in juno directly converted geometry (kcd)::
+
+    [blyth@localhost 0]$ np.py nodeinfo.npy -viF -s 0:20
+    a :                                                 nodeinfo.npy :          (366697, 4) : 0df666cebed04081b722d1fb60c54b1c : 20190525-1054 
+    (366697, 4)
+    i32
+    [[ 12   8   0  -1]
+     [ 12   8   1   0]
+     [ 12   8   2   1]
+     [ 96  50   3   2]
+     [ 96  50   4   3]
+     [192  96   5   3]
+     [192  96   6   3]
+     [108  58   7   2]
+     [ 12   8   8   7]
+     [ 12   8   9   8]
+     [  0   0  10   9]
+     [  0   0  11  10]
+     [  0   0  12  11]
+     [  0   0  13  12]
+     [  0   0  14  11]
+     [  0   0  15  14]
+     [  0   0  16  11]
+     [  0   0  17  16]
+     [  0   0  18  11]
+     [  0   0  19  18]]
+
+
+    [blyth@localhost 1]$ np.py GMergedMesh/0/nodeinfo.npy -viF -s _20:_1
+    a :                                   GMergedMesh/0/nodeinfo.npy :          (366697, 4) : 0df666cebed04081b722d1fb60c54b1c : 20190525-1054 
+    (366697, 4)
+    i32
+    [[     0      0 366677 366676]
+     [     0      0 366678 366676]
+     [     0      0 366679  62590]
+     [     0      0 366680 366679]
+     [     0      0 366681 366679]
+     [     0      0 366682 366681]
+     [     0      0 366683 366682]
+     [     0      0 366684 366682]
+     [     0      0 366685  62590]
+     [     0      0 366686 366685]
+     [     0      0 366687 366685]
+     [     0      0 366688 366687]
+     [     0      0 366689 366688]
+     [     0      0 366690 366688]
+     [     0      0 366691  62590]
+     [     0      0 366692 366691]
+     [     0      0 366693 366691]
+     [     0      0 366694 366693]
+     [     0      0 366695 366694]]
+
+
 
 isTest from --test option
 ------------------------------

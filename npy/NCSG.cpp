@@ -6,17 +6,11 @@
 
 #include "BStr.hh"
 #include "BFile.hh"
-//#include "BTxt.hh"
 
 #include "NGLMExt.hpp"
 #include "GLMFormat.hpp"
 
-#ifdef OLD_PARAMETERS
-#include "X_BParameters.hh"
-#else
 #include "NMeta.hpp"
-#endif
-
 
 #include "NTrianglesNPY.hpp"
 #include "NPolygonizer.hpp"
@@ -252,12 +246,7 @@ void NCSG::postload()
     std::string gpuoffset = m_meta->getValue<std::string>("gpuoffset", "0,0,0" );
     m_gpuoffset = gvec3(gpuoffset);  
 
-
-#ifdef OLD_PARAMETERS
-    int verbosity  = m_meta->getValue<int>("verbosity", "0");
-#else
     int verbosity = m_meta->getIntFromString("verbosity", "0") ;
-#endif
 
     increaseVerbosity(verbosity);
 }
@@ -379,11 +368,7 @@ nnode* NCSG::import_r(unsigned idx, nnode* parent)
     }
     assert(node); 
 
-#ifdef OLD_PARAMETERS
-    X_BParameters* nodemeta = m_meta->getMeta(idx);
-#else
     NMeta* nodemeta = m_meta->getMeta(idx);
-#endif
 
     if(nodemeta) node->meta = nodemeta ; 
 
@@ -894,11 +879,7 @@ void NCSG::dump(const char* msg)
 
     m_root->dump("NCSG::dump");   
 
-#ifdef OLD_PARAMETERS
-    X_BParameters* _meta = m_meta->getMeta(-1) ;
-#else
     NMeta* _meta = m_meta->getMeta(-1) ;
-#endif
 
     if(_meta) _meta->dump(); 
 
@@ -1121,11 +1102,7 @@ void NCSG::postimport_autoscan()
 }
 
 
-#ifdef OLD_PARAMETERS
-X_BParameters* NCSG::LoadMetadata( const char* treedir, int item )
-#else
 NMeta* NCSG::LoadMetadata( const char* treedir, int item )
-#endif
 {
     return NPYMeta::LoadMetadata(treedir, item); 
 } 
@@ -1254,11 +1231,7 @@ std::string NCSG::smry() const
     return ss.str();
 }
 
-#ifdef OLD_PARAMETERS
-X_BParameters* NCSG::getMeta(int idx) const 
-#else
 NMeta* NCSG::getMeta(int idx) const 
-#endif
 {
     return m_meta->getMeta(idx); 
 }

@@ -21,20 +21,19 @@
 
 
 GVolume::GVolume( unsigned int index, GMatrix<float>* transform, const GMesh* mesh, unsigned int boundary, NSensor* sensor)
-         : 
-         GNode(index, transform, mesh ),
-         m_boundary(boundary),
-         m_csgflag(CSG_PARTLIST),
-         m_csgskip(false),
-         m_sensor(sensor),
-         m_pvname(NULL),
-         m_lvname(NULL),
-         m_sensor_surface_index(0),
-         m_parts(NULL),
-         m_parallel_node(NULL)
+    : 
+    GNode(index, transform, mesh ),
+    m_boundary(boundary),
+    m_csgflag(CSG_PARTLIST),
+    m_csgskip(false),
+    m_sensor(sensor),
+    m_pvname(NULL),
+    m_lvname(NULL),
+    m_sensor_surface_index(0),
+    m_parts(NULL),
+    m_parallel_node(NULL)
 {
 }
-
 
 OpticksCSG_t GVolume::getCSGFlag()
 {
@@ -83,9 +82,9 @@ const char* GVolume::getLVName() const
 
 void GVolume::Summary(const char* msg )
 {
-   if(!msg) msg = getDescription();
-   if(!msg) msg = "GVolume::Summary" ;
-   printf("%s\n", msg );
+    if(!msg) msg = getDescription();
+    if(!msg) msg = "GVolume::Summary" ;
+    printf("%s\n", msg );
 }
 
 std::string GVolume::description()
@@ -136,16 +135,16 @@ void GVolume::setBoundary(unsigned int boundary)
 
 void GVolume::setBoundaryAll(unsigned boundary)
 {
-     unsigned nchild = getNumChildren();
-     if(nchild > 0)
-     {
+    unsigned nchild = getNumChildren();
+    if(nchild > 0)
+    {
         for(unsigned i=0 ; i < nchild ; i++)
         {
             GNode* node = getChild(i);
             GVolume* sub = dynamic_cast<GVolume*>(node);
             sub->setBoundary(boundary);
         }
-     } 
+    } 
 }
 
 
@@ -178,9 +177,6 @@ void GVolume::setIdentity(const guint4& id )
 }
 */
 
-
-
-
 void GVolume::setSensorSurfaceIndex(unsigned int ssi)
 {
     m_sensor_surface_index = ssi ; 
@@ -190,12 +186,10 @@ unsigned int GVolume::getSensorSurfaceIndex()
     return m_sensor_surface_index ; 
 }
 
-
 void GVolume::Dump( const std::vector<GVolume*>& volumes, const char* msg )
 {
     unsigned numVolume = volumes.size() ;
     LOG(info) << msg << " numVolume " << numVolume ; 
     for(unsigned i=0 ; i < numVolume ; i++) volumes[i]->dump(); 
 }
-
 

@@ -1,4 +1,6 @@
 #include <sstream>
+#include <iostream>
+#include <iomanip>
 
 #include "PLOG.hh"
 
@@ -35,16 +37,22 @@ void GNodeLib::loadFromCache()
     m_lvlist = GItemList::load(idpath, "LVNames", m_reldir);
 }
 
-GNodeLib::GNodeLib(Opticks* ok, bool analytic, bool test)  
+GNodeLib::GNodeLib(Opticks* ok, bool analytic, bool test, GNodeLib* basis)  
     :
     m_ok(ok),
     m_analytic(analytic),
     m_test(test),
+    m_basis(basis),
     m_reldir(GetRelDir(analytic,test)),
     m_pvlist(NULL),
     m_lvlist(NULL),
     m_treepresent(new GTreePresent(100, 1000))   // depth_max,sibling_max
 {
+}
+
+GNodeLib* GNodeLib::getBasis() const 
+{
+    return m_basis ; 
 }
 
 
@@ -207,6 +215,24 @@ GNode* GNodeLib::getNode(unsigned index) const
     GVolume* volume = getVolume(index);
     GNode* node = static_cast<GNode*>(volume); 
     return node ; 
+}
+
+
+void GNodeLib::dump(const char* msg) const 
+{
+    LOG(info) << msg ; 
+    LOG(info) << " NumVolumes " << m_volumes.size() ; 
+
+    for(unsigned i=0 ; i < std::min(m_volumes.size(), 100ul) ; i++ )
+    {
+        GVolume* volume = m_volumes.at(i) ; 
+        std::cout 
+            << " ix " << std::setw(5) << i 
+            << " lv " << std::setw(40) << volume->getLVName()
+            << " pv " << std::setw(40) << volume->getPVName()
+            << std::endl 
+            ;
+    }
 }
 
 

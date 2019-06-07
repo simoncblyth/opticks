@@ -3,28 +3,23 @@
 #include <string>
 #include <map>
 
-#ifdef OLD_PARAMETERS
-class X_BParameters ; 
-#else
 class NMeta ; 
-#endif
 
 #include "NPY_API_EXPORT.hh"
 
 /**
-NPYMeta
-=========
+NPYMeta : integer keyed map of NMeta dicts used for node metadata
+=====================================================================
+
+Primary usage so far is as the m_meta instance of NCSG node trees,
+providing per-node metadata for the trees.
 
 **/
 
 class NPY_API NPYMeta
 {
     public:
-#ifdef OLD_PARAMETERS
-        static X_BParameters* LoadMetadata(const char* treedir, int item=-1);
-#else
         static NMeta*       LoadMetadata(const char* treedir, int item=-1);
-#endif
         static bool         ExistsMeta(const char* treedir, int item=-1);
     private:
         static const char*  META ; 
@@ -34,11 +29,7 @@ class NPY_API NPYMeta
     public:
         // item -1 corresponds to global metadata 
         NPYMeta(); 
-#ifdef OLD_PARAMETERS
-        X_BParameters*  getMeta(int item=-1) const ;   
-#else
         NMeta*  getMeta(int item=-1) const ;   
-#endif
         bool          hasMeta(int idx) const ;
     public:
         int                       getIntFromString(const char* key, const char* fallback, int item=-1 ) const ;
@@ -48,12 +39,8 @@ class NPY_API NPYMeta
         void load(const char* dir, int num_item = NUM_ITEM ) ;
         void save(const char* dir) const ;
     private:
-#ifdef OLD_PARAMETERS
-        std::map<int, X_BParameters*>    m_meta ;    
-#else
         std::map<int, NMeta*>    m_meta ;    
-#endif
-        // could be a complete binary tree with loada nodes, so std::array not appropriate
+        // could be a complete binary tree with loadsa nodes, so std::array not appropriate
 
 };
 

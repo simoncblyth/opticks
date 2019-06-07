@@ -127,11 +127,7 @@ struct nbbox ;
 struct NSceneConfig ; 
 struct NNodeNudger ; 
 
-#ifdef OLD_PARAMETERS
-class X_BParameters ; 
-#else
 class NMeta ; 
-#endif
 
 class NCSGData ; 
 class NPYMeta ; 
@@ -165,11 +161,7 @@ class NPY_API NCSG {
         static NCSG* Load(const char* treedir, const char* gltfconfig);
         static NCSG* Load(const char* treedir, const NSceneConfig* config );
 
-#ifdef OLD_PARAMETERS
-        static X_BParameters* LoadMetadata( const char* treedir, int item=-1 );  // -1 for global
-#else
         static NMeta* LoadMetadata( const char* treedir, int item=-1 );  // -1 for global
-#endif
 
 
         NNodeUncoincide* make_uncoincide() const ;
@@ -269,11 +261,7 @@ class NPY_API NCSG {
     public:
         // from NPYMeta.m_meta 
 
-#ifdef OLD_PARAMETERS
-        X_BParameters*   getMeta(int idx) const ;
-#else
         NMeta*         getMeta(int idx) const ;
-#endif
 
 
         nnode*       getRoot() const ;
