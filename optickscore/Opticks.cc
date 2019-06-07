@@ -2266,7 +2266,7 @@ OpticksEvent* Opticks::makeEvent(bool ok, unsigned tagoffset)
     bool match = strcmp(e_udet, x_udet) == 0 ;
     if(!match)
     {
-        LOG(fatal) << "Opticks::makeEvent"
+        LOG(fatal) 
                    << " MISMATCH "
                    << " x_udet " << x_udet 
                    << " e_udet " << e_udet 
@@ -2279,15 +2279,13 @@ OpticksEvent* Opticks::makeEvent(bool ok, unsigned tagoffset)
     // formerly did configureDomains here, but thats confusing 
     // configureDomains now invoked when setSpaceDomain is called
     if(!m_domains_configured)
-         LOG(fatal) << "Opticks::makeEvent"
+         LOG(fatal) 
                     << " domains MUST be configured by calling setSpaceDomain "
                     << " prior to makeEvent being possible "
                     << " description " << description()
                     ;
 
     assert(m_domains_configured);
-
-
 
 
     unsigned int rng_max = getRngMax() ;
@@ -2309,11 +2307,7 @@ OpticksEvent* Opticks::makeEvent(bool ok, unsigned tagoffset)
     // other params are best keep in m_parameters where they get saved/loaded  
     // with the evt 
 
-#ifdef OLD_PARAMETERS
-    X_BParameters* parameters = evt->getParameters();
-#else
     NMeta*       parameters = evt->getParameters();
-#endif
     parameters->add<unsigned int>("RngMax",    rng_max );
     parameters->add<unsigned int>("BounceMax", bounce_max );
     parameters->add<unsigned int>("RecordMax", record_max );

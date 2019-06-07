@@ -20,6 +20,97 @@ How to do this ?
   * but will I need to create corresponding NCSG ?
 
 
+
+Thoughts
+------------
+
+* it aint easy with what legacy persists, so dont complicate the 
+  situation by trying to do it there 
+
+* instead as a 1st step bring test running into direct workflow  : DONE 
+
+* with direct workflow have advantage that can cycle on creating the
+  base geocache much more easily : so all stages of processing are within easy reach
+
+* but still now to do it ?  start by checking X4PhysicalVolume::convertSolids
+
+And the answer looks like::
+
+    488 GMesh* X4PhysicalVolume::convertSolid( int lvIdx, int soIdx, const G4VSolid* const solid, const std::string& lvname) const
+    489 {
+    490      assert( lvIdx == soIdx );
+    491 
+    492      bool dbglv = lvIdx == m_ok->getDbgLV() ;
+    493      LOG(info) << " [ "
+    494                << ( dbglv ? " --dbglv " : "" )
+    495                 << lvIdx << " " << lvname ;
+    496 
+    497      nnode* raw = X4Solid::Convert(solid, m_ok)  ;
+    ... 
+    518      nnode* root = NTreeProcess<nnode>::Process(raw, soIdx, lvIdx);  // balances deep trees
+    519      root->other = raw ;
+    520 
+    521 
+    522      const NSceneConfig* config = NULL ;
+    523      NCSG* csg = NCSG::Adopt( root, config, soIdx, lvIdx );   // Adopt exports nnode tree to m_nodes buffer in NCSG instance
+    524      assert( csg ) ;
+    525      assert( csg->isUsedGlobally() );
+    526 
+    527      const std::string& soname = solid->GetName() ;
+    528      csg->set_soname( soname.c_str() ) ;
+    529      csg->set_lvname( lvname.c_str() ) ;
+    530 
+    531      bool is_x4polyskip = m_ok->isX4PolySkip(lvIdx);   // --x4polyskip 211,232
+    532      if( is_x4polyskip ) LOG(fatal) << " is_x4polyskip " << " soIdx " << soIdx  << " lvIdx " << lvIdx ;
+    533 
+    534      GMesh* mesh =  is_x4polyskip ? X4Mesh::Placeholder(solid ) : X4Mesh::Convert(solid ) ;
+    535      mesh->setCSG( csg );
+    536 
+    537      LOG(info) << " ] " << lvIdx ;
+    538      return mesh ;
+    539 }
+
+
+* the GMesh have associated NCSG which get added to GGeo and have lvIdx set as their index
+* so looks like just need to persist the GMesh+NCSG separately as well as collectively into the geocache 
+  in addition to the mainline GMergedMesh 
+
+  * the GMesh are already persisted in the GMeshLib, but associated NCSG are not 
+  * need to get the NCSGData src vs transport buffer distinction clear  
+
+* the GMesh are a solid level thing (not node level) so not so many of them (less than 40 for JUNO) 
+
+
+
+
+  
+
+Bringing tboolean-box into direct workflow
+----------------------------------------------
+
+* this means basing the test geometry off of the direct geocache
+
+Hmm still picking up legacy geomety after unset IDPATH ?::
+
+    [blyth@localhost tmp]$ js.py tboolean-box/evt/tboolean-box/torch/-1/parameters.json  | egrep 'Detector|GEOCACHE|KEY' 
+     u'Detector': u'dayabay',
+     u'GEOCACHE': u'/home/blyth/local/opticks/opticksdata/export/DayaBay_VGDX_20140414-1300/g4_00.96ff965744a2f6b78c24e33c80d3a4cd.dae',
+     u'KEY': u'no-key-spec',
+
+
+* Ahha, its because are using op.sh that diddles the environment
+* created a simpler o.sh to replace op.sh that gets this working in direct workflow
+
+::
+
+    blyth@localhost tmp]$ js.py tboolean-box/evt/tboolean-box/torch/-1/parameters.json  | egrep 'Detector|GEOCACHE|KEY' 
+     u'Detector': u'g4live',
+     u'GEOCACHE': u'/home/blyth/local/opticks/geocache/OKX4Test_lWorld0x4bc2710_PV_g4live/g4ok_gltf/f6cc352e44243f8fa536ab483ad390ce/1',
+     u'KEY': u'OKX4Test.X4PhysicalVolume.lWorld0x4bc2710_PV.f6cc352e44243f8fa536ab483ad390ce',
+
+
+
+
 Resolve proxy in GGeoTest::importCSG ?
 --------------------------------------------
 

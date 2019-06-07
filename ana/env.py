@@ -5,6 +5,7 @@
 import numpy as np
 import os, logging
 from opticks.ana.bpath import BPath
+from opticks.ana.key import Key
 
 log = logging.getLogger(__name__) 
 

@@ -23,9 +23,9 @@ class BaseType(object):
 
         """
 
-        log.info("flags.names %s " % repr(flags.names) )
-        log.info("abbrev.name2abbr %s " % abbrev.name2abbr )
-        log.info("abbrev %s " % repr(map(lambda _:abbrev.name2abbr.get(_,None),flags.names)))
+        log.debug("flags.names %s " % repr(flags.names) )
+        log.debug("abbrev.name2abbr %s " % abbrev.name2abbr )
+        log.debug("abbrev %s " % repr(map(lambda _:abbrev.name2abbr.get(_,None),flags.names)))
 
 
         abbrs = map(lambda name:abbrev.name2abbr.get(name,firstlast_(name)), flags.names )

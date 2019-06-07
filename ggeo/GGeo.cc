@@ -981,9 +981,8 @@ const GMesh* GGeo::getMesh(unsigned aindex) const
 {
     return m_meshlib->getMesh(aindex);
 }  
-void GGeo::add(const GMesh* mesh)
+void GGeo::add(const GMesh* mesh)  // canonically invoked by X4PhysicalVolume::convertSolids_r
 {
-    //assert(0);
     m_meshlib->add(mesh);
 }
 void GGeo::countMeshUsage(unsigned meshIndex, unsigned nodeIndex)

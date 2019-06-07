@@ -3,6 +3,7 @@
 #include <iomanip>
 #include <cstdlib>
 #include <cstring>
+#include <csignal>
 
 #include <cassert>
 #include <cstdio>
@@ -274,15 +275,17 @@ int SSys::setenvvar( const char* ekey, const char* value, bool overwrite)
 
     const char* after = getenv(ekey) ;
 
-    LOG(verbose) << "SSys::setenvvar"
-              << " ekey " << ekey 
-              << " ekv " << ekv 
-              << " overwrite " << overwrite
-              << " prior " << ( prior ? prior : "NULL" )
-              << " value " << ( value ? value : "NULL" )   
-              << " after " << ( after ? after : "NULL" )   
-              << " rc " << rc 
-              ;
+    LOG(info) 
+        << " ekey " << ekey 
+        << " ekv " << ekv 
+        << " overwrite " << overwrite
+        << " prior " << ( prior ? prior : "NULL" )
+        << " value " << ( value ? value : "NULL" )   
+        << " after " << ( after ? after : "NULL" )   
+        << " rc " << rc 
+        ;
+
+    //std::raise(SIGINT);  
     return rc ;
 }
 

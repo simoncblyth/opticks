@@ -583,8 +583,9 @@ tboolean--(){
 
     $testname--   ## dump python geometry description
 
-    op.sh  \
+    o.sh  \
             $cmdline \
+            --envkey \
             --rendermode +global,+axis \
             --animtimemax 20 \
             --timemax 20 \
@@ -596,6 +597,8 @@ tboolean--(){
             --torchdbg \
             --tag $(tboolean-tag) --cat $testname \
             --anakey tboolean \
+            --dumpenv \
+            --args \
             --save 
 
     cat << EON > /dev/null
@@ -741,7 +744,7 @@ args = opticks_main(csgpath="${FUNCNAME/--}", autoemitconfig=autoemitconfig)
 
 #emitconfig = "photons:100000,wavelength:380,time:0.2,posdelta:0.1,sheetmask:0x1,umin:0.25,umax:0.75,vmin:0.25,vmax:0.75" 
 #emitconfig = "photons:1,wavelength:380,time:0.2,posdelta:0.1,sheetmask:0x1,umin:0.25,umax:0.75,vmin:0.25,vmax:0.75" 
-emitconfig = "photons:100000,wavelength:380,time:0.2,posdelta:0.1,sheetmask:0x1,umin:0.45,umax:0.55,vmin:0.45,vmax:0.55" 
+emitconfig = "photons:10000,wavelength:380,time:0.2,posdelta:0.1,sheetmask:0x1,umin:0.45,umax:0.55,vmin:0.45,vmax:0.55" 
 
 CSG.kwa = dict(poly="IM",resolution="20", verbosity="0", ctrl=0, containerscale=3.0, emitconfig=emitconfig  )
 

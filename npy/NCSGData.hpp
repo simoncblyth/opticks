@@ -22,6 +22,18 @@ Are using this class as a testbed for generic buffer handling...
 which creates a kinda strange style mix : consider making this 
 entirely generic buffer handling code. Moving specifics up into NCSG ? 
 
+Buffers are grouped into two categeories
+
+SrcBuffers
+    which tellingly have no GTransform buffer, 
+    but do have faces and verts
+
+TransportBuffers
+    (is that the right name ?) 
+
+
+
+
 **/
 
 class NPY_API NCSGData

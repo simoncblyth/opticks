@@ -11,6 +11,19 @@ move to specific other scripts such as ab.py etc..
 
 Keep this general.
 
+
+NB when intended argument values begin with a negative sign
+you have to handhold argparser to get them in::
+
+   np.py GMergedMesh/0/nodeinfo.npy -viF --slice="-20:-1"
+
+Because arguments beginning with negative signs are very common with slices, 
+underscores in arguments are converted to "-" signs for the slice arguments, 
+allowing::
+
+   np.py GMergedMesh/0/nodeinfo.npy -viF -s _20:_1
+
+
 ::
 
    ipython -i $(which np.py) -- tmp/blyth/OKG4Test/evt/g4live/natural/-1/so.npy source/evt/g4live/natural/-1/so.npy -v
@@ -35,7 +48,6 @@ from collections import OrderedDict as odict
 
 log = logging.getLogger(__name__)
 
-np.set_printoptions(suppress=True, precision=4, linewidth=200)
 is_npy_ = lambda _:fnmatch.fnmatch(_,"*.npy")
 is_txt_ = lambda _:fnmatch.fnmatch(_,"*.txt")
 is_dir_ = lambda _:os.path.isdir(_)
@@ -46,10 +58,12 @@ from opticks.ana.base import stamp_
 def dump_one(a, args):
     print(a.shape)
     if args.float:
-        print("f32\n",a.view(np.float32))
+        print("f32")
+        print(a[args.slice].view(np.float32))
     pass
     if args.int:
-        print("i32\n",a.view(np.int32))
+        print("i32")
+        print(a[args.slice].view(np.int32))
     pass
 
 def dump_tree(base, args):
@@ -104,14 +118,25 @@ if __name__ == '__main__':
     parser.add_argument("-F","--nofloat", dest="float", action="store_false" )
     parser.add_argument("-T","--notxt", dest="txt", action="store_false", default=True )
     parser.add_argument("-i","--int", action="store_true", default=False )
+    parser.add_argument("-n","--threshold", type=int, default=1000 )
     parser.add_argument("-d","--debug", action="store_true", default=False )
+    parser.add_argument("-s","--slice", default=None )
 
     args = parser.parse_args()
+    if args.debug:
+        print(args)
+    pass  
+    if args.slice is not None: 
+        args.slice = slice( *map(int,args.slice.replace("_","-").split(":")) )
+    pass 
+    if args.debug:
+        print("args.slice %r " % args.slice)
+    pass 
 
+    np.set_printoptions(suppress=True, precision=4, linewidth=200, threshold=int(args.threshold))
 
     dirs = filter(is_dir_, args.paths)
     npys = filter(is_npy_, args.paths)
-
     if args.debug:
         print("dirs:%s" % repr(dirs))
         print("npys:%s" % repr(npys))

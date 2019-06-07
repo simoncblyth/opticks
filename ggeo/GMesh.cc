@@ -1917,8 +1917,12 @@ void GMesh::save(const char* dir, const char* typedir, const char* instancedir) 
     std::string cachedir = BFile::CreateDir(dir, typedir, instancedir);
 
     if(!cachedir.empty())
-    {
-        saveBuffers(cachedir.c_str());
+     {
+        const char* dir = cachedir.c_str() ;   
+        saveBuffers(dir);
+
+        
+
     }
     else 
     {

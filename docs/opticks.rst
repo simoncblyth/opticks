@@ -178,6 +178,12 @@ directory              precursor        pkg name        notes
 boost                  boost-           Boost           components: system thread program_options log log_setup filesystem regex 
 =====================  ===============  =============   ==============================================================================
 
+
+The recommended minimum boost version is 1.53 as that is what I am using. 
+You might be able to survive with an earlier version, 
+but anything before 1.41 is known not to work. 
+
+
 Updating Boost 
 ~~~~~~~~~~~~~~~~
 
@@ -192,12 +198,6 @@ step will yield errors like the below.::
 If possible use your system package manager to update Boost. If that is 
 not possible then do a local Boost install.  Opticks includes bash functions
 starting *boost-* that can get and install Boost locally.
-
-::
-
-    opticks-
-    boost-
-    opticks-configure -DBOOST_ROOT=$(boost-prefix)
 
 
 Platform Support
@@ -274,8 +274,7 @@ Versions of CUDA and OptiX
 
 I recommend you start your installation attempt with the lastest versions of OptiX
 together with the version of CUDA that it was built against, as stated in 
-the OptiX release notes. For example I am currently testing and seeing some success 
-with the latest OptiX 5.0.1, CUDA 9.1 on the almost latest build of macOS 10.13.4.
+the OptiX release notes. 
 This version pinning between CUDA and OptiX is because Opticks links against 
 both the OptiX library and the CUDA runtime.
 
@@ -303,7 +302,7 @@ Any issues with *earlier* version combinations will not be addressed.
 The reason for the extremes of caution regarding version combinations of drivers 
 is that the interface to the GPU is via kernel extensions where if anything goes 
 wrong there is no safety net. A bad kernel extension will cause kernel panics, 
-your machine crashes and continue to crash until the bad driver is removed 
+your machine crashes and continues to crash until the bad driver is removed 
 (on macOS the removal can be done by resetting NVRAM).
 
 
@@ -504,34 +503,6 @@ To build::
 
     opticks--
 
-
-Configuration Machinery
-------------------------
-
-If the above configuration suceeded for you then 
-you do not need to understand this machinery.
-
-The below commands from the *opticks-cmake* bash function 
-change directory to the build folder and invokes cmake 
-to generate a configuration cache file and multiple Makefiles.::
-
-   opticks-bcd
-   cmake \
-       -DCMAKE_BUILD_TYPE=Debug \
-       -DCMAKE_INSTALL_PREFIX=$(opticks-prefix) \
-       -DOptiX_INSTALL_DIR=$(optix-prefix) \
-       $* \
-       $(opticks-sdir)
-
-CMake is controlled via CMakeLists.txt files. 
-The top level one includes the below lines that 
-locate the CUDA and OptiX:: 
-
-    set(OPTICKS_CUDA_VERSION 7.0)
-    set(OPTICKS_OPTIX_VERSION 3.8)
-    ...
-    find_package(CUDA ${OPTICKS_CUDA_VERSION})
-    find_package(OptiX ${OPTICKS_OPTIX_VERSION})
 
 
 Opticks Without NVIDIA OptiX and CUDA ?

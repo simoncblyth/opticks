@@ -6,13 +6,6 @@ CSG_
 Used by tboolean- for CSG solid construction and serialization
 for reading by npy-/NCSG 
 
-TODO:
-
-* collect metadata kv for any node, for root nodes only 
-  persist the metadata with Serialize (presumably as json or ini) 
-  For example to control type of triangulation and 
-  parameters such as thresholds and octree sizes per csg tree.
-
 """
 import os, sys, logging, json, string, numpy as np
 log = logging.getLogger(__name__)
