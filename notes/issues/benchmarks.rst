@@ -10,7 +10,10 @@ from an extreme sensitivity to f64 in the PTX
 After removing the f64 with the help of ptx.py the 
 RTX mode started flying.   See :doc:`bench360`
 
+Related:
 
+* :doc:`rtxmode-performance-jumps-by-factor-3-or-4-after-flipping-with-torus-switch-off`
+* :doc:`oxrap-hunt-for-f64-in-ptx`
 
 
 Things to try to speedup analytic

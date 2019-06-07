@@ -7,6 +7,29 @@ Context
 * :doc:`shakedown-running-from-expanded-binary-tarball`
 
 
+
+OPTIX_CACHE_PATH Envvar Workaround
+-------------------------------------
+
+::
+
+    [blyth@localhost ~]$ OPTIX_CACHE_PATH=/var/tmp/blyth/OptiXCache UseOptiX --ctx
+    OptiX version 60000 major.minor.micro 6.0.0   Number of devices = 2 
+
+     Device 0:                        TITAN_V    0000:A6:00.0 ordinal:0 compat[0]:1  Compute Support: 7 0  Total Memory: 12621381632 bytes 
+     Device 1:                      TITAN_RTX    0000:73:00.0 ordinal:1 compat[0]:1  Compute Support: 7 5  Total Memory: 25364987904 bytes 
+    all GPU names are unique, nothing to do 
+
+
+    ( creating context 
+    ) creating context 
+     RT_FORMAT_FLOAT4 size 16
+    [blyth@localhost ~]$ l /var/tmp/blyth/
+    total 0
+    drwxrwxr--. 2 blyth blyth 62 Jun  7 10:44 OptiXCache
+
+
+
 Issue : /var/tmp/OptixCache doesnt have username in the path
 ----------------------------------------------------------------
 
