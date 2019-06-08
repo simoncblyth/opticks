@@ -410,9 +410,6 @@ G4LogicalSurface* X4PhysicalVolume::findSurface( const G4VPhysicalVolume* const 
 
 
 
-
-
-
 /**
 X4PhysicalVolume::convertSolids
 -----------------------------------
@@ -422,11 +419,10 @@ tail after the recursive call, to match the traverse used
 by GDML, and hence giving the same "postorder" indices
 for the solid lvIdx.
 
-The entire tree volume tree is recursed, but only the 
+The entire volume tree is recursed, but only the 
 first occurence of each LV solid gets converted 
 (because they are all the same).
 Done this way to have consistent lvIdx soIdx indexing with GDML ?
-
 
 **/
 
@@ -447,6 +443,17 @@ void X4PhysicalVolume::convertSolids()
     OK_PROFILE("X4PhysicalVolume::convertSolids");
 
 }
+
+
+/**
+X4PhysicalVolume::convertSolids_r
+------------------------------------
+
+G4VSolid is converted to GMesh with associated analytic NCSG 
+and added to GGeo/GMeshLib.
+
+**/
+
 
 void X4PhysicalVolume::convertSolids_r(const G4VPhysicalVolume* const pv, int depth)
 {
@@ -677,6 +684,7 @@ void X4PhysicalVolume::convertStructure()
     int depth = 0 ;
 
     bool recursive_select = false ;
+
     m_root = convertStructure_r(pv, parent, depth, parent_pv, recursive_select );
 
     NTreeProcess<nnode>::SaveBuffer("$TMP/NTreeProcess.npy");      
@@ -839,6 +847,20 @@ unsigned X4PhysicalVolume::addBoundary(const G4VPhysicalVolume* const pv, const 
 }
 
 
+
+/**
+X4PhysicalVolume::convertNode
+--------------------------------
+
+* suspect the parallel tree is for gltf creation ?
+
+* observe the NSensor is always NULL here 
+
+
+
+**/
+
+
 GVolume* X4PhysicalVolume::convertNode(const G4VPhysicalVolume* const pv, GVolume* parent, int depth, const G4VPhysicalVolume* const pv_p, bool& recursive_select )
 {
 
@@ -863,7 +885,8 @@ GVolume* X4PhysicalVolume::convertNode(const G4VPhysicalVolume* const pv, GVolum
 
      const GMesh* mesh = m_ggeo->getMesh(lvIdx); 
      const NCSG* csg = mesh->getCSG();  
-     GParts* pts = GParts::make( csg, boundaryName.c_str(), m_verbosity  );  // see GScene::createVolume 
+
+     GParts* pts = GParts::Make( csg, boundaryName.c_str() );  // see GScene::createVolume 
      pts->setBndLib(m_blib);
 
 
@@ -882,13 +905,12 @@ GVolume* X4PhysicalVolume::convertNode(const G4VPhysicalVolume* const pv, GVolum
      glm::mat4 xf_global = gtriple->t ;
      GMatrixF* gtransform = new GMatrix<float>(glm::value_ptr(xf_global));
 
-     NSensor* sensor = NULL ; 
      unsigned ndIdx = m_node_count ;  
 
  
      pts->setVolumeIndex( ndIdx );  
 
-     GVolume* volume = new GVolume(ndIdx, gtransform, mesh, boundary, sensor );
+     GVolume* volume = new GVolume(ndIdx, gtransform, mesh );
      m_node_count += 1 ; 
 
      unsigned lvr_lvIdx = lvIdx ; 
@@ -899,10 +921,10 @@ GVolume* X4PhysicalVolume::convertNode(const G4VPhysicalVolume* const pv, GVolum
                 << " selected " << selected
                ; 
  
+     NSensor* sensor = NULL ; 
      volume->setSensor( sensor );   
      volume->setBoundary( boundary ); 
      volume->setSelected( selected );
-     // TODO: rejig GVolume ctor args, to avoid the apparent duplication of setters for array setup
 
      volume->setLevelTransform(ltransform);
 

@@ -1,10 +1,8 @@
 #!/usr/bin/env python
 
 import os,sys, numpy as np, logging
-from opticks.ana.base import opticks_main
 from opticks.ana.proplib import PropLib
 from opticks.ana.nload import np_load
-
 log = logging.getLogger(__name__)
 
 np.set_printoptions(precision=3, suppress=True)
@@ -12,6 +10,7 @@ np.set_printoptions(precision=3, suppress=True)
 
 if __name__ == '__main__':
 
+    from opticks.ana.main import opticks_main
     args = opticks_main()
 
     base = "$TMP/InterpolationTest"

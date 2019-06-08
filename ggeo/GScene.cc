@@ -51,6 +51,7 @@ GBndLib*          GScene::getBndLib() const  {          return m_ggeo->getBndLib
 GPmtLib*          GScene::getPmtLib() const {          return m_ggeo->getPmtLib(); } 
 GGeoLib*          GScene::getGeoLib() const {          return m_geolib ; } 
 GNodeLib*         GScene::getNodeLib() const {         return m_nodelib ; }
+GMeshLib*         GScene::getMeshLib() const {         return NULL ; }
 
 const char*       GScene::getIdentifier() const {       return "GScene" ;  }
 GMergedMesh*      GScene::getMergedMesh(unsigned idx) const { return m_geolib->getMergedMesh(idx); } 
@@ -341,7 +342,7 @@ void GScene::importMeshes(NScene* scene)  // load analytic polygonized GMesh ins
              << " soname " << soname 
              ;
 
-        GMesh* mesh = GMeshMaker::make_mesh(tris->getTris(), mesh_idx );
+        GMesh* mesh = GMeshMaker::Make(tris->getTris(), mesh_idx );
         assert(mesh);
 
         mesh->setCSG(csg);
@@ -691,7 +692,7 @@ GVolume* GScene::createVolume(nd* n, unsigned depth, bool& recursive_select  ) /
     // for odd gltf : use the tri GMesh within the analytic GVolume 
     // for direct comparison of analytic ray trace with tri polygonization
 
-    GVolume* volume = new GVolume( rel_node_idx, gtransform, (m_gltf == 3 ? altmesh : mesh ), UINT_MAX, NULL );     
+    GVolume* volume = new GVolume( rel_node_idx, gtransform, (m_gltf == 3 ? altmesh : mesh ) );     
    
     volume->setLevelTransform(ltransform); 
 
@@ -700,7 +701,7 @@ GVolume* GScene::createVolume(nd* n, unsigned depth, bool& recursive_select  ) /
 
     std::string bndspec = lookupBoundarySpec(volume, n);  // using just transferred boundary from tri branch
 
-    GParts* pts = GParts::make( csg, bndspec.c_str(), m_verbosity  ); // amplification from mesh level to node level 
+    GParts* pts = GParts::Make( csg, bndspec.c_str() ); // amplification from mesh level to node level 
 
     assert( m_tri_bndlib );
 

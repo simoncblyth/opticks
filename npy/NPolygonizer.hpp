@@ -5,12 +5,7 @@
 
 struct nnode ; 
 struct nbbox ; 
-
-#ifdef OLD_PARAMETERS
-class X_BParameters ; 
-#else
 class NMeta ; 
-#endif
 
 
 class NCSG ; 
@@ -53,11 +48,8 @@ class NPY_API NPolygonizer {
          NCSG*             m_csg ;
          nnode*            m_root ; 
          nbbox*            m_bbox ; 
-#ifdef OLD_PARAMETERS
-         X_BParameters*      m_meta ;  
-#else
          NMeta*            m_meta ;  
-#endif
+
          int               m_verbosity ; 
          int               m_index ; 
          const char*       m_poly ; 

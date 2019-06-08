@@ -19,6 +19,7 @@ class GMaterialLib ;
 class GBndLib ; 
 class GPmtLib ; 
 class GGeoLib ; 
+class GMeshLib ; 
 
 class GMesh ; 
 class GMergedMesh ; 
@@ -144,6 +145,7 @@ class GGEO_API GScene : public GGeoBase
         GPmtLib*          getPmtLib() const ; 
         GGeoLib*          getGeoLib() const ; 
         GNodeLib*         getNodeLib() const ;
+        GMeshLib*         getMeshLib() const ;
 
         const char*       getIdentifier() const ;
         GMergedMesh*      getMergedMesh(unsigned ridx) const ;

@@ -230,6 +230,7 @@ GScintillatorLib* GGeo::getScintillatorLib() const { return m_scintillatorlib ; 
 GSourceLib*       GGeo::getSourceLib() const  { return m_sourcelib ; }
 GSurfaceLib*      GGeo::getSurfaceLib() const { return m_surfacelib ; } 
 GMaterialLib*     GGeo::getMaterialLib() const { return m_materiallib ; }
+GMeshLib*         GGeo::getMeshLib() const { return m_meshlib ; }
  
 GBndLib*          GGeo::getBndLib() const { return m_bndlib ; } 
 GPmtLib*          GGeo::getPmtLib() const { return m_pmtlib ; } 

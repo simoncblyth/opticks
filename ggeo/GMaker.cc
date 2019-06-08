@@ -19,6 +19,7 @@
 #include "GParts.hh"
 #include "GBBoxMesh.hh"
 #include "GMesh.hh"
+#include "GMeshLib.hh"
 #include "GMeshMaker.hh"
 #include "GVolume.hh"
 #include "GVector.hh"
@@ -28,10 +29,11 @@
 #include "PLOG.hh"
 
 
-GMaker::GMaker(Opticks* ok, GBndLib* blib)
+GMaker::GMaker(Opticks* ok, GBndLib* blib, GMeshLib* meshlib)
     :
     m_ok(ok),
-    m_bndlib(blib)   // required for adding boundaries and returning indices for them 
+    m_bndlib(blib),   // required for adding boundaries and returning indices for them 
+    m_meshlib(meshlib)
 {
     init();
 }
@@ -41,7 +43,6 @@ void GMaker::init()
 {
     assert( m_bndlib );
 }
-
 
 
 GVolume* GMaker::make(unsigned int /*index*/, OpticksCSG_t type, glm::vec4& param, const char* spec )
@@ -95,7 +96,7 @@ GVolume* GMaker::make(unsigned int /*index*/, OpticksCSG_t type, glm::vec4& para
      GParts* pts = volume->getParts();  
      if(pts == NULL)
      {
-         pts = GParts::make(type, param, spec);  // (1,4,4) with typecode and bbox set 
+         pts = GParts::Make(type, param, spec);  // (1,4,4) with typecode and bbox set 
          volume->setParts(pts);
      }
      assert(pts);
@@ -109,11 +110,6 @@ GVolume* GMaker::make(unsigned int /*index*/, OpticksCSG_t type, glm::vec4& para
 }
 
 
-GVolume* GMaker::makeFromCSG(NCSG* csg, unsigned verbosity)
-{
-    return makeFromCSG(csg, m_bndlib, verbosity );
-}
-
 
 std::string GMaker::LVName(const char* shapename, int idx)
 {
@@ -125,7 +121,57 @@ std::string GMaker::PVName(const char* shapename, int idx)
     return NCSG::TestVolumeName(shapename, "pv", idx );
 }
 
-GVolume* GMaker::makeFromCSG(NCSG* csg, GBndLib* /*bndlib*/, unsigned verbosity )
+
+GVolume* GMaker::makeFromProxy(NCSG* proxy )
+{
+    unsigned lvIdx = proxy->getProxyLV(); 
+    const char* spec = proxy->getBoundary();  
+    assert( spec ); 
+
+    const GMesh* mesh = m_meshlib->getMesh(lvIdx); 
+    const NCSG* csg = mesh->getCSG(); 
+    assert( csg ) ; 
+
+    glm::mat4 txf(1.f) ; 
+    GMatrixF* transform = new GMatrix<float>(glm::value_ptr(txf));
+
+    GVolume* volume = new GVolume(lvIdx, transform, mesh );     
+
+    volume->setSensor( NULL );      
+
+    OpticksCSG_t type = csg->getRootType() ;
+
+    std::string lvn = csg->getTestLVName();
+    std::string pvn = csg->getTestPVName();
+    
+    volume->setPVName( strdup(pvn.c_str()) );
+    volume->setLVName( strdup(lvn.c_str()) );
+    volume->setCSGFlag( type );
+
+    GParts* pts = GParts::Make( csg, spec );
+
+    volume->setParts( pts );
+
+    LOG(info) 
+              << " lvIdx " << lvIdx
+              << " proxy.spec " << spec 
+              ; 
+
+    return volume ; 
+}
+
+
+/**
+GMaker::makeFromCSG
+----------------------
+
+FORMERLY set boundary within here,  
+moved later to allow relocation of basis
+surfaces prior to arriving at a boundary index 
+
+**/
+
+GVolume* GMaker::makeFromCSG(NCSG* csg )
 {
     unsigned index = csg->getIndex();
 
@@ -133,24 +179,20 @@ GVolume* GMaker::makeFromCSG(NCSG* csg, GBndLib* /*bndlib*/, unsigned verbosity 
 
     NTrianglesNPY* tris = csg->polygonize();
 
-    GMesh* mesh = GMeshMaker::make_mesh(tris->getTris(), index);
+    GMesh* mesh = GMeshMaker::Make(tris->getTris(), index);
 
     mesh->setCSG(csg);
 
-    glm::mat4 txf = tris->getTransform(); 
+    glm::mat4 txf = tris->getTransform();  // <-- mysterious place to get transform from ?
 
     //LOG(info) << "txf " << glm::to_string(txf) ; 
 
     GMatrixF* transform = new GMatrix<float>(glm::value_ptr(txf));
 
-    GVolume* volume = new GVolume(index, transform, mesh, UINT_MAX, NULL );     
+    GVolume* volume = new GVolume(index, transform, mesh );     
     // csg is mesh-qty not a node-qty, boundary spec is a node-qty : so this is just for testing
 
     volume->setSensor( NULL );      
-
-    // FORMERLY set boundary here 
-    // moved later to allow relocation of basis
-    // surfaces prior to arriving at a boundary index 
 
 
     OpticksCSG_t type = csg->getRootType() ;
@@ -162,13 +204,11 @@ GVolume* GMaker::makeFromCSG(NCSG* csg, GBndLib* /*bndlib*/, unsigned verbosity 
     volume->setLVName( strdup(lvn.c_str()) );
     volume->setCSGFlag( type );
 
-    GParts* pts = GParts::make( csg, spec, verbosity );
+    GParts* pts = GParts::Make( csg, spec );  
 
     volume->setParts( pts );
 
-
     LOG(info) 
-              << " verbosity " << verbosity 
               << " index " << index 
               << " boundary-spec " << spec 
               << " numTris " << ( tris ? tris->getNumTriangles() : 0 )
@@ -225,7 +265,7 @@ GVolume* GMaker::makeBox(gbbox& bbox)
     // TODO: tranform hookup with NTrianglesNPY 
     GMatrixF* transform = new GMatrix<float>();
 
-    GVolume* volume = new GVolume(nodeindex, transform, mesh, UINT_MAX, NULL );     
+    GVolume* volume = new GVolume(nodeindex, transform, mesh );     
 
     volume->setBoundary(0);     // unlike ctor these create arrays
     volume->setSensor( NULL );      
@@ -238,28 +278,26 @@ GVolume* GMaker::makeBox(gbbox& bbox)
 
 GVolume* GMaker::makePrism(glm::vec4& param, const char* spec)
 {
-   /*
-   */
 
     NTrianglesNPY* tris = NTrianglesNPY::prism(param);
 
     unsigned int meshindex = 0 ; 
     unsigned int nodeindex = 0 ; 
 
-    GMesh* mesh = GMeshMaker::make_mesh(tris->getTris(), meshindex);
+    GMesh* mesh = GMeshMaker::Make(tris->getTris(), meshindex);
     //mesh->dumpNormals("GMaker::makePrism normals", 24);
 
     glm::mat4 txf = tris->getTransform(); 
     GMatrixF* transform = new GMatrix<float>(glm::value_ptr(txf));
 
-    GVolume* volume = new GVolume(nodeindex, transform, mesh, UINT_MAX, NULL );     
-    volume->setBoundary(0);     // unlike ctor these create arrays
+    GVolume* volume = new GVolume(nodeindex, transform, mesh );     
+    volume->setBoundary(0);     // these setters create arrays
     volume->setSensor( NULL );      
 
     nprism prism(param.x, param.y, param.z, param.w);
     npart  pprism = prism.part();
 
-    GParts* pts = GParts::make(pprism, spec);
+    GParts* pts = GParts::Make(pprism, spec);
 
     volume->setParts(pts);
 
@@ -427,8 +465,8 @@ GVolume* GMaker::makeZSphereIntersect_DEAD(glm::vec4& param, const char* spec)
     GVolume* a_volume = makeSphere(a_tris);
     GVolume* b_volume = makeSphere(b_tris);
 
-    GParts* a_pts = GParts::make(ar, spec);
-    GParts* b_pts = GParts::make(bl, spec);
+    GParts* a_pts = GParts::Make(ar, spec);
+    GParts* b_pts = GParts::Make(bl, spec);
 
     a_volume->setParts(a_pts);
     b_volume->setParts(b_pts);
@@ -452,15 +490,15 @@ GVolume* GMaker::makeSphere(NTrianglesNPY* tris)
 
     glm::mat4 txf = tris->getTransform(); 
 
-    GMesh* mesh = GMeshMaker::make_spherelocal_mesh(triangles, meshindex);
+    GMesh* mesh = GMeshMaker::MakeSphereLocal(triangles, meshindex);
 
     GMatrixF* transform = new GMatrix<float>(glm::value_ptr(txf));
 
     //transform->Summary("GMaker::makeSphere");
 
-    GVolume* volume = new GVolume(nodeindex, transform, mesh, UINT_MAX, NULL );     
+    GVolume* volume = new GVolume(nodeindex, transform, mesh );     
 
-    volume->setBoundary(0);     // unlike ctor these create arrays
+    volume->setBoundary(0);     // these setters create arrays
     volume->setSensor( NULL );      
 
     return volume ; 

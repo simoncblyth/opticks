@@ -27,8 +27,8 @@ GMeshLib : provides load/save for GMesh instances with associated names
 * not on critical path (?) : used in checking feasibility of a polygonization implementation  
 
 
-TODO: use GItemList rather than GItemIndex for the names
--------------------------------------------------------------
+TODO: complete the switch to GItemList rather than GItemIndex for the names
+--------------------------------------------------------------------------------
 
 The local/source indices are 1-based and 0-based, thats not a good 
 reason to use an Index.
@@ -114,6 +114,7 @@ class GGEO_API GMeshLib
         void saveMeshUsage(const char* idpath) const ;
     private:
         Opticks*                      m_ok ; 
+        bool                          m_direct ;  
         const char*                   m_reldir ; 
         const char*                   m_reldir_solids ; 
         GItemIndex*                   m_meshindex ; 

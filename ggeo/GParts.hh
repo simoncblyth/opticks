@@ -182,12 +182,12 @@ class GGEO_API GParts {
             } ;
     public:
       //
-        static GParts* make(const npart& pt, const char* spec);
-        static GParts* make(OpticksCSG_t csgflag, glm::vec4& param, const char* spec);
-        static GParts* make(const NCSG* tree, const char* spec, unsigned verbosity );
+        static GParts* Make(const npart& pt, const char* spec);
+        static GParts* Make(OpticksCSG_t csgflag, glm::vec4& param, const char* spec);
+        static GParts* Make(const NCSG* tree, const char* spec );
     public:
-        static GParts* combine(std::vector<GParts*> subs, unsigned verbosity);
-        static GParts* combine(GParts* onesub,            unsigned verbosity=0 );   // for consistent handling between 1 and many 
+        static GParts* Combine(std::vector<GParts*> subs, unsigned verbosity);
+        static GParts* Combine(GParts* onesub,            unsigned verbosity=0 );   // for consistent handling between 1 and many 
     public:
         GParts(GBndLib* bndlib=NULL);
         GParts(NPY<unsigned>* idxBuf, NPY<float>* partBuf, NPY<float>* tranBuf, NPY<float>* planBuf, const char* spec, GBndLib* bndlib=NULL);

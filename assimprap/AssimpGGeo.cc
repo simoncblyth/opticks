@@ -982,9 +982,7 @@ GVolume* AssimpGGeo::convertStructureVisit(GGeo* gg, AssimpNode* node, unsigned 
     ltransform->Summary("AssimpGGeo::convertStructureVisit ltransform");
 
 
-    unsigned boundary = UINT_MAX ; 
-    NSensor* sensor = NULL ; 
-    GVolume* volume = new GVolume(nodeIndex, gtransform, mesh, boundary, sensor ); // sensor starts NULL
+    GVolume* volume = new GVolume(nodeIndex, gtransform, mesh ); 
     volume->setLevelTransform(ltransform);
 
     const char* lv   = node->getName(0); 
@@ -1050,7 +1048,7 @@ GVolume* AssimpGGeo::convertStructureVisit(GGeo* gg, AssimpNode* node, unsigned 
     }
 
 
-    sensor = m_sensor_list ? m_sensor_list->findSensorForNode( nodeIndex ) : NULL ; 
+    NSensor* sensor = m_sensor_list ? m_sensor_list->findSensorForNode( nodeIndex ) : NULL ; 
     volume->setSensor( sensor );  
 
     GBndLib* blib = gg->getBndLib();  
@@ -1058,7 +1056,7 @@ GVolume* AssimpGGeo::convertStructureVisit(GGeo* gg, AssimpNode* node, unsigned 
 
 
     // boundary identification via 4-uint 
-    boundary = blib->addBoundary( 
+    unsigned boundary = blib->addBoundary( 
                                   omat,
                                   osurf ? osurf->getShortName() : NULL ,
                                   isurf ? isurf->getShortName() : NULL ,

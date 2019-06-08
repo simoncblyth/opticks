@@ -67,6 +67,7 @@ GPmtLib*          GGeoTest::getPmtLib() const {          return m_pmtlib ; }
 
 // local residents backed by corresponding basis libs 
 GBndLib*          GGeoTest::getBndLib() const {          return m_bndlib ;  }
+GMeshLib*         GGeoTest::getMeshLib() const {         return m_meshlib ;  }
 GSurfaceLib*      GGeoTest::getSurfaceLib() const {      return m_slib ;  }
 GMaterialLib*     GGeoTest::getMaterialLib() const {     return m_mlib ;  }
 
@@ -109,12 +110,13 @@ GGeoTest::GGeoTest(Opticks* ok, GGeoBase* basis)
     m_test(true),
     m_basis(basis),
     m_pmtlib(basis->getPmtLib()),
+    m_meshlib(basis->getMeshLib()),
     m_mlib(new GMaterialLib(m_ok, basis->getMaterialLib())),
     m_slib(new GSurfaceLib(m_ok, basis->getSurfaceLib())),
     m_bndlib(new GBndLib(m_ok, m_mlib, m_slib)),
     m_geolib(new GGeoLib(m_ok,m_analytic,m_bndlib)),
     m_nodelib(new GNodeLib(m_ok, m_analytic, m_test, basis->getNodeLib() )),
-    m_maker(new GMaker(m_ok, m_bndlib)),
+    m_maker(new GMaker(m_ok, m_bndlib, m_meshlib)),
     m_csglist(m_csgpath ? NCSGList::Load(m_csgpath, m_verbosity ) : NULL),
     m_solist(new GVolumeList()),
     m_err(0)
@@ -159,7 +161,7 @@ void GGeoTest::init()
 
 GMergedMesh* GGeoTest::initCreateCSG()
 {
-    assert(m_csgpath && "misconfigured");
+    assert(m_csgpath && "m_csgpath is required");
     assert(strlen(m_csgpath) > 3 && "unreasonable csgpath strlen");  
 
     m_resource->setTestCSGPath(m_csgpath); // take note of path, for inclusion in event metadata
@@ -180,7 +182,6 @@ GMergedMesh* GGeoTest::initCreateCSG()
         return NULL ; 
     }
 
-
     if(m_ok->isTestAuto())
     {
         // override commandline settings, and CSG boundaries and emit config
@@ -193,14 +194,10 @@ GMergedMesh* GGeoTest::initCreateCSG()
         m_csglist->autoTestSetup(m_config);
     }
 
-
-
     {
         GNodeLib* basis = m_nodelib->getBasis(); 
         basis->dump("basis nodeLib");    
     }  
-
-
 
     std::vector<GVolume*>& volumes = m_solist->getList();
 
@@ -208,9 +205,167 @@ GMergedMesh* GGeoTest::initCreateCSG()
 
     GMergedMesh* tmm = combineVolumes(volumes, NULL);
 
-
     return tmm ; 
 }
+
+
+/**
+GGeoTest::importCSG
+--------------------
+
+Imports CSG trees from the m_csglist appending GVolume instances to the argument vector.
+
+
+1. add test materials to m_mlib
+2. reuse materials mentioned in test geometry boundary specification strings 
+   by "stealing" material pointers from the basis lib and adding them to m_mlib
+3. for each NCSG tree in the test geometry make a corresponding GVolume (with GMaker), 
+
+   * parent/child links are set assuming simple Russian doll containment 
+     with outermost volume being the first in the list of NCSG trees
+
+   * surfaces referenced by boundaries of the test geometry are collected 
+     into m_slib (stealing pointers) and surface metadata changed for test volume
+     names
+
+4. boundaries used in the test geometry are added to m_bndlib and the 
+   boundary index is assigned to GVolume
+
+
+**/
+
+void GGeoTest::importCSG(std::vector<GVolume*>& volumes)
+{
+    assert(m_csgpath);
+    assert(m_csglist);
+    unsigned numTree = m_csglist->getNumTrees() ;
+
+    LOG(info) << "[" 
+             << " csgpath " << m_csgpath 
+             << " numTree " << numTree 
+             << " verbosity " << m_verbosity
+             ;
+
+    assert( numTree > 0 );
+
+    m_mlib->addTestMaterials(); 
+
+    reuseMaterials(m_csglist);
+   
+    if(m_dbgbnd)
+    { 
+        LOG(error) << "[--dbgbnd] this.slib  " << m_slib->desc()  ; 
+        LOG(error) << "[--dbgbnd] basis.slib " << m_slib->getBasis()->desc()  ; 
+    }
+
+    int primIdx(-1) ; 
+
+    // assuming tree order from outermost to innermost volume 
+    GVolume* prior = NULL ; 
+
+    for(unsigned i=0 ; i < numTree ; i++)
+    {
+        primIdx++ ; // each tree is separate OptiX primitive, with own line in the primBuffer 
+
+        NCSG* tree = m_csglist->getTree(i) ; 
+
+        GVolume* volume = NULL ; 
+        if( tree->isProxy() )
+        {
+            volume = m_maker->makeFromProxy( tree );
+            volume->setIndex(i);
+        }
+        else
+        {
+            volume = m_maker->makeFromCSG( tree );
+        } 
+
+
+        if(prior)
+        {
+            volume->setParent(prior);
+            prior->addChild(volume);
+        }
+        prior = volume ; 
+
+        const char* spec = tree->getBoundary();  
+        assert( spec );  
+
+        // materials and surfaces must be in place before adding 
+        // the boundary spec to get the boundary index 
+
+        relocateSurfaces(volume, spec);
+
+        GParts* pts = volume->getParts();
+        pts->setIndex(0u, i);
+        if(pts->isPartList())  // not doing this for NodeTree
+        {
+            pts->setNodeIndexAll(primIdx ); 
+        }
+        pts->setBndLib(m_bndlib);
+
+        //glm::mat4 tr = volume->getTransformMat4(); 
+        //LOG(info) << " tr " << glm::to_string(tr);  
+
+        volumes.push_back(volume);  // <-- TODO: eliminate 
+        m_nodelib->add(volume);
+    }
+
+
+    // Final pass setting boundaries
+    // as all mat/sur must be added to the mlib/slib
+    // before can form boundaries. As boundaries 
+    // require getIndex calls that will close the slib, mlib 
+    // (settling the indices) and making subsequnent mat/sur additions assert.
+    //
+    // Note that late setting of boundary is fine for GParts (analytic geometry), 
+    // as spec are held as strings within GParts until GParts::close
+    //
+    // See notes/issues/GGeoTest_isClosed_assert.rst 
+    
+ 
+    unsigned numVolume = m_nodelib->getNumVolumes();
+    assert( numVolume == numTree );
+
+    m_bndlib->closeConstituents(); 
+
+    for(unsigned i=0 ; i < numTree ; i++)
+    {
+        NCSG* tree = m_csglist->getTree(i) ; 
+        GVolume* volume = m_nodelib->getVolume(i) ;
+        const char* spec = tree->getBoundary();  
+        assert(spec);  
+        unsigned boundary = m_bndlib->addBoundary(spec, false); 
+
+        volume->setBoundary(boundary);     // unlike ctor these create arrays, duplicating boundary to all tris
+    }
+
+    // see notes/issues/material-names-wrong-python-side.rst
+    LOG(info) << "Save mlib/slib names " 
+              << " numTree : " << numTree
+              << " csgpath : " << m_csgpath
+              ;
+
+    if( numTree > 0 )
+    { 
+        m_mlib->saveNames(m_csgpath);
+        m_slib->saveNames(m_csgpath);
+    } 
+
+    LOG(info) << "]" ; 
+}
+
+
+
+/**
+GGeoTest::initCreateBIB
+------------------------
+
+This is almost ready to be deleted, once 
+succeed to wheel in standard solids
+via some proxying metadata in the csglist.
+
+**/
 
 GMergedMesh* GGeoTest::initCreateBIB()
 {
@@ -351,149 +506,6 @@ void GGeoTest::reuseMaterials(const char* spec)
     }
 }
 
-
-/**
-GGeoTest::importCSG
---------------------
-
-1. add test materials to m_mlib
-2. reuse materials mentioned in test geometry boundary specification strings 
-   by "stealing" material pointers from the basis lib and adding them to m_mlib
-3. for each NCSG tree in the test geometry make a corresponding GVolume (with GMaker), 
-
-   * parent/child links are set assuming simple Russian doll containment 
-     with outermost volume being the first in the list of NCSG trees
-
-   * surfaces referenced by boundaries of the test geometry are collected 
-     into m_slib (stealing pointers) and surface metadata changed for test volume
-     names
-
-4. boundaries used in the test geometry are added to m_bndlib and the 
-   boundary index is assigned to GVolume
-
-
-**/
-
-void GGeoTest::importCSG(std::vector<GVolume*>& volumes)
-{
-    assert(m_csgpath);
-    assert(m_csglist);
-
-    unsigned numTree = m_csglist->getNumTrees() ;
-
-    LOG(info) << "[" 
-             << " csgpath " << m_csgpath 
-             << " numTree " << numTree 
-             << " verbosity " << m_verbosity
-             ;
-
-
-    assert( numTree > 0 );
-
-    m_mlib->addTestMaterials(); 
-
-    reuseMaterials(m_csglist);
-   
-
-    if(m_dbgbnd)
-    { 
-       LOG(error) << "[--dbgbnd] this.slib  " << m_slib->desc()  ; 
-       LOG(error) << "[--dbgbnd] basis.slib " << m_slib->getBasis()->desc()  ; 
-    }
-
-    int primIdx(-1) ; 
-
-    // assuming tree order from outermost to innermost volume 
-    GVolume* prior = NULL ; 
-
-    for(unsigned i=0 ; i < numTree ; i++)
-    {
-        primIdx++ ; // each tree is separate OptiX primitive, with own line in the primBuffer 
-
-        NCSG* tree = m_csglist->getTree(i) ; 
-       
-        GVolume* volume = m_maker->makeFromCSG(tree, m_verbosity );
-
-        if(prior)
-        {
-            volume->setParent(prior);
-            prior->addChild(volume);
-        }
-        prior = volume ; 
-
-        const char* spec = tree->getBoundary();  
-
-        // materials and surfaces must be in place before adding 
-        // the boundary spec to get the boundary index 
-
-        relocateSurfaces(volume, spec);
-
-
-
-        GParts* pts = volume->getParts();
-        pts->setIndex(0u, i);
-        if(pts->isPartList())  // not doing this for NodeTree
-        {
-            pts->setNodeIndexAll(primIdx ); 
-        }
-        pts->setBndLib(m_bndlib);
-
-
-        //glm::mat4 tr = volume->getTransformMat4(); 
-        //LOG(info) << " tr " << glm::to_string(tr);  
-
-
-
-        volumes.push_back(volume);  // <-- TODO: eliminate 
-        m_nodelib->add(volume);
-    }
-
-
-
-    // Final pass setting boundaries
-    // as all mat/sur must be added to the mlib/slib
-    // before can form boundaries. As boundaries 
-    // require getIndex calls that will close the slib, mlib 
-    // (settling the indices) and making subsequnent mat/sur additions assert.
-    //
-    // Note that late setting of boundary is fine for GParts (analytic geometry), 
-    // as spec are held as strings within GParts until GParts::close
-    //
-    // See notes/issues/GGeoTest_isClosed_assert.rst 
-    
- 
-    unsigned numVolume = m_nodelib->getNumVolumes();
-    assert( numVolume == numTree );
-
-    m_bndlib->closeConstituents(); 
-
-
-    for(unsigned i=0 ; i < numTree ; i++)
-    {
-        NCSG* tree = m_csglist->getTree(i) ; 
-        GVolume* volume = m_nodelib->getVolume(i) ;
-        const char* spec = tree->getBoundary();  
-        unsigned boundary = m_bndlib->addBoundary(spec, false); 
-
-        volume->setBoundary(boundary);     // unlike ctor these create arrays, duplicating boundary to all tris
-    }
-
-
-    // see notes/issues/material-names-wrong-python-side.rst
-    LOG(info) << "Save mlib/slib names " 
-              << " numTree : " << numTree
-              << " csgpath : " << m_csgpath
-              ;
-
-    if( numTree > 0 )
-    { 
-        m_mlib->saveNames(m_csgpath);
-        m_slib->saveNames(m_csgpath);
-    } 
-    
-
-    LOG(info) << "]" ; 
-}
 
 
 /**

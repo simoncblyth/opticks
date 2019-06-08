@@ -82,8 +82,24 @@ And the answer looks like::
 * the GMesh are a solid level thing (not node level) so not so many of them (less than 40 for JUNO) 
 
 
-Adding GMesh level associated NCSG to what GGeo persists for ease of geometry testing 
-----------------------------------------------------------------------------------------
+
+How to incorporate standard solids (now persisted) from basis geocache into test geometry ?
+----------------------------------------------------------------------------------------------
+
+* GGeoTest::importCSG GMaker::makeFromCSG
+* added GMaker::makeFromProxy 
+
+::
+
+   tboolean.sh box -D
+
+   PROXYLV=20 tboolean.sh box -D
+
+
+
+
+Adding GMesh level associated NCSG to what GGeo persists for ease of geometry testing  : DONE 
+------------------------------------------------------------------------------------------------------
 
 * tempting to save the NCSG into GMesh dirs, but thats kinda messy so did this at GMeshLib level
   into GMeshLibNCSG folder
@@ -145,8 +161,8 @@ Missed call to NCSG::export_idx ? No the export is done::
 
  
 
-Bringing tboolean-box into direct workflow
-----------------------------------------------
+Bringing tboolean-box into direct workflow  : DONE 
+-----------------------------------------------------------
 
 * this means basing the test geometry off of the direct geocache
 

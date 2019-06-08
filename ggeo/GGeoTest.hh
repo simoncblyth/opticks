@@ -13,7 +13,8 @@ class GGeoLib ;
 class GMaterialLib ; 
 class GSurfaceLib ; 
 class GBndLib ; 
-class GPmtLib ; 
+class GPmtLib ;   // <-- aim to remove
+class GMeshLib ; 
 class GNodeLib ; 
 
 class GMaker ; 
@@ -70,6 +71,7 @@ class GGEO_API GGeoTest : public GGeoBase {
        GSourceLib*       getSourceLib() const ;
        GSurfaceLib*      getSurfaceLib() const ;
        GMaterialLib*     getMaterialLib() const ;
+       GMeshLib*         getMeshLib() const ;
 
        GBndLib*          getBndLib() const ;    
        GPmtLib*          getPmtLib() const ;
@@ -124,6 +126,7 @@ class GGEO_API GGeoTest : public GGeoBase {
        // base geometry and stolen libs 
        GGeoBase*        m_basis ; 
        GPmtLib*         m_pmtlib ; 
+       GMeshLib*        m_meshlib ; 
    private:
        // local resident libs
        GMaterialLib*    m_mlib ; 

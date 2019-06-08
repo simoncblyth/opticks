@@ -337,6 +337,9 @@ class NPY_API NCSG {
         void setLVIdx(unsigned lvIdx);
         unsigned getSOIdx() const ; 
         unsigned getLVIdx() const ; 
+    public:
+        bool isProxy() const ; 
+        unsigned getProxyLV() const ;
 
     private:
         const char*      m_treedir ; 
@@ -357,6 +360,7 @@ class NPY_API NCSG {
         const NSceneConfig* m_config ; 
 
         glm::vec3   m_gpuoffset ; 
+        int         m_proxylv ;  
         int         m_container ;  
         float       m_containerscale ;  
         

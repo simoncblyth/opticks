@@ -60,10 +60,10 @@ void test_solid(G4VSolid* so)
     GBndLib* blib = new GBndLib(ok, mlib, slib);
     blib->closeConstituents();
 
-    GParts* pts = GParts::make( csg, "Air///Water", 1 );  
+    GParts* pts = GParts::Make( csg, "Air///Water" );  
     pts->setBndLib(blib); 
 
-    GParts* cpts = GParts::combine(pts); 
+    GParts* cpts = GParts::Combine(pts); 
 
     const char* path = "/tmp/X4SolidTest/GParts" ;
     cpts->save(path);

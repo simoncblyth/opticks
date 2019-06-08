@@ -1920,16 +1920,6 @@ void GMesh::save(const char* dir, const char* typedir, const char* instancedir) 
      {
         const char* dir = cachedir.c_str() ;   
         saveBuffers(dir);
-
-/*
-       // too messy to to here  
-        NCSG* csg = getCSG(); 
-        if(csg)
-        {
-
-        }
-*/
-
     }
     else 
     {

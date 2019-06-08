@@ -1,14 +1,5 @@
 #pragma once
 
-//  hmm the difference between the models (Chroma and G4 at the time) is focussed in here 
-//   chroma.geometry.Solid is all about splaying things across all the triangles
-//  relationship between how many materials for each mesh is up for grabs
-//
-// Instances are created by:
-//       GVolume* AssimpGGeo::convertStructureVisit(GGeo* gg, AssimpNode* node, unsigned int depth, GVolume* parent)
-//
-
-
 #include <vector>
 #include <string>
 
@@ -18,14 +9,13 @@ class NSensor ;
 template <typename T> class GMatrix ; 
 
 #include "OpticksCSG.h"
-#include "GVector.hh"
-
+//#include "GVector.hh"
 #include "GNode.hh"
+
 #include "GGEO_API_EXPORT.hh"
 #include "GGEO_HEAD.hh"
 
 /**
-
 GVolume
 ========
 
@@ -43,26 +33,25 @@ class GGEO_API GVolume : public GNode {
   public:
       static void Dump( const std::vector<GVolume*>& solids, const char* msg="GVolume::Dump" );
   public:
-      GVolume( unsigned int index, GMatrix<float>* transform, const GMesh* mesh,  unsigned int boundary, NSensor* sensor);
+      GVolume( unsigned index, GMatrix<float>* transform, const GMesh* mesh );
   public:
-      void setCSGFlag(OpticksCSG_t flag);
-      void setCSGSkip(bool csgskip);
-      void setBoundary(unsigned boundary);     // also sets BoundaryIndices array
-      void setBoundaryAll(unsigned boundary);  // recursive over tree
-      void setSensor(NSensor* sensor);         // also sets SensorIndices
-      void setSensorSurfaceIndex(unsigned int ssi);
-      unsigned int getSensorSurfaceIndex();
+      void     setCSGFlag(OpticksCSG_t flag);
+      void     setCSGSkip(bool csgskip);
+      void     setBoundary(unsigned boundary);     // also sets BoundaryIndices array
+      void     setBoundaryAll(unsigned boundary);  // recursive over tree
+      void     setSensor(NSensor* sensor);         // also sets SensorIndices
+      void     setSensorSurfaceIndex(unsigned int ssi);
+      unsigned getSensorSurfaceIndex();
   public:
-      void setPVName(const char* pvname);
-      void setLVName(const char* lvname);
+      void        setPVName(const char* pvname);
+      void        setLVName(const char* lvname);
       const char* getPVName() const ;
       const char* getLVName() const ;
   public:
       OpticksCSG_t getCSGFlag();
       bool         isCSGSkip();
-      unsigned int getBoundary() const ;
+      unsigned     getBoundary() const ;
       guint4       getIdentity();
-      //void  setIdentity(const guint4& id );
       NSensor*     getSensor();
   public:
       GParts*      getParts();
@@ -75,7 +64,7 @@ class GGEO_API GVolume : public GNode {
       void Summary(const char* msg="GVolume::Summary");
       std::string description();
   private:
-      unsigned int      m_boundary ; 
+      int               m_boundary ; 
       OpticksCSG_t      m_csgflag ; 
       bool              m_csgskip ; 
       NSensor*          m_sensor ; 

@@ -233,7 +233,7 @@ int main(int argc, char** argv)
 
 
     // primBuffer creation expects a combine, not a single one
-    GParts* pts_c = GParts::combine( pts, pts->getVerbosity() ); 
+    GParts* pts_c = GParts::Combine( pts, pts->getVerbosity() ); 
     pts_c->close();
     pts_c->save("$TMP/X4/X4PhysicalVolume2Test");
 

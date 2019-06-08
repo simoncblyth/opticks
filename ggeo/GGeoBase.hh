@@ -10,6 +10,7 @@ class GBndLib ;
 class GGeoLib ; 
 class GPmtLib ; 
 class GNodeLib ; 
+class GMeshLib ; 
 class GMergedMesh ; 
 
 class GGEO_API GGeoBase {
@@ -23,6 +24,7 @@ class GGEO_API GGeoBase {
         virtual GPmtLib*          getPmtLib() const = 0 ; 
         virtual GGeoLib*          getGeoLib() const = 0 ;        // GMergedMesh 
         virtual GNodeLib*         getNodeLib() const = 0 ;       // GNode/GVolume pv,lv names
+        virtual GMeshLib*         getMeshLib() const = 0 ;      
 
         virtual const char*       getIdentifier() const = 0 ; 
         virtual GMergedMesh*      getMergedMesh(unsigned index) const = 0 ; 

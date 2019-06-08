@@ -69,7 +69,7 @@ NCSG* NCSG::Load(const char* treedir, const NSceneConfig* config  )
 {
     if(!NCSGData::Exists(treedir) )
     {
-         LOG(warning) << "NCSG::Load no such treedir " << treedir ;
+         LOG(debug) << "NCSG::Load no such treedir " << treedir ;
          return NULL ; 
     }
 
@@ -188,6 +188,7 @@ NCSG::NCSG(const char* treedir)
    m_boundary(NULL),
    m_config(NULL),
    m_gpuoffset(0,0,0),
+   m_proxylv(-1),
    m_container(0),
    m_containerscale(2.f),
    m_tris(NULL),
@@ -223,6 +224,7 @@ NCSG::NCSG(nnode* root )
    m_boundary(NULL),
    m_config(NULL),
    m_gpuoffset(0,0,0),
+   m_proxylv(-1),
    m_container(0),
    m_containerscale(2.f),
    m_tris(NULL),
@@ -273,6 +275,7 @@ void NCSG::loadsrc()
     LOG(debug) << "NCSG::load DONE " ; 
 }
 
+
 void NCSG::postload()
 {
     m_soIdx = m_csgdata->getSrcSOIdx(); 
@@ -285,8 +288,16 @@ void NCSG::postload()
         << " lvIdx " << m_lvIdx 
         ; 
 
+    m_proxylv         = m_meta->getValue<int>("proxylv", "-1");
     m_container       = m_meta->getValue<int>("container", "-1");
     m_containerscale  = m_meta->getValue<float>("containerscale", "2.");
+
+    if( m_proxylv > -1 )
+    {
+        LOG(info) 
+            << " proxylv " << m_proxylv
+            ;
+    }
 
     std::string gpuoffset = m_meta->getValue<std::string>("gpuoffset", "0,0,0" );
     m_gpuoffset = gvec3(gpuoffset);  
@@ -295,6 +306,18 @@ void NCSG::postload()
 
     increaseVerbosity(verbosity);
 }
+
+bool NCSG::isProxy() const 
+{
+    return m_proxylv > -1 ; 
+}
+unsigned NCSG::getProxyLV() const 
+{
+    return m_proxylv ;  
+}
+
+
+
 
 /** 
 NCSG::import : from complete binary tree buffers into nnode tree

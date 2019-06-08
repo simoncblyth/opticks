@@ -62,10 +62,13 @@ void GItemList::load_(const char* idpath)
    } 
    else
    {
-       LOG(warning) << "GItemList::load_"
-                    << " NO SUCH TXTPATH " 
-                    << txtpath 
-                    ;
+       LOG(error)
+           << " MISSING ITEMLIST TXT " 
+           << " txtpath " << txtpath 
+           << " txtname " << txtname 
+           << " reldir " << reldir
+           << " m_itemtype " << m_itemtype
+           ;
    }
 }
 

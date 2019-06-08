@@ -117,6 +117,7 @@ G4VPhysicalVolume* CTestDetector::makeChildVolume(const NCSG* csg, const char* l
     assert( pvn );
   
     const char* spec = csg->getBoundary();
+    assert( spec );  
 
     unsigned boundary = m_blib->addBoundary(spec); 
     // this should not actually add any new boundaries, that all happened earlier in GGeoTest? 
@@ -169,9 +170,9 @@ G4VPhysicalVolume* CTestDetector::makeDetector_NCSG()
     assert( nolib );
     unsigned numVolumes = nolib->getNumVolumes();
 
-    LOG(info) << "CTestDetector::makeDetector_NCSG"
-              << " numVolumes " << numVolumes 
-              ;
+    LOG(info) 
+        << " numVolumes " << numVolumes 
+        ;
 
     NCSG* universe = m_geotest->getUniverse();
     assert(universe);
@@ -184,6 +185,9 @@ G4VPhysicalVolume* CTestDetector::makeDetector_NCSG()
     }
     
     G4VPhysicalVolume* ppv = NULL ; 
+
+
+
     for(unsigned i=0 ; i < numVolumes ; i++) 
     {
         GVolume* kso = nolib->getVolume(i); 
@@ -191,6 +195,9 @@ G4VPhysicalVolume* CTestDetector::makeDetector_NCSG()
         const char* pvn = kso->getPVName();
         const GMesh* mesh = kso->getMesh();
         const NCSG* csg = mesh->getCSG();
+        const char* spec = csg->getBoundary(); 
+        LOG(info) << std::setw(4) << i << " spec " << ( spec ? spec : "NULL" ) ;   
+        assert( spec );  
 
         G4VPhysicalVolume* pv = makeChildVolume( csg , lvn , pvn, mother );
 

@@ -50,7 +50,7 @@ GMesh* X4Mesh::Placeholder(const G4VSolid* solid ) //static
     nbbox* bb = X4SolidExtent::Extent(solid) ; 
 
     NTrianglesNPY* tris = NTrianglesNPY::box(*bb) ;     
-    GMesh* mesh = GMeshMaker::make_mesh(tris->getTris());
+    GMesh* mesh = GMeshMaker::Make(tris->getTris());
 
     NVtxIdx vtxidx ;
     tris->to_vtxidx(vtxidx);
@@ -331,11 +331,11 @@ void X4Mesh::makemesh()
     if( via_tris ) 
     {
         NTrianglesNPY* tris = NTrianglesNPY::from_indexed(m_vtx, m_tri);
-        m_mesh = GMeshMaker::make_mesh(tris->getTris());
+        m_mesh = GMeshMaker::Make(tris->getTris());
     }
     else
     {
-        m_mesh = GMeshMaker::make_mesh(m_vtx, m_tri, 0 );
+        m_mesh = GMeshMaker::Make(m_vtx, m_tri, 0 );
     }
 }
 

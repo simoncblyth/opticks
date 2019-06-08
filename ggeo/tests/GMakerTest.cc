@@ -8,7 +8,6 @@
 #include "NCSG.hpp"
 #include "NPYBase.hpp"
 #include "NPYMeta.hpp"
-//#include "NCSGData.hpp"
 #include "NNode.hpp"
 #include "NNodeSample.hpp"
 #include "NSceneConfig.hpp"
@@ -18,6 +17,7 @@
 #include "GMesh.hh"
 #include "GVolume.hh"
 #include "GBndLib.hh"
+#include "GMeshLib.hh"
 #include "GMaker.hh"
 
 #include "OPTICKS_LOG.hh"
@@ -27,7 +27,7 @@
 class GMakerTest 
 {
    public:
-       GMakerTest(Opticks* ok, GBndLib* blib);
+       GMakerTest(Opticks* ok, GBndLib* blib, GMeshLib* meshlib);
        void makeSphere();
        void makeFromCSG();
    private:
@@ -35,10 +35,10 @@ class GMakerTest
        GMaker*  m_maker ;  
 };
 
-GMakerTest::GMakerTest(Opticks* ok, GBndLib* blib)
+GMakerTest::GMakerTest(Opticks* ok, GBndLib* blib, GMeshLib* meshlib)
    :
    m_ok(ok),
-   m_maker(new GMaker(ok, blib))
+   m_maker(new GMaker(ok, blib, meshlib))
 {
 }
 
@@ -85,7 +85,9 @@ void GMakerTest::makeFromCSG()
         NCSG* csg = NCSG::Adopt( n, config, soIdx, lvIdx );
         csg->getMeta()->setValue<std::string>("poly", "IM");
 
-        GVolume* volume = m_maker->makeFromCSG(csg, verbosity );
+        csg->setVerbosity(verbosity);
+
+        GVolume* volume = m_maker->makeFromCSG(csg);
 
         const GMesh* mesh = volume->getMesh();
 
@@ -107,9 +109,11 @@ int main(int argc, char** argv)
     GBndLib* blib = GBndLib::load(&ok, constituents ); 
     blib->closeConstituents();
 
+    GMeshLib* meshlib = GMeshLib::Load(&ok); 
+
     LOG(error) << " after load " ; 
 
-    GMakerTest tst(&ok, blib);
+    GMakerTest tst(&ok, blib, meshlib);
 
     LOG(error) << " after ctor " ; 
 

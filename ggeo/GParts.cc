@@ -37,15 +37,15 @@ const plog::Severity GParts::LEVEL = debug ;
 const char* GParts::CONTAINING_MATERIAL = "CONTAINING_MATERIAL" ;  
 const char* GParts::SENSOR_SURFACE = "SENSOR_SURFACE" ;  
 
-GParts* GParts::combine(GParts* onesub, unsigned verbosity)
+GParts* GParts::Combine(GParts* onesub, unsigned verbosity)  // static
 {
     // for consistency: need to combine even when only one sub
     std::vector<GParts*> subs ; 
     subs.push_back(onesub); 
-    return GParts::combine(subs, verbosity == 0 ? onesub->getVerbosity() : verbosity  );
+    return GParts::Combine(subs, verbosity == 0 ? onesub->getVerbosity() : verbosity  );
 }
 
-GParts* GParts::combine(std::vector<GParts*> subs, unsigned verbosity)
+GParts* GParts::Combine(std::vector<GParts*> subs, unsigned verbosity)  // static
 {
     // Concatenate vector of GParts instances into a single GParts instance
     if(verbosity > 1)
@@ -92,7 +92,7 @@ GParts* GParts::combine(std::vector<GParts*> subs, unsigned verbosity)
 }
 
 
-GParts* GParts::make(const npart& pt, const char* spec)
+GParts* GParts::Make(const npart& pt, const char* spec)
 {
     // Serialize the npart shape (BOX, SPHERE or PRISM) into a (1,4,4) parts buffer. 
     // Then instanciate a GParts instance to hold the parts buffer 
@@ -120,7 +120,7 @@ GParts* GParts::make(const npart& pt, const char* spec)
     return gpt ; 
 }
 
-GParts* GParts::make(OpticksCSG_t csgflag, glm::vec4& param, const char* spec)
+GParts* GParts::Make(OpticksCSG_t csgflag, glm::vec4& param, const char* spec)
 {
     float size = param.w ;  
     //-------   
@@ -181,7 +181,7 @@ const NCSG* GParts::getCSG() const
 }
 
 
-GParts* GParts::make( const NCSG* tree, const char* spec, unsigned verbosity )
+GParts* GParts::Make( const NCSG* tree, const char* spec )
 {
     assert(spec);
 
@@ -209,14 +209,15 @@ GParts* GParts::make( const NCSG* tree, const char* spec, unsigned verbosity )
     //   2. transform the planes with the global transform, do this in applyPlacementTransform 
     //
 
+    unsigned verbosity = tree->getVerbosity(); 
     if(verbosity > 1)
-    LOG(info) << "GParts::make(NCSG)"
-              << " tree " << std::setw(5) << tree->getIndex()
-              << " usedglobally " << std::setw(1) << usedglobally 
-              << " nodebuf " << ( nodebuf ? nodebuf->getShapeString() : "NULL" ) 
-              << " tranbuf " << ( tranbuf ? tranbuf->getShapeString() : "NULL" ) 
-              << " planbuf " << ( planbuf ? planbuf->getShapeString() : "NULL" ) 
-              ;
+    LOG(info) 
+        << " tree " << std::setw(5) << tree->getIndex()
+        << " usedglobally " << std::setw(1) << usedglobally 
+        << " nodebuf " << ( nodebuf ? nodebuf->getShapeString() : "NULL" ) 
+        << " tranbuf " << ( tranbuf ? tranbuf->getShapeString() : "NULL" ) 
+        << " planbuf " << ( planbuf ? planbuf->getShapeString() : "NULL" ) 
+        ;
 
     if(!tranbuf) 
     {

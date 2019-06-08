@@ -20,13 +20,13 @@
 #include "GGEO_BODY.hh"
 
 
-GVolume::GVolume( unsigned int index, GMatrix<float>* transform, const GMesh* mesh, unsigned int boundary, NSensor* sensor)
+GVolume::GVolume( unsigned index, GMatrix<float>* transform, const GMesh* mesh )
     : 
     GNode(index, transform, mesh ),
-    m_boundary(boundary),
+    m_boundary(-1),
     m_csgflag(CSG_PARTLIST),
     m_csgskip(false),
-    m_sensor(sensor),
+    m_sensor(NULL),
     m_pvname(NULL),
     m_lvname(NULL),
     m_sensor_surface_index(0),
@@ -50,7 +50,7 @@ void GVolume::setCSGSkip(bool csgskip)
 }
 
 
-unsigned int GVolume::getBoundary() const 
+unsigned GVolume::getBoundary() const 
 {
     return m_boundary ; 
 }

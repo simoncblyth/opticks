@@ -5,7 +5,7 @@
 #include "GMeshMaker.hh"
 
 
-GMesh* GMeshMaker::make_mesh(NPY<float>* vtx3, NPY<unsigned>* tri3, unsigned int meshindex)
+GMesh* GMeshMaker::Make(NPY<float>* vtx3, NPY<unsigned>* tri3, unsigned meshindex)
 {
     assert( vtx3->hasShape(-1,3) ); 
     assert( tri3->hasShape(-1,3) ); 
@@ -86,7 +86,7 @@ GMesh* GMeshMaker::make_mesh(NPY<float>* vtx3, NPY<unsigned>* tri3, unsigned int
 
 
 
-GMesh* GMeshMaker::make_mesh(NPY<float>* triangles, unsigned int meshindex) // static
+GMesh* GMeshMaker::Make(NPY<float>* triangles, unsigned meshindex) // static
 {
     unsigned int ni = triangles->getShape(0) ;
     unsigned int nj = triangles->getShape(1) ;
@@ -187,7 +187,19 @@ GMesh* GMeshMaker::make_mesh(NPY<float>* triangles, unsigned int meshindex) // s
     return mesh ; 
 }
 
-GMesh* GMeshMaker::make_spherelocal_mesh(NPY<float>* triangles, unsigned int meshindex)
+
+/**
+GMeshMaker::MakeSphereLocal
+----------------------------
+
+Using the normalized position as the normal 
+restricts triangles to being in spherelocal coordinates
+ie the sphere must be centered at origin
+
+
+**/
+
+GMesh* GMeshMaker::MakeSphereLocal(NPY<float>* triangles, unsigned meshindex)
 {
     unsigned int ni = triangles->getShape(0) ;
     unsigned int nj = triangles->getShape(1) ;
@@ -223,10 +235,6 @@ GMesh* GMeshMaker::make_spherelocal_mesh(NPY<float>* triangles, unsigned int mes
              nrm.y = npos.y ; 
              nrm.z = npos.z ; 
 
-             // using the normalized position as the normal 
-             // restricts triangles to being in spherelocal coordinates
-             // ie the sphere must be centered at origin
-
              vtx.x = vpos.x ; 
              vtx.y = vpos.y ;
              vtx.z = vpos.z ;  
@@ -251,7 +259,6 @@ GMesh* GMeshMaker::make_spherelocal_mesh(NPY<float>* triangles, unsigned int mes
 
     return mesh ; 
 }
-
 
 
 

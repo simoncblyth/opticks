@@ -43,8 +43,9 @@ void test_Adopt()
         n->set_boundary(spec) ; 
 
         NCSG* csg = NCSG::Adopt( n );
+        csg->setVerbosity(verbosity);
 
-        GParts* pts = GParts::make( csg , spec, verbosity ) ; 
+        GParts* pts = GParts::Make( csg , spec  ) ; 
         pts->dump("GPartsTest");
 
     }
@@ -77,8 +78,8 @@ void test_save_load(GBndLib* bndlib)
 
     NCSG* csg = NCSG::Adopt( n, config, soIdx, lvIdx );
 
-    unsigned verbosity = 2 ; 
-    GParts* pts = GParts::make(csg, spec, verbosity ) ; 
+    csg->setVerbosity(2);  
+    GParts* pts = GParts::Make(csg, spec ) ; 
     pts->dump("pts");
 
     const char* dir = "$TMP/GPartsTest_test_save" ;
@@ -101,12 +102,13 @@ void test_load_ncsg_make()
      if(!csg) return ; 
 
      const char* spec = "Rock//perfectAbsorbSurface/Vacuum" ; 
-     unsigned verbosity = 3 ; 
 
      NPYList* npy = csg->getNPYList(); 
      LOG(info) << " npy " << npy->desc() ; 
 
-     GParts* pts = GParts::make( csg, spec, verbosity );
+     csg->setVerbosity(3); 
+
+     GParts* pts = GParts::Make( csg, spec );
      assert(pts); 
 }
 

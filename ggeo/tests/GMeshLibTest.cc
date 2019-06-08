@@ -33,6 +33,7 @@ dbgmesh
 
 #include "Opticks.hh"
 #include "NCSG.hpp"
+#include "GMesh.hh"
 #include "GMeshLib.hh"
 #include "GMesh.hh"
 
@@ -45,13 +46,29 @@ int main(int argc, char** argv)
     Opticks ok(argc, argv);
     ok.configure();
 
-    GMeshLib* ml = GMeshLib::Load(&ok);
+    GMeshLib* meshlib = GMeshLib::Load(&ok);
+
+
+    unsigned num_mesh = meshlib->getNumMeshes(); 
+    for(unsigned i=0 ; i < num_mesh ; i++)
+    {
+        const GMesh* mesh = meshlib->getMesh(i); 
+        const char* name = mesh->getName() ; 
+        LOG(info) 
+            << " i " << std::setw(3) << i 
+            << " mesh " << mesh 
+            << " name " << ( name ? name : "NULL" )
+            ; 
+
+    }
+
+
 
     const char* dbgmesh = ok.getDbgMesh();
     if(dbgmesh)
     {
         bool startswith = true ; 
-        const GMesh* mesh = ml->getMesh(dbgmesh, startswith);
+        const GMesh* mesh = meshlib->getMesh(dbgmesh, startswith);
         mesh->dump("GMesh::dump", 50);
 
         const NCSG* solid = mesh->getCSG(); 
@@ -62,7 +79,7 @@ int main(int argc, char** argv)
     else
     {
         LOG(info) << "no dbgmesh" ; 
-        ml->dump();
+        meshlib->dump();
     }
 
     return 0 ; 

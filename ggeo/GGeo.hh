@@ -120,6 +120,7 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
         GSourceLib*       getSourceLib() const ; 
         GSurfaceLib*      getSurfaceLib() const ;
         GMaterialLib*     getMaterialLib() const ;
+        GMeshLib*         getMeshLib() const ;
 
         GBndLib*          getBndLib() const ; 
         GPmtLib*          getPmtLib() const ; 

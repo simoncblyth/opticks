@@ -25,7 +25,7 @@ const unsigned GMeshLib::MAX_MESH = 250 ;   // <-- hmm 500 too large ? it means 
 const char* GMeshLib::GITEMINDEX = "GItemIndex" ; 
 const char* GMeshLib::GMESHLIB_INDEX = "MeshIndex" ; 
 
-const char* GMeshLib::GMESHLIB_LIST = "GMeshLib.txt" ; 
+const char* GMeshLib::GMESHLIB_LIST = "GMeshLib" ; 
 
 
 const char* GMeshLib::GMESHLIB = "GMeshLib" ; 
@@ -35,6 +35,7 @@ const char* GMeshLib::GMESHLIB_NCSG = "GMeshLibNCSG" ;
 GMeshLib::GMeshLib(Opticks* ok ) 
    :
    m_ok(ok),
+   m_direct(ok->isDirect()),
    m_reldir(GMESHLIB),
    m_reldir_solids(GMESHLIB_NCSG),
    m_meshindex(NULL),
@@ -54,7 +55,6 @@ void GMeshLib::loadFromCache()
 {
     const char* idpath = m_ok->getIdPath() ;
 
-
     m_meshindex = GItemIndex::load(idpath, GITEMINDEX, GMESHLIB_INDEX ) ;
     assert(m_meshindex);
     bool has_index = m_meshindex->hasIndex() ;
@@ -62,7 +62,7 @@ void GMeshLib::loadFromCache()
     assert(has_index && " MISSING MESH INDEX : PERHAPS YOU NEED TO CREATE/RE-CREATE GEOCACHE WITH : op.sh -G ");
 
 
-    m_meshnames = GItemList::Load(idpath, "GItemList", GMESHLIB_LIST ) ;
+    m_meshnames = GItemList::Load(idpath, GMESHLIB_LIST, "GItemList" ) ;
     assert(m_meshnames);
 
     loadMeshes(idpath);
@@ -78,7 +78,7 @@ void GMeshLib::save() const
 
 
     assert( m_meshnames ); 
-    m_meshnames->save(idpath, "GItemList", GMESHLIB_LIST );
+    m_meshnames->save(idpath );
 
     saveMeshes(idpath);
     saveMeshUsage(idpath);
@@ -227,7 +227,10 @@ void GMeshLib::add(const GMesh* mesh)
     m_meshes.push_back(mesh);
     const NCSG* solid = mesh->getCSG(); 
 
-    assert(solid) ;                // hmm probably fail for legacy workflow
+    if(m_direct)
+    { 
+        assert(solid) ;                
+    }
     m_solids.push_back(solid); 
 
     m_meshindex->add(name, index); 
@@ -283,7 +286,10 @@ void GMeshLib::loadMeshes(const char* idpath )
 
         if(meshdir_exists)
         {   
-            assert( soliddir_exists && "GMeshLib persisted GMesh are expected to have paired GMeshLibNCSG dirs"); 
+            if( m_direct )
+            {
+                assert( soliddir_exists && "GMeshLib persisted GMesh are expected to have paired GMeshLibNCSG dirs"); 
+            }
 
             LOG(debug) 
                 << " meshdir " << meshdir 

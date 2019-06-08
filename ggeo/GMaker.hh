@@ -15,6 +15,7 @@ struct gbbox ;
 struct nnode ; 
 
 class GBndLib ; 
+class GMeshLib ; 
 class GVolume ; 
 class GMesh ; 
 
@@ -35,14 +36,14 @@ class GGEO_API GMaker {
         static std::string PVName(const char* shapename, int idx=-1);
         static std::string LVName(const char* shapename, int idx=-1);
    public:
-       GMaker(Opticks* ok, GBndLib* blib);
+       GMaker(Opticks* ok, GBndLib* blib, GMeshLib* meshlib );
    public:
        GVolume* make(unsigned int index, OpticksCSG_t typecode, glm::vec4& param, const char* spec);
-       GVolume* makeFromCSG(NCSG* csg, unsigned verbosity );
+       GVolume* makeFromCSG(NCSG* csg);
+       GVolume* makeFromProxy(NCSG* proxy );
    private:
        void init();    
 
-       static GVolume* makeFromCSG(NCSG* csg, GBndLib* , unsigned verbosity );
        static GVolume* makePrism(glm::vec4& param, const char* spec);
        static GVolume* makeBox(glm::vec4& param);
        static GVolume* makeZSphere(glm::vec4& param);
@@ -56,6 +57,7 @@ class GGEO_API GMaker {
    private:
        Opticks*  m_ok ; 
        GBndLib*  m_bndlib ; 
+       GMeshLib* m_meshlib ; 
 };
 
 
