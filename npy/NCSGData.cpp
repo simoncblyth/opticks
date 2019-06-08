@@ -24,7 +24,7 @@ const NPYSpecList* NCSGData::MakeSPECS()
     NPYSpecList* sl = new NPYSpecList(); 
 
     int verbosity = 0 ; 
-
+    //                                               name                  ni nj nk nl nm  type            ctrl optional verbosity         
     sl->add( (unsigned)SRC_NODES       , new NPYSpec("srcnodes.npy"       , 0, 4, 4, 0, 0, NPYBase::FLOAT , "" , false, verbosity));
     sl->add( (unsigned)SRC_IDX         , new NPYSpec("srcidx.npy"         , 0, 4, 0, 0, 0, NPYBase::UINT  , "" , false, verbosity));
     sl->add( (unsigned)SRC_TRANSFORMS  , new NPYSpec("srctransforms.npy"  , 0, 4, 4, 0, 0, NPYBase::FLOAT , "" , false, verbosity));
@@ -111,6 +111,7 @@ void NCSGData::import_src_identity()
     m_src_lvIdx = uidx.z ; 
     m_src_height = uidx.w ; 
 
+
     bool match_height = m_src_height == m_height ;
   
     if(!match_height)
@@ -120,9 +121,11 @@ void NCSGData::import_src_identity()
             << " src_lvIdx " << m_src_lvIdx
             << " src_height " << m_src_height
             << " m_height " << m_height
+            << ( match_height ? " MATCH " : " MISMATCH " ) 
+            << "height" 
             ; 
      
-    //assert( match_height );
+    assert( match_height );
 
 
 }
@@ -172,6 +175,7 @@ Requires : nodes, planes buffers ready to receive the export
 
 void NCSGData::prepareForExport()
 {
+    //                  bid                 ni          zero    msg        
     m_npy->initBuffer( (int)NODES         , m_num_nodes, true , "prepareForExport");
     m_npy->initBuffer( (int)PLANES        ,           0, true , "prepareForExport");
     m_npy->initBuffer( (int)IDX           ,           1, true , "prepareForExport");
@@ -343,14 +347,29 @@ unsigned NCSGData::getNumNodes() const
 }
 
 
-void NCSGData::setIdx( unsigned index, unsigned soIdx, unsigned lvIdx, unsigned height )
+
+
+
+
+
+
+
+void NCSGData::setIdx( unsigned index, unsigned soIdx, unsigned lvIdx, unsigned height, bool src )
 {
     assert( height == m_height ); 
     glm::uvec4 uidx(index, soIdx, lvIdx, height); 
 
-    NPY<unsigned>* _idx = getIdxBuffer() ;  
+    NPY<unsigned>* _idx = src ? getSrcIdxBuffer() : getIdxBuffer() ;  
     assert(_idx); 
     _idx->setQuad(uidx, 0u );     
+
+    LOG(debug) 
+        << " index " << index 
+        << " soIdx " << soIdx
+        << " lvIdx " << lvIdx
+        << " height " << height
+        << ( src ? " srcIdx " : " Idx " )
+        ;
 
     // used by GParts::make GParts::combine
 }

@@ -13,7 +13,6 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/join.hpp>
-//#include <boost/filesystem.hpp>
 
 
 #include "BFile.hh"
@@ -21,7 +20,6 @@
 
 #include "PLOG.hh"
 
-//namespace fs = boost::filesystem;
 
 const char* GItemList::GITEMLIST = "GItemList" ; 
 
@@ -43,7 +41,7 @@ unsigned int GItemList::getIndex(const char* key) const
 }
 
 
-GItemList* GItemList::load(const char* idpath, const char* itemtype, const char* reldir)
+GItemList* GItemList::Load(const char* idpath, const char* itemtype, const char* reldir)
 {
     GItemList* gil = new GItemList(itemtype, reldir);
     gil->load_(idpath); 

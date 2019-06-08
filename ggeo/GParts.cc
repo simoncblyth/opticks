@@ -520,7 +520,7 @@ GParts* GParts::Load(const char* dir) // static
     //    
 
     const char* reldir = "" ;   // empty, signally inplace itemlist persisting
-    GItemList* bndspec = GItemList::load(dir, "GParts", reldir ) ; 
+    GItemList* bndspec = GItemList::Load(dir, "GParts", reldir ) ; 
     GBndLib*  bndlib = NULL ; 
     GParts* parts = new GParts(idxBuf, partBuf,  tranBuf, planBuf, bndspec, bndlib) ;
     
@@ -691,7 +691,7 @@ GParts::applyPlacementTransform
 
 void GParts::applyPlacementTransform(GMatrix<float>* gtransform, unsigned verbosity )
 {
-   // gets invoked from GMergedMesh::mergeVolumeAnalytic
+   // gets invoked from GGeo::prepare...GMergedMesh::mergeVolumeAnalytic
 
     const float* data = static_cast<float*>(gtransform->getPointer());
 
@@ -701,9 +701,9 @@ void GParts::applyPlacementTransform(GMatrix<float>* gtransform, unsigned verbos
     glm::mat4 placement = glm::make_mat4( data ) ;  
 
 
-    LOG(info) << "placement " << glm::to_string( placement ) ; 
+    LOG(debug) << "placement " << glm::to_string( placement ) ; 
 
-    std::raise(SIGINT); 
+    //std::raise(SIGINT); 
 
 
     assert(m_tran_buffer->hasShape(-1,3,4,4));

@@ -91,10 +91,10 @@ void GPmt::loadFromCache(NSlice* slice)
                ;
 
 
-    GItemList*  bndSpec_orig = GItemList::load(base, "GPmt_boundaries", relpath.c_str() );
-    GItemList*  materials = GItemList::load(base, "GPmt_materials", relpath.c_str() );
-    GItemList*  lvnames = GItemList::load(base, "GPmt_lvnames", relpath.c_str() );
-    GItemList*  pvnames = GItemList::load(base, "GPmt_pvnames", relpath.c_str() );
+    GItemList*  bndSpec_orig = GItemList::Load(base, "GPmt_boundaries", relpath.c_str() );
+    GItemList*  materials = GItemList::Load(base, "GPmt_materials", relpath.c_str() );
+    GItemList*  lvnames = GItemList::Load(base, "GPmt_lvnames", relpath.c_str() );
+    GItemList*  pvnames = GItemList::Load(base, "GPmt_pvnames", relpath.c_str() );
 
     NPY<float>* partBuf_orig = NPY<float>::load( path.c_str(), FILENAME );
     NPY<float>* csgBuf_orig = NPY<float>::load( path.c_str(), FILENAME_CSG );

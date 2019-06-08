@@ -775,6 +775,13 @@ tboolean-;tboolean-box --okg4
     PASS
 
 
+CSG.Serialize writes separate directories for each tree containing src buffers::
+
+    [blyth@localhost tboolean-box]$ np.py 0
+    /tmp/tboolean-box/0
+    . :                                                 0/srcidx.npy :               (1, 4) : 6c5c9fc27d1d5e44e98016bdef9aaba1 : 20190607-2129 
+    . :                                               0/srcnodes.npy :            (1, 4, 4) : e279d8f47aa14224674129cf6007768d : 20190607-2129 
+    . :                                          0/srctransforms.npy :            (1, 4, 4) : ead0cc88939337cc91c7e7432bf1889c : 20190607-2129 
 
 
 

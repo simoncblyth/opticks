@@ -218,7 +218,7 @@ class NPY_API NCSG {
         int         getEmit() const ;
         const char* getEmitConfig() const ;
     public:
-        void dump(const char* msg="NCSG::dump");
+        void dump(const char* msg="NCSG::dump") const ;
         void dump_surface_points(const char* msg="NCSG::dump_surface_points", unsigned dmax=20) const ;
 
         std::string desc();
@@ -289,6 +289,7 @@ class NPY_API NCSG {
         void setConfig(const NSceneConfig* config);
 
     public:
+        void savesrc(const char* idpath, const char* rela, const char* relb ) const ; 
         void savesrc(const char* treedir) const ;
     private:
         void loadsrc();
@@ -321,6 +322,7 @@ class NPY_API NCSG {
         // export node tree into a buffers (complete binary tree buffer of nodes, transforms, planes)
         void export_r(nnode* node, unsigned idx);
         void export_idx();
+        void export_srcidx();
         void export_();
 
         // collects gtransform into the tran buffer and sets gtransform_idx 

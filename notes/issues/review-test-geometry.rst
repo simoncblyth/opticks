@@ -76,14 +76,74 @@ And the answer looks like::
   in addition to the mainline GMergedMesh 
 
   * the GMesh are already persisted in the GMeshLib, but associated NCSG are not 
-  * need to get the NCSGData src vs transport buffer distinction clear  
+  * need to get the NCSGData src vs transport buffer distinction clear, see comments 
+    added to NCSG.cpp  
 
 * the GMesh are a solid level thing (not node level) so not so many of them (less than 40 for JUNO) 
 
 
+Adding GMesh level associated NCSG to what GGeo persists for ease of geometry testing 
+----------------------------------------------------------------------------------------
+
+* tempting to save the NCSG into GMesh dirs, but thats kinda messy so did this at GMeshLib level
+  into GMeshLibNCSG folder
 
 
-  
+Recreate geocache with the added NCSG solids::
+
+   geocache-j1808-v4
+   DBG=1 geocache-j1808-v4
+
+Hmm all persisted identity indices are zero, giving height mismatches on loading with GMeshLibTest::
+
+    [blyth@localhost 1]$ GMeshLibTest --envkey 
+    2019-06-08 14:12:45.083 FATAL [42385] [Opticks::configure@1710]  --interop mode with no cvd specified, adopting OPTICKS_DEFAULT_INTEROP_CVD hinted by envvar [1]
+    ...
+    2019-06-08 14:12:45.095 FATAL [42385] [NCSGData::import_src_identity@118]  src_index 0 src_soIdx 0 src_lvIdx 0 src_height 0 m_height 0 MATCH height
+    2019-06-08 14:12:45.097 FATAL [42385] [NCSGData::import_src_identity@118]  src_index 0 src_soIdx 0 src_lvIdx 0 src_height 0 m_height 1 MISMATCH height
+    2019-06-08 14:12:45.102 FATAL [42385] [NCSGData::import_src_identity@118]  src_index 0 src_soIdx 0 src_lvIdx 0 src_height 0 m_height 1 MISMATCH height
+    2019-06-08 14:12:45.106 FATAL [42385] [NCSGData::import_src_identity@118]  src_index 0 src_soIdx 0 src_lvIdx 0 src_height 0 m_height 0 MATCH height
+    2019-06-08 14:12:45.107 FATAL [42385] [NCSGData::import_src_identity@118]  src_index 0 src_soIdx 0 src_lvIdx 0 src_height 0 m_height 0 MATCH height
+
+
+All srcidx stuck at zero::
+
+    [blyth@localhost 1]$ np.py GMeshLibNCSG/*/srcidx.npy
+    a :                                    GMeshLibNCSG/0/srcidx.npy :               (1, 4) : fd1d8dbbb28bb73539ac887373153fb2 : 20190608-1501 
+    b :                                   GMeshLibNCSG/10/srcidx.npy :               (1, 4) : fd1d8dbbb28bb73539ac887373153fb2 : 20190608-1501 
+    c :                                   GMeshLibNCSG/11/srcidx.npy :               (1, 4) : fd1d8dbbb28bb73539ac887373153fb2 : 20190608-1501 
+    d :                                   GMeshLibNCSG/12/srcidx.npy :               (1, 4) : fd1d8dbbb28bb73539ac887373153fb2 : 20190608-1501 
+    e :                                   GMeshLibNCSG/13/srcidx.npy :               (1, 4) : fd1d8dbbb28bb73539ac887373153fb2 : 20190608-1501 
+    f :                                   GMeshLibNCSG/14/srcidx.npy :               (1, 4) : fd1d8dbbb28bb73539ac887373153fb2 : 20190608-1501 
+    g :                                   GMeshLibNCSG/15/srcidx.npy :               (1, 4) : fd1d8dbbb28bb73539ac887373153fb2 : 20190608-1501 
+    h :                                   GMeshLibNCSG/16/srcidx.npy :               (1, 4) : fd1d8dbbb28bb73539ac887373153fb2 : 20190608-1501 
+
+
+
+Missed call to NCSG::export_idx ? No the export is done::
+
+     760 void NCSG::export_idx()   // only tree level
+     761 {
+     762     unsigned height = getHeight()  ;
+     763 
+     764     if(m_verbosity > 4)
+     765     LOG(error)
+     766            << " m_csgdata->setIdx "
+     767            << " index " << m_index
+     768            << " soIdx " << m_soIdx
+     769            << " lvIdx " << m_lvIdx
+     770            << " height " << height
+     771            ;
+     772 
+     773     m_csgdata->setIdx( m_index, m_soIdx, m_lvIdx, height );
+     774 }
+
+
+* twas confusion between srdidx and idx buffers ?  added *export_srcidx* and invoke it from Adopt 
+* also the index was not being set 
+
+
+ 
 
 Bringing tboolean-box into direct workflow
 ----------------------------------------------

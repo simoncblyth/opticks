@@ -588,7 +588,7 @@ void GPropertyLib::loadFromCache()
     setBuffer(buf); 
     setMeta(meta) ; 
 
-    GItemList* names = GItemList::load(m_resource->getIdPath(), m_type);
+    GItemList* names = GItemList::Load(m_resource->getIdPath(), m_type);
     setNames(names); 
 
     import();   // <--- implemented in subclasses 

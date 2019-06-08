@@ -8,8 +8,11 @@
 
 class Opticks ; 
 
-class GItemIndex ; 
+class GItemIndex ;  // <-- aiming to remove 
+class GItemList ;  
+
 class GMesh ; 
+class NCSG ; 
 
 
 #include "GGEO_API_EXPORT.hh"
@@ -68,17 +71,15 @@ class GGEO_API GMeshLib
 
         static const char*    GITEMINDEX ; 
         static const char*    GMESHLIB_INDEX ; 
-        static const char*    GMESHLIB_INDEX_ANALYTIC ; 
-        static const char*    GetRelDirIndex(bool analytic);
+
+        static const char*    GMESHLIB_LIST ; 
 
         static const char*    GMESHLIB ; 
-        static const char*    GMESHLIB_ANALYTIC ; 
-        static const char*    GetRelDir(bool analytic);
+        static const char*    GMESHLIB_NCSG ; 
 
-        static GMeshLib* Load(Opticks* ok, bool analytic);
+        static GMeshLib* Load(Opticks* ok );
     public:
-        GMeshLib(Opticks* opticks, bool analytic); 
-        bool isAnalytic() const ; 
+        GMeshLib(Opticks* ok); 
         void add(const GMesh* mesh);
         void dump(const char* msg="GMeshLib::dump") const;
     public:
@@ -90,15 +91,19 @@ class GGEO_API GMeshLib
         GItemIndex* getMeshIndex() ;
         unsigned    getNumMeshes() const ; 
         const GMesh*  getMesh(unsigned aindex) const ;  // first mesh in m_meshes addition order with getIndex() matching aindex 
+        const NCSG*  getSolid(unsigned aindex) const ;  // first mesh in m_solids addition order with getIndex() matching aindex 
         const GMesh*  getMesh(const char* name, bool startswith) const ;
     private:
         void        loadFromCache();
         void        save() const ; 
     private:
+        void removeDirs(const char* idpath ) const ;
+    private:
         void saveMeshes(const char* idpath) const ;
         void loadMeshes(const char* idpath ) ;
-        void removeMeshes(const char* idpath ) const ;
-
+    private:
+        unsigned getNumSolids() const ;  // should give same as getNumMeshes
+        void loadSolids(const char* idpath ) ;
     public:
         std::map<unsigned,unsigned>& getMeshUsage();
         std::map<unsigned,std::vector<unsigned> >& getMeshNodes();
@@ -109,13 +114,13 @@ class GGEO_API GMeshLib
         void saveMeshUsage(const char* idpath) const ;
     private:
         Opticks*                      m_ok ; 
-        bool                          m_analytic ; 
         const char*                   m_reldir ; 
+        const char*                   m_reldir_solids ; 
         GItemIndex*                   m_meshindex ; 
+        GItemList*                    m_meshnames ; 
         unsigned                      m_missing ; 
         std::vector<const GMesh*>     m_meshes ; 
-
-
+        std::vector<const NCSG*>      m_solids ; 
         std::map<unsigned, unsigned>                  m_mesh_usage ; 
         std::map<unsigned, std::vector<unsigned> >    m_mesh_nodes ; 
 

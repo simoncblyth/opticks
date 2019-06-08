@@ -25,7 +25,7 @@ void test_base()
 
     l.save("$TMP");
 
-    GItemList* t = GItemList::load("$TMP", "testlist");
+    GItemList* t = GItemList::Load("$TMP", "testlist");
     if(t) t->dump();
 
     Map<std::string, unsigned int>* m = new Map<std::string, unsigned int>() ;
@@ -60,7 +60,7 @@ void test_reldir()
 
 void test_replaceFields(Opticks* cache)
 {
-    GItemList* il = GItemList::load(cache->getIdPath(), "GPmt", "GPmt/0");
+    GItemList* il = GItemList::Load(cache->getIdPath(), "GPmt", "GPmt/0");
     il->dump();
     il->dumpFields();
     il->replaceField(0, "OUTERMATERIAL", "MineralOil" );
@@ -71,7 +71,7 @@ void test_replaceFields(Opticks* cache)
 
 void test_makeSlice(Opticks* cache)
 {
-    GItemList* il = GItemList::load(cache->getIdPath(), "GPmt", "GPmt/0");
+    GItemList* il = GItemList::Load(cache->getIdPath(), "GPmt", "GPmt/0");
     il->dump();
 
     if(il->getNumKeys() == 0) 

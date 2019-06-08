@@ -275,7 +275,7 @@ int SSys::setenvvar( const char* ekey, const char* value, bool overwrite)
 
     const char* after = getenv(ekey) ;
 
-    LOG(info) 
+    LOG(debug) 
         << " ekey " << ekey 
         << " ekv " << ekv 
         << " overwrite " << overwrite
@@ -288,20 +288,6 @@ int SSys::setenvvar( const char* ekey, const char* value, bool overwrite)
     //std::raise(SIGINT);  
     return rc ;
 }
-
-
-/*
-int SSys::setenvvar( const char* envprefix, const char* key, const char* value, bool overwrite)
-{
-    std::stringstream ss ;
-    if(envprefix) ss << envprefix ; 
-    if(key)       ss << key ; 
-    std::string ekey = ss.str();
-    return SSys::setenvvar(ekey.c_str(), value, overwrite );    
-} 
-*/
-
-
 
 unsigned SSys::COUNT = 0 ; 
 

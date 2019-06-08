@@ -454,7 +454,7 @@ void GGeo::init()
    assert( m_analytic == false );  
    bool testgeo = false ;  
 
-   m_meshlib = new GMeshLib(m_ok, m_analytic);
+   m_meshlib = new GMeshLib(m_ok);
    m_geolib = new GGeoLib(m_ok, m_analytic, m_bndlib );
    m_nodelib = new GNodeLib(m_ok, m_analytic, testgeo ); 
 
@@ -811,9 +811,12 @@ void GGeo::loadFromCache()
     bool analytic = false ; 
     bool testgeo = false ; 
 
+    // these analytic arguments are legacy now that analytic and triangulated
+    // are treated as peers and always go together
+
     m_geolib = GGeoLib::Load(m_ok, analytic, m_bndlib);
     m_nodelib = GNodeLib::Load(m_ok, analytic, testgeo );        
-    m_meshlib = GMeshLib::Load(m_ok, analytic);
+    m_meshlib = GMeshLib::Load(m_ok );
 
     loadCacheMeta();
 

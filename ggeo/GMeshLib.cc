@@ -1,3 +1,4 @@
+#include <csignal>
 #include <ostream>
 #include <fstream>
 #include <iomanip>
@@ -6,52 +7,45 @@
 #include "BFile.hh"
 #include "Opticks.hh"
 
+#include "NCSG.hpp"
+
 #include "GMesh.hh"
 #include "GMeshLib.hh"
-#include "GItemIndex.hh"
+#include "GItemIndex.hh"   // <-- aim to remove 
+#include "GItemList.hh"
 
 #include "PLOG.hh"
 
 const plog::Severity GMeshLib::LEVEL = debug ; 
 
 
-const unsigned GMeshLib::MAX_MESH = 500 ; 
+const unsigned GMeshLib::MAX_MESH = 250 ;   // <-- hmm 500 too large ? it means a lot of filesystem checking 
+
+
 const char* GMeshLib::GITEMINDEX = "GItemIndex" ; 
 const char* GMeshLib::GMESHLIB_INDEX = "MeshIndex" ; 
-const char* GMeshLib::GMESHLIB_INDEX_ANALYTIC = "MeshIndexAnalytic" ; 
+
+const char* GMeshLib::GMESHLIB_LIST = "GMeshLib.txt" ; 
+
 
 const char* GMeshLib::GMESHLIB = "GMeshLib" ; 
-const char* GMeshLib::GMESHLIB_ANALYTIC = "GMeshLibAnalytic" ; 
-
-const char* GMeshLib::GetRelDir(bool analytic)
-{
-    return analytic ? GMESHLIB_ANALYTIC : GMESHLIB ;
-}
-const char* GMeshLib::GetRelDirIndex(bool analytic)
-{
-    return analytic ? GMESHLIB_INDEX_ANALYTIC : GMESHLIB_INDEX  ;
-}
+const char* GMeshLib::GMESHLIB_NCSG = "GMeshLibNCSG" ; 
 
 
-GMeshLib::GMeshLib(Opticks* ok, bool analytic) 
+GMeshLib::GMeshLib(Opticks* ok ) 
    :
    m_ok(ok),
-   m_analytic(analytic),
-   m_reldir(strdup(GetRelDir(analytic))),
+   m_reldir(GMESHLIB),
+   m_reldir_solids(GMESHLIB_NCSG),
    m_meshindex(NULL),
+   m_meshnames(NULL),
    m_missing(std::numeric_limits<unsigned>::max())
 {
 }
 
-
-bool GMeshLib::isAnalytic() const 
+GMeshLib* GMeshLib::Load(Opticks* ok)
 {
-    return m_analytic ; 
-}
-
-GMeshLib* GMeshLib::Load(Opticks* ok, bool analytic)
-{
-    GMeshLib* meshlib = new GMeshLib(ok, analytic);
+    GMeshLib* meshlib = new GMeshLib(ok);
     meshlib->loadFromCache(); 
     return meshlib ; 
 }
@@ -59,12 +53,17 @@ GMeshLib* GMeshLib::Load(Opticks* ok, bool analytic)
 void GMeshLib::loadFromCache()
 {
     const char* idpath = m_ok->getIdPath() ;
-    m_meshindex = GItemIndex::load(idpath, GITEMINDEX, GetRelDirIndex(m_analytic)) ;
-    assert(m_meshindex);
 
+
+    m_meshindex = GItemIndex::load(idpath, GITEMINDEX, GMESHLIB_INDEX ) ;
+    assert(m_meshindex);
     bool has_index = m_meshindex->hasIndex() ;
     if(!has_index)  LOG(fatal) << " meshindex load failure " ; 
-    //assert(has_index && " MISSING MESH INDEX : PERHAPS YOU NEED TO CREATE/RE-CREATE GEOCACHE WITH : op.sh -G ");
+    assert(has_index && " MISSING MESH INDEX : PERHAPS YOU NEED TO CREATE/RE-CREATE GEOCACHE WITH : op.sh -G ");
+
+
+    m_meshnames = GItemList::Load(idpath, "GItemList", GMESHLIB_LIST ) ;
+    assert(m_meshnames);
 
     loadMeshes(idpath);
 }
@@ -73,14 +72,13 @@ void GMeshLib::save() const
 {
     const char* idpath = m_ok->getIdPath() ;
 
-    if(m_meshindex)
-    {
-        m_meshindex->save(idpath);
-    }
-    else
-    {
-        LOG(warning) << "GMeshLib::save m_meshindex NULL " ; 
-    }
+
+    assert( m_meshindex ); 
+    m_meshindex->save(idpath);
+
+
+    assert( m_meshnames ); 
+    m_meshnames->save(idpath, "GItemList", GMESHLIB_LIST );
 
     saveMeshes(idpath);
     saveMeshUsage(idpath);
@@ -129,7 +127,7 @@ void GMeshLib::dump(const char* msg) const
 
         std::cout 
                << " aidx " << std::setw(3) << aindex  
-               << " name " << std::setw(40) << name 
+               << " name " << std::setw(50) << name 
                ;
 
          const GMesh* mesh = getMesh(aindex);
@@ -152,18 +150,19 @@ void GMeshLib::dump(const char* msg) const
 
 
 
-
-
-
-unsigned int GMeshLib::getNumMeshes() const 
+unsigned GMeshLib::getNumMeshes() const 
 {
     return m_meshes.size();
+}
+unsigned GMeshLib::getNumSolids() const 
+{
+    return m_solids.size();
 }
 
 const GMesh* GMeshLib::getMesh(unsigned aindex) const 
 {
     const GMesh* mesh = NULL ; 
-    for(unsigned int i=0 ; i < m_meshes.size() ; i++ )
+    for(unsigned i=0 ; i < m_meshes.size() ; i++ )
     { 
         if(m_meshes[i]->getIndex() == aindex )
         {
@@ -175,35 +174,69 @@ const GMesh* GMeshLib::getMesh(unsigned aindex) const
 }  
 
 
+const NCSG* GMeshLib::getSolid(unsigned aindex) const 
+{
+    const NCSG* solid = NULL ; 
+    for(unsigned i=0 ; i < m_solids.size() ; i++ )
+    { 
+        if(m_solids[i]->getIndex() == aindex )
+        {
+            solid = m_solids[i] ; 
+            break ; 
+        }
+    }
+    return solid ;
+}  
+
+
+
+
+
 const GMesh* GMeshLib::getMesh(const char* name, bool startswith) const 
 {
     unsigned aindex = getMeshIndex(name, startswith);
     return getMesh(aindex);
 }
 
+
+/**
+GMeshLib::add
+----------------
+
+Invoked via GGeo::add from X4PhysicalVolume::convertSolids_r as each distinct 
+solid is encountered in the recursive traverse.
+
+**/
+
 void GMeshLib::add(const GMesh* mesh)
 {
-    if(!m_meshindex) m_meshindex = new GItemIndex(GITEMINDEX, GetRelDirIndex(m_analytic))   ;
-
-    m_meshes.push_back(mesh);
+    if(!m_meshindex) m_meshindex = new GItemIndex(GITEMINDEX, GMESHLIB_INDEX )   ;
+    if(!m_meshnames) m_meshnames = new GItemList("GMeshLib", "GItemList" )   ;
 
     const char* name = mesh->getName();
     unsigned int index = mesh->getIndex();
-
     assert(name) ; 
 
-    LOG(debug) << "GMeshLib::add (GMesh)"
-              << " index " << std::setw(4) << index 
-              << " name " << name 
-              ;
+    m_meshnames->add(name); 
+
+    LOG(debug) 
+        << " index " << std::setw(4) << index 
+        << " name " << name 
+        ;
+
+    m_meshes.push_back(mesh);
+    const NCSG* solid = mesh->getCSG(); 
+
+    assert(solid) ;                // hmm probably fail for legacy workflow
+    m_solids.push_back(solid); 
 
     m_meshindex->add(name, index); 
+
+    //std::raise(SIGINT); 
 }
 
 
-
-
-void GMeshLib::removeMeshes(const char* idpath ) const 
+void GMeshLib::removeDirs(const char* idpath ) const 
 {
    for(unsigned int idx=0 ; idx < MAX_MESH ; ++idx)
    {   
@@ -212,11 +245,21 @@ void GMeshLib::removeMeshes(const char* idpath ) const
         { 
             BFile::RemoveDir(idpath, m_reldir, sidx); 
         }
+        if(BFile::ExistsDir(idpath, m_reldir_solids, sidx))
+        { 
+            BFile::RemoveDir(idpath, m_reldir_solids, sidx); 
+        }
    } 
 }
 
+/**
+GMeshLib::loadMeshes
+----------------------
 
+In addition to GMesh instances this also loads the corresponding NCSG 
+analytic solids and associates them with the GMesh instances.
 
+**/
 
 void GMeshLib::loadMeshes(const char* idpath )
 {
@@ -228,13 +271,30 @@ void GMeshLib::loadMeshes(const char* idpath )
    for(unsigned int idx=0 ; idx < MAX_MESH ; ++idx)
    {   
         const char* sidx = BStr::itoa(idx);
-        std::string spath = BFile::FormPath(idpath, m_reldir, sidx);
-        const char* path = spath.c_str() ;
 
-        if(BFile::ExistsDir(path))
+        std::string meshdir_ = BFile::FormPath(idpath, m_reldir, sidx);
+        const char* meshdir = meshdir_.c_str() ;
+
+        std::string soliddir_ = BFile::FormPath(idpath, m_reldir_solids, sidx);
+        const char* soliddir = soliddir_.c_str() ;
+
+        bool meshdir_exists = BFile::ExistsDir(meshdir) ; 
+        bool soliddir_exists = BFile::ExistsDir(soliddir) ; 
+
+        if(meshdir_exists)
         {   
-            LOG(debug) << "GMeshLib::loadMeshes " << path ; 
-            GMesh* mesh = GMesh::load( path );
+            assert( soliddir_exists && "GMeshLib persisted GMesh are expected to have paired GMeshLibNCSG dirs"); 
+
+            LOG(debug) 
+                << " meshdir " << meshdir 
+                << " meshdir_exists " << meshdir_exists 
+                << " soliddir " << soliddir 
+                << " soliddir_exists " << soliddir_exists 
+                ; 
+
+            GMesh* mesh = GMesh::load( meshdir );
+            NCSG* solid = NCSG::Load( soliddir );  
+            mesh->setCSG(solid); 
 
             const char* name = getMeshName(idx);
             assert(name);
@@ -246,23 +306,27 @@ void GMeshLib::loadMeshes(const char* idpath )
             mesh->setName(strdup(name));
 
             m_meshes.push_back(mesh);
+            m_solids.push_back(solid);
         }
         else
         {
-            LOG(debug) << "GMeshLib::loadMeshes " 
-                       << " no mdir for idx " << idx 
-                       << " path " << path 
-                       ;
+            LOG(debug)
+                << " MISSING meshdir "  
+                << " idx " << idx 
+                << " meshdir " << meshdir 
+                ;
         }
    }
-   LOG(debug) << "GMeshLib::loadMeshes" 
-             << " loaded "  << m_meshes.size()
-             ;
+   LOG(info) 
+       << " loaded "  
+       << " meshes "  << m_meshes.size()
+       << " solids "  << m_solids.size()
+       ;
 }
 
 void GMeshLib::saveMeshes(const char* idpath) const 
 {
-    removeMeshes(idpath); // clean old meshes to avoid duplication when repeat counts go down 
+    removeDirs(idpath); // clean old meshes to avoid duplication when repeat counts go down 
 
     typedef std::vector<const GMesh*>::const_iterator VMI ; 
     for(VMI it=m_meshes.begin() ; it != m_meshes.end() ; it++)
@@ -272,15 +336,15 @@ void GMeshLib::saveMeshes(const char* idpath) const
         const char* sidx = BStr::itoa(idx);
 
         mesh->save(idpath, m_reldir, sidx); 
+
+        const NCSG* solid = mesh->getCSG(); 
+        assert(solid); 
+
+        solid->savesrc(idpath, m_reldir_solids, sidx); 
     }
 
     // meshindex persisted first, up in GMeshLib::save
 }
-
-
-
-
-
 
 
 

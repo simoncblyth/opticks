@@ -25,8 +25,11 @@ entirely generic buffer handling code. Moving specifics up into NCSG ?
 Buffers are grouped into two categeories
 
 SrcBuffers
-    which tellingly have no GTransform buffer, 
-    but do have faces and verts
+    No GTransform buffer, but includes optional planes, faces and verts buffers
+
+    Canonically these are the buffers written from python by
+    opticks.analytic.csg:CSG.Serialize
+
 
 TransportBuffers
     (is that the right name ?) 
@@ -96,7 +99,7 @@ class NPY_API NCSGData
     public:
         NCSGData(); 
         void init_buffers(unsigned height);  // maxdepth of node tree
-        void setIdx( unsigned index, unsigned soIdx, unsigned lvIdx, unsigned height );
+        void setIdx( unsigned index, unsigned soIdx, unsigned lvIdx, unsigned height, bool src  );
 
     public:
         // pure const access to src buffer content 

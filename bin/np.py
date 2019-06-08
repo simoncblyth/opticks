@@ -154,7 +154,8 @@ if __name__ == '__main__':
 
     if len(npys) > 0:
         n = odict()
-        labels = "abcd"
+        labels = "abcdefghijklmnopqrstuvwxyz"
+        labels += labels.upper()
         for i,path in enumerate(npys):
             n[i] = npy_brief(path, args, label=labels[i])
         pass

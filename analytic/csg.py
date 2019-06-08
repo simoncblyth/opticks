@@ -424,6 +424,11 @@ class CSG(CSG_):
         :param trees: list of CSG instances of solid root nodes
         :param args: namespace instance provided by opticks_main directory to save the tree serializations, under an indexed directory 
         :param outerfirst: when 1 signifies that the first listed tree contains is the outermost volume 
+
+        1. saves each tree into a separate directories
+        2. saves FILENAME csg.txt containing boundary strings at top level
+        3. saves METANAME csgmeta.json containing tree level metadata at top level
+
         """
         base = args.csgpath 
 
@@ -455,7 +460,7 @@ class CSG(CSG_):
         csgmeta["autoseqmap"] = args.autoseqmap
 
         meta_fmt_ = lambda meta:"_".join(["%s=%s" % kv for kv in meta.items()])
-        print meta_fmt_(csgmeta)  # communicates to tboolean--
+        print(meta_fmt_(csgmeta))  # communicates to tboolean--
         cls.SaveMeta(base, csgmeta)     # read by NCSG::Deserialize
         pass
 

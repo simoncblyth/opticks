@@ -118,7 +118,7 @@ GScene::GScene( Opticks* ok, GGeo* ggeo, bool loaded )
 
     m_geolib(loaded ? GGeoLib::Load(m_ok, m_analytic, m_tri_bndlib ) : new GGeoLib(m_ok, m_analytic, m_tri_bndlib)),
     m_nodelib(loaded ? GNodeLib::Load(m_ok, m_analytic, m_testgeo )  : new GNodeLib(m_ok, m_analytic, m_testgeo )),
-    m_meshlib(loaded ? GMeshLib::Load(m_ok, m_analytic)              : new GMeshLib(m_ok, m_analytic)),
+    m_meshlib(loaded ? GMeshLib::Load(m_ok)                          : new GMeshLib(m_ok)),
 
     m_colorizer(new GColorizer(m_nodelib, m_geolib, m_tri_bndlib, ggeo->getColors(), GColorizer::PSYCHEDELIC_NODE )),   // GColorizer::SURFACE_INDEX
 

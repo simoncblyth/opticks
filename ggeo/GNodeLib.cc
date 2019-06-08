@@ -33,8 +33,8 @@ GNodeLib* GNodeLib::Load(Opticks* ok, bool analytic, bool test)
 void GNodeLib::loadFromCache()
 {
     const char* idpath = m_ok->getIdPath() ;
-    m_pvlist = GItemList::load(idpath, "PVNames", m_reldir);
-    m_lvlist = GItemList::load(idpath, "LVNames", m_reldir);
+    m_pvlist = GItemList::Load(idpath, "PVNames", m_reldir);
+    m_lvlist = GItemList::Load(idpath, "LVNames", m_reldir);
 }
 
 GNodeLib::GNodeLib(Opticks* ok, bool analytic, bool test, GNodeLib* basis)  

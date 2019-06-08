@@ -1,4 +1,5 @@
 #include <cstring>
+#include <csignal>
 #include <algorithm>
 #include <sstream>
 
@@ -38,6 +39,10 @@ const float NCSG::SURFACE_EPSILON = 1e-5f ;
 NCSG::Load
 -----------
 
+Loads a single CSG tree from a tree directory, as written 
+by python opticks.analytic.csg:CSG.Serialize
+
+
 **/
 
 NCSG* NCSG::Load(const char* treedir)
@@ -75,7 +80,7 @@ NCSG* NCSG::Load(const char* treedir, const NSceneConfig* config  )
     tree->setIsUsedGlobally(true);
 
     tree->loadsrc();  // populate the src* buffers 
-    tree->import();   // complete binary tree m_nodes buffer -> node tree
+    tree->import();   // complete binary tree m_nodes buffer -> nnode tree
     tree->collect_global_transforms();  // also sets the gtransform_idx onto the tree
     tree->export_();  // node tree -> complete binary tree m_nodes buffer
 
@@ -94,6 +99,10 @@ NCSG::Adopt
 
 Canonical usage in direct route is from X4PhysicalVolume::convertSolid
 
+Note that as this starts from an in memory nnode tree there 
+is no *loadsrc* or *import* only an *export* into the GPU ready 
+complete binary tree buffers.
+
 
 **/
 
@@ -111,6 +120,38 @@ NCSG* NCSG::Adopt(nnode* root, const char* config_, unsigned soIdx, unsigned lvI
     return Adopt( root, config, soIdx , lvIdx ); 
 }
 
+NCSG* NCSG::Adopt(nnode* root, const NSceneConfig* config, unsigned soIdx, unsigned lvIdx )
+{
+    PrepTree(root);
+
+    LOG(debug) 
+        << " soIdx " << soIdx  
+        << " lvIdx " << lvIdx 
+        ; 
+
+    // XCSG test generation giving lots of these Adopts with zero idx
+    // if( soIdx == 0 && lvIdx == 0) std::raise(SIGINT); 
+
+    root->set_treeidx(lvIdx) ;  // without this no nudging is done
+
+    NCSG* tree = new NCSG(root);
+
+    tree->setConfig(config);
+    tree->setSOIdx(soIdx); 
+    tree->setLVIdx(lvIdx); 
+    tree->setIndex(lvIdx); 
+
+    tree->collect_global_transforms();  // collects and sets the gtransform_idx onto the tree
+    tree->export_();           // node tree -> complete binary tree m_nodes buffer
+    tree->export_srcidx();     // identity indices into srcidx buffer
+
+    assert( tree->getGTransformBuffer() );
+    tree->collect_surface_points();
+
+    return tree ; 
+}
+
+
 void NCSG::PrepTree(nnode* root)  // static
 {
     nnode::Set_parent_links_r(root, NULL);
@@ -120,30 +161,16 @@ void NCSG::PrepTree(nnode* root)  // static
     root->check_tree( FEATURE_PARENT_LINKS | FEATURE_GTRANSFORMS ); 
 }
 
-NCSG* NCSG::Adopt(nnode* root, const NSceneConfig* config, unsigned soIdx, unsigned lvIdx )
-{
-    PrepTree(root);
-
-    root->set_treeidx(lvIdx) ;  // without this no nudging is done
-
-    NCSG* tree = new NCSG(root);
-
-    tree->setConfig(config);
-    tree->setSOIdx(soIdx); 
-    tree->setLVIdx(lvIdx); 
-
-    tree->collect_global_transforms();  // collects and sets the gtransform_idx onto the tree
-    tree->export_();        // node tree -> complete binary tree m_nodes buffer
-
-    assert( tree->getGTransformBuffer() );
-    tree->collect_surface_points();
-
-    return tree ; 
-}
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-// ctor : booting via deserialization of directory 
+/**
+NCSG::NCSG(const char* treedir) 
+---------------------------------
+
+Private constructor used by NCSG::Load deserialization of a tree directory 
+
+**/
 NCSG::NCSG(const char* treedir) 
    :
    m_treedir(treedir ? strdup(treedir) : NULL),
@@ -169,7 +196,16 @@ NCSG::NCSG(const char* treedir)
 {
 }
 
-// ctor : booting from in memory node tree : cannot be const because of the nudger 
+/**
+NCSG::NCSG(nnode* root )
+-----------------------------
+
+Private constructor used by NCSG::Adopt booting from in memory nnode tree
+
+* cannot be const because of the nudger 
+
+**/
+
 NCSG::NCSG(nnode* root ) 
    :
    m_treedir(NULL),
@@ -194,10 +230,19 @@ NCSG::NCSG(nnode* root )
    m_lvIdx(0)
 {
     setBoundary( root->boundary );  // boundary spec
-    //LOG(error) << " NCSG adopt " ; 
+    LOG(debug) << "[" ; 
     m_csgdata->init_buffers(root->maxdepth()) ;  
-    //LOG(error) << " NCSG adopt after init_buffers" ; 
+    LOG(debug) << "]" ; 
 }
+
+
+void NCSG::savesrc(const char* idpath, const char* rela, const char* relb ) const 
+{
+    std::string treedir_ = BFile::FormPath( idpath, rela, relb ); 
+    const char* treedir = treedir_.c_str(); 
+    savesrc(treedir);  
+}
+
 
 void NCSG::savesrc(const char* treedir_ ) const 
 {
@@ -208,7 +253,7 @@ void NCSG::savesrc(const char* treedir_ ) const
 
     LOG(info) << " treedir_ " << treedir_ ; 
 
-    m_csgdata->savesrc(treedir_) ;  
+    m_csgdata->savesrc( treedir_ ) ;  
     m_meta->save( treedir_ ); 
 }
 
@@ -309,8 +354,11 @@ void NCSG::postimport()
 NCSG::import_r
 ----------------
 
-Importing : constructs the node tree from src buffers 
-loaded by loadsrc ( which were written by analytic/csg.py ) 
+Importing : constructs the in memory nnode tree from 
+the src buffers loaded by loadsrc ( which were written by analytic/csg.py ) 
+Prior to importing the NCSGData::prepareForImport must 
+be called to triplet-ize the srctransforms making the 
+transforms buffer.
 
 Formerly:
 
@@ -331,11 +379,11 @@ nnode* NCSG::import_r(unsigned idx, nnode* parent)
     int transform_idx = m_csgdata->getTransformIndex(idx) ; 
     bool complement = m_csgdata->isComplement(idx) ; 
 
-    LOG(debug) << "NCSG::import_r"
-              << " idx " << idx
-              << " transform_idx " << transform_idx
-              << " complement " << complement 
-              ;
+    LOG(debug) 
+        << " idx " << idx
+        << " transform_idx " << transform_idx
+        << " complement " << complement 
+        ;
 
     nnode* node = NULL ;   
  
@@ -446,12 +494,12 @@ nnode* NCSG::import_primitive( unsigned idx, OpticksCSG_t typecode )
 
     if(node == NULL) 
     {
-            LOG(fatal) << "NCSG::import_primitive"
-                       << " TYPECODE NOT IMPLEMENTED " 
-                       << " idx " << idx 
-                       << " typecode " << typecode
-                       << " csgname " << CSGName(typecode)
-                       ;
+        LOG(fatal) 
+            << " TYPECODE NOT IMPLEMENTED " 
+            << " idx " << idx 
+            << " typecode " << typecode
+            << " csgname " << CSGName(typecode)
+            ;
     } 
 
     assert(node); 
@@ -464,12 +512,12 @@ nnode* NCSG::import_primitive( unsigned idx, OpticksCSG_t typecode )
 
     if(m_verbosity > 3)
     {
-    LOG(info) << "NCSG::import_primitive  " 
-              << " idx " << idx 
-              << " typecode " << typecode 
-              << " csgname " << CSGName(typecode) 
-              << " DONE " 
-              ;
+        LOG(info) 
+            << " idx " << idx 
+            << " typecode " << typecode 
+            << " csgname " << CSGName(typecode) 
+            << " DONE " 
+            ;
     } 
     return node ; 
 }
@@ -666,7 +714,8 @@ unsigned NCSG::addUniqueTransform( const nmat4triple* gtransform_ )
 NCSG::export_
 -----------------
 
-Writing node tree into transport buffers 
+Writing node tree into transport buffers using 
+complete binary tree indexing. 
 
 1. prepareForExport : init NODES, PLANES 
 
@@ -689,21 +738,21 @@ these as idxs get into that buffer
 
 void NCSG::export_()
 {
-    //LOG(error) << "export_ START " ; 
+    LOG(debug) << "[" ; 
     m_root->check_tree( FEATURE_PARENT_LINKS | FEATURE_GTRANSFORMS ) ; 
 
     m_csgdata->prepareForExport() ;  //  create node buffer 
 
-    //LOG(error) << "export_ prepare DONE " ; 
+    LOG(debug) << "]" ; 
 
     NPY<float>* _nodes = m_csgdata->getNodeBuffer() ; 
     assert(_nodes);
 
-    LOG(debug) << "NCSG::export_ "
-              << " exporting CSG node tree into nodes buffer "
-              << " num_nodes " << getNumNodes()
-              << " height " << getHeight()
-              ;
+    LOG(debug) 
+        << " exporting CSG node tree into nodes buffer "
+        << " num_nodes " << getNumNodes()
+        << " height " << getHeight()
+        ;
 
     export_idx();  
 
@@ -713,20 +762,26 @@ void NCSG::export_()
     //  FEATURE_GTRANSFORM_IDX not fulfilled
 }
 
+/**
+NCSG::export_idx
+-------------------
+
+Set tree identity indices into the idx buffer
+
+**/
+
 void NCSG::export_idx()   // only tree level
 {
     unsigned height = getHeight()  ;
+    bool src = false ; 
+    m_csgdata->setIdx( m_index, m_soIdx, m_lvIdx, height, src ); 
+}
 
-    if(m_verbosity > 4)
-    LOG(error) 
-           << " m_csgdata->setIdx "
-           << " index " << m_index
-           << " soIdx " << m_soIdx
-           << " lvIdx " << m_lvIdx
-           << " height " << height
-           ;
-
-    m_csgdata->setIdx( m_index, m_soIdx, m_lvIdx, height ); 
+void NCSG::export_srcidx()   // only tree level
+{
+    unsigned height = getHeight()  ;
+    bool src = true  ; 
+    m_csgdata->setIdx( m_index, m_soIdx, m_lvIdx, height, src ); 
 }
 
 void NCSG::export_r(nnode* node, unsigned idx)
@@ -740,28 +795,35 @@ void NCSG::export_r(nnode* node, unsigned idx)
     }  
 }
 
+
+/**
+NCSG::export_node
+--------------------
+
+NB this now writes nodes to the transport nodes buffer, which 
+is separate from the srcnodes buffer 
+
+In the case of adopted nnode the src buffers are also populated, 
+to enable subsequent loading to be just like loading from python written trees 
+
+**/
+
 void NCSG::export_node(nnode* node, unsigned idx)
 {
-    //LOG(error) << "export_node START " ; 
-
     assert(idx < getNumNodes() ); 
-    LOG(verbose) << "NCSG::export_node"
-              << " idx " << idx 
-              << node->desc()
-              ;
-
+    LOG(verbose) 
+        << " idx " << idx 
+        << node->desc()
+        ;
 
     if(m_adopted)   
     {
         export_srcnode( node, idx) ; 
     }
 
-    //export_gtransform(node);
-
     NPY<float>* _planes = m_csgdata->getPlaneBuffer() ; 
     export_planes(node, _planes);
   
-    // crucial 2-step here, where m_nodes gets totally rewritten
     npart pt = node->part();  // node->type node->gtransform_idx node->complement written into pt 
 
     pt.check_bb_zero(node->type); 
@@ -817,14 +879,15 @@ void NCSG::export_planes(nnode* node, NPY<float>* _planes)
 NCSG::export_srcnode
 ----------------------
 
-In the adopted from nnode case (as opposed to loaded from python written buffers) there are no src buffers  
-so remedy that here : allowing loading just like from python
+In the adopted from nnode case (as opposed to loaded from python written buffers) 
+there are no src buffers so remedy that here : 
+allowing loading to proceed just like from python
  
 **/
 
 void NCSG::export_srcnode(nnode* node, unsigned idx)
 {
-    //LOG(info) << "export_srcnode" ; 
+    LOG(debug) << "[" ; 
 
     assert( m_adopted ) ; 
 
@@ -840,9 +903,18 @@ void NCSG::export_srcnode(nnode* node, unsigned idx)
     npart pt = node->srcpart();
     _srcnodes->setPart( pt, idx );   // writes 4 quads to buffer 
 
-    //LOG(info) << "export_srcnode DONE " ; 
+    LOG(debug) << "]" ; 
 }
 
+
+/**
+NCSG::export_itransform
+------------------------
+
+Note this writes just the transforms, not the full triplet as
+that is what analytic/csg.py does
+
+**/
 
 void NCSG::export_itransform( nnode* node, NPY<float>* _dest )
 {
@@ -854,7 +926,7 @@ void NCSG::export_itransform( nnode* node, NPY<float>* _dest )
 
     unsigned itransform1 = _dest->getNumItems() + 1 ;  // 1-based transform idx
  
-    _dest->add(t) ;   // <-- nothing fancy straight collection like csg.py:serialize 
+    _dest->add(t) ;   // <-- nothing fancy straight collection just like analytic/csg.py:serialize 
 
     node->itransform_idx = itransform1  ;    
 }
@@ -863,7 +935,7 @@ void NCSG::export_itransform( nnode* node, NPY<float>* _dest )
 //////////////////////////////////////////////////////////////////////////////////////////////
 
 
-void NCSG::dump(const char* msg)
+void NCSG::dump(const char* msg) const 
 {
     LOG(info) << msg  ; 
     std::cout << brief() << std::endl ; 

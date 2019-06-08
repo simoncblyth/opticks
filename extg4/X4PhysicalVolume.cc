@@ -524,9 +524,17 @@ GMesh* X4PhysicalVolume::convertSolid( int lvIdx, int soIdx, const G4VSolid* con
      assert( csg ) ; 
      assert( csg->isUsedGlobally() );
 
+
      const std::string& soname = solid->GetName() ; 
      csg->set_soname( soname.c_str() ) ; 
      csg->set_lvname( lvname.c_str() ) ; 
+
+     LOG(debug) 
+          << " soIdx " << std::setw(5) << soIdx
+          << " lvIdx " << std::setw(5) << lvIdx
+          << " soname " << soname
+          << " lvname " << lvname
+          ;
 
      bool is_x4polyskip = m_ok->isX4PolySkip(lvIdx);   // --x4polyskip 211,232
      if( is_x4polyskip ) LOG(fatal) << " is_x4polyskip " << " soIdx " << soIdx  << " lvIdx " << lvIdx ;  
