@@ -339,8 +339,6 @@ void OpticksCfg<Listener>::init()
        ("dbgkludgeflatzero",  "debug of the maligned six, see notes/issues/RNG_seq_off_by_one.rst") ;
 
 
-
-
    m_desc.add_options()
        ("simplify",  "simplify OptiX geometry for debugging") ;
 
@@ -395,6 +393,9 @@ void OpticksCfg<Listener>::init()
        ) ;
 
 
+
+   m_desc.add_options()
+       ("dbgdownload",  "debug event downloading from GPU") ;
 
    m_desc.add_options()
        ("save",  "download generated/propagated event data from GPU and save to file") ;

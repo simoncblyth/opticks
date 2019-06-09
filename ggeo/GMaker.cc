@@ -122,90 +122,49 @@ std::string GMaker::PVName(const char* shapename, int idx)
 }
 
 
-GVolume* GMaker::makeFromProxy(NCSG* proxy )
-{
-    unsigned lvIdx = proxy->getProxyLV(); 
-    const char* spec = proxy->getBoundary();  
-    assert( spec ); 
 
-    LOG(info) 
-        << "["
-        << " proxyLV " << lvIdx 
-        << " proxy.spec " << spec 
-        ; 
-
-    GMesh* mesh = m_meshlib->getMeshSimple(lvIdx); 
-
-    const NCSG* csg = mesh->getCSG(); 
-    assert( csg ) ; 
-    assert( csg->getBoundary() == NULL && "expecting fresh csg from meshlib to have no boundary assigned") ; 
-
-    mesh->setCSGBoundary( spec );  // adopt the boundary from the proxy object setup in python
-
-    unsigned index = proxy->getIndex(); 
-
-
-    glm::mat4 txf(1.f) ; 
-    GMatrixF* transform = new GMatrix<float>(glm::value_ptr(txf));
-
-    GVolume* volume = new GVolume(index, transform, mesh );     
-
-    volume->setSensor( NULL );      
-
-    OpticksCSG_t type = csg->getRootType() ;
-
-    std::string lvn = csg->getTestLVName();
-    std::string pvn = csg->getTestPVName();
-    
-    volume->setPVName( strdup(pvn.c_str()) );
-    volume->setLVName( strdup(lvn.c_str()) );
-    volume->setCSGFlag( type );
-
-    GParts* pts = GParts::Make( csg, spec );
-
-    volume->setParts( pts );
-
-
-    const char* spec2 = volume->getMesh()->getCSG()->getBoundary() ;  
-    assert( spec2 ); 
-
-    LOG(info) 
-        << "]"
-        << " proxyLV " << lvIdx 
-        << " proxy.spec " << spec 
-        << " spec2 " << spec2 
-        ; 
-
-
-    return volume ; 
-}
 
 
 /**
-GMaker::makeFromCSG
+GMaker::makeMeshFromCSG
 ----------------------
 
-FORMERLY set boundary within here,  
-moved later to allow relocation of basis
-surfaces prior to arriving at a boundary index 
+Hmm : this is using my (very temperamental) polygonization,
+but there is no need to do so in direct workflow as the Geant4 
+polygonization GMesh is available. 
 
 **/
 
-GVolume* GMaker::makeFromCSG(NCSG* csg )
+
+GMesh* GMaker::makeMeshFromCSG( NCSG* csg ) // cannot be const due to lazy NCSG::polgonize 
 {
     unsigned index = csg->getIndex();
+    const char* spec = csg->getBoundary();  
+    NTrianglesNPY* tris = csg->polygonize();
+
+    LOG(info) 
+              << " index " << index 
+              << " spec " << spec 
+              << " numTris " << ( tris ? tris->getNumTriangles() : 0 )
+              << " trisMsg " << ( tris ? tris->getMessage() : "" )
+              ; 
+
+    GMesh* mesh = GMeshMaker::Make(tris->getTris(), index);
+    mesh->setCSG(csg);
+    return mesh ; 
+}
+
+
+
+GVolume* GMaker::makeFromMesh( const GMesh* mesh ) const 
+{
+    const NCSG* csg = mesh->getCSG();   
+
+    unsigned index = mesh->getIndex(); 
 
     const char* spec = csg->getBoundary();  
 
-    NTrianglesNPY* tris = csg->polygonize();
-
-    GMesh* mesh = GMeshMaker::Make(tris->getTris(), index);
-
-    mesh->setCSG(csg);
-
-    glm::mat4 txf = tris->getTransform();  // <-- mysterious place to get transform from ?
-
-    //LOG(info) << "txf " << glm::to_string(txf) ; 
+    glm::mat4 txf(1.0f); 
 
     GMatrixF* transform = new GMatrix<float>(glm::value_ptr(txf));
 
@@ -230,14 +189,11 @@ GVolume* GMaker::makeFromCSG(NCSG* csg )
 
     LOG(info) 
               << " index " << index 
-              << " boundary-spec " << spec 
-              << " numTris " << ( tris ? tris->getNumTriangles() : 0 )
-              << " trisMsg " << ( tris ? tris->getMessage() : "" )
+              << " spec " << spec 
               ; 
 
     return volume ; 
 }
-
 
 
 

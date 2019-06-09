@@ -5,10 +5,13 @@
 class GMesh ; 
 template <typename T> class NPY ; 
 
+struct nbbox ; 
+
 
 class GGEO_API GMeshMaker 
 {
     public:
+        static GMesh* Make( nbbox& bb ) ;
         static GMesh* MakeSphereLocal(NPY<float>* triangles, unsigned meshindex=0);  
         static GMesh* Make(NPY<float>* triangles, unsigned meshindex=0);
 

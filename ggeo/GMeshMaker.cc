@@ -1,8 +1,19 @@
 
 #include "NPY.hpp"
 #include "NGLM.hpp"
+#include "NBBox.hpp"
+#include "NTrianglesNPY.hpp"
 #include "GMesh.hh"
 #include "GMeshMaker.hh"
+
+
+
+GMesh* GMeshMaker::Make( nbbox& bb ) 
+{
+    NTrianglesNPY* tris = NTrianglesNPY::box(bb) ;         
+    GMesh* mesh = Make(tris->getTris());
+    return mesh ;  
+}
 
 
 GMesh* GMeshMaker::Make(NPY<float>* vtx3, NPY<unsigned>* tri3, unsigned meshindex)

@@ -88,14 +88,14 @@ NCSGList::NCSGList(const char* csgpath, int verbosity)
     m_verbosity(verbosity),
     m_bndspec(new BTxt(m_txtpath)),
     m_universe(NULL),
-    m_container_bbox()  
+    m_bbox()  
 {
     init();
 }
 
 void NCSGList::init()
 {
-    init_bbox(m_container_bbox) ;
+    init_bbox(m_bbox) ;
 }
 
 std::vector<NCSG*>& NCSGList::getTrees()
@@ -114,18 +114,6 @@ void NCSGList::add(NCSG* tree)
     LOG(error) << " add tree, boundary: " << boundary ; 
     m_trees.push_back(tree);  
     m_bndspec->addLine( boundary ); 
-}
-
-bool NCSGList::hasContainer() const 
-{
-    unsigned num_tree = m_trees.size(); 
-    unsigned count(0);   
-    for(unsigned i=0 ; i < num_tree ; i++)
-    {
-        if(m_trees[i]->isContainer()) count += 1 ; 
-    }  
-    assert( count == 0 || count == 1 ); 
-    return count == 1 ; 
 }
 
 
@@ -163,10 +151,13 @@ void NCSGList::adjustContainerSize()
     m_bbox.include(bba2);   // update for the auto-container, used by NCSGList::createUniverse
 
     container->export_();  // after changing geometry must re-export to update the buffers destined for upload to GPU 
+
+    LOG(info) 
+        << " m_bbox " 
+        << m_bbox.description()
+        ; 
+       
 }
-
-
-
 
 
 /**
@@ -174,86 +165,6 @@ NCSGList::load
 ------------------
 
 **/
-
-
-#ifdef OLD_LOAD
-void NCSGList::load()
-{
-    assert(m_trees.size() == 0);
-    assert(m_bndspec) ; 
-
-    bool exists = BFile::ExistsFile(m_txtpath ); 
-    if(!exists) 
-    {
-        LOG(fatal) << "NCSGList::load missing " << m_txtpath ; 
-    }
-    //assert(exists); 
-
-    if( exists )
-    {
-        m_bndspec->read();
-        //m_bndspec->dump("NCSGList::load");    
-    }
-
-    unsigned nbnd = m_bndspec ? m_bndspec->getNumLines() : 0 ;
-
-    LOG(info) << "NCSGList::load"
-              << " VERBOSITY " << m_verbosity 
-              << " basedir " << m_csgpath 
-              << " txtpath " << m_txtpath 
-              << " nbnd " << nbnd 
-              ;
-
-
-    // order is reversed so that a tree with the "container" meta data tag at tree slot 0
-    // is handled last, so container_bb will then have been adjusted to hold all the others...
-    // allowing the auto-bbox setting of the container
-    //
-    // this order flipping feels kludgy, 
-    // but because of the export of the resultant bbox it aint easy to fix
-    //
-
-    for(unsigned j=0 ; j < nbnd ; j++)
-    {
-        unsigned idx = nbnd - 1 - j ;     // idx 0 is handled last 
-        const char* boundary = m_bndspec->getLine(idx);
-
-        NCSG* tree = loadTree(idx);
-        tree->setBoundary(boundary);  
-
-        nbbox bba = tree->bbox_analytic();  
-
-       // for non-container trees updates m_container_bbox, for the container trees adopts the bbox 
-        if(!tree->isContainer())
-        {
-            m_container_bbox.include(bba);
-        } 
-        else if(tree->isContainer())
-        {
-            float scale = tree->getContainerScale(); // hmm should be prop of the list not the tree ? 
-            float delta = 0.f ; 
-            tree->adjustToFit(m_container_bbox, scale, delta );
-
-            nbbox bba2 = tree->bbox_analytic();
-            m_container_bbox.include(bba2);   // update for the auto-container, used by NCSGList::createUniverse
-
-            tree->export_();  // after changing geometry must re-export to update the buffers destined for upload to GPU 
-
-        }
-  
-        // tree->export_() ;  <-- former position,   
-      
-
-        LOG(debug) << "NCSGList::load [" << idx << "] " << tree->desc() ; 
-
-        add(tree) ; 
-    }
-
-    // back into original source order with outer first eg [outer, container, sphere]  
-    std::reverse( m_trees.begin(), m_trees.end() );
-}
-
-#else
 
 void NCSGList::load()
 {
@@ -286,8 +197,6 @@ void NCSGList::load()
     //std::raise(SIGINT); 
 
 }
-
-#endif
 
 
        
@@ -333,7 +242,7 @@ NCSG* NCSGList::createUniverse(float scale, float delta) const
                   ;
     }
 
-    universe->adjustToFit( m_container_bbox, scale, delta ); 
+    universe->adjustToFit( m_bbox, scale, delta ); 
 
     /// huh : not re-exported : this means different geometry on CPU and GPU ??
 
@@ -356,6 +265,15 @@ NCSG* NCSGList::getTree(unsigned index) const
 {
     return m_trees[index] ;
 }
+
+void NCSGList::setTree(unsigned index, NCSG* replacement) 
+{
+    m_trees[index] = replacement  ;
+}
+
+
+
+
 
 /*
 const char* NCSGList::getBoundary(unsigned index) const 
@@ -529,37 +447,59 @@ OpticksGen::OpticksGen
 
 **/
 
-NCSG* NCSGList::findEmitter() const 
+NCSG* NCSGList::findEmitter()   const {  return find(EMITTER) ; }
+NCSG* NCSGList::findContainer() const {  return find(CONTAINER) ; }
+NCSG* NCSGList::findProxy()     const {  return find(PROXY) ; }
+
+int NCSGList::findEmitterIndex()   const {  return findIndex(EMITTER) ; }
+int NCSGList::findContainerIndex() const {  return findIndex(CONTAINER) ; }
+int NCSGList::findProxyIndex()     const {  return findIndex(PROXY) ; }
+
+bool  NCSGList::hasContainer() const {  return find(CONTAINER) != NULL ; }
+bool  NCSGList::hasEmitter()   const {  return find(EMITTER) != NULL ; }
+bool  NCSGList::hasProxy()     const {  return find(PROXY) != NULL ; }
+
+
+NCSG* NCSGList::find(NCSG_t type) const 
 {
     unsigned numTrees = getNumTrees() ;
-    NCSG* emitter = NULL ; 
+    NCSG* found = NULL ; 
     for(unsigned i=0 ; i < numTrees ; i++)
     {
         NCSG* tree = getTree(i);
-        if(tree->isEmit())
+        if( 
+            ( type == CONTAINER && tree->isContainer() ) ||
+            ( type == EMITTER   && tree->isEmitter() )   ||
+            ( type == PROXY     && tree->isProxy() )   
+          )
         {
-           assert( emitter == NULL && "not expecting more than one emitter" );
-           emitter = tree ;
-        }
+            assert( found == NULL ); 
+            found = tree ; 
+        } 
     }
-    return emitter ; 
+    return found ; 
 }
 
-NCSG* NCSGList::findContainer() const 
+int NCSGList::findIndex(NCSG_t type) const 
 {
     unsigned numTrees = getNumTrees() ;
-    NCSG* container = NULL ; 
+    int found = -1 ; 
     for(unsigned i=0 ; i < numTrees ; i++)
     {
         NCSG* tree = getTree(i);
-        if(tree->isContainer())
+        if( 
+            ( type == CONTAINER && tree->isContainer() ) ||
+            ( type == EMITTER   && tree->isEmitter() )   ||
+            ( type == PROXY     && tree->isProxy() )   
+          )
         {
-           assert( container == NULL && "not expecting more than one container" );
-           container = tree ;
-        }
+            assert( found == -1 ); 
+            found = i ; 
+        } 
     }
-    return container ; 
+    return found ; 
 }
+
 
 
 

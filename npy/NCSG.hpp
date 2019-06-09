@@ -214,7 +214,7 @@ class NPY_API NCSG {
         void setEmit(int emit);  
         void setEmitConfig(const char* emitconfig);  
     public:
-        bool        isEmit() const ;
+        bool        isEmitter() const ;
         int         getEmit() const ;
         const char* getEmitConfig() const ;
     public:

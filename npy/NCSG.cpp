@@ -1282,7 +1282,7 @@ bool        NCSG::isSkip() const {        return m_meta->getValue<int>("skip","0
 bool        NCSG::is_uncoincide() const { return m_meta->getValue<int>("uncoincide","1") == 1 ; }
 int         NCSG::getEmit() const {       return m_meta->getValue<int>("emit","0") ;  }
 
-bool NCSG::isEmit() const 
+bool NCSG::isEmitter() const 
 {  
     int emit = getEmit() ;
     return emit == 1 || emit == -1 ;

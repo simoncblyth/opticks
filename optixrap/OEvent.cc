@@ -42,6 +42,7 @@ OEvent::OEvent(Opticks* ok, OContext* ocontext)
    :
    m_log(new SLog("OEvent::OEvent", "", LEVEL)),
    m_ok(ok),
+   m_dbgdownload(m_ok->isDbgDownload()),  // --dbgdownload
    m_mask(m_ok->getMaskBuffer()),
    m_ocontext(ocontext),
    m_context(ocontext->getContext()),
@@ -351,7 +352,12 @@ unsigned OEvent::downloadHits()
 unsigned OEvent::download()
 {
     if(!m_ok->isProduction()) download(m_evt, DOWNLOAD_DEFAULT);
-    return downloadHits(m_evt);  
+
+    //unsigned nhit = downloadHits(m_evt);  
+    unsigned nhit = 0 ; 
+    LOG(fatal) << "COMMENTED OUT downloadHits " ; 
+
+    return nhit ; 
 }
 
 
@@ -371,29 +377,34 @@ void OEvent::download(OpticksEvent* evt, unsigned mask)
  
     if(mask & GENSTEP)
     {
-        NPY<float>* genstep = evt->getGenstepData();
-        OContext::download<float>( m_genstep_buffer, genstep );
+        NPY<float>* gs = evt->getGenstepData();
+        OContext::download<float>( m_genstep_buffer, gs );
+        if(m_dbgdownload) LOG(info) << "gs " << gs->getShapeString() ;   
     }
     if(mask & SEED)
     {
         NPY<unsigned>* se = evt->getSeedData();
         OContext::download<unsigned>( m_seed_buffer, se );
+        if(m_dbgdownload) LOG(info) << "se " << se->getShapeString() ;   
     }
     if(mask & PHOTON)
     {
-       NPY<float>* photon = evt->getPhotonData();
-       OContext::download<float>( m_photon_buffer, photon );
+        NPY<float>* ox = evt->getPhotonData();
+        OContext::download<float>( m_photon_buffer, ox );
+        if(m_dbgdownload) LOG(info) << "ox " << ox->getShapeString() ;   
     }
 #ifdef WITH_RECORD
     if(mask & RECORD)
     {
         NPY<short>* rx = evt->getRecordData();
         OContext::download<short>( m_record_buffer, rx );
+        if(m_dbgdownload) LOG(info) << "rx " << rx->getShapeString() ;   
     }
     if(mask & SEQUENCE)
     {
         NPY<unsigned long long>* sq = evt->getSequenceData();
         OContext::download<unsigned long long>( m_sequence_buffer, sq );
+        if(m_dbgdownload) LOG(info) << "sq " << sq->getShapeString() ;   
     }
 #endif
 

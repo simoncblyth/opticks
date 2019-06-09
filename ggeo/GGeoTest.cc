@@ -26,6 +26,7 @@
 #include "GSurfaceLib.hh"
 #include "GBndLib.hh"
 #include "GPmtLib.hh"
+#include "GMeshLib.hh"
 
 #include "GMergedMesh.hh"
 #include "GPmt.hh"
@@ -34,6 +35,7 @@
 #include "GNodeLib.hh"
 
 #include "GMaker.hh"
+#include "GMeshMaker.hh"
 #include "GItemList.hh"
 #include "GParts.hh"
 #include "GTransforms.hh"
@@ -118,11 +120,8 @@ GGeoTest::GGeoTest(Opticks* ok, GGeoBase* basis)
     m_err(0)
 {
     assert(m_basis); 
-
     init();
 }
-
-
 
 void GGeoTest::init()
 {
@@ -136,13 +135,13 @@ void GGeoTest::init()
         return ;        
     }
 
-
     GMergedMesh* tmm = m_lod > 0 ? GMergedMesh::MakeLODComposite(tmm_, m_lodconfig->levels ) : tmm_ ;         
 
     char geocode =  m_analytic ? OpticksConst::GEOCODE_ANALYTIC : OpticksConst::GEOCODE_TRIANGULATED ;  // message to OGeo
 
-    tmm->setGeoCode( geocode );
+    assert( m_analytic ) ;  
 
+    tmm->setGeoCode( geocode );
 
     if(tmm->isTriangulated()) 
     { 
@@ -194,11 +193,12 @@ GMergedMesh* GGeoTest::initCreateCSG()
         basis->dump("basis nodeLib");    
     }  
 
-    GMergedMesh* mm0 = NULL ; 
-
     importCSG();
+
     assignBoundaries(); 
-    GMergedMesh* tmm = combineVolumes( mm0 );
+
+    GMergedMesh* tmm = combineVolumes( NULL );
+
     return tmm ; 
 }
 
@@ -208,9 +208,9 @@ GGeoTest::importCSG
 --------------------
 
 Imports CSG trees from the m_csglist adding GVolume instances to the local GNodeLib 
+assuming tree order from outermost to innermost volume. 
 
-
-1. add test materials to m_mlib
+1. adds test materials to m_mlib
 2. reuse materials mentioned in test geometry boundary specification strings 
    by "stealing" material pointers from the basis lib and adding them to m_mlib
 3. for each NCSG tree in the test geometry make a corresponding GVolume (with GMaker), 
@@ -222,53 +222,32 @@ Imports CSG trees from the m_csglist adding GVolume instances to the local GNode
      into m_slib (stealing pointers) and surface metadata changed for test volume
      names
 
+* materials and surfaces must be in place before adding 
+  the boundary spec to get the boundary index 
+
 **/
+
 
 void GGeoTest::importCSG()
 {
-    assert(m_csgpath);
-    assert(m_csglist);
-    unsigned numTree = m_csglist->getNumTrees() ;
-
-    LOG(info) << "[" 
-             << " csgpath " << m_csgpath 
-             << " numTree " << numTree 
-             << " verbosity " << m_verbosity
-             ;
-
-    assert( numTree > 0 );
-
     m_mlib->addTestMaterials(); 
 
     reuseMaterials(m_csglist);
    
-    if(m_dbgbnd)
-    { 
-        LOG(error) << "[--dbgbnd] this.slib  " << m_slib->desc()  ; 
-        LOG(error) << "[--dbgbnd] basis.slib " << m_slib->getBasis()->desc()  ; 
-    }
+    prepareMeshes(); 
+
+    adjustContainer(); 
 
     int primIdx(-1) ; 
 
-    // assuming tree order from outermost to innermost volume 
     GVolume* prior = NULL ; 
 
-    for(unsigned i=0 ; i < numTree ; i++)
+    for(unsigned i=0 ; i < m_meshes.size() ; i++)
     {
         primIdx++ ; // each tree is separate OptiX primitive, with own line in the primBuffer 
 
-        NCSG* tree = m_csglist->getTree(i) ; 
-
-        GVolume* volume = NULL ; 
-        if( tree->isProxy() )
-        {
-            volume = m_maker->makeFromProxy( tree );
-        }
-        else
-        {
-            volume = m_maker->makeFromCSG( tree );
-        } 
-
+        GMesh* mesh = m_meshes[i] ; 
+        GVolume* volume = m_maker->makeFromMesh(mesh);
 
         if(prior)
         {
@@ -277,11 +256,8 @@ void GGeoTest::importCSG()
         }
         prior = volume ; 
 
-        const char* spec = tree->getBoundary();  
-        assert( spec );  
-
-        // materials and surfaces must be in place before adding 
-        // the boundary spec to get the boundary index 
+        const char* spec = mesh->getCSG()->getBoundary(); 
+        assert( spec ); 
 
         relocateSurfaces(volume, spec);
 
@@ -293,12 +269,148 @@ void GGeoTest::importCSG()
         }
         pts->setBndLib(m_bndlib);
 
-        //glm::mat4 tr = volume->getTransformMat4(); 
-        //LOG(info) << " tr " << glm::to_string(tr);  
-
         m_nodelib->add(volume);
     }
     LOG(info) << "]" ; 
+}
+
+
+
+
+
+/**
+GGeoTest::prepareMeshes
+------------------------------
+
+**/
+
+void GGeoTest::prepareMeshes()
+{
+    assert(m_csgpath);
+    assert(m_csglist);
+    unsigned numTree = m_csglist->getNumTrees() ;
+
+    assert( numTree > 0 );
+    for(unsigned i=0 ; i < numTree ; i++)
+    {
+        NCSG* tree = m_csglist->getTree(i) ; 
+        GMesh* mesh =  tree->isProxy() ? importMeshViaProxy(tree) : m_maker->makeMeshFromCSG(tree) ; 
+
+        mesh->Summary("GGeoTest::prepareMeshes"); 
+
+        m_meshes.push_back(mesh); 
+    }
+
+    LOG(info)  
+             << " csgpath " << m_csgpath 
+             << " numTree " << numTree 
+             << " verbosity " << m_verbosity
+             << " numMesh " << m_meshes.size()
+             ;
+}
+
+
+/**
+GGeoTest::adjustContainer
+--------------------------
+
+Changes the size of the container to fit the solid brought in by 
+the proxy by inserting the replacement NCSG solid into the 
+m_csglist and then invoking NCSGList::adjustContainerSize 
+
+That updates the analytic geometry, but also need to update the
+triangulated geometry GMesh for the OpenGL visualization.
+So use GMaker polygonization to do so, replacinging the 
+mesh with a newly created one.
+
+**/
+
+void GGeoTest::adjustContainer()
+{
+    if(!( m_csglist->hasProxy() && m_csglist->hasContainer())) 
+    {
+        return ;  
+    }
+
+    NCSG* proxy = m_csglist->findProxy(); 
+    assert( proxy ) ; 
+
+    unsigned proxy_index = m_csglist->findProxyIndex();  
+    assert( proxy_index < m_meshes.size() ) ; 
+
+    GMesh* viaproxy = m_meshes[proxy_index] ; 
+    const NCSG* replacement_solid = viaproxy->getCSG();  
+    unsigned index = viaproxy->getIndex();  
+    assert( index == proxy_index ); 
+
+
+    m_csglist->setTree( index, const_cast<NCSG*>(replacement_solid) ); 
+    m_csglist->adjustContainerSize();  
+
+
+
+    NCSG* container = m_csglist->findContainer(); 
+    assert(container) ; 
+
+    int container_index = m_csglist->findContainerIndex() ; 
+    assert( container_index > -1 ) ; 
+    nbbox container_bba = container->bbox_analytic(); 
+
+    GMesh* replacement_mesh = GMeshMaker::Make(container_bba); 
+    //GMesh* replacement_mesh = m_maker->makeMeshFromCSG( container ); 
+    replacement_mesh->setIndex( container_index ) ; 
+    replacement_mesh->setCSG(container); 
+
+
+    m_meshes[container_index] = replacement_mesh ; 
+
+    LOG(info) 
+        << " proxy_index " << proxy_index
+        << " container_index " << container_index
+        << " container_bba " << container_bba.description() 
+        ;
+
+    replacement_mesh->Summary("GGeoTest::adjustContainer.replacement_mesh"); 
+
+
+
+
+}
+
+
+/**
+GGeoTest::importMeshViaProxy
+------------------------------
+
+Proxy CSG solids have the proxylv attribute set to
+a value greater than -1 which refers to a solid from
+the basis geometry.
+
+**/
+
+GMesh* GGeoTest::importMeshViaProxy(NCSG* tree)
+{
+    assert( tree->isProxy() ); 
+    unsigned lvIdx = tree->getProxyLV(); 
+    const char* spec = tree->getBoundary();  
+    assert( spec ); 
+    LOG(info) 
+        << "["
+        << " proxyLV " << lvIdx 
+        << " proxy.spec " << spec 
+        ; 
+
+    GMesh* mesh = m_meshlib->getMeshSimple(lvIdx); 
+    assert( mesh ); 
+    mesh->setIndex( tree->getIndex() ) ; 
+
+    const NCSG* csg = mesh->getCSG(); 
+    assert( csg ) ; 
+    assert( csg->getBoundary() == NULL && "expecting fresh csg from meshlib to have no boundary assigned") ; 
+
+    mesh->setCSGBoundary( spec );  // adopt the boundary from the proxy object setup in python
+
+    return mesh ;  
 }
 
 
@@ -433,6 +545,14 @@ GGeoTest::relocateSurfaces
 
 void GGeoTest::relocateSurfaces(GVolume* volume, const char* spec)
 {
+
+    if(m_dbgbnd)
+    { 
+        LOG(error) << "[--dbgbnd] this.slib  " << m_slib->desc()  ; 
+        LOG(error) << "[--dbgbnd] basis.slib " << m_slib->getBasis()->desc()  ; 
+    }
+
+
     BBnd b(spec);
     bool unknown_osur = b.osur && !m_slib->hasSurface(b.osur) ;
     bool unknown_isur = b.isur && !m_slib->hasSurface(b.isur) ;

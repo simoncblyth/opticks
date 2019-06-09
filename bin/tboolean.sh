@@ -47,7 +47,8 @@ fi
 echo ====== $0 $arg $* ====== PWD $PWD =================
 
 tboolean-
-cmd="tboolean-$arg --okg4 --compute $*"
+#cmd="tboolean-$arg --okg4 --compute $*"
+cmd="tboolean-$arg --okg4  $*"
 echo $cmd
 eval $cmd
 rc=$?

@@ -511,6 +511,7 @@ class OKCORE_API Opticks {
        bool isDbgKludgeFlatZero() const ; // --dbgkludgeflatzero
        bool isDbgTex() const ; // --dbgtex
        bool isDbgEmit() const ; // --dbgemit
+       bool isDbgDownload() const ; // --dbgdownload
 
        bool isReflectCheat() const ;
        bool isSave() const ;

@@ -585,7 +585,6 @@ void nbbox::scan_sdf( const glm::vec3& o, const glm::vec3& range, const nmat4tri
 std::string nbbox::description() const 
 {
     std::stringstream ss ; 
-
     glm::vec3 si = side();
 
     ss

@@ -39,8 +39,9 @@ class GGEO_API GMaker {
        GMaker(Opticks* ok, GBndLib* blib, GMeshLib* meshlib );
    public:
        GVolume* make(unsigned int index, OpticksCSG_t typecode, glm::vec4& param, const char* spec);
-       GVolume* makeFromCSG(NCSG* csg);
-       GVolume* makeFromProxy(NCSG* proxy );
+   public:
+       GMesh*   makeMeshFromCSG( NCSG* csg ) ; 
+       GVolume* makeFromMesh( const GMesh* mesh ) const ; 
    private:
        void init();    
 

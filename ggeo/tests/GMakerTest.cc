@@ -87,9 +87,9 @@ void GMakerTest::makeFromCSG()
 
         csg->setVerbosity(verbosity);
 
-        GVolume* volume = m_maker->makeFromCSG(csg);
-
-        const GMesh* mesh = volume->getMesh();
+        const GMesh* mesh = m_maker->makeMeshFromCSG(csg) ;   
+        
+        GVolume* volume = m_maker->makeFromMesh(mesh);
 
         mesh->Summary();
 

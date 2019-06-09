@@ -971,6 +971,11 @@ bool Opticks::isDbgEmit() const  // --dbgemit
    return m_cfg->hasOpt("dbgemit");
 }
 
+bool Opticks::isDbgDownload() const  // --dbgdownload
+{
+   return m_cfg->hasOpt("dbgdownload");
+}
+
 
 
 

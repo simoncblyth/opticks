@@ -1,5 +1,7 @@
 #pragma once
 
+#include <vector>
+
 struct NLODConfig ; 
 class NCSGList ; 
 class Opticks ; 
@@ -18,6 +20,7 @@ class GMeshLib ;
 class GNodeLib ; 
 
 class GMaker ; 
+class GMesh ; 
 class GMergedMesh ; 
 class GVolume ; 
 
@@ -83,6 +86,8 @@ class GGEO_API GGeoTest : public GGeoBase {
        void autoTestSetup(NCSGList* csglist);
        void relocateSurfaces(GVolume* solid, const char* spec) ;
        void reuseMaterials(NCSGList* csglist);
+       void prepareMeshes();
+       void adjustContainer();
        void reuseMaterials(const char* spec);
     public:
        void dump(const char* msg="GGeoTest::dump");
@@ -98,6 +103,7 @@ class GGEO_API GGeoTest : public GGeoBase {
        GMergedMesh* combineVolumes( GMergedMesh* mm0);
     private:
        void         importCSG();
+       GMesh*       importMeshViaProxy(NCSG* tree); 
        void         assignBoundaries();
        void         createBoxInBox();
        void         labelPartList();
@@ -134,6 +140,8 @@ class GGEO_API GGeoTest : public GGeoBase {
        // actors
        GMaker*          m_maker ; 
        NCSGList*        m_csglist ; 
+       std::vector<GMesh*> m_meshes ; 
+ 
        int              m_err ; 
 
 };

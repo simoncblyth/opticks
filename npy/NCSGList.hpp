@@ -25,6 +25,8 @@ persisted trees.
 class NPY_API NCSGList 
 {
     public:
+        typedef enum { PROXY, EMITTER, CONTAINER } NCSG_t ;
+  
         static const char* FILENAME ; 
         static NCSGList* Load(const char* csgpath, int verbosity=-1, bool checkmaterial=true) ;
         static bool      ExistsDir(const char* dir);
@@ -57,18 +59,30 @@ class NPY_API NCSGList
         std::vector<NCSG*>& getTrees(); 
         std::string  getTreeDir(unsigned idx) const ;
         NCSG*        getTree(unsigned index) const ;
+        void         setTree(unsigned index, NCSG* replacement );
         unsigned     getNumTrees() const ;
     public:
         NCSG*        getUniverse() ;   // not-const as may create
         const char*  getBoundary(unsigned index) const ;
+    public:
         NCSG*        findEmitter() const ;
-        int          polygonize();
-
-    private:
-        bool         hasContainer() const ;  
         NCSG*        findContainer() const ;
-        void         updateBoundingBox(bool exclude_container) ; 
+        NCSG*        findProxy() const ;
+    public:
+        int          findEmitterIndex() const ;
+        int          findContainerIndex() const ;
+        int          findProxyIndex() const ;
+    public:
+        bool         hasContainer() const ;  
+        bool         hasProxy() const ;  
+        bool         hasEmitter() const ;  
+    public:
         void         adjustContainerSize(); 
+        int          polygonize();
+    private:
+        NCSG*        find( NCSG_t type ) const ;
+        int          findIndex( NCSG_t type ) const ;
+        void         updateBoundingBox(bool exclude_container) ; 
 
     private:
         const char*        m_csgpath ; 
@@ -77,7 +91,6 @@ class NPY_API NCSGList
         BTxt*              m_bndspec ; 
         NCSG*              m_universe ; 
         std::vector<NCSG*> m_trees ; 
-        nbbox              m_container_bbox ; 
         nbbox              m_bbox ; 
 
 };

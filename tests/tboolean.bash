@@ -756,7 +756,7 @@ args = opticks_main(csgpath="$(tboolean-proxy-name)", autoemitconfig=autoemitcon
 # 0x1 is -Z
 # 0x2 is +Z   havent succeed to get this to work yet 
 
-emitconfig = "photons:10000,wavelength:380,time:0.2,posdelta:0.1,sheetmask:0x2,umin:0.45,umax:0.55,vmin:0.45,vmax:0.55" 
+emitconfig = "photons:10000,wavelength:380,time:0.0,posdelta:0.1,sheetmask:0x2,umin:0.45,umax:0.55,vmin:0.45,vmax:0.55" 
 
 CSG.kwa = dict(poly="IM",resolution="20", verbosity="0", ctrl=0, containerscale=3.0, emitconfig=emitconfig  )
 
