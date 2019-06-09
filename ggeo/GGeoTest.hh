@@ -45,6 +45,9 @@ Rejig
 **/
 
 
+//#define OLD_VOLUMES 1
+
+
 #include "GGeoBase.hh"
 #include "GGEO_API_EXPORT.hh"
 class GGEO_API GGeoTest : public GGeoBase {
@@ -96,18 +99,27 @@ class GGEO_API GGeoTest : public GGeoBase {
        unsigned        getNumTrees() const ;
        NCSG*           getTree(unsigned index) const ;
     public:
-       GVolumeList*     getVolumeList();
-    public:
        void anaEvent(OpticksEvent* evt);
+
+#ifdef OLD_VOLUMES
+    public:
+       GVolumeList*     getVolumeList();
     private:
        GMergedMesh* combineVolumes( std::vector<GVolume*>& volumes, GMergedMesh* mm0);
-       GVolume*      makeVolumeFromConfig( unsigned i );
        void         importCSG(std::vector<GVolume*>& volumes );
-
        void         createBoxInBox(std::vector<GVolume*>& volumes);
-       GMergedMesh* createPmtInBox();
+       void         labelPartList( std::vector<GVolume*>& volumes );
+#else
+       GMergedMesh* combineVolumes( GMergedMesh* mm0);
+    private:
+       void         importCSG();
+       void         createBoxInBox();
+       void         labelPartList();
+#endif
 
-       void labelPartList( std::vector<GVolume*>& volumes );
+
+       GVolume*      makeVolumeFromConfig( unsigned i );
+       GMergedMesh* createPmtInBox();
 
     private:
        Opticks*         m_ok ; 
@@ -138,7 +150,9 @@ class GGEO_API GGeoTest : public GGeoBase {
        // actors
        GMaker*          m_maker ; 
        NCSGList*        m_csglist ; 
+#ifdef OLD_VOLUMES
        GVolumeList*      m_solist ; 
+#endif
        int              m_err ; 
 
 };

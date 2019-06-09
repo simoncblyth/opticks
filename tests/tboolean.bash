@@ -597,13 +597,13 @@ tboolean--(){
             --torchdbg \
             --tag $(tboolean-tag) --cat $testname \
             --anakey tboolean \
-            --dumpenv \
             --args \
             --save 
 
     cat << EON > /dev/null
             --dbganalytic \
             --dbgemit \
+            --dumpenv \
             --strace \
             --args \
 

@@ -140,9 +140,13 @@ const char* GNodeLib::getLVName(unsigned int index) const
 }
 
 
-unsigned int GNodeLib::getNumVolumes() const 
+unsigned GNodeLib::getNumVolumes() const 
 {
     return m_volumes.size();
+}
+std::vector<GVolume*>& GNodeLib::getVolumes() 
+{
+    return m_volumes ; 
 }
 
 

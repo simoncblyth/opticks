@@ -50,7 +50,9 @@ const char* GGeoTest::UNIVERSE_LV = "UNIVERSE_LV" ;
 const char* GGeoTest::UNIVERSE_PV = "UNIVERSE_PV" ; 
 
 
+#ifdef OLD_VOLUMES
 GVolumeList*     GGeoTest::getVolumeList(){        return m_solist ; }  // <-- TODO: elim, use GNodeLib
+#endif
 
 NCSGList*       GGeoTest::getCSGList() const  {  return m_csglist ;  }
 NGeoTestConfig* GGeoTest::getConfig() {          return m_config ; }
@@ -118,7 +120,9 @@ GGeoTest::GGeoTest(Opticks* ok, GGeoBase* basis)
     m_nodelib(new GNodeLib(m_ok, m_analytic, m_test, basis->getNodeLib() )),
     m_maker(new GMaker(m_ok, m_bndlib, m_meshlib)),
     m_csglist(m_csgpath ? NCSGList::Load(m_csgpath, m_verbosity ) : NULL),
+#ifdef OLD_VOLUMES
     m_solist(new GVolumeList()),
+#endif
     m_err(0)
 {
     assert(m_basis); 
@@ -199,12 +203,15 @@ GMergedMesh* GGeoTest::initCreateCSG()
         basis->dump("basis nodeLib");    
     }  
 
+    GMergedMesh* mm0 = NULL ; 
+#ifdef OLD_VOLUMES
     std::vector<GVolume*>& volumes = m_solist->getList();
-
     importCSG(volumes);
-
-    GMergedMesh* tmm = combineVolumes(volumes, NULL);
-
+    GMergedMesh* tmm = combineVolumes(volumes, mm0 );
+#else
+    importCSG();
+    GMergedMesh* tmm = combineVolumes( mm0 );
+#endif
     return tmm ; 
 }
 
@@ -234,7 +241,11 @@ Imports CSG trees from the m_csglist appending GVolume instances to the argument
 
 **/
 
+#ifdef OLD_VOLUMES
 void GGeoTest::importCSG(std::vector<GVolume*>& volumes)
+#else
+void GGeoTest::importCSG()
+#endif
 {
     assert(m_csgpath);
     assert(m_csglist);
@@ -307,7 +318,11 @@ void GGeoTest::importCSG(std::vector<GVolume*>& volumes)
         //glm::mat4 tr = volume->getTransformMat4(); 
         //LOG(info) << " tr " << glm::to_string(tr);  
 
+
+#ifdef OLD_VOLUMES
         volumes.push_back(volume);  // <-- TODO: eliminate 
+#endif
+
         m_nodelib->add(volume);
     }
 
@@ -333,6 +348,9 @@ void GGeoTest::importCSG(std::vector<GVolume*>& volumes)
     {
         NCSG* tree = m_csglist->getTree(i) ; 
         GVolume* volume = m_nodelib->getVolume(i) ;
+        const NCSG* tree2 = volume->getMesh()->getCSG(); 
+        assert( tree == tree2 ); 
+
         const char* spec = tree->getBoundary();  
         assert(spec);  
         unsigned boundary = m_bndlib->addBoundary(spec, false); 
@@ -378,15 +396,20 @@ GMergedMesh* GGeoTest::initCreateBIB()
     }
     assert(nelem > 0);
 
-
-    std::vector<GVolume*>& volumes = m_solist->getList();
     GMergedMesh* tmm = NULL ;
 
     if(m_config->isBoxInBox()) 
     {
+#ifdef OLD_VOLUMES
+        std::vector<GVolume*>& volumes = m_solist->getList();
         createBoxInBox(volumes); 
         labelPartList(volumes) ;
         tmm = combineVolumes(volumes, NULL);
+#else
+        createBoxInBox(); 
+        labelPartList() ;
+        tmm = combineVolumes(NULL);
+#endif
     }
     else if(m_config->isPmtInBox())
     {
@@ -526,11 +549,19 @@ NB Partlist test geometry was created
 
 **/
 
+#ifdef OLD_VOLUMES
 void GGeoTest::labelPartList( std::vector<GVolume*>& volumes )
 {
     for(unsigned i=0 ; i < volumes.size() ; i++)
     {
         GVolume* volume = volumes[i];
+#else
+void GGeoTest::labelPartList()
+{
+    for(unsigned i=0 ; i < m_nodelib->getNumVolumes() ; i++)
+    {
+        GVolume* volume = m_nodelib->getVolume(i) ;
+#endif
         GParts* pts = volume->getParts();
         assert(pts);
         assert(pts->isPartList());
@@ -602,13 +633,21 @@ GVolume* GGeoTest::makeVolumeFromConfig( unsigned i ) // setup nodeIndex here ?
     return volume ; 
 }
 
+
+#ifdef OLD_VOLUMES
 void GGeoTest::createBoxInBox(std::vector<GVolume*>& volumes)
+#else
+void GGeoTest::createBoxInBox()
+#endif
 {
     unsigned nelem = m_config->getNumElements();
     for(unsigned i=0 ; i < nelem ; i++)
     {
         GVolume* volume = makeVolumeFromConfig(i);
+
+#ifdef OLD_VOLUMES
         volumes.push_back(volume);  // <-- TODO: eliminate
+#endif
 
         m_nodelib->add(volume);
     }
@@ -621,7 +660,6 @@ GGeoTest::createPmtInBox
 --------------------------
 
 * hmm : suspect this was a dirty hack
-
 
 **/
 
@@ -644,12 +682,11 @@ GMergedMesh* GGeoTest::createPmtInBox()
     unsigned pmtNumVolumes = mmpmt->getNumVolumes() ; 
     container->setIndex( pmtNumVolumes );   // <-- HMM: MAYBE THIS SHOULD FEED INTO GParts::setNodeIndex ?
 
-    LOG(info) << "GGeoTest::createPmtInBox " 
-              << " spec " << spec 
-              << " container_inner_material " << container_inner_material
-              << " pmtNumVolumes " << pmtNumVolumes
-              ; 
-
+    LOG(info) 
+        << " spec " << spec 
+        << " container_inner_material " << container_inner_material
+        << " pmtNumVolumes " << pmtNumVolumes
+        ; 
 
     GMesh* mesh = const_cast<GMesh*>(container->getMesh()); // TODO: reorg to avoid 
     mesh->setIndex(1000);
@@ -681,9 +718,23 @@ GMergedMesh* GGeoTest::createPmtInBox()
     return triangulated ; 
 }
 
+
+/**
+GGeoTest::combineVolumes
+==========================
+
+TODO: eliminate, instead use GNodeLib::createMergeMesh 
+
+**/
+
+#ifdef OLD_VOLUMES
 GMergedMesh* GGeoTest::combineVolumes(std::vector<GVolume*>& volumes, GMergedMesh* mm0)
 {
-    // TODO: eliminate, instead use GNodeLib::createMergeMesh 
+#else
+GMergedMesh* GGeoTest::combineVolumes(GMergedMesh* mm0)
+{
+    std::vector<GVolume*>& volumes = m_nodelib->getVolumes(); 
+#endif
 
     LOG(info) << "[" ; 
 
@@ -717,9 +768,7 @@ GMergedMesh* GGeoTest::combineVolumes(std::vector<GVolume*>& volumes, GMergedMes
     }
     // collected pts are converted into primitives in GParts::makePrimBuffer
 
-
     LOG(info) << "]" ; 
-
     return tri ; 
 }
 
@@ -767,9 +816,14 @@ const char* GGeoTest::MakeArgForce(const char* funcname, const char* extra)
 }
 
 
+/**
+GGeoTest::anaEvent
+---------------------
 
+This is invoked by OpticksHub::anaEvent 
 
-//  this is invoked by OpticksHub::anaEvent after 
+**/
+
 void GGeoTest::anaEvent(OpticksEvent* evt)
 {
     int dbgnode = m_ok->getDbgNode();
@@ -786,6 +840,5 @@ void GGeoTest::anaEvent(OpticksEvent* evt)
     OpticksEventAna ana(m_ok, evt, m_csglist);
     ana.dump("GGeoTest::anaEvent");
 }
-
 
 

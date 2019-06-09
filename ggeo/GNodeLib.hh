@@ -81,6 +81,7 @@ class GGEO_API GNodeLib
         GVolume* getVolume(unsigned int index) const ;  
         GVolume* getVolumeSimple(unsigned int index);  
         unsigned getNumVolumes() const ;
+        std::vector<GVolume*>& getVolumes() ; 
     public:
         const char* getPVName(unsigned int index) const ;
         const char* getLVName(unsigned int index) const ;
