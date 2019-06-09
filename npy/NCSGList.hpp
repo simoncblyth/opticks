@@ -11,6 +11,17 @@ class BTxt ;
 
 #include "NBBox.hpp"
 
+/**
+NCSGList
+===========
+
+Used by GGeoTest and many other tests to load 
+persisted trees.  
+
+
+**/
+
+
 class NPY_API NCSGList 
 {
     public:
@@ -28,7 +39,7 @@ class NPY_API NCSGList
         void load() ;
         void checkMaterialConsistency() const  ;
 
-        NCSG* loadTree(unsigned idx, const char* boundary) const ;
+        NCSG* loadTree(unsigned idx) const ;
         NCSG* createUniverse(float scale, float delta) const ;
 
     public:
@@ -54,6 +65,12 @@ class NPY_API NCSGList
         int          polygonize();
 
     private:
+        bool         hasContainer() const ;  
+        NCSG*        findContainer() const ;
+        void         updateBoundingBox(bool exclude_container) ; 
+        void         adjustContainerSize(); 
+
+    private:
         const char*        m_csgpath ; 
         const char*        m_txtpath ; 
         int                m_verbosity ; 
@@ -61,6 +78,7 @@ class NPY_API NCSGList
         NCSG*              m_universe ; 
         std::vector<NCSG*> m_trees ; 
         nbbox              m_container_bbox ; 
+        nbbox              m_bbox ; 
 
 };
  

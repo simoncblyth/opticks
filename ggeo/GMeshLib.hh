@@ -90,7 +90,11 @@ class GGEO_API GMeshLib
         //std::string desc() const ; 
         GItemIndex* getMeshIndex() ;
         unsigned    getNumMeshes() const ; 
+        GMesh*        getMeshSimple(unsigned index) ;  
         const GMesh*  getMesh(unsigned aindex) const ;  // first mesh in m_meshes addition order with getIndex() matching aindex 
+
+
+
         const NCSG*  getSolid(unsigned aindex) const ;  // first mesh in m_solids addition order with getIndex() matching aindex 
         const GMesh*  getMesh(const char* name, bool startswith) const ;
     private:

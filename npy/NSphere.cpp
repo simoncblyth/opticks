@@ -212,6 +212,15 @@ nbbox nsphere::bbox() const
 
 
 
+/**
+nsphere::adjustToFit
+----------------------
+
+Changes radius and center of the sphere to the center extent of the 
+argument bounding box with scale and delta applied.
+
+**/
+
 void nsphere::adjustToFit(const nbbox& bb, float scale, float delta)
 {
     nquad qce ; 

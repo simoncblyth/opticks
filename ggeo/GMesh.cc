@@ -212,6 +212,15 @@ const nnode* GMesh::getRoot() const
 }
 
 
+void GMesh::setCSGBoundary(const char* spec)
+{
+    assert( m_csg ); 
+
+    NCSG* csg = const_cast<NCSG*>(m_csg); 
+    csg->setBoundary( spec );  
+}
+
+
 
 
 void GMesh::setAlt(const GMesh* alt)

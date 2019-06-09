@@ -54,17 +54,6 @@ void X4CSG::GenerateTest( const G4VSolid* solid, Opticks* ok, const char* prefix
 
 G4VSolid* X4CSG::MakeContainer(const G4VSolid* solid, float scale ) // static
 {
-   /*
-    G4VisExtent ve = solid->GetExtent();  // crashes in 10.4.2
-    float xmin = ve.GetXmin() ;
-    float ymin = ve.GetYmin() ;
-    float zmin = ve.GetZmin() ;
-
-    float xmax = ve.GetXmax() ;
-    float ymax = ve.GetYmax() ;
-    float zmax = ve.GetZmax() ;
-    */
-
     nbbox* bb = X4SolidExtent::Extent(solid) ; 
 
     float xmin = bb->min.x ; 

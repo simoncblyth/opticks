@@ -253,6 +253,8 @@ class GGEO_API GMesh : public GDrawable {
       const char* getVersion() const ;
       char getGeoCode() const ;
       const NCSG* getCSG() const ; 
+      void setCSGBoundary(const char* spec); 
+
       const nnode* getRoot() const ; 
       const GMesh* getAlt() const ; 
 

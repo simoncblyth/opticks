@@ -128,14 +128,27 @@ GVolume* GMaker::makeFromProxy(NCSG* proxy )
     const char* spec = proxy->getBoundary();  
     assert( spec ); 
 
-    const GMesh* mesh = m_meshlib->getMesh(lvIdx); 
+    LOG(info) 
+        << "["
+        << " proxyLV " << lvIdx 
+        << " proxy.spec " << spec 
+        ; 
+
+    GMesh* mesh = m_meshlib->getMeshSimple(lvIdx); 
+
     const NCSG* csg = mesh->getCSG(); 
     assert( csg ) ; 
+    assert( csg->getBoundary() == NULL && "expecting fresh csg from meshlib to have no boundary assigned") ; 
+
+    mesh->setCSGBoundary( spec );  // adopt the boundary from the proxy object setup in python
+
+    unsigned index = proxy->getIndex(); 
+
 
     glm::mat4 txf(1.f) ; 
     GMatrixF* transform = new GMatrix<float>(glm::value_ptr(txf));
 
-    GVolume* volume = new GVolume(lvIdx, transform, mesh );     
+    GVolume* volume = new GVolume(index, transform, mesh );     
 
     volume->setSensor( NULL );      
 
@@ -152,10 +165,17 @@ GVolume* GMaker::makeFromProxy(NCSG* proxy )
 
     volume->setParts( pts );
 
+
+    const char* spec2 = volume->getMesh()->getCSG()->getBoundary() ;  
+    assert( spec2 ); 
+
     LOG(info) 
-              << " lvIdx " << lvIdx
-              << " proxy.spec " << spec 
-              ; 
+        << "]"
+        << " proxyLV " << lvIdx 
+        << " proxy.spec " << spec 
+        << " spec2 " << spec2 
+        ; 
+
 
     return volume ; 
 }

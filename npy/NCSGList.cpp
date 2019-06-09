@@ -1,4 +1,5 @@
 #include <cstring>
+#include <csignal>
 
 #include "SSys.hh"
 #include "BBnd.hh"
@@ -39,6 +40,11 @@ NCSGList* NCSGList::Load(const char* csgpath, int verbosity, bool checkmaterial)
     NCSGList* ls = new NCSGList(csgpath, verbosity );
     ls->load();
     if(checkmaterial) ls->checkMaterialConsistency();
+    if(ls->hasContainer())
+    {
+        ls->adjustContainerSize(); 
+    } 
+
     return ls ;
 } 
 
@@ -110,6 +116,67 @@ void NCSGList::add(NCSG* tree)
     m_bndspec->addLine( boundary ); 
 }
 
+bool NCSGList::hasContainer() const 
+{
+    unsigned num_tree = m_trees.size(); 
+    unsigned count(0);   
+    for(unsigned i=0 ; i < num_tree ; i++)
+    {
+        if(m_trees[i]->isContainer()) count += 1 ; 
+    }  
+    assert( count == 0 || count == 1 ); 
+    return count == 1 ; 
+}
+
+
+void NCSGList::updateBoundingBox(bool exclude_container)
+{
+    unsigned num_tree = m_trees.size(); 
+    m_bbox.set_empty(); 
+
+    for(unsigned i=0 ; i < num_tree ; i++)
+    {
+        NCSG* tree = m_trees[i] ; 
+        nbbox bba = tree->bbox_analytic();  
+
+        if(!tree->isContainer() && exclude_container)
+        {
+            m_bbox.include(bba);
+        } 
+    }  
+}
+
+void NCSGList::adjustContainerSize()
+{
+    assert( hasContainer() ); 
+    NCSG* container = findContainer(); 
+    assert(container); 
+
+    bool exclude_container = true ; 
+    updateBoundingBox(exclude_container); 
+
+    float scale = container->getContainerScale(); // hmm should be prop of the list not the tree ? 
+    float delta = 0.f ; 
+    container->adjustToFit(m_bbox, scale, delta );
+
+    nbbox bba2 = container->bbox_analytic();
+    m_bbox.include(bba2);   // update for the auto-container, used by NCSGList::createUniverse
+
+    container->export_();  // after changing geometry must re-export to update the buffers destined for upload to GPU 
+}
+
+
+
+
+
+/**
+NCSGList::load
+------------------
+
+**/
+
+
+#ifdef OLD_LOAD
 void NCSGList::load()
 {
     assert(m_trees.size() == 0);
@@ -146,14 +213,13 @@ void NCSGList::load()
     // but because of the export of the resultant bbox it aint easy to fix
     //
 
-
     for(unsigned j=0 ; j < nbnd ; j++)
     {
         unsigned idx = nbnd - 1 - j ;     // idx 0 is handled last 
-    
         const char* boundary = m_bndspec->getLine(idx);
 
-        NCSG* tree = loadTree(idx, boundary);
+        NCSG* tree = loadTree(idx);
+        tree->setBoundary(boundary);  
 
         nbbox bba = tree->bbox_analytic();  
 
@@ -170,13 +236,13 @@ void NCSGList::load()
 
             nbbox bba2 = tree->bbox_analytic();
             m_container_bbox.include(bba2);   // update for the auto-container, used by NCSGList::createUniverse
-        }
-      
-        tree->export_(); // from CSG nnode tree back into *same* in memory buffer, with bbox added   
 
-        // ^^^^^^^^^^^^^ DONT LIKE THIS the Load does an export already 
-        //  this is trying to update the buffers following the adjustToFit 
- 
+            tree->export_();  // after changing geometry must re-export to update the buffers destined for upload to GPU 
+
+        }
+  
+        // tree->export_() ;  <-- former position,   
+      
 
         LOG(debug) << "NCSGList::load [" << idx << "] " << tree->desc() ; 
 
@@ -186,6 +252,43 @@ void NCSGList::load()
     // back into original source order with outer first eg [outer, container, sphere]  
     std::reverse( m_trees.begin(), m_trees.end() );
 }
+
+#else
+
+void NCSGList::load()
+{
+    assert(m_trees.size() == 0);
+    assert(m_bndspec) ; 
+
+    bool exists = BFile::ExistsFile(m_txtpath ); 
+    assert(exists); 
+    m_bndspec->read();
+    //m_bndspec->dump("NCSGList::load");    
+
+    unsigned nbnd = m_bndspec->getNumLines() ;
+
+    LOG(info) 
+        << " VERBOSITY " << m_verbosity 
+        << " basedir " << m_csgpath 
+        << " txtpath " << m_txtpath 
+        << " nbnd " << nbnd 
+        ;
+
+    for(unsigned idx=0 ; idx < nbnd ; idx++)
+    {
+        const char* boundary = getBoundary(idx) ;
+        NCSG* tree = loadTree(idx);
+        tree->setBoundary(boundary);  
+        LOG(debug) << "NCSGList::load [" << idx << "] " << tree->desc() ; 
+        add(tree) ; 
+    }
+
+    //std::raise(SIGINT); 
+
+}
+
+#endif
+
 
        
 NCSG* NCSGList::getUniverse() 
@@ -203,7 +306,8 @@ NCSG* NCSGList::getUniverse()
 
 NCSG* NCSGList::createUniverse(float scale, float delta) const 
 {
-    const char* bnd0 = m_bndspec->getLine(0);
+    //const char* bnd0 = m_bndspec->getLine(0);
+    const char* bnd0 = getBoundary(0);
     const char* ubnd = BBnd::DuplicateOuterMaterial( bnd0 ); 
 
     LOG(info) << "NCSGList::createUniverse"
@@ -218,8 +322,8 @@ NCSG* NCSGList::createUniverse(float scale, float delta) const
     // then increase size a little 
     // this is only used for the Geant4 geometry
  
-    NCSG* universe = loadTree(0, ubnd ) ;    
-
+    NCSG* universe = loadTree(0) ;    
+    universe->setBoundary(ubnd);  
 
     if( universe->isContainer() )
     {
@@ -229,46 +333,43 @@ NCSG* NCSGList::createUniverse(float scale, float delta) const
                   ;
     }
 
-
     universe->adjustToFit( m_container_bbox, scale, delta ); 
+
+    /// huh : not re-exported : this means different geometry on CPU and GPU ??
+
 
     return universe ; 
 }
 
 
-NCSG* NCSGList::loadTree(unsigned idx, const char* boundary) const 
+NCSG* NCSGList::loadTree(unsigned idx) const 
 {
     std::string treedir = getTreeDir(idx);
 
-/*
-    NCSG* tree = new NCSG(treedir.c_str());
-
-    tree->setIndex(idx);
-    tree->setVerbosity( m_verbosity );
-    tree->setBoundary( boundary );
-
-    tree->loadsrc();    // m_nodes, the user input serialization buffer (no bbox from user input python)
-    tree->import();     // input m_nodes buffer into CSG nnode tree 
-*/
-
     NCSG* tree = NCSG::Load(treedir.c_str()) ; 
     tree->setIndex(idx);  
-    tree->setBoundary(boundary); 
 
     return tree ; 
 }
-
-
 
 NCSG* NCSGList::getTree(unsigned index) const 
 {
     return m_trees[index] ;
 }
 
+/*
 const char* NCSGList::getBoundary(unsigned index) const 
 {
     NCSG* tree = getTree(index);
     return tree ? tree->getBoundary() : NULL  ;
+}
+*/
+
+const char* NCSGList::getBoundary(unsigned idx) const
+{
+    assert( m_bndspec ); 
+    const char* boundary = m_bndspec->getLine(idx);
+    return boundary ; 
 }
 
 
@@ -330,8 +431,6 @@ void NCSGList::checkMaterialConsistency() const
     }
 }
 
-
-
 unsigned NCSGList::getNumTrees() const 
 {
     return m_trees.size();
@@ -359,10 +458,6 @@ int NCSGList::polygonize()
     }     
     return rc ; 
 }
-
-
-
-
 
 
 
@@ -414,12 +509,6 @@ void NCSGList::autoTestSetup(NGeoTestConfig* config)
 }
 
 
-
-
-
-
-
-
 /**
 
 NCSGList::findEmitter
@@ -456,6 +545,21 @@ NCSG* NCSGList::findEmitter() const
     return emitter ; 
 }
 
+NCSG* NCSGList::findContainer() const 
+{
+    unsigned numTrees = getNumTrees() ;
+    NCSG* container = NULL ; 
+    for(unsigned i=0 ; i < numTrees ; i++)
+    {
+        NCSG* tree = getTree(i);
+        if(tree->isContainer())
+        {
+           assert( container == NULL && "not expecting more than one container" );
+           container = tree ;
+        }
+    }
+    return container ; 
+}
 
 
 
@@ -519,7 +623,6 @@ void NCSGList::dumpUniverse(const char* msg)
               ;
 
     NCSG* tree = getUniverse();
-
     std::cout 
          << " meta " 
          << std::endl 
@@ -530,11 +633,7 @@ void NCSGList::dumpUniverse(const char* msg)
          << tree->desc() 
          << std::endl 
          ;
-
 }
-
-
-
 
 
 

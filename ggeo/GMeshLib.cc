@@ -174,6 +174,22 @@ const GMesh* GMeshLib::getMesh(unsigned aindex) const
 }  
 
 
+
+
+GMesh* GMeshLib::getMeshSimple(unsigned index)  
+{
+    assert( index < m_meshes.size() ); 
+    const GMesh* mesh_ = m_meshes[index] ; 
+    GMesh* mesh = const_cast<GMesh*>(mesh_);   // hmm rethink needed ?
+    assert( mesh->getIndex() == index ); 
+    return mesh ; 
+}  
+
+
+
+
+
+
 const NCSG* GMeshLib::getSolid(unsigned aindex) const 
 {
     const NCSG* solid = NULL ; 

@@ -1081,8 +1081,15 @@ float NCSG::getSurfaceEpsilon() const
 }
 
 
+/**
+NCSG::adjustToFit
+------------------
 
+Changes extent of analytic geometry to be that of the container argument
+with scale and delta applied.
+Only implemented for CSG_BOX, CSG_BOX3 and CSG_SPHERE.
 
+**/
 
 void NCSG::adjustToFit( const nbbox& container, float scale, float delta ) const 
 {

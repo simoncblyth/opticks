@@ -32,7 +32,6 @@
 #include "GVolume.hh"
 
 #include "GNodeLib.hh"
-#include "GVolumeList.hh"
 
 #include "GMaker.hh"
 #include "GItemList.hh"
@@ -49,10 +48,6 @@
 const char* GGeoTest::UNIVERSE_LV = "UNIVERSE_LV" ; 
 const char* GGeoTest::UNIVERSE_PV = "UNIVERSE_PV" ; 
 
-
-#ifdef OLD_VOLUMES
-GVolumeList*     GGeoTest::getVolumeList(){        return m_solist ; }  // <-- TODO: elim, use GNodeLib
-#endif
 
 NCSGList*       GGeoTest::getCSGList() const  {  return m_csglist ;  }
 NGeoTestConfig* GGeoTest::getConfig() {          return m_config ; }
@@ -120,9 +115,6 @@ GGeoTest::GGeoTest(Opticks* ok, GGeoBase* basis)
     m_nodelib(new GNodeLib(m_ok, m_analytic, m_test, basis->getNodeLib() )),
     m_maker(new GMaker(m_ok, m_bndlib, m_meshlib)),
     m_csglist(m_csgpath ? NCSGList::Load(m_csgpath, m_verbosity ) : NULL),
-#ifdef OLD_VOLUMES
-    m_solist(new GVolumeList()),
-#endif
     m_err(0)
 {
     assert(m_basis); 
@@ -171,7 +163,6 @@ GMergedMesh* GGeoTest::initCreateCSG()
     m_resource->setTestCSGPath(m_csgpath); // take note of path, for inclusion in event metadata
     m_resource->setTestConfig(m_config_); // take note of config, for inclusion in event metadata
     m_resource->setEventBase(m_csgpath);   // BResource("evtbase") yields OPTICKS_EVENT_BASE 
-    
 
     if(!m_csglist) return NULL ; 
 
@@ -204,14 +195,10 @@ GMergedMesh* GGeoTest::initCreateCSG()
     }  
 
     GMergedMesh* mm0 = NULL ; 
-#ifdef OLD_VOLUMES
-    std::vector<GVolume*>& volumes = m_solist->getList();
-    importCSG(volumes);
-    GMergedMesh* tmm = combineVolumes(volumes, mm0 );
-#else
+
     importCSG();
+    assignBoundaries(); 
     GMergedMesh* tmm = combineVolumes( mm0 );
-#endif
     return tmm ; 
 }
 
@@ -220,7 +207,7 @@ GMergedMesh* GGeoTest::initCreateCSG()
 GGeoTest::importCSG
 --------------------
 
-Imports CSG trees from the m_csglist appending GVolume instances to the argument vector.
+Imports CSG trees from the m_csglist adding GVolume instances to the local GNodeLib 
 
 
 1. add test materials to m_mlib
@@ -235,17 +222,9 @@ Imports CSG trees from the m_csglist appending GVolume instances to the argument
      into m_slib (stealing pointers) and surface metadata changed for test volume
      names
 
-4. boundaries used in the test geometry are added to m_bndlib and the 
-   boundary index is assigned to GVolume
-
-
 **/
 
-#ifdef OLD_VOLUMES
-void GGeoTest::importCSG(std::vector<GVolume*>& volumes)
-#else
 void GGeoTest::importCSG()
-#endif
 {
     assert(m_csgpath);
     assert(m_csglist);
@@ -284,7 +263,6 @@ void GGeoTest::importCSG()
         if( tree->isProxy() )
         {
             volume = m_maker->makeFromProxy( tree );
-            volume->setIndex(i);
         }
         else
         {
@@ -318,53 +296,61 @@ void GGeoTest::importCSG()
         //glm::mat4 tr = volume->getTransformMat4(); 
         //LOG(info) << " tr " << glm::to_string(tr);  
 
-
-#ifdef OLD_VOLUMES
-        volumes.push_back(volume);  // <-- TODO: eliminate 
-#endif
-
         m_nodelib->add(volume);
     }
+    LOG(info) << "]" ; 
+}
 
 
-    // Final pass setting boundaries
-    // as all mat/sur must be added to the mlib/slib
-    // before can form boundaries. As boundaries 
-    // require getIndex calls that will close the slib, mlib 
-    // (settling the indices) and making subsequnent mat/sur additions assert.
-    //
-    // Note that late setting of boundary is fine for GParts (analytic geometry), 
-    // as spec are held as strings within GParts until GParts::close
-    //
-    // See notes/issues/GGeoTest_isClosed_assert.rst 
-    
- 
+/**
+GGeoTest::assignBoundaries
+------------------------
+
+1. boundaries used in the test geometry are added to m_bndlib and the 
+   boundary index is assigned to GVolume
+
+
+Final pass setting boundaries
+as all mat/sur must be added to the mlib/slib
+before can form boundaries. As boundaries 
+require getIndex calls that will close the slib, mlib 
+(settling the indices) and making subsequnent mat/sur additions assert.
+
+Note that late setting of boundary is fine for GParts (analytic geometry), 
+as spec are held as strings within GParts until GParts::close
+
+See notes/issues/GGeoTest_isClosed_assert.rst 
+
+**/
+
+void GGeoTest::assignBoundaries()
+{
+    LOG(info) << "[" ; 
+    unsigned numTree = m_csglist->getNumTrees() ;
     unsigned numVolume = m_nodelib->getNumVolumes();
     assert( numVolume == numTree );
 
     m_bndlib->closeConstituents(); 
 
-    for(unsigned i=0 ; i < numTree ; i++)
+    for(unsigned i=0 ; i < numVolume ; i++)
     {
-        NCSG* tree = m_csglist->getTree(i) ; 
         GVolume* volume = m_nodelib->getVolume(i) ;
-        const NCSG* tree2 = volume->getMesh()->getCSG(); 
-        assert( tree == tree2 ); 
+        const NCSG* csg = volume->getMesh()->getCSG(); 
 
-        const char* spec = tree->getBoundary();  
+        const char* spec = csg->getBoundary();  
         assert(spec);  
         unsigned boundary = m_bndlib->addBoundary(spec, false); 
 
-        volume->setBoundary(boundary);     // unlike ctor these create arrays, duplicating boundary to all tris
+        volume->setBoundary(boundary); // creates arrays, duplicating boundary to all tris
     }
 
     // see notes/issues/material-names-wrong-python-side.rst
     LOG(info) << "Save mlib/slib names " 
-              << " numTree : " << numTree
+              << " numVolume : " << numVolume
               << " csgpath : " << m_csgpath
               ;
 
-    if( numTree > 0 )
+    if( numVolume > 0 )
     { 
         m_mlib->saveNames(m_csgpath);
         m_slib->saveNames(m_csgpath);
@@ -400,16 +386,9 @@ GMergedMesh* GGeoTest::initCreateBIB()
 
     if(m_config->isBoxInBox()) 
     {
-#ifdef OLD_VOLUMES
-        std::vector<GVolume*>& volumes = m_solist->getList();
-        createBoxInBox(volumes); 
-        labelPartList(volumes) ;
-        tmm = combineVolumes(volumes, NULL);
-#else
         createBoxInBox(); 
         labelPartList() ;
         tmm = combineVolumes(NULL);
-#endif
     }
     else if(m_config->isPmtInBox())
     {
@@ -549,19 +528,11 @@ NB Partlist test geometry was created
 
 **/
 
-#ifdef OLD_VOLUMES
-void GGeoTest::labelPartList( std::vector<GVolume*>& volumes )
-{
-    for(unsigned i=0 ; i < volumes.size() ; i++)
-    {
-        GVolume* volume = volumes[i];
-#else
 void GGeoTest::labelPartList()
 {
     for(unsigned i=0 ; i < m_nodelib->getNumVolumes() ; i++)
     {
         GVolume* volume = m_nodelib->getVolume(i) ;
-#endif
         GParts* pts = volume->getParts();
         assert(pts);
         assert(pts->isPartList());
@@ -634,21 +605,12 @@ GVolume* GGeoTest::makeVolumeFromConfig( unsigned i ) // setup nodeIndex here ?
 }
 
 
-#ifdef OLD_VOLUMES
-void GGeoTest::createBoxInBox(std::vector<GVolume*>& volumes)
-#else
 void GGeoTest::createBoxInBox()
-#endif
 {
     unsigned nelem = m_config->getNumElements();
     for(unsigned i=0 ; i < nelem ; i++)
     {
         GVolume* volume = makeVolumeFromConfig(i);
-
-#ifdef OLD_VOLUMES
-        volumes.push_back(volume);  // <-- TODO: eliminate
-#endif
-
         m_nodelib->add(volume);
     }
 }
@@ -727,14 +689,9 @@ TODO: eliminate, instead use GNodeLib::createMergeMesh
 
 **/
 
-#ifdef OLD_VOLUMES
-GMergedMesh* GGeoTest::combineVolumes(std::vector<GVolume*>& volumes, GMergedMesh* mm0)
-{
-#else
 GMergedMesh* GGeoTest::combineVolumes(GMergedMesh* mm0)
 {
     std::vector<GVolume*>& volumes = m_nodelib->getVolumes(); 
-#endif
 
     LOG(info) << "[" ; 
 

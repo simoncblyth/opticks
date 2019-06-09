@@ -20,7 +20,6 @@ class GNodeLib ;
 class GMaker ; 
 class GMergedMesh ; 
 class GVolume ; 
-class GVolumeList ; 
 
 /**
 GGeoTest
@@ -41,11 +40,7 @@ Rejig
   appropach which cleared the basis mm
 
 
-
 **/
-
-
-//#define OLD_VOLUMES 1
 
 
 #include "GGeoBase.hh"
@@ -100,23 +95,12 @@ class GGEO_API GGeoTest : public GGeoBase {
        NCSG*           getTree(unsigned index) const ;
     public:
        void anaEvent(OpticksEvent* evt);
-
-#ifdef OLD_VOLUMES
-    public:
-       GVolumeList*     getVolumeList();
-    private:
-       GMergedMesh* combineVolumes( std::vector<GVolume*>& volumes, GMergedMesh* mm0);
-       void         importCSG(std::vector<GVolume*>& volumes );
-       void         createBoxInBox(std::vector<GVolume*>& volumes);
-       void         labelPartList( std::vector<GVolume*>& volumes );
-#else
        GMergedMesh* combineVolumes( GMergedMesh* mm0);
     private:
        void         importCSG();
+       void         assignBoundaries();
        void         createBoxInBox();
        void         labelPartList();
-#endif
-
 
        GVolume*      makeVolumeFromConfig( unsigned i );
        GMergedMesh* createPmtInBox();
@@ -150,9 +134,6 @@ class GGEO_API GGeoTest : public GGeoBase {
        // actors
        GMaker*          m_maker ; 
        NCSGList*        m_csglist ; 
-#ifdef OLD_VOLUMES
-       GVolumeList*      m_solist ; 
-#endif
        int              m_err ; 
 
 };
