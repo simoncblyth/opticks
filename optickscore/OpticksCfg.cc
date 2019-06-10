@@ -364,6 +364,12 @@ void OpticksCfg<Listener>::init()
        ("compute",  "COMPUTE mode, ie not INTEROP") ; 
 
    m_desc.add_options()
+       ("interop",  "INTEROP mode, normally the default, but convenient to trump an existing --compute on commandline, switching on visualization.") ; 
+
+
+
+
+   m_desc.add_options()
        ("scintillation,s",  "load scintillation gensteps") ;
 
    m_desc.add_options()

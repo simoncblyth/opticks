@@ -1821,12 +1821,7 @@ void OpticksEvent::saveParameters()
 void OpticksEvent::loadParameters()
 {
     std::string tagdir = getTagDir();
-#ifdef OLD_PARAMETERS
-    m_parameters->load_(tagdir.c_str(), PARAMETERS_NAME );
-#else
     m_parameters->load(tagdir.c_str(), PARAMETERS_NAME );
-#endif
-
 }
 
 void OpticksEvent::importParameters()

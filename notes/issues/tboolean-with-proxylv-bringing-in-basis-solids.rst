@@ -119,6 +119,7 @@ Hmm, maybe not the same old problem : commenting out downloading hits makes it w
 ::
 
     ## temporaily remove --compute in tboolean.sh to tickle this problem
+    ## FIXED this annoyance : now "--interop" trumps "--compute" within the same commandline  
 
     PROXYLV=2 tboolean.sh proxy --cvd 1 --dbgdownload -D
 
@@ -227,8 +228,32 @@ event and animation timings need auto adjustment as change size of geometry
 
 
 
+making --interop trump --compute : FIXED by rejig of OpticksMode 
+-----------------------------------------------------------------
+
+After the fix the "--interop" will trump the "--compute" argument within tboolean.sh::
+
+    PROXYLV=2 tboolean.sh proxy --cvd 1 --interop
 
 
+Initial simple hasArg in Opticks::init correctly sets interop when have both "--interop" and "--compute" but then::
 
+   2019-06-10 09:52:51.116 ERROR [404357] [OpticksViz::renderLoop@528] OpticksViz::renderLoop early exit due to InteractivityLevel 0
+
+
+::
+
+    087     m_interactivity(m_ok->getInteractivityLevel()),
+    ...
+    524 void OpticksViz::renderLoop()
+    525 {
+    526     if(m_interactivity == 0 )
+    527     {
+    528         LOG(LEVEL) << "early exit due to InteractivityLevel 0  " ;                       
+    529         return ;
+    530     }
+
+
+Fix this by moving the mode decision into OpticksMode
 
 

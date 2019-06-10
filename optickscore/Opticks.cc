@@ -77,8 +77,6 @@ BPropNames* Opticks::G_MATERIAL_NAMES = NULL ;
 
 const float Opticks::F_SPEED_OF_LIGHT = 299.792458f ;  // mm/ns
 
-const char* Opticks::COMPUTE_ARG_ = "--compute" ; 
-
 // formerly of GPropertyLib, now booted upstairs
 float        Opticks::DOMAIN_LOW  = 60.f ;
 float        Opticks::DOMAIN_HIGH = 820.f ;  // has been 810.f for a long time  
@@ -250,6 +248,7 @@ Opticks::Opticks(int argc, char** argv, const char* argforced )
     m_sargs(new SArgs(argc, argv, argforced)), 
     m_argc(m_sargs->argc),
     m_argv(m_sargs->argv),
+    m_mode(new OpticksMode(this)),
     m_dumpenv(m_sargs->hasArg("--dumpenv")),
     m_envkey(m_sargs->hasArg("--envkey") ? BOpticksKey::SetKey(NULL) : false),  // see tests/OpticksEventDumpTest.cc makes sensitive to OPTICKS_KEY
     m_production(m_sargs->hasArg("--production")),
@@ -282,7 +281,6 @@ Opticks::Opticks(int argc, char** argv, const char* argforced )
     m_detector(NULL),
     m_event_count(0),
     m_domains_configured(false),
-    m_mode(NULL),
     m_run(new OpticksRun(this)),
     m_evt(NULL),
     m_ana(new OpticksAna(this)),
@@ -567,7 +565,10 @@ const char* Opticks::getDbgMesh() const
 
 void Opticks::init()
 {
-    m_mode = new OpticksMode(hasArg(COMPUTE_ARG_)) ; 
+
+
+    LOG(info) << m_mode->description(); 
+
 
     m_cfg = new OpticksCfg<Opticks>("opticks", this,false);
 
@@ -1902,11 +1903,10 @@ int Opticks::getLastArgInt()
     return BStr::atoi(m_lastarg, -1 );
 }
 
-int Opticks::getInteractivityLevel()
+int Opticks::getInteractivityLevel() const 
 {
-    int interactivity = SSys::GetInteractivityLevel() ;
-    if(hasOpt("noviz|compute")) interactivity = 0 ; 
-    return interactivity  ;
+    return m_mode->getInteractivityLevel() ; 
+
 }
 
 

@@ -139,17 +139,26 @@ int SSys::OKConfCheck()
 }
 
 
+/**
+SSys::GetInteractivityLevel
+-------------------------------
+
+Defines an interactivity level of the session 
+as discerned from the existance of certain environment
+variables characteristic of test running and remote ssh sessions.
+
+see opticks/notes/issues/automated_interop_tests.rst
+
+hmm these envvars are potentially dependant on CMake/CTest version 
+if that turns out to be the case will have to define an OPTICKS_INTERACTIVITY 
+envvar for this purpose
+
+**/
 
 int SSys::GetInteractivityLevel()
 {
-    // see opticks/notes/issues/automated_interop_tests.rst
-    // hmm these envvars are potentially dependant on CMake/CTest version 
-    // if that turns out to be the case will have to define an OPTICKS_INTERACTIVITY 
-    // envvar for this purpose
-
     char* dtmd = getenv("DART_TEST_FROM_DART");           //  ctest run with --interactive-debug-mode 0
     char* cidm = getenv("CTEST_INTERACTIVE_DEBUG_MODE");  //  ctest run with --interactive-debug-mode 1  (the default)
-
 
     int level = 2 ;   
     if(dtmd && dtmd[0] == '1') 

@@ -7,15 +7,19 @@
 OpticksMode
 ===============
 
-Is resident of Opticks and is set early in Opticks::init
-
+Constructor resident of Opticks instanciated very early prior to configuration.
 
 **/
+
+class Opticks ; 
 
 
 class OKCORE_API OpticksMode {
     public:
-       static unsigned int Parse(const char* tag);
+       static const char* COMPUTE_ARG_ ; 
+       static const char* INTEROP_ARG_ ; 
+       static const char* NOVIZ_ARG_ ; 
+    public:
        static const char* UNSET_MODE_ ;
        static const char* COMPUTE_MODE_ ;
        static const char* INTEROP_MODE_ ;
@@ -27,16 +31,23 @@ class OKCORE_API OpticksMode {
                 CFG4_MODE    = 0x1 << 3
             }; 
     public:
-        OpticksMode(const char* tag);
-        OpticksMode(bool compute_requested);
+       static unsigned Parse(const char* tag);
     public:
-        void setOverride(unsigned int mode);
-        std::string description();
-        bool isCompute();
-        bool isInterop();
-        bool isCfG4();   // needs manual override to set to CFG4_MODE
+        OpticksMode(const char* tag);  // used to instanciate from OpticksEvent metadata
+        OpticksMode(Opticks* ok);
+    public:
+        int getInteractivityLevel() const ;
+        std::string description() const ;
+        bool isCompute() const ;
+        bool isInterop() const ;
+        bool isCfG4() const ;   // needs manual override to set to CFG4_MODE
+    public:
+        void setOverride(unsigned mode);
     private:
-         unsigned int m_mode ;  
+        unsigned  m_mode ;  
+        bool      m_compute_requested ;  
+        bool      m_noviz ; 
+        bool      m_forced_compute ;  
 };
 
 #include "OKCORE_TAIL.hh"

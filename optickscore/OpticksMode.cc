@@ -3,27 +3,26 @@
 #include <sstream>
 
 #include "SSys.hh"
+#include "Opticks.hh"
 #include "OpticksMode.hh"
+#include "PLOG.hh"
+
+
+const char* OpticksMode::COMPUTE_ARG_ = "--compute" ; 
+const char* OpticksMode::INTEROP_ARG_ = "--interop" ; 
+const char* OpticksMode::NOVIZ_ARG_ = "--noviz" ; 
+
 
 const char* OpticksMode::UNSET_MODE_  = "UNSET_MODE" ;
 const char* OpticksMode::COMPUTE_MODE_  = "COMPUTE_MODE" ;
 const char* OpticksMode::INTEROP_MODE_  = "INTEROP_MODE" ;
 const char* OpticksMode::CFG4_MODE_     = "CFG4_MODE" ;
 
-bool OpticksMode::isCompute()
-{
-    return (m_mode & COMPUTE_MODE) != 0 ;  
-}
-bool OpticksMode::isInterop()
-{
-    return (m_mode & INTEROP_MODE) != 0 ;  
-}
-bool OpticksMode::isCfG4()
-{
-    return (m_mode & CFG4_MODE) != 0  ; 
-}
+bool OpticksMode::isCompute() const { return (m_mode & COMPUTE_MODE) != 0 ; }
+bool OpticksMode::isInterop() const { return (m_mode & INTEROP_MODE) != 0 ; } 
+bool OpticksMode::isCfG4()    const { return (m_mode & CFG4_MODE) != 0  ; }
 
-std::string OpticksMode::description()
+std::string OpticksMode::description() const 
 {
     std::stringstream ss ; 
 
@@ -31,10 +30,13 @@ std::string OpticksMode::description()
     if(isInterop()) ss << INTEROP_MODE_ ; 
     if(isCfG4())    ss << CFG4_MODE_ ; 
 
+    if(m_compute_requested) ss << " compute_requested " ; 
+    if(m_forced_compute)    ss << " forced_compute " ; 
+
     return ss.str();
 }
 
-unsigned int OpticksMode::Parse(const char* tag)
+unsigned int OpticksMode::Parse(const char* tag)  // static
 {
     unsigned int mode = UNSET_MODE  ; 
     if(     strcmp(tag, INTEROP_MODE_)==0)  mode = INTEROP_MODE ; 
@@ -43,23 +45,48 @@ unsigned int OpticksMode::Parse(const char* tag)
     return mode ; 
 }
 
+
+int OpticksMode::getInteractivityLevel() const 
+{
+    int interactivity = SSys::GetInteractivityLevel() ;
+    if(m_noviz) interactivity = 0 ; 
+    if(isCompute()) interactivity = 0 ; 
+    return interactivity  ;
+}
+
+
+/**
 OpticksMode::OpticksMode(const char* tag)
-  :
-    m_mode(Parse(tag))
+--------------------------------------------
+
+Used by OpticksEvent to instanciate from loaded metadata string.
+
+**/
+
+OpticksMode::OpticksMode(const char* tag)
+    :
+    m_mode(Parse(tag)),
+    m_compute_requested(false),
+    m_noviz(false),
+    m_forced_compute(false)
 {
 }
 
-OpticksMode::OpticksMode(bool compute_requested) 
-   : 
-   m_mode(UNSET_MODE)
+OpticksMode::OpticksMode(Opticks* ok) 
+    : 
+    m_mode(UNSET_MODE),
+    m_compute_requested(ok->hasArg(COMPUTE_ARG_) && !ok->hasArg(INTEROP_ARG_)),   // "--interop" trumps "--compute" on same commandline
+    m_noviz(ok->hasArg(NOVIZ_ARG_)),
+    m_forced_compute(false)
 {
     if(SSys::IsRemoteSession())
     {
         m_mode = COMPUTE_MODE ; 
+        m_forced_compute = true ;  
     }
     else
     {
-        m_mode = compute_requested ? COMPUTE_MODE : INTEROP_MODE ;
+        m_mode = m_compute_requested ? COMPUTE_MODE : INTEROP_MODE ;
     }
 }
 
@@ -68,8 +95,4 @@ void OpticksMode::setOverride(unsigned int mode)
    assert( mode == CFG4_MODE );
    m_mode = mode ;
 }
-
-
-
-
 

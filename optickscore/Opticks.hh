@@ -91,9 +91,6 @@ class OKCORE_API Opticks {
        static const plog::Severity LEVEL ;  
        static const float F_SPEED_OF_LIGHT ;  // mm/ns
    public:
-       // TODO: move into OpticksMode
-       static const char* COMPUTE_ARG_ ; 
-
    public:
        static BPropNames* G_MATERIAL_NAMES ;
        static const char* Material(const unsigned int mat);
@@ -201,7 +198,7 @@ class OKCORE_API Opticks {
        const char* getMaterialMap();
        const char* getLastArg();
        int         getLastArgInt();
-       int         getInteractivityLevel();
+       int         getInteractivityLevel() const ;  // from m_mode (OpticksMode)
        std::string getArgLine();
    public:
        unsigned    getOptiXVersion();
@@ -554,6 +551,8 @@ class OKCORE_API Opticks {
        SArgs*               m_sargs ; 
        int                  m_argc ; 
        char**               m_argv ; 
+       OpticksMode*         m_mode ; 
+
        bool                 m_dumpenv ; 
        bool                 m_envkey ; 
        bool                 m_production ; 
@@ -599,7 +598,6 @@ class OKCORE_API Opticks {
        glm::ivec4       m_settings ; 
        //NB avoid duplication between here and OpticksCfg , only things that need more control need be here
 
-       OpticksMode*         m_mode ; 
 
        OpticksRun*          m_run ;   // actually used for dual running 
        OpticksEvent*        m_evt ; 
