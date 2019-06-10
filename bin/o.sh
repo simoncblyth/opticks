@@ -180,7 +180,8 @@ o-main()
    RC=$?
    echo $msg $runline ======= PWD $PWD  RC $RC 
 
-   [ $RC -eq 0 ] && echo $postline && eval $postline 
+   #[ $RC -eq 0 ] && echo $postline && eval $postline 
+   echo $postline && eval $postline 
 
    exit $RC
 }

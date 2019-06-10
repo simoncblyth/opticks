@@ -166,9 +166,9 @@ void CG4::setUserInitialization(G4VUserDetectorConstruction* detector)
 
 void CG4::initialize()
 {
+    LOG(info) << "[" ;
     assert(!m_initialized && "CG4::initialize already initialized");
     m_initialized = true ; 
-    LOG(info) << "CG4::initialize" ;
 
     m_runManager->SetUserAction(m_ra);
     m_runManager->SetUserAction(m_ea);
@@ -178,11 +178,12 @@ void CG4::initialize()
 
     m_runManager->Initialize();
     postinitialize();
+    LOG(info) << "]" ;
 }
 
 void CG4::postinitialize()
 {
-
+    LOG(info) << "[" ;
     C4FPEDetection::InvalidOperationDetection_Disable();  // see notes/issues/OKG4Test_prelaunch_FPE_causing_fail.rst
 
     m_uiManager = G4UImanager::GetUIpointer();
@@ -214,7 +215,7 @@ void CG4::postinitialize()
 
     if(m_ok->isG4Snap()) snap() ;
 
-    LOG(info) << "CG4::postinitialize DONE" ;
+    LOG(info) << "]" ;
 }
 
 void CG4::execute(const char* path)
@@ -274,8 +275,6 @@ void CG4::interactive()
     bool g4ui = m_ok->hasOpt("g4ui") ; 
     if(!g4ui) return ; 
 
-    LOG(info) << "CG4::interactive proceeding " ; 
-
     m_visManager = new G4VisExecutive;
     m_visManager->Initialize();
 
@@ -285,6 +284,7 @@ void CG4::interactive()
 
 void CG4::initEvent(OpticksEvent* evt)
 {
+    LOG(info) << "[" ;
     m_generator->configureEvent(evt);
 
     m_ctx.initEvent(evt);
@@ -295,11 +295,13 @@ void CG4::initEvent(OpticksEvent* evt)
     if(!nopstep) LOG(fatal) << " nopstep NULL " << " evt " << evt->getShapeString() ; 
     assert(nopstep); 
     m_steprec->initEvent(nopstep);
+    LOG(info) << "]" ;
 }
 
 
 NPY<float>* CG4::propagate()
 {
+    LOG(info) << "[" ;
     OpticksEvent* evt = m_run->getG4Event();
     LOG(info) << evt->brief() <<  " " << evt->getShapeString() ;
 
@@ -319,7 +321,7 @@ NPY<float>* CG4::propagate()
         assert(hasGensteps);    
     }
 
-    LOG(info) << "CG4::propagate(" << m_ok->getTagOffset() << ") " << evt->getDir() ; 
+    LOG(info) << "(" << m_ok->getTagOffset() << ") " << evt->getDir() ; 
 
     initEvent(evt);
 
@@ -339,17 +341,23 @@ NPY<float>* CG4::propagate()
 
     NPY<float>* gs = m_collector->getGensteps(); 
 
+
+    LOG(fatal) << "idpath " << m_ok->getIdPath();  
+
     NPY<float>* pr = m_primary_collector->getPrimary(); 
     pr->save("$TMP/cg4/primary.npy");   // debugging primary position issue 
 
+    LOG(info) << "]" ;
     return gs ; 
 }
 
 void CG4::postpropagate()
 {
-    LOG(info) << "CG4::postpropagate(" << m_ok->getTagOffset() << ")"
-              << " ctx " << m_ctx.desc_stats() 
-               ;
+    LOG(info) 
+         << "[" 
+         << " (" << m_ok->getTagOffset() << ")"
+         << " ctx " << m_ctx.desc_stats() 
+         ;
 
     std::string finmac = m_cfg->getG4FinMac();
     if(!finmac.empty()) execute(finmac.c_str());
@@ -366,13 +374,15 @@ void CG4::postpropagate()
 
     if(m_engine) m_engine->postpropagate();  
 
-    LOG(info) << "CG4::postpropagate(" << m_ok->getTagOffset() << ") DONE"  ;
+    LOG(info) << "]" 
+              << " (" <<  m_ok->getTagOffset() << ")"  
+              ;
 }
 
 void CG4::cleanup()
 {
-    LOG(info) << "opening geometry" ; 
+    LOG(info) << "[" ; 
     G4GeometryManager::GetInstance()->OpenGeometry();
-    LOG(info) << "opening geometry DONE " ; 
+    LOG(info) << "]" ; 
 }
 

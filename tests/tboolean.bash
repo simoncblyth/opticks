@@ -491,13 +491,13 @@ tboolean-ana-(){
     local exe=OpticksEventCompareTest 
     #local exe=OpticksEventDumpTest 
 
-    gdb --args $exe --torch  --tag $(tboolean-tag) --cat $testname  --dbgnode 0  --dbgseqhis $dbgseqhis $* 
+    gdb --args $exe --torch  --tag $(tboolean-tag) --cat $testname  --pfx $testname --dbgnode 0  --dbgseqhis $dbgseqhis $* 
 }
 
 # TODO: how to pick a profile without being explicit about it ? so this doesnt depend on having it 
-tboolean-ipy-(){ ipython  --pdb  $(which tboolean.py) -i -- --det ${TESTNAME} --tag $(tboolean-tag) $* ; }
-tboolean-py-(){ tboolean.py --det ${TESTNAME} --tag $(tboolean-tag)  $* ; }
-tboolean-m-(){  metadata.py --det ${TESTNAME} --tag $(tboolean-tag) ; }
+tboolean-ipy-(){ ipython  --pdb  $(which tboolean.py) -i -- --det $TESTNAME --pfx $TESTNAME --tag $(tboolean-tag) $* ; }
+tboolean-py-(){ tboolean.py --det $TESTNAME --pfx $TESTNAME --tag $(tboolean-tag)  $* ; }
+tboolean-m-(){  metadata.py --det $TESTNAME --pfx $TESTNAME --tag $(tboolean-tag) ; }
 tboolean-g-(){  lldb -- CTestDetectorTest --test --testconfig "$TESTCONFIG" $* ; }
 
 
@@ -603,6 +603,7 @@ tboolean--(){
             --torchconfig "$torchconfig" \
             --torchdbg \
             --tag $(tboolean-tag) \
+            --pfx $testname \
             --cat $testname \
             --anakey tboolean \
             --args \
@@ -739,9 +740,9 @@ tboolean-testobject(){ echo Vacuum///GlassSchottF2 ; }
 tboolean-proxy-lvidx(){    echo ${PROXYLV:--1} ; }
 tboolean-proxy-name(){  echo tboolean-proxy-$(tboolean-proxy-lvidx) ; }
 
-tboolean-proxy-dbg(){ cd /tmp ; OPTICKS_EVENT_BASE=$(tboolean-proxy-name) ipython --pdb $(which tboolean.py) -i -- --tag 1 --tagoffset 0 --det $(tboolean-proxy-name) --src torch ; }
-tboolean-proxy-ip(){ OPTICKS_EVENT_BASE=$(tboolean-proxy-name) TESTNAME=$(tboolean-proxy-name) tboolean-ipy- $* ; } 
-tboolean-proxy-p(){ OPTICKS_EVENT_BASE=$(tboolean-proxy-name) TESTNAME=$(tboolean-proxy-name) tboolean-py- $* ; } 
+tboolean-proxy-pdb(){ cd /tmp ; OPTICKS_EVENT_BASE=/tmp ipython --pdb $(which tboolean.py) -i -- --tag 1 --tagoffset 0 --det $(tboolean-proxy-name) --pfx $(tboolean-proxy-name) --src torch ; }
+tboolean-proxy-ip(){ OPTICKS_EVENT_BASE=/tmp TESTNAME=$(tboolean-proxy-name) tboolean-ipy- $* ; } 
+tboolean-proxy-p(){ OPTICKS_EVENT_BASE=/tmp TESTNAME=$(tboolean-proxy-name) tboolean-py- $* ; } 
 tboolean-proxy-a(){ TESTNAME=$(tboolean-proxy-name) tboolean-ana- $* ; } 
 tboolean-proxy(){ TESTNAME=$(tboolean-proxy-name) TESTCONFIG=$($FUNCNAME- 2>/dev/null) tboolean-- $* ; } 
 tboolean-proxy-(){  $FUNCNAME- | python $* ; }
@@ -783,13 +784,24 @@ To see a list of the lvidx indices and names use::
 
    GMeshLibTest --envkey 
    
+When PROXYLV is in environment the tboolean-proxy functions are automatically invoked, rather than box etc..
+These both save events::
 
-::
+   PROXYLV=20 tboolean.sh             # defaults to compute, saving events 
+   PROXYLV=20 tboolean.sh --strace    # with monitoring of all opened files, log analysed with strace.py
+   PROXYLV=20 tboolean.sh --interop   # propagate, save and visualize  
 
-   PROXYLV=20 tboolean.sh proxy
-   PROXYLV=20 tbooleanviz.sh proxy
 
 
+Load the event and visualize the propagation::
+
+   PROXYLV=20 tbooleanviz.sh         
+
+For subsequent analysis of the events written by the above::
+
+   PROXYLV=20 tboolean-proxy-p        # python analysis       
+   PROXYLV=20 tboolean-proxy-ip       # ipython analysis  
+   PROXYLV=20 tboolean-proxy-a        # C++ OpticksEventCompare analysis
 
 EON
 }
