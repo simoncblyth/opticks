@@ -3,10 +3,24 @@
 nload.py
 ==========
 
+With current defaults in environment::
+
+    export OPTICKS_ANA_DEFAULTS="det=tboolean-box,src=torch,tag=1,pfx=tboolean-box"
+    export OPTICKS_EVENT_BASE=/tmp
+
 ::
 
    cd /tmp
-   OPTICKS_EVENT_BASE=tboolean-box nload.py
+   OPTICKS_EVENT_BASE=tboolean-box nload.py   
+        ## no longer works
+
+   OPTICKS_EVENT_BASE=. nload.py  
+   nload.py                       
+        ## these work
+
+   OPTICKS_EVENT_BASE=/timbucku nload.py 
+        ## looks in /timbucku/tboolean-box/evt/tboolean-box/torch/1 
+
 
 """
 import os, sys, logging, datetime

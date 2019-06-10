@@ -8,7 +8,6 @@
 
 class OpticksEventSpec ; 
 
-
 class OKCORE_API OpticksEventSpec {
    public:
         static const char* OK_ ; 
@@ -16,16 +15,15 @@ class OKCORE_API OpticksEventSpec {
         static const char* NO_ ; 
    public:
         OpticksEventSpec(OpticksEventSpec* spec);
-        OpticksEventSpec(const char* typ, const char* tag, const char* det, const char* cat=NULL);
+        OpticksEventSpec(const char* pfx, const char* typ, const char* tag, const char* det, const char* cat=NULL);
         OpticksEventSpec* clone(unsigned tagoffset=0) const ;   // non-zero tagoffset increments if +ve, and decrements if -ve
         void Summary(const char* msg="OpticksEventSpec::Summary") const ;
         std::string brief() const ;
         bool isG4() const ;
         bool isOK() const ;
         const char*  getEngine() const ;
-   private:
-        void init();
    public:
+        const char*  getPfx() const ;
         const char*  getTyp() const ;
         const char*  getTag() const ;
         const char*  getDet() const ;
@@ -42,6 +40,7 @@ class OKCORE_API OpticksEventSpec {
    public:
         int          getITag() const ;
    protected:
+        const char*  m_pfx ; 
         const char*  m_typ ; 
         const char*  m_tag ; 
         const char*  m_det ; 

@@ -15,8 +15,7 @@ NScanTest $TMP/tgltf/extras
 #include "NNode.hpp"
 #include "NSceneConfig.hpp"
 
-#include "PLOG.hh"
-#include "NPY_LOG.hh"
+#include "OPTICKS_LOG.hh"
 
 
 
@@ -126,11 +125,11 @@ void test_scan( const std::vector<NCSG*>& trees )
 
 int main(int argc, char** argv)
 {
-    PLOG_(argc, argv);
-    NPY_LOG__ ;  
+    OPTICKS_LOG(argc, argv);
 
 
-    BOpticksResource okr ;  // no Opticks at this level 
+    bool testgeo(false); 
+    BOpticksResource okr(testgeo)  ;  // no Opticks at this level 
     const char* basedir = okr.getDebuggingTreedir(argc, argv);  // uses debugging only IDPATH envvar
 
     const char* gltfconfig = "csg_bbox_parsurf=1" ;

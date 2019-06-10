@@ -1583,10 +1583,10 @@ void OpticksEvent::saveDomains()
     updateDomainsBuffer();
 
     NPY<float>* fdom = getFDomain();
-    if(fdom) fdom->save(fdom_, m_typ,  m_tag, m_udet);
+    if(fdom) fdom->save(m_pfx, fdom_, m_typ,  m_tag, m_udet);
 
     NPY<int>* idom = getIDomain();
-    if(idom) idom->save(idom_, m_typ,  m_tag, m_udet);
+    if(idom) idom->save(m_pfx, idom_, m_typ,  m_tag, m_udet);
 }
 
 
@@ -1673,7 +1673,7 @@ void OpticksEvent::saveHitData(NPY<float>* ht) const
     if(ht)
     {
         unsigned num_hit = ht->getNumItems(); 
-        ht->save("ht", m_typ,  m_tag, m_udet);  // even when zero hits
+        ht->save(m_pfx, "ht", m_typ,  m_tag, m_udet);  // even when zero hits
         if(num_hit == 0) LOG(info) << "saveHitData zero hits " ; 
     }
 }
@@ -1686,7 +1686,7 @@ void OpticksEvent::saveNopstepData()
     if(no)
     {
         unsigned num_nop = no->getNumItems(); 
-        if(num_nop > 0)  no->save("no", m_typ,  m_tag, m_udet);
+        if(num_nop > 0)  no->save(m_pfx, "no", m_typ,  m_tag, m_udet);
         if(num_nop == 0) LOG(debug) << "saveNopstepData zero nop " ;
         if(num_nop > 0) no->dump("OpticksEvent::save (nopstep)");
     
@@ -1700,24 +1700,24 @@ void OpticksEvent::saveGenstepData()
     // however recording the gs in use for posterity makes sense
     // 
     NPY<float>* gs = getGenstepData();
-    if(gs) gs->save("gs", m_typ,  m_tag, m_udet);
+    if(gs) gs->save(m_pfx, "gs", m_typ,  m_tag, m_udet);
 }
 void OpticksEvent::savePhotonData()
 {
     NPY<float>* ox = getPhotonData();
-    if(ox) ox->save("ox", m_typ,  m_tag, m_udet);
+    if(ox) ox->save(m_pfx, "ox", m_typ,  m_tag, m_udet);
 }
 
 
 void OpticksEvent::saveRecordData()
 {
     NPY<short>* rx = getRecordData();    
-    if(rx) rx->save("rx", m_typ,  m_tag, m_udet);
+    if(rx) rx->save(m_pfx, "rx", m_typ,  m_tag, m_udet);
 }
 void OpticksEvent::saveSequenceData()
 {
     NPY<unsigned long long>* ph = getSequenceData();
-    if(ph) ph->save("ph", m_typ,  m_tag, m_udet);
+    if(ph) ph->save(m_pfx, "ph", m_typ,  m_tag, m_udet);
 }
 void OpticksEvent::saveSeedData()
 {
@@ -1725,7 +1725,7 @@ void OpticksEvent::saveSeedData()
     // also suspect such an attempt messes up the OptiX context is peculiar ways 
     //
     // NPY<unsigned>* se  = getSeedData();
-    // if(se) se->save("se", m_typ,  m_tag, m_udet);
+    // if(se) se->save(m_pfx, "se", m_typ,  m_tag, m_udet);
 }
 
 
@@ -1742,7 +1742,7 @@ void OpticksEvent::saveSourceData(NPY<float>* so) const
     if(so)
     {
         //unsigned num_so = so->getNumItems(); 
-        so->save("so", m_typ,  m_tag, m_udet);  
+        so->save(m_pfx, "so", m_typ,  m_tag, m_udet);  
         //if(num_so == 0) LOG(info) << "saveSourceData zero source " ; 
     }
 }
@@ -1784,9 +1784,9 @@ void OpticksEvent::saveReport()
 
 
 
-std::string OpticksEvent::TagDir(const char* det, const char* typ, const char* tag, const char* anno)
+std::string OpticksEvent::TagDir(const char* pfx, const char* det, const char* typ, const char* tag, const char* anno)
 {
-    std::string tagdir = BOpticksEvent::directory(det, typ, tag, anno ? anno : NULL );
+    std::string tagdir = BOpticksEvent::directory(pfx, det, typ, tag, anno ? anno : NULL );
  
     return tagdir ; 
 
@@ -1794,7 +1794,7 @@ std::string OpticksEvent::TagDir(const char* det, const char* typ, const char* t
 std::string OpticksEvent::getTagDir(const char* anno)
 {
     const char* udet = getUDet();
-    std::string tagdir = TagDir(udet, m_typ, m_tag, anno ? anno : NULL );
+    std::string tagdir = TagDir(m_pfx, udet, m_typ, m_tag, anno ? anno : NULL );
 
 
     if( anno == NULL )
@@ -1875,17 +1875,17 @@ void OpticksEvent::setFakeNopstepPath(const char* path)
 }
 
 
-OpticksEvent* OpticksEvent::load(const char* typ, const char* tag, const char* det, const char* cat, bool verbose)
+OpticksEvent* OpticksEvent::load( const char* pfx, const char* typ, const char* tag, const char* det, const char* cat, bool verbose)
 {
-    LOG(info) << "OpticksEvent::load"
-              << " typ " << typ
-              << " tag " << tag
-              << " det " << det
-              << " cat " << ( cat ? cat : "NULL" )
-              ;
+    LOG(info) 
+        << " pfx " << pfx
+        << " typ " << typ
+        << " tag " << tag
+        << " det " << det
+        << " cat " << ( cat ? cat : "NULL" )
+        ;
 
-
-    OpticksEventSpec* spec = new OpticksEventSpec(typ, tag, det, cat);
+    OpticksEventSpec* spec = new OpticksEventSpec(pfx, typ, tag, det, cat);
     OpticksEvent* evt = new OpticksEvent(spec);
 
     evt->loadBuffers(verbose);
@@ -1913,7 +1913,7 @@ const char* OpticksEvent::getPath(const char* xx)
 {
     std::string name = m_abbrev.count(xx) == 1 ? m_abbrev[xx] : xx ;  
     const char* udet = getUDet(); // cat overrides det if present 
-    std::string path = BOpticksEvent::path(udet, m_typ, m_tag, name.c_str() );
+    std::string path = BOpticksEvent::path(m_pfx, udet, m_typ, m_tag, name.c_str() );
     return strdup(path.c_str()) ; 
 }
 
@@ -1935,7 +1935,7 @@ void OpticksEvent::loadBuffers(bool verbose)
 
     bool qload = true ; 
 
-    NPY<int>*   idom = NPY<int>::load(idom_, m_typ,  m_tag, udet, qload);
+    NPY<int>*   idom = NPY<int>::load(m_pfx, idom_, m_typ,  m_tag, udet, qload);
 
     if(!idom)
     {
@@ -1955,7 +1955,7 @@ void OpticksEvent::loadBuffers(bool verbose)
 
     m_loaded = true ; 
 
-    NPY<float>* fdom = NPY<float>::load(fdom_, m_typ,  m_tag, udet, qload );
+    NPY<float>* fdom = NPY<float>::load(m_pfx, fdom_, m_typ,  m_tag, udet, qload );
 
     setIDomain(idom);
     setFDomain(fdom);
@@ -1981,19 +1981,19 @@ void OpticksEvent::loadBuffers(bool verbose)
     }
     else
     {  
-        no = NPY<float>::load("no", m_typ,  m_tag, udet, qload);
+        no = NPY<float>::load(m_pfx, "no", m_typ,  m_tag, udet, qload);
     }
     if(no) loadBuffersImportSpec(no, m_nopstep_spec) ;
 
-    NPY<float>*              gs = NPY<float>::load("gs", m_typ,  m_tag, udet, qload);
-    NPY<float>*              ox = NPY<float>::load("ox", m_typ,  m_tag, udet, qload);
-    NPY<short>*              rx = NPY<short>::load("rx", m_typ,  m_tag, udet, qload);
+    NPY<float>*              gs = NPY<float>::load(m_pfx, "gs", m_typ,  m_tag, udet, qload);
+    NPY<float>*              ox = NPY<float>::load(m_pfx, "ox", m_typ,  m_tag, udet, qload);
+    NPY<short>*              rx = NPY<short>::load(m_pfx, "rx", m_typ,  m_tag, udet, qload);
 
-    NPY<unsigned long long>* ph = NPY<unsigned long long>::load("ph", m_typ,  m_tag, udet, qload );
-    NPY<unsigned char>*      ps = NPY<unsigned char>::load("ps", m_typ,  m_tag, udet, qload );
-    NPY<unsigned char>*      rs = NPY<unsigned char>::load("rs", m_typ,  m_tag, udet, qload );
-    NPY<unsigned>*           se = NPY<unsigned>::load("se", m_typ,  m_tag, udet, qload );
-    NPY<float>*              ht = NPY<float>::load("ht", m_typ,  m_tag, udet, qload );
+    NPY<unsigned long long>* ph = NPY<unsigned long long>::load(m_pfx, "ph", m_typ,  m_tag, udet, qload );
+    NPY<unsigned char>*      ps = NPY<unsigned char>::load(m_pfx, "ps", m_typ,  m_tag, udet, qload );
+    NPY<unsigned char>*      rs = NPY<unsigned char>::load(m_pfx, "rs", m_typ,  m_tag, udet, qload );
+    NPY<unsigned>*           se = NPY<unsigned>::load(     m_pfx, "se", m_typ,  m_tag, udet, qload );
+    NPY<float>*              ht = NPY<float>::load(        m_pfx, "ht", m_typ,  m_tag, udet, qload );
 
     if(ph == NULL || ps == NULL || rs == NULL )
         LOG(warning) 
@@ -2309,8 +2309,8 @@ void OpticksEvent::saveIndex()
     assert(ps);
     assert(rs);
 
-    ps->save("ps", m_typ,  m_tag, m_udet);
-    rs->save("rs", m_typ,  m_tag, m_udet);
+    ps->save(m_pfx, "ps", m_typ,  m_tag, m_udet);
+    rs->save(m_pfx, "rs", m_typ,  m_tag, m_udet);
 
     NPYBase::setGlobalVerbose(false);
 
@@ -2358,9 +2358,9 @@ void OpticksEvent::loadIndex()
 
 
 
-Index* OpticksEvent::loadNamedIndex( const char* typ, const char* tag, const char* udet, const char* name)
+Index* OpticksEvent::loadNamedIndex( const char* pfx, const char* typ, const char* tag, const char* udet, const char* name)
 {
-    std::string tagdir = TagDir(udet, typ, tag);
+    std::string tagdir = TagDir(pfx, udet, typ, tag);
     const char* reldir = NULL ; 
     Index* index = Index::load(tagdir.c_str(), name, reldir);
 
@@ -2378,17 +2378,17 @@ Index* OpticksEvent::loadNamedIndex( const char* typ, const char* tag, const cha
     return index ; 
 }
 
-Index* OpticksEvent::loadHistoryIndex( const char* typ, const char* tag, const char* udet)
+Index* OpticksEvent::loadHistoryIndex( const char* pfx, const char* typ, const char* tag, const char* udet)
 {
-    return loadNamedIndex(typ, tag, udet, OpticksConst::SEQHIS_NAME_); 
+    return loadNamedIndex(pfx, typ, tag, udet, OpticksConst::SEQHIS_NAME_); 
 }
-Index* OpticksEvent::loadMaterialIndex( const char* typ, const char* tag, const char* udet)
+Index* OpticksEvent::loadMaterialIndex( const char* pfx, const char* typ, const char* tag, const char* udet)
 {
-    return loadNamedIndex(typ, tag, udet, OpticksConst::SEQMAT_NAME_); 
+    return loadNamedIndex(pfx, typ, tag, udet, OpticksConst::SEQMAT_NAME_); 
 }
-Index* OpticksEvent::loadBoundaryIndex( const char* typ, const char* tag, const char* udet)
+Index* OpticksEvent::loadBoundaryIndex( const char* pfx, const char* typ, const char* tag, const char* udet)
 {
-    return loadNamedIndex(typ, tag, udet, OpticksConst::BNDIDX_NAME_); 
+    return loadNamedIndex(pfx, typ, tag, udet, OpticksConst::BNDIDX_NAME_); 
 }
 
 

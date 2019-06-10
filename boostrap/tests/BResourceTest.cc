@@ -8,7 +8,8 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
 
-    BOpticksResource br ; 
+    bool testgeo(true); 
+    BOpticksResource br(testgeo) ; 
 
     const char* key = argc > 1 ? argv[1] : "tmpuser_dir" ; 
     const char* nval = argc > 2 ? argv[2] : "/tmp" ; 

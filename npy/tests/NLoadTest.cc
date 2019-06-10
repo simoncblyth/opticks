@@ -28,15 +28,15 @@ void test_Gensteps()
 void test_directory()
 {
     LOG(info) ; 
-    std::string tagdir = NLoad::directory("det", "typ", "tag", "anno" ); 
-    LOG(info) << " NLoad::directory(\"det\", \"typ\", \"tag\", \"anno\" ) " << tagdir ; 
+    std::string tagdir = NLoad::directory("pfx","det", "typ", "tag", "anno" ); 
+    LOG(info) << " NLoad::directory(\"pfx\", \"det\", \"typ\", \"tag\", \"anno\" ) " << tagdir ; 
 }
 
 void test_reldir()
 {
     LOG(info) ; 
-    std::string rdir = NLoad::reldir("det", "typ", "tag" ); 
-    LOG(info) << " NLoad::reldir(\"det\", \"typ\", \"tag\" ) " << rdir ; 
+    std::string rdir = NLoad::reldir("pfx", "det", "typ", "tag" ); 
+    LOG(info) << " NLoad::reldir(\"pfx\", \"det\", \"typ\", \"tag\" ) " << rdir ; 
 }
 
 

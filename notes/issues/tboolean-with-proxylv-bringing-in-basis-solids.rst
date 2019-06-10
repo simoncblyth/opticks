@@ -257,3 +257,9 @@ Initial simple hasArg in Opticks::init correctly sets interop when have both "--
 Fix this by moving the mode decision into OpticksMode
 
 
+analysis needs adjusting for proxy locations
+------------------------------------------------
+
+* :doc:`opticks-event-paths`
+
+

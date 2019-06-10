@@ -14,11 +14,11 @@
 #include "PLOG.hh"
 
 G4StepNPY::G4StepNPY(NPY<float>* npy) 
-       :  
-       m_npy(npy),
-       m_lookup(NULL),
-       m_total_photons(0),
-       m_apply_lookup_count(0)
+    :  
+    m_npy(npy),
+    m_lookup(NULL),
+    m_total_photons(0),
+    m_apply_lookup_count(0)
 {
 }
 
@@ -220,8 +220,19 @@ int G4StepNPY::getNumPhotonsCounted()
     return m_total_photons ; 
 }
 
+void G4StepNPY::addAllowedGencodes(int gencode1, int gencode2, int gencode3, int gencode4 )
+{
+    if(gencode1 > -1) m_allowed_gencodes.push_back(gencode1);
+    if(gencode2 > -1) m_allowed_gencodes.push_back(gencode2);
+    if(gencode3 > -1) m_allowed_gencodes.push_back(gencode3);
+    if(gencode4 > -1) m_allowed_gencodes.push_back(gencode4);
+}
+bool G4StepNPY::isAllowedGencode(unsigned gencode) const 
+{
+    return std::find( m_allowed_gencodes.begin(), m_allowed_gencodes.end() , gencode ) != m_allowed_gencodes.end() ; 
+}
 
-void G4StepNPY::checklabel(int xlabel, int ylabel)
+void G4StepNPY::checkGencodes()
 {
     // genstep labels must match  
 
@@ -231,40 +242,30 @@ void G4StepNPY::checklabel(int xlabel, int ylabel)
     for(unsigned int i=0 ; i<numStep ; i++ )
     {
         int label = m_npy->getInt(i,0u,0u);
+        bool allowed = label > -1 && isAllowedGencode(unsigned(label)) ;  
 
-        if(xlabel > -1 && ylabel > -1)
+        if( allowed ) 
         {
-            if(xlabel == label || ylabel == label )
-                 continue ;
-            else 
-                 mismatch += 1 ;  
+            continue ;
         }
-        else if(xlabel > -1 )
+        else 
         {
-            if(xlabel == label )
-                 continue ;
-            else 
-                 mismatch += 1 ;  
-        } 
-        else if(ylabel > -1 )
-        {
-            if(ylabel == label )
-                 continue ;
-            else 
-                 mismatch += 1 ;  
-        } 
+            LOG(error) 
+                << " i " << i 
+                << " unexpected label " << label 
+                ; 
+            mismatch += 1 ;  
+        }
+
     }
 
     if(mismatch > 0) 
     {
          LOG(fatal)<<"G4StepNPY::checklabel FAIL" 
-                   << " xlabel " << xlabel 
-                   << " ylabel " << ylabel 
                    << " numStep " << numStep
                    << " mismatch " << mismatch ; 
                    ;
     }
-  
     assert(mismatch == 0 );
 }
 

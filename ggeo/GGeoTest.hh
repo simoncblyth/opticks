@@ -24,6 +24,9 @@ class GMesh ;
 class GMergedMesh ; 
 class GVolume ; 
 
+#include "plog/Severity.h"
+
+
 /**
 GGeoTest
 =========
@@ -50,6 +53,7 @@ Rejig
 #include "GGEO_API_EXPORT.hh"
 class GGEO_API GGeoTest : public GGeoBase {
     public:
+       static const plog::Severity LEVEL ; 
        static const char* UNIVERSE_PV ; 
        static const char* UNIVERSE_LV ; 
     public:
@@ -113,6 +117,7 @@ class GGEO_API GGeoTest : public GGeoBase {
 
     private:
        Opticks*         m_ok ; 
+       bool             m_dbggeotest ;  // --dbggeotest
        const char*      m_config_ ; 
        NGeoTestConfig*  m_config ; 
        unsigned         m_verbosity ;

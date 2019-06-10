@@ -264,7 +264,8 @@ void test_path()
 {
     LOG(info) << "test_path" ; 
 
-    std::string path = BOpticksEvent::path("dayabay","cerenkov", "1", "ox");
+    const char* pfx = "source" ; 
+    std::string path = BOpticksEvent::path(pfx, "dayabay","cerenkov", "1", "ox");
 
     LOG(info) << "test_path path:" << path ;
     LOG(info) << "test_path DONE" ; 
@@ -273,14 +274,16 @@ void test_path()
 void test_load()
 {
     LOG(info) << "test_load" ; 
-    NPY<float>* npy = NPY<float>::load("ox","cerenkov","1", "dayabay");
+    const char* pfx = "source" ; 
+    NPY<float>* npy = NPY<float>::load(pfx, "ox","cerenkov","1", "dayabay");
     if(npy) std::cout << npy->description("npy") << std::endl ; 
 }
 
 void test_save_path()
 {
     LOG(info) << "test_save_path" ; 
-    NPY<float>* npy = NPY<float>::load("ox","cerenkov","1", "dayabay");
+    const char* pfx = "source" ; 
+    NPY<float>* npy = NPY<float>::load(pfx, "ox","cerenkov","1", "dayabay");
     if(npy)
     { 
        std::cout << npy->description("npy") << std::endl ; 
@@ -302,7 +305,8 @@ void test_load_path_throws()
 void test_load_missing()
 {
     LOG(info) << "test_load_missing" ; 
-    NPY<float>* npy = NPY<float>::load("ox","cerenkov","missing", "dayabay");
+    const char* pfx = "source" ; 
+    NPY<float>* npy = NPY<float>::load(pfx, "ox","cerenkov","missing", "dayabay");
     if(npy) std::cout << npy->description("npy") << std::endl ; 
 }
 

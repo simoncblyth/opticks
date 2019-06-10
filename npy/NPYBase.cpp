@@ -157,14 +157,7 @@ NLookup* NPYBase::getLookup() const
 
 
 
-// TODO: move from X_BParameters to NMeta : which is composable and is persisted
-
-
-#ifdef OLD_PARAMETERS
-X_BParameters* NPYBase::getParameters() const 
-#else
 NMeta* NPYBase::getParameters() const 
-#endif
 {
     return m_parameters ;
 }
@@ -232,12 +225,10 @@ const char* NPYBase::ArrayContentVersion = "ArrayContentVersion" ;
 
 int NPYBase::getArrayContentVersion() const 
 {
-    //return NMeta::Get<int>(m_meta, ArrayContentVersion, "0") ; 
     return getMeta<int>(ArrayContentVersion, "0");
 }
 void NPYBase::setArrayContentVersion(int acv)
 {
-    //m_meta->set<int>(ArrayContentVersion, acv) ; 
     setMeta<int>(ArrayContentVersion, acv) ;
 }
 
@@ -270,11 +261,7 @@ NPYBase::NPYBase(const std::vector<int>& shape, unsigned char sizeoftype, Type_t
     m_allow_prealloc(false),
     m_dynamic(false),
     m_lookup(NULL),
-#ifdef OLD_PARAMETERS
-    m_parameters(new X_BParameters),
-#else
     m_parameters(new NMeta),
-#endif
     m_meta(new NMeta),
     m_name(NULL)
 {

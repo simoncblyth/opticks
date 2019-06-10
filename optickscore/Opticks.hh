@@ -422,13 +422,16 @@ class OKCORE_API Opticks {
        bool                 isTrivial() const ;
        bool                 isSeedtest() const ;
    public:
+       const char*          getEventPfx() const ;
        const char*          getEventTag() const ;
        const char*          getEventDir() const ;  // tag directory 
        const char*          getEventFold() const ; // one level above the tag directory 
        int                  getEventITag() const ; 
        const char*          getEventCat() const ;
+       const char*          getEventDet() const ;
+   private: 
+       const char*          getInputUDet() const ;
    public:
-       const char*          getUDet()  ;
        std::string          getPreferenceDir(const char* type, const char* subtype);
    public:
        //const char*          getGenstepPath() const ;  // either direct or legacy depending on mode : as distinguished by hasKey 
@@ -509,6 +512,7 @@ class OKCORE_API Opticks {
        bool isDbgTex() const ; // --dbgtex
        bool isDbgEmit() const ; // --dbgemit
        bool isDbgDownload() const ; // --dbgdownload
+       bool isDbgGeoTest() const ; // --dbggeotest
 
        bool isReflectCheat() const ;
        bool isSave() const ;
@@ -551,6 +555,7 @@ class OKCORE_API Opticks {
        SArgs*               m_sargs ; 
        int                  m_argc ; 
        char**               m_argv ; 
+       const char*          m_lastarg ; 
        OpticksMode*         m_mode ; 
 
        bool                 m_dumpenv ; 
@@ -573,7 +578,6 @@ class OKCORE_API Opticks {
        bool             m_geocache ; 
        bool             m_instanced ; 
        bool             m_integrated ; 
-       const char*      m_lastarg ; 
 
    private:
        bool                 m_configured ; 

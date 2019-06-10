@@ -197,9 +197,12 @@ std::string BFile::ResolveKey( const char* key )
         {
             evalue = evtbase ; 
         }
+        else if( envvar )   // if no internal BResource set allow use of external envvar
+        {
+            evalue = envvar ; 
+        }
         else
         {
-            //evalue = BResource::Get("tmpuser_dir") ; 
             evalue = usertmpdir("/tmp","opticks",NULL);
         } 
         LOG(verbose) << "replacing $OPTICKS_EVENT_BASE  with " << evalue ; 

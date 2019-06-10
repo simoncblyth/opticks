@@ -61,8 +61,8 @@ void BOpticksEventTest::check_layout_version(const char* det, const char* source
 
 void test_notag()
 {
-    std::string dir0 = BOpticksEvent::directory("det","source", "tag");
-    std::string dir1 = BOpticksEvent::directory("det","source", NULL );
+    std::string dir0 = BOpticksEvent::directory("pfx", "det","source", "tag");
+    std::string dir1 = BOpticksEvent::directory("pfx", "det","source", NULL );
     LOG(info) 
          << " test_notag "
          << " dir0 " << dir0 
@@ -86,12 +86,13 @@ void test_srctagdir()
 
 void test_path()
 {
-    const char* tfmt = "so" ; 
-    const char* det = "tboolean-box" ; 
+    const char* pfx = "tboolean-proxy-11" ; 
+    const char* det = "tboolean-proxy-11" ; 
     const char* typ = "torch" ; 
     const char* tag = "1" ; 
+    const char* tfmt = "so" ; 
 
-    std::string p = BOpticksEvent::path(det, typ, tag, tfmt  ); 
+    std::string p = BOpticksEvent::path(pfx, det, typ, tag, tfmt  ); 
 
     LOG(info) << p ; 
 }
@@ -102,7 +103,8 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv);
 
-    BOpticksResource res ; 
+    bool testgeo(true); 
+    BOpticksResource res(testgeo) ; 
     res.Summary();
 /*
 

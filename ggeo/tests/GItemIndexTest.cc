@@ -18,8 +18,7 @@
 // ggeo-
 #include "GItemIndex.hh"
 
-#include "PLOG.hh"
-#include "GGEO_LOG.hh"
+#include "OPTICKS_LOG.hh"
 
 
 
@@ -33,17 +32,17 @@ void dump(GItemIndex* idx, const char* msg)
 
 int main(int argc, char** argv)
 {
-    PLOG_(argc, argv);
-    GGEO_LOG_ ;
+    OPTICKS_LOG(argc, argv);
     
 
     Types types ; 
 
+    const char* pfx = "source" ; 
     const char* det = "concentric" ; 
     const char* typ = "torch" ; 
     const char* tag = "1" ;
 
-    std::string tagdir_ = OpticksEvent::TagDir( det, typ, tag );  
+    std::string tagdir_ = OpticksEvent::TagDir( pfx, det, typ, tag );  
     const char* tagdir = tagdir_.c_str() ; 
 
     LOG(info) << argv[0] << " tagdir " << tagdir ;  

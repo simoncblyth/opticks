@@ -49,15 +49,32 @@ void CGenerator::init()
 
 CSource* CGenerator::initSource(unsigned code)
 {
+    LOG(fatal) 
+        << " code " << code 
+        << " SourceType " << OpticksFlags::SourceType(code) 
+        << " m_source_type " << m_source_type
+        ; 
+
     CSource* source = NULL ;  
 
-    if(     code == G4GUN)      source = initG4GunSource();
-    else if(code == TORCH)      source = initTorchSource();
-    else if(code == EMITSOURCE) source = initInputPhotonSource();
-    else if(code == GENSTEPSOURCE) source = initInputGenstepSource();
-    else  assert( 0 && "code not handled" ); 
- 
-    assert(source) ;
+    if(code == G4GUN)
+    {
+        source = initG4GunSource();
+    } 
+    else if(code == TORCH)      
+    {
+        source = initTorchSource();
+    } 
+    else if(code == EMITSOURCE) 
+    {
+        source = initInputPhotonSource();
+    } 
+    else if(code == GENSTEPSOURCE) 
+    {
+        source = initInputGenstepSource();
+    }
+
+    assert(source && "code not expected" ) ;
 
     LOG(fatal) 
         << " code " << code

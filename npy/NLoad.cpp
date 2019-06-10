@@ -3,7 +3,9 @@
 
 #include "NLoad.hpp"
 #include "NPY.hpp"
+#include "PLOG.hh"
 
+const plog::Severity NLoad::LEVEL = info ; 
 
 std::string NLoad::GenstepsPath(const char* det, const char* typ, const char* tag)
 {
@@ -11,8 +13,13 @@ std::string NLoad::GenstepsPath(const char* det, const char* typ, const char* ta
     BOpticksEvent::SetOverrideEventBase(gensteps_dir) ;
     BOpticksEvent::SetLayoutVersion(1) ;     
 
-    const char* stem = "" ; // backward compat stem of gensteps
-    std::string path = BOpticksEvent::path(det, typ, tag, stem, ".npy");
+    LOG(LEVEL) 
+         << " gensteps_dir " << gensteps_dir ; 
+         ; 
+
+    const char* pfx = NULL ; 
+    const char* stem = NULL ; 
+    std::string path = BOpticksEvent::path(pfx, det, typ, tag, stem, ".npy");
 
     BOpticksEvent::SetOverrideEventBase(NULL) ;
     BOpticksEvent::SetLayoutVersionDefault() ;
@@ -28,15 +35,15 @@ NPY<float>* NLoad::Gensteps(const char* det, const char* typ, const char* tag)
 }
 
 
-std::string NLoad::directory(const char* det, const char* typ, const char* tag, const char* anno)
+std::string NLoad::directory(const char* pfx, const char* det, const char* typ, const char* tag, const char* anno)
 {
-   std::string tagdir = BOpticksEvent::directory(det, typ, tag, anno ? anno : NULL );  
+   std::string tagdir = BOpticksEvent::directory(pfx, det, typ, tag, anno ? anno : NULL );  
    return tagdir ; 
 }
 
-std::string NLoad::reldir(const char* det, const char* typ, const char* tag )
+std::string NLoad::reldir(const char* pfx, const char* det, const char* typ, const char* tag )
 {
-   std::string rdir = BOpticksEvent::reldir(det, typ, tag );  
+   std::string rdir = BOpticksEvent::reldir(pfx, det, typ, tag );  
    return rdir ; 
 }
 

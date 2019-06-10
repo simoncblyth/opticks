@@ -9,16 +9,15 @@
 #include "GPropertyLib.hh"
 #include "GPropertyMap.hh"
 
-#include "PLOG.hh"
-#include "GGEO_LOG.hh"
+#include "OPTICKS_LOG.hh"
 
 
 int main(int argc, char** argv)
 {
-    PLOG_(argc, argv);
-    GGEO_LOG_ ;
+    OPTICKS_LOG(argc, argv);
 
-    BOpticksResource rsc ;  // sets internal envvar OPTICKS_INSTALL_PREFIX
+    bool testgeo(false) ; 
+    BOpticksResource rsc(testgeo) ;  // sets internal envvar OPTICKS_INSTALL_PREFIX
 
     const char* path = "$OPTICKS_INSTALL_PREFIX/opticksdata/refractiveindex/tmp/glass/schott/F2.npy";
     GProperty<float>* f2 = GProperty<float>::load(path);

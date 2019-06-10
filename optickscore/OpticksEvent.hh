@@ -107,11 +107,11 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec
       //    cat: optional override of det for test categorization, eg PmtInBox
       //
       static bool CanAnalyse(OpticksEvent* evt); 
-      static OpticksEvent* load(const char* typ, const char* tag, const char* det, const char* cat=NULL, bool verbose=false);
-      static Index* loadHistoryIndex(  const char* typ, const char* tag, const char* udet);
-      static Index* loadMaterialIndex( const char* typ, const char* tag, const char* udet);
-      static Index* loadBoundaryIndex( const char* typ, const char* tag, const char* udet);
-      static Index* loadNamedIndex(    const char* typ, const char* tag, const char* udet, const char* name);
+      static OpticksEvent* load(       const char* pfx, const char* typ, const char* tag, const char* det, const char* cat=NULL, bool verbose=false);
+      static Index* loadHistoryIndex(  const char* pfx, const char* typ, const char* tag, const char* udet);
+      static Index* loadMaterialIndex( const char* pfx, const char* typ, const char* tag, const char* udet);
+      static Index* loadBoundaryIndex( const char* pfx, const char* typ, const char* tag, const char* udet);
+      static Index* loadNamedIndex(    const char* pfx, const char* typ, const char* tag, const char* udet, const char* name);
       static NPYSpec* GenstepSpec(bool compute);
       static NPYSpec* SourceSpec(bool compute);
       static NPYSpec* SeedSpec(bool compute);
@@ -288,7 +288,7 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec
        void recordDigests();
    public:
        std::string getTagDir(const char* anno=NULL); // anno usually NULL, sometimes the timestamp
-       static std::string TagDir(const char* det, const char* typ, const char* tag, const char* anno=NULL);
+       static std::string TagDir(const char* pfx, const char* det, const char* typ, const char* tag, const char* anno=NULL);
    public:
        unsigned long long getSeqHis(unsigned photon_id) const ; 
        unsigned long long getSeqMat(unsigned photon_id) const ; 

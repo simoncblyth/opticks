@@ -1,24 +1,44 @@
 // op --tindexer
 
+/**
+IndexerTest
+=============
+
+::
+
+   ckm-indexer-test 
+
+
+**/
 
 #include "NGLM.hpp"
+#include "Opticks.hh"
 #include "OpticksConst.hh"
 #include "OpticksEvent.hh"
 #include "Indexer.hh"
 
-#include "PLOG.hh"
+#include "OPTICKS_LOG.hh"
 
 int main(int argc, char** argv)
 {
-    PLOG_(argc, argv);
+    OPTICKS_LOG(argc, argv);
 
-    const char* typ = "torch" ; 
-    const char* tag = "4" ; 
-    const char* det = "dayabay" ; 
-    const char* cat = "PmtInBox" ; 
+    Opticks ok(argc, argv); 
+    ok.configure(); 
+
+    const char* pfx = "source" ;  // 
+    const char* typ = "natural" ; 
+    const char* tag = "1" ; 
+    const char* det = "g4live" ; 
+    const char* cat = NULL ; 
  
-    OpticksEvent* evt = OpticksEvent::load(typ, tag, det, cat) ;
-    if(!evt) return 0 ; 
+    OpticksEvent* evt = OpticksEvent::load(pfx, typ, tag, det, cat) ;
+
+    if(!evt) 
+    {
+        LOG(info) << " failed to load " ; 
+        return 0 ; 
+    }
 
     LOG(info) << evt->getShapeString() ; 
 

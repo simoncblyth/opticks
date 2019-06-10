@@ -36,13 +36,12 @@ const char* OpticksAna::getScript(const char* anakey)
 
 std::string OpticksAna::getArgs(const char* /*anakey*/)
 {
-
     const char* anakeyargs = m_ok->getAnaKeyArgs();
     std::stringstream ss ; 
     ss
          << "--tag " << m_ok->getEventTag() << " "
          << "--tagoffset " << m_ok->getTagOffset() << " "
-         << "--det " << m_ok->getUDet() << " "
+         << "--det " << m_ok->getEventDet() << " "
          << "--src " << m_ok->getSourceType() << " "
          << ( anakeyargs ? anakeyargs : "" )
          ;
@@ -60,27 +59,6 @@ std::string OpticksAna::getCommandline(const char* anakey)
     return ss.str();
 }
 
-void OpticksAna::setEnv()
-{
-    if(m_ok->isTest())  // --test : unused
-    {
-
-        /*
-        const char* key = "OPTICKS_EVENT_BASE" ;  
-        const char* evtbase = BResource::GetDir("evtbase"); 
-        LOG(info) << " setting envvar key " << key << " evtbase " << evtbase ; 
-        SSys::setenvvar(key, evtbase ); 
-
-        formerly thought should be example specific /tmp/tboolean-box
-        but now think that is a mistake, much better for OPTICKS_EVENT_BASE 
-        to be more stable than that and not include specifics, 
-        eg /tmp OR /tmp/$USER/opticks
-
-        */ 
-
-    }
-}
-
 
 void OpticksAna::run()
 {
@@ -92,8 +70,6 @@ void OpticksAna::run()
              ; 
 
    if(!enabled) return ; 
-
-   setEnv(); 
 
    std::string cmdline = getCommandline(anakey);
 

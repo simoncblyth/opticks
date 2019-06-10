@@ -7,12 +7,9 @@ class OpticksEvent ;
 template <typename T> class NPY ; 
 class NPYBase ; 
 class G4StepNPY ; 
-
-#ifdef OLD_PARAMETERS
-class X_BParameters ;
-#else
 class NMeta ; 
-#endif
+
+#include "plog/Severity.h"
 
 
 /**
@@ -30,6 +27,7 @@ between g4evt and evt regarding the gensteps.
 #include "OKCORE_API_EXPORT.hh"
 class OKCORE_API OpticksRun 
 { 
+        static const plog::Severity LEVEL ; 
     public:
         OpticksRun(Opticks* ok);
     private:

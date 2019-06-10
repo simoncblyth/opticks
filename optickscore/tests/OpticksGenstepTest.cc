@@ -13,7 +13,8 @@ int main(int argc, char** argv)
     const char* def = "$DATADIR/gensteps/dayabay/natural/1.npy" ; 
     const char* path = argc > 1 ? argv[1] : def ; 
 
-    BOpticksResource bor ;  // needed ro resolve internal "envvar" DATADIR, see BResourceTest, BFile 
+    bool testgeo(false); 
+    BOpticksResource bor(testgeo) ;  // needed ro resolve internal "envvar" DATADIR, see BResourceTest, BFile 
 
     NPY<float>* np = NPY<float>::load(path) ; 
     if(np == NULL) return 0 ; 

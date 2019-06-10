@@ -31,11 +31,6 @@ m_gen copies are available in the principal users
 * ok/OKMgr 
 * okg4/OKG4Mgr
 
-
-
-
-
-
 **/
 
 
@@ -53,7 +48,6 @@ class OKGEO_API OpticksGen
         Opticks*             getOpticks() const ; 
         NPY<float>*          getInputPhotons() const ;    // currently only used for NCSG emitter testing 
         NPY<float>*          getInputGensteps() const ;
-
 
     private:
         FabStepNPY*          getFabStep() const  ;

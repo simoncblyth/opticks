@@ -10,15 +10,18 @@
 #include "NSensorList.hpp"
 #include "NSensor.hpp"
 
-#include "PLOG.hh"
-#include "NPY_LOG.hh"
+#include "OPTICKS_LOG.hh"
 
 
 
 struct HitsNPYTest
 {
     HitsNPYTest( const char* idpath )
+        :
+        _testgeo(false), 
+        _res(_testgeo)
     {
+        
         _res.setupViaID(idpath); 
 
         const char* idmpath = _res.getIdMapPath(); 
@@ -42,7 +45,7 @@ struct HitsNPYTest
         hits.debugdump() ; 
     }
 
-   
+    bool             _testgeo ; 
     BOpticksResource _res ; 
     NSensorList      _sens ; 
 };
@@ -51,8 +54,7 @@ struct HitsNPYTest
 
 int main(int argc, char** argv)
 {
-    PLOG_(argc, argv);
-    NPY_LOG__ ; 
+    OPTICKS_LOG(argc, argv);
 
     const char* idpath = SSys::getenvvar("IDPATH");
     if(!idpath) return 0 ; 

@@ -691,7 +691,6 @@ template <typename T>
 void NPY<T>::save(const char* dir, const char* name)
 {
     std::string path_ = BFile::FormPath(dir, name);
-    //std::string path_ = NPYBase::path(dir, name);
     save(path_.c_str());
 }
 
@@ -699,51 +698,47 @@ template <typename T>
 void NPY<T>::save(const char* dir, const char* reldir, const char* name)
 {
     std::string path_ = BFile::FormPath(dir, reldir, name);
-    //std::string path_ = NPYBase::path(dir, reldir, name);
     save(path_.c_str());
 }
-
-
 
 template <typename T>
 bool NPY<T>::exists(const char* dir, const char* name)
 {
     std::string path_ = BFile::FormPath(dir, name);
-    //std::string path_ = NPYBase::path(dir, name);
     return exists(path_.c_str());
 }
 
 
 
+
 template <typename T>
-NPY<T>* NPY<T>::load(const char* tfmt, const char* source, const char* tag, const char* det, bool quietly)
+NPY<T>* NPY<T>::load(const char* pfx, const char* tfmt, const char* source, const char* tag, const char* det, bool quietly)
 {
     //  (ox,cerenkov,1,dayabay)  ->   (dayabay,cerenkov,1,ox)
     //
     //     arg order twiddling done here is transitional to ease the migration 
     //     once working in the close to old arg order, can untwiddling all the calls
     //
-    //std::string path_ = NPYBase::path(det, source, tag, tfmt );
-    std::string path_ = BOpticksEvent::path(det, source, tag, tfmt );
+    std::string path_ = BOpticksEvent::path(pfx, det, source, tag, tfmt );
     return load(path_.c_str(),quietly);
 }
 template <typename T>
-void NPY<T>::save(const char* tfmt, const char* source, const char* tag, const char* det)
+void NPY<T>::save(const char* pfx, const char* tfmt, const char* source, const char* tag, const char* det)
 {
-    //std::string path_ = NPYBase::path(det, source, tag, tfmt );
-    std::string path_ = BOpticksEvent::path(det, source, tag, tfmt );
+    std::string path_ = BOpticksEvent::path(pfx, det, source, tag, tfmt );
     save(path_.c_str());
 }
 
-
-
 template <typename T>
-bool NPY<T>::exists(const char* tfmt, const char* source, const char* tag, const char* det)
+bool NPY<T>::exists(const char* pfx, const char* tfmt, const char* source, const char* tag, const char* det)
 {
-    //std::string path_ = NPYBase::path(det, source, tag, tfmt );
-    std::string path_ = BOpticksEvent::path(det, source, tag, tfmt );
+    std::string path_ = BOpticksEvent::path(pfx, det, source, tag, tfmt );
     return exists(path_.c_str());
 }
+
+
+
+
 
 
 

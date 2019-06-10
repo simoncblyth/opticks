@@ -9,25 +9,26 @@
 #include "RecordsNPY.hpp"
 #include "BoundariesNPY.hpp"
 
-#include "PLOG.hh"
+#include "OPTICKS_LOG.hh"
 
 int main(int argc, char** argv)
 {
-    PLOG_(argc, argv);
+    OPTICKS_LOG(argc, argv);
 
     Types types ; 
     types.dumpFlags();
 
-    const char* typ = "cerenkov" ;
+    const char* pfx = "tboolean-proxy-11" ;   
+    const char* typ = "torch" ;
     const char* tag = "1" ;
-    const char* det = "dayabay" ;
+    const char* det = pfx ;
 
-    NPY<float>* photons = NPY<float>::load("ox%s", typ, tag, det);
+    NPY<float>* photons = NPY<float>::load(pfx, "ox%s", typ, tag, det);
     if(!photons) return 0 ;   
 
-    NPY<short>* records = NPY<short>::load("rx%s",   typ, tag, det);
-    NPY<float>* domains = NPY<float>::load("fdom%s", typ, tag, det);
-    NPY<int>*   idom    =   NPY<int>::load("idom%s", typ, tag, det);
+    NPY<short>* records = NPY<short>::load(pfx, "rx%s",   typ, tag, det);
+    NPY<float>* domains = NPY<float>::load(pfx, "fdom%s", typ, tag, det);
+    NPY<int>*   idom    =   NPY<int>::load(pfx, "idom%s", typ, tag, det);
 
     if(idom == NULL)
     {  

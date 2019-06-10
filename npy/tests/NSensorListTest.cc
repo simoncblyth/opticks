@@ -16,8 +16,7 @@ nodeIndex 6871 sensor NSensor  index   2390 idhex 1051306 iddec 17109766 node_in
 #include <cstdio>
 #include <cassert>
 
-#include "PLOG.hh"
-#include "NPY_LOG.hh"
+#include "OPTICKS_LOG.hh"
 
 #include "SSys.hh"
 #include "BOpticksResource.hh"
@@ -29,6 +28,9 @@ nodeIndex 6871 sensor NSensor  index   2390 idhex 1051306 iddec 17109766 node_in
 struct NSensorListTest
 {
     NSensorListTest( const char* idpath )
+        :
+        _testgeo(false),
+        _res(_testgeo)
     {
         _res.setupViaID(idpath); 
         const char* idmpath = _res.getIdMapPath(); 
@@ -36,6 +38,7 @@ struct NSensorListTest
         _sens.load(idmpath);
     }
    
+    bool             _testgeo ; 
     BOpticksResource _res ; 
     NSensorList      _sens ; 
 };
@@ -45,8 +48,7 @@ struct NSensorListTest
 
 int main(int argc, char** argv)
 {
-    PLOG_(argc, argv);
-    NPY_LOG__ ; 
+    OPTICKS_LOG(argc, argv);
 
     const char* idpath = SSys::getenvvar("IDPATH");
     if(!idpath) return 0 ; 

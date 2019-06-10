@@ -134,13 +134,14 @@ GMergedMesh* GMergedMesh::combine(unsigned int index, GMergedMesh* mm, GVolume* 
 GMergedMesh* GMergedMesh::combine(unsigned int index, GMergedMesh* mm, const std::vector<GVolume*>& volumes, unsigned verbosity )
 {
     unsigned numVolumes = volumes.size(); 
-    LOG(info) << "GMergedMesh::combine"
-              << " making new mesh "
-              << " index " << index 
-              << " volumes " << numVolumes
-              << " verbosity " << verbosity 
-              ; 
+    LOG(LEVEL)
+        << " making new mesh "
+        << " index " << index 
+        << " volumes " << numVolumes
+        << " verbosity " << verbosity 
+        ; 
 
+    if(verbosity > 1)
     GVolume::Dump(volumes, "GMergedMesh::combine (source volumes)");
 
 
@@ -156,6 +157,8 @@ GMergedMesh* GMergedMesh::combine(unsigned int index, GMergedMesh* mm, const std
     for(unsigned i=0 ; i < numVolumes ; i++) com->mergeVolume(volumes[i], true, verbosity ) ;
 
     com->updateBounds();
+
+    if(verbosity > 1)
     com->dumpVolumes("GMergedMesh::combine (combined result) ");
    
     return com ; 

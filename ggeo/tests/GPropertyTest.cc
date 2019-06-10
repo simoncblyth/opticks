@@ -9,8 +9,7 @@
 #include "GProperty.hh"
 
 
-#include "PLOG.hh"
-#include "GGEO_LOG.hh"
+#include "OPTICKS_LOG.hh"
 
 /*
 // Why does lookup "sampling" require so many more bins to get good results than standard sampling ?
@@ -225,10 +224,10 @@ void test_GROUPVEL()
 
 int main(int argc, char** argv)
 {
-    PLOG_(argc, argv);
-    GGEO_LOG_ ; 
+    OPTICKS_LOG(argc, argv);
 
-    BOpticksResource rsc ;   // sets OPTICKS_INSTALL_PREFIX envvar
+    bool testgeo(false); 
+    BOpticksResource rsc(testgeo) ;   // sets OPTICKS_INSTALL_PREFIX envvar
 
     //test_createSliced();
     //test_createReciprocalCDF();

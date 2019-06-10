@@ -864,6 +864,23 @@ opticks-f(){
 }
 
 
+opticks-c(){   
+   local str="${1:-ENV_HOME}"
+   local opt=${2:--H}
+
+   local iwd=$PWD
+   opticks-scd
+
+   find . \
+        \( \
+       -name '*.cc' -or \
+       -name '*.hh' -or \
+       -name '*.cpp' -or \
+       -name '*.hpp' -or \
+       -name '*.h' \
+        \) \
+       -exec grep $opt "$str" {} \;
+}
 
 
 

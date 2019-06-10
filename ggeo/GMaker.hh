@@ -19,6 +19,8 @@ class GMeshLib ;
 class GVolume ; 
 class GMesh ; 
 
+#include "plog/Severity.h"
+
 /**
 
 GMaker
@@ -31,6 +33,7 @@ Only one canonical instance m_maker resides in GGeoTest
 
 #include "GGEO_API_EXPORT.hh"
 class GGEO_API GMaker {
+       static const plog::Severity LEVEL ;  
        friend class GMakerTest ; 
     public:
         static std::string PVName(const char* shapename, int idx=-1);

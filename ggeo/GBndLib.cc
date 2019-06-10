@@ -47,13 +47,14 @@ void GBndLib::save()
 
 GBndLib* GBndLib::load(Opticks* ok, bool constituents)
 {
+    LOG(LEVEL) << "[" ; 
     GBndLib* blib = new GBndLib(ok);
 
-    LOG(verbose) << "GBndLib::load" ; 
+    LOG(verbose) ;
 
     blib->loadIndexBuffer();
 
-    LOG(verbose) << "GBndLib::load indexBuffer loaded" ; 
+    LOG(verbose) << "indexBuffer loaded" ; 
     blib->importIndexBuffer();
 
 
@@ -72,7 +73,7 @@ GBndLib* GBndLib::load(Opticks* ok, bool constituents)
 
         if(finedom)
         {
-            LOG(warning) << "GBndLib::load  --finebndtex option triggers interpolation of material and surface props "  ;
+            LOG(warning) << "--finebndtex option triggers interpolation of material and surface props "  ;
             GMaterialLib* mlib2 = new GMaterialLib(mlib, finedom );    
             GSurfaceLib* slib2 = new GSurfaceLib(slib, finedom );    
 
@@ -92,14 +93,14 @@ GBndLib* GBndLib::load(Opticks* ok, bool constituents)
         } 
     }
 
-    LOG(verbose) << "GBndLib::load DONE" ; 
+    LOG(LEVEL) << "]" ; 
 
     return blib ; 
 }
 
 void GBndLib::loadIndexBuffer()
 {
-    LOG(verbose) << "GBndLib::loadIndexBuffer" ; 
+    LOG(LEVEL) ; 
 
     std::string dir = getCacheDir(); 
     std::string name = getBufferName("Index");
@@ -328,7 +329,7 @@ void GBndLib::init()
 
 void GBndLib::closeConstituents()
 {
-    LOG(info) << "GBndLib::closeConstituents" ; 
+    LOG(LEVEL) ; 
     if(m_mlib) m_mlib->close(); 
     if(m_slib) m_slib->close(); 
 }

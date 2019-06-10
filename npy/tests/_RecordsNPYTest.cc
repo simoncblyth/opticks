@@ -7,32 +7,31 @@
 #include "RecordsNPY.hpp"
 #include "RecordsNPY.hpp"
 
-#include "NPY_LOG.hh"
-#include "PLOG.hh"
+#include "OPTICKS_LOG.hh"
 
 
 int main(int argc , char** argv )
 {
-    PLOG_(argc, argv);
-    NPY_LOG__ ; 
+    OPTICKS_LOG(argc, argv);
 
     Types types ; 
     types.dumpFlags();
 
-    const char* typ = "cerenkov" ;
+    const char* pfx = "tboolean-proxy-11" ;
+    const char* typ = "torch" ;
     const char* tag = "1" ;
-    const char* det = "dayabay" ;
+    const char* det = pfx ;
 
-    NPY<float>* photons = NPY<float>::load("ox", typ, tag, det);
+    NPY<float>* photons = NPY<float>::load(pfx,"ox", typ, tag, det);
     if(!photons) return 0 ;   
 
-    NPY<short>* records = NPY<short>::load("rx", typ, tag, det);
+    NPY<short>* records = NPY<short>::load(pfx,"rx", typ, tag, det);
     if(!records) return 1 ; 
 
-    NPY<float>* fdom  = NPY<float>::load("fdom", typ, tag, det);
+    NPY<float>* fdom  = NPY<float>::load(pfx,"fdom", typ, tag, det);
     if(!fdom) return 1 ; 
 
-    NPY<int>*   idom  = NPY<int>::load("idom", typ, tag, det);
+    NPY<int>*   idom  = NPY<int>::load(pfx,"idom", typ, tag, det);
 
     if(idom == NULL)
     {  

@@ -1,9 +1,5 @@
 
-#ifdef OLD_PARAMETERS
-#include "X_BParameters.hh"
-#else
 #include "NMeta.hpp"
-#endif
 
 #include "NCSG.hpp"
 #include "NPY.hpp"
@@ -48,7 +44,7 @@ OpticksGen::OpticksGen(OpticksHub* hub)
     m_dbgemit(m_ok->isDbgEmit()),  
     m_emitter(m_csg_emit ? new NEmitPhotonsNPY(m_csg_emit, EMITSOURCE, m_ok->getSeed(), m_dbgemit, m_ok->getMaskBuffer(), m_ok->getGenerateOverride() ) : NULL ),
     m_input_photons(NULL),
-    m_direct_gensteps(m_ok->hasKey() && m_ok->existsDirectGenstepPath() ? m_ok->loadDirectGenstep() : NULL ),
+    m_direct_gensteps(m_ok->hasKey() && m_ok->existsDirectGenstepPath() && !m_ok->isTest() ? m_ok->loadDirectGenstep() : NULL ),
     m_legacy_gensteps(NULL),
     m_source_code(initSourceCode())
 {
@@ -274,10 +270,10 @@ void OpticksGen::setInputPhotons(NPY<float>* ox)
     m_input_photons = ox ;  
     if(ox) 
     {
-        LOG(error) << "OpticksGen::setInputPhotons"
-                   << " ox " << ox->getShapeString()
-                   << " ox.hasMsk " << ( ox->hasMsk() ? "Y" : "N" )
-                   ;
+        LOG(error) 
+            << " ox " << ox->getShapeString()
+            << " ox.hasMsk " << ( ox->hasMsk() ? "Y" : "N" )
+            ;
 
         ox->setBufferSpec(OpticksEvent::SourceSpec(m_ok->isCompute()));
     }
@@ -300,7 +296,7 @@ void OpticksGen::targetGenstep( GenstepNPY* gs )
 
     if(gs->isFrameTargetted())
     {    
-        LOG(info) << "OpticksGen::targetGenstep frame targetted already  " << gformat(gs->getFrameTransform()) ;  
+        LOG(info) << "frame targetted already  " << gformat(gs->getFrameTransform()) ;  
     }    
     else 
     {   
@@ -308,12 +304,12 @@ void OpticksGen::targetGenstep( GenstepNPY* gs )
         {
             glm::ivec4& iframe = gs->getFrame();
             glm::mat4 transform = m_hub->getTransform( iframe.x );
-            LOG(info) << "OpticksGen::targetGenstep setting frame " << iframe.x << " " << gformat(transform) ;  
+            LOG(info) << "setting frame " << iframe.x << " " << gformat(transform) ;  
             gs->setFrameTransform(transform);
         }
         else
         {
-            LOG(warning) << "OpticksGen::targetGenstep SKIP AS NO GEOMETRY " ; 
+            LOG(warning) << "SKIP AS NO GEOMETRY " ; 
         }
 
     }    
@@ -336,7 +332,7 @@ void OpticksGen::setMaterialLine( GenstepNPY* gs )
 {
     if(!m_blib)
     {
-        LOG(warning) << "OpticksGen::setMaterialLine no blib, skip setting material line " ;
+        LOG(warning) << "no blib, skip setting material line " ;
         return ; 
     }
    const char* material = gs->getMaterial() ;

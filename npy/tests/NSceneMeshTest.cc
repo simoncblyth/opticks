@@ -8,17 +8,15 @@
 #include "NSceneConfig.hpp"
 #include "NPY.hpp"
 
-#include "NPY_LOG.hh"
-#include "PLOG.hh"
+#include "OPTICKS_LOG.hh"
 
 
 int main(int argc, char** argv)
 {
-    PLOG_(argc, argv);
-    NPY_LOG__ ; 
+    OPTICKS_LOG(argc, argv);
 
-
-    BOpticksResource okr ;  // no Opticks at this level 
+    bool testgeo(false); 
+    BOpticksResource okr(testgeo) ;  // no Opticks at this level 
 
     const char* dbgmesh = SSys::getenvvar("DBGMESH");
     int dbgnode = SSys::getenvint("DBGNODE", -1) ; 

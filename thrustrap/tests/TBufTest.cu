@@ -117,8 +117,9 @@ void test_f4()
 void test_dump()
 {
 
+    const char* pfx = NULL ;  
     LOG(info) << "(" ;
-    NPY<unsigned long long>* ph = NPY<unsigned long long>::load("ph%s", "torch",  "-5", "rainbow" );
+    NPY<unsigned long long>* ph = NPY<unsigned long long>::load(pfx, "ph%s", "torch",  "-5", "rainbow" );
     // check 
     if (!ph) {
         printf("can't load data\n");

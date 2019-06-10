@@ -29,6 +29,10 @@
 #include "PLOG.hh"
 
 
+const plog::Severity GMaker::LEVEL = debug ; 
+
+
+
 GMaker::GMaker(Opticks* ok, GBndLib* blib, GMeshLib* meshlib)
     :
     m_ok(ok),
@@ -142,12 +146,12 @@ GMesh* GMaker::makeMeshFromCSG( NCSG* csg ) // cannot be const due to lazy NCSG:
     const char* spec = csg->getBoundary();  
     NTrianglesNPY* tris = csg->polygonize();
 
-    LOG(info) 
-              << " index " << index 
-              << " spec " << spec 
-              << " numTris " << ( tris ? tris->getNumTriangles() : 0 )
-              << " trisMsg " << ( tris ? tris->getMessage() : "" )
-              ; 
+    LOG(LEVEL) 
+        << " index " << index 
+        << " spec " << spec 
+        << " numTris " << ( tris ? tris->getNumTriangles() : 0 )
+        << " trisMsg " << ( tris ? tris->getMessage() : "" )
+        ; 
 
     GMesh* mesh = GMeshMaker::Make(tris->getTris(), index);
     mesh->setCSG(csg);
@@ -187,7 +191,7 @@ GVolume* GMaker::makeFromMesh( const GMesh* mesh ) const
 
     volume->setParts( pts );
 
-    LOG(info) 
+    LOG(LEVEL) 
               << " index " << index 
               << " spec " << spec 
               ; 

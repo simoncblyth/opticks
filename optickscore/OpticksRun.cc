@@ -1,11 +1,6 @@
 
 
-#ifdef OLD_PARAMETERS
-#include "X_BParameters.hh"
-#else
 #include "NMeta.hpp"
-#endif
-
 #include "NLookup.hpp"
 
 #include "Opticks.hh"
@@ -18,17 +13,17 @@
 
 #include "PLOG.hh"
 
+
+const plog::Severity OpticksRun::LEVEL = debug ; 
+
+
 OpticksRun::OpticksRun(Opticks* ok) 
-   :
-   m_ok(ok),
-   m_g4evt(NULL),
-   m_evt(NULL),
-   m_g4step(NULL),
-#ifdef OLD_PARAMETERS
-   m_parameters(new X_BParameters) 
-#else
-   m_parameters(new NMeta) 
-#endif
+    :
+    m_ok(ok),
+    m_g4evt(NULL),
+    m_evt(NULL),
+    m_g4step(NULL),
+    m_parameters(new NMeta)
 {
     OK_PROFILE("OpticksRun::OpticksRun");
 }
@@ -69,15 +64,16 @@ void OpticksRun::createEvent(unsigned tagoffset)
     m_evt->setTimeStamp( tstamp.c_str() );        // align timestamps
 
 
-    LOG(debug) << "OpticksRun::createEvent(" 
-              << tagoffset 
-              << ") " 
-              << tstamp 
-              << "[ "
-              << " ok:" << m_evt->getId() << " " << m_evt->getDir() 
-              << " g4:" << m_g4evt->getId() << " " << m_g4evt->getDir()
-              << "] DONE "
-              ; 
+    LOG(LEVEL)
+        << "(" 
+        << tagoffset 
+        << ") " 
+        << tstamp 
+        << "[ "
+        << " ok:" << m_evt->getId() << " " << m_evt->getDir() 
+        << " g4:" << m_g4evt->getId() << " " << m_g4evt->getDir()
+        << "] DONE "
+        ; 
 
     annotateEvent();
 
@@ -86,16 +82,15 @@ void OpticksRun::createEvent(unsigned tagoffset)
 
 void OpticksRun::annotateEvent()
 {
-
     // these are set into resource by GGeoTest::initCreateCSG during geometry loading
     OpticksResource* resource = m_ok->getResource();
     const char* testcsgpath = resource->getTestCSGPath();
     const char* geotestconfig = resource->getTestConfig();
 
-    LOG(debug) 
-              << " testcsgpath " << ( testcsgpath ? testcsgpath : "-" )
-              << " geotestconfig " << ( geotestconfig ? geotestconfig : "-" )
-              ;
+    LOG(LEVEL) 
+        << " testcsgpath " << ( testcsgpath ? testcsgpath : "-" )
+        << " geotestconfig " << ( geotestconfig ? geotestconfig : "-" )
+        ;
 
     if(testcsgpath)
     {  
@@ -145,7 +140,7 @@ void OpticksRun::setGensteps(NPY<float>* gensteps) // THIS IS CALLED FROM VERY H
     if(no_gensteps) LOG(fatal) << "OpticksRun::setGensteps given NULL gensteps" ; 
     assert(!no_gensteps); 
 
-    LOG(info) << "genstep " << gensteps->getShapeString() ;  
+    LOG(LEVEL) << "genstep " << gensteps->getShapeString() ;  
 
     assert(m_evt && m_g4evt && "must OpticksRun::createEvent prior to OpticksRun::setGensteps");
 
@@ -174,12 +169,17 @@ void OpticksRun::setGensteps(NPY<float>* gensteps) // THIS IS CALLED FROM VERY H
 
 /**
 OpticksRun::passBaton
+-----------------------
 
 Handoff from G4Event to Opticks event of the
 Nopstep, Genstep and Source buffer pointers.
 NB there is no cloning as these buffers are 
 not distinct between Geant4 and Opticks
 
+Nopstep and Genstep should be treated as owned 
+by the m_g4evt not the Opticks m_evt 
+where the m_evt pointers are just weak reference guests 
+ 
 **/
 
 void OpticksRun::passBaton()
@@ -188,25 +188,16 @@ void OpticksRun::passBaton()
     NPY<float>* genstep = m_g4evt->getGenstepData() ;
     NPY<float>* source  = m_g4evt->getSourceData() ;
 
-    LOG(debug)
-           << "OpticksRun::passBaton"
-           << " nopstep " << nopstep
-           << " genstep " << genstep
-           << " source " << source
-           ;
+    LOG(LEVEL)
+        << " nopstep " << nopstep
+        << " genstep " << genstep
+        << " source " << source
+        ;
 
-   // Not-cloning as these buffers are not actually distinct 
-   // between G4 and OK.
-   //
-   // Nopstep and Genstep should be treated as owned 
-   // by the m_g4evt not the Opticks m_evt 
-   // where the m_evt pointers are just weak reference guests 
-   //
     m_evt->setNopstepData(nopstep);  
     m_evt->setGenstepData(genstep);
     m_evt->setSourceData(source);
 }
-
 
 
 bool OpticksRun::hasGensteps()
@@ -284,11 +275,7 @@ translations performed.
 
 G4StepNPY* OpticksRun::importGenstepData(NPY<float>* gs, const char* oac_label)
 {
-#ifdef OLD_PARAMETERS
-    X_BParameters* gsp = gs->getParameters();
-#else
     NMeta* gsp = gs->getParameters();
-#endif
     m_parameters->append(gsp);
 
     gs->setBufferSpec(OpticksEvent::GenstepSpec(m_ok->isCompute()));
@@ -300,15 +287,16 @@ G4StepNPY* OpticksRun::importGenstepData(NPY<float>* gs, const char* oac_label)
 
     if(oac_label)
     {
-        LOG(debug) << "OpticksRun::importGenstepData adding oac_label " << oac_label ; 
+        LOG(LEVEL) 
+            << "adding oac_label " << oac_label ; 
         oac.add(oac_label);
     }
 
-    LOG(debug) << "OpticksRun::importGenstepData"
-               << brief()
-               << " shape " << gs->getShapeString()
-               << " " << oac.description("oac")
-               ;
+    LOG(LEVEL) 
+        << brief()
+        << " shape " << gs->getShapeString()
+        << " " << oac.description("oac")
+        ;
 
     if(oac("GS_LEGACY"))
     {
@@ -316,31 +304,32 @@ G4StepNPY* OpticksRun::importGenstepData(NPY<float>* gs, const char* oac_label)
     }
     else if(oac("GS_EMBEDDED"))
     {
-        LOG(debug) << " GS_EMBEDDED collected direct gensteps assumed translated at collection  " << oac.description("oac") ; 
-        g4step->checklabel(CERENKOV, SCINTILLATION);
+        g4step->addAllowedGencodes( CERENKOV, SCINTILLATION) ; 
+        LOG(LEVEL) << " GS_EMBEDDED collected direct gensteps assumed translated at collection  " << oac.description("oac") ; 
     }
     else if(oac("GS_TORCH"))
     {
-        LOG(debug) << " checklabel of torch steps  " << oac.description("oac") ; 
-        g4step->checklabel(TORCH); 
+        g4step->addAllowedGencodes(TORCH); 
+        LOG(LEVEL) << " checklabel of torch steps  " << oac.description("oac") ; 
     }
     else if(oac("GS_FABRICATED"))
     {
-        g4step->checklabel(FABRICATED); 
+        g4step->addAllowedGencodes(FABRICATED); 
     }
     else if(oac("GS_EMITSOURCE"))
     {
-        g4step->checklabel(EMITSOURCE); 
+        g4step->addAllowedGencodes(EMITSOURCE); 
     }
     else
     {
-        LOG(debug) << " checklabel of non-legacy (collected direct) gensteps  " << oac.description("oac") ; 
-        g4step->checklabel(CERENKOV, SCINTILLATION);
+        LOG(LEVEL) << " checklabel of non-legacy (collected direct) gensteps  " << oac.description("oac") ; 
+        g4step->addAllowedGencodes(CERENKOV, SCINTILLATION, EMITSOURCE);
     }
+    g4step->checkGencodes();
 
     g4step->countPhotons();
 
-    LOG(debug) 
+    LOG(LEVEL) 
          << " Keys "
          << " TORCH: " << TORCH 
          << " CERENKOV: " << CERENKOV 
@@ -348,7 +337,7 @@ G4StepNPY* OpticksRun::importGenstepData(NPY<float>* gs, const char* oac_label)
          << " G4GUN: " << G4GUN  
          ;
 
-     LOG(debug) 
+     LOG(LEVEL) 
          << " counts " 
          << g4step->description()
          ;

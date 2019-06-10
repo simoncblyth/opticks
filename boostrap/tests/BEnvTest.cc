@@ -96,7 +96,8 @@ int main(int argc, char** argv, char** /*envp*/)
 {
     OPTICKS_LOG(argc, argv);
 
-    BOpticksResource rsc ;  // sets envvar OPTICKS_INSTALL_PREFIX internally 
+    bool testgeo(false);
+    BOpticksResource rsc(testgeo) ;  // sets envvar OPTICKS_INSTALL_PREFIX internally 
     rsc.Summary();
 
 /*

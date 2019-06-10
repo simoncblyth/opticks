@@ -17,12 +17,7 @@
 // brap-
 #include "BTimeKeeper.hh"
 
-#ifdef OLD_PARAMETERS
-#include "X_BParameters.hh"
-#else
 #include "NMeta.hpp"
-#endif
-
 
 #include "BDynamicDefine.hh"
 #include "BOpticksEvent.hh"
@@ -241,6 +236,8 @@ Opticks* Opticks::GetInstance()
 }
 
 
+
+
 Opticks::Opticks(int argc, char** argv, const char* argforced )
     :
     m_log(new SLog("Opticks::Opticks","",debug)),
@@ -248,6 +245,7 @@ Opticks::Opticks(int argc, char** argv, const char* argforced )
     m_sargs(new SArgs(argc, argv, argforced)), 
     m_argc(m_sargs->argc),
     m_argv(m_sargs->argv),
+    m_lastarg(m_argc > 1 ? strdup(m_argv[m_argc-1]) : NULL),
     m_mode(new OpticksMode(this)),
     m_dumpenv(m_sargs->hasArg("--dumpenv")),
     m_envkey(m_sargs->hasArg("--envkey") ? BOpticksKey::SetKey(NULL) : false),  // see tests/OpticksEventDumpTest.cc makes sensitive to OPTICKS_KEY
@@ -267,14 +265,13 @@ Opticks::Opticks(int argc, char** argv, const char* argforced )
     m_compute(false),
     m_geocache(false),
     m_instanced(true),
-
-    m_lastarg(NULL),
-
     m_configured(false),
-    m_cfg(NULL),
-    m_parameters(NULL),
-    m_runtxt(NULL),
-    m_cachemeta(NULL),
+
+    m_cfg(new OpticksCfg<Opticks>("opticks", this,false)),
+    m_parameters(new NMeta), 
+    m_runtxt(new BTxt),  
+    m_cachemeta(new NMeta), 
+
     m_scene_config(NULL),
     m_lod_config(NULL),
     m_snap_config(NULL),
@@ -298,13 +295,25 @@ Opticks::Opticks(int argc, char** argv, const char* argforced )
     {
         LOG(fatal) << " SECOND OPTICKS INSTANCE " ;  
     }
-    //assert( fInstance == NULL ); // should only ever be one instance 
 
     fInstance = this ; 
 
     init();
     (*m_log)("DONE");
 }
+
+
+void Opticks::init()
+{
+    LOG(info) << m_mode->description(); 
+
+    m_parameters->addEnvvar("CUDA_VISIBLE_DEVICES");
+    m_parameters->add<std::string>("CMDLINE", PLOG::instance->cmdline() ); 
+    if(m_envkey) m_parameters->add<int>("--envkey", 1 ); // OPTICKS_KEY envvar is only relevant when use --envkey to switch on sensitivity 
+    m_parameters->addEnvvarsWithPrefix("OPTICKS_"); 
+}
+
+
 
 
 bool Opticks::isDumpEnv() const 
@@ -561,36 +570,6 @@ const char* Opticks::getDbgMesh() const
 
 
 
-
-
-void Opticks::init()
-{
-
-
-    LOG(info) << m_mode->description(); 
-
-
-    m_cfg = new OpticksCfg<Opticks>("opticks", this,false);
-
-
-    m_parameters = new NMeta ;  
-
-    m_parameters->addEnvvar("CUDA_VISIBLE_DEVICES");
-    m_parameters->add<std::string>("CMDLINE", PLOG::instance->cmdline() ); 
-    if(m_envkey) m_parameters->add<int>("--envkey", 1 ); // OPTICKS_KEY envvar is only relevant when use --envkey to switch on sensitivity 
-    m_parameters->addEnvvarsWithPrefix("OPTICKS_"); 
-
-
-    m_runtxt = new BTxt ; 
-    m_cachemeta = new NMeta ; 
-
-
-    m_lastarg = m_argc > 1 ? strdup(m_argv[m_argc-1]) : NULL ;
-
-    // initResource();  TRYING TO MOVE THIS TO configure
-}
-
-
 void Opticks::initResource()
 {
     LOG(LEVEL) << "( OpticksResource " ;
@@ -600,7 +579,6 @@ void Opticks::initResource()
 
     const char* idpath = m_resource->getIdPath();
     m_parameters->add<std::string>("idpath", idpath); 
-
 
     LOG(LEVEL) << " DONE " << m_resource->desc()  ;
 }
@@ -975,6 +953,11 @@ bool Opticks::isDbgEmit() const  // --dbgemit
 bool Opticks::isDbgDownload() const  // --dbgdownload
 {
    return m_cfg->hasOpt("dbgdownload");
+}
+
+bool Opticks::isDbgGeoTest() const  // --dbggeotest
+{
+   return m_cfg->hasOpt("dbggeotest");
 }
 
 
@@ -1412,6 +1395,10 @@ void Opticks::appendCacheMeta(const char* key, NMeta* obj)
 {
     m_cachemeta->setObj(key, obj); 
 }
+
+
+
+
 void Opticks::updateCacheMeta()  
 {
     std::string argline = PLOG::instance->args.argline() ;
@@ -1614,41 +1601,57 @@ void  Opticks::setVerbosity(unsigned verbosity)
 
 
 
+const char* Opticks::getInputUDet() const 
+{
+    const char* det = m_detector ;           // set by initResource
+    const char* cat = m_cfg->getEventCat() ;  
+    return cat && strlen(cat) > 0 ? cat : det ;  
+}
 
 
 /**
 Opticks::defineEventSpec
 -------------------------
 
-Formerly invoked from Opticks::configure after commandline parse.
-Now try moving to Opticks::postgeometry so BResource evtbase changes
-are honoured. 
-
-Actually better to remove absolute dir reponsibility from this.
-
+Invoked from Opticks::configure after commandline parse and initResource
 
 **/
 
-
 void Opticks::defineEventSpec()
 {
+    const char* cat = m_cfg->getEventCat(); // expected to be defined for tests and equal to the TESTNAME from bash functions like tboolean-
+    const char* udet = getInputUDet(); 
+    const char* tag = m_cfg->getEventTag();
+    const char* ntag = BStr::negate(tag) ; 
     const char* typ = getSourceType(); 
 
-    //std::string tag_ = m_integrated ? m_cfg->getIntegratedEventTag() : m_cfg->getEventTag();
-    std::string tag_ = m_cfg->getEventTag();
-    const char* tag = tag_.c_str();
-    const char* ntag = BStr::negate(tag) ; 
+    const char* resource_pfx = m_resource->getEventPfx() ; 
+    const char* config_pfx = m_cfg->getEventPfx() ; 
+    const char* pfx = config_pfx ? config_pfx : resource_pfx ;  
+    if( !pfx )
+    { 
+        LOG(fatal) 
+            << " resource_pfx " << resource_pfx 
+            << " config_pfx " << config_pfx 
+            << " pfx " << pfx 
+            << " cat " << cat
+            << " udet " << udet
+            << " typ " << typ
+            << " tag " << tag
+            ;
+    }
+    assert( pfx ); 
 
-    std::string det = m_detector ? m_detector : "" ;
-    std::string cat = m_cfg->getEventCat();   // overrides det for categorization of test events eg "rainbow" "reflect" "prism" "newton"
 
-    m_spec  = new OpticksEventSpec(typ,  tag, det.c_str(), cat.c_str() );
-    m_nspec = new OpticksEventSpec(typ, ntag, det.c_str(), cat.c_str() );
+    m_spec  = new OpticksEventSpec(pfx, typ,  tag, udet, cat );
+    m_nspec = new OpticksEventSpec(pfx, typ, ntag, udet, cat );
 
     LOG(LEVEL) 
+         << " pfx " << pfx
          << " typ " << typ
          << " tag " << tag
-         << " det " << det 
+         << " ntag " << ntag
+         << " udet " << udet 
          << " cat " << cat 
          ;
 
@@ -1732,10 +1735,6 @@ void Opticks::configure()
 
     defineEventSpec();  
 
-/*
-    m_profile->setDir(getEventFold());  // <-- too soon for test geometry that adjusts evtbase
-
-*/
 
     const std::string& ssize = m_cfg->getSize();
 
@@ -2024,17 +2023,6 @@ std::string Opticks::desc() const
 
 
 
-const char* Opticks::getUDet()
-{
-    const char* det = m_detector ? m_detector : "" ;
-    const std::string& cat = m_cfg->getEventCat();   // overrides det for categorization of test events eg "rainbow" "reflect" "prism" "newton"
-    const char* cat_ = cat.c_str();
-    return strlen(cat_) > 0 ? cat_ : det ;  
-}
-
-
-
-
 
 /**
 Opticks::getSourceCode
@@ -2149,7 +2137,10 @@ const char* Opticks::getEventDir() const
 }
 
 
-
+const char* Opticks::getEventPfx() const
+{
+    return m_spec->getPfx();
+}
 const char* Opticks::getEventTag() const
 {
     return m_spec->getTag();
@@ -2162,6 +2153,11 @@ const char* Opticks::getEventCat() const
 {
     return m_spec->getCat();
 }
+const char* Opticks::getEventDet() const
+{
+    return m_spec->getDet();
+}
+
 
 
 
@@ -2170,27 +2166,32 @@ const char* Opticks::getEventCat() const
 
 Index* Opticks::loadHistoryIndex()
 {
+    const char* pfx = getEventPfx();
     const char* typ = getSourceType();
     const char* tag = getEventTag();
-    const char* udet = getUDet();
+    const char* udet = getEventDet();
 
-    Index* index = OpticksEvent::loadHistoryIndex(typ, tag, udet) ;
+    Index* index = OpticksEvent::loadHistoryIndex(pfx, typ, tag, udet) ;
 
     return index ; 
 }
 Index* Opticks::loadMaterialIndex()
 {
+    const char* pfx = getEventPfx();
     const char* typ = getSourceType();
     const char* tag = getEventTag();
-    const char* udet = getUDet();
-    return OpticksEvent::loadMaterialIndex(typ, tag, udet ) ;
+    const char* udet = getEventDet();
+
+    return OpticksEvent::loadMaterialIndex(pfx, typ, tag, udet ) ;
 }
 Index* Opticks::loadBoundaryIndex()
 {
+    const char* pfx = getEventPfx();
     const char* typ = getSourceType();
     const char* tag = getEventTag();
-    const char* udet = getUDet();
-    return OpticksEvent::loadBoundaryIndex(typ, tag, udet ) ;
+    const char* udet = getEventDet();
+
+    return OpticksEvent::loadBoundaryIndex(pfx, typ, tag, udet ) ;
 }
 
 
@@ -2265,7 +2266,7 @@ OpticksEvent* Opticks::makeEvent(bool ok, unsigned tagoffset)
     m_event_count += 1 ; 
 
 
-    const char* x_udet = getUDet();
+    const char* x_udet = getEventDet();
     const char* e_udet = evt->getUDet();
 
     bool match = strcmp(e_udet, x_udet) == 0 ;
@@ -2630,7 +2631,7 @@ const char* Opticks::getRNGInstallCacheDir() { return m_resource->getRNGInstallC
 
 std::string Opticks::getPreferenceDir(const char* type, const char* subtype)
 {
-    const char* udet = getUDet();
+    const char* udet = getEventDet();
     return m_resource->getPreferenceDir(type, udet, subtype);
 }
 

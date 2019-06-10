@@ -27,8 +27,22 @@ EON
 }
 
 
-arg=${1:-box}
-shift
+default="box"
+[ -n "$PROXYLV" ] && default="proxy"
+
+
+## only shift out the first argument when it doesnt start with a hyphen
+## this avoids the need to provide the default arg when wish to set options
+
+if [ ${#} -eq 0 ]; then
+   arg=$default 
+elif [ "${1:0:1}" == "-" ]; then  
+   arg=$default 
+else
+   arg=$1
+   shift
+fi 
+
 
 cd /tmp
 
@@ -48,7 +62,6 @@ echo ====== $0 $arg $* ====== PWD $PWD =================
 
 tboolean-
 cmd="tboolean-$arg --okg4 --compute $*"
-#cmd="tboolean-$arg --okg4  $*"
 echo $cmd
 eval $cmd
 rc=$?

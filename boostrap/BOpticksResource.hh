@@ -115,7 +115,7 @@ class BRAP_API  BOpticksResource {
 
         const char* makeIdPathPath(const char* rela, const char* relb=NULL, const char* relc=NULL, const char* reld=NULL) ;
    public:
-        BOpticksResource();
+        BOpticksResource(bool testgeo);
         virtual ~BOpticksResource();
         virtual void Summary(const char* msg="BOpticksResource::Summary");
    public:
@@ -185,7 +185,9 @@ class BRAP_API  BOpticksResource {
         const char* getIdMapPath() const ;
     public:
         const char* getEventBase() const ; 
+        const char* getEventPfx() const ; 
         void setEventBase(const char* rela, const char* relb=NULL) ; 
+        void setEventPfx(const char* pfx) ; 
     public:
         BOpticksKey* getKey() const ; 
         bool         hasKey() const ;   // distinguishes direct from legacy 
@@ -220,6 +222,7 @@ class BRAP_API  BOpticksResource {
         void setSrcPath(const char* srcpath);
         void setSrcDigest(const char* srcdigest);
    protected:
+        bool         m_testgeo ;   
         SLog*        m_log ; 
         bool         m_setup ; 
         BOpticksKey* m_key ; 
@@ -252,8 +255,9 @@ class BRAP_API  BOpticksResource {
         const char* m_idname ; 
         const char* m_idpath ; 
         const char* m_idpath_tmp ; 
-        const char* m_srcevtbase ; 
+        //const char* m_srcevtbase ; 
         const char* m_evtbase ; 
+        const char* m_evtpfx ; 
    protected:
         const char* m_debugging_idpath ; 
         const char* m_debugging_idfold ; 

@@ -4,6 +4,7 @@
 
 #include "BRAP_API_EXPORT.hh"
 #include "BRAP_HEAD.hh"
+#include "plog/Severity.h"
 
 /**
 BOpticksEvent
@@ -30,6 +31,7 @@ Used widely, opticks-findl BOpticksEvent.hh (ordered by relevance)::
 **/
 
 class BRAP_API  BOpticksEvent {
+        static const plog::Severity LEVEL ;  
         friend class BOpticksEventTest ; 
    public:
         static const int DEFAULT_LAYOUT_VERSION ; 
@@ -46,17 +48,15 @@ class BRAP_API  BOpticksEvent {
        static void SetOverrideEventBase(const char* override_event_base); // NB remember to clear override by setting NULL after use
 
    public:
-       static std::string reldir(const char* top, const char* sub, const char* tag );
-       static std::string directory(const char* top, const char* sub, const char* tag, const char* anno=NULL  );
-       static std::string path(     const char* top, const char* sub, const char* tag, const char* stem, const char* ext=".npy");
-       static const char* srctagdir( const char* det, const char* typ, const char* tag);
-       
-       //static std::string path(const char* dir, const char* name);
-       //static std::string path(const char* dir, const char* reldir, const char* name);
+       static std::string reldir(   const char* pfx, const char* top, const char* sub, const char* tag );
+       static std::string directory(const char* pfx, const char* top, const char* sub, const char* tag, const char* anno=NULL  );
+       static std::string path(     const char* pfx, const char* top, const char* sub, const char* tag, const char* stem, const char* ext=".npy");
    private:
        static std::string directory_template(bool notag=false);
-       static std::string directory_(const char* top, const char* sub, const char* tag, const char* anno=NULL );
-       static std::string path_(const char* top, const char* sub, const char* tag, const char* stem, const char* ext=".npy");
+       static void replace( std::string& base , const char* pfx, const char* top, const char* sub, const char* tag ) ; 
+       static std::string path_(const char* pfx, const char* top, const char* sub, const char* tag, const char* stem, const char* ext=".npy");
+   public:
+       static const char* srctagdir( const char* det, const char* typ, const char* tag);
 
 };
 

@@ -6,9 +6,8 @@
 #include "NScene.hpp"
 #include "NSceneConfig.hpp"
 #include "NPY.hpp"
-#include "NPY_LOG.hh"
 
-#include "PLOG.hh"
+#include "OPTICKS_LOG.hh"
 
 
 void test_makeInstanceTransformsBuffer(NScene* scene)
@@ -33,6 +32,8 @@ struct NSceneTest
 
     NSceneTest(const char* idpath)
         :
+        _testgeo(false),
+        _bres(_testgeo),
         _scene(NULL)
     {
         _bres.setupViaID(idpath); 
@@ -40,6 +41,8 @@ struct NSceneTest
 
     NSceneTest(const char* srcpath, const char* srcdigest)
         :
+        _testgeo(false),
+        _bres(_testgeo),
         _scene(NULL)
     {
         _bres.setupViaSrc(srcpath, srcdigest); 
@@ -85,6 +88,7 @@ struct NSceneTest
         //test_makeInstanceTransformsBuffer(_scene);
     }
 
+    bool             _testgeo ; 
     BOpticksResource _bres ; 
     NScene*          _scene ;  
 
@@ -104,8 +108,7 @@ void test_ViaSrc()
 
 int main(int argc, char** argv)
 {
-    PLOG_(argc, argv);
-    NPY_LOG__ ; 
+    OPTICKS_LOG(argc, argv);
 
     const char* idpath = SSys::getenvvar("IDPATH");
     if(!idpath) return 0 ; 

@@ -56,6 +56,8 @@ ckm-dig(){ echo 27d088654714cda61096045ff5eacc02 ; }
 
 ckm-key(){ echo CerenkovMinimal.X4PhysicalVolume.World.$(ckm-dig) ; }
 ckm-key-export(){ export OPTICKS_KEY=$(ckm-key) ;  }
+ckm-indexer-test(){   OPTICKS_KEY=$(ckm-key) IndexerTest --envkey ; }
+
 
 ckm-idpath(){ echo $LOCAL_BASE/opticks/geocache/CerenkovMinimal_World_g4live/g4ok_gltf/$(ckm-dig)/1 ; }
 ckm-kcd(){ cd $(ckm-idpath) ; }

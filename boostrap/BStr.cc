@@ -279,6 +279,7 @@ int BStr::atoi( const char* str, int fallback )
                    << " fallback " << fallback
                    ;  
        // assert(0); 
+        std::raise(SIGINT); 
     }
 
     return i ;

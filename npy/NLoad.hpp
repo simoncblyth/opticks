@@ -3,12 +3,14 @@
 #include <string>
 template <typename T> class NPY ; 
 #include "NPY_API_EXPORT.hh"
+#include "plog/Severity.h"
 
 class NPY_API NLoad {
+       static const plog::Severity LEVEL ; 
    public:
        static NPY<float>* Gensteps( const char* det, const char* typ, const char* tag );
        static std::string GenstepsPath( const char* det, const char* typ, const char* tag );
-       static std::string directory(const char* det, const char* typ, const char* tag, const char* anno=NULL);
-       static std::string reldir(const char* det, const char* typ, const char* tag );
+       static std::string directory(const char* pfx, const char* det, const char* typ, const char* tag, const char* anno=NULL);
+       static std::string reldir(const char* pfx, const char* det, const char* typ, const char* tag );
 
 };

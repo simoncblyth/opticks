@@ -597,10 +597,13 @@ tboolean--(){
             --geocenter \
             --stack $stack \
             --eye 1,0,0 \
-            --test --testconfig "$testconfig" \
-            --torch --torchconfig "$torchconfig" \
+            --test \
+            --testconfig "$testconfig" \
+            --torch \
+            --torchconfig "$torchconfig" \
             --torchdbg \
-            --tag $(tboolean-tag) --cat $testname \
+            --tag $(tboolean-tag) \
+            --cat $testname \
             --anakey tboolean \
             --args \
             --save 

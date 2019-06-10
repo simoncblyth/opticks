@@ -22,7 +22,10 @@ GNodeLib
 ===========
 
 Collection of GVolume/GNode instances with access by index.
-NB only pv/lv names are persisted, not the volumes/nodes.
+
+* **NB currently only pv/lv names are persisted, not the volumes/nodes**
+* the merged meshes and analytic information is of course persisted
+
 The analytic and test ctor arguments determine the name of the 
 persisting directory.
 

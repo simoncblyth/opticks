@@ -1,3 +1,5 @@
+#include <csignal>
+
 #include "BFile.hh"
 #include "BStr.hh"
 
@@ -119,12 +121,13 @@ void NPYList::setBuffer( int bid, NPYBase* buffer, const char* msg )
     NPYBase* prior = getBuffer(bid) ; 
     if(prior) 
     { 
-        LOG(error) << "replacing " << spec->getName() << " buffer "   
-                   << " prior " << prior->getShapeString()
-                   << " buffer " << buffer->getShapeString()
-                   << " msg " << ( msg ? msg : "-" )
-                   ; 
-        //assert(0);   NCSGList trips this with its re-export following an adjustToFit of the container
+        LOG(debug) 
+            << "replacing " << spec->getName() << " buffer "   
+            << " prior " << prior->getShapeString()
+            << " buffer " << buffer->getShapeString()
+            << " msg " << ( msg ? msg : "-" )
+            ; 
+        //std::raise(SIGINT) ;  // NCSGList does this with its re-export following an adjustToFit of the container
     } 
     assert( bid > -1 && bid < MAX_BUF ) ; 
     m_buf[bid] = buffer ; 

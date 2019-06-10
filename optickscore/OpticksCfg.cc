@@ -30,6 +30,13 @@ OpticksCfg<Listener>::OpticksCfg(const char* name, Listener* listener, bool live
        m_position(""),
        m_dbgcsgpath(""),
        m_logname(""),
+       m_event_cat(""),
+       m_event_pfx("source"),
+       m_event_tag("1"),
+       m_integrated_event_tag("100"),
+       m_liveline(""),
+
+       m_configpath(""),
        m_exportconfig("$TMP"),
        m_torchconfig(""),
        m_g4gunconfig(""),
@@ -398,10 +405,12 @@ void OpticksCfg<Listener>::init()
            "input emitconfig photons to stay point-by-point aligned thru refections. "
        ) ;
 
-
-
    m_desc.add_options()
        ("dbgdownload",  "debug event downloading from GPU") ;
+
+   m_desc.add_options()
+       ("dbggeotest",  "debug creation of test geometry") ;
+
 
    m_desc.add_options()
        ("save",  "download generated/propagated event data from GPU and save to file") ;
@@ -729,6 +738,11 @@ void OpticksCfg<Listener>::init()
 
    m_desc.add_options()
        ("cat",   boost::program_options::value<std::string>(&m_event_cat), "event category for organization of event files, typically used instead of detector for test geometries such as prism and lens" );
+
+   m_desc.add_options()
+       ("pfx",   boost::program_options::value<std::string>(&m_event_pfx), "event prefix for organization of event files, typically source or the name of the creating executable or the testname" );
+
+
 
 
    m_desc.add_options()
@@ -1221,30 +1235,36 @@ const std::string& OpticksCfg<Listener>::getConfigPath()
     return m_configpath ;
 }
 
-template <class Listener>
-const std::string& OpticksCfg<Listener>::getEventTag()
-{
-    if(m_event_tag.empty()) m_event_tag = "1" ;
-    return m_event_tag ;
-}
-
-
-template <class Listener>
-const std::string& OpticksCfg<Listener>::getIntegratedEventTag()
-{
-    if(m_integrated_event_tag.empty()) m_integrated_event_tag = "100" ;
-    return m_integrated_event_tag ;
-}
-
 
 
 
 template <class Listener>
-const std::string& OpticksCfg<Listener>::getEventCat()
+const char* OpticksCfg<Listener>::getEventTag() const 
 {
-    if(m_event_cat.empty()) m_event_cat = "" ;
-    return m_event_cat ;
+    return m_event_tag.empty() ? NULL : m_event_tag.c_str() ;
 }
+template <class Listener>
+const char* OpticksCfg<Listener>::getEventCat() const 
+{
+    return m_event_cat.empty() ? NULL : m_event_cat.c_str() ;
+}
+template <class Listener>
+const char* OpticksCfg<Listener>::getEventPfx() const 
+{
+    return m_event_pfx.empty() ? NULL : m_event_pfx.c_str() ;
+}
+
+
+// no longer used ?
+template <class Listener>
+const char* OpticksCfg<Listener>::getIntegratedEventTag() const 
+{
+    return m_integrated_event_tag.empty() ? NULL :  m_integrated_event_tag.c_str() ;
+}
+
+
+
+
 
 
 template <class Listener>

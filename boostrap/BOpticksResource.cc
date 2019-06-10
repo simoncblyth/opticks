@@ -74,8 +74,9 @@ const int BOpticksResource::DEFAULT_FRAME_JUNO = 62593 ;
 
 const plog::Severity BOpticksResource::LEVEL = debug ; 
 
-BOpticksResource::BOpticksResource()
+BOpticksResource::BOpticksResource(bool testgeo)
     :
+    m_testgeo(testgeo), 
     m_log(new SLog("BOpticksResource::BOpticksResource","",debug)),
     m_setup(false),
     m_key(BOpticksKey::GetKey()),   // will be NULL unless BOpticksKey::SetKey has been called 
@@ -103,8 +104,9 @@ BOpticksResource::BOpticksResource()
     m_idname(NULL),
     m_idpath(NULL),
     m_idpath_tmp(NULL),
-    m_srcevtbase(NULL),
+    //m_srcevtbase(NULL),
     m_evtbase(NULL),
+    m_evtpfx(NULL),
     m_debugging_idpath(NULL),
     m_debugging_idfold(NULL),
     m_daepath(NULL),
@@ -502,8 +504,6 @@ void BOpticksResource::setSrcDigest(const char* srcdigest)
 }
 
 
-
-
 void BOpticksResource::setupViaID(const char* idpath)
 {
     assert( !m_setup );
@@ -618,11 +618,9 @@ void BOpticksResource::setupViaKey()
     m_directphotonspath = makeIdPathPath("directphotons.npy");  
     m_res->addPath("directphotonspath", m_directphotonspath ); 
 
-    m_srcevtbase = makeIdPathPath("source"); 
-    m_res->addDir( "srcevtbase", m_srcevtbase ); 
-
     const char* exename = SProc::ExecutableName() ;
     bool exename_allowed = SStr::EndsWith(exename, "Test") || SStr::EndsWith(exename, "Minimal") ;  
+
     if(!exename_allowed)
     {
         LOG(fatal) << "exename " << exename
@@ -633,15 +631,36 @@ void BOpticksResource::setupViaKey()
     }   
     assert( exename_allowed ); 
 
-    //const char* user = SSys::username(); 
-    //m_evtbase = isKeySource() ? strdup(m_srcevtbase) : makeIdPathPath("tmp", user, exename ) ;  
+    // see notes/issues/opticks-event-paths.rst 
+    // matching python approach to event path addressing 
+    // aiming to eliminate srcevtbase and make evtbase mostly constant
+    // and equal to idpath normally and OPTICKS_EVENT_BASE eg /tmp for test running
+    //
+    // KeySource means name of current executable is same as the one that created the geocache
+    m_evtpfx = isKeySource() ? "source" : exename ; 
+    m_res->addName("evtpfx", m_evtpfx ); 
 
+     // what to do in legacy ?
+
+    if(!m_testgeo)
+    {
+        m_evtbase = m_idpath ;  
+        m_res->addDir( "evtbase", m_evtbase ); 
+    }
+
+
+/*
+    m_srcevtbase = makeIdPathPath("source"); 
+    m_res->addDir( "srcevtbase", m_srcevtbase ); 
+
+    // KeySource means name of current executable is same as the one that created the geocache
     m_evtbase = isKeySource() ? strdup(m_srcevtbase) : makeIdPathPath(exename ) ;  
-    ///  should this always be KeySource ???
-    ///      NO : KeySource means that the current executable is same as the exename 
-    ///           enshrined into the geocache : ie the geocache creator  
-
     m_res->addDir( "evtbase", m_evtbase ); 
+
+*/
+
+
+
 
 /**
    
@@ -788,8 +807,7 @@ const char* BOpticksResource::getIdMapPath() const { return m_idmappath ; }
 
 //const char* BOpticksResource::getSrcEventBase() const { return m_srcevtbase ; } 
 const char* BOpticksResource::getEventBase() const { return m_evtbase ; } 
-
-
+const char* BOpticksResource::getEventPfx() const {  return m_evtpfx ; } 
 
 void BOpticksResource::setEventBase(const char* rela, const char* relb)
 {
@@ -797,6 +815,12 @@ void BOpticksResource::setEventBase(const char* rela, const char* relb)
     m_evtbase = strdup(abs.c_str()); 
     m_res->setDir( "evtbase", m_evtbase ); 
 }
+void BOpticksResource::setEventPfx(const char* pfx)
+{
+    m_evtpfx = strdup(pfx); 
+    m_res->setName( "evtpfx", m_evtpfx ); 
+}
+
 
 
 
@@ -813,7 +837,7 @@ BOpticksKey*  BOpticksResource::getKey() const
     return m_key ; 
 }
 
-bool BOpticksResource::isKeySource() const 
+bool BOpticksResource::isKeySource() const   // name of current executable matches that of the creator of the geocache
 {
     return m_key ? m_key->isKeySource() : false ; 
 }

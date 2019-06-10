@@ -11,28 +11,28 @@
 #include <glm/fwd.hpp>
 
 
-#ifdef OLD_PARAMETERS
-class X_BParameters ; 
-#else
 class NMeta ; 
-#endif
-
 class NLookup ; 
 class NPYSpec ; 
 #include "NPY_API_EXPORT.hh"
+
+/**
+NPYBase
+==========
+
+Load/Make return NPYBase for generic handling, but 
+they use type specialized NPY<T> buffers internally.
+dynamic_cast<NPY<T>*>(buf) them when needed.
+
+**/
 
 class NPY_API NPYBase {
    public:
        typedef enum { FLOAT, SHORT, DOUBLE, INT, UINT, CHAR, UCHAR, ULONGLONG} Type_t ;
    public:
-       // Load/Make return NPYBase for generic handling, but 
-       // they use type specialized NPY<T> buffers internally.
-       // dynamic_cast<NPY<T>*>(buf) them when needed.
-       //
        static const char* ArrayContentVersion ; 
        static NPYBase* Load( const char* path, Type_t type );
        static NPYBase* Make( unsigned ni, const NPYSpec* itemspec, bool zero );
-
    private:
        static bool NPDump ; 
    public:
@@ -53,11 +53,6 @@ class NPY_API NPYBase {
 
        static bool GLOBAL_VERBOSE ; 
        static int checkNumItems(NPYBase* data);
-   public:
-       // from BOpticksEvent
-       // static std::string path(const char* dir, const char* name);
-       // static std::string path(const char* dir, const char* reldir, const char* name);
-       // static std::string path(const char* det, const char* source, const char* tag, const char* tfmt);
    public:
         NPYBase(const std::vector<int>& shape, unsigned char sizeoftype, Type_t type, std::string& metadata, bool has_data);
         virtual ~NPYBase();
@@ -100,16 +95,11 @@ class NPY_API NPYBase {
        unsigned int getValueIndex(unsigned i, unsigned j, unsigned k, unsigned l=0, unsigned m=0) const ;
        unsigned int getNumValues(unsigned int from_dim=0) const ;
 
-#ifdef OLD_PARAMETERS
-       X_BParameters*  getParameters() const ;
-#else
        NMeta*        getParameters() const ;
-#endif
 
        template <typename T> void setParameter(const char* key, T value);
        template <typename T> T getParameter(const char* key, const char* fallback) const ;
 
-       // TODO: switch over to NMeta from X_BParameters
        void setMeta(NMeta* meta); 
        template <typename T> void setMeta(const char* key, T value);
        template <typename T> T getMeta(const char* key, const char* fallback) const ;
@@ -193,8 +183,9 @@ class NPY_API NPYBase {
 
        virtual void save(const char* path) = 0;
        virtual void save(const char* dir, const char* name) = 0;
-       //virtual void save(const char* typ, const char* tag, const char* det) = 0;
-       virtual void save(const char* tfmt, const char* targ, const char* tag, const char* det ) = 0;
+   public:
+       // from BOpticksEvent
+       virtual void save(const char* pfx, const char* tfmt, const char* targ, const char* tag, const char* det ) = 0;
  
     public:
        void Summary(const char* msg="NPYBase::Summary") const ;

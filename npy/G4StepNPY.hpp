@@ -35,8 +35,11 @@ class NPY_API G4StepNPY {
        NPY<float>* getNPY();
    public:  
        void relabel(int cerenkov_label, int scintillation_label);
-       void checklabel(int xlabel, int ylabel=-1);
        void checkCounts(std::vector<int>& counts, const char* msg="G4StepNPY::checkCounts");
+   public:  
+       void addAllowedGencodes(int gencode1=-1,int gencode2=-1, int gencode3=-1, int gencode4=-1 ); 
+       bool isAllowedGencode(unsigned gencode) const ;
+       void checkGencodes();
    public:  
        unsigned getNumSteps();
        unsigned getNumPhotons(unsigned step);
@@ -71,6 +74,7 @@ class NPY_API G4StepNPY {
         std::map<int, int> m_lookup_ok ; 
 
         unsigned m_apply_lookup_count ; 
+        std::vector<unsigned>  m_allowed_gencodes ;  
 
  
 };
