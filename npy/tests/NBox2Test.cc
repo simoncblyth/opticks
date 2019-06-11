@@ -5,6 +5,7 @@
 #include <cfloat>
 
 #include "NBox.hpp"
+#include "NGLMExt.hpp"
 #include "NBBox.hpp"
 
 #include "OPTICKS_LOG.hh"
@@ -127,16 +128,34 @@ void test_box3()   // always symmetric
 }
 
 
+void test_box_transform()
+{
+    float sz = 10.f ; 
+    nbox* a = make_box(0.f, 0.f, 0.f, sz ); 
+    a->pdump("make_box(0,0,0, 10)");
+ 
+    assert(  a->transform == NULL ); 
+    a->transform = nmat4triple::make_translate( 0.f, 0.f, -5.f ); 
+    a->update_gtransforms(); 
+
+    nbbox bb = a->bbox();  // <-- global frame bbox, even for single primitive 
+
+    LOG(info) << " bb " << bb.description() ; 
+}
+
+
 int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv);
 
     //test_adjustToFit();
     //test_adjustToFit_box();
-    test_adjustToFit_box3();
+    //test_adjustToFit_box3();
 
     //test_box();
     //test_box3();
+
+    test_box_transform();
 
     return 0 ; 
 }

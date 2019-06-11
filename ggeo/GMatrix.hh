@@ -19,7 +19,7 @@ class GGEO_API GMatrix : public GBuffer
 
        GMatrix();
        GMatrix(const GMatrix& m);
-       GMatrix(T* buf);
+       GMatrix(const T* buf);
        GMatrix(
           T _a1, T _a2, T _a3, T _a4,
           T _b1, T _b2, T _b3, T _b4,

@@ -30,12 +30,18 @@ dbgmesh
 **/
 
 #include <cassert>
+#include <iostream>
+#include <iomanip>
 
 #include "Opticks.hh"
 #include "NCSG.hpp"
 #include "GMesh.hh"
 #include "GMeshLib.hh"
 #include "GMesh.hh"
+#include "NBBox.hpp"
+#include "NQuad.hpp"
+#include "NNode.hpp"
+#include "NGLMExt.hpp"
 
 #include "OPTICKS_LOG.hh"
 
@@ -48,22 +54,37 @@ int main(int argc, char** argv)
 
     GMeshLib* meshlib = GMeshLib::Load(&ok);
 
-
     unsigned num_mesh = meshlib->getNumMeshes(); 
+    LOG(info) << " num_mesh " << num_mesh ; 
+
     for(unsigned i=0 ; i < num_mesh ; i++)
     {
         const GMesh* mesh = meshlib->getMesh(i); 
         const char* name = mesh->getName() ; 
-        LOG(info) 
-            << " i " << std::setw(3) << i 
-            << " mesh " << mesh 
-            << " name " << ( name ? name : "NULL" )
-            ; 
+        const NCSG* solid = mesh->getCSG(); 
+        nbbox bba = solid->bbox_analytic(); // global frame bbox
+        nvec4 ce = bba.center_extent() ; 
 
+        nnode* root = solid->getRoot(); 
+
+           
+
+
+        if( root->transform && !root->transform->is_identity() ) LOG(info) << " tr " << *root->transform ; 
+
+
+        std::cout  
+            << std::setw(2) << i 
+            << std::setw(45) << ( name ? name : "NULL" )
+            << " bba " << bba.description()
+            << " ce " << std::setw(25) << ce.desc()
+            << " " << std::setw(2) << i 
+            << std::endl    
+            ; 
     }
 
 
-
+/*
     const char* dbgmesh = ok.getDbgMesh();
     if(dbgmesh)
     {
@@ -81,6 +102,7 @@ int main(int argc, char** argv)
         LOG(info) << "no dbgmesh" ; 
         meshlib->dump();
     }
+*/
 
     return 0 ; 
 }

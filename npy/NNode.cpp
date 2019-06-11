@@ -205,6 +205,7 @@ void nnode::Init( nnode* n , OpticksCSG_t type, nnode* left, nnode* right )
     n->subdepth = 0 ; 
     n->boundary = NULL ;  
 
+    n->placement = NULL ; 
     n->transform = NULL ; 
     n->gtransform = NULL ; 
     n->gtransform_idx = 0 ; 
@@ -252,17 +253,37 @@ const nmat4triple* nnode::global_transform()
     return global_transform(this);
 }
 
+/**
+nnode::global_transform
+------------------------
+
+Is invoked by nnode::update_gtransforms_r from each primitive, 
+whence parent links are followed up the tree until reaching root
+which has no parent. Along the way transforms are collected
+into the tvq vector in reverse hierarchical order from 
+leaf back up to root
+
+If a placement transform is present on the root node, that 
+is also collected. 
+
+
+* NB these are the CSG nodes, not structure nodes
+
+**/
+
 const nmat4triple* nnode::global_transform(nnode* n)
 {
     std::vector<const nmat4triple*> tvq ; 
+    nnode* r = NULL ;  
     while(n)
     {
         if(n->transform) tvq.push_back(n->transform);
+        r = n ;            // keep hold of the last non-NULL 
         n = n->parent ; 
     }
 
-    // tvq transforms are in reverse hierarchical order from leaf back up to root
-    // these are the CSG nodes : not the structure nodes
+    if(r->placement) tvq.push_back(r->placement); 
+
 
     bool reverse = true ; 
     const nmat4triple* gtransform= tvq.size() == 0 ? NULL : nmat4triple::product(tvq, reverse) ; 
@@ -822,7 +843,7 @@ void nnode::get_primitive_bbox(nbbox& bb) const
 
     if(node->is_unbounded())
     {
-        LOG(warning) << "nnode::get_primitive_bbox not providing bbox for unbounded primitive " ; 
+        LOG(error) << "nnode::get_primitive_bbox not providing bbox for unbounded primitive " ; 
     }
     else if(node->type == CSG_SPHERE)
     { 

@@ -196,9 +196,6 @@ unsigned  nbox::par_nvertices(unsigned nu, unsigned nv) const
 
 
 
-
-
-
 glm::vec3 nbox::par_pos_model( const nuv& uv) const 
 {
     unsigned s = uv.s() ; 

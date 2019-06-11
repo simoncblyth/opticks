@@ -153,7 +153,7 @@ G4VPhysicalVolume* CTestDetector::makeChildVolume(const NCSG* csg, const char* l
 
     glm::vec3 placement(0,0,0) ;  
 
-    if(csg->is_box()) boxCenteringFix( placement, const_cast<nnode*>(csg->getRoot()) ); 
+    //if(csg->is_box()) boxCenteringFix( placement, const_cast<nnode*>(csg->getRoot()) ); 
 
     G4VSolid* solid = CMaker::MakeSolid( csg ); 
 

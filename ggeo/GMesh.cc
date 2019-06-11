@@ -13,8 +13,8 @@
 #include "BStr.hh"
 
 
-// huh why both ?
 #include "NGLM.hpp"
+#include "NGLMExt.hpp"
 #include "GLMFormat.hpp"
 #include "NBBox.hpp"
 #include "NPY.hpp"
@@ -88,6 +88,14 @@ bool GMesh::isEmpty() const
 {
     return m_num_vertices == 0 && m_num_faces == 0 ; 
 }
+
+
+
+
+
+
+
+
 
 
 GMesh::GMesh(unsigned int index, 
@@ -188,14 +196,9 @@ void GMesh::stealIdentity(GMesh* other)
     setInstancedIdentityBuffer( other->getInstancedIdentityBuffer() );
     setAnalyticInstancedIdentityBuffer( other->getAnalyticInstancedIdentityBuffer() );
 
-
     // hmm passing everything over is too complicated, maybe better to do LODification inplace
     //     to avoid this        
 }
-
-
-
-
 
 
 void GMesh::setCSG(const NCSG* csg)
@@ -211,7 +214,6 @@ const nnode* GMesh::getRoot() const
     return m_csg ? m_csg->getRoot() : NULL  ; 
 }
 
-
 void GMesh::setCSGBoundary(const char* spec)
 {
     assert( m_csg ); 
@@ -219,9 +221,6 @@ void GMesh::setCSGBoundary(const char* spec)
     NCSG* csg = const_cast<NCSG*>(m_csg); 
     csg->setBoundary( spec );  
 }
-
-
-
 
 void GMesh::setAlt(const GMesh* alt)
 {
@@ -659,8 +658,6 @@ GParts* GMesh::getParts()
 void GMesh::setParts(GParts* pts) 
 {
     m_parts = pts ; 
-   // originally under protest as only used by the old dirty analytic PMT handling 
-   // but now that are persisting GParts, this is needed from GGeoLib 
 }
 
 
@@ -680,11 +677,9 @@ void GMesh::init(gfloat3* vertices, guint3* faces, gfloat3* normals, gfloat2* te
 
 void GMesh::allocate()
 {
-
     unsigned int numVertices = getNumVertices();
     unsigned int numFaces = getNumFaces();
     unsigned int numVolumes = getNumVolumes();
-
 
     bool empty = numVertices == 0 && numFaces == 0 ; 
 
@@ -712,14 +707,6 @@ void GMesh::allocate()
 
         guint3* faces = new guint3[numFaces] ;
         setFacesQty(faces);
-
-/*
-        setFaces(        new guint3[numFaces]);
-        setNodes(        new unsigned[numFaces]);
-        setBoundaries(   new unsigned[numFaces]);
-        setSensors(      new unsigned[numFaces]);
-*/
-
     }
 
 
@@ -806,9 +793,46 @@ void GMesh::setBuffer(const char* name, GBuffer* buffer)
     if(strcmp(name, meshes_) == 0)          setMeshesBuffer(buffer) ; 
     if(strcmp(name, nodeinfo_) == 0)        setNodeInfoBuffer(buffer) ; 
     if(strcmp(name, identity_) == 0)        setIdentityBuffer(buffer) ; 
-
 }
 
+
+
+void GMesh::applyCentering()
+{
+    glm::vec4 ce = getCE(0);  
+    LOG(info) << " ce " << gformat(ce) ; 
+    applyTranslation(-ce.x, -ce.y, -ce.z ); 
+}
+
+void GMesh::applyTranslation(float x, float y, float z )
+{
+    glm::mat4 txf(nglmext::make_translate(x, y, z)); 
+    GMatrixF* transform = new GMatrix<float>(glm::value_ptr(txf));
+    applyTransform(*transform);  
+}
+
+void GMesh::applyTransform( GMatrixF& transform )
+{
+    gfloat3* vertices = getTransformedVertices(transform); 
+    gfloat3* normals  = getTransformedNormals(transform); 
+
+    unsigned num_vertices = getNumVertices() ; 
+
+    updateVertices(vertices, num_vertices ); 
+    updateNormals(normals, num_vertices ); 
+    updateBounds(); 
+}
+
+
+void GMesh::updateVertices(gfloat3* vertices, unsigned num_vertices)
+{
+    assert( num_vertices == m_num_vertices ); 
+ 
+    delete [] m_vertices ; 
+    delete m_vertices_buffer ; 
+
+    setVertices( vertices );   
+}
 void GMesh::setVertices(gfloat3* vertices)
 {
     m_vertices = vertices ;
@@ -827,6 +851,16 @@ void GMesh::setVerticesBuffer(GBuffer* buffer)
 }
 
 
+
+void GMesh::updateNormals(gfloat3* normals, unsigned num_normals)
+{
+    assert( num_normals == m_num_vertices ); 
+ 
+    delete [] m_normals ; 
+    delete m_normals_buffer ; 
+
+    setNormals( normals );   
+}
 void GMesh::setNormals(gfloat3* normals)
 {
     m_normals = normals ;
@@ -1433,8 +1467,6 @@ gbbox* GMesh::findBBox(gfloat3* vertices, unsigned int num_vertices)
 {
     if(num_vertices == 0) return NULL ;
 
-
-
     std::vector<glm::vec3> points ; 
 
     for( unsigned int i = 0; i < num_vertices ;++i )
@@ -1447,22 +1479,6 @@ gbbox* GMesh::findBBox(gfloat3* vertices, unsigned int num_vertices)
     unsigned verbosity = 0 ;  
     nbbox nbb = nbbox::from_points(points, verbosity);
     gbbox* bb = new gbbox(nbb);
-
-/*
-    gbbox* bb = new gbbox (gfloat3(FLT_MAX), gfloat3(-FLT_MAX)) ; 
-    for( unsigned int i = 0; i < num_vertices ;++i )
-    {
-        gfloat3& v = vertices[i];
-
-        bb->min.x = std::min( bb->min.x, v.x);
-        bb->min.y = std::min( bb->min.y, v.y);
-        bb->min.z = std::min( bb->min.z, v.z);
-
-        bb->max.x = std::max( bb->max.x, v.x);
-        bb->max.y = std::max( bb->max.y, v.y);
-        bb->max.z = std::max( bb->max.z, v.z);
-    }
-*/
 
     return bb ; 
 } 
@@ -1530,68 +1546,44 @@ arising from double use of slot zero for:
 1. absolute volume 0 (world volume, an often over large container)  
 2. overall selected volumes 
 
+
+model coordinates definition
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* all vertices are contained within model coordinates box  (-1:1,-1:1,-1:1) 
+* model coordinates origin (0,0,0) corresponds to world coordinates  m_center
+* extent is half the maximal dimension 
+
+world -> model
+   
+* translate by -m_center 
+* scale by 1/m_extent
+
+model -> world
+
+* scale by m_extent
+* translate by m_center
+
+
+TO FIX 
+~~~~~~~~~~~~
+
+This avoid stomping on position of array of center_extent in case of MergedMesh, 
+but it still overwrites volume 0 
+
+
 **/
 
 void GMesh::updateBounds()
 {
-    /*
-    if(m_num_volumes > 0)
-    LOG(error) << "GMesh::updateBounds from bbox of vertices  " 
-               << " num_vertices " << m_num_vertices
-               << " num_volumes " << m_num_volumes
-               ; 
-    */
-
     gbbox*  bb = findBBox(m_vertices, m_num_vertices);
-
-
-/*
-   // just means have instanciated the mesh and not added
-   // any verts yet 
-
-    if(bb == NULL)
-    {
-        LOG(warning) << "GMesh::updateBounds"
-                     << " mesh with NO BBOX "
-                     << " index " << m_index 
-                     << " g_instance_count " << g_instance_count 
-                     << " num_vertices " << m_num_vertices
-                     ; 
-    }
-    else
-    {
-        LOG(info) << "GMesh::updateBounds"
-                     << " mesh with bbox "
-                     << " index " << m_index 
-                     << " g_instance_count " << g_instance_count 
-                     << " num_vertices " << m_num_vertices
-                     ; 
- 
-    }
-*/
-
 
     gfloat4 ce(0,0,0,1.f) ;
     if(bb) ce = bb->center_extent() ;
 
+    LOG(debug) << " ce " <<  ce.desc(); 
+
     m_model_to_world = new GMatrix<float>( ce.x, ce.y, ce.z, ce.w );
-
-    //
-    // extent is half the maximal dimension 
-    // 
-    // model coordinates definition
-    //      all vertices are contained within model coordinates box  (-1:1,-1:1,-1:1) 
-    //      model coordinates origin (0,0,0) corresponds to world coordinates  m_center
-    //  
-    // world -> model
-    //        * translate by -m_center 
-    //        * scale by 1/m_extent
-    //
-    //  model -> world
-    //        * scale by m_extent
-    //        * translate by m_center
-    //
-
 
     if(bb)
     {
@@ -1606,25 +1598,21 @@ void GMesh::updateBounds()
         }
     }
 
-
-
     if(m_center_extent == NULL)
     {
         m_center_extent = new gfloat4( ce.x, ce.y, ce.z, ce.w );
     }
     else
     {
-        // avoid stomping on position of array of center_extent in case of MergedMesh, 
-        // instead just overwrite volume 0 
-
-        LOG(debug) << "GMesh::updateBounds (to bbox of selected vertices) "
-                   << " overwrite volume 0 ce "
-                   <<  m_center_extent[0].description()
-                   << " with " 
-                   << ce.description()
-                   << " num_vertices " << m_num_vertices
-                   << " num_volumes " << m_num_volumes
-                   ;
+        LOG(debug)
+            << "(to bbox of selected vertices) "
+            << " overwrite volume 0 ce "
+            <<  m_center_extent[0].description()
+            << " with " 
+            << ce.description()
+            << " num_vertices " << m_num_vertices
+            << " num_volumes " << m_num_volumes
+            ;
 
         m_center_extent[0].x = ce.x ;
         m_center_extent[0].y = ce.y ;
@@ -1654,6 +1642,10 @@ void GMesh::updateBounds(gfloat3& low, gfloat3& high, GMatrixF& transform)
         high.z = std::max( high.z, mhigh.z);
    }
 }
+
+
+
+
 
 
 

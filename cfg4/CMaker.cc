@@ -396,7 +396,7 @@ G4VSolid* CMaker::ConvertPrimitive(const nnode* node) // static
                     << " center " << gformat(center)
                     ; 
             } 
-            assert( is_centered );  
+            //assert( is_centered );  
         }
 
 

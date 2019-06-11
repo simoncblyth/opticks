@@ -88,7 +88,7 @@ GMatrix<T>::GMatrix(const GMatrix& m) :
 
 
 template<typename T>
-GMatrix<T>::GMatrix(T* buf) :
+GMatrix<T>::GMatrix(const T* buf) :
       GBuffer( sizeof(T)*16, NULL, sizeof(T), 1 , "GMatrix4"),
 
       a1(buf[0]),

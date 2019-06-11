@@ -401,19 +401,6 @@ const char* BOpticksResource::getTestConfig() const
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
 const char* BOpticksResource::MakeSrcPath(const char* srcpath, const char* ext) 
 {
     std::string path = BFile::ChangeExt(srcpath, ext ); 

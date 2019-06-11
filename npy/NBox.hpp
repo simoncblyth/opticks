@@ -82,18 +82,10 @@ struct NPY_API nbox : nnode
 
     bool is_equal( const nbox& other ) const ; 
 
-
     bool is_box   ;   // cannot const these without ctor
     bool is_box3  ; 
 
-   
-
-
-
 };
-
-
-
 
 
 // only methods that are specific to boxes 

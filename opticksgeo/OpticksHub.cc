@@ -77,7 +77,7 @@ const char* OpticksHub::getIdentifier()
 }
 GMergedMesh* OpticksHub::getMergedMesh( unsigned index )
 {
-    GGeoBase* ggb = getGGeoBase();  // 3-way
+    GGeoBase* ggb = getGGeoBase();  // 3-way   m_geotest/m_ggeo/m_gscene
     return ggb->getMergedMesh(index);
 }
 
@@ -599,11 +599,15 @@ glm::mat4 OpticksHub::getTransform(int index)
 
 void OpticksHub::registerGeometry()
 {
-    LOG(LEVEL) << "[" ; 
+    LOG(fatal) << "[" ; 
+
+    const char* ggb = getIdentifier(); 
+    LOG(fatal) << " ggb " << ggb ;  
     GMergedMesh* mm0 = getMergedMesh(0);
     assert(mm0);
     m_aim->registerGeometry( mm0 );
-    LOG(LEVEL) << "]" ; 
+
+    LOG(fatal) << "]" ; 
 }
 
 void OpticksHub::setupCompositionTargetting()
@@ -859,7 +863,7 @@ GGeoBase* OpticksHub::getGGeoBasePrimary() const
 
     return ggb ; 
 }
-GGeoBase* OpticksHub::getGGeoBase() const 
+GGeoBase* OpticksHub::getGGeoBase() const   //  3-way : m_geotest/m_gscene/m_ggeo
 {
     return m_geotest ? dynamic_cast<GGeoBase*>(m_geotest) : getGGeoBasePrimary() ; 
 }

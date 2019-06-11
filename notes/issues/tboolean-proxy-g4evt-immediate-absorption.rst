@@ -678,6 +678,174 @@ BUT Geant4 takes exception to a non-centered universe::
 
 
 
+Hmm : maybe just center the standard volume that comes in via the proxy to avoid this ?
+--------------------------------------------------------------------------------------------
+
+::
+
+    [blyth@localhost tests]$ GMeshLibTest --envkey 
+    2019-06-11 16:22:23.005 INFO  [402242] [Opticks::init@308] INTEROP_MODE
+    2019-06-11 16:22:23.006 FATAL [402242] [Opticks::configure@1719]  --interop mode with no cvd specified, adopting OPTICKS_DEFAULT_INTEROP_CVD hinted by envvar [1]
+    2019-06-11 16:22:23.006 INFO  [402242] [Opticks::configure@1726]  setting CUDA_VISIBLE_DEVICES envvar internally to 1
+    2019-06-11 16:22:23.012 INFO  [402242] [BOpticksResource::setupViaKey@544] 
+                 BOpticksKey  :  
+          spec (OPTICKS_KEY)  : OKX4Test.X4PhysicalVolume.lWorld0x4bc2710_PV.f6cc352e44243f8fa536ab483ad390ce
+                     exename  : OKX4Test
+             current_exename  : GMeshLibTest
+                       class  : X4PhysicalVolume
+                     volname  : lWorld0x4bc2710_PV
+                      digest  : f6cc352e44243f8fa536ab483ad390ce
+                      idname  : OKX4Test_lWorld0x4bc2710_PV_g4live
+                      idfile  : g4ok.gltf
+                      idgdml  : g4ok.gdml
+                      layout  : 1
+
+    2019-06-11 16:22:23.012 ERROR [402242] [OpticksResource::initRunResultsDir@260] /home/blyth/local/opticks/results/GMeshLibTest/R0_cvd_1/20190611_162223
+    2019-06-11 16:22:23.077 ERROR [402242] [NNodeNudger::init@61] NNodeNudger::brief root.treeidx  22 num_prim  1 num_coincidence  0 num_nudge  0 ##LISTED
+    2019-06-11 16:22:23.079 ERROR [402242] [NNodeNudger::init@61] NNodeNudger::brief root.treeidx  24 num_prim  1 num_coincidence  0 num_nudge  0 ##LISTED
+    2019-06-11 16:22:23.106 ERROR [402242] [NNodeNudger::init@61] NNodeNudger::brief root.treeidx  37 num_prim  1 num_coincidence  0 num_nudge  0 ##LISTED
+    2019-06-11 16:22:23.111 INFO  [402242] [GMeshLib::loadMeshes@342]  loaded  meshes 40 solids 40
+    2019-06-11 16:22:23.111 INFO  [402242] [main@56]  num_mesh 40
+     0                       Upper_LS_tube0x5b2e9f0 bba  mi (   -400.000  -400.000 -1750.000) mx (    400.000   400.000  1750.000) si (    800.000   800.000  3500.000) ce  (   0.00    0.00    0.00 1750.00)   0
+     1                    Upper_Steel_tube0x5b2eb10 bba  mi (   -407.000  -407.000 -1750.000) mx (    407.000   407.000  1750.000) si (    814.000   814.000  3500.000) ce  (   0.00    0.00    0.00 1750.00)   1
+     2                    Upper_Tyvek_tube0x5b2ec30 bba  mi (   -402.000  -402.000 -1750.000) mx (    402.000   402.000  1750.000) si (    804.000   804.000  3500.000) ce  (   0.00    0.00    0.00 1750.00)   2
+     3                       Upper_Chimney0x5b2e8e0 bba  mi (   -412.000  -412.000 -1750.000) mx (    412.000   412.000  1750.000) si (    824.000   824.000  3500.000) ce  (   0.00    0.00    0.00 1750.00)   3
+     4                                sBar0x5b34ab0 bba  mi (  -3430.000   -13.000    -5.000) mx (   3430.000    13.000     5.000) si (   6860.000    26.000    10.000) ce  (   0.00    0.00    0.00 3430.00)   4
+     5                                sBar0x5b34920 bba  mi (  -3430.000   -13.150    -5.150) mx (   3430.000    13.150     5.150) si (   6860.000    26.300    10.300) ce  (   0.00    0.00    0.00 3430.00)   5
+     6                         sModuleTape0x5b34790 bba  mi (  -3430.000  -845.650    -6.050) mx (   3430.000   845.650     6.050) si (   6860.000  1691.300    12.100) ce  (   0.00    0.00    0.00 3430.00)   6
+     7                             sModule0x5b34600 bba  mi (  -3430.600  -846.250    -6.650) mx (   3430.600   846.250     6.650) si (   6861.200  1692.500    13.300) ce  (   0.00    0.00    0.00 3430.60)   7
+     8                              sPlane0x5b34470 bba  mi (  -3430.600 -3385.150    -6.650) mx (   3430.600  3385.150     6.650) si (   6861.200  6770.300    13.300) ce  (   0.00    0.00    0.00 3430.60)   8
+     9                               sWall0x5b342e0 bba  mi (  -3430.600 -3430.600   -13.800) mx (   3430.600  3430.600    13.800) si (   6861.200  6861.200    27.600) ce  (   0.00    0.00    0.00 3430.60)   9
+    10                              sAirTT0x5b34000 bba  mi ( -24000.000-24000.000 -2500.000) mx (  24000.000 24000.000  2500.000) si (  48000.000 48000.000  5000.000) ce  (   0.00    0.00    0.00 24000.00)  10
+    11                            sExpHall0x4bcd390 bba  mi ( -24000.000-24000.000 -9300.000) mx (  24000.000 24000.000  9300.000) si (  48000.000 48000.000 18600.000) ce  (   0.00    0.00    0.00 24000.00)  11
+    12                            sTopRock0x4bccfc0 bba  mi ( -27000.000-27000.000-10800.000) mx (  27000.000 27000.000 10800.000) si (  54000.000 54000.000 21600.000) ce  (   0.00    0.00    0.00 27000.00)  12
+    13                             sTarget0x4bd4340 bba  mi ( -17700.000-17700.000-17700.000) mx (  17700.000 17700.000 17820.000) si (  35400.000 35400.000 35520.000) ce  (   0.00    0.00   60.00 17760.00)  13
+    14                            sAcrylic0x4bd3cd0 bba  mi ( -17820.000-17820.000-17820.000) mx (  17820.000 17820.000 17820.000) si (  35640.000 35640.000 35640.000) ce  (   0.00    0.00    0.00 17820.00)  14
+    15                              sStrut0x4bd4b80 bba  mi (    -51.000   -51.000  -600.000) mx (     51.000    51.000   600.000) si (    102.000   102.000  1200.000) ce  (   0.00    0.00    0.00  600.00)  15
+    16                          sFasteners0x4c01080 bba  mi (   -150.000  -150.000  -190.000) mx (    150.000   150.000     5.000) si (    300.000   300.000   195.000) ce  (   0.00    0.00  -92.50  150.00)  16
+    17                               sMask0x4ca38d0 bba  mi (   -264.000  -264.000  -353.900) mx (    264.000   264.000   196.000) si (    528.000   528.000   549.900) ce  (   0.00    0.00  -78.95  274.95)  17
+    18             PMT_20inch_inner1_solid0x4cb3610 bba  mi (   -249.000  -249.000     0.000) mx (    249.000   249.000   179.000) si (    498.000   498.000   179.000) ce  (   0.00    0.00   89.50  249.00)  18
+    19             PMT_20inch_inner2_solid0x4cb3870 bba  mi (   -249.000  -249.000  -334.010) mx (    249.000   249.000     0.000) si (    498.000   498.000   334.010) ce  (   0.00    0.00 -167.01  249.00)  19
+    20               PMT_20inch_body_solid0x4c90e50 bba  mi (   -254.000  -254.000  -339.010) mx (    254.000   254.000   184.000) si (    508.000   508.000   523.010) ce  (   0.00    0.00  -77.51  261.51)  20
+    21                PMT_20inch_pmt_solid0x4c81b40 bba  mi (   -254.001  -254.001  -339.011) mx (    254.001   254.001   184.001) si (    508.002   508.002   523.012) ce  (   0.00    0.00  -77.50  261.51)  21
+    22                       sMask_virtual0x4c36e10 bba  mi (   -264.050  -264.050  -354.050) mx (    264.050   264.050   196.050) si (    528.100   528.100   550.100) ce  (   0.00    0.00  -79.00  275.05)  22
+    23   PMT_3inch_inner1_solid_ell_helper0x510ae30 bba  mi (    -38.000   -38.000     7.043) mx (     38.000    38.000    22.000) si (     76.000    76.000    14.957) ce  (   0.00    0.00   14.52   38.00)  23
+    24   PMT_3inch_inner2_solid_ell_helper0x510af10 bba  mi (    -38.000   -38.000   -15.875) mx (     38.000    38.000     7.043) si (     76.000    76.000    22.918) ce  (   0.00    0.00   -4.42   38.00)  24
+    25 PMT_3inch_body_solid_ell_ell_helper0x510ada0 bba  mi (    -40.000   -40.000   -15.875) mx (     40.000    40.000    24.000) si (     80.000    80.000    39.875) ce  (   0.00    0.00    4.06   40.00)  25
+    26                PMT_3inch_cntr_solid0x510afa0 bba  mi (    -29.999   -29.999   -75.874) mx (     29.999    29.999   -15.875) si (     59.998    59.998    59.999) ce  (   0.00    0.00  -45.87   30.00)  26
+    27                 PMT_3inch_pmt_solid0x510aae0 bba  mi (    -40.001   -40.001   -75.876) mx (     40.001    40.001    40.001) si (     80.002    80.002   115.877) ce  (   0.00    0.00  -17.94   57.94)  27
+    28                     sChimneyAcrylic0x5b310c0 bba  mi (   -520.000  -520.000  -300.000) mx (    520.000   520.000   300.000) si (   1040.000  1040.000   600.000) ce  (   0.00    0.00    0.00  520.00)  28
+    29                          sChimneyLS0x5b312e0 bba  mi (   -400.000  -400.000 -1965.000) mx (    400.000   400.000  1965.000) si (    800.000   800.000  3930.000) ce  (   0.00    0.00    0.00 1965.00)  29
+    30                       sChimneySteel0x5b314f0 bba  mi (   -405.000  -405.000 -1665.000) mx (    405.000   405.000  1665.000) si (    810.000   810.000  3330.000) ce  (   0.00    0.00    0.00 1665.00)  30
+    31                          sWaterTube0x5b30eb0 bba  mi (   -520.000  -520.000 -1965.000) mx (    520.000   520.000  1965.000) si (   1040.000  1040.000  3930.000) ce  (   0.00    0.00    0.00 1965.00)  31
+    32                        svacSurftube0x5b3bf50 bba  mi (     -4.000    -4.000    -4.000) mx (      4.000     4.000     4.000) si (      8.000     8.000     8.000) ce  (   0.00    0.00    0.00    4.00)  32
+    33                           sSurftube0x5b3ab80 bba  mi (     -5.000    -5.000    -5.000) mx (      5.000     5.000     5.000) si (     10.000    10.000    10.000) ce  (   0.00    0.00    0.00    5.00)  33
+    34                         sInnerWater0x4bd3660 bba  mi ( -20050.000-20050.000-20050.000) mx (  20050.000 20050.000 21750.000) si (  40100.000 40100.000 41800.000) ce  (   0.00    0.00  850.00 20900.00)  34
+    35                      sReflectorInCD0x4bd3040 bba  mi ( -20052.000-20052.000-20052.000) mx (  20052.000 20052.000 21750.000) si (  40104.000 40104.000 41802.000) ce  (   0.00    0.00  849.00 20901.00)  35
+    36                     sOuterWaterPool0x4bd2960 bba  mi ( -21750.000-21750.000-21750.000) mx (  21750.000 21750.000 21750.000) si (  43500.000 43500.000 43500.000) ce  (   0.00    0.00    0.00 21750.00)  36
+    37                         sPoolLining0x4bd1eb0 bba  mi ( -21753.000-21753.000-21753.000) mx (  21753.000 21753.000 21750.000) si (  43506.000 43506.000 43503.000) ce  (   0.00    0.00   -1.50 21753.00)  37
+    38                         sBottomRock0x4bcd770 bba  mi ( -24750.000-24750.000-24750.000) mx (  24750.000 24750.000 21750.000) si (  49500.000 49500.000 46500.000) ce  (   0.00    0.00 -1500.00 24750.00)  38
+    39                              sWorld0x4bc2350 bba  mi ( -60000.000-60000.000-60000.000) mx (  60000.000 60000.000 60000.000) si ( 120000.000120000.000120000.000) ce  (   0.00    0.00    0.00 60000.00)  39
 
 
+
+
+
+mergeVolume will transform vertices and applyPlacementTransform just need to set transform on the volume
+----------------------------------------------------------------------------------------------------------------
+
+* GMergedMesh::mergeVolume called by GMergedMesh::combine will transform GMesh verts and applyPlacementTransform
+  to GParts analytic according to the transform on the GVolume
+
+* so this means can setup universe appropriate for an origin centered proxied in solid 
+  and then in the combine apply the requisite transform to make it so 
+
+::
+
+     362 void GMergedMesh::mergeVolume( GVolume* volume, bool selected, unsigned verbosity )
+     363 {
+     364     GNode* node = static_cast<GNode*>(volume);
+     365     GNode* base = getCurrentBase();
+     366     unsigned ridx = volume->getRepeatIndex() ;
+     367 
+     368     GMatrixF* transform = base ? volume->getRelativeTransform(base) : volume->getTransform() ;     // base or root relative global transform
+     369 
+
+
+Need to come up with the centering transform for the proxied in volume::
+
+    836 GMergedMesh* GGeoTest::combineVolumes(GMergedMesh* mm0)
+    837 {
+    838     std::vector<GVolume*>& volumes = m_nodelib->getVolumes();
+    839 
+    840     LOG(LEVEL) << "[" ;
+    841 
+    842     GMergedMesh* tri = GMergedMesh::combine( 0, mm0, volumes, m_verbosity );
+    843 
+    844     unsigned nelem = volumes.size() ;
+    845     GTransforms* txf = GTransforms::make(nelem); // identities
+    846     GIds*        aii = GIds::make(nelem);        // placeholder (n,4) of zeros
+    847 
+
+
+* those are instance transforms, not them : the ones on the volumes
+
+
+
+
+Am I picking up the right mm0 ?
+--------------------------------------
+
+::
+
+    078 GMergedMesh* OpticksHub::getMergedMesh( unsigned index )
+     79 {
+     80     GGeoBase* ggb = getGGeoBase();  // 3-way   m_geotest/m_ggeo/m_gscene
+     81     return ggb->getMergedMesh(index);
+     82 }
+
+
+    600 void OpticksHub::registerGeometry()
+    601 {
+    602     LOG(LEVEL) << "[" ;
+    603 
+    604     const char* ggb = getIdentifier();
+    605     LOG(fatal) << " ggb " << ggb ; 
+    606     GMergedMesh* mm0 = getMergedMesh(0);
+    607 
+    608     assert(mm0);
+    609     m_aim->registerGeometry( mm0 );
+    610     LOG(LEVEL) << "]" ; 
+    611 }   
+
+
+    080 GMergedMesh*      GGeoTest::getMergedMesh(unsigned index) const { return m_geolib->getMergedMesh(index) ; }
+
+    101 GGeoTest::GGeoTest(Opticks* ok, GGeoBase* basis)
+    102     :
+    103     m_ok(ok),
+    104     m_dbggeotest(ok->isDbgGeoTest()),    // --dbggeotest
+    105     m_config_(ok->getTestConfig()),
+    106     m_config(new NGeoTestConfig(m_config_)),
+    107     m_verbosity(m_ok->isDbgGeoTest() ? 10 : m_config->getVerbosity()),
+    108     m_resource(ok->getResource()),
+    109     m_dbgbnd(m_ok->isDbgBnd()),
+    110     m_dbganalytic(m_ok->isDbgAnalytic()),
+    111     m_lodconfig(ok->getLODConfig()),
+    112     m_lod(ok->getLOD()),
+    113     m_analytic(m_config->getAnalytic()),
+    114     m_csgpath(m_config->getCSGPath()),
+    115     m_test(true),
+    116     m_basis(basis),
+    117     m_pmtlib(basis->getPmtLib()),
+    118     m_meshlib(basis->getMeshLib()),
+    119     m_mlib(new GMaterialLib(m_ok, basis->getMaterialLib())),
+    120     m_slib(new GSurfaceLib(m_ok, basis->getSurfaceLib())),
+    121     m_bndlib(new GBndLib(m_ok, m_mlib, m_slib)),
+    122     m_geolib(new GGeoLib(m_ok,m_analytic,m_bndlib)),
+    123     m_nodelib(new GNodeLib(m_ok, m_analytic, m_test, basis->getNodeLib() )),
+    124     m_maker(new GMaker(m_ok, m_bndlib, m_meshlib)),
+    125     m_csglist(m_csgpath ? NCSGList::Load(m_csgpath, m_verbosity ) : NULL),
+    126     m_err(0)
+    127 {
 

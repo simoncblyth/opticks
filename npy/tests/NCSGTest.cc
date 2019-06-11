@@ -7,8 +7,7 @@
 #include "NNode.hpp"
 #include "NNodeSample.hpp"
 
-#include "PLOG.hh"
-#include "NPY_LOG.hh"
+#include "OPTICKS_LOG.hh"
 
 void test_Adopt_Meta()
 {
@@ -118,13 +117,11 @@ void test_setEmitconfig()
 
 int main(int argc, char** argv)
 {
-    PLOG_(argc, argv);
-    NPY_LOG__ ;  
+    OPTICKS_LOG(argc, argv);
 
     //test_DeserializeTrees(argc, argv);
     //test_Adopt();
     //test_Adopt_Meta();
-
     test_setEmitconfig();
 
     return 0 ; 

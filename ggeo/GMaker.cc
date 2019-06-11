@@ -159,16 +159,19 @@ GMesh* GMaker::makeMeshFromCSG( NCSG* csg ) // cannot be const due to lazy NCSG:
 }
 
 
-
 GVolume* GMaker::makeFromMesh( const GMesh* mesh ) const 
+{
+    glm::mat4 txf(1.0f); 
+    return makeFromMesh( mesh, txf ); 
+}
+
+GVolume* GMaker::makeFromMesh( const GMesh* mesh, const glm::mat4& txf   ) const 
 {
     const NCSG* csg = mesh->getCSG();   
 
     unsigned index = mesh->getIndex(); 
 
     const char* spec = csg->getBoundary();  
-
-    glm::mat4 txf(1.0f); 
 
     GMatrixF* transform = new GMatrix<float>(glm::value_ptr(txf));
 

@@ -45,6 +45,7 @@ class GGEO_API GMaker {
    public:
        GMesh*   makeMeshFromCSG( NCSG* csg ) ; 
        GVolume* makeFromMesh( const GMesh* mesh ) const ; 
+       GVolume* makeFromMesh( const GMesh* mesh, const glm::mat4& txf   ) const ; 
    private:
        void init();    
 

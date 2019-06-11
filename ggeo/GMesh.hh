@@ -446,6 +446,9 @@ class GGEO_API GMesh : public GDrawable {
       void setHigh(gfloat3* high);
 
   private:
+      void updateVertices(gfloat3* vertices, unsigned num_vertices);
+      void updateNormals( gfloat3* normals,  unsigned num_normals);
+  private:
       void setVertices(gfloat3* vertices);
       void setNormals(gfloat3* normals);
       void setColors(gfloat3* colors);
@@ -469,6 +472,9 @@ class GGEO_API GMesh : public GDrawable {
       void setColor(float r, float g, float b);
  
   public:
+       void applyCentering(); 
+       void applyTranslation(float x, float y, float z ); 
+       void applyTransform( GMatrixF& transform ) ; 
        gfloat3* getTransformedVertices(GMatrixF& transform ) const ;
        gfloat3* getTransformedNormals(GMatrixF& transform ) const ;
 

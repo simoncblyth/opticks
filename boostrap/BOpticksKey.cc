@@ -52,6 +52,13 @@ bool BOpticksKey::SetKey(const char* spec)
     return true ; 
 }
 
+void BOpticksKey::Desc()
+{
+    if(fKey) LOG(info) << std::endl << fKey->desc() ; 
+}
+
+
+
 
 bool BOpticksKey::isKeySource() const  // current executable is geocache creator 
 {

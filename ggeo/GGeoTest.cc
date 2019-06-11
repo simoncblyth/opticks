@@ -10,6 +10,9 @@
 #include "GLMFormat.hpp"
 #include "NGLMExt.hpp"
 #include "NLODConfig.hpp"
+#include "NBBox.hpp"
+#include "NQuad.hpp"
+
 
 // okc-
 #include "Opticks.hh"
@@ -249,7 +252,31 @@ void GGeoTest::importCSG()
         primIdx++ ; // each tree is separate OptiX primitive, with own line in the primBuffer 
 
         GMesh* mesh = m_meshes[i] ; 
-        GVolume* volume = m_maker->makeFromMesh(mesh);
+        const NCSG* csg = mesh->getCSG(); 
+        const NCSG* other = csg->getOther(); 
+
+        bool is_proxy = other && other->isProxy() ;  // means that csg "is_proxied"
+        if( is_proxy ) assert( other != csg ); 
+
+        GVolume* volume = NULL ; 
+        if( is_proxy )
+        { 
+            nbbox bba = csg->bbox_analytic(); 
+            nvec4 ce = bba.center_extent() ; 
+            glm::mat4 txf(nglmext::make_translate(-ce.x, -ce.y, -ce.z)); 
+            volume = m_maker->makeFromMesh(mesh, txf);
+
+            LOG(fatal) 
+                << "centering the proxied" 
+                << " txf " << glm::to_string(txf) 
+                << " ce " << ce.desc()
+                << " bba " << bba.description()
+                ; 
+        } 
+        else
+        {
+            volume = m_maker->makeFromMesh(mesh);
+        } 
 
         if(prior)
         {
@@ -335,7 +362,6 @@ void GGeoTest::adjustContainer()
     {
         return ;  
     }
-
 
 
     NCSG* container = m_csglist->findContainer(); 
@@ -435,7 +461,11 @@ GMesh* GGeoTest::importMeshViaProxy(NCSG* tree)
     assert( csg ) ; 
     assert( csg->getBoundary() == NULL && "expecting fresh csg from meshlib to have no boundary assigned") ; 
 
+    const_cast<NCSG*>(csg)->setOther(tree);  // keep note of the proxy from whence it came
+
     mesh->setCSGBoundary( spec );  // adopt the boundary from the proxy object setup in python
+
+    mesh->applyCentering(); 
 
     return mesh ;  
 }
@@ -867,6 +897,10 @@ GMergedMesh* GGeoTest::combineVolumes(GMergedMesh* mm0)
         pts->dumpPrimInfo(msg); // this usually dumps nothing as solid buffer not yet created
     }
     // collected pts are converted into primitives in GParts::makePrimBuffer
+
+    glm::vec4 ce = tri->getCE(0);    
+    LOG(fatal) << " mm0.ce " << gformat(ce) ; 
+
 
     LOG(LEVEL) << "]" ; 
     return tri ; 

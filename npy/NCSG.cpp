@@ -194,7 +194,8 @@ NCSG::NCSG(const char* treedir)
    m_containerautosize(-1),
    m_tris(NULL),
    m_soIdx(0),
-   m_lvIdx(0)
+   m_lvIdx(0),
+   m_other(NULL)
 {
 }
 
@@ -231,7 +232,8 @@ NCSG::NCSG(nnode* root )
    m_containerautosize(-1),
    m_tris(NULL),
    m_soIdx(0),
-   m_lvIdx(0)
+   m_lvIdx(0),
+   m_other(NULL)
 {
     setBoundary( root->boundary );  // boundary spec
     LOG(debug) << "[" ; 
@@ -1478,7 +1480,15 @@ bool NCSG::is_box3() const
     return m_root->is_box3() ; 
 }
 
-
+void NCSG::setOther(NCSG* other)
+{
+    m_other = other ; 
+}
+NCSG* NCSG::getOther() const 
+{
+    return m_other ; 
+}
+ 
 
 
 

@@ -347,7 +347,9 @@ class NPY_API NCSG {
         const char* get_root_csgname() const ;
         bool is_box() const ; 
         bool is_box3() const ; 
-
+    public:
+        void setOther(NCSG* other); 
+        NCSG* getOther() const ;   
     private:
         const char*      m_treedir ; 
         unsigned         m_index ; 
@@ -378,7 +380,7 @@ class NPY_API NCSG {
         unsigned    m_soIdx ;   // debugging 
         unsigned    m_lvIdx ;   // debugging 
 
-
+        NCSG*       m_other ; 
 
 };
 

@@ -289,6 +289,7 @@ struct NPY_API nnode
     unsigned    subdepth ; 
     const char* boundary ; 
 
+    const nmat4triple* placement ; 
     const nmat4triple* transform ; 
     const nmat4triple* gtransform ; 
     unsigned           gtransform_idx ; 

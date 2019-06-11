@@ -30,6 +30,7 @@ class BRAP_API BOpticksKey
         static int         LAYOUT ; 
         static BOpticksKey* GetKey();
         static bool         SetKey(const char* spec) ;  
+        static void         Desc() ;  
         static const char* StemName( const char* ext, const char* sep="." );
     public:
         const char* getSpec() const ; 

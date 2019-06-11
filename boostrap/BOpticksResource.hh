@@ -213,6 +213,7 @@ class BRAP_API  BOpticksResource {
         
         void setupViaSrc(const char* srcpath, const char* srcdigest);
         void setupViaID(const char* idpath );
+   public: 
         void setupViaKey();
 
         // unfortunately having 2 routes difficult to avoid, as IDPATH is 
