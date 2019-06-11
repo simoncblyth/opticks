@@ -336,6 +336,23 @@ void GGeoTest::adjustContainer()
         return ;  
     }
 
+
+
+    NCSG* container = m_csglist->findContainer(); 
+    assert(container) ; 
+    bool containerautosize = container->isContainerAutoSize() ; 
+
+    if(!containerautosize)
+    {
+        LOG(fatal) << " containerautosize DISABLED by metadata on container CSG " << containerautosize  ;
+        return ; 
+    }  
+    else
+    {
+        LOG(fatal) << " containerautosize ENABLED by metadata on container CSG " << containerautosize  ;
+    }
+
+
     // Lookup the proxied analytic solid (NCSG) from 
     // basis geocache and insert it into the m_csglist 
     // then update the container size to fit it 
@@ -344,6 +361,7 @@ void GGeoTest::adjustContainer()
 
     NCSG* proxy = m_csglist->findProxy(); 
     assert( proxy ) ; 
+
 
     unsigned proxy_index = m_csglist->findProxyIndex();  
     assert( proxy_index < m_meshes.size() ) ; 
@@ -360,8 +378,6 @@ void GGeoTest::adjustContainer()
     // Find the adjusted analytic container (NCSG) and create corresponding 
     // triangulated geometry (GMesh) to replace the old one
 
-    NCSG* container = m_csglist->findContainer(); 
-    assert(container) ; 
 
     int container_index = m_csglist->findContainerIndex() ; 
     assert( container_index > -1 ) ; 

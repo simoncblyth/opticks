@@ -764,7 +764,7 @@ emitconfig = "photons:10000,wavelength:380,time:0.0,posdelta:0.1,sheetmask:0x2,u
 
 CSG.kwa = dict(poly="IM",resolution="20", verbosity="0", ctrl=0, containerscale=3.0, emitconfig=emitconfig  )
 
-container = CSG("box", emit=-1, boundary='Rock//perfectAbsorbSurface/Vacuum', container=1 )  # no param, container="1" switches on auto-sizing
+container = CSG("box", emit=-1, boundary='Rock//perfectAbsorbSurface/Vacuum', container=1, containerautosize=0 ) 
 
 box = CSG("box3", param=[300,300,200,0], emit=0,  boundary="Vacuum///GlassSchottF2", proxylv=$(tboolean-proxy-lvidx) )
 

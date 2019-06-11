@@ -191,6 +191,7 @@ NCSG::NCSG(const char* treedir)
    m_proxylv(-1),
    m_container(0),
    m_containerscale(2.f),
+   m_containerautosize(-1),
    m_tris(NULL),
    m_soIdx(0),
    m_lvIdx(0)
@@ -227,6 +228,7 @@ NCSG::NCSG(nnode* root )
    m_proxylv(-1),
    m_container(0),
    m_containerscale(2.f),
+   m_containerautosize(-1),
    m_tris(NULL),
    m_soIdx(0),
    m_lvIdx(0)
@@ -291,6 +293,8 @@ void NCSG::postload()
     m_proxylv         = m_meta->getValue<int>("proxylv", "-1");
     m_container       = m_meta->getValue<int>("container", "-1");
     m_containerscale  = m_meta->getValue<float>("containerscale", "2.");
+    m_containerautosize = m_meta->getValue<int>("containerautosize", "0");
+
 
     if( m_proxylv > -1 )
     {
@@ -314,6 +318,18 @@ bool NCSG::isProxy() const
 unsigned NCSG::getProxyLV() const 
 {
     return m_proxylv ;  
+}
+bool NCSG::isContainerAutoSize() const 
+{
+    return m_containerautosize == 1 ; 
+}
+bool NCSG::isContainer() const 
+{
+    return m_container > 0  ; 
+}
+float NCSG::getContainerScale() const 
+{
+    return m_containerscale  ; 
 }
 
 
@@ -1419,14 +1435,9 @@ int NCSG::getVerbosity() const
 {
     return m_verbosity ; 
 }
-bool NCSG::isContainer() const 
-{
-    return m_container > 0  ; 
-}
-float NCSG::getContainerScale() const 
-{
-    return m_containerscale  ; 
-}
+
+
+
 bool NCSG::isUsedGlobally() const 
 {
     return m_usedglobally ; 

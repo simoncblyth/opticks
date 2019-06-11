@@ -21,6 +21,14 @@ To create the events
    PROXYLV=17 tboolean.sh --interop   ## propagate and visualize it 
 
 
+Check extent of issue
+-----------------------
+
+tboolean-box is not effected::
+
+   tboolean.sh box
+
+
 Issue : all g4 photons are immediately absorbed without going anywhere
 ----------------------------------------------------------------------------
 
@@ -225,6 +233,46 @@ According to g4 the photons are starting in Rock and immediately get absorbed::
     2019-06-10 23:07:40.307 INFO  [50323] [CDebug::dump_brief@190]  mskhis             1008    AB|TO
     2019-06-10 23:07:40.307 INFO  [50323] [CDebug::dump_brief@195]  seqmat               33    Rock Rock - - - - - - - - - - - - - - 
     2019-0
+
+
+
+
+G4 OK Geometry mismatch : likely source container auto resizing : CONFIRMED by adding containerautosize control  
+------------------------------------------------------------------------------------------------------------------
+
+* emitter is also a container and containers gets auto-resized when proxying 
+  in base solids : thats a likely cause, try switching off auto-resizing
+
+::
+
+    tboolean-proxy-- () 
+    { 
+        cat  <<EOP
+    import logging
+    log = logging.getLogger(__name__)
+    from opticks.ana.main import opticks_main
+    from opticks.analytic.csg import CSG  
+
+    autoemitconfig="photons:600000,wavelength:380,time:0.2,posdelta:0.1,sheetmask:0x1,umin:0.45,umax:0.55,vmin:0.45,vmax:0.55,diffuse:1,ctmindiffuse:0.5,ctmaxdiffuse:1.0"
+    args = opticks_main(csgpath="$(tboolean-proxy-name)", autoemitconfig=autoemitconfig)
+
+    # 0x3f is all 6 
+    # 0x1 is -Z
+    # 0x2 is +Z   havent succeed to get this to work yet 
+    
+    emitconfig = "photons:10000,wavelength:380,time:0.0,posdelta:0.1,sheetmask:0x2,umin:0.45,umax:0.55,vmin:0.45,vmax:0.55" 
+
+    CSG.kwa = dict(poly="IM",resolution="20", verbosity="0", ctrl=0, containerscale=3.0, emitconfig=emitconfig  )
+
+    container = CSG("box", emit=-1, boundary='Rock//perfectAbsorbSurface/Vacuum', container=1 )  # no param, container="1" switches on auto-sizing
+
+    box = CSG("box3", param=[300,300,200,0], emit=0,  boundary="Vacuum///GlassSchottF2", proxylv=$(tboolean-proxy-lvidx) )
+
+    CSG.Serialize([container, box], args )
+    EOP
+
+    }
+
 
 
 

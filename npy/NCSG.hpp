@@ -235,7 +235,10 @@ class NPY_API NCSG {
         int          getVerbosity() const ;
     public:
         bool         isContainer() const ;
+        bool         isContainerAutoSize() const ;
         float        getContainerScale() const ;
+
+    public:
         bool         isUsedGlobally() const ;
 
 
@@ -363,6 +366,7 @@ class NPY_API NCSG {
         int         m_proxylv ;  
         int         m_container ;  
         float       m_containerscale ;  
+        int         m_containerautosize ;  
         
         NTrianglesNPY*         m_tris ; 
         std::vector<glm::vec3> m_surface_points ; 
