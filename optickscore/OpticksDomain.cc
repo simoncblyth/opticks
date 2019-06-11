@@ -7,7 +7,6 @@
 
 
 
-
 OpticksDomain::OpticksDomain()
     :
     m_fdom(NULL),
@@ -59,15 +58,15 @@ void OpticksDomain::setWavelengthDomain(const glm::vec4& wavelength_domain)
 }
 
 
-const glm::vec4& OpticksDomain::getSpaceDomain()
+const glm::vec4& OpticksDomain::getSpaceDomain() const
 {
     return m_space_domain ; 
 }
-const glm::vec4& OpticksDomain::getTimeDomain()
+const glm::vec4& OpticksDomain::getTimeDomain() const
 {
     return m_time_domain ;
 }
-const glm::vec4& OpticksDomain::getWavelengthDomain()
+const glm::vec4& OpticksDomain::getWavelengthDomain() const 
 { 
     return m_wavelength_domain ; 
 }
@@ -87,14 +86,18 @@ void OpticksDomain::updateBuffer()
     }
     else
     {
-        LOG(warning) << "OpticksDomain::updateBuffer fdom NULL " ;
+        LOG(error) << "fdom NULL " ;
     }
 
     NPY<int>* idom = getIDomain();
     if(idom)
+    { 
         idom->setQuad(m_settings, 0 );
+    } 
     else
-        LOG(warning) << "OpticksDomain::updateBuffer idom NULL " ;
+    {
+        LOG(error) << "idom NULL " ;
+    }
     
 }
 
@@ -109,7 +112,7 @@ void OpticksDomain::importBuffer()
 
     if(m_space_domain.w <= 0.)
     {
-        LOG(fatal) << "OpticksDomain::importBuffer BAD FDOMAIN" ; 
+        LOG(fatal) << "BAD FDOMAIN" ; 
         dump("OpticksDomain::importBuffer");
         assert(0);
     }
@@ -121,52 +124,22 @@ void OpticksDomain::importBuffer()
     unsigned int maxrec = m_settings.w ; 
 
     if(maxrec != 10)
-        LOG(fatal) << "OpticksDomain::importBuffer" 
-                   << " from idom settings m_maxrec BUT EXPECT 10 " << maxrec 
-                        ;
+        LOG(fatal) 
+            << " from idom settings m_maxrec BUT EXPECT 10 " << maxrec 
+            ;
+
     //assert(maxrec == 10);
 }
 
 
 
+unsigned OpticksDomain::getMaxRng() const {    return m_settings.y ; } 
+unsigned OpticksDomain::getMaxBounce() const { return m_settings.z ; } 
+unsigned OpticksDomain::getMaxRec() const {    return m_settings.w ; }
 
-
-
-
-unsigned OpticksDomain::getMaxRng() const 
-{
-    return m_settings.y ; 
-}
-void OpticksDomain::setMaxRng(unsigned maxrng)
-{
-    m_settings.y = maxrng ; 
-}
-
-unsigned int OpticksDomain::getMaxBounce() const 
-{
-    return m_settings.z ; 
-}
-void OpticksDomain::setMaxBounce(unsigned int maxbounce)
-{
-    m_settings.z = maxbounce ; 
-}
-
-unsigned int OpticksDomain::getMaxRec() const 
-{
-    return m_settings.w ; 
-}
-void OpticksDomain::setMaxRec(unsigned int maxrec)
-{
-    m_settings.w = maxrec ; 
-}
-
-
-
-
-
-
-
-
+void OpticksDomain::setMaxRng(unsigned maxrng) {       m_settings.y = maxrng ; } 
+void OpticksDomain::setMaxBounce(unsigned maxbounce) { m_settings.z = maxbounce ; } 
+void OpticksDomain::setMaxRec(unsigned maxrec) {       m_settings.w = maxrec ; } 
 
 
 void OpticksDomain::dump(const char* msg)

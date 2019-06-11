@@ -557,6 +557,19 @@ bool nnode::has_torus() const
 {
     return get_count(CSG_TORUS) > 0 ; 
 }
+bool nnode::is_box() const
+{
+    return is_primitive() && type == CSG_BOX ; 
+}
+bool nnode::is_box3() const
+{
+    return is_primitive() && type == CSG_BOX3 ; 
+}
+
+
+
+
+
 unsigned nnode::get_count(OpticksCSG_t typ) const 
 {
     unsigned count = 0 ;

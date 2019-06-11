@@ -10,6 +10,8 @@
 
 // npy-
 #include "NGLM.hpp"
+#include "NNode.hpp"
+#include "NBox.hpp"
 #include "NCSG.hpp"
 #include "NCSGList.hpp"
 #include "GLMFormat.hpp"
@@ -95,6 +97,29 @@ G4VPhysicalVolume* CTestDetector::makeDetector()
 
 
 /**
+CTestDetector::boxCenteringFix
+--------------------------------
+
+See notes/issues/tboolean-proxy-g4evt-immediate-absorption.rst
+
+**/
+
+void CTestDetector::boxCenteringFix( glm::vec3& placement, nnode* root  )
+{
+    assert( root->type == CSG_BOX ) ;  
+    nbox* box = (nbox*)root ; 
+    if( !box->is_centered() )
+    {
+        glm::vec3 center = box->center(); 
+        LOG(fatal) << " box.center " << gformat(center) ; 
+        placement = center ;  
+        box->set_centered() ; 
+    }   
+    assert( box->is_centered() ); 
+}
+
+
+/**
 CTestDetector::makeChildVolume
 -------------------------------
 
@@ -126,14 +151,21 @@ G4VPhysicalVolume* CTestDetector::makeChildVolume(const NCSG* csg, const char* l
 
     const G4Material* material = m_mlib->convertMaterial(imat);
 
+    glm::vec3 placement(0,0,0) ;  
+
+    if(csg->is_box()) boxCenteringFix( placement, const_cast<nnode*>(csg->getRoot()) ); 
+
     G4VSolid* solid = CMaker::MakeSolid( csg ); 
 
     G4LogicalVolume* lv = new G4LogicalVolume(solid, const_cast<G4Material*>(material), strdup(lvn), 0,0,0);
 
-    G4VPhysicalVolume* pv = new G4PVPlacement(0,G4ThreeVector(), lv, strdup(pvn) ,mother,false,0);
+    G4ThreeVector plc(placement.x, placement.y, placement.z ); 
+
+    G4VPhysicalVolume* pv = new G4PVPlacement(0, plc, lv, strdup(pvn) ,mother,false,0);
 
     LOG(fatal) 
           << " csg.spec " << spec 
+          << " csg.get_root_csgname " << csg->get_root_csgname() 
           << " boundary " << boundary 
           << " mother " << ( mother ? mother->GetName() : "-" )
           << " lv " << ( lv ? lv->GetName() : "-" )
@@ -151,7 +183,6 @@ G4VPhysicalVolume* CTestDetector::makeVolumeUniverse(const NCSG* csg)
     G4LogicalVolume* mother = NULL ; 
     return makeChildVolume(csg, lvn, pvn, mother  );
 }
-
 
 
 /**
@@ -185,8 +216,6 @@ G4VPhysicalVolume* CTestDetector::makeDetector_NCSG()
     }
     
     G4VPhysicalVolume* ppv = NULL ; 
-
-
 
     for(unsigned i=0 ; i < numVolumes ; i++) 
     {

@@ -2,12 +2,14 @@
 
 #include <map>
 #include <string>
+#include <glm/fwd.hpp>
 
 // okc-
 class OpticksHub ; 
 class OpticksQuery ; 
 
 // npy-
+struct nnode ; 
 class NCSG ; 
 class NGeoTestConfig ; 
 
@@ -55,6 +57,7 @@ class CFG4_API CTestDetector : public CDetector
   private:
     G4VPhysicalVolume* makeDetector();
     G4VPhysicalVolume* makeDetector_NCSG();
+    void boxCenteringFix( glm::vec3& placement, nnode* root  );
     G4VPhysicalVolume* makeChildVolume(const NCSG* csg, const char* lvn, const char* pvn, G4LogicalVolume* mother);
     G4VPhysicalVolume* makeVolumeUniverse(const NCSG* csg);
 

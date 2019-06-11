@@ -1463,5 +1463,23 @@ void NCSG::setConfig(const NSceneConfig* config)
     m_config = config ; 
 }
 
+const char* NCSG::get_root_csgname() const 
+{
+    return m_root ? m_root->csgname() : NULL ; 
+}
+bool NCSG::is_box() const 
+{
+    assert( m_root ); 
+    return m_root->is_box() ; 
+}
+bool NCSG::is_box3() const 
+{
+    assert( m_root ); 
+    return m_root->is_box3() ; 
+}
+
+
+
+
 
 

@@ -588,6 +588,14 @@ void nbox::pdump(const char* msg) const
 }
 
 
+bool nbox::is_equal( const nbox& other ) const 
+{
+    return 
+          param.f.x == other.param.f.x &&
+          param.f.y == other.param.f.y &&
+          param.f.z == other.param.f.z &&
+          param.f.w == other.param.f.w ;
+}
 
 
 

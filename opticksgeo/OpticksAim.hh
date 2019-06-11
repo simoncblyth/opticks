@@ -16,6 +16,8 @@ class Composition ;
 OpticksAim
 ===========
 
+Canonical m_aim is resident of OpticksHub and is instanciated by OpticksHub::init
+The crucial for domain setup OpticksAim::registerGeometry is 
 
 
 **/
@@ -37,6 +39,7 @@ class OKGEO_API OpticksAim {
        void            dumpTarget(const char* msg="OpticksAim::dumpTarget");  
     private:
        Opticks*     m_ok ; 
+       bool         m_dbgaim ;  // --dbgaim
        OpticksHub*  m_hub ; 
        Composition* m_composition ; 
 

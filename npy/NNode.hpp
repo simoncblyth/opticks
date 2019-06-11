@@ -24,14 +24,8 @@ struct NSceneConfig ;
 class NNodeDump2 ; 
 class NNodePoints ; 
 
-#ifdef OLD_PARAMETERS
-class X_BParameters ;
-#else
 class NMeta ; 
-#endif
 
-
-//struct nuv ; 
 
 // NGLMExt
 struct nmat4pair ; 
@@ -246,6 +240,8 @@ struct NPY_API nnode
 
     // type count for the tree : eg to give the number of CSG_TORUS present in the tree
     bool has_torus() const ; 
+    bool is_box3() const ; 
+    bool is_box() const ; 
     unsigned get_count(OpticksCSG_t typ) const ;
     static void get_count_r(const nnode* node, OpticksCSG_t typ, unsigned& count);
 
@@ -309,12 +305,7 @@ struct NPY_API nnode
     std::vector<glm::vec3> par_points ; 
     std::vector<nuv>       par_coords ; 
 
-#ifdef OLD_PARAMETERS
-    X_BParameters*  meta ;
-#else
     NMeta*        meta ;
-#endif
-
 
     NNodeDump2*   _dump ;
     nbbox*        _bbox_model ; 

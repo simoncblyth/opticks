@@ -436,7 +436,7 @@ void OpticksCfg<Listener>::init()
        ("sourcedbg",  "dump details of emitsource ") ;
 
    m_desc.add_options()
-       ("aimdbg",  "dump details of targetting, see OpticksAim ") ;
+       ("dbgaim",  "dump details of targetting, see OpticksAim ") ;
 
 
 

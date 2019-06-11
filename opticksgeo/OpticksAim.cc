@@ -23,6 +23,7 @@ const plog::Severity OpticksAim::LEVEL = debug ;
 OpticksAim::OpticksAim(OpticksHub* hub) 
     :
     m_ok(hub->getOpticks()),
+    m_dbgaim(m_ok->isDbgAim()),   // --dbgaim
     m_hub(hub),
     m_composition(hub->getComposition()),
     m_mesh0(NULL),
@@ -39,7 +40,7 @@ void OpticksAim::registerGeometry(GMergedMesh* mm0)
     glm::vec4 ce0 = getCenterExtent(); 
     m_ok->setSpaceDomain( ce0 );
 
-    LOG(LEVEL)
+    LOG(m_dbgaim ? fatal : LEVEL)
           << " setting SpaceDomain : " 
           << " ce0 " << gformat(ce0) 
           ; 
@@ -114,7 +115,7 @@ void  OpticksAim::setTarget(unsigned target, bool aim)
     m_target = target ; 
 
 
-    if(m_ok->isDbgAim())
+    if(m_dbgaim)
     {
         dumpTarget("OpticksAim::setTarget");
     } 

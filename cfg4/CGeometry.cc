@@ -90,7 +90,7 @@ bool CGeometry::hookup(CG4* g4)
 
 
     glm::vec4 ce = m_detector->getCenterExtent();
-    LOG(info) 
+    LOG(fatal) 
         << " center_extent " << gformat(ce) 
         ;    
 

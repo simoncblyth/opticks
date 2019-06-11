@@ -343,6 +343,10 @@ class NPY_API NCSG {
     public:
         bool isProxy() const ; 
         unsigned getProxyLV() const ;
+    public:
+        const char* get_root_csgname() const ;
+        bool is_box() const ; 
+        bool is_box3() const ; 
 
     private:
         const char*      m_treedir ; 

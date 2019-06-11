@@ -1044,9 +1044,9 @@ bool Opticks::isDbgSource() const
 {
     return m_cfg->hasOpt("sourcedbg") ;
 }
-bool Opticks::isDbgAim() const
+bool Opticks::isDbgAim() const  // --dbgaim
 {
-    return m_cfg->hasOpt("aimdbg") ;
+    return m_cfg->hasOpt("dbgaim") ;
 }
 bool Opticks::isDbgClose() const
 {
@@ -1108,19 +1108,19 @@ bool Opticks::isIntegrated()
 
 
 
-const glm::vec4& Opticks::getTimeDomain()
+const glm::vec4& Opticks::getTimeDomain() const 
 {
     return m_time_domain ; 
 }
-const glm::vec4& Opticks::getSpaceDomain()
+const glm::vec4& Opticks::getSpaceDomain() const 
 {
     return m_space_domain ; 
 }
-const glm::vec4& Opticks::getWavelengthDomain()
+const glm::vec4& Opticks::getWavelengthDomain() const
 {
     return m_wavelength_domain ; 
 }
-const glm::ivec4& Opticks::getSettings()
+const glm::ivec4& Opticks::getSettings() const 
 {
     return m_settings ; 
 }
@@ -1921,6 +1921,11 @@ void Opticks::setSpaceDomain(float x, float y, float z, float w)
     m_space_domain.z = z  ; 
     m_space_domain.w = w  ; 
 
+    if( isDbgAim() ) 
+    {  
+        LOG(fatal) << " --dbgaim : m_space_domain " << gformat(m_space_domain) ;  
+    }
+
     postgeometry();  
 }
 
@@ -1961,6 +1966,13 @@ float Opticks::getAnimTimeMax()
 }
 
 
+/**
+Opticks::postgeometry
+------------------------
+
+Invoked by Opticks::setSpaceDomain
+
+**/
 
 void Opticks::postgeometry()
 {

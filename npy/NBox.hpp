@@ -74,12 +74,19 @@ struct NPY_API nbox : nnode
     float y() const ; 
     float z() const ; 
     glm::vec3 center() const  ; 
+    bool is_centered() const  ;   // always true for BOX3, sometimes not for BOX
+    void set_centered() ;  
     glm::vec3 halfside() const ; 
     glm::vec3 bmin() const  ; 
     glm::vec3 bmax() const  ; 
 
+    bool is_equal( const nbox& other ) const ; 
+
+
     bool is_box   ;   // cannot const these without ctor
     bool is_box3  ; 
+
+   
 
 
 
@@ -98,6 +105,14 @@ inline NPY_API glm::vec3 nbox::center() const { return glm::vec3(x(), y(), z()) 
 inline NPY_API float nbox::x() const { return is_box ? param.f.x : 0.f ; }
 inline NPY_API float nbox::y() const { return is_box ? param.f.y : 0.f ; }
 inline NPY_API float nbox::z() const { return is_box ? param.f.z : 0.f ; }
+inline NPY_API bool  nbox::is_centered() const { return x() == 0.f && y() == 0.f && z() == 0.f ; }
+inline NPY_API void  nbox::set_centered() 
+{ 
+    assert( is_box) ; 
+    param.f.x = 0.f ; 
+    param.f.y = 0.f ; 
+    param.f.z = 0.f ; 
+}
 
 inline NPY_API glm::vec3 nbox::halfside() const 
 { 

@@ -199,54 +199,70 @@ void NCSGList::load()
 }
 
 
+/**
+NCSGList::getUniverse
+-----------------------
+
+No longer create universe by default, 
+as with full geomrtries NCSGLoadTest and NScanTest 
+when reading /usr/local/opticks/opticksdata/export/DayaBay_VGDX_20140414-1300/extras/csg.txt
+takes exception to the content of "extras/248" not being a bnd
+
+**/
        
 NCSG* NCSGList::getUniverse() 
 {
-   /*
-    No longer create universe by default, 
-    as with full geomrtries NCSGLoadTest and NScanTest 
-    when reading /usr/local/opticks/opticksdata/export/DayaBay_VGDX_20140414-1300/extras/csg.txt
-    takes exception to the content of "extras/248" not being a bnd
-    */
+    float scale = 1.f ; 
+    float delta = 1.f ; 
 
-    if(m_universe == NULL) m_universe = createUniverse(1., 1.); 
+    if(m_universe == NULL) m_universe = createUniverse(scale, delta); 
     return m_universe ; 
 }
 
+/**
+NCSGList::createUniverse
+-------------------------
+
+"cheat" clone (via 2nd load) of outer volume 
+then increase size a little 
+this is only used for the Geant4 geometry
+
+**/
+
 NCSG* NCSGList::createUniverse(float scale, float delta) const 
 {
-    //const char* bnd0 = m_bndspec->getLine(0);
     const char* bnd0 = getBoundary(0);
     const char* ubnd = BBnd::DuplicateOuterMaterial( bnd0 ); 
 
-    LOG(info) << "NCSGList::createUniverse"
-              << " bnd0 " << bnd0 
-              << " ubnd " << ubnd
-              << " scale " << scale
-              << " delta " << delta
-              ;
+    LOG(fatal) 
+        << " bnd0 " << bnd0 
+        << " ubnd " << ubnd
+        << " scale " << scale
+        << " delta " << delta
+        ;
 
-
-    // "cheat" clone (via 2nd load) of outer volume 
-    // then increase size a little 
-    // this is only used for the Geant4 geometry
+    LOG(fatal) 
+        << " m_bbox " 
+        << m_bbox.description()
+        ; 
  
+
     NCSG* universe = loadTree(0) ;    
     universe->setBoundary(ubnd);  
 
+    LOG(fatal) << " universe.get_root_csgname " << universe->get_root_csgname() ; 
+
+
     if( universe->isContainer() )
     {
-        LOG(info) << "NCSGList::createUniverse"
-                  << " outer volume isContainer (ie auto scaled) "
-                  << " universe will be scaled/delted a bit from there "
-                  ;
+        LOG(info) 
+            << " outer volume isContainer (ie auto scaled) "
+            << " universe will be scaled/delted a bit from there "
+            ;
     }
 
     universe->adjustToFit( m_bbox, scale, delta ); 
-
     /// huh : not re-exported : this means different geometry on CPU and GPU ??
-
-
     return universe ; 
 }
 

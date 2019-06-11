@@ -460,10 +460,10 @@ class OKCORE_API Opticks {
        Index*               loadMaterialIndex();
        Index*               loadBoundaryIndex();
    public:
-       const glm::vec4&  getTimeDomain();
-       const glm::vec4&  getSpaceDomain();
-       const glm::vec4&  getWavelengthDomain();
-       const glm::ivec4& getSettings();
+       const glm::vec4&  getTimeDomain() const ;
+       const glm::vec4&  getSpaceDomain() const ;
+       const glm::vec4&  getWavelengthDomain() const ;
+       const glm::ivec4& getSettings() const ;
    public:
        float getTimeMin();
        float getTimeMax();
@@ -530,7 +530,7 @@ class OKCORE_API Opticks {
        bool isRecCf() const ; 
        bool isDbgTorch() const ; 
        bool isDbgSource() const ; 
-       bool isDbgAim() const ; 
+       bool isDbgAim() const ;   // --dbgaim
        bool isDbgClose() const ; 
    public:
        bool isInternal() const ; 

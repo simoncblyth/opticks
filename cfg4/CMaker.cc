@@ -1,17 +1,13 @@
-#include "CFG4_BODY.hh"
 #include "CMaker.hh"
 
 // npy-
 #include "NGLM.hpp"
 #include "NGLMExt.hpp"
+#include "GLMFormat.hpp"
 #include "NCSG.hpp"
 #include "NNode.hpp"
 
-#ifdef OLD_PARAMETERS
-#include "X_BParameters.hh"
-#else
 #include "NMeta.hpp"
-#endif
 
 
 #include "NPrimitives.hpp"
@@ -241,15 +237,9 @@ g4-;g4-cls G4VFacet
  
 G4VSolid* CMaker::ConvertConvexPolyhedron(const nnode* node) // static
 {
-#ifdef OLD_PARAMETERS
-    X_BParameters* meta = node->meta ;  
-    assert(meta);
-    std::string src_type = meta->getStringValue("src_type");
-#else
     NMeta* meta = node->meta ;  
     assert(meta);
     std::string src_type = meta->get<std::string>("src_type");
-#endif
    
     // see src_type args of the ConvexPolyhedronSrc in opticks/analytic/prism.py 
     bool prism = src_type.compare("prism")==0 ;
@@ -389,8 +379,26 @@ G4VSolid* CMaker::ConvertPrimitive(const nnode* node) // static
     }
     else if(node->type == CSG_BOX || node->type == CSG_BOX3)
     {
+        // BOX can have an offset, BOX3 cannot it being always origin centered. 
+        // Hence treating them as equivalent will loose the offset for BOX.
+
         nbox* n = (nbox*)node ; 
         glm::vec3 halfside = n->halfside();
+
+        if( node->type == CSG_BOX )
+        {
+            bool is_centered = n->is_centered(); 
+            if(!is_centered)
+            {
+                glm::vec3 center = n->center(); 
+                LOG(fatal) 
+                    << " loosing offset of CSG_BOX " 
+                    << " center " << gformat(center)
+                    ; 
+            } 
+            assert( is_centered );  
+        }
+
 
         G4Box* bx = new G4Box( name, halfside.x, halfside.y, halfside.z );
         result = bx ; 

@@ -124,12 +124,6 @@ OpticksEvent::OpticksEvent(OpticksEventSpec* spec)
 
           m_noload(false),
           m_loaded(false),
-
-#ifdef OLD_TIMER
-          m_timer(NULL),
-          m_ttable(NULL),
-#endif
-
           m_versions(NULL),
           m_parameters(NULL),
           m_report(NULL),
@@ -295,36 +289,6 @@ unsigned int OpticksEvent::getNumRecords() const
     return m_num_photons * maxrec ; 
 }
 
-unsigned OpticksEvent::getMaxRec() const 
-{
-    return m_domain->getMaxRec() ; 
-}
-void OpticksEvent::setMaxRec(unsigned maxrec)
-{
-    m_domain->setMaxRec(maxrec);
-}
-
-
-unsigned OpticksEvent::getMaxBounce() const  // caution there is a getBounceMax 
-{
-    return m_domain->getMaxBounce() ; 
-}
-void OpticksEvent::setMaxBounce(unsigned maxbounce)
-{
-    m_domain->setMaxBounce(maxbounce);
-}
-
-
-unsigned OpticksEvent::getMaxRng() const 
-{
-    return m_domain->getMaxRng() ; 
-}
-void OpticksEvent::setMaxRng(unsigned maxrng)
-{
-    m_domain->setMaxRng(maxrng);
-}
-
-
 
 
 
@@ -456,49 +420,65 @@ BoundariesNPY* OpticksEvent::getBoundariesNPY()
 
 
 
+//////////////// m_domain related ///////////////////////////////////
 
+void OpticksEvent::setFDomain(NPY<float>* fdom) { m_domain->setFDomain(fdom) ; } 
+void OpticksEvent::setIDomain(NPY<int>* idom) {   m_domain->setIDomain(idom) ; } 
 
-
-
-void OpticksEvent::setFDomain(NPY<float>* fdom)
-{
-    m_domain->setFDomain(fdom) ; 
-}
-void OpticksEvent::setIDomain(NPY<int>* idom)
-{
-    m_domain->setIDomain(idom) ; 
-}
-
-NPY<float>* OpticksEvent::getFDomain() const 
-{
-    return m_domain->getFDomain() ; 
-}
-NPY<int>* OpticksEvent::getIDomain() const 
-{
-    return m_domain->getIDomain() ; 
-}
-
+NPY<float>* OpticksEvent::getFDomain() const { return m_domain->getFDomain() ; } 
+NPY<int>*   OpticksEvent::getIDomain() const { return m_domain->getIDomain() ; }
 
 // below set by Opticks::makeEvent
+
+void OpticksEvent::setSpaceDomain(const glm::vec4& space_domain) {           m_domain->setSpaceDomain(space_domain) ; } 
+void OpticksEvent::setTimeDomain(const glm::vec4& time_domain) {             m_domain->setTimeDomain(time_domain)  ; } 
+void OpticksEvent::setWavelengthDomain(const glm::vec4& wavelength_domain) { m_domain->setWavelengthDomain(wavelength_domain)  ; } 
+
+const glm::vec4& OpticksEvent::getSpaceDomain() const {      return m_domain->getSpaceDomain() ; } 
+const glm::vec4& OpticksEvent::getTimeDomain() const {       return m_domain->getTimeDomain() ; } 
+const glm::vec4& OpticksEvent::getWavelengthDomain() const { return m_domain->getWavelengthDomain() ; } 
+
+unsigned OpticksEvent::getMaxRec() const {     return m_domain->getMaxRec() ; } 
+unsigned OpticksEvent::getMaxBounce() const  { return m_domain->getMaxBounce() ; }  // caution there is a getBounceMax 
+unsigned OpticksEvent::getMaxRng() const {     return m_domain->getMaxRng() ; } 
+
+void OpticksEvent::setMaxRec(unsigned maxrec) {       m_domain->setMaxRec(maxrec); } 
+void OpticksEvent::setMaxBounce(unsigned maxbounce) { m_domain->setMaxBounce(maxbounce); } 
+void OpticksEvent::setMaxRng(unsigned maxrng) {       m_domain->setMaxRng(maxrng); } 
+
+void OpticksEvent::dumpDomains(const char* msg)
+{
+    m_domain->dump(msg);
+}
+void OpticksEvent::updateDomainsBuffer()
+{
+    m_domain->updateBuffer();
+}
+void OpticksEvent::importDomainsBuffer()  // invoked by OpticksEvent::loadBuffers
+{
+    m_domain->importBuffer();
+}
+void OpticksEvent::saveDomains()   // invoked by OpticksEvent::save
+{
+    updateDomainsBuffer();
+
+    NPY<float>* fdom = getFDomain();
+    if(fdom) fdom->save(m_pfx, fdom_, m_typ,  m_tag, m_udet);
+
+    NPY<int>* idom = getIDomain();
+    if(idom) idom->save(m_pfx, idom_, m_typ,  m_tag, m_udet);
+}
+
+////////////////////////////////////////////////////////////////////////////////////
+
+
+
+
 
 void OpticksEvent::setMode(OpticksMode* mode)
 { 
     m_mode = mode ; 
 }
-void OpticksEvent::setSpaceDomain(const glm::vec4& space_domain)
-{
-    m_domain->setSpaceDomain(space_domain) ; 
-}
-void OpticksEvent::setTimeDomain(const glm::vec4& time_domain)
-{
-    m_domain->setTimeDomain(time_domain)  ; 
-}
-void OpticksEvent::setWavelengthDomain(const glm::vec4& wavelength_domain)
-{
-    m_domain->setWavelengthDomain(wavelength_domain)  ; 
-}
-
-
 bool OpticksEvent::isInterop()
 {
     return m_mode->isInterop();
@@ -507,21 +487,6 @@ bool OpticksEvent::isCompute()
 {
     return m_mode->isCompute();
 }
-
-const glm::vec4& OpticksEvent::getSpaceDomain()
-{
-    return m_domain->getSpaceDomain() ; 
-}
-const glm::vec4& OpticksEvent::getTimeDomain()
-{
-    return m_domain->getTimeDomain() ;
-}
-const glm::vec4& OpticksEvent::getWavelengthDomain()
-{ 
-    return m_domain->getWavelengthDomain() ; 
-}
-
-
 
 
 
@@ -561,17 +526,6 @@ NMeta*      OpticksEvent::getParameters()
     return m_parameters ;
 }
 
-#ifdef OLD_TIMER
-BTimeKeeper* OpticksEvent::getTimer()
-{
-    return m_timer ;
-}
-BTimesTable* OpticksEvent::getTimesTable()
-{
-    return m_ttable ;
-}
-#endif
-
 
 void OpticksEvent::pushNames(std::vector<std::string>& names)
 {
@@ -589,14 +543,6 @@ void OpticksEvent::pushNames(std::vector<std::string>& names)
 
 void OpticksEvent::init()
 {
-
-#ifdef OLD_TIMER
-    m_timer = new BTimeKeeper("OpticksEvent"); 
-    m_timer->setVerbose(false);
-    m_timer->start();
-#endif
-
-
     m_versions = new NMeta ;
     m_parameters = new NMeta ;
     m_report = new Report ; 
@@ -1129,20 +1075,6 @@ void OpticksEvent::zero()
 }
 
 
-void OpticksEvent::dumpDomains(const char* msg)
-{
-    m_domain->dump(msg);
-}
-void OpticksEvent::updateDomainsBuffer()
-{
-    m_domain->updateBuffer();
-}
-void OpticksEvent::importDomainsBuffer()
-{
-    m_domain->importBuffer();
-}
-
-
 void OpticksEvent::setGenstepData(NPY<float>* genstep_data, bool progenitor)
 {
     // gets called for OpticksRun::m_g4evt from OpticksRun::setGensteps by OKMgr::propagate 
@@ -1578,18 +1510,6 @@ void OpticksEvent::recordDigests()
 }
 
 
-void OpticksEvent::saveDomains()
-{
-    updateDomainsBuffer();
-
-    NPY<float>* fdom = getFDomain();
-    if(fdom) fdom->save(m_pfx, fdom_, m_typ,  m_tag, m_udet);
-
-    NPY<int>* idom = getIDomain();
-    if(idom) idom->save(m_pfx, idom_, m_typ,  m_tag, m_udet);
-}
-
-
 
 void OpticksEvent::save()
 {
@@ -1760,15 +1680,6 @@ void OpticksEvent::makeReport(bool verbose)
     m_report->add(m_parameters->getLines());
     m_report->add(m_profile->getLines());
 
-
-#ifdef OLD_TIMER
-    m_timer->stop();
-    m_ttable = m_timer->makeTable();
-    if(verbose)
-    m_ttable->dump("OpticksEvent::makeReport");
-    m_report->add(m_ttable->getLines());
-#endif
-
 }
 
 
@@ -1841,10 +1752,6 @@ void OpticksEvent::saveReport(const char* dir)
     if(!m_report) return ; 
     LOG(debug) << "OpticksEvent::saveReport to " << dir  ; 
 
-#ifdef OLD_TIMER
-    m_ttable->save(dir);
-#endif
-
     m_profile->save(dir); 
     m_report->save(dir);  
     m_launch_times->save(dir);
@@ -1855,10 +1762,6 @@ void OpticksEvent::saveReport(const char* dir)
 void OpticksEvent::loadReport()
 {
     std::string tagdir = getTagDir();
-#ifdef OLD_TIMER
-    m_ttable = BTimeKeeper::loadTable(tagdir.c_str());
-#endif
-
     m_profile = OpticksProfile::Load( tagdir.c_str() );  
     m_report = Report::load(tagdir.c_str());
     m_launch_times = BTimes::Load(tagdir.c_str(), LAUNCH_LABEL );
@@ -1926,6 +1829,14 @@ void OpticksEvent::importGenstepDataLoaded(NPY<float>* gs)
 }
 
 
+/**
+OpticksEvent::loadBuffers
+---------------------------
+
+TODO: move domain loading into separate method
+
+
+**/
 
 void OpticksEvent::loadBuffers(bool verbose)
 {
@@ -1960,6 +1871,7 @@ void OpticksEvent::loadBuffers(bool verbose)
     setIDomain(idom);
     setFDomain(fdom);
 
+
     loadReport();
     loadParameters();
 
@@ -1972,6 +1884,8 @@ void OpticksEvent::loadBuffers(bool verbose)
 
     assert(idom->hasShapeSpec(m_idom_spec));
     assert(fdom->hasShapeSpec(m_fdom_spec));
+
+
  
     NPY<float>* no = NULL ; 
     if(m_fake_nopstep_path)

@@ -147,8 +147,6 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec
        void postPropagateGeant4(); // called following dynamic photon/record/sequence collection
    public:
        // from parameters set in Opticks::makeEvent
-       unsigned int getBounceMax() const ;
-       unsigned int getRngMax() const ;
        std::string getTimeStamp();
        std::string getCreator();
        char getEntryCode();
@@ -171,7 +169,6 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec
        void        setNote(const char* note);
        void        appendNote(const char* note);
    private:
-       void setRngMax(unsigned int rng_max);
        void init();
        void indexPhotonsCPU();
        void collectPhotonHitsCPU();
@@ -194,9 +191,7 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec
        void setGenstepData(NPY<float>* genstep_data, bool progenitor=true);
        void setNopstepData(NPY<float>* nopstep_data);
 
-
        void zero();
-       void dumpDomains(const char* msg="OpticksEvent::dumpDomains");
    public:
        void addBufferControl(const char* name, const char* ctrl_);
        int seedDebugCheck(const char* msg="OpticksEvent::seedDebugCheck");
@@ -205,23 +200,13 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec
 
    public:
        const char* getPath(const char* xx);  // accepts abbreviated or full constituent names
-
        NMeta*       getParameters();
-#ifdef OLD_TIMER
-       BTimeKeeper*      getTimer();
-       BTimesTable* getTimesTable();
-#endif
    public:
        void makeReport(bool verbose=false);
        void saveReport();
        void loadReport();
    private:
-       void saveDomains();
        void saveReport(const char* dir);
-   public:
-       void setMaxRec(unsigned maxrec);         // maximum record slots per photon
-       void setMaxBounce(unsigned maxbounce);         // maximum record slots per photon
-       void setMaxRng(unsigned maxrng); 
    public:
        // G4 related qtys used by cfg4- when OpticksEvent used to store G4 propagations
        void setNumG4Event(unsigned int n);
@@ -238,17 +223,44 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec
    public:
        // below are set in Opticks::makeEvent   
        void setMode(OpticksMode* mode); 
+
+   public:
+       //////////  m_domain related ///////////////////////
+       void setFDomain(NPY<float>* fdom);
+       void setIDomain(NPY<int>* idom);
+
        // domains used for record compression
        void setSpaceDomain(const glm::vec4& space_domain);
        void setTimeDomain(const glm::vec4& time_domain);
        void setWavelengthDomain(const glm::vec4& wavelength_domain);
+
    public:
-       const glm::vec4& getSpaceDomain();
-       const glm::vec4& getTimeDomain();
-       const glm::vec4& getWavelengthDomain();
+       const glm::vec4& getSpaceDomain() const ;
+       const glm::vec4& getTimeDomain() const ;
+       const glm::vec4& getWavelengthDomain() const ;
+
+   public:
+       // idom persisted 
+       unsigned getMaxRec() const ;     // per-photon
+       unsigned getMaxBounce() const ;  // per-photon
+       unsigned getMaxRng() const ;     // limits number of photons, has been 3M for a long time
+
+       void setMaxRec(unsigned maxrec);         // maximum record slots per photon
+       void setMaxBounce(unsigned maxbounce);         // maximum record slots per photon
+       void setMaxRng(unsigned maxrng); 
+
+       void dumpDomains(const char* msg="OpticksEvent::dumpDomains");
    private:
        void updateDomainsBuffer();
        void importDomainsBuffer();
+       void saveDomains();
+
+
+   public:
+       // huh : these are from m_parameters not m_domain 
+       void setRngMax(unsigned int rng_max);  
+       unsigned getBounceMax() const ;
+       unsigned getRngMax() const ;
    public:
        void save();
    public:
@@ -298,9 +310,7 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec
        void saveParameters();
        void loadParameters();
        void importParameters();
-   public:
-       void setFDomain(NPY<float>* fdom);
-       void setIDomain(NPY<int>* idom);
+
    public:
        bool                 hasGenstepData() const ;
        bool                 hasSourceData() const ;
@@ -364,11 +374,7 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec
        unsigned int getNumPhotons() const ;
        unsigned int getNumSource() const ;
        unsigned int getNumRecords() const ;
-   public:
-       // idom persisted 
-       unsigned int getMaxRec() const ;  // per-photon
-       unsigned int getMaxBounce() const ;  // per-photon
-       unsigned int getMaxRng() const ;  
+
    public:
        void resizeToZero();  // used by OpticksHub::setupZeroEvent
    private:
@@ -392,10 +398,6 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec
        bool                  m_noload ; 
        bool                  m_loaded ; 
 
-#ifdef OLD_TIMER
-       BTimeKeeper*          m_timer ;
-       BTimesTable*          m_ttable ;
-#endif
        NMeta*                m_versions ;
        NMeta*                m_parameters ;
 
