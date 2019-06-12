@@ -62,6 +62,7 @@ struct NPY_API nbbox
 
     float diagonal() const ; 
 
+    glm::vec4 ce() const ;  
     nvec4 center_extent() const ;
     nvec4 dimension_extent() const ;
     static float extent(const nvec4& dim);
@@ -79,9 +80,6 @@ struct NPY_API nbbox
     {
         return min.x == other.min.x && min.y == other.min.y && min.z == other.min.z && max.x == other.max.x && max.y == other.max.y && max.z == other.max.z && invert == other.invert   ; 
     }
-
-
-
 
     void set_empty()
     {
@@ -116,17 +114,8 @@ struct NPY_API nbbox
     glm::vec3 max ; 
     bool  invert ; 
 
-
-
 };
 
-
-inline NPY_API void nbbox::copy_from(const nbbox& src)
-{
-    min = src.min ; 
-    max = src.max ; 
-    invert = src.invert ; 
-}
 
 inline NPY_API bool operator == (const nbbox& a , const nbbox& b )
 {
@@ -176,34 +165,5 @@ inline NPY_API nbbox make_bbox_zsymmetric(float zmin, float zmax, float ymin, fl
     return make_bbox( ymin,ymin, zmin, ymax, ymax, zmax) ;
 }
 
-inline NPY_API float nbbox::extent(const nvec4& dim) 
-{
-    float _extent(0.f) ;
-    _extent = nmaxf( dim.x , _extent );
-    _extent = nmaxf( dim.y , _extent );
-    _extent = nmaxf( dim.z , _extent );
-    _extent = _extent / 2.0f ;    
-    return _extent ; 
-}
 
-inline NPY_API nvec4 nbbox::dimension_extent() const
-{
-    nvec4 de ; 
-    de.x = max.x - min.x ; 
-    de.y = max.y - min.y ; 
-    de.z = max.z - min.z ; 
-    de.w = extent(de) ; 
-    return de ; 
-}
-
-inline NPY_API nvec4 nbbox::center_extent() const 
-{
-    nvec4 ce ; 
-    ce.x = (min.x + max.x)/2.f ;
-    ce.y = (min.y + max.y)/2.f ;
-    ce.z = (min.z + max.z)/2.f ;
-    nvec4 de = dimension_extent();
-    ce.w = de.w ;  
-    return ce ; 
-}
 

@@ -41,25 +41,35 @@ dbgmesh
 #include "NBBox.hpp"
 #include "NQuad.hpp"
 #include "NNode.hpp"
+#include "GLMFormat.hpp"
 #include "NGLMExt.hpp"
 
 #include "OPTICKS_LOG.hh"
 
-int main(int argc, char** argv)
+
+
+
+void test_getDbgMeshByName(const Opticks& ok, const GMeshLib* meshlib)
 {
-    OPTICKS_LOG(argc, argv);
-
-    Opticks ok(argc, argv);
-    ok.configure();
-    if(!ok.isDirect())
+    const char* dbgmesh = ok.getDbgMesh();
+    if(dbgmesh)
     {
-        LOG(fatal) << "this is a direct only test : that means use --envkey option and have a valid OPTICKS_KEY envvar "  ; 
-        return 0 ; 
+        bool startswith = true ; 
+        const GMesh* mesh = meshlib->getMesh(dbgmesh, startswith);
+        mesh->dump("GMesh::dump", 50);
+        const NCSG* solid = mesh->getCSG(); 
+        assert( solid );     
+        solid->dump();  
     }
+    else
+    {
+        LOG(info) << "no dbgmesh" ; 
+    }
+}
 
 
-    GMeshLib* meshlib = GMeshLib::Load(&ok);
-
+void test_dump0( const GMeshLib* meshlib )
+{
     unsigned num_mesh = meshlib->getNumMeshes(); 
     LOG(info) << " num_mesh " << num_mesh ; 
 
@@ -67,14 +77,13 @@ int main(int argc, char** argv)
     {
         const GMesh* mesh = meshlib->getMesh(i); 
         const char* name = mesh->getName() ; 
+
         const NCSG* solid = mesh->getCSG(); 
-        nbbox bba = solid->bbox_analytic(); // global frame bbox
+        nbbox bba = solid->bbox(); // global frame bbox
         nvec4 ce = bba.center_extent() ; 
 
-        nnode* root = solid->getRoot(); 
-
-        if( root->transform && !root->transform->is_identity() ) LOG(info) << " tr " << *root->transform ; 
-
+        //nnode* root = solid->getRoot(); 
+        //if( root->transform && !root->transform->is_identity() ) LOG(info) << " tr " << *root->transform ; 
 
         std::cout  
             << std::setw(2) << i 
@@ -85,27 +94,58 @@ int main(int argc, char** argv)
             << std::endl    
             ; 
     }
+}
 
 
-/*
-    const char* dbgmesh = ok.getDbgMesh();
-    if(dbgmesh)
+void test_dump1( const GMeshLib* meshlib )
+{
+    unsigned num_mesh = meshlib->getNumMeshes(); 
+    LOG(info) << " num_mesh " << num_mesh ; 
+
+    for(unsigned i=0 ; i < num_mesh ; i++)
     {
-        bool startswith = true ; 
-        const GMesh* mesh = meshlib->getMesh(dbgmesh, startswith);
-        mesh->dump("GMesh::dump", 50);
+        const GMesh* mesh = meshlib->getMesh(i); 
+        const char* name = mesh->getName() ; 
+        const NCSG* csg = mesh->getCSG(); 
+        glm::vec4 ce0 = csg->bbox_center_extent(); 
 
-        const NCSG* solid = mesh->getCSG(); 
-        assert( solid );     
-        solid->dump();  
+         
+        //const_cast<NCSG*>(csg)->apply_centering(); 
+        const_cast<GMesh*>(mesh)->applyCentering(); 
 
+
+        glm::vec4 ce1 = csg->bbox_center_extent(); 
+        std::cout  
+            << std::setw(2) << i 
+            << std::setw(45) << ( name ? name : "NULL" )
+            << " ce0 " << std::setw(25) << gformat(ce0)
+            << " ce1 " << std::setw(25) << gformat(ce1)
+            << " " << std::setw(2) << i 
+            << std::endl    
+            ; 
     }
-    else
+}
+
+
+int main(int argc, char** argv)
+{
+    OPTICKS_LOG(argc, argv);
+
+    Opticks ok(argc, argv, "--envkey" );
+    ok.configure();
+    if(!ok.isDirect())
     {
-        LOG(info) << "no dbgmesh" ; 
-        meshlib->dump();
+        LOG(fatal) << "this is a direct only test : that means use --envkey option and have a valid OPTICKS_KEY envvar "  ; 
+        return 0 ; 
     }
-*/
+
+
+    GMeshLib* meshlib = GMeshLib::Load(&ok);
+
+    //test_getDbgMeshByName( ok, meshlib ); 
+    //test_dump0( meshlib ); 
+    test_dump1( meshlib ); 
+
 
     return 0 ; 
 }

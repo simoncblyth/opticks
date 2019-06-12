@@ -776,15 +776,59 @@ bool nbbox::contains(const nbbox& other, float epsilon ) const
 } 
 
 
-
-
-
 float nbbox::MaxDiff( const nbbox& a, const nbbox& b)
 {
     glm::vec3 dmn = glm::abs(a.min - b.min) ;
     glm::vec3 dmx = glm::abs(a.max - b.max) ;
 
     return std::max<float>( glm::compMax(dmn), glm::compMax(dmx) );
+}
+
+
+
+void nbbox::copy_from(const nbbox& src)
+{
+    min = src.min ; 
+    max = src.max ; 
+    invert = src.invert ; 
+}
+
+
+float nbbox::extent(const nvec4& dim) 
+{
+    float _extent(0.f) ;
+    _extent = nmaxf( dim.x , _extent );
+    _extent = nmaxf( dim.y , _extent );
+    _extent = nmaxf( dim.z , _extent );
+    _extent = _extent / 2.0f ;    
+    return _extent ; 
+}
+
+nvec4 nbbox::dimension_extent() const
+{
+    nvec4 de ; 
+    de.x = max.x - min.x ; 
+    de.y = max.y - min.y ; 
+    de.z = max.z - min.z ; 
+    de.w = extent(de) ; 
+    return de ; 
+}
+
+nvec4 nbbox::center_extent() const 
+{
+    nvec4 ce ; 
+    ce.x = (min.x + max.x)/2.f ;
+    ce.y = (min.y + max.y)/2.f ;
+    ce.z = (min.z + max.z)/2.f ;
+    nvec4 de = dimension_extent();
+    ce.w = de.w ;  
+    return ce ; 
+}
+
+glm::vec4 nbbox::ce() const 
+{
+    nvec4 v = center_extent() ; 
+    return glm::vec4(v.x, v.y, v.z, v.w )  ; 
 }
 
 

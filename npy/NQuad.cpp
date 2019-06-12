@@ -23,6 +23,18 @@ glm::vec3 nvec3::as_vec3() const
     return glm::vec3(x,y,z);
 }
 
+bool nvec3::is_zero(float eps)
+{
+    return fabs(x) < eps && fabs(y) < eps && fabs(z) < eps ; 
+}
+
+nvec3 nvec3::from_vec4( const nvec4& v ) // static 
+{
+    return nvec3( v.x, v.y, v.z ); 
+}
+
+
+
 
 const char* nvec3::desc() const
 {
@@ -30,6 +42,14 @@ const char* nvec3::desc() const
     snprintf(_desc, 64, " (%7.2f %7.2f %7.2f) ", x,y,z );
     return strdup(_desc);
 }
+
+const char* nvec3::descg() const
+{
+    char _desc[64];
+    snprintf(_desc, 64, " (%7.2g %7.2g %7.2g) ", x,y,z );
+    return strdup(_desc);
+}
+
 
 const char* nivec3::desc() const 
 {

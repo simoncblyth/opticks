@@ -310,7 +310,8 @@ void nnode::apply_centering()
 {
     nbbox bb0 = bbox(); // <-- global
     nvec4 ce0 = bb0.center_extent(); 
-    bool centered0 = ce0.x == 0.f && ce0.y == 0.f && ce0.z == 0.f ;
+    nvec3 c0 = nvec3::from_vec4(ce0) ; 
+    bool centered0 = c0.is_zero(1e-5) ;  
 
     if(verbosity > 0)
     LOG(info) 
@@ -321,15 +322,20 @@ void nnode::apply_centering()
 
     if(centered0) return ; 
 
-    const nmat4triple* plc = nmat4triple::make_translate( -ce0.x, -ce0.y, -ce0.z );  
-
-    apply_placement( plc ); 
-
+    glm::vec3 tla( -ce0.x, -ce0.y, -ce0.z );  
+    apply_translation( tla.x, tla.y, tla.z ); 
 
     nbbox bb1 = bbox(); // <-- global
     nvec4 ce1 = bb1.center_extent(); 
+    nvec3 c1 = nvec3::from_vec4(ce1) ; 
 
-    bool centered1 = ce1.x == 0.f && ce1.y == 0.f && ce1.z == 0.f ;   // need epsilon perhaps ?
+
+    bool centered1 = c1.is_zero(2e-5) ;  
+
+    if(!centered1)
+    {
+        LOG(info) << "c1 " << c1.descg() ;   
+    }
 
     if(verbosity > 0)
     LOG(info) 
@@ -339,6 +345,13 @@ void nnode::apply_centering()
         ; 
 
     assert( centered1 ); 
+}
+
+
+void nnode::apply_translation( float x, float y, float z )
+{
+    const nmat4triple* plc = nmat4triple::make_translate( x, y, z );  
+    apply_placement( plc ); 
 }
 
 
@@ -1004,6 +1017,14 @@ nbbox nnode::bbox() const
         get_composite_bbox(bb);
     }
     return bb ; 
+}
+
+
+
+glm::vec4 nnode::bbox_center_extent() const 
+{
+   nbbox bb = bbox(); 
+   return bb.ce(); 
 }
 
 

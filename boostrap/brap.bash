@@ -172,7 +172,10 @@ brap---(){     touch $(brap-apihh) ; brap--  ; }
 #brap--(){       opticks-- $(brap-bdir) ; }
 #brap-t(){       opticks-t $(brap-bdir) $* ; }
 
-brap--(){   brap-scd ; om- ; om-make ; }
+#brap--(){   brap-scd ; om- ; om-make ; }
+brap--(){   opticks-- $(brap-bdir) $* ; }
+
+
 brap-t(){   brap-scd ; om- ; om-test ; }
 
 

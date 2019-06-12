@@ -1071,11 +1071,35 @@ glm::uvec4 NCSG::collect_surface_points()
 
 
 
-nbbox NCSG::bbox_analytic() const 
+nbbox NCSG::bbox() const 
 {
     assert(m_root);
     return m_root->bbox();
 }
+
+glm::vec4 NCSG::bbox_center_extent() const 
+{
+    assert(m_root);
+    return m_root->bbox_center_extent() ; 
+}
+
+void NCSG::apply_translation(float x, float y, float z) 
+{
+    assert(m_root);
+    return m_root->apply_translation(x, y, z) ; 
+}
+
+void NCSG::apply_centering() 
+{
+    assert(m_root);
+    return m_root->apply_centering() ; 
+}
+
+
+
+
+
+
 
 nbbox NCSG::bbox_surface_points() const 
 {

@@ -125,7 +125,7 @@ void NCSGList::updateBoundingBox(bool exclude_container)
     for(unsigned i=0 ; i < num_tree ; i++)
     {
         NCSG* tree = m_trees[i] ; 
-        nbbox bba = tree->bbox_analytic();  
+        nbbox bba = tree->bbox();  
 
         if(!tree->isContainer() && exclude_container)
         {
@@ -147,7 +147,7 @@ void NCSGList::adjustContainerSize()
     float delta = 0.f ; 
     container->adjustToFit(m_bbox, scale, delta );
 
-    nbbox bba2 = container->bbox_analytic();
+    nbbox bba2 = container->bbox();
     m_bbox.include(bba2);   // update for the auto-container, used by NCSGList::createUniverse
 
     container->export_();  // after changing geometry must re-export to update the buffers destined for upload to GPU 

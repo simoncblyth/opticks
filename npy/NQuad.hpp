@@ -110,6 +110,7 @@ struct NPY_API nuvec3 {
 };
 
 
+
 struct NPY_API nvec3 {
 
    // no CTOR, due to implicit use from bbox
@@ -117,12 +118,16 @@ struct NPY_API nvec3 {
   nvec3() : x(0), y(0), z(0) {} ; 
   nvec3( float x_ ) : x(x_), y(x_), z(x_) {} ; 
   nvec3( float x_, float y_, float z_ ) : x(x_), y(y_), z(z_) {} ; 
-
+ 
+  static nvec3 from_vec4(const nvec4& v );  
+ 
+  bool is_zero(float eps=1e-5);  
 
   glm::vec3 as_vec3() const ; 
    
   void dump(const char* msg) const;
   const char* desc() const;
+  const char* descg() const;
 
   nvec3& operator += (const float delta);
   nvec3& operator -= (const float delta);
@@ -136,6 +141,9 @@ struct NPY_API nvec3 {
   float z ; 
 
 };
+
+
+
 
 
 struct NPY_API nivec3 

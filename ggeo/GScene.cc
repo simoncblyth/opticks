@@ -431,7 +431,7 @@ nbbox GScene::getBBox(const char* soname, NSceneConfigBBoxType bbty) const
 
     if( bbty == CSG_BBOX_ANALYTIC )
     {
-        nbbox abb = csg->bbox_analytic();         // depends on my CSG tree primitive/composite bbox calc 
+        nbbox abb = csg->bbox();         // depends on my CSG tree primitive/composite bbox calc 
         ubb.copy_from(abb);
     }
     else if(bbty == CSG_BBOX_PARSURF )

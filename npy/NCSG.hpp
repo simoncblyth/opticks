@@ -186,7 +186,10 @@ class NPY_API NCSG {
         unsigned    get_prim_mask() const ;
         std::string get_type_mask_string() const ;
     public:
-        nbbox bbox_analytic() const ;
+        nbbox     bbox() const ;
+        glm::vec4 bbox_center_extent() const ;
+        void      apply_translation( float x, float y, float z); 
+        void      apply_centering(); 
         nbbox bbox_surface_points() const ;
 
         const std::vector<glm::vec3>& getSurfacePoints() const ;

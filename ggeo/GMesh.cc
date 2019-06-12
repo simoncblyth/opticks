@@ -799,9 +799,21 @@ void GMesh::setBuffer(const char* name, GBuffer* buffer)
 
 void GMesh::applyCentering()
 {
-    glm::vec4 ce = getCE(0);  
-    LOG(info) << " ce " << gformat(ce) ; 
-    applyTranslation(-ce.x, -ce.y, -ce.z ); 
+    // use analytic bbox center_extent when there is an associated CSG solid
+
+    glm::vec4 ce = m_csg ? m_csg->bbox_center_extent() : getCE(0) ; 
+
+    LOG(debug) << " ce " << gformat(ce) ; 
+
+    glm::vec3 tla(-ce.x, -ce.y, -ce.z); 
+
+    applyTranslation( tla.x, tla.y, tla.z ); 
+
+    if(m_csg)
+    {
+        const_cast<NCSG*>(m_csg)->apply_translation( tla.x, tla.y, tla.z ); 
+    }
+
 }
 
 void GMesh::applyTranslation(float x, float y, float z )

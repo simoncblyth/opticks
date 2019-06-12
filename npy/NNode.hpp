@@ -77,6 +77,8 @@ struct NPY_API nnode
 
     virtual const char* csgname() const ;  
     virtual nbbox bbox() const ;
+    glm::vec4 bbox_center_extent() const ; 
+
 
     void check_primitive_bb( const nbbox& bb) const  ;
     void get_composite_bbox( nbbox& bb ) const ;
@@ -171,6 +173,7 @@ struct NPY_API nnode
     static const nmat4triple* global_transform(nnode* n); 
 
     void apply_centering();
+    void apply_translation( float x, float y, float z );
     void apply_placement( const nmat4triple* plc );
 
     void check_tree(unsigned mask) const ;

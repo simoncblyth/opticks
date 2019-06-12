@@ -20,7 +20,7 @@
 
 void test_apply_centering_0( NCSG* csg )  // NB this code now moved into nnode::apply_centering 
 {
-    nbbox bb0 = csg->bbox_analytic() ; 
+    nbbox bb0 = csg->bbox() ; 
     nvec4 ce0 = bb0.center_extent() ;
     bool centered0 = ce0.x == 0.f && ce0.y == 0.f && ce0.z == 0.f ; 
 
@@ -38,7 +38,7 @@ void test_apply_centering_0( NCSG* csg )  // NB this code now moved into nnode::
         root->update_gtransforms(); 
     } 
 
-    nbbox bb1 = csg->bbox_analytic();  // <-- global frame bbox, even for single primitive 
+    nbbox bb1 = csg->bbox();  // <-- global frame bbox, even for single primitive 
     nvec4 ce1 = bb1.center_extent() ;
     bool centered1 = ce1.x == 0.f && ce1.y == 0.f && ce1.z == 0.f ; 
 

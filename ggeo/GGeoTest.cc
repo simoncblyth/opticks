@@ -261,7 +261,7 @@ void GGeoTest::importCSG()
         GVolume* volume = NULL ; 
         if( is_proxy )
         { 
-            nbbox bba = csg->bbox_analytic(); 
+            nbbox bba = csg->bbox(); 
             nvec4 ce = bba.center_extent() ; 
             glm::mat4 txf(nglmext::make_translate(-ce.x, -ce.y, -ce.z)); 
             volume = m_maker->makeFromMesh(mesh, txf);
@@ -408,7 +408,7 @@ void GGeoTest::adjustContainer()
     int container_index = m_csglist->findContainerIndex() ; 
     assert( container_index > -1 ) ; 
 
-    nbbox container_bba = container->bbox_analytic(); 
+    nbbox container_bba = container->bbox(); 
 
     GMesh* replacement_mesh = GMeshMaker::Make(container_bba); 
     replacement_mesh->setIndex( container_index ) ; 
