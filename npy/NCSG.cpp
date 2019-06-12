@@ -1117,6 +1117,35 @@ glm::vec4 NCSG::bbox_center_extent() const
     return m_root->bbox_center_extent() ; 
 }
 
+
+
+
+
+bool NCSG::has_placement_translation() const 
+{
+    assert(m_root);
+    return m_root->has_placement_translation() ; 
+}
+
+glm::vec3 NCSG::get_placement_translation() const 
+{
+    assert(m_root);
+    return m_root->get_placement_translation() ; 
+}
+
+
+
+
+
+
+/**
+NCSG::set_translation
+------------------------
+
+invoked from GMesh::applyCentering for GGeoTest 
+
+**/
+
 void NCSG::set_translation(float x, float y, float z) 
 {
     assert(m_root);
@@ -1125,7 +1154,7 @@ void NCSG::set_translation(float x, float y, float z)
     postchange();  // update buffers following geometry change
 }
 
-void NCSG::set_centering() 
+void NCSG::set_centering()  
 {
     assert(m_root);
     m_root->set_centering() ; 

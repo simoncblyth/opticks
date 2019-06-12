@@ -188,16 +188,20 @@ class NPY_API NCSG {
     public:
         nbbox     bbox() const ;
         glm::vec4 bbox_center_extent() const ;
-        void      set_translation( float x, float y, float z); 
-        void      set_centering(); 
-        nbbox bbox_surface_points() const ;
-
+        nbbox     bbox_surface_points() const ;
+    public:
         const std::vector<glm::vec3>& getSurfacePoints() const ;
         unsigned getNumSurfacePoints() const ;
         float    getSurfaceEpsilon() const ; 
         static   glm::uvec4 collect_surface_points(std::vector<glm::vec3>& surface_points, const nnode* root, const NSceneConfig* config, unsigned verbosity, float epsilon );
     private:
         glm::uvec4 collect_surface_points();
+
+    public:
+        bool has_placement_translation() const ; 
+        glm::vec3 get_placement_translation() const ; 
+        void      set_translation( float x, float y, float z); 
+        void      set_centering(); 
 
     public:
         void set_lvname(const char* name);

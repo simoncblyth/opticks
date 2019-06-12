@@ -347,6 +347,28 @@ void nnode::set_centering()
     assert( centered1 ); 
 }
 
+bool nnode::has_placement() const
+{
+    return placement != NULL ;  
+}
+bool nnode::has_placement_translation() const
+{
+    return placement != NULL && placement->is_translation() ;  
+}
+glm::vec3 nnode::get_placement_translation() const 
+{
+    assert( has_placement_translation() ); 
+    return placement->get_translation() ; 
+}
+
+
+/**
+nnode::set_translation
+-----------------------
+
+Invoked from NCSG::set_translation/GMesh::applyCentering from GGeoTest
+
+**/
 
 void nnode::set_translation( float x, float y, float z )
 {

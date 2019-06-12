@@ -172,9 +172,14 @@ struct NPY_API nnode
     const nmat4triple* global_transform(); 
     static const nmat4triple* global_transform(nnode* n); 
 
-    void set_centering();
+
+    bool      has_placement() const ; 
+    bool      has_placement_translation() const ; 
+    glm::vec3 get_placement_translation() const ; 
+
     void set_translation( float x, float y, float z );
     void set_placement( const nmat4triple* plc );
+    void set_centering();
 
     void check_tree(unsigned mask) const ;
     static void check_tree_r(const nnode* node, const nnode* parent, unsigned depth, unsigned mask);

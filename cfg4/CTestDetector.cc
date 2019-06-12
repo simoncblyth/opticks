@@ -152,17 +152,22 @@ G4VPhysicalVolume* CTestDetector::makeChildVolume(const NCSG* csg, const char* l
 
     const G4Material* material = m_mlib->convertMaterial(imat);
 
-    glm::vec3 placement(0,0,0) ;  
-
-    //if(csg->is_box()) boxCenteringFix( placement, const_cast<nnode*>(csg->getRoot()) ); 
 
     G4VSolid* solid = CMaker::MakeSolid( csg ); 
 
+    G4ThreeVector placement(0,0,0); 
+  
+    if(csg->has_placement_translation())
+    {
+        glm::vec3 tlate = csg->get_placement_translation(); 
+        LOG(fatal) << " csg.has_placement_translation " << gformat(tlate) ; 
+        placement.set( tlate.x, tlate.y, tlate.z ); 
+    }
+
+
     G4LogicalVolume* lv = new G4LogicalVolume(solid, const_cast<G4Material*>(material), strdup(lvn), 0,0,0);
 
-    G4ThreeVector plc(placement.x, placement.y, placement.z ); 
-
-    G4VPhysicalVolume* pv = new G4PVPlacement(0, plc, lv, strdup(pvn) ,mother,false,0);
+    G4VPhysicalVolume* pv = new G4PVPlacement(0, placement, lv, strdup(pvn) ,mother,false,0);
 
     LOG(LEVEL) 
           << " csg.spec " << spec 

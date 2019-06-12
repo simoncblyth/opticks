@@ -39,6 +39,222 @@ tboolean-box is not effected::
 
 
 
+ISSUE 4 : FIXED : by applying the placement translation in CTestDetector 
+---------------------------------------------------------------------------
+
+Hmm, but is it a "good" fix ? Its kinda mixing up 
+solid level things (in NNode/GMesh usage) 
+with structural level things in CTestDetector/Geant4 usage. 
+
+* OpenGL triangulated geometry (GMesh)
+* OptiX raytrace geometry (NCSG)
+* Geant4 geometry (CSolid)  
+
+
+::
+
+    139 G4VPhysicalVolume* CTestDetector::makeChildVolume(const NCSG* csg, const char* lvn, const char* pvn, G4LogicalVolume* mother )
+    140 {
+    141     assert( csg );
+    142     assert( lvn );
+    143     assert( pvn );
+    144 
+    145     const char* spec = csg->getBoundary();
+    146     assert( spec );
+    147 
+    148     unsigned boundary = m_blib->addBoundary(spec);
+    149     // this should not actually add any new boundaries, that all happened earlier in GGeoTest? 
+    150 
+    151     GMaterial* imat = m_blib->getInnerMaterial(boundary);
+    152 
+    153     const G4Material* material = m_mlib->convertMaterial(imat);
+    154 
+    155     
+    156     G4VSolid* solid = CMaker::MakeSolid( csg );
+    157     
+    158     G4ThreeVector placement(0,0,0);
+    159     
+    160     if(csg->has_placement_translation())
+    161     {
+    162         glm::vec3 tlate = csg->get_placement_translation();
+    163         LOG(fatal) << " csg.has_placement_translation " << gformat(tlate) ;
+    164         placement.set( tlate.x, tlate.y, tlate.z ); 
+    165     }   
+    166 
+    167     
+    168     G4LogicalVolume* lv = new G4LogicalVolume(solid, const_cast<G4Material*>(material), strdup(lvn), 0,0,0);
+    169 
+    170     G4VPhysicalVolume* pv = new G4PVPlacement(0, placement, lv, strdup(pvn) ,mother,false,0);
+    171 
+
+
+
+
+
+tboolean-;PROXYLV=17 tboolean-proxy-ip::::
+
+    In [4]: b.rposti(0)
+    Out[4]: 
+    A()sliced
+    A([[  20.6922,  -63.5134, -824.7411,    0.    ],
+       [  20.6922,  -63.5134, -274.9473,    1.8342],
+       [  20.6922,  -63.5134, -264.9414,    1.8946],
+       [  20.6922,  -63.5134,  258.5145,    3.6409],
+       [  20.9443,  -64.2443,  268.4195,    3.7007],
+       [  20.9191,  -64.1687,  824.8419,    5.5568]])
+
+    In [5]: a.rposti(0) - b.rposti(0)
+    Out[5]: 
+    A()sliced
+    A([[0., 0., 0., 0.],
+       [0., 0., 0., 0.],
+       [0., 0., 0., 0.],
+       [0., 0., 0., 0.],
+       [0., 0., 0., 0.],
+       [0., 0., 0., 0.]])
+
+
+
+ISSUE 4 : G4 geometry is not centered (+Z shifted) 
+-----------------------------------------------------
+
+Can see it (reflecting before reaching the geometry) by visualizing the G4 propagation::
+
+    PROXYLV=17 tboolean.sh --interop --load --vizg4
+
+Compare points for 1st photon, 
+
+tboolean-;PROXYLV=17 tboolean-proxy-ip::
+
+    In [5]: a.seqhis_ls[:1]
+    Out[5]: TO BT BT BT BT SA
+
+    In [6]: b.seqhis_ls[:1]
+    Out[6]: TO BT BT BT BT SA
+
+    In [1]: a.rposti(0)
+    Out[1]: 
+    A()sliced
+    A([[  20.6922,  -63.5134, -824.7411,    0.    ],
+       [  20.6922,  -63.5134, -274.9473,    1.8342],
+       [  20.6922,  -63.5134, -264.9414,    1.8946],
+       [  20.6922,  -63.5134,  258.5145,    3.6409],
+       [  20.9443,  -64.2443,  268.4195,    3.7007],
+       [  20.9191,  -64.1687,  824.8419,    5.5568]])
+
+    In [2]: b.rposti(0)     ## G4 geometry lacks the +Z shift
+    Out[2]: 
+    A()sliced
+    A([[  20.6922,  -63.5134, -824.7411,    0.    ],
+       [  20.6922,  -63.5134, -353.9105,    1.5705],
+       [  20.6922,  -63.5134, -343.9047,    1.6309],
+       [  20.6922,  -63.5134,  179.5512,    3.3772],
+       [  20.9443,  -64.2443,  189.4815,    3.4376],
+       [  20.9191,  -64.1687,  824.8419,    5.5568]])
+
+    In [3]: a.rposti(0) - b.rposti(0)
+    Out[3]: 
+    A()sliced
+    A([[ 0.    ,  0.    ,  0.    ,  0.    ],
+       [ 0.    ,  0.    , 78.9632,  0.2637],
+       [ 0.    ,  0.    , 78.9632,  0.2637],
+       [ 0.    ,  0.    , 78.9632,  0.2637],
+       [ 0.    ,  0.    , 78.938 ,  0.2631],
+       [ 0.    ,  0.    ,  0.    ,  0.    ]])
+
+    In [4]: 
+
+::
+
+    [blyth@localhost opticks]$ GMeshLibTest 
+    2019-06-12 15:48:00.156 INFO  [93420] [GMeshLib::loadMeshes@342]  loaded  meshes 40 solids 40
+    2019-06-12 15:48:00.156 INFO  [93420] [test_dump1@103]  num_mesh 40
+     0                       Upper_LS_tube0x5b2e9f0 ce0 0.0000,0.0000,0.0000,1750.0000 ce1 0.0000,0.0000,0.0000,1750.0000  0
+     1                    Upper_Steel_tube0x5b2eb10 ce0 0.0000,0.0000,0.0000,1750.0000 ce1 0.0000,0.0000,0.0000,1750.0000  1
+     2                    Upper_Tyvek_tube0x5b2ec30 ce0 0.0000,0.0000,0.0000,1750.0000 ce1 0.0000,0.0000,0.0000,1750.0000  2
+     3                       Upper_Chimney0x5b2e8e0 ce0 0.0000,0.0000,0.0000,1750.0000 ce1 0.0000,0.0000,0.0000,1750.0000  3
+     4                                sBar0x5b34ab0 ce0 0.0000,0.0000,0.0000,3430.0000 ce1 0.0000,0.0000,0.0000,3430.0000  4
+     5                                sBar0x5b34920 ce0 0.0000,0.0000,0.0000,3430.0000 ce1 0.0000,0.0000,0.0000,3430.0000  5
+     6                         sModuleTape0x5b34790 ce0 0.0000,0.0000,0.0000,3430.0000 ce1 0.0000,0.0000,0.0000,3430.0000  6
+     7                             sModule0x5b34600 ce0 0.0000,0.0000,0.0000,3430.6001 ce1 0.0000,0.0000,0.0000,3430.6001  7
+     8                              sPlane0x5b34470 ce0 0.0000,0.0000,0.0000,3430.6001 ce1 0.0000,0.0000,0.0000,3430.6001  8
+     9                               sWall0x5b342e0 ce0 0.0000,0.0000,0.0000,3430.6001 ce1 0.0000,0.0000,0.0000,3430.6001  9
+    10                              sAirTT0x5b34000 ce0 0.0000,0.0000,0.0000,24000.0000 ce1 0.0000,0.0000,0.0000,24000.0000 10
+    11                            sExpHall0x4bcd390 ce0 0.0000,0.0000,0.0000,24000.0000 ce1 0.0000,0.0000,0.0000,24000.0000 11
+    12                            sTopRock0x4bccfc0 ce0 0.0000,0.0000,0.0000,27000.0000 ce1 0.0000,0.0000,0.0000,27000.0000 12
+    13                             sTarget0x4bd4340 ce0 0.0000,0.0000,60.0000,17760.0000 ce1 0.0000,0.0000,0.0000,17760.0000 13
+    14                            sAcrylic0x4bd3cd0 ce0 0.0000,0.0000,0.0000,17820.0000 ce1 0.0000,0.0000,0.0000,17820.0000 14
+    15                              sStrut0x4bd4b80 ce0 0.0000,0.0000,0.0000,600.0000 ce1 0.0000,0.0000,0.0000,600.0000 15
+    16                          sFasteners0x4c01080 ce0 0.0000,0.0000,-92.5000,150.0000 ce1 0.0000,0.0000,0.0000,150.0000 16
+    17                               sMask0x4ca38d0 ce0 0.0000,0.0000,*-78.9500*,274.9500 ce1 0.0000,0.0000,0.0000,274.9500 17
+    18             PMT_20inch_inner1_solid0x4cb3610 ce0 0.0000,0.0000,89.5000,249.0000 ce1 0.0000,0.0000,0.0000,249.0000 18
+    19             PMT_20inch_inner2_solid0x4cb3870 ce0 0.0000,0.0000,-167.0050,249.0000 ce1 0.0000,0.0000,0.0000,249.0000 19
+    20               PMT_20inch_body_solid0x4c90e50 ce0 0.0000,0.0000,-77.5050,261.5050 ce1 0.0000,0.0000,0.0000,261.5050 20
+    21                PMT_20inch_pmt_solid0x4c81b40 ce0 0.0000,0.0000,-77.5050,261.5060 ce1 0.0000,0.0000,-0.0000,261.5060 21
+    22                       sMask_virtual0x4c36e10 ce0 0.0000,0.0000,-79.0000,275.0500 ce1 0.0000,0.0000,0.0000,275.0500 22
+
+
+Am I not updating NodeLib ?::
+
+    199 G4VPhysicalVolume* CTestDetector::makeDetector_NCSG()
+    200 {
+    201     GNodeLib* nolib = m_geotest->getNodeLib();
+    202     assert( nolib );
+    203     unsigned numVolumes = nolib->getNumVolumes();
+    204 
+    205     LOG(LEVEL)
+    206         << " numVolumes " << numVolumes
+    207         ;
+    208 
+    209     NCSG* universe = m_geotest->getUniverse();
+    210     assert(universe);
+    211     G4VPhysicalVolume* top = universe ? makeVolumeUniverse(universe) : NULL ;
+    212     G4LogicalVolume* mother = top ? top->GetLogicalVolume() : NULL ;
+    213 
+    214     if(mother)
+    215     {
+    216         mother->SetVisAttributes (CVis::MakeInvisible());
+    217     }
+    218 
+    219     G4VPhysicalVolume* ppv = NULL ;
+    220 
+    221     for(unsigned i=0 ; i < numVolumes ; i++)
+    222     {
+    223         GVolume* kso = nolib->getVolume(i);
+    224         const char* lvn = kso->getLVName();
+    225         const char* pvn = kso->getPVName();
+    226         const GMesh* mesh = kso->getMesh();
+    227         const NCSG* csg = mesh->getCSG();
+    228         const char* spec = csg->getBoundary();
+
+
+The volumes currently have identity transforms::
+
+    162 GVolume* GMaker::makeFromMesh( const GMesh* mesh ) const
+    163 {
+    164     glm::mat4 txf(1.0f);
+    165     return makeFromMesh( mesh, txf );
+    166 }
+    167 
+    168 GVolume* GMaker::makeFromMesh( const GMesh* mesh, const glm::mat4& txf   ) const
+    169 {
+    170     const NCSG* csg = mesh->getCSG();
+    171 
+    172     unsigned index = mesh->getIndex();
+    173 
+    174     const char* spec = csg->getBoundary();
+    175 
+    176     GMatrixF* transform = new GMatrix<float>(glm::value_ptr(txf));
+    177 
+    178     GVolume* volume = new GVolume(index, transform, mesh );
+    179     // csg is mesh-qty not a node-qty, boundary spec is a node-qty : so this is just for testing
+    180 
+
+
+
+
+
+
 ISSUE 3 : FIXED : raytrace geometry is not centered, but OpenGL triangulated is 
 -----------------------------------------------------------------------------------------
 

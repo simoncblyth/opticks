@@ -1,4 +1,4 @@
-
+// TEST=NGLMExtTest om-t
 
 #include "NGLMExt.hpp"
 #include "GLMFormat.hpp"
@@ -6,7 +6,7 @@
 #include <glm/gtc/epsilon.hpp>
 
 
-#include "PLOG.hh"
+#include "OPTICKS_LOG.hh"
 
 void test_stream()
 {
@@ -231,6 +231,25 @@ void test_make_transform()
 
 
 
+
+
+void test_nmat4triple_is_translation()
+{
+    glm::vec3 t0(100, 200, 300); 
+    const nmat4triple* plc = nmat4triple::make_translate( t0 );  
+    glm::vec3 t1 = plc->get_translation(); 
+
+    LOG(info) << "t0 " << gformat(t0) ;   
+    LOG(info) << "t1 " << gformat(t1) ;   
+
+    assert( plc->is_translation() ); 
+}
+
+
+
+
+
+
 void test_nmat4triple_make_translated()
 {
     LOG(info) << "test_nmat4triple_make_translated" ;
@@ -261,6 +280,7 @@ void test_nmat4triple_make_translated()
          << std::endl 
         ;  
 }
+
 
 
 void test_nmat4triple_id_digest()
@@ -404,10 +424,9 @@ void test_make_yzflip()
 
 
 
-
 int main(int argc, char** argv)
 {
-    PLOG_(argc, argv) ; 
+    OPTICKS_LOG(argc, argv) ; 
 
     //test_stream();
     //test_invert_tr();
@@ -424,7 +443,8 @@ int main(int argc, char** argv)
 
     //test_nmat4triple_is_identity();
 
-    test_make_yzflip(); 
+    //test_make_yzflip(); 
+    test_nmat4triple_is_translation() ; 
 
 
     return 0 ; 

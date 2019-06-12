@@ -623,6 +623,23 @@ bool nmat4triple::is_equal_to(const nmat4triple* other, float eps) const
     return dt < eps && dv < eps && dq < eps ; 
 }
 
+
+
+
+glm::vec3 nmat4triple::get_translation() const 
+{
+    glm::vec3 tla(t[3]) ;  
+    return tla ; 
+}
+
+bool nmat4triple::is_translation(float eps) const 
+{
+    glm::mat3 i3(1.f); 
+    glm::mat3 t3(t) ; 
+    float dt = nglmext::compDiff(t3, i3);
+    return dt < eps ; 
+}
+
 bool nmat4triple::is_identity(float eps) const 
 {
     glm::mat4 id(1.0) ; 
