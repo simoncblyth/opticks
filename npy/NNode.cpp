@@ -366,6 +366,11 @@ top node and invoking update_gtransforms(). Which
 collects all transforms from leaf to root and then
 the placmement.
 
+BUT : it seems NCSG::collect_global_transforms is going to
+invoke node->global_transform() again ... so need to 
+leave the placement ?
+
+
 **/
 
 void nnode::apply_placement( const nmat4triple* plc )
@@ -1071,27 +1076,27 @@ float ndifference::operator()(float x, float y, float z) const
 
 
 
-void nnode::AdjustToFit(nnode* root, const nbbox& container, float scale, float delta ) 
+void nnode::ResizeToFit(nnode* root, const nbbox& container, float scale, float delta ) 
 {
     if( root->type == CSG_BOX || root->type == CSG_BOX3)
     {
         nbox* box = dynamic_cast<nbox*>(root)  ;
         assert(box) ; 
-        box->adjustToFit(container, scale, delta );
+        box->resizeToFit(container, scale, delta );
     }
     else if( root->type == CSG_SPHERE )
     {
         nsphere* sph = dynamic_cast<nsphere*>(root)  ;
         assert(sph) ; 
-        sph->adjustToFit(container, scale, delta );
+        sph->resizeToFit(container, scale, delta );
     }
     else
     {
-        LOG(fatal) << "nnode::AdjustToFit"
-                   << " auto-containement only implemented for BOX and SPHERE"
-                   << " root: " << root->desc()
-                   ; 
-        assert(0 && "nnode::AdjustToFit" ); 
+        LOG(fatal)
+            << " auto-containement only implemented for BOX and SPHERE"
+            << " root: " << root->desc()
+            ; 
+        assert(0 && "nnode::ResizeToFit" ); 
     }
 }
 
@@ -2009,7 +2014,7 @@ void nnode::reconstruct_ellipsoid( glm::vec3& axes, glm::vec2& zcut, glm::mat4& 
     float sy = d.s[1][1] ; 
     float sz = d.s[2][2] ;
 
-    LOG(info) 
+    LOG(debug) 
          << " sx " << sx  
          << " sy " << sy  
          << " sz " << sz 

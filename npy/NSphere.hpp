@@ -18,7 +18,7 @@ struct NPY_API nsphere : nnode {
 
     float operator()(float x, float y, float z) const ;
 
-    void adjustToFit(const nbbox& container_bb, float scale, float delta);
+    void resizeToFit(const nbbox& container_bb, float scale, float delta);
 
 
     nbbox bbox() const ;

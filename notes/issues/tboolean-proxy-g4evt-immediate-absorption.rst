@@ -38,8 +38,73 @@ tboolean-box is not effected::
    tboolean.sh box
 
 
-Issue : all g4 photons are immediately absorbed without going anywhere
-----------------------------------------------------------------------------
+
+ISSUE 3 : raytrace geometry is not centered, but OpenGL triangulated is 
+-----------------------------------------------------------------------------------------
+
+* history matching with G4 presumably means it is not centered either
+
+
+ISSUE 2 : Changing setSpaceDomain as a result of the 1mm delta on extent of Universe
+-----------------------------------------------------------------------------------------
+
+Universe is a G4 only wrapper construct to reconcile the surface and volume models,
+but currently it is leading to a change in Opticks extent : that 
+might be making compressed record positions slightly mismatch non-compressed ones.
+
+But it depends on when OpticksEvents are created (which capture the domains) 
+relative to setSpaceDomain change 
+ 
+::
+
+   2019-06-12 14:16:02.174 FATAL [370009] [Opticks::setSpaceDomain@1926]  changing w 824.85 -> 825.85
+
+
+
+
+ISSUE 1 : FIX : move to applyCentering on the proxied at GMesh and NCSG level
+------------------------------------------------------------------------------
+
+* catches the geometry early and changes it in GMesh::applyCentering NCSG::apply_centering, 
+  avoiding complications at higher levels
+
+* succeeds to make G4 and OK histories line up, BUT see ISSUE 2,3::
+
+    [2019-06-12 14:16:09,102] p370251 {/home/blyth/opticks/ana/seq.py:291} INFO -  c2sum 2.2296304566157255 ndf 3 c2p 0.7432101522052418 c2_pval 0.5261357005113207 
+    AB(1,torch,tboolean-proxy-17)  None 0 
+    A tboolean-proxy-17/tboolean-proxy-17/torch/  1 :  20190612-1416 maxbounce:9 maxrec:10 maxrng:3000000 /tmp/tboolean-proxy-17/evt/tboolean-proxy-17/torch/1/fdom.npy () 
+    B tboolean-proxy-17/tboolean-proxy-17/torch/ -1 :  20190612-1416 maxbounce:9 maxrec:10 maxrng:3000000 /tmp/tboolean-proxy-17/evt/tboolean-proxy-17/torch/-1/fdom.npy (recstp) 
+    Rock//perfectAbsorbSurface/Vacuum,Vacuum///GlassSchottF2
+    tboolean-proxy-17
+    .                seqhis_ana  1:tboolean-proxy-17:tboolean-proxy-17   -1:tboolean-proxy-17:tboolean-proxy-17        c2        ab        ba 
+    .                              10000     10000         4.71/10 =  0.47  (pval:0.910 prob:0.090)  
+    0000           8ccccd      7729      7723             0.00        1.001 +- 0.011        0.999 +- 0.011  [6 ] TO BT BT BT BT SA
+    0001              8bd       580       610             0.76        0.951 +- 0.039        1.052 +- 0.043  [3 ] TO BR SA
+    0002            8cbcd       564       559             0.02        1.009 +- 0.042        0.991 +- 0.042  [5 ] TO BT BR BT SA
+    0003          8ccbccd       491       490             0.00        1.002 +- 0.045        0.998 +- 0.045  [7 ] TO BT BT BR BT BT SA
+    0004        8cccbcccd       423       416             0.06        1.017 +- 0.049        0.983 +- 0.048  [9 ] TO BT BT BT BR BT BT BT SA
+    0005       8cccbcbccd        29        19             2.08        1.526 +- 0.283        0.655 +- 0.150  [10] TO BT BT BR BT BR BT BT BT SA
+    0006         8ccbbccd        28        25             0.17        1.120 +- 0.212        0.893 +- 0.179  [8 ] TO BT BT BR BR BT BT SA
+    0007       ccbccbcccd        26        24             0.08        1.083 +- 0.212        0.923 +- 0.188  [10] TO BT BT BT BR BT BT BR BT BT
+    0008         8cccbbcd        26        31             0.44        0.839 +- 0.164        1.192 +- 0.214  [8 ] TO BT BR BR BT BT BT SA
+    0009         8cbbcccd        24        31             0.89        0.774 +- 0.158        1.292 +- 0.232  [8 ] TO BT BT BT BR BR BT SA
+    0010       8ccbcbcccd        20        23             0.21        0.870 +- 0.194        1.150 +- 0.240  [10] TO BT BT BT BR BT BR BT BT SA
+    0011          8cbbbcd         6         3             0.00        2.000 +- 0.816        0.500 +- 0.289  [7 ] TO BT BR BR BR BT SA
+    0012              86d         5         2             0.00        2.500 +- 1.118        0.400 +- 0.283  [3 ] TO SC SA
+    0013       bcbccbcccd         4         4             0.00        1.000 +- 0.500        1.000 +- 0.500  [10] TO BT BT BT BR BT BT BR BT BR
+    0014        8cbbcbccd         4         4             0.00        1.000 +- 0.500        1.000 +- 0.500  [9 ] TO BT BT BR BT BR BR BT SA
+    0015       ccbbcbcccd         4         1             0.00        4.000 +- 2.000        0.250 +- 0.250  [10] TO BT BT BT BR BT BR BR BT BT
+    0016          8cc6ccd         4         5             0.00        0.800 +- 0.400        1.250 +- 0.559  [7 ] TO BT BT SC BT BT SA
+    0017       cbbccbcccd         3         0             0.00        0.000 +- 0.000        0.000 +- 0.000  [10] TO BT BT BT BR BT BT BR BR BT
+    0018       bbccbcbccd         3         0             0.00        0.000 +- 0.000        0.000 +- 0.000  [10] TO BT BT BR BT BR BT BT BR BR
+    0019          86ccccd         3         3             0.00        1.000 +- 0.577        1.000 +- 0.577  [7 ] TO BT BT BT BT SC SA
+    .                              10000     10000         4.71/10 =  0.47  (pval:0.910 prob:0.090)  
+
+
+
+
+ISSUE 1 : NOW FIXED : all g4 photons are immediately absorbed without going anywhere 
+-----------------------------------------------------------------------------------------------------------------------------------------------
 
 
 tboolean-;PROXYLV=17 tboolean-proxy-ip::

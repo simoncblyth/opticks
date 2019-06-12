@@ -212,7 +212,7 @@ GGeoTest::importCSG
 --------------------
 
 Imports CSG trees from the m_csglist adding GVolume instances to the local GNodeLib 
-assuming tree order from outermost to innermost volume. 
+assuming tree order is from outermost to innermost volume. 
 
 1. adds test materials to m_mlib
 2. reuse materials mentioned in test geometry boundary specification strings 
@@ -239,7 +239,7 @@ void GGeoTest::importCSG()
 
     reuseMaterials(m_csglist);
    
-    prepareMeshes(); 
+    prepareMeshes();     
 
     adjustContainer(); 
 
@@ -252,31 +252,7 @@ void GGeoTest::importCSG()
         primIdx++ ; // each tree is separate OptiX primitive, with own line in the primBuffer 
 
         GMesh* mesh = m_meshes[i] ; 
-        const NCSG* csg = mesh->getCSG(); 
-        const NCSG* other = csg->getOther(); 
-
-        bool is_proxy = other && other->isProxy() ;  // means that csg "is_proxied"
-        if( is_proxy ) assert( other != csg ); 
-
-        GVolume* volume = NULL ; 
-        if( is_proxy )
-        { 
-            nbbox bba = csg->bbox(); 
-            nvec4 ce = bba.center_extent() ; 
-            glm::mat4 txf(nglmext::make_translate(-ce.x, -ce.y, -ce.z)); 
-            volume = m_maker->makeFromMesh(mesh, txf);
-
-            LOG(fatal) 
-                << "centering the proxied" 
-                << " txf " << glm::to_string(txf) 
-                << " ce " << ce.desc()
-                << " bba " << bba.description()
-                ; 
-        } 
-        else
-        {
-            volume = m_maker->makeFromMesh(mesh);
-        } 
+        GVolume* volume = m_maker->makeFromMesh(mesh);
 
         if(prior)
         {
@@ -285,7 +261,9 @@ void GGeoTest::importCSG()
         }
         prior = volume ; 
 
-        const char* spec = mesh->getCSG()->getBoundary(); 
+
+        const NCSG* csg = mesh->getCSG(); 
+        const char* spec = csg->getBoundary(); 
         assert( spec ); 
 
         relocateSurfaces(volume, spec);
@@ -305,11 +283,12 @@ void GGeoTest::importCSG()
 
 
 
-
-
 /**
 GGeoTest::prepareMeshes
 ------------------------------
+
+Proxied in geometry is centered
+
 
 **/
 
@@ -340,6 +319,54 @@ void GGeoTest::prepareMeshes()
             ;
 }
 
+/**
+GGeoTest::importMeshViaProxy
+------------------------------
+
+Proxy CSG solids have the proxylv attribute set to
+a value greater than -1 which refers to a solid from
+the basis geometry.  
+
+GMeshLib loaded GMesh have an associated NCSG instance
+with the analytic representation of the solid.
+
+**/
+
+GMesh* GGeoTest::importMeshViaProxy(NCSG* proxy)
+{
+    assert( proxy->isProxy() ); 
+    unsigned lvIdx = proxy->getProxyLV(); 
+    const char* spec = proxy->getBoundary();  
+    unsigned index = proxy->getIndex(); 
+
+    assert( spec ); 
+
+    if(m_dbggeotest) 
+        LOG(info) 
+            << "["
+            << " proxy.index " << index
+            << " proxy.spec " << spec 
+            << " proxyLV " << lvIdx 
+            ; 
+
+    GMesh* mesh = m_meshlib->getMeshSimple(lvIdx); 
+    assert( mesh ); 
+    const NCSG* csg = mesh->getCSG(); 
+    assert( csg ) ; 
+
+
+    assert( csg->getBoundary() == NULL && "expecting fresh csg from meshlib to have no boundary assigned") ; 
+    const_cast<NCSG*>(csg)->setOther(proxy);  // keep note of the proxy from whence it came
+
+    mesh->setIndex( index ) ; 
+    mesh->setCSGBoundary( spec );  // adopt the boundary from the proxy object setup in python
+
+    mesh->applyCentering();        // applies to both GMesh and NCSG instances
+
+    return mesh ;  
+}
+
+
 
 /**
 GGeoTest::adjustContainer
@@ -354,6 +381,10 @@ triangulated geometry GMesh for the OpenGL visualization.
 So use GMaker polygonization to do so, replacinging the 
 mesh with a newly created one.
 
+This is kinda awkward because its modifying this,
+ would be cleaner just to create a container GVolume/GMesh/NCSG 
+combo in separate method from a bb or ce or just extent.
+
 **/
 
 void GGeoTest::adjustContainer()
@@ -362,7 +393,6 @@ void GGeoTest::adjustContainer()
     {
         return ;  
     }
-
 
     NCSG* container = m_csglist->findContainer(); 
     assert(container) ; 
@@ -388,9 +418,10 @@ void GGeoTest::adjustContainer()
     NCSG* proxy = m_csglist->findProxy(); 
     assert( proxy ) ; 
 
-
     unsigned proxy_index = m_csglist->findProxyIndex();  
     assert( proxy_index < m_meshes.size() ) ; 
+
+
 
     GMesh* viaproxy = m_meshes[proxy_index] ; 
     const NCSG* replacement_solid = viaproxy->getCSG();  
@@ -398,6 +429,8 @@ void GGeoTest::adjustContainer()
     assert( index == proxy_index ); 
 
     m_csglist->setTree( index, const_cast<NCSG*>(replacement_solid) ); 
+    // ^^^ awkward reachback : perhaps update this on proxying 
+
     m_csglist->adjustContainerSize();  
 
 
@@ -414,6 +447,7 @@ void GGeoTest::adjustContainer()
     replacement_mesh->setIndex( container_index ) ; 
     replacement_mesh->setCSG(container); 
 
+
     m_meshes[container_index] = replacement_mesh ; 
 
     if(m_dbggeotest) 
@@ -429,46 +463,8 @@ void GGeoTest::adjustContainer()
 }
 
 
-/**
-GGeoTest::importMeshViaProxy
-------------------------------
 
-Proxy CSG solids have the proxylv attribute set to
-a value greater than -1 which refers to a solid from
-the basis geometry.
 
-**/
-
-GMesh* GGeoTest::importMeshViaProxy(NCSG* tree)
-{
-    assert( tree->isProxy() ); 
-    unsigned lvIdx = tree->getProxyLV(); 
-    const char* spec = tree->getBoundary();  
-    assert( spec ); 
-
-    if(m_dbggeotest) 
-        LOG(info) 
-            << "["
-            << " proxyLV " << lvIdx 
-            << " proxy.spec " << spec 
-            ; 
-
-    GMesh* mesh = m_meshlib->getMeshSimple(lvIdx); 
-    assert( mesh ); 
-    mesh->setIndex( tree->getIndex() ) ; 
-
-    const NCSG* csg = mesh->getCSG(); 
-    assert( csg ) ; 
-    assert( csg->getBoundary() == NULL && "expecting fresh csg from meshlib to have no boundary assigned") ; 
-
-    const_cast<NCSG*>(csg)->setOther(tree);  // keep note of the proxy from whence it came
-
-    mesh->setCSGBoundary( spec );  // adopt the boundary from the proxy object setup in python
-
-    mesh->applyCentering(); 
-
-    return mesh ;  
-}
 
 
 /**

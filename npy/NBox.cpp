@@ -473,7 +473,7 @@ void nbox::nudge(unsigned s, float delta)
 
 
 /**
-nbox::adjustToFit
+nbox::resizeToFit
 ------------------
 
 Replaces existing dimensons with those of the argument bounding box 
@@ -481,7 +481,7 @@ with scale and delta applied.
 
 **/
 
-void nbox::adjustToFit(const nbbox& bb, float scale, float delta )
+void nbox::resizeToFit(const nbbox& bb, float scale, float delta )
 {
     nquad qce ; 
 

@@ -37,6 +37,9 @@
 #include "PLOG.hh"
 
 
+
+const plog::Severity CPropLib::LEVEL = debug ; 
+
 const char* CPropLib::SENSOR_MATERIAL = "Bialkali" ;
 
 
@@ -65,16 +68,16 @@ GSurfaceLib* CPropLib::getSurfaceLib()
 
 void CPropLib::init()
 {
-    pLOG(m_level,-2) << "[" ; 
+    LOG(LEVEL) << "[" ; 
 
-    LOG(info) << m_slib->desc(); 
+    LOG(LEVEL) << m_slib->desc(); 
     //m_slib->dump(); 
 
     m_sensor_surface = m_slib->getSensorSurface(0) ;
 
     if(m_sensor_surface == NULL)
     {
-        LOG(fatal) << " surface lib sensor_surface NULL " ;
+        LOG(LEVEL) << " surface lib sensor_surface NULL " ;
         //assert(0);   // this happens with test running such as tboolean-box 
     }
     else
@@ -90,7 +93,7 @@ void CPropLib::init()
     initSetupOverrides();
  
     //convert();
-    pLOG(m_level,-2) << "]" ; 
+    LOG(LEVEL) << "]" ; 
 }
 
 
@@ -111,19 +114,19 @@ void CPropLib::initSetupOverrides()
 
 void CPropLib::initCheckConstants()
 {
-    LOG(debug) << "CPropLib::initCheckConstants" 
-               << " mm " << mm 
-               << " MeV " << MeV
-               << " nanosecond " << nanosecond
-               << " ns " << ns
-               << " nm " << nm
-               << " GC::nanometer " << GConstant::nanometer
-               << " h_Planck " << h_Planck
-               << " GC::h_Planck " << GConstant::h_Planck
-               << " c_light " << c_light
-               << " GC::c_light " << GConstant::c_light
-               << " dscale " << m_dscale 
-               ;   
+    LOG(debug) 
+        << " mm " << mm 
+        << " MeV " << MeV
+        << " nanosecond " << nanosecond
+        << " ns " << ns
+        << " nm " << nm
+        << " GC::nanometer " << GConstant::nanometer
+        << " h_Planck " << h_Planck
+        << " GC::h_Planck " << GConstant::h_Planck
+        << " c_light " << c_light
+        << " GC::c_light " << GConstant::c_light
+        << " dscale " << m_dscale 
+        ;   
 
 }
 

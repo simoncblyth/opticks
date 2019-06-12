@@ -145,7 +145,7 @@ void NCSGList::adjustContainerSize()
 
     float scale = container->getContainerScale(); // hmm should be prop of the list not the tree ? 
     float delta = 0.f ; 
-    container->adjustToFit(m_bbox, scale, delta );
+    container->resizeToFit(m_bbox, scale, delta );
 
     nbbox bba2 = container->bbox();
     m_bbox.include(bba2);   // update for the auto-container, used by NCSGList::createUniverse
@@ -261,7 +261,7 @@ NCSG* NCSGList::createUniverse(float scale, float delta) const
             ;
     }
 
-    universe->adjustToFit( m_bbox, scale, delta ); 
+    universe->resizeToFit( m_bbox, scale, delta ); 
     /// huh : not re-exported : this means different geometry on CPU and GPU ??
     return universe ; 
 }

@@ -30,6 +30,7 @@ class G4VSolid;
 
 #include "CDetector.hh"
 #include "CFG4_API_EXPORT.hh"
+#include "plog/Severity.h"
 
 /**
 
@@ -49,6 +50,7 @@ is invoked.
 
 class CFG4_API CTestDetector : public CDetector
 {
+    static const plog::Severity LEVEL ; 
  public:
     CTestDetector(OpticksHub* hub, OpticksQuery* query=NULL, CSensitiveDetector* sd=NULL);
   private:

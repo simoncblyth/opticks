@@ -131,7 +131,7 @@ G4VSolid* CMaker::MakeSolid_r(const nnode* node, unsigned depth )  //static
         {
             if(left_sphere)
             { 
-                LOG(error) << " non-identity left transform on sphere (an ellipsoid perhaps) " ; 
+                LOG(debug) << " non-identity left transform on sphere (an ellipsoid perhaps) " ; 
             }
             else
             {

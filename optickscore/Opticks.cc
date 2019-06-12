@@ -278,6 +278,10 @@ Opticks::Opticks(int argc, char** argv, const char* argforced )
     m_detector(NULL),
     m_event_count(0),
     m_domains_configured(false),
+    m_time_domain(0.f, 0.f, 0.f, 0.f),
+    m_space_domain(0.f, 0.f, 0.f, 0.f),
+    m_wavelength_domain(0.f, 0.f, 0.f, 0.f),
+    m_settings(0,0,0,0),
     m_run(new OpticksRun(this)),
     m_evt(NULL),
     m_ana(new OpticksAna(this)),
@@ -1916,6 +1920,11 @@ void Opticks::setSpaceDomain(const glm::vec4& sd)
 
 void Opticks::setSpaceDomain(float x, float y, float z, float w)
 {
+    if( m_space_domain.x != 0.f && m_space_domain.x != x ) LOG(fatal) << " changing x " << m_space_domain.x << " -> " << x ;  
+    if( m_space_domain.y != 0.f && m_space_domain.y != y ) LOG(fatal) << " changing y " << m_space_domain.y << " -> " << y ;  
+    if( m_space_domain.z != 0.f && m_space_domain.z != z ) LOG(fatal) << " changing z " << m_space_domain.z << " -> " << z ;  
+    if( m_space_domain.w != 0.f && m_space_domain.w != w ) LOG(fatal) << " changing w " << m_space_domain.w << " -> " << w ;  
+
     m_space_domain.x = x  ; 
     m_space_domain.y = y  ; 
     m_space_domain.z = z  ; 
@@ -2268,12 +2277,11 @@ OpticksEvent* Opticks::makeEvent(bool ok, unsigned tagoffset)
     evt->setOpticks(this);
     evt->setEntryCode(getEntryCode());
 
-
-    LOG(debug) << "Opticks::makeEvent" 
-               << ( ok ? " OK " : " G4 " )
-               << " tagoffset " << tagoffset 
-               << " id " << evt->getId() 
-               ;
+    LOG(error) 
+        << ( ok ? " OK " : " G4 " )
+        << " tagoffset " << tagoffset 
+        << " id " << evt->getId() 
+        ;
 
     m_event_count += 1 ; 
 

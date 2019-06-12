@@ -170,7 +170,7 @@ class NPY_API NCSG {
         unsigned         get_num_coincidence() const ;
         std::string      desc_coincidence() const ;
 
-        void adjustToFit( const nbbox& container, float scale, float delta ) const ;
+        void resizeToFit( const nbbox& container, float scale, float delta ) const ;
     public:
         NTrianglesNPY* polygonize();
         NTrianglesNPY* getTris() const ;

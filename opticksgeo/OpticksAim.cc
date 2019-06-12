@@ -128,7 +128,7 @@ void  OpticksAim::setTarget(unsigned target, bool aim)
         << " target " << target 
         << " aim " << aim
         << " ce " << gformat(ce) 
-        << " for details : --aimdbg" 
+        << " for details : --dbgaim " 
         ;    
 
     m_composition->setCenterExtent(ce, aim); 

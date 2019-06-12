@@ -52,6 +52,9 @@
 #include "PLOG.hh"
 
 
+const plog::Severity CTestDetector::LEVEL = debug ; 
+
+
 CTestDetector::CTestDetector(OpticksHub* hub, OpticksQuery* query, CSensitiveDetector* sd)
     : 
     CDetector(hub, query, sd),
@@ -64,7 +67,7 @@ CTestDetector::CTestDetector(OpticksHub* hub, OpticksQuery* query, CSensitiveDet
 
 void CTestDetector::init()
 {
-    LOG(verbose) << "CTestDetector::init" ; 
+    LOG(LEVEL) << "[" ; 
 
     if(m_ok->hasOpt("dbgtestgeo"))
     {
@@ -72,11 +75,7 @@ void CTestDetector::init()
         setVerbosity(1);
     }
 
-    LOG(verbose) << "CTestDetector::init CMaker created" ; 
-
     G4VPhysicalVolume* top = makeDetector();
-
-    LOG(verbose) << "CTestDetector::init makeDetector DONE" ; 
 
     setTop(top) ;  // <-- kicks off CTraverser
 
@@ -85,6 +84,7 @@ void CTestDetector::init()
 
     hookupSD(); 
 
+    LOG(LEVEL) << "]" ; 
 }
 
 
@@ -106,6 +106,7 @@ See notes/issues/tboolean-proxy-g4evt-immediate-absorption.rst
 
 void CTestDetector::boxCenteringFix( glm::vec3& placement, nnode* root  )
 {
+    assert( 0 && "not using this way " ); 
     assert( root->type == CSG_BOX ) ;  
     nbox* box = (nbox*)root ; 
     if( !box->is_centered() )
@@ -163,7 +164,7 @@ G4VPhysicalVolume* CTestDetector::makeChildVolume(const NCSG* csg, const char* l
 
     G4VPhysicalVolume* pv = new G4PVPlacement(0, plc, lv, strdup(pvn) ,mother,false,0);
 
-    LOG(fatal) 
+    LOG(LEVEL) 
           << " csg.spec " << spec 
           << " csg.get_root_csgname " << csg->get_root_csgname() 
           << " boundary " << boundary 
@@ -201,7 +202,7 @@ G4VPhysicalVolume* CTestDetector::makeDetector_NCSG()
     assert( nolib );
     unsigned numVolumes = nolib->getNumVolumes();
 
-    LOG(info) 
+    LOG(LEVEL) 
         << " numVolumes " << numVolumes 
         ;
 
@@ -225,7 +226,7 @@ G4VPhysicalVolume* CTestDetector::makeDetector_NCSG()
         const GMesh* mesh = kso->getMesh();
         const NCSG* csg = mesh->getCSG();
         const char* spec = csg->getBoundary(); 
-        LOG(info) << std::setw(4) << i << " spec " << ( spec ? spec : "NULL" ) ;   
+        LOG(LEVEL) << std::setw(4) << i << " spec " << ( spec ? spec : "NULL" ) ;   
         assert( spec );  
 
         G4VPhysicalVolume* pv = makeChildVolume( csg , lvn , pvn, mother );

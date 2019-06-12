@@ -48,6 +48,7 @@ TODO:
 #include "CFG4_HEAD.hh"
 class CFG4_API CPropLib {
    public:
+       static const plog::Severity LEVEL ;
        static const char* SENSOR_MATERIAL ;
    public:
        CPropLib(OpticksHub* hub, int verbosity=0);

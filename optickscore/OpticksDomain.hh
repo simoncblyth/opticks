@@ -14,6 +14,9 @@ Canonical m_domain instance is a resident of OpticksEvent and
 is instancianted by OpticksEvent::init. The domains are 
 critically important for record domain compression.
 
+* NB Opticks::setSpaceDomain only indirectly effects OpticksDomain on 
+  creation of OpticksEvent instances
+
 * OpticksEvent getters and setters defer to OpticksDomain.
 * Note the vec and buffers duplication
 

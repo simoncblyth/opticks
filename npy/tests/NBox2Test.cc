@@ -10,7 +10,7 @@
 
 #include "OPTICKS_LOG.hh"
 
-void test_adjustToFit()
+void test_resizeToFit()
 {
     float h = 10.f ; 
     nbox* box = make_box3(2*h,2*h,2*h); 
@@ -26,15 +26,15 @@ void test_adjustToFit()
 
     LOG(info) << " cc ( enlarged bbox ) " << cc.desc() ; 
 
-    box->adjustToFit( cc , 1.f, 0.f );    
+    box->resizeToFit( cc , 1.f, 0.f );    
 
-    box->pdump("after adjustToFit make_box3(2*h,2*h,2*h)");
+    box->pdump("after resizeToFit make_box3(2*h,2*h,2*h)");
 
     nbbox cc2 = box->bbox_model();
 
     assert( cc.is_equal(cc2) );
 
-    box->adjustToFit( cc , 1.f, 1.f );    
+    box->resizeToFit( cc , 1.f, 1.f );    
    
     nbbox cc3 = box->bbox_model();
 
@@ -45,7 +45,7 @@ void test_adjustToFit()
 
 
 
-void test_adjustToFit_box()
+void test_resizeToFit_box()
 {
     nbox* box = make_box( 0.f, 0.f, -5.f, 10.f ); 
     box->verbosity = 3 ;  
@@ -61,16 +61,16 @@ void test_adjustToFit_box()
 
     float scale = 1.f ; 
     float delta = 0.f ; 
-    box->adjustToFit( bb, scale , delta );  
+    box->resizeToFit( bb, scale , delta );  
     // ignores initial box, simply changes it to correspond to the bb 
     // BUT shifts of the bbox are honoured
 
-    box->pdump("after adjustToFit "); 
+    box->pdump("after resizeToFit "); 
 
     assert( box->is_equal(*xbox) ); 
 }
 
-void test_adjustToFit_box3()
+void test_resizeToFit_box3()
 {
     nbox* box = make_box3( 10.f, 10.f, 20.f ); 
     box->verbosity = 3 ;  
@@ -89,12 +89,12 @@ void test_adjustToFit_box3()
 
     float scale = 1.f ; 
     float delta = 0.f ; 
-    box->adjustToFit( bb, scale , delta );  
+    box->resizeToFit( bb, scale , delta );  
 
     // ignores initial box, simply changes it to correspond to the bb 
     // also ignores any shifts in the bbox
 
-    box->pdump("after adjustToFit "); 
+    box->pdump("after resizeToFit "); 
 
     assert( box->is_equal(*ybox) ); 
 }
@@ -148,9 +148,9 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv);
 
-    //test_adjustToFit();
-    //test_adjustToFit_box();
-    //test_adjustToFit_box3();
+    //test_resizeToFit();
+    //test_resizeToFit_box();
+    //test_resizeToFit_box3();
 
     //test_box();
     //test_box3();

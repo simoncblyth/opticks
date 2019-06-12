@@ -1086,17 +1086,16 @@ glm::vec4 NCSG::bbox_center_extent() const
 void NCSG::apply_translation(float x, float y, float z) 
 {
     assert(m_root);
-    return m_root->apply_translation(x, y, z) ; 
+    m_root->apply_translation(x, y, z) ; 
+    export_();   // update buffers following geometry change
 }
 
 void NCSG::apply_centering() 
 {
     assert(m_root);
-    return m_root->apply_centering() ; 
+    m_root->apply_centering() ; 
+    export_();   // update buffers following geometry change
 }
-
-
-
 
 
 
@@ -1124,7 +1123,7 @@ float NCSG::getSurfaceEpsilon() const
 
 
 /**
-NCSG::adjustToFit
+NCSG::resizeToFit
 ------------------
 
 Changes extent of analytic geometry to be that of the container argument
@@ -1133,17 +1132,17 @@ Only implemented for CSG_BOX, CSG_BOX3 and CSG_SPHERE.
 
 **/
 
-void NCSG::adjustToFit( const nbbox& container, float scale, float delta ) const 
+void NCSG::resizeToFit( const nbbox& container, float scale, float delta ) const 
 {
-    LOG(debug) << "NCSG::adjustToFit START " ; 
+    LOG(debug) << "[" ; 
 
     nnode* root = getRoot();
 
     nbbox root_bb = root->bbox();
  
-    nnode::AdjustToFit(root, container, scale, delta );         
+    nnode::ResizeToFit(root, container, scale, delta );         
 
-    LOG(debug) << "NCSG::updateContainer DONE"
+    LOG(debug) << "]"
               << " root_bb " << root_bb.desc()
               << " container " << container.desc()
               ;

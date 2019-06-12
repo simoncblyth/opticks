@@ -44,8 +44,8 @@ void NNodeNudger::init()
 {
     LOG(level) << " init " ; 
 
-    if( TreeList == NULL )
-         TreeList = new std::vector<unsigned> {24, 42, 37, 22};   // iav, oav, lso, gds
+    //if( TreeList == NULL )
+    //     TreeList = new std::vector<unsigned> {24, 42, 37, 22};   // iav, oav, lso, gds
 
     listed = TreeList != NULL && std::find(TreeList->begin(), TreeList->end(), root->treeidx ) != TreeList->end() ; 
  
