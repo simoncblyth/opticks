@@ -25,6 +25,7 @@ set(TEST_SOURCES
    BPathTest.cc
    BBufSpecTest.cc
    BEnvTest.cc
+   BOpticksTest.cc
    BOpticksResourceTest.cc
    BResourceTest.cc
    BOpticksKeyTest.cc

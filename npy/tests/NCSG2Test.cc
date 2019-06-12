@@ -15,11 +15,10 @@
 
 #include "OPTICKS_LOG.hh"
 
-#include "BOpticksKey.hh"
-#include "BOpticksResource.hh"
+#include "BOpticks.hh"
 
 
-void test_analytic_centering( NCSG* csg )
+void test_apply_centering_0( NCSG* csg )  // NB this code now moved into nnode::apply_centering 
 {
     nbbox bb0 = csg->bbox_analytic() ; 
     nvec4 ce0 = bb0.center_extent() ;
@@ -38,8 +37,6 @@ void test_analytic_centering( NCSG* csg )
         root->placement = nmat4triple::make_translate( -ce0.x, -ce0.y, -ce0.z );  
         root->update_gtransforms(); 
     } 
-    // TODO: nnode::apply_centering() for this
-   
 
     nbbox bb1 = csg->bbox_analytic();  // <-- global frame bbox, even for single primitive 
     nvec4 ce1 = bb1.center_extent() ;
@@ -55,26 +52,32 @@ void test_analytic_centering( NCSG* csg )
 }
 
 
+void test_apply_centering_1( NCSG* csg )
+{
+    nnode* root = csg->getRoot(); 
+    root->verbosity = 1 ; 
+    root->apply_centering(); 
+    root->verbosity = 0 ; 
+}
+
+
 int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv);
 
-    const char* lvid = argc > 1 ? argv[1] : "17" ; 
-   
-    // TODO: streamline this stuff at brap level  
-    BOpticksKey::SetKey(NULL) ; 
-    bool testgeo(false) ; 
-    BOpticksResource okr(testgeo) ;  // no Opticks at this level 
-    if( !okr.hasKey() ) return 0 ;  
-    okr.setupViaKey(); 
+    BOpticks ok(argc, argv, "--envkey" );  
+    if(ok.getError() > 0) return 0 ;
 
-    const char* path = okr.makeIdPathPath("GMeshLibNCSG", lvid );  
+    const char* lvid = ok.getFirstArg("17"); 
+    const char* path = ok.getPath("GMeshLibNCSG", lvid ); 
+
     LOG(info) << "[" << path  << "]" ;  
 
     NCSG* csg = NCSG::Load(path); 
     if(!csg) return 0 ; 
 
-    test_analytic_centering(csg); 
+    //test_apply_centering_0(csg); 
+    test_apply_centering_1(csg); 
 
     return 0 ; 
 }

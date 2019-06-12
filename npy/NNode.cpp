@@ -296,7 +296,72 @@ const nmat4triple* nnode::global_transform(nnode* n)
 }
 
 
+/**
+nnode::apply_centering
+-----------------------
 
+Obtains the center extent from the global analytic bounding box, 
+and then contructs a translation moving the center to the origin.
+After this the bounding box is expected to be centered. 
+
+**/
+
+void nnode::apply_centering()
+{
+    nbbox bb0 = bbox(); // <-- global
+    nvec4 ce0 = bb0.center_extent(); 
+    bool centered0 = ce0.x == 0.f && ce0.y == 0.f && ce0.z == 0.f ;
+
+    if(verbosity > 0)
+    LOG(info) 
+        << " bb0 " << bb0.description()
+        << " ce0 " << ce0.desc()
+        << ( centered0 ? " CENTERED " : " NOT-CENTERED " )
+        ; 
+
+    if(centered0) return ; 
+
+    const nmat4triple* plc = nmat4triple::make_translate( -ce0.x, -ce0.y, -ce0.z );  
+
+    apply_placement( plc ); 
+
+
+    nbbox bb1 = bbox(); // <-- global
+    nvec4 ce1 = bb1.center_extent(); 
+
+    bool centered1 = ce1.x == 0.f && ce1.y == 0.f && ce1.z == 0.f ;   // need epsilon perhaps ?
+
+    if(verbosity > 0)
+    LOG(info) 
+        << " bb1 " << bb1.description()
+        << " ce1 " << ce1.desc()
+        << ( centered1 ? " CENTERED " : " NOT-CENTERED " )
+        ; 
+
+    assert( centered1 ); 
+}
+
+
+/**
+nnode::apply_placement
+-----------------------
+
+Unusually this bakes in a change to the
+gtransforms of all primitives in the tree, by
+temorarily setting a placement transform on the
+top node and invoking update_gtransforms(). Which 
+collects all transforms from leaf to root and then
+the placmement.
+
+**/
+
+void nnode::apply_placement( const nmat4triple* plc )
+{
+    assert( is_root() ) ; 
+    placement = plc ; 
+    update_gtransforms(); 
+    placement = NULL ; 
+}
 
 
 

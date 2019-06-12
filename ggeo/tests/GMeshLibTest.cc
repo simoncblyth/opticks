@@ -51,6 +51,12 @@ int main(int argc, char** argv)
 
     Opticks ok(argc, argv);
     ok.configure();
+    if(!ok.isDirect())
+    {
+        LOG(fatal) << "this is a direct only test : that means use --envkey option and have a valid OPTICKS_KEY envvar "  ; 
+        return 0 ; 
+    }
+
 
     GMeshLib* meshlib = GMeshLib::Load(&ok);
 
@@ -66,9 +72,6 @@ int main(int argc, char** argv)
         nvec4 ce = bba.center_extent() ; 
 
         nnode* root = solid->getRoot(); 
-
-           
-
 
         if( root->transform && !root->transform->is_identity() ) LOG(info) << " tr " << *root->transform ; 
 
