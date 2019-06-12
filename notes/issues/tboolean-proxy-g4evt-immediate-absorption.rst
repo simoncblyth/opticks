@@ -39,10 +39,17 @@ tboolean-box is not effected::
 
 
 
-ISSUE 3 : raytrace geometry is not centered, but OpenGL triangulated is 
+ISSUE 3 : FIXED : raytrace geometry is not centered, but OpenGL triangulated is 
 -----------------------------------------------------------------------------------------
 
 * history matching with G4 presumably means it is not centered either
+
+* fixed following move to nnode::set_placement and use of NCSG::postchange 
+  to update the geometry result buffers after changes
+
+* after the fix flipping between geometries with O key shows no difference
+  and the propagation reflections happen in the expected places and the
+  histories are still in line with each other 
 
 
 ISSUE 2 : Changing setSpaceDomain as a result of the 1mm delta on extent of Universe

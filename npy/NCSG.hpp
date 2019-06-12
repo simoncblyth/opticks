@@ -188,8 +188,8 @@ class NPY_API NCSG {
     public:
         nbbox     bbox() const ;
         glm::vec4 bbox_center_extent() const ;
-        void      apply_translation( float x, float y, float z); 
-        void      apply_centering(); 
+        void      set_translation( float x, float y, float z); 
+        void      set_centering(); 
         nbbox bbox_surface_points() const ;
 
         const std::vector<glm::vec3>& getSurfacePoints() const ;
@@ -293,6 +293,7 @@ class NPY_API NCSG {
     private:
         // Deserialize branch 
         void setConfig(const NSceneConfig* config);
+        const NSceneConfig* getConfig() const ;   
 
     public:
         void savesrc(const char* idpath, const char* rela, const char* relb ) const ; 
@@ -316,6 +317,7 @@ class NPY_API NCSG {
         void import_srcvertsfaces(nnode* node);
 
     public:
+        void postchange(); 
         // collect global transforms into m_gtransforms and sets the node->gtransform and node->gtransform_idx refs
         void collect_global_transforms() ;
     private:

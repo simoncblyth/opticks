@@ -297,7 +297,7 @@ const nmat4triple* nnode::global_transform(nnode* n)
 
 
 /**
-nnode::apply_centering
+nnode::set_centering
 -----------------------
 
 Obtains the center extent from the global analytic bounding box, 
@@ -306,7 +306,7 @@ After this the bounding box is expected to be centered.
 
 **/
 
-void nnode::apply_centering()
+void nnode::set_centering()
 {
     nbbox bb0 = bbox(); // <-- global
     nvec4 ce0 = bb0.center_extent(); 
@@ -323,7 +323,7 @@ void nnode::apply_centering()
     if(centered0) return ; 
 
     glm::vec3 tla( -ce0.x, -ce0.y, -ce0.z );  
-    apply_translation( tla.x, tla.y, tla.z ); 
+    set_translation( tla.x, tla.y, tla.z ); 
 
     nbbox bb1 = bbox(); // <-- global
     nvec4 ce1 = bb1.center_extent(); 
@@ -348,37 +348,32 @@ void nnode::apply_centering()
 }
 
 
-void nnode::apply_translation( float x, float y, float z )
+void nnode::set_translation( float x, float y, float z )
 {
     const nmat4triple* plc = nmat4triple::make_translate( x, y, z );  
-    apply_placement( plc ); 
+    set_placement( plc ); 
 }
 
 
 /**
-nnode::apply_placement
+nnode::set_placement
 -----------------------
 
-Unusually this bakes in a change to the
-gtransforms of all primitives in the tree, by
-temorarily setting a placement transform on the
-top node and invoking update_gtransforms(). Which 
-collects all transforms from leaf to root and then
-the placmement.
-
-BUT : it seems NCSG::collect_global_transforms is going to
-invoke node->global_transform() again ... so need to 
-leave the placement ?
-
+Formerly when this was called apply_placement
+the placement was nullified after update_gtransforms()
+but it appears that methods such as NCSG::collect_global_transforms 
+are going to invoke node->global_transform() again on all 
+primitives ... so need to leave the placement in place.
 
 **/
 
-void nnode::apply_placement( const nmat4triple* plc )
+void nnode::set_placement( const nmat4triple* plc )
 {
     assert( is_root() ) ; 
     placement = plc ; 
     update_gtransforms(); 
-    placement = NULL ; 
+
+    // placement = NULL ;   
 }
 
 

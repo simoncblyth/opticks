@@ -811,7 +811,7 @@ void GMesh::applyCentering()
 
     if(m_csg)
     {
-        const_cast<NCSG*>(m_csg)->apply_translation( tla.x, tla.y, tla.z ); 
+        const_cast<NCSG*>(m_csg)->set_translation( tla.x, tla.y, tla.z ); 
     }
 
 }

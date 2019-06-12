@@ -120,7 +120,7 @@ class NPY_API NCSGData
         // from m_transforms
         nmat4triple* import_transform_triple(unsigned itra);
         void prepareForImport();  // m_srctransforms -> m_transforms + prepares m_gtransforms to collect globals during import  
-        void prepareForSetup();   
+        void prepareForGTransforms(bool locked);   
         void prepareForExport();  // create m_nodes ready for exporting from the node tree 
     public:
         unsigned addUniqueTransform( const nmat4triple* gtransform ); // add to m_gtransforms

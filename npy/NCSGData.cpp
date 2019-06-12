@@ -189,11 +189,11 @@ NCSGData::prepareForSetup
 
 **/
 
-void NCSGData::prepareForSetup()
+void NCSGData::prepareForGTransforms(bool locked)
 {
     bool zero = true ; 
     m_npy->initBuffer( (int)GTRANSFORMS   ,           0, zero , "prepareForSetup"); 
-    m_npy->setLocked( (int)GTRANSFORMS ); 
+    m_npy->setLocked( (int)GTRANSFORMS, locked ); 
 }
 
 /**

@@ -52,11 +52,11 @@ void test_apply_centering_0( NCSG* csg )  // NB this code now moved into nnode::
 }
 
 
-void test_apply_centering_1( NCSG* csg )
+void test_set_centering_1( NCSG* csg )
 {
     nnode* root = csg->getRoot(); 
     root->verbosity = 1 ; 
-    root->apply_centering(); 
+    root->set_centering(); 
     root->verbosity = 0 ; 
 }
 
@@ -77,7 +77,7 @@ int main(int argc, char** argv)
     if(!csg) return 0 ; 
 
     //test_apply_centering_0(csg); 
-    test_apply_centering_1(csg); 
+    test_set_centering_1(csg); 
 
     return 0 ; 
 }

@@ -79,18 +79,14 @@ NCSG* NCSG::Load(const char* treedir, const NSceneConfig* config  )
     tree->setVerbosity(config->verbosity);
     tree->setIsUsedGlobally(true);
 
-    tree->loadsrc();  // populate the src* buffers 
-    tree->import();   // complete binary tree m_nodes buffer -> nnode tree
-    tree->collect_global_transforms();  // also sets the gtransform_idx onto the tree
-    tree->export_();  // node tree -> complete binary tree m_nodes buffer
-
-    if(config->verbosity > 1) tree->dump("NCSG::Load");
-    if(config->polygonize) tree->polygonize();
-
-    tree->collect_surface_points();
+    tree->loadsrc();     // populate the src* buffers 
+    tree->import();      // complete binary tree m_nodes buffer -> nnode tree
+    tree->postchange();  // update result buffers  
 
     return tree ; 
 }
+
+
 
 /**
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -141,15 +137,37 @@ NCSG* NCSG::Adopt(nnode* root, const NSceneConfig* config, unsigned soIdx, unsig
     tree->setLVIdx(lvIdx); 
     tree->setIndex(lvIdx); 
 
-    tree->collect_global_transforms();  // collects and sets the gtransform_idx onto the tree
-    tree->export_();           // node tree -> complete binary tree m_nodes buffer
-    tree->export_srcidx();     // identity indices into srcidx buffer
-
-    assert( tree->getGTransformBuffer() );
-    tree->collect_surface_points();
+    tree->postchange(); 
 
     return tree ; 
 }
+
+
+
+
+/**
+NCSG::postchange
+-----------------
+
+Updates result buffers. Needs to be called following 
+changes to the geometry such as centering by the 
+setting of placement transforms or translations.
+
+**/
+
+void NCSG::postchange() 
+{
+    collect_global_transforms();  // also sets the gtransform_idx onto the tree
+    export_();                    // node tree -> complete binary tree m_nodes buffer
+    export_srcidx();              // identity indices into srcidx buffer  : formerly was not done by NCSG::Load only NCSG::Adopt
+
+    if(m_config->verbosity > 1) dump("NCSG::postchange");
+    if(m_config->polygonize) polygonize();
+
+    assert( getGTransformBuffer() );
+    collect_surface_points();
+}
+
 
 
 void NCSG::PrepTree(nnode* root)  // static
@@ -663,6 +681,21 @@ void NCSG::check_node(const nnode* node ) const
         }
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 /**
 NCSG::collect_global_transforms
@@ -698,7 +731,8 @@ using 0 (meaning None) for identity
 
 void NCSG::collect_global_transforms() 
 {
-    m_csgdata->prepareForSetup();
+    bool locked(false) ;  // with locked=true m_csgdata asserts if called more than once
+    m_csgdata->prepareForGTransforms(locked);
     collect_global_transforms_r( m_root ) ; 
 }
 void NCSG::collect_global_transforms_r(nnode* node) 
@@ -1083,18 +1117,20 @@ glm::vec4 NCSG::bbox_center_extent() const
     return m_root->bbox_center_extent() ; 
 }
 
-void NCSG::apply_translation(float x, float y, float z) 
+void NCSG::set_translation(float x, float y, float z) 
 {
     assert(m_root);
-    m_root->apply_translation(x, y, z) ; 
-    export_();   // update buffers following geometry change
+    m_root->set_translation(x, y, z) ; 
+
+    postchange();  // update buffers following geometry change
 }
 
-void NCSG::apply_centering() 
+void NCSG::set_centering() 
 {
     assert(m_root);
-    m_root->apply_centering() ; 
-    export_();   // update buffers following geometry change
+    m_root->set_centering() ; 
+
+    postchange();  // update buffers following geometry change
 }
 
 
@@ -1487,6 +1523,11 @@ void NCSG::setConfig(const NSceneConfig* config)
 {
     m_config = config ; 
 }
+const NSceneConfig* NCSG::getConfig() const  
+{
+    return m_config ; 
+}
+
 
 const char* NCSG::get_root_csgname() const 
 {
