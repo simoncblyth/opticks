@@ -5,82 +5,87 @@
 #include "CResource.hh"
 #include "helper_cuda.h"   // for checkCudaErrors
 
-struct CResourceImp {
-   unsigned int buffer_id ; 
-   size_t       bufsize  ; 
-   unsigned int flags ; 
-   cudaStream_t stream ; 
-   struct cudaGraphicsResource*  resource ;
-   void*         dev_ptr ;   
+#include "cfloat4x4.h"
 
-   CResourceImp(unsigned int buffer_id_, unsigned int flags_, cudaStream_t stream_) : 
-       buffer_id(buffer_id_),
-       bufsize(0),
-       flags(flags_),  
-       stream(stream_),
-       resource(NULL),
-       dev_ptr(NULL)
-   {
-   }
+
+struct CResourceImp 
+{
+    unsigned      buffer_id ; 
+    size_t        bufsize  ; 
+    unsigned      flags ; 
+    cudaStream_t  stream ; 
+    struct cudaGraphicsResource*  resource ;
+    void*         dev_ptr ;   
+
+    CResourceImp(unsigned buffer_id_, unsigned flags_, cudaStream_t stream_) 
+        : 
+        buffer_id(buffer_id_),
+        bufsize(0),
+        flags(flags_),  
+        stream(stream_),
+        resource(NULL),
+        dev_ptr(NULL)
+    {
+    }
     
-   // HMM : stream_ arg was previously ignored with steam(NULL) : Changed to taking copy of stream arg Jun 26, 2016 
+    // HMM : stream_ arg was previously ignored with steam(NULL) : Changed to taking copy of stream arg Jun 26, 2016 
 
-   const char* getFlagDescription()
-   {
-       const char* ret(NULL);
-       switch(flags)
-       {
-           case cudaGraphicsMapFlagsNone:         ret="cudaGraphicsMapFlagsNone: Default; Assume resource can be read/written " ; break ;
-           case cudaGraphicsMapFlagsReadOnly:     ret="cudaGraphicsMapFlagsReadOnly: CUDA will not write to this resource " ; break ; 
-           case cudaGraphicsMapFlagsWriteDiscard: ret="cudaGraphicsMapFlagsWriteDiscard: CUDA will only write to and will not read from this resource " ; break ;  
-       }
-       return ret ;
-   }
+    const char* getFlagDescription()
+    {
+        const char* ret(NULL);
+        switch(flags)
+        {
+            case cudaGraphicsMapFlagsNone:         ret="cudaGraphicsMapFlagsNone: Default; Assume resource can be read/written " ; break ;
+            case cudaGraphicsMapFlagsReadOnly:     ret="cudaGraphicsMapFlagsReadOnly: CUDA will not write to this resource " ; break ; 
+            case cudaGraphicsMapFlagsWriteDiscard: ret="cudaGraphicsMapFlagsWriteDiscard: CUDA will only write to and will not read from this resource " ; break ;  
+        }
+        return ret ;
+    }
 
-   void registerBuffer()
-   {
-       //printf("Resource::registerBuffer %d : %s \n", buffer_id, getFlagDescription() );
-       checkCudaErrors( cudaGraphicsGLRegisterBuffer(&resource, buffer_id, flags) );
-   }
+    void registerBuffer()
+    {
+        //printf("Resource::registerBuffer %d : %s \n", buffer_id, getFlagDescription() );
+        checkCudaErrors( cudaGraphicsGLRegisterBuffer(&resource, buffer_id, flags) );
+    }
 
-   void unregisterBuffer()
-   {
-       //printf("Resource::unregisterBuffer %d \n", buffer_id );
-       checkCudaErrors( cudaGraphicsUnregisterResource(resource) );
-   }
+    void unregisterBuffer()
+    {
+        //printf("Resource::unregisterBuffer %d \n", buffer_id );
+        checkCudaErrors( cudaGraphicsUnregisterResource(resource) );
+    }
 
 
-   void* mapGLToCUDA() 
-   {
-       checkCudaErrors( cudaGraphicsMapResources(1, &resource, stream) );
-       checkCudaErrors( cudaGraphicsResourceGetMappedPointer((void **)&dev_ptr, &bufsize, resource) );
-       //printf("Resource::mapGLToCUDA bufsize %lu dev_ptr %p \n", bufsize, dev_ptr );
-       return dev_ptr ; 
-   }
+    void* mapGLToCUDA() 
+    {
+        checkCudaErrors( cudaGraphicsMapResources(1, &resource, stream) );
+        checkCudaErrors( cudaGraphicsResourceGetMappedPointer((void **)&dev_ptr, &bufsize, resource) );
+        //printf("Resource::mapGLToCUDA bufsize %lu dev_ptr %p \n", bufsize, dev_ptr );
+        return dev_ptr ; 
+    }
 
-   void unmapGLToCUDA()
-   {
-       //printf("Resource::unmapGLToCUDA\n");
-       checkCudaErrors( cudaGraphicsUnmapResources(1, &resource, stream));
-   } 
+    void unmapGLToCUDA()
+    {
+        //printf("Resource::unmapGLToCUDA\n");
+        checkCudaErrors( cudaGraphicsUnmapResources(1, &resource, stream));
+    } 
 
-   void streamSync()
-   {
-       //printf("Resource::streamSync\n");
-       checkCudaErrors( cudaStreamSynchronize(stream));
-   }
+    void streamSync()
+    {
+        //printf("Resource::streamSync\n");
+        checkCudaErrors( cudaStreamSynchronize(stream));
+    }
 
 };
 
 
 void CResource::init()
 {
-    unsigned int flgs(0) ;
+    unsigned flgs(0) ;
     switch(m_access)
     {
-       case RW: flgs = cudaGraphicsMapFlagsNone         ;break;
-       case  R: flgs = cudaGraphicsMapFlagsReadOnly     ;break;
-       case  W: flgs = cudaGraphicsMapFlagsWriteDiscard ;break;
+        case RW: flgs = cudaGraphicsMapFlagsNone         ;break;
+        case  R: flgs = cudaGraphicsMapFlagsReadOnly     ;break;
+        case  W: flgs = cudaGraphicsMapFlagsWriteDiscard ;break;
     }
     //cudaStream_t stream1 ; 
     //cudaStreamCreate ( &stream1) ;
@@ -117,6 +122,8 @@ template CUDARAP_API CBufSpec CResource::mapGLToCUDA<unsigned int>();
 template CUDARAP_API CBufSpec CResource::mapGLToCUDA<unsigned long long>();
 template CUDARAP_API CBufSpec CResource::mapGLToCUDA<short>();
 template CUDARAP_API CBufSpec CResource::mapGLToCUDA<int>();
+template CUDARAP_API CBufSpec CResource::mapGLToCUDA<float>();
+template CUDARAP_API CBufSpec CResource::mapGLToCUDA<cfloat4x4>();
 
 
 

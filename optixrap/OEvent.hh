@@ -107,7 +107,8 @@ class OXRAP_API OEvent
 #ifdef WITH_SOURCE
         unsigned uploadSource(OpticksEvent* evt);
 #endif
-        unsigned downloadHits(OpticksEvent* evt);
+        unsigned downloadHitsCompute(OpticksEvent* evt);
+        unsigned downloadHitsInterop(OpticksEvent* evt);
     public:
         OContext*     getOContext();
         OpticksEvent* getEvent();
@@ -130,6 +131,7 @@ class OXRAP_API OEvent
     private:
         SLog*           m_log ; 
         Opticks*        m_ok ; 
+        bool            m_compute ;  
         bool            m_dbgdownload ; 
         NPY<unsigned>*  m_mask ; 
         OContext*       m_ocontext ; 

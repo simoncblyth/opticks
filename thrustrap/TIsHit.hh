@@ -36,6 +36,28 @@ struct TIsHit : public thrust::unary_function<float4x4,bool>
 };
 
 
+/**
+TIsHitReflect : for testing hit download machinery 
+
+**/
+
+
+struct TIsHitReflect : public thrust::unary_function<float4x4,bool>
+{
+    __host__ __device__
+    bool operator()(float4x4 photon)
+    {   
+        tquad q3 ; 
+        q3.f = photon.q3 ; 
+        return ( q3.u.w & BOUNDARY_REFLECT ) == BOUNDARY_REFLECT ;
+    }   
+};
+
+
+
+
+
+
  /**
 
 python -i $(which evt.py --tag 10)

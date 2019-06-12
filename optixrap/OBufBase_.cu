@@ -32,6 +32,19 @@ CBufSpec OBufBase::bufspec()
    return CBufSpec( getDevicePtr(), getSize(), getNumBytes()) ;
 }
 
+void* OBufBase::getDevicePtr() 
+{
+    //printf("OBufBase::getDevicePtr %s \n", ( m_name ? m_name : "-") ) ;
+    //return (void*) m_buffer->getDevicePointer(m_device); 
+
+    CUdeviceptr cu_ptr = (CUdeviceptr)m_buffer->getDevicePointer(m_device) ;
+    return (void*)cu_ptr ; 
+}
+
+
+
+
+
 std::string OBufBase::desc() const 
 {
    std::stringstream ss ;  
@@ -198,14 +211,6 @@ void OBufBase::setMultiplicity(unsigned int mul)
 } 
 
 
-void* OBufBase::getDevicePtr() 
-{
-    //printf("OBufBase::getDevicePtr %s \n", ( m_name ? m_name : "-") ) ;
-    //return (void*) m_buffer->getDevicePointer(m_device); 
-
-    CUdeviceptr cu_ptr = (CUdeviceptr)m_buffer->getDevicePointer(m_device) ;
-    return (void*)cu_ptr ; 
-}
 
 unsigned int OBufBase::Size(const optix::Buffer& buffer) // static
 {

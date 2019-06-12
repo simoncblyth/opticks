@@ -11,7 +11,9 @@
 #include "OEvent.hh"
 #include "OBuf.hh"
 
+#include "CResource.hh"
 #include "TBuf.hh"
+// #include "cfloat4x4.h"   // fine with nvcc 
 
 
 #include "PLOG.hh"
@@ -42,6 +44,7 @@ OEvent::OEvent(Opticks* ok, OContext* ocontext)
    :
    m_log(new SLog("OEvent::OEvent", "", LEVEL)),
    m_ok(ok),
+   m_compute(ok->isCompute()),
    m_dbgdownload(m_ok->isDbgDownload()),  // --dbgdownload
    m_mask(m_ok->getMaskBuffer()),
    m_ocontext(ocontext),
@@ -346,16 +349,14 @@ void OEvent::downloadPhotonData()
 
 unsigned OEvent::downloadHits()
 {
-    return downloadHits(m_evt);
+    return m_compute ? downloadHitsCompute(m_evt) : downloadHitsInterop(m_evt) ;
 }
 
 unsigned OEvent::download()
 {
     if(!m_ok->isProduction()) download(m_evt, DOWNLOAD_DEFAULT);
 
-    //unsigned nhit = downloadHits(m_evt);  
-    unsigned nhit = 0 ; 
-    LOG(fatal) << "COMMENTED OUT downloadHits " ; 
+    unsigned nhit = downloadHits();  
 
     return nhit ; 
 }
@@ -387,20 +388,20 @@ void OEvent::download(OpticksEvent* evt, unsigned mask)
         OContext::download<unsigned>( m_seed_buffer, se );
         if(m_dbgdownload) LOG(info) << "se " << se->getShapeString() ;   
     }
-    if(mask & PHOTON)
+    if(mask & PHOTON)   // final photon positions
     {
         NPY<float>* ox = evt->getPhotonData();
         OContext::download<float>( m_photon_buffer, ox );
         if(m_dbgdownload) LOG(info) << "ox " << ox->getShapeString() ;   
     }
 #ifdef WITH_RECORD
-    if(mask & RECORD)
+    if(mask & RECORD)    // photon stepping point records 
     {
         NPY<short>* rx = evt->getRecordData();
         OContext::download<short>( m_record_buffer, rx );
         if(m_dbgdownload) LOG(info) << "rx " << rx->getShapeString() ;   
     }
-    if(mask & SEQUENCE)
+    if(mask & SEQUENCE)   // seqhis, seqmat
     {
         NPY<unsigned long long>* sq = evt->getSequenceData();
         OContext::download<unsigned long long>( m_sequence_buffer, sq );
@@ -413,15 +414,30 @@ void OEvent::download(OpticksEvent* evt, unsigned mask)
 }
 
 
-unsigned OEvent::downloadHits(OpticksEvent* evt)
+
+/**
+OEvent::downloadHits
+-------------------------
+
+Downloading hits is special because:
+
+1. a selection of the photon buffer is required, necessitating the 
+    use of Thrust stream compaction 
+
+
+
+**/
+
+unsigned OEvent::downloadHitsCompute(OpticksEvent* evt)
 {
-    OK_PROFILE("_OEvent::downloadHits");
+    OK_PROFILE("_OEvent::downloadHitsCompute");
 
     NPY<float>* hit = evt->getHitData();
 
-    LOG(debug) << "OEvent::downloadHits.cpho" ;
+
+    LOG(info) << "[ cpho" ;
     CBufSpec cpho = m_photon_buf->bufspec();  
-    LOG(debug) << "OEvent::downloadHits.cpho DONE " ;
+    LOG(info) << "] cpho DONE " ;
     assert( cpho.size % 4 == 0 );
     cpho.size /= 4 ;    //  decrease size by factor of 4, increases cpho "item" from 1*float4 to 4*float4 
 
@@ -431,37 +447,48 @@ unsigned OEvent::downloadHits(OpticksEvent* evt)
     // hit buffer (0,4,4) resized to fit downloaded hits (nhit,4,4)
     assert(hit->hasShape(nhit,4,4));
 
-    OK_PROFILE("OEvent::downloadHits");
+    OK_PROFILE("OEvent::downloadHitsCompute");
 
     return nhit ; 
 }
 
 
-
-OBuf* OEvent::getSeedBuf()
+unsigned OEvent::downloadHitsInterop(OpticksEvent* evt)
 {
-    return m_seed_buf ; 
-}
-OBuf* OEvent::getPhotonBuf()
-{
-    return m_photon_buf ; 
-}
-OBuf* OEvent::getGenstepBuf()
-{
-    return m_genstep_buf ; 
+    OK_PROFILE("_OEvent::downloadHitsInterop");
+
+    NPY<float>* hit = evt->getHitData();
+    NPY<float>* npho = evt->getPhotonData();
+
+    unsigned photon_id = npho->getBufferId();
+
+    LOG(fatal) << "[ cpho" ;
+    CResource rphoton( photon_id, CResource::R );
+    //CBufSpec cpho = rphoton.mapGLToCUDA<cfloat4x4>();
+    CBufSpec cpho = rphoton.mapGLToCUDA<float>();
+    LOG(fatal) << "] cpho DONE " ;
+
+    assert( cpho.size % 16 == 0 );
+    cpho.size /= 16 ;    //  decrease size by factor of 16, increases cpho "item" from 1*float to 4*4*float 
+
+
+    bool verbose = true ; 
+    TBuf tpho("tpho", cpho );
+    unsigned nhit = tpho.downloadSelection4x4("OEvent::downloadHits", hit, verbose);
+    // hit buffer (0,4,4) resized to fit downloaded hits (nhit,4,4)
+    assert(hit->hasShape(nhit,4,4));
+
+    OK_PROFILE("OEvent::downloadHitsInterop");
+
+    return nhit ; 
 }
 
 
+OBuf* OEvent::getSeedBuf() {    return m_seed_buf ; } 
+OBuf* OEvent::getPhotonBuf() {  return m_photon_buf ; } 
+OBuf* OEvent::getGenstepBuf() { return m_genstep_buf ; }
 #ifdef WITH_RECORD
-OBuf* OEvent::getRecordBuf()
-{
-    return m_record_buf ; 
-}
-OBuf* OEvent::getSequenceBuf()
-{
-    return m_sequence_buf ; 
-}
+OBuf* OEvent::getRecordBuf() {   return m_record_buf ; } 
+OBuf* OEvent::getSequenceBuf() { return m_sequence_buf ; } 
 #endif
-
-
 

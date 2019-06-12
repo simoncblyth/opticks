@@ -23,6 +23,7 @@ endforeach()
 
 set(TEST_SOURCES_CU
    cudaGetDevicePropertiesTest.cu
+   cfloat4x4Test.cu
 )
 
 foreach(CU ${TEST_SOURCES_CU})

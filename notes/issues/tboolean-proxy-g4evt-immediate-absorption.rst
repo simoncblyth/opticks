@@ -253,8 +253,6 @@ The volumes currently have identity transforms::
 
 
 
-
-
 ISSUE 3 : FIXED : raytrace geometry is not centered, but OpenGL triangulated is 
 -----------------------------------------------------------------------------------------
 
@@ -268,8 +266,8 @@ ISSUE 3 : FIXED : raytrace geometry is not centered, but OpenGL triangulated is
   histories are still in line with each other 
 
 
-ISSUE 2 : Changing setSpaceDomain as a result of the 1mm delta on extent of Universe
------------------------------------------------------------------------------------------
+ISSUE 2 : NO-PROBLEM : Changing setSpaceDomain as a result of the 1mm delta on extent of Universe
+-------------------------------------------------------------------------------------------------------
 
 Universe is a G4 only wrapper construct to reconcile the surface and volume models,
 but currently it is leading to a change in Opticks extent : that 
@@ -281,6 +279,76 @@ relative to setSpaceDomain change
 ::
 
    2019-06-12 14:16:02.174 FATAL [370009] [Opticks::setSpaceDomain@1926]  changing w 824.85 -> 825.85
+
+
+*NO-PROBLEM*
+
+It seems not to matter, a slightly enlarged domain is not a problem so long as
+the change is consistent between parties : OK/generate.cu and G4/CRecorder 
+
+::
+
+    In [19]: a.rpost_(0)
+    Out[19]: 
+    A()sliced
+    A([[  20.6922,  -63.5134, -824.7411,    0.    ],
+       [ -48.9204,   -0.5293, -824.7411,    0.    ],
+       [ -74.351 ,   17.9955, -824.7411,    0.    ],
+       ...,
+       [ -18.8272,   74.0233, -824.7411,    0.    ],
+       [ -16.0548,   36.1925, -824.7411,    0.    ],
+       [  28.7322,   56.8848, -824.7411,    0.    ]])
+
+    In [20]: b.rpost_(0)
+    Out[20]: 
+    A()sliced
+    A([[  20.6922,  -63.5134, -824.7411,    0.    ],
+       [ -48.9204,   -0.5293, -824.7411,    0.    ],
+       [ -74.351 ,   17.9955, -824.7411,    0.    ],
+       ...,
+       [ -18.8272,   74.0233, -824.7411,    0.    ],
+       [ -16.0548,   36.1925, -824.7411,    0.    ],
+       [  28.7322,   56.8848, -824.7411,    0.    ]])
+
+    In [21]: a.so[:,0]
+    Out[21]: 
+    A()sliced
+    A([[  20.6971,  -63.5045, -824.7501,    0.    ],
+       [ -48.9207,   -0.5178, -824.7501,    0.    ],
+       [ -74.3543,   17.9927, -824.7501,    0.    ],
+       ...,
+       [ -18.8286,   74.0311, -824.7501,    0.    ],
+       [ -16.0536,   36.2017, -824.7501,    0.    ],
+       [  28.7337,   56.8787, -824.7501,    0.    ]], dtype=float32)
+
+    In [22]: a.fdom
+    Out[22]: 
+    A(torch,1,tboolean-proxy-17)(metadata) 3*float4 domains of position, time, wavelength (used for compression)
+    A([[[  0.  ,   0.  ,   0.  , 825.85]],
+
+       [[  0.  ,  20.  ,  20.  ,   0.  ]],
+
+       [[ 60.  , 820.  ,  20.  , 760.  ]]], dtype=float32)
+
+    In [23]: b.fdom
+    Out[23]: 
+    A(torch,-1,tboolean-proxy-17)(metadata) 3*float4 domains of position, time, wavelength (used for compression)
+    A([[[  0.  ,   0.  ,   0.  , 825.85]],
+
+       [[  0.  ,  20.  ,  20.  ,   0.  ]],
+
+       [[ 60.  , 820.  ,  20.  , 760.  ]]], dtype=float32)
+
+
+
+
+
+
+
+
+
+
+
 
 
 

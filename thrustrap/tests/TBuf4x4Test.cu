@@ -12,19 +12,20 @@
 #include "TIsHit.hh"
 #include "float4x4.h"
 
-
+#include "OpticksPhoton.h"
 #include "DummyPhotonsNPY.hpp"
 #include "NPY.hpp"
-#include "PLOG.hh"
+#include "OPTICKS_LOG.hh"
 
 // nvcc cannot stomach GLM
+
 
 
 void test_dump44()
 {
     LOG(info) << "(" ;
     unsigned num_photons = 100 ; 
-    NPY<float>* ph = DummyPhotonsNPY::make(num_photons);
+    NPY<float>* ph = DummyPhotonsNPY::Make(num_photons, SURFACE_DETECT );
  
     thrust::device_vector<float4> d_ph(num_photons*4) ;
 
@@ -46,7 +47,7 @@ void test_dump4x4()
     LOG(info) << "(" ;
     unsigned num_photons = 100 ; 
 
-    NPY<float>* ph = DummyPhotonsNPY::make(num_photons);
+    NPY<float>* ph = DummyPhotonsNPY::Make(num_photons, SURFACE_DETECT );
  
     thrust::device_vector<float4x4> d_ph(num_photons) ;
 
@@ -68,7 +69,7 @@ void test_count4x4()
     LOG(info) << "(" ;
     unsigned num_photons = 100 ; 
 
-    NPY<float>* ph = DummyPhotonsNPY::make(num_photons);
+    NPY<float>* ph = DummyPhotonsNPY::Make(num_photons, SURFACE_DETECT );
  
     thrust::device_vector<float4x4> d_ph(num_photons) ;
 
@@ -97,13 +98,11 @@ void test_count4x4_ptr()
     LOG(info) << "(" ;
     unsigned num_photons = 100 ; 
 
-    NPY<float>* ph = DummyPhotonsNPY::make(num_photons);
+    NPY<float>* ph = DummyPhotonsNPY::Make(num_photons, SURFACE_DETECT );
  
     thrust::device_vector<float4x4> d_ph(num_photons) ;
 
     CBufSpec cph = make_bufspec<float4x4>(d_ph); 
-
-
 
     TBuf tph("tph", cph);
 
@@ -129,7 +128,7 @@ void test_copy4x4()
     LOG(info) << "(" ;
     unsigned num_photons = 100 ; 
 
-    NPY<float>* pho = DummyPhotonsNPY::make(num_photons);
+    NPY<float>* pho = DummyPhotonsNPY::Make(num_photons, SURFACE_DETECT );
  
     thrust::device_vector<float4x4> d_pho(num_photons) ;
 
@@ -173,8 +172,9 @@ void test_copy4x4_ptr()
 {
     LOG(info) << "(" ;
     unsigned num_photons = 100 ; 
+    unsigned modulo = 10 ; 
 
-    NPY<float>* pho = DummyPhotonsNPY::make(num_photons);
+    NPY<float>* pho = DummyPhotonsNPY::Make(num_photons, SURFACE_DETECT, modulo );
 
     unsigned x_numHit = pho->getNumHit();
  
@@ -228,24 +228,29 @@ void test_copy4x4_encapsulated()
 {
     LOG(info) << "(" ;
     unsigned num_photons = 100 ; 
+    unsigned modulo = 10 ; 
 
-    NPY<float>* pho = DummyPhotonsNPY::make(num_photons);
+    NPY<float>* pho = DummyPhotonsNPY::Make(num_photons, SURFACE_DETECT, modulo );
+    unsigned x_num_hit = pho->getNumHit() ; 
 
+    thrust::device_vector<float4x4> d_pho(num_photons) ;  // allocate GPU buffer 
+    CBufSpec cpho = make_bufspec<float4x4>(d_pho);        // CBufSpec holds (dec_ptr,size,num_bytes)  using thrustrap/TUtil_.cu 
 
-
-    thrust::device_vector<float4x4> d_pho(num_photons) ;
-
-    CBufSpec cpho = make_bufspec<float4x4>(d_pho); 
-
+    assert( cpho.dev_ptr != NULL );
     assert( cpho.size == num_photons );
+    assert( cpho.num_bytes == num_photons*sizeof(float4x4) ); 
 
     TBuf tpho("tpho", cpho);
     tpho.upload(pho);
     tpho.dump4x4("tpho dump4x4", 1, 0, num_photons );  // stride, begin, end 
 
-    NPY<float>* hit = NPY<float>::make(0,4,4);
 
+    NPY<float>* hit = NPY<float>::make(0,4,4);
     tpho.downloadSelection4x4("tpho.downloadSelection4x4", hit );
+
+    unsigned num_hit = hit->getShape(0) ;
+    assert( num_hit == x_num_hit ); 
+
 
     const char* path = "$TMP/hit.npy";
     hit->save(path);
@@ -256,7 +261,7 @@ void test_copy4x4_encapsulated()
 
 int main(int argc, char** argv)
 {
-    PLOG_(argc, argv);
+    OPTICKS_LOG(argc, argv);
 
     LOG(info) << argv[0] ;
 
@@ -269,9 +274,9 @@ int main(int argc, char** argv)
 
 
     test_count4x4_ptr(); 
-    test_copy4x4_ptr(); 
 */
 
+    test_copy4x4_ptr(); 
     test_copy4x4_encapsulated(); 
 
     cudaDeviceSynchronize();  

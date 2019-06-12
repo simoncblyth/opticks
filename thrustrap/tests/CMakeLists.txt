@@ -38,11 +38,11 @@ thrust_curand_estimate_pi.cu
 thrust_curand_printf.cu
 thrust_curand_printf_redirect.cu
 thrust_curand_printf_redirect2.cu
+TBuf4x4Test.cu
 
 )
 
 set(_TEST_CU_SRCS
-TBuf4x4Test.cu
 )
 
 

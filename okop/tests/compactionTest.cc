@@ -47,9 +47,10 @@ int main(int argc, char** argv)
     unsigned PNUMQUAD = 4 ;
 
     unsigned hitmask = SURFACE_DETECT ; 
+    unsigned modulo = 10 ;   
     LOG(error) << " hitmask " << hitmask ;  
 
-    NPY<float>* pho = DummyPhotonsNPY::make(num_photons, hitmask );
+    NPY<float>* pho = DummyPhotonsNPY::Make(num_photons, hitmask, modulo );
     pho->save("$TMP/DummyPhotonsNPY.npy"); 
 
 

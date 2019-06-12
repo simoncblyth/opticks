@@ -20,15 +20,16 @@
 
 
 
-TBuf::TBuf(const char* name, CBufSpec spec, const char* delim) :
-        m_name(strdup(name)),
-        m_spec(spec),
-        m_delim(strdup(delim))
+TBuf::TBuf(const char* name, CBufSpec spec, const char* delim) 
+    :
+    m_name(strdup(name)),
+    m_spec(spec),
+    m_delim(strdup(delim))
 {
     //m_spec.Summary("TBuf::TBuf.m_spec"); 
 }
 
-CBufSlice TBuf::slice( unsigned int stride, unsigned int begin, unsigned int end ) const 
+CBufSlice TBuf::slice( unsigned stride, unsigned begin, unsigned end ) const 
 {
     if(end == 0u) end = m_spec.size ;  
     return CBufSlice(m_spec.dev_ptr, m_spec.size, m_spec.num_bytes, stride, begin, end);
@@ -59,9 +60,6 @@ unsigned int TBuf::getItemSize() const
 
 
 
-
-
-
 template <typename T>
 void TBuf::download(NPY<T>* npy, bool verbose) const 
 {
@@ -73,9 +71,10 @@ void TBuf::download(NPY<T>* npy, bool verbose) const
 
     if(numItems_tbuf == 0)
     {
-        std::cout << "TBuf::download SKIP "
-                  << " numItems_tbuf " << numItems_tbuf
-                  << std::endl ; 
+        std::cout 
+            << "TBuf::download SKIP "
+            << " numItems_tbuf " << numItems_tbuf
+            << std::endl ; 
 
         m_spec.Summary("CBufSpec.Summary (empty tbuf?)"); 
         if(create_empty_npy)
@@ -98,14 +97,15 @@ void TBuf::download(NPY<T>* npy, bool verbose) const
         unsigned numQuad = itemFactor/4 ; 
 
         if(verbose)
-        std::cout << "TBuf::download resizing empty npy"
-                  << " itemSize_tbuf (eg float4x4 => 4*4*4 = 64) " << itemSize_tbuf
-                  << " itemSize_npy  (eg float => 4 ) " << itemSize_npy
-                  << " itemFactor (eg float4x4/float => 16 ) " << itemFactor  
-                  << " numQuad " << numQuad 
-                  << " numItems_tbuf " << numItems_tbuf
-                  << std::endl 
-                  ;
+        std::cout 
+            << "TBuf::download resizing empty npy"
+            << " itemSize_tbuf (eg float4x4 => 4*4*4 = 64) " << itemSize_tbuf
+            << " itemSize_npy  (eg float => 4 ) " << itemSize_npy
+            << " itemFactor (eg float4x4/float => 16 ) " << itemFactor  
+            << " numQuad " << numQuad 
+            << " numItems_tbuf " << numItems_tbuf
+            << std::endl 
+            ;
 
         assert(npy->hasItemShape(numQuad,4));
         npy->setNumItems(numItems_tbuf);
@@ -116,11 +116,12 @@ void TBuf::download(NPY<T>* npy, bool verbose) const
     bool numBytes_match = numBytes_npy == numBytes_tbuf ;
 
     if(!numBytes_match)
-        std::cout << "TBuf::download FATAL numBytes MISMATCH "
-                  << " numBytes_npy " << numBytes_npy 
-                  << " numBytes_tbuf " << numBytes_tbuf
-                  << std::endl 
-                  ;  
+        std::cout 
+            << "TBuf::download FATAL numBytes MISMATCH "
+            << " numBytes_npy " << numBytes_npy 
+            << " numBytes_tbuf " << numBytes_tbuf
+            << std::endl 
+            ;  
     assert(numBytes_match);
 
     void* src = getDevicePtr();
@@ -135,27 +136,45 @@ void TBuf::download(NPY<T>* npy, bool verbose) const
 
 
 
-// TODO: generalize with selector template type such as TIsHit 
-//
-//
-//  Initially tried to 
-//      TBuf* TBuf::make_selection
-//
-//  but that means the d_selected thrust::device_vector 
-//  goes out of scope prior to being able to download
-//  its content to host.
-//
-//  Avoid complication of hanging onto thrust::device_vector
-//  by combining the making of the selection TBuf and 
-//  the download 
-//
 
+/**
+TBuf::downloadSelection4x4
+-----------------------------
 
+This hides the float4x4 type down in here in the _.cu 
+where nvcc makes it available by default, such that the  
+user doesnt need access to the type.
+
+**/
 
 unsigned TBuf::downloadSelection4x4(const char* name, NPY<float>* npy, bool verbose) const 
 {
     return downloadSelection<float4x4>(name, npy, verbose);
 }
+
+
+
+
+
+
+/**
+TBuf::downloadSelection
+------------------------
+
+TODO: generalize with selector template type such as TIsHit 
+
+Initially tried to 
+    TBuf* TBuf::make_selection
+
+but that means the d_selected thrust::device_vector 
+goes out of scope prior to being able to download
+its content to host.
+
+Avoid complication of hanging onto thrust::device_vector
+by combining the making of the selection TBuf and 
+the download 
+
+**/
 
 template <typename T>
 unsigned TBuf::downloadSelection(const char* name, NPY<float>* selection, bool verbose) const 
@@ -164,18 +183,20 @@ unsigned TBuf::downloadSelection(const char* name, NPY<float>* selection, bool v
 
     unsigned numItems = getSize();
 
-    TIsHit selector ;
+    //TIsHit selector ;
+    TIsHitReflect selector ;
 
     unsigned numSel = thrust::count_if(ptr, ptr+numItems, selector );
 
     if(verbose)
-    std::cout << "TBuf::downloadSelection"
-              << " name : " << name 
-              << " numItems :" << numItems 
-              << " numSel :" << numSel 
-              << " sizeof(T) : " << sizeof(T)
-              << std::endl 
-              ; 
+    std::cout 
+        << "TBuf::downloadSelection"
+        << " name : " << name 
+        << " numItems :" << numItems 
+        << " numSel :" << numSel 
+        << " sizeof(T) : " << sizeof(T)
+        << std::endl 
+        ; 
 
 
     // device buffer is deallocated when d_selected goes out of scope 
@@ -196,11 +217,12 @@ unsigned TBuf::downloadSelection(const char* name, NPY<float>* selection, bool v
     {
         bool itemsize_match = sizeof(T) == tsel.getItemSize() ;
         if(!itemsize_match)
-            std::cerr << "TBuf::downloadSelection   FATAL"
-                      << " sizeof(T) " << sizeof(T)
-                      << " tsel ItemSize " << tsel.getItemSize()
-                      << std::endl 
-                 ; 
+            std::cerr 
+                << "TBuf::downloadSelection   FATAL"
+                << " sizeof(T) " << sizeof(T)
+                << " tsel ItemSize " << tsel.getItemSize()
+                << std::endl 
+                ; 
         assert(itemsize_match);
     }
 

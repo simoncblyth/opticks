@@ -48,6 +48,7 @@ SET(HEADERS
     CResource.hh
     CBufSpec.hh
     CBufSlice.hh
+    cfloat4x4.h
 )
 
 set(LIBRARIES

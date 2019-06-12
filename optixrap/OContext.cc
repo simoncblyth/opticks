@@ -732,12 +732,12 @@ optix::Buffer OContext::createBuffer(NPY<T>* npy, const char* name)
     bool compute = isCompute()  ; 
 
     if(verbose) 
-       LOG(info) << "OContext::createBuffer "
-              << std::setw(20) << name 
-              << std::setw(20) << npy->getShapeString()
-              << " mode : " << ( compute ? "COMPUTE " : "INTEROP " )
-              << " BufferControl : " << ctrl.description(name)
-              ;
+       LOG(info) 
+           << std::setw(20) << name 
+           << std::setw(20) << npy->getShapeString()
+           << " mode : " << ( compute ? "COMPUTE " : "INTEROP " )
+           << " BufferControl : " << ctrl.description(name)
+           ;
 
     unsigned int type(0);
     bool noctrl = false ; 
@@ -767,14 +767,22 @@ optix::Buffer OContext::createBuffer(NPY<T>* npy, const char* name)
     }
     else
     {
-         int buffer_id = npy ? npy->getBufferId() : -1 ;
-         if(!(buffer_id > -1))
-             LOG(fatal) << "OContext::createBuffer CANNOT createBufferFromGLBO as not uploaded  "
-                        << " name " << std::setw(20) << name
-                        << " buffer_id " << buffer_id 
-                         ; 
-         assert(buffer_id > -1 );
-         buffer = m_context->createBufferFromGLBO(type, buffer_id);
+        int buffer_id = npy ? npy->getBufferId() : -1 ;
+        if(!(buffer_id > -1))
+            LOG(fatal) 
+                << "CANNOT createBufferFromGLBO as not uploaded  "
+                << " name " << std::setw(20) << name
+                << " buffer_id " << buffer_id 
+                ; 
+        assert(buffer_id > -1 );
+
+        LOG(error) 
+                << "createBufferFromGLBO" 
+                << " name " << std::setw(20) << name
+                << " buffer_id " << buffer_id 
+                ; 
+
+        buffer = m_context->createBufferFromGLBO(type, buffer_id);
     } 
 
     configureBuffer<T>(buffer, npy, name );

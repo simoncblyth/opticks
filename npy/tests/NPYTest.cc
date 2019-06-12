@@ -29,7 +29,7 @@ void test_selection_write()
     unsigned numPhotons = 1000 ; 
     unsigned hitmask = 0x1 << 5 ; 
 
-    NPY<float>* ox = DummyPhotonsNPY::make(numPhotons, hitmask);
+    NPY<float>* ox = DummyPhotonsNPY::Make(numPhotons, hitmask);
     NPY<float>* ht = NPY<float>::make(0,4,4);
     unsigned numHits = ox->write_selection(ht, 3,3, hitmask );
 
@@ -54,7 +54,7 @@ void test_selection()
     unsigned numPhotons = 1000 ; 
     unsigned hitmask = 0x1 << 5 ; 
 
-    NPY<float>* ox = DummyPhotonsNPY::make(numPhotons, hitmask);
+    NPY<float>* ox = DummyPhotonsNPY::Make(numPhotons, hitmask);
     unsigned numHits = NPY<float>::count_selection(ox, 3,3, hitmask );
     NPY<float>* ht  = NPY<float>::make_selection(ox, 3,3, hitmask );
 
