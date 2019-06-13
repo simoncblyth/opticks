@@ -72,6 +72,7 @@ opticks-id(){ cat << EOI
 EOI
 }
 
+opticks-cmakecache(){ echo $(opticks-bdir)/CMakeCache.txt ; }
 
 
 opticks-pretty(){  cat ${1:-some.json} | python -m json.tool ; }

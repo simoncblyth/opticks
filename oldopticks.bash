@@ -44,6 +44,7 @@ EOI
 
 
 opticks-cmakecache(){ echo $(opticks-bdir)/CMakeCache.txt ; }
+
 opticks-cmakecache-grep(){ grep ${1:-COMPUTE_CAPABILITY} $(opticks-cmakecache) ; }
 opticks-cmakecache-vars-(){  cat << EOV
 CMAKE_BUILD_TYPE

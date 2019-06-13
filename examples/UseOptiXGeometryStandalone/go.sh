@@ -21,14 +21,20 @@ glm-url(){    echo https://github.com/g-truc/glm/releases/download/$(glm-version
 glm-dist(){    echo $(dirname $(glm-dir))/$(basename $(glm-url)) ; }
 
 glm-get(){
+   local msg="=== $FUNCNAME :"
    local dir=$(dirname $(glm-dir)) &&  mkdir -p $dir && cd $dir
    local url=$(glm-url)
    local zip=$(basename $url)
    local nam=$(glm-name)
    local opt=$( [ -n "${VERBOSE}" ] && echo "" || echo "-q" )
 
+   local hpp=$nam/glm/glm/glm.hpp
+   echo $msg nam $nam PWD $PWD hpp $hpp
+   ## curiously directories under /tmp being emptied but directory structure
+   ## remains, so have to check file rather than directory existance  
+
    [ ! -f "$zip" ] && curl -L -O $url
-   [ ! -d "$nam" ] && unzip $opt $zip -d $nam
+   [ ! -f "$hpp" ] && unzip $opt $zip -d $nam
    ln -sfnv $(glm-name)/glm glm 
    echo symbolic link for access without version in path
 }
