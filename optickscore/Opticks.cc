@@ -375,7 +375,7 @@ void Opticks::saveProfile()
 void Opticks::postpropagate()
 {
    saveProfile();
-   dumpProfile("Opticks::postpropagate", NULL, "OpticksRun::createEvent.BEG", 0.0001 );  // spacwith spacing at start if each evt
+   dumpProfile("Opticks::postpropagate", NULL, "_OpticksRun::createEvent", 0.0001 );  // spacwith spacing at start if each evt
 
    // startswith filtering 
    dumpProfile("Opticks::postpropagate", "OPropagator::launch");  
@@ -957,6 +957,10 @@ bool Opticks::isDbgEmit() const  // --dbgemit
 bool Opticks::isDbgDownload() const  // --dbgdownload
 {
    return m_cfg->hasOpt("dbgdownload");
+}
+bool Opticks::isDbgHit() const  // --dbghit
+{
+   return m_cfg->hasOpt("dbghit");
 }
 
 bool Opticks::isDbgGeoTest() const  // --dbggeotest

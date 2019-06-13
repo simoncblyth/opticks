@@ -1,17 +1,19 @@
 #pragma once
 
-#include "OpticksPhoton.h"
 #include "float4x4.h"
 
 /**
 TIsHit functor
 ===============
 
-Decision based on SURFACE_DETECT "SD" bit in photon flags
+Decision based on all bits in the selection mask being set in photon flags, 
+note this is non-exclusive, other bits may be set too.
+Canonically only a single bit is set in the mask with SURFACE_DETECT.  
 
 * photon flags such as SURFACE_DETECT are assigned to s.flag by oxrap-/cu/propagate.h
 * at each bounce oxrap-/cu/generate.cu FLAGS macro ORs s.flag into p.flags.u.w
 * p.flags.f saved into photon buffer by oxrap-/cu/photon.h:psave
+
 
 Suspect a failure to rebuild dependency issue regards 
 updates to this header... so touch the principal user TBuf\_.cu 
@@ -26,39 +28,22 @@ argument.
 
 struct TIsHit : public thrust::unary_function<float4x4,bool>
 {
+    unsigned hitmask ; 
+
+    TIsHit(unsigned hitmask_) : hitmask(hitmask_) {}   
+
     __host__ __device__
     bool operator()(float4x4 photon)
     {   
         tquad q3 ; 
         q3.f = photon.q3 ; 
-        return ( q3.u.w & SURFACE_DETECT ) == SURFACE_DETECT ;
+        return ( q3.u.w & hitmask ) == hitmask ;   
     }   
 };
+
 
 
 /**
-TIsHitReflect : for testing hit download machinery 
-
-**/
-
-
-struct TIsHitReflect : public thrust::unary_function<float4x4,bool>
-{
-    __host__ __device__
-    bool operator()(float4x4 photon)
-    {   
-        tquad q3 ; 
-        q3.f = photon.q3 ; 
-        return ( q3.u.w & BOUNDARY_REFLECT ) == BOUNDARY_REFLECT ;
-    }   
-};
-
-
-
-
-
-
- /**
 
 python -i $(which evt.py --tag 10)
 
@@ -91,14 +76,11 @@ array([[  4104,  18866],
        [  7296,    190],
        [  7328,     44]])
 
-
 In [43]: TORCH | SURFACE_DETECT | BOUNDARY_TRANSMIT
 Out[43]: 6208
 
 n [47]: ( TORCH | SURFACE_DETECT | BOUNDARY_TRANSMIT | BULK_SCATTER  )
 Out[47]: 6240
-
-
 
 
  **/

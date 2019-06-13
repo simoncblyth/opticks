@@ -776,11 +776,11 @@ optix::Buffer OContext::createBuffer(NPY<T>* npy, const char* name)
                 ; 
         assert(buffer_id > -1 );
 
-        LOG(error) 
-                << "createBufferFromGLBO" 
-                << " name " << std::setw(20) << name
-                << " buffer_id " << buffer_id 
-                ; 
+        LOG(debug) 
+            << "createBufferFromGLBO" 
+            << " name " << std::setw(20) << name
+            << " buffer_id " << buffer_id 
+            ; 
 
         buffer = m_context->createBufferFromGLBO(type, buffer_id);
     } 

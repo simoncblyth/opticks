@@ -512,6 +512,7 @@ class OKCORE_API Opticks {
        bool isDbgTex() const ; // --dbgtex
        bool isDbgEmit() const ; // --dbgemit
        bool isDbgDownload() const ; // --dbgdownload
+       bool isDbgHit() const ; // --dbghit
        bool isDbgGeoTest() const ; // --dbggeotest
 
        bool isReflectCheat() const ;

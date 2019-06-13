@@ -11,6 +11,8 @@
 #include "TBuf.hh"
 #include "TUtil.hh"
 #include "TIsHit.hh"
+#include "OpticksPhoton.h"
+// keep minimal : nvcc is tempramental 
 
 #include "float4x4.h"
 #include "strided_range.h"
@@ -147,21 +149,14 @@ user doesnt need access to the type.
 
 **/
 
-unsigned TBuf::downloadSelection4x4(const char* name, NPY<float>* npy, bool verbose) const 
+unsigned TBuf::downloadSelection4x4(const char* name, NPY<float>* npy, unsigned hitmask, bool verbose) const 
 {
-    return downloadSelection<float4x4>(name, npy, verbose);
+    return downloadSelection<float4x4>(name, npy, hitmask, verbose);
 }
-
-
-
-
-
 
 /**
 TBuf::downloadSelection
 ------------------------
-
-TODO: generalize with selector template type such as TIsHit 
 
 Initially tried to 
     TBuf* TBuf::make_selection
@@ -177,16 +172,15 @@ the download
 **/
 
 template <typename T>
-unsigned TBuf::downloadSelection(const char* name, NPY<float>* selection, bool verbose) const 
+unsigned TBuf::downloadSelection(const char* name, NPY<float>* selection, unsigned hitmask, bool verbose) const 
 {
     thrust::device_ptr<T> ptr = thrust::device_pointer_cast((T*)getDevicePtr()) ;
 
     unsigned numItems = getSize();
 
-    //TIsHit selector ;
-    TIsHitReflect selector ;
+    TIsHit is_hit(hitmask); 
 
-    unsigned numSel = thrust::count_if(ptr, ptr+numItems, selector );
+    unsigned numSel = thrust::count_if(ptr, ptr+numItems, is_hit );
 
     if(verbose)
     std::cout 
@@ -195,6 +189,7 @@ unsigned TBuf::downloadSelection(const char* name, NPY<float>* selection, bool v
         << " numItems :" << numItems 
         << " numSel :" << numSel 
         << " sizeof(T) : " << sizeof(T)
+        << " hitmask 0x" << std::hex << hitmask << std::dec
         << std::endl 
         ; 
 
@@ -204,7 +199,7 @@ unsigned TBuf::downloadSelection(const char* name, NPY<float>* selection, bool v
 
     thrust::device_vector<T> d_selected(numSel) ;    
 
-    thrust::copy_if(ptr, ptr+numItems, d_selected.begin(), selector );
+    thrust::copy_if(ptr, ptr+numItems, d_selected.begin(), is_hit );
 
     CBufSpec cselected = make_bufspec<T>(d_selected); 
 
@@ -409,6 +404,6 @@ template void TBuf::fill<unsigned>(unsigned value) const ;
 template void TBuf::fill<unsigned char>(unsigned char value) const ;
 
 
-template unsigned TBuf::downloadSelection<float4x4>(const char*, NPY<float>*, bool ) const ;
+template unsigned TBuf::downloadSelection<float4x4>(const char*, NPY<float>*, unsigned, bool ) const ;
 
 

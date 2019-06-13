@@ -131,7 +131,9 @@ class OXRAP_API OEvent
     private:
         SLog*           m_log ; 
         Opticks*        m_ok ; 
+        unsigned        m_hitmask ;  
         bool            m_compute ;  
+        bool            m_dbghit ; 
         bool            m_dbgdownload ; 
         NPY<unsigned>*  m_mask ; 
         OContext*       m_ocontext ; 

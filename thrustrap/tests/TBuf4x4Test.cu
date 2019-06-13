@@ -68,8 +68,9 @@ void test_count4x4()
 {
     LOG(info) << "(" ;
     unsigned num_photons = 100 ; 
+    unsigned hitmask = SURFACE_DETECT ; 
 
-    NPY<float>* ph = DummyPhotonsNPY::Make(num_photons, SURFACE_DETECT );
+    NPY<float>* ph = DummyPhotonsNPY::Make(num_photons, hitmask );
  
     thrust::device_vector<float4x4> d_ph(num_photons) ;
 
@@ -81,8 +82,9 @@ void test_count4x4()
 
     tph.dump<float4x4>("tph dump<float4x4>", 1, 0, num_photons );  // stride, begin, end 
 
-    TIsHit hitfunc ;
-    unsigned numHit = thrust::count_if(d_ph.begin(), d_ph.end(), hitfunc );
+
+    TIsHit is_hit(hitmask) ;
+    unsigned numHit = thrust::count_if(d_ph.begin(), d_ph.end(), is_hit );
 
     LOG(info) << "numHit :" << numHit ; 
     unsigned x_numHit = ph->getNumHit();
@@ -97,8 +99,9 @@ void test_count4x4_ptr()
 {
     LOG(info) << "(" ;
     unsigned num_photons = 100 ; 
+    unsigned hitmask = SURFACE_DETECT ; 
 
-    NPY<float>* ph = DummyPhotonsNPY::Make(num_photons, SURFACE_DETECT );
+    NPY<float>* ph = DummyPhotonsNPY::Make(num_photons, hitmask );
  
     thrust::device_vector<float4x4> d_ph(num_photons) ;
 
@@ -112,8 +115,8 @@ void test_count4x4_ptr()
 
     thrust::device_ptr<float4x4> ptr = thrust::device_pointer_cast((float4x4*)tph.getDevicePtr()) ;
 
-    TIsHit hitfunc ;
-    unsigned numHit = thrust::count_if(ptr, ptr+num_photons, hitfunc );
+    TIsHit is_hit(hitmask) ;
+    unsigned numHit = thrust::count_if(ptr, ptr+num_photons, is_hit );
 
     LOG(info) << "numHit :" << numHit ; 
     unsigned x_numHit = ph->getNumHit();
@@ -127,8 +130,8 @@ void test_copy4x4()
 {
     LOG(info) << "(" ;
     unsigned num_photons = 100 ; 
-
-    NPY<float>* pho = DummyPhotonsNPY::Make(num_photons, SURFACE_DETECT );
+    unsigned hitmask = SURFACE_DETECT ; 
+    NPY<float>* pho = DummyPhotonsNPY::Make(num_photons, hitmask );
  
     thrust::device_vector<float4x4> d_pho(num_photons) ;
 
@@ -142,9 +145,9 @@ void test_copy4x4()
 
     tpho.dump<float4x4>("tpho dump<float4x4>", 1, 0, num_photons );  // stride, begin, end 
 
-    TIsHit hitsel ;
+    TIsHit is_hit(hitmask) ;
 
-    unsigned numHit = thrust::count_if(d_pho.begin(), d_pho.end(), hitsel );
+    unsigned numHit = thrust::count_if(d_pho.begin(), d_pho.end(), is_hit );
 
     LOG(info) << "numHit :" << numHit ; 
     unsigned x_numHit = pho->getNumHit();
@@ -152,7 +155,7 @@ void test_copy4x4()
 
     thrust::device_vector<float4x4> d_hit(numHit) ; 
 
-    thrust::copy_if(d_pho.begin(), d_pho.end(), d_hit.begin(), hitsel );
+    thrust::copy_if(d_pho.begin(), d_pho.end(), d_hit.begin(), is_hit );
 
     CBufSpec chit = make_bufspec<float4x4>(d_hit); 
 
@@ -172,9 +175,10 @@ void test_copy4x4_ptr()
 {
     LOG(info) << "(" ;
     unsigned num_photons = 100 ; 
+    unsigned hitmask = SURFACE_DETECT ; 
     unsigned modulo = 10 ; 
 
-    NPY<float>* pho = DummyPhotonsNPY::Make(num_photons, SURFACE_DETECT, modulo );
+    NPY<float>* pho = DummyPhotonsNPY::Make(num_photons, hitmask, modulo );
 
     unsigned x_numHit = pho->getNumHit();
  
@@ -197,15 +201,15 @@ void test_copy4x4_ptr()
 
     assert(num_photons == tpho.getSize());
 
-    TIsHit hitsel ;
-    unsigned numHit = thrust::count_if(ptr, ptr+num_photons, hitsel );
+    TIsHit is_hit(hitmask) ;
+    unsigned numHit = thrust::count_if(ptr, ptr+num_photons, is_hit );
 
     LOG(info) << "numHit :" << numHit ; 
     assert(x_numHit == numHit );
 
     thrust::device_vector<float4x4> d_hit(numHit) ; 
 
-    thrust::copy_if(ptr, ptr+num_photons, d_hit.begin(), hitsel );
+    thrust::copy_if(ptr, ptr+num_photons, d_hit.begin(), is_hit );
 
     CBufSpec chit = make_bufspec<float4x4>(d_hit); 
 
@@ -228,9 +232,10 @@ void test_copy4x4_encapsulated()
 {
     LOG(info) << "(" ;
     unsigned num_photons = 100 ; 
+    unsigned hitmask = SURFACE_DETECT ; 
     unsigned modulo = 10 ; 
 
-    NPY<float>* pho = DummyPhotonsNPY::Make(num_photons, SURFACE_DETECT, modulo );
+    NPY<float>* pho = DummyPhotonsNPY::Make(num_photons, hitmask, modulo );
     unsigned x_num_hit = pho->getNumHit() ; 
 
     thrust::device_vector<float4x4> d_pho(num_photons) ;  // allocate GPU buffer 
@@ -246,7 +251,8 @@ void test_copy4x4_encapsulated()
 
 
     NPY<float>* hit = NPY<float>::make(0,4,4);
-    tpho.downloadSelection4x4("tpho.downloadSelection4x4", hit );
+
+    tpho.downloadSelection4x4("tpho.downloadSelection4x4", hit, hitmask );
 
     unsigned num_hit = hit->getShape(0) ;
     assert( num_hit == x_num_hit ); 

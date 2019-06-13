@@ -409,6 +409,10 @@ void OpticksCfg<Listener>::init()
        ("dbgdownload",  "debug event downloading from GPU") ;
 
    m_desc.add_options()
+       ("dbghit",  "debug hit downloading from GPU") ;
+
+
+   m_desc.add_options()
        ("dbggeotest",  "debug creation of test geometry") ;
 
 

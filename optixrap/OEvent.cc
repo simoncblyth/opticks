@@ -1,8 +1,11 @@
 #include "SLog.hh"
 #include "NPY.hpp"
 
+// okc-
 #include "Opticks.hh"
-#include "OpticksEvent.hh"  // okc-
+#include "OpticksPhoton.h"  
+#include "OpticksFlags.hh"  
+#include "OpticksEvent.hh"  
 #include "OpticksBufferControl.hh"  
 
 #include "OpticksHub.hh"    // okg-
@@ -44,7 +47,10 @@ OEvent::OEvent(Opticks* ok, OContext* ocontext)
    :
    m_log(new SLog("OEvent::OEvent", "", LEVEL)),
    m_ok(ok),
+   //m_hitmask(SURFACE_DETECT),
+   m_hitmask(TORCH | BULK_SCATTER | BOUNDARY_TRANSMIT | SURFACE_ABSORB),
    m_compute(ok->isCompute()),
+   m_dbghit(m_ok->isDbgHit()),            // --dbghit
    m_dbgdownload(m_ok->isDbgDownload()),  // --dbgdownload
    m_mask(m_ok->getMaskBuffer()),
    m_ocontext(ocontext),
@@ -349,7 +355,17 @@ void OEvent::downloadPhotonData()
 
 unsigned OEvent::downloadHits()
 {
-    return m_compute ? downloadHitsCompute(m_evt) : downloadHitsInterop(m_evt) ;
+    unsigned nhit = m_compute ? downloadHitsCompute(m_evt) : downloadHitsInterop(m_evt) ;
+
+    LOG(info) 
+        << " nhit " << nhit 
+        << " --dbghit " << ( m_dbghit ? "Y" : "N" )
+        << " hitmask 0x" << std::hex << m_hitmask << std::dec
+        << " " << OpticksFlags::FlagMask(m_hitmask, true)
+        << " " << OpticksFlags::FlagMask(m_hitmask, false)
+        ;
+
+    return nhit ; 
 }
 
 unsigned OEvent::download()
@@ -419,12 +435,14 @@ void OEvent::download(OpticksEvent* evt, unsigned mask)
 OEvent::downloadHits
 -------------------------
 
-Downloading hits is special because:
+Downloading hits is special because a selection of the 
+photon buffer is required, necessitating 
+the use of Thrust stream compaction. This avoids allocating 
+memory for all the photons on the host, just need to allocate
+for the hits.
 
-1. a selection of the photon buffer is required, necessitating the 
-    use of Thrust stream compaction 
-
-
+In interop need CUDA/Thrust access to underlying OpenGL buffer.  
+In compute need CUDA/Thrust access to the OptiX buffer.  
 
 **/
 
@@ -434,16 +452,13 @@ unsigned OEvent::downloadHitsCompute(OpticksEvent* evt)
 
     NPY<float>* hit = evt->getHitData();
 
-
-    LOG(info) << "[ cpho" ;
     CBufSpec cpho = m_photon_buf->bufspec();  
-    LOG(info) << "] cpho DONE " ;
     assert( cpho.size % 4 == 0 );
     cpho.size /= 4 ;    //  decrease size by factor of 4, increases cpho "item" from 1*float4 to 4*float4 
 
-    bool verbose = false ; 
+    bool verbose = m_dbghit ; 
     TBuf tpho("tpho", cpho );
-    unsigned nhit = tpho.downloadSelection4x4("OEvent::downloadHits", hit, verbose);
+    unsigned nhit = tpho.downloadSelection4x4("OEvent::downloadHits", hit, m_hitmask, verbose);
     // hit buffer (0,4,4) resized to fit downloaded hits (nhit,4,4)
     assert(hit->hasShape(nhit,4,4));
 
@@ -451,7 +466,6 @@ unsigned OEvent::downloadHitsCompute(OpticksEvent* evt)
 
     return nhit ; 
 }
-
 
 unsigned OEvent::downloadHitsInterop(OpticksEvent* evt)
 {
@@ -462,19 +476,17 @@ unsigned OEvent::downloadHitsInterop(OpticksEvent* evt)
 
     unsigned photon_id = npho->getBufferId();
 
-    LOG(fatal) << "[ cpho" ;
     CResource rphoton( photon_id, CResource::R );
     //CBufSpec cpho = rphoton.mapGLToCUDA<cfloat4x4>();
     CBufSpec cpho = rphoton.mapGLToCUDA<float>();
-    LOG(fatal) << "] cpho DONE " ;
 
     assert( cpho.size % 16 == 0 );
     cpho.size /= 16 ;    //  decrease size by factor of 16, increases cpho "item" from 1*float to 4*4*float 
 
 
-    bool verbose = true ; 
+    bool verbose = m_dbghit ; 
     TBuf tpho("tpho", cpho );
-    unsigned nhit = tpho.downloadSelection4x4("OEvent::downloadHits", hit, verbose);
+    unsigned nhit = tpho.downloadSelection4x4("OEvent::downloadHits", hit, m_hitmask, verbose);
     // hit buffer (0,4,4) resized to fit downloaded hits (nhit,4,4)
     assert(hit->hasShape(nhit,4,4));
 
