@@ -1,3 +1,5 @@
+// TEST=NSlabTest om-t
+
 #include <iostream>
 #include <iomanip>
 
@@ -35,7 +37,7 @@ void test_sdf()
 
 void test_intersect()
 {
-    LOG(info) << "test_intersect" ; 
+    LOG(info) ; 
 
     float a = -10 ; 
     float b = 10 ; 

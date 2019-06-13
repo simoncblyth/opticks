@@ -74,13 +74,15 @@ NPolygonizer::NPolygonizer(NCSG* csg)
     m_root(csg->getRoot()),
     m_bbox(new nbbox(m_root->bbox())),
     m_meta(csg->getMeta(-1)),
-    m_verbosity(m_meta->getIntFromString("verbosity", "0" )),
+    m_verbosity(0),
     m_index(m_csg->getIndex()),
     m_poly(NULL),
     m_polymode(POLY_NONE)
 {
     assert(m_root);
     assert(m_meta);
+
+    m_verbosity = m_meta->getIntFromString("verbosity", "0" ) ; 
 
     std::string poly = m_meta->get<std::string>("poly", "DCS");
 

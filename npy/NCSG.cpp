@@ -161,8 +161,11 @@ void NCSG::postchange()
     export_();                    // node tree -> complete binary tree m_nodes buffer
     export_srcidx();              // identity indices into srcidx buffer  : formerly was not done by NCSG::Load only NCSG::Adopt
 
-    if(m_config->verbosity > 1) dump("NCSG::postchange");
-    if(m_config->polygonize) polygonize();
+    if(m_config)
+    {
+        if(m_config->verbosity > 1) dump("NCSG::postchange");
+        if(m_config->polygonize) polygonize();
+    }
 
     assert( getGTransformBuffer() );
     collect_surface_points();
@@ -1070,6 +1073,10 @@ std::string NCSG::desc()
 
 NTrianglesNPY* NCSG::polygonize()
 {
+    assert( m_config ) ; 
+    m_config->dump("NCSG::polygonize"); 
+
+
     if(m_tris == NULL)
     {
         NPolygonizer pg(this);

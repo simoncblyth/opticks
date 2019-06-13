@@ -42,15 +42,15 @@ NSceneConfig::NSceneConfig(const char* cfg)
     parsurf_level(2),
     parsurf_margin(0),
     verbosity(0),
-    polygonize(1),
+    polygonize(0),
     instance_repeat_min(100),
     instance_vertex_min(0),
 
     default_csg_bbty(CSG_BBOX_PARSURF)
 {
-    LOG(debug) << "NSceneConfig::NSceneConfig"
-              << " cfg [" << ( cfg ? cfg : "NULL" ) << "]"
-              ;
+    LOG(debug) 
+        << " cfg [" << ( cfg ? cfg : "NULL" ) << "]"
+        ;
 
     bconfig->addInt("check_surf_containment", &check_surf_containment );
     bconfig->addInt("check_aabb_containment", &check_aabb_containment );
@@ -79,11 +79,11 @@ void NSceneConfig::env_override()
     int env_verbosity = SSys::getenvint("VERBOSITY", 0) ;
     if(verbosity != env_verbosity) 
     {
-        LOG(info) << "NSceneConfig"
-                  << " VERBOSITY envvar override " 
-                  << " env_verbosity " << env_verbosity 
-                  << " verbosity " << verbosity 
-                  ;   
+        LOG(info) 
+            << " VERBOSITY envvar override " 
+            << " env_verbosity " << env_verbosity 
+            << " verbosity " << verbosity 
+            ;   
         verbosity = env_verbosity ; 
     }
 }
