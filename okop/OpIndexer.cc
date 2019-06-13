@@ -39,6 +39,8 @@
 
 
 
+const plog::Severity OpIndexer::LEVEL = debug ; 
+
 OpIndexer::OpIndexer(Opticks* ok, OEvent* oevt)  
    :
      m_ok(ok),
@@ -102,11 +104,11 @@ void OpIndexer::setNumPhotons(unsigned int num_photons)
 
     if(!expected)
     {
-        LOG(fatal) << "OpIndexer::setNumPhotons"
-                   << " DISCREPANCY  " 
-                   << " num_photons " << num_photons
-                   << " x_num_photons " << x_num_photons
-                   ; 
+        LOG(fatal) 
+            << " DISCREPANCY  " 
+            << " num_photons " << num_photons
+            << " x_num_photons " << x_num_photons
+            ; 
     }
 
     assert(expected);
@@ -243,6 +245,7 @@ as these are used by OpenGL
 
 void OpIndexer::indexSequenceInterop()
 {
+    LOG(LEVEL) << "[" ; 
     OK_PROFILE("_OpIndexer::indexSequenceInterop"); 
 
     if(!m_seq)
@@ -251,7 +254,6 @@ void OpIndexer::indexSequenceInterop()
 
     assert(m_seq);
 
-    LOG(info) << "OpIndexer::indexSequenceInterop slicing (OBufBase*)m_seq " ; 
     CBufSlice seqh = m_seq->slice(2,0) ;  // stride, begin
     CBufSlice seqm = m_seq->slice(2,1) ;
 
@@ -264,23 +266,24 @@ void OpIndexer::indexSequenceInterop()
     indexSequenceViaOpenGL(seqhis, seqmat, m_verbose );
 
     OK_PROFILE("OpIndexer::indexSequenceInterop"); 
+    LOG(LEVEL) << "]" ; 
 }
 
 
 void OpIndexer::indexSequenceLoaded()
 {
+    LOG(LEVEL) << "[" ; 
     OK_PROFILE("_OpIndexer::indexSequenceLoaded"); 
     // starts from host based index
 
-    LOG(info) << "OpIndexer::indexSequenceLoaded" ; 
     if(m_evt->isIndexed() && !m_ok->hasOpt("forceindex")) 
     {
-        LOG(info) << "OpIndexer::indexSequenceLoaded evt already indexed" ; 
+        LOG(info) << "skipping : evt already indexed" ; 
         return ;  
     }
 
     NPY<unsigned long long>* ph = m_evt->getSequenceData(); 
-    if(!ph) LOG(fatal) << "OpIndexer::indexSequenceLoaded" << " ph NULL " ; 
+    if(!ph) LOG(fatal) << " ph NULL " ; 
     assert(ph);
 
     thrust::device_vector<unsigned long long> dph(ph->begin(),ph->end());
@@ -298,7 +301,6 @@ void OpIndexer::indexSequenceLoaded()
     TSparse<unsigned long long> seqmat(OpticksConst::SEQMAT_NAME_, phm ); 
 
 
-
     m_evt->setHistoryIndex(seqhis.getIndex());
     m_evt->setMaterialIndex(seqmat.getIndex());  // the indices are populated by the make_lookup below
 
@@ -307,7 +309,7 @@ void OpIndexer::indexSequenceLoaded()
     indexSequenceViaThrust(seqhis, seqmat, m_verbose );
 
     OK_PROFILE("OpIndexer::indexSequenceLoaded"); 
-
+    LOG(LEVEL) << "]" ; 
 }
 
 
@@ -319,11 +321,11 @@ void OpIndexer::prepareTarget(const char* msg)
     assert(phosel && "photon index lookups are written to phosel, this must be allocated with num photons length " );
     assert(recsel && "photon index lookups are repeated to into recsel, this must be allocated with num records length " );
 
-    LOG(info) << "OpIndexer::checkTarget"
-              << " (" << msg << ") " 
-              << " phosel " << phosel->getShapeString() 
-              << " recsel " << recsel->getShapeString() 
-              ;
+    LOG(info) 
+        << " (" << msg << ") " 
+        << " phosel " << phosel->getShapeString() 
+        << " recsel " << recsel->getShapeString() 
+        ;
 
     if(phosel->getShape(0) == 0 && recsel->getShape(0) == 0)
     {
@@ -373,10 +375,10 @@ void OpIndexer::dump(const TBuf& tphosel, const TBuf& trecsel)
     unsigned int nphosel = tphosel.getSize() ; 
     unsigned int nrecsel = trecsel.getSize() ; 
 
-    LOG(info) << "OpIndexer::dump"
-              << " nphosel " << nphosel
-              << " nrecsel " << nrecsel
-              ; 
+    LOG(info) 
+        << " nphosel " << nphosel
+        << " nrecsel " << nrecsel
+        ; 
 
     if(seq)
     {

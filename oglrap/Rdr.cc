@@ -30,6 +30,8 @@
 #include "G.hh"
 
 
+const plog::Severity Rdr::LEVEL = debug ; 
+
 const char* Rdr::PRINT = "print" ; 
 
 
@@ -71,7 +73,7 @@ void Rdr::download( NPY<T>* npy )
     OpticksBufferControl ctrl(npy->getBufferControlPtr());
     if(ctrl.isSet(OpticksBufferControl::OPTIX_NON_INTEROP_))
     {
-        LOG(info) << "Rdr::download SKIP for " << npy->getBufferName() << " as " << OpticksBufferControl::OPTIX_NON_INTEROP_  ;
+        LOG(LEVEL) << "SKIP for " << npy->getBufferName() << " as " << OpticksBufferControl::OPTIX_NON_INTEROP_  ;
         return ; 
     }
 
@@ -174,7 +176,7 @@ void Rdr::upload(MultiViewNPY* mvn, bool debug)
    
     if(debug)
     {
-        LOG(info) << "Rdr::upload tag [" << tag << "] mvn [" << mvn->getName() << "]" ; 
+        LOG(info) << "tag [" << tag << "] mvn [" << mvn->getName() << "]" ; 
         mvn->Summary("Rdr::upload mvn");
     }
 

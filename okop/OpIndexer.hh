@@ -97,11 +97,13 @@ template <typename T> class TSparse ;
 class BTimeKeeper ; 
 
 
+#include "plog/Severity.h"
 
 #include "OpticksSwitches.h"
 #include "OKOP_API_EXPORT.hh"
 
 class OKOP_API OpIndexer {
+      static const plog::Severity LEVEL ; 
    public:
       OpIndexer(Opticks* ok, OEvent* oevt);
 

@@ -71,7 +71,7 @@
 #include "Interactor.hh"
 #include "InteractorCfg.hh"
 
-const plog::Severity OpticksViz::LEVEL = error ; 
+const plog::Severity OpticksViz::LEVEL = debug ; 
 
 
 OpticksViz::OpticksViz(OpticksHub* hub, OpticksIdx* idx, bool immediate)
@@ -204,7 +204,7 @@ Commands currently only from InterpolatedView flightpaths
 void OpticksViz::command(const char* cmd)
 {
     assert( strlen(cmd) == 2 ); 
-    LOG(info) << cmd ; 
+    LOG(LEVEL) << cmd ; 
 
     // m_hub->command(cmd); // hub always redirects to composition anyhow
     m_composition->command(cmd) ;    
@@ -218,7 +218,7 @@ void OpticksViz::commandline(const char* cmdline)
     std::vector<std::string> cmds ;
     BStr::split(cmds, cmdline, ',' );
 
-    LOG(info) 
+    LOG(LEVEL) 
          << " cmdline " << cmdline 
          << " cmds " << cmds.size()
          ;
@@ -240,7 +240,7 @@ bool OpticksViz::hasOpt(const char* name)
 
 void OpticksViz::setupRendermode(const char* rendermode )
 {
-    LOG(info) << "OpticksViz::setupRendermode [" << ( rendermode ? rendermode : "-" ) << "]"  ;
+    LOG(LEVEL) << "[" << ( rendermode ? rendermode : "-" ) << "]"  ;
 
     if(rendermode)
     { 
@@ -255,7 +255,7 @@ void OpticksViz::setupRendermode(const char* rendermode )
         }
     }
     std::string rmode = m_scene->getRenderMode();
-    LOG(info) << "OpticksViz::setupRendermode rmode " << rmode ; 
+    LOG(LEVEL) << " rmode " << rmode ; 
 
     m_scene->setInstCull( m_ok->hasOpt("instcull" ) );
 
@@ -265,7 +265,7 @@ void OpticksViz::setupRestrictions()
 {
     if(m_ok->isJuno())
     {
-        LOG(warning) << "disable GeometryStyle  WIRE for JUNO as too slow " ;
+        LOG(error) << "disable GeometryStyle  WIRE for JUNO as too slow " ;
 
         if(!hasOpt("jwire")) // use --jwire to enable wireframe with JUNO, do this only on workstations with very recent GPUs
         { 
@@ -316,9 +316,7 @@ void OpticksViz::prepareScene(const char* rendermode)
 
 void OpticksViz::uploadGeometry()
 {
-    LOG(fatal) << "OpticksViz::uploadGeometry"
-               << " hub " << m_hub->desc()
-               ;
+    LOG(LEVEL) << "[ hub " << m_hub->desc() ;
 
     NPY<unsigned char>* colors = m_hub->getColorBuffer();
 
@@ -336,6 +334,7 @@ void OpticksViz::uploadGeometry()
 
     m_hub->setupCompositionTargetting();
 
+    LOG(LEVEL) << "]" ;
 }
 
 int OpticksViz::getTarget()
@@ -357,14 +356,14 @@ void OpticksViz::uploadEvent()
 
 void OpticksViz::uploadEvent(OpticksEvent* evt)
 {
-    LOG(info) << "OpticksViz::uploadEvent (" << evt->getId() << ")"  ;
+    LOG(LEVEL) << "[ (" << evt->getId() << ")" ;
 
     m_scene->upload(evt);
 
     if(m_hub->hasOpt("dbguploads"))
         m_scene->dump_uploads_table("OpticksViz::uploadEvent(--dbguploads)");
 
-    LOG(info) << "OpticksViz::uploadEvent (" << evt->getId() << ") DONE "  ;
+    LOG(LEVEL) << "] (" << evt->getId() << ")" ;
 }
 
 
@@ -373,7 +372,7 @@ void OpticksViz::uploadEvent(OpticksEvent* evt)
 void OpticksViz::downloadData(NPY<float>* data)
 {
     assert(data);
-    LOG(info) << "OpticksViz::downloadData" ;
+    LOG(LEVEL) ;
     Rdr::download<float>(data);
 }
 
@@ -381,9 +380,9 @@ void OpticksViz::downloadEvent()
 {
     OpticksEvent* evt = m_run->getEvent();  // almost always OK evt never G4 ?
     assert(evt);
-    LOG(info) << "OpticksViz::downloadEvent (" << evt->getId() << ")" ;
+    LOG(LEVEL) << "[ (" << evt->getId() << ")" ;
     Rdr::download(evt);
-    LOG(info) << "OpticksViz::downloadEvent (" << evt->getId() << ") DONE " ;
+    LOG(LEVEL) << "] (" << evt->getId() << ")" ;
 }
 
 
@@ -391,7 +390,7 @@ void OpticksViz::indexPresentationPrep()
 {
     if(!m_idx) return ; 
 
-    LOG(info) << "OpticksViz::indexPresentationPrep" ; 
+    LOG(LEVEL) ; 
 
     m_seqhis = m_idx->makeHistoryItemIndex();
     m_seqmat = m_idx->makeMaterialItemIndex();
@@ -428,17 +427,6 @@ void OpticksViz::prepareGUI()
     OpticksEvent* evt = m_run->getCurrentEvent();
 
 
-#ifdef OLD_TIMER
-    BTimesTable* tt = evt ? evt->getTimesTable() : NULL ; 
-    if(tt)
-    {
-        m_gui->setupStats(tt->getLines());
-    }
-    else
-    {
-        LOG(LEVEL) << "NULL TimesTable " ; 
-    }  
-#else
     OpticksProfile* profile = evt ? evt->getProfile() : NULL ; 
     if(profile)
     {
@@ -448,8 +436,6 @@ void OpticksViz::prepareGUI()
     {
         LOG(LEVEL) << "NULL profile " ; 
     }  
-#endif
-
 
     NMeta* parameters = evt ? evt->getParameters() : m_ok->getParameters() ; 
     m_gui->setupParams(parameters->getLines());
@@ -525,10 +511,10 @@ void OpticksViz::renderLoop()
 {
     if(m_interactivity == 0 )
     {
-        LOG(LEVEL) << "OpticksViz::renderLoop early exit due to InteractivityLevel 0  " ; 
+        LOG(LEVEL) << "early exit due to InteractivityLevel 0  " ; 
         return ;
     }
-    LOG(info) << "enter runloop "; 
+    LOG(LEVEL) << "enter runloop "; 
 
     //m_frame->toggleFullscreen(true); causing blankscreen then segv
     m_frame->hintVisible(true);
@@ -568,12 +554,10 @@ void OpticksViz::renderLoop()
         exitloop = renderlooplimit > 0 && int(count) > renderlooplimit ; 
     }
 
-    //if(exitloop)
-    {
-        LOG(info) << " renderlooplimit " << renderlooplimit 
-                  << " count " << count 
-                  ;
-    }
+    LOG(LEVEL) 
+        << " renderlooplimit " << renderlooplimit 
+        << " count " << count 
+        ;
 
 }
 
@@ -584,7 +568,6 @@ void OpticksViz::cleanup()
     if(m_gui) m_gui->shutdown();
 #endif
     if(m_frame) m_frame->exit();
-
 }
 
 

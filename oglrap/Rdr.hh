@@ -15,7 +15,11 @@ class Device ;
 #include "OGLRAP_API_EXPORT.hh"
 #include "OGLRAP_HEAD.hh"
 
+#include "plog/Severity.h"
+
 class OGLRAP_API Rdr : public RendererBase  {
+
+      static const plog::Severity LEVEL ; 
   public:
       Rdr(Device* dev, const char* tag, const char* dir=NULL, const char* incl_path=NULL);
 

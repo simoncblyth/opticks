@@ -105,8 +105,8 @@ Observations
 
 
 
-try to viz and propagate together fails : the old linux interop chestnut OR not : its just hits buffer
----------------------------------------------------------------------------------------------------------
+try to viz and propagate together fails : the old linux interop chestnut OR not : its just hits buffer : FIXED with OEvent::downloadHitsInterop 
+----------------------------------------------------------------------------------------------------------------------------------------------------
 
 * :doc:`OEvent_downloadHits_fail_in_interop`
 

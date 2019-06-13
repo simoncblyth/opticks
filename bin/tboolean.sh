@@ -54,14 +54,18 @@ then
     unset IDPATH
     geocache-
     geocache-key-export
-    echo IDPATH : $IDPATH
+    [ -n "$IDPATH" ] && echo $0 ERROR IDPATH should not be defined in direct running : $IDPATH && exit 101
 fi
 
 
 echo ====== $0 $arg $* ====== PWD $PWD =================
 
 tboolean-
-cmd="tboolean-$arg --okg4 --compute $*"
+cmd="tboolean-$arg --okg4  $*"
+
+## removed --compute will default to interop mode, now that viz+propagate are working together 
+
+
 echo $cmd
 eval $cmd
 rc=$?
