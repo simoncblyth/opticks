@@ -4,7 +4,33 @@ x4gen-env(){  olocal- ; opticks- ; }
 x4gen-usage(){ cat << EOU
 
 X4Gen Usage 
-===================
+==============
+
+
+::
+
+   x4gen-
+   x4gen--
+
+
+
+ISSUES
+--------
+
+* x016.cc generated with zero content
+
+::
+
+    2019-06-13 22:00:53.292 INFO  [385857] [X4PhysicalVolume::convertSolid@500]  [ 16 lFasteners0x4c012d0
+    G4GDML: Writing solids...
+    G4GDML: Writing solids...
+    2019-06-13 22:00:53.294 INFO  [385857] [NTreeBalance<T>::create_balanced@40] op_mask union intersection 
+    2019-06-13 22:00:53.294 INFO  [385857] [NTreeBalance<T>::create_balanced@41] hop_mask union 
+    2019-06-13 22:00:53.294 INFO  [385857] [NTreeBalance<T>::create_balanced@65]  bileafs 2 otherprim 9
+    2019-06-13 22:00:53.294 ERROR [385857] [NTreeBuilder<T>::init@169]  num_subs 2 num_otherprim 9 num_prim 13 height 4 mode MIXED operator union
+    2019-06-13 22:00:53.302 ERROR [385857] [X4CSG::generateTestMain@236]  skip as no g4code 
+
+
 
 
 TODO:
@@ -182,7 +208,6 @@ x4gen-ed(){
 x4gen-cd(){   cd $(x4gen-base) ; }
 x4gen-base(){ x4gen-base-fromkey ; } 
 x4gen-base-fromkey(){ geocache- ; echo $(geocache-keydir) ; }  # requires OPTICKS_KEY envvar 
-x4gen-base-manual(){  echo  /usr/local/opticks/geocache/OKX4Test_World0xc15cfc0_PV_g4live/g4ok_gltf/828722902b5e94dab05ac248329ffebe/1 ; }
 
 
 x4gen-name(){ echo x$(printf "%0.3d" ${1:-0}) ; }
@@ -277,7 +302,7 @@ x4gen-idx(){ cat << EOI
 EOI
 }
 
-x4gen-go(){ cat << EOG
+x4gen-go-(){ cat << EOG
 #!/bin/bash -l
 
 opticks-
@@ -314,7 +339,7 @@ x4gen--(){
    local iwd=$PWD
    cd $base
 
-   x4gen-go > go.sh
+   x4gen-go- > go.sh
    chmod ugo+x go.sh
    x4gen-hh > X4Gen.hh
    x4gen-cc > X4Gen.cc

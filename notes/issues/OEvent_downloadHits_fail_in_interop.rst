@@ -1,7 +1,5 @@
-OEvent_downloadHits_fail_in_interop
-=========================================
-
-
+OEvent_downloadHits_fail_in_interop : FIXED 
+================================================
 
 context
 ---------

@@ -229,8 +229,10 @@ geocache-j1808-v3(){  opticksdata- ; geocache-create- --gdmlpath $(opticksdata-j
 geocache-j1808-v3(){  opticksdata- ; geocache-create- --gdmlpath $(opticksdata-jv3) --csgskiplv 22  ; }
 geocache-j1808-v4-(){ opticksdata- ; geocache-create- --gdmlpath $(opticksdata-jv4) $* ; }
 
+geocache-recreate(){ geocache-j1808-v4 ; }
 
-geocache-j1808-v4-comment(){ echo reproduce-rtx-inversion-skipping-just-lv-22-maskVirtual ; }
+
+geocache-j1808-v4-comment(){ echo torus-less-skipping-just-lv-22-maskVirtual ; }
 geocache-j1808-v4-key(){     echo OKX4Test.X4PhysicalVolume.lWorld0x4bc2710_PV.f6cc352e44243f8fa536ab483ad390ce ; }
 geocache-j1808-v4-export(){  geocache-export ${FUNCNAME/-export} ; }
 geocache-j1808-v4(){  geocache-j1808-v4- --csgskiplv 22 --runfolder $FUNCNAME --runcomment $(${FUNCNAME}-comment) $* ; }  

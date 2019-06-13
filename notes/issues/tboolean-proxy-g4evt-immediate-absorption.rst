@@ -1,5 +1,5 @@
-tboolean-proxy-g4evt-immediate-absorption
-===============================================
+tboolean-proxy-g4evt-immediate-absorption : 4 ISSUES COVERED HERE ALL FIXED
+=================================================================================
 
 Context
 ---------
@@ -19,6 +19,8 @@ To create the events
 
    PROXYLV=17 tboolean.sh             ## compute mode
    PROXYLV=17 tboolean.sh --interop   ## propagate and visualize it 
+
+   ## interop now default 
 
 
 Load the events into ipython
@@ -602,8 +604,8 @@ According to g4 the photons are starting in Rock and immediately get absorbed::
 
 
 
-G4 OK Geometry mismatch : likely source container auto resizing : CONFIRMED by adding containerautosize control  
-------------------------------------------------------------------------------------------------------------------
+G4 OK Geometry mismatch : likely source container auto resizing : CONFIRMED by adding containerautosize control  : FIXED 
+-----------------------------------------------------------------------------------------------------------------------------
 
 * emitter is also a container and containers gets auto-resized when proxying 
   in base solids : thats a likely cause, try switching off auto-resizing
@@ -675,7 +677,8 @@ With containerautosize=1 see discrepancy between uncompressed ox and domain comp
 
     In [33]: b.rpostn(2)[:,1,2].min()    # z of the 2nd position (AB) of g4 photons 
     Out[33]: 
-    A(-825.8752)
+    A(-825.8752)  ### HUGE DIFFERENCE BETWEED THE PHOTONS b.ox AND THE RECORDS b.rpostn
+                  ### WHOPPER BUG   
 
     In [34]: b.rpostn(2)[:,1,2].max()
     Out[34]: 
@@ -696,6 +699,40 @@ With containerautosize=1 see discrepancy between uncompressed ox and domain comp
     A()sliced
     A([[  0.  ,   0.  ,   0.  , 825.85]], dtype=float32)
 
+
+revisit after fix : looks ok
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+PROXYLV=17 tboolean-proxy-ip::
+
+    In [1]: b.ox[:,0]
+    Out[1]: 
+    A([[  20.9156,  -64.1749,  824.85  ,    5.5569],
+       [ -49.4043,   -0.5229,  824.85  ,    5.5569],
+       [ -75.1754,   18.1914,  824.85  ,    5.5569],
+       ...,
+       [ -19.0364,   74.8482,  824.85  ,    5.5569],
+       [ -16.2082,   36.5504,  824.85  ,    5.5569],
+       [-163.5415, -323.7321, -824.85  ,    7.6755]], dtype=float32)
+
+
+    In [4]: b.ox[:,0,2].min()         ## photons end on the container surface, not the universe wrapper : which is 1mm larger
+    Out[4]: 
+    A(-824.85, dtype=float32)
+
+    In [5]: b.ox[:,0,2].max()
+    Out[5]: 
+    A(824.85, dtype=float32)
+
+
+    In [11]: b.rpostn(3)[:,2,2].min()  # last z of 3 point propagations 
+    Out[11]: 
+    A(-824.8419)    ## 
+
+This is the level of difference expected from the domain compression on the record points which is not applied to photons (final position only)::
+
+    In [13]: -824.85--824.8419
+    Out[13]: -0.008100000000013097
 
 
 Review OpticksDomain, add header docs
