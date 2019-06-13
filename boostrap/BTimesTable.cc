@@ -88,7 +88,6 @@ void BTimesTable::add( T row_, double x, double y, double z, double w, int count
 
 void BTimesTable::setLabel(const char* label)
 {
-    free((void*)m_label);
     m_label = label ; 
 }
 const char* BTimesTable::getLabel()
@@ -96,18 +95,69 @@ const char* BTimesTable::getLabel()
     return m_label ;
 }
 
+const unsigned BTimesTable::WIDTH = 15 ; 
+const unsigned BTimesTable::PRIME = 0 ; 
+
+
+void BTimesTable::makeLines()
+{
+    unsigned wid = WIDTH ; 
+
+    m_lines.clear() ;  
+    m_names.clear() ;  
+    m_first.clear() ;  
+
+    unsigned numcol = m_table.size() ;
+    unsigned numrow = getNumRows() ; 
+
+    for(unsigned i=0 ; i < numrow ; i++)
+    {
+        std::stringstream ss ;  
+        std::string rowname ; 
+        double first = 0 ; 
+        for(unsigned int j=0 ; j < numcol ; j++)
+        { 
+            BTimes* ts = m_table[j];
+            std::pair<std::string, double>& entry = ts->getEntry(i);
+
+            if(rowname.empty()) 
+                rowname = entry.first ; 
+            else
+                assert(entry.first.compare(rowname) == 0) ;
+
+             ss << std::fixed << std::setw(wid) << std::setprecision(3) << entry.second ;
+
+            if(j==PRIME) first = entry.second ;   // 1st column only
+        }
+
+        ss << " : " << rowname ;       
+
+        m_lines.push_back(ss.str());
+        m_names.push_back(rowname);
+        m_first.push_back(first);
+    }
+}
+
 
 void BTimesTable::dump(const char* msg, const char* startswith, const char* spacewith, double tcut )
 {
     makeLines();
-    LOG(info) << msg 
-              << " filter: " << ( startswith ? startswith : "NONE" )
-              ;
+    LOG(info) 
+        << msg 
+        << " filter: " << ( startswith ? startswith : "NONE" )
+        ;
 
     assert(m_lines.size() == m_names.size());
     unsigned nline = m_lines.size();
+    std::string column_labels = getColumnLabels() ;
+
+
+    std::stringstream ss ; 
+    ss << "diffListed" << getColumnLabel(PRIME) ;  
+    std::string diffListed = ss.str(); 
 
     double prior_first(0);
+    std::cout << std::setw(WIDTH) << diffListed << column_labels << std::endl ;  
 
     for( unsigned i=0 ; i < nline ; i++)
     {
@@ -129,7 +179,7 @@ void BTimesTable::dump(const char* msg, const char* startswith, const char* spac
             bool cut = tcut == 0.0 ? false : delta < tcut ;   // suppress lines with delta less than tcut 
 
             if(!cut)
-            std::cout << std::fixed << std::setw(15) << std::setprecision(3) << delta << " " << line << std::endl ;  
+            std::cout << std::fixed << std::setw(WIDTH) << std::setprecision(3) << delta << " " << line << std::endl ;  
 
             prior_first = first ; 
         }
@@ -154,61 +204,40 @@ void BTimesTable::load(const char* dir)
     }
 }
 
-
-void BTimesTable::makeLines()
+const char* BTimesTable::getColumnLabel(unsigned j) const 
 {
-    unsigned wid = 15 ; 
+    assert( j < m_table.size() ); 
+    return m_table[j]->getLabel();  
+}
 
-    m_lines.clear() ;  
-    m_names.clear() ;  
-    m_first.clear() ;  
+std::string BTimesTable::getColumnLabels() const 
+{
+    std::stringstream ss ;  
+    unsigned numcol = m_table.size() ;
+    for(unsigned j=0 ; j < numcol ; j++)
+    { 
+        BTimes* ts = m_table[j];
+        ss << std::setw(WIDTH) << ts->getLabel() ;
+    }
+    return ss.str();
+}
 
-    unsigned int nrow = 0 ;
-    unsigned int numcol = m_table.size() ;
 
-    std::stringstream ll ;  
+unsigned BTimesTable::getNumRows() const 
+{
+    unsigned numcol = m_table.size() ;
+    unsigned numrow = 0u ; 
     for(unsigned int j=0 ; j < numcol ; j++)
     {  
         BTimes* ts = m_table[j];
-        if(nrow == 0)
-            nrow = ts->getNumEntries();
+        if(numrow == 0)
+            numrow = ts->getNumEntries();
         else
-           assert(ts->getNumEntries() == nrow && "all times must have same number of entries" );
-
-        ll << std::setw(wid) << ts->getLabel() ;
+           assert(ts->getNumEntries() == numrow && "all times must have same number of entries" );
     }
-    m_lines.push_back(ll.str());
-    m_names.push_back("header");
-    m_first.push_back(0);
-
-    for(unsigned int i=0 ; i < nrow ; i++)
-    {
-        std::stringstream ss ;  
-
-        std::string rowname ; 
-        double first = 0 ; 
-        for(unsigned int j=0 ; j < numcol ; j++)
-        { 
-            BTimes* ts = m_table[j];
-            std::pair<std::string, double>& entry = ts->getEntry(i);
-
-            if(rowname.empty()) 
-                rowname = entry.first ; 
-            else
-                assert(entry.first.compare(rowname) == 0) ;
-
-             ss << std::fixed << std::setw(wid) << std::setprecision(3) << entry.second ;
-
-            if(j==0) first = entry.second ;
-        }
-
-        ss << " : " << rowname ;       
-
-        m_lines.push_back(ss.str());
-        m_names.push_back(rowname);
-        m_first.push_back(first);
-    }
+    return numrow ; 
 }
+
 
 
 template BRAP_API void BTimesTable::add(int           , double, double, double, double, int);

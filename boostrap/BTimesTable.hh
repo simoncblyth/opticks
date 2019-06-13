@@ -19,10 +19,6 @@ as individual ".ini" files named after the column labels.
 
 *BTimeKeeper* is the canonical user of *BTimesTable*
 
-
-
-
-
 ::
 
     simon:1 blyth$ BTimesTableTest 
@@ -44,6 +40,9 @@ as individual ".ini" files named after the column labels.
 
 class BRAP_API BTimesTable {
     public:
+        static const unsigned WIDTH ; 
+        static const unsigned PRIME ; 
+    public:
         BTimesTable(const char* columns, const char* delim=","); 
         BTimesTable(const std::vector<std::string>& columns);
         void dump(const char* msg="BTimesTable::dump", const char* startswith=NULL, const char* spacewith=NULL, double tcut=0.0 );
@@ -54,15 +53,21 @@ class BRAP_API BTimesTable {
         template <typename T> void add( T row, double x, double y, double z, double w, int count=-1 );
         template <typename T> const char* makeLabel( T row_, int count=-1 );
 
-        void makeLines();
         std::vector<std::string>& getLines(); 
+
     public:
         void save(const char* dir);
         void load(const char* dir);
         const char* getLabel();
+
     private:
+        void makeLines();
         void init(const std::vector<std::string>& columns);
         void setLabel(const char* label);
+
+        unsigned getNumRows() const ; 
+        const char* getColumnLabel(unsigned j) const ;
+        std::string getColumnLabels() const ; 
     private:
         BTimes*   m_tx ; 
         BTimes*   m_ty ; 
