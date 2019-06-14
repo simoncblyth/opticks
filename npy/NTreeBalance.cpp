@@ -41,12 +41,12 @@ T* NTreeBalance<T>::create_balanced()
     LOG(LEVEL) << "hop_mask " << CSGMaskDesc(hop_mask ); 
 
 
-    OpticksCSG_t op = CSG_MonoOperator(op_mask) ;  
+    OpticksCSG_t op = CSG_MonoOperator(op_mask) ;    // sysrap/OpticksCSGMask.h returns CSG_ZERO when not a mono mask
     OpticksCSG_t hop = CSG_MonoOperator(hop_mask) ;  
 
     T* balanced = NULL ; 
 
-    if( op == CSG_INTERSECTION || op == CSG_UNION ) 
+    if( op == CSG_INTERSECTION || op == CSG_UNION )  // simple mono-operator case : all operators in tree are the same 
     {
         std::vector<T*> prims ; 
         std::vector<T*> otherprim ; 
@@ -75,9 +75,7 @@ T* NTreeBalance<T>::create_balanced()
         {
             balanced = NTreeBuilder<T>::MixedTree(bileafs, otherprim, hop ); 
         }
-
-        // BUT : can also have bileafs + primitives in a mixed tree, 
-        //       like with sFasterner bolts : and this is dropping them 
+        // can also have bileafs + primitives in a mixed tree, like with sFasterner bolts
     }
     else
     {
@@ -144,9 +142,6 @@ void NTreeBalance<T>::subdepth_r(T* node, unsigned depth_ )
 
 
 
-
-
-
 /**
 NTreeBalance<T>::subtrees
 ---------------------------
@@ -190,9 +185,21 @@ void NTreeBalance<T>::subtrees_r(T* node, std::vector<T*>& subs, unsigned subdep
 }
 
 
+/**
+NTreeBalance<T>::is_collected
+--------------------------------
+
+Check if the argument node is already present in the subs list of subtrees 
+eitherdirectly or as first child.
+
+NB implicit assumption of maximum depth 1 of the subtrees, ie either leaf or bileaf 
+
+**/
+
 template <typename T>
 bool NTreeBalance<T>::is_collected(const std::vector<T*>& subs, const T* node) // static
 {
+    assert( node->is_primitive() ); 
     for(unsigned i=0 ; i < subs.size() ; i++)
     {
         const T* sub = subs[i] ; 

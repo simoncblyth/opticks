@@ -37,13 +37,16 @@ class GGEO_API GItemList : public NSequence {
     public:
        // fulfil NSequence protocol
        const char* getKey(unsigned index) const ;
-       unsigned int getNumKeys() const ;
-       unsigned int getIndex(const char* key) const ;    // 0-based index of first matching name, OR UINT_MAX if no match
+       unsigned getNumKeys() const ;
+       unsigned getNumUniqueKeys() const ; 
     public:
        void setKey(unsigned int index, const char* newkey);
        static bool isUnset(unsigned int index);
    public:
        void getIndicesWithKeyEnding( std::vector<unsigned>& indices, const char* ending ) const ;  
+       int  findIndexWithKeyStarting( const char* starting ) const ;  // first index is returned, gives -1 if none found
+       int  findIndex( const char* key ) const ;  // first index is returned, gives -1 if none found
+       unsigned getIndex(const char* key) const ;    // 0-based index of first matching name, OR UINT_MAX if no match
    public:
        bool operator()(const std::string& a_, const std::string& b_);
        void setOrder(std::map<std::string, unsigned int>& order);

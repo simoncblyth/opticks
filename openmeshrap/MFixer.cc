@@ -62,7 +62,7 @@ void MFixer::fixMesh()
         for(unsigned int i=0 ; i < std::min( nodeCount, 5u ) ; i++) nss << nodes[i] << "," ;
 
 
-        const GMesh* mesh = m_meshlib->getMesh(meshIndex);
+        const GMesh* mesh = m_meshlib->getMeshWithIndex(meshIndex);
         gfloat4 ce = mesh->getCenterExtent(0);
 
         const char* shortName = mesh->getShortName();
@@ -99,7 +99,7 @@ void MFixer::fixMesh()
     for(MUUI it=mesh_usage.begin() ; it != mesh_usage.end() ; it++)
     {
         unsigned int meshIndex = it->first ; 
-        const GMesh* mesh = m_meshlib->getMesh(meshIndex);
+        const GMesh* mesh = m_meshlib->getMeshWithIndex(meshIndex);
         bool join = m_ggeo->shouldMeshJoin(mesh);
         if(join)
         {

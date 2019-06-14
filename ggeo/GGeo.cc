@@ -977,13 +977,18 @@ unsigned GGeo::getNumMeshes() const
 {
     return m_meshlib->getNumMeshes(); 
 }
+
+#ifdef OLD_INDEX
 GItemIndex* GGeo::getMeshIndex()
 {
     return m_meshlib->getMeshIndex() ; 
 }
+#endif
+
+
 const GMesh* GGeo::getMesh(unsigned aindex) const 
 {
-    return m_meshlib->getMesh(aindex);
+    return m_meshlib->getMeshWithIndex(aindex);
 }  
 void GGeo::add(const GMesh* mesh)  // canonically invoked by X4PhysicalVolume::convertSolids_r
 {

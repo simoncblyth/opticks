@@ -199,6 +199,7 @@ NCSG::NCSG(const char* treedir)
    m_surface_epsilon(SURFACE_EPSILON),
    m_verbosity(0),
    m_usedglobally(true),   // changed to true : June 2018, see notes/issues/subtree_instances_missing_transform.rst
+   m_balanced(false),      // set by X4PhysicalVolume::convertSolid
    m_root(NULL),
    m_points(NULL),
    m_uncoincide(NULL),
@@ -237,6 +238,7 @@ NCSG::NCSG(nnode* root )
    m_surface_epsilon(SURFACE_EPSILON),
    m_verbosity(root->verbosity),
    m_usedglobally(true),   // changed to true : June 2018, see notes/issues/subtree_instances_missing_transform.rst
+   m_balanced(false),      // set by X4PhysicalVolume::convertSolid
    m_root(root),
    m_points(NULL),
    m_uncoincide(make_uncoincide()),
@@ -1074,8 +1076,7 @@ std::string NCSG::desc()
 NTrianglesNPY* NCSG::polygonize()
 {
     assert( m_config ) ; 
-    m_config->dump("NCSG::polygonize"); 
-
+    //m_config->dump("NCSG::polygonize"); 
 
     if(m_tris == NULL)
     {
@@ -1551,6 +1552,18 @@ void NCSG::setIsUsedGlobally(bool usedglobally )
 {
     m_usedglobally = usedglobally ; 
 }
+void NCSG::setBalanced(bool balanced )
+{
+    m_balanced = balanced ; 
+}
+bool NCSG::isBalanced() const 
+{
+    return m_balanced ; 
+}
+
+
+
+
 void NCSG::setBoundary(const char* boundary)
 {
     m_boundary = boundary ? strdup(boundary) : NULL ; 

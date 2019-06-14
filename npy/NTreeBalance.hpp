@@ -12,7 +12,10 @@ NB this is **NOT A GENERAL TREE BALANCER** it does
 however succeed to balance trees that Geant4 
 boolean solids often result in.
 
-Ported from ../analytic/csg.py ../analytic/treebuilder.py
+Ported from python:
+
+* ../analytic/csg.py 
+* ../analytic/treebuilder.py
 
 **/
 

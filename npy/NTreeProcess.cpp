@@ -28,8 +28,8 @@ void NTreeProcess<T>::SaveBuffer(const char* path)
 template <typename T>
 T* NTreeProcess<T>::Process( T* root_ , unsigned soIdx, unsigned lvIdx )  // static
 {
-    if( LVList == NULL )
-         LVList = new std::vector<unsigned> { 10, 16, 17, 18, 19, 20, 21, 999 } ; 
+    //if( LVList == NULL )
+         //LVList = new std::vector<unsigned> { 10, 16, 17, 18, 19, 20, 21, 999 } ; 
          //LVList = new std::vector<unsigned> {36,  56,  57,  60,  63,  65,  67,  69,  70,  74, 131, 200 } ; 
  
     if( ProcBuffer == NULL ) ProcBuffer = NPY<unsigned>::make(0,4) ; 
@@ -84,7 +84,7 @@ void NTreeProcess<T>::init()
 {
     if(balancer->height0 > MaxHeight0 )
     {
-        positiver = new NTreePositive<T>(root) ; 
+        positiver = new NTreePositive<T>(root) ;  // inplace changes operator types and sets complements on primitives
         balanced = balancer->create_balanced() ;  
         result = balanced ; 
     }

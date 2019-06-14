@@ -217,6 +217,7 @@ class NPY_API NCSG {
         std::string meta() const ;
         std::string smry() const ;
     public:
+    public:
         // used by --testauto 
         void setEmit(int emit);  
         void setEmitConfig(const char* emitconfig);  
@@ -232,6 +233,7 @@ class NPY_API NCSG {
         std::string brief() const ;
    public:
         void setIsUsedGlobally(bool usedglobally);
+        void setBalanced(bool balanced); 
    public:
         const char*  getBoundary() const ;
         const char*  getTreeDir() const ;
@@ -247,6 +249,7 @@ class NPY_API NCSG {
 
     public:
         bool         isUsedGlobally() const ;
+        bool         isBalanced() const ;
 
 
 
@@ -365,6 +368,7 @@ class NPY_API NCSG {
         float            m_surface_epsilon ; 
         int              m_verbosity ;  
         bool             m_usedglobally ; 
+        bool             m_balanced ; 
         nnode*           m_root ;  
         NNodePoints*     m_points ; 
         NNodeUncoincide* m_uncoincide ; 

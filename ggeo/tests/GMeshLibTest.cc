@@ -55,7 +55,7 @@ void test_getDbgMeshByName(const Opticks& ok, const GMeshLib* meshlib)
     if(dbgmesh)
     {
         bool startswith = true ; 
-        const GMesh* mesh = meshlib->getMesh(dbgmesh, startswith);
+        const GMesh* mesh = meshlib->getMeshWithName(dbgmesh, startswith);
         mesh->dump("GMesh::dump", 50);
         const NCSG* solid = mesh->getCSG(); 
         assert( solid );     
@@ -75,7 +75,7 @@ void test_dump0( const GMeshLib* meshlib )
 
     for(unsigned i=0 ; i < num_mesh ; i++)
     {
-        const GMesh* mesh = meshlib->getMesh(i); 
+        const GMesh* mesh = meshlib->getMeshSimple(i); 
         const char* name = mesh->getName() ; 
 
         const NCSG* solid = mesh->getCSG(); 
@@ -104,7 +104,7 @@ void test_dump1( const GMeshLib* meshlib )
 
     for(unsigned i=0 ; i < num_mesh ; i++)
     {
-        const GMesh* mesh = meshlib->getMesh(i); 
+        const GMesh* mesh = meshlib->getMeshSimple(i); 
         const char* name = mesh->getName() ; 
         const NCSG* csg = mesh->getCSG(); 
         glm::vec4 ce0 = csg->bbox_center_extent(); 

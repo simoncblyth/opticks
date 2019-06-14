@@ -76,6 +76,17 @@ void test_EndsWith()
     assert( SStr::EndsWith(s, "World") == true ); 
 }
 
+void test_StartsWith()
+{
+    const char* s = "/hello/there/Cathode/World" ; 
+    assert( SStr::StartsWith(s, "/hello") == true ); 
+    assert( SStr::StartsWith(s, "World") == false ); 
+}
+
+
+
+
+
 void test_HasPointerSuffix()
 {
 
@@ -147,8 +158,9 @@ int main(int argc , char** argv )
     test_Contains();  
     test_EndsWith();  
     test_HasPointerSuffix();  
-    */
     test_HasPointerSuffix2();  
+    */
+    test_StartsWith();  
 
     return 0  ; 
 }

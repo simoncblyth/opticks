@@ -45,7 +45,7 @@
 
 
 
-const plog::Severity CMaker::LEVEL = debug ; 
+const plog::Severity CMaker::LEVEL = info ; 
 
 
 CMaker::CMaker() 
@@ -110,8 +110,7 @@ G4VSolid* CMaker::MakeSolid_r(const nnode* node, unsigned depth )  //static
 
     G4VSolid* result = NULL ; 
 
-    const char* name = node->label ;
-    assert(name); 
+    assert( node->label ); 
 
     if( node->is_primitive() )
     {
@@ -122,85 +121,139 @@ G4VSolid* CMaker::MakeSolid_r(const nnode* node, unsigned depth )  //static
         G4VSolid* left = MakeSolid_r(node->left, depth+1);
         G4VSolid* right = MakeSolid_r(node->right, depth+1);
 
-        // transforms handled at the operator rather than the 
-        // nodes level so can easily see left from right
+        result = ConvertOperator(node, left, right, depth );  
 
-        bool left_transform = node->left->transform ? !node->left->transform->is_identity() : false ;  
-        bool left_sphere = node->left->type == CSG_SPHERE || node->left->type == CSG_ZSPHERE ; 
-                  
-        if(left_transform)
-        {
-            if(left_sphere)
-            { 
-                LOG(debug) << " non-identity left transform on sphere (an ellipsoid perhaps) " ; 
-            }
-            else
-            {
-                LOG(fatal) 
-                      << " unexpected non-identity left transform "
-                      << " depth " << depth
-                      << " name " << name 
-                      << " label " << ( node->label ? node->label : "-" )
-                      << std::endl 
-                      << gformat(node->left->transform->t )
-                      ;
-                 assert(0);
-            }
-        }  
+    }
+    LOG(LEVEL) << ") " << ( node->label ? node->label : "-" ) << " depth " << depth ;   
+
+    return result  ; 
+}
 
 
 
-        const nmat4triple* right_transform = node->right->transform ;
-        glm::mat4* tr = new glm::mat4(1.f) ;; 
+/**
+CMaker::ConvertOperator
+-------------------------
 
-        if(right_transform == NULL )
-        {
-            right_transform = nmat4triple::make_identity() ;
-            *tr = right_transform->t ; 
-            // from nnode::update_gtransforms nnode::global_transform
-            // only primitives always have gtransforms not operator nodes 
+Transforms handled at the operator rather than the 
+node level so can easily see left from right.
+
+**/
+
+G4VSolid* CMaker::ConvertOperator(const nnode* node, G4VSolid* left, G4VSolid* right, unsigned depth ) // static
+{
+    G4VSolid* result = NULL ; 
+
+    const char* name = node->label ;
+    assert(name); 
+
+    bool has_left_transform = node->left->transform ? !node->left->transform->is_identity() : false ;  
+    bool has_right_transform = node->right->transform ? !node->right->transform->is_identity() : false ;  
+
+    bool left_sphere = node->left->type == CSG_SPHERE || node->left->type == CSG_ZSPHERE ; 
+
+
+    LOG(LEVEL) 
+        << "( " 
+        << " L:" << node->left->label
+        << " R:" << node->right->label 
+        << " depth " << depth 
+        << " " << ( has_left_transform ? "HAS_LEFT_TRANSFORM" : "" ) 
+        << " " << ( has_right_transform ? "has_right_transform" : "" ) 
+        ;   
+              
+    if(has_left_transform)
+    {
+        if(left_sphere)
+        { 
+            LOG(debug) << " non-identity left transform on sphere (an ellipsoid perhaps) " ; 
         }
         else
         {
-            bool right_ellipsoid = node->right->is_ellipsoid() ; 
-            // An ellipsoid will always have a transform.
-            // BUT it needs to be transform un-scaled  (trs -> tr)
-            // as Geant4 models that scaling in the G4Ellipsoid axes parameters.
+            LOG(fatal) 
+                  << " unexpected non-identity left transform "
+                  << " depth " << depth
+                  << " name " << name 
+                  << " label " << ( node->label ? node->label : "-" )
+                  << std::endl 
+                  << gformat(node->left->transform->t )
+                  ;
+             assert(0);
+        }
+    }  
 
-            if( right_ellipsoid )
-            {
-                // hmm nasty that have to do this both for the primitive and then again
-                // for the parent : but alternatives seem complicated
-                glm::vec3 e_axes ;
-                glm::vec2 e_zcut ; 
-                node->right->reconstruct_ellipsoid( e_axes, e_zcut, *tr ) ;   
-            }
-            else
-            {
-                *tr = right_transform->t ;    
-            }
-        } 
-        G4Transform3D* rtransform = ConvertTransform(*tr);
+    const nmat4triple* right_transform = node->right->transform ;
+    glm::mat4* t_right = new glm::mat4(1.f) ;; 
 
-        if(node->type == CSG_UNION)
-        {
-            G4UnionSolid* uso = new G4UnionSolid( name, left, right, *rtransform );
-            result = uso ; 
-        }
-        else if(node->type == CSG_INTERSECTION)
-        {
-            G4IntersectionSolid* iso = new G4IntersectionSolid( name, left, right, *rtransform );
-            result = iso ; 
-        }
-        else if(node->type == CSG_DIFFERENCE)
-        {
-            G4SubtractionSolid* sso = new G4SubtractionSolid( name, left, right, *rtransform );
-            result = sso ; 
-        }
+    if(right_transform == NULL )
+    {
+        right_transform = nmat4triple::make_identity() ;
+        *t_right = right_transform->t ; 
+
+        // only primitives always have gtransforms not operator nodes 
+        // see nnode::update_gtransforms nnode::global_transform
     }
-    LOG(LEVEL) << ") " << ( node->label ? node->label : "-" ) << " depth " << depth ;   
+    else
+    {
+        bool right_ellipsoid = node->right->is_ellipsoid() ; 
+        // An ellipsoid will always have a transform.
+        // BUT it needs to be transform un-scaled  (trs -> tr)
+        // as Geant4 models that scaling in the G4Ellipsoid axes parameters.
+
+        if( right_ellipsoid )
+        {
+            // hmm nasty that have to do this both for the primitive and then again
+            // for the parent : but alternatives seem complicated
+            glm::vec3 e_axes ;
+            glm::vec2 e_zcut ; 
+            node->right->reconstruct_ellipsoid( e_axes, e_zcut, *t_right ) ;   
+        }
+        else
+        {
+            *t_right = right_transform->t ;    
+        }
+    } 
+    G4Transform3D* rtransform = ConvertTransform(*t_right);
+
+
+
+
+    if(node->type == CSG_UNION)
+    {
+        G4UnionSolid* uso = new G4UnionSolid( name, left, right, *rtransform );
+        result = uso ; 
+    }
+    else if(node->type == CSG_INTERSECTION)
+    {
+        G4IntersectionSolid* iso = new G4IntersectionSolid( name, left, right, *rtransform );
+        result = iso ; 
+    }
+    else if(node->type == CSG_DIFFERENCE)
+    {
+        G4SubtractionSolid* sso = new G4SubtractionSolid( name, left, right, *rtransform );
+        result = sso ; 
+    }
+
+    LOG(LEVEL) << "]" ;  
+
     return result  ; 
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -12,6 +12,7 @@ class G4VSolid ;
 
 #include "G4Transform3D.hh"
 
+struct nnode ; 
 #include "NGLM.hpp"
 #include "X4_API_EXPORT.hh"
 #include "X4Named.hh"
@@ -23,6 +24,7 @@ class GMesh ;
 class GMaterialLib ; 
 class GSurfaceLib ; 
 class GBndLib ; 
+class GMeshLib ; 
 class GVolume ; 
 
 class Opticks ; 
@@ -87,13 +89,15 @@ class X4_API X4PhysicalVolume : public X4Named
         void convertSensors(); 
         void closeSurfaces(); 
         void convertSolids(); 
+        void addUnbalancedSolids();
         void convertStructure(); 
         void convertCheck() const ;
     private:
         void convertSolids_r(const G4VPhysicalVolume* const pv, int depth);
         void dumpLV() const ;
         void dumpTorusLV() const ;
-        GMesh* convertSolid( int lvIdx, int soIdx, const G4VSolid* const solid, const std::string& lvname) const ;
+        GMesh* convertSolid( int lvIdx, int soIdx, const G4VSolid* const solid, const std::string& lvname, bool balancetree ) const ;
+        void generateTestG4Code( int lvIdx, const G4VSolid* const solid, const nnode* raw) const ; 
     private:
         void convertSensors_r(const G4VPhysicalVolume* const pv, int depth);
         GVolume* convertStructure_r(const G4VPhysicalVolume* const pv, GVolume* parent, int depth, const G4VPhysicalVolume* const parent_pv, bool& recursive_select );
@@ -114,6 +118,7 @@ class X4_API X4PhysicalVolume : public X4Named
         GMaterialLib*                m_mlib ; 
         GSurfaceLib*                 m_slib ; 
         GBndLib*                     m_blib ; 
+        GMeshLib*                    m_hlib ; 
     private:
         GVolume*                     m_root ;  
     private:

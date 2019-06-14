@@ -175,6 +175,7 @@ GMesh::GMesh(unsigned int index,
       m_analytic_geometry_buffer(NULL),
 
       m_csg(NULL),
+      m_alt(NULL),
       m_verbosity(0),
       m_parts(NULL),
 

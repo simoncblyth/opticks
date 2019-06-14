@@ -56,6 +56,7 @@ template struct nxform<X4Nd> ;
 #include "GSurfaceLib.hh"
 #include "GSkinSurface.hh"
 #include "GBndLib.hh"
+#include "GMeshLib.hh"
 
 #include "Opticks.hh"
 #include "OpticksQuery.hh"
@@ -108,17 +109,19 @@ X4PhysicalVolume::X4PhysicalVolume(GGeo* ggeo, const G4VPhysicalVolume* const to
     m_mlib(m_ggeo->getMaterialLib()),
     m_slib(m_ggeo->getSurfaceLib()),
     m_blib(m_ggeo->getBndLib()),
+    m_hlib(m_ggeo->getMeshLib()),
     m_xform(new nxform<X4Nd>(0,false)),
     m_verbosity(m_ok->getVerbosity()),
     m_node_count(0),
     m_selected_node_count(0)
 {
-    const char* msg = "GGeo ctor argument of X4PhysicalVolume must have mlib, slib and blib already " ; 
+    const char* msg = "GGeo ctor argument of X4PhysicalVolume must have mlib, slib, blib and hlib already " ; 
 
     // trying to Opticks::configure earlier, from Opticks::init trips these asserts
     assert( m_mlib && msg ); 
     assert( m_slib && msg ); 
     assert( m_blib && msg ); 
+    assert( m_hlib && msg ); 
 
     init();
 }
@@ -434,15 +437,40 @@ void X4PhysicalVolume::convertSolids()
     const G4VPhysicalVolume* pv = m_top ; 
     int depth = 0 ;
     convertSolids_r(pv, depth);
+    addUnbalancedSolids(); 
 
     if(m_verbosity > 5) dumpLV();
     LOG(debug) << "]" ; 
 
     dumpTorusLV();
+
     LOG(info) << "]" ;
     OK_PROFILE("X4PhysicalVolume::convertSolids");
 
 }
+
+void X4PhysicalVolume::addUnbalancedSolids()
+{
+    std::vector<unsigned> indices_with_alt ; 
+    m_hlib->getMeshIndicesWithAlt(indices_with_alt) ; 
+
+    LOG(info) 
+        << " num_indices_with_alt " << indices_with_alt.size()
+        ;
+
+    for(unsigned i=0 ; i < indices_with_alt.size() ; i++)
+    {
+        unsigned index = indices_with_alt[i] ; 
+        GMesh* mesh = m_hlib->getMeshSimple(index); 
+        const GMesh* alt = mesh->getAlt() ; 
+        assert(alt);
+        m_ggeo->add(alt); 
+    }
+
+    m_hlib->dump("X4PhysicalVolume::addUnbalancedSolids"); 
+
+}
+
 
 
 /**
@@ -453,7 +481,6 @@ G4VSolid is converted to GMesh with associated analytic NCSG
 and added to GGeo/GMeshLib.
 
 **/
-
 
 void X4PhysicalVolume::convertSolids_r(const G4VPhysicalVolume* const pv, int depth)
 {
@@ -475,8 +502,19 @@ void X4PhysicalVolume::convertSolids_r(const G4VPhysicalVolume* const pv, int de
         const G4VSolid* const solid = lv->GetSolid(); 
         const std::string& lvname = lv->GetName() ; 
 
-        GMesh* mesh = convertSolid( lvIdx, soIdx, solid, lvname ) ;  
+        bool balance_deep_tree = true ;  
+        GMesh* mesh = convertSolid( lvIdx, soIdx, solid, lvname, balance_deep_tree ) ;  
         mesh->setIndex( lvIdx ) ;   
+
+        const NCSG* csg = mesh->getCSG(); 
+        if( csg->isBalanced() )  // when balancing done, also convert without it 
+        {
+            balance_deep_tree = false ;  
+            GMesh* rawmesh = convertSolid( lvIdx, soIdx, solid, lvname, balance_deep_tree ) ;  
+            rawmesh->setIndex( lvIdx ) ;   
+
+            mesh->setAlt(rawmesh); 
+        }
 
         const nnode* root = mesh->getRoot(); 
         assert( root ); 
@@ -492,66 +530,6 @@ void X4PhysicalVolume::convertSolids_r(const G4VPhysicalVolume* const pv, int de
     }  
 }
 
-GMesh* X4PhysicalVolume::convertSolid( int lvIdx, int soIdx, const G4VSolid* const solid, const std::string& lvname) const 
-{
-     assert( lvIdx == soIdx );  
-
-     bool dbglv = lvIdx == m_ok->getDbgLV() ; 
-     LOG(info) << " [ " 
-               << ( dbglv ? " --dbglv " : "" ) 
-                << lvIdx << " " << lvname ;  
- 
-     nnode* raw = X4Solid::Convert(solid, m_ok)  ; 
-
-     if(m_g4codegen) 
-     {
-         const char* gdmlpath = X4CSG::GenerateTestPath( m_g4codegendir, lvIdx, ".gdml" ) ;  
-         bool refs = false ;  
-         X4GDMLParser::Write( solid, gdmlpath, refs ); 
-         if(dbglv)
-         { 
-             LOG(info) 
-                 << "[--g4codegen]"
-                 << " lvIdx " << lvIdx
-                 << " soIdx " << soIdx
-                 << " lvname " << lvname 
-                 ;
-             raw->dump_g4code();  // just for debug 
-         }
-         X4CSG::GenerateTest( solid, m_ok, m_g4codegendir , lvIdx ) ; 
-
-     }
-
-     nnode* root = NTreeProcess<nnode>::Process(raw, soIdx, lvIdx);  // balances deep trees
-     root->other = raw ; 
-
-
-     const NSceneConfig* config = NULL ; 
-     NCSG* csg = NCSG::Adopt( root, config, soIdx, lvIdx );   // Adopt exports nnode tree to m_nodes buffer in NCSG instance
-     assert( csg ) ; 
-     assert( csg->isUsedGlobally() );
-
-
-     const std::string& soname = solid->GetName() ; 
-     csg->set_soname( soname.c_str() ) ; 
-     csg->set_lvname( lvname.c_str() ) ; 
-
-     LOG(debug) 
-          << " soIdx " << std::setw(5) << soIdx
-          << " lvIdx " << std::setw(5) << lvIdx
-          << " soname " << soname
-          << " lvname " << lvname
-          ;
-
-     bool is_x4polyskip = m_ok->isX4PolySkip(lvIdx);   // --x4polyskip 211,232
-     if( is_x4polyskip ) LOG(fatal) << " is_x4polyskip " << " soIdx " << soIdx  << " lvIdx " << lvIdx ;  
-
-     GMesh* mesh =  is_x4polyskip ? X4Mesh::Placeholder(solid ) : X4Mesh::Convert(solid ) ; 
-     mesh->setCSG( csg ); 
-
-     LOG(info) << " ] " << lvIdx ; 
-     return mesh ; 
-}
 
 /**
 convertSolid
@@ -581,6 +559,78 @@ Skipping results in placeholder bounding box meshes being
 used instead of he real shape. 
 
 **/
+
+
+GMesh* X4PhysicalVolume::convertSolid( int lvIdx, int soIdx, const G4VSolid* const solid, const std::string& lvname, bool balance_deep_tree ) const 
+{
+     assert( lvIdx == soIdx );  
+     bool dbglv = lvIdx == m_ok->getDbgLV() ; 
+     const std::string& soname = solid->GetName() ; 
+
+     LOG(info)
+          << "[ "  
+          << lvIdx
+          << ( dbglv ? " --dbglv " : "" ) 
+          << " soname " << soname
+          << " lvname " << lvname
+          ;
+ 
+     nnode* raw = X4Solid::Convert(solid, m_ok)  ; 
+
+     if(m_g4codegen) generateTestG4Code(lvIdx, solid, raw); 
+
+     nnode* root = balance_deep_tree ? NTreeProcess<nnode>::Process(raw, soIdx, lvIdx) : raw ;  
+     root->other = raw ; 
+
+     const NSceneConfig* config = NULL ; 
+     NCSG* csg = NCSG::Adopt( root, config, soIdx, lvIdx );   // Adopt exports nnode tree to m_nodes buffer in NCSG instance
+     assert( csg ) ; 
+     assert( csg->isUsedGlobally() );
+     csg->set_soname( soname.c_str() ) ; 
+     csg->set_lvname( lvname.c_str() ) ; 
+
+     bool is_balanced = root != raw ; 
+     if(is_balanced) assert( balance_deep_tree == true );  
+     csg->setBalanced(is_balanced) ;  
+
+     bool is_x4polyskip = m_ok->isX4PolySkip(lvIdx);   // --x4polyskip 211,232
+     if( is_x4polyskip ) LOG(fatal) << " is_x4polyskip " << " soIdx " << soIdx  << " lvIdx " << lvIdx ;  
+
+     GMesh* mesh =  is_x4polyskip ? X4Mesh::Placeholder(solid ) : X4Mesh::Convert(solid ) ; 
+     mesh->setCSG( csg ); 
+
+     LOG(info) << "] " << lvIdx ; 
+     return mesh ; 
+}
+
+
+
+void X4PhysicalVolume::generateTestG4Code( int lvIdx, const G4VSolid* const solid, const nnode* raw) const 
+{
+     bool dbglv = lvIdx == m_ok->getDbgLV() ; 
+     const char* gdmlpath = X4CSG::GenerateTestPath( m_g4codegendir, lvIdx, ".gdml" ) ;  
+     bool refs = false ;  
+     X4GDMLParser::Write( solid, gdmlpath, refs ); 
+     if(dbglv)
+     { 
+         LOG(info) 
+             << ( dbglv ? " --dbglv " : "" ) 
+             << "[--g4codegen]"
+             << " lvIdx " << lvIdx
+             ;
+         raw->dump_g4code();  // just for debug 
+     }
+     X4CSG::GenerateTest( solid, m_ok, m_g4codegendir , lvIdx ) ; 
+}
+
+
+
+
+
+
+
+
+
 
 
 

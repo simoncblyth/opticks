@@ -34,6 +34,7 @@ o-binary-name()
 {
    case $1 in 
            --okg4) echo OKG4Test ;;
+           --okx4) echo OKX4Test ;;
          --tracer) echo OTracerTest ;;
    esac 
    # no default as its important this return blank for unidentified commands

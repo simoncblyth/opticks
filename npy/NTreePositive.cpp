@@ -47,7 +47,7 @@ void NTreePositive<T>::positivize_r(T* node, bool negate, unsigned depth)
                    << " depth " << depth 
                    ; 
 
-    if(node->left == NULL && node->right == NULL)
+    if(node->left == NULL && node->right == NULL)  // primitive 
     {
         if(negate) node->complement = !node->complement ; 
     } 

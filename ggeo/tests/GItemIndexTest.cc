@@ -30,6 +30,7 @@ void dump(GItemIndex* idx, const char* msg)
     idx->dump(msg);
 }
 
+
 int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv);

@@ -61,6 +61,9 @@ reason to use an Index.
 
 */
 
+
+//#define OLD_INDEX 1
+
 class GGEO_API GMeshLib 
 {
         friend class GGeo ; 
@@ -69,8 +72,10 @@ class GGEO_API GMeshLib
         static const plog::Severity LEVEL ;  
         static const unsigned MAX_MESH  ; 
 
+#ifdef OLD_INDEX
         static const char*    GITEMINDEX ; 
         static const char*    GMESHLIB_INDEX ; 
+#endif
 
         static const char*    GMESHLIB_LIST ; 
 
@@ -84,19 +89,22 @@ class GGEO_API GMeshLib
         void dump(const char* msg="GMeshLib::dump") const;
     public:
         // methods working from the index, so work prior to loading meshes
-        unsigned    getMeshIndex(const char* name, bool startswith) const ;
-        const char* getMeshName(unsigned aindex) ; 
+        const char* getMeshName(unsigned aindex) const ; 
     public:
         //std::string desc() const ; 
+#ifdef OLD_INDEX
         GItemIndex* getMeshIndex() ;
+#endif
         unsigned    getNumMeshes() const ; 
-        GMesh*        getMeshSimple(unsigned index) ;  
-        const GMesh*  getMesh(unsigned aindex) const ;  // first mesh in m_meshes addition order with getIndex() matching aindex 
 
+        void          getMeshIndicesWithAlt(std::vector<unsigned>& indices) const ; 
+        const GMesh*  getAltMesh(unsigned index) const ; 
+        GMesh*        getMeshSimple(unsigned index) const ;  
 
-
-        const NCSG*  getSolid(unsigned aindex) const ;  // first mesh in m_solids addition order with getIndex() matching aindex 
-        const GMesh*  getMesh(const char* name, bool startswith) const ;
+        int           getMeshIndexWithName(const char* name, bool startswith) const ;
+        const GMesh*  getMeshWithIndex(unsigned aindex) const ;  // first mesh in m_meshes addition order with getIndex() matching aindex 
+        const GMesh*  getMeshWithName(const char* name, bool startswith) const ;
+        const NCSG*   getSolidWithIndex(unsigned aindex) const ;  // first mesh in m_solids addition order with getIndex() matching aindex 
     private:
         void        loadFromCache();
         void        save() const ; 
@@ -121,7 +129,9 @@ class GGEO_API GMeshLib
         bool                          m_direct ;  
         const char*                   m_reldir ; 
         const char*                   m_reldir_solids ; 
+#ifdef OLD_INDEX
         GItemIndex*                   m_meshindex ; 
+#endif
         GItemList*                    m_meshnames ; 
         unsigned                      m_missing ; 
         std::vector<const GMesh*>     m_meshes ; 

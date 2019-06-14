@@ -1,0 +1,288 @@
+x016
+=========
+
+Context
+------------
+
+* :doc:`g4codegen_review`
+
+
+
+Issue 1 : back translation CMaker::ConvertOperator asserts from a left transform 
+-------------------------------------------------------------------------------------------
+
+::
+
+    [blyth@localhost opticks]$ GMeshLibTest | egrep ^16
+    16                          sFasteners0x4c01080 ce0 0.0000,0.0000,-92.5000,150.0000 ce1 0.0000,0.0000,0.0000,150.0000 16
+
+::
+
+    PROXYLV=16 tboolean.sh -D
+    ... 
+
+    2019-06-14 13:28:48.315 FATAL [38189] [CTestDetector::makeChildVolume@156]  lvn box_lv0_
+    2019-06-14 13:28:48.315 INFO  [38189] [CMaker::MakeSolid@83] [[[ bo
+    2019-06-14 13:28:48.315 INFO  [38189] [CMaker::MakeSolid_r@109] ( bo depth 0
+    2019-06-14 13:28:48.316 INFO  [38189] [CMaker::MakeSolid_r@127] ) bo depth 0
+    2019-06-14 13:28:48.316 INFO  [38189] [CMaker::MakeSolid@87] ]]] bo
+    2019-06-14 13:28:48.316 FATAL [38189] [CTestDetector::makeChildVolume@156]  lvn union_lv0_
+    2019-06-14 13:28:48.316 INFO  [38189] [CMaker::MakeSolid@83] [[[ un
+    2019-06-14 13:28:48.316 INFO  [38189] [CMaker::MakeSolid_r@109] ( un depth 0
+    2019-06-14 13:28:48.316 INFO  [38189] [CMaker::MakeSolid_r@109] ( un depth 1
+    2019-06-14 13:28:48.316 INFO  [38189] [CMaker::MakeSolid_r@109] ( un depth 2
+    2019-06-14 13:28:48.316 INFO  [38189] [CMaker::MakeSolid_r@109] ( un depth 3
+    2019-06-14 13:28:48.316 INFO  [38189] [CMaker::MakeSolid_r@109] ( cy depth 4
+    2019-06-14 13:28:48.316 INFO  [38189] [CMaker::MakeSolid_r@127] ) cy depth 4
+    2019-06-14 13:28:48.316 INFO  [38189] [CMaker::MakeSolid_r@109] ( cy depth 4
+    2019-06-14 13:28:48.316 INFO  [38189] [CMaker::MakeSolid_r@127] ) cy depth 4
+    2019-06-14 13:28:48.316 INFO  [38189] [CMaker::ConvertOperator@156] (  L:cy R:cy depth 3 HAS_LEFT_TRANSFORM has_right_transform
+    2019-06-14 13:28:48.316 FATAL [38189] [CMaker::ConvertOperator@173]  unexpected non-identity left transform  depth 3 name un label un
+    1.0000,0.0000,0.0000,0.0000 0.0000,1.0000,0.0000,0.0000 0.0000,0.0000,1.0000,0.0000 0.0000,125.0000,-70.0000,1.0000
+    OKG4Test: /home/blyth/opticks/cfg4/CMaker.cc:181: static G4VSolid* CMaker::ConvertOperator(const nnode*, G4VSolid*, G4VSolid*, unsigned int): Assertion `0' failed.
+
+    (gdb) bt
+    #0  0x00007fffe201a207 in raise () from /lib64/libc.so.6
+    #1  0x00007fffe201b8f8 in abort () from /lib64/libc.so.6
+    #2  0x00007fffe2013026 in __assert_fail_base () from /lib64/libc.so.6
+    #3  0x00007fffe20130d2 in __assert_fail () from /lib64/libc.so.6
+    #4  0x00007fffefdd77b6 in CMaker::ConvertOperator (node=0x589a200, left=0x61367b0, right=0x6136c30, depth=3) at /home/blyth/opticks/cfg4/CMaker.cc:181
+    #5  0x00007fffefdd7165 in CMaker::MakeSolid_r (node=0x589a200, depth=3) at /home/blyth/opticks/cfg4/CMaker.cc:124
+    #6  0x00007fffefdd7122 in CMaker::MakeSolid_r (node=0x5899fb0, depth=2) at /home/blyth/opticks/cfg4/CMaker.cc:121
+    #7  0x00007fffefdd7122 in CMaker::MakeSolid_r (node=0x5899d60, depth=1) at /home/blyth/opticks/cfg4/CMaker.cc:121
+    #8  0x00007fffefdd7122 in CMaker::MakeSolid_r (node=0x5899b10, depth=0) at /home/blyth/opticks/cfg4/CMaker.cc:121
+    #9  0x00007fffefdd6e5d in CMaker::MakeSolid (root=0x5899b10) at /home/blyth/opticks/cfg4/CMaker.cc:85
+    #10 0x00007fffefdd6d56 in CMaker::MakeSolid (csg=0x5890f40) at /home/blyth/opticks/cfg4/CMaker.cc:76
+    #11 0x00007fffefddc291 in CTestDetector::makeChildVolume (this=0x60e2880, csg=0x5890f40, lvn=0x5c6a020 "union_lv0_", pvn=0x5c69fe0 "union_pv0_", mother=0x6132520) at /home/blyth/opticks/cfg4/CTestDetector.cc:158
+    #12 0x00007fffefddccf6 in CTestDetector::makeDetector_NCSG (this=0x60e2880) at /home/blyth/opticks/cfg4/CTestDetector.cc:239
+    #13 0x00007fffefddc04a in CTestDetector::makeDetector (this=0x60e2880) at /home/blyth/opticks/cfg4/CTestDetector.cc:95
+    #14 0x00007fffefddbec8 in CTestDetector::init (this=0x60e2880) at /home/blyth/opticks/cfg4/CTestDetector.cc:78
+    #15 0x00007fffefddbd22 in CTestDetector::CTestDetector (this=0x60e2880, hub=0x6b8dc0, query=0x0, sd=0x60e0220) at /home/blyth/opticks/cfg4/CTestDetector.cc:64
+    #16 0x00007fffefd78bba in CGeometry::init (this=0x60e27d0) at /home/blyth/opticks/cfg4/CGeometry.cc:70
+    #17 0x00007fffefd78ab2 in CGeometry::CGeometry (this=0x60e27d0, hub=0x6b8dc0, sd=0x60e0220) at /home/blyth/opticks/cfg4/CGeometry.cc:60
+    #18 0x00007fffefde9d79 in CG4::CG4 (this=0x5f00010, hub=0x6b8dc0) at /home/blyth/opticks/cfg4/CG4.cc:121
+    #19 0x00007ffff7bd5256 in OKG4Mgr::OKG4Mgr (this=0x7fffffffcc50, argc=32, argv=0x7fffffffcf88) at /home/blyth/opticks/okg4/OKG4Mgr.cc:76
+    #20 0x0000000000403998 in main (argc=32, argv=0x7fffffffcf88) at /home/blyth/opticks/okg4/tests/OKG4Test.cc:8
+    (gdb) 
+
+
+::
+
+    (gdb) p node->left->transform->t
+    $1 = {value = {{{x = 1, r = 1, s = 1}, {y = 0, g = 0, t = 0}, {z = 0, b = 0, p = 0}, {w = 0, a = 0, q = 0}}, {{x = 0, r = 0, s = 0}, {y = 1, g = 1, t = 1}, {z = 0, b = 0, p = 0}, {w = 0, a = 0, q = 0}}, {{x = 0, r = 0, s = 0}, {y = 0, g = 0, 
+            t = 0}, {z = 1, b = 1, p = 1}, {w = 0, a = 0, q = 0}}, {{x = 0, r = 0, s = 0}, {y = 125, g = 125, t = 125}, {z = -70, b = -70, p = -70}, {w = 1, a = 1, q = 1}}}}
+    (gdb) p node->right->transform->t
+    $2 = {value = {{{x = 1, r = 1, s = 1}, {y = 0, g = 0, t = 0}, {z = 0, b = 0, p = 0}, {w = 0, a = 0, q = 0}}, {{x = 0, r = 0, s = 0}, {y = 1, g = 1, t = 1}, {z = 0, b = 0, p = 0}, {w = 0, a = 0, q = 0}}, {{x = 0, r = 0, s = 0}, {y = 0, g = 0, 
+            t = 0}, {z = 1, b = 1, p = 1}, {w = 0, a = 0, q = 0}}, {{x = 88.3883514, r = 88.3883514, s = 88.3883514}, {y = 88.3883514, g = 88.3883514, t = 88.3883514}, {z = -70, b = -70, p = -70}, {w = 1, a = 1, q = 1}}}}
+
+    (gdb) p node->left->type
+    $3 = CSG_CYLINDER
+    (gdb) p node->right->type
+    $4 = CSG_CYLINDER
+
+
+* note the transforms matching those in GDML, but they are both on the same and not different operators 
+* the issue is that Opticks has no problem with left transforms, but Geant4 does
+* left transforms happen with tree balancing : due to balancing shuffling the primitives around
+
+* try back translating the unbalanced tree ?
+
+* when does balancing happen ?
+
+  * X4PhysicalVolume controls this and adds the GMesh and associated NCSG to GGeo/GMeshLib with takes care of persisting 
+  * clearest way is to simply add another GMesh associated to an NCSG without the balancing applied, need to collect 
+    the unbalanced raw GMesh and add them last to avoid disturbing the indices
+
+
+g4codegen/tests/x016.gdml::
+
+     01 <?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+      2 <gdml xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="SchemaLocation">
+      3 
+      4   <solids>
+      5     <tube aunit="deg" deltaphi="360" lunit="mm" name="solidFasteners_down0x4bff9b0" rmax="150" rmin="80" startphi="0" z="10"/>
+      6     <tube aunit="deg" deltaphi="360" lunit="mm" name="solidFasteners_Bolts0x4bffad0" rmax="10" rmin="0" startphi="0" z="140"/>
+      7     <union name="solid_FastenersUnion0x4bffbf0">
+      8       <first ref="solidFasteners_down0x4bff9b0"/>
+      9       <second ref="solidFasteners_Bolts0x4bffad0"/>
+     10       <position name="solid_FastenersUnion0x4bffbf0_pos" unit="mm" x="0" y="125" z="-70"/>
+     11     </union>
+     12     <union name="solid_FastenersUnion0x4bffdd0">
+     13       <first ref="solid_FastenersUnion0x4bffbf0"/>
+     14       <second ref="solidFasteners_Bolts0x4bffad0"/>
+     15       <position name="solid_FastenersUnion0x4bffdd0_pos" unit="mm" x="88.3883476483184" y="88.3883476483184" z="-70"/>
+     16     </union>
+     17     <union name="solid_FastenersUnion0x4c00030">
+     18       <first ref="solid_FastenersUnion0x4bffdd0"/>
+     19       <second ref="solidFasteners_Bolts0x4bffad0"/>
+     20       <position name="solid_FastenersUnion0x4c00030_pos" unit="mm" x="125" y="7.65404249467096e-15" z="-70"/>
+     21     </union>
+
+
+
+
+
+Issue 2 : g4codegen not implemented(?) for deep tree that gets balanced
+----------------------------------------------------------------------------------
+
+Extract from geocache-recreate::
+
+    2019-06-14 11:21:54.809 INFO  [288770] [X4PhysicalVolume::convertSolid@500]  [ 16 lFasteners0x4c012d0
+    G4GDML: Writing solids...
+    G4GDML: Writing solids...
+    2019-06-14 11:21:54.811 INFO  [288770] [NTreeBalance<T>::create_balanced@40] op_mask union intersection 
+    2019-06-14 11:21:54.811 INFO  [288770] [NTreeBalance<T>::create_balanced@41] hop_mask union 
+    2019-06-14 11:21:54.811 INFO  [288770] [NTreeBalance<T>::create_balanced@65]  bileafs 2 otherprim 9
+    2019-06-14 11:21:54.811 ERROR [288770] [NTreeBuilder<T>::init@169]  num_subs 2 num_otherprim 9 num_prim 13 height 4 mode MIXED operator union
+    2019-06-14 11:21:54.818 ERROR [288770] [X4CSG::generateTestMain@236]  skip as no g4code 
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^   
+    2019-06-14 11:21:54.818 INFO  [288770] [NTreeProcess<T>::Process@39] before
+    NTreeAnalyse height 11 count 25
+                                                                                          un            
+
+                                                                                  un              di    
+
+                                                                          un          cy      cy      cy
+
+                                                                  un          cy                        
+
+                                                          un          cy                                
+
+                                                  un          cy                                        
+
+                                          un          cy                                                
+
+                                  un          cy                                                        
+
+                          un          cy                                                                
+
+                  un          cy                                                                        
+
+          di          cy                                                                                
+
+      cy      cy                                                                                        
+
+    ...
+    2019-06-14 11:21:54.818 INFO  [288770] [NTreeBalance<T>::create_balanced@40] op_mask union intersection 
+    2019-06-14 11:21:54.818 INFO  [288770] [NTreeBalance<T>::create_balanced@41] hop_mask union 
+    2019-06-14 11:21:54.818 INFO  [288770] [NTreeBalance<T>::create_balanced@65]  bileafs 2 otherprim 9
+    2019-06-14 11:21:54.818 ERROR [288770] [NTreeBuilder<T>::init@169]  num_subs 2 num_otherprim 9 num_prim 13 height 4 mode MIXED operator union
+    2019-06-14 11:21:54.819 INFO  [288770] [NTreeProcess<T>::Process@54] after
+    NTreeAnalyse height 4 count 25
+                                                                  un                                    
+
+                                  un                                                      un            
+
+                  un                              un                      un                      in    
+
+          un              un              un              un          cy          in          cy     !cy
+
+      cy      cy      cy      cy      cy      cy      cy      cy              cy     !cy                
+
+
+    ...
+    2019-06-14 11:21:54.819 INFO  [288770] [NTreeProcess<T>::Process@55]  soIdx 16 lvIdx 16 height0 11 height1 4 ### LISTED
+    2019-06-14 11:21:55.159 INFO  [288770] [X4PhysicalVolume::convertSolid@552]  ] 16
+
+
+
+
+
+Problem is that getting balanced looses the g4code on the nodes
+--------------------------------------------------------------------
+
+* but is it recoverable ? balancing doesnt change primitives just operators 
+
+
+::
+
+    095 X4CSG::X4CSG(const G4VSolid* solid_, Opticks* ok_)
+     96     :
+     97     verbosity(SSys::getenvint("VERBOSITY",0)),
+     98     solid(solid_),
+     99     ok(ok_),
+    100     gdml(X4GDMLParser::ToString(solid, false )),    // do not add pointer refs to names  
+    101     container(MakeContainer(solid, 1.5f)),
+    102     solid_boundary("Vacuum///GlassSchottF2"),
+    103     container_boundary("Rock//perfectAbsorbSurface/Vacuum"),
+    104     nraw(X4Solid::Convert(solid, ok, solid_boundary)),
+    105     nsolid(X4Solid::Balance(nraw)),                  // lvIdx 16 has an empty test .cc generated as being balanced looses the g4code see npy/NTreeProcess.cc
+    106     ncontainer(X4Solid::Convert(container, ok, container_boundary)),
+    107     csolid( NCSG::Adopt(nsolid) ),
+    108     ccontainer( NCSG::Adopt(ncontainer) ),
+    109     ls(NULL),
+    110     index(-1)
+    111 {
+    112     init();
+    113 }
+
+
+    232 void X4CSG::generateTestMain( std::ostream& out ) const
+    233 {
+    234     if( nsolid->g4code == NULL )
+    235     {
+    236         LOG(error) << " skip as no g4code " ;
+    237         return ;
+    238     }
+    239 
+
+
+::
+
+      71 nnode* X4Solid::Balance(nnode* raw, unsigned soIdx , unsigned lvIdx )
+      72 {
+      73     nnode* root = NTreeProcess<nnode>::Process(raw, soIdx, lvIdx);  // balances deep trees, or if not deep retuns raw
+      74     root->other = raw ;
+      75     root->boundary = raw->boundary ? strdup(raw->boundary) : NULL ;
+      76     // note that g4code is not passed, as its inconsistent with the balanced tree presumably 
+      77     return root ;
+      78 }
+
+
+
+
+Rearranging GMeshLib to use GItemList instead of GItemIndex has caused some breakage : FIXED
+--------------------------------------------------------------------------------------------------
+
+* FIXED the fails with ggeo/tests/GItemIndex2Test.cc to create the GItemList/GMaterialLib.txt names
+
+::
+
+    totals  28  / 402 
+
+
+    FAILS:
+      37 /50  Test #37 : GGeoTest.GGeoTest                             Child aborted***Exception:     0.25   
+      38 /50  Test #38 : GGeoTest.GMakerTest                           Child aborted***Exception:     0.10   
+      49 /50  Test #49 : GGeoTest.GSceneTest                           Child aborted***Exception:     0.26   
+      1  /3   Test #1  : OpticksGeoTest.OpticksGeoTest                 Child aborted***Exception:     0.29   
+      2  /3   Test #2  : OpticksGeoTest.OpticksHubTest                 Child aborted***Exception:     0.28   
+      4  /24  Test #4  : OptiXRapTest.Roots3And4Test                   Child aborted***Exception:     1.88   
+      12 /24  Test #12 : OptiXRapTest.rayleighTest                     Child aborted***Exception:     0.37   
+      17 /24  Test #17 : OptiXRapTest.eventTest                        Child aborted***Exception:     0.36   
+      18 /24  Test #18 : OptiXRapTest.interpolationTest                Child aborted***Exception:     0.38   
+      21 /24  Test #21 : OptiXRapTest.intersectAnalyticTest.iaTorusTest Child aborted***Exception:     2.19   
+      1  /5   Test #1  : OKOPTest.OpIndexerTest                        Child aborted***Exception:     0.38   
+      2  /5   Test #2  : OKOPTest.OpSeederTest                         Child aborted***Exception:     0.35   
+      5  /5   Test #5  : OKOPTest.OpSnapTest                           Child aborted***Exception:     0.36   
+      2  /5   Test #2  : OKTest.OKTest                                 Child aborted***Exception:     0.36   
+      3  /5   Test #3  : OKTest.OTracerTest                            Child aborted***Exception:     0.39   
+      1  /34  Test #1  : CFG4Test.CMaterialLibTest                     Child aborted***Exception:     0.34   
+      2  /34  Test #2  : CFG4Test.CMaterialTest                        Child aborted***Exception:     0.33   
+      3  /34  Test #3  : CFG4Test.CTestDetectorTest                    Child aborted***Exception:     0.35   
+      5  /34  Test #5  : CFG4Test.CGDMLDetectorTest                    Child aborted***Exception:     0.33   
+      6  /34  Test #6  : CFG4Test.CGeometryTest                        Child aborted***Exception:     0.34   
+      7  /34  Test #7  : CFG4Test.CG4Test                              Child aborted***Exception:     0.33   
+      22 /34  Test #22 : CFG4Test.CGenstepCollectorTest                Child aborted***Exception:     0.33   
+      23 /34  Test #23 : CFG4Test.CInterpolationTest                   Child aborted***Exception:     0.34   
+      25 /34  Test #25 : CFG4Test.CGROUPVELTest                        Child aborted***Exception:     0.35   
+      29 /34  Test #29 : CFG4Test.CRandomEngineTest                    Child aborted***Exception:     0.33   
+      32 /34  Test #32 : CFG4Test.CCerenkovGeneratorTest               Child aborted***Exception:     0.35   
+      33 /34  Test #33 : CFG4Test.CGenstepSourceTest                   Child aborted***Exception:     0.34   
+      1  /1   Test #1  : OKG4Test.OKG4Test                             Child aborted***Exception:     0.45   
+    [blyth@localhost ggeo]$ 
+    [blyth@localhost ggeo]$ 
+
+
+
+

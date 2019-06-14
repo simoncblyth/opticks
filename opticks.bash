@@ -1393,6 +1393,7 @@ scan-(){            . $(opticks-home)/bin/scan.bash    && scan-env $* ; }
 hh-(){              . $(opticks-home)/bin/hh.bash      && hh-env $* ; }
 vbx-(){             . $(opticks-home)/bin/vbx.bash     && vbx-env $* ; }
 ptx-(){             . $(opticks-home)/bin/ptx.bash     && ptx-env $* ; }
+ezgdml-(){          . $(opticks-home)/bin/ezgdml.bash  && ezgdml-env $* ; }
 odocker-(){         . $(opticks-home)/bin/odocker.bash && odocker-env $* ; }
 olxd-(){            . $(opticks-home)/bin/olxd.bash    && olxd-env $* ; }
 onvidia-(){         . $(opticks-home)/bin/onvidia.bash && onvidia-env $* ; }

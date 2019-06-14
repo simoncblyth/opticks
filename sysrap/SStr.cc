@@ -110,6 +110,10 @@ bool SStr::EndsWith( const char* s, const char* q)
     return pos > 0 && strncmp(s + pos, q, strlen(q)) == 0 ;
 }
 
+bool SStr::StartsWith( const char* s, const char* q)
+{
+    return strlen(q) <= strlen(s) && strncmp(s, q, strlen(q)) == 0 ;
+}
 
 
 

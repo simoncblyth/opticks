@@ -153,6 +153,8 @@ G4VPhysicalVolume* CTestDetector::makeChildVolume(const NCSG* csg, const char* l
     const G4Material* material = m_mlib->convertMaterial(imat);
 
 
+    LOG(fatal) << " lvn " << lvn ; 
+
     G4VSolid* solid = CMaker::MakeSolid( csg ); 
 
     G4ThreeVector placement(0,0,0); 

@@ -252,7 +252,9 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
         // via meshlib
         GMeshLib*          getMeshLib();  // unplaced meshes
         unsigned           getNumMeshes() const ;
+#ifdef OLD_INDEX
         GItemIndex*        getMeshIndex(); 
+#endif
         const GMesh*       getMesh(unsigned index) const ;  
         void               add(const GMesh* mesh);
         void countMeshUsage(unsigned meshIndex, unsigned nodeIndex);

@@ -204,11 +204,7 @@ geocache-create-()
     local tmp=$(geocache-tmp $FUNCNAME)
     mkdir -p $tmp && cd $tmp
          
-    type $FUNCNAME
-    local dbg
-    [ -n "$DBG" ] && dbg="gdb --args"  
-
-    $dbg  OKX4Test --cvd 1 --g4codegen --deletegeocache $*
+    o.sh --okx4 --g4codegen --deletegeocache $*
 
     cd $iwd
 }
@@ -229,7 +225,7 @@ geocache-j1808-v3(){  opticksdata- ; geocache-create- --gdmlpath $(opticksdata-j
 geocache-j1808-v3(){  opticksdata- ; geocache-create- --gdmlpath $(opticksdata-jv3) --csgskiplv 22  ; }
 geocache-j1808-v4-(){ opticksdata- ; geocache-create- --gdmlpath $(opticksdata-jv4) $* ; }
 
-geocache-recreate(){ geocache-j1808-v4 ; }
+geocache-recreate(){ geocache-j1808-v4 $* ; }
 
 
 geocache-j1808-v4-comment(){ echo torus-less-skipping-just-lv-22-maskVirtual ; }

@@ -31,6 +31,17 @@ static std::string CSGMaskDesc( unsigned mask )
     return ss.str()  ; 
 }
 
+/**
+CSG_MonoOperator
+------------------
+
+For masks corresponding to a single operator return
+the CSG code of the operator, otherwise return CSG_ZERO.
+
+TODO: collect these into a OpticksCSGMask class as static methods for easier identification 
+
+**/
+
 static OpticksCSG_t CSG_MonoOperator( unsigned mask )
 {
     OpticksCSG_t op = CSG_ZERO ; 

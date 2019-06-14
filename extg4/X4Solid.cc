@@ -53,6 +53,16 @@ void X4Solid::SetVerbosity(unsigned verbosity) // static
     fVerbosity = verbosity ; 
 }
 
+
+/**
+X4Solid::Convert
+-----------------
+
+Canonicaly used from X4PhysicalVolume::convertSolid
+
+
+**/
+
 nnode* X4Solid::Convert(const G4VSolid* solid, Opticks* ok, const char* boundary)
 {
     if(fVerbosity > 0) LOG(error) << " convert " << solid->GetName() ; 
@@ -67,6 +77,14 @@ nnode* X4Solid::Convert(const G4VSolid* solid, Opticks* ok, const char* boundary
 
     return root ; 
 }
+
+/**
+X4Solid::Balance
+-----------------
+
+Used from X4CSG::X4CSG during g4codegen
+
+**/
 
 nnode* X4Solid::Balance(nnode* raw, unsigned soIdx , unsigned lvIdx )
 {

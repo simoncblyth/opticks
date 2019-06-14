@@ -11,7 +11,9 @@
 
 #include "GMesh.hh"
 #include "GMeshLib.hh"
+#ifdef OLD_INDEX
 #include "GItemIndex.hh"   // <-- aim to remove 
+#endif
 #include "GItemList.hh"
 
 #include "PLOG.hh"
@@ -22,8 +24,10 @@ const plog::Severity GMeshLib::LEVEL = debug ;
 const unsigned GMeshLib::MAX_MESH = 250 ;   // <-- hmm 500 too large ? it means a lot of filesystem checking 
 
 
+#ifdef OLD_INDEX
 const char* GMeshLib::GITEMINDEX = "GItemIndex" ; 
 const char* GMeshLib::GMESHLIB_INDEX = "MeshIndex" ; 
+#endif
 
 const char* GMeshLib::GMESHLIB_LIST = "GMeshLib" ; 
 
@@ -38,8 +42,10 @@ GMeshLib::GMeshLib(Opticks* ok )
    m_direct(ok->isDirect()),
    m_reldir(GMESHLIB),
    m_reldir_solids(GMESHLIB_NCSG),
-   m_meshindex(NULL),
-   m_meshnames(NULL),
+#ifdef OLD_INDEX
+   m_meshindex(new GItemIndex(GITEMINDEX, GMESHLIB_INDEX )),
+#endif
+   m_meshnames(new GItemList("GMeshLib", "GItemList")),
    m_missing(std::numeric_limits<unsigned>::max())
 {
 }
@@ -55,11 +61,13 @@ void GMeshLib::loadFromCache()
 {
     const char* idpath = m_ok->getIdPath() ;
 
+#ifdef OLD_INDEX
     m_meshindex = GItemIndex::load(idpath, GITEMINDEX, GMESHLIB_INDEX ) ;
     assert(m_meshindex);
     bool has_index = m_meshindex->hasIndex() ;
     if(!has_index)  LOG(fatal) << " meshindex load failure " ; 
     assert(has_index && " MISSING MESH INDEX : PERHAPS YOU NEED TO CREATE/RE-CREATE GEOCACHE WITH : op.sh -G ");
+#endif
 
 
     m_meshnames = GItemList::Load(idpath, GMESHLIB_LIST, "GItemList" ) ;
@@ -73,9 +81,10 @@ void GMeshLib::save() const
     const char* idpath = m_ok->getIdPath() ;
 
 
+#ifdef OLD_INDEX
     assert( m_meshindex ); 
     m_meshindex->save(idpath);
-
+#endif
 
     assert( m_meshnames ); 
     m_meshnames->save(idpath );
@@ -85,27 +94,23 @@ void GMeshLib::save() const
 }
 
 
-
+#ifdef OLD_INDEX
 GItemIndex* GMeshLib::getMeshIndex()
 {
     return m_meshindex ; 
 }
-const char* GMeshLib::getMeshName(unsigned aindex) 
+#endif
+
+const char* GMeshLib::getMeshName(unsigned aindex) const 
 {
+#ifdef OLD_INDEX
     return m_meshindex->getNameSource(aindex);
-}
-unsigned GMeshLib::getMeshIndex(const char* name, bool startswith)  const 
-{
-    unsigned aindex = startswith ? 
-          m_meshindex->getIndexSourceStarting(name, m_missing)
-          :
-          m_meshindex->getIndexSource(name, m_missing)
-          ;
- 
-    assert( aindex != m_missing );
-    return aindex ; 
+#else
+    return m_meshnames->getKey(aindex); 
+#endif
 }
 
+#ifdef OLD_INDEX
 void GMeshLib::dump(const char* msg) const
 {
     unsigned num_mesh = m_meshindex->getNumItems();
@@ -118,10 +123,8 @@ void GMeshLib::dump(const char* msg) const
     for(unsigned i=0 ; i < num_mesh ; i++)
     {
         const char* name = m_meshindex->getNameSource(i);  // hmm assumes source index is 0:N-1 which is not gauranteed
-        //const char* name = m_meshindex->getNameLocal(i);
-
         assert(name);
-        unsigned aindex = m_meshindex->getIndexSource(name, m_missing); // huh : why have to go via name
+        unsigned aindex = m_meshindex->getIndexSource(name, m_missing); // huh : why have to go via name : consistency check probably 
         assert(aindex != m_missing);
         assert(aindex == i);
 
@@ -143,23 +146,68 @@ void GMeshLib::dump(const char* msg) const
          }
     }
 }
+#else
+void GMeshLib::dump(const char* msg) const
+{
+    unsigned num_mesh = m_meshnames->getNumKeys();
+    LOG(info) << msg 
+              << " meshnames " << num_mesh 
+              << " meshes " << m_meshes.size() 
+              ; 
 
+    for(unsigned i=0 ; i < num_mesh ; i++)
+    {
+        const char* name = getMeshName(i); 
+        assert(name);
+        bool startswith(false); 
+        int aidx = getMeshIndexWithName(name, startswith);  // hmm this is lib index not mesh index
 
+        const GMesh* mesh = getMeshSimple(i);
+        assert( mesh ); 
+        unsigned midx = mesh->getIndex();  
 
+        assert( strcmp(mesh->getName(), name) == 0);
 
-
+        std::cout 
+               << " i " << std::setw(3) << i  
+               << " aidx " << std::setw(3) << aidx  
+               << " midx " << std::setw(3) << midx  
+               << " name " << std::setw(50) << name 
+               << " mesh " << mesh->desc()
+               << std::endl 
+               ;
+    }
+}
+#endif
 
 
 unsigned GMeshLib::getNumMeshes() const 
 {
     return m_meshes.size();
 }
+
 unsigned GMeshLib::getNumSolids() const 
 {
     return m_solids.size();
 }
 
-const GMesh* GMeshLib::getMesh(unsigned aindex) const 
+
+
+const NCSG* GMeshLib::getSolidWithIndex(unsigned aindex) const  // gets the solid with the index
+{
+    const NCSG* solid = NULL ; 
+    for(unsigned i=0 ; i < m_solids.size() ; i++ )
+    { 
+        if(m_solids[i]->getIndex() == aindex )
+        {
+            solid = m_solids[i] ; 
+            break ; 
+        }
+    }
+    return solid ;
+}  
+
+const GMesh* GMeshLib::getMeshWithIndex(unsigned aindex) const // gets the mesh with the index
 {
     const GMesh* mesh = NULL ; 
     for(unsigned i=0 ; i < m_meshes.size() ; i++ )
@@ -174,44 +222,62 @@ const GMesh* GMeshLib::getMesh(unsigned aindex) const
 }  
 
 
+const GMesh* GMeshLib::getMeshWithName(const char* name, bool startswith) const 
+{
+    int idx = getMeshIndexWithName(name, startswith);
+    return idx == -1 ? NULL : getMeshWithIndex(idx);
+}
 
 
-GMesh* GMeshLib::getMeshSimple(unsigned index)  
+int GMeshLib::getMeshIndexWithName(const char* name, bool startswith)  const 
+{
+#ifdef OLD_INDEX
+    unsigned aindex = startswith ? 
+          m_meshindex->getIndexSourceStarting(name, m_missing)
+          :
+          m_meshindex->getIndexSource(name, m_missing)
+          ;
+    assert( aindex != m_missing );
+#else
+    int aindex = startswith ? m_meshnames->findIndexWithKeyStarting(name) : m_meshnames->findIndex(name) ;   
+#endif
+    return aindex ; 
+}
+
+
+GMesh* GMeshLib::getMeshSimple(unsigned index) const 
 {
     assert( index < m_meshes.size() ); 
     const GMesh* mesh_ = m_meshes[index] ; 
     GMesh* mesh = const_cast<GMesh*>(mesh_);   // hmm rethink needed ?
-    assert( mesh->getIndex() == index ); 
+
+    bool index_match = mesh->getIndex() == index ; 
+    if(!index_match)
+       LOG(error) 
+           << " mesh indices do not match " 
+           << " m_meshes index " << index
+           << " mesh.index " << mesh->getIndex()
+           ; 
+
+    //assert( index_match ); 
     return mesh ; 
 }  
 
-
-
-
-
-
-const NCSG* GMeshLib::getSolid(unsigned aindex) const 
+const GMesh* GMeshLib::getAltMesh(unsigned index) const 
 {
-    const NCSG* solid = NULL ; 
-    for(unsigned i=0 ; i < m_solids.size() ; i++ )
-    { 
-        if(m_solids[i]->getIndex() == aindex )
-        {
-            solid = m_solids[i] ; 
-            break ; 
-        }
+    const GMesh* mesh = getMeshSimple(index); 
+    return mesh->getAlt();  
+}
+
+
+void GMeshLib::getMeshIndicesWithAlt(std::vector<unsigned>& indices) const 
+{
+    for(unsigned i=0 ; i < m_meshes.size() ; i++ )
+    {
+        const GMesh* mesh = m_meshes[i] ; 
+        const GMesh* alt = mesh->getAlt(); 
+        if(alt) indices.push_back(i); 
     }
-    return solid ;
-}  
-
-
-
-
-
-const GMesh* GMeshLib::getMesh(const char* name, bool startswith) const 
-{
-    unsigned aindex = getMeshIndex(name, startswith);
-    return getMesh(aindex);
 }
 
 
@@ -226,9 +292,6 @@ solid is encountered in the recursive traverse.
 
 void GMeshLib::add(const GMesh* mesh)
 {
-    if(!m_meshindex) m_meshindex = new GItemIndex(GITEMINDEX, GMESHLIB_INDEX )   ;
-    if(!m_meshnames) m_meshnames = new GItemList("GMeshLib", "GItemList" )   ;
-
     const char* name = mesh->getName();
     unsigned int index = mesh->getIndex();
     assert(name) ; 
@@ -249,7 +312,9 @@ void GMeshLib::add(const GMesh* mesh)
     }
     m_solids.push_back(solid); 
 
+#ifdef OLD_INDEX
     m_meshindex->add(name, index); 
+#endif
 
     //std::raise(SIGINT); 
 }
@@ -319,10 +384,12 @@ void GMeshLib::loadMeshes(const char* idpath )
             mesh->setCSG(solid); 
 
             const char* name = getMeshName(idx);
-            assert(name);
+            if(name == NULL)
+                LOG(fatal) 
+                    << " no name for mesh idx " << idx 
+                    ; 
 
-            // mesh->updateBounds(); // CAN THIS BE DONE IN LOAD ? Perhaps MM complications
-           // should have been done by GMesh::loadBuffers ?
+            assert(name);
 
             mesh->setIndex(idx);
             mesh->setName(strdup(name));
@@ -402,7 +469,7 @@ void GMeshLib::reportMeshUsage_(std::ostream& out) const
          unsigned int meshIndex = it->first ; 
          unsigned int nodeCount = it->second ; 
  
-         const GMesh* mesh = getMesh(meshIndex);
+         const GMesh* mesh = getMeshWithIndex(meshIndex);
          const char* meshName = mesh->getName() ; 
          unsigned int nvert = mesh->getNumVertices() ; 
          unsigned int nface = mesh->getNumFaces() ; 

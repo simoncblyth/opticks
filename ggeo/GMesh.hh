@@ -240,7 +240,8 @@ class GGEO_API GMesh : public GDrawable {
       void setName(const char* name);
       void setCSG(const NCSG* csg);
       void setAlt(const GMesh* alt);
-    
+
+   
 
       void setGeoCode(char geocode);
       void setInstanceSlice(NSlice* slice);
@@ -587,6 +588,7 @@ class GGEO_API GMesh : public GDrawable {
   public:
       // expedient recording source solid in X4PhysicalVolume::convertSolid X4Mesh::Convert X4Mesh::Placeholder
       const void*    m_g4vsolid ; 
+
 
 };
 

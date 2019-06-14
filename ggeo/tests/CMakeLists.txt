@@ -35,6 +35,7 @@ set(TEST_SOURCES
     GTransformsTest.cc
     GIdsTest.cc
     GItemIndexTest.cc
+    GItemIndex2Test.cc
     GTreePresentTest.cc
     GCSGTest.cc
     GPartsTest.cc

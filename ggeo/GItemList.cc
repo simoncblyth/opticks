@@ -31,15 +31,6 @@ bool GItemList::isUnset(unsigned int index)
     return index == UNSET ; 
 }
 
-unsigned int GItemList::getIndex(const char* key) const 
-{
-    if(key)
-    {
-        for(unsigned int i=0 ; i < m_list.size() ; i++) if(m_list[i].compare(key) == 0) return i ;  
-    } 
-    return UNSET  ; 
-}
-
 
 GItemList* GItemList::Load(const char* idpath, const char* itemtype, const char* reldir)
 {
@@ -154,6 +145,18 @@ const char* GItemList::getKey(unsigned index) const
     return index < m_list.size() ? m_list[index].c_str() : NULL  ;
 }
 
+unsigned GItemList::getNumUniqueKeys() const 
+{
+    std::vector<std::string> unames ; 
+    for( unsigned i=0 ; i < m_list.size() ; i++)
+    {
+        std::string key = m_list[i] ; 
+        if(std::find( unames.begin(), unames.end() , key) == unames.end() ) unames.push_back(key) ; 
+    }
+    return unames.size() ; 
+}
+
+
 
 void GItemList::getIndicesWithKeyEnding( std::vector<unsigned>& indices, const char* ending ) const 
 {  
@@ -162,6 +165,46 @@ void GItemList::getIndicesWithKeyEnding( std::vector<unsigned>& indices, const c
         const std::string& k = m_list[i] ; 
         if( SStr::EndsWith( k.c_str(), ending )) indices.push_back(i) ; 
     }
+}
+
+
+int GItemList::findIndexWithKeyStarting( const char* starting ) const 
+{  
+    int result(-1); 
+    for(unsigned i=0 ; i < m_list.size() ; i++)
+    {
+        const std::string& k = m_list[i] ; 
+        if( SStr::StartsWith( k.c_str(), starting )) 
+        {
+            result = i ; 
+            break ; 
+        }   
+    }
+    return result ; 
+}
+
+
+unsigned int GItemList::getIndex(const char* key) const 
+{
+    if(key)
+    {
+        for(unsigned int i=0 ; i < m_list.size() ; i++) if(m_list[i].compare(key) == 0) return i ;  
+    } 
+    return UNSET  ; 
+}
+
+int GItemList::findIndex(const char* key) const 
+{
+    int index(-1) ;  
+    for(unsigned i=0 ; i < m_list.size() ; i++) 
+    {
+        if(m_list[i].compare(key) == 0) 
+        {
+           index = int(i); 
+           break ; 
+        }
+    } 
+    return index  ; 
 }
 
 

@@ -52,6 +52,7 @@ class CFG4_API CMaker
         static G4VSolid* MakeSolid_r(const nnode* node, unsigned depth );
         static G4Transform3D* ConvertTransform(const glm::mat4& t);
         static G4VSolid*      ConvertPrimitive(const nnode* node);
+        static G4VSolid*      ConvertOperator( const nnode* node, G4VSolid* left, G4VSolid* right, unsigned depth ); 
         static G4VSolid*      ConvertConvexPolyhedron(const nnode* node);
 
 };
