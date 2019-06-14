@@ -20,6 +20,7 @@
 #include "G4Sphere.hh"
 #include "G4Box.hh"
 #include "G4Tubs.hh"
+#include "G4Polycone.hh"
 #include "G4Cons.hh"
 #include "G4Trd.hh"
 #include "G4Torus.hh"
@@ -422,17 +423,33 @@ G4VSolid* CMaker::ConvertPrimitive(const nnode* node) // static
 
         float z1 = n->z1() ; 
         float z2 = n->z2() ;
-        assert( z2 > z1 && z2 == -z1 ); 
-        float hz = fabs(z1) ;
+        assert( z2 > z1 ); 
+
+        bool zsymmetric = z2 == -z1 ; 
 
         double innerRadius = 0. ;
         double outerRadius = n->radius() ;
-        double zHalfLength = hz ;  // hmm will need transforms for nudged ?
         double startPhi = 0. ; 
         double deltaPhi = twopi ; 
 
-        G4Tubs* tb = new G4Tubs( name, innerRadius, outerRadius, zHalfLength, startPhi, deltaPhi );
-        result = tb ; 
+  
+        if( zsymmetric )
+        { 
+            float hz = fabs(z1) ;
+            double zHalfLength = hz ;  
+            G4Tubs* tb = new G4Tubs( name, innerRadius, outerRadius, zHalfLength, startPhi, deltaPhi );
+            result = tb ; 
+        }
+        else
+        {
+            // see notes/issues/tboolean-proxylv-CMaker-MakeSolid-asserts.rst
+            int numZPlanes = 2 ; 
+            double zPlane[] = { z1, z2 } ; 
+            double rInner[] = { innerRadius, innerRadius } ;  
+            double rOuter[] = { outerRadius, outerRadius } ; 
+            G4Polycone* pc = new G4Polycone( name, startPhi, deltaPhi,  numZPlanes, zPlane, rInner, rOuter ); 
+            result = pc ; 
+        }
     }
     else if(node->type == CSG_DISC)
     {

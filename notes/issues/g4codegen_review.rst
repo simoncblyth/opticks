@@ -1,11 +1,49 @@
 g4codegen_review
 ===================
 
+overview
+----------
+
 The g4codegen creates strings of G4VSolid creating 
 code from instances of G4VSolid. This is convenient
 when operating from GDML, as can generate tests of all 
 solids in a consistent/automated way.
 
+
+ISSUE 1 : x016.cc comes out zero length
+------------------------------------------
+
+
+
+
+
+
+
+
+
+how to generate the G4 code for each solid and how to use
+-------------------------------------------------------------
+
+The g4code is generated for each solid on creating the geocache with OKX4Test executable
+when using --g4codegen option. Executables with names like x000.cc, x001.cc,... 
+are written into the g4codegen/tests/ directory inside the geocache.
+To recreate the geocache::
+
+   geocache-
+   geocache-recreate 
+   geocache-kcd          # cd to the geocache 
+
+To compile the generated code, CMakeLists.txt and go.sh scripts etc.. are needed. 
+Generate these into the g4codegen dir and compile the code with::
+
+   x4gen-
+   x4gen--
+
+The executables x000 x001 etc.. should now be in your PATH.
+
+
+review implementation
+-----------------------
 
 ::
 

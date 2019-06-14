@@ -11,21 +11,18 @@ basis GMeshLib (whica also houses the analytic NCSG).
 
 From tboolean-box--::
 
- 753 box = CSG("box3", param=[300,300,200,0], emit=0,  boundary="Vacuum///GlassSchottF2", proxylv=${PROXYLV:--1} )
- 754 
- 755 CSG.Serialize([container, box], args )
-
+     753 box = CSG("box3", param=[300,300,200,0], emit=0,  boundary="Vacuum///GlassSchottF2", proxylv=${PROXYLV:--1} )
+     754 
+     755 CSG.Serialize([container, box], args )
 
 Doing this required adding GMesh+NCSG to GMeshLib persisting as described 
 in :doc:`review-test-geometry` and handling the proxying in GGeoTest and GMaker.
 
-
 Observations
 ---------------
 
-* having to double run the compute and viz is a pain when proxying 
-* the black time-zero moving into position glitch is distracting 
-
+* having to double run the compute and viz is a pain when proxying : NOW FIXED
+* the black time-zero moving into position glitch is distracting : MOVING START TIME TO ZERO IS AN OK WORKAROUND
 
 
 PROXYLV=0 tboolean.sh 
@@ -75,7 +72,7 @@ PROXYLV=15 tboolean.sh
    * more normal photon behaviour with this smaller piece  
 
 *PROXYLV=16 tboolean.sh*
-   * asserts, see below
+   * *asserts with unexpected left transform*
 
 PROXYLV=17 tboolean.sh
    * observatory dome, nice propagation
@@ -99,7 +96,8 @@ PROXYLV=21 tboolean.sh
    * PMT shape
 
 *PROXYLV=22 tboolean.sh* 
-   * asserts, see below
+   * asserts, NOW FIXED : see below
+   * cylinder
 
 PROXYLV=23 tboolean.sh
    * 23   PMT_3inch_inner1_solid_ell_helper0x510ae30 ce0 0.0000,0.0000,14.5216,38.0000 ce1 0.0000,0.0000,0.0000,38.0000 23
@@ -118,7 +116,9 @@ PROXYLV=25 tboolean.sh
    * 26                PMT_3inch_cntr_solid0x510afa0 ce0 0.0000,0.0000,-45.8740,29.9995 ce1 0.0000,0.0000,0.0000,29.9995 26
    * 27                 PMT_3inch_pmt_solid0x510aae0 ce0 0.0000,0.0000,-17.9373,57.9383 ce1 0.0000,0.0000,0.0000,57.9383 27
      
-   * both assert, see below 
+   * both assert, NOW FIXED : see below 
+   * 26: cylinder 
+   * 27: cylinder union with sphere : has some ox deviation in TO BT BR BR BT SA 
 
 PROXYLV=28 tboolean.sh 
    * 28                     sChimneyAcrylic0x5b310c0 ce0 0.0000,0.0000,0.0000,520.0000 ce1 0.0000,0.0000,0.0000,520.0000 28 
@@ -180,7 +180,9 @@ PROXYLV=36 tboolean.sh
     * 37                         sPoolLining0x4bd1eb0 ce0 0.0000,0.0000,-1.5000,21753.0000 ce1 0.0000,0.0000,0.0000,21753.0000 37
     * 38                         sBottomRock0x4bcd770 ce0 0.0000,0.0000,-1500.0000,24750.0000 ce1 0.0000,0.0000,0.0000,24750.0000 38
     
-    * both assert, see below   
+    * both assert, NOW FIXED : see below   
+    * 37,38: very big cylinders
+
 
 PROXYLV=39 tboolean.sh 
     * 39                              sWorld0x4bc2350 ce0 0.0000,0.0000,0.0000,60000.0000 ce1 0.0000,0.0000,0.0000,60000.0000 39
@@ -189,13 +191,13 @@ PROXYLV=39 tboolean.sh
 
 
 
-
 CMaker::MakeSolid asserts for PROXYLV 16,22,26,27,37,38
 ---------------------------------------------------------------------------------------------
 
 * :doc:`tboolean-proxylv-CMaker-MakeSolid-asserts`
 
-
+* after implementing back translation from ncylinder to G4Polycone for non z-symmetric cylinders 
+  the asserts of 22,26,27,37,38 are fixed leaving just the "temple" 16 (sFasteners)
 
 
 try to viz and propagate together fails : the old linux interop chestnut OR not : its just hits buffer : FIXED with OEvent::downloadHitsInterop 
