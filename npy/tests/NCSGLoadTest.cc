@@ -62,7 +62,7 @@ void test_coincidence( const std::vector<NCSG*>& trees )
         {
             LOG(info)
                   << std::setw(40) 
-                  << csg->soname()
+                  << csg->get_soname()
                   << " " 
                   << csg->get_type_mask_string()
                   << csg->desc_coincidence() 

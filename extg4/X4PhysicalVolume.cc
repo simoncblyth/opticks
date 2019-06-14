@@ -437,8 +437,7 @@ void X4PhysicalVolume::convertSolids()
     const G4VPhysicalVolume* pv = m_top ; 
     int depth = 0 ;
     convertSolids_r(pv, depth);
-    addUnbalancedSolids(); 
-
+    
     if(m_verbosity > 5) dumpLV();
     LOG(debug) << "]" ; 
 
@@ -449,27 +448,9 @@ void X4PhysicalVolume::convertSolids()
 
 }
 
-void X4PhysicalVolume::addUnbalancedSolids()
-{
-    std::vector<unsigned> indices_with_alt ; 
-    m_hlib->getMeshIndicesWithAlt(indices_with_alt) ; 
 
-    LOG(info) 
-        << " num_indices_with_alt " << indices_with_alt.size()
-        ;
 
-    for(unsigned i=0 ; i < indices_with_alt.size() ; i++)
-    {
-        unsigned index = indices_with_alt[i] ; 
-        GMesh* mesh = m_hlib->getMeshSimple(index); 
-        const GMesh* alt = mesh->getAlt() ; 
-        assert(alt);
-        m_ggeo->add(alt); 
-    }
 
-    m_hlib->dump("X4PhysicalVolume::addUnbalancedSolids"); 
-
-}
 
 
 
@@ -479,6 +460,15 @@ X4PhysicalVolume::convertSolids_r
 
 G4VSolid is converted to GMesh with associated analytic NCSG 
 and added to GGeo/GMeshLib.
+
+If the conversion from G4VSolid to GMesh/NCSG/nnode required
+balancing of the nnode then the conversion is repeated 
+without the balancing and an alt reference is to the alternative 
+GMesh/NCSG/nnode is kept in the primary GMesh. 
+
+Note that only the nnode is different due to the balancing, however
+its simpler to keep a one-to-one relationship between these three instances
+for persistency convenience.
 
 **/
 
@@ -507,13 +497,17 @@ void X4PhysicalVolume::convertSolids_r(const G4VPhysicalVolume* const pv, int de
         mesh->setIndex( lvIdx ) ;   
 
         const NCSG* csg = mesh->getCSG(); 
-        if( csg->isBalanced() )  // when balancing done, also convert without it 
+
+        if( csg->is_balanced() )  // when balancing done, also convert without it 
         {
             balance_deep_tree = false ;  
             GMesh* rawmesh = convertSolid( lvIdx, soIdx, solid, lvname, balance_deep_tree ) ;  
             rawmesh->setIndex( lvIdx ) ;   
 
-            mesh->setAlt(rawmesh); 
+            const NCSG* rawcsg = rawmesh->getCSG(); 
+            assert( rawmesh->getIndex() == rawcsg->getIndex() ) ;   
+
+            mesh->setAlt(rawmesh);  // <-- this association is preserved (and made symmetric) thru metadata by GMeshLib 
         }
 
         const nnode* root = mesh->getRoot(); 
@@ -591,7 +585,7 @@ GMesh* X4PhysicalVolume::convertSolid( int lvIdx, int soIdx, const G4VSolid* con
 
      bool is_balanced = root != raw ; 
      if(is_balanced) assert( balance_deep_tree == true );  
-     csg->setBalanced(is_balanced) ;  
+     csg->set_balanced(is_balanced) ;  
 
      bool is_x4polyskip = m_ok->isX4PolySkip(lvIdx);   // --x4polyskip 211,232
      if( is_x4polyskip ) LOG(fatal) << " is_x4polyskip " << " soIdx " << soIdx  << " lvIdx " << lvIdx ;  

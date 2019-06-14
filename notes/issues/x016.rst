@@ -7,6 +7,50 @@ Context
 * :doc:`g4codegen_review`
 
 
+Issue 1 : attempt to avoid
+------------------------------
+
+* https://bitbucket.org/simoncblyth/opticks/commits/c9b8ed3b33624d74b6b38e17d6a5708777f84732
+
+1. rejig GMeshLib to be based on GItemList rather than GItemIndex
+2. record where an NCSG has been balanced
+
+
+TODO: keep and alt index reference in NCSG metadata
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+X4PhysicalVolume::convertSolids_r
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 
+G4VSolid is converted to GMesh with associated analytic NCSG 
+and added to GGeo/GMeshLib.
+ 
+If the conversion from G4VSolid to GMesh/NCSG/nnode required
+balancing of the nnode then the conversion is repeated 
+without the balancing and an alt reference is to the alternative 
+GMesh/NCSG/nnode is kept in the primary GMesh. 
+ 
+Note that only the nnode is different due to the balancing, however
+its simpler to keep a one-to-one relationship between these three instances
+for persistency convenience : so can use a single index to refer to them.
+
+retaining alt/other refs
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The lvIdx cannot be used : need to use a "libindex" 
+
+ 
+
+Lifecycle of the issue :  when does balancing happen ?
+---------------------------------------------------------
+
+* at X4 conversion (OKX4Test) eg geocache-recreate X4PhysicalVolume controls this and adds the GMesh 
+  and associated NCSG to GGeo/GMeshLib which takes care of persisting 
+  
+* clearest way is to simply add another GMesh associated to an NCSG without the balancing applied, need to collect 
+  the unbalanced raw GMesh and add them last to avoid disturbing the indices
+
 
 Issue 1 : back translation CMaker::ConvertOperator asserts from a left transform 
 -------------------------------------------------------------------------------------------
@@ -86,12 +130,6 @@ Issue 1 : back translation CMaker::ConvertOperator asserts from a left transform
 * left transforms happen with tree balancing : due to balancing shuffling the primitives around
 
 * try back translating the unbalanced tree ?
-
-* when does balancing happen ?
-
-  * X4PhysicalVolume controls this and adds the GMesh and associated NCSG to GGeo/GMeshLib with takes care of persisting 
-  * clearest way is to simply add another GMesh associated to an NCSG without the balancing applied, need to collect 
-    the unbalanced raw GMesh and add them last to avoid disturbing the indices
 
 
 g4codegen/tests/x016.gdml::

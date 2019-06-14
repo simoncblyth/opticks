@@ -198,33 +198,35 @@ class NPY_API NCSG {
         glm::uvec4 collect_surface_points();
 
     public:
-        bool has_placement_translation() const ; 
+        bool      has_placement_translation() const ; 
         glm::vec3 get_placement_translation() const ; 
         void      set_translation( float x, float y, float z); 
         void      set_centering(); 
+    public:
+        // kept in metadata : survives persisting 
+        void        set_lvname(const char* name);
+        void        set_soname(const char* name);
+        void        set_balanced(bool balanced); 
+        void        set_altindex(int altindex); 
+        void        set_emit(int emit);   // used by --testauto 
+        void        set_emitconfig(const char* emitconfig);  
 
+        std::string get_lvname() const ;
+        std::string get_soname() const ;
+        bool        is_balanced() const ;
+        int         get_altindex() const ;
+        int         get_emit() const ;
+        bool        is_emitter() const ;
+        const char* get_emitconfig() const ;
     public:
-        void set_lvname(const char* name);
-        void set_soname(const char* name);
+        int         get_treeindex() const ;
+        int         get_depth() const ;
+        int         get_nchild() const ;
+        bool        is_skip() const ;
+        bool        is_uncoincide() const ;
     public:
-        std::string lvname() const ;
-        std::string soname() const ;
-        int treeindex() const ;
-        int depth() const ;
-        int nchild() const ;
-        bool isSkip() const ;
-        bool is_uncoincide() const ;
         std::string meta() const ;
         std::string smry() const ;
-    public:
-    public:
-        // used by --testauto 
-        void setEmit(int emit);  
-        void setEmitConfig(const char* emitconfig);  
-    public:
-        bool        isEmitter() const ;
-        int         getEmit() const ;
-        const char* getEmitConfig() const ;
     public:
         void dump(const char* msg="NCSG::dump") const ;
         void dump_surface_points(const char* msg="NCSG::dump_surface_points", unsigned dmax=20) const ;
@@ -233,7 +235,7 @@ class NPY_API NCSG {
         std::string brief() const ;
    public:
         void setIsUsedGlobally(bool usedglobally);
-        void setBalanced(bool balanced); 
+   public:
    public:
         const char*  getBoundary() const ;
         const char*  getTreeDir() const ;
@@ -249,10 +251,6 @@ class NPY_API NCSG {
 
     public:
         bool         isUsedGlobally() const ;
-        bool         isBalanced() const ;
-
-
-
     public:
         // from NCSGData.m_csgdata, principal consumer is GParts::make
 
@@ -264,21 +262,18 @@ class NPY_API NCSG {
         NPY<float>*    getGTransformBuffer() const ;
         NPY<float>*    getPlaneBuffer() const ;
         NPY<unsigned>* getIdxBuffer() const ;
-    private: 
-        /*
-        NPY<float>*    getSrcNodeBuffer() const ;
-        NPY<unsigned>* getSrcIdxBuffer() const ;
-        NPY<float>*    getSrcPlaneBuffer() const ;
-        NPY<float>*    getSrcTransformBuffer() const ;
-        */
     public:
         // from NPYMeta.m_meta 
-
         NMeta*         getMeta(int idx) const ;
 
-
+    public:
         nnode*       getRoot() const ;
         OpticksCSG_t getRootType() const ;  
+        const char*  getRootCSGName() const ;
+        bool         isBox() const ; 
+        bool         isBox3() const ; 
+
+
         unsigned getNumTriangles() const ;
     public:
         void check() const ;
@@ -289,14 +284,10 @@ class NPY_API NCSG {
         void setIndex(unsigned index);
         void setVerbosity(int verbosity);
     private:
-        // Deserialize
-        NCSG(const char* treedir);
-
-        // Serialize 
-        NCSG( nnode* root);  // cannot be const because of the nudger
+        NCSG(const char* treedir); // Deserialize
+        NCSG( nnode* root);  // Serialize : cannot be const because of the nudger
     public:
-        // for --testauto
-        void setBoundary(const char* boundary);
+        void setBoundary(const char* boundary); // for --testauto
     private:
         // Deserialize branch 
         void setConfig(const NSceneConfig* config);
@@ -355,10 +346,8 @@ class NPY_API NCSG {
     public:
         bool isProxy() const ; 
         unsigned getProxyLV() const ;
-    public:
-        const char* get_root_csgname() const ;
-        bool is_box() const ; 
-        bool is_box3() const ; 
+
+
     public:
         void setOther(NCSG* other); 
         NCSG* getOther() const ;   

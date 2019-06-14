@@ -29,7 +29,7 @@ std::string GSolidRec::desc() const
         << " lv:" << BStr::utoa(lvIdx, 3, true)  
         << " rmx:" << BStr::utoa(raw->maxdepth(), 2, true )  
         << " bmx:" << BStr::utoa(balanced->maxdepth(), 2, true )  
-        << " soName: " << csg->soname() 
+        << " soName: " << csg->get_soname() 
         ;
 
     return ss.str(); 

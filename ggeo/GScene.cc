@@ -326,7 +326,7 @@ void GScene::importMeshes(NScene* scene)  // load analytic polygonized GMesh ins
         // establish index mapping between ana and tri meshes 
         // based on the common volumename  
 
-        std::string soname = csg->soname();
+        std::string soname = csg->get_soname();
         unsigned tri_mesh_idx = findTriMeshIndex(soname.c_str());
 
         // rel2abs/abs2rel are not good names
@@ -742,10 +742,10 @@ void GScene::transferMetadata( GVolume* node, const NCSG* csg, const nd* n, unsi
 
     node->setRepeatIndex( n->repeatIdx ); 
     node->setCSGFlag( csg->getRootType() );
-    node->setCSGSkip( csg->isSkip() );
+    node->setCSGSkip( csg->is_skip() );
 
     std::string pvname = n->pvname  ;  // pv from the node, not the csg/mesh
-    std::string lvn = csg->lvname()  ;
+    std::string lvn = csg->get_lvname()  ;
 
     node->setPVName( pvname.c_str() );
     node->setLVName( lvn.c_str() );

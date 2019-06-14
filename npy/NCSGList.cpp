@@ -250,7 +250,7 @@ NCSG* NCSGList::createUniverse(float scale, float delta) const
     NCSG* universe = loadTree(0) ;    
     universe->setBoundary(ubnd);  
 
-    LOG(fatal) << " universe.get_root_csgname " << universe->get_root_csgname() ; 
+    LOG(fatal) << " universe.get_root_csgname " << universe->getRootCSGName() ; 
 
 
     if( universe->isContainer() )
@@ -425,12 +425,12 @@ void NCSGList::autoTestSetup(NGeoTestConfig* config)
         NCSG* tree = getTree(i) ; 
         const char* origspec = tree->getBoundary();  
 
-        tree->setEmitConfig( autoemitconfig );
-        tree->setEmit( i == 0 ? -1 : 0 );
+        tree->set_emitconfig( autoemitconfig );
+        tree->set_emit( i == 0 ? -1 : 0 );
         tree->setBoundary( i == 0 ? autocontainer : autoobject ) ;  
 
         const char* autospec = tree->getBoundary();  
-        const char* autoemitconfig2 = tree->getEmitConfig() ; 
+        const char* autoemitconfig2 = tree->get_emitconfig() ; 
        
         std::cout 
              << " i " << std::setw(3) << i 
@@ -485,7 +485,7 @@ NCSG* NCSGList::find(NCSG_t type) const
         NCSG* tree = getTree(i);
         if( 
             ( type == CONTAINER && tree->isContainer() ) ||
-            ( type == EMITTER   && tree->isEmitter() )   ||
+            ( type == EMITTER   && tree->is_emitter() )   ||
             ( type == PROXY     && tree->isProxy() )   
           )
         {
@@ -505,7 +505,7 @@ int NCSGList::findIndex(NCSG_t type) const
         NCSG* tree = getTree(i);
         if( 
             ( type == CONTAINER && tree->isContainer() ) ||
-            ( type == EMITTER   && tree->isEmitter() )   ||
+            ( type == EMITTER   && tree->is_emitter() )   ||
             ( type == PROXY     && tree->isProxy() )   
           )
         {

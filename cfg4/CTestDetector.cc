@@ -173,7 +173,7 @@ G4VPhysicalVolume* CTestDetector::makeChildVolume(const NCSG* csg, const char* l
 
     LOG(LEVEL) 
           << " csg.spec " << spec 
-          << " csg.get_root_csgname " << csg->get_root_csgname() 
+          << " csg.getRootCSGName " << csg->getRootCSGName() 
           << " boundary " << boundary 
           << " mother " << ( mother ? mother->GetName() : "-" )
           << " lv " << ( lv ? lv->GetName() : "-" )

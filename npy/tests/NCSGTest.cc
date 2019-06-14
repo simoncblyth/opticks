@@ -28,7 +28,7 @@ void test_Adopt_Meta()
         unsigned lvIdx = 0 ; 
 
         NCSG* tree = NCSG::Adopt( n , config , soIdx, lvIdx );
-        LOG(info) << "test_Adopt_0 " << tree->soname() ; 
+        LOG(info) << "test_Adopt_0 " << tree->get_soname() ; 
     }
 }
 
@@ -93,12 +93,12 @@ void test_setEmitconfig()
     NCSG* csg = NCSG::Load(treedir);
     if(!csg) return ; 
 
-    const char* ec0 = csg->getEmitConfig() ; 
+    const char* ec0 = csg->get_emitconfig() ; 
     const char* ec1 = "hello:world" ; 
 
-    csg->setEmitConfig(ec1);
+    csg->set_emitconfig(ec1);
 
-    const char* ec2 = csg->getEmitConfig();
+    const char* ec2 = csg->get_emitconfig();
 
     std::cout 
         << " ec0 " << ec0

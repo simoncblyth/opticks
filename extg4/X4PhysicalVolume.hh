@@ -89,7 +89,6 @@ class X4_API X4PhysicalVolume : public X4Named
         void convertSensors(); 
         void closeSurfaces(); 
         void convertSolids(); 
-        void addUnbalancedSolids();
         void convertStructure(); 
         void convertCheck() const ;
     private:

@@ -352,7 +352,18 @@ GMesh* GGeoTest::importMeshViaProxy(NCSG* proxy)
     GMesh* mesh = m_meshlib->getMeshSimple(lvIdx); 
     assert( mesh ); 
     const NCSG* csg = mesh->getCSG(); 
-    assert( csg ) ; 
+    assert( csg ) ;
+
+    const GMesh* altmesh = mesh->getAlt(); 
+
+    if( altmesh )
+    {
+        const NCSG* altcsg = altmesh->getCSG() ; 
+        LOG(error) 
+            << " csg.is_balanced " << csg->is_balanced()
+            << " altcsg.is_balanced " << altcsg->is_balanced()
+            ; 
+    }
 
 
     assert( csg->getBoundary() == NULL && "expecting fresh csg from meshlib to have no boundary assigned") ; 

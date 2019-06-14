@@ -495,7 +495,7 @@ void NScene::load_mesh_extras()
 
         NCSG* csg = m_source->getCSG(mesh_id);  
 
-        bool csgskip = csg->isSkip() ;
+        bool csgskip = csg->is_skip() ;
         if(csgskip) 
         {
             if(m_csgskip_lvlist)

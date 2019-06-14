@@ -8,9 +8,7 @@
 
 class Opticks ; 
 
-class GItemIndex ;  // <-- aiming to remove 
 class GItemList ;  
-
 class GMesh ; 
 class NCSG ; 
 
@@ -24,45 +22,9 @@ GMeshLib : provides load/save for GMesh instances with associated names
 
 * canonical m_meshlib instances are constituents of GGeo and GScene.
 * manages a vector of GMesh* and a GItemIndex of names
-* not on critical path (?) : used in checking feasibility of a polygonization implementation  
-
-
-TODO: complete the switch to GItemList rather than GItemIndex for the names
---------------------------------------------------------------------------------
-
-The local/source indices are 1-based and 0-based, thats not a good 
-reason to use an Index.
-
-::
-
-    epsilon:MeshIndex blyth$ ll
-    total 48
-    -rw-r--r--   1 blyth  staff  9448 Jun 28 10:45 GItemIndexSource.json
-    -rw-r--r--   1 blyth  staff  9450 Jun 28 10:45 GItemIndexLocal.json
-    drwxr-xr-x  17 blyth  staff   544 Jun 28 10:45 ..
-
-::
-
-    epsilon:MeshIndex blyth$ diff -y  GItemIndexLocal.json GItemIndexSource.json | head -10
-    {								{
-        "AcrylicCylinder0xc3d3830": "137",			  |	    "AcrylicCylinder0xc3d3830": "136",
-        "AdPmtCollar0xc2c5260": "49",			      |	    "AdPmtCollar0xc2c5260": "48",
-        "AmCCo60AcrylicContainer0xc0b23b8": "132",	  |	    "AmCCo60AcrylicContainer0xc0b23b8": "131",
-        "AmCCo60Cavity0xc0b3de0": "131",			  |	    "AmCCo60Cavity0xc0b3de0": "130",
-        "AmCCo60SourceAcrylic0xc3ce678": "123",		  |	    "AmCCo60SourceAcrylic0xc3ce678": "122",
-        "AmCSS0xc3d0040": "121",				      |	    "AmCSS0xc3d0040": "120",
-        "AmCSSCap0xc3cfc58": "116",				      |	    "AmCSSCap0xc3cfc58": "115",
-        "AmCSource0xc3d0708": "120",			      |	    "AmCSource0xc3d0708": "119",
-        "AmCSourceAcrylicCup0xc3d1bc8": "119",		  |	    "AmCSourceAcrylicCup0xc3d1bc8": "118",
-  
-::
-
-    op --dsst -G 
 
 */
 
-
-//#define OLD_INDEX 1
 
 class GGEO_API GMeshLib 
 {
@@ -72,14 +34,8 @@ class GGEO_API GMeshLib
         static const plog::Severity LEVEL ;  
         static const unsigned MAX_MESH  ; 
 
-#ifdef OLD_INDEX
-        static const char*    GITEMINDEX ; 
-        static const char*    GMESHLIB_INDEX ; 
-#endif
-
-        static const char*    GMESHLIB_LIST ; 
-
         static const char*    GMESHLIB ; 
+        static const char*    GMESHLIB_LIST ; 
         static const char*    GMESHLIB_NCSG ; 
 
         static GMeshLib* Load(Opticks* ok );
@@ -92,9 +48,6 @@ class GGEO_API GMeshLib
         const char* getMeshName(unsigned aindex) const ; 
     public:
         //std::string desc() const ; 
-#ifdef OLD_INDEX
-        GItemIndex* getMeshIndex() ;
-#endif
         unsigned    getNumMeshes() const ; 
 
         void          getMeshIndicesWithAlt(std::vector<unsigned>& indices) const ; 
@@ -106,13 +59,18 @@ class GGEO_API GMeshLib
         const GMesh*  getMeshWithName(const char* name, bool startswith) const ;
         const NCSG*   getSolidWithIndex(unsigned aindex) const ;  // first mesh in m_solids addition order with getIndex() matching aindex 
     private:
+        int         findMeshIndex( const GMesh* mesh ) const ; 
+        int         findSolidIndex( const NCSG* solid ) const ; 
         void        loadFromCache();
-        void        save() const ; 
+        void        save() ; 
     private:
         void removeDirs(const char* idpath ) const ;
     private:
         void saveMeshes(const char* idpath) const ;
         void loadMeshes(const char* idpath ) ;
+        void addAltMeshes(); 
+        void saveAltReferences(); 
+        void loadAltReferences(); 
     private:
         unsigned getNumSolids() const ;  // should give same as getNumMeshes
         void loadSolids(const char* idpath ) ;
@@ -129,15 +87,10 @@ class GGEO_API GMeshLib
         bool                          m_direct ;  
         const char*                   m_reldir ; 
         const char*                   m_reldir_solids ; 
-#ifdef OLD_INDEX
-        GItemIndex*                   m_meshindex ; 
-#endif
         GItemList*                    m_meshnames ; 
-        unsigned                      m_missing ; 
         std::vector<const GMesh*>     m_meshes ; 
         std::vector<const NCSG*>      m_solids ; 
         std::map<unsigned, unsigned>                  m_mesh_usage ; 
         std::map<unsigned, std::vector<unsigned> >    m_mesh_nodes ; 
-
 
 };

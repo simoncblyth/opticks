@@ -108,7 +108,7 @@ void test_scan( const std::vector<NCSG*>& trees )
                      << " NScanTest " << std::setw(4) << csg->getTreeNameIdx()
                      //<< std::left << std::setw(40) << csg->getTreeDir()  << std::right
                      //<< " treeNameIdx " << csg->getTreeNameIdx()
-                     << " soname " << std::setw(40) << csg->soname()  
+                     << " soname " << std::setw(40) << csg->get_soname()  
                      << " tag " << std::setw(10) << root->tag()
                      << " nprim " << std::setw(4) << nprim
                      << " typ " << std::setw(20) << root->get_type_mask_string()

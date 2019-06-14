@@ -73,8 +73,8 @@ void GGeoGLTF::addMeshes()
         const nnode* root = mesh->getRoot();  
         const nnode* raw = root->other ;
 
-        std::string lvname = csg->lvname();  // <-- probably wont work postcache
-        std::string soname = csg->soname(); 
+        std::string lvname = csg->get_lvname();  // <-- probably wont work postcache : IT DOES NOW VIA METADATA
+        std::string soname = csg->get_soname(); 
 
         LOG(verbose)
             << " lvIdx " << lvIdx 
