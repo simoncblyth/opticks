@@ -42,8 +42,6 @@ const char* GGeoLib::getRelDir(const char* name) const
 }
 
 
-
-
 GBndLib* GGeoLib::getBndLib() const 
 {
     return m_bndlib ; 

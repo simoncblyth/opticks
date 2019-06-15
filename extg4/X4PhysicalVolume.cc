@@ -923,6 +923,7 @@ GVolume* X4PhysicalVolume::convertNode(const G4VPhysicalVolume* const pv, GVolum
      const G4LogicalVolume* const lv   = pv->GetLogicalVolume() ;
      const std::string& lvName = lv->GetName() ; 
      const std::string& pvName = pv->GetName() ; 
+     unsigned ndIdx = m_node_count ;       // incremented below after GVolume instanciation
 
      int lvIdx = m_lvidx[lv] ;   // from postorder traverse in convertSolids to match GDML lvIdx : mesh identity uses lvIdx
 
@@ -937,7 +938,7 @@ GVolume* X4PhysicalVolume::convertNode(const G4VPhysicalVolume* const pv, GVolum
      const NCSG* csg = mesh->getCSG();  
 
      GParts* pts = GParts::Make( csg, boundaryName.c_str() );  // see GScene::createVolume 
-     GPt*    pt = new GPt( lvIdx, boundaryName.c_str() )  ; 
+     GPt*    pt = new GPt( lvIdx, ndIdx, boundaryName.c_str() )  ; 
 
      pts->setBndLib(m_blib);
 
@@ -956,7 +957,6 @@ GVolume* X4PhysicalVolume::convertNode(const G4VPhysicalVolume* const pv, GVolum
      glm::mat4 xf_global = gtriple->t ;
      GMatrixF* gtransform = new GMatrix<float>(glm::value_ptr(xf_global));
 
-     unsigned ndIdx = m_node_count ;  
 
  
      pts->setVolumeIndex( ndIdx );  

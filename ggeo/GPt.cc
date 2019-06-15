@@ -6,17 +6,19 @@
 #include "GLMFormat.hpp"
 
 
-GPt::GPt( unsigned tree_, const char* spec_, const glm::mat4& placement_ )
+GPt::GPt( int lvIdx_, int ndIdx_, const char* spec_, const glm::mat4& placement_ )
     :
-    tree(tree_),
+    lvIdx(lvIdx_),
+    ndIdx(ndIdx_),
     spec(strdup(spec_)),
     placement(placement_)
 {
 } 
 
-GPt::GPt( unsigned tree_, const char* spec_ )
+GPt::GPt( int lvIdx_, int ndIdx_, const char* spec_ )
     :
-    tree(tree_),
+    lvIdx(lvIdx_),
+    ndIdx(ndIdx_),
     spec(strdup(spec_)),
     placement(1.0f)
 {
@@ -32,7 +34,8 @@ std::string GPt::desc() const
 {
     std::stringstream ss ; 
     ss 
-       << " tree " << std::setw(4) << tree
+       << " lvIdx " << std::setw(4) << lvIdx
+       << " ndIdx " << std::setw(7) << ndIdx
        << " spec " << std::setw(30) << spec
        << " placement " << gformat( placement )   
        ; 

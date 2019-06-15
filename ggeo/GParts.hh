@@ -12,6 +12,7 @@
 struct npart ; 
 struct NSlice ; 
 template <typename T> class NPY ;
+class NPYBase ; 
 template <typename T> class GMatrix ;
 
 class NCSG ; 
@@ -20,7 +21,7 @@ struct nivec4 ;
 struct gbbox ; 
 struct gfloat3 ; 
 
-
+class GPts ; 
 class GItemList ; 
 class GBndLib ; 
 
@@ -190,6 +191,8 @@ class GGEO_API GParts {
             } ;
     public:
       //
+        static int     Compare(const GParts* a, const GParts* b); 
+        static GParts* Create(const GPts* pts, const std::vector<const NCSG*>& solids, unsigned verbosity ); 
         static GParts* Make(const npart& pt, const char* spec);
         static GParts* Make(OpticksCSG_t csgflag, glm::vec4& param, const char* spec);
         static GParts* Make(const NCSG* tree, const char* spec );
@@ -220,10 +223,8 @@ class GGEO_API GParts {
         void         setName(const char* name);
         const char*  getName() const ;
 
-
-        bool isClosed();
-        bool isLoaded();
-
+        bool isClosed() const ;
+        bool isLoaded() const ;
         std::string id() const ; 
 
         unsigned getIndex(unsigned part);
@@ -253,9 +254,9 @@ class GGEO_API GParts {
         void setBoundaryAll(unsigned boundary);
         void setNodeIndexAll(unsigned nodeindex);
     public:
-        GBndLib*       getBndLib();
+        GBndLib*       getBndLib() const ;
         GItemList*     getBndSpec();
-        unsigned       getNumPrim();
+        unsigned       getNumPrim() const ;
         unsigned       getNumParts() const ;
         unsigned       getNumIdx() const ;
         unsigned       getPrimNumParts(unsigned int prim_index);
@@ -268,6 +269,7 @@ class GGEO_API GParts {
         NPY<float>*    getPlanBuffer() const ; // planes used by convex polyhedra such as trapezoid
     public:
         NPY<float>*    getBuffer(const char* tag) const ;
+        NPYBase*       getBufferBase(const char* tag) const ; 
     public:
         void fulldump(const char* msg="GParts::fulldump", unsigned lim=10 );
         void dump(const char* msg="GParts::dump", unsigned lim=10 );
@@ -280,6 +282,7 @@ class GGEO_API GParts {
         void setSensorSurface(const char* surface="lvPmtHemiCathodeSensorSurface");
         void setContainingMaterial(const char* material="MineralOil");
         void applyPlacementTransform(GMatrix<float>* placement, unsigned verbosity=0);
+        void applyPlacementTransform(const glm::mat4& placement, unsigned verbosity=0);
 
         void save(const char* dir);
         static GParts* Load(const char* dir);
@@ -314,8 +317,9 @@ class GGEO_API GParts {
        void         setUInt(unsigned part, unsigned j, unsigned k, unsigned value);
 
     public:
-        // for global pieces of geometry its useful to keep
-        // reference to the volume index at analytic level 
+        // idx_buffer 
+        //     for global pieces of geometry its useful to keep
+        //      reference to the volume index at analytic level 
         static const unsigned VOL_IDX ; 
         void setVolumeIndex(unsigned idx); 
         unsigned getVolumeIndex(unsigned i) const ; 

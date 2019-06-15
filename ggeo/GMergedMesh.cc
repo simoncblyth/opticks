@@ -137,10 +137,24 @@ GMergedMesh* GMergedMesh::Combine(unsigned index, GMergedMesh* mm, GVolume* volu
     return Combine(index, mm, volumes, verbosity );
 }
 
-// count-allocate-merge
+
+/**
+GMergedMesh::Combine
+----------------------
+
+Three stages:
+
+1. count
+2. allocate
+3. merge
+
+Seems to only be invoked from GGeoTest running, specifically GGeoTest::combineVolumes / GGeoTest::initCreateCSG
+
+**/
+
 GMergedMesh* GMergedMesh::Combine(unsigned index, GMergedMesh* mm, const std::vector<GVolume*>& volumes, unsigned verbosity ) // static
 {
-    std::raise(SIGINT); 
+    //std::raise(SIGINT);   
     unsigned numVolumes = volumes.size(); 
     LOG(info)
         << " making new mesh "

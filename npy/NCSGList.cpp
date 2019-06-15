@@ -33,7 +33,7 @@ NCSGList* NCSGList::Load(const char* csgpath, int verbosity, bool checkmaterial)
 
     if(!NCSGList::ExistsDir(csgpath))
     {
-        LOG(warning) << "NCSGList::Load missing csgpath " << csgpath ; 
+        LOG(error) << "missing csgpath " << csgpath ; 
         return NULL ; 
     }
 

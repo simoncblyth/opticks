@@ -105,6 +105,9 @@ void GMeshLib::addAltMeshes()
  
     dump("addAltMeshes"); 
 }
+
+const std::vector<const NCSG*>& GMeshLib::getSolids() const { return m_solids ; }
+
  
 
 /**

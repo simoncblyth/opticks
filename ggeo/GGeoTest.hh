@@ -16,11 +16,6 @@ class GMaterialLib ;
 class GSurfaceLib ; 
 class GBndLib ; 
 
-
-#ifdef OLD_GGEOTEST
-class GPmtLib ;   // <-- aim to remove
-#endif
-
 class GMeshLib ; 
 class GNodeLib ; 
 
@@ -36,11 +31,13 @@ class GVolume ;
 GGeoTest
 =========
 
-Creates simple test geometries from a commandline specification.
+Creates simple test geometries from a commandline specification 
+that points to a csgpath directory containing python serialized 
+CSG geometry, see for example tboolean-box.
 
 Canonical instance m_geotest resides in OpticksHub and is instanciated
-only when the --test geometry option is active.  This happens
-after standard geometry is loaded via OpticksHub::modifyGeometry.
+by OpticksHub::loadGeometry only when the --test geometry option is active.  
+Which happens after the standard geometry has been loaded.
 
 Rejig
 -------
@@ -48,7 +45,7 @@ Rejig
 * GGeoTest is now a GGeoBase subclass (just like GGeo and GScene)
 
 * GGeoTest now has its own GGeoLib, to avoid dirty modifyGeometry
-  appropach which cleared the basis mm
+  approach which cleared the basis mm
 
 
 **/
@@ -71,6 +68,8 @@ class GGEO_API GGeoTest : public GGeoBase {
        int getErr() const ; 
     private:
        void init();
+       void checkPts();
+
        GMergedMesh* initCreateCSG();
        void setErr(int err); 
     public:
@@ -131,7 +130,8 @@ class GGEO_API GGeoTest : public GGeoBase {
     private:
        // base geometry and stolen libs 
        GGeoBase*        m_basis ; 
-       GMeshLib*        m_meshlib ; 
+       GMeshLib*        m_basemeshlib ; 
+       GGeoLib*         m_basegeolib ; 
    private:
        // local resident libs
        GMaterialLib*    m_mlib ; 

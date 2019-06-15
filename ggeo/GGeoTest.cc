@@ -29,11 +29,6 @@
 #include "GSurfaceLib.hh"
 #include "GBndLib.hh"
 
-#ifdef OLD_GGEOTEST
-#include "GPmtLib.hh"
-#include "GPmt.hh"
-#endif
-
 #include "GMeshLib.hh"
 
 #include "GMergedMesh.hh"
@@ -44,7 +39,10 @@
 #include "GMaker.hh"
 #include "GMeshMaker.hh"
 #include "GItemList.hh"
+
 #include "GParts.hh"
+#include "GPts.hh"
+
 #include "GTransforms.hh"
 #include "GIds.hh"
 
@@ -71,15 +69,10 @@ GScintillatorLib* GGeoTest::getScintillatorLib() const { return m_basis->getScin
 GSourceLib*       GGeoTest::getSourceLib() const {       return m_basis->getSourceLib() ; }
 
 
-#ifdef OLD_GGEOTEST
-// local copy of m_basis pointer
-GPmtLib*          GGeoTest::getPmtLib() const {          return m_pmtlib ; }
-#endif
-
 
 // local residents backed by corresponding basis libs 
 GBndLib*          GGeoTest::getBndLib() const {          return m_bndlib ;  }
-GMeshLib*         GGeoTest::getMeshLib() const {         return m_meshlib ;  }
+GMeshLib*         GGeoTest::getMeshLib() const {         return m_basemeshlib ;  }
 GSurfaceLib*      GGeoTest::getSurfaceLib() const {      return m_slib ;  }
 GMaterialLib*     GGeoTest::getMaterialLib() const {     return m_mlib ;  }
 
@@ -122,20 +115,21 @@ GGeoTest::GGeoTest(Opticks* ok, GGeoBase* basis)
     m_csgpath(m_config->getCSGPath()),
     m_test(true),
     m_basis(basis),
-#ifdef OLD_GGEOTEST
-    m_pmtlib(basis->getPmtLib()),
-#endif
-    m_meshlib(basis->getMeshLib()),
+    m_basemeshlib(basis->getMeshLib()),
+    m_basegeolib(basis->getGeoLib()), 
     m_mlib(new GMaterialLib(m_ok, basis->getMaterialLib())),
     m_slib(new GSurfaceLib(m_ok, basis->getSurfaceLib())),
     m_bndlib(new GBndLib(m_ok, m_mlib, m_slib)),
     m_geolib(new GGeoLib(m_ok,m_analytic,m_bndlib)),
     m_nodelib(new GNodeLib(m_ok, m_analytic, m_test, basis->getNodeLib() )),
-    m_maker(new GMaker(m_ok, m_bndlib, m_meshlib)),
+    m_maker(new GMaker(m_ok, m_bndlib, m_basemeshlib)),
     m_csglist(m_csgpath ? NCSGList::Load(m_csgpath, m_verbosity ) : NULL),
     m_err(0)
 {
     assert(m_basis); 
+
+    checkPts(); 
+
     init();
 }
 
@@ -169,6 +163,34 @@ void GGeoTest::init()
     m_geolib->setMergedMesh( 0, tmm );  // TODO: create via standard GGeoLib::create ?
 
     LOG(LEVEL) << "]" ;
+}
+
+void GGeoTest::checkPts()
+{
+    if(m_csglist == NULL ) return ;  // OpticksHubTest
+    NCSG* proxy = m_csglist->findProxy();  
+    
+
+    int proxy_idx = m_csglist->findProxyIndex(); 
+    LOG(info)
+        << " proxy " << proxy 
+        << " proxy_idx " << proxy_idx
+        ;  
+
+    unsigned nmm = m_basegeolib->getNumMergedMesh() ; 
+    LOG(info) 
+        << " basegeolib " 
+        << " nmm " << nmm 
+        ; 
+
+    for(unsigned i=0 ; i < nmm ; i++)
+    {
+        GMergedMesh* bmm = m_basegeolib->getMergedMesh(i);  
+        GPts* pts = bmm->getPts(); 
+        assert( pts ); 
+        pts->dump("GGeoTest::checkPts") ; 
+    }
+
 }
 
 
@@ -361,7 +383,7 @@ GMesh* GGeoTest::importMeshViaProxy(NCSG* proxy)
             << " proxyLV " << lvIdx 
             ; 
 
-    GMesh* mesh = m_meshlib->getMeshSimple(lvIdx); 
+    GMesh* mesh = m_basemeshlib->getMeshSimple(lvIdx); 
     assert( mesh ); 
     const NCSG* csg = mesh->getCSG(); 
     assert( csg ) ;
@@ -378,7 +400,7 @@ GMesh* GGeoTest::importMeshViaProxy(NCSG* proxy)
     }
 
 
-    assert( csg->getBoundary() == NULL && "expecting fresh csg from meshlib to have no boundary assigned") ; 
+    assert( csg->getBoundary() == NULL && "expecting fresh csg from basemeshlib to have no boundary assigned") ; 
     const_cast<NCSG*>(csg)->setOther(proxy);  // keep note of the proxy from whence it came
 
     mesh->setIndex( index ) ; 
@@ -672,6 +694,8 @@ TODO: eliminate, instead use GNodeLib::createMergeMesh
 
 GMergedMesh* GGeoTest::combineVolumes(GMergedMesh* mm0)
 {
+    assert( mm0 == NULL ); 
+
     std::vector<GVolume*>& volumes = m_nodelib->getVolumes(); 
 
     LOG(LEVEL) << "[" ; 

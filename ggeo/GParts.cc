@@ -27,8 +27,12 @@
 #include "GVector.hh"
 #include "GItemList.hh"
 #include "GBndLib.hh"
-#include "GParts.hh"
 #include "GMatrix.hh"
+
+#include "GPts.hh"
+#include "GPt.hh"
+#include "GParts.hh"
+
 
 #include "PLOG.hh"
 
@@ -37,6 +41,152 @@ const plog::Severity GParts::LEVEL = debug ;
 
 const char* GParts::CONTAINING_MATERIAL = "CONTAINING_MATERIAL" ;  
 const char* GParts::SENSOR_SURFACE = "SENSOR_SURFACE" ;  
+
+
+/**
+GParts::Compare
+----------------
+
+See GPtsTest
+
+**/
+
+
+int GParts::Compare(const GParts* a, const GParts* b)
+{
+    LOG(info); 
+    unsigned w = 34 ; 
+
+    std::cout 
+        << std::setw(w) << "qty" 
+        << std::setw(w) << "A" 
+        << std::setw(w) << "B"
+        << std::endl 
+        ;  
+
+
+    const char* aname = a->getName(); 
+    const char* bname = b->getName(); 
+    std::cout 
+        << std::setw(w) << "Name" 
+        << std::setw(w) << ( aname ? aname : "NULL" )
+        << std::setw(w) << ( bname ? bname : "NULL" )
+        << std::endl 
+        ;  
+
+    std::cout 
+        << std::setw(w) << "BndLib" 
+        << std::setw(w) << a->getBndLib() 
+        << std::setw(w) << b->getBndLib() 
+        << std::endl 
+        ;  
+
+    std::cout 
+        << std::setw(w) << "Closed" 
+        << std::setw(w) << a->isClosed() 
+        << std::setw(w) << b->isClosed() 
+        << std::endl 
+        ;  
+
+    std::cout 
+        << std::setw(w) << "Loaded" 
+        << std::setw(w) << a->isLoaded() 
+        << std::setw(w) << b->isLoaded() 
+        << std::endl 
+        ;  
+ 
+    std::cout 
+        << std::setw(w) << "PrimFlagString" 
+        << std::setw(w) << a->getPrimFlagString() 
+        << std::setw(w) << b->getPrimFlagString() 
+        << std::endl 
+        ;  
+   
+    std::cout 
+        << std::setw(w) << "NumParts" 
+        << std::setw(w) << a->getNumParts() 
+        << std::setw(w) << b->getNumParts() 
+        << std::endl 
+        ;  
+
+    std::cout 
+        << std::setw(w) << "NumPrim" 
+        << std::setw(w) << a->getNumPrim() 
+        << std::setw(w) << b->getNumPrim() 
+        << std::endl 
+        ;  
+
+
+    std::vector<const char*> tags = {"prim", "idx", "part", "tran", "plan" }; 
+    for(unsigned i=0 ; i < tags.size() ; i++)
+    {
+        const char* tag = tags[i]; 
+        std::cout 
+            << std::setw(w) << tags[i] 
+            << std::setw(w) << a->getBufferBase(tag)->getDigestString() 
+            << std::setw(w) << b->getBufferBase(tag)->getDigestString() 
+            << std::endl 
+            ;  
+    } 
+    return 0 ; 
+}
+
+
+/**
+GParts::Create from GPts
+--------------------------
+
+GParts::Create from GPts attempts to duplicate the standard precache GParts 
+in a deferred postcache manner using NCSG solids persisted with GMeshLib 
+and the requisite GParts arguments (spec, placement transforms) persisted by GPts 
+together with the GGeoLib merged meshes.  
+
+Canonically the merged GParts is created precache by:
+
+X4PhysicalVolume::convertNode  
+    creating single volume GParts from NCSG and associating to GVolume
+
+GMergedMesh::mergeVolume
+GMergedMesh::mergeVolumeAnalytic
+     combining and applying placement transform
+
+* There are GPts instances for each mergedMesh 
+* hmm: need to match csgskips
+
+* testing this with GPtsTest, using GParts::Compare 
+
+**/
+
+GParts* GParts::Create(const GPts* pts, const std::vector<const NCSG*>& solids, unsigned verbosity) // static
+{
+    GParts* com = new GParts() ; 
+
+    unsigned num_pt = pts->getNumPt(); 
+    for(unsigned i=0 ; i < num_pt ; i++)
+    {
+        const GPt* pt = pts->getPt(i); 
+        int   lvIdx = pt->lvIdx ; 
+        int   ndIdx = pt->ndIdx ; 
+        const std::string& spec = pt->spec ; 
+        const glm::mat4& placement = pt->placement ; 
+        assert( lvIdx > -1 ); 
+
+        const NCSG* csg = unsigned(lvIdx) < solids.size() ? solids[lvIdx] : NULL ; 
+        assert( csg ); 
+
+        //  X4PhysicalVolume::convertNode
+        GParts* parts = GParts::Make( csg, spec.c_str() ); 
+        parts->setVolumeIndex(ndIdx); 
+
+        // GMergedMesh::mergeVolume
+        // GMergedMesh::mergeVolumeAnalytic
+        parts->applyPlacementTransform( placement ); 
+          
+        com->add( parts, verbosity ); 
+    }
+    return com ; 
+}
+
 
 
 /**
@@ -55,7 +205,6 @@ Concatenate vector of GParts instances into a single GParts instance
 * the first GBndLib encountered is adopted for the combined GParts
 
 * concatenation is done with GParts::add
-
 
 Currently GParts::Combine is used only from tests:
 
@@ -109,6 +258,9 @@ GParts* GParts::Combine(std::vector<GParts*> subs, unsigned verbosity)  // stati
 
     return parts ; 
 }
+
+
+
 
 
 GParts* GParts::Combine(GParts* onesub, unsigned verbosity)  // static
@@ -440,10 +592,6 @@ void GParts::init()
 
 }
 
-
-
-
-
 void GParts::setPrimFlag(OpticksCSG_t primflag)
 {
     assert(primflag == CSG_FLAGNODETREE || primflag == CSG_FLAGPARTLIST || primflag == CSG_FLAGINVISIBLE );
@@ -501,7 +649,7 @@ void GParts::BufferTags(std::vector<std::string>& tags) // static
     tags.push_back("part");
     tags.push_back("tran");
     tags.push_back("plan");
-   // tags.push_back("prim");   <-- prim is deferred til closing time
+   // tags.push_back("prim");   
 }
 
 const char* GParts::BufferName(const char* tag) // static
@@ -552,6 +700,8 @@ void GParts::save(const char* dir)
     } 
     if(m_idx_buffer) m_idx_buffer->save(dir, BufferName("idx"));    
     if(m_prim_buffer) m_prim_buffer->save(dir, BufferName("prim"));    
+
+    // TODO: see if can use NPYBase to treat all buffers uniformly using getBufferBase
 
     if(m_bndspec) m_bndspec->save(dir); 
 }
@@ -630,14 +780,8 @@ void GParts::setAnalyticVersion(unsigned version)
 
 
 
-bool GParts::isClosed()
-{
-    return m_closed ; 
-}
-bool GParts::isLoaded()
-{
-    return m_loaded ; 
-}
+bool GParts::isClosed() const { return m_closed ; } 
+bool GParts::isLoaded() const { return m_loaded ; }
 
 void GParts::setLoaded(bool loaded)
 {
@@ -665,52 +809,32 @@ void GParts::setBndLib(GBndLib* bndlib)
 {
     m_bndlib = bndlib ; 
 }
-GBndLib* GParts::getBndLib()
+GBndLib* GParts::getBndLib() const 
 {
     return m_bndlib ; 
 }
-void GParts::setIdxBuffer(NPY<unsigned>* buf )
-{
-    m_idx_buffer = buf ; 
-}
-void GParts::setPrimBuffer(NPY<int>* buf )
-{
-    m_prim_buffer = buf ; 
-}
-
-void GParts::setPartBuffer(NPY<float>* buf )
-{
-    m_part_buffer = buf ; 
-}
-void GParts::setTranBuffer(NPY<float>* buf)
-{
-    m_tran_buffer = buf ; 
-}
-void GParts::setPlanBuffer(NPY<float>* buf)
-{
-    m_plan_buffer = buf ; 
-}
 
 
-NPY<int>* GParts::getPrimBuffer() const 
+void GParts::setIdxBuffer(NPY<unsigned>* buf ) { m_idx_buffer = buf ; } 
+void GParts::setPrimBuffer(NPY<int>* buf ) {     m_prim_buffer = buf ; } 
+void GParts::setPartBuffer(NPY<float>* buf ) {   m_part_buffer = buf ; } 
+void GParts::setTranBuffer(NPY<float>* buf) {    m_tran_buffer = buf ; } 
+void GParts::setPlanBuffer(NPY<float>* buf) {    m_plan_buffer = buf ; } 
+
+NPY<int>*      GParts::getPrimBuffer() const  { return m_prim_buffer ;  }
+NPY<unsigned>* GParts::getIdxBuffer() const {   return m_idx_buffer ; } 
+NPY<float>*    GParts::getPartBuffer() const {  return m_part_buffer ; } 
+NPY<float>*    GParts::getTranBuffer() const {  return m_tran_buffer ; } 
+NPY<float>*    GParts::getPlanBuffer() const {  return m_plan_buffer ; } 
+
+NPYBase* GParts::getBufferBase(const char* tag) const 
 {
-    return m_prim_buffer ; 
-}
-NPY<unsigned>* GParts::getIdxBuffer() const 
-{
-    return m_idx_buffer ; 
-}
-NPY<float>* GParts::getPartBuffer() const 
-{
-    return m_part_buffer ; 
-}
-NPY<float>* GParts::getTranBuffer() const 
-{
-    return m_tran_buffer ; 
-}
-NPY<float>* GParts::getPlanBuffer() const 
-{
-    return m_plan_buffer ; 
+    if(strcmp(tag,"prim")==0) return m_prim_buffer ; 
+    if(strcmp(tag,"idx")==0) return m_idx_buffer ; 
+    if(strcmp(tag,"part")==0) return m_part_buffer ; 
+    if(strcmp(tag,"tran")==0) return m_tran_buffer ; 
+    if(strcmp(tag,"plan")==0) return m_plan_buffer ; 
+    return NULL ; 
 }
 
 NPY<float>* GParts::getBuffer(const char* tag) const 
@@ -718,10 +842,9 @@ NPY<float>* GParts::getBuffer(const char* tag) const
     if(strcmp(tag,"part")==0) return m_part_buffer ; 
     if(strcmp(tag,"tran")==0) return m_tran_buffer ; 
     if(strcmp(tag,"plan")==0) return m_plan_buffer ; 
- //   if(strcmp(tag,"prim")==0) return m_prim_buffer ; 
+    //if(strcmp(tag,"prim")==0) return m_prim_buffer ; 
     return NULL ; 
 }
-
 
 
 unsigned GParts::getNumIdx() const 
@@ -757,19 +880,19 @@ GParts::applyPlacementTransform
 void GParts::applyPlacementTransform(GMatrix<float>* gtransform, unsigned verbosity )
 {
    // gets invoked from GGeo::prepare...GMergedMesh::mergeVolumeAnalytic
-
     const float* data = static_cast<float*>(gtransform->getPointer());
-
     if(verbosity > 2)
     nmat4triple::dump(data, "GParts::applyPlacementTransform gtransform:" ); 
-
     glm::mat4 placement = glm::make_mat4( data ) ;  
 
+    applyPlacementTransform( placement, verbosity ); 
+}
 
+void GParts::applyPlacementTransform(const glm::mat4& placement, unsigned verbosity )
+{
     LOG(debug) << "placement " << glm::to_string( placement ) ; 
 
     //std::raise(SIGINT); 
-
 
     assert(m_tran_buffer->hasShape(-1,3,4,4));
 
@@ -1000,9 +1123,10 @@ void GParts::registerBoundaries() // convert boundary spec names into integer co
 }
 
 
-void GParts::reconstructPartsPerPrim()
-{
-/*
+/**
+GParts::reconstructPartsPerPrim
+---------------------------------
+
 The "classic" partlist formed in python with opticks/ana/pmt/analytic.py  (pmt-ecd)
 uses the nodeindex entry in the partlist buffer to identify which parts 
 correspond to each solid eg PYREX,VACUUM,CATHODE,BOTTOM,DYNODE. 
@@ -1016,7 +1140,12 @@ via the nodeIndex property.
 For the CSG nodeTree things are simpler as each NCSG tree 
 directly corresponds to a 1 GVolume and 1 GParts that
 are added separtately, see GGeoTest::loadCSG.
-*/
+
+**/
+
+void GParts::reconstructPartsPerPrim()
+{
+
 
     assert(isPartList());
     m_parts_per_prim.clear();
@@ -1026,9 +1155,9 @@ are added separtately, see GGeoTest::loadCSG.
 
     unsigned numParts = getNumParts() ; 
 
-    LOG(info) << "GParts::reconstructPartsPerPrim"
-              << " numParts " << numParts 
-              ;
+    LOG(info) 
+        << " numParts " << numParts 
+        ;
  
     // count parts for each nodeindex
     for(unsigned int i=0; i < numParts ; i++)
@@ -1037,12 +1166,12 @@ are added separtately, see GGeoTest::loadCSG.
         unsigned typ = getTypeCode(i);
         std::string  typName = CSGName((OpticksCSG_t)typ);
  
-        LOG(info) << "GParts::makePrimBuffer"
-                   << " i " << std::setw(3) << i  
-                   << " nodeIndex " << std::setw(3) << nodeIndex
-                   << " typ " << std::setw(3) << typ 
-                   << " typName " << typName 
-                   ;  
+        LOG(info) 
+            << " i " << std::setw(3) << i  
+            << " nodeIndex " << std::setw(3) << nodeIndex
+            << " typ " << std::setw(3) << typ 
+            << " typName " << typName 
+            ;  
                      
         m_parts_per_prim[nodeIndex] += 1 ; 
 
@@ -1055,13 +1184,14 @@ are added separtately, see GGeoTest::loadCSG.
     //assert(nmax - nmin == num_solids - 1);  // expect contiguous node indices
     if(nmax - nmin != num_prim - 1)
     {
-        LOG(warning) << "GParts::reconstructPartsPerPrim  non-contiguous node indices"
-                     << " nmin " << nmin 
-                     << " nmax " << nmax
-                     << " num_prim " << num_prim
-                     << " part_per_add.size " << m_part_per_add.size()
-                     << " tran_per_add.size " << m_tran_per_add.size()
-                     ; 
+        LOG(warning) 
+            << " non-contiguous node indices"
+            << " nmin " << nmin 
+            << " nmax " << nmax
+            << " num_prim " << num_prim
+            << " part_per_add.size " << m_part_per_add.size()
+            << " tran_per_add.size " << m_tran_per_add.size()
+            ; 
     }
 }
 
@@ -1121,15 +1251,15 @@ void GParts::makePrimBuffer()
     unsigned int num_prim = 0 ; 
 
     if(m_verbosity > 0)
-    LOG(info) << "GParts::makePrimBuffer"
-              << " verbosity " << m_verbosity
-              << " isPartList " << isPartList()
-              << " isNodeTree " << isNodeTree()
-              << " parts_per_prim.size " << m_parts_per_prim.size()
-              << " part_per_add.size " << m_part_per_add.size()
-              << " tran_per_add.size " << m_tran_per_add.size()
-              << " plan_per_add.size " << m_plan_per_add.size()
-              ; 
+    LOG(info) 
+        << " verbosity " << m_verbosity
+        << " isPartList " << isPartList()
+        << " isNodeTree " << isNodeTree()
+        << " parts_per_prim.size " << m_parts_per_prim.size()
+        << " part_per_add.size " << m_part_per_add.size()
+        << " tran_per_add.size " << m_tran_per_add.size()
+        << " plan_per_add.size " << m_plan_per_add.size()
+        ; 
 
     if(isPartList())
     {
@@ -1150,14 +1280,14 @@ void GParts::makePrimBuffer()
 
 
     if(m_verbosity > 2)
-    LOG(info) << "GParts::makePrimBuffer"
-              << " verbosity " << m_verbosity
-              << " num_prim " << num_prim
-              << " parts_per_prim.size " << m_parts_per_prim.size()
-              << " part_per_add.size " << m_part_per_add.size()
-              << " tran_per_add.size " << m_tran_per_add.size()
-              << " plan_per_add.size " << m_plan_per_add.size()
-              ; 
+    LOG(info) 
+        << " verbosity " << m_verbosity
+        << " num_prim " << num_prim
+        << " parts_per_prim.size " << m_parts_per_prim.size()
+        << " part_per_add.size " << m_part_per_add.size()
+        << " tran_per_add.size " << m_tran_per_add.size()
+        << " plan_per_add.size " << m_plan_per_add.size()
+        ; 
 
     nivec4* priminfo = new nivec4[num_prim] ;
 
@@ -1184,7 +1314,7 @@ void GParts::makePrimBuffer()
             pri.w = plan_offset ; 
 
             if(m_verbosity > 2)
-            LOG(info) << "GParts::makePrimBuffer(nodeTree) priminfo " << pri.desc() ;       
+            LOG(info) << "priminfo " << pri.desc() ;       
 
             part_offset += parts_for_prim ; 
             tran_offset += tran_for_prim ; 
@@ -1271,26 +1401,28 @@ void GParts::dumpPrim(unsigned primIdx)
         else num_nonzeros++ ; 
 
         if(!iszero)
-        LOG(info) << " p " << std::setw(3) << p 
-                  << " partIdx " << std::setw(3) << partIdx
-                  << " typecode " << typecode
-                  << " CSGName " << CSGName((OpticksCSG_t)typecode)
-                  ;
+        LOG(info) 
+            << " p " << std::setw(3) << p 
+            << " partIdx " << std::setw(3) << partIdx
+            << " typecode " << typecode
+            << " CSGName " << CSGName((OpticksCSG_t)typecode)
+            ;
 
     }
 
-    LOG(info) << " primIdx "    << std::setw(3) << primIdx 
-              << " partOffset " << std::setw(3) << partOffset 
-              << " tranOffset " << std::setw(3) << tranOffset 
-              << " planOffset " << std::setw(3) << planOffset 
-              << " numParts_ "  << std::setw(3) << numParts_
-              << " numParts "   << std::setw(3) << numParts
-              << " num_zeros "   << std::setw(5) << num_zeros
-              << " num_nonzeros " << std::setw(5) << num_nonzeros
-              << " primFlag "   << std::setw(5) << primFlag 
-              << " CSGName "  << CSGName((OpticksCSG_t)primFlag) 
-              << " prim "       << gformat(prim)
-              ;
+    LOG(info) 
+        << " primIdx "    << std::setw(3) << primIdx 
+        << " partOffset " << std::setw(3) << partOffset 
+        << " tranOffset " << std::setw(3) << tranOffset 
+        << " planOffset " << std::setw(3) << planOffset 
+        << " numParts_ "  << std::setw(3) << numParts_
+        << " numParts "   << std::setw(3) << numParts
+        << " num_zeros "   << std::setw(5) << num_zeros
+        << " num_nonzeros " << std::setw(5) << num_nonzeros
+        << " primFlag "   << std::setw(5) << primFlag 
+        << " CSGName "  << CSGName((OpticksCSG_t)primFlag) 
+        << " prim "       << gformat(prim)
+        ;
 }
 
 
@@ -1324,11 +1456,12 @@ void GParts::dumpPrimInfo(const char* msg, unsigned lim )
     unsigned numPrim = getNumPrim() ;
     unsigned ulim = std::min( numPrim, lim ) ; 
 
-    LOG(info) << msg 
-              << " (part_offset, parts_for_prim, tran_offset, plan_offset) "
-              << " numPrim: " << numPrim 
-              << " ulim: " << ulim 
-              ;
+    LOG(info) 
+        << msg 
+        << " (part_offset, parts_for_prim, tran_offset, plan_offset) "
+        << " numPrim: " << numPrim 
+        << " ulim: " << ulim 
+        ;
 
     for(unsigned i=0 ; i < numPrim ; i++)
     {
@@ -1342,10 +1475,11 @@ void GParts::dumpPrimInfo(const char* msg, unsigned lim )
 
 void GParts::Summary(const char* msg, unsigned lim)
 {
-    LOG(info) << msg 
-              << " num_parts " << getNumParts() 
-              << " num_prim " << getNumPrim()
-              ;
+    LOG(info) 
+        << msg 
+        << " num_parts " << getNumParts() 
+        << " num_prim " << getNumPrim()
+        ;
  
     typedef std::map<unsigned int, unsigned int> UU ; 
     for(UU::const_iterator it=m_parts_per_prim.begin() ; it!=m_parts_per_prim.end() ; it++)
@@ -1385,7 +1519,11 @@ std::string GParts::desc()
 }
 
 
-unsigned int GParts::getNumPrim()
+
+
+
+
+unsigned GParts::getNumPrim() const 
 {
     return m_prim_buffer ? m_prim_buffer->getShape(0) : 0 ; 
 }
@@ -1447,12 +1585,12 @@ void GParts::enlargeBBox(unsigned int part, float epsilon)
     *(pmax+1 ) = max.y ; 
     *(pmax+2 ) = max.z ; 
 
-    LOG(debug) << "GParts::enlargeBBox"
-              << " part " << part 
-              << " epsilon " << epsilon
-              << " min " << gformat(min) 
-              << " max " << gformat(max)
-              ; 
+    LOG(debug) 
+        << " part " << part 
+        << " epsilon " << epsilon
+        << " min " << gformat(min) 
+        << " max " << gformat(max)
+        ; 
 
 }
 
@@ -1535,9 +1673,10 @@ std::string GParts::getBoundaryName(unsigned int part)
 
 void GParts::fulldump(const char* msg, unsigned lim)
 {
-    LOG(info) << msg 
-              << " lim " << lim 
-              ; 
+    LOG(info) 
+        << msg 
+        << " lim " << lim 
+        ; 
 
     dump(msg, lim);
     Summary(msg);
@@ -1551,12 +1690,11 @@ void GParts::fulldump(const char* msg, unsigned lim)
 
 void GParts::dump(const char* msg, unsigned lim)
 {
-
-
-    LOG(info) << msg
-              << " lim " << lim 
-              << " pbuf " << m_part_buffer->getShapeString()
-              ; 
+    LOG(info) 
+        << msg
+        << " lim " << lim 
+        << " pbuf " << m_part_buffer->getShapeString()
+        ; 
 
     dumpPrimInfo(msg, lim);
 
@@ -1570,11 +1708,11 @@ void GParts::dump(const char* msg, unsigned lim)
 
     unsigned ulim = std::min( ni, lim ) ; 
 
-    LOG(info) << "GParts::dump"
-              << " ni " << ni 
-              << " lim " << lim
-              << " ulim " << ulim
-              ; 
+    LOG(info) 
+        << " ni " << ni 
+        << " lim " << lim
+        << " ulim " << ulim
+        ; 
 
     assert( nj == NJ );
     assert( nk == NK );

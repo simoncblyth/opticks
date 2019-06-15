@@ -48,6 +48,44 @@ Can GParts combine be made higher level (and hence deferable postcache) ?
 
 
 
+Checking creation of GParts postcache with GPtsTest 
+--------------------------------------------------------
+
+::
+
+    2019-06-15 23:44:58.547 INFO  [21706] [GParts::Compare@57] 
+                                   qty                                 A                                 B
+                                  Name                              NULL                              NULL
+                                BndLib                         0x1140b00                         0x1140b00
+                                Closed                                 1                                 1
+                                Loaded                                 1                                 0
+                        PrimFlagString                      flagnodetree                      flagnodetree
+                              NumParts                                31                                31
+                               NumPrim                                 1                                 1
+                                  prim  e1a7612fac70b684990129fedf3b8ce7  e1a7612fac70b684990129fedf3b8ce7
+                                   idx  614ed949cf70802dab93ed8fb14578f6  535302f0401f8d763415925ce5b3acc1
+                                  part  c9150c5e22f758aded28d128c69912da  c9150c5e22f758aded28d128c69912da
+                                  tran  e95415b9ce12a474595951b44d131b0d  e95415b9ce12a474595951b44d131b0d
+                                  plan  d41d8cd98f00b204e9800998ecf8427e  d41d8cd98f00b204e9800998ecf8427e
+
+
+Get discrepant idxBuffer::
+
+
+    [blyth@localhost GPtsTest]$ np.py parts/idxBuffer.npy -iFv
+    a :                                          parts/idxBuffer.npy :               (1, 4) : d988f81268f2555ea952d45d32060d08 : 20190615-2344 
+    (1, 4)
+    i32
+    [[[63554    16    16     4]]]
+    [blyth@localhost GPtsTest]$ np.py parts2/idxBuffer.npy -iFv
+    a :                                         parts2/idxBuffer.npy :               (1, 4) : 000516c4738eac9ef5392eaa5fafe0f0 : 20190615-2344 
+    (1, 4)
+    i32
+    [[[63075    16    16     4]]]
+
+
+
+
 
 Issue 1 : For large CSG trees : Geant4 needs unbalanced, my GPU CSG needs balanced : how to reconcile ?
 ----------------------------------------------------------------------------------------------------------------

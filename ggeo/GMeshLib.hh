@@ -58,6 +58,8 @@ class GGEO_API GMeshLib
         const GMesh*  getMeshWithIndex(unsigned aindex) const ;  // first mesh in m_meshes addition order with getIndex() matching aindex 
         const GMesh*  getMeshWithName(const char* name, bool startswith) const ;
         const NCSG*   getSolidWithIndex(unsigned aindex) const ;  // first mesh in m_solids addition order with getIndex() matching aindex 
+
+        const std::vector<const NCSG*>& getSolids() const ; 
     private:
         int         findMeshIndex( const GMesh* mesh ) const ; 
         int         findSolidIndex( const NCSG* solid ) const ; 
