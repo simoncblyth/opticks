@@ -896,11 +896,13 @@ unsigned X4PhysicalVolume::addBoundary(const G4VPhysicalVolume* const pv, const 
 X4PhysicalVolume::convertNode
 --------------------------------
 
-* suspect the parallel tree is for gltf creation ?
+* creates pts(GParts) from the csg(NCSG) associated to the mesh(GMesh) for the lvIdx solid. 
+
+* pts(GParts) are associated to the GVolume returned for structural node
+
+* suspect the parallel tree is for gltf creation only ?
 
 * observe the NSensor is always NULL here 
-
-
 
 **/
 
@@ -932,7 +934,6 @@ GVolume* X4PhysicalVolume::convertNode(const G4VPhysicalVolume* const pv, GVolum
 
      GParts* pts = GParts::Make( csg, boundaryName.c_str() );  // see GScene::createVolume 
      pts->setBndLib(m_blib);
-
 
 
      //  boundary name is a node level thing, not mesh level : so forced to do GParts::make at node level

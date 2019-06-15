@@ -28,11 +28,15 @@
 #include "GMaterialLib.hh"
 #include "GSurfaceLib.hh"
 #include "GBndLib.hh"
+
+#ifdef OLD_GGEOTEST
 #include "GPmtLib.hh"
+#include "GPmt.hh"
+#endif
+
 #include "GMeshLib.hh"
 
 #include "GMergedMesh.hh"
-#include "GPmt.hh"
 #include "GVolume.hh"
 
 #include "GNodeLib.hh"
@@ -66,8 +70,12 @@ NCSG*           GGeoTest::getUniverse() const  { return m_csglist ? m_csglist->g
 GScintillatorLib* GGeoTest::getScintillatorLib() const { return m_basis->getScintillatorLib() ; }
 GSourceLib*       GGeoTest::getSourceLib() const {       return m_basis->getSourceLib() ; }
 
+
+#ifdef OLD_GGEOTEST
 // local copy of m_basis pointer
 GPmtLib*          GGeoTest::getPmtLib() const {          return m_pmtlib ; }
+#endif
+
 
 // local residents backed by corresponding basis libs 
 GBndLib*          GGeoTest::getBndLib() const {          return m_bndlib ;  }
@@ -114,7 +122,9 @@ GGeoTest::GGeoTest(Opticks* ok, GGeoBase* basis)
     m_csgpath(m_config->getCSGPath()),
     m_test(true),
     m_basis(basis),
+#ifdef OLD_GGEOTEST
     m_pmtlib(basis->getPmtLib()),
+#endif
     m_meshlib(basis->getMeshLib()),
     m_mlib(new GMaterialLib(m_ok, basis->getMaterialLib())),
     m_slib(new GSurfaceLib(m_ok, basis->getSurfaceLib())),
@@ -133,7 +143,9 @@ void GGeoTest::init()
 {
     LOG(LEVEL) << "[" ;
 
-    GMergedMesh* tmm_ = m_config->isNCSG() ? initCreateCSG() : initCreateBIB() ;
+    assert( m_config->isNCSG() ); 
+
+    GMergedMesh* tmm_ = initCreateCSG() ;
 
     if(!tmm_)
     {
@@ -539,50 +551,6 @@ void GGeoTest::assignBoundaries()
 
 
 
-/**
-GGeoTest::initCreateBIB
-------------------------
-
-This is almost ready to be deleted, once 
-succeed to wheel in standard solids
-via some proxying metadata in the csglist.
-
-**/
-
-GMergedMesh* GGeoTest::initCreateBIB()
-{
-    const char* mode = m_config->getMode();
-    unsigned nelem = m_config->getNumElements();
-    if(nelem == 0 )
-    {
-        LOG(fatal) << " NULL csgpath and config nelem zero  " ; 
-        m_config->dump("GGeoTest::initCreateBIB ERROR nelem==0 " ); 
-    }
-    assert(nelem > 0);
-
-    GMergedMesh* tmm = NULL ;
-
-    if(m_config->isBoxInBox()) 
-    {
-        createBoxInBox(); 
-        labelPartList() ;
-        tmm = combineVolumes(NULL);
-    }
-    else if(m_config->isPmtInBox())
-    {
-        assert(0); 
-    }
-    else 
-    { 
-        LOG(fatal) << "mode not recognized [" << mode << "]" ; 
-        assert(0);
-    }
-
-    return tmm ; 
-}
-
-
-
 
 NCSG* GGeoTest::getTree(unsigned index) const 
 {
@@ -695,174 +663,6 @@ void GGeoTest::reuseMaterials(const char* spec)
 
 
 /**
-GGeoTest::labelPartList
----------------------------
-
-PartList geometry is implemented by allowing a single "primitive" to be composed of multiple
-"parts", the association from part to prim being 
-controlled via the primIdx attribute of each part.
-
-collected pts are converted into primitives in GParts::makePrimBuffer
-
-NB Partlist test geometry was created 
-   via simple simple commandline strings. 
-   It is the precursor to proper CSG Trees, which are implemented 
-   with NCSG and created using python opticks.analytic.csg.CSG.
-
-**/
-
-void GGeoTest::labelPartList()
-{
-    for(unsigned i=0 ; i < m_nodelib->getNumVolumes() ; i++)
-    {
-        GVolume* volume = m_nodelib->getVolume(i) ;
-        GParts* pts = volume->getParts();
-        assert(pts);
-        assert(pts->isPartList());
-
-        OpticksCSG_t csgflag = volume->getCSGFlag(); 
-        int flags = csgflag ;
-
-        pts->setIndex(0u, i);
-        pts->setNodeIndex(0u, 0 );  
-        //
-        // for CSG_FLAGPARTLIST the nodeIndex is crucially used to associate parts to their prim 
-        // setting all to zero is structuring all parts into a single prim ... 
-        // can get away with that for BoxInBox (for now)
-        // but would definitely not work for PmtInBox 
-        //
-
-        pts->setTypeCode(0u, flags);
-
-        pts->setBndLib(m_bndlib);
-
-        LOG(info) << "GGeoTest::labelPartList"
-                  << " i " << std::setw(3) << i 
-                  << " csgflag " << std::setw(5) << csgflag 
-                  << std::setw(20) << CSGName(csgflag)
-                  << " pts " << pts 
-                  ;
-    }
-}
-
-/**
-GGeoTest::makeVolumeFromConfig
----------------------------------
-
-* partlist geometry from commandline strings
-
-**/
-
-GVolume* GGeoTest::makeVolumeFromConfig( unsigned i ) // setup nodeIndex here ?
-{
-    std::string node = m_config->getNodeString(i);
-    OpticksCSG_t type = m_config->getTypeCode(i);
-
-    const char* spec = m_config->getBoundary(i);
-    glm::vec4 param = m_config->getParameters(i);
-    glm::mat4 trans = m_config->getTransform(i);
-    unsigned boundary = m_bndlib->addBoundary(spec);
-
-    LOG(info) 
-        << " i " << std::setw(2) << i 
-        << " node " << std::setw(20) << node
-        << " type " << std::setw(2) << type 
-        << " csgName " << std::setw(15) << CSGName(type)
-        << " spec " << spec
-        << " boundary " << boundary
-        << " param " << gformat(param)
-        << " trans " << gformat(trans)
-        ;
-
-    bool oktype = type < CSG_UNDEFINED ;  
-    if(!oktype) LOG(fatal) << "GGeoTest::makeVolumeFromConfig configured node not implemented " << node ;
-    assert(oktype);
-
-    GVolume* volume = m_maker->make(i, type, param, spec );   
-    GParts* pts = volume->getParts();
-    assert(pts);
-    pts->setPartList(); // setting primFlag to CSG_FLAGPARTLIST
-    pts->setBndLib(m_bndlib) ; 
-
-    return volume ; 
-}
-
-
-void GGeoTest::createBoxInBox()
-{
-    unsigned nelem = m_config->getNumElements();
-    for(unsigned i=0 ; i < nelem ; i++)
-    {
-        GVolume* volume = makeVolumeFromConfig(i);
-        m_nodelib->add(volume);
-    }
-}
-
-
-
-/**
-GGeoTest::createPmtInBox
---------------------------
-
-* hmm : suspect this was a dirty hack
-
-**/
-
-GMergedMesh* GGeoTest::createPmtInBox()
-{
-    assert( m_config->getNumElements() == 1 && "GGeoTest::createPmtInBox expecting single container " );
-
-    GVolume* container = makeVolumeFromConfig(0); 
-    const char* spec = m_config->getBoundary(0);
-    const char* container_inner_material = m_bndlib->getInnerMaterialName(spec);
-    const char* medium = m_ok->getAnalyticPMTMedium();
-    assert( strcmp( container_inner_material, medium ) == 0 );
-
-
-    //GMergedMesh* mmpmt = loadPmtDirty();
-    GMergedMesh* mmpmt = m_pmtlib->getPmt() ;
-    assert(mmpmt);
-
-    unsigned pmtNumVolumes = mmpmt->getNumVolumes() ; 
-    container->setIndex( pmtNumVolumes );   // <-- HMM: MAYBE THIS SHOULD FEED INTO GParts::setNodeIndex ?
-
-    LOG(info) 
-        << " spec " << spec 
-        << " container_inner_material " << container_inner_material
-        << " pmtNumVolumes " << pmtNumVolumes
-        ; 
-
-    GMesh* mesh = const_cast<GMesh*>(container->getMesh()); // TODO: reorg to avoid 
-    mesh->setIndex(1000);
-    
-    GParts* cpts = container->getParts() ;
-
-    cpts->setPrimFlag(CSG_FLAGPARTLIST);  // PmtInBox uses old partlist, not the default CSG_FLAGNODETREE
-    cpts->setAnalyticVersion(mmpmt->getParts()->getAnalyticVersion()); // follow the PMT version for the box
-    cpts->setNodeIndex(0, pmtNumVolumes);   // NodeIndex used to associate parts to their prim, fixed 5-4-2-1-1 issue yielding 4-4-2-1-1-1
-
-    GMergedMesh* triangulated = GMergedMesh::combine( mmpmt->getIndex(), mmpmt, container, m_verbosity );   
-
-    // hmm this is putting the container at the end... does that matter ?
-
-    if(m_verbosity > 1)
-    triangulated->dumpVolumes("GGeoTest::createPmtInBox GMergedMesh::dumpVolumes combined (triangulated) ");
-
-    // needed by OGeo::makeAnalyticGeometry
-    NPY<unsigned int>* idBuf = mmpmt->getAnalyticInstancedIdentityBuffer();
-    NPY<float>* itransforms = mmpmt->getITransformsBuffer();
-
-    assert(idBuf);
-    assert(itransforms);
-
-    triangulated->setAnalyticInstancedIdentityBuffer(idBuf);
-    triangulated->setITransformsBuffer(itransforms);
-
-    return triangulated ; 
-}
-
-
-/**
 GGeoTest::combineVolumes
 ==========================
 
@@ -916,6 +716,39 @@ GMergedMesh* GGeoTest::combineVolumes(GMergedMesh* mm0)
 
 
 
+
+
+/**
+GGeoTest::MakeArgForce
+------------------------
+
+Used by OpticksHubTest 
+
+TODO: maybe eliminate or move to test, once return to that context
+
+**/
+const char* GGeoTest::MakeArgForce(const char* funcname, const char* extra)
+{
+    std::string argforce = MakeArgForce_(funcname, extra);
+    return strdup(argforce.c_str());
+}
+
+
+std::string GGeoTest::MakeArgForce_(const char* funcname, const char* extra)
+{
+    std::stringstream ss ; 
+    ss  
+       << "--test"
+       << " " 
+       << "--testconfig"
+       << " " 
+       << MakeTestConfig_(funcname)
+       ;   
+
+    if(extra) ss << " " << extra ; 
+    return ss.str() ;
+}
+
 std::string GGeoTest::MakeTestConfig_(const char* funcname)
 {
     std::stringstream ss ; 
@@ -934,27 +767,6 @@ std::string GGeoTest::MakeTestConfig_(const char* funcname)
     return ss.str() ;
 }
 
-std::string GGeoTest::MakeArgForce_(const char* funcname, const char* extra)
-{
-    std::stringstream ss ; 
-    ss  
-       << "--test"
-       << " " 
-       << "--testconfig"
-       << " " 
-       << MakeTestConfig_(funcname)
-       ;   
-
-    if(extra) ss << " " << extra ; 
- 
-    return ss.str() ;
-}
-
-const char* GGeoTest::MakeArgForce(const char* funcname, const char* extra)
-{
-    std::string argforce = MakeArgForce_(funcname, extra);
-    return strdup(argforce.c_str());
-}
 
 
 /**

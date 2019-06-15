@@ -7,19 +7,16 @@
 #include <glm/fwd.hpp>
 #include "plog/Severity.h"
 #include "OpticksCSG.h"
+#include "NBBox.hpp"
 
 struct npart ; 
 struct NSlice ; 
 template <typename T> class NPY ;
 template <typename T> class GMatrix ;
 
-#include "NCSG.hpp"
+class NCSG ; 
 
-//class NCSG ; 
-
-//struct guint4 ; 
 struct nivec4 ; 
-
 struct gbbox ; 
 struct gfloat3 ; 
 
@@ -31,112 +28,121 @@ class GBndLib ;
 GParts
 ======= 
 
-Creates *primitive* buffer (formerly called *solid*) from the *parts* buffer
-the *parts* buffer .npy for DYB PMT geometry is created by detdesc partitioning with pmt-/tree.py 
-OR for test geometries it is created part-by-part using methods of the npy primitive structs, see eg::
+* handles the concatenation of analytic geometry, by combination
+  of GParts instances
 
-   npy/NPart.hpp
-   npy/NSphere.hpp 
+* creates *primitive* buffer from the *parts* buffer
 
+* holds boundary specifications as lists of strings
+  that are only converted into actual boundaries with indices pointing 
+  at materials and surface by GParts::registerBoundaries which 
+  is invoked by GParts::close which happens late 
+  (typically within oxrap just before upload to GPU). 
 
-GParts holds boundary specifications as lists of strings
-that are only converted into actual boundaries with indices pointing 
-at materials and surface by GParts::registerBoundaries which 
-is invoked by GParts::close which happens late 
-(typically within oxrap just before upload to GPU). 
+  This approach was adopted to allow dynamic addition of geometry and
+  boundaries, which is convenient for testing.
 
-This approach was adopted to allow dynamic addition of geometry and
-boundaries, which is convenient for testing.
-
-Lifecycle
------------
-
-Single Tree GParts created from from NCSG by GScene
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-GParts are created from the NCSG in GScene::createVolume where they get attached to a GVolume::
-
-    629 GVolume* GScene::createVolume(nd* n, unsigned depth, bool& recursive_select  ) // compare with AssimpGGeo::convertStructureVisit
-    630 {
-    ...
-    644     NCSG*   csg =  getCSG(rel_mesh_idx);
-
-    661     std::string bndspec = lookupBoundarySpec(solid, n);  // using just transferred boundary from tri branch
-    662 
-    663     GParts* pts = GParts::make( csg, bndspec.c_str(), m_verbosity  ); // amplification from mesh level to node level 
-    664 
-    665     pts->setBndLib(m_tri_bndlib);
-    666 
-    667     solid->setParts( pts );
+* the GParts name derives from the history of being used to hold single primitive
+  parts of Daya Bay PMT which were created by detdesc partitioning 
+  from python (pmt-/tree.py) 
 
 
-Merged GParts are born with GMergedMesh
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Lifecycle Summary
+-----------------------
+
+* single tree(ie single solid) GParts created from NCSG by X4PhysicalVolume::convertNode 
+  on first encountering an lvIdx, where they get attached to a GVolume
+
+* single tree GParts are merged together into combination GParts by GMergedMesh::mergeVolumeAnalytic
+  where placement transforms are applied with GParts::applyPlacementTransform  
+
+* combinend GParts are uses by OGeo::makeAnalyticGeometry to GParts::close and upload the GParts
+  buffers into the OptiX context on GPU 
+
+
+Details on where GParts is used
+-------------------------------------
+
+Based on *opticks-fl GParts.hh*
 
 ::
 
-     45 GMergedMesh::GMergedMesh(unsigned int index)
-     46        :
-     47        GMesh(index, NULL, 0, NULL, 0, NULL, NULL),
-     48        m_cur_vertices(0),
-     49        m_cur_faces(0),
-     50        m_cur_solid(0),
-     51        m_num_csgskip(0),
-     52        m_cur_base(NULL),
-     53        m_parts(new GParts())
-     54 {
-     55 }
+    ./ggeo/CMakeLists.txt
+    ./ggeo/GParts.cc
+         setup 
+
+    ./ggeo/GPmt.cc
+    ./ggeo/tests/GPmtTest.cc
+    ./ggeo/GScene.cc
+         near dead code : to be removed     
+
+    ./extg4/tests/X4PhysicalVolume2Test.cc
+    ./extg4/tests/X4SolidTest.cc
+    ./ggeo/tests/GPartsTest.cc
+         tests 
+
+    ./extg4/X4PhysicalVolume.cc
+
+         X4PhysicalVolume::convertNode 
+             within the visit of X4PhysicalVolume::convertStructure_r
+             GParts::Make creates GParts instance from the NCSG 
+             associated to the GMesh for the lvIdx solid.  The GParts
+             are associated with the GVolume. 
+
+    ./ggeo/GMergedMesh.cc
+
+         GMergedMesh::mergeMergedMesh
+             GParts::add the pts from an "other" GMergedMesh into m_parts
+
+         GMergedMesh::mergeVolume
+             invokes GMergedMesh::mergeVolumeAnalytic with the pts 
+             and transform associated to the GVolume.  
+             The transform is the base or root relative flobal transform
+
+         GMergedMesh::mergeVolumeAnalytic
+             GParts::add the pts argument after GParts::applyPlacementTransform
+             is applied to them, using transform argument
+
+    ./ggeo/GGeoLib.cc
+
+          GGeoLib::loadConstituents
+              GParts::Load and associates them with corresponding GMergedMesh also loaded  
+
+          GGeoLib::saveConstituents
+              GParts::save  
 
 
-GParts merging happens via GMergedMesh::mergeVolumeAnalytic
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    ./ggeo/GGeoTest.cc
 
-::
+         GGeoTest::importCSG
+              GParts::setIndex to the collected m_meshes index           
 
-    525 void GMergedMesh::mergeVolumeAnalytic( GParts* pts, GMatrixF* transform, unsigned verbosity )
-    526 {
-    527     // analytic CSG combined at node level  
-    ...
-    535     if(transform && !transform->isIdentity())
-    536     {
-    537         pts->applyPlacementTransform(transform, verbosity );
-    538     }
-    539     m_parts->add(pts, verbosity);
-    540 }
+    ./ggeo/GMaker.cc
 
+         GMaker::makeFromMesh
+              GParts::Make from NCSG instance and spec : used 
+              from GGeoTest  
 
-Primary GParts usage by OGeo::makeAnalyticGeometry feeding cu/intersect_analytic.cu
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-::
-
-    470 optix::Geometry OGeo::makeAnalyticGeometry(GMergedMesh* mm)
-    471 {
-    ...
-    480     GParts* pts = mm->getParts(); assert(pts && "GMergedMesh with GEOCODE_ANALYTIC must have associated GParts, see GGeo::modifyGeometry ");
-    481 
-    482     if(pts->getPrimBuffer() == NULL)
-    483     {
-    485         pts->close();
-    487     } 
-    ... 
-    496     NPY<float>*     partBuf = pts->getPartBuffer(); assert(partBuf && partBuf->hasShape(-1,4,4));    // node buffer
-    497     NPY<float>*     tranBuf = pts->getTranBuffer(); assert(tranBuf && tranBuf->hasShape(-1,3,4,4));  // transform triples (t,v,q) 
-    498     NPY<float>*     planBuf = pts->getPlanBuffer(); assert(planBuf && planBuf->hasShape(-1,4));      // planes used for convex polyhedra such as trapezoid
-    499     NPY<int>*       primBuf = pts->getPrimBuffer(); assert(primBuf && primBuf->hasShape(-1,4));      // prim
-    500     NPY<unsigned>*  idBuf = mm->getAnalyticInstancedIdentityBuffer(); assert(idBuf && ( idBuf->hasShape(-1,4) || idBuf->hasShape(-1,1,4)));
-    501      // PmtInBox yielding -1,1,4 ?
-    502 
+         GMaker::make 
+         GMaker::makePrism
+              GParts::Make from parameters, type and spec : used for 
+              creation of simple geometries   
 
 
+    ./optixrap/OGeo.cc
+
+          OGeo::makeAnalyticGeometry
+              GParts::close constructs the primBuffer, also uploads the
+              various buffers prim/tran/part/identity into OptiX context on GPU 
+              
 
 Mesh-type or node-type
-~~~~~~~~~~~~~~~~~~~~~~~~~
+--------------------------
 
-Hmm boundary spec is a node-type-qty, not a mesh-type-qty 
+Boundary spec is a node-type-qty, not a mesh-type-qty 
 so it does not belong inside GParts (a mesh-type-qty)
 ... there are relatively few mesh-type-qty for 
-each distinct shape (~249), but much more node-type-qty (~12k)
+each distinct shape (~249 DYB), but much more node-type-qty (~12k DYB)
  
 BUT: GParts combination means that it kinda transitions 
 between mesh-type when just for a single unplaced shape
@@ -193,14 +199,14 @@ class GGEO_API GParts {
         GParts(NPY<unsigned>* idxBuf, NPY<float>* partBuf, NPY<float>* tranBuf, NPY<float>* planBuf, const char* spec, GBndLib* bndlib=NULL);
         GParts(NPY<unsigned>* idxBuf, NPY<float>* partBuf, NPY<float>* tranBuf, NPY<float>* planBuf, GItemList* spec, GBndLib* bndlib=NULL);
    public:
-        void setName(const char* name);
-        void setBndLib(GBndLib* blib);
-        void setVerbosity(unsigned verbosity); 
-        unsigned getVerbosity() const ; 
         void add(GParts* other, unsigned verbosity);
         void close();
-        void enlargeBBox(unsigned int part, float epsilon=0.00001f);
-        void enlargeBBoxAll(float epsilon=0.00001f);
+   public:
+        void     setBndLib(GBndLib* blib);
+        void     setVerbosity(unsigned verbosity); 
+        unsigned getVerbosity() const ; 
+        void     enlargeBBox(unsigned int part, float epsilon=0.00001f);
+        void     enlargeBBoxAll(float epsilon=0.00001f);
     public:
         // transients for debugging convenience when made from NCSG
         void setCSG(const NCSG* csg);
@@ -209,62 +215,57 @@ class GGEO_API GParts {
         void init(const char* spec);        
         void init();        
     public: 
-        const char*  getName();
+        void         setName(const char* name);
+        const char*  getName() const ;
 
-        bool isPartList();
-        bool isNodeTree();
-        bool isInvisible();
+
         bool isClosed();
         bool isLoaded();
 
-        void setInvisible();
-        void setPartList();
-        void setNodeTree();
-
         std::string id() const ; 
 
-        unsigned int getIndex(unsigned int part);
-        unsigned int getTypeCode(unsigned int part);
-        unsigned int getNodeIndex(unsigned int part);
-        unsigned int getBoundary(unsigned int part);
+        unsigned getIndex(unsigned part);
+        unsigned getTypeCode(unsigned part);
+        unsigned getNodeIndex(unsigned part);
+        unsigned getBoundary(unsigned part);
 
         unsigned getAnalyticVersion();
-        void setAnalyticVersion(unsigned vers);
+        void     setAnalyticVersion(unsigned vers);
     private: 
         void setLoaded(bool loaded=true);
     public: 
-        std::string  getBoundaryName(unsigned int part);
-        const char*  getTypeName(unsigned int part);
+        std::string  getBoundaryName(unsigned part);
+        const char*  getTypeName(unsigned part);
    private:
-        nbbox        getBBox(unsigned int i);
-        gfloat3      getGfloat3(unsigned int i, unsigned int j, unsigned int k);
-        float*       getValues(unsigned int i, unsigned int j, unsigned int k);
+        nbbox        getBBox(unsigned i);
+        gfloat3      getGfloat3(unsigned i, unsigned j, unsigned k);
+        float*       getValues(unsigned i, unsigned j, unsigned k);
     public:
-        nivec4       getPrimInfo(unsigned int iprim);
+        nivec4       getPrimInfo(unsigned iprim);
    public:
-        void setIndex(unsigned int part, unsigned int index);
-        void setTypeCode(unsigned int part, unsigned int typecode);
-        void setNodeIndex(unsigned int part, unsigned int nodeindex);  // caution slot is used for GTRANFORM index GPU side
-        void setBoundary(unsigned int part, unsigned int boundary);
+        void setIndex(unsigned part, unsigned index);
+        void setTypeCode(unsigned part, unsigned typecode);
+        void setNodeIndex(unsigned part, unsigned nodeindex);  // caution slot is used for GTRANFORM index GPU side
+        void setBoundary(unsigned part, unsigned boundary);
    public:
-        void setBoundaryAll(unsigned int boundary);
-        void setNodeIndexAll(unsigned int nodeindex);
+        void setBoundaryAll(unsigned boundary);
+        void setNodeIndexAll(unsigned nodeindex);
     public:
-        GBndLib*           getBndLib();
-        GItemList*         getBndSpec();
-        unsigned int       getNumPrim();
-        unsigned int       getNumParts() const ;
-        unsigned int       getNumIdx() const ;
-        unsigned int       getPrimNumParts(unsigned int prim_index);
-        std::string        desc(); 
+        GBndLib*       getBndLib();
+        GItemList*     getBndSpec();
+        unsigned       getNumPrim();
+        unsigned       getNumParts() const ;
+        unsigned       getNumIdx() const ;
+        unsigned       getPrimNumParts(unsigned int prim_index);
+        std::string    desc(); 
     public:
-        NPY<unsigned>*     getIdxBuffer() const ;
-        NPY<int>*          getPrimBuffer() const ;
-        NPY<float>*        getPartBuffer() const ;
-        NPY<float>*        getTranBuffer() const ; // inverse transforms IR*IT ie inverse of T*R 
-        NPY<float>*        getPlanBuffer() const ; // planes used by convex polyhedra such as trapezoid
+        NPY<unsigned>* getIdxBuffer() const ;
+        NPY<int>*      getPrimBuffer() const ;
+        NPY<float>*    getPartBuffer() const ;
+        NPY<float>*    getTranBuffer() const ; // inverse transforms IR*IT ie inverse of T*R 
+        NPY<float>*    getPlanBuffer() const ; // planes used by convex polyhedra such as trapezoid
     public:
-        NPY<float>*        getBuffer(const char* tag) const ;
+        NPY<float>*    getBuffer(const char* tag) const ;
     public:
         void fulldump(const char* msg="GParts::fulldump", unsigned lim=10 );
         void dump(const char* msg="GParts::dump", unsigned lim=10 );
@@ -291,13 +292,24 @@ class GGEO_API GParts {
         void setIdxBuffer(NPY<unsigned>*  idx_buffer);
         void setTranBuffer(NPY<float>* tran_buffer);
         void setPlanBuffer(NPY<float>* plan_buffer);
-        void setPrimFlag(OpticksCSG_t primflag);
-        OpticksCSG_t getPrimFlag(); 
-        const char*  getPrimFlagString() const ; 
 
     private:
-       unsigned int getUInt(unsigned int part, unsigned int j, unsigned int k);
-       void         setUInt(unsigned int part, unsigned int j, unsigned int k, unsigned int value);
+        void         setPrimFlag(OpticksCSG_t primflag);
+        OpticksCSG_t getPrimFlag() const ; 
+        const char*  getPrimFlagString() const ; 
+    public:
+        bool isPartList() const ;
+        bool isNodeTree() const ;
+        bool isInvisible() const ;
+
+        void setInvisible();
+        void setPartList();
+        void setNodeTree();
+
+
+    private:
+       unsigned int getUInt(unsigned part, unsigned j, unsigned k);
+       void         setUInt(unsigned part, unsigned j, unsigned k, unsigned value);
 
     public:
         // for global pieces of geometry its useful to keep

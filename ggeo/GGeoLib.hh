@@ -18,7 +18,9 @@ class GNode ;
 GGeoLib
 ==========
 
-Container for GMergedMesh
+Container for GMergedMesh and associated GParts that handles persistency
+of the objects, including their association.
+
 
 Instances::
 

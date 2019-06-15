@@ -11,7 +11,8 @@ Overview
 ----------
 
 * after implementing back translation from ncylinder to G4Polycone for non z-symmetric cylinders 
-   the asserts of 22,26,27,37,38 are fixed leaving just the "temple" 16 (sFasteners)
+  the asserts of 22,26,27,37,38 are fixed leaving just the "temple" 16 (sFasteners)
+  covering the details for that in :doc:`x016`
 
 
 assertive six : dirty half-dozen : 5 of them (at least) with non-z-symmetric ncylinder to G4Tubs asserts 
@@ -67,7 +68,7 @@ Investigate g4codegen fail for x016 sFasteners
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * :doc:`g4codegen_review`
-
+* :doc:`x016`
 
 
 Revived x4gen-- for easy access to what is special about this 6 : 5 at least using polycone

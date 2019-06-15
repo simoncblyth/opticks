@@ -15,7 +15,12 @@ class GGeoLib ;
 class GMaterialLib ; 
 class GSurfaceLib ; 
 class GBndLib ; 
+
+
+#ifdef OLD_GGEOTEST
 class GPmtLib ;   // <-- aim to remove
+#endif
+
 class GMeshLib ; 
 class GNodeLib ; 
 
@@ -67,7 +72,6 @@ class GGEO_API GGeoTest : public GGeoBase {
     private:
        void init();
        GMergedMesh* initCreateCSG();
-       GMergedMesh* initCreateBIB();
        void setErr(int err); 
     public:
        // GGeoBase
@@ -79,7 +83,6 @@ class GGEO_API GGeoTest : public GGeoBase {
        GMeshLib*         getMeshLib() const ;
 
        GBndLib*          getBndLib() const ;    
-       GPmtLib*          getPmtLib() const ;
        GGeoLib*          getGeoLib() const ;
        GNodeLib*         getNodeLib() const ;
 
@@ -109,11 +112,7 @@ class GGEO_API GGeoTest : public GGeoBase {
        void         importCSG();
        GMesh*       importMeshViaProxy(NCSG* tree); 
        void         assignBoundaries();
-       void         createBoxInBox();
-       void         labelPartList();
 
-       GVolume*      makeVolumeFromConfig( unsigned i );
-       GMergedMesh* createPmtInBox();
 
     private:
        Opticks*         m_ok ; 
@@ -132,7 +131,6 @@ class GGEO_API GGeoTest : public GGeoBase {
     private:
        // base geometry and stolen libs 
        GGeoBase*        m_basis ; 
-       GPmtLib*         m_pmtlib ; 
        GMeshLib*        m_meshlib ; 
    private:
        // local resident libs

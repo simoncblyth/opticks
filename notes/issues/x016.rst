@@ -5,19 +5,45 @@ Context
 ------------
 
 * :doc:`g4codegen_review`
+* :doc:`tboolean-proxylv-CMaker-MakeSolid-asserts`
+* ggeo/GParts.hh added a review of where GParts is used
 
 
-Issue 1 : attempt to avoid
-------------------------------
+
+
+Overview
+-----------
+
+getting the back translation of the temple sFastener to work requires 
+unbalanced NCSG, but my GPU CSG requires balanced node tree.  
+
+* Have arranged for alt GMesh/NCSG references to survive the geocache 
+  within GMeshLibNCSG : so have access to balanced and unbalanced postcache
+
+* But thats just the start : also need alt GParts and GMergedMesh too ?   
+
+* maybe easier to defer balanching and do it postcache, just before upload to GPU ? 
+
+* Hmm problem with defered balancing is that would then need to defer the GParts concatenation ?
+
+* unclear which way is easier/best 
+
+* added review of GParts lifecycle to docs in ggeo/GParts.hh 
+
+
+
+
+
+
+
+Issue 1 : For large CSG trees : Geant4 needs unbalanced, my GPU CSG needs balanced : how to reconcile ?
+----------------------------------------------------------------------------------------------------------------
 
 * https://bitbucket.org/simoncblyth/opticks/commits/c9b8ed3b33624d74b6b38e17d6a5708777f84732
 
 1. rejig GMeshLib to be based on GItemList rather than GItemIndex
-2. record where an NCSG has been balanced
-
-
-TODO: keep and alt index reference in NCSG metadata
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+2. record whether an NCSG has been balanced in metadata
+3. arrange the persisting if GMesh alt relationships using NCSG metadata
 
 
 X4PhysicalVolume::convertSolids_r
@@ -40,7 +66,6 @@ retaining alt/other refs
 
 The lvIdx cannot be used : need to use a "libindex" 
 
- 
 
 Lifecycle of the issue :  when does balancing happen ?
 ---------------------------------------------------------
@@ -318,8 +343,6 @@ Rearranging GMeshLib to use GItemList instead of GItemIndex has caused some brea
       32 /34  Test #32 : CFG4Test.CCerenkovGeneratorTest               Child aborted***Exception:     0.35   
       33 /34  Test #33 : CFG4Test.CGenstepSourceTest                   Child aborted***Exception:     0.34   
       1  /1   Test #1  : OKG4Test.OKG4Test                             Child aborted***Exception:     0.45   
-    [blyth@localhost ggeo]$ 
-    [blyth@localhost ggeo]$ 
 
 
 

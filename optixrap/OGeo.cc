@@ -584,6 +584,17 @@ OGeometry* OGeo::makeOGeometry(GMergedMesh* mergedmesh, unsigned lod)
 }
 
 
+/**
+OGeo::makeAnalyticGeometry
+----------------------------
+
+The GParts instance that this operates from will usually 
+have been concatenated from multiple other GParts instances, 
+one for each NCSG solid.  GParts concatenation happens during 
+GMergedMesh formation in GMergedMesh::mergeVolumeAnalytic.
+
+**/
+
 optix::Geometry OGeo::makeAnalyticGeometry(GMergedMesh* mm, unsigned lod)
 {
     m_lodidx = lod ; 

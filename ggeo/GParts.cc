@@ -12,6 +12,7 @@
 
 // npy-
 
+#include "NCSG.hpp"
 #include "NBBox.hpp"
 #include "NGLMExt.hpp"
 #include "NPY.hpp"
@@ -37,17 +38,35 @@ const plog::Severity GParts::LEVEL = debug ;
 const char* GParts::CONTAINING_MATERIAL = "CONTAINING_MATERIAL" ;  
 const char* GParts::SENSOR_SURFACE = "SENSOR_SURFACE" ;  
 
-GParts* GParts::Combine(GParts* onesub, unsigned verbosity)  // static
-{
-    // for consistency: need to combine even when only one sub
-    std::vector<GParts*> subs ; 
-    subs.push_back(onesub); 
-    return GParts::Combine(subs, verbosity == 0 ? onesub->getVerbosity() : verbosity  );
-}
+
+/**
+GParts::Combine
+------------------
+
+Concatenate vector of GParts instances into a single GParts instance
+
+* getPrimFlag of all instances must be the same, typically CSG_FLAGNODETREE
+  and not the old CSG_FLAGPARTLIST that predates full CSG, and is adopted 
+  by the combined GParts
+
+* getAnalyticVersion of all instances is also required to be the same and is
+  adopted by the combined GParts
+
+* the first GBndLib encountered is adopted for the combined GParts
+
+* concatenation is done with GParts::add
+
+
+Currently GParts::Combine is used only from tests:
+
+* extg4/tests/X4PhysicalVolume2Test.cc
+* extg4/tests/X4SolidTest.cc
+
+
+**/
 
 GParts* GParts::Combine(std::vector<GParts*> subs, unsigned verbosity)  // static
 {
-    // Concatenate vector of GParts instances into a single GParts instance
     if(verbosity > 1)
     LOG(info) << "GParts::combine " << subs.size() ; 
 
@@ -90,6 +109,16 @@ GParts* GParts::Combine(std::vector<GParts*> subs, unsigned verbosity)  // stati
 
     return parts ; 
 }
+
+
+GParts* GParts::Combine(GParts* onesub, unsigned verbosity)  // static
+{
+    // for consistency: need to combine even when only one sub
+    std::vector<GParts*> subs ; 
+    subs.push_back(onesub); 
+    return GParts::Combine(subs, verbosity == 0 ? onesub->getVerbosity() : verbosity  );
+}
+
 
 
 GParts* GParts::Make(const npart& pt, const char* spec)
@@ -181,22 +210,43 @@ const NCSG* GParts::getCSG() const
 }
 
 
+
+
+/**
+GParts::Make from NCSG tree
+----------------------------
+
+This is canonically invoked from X4PhysicalVolume::convertNode 
+within the recursive visit of X4PhysicalVolume::convertStructure_r
+which is doing the direct translation of Geant4 geometry.
+
+The spec string (aka boundary name) combines four names of materials
+and surfaces omat/osur/isur/imat.   
+
+The boundary name is a "node level thing" because surfaces and materials depends 
+on where you are in the structural node tree.
+Contrast this with "solid level quantities" which are related just to the distinct
+shapes of the solids.
+
+In general it is better for information to be mesh or solid level 
+where possible because there are far fewer distinc meshes/solids in a geometry 
+that there are nodes in the structural tree.
+
+Because GParts requires the boundary spec are forced to create it 
+at node level.
+
+**/
+
 GParts* GParts::Make( const NCSG* tree, const char* spec )
 {
     assert(spec);
 
-    //LOG(info) << "GParts::make " << tree->getIndex() ; 
-
-
     bool usedglobally = tree->isUsedGlobally() ;   // see opticks/notes/issues/subtree_instances_missing_transform.rst
-    //bool usedglobally = true ; 
+    assert( usedglobally == true );  // always true now ?   
 
     NPY<float>* tree_tranbuf = tree->getGTransformBuffer() ;
     NPY<float>* tree_planbuf = tree->getPlaneBuffer() ;
     assert( tree_tranbuf );
-
-    //LOG(info) << "tree_tranbuf " << tree_tranbuf->getShapeString() ; 
-
 
     NPY<unsigned>* idxbuf = tree->getIdxBuffer() ; //  (1,4) identity indices (index,soIdx,lvIdx,height)
     NPY<float>* nodebuf = tree->getNodeBuffer();       // serialized binary tree
@@ -399,22 +449,28 @@ void GParts::setPrimFlag(OpticksCSG_t primflag)
     assert(primflag == CSG_FLAGNODETREE || primflag == CSG_FLAGPARTLIST || primflag == CSG_FLAGINVISIBLE );
     m_primflag = primflag ; 
 }
-bool GParts::isPartList()  // LEGACY ANALYTIC, NOT LONG TO LIVE ? ACTUALLY ITS FASTER SO BETTER TO KEEP ALIVE
+
+OpticksCSG_t GParts::getPrimFlag() const 
 {
-    return m_primflag == CSG_FLAGPARTLIST ;
-}
-bool GParts::isNodeTree()  // ALMOST ALWAYS THIS ONE NOWADAYS
-{
-    return m_primflag == CSG_FLAGNODETREE ;
-}
-bool GParts::isInvisible()
-{
-    return m_primflag == CSG_FLAGINVISIBLE ;
+    return m_primflag ;
 }
 
 const char* GParts::getPrimFlagString() const 
 {
     return CSGName(m_primflag); 
+}
+
+bool GParts::isPartList() const  // LEGACY ANALYTIC, NOT LONG TO LIVE ? ACTUALLY ITS FASTER SO BETTER TO KEEP ALIVE
+{
+    return m_primflag == CSG_FLAGPARTLIST ;
+}
+bool GParts::isNodeTree() const // ALMOST ALWAYS THIS ONE NOWADAYS
+{
+    return m_primflag == CSG_FLAGNODETREE ;
+}
+bool GParts::isInvisible() const
+{
+    return m_primflag == CSG_FLAGINVISIBLE ;
 }
 
 
@@ -437,10 +493,8 @@ void GParts::setNodeTree()
 
 
 
-OpticksCSG_t GParts::getPrimFlag()
-{
-    return m_primflag ;
-}
+
+
 
 void GParts::BufferTags(std::vector<std::string>& tags) // static
 {
@@ -538,7 +592,7 @@ void GParts::setName(const char* name)
 {
     m_name = name ? strdup(name) : NULL  ; 
 }
-const char* GParts::getName()
+const char* GParts::getName() const 
 {
     return m_name ; 
 }

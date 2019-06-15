@@ -24,6 +24,7 @@
 
 #include "NCSG.hpp"
 #include "NNode.hpp"
+#include "NBBox.hpp"
 
 #include "Opticks.hh"
 #include "SDirect.hh"

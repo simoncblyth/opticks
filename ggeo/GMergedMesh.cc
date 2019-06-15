@@ -438,10 +438,17 @@ void GMergedMesh::mergeVolume( GVolume* volume, bool selected, unsigned verbosit
 }
 
 
+/**
+GMergedMesh::mergeMergedMesh
+--------------------------------
+
+Volumes are present irrespective of selection as prefer absolute volume indexing 
+
+
+**/
 
 void GMergedMesh::mergeMergedMesh( GMergedMesh* other, bool selected, unsigned verbosity )
 {
-    // volumes are present irrespective of selection as prefer absolute volume indexing 
 
     // 2017-10-21 : HUH SEEMS NEVER ADDED A SOLID TO AN MM ANALYTIC-WISE PREVIOUSLY ?
     GParts* pts = other->getParts(); 

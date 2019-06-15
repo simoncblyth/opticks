@@ -199,9 +199,7 @@ void GGeoLib::loadConstituents(const char* idpath )
         {
             // equivalent for test geometry in GGeoTest::modifyGeometry
 
-            //bool lodify = ridx > 0 && m_lod > 0 && m_lodconfig->instanced_lodify_onload > 0 ;  // NB not global 
             bool lodify = ridx > 0 && m_lod > 0 && m_lodconfig->instanced_lodify_onload > 0 ;  // NB not global 
-            //bool lodify = ridx > 0 ;   // moving to lodification as standard ?
 
             GMergedMesh* mm = lodify  ? GMergedMesh::MakeLODComposite(mm_, m_lodconfig->levels ) : mm_ ;         
 

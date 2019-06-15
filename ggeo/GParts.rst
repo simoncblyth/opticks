@@ -2,6 +2,10 @@ GParts
 ========
 
 
+The structure of persisted GParts buffers in the geocache foe DayaBay geometry 
+is below examined.
+
+
 TODO : compare with old GParts buffers
 ------------------------------------------
 

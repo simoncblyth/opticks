@@ -81,11 +81,15 @@ GMergedMesh* OpticksHub::getMergedMesh( unsigned index )
     return ggb->getMergedMesh(index);
 }
 
+/*
 GPmtLib* OpticksHub::getPmtLib()
 {
     GGeoBase* ggb = getGGeoBase();  // 3-way
     return ggb->getPmtLib();
 }
+*/
+
+
 GNodeLib* OpticksHub::getNodeLib()
 {
     GGeoBase* ggb = getGGeoBase();  // 3-way

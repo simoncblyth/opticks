@@ -8,7 +8,7 @@ class GSurfaceLib ;
 class GMaterialLib ; 
 class GBndLib ; 
 class GGeoLib ; 
-class GPmtLib ; 
+//class GPmtLib ; 
 class GNodeLib ; 
 class GMeshLib ; 
 class GMergedMesh ; 
@@ -21,7 +21,7 @@ class GGEO_API GGeoBase {
         virtual GMaterialLib*     getMaterialLib() const = 0 ; 
 
         virtual GBndLib*          getBndLib() const = 0 ; 
-        virtual GPmtLib*          getPmtLib() const = 0 ; 
+   //     virtual GPmtLib*          getPmtLib() const = 0 ; 
         virtual GGeoLib*          getGeoLib() const = 0 ;        // GMergedMesh 
         virtual GNodeLib*         getNodeLib() const = 0 ;       // GNode/GVolume pv,lv names
         virtual GMeshLib*         getMeshLib() const = 0 ;      

@@ -1377,13 +1377,27 @@ const char*         NCSG::getTreeDir() const {  return m_treedir ; }
 const char*         NCSG::getTreeName() const { std::string name = BFile::Name(m_treedir ? m_treedir : "-1") ; return strdup(name.c_str()); }
 int                 NCSG::getTreeNameIdx() const { const char* name = getTreeName(); return BStr::atoi(name, -1); } 
 
-void NCSG::setVerbosity(int verbosity) {           m_verbosity = verbosity ;  }
+
+
+/**
+NCSG::setIsUsedGlobally
+------------------------
+
+This formerly was used to indicate if a solid was to be used in the 
+non-instanced "global" GMergedMesh requiring slightly different 
+handling of transforms.   Nowadays I suspect that handling 
+has been standardized and all solids can now be regarded as 
+being "usedglobally".
+
+**/
+
 void NCSG::setIsUsedGlobally(bool usedglobally ){  m_usedglobally = usedglobally ;  }
+void NCSG::setVerbosity(int verbosity) {           m_verbosity = verbosity ;  }
 void NCSG::setBoundary(const char* boundary){      m_boundary = boundary ? strdup(boundary) : NULL ;  }
 void NCSG::setConfig(const NSceneConfig* config) { m_config = config ;  }
 
-int                 NCSG::getVerbosity() const { return m_verbosity ; }
 bool                NCSG::isUsedGlobally() const { return m_usedglobally ;  }
+int                 NCSG::getVerbosity() const { return m_verbosity ; }
 const char*         NCSG::getBoundary() const { return m_boundary ; }
 const NSceneConfig* NCSG::getConfig() const { return m_config ;  }
 

@@ -32,7 +32,7 @@ class GBndLib ;
 class GSourceLib ; 
 class GScintillatorLib ; 
 class GNodeLib ;
-class GPmtLib ;
+//class GPmtLib ;
 
 class Composition ; 
 class Bookmarks ; 
@@ -201,7 +201,7 @@ class OKGEO_API OpticksHub : public SCtrl {
        GSurfaceLib*         getSurfaceLib();   //  surfaces
        GBndLib*             getBndLib();       //  boundaries
 
-       GPmtLib*             getPmtLib();       //   partlist? analytic PMT   
+     //  GPmtLib*             getPmtLib();       //   partlist? analytic PMT   
        GScintillatorLib*    getScintillatorLib();
        GSourceLib*          getSourceLib();
        GNodeLib*            getNodeLib() ; 

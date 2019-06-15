@@ -19,14 +19,18 @@
 #include "OpticksHub.hh"
 
 // ggeo-
+
 #include "GGeoLib.hh"
-#include "GBndLib.hh"
-#include "GMaterialLib.hh"
 #include "GSurfaceLib.hh"
-#include "GPmt.hh"
-#include "GParts.hh"
+
+//#include "GBndLib.hh"
+//#include "GMaterialLib.hh"
+//#include "GPmt.hh"
+//#include "GParts.hh"
+//#include "GNodeLib.hh"
+
+
 #include "GMergedMesh.hh"
-#include "GNodeLib.hh"
 #include "GGeo.hh"
 
 // assimpwrap

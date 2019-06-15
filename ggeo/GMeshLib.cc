@@ -147,8 +147,10 @@ void GMeshLib::loadAltReferences()
     for(unsigned i=0 ; i < m_meshes.size() ; i++ )
     {
         const GMesh* mesh = m_meshes[i] ; 
-        const NCSG* solid = m_solids[i];  
+        const NCSG* solid = i < m_solids.size() ? m_solids[i] : NULL ;  
         assert( mesh->getCSG() == solid ); 
+        if(solid == NULL) continue ;  
+
         int altindex = solid->get_altindex();  
         if(altindex == -1) continue ; 
      
