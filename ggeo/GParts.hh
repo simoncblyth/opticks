@@ -90,6 +90,8 @@ Based on *opticks-fl GParts.hh*
              are associated with the GVolume. 
 
     ./ggeo/GMergedMesh.cc
+         NB for full(not test?) geometry GMergedMesh is orchestrated
+         from GGeo::prepare by the GInstancer, but most action is in GMergedMesh  
 
          GMergedMesh::mergeMergedMesh
              GParts::add the pts from an "other" GMergedMesh into m_parts

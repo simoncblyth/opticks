@@ -515,7 +515,6 @@ std::vector<GNode*> GInstancer::getPlacements(unsigned int ridx)
         assert(ridx-1 < m_repeat_candidates.size()); 
         std::string pdig = m_repeat_candidates[ridx-1];
         placements = m_root->findAllProgenyDigest(pdig);
-        //placements = m_root->findAllProgenyDigest(pdig);
     } 
     return placements ; 
 }

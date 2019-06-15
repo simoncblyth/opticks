@@ -37,6 +37,7 @@ class GGEO_API GGeoLib {
         static const plog::Severity LEVEL ;  
         static const char* GMERGEDMESH ; 
         static const char* GPARTS ; 
+        static const char* GPTS ; 
         enum { MAX_MERGED_MESH = 10 } ;
     public:
         static bool HasCacheConstituent(const char* idpath, bool analytic, unsigned ridx) ;

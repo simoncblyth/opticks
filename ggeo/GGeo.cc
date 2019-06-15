@@ -652,9 +652,7 @@ void GGeo::postDirectTranslation()
 {
     LOG(debug) << "[" ; 
 
-    LOG(info) << "( GGeo::prepare " ; 
     prepare();         
-    LOG(info) << ") GGeo::prepare " ; 
 
     LOG(info) << "( GBndLib::fillMaterialLineMap " ; 
     GBndLib* blib = getBndLib();
@@ -671,6 +669,8 @@ void GGeo::postDirectTranslation()
 bool GGeo::isPrepared() const { return m_prepared ; }
 void GGeo::prepare()
 {
+    LOG(info) << "[" ; 
+
    // prepare is needed prior to saving or GPU upload by OGeo
     assert( m_prepared == false && "have prepared already" ); 
     m_prepared = true ; 
@@ -689,6 +689,8 @@ void GGeo::prepare()
 
     LOG(info) << "prepareVertexColors" ;  
     prepareVertexColors();  // writes colors into GMergedMesh mm0
+
+    LOG(info) << "]" ; 
 }
 
 
@@ -1297,6 +1299,8 @@ instances hitched to the created GMergedMesh.
 
 void GGeo::prepareVolumes()
 {
+    LOG(info) << "[ creating merged meshes from the volume tree " ; 
+
     unsigned numcsgskiplv = m_ok->getNumCSGSkipLV() ; 
 
     LOG(fatal) << " numcsgskiplv " << numcsgskiplv ; 
@@ -1319,7 +1323,7 @@ void GGeo::prepareVolumes()
     }
     else
     {
-        LOG(fatal) << "GGeo::prepareVolumes instancing inhibited " ;
+        LOG(fatal) << "instancing inhibited " ;
         GNode* root = getNode(0);
         m_geolib->makeMergedMesh(0, NULL, root, meshverbosity);  // ridx:0 rbase:NULL 
         // ^^^^  precache never needs analytic geolib ?
@@ -1328,7 +1332,7 @@ void GGeo::prepareVolumes()
 
     m_instancer->dump("GGeo::prepareVolumes") ; 
 
-    LOG(LEVEL) << "DONE" ;
+    LOG(info) << "]" ;
 }
 
 

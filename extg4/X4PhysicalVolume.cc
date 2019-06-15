@@ -48,7 +48,11 @@ template struct nxform<X4Nd> ;
 
 #include "GMesh.hh"
 #include "GVolume.hh"
+
 #include "GParts.hh"
+#include "GPt.hh"
+#include "GPts.hh"
+
 #include "GGeo.hh"
 #include "GGeoSensor.hh"
 #include "GMaterial.hh"
@@ -715,7 +719,7 @@ used.
 void X4PhysicalVolume::convertStructure()
 {
     OK_PROFILE("_X4PhysicalVolume::convertStructure");
-    LOG(info) << "[" ; 
+    LOG(info) << "[ creating large tree of GVolume instances" ; 
     assert(m_top) ;
 
     m_ggeo->dumpCathodeLV("dumpCathodeLV"); 
@@ -735,7 +739,7 @@ void X4PhysicalVolume::convertStructure()
     NNodeNudger::SaveBuffer("$TMP/NNodeNudger.npy"); 
     X4Transform3D::SaveBuffer("$TMP/X4Transform3D.npy"); 
 
-    LOG(info) << "]" ;
+    LOG(info) << "] tree contains GGeo::getNumVolumes() " << m_ggeo->getNumVolumes() ;
     OK_PROFILE("X4PhysicalVolume::convertStructure");
 }
 
@@ -933,6 +937,8 @@ GVolume* X4PhysicalVolume::convertNode(const G4VPhysicalVolume* const pv, GVolum
      const NCSG* csg = mesh->getCSG();  
 
      GParts* pts = GParts::Make( csg, boundaryName.c_str() );  // see GScene::createVolume 
+     GPt*    pt = new GPt( lvIdx, boundaryName.c_str() )  ; 
+
      pts->setBndLib(m_blib);
 
 
@@ -978,6 +984,7 @@ GVolume* X4PhysicalVolume::convertNode(const G4VPhysicalVolume* const pv, GVolum
  
      volume->setParallelNode( nd ); 
      volume->setParts( pts ); 
+     volume->setPt( pt ); 
      volume->setPVName( pvName.c_str() );
      volume->setLVName( lvName.c_str() );
      volume->setName( pvName.c_str() );   // historically (AssimpGGeo) this was set to lvName, but pvName makes more sense for node node

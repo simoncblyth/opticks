@@ -178,6 +178,7 @@ GMesh::GMesh(unsigned int index,
       m_alt(NULL),
       m_verbosity(0),
       m_parts(NULL),
+      m_pt(NULL),
 
       m_x4src_vtx(NULL), 
       m_x4src_idx(NULL),
@@ -660,6 +661,16 @@ void GMesh::setParts(GParts* pts)
 {
     m_parts = pts ; 
 }
+GPt* GMesh::getPt() const 
+{
+    return m_pt ; 
+}
+void GMesh::setPt(GPt* pt) 
+{
+    m_pt = pt ; 
+}
+
+
 
 
 

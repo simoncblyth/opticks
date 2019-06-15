@@ -501,7 +501,7 @@ void GParts::BufferTags(std::vector<std::string>& tags) // static
     tags.push_back("part");
     tags.push_back("tran");
     tags.push_back("plan");
-   // tags.push_back("prim");
+   // tags.push_back("prim");   <-- prim is deferred til closing time
 }
 
 const char* GParts::BufferName(const char* tag) // static
@@ -509,11 +509,21 @@ const char* GParts::BufferName(const char* tag) // static
     return BStr::concat(tag, "Buffer.npy", NULL) ;
 }
 
+
+/**
+GParts::save
+--------------
+
+Canonically invoked from GGeoLib, saving merged GParts together 
+with corresponding GMergedMesh. 
+
+Also called by X4SolidTest:test_cathode, X4PhysicalVolume2Test
+
+**/
+
 void GParts::save(const char* dir)
 {
     if(!dir) return ; 
-
-    // resource organization handled by GGeoLib, that invokes this
 
     LOG(LEVEL) << "dir " << dir ; 
 

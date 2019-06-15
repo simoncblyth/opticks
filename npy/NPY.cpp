@@ -325,6 +325,14 @@ void NPY<T>::add(const glm::uvec4& u)
 }
 
 template <typename T>
+void NPY<T>::add(const glm::ivec4& i)
+{
+    add(i.x, i.y, i.z, i.w);
+}
+
+
+
+template <typename T>
 void NPY<T>::add(const glm::mat4& m)
 {
     const T* values = reinterpret_cast<const T*>(glm::value_ptr(m));    // expect gibberish when not float 
@@ -2371,6 +2379,8 @@ template <typename T>
         case FLOAT: uif.f = t ; break;
         case DOUBLE: uif.f = t ; break;
         case SHORT: uif.i = t ; break;
+        case UINT: uif.u = t ; break;
+        case INT: uif.i = t ; break;
         default: assert(0);   break;
     }
     return uif.i ;

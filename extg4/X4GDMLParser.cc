@@ -1,10 +1,11 @@
+#include "SDirect.hh"
 #include "BStr.hh"
 #include "BFile.hh"
 
 #include "X4GDMLParser.hh"
 #include "X4GDMLWriteStructure.hh"
 
-
+#include "PLOG.hh"
 
 const char* X4GDMLParser::PreparePath( const char* prefix, int lvidx, const char* ext  ) // static
 { 
@@ -36,14 +37,60 @@ X4GDMLParser::X4GDMLParser(bool refs)
     writer = new X4GDMLWriteStructure(refs) ; 
 }
 
+void X4GDMLParser::write_noisily(const G4VSolid* solid, const char* path )
+{
+    LOG(info) << "[" ; 
+    writer->write( solid, path ); 
+    LOG(info) << "]" ; 
+}
+
+/**
+X4GDMLParser::write
+---------------------
+
+Stream redirection from SDirect avoids non-error output from G4GDMLParser
+
+**/
+
 void X4GDMLParser::write(const G4VSolid* solid, const char* path )
 {
-    writer->write( solid, path ); 
+    std::stringstream coutbuf;
+    std::stringstream cerrbuf;
+    {   
+       cout_redirect out(coutbuf.rdbuf());
+       cerr_redirect err(cerrbuf.rdbuf());
+
+       writer->write( solid, path ); 
+
+    }   
+
+    std::string cout_ = coutbuf.str() ; 
+    std::string cerr_ = cerrbuf.str() ; 
+
+    //if(cout_.size() > 0) LOG(info)    << "cout:" << cout_ ; 
+    if(cerr_.size() > 0) LOG(error) << "cerr:"<< cerr_ ; 
 }
+
 
 std::string X4GDMLParser::to_string( const G4VSolid* solid )
 {
-    return writer->to_string(solid); 
+    std::string gdml ; 
+
+    std::stringstream coutbuf;
+    std::stringstream cerrbuf;
+    {   
+       cout_redirect out(coutbuf.rdbuf());
+       cerr_redirect err(cerrbuf.rdbuf());
+
+       gdml = writer->to_string(solid); 
+
+    }   
+    std::string cout_ = coutbuf.str() ; 
+    std::string cerr_ = cerrbuf.str() ; 
+
+    //if(cout_.size() > 0) LOG(info)    << "cout:" << cout_ ; 
+    if(cerr_.size() > 0) LOG(error) << "cerr:"<< cerr_ ; 
+    return gdml ; 
 }
 
 

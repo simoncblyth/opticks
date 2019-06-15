@@ -54,6 +54,8 @@ set(SOURCES
     GBnd.cc
     GBndLib.cc
     GParts.cc
+    GPts.cc
+    GPt.cc
     GPmt.cc
 
     GMeshFixer.cc
@@ -148,6 +150,8 @@ set(HEADERS
     GMeshMaker.hh
     GMeshFixer.hh
     GParts.hh
+    GPts.hh
+    GPt.hh
     GCSG.hh
     GPmt.hh
     GMaker.hh

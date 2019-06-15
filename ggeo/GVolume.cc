@@ -31,6 +31,7 @@ GVolume::GVolume( unsigned index, GMatrix<float>* transform, const GMesh* mesh )
     m_lvname(NULL),
     m_sensor_surface_index(0),
     m_parts(NULL),
+    m_pt(NULL),
     m_parallel_node(NULL)
 {
 }
@@ -106,6 +107,20 @@ void GVolume::setParts(GParts* pts)
 {
     m_parts = pts ; 
 }
+
+
+GPt* GVolume::getPt() const 
+{
+    return m_pt ;  
+}
+void GVolume::setPt(GPt* pt)
+{
+    m_pt = pt ; 
+}
+
+
+
+
 
 
 // ancillary slot for a parallel node tree, used by X4PhysicalVolume

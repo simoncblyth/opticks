@@ -15,6 +15,7 @@
 #include "GGeoLib.hh"
 #include "GMergedMesh.hh"
 #include "GParts.hh"
+#include "GPts.hh"
 #include "GNode.hh"
 
 
@@ -27,6 +28,7 @@ const plog::Severity GGeoLib::LEVEL = debug ;
 
 const char* GGeoLib::GMERGEDMESH = "GMergedMesh" ; 
 const char* GGeoLib::GPARTS = "GParts" ; 
+const char* GGeoLib::GPTS = "GPts" ; 
 
 
 const char* GGeoLib::RelDir(const char* name, bool analytic) // static
@@ -182,18 +184,22 @@ void GGeoLib::loadConstituents(const char* idpath )
         const char* sidx = BStr::itoa(ridx) ;
         std::string smmpath = BFile::FormPath(idpath, getRelDir(GMERGEDMESH), sidx );
         std::string sptpath = BFile::FormPath(idpath, getRelDir(GPARTS),      sidx );
+        std::string sptspath = BFile::FormPath(idpath, getRelDir(GPTS),       sidx );
 
         const char* mmpath = smmpath.c_str();
         const char* ptpath = sptpath.c_str();
+        const char* ptspath = sptspath.c_str();
 
-        GMergedMesh* mm_ = BFile::ExistsDir(mmpath) ? GMergedMesh::load( mmpath, ridx, m_mesh_version ) : NULL ; 
-        GParts*      pt = BFile::ExistsDir(ptpath) ? GParts::Load( ptpath ) : NULL ; 
+        GMergedMesh* mm_ = BFile::ExistsDir(mmpath) ? GMergedMesh::Load( mmpath, ridx, m_mesh_version ) : NULL ; 
+        GParts*      parts = BFile::ExistsDir(ptpath) ? GParts::Load( ptpath ) : NULL ; 
+        GPts*        pts = BFile::ExistsDir(ptspath) ? GPts::Load( ptspath ) : NULL ; 
 
-        if(pt)
+        if(parts)
         {
-            pt->setBndLib(m_bndlib);
-            pt->setVerbosity(m_verbosity);
+            parts->setBndLib(m_bndlib);
+            parts->setVerbosity(m_verbosity);
         }
+
    
         if( mm_ )
         {
@@ -203,7 +209,8 @@ void GGeoLib::loadConstituents(const char* idpath )
 
             GMergedMesh* mm = lodify  ? GMergedMesh::MakeLODComposite(mm_, m_lodconfig->levels ) : mm_ ;         
 
-            mm->setParts(pt);
+            mm->setParts(parts);
+            mm->setPts(pts);
             
             mm->setGeoCode( m_analytic ? OpticksConst::GEOCODE_ANALYTIC : OpticksConst::GEOCODE_TRIANGULATED );  // assuming uniform : all analytic/triangulated GPU geom
 
@@ -212,12 +219,11 @@ void GGeoLib::loadConstituents(const char* idpath )
         }
         else
         {
-            if(pt) LOG(fatal) << "GGeoLib::loadConstituents"
-                              << " pt exists but mm doesn not " ;
-            assert(pt==NULL);
-            LOG(debug) << "GGeoLib::loadConstituents " 
-                       << " no mmdir for ridx " << ridx 
-                       ;
+            if(parts) LOG(fatal) << " parts exists but mm does not " ;
+            assert(parts==NULL);
+            LOG(debug)
+                 << " no mmdir for ridx " << ridx 
+                 ;
         }
    }
    LOG(LEVEL) 
@@ -240,14 +246,24 @@ void GGeoLib::saveConstituents(const char* idpath)
         assert(mm->getIndex() == ridx);
         mm->save(idpath, getRelDir(GMERGEDMESH), sidx ); 
 
-        std::string sptpath = BFile::FormPath(idpath, getRelDir(GPARTS), sidx );
-        const char* ptpath = sptpath.c_str();
 
         GParts* pt = mm->getParts() ; 
         if(pt)  
         {          
-           pt->save(ptpath); 
+           std::string partsp_ = BFile::FormPath(idpath, getRelDir(GPARTS), sidx );
+           const char* partsp = partsp_.c_str();
+           pt->save(partsp); 
         }
+
+
+        GPts* pts = mm->getPts() ; 
+        if(pts)  
+        {          
+           std::string ptsp_ = BFile::FormPath(idpath, getRelDir(GPTS), sidx );
+           const char* ptsp = ptsp_.c_str();
+           pts->save(ptsp); 
+        }
+
     }
 }
 
@@ -259,7 +275,7 @@ GMergedMesh* GGeoLib::makeMergedMesh(unsigned index, GNode* base, GNode* root, u
 
     if(m_merged_mesh.find(index) == m_merged_mesh.end())
     {
-        m_merged_mesh[index] = GMergedMesh::create(index, base, root, verbosity );
+        m_merged_mesh[index] = GMergedMesh::Create(index, base, root, verbosity );
     }
     GMergedMesh* mm = m_merged_mesh[index] ;
 

@@ -18,7 +18,7 @@ int main(int argc, char** argv)
     OpticksResource* resource = ok.getResource();
 
     std::string mmpath = resource->getMergedMeshPath(ridx);
-    GMergedMesh* mm = GMergedMesh::load(mmpath.c_str(), ridx);
+    GMergedMesh* mm = GMergedMesh::Load(mmpath.c_str(), ridx);
     if(!mm)
     {
         LOG(error) << "NULL mm" ;

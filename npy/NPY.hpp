@@ -193,6 +193,7 @@ class NPY_API NPY : public NPYBase {
        void add(T x, T y, T z, T w) ;   // add values of a quad, itemsize must be 4 
        void add(const glm::vec4& v ) ;  // add quad, itemsize must be 4 
        void add(const glm::uvec4& u ) ; // add quad, itemsize must be 4 
+       void add(const glm::ivec4& u ) ; // add quad, itemsize must be 4 
        void add(const glm::mat4& m ) ;  // add mat4, itemsize must be 4,4
        void reset();   //  clears data, setHasData to false and setNumItems to zero
     public:

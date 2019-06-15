@@ -12,6 +12,7 @@ class GGeo ;
 class GNode ;
 class GVolume ; 
 class GMergedMesh ; 
+class GPts ; 
 
 #include "GMesh.hh"
 #include "GVector.hh"
@@ -26,6 +27,29 @@ GMergedMesh
 * general usage should target GMesh  
 * THAT MEANS : DO NOT ADD METHODS HERE THAT CAN LIVE IN GMesh
 
+
+
+Usage of GMergedMesh
+-----------------------
+
+GGeoLib::makeMergedMesh
+    canonical driver 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 **/
 
 class GGEO_API GMergedMesh : public GMesh {
@@ -38,13 +62,13 @@ public:
 public:
     static const plog::Severity LEVEL ; 
     static std::string Desc(const GMergedMesh* mm);
-    static GMergedMesh* create(unsigned ridx, GNode* base, GNode* root, unsigned verbosity);
+    static GMergedMesh* Create(unsigned ridx, GNode* base, GNode* root, unsigned verbosity);
 private:
      // operates in COUNT and MERGE passes, COUNT find out the number of 
      // ridx selected volumes and their vertices to allocate then 
      // MERGE collects them together
      void traverse_r( GNode* node, unsigned int depth, unsigned int pass, unsigned verbosity );
-
+     void postcreate(); 
 public:
     static GMergedMesh* MakeComposite(std::vector<GMergedMesh*> mms );           // eg for LOD levels 
     static GMergedMesh* MakeLODComposite(GMergedMesh* mm, unsigned levels=3 );   // 2/3 LOD levels 
@@ -52,10 +76,10 @@ public:
     static GMergedMesh* CreateQuadMesh(unsigned index, gbbox& bb );
     static bool CheckFacesQty(const GMergedMesh* mm);
 public:
-    static GMergedMesh* load(Opticks* opticks, unsigned int index=0, const char* version=NULL );
-    static GMergedMesh* load(const char* dir, unsigned int index=0, const char* version=NULL );
-    static GMergedMesh* combine(unsigned int index, GMergedMesh* mm, const std::vector<GVolume*>& volumes, unsigned verbosity) ;
-    static GMergedMesh* combine(unsigned int index, GMergedMesh* mm, GVolume* volume, unsigned verbosity ) ;
+    static GMergedMesh* Load(Opticks* opticks, unsigned int index=0, const char* version=NULL );
+    static GMergedMesh* Load(const char* dir, unsigned int index=0, const char* version=NULL );
+    static GMergedMesh* Combine(unsigned int index, GMergedMesh* mm, const std::vector<GVolume*>& volumes, unsigned verbosity) ;
+    static GMergedMesh* Combine(unsigned int index, GMergedMesh* mm, GVolume* volume, unsigned verbosity ) ;
 public:
     GMergedMesh(unsigned index) ;
     GMergedMesh(                // expedient pass-thru to GMesh ctor
@@ -83,6 +107,7 @@ private:
     void mergeVolumeVertices( unsigned nvert, gfloat3* vertices, gfloat3* normals );
     void mergeVolumeFaces( unsigned nface, guint3* faces, unsigned* node_indices, unsigned* boundary_indices, unsigned* sensor_indices );
     void mergeVolumeAnalytic( GParts* pts, GMatrixF* transform, unsigned verbosity );
+    void mergeVolumeAnalytic( GPt*    pt,  GMatrixF* transform, unsigned verbosity );
     void mergeVolumeBBox( gfloat3* vertices, unsigned nvert );
     void mergeVolumeDump( GVolume* volume);
 private:
@@ -97,6 +122,9 @@ public:
     void dumpVolumes(const char* msg="GMergedMesh::dumpVolumes") const ;
     void dumpVolumesFaces(const char* msg="GMergedMesh::dumpVolumesFaces") const  ;  // migrated from OGeo
     void dumpTransforms( const char* msg="GMergedMesh::dumpTransforms") const ; // migrated from OGeo
+
+    void setPts(GPts* pts); 
+    GPts* getPts() const ; 
 
 public:
     // used when obtaining relative transforms for flattening sub-trees of repeated geometry
@@ -118,6 +146,8 @@ private:
     unsigned     m_num_csgskip ; 
     GNode*       m_cur_base ;  
     std::map<unsigned int, unsigned int> m_mesh_usage ; 
+
+    GPts*        m_pts ; 
 
      
 };

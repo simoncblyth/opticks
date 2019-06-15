@@ -27,6 +27,7 @@ class X4_API X4GDMLParser
     private:
         X4GDMLParser(bool refs) ; 
         void write(const G4VSolid* solid, const char* path);
+        void write_noisily(const G4VSolid* solid, const char* path);
         std::string to_string( const G4VSolid* solid);
     private:
         X4GDMLWriteStructure* writer ;  

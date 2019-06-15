@@ -5,11 +5,11 @@
 
 class GMesh ;
 class GParts ; 
+struct GPt ; 
 class NSensor ; 
 template <typename T> class GMatrix ; 
 
 #include "OpticksCSG.h"
-//#include "GVector.hh"
 #include "GNode.hh"
 
 #include "GGEO_API_EXPORT.hh"
@@ -55,7 +55,9 @@ class GGEO_API GVolume : public GNode {
       NSensor*     getSensor();
   public:
       GParts*      getParts();
+      GPt*         getPt() const ;
       void         setParts(GParts* pts);
+      void         setPt(GPt* pt);
   public:
       // ancillary slot for a parallel node tree, used by X4PhysicalVolume
       void*        getParallelNode() const ;
@@ -72,6 +74,7 @@ class GGEO_API GVolume : public GNode {
       const char*       m_lvname ; 
       unsigned int      m_sensor_surface_index ; 
       GParts*           m_parts ; 
+      GPt*              m_pt ; 
       void*             m_parallel_node ; 
 
 };

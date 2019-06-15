@@ -676,7 +676,7 @@ GMergedMesh* GGeoTest::combineVolumes(GMergedMesh* mm0)
 
     LOG(LEVEL) << "[" ; 
 
-    GMergedMesh* tri = GMergedMesh::combine( 0, mm0, volumes, m_verbosity );
+    GMergedMesh* tri = GMergedMesh::Combine( 0, mm0, volumes, m_verbosity );
 
     unsigned nelem = volumes.size() ; 
     GTransforms* txf = GTransforms::make(nelem); // identities

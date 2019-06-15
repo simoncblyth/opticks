@@ -86,7 +86,7 @@ void GPmtLib::loadTriPmt()
 {
     std::string pmtpath = getTriPmtPath(); 
 
-    m_tpmt = GMergedMesh::load(pmtpath.c_str());
+    m_tpmt = GMergedMesh::Load(pmtpath.c_str());
 
     if(m_tpmt == NULL) LOG(fatal) << "GPmtLib::loadTriPmt FAILED " << pmtpath ;
     assert(m_tpmt);

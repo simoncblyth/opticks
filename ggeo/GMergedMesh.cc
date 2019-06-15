@@ -1,4 +1,4 @@
-//
+#include <csignal>
 #include <vector>
 #include <climits>
 #include <iostream>
@@ -21,7 +21,11 @@
 
 #include "GGeo.hh"
 #include "GVolume.hh"
+
 #include "GParts.hh"
+#include "GPt.hh"
+#include "GPts.hh"
+
 #include "GTree.hh"
 #include "GMergedMesh.hh"
 #include "GBBoxMesh.hh"
@@ -61,21 +65,23 @@ GMergedMesh::GMergedMesh(
     m_cur_volume(0),
     m_cur_mergedmesh(0),
     m_num_csgskip(0),
-    m_cur_base(NULL)
+    m_cur_base(NULL),
+    m_pts(GPts::Make())
 {
 } 
 
 
 
 GMergedMesh::GMergedMesh(unsigned index)
-       : 
-       GMesh(index, NULL, 0, NULL, 0, NULL, NULL),
-       m_cur_vertices(0),
-       m_cur_faces(0),
-       m_cur_volume(0),
-       m_cur_mergedmesh(0),
-       m_num_csgskip(0),
-       m_cur_base(NULL)
+    : 
+    GMesh(index, NULL, 0, NULL, 0, NULL, NULL),
+    m_cur_vertices(0),
+    m_cur_faces(0),
+    m_cur_volume(0),
+    m_cur_mergedmesh(0),
+    m_num_csgskip(0),
+    m_cur_base(NULL),
+    m_pts(GPts::Make())
 {
 } 
 
@@ -123,18 +129,20 @@ bool GMergedMesh::isInstanced()
 
 
 
-GMergedMesh* GMergedMesh::combine(unsigned int index, GMergedMesh* mm, GVolume* volume, unsigned verbosity )
+GMergedMesh* GMergedMesh::Combine(unsigned index, GMergedMesh* mm, GVolume* volume, unsigned verbosity ) // static
 {
+    std::raise(SIGINT); 
     std::vector<GVolume*> volumes ; 
     volumes.push_back(volume);
-    return combine(index, mm, volumes, verbosity );
+    return Combine(index, mm, volumes, verbosity );
 }
 
 // count-allocate-merge
-GMergedMesh* GMergedMesh::combine(unsigned int index, GMergedMesh* mm, const std::vector<GVolume*>& volumes, unsigned verbosity )
+GMergedMesh* GMergedMesh::Combine(unsigned index, GMergedMesh* mm, const std::vector<GVolume*>& volumes, unsigned verbosity ) // static
 {
+    std::raise(SIGINT); 
     unsigned numVolumes = volumes.size(); 
-    LOG(LEVEL)
+    LOG(info)
         << " making new mesh "
         << " index " << index 
         << " volumes " << numVolumes
@@ -167,7 +175,7 @@ GMergedMesh* GMergedMesh::combine(unsigned int index, GMergedMesh* mm, const std
 
 
 /**
-GMergedMesh::create
+GMergedMesh::Create
 ---------------------
 
 For instanced meshes the base is set to the first occurence of the 
@@ -188,7 +196,7 @@ The GNode::setSelection is invoked from::
 **/
 
 
-GMergedMesh* GMergedMesh::create(unsigned ridx, GNode* base, GNode* root, unsigned verbosity )
+GMergedMesh* GMergedMesh::Create(unsigned ridx, GNode* base, GNode* root, unsigned verbosity ) // static
 {
     assert(root && "root node is required");
 
@@ -199,7 +207,7 @@ GMergedMesh* GMergedMesh::create(unsigned ridx, GNode* base, GNode* root, unsign
         << " verbosity " << verbosity
         ;
 
-    BTimeKeeper t("GMergedMesh::create") ; 
+    BTimeKeeper t("GMergedMesh::Create") ; 
     t.setVerbose(false);
     t.start();
 
@@ -248,8 +256,24 @@ GMergedMesh* GMergedMesh::create(unsigned ridx, GNode* base, GNode* root, unsign
     t.stop();
     //t.dump();
 
+    mm->postcreate(); 
+
     return mm ;
 }
+
+
+
+GPts* GMergedMesh::getPts() const { return m_pts ; } 
+void  GMergedMesh::setPts(GPts* pts) { m_pts = pts ; }
+
+void GMergedMesh::postcreate()
+{
+    LOG(info) << "[ " << getIndex() ; 
+    m_pts->dump(); 
+    LOG(info) << "] " << getIndex() ; 
+}
+
+
 
 
 void GMergedMesh::traverse_r( GNode* node, unsigned int depth, unsigned int pass, unsigned verbosity )
@@ -357,7 +381,21 @@ void GMergedMesh::countMergedMesh( GMergedMesh*  other, bool selected)
               ;
 }
 
+/**
+GMergedMesh::mergeVolume
+--------------------------
 
+TO INVESTIGATE:
+
+Currently the full tree is traversed for every merged mesh and 
+only the ridx selected volumes are merged.  
+
+Perhaps better to implement this from a higher level
+class and contribute to multiple GMergedMeshes at once
+allowing all to be populated with a single traverse 
+of the volume tree ?
+
+**/
 
 void GMergedMesh::mergeVolume( GVolume* volume, bool selected, unsigned verbosity )
 {
@@ -391,22 +429,22 @@ void GMergedMesh::mergeVolume( GVolume* volume, bool selected, unsigned verbosit
     transform->copyTo(dest);
 
     const GMesh* mesh = volume->getMesh();   // triangulated
-    GParts* pts = volume->getParts();  // analytic 
+    GParts* parts = volume->getParts();  // analytic 
+    // assert(parts);   <-- not present for AssimpRapTest
+
+    GPt* pt = volume->getPt();   
 
 
     unsigned num_vert = mesh->getNumVertices();
     unsigned num_face = mesh->getNumFaces();
 
-
-    LOG(verbose) << "GMergedMesh::mergeVolume "
-               << " m_cur_volume " << std::setw(6) << m_cur_volume
-               << " pts (normally NULL) " << pts
-               << " selected " << ( selected ? "YES" : "NO" ) 
-               << " num_vert " << std::setw(5) << num_vert
-               << " num_face " << std::setw(5) << num_face
-               ;  
-
-    //assert(pts);
+    LOG(debug)
+        << " m_cur_volume " << std::setw(6) << m_cur_volume
+        << " parts " << parts
+        << " selected " << ( selected ? "YES" : "NO" ) 
+        << " num_vert " << std::setw(5) << num_vert
+        << " num_face " << std::setw(5) << num_face
+        ;  
  
 
     guint3* faces = mesh->getFaces();
@@ -429,7 +467,8 @@ void GMergedMesh::mergeVolume( GVolume* volume, bool selected, unsigned verbosit
 
         mergeVolumeFaces( num_face, faces, node_indices, boundary_indices, sensor_indices  );
 
-        mergeVolumeAnalytic( pts, transform, verbosity );
+        mergeVolumeAnalytic( parts, transform, verbosity );
+        mergeVolumeAnalytic( pt,    transform, verbosity );
 
         // offsets with the flat arrays
         m_cur_vertices += num_vert ;  
@@ -444,11 +483,20 @@ GMergedMesh::mergeMergedMesh
 
 Volumes are present irrespective of selection as prefer absolute volume indexing 
 
+Called from:
+
+    GMergedMeshTest:test_GMergedMesh_MakeLODComposite...GMergedMesh::MakeComposite
+    
+
+
+
+
 
 **/
 
 void GMergedMesh::mergeMergedMesh( GMergedMesh* other, bool selected, unsigned verbosity )
 {
+    //std::raise(SIGINT);  // seeing where this is called
 
     // 2017-10-21 : HUH SEEMS NEVER ADDED A SOLID TO AN MM ANALYTIC-WISE PREVIOUSLY ?
     GParts* pts = other->getParts(); 
@@ -466,14 +514,14 @@ void GMergedMesh::mergeMergedMesh( GMergedMesh* other, bool selected, unsigned v
 
     unsigned int nvolume = other->getNumVolumes();
 
-    if(m_verbosity > 1)
-    LOG(info) << "GMergedMesh::mergeMergedMesh"
-              << " m_cur_volume " << m_cur_volume
-              << " m_cur_vertices " << m_cur_vertices
-              << " m_cur_faces " << m_cur_faces
-              << " other nvolume " << nvolume 
-              << " selected " << selected
-              ; 
+    //if(m_verbosity > 1)
+    LOG(info) 
+        << " m_cur_volume " << m_cur_volume
+        << " m_cur_vertices " << m_cur_vertices
+        << " m_cur_faces " << m_cur_faces
+        << " other nvolume " << nvolume 
+        << " selected " << selected
+        ; 
 
 
     for(unsigned int i=0 ; i < nvolume ; i++)
@@ -658,15 +706,15 @@ between the CSG tree of transforms and the structure tree of transforms/
 
 **/
 
-void GMergedMesh::mergeVolumeAnalytic( GParts* pts, GMatrixF* transform, unsigned verbosity )
+void GMergedMesh::mergeVolumeAnalytic( GParts* parts, GMatrixF* transform, unsigned verbosity )
 {
-    LOG(debug) << "GMergedMesh::mergeVolumeAnalytic" 
-               << " pts (often NULL) " << ( pts ? pts->desc() : "-" )
-                ; 
+    LOG(debug) 
+        << " parts " << ( parts ? parts->desc() : "-" )
+        ; 
 
-    if(!pts)
+    if(!parts)
     {
-        LOG(debug) << "GMergedMesh::mergeVolumeAnalytic pts NULL " ;
+        LOG(fatal) << "parts NULL " ;
         return ; 
         //assert(pts);
     }
@@ -674,13 +722,53 @@ void GMergedMesh::mergeVolumeAnalytic( GParts* pts, GMatrixF* transform, unsigne
     if(transform && !transform->isIdentity())
     {
         LOG(debug) << "applyPlacementTransform" ; 
-        pts->applyPlacementTransform(transform, verbosity );
+        parts->applyPlacementTransform(transform, verbosity );
     }
 
     if(!m_parts) m_parts = new GParts() ; 
 
-    m_parts->add(pts, verbosity); 
+    m_parts->add(parts, verbosity); 
 }
+
+
+
+/**
+GMergedMesh::mergeVolumeAnalytic
+------------------------------------
+
+Aiming to allow postcache deferred analytic merging from a bunch of NCSG 
+and the GPt collected into GPts
+
+**/
+
+void GMergedMesh::mergeVolumeAnalytic( GPt* pt, GMatrixF* transform, unsigned /*verbosity*/ )
+{
+
+    if(!pt) 
+    {
+        LOG(debug) << " NULL pt " ;    // this happens with AssimpRapTest 
+        return ;  
+    }
+   
+
+    const float* data = static_cast<float*>(transform->getPointer());
+
+    glm::mat4 placement = glm::make_mat4( data ) ;  
+
+    LOG(debug) << "placement " << glm::to_string( placement ) ; 
+
+    pt->setPlacement(placement);  
+
+    m_pts->add( pt );   
+}
+
+
+
+
+
+
+
+
 
 
 
@@ -711,34 +799,34 @@ void GMergedMesh::reportMeshUsage(GGeo* ggeo, const char* msg)
 
 
 
-GMergedMesh* GMergedMesh::load(Opticks* opticks, unsigned int ridx, const char* version)
+GMergedMesh* GMergedMesh::Load(Opticks* opticks, unsigned int ridx, const char* version)  // static
 {
     std::string mmpath = opticks->getResource()->getMergedMeshPath(ridx);
-    GMergedMesh* mm = GMergedMesh::load(mmpath.c_str(), ridx, version);
+    GMergedMesh* mm = GMergedMesh::Load(mmpath.c_str(), ridx, version);
     return mm ; 
 }
 
 
 
-GMergedMesh* GMergedMesh::load(const char* dir, unsigned int index, const char* version)
+GMergedMesh* GMergedMesh::Load(const char* dir, unsigned int index, const char* version) // static
 {
     GMergedMesh* mm(NULL);
 
     std::string cachedir = BFile::FormPath(dir, NULL, NULL);
     bool existsdir = BFile::ExistsDir(dir, NULL, NULL);
 
-    LOG(debug) << "GMergedMesh::load"
-              << " dir " << dir 
-              << " -> cachedir " << cachedir
-              << " index " << index
-              << " version " << version
-              << " existsdir " << existsdir
-              ;
+    LOG(debug) 
+        << " dir " << dir 
+        << " -> cachedir " << cachedir
+        << " index " << index
+        << " version " << version
+        << " existsdir " << existsdir
+        ;
  
 
     if(!existsdir)
     {
-        LOG(warning) << "GMergedMesh::load directory DOES NOT EXIST " <<  dir ;
+        LOG(warning) << "directory DOES NOT EXIST " <<  dir ;
     }
     else
     {

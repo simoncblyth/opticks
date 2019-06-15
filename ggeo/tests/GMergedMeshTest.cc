@@ -61,7 +61,7 @@ void test_GMergedMesh_MakeComposite(GMergedMesh* mm)
     const char* dir = "$TMP/test_GMergedMesh_MakeComposite" ; 
     comp->save(dir);    
 
-    GMergedMesh* comp2 = GMergedMesh::load(dir);
+    GMergedMesh* comp2 = GMergedMesh::Load(dir);
 
     comp2->dumpVolumes("test_GMergedMesh_MakeComposite.dumpVolumes.comp2");
     comp2->dumpComponents("test_GMergedMesh_MakeComposite.dumpComponents.comp2");
@@ -102,7 +102,7 @@ int main(int argc, char** argv)
     //unsigned index = 6 ;    // NULL mm    
 
 
-    GMergedMesh* mm = GMergedMesh::load(&ok, index);
+    GMergedMesh* mm = GMergedMesh::Load(&ok, index);
 
     if(!mm)
     {

@@ -6,6 +6,7 @@ template <typename T> class NPY ;
 
 class NPYBase ; 
 class GParts ; 
+struct GPt ; 
 class NCSG ; 
 struct nnode ; 
 
@@ -496,6 +497,10 @@ class GGEO_API GMesh : public GDrawable {
       // analytic geometry standin for OptiX
       void setParts(GParts* parts);
       GParts* getParts();
+
+      void   setPt(GPt* pt);
+      GPt*   getPt() const ;
+
       void stealIdentity(GMesh* other);
 
   protected:
@@ -580,6 +585,7 @@ class GGEO_API GMesh : public GDrawable {
       unsigned int   m_verbosity ; 
   protected:
       GParts*        m_parts ;
+      GPt*           m_pt ;
 
   public:
       // expedient x4src buffers 

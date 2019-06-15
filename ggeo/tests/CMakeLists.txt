@@ -39,6 +39,8 @@ set(TEST_SOURCES
     GTreePresentTest.cc
     GCSGTest.cc
     GPartsTest.cc
+    GPtsTest.cc
+    GPtTest.cc
     GGeoNCSGTest.cc
 
     GPmtTest.cc

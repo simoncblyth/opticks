@@ -32,6 +32,19 @@ unbalanced NCSG, but my GPU CSG requires balanced node tree.
 
 
 
+Can GParts combine be made higher level (and hence deferable postcache) ? 
+-----------------------------------------------------------------------------------------------------
+
+* Just hang onto NCSG instances (actually indices as want this to work postcache) and boundary names 
+* also need placement transforms
+
+::
+
+     GParts* pts = GParts::Make( csg, boundaryName.c_str() );  // see GScene::createVolume 
+     pts->setBndLib(m_blib);
+
+
+* leave GParts asis, experiment with GPts
 
 
 
