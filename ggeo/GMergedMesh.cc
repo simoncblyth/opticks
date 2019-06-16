@@ -66,10 +66,11 @@ GMergedMesh::GMergedMesh(
     m_cur_mergedmesh(0),
     m_num_csgskip(0),
     m_cur_base(NULL),
-    m_pts(GPts::Make())
+    m_pts(GPts::Make()),
+    m_ok(Opticks::Instance())
 {
+    init();
 } 
-
 
 
 GMergedMesh::GMergedMesh(unsigned index)
@@ -81,9 +82,16 @@ GMergedMesh::GMergedMesh(unsigned index)
     m_cur_mergedmesh(0),
     m_num_csgskip(0),
     m_cur_base(NULL),
-    m_pts(GPts::Make())
+    m_pts(GPts::Make()),
+    m_ok(Opticks::Instance())
 {
+    init();
 } 
+
+void GMergedMesh::init()
+{
+    assert(m_ok) ; 
+}
 
 
 std::string GMergedMesh::brief() const 
@@ -206,9 +214,7 @@ The GNode::setSelection is invoked from::
     AssimpGGeo::convertStructure
     GScene::transferMetadata    
 
-
 **/
-
 
 GMergedMesh* GMergedMesh::Create(unsigned ridx, GNode* base, GNode* root, unsigned verbosity ) // static
 {
@@ -221,28 +227,23 @@ GMergedMesh* GMergedMesh::Create(unsigned ridx, GNode* base, GNode* root, unsign
         << " verbosity " << verbosity
         ;
 
-    BTimeKeeper t("GMergedMesh::Create") ; 
-    t.setVerbose(false);
-    t.start();
+
+    OKI_PROFILE("_GMergedMesh::Create"); 
 
     GMergedMesh* mm = new GMergedMesh( ridx ); 
     mm->setCurrentBase(base);  // <-- when NULL it means will use global not base relative transforms
 
     GNode* start = base ? base : root ; 
 
-    //if(verbosity > 1)
-    LOG(LEVEL)
+    if(verbosity > 1)
+    LOG(info)
         << " ridx " << ridx 
         << " starting from " << start->getName() ;
         ; 
 
-    // 1st pass traversal : counts vertices and faces
+    mm->traverse_r( start, 0, PASS_COUNT, verbosity  );  // 1st pass traversal : counts vertices and faces
 
-    mm->traverse_r( start, 0, PASS_COUNT, verbosity  );  
-
-    t("1st pass traverse");
-
-    // allocate space for flattened arrays
+    OKI_PROFILE("GMergedMesh::Create::Count"); 
 
     unsigned nvs = mm->getNumVolumesSelected() ; 
     if( nvs == 0 )
@@ -253,24 +254,23 @@ GMergedMesh* GMergedMesh::Create(unsigned ridx, GNode* base, GNode* root, unsign
            ;
     }
 
-    if(verbosity > 1)
-    LOG(info) << mm->brief() ; 
+    if(verbosity > 1) LOG(info) << mm->brief() ; 
 
-    mm->allocate(); 
+    OKI_PROFILE("_GMergedMesh::Create::Allocate"); 
 
-    // 2nd pass traversal : merge copy GMesh into GMergedMesh 
+    mm->allocate();  // allocate space for flattened arrays
 
-    mm->traverse_r( start, 0, PASS_MERGE, verbosity );  
-    t("2nd pass traverse");
+    OKI_PROFILE("GMergedMesh::Create::Allocate"); 
+
+    mm->traverse_r( start, 0, PASS_MERGE, verbosity );  // 2nd pass traversal : merge copy GMesh into GMergedMesh 
+
+    OKI_PROFILE("GMergedMesh::Create::Merge"); 
 
     mm->updateBounds();
 
-    t("updateBounds");
+    OKI_PROFILE("GMergedMesh::Create::Bounds"); 
 
-    t.stop();
-    //t.dump();
-
-    mm->postcreate(); 
+    //mm->postcreate(); 
 
     return mm ;
 }
@@ -288,9 +288,15 @@ void GMergedMesh::postcreate()
 }
 
 
+/**
+GMergedMesh::traverse_r
+--------------------------
 
+Pre-order traversal of the node tree, so root is index zero
 
-void GMergedMesh::traverse_r( GNode* node, unsigned int depth, unsigned int pass, unsigned verbosity )
+**/
+
+void GMergedMesh::traverse_r( GNode* node, unsigned depth, unsigned pass, unsigned verbosity )
 {
     GVolume* volume = dynamic_cast<GVolume*>(node) ;
 
@@ -300,41 +306,39 @@ void GMergedMesh::traverse_r( GNode* node, unsigned int depth, unsigned int pass
     unsigned uidx = idx > -1 ? idx : UINT_MAX ; 
     unsigned ridx = volume->getRepeatIndex() ;
 
-    bool repsel =  idx == -1 || ridx == uidx ;
-    bool csgskip = volume->isCSGSkip() ;     // --csgskiplv
+    bool repsel =  idx == -1 || ridx == uidx ;   // RepeatIndex of volume same as index of mm 
+    bool csgskip = volume->isCSGSkip() ;         // --csgskiplv
     bool selected_ =  volume->isSelected() && repsel ;
-    bool selected = selected_ && !csgskip ;     // selection honoured by both triangulated and analytic 
+    bool selected = selected_ && !csgskip ;      // selection honoured by both triangulated and analytic 
 
 
     if(pass == PASS_COUNT)
     {
          if(selected_ && csgskip) m_num_csgskip++ ; 
     }
-
     
     if(verbosity > 1)
-          LOG(info)
-                  << "GMergedMesh::traverse_r"
-                  << " verbosity " << verbosity
-                  << " node " << node 
-                  << " volume " << volume 
-                  << " volume.pts " << volume->getParts()
-                  << " depth " << depth 
-                  << " NumChildren " << node->getNumChildren()
-                  << " pass " << pass
-                  << " selected " << selected
-                  << " csgskip " << csgskip
-                  ; 
+        LOG(info)
+            << " verbosity " << verbosity
+            << " node " << node 
+            << " volume " << volume 
+            << " volume.pts " << volume->getParts()
+            << " depth " << depth 
+            << " NumChildren " << node->getNumChildren()
+            << " pass " << pass
+            << " selected " << selected
+            << " csgskip " << csgskip
+            ; 
 
 
     switch(pass)
     {
-       case PASS_COUNT:    countVolume(volume, selected, verbosity)  ;break;
-       case PASS_MERGE:    mergeVolume(volume, selected, verbosity)  ;break;
-               default:    assert(0)                    ;break;
+        case PASS_COUNT:    countVolume(volume, selected, verbosity)  ;break;
+        case PASS_MERGE:    mergeVolume(volume, selected, verbosity)  ;break;
+                default:    assert(0)                                 ;break;
     }
 
-    for(unsigned int i = 0; i < node->getNumChildren(); i++) traverse_r(node->getChild(i), depth + 1, pass, verbosity );
+    for(unsigned i = 0; i < node->getNumChildren(); i++) traverse_r(node->getChild(i), depth + 1, pass, verbosity );
 }
 
 
@@ -350,31 +354,38 @@ void GMergedMesh::countVolume( GVolume* volume, bool selected, unsigned verbosit
     }
 
     //if(m_verbosity > 1)
-    LOG(debug) << "GMergedMesh::count GVolume " 
-              << " verbosity " << verbosity 
-              << " selected " << selected
-              << " num_volumes " << m_num_volumes 
-              << " num_volumes_selected " << m_num_volumes_selected 
-              ;
+    LOG(debug) 
+        << " verbosity " << verbosity 
+        << " selected " << selected
+        << " num_volumes " << m_num_volumes 
+        << " num_volumes_selected " << m_num_volumes_selected 
+        ;
 }
 
 void GMergedMesh::countMesh( const GMesh* mesh )
 {
-    unsigned int nface = mesh->getNumFaces();
-    unsigned int nvert = mesh->getNumVertices();
-    unsigned int meshIndex = mesh->getIndex();
+    unsigned nface = mesh->getNumFaces();
+    unsigned nvert = mesh->getNumVertices();
+    unsigned meshIndex = mesh->getIndex();
 
     m_num_vertices += nvert ;
     m_num_faces    += nface ; 
     m_mesh_usage[meshIndex] += 1 ;  // which meshes contribute to the mergedmesh
 }
 
+/**
+GMergedMesh::countMergedMesh
+---------------------------------
+
+NB what is appropriate for a merged mesh is not for a mesh ... wrt counting volumes
+so cannot lump the below together using GMesh base class
+
+
+**/
+
 void GMergedMesh::countMergedMesh( GMergedMesh*  other, bool selected)
 {
-    // NB what is appropriate for a merged mesh is not for a mesh ... wrt counting volumes
-    // so cannot lump the below together using GMesh base class
-
-    unsigned int nvolume = other->getNumVolumes();
+    unsigned nvolume = other->getNumVolumes();
 
     m_num_mergedmesh += 1 ; 
 
@@ -387,17 +398,32 @@ void GMergedMesh::countMergedMesh( GMergedMesh*  other, bool selected)
     }
 
     if(m_verbosity > 1)
-    LOG(info) << "GMergedMesh::count other GMergedMesh  " 
-              << " selected " << selected
-              << " num_mergedmesh " << m_num_mergedmesh 
-              << " num_volumes " << m_num_volumes 
-              << " num_volumes_selected " << m_num_volumes_selected 
-              ;
+    LOG(info) 
+        << "other GMergedMesh" 
+        << " selected " << selected
+        << " num_mergedmesh " << m_num_mergedmesh 
+        << " num_volumes " << m_num_volumes 
+        << " num_volumes_selected " << m_num_volumes_selected 
+        ;
 }
 
 /**
 GMergedMesh::mergeVolume
 --------------------------
+
+GMergedMesh::create invokes GMergedMesh::mergeVolume from node tree traversal 
+via the recursive GMergedMesh::traverse_r 
+
+GNode::getRelativeTransform
+    relative transform calculated from the product of ancestor transforms
+    after the base node (ie traverse ancestors starting from root to this node
+    but only collect transforms after the base node : which is required to be 
+    an ancestor of this node)
+
+GNode::getTransform
+    global transform, ie product of all transforms from root to this node
+    When node == base the transform is identity
+
 
 TO INVESTIGATE:
 
@@ -409,6 +435,22 @@ class and contribute to multiple GMergedMeshes at once
 allowing all to be populated with a single traverse 
 of the volume tree ?
 
+
+GInstancer is the driver of this in standard geocache creation::
+
+    (gdb) bt
+    #0  0x00007ffff44f449b in raise () from /lib64/libpthread.so.0
+    #1  0x00007fffe5ce5a84 in GMergedMesh::mergeVolume (this=0xeafac2c0, volume=0x3374950, selected=true, verbosity=0) at /home/blyth/opticks/ggeo/GMergedMesh.cc:480
+    #2  0x00007fffe5ce516c in GMergedMesh::traverse_r (this=0xeafac2c0, node=0x3374950, depth=0, pass=1, verbosity=0) at /home/blyth/opticks/ggeo/GMergedMesh.cc:337
+    #3  0x00007fffe5ce4a44 in GMergedMesh::Create (ridx=0, base=0x0, root=0x3374950, verbosity=0) at /home/blyth/opticks/ggeo/GMergedMesh.cc:265
+    #4  0x00007fffe5cc681d in GGeoLib::makeMergedMesh (this=0x26bf080, index=0, base=0x0, root=0x3374950, verbosity=0) at /home/blyth/opticks/ggeo/GGeoLib.cc:276
+    #5  0x00007fffe5cdabce in GInstancer::makeMergedMeshAndInstancedBuffers (this=0x26bfd70, verbosity=0) at /home/blyth/opticks/ggeo/GInstancer.cc:560
+    #6  0x00007fffe5cd8c5f in GInstancer::createInstancedMergedMeshes (this=0x26bfd70, delta=true, verbosity=0) at /home/blyth/opticks/ggeo/GInstancer.cc:98
+    #7  0x00007fffe5cf1b65 in GGeo::prepareVolumes (this=0x26b8180) at /home/blyth/opticks/ggeo/GGeo.cc:1322
+    #8  0x00007fffe5ceec17 in GGeo::prepare (this=0x26b8180) at /home/blyth/opticks/ggeo/GGeo.cc:688
+    #9  0x0000000000405263 in main (argc=13, argv=0x7fffffffd748) at /home/blyth/opticks/okg4/tests/OKX4Test.cc:134
+
+
 **/
 
 void GMergedMesh::mergeVolume( GVolume* volume, bool selected, unsigned verbosity )
@@ -419,21 +461,6 @@ void GMergedMesh::mergeVolume( GVolume* volume, bool selected, unsigned verbosit
 
     GMatrixF* transform = base ? volume->getRelativeTransform(base) : volume->getTransform() ;     // base or root relative global transform
 
-    // GMergedMesh::create invokes GMergedMesh::mergeVolume from node tree traversal 
-    // via the recursive GMergedMesh::traverse_r 
-    //
-    // GNode::getRelativeTransform
-    //     relative transform calculated from the product of ancestor transforms
-    //     after the base node (ie traverse ancestors starting from root to this node
-    //     but only collect transforms after the base node : which is required to be 
-    //     an ancestor of this node)
-    //
-    // GNode::getTransform
-    //     global transform, ie product of all transforms from root to this node
-    //  
-    //
-    // When node == base the transform is identity
-    //
     if( node == base ) assert( transform->isIdentity() ); 
     if( ridx == 0 ) assert( base == NULL && "expecting NULL base for ridx 0" ); 
 
@@ -443,18 +470,11 @@ void GMergedMesh::mergeVolume( GVolume* volume, bool selected, unsigned verbosit
     transform->copyTo(dest);
 
     const GMesh* mesh = volume->getMesh();   // triangulated
-    GParts* parts = volume->getParts();  // analytic 
-    // assert(parts);   <-- not present for AssimpRapTest
-
-    GPt* pt = volume->getPt();   
-
-
     unsigned num_vert = mesh->getNumVertices();
     unsigned num_face = mesh->getNumFaces();
 
     LOG(debug)
         << " m_cur_volume " << std::setw(6) << m_cur_volume
-        << " parts " << parts
         << " selected " << ( selected ? "YES" : "NO" ) 
         << " num_vert " << std::setw(5) << num_vert
         << " num_face " << std::setw(5) << num_face
@@ -473,6 +493,22 @@ void GMergedMesh::mergeVolume( GVolume* volume, bool selected, unsigned verbosit
 
     if(selected)
     {
+        //std::raise(SIGINT);
+
+        GParts* parts = volume->getParts();  // analytic 
+        GPt* pt = volume->getPt();   
+        // assert(parts);   <-- not present for AssimpRapTest
+
+        if( pt &&  pt->lvIdx == 16 )
+        {
+            LOG(info)
+                << " m_cur_volume " << m_cur_volume 
+                << " parts.getVolumeIndex(0) " << parts->getVolumeIndex(0)
+                << " selected " << ( selected ? "YES" : "NO " ) 
+                << " pt " << pt->desc()
+                ;
+        }
+
         mergeVolumeVertices( num_vert, vertices, normals );
 
         unsigned* node_indices     = volume->getNodeIndices();
@@ -502,17 +538,11 @@ Called from:
     GMergedMeshTest:test_GMergedMesh_MakeLODComposite...GMergedMesh::MakeComposite
     
 
-
-
-
-
 **/
 
 void GMergedMesh::mergeMergedMesh( GMergedMesh* other, bool selected, unsigned verbosity )
 {
     //std::raise(SIGINT);  // seeing where this is called
-
-    // 2017-10-21 : HUH SEEMS NEVER ADDED A SOLID TO AN MM ANALYTIC-WISE PREVIOUSLY ?
     GParts* pts = other->getParts(); 
 
     if(pts && !m_parts) 
@@ -544,12 +574,12 @@ void GMergedMesh::mergeMergedMesh( GMergedMesh* other, bool selected, unsigned v
         gfloat4 ce = other->getCenterExtent(i) ;
 
         if(m_verbosity > 2)
-        LOG(info) << "GMergedMesh::mergeMergedMesh"
-                   << " m_cur_volume " << m_cur_volume  
-                   << " i " << i
-                   << " ce " <<  ce.description() 
-                   << " bb " <<  bb.description() 
-                   ;
+        LOG(info) 
+            << " m_cur_volume " << m_cur_volume  
+            << " i " << i
+            << " ce " <<  ce.description() 
+            << " bb " <<  bb.description() 
+            ;
 
         m_bbox[m_cur_volume] = bb ;  
         m_center_extent[m_cur_volume] = ce ;
@@ -599,21 +629,21 @@ void GMergedMesh::mergeVolumeDump( GVolume* volume)
     guint4 _identity = volume->getIdentity();
     unsigned ridx = volume->getRepeatIndex() ;  
 
-    LOG(info) << "GMergedMesh::mergeVolumeDump" 
-              << " m_cur_volume " << m_cur_volume
-              << " idx " << volume->getIndex()
-              << " ridx " << ridx
-              << " id " << _identity.description()
-              << " pv " << ( pvn ? pvn : "-" )
-              << " lv " << ( lvn ? lvn : "-" )
-              ;
+    LOG(info) 
+        << " m_cur_volume " << m_cur_volume
+        << " idx " << volume->getIndex()
+        << " ridx " << ridx
+        << " id " << _identity.description()
+        << " pv " << ( pvn ? pvn : "-" )
+        << " lv " << ( lvn ? lvn : "-" )
+        ;
 }
 
 void GMergedMesh::mergeVolumeBBox( gfloat3* vertices, unsigned nvert )
 {
     // needs to be outside the selection branch for the all volume center extent
     gbbox* bb = GMesh::findBBox(vertices, nvert) ;
-    if(bb == NULL) LOG(fatal) << "GMergedMesh::mergeVolume NULL bb " ; 
+    if(bb == NULL) LOG(fatal) << "NULL bb " ; 
     assert(bb); 
 
     m_bbox[m_cur_volume] = *bb ;  
@@ -641,13 +671,13 @@ void GMergedMesh::mergeVolumeIdentity( GVolume* volume, bool selected )
     assert(_identity.z == boundary);
     //assert(_identity.w == sensorIndex);   this is no longer the case, now require SensorSurface in the identity
     
-    LOG(debug) << "GMergedMesh::mergeVolumeIdentity"
-              << " m_cur_volume " << m_cur_volume 
-              << " nodeIndex " << nodeIndex
-              << " boundaryIndex " << boundary
-              << " sensorIndex " << sensorIndex
-              << " sensor " << ( sensor ? sensor->description() : "NULL" )
-              ;
+    LOG(debug) 
+        << " m_cur_volume " << m_cur_volume 
+        << " nodeIndex " << nodeIndex
+        << " boundaryIndex " << boundary
+        << " sensorIndex " << sensorIndex
+        << " sensor " << ( sensor ? sensor->description() : "NULL" )
+        ;
 
 
     GNode* parent = volume->getParent();
@@ -666,7 +696,7 @@ void GMergedMesh::mergeVolumeIdentity( GVolume* volume, bool selected )
     if(isGlobal())
     {
          if(nodeIndex != m_cur_volume)
-             LOG(fatal) << "GMergedMesh::mergeVolumeIdentity mismatch " 
+             LOG(fatal) << "mismatch" 
                         <<  " nodeIndex " << nodeIndex 
                         <<  " m_cur_volume " << m_cur_volume
                         ; 
@@ -774,6 +804,15 @@ void GMergedMesh::mergeVolumeAnalytic( GPt* pt, GMatrixF* transform, unsigned /*
     pt->setPlacement(placement);  
 
     m_pts->add( pt );   
+
+
+    if(pt->lvIdx == 16)
+    {
+        LOG(info) << pt->desc() ; 
+    } 
+
+
+
 }
 
 
@@ -1057,10 +1096,10 @@ GMergedMesh*  GMergedMesh::MakeComposite(std::vector<GMergedMesh*> mms ) // stat
 
     unsigned verbosity = mm0 ? mm0->getVerbosity() : 0 ;
 
-    LOG(info) << "GMergedMesh::MakeComposite"
-              << " verbosity " << verbosity 
-              << " nmm " << nmm 
-              ;
+    LOG(info)
+        << " verbosity " << verbosity 
+        << " nmm " << nmm 
+        ;
 
     com->setVerbosity(verbosity );
 
@@ -1096,7 +1135,7 @@ GMergedMesh*  GMergedMesh::MakeLODComposite(GMergedMesh* mm, unsigned levels ) /
 
     if(!cfq)
     {
-        LOG(warning) << "GMergedMesh::MakeLODComposite mm misses sensors/boundaries/nodes invoking setFacesQty " ; 
+        LOG(warning) << "mm misses sensors/boundaries/nodes invoking setFacesQty " ; 
         mm->setFacesQty(NULL); 
     }
 
@@ -1358,7 +1397,6 @@ std::string GMergedMesh::Desc(const GMergedMesh* mm)
 
    return ss.str();
 }
-
 
 
 

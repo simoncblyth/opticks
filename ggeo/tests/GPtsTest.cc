@@ -2,6 +2,9 @@
 
 #include "OPTICKS_LOG.hh"
 
+#include "BFile.hh"
+#include "BStr.hh"
+
 #include "Opticks.hh"
 #include "GPt.hh"
 #include "GPts.hh"
@@ -24,6 +27,74 @@ See notes/issues/x016.rst
 **/
 
 
+struct testGPts
+{
+    const GMeshLib* meshlib ; 
+    GBndLib*  bndlib ; 
+    const std::vector<const NCSG*>& solids  ; 
+    const GMergedMesh* mm ;
+    int imm ; 
+    GParts* parts ; 
+    GPts*   pts ; 
+    unsigned verbosity ; 
+    GParts* parts2 ; 
+    std::string path ; 
+    int rc ; 
+
+    testGPts( const GMeshLib* meshlib_, GBndLib* bndlib_, const GMergedMesh* mm_ ) 
+        :
+        meshlib(meshlib_),
+        bndlib(bndlib_),
+        solids(meshlib->getSolids()),
+        mm(mm_), 
+        imm(mm->getIndex()),
+        parts(mm->getParts()),
+        pts(mm->getPts()),
+        verbosity(1), 
+        parts2(GParts::Create( pts, solids, verbosity  )),
+        path(BFile::FormPath("$TMP/GGeo/GPtsTest",BStr::itoa(imm))),
+        rc(0)
+    {
+        init();
+        compare(); 
+        save(); 
+    } 
+
+    void init()
+    {
+        assert( parts ); 
+        assert( parts2 ); 
+        parts2->setBndLib(bndlib); 
+        parts2->close(); 
+    }
+
+    void dump()
+    {
+        parts->dump("parts"); 
+        parts2->dump("parts2"); 
+    }
+    void save()
+    {
+        LOG(info) << path ; 
+        parts->save(path.c_str(), "parts"); 
+        parts2->save(path.c_str(), "parts2"); 
+    }
+
+    void compare()
+    {
+        rc = GParts::Compare( parts, parts2, false );
+        if( rc > 0)  GParts::Compare( parts, parts2, true ); 
+
+        LOG(info) 
+            << " mm.index " << mm->getIndex()
+            << " meshlib.solids " << solids.size() 
+            << " RC " << rc 
+            ; 
+    }
+};
+
+
+
 int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv);
@@ -37,44 +108,31 @@ int main(int argc, char** argv)
     }
 
     GMeshLib* meshlib = GMeshLib::Load(&ok);
-    meshlib->dump(); 
-    const std::vector<const NCSG*>& solids = meshlib->getSolids(); 
-    LOG(info) << " meshlib.solids " << solids.size(); 
-
+    //meshlib->dump(); 
     bool constituents = true ; 
     GBndLib* bndlib = GBndLib::load(&ok, constituents);
     bndlib->closeConstituents();   // required otherwise GParts::close asserts
     
-    //GMaterialLib* mlib = bndlib->getMaterialLib(); 
-    //GSurfaceLib* slib = bndlib->getSurfaceLib(); 
 
     bool analytic = false ;   // <-- funny need to say false to get smth, TODO: eliminate this, all libs now analytic 
     GGeoLib* geolib = GGeoLib::Load(&ok, analytic, bndlib); 
-    geolib->dump("geolib");
-
+    //geolib->dump("geolib");
 
     unsigned nmm = geolib->getNumMergedMesh(); 
     LOG(info) << " geolib.nmm " << nmm ; 
 
-    GMergedMesh* mm = geolib->getMergedMesh(nmm-1);  // last one is sFastener
-    assert(mm); 
+    unsigned i0 = 0 ; 
+    unsigned i1 = nmm ; 
+    //unsigned i0 = 3 ; 
+    //unsigned i1 = 4 ; 
 
-    GParts* parts = mm->getParts();  
-    parts->dump("parts"); 
-    parts->save("$TMP/GGeo/GPtsTest/parts"); 
-
-    GPts* pts = mm->getPts(); 
-    pts->dump("pts"); 
-
-    unsigned verbosity = 1 ; 
-    GParts* parts2 = GParts::Create( pts, solids, verbosity  ); 
-    assert( parts2 ); 
-    parts2->setBndLib(bndlib); 
-    parts2->close(); 
-    parts2->dump("parts2"); 
-    parts2->save("$TMP/GGeo/GPtsTest/parts2"); 
-
-    int rc = GParts::Compare( parts, parts2 ); 
+    int rc(0) ;  
+    for(unsigned i=i0 ; i < i1 ; i++)
+    {
+        GMergedMesh* mm = geolib->getMergedMesh(i);
+        testGPts t(meshlib, bndlib, mm); 
+        rc += t.rc ; 
+    }
 
     return rc ;
 }

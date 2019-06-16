@@ -348,11 +348,17 @@ unsigned NCSGData::getNumNodes() const
 
 
 
+/**
+NCSGData::setIdx
+------------------
 
+Used by NCSG::export_idx NCSG::export_srcidx
 
+The (1,4) idx_buffer integers written by this are then used by 
+GParts::Make when creating a GParts instance from the NCSG, 
+and then this identity information gets concatenated in GParts::Combine
 
-
-
+**/
 
 void NCSGData::setIdx( unsigned index, unsigned soIdx, unsigned lvIdx, unsigned height, bool src )
 {
@@ -371,7 +377,6 @@ void NCSGData::setIdx( unsigned index, unsigned soIdx, unsigned lvIdx, unsigned 
         << ( src ? " srcIdx " : " Idx " )
         ;
 
-    // used by GParts::make GParts::combine
 }
 
 std::string NCSGData::smry() const 

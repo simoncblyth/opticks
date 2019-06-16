@@ -8,6 +8,7 @@
 
 
 #include "BStr.hh"
+#include "BFile.hh"
 #include "OpticksCSG.h"
 
 // npy-
@@ -52,11 +53,12 @@ See GPtsTest
 **/
 
 
-int GParts::Compare(const GParts* a, const GParts* b)
+int GParts::Compare(const GParts* a, const GParts* b, bool dump )
 {
-    LOG(info); 
+    int rc = 0 ; 
     unsigned w = 34 ; 
-
+    
+    if(dump)
     std::cout 
         << std::setw(w) << "qty" 
         << std::setw(w) << "A" 
@@ -65,8 +67,26 @@ int GParts::Compare(const GParts* a, const GParts* b)
         ;  
 
 
+    {
+        unsigned av = a->getVolumeIndex(0) ; 
+        unsigned bv = b->getVolumeIndex(0) ; 
+        
+
+        rc += ( av == bv ? 0 : 1 );  
+
+        if(dump)
+        std::cout 
+            << std::setw(w) << "VolumeIndex"
+            << std::setw(w) << av
+            << std::setw(w) << bv
+            << std::endl 
+            ;  
+    } 
+
+
     const char* aname = a->getName(); 
     const char* bname = b->getName(); 
+    if(dump)
     std::cout 
         << std::setw(w) << "Name" 
         << std::setw(w) << ( aname ? aname : "NULL" )
@@ -74,6 +94,7 @@ int GParts::Compare(const GParts* a, const GParts* b)
         << std::endl 
         ;  
 
+    if(dump)
     std::cout 
         << std::setw(w) << "BndLib" 
         << std::setw(w) << a->getBndLib() 
@@ -81,6 +102,7 @@ int GParts::Compare(const GParts* a, const GParts* b)
         << std::endl 
         ;  
 
+    if(dump)
     std::cout 
         << std::setw(w) << "Closed" 
         << std::setw(w) << a->isClosed() 
@@ -88,6 +110,7 @@ int GParts::Compare(const GParts* a, const GParts* b)
         << std::endl 
         ;  
 
+    if(dump)
     std::cout 
         << std::setw(w) << "Loaded" 
         << std::setw(w) << a->isLoaded() 
@@ -95,6 +118,7 @@ int GParts::Compare(const GParts* a, const GParts* b)
         << std::endl 
         ;  
  
+    if(dump)
     std::cout 
         << std::setw(w) << "PrimFlagString" 
         << std::setw(w) << a->getPrimFlagString() 
@@ -102,6 +126,7 @@ int GParts::Compare(const GParts* a, const GParts* b)
         << std::endl 
         ;  
    
+    if(dump)
     std::cout 
         << std::setw(w) << "NumParts" 
         << std::setw(w) << a->getNumParts() 
@@ -109,6 +134,7 @@ int GParts::Compare(const GParts* a, const GParts* b)
         << std::endl 
         ;  
 
+    if(dump)
     std::cout 
         << std::setw(w) << "NumPrim" 
         << std::setw(w) << a->getNumPrim() 
@@ -121,14 +147,21 @@ int GParts::Compare(const GParts* a, const GParts* b)
     for(unsigned i=0 ; i < tags.size() ; i++)
     {
         const char* tag = tags[i]; 
+
+        std::string av = a->getBufferBase(tag)->getDigestString() ;
+        std::string bv = b->getBufferBase(tag)->getDigestString() ;
+    
+        rc += ( av.compare(bv) == 0 ? 0 : 1 ) ; 
+
+        if(dump)
         std::cout 
             << std::setw(w) << tags[i] 
-            << std::setw(w) << a->getBufferBase(tag)->getDigestString() 
-            << std::setw(w) << b->getBufferBase(tag)->getDigestString() 
+            << std::setw(w) << av 
+            << std::setw(w) << bv
             << std::endl 
             ;  
     } 
-    return 0 ; 
+    return rc ; 
 }
 
 
@@ -484,94 +517,73 @@ GParts* GParts::Make( const NCSG* tree, const char* spec )
 }
 
 GParts::GParts(GBndLib* bndlib) 
-      :
-      m_idx_buffer(NPY<unsigned>::make(0, 4)),
-      m_part_buffer(NPY<float>::make(0, NJ, NK )),
-      m_tran_buffer(NPY<float>::make(0, NTRAN, 4, 4 )),
-      m_plan_buffer(NPY<float>::make(0, 4)),
-      m_bndspec(new GItemList("GParts","")),   // empty reldir allows GParts.txt to be written directly at eg GPartsAnalytic/0/GParts.txt
-      m_bndlib(bndlib),
-      m_name(NULL),
-      m_prim_buffer(NULL),
-      m_closed(false),
-      m_loaded(false),
-      m_verbosity(0),
-      m_analytic_version(0),
-      m_primflag(CSG_FLAGNODETREE),
-      m_medium(NULL),
-      m_csg(NULL)
+    :
+    m_idx_buffer(NPY<unsigned>::make(0, 4)),
+    m_part_buffer(NPY<float>::make(0, NJ, NK )),
+    m_tran_buffer(NPY<float>::make(0, NTRAN, 4, 4 )),
+    m_plan_buffer(NPY<float>::make(0, 4)),
+    m_bndspec(new GItemList("GParts","")),   // empty reldir allows GParts.txt to be written directly at eg GPartsAnalytic/0/GParts.txt
+    m_bndlib(bndlib),
+    m_name(NULL),
+    m_prim_buffer(NULL),
+    m_closed(false),
+    m_loaded(false),
+    m_verbosity(0),
+    m_analytic_version(0),
+    m_primflag(CSG_FLAGNODETREE),
+    m_medium(NULL),
+    m_csg(NULL)
 {
-      m_idx_buffer->zero();
-      m_part_buffer->zero();
-      m_tran_buffer->zero();
-      m_plan_buffer->zero();
+    m_idx_buffer->zero();
+    m_part_buffer->zero();
+    m_tran_buffer->zero();
+    m_plan_buffer->zero();
  
-      init() ; 
+    init() ; 
 }
 GParts::GParts(NPY<unsigned>* idxBuf, NPY<float>* partBuf,  NPY<float>* tranBuf, NPY<float>* planBuf, const char* spec, GBndLib* bndlib) 
-      :
-      m_idx_buffer(idxBuf ? idxBuf : NPY<unsigned>::make(0, 4)),
-      m_part_buffer(partBuf ? partBuf : NPY<float>::make(0, NJ, NK )),
-      m_tran_buffer(tranBuf ? tranBuf : NPY<float>::make(0, NTRAN, 4, 4 )),
-      m_plan_buffer(planBuf ? planBuf : NPY<float>::make(0, 4)),
-      m_bndspec(new GItemList("GParts","")),   // empty reldir allows GParts.txt to be written directly at eg GPartsAnalytic/0/GParts.txt
-      m_bndlib(bndlib),
-      m_name(NULL),
-      m_prim_buffer(NULL),
-      m_closed(false),
-      m_loaded(false),
-      m_verbosity(0),
-      m_analytic_version(0),
-      m_primflag(CSG_FLAGNODETREE),
-      m_medium(NULL),
-      m_csg(NULL)
+    :
+    m_idx_buffer(idxBuf ? idxBuf : NPY<unsigned>::make(0, 4)),
+    m_part_buffer(partBuf ? partBuf : NPY<float>::make(0, NJ, NK )),
+    m_tran_buffer(tranBuf ? tranBuf : NPY<float>::make(0, NTRAN, 4, 4 )),
+    m_plan_buffer(planBuf ? planBuf : NPY<float>::make(0, 4)),
+    m_bndspec(new GItemList("GParts","")),   // empty reldir allows GParts.txt to be written directly at eg GPartsAnalytic/0/GParts.txt
+    m_bndlib(bndlib),
+    m_name(NULL),
+    m_prim_buffer(NULL),
+    m_closed(false),
+    m_loaded(false),
+    m_verbosity(0),
+    m_analytic_version(0),
+    m_primflag(CSG_FLAGNODETREE),
+    m_medium(NULL),
+    m_csg(NULL)
 {
-      m_bndspec->add(spec);
-      init() ; 
+    m_bndspec->add(spec);
+    init() ; 
 }
 GParts::GParts(NPY<unsigned>* idxBuf, NPY<float>* partBuf,  NPY<float>* tranBuf, NPY<float>* planBuf, GItemList* spec, GBndLib* bndlib) 
-      :
-      m_idx_buffer(idxBuf ? idxBuf : NPY<unsigned>::make(0, 4)),
-      m_part_buffer(partBuf ? partBuf : NPY<float>::make(0, NJ, NK )),
-      m_tran_buffer(tranBuf ? tranBuf : NPY<float>::make(0, NTRAN, 4, 4 )),
-      m_plan_buffer(planBuf ? planBuf : NPY<float>::make(0, 4)),
-      m_bndspec(spec),
-      m_bndlib(bndlib),
-      m_name(NULL),
-      m_prim_buffer(NULL),
-      m_closed(false),
-      m_loaded(false),
-      m_verbosity(0),
-      m_analytic_version(0),
-      m_primflag(CSG_FLAGNODETREE),
-      m_medium(NULL),
-      m_csg(NULL)
+    :
+    m_idx_buffer(idxBuf ? idxBuf : NPY<unsigned>::make(0, 4)),
+    m_part_buffer(partBuf ? partBuf : NPY<float>::make(0, NJ, NK )),
+    m_tran_buffer(tranBuf ? tranBuf : NPY<float>::make(0, NTRAN, 4, 4 )),
+    m_plan_buffer(planBuf ? planBuf : NPY<float>::make(0, 4)),
+    m_bndspec(spec),
+    m_bndlib(bndlib),
+    m_name(NULL),
+    m_prim_buffer(NULL),
+    m_closed(false),
+    m_loaded(false),
+    m_verbosity(0),
+    m_analytic_version(0),
+    m_primflag(CSG_FLAGNODETREE),
+    m_medium(NULL),
+    m_csg(NULL)
 {
-     
-      const std::string& reldir = spec->getRelDir() ;
-      bool empty_rel = reldir.empty() ;
-
-      //bool gpmt_0 = strcmp(reldir.c_str(), "GPmt/0")== 0 ; 
-
-      bool is_gpmt = !empty_rel && reldir.find("GPmt/") == 0 ; 
-
-      if(is_gpmt)
-      {
-          LOG(info) << "GParts::GParts detected is_gpmt " << reldir ; 
-      } 
-      else
-      {
-          if(!empty_rel)
-             LOG(warning) << "GParts::GParts"
-                          << " EXPECTING EMPTY RelDir FOR NON GPmt GParts [" << reldir << "]"
-                          ;
-          assert( empty_rel );
-          //  WHY ?
-          //  RELDIR IS GItemList ctor argument which 
-          //  GPmt::loadFromCache plants the relative PmtPath in ? 
-      }
- 
-      init() ; 
+    const std::string& reldir = spec->getRelDir() ;
+    bool empty_rel = reldir.empty() ;
+    assert( empty_rel );
+    init() ; 
 }
 
 
@@ -582,11 +594,11 @@ void GParts::init()
 
     bool match = npart == nspec ; 
     if(!match) 
-    LOG(fatal) << "GParts::init"
-               << " parts/spec MISMATCH "  
-               << " npart " << npart 
-               << " nspec " << nspec
-               ;
+    LOG(fatal) 
+        << " parts/spec MISMATCH "  
+        << " npart " << npart 
+        << " nspec " << nspec
+        ;
 
     assert(match);
 
@@ -668,6 +680,12 @@ with corresponding GMergedMesh.
 Also called by X4SolidTest:test_cathode, X4PhysicalVolume2Test
 
 **/
+
+void GParts::save(const char* dir, const char* rela)
+{
+    std::string path = BFile::FormPath(dir, rela); 
+    save(path.c_str()); 
+}
 
 void GParts::save(const char* dir)
 {
@@ -1770,9 +1788,29 @@ void GParts::dump(const char* msg, unsigned lim)
 
 
 /**
+GParts::setVolumeIndex
+-------------------------
+
 For "global" bits of geometry (from mm0) its handy to keep a reference to 
 the volume index at analytic lebel
+
+NB this overwrites the NCSG tree index, one of the initial (1,4) 
+NCSG identity indices (index,soIdx,lvIdx,height) coming in from 
+the NCSG tree via GParts::Make
+
 **/
+
+const unsigned GParts::VOL_IDX = 0 ; 
+
+void GParts::setVolumeIndex(unsigned idx)
+{
+    assert( 1 == getNumIdx() ) ;  
+    setUIntIdx( 0, VOL_IDX, idx ) ; 
+}
+unsigned GParts::getVolumeIndex(unsigned i) const
+{
+    return getUIntIdx(i, VOL_IDX ) ;  
+}
 
 void GParts::setUIntIdx(unsigned i, unsigned j, unsigned idx)
 {
@@ -1789,20 +1827,6 @@ unsigned GParts::getUIntIdx(unsigned i, unsigned j ) const
     unsigned idx = m_idx_buffer->getUInt( i, j, k, l); 
     return idx ; 
 }
-
-const unsigned GParts::VOL_IDX = 0 ; 
-
-void GParts::setVolumeIndex(unsigned idx)
-{
-    assert( 1 == getNumIdx() ) ;  
-    setUIntIdx( 0, VOL_IDX, idx ) ; 
-}
-unsigned GParts::getVolumeIndex(unsigned i) const
-{
-    return getUIntIdx(i, VOL_IDX ) ;  
-}
-
-
 
 
 

@@ -136,11 +136,12 @@ m_blib
 
 **/
 
-G4VPhysicalVolume* CTestDetector::makeChildVolume(const NCSG* csg, const char* lvn, const char* pvn, G4LogicalVolume* mother )
+G4VPhysicalVolume* CTestDetector::makeChildVolume(const NCSG* csg, const char* lvn, const char* pvn, G4LogicalVolume* mother, const NCSG* altcsg )
 {
     assert( csg );
     assert( lvn );
     assert( pvn );
+
   
     const char* spec = csg->getBoundary();
     assert( spec );  
@@ -155,7 +156,13 @@ G4VPhysicalVolume* CTestDetector::makeChildVolume(const NCSG* csg, const char* l
 
     LOG(fatal) << " lvn " << lvn ; 
 
-    G4VSolid* solid = CMaker::MakeSolid( csg ); 
+    bool have_unbalanced_alt = csg->is_balanced() && altcsg && !altcsg->is_balanced() ; 
+    if(have_unbalanced_alt) 
+    { 
+        LOG(fatal) << " have_unbalanced_alt " ; 
+    }
+
+    G4VSolid* solid = CMaker::MakeSolid( have_unbalanced_alt ? altcsg : csg ); 
 
     G4ThreeVector placement(0,0,0); 
   
@@ -189,7 +196,7 @@ G4VPhysicalVolume* CTestDetector::makeVolumeUniverse(const NCSG* csg)
     const char* lvn = GGeoTest::UNIVERSE_LV ; 
     const char* pvn = GGeoTest::UNIVERSE_PV ; 
     G4LogicalVolume* mother = NULL ; 
-    return makeChildVolume(csg, lvn, pvn, mother  );
+    return makeChildVolume(csg, lvn, pvn, mother, NULL  );
 }
 
 
@@ -233,10 +240,16 @@ G4VPhysicalVolume* CTestDetector::makeDetector_NCSG()
         const GMesh* mesh = kso->getMesh();
         const NCSG* csg = mesh->getCSG();
         const char* spec = csg->getBoundary(); 
+
+        const GMesh* altmesh = mesh->getAlt(); 
+        const NCSG* altcsg = altmesh ? altmesh->getCSG() : NULL ; 
+ 
+
+
         LOG(LEVEL) << std::setw(4) << i << " spec " << ( spec ? spec : "NULL" ) ;   
         assert( spec );  
 
-        G4VPhysicalVolume* pv = makeChildVolume( csg , lvn , pvn, mother );
+        G4VPhysicalVolume* pv = makeChildVolume( csg , lvn , pvn, mother, altcsg );
 
         G4LogicalVolume* lv = pv->GetLogicalVolume() ;
 

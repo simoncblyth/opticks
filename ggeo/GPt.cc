@@ -6,19 +6,21 @@
 #include "GLMFormat.hpp"
 
 
-GPt::GPt( int lvIdx_, int ndIdx_, const char* spec_, const glm::mat4& placement_ )
+GPt::GPt( int lvIdx_, int ndIdx_, int csgIdx_, const char* spec_, const glm::mat4& placement_ )
     :
     lvIdx(lvIdx_),
     ndIdx(ndIdx_),
+    csgIdx(csgIdx_),
     spec(strdup(spec_)),
     placement(placement_)
 {
 } 
 
-GPt::GPt( int lvIdx_, int ndIdx_, const char* spec_ )
+GPt::GPt( int lvIdx_, int ndIdx_, int csgIdx_, const char* spec_ )
     :
     lvIdx(lvIdx_),
     ndIdx(ndIdx_),
+    csgIdx(csgIdx_),
     spec(strdup(spec_)),
     placement(1.0f)
 {
@@ -36,6 +38,7 @@ std::string GPt::desc() const
     ss 
        << " lvIdx " << std::setw(4) << lvIdx
        << " ndIdx " << std::setw(7) << ndIdx
+       << " csgIdx " << std::setw(7) << csgIdx
        << " spec " << std::setw(30) << spec
        << " placement " << gformat( placement )   
        ; 

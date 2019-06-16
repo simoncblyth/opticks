@@ -9,6 +9,7 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/join.hpp>
 
+#include "NGLMExt.hpp"
 #include "NGLM.hpp"
 
 #ifdef _MSC_VER
@@ -400,7 +401,7 @@ std::string gformat(const glm::quat& q )
 std::string gformat(const glm::mat4& m )
 {
     GLMFormat fmt; 
-    return fmt.format(m);
+    return nglmext::is_identity(m) ? "Id" :  fmt.format(m) ;
 }
 
 std::string gformat(const glm::mat3& m )

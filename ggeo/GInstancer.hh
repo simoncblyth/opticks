@@ -76,7 +76,8 @@ class GGEO_API GInstancer {
         //
         unsigned            getRepeatIndex(const std::string& pdig );
         unsigned            getNumRepeats() const ;   
-        GNode*              getRepeatExample(unsigned int ridx);    // first node that matches the ridx progeny digest
+        GNode*              getRepeatExample(unsigned ridx);     // first node that matches the ridx progeny digest
+        GNode*              getLastRepeatExample(unsigned ridx); // last node that matches the ridx progeny digest
         std::vector<GNode*> getPlacements(unsigned int ridx);  // all GNode with the ridx progeny digest
    public:
         void dump(const char* msg) const ;

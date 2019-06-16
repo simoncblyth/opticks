@@ -23,6 +23,7 @@
 #include "GBuffer.hh"
 #include "GTree.hh"
 #include "GInstancer.hh"
+#include "GPt.hh"
 
 
 #include "PLOG.hh"
@@ -81,38 +82,37 @@ Canonical invokation from GGeo::prepareMeshes
 
 void GInstancer::createInstancedMergedMeshes(bool delta, unsigned verbosity)
 {
-    BTimeKeeper t("GInstancer::createInstancedMergedMeshes") ; 
-    t.setVerbose(true);
-    t.start();
+    OK_PROFILE("GInstancer::createInstancedMergedMeshes"); 
 
-    if(delta) 
-    {
-        deltacheck();
-        t("deltacheck"); 
-    }
+    if(delta) deltacheck();
+
+    OK_PROFILE("GInstancer::createInstancedMergedMeshes:deltacheck");
 
     traverse();   // spin over tree counting up progenyDigests to find repeated geometry 
-    t("traverse"); 
+
+    OK_PROFILE("GInstancer::createInstancedMergedMeshes:traverse");
 
     labelTree();  // recursive setRepeatIndex on the GNode tree for each of the repeated bits of geometry
-    t("labelTree"); 
 
+    OK_PROFILE("GInstancer::createInstancedMergedMeshes:labelTree");
 
-    LOG(LEVEL) << "( makeMergedMeshAndInstancedBuffers " ; 
     makeMergedMeshAndInstancedBuffers(verbosity);
-    t("makeMergedMeshAndInstancedBuffers"); 
-    LOG(LEVEL) << ") makeMergedMeshAndInstancedBuffers " ; 
 
+    OK_PROFILE("GInstancer::createInstancedMergedMeshes:makeMergedMeshAndInstancedBuffers");
 
-    t.stop();
-
-    if(t.deltaTime() > 0.1)
-    t.dump("GInstancer::createInstancedMergedMeshes deltaTime > cut ");
+    //if(t.deltaTime() > 0.1)
+    //t.dump("GInstancer::createInstancedMergedMeshes deltaTime > cut ");
 }
 
 
 
+/**
+GInstancer::traverse
+---------------------
 
+DYB: minrep 120 removes repeats from headonPMT, calibration sources and RPC leaving just PMTs 
+
+**/
 
 void GInstancer::traverse()
 {
@@ -125,8 +125,6 @@ void GInstancer::traverse()
     m_digest_count->sort(false);   // descending count order, ie most common subtrees first
     //m_digest_count->dump();
 
-    // minrep 120 removes repeats from headonPMT, calibration sources and RPC leaving just PMTs 
-   
     // collect digests of repeated pieces of geometry into  m_repeat_candidates
     findRepeatCandidates(m_repeat_min, m_vertex_min); 
 
@@ -145,9 +143,19 @@ void GInstancer::traverse_r( GNode* node, unsigned int depth)
 }
 
 
+
+
+/**
+GInstancer::deltacheck
+-----------------------
+
+Check consistency of the level transforms
+
+**/
+
+
 void GInstancer::deltacheck()
 {
-    // check consistency of the level transforms
     m_root = m_nodelib->getVolume(0);
     assert(m_root);
 
@@ -171,12 +179,11 @@ void GInstancer::deltacheck_r( GNode* node, unsigned int depth)
     unsigned int nprogeny = node->getLastProgenyCount() ;
 
     if(nprogeny > 0 ) 
-            LOG(debug) 
-              << "GInstancer::deltacheck " 
-              << " #progeny "  << std::setw(6) << nprogeny 
-              << " delta*1e6 " << std::setprecision(6) << std::fixed << delta*1e6 
-              << " name " << node->getName() 
-              ;
+        LOG(debug) 
+            << " #progeny "  << std::setw(6) << nprogeny 
+            << " delta*1e6 " << std::setprecision(6) << std::fixed << delta*1e6 
+            << " name " << node->getName() 
+            ;
 
     assert(delta < 1e-6) ;
 
@@ -189,8 +196,8 @@ void GInstancer::deltacheck_r( GNode* node, unsigned int depth)
 
 struct GRepeat
 {
-    unsigned   repeat_min ; 
-    unsigned   vertex_min ; 
+    unsigned    repeat_min ; 
+    unsigned    vertex_min ; 
     unsigned    index ; 
     std::string pdig ; 
     unsigned    ndig ; 
@@ -240,11 +247,16 @@ struct GRepeat
 
 
 
-// suspect problem with allowing leaf repeaters is that digesta are not-specific enough, 
-// so get bad matching 
-//
-//  allowing leaf repeaters results in too many, so place vertex count reqirement too 
+/**
+GInstancer::findRepeatCandidates
+----------------------------------
 
+Suspect problem with allowing leaf repeaters is that digesta are not-specific enough, 
+so get bad matching. 
+
+Allowing leaf repeaters results in too many, so place vertex count reqirement too. 
+
+**/
 
 void GInstancer::findRepeatCandidates(unsigned int repeat_min, unsigned int vertex_min)
 {
@@ -498,11 +510,7 @@ void GInstancer::traverseGlobals_r( GNode* node, unsigned depth )
 }
 
 
-
-
-
-
-std::vector<GNode*> GInstancer::getPlacements(unsigned int ridx)
+std::vector<GNode*> GInstancer::getPlacements(unsigned ridx)
 {
     std::vector<GNode*> placements ;
     if(ridx == 0)
@@ -519,14 +527,40 @@ std::vector<GNode*> GInstancer::getPlacements(unsigned int ridx)
     return placements ; 
 }
 
-GNode* GInstancer::getRepeatExample(unsigned int ridx)
+
+GNode* GInstancer::getRepeatExample(unsigned ridx)
 {
     std::vector<GNode*> placements = getPlacements(ridx);
     std::string pdig = m_repeat_candidates[ridx-1];
     GNode* node = m_root->findProgenyDigest(pdig) ; // first node that matches the progeny digest
     assert(placements[0] == node);
+
+    GVolume* first = static_cast<GVolume*>(placements.front()) ; 
+    GVolume* last = static_cast<GVolume*>(placements.back()) ; 
+
+    LOG(info) 
+        << " ridx " << ridx
+        << std::endl 
+        << " first.pt " << first->getPt()->desc() 
+        << std::endl 
+        << " last.pt  " << last->getPt()->desc() 
+        ; 
+
     return node ; 
 }
+
+GNode* GInstancer::getLastRepeatExample(unsigned ridx)
+{
+    std::vector<GNode*> placements = getPlacements(ridx);
+    std::string pdig = m_repeat_candidates[ridx-1];
+    GNode* node = m_root->findProgenyDigest(pdig) ; // first node that matches the progeny digest
+    assert(placements[0] == node);
+    return placements.back() ; 
+}
+
+
+
+
 
 
 /**
@@ -535,10 +569,16 @@ GInstancer::makeMergedMeshAndInstancedBuffers
 
 Populates m_geolib with merged meshes including the instancing buffers.
 
+Using *last=true* is for the ndIdx of GParts(GPts) to match 
+those of GParts(NCSG) see notes/issues/x016.rst
+
+
 **/
 
 void GInstancer::makeMergedMeshAndInstancedBuffers(unsigned verbosity)
 {
+
+    bool last = true ; 
 
     GNode* root = m_nodelib->getNode(0);
     assert(root); 
@@ -558,19 +598,19 @@ void GInstancer::makeMergedMeshAndInstancedBuffers(unsigned verbosity)
     unsigned numRidx = numRepeats + 1 ; 
  
     LOG(info) 
-              << " numRepeats " << numRepeats
-              << " numRidx " << numRidx
-              ;
+        << " numRepeats " << numRepeats
+        << " numRidx " << numRidx
+        ;
 
-    for(unsigned int ridx=1 ; ridx < numRidx ; ridx++)  // 1-based index
+    for(unsigned ridx=1 ; ridx < numRidx ; ridx++)  // 1-based index
     {
-         GNode*   rbase  = getRepeatExample(ridx) ;    // <--- why not the parent ? off-by-one confusion here as to which transforms to include
+         GNode*   rbase  = last ? getLastRepeatExample(ridx)  : getRepeatExample(ridx) ;  
 
          if(m_verbosity > 2)
          LOG(info) 
-                   << " ridx " << ridx 
-                   << " rbase " << rbase
-                   ;
+             << " ridx " << ridx 
+             << " rbase " << rbase
+             ;
 
          GMergedMesh* mm = m_geolib->makeMergedMesh(ridx, rbase, root, verbosity ); 
 

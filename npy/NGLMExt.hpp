@@ -167,6 +167,8 @@ struct NPY_API nglmext
     static bool has_scale( const glm::vec3& scale, float epsilon=1e-3 ); 
 
     static glm::vec3 pluck_translation( const glm::mat4& t ); 
+    static bool is_identity(const glm::mat4& t, float eps=1e-5); 
+
 
     static glm::mat4 invert_trs( const glm::mat4& trs ); 
     static glm::mat4 make_transform(const std::string& order, const glm::vec3& tlat, const glm::vec4& axis_angle, const glm::vec3& scal );

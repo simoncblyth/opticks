@@ -59,6 +59,15 @@ class OpticksDbg ;
        }\
     }
 
+#define OKI_PROFILE(s) \
+    { \
+       if(Opticks::HasInstance())\
+       {\
+          Opticks::Instance()->profile((s)) ;\
+       }\
+    }
+
+
 
 
 

@@ -744,6 +744,15 @@ void X4PhysicalVolume::convertStructure()
 }
 
 
+/**
+
+X4PhysicalVolume::convertStructure_r
+--------------------------------------
+
+Preorder traverse.
+
+**/
+
 GVolume* X4PhysicalVolume::convertStructure_r(const G4VPhysicalVolume* const pv, GVolume* parent, int depth, const G4VPhysicalVolume* const parent_pv, bool& recursive_select )
 {
      GVolume* volume = convertNode(pv, parent, depth, parent_pv, recursive_select );
@@ -908,6 +917,24 @@ X4PhysicalVolume::convertNode
 
 * observe the NSensor is always NULL here 
 
+* convertNode is hot code : should move whatever possible elsewhere 
+
+
+Doing GParts::Make at node level is very repetitive
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Note that boundary name is a node level thing, not mesh level : so are forced to 
+do GParts::Make at node level 
+
+
+Can GParts stuff not needing the boundary be done elsewhere ?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Actually GPt/GPts may provide a way of avoiding doing GParts::Make here, 
+instead the arguments are collected allowing deferred postcache GParts::Create 
+from persisted GPts
+
+
 **/
 
 
@@ -936,15 +963,18 @@ GVolume* X4PhysicalVolume::convertNode(const G4VPhysicalVolume* const pv, GVolum
 
      const GMesh* mesh = m_ggeo->getMesh(lvIdx); 
      const NCSG* csg = mesh->getCSG();  
-
-     GParts* pts = GParts::Make( csg, boundaryName.c_str() );  // see GScene::createVolume 
-     GPt*    pt = new GPt( lvIdx, ndIdx, boundaryName.c_str() )  ; 
-
-     pts->setBndLib(m_blib);
+     unsigned csgIdx = csg->getIndex() ; 
 
 
-     //  boundary name is a node level thing, not mesh level : so forced to do GParts::make at node level
-     //  TODO: see if GParts stuff not needing the boundary could be factored out 
+     GParts* parts = GParts::Make( csg, boundaryName.c_str() );  // painful to do this here in hot node code
+     parts->setBndLib(m_blib);
+     parts->setVolumeIndex( ndIdx );  
+
+     unsigned volIdx = parts->getVolumeIndex(0); 
+     assert( volIdx == ndIdx ); 
+
+     GPt* pt = new GPt( lvIdx, ndIdx, csgIdx, boundaryName.c_str() )  ; 
+
 
      glm::mat4 xf_local = X4Transform3D::GetObjectTransform(pv);  
 
@@ -957,9 +987,18 @@ GVolume* X4PhysicalVolume::convertNode(const G4VPhysicalVolume* const pv, GVolum
      glm::mat4 xf_global = gtriple->t ;
      GMatrixF* gtransform = new GMatrix<float>(glm::value_ptr(xf_global));
 
-
- 
-     pts->setVolumeIndex( ndIdx );  
+/*
+     if( lvIdx == 16)
+     {
+         LOG(info) 
+             << " lvIdx " << lvIdx 
+             << " ndIdx " << ndIdx 
+             << " csgIdx " << csgIdx 
+             << " boundaryName " << boundaryName
+             << " pt " << pt->desc()
+             ;
+     }  
+*/
 
      GVolume* volume = new GVolume(ndIdx, gtransform, mesh );
      m_node_count += 1 ; 
@@ -983,7 +1022,7 @@ GVolume* X4PhysicalVolume::convertNode(const G4VPhysicalVolume* const pv, GVolum
      volume->setGlobalTransform(gtriple);
  
      volume->setParallelNode( nd ); 
-     volume->setParts( pts ); 
+     volume->setParts( parts ); 
      volume->setPt( pt ); 
      volume->setPVName( pvName.c_str() );
      volume->setLVName( lvName.c_str() );

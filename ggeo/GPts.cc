@@ -65,7 +65,7 @@ void GPts::export_() // to the buffer
     for(unsigned i=0 ; i < getNumPt() ; i++ )
     {
         const GPt* pt = getPt(i); 
-        glm::ivec4 ipt(pt->lvIdx, pt->ndIdx,0,i); 
+        glm::ivec4 ipt(pt->lvIdx, pt->ndIdx, pt->csgIdx, i); 
 
         m_specs->add(pt->spec.c_str());
         m_ipt_buffer->add(ipt); 
@@ -87,7 +87,7 @@ void GPts::import()  // from buffers into vector
         glm::mat4 placement = m_plc_buffer->getMat4(i); 
         glm::ivec4 ipt = m_ipt_buffer->getQuadI(i); 
   
-        GPt* pt = new GPt( ipt.x, ipt.y, spec, placement ); 
+        GPt* pt = new GPt( ipt.x, ipt.y, ipt.z, spec, placement ); 
         add(pt);  
     }
     assert( getNumPt() == num_pt );  

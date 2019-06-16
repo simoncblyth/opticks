@@ -207,6 +207,12 @@ glm::vec3 nglmext::pluck_translation( const glm::mat4& t )
     return tla ; 
 }
 
+bool nglmext::is_identity(const glm::mat4& t, float eps) 
+{
+    glm::mat4 id(1.0) ; 
+    float dt = nglmext::compDiff(t, id);
+    return dt < eps  ; 
+}
 
 
 

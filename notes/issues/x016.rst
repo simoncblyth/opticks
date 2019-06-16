@@ -9,8 +9,6 @@ Context
 * ggeo/GParts.hh added a review of where GParts is used
 
 
-
-
 Overview
 -----------
 
@@ -22,7 +20,12 @@ unbalanced NCSG, but my GPU CSG requires balanced node tree.
 
 * But thats just the start : also need alt GParts and GMergedMesh too ?   
 
+  * not for simple test geometries you dont, see CTestDetector 
+
 * maybe easier to defer balanching and do it postcache, just before upload to GPU ? 
+
+  * took the converse approach, give Geant4/CMaker the alternative 
+    unbalanced and leave the GPU path untouched
 
 * Hmm problem with defered balancing is that would then need to defer the GParts concatenation ?
 
@@ -37,53 +40,44 @@ Can GParts combine be made higher level (and hence deferable postcache) ?
 
 * Just hang onto NCSG instances (actually indices as want this to work postcache) and boundary names 
 * also need placement transforms
-
-::
-
-     GParts* pts = GParts::Make( csg, boundaryName.c_str() );  // see GScene::createVolume 
-     pts->setBndLib(m_blib);
-
-
 * leave GParts asis, experiment with GPts
 
+* :doc:`GPtsTest`
 
 
-Checking creation of GParts postcache with GPtsTest 
---------------------------------------------------------
+
+
+WORKAROUND  CTestDetector::makeChildVolume use the alt unbalanced NCSG for Geant4 conversion
+------------------------------------------------------------------------------------------------
 
 ::
 
-    2019-06-15 23:44:58.547 INFO  [21706] [GParts::Compare@57] 
-                                   qty                                 A                                 B
-                                  Name                              NULL                              NULL
-                                BndLib                         0x1140b00                         0x1140b00
-                                Closed                                 1                                 1
-                                Loaded                                 1                                 0
-                        PrimFlagString                      flagnodetree                      flagnodetree
-                              NumParts                                31                                31
-                               NumPrim                                 1                                 1
-                                  prim  e1a7612fac70b684990129fedf3b8ce7  e1a7612fac70b684990129fedf3b8ce7
-                                   idx  614ed949cf70802dab93ed8fb14578f6  535302f0401f8d763415925ce5b3acc1
-                                  part  c9150c5e22f758aded28d128c69912da  c9150c5e22f758aded28d128c69912da
-                                  tran  e95415b9ce12a474595951b44d131b0d  e95415b9ce12a474595951b44d131b0d
-                                  plan  d41d8cd98f00b204e9800998ecf8427e  d41d8cd98f00b204e9800998ecf8427e
+     
+    -    G4VSolid* solid = CMaker::MakeSolid( csg ); 
+    +    bool have_unbalanced_alt = csg->is_balanced() && altcsg && !altcsg->is_balanced() ; 
+    +    if(have_unbalanced_alt) 
+    +    { 
+    +        LOG(fatal) << " have_unbalanced_alt " ; 
+    +    }
+    +
+    +    G4VSolid* solid = CMaker::MakeSolid( have_unbalanced_alt ? altcsg : csg ); 
+     
 
 
-Get discrepant idxBuffer::
+Huh, that was easy : why did I explore the GParts/GPts rabbit hole ?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-    [blyth@localhost GPtsTest]$ np.py parts/idxBuffer.npy -iFv
-    a :                                          parts/idxBuffer.npy :               (1, 4) : d988f81268f2555ea952d45d32060d08 : 20190615-2344 
-    (1, 4)
-    i32
-    [[[63554    16    16     4]]]
-    [blyth@localhost GPtsTest]$ np.py parts2/idxBuffer.npy -iFv
-    a :                                         parts2/idxBuffer.npy :               (1, 4) : 000516c4738eac9ef5392eaa5fafe0f0 : 20190615-2344 
-    (1, 4)
-    i32
-    [[[63075    16    16     4]]]
+* GParts is needed if you want to change the analytic GPU geometry, 
+  this workaround doesnt change that : it just swaps to the alt unbalanced  
+  for Geant4 consumption 
 
 
+* that exploration however did reveal a still mystifying bug in the volume index (ndIdx)
+  collected by GParts : how is it possible to get non-unique ndIdx ?
+
+* it also suggests an optimization using GParts::Create based on GPts rather 
+  than directly GParts::Make in the hot node code
 
 
 

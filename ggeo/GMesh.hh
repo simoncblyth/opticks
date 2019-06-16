@@ -496,7 +496,7 @@ class GGEO_API GMesh : public GDrawable {
   public:
       // analytic geometry standin for OptiX
       void setParts(GParts* parts);
-      GParts* getParts();
+      GParts* getParts() const ;
 
       void   setPt(GPt* pt);
       GPt*   getPt() const ;

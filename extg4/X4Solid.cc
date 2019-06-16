@@ -939,7 +939,7 @@ void X4Solid::convertEllipsoid()
 
     bool zslice = z1 > -cz || z2 < cz ;  
 
-    LOG(info) 
+    LOG(debug) 
          << " zcut1 " << zcut1 
          << " zcut2 " << zcut2
          << " z1 " << z1
@@ -1078,7 +1078,7 @@ void X4Solid::convertPolycone()
 
     if( zp.size() == 2 && zp[0].z > zp[1].z )  // Aug 2018 FIX: was [0] [0] 
     {
-        LOG(warning) << "Polycone swap misordered pair of zplanes for " << m_name ; 
+        LOG(debug) << "Polycone swap misordered pair of zplanes for " << m_name ; 
         std::reverse( std::begin(zp), std::end(zp) ) ; 
     }
 

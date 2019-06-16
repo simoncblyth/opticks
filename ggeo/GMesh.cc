@@ -653,7 +653,7 @@ NSlice* GMesh::getPartSlice()
 }
 
 
-GParts* GMesh::getParts()
+GParts* GMesh::getParts() const 
 {
     return m_parts ; 
 }

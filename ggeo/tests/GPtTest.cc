@@ -11,9 +11,9 @@ int main(int argc, char** argv)
 
     GPts* pts = GPts::Make() ; 
 
-    pts->add( new GPt( 101, 10001, "red" ) );
-    pts->add( new GPt( 202, 20002, "green" ) );
-    pts->add( new GPt( 303, 30003, "blue" ) );
+    pts->add( new GPt( 101, 10001, 42,  "red" ) );
+    pts->add( new GPt( 202, 20002, 43, "green" ) );
+    pts->add( new GPt( 303, 30003, 44, "blue" ) );
 
     pts->dump();  
 

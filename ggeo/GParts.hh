@@ -88,7 +88,7 @@ Based on *opticks-fl GParts.hh*
              within the visit of X4PhysicalVolume::convertStructure_r
              GParts::Make creates GParts instance from the NCSG 
              associated to the GMesh for the lvIdx solid.  The GParts
-             are associated with the GVolume. 
+             are associated with the GVolume nodes of the tree.
 
     ./ggeo/GMergedMesh.cc
          NB for full(not test?) geometry GMergedMesh is orchestrated
@@ -191,7 +191,7 @@ class GGEO_API GParts {
             } ;
     public:
       //
-        static int     Compare(const GParts* a, const GParts* b); 
+        static int     Compare(const GParts* a, const GParts* b, bool dump ); 
         static GParts* Create(const GPts* pts, const std::vector<const NCSG*>& solids, unsigned verbosity ); 
         static GParts* Make(const npart& pt, const char* spec);
         static GParts* Make(OpticksCSG_t csgflag, glm::vec4& param, const char* spec);
@@ -285,6 +285,7 @@ class GGEO_API GParts {
         void applyPlacementTransform(const glm::mat4& placement, unsigned verbosity=0);
 
         void save(const char* dir);
+        void save(const char* dir, const char* rela);
         static GParts* Load(const char* dir);
     private:
         void registerBoundaries();  // convert the boundary spec names into integer codes using bndlib, setting into partBuffer
@@ -335,7 +336,7 @@ class GGEO_API GParts {
         NPY<float>*        m_tran_buffer ; 
         NPY<float>*        m_plan_buffer ; 
         GItemList*         m_bndspec ;  
-        GBndLib*           m_bndlib ; 
+        GBndLib*           m_bndlib ;   // cannot be const as registerBoundaries may add
         const char*        m_name ;         
     private:
         typedef std::map<unsigned, unsigned> MUU ; 

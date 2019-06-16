@@ -397,12 +397,12 @@ GMatrixF* GNode::getRelativeTransform(GNode* base)
     if(nbase == 0)
     {
         LOG(fatal)
-                    << " BASE NODE IS NOT ANCESTOR " 
-                    << " base node index: " << ( base ? base->getIndex() : -1 )
-                    << " base node name:  " << base->getName()
-                    << " this node index:  " << getIndex() 
-                    << " this node name:  " << this->getName()
-                    ;
+            << " BASE NODE IS NOT ANCESTOR " 
+            << " base node index: " << ( base ? base->getIndex() : -1 )
+            << " base node name:  " << base->getName()
+            << " this node index:  " << getIndex() 
+            << " this node name:  " << this->getName()
+            ;
         assert(0);
     }
     return m ; 
@@ -522,6 +522,17 @@ unsigned int GNode::getLastProgenyCount()
     return m_progeny_count ; 
 }
 
+/**
+GNode::findProgenyDigest
+-------------------------
+
+If digest of this node matches target return this node
+otherwise recursively invoke on children returning the first match.
+
+Hmm slightly funny structure, preorder ?
+
+**/
+
 GNode* GNode::findProgenyDigest(const std::string& dig)  
 {
    std::string& pdig = getProgenyDigest();
@@ -532,7 +543,7 @@ GNode* GNode::findProgenyDigest(const std::string& dig)
    }
    else
    {
-       for(unsigned int i = 0; i < getNumChildren(); i++) 
+       for(unsigned i = 0; i < getNumChildren(); i++) 
        {
            GNode* child = getChild(i);
            node = child->findProgenyDigest(dig);
@@ -572,16 +583,18 @@ void GNode::collectAllProgenyDigest(std::vector<GNode*>& match, std::string& dig
     }
 }
 
+
+/**
+GNode::collectAllInstances
+---------------------------
+
+* with "inside=false" the recursion stops at the first matched instance,.
+* with "inside=true" the recursion continues, collecting all matched instances
+
+**/
+
 void GNode::collectAllInstances(std::vector<GNode*>& match, unsigned ridx, bool inside, bool honour_selection )
 {
-    // NB when a node labelled with the target ridx is found... 
-    // the traverse stops the descent there...  
-    // ie there is no attempt to collect from inside the target node
-    // ... this is why looking for instances of ridx 0 returns just one instance, 
-    // the root node
-    //
-
-     
     bool matched_ridx = getRepeatIndex()==ridx ; 
     bool matched_selection = honour_selection ? m_selected : true ; 
     bool matched = matched_ridx && matched_selection ;
@@ -589,18 +602,20 @@ void GNode::collectAllInstances(std::vector<GNode*>& match, unsigned ridx, bool 
     if(inside)
     {
         if(matched) match.push_back(this);
-        for(unsigned int i = 0; i < getNumChildren(); i++) getChild(i)->collectAllInstances(match, ridx, inside, honour_selection );
+        for(unsigned i = 0; i < getNumChildren(); i++) getChild(i)->collectAllInstances(match, ridx, inside, honour_selection );
     }
     else
     {
-        // without "inside" the traverse is stopped at the first matched instance, ie it doesnt look inside self 
         if(matched) 
         {
             match.push_back(this);
         }
         else
         {
-            for(unsigned int i = 0; i < getNumChildren(); i++) getChild(i)->collectAllInstances(match, ridx, inside, honour_selection );
+            for(unsigned i = 0; i < getNumChildren(); i++) getChild(i)->collectAllInstances(match, ridx, inside, honour_selection );
         }
     }
 }
+
+
+

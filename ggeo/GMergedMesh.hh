@@ -98,6 +98,7 @@ public:
 private:
     // NB cannot treat GMergedMesh as a GMesh wrt calling getNumVolumes 
     // explicit naming to avoid subclass confusion
+    void init(); 
     void countMergedMesh( GMergedMesh* other, bool selected );   
     void countVolume( GVolume*      volume, bool selected, unsigned verbosity  ); 
     void countMesh( const GMesh* mesh ); 
@@ -148,6 +149,7 @@ private:
     std::map<unsigned int, unsigned int> m_mesh_usage ; 
 
     GPts*        m_pts ; 
+    Opticks*     m_ok ; 
 
      
 };

@@ -196,10 +196,11 @@ GProperty<float>* GScintillatorLib::constructInvertedReemissionCDF(GPropertyMap<
 
     if( l_srrd != l_rrd - 2)
     {
-       LOG(fatal) << "GScintillatorLib::constructInvertedReemissionCDF  was expecting to trim 2 values "
-                  << " l_srrd " << l_srrd 
-                  << " l_rrd " << l_rrd 
-                  ;
+       LOG(debug) 
+           << "was expecting to trim 2 values "
+           << " l_srrd " << l_srrd 
+           << " l_rrd " << l_rrd 
+           ;
     }
     //assert( l_srrd == l_rrd - 2); // expect to trim 2 values
 

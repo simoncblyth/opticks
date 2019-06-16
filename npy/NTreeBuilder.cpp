@@ -1,4 +1,5 @@
 #include <iostream>
+#include <csignal>
 #include <sstream>
 
 #include "NNodeCollector.hpp"
@@ -166,6 +167,7 @@ void NTreeBuilder<T>::init()
     m_num_prim = getNumPrim() ; 
     m_height = FindBinaryTreeHeight(m_num_prim) ; 
 
+    //std::raise(SIGINT);   // from  X4CSG::GenerateTest X4Solid::Balance 
     LOG(LEVEL) << desc() ; 
 
     m_subs_copy = m_subs ; 
