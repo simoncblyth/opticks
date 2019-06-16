@@ -15,14 +15,11 @@
 #include "GParts.hh"
 #include "GCSG.hh"
 
-#include "PLOG.hh"
-#include "GGEO_LOG.hh"
-#include "GGEO_BODY.hh"
+#include "OPTICKS_LOG.hh"
 
 int main(int argc, char** argv)
 {
-    PLOG_COLOR(argc, argv);
-    GGEO_LOG__ ;
+    OPTICKS_LOG(argc, argv);
 
     Opticks ok(argc, argv);
     ok.configure();

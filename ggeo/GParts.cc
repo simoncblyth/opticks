@@ -629,11 +629,41 @@ GParts::GParts(NPY<unsigned>* idxBuf, NPY<float>* partBuf,  NPY<float>* tranBuf,
     m_medium(NULL),
     m_csg(NULL)
 {
-    const std::string& reldir = spec->getRelDir() ;
-    bool empty_rel = reldir.empty() ;
-    assert( empty_rel );
+    checkSpec(spec); 
     init() ; 
 }
+
+
+/**
+GParts::checkSpec
+-----------------
+
+RelDir is GItemList ctor argument which 
+GPmt::loadFromCache plants the relative PmtPath in ? 
+
+The assert is tripped by GPmtTest without the special casing 
+
+**/
+
+void GParts::checkSpec(GItemList* spec) const 
+{
+    const std::string& reldir = spec->getRelDir() ;
+    bool empty_rel = reldir.empty() ;
+    bool is_gpmt = !empty_rel && reldir.find("GPmt/") == 0 ; 
+    if(is_gpmt)
+    {
+        LOG(info) << "is_gpmt " << reldir ; 
+    } 
+    else
+    {
+        if(!empty_rel)
+            LOG(fatal)
+                << " EXPECTING EMPTY RelDir FOR NON GPmt GParts [" << reldir << "]"
+                ;
+        assert( empty_rel );
+    }
+}
+
 
 
 void GParts::init()

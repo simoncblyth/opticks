@@ -233,6 +233,7 @@ class GGEO_API GParts {
     private:
         void init(const char* spec);        
         void init();        
+        void checkSpec(GItemList* spec) const ;
     public: 
         void         setName(const char* name);
         const char*  getName() const ;
