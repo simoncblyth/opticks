@@ -208,8 +208,8 @@ GParts* GParts::Create(const GPts* pts, const std::vector<const NCSG*>& solids, 
         assert( csg ); 
 
         //  X4PhysicalVolume::convertNode
-        GParts* parts = GParts::Make( csg, spec.c_str() ); 
-        parts->setVolumeIndex(ndIdx); 
+        GParts* parts = GParts::Make( csg, spec.c_str(), ndIdx ); 
+        //parts->setVolumeIndex(ndIdx); 
 
         // GMergedMesh::mergeVolume
         // GMergedMesh::mergeVolumeAnalytic
@@ -420,29 +420,50 @@ that there are nodes in the structural tree.
 Because GParts requires the boundary spec are forced to create it 
 at node level.
 
+
+Promotion from mesh/solid level to node/volume level : remember to clone
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+When objects are "usedglobally" and need an independent non-instanced
+identity (ie they need to be changed) then it is imperative to clone them.
+Forgetting to clone leads to bizarre bugs such as duplicated indices, 
+see notes/issues/GPtsTest.rst  
+
+If any convexpolyhedron eg Trapezoids are usedglobally (ie non-instanced), will need:
+
+1. clone the PlaneBuffer 
+2. transform the planes with the global transform, do this in applyPlacementTransform 
+
 **/
 
-GParts* GParts::Make( const NCSG* tree, const char* spec )
+GParts* GParts::Make( const NCSG* tree, const char* spec, unsigned ndIdx )
 {
     assert(spec);
 
     bool usedglobally = tree->isUsedGlobally() ;   // see opticks/notes/issues/subtree_instances_missing_transform.rst
     assert( usedglobally == true );  // always true now ?   
 
-    NPY<float>* tree_tranbuf = tree->getGTransformBuffer() ;
-    NPY<float>* tree_planbuf = tree->getPlaneBuffer() ;
+    NPY<unsigned>* tree_idxbuf = tree->getIdxBuffer() ;   // (1,4) identity indices (index,soIdx,lvIdx,height)
+    NPY<float>*   tree_tranbuf = tree->getGTransformBuffer() ;
+    NPY<float>*   tree_planbuf = tree->getPlaneBuffer() ;
     assert( tree_tranbuf );
 
-    NPY<unsigned>* idxbuf = tree->getIdxBuffer() ; //  (1,4) identity indices (index,soIdx,lvIdx,height)
+    NPY<unsigned>* idxbuf = tree_idxbuf->clone()  ;   // <-- lacking this clone was cause of the mystifying repeated indices see notes/issues/GPtsTest             
     NPY<float>* nodebuf = tree->getNodeBuffer();       // serialized binary tree
     NPY<float>* tranbuf = usedglobally                 ? tree_tranbuf->clone() : tree_tranbuf ; 
     NPY<float>* planbuf = usedglobally && tree_planbuf ? tree_planbuf->clone() : tree_planbuf ;  
 
-    // if any convexpolyhedron eg Trapezoids are usedglobally (ie non-instanced), will need:
-    //
-    //   1. clone the PlaneBuffer above
-    //   2. transform the planes with the global transform, do this in applyPlacementTransform 
-    //
+     
+    // overwrite the cloned idxbuf swapping the tree index for the ndIdx 
+    // as being promoted to node level 
+    {
+        assert( idxbuf->getNumItems() == 1 ); 
+        unsigned i=0u ; 
+        unsigned j=0u ; 
+        unsigned k=0u ; 
+        unsigned l=0u ; 
+        idxbuf->setUInt(i,j,k,l, ndIdx);
+    }
 
     unsigned verbosity = tree->getVerbosity(); 
     if(verbosity > 1)
@@ -516,6 +537,31 @@ GParts* GParts::Make( const NCSG* tree, const char* spec )
     return pts ; 
 }
 
+
+#ifdef GPARTS_DEBUG
+std::vector<unsigned>* GParts::IDXS = NULL ;
+
+void GParts::initDebugDupeIdx()
+{
+    if(IDXS == NULL) IDXS = new std::vector<unsigned> ; 
+    if( m_idx_buffer && m_idx_buffer->getNumItems() == 1 )
+    {
+        glm::uvec4 uv = m_idx_buffer->getQuadU(0) ; 
+        bool dupe = std::find(IDXS->begin(), IDXS->end(), uv.x ) != IDXS->end()  ;   
+        if(dupe)
+        {
+           LOG(fatal) 
+                << " ctor dupe " << glm::to_string( uv ) 
+                << " count " << IDXS->size()
+                ;   
+        } 
+        assert(!dupe); 
+        IDXS->push_back(uv.x); 
+    } 
+}
+#endif
+
+
 GParts::GParts(GBndLib* bndlib) 
     :
     m_idx_buffer(NPY<unsigned>::make(0, 4)),
@@ -541,6 +587,8 @@ GParts::GParts(GBndLib* bndlib)
  
     init() ; 
 }
+
+
 GParts::GParts(NPY<unsigned>* idxBuf, NPY<float>* partBuf,  NPY<float>* tranBuf, NPY<float>* planBuf, const char* spec, GBndLib* bndlib) 
     :
     m_idx_buffer(idxBuf ? idxBuf : NPY<unsigned>::make(0, 4)),
@@ -560,6 +608,7 @@ GParts::GParts(NPY<unsigned>* idxBuf, NPY<float>* partBuf,  NPY<float>* tranBuf,
     m_csg(NULL)
 {
     m_bndspec->add(spec);
+
     init() ; 
 }
 GParts::GParts(NPY<unsigned>* idxBuf, NPY<float>* partBuf,  NPY<float>* tranBuf, NPY<float>* planBuf, GItemList* spec, GBndLib* bndlib) 
@@ -601,6 +650,9 @@ void GParts::init()
         ;
 
     assert(match);
+#ifdef GPARTS_DEBUG
+    //initDebugDupeIdx();
+#endif
 
 }
 
@@ -1015,6 +1067,23 @@ void GParts::add(GParts* other, unsigned verbosity )
 
     unsigned num_idx_add = other_idx_buffer->getNumItems() ;
     assert( num_idx_add == 1);
+
+#ifdef GPARTS_DEBUG
+    glm::uvec4 idx = other_idx_buffer->getQuadU(0);  
+    unsigned aix = idx.x ;  
+    bool dupe = std::find(m_aix.begin(), m_aix.end(), aix ) != m_aix.end() ; 
+    m_aix.push_back(aix);  
+
+    LOG(debug) 
+        << " idx " << glm::to_string(idx) 
+        << " aix " << aix
+        << " m_idx_buffer.NumItems " << m_idx_buffer->getNumItems()
+        << " m_aix.size " << m_aix.size()
+        ; 
+
+    if(dupe) LOG(fatal) << " dupe " << aix ; 
+    assert(!dupe); 
+#endif
 
     unsigned num_part_add = other_part_buffer->getNumItems() ;
     unsigned num_tran_add = other_tran_buffer->getNumItems() ;
@@ -1804,6 +1873,16 @@ const unsigned GParts::VOL_IDX = 0 ;
 
 void GParts::setVolumeIndex(unsigned idx)
 {
+    assert(0 && "do this in the Make : not after ctor") ; 
+
+#ifdef GPARTS_DEBUG
+    // only called once per node
+    bool dupe = std::find(m_nix.begin(), m_nix.end(), idx ) != m_nix.end() ; 
+    m_nix.push_back(idx);  
+    if(dupe) LOG(fatal) << " dupe " << idx ; 
+    assert(!dupe); 
+#endif 
+
     assert( 1 == getNumIdx() ) ;  
     setUIntIdx( 0, VOL_IDX, idx ) ; 
 }

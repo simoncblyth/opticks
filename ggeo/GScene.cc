@@ -706,7 +706,9 @@ GVolume* GScene::createVolume(nd* n, unsigned depth, bool& recursive_select  ) /
 
     std::string bndspec = lookupBoundarySpec(volume, n);  // using just transferred boundary from tri branch
 
-    GParts* pts = GParts::Make( csg, bndspec.c_str() ); // amplification from mesh level to node level 
+    unsigned ndIdx = abs_node_idx ; 
+
+    GParts* pts = GParts::Make( csg, bndspec.c_str(), ndIdx ); // amplification from mesh level to node level 
 
     assert( m_tri_bndlib );
 

@@ -60,7 +60,9 @@ void test_solid(G4VSolid* so)
     GBndLib* blib = new GBndLib(ok, mlib, slib);
     blib->closeConstituents();
 
-    GParts* pts = GParts::Make( csg, "Air///Water" );  
+    unsigned ndIdx = 0 ; 
+
+    GParts* pts = GParts::Make( csg, "Air///Water", ndIdx );  
     pts->setBndLib(blib); 
 
     GParts* cpts = GParts::Combine(pts); 

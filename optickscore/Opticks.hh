@@ -151,6 +151,7 @@ class OKCORE_API Opticks {
        bool hasOpt(const char* name) const ;
        bool operator()(const char* name) const ; 
        void cleanup();
+       void postgeocache();
        void postpropagate();
        void ana();
 

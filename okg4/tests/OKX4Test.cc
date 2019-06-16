@@ -120,6 +120,10 @@ int main(int argc, char** argv)
 
     ok->profile("OKX4Test:X4PhysicalVolume"); 
 
+
+
+
+
     bool save_gltf = false ; 
     if(save_gltf)
     {
@@ -147,8 +151,11 @@ int main(int argc, char** argv)
 
     Opticks* oki = Opticks::GetInstance() ; 
     ok->saveProfile();
+    ok->postgeocache(); 
+
     assert( oki == ok ) ; 
     ok->reportGeoCacheCoordinates(); 
+
 
     return mgr.rc() ;
 

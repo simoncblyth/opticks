@@ -45,7 +45,8 @@ void test_Adopt()
         NCSG* csg = NCSG::Adopt( n );
         csg->setVerbosity(verbosity);
 
-        GParts* pts = GParts::Make( csg , spec  ) ; 
+        unsigned ndIdx = i ; 
+        GParts* pts = GParts::Make( csg , spec, ndIdx  ) ; 
         pts->dump("GPartsTest");
 
     }
@@ -75,11 +76,12 @@ void test_save_load(GBndLib* bndlib)
 
     unsigned soIdx = 0 ; 
     unsigned lvIdx = 0 ; 
+    unsigned ndIdx = 0 ; 
 
     NCSG* csg = NCSG::Adopt( n, config, soIdx, lvIdx );
 
     csg->setVerbosity(2);  
-    GParts* pts = GParts::Make(csg, spec ) ; 
+    GParts* pts = GParts::Make(csg, spec, ndIdx ) ; 
     pts->dump("pts");
 
     const char* dir = "$TMP/GPartsTest_test_save" ;
@@ -108,7 +110,9 @@ void test_load_ncsg_make()
 
      csg->setVerbosity(3); 
 
-     GParts* pts = GParts::Make( csg, spec );
+     unsigned ndIdx = 0 ; 
+
+     GParts* pts = GParts::Make( csg, spec, ndIdx );
      assert(pts); 
 }
 

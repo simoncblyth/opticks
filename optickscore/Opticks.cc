@@ -372,6 +372,11 @@ void Opticks::saveProfile()
    m_profile->save();
 }
 
+void Opticks::postgeocache()
+{
+   dumpProfile("Opticks::postgeocache", NULL  );  
+}
+
 void Opticks::postpropagate()
 {
    saveProfile();

@@ -535,6 +535,16 @@ GNode* GInstancer::getRepeatExample(unsigned ridx)
     GNode* node = m_root->findProgenyDigest(pdig) ; // first node that matches the progeny digest
     assert(placements[0] == node);
 
+    return node ; 
+}
+
+GNode* GInstancer::getLastRepeatExample(unsigned ridx)
+{
+    std::vector<GNode*> placements = getPlacements(ridx);
+    std::string pdig = m_repeat_candidates[ridx-1];
+    GNode* node = m_root->findProgenyDigest(pdig) ; // first node that matches the progeny digest
+    assert(placements[0] == node);
+
     GVolume* first = static_cast<GVolume*>(placements.front()) ; 
     GVolume* last = static_cast<GVolume*>(placements.back()) ; 
 
@@ -546,15 +556,6 @@ GNode* GInstancer::getRepeatExample(unsigned ridx)
         << " last.pt  " << last->getPt()->desc() 
         ; 
 
-    return node ; 
-}
-
-GNode* GInstancer::getLastRepeatExample(unsigned ridx)
-{
-    std::vector<GNode*> placements = getPlacements(ridx);
-    std::string pdig = m_repeat_candidates[ridx-1];
-    GNode* node = m_root->findProgenyDigest(pdig) ; // first node that matches the progeny digest
-    assert(placements[0] == node);
     return placements.back() ; 
 }
 
@@ -577,8 +578,7 @@ those of GParts(NCSG) see notes/issues/x016.rst
 
 void GInstancer::makeMergedMeshAndInstancedBuffers(unsigned verbosity)
 {
-
-    bool last = true ; 
+    bool last = false ; 
 
     GNode* root = m_nodelib->getNode(0);
     assert(root); 

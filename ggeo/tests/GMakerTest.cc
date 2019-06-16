@@ -72,15 +72,20 @@ void GMakerTest::makeFromCSG()
 
     const NSceneConfig* config = new NSceneConfig(m_ok->getGLTFConfig()); 
 
-    for(VN::const_iterator it=nodes.begin() ; it != nodes.end() ; it++)
+
+
+    //for(VN::const_iterator it=nodes.begin() ; it != nodes.end() ; it++)
+
+    for(unsigned i=0 ; i < nodes.size() ; i++)
     {
-        nnode* n = *it ; 
+        nnode* n = nodes[i]; 
         n->dump();
 
         n->set_boundary(spec);
 
         unsigned soIdx = 0 ; 
         unsigned lvIdx = 0 ; 
+        unsigned ndIdx = i ; 
 
         NCSG* csg = NCSG::Adopt( n, config, soIdx, lvIdx );
         csg->getMeta()->setValue<std::string>("poly", "IM");
@@ -89,7 +94,8 @@ void GMakerTest::makeFromCSG()
 
         const GMesh* mesh = m_maker->makeMeshFromCSG(csg) ;   
         
-        GVolume* volume = m_maker->makeFromMesh(mesh);
+
+        GVolume* volume = m_maker->makeVolumeFromMesh(ndIdx, mesh);
 
         mesh->Summary();
 

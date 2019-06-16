@@ -159,23 +159,23 @@ GMesh* GMaker::makeMeshFromCSG( NCSG* csg ) // cannot be const due to lazy NCSG:
 }
 
 
-GVolume* GMaker::makeFromMesh( const GMesh* mesh ) const 
+GVolume* GMaker::makeVolumeFromMesh( unsigned ndIdx, const GMesh* mesh ) const 
 {
     glm::mat4 txf(1.0f); 
-    return makeFromMesh( mesh, txf ); 
+    return makeVolumeFromMesh( ndIdx, mesh, txf ); 
 }
 
-GVolume* GMaker::makeFromMesh( const GMesh* mesh, const glm::mat4& txf   ) const 
+GVolume* GMaker::makeVolumeFromMesh( unsigned ndIdx, const GMesh* mesh, const glm::mat4& txf ) const 
 {
     const NCSG* csg = mesh->getCSG();   
 
-    unsigned index = mesh->getIndex(); 
+    unsigned lvIdx = mesh->getIndex(); 
 
     const char* spec = csg->getBoundary();  
 
     GMatrixF* transform = new GMatrix<float>(glm::value_ptr(txf));
 
-    GVolume* volume = new GVolume(index, transform, mesh );     
+    GVolume* volume = new GVolume( ndIdx, transform, mesh );     
     // csg is mesh-qty not a node-qty, boundary spec is a node-qty : so this is just for testing
 
     volume->setSensor( NULL );      
@@ -190,12 +190,13 @@ GVolume* GMaker::makeFromMesh( const GMesh* mesh, const glm::mat4& txf   ) const
     volume->setLVName( strdup(lvn.c_str()) );
     volume->setCSGFlag( type );
 
-    GParts* pts = GParts::Make( csg, spec );  
+    GParts* pts = GParts::Make( csg, spec, ndIdx );  
 
     volume->setParts( pts );
 
     LOG(LEVEL) 
-              << " index " << index 
+              << " lvIdx (aka meshIdx) " << lvIdx 
+              << " ndIdx (aka volIdx) " << ndIdx 
               << " spec " << spec 
               ; 
 

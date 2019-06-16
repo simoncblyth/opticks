@@ -7,7 +7,7 @@
 #include "PLOG.hh"
 
 
-template <typename T> const plog::Severity NTreeBuilder<T>::LEVEL = error ; 
+template <typename T> const plog::Severity NTreeBuilder<T>::LEVEL = debug ; 
 
 template <typename T> const char* NTreeBuilder<T>::PRIM_ = "PRIM" ; 
 template <typename T> const char* NTreeBuilder<T>::BILEAF_ = "BILEAF" ; 

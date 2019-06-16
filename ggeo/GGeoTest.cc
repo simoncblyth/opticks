@@ -286,7 +286,8 @@ void GGeoTest::importCSG()
         primIdx++ ; // each tree is separate OptiX primitive, with own line in the primBuffer 
 
         GMesh* mesh = m_meshes[i] ; 
-        GVolume* volume = m_maker->makeFromMesh(mesh);
+        unsigned ndIdx = i ;  
+        GVolume* volume = m_maker->makeVolumeFromMesh(ndIdx, mesh);
 
         if(prior)
         {

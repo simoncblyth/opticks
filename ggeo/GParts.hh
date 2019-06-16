@@ -9,6 +9,11 @@
 #include "OpticksCSG.h"
 #include "NBBox.hpp"
 
+
+#define GPARTS_DEBUG 1
+
+
+
 struct npart ; 
 struct NSlice ; 
 template <typename T> class NPY ;
@@ -168,6 +173,15 @@ class GGEO_API GParts {
        friend class GGeoTest ;
        friend class GPmt ; 
     public:
+
+#ifdef GPARTS_DEBUG
+       static std::vector<unsigned>* IDXS ;
+       void initDebugDupeIdx();
+
+       std::vector<unsigned> m_nix ;
+       std::vector<unsigned> m_aix ;
+#endif
+
        static const plog::Severity LEVEL ; 
        // conventional names for interfacing
        static const char* CONTAINING_MATERIAL ; 
@@ -195,7 +209,7 @@ class GGEO_API GParts {
         static GParts* Create(const GPts* pts, const std::vector<const NCSG*>& solids, unsigned verbosity ); 
         static GParts* Make(const npart& pt, const char* spec);
         static GParts* Make(OpticksCSG_t csgflag, glm::vec4& param, const char* spec);
-        static GParts* Make(const NCSG* tree, const char* spec );
+        static GParts* Make(const NCSG* tree, const char* spec, unsigned ndIdx );
     public:
         static GParts* Combine(std::vector<GParts*> subs, unsigned verbosity);
         static GParts* Combine(GParts* onesub,            unsigned verbosity=0 );   // for consistent handling between 1 and many 
@@ -354,6 +368,7 @@ class GGEO_API GParts {
         OpticksCSG_t       m_primflag ; 
         const char*        m_medium ; 
         const NCSG*        m_csg ; 
+
 
 };
 

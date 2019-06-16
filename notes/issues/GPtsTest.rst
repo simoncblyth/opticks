@@ -12,9 +12,91 @@ Context
 * Neverthless the postcache GParts(GPts) seems to avoid a still mystifying bug 
   with repeated ndIdx in the precache GParts(NCSG).
 
+  * NOW FIXED 
+
 * Also need to measure using the GParts(GPts) approach, 
   it enables moving most of GParts creation from hot node level code 
   into cool solid level code.
+
+
+BUG FIXED : WAS A MISSING idxbuf CLONE IN GParts::Make
+------------------------------------------------------------
+
+::
+
+     439 GParts* GParts::Make( const NCSG* tree, const char* spec, unsigned ndIdx )
+     440 {
+     441     assert(spec);
+     442 
+     443     bool usedglobally = tree->isUsedGlobally() ;   // see opticks/notes/issues/subtree_instances_missing_transform.rst
+     444     assert( usedglobally == true );  // always true now ?   
+     445 
+     446     NPY<unsigned>* tree_idxbuf = tree->getIdxBuffer() ;   // (1,4) identity indices (index,soIdx,lvIdx,height)
+     447     NPY<float>*   tree_tranbuf = tree->getGTransformBuffer() ;
+     448     NPY<float>*   tree_planbuf = tree->getPlaneBuffer() ;
+     449     assert( tree_tranbuf );
+     450 
+     451     NPY<unsigned>* idxbuf = tree_idxbuf->clone()  ;   // <-- lacking this clone was cause of the mystifying repeated indices see notes/issues/GPtsTest             
+     452     NPY<float>* nodebuf = tree->getNodeBuffer();       // serialized binary tree
+     453     NPY<float>* tranbuf = usedglobally                 ? tree_tranbuf->clone() : tree_tranbuf ;
+     454     NPY<float>* planbuf = usedglobally && tree_planbuf ? tree_planbuf->clone() : tree_planbuf ;
+     455 
+     456     
+     457     // overwrite the cloned idxbuf swapping the tree index for the ndIdx 
+     458     // as being promoted to node level 
+     459     {
+     460         assert( idxbuf->getNumItems() == 1 );
+     461         unsigned i=0u ;
+     462         unsigned j=0u ;
+     463         unsigned k=0u ;
+     464         unsigned l=0u ;
+     465         idxbuf->setUInt(i,j,k,l, ndIdx);
+     466     }
+
+
+
+Fix confirmed by GPtsTest::
+
+    [blyth@localhost issues]$ GPtsTest 
+    2019-06-16 21:17:18.310 INFO  [409948] [Opticks::init@312] INTEROP_MODE
+    2019-06-16 21:17:18.311 FATAL [409948] [Opticks::configure@1732]  --interop mode with no cvd specified, adopting OPTICKS_DEFAULT_INTEROP_CVD hinted by envvar [1]
+    2019-06-16 21:17:18.311 INFO  [409948] [Opticks::configure@1739]  setting CUDA_VISIBLE_DEVICES envvar internally to 1
+    2019-06-16 21:17:18.318 INFO  [409948] [BOpticksResource::setupViaKey@531] 
+                 BOpticksKey  :  
+          spec (OPTICKS_KEY)  : OKX4Test.X4PhysicalVolume.lWorld0x4bc2710_PV.f6cc352e44243f8fa536ab483ad390ce
+                     exename  : OKX4Test
+             current_exename  : GPtsTest
+                       class  : X4PhysicalVolume
+                     volname  : lWorld0x4bc2710_PV
+                      digest  : f6cc352e44243f8fa536ab483ad390ce
+                      idname  : OKX4Test_lWorld0x4bc2710_PV_g4live
+                      idfile  : g4ok.gltf
+                      idgdml  : g4ok.gdml
+                      layout  : 1
+
+    2019-06-16 21:17:18.318 ERROR [409948] [OpticksResource::initRunResultsDir@260] /home/blyth/local/opticks/results/GPtsTest/R0_cvd_1/20190616_211718
+    2019-06-16 21:17:18.417 INFO  [409948] [GMeshLib::loadMeshes@434]  loaded  meshes 41 solids 41
+    2019-06-16 21:17:18.418 INFO  [409948] [GMeshLib::loadAltReferences@163]  mesh.i 16 altindex 40
+    2019-06-16 21:17:18.418 INFO  [409948] [GMeshLib::loadAltReferences@163]  mesh.i 40 altindex 16
+    2019-06-16 21:17:18.545 INFO  [409948] [main@122]  geolib.nmm 6
+    2019-06-16 21:17:18.554 INFO  [409948] [testGPts::compare@88]  mm.index 0 meshlib.solids 41 RC 0
+    2019-06-16 21:17:18.554 INFO  [409948] [testGPts::save@78] /tmp/blyth/location/GGeo/GPtsTest/0
+    2019-06-16 21:17:18.556 INFO  [409948] [testGPts::compare@88]  mm.index 1 meshlib.solids 41 RC 0
+    2019-06-16 21:17:18.556 INFO  [409948] [testGPts::save@78] /tmp/blyth/location/GGeo/GPtsTest/1
+    2019-06-16 21:17:18.558 INFO  [409948] [testGPts::compare@88]  mm.index 2 meshlib.solids 41 RC 0
+    2019-06-16 21:17:18.558 INFO  [409948] [testGPts::save@78] /tmp/blyth/location/GGeo/GPtsTest/2
+    2019-06-16 21:17:18.564 INFO  [409948] [testGPts::compare@88]  mm.index 3 meshlib.solids 41 RC 0
+    2019-06-16 21:17:18.564 INFO  [409948] [testGPts::save@78] /tmp/blyth/location/GGeo/GPtsTest/3
+    2019-06-16 21:17:18.565 INFO  [409948] [testGPts::compare@88]  mm.index 4 meshlib.solids 41 RC 0
+    2019-06-16 21:17:18.565 INFO  [409948] [testGPts::save@78] /tmp/blyth/location/GGeo/GPtsTest/4
+    2019-06-16 21:17:18.567 INFO  [409948] [testGPts::compare@88]  mm.index 5 meshlib.solids 41 RC 0
+    2019-06-16 21:17:18.567 INFO  [409948] [testGPts::save@78] /tmp/blyth/location/GGeo/GPtsTest/5
+    [blyth@localhost issues]$ 
+
+
+
+
+
 
 
 mm 0 : idx again 
