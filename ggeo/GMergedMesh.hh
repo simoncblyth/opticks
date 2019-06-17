@@ -27,27 +27,11 @@ GMergedMesh
 * general usage should target GMesh  
 * THAT MEANS : DO NOT ADD METHODS HERE THAT CAN LIVE IN GMesh
 
-
-
 Usage of GMergedMesh
 -----------------------
 
 GGeoLib::makeMergedMesh
     canonical driver 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 **/
@@ -107,7 +91,11 @@ private:
     void mergeVolumeIdentity( GVolume* volume, bool selected );
     void mergeVolumeVertices( unsigned nvert, gfloat3* vertices, gfloat3* normals );
     void mergeVolumeFaces( unsigned nface, guint3* faces, unsigned* node_indices, unsigned* boundary_indices, unsigned* sensor_indices );
+
+#ifdef GPARTS_HOT
     void mergeVolumeAnalytic( GParts* pts, GMatrixF* transform, unsigned verbosity );
+#endif
+
     void mergeVolumeAnalytic( GPt*    pt,  GMatrixF* transform, unsigned verbosity );
     void mergeVolumeBBox( gfloat3* vertices, unsigned nvert );
     void mergeVolumeDump( GVolume* volume);

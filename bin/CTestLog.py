@@ -59,10 +59,11 @@ class CTestLog(object):
         pass
         cls.logs = logs 
         cls.tot = tot
+        cls.dt = max(map(lambda lg:lg.dt, logs ))
 
     @classmethod
     def desc_totals(cls):
-        return " totals  %(fails)-3s / %(tests)-3s " % cls.tot
+        return "%(fails)-3s / %(tests)-3s " % cls.tot
 
     num_tests = property(lambda self:len(self.tests))
     num_fails = property(lambda self:len(self.fails))
@@ -88,6 +89,7 @@ class CTestLog(object):
                 #print line  
                 #print tst
             pass
+        pass
 
  
     def __repr__(self):
@@ -115,25 +117,23 @@ if __name__ == '__main__':
 
     lgs = sorted(CTestLog.logs, key=lambda lg:lg.dt)
 
-    print "\n\nTESTS:"
+    print("\n\nTESTS:")
     for lg in lgs:
-        print ""
-        print repr(lg)
+        print("")
+        print(repr(lg))
         for tst in lg.tests:
-            print tst
+            print(tst)
         pass
     pass
 
-    print "\n\nLOGS:"
+    print("\n\nLOGS:")
     for lg in lgs:
-        print repr(lg)
+        print(repr(lg))
     pass
-    print CTestLog.desc_totals()
-
-    print "\n\nFAILS:"
+    print("\n\nFAILS:  %s  :  %s   " % ( CTestLog.desc_totals(), CTestLog.dt.strftime("%c")))
     for lg in lgs:
         for tst in lg.fails:
-            print tst
+            print(tst)
         pass
     pass
 

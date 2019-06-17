@@ -134,6 +134,8 @@ class OKGEO_API OpticksHub : public SCtrl {
        void overrideMaterialMapA(const std::map<std::string, unsigned>& A, const char* msg);
        void overrideMaterialMapA(const char* jsonA );
    public:
+       void deferredGeometryPrep();
+   public:
        void add(BCfg* cfg);
    public:
        bool         hasOpt(const char* name);

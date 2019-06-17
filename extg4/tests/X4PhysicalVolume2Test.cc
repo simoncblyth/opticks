@@ -219,11 +219,22 @@ int main(int argc, char** argv)
     assert(vol); 
     LOG(info) << " vol.getNumChildren " << vol->getNumChildren() ; 
 
-    GParts* pts = vol->getParts();
-    pts->setVerbosity(5); 
 
 
-    const NCSG* csg = pts->getCSG();
+
+    GParts* parts = vol->getParts();
+
+    if(parts == NULL )
+    {
+        LOG(fatal) << "THIS TEST NEEDS UPDATING FOR DEFERRED GParts CREATION" ; 
+        return 0 ;  
+    }
+
+
+    parts->setVerbosity(5); 
+
+
+    const NCSG* csg = parts->getCSG();
     LOG(info) << " csg.smry " << csg->smry() ;
 
     nnode* root = csg->getRoot();
@@ -234,7 +245,7 @@ int main(int argc, char** argv)
 
 
     // primBuffer creation expects a combine, not a single one
-    GParts* pts_c = GParts::Combine( pts, pts->getVerbosity() ); 
+    GParts* pts_c = GParts::Combine( parts, parts->getVerbosity() ); 
     pts_c->close();
     pts_c->save("$TMP/X4/X4PhysicalVolume2Test");
 

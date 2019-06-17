@@ -493,21 +493,6 @@ void GMergedMesh::mergeVolume( GVolume* volume, bool selected, unsigned verbosit
 
     if(selected)
     {
-        //std::raise(SIGINT);
-
-        GParts* parts = volume->getParts();  // analytic 
-        GPt* pt = volume->getPt();   
-        // assert(parts);   <-- not present for AssimpRapTest
-
-        if( pt &&  pt->lvIdx == 16 )
-        {
-            LOG(info)
-                << " m_cur_volume " << m_cur_volume 
-                << " parts.getVolumeIndex(0) " << parts->getVolumeIndex(0)
-                << " selected " << ( selected ? "YES" : "NO " ) 
-                << " pt " << pt->desc()
-                ;
-        }
 
         mergeVolumeVertices( num_vert, vertices, normals );
 
@@ -516,9 +501,15 @@ void GMergedMesh::mergeVolume( GVolume* volume, bool selected, unsigned verbosit
         unsigned* sensor_indices   = volume->getSensorIndices();
 
         mergeVolumeFaces( num_face, faces, node_indices, boundary_indices, sensor_indices  );
-
+   
+#ifdef GPARTS_HOT 
+        GParts* parts = volume->getParts();  // analytic 
         mergeVolumeAnalytic( parts, transform, verbosity );
-        mergeVolumeAnalytic( pt,    transform, verbosity );
+#endif
+
+        GPt* pt = volume->getPt();  // analytic 
+        mergeVolumeAnalytic( pt, transform, verbosity );
+
 
         // offsets with the flat arrays
         m_cur_vertices += num_vert ;  
@@ -748,20 +739,20 @@ between the CSG tree of transforms and the structure tree of transforms/
 * doing the applyPlacementTransform inside GMergedMesh seems mal-placed ? 
   Always have to search to find it.
 
+Aiming to allow postcache deferred analytic merging from a bunch of NCSG 
+and the GPt collected into GPts
+
+
 **/
 
+#ifdef GPARTS_HOT
 void GMergedMesh::mergeVolumeAnalytic( GParts* parts, GMatrixF* transform, unsigned verbosity )
 {
-    LOG(debug) 
-        << " parts " << ( parts ? parts->desc() : "-" )
-        ; 
-
     if(!parts)
     {
-        LOG(fatal) << "parts NULL " ;
-        return ; 
-        //assert(pts);
+        LOG(fatal) << "parts NULL  " ;
     }
+    assert(parts);
 
     if(transform && !transform->isIdentity())
     {
@@ -773,56 +764,21 @@ void GMergedMesh::mergeVolumeAnalytic( GParts* parts, GMatrixF* transform, unsig
 
     m_parts->add(parts, verbosity); 
 }
+#endif
 
-
-
-/**
-GMergedMesh::mergeVolumeAnalytic
-------------------------------------
-
-Aiming to allow postcache deferred analytic merging from a bunch of NCSG 
-and the GPt collected into GPts
-
-**/
 
 void GMergedMesh::mergeVolumeAnalytic( GPt* pt, GMatrixF* transform, unsigned /*verbosity*/ )
 {
-
-    if(!pt) 
-    {
-        LOG(debug) << " NULL pt " ;    // this happens with AssimpRapTest 
-        return ;  
-    }
-   
+    if(!pt) return ;  // this happens with AssimpRapTest
 
     const float* data = static_cast<float*>(transform->getPointer());
 
     glm::mat4 placement = glm::make_mat4( data ) ;  
 
-    LOG(debug) << "placement " << glm::to_string( placement ) ; 
-
     pt->setPlacement(placement);  
 
     m_pts->add( pt );   
-
-
-    if(pt->lvIdx == 16)
-    {
-        LOG(info) << pt->desc() ; 
-    } 
-
-
-
 }
-
-
-
-
-
-
-
-
-
 
 
 

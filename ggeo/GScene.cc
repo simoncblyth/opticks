@@ -48,7 +48,7 @@ GSurfaceLib*      GScene::getSurfaceLib() const  {     return m_ggeo->getSurface
 GMaterialLib*     GScene::getMaterialLib() const {     return m_ggeo->getMaterialLib(); } 
 
 GBndLib*          GScene::getBndLib() const  {          return m_ggeo->getBndLib(); } 
-GPmtLib*          GScene::getPmtLib() const {          return m_ggeo->getPmtLib(); } 
+//GPmtLib*          GScene::getPmtLib() const {          return m_ggeo->getPmtLib(); } 
 GGeoLib*          GScene::getGeoLib() const {          return m_geolib ; } 
 GNodeLib*         GScene::getNodeLib() const {         return m_nodelib ; }
 GMeshLib*         GScene::getMeshLib() const {         return NULL ; }

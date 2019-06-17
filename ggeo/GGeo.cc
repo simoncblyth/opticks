@@ -3,11 +3,6 @@
 #include <cstring>
 #include <iomanip>
 
-//#include <boost/lexical_cast.hpp>
-//#include <boost/algorithm/string.hpp>
-//#include <boost/filesystem.hpp>
-//namespace fs = boost::filesystem;
-
 #include "SLog.hh"
 #include "BStr.hh"
 #include "BMap.hh"
@@ -58,6 +53,8 @@
 #include "GScintillatorLib.hh"
 #include "GSourceLib.hh"
 
+#include "GParts.hh"
+
 
 #include "GVolume.hh"
 #include "GMesh.hh"
@@ -101,7 +98,7 @@ GGeo::GGeo(Opticks* ok, bool live)
    m_gltf(m_ok->getGLTF()),   
    m_composition(NULL), 
    m_instancer(NULL), 
-   m_loaded(false), 
+   m_loaded_from_cache(false), 
    m_prepared(false), 
    m_loadedcachemeta(NULL),
    m_lv2sd(NULL),
@@ -169,11 +166,6 @@ void GGeo::setMeshJoinCfg(const char* cfg)
     m_join_cfg = cfg ? strdup(cfg) : NULL  ; 
 }
 
-bool GGeo::isLoaded()
-{
-    return m_loaded ; 
-}
-
 
 
 
@@ -233,7 +225,7 @@ GMaterialLib*     GGeo::getMaterialLib() const { return m_materiallib ; }
 GMeshLib*         GGeo::getMeshLib() const { return m_meshlib ; }
  
 GBndLib*          GGeo::getBndLib() const { return m_bndlib ; } 
-GPmtLib*          GGeo::getPmtLib() const { return m_pmtlib ; } 
+//GPmtLib*          GGeo::getPmtLib() const { return m_pmtlib ; } 
 GGeoLib*          GGeo::getGeoLib() const { return m_geolib ; } 
 GNodeLib*         GGeo::getNodeLib() const { return m_nodelib ; } 
 
@@ -408,40 +400,56 @@ Opticks* GGeo::getOpticks() const
 
 
 
+/**
+GGeo::init
+-------------
 
+When the geocache exists and are configured to use it 
+this will not instanciate the libs as those will subsequently 
+be loaded from geocache.
 
-
-
+**/
 
 void GGeo::init()
 {
-   const char* idpath = m_ok->getIdPath() ;
-   LOG(verbose)
-         << " idpath " << ( idpath ? idpath : "NULL" )
-         ; 
+    LOG(verbose) << "[" ; 
+    const char* idpath = m_ok->getIdPath() ;
+    LOG(verbose) << " idpath " << ( idpath ? idpath : "NULL" ) ; 
+    assert(idpath && "GGeo::init idpath is required" );
 
-   assert(idpath && "GGeo::init idpath is required" );
+    bool cache_exists = m_ok->hasGeoCache(); 
+    bool cache_requested = m_ok->isGeocache() ; 
+    m_loaded_from_cache = cache_exists && cache_requested ;
+    bool will_load_libs = m_loaded_from_cache && !m_live ; 
 
-   /*
-   fs::path geocache(idpath); 
-   bool cache_exists = fs::exists(geocache) && fs::is_directory(geocache) ;
-   */
-
-   bool cache_exists = m_ok->hasGeoCache(); 
-   bool cache_requested = m_ok->isGeocache() ; 
-   m_loaded = cache_exists && cache_requested ;
-
-   LOG(error) 
+    LOG(error) 
         << " idpath " << idpath
         << " cache_exists " << cache_exists 
         << " cache_requested " << cache_requested
-        << " m_loaded " << m_loaded 
+        << " m_loaded_from_cache " << m_loaded_from_cache
         << " m_live " << m_live 
+        << " will_load_libs " << will_load_libs 
         ;
 
-   if(m_loaded && !m_live) return ; 
+    if(!will_load_libs)
+    {
+        initLibs() ;  
+    }
 
-   //////////////  below only when operating pre-cache //////////////////////////
+    LOG(verbose) << "]" ; 
+}
+
+
+/**
+GGeo::initLibs
+----------------
+
+This only happens when operating pre-cache 
+
+**/
+
+void GGeo::initLibs()
+{
 
    m_bndlib = new GBndLib(m_ok);
    m_materiallib = new GMaterialLib(m_ok);
@@ -467,47 +475,49 @@ void GGeo::init()
 
    m_colorizer = new GColorizer( m_nodelib, m_geolib, m_bndlib, colors, style ); // colorizer needs full tree, so pre-cache only 
 
-
    m_scintillatorlib  = new GScintillatorLib(m_ok);
    m_sourcelib  = new GSourceLib(m_ok);
 
    m_pmtlib = NULL ; 
-
-   LOG(verbose) << "GGeo::init DONE" ; 
-}
-
-
-void GGeo::add(GMaterial* material)
-{
-    m_materiallib->add(material);
-    //addToIndex((GPropertyMap<float>*)material);
-}
-void GGeo::addRaw(GMaterial* material)
-{
-    m_materiallib->addRaw(material);
 }
 
 
 
 
-unsigned GGeo::getNumMaterials() const 
-{
-    return m_materiallib->getNumMaterials();
-}
-unsigned GGeo::getNumRawMaterials() const 
-{
-    return m_materiallib->getNumRawMaterials();
-}
 
+// TO ELIMINATE
 GScene* GGeo::getScene() 
 {
     return m_gscene ; 
 }
 
 
+// via Opticks
+
+const char*      GGeo::getIdPath() { return m_ok->getIdPath(); } 
+OpticksColors*   GGeo::getColors() { return m_ok->getColors() ; } 
+OpticksFlags*    GGeo::getFlags() { return m_ok->getFlags(); }
+OpticksAttrSeq*  GGeo::getFlagNames() { return m_ok->getFlagNames(); } 
+OpticksResource* GGeo::getResource() { return m_ok->getResource(); } 
+
+
+// via GMaterialLib
+
+void     GGeo::add(GMaterial* material) { m_materiallib->add(material); } 
+void     GGeo::addRaw(GMaterial* material) { m_materiallib->addRaw(material); } 
+unsigned GGeo::getNumMaterials() const { return m_materiallib->getNumMaterials(); } 
+unsigned GGeo::getNumRawMaterials() const { return m_materiallib->getNumRawMaterials(); } 
+
+// via GBndLib
+
+unsigned int GGeo::getMaterialLine(const char* shortname) { return m_bndlib->getMaterialLine(shortname); }
+
+
+// via GGeoLib
+
 unsigned int GGeo::getNumMergedMesh()
 {
-    GGeoLib* geolib = getGeoLib() ;
+    GGeoLib* geolib = getGeoLib() ;  
     assert(geolib);
     return geolib->getNumMergedMesh();
 }
@@ -516,69 +526,28 @@ GMergedMesh* GGeo::getMergedMesh(unsigned index) const
 {
     GGeoLib* geolib = getGeoLib() ;
     assert(geolib);
-
     GMergedMesh* mm = geolib->getMergedMesh(index);
-
     unsigned meshverbosity = getMeshVerbosity() ; 
-
-    LOG(debug) << "GGeo::getMergedMesh"
-              << " index " << index 
-              << " mm " << mm
-              << " meshverbosity " << meshverbosity
-              ;
-
-    if(mm)
-        mm->setVerbosity(meshverbosity);
-
+    if(mm) mm->setVerbosity(meshverbosity);
     return mm ; 
 }
 
 
-const char* GGeo::getIdPath()
-{
-    return m_ok->getIdPath();
-}
-OpticksColors* GGeo::getColors()
-{
-   return m_ok->getColors() ; 
-}
-OpticksFlags* GGeo::getFlags()
-{
-    return m_ok->getFlags();
-}
-OpticksAttrSeq* GGeo::getFlagNames()
-{
-    return m_ok->getFlagNames();
-} 
 
-OpticksResource* GGeo::getResource()
-{
-    return m_ok->getResource();
-}
+bool GGeo::isLoadedFromCache() const { return m_loaded_from_cache ; } 
 
-
-
-
-
-
-unsigned int GGeo::getMaterialLine(const char* shortname)
-{
-    return m_bndlib->getMaterialLine(shortname);
-}
 
 void GGeo::loadGeometry()
 {
-    bool loaded = isLoaded() ;
-
     int gltf = m_ok->getGLTF(); 
 
     LOG(LEVEL)
         << "["
-        << " loaded " << loaded 
+        << " m_loaded_from_cache " << m_loaded_from_cache 
         << " gltf " << gltf
         ; 
 
-    if(!loaded)
+    if(!m_loaded_from_cache)
     {
         loadFromG4DAE();
         save();
@@ -638,6 +607,31 @@ void GGeo::loadFromG4DAE()
 }
 
 
+void GGeo::loadAnalyticFromGLTF()
+{
+    LOG(info) << "GGeo::loadAnalyticFromGLTF START" ; 
+    if(!m_ok->isGLTF()) return ; 
+
+#ifdef OPTICKS_YoctoGL
+    m_gscene = GScene::Create(m_ok, this); 
+#else
+    LOG(fatal) << "GGeo::loadAnalyticFromGLTF requires YoctoGL external " ; 
+    assert(0);
+#endif
+
+    LOG(info) << "GGeo::loadAnalyticFromGLTF DONE" ; 
+}
+
+void GGeo::saveAnalytic()
+{ 
+    LOG(info) << "GGeo::saveAnalytic" ;
+    m_gscene->save();   // HUH: still needed ???   THIS IS VESTIGIAL SURELY 
+}
+
+
+
+
+
 
 /**
 GGeo::postDirectTranslation
@@ -667,17 +661,25 @@ void GGeo::postDirectTranslation()
 }
 
 bool GGeo::isPrepared() const { return m_prepared ; }
+
+
+/**
+GGeo::prepare
+---------------
+    
+Prepare is needed prior to saving to geocache or GPU upload by OGeo
+
+**/
+
 void GGeo::prepare()
 {
     LOG(info) << "[" ; 
 
-   // prepare is needed prior to saving or GPU upload by OGeo
     assert( m_prepared == false && "have prepared already" ); 
     m_prepared = true ; 
 
     //TODO: implement prepareSensorSurfaces() and invoke from here 
 
-   
     LOG(info) << "prepareScintillatorLib" ;  
     prepareScintillatorLib();
 
@@ -694,38 +696,20 @@ void GGeo::prepare()
 }
 
 
-void GGeo::loadAnalyticFromGLTF()
-{
-    LOG(info) << "GGeo::loadAnalyticFromGLTF START" ; 
-    if(!m_ok->isGLTF()) return ; 
-
-#ifdef OPTICKS_YoctoGL
-    m_gscene = GScene::Create(m_ok, this); 
-#else
-    LOG(fatal) << "GGeo::loadAnalyticFromGLTF requires YoctoGL external " ; 
-    assert(0);
-#endif
-
-    LOG(info) << "GGeo::loadAnalyticFromGLTF DONE" ; 
-}
-
 
 
 
 void GGeo::save()
 {
     const char* idpath = m_ok->getIdPath() ;
-    LOG(LEVEL) << "[" 
-              << " idpath " << ( idpath ? idpath : "NULL" )
-               ;
-
+    assert( idpath ); 
+    LOG(LEVEL) << "[" << " idpath " << idpath ; 
 
     if(!m_prepared)
     {
         LOG(info) << "preparing before save " ; 
         prepare();
     }   
-
 
     m_geolib->dump("GGeo::save");
 
@@ -791,11 +775,6 @@ void GGeo::loadCacheMeta() // loads metadata that the process that created the g
 }
 
 
-void GGeo::saveAnalytic()
-{ 
-    LOG(info) << "GGeo::saveAnalytic" ;
-    m_gscene->save();   // HUH: still needed ???   THIS IS VESTIGIAL SURELY 
-}
  
 void GGeo::loadFromCache()
 {   
@@ -829,9 +808,9 @@ void GGeo::loadFromCache()
 void GGeo::loadAnalyticFromCache()
 {
     //assert(0) ; // THIS IS THE OLD WAY ? YES : USED BY GSceneTest
-    LOG(info) << "GGeo::loadAnalyticFromCache START" ; 
+    LOG(info) << "[" ; 
     m_gscene = GScene::Load(m_ok, this); // GGeo needed for m_bndlib 
-    LOG(info) << "GGeo::loadAnalyticFromCache DONE" ; 
+    LOG(info) << "]" ; 
 }
 
 bool GGeo::isLive() const 
@@ -910,13 +889,14 @@ void GGeo::updateBounds(GNode* node)
 
 void GGeo::Summary(const char* msg)
 {
-    LOG(info) << msg
-              << " ms " << m_meshlib->getNumMeshes()
-              << " so " << m_nodelib->getNumVolumes()
-              << " mt " << m_materiallib->getNumMaterials()
-              << " bs " << getNumBorderSurfaces() 
-              << " ss " << getNumSkinSurfaces()
-              ;
+    LOG(info) 
+        << msg
+        << " ms " << m_meshlib->getNumMeshes()
+        << " so " << m_nodelib->getNumVolumes()
+        << " mt " << m_materiallib->getNumMaterials()
+        << " bs " << getNumBorderSurfaces() 
+        << " ss " << getNumSkinSurfaces()
+        ;
 
     if(m_low)  printf("    low  %10.3f %10.3f %10.3f \n", m_low->x, m_low->y, m_low->z);
     if(m_high) printf("    high %10.3f %10.3f %10.3f \n", m_high->x, m_high->y, m_high->z);
@@ -969,7 +949,11 @@ void GGeo::Details(const char* msg)
 
 
 
-//  via meshlib
+
+
+
+
+//  via GMeshLib
 
 GMeshLib* GGeo::getMeshLib()
 {
@@ -979,14 +963,6 @@ unsigned GGeo::getNumMeshes() const
 {
     return m_meshlib->getNumMeshes(); 
 }
-
-#ifdef OLD_INDEX
-GItemIndex* GGeo::getMeshIndex()
-{
-    return m_meshlib->getMeshIndex() ; 
-}
-#endif
-
 
 const GMesh* GGeo::getMesh(unsigned aindex) const 
 {
@@ -1042,52 +1018,7 @@ GNode* GGeo::getNode(unsigned index) const
 
 
 
-
-
-
-
-#if 0
-
-// cannot do this check any more in GBoundary approach 
-
-void GGeo::materialConsistencyCheck()
-{
-    GVolume* volume = getVolume(0);
-    assert(volume);
-    unsigned int nok = materialConsistencyCheck(volume);
-    printf("GGeo::materialConsistencyCheck nok %u \n", nok );
-}
-
-unsigned int GGeo::materialConsistencyCheck(GVolume* volume)
-{
-    assert(volume);
-    //volume->Summary(NULL);
-
-    GVolume* parent = dynamic_cast<GVolume*>(volume->getParent()) ; 
-
-    unsigned int nok = 0 ;
-    if(parent)
-    {
-        assert(parent->getInnerMaterial() == volume->getOuterMaterial());
-        nok += 1 ;
-    } 
-    else
-    {
-        assert(volume->getIndex() == 0); 
-    } 
-
-    for(unsigned int i=0 ; i < volume->getNumChildren() ; i++)
-    {
-        GVolume* child = dynamic_cast<GVolume*>(volume->getChild(i)) ;
-        assert(child); 
-        nok += materialConsistencyCheck(child);
-    }
-    return nok ;
-}
-
-#endif
-
-
+// via GMaterialLib
 
 
 GMaterial* GGeo::getMaterial(unsigned aindex) const 
@@ -1112,9 +1043,7 @@ std::vector<GMaterial*> GGeo::getRawMaterialsWithProperties(const char* props, c
 }
 
 
-
-
-
+// via GSurfaceLib
 
 GSkinSurface* GGeo::findSkinSurface(const char* lv) const
 {
@@ -1124,7 +1053,6 @@ GBorderSurface* GGeo::findBorderSurface(const char* pv1, const char* pv2) const
 {
     return m_surfacelib->findBorderSurface(pv1, pv2); 
 }
-
 
 void GGeo::dumpSkinSurface(const char* name) const
 {
@@ -1172,7 +1100,7 @@ void GGeo::traverse( GNode* node, unsigned int depth)
 
 void GGeo::prepareMaterialLib()
 {
-    LOG(verbose) << "GGeo::prepareMaterialLib " ; 
+    LOG(verbose) ;
 
     GMaterialLib* mlib = getMaterialLib() ;
    
@@ -1181,7 +1109,7 @@ void GGeo::prepareMaterialLib()
 
 void GGeo::prepareSurfaceLib()
 {
-    LOG(verbose) << "GGeo::prepareSurfaceLib " ; 
+    LOG(verbose) ; 
 
     GSurfaceLib* slib = getSurfaceLib() ;
    
@@ -1191,7 +1119,7 @@ void GGeo::prepareSurfaceLib()
 
 void GGeo::prepareSourceLib()
 {
-    LOG(verbose) << "GGeo::prepareSourceLib " ; 
+    LOG(verbose) ;
 
     GSourceLib* srclib = getSourceLib() ;
 
@@ -1213,11 +1141,9 @@ void GGeo::close()
     mlib->close();
     slib->close();
 
-
     // this was not here traditionally due to late addition of boundaries 
     GBndLib* blib = getBndLib() ;
     blib->createDynamicBuffers(); 
-
 
     LOG(LEVEL) << "]" ; 
 }
@@ -1295,6 +1221,8 @@ This was formerly mis-named as prepareMeshes which as it
 also does the analytic combination, with analytic GParts 
 instances hitched to the created GMergedMesh.
 
+As this is creating GMergedMesh it is clearly precache.
+
 **/
 
 void GGeo::prepareVolumes()
@@ -1302,13 +1230,10 @@ void GGeo::prepareVolumes()
     LOG(info) << "[ creating merged meshes from the volume tree " ; 
 
     unsigned numcsgskiplv = m_ok->getNumCSGSkipLV() ; 
-
     LOG(fatal) << " numcsgskiplv " << numcsgskiplv ; 
-    //assert( numcsgskiplv > 0 && "temporary" ); 
 
     bool instanced = m_ok->isInstanced();
     unsigned meshverbosity = m_ok->getMeshVerbosity() ; 
-
 
     LOG(LEVEL) 
                << "START" 
@@ -1329,10 +1254,58 @@ void GGeo::prepareVolumes()
         // ^^^^  precache never needs analytic geolib ?
     }
 
-
     m_instancer->dump("GGeo::prepareVolumes") ; 
-
     LOG(info) << "]" ;
+}
+
+
+/**
+GGeo::deferredCreateGParts
+------------------------------
+
+This is needed prior to GPU upload of analytic geometry by OGeo,
+it requires the GMergedMesh from GGeoLib and the NCSG solids from GMeshLib.  
+Thus it can be done postcache, as all the ingredients are loaded from cache.
+
+See notes/issues/GPts_GParts_optimization.rst
+
+**/
+
+void GGeo::deferredCreateGParts()
+{
+    LOG(info) << "[" ; 
+
+    const std::vector<const NCSG*>& solids = m_meshlib->getSolids(); 
+          
+    unsigned verbosity = 0 ;  
+
+    unsigned nmm = m_geolib->getNumMergedMesh(); 
+
+    LOG(info) 
+        << " geolib.nmm " << nmm 
+        << " meshlib.solids " << solids.size()
+        ; 
+
+    for(unsigned i=0 ; i < nmm ; i++)
+    {
+        GMergedMesh* mm = m_geolib->getMergedMesh(i);
+        assert( mm->getParts() == NULL ); 
+
+        GPts* pts = mm->getPts(); 
+        if( pts == NULL )
+        { 
+            LOG(error) << " pts NULL, cannot create GParts for mm " << i ; 
+            continue ; 
+        }
+
+        GParts* parts = GParts::Create( pts, solids, verbosity ) ; 
+        parts->setBndLib(m_bndlib); 
+        parts->close(); 
+
+        mm->setParts( parts ); 
+    }
+
+    LOG(info) << "]" ; 
 }
 
 
@@ -1884,7 +1857,6 @@ std::vector<std::string> GGeo::getTags()
     //tags.push_back(PICKFACE);
     return tags ;
 }
-
 
 
 void GGeo::anaEvent(OpticksEvent* evt)

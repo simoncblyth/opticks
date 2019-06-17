@@ -479,11 +479,29 @@ void GInstancer::labelRepeats_r( GNode* node, unsigned int ridx)
 }
 
 
+/**
+GInstancer::traverseGlobals_r
+-------------------------------
+
+Only recurses whilst in global territory with ridx == 0, as soon as hit a repeated 
+volume, with ridx > 0, stop recursing. 
+
+Skipping of an instanced LV is done here by setting a flag.
+
+Currently trying to skip a global lv at this rather late juncture 
+leads to inconsistencies manifesting in a corrupted color buffer 
+(i recall that all global volumes are retained for index consistency in the merge of GMergedMesh GGeoLib)
+so moved to simply editing the input GDML
+Presumably could also do this by moving the skip earlier to the Geant4 X4 traverse
+see notes/issues/torus_replacement_on_the_fly.rst
+
+
+**/
+
 void GInstancer::traverseGlobals_r( GNode* node, unsigned depth )
 {
     unsigned ridx = node->getRepeatIndex() ; 
     if( ridx > 0 ) return ; 
-    // only recurse whilst in global territory with ridx == 0, as soon as hit a repeated volume stop recursing 
     assert( ridx == 0 ); 
     m_globals_count += 1 ; 
 
@@ -492,15 +510,10 @@ void GInstancer::traverseGlobals_r( GNode* node, unsigned depth )
 
     if( m_ok->isCSGSkipLV(lvidx) )   // --csgskiplv
     {
+        assert(0 && "skipping of LV used globally, ie non-instanced, is not currently working "); 
+
         GVolume* vol = dynamic_cast<GVolume*>(node); 
         vol->setCSGSkip(true);      
-
-        // Currently trying to skip global lv at this rather late juncture 
-        // leads to inconsistencies manifesting in a corrupted color buffer 
-        // (i recall that all global volumes are retained for index consistency in the merge of GMergedMesh GGeoLib)
-        // so moved to simply editing the input GDML
-        // Presumably could also do this by moving the skip earlier to the Geant4 X4 traverse
-        // see notes/issues/torus_replacement_on_the_fly.rst
 
         m_csgskiplv[lvidx].push_back( node->getIndex() ); 
         m_csgskiplv_count += 1 ; 

@@ -49,7 +49,10 @@ template struct nxform<X4Nd> ;
 #include "GMesh.hh"
 #include "GVolume.hh"
 
+#ifdef GPARTS_HOT
 #include "GParts.hh"
+#endif
+
 #include "GPt.hh"
 #include "GPts.hh"
 
@@ -655,6 +658,8 @@ void X4PhysicalVolume::dumpTorusLV() const
 {
     assert( m_lv_with_torus.size() == m_lvname_with_torus.size() ); 
     unsigned num_afflicted = m_lv_with_torus.size() ;  
+    if(num_afflicted == 0) return ; 
+
 
     LOG(info) << " num_afflicted " << num_afflicted ; 
     std::cout << " lvIdx ( " ; 
@@ -920,8 +925,8 @@ X4PhysicalVolume::convertNode
 * convertNode is hot code : should move whatever possible elsewhere 
 
 
-Doing GParts::Make at node level is very repetitive
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Doing GParts::Make at node level is very repetitive, think 300,000 nodes for JUNO
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Note that boundary name is a node level thing, not mesh level : so are forced to 
 do GParts::Make at node level 
@@ -961,17 +966,22 @@ GVolume* X4PhysicalVolume::convertNode(const G4VPhysicalVolume* const pv, GVolum
          << " lvIdx " << lvIdx
          ;
 
-     const GMesh* mesh = m_ggeo->getMesh(lvIdx); 
+     // THIS IS HOT NODE CODE : ~300,000 TIMES FOR JUNO 
+
+
+     const GMesh* mesh = m_ggeo->getMesh(lvIdx);  // <-- better to upfront get reference to the vector
      const NCSG* csg = mesh->getCSG();  
      unsigned csgIdx = csg->getIndex() ; 
 
 
+#ifdef GPARTS_HOT
      GParts* parts = GParts::Make( csg, boundaryName.c_str(), ndIdx );  // painful to do this here in hot node code
      parts->setBndLib(m_blib);
      //parts->setVolumeIndex( ndIdx );  
-
      unsigned volIdx = parts->getVolumeIndex(0); 
      assert( volIdx == ndIdx ); 
+#endif
+
 
      GPt* pt = new GPt( lvIdx, ndIdx, csgIdx, boundaryName.c_str() )  ; 
 
@@ -987,18 +997,6 @@ GVolume* X4PhysicalVolume::convertNode(const G4VPhysicalVolume* const pv, GVolum
      glm::mat4 xf_global = gtriple->t ;
      GMatrixF* gtransform = new GMatrix<float>(glm::value_ptr(xf_global));
 
-/*
-     if( lvIdx == 16)
-     {
-         LOG(info) 
-             << " lvIdx " << lvIdx 
-             << " ndIdx " << ndIdx 
-             << " csgIdx " << csgIdx 
-             << " boundaryName " << boundaryName
-             << " pt " << pt->desc()
-             ;
-     }  
-*/
 
      GVolume* volume = new GVolume(ndIdx, gtransform, mesh );
      m_node_count += 1 ; 
@@ -1022,14 +1020,17 @@ GVolume* X4PhysicalVolume::convertNode(const G4VPhysicalVolume* const pv, GVolum
      volume->setGlobalTransform(gtriple);
  
      volume->setParallelNode( nd ); 
+
+#ifdef GPARTS_HOT
      volume->setParts( parts ); 
+#endif
+
      volume->setPt( pt ); 
      volume->setPVName( pvName.c_str() );
      volume->setLVName( lvName.c_str() );
      volume->setName( pvName.c_str() );   // historically (AssimpGGeo) this was set to lvName, but pvName makes more sense for node node
 
      m_ggeo->countMeshUsage(lvIdx, ndIdx );
-
 
      if(parent) 
      {

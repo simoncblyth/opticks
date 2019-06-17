@@ -87,7 +87,7 @@ void OpticksGeometry::loadGeometry()
 
     if(!m_ggeo->isValid())
     {
-        LOG(warning) << "OpticksGeometry::loadGeometry finds invalid geometry, try creating geocache with --nogeocache/-G option " ; 
+        LOG(warning) << "invalid geometry, try creating geocache with --nogeocache/-G option " ; 
         m_ok->setExit(true); 
         return ; 
     }
@@ -101,7 +101,7 @@ void OpticksGeometry::loadGeometry()
 
     if(!m_ok->isGeocache())
     {
-        LOG(info) << "OpticksGeometry::loadGeometry early exit due to --nogeocache/-G option " ; 
+        LOG(info) << "early exit due to --nogeocache/-G option " ; 
         m_ok->setExit(true); 
     }
 
@@ -151,12 +151,12 @@ void OpticksGeometry::loadGeometryBase()
 
 void OpticksGeometry::fixGeometry()
 {
-    if(m_ggeo->isLoaded())
+    if(m_ggeo->isLoadedFromCache())
     {
-        LOG(debug) << "OpticksGeometry::fixGeometry needs to be done precache " ;
+        LOG(debug) << "needs to be done precache " ;
         return ; 
     }
-    LOG(info) << "OpticksGeometry::fixGeometry" ; 
+    LOG(info) << "[" ; 
 
     MFixer* fixer = new MFixer(m_ggeo);
     fixer->setVerbose(m_ok->hasOpt("meshfixdbg"));
@@ -172,6 +172,8 @@ void OpticksGeometry::fixGeometry()
         GMergedMesh* mesh0 = m_ggeo->getMergedMesh(0);
         mesh0->explodeZVertices(zexplodeconfig.y, zexplodeconfig.x ); 
     }
+
+    LOG(info) << "]" ; 
 }
 
 

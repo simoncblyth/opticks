@@ -68,6 +68,15 @@ class GScene ;
 GGeo
 =====
 
+Looks like started to move "steering" of GGeo up
+to OpticksGeometry.  
+
+* Not sure if I now think that a good route in the light of direct translation
+* better to slim GGeo by moving things off into sub-libs
+  and have one locus-of-control ?
+
+
+
 In the beginning GGeo was intended to be  a dumb substrate 
 from which the geometry model is created eg by AssimpGGeo::convert 
 However it grew to be somewhat monolithic.
@@ -123,7 +132,7 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
         GMeshLib*         getMeshLib() const ;
 
         GBndLib*          getBndLib() const ; 
-        GPmtLib*          getPmtLib() const ; 
+        //GPmtLib*          getPmtLib() const ; 
         GGeoLib*          getGeoLib()  const ; 
         GNodeLib*         getNodeLib() const ;
 
@@ -162,6 +171,7 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
         Composition* getComposition();
         void setComposition(Composition* composition);
     public:
+        bool isLoadedFromCache() const ;
         void loadGeometry(); 
         void loadFromCache();
         void loadFromG4DAE();  // AssimpGGeo::load
@@ -192,10 +202,14 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
         void prepareVertexColors();
     public:
 
+        void deferredCreateGParts(); 
+
+    public:
         unsigned int getMaterialLine(const char* shortname);
 
    private:
         void init(); 
+        void initLibs(); 
         //void loadMergedMeshes(const char* idpath);
         //void removeMergedMeshes(const char* idpath);
     public:
@@ -230,9 +244,6 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
 
     private:
         glm::mat4 getTransform(int index);  //TRYING TO MOVE TO HUB 
-    public:
-        bool isLoaded();
-
     public:
         // via GNodeLib
         void add(GVolume*    volume);
@@ -373,7 +384,7 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
         int                           m_gltf ; 
         Composition*                  m_composition ; 
         GInstancer*                   m_instancer ; 
-        bool                          m_loaded ;  
+        bool                          m_loaded_from_cache ;  
         bool                          m_prepared ;  
 
         NMeta*                        m_loadedcachemeta ; 

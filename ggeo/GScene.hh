@@ -142,7 +142,7 @@ class GGEO_API GScene : public GGeoBase
         GMaterialLib*     getMaterialLib() const ; 
 
         GBndLib*          getBndLib() const ; 
-        GPmtLib*          getPmtLib() const ; 
+        //GPmtLib*          getPmtLib() const ; 
         GGeoLib*          getGeoLib() const ; 
         GNodeLib*         getNodeLib() const ;
         GMeshLib*         getMeshLib() const ;

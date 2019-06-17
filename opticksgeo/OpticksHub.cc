@@ -238,7 +238,13 @@ void OpticksHub::init()
     }
     if(m_err) return ; 
 
+
+
     configureGeometry() ;    
+
+    deferredGeometryPrep(); 
+
+
 
     m_gen = new OpticksGen(this) ;
 
@@ -760,6 +766,26 @@ void OpticksHub::configureGeometryTest()
     // actually unlikely to need restrictmesh with --test 
 
 }
+
+
+
+
+/**
+OpticksHub::deferredGeometryPrep
+---------------------------------
+
+Invoked from OpticksHub::init after loading or adopting geometry.
+
+
+**/
+
+void OpticksHub::deferredGeometryPrep()
+{
+    m_ggeo->deferredCreateGParts() ;    
+}
+
+
+
 
 
 
