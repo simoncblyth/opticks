@@ -41,7 +41,7 @@ class GGEO_API GMeshLib
         static GMeshLib* Load(Opticks* ok );
     public:
         GMeshLib(Opticks* ok); 
-        void add(const GMesh* mesh);
+        void add(const GMesh* mesh, bool alt=false );
         void dump(const char* msg="GMeshLib::dump") const;
     public:
         // methods working from the index, so work prior to loading meshes
@@ -60,6 +60,7 @@ class GGEO_API GMeshLib
         const NCSG*   getSolidWithIndex(unsigned aindex) const ;  // first mesh in m_solids addition order with getIndex() matching aindex 
 
         const std::vector<const NCSG*>& getSolids() const ; 
+        const std::vector<const GMesh*>& getMeshes() const ; 
     private:
         int         findMeshIndex( const GMesh* mesh ) const ; 
         int         findSolidIndex( const NCSG* solid ) const ; 

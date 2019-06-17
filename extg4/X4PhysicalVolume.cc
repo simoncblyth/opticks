@@ -33,6 +33,7 @@
 
 #include "BStr.hh"
 #include "BFile.hh"
+#include "BTimeStamp.hh"
 #include "BOpticksKey.hh"
 
 class NSensor ; 
@@ -117,10 +118,22 @@ X4PhysicalVolume::X4PhysicalVolume(GGeo* ggeo, const G4VPhysicalVolume* const to
     m_slib(m_ggeo->getSurfaceLib()),
     m_blib(m_ggeo->getBndLib()),
     m_hlib(m_ggeo->getMeshLib()),
+    //m_meshes(m_hlib->getMeshes()), 
     m_xform(new nxform<X4Nd>(0,false)),
     m_verbosity(m_ok->getVerbosity()),
     m_node_count(0),
-    m_selected_node_count(0)
+    m_selected_node_count(0),
+#ifdef X4_PROFILE
+    m_convertNode_dt(0.f),
+    m_convertNode_boundary_dt(0.f),
+    m_convertNode_transformsA_dt(0.f),
+    m_convertNode_transformsB_dt(0.f),
+    m_convertNode_transformsC_dt(0.f),
+    m_convertNode_transformsD_dt(0.f),
+    m_convertNode_transformsE_dt(0.f),
+    m_convertNode_GVolume_dt(0.f),
+#endif
+    m_dummy(0)
 {
     const char* msg = "GGeo ctor argument of X4PhysicalVolume must have mlib, slib, blib and hlib already " ; 
 
@@ -723,7 +736,6 @@ used.
 
 void X4PhysicalVolume::convertStructure()
 {
-    OK_PROFILE("_X4PhysicalVolume::convertStructure");
     LOG(info) << "[ creating large tree of GVolume instances" ; 
     assert(m_top) ;
 
@@ -735,17 +747,46 @@ void X4PhysicalVolume::convertStructure()
     GVolume* parent = NULL ; 
     const G4VPhysicalVolume* parent_pv = NULL ; 
     int depth = 0 ;
-
     bool recursive_select = false ;
 
+
+    OK_PROFILE("_X4PhysicalVolume::convertStructure");
+
     m_root = convertStructure_r(pv, parent, depth, parent_pv, recursive_select );
+
+    OK_PROFILE("X4PhysicalVolume::convertStructure");
+
+
 
     NTreeProcess<nnode>::SaveBuffer("$TMP/NTreeProcess.npy");      
     NNodeNudger::SaveBuffer("$TMP/NNodeNudger.npy"); 
     X4Transform3D::SaveBuffer("$TMP/X4Transform3D.npy"); 
 
-    LOG(info) << "] tree contains GGeo::getNumVolumes() " << m_ggeo->getNumVolumes() ;
-    OK_PROFILE("X4PhysicalVolume::convertStructure");
+    LOG(info) 
+        << "] " 
+        << "GGeo::getNumVolumes() " << m_ggeo->getNumVolumes() 
+        ;
+
+#ifdef X4_PROFILE    
+    LOG(info) 
+        << " m_convertNode_dt " << m_convertNode_dt 
+        << std::endl 
+        << " m_convertNode_boundary_dt " << m_convertNode_boundary_dt 
+        << std::endl 
+        << " m_convertNode_transformsA_dt " << m_convertNode_transformsA_dt 
+        << std::endl 
+        << " m_convertNode_transformsB_dt " << m_convertNode_transformsB_dt 
+        << std::endl 
+        << " m_convertNode_transformsC_dt " << m_convertNode_transformsC_dt 
+        << std::endl 
+        << " m_convertNode_transformsD_dt " << m_convertNode_transformsD_dt 
+        << std::endl 
+        << " m_convertNode_transformsE_dt " << m_convertNode_transformsE_dt 
+        << std::endl 
+        << " m_convertNode_GVolume_dt " << m_convertNode_GVolume_dt 
+        ;
+#endif
+
 }
 
 
@@ -760,7 +801,17 @@ Preorder traverse.
 
 GVolume* X4PhysicalVolume::convertStructure_r(const G4VPhysicalVolume* const pv, GVolume* parent, int depth, const G4VPhysicalVolume* const parent_pv, bool& recursive_select )
 {
+#ifdef X4_PROFILE
+     float t0 = BTimeStamp::RealTime(); 
+#endif
+
      GVolume* volume = convertNode(pv, parent, depth, parent_pv, recursive_select );
+
+#ifdef X4_PROFILE
+     float t1 = BTimeStamp::RealTime() ; 
+     m_convertNode_dt += t1 - t0 ; 
+#endif
+
      m_ggeo->add(volume); // collect in nodelib
 
      const G4LogicalVolume* const lv = pv->GetLogicalVolume();
@@ -945,100 +996,162 @@ from persisted GPts
 
 GVolume* X4PhysicalVolume::convertNode(const G4VPhysicalVolume* const pv, GVolume* parent, int depth, const G4VPhysicalVolume* const pv_p, bool& recursive_select )
 {
+#ifdef X4_PROFILE
+    float t00 = BTimeStamp::RealTime(); 
+#endif
 
-     X4Nd* parent_nd = parent ? static_cast<X4Nd*>(parent->getParallelNode()) : NULL ;
+    X4Nd* parent_nd = parent ? static_cast<X4Nd*>(parent->getParallelNode()) : NULL ;
 
-     unsigned boundary = addBoundary( pv, pv_p );
-     std::string boundaryName = m_blib->shortname(boundary); 
-     int materialIdx = m_blib->getInnerMaterial(boundary); 
+    unsigned boundary = addBoundary( pv, pv_p );
+    std::string boundaryName = m_blib->shortname(boundary); 
+    int materialIdx = m_blib->getInnerMaterial(boundary); 
 
-     const G4LogicalVolume* const lv   = pv->GetLogicalVolume() ;
-     const std::string& lvName = lv->GetName() ; 
-     const std::string& pvName = pv->GetName() ; 
-     unsigned ndIdx = m_node_count ;       // incremented below after GVolume instanciation
+    const G4LogicalVolume* const lv   = pv->GetLogicalVolume() ;
+    const std::string& lvName = lv->GetName() ; 
+    const std::string& pvName = pv->GetName() ; 
+    unsigned ndIdx = m_node_count ;       // incremented below after GVolume instanciation
 
-     int lvIdx = m_lvidx[lv] ;   // from postorder traverse in convertSolids to match GDML lvIdx : mesh identity uses lvIdx
+    int lvIdx = m_lvidx[lv] ;   // from postorder traverse in convertSolids to match GDML lvIdx : mesh identity uses lvIdx
 
-     LOG(verbose) 
-         << " boundary " << std::setw(4) << boundary 
-         << " materialIdx " << std::setw(4) << materialIdx
-         << " boundaryName " << boundaryName
-         << " lvIdx " << lvIdx
-         ;
+    LOG(verbose) 
+        << " boundary " << std::setw(4) << boundary 
+        << " materialIdx " << std::setw(4) << materialIdx
+        << " boundaryName " << boundaryName
+        << " lvIdx " << lvIdx
+        ;
 
-     // THIS IS HOT NODE CODE : ~300,000 TIMES FOR JUNO 
+    // THIS IS HOT NODE CODE : ~300,000 TIMES FOR JUNO 
 
 
-     const GMesh* mesh = m_ggeo->getMesh(lvIdx);  // <-- better to upfront get reference to the vector
-     const NCSG* csg = mesh->getCSG();  
-     unsigned csgIdx = csg->getIndex() ; 
+    //const GMesh* mesh = m_ggeo->getMesh(lvIdx);  // <-- better to upfront get reference to the vector
+    //const GMesh* mesh = m_meshes[lvIdx] ; 
+    const GMesh* mesh = m_hlib->getMeshWithIndex(lvIdx); 
+
+    const NCSG* csg = mesh->getCSG();  
+    unsigned csgIdx = csg->getIndex() ; 
 
 
 #ifdef GPARTS_HOT
-     GParts* parts = GParts::Make( csg, boundaryName.c_str(), ndIdx );  // painful to do this here in hot node code
-     parts->setBndLib(m_blib);
-     //parts->setVolumeIndex( ndIdx );  
-     unsigned volIdx = parts->getVolumeIndex(0); 
-     assert( volIdx == ndIdx ); 
+    GParts* parts = GParts::Make( csg, boundaryName.c_str(), ndIdx );  // painful to do this here in hot node code
+    parts->setBndLib(m_blib);
+    //parts->setVolumeIndex( ndIdx );  
+    unsigned volIdx = parts->getVolumeIndex(0); 
+    assert( volIdx == ndIdx ); 
 #endif
 
 
-     GPt* pt = new GPt( lvIdx, ndIdx, csgIdx, boundaryName.c_str() )  ; 
+     ///////////////////////////////////////////////////////////////  
 
+#ifdef X4_PROFILE
+    float t10 = BTimeStamp::RealTime(); 
+#endif
 
-     glm::mat4 xf_local = X4Transform3D::GetObjectTransform(pv);  
+    GPt* pt = new GPt( lvIdx, ndIdx, csgIdx, boundaryName.c_str() )  ; 
 
-     const nmat4triple* ltriple = m_xform->make_triple( glm::value_ptr(xf_local) ) ; 
-     GMatrixF* ltransform = new GMatrix<float>(glm::value_ptr(xf_local));
+    glm::mat4 xf_local = X4Transform3D::GetObjectTransform(pv);  
 
-     X4Nd* nd = new X4Nd { parent_nd, ltriple } ;        
+#ifdef X4_PROFILE
+    float t12 = BTimeStamp::RealTime(); 
+#endif
 
-     const nmat4triple* gtriple = nxform<X4Nd>::make_global_transform(nd) ; 
-     glm::mat4 xf_global = gtriple->t ;
-     GMatrixF* gtransform = new GMatrix<float>(glm::value_ptr(xf_global));
+    const nmat4triple* ltriple = m_xform->make_triple( glm::value_ptr(xf_local) ) ;   // YIKES does polardecomposition + inversion and checks them 
+    // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+#ifdef X4_PROFILE
+    float t13 = BTimeStamp::RealTime(); 
+#endif
 
-     GVolume* volume = new GVolume(ndIdx, gtransform, mesh );
-     m_node_count += 1 ; 
+    GMatrixF* ltransform = new GMatrix<float>(glm::value_ptr(xf_local));
 
-     unsigned lvr_lvIdx = lvIdx ; 
-     bool selected = m_query->selected(pvName.c_str(), ndIdx, depth, recursive_select, lvr_lvIdx );
-     if(selected) m_selected_node_count += 1 ;  
+#ifdef X4_PROFILE
+    float t15 = BTimeStamp::RealTime(); 
+#endif
 
-     LOG(verbose) << " lv_lvIdx " << lvr_lvIdx
+    X4Nd* nd = new X4Nd { parent_nd, ltriple } ;        
+
+    const nmat4triple* gtriple = nxform<X4Nd>::make_global_transform(nd) ; 
+    // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+#ifdef X4_PROFILE
+    float t17 = BTimeStamp::RealTime(); 
+#endif
+
+    glm::mat4 xf_global = gtriple->t ;
+
+    GMatrixF* gtransform = new GMatrix<float>(glm::value_ptr(xf_global));
+
+#ifdef X4_PROFILE
+    float t20 = BTimeStamp::RealTime(); 
+
+    m_convertNode_boundary_dt    += t10 - t00 ; 
+
+    m_convertNode_transformsA_dt += t12 - t10 ; 
+    m_convertNode_transformsB_dt += t13 - t12 ; 
+    m_convertNode_transformsC_dt += t15 - t13 ; 
+    m_convertNode_transformsD_dt += t17 - t15 ; 
+    m_convertNode_transformsE_dt += t20 - t17 ; 
+#endif
+
+/*
+     m_convertNode_boundary_dt 3.47852
+     m_convertNode_transformsA_dt 0.644531
+     m_convertNode_transformsB_dt 6.35547
+     m_convertNode_transformsC_dt 0.277344
+     m_convertNode_transformsD_dt 7.29492
+     m_convertNode_transformsE_dt 0.230469
+     m_convertNode_GVolume_dt 3
+*/
+
+    ////////////////////////////////////////////////////////////////
+
+    GVolume* volume = new GVolume(ndIdx, gtransform, mesh );
+    m_node_count += 1 ; 
+
+    unsigned lvr_lvIdx = lvIdx ; 
+    bool selected = m_query->selected(pvName.c_str(), ndIdx, depth, recursive_select, lvr_lvIdx );
+    if(selected) m_selected_node_count += 1 ;  
+
+    LOG(verbose) << " lv_lvIdx " << lvr_lvIdx
                 << " selected " << selected
                ; 
  
-     NSensor* sensor = NULL ; 
-     volume->setSensor( sensor );   
-     volume->setBoundary( boundary ); 
-     volume->setSelected( selected );
+    NSensor* sensor = NULL ; 
+    volume->setSensor( sensor );   
+    volume->setBoundary( boundary ); 
+    volume->setSelected( selected );
 
-     volume->setLevelTransform(ltransform);
+    volume->setLevelTransform(ltransform);
 
-     volume->setLocalTransform(ltriple);
-     volume->setGlobalTransform(gtriple);
+    volume->setLocalTransform(ltriple);
+    volume->setGlobalTransform(gtriple);
  
-     volume->setParallelNode( nd ); 
+    volume->setParallelNode( nd ); 
 
 #ifdef GPARTS_HOT
      volume->setParts( parts ); 
 #endif
 
-     volume->setPt( pt ); 
-     volume->setPVName( pvName.c_str() );
-     volume->setLVName( lvName.c_str() );
-     volume->setName( pvName.c_str() );   // historically (AssimpGGeo) this was set to lvName, but pvName makes more sense for node node
+    volume->setPt( pt ); 
+    volume->setPVName( pvName.c_str() );
+    volume->setLVName( lvName.c_str() );
+    volume->setName( pvName.c_str() );   // historically (AssimpGGeo) this was set to lvName, but pvName makes more sense for node node
 
-     m_ggeo->countMeshUsage(lvIdx, ndIdx );
+    m_ggeo->countMeshUsage(lvIdx, ndIdx );
 
-     if(parent) 
-     {
+    if(parent) 
+    {
          parent->addChild(volume);
          volume->setParent(parent);
-     } 
+    } 
 
-     return volume ; 
+
+#ifdef X4_PROFILE
+    float t30 = BTimeStamp::RealTime() ;
+    m_convertNode_GVolume_dt     += t30 - t20 ; 
+#endif
+
+
+    return volume ; 
 }
 
 

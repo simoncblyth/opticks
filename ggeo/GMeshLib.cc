@@ -97,16 +97,18 @@ void GMeshLib::addAltMeshes()
     {
         unsigned index = indices_with_alt[i] ; 
         GMesh* mesh = getMeshSimple(index); 
-        const GMesh* alt = mesh->getAlt() ; 
-        assert(alt);
+        const GMesh* altmesh = mesh->getAlt() ; 
+        assert(altmesh);
         LOG(info) << " index with alt " << index ;  
-        add(alt); 
+        bool alt = true ; 
+        add(altmesh, alt ); 
     }
  
     dump("addAltMeshes"); 
 }
 
 const std::vector<const NCSG*>& GMeshLib::getSolids() const { return m_solids ; }
+const std::vector<const GMesh*>& GMeshLib::getMeshes() const { return m_meshes ; }
 
  
 
@@ -319,10 +321,10 @@ solid is encountered in the recursive traverse.
 
 **/
 
-void GMeshLib::add(const GMesh* mesh)
+void GMeshLib::add(const GMesh* mesh, bool alt )
 {
     const char* name = mesh->getName();
-    unsigned int index = mesh->getIndex();
+    unsigned index = mesh->getIndex();
     assert(name) ; 
 
     m_meshnames->add(name); 
@@ -332,7 +334,26 @@ void GMeshLib::add(const GMesh* mesh)
         << " name " << name 
         ;
 
+
+    if( alt == false )
+    {
+        bool inorder = index == m_meshes.size()  ; 
+        if(!inorder )
+        {
+            LOG(fatal) 
+                << " non-alt meshes are required to be added in index order "
+                << " index " << index
+                << " m_meshes.size() " << m_meshes.size()
+                ; 
+        }
+        assert( inorder ) ; 
+    }
+
+
     m_meshes.push_back(mesh);
+
+
+
     const NCSG* solid = mesh->getCSG(); 
 
     if(m_direct)

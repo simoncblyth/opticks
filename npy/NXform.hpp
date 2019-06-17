@@ -93,9 +93,20 @@ const nmat4triple* nxform<N>::make_triple( const float* data)
 }
 
 
+/**
+nxform<N>::make_global_transform
+-----------------------------------
 
-// node structs that can work with this require
-// transform and parent members   
+node structs that can work with this require
+transform and parent members   
+
+1. collects nmat4triple pointers whilst following 
+   parent links up the tree, ie in leaf-to-root order 
+
+2. returns the reversed product of those 
+
+
+**/
 
 template <typename N>
 const nmat4triple* nxform<N>::make_global_transform(const N* n) // static

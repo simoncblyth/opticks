@@ -22,8 +22,14 @@ Issue : geocache-recreate takes lots of memory+time
 
 * too much memory to run on lxslc
 
-::
 
+Culprit for majority of time is transform handling 
+
+* :doc:`X4PhysicalVolume_convertNode_transforms`
+
+
+
+::
 
     geocache-recreate () 
     { 
@@ -52,8 +58,6 @@ Issue : geocache-recreate takes lots of memory+time
 
 
 
-
-
 ::
 
     2019-06-16 22:06:40.608 INFO  [37908] [X4PhysicalVolume::convertStructure@722] [ creating large tree of GVolume instances
@@ -64,6 +68,16 @@ Issue : geocache-recreate takes lots of memory+time
     2019-06-17 09:51:21.859 INFO  [235645] [X4PhysicalVolume::convertStructure@745] ] tree contains GGeo::getNumVolumes() 366697
 
     ## deferring GParts only saves ~6s 
+
+    2019-06-17 13:44:14.124 INFO  [203242] [X4PhysicalVolume::convertStructure@728] [ creating large tree of GVolume instances
+    2019-06-17 13:44:34.546 INFO  [203242] [X4PhysicalVolume::convertStructure@748] ] tree contains GGeo::getNumVolumes() 366697
+
+    ## avoiding searching for meshes does little
+
+    2019-06-17 14:14:31.577 INFO  [269427] [X4PhysicalVolume::convertStructure@732] [ creating large tree of GVolume instances
+    2019-06-17 14:14:53.807 INFO  [269427] [X4PhysicalVolume::convertStructure@758] ] GGeo::getNumVolumes() 366697 m_convertNode_dt 20.9629 m_convertNode_boundary_dt 3.50391 m_convertNode_transforms_dt 14.0918 m_convertNode_GVolume_dt 2.96484
+
+    ## 75% of time in transforms section of convertNode
 
 
 
@@ -250,6 +264,61 @@ After skipping the assert::
 
 X4PhysicalVolume2Test was expecting GParts on volume for access to NCSG.
 After skipping that, down to normal 2.
+
+
+
+Since moving to not searching for meshes using m_meshes reference, get occasional cleanup problem.
+So return to "getMesh"::
+
+    2019-06-17 14:50:07.281 INFO  [326273] [Opticks::dumpRC@201]  rc 0 rcmsg : -
+    2019-06-17 14:50:10.004 INFO  [326273] [OContext::cleanUpCache@446]  RemoveDir /var/tmp/OptixCache
+    *** Error in /home/blyth/local/opticks/lib/OKX4Test': double free or corruption (!prev): 0x0000000003fb8f30 ***
+    ======= Backtrace: =========
+    /lib64/libc.so.6(+0x81489)[0x7fbca89da489]
+    /home/blyth/local/opticks/lib/OKX4Test(_ZN9__gnu_cxx13new_allocatorIjE10deallocateEPjm+0x20)[0x407eb6]
+    /home/blyth/local/opticks/lib/OKX4Test(_ZNSt12_Vector_baseIjSaIjEE13_M_deallocateEPjm+0x32)[0x40799c]
+    /home/blyth/local/opticks/lib/OKX4Test(_ZNSt12_Vector_baseIjSaIjEED2Ev+0x41)[0x40740b]
+    /home/blyth/local/opticks/lib/OKX4Test(_ZNSt6vectorIjSaIjEED1Ev+0x41)[0x406b57]
+    /home/blyth/local/opticks/lib/OKX4Test(_ZN16X4PhysicalVolumeD1Ev+0x30)[0x406a8a]
+    /home/blyth/local/opticks/lib/OKX4Test[0x4053e1]
+    /lib64/libc.so.6(__libc_start_main+0xf5)[0x7fbca897b3d5]
+    /home/blyth/local/opticks/lib/OKX4Test[0x404909]
+
+
+
+    [blyth@localhost extg4]$ c++filt _ZN9__gnu_cxx13new_allocatorIjE10deallocateEPjm
+    __gnu_cxx::new_allocator<unsigned int>::deallocate(unsigned int*, unsigned long)
+    [blyth@localhost extg4]$ 
+    [blyth@localhost extg4]$ c++filt _ZNSt12_Vector_baseIjSaIjEE13_M_deallocateEPjm
+    std::_Vector_base<unsigned int, std::allocator<unsigned int> >::_M_deallocate(unsigned int*, unsigned long)
+    [blyth@localhost extg4]$ c++filt _ZN16X4PhysicalVolumeD1Ev
+    X4PhysicalVolume::~X4PhysicalVolume()
+    [blyth@localhost extg4]$ 
+    [blyth@localhost extg4]$ c++filt ZNSt6vectorIjSaIjEED1Ev
+    ZNSt6vectorIjSaIjEED1Ev
+    [blyth@localhost extg4]$ c++filt _ZNSt6vectorIjSaIjEED1Ev
+    std::vector<unsigned int, std::allocator<unsigned int> >::~vector()
+    [blyth@localhost extg4]$ 
+    [blyth@localhost extg4]$ c++filt _ZNSt12_Vector_baseIjSaIjEED2Ev
+    std::_Vector_base<unsigned int, std::allocator<unsigned int> >::~_Vector_base()
+
+
+
+    ======= Memory map: ========
+    00400000-0040d000 r-xp 00000000 fd:02 136998436                          /home/blyth/local/opticks/lib/OKX4Test
+    0060d000-0060e000 r--p 0000d000 fd:02 136998436                          /home/blyth/local/opticks/lib/OKX4Test
+    0060e000-0060f000 rw-p 0000e000 fd:02 136998436                          /home/blyth/local/opticks/lib/OKX4Test
+    01430000-137d9f000 rw-p 00000000 00:00 0                                 [heap]
+    200000000-300200000 ---p 00000000 00:00 0 
+    7fbb8c000000-7fbb8c021000 rw-p 00000000 00:00 0 
+    7fbb8c021000-7fbb90000000 ---p 00000000 00:00 0 
+    7fbb90000000-7fbb90021000 rw-p 00000000 00:00 0 
+    7fbb90021000-7fbb94000000 ---p 00000000 00:00 0 
+    7fbb98000000-7fbb98021000 rw-p 00000000 00:00 0 
+    7fbb98021000-7fbb9c000000 ---p 00000000 00:00 0 
+
+
+
 
 
 

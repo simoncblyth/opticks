@@ -176,10 +176,10 @@ o-main()
    local runline=$(o-runline)
    local postline=$(o-postline)
 
-   echo $msg $runline ======= PWD $PWD 
+   echo $msg $runline ======= PWD $PWD $(date)
    eval $runline
    RC=$?
-   echo $msg $runline ======= PWD $PWD  RC $RC 
+   echo $msg $runline ======= PWD $PWD  RC $RC $(date)
 
    #[ $RC -eq 0 ] && echo $postline && eval $postline 
    echo $postline && eval $postline 

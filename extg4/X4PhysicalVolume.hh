@@ -117,7 +117,10 @@ class X4_API X4PhysicalVolume : public X4Named
         GMaterialLib*                m_mlib ; 
         GSurfaceLib*                 m_slib ; 
         GBndLib*                     m_blib ; 
-        GMeshLib*                    m_hlib ; 
+    private:
+        GMeshLib*                         m_hlib ; 
+ 
+        //const std::vector<const GMesh*>&  m_meshes ;  
     private:
         GVolume*                     m_root ;  
     private:
@@ -126,12 +129,23 @@ class X4_API X4PhysicalVolume : public X4Named
         int                          m_verbosity ; 
         unsigned                     m_node_count ; 
         unsigned                     m_selected_node_count ; 
-
+#ifdef X4_PROFILE    
+    private:
+        float                        m_convertNode_dt ;  
+        float                        m_convertNode_boundary_dt ;  
+        float                        m_convertNode_transformsA_dt ;  
+        float                        m_convertNode_transformsB_dt ;  
+        float                        m_convertNode_transformsC_dt ;  
+        float                        m_convertNode_transformsD_dt ;  
+        float                        m_convertNode_transformsE_dt ;  
+        float                        m_convertNode_GVolume_dt ;  
+#endif  
+        int                          m_dummy ;   
+    private:
         std::map<const G4LogicalVolume*, int> m_lvidx ; 
-
-        std::vector<const G4LogicalVolume*> m_lvlist ; 
-        std::vector<unsigned>        m_lv_with_torus ; 
-        std::vector<std::string>     m_lvname_with_torus ; 
+        std::vector<const G4LogicalVolume*>   m_lvlist ; 
+        std::vector<unsigned>                 m_lv_with_torus ; 
+        std::vector<std::string>              m_lvname_with_torus ; 
 
 
 };
