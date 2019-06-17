@@ -874,10 +874,11 @@ EON
 
 om-cls()
 {
+    local base=$(om-home)
     local cls=${1:-NTreeJUNO}
-    local hdr=$(find . \( -name {cls}.hh -or -name ${cls}.hpp -or -name ${cls}.h  \) )
-    local imp=$(find . \( -name ${cls}Test.cc -or -name ${cls}.cpp \) )
-    local tst=$(find . \( -name ${cls}Test.cc -or -name ${cls}.txt -or -name ${cls}.py \) )
+    local hdr=$(find $base \( -name ${cls}.hh -or -name ${cls}.hpp -or -name ${cls}.h  \) )
+    local imp=$(find $base \( -name ${cls}.cc -or -name ${cls}.cpp \) )
+    local tst=$(find $base \( -name ${cls}Test.cc -or -name ${cls}.txt -or -name ${cls}.py \) )
     local cmd="vi $hdr $imp $tst"
     echo $cmd
     eval $cmd

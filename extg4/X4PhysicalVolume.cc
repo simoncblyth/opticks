@@ -46,6 +46,7 @@ template struct nxform<X4Nd> ;
 #include "NNode.hpp"
 #include "NNodeNudger.hpp"
 #include "NTreeProcess.hpp"
+#include "GLMFormat.hpp"
 
 #include "GMesh.hh"
 #include "GVolume.hh"
@@ -132,6 +133,10 @@ X4PhysicalVolume::X4PhysicalVolume(GGeo* ggeo, const G4VPhysicalVolume* const to
     m_convertNode_transformsD_dt(0.f),
     m_convertNode_transformsE_dt(0.f),
     m_convertNode_GVolume_dt(0.f),
+#endif
+#ifdef X4_TRANSFORM
+    m_is_identity0(0),
+    m_is_identity1(0),
 #endif
     m_dummy(0)
 {
@@ -767,6 +772,15 @@ void X4PhysicalVolume::convertStructure()
         << "GGeo::getNumVolumes() " << m_ggeo->getNumVolumes() 
         ;
 
+#ifdef X4_TRANSFORM
+    LOG(info) 
+        << " m_is_identity0 " << m_is_identity0
+        << std::endl 
+        << " m_is_identity1 " << m_is_identity1 
+        ;
+#endif
+
+
 #ifdef X4_PROFILE    
     LOG(info) 
         << " m_convertNode_dt " << m_convertNode_dt 
@@ -994,6 +1008,8 @@ from persisted GPts
 **/
 
 
+
+
 GVolume* X4PhysicalVolume::convertNode(const G4VPhysicalVolume* const pv, GVolume* parent, int depth, const G4VPhysicalVolume* const pv_p, bool& recursive_select )
 {
 #ifdef X4_PROFILE
@@ -1048,20 +1064,50 @@ GVolume* X4PhysicalVolume::convertNode(const G4VPhysicalVolume* const pv, GVolum
 
     GPt* pt = new GPt( lvIdx, ndIdx, csgIdx, boundaryName.c_str() )  ; 
 
-    glm::mat4 xf_local = X4Transform3D::GetObjectTransform(pv);  
+    glm::mat4 xf_local_t = X4Transform3D::GetObjectTransform(pv);  
+
+#ifdef X4_TRANSFORM
+    glm::mat4 xf_local_v = X4Transform3D::GetFrameTransform(pv);  
+    glm::mat4 id0 = xf_local_t * xf_local_v ; 
+    glm::mat4 id1 = xf_local_v * xf_local_t ; 
+    bool is_identity0 = nglmext::is_identity(id0)  ; 
+    bool is_identity1 = nglmext::is_identity(id1)  ; 
+
+    m_is_identity0 += ( is_identity0 ? 1 : 0 ); 
+    m_is_identity1 += ( is_identity1 ? 1 : 0 ); 
+
+    if(ndIdx < 10 || !(is_identity0 && is_identity1))
+    {
+        LOG(info) 
+            << " ndIdx  " << ndIdx 
+            << " is_identity0 " << is_identity0
+            << " is_identity1 " << is_identity1
+            << std::endl
+            << " id0 " << gformat(id0)
+            << std::endl
+            << " id1 " << gformat(id1)
+            << std::endl
+            << " xf_local_t " << gformat(xf_local_t)
+            << std::endl
+            << " xf_local_v " << gformat(xf_local_v)
+            ;       
+    }
+    //assert( is_identity ) ;  
+#endif
+
 
 #ifdef X4_PROFILE
     float t12 = BTimeStamp::RealTime(); 
 #endif
 
-    const nmat4triple* ltriple = m_xform->make_triple( glm::value_ptr(xf_local) ) ;   // YIKES does polardecomposition + inversion and checks them 
+    const nmat4triple* ltriple = m_xform->make_triple( glm::value_ptr(xf_local_t) ) ;   // YIKES does polardecomposition + inversion and checks them 
     // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 #ifdef X4_PROFILE
     float t13 = BTimeStamp::RealTime(); 
 #endif
 
-    GMatrixF* ltransform = new GMatrix<float>(glm::value_ptr(xf_local));
+    GMatrixF* ltransform = new GMatrix<float>(glm::value_ptr(xf_local_t));
 
 #ifdef X4_PROFILE
     float t15 = BTimeStamp::RealTime(); 

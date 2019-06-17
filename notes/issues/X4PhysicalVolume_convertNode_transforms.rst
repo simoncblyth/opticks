@@ -51,6 +51,63 @@ TODO
 
 
 
+
+
+It would save some time if can use preexisting inverse from G4 ?
+----------------------------------------------------------------------
+
+* started looking into this behind X4_TRANSFORM macro
+
+
+Currently using X4Transform3D::GetObjectTransform and are then inverting it.
+
+
+g4-cls G4VPhysicalVolume::
+
+    110     // Access functions
+    111     //
+    112     // The following are accessor functions that make a distinction
+    113     // between whether the rotation/translation is being made for the
+    114     // frame or the object/volume that is being placed.
+    115     // (They are the inverse of each other).
+    116 
+    117     G4RotationMatrix* GetObjectRotation() const;              //  Obsolete 
+    118     G4RotationMatrix  GetObjectRotationValue() const;  //  Replacement
+    119     G4ThreeVector  GetObjectTranslation() const;
+    120       // Return the rotation/translation of the Object relative to the mother.
+    121     const G4RotationMatrix* GetFrameRotation() const;
+    122     G4ThreeVector  GetFrameTranslation() const;
+    123       // Return the rotation/translation of the Frame used to position 
+    124       // this volume in its mother volume (opposite of object rot/trans).
+    125 
+
+
+om-cls X4Transform3D::
+
+     17 glm::mat4 X4Transform3D::GetObjectTransform(const G4VPhysicalVolume* const pv)
+     18 {
+     19    // preferred for interop with glm/Opticks : obj relative to mother
+     20     G4RotationMatrix rot = pv->GetObjectRotationValue() ; 
+     21     G4ThreeVector    tla = pv->GetObjectTranslation() ;
+     22     G4Transform3D    tra(rot,tla);
+     23     return Convert( tra ) ;
+     24 }
+     25 
+     26 glm::mat4 X4Transform3D::GetFrameTransform(const G4VPhysicalVolume* const pv)
+     27 {
+     28     const G4RotationMatrix* rotp = pv->GetFrameRotation() ;
+     29     G4ThreeVector    tla = pv->GetFrameTranslation() ;
+     30     G4Transform3D    tra(rotp ? *rotp : G4RotationMatrix(),tla);
+     31     return Convert( tra ) ;
+     32 }
+
+
+
+
+
+
+
+
 Issue : transform handling takes 75% of convertNodes time
 -------------------------------------------------------------
 
