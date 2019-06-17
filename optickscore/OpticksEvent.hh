@@ -5,6 +5,7 @@
 
 //template <typename T> class NPY ; 
 #include "NPY.hpp"
+#include "plog/Severity.h"
 
 
 class BTimes ; 
@@ -86,6 +87,8 @@ TODO:
 
 class OKCORE_API OpticksEvent : public OpticksEventSpec 
 {
+      static const plog::Severity LEVEL ; 
+
       // loadBuffers
       friend class Opticks ; 
       friend class OpticksRun ; 

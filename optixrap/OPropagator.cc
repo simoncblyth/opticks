@@ -132,7 +132,7 @@ void OPropagator::prelaunch()
     m_prelaunch = true ; 
 
     bool entry = m_entry_index > -1 ; 
-    if(!entry) LOG(fatal) << "OPropagator::prelaunch MISSING entry " ;
+    if(!entry) LOG(fatal) << "MISSING entry " ;
     assert(entry);
 
     OpticksEvent* evt = m_oevt->getEvent(); 
@@ -168,13 +168,13 @@ void OPropagator::launch()
 
     const char* llogpath = m_ocontext->getPrintIndexLogPath() ; 
 
-    LOG(error) << "LAUNCH NOW " << ( llogpath ? llogpath : "-" ) ; 
+    LOG(info) << "LAUNCH NOW " << ( llogpath ? llogpath : "-" ) ; 
 
     OK_PROFILE("_OPropagator::launch");
     m_ocontext->launch( OContext::LAUNCH,  m_entry_index,  m_width, m_height, launch_times);
     OK_PROFILE("OPropagator::launch");
 
-    LOG(error) << "LAUNCH DONE" ; 
+    LOG(info) << "LAUNCH DONE" ; 
 
     LOG(info) << brief() ;
     launch_times->dump("OPropagator::launch");

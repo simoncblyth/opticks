@@ -65,7 +65,7 @@
 #include "PLOG.hh"
 
 
-
+const plog::Severity OpticksEvent::LEVEL = debug ; 
 
 
 const char* OpticksEvent::TIMEFORMAT = "%Y%m%d_%H%M%S" ;
@@ -2092,7 +2092,7 @@ void OpticksEvent::postPropagateGeant4()
     }
     else
     {
-        LOG(fatal) << " NOT setting num_photons " << num_photons ; 
+        LOG(LEVEL) << " NOT setting num_photons, as STATIC running " << num_photons ; 
     }
 
 
@@ -2239,17 +2239,17 @@ void OpticksEvent::saveIndex()
     if(m_seqhis)
         m_seqhis->save(tagdir.c_str());        
     else
-        LOG(warning) << "no seqhis to save " ;
+        LOG(LEVEL) << "no seqhis to save " ;
 
     if(m_seqmat)
         m_seqmat->save(tagdir.c_str());        
     else
-        LOG(warning) << "no seqmat to save " ;
+        LOG(LEVEL) << "no seqmat to save " ;
 
     if(m_bndidx)
         m_bndidx->save(tagdir.c_str());        
     else
-        LOG(warning) << "no bndidx to save " ;
+        LOG(LEVEL) << "no bndidx to save " ;
 }
 
 void OpticksEvent::loadIndex()

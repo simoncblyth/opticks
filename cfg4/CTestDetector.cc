@@ -154,12 +154,12 @@ G4VPhysicalVolume* CTestDetector::makeChildVolume(const NCSG* csg, const char* l
     const G4Material* material = m_mlib->convertMaterial(imat);
 
 
-    LOG(fatal) << " lvn " << lvn ; 
+    LOG(LEVEL) << " lvn " << lvn ; 
 
     bool have_unbalanced_alt = csg->is_balanced() && altcsg && !altcsg->is_balanced() ; 
     if(have_unbalanced_alt) 
     { 
-        LOG(fatal) << " have_unbalanced_alt " ; 
+        LOG(LEVEL) << " have_unbalanced_alt " ; 
     }
 
     G4VSolid* solid = CMaker::MakeSolid( have_unbalanced_alt ? altcsg : csg ); 
@@ -169,7 +169,7 @@ G4VPhysicalVolume* CTestDetector::makeChildVolume(const NCSG* csg, const char* l
     if(csg->has_placement_translation())
     {
         glm::vec3 tlate = csg->get_placement_translation(); 
-        LOG(fatal) << " csg.has_placement_translation " << gformat(tlate) ; 
+        LOG(LEVEL) << " csg.has_placement_translation " << gformat(tlate) ; 
         placement.set( tlate.x, tlate.y, tlate.z ); 
     }
 

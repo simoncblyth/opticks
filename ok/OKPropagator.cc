@@ -25,6 +25,8 @@
 #include "OK_BODY.hh"
 
 
+const plog::Severity OKPropagator::LEVEL = debug ; 
+
 
 OKPropagator* OKPropagator::fInstance = NULL ; 
 OKPropagator* OKPropagator::GetInstance(){ return fInstance ;}
@@ -58,7 +60,7 @@ void OKPropagator::propagate()
 
     assert(evt);
 
-    LOG(fatal) << "OKPropagator::propagate(" << evt->getId() << ") " << m_ok->brief()   ;
+    LOG(LEVEL) << "OKPropagator::propagate(" << evt->getId() << ") " << m_ok->brief()   ;
 
     if(m_viz) m_hub->target();     // if not Scene targetted, point Camera at gensteps 
 
@@ -72,7 +74,7 @@ void OKPropagator::propagate()
 
     int nhit = m_ok->isSave() ? downloadEvent() : -1 ; 
 
-    LOG(fatal) << "OKPropagator::propagate(" << evt->getId() << ") DONE nhit: " << nhit    ;
+    LOG(LEVEL) << "OKPropagator::propagate(" << evt->getId() << ") DONE nhit: " << nhit    ;
 
     OK_PROFILE("OKPropagator::propagate-download");
 }

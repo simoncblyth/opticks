@@ -14,6 +14,9 @@
 
 #include "PLOG.hh"
 
+const plog::Severity OpticksProfile::LEVEL = debug ; 
+
+
 OpticksProfile::OpticksProfile(const char* name, bool stamp_out) 
    :
    m_dir(NULL),
@@ -119,7 +122,7 @@ void OpticksProfile::load()
 void OpticksProfile::save(const char* dir)
 {
    assert(dir);
-   LOG(error) << brief() ; 
+   LOG(LEVEL) << brief() ; 
    m_tt->save(dir);
    m_npy->save(dir, m_name);
 }

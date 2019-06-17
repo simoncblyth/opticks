@@ -2,6 +2,7 @@
 
 #include "CFG4_API_EXPORT.hh"
 #include "CFG4_HEAD.hh"
+#include "plog/Severity.h"
 
 class G4StepPoint ;
 
@@ -33,6 +34,7 @@ mode the buffers are grown as new photons are added.
 
 class CFG4_API CWriter 
 {
+        static const plog::Severity LEVEL ; 
         friend class CRecorder ; 
     public: 
         // TODO: move into sysrap- 

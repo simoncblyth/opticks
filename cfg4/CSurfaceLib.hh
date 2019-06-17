@@ -50,6 +50,7 @@ Hmm how to apply to CTestDetector ? PV indices are all different.
 
 class CFG4_API CSurfaceLib 
 {
+         static const plog::Severity LEVEL ; 
          friend class CDetector ;
          friend class CGeometry ;
     public:
@@ -69,7 +70,6 @@ class CFG4_API CSurfaceLib
          Opticks*       m_ok ; 
          bool           m_dbgsurf ; 
          CDetector*     m_detector ; 
-         plog::Severity m_level ; 
 
          std::vector<G4LogicalBorderSurface*> m_border ; 
          std::vector<G4LogicalSkinSurface*>   m_skin ; 

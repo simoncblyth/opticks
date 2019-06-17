@@ -7,6 +7,7 @@ template <typename T> class NPY ;
 
 #include "OKCORE_API_EXPORT.hh"
 #include "OKCORE_HEAD.hh"
+#include "plog/Severity.h"
 
 /**
 
@@ -22,6 +23,7 @@ Recording time and virtual memory as various points during Opticks running.
 class OKCORE_API OpticksProfile 
 {
     private:
+       static const plog::Severity LEVEL ; 
        static const char* NAME ; 
     public:
        static OpticksProfile* Load( const char* dir, const char* name=NULL ); 

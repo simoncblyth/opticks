@@ -65,6 +65,9 @@
 
 #include "PLOG.hh"
 
+const plog::Severity CG4::LEVEL = debug ; 
+
+
 CG4* CG4::INSTANCE = NULL ; 
 
 Opticks*    CG4::getOpticks() const { return m_ok ; } 
@@ -107,7 +110,7 @@ CG4Ctx& CG4::getCtx()
 
 CG4::CG4(OpticksHub* hub) 
     :
-    m_log(new SLog("CG4::CG4", "", fatal)),
+    m_log(new SLog("CG4::CG4", "", LEVEL)),
     m_hub(hub),
     m_ok(m_hub->getOpticks()),
     m_run(m_ok->getRun()),
@@ -342,7 +345,7 @@ NPY<float>* CG4::propagate()
     NPY<float>* gs = m_collector->getGensteps(); 
 
 
-    LOG(fatal) << "idpath " << m_ok->getIdPath();  
+    LOG(LEVEL) << "idpath " << m_ok->getIdPath();  
 
     NPY<float>* pr = m_primary_collector->getPrimary(); 
     pr->save("$TMP/cg4/primary.npy");   // debugging primary position issue 

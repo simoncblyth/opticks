@@ -14,6 +14,7 @@ class CMaterialBridge ;
 class CSurfaceBridge ; 
 class CSensitiveDetector ; 
 
+#include "plog/Severity.h"
 #include "CFG4_API_EXPORT.hh"
 
 /**
@@ -31,6 +32,7 @@ Canonical m_geometry instance is ctor resident of CG4.
 
 class CFG4_API CGeometry 
 {
+       static const plog::Severity LEVEL ; 
    public:
        CGeometry(OpticksHub* hub, CSensitiveDetector* sd);
        bool hookup(CG4* g4);

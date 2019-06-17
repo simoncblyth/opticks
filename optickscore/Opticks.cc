@@ -8,6 +8,7 @@
 
 
 #include <sstream>
+#include <iostream>
 
 #include "SLog.hh"
 #include "SProc.hh"
@@ -391,9 +392,7 @@ void Opticks::postpropagate()
 
 void Opticks::ana()
 {
-   LOG(error) << "[" ; 
    m_ana->run();
-   LOG(error) << "]" ; 
 }
 
 
@@ -1729,7 +1728,7 @@ void Opticks::configure()
     const char* dcvd = SSys::getenvvar(dk) ;  
     if( cvd == NULL && isInterop() && dcvd != NULL )
     {
-        LOG(fatal) << " --interop mode with no cvd specified, adopting OPTICKS_DEFAULT_INTEROP_CVD hinted by envvar [" << dcvd << "]" ;   
+        LOG(LEVEL) << " --interop mode with no cvd specified, adopting OPTICKS_DEFAULT_INTEROP_CVD hinted by envvar [" << dcvd << "]" ;   
         cvd = strdup(dcvd);   
     }
 
@@ -2286,7 +2285,7 @@ OpticksEvent* Opticks::makeEvent(bool ok, unsigned tagoffset)
     evt->setOpticks(this);
     evt->setEntryCode(getEntryCode());
 
-    LOG(error) 
+    LOG(info) 
         << ( ok ? " OK " : " G4 " )
         << " tagoffset " << tagoffset 
         << " id " << evt->getId() 

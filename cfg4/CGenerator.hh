@@ -9,6 +9,7 @@ class TorchStepNPY ;
 class CSource ; 
 template <typename T> class NPY ; 
 
+#include "plog/Severity.h"
 #include "CFG4_API_EXPORT.hh"
 
 /**
@@ -44,6 +45,7 @@ to pass to CPrimaryGeneratorAction::
 
 class CFG4_API CGenerator 
 {
+       static const plog::Severity LEVEL ; 
    public:
        CGenerator(OpticksGen* gen, CG4* g4);
    public:

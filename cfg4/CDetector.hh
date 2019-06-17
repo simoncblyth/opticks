@@ -52,6 +52,7 @@ instanciated in *CGeometry::init*.
 
 class CFG4_API CDetector : public G4VUserDetectorConstruction
 {
+    static const plog::Severity LEVEL ; 
  public:
     friend class CTestDetector ; 
     friend class CGDMLDetector ; 
@@ -133,7 +134,6 @@ class CFG4_API CDetector : public G4VUserDetectorConstruction
     bool               m_valid ;
     std::map<std::string, G4VPhysicalVolume*> m_pvm ; 
     std::map<std::string, G4LogicalVolume*>   m_lvm ; 
-    plog::Severity                            m_level ; 
 
 }; 
 #include "CFG4_TAIL.hh"

@@ -181,13 +181,13 @@ void GGeoTest::checkPts()
     
 
     int proxy_idx = m_csglist->findProxyIndex(); 
-    LOG(info)
+    LOG(LEVEL)
         << " proxy " << proxy 
         << " proxy_idx " << proxy_idx
         ;  
 
     unsigned nmm = m_basegeolib->getNumMergedMesh() ; 
-    LOG(info) 
+    LOG(LEVEL) 
         << " basegeolib " 
         << " nmm " << nmm 
         ; 
@@ -197,7 +197,7 @@ void GGeoTest::checkPts()
         GMergedMesh* bmm = m_basegeolib->getMergedMesh(i);  
         GPts* pts = bmm->getPts(); 
         assert( pts ); 
-        LOG(info) << std::setw(3) << i << " " << pts->brief() ;  
+        LOG(LEVEL) << std::setw(3) << i << " " << pts->brief() ;  
         //pts->dump("GGeoTest::checkPts") ; 
     }
 }
@@ -286,7 +286,7 @@ GMergedMesh* GGeoTest::initCreateCSG()
 
 
     glm::vec4 ce = tmm->getCE(0);    
-    LOG(fatal) << " tmm.ce " << gformat(ce) ; 
+    LOG(LEVEL) << " tmm.ce " << gformat(ce) ; 
 
     return tmm ; 
 }
@@ -451,7 +451,7 @@ GMesh* GGeoTest::importMeshViaProxy(NCSG* proxy)
     if( altmesh )
     {
         const NCSG* altcsg = altmesh->getCSG() ; 
-        LOG(error) 
+        LOG(LEVEL) 
             << " csg.is_balanced " << csg->is_balanced()
             << " altcsg.is_balanced " << altcsg->is_balanced()
             ; 
@@ -501,12 +501,12 @@ void GGeoTest::adjustContainer()
 
     if(!containerautosize)
     {
-        LOG(fatal) << " containerautosize DISABLED by metadata on container CSG " << containerautosize  ;
+        LOG(LEVEL) << " containerautosize DISABLED by metadata on container CSG " << containerautosize  ;
         return ; 
     }  
     else
     {
-        LOG(fatal) << " containerautosize ENABLED by metadata on container CSG " << containerautosize  ;
+        LOG(LEVEL) << " containerautosize ENABLED by metadata on container CSG " << containerautosize  ;
     }
 
 

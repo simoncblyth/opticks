@@ -7,9 +7,11 @@
 #include "OKCORE_API_EXPORT.hh"
 #include "OKCORE_HEAD.hh"
 #include "NConfigurable.hpp"
+#include "plog/Severity.h"
 
 class OKCORE_API Trackball : public NConfigurable {
    public:
+       static const plog::Severity LEVEL ; 
        static const char* PREFIX ;
        const char* getPrefix();
    public:

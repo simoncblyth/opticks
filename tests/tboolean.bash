@@ -609,6 +609,10 @@ tboolean--(){
             --args \
             --save 
 
+
+    RC=$?
+    echo $FUNCNAME RC $RC
+
     cat << EON > /dev/null
             --dbganalytic \
             --dbgemit \
@@ -619,6 +623,7 @@ tboolean--(){
 
 EON
 
+    exit $RC 
 }
 
 tboolean-tracetest()
@@ -744,7 +749,7 @@ tboolean-proxy-pdb(){ cd /tmp ; OPTICKS_EVENT_BASE=/tmp ipython --pdb $(which tb
 tboolean-proxy-ip(){ OPTICKS_EVENT_BASE=/tmp TESTNAME=$(tboolean-proxy-name) tboolean-ipy- $* ; } 
 tboolean-proxy-p(){ OPTICKS_EVENT_BASE=/tmp TESTNAME=$(tboolean-proxy-name) tboolean-py- $* ; } 
 tboolean-proxy-a(){ TESTNAME=$(tboolean-proxy-name) tboolean-ana- $* ; } 
-tboolean-proxy(){ TESTNAME=$(tboolean-proxy-name) TESTCONFIG=$($FUNCNAME- 2>/dev/null) tboolean-- $* ; } 
+tboolean-proxy(){ TESTNAME=$(tboolean-proxy-name) TESTCONFIG=$($FUNCNAME- 2>/dev/null) tboolean-- $* ; RC=$? ; echo $FUNCNAME RC $RC ;  } 
 tboolean-proxy-(){  $FUNCNAME- | python $* ; }
 tboolean-proxy--(){ cat << EOP 
 import logging

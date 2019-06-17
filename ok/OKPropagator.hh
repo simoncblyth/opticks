@@ -17,6 +17,7 @@ class OKGLTracer ;
 
 #include "OK_API_EXPORT.hh"
 #include "OK_HEAD.hh"
+#include "plog/Severity.h"
 
 /**
 OKPropagator
@@ -38,6 +39,7 @@ level of the compute/interop split.
 
 class OK_API OKPropagator {
    public:
+       static const plog::Severity LEVEL ; 
        static OKPropagator* GetInstance();
    public:
        OKPropagator(OpticksHub* hub, OpticksIdx* idx, OpticksViz* viz);

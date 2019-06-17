@@ -75,9 +75,11 @@ int SSys::run(const char* cmd)
 
     if(rc != 0)
     {
-        LOG(warning) << "SSys::run FAILED with "
-                     << " cmd " << cmd 
-                     ;
+        LOG(error) 
+            << "FAILED with "
+            << " cmd " << cmd 
+            << " RC " << rc 
+            ;
         LOG(verbose) << " possibly you need to set export PATH=$OPTICKS_HOME/ana:$OPTICKS_HOME/bin:/usr/local/opticks/lib:$PATH " ;
     }
     
@@ -154,6 +156,11 @@ hmm these envvars are potentially dependant on CMake/CTest version
 if that turns out to be the case will have to define an OPTICKS_INTERACTIVITY 
 envvar for this purpose
 
+
+This is used by OpticksMode::getInteractivityLevel see `opticks-f getInteractivityLevel`
+
+
+
 **/
 
 int SSys::GetInteractivityLevel()
@@ -174,6 +181,10 @@ int SSys::GetInteractivityLevel()
     {
         level = 1 ;  // running under CTest with --interactive-debug-mode 1  
     }
+    else if(cidm && cidm[0] == '0') 
+    {
+        level = 0 ;  
+    } 
     else
     {
         level = 2 ;  // not-running under CTest 

@@ -65,7 +65,6 @@ cmd="tboolean-$arg --okg4  $*"
 
 ## removed --compute will default to interop mode, now that viz+propagate are working together 
 
-
 echo $cmd
 eval $cmd
 rc=$?
@@ -73,5 +72,3 @@ rc=$?
 echo ====== $0 $arg $* ====== PWD $PWD ============ RC $rc =======
 
 exit $rc
-
-

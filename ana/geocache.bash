@@ -344,7 +344,7 @@ geocache-export()
     export OPTICKS_KEY=$(${geofunc}-key)
     export OPTICKS_COMMENT=$(${geofunc}-comment)
 
-    [ -t 1 ] && geocache-desc     ## only when connected to terminal 
+    #[ -t 1 ] && geocache-desc     ## only when connected to terminal 
 }
 geocache-desc()
 {

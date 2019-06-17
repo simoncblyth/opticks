@@ -26,6 +26,9 @@
 
 #include "PLOG.hh"
 
+const plog::Severity OpticksGen::LEVEL = debug ; 
+
+
 NPY<float>* OpticksGen::getInputGensteps() const { return m_direct_gensteps ? m_direct_gensteps : m_legacy_gensteps ; }
 NPY<float>* OpticksGen::getInputPhotons() const {   return m_input_photons ; }
 
@@ -139,7 +142,7 @@ void OpticksGen::initFromEmitterGensteps()
     OpticksActionControl oac(gs->getActionControlPtr());
     setLegacyGensteps(gs);
 
-    LOG(fatal) << "getting input photons and shim genstep "
+    LOG(LEVEL) << "getting input photons and shim genstep "
               << " --dbgemit " << m_dbgemit
               << " input_photons " << m_input_photons->getNumItems()
               << " oac : " << oac.description("oac") 
@@ -152,7 +155,7 @@ void OpticksGen::initFromDirectGensteps()
 {
     assert( m_direct_gensteps ) ; 
     std::string loadpath = m_direct_gensteps->getMeta<std::string>("loadpath",""); 
-    LOG(info) << loadpath ; 
+    LOG(LEVEL) << loadpath ; 
     m_direct_gensteps->setBufferSpec(OpticksEvent::GenstepSpec(m_ok->isCompute()));
 }
 
@@ -160,17 +163,17 @@ void OpticksGen::initFromLegacyGensteps()
 {
     if(m_ok->isNoInputGensteps() || m_ok->isEmbedded())
     {
-        LOG(warning) << "OpticksGen::initFromLegacyGensteps SKIP as isNoInputGensteps OR isEmbedded  " ; 
+        LOG(warning) << "SKIP as isNoInputGensteps OR isEmbedded  " ; 
         return ; 
     } 
 
     const char* type = m_ok->getSourceType();
     unsigned code = m_ok->getSourceCode();
 
-    LOG(debug) << "OpticksGen::initFromLegacyGensteps" 
-               << " code " << code
-               << " type " << type
-               ;
+    LOG(debug) 
+        << " code " << code
+        << " type " << type
+        ;
 
     NPY<float>* gs = makeLegacyGensteps(code) ; 
     assert( gs );
@@ -270,7 +273,7 @@ void OpticksGen::setInputPhotons(NPY<float>* ox)
     m_input_photons = ox ;  
     if(ox) 
     {
-        LOG(error) 
+        LOG(LEVEL) 
             << " ox " << ox->getShapeString()
             << " ox.hasMsk " << ( ox->hasMsk() ? "Y" : "N" )
             ;

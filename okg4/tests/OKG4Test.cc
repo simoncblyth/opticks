@@ -10,6 +10,6 @@ int main(int argc, char** argv)
     okg4.visualize();   
 
     int rc = okg4.rc() ;
-    LOG(info) << " end of main " << rc  ; 
+    LOG(info) << " RC " << rc  ; 
     return rc ;
 }

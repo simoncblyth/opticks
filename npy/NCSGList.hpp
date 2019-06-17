@@ -10,6 +10,7 @@ class NGeoTestConfig ;
 class BTxt ; 
 
 #include "NBBox.hpp"
+#include "plog/Severity.h"
 
 /**
 NCSGList
@@ -24,6 +25,7 @@ persisted trees.
 
 class NPY_API NCSGList 
 {
+        static const plog::Severity LEVEL ; 
     public:
         typedef enum { PROXY, EMITTER, CONTAINER } NCSG_t ;
   

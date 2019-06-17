@@ -32,6 +32,8 @@
 
 #include "PLOG.hh"
 
+const plog::Severity NCSG::LEVEL = debug ; 
+
 const float NCSG::SURFACE_EPSILON = 1e-5f ; 
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -319,7 +321,7 @@ void NCSG::postload()
 
     if( m_proxylv > -1 )
     {
-        LOG(info) 
+        LOG(LEVEL) 
             << " proxylv " << m_proxylv
             ;
     }

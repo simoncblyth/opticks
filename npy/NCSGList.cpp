@@ -17,6 +17,9 @@
 const char* NCSGList::FILENAME = "csg.txt" ; 
 
 
+const plog::Severity NCSGList::LEVEL = debug ; 
+
+
 bool NCSGList::ExistsDir(const char* dir)
 {
     if(!dir) return false ; 
@@ -111,7 +114,7 @@ std::string NCSGList::getTreeDir(unsigned idx) const
 void NCSGList::add(NCSG* tree)
 {
     const char* boundary = tree->getBoundary() ;
-    LOG(error) << " add tree, boundary: " << boundary ; 
+    LOG(LEVEL) << " add tree, boundary: " << boundary ; 
     m_trees.push_back(tree);  
     m_bndspec->addLine( boundary ); 
 }
@@ -152,7 +155,7 @@ void NCSGList::adjustContainerSize()
 
     container->export_();  // after changing geometry must re-export to update the buffers destined for upload to GPU 
 
-    LOG(info) 
+    LOG(LEVEL) 
         << " m_bbox " 
         << m_bbox.description()
         ; 
@@ -178,7 +181,7 @@ void NCSGList::load()
 
     unsigned nbnd = m_bndspec->getNumLines() ;
 
-    LOG(info) 
+    LOG(LEVEL) 
         << " VERBOSITY " << m_verbosity 
         << " basedir " << m_csgpath 
         << " txtpath " << m_txtpath 
@@ -234,14 +237,14 @@ NCSG* NCSGList::createUniverse(float scale, float delta) const
     const char* bnd0 = getBoundary(0);
     const char* ubnd = BBnd::DuplicateOuterMaterial( bnd0 ); 
 
-    LOG(fatal) 
+    LOG(LEVEL) 
         << " bnd0 " << bnd0 
         << " ubnd " << ubnd
         << " scale " << scale
         << " delta " << delta
         ;
 
-    LOG(fatal) 
+    LOG(LEVEL) 
         << " m_bbox " 
         << m_bbox.description()
         ; 
@@ -250,12 +253,12 @@ NCSG* NCSGList::createUniverse(float scale, float delta) const
     NCSG* universe = loadTree(0) ;    
     universe->setBoundary(ubnd);  
 
-    LOG(fatal) << " universe.get_root_csgname " << universe->getRootCSGName() ; 
+    LOG(LEVEL) << " universe.get_root_csgname " << universe->getRootCSGName() ; 
 
 
     if( universe->isContainer() )
     {
-        LOG(info) 
+        LOG(LEVEL) 
             << " outer volume isContainer (ie auto scaled) "
             << " universe will be scaled/delted a bit from there "
             ;

@@ -743,7 +743,7 @@ void GGeo::loadCacheMeta() // loads metadata that the process that created the g
 {
     const char* path = m_ok->getCacheMetaPath(); 
 
-    LOG(error) << path ; 
+    LOG(LEVEL) << path ; 
 
     assert( m_loadedcachemeta == NULL ); 
     m_loadedcachemeta = NMeta::Load(path);
@@ -766,7 +766,7 @@ void GGeo::loadCacheMeta() // loads metadata that the process that created the g
 
     if( m_ok->isTest() )   // --test : skip lv2sd association
     {
-         LOG(error) << "NOT USING the lv2sd association as --test is active " ;  
+         LOG(LEVEL) << "NOT USING the lv2sd association as --test is active " ;  
     }
     else
     {
@@ -1273,7 +1273,7 @@ See notes/issues/GPts_GParts_optimization.rst
 
 void GGeo::deferredCreateGParts()
 {
-    LOG(info) << "[" ; 
+    LOG(LEVEL) << "[" ; 
 
     const std::vector<const NCSG*>& solids = m_meshlib->getSolids(); 
           
@@ -1281,7 +1281,7 @@ void GGeo::deferredCreateGParts()
 
     unsigned nmm = m_geolib->getNumMergedMesh(); 
 
-    LOG(info) 
+    LOG(LEVEL) 
         << " geolib.nmm " << nmm 
         << " meshlib.solids " << solids.size()
         ; 
@@ -1292,7 +1292,8 @@ void GGeo::deferredCreateGParts()
 
         if( mm->getParts() != NULL )
         {
-            LOG(error) << " skip as parts already present for mm " << i ;  // this happens for test geometry eg tboolean.sh 
+            LOG(debug) << " skip as parts already present for mm " << i ;  
+            // this happens for test geometry eg tboolean.sh 
             continue ; 
         } 
 
@@ -1312,7 +1313,7 @@ void GGeo::deferredCreateGParts()
         mm->setParts( parts ); 
     }
 
-    LOG(info) << "]" ; 
+    LOG(LEVEL) << "]" ; 
 }
 
 

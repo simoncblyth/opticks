@@ -16,6 +16,7 @@ class FabStepNPY ;
 class NEmitPhotonsNPY ; 
 
 #include "OKGEO_API_EXPORT.hh"
+#include "plog/Severity.h"
 
 /**
 OpticksGen : High level genstep control
@@ -36,6 +37,7 @@ m_gen copies are available in the principal users
 
 class OKGEO_API OpticksGen 
 { 
+        static const plog::Severity LEVEL ; 
         friend class OpMgr ;  // for setInputGensteps
         friend class OpticksHub ; // for getTorchstep getGenstepNPY getG4GunConfig
         friend class CGenerator ; // for getTorchstep getGenstepNPY getG4GunConfig

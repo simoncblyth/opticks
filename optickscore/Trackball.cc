@@ -17,6 +17,8 @@
 
 #include "Trackball.hh"
 
+const plog::Severity Trackball::LEVEL = debug ; 
+
 
 const char* Trackball::PREFIX = "trackball" ;
 const char* Trackball::getPrefix()
@@ -41,12 +43,6 @@ std::vector<std::string> Trackball::getTags()
     tags.push_back(TRANSLATEFACTOR);
     return tags ; 
 }
-
-
-
-
-
-
 
 
 float Trackball::getTranslationMin()
@@ -489,7 +485,7 @@ void Trackball::drag_to(float x, float y, float dx, float dy)
 
     if(bad)
     {
-        LOG(warning) << "Trackball::drag_to IGNORING bad drag " ; 
+        LOG(LEVEL) << "IGNORING bad drag " ; 
         return ;  
     }
 

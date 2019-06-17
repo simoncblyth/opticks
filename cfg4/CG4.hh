@@ -95,14 +95,18 @@ photon counts ahead of time.
 
 #define CG4UniformRand(file, line) CG4::INSTANCE->flat_instrumented((file), (line))
 
+#include "plog/Severity.h"
 #include "CG4Ctx.hh"
 
 #include "CFG4_API_EXPORT.hh"
 
 class CFG4_API CG4 
 {
+
+
         friend class CGeometry ;  // for setUserInitialization
    public:
+        static const plog::Severity LEVEL ; 
         static CG4* INSTANCE ; 
    public:
         CG4(OpticksHub* hub);

@@ -23,6 +23,8 @@
 #include "PLOG.hh"
 
 
+const plog::Severity CGenerator::LEVEL = debug ; 
+
 
 CGenerator::CGenerator(OpticksGen* gen, CG4* g4)
     :
@@ -49,7 +51,7 @@ void CGenerator::init()
 
 CSource* CGenerator::initSource(unsigned code)
 {
-    LOG(fatal) 
+    LOG(LEVEL) 
         << " code " << code 
         << " SourceType " << OpticksFlags::SourceType(code) 
         << " m_source_type " << m_source_type
@@ -76,7 +78,7 @@ CSource* CGenerator::initSource(unsigned code)
 
     assert(source && "code not expected" ) ;
 
-    LOG(fatal) 
+    LOG(LEVEL) 
         << " code " << code
         << " type " << m_source_type
         << " " << ( m_dynamic ? "DYNAMIC" : "STATIC" ) 

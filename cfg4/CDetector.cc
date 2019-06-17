@@ -40,6 +40,8 @@
 
 #include "PLOG.hh"
 
+const plog::Severity CDetector::LEVEL = debug ; 
+
 G4VPhysicalVolume* CDetector::getTop() const { return m_top ; }
 CMaterialLib* CDetector::getMaterialLib() const { return m_mlib ; }
 GMaterialLib* CDetector::getGMaterialLib() const { return m_gmateriallib ; }
@@ -72,8 +74,8 @@ CDetector::CDetector(OpticksHub* hub, OpticksQuery* query, CSensitiveDetector* s
     m_check(NULL),
     m_bbox(new NBoundingBox),
     m_verbosity(0),
-    m_valid(true),
-    m_level(info)
+    m_valid(true)
+
 {
     init();
 }
@@ -81,7 +83,7 @@ CDetector::CDetector(OpticksHub* hub, OpticksQuery* query, CSensitiveDetector* s
 
 void CDetector::init()
 {
-    LOG(m_level) << "." ; 
+    LOG(LEVEL)  ; 
 }
 
 G4VPhysicalVolume* CDetector::Construct()
@@ -91,7 +93,7 @@ G4VPhysicalVolume* CDetector::Construct()
 
 void CDetector::setTop(G4VPhysicalVolume* top)
 {
-    LOG(m_level) << "." ; 
+    LOG(LEVEL) ; 
     m_top = top ; 
     traverse(m_top);
 }

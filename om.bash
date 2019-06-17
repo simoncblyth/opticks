@@ -580,6 +580,10 @@ To debug ctest running::
     ctest -V --interactive-debug-mode 0   
         ## verbose output, but with the non-interactive mode used by test running   
 
+NB see SSys::GetInteractivityLevel the --interactive-debug-mode results in ctest 
+setting envvar CTEST_INTERACTIVE_DEBUG_MODE     
+
+
 EON
 }
 

@@ -29,6 +29,8 @@
 
 #include "PLOG.hh"
 
+const plog::Severity CRecorder::LEVEL = debug ; 
+
 const char* CRecorder::PRE  = "PRE" ; 
 const char* CRecorder::POST = "POST" ; 
 
@@ -74,7 +76,7 @@ CRecorder::CRecorder(CG4* g4, CGeometry* geometry, bool dynamic)
     m_writer(new CWriter(g4, m_photon, m_dynamic)),
     m_not_done_count(0)
 {   
-    LOG(fatal) << " " << ( m_dynamic ? "DYNAMIC" : "STATIC" ) ;
+    LOG(LEVEL) << " " << ( m_dynamic ? "DYNAMIC" : "STATIC" ) ;
 }
 
 void CRecorder::postinitialize()

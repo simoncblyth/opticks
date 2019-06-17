@@ -168,6 +168,9 @@ o-unmalloc()
    unset MallocCheckHeapEach
 }
 
+
+export RC=0 
+
 o-main()
 {
    local msg="=== $FUNCNAME :"
@@ -183,10 +186,8 @@ o-main()
 
    #[ $RC -eq 0 ] && echo $postline && eval $postline 
    echo $postline && eval $postline 
-
-   exit $RC
 }
 
 o-main
-
-
+echo $0 : RC : $RC 
+exit $RC

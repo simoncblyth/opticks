@@ -257,7 +257,7 @@ void OpticksResource::initRunResultsDir()
     std::string runresultsdir = getResultsPath( runfolder, runlabel, rundate ) ;  // eg /usr/local/opticks/results/geocache-bench/OFF_TITAN_V_AND_TITAN_RTX/20190422_162401
 
     m_runresultsdir = strdup(runresultsdir.c_str());
-    LOG(error) << runresultsdir ; 
+    LOG(LEVEL) << runresultsdir ; 
 }
 
 /**

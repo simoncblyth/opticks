@@ -77,7 +77,7 @@ const plog::Severity OpticksViz::LEVEL = debug ;
 OpticksViz::OpticksViz(OpticksHub* hub, OpticksIdx* idx, bool immediate)
     :
     SCtrl(),
-    m_log(new SLog("OpticksViz::OpticksViz")),
+    m_log(new SLog("OpticksViz::OpticksViz", "", LEVEL)),
     m_hub(hub),
     m_ok(hub->getOpticks()),
     m_run(m_ok->getRun()),
@@ -244,7 +244,7 @@ void OpticksViz::setupRendermode(const char* rendermode )
 
     if(rendermode)
     { 
-        LOG(warning) << "using non-standard rendermode " << rendermode ;
+        LOG(LEVEL) << "using non-standard rendermode " << rendermode ;
         m_scene->setRenderMode(rendermode);
     } 
     else

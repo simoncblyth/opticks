@@ -162,7 +162,7 @@ void GMeshLib::loadAltReferences()
         assert( unsigned(altindex) < m_meshes.size() ); 
         const GMesh* alt = m_meshes[altindex] ; 
         const_cast<GMesh*>(mesh)->setAlt(alt) ;            
-        LOG(info) 
+        LOG(LEVEL) 
             << " mesh.i " << i 
             << " altindex " << altindex ; 
             ;
@@ -463,7 +463,7 @@ void GMeshLib::loadMeshes(const char* idpath )
                 ;
         }
    }
-   LOG(info) 
+   LOG(LEVEL) 
        << " loaded "  
        << " meshes "  << m_meshes.size()
        << " solids "  << m_solids.size()

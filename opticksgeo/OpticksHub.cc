@@ -65,7 +65,6 @@
 #include "PLOG.hh"
 
 const plog::Severity OpticksHub::LEVEL = debug ; 
-//const plog::Severity OpticksHub::LEVEL = error ; 
 
 
 //  hmm : the hub could be a GGeoBase ?
@@ -427,10 +426,10 @@ void OpticksHub::configureState(NConfigurable* scene)
 
     const char* dir = m_state->getDir();
 
-    LOG(fatal) << "OpticksHub::configureState " 
-               << m_state->description()
-               << " dir " << dir
-               ;
+    LOG(LEVEL)
+        << m_state->description()
+        << " dir " << dir
+        ;
 
     m_bookmarks   = new Bookmarks(dir) ; 
     m_bookmarks->setState(m_state);
@@ -567,11 +566,11 @@ GGeoTest* OpticksHub::createTestGeometry(GGeoBase* basis)
 {
     assert(m_ok->isTest());  // --test  : instanciate GGeoTest using the basis
 
-    LOG(info) << "[" ;
+    LOG(LEVEL) << "[" ;
 
     GGeoTest* testgeo = new GGeoTest(m_ok, basis);
 
-    LOG(info) << "]" ;
+    LOG(LEVEL) << "]" ;
 
     return testgeo ; 
 }
@@ -609,15 +608,15 @@ glm::mat4 OpticksHub::getTransform(int index)
 
 void OpticksHub::registerGeometry()
 {
-    LOG(fatal) << "[" ; 
+    LOG(LEVEL) << "[" ; 
 
     const char* ggb = getIdentifier(); 
-    LOG(fatal) << " ggb " << ggb ;  
+    LOG(LEVEL) << " ggb " << ggb ;  
     GMergedMesh* mm0 = getMergedMesh(0);
     assert(mm0);
     m_aim->registerGeometry( mm0 );
 
-    LOG(fatal) << "]" ; 
+    LOG(LEVEL) << "]" ; 
 }
 
 void OpticksHub::setupCompositionTargetting()

@@ -6,6 +6,7 @@
 
 #include "NGLM.hpp"
 #include "OpticksCSG.h"
+#include "plog/Severity.h"
 
 template <typename T> class NPY ; 
 #include "NPY_API_EXPORT.hh"
@@ -142,6 +143,7 @@ class NPY_API NCSG {
         friend struct NCSGLoadTest ; 
         typedef std::map<std::string, nnode*> MSN ; 
     public:
+        static const plog::Severity LEVEL ; 
         static const float SURFACE_EPSILON ; 
 
         static std::string TestVolumeName(const char* shapename, const char* suffix, int idx) ; 

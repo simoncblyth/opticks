@@ -25,16 +25,16 @@
 
 #include "PLOG.hh"
 
+const plog::Severity CSurfaceLib::LEVEL = debug ; 
 
 CSurfaceLib::CSurfaceLib(GSurfaceLib* surfacelib) 
     :
     m_surfacelib(surfacelib),
     m_ok(surfacelib->getOpticks()),
     m_dbgsurf(m_ok->isDbgSurf()),
-    m_detector(NULL),
-    m_level(info)
+    m_detector(NULL)
 {
-    LOG(m_level) << "." ; 
+    LOG(LEVEL)  ; 
 }
 
 void CSurfaceLib::setDetector(CDetector* detector)
@@ -78,7 +78,7 @@ TODO: see if can rearrange into an easier to grasp position, eg::
 
 void CSurfaceLib::convert(CDetector* detector, bool exclude_sensors)
 {
-    LOG(m_level) << "." ;
+    LOG(LEVEL) << "[" ;
 
     //assert(m_surfacelib->isClosed()); 
     if(!m_surfacelib->isClosed())
@@ -90,7 +90,7 @@ void CSurfaceLib::convert(CDetector* detector, bool exclude_sensors)
     setDetector(detector);  
 
     unsigned num_surf = m_surfacelib->getNumSurfaces() ; 
-    LOG(m_level) << "." 
+    LOG(LEVEL) << "." 
                  << " num_surf " << num_surf
                   ; 
 
@@ -133,7 +133,7 @@ void CSurfaceLib::convert(CDetector* detector, bool exclude_sensors)
                         ;  
         }
     }   
-    LOG(info) << brief();
+    LOG(LEVEL) << brief();
 }
 
 

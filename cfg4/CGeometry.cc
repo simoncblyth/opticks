@@ -24,6 +24,9 @@ class OpticksQuery ;
 
 #include "PLOG.hh"
 
+const plog::Severity CGeometry::LEVEL = debug ; 
+
+
 
 CMaterialLib*    CGeometry::getMaterialLib() const { return m_mlib ; }
 CDetector*       CGeometry::getDetector() const { return m_detector; } 
@@ -65,14 +68,14 @@ void CGeometry::init()
     CDetector* detector = NULL ; 
     if(m_ok->isTest())  // --test  : branch between CTestDetector and CGDMLDetector
     {
-        LOG(fatal) << "G4 simple test geometry " ; 
+        LOG(LEVEL) << "G4 simple test geometry " ; 
         OpticksQuery* query = NULL ;  // normally no OPTICKS_QUERY geometry subselection with test geometries
         detector  = static_cast<CDetector*>(new CTestDetector(m_hub, query, m_sd)) ; 
     }
     else
     {
         // no options here: will load the .gdml sidecar of the geocache .dae 
-        LOG(fatal) << "G4 GDML geometry " ; 
+        LOG(LEVEL) << "G4 GDML geometry " ; 
         OpticksQuery* query = m_ok->getQuery();
         detector  = static_cast<CDetector*>(new CGDMLDetector(m_hub, query, m_sd)) ; 
     }
@@ -90,7 +93,7 @@ bool CGeometry::hookup(CG4* g4)
 
 
     glm::vec4 ce = m_detector->getCenterExtent();
-    LOG(fatal) 
+    LOG(LEVEL) 
         << " center_extent " << gformat(ce) 
         ;    
 

@@ -355,8 +355,10 @@ void Frame::initContext()
     G::ErrCheck("Frame::initContext.7", true); 
     const GLubyte* version = glGetString (GL_VERSION); // version as a string
     G::ErrCheck("Frame::initContext.8", true); 
-    LOG(error) << "Frame::gl_init_window Renderer: " << renderer ;
-    LOG(error) << "Frame::gl_init_window OpenGL version supported " <<  version ;
+    LOG(info) 
+        << "Renderer: " << renderer 
+        << "OpenGL version supported " <<  version
+        ;
 
     Opticks::SetFrameRenderer((const char*)renderer);
 

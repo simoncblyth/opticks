@@ -9,6 +9,8 @@
 
 #include "PLOG.hh"
 
+const plog::Severity OpticksAna::LEVEL = debug ; 
+
 
 const char* OpticksAna::DEFAULT_EXEC = "echo" ; 
 
@@ -65,28 +67,32 @@ void OpticksAna::run()
 {
    const char* anakey = m_ok->getAnaKey();
    bool enabled = isKeyEnabled(anakey) ; 
-   LOG(info) << "OpticksAna::run" 
-             << " anakey " << anakey  
-             << " enabled " << ( enabled ? "Y" : "N" )
-             ; 
+   LOG(info)
+       << " anakey " << anakey  
+       << " enabled " << ( enabled ? "Y" : "N" )
+       ; 
 
    if(!enabled) return ; 
 
    std::string cmdline = getCommandline(anakey);
 
+   std::cout << std::endl ;  
+
    int rc = cmdline.empty() ? 0 : SSys::run(cmdline.c_str()) ; 
+
+   std::cout << std::endl ;  
    
    const char* rcmsg = rc == 0 ? NULL : "OpticksAna::run non-zero RC from ana script"  ;
 
    int interactivity = m_ok->getInteractivityLevel() ; 
 
-   LOG(info) << "OpticksAna::run"
-             << " anakey " << anakey 
-             << " cmdline " << cmdline
-             << " interactivity " << interactivity
-             << " rc " << rc
-             << " rcmsg " << ( rcmsg ? rcmsg : "-" )
-             ;
+   LOG(info) 
+       << " anakey " << anakey 
+       << " cmdline " << cmdline
+       << " interactivity " << interactivity
+       << " rc " << rc
+       << " rcmsg " << ( rcmsg ? rcmsg : "-" )
+       ;
 
    if( rc != 0)  m_ok->setRC(rc, rcmsg);
 

@@ -26,6 +26,9 @@
 #include "CWriter.hh"
 #include "PLOG.hh"
 
+const plog::Severity CWriter::LEVEL = debug ; 
+
+
 CWriter::CWriter(CG4* g4, CPhoton& photon, bool dynamic)
     :
     m_g4(g4),
@@ -47,7 +50,7 @@ CWriter::CWriter(CG4* g4, CPhoton& photon, bool dynamic)
     m_dynamic_photons(NULL),
     m_dynamic_history(NULL)
 {
-    LOG(fatal) << " " << ( m_dynamic ? "DYNAMIC" : "STATIC" ) ;
+    LOG(LEVEL) << " " << ( m_dynamic ? "DYNAMIC" : "STATIC" ) ;
 }
 
 void CWriter::setEnabled(bool enabled)

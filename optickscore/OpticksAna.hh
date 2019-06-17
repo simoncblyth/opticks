@@ -7,6 +7,7 @@ template <typename T> class OpticksCfg ;
 
 #include "OKCORE_API_EXPORT.hh"
 #include "OKCORE_HEAD.hh"
+#include "plog/Severity.h"
 
 /**
 OpticksAna
@@ -24,6 +25,7 @@ such as OKG4Mgr and OKMgr.
 
 class OKCORE_API OpticksAna
 {
+       static const plog::Severity LEVEL ; 
        static const char* DEFAULT_EXEC ; 
     public:
        OpticksAna(Opticks* ok);

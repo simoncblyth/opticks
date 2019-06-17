@@ -16,6 +16,7 @@ class OpticksEvent ;
 struct CG4Ctx ; 
 #include "CPhoton.hh"
 #include "CRecState.hh"
+#include "plog/Severity.h"
 
 class CDebug ; 
 class CRec ; 
@@ -104,6 +105,7 @@ Debugging
 class CFG4_API CRecorder {
         friend class CSteppingAction ;
    public:
+        static const plog::Severity LEVEL ; 
         static const char* PRE ; 
         static const char* POST ; 
    public:

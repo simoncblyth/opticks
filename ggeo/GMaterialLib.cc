@@ -1082,7 +1082,7 @@ void GMaterialLib::addTestMaterials()
         std::string name = it->first ; 
         std::string path = it->second ; 
 
-        LOG(info) 
+        LOG(LEVEL) 
                   << " name " << std::setw(30) << name 
                   << " path " << path 
                   ;

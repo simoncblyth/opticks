@@ -121,11 +121,13 @@ void NMeta::prepLines()
 
 void NMeta::dump() const 
 {
+    if(m_js.empty()) return ; 
     LOG(info) << std::endl << m_js.dump(4) ; 
 }
 void NMeta::dump(const char* msg) const 
 {
     LOG(info) << msg ; 
+    if(m_js.empty()) return ; 
     std::cout << m_js.dump(4) << std::endl ; 
 }
 
