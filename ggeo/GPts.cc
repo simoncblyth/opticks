@@ -107,9 +107,29 @@ void GPts::add( GPt* other )
     m_pts.push_back(other);    
 }
 
+std::string GPts::brief() const 
+{
+    std::stringstream ss ; 
+
+    unsigned num_pt = getNumPt() ; 
+    ss << " GPts.NumPt " << num_pt
+       << " lvIdx (" 
+        ;
+
+    for( unsigned i=0 ; i < num_pt ; i++) 
+    {
+        const GPt* pt = getPt(i); 
+        ss << " " << pt->lvIdx  ; 
+    } 
+    ss << ")" ; 
+
+    return ss.str(); 
+}
+
+
 void GPts::dump(const char* msg) const 
 {
-    LOG(info) << msg << " NumPt " << getNumPt() ;
+    LOG(info) << msg << brief() ; 
     for(unsigned i=0 ; i < getNumPt() ; i++ )
     {
         const GPt* pt = getPt(i); 

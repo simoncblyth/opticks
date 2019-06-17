@@ -44,6 +44,7 @@ class GGEO_API GPts {
         void         add(GPt*  other);
         void         dump(const char* msg="GPts::dump") const ;  
         void         save(const char* path); 
+        std::string  brief() const ; 
     private:
         std::vector<GPt*>  m_pts ; 
     private:

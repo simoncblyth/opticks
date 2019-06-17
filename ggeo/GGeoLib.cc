@@ -353,6 +353,23 @@ void GGeoLib::dump(const char* msg)
                 << " num_global_volumes " << num_total_volumes - num_instanced_volumes
                 << std::endl
                 ;
+
+    for(unsigned i=0 ; i < nmm ; i++)
+    {   
+        GMergedMesh* mm = getMergedMesh(i); 
+
+        GPts* pts = mm->getPts(); 
+
+        std::cout 
+             << std::setw(4) << i 
+             << " pts " << ( pts ? "Y" : "N" )
+             << " " << ( pts ? pts->brief().c_str() : "" )
+             << std::endl
+             ;
+    }
+
+
+
      
 }
 
@@ -377,5 +394,8 @@ int GGeoLib::checkMergedMeshes() const
 
     return mia ; 
 }
+
+
+
 
 

@@ -1289,6 +1289,13 @@ void GGeo::deferredCreateGParts()
     for(unsigned i=0 ; i < nmm ; i++)
     {
         GMergedMesh* mm = m_geolib->getMergedMesh(i);
+
+        if( mm->getParts() != NULL )
+        {
+            LOG(error) << " skip as parts already present for mm " << i ;  // this happens for test geometry eg tboolean.sh 
+            continue ; 
+        } 
+
         assert( mm->getParts() == NULL ); 
 
         GPts* pts = mm->getPts(); 

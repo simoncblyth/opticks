@@ -314,7 +314,7 @@ void GMergedMesh::traverse_r( GNode* node, unsigned depth, unsigned pass, unsign
 
     if(pass == PASS_COUNT)
     {
-         if(selected_ && csgskip) m_num_csgskip++ ; 
+        if(selected_ && csgskip) m_num_csgskip++ ; 
     }
     
     if(verbosity > 1)
@@ -1021,12 +1021,19 @@ float* GMergedMesh::getModelToWorldPtr(unsigned int index)
 }
 
 
+/**
+GMergedMesh::addInstancedBuffers
+-----------------------------------
+
+hmm for very large numbers of instances : probably better to defer this post-cache
+and/or use some thrust trickery to do the repeating at GPU upload stage
+
+
+**/
+
 
 void GMergedMesh::addInstancedBuffers(const std::vector<GNode*>& placements)
 {
-    // hmm for very large numbers of instances : probably better to defer this post-cache
-    // and/or use some thrust trickery to do the repeating at GPU upload stage
-
     NPY<float>* itransforms = GTree::makeInstanceTransformsBuffer(placements); // collect GNode placement transforms into buffer
     setITransformsBuffer(itransforms);
 
@@ -1349,6 +1356,8 @@ std::string GMergedMesh::Desc(const GMergedMesh* mm)
         << " numFaces  " << std::setw(10) << numFaces
         << " numITransforms  " << std::setw(10) << numITransforms
         << " numITransforms*numVolumes  " << std::setw(10) << numITransforms*numVolumes
+        << " GParts " << ( mm->getParts() ? "Y" : "N"  )
+        << " GPts " <<   ( mm->getPts() ? "Y" : "N"  )
         ;   
 
    return ss.str();

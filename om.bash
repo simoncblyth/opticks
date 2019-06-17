@@ -145,6 +145,7 @@ extg4
 cfg4
 okg4
 g4ok
+integration
 EOS
 }
 
@@ -563,6 +564,23 @@ om-make-one()
     rc=$?
     return $rc
     [ "$rc" != "0" ] && cd $iwd && return $rc
+}
+
+
+om-test-one-notes(){ cat << EON
+$FUNCNAME
+====================
+
+To debug ctest running::
+
+    cd ~/opticks/integration
+    om-cd  # change to bdir
+
+    ctest -N    # list tests 
+    ctest -V --interactive-debug-mode 0   
+        ## verbose output, but with the non-interactive mode used by test running   
+
+EON
 }
 
 om-test-one()

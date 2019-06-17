@@ -122,6 +122,7 @@ GGeoTest::GGeoTest(Opticks* ok, GGeoBase* basis)
     m_bndlib(new GBndLib(m_ok, m_mlib, m_slib)),
     m_geolib(new GGeoLib(m_ok,m_analytic,m_bndlib)),
     m_nodelib(new GNodeLib(m_ok, m_analytic, m_test, basis->getNodeLib() )),
+    m_meshlib(new GMeshLib(m_ok)),
     m_maker(new GMaker(m_ok, m_bndlib, m_basemeshlib)),
     m_csglist(m_csgpath ? NCSGList::Load(m_csgpath, m_verbosity ) : NULL),
     m_err(0)
@@ -160,10 +161,18 @@ void GGeoTest::init()
         tmm->setITransformsBuffer(NULL); // avoiding FaceRepeated complications 
     } 
 
+
     m_geolib->setMergedMesh( 0, tmm );  // TODO: create via standard GGeoLib::create ?
 
     LOG(LEVEL) << "]" ;
 }
+
+
+/**
+GGeoTest::checkPts
+-------------------
+
+**/
 
 void GGeoTest::checkPts()
 {
@@ -188,10 +197,28 @@ void GGeoTest::checkPts()
         GMergedMesh* bmm = m_basegeolib->getMergedMesh(i);  
         GPts* pts = bmm->getPts(); 
         assert( pts ); 
-        pts->dump("GGeoTest::checkPts") ; 
+        LOG(info) << std::setw(3) << i << " " << pts->brief() ;  
+        //pts->dump("GGeoTest::checkPts") ; 
     }
-
 }
+
+/**
+GGeoTest::initCreateCSG
+-------------------------
+
+
+
+
+
+testauto mode  TODO:review to see if still relevant
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Override commandline settings, and CSG boundaries and emit config
+that is the whole point of --testauto to take control 
+and simplify the repurposing of a test geometry 
+for NCSGIntersect testing with seqmap asserts
+ 
+**/
 
 
 GMergedMesh* GGeoTest::initCreateCSG()
@@ -203,8 +230,6 @@ GMergedMesh* GGeoTest::initCreateCSG()
 
     m_resource->setTestCSGPath(m_csgpath); // take note of path, for inclusion in event metadata
     m_resource->setTestConfig(m_config_); // take note of config, for inclusion in event metadata
-    
-    //m_resource->setEventBase(m_csgpath);   // BResource("evtbase") yields OPTICKS_EVENT_BASE 
 
     if(!m_csglist) return NULL ; 
 
@@ -221,21 +246,47 @@ GMergedMesh* GGeoTest::initCreateCSG()
 
     if(m_ok->isTestAuto())
     {
-        // override commandline settings, and CSG boundaries and emit config
-        // that is the whole point of --testauto to take control 
-        // and simplify the repurposing of a test geometry 
-        // for NCSGIntersect testing with seqmap asserts
-     
         const char* autoseqmap = m_config->getAutoSeqMap();
         m_ok->setSeqMapString(autoseqmap);
         m_csglist->autoTestSetup(m_config);
     }
 
-    importCSG();
+    GVolume* top = importCSG();
 
     assignBoundaries(); 
 
-    GMergedMesh* tmm = combineVolumes( NULL );
+    unsigned ridx = 0 ; 
+    GNode* base = NULL ; 
+    GNode* root = top ; 
+    unsigned verbosity = 1 ; 
+
+    GMergedMesh* tmm = GMergedMesh::Create(ridx, base, root, verbosity );
+
+
+    // below normally done in  GGeo::deferredCreateGParts  when not --test
+    GPts* pts = tmm->getPts();  
+
+    const std::vector<const NCSG*>& solids = m_meshlib->getSolids(); 
+    GParts* parts = GParts::Create( pts, solids, verbosity ) ; 
+    parts->setBndLib(m_bndlib); 
+    parts->close(); 
+
+    tmm->setParts(parts);  
+
+
+    // similar to GMergedMesh::addInstancedBuffers
+    // TODO: try to reuse that 
+  
+    unsigned nelem = solids.size() ; 
+    GTransforms* txf = GTransforms::make(nelem); // identities
+    GIds*        aii = GIds::make(nelem);        // placeholder (n,4) of zeros
+
+    tmm->setAnalyticInstancedIdentityBuffer(aii->getBuffer());  
+    tmm->setITransformsBuffer(txf->getBuffer());
+
+
+    glm::vec4 ce = tmm->getCE(0);    
+    LOG(fatal) << " tmm.ce " << gformat(ce) ; 
 
     return tmm ; 
 }
@@ -265,8 +316,7 @@ assuming tree order is from outermost to innermost volume.
 
 **/
 
-
-void GGeoTest::importCSG()
+GVolume* GGeoTest::importCSG()
 {
     LOG(LEVEL) << "[" ; 
     m_mlib->addTestMaterials(); 
@@ -279,15 +329,20 @@ void GGeoTest::importCSG()
 
     int primIdx(-1) ; 
 
+    GVolume* top = NULL ; 
     GVolume* prior = NULL ; 
 
-    for(unsigned i=0 ; i < m_meshes.size() ; i++)
+    unsigned num_mesh = m_meshlib->getNumMeshes(); 
+
+    for(unsigned i=0 ; i < num_mesh ; i++)
     {
         primIdx++ ; // each tree is separate OptiX primitive, with own line in the primBuffer 
 
-        GMesh* mesh = m_meshes[i] ; 
+        GMesh* mesh = m_meshlib->getMeshSimple(i); 
+
         unsigned ndIdx = i ;  
         GVolume* volume = m_maker->makeVolumeFromMesh(ndIdx, mesh);
+        if( top == NULL ) top = volume ;  
 
         if(prior)
         {
@@ -297,23 +352,20 @@ void GGeoTest::importCSG()
         prior = volume ; 
 
 
+        GPt* pt = volume->getPt(); 
+        assert( pt );
+
         const NCSG* csg = mesh->getCSG(); 
         const char* spec = csg->getBoundary(); 
         assert( spec ); 
 
         relocateSurfaces(volume, spec);
 
-        GParts* pts = volume->getParts();
-        pts->setIndex(0u, i);
-        if(pts->isPartList())  // not doing this for NodeTree
-        {
-            pts->setNodeIndexAll(primIdx ); 
-        }
-        pts->setBndLib(m_bndlib);
-
         m_nodelib->add(volume);
     }
     LOG(LEVEL) << "]" ; 
+
+    return top ; 
 }
 
 
@@ -323,7 +375,6 @@ GGeoTest::prepareMeshes
 ------------------------------
 
 Proxied in geometry is centered
-
 
 **/
 
@@ -338,11 +389,14 @@ void GGeoTest::prepareMeshes()
     {
         NCSG* tree = m_csglist->getTree(i) ; 
         GMesh* mesh =  tree->isProxy() ? importMeshViaProxy(tree) : m_maker->makeMeshFromCSG(tree) ; 
+        const char* name = BStr::concat<unsigned>("testmesh", i, NULL ); 
+        mesh->setName(name);   
 
         if(m_dbggeotest) 
             mesh->Summary("GGeoTest::prepareMeshes"); 
 
-        m_meshes.push_back(mesh); 
+        mesh->setIndex(m_meshlib->getNumMeshes());   // <-- used for GPt reference into GMeshLib.m_meshes
+        m_meshlib->add(mesh); 
     }
 
     if(m_dbggeotest) 
@@ -350,7 +404,6 @@ void GGeoTest::prepareMeshes()
             << " csgpath " << m_csgpath 
             << " numTree " << numTree 
             << " verbosity " << m_verbosity
-            << " numMesh " << m_meshes.size()
             ;
 }
 
@@ -370,7 +423,11 @@ with the analytic representation of the solid.
 GMesh* GGeoTest::importMeshViaProxy(NCSG* proxy)
 {
     assert( proxy->isProxy() ); 
+
+    // property of the proxy that refers to the original index of the proxied
     unsigned lvIdx = proxy->getProxyLV(); 
+
+    // NB these are properties of the proxy, NOT the proxied
     const char* spec = proxy->getBoundary();  
     unsigned index = proxy->getIndex(); 
 
@@ -400,7 +457,6 @@ GMesh* GGeoTest::importMeshViaProxy(NCSG* proxy)
             ; 
     }
 
-
     assert( csg->getBoundary() == NULL && "expecting fresh csg from basemeshlib to have no boundary assigned") ; 
     const_cast<NCSG*>(csg)->setOther(proxy);  // keep note of the proxy from whence it came
 
@@ -411,7 +467,6 @@ GMesh* GGeoTest::importMeshViaProxy(NCSG* proxy)
 
     return mesh ;  
 }
-
 
 
 /**
@@ -465,11 +520,13 @@ void GGeoTest::adjustContainer()
     assert( proxy ) ; 
 
     unsigned proxy_index = m_csglist->findProxyIndex();  
-    assert( proxy_index < m_meshes.size() ) ; 
+
+    unsigned num_mesh = m_meshlib->getNumMeshes(); 
+    assert( proxy_index < num_mesh  ) ; 
 
 
-
-    GMesh* viaproxy = m_meshes[proxy_index] ; 
+    GMesh* viaproxy = m_meshlib->getMeshSimple(proxy_index) ;
+ 
     const NCSG* replacement_solid = viaproxy->getCSG();  
     unsigned index = viaproxy->getIndex();  
     assert( index == proxy_index ); 
@@ -483,7 +540,6 @@ void GGeoTest::adjustContainer()
     // Find the adjusted analytic container (NCSG) and create corresponding 
     // triangulated geometry (GMesh) to replace the old one
 
-
     int container_index = m_csglist->findContainerIndex() ; 
     assert( container_index > -1 ) ; 
 
@@ -493,8 +549,7 @@ void GGeoTest::adjustContainer()
     replacement_mesh->setIndex( container_index ) ; 
     replacement_mesh->setCSG(container); 
 
-
-    m_meshes[container_index] = replacement_mesh ; 
+    m_meshlib->replace( container_index, replacement_mesh); 
 
     if(m_dbggeotest) 
     {
@@ -507,10 +562,6 @@ void GGeoTest::adjustContainer()
         replacement_mesh->Summary("GGeoTest::adjustContainer.replacement_mesh"); 
     }
 }
-
-
-
-
 
 
 /**
@@ -682,63 +733,6 @@ void GGeoTest::reuseMaterials(const char* spec)
         if(!m_mlib->hasMaterial(b.imat)) m_mlib->reuseBasisMaterial( b.imat );
     }
 }
-
-
-
-/**
-GGeoTest::combineVolumes
-==========================
-
-TODO: eliminate, instead use GNodeLib::createMergeMesh 
-
-**/
-
-GMergedMesh* GGeoTest::combineVolumes(GMergedMesh* mm0)
-{
-    assert( mm0 == NULL ); 
-
-    std::vector<GVolume*>& volumes = m_nodelib->getVolumes(); 
-
-    LOG(LEVEL) << "[" ; 
-
-    GMergedMesh* tri = GMergedMesh::Combine( 0, mm0, volumes, m_verbosity );
-
-    unsigned nelem = volumes.size() ; 
-    GTransforms* txf = GTransforms::make(nelem); // identities
-    GIds*        aii = GIds::make(nelem);        // placeholder (n,4) of zeros
-
-    tri->setAnalyticInstancedIdentityBuffer(aii->getBuffer());  
-    tri->setITransformsBuffer(txf->getBuffer());
-
-    GParts* pts0 = volumes[0]->getParts();
-    GParts* pts = tri->getParts();
-
-    if(pts0->isPartList())
-    {
-        pts->setPartList();  // not too late, needed only for primBuffer creation which happens last 
-    } 
-
-    //  OGeo::makeAnalyticGeometry  requires AII and IT buffers to have same item counts
-
-    if(m_dbganalytic)
-    {
-        GParts* pts = tri->getParts();
-        pts->setName(m_config->getName());
-        const char* msg = "GGeoTest::combineVolumes --dbganalytic" ;
-        pts->Summary(msg);
-        pts->dumpPrimInfo(msg); // this usually dumps nothing as solid buffer not yet created
-    }
-    // collected pts are converted into primitives in GParts::makePrimBuffer
-
-    glm::vec4 ce = tri->getCE(0);    
-    LOG(fatal) << " mm0.ce " << gformat(ce) ; 
-
-
-    LOG(LEVEL) << "]" ; 
-    return tri ; 
-}
-
-
 
 
 

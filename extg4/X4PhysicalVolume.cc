@@ -1047,7 +1047,7 @@ GVolume* X4PhysicalVolume::convertNode(const G4VPhysicalVolume* const pv, GVolum
     unsigned csgIdx = csg->getIndex() ; 
 
 
-#ifdef GPARTS_HOT
+#ifdef GPARTS_OLD
     GParts* parts = GParts::Make( csg, boundaryName.c_str(), ndIdx );  // painful to do this here in hot node code
     parts->setBndLib(m_blib);
     //parts->setVolumeIndex( ndIdx );  

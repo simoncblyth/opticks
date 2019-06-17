@@ -12,7 +12,13 @@ EOU
 }
 
 
-scan-photons(){ cat << EOS | tr -d " ,"  | grep -v \#
+
+#scan-mode(){ echo photons ; }
+scan-mode(){ echo ${SCAN_MODE:-proxy} ; }
+
+#scan-proxy-args(){   seq 0 39 ; }
+scan-proxy-args(){   seq 0 39 ; }
+scan-photons-args(){ cat << EOS | tr -d " ,"  | grep -v \#
           1
        1000
      10,000
@@ -25,18 +31,20 @@ scan-photons(){ cat << EOS | tr -d " ,"  | grep -v \#
   3,000,000
 EOS
 }
+scan-photons-cmd(){ printf "tboolean.sh box --generateoverride %s --error --cvd 1 --rtx 1\n" $1 ; }
+scan-proxy-cmd(){   printf "PROXYLV=%s tboolean.sh\n" $1 ; }
 
-#scan-cmd(){ printf "tboolean.sh box --generateoverride %s --error\n" $1 ; }
-scan-cmd(){ printf "tboolean.sh box --generateoverride %s --error --cvd 1 --rtx 1\n" $1 ; }
+scan-photons-post(){  scan.py /tmp/tboolean-box ; }
+scan-proxy-post(){    echo scan.py ???????? ; }
 
-scan-post(){  scan.py /tmp/tboolean-box ; }
 
 scan-cmds(){
+   local mode=$(scan-mode)
    local cmd
-   local photons
-   scan-photons | while read photons 
+   local arg
+   scan-$mode-args | while read arg
    do 
-      scan-cmd $photons
+      scan-$mode-cmd $arg
    done
 }
 

@@ -276,6 +276,7 @@ int GMeshLib::getMeshIndexWithName(const char* name, bool startswith)  const
 }
 
 
+
 GMesh* GMeshLib::getMeshSimple(unsigned index) const 
 {
     assert( index < m_meshes.size() ); 
@@ -352,18 +353,28 @@ void GMeshLib::add(const GMesh* mesh, bool alt )
 
     m_meshes.push_back(mesh);
 
-
-
     const NCSG* solid = mesh->getCSG(); 
-
-    if(m_direct)
-    { 
-        assert(solid) ;                
-    }
+    if(m_direct) assert(solid) ;                
     m_solids.push_back(solid); 
 
     //std::raise(SIGINT); 
 }
+
+
+void GMeshLib::replace(unsigned index, GMesh* replacement )
+{
+    // replace the name too ?
+
+    assert( index < m_meshes.size() ); 
+    m_meshes[index] = replacement ; 
+
+    const NCSG* solid = replacement->getCSG(); 
+    if(m_direct) assert(solid) ;                
+
+    assert( index < m_solids.size() ); 
+    m_solids[index] = solid  ; 
+}
+
 
 
 void GMeshLib::removeDirs(const char* idpath ) const 

@@ -16,7 +16,10 @@
 
 // ggeo-
 #include "GBndLib.hh"
+
 #include "GParts.hh"
+#include "GPt.hh"
+
 #include "GBBoxMesh.hh"
 #include "GMesh.hh"
 #include "GMeshLib.hh"
@@ -190,9 +193,16 @@ GVolume* GMaker::makeVolumeFromMesh( unsigned ndIdx, const GMesh* mesh, const gl
     volume->setLVName( strdup(lvn.c_str()) );
     volume->setCSGFlag( type );
 
-    GParts* pts = GParts::Make( csg, spec, ndIdx );  
 
-    volume->setParts( pts );
+#ifdef GPARTS_OLD
+    GParts* parts = GParts::Make( csg, spec, ndIdx );  
+    volume->setParts( parts );
+#else
+    unsigned csgIdx = csg->getIndex(); 
+    GPt* pt = new GPt( lvIdx, ndIdx, csgIdx, spec )  ;
+    volume->setPt( pt );
+#endif
+
 
     LOG(LEVEL) 
               << " lvIdx (aka meshIdx) " << lvIdx 

@@ -45,7 +45,7 @@
 
 
 
-const plog::Severity CMaker::LEVEL = info ; 
+const plog::Severity CMaker::LEVEL = debug ; 
 
 
 CMaker::CMaker() 

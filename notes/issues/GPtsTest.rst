@@ -18,9 +18,25 @@ Context
   it enables moving most of GParts creation from hot node level code 
   into cool solid level code.
 
+  * not much time (5s) saving, but 1.3G of memory saved from deferred GParts creation 
 
-BUG FIXED : WAS A MISSING idxbuf CLONE IN GParts::Make
-------------------------------------------------------------
+
+
+GGeoTest with proxying is broken by move todeferred GParts : FIXED
+-------------------------------------------------------------------------------
+
+* tempted to add non-proxy GMesh/NCSG onto end of standard GMeshLib meshes/solids,  
+  so proxy references can "just work" 
+
+
+* FIXED by moving GGeoTest closer to standard geometry setup using GMergedMesh::Create
+
+
+
+
+
+BUG FIXED : WAS A MISSING idxbuf CLONE IN GParts::Make : causing the repated ndIdx in GPts
+------------------------------------------------------------------------------------------------
 
 ::
 

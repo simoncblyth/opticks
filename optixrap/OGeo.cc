@@ -212,6 +212,8 @@ std::string OGeo::description() const
 
 void OGeo::convert()
 {
+    m_geolib->dump("OGeo::convert"); 
+
     unsigned int nmm = m_geolib->getNumMergedMesh();
 
     LOG(info) << "[ nmm " << nmm ;

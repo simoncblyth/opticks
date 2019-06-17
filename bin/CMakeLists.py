@@ -16,7 +16,8 @@ class Dependent(object):
         return "Dependent %s " % self.name
 
 class CMakeLists(object):
-
+   """  
+   """
    NAME = "CMakeLists.txt"
    name_ptn = re.compile("^set\(name (?P<name>\S*)\).*")
    find_ptn = re.compile("^find_package\((?P<findargs>.*)\).*")
@@ -60,7 +61,7 @@ class CMakeLists(object):
        pass
 
        if not obo_found:
-           print self.path
+           log.debug("no obo %s " % self.path)
        pass
        assert obo_found, "missing obo for %s " % self.reldir  
 
@@ -77,8 +78,12 @@ class CMakeLists(object):
 
 class Opticks(object):
     """
-    """
+    NB the order keys must correspond to the names as defined by the 
+    line in the CMakeLists.txt of form::
 
+       set(name Integration)  
+
+    """
     order = {
              'OKConf':10, 
              'SysRap':20, 
@@ -101,6 +106,7 @@ class Opticks(object):
              'CFG4':170,
              'OKG4':180,
              'G4OK':190,
+             'Integration':200,
              'NumpyServer':-1
             }
 
@@ -116,11 +122,12 @@ class Opticks(object):
     def examine_dependencies(cls, args):
         #root = sys.argv[1] if len(sys.argv) > 1 else os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        log.info("root %s " % root)    
+        log.debug("root %s " % root)    
         pkgs = {} 
         for dirpath, dirs, names in os.walk(root):
             #if CMakeLists.NAME in names and not "examples" in dirpath and not "tests" in dirpath and not "externals" in dirpath:
             if CMakeLists.NAME in names:
+                log.debug("proceed %s " % dirpath ) 
                 reldir = dirpath[len(root)+1:]
                 path = os.path.join(dirpath, CMakeLists.NAME)
                 tag = cls.find_export_tag(names)
@@ -128,14 +135,15 @@ class Opticks(object):
 
                 has_obo = CMakeLists.HasOpticksBuildOptions(lines)
                 if not has_obo:
-                    log.info("skipping %s as does not have OpticksBuildOptions" % path )
+                    log.debug("skipping %s as does not have OpticksBuildOptions" % path )
                     continue
                 pass
 
                 ls = CMakeLists(lines, reldir=reldir, path=path, tag=tag)
                 pkgs[ls.name] = ls
-                #print path
-                #print repr(ls)
+                log.debug(repr(ls))
+            else:
+                log.debug("skip %s " % dirpath)
             pass
         pass
        
@@ -151,7 +159,12 @@ class Opticks(object):
             print("#")
             print("#")
 
-        for k in sorted(filter(lambda k:cls.order.get(k) > -1,pkgs.keys()), key=lambda k:cls.order.get(k,1000)):
+
+
+        keys = pkgs.keys()
+        log.debug(repr(keys))
+
+        for k in sorted(filter(lambda k:cls.order.get(k) > -1,keys), key=lambda k:cls.order.get(k,1000)):
 
             ls = pkgs[k]
             if args.subdirs:
@@ -181,7 +194,6 @@ class Opticks(object):
 
 
 if __name__ == '__main__':
-    logging.basicConfig(level=logging.INFO)
 
     parser = argparse.ArgumentParser(__doc__)
     parser.add_argument(     "--dump",  action="store_true", help="Dump CMakeLists repr" )
@@ -190,7 +202,11 @@ if __name__ == '__main__':
     parser.add_argument(     "--tags",  action="store_true", help="Dump just the tags" )
     parser.add_argument(     "--subproj",  action="store_true", help="Dump just the subproj" )
     parser.add_argument(     "--testfile", action="store_true", help="Generate to stdout a CTestTestfile.cmake with all subdirs" ) 
+    parser.add_argument(     "--level", default="info", help="logging level" ) 
     args = parser.parse_args()
-    
+
+    fmt = '[%(asctime)s] p%(process)s {%(pathname)s:%(lineno)d} %(levelname)s - %(message)s'
+    logging.basicConfig(level=getattr(logging,args.level.upper()), format=fmt)
+
     Opticks.examine_dependencies(args)
 

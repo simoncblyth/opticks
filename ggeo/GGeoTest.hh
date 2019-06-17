@@ -47,7 +47,6 @@ Rejig
 * GGeoTest now has its own GGeoLib, to avoid dirty modifyGeometry
   approach which cleared the basis mm
 
-
 **/
 
 
@@ -108,7 +107,7 @@ class GGEO_API GGeoTest : public GGeoBase {
        void anaEvent(OpticksEvent* evt);
        GMergedMesh* combineVolumes( GMergedMesh* mm0);
     private:
-       void         importCSG();
+       GVolume*     importCSG();
        GMesh*       importMeshViaProxy(NCSG* tree); 
        void         assignBoundaries();
 
@@ -139,12 +138,11 @@ class GGEO_API GGeoTest : public GGeoBase {
        GBndLib*         m_bndlib ;  
        GGeoLib*         m_geolib ; 
        GNodeLib*        m_nodelib ; 
+       GMeshLib*        m_meshlib ; 
     private:
        // actors
        GMaker*          m_maker ; 
        NCSGList*        m_csglist ; 
-       std::vector<GMesh*> m_meshes ; 
- 
        int              m_err ; 
 
 };

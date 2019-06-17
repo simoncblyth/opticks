@@ -42,6 +42,8 @@ class GGEO_API GMeshLib
     public:
         GMeshLib(Opticks* ok); 
         void add(const GMesh* mesh, bool alt=false );
+        void replace(unsigned index, GMesh* replacement ); 
+    public:
         void dump(const char* msg="GMeshLib::dump") const;
     public:
         // methods working from the index, so work prior to loading meshes
