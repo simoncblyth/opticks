@@ -16,6 +16,7 @@ from opticks.ana.evt import Evt
 from opticks.ana.abstat import ABStat
 from opticks.ana.dv import Dv, DvTab
 from opticks.ana.make_rst_table import recarray_as_rst
+from opticks.ana.metadata import CompareMetadata
 
 log = logging.getLogger(__name__)
 
@@ -75,7 +76,6 @@ class AB(object):
     def print_(cls, obj):
         print(str(obj), file=cls.STREAM)
 
-
     def _get_maligned(self):
         return np.where(self.a.seqhis != self.b.seqhis)[0]
     maligned = property(_get_maligned)
@@ -97,25 +97,30 @@ class AB(object):
         self.print_( "\n".join( map(lambda iq:self.recline(iq), enumerate(wh))))
 
     def dump(self):
-        self.print_("ab.a.metadata:%s" % self.a.metadata)
+        log.debug("[")
+        self.print_(self.cfm)  
         self.print_(self)
-        self.print_("ab.a.metadata:%s" % self.a.metadata)
-        self.print_("ab.a.metadata.csgmeta0:%s" % self.a.metadata.csgmeta0 )
+        self.print_(self.cfm)  
         self.print_(self.rpost_dv)
+        self.print_("")
         self.print_(self.rpol_dv)
+        self.print_("")
         self.print_(self.ox_dv)
+        log.debug("]")
 
     def __init__(self, ok):
-        log.info("ab START")
+        log.debug("[")
         self.ok = ok
         self.histype = HisType()
         self.dveps = ok.dveps
         self.tabs = []
         self.dvtabs = []
         self.load()
+        self.cfm = self.compare_meta()
         self.compare()
         self.init_point()
         self.stream = sys.stderr
+        log.debug("]")
 
     def load(self):
         """
@@ -157,7 +162,6 @@ class AB(object):
 
         amd = ",".join(self.a.metadata.csgbnd)
         bmd = ",".join(self.b.metadata.csgbnd)
-
         assert amd == bmd
 
         acsgp = self.a.metadata.TestCSGPath
@@ -178,15 +182,26 @@ class AB(object):
         pass
         return "\n".join(map(repr, [self,self.his,self.flg,self.mat]))
  
+    def compare_meta(self):
+        cfm = CompareMetadata(self.a.metadata, self.b.metadata)
+
+        non_aligned_skips = "SC AB RE" 
+        #non_aligned_skips = "RE" 
+
+        self.dvskips = "" if cfm.align == 1 else non_aligned_skips   
+
+        return cfm 
+        
     def compare(self):
         log.debug("AB.compare START ")
 
-        self.ahis = self._get_cf("all_seqhis_ana")
-        self.amat = self._get_cf("all_seqmat_ana")
+        self.ahis = self._get_cf("all_seqhis_ana", "ab.ahis")
+        self.amat = self._get_cf("all_seqmat_ana", "ab.amat")
 
         if self.ok.prohis:self.prohis()
         if self.ok.promat:self.promat()
         log.debug("AB.compare DONE")
+
 
     def init_point(self):
         log.debug("AB.init_point START")
@@ -298,13 +313,13 @@ class AB(object):
         pass
         return tn
 
-    def _make_cf(self, ana="seqhis_ana"):
+    def _make_cf(self, ana, shortname):
         """
         all_ tables have no selection applied so they are not dirtied by changing selection
         """
         ordering = self.ok.cfordering 
         assert ordering in ["max","self","other"] 
-        c_tab = Evt.compare_ana( self.a, self.b, ana, lmx=self.ok.lmx, cmx=self.ok.cmx, c2max=None, cf=True, ordering=ordering)
+        c_tab = Evt.compare_ana( self.a, self.b, ana, lmx=self.ok.lmx, cmx=self.ok.cmx, c2max=None, cf=True, ordering=ordering, shortname=shortname )
         if not ana[0:3] == "all":
             self.tabs.append(c_tab)
         pass 
@@ -318,10 +333,7 @@ class AB(object):
         self.warn_empty = False
         seqtab = self.ahis
 
-        skips = "SC AB RE" 
-        #skips = "RE" 
-
-        dv_tab = DvTab(ana, seqtab, self, skips) 
+        dv_tab = DvTab(ana, seqtab, self, self.dvskips) 
         self.dvtabs.append(dv_tab)
 
         self.warn_empty = we
@@ -425,7 +437,7 @@ class AB(object):
     RC = property(_get_RC)
 
 
-    def _get_cf(self, ana):
+    def _get_cf(self, ana, shortname):
         """
         Changing *sel* property invokes _set_sel 
         results in a change to the SeqAna in the A B Evt,
@@ -435,19 +447,19 @@ class AB(object):
         tabname = self.tabname(ana)
         tab = getattr(self, tabname, None)
         if tab is None:
-            tab = self._make_cf(ana) 
+            tab = self._make_cf(ana, shortname) 
         elif tab.dirty:
-            tab = self._make_cf(ana) 
+            tab = self._make_cf(ana, shortname) 
         else:
             pass 
         return tab
 
     def _get_his(self):
-        return self._get_cf("seqhis_ana")
+        return self._get_cf("seqhis_ana", "ab.his")
     def _get_mat(self):
-        return self._get_cf("seqmat_ana")
+        return self._get_cf("seqmat_ana", "ab.mat")
     def _get_flg(self):
-        return self._get_cf("pflags_ana")
+        return self._get_cf("pflags_ana", "ab.flg")
 
     his = property(_get_his)
     mat = property(_get_mat)
@@ -921,6 +933,7 @@ class AB(object):
         nr = self.nrec
         if nr > -1 and fr < nr and to < nr:
             return True 
+        pass
         log.fatal("checkrec requires a single label selection nr %d fr %d to %d" % (nr,fr,to))
         return False
 

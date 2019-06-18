@@ -113,13 +113,14 @@ void test_dump1( const GMeshLib* meshlib )
         //const_cast<NCSG*>(csg)->apply_centering(); 
         const_cast<GMesh*>(mesh)->applyCentering(); 
 
+        int w(40);   
 
         glm::vec4 ce1 = csg->bbox_center_extent(); 
         std::cout  
             << std::setw(2) << i 
             << std::setw(45) << ( name ? name : "NULL" )
-            << " ce0 " << std::setw(25) << gformat(ce0)
-            << " ce1 " << std::setw(25) << gformat(ce1)
+            << " ce0 " << std::setw(w) << gformat(ce0)
+            << " ce1 " << std::setw(w) << gformat(ce1)
             << " " << std::setw(2) << i 
             << std::endl    
             ; 

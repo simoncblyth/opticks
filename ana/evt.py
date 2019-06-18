@@ -254,7 +254,7 @@ class Evt(object):
         self.histype = HisType()
 
         testcsgpath = self.metadata.TestCSGPath
-        log.info("testcsgpath %s " %  testcsgpath)
+        log.debug("testcsgpath %s " %  testcsgpath)
 
         if testcsgpath is not None:
             #reldir=os.path.abspath(os.path.join(testcsgpath,"GItemList"))  
@@ -264,7 +264,7 @@ class Evt(object):
             else:
                 reldir = os.path.expandvars(os.path.join("$OPTICKS_EVENT_BASE", testcsgpath, "GItemList" ))
             pass
-            log.info("reldir %s " % reldir) 
+            log.debug("reldir %s " % reldir) 
             mattype = MatType(reldir=reldir)
         else:
             mattype = MatType()
@@ -314,8 +314,8 @@ class Evt(object):
     def init_metadata(self):
         log.debug("init_metadata")
         metadata = Metadata(self.tagdir)
-        log.info("loaded metadata from %s " % self.tagdir)
-        log.info("metadata %s " % repr(metadata))
+        log.debug("loaded metadata from %s " % self.tagdir)
+        log.debug("metadata %s " % repr(metadata))
         self.metadata = metadata  
 
         fdom = self.aload("fdom")
@@ -1230,7 +1230,7 @@ class Evt(object):
 
 
     @classmethod
-    def compare_ana(cls, a, b, ana_ , lmx=20, c2max=None, cf=True, zero=False, cmx=0, pr=False, ordering="max"):
+    def compare_ana(cls, a, b, ana_ , lmx=20, c2max=None, cf=True, zero=False, cmx=0, pr=False, ordering="max", shortname="noshortname?" ):
         """
         :param a: evt A
         :param b: evt B
@@ -1256,7 +1256,7 @@ class Evt(object):
         c_tab = None
 
         if cf:
-            c_tab = a_tab.compare(b_tab, ordering=ordering)
+            c_tab = a_tab.compare(b_tab, ordering=ordering, shortname=shortname)
             c_tab.title = ana_
 
             if len(c_tab.lines) > lmx:

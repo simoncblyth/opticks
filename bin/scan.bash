@@ -32,7 +32,9 @@ scan-photons-args(){ cat << EOS | tr -d " ,"  | grep -v \#
 EOS
 }
 scan-photons-cmd(){ printf "tboolean.sh box --generateoverride %s --error --cvd 1 --rtx 1 --compute\n" $1 ; }
-scan-proxy-cmd(){   printf "env PROXYLV=%s tboolean.sh --compute\n" $1 ; }
+#scan-proxy-cmd(){   printf "env PROXYLV=%s tboolean.sh --compute\n" $1 ; }
+scan-proxy-cmd(){   printf "tboolean.py --pfx tboolean-proxy-%s\n" $1  ; }
+
 
 scan-photons-post(){  scan.py /tmp/tboolean-box ; }
 scan-proxy-post(){    echo scan.py ???????? ; }
@@ -53,7 +55,7 @@ scan--()
    local cmd
    scan-cmds | while read cmd
    do
-      echo $cmd
+      #echo $cmd
       $cmd > /dev/null 2>&1  
       #$cmd  
       rc=$?

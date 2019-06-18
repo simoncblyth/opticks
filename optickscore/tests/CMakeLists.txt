@@ -29,6 +29,7 @@ set(TEST_SOURCES
     OpticksPrepareInstallCache_OKC.cc
     OpticksAnaTest.cc
     OpticksDbgTest.cc
+    OpticksSwitchesTest.cc
 
     CompositionTest.cc
     ViewTest.cc

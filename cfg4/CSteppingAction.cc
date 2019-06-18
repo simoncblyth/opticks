@@ -104,7 +104,7 @@ void CSteppingAction::UserSteppingAction(const G4Step* step)
 
         if(skipClear)
         {
-            LOG(error) << " --dbgskipclearzero  skipping CProcessManager::ClearNumberOfInteractionLengthLeft " ; 
+            LOG(debug) << " --dbgskipclearzero  skipping CProcessManager::ClearNumberOfInteractionLengthLeft " ; 
         }  
         else
         {

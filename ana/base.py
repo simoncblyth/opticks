@@ -240,7 +240,7 @@ class ItemList(object): # formerly ListFlags
         """
         :param reldir: when starts with "/" an absolute path is assumed
         """
-        log.info("txt %s reldir  %s " % (txt, reldir))
+        log.debug("txt %s reldir  %s " % (txt, reldir))
         npath=self.Path(txt, reldir)
         names = map(lambda _:_[:-1],file(npath).readlines())
         if translate_ is not None:

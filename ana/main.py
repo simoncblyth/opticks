@@ -6,6 +6,7 @@ import os, sys, logging, argparse
 from opticks.ana.env import opticks_environment
 from opticks.ana.OpticksQuery import OpticksQuery 
 from opticks.ana.nload import tagdir_
+from opticks.ana.log import init_logging
 
 log = logging.getLogger(__name__) 
 
@@ -35,7 +36,6 @@ class OK(argparse.Namespace):
     def _get_catdir(self):
         return tagdir_(self.det, self.src, None, pfx=self.pfx )
     catdir = property(_get_catdir)
-
 
 
 
@@ -205,8 +205,9 @@ def opticks_args(**kwa):
 
     ok = OK()
     args = parser.parse_args(namespace=ok)
-    fmt = '[%(asctime)s] p%(process)s {%(pathname)s:%(lineno)d} %(levelname)s - %(message)s'
-    logging.basicConfig(level=getattr(logging,args.loglevel.upper()), format=fmt)
+
+    init_logging(level=args.loglevel)
+
 
     if args.multievent > 1 and args.tagoffset > 0:
          log.fatal("use either --multievent n or --tagoffset o to pick one from multi, USING BOTH --multievent and --tagoffset NOT SUPPORTED  ") 
@@ -214,6 +215,10 @@ def opticks_args(**kwa):
 
     assert args.cfordering in "max self other".split() 
 
+
+    if args.det != "g4live" and args.pfx != ".":
+        args.det = args.pfx 
+    pass
 
     if args.multievent > 1:
         args.utags =  map(lambda offset:int(args.tag) + offset, range(args.multievent)) 

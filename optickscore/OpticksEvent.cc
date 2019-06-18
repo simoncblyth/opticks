@@ -541,6 +541,31 @@ void OpticksEvent::pushNames(std::vector<std::string>& names)
     names.push_back(hit_);
 } 
 
+/**
+OpticksEvent::init
+-------------------
+
+From ipython ab.py testing::
+
+    In [1]: a.metadata.parameters
+    Out[1]: 
+    {u'BounceMax': 9,
+     u'Cat': u'tboolean-box',
+     u'Creator': u'/home/blyth/local/opticks/lib/OKG4Test',
+     u'Detector': u'tboolean-box',
+     u'EntryCode': u'G',
+     u'EntryName': u'GENERATE',
+     u'GEOCACHE': u'/home/blyth/local/opticks/geocache/OKX4Test_lWorld0x4bc2710_PV_g4live/g4ok_gltf/f6cc352e44243f8fa536ab483ad390ce/1',
+     u'Id': 1,
+     u'KEY': u'OKX4Test.X4PhysicalVolume.lWorld0x4bc2710_PV.f6cc352e44243f8fa536ab483ad390ce',
+     u'NumGensteps': 1,
+
+
+**/
+
+
+
+
 void OpticksEvent::init()
 {
     m_versions = new NMeta ;
@@ -559,6 +584,9 @@ void OpticksEvent::init()
     m_parameters->add<std::string>("Detector", m_det );
     if(m_cat) m_parameters->add<std::string>("Cat", m_cat );
     m_parameters->add<std::string>("UDet", getUDet() );
+
+    std::string switches = OpticksSwitches(); 
+    m_parameters->add<std::string>("Switches", switches );
 
     pushNames(m_data_names);
 

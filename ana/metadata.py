@@ -63,6 +63,47 @@ class LaunchTimes(object):
 pass      
 
 
+class CompareMetadata(object):
+    def __init__(self, am, bm):
+        self.am = am 
+        self.bm = bm 
+
+        self.numPhotons = self.expected_common("numPhotons", parameter=False)
+        self.mode =  self.expected_common("mode", parameter=False)
+        self.csgmeta0 = self.expected_common("csgmeta0", parameter=False)  # container metadata, usually an emitter 
+        self.cmdline = self.expected_common( "cmdline", parameter=True) 
+        self.Switches = self.expected_common( "Switches", parameter=True) 
+
+        self.align = 1 if self.cmdline.find("--align") > -1 else 0   
+        self.factor = float(bm.propagate0)/float(am.propagate0)
+
+
+    def expected_common(self, key, parameter=True):
+        if parameter:
+            av = self.am.parameters.get(key,"") 
+            bv = self.bm.parameters.get(key,"")
+        else:
+            av = getattr( self.am, key ) 
+            bv = getattr( self.bm, key ) 
+        pass     
+        assert av == bv, ( "expected_common mismatch", key, av,bv )          
+        return av 
+
+    def __repr__(self):
+        return "\n".join([
+              "",
+              self.brief(),
+              "ab.a.metadata:%s" % self.am,
+              "ab.b.metadata:%s" % self.bm,
+              self.Switches,
+              str(self.csgmeta0),
+              #self.cmdline,
+              ""
+                        ])
+ 
+    def brief(self):
+        return "ab.cfm nph:%8d A:%10.4f B:%10.4f B/A:%10.1f %s %s " % (self.numPhotons, self.am.propagate0, self.bm.propagate0, self.factor, self.mode, "ALIGN" if self.align==1 else "not-align" )  
+
 
 class Metadata(object):
     """
@@ -162,7 +203,7 @@ class Metadata(object):
     flags = property(_flags)
 
     def __repr__(self):
-        return "%60s %32s %32s %7d %10.4f %s " % (self.path, self.photonData, self.recordData, self.numPhotons, self.propagate, self.mode )
+        return "%-60s ox:%32s rx:%32s np:%7d pr:%10.4f %s" % (self.path, self.photonData, self.recordData, self.numPhotons, self.propagate0, self.mode )
 
 
     def _get_csgbnd(self):

@@ -1,5 +1,55 @@
 #!/usr/bin/env python
 """
+
+dv.py
+======
+
+
+Non-aligned deviation checking
+---------------------------------
+
+::
+
+    tp() { tboolean-;PROXYLV=18 tboolean-proxy-ip $* ; }
+
+    ab.rpost_dv maxdvmax: 0.02283 maxdv: 0.02283        0  0.02283  skip:SC AB RE
+      idx        msg :                            sel :    lcu1     lcu2  :       nitem     nelem/    ndisc: fdisc  mx/mn/av        mx/       mn/      avg  eps:eps    
+     0000            :                    TO BT BT SA :    8794     8794  :        7710    123360/       17: 0.000  mx/mn/av   0.02283/        0/1.705e-06  eps:0.0002    
+     0001            :                       TO BR SA :     580      617  :          33       396/        0: 0.000  mx/mn/av         0/        0/        0  eps:0.0002    
+     0002            :                 TO BT BR BT SA :     561      527  :          27       540/        1: 0.002  mx/mn/av   0.02283/        0/4.227e-05  eps:0.0002    
+    ab.rpol_dv maxdvmax:       0 maxdv:       0        0        0  skip:SC AB RE
+      idx        msg :                            sel :    lcu1     lcu2  :       nitem     nelem/    ndisc: fdisc  mx/mn/av        mx/       mn/      avg  eps:eps    
+     0000            :                    TO BT BT SA :    8794     8794  :        7710     92520/        0: 0.000  mx/mn/av         0/        0/        0  eps:0.0002    
+     0001            :                       TO BR SA :     580      617  :          33       297/        0: 0.000  mx/mn/av         0/        0/        0  eps:0.0002    
+     0002            :                 TO BT BR BT SA :     561      527  :          27       405/        0: 0.000  mx/mn/av         0/        0/        0  eps:0.0002    
+    ab.ox_dv maxdvmax: 0.00238 maxdv:0.0001221        0  0.00238  skip:SC AB RE
+      idx        msg :                            sel :    lcu1     lcu2  :       nitem     nelem/    ndisc: fdisc  mx/mn/av        mx/       mn/      avg  eps:eps    
+     0000            :                    TO BT BT SA :    8794     8794  :        7710     92520/        0: 0.000  mx/mn/av 0.0001221/        0/3.652e-06  eps:0.0002    
+     0001            :                       TO BR SA :     580      617  :          33       396/        0: 0.000  mx/mn/av         0/        0/        0  eps:0.0002    
+     0002            :                 TO BT BR BT SA :     561      527  :          27       324/       14: 0.043  mx/mn/av   0.00238/        0/3.823e-05  eps:0.0002    
+
+
+
+Observations:
+
+* nitem much lower than photon counts when you have a BR in history 
+
+
+Non-random-aligned deviation checking relies on 
+
+1. same input photons for both simulations A and B
+2. "accidental" history alignment between A and B : helped by BR reflectcheat 
+
+Need to find some corroboration:
+
+    For histories like "TO BT BT SA" what happens is purely geometry, so 
+    for those photons in A and B that follow this history can directly compare.
+    But some fraction of BT in simulation A will be BR in the simulation B as 
+    the random numbers are not aligned.  To reduce this the reflectcheat technique 
+    is used to decide which fraction of sample to reflect and which to transmit 
+    based on the ratio of record_id to total   
+
+
 Examining the deviation::
 
     In [15]: ab.rpost_dv
@@ -46,19 +96,33 @@ class Dv(object):
    FMT  = "  %9d %9d/%9d:%6.3f  mx/mn/av %9.4g/%9.4g/%9.4g  eps:%g  "
    CFMT = "  %9s %9s/%9s:%6s  mx/mn/av %9s/%9s/%9s  eps:%s  "
 
-   LMT  = " %0.4d %10s : %30s : %7d  %7d " 
+   LMT  = " %0.4d %10s : %30s : %7d  %7d "   # labels seqhis line 
    CLMT = " %4s %10s : %30s : %7s  %7s " 
 
    clabel = CLMT % ( "idx", "msg", "sel", "lcu1", "lcu2" )
 
    def __init__(self, idx, sel, av, bv, lcu, eps, msg=""):
        """
-       :param idx: 
-       :param sel: 
-       :param av: 
-       :param bv: 
-       :param lcu: 
-       :param eps: 
+       :param idx: unskipped orignal seqhis line index
+       :param sel: single line selection eg 'TO BT BT SA'
+       :param av: evt a values array within selection  
+       :param bv: evt b values array within selection
+       :param lcu: list of length 3 with (seqhis-bigint, a-count, b-count)
+       :param eps: epsilon passed down from ab.eps
+
+
+       Maximum and minimum 
+
+       Access an Dv instance in ipython::
+
+            In [12]: ab.ox_dv.dvs[2]
+            Out[12]:  0002            :                 TO BT BR BT SA :     561      527  :          27       324/       14: 0.043  mx/mn/av   0.00238/        0/3.823e-05  eps:0.0002    
+
+
+       Get at the values::
+
+           In [16]: av,bv = ab.ox_dv.dvs[2].av, ab.ox_dv.dvs[2].bv   
+
        """
        label = self.LMT % ( idx, msg, sel, lcu[1], lcu[2] )
 
@@ -137,6 +201,12 @@ class DvTab(object):
         return skip 
 
     def __init__(self, name, seqtab, ab, skips="SC AB RE" ):
+        """
+        :param name:
+        :param seqtab:
+        :param ab:
+        :param skips: 
+        """
         self.name = name
         self.seqtab = seqtab
         self.ab = ab 
@@ -144,11 +214,11 @@ class DvTab(object):
         self.eps = ab.dveps
         self.skips = skips.split()
 
-        labels = self.seqtab.labels
-        cu = self.seqtab.cu
+        labels = self.seqtab.labels       # eg list of length 17 : ['TO BT BT SA', 'TO BR SA', ... ]
+
+        cu = self.seqtab.cu               # eg with shape (17,3)  the 3 columns being (seqhis, a-count, b-count ) 
         assert len(labels) == len(cu)
         nsel = len(labels)
-
 
         dvs = []
         for i in range(nsel):
@@ -160,17 +230,27 @@ class DvTab(object):
 
             lcu = cu[i]
             assert len(lcu) == 3
-            _, na, nb = lcu 
+            _, na, nb = lcu     
 
-            ab.aselhis = sel 
-            ab.checkrec()
+            ab.aselhis = sel              # set selection to just this history sequence
+            assert True == ab.checkrec()  # checking that both evt a and b give same number of record points
 
-            dv = self.dv_(i, sel, lcu)
+            dv = self.dv_(i, sel, lcu)    # Dv instance comparing values within single line selection eg all 'TO BT BT SA' 
             dvs.append(dv)
         pass
         self.dvs = dvs 
 
+
+
     def dv_(self, i, sel, lcu):
+        """
+        :param i: unskipped orignal seqhis line index
+        :param sel: seqhis label eg 'TO BT BT SA'
+        :param lcu: count unique for single line eg [36045,  8794, 8794] 
+
+        Accessing av and bv values within the active single line selection ab.aselhis, 
+        and creating a Dv instance from them. 
+        """ 
         ab = self.ab
         if self.name == "rpost_dv": 
             av = ab.a.rpost()
@@ -212,8 +292,8 @@ class DvTab(object):
 
     def _get_brief(self):
         skips = " ".join(self.skips)
-        gfmt_ = lambda _:"%8.4g" % float(_) 
-        return "%s maxdvmax:%s maxdv:%s  skip:%s" % ( self.name, gfmt_(self.maxdvmax), " ".join(map(gfmt_,self.maxdv)), skips )
+        gfmt_ = lambda _:"%.4g" % float(_) 
+        return "ab.%s maxdvmax:%s maxdv:%s  skip:%s" % ( self.name, gfmt_(self.maxdvmax), " ".join(map(gfmt_,self.maxdv)), skips )
     brief = property(_get_brief)
 
     def __repr__(self):

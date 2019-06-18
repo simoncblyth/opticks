@@ -623,7 +623,7 @@ tboolean--(){
 
 EON
 
-    exit $RC 
+    return $RC 
 }
 
 tboolean-tracetest()
@@ -823,7 +823,7 @@ EON
 
 tboolean-box-dbg(){ cd /tmp ; OPTICKS_EVENT_BASE=tboolean-box ipython --pdb $(which tboolean.py) -i -- --tag 1 --tagoffset 0 --det tboolean-box --src torch ; }
 
-tboolean-box-ip(){ OPTICKS_EVENT_BASE=${FUNCNAME/-ip} TESTNAME=${FUNCNAME/-ip} tboolean-ipy- $* ; } 
+tboolean-box-ip(){ OPTICKS_EVENT_BASE=/tmp TESTNAME=${FUNCNAME/-ip} tboolean-ipy- $* ; } 
 tboolean-box-p(){ OPTICKS_EVENT_BASE=${FUNCNAME/-p} TESTNAME=${FUNCNAME/-p} tboolean-py- $* ; } 
 tboolean-box-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; } 
 tboolean-box(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null) tboolean-- $* ; } 
@@ -841,7 +841,7 @@ args = opticks_main(csgpath="${FUNCNAME/--}", autoemitconfig=autoemitconfig)
 
 #emitconfig = "photons:100000,wavelength:380,time:0.2,posdelta:0.1,sheetmask:0x1,umin:0.25,umax:0.75,vmin:0.25,vmax:0.75" 
 #emitconfig = "photons:1,wavelength:380,time:0.2,posdelta:0.1,sheetmask:0x1,umin:0.25,umax:0.75,vmin:0.25,vmax:0.75" 
-emitconfig = "photons:10000,wavelength:380,time:0.2,posdelta:0.1,sheetmask:0x1,umin:0.45,umax:0.55,vmin:0.45,vmax:0.55" 
+emitconfig = "photons:100000,wavelength:380,time:0.2,posdelta:0.1,sheetmask:0x1,umin:0.45,umax:0.55,vmin:0.45,vmax:0.55" 
 
 CSG.kwa = dict(poly="IM",resolution="20", verbosity="0", ctrl=0, containerscale=3.0, emitconfig=emitconfig  )
 

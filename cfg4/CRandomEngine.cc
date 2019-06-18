@@ -233,11 +233,12 @@ double CRandomEngine::flat()
   
     if( kludge )
     {
-        LOG(info) << " --dbgkludgeflatzero  "
-                  << " first flat call following boundary status StepTooSmall after FresnelReflection yields  _peek(-2) value "
-                  << " v " << v 
-                 ;
-        // actually the value does not matter, its just OpBoundary which is not used 
+        LOG(debug) 
+            << " --dbgkludgeflatzero  "
+            << " first flat call following boundary status StepTooSmall after FresnelReflection yields  _peek(-2) value "
+            << " v " << v 
+            ;
+            // actually the value does not matter, its just OpBoundary which is not used 
     }
 
     m_flat = v ; 
@@ -331,15 +332,15 @@ void CRandomEngine::postStep()
         int backseq = -m_current_step_flat_count ; 
         bool dbgnojumpzero = m_ok->isDbgNoJumpZero() ; 
 
-        LOG(error) << "CRandomEngine::postStep"
-                   << " _noZeroSteps " << m_ctx._noZeroSteps
-                   << " backseq " << backseq
-                   << " --dbgnojumpzero " << ( dbgnojumpzero ? "YES" : "NO" )
-                   ;
+        LOG(debug) 
+            << " _noZeroSteps " << m_ctx._noZeroSteps
+            << " backseq " << backseq
+            << " --dbgnojumpzero " << ( dbgnojumpzero ? "YES" : "NO" )
+            ;
 
         if( dbgnojumpzero )
         {
-            LOG(fatal) << "CRandomEngine::postStep rewind inhibited by option: --dbgnojumpzero " ;   
+            LOG(debug) << "rewind inhibited by option: --dbgnojumpzero " ;   
         }
         else
         {
@@ -436,11 +437,12 @@ void CRandomEngine::preTrack()
     setupCurandSequence(use_index) ;   
 
 
-    LOG(error) << "CRandomEngine::pretrack record_id: "    // (*lldb*) preTrack
-               << " ctx.record_id " << m_ctx._record_id 
-               << " use_index " << use_index 
-               << " align_mask " << ( align_mask ? "YES" : "NO" )
-               ;
+    LOG(debug)
+        << "record_id: "    // (*lldb*) preTrack
+        << " ctx.record_id " << m_ctx._record_id 
+        << " use_index " << use_index 
+        << " align_mask " << ( align_mask ? "YES" : "NO" )
+        ;
  
 }
 

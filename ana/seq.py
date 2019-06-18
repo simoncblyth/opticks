@@ -1,7 +1,11 @@
 #!/usr/bin/env python
-import os, datetime, logging, re
+import os, datetime, logging, re, signal
 log = logging.getLogger(__name__)
 import numpy as np
+
+from IPython.core.debugger import Pdb
+ipdb = Pdb()
+
 
 
 from opticks.ana.base import ihex_
@@ -217,7 +221,7 @@ class SeqType(BaseType):
 
         xs = ihex_(i)[::-1]  # top and tailed hex string in reverse order 
         seq = map(lambda _:int(_,16), xs ) 
-        log.debug("label xs %s seq %s " % (xs, repr(seq)) )
+        #log.debug("label xs %s seq %s " % (xs, repr(seq)) )
         d = self.code2abbr
         elem = map(lambda _:d.get(_,'?%s?' % _ ), seq ) 
         if wildcard:
@@ -244,7 +248,7 @@ class SeqList(object):
 
  
 class SeqTable(object):
-    def __init__(self, cu, af, cnames=[], dbgseq=0, dbgmsk=0, dbgzero=False, cmx=0, c2cut=30, smry=False): 
+    def __init__(self, cu, af, cnames=[], dbgseq=0, dbgmsk=0, dbgzero=False, cmx=0, c2cut=30, smry=False, shortname="noshortname?"): 
         """
         :param cu: count unique array, typically shaped (n, 2) or (n,3) for comparisons
         :param af: instance of SeqType subclass such as HisType
@@ -252,6 +256,8 @@ class SeqTable(object):
 
         """
         log.debug("SeqTable.__init__ dbgseq %x" % dbgseq)
+
+        #ipdb.set_trace() 
 
         assert len(cu.shape) == 2 and cu.shape[1] >= 2 
 
@@ -265,6 +271,7 @@ class SeqTable(object):
         self.dbgmsk = dbgmsk
         self.dbgzero = dbgzero
         self.cmx = cmx
+        self.shortname = shortname
 
         seqs = cu[:,0]
         msks = seq2msk(seqs)
@@ -288,7 +295,7 @@ class SeqTable(object):
             c2_pval = chi2_pvalue( c2sum , ndf )
 
 
-            log.info(" c2sum %s ndf %s c2p %s c2_pval %s " % (c2sum,ndf,c2p, c2_pval ))
+            log.debug(" c2sum %10.4f ndf %d c2p %10.4f c2_pval %10.4f " % (c2sum,ndf,c2p, c2_pval ))
 
             cnames += ["c2"]
             tots += ["%10.2f/%d = %5.2f  (pval:%0.3f prob:%0.3f) " % (c2sum,ndf,c2p,c2_pval,1-c2_pval) ]
@@ -440,13 +447,13 @@ class SeqTable(object):
         body_ = lambda _:" %7s " % _
         head = title + " ".join(map(body_, self.cnames ))
         tail = space + " ".join(map(body_, self.tots ))
-        return "\n".join([head,tail]+ filter(None,self.lines[self.sli]) + [tail])
+        return "\n".join([self.shortname,head,tail]+ filter(None,self.lines[self.sli]) + [tail])
 
     def __getitem__(self, sli):
          self.sli = sli
          return self
 
-    def compare(self, other, ordering="self"):
+    def compare(self, other, ordering="self", shortname="noshortname?"):
         """
         :param other: SeqTable instance
         :param ordering: string "self", "other", "max"  control descending count row ordering  
@@ -480,7 +487,7 @@ class SeqTable(object):
 
         log.debug("compare dbgseq %x dbgmsk %x " % (self.dbgseq, self.dbgmsk))
 
-        cftab = SeqTable(cf, self.af, cnames=cnames, dbgseq=self.dbgseq, dbgmsk=self.dbgmsk, dbgzero=self.dbgzero, cmx=self.cmx, smry=self.smry)    
+        cftab = SeqTable(cf, self.af, cnames=cnames, dbgseq=self.dbgseq, dbgmsk=self.dbgmsk, dbgzero=self.dbgzero, cmx=self.cmx, smry=self.smry, shortname=shortname)    
         log.debug("SeqTable.compare DONE")
         return cftab
 
