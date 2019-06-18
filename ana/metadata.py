@@ -91,18 +91,18 @@ class CompareMetadata(object):
 
     def __repr__(self):
         return "\n".join([
-              "",
+              "ab.cfm",
               self.brief(),
               "ab.a.metadata:%s" % self.am,
               "ab.b.metadata:%s" % self.bm,
               self.Switches,
               str(self.csgmeta0),
               #self.cmdline,
-              ""
+              "."
                         ])
  
     def brief(self):
-        return "ab.cfm nph:%8d A:%10.4f B:%10.4f B/A:%10.1f %s %s " % (self.numPhotons, self.am.propagate0, self.bm.propagate0, self.factor, self.mode, "ALIGN" if self.align==1 else "not-align" )  
+        return "nph:%8d A:%10.4f B:%10.4f B/A:%10.1f %s %s " % (self.numPhotons, self.am.propagate0, self.bm.propagate0, self.factor, self.mode, "ALIGN" if self.align==1 else "not-align" )  
 
 
 class Metadata(object):

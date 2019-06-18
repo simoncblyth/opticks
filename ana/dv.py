@@ -213,6 +213,7 @@ class DvTab(object):
         self.dirty = False
         self.eps = ab.dveps
         self.skips = skips.split()
+        self.sli = slice(None)
 
         labels = self.seqtab.labels       # eg list of length 17 : ['TO BT BT SA', 'TO BR SA', ... ]
 
@@ -293,11 +294,15 @@ class DvTab(object):
     def _get_brief(self):
         skips = " ".join(self.skips)
         gfmt_ = lambda _:"%.4g" % float(_) 
-        return "ab.%s maxdvmax:%s maxdv:%s  skip:%s" % ( self.name, gfmt_(self.maxdvmax), " ".join(map(gfmt_,self.maxdv)), skips )
+        return "maxdvmax:%s maxdv:%s  skip:%s" % ( gfmt_(self.maxdvmax), " ".join(map(gfmt_,self.maxdv)), skips )
     brief = property(_get_brief)
 
     def __repr__(self):
-        return "\n".join( [self.brief, Dv.columns()] + map(repr, filter(None,self.dvs) ))
+        return "\n".join( ["ab.%s" % self.name, self.brief, Dv.columns()] + map(repr, filter(None,self.dvs[self.sli]) ) + ["."] )
+
+    def __getitem__(self, sli):
+         self.sli = sli
+         return self
 
 
 

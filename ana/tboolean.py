@@ -53,7 +53,7 @@ log = logging.getLogger(__name__)
 
 from opticks.ana.main import opticks_main
 from opticks.ana.nload import np_load
-from opticks.ana.ab   import AB
+from opticks.ana.ab   import AB, RC
 from opticks.ana.seq import seq2msk
 
 
@@ -65,7 +65,12 @@ if __name__ == '__main__':
     ab = AB(ok)
     ab.dump()
 
-    rc = ab.RC 
+    rc = ab.rc.rc 
+
+    level = "fatal" if rc > 0 else "info"
+    getattr(log, level)(" RC %d " % rc)
+
+
 
     if not ok.ipython:
         log.info("early exit as non-interactive")

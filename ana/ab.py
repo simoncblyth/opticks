@@ -21,6 +21,67 @@ from opticks.ana.metadata import CompareMetadata
 log = logging.getLogger(__name__)
 
 
+
+class MXD(object):
+    def __init__(self, ab, key, cut, erc, shortname): 
+        """
+        :param ab:
+        :param key: property name which returns a dict with numerical values  
+        :param cut: maximum permissable value
+        :param erc: integer return code if any of the values exceeds the cut 
+
+        RC passed from python to C++ via system calls 
+        are truncated beyond 0xff see: SSysTest
+        """ 
+        self.ab = ab 
+        self.key = key
+        self.cut = cut
+        self.erc = erc
+        self.shortname = shortname
+
+    mxd = property(lambda self:getattr(self.ab, self.key))
+
+    def _get_mx(self):
+        mxd = self.mxd
+        return max(mxd.values()) if len(mxd) > 0 else 999.
+    mx = property(_get_mx)
+
+    def _get_rc(self):
+        return self.erc if self.mx > self.cut else 0  
+    rc = property(_get_rc)
+
+    def __repr__(self):
+        mxd = self.mxd
+        pres_ = lambda d:" ".join(map(lambda kv:"%10s : %8.3g " % (kv[0], kv[1]),d.items()))  
+        return "\n".join(["%s .rc %3d  .mx %7.3f .cut %7.3f   %s  " % ( self.shortname, self.rc,  self.mx, self.cut, pres_(mxd) )]) 
+                       
+
+class RC(object):
+    def __init__(self, ab ):
+        self.ab = ab 
+        self.c2p = MXD(ab, "c2p",  ab.ok.c2max,  77, "ab.rc.c2p") 
+        self.rdv = MXD(ab, "rmxs", ab.ok.rdvmax, 88, "ab.rc.rdv") 
+        self.pdv = MXD(ab, "pmxs", ab.ok.pdvmax, 99, "ab.rc.pdv") 
+
+    def _get_rcs(self):
+        return map(lambda _:_.rc, [self.c2p, self.rdv, self.pdv])
+    rcs = property(_get_rcs) 
+        
+    def _get_rc(self):
+        return max(self.rcs+[0])
+    rc = property(_get_rc) 
+
+    def __repr__(self):
+        return "\n".join([
+                "ab.rc     .rc %3d      %r " % (self.rc, self.rcs) , 
+                 repr(self.c2p),
+                 repr(self.rdv),
+                 repr(self.pdv),
+                 "."
+                  ])
+
+
+
 class AB(object):
     """
     AB : Event Pair comparison
@@ -102,10 +163,9 @@ class AB(object):
         self.print_(self)
         self.print_(self.cfm)  
         self.print_(self.rpost_dv)
-        self.print_("")
         self.print_(self.rpol_dv)
-        self.print_("")
         self.print_(self.ox_dv)
+        self.print_(self.rc)
         log.debug("]")
 
     def __init__(self, ok):
@@ -171,7 +231,7 @@ class AB(object):
         #aNote = "A:%s" % self.a.metadata.Note
         ##bNote = "B:%s" % self.b.metadata.Note
  
-        return "\n".join(filter(None,[abn, abr,bbr, amd, acsgp ]))
+        return "\n".join(filter(None,["ab", abn, abr,bbr, amd, acsgp,"." ]))
 
     def __str__(self):
         lmx = self.ok.lmx
@@ -193,14 +253,16 @@ class AB(object):
         return cfm 
         
     def compare(self):
-        log.debug("AB.compare START ")
+        log.debug("[")
 
         self.ahis = self._get_cf("all_seqhis_ana", "ab.ahis")
         self.amat = self._get_cf("all_seqmat_ana", "ab.amat")
 
         if self.ok.prohis:self.prohis()
         if self.ok.promat:self.promat()
-        log.debug("AB.compare DONE")
+
+        self.rc = RC(self) 
+        log.debug("]")
 
 
     def init_point(self):
@@ -395,46 +457,6 @@ class AB(object):
 
     c2p = property(lambda self:dict(map(lambda _:[_.title,_.c2p], self.tabs )))
     c2p_max = property(lambda self:max(self.c2p.values()))
-
-    def _get_RC(self):
-        """
-        # NB RC passed from python to C++ via system calls 
-        #    are truncated beyond 0xff see: SSysTest
-        """
-        rc = 0 
-
-        c2p = self.c2p
-        c2p_max = max(c2p.values())
-        if c2p_max > self.ok.c2max:
-            rc = 77   
-        pass
-        self.print_( "c2p : %r c2pmax: %s  CUT ok.c2max %s  RC:%s " % ( c2p, c2p_max, self.ok.c2max, rc ) )
-
-        rmxs_ = self.rmxs
-        if len(rmxs_) > 0:
-            rmxs_max_ = max(rmxs_.values())
-            if rmxs_max_ > self.ok.rdvmax:
-                rc = 88   
-            pass
-            self.print_( "rmxs_ : %r rmxs_max_: %s  CUT ok.rdvmax %s  RC:%s " % ( rmxs_, rmxs_max_, self.ok.rdvmax, rc )) 
-        else:
-            log.warning("missing ab.rmxs ")
-        pass
-
-        pmxs_ = self.pmxs
-        if len(pmxs_) > 0:
-            pmxs_max_ = max(pmxs_.values())
-            if pmxs_max_ > self.ok.pdvmax:
-                rc = 99   
-            pass
-            self.print_( "pmxs_ : %r pmxs_max_: %s  CUT ok.pdvmax %s  RC:%s " % ( pmxs_, pmxs_max_, self.ok.pdvmax, rc ))
-        else:
-            log.warning("missing ab.pmxs ")
-        pass
-
-        pass
-        return rc 
-    RC = property(_get_RC)
 
 
     def _get_cf(self, ana, shortname):
