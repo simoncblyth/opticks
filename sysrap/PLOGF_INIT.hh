@@ -14,7 +14,7 @@ Color PLOG logging macros.
 #define PLOGF_(argc, argv) \
 { \
     PLOG _plog(argc, argv) \
-    static plog::RollingFileAppender<plog::TxtFormatter> fileAppender( _plog.logpath, _plog.logmax); \
+    static plog::RollingFileAppender<plog::TxtFormatter> fileAppender( _plog.filename, _plog.maxFileSize, _plog.maxFiles ); \
     static plog::ConsoleAppender<plog::TxtFormatter> consoleAppender; \
     plog::Severity severity = static_cast<plog::Severity>(_plog.level) ; \
     plog::init( severity , &fileAppender ).addAppender(&consoleAppender) ; \

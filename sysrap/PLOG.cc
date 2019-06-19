@@ -4,7 +4,9 @@
 #include <algorithm>
 #include <string>
 
+
 #include "PLOG.hh"
+#include "SProc.hh"
 
 PLOG* PLOG::instance = NULL ; 
 
@@ -64,30 +66,72 @@ int PLOG::_parse(int argc, char** argv, const char* fallback)
 }
 
 
+/**
+PLOG::_logpath_parse_problematic
+--------------------------------------
 
-const char* PLOG::_logpath_parse(int argc, char** argv)
+Constructs logfile path based on executable name argv[0] with .log appended 
+
+This approach is problematic as when running from an absolute 
+path such as with::
+
+    gdb $(which OKTest)
+
+This will yield a logpath within the directory where executables
+are installed which presents a permission problems with shared installs.
+
+**/
+
+const char* PLOG::_logpath_parse_problematic(int argc, char** argv)
 {
     assert( argc < MAXARGC && " argc sanity check fail "); 
-    //  Construct logfile path based on executable name argv[0] with .log appended 
     std::string lp(argc > 0 ? argv[0] : "default") ; 
     lp += ".log" ; 
     return strdup(lp.c_str());
 }
 
 
+/**
+PLOG::_logpath()
+------------------
+
+This uses just the executable name with .log appended 
+
+**/
+
+const char* PLOG::_logpath()
+{
+    const char* exename = SProc::ExecutableName() ; 
+    std::string lp(exename) ; 
+    lp += ".log" ; 
+    return strdup(lp.c_str());
+}
+
+
+
+
+/**
+PLOG::_prefixlevel_parse
+---------------------------
+
+Example commandline::
+
+   --okcore info --sysrap error --brap trace --npy trace
+
+Parse commandline to find project logging level  
+looking for a single project prefix, eg 
+with the below commandline and prefix of sysrap
+the level "error" should be set.
+
+When no level is found the fallback level is used.
+     
+Both prefix and the arguments are lowercased before comparison.
+
+
+**/
+
 int PLOG::_prefixlevel_parse(int argc, char** argv, const char* fallback, const char* prefix)
 {
-    // Parse commandline to find project logging level  
-    // looking for a single project prefix, eg 
-    // with the below commandline and prefix of sysrap
-    // the level "error" should be set.
-    //
-    // When no level is found the fallback level is used.
-    //
-    //    --okcore info --sysrap error --brap trace --npy trace
-    //  
-    // Both prefix and the arguments are lowercased before comparison.
-    //
 
     assert( argc < MAXARGC && " argc sanity check fail "); 
 
@@ -211,8 +255,9 @@ PLOG::PLOG(int argc_, char** argv_, const char* fallback, const char* prefix)
     :
       args(argc_, argv_, "OPTICKS_LOG_ARGS" , ' '),   // when argc_ is 0 the named envvar is checked for arguments instead 
       level(info),
-      logpath(_logpath_parse(argc_, argv_)),
-      logmax(3)
+      filename(_logpath()),
+      maxFileSize(500000),
+      maxFiles(3)
 {
    level = prefix == NULL ?  parse(fallback) : prefixlevel_parse(fallback, prefix ) ;    
 
@@ -223,7 +268,7 @@ PLOG::PLOG(int argc_, char** argv_, const char* fallback, const char* prefix)
    std::cerr << "PLOG::PLOG " 
              << " instance " << instance 
              << " this " << this 
-             << " logpath " << logpath
+             << " filename " << filename
              << std::endl
              ;
 */

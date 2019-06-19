@@ -134,8 +134,9 @@ struct SYSRAP_API PLOG
 {
     SAr         args ; 
     int         level ; 
-    const char* logpath ; 
-    int         logmax ; 
+    const char* filename ; 
+    int         maxFileSize ;    // bytes
+    int         maxFiles ; 
 
     static plog::Severity Delta(plog::Severity level_, int delta); 
 
@@ -158,7 +159,8 @@ struct SYSRAP_API PLOG
     static void _dump(const char* msg, int argc, char** argv);
     static const char* _name(plog::Severity severity);
     static const char* _name(int level);
-    static const char* _logpath_parse(int argc, char** argv);
+    static const char* _logpath_parse_problematic(int argc, char** argv);
+    static const char* _logpath();
 
     static PLOG* instance ; 
 };

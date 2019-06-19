@@ -2,6 +2,48 @@ strace-monitor-file-opens
 ============================
 
 
+
+
+FIXED ISSUE : strace running shows log being written into unexpected location beside the binary /home/blyth/local/opticks/lib/OKG4Test.log
+--------------------------------------------------------------------------------------------------------------------------------------------
+
+
+* many logs found in that directory 
+* need to avoid this as would cause permission failure in shared installation
+* FIXED using SProc::ExecutableName() in PLOG.cc instead of argv[0]
+* Also while looking into PLOG setup note that the RollingFileAppender is not enabled, due
+  to a default zero argument : tried setting these to 500,000 bytes and 3 files
+
+::
+
+    [blyth@localhost tmp]$ cd /tmp ; strace -o /tmp/strace.log -e open $(which OKG4Test) --help >/dev/null ; strace.py
+    strace.py
+     /home/blyth/local/opticks/lib/OKG4Test.log                                       :          O_WRONLY|O_CREAT :  0644 
+
+    [blyth@localhost tmp]$ cd /tmp ; strace -o /tmp/strace.log -e open OKG4Test --help >/dev/null ; strace.py
+    strace.py
+     OKG4Test.log                                                                     :          O_WRONLY|O_CREAT :  0644 
+
+::
+
+    068 const char* PLOG::_logpath_parse(int argc, char** argv)
+     69 {
+     70     assert( argc < MAXARGC && " argc sanity check fail ");
+     71     //  Construct logfile path based on executable name argv[0] with .log appended 
+     72     std::string lp(argc > 0 ? argv[0] : "default") ;
+     73     lp += ".log" ;
+     74     return strdup(lp.c_str());
+     75 }
+     76
+
+
+
+
+strace technique
+-----------------------
+
+
+
 Using "--strace" argumment to old op.sh script::
 
     822    elif [ "${OPTICKS_DBG}" == "2" ]; then
