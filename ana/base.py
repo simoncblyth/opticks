@@ -161,13 +161,15 @@ def json_(path):
     global _json 
     if _json.get(path,None):
         log.debug("return cached json for key %s" % path)
-        return _json[path] 
+        return _json[path]
+        return js
     try: 
         log.debug("parsing json for key %s" % path)
         xpath = os.path.expandvars(os.path.expanduser(path))
         #log.info("xpath:%s"%xpath)
-
-        _json[path] = json.load(file(xpath))
+        js = json.load(file(xpath))
+        js[u"jsonLoadPath"] = unicode(xpath) 
+        _json[path] = js 
     except IOError:
         log.warning("failed to load json from %s : %s " % (path,xpath))
         assert 0

@@ -41,8 +41,9 @@ class SYSRAP_API SStr {
       static bool HasPointerSuffix( const char* name, unsigned min_hexdigits, unsigned max_hexdigits ) ;
       static int  GetPointerSuffixDigits( const char* name );
 
-      const char* Concat( const char* a, const char* b, const char* c=NULL  );
+      static const char* Concat( const char* a, const char* b, const char* c=NULL  );
 
+      static const char* Replace( const char* s,  char a, char b ); 
 
 };
 

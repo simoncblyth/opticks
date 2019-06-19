@@ -21,6 +21,19 @@ analysis commandline
     tboolean-ipy- () {    ipython --pdb $(which tboolean.py) -i -- --det $TESTNAME --pfx $TESTNAME --tag $(tboolean-tag) $* ; } 
 
 
+
+future ab.perf module needs more metadata
+-------------------------------------------------------------------------------------------
+
+* number and types of GPUs 
+* hostname 
+* RTX mode setting
+* versions of OptiX, Geant4, Opticks(hmm probably just a commit hash for now, prior to releases)  
+
+* proceed with this in :doc:`metadata-review` 
+
+
+
 grab an old commandline
 ----------------------------
 

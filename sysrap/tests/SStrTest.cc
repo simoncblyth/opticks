@@ -145,6 +145,14 @@ void test_HasPointerSuffix2()
 }
 
 
+void test_Replace()
+{
+    const char* name = "TITAN RTX " ; 
+    const char* xname2 = "TITAN_RTX_" ; 
+    const char* name2 = SStr::Replace(name, ' ', '_' ); 
+    assert( strcmp(name2, xname2) == 0 );  
+}
+
 
 
 int main(int argc , char** argv )
@@ -159,8 +167,9 @@ int main(int argc , char** argv )
     test_EndsWith();  
     test_HasPointerSuffix();  
     test_HasPointerSuffix2();  
-    */
     test_StartsWith();  
+    */
+    test_Replace();  
 
     return 0  ; 
 }

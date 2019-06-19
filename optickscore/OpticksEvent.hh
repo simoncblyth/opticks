@@ -303,6 +303,8 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec
        void recordDigests();
    public:
        std::string getTagDir(const char* anno=NULL); // anno usually NULL, sometimes the timestamp
+       std::string getTagZeroDir(const char* anno=NULL);
+
        static std::string TagDir(const char* pfx, const char* det, const char* typ, const char* tag, const char* anno=NULL);
    public:
        unsigned long long getSeqHis(unsigned photon_id) const ; 

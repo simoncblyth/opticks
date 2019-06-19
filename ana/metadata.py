@@ -174,8 +174,8 @@ class Metadata(object):
         self.datefold = datefold
         self.tag = tag 
         self.timestamp = timestamp 
-
         self.parameters = json_(os.path.join(self.path, "parameters.json"))
+
         self.delta_times = DeltaTime(self.path, tag)
         self.launch_times = LaunchTimes(self.path, tag)
         self.propagate0 = float(self.delta_times.propagate) 

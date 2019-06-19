@@ -210,7 +210,17 @@ const char* SStr::Concat( const char* a, const char* b, const char* c  )
 }
 
 
-
+const char* SStr::Replace( const char* s,  char a, char b )
+{
+    std::stringstream ss ; 
+    for(unsigned i=0 ; i < strlen(s) ; i++)
+    {
+        char c = *(s+i) ;   
+        ss << ( c == a ? b : c ) ;  
+    }
+    std::string r = ss.str(); 
+    return strdup(r.c_str());
+}
 
 
 

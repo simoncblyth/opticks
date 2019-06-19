@@ -261,7 +261,7 @@ void OpticksResource::initRunResultsDir()
 }
 
 /**
-OpticksResource::getRunResultsDir
+  OpticksResource::getRunResultsDir
 -----------------------------------
 
 Used from OTracer::report 

@@ -1746,6 +1746,25 @@ std::string OpticksEvent::getTagDir(const char* anno)
 }
 
 
+
+
+std::string OpticksEvent::getTagZeroDir(const char* anno)
+{
+    const char* udet = getUDet();
+    const char* tagzero = "0" ; 
+    std::string tagdir = TagDir(m_pfx, udet, m_typ, tagzero, anno ? anno : NULL );
+    return tagdir ;
+}
+
+
+
+
+
+
+
+
+
+
 void OpticksEvent::saveParameters()
 {
     std::string tagdir = getTagDir();

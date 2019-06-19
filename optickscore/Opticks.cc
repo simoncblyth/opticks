@@ -284,7 +284,7 @@ Opticks::Opticks(int argc, char** argv, const char* argforced )
     m_wavelength_domain(0.f, 0.f, 0.f, 0.f),
     m_settings(0,0,0,0),
     m_run(new OpticksRun(this)),
-    m_evt(NULL),
+    //m_evt(NULL),
     m_ana(new OpticksAna(this)),
     m_dbg(new OpticksDbg(this)),
     m_rc(0),
@@ -388,6 +388,10 @@ void Opticks::postpropagate()
    dumpProfile("Opticks::postpropagate", "CG4::propagate");  
 
    dumpParameters("Opticks::postpropagate");
+
+   saveParameters(); 
+
+
 }
 
 void Opticks::ana()
@@ -871,12 +875,36 @@ void Opticks::dumpParameters(const char* msg) const
 {
     m_parameters->dump(msg);
 }
+
+
+/**
+Opticks::saveParameters
+--------------------------
+
+Metadata parameters.json are saved either into 
+
+1. TagZeroDir following event propagation running 
+2. RunResultsDir following non-event running, eg raytrace benchmarks 
+
+**/
+
 void Opticks::saveParameters() const 
 {
-    const char* dir = getRunResultsDir(); 
     const char* name = "parameters.json" ; 
-    LOG(info) << name << " into " << dir ; 
-    m_parameters->save( dir, name);
+    OpticksEvent* evt = getEvent(); 
+
+    if( evt )
+    {
+        std::string dir = evt->getTagZeroDir() ; 
+        LOG(info) << " postpropagate save " << name << " into TagZeroDir " << dir ; 
+        m_parameters->save( dir.c_str(), name ); 
+    }
+    else
+    {
+        const char* dir = getRunResultsDir() ; 
+        LOG(info) << " non-event running (eg raytrace benchmarks) save " << name << " into RunResultsDir " << dir ; 
+        m_parameters->save( dir, name ) ; 
+    }
 }
 
 
@@ -1173,7 +1201,7 @@ void Opticks::setExit(bool exit_)
     m_exit = exit_  ;   
     if(m_exit)
     {
-        LOG(info) << "Opticks::setExit EXITING " ; 
+        LOG(info) << "EXITING " ; 
         exit(EXIT_SUCCESS) ;
     }
 }
@@ -2275,6 +2303,15 @@ unsigned Opticks::getTagOffset()
 {
     return m_tagoffset ; 
 }
+
+/**
+Opticks::makeEvent
+---------------------
+
+
+
+
+**/
 OpticksEvent* Opticks::makeEvent(bool ok, unsigned tagoffset)
 {
     setTagOffset(tagoffset) ; 
@@ -2322,9 +2359,9 @@ OpticksEvent* Opticks::makeEvent(bool ok, unsigned tagoffset)
     assert(m_domains_configured);
 
 
-    unsigned int rng_max = getRngMax() ;
-    unsigned int bounce_max = getBounceMax() ;
-    unsigned int record_max = getRecordMax() ;
+    unsigned rng_max = getRngMax() ;
+    unsigned bounce_max = getBounceMax() ;
+    unsigned record_max = getRecordMax() ;
     
     evt->setTimeDomain(getTimeDomain());
     evt->setSpaceDomain(getSpaceDomain());  

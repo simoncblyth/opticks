@@ -615,7 +615,7 @@ class OKCORE_API Opticks {
 
 
        OpticksRun*          m_run ;   // actually used for dual running 
-       OpticksEvent*        m_evt ; 
+       //OpticksEvent*        m_evt ; 
 
        OpticksAna*          m_ana ; 
        OpticksDbg*          m_dbg ; 

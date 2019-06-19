@@ -39,8 +39,27 @@ std::string OpticksRun::brief() const
 
 
 
-// OpticksRun::createEvent is invoked during propagate of the high level mgrs 
-// (OKG4Mgr::propagate, OKMgr::propagate) long after geometry has been loaded 
+/**
+OpticksRun::createEvent
+-------------------------
+
+OpticksRun::createEvent is canonically invoked by the propagate methods 
+of the high level managers, which happens long after geometry has been loaded.  
+Specifically:
+
+* OKG4Mgr::propagate
+* OKMgr::propagate
+
+This 
+
+1. creates separate OpticksEvent instances for G4 and OK propagations, 
+   associates them as siblings and adopts a common timestamp 
+
+2. invokes annotateEvent
+
+
+
+**/
 
 void OpticksRun::createEvent(unsigned tagoffset)
 {
@@ -52,17 +71,14 @@ void OpticksRun::createEvent(unsigned tagoffset)
     m_g4evt = m_ok->makeEvent(false, tagoffset) ;
     m_evt = m_ok->makeEvent(true, tagoffset) ;
 
-
     LOG(verbose) << m_g4evt->brief() << " " << m_g4evt->getShapeString() ;  
     LOG(verbose) << m_evt->brief() << " " << m_evt->getShapeString() ;  
   
     m_evt->setSibling(m_g4evt);
     m_g4evt->setSibling(m_evt);
 
-   
     std::string tstamp = m_g4evt->getTimeStamp();
     m_evt->setTimeStamp( tstamp.c_str() );        // align timestamps
-
 
     LOG(LEVEL)
         << "(" 
@@ -79,6 +95,16 @@ void OpticksRun::createEvent(unsigned tagoffset)
 
     OK_PROFILE("OpticksRun::createEvent");
 }
+
+
+/**
+OpticksRun::annotateEvent
+----------------------------
+
+* huh : looks like Opticks parameters are not passed into OpticksEvent metadata ?
+
+**/
+
 
 void OpticksRun::annotateEvent()
 {

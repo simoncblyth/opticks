@@ -70,7 +70,7 @@ class OXRAP_API OContext {
 #if OPTIX_VERSION_MAJOR >= 6
             static void InitRTX(int rtxmode);
 #endif
-            static void CheckDevices();
+            static void CheckDevices(Opticks* ok);
             ~OContext();
      private:
             OContext(optix::Context context, Opticks* ok, const char* cmake_target, const char* ptxrel );

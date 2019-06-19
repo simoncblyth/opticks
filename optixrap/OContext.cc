@@ -21,6 +21,7 @@
 // npy-
 #include "NGLM.hpp"
 #include "NPY.hpp"
+#include "NMeta.hpp"
 #include "GLMFormat.hpp"
 
 // okc-
@@ -163,13 +164,29 @@ struct VisibleDevices
        for(unsigned i = 0; i < num_devices; ++i) ss << devices[i].desc() << std::endl ; 
        return ss.str();
     }
+
+    std::string brief() const 
+    {
+       std::stringstream ss ;  
+       for(unsigned i = 0; i < num_devices; ++i) 
+       {
+           std::string name = SStr::Replace( devices[i].name , ' ', '_' ); 
+           ss << name ; 
+           if( i < num_devices - 1 ) ss << " " ; 
+       }
+       return ss.str();
+    }
 };
 
 
-void OContext::CheckDevices()
+void OContext::CheckDevices(Opticks* ok)
 {
     VisibleDevices vdev ; 
     LOG(info) << std::endl << vdev.desc(); 
+
+    NMeta* parameters = ok->getParameters(); 
+    parameters->add<int>("NumDevices", vdev.num_devices );
+    parameters->add<std::string>("VisibleDevices", vdev.brief() );
 
     const char* frame_renderer = Opticks::Instance()->getFrameRenderer();
     if( frame_renderer != NULL)
@@ -179,7 +196,9 @@ void OContext::CheckDevices()
         LOG(info) << " frame_renderer " << frame_renderer ; 
         LOG(info) << " optix_device " << optix_device  ; 
         bool interop_device_match = SStr::Contains( frame_renderer, optix_device )  ; 
-        assert( interop_device_match && "OpenGL and OptiX must be taking to the same single device in interop mode"  ); 
+        assert( interop_device_match && "OpenGL and OptiX must be talking to the same single device in interop mode"  ); 
+
+        parameters->add<std::string>("FrameRenderer", frame_renderer );
     }
     else
     {
@@ -188,17 +207,18 @@ void OContext::CheckDevices()
 }
 
 
-
 OContext* OContext::Create(Opticks* ok, const char* cmake_target, const char* ptxrel )
 {
+    NMeta* parameters = ok->getParameters(); 
     int rtxmode = ok->getRTX();
 #if OPTIX_VERSION_MAJOR >= 6
     InitRTX( rtxmode ); 
 #else
     assert( rtxmode == 0 && "Cannot use --rtx 1/2/-1 options prior to OptiX 6.0.0 " ) ;
 #endif
+    parameters->add<int>("RTXMode", rtxmode  );
 
-    CheckDevices();
+    CheckDevices(ok);
 
     LOG(verbose) << "optix::Context::create() START " ; 
     optix::Context context = optix::Context::create();
