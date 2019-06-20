@@ -53,7 +53,7 @@ class MXD(object):
     def __repr__(self):
         mxd = self.mxd
         pres_ = lambda d:" ".join(map(lambda kv:"%10s : %8.3g " % (kv[0], kv[1]),d.items()))  
-        return "\n".join(["%s .rc %3d  .mx %7.3f .cut %7.3f/%7.3f/%7.3f   %s  " % ( self.shortname, self.rc,  self.mx, self.cut[0], self.cut[1], self.cut[2], pres_(mxd) )]) 
+        return "\n".join(["%s  .rc %d  .mx %7.3f .cut %7.3f/%7.3f/%7.3f   %s  " % ( self.shortname, self.rc,  self.mx, self.cut[0], self.cut[1], self.cut[2], pres_(mxd) )]) 
                        
 
 class RC(object):
@@ -79,6 +79,23 @@ class RC(object):
                  repr(self.pdv),
                  "."
                   ])
+
+
+
+class _RC(object):
+    offset = { "rpost_dv":0, "rpol_dv":1 , "ox_dv":2 } 
+
+    def __init__(self, ab):
+        rc = {}
+        rc["rpost_dv"] = ab.rpost_dv.RC 
+        rc["rpol_dv"] = ab.rpol_dv.RC 
+        rc["ox_dv"] = ab.ox_dv.RC 
+        assert max(rc.values()) <= 1 
+        self.rc = rc["rpost_dv"] << self.offset["rpost_dv"] | rc["rpol_dv"] << self.offset["rpol_dv"] | rc["ox_dv"] << self.offset["ox_dv"]
+
+    def __repr__(self):
+        return "RC 0x%.2x" % self.rc
+
 
 
 
@@ -165,6 +182,7 @@ class AB(object):
         self.print_(self.rpost_dv)
         self.print_(self.rpol_dv)
         self.print_(self.ox_dv)
+        self.print_(self._rc)
         self.print_(self.rc)
         log.debug("]")
 
@@ -176,6 +194,7 @@ class AB(object):
         self.dvtabs = []
         self.load()
         self.cfm = self.compare_meta()
+        self.compare_domains()
         self.compare()
         self.init_point()
         self.stream = sys.stderr
@@ -240,6 +259,14 @@ class AB(object):
             self.mat.sli = slice(0,lmx)
         pass
         return "\n".join(map(repr, [self,self.his,self.flg,self.mat]))
+
+
+
+    def compare_domains(self):
+        assert np.all( self.a.fdom == self.b.fdom )
+        self.fdom = self.a.fdom
+        assert np.all( self.a.idom == self.b.idom )
+        self.idom = self.a.idom
  
     def compare_meta(self):
         cfm = CompareMetadata(self.a.metadata, self.b.metadata)
@@ -261,6 +288,7 @@ class AB(object):
         if self.ok.promat:self.promat()
 
         self.rc = RC(self) 
+        self._rc = _RC(self) 
         log.debug("]")
 
 

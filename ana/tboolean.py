@@ -65,11 +65,11 @@ if __name__ == '__main__':
     ab = AB(ok)
     ab.dump()
 
-    rc = ab.rc.rc 
+    rc0 = ab.rc.rc 
+    rc = ab._rc.rc 
 
     level = "fatal" if rc > 0 else "info"
-    getattr(log, level)(" RC %d " % rc)
-
+    getattr(log, level)(" RC 0x%.2x %s " % (rc,bin(rc)) )
 
 
     if not ok.ipython:

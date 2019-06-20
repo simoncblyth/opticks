@@ -22,7 +22,7 @@ TODO
 
  * where exceeding error level yields non-zero RC for that comparison
  * report these levels in the output
- * ansi colors are good interactively but need to show that in pure text way too
+ * ansi colors are good interactively but need to show that in pure text way too : DONE
  * have an RC for every line, that gets combined into max RC for each section 
 
 
@@ -64,7 +64,7 @@ which gets scaled to make the domain.
 
 
 * TODO: get domain extent into the report 
-* TODO: automate the rdvmax cuts based on the compression bin sizes for the fdomain in use
+* DONE: automate the rdvmax cuts based on the compression bin sizes for the fdomain in use
 
 
 ::
@@ -163,8 +163,15 @@ Was using a fixed triplet::
     Out[7]: [0.01, 0.1, 1.0]
 
 
-Can instead can now use a more motivated cut.
+Can instead can now use a more motivated cut.  DONE using [eps, 1.5*eps, 2.0*eps] as warn/error/fatal levels where eps is compression bin size 
 
+::
+
+    In [10]: np.float(ab.rpost_dv.dvs[0].dv.max())
+    Out[10]: 0.16025269325837144
+
+    In [16]: 2.*5251./(65536.-1.)
+    Out[16]: 0.16025024795910583
 
 
 
@@ -197,6 +204,62 @@ tp 4-9
      8                              sPlane0x5b34470 ce0           0.0000,0.0000,0.0000,3430.6001 ce1           0.0000,0.0000,0.0000,3430.6001  8
      9                               sWall0x5b342e0 ce0           0.0000,0.0000,0.0000,3430.6001 ce1           0.0000,0.0000,0.0000,3430.6001  9
 
+
+
+
+
+
+
+
+
+aligned scan with the new RC
+-------------------------------
+
+::
+
+    offset = { "rpost_dv":0, "rpol_dv":1 , "ox_dv":2 }
+
+    [blyth@localhost ana]$ scan--
+    scan-- : tboolean.py --pfx tboolean-proxy-0 ========== RC 4
+    scan-- : tboolean.py --pfx tboolean-proxy-1 ========== RC 0
+    scan-- : tboolean.py --pfx tboolean-proxy-2 ========== RC 4
+    scan-- : tboolean.py --pfx tboolean-proxy-3 ========== RC 4
+    scan-- : tboolean.py --pfx tboolean-proxy-4 ========== RC 0
+    scan-- : tboolean.py --pfx tboolean-proxy-5 ========== RC 0
+    scan-- : tboolean.py --pfx tboolean-proxy-6 ========== RC 0
+    scan-- : tboolean.py --pfx tboolean-proxy-7 ========== RC 0
+    scan-- : tboolean.py --pfx tboolean-proxy-8 ========== RC 0
+    scan-- : tboolean.py --pfx tboolean-proxy-9 ========== RC 0
+    scan-- : tboolean.py --pfx tboolean-proxy-10 ========== RC 1
+    scan-- : tboolean.py --pfx tboolean-proxy-11 ========== RC 1
+    scan-- : tboolean.py --pfx tboolean-proxy-12 ========== RC 1
+    scan-- : tboolean.py --pfx tboolean-proxy-13 ========== RC 1
+    scan-- : tboolean.py --pfx tboolean-proxy-14 ========== RC 1
+    scan-- : tboolean.py --pfx tboolean-proxy-15 ========== RC 0
+    scan-- : tboolean.py --pfx tboolean-proxy-16 ========== RC 0
+    scan-- : tboolean.py --pfx tboolean-proxy-17 ========== RC 4
+    scan-- : tboolean.py --pfx tboolean-proxy-18 ========== RC 6
+    scan-- : tboolean.py --pfx tboolean-proxy-19 ========== RC 1
+    scan-- : tboolean.py --pfx tboolean-proxy-20 ========== RC 1
+    scan-- : tboolean.py --pfx tboolean-proxy-21 ========== RC 1
+    scan-- : tboolean.py --pfx tboolean-proxy-22 ========== RC 0
+    scan-- : tboolean.py --pfx tboolean-proxy-23 ========== RC 0
+    scan-- : tboolean.py --pfx tboolean-proxy-24 ========== RC 0
+    scan-- : tboolean.py --pfx tboolean-proxy-25 ========== RC 0
+    scan-- : tboolean.py --pfx tboolean-proxy-26 ========== RC 0
+    scan-- : tboolean.py --pfx tboolean-proxy-27 ========== RC 0
+    scan-- : tboolean.py --pfx tboolean-proxy-28 ========== RC 0
+    scan-- : tboolean.py --pfx tboolean-proxy-29 ========== RC 4
+    scan-- : tboolean.py --pfx tboolean-proxy-30 ========== RC 0
+    scan-- : tboolean.py --pfx tboolean-proxy-31 ========== RC 0
+    scan-- : tboolean.py --pfx tboolean-proxy-32 ========== RC 0
+    scan-- : tboolean.py --pfx tboolean-proxy-33 ========== RC 0
+    scan-- : tboolean.py --pfx tboolean-proxy-34 ========== RC 1
+    scan-- : tboolean.py --pfx tboolean-proxy-35 ========== RC 1
+    scan-- : tboolean.py --pfx tboolean-proxy-36 ========== RC 1
+    scan-- : tboolean.py --pfx tboolean-proxy-37 ========== RC 1
+    scan-- : tboolean.py --pfx tboolean-proxy-38 ========== RC 1
+    scan-- : tboolean.py --pfx tboolean-proxy-39 ========== RC 1
 
 
 

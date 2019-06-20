@@ -16,9 +16,17 @@ code = {
     "green":(32,),
     "pink":(35,),
     "normal":(0,),
+    "underline":(4,),
+    "bold":(1,),
+    "reverse":(7,),
+    "blink":(5,),
 }  
 
 red_ = lambda msg:ansi_(msg, code["red"])
+underline_ = lambda msg:ansi_(msg, code["underline"])
+bold_ = lambda msg:ansi_(msg, code["bold"])
+reverse_ = lambda msg:ansi_(msg, code["reverse"])
+blink_ = lambda msg:ansi_(msg, code["blink"])
 
 fatal_ = lambda msg:ansi_(msg, code["white_on_red_bright"])
 error_ = lambda msg:ansi_(msg, code["red"])

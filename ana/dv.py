@@ -91,20 +91,54 @@ Examining the deviation::
 
 """
 import os, sys, logging, numpy as np
-from opticks.ana.log import fatal_, error_, warning_, info_, debug_ 
+from opticks.ana.log import fatal_, error_, warning_, info_, debug_
+from opticks.ana.log import underline_, blink_ 
+
+
+class Level(object):
+    FATAL = 20
+    ERROR = 10
+    WARNING = 0 
+    INFO = -10
+    DEBUG = -20
+
+    level2name = { FATAL:"FATAL", ERROR:"ERROR", WARNING:"WARNING", INFO:"INFO", DEBUG:"DEBUG" }
+    name2level = { "FATAL":FATAL, "ERROR":ERROR, "WARNING":WARNING, "INFO":INFO, "DEBUG":DEBUG  }
+    level2func = { FATAL:fatal_, ERROR:error_, WARNING:warning_, INFO:info_, DEBUG:debug_ }
+
+
+    @classmethod
+    def FromName(cls, name):
+        level = cls.name2level[name] 
+        return cls(name, level) 
+    @classmethod
+    def FromLevel(cls, level):
+        name = cls.level2name[level] 
+        return cls(name, level) 
+
+    def __init__(self, name, level):
+        self.name = name
+        self.level = level
+        self.fn_ = self.level2func[level]
+
 
 class Dv(object):
 
-   FMT  = "  %9d %9d %9d:%6.3f   %9.4f %9.4f %9.4f  "
-   CFMT = "  %9s %9s %9s:%6s   %9s %9s %9s    "
+   FMT  =       "  %9d %9d : %5d %5d %5d : %6.4f %6.4f %6.4f : %9.4f %9.4f %9.4f  "
+   CFMT =       "  %9s %9s : %5s %5s %5s : %6s %6s %6s : %9s %9s %9s    "
+   CFMT_CUTS =  "  %9s %9s : %5s %5s %5s : %6.4f %6.4f %6.4f : %9s %9s %9s    "
+   CFMT_COLS =  "nitem nelem nwar nerr nfat fwar ferr ffat mx mn avg".split()
 
    LMT  = " %0.4d %10s : %30s : %7d  %7d "   # labels seqhis line 
    CLMT = " %4s %10s : %30s : %7s  %7s " 
 
    clabel = CLMT % ( "idx", "msg", "sel", "lcu1", "lcu2" )
+   cblank = CLMT % ( "", "", "", "", "" )
 
-   def __init__(self, idx, sel, av, bv, lcu, dvmax, msg=""):
+
+   def __init__(self, tab, idx, sel, av, bv, lcu, dvmax, msg=""):
        """
+       :param tab: DvTab instance 
        :param idx: unskipped orignal seqhis line index
        :param sel: single line selection eg 'TO BT BT SA'
        :param av: evt a values array within selection  
@@ -135,25 +169,27 @@ class Dv(object):
            mn = dv.min()
            avg = dv.sum()/float(nelem)
 
-           discrep = dv[dv>dvmax[1]]
-           ndiscrep = len(discrep)           # elements, not items
-           fdiscrep = float(ndiscrep)/float(nelem) 
+           disc=[ dv[dv>dvmax[0]], dv[dv>dvmax[1]], dv[dv>dvmax[2]] ]
+           ndisc = map(len, disc)     # elements, not items
+           fdisc =  map(lambda _:float(_)/float(nelem), ndisc ) 
        else:
            mx = None
            mn = None
            avg = None
-           ndiscrep = None
-           fdiscrep = None
+           ndisc = None
+           fdisc = None
        pass
 
+       self.tab = tab 
        self.label = label
        self.nitem = nitem
        self.nelem = nelem
-       self.ndiscrep = ndiscrep
-       self.fdiscrep = fdiscrep
+       self.ndisc = ndisc
+       self.fdisc = fdisc
        self.mx = mx 
        self.mn = mn 
        self.avg = avg 
+       self.ismax = False # set from DvTab
        
        self.av = av
        self.bv = bv
@@ -162,38 +198,48 @@ class Dv(object):
        self.dvmax = dvmax 
        self.msg = msg
 
+       if self.mx > self.dvmax[2]:
+           lev = Level.FromName("FATAL")
+           lmsg = "  > dvmax[2] %.4f " % self.dvmax[2] 
+       elif self.mx > self.dvmax[1]:
+           lev = Level.FromName("ERROR")
+           lmsg = "  > dvmax[1] %.4f " % self.dvmax[1] 
+       elif self.mx > self.dvmax[0]:
+           lev = Level.FromName("WARNING")
+           lmsg = "  > dvmax[0] %.4f " % self.dvmax[0] 
+       else:
+           lev = Level.FromName("INFO")
+           lmsg = ""
+       pass
+       self.fn_ = lev.fn_
+       self.lev = lev
+       self.lmsg = lmsg
+ 
+
    @classmethod  
    def columns(cls):
-       cdesc = cls.CFMT % ( "nitem", "nelem", "nerr", "ferr", "mx", "mn", "avg"  )
-       clabel = cls.clabel ; 
+       cdesc = cls.CFMT % tuple(cls.CFMT_COLS)
+       clabel = cls.clabel 
        return "%s : %s  " % (clabel, cdesc )
+
+   def columns2(self):
+       cdesc2 = self.CFMT_CUTS % ("","","","","", self.dvmax[0], self.dvmax[1], self.dvmax[2], "", "", "") 
+       return "%s : %s  " % (self.cblank, cdesc2 )
 
 
    def __repr__(self):
        if self.nelem>0:
-           desc =  self.FMT % ( self.nitem, self.nelem, self.ndiscrep, self.fdiscrep, self.mx, self.mn, self.avg )
+           desc =  self.FMT % ( self.nitem, self.nelem, self.ndisc[0], self.ndisc[1], self.ndisc[2], self.fdisc[0], self.fdisc[1], self.fdisc[2], self.mx, self.mn, self.avg )
        else:
            desc = ""
        pass
 
-       if self.mx > self.dvmax[2]:
-           fn_ = fatal_
-           lev = "FATAL"
-           msg = "  > dvmax[2] %.4f " % self.dvmax[2] 
-       elif self.mx > self.dvmax[1]:
-           fn_ = error_
-           lev = "ERROR"
-           msg = "  > dvmax[1] %.4f " % self.dvmax[1] 
-       elif self.mx > self.dvmax[0]:
-           fn_ = warning_
-           lev = "WARNING"
-           msg = "  > dvmax[0] %.4f " % self.dvmax[0] 
-       else:
-           fn_ = info_
-           lev = ""
-           msg = ""
+       if self.ismax:
+           pdesc = underline_(self.fn_(desc))
+       else: 
+           pdesc = self.fn_(desc)
        pass
-       return "%s : %s : %20s : %s " % (self.label, fn_(desc), fn_(lev), fn_(msg)  )
+       return "%s : %s : %20s : %s " % (self.label, pdesc, self.fn_(self.lev.name), self.fn_(self.lmsg)  )
 
 
 class DvTab(object):
@@ -254,9 +300,39 @@ class DvTab(object):
 
             dv = self.dv_(i, sel, lcu)    # Dv instance comparing values within single line selection eg all 'TO BT BT SA' 
             dvs.append(dv)
+            ab.aselhis = None
+
         pass
         self.dvs = dvs 
+        self.findmax()
 
+    def _get_dvmax(self): 
+        """
+        :return dvmax: list of three values corresponding to warn/error/fatal deviation cuts  
+
+        rpost 
+            extent*2/65535 is the size of shortnorm compression bins 
+            so its the closest can expect values to get.
+        rpol 
+             is extremely compressed, so bins are big : 1*2/255 
+        ox
+             not compressed stored as floats : other things will limit deviations
+
+        """
+        ab = self.ab
+        if self.name == "rpost_dv": 
+            eps = ab.fdom[0,0,3]*2.0/((0x1 << 16) - 1)
+            dvmax = [eps, 1.5*eps, 2.0*eps] 
+        elif self.name == "rpol_dv": 
+            eps = 1.0*2.0/((0x1 << 8) - 1)
+            dvmax = [eps, 1.5*eps, 2.0*eps] 
+        elif self.name == "ox_dv":
+            dvmax = ab.ok.pdvmax 
+        else:
+            assert self.name 
+        pass 
+        return dvmax 
+    dvmax = property(_get_dvmax)
 
 
     def dv_(self, i, sel, lcu):
@@ -272,21 +348,20 @@ class DvTab(object):
         if self.name == "rpost_dv": 
             av = ab.a.rpost()
             bv = ab.b.rpost()
-            dvmax = ab.ok.rdvmax 
         elif self.name == "rpol_dv": 
             av = ab.a.rpol()
             bv = ab.b.rpol()
-            dvmax = ab.ok.rdvmax 
         elif self.name == "ox_dv": 
             av = ab.a.ox[:,:3,:]
             bv = ab.b.ox[:,:3,:]
-            dvmax = ab.ok.pdvmax 
         else:
             assert self.name
         pass 
+        dvmax = self.dvmax
+
         assert ab.a.sel == ab.b.sel 
         sel = ab.a.sel 
-        dv = Dv(i, sel, av, bv, lcu, dvmax )
+        dv = Dv(self, i, sel, av, bv, lcu, dvmax )
         return dv if len(dv.dv) > 0 else None
 
 
@@ -299,6 +374,29 @@ class DvTab(object):
         return max(maxdv_) if len(maxdv_) > 0 else -1 
     maxdvmax   = property(_get_maxdvmax)  
 
+    def findmax(self):
+        maxdv = map(lambda _:float(_.mx), self.dvs) 
+        mmaxdv = max(maxdv)
+        for dv in self.dvs:
+            if dv.mx == mmaxdv and dv.lev.level > Level.INFO:
+                dv.ismax = True
+            pass
+        pass 
+
+    def _get_maxlevel(self):
+        """
+        Overall level of the table : INFO, WARNING, ERROR or FATAL 
+        based on the maximum level of the lines
+        """
+        mxl = max(map(lambda dv:dv.lev.level, self.dvs))
+        return Level.FromLevel(mxl)  
+    maxlevel = property(_get_maxlevel)  
+
+    def _get_RC(self):
+        maxlevel = self.maxlevel
+        return 1 if maxlevel.level > Level.WARNING else 0
+    RC = property(_get_RC)
+
     fdiscreps = property(lambda self:self._get_float("fdiscrep"))  
     def _get_fdiscmax(self):
         fdiscreps_ = self.fdiscreps
@@ -307,17 +405,17 @@ class DvTab(object):
 
 
     def _get_smry(self):
-        return "%s fdiscmax:%s fdiscreps:%r maxdvmax:%s maxdv:%r  " % ( self.name, self.fdiscmax, self.fdiscreps, self.maxdvmax, self.maxdv  )
+        return "%s fdiscmax:%s fdiscreps:%r maxdvmax:%s " % ( self.name, self.fdiscmax, self.fdiscreps, self.maxdvmax  )
     smry = property(_get_smry)
 
     def _get_brief(self):
         skips = " ".join(self.skips)
         gfmt_ = lambda _:"%.4f" % float(_) 
-        return "maxdvmax:%s maxdv:%s  skip:%s" % ( gfmt_(self.maxdvmax), " ".join(map(gfmt_,self.maxdv)), skips )
+        return "maxdvmax:%s  level:%s  RC:%d       skip:%s" % ( gfmt_(self.maxdvmax), self.maxlevel.fn_(self.maxlevel.name), self.RC,  skips )
     brief = property(_get_brief)
 
     def __repr__(self):
-        return "\n".join( ["ab.%s" % self.name, self.brief, Dv.columns()] + map(repr, filter(None,self.dvs[self.sli]) ) + ["."] )
+        return "\n".join( ["ab.%s" % self.name, self.brief, self.dvs[0].columns2(), Dv.columns()] + map(repr, filter(None,self.dvs[self.sli]) ) + ["."] )
 
     def __getitem__(self, sli):
          self.sli = sli
