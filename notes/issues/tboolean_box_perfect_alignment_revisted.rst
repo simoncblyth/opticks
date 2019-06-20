@@ -34,12 +34,24 @@ future ab.perf module needs more metadata
 
 
 
+
+
+
+
+
+
 grab an old commandline
 ----------------------------
 
 ::
 
     tboolean-;TBOOLEAN_TAG=3 tboolean-box --okg4 --align --dbgskipclearzero --dbgnojumpzero --dbgkludgeflatzero
+
+
+For a look at the effect of these options see
+
+* :doc:`alignment_options_review`
+
 
 Works first time, thats unusual
 

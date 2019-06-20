@@ -377,6 +377,8 @@ class Evt(object):
         log.debug("init_photons")
         ox = self.aload("ox",optional=True) 
         self.ox = ox
+        self.oxa = ox[:,:3,:]    # avoiding flags of last quad 
+
         self.desc['ox'] = "(photons) final photon step"
 
         if ox.missing:return 
@@ -842,6 +844,7 @@ class Evt(object):
         # for first _init_selection hold on to the originals
         if self._psel is None:
             self.ox_ = self.ox
+            self.oxa_ = self.oxa
             self.c4_ = self.c4
             self.wl_ = self.wl
             self.rx_ = self.rx
@@ -851,6 +854,7 @@ class Evt(object):
             if hasattr(self, 'ox_'):
                 log.debug("_init_selection with psel None : resetting selection to original ")
                 self.ox = self.ox_
+                self.oxa = self.oxa_
                 self.c4 = self.c4_
                 self.wl = self.wl_
                 self.rx = self.rx_
@@ -878,6 +882,7 @@ class Evt(object):
 
         ## always basing new selection of the originals
         self.ox = self.ox_[psel]
+        self.oxa = self.oxa_[psel]
         self.c4 = self.c4_[psel]
         self.wl = self.wl_[psel]
         self.rx = self.rx_[psel]

@@ -32,15 +32,16 @@ scan-photons-args(){ cat << EOS | tr -d " ,"  | grep -v \#
 EOS
 }
 scan-photons-cmd(){ printf "tboolean.sh box --generateoverride %s --error --cvd 1 --rtx 1 --compute\n" $1 ; }
-#scan-proxy-cmd(){   printf "env PROXYLV=%s tboolean.sh --compute\n" $1 ; }
+
+#scan-proxy-cmd(){   printf "env PROXYLV=%s tboolean.sh --compute --align --dbgskipclearzero --dbgnojumpzero --dbgkludgeflatzero   \n" $1 ; }
 scan-proxy-cmd(){   printf "tboolean.py --pfx tboolean-proxy-%s\n" $1  ; }
 
 
 scan-photons-post(){  scan.py /tmp/tboolean-box ; }
-scan-proxy-post(){    echo scan.py ???????? ; }
+scan-proxy-post(){    echo scan.py  ; }
 
 
-scan-cmds(){
+scan-cmds-all(){
    local mode=$(scan-mode)
    local cmd
    local arg
@@ -50,16 +51,25 @@ scan-cmds(){
    done
 }
 
+scan-cmds(){ scan-cmds-all ; }
+#scan-cmds(){ scan-cmds-all | head -22 | tail -1  ; }
+
 scan--()
 {
    local cmd
    scan-cmds | while read cmd
    do
-      #echo $cmd
-      $cmd > /dev/null 2>&1  
-      #$cmd  
-      rc=$?
+      local rc
+      if [ -n "$VERBOSE" ]; then
+          echo $cmd
+          $cmd 
+          rc=$?
+      else
+          $cmd > /dev/null 2>&1  
+          rc=$?
+      fi 
       echo $FUNCNAME : $cmd ========== RC $rc 
    done
 }
+
 

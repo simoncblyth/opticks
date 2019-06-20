@@ -1,7 +1,11 @@
 #!/usr/bin/env python
 """
-ucf.py
-=======
+ucf.py : Comparing Opticks and Geant4 random consumption
+=============================================================
+
+Compares the randoms consumed by Geant4 and Opticks and the
+positions where the consumption happens.  Relies on mask 
+running of single photons 
 
 ::
 
@@ -46,10 +50,13 @@ def print_(s):
 
 class U(object):
 
-    XRNG = []
+    XRNG = []   # set by UCF.__init__ 
 
     @classmethod
     def find(cls, u, tolerance=1e-6):
+        """
+        :return: index of u within XRNG sequence, or None if not found
+        """ 
         idxf = None
         for i in range(len(cls.XRNG)):
             if abs(u-cls.XRNG[i]) < tolerance:
@@ -60,7 +67,12 @@ class U(object):
         return idxf
 
     def __init__(self, idx, lab, val, lines):
-
+        """
+        :param idx: index into XRNG sequence
+        :param lab: 
+        :param val:
+        :param lines:  
+        """
         cls = self.__class__ 
         self.idx = idx
         self.lab = lab
@@ -103,6 +115,9 @@ class UCF(list):
         return os.path.expandvars("$TMP/TRngBufTest_%s.txt" % pindex )
     @classmethod
     def printlogpath(cls, pindex):
+        """
+        :return: path to single photon log, obtained by redirection of OptiX output stream 
+        """
         return os.path.expandvars("$TMP/ox_%s.log" % pindex )
 
     @classmethod
@@ -116,6 +131,13 @@ class UCF(list):
         return map(float, file(trng).readlines())
 
     def __init__(self, pindex):
+        """
+        :param pindex: photon record index 
+
+        1. collects random consumption reported in OptiX single photon log into this list
+        2. loads the expected sequence of randoms for this photon  
+
+        """
         list.__init__(self)
 
         evar = "UCF_PINDEX_DEV"
@@ -124,7 +146,6 @@ class UCF(list):
             print_("WARNING evar active %s " % evar )
         pass
         path = self.printlogpath(upindex)
-
         xrng = self.loadrngtxt(pindex)
 
         U.XRNG = xrng 
@@ -137,6 +158,10 @@ class UCF(list):
     PTN = re.compile("u_(\S*):\s*(\S*)\s*")
 
     def parse(self, path):
+        """
+        Parses the single photon log, collecting consumption lines 
+        into this list as U instances. 
+        """  
         self.lines = map(lambda line:line.rstrip(),file(path).readlines())
         curr = []
         for i, line in enumerate(self.lines):

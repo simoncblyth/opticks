@@ -6,6 +6,19 @@ g4lldb.py
 =============
 
 
+python interface inside gdb ? yes since version 7
+---------------------------------------------------
+
+* :google:`gdb python scripting`
+
+* https://fy.blackhats.net.au/blog/html/2017/08/04/so_you_want_to_script_gdb_with_python.html
+* https://sourceware.org/gdb/onlinedocs/gdb/Python.html#Python
+* https://sourceware.org/gdb/onlinedocs/gdb/Python-API.html
+* https://devguide.python.org/gdb/
+* https://medium.com/@tarun27sh/python-scripts-for-gdb-9b17ca090ac5
+* https://stripe.com/en-it/blog/exploring-python-using-gdb
+
+
 THOUGHTS ON CODE FOR DEBUGGING
 ------------------------------
 

@@ -226,6 +226,10 @@ g4lldb.py::
 1230 bare : ie with clears on every step and zero-step rewinds : goes off rails at TIR
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+Most of the below output relies on ana/g4lldb.py (unfortunately) and lldb python scripted 
+breakpoints with access to C++ program context.   
+
+
 ::
 
     tboolean-;tboolean-box --okg4 --align --mask 1230 --pindex 0 --pindexlog  -DD --noviz

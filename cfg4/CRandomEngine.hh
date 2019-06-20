@@ -26,6 +26,22 @@ CLHEP::HepRandom::setTheEngine.
 Canonical m_engine instance is resident of CG4 and is instanciated with it, 
 when the --align option is used.
 
+With the engine instanciated standard G4UniformRand calls to get random numbers
+are routed via the engine which provides values from precooked sequences generated
+by curand for each photon record_id on GPU. 
+
+To provide the appropriate sequence of random numbers for the current photon
+it is necessary to call CRandomEngine::preTrack  and the m_ctx referenced needs 
+to have the photon record id.
+
+Note that nothing special is needed on the GPU side for alignment, which just uses
+standard curand to get its randoms. 
+During development the below optional macros were used for dumping the random consumption.
+GPU dumping is only comprehensible when restricting to single photons.
+
+ALIGN_DEBUG 
+WITH_ALIGN_DEV_DEBUG 
+
 **/
 
 #include "CLHEP/Random/RandomEngine.h"

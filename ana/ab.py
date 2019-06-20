@@ -27,7 +27,7 @@ class MXD(object):
         """
         :param ab:
         :param key: property name which returns a dict with numerical values  
-        :param cut: maximum permissable value
+        :param cut: warn/error/fatal maximum permissable deviations, exceeding error level yields non-zero RC
         :param erc: integer return code if any of the values exceeds the cut 
 
         RC passed from python to C++ via system calls 
@@ -47,13 +47,13 @@ class MXD(object):
     mx = property(_get_mx)
 
     def _get_rc(self):
-        return self.erc if self.mx > self.cut else 0  
+        return self.erc if self.mx > self.cut[1] else 0  
     rc = property(_get_rc)
 
     def __repr__(self):
         mxd = self.mxd
         pres_ = lambda d:" ".join(map(lambda kv:"%10s : %8.3g " % (kv[0], kv[1]),d.items()))  
-        return "\n".join(["%s .rc %3d  .mx %7.3f .cut %7.3f   %s  " % ( self.shortname, self.rc,  self.mx, self.cut, pres_(mxd) )]) 
+        return "\n".join(["%s .rc %3d  .mx %7.3f .cut %7.3f/%7.3f/%7.3f   %s  " % ( self.shortname, self.rc,  self.mx, self.cut[0], self.cut[1], self.cut[2], pres_(mxd) )]) 
                        
 
 class RC(object):
@@ -172,7 +172,6 @@ class AB(object):
         log.debug("[")
         self.ok = ok
         self.histype = HisType()
-        self.dveps = ok.dveps
         self.tabs = []
         self.dvtabs = []
         self.load()

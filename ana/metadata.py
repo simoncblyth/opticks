@@ -63,6 +63,14 @@ class LaunchTimes(object):
 pass      
 
 
+class CommandLine(object):
+    def __init__(self, cmdline):
+        self.cmdline = cmdline
+    def has(self, opt):
+        return 1 if self.cmdline.find(opt) > -1 else 0 
+    def __repr__(self):
+        return "\n".join(self.cmdline.split())  
+
 class CompareMetadata(object):
     def __init__(self, am, bm):
         self.am = am 
@@ -71,12 +79,23 @@ class CompareMetadata(object):
         self.numPhotons = self.expected_common("numPhotons", parameter=False)
         self.mode =  self.expected_common("mode", parameter=False)
         self.csgmeta0 = self.expected_common("csgmeta0", parameter=False)  # container metadata, usually an emitter 
-        self.cmdline = self.expected_common( "cmdline", parameter=True) 
-        self.Switches = self.expected_common( "Switches", parameter=True) 
 
-        self.align = 1 if self.cmdline.find("--align") > -1 else 0   
+        cmdline = self.expected_common( "cmdline", parameter=True) 
+        self.cmdline = CommandLine(cmdline)
+        self.Switches = self.expected_common( "Switches", parameter=True) 
+        self.align = self.cmdline.has("--align ")
+        self.reflectcheat = self.cmdline.has("--reflectcheat ")
         self.factor = float(bm.propagate0)/float(am.propagate0)
 
+    def _get_crucial(self):
+        """
+        Amplify some of the crucial options for comparisons
+        """
+        return " ".join([ 
+            "ALIGN" if self.align==1 else "non-align" , 
+            "REFLECTCHEAT" if self.reflectcheat==1 else "non-reflectcheat" ,
+            ]) 
+    crucial = property(_get_crucial)
 
     def expected_common(self, key, parameter=True):
         if parameter:
@@ -97,12 +116,12 @@ class CompareMetadata(object):
               "ab.b.metadata:%s" % self.bm,
               self.Switches,
               str(self.csgmeta0),
-              #self.cmdline,
+              #repr(self.cmdline),
               "."
                         ])
  
     def brief(self):
-        return "nph:%8d A:%10.4f B:%10.4f B/A:%10.1f %s %s " % (self.numPhotons, self.am.propagate0, self.bm.propagate0, self.factor, self.mode, "ALIGN" if self.align==1 else "not-align" )  
+        return "nph:%8d A:%10.4f B:%10.4f B/A:%10.1f %s %s " % (self.numPhotons, self.am.propagate0, self.bm.propagate0, self.factor, self.mode, self.crucial )  
 
 
 class Metadata(object):

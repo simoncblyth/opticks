@@ -116,8 +116,7 @@ CG4::CG4(OpticksHub* hub)
     m_run(m_ok->getRun()),
     m_cfg(m_ok->getCfg()),
     m_ctx(m_ok),
-    //m_engine(m_ok->isAlign() ? (CRandomListener*)new CRandomEngine(this) : (CRandomListener*)new CMixMaxRng ),
-    m_engine(m_ok->isAlign() ? (CRandomListener*)new CRandomEngine(this) : NULL  ),
+    m_engine(m_ok->isAlign() ? (CRandomListener*)new CRandomEngine(this) : NULL  ),   // --align
     m_physics(new CPhysics(this)),
     m_runManager(m_physics->getRunManager()),
     m_sd(new CSensitiveDetector("SD0")),

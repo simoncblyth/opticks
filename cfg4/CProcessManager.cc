@@ -39,13 +39,43 @@ G4ProcessManager* CProcessManager::Current(G4Track* trk)
 }
 
 
+/**
+CProcessManager::ResetNumberOfInteractionLengthLeft
+------------------------------------------------------
 
+G4VProcess::ResetNumberOfInteractionLengthLeft explicity invokes G4UniformRand
+whereas ClearNumberOfInteractionLengthLeft induces that to happen
+for the next step
+
+g4-;g4-cls G4VProcess::
+
+    303  public: // with description
+    304       virtual void      ResetNumberOfInteractionLengthLeft();
+    305      // reset (determine the value of)NumberOfInteractionLengthLeft
+    ...
+    314  protected:  // with description
+    ...
+    321      void      ClearNumberOfInteractionLengthLeft();
+    322      // clear NumberOfInteractionLengthLeft 
+    323      // !!! This method should be at the end of PostStepDoIt()
+    324      // !!! and AtRestDoIt
+    ...
+    450 inline void G4VProcess::ClearNumberOfInteractionLengthLeft()
+    451 {
+    452   theInitialNumberOfInteractionLength = -1.0;
+    453   theNumberOfInteractionLengthLeft =  -1.0;
+    454 }
+
+    095 void G4VProcess::ResetNumberOfInteractionLengthLeft()
+     96 {
+     97   theNumberOfInteractionLengthLeft =  -std::log( G4UniformRand() );
+     98   theInitialNumberOfInteractionLength = theNumberOfInteractionLengthLeft;
+     99 }
+
+**/
 
 void CProcessManager::ResetNumberOfInteractionLengthLeft(G4ProcessManager* proMgr)
 {
-    // ResetNumberOfInteractionLengthLeft explicity throws the G4UniformRand
-    // whereas ClearNumberOfInteractionLengthLeft should induce that to happen
-    // for next step
 
     G4ProcessVector* pl = proMgr->GetProcessList() ;
     G4int n = pl->entries() ;
@@ -56,17 +86,31 @@ void CProcessManager::ResetNumberOfInteractionLengthLeft(G4ProcessManager* proMg
         p->ResetNumberOfInteractionLengthLeft();
     } 
 }
-/*
 
-     95 void G4VProcess::ResetNumberOfInteractionLengthLeft()
-     96 {
-     97   theNumberOfInteractionLengthLeft =  -std::log( G4UniformRand() );
-     98   theInitialNumberOfInteractionLength = theNumberOfInteractionLengthLeft;
-     99 }
+/**
+CProcessManager::ClearNumberOfInteractionLengthLeft
+-----------------------------------------------------
 
-*/
+This simply clears the interaction length left for OpAbsorption and OpRayleigh 
+with no use of G4UniformRand.
 
+This provides a devious way to invoke the protected ClearNumberOfInteractionLengthLeft 
+via the public G4VDiscreteProcess::PostStepDoIt
 
+g4-;g4-cls G4VDiscreteProcess::
+
+    112 G4VParticleChange* G4VDiscreteProcess::PostStepDoIt(
+    113                             const G4Track& ,
+    114                             const G4Step&
+    115                             )
+    116 { 
+    117 //  clear NumberOfInteractionLengthLeft
+    118     ClearNumberOfInteractionLengthLeft();
+    119 
+    120     return pParticleChange;
+    121 }
+
+**/
 
 void CProcessManager::ClearNumberOfInteractionLengthLeft(G4ProcessManager* proMgr, const G4Track& aTrack, const G4Step& aStep)
 {
@@ -85,7 +129,6 @@ void CProcessManager::ClearNumberOfInteractionLengthLeft(G4ProcessManager* proMg
             G4VDiscreteProcess* dp = dynamic_cast<G4VDiscreteProcess*>(p) ;     
             assert(dp);   // Transportation not discrete
             dp->G4VDiscreteProcess::PostStepDoIt( aTrack, aStep );   
-            // devious way to invoke the protected ClearNumberOfInteractionLengthLeft via G4VDiscreteProcess::PostStepDoIt
         }
     } 
 }

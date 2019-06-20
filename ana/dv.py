@@ -33,6 +33,7 @@ Non-aligned deviation checking
 Observations:
 
 * nitem much lower than photon counts when you have a BR in history 
+* "--reflectcheat" is not enabled by default : enabling it can increase the stats of the comparison
 
 
 Non-random-aligned deviation checking relies on 
@@ -90,34 +91,31 @@ Examining the deviation::
 
 """
 import os, sys, logging, numpy as np
+from opticks.ana.log import fatal_, error_, warning_, info_, debug_ 
 
 class Dv(object):
 
-   FMT  = "  %9d %9d/%9d:%6.3f  mx/mn/av %9.4g/%9.4g/%9.4g  eps:%g  "
-   CFMT = "  %9s %9s/%9s:%6s  mx/mn/av %9s/%9s/%9s  eps:%s  "
+   FMT  = "  %9d %9d %9d:%6.3f   %9.4f %9.4f %9.4f  "
+   CFMT = "  %9s %9s %9s:%6s   %9s %9s %9s    "
 
    LMT  = " %0.4d %10s : %30s : %7d  %7d "   # labels seqhis line 
    CLMT = " %4s %10s : %30s : %7s  %7s " 
 
    clabel = CLMT % ( "idx", "msg", "sel", "lcu1", "lcu2" )
 
-   def __init__(self, idx, sel, av, bv, lcu, eps, msg=""):
+   def __init__(self, idx, sel, av, bv, lcu, dvmax, msg=""):
        """
        :param idx: unskipped orignal seqhis line index
        :param sel: single line selection eg 'TO BT BT SA'
        :param av: evt a values array within selection  
        :param bv: evt b values array within selection
        :param lcu: list of length 3 with (seqhis-bigint, a-count, b-count)
-       :param eps: epsilon passed down from ab.eps
-
-
-       Maximum and minimum 
+       :param dvmax: triplet of floats for warn/error/fatal deviation levels
 
        Access an Dv instance in ipython::
 
             In [12]: ab.ox_dv.dvs[2]
             Out[12]:  0002            :                 TO BT BR BT SA :     561      527  :          27       324/       14: 0.043  mx/mn/av   0.00238/        0/3.823e-05  eps:0.0002    
-
 
        Get at the values::
 
@@ -125,6 +123,7 @@ class Dv(object):
 
        """
        label = self.LMT % ( idx, msg, sel, lcu[1], lcu[2] )
+       assert len(dvmax) == 3 
 
        dv = np.abs( av - bv )
        nitem = len(dv)
@@ -136,8 +135,8 @@ class Dv(object):
            mn = dv.min()
            avg = dv.sum()/float(nelem)
 
-           discrep = dv[dv>eps]
-           ndiscrep = len(discrep)  # elements, not items
+           discrep = dv[dv>dvmax[1]]
+           ndiscrep = len(discrep)           # elements, not items
            fdiscrep = float(ndiscrep)/float(nelem) 
        else:
            mx = None
@@ -160,23 +159,41 @@ class Dv(object):
        self.bv = bv
        self.dv = dv
        self.lcu  = lcu
-       self.eps = eps
+       self.dvmax = dvmax 
        self.msg = msg
 
    @classmethod  
    def columns(cls):
-       cdesc = cls.CFMT % ( "nitem", "nelem", "ndisc", "fdisc", "mx", "mn", "avg", "eps" )
+       cdesc = cls.CFMT % ( "nitem", "nelem", "nerr", "ferr", "mx", "mn", "avg"  )
        clabel = cls.clabel ; 
        return "%s : %s  " % (clabel, cdesc )
 
 
    def __repr__(self):
        if self.nelem>0:
-           desc =  self.FMT % ( self.nitem, self.nelem, self.ndiscrep, self.fdiscrep, self.mx, self.mn, self.avg, self.eps )
+           desc =  self.FMT % ( self.nitem, self.nelem, self.ndiscrep, self.fdiscrep, self.mx, self.mn, self.avg )
        else:
            desc = ""
        pass
-       return "%s : %s  " % (self.label, desc )
+
+       if self.mx > self.dvmax[2]:
+           fn_ = fatal_
+           lev = "FATAL"
+           msg = "  > dvmax[2] %.4f " % self.dvmax[2] 
+       elif self.mx > self.dvmax[1]:
+           fn_ = error_
+           lev = "ERROR"
+           msg = "  > dvmax[1] %.4f " % self.dvmax[1] 
+       elif self.mx > self.dvmax[0]:
+           fn_ = warning_
+           lev = "WARNING"
+           msg = "  > dvmax[0] %.4f " % self.dvmax[0] 
+       else:
+           fn_ = info_
+           lev = ""
+           msg = ""
+       pass
+       return "%s : %s : %20s : %s " % (self.label, fn_(desc), fn_(lev), fn_(msg)  )
 
 
 class DvTab(object):
@@ -211,7 +228,6 @@ class DvTab(object):
         self.seqtab = seqtab
         self.ab = ab 
         self.dirty = False
-        self.eps = ab.dveps
         self.skips = skips.split()
         self.sli = slice(None)
 
@@ -256,18 +272,21 @@ class DvTab(object):
         if self.name == "rpost_dv": 
             av = ab.a.rpost()
             bv = ab.b.rpost()
+            dvmax = ab.ok.rdvmax 
         elif self.name == "rpol_dv": 
             av = ab.a.rpol()
             bv = ab.b.rpol()
+            dvmax = ab.ok.rdvmax 
         elif self.name == "ox_dv": 
             av = ab.a.ox[:,:3,:]
             bv = ab.b.ox[:,:3,:]
+            dvmax = ab.ok.pdvmax 
         else:
             assert self.name
         pass 
         assert ab.a.sel == ab.b.sel 
         sel = ab.a.sel 
-        dv = Dv(i, sel, av, bv, lcu, eps=self.eps)
+        dv = Dv(i, sel, av, bv, lcu, dvmax )
         return dv if len(dv.dv) > 0 else None
 
 
@@ -293,7 +312,7 @@ class DvTab(object):
 
     def _get_brief(self):
         skips = " ".join(self.skips)
-        gfmt_ = lambda _:"%.4g" % float(_) 
+        gfmt_ = lambda _:"%.4f" % float(_) 
         return "maxdvmax:%s maxdv:%s  skip:%s" % ( gfmt_(self.maxdvmax), " ".join(map(gfmt_,self.maxdv)), skips )
     brief = property(_get_brief)
 

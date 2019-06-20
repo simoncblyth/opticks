@@ -67,10 +67,11 @@ def opticks_args(**kwa):
     sli = kwa.get("sli", "::1")
     sel = kwa.get("sel", "0:5:1")
     qwn = kwa.get("qwn", "XYZT,ABCW")
-    c2max = kwa.get("c2max", 2.0)
 
-    rdvmax = kwa.get("rdvmax", 0.1) 
-    pdvmax = kwa.get("pdvmax", 0.001) 
+    c2max = kwa.get("c2max", "1.5,2.0,2.5")
+    rdvmax = kwa.get("rdvmax", "0.01,0.10,1.0") 
+    pdvmax = kwa.get("pdvmax", "0.0010,0.0200,0.1000") 
+    #dveps = kwa.get("dveps", 0.0002)
 
     pfxseqhis = kwa.get("pfxseqhis", "")
     pfxseqmat = kwa.get("pfxseqmat", "")
@@ -82,7 +83,8 @@ def opticks_args(**kwa):
     dbgzero = kwa.get("dbgzero", False)
     lmx = kwa.get("lmx", 20)
     cmx = kwa.get("cmx", 0)
-    dveps = kwa.get("dveps", 0.0002)
+
+
     prohis = kwa.get("prohis", False)
     promat = kwa.get("promat", False)
     rehist = kwa.get("rehist", False)
@@ -146,9 +148,11 @@ def opticks_args(**kwa):
     parser.add_argument(     "--sli",  default=sli, help="slice specification delimited by colon. Default %(default)s"  )
     parser.add_argument(     "--sel",  default=sel, help="selection slice specification delimited by colon. Default %(default)s"  )
     parser.add_argument(     "--qwn",  default=qwn, help="Quantity by single char, pages delimited by comma eg XYZT,ABCR. Default %(default)s"  )
-    parser.add_argument(     "--c2max",  default=c2max, type=float, help="Admissable total chi2 deviation in comparisons. Default %(default)s"  )
-    parser.add_argument(     "--rdvmax",  default=rdvmax, type=float, help="For compressed record data : admissable total absolute deviation in DvTab comparisons. Default %(default)s"  )
-    parser.add_argument(     "--pdvmax",  default=pdvmax, type=float, help="For uncompressed final photon data : admissable total absolute deviation in DvTab comparisons. Default %(default)s"  )
+
+    parser.add_argument(     "--c2max",  default=c2max, help="Admissable total chi2 deviation in comparisons. Comma delimited triplet of floats for warn/error/fatal levels. Default %(default)s"  )
+    parser.add_argument(     "--rdvmax",  default=rdvmax, help="For compressed record data : admissable total absolute deviation in DvTab comparisons. Comma delimited triplet of floats for warn/error/fatal levels. Default %(default)s"  )
+    parser.add_argument(     "--pdvmax",  default=pdvmax, help="For uncompressed final photon data : admissable total absolute deviation in DvTab comparisons. Comma delimited triplet of floats for warn/error/fatal levels. Default %(default)s"  )
+
     parser.add_argument(     "--pfxseqhis",  default=pfxseqhis, help="Seqhis hexstring prefix for spawned selection. Default %(default)s"  )
     parser.add_argument(     "--pfxseqmat",  default=pfxseqmat, help="Seqmat hexstring prefix for spawned selection. Default %(default)s"  )
     parser.add_argument(     "--dbgseqhis",  default=dbgseqhis, help="Seqhis hexstring prefix for dumping. Default %(default)s"  )
@@ -198,7 +202,6 @@ def opticks_args(**kwa):
     parser.add_argument(     "--j1707", action="store_true", help="Bash level option passthru. %(default)s ")
     parser.add_argument(     "--extras", action="store_true", help="Bash level option passthru. %(default)s ")
     parser.add_argument(     "--disco", action="store_true", help="Disable container, investigate suspected  inefficient raytrace of objects inside spacious containers. %(default)s ")
-    parser.add_argument(     "--dveps", default=dveps, type=float, help="Dv epsilon see dv.py:DvTab. %(default)s ")
 
     parser.add_argument('nargs', nargs='*', help='nargs : non-option args')
 
@@ -219,6 +222,10 @@ def opticks_args(**kwa):
     if args.det != "g4live" and args.pfx != ".":
         args.det = args.pfx 
     pass
+
+    args.c2max = map(float, args.c2max.split(",")) 
+    args.rdvmax = map(float, args.rdvmax.split(",")) 
+    args.pdvmax = map(float, args.pdvmax.split(",")) 
 
     if args.multievent > 1:
         args.utags =  map(lambda offset:int(args.tag) + offset, range(args.multievent)) 

@@ -41,7 +41,7 @@ CRandomEngine::CRandomEngine(CG4* g4)
     m_g4(g4),
     m_ctx(g4->getCtx()),
     m_ok(g4->getOpticks()),
-    m_dbgkludgeflatzero(m_ok->isDbgKludgeFlatZero()), 
+    m_dbgkludgeflatzero(m_ok->isDbgKludgeFlatZero()),    // --dbgkludgeflatzero
     m_run(g4->getRun()),
     m_okevt(NULL),
     m_okevt_seqhis(0),
@@ -123,12 +123,12 @@ void CRandomEngine::setupCurandSequence(int record_id)
 {
     if( m_curand_ni == 0 )
     {
-        LOG(fatal) << "CRandomEngine::setupCurandSequence"
-                   << " m_curand_ni ZERO "
-                   << " no precooked RNG have been loaded from " 
-                   << " m_path " << m_path
-                   << " : try running : TRngBufTest "
-                   ;
+        LOG(fatal) 
+            << " m_curand_ni ZERO "
+            << " no precooked RNG have been loaded from " 
+            << " m_path " << m_path
+            << " : try running : TRngBufTest "
+            ;
 
     }
     assert( m_curand_ni > 0 );
@@ -209,6 +209,20 @@ double CRandomEngine::flat_instrumented(const char* file, int line)
 }
 
 
+
+/**
+CRandomEngine::flat()
+----------------------
+
+Returns a random double in range 0..1
+
+A StepToSmall boundary condition immediately following 
+FresnelReflection is special cased to avoid calling _flat(). 
+Although apparently the returned value is not used (it being from OpBoundary process)
+it is still important to avoid call _flat() and misaligning the sequences.
+
+**/
+
 double CRandomEngine::flat() 
 { 
     if(!m_internal) m_location = CurrentProcessName();
@@ -275,6 +289,16 @@ double CRandomEngine::_flat()
     return v  ;    
 }
 
+/**
+CRandomEngine::jump
+--------------------
+
+Moves the random seqence cursor by the offset argument, either rewinding or
+jumping ahead in the sequence.
+
+
+**/
+
 void CRandomEngine::jump(int offset) 
 {
     m_cursor_old = m_cursor ; 
@@ -324,9 +348,28 @@ void CRandomEngine::dumpFlat()
 }
 
 
-// invoked by CG4::postStep
+
+/**
+CRandomEngine::postStep
+-------------------------
+
+This is invoked by CG4::postStep
+
+Normally without zeroSteps this does nothing 
+other than resetting the m_current_step_flat_count to zero.
+
+When there are zeroSteps the RNG sequence is rewound 
+by -m_current_step_flat_count as if the current step never 
+happened.
+
+This rewinding for zeroSteps can be inhibited using 
+the --dbgnojumpzero option. 
+
+**/
+
 void CRandomEngine::postStep()
 {
+
     if(m_ctx._noZeroSteps > 0)
     {
         int backseq = -m_current_step_flat_count ; 
@@ -400,7 +443,8 @@ void CRandomEngine::preTrack()
     m_jump_count = 0 ; 
 
     unsigned use_index ; 
-    bool align_mask = m_ok->isAlign() && m_ok->hasMask() ;
+    assert( m_ok->isAlign() );    // --align 
+    bool align_mask = m_ok->hasMask() ;  
 
     // --pindexlog too ?
 
@@ -424,10 +468,10 @@ void CRandomEngine::preTrack()
            ;
 
         const char* cmd = BStr::concat<unsigned>("ucf.py ", mask_index, NULL );  
-        LOG(info) << "CRandomEngine::preTrack : START cmd \"" << cmd << "\"";   
+        LOG(info) << "[ cmd \"" << cmd << "\"";   
         int rc = SSys::run(cmd) ;  // NB must not write to stdout, stderr is ok though 
         assert( rc == 0 );
-        LOG(info) << "CRandomEngine::preTrack : DONE cmd \"" << cmd << "\"";   
+        LOG(info) << "] cmd \"" << cmd << "\"";   
     }
     else
     {

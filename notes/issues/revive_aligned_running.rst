@@ -4,12 +4,18 @@ revive_aligned_running
 * :doc:`tboolean_box_perfect_alignment`
 
 
+Had another go at this in 
+---------------------------
+
+* :doc:`tboolean_box_perfect_alignment_revisited`
+
+
 Attempt to repeat some of *tboolean_box_perfect_alignment*
 ----------------------------------------------------------------------------
 
 
-1. interop problem : Cannot get device pointers from non-CUDA interop buffers
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+1. interop problem : Cannot get device pointers from non-CUDA interop buffers  : FIXED THIS A FEWS DAYS AGO WITH downloadHitsInterop 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Since the OptiX version bump to 5.1  are now getting this interop problem, both on macOS as well as Linux. 
 Workaround is to add *--compute* to switch to non-interop non-viz mode and do a separate 
