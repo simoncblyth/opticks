@@ -93,6 +93,8 @@ Examining the deviation::
 import os, sys, logging, numpy as np
 from opticks.ana.log import fatal_, error_, warning_, info_, debug_
 from opticks.ana.log import underline_, blink_ 
+log = logging.getLogger(__name__)
+
 
 
 class Level(object):
@@ -299,7 +301,13 @@ class DvTab(object):
             assert True == ab.checkrec()  # checking that both evt a and b give same number of record points
 
             dv = self.dv_(i, sel, lcu)    # Dv instance comparing values within single line selection eg all 'TO BT BT SA' 
-            dvs.append(dv)
+
+            if dv is None:
+                log.debug("dv None for i:%d sel:%s lcu:%r " % ( i, sel, lcu))
+            else:
+                dvs.append(dv)
+            pass
+
             ab.aselhis = None
 
         pass

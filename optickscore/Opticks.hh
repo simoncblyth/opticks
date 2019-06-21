@@ -475,9 +475,9 @@ class OKCORE_API Opticks {
        const glm::vec4&  getWavelengthDomain() const ;
        const glm::ivec4& getSettings() const ;
    public:
-       float getTimeMin();
-       float getTimeMax();
-       float getAnimTimeMax();
+       float getTimeMin() const ;   // 
+       float getTimeMax() const ;   // --timemax
+       float getAnimTimeMax() const ; // --animtimemax
    public:
        // screen frame 
        const glm::uvec4& getSize();
@@ -488,6 +488,7 @@ class OKCORE_API Opticks {
        std::string description() const ;
        std::string desc() const ;
    private:
+       void setupTimeDomain(float extent); 
        void postgeometry();
        void defineEventSpec();
        void configureDomains();

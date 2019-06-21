@@ -79,18 +79,21 @@ __device__ void psave( Photon& p, optix::buffer<float4>& pbuffer, unsigned int p
 
 
 
+/**
+shortnorm
+------------
 
+range of short is -32768 to 32767
+Expect no positions out of range, as constrained by the geometry are bouncing on,
+but getting times beyond the range eg 0.:100 ns is expected
+
+**/
 
 __device__ short shortnorm( float v, float center, float extent )
 {
-    // range of short is -32768 to 32767
-    // Expect no positions out of range, as constrained by the geometry are bouncing on,
-    // but getting times beyond the range eg 0.:100 ns is expected
-    //
     int inorm = __float2int_rn(32767.0f * (v - center)/extent ) ;    // linear scaling into -1.f:1.f * float(SHRT_MAX)
     return fitsInShort(inorm) ? short(inorm) : SHRT_MIN  ;
 } 
-
 
 
 __device__ void rsave_zero( optix::buffer<short4>& rbuffer, unsigned int record_offset )
@@ -99,35 +102,41 @@ __device__ void rsave_zero( optix::buffer<short4>& rbuffer, unsigned int record_
     rbuffer[record_offset+1] = make_short4(0,0,0,0) ;    
 }
 
+
+
+/**
+rsave
+--------
+
+1. packs position and time into normalized shorts (4*16 = 64 bits)
+
+   * NB shortnorm wastes half the bits for time, as do not get negative times,  
+     TODO: use a "ushortnorm" 
+
+2. pack polarization and wavelength into 4*8 = 32 bits   
+
+   * polarization already normalized into -1.f:1.f
+   * wavelenth normalized via  (wavelength - low)/range into 0.:1. 
+   * range of char -128:127  normalization of polarization and wavelength expected bulletproof, so no handling of out-of-range 
+   * range of uchar 0:255   -1.f:1.f  + 1 => 0.f:2.f  so scale by 127.f 
+ 
+POSSIBLE ALTERNATIVE: use a more vectorized approach, ie
+   
+* combine position and time domains into single float4 on the host 
+* after verification can dispense with the fit checking for positions, just do time
+* adopt p.position_time  maybe p.polarization_wavelength
+* simularly with domains of those ?
+
+**/
+
 __device__ void rsave( Photon& p, State& s, optix::buffer<short4>& rbuffer, unsigned int record_offset, float4& center_extent, float4& time_domain )
 {
-    //  pack position and time into normalized shorts (4*16 = 64 bits)
-    //
-    //  TODO: use a more vectorized approach, ie
-    // 
-    //  * combine position and time domains into single float4 on the host 
-    //  * after verification can dispense with the fit checking for positions, just do time
-    //        
-    //  * adopt p.position_time  maybe p.polarization_wavelength
-    //  * simularly with domains of those ?
-    // 
     rbuffer[record_offset+0] = make_short4(    // 4*int16 = 64 bits 
                     shortnorm(p.position.x, center_extent.x, center_extent.w), 
                     shortnorm(p.position.y, center_extent.y, center_extent.w), 
                     shortnorm(p.position.z, center_extent.z, center_extent.w),   
                     shortnorm(p.time      , time_domain.x  , time_domain.y  )
                     ); 
-
-    //    plt.hist(a[::10,0,3]/100., bins=100)    first record times in range 0:45 ns with 100ns domain
-    //
-    //  pack polarization and wavelength into 4*8 = 32 bits   
-    //  range of char -128:127  normalization of polarization and wavelength expected bulletproof, so no handling of out-of-range 
-    //  range of uchar 0:255   -1.f:1.f  + 1 => 0.f:2.f  so scale by 127.f 
-    //
-    //  polarization already normalized into -1.f:1.f
-    //  wavelenth normalized via  (wavelength - low)/range into 0.:1. 
-    //
-    // TODO: avoid reliance on wavelength_lookup here ?
 
     float nwavelength = 255.f*(p.wavelength - boundary_domain.x)/boundary_domain.w ; // 255.f*0.f->1.f 
 

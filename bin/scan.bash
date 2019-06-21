@@ -68,7 +68,7 @@ scan--()
           $cmd > /dev/null 2>&1  
           rc=$?
       fi 
-      echo $FUNCNAME : $cmd ========== RC $rc 
+      printf " %20s : %40s ======= RC %3d  RC 0x%.2x \n"  $FUNCNAME "$cmd" $rc $rc  
    done
 }
 

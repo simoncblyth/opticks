@@ -29,6 +29,9 @@
 #include "OGLRap_imgui.hh"
 
 
+const plog::Severity Interactor::LEVEL = info ; 
+
+
 const unsigned int Interactor::_pan_mode_key = GLFW_KEY_X ; 
 
 const char* Interactor::DRAGFACTOR = "dragfactor" ; 
@@ -626,6 +629,12 @@ Bookmarks* Interactor::getBookmarks()
 
 void Interactor::number_key_pressed(unsigned int number)
 {
+
+    LOG(LEVEL) 
+        << " number " << number
+        << " m_bookmarks " << m_bookmarks 
+        ;
+
     if(!m_bookmarks) return ; 
 
     m_bookmark_mode = true ; 
@@ -641,7 +650,7 @@ void Interactor::number_key_pressed(unsigned int number)
 
 void Interactor::tab_pressed()
 {
-    LOG(info) << "Interactor::tab_pressed " ;   
+    LOG(LEVEL) ;   
     m_frame->snap(); 
 }
 

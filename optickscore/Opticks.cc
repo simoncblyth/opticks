@@ -1971,8 +1971,64 @@ void Opticks::setSpaceDomain(float x, float y, float z, float w)
         LOG(fatal) << " --dbgaim : m_space_domain " << gformat(m_space_domain) ;  
     }
 
+    setupTimeDomain(w); 
+
     postgeometry();  
 }
+
+
+/**
+Opticks::setupTimeDomain
+-------------------------
+
+When configured values of "--timemax" and "--animtimemax" are 
+negative a rule of thumb is used to setup a timedomain 
+suitable for the extent of space domain.
+
+When the propagation yields times exeeding timemax, the 
+domain compression will return SHRT_MIN for them 
+which will get translated back as -timemax.  
+
+Initial rule of thumb  2.f*extent/speed_of_light results in 
+some times trying to go over domain, so upped the factor to 3.f
+
+
+**/
+
+void Opticks::setupTimeDomain(float extent)
+{
+    float timemax = m_cfg->getTimeMax();  // ns
+    float animtimemax = m_cfg->getAnimTimeMax() ; 
+
+    float speed_of_light = 300.f ;        // mm/ns 
+    float rule_of_thumb_timemax = 3.f*extent/speed_of_light ;
+
+    float u_timemin = 0.f ;  // ns
+    float u_timemax = timemax < 0.f ? rule_of_thumb_timemax : timemax ;  
+    float u_animtimemax = animtimemax < 0.f ? u_timemax : animtimemax ; 
+
+    LOG(info)
+        << " cfg.getTimeMax [--timemax] " << timemax 
+        << " cfg.getAnimTimeMax [--animtimemax] " << animtimemax 
+        << " speed_of_light (mm/ns) " << speed_of_light
+        << " extent (mm) " << extent 
+        << " rule_of_thumb_timemax (ns) " << rule_of_thumb_timemax 
+        << " u_timemax " << u_timemax
+        << " u_animtimemax " << u_animtimemax
+        ;  
+
+    m_time_domain.x = u_timemin ;
+    m_time_domain.y = u_timemax ;
+    m_time_domain.z = u_animtimemax ;
+    m_time_domain.w = 0.f  ;
+}
+
+
+
+
+
+
+
 
 int Opticks::getMultiEvent() const 
 {    
@@ -1997,20 +2053,6 @@ int Opticks::getPropagateOverride() const
 
 
 
-float Opticks::getTimeMin()
-{
-    return m_time_domain.x ; 
-}
-float Opticks::getTimeMax()
-{
-    return m_time_domain.y ; 
-}
-float Opticks::getAnimTimeMax()
-{
-    return m_time_domain.z ; 
-}
-
-
 /**
 Opticks::postgeometry
 ------------------------
@@ -2027,16 +2069,19 @@ void Opticks::postgeometry()
 }
 
 
+/**
+Opticks::configureDomains
+--------------------------
+
+This is triggered by setSpaceDomain which is 
+invoked when geometry is loaded, canonically by OpticksAim::registerGeometry 
+
+
+**/
+
 void Opticks::configureDomains()
 {
-   // this is triggered by setSpaceDomain which is 
-   // invoked when geometry is loaded 
    m_domains_configured = true ; 
-
-   m_time_domain.x = 0.f  ;
-   m_time_domain.y = m_cfg->getTimeMax() ;
-   m_time_domain.z = m_cfg->getAnimTimeMax() ;
-   m_time_domain.w = 0.f  ;
 
    m_wavelength_domain = getDefaultDomainSpec() ;  
 
@@ -2052,6 +2097,29 @@ void Opticks::configureDomains()
 
    //assert(e_rng_max == x_rng_max && "Configured RngMax must match envvar CUDAWRAP_RNG_MAX and corresponding files, see cudawrap- ");    
 }
+
+float Opticks::getTimeMin() const 
+{
+    return m_time_domain.x ; 
+}
+float Opticks::getTimeMax() const 
+{
+    return m_time_domain.y ; 
+}
+float Opticks::getAnimTimeMax() const 
+{
+    return m_time_domain.z ; 
+}
+
+
+
+
+
+
+
+
+
+
 
 std::string Opticks::description() const 
 {
@@ -2251,6 +2319,21 @@ Index* Opticks::loadBoundaryIndex()
     return OpticksEvent::loadBoundaryIndex(pfx, typ, tag, udet ) ;
 }
 
+/**
+Opticks::makeDynamicDefine
+----------------------------
+
+MATERIAL_COLOR_OFFSET, FLAG_COLOR_OFFSET
+    used by oglrap/gl/fcolor.h
+
+MAXREC
+    used by oglrap/gl/{,alt,dev}rec/geom.glsl for photon picking interface 
+    (not active for many years)
+
+MAXTIME
+    appears unused
+
+**/
 
 BDynamicDefine* Opticks::makeDynamicDefine()
 {
@@ -2347,14 +2430,12 @@ OpticksEvent* Opticks::makeEvent(bool ok, unsigned tagoffset)
 
     evt->setMode(m_mode);
 
-    // formerly did configureDomains here, but thats confusing 
-    // configureDomains now invoked when setSpaceDomain is called
     if(!m_domains_configured)
          LOG(fatal) 
-                    << " domains MUST be configured by calling setSpaceDomain "
-                    << " prior to makeEvent being possible "
-                    << " description " << description()
-                    ;
+             << " domains MUST be configured by calling setSpaceDomain "
+             << " prior to makeEvent being possible "
+             << " description " << description()
+             ;
 
     assert(m_domains_configured);
 

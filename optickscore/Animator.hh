@@ -1,5 +1,15 @@
 #pragma once
 
+/**
+Animator
+==========
+
+Changes the value of \*m_target at each Animator::step
+
+**/
+
+
+
 // TODO: try to support live changing of the range 
 
 //#define ANIMATOR_DEBUG 1

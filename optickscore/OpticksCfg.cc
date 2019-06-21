@@ -1612,13 +1612,13 @@ int OpticksCfg<Listener>::getRecordMax()
     return m_recordmax ; 
 }
 template <class Listener>
-float OpticksCfg<Listener>::getTimeMax() const 
+float OpticksCfg<Listener>::getTimeMax() const   // --timemax
 {
     return m_timemax ; 
 }
 
 template <class Listener>
-float OpticksCfg<Listener>::getAnimTimeMax() const 
+float OpticksCfg<Listener>::getAnimTimeMax() const   // --animtimemax
 {
     return m_animtimemax ; 
 }

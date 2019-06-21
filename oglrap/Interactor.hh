@@ -18,8 +18,13 @@ class Frame ;
 class Scene ;   
 class Animator ; 
 
+#include "plog/Severity.h"
+
+
 #include "OGLRAP_API_EXPORT.hh"
 class OGLRAP_API Interactor {
+
+       static const plog::Severity LEVEL ; 
   public:
        enum { NUM_KEYS = 512 } ;
 

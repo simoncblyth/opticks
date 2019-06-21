@@ -580,7 +580,7 @@ tboolean--(){
     local testname=$(tboolean-testname)
     local testconfig=$(tboolean-testconfig)
     local torchconfig=$(tboolean-torchconfig)
-
+    local tmax=${TMAX:-20}
 
     tboolean-info
 
@@ -592,8 +592,8 @@ tboolean--(){
             $cmdline \
             --envkey \
             --rendermode +global,+axis \
-            --animtimemax 20 \
-            --timemax 20 \
+            --animtimemax $tmax \
+            --timemax $tmax \
             --geocenter \
             --stack $stack \
             --eye 1,0,0 \

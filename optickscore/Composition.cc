@@ -742,17 +742,42 @@ void Composition::addConfig(BCfg* cfg)
     cfg->add(new ClipperCfg<Clipper>(        "clipper",     getClipper(),  true));
 }
 
+
+/**
+Composition::initAnimator
+--------------------------
+
+Creation of m_animator is deferred as m_domain_time is only defined  
+after geometry has been loaded.
+
+When active the animator changes the value of its target m_param.w 
+representing the propagation time each time Animator::step is called.
+The value is available via OpenGL uniform as Param.w within the shaders. 
+This is used by oglrap/gl/{altrec,rec,devrec}/geom.glsl 
+
+The m_animator is instanciated with:
+
+1. m_domain_time.x  0ns default
+2. m_domain_time.z  getAnimTimeMax() : configured with --animtimemax
+
+Not used:
+
+3. m_domain_time.y  getTimeMax() : configured with --timemax  
+
+It makes no sense for AnimTimeMax to be more than TimeMax, but 
+reducing AnimTimeMax can yield more interesting propagations when 
+all the action happens early in the period. 
+
+Historically for DYB AD (~5m extent) a TimeMax of 200ns 
+and AnimTimeMax of 50ns was used typically.
+
+**/
+
 void Composition::initAnimator()
 {
-    // must defer creation (to render time) as domain_time not set at initialization
-    float* target = glm::value_ptr(m_param) + 3 ;
+    float* target = glm::value_ptr(m_param) + 3 ;   // offset to ".w" 
 
     m_animator = new Animator(target, m_animator_period, m_domain_time.x, m_domain_time.z ); 
-    //
-    //  m_domain_time.x  start                       (0ns)
-    //  m_domain_time.y  end      getTimeMax()       (200ns ) 
-    //  m_domain_time.z           getAnimTimeMax()   (previously 0.25*TimeMax as all fun in first 50ns)
-    //
     m_animator->setModeRestrict(Animator::FAST);
     m_animator->Summary("Composition::gui setup Animation");
 }
