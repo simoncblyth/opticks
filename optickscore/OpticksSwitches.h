@@ -19,7 +19,7 @@ NB when searching for switches in python include the space at the end, eg::
 #define WITH_RECORD 1 
 #define WITH_SOURCE 1 
 #define WITH_ALIGN_DEV 1
-//#define WITH_ALIGN_DEV_DEBUG 1
+#define WITH_ALIGN_DEV_DEBUG 1
 #define WITH_LOGDOUBLE 1
 
 

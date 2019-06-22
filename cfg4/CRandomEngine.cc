@@ -515,10 +515,9 @@ void CRandomEngine::dump(const char* msg) const
 
 void CRandomEngine::postpropagate()
 {
-
-    LOG(info) << "CRandomEngine::postpropagate"
-              << " jump_photons " << m_jump_photons.size()
-              ;
+    LOG(info) 
+        << " jump_photons " << m_jump_photons.size()
+        ;
 
     NPY<unsigned>* jump = NPY<unsigned>::make_from_vec(m_jump_photons) ;
     jump->save("$TMP/CRandomEngine_jump_photons.npy");

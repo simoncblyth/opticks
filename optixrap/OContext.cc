@@ -344,12 +344,20 @@ void OContext::initPrint()
                    << " idx.z " << idx.z
                    ; 
     } 
-    else if( m_ok->isPrintEnabled() )   // --printenabled 
+    else if( m_ok->isPrintEnabled()  )   // --printenabled 
     {    
          m_context->setPrintEnabled(true);
          assert( m_context->getPrintEnabled() == true );  
          LOG(info) << " --printenabled " ; 
     }
+   /*
+    else if( m_ok->hasMask() )   // --mask NNN
+    {
+         m_context->setPrintEnabled(true);
+         assert( m_context->getPrintEnabled() == true );  
+         LOG(info) << " --printenabled via the --mask setting " ; 
+    }
+   */
     else
     {
          return ;  
@@ -366,10 +374,10 @@ void OContext::initPrint()
     unsigned uindex = m_ok->hasMask() ? m_ok->getMaskIndex(idx.x) : idx.x ; 
     m_llogpath = m_ok->isPrintIndexLog() ?  LaunchLogPath(uindex) : NULL ; 
 
-    LOG(LEVEL) << "OContext::initPrint " 
-               << " idx " << gformat(idx) 
-               << " llogpath " << ( m_llogpath ? m_llogpath : "-" )
-               ;  
+    LOG(fatal) 
+        << " idx " << gformat(idx) 
+        << " llogpath " << ( m_llogpath ? m_llogpath : "-" )
+        ;  
 }
 
 const char* OContext::getPrintIndexLogPath() const 
@@ -697,11 +705,12 @@ void OContext::download(optix::Buffer& buffer, NPY<T>* npy)
     if(ctrl(OpticksBufferControl::OPTIX_INPUT_ONLY_))
     {
          proceed = false ; 
-         LOG(warning) << "OContext::download NOT PROCEEDING "
-                      << " name " << npy->getBufferName()
-                      << " as " << OpticksBufferControl::OPTIX_INPUT_ONLY_
-                      << " desc " << npy->description("skip-download") 
-                      ;
+         LOG(warning) 
+             << "NOT PROCEEDING "
+             << " name " << npy->getBufferName()
+             << " as " << OpticksBufferControl::OPTIX_INPUT_ONLY_
+             << " desc " << npy->description("skip-download") 
+             ;
     }
     else if(ctrl(OpticksBufferControl::COMPUTE_MODE_))
     {
@@ -710,7 +719,7 @@ void OContext::download(optix::Buffer& buffer, NPY<T>* npy)
     else if(ctrl(OpticksBufferControl::OPTIX_NON_INTEROP_))
     {   
          proceed = true ;
-         LOG(info) << "OContext::download PROCEED for " << npy->getBufferName() << " as " << OpticksBufferControl::OPTIX_NON_INTEROP_  ;
+         LOG(info) << "PROCEED for " << npy->getBufferName() << " as " << OpticksBufferControl::OPTIX_NON_INTEROP_  ;
     }   
     
     if(proceed)

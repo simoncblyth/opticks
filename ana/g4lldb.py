@@ -1,6 +1,6 @@
 #!/usr/bin/python
 """
-## NB system python
+## NB system python on macOS
 
 g4lldb.py
 =============
@@ -155,6 +155,8 @@ def _CRec_cc_add(frame, bp_loc, sess):
 
 
 class CRandomEngine(EV):
+    """
+    """
     def __init__(self):
         EV.__init__(self, None)
 

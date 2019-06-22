@@ -59,7 +59,16 @@ NPY<unsigned>* OpticksDbg::getMaskBuffer() const
 
 unsigned OpticksDbg::getMaskIndex(unsigned idx) const 
 {
-    assert( idx < m_mask.size() );
+    bool in_range = idx < m_mask.size() ;
+    if(!in_range)
+    {
+         LOG(fatal) 
+             << " OUT OF RANGE " 
+             << " idx " << idx
+             << " m_mask.size() " << m_mask.size()
+             ;
+    } 
+    assert( in_range );
     return m_mask[idx] ; 
 }
 

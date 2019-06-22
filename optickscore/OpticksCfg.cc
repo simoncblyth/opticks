@@ -86,8 +86,8 @@ OpticksCfg<Listener>::OpticksCfg(const char* name, Listener* listener, bool live
        m_rngmax(3000000),     
        m_bouncemax(9),     
        m_recordmax(10),
-       m_timemax(200),
-       m_animtimemax(50),
+       m_timemax(-1.f),
+       m_animtimemax(-1.f),
        m_animator_period(200),
        m_ivperiod(100),
        m_ovperiod(180),
@@ -926,14 +926,15 @@ void OpticksCfg<Listener>::init()
    m_desc.add_options()
        ("recordmax,r",  boost::program_options::value<int>(&m_recordmax), recordmax );
 
-   char timemax[128];
-   snprintf(timemax,128, "Maximum time in nanoseconds. Default %f ", m_timemax);
+   char timemax[256];
+   snprintf(timemax,256, 
+"Maximum time in nanoseconds. A negative value sets the timedomain using a rule of thumb based on geometry extent. Default %f.", m_timemax);
    m_desc.add_options()
        ("timemax",  boost::program_options::value<float>(&m_timemax), timemax );
 
-
    char animtimemax[128];
-   snprintf(animtimemax,128, "Maximum animation time in nanoseconds. Default %f ", m_animtimemax);
+   snprintf(animtimemax,128, 
+"Maximum animation time in nanoseconds. Default %f ", m_animtimemax);
    m_desc.add_options()
        ("animtimemax",  boost::program_options::value<float>(&m_animtimemax), animtimemax );
 

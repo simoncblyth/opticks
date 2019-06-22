@@ -24,8 +24,6 @@ to the seq_idx.  When seq_idx is negative the engine in place previously
 is restored as theEngine and ordinary non-precooked random numbers
 are returned from G4UniformRand().
 
-
-
 Dev Notes
 ----------
 

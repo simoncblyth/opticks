@@ -266,6 +266,7 @@ class SeqTable(object):
         self.smry = smry
         self.dirty = False
         self.cu = cu 
+
         self.ncol = ncol
         self.dbgseq = dbgseq
         self.dbgmsk = dbgmsk
@@ -281,6 +282,10 @@ class SeqTable(object):
         if ncol == 2:
             a = cu[:,1].astype(np.float64)
             b = cu[:,2].astype(np.float64)
+
+            ia = cu[:,1].astype(np.int64)
+            ib = cu[:,2].astype(np.int64)
+            idif = ia-ib    
 
             c2, c2n, c2c = chi2(a, b, cut=c2cut)
 
@@ -312,7 +317,9 @@ class SeqTable(object):
             cfcount = None
             ab = None
             ba = None
+            idif = None
         pass
+        self.idif = idif
 
 
         if len(tots) == 1:
@@ -368,13 +375,11 @@ class SeqTable(object):
         imsk = int(self.msks[n])
 
         if self.dbgseq > 0 and ( self.dbgseq & iseq ) != self.dbgseq:
-           #log.info("iseq %x dbgseq %x " % (iseq,self.dbgseq))
            return None 
+        pass
     
         if self.dbgmsk > 0:
-           #pick = self.dbgmsk == imsk 
            pick = (self.dbgmsk & imsk) == self.dbgmsk   # 
-           #log.info(" iseq %x imsk %x dbgmsk %x pick %s" % (iseq, imsk, self.dbgmsk, pick ))
            if not pick: 
                return None 
 
@@ -385,22 +390,31 @@ class SeqTable(object):
         pass
       
         vals = map(lambda _:" %7s " % _, self.cu[n,1:] ) 
-        label = self.labels[n]
 
+        idif = self.idif[n] if len(vals) == 2 else None
+        idif = " %4d " % idif if idif is not None else " " 
+
+
+        label = self.labels[n]
         if self.smry == False:
             nstep = "[%-2d]" % self.label2nstep[label]
         else:
             nstep = "" 
+        pass
 
         # show only lines with chi2 contrib greater than cmx
         if self.c2 is not None:
             if self.cmx > 0 and self.c2[n] < self.cmx:
-               return None
+                return None
+            pass
+        pass
 
         # show only lines with zero counts
         if self.c2 is not None:
-           if self.dbgzero and self.cu[n,1] > 0 and self.cu[n,2] > 0:
-               return None
+            if self.dbgzero and self.cu[n,1] > 0 and self.cu[n,2] > 0:
+                return None
+            pass
+        pass
 
         if self.c2 is not None:
             sc2 = " %10.2f " % (self.c2[n])
@@ -427,7 +441,7 @@ class SeqTable(object):
         else:
              frac = ""
         pass
-        cols = [xs+" "] + [frac] + vals + ["   "]+ [sc2, sab, sba, nstep, label]
+        cols = [xs+" "] + [frac] + vals + [idif] + ["   "]+ [sc2, sab, sba, nstep, label]
         return " ".join(filter(lambda _:_ != "", cols)) 
 
     def __call__(self, labels):

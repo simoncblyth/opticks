@@ -580,20 +580,13 @@ tboolean--(){
     local testname=$(tboolean-testname)
     local testconfig=$(tboolean-testconfig)
     local torchconfig=$(tboolean-torchconfig)
-    local tmax=${TMAX:-20}
 
     tboolean-info
-
-    # $testname--   
-    #     this assumes testname matches bash function name
-    #     which is not the case fot tboolean-proxy 
 
     o.sh  \
             $cmdline \
             --envkey \
             --rendermode +global,+axis \
-            --animtimemax $tmax \
-            --timemax $tmax \
             --geocenter \
             --stack $stack \
             --eye 1,0,0 \
@@ -619,6 +612,8 @@ tboolean--(){
             --dumpenv \
             --strace \
             --args \
+            --timemax $tmax \
+            --animtimemax $tmax \
 
 
 EON

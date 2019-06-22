@@ -220,12 +220,13 @@ the visualized propagation looks more reasonable::
     TMAX=-1 tv 10 
 
 
-LV:10 sAirTT COINCIDENCE/SPECKLE ISSUE : FIXED
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+LV:10 sAirTT COINCIDENCE/SPECKLE + HISTORY ALIGNMENT LOSSES
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * large deviations from a few photons failing to stay in history alignment
 
-* :doc:`tboolean-proxy-scan-LV10-coincidence-speckle`
+* :doc:`tboolean-proxy-scan-LV10-coincidence-speckle`  FIXED
+* :doc:`tboolean-proxy-scan-LV10-history-misaligned-big-bouncer`
 
 
 LV:11 sExpHall0x4bcd390 : maxdvmax:0.1265  THIS ONE IS A BIG EXTENT SOLIDS THATS CLOSE TO BEING OK

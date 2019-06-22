@@ -195,12 +195,13 @@ double CAlignEngine::flat()
             unsigned n1 = m_recycle_idx.size(); 
 
             if( n1 > n0) 
-            LOG(error) << " recycling RNG : not enough pre-cooked :" 
-                       << " seq_index " << m_seq_index 
-                       << " seq_nv " << m_seq_nv
-                       << " cursor " << cursor
-                       << " recycle_idx " << m_recycle_idx.size()
-                       ; 
+            LOG(error) 
+                << " recycling RNG : not enough pre-cooked :" 
+                << " seq_index " << m_seq_index 
+                << " seq_nv " << m_seq_nv
+                << " cursor " << cursor
+                << " recycle_idx " << m_recycle_idx.size()
+                ; 
  
             cursor = cursor % m_seq_nv ;  
         }

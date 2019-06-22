@@ -49,7 +49,8 @@ class BounceLog(OrderedDict):
         for i, line in enumerate(self.lines):
             m = self.BOUNCE.search(line)
             if m:
-                bounce = int(m.group(1))
+                #bounce = int(m.group(1))   ## some OptiX rtPrintf bug makes bounce always 0 
+                bounce += 1
                 self[bounce] = Bounce()
             pass
             if bounce > -1:
