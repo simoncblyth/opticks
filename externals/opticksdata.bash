@@ -37,7 +37,6 @@ big file issue
     abort: missing support for check:phases                                                                                                                                                                    
     epsilon:export blyth$ 
 
-
 A few hours later from ~/opticksdata it works::
 
     epsilon:juno1808 blyth$ hg commit -m "j1808"
@@ -51,8 +50,6 @@ A few hours later from ~/opticksdata it works::
     remote: added 1 changesets with 1 changes to 1 files
     epsilon:juno1808 blyth$ 
     epsilon:juno1808 blyth$ 
-
-
 
 
 FUNCTIONS
@@ -135,6 +132,9 @@ opticksdata-jv3-vi(){ vi $(opticksdata-jv3) ; }
 opticksdata-jv4(){ echo $(opticksdata-xpath j1808)_v4.gdml ; }  
 opticksdata-jv4-vi(){ vi $(opticksdata-jv4) ; }
 
+opticksdata-jv5(){ echo $(opticksdata-xpath j1808)_v5.gdml ; }  
+opticksdata-jv5-vi(){ vi $(opticksdata-jv5) ; }
+
 
 
 
@@ -143,8 +143,9 @@ opticksdata-j-info(){ cat << EOI
 
    opticksdata-j   : $(opticksdata-j)
    opticksdata-jv2 : $(opticksdata-jv2)
-   opticksdata-jv3 : $(opticksdata-jv3)
-   opticksdata-jv4 : $(opticksdata-jv4)
+   opticksdata-jv3 : $(opticksdata-jv3)     
+   opticksdata-jv4 : $(opticksdata-jv4)     opticksdata-jv4-vi
+   opticksdata-jv5 : $(opticksdata-jv5)     opticksdata-jv5-vi 
 
 EOI
 }

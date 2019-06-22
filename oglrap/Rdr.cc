@@ -249,12 +249,11 @@ void Rdr::upload(MultiViewNPY* mvn, bool debug)
 void Rdr::log(const char* msg, int value)
 {
     LOG(debug)
-                 << "Rdr::log " 
-                 << std::setw(10) << getShaderTag() 
-                 << " "
-                 << msg  
-                 << value ;
- 
+        << std::setw(10) << getShaderTag() 
+        << " "
+        << msg  
+        << value 
+        ;
 }
 
 
@@ -275,12 +274,17 @@ void Rdr::prepare_vao()
 
 }
 
+/**
+Rdr::upload
+-------------
+
+Multiple mvn referring to the same buffer are handled without data duplication,
+by maintaining a list of NPYBase which have been uploaded to the Device.
+
+**/
 
 void Rdr::upload(NPYBase* npy, ViewNPY* vnpy)
 {
-    // handles case of multiple mvn referring to the same buffer without data duplication,
-    // by maintaining a list of NPYBase which have been uploaded to the Device
-
     prepare_vao();
 
     MultiViewNPY* parent = vnpy->getParent();
@@ -308,16 +312,16 @@ void Rdr::upload(NPYBase* npy, ViewNPY* vnpy)
         glBindBuffer(GL_ARRAY_BUFFER, buffer_id);
 
         LOG(debug) 
-                  << std::setw(15) << parent->getName() 
-                  << std::setw(5)  << vnpy->getName()
-                  << " cn " << std::setw(8) << vnpy->getCount()
-                  << " sh " << std::setw(20) << vnpy->getShapeString()
-                  << " id " << std::setw(5) << buffer_id
-                  << " dt " << std::setw(16) << repdata 
-                  << " hd " << std::setw(5) << ( npy->hasData() ? "Y" : "N" )
-                  << " nb " << std::setw(10) << nbytes 
-                  << " " << (dynamic ? "GL_DYNAMIC_DRAW" : "GL_STATIC_DRAW" )
-                  ;   
+            << std::setw(15) << parent->getName() 
+            << std::setw(5)  << vnpy->getName()
+            << " cn " << std::setw(8) << vnpy->getCount()
+            << " sh " << std::setw(20) << vnpy->getShapeString()
+            << " id " << std::setw(5) << buffer_id
+            << " dt " << std::setw(16) << repdata 
+            << " hd " << std::setw(5) << ( npy->hasData() ? "Y" : "N" )
+            << " nb " << std::setw(10) << nbytes 
+            << " " << (dynamic ? "GL_DYNAMIC_DRAW" : "GL_STATIC_DRAW" )
+            ;   
 
         glBufferData(GL_ARRAY_BUFFER, nbytes, data, dynamic ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW  );
 
@@ -413,16 +417,16 @@ void Rdr::address(ViewNPY* vnpy)
     // offset of the first component of the first generic vertex attribute 
     // in the array in the data store of the buffer currently bound to GL_ARRAY_BUFFER target
 
-    LOG(verbose) << "Rdr::address (glVertexAttribPointer) "
-              << std::setw(10) << getShaderTag() 
-              << " name " << name 
-              << " type " << std::setw(20) << vnpy->getTypeName() 
-              << " index " << index
-              << " norm " << norm
-              << " size " << size
-              << " stride " << stride
-              << " offset_ " << offset_
-              ;
+    LOG(verbose) 
+        << std::setw(10) << getShaderTag() 
+        << " name " << name 
+        << " type " << std::setw(20) << vnpy->getTypeName() 
+        << " index " << index
+        << " norm " << norm
+        << " size " << size
+        << " stride " << stride
+        << " offset_ " << offset_
+        ;
 
     assert( offset_ < stride_ && "offset_ should always be less than the stride_, see ggv-/issues/gui_broken_photon_record_colors");
 

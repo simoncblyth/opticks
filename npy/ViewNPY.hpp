@@ -3,7 +3,15 @@
 #include <string>
 #include "NGLM.hpp"
 
-/*
+/**
+ViewNPY
+=========
+
+Holds most of the paramters needed by the OpenGL data descriptor 
+method from Rdr::address::
+
+    glVertexAttribPointer(index, size, type, norm, stride, offset);
+
 
 ViewNPY is ultra-lightweight, just managing: 
 
@@ -16,7 +24,7 @@ Many methods assume a 3 dimensional NPY array structure,
 eg with shapes like (10000,6,4) in which case j 0:5 k 0:3 size=1:4 
 Trailing dimension usually 4 as quads are convenient and efficient on GPU.
 
-*/
+**/
 
 class NPYBase ; 
 class MultiViewNPY ; 

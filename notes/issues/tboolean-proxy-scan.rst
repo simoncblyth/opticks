@@ -124,56 +124,13 @@ Two different issues
     14                            sAcrylic0x4bd3cd0 ce0          0.0000,0.0000,0.0000,17820.0000 ce1          0.0000,0.0000,0.0000,17820.0000 14
 
 
-LV:10 sAirTT  TODO:FIX COINCIDENCE/SPECKLE ISSUE 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-* large deviations from a few photons failing to stay in history alignment
-
-tv 10 
-     shows large flat box cylinder hole with coincidence speckle problem in the hole
-
-ta 10, has history dropout zero::
-
-    tboolean-proxy-10
-    .
-    ab.his
-    .                seqhis_ana  1:tboolean-proxy-10:tboolean-proxy-10   -1:tboolean-proxy-10:tboolean-proxy-10        c2        ab        ba 
-    .                              10000     10000         0.09/13 =  0.01  (pval:1.000 prob:0.000)  
-    0000             8ccd      7585      7610             0.04        0.997 +- 0.011        1.003 +- 0.012  [4 ] TO BT BT SA
-    0001              8bd       510       510             0.00        1.000 +- 0.044        1.000 +- 0.044  [3 ] TO BR SA
-    0002            8cbcd       489       492             0.01        0.994 +- 0.045        1.006 +- 0.045  [5 ] TO BT BR BT SA
-    0003              86d       467       467             0.00        1.000 +- 0.046        1.000 +- 0.046  [3 ] TO SC SA
-    0004            86ccd       447       449             0.00        0.996 +- 0.047        1.004 +- 0.047  [5 ] TO BT BT SC SA
-    0005            8cc6d        75        75             0.00        1.000 +- 0.115        1.000 +- 0.115  [5 ] TO SC BT BT SA
-    0006          8cc6ccd        67        67             0.00        1.000 +- 0.122        1.000 +- 0.122  [7 ] TO BT BT SC BT BT SA
-    0007              4cd        44        44             0.00        1.000 +- 0.151        1.000 +- 0.151  [3 ] TO BT AB
-    0008           866ccd        35        35             0.00        1.000 +- 0.169        1.000 +- 0.169  [6 ] TO BT BT SC SC SA
-    0009             866d        30        30             0.00        1.000 +- 0.183        1.000 +- 0.183  [4 ] TO SC SC SA
-    0010           8cbbcd        26        26             0.00        1.000 +- 0.196        1.000 +- 0.196  [6 ] TO BT BR BR BT SA
-    0011             86bd        25        25             0.00        1.000 +- 0.200        1.000 +- 0.200  [4 ] TO BR SC SA
-    0012            8cccd        23         0             0.00        0.000 +- 0.000        0.000 +- 0.000  [5 ] TO BT BT BT SA
-                               ^^^^^^^^^^^^^^^^^^^
-    0013           86cbcd        20        20             0.00        1.000 +- 0.224        1.000 +- 0.224  [6 ] TO BT BR BT SC SA
-    0014       bbbbbbb6cd        16        15             0.03        1.067 +- 0.267        0.938 +- 0.242  [10] TO BT SC BR BR BR BR BR BR BR
-    0015             8b6d        14        14             0.00        1.000 +- 0.267        1.000 +- 0.267  [4 ] TO SC BR SA
-    0016           8b6ccd        11        11             0.00        1.000 +- 0.302        1.000 +- 0.302  [6 ] TO BT BT SC BR SA
-    0017            8c6cd         9         9             0.00        1.000 +- 0.333        1.000 +- 0.333  [5 ] TO BT SC BT SA
-    0018           8cbc6d         8         8             0.00        1.000 +- 0.354        1.000 +- 0.354  [6 ] TO SC BT BR BT SA
-    0019         8cbc6ccd         8         8             0.00        1.000 +- 0.354        1.000 +- 0.354  [8 ] TO BT BT SC BT BR BT SA
-    .                              10000     10000         0.09/13 =  0.01  (pval:1.000 prob:0.000)  
 
 
 
-warning when select the dropout 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+LV:10 fixing -ve rpost times from too small time domain
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ta 10::
-
-    In [24]: ab.sel = "TO BT BT BT SA"
-    [2019-06-21 23:04:34,335] p23392 {evt.py    :876} WARNING  - _init_selection EMPTY nsel 0 len(psel) 10000 
-
-
-::
 
     In [28]: a.rpost().shape
     Out[28]: (23, 5, 4)
@@ -234,8 +191,6 @@ becoming -480.0 the negated timemax : which stands out like a sore thumb.
         [  -239.5126,    -92.2893,   2500.5993,    251.2284],
         [  -239.5126,    -92.2893,  72001.    ,    483.0622]],
 
-
-
 ::
 
      
@@ -257,11 +212,20 @@ becoming -480.0 the negated timemax : which stands out like a sore thumb.
 
 
 
-After re-simulating to fix the time domain::
+After re-simulating to fix the time domain and using automated rule of thumb to 
+set the timedomain based on geometry extent the -ve times are gone and 
+the visualized propagation looks more reasonable::
 
     TMAX=-1 ts 10 
     TMAX=-1 tv 10 
 
+
+LV:10 sAirTT COINCIDENCE/SPECKLE ISSUE : FIXED
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* large deviations from a few photons failing to stay in history alignment
+
+* :doc:`tboolean-proxy-scan-LV10-coincidence-speckle`
 
 
 LV:11 sExpHall0x4bcd390 : maxdvmax:0.1265  THIS ONE IS A BIG EXTENT SOLIDS THATS CLOSE TO BEING OK

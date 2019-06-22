@@ -1346,26 +1346,34 @@ void OpticksEvent::setNopstepData(NPY<float>* nopstep)
 }
 
 
+
+/**
+OpticksEvent::setRecordData
+------------------------------
+
+NB that the ViewNPY::TYPE need not match the NPY<T>,
+OpenGL shaders will view the data as of the ViewNPY::TYPE, 
+informed via glVertexAttribPointer/glVertexAttribIPointer 
+in oglrap-/Rdr::address(ViewNPY* vnpy)
+
+* see ggv-/issues/gui_broken_photon_record_colors.rst 
+* note the shift of one to the right of the (j,k,l)
+
+NB search the oglrap/gl/ shaders for the names "rpol" "rflg" to see how used
+
+
+rpos 
+   photon step records stored as domain compressed shorts -32767,+32767 
+   with norm=true, so within the shaders rpos values are mapped to -1.f:1.f  
+
+
+
+**/
+
 void OpticksEvent::setRecordData(NPY<short>* record_data)
 {
     setBufferControl(record_data);
-
     m_record_data = record_data  ;
-
-
-#ifdef OLDWAY
-    //                                               j k l  sz   type                  norm   iatt   item_from_dim
-    ViewNPY* rpos = new ViewNPY("rpos",m_record_data,0,0,0 ,4,ViewNPY::SHORT          ,true,  false, 2);
-    ViewNPY* rpol = new ViewNPY("rpol",m_record_data,1,0,0 ,4,ViewNPY::UNSIGNED_BYTE  ,true,  false, 2);   
-
-    ViewNPY* rflg = new ViewNPY("rflg",m_record_data,1,2,0 ,2,ViewNPY::UNSIGNED_SHORT ,false, true,  2);   
-    // NB k=2, value offset from which to start accessing data to fill the shaders uvec4 x y (z, w)  
-
-    ViewNPY* rflq = new ViewNPY("rflq",m_record_data,1,2,0 ,4,ViewNPY::UNSIGNED_BYTE  ,false, true,  2);   
-    // NB k=2 again : try a UBYTE view of the same data for access to boundary,m1,history-hi,history-lo
-
-#else
-    // see ggv-/issues/gui_broken_photon_record_colors.rst note the shift of one to the right of the (j,k,l)
 
     //                                               j k l  sz   type                  norm   iatt   item_from_dim
     ViewNPY* rpos = new ViewNPY("rpos",m_record_data,0,0,0 ,4,ViewNPY::SHORT          ,true,  false, 2);
@@ -1376,19 +1384,6 @@ void OpticksEvent::setRecordData(NPY<short>* record_data)
 
     ViewNPY* rflq = new ViewNPY("rflq",m_record_data,0,1,2 ,4,ViewNPY::UNSIGNED_BYTE  ,false, true,  2);   
     // NB k=2 again : try a UBYTE view of the same data for access to boundary,m1,history-hi,history-lo
-
-#endif
-
-    // structured record array => item_from_dim=2 the count comes from product of 1st two dimensions
-
-    // ViewNPY::TYPE need not match the NPY<T>,
-    // OpenGL shaders will view the data as of the ViewNPY::TYPE, 
-    // informed via glVertexAttribPointer/glVertexAttribIPointer 
-    // in oglrap-/Rdr::address(ViewNPY* vnpy)
- 
-    // standard byte offsets obtained from from sizeof(T)*value_offset 
-    //rpol->setCustomOffset(sizeof(unsigned char)*rpol->getValueOffset());
-    // this is not needed
 
     m_record_attr = new MultiViewNPY("record_attr");
 
@@ -1409,15 +1404,6 @@ void OpticksEvent::setPhoselData(NPY<unsigned char>* phosel_data)
     ViewNPY* psel = new ViewNPY("psel",m_phosel_data,0,0,0,4,ViewNPY::UNSIGNED_BYTE,false,  true, 1);
     m_phosel_attr = new MultiViewNPY("phosel_attr");
     m_phosel_attr->add(psel);
-
-
-/*
-psel is not currently used in shaders, as have not done much at photon level, only record level
-
-delta:gl blyth$ find . -type f -exec grep -H psel {} \;
-delta:gl blyth$ 
-*/
-
 }
 
 

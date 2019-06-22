@@ -224,8 +224,8 @@ geocache-j1808-v2(){  opticksdata- ; geocache-create- --gdmlpath $(opticksdata-j
 geocache-j1808-v3(){  opticksdata- ; geocache-create- --gdmlpath $(opticksdata-jv3) --csgskiplv 22  ; }
 geocache-j1808-v3(){  opticksdata- ; geocache-create- --gdmlpath $(opticksdata-jv3) --csgskiplv 22  ; }
 geocache-j1808-v4-(){ opticksdata- ; geocache-create- --gdmlpath $(opticksdata-jv4) $* ; }
+geocache-j1808-v5-(){ opticksdata- ; geocache-create- --gdmlpath $(opticksdata-jv5) $* ; }
 
-geocache-recreate(){ geocache-j1808-v4 $* ; }
 
 
 geocache-j1808-v4-comment(){ echo torus-less-skipping-just-lv-22-maskVirtual ; }
@@ -272,9 +272,6 @@ geocache-j1808-v4-t8-comment(){ echo just-21-18-19-outer-pyrex+vacuum-cap-and-re
 geocache-j1808-v4-t8-key(){     echo OKX4Test.X4PhysicalVolume.lWorld0x4bc2710_PV.52e273e4ad5423fe2fc8aa44bbf055ec ; }       ## NB this matches geocache-j1808-v4-t3
 geocache-j1808-v4-t8-export(){  geocache-export ${FUNCNAME/-export} ; }
 geocache-j1808-v4-t8(){ geocache-j1808-v4- --csgskiplv 22,17,20 --runfolder $FUNCNAME --runcomment $(${FUNCNAME}-comment) ; }
-
-#geocache-key-export(){   geocache-j1808-v4-t8-export ; }
-geocache-key-export(){   geocache-j1808-v4-export ; }
 
 geocache-j1808-v4-notes(){ cat << EON
 
@@ -336,6 +333,103 @@ See:
 
 EON
 }
+
+
+
+geocache-j1808-v5-comment(){ echo fix-lv10-coincidence-speckle ; }
+geocache-j1808-v5-key(){     echo OKX4Test.X4PhysicalVolume.lWorld0x4bc2710_PV.f6cc352e44243f8fa536ab483ad390ce ; }
+geocache-j1808-v5-export(){  geocache-export ${FUNCNAME/-export} ; }
+geocache-j1808-v5(){  geocache-j1808-v5- --csgskiplv 22 --runfolder $FUNCNAME --runcomment $(${FUNCNAME}-comment) $* ; }  
+
+geocache-recreate(){ geocache-j1808-v5 $* ; }
+geocache-key-export(){   geocache-j1808-v5-export ; }
+
+
+geocache-j1808-v5-notes(){ cat << EON
+$FUNCNAME : avoiding a coincidence speckle in box subtract cylinder
+============================================================================
+
+See notes/issues/tboolean-proxy-scan-LV10-coincidence-speckle.rst for ascii art explaining the change.
+
+v4::
+
+       555   <solids>
+       556     <tube aunit="deg" deltaphi="360" lunit="mm" name="Upper_LS_tube0x5b2e9f0" rmax="400" rmin="0" startphi="0" z="3500"/>
+       557     <opticalsurface finish="3" model="1" name="UpperChimneyTyvekOpticalSurface" type="0" value="0.2">
+       558       <property name="REFLECTIVITY" ref="REFLECTIVITY0x5b300c0"/>
+       559     </opticalsurface>
+       560     <tube aunit="deg" deltaphi="360" lunit="mm" name="Upper_Steel_tube0x5b2eb10" rmax="407" rmin="402" startphi="0" z="3500"/>
+       561     <tube aunit="deg" deltaphi="360" lunit="mm" name="Upper_Tyvek_tube0x5b2ec30" rmax="402" rmin="400" startphi="0" z="3500"/>
+       562     <tube aunit="deg" deltaphi="360" lunit="mm" name="Upper_Chimney0x5b2e8e0" rmax="412" rmin="0" startphi="0" z="3500"/>
+       563     <box lunit="mm" name="sBar0x5b34ab0" x="6860" y="26" z="10"/>
+       564     <box lunit="mm" name="sBar0x5b34920" x="6860" y="26.3" z="10.3"/>
+       565     <box lunit="mm" name="sModuleTape0x5b34790" x="6860" y="1691.3" z="12.1"/>
+       566     <box lunit="mm" name="sModule0x5b34600" x="6861.2" y="1692.5" z="13.3"/>
+       567     <box lunit="mm" name="sPlane0x5b34470" x="6861.2" y="6770.3" z="13.3"/>
+       568     <box lunit="mm" name="sWall0x5b342e0" x="6861.2" y="6861.2" z="27.6"/>
+       569     <box lunit="mm" name="BoxsAirTT0x5b33e60" x="48000" y="48000" z="5000"/>
+       570     <tube aunit="deg" deltaphi="360" lunit="mm" name="Cylinder0x5b33ef0" rmax="500" rmin="0" startphi="0" z="4000"/>
+                                                                                                                  ^^^^^^^^^^^^^^^
+       571     <subtraction name="sAirTT0x5b34000">
+       572       <first ref="BoxsAirTT0x5b33e60"/>
+       573       <second ref="Cylinder0x5b33ef0"/>
+       574       <position name="sAirTT0x5b34000_pos" unit="mm" x="0" y="0" z="-500"/>
+                                                                              ^^^^^^^^^
+       575     </subtraction>
+       576     <box lunit="mm" name="sExpHall0x4bcd390" x="48000" y="48000" z="18600"/>
+       577     <box lunit="mm" name="sTopRock0x4bccfc0" x="54000" y="54000" z="21600"/>
+       578     <sphere aunit="deg" deltaphi="360" deltatheta="180" lunit="mm" name="sTarget_bottom_ball0x4bd40d0" rmax="17700" rmin="0" startphi="0" starttheta="0"/>
+       579     <tube aunit="deg" deltaphi="360" lunit="mm" name="sTarget_top_tube0x4bd4260" rmax="400" rmin="0" startphi="0" z="124.520351230938"/>
+
+
+v5::
+
+       569     <box lunit="mm" name="BoxsAirTT0x5b33e60" x="48000" y="48000" z="5000"/>
+       570     
+       571     <!-- see notes/issues/tboolean-proxy-scan-LV10-coincidence-speckle.rst -->
+       572     <!--tube aunit="deg" deltaphi="360" lunit="mm" name="Cylinder0x5b33ef0" rmax="500" rmin="0" startphi="0" z="4000"/-->
+       573     <tube aunit="deg" deltaphi="360" lunit="mm" name="Cylinder0x5b33ef0" rmax="500" rmin="0" startphi="0" z="4002"/>
+       574     
+       575     <subtraction name="sAirTT0x5b34000">
+       576       <first ref="BoxsAirTT0x5b33e60"/>
+       577       <second ref="Cylinder0x5b33ef0"/>
+       578       <!--position name="sAirTT0x5b34000_pos" unit="mm" x="0" y="0" z="-500"/-->
+       579       <position name="sAirTT0x5b34000_pos" unit="mm" x="0" y="0" z="-501"/>
+       580     </subtraction>
+       581 
+
+::
+
+    [blyth@localhost issues]$ opticksdata-j-info
+
+       opticksdata-j   : /home/blyth/local/opticks/opticksdata/export/juno1808/g4_00.gdml
+       opticksdata-jv2 : /home/blyth/local/opticks/opticksdata/export/juno1808/g4_00_v2.gdml
+       opticksdata-jv3 : /home/blyth/local/opticks/opticksdata/export/juno1808/g4_00_v3.gdml     
+       opticksdata-jv4 : /home/blyth/local/opticks/opticksdata/export/juno1808/g4_00_v4.gdml     opticksdata-jv4-vi
+       opticksdata-jv5 : /home/blyth/local/opticks/opticksdata/export/juno1808/g4_00_v5.gdml     opticksdata-jv5-vi 
+
+    [blyth@localhost issues]$ cp /home/blyth/local/opticks/opticksdata/export/juno1808/g4_00_v4.gdml /home/blyth/local/opticks/opticksdata/export/juno1808/g4_00_v5.gdml
+
+
+
+
+EON
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 geocache-export()
 {

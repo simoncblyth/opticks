@@ -55,35 +55,34 @@ const char* ViewNPY::getTypeName()
 
 
 ViewNPY::ViewNPY(const char* name, NPYBase* npy, unsigned int j, unsigned int k, unsigned int l, unsigned int size, Type_t type, bool norm, bool iatt, unsigned int item_from_dim) 
-  :
-            m_name(strdup(name)),
-            m_npy(npy),
-            m_parent(NULL),
-            m_bytes(NULL),
-            m_j(j),
-            m_k(k),
-            m_l(l),
-            m_size(size),
-            m_type(type),
-            m_norm(norm),
-            m_iatt(iatt),
-            m_item_from_dim(item_from_dim),
+    :
+    m_name(strdup(name)),
+    m_npy(npy),
+    m_parent(NULL),
+    m_bytes(NULL),
+    m_j(j),
+    m_k(k),
+    m_l(l),
+    m_size(size),
+    m_type(type),
+    m_norm(norm),
+    m_iatt(iatt),
+    m_item_from_dim(item_from_dim),
 
-            m_numbytes(0),
-            m_stride(0),
-            m_offset(0),
-            m_low(NULL),
-            m_high(NULL),
-            m_dimensions(NULL),
-            m_center(NULL),
-            m_model_to_world(0),
-            m_center_extent(0),
-            m_extent(0.f),
-            m_addressed(false)
+    m_numbytes(0),
+    m_stride(0),
+    m_offset(0),
+    m_low(NULL),
+    m_high(NULL),
+    m_dimensions(NULL),
+    m_center(NULL),
+    m_model_to_world(0),
+    m_center_extent(0),
+    m_extent(0.f),
+    m_addressed(false)
 {
     init();
 }
-
 
 glm::vec4& ViewNPY::getCenterExtent()
 {

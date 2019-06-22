@@ -34,7 +34,257 @@ ISSUE 2 : times(ns) of propagation milestones (eg BT) shown on animation slider 
 
 ::
 
-   TMAX=-1 tv 10 
+   TMAX=-1 ts 10    # auto timeMax, base on extent 
+
+   TMAX=-1 ta 10    # auto animTimeMax based on extent
+                    # hmm probably makes more sense to use value from fdom ?  
+
+
+ta 10::
+
+    In [2]: ab.aselhis = "TO BT BT SA"
+
+    In [3]: a.rpost().shape
+    Out[3]: (7610, 4, 4)
+
+    In [4]: a.rpost()
+    Out[4]: 
+    A()sliced
+    A([[[  1806.2326,  -5543.9474, -71998.8026,      0.    ],
+        [  1806.2326,  -5543.9474,  -2500.5993,    231.8218],
+        [  1806.2326,  -5543.9474,   2500.5993,    262.1235],
+        [  1806.2326,  -5543.9474,  72001.    ,    493.9453]],
+
+       [[ -4269.4767,    -46.1446, -71998.8026,      0.    ],
+        [ -4269.4767,    -46.1446,  -2500.5993,    231.8218],
+        [ -4269.4767,    -46.1446,   2500.5993,    262.1235],
+        [ -4269.4767,    -46.1446,  72001.    ,    493.9453]],
+
+
+
+    In [5]: ab.fdom
+    Out[5]: 
+    A(torch,1,tboolean-proxy-10)(metadata) 3*float4 domains of position, time, wavelength (used for compression)
+    A([[[    0.  ,     0.  ,     0.  , 72001.  ]],
+
+       [[    0.  ,   720.01,   720.01,     0.  ]],
+
+       [[   60.  ,   820.  ,    20.  ,   760.  ]]], dtype=float32)
+
+
+
+
+Viz with auto time domain::
+
+    TMAX=-1 tv 10
+
+
+* its a bit difficult to select times with the slider precisely, because of the animation steps and great sensitivity when zoomed in 
+* but it looks like at 231.20/261.42 ns on slider the photons are just before the lower/upper boundaries 
+  which is very close to rpost() values 
+
+Now with changing animTimeMax::
+
+    TMAX=250 tv 10 
+
+* at 80.28/90.77 in slider are just before boundaries
+* what about a non-zero animTimeMin ?
+
+Hmm, looks like need to scale by animTimeMax/timeMax for the slider numbers to be correct::
+
+    In [1]: 250./720.
+    Out[1]: 0.3472222222222222
+
+    In [2]: 231.2*0.3472222222
+    Out[2]: 80.27777777264
+
+    In [3]: 261.42*0.347222222
+    Out[3]: 90.77083327524001
+
+oglrap/gl/rec/geom.glsl::
+
+     31 out vec4 fcolor ;
+     32 
+     33 void main ()
+     34 {
+     35     uint seqhis = sel[0].x ;
+     36     uint seqmat = sel[0].y ;
+     37     if( RecSelect.x > 0 && RecSelect.x != seqhis )  return ;
+     38     if( RecSelect.y > 0 && RecSelect.y != seqmat )  return ;
+     39 
+     40     uint photon_id = gl_PrimitiveIDIn/MAXREC ;
+     41     if( PickPhoton.x > 0 && PickPhoton.y > 0 && PickPhoton.x != photon_id )  return ;
+     42 
+     43 
+     44     vec4 p0 = gl_in[0].gl_Position  ;
+     45     vec4 p1 = gl_in[1].gl_Position  ;
+     46     float tc = Param.w / TimeDomain.y ;
+     47 
+     48     uint valid  = (uint(p0.w >= 0.)  << 0) + (uint(p1.w >= 0.) << 1) + (uint(p1.w > p0.w) << 2) ;
+     49     uint select = (uint(tc > p0.w ) << 0) + (uint(tc < p1.w) << 1) + (uint(Pick.x == 0 || photon_id % Pick.x == 0) << 2) ;
+     50     uint vselect = valid & select ;
+     51 
+     52 #incl fcolor.h
+     53 
+     54     if(vselect == 0x7) // both valid and straddling tc
+     55     {
+     56         vec3 pt = mix( vec3(p0), vec3(p1), (tc - p0.w)/(p1.w - p0.w) );
+     57         gl_Position = ISNormModelViewProjection * vec4( pt, 1.0 ) ;
+     58 
+     59         if(NrmParam.z == 1)
+     60         {
+     61             float depth = ((gl_Position.z / gl_Position.w) + 1.0) * 0.5;
+     62             if(depth < ScanParam.x || depth > ScanParam.y ) return ;
+     63         }
+     64 
+     65 
+     66         EmitVertex();
+     67         EndPrimitive();
+     68     }
+     69     else if( valid == 0x7 && select == 0x5 )     // both valid and prior to tc
+     70     {
+     71         vec3 pt = vec3(p1) ;
+     72         gl_Position = ISNormModelViewProjection * vec4( pt, 1.0 ) ;
+     73 
+     74         if(NrmParam.z == 1)
+     75         {
+     76             float depth = ((gl_Position.z / gl_Position.w) + 1.0) * 0.5;
+     77             if(depth < ScanParam.x || depth > ScanParam.y ) return ;
+     78         }
+     79 
+
+
+
+p0,p1 
+    rpos domain compressed positions and times and will be in range -1.f:1.f
+    using the position and time domains active at simulation 
+
+Param.w
+    uniform propagation time coming from the Animator (or slider) which 
+    is in range m_domain_time.x(timemin), m_domain_time.z(animTimeMax)
+ 
+TimeDomain.y
+    from Composition::getTimeDomain which is set at OpticksViz::uploadGeometry 
+    using Opticks::getTimeDomain 
+    
+
+Keeping animTimeMax the same as timeMax avoids the problem.
+
+
+
+::
+
+    317 void OpticksViz::uploadGeometry()
+    318 {
+    319     LOG(LEVEL) << "[ hub " << m_hub->desc() ;
+    320 
+    321     NPY<unsigned char>* colors = m_hub->getColorBuffer();
+    322 
+    323     m_scene->uploadColorBuffer( colors );  //     oglrap-/Colors preps texture, available to shaders as "uniform sampler1D Colors"
+    324 
+    325     LOG(info) << m_ok->description();
+    326 
+    327     m_composition->setTimeDomain(        m_ok->getTimeDomain() );
+    328     m_composition->setDomainCenterExtent(m_ok->getSpaceDomain());
+    329 
+    330     m_scene->setGeometry(m_ggb->getGeoLib());
+    331 
+    332     m_scene->uploadGeometry();
+    333 
+    334 
+    335     m_hub->setupCompositionTargetting();
+    336 
+    337     LOG(LEVEL) << "]" ;
+    338 }
+
+
+
+::
+
+    1998 void Opticks::setupTimeDomain(float extent)
+    1999 {
+    2000     float timemax = m_cfg->getTimeMax();  // ns
+    2001     float animtimemax = m_cfg->getAnimTimeMax() ;
+    2002 
+    2003     float speed_of_light = 300.f ;        // mm/ns 
+    2004     float rule_of_thumb_timemax = 3.f*extent/speed_of_light ;
+    2005 
+    2006     float u_timemin = 0.f ;  // ns
+    2007     float u_timemax = timemax < 0.f ? rule_of_thumb_timemax : timemax ;
+    2008     float u_animtimemax = animtimemax < 0.f ? u_timemax : animtimemax ;
+    2009 
+    2010     LOG(info)
+    2011         << " cfg.getTimeMax [--timemax] " << timemax
+    2012         << " cfg.getAnimTimeMax [--animtimemax] " << animtimemax
+    2013         << " speed_of_light (mm/ns) " << speed_of_light
+    2014         << " extent (mm) " << extent
+    2015         << " rule_of_thumb_timemax (ns) " << rule_of_thumb_timemax
+    2016         << " u_timemax " << u_timemax
+    2017         << " u_animtimemax " << u_animtimemax
+    2018         ;
+    2019 
+    2020     m_time_domain.x = u_timemin ;
+    2021     m_time_domain.y = u_timemax ;
+    2022     m_time_domain.z = u_animtimemax ;
+    2023     m_time_domain.w = 0.f  ;
+    2024 }
+    2025 
+
+
+
+
+
+Hmm using m_domain_time.z  AnimTimeMax::
+
+     776 void Composition::initAnimator()
+     777 {
+     778     float* target = glm::value_ptr(m_param) + 3 ;   // offset to ".w" 
+     779 
+     780     m_animator = new Animator(target, m_animator_period, m_domain_time.x, m_domain_time.z );
+     781     m_animator->setModeRestrict(Animator::FAST);
+     782     m_animator->Summary("Composition::gui setup Animation");
+     783 }
+
+
+
+
+
+
+
+
+
+oglrap/Rdr.cc::
+
+    477 void Rdr::update_uniforms()
+    478 {
+    479 
+    480     if(m_composition)
+    481     {
+    482         // m_composition->update() ; moved up to Scene::render
+    ...
+    501         glm::vec4 par = m_composition->getParam();
+    502         glUniform4f(m_param_location, par.x, par.y, par.z, par.w  );
+    ...
+    518         glm::vec4 td = m_composition->getTimeDomain();
+    519         glUniform4f(m_timedomain_location, td.x, td.y, td.z, td.w  );
+
+
+
+::
+
+    [blyth@localhost optickscore]$ opticks-f setTimeDomain
+    ./npy/RecordsNPY.cpp:void RecordsNPY::setTimeDomain(glm::vec4& td)
+    ./npy/RecordsNPY.cpp:    setTimeDomain(td);    
+    ./npy/RecordsNPY.hpp:       void setTimeDomain(glm::vec4& td);
+    ./oglrap/OpticksViz.cc:    m_composition->setTimeDomain(        m_ok->getTimeDomain() );
+    ./optickscore/Opticks.cc:    evt->setTimeDomain(getTimeDomain());
+    ./optickscore/OpticksEvent.cc:void OpticksEvent::setTimeDomain(const glm::vec4& time_domain) {             m_domain->setTimeDomain(time_domain)  ; } 
+    ./optickscore/OpticksDomain.cc:void OpticksDomain::setTimeDomain(const glm::vec4& time_domain)
+    ./optickscore/OpticksDomain.hh:       void setTimeDomain(const glm::vec4& time_domain);
+    ./optickscore/Composition.cc:void Composition::setTimeDomain(const glm::vec4& td)
+    ./optickscore/Composition.hh:      void setTimeDomain(const glm::vec4& td);
+    ./optickscore/OpticksEvent.hh:       void setTimeDomain(const glm::vec4& time_domain);
+
 
 
 
@@ -168,16 +418,6 @@ hmm -ve times ?
         [  5614.263 ,  -5680.1839,  -2500.5993,    292.4251],
         [  5614.263 ,  -5680.1839, -29752.2977,    383.3227],
         [ 72001.    ,   2478.6257, -46759.8889,   -480.0213]],
-
-
-
-
-
-
-
-
-
-
 
 
 

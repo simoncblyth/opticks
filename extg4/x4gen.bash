@@ -346,7 +346,9 @@ x4gen--(){
    x4gen-CMakeLists > CMakeLists.txt
 
    x4gen-CMakeLists-tests-head  > tests/CMakeLists.txt
-   ( cd tests ; ls -1 x*.cc )  >> tests/CMakeLists.txt
+   ( cd tests ; find * -name 'x???.cc' -size +0 ) >> tests/CMakeLists.txt
+   ## skip the zero length x016.cc 
+
    x4gen-CMakeLists-tests-tail >> tests/CMakeLists.txt
 
    echo $msg invoking go.sh to compile/build/install
