@@ -74,17 +74,40 @@ float SProc::VirtualMemoryUsageMB()
 
 
 
+/**
+SProc::ExecutablePath
+-----------------------
+
+* https://stackoverflow.com/questions/799679/programmatically-retrieving-the-absolute-path-of-an-os-x-command-line-app/1024933#1024933
+
+**/
 
 
 #ifdef _MSC_VER
-const char* SProc::ExecutablePath()
+const char* SProc::ExecutablePath(bool basename)
 {
     return NULL ; 
 }
 #elif defined(__APPLE__)
-const char* SProc::ExecutablePath()
+
+#include <mach-o/dyld.h>
+
+const char* SProc::ExecutablePath(bool basename)
 {
-    return NULL ; 
+    char buf[PATH_MAX];
+    uint32_t size = sizeof(buf);
+    bool ok = _NSGetExecutablePath(buf, &size) == 0 ; 
+
+    if(!ok)
+       LOG(fatal) 
+           << "_NSGetExecutablePath FAIL " 
+           << " size " << size 
+           << " buf " << buf 
+           ;
+
+    assert(ok); 
+    const char* s = basename ? strrchr(buf, '/') : NULL ;  
+    return s ? strdup(s+1) : strdup(buf) ; 
 }
 #else
 
@@ -99,7 +122,7 @@ const char* SProc::ExecutablePath(bool basename)
     if (len != -1) buf[len] = '\0';
 
     const char* s = basename ? strrchr(buf, '/') : NULL ;  
-    return s ? strdup(s+1) : buf ; 
+    return s ? strdup(s+1) : strdup(buf) ; 
 }
 
 #endif

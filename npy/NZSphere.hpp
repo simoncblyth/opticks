@@ -91,13 +91,6 @@ inline NPY_API void  nzsphere::increase_z2(float dz){ assert( dz >= 0.f) ; param
 inline NPY_API void  nzsphere::decrease_z1(float dz){ assert( dz >= 0.f) ; param1.f.x -= dz ; check() ; }
 inline NPY_API void  nzsphere::set_zcut(float z1, float z2){  param1.f.x = z1 ; param1.f.y = z2 ; check() ; }
 
-inline NPY_API void nzsphere::check() const 
-{
-    assert( z2() > z1() );
-    assert( fabs(z2()) <= radius() );
-    assert( fabs(z1()) <= radius() );
-    assert( zmax() > zmin() ); 
-}
 
 inline NPY_API float nzsphere::rz(float z_) const 
 {

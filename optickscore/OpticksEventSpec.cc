@@ -176,7 +176,7 @@ std::string OpticksEventSpec::brief() const
        << " tag " << m_tag
        << " itag " << getITag()
        << " det " << m_det
-       << " cat " << m_cat
+       << " cat " << ( m_cat ? m_cat : "-" )
        << " eng " << getEngine()
        ;
 

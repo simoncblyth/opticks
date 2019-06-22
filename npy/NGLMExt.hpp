@@ -157,6 +157,7 @@ struct NPY_API nglmext
 
     // maximum absolute componentwise difference between a and b 
     static float compDiff(const glm::mat4& a , const glm::mat4& b );
+    static float compDiff(const glm::mat3& a , const glm::mat3& b );
     static float compDiff(const glm::vec4& a , const glm::vec4& b );
     static float compDiff(const glm::vec3& a , const glm::vec3& b );
     static float compDiff(const glm::vec2& a , const glm::vec2& b );

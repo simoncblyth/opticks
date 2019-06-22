@@ -508,6 +508,14 @@ void NScene::load_mesh_extras()
         }
 
         NTrianglesNPY* tris = csg->getTris();
+
+        if(!tris)
+            LOG(fatal) 
+                << " NULL tris " 
+                << " mesh_id " << mesh_id 
+                << " num_meshes " << num_meshes
+                ;
+
         assert(tris);
         bool placeholder = tris->isPlaceholder();
         if(placeholder) 

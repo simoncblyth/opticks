@@ -17,6 +17,27 @@
 #include "PLOG.hh"
 
 
+void nzsphere::check() const 
+{
+    bool z1z2_asc = z2() > z1() ; 
+
+    if(!z1z2_asc)
+       LOG(fatal) 
+          << " z1z2_asc " 
+          << " z1 " << z1()
+          << " z2 " << z2()
+          ;
+ 
+    assert( z1z2_asc );
+    assert( fabs(z2()) <= radius() );
+    assert( fabs(z1()) <= radius() );
+    assert( zmax() > zmin() ); 
+}
+
+
+
+
+
 float nzsphere::operator()(float x_, float y_, float z_) const 
 {
     glm::vec4 p(x_,y_,z_,1.f); 

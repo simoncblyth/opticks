@@ -10,6 +10,7 @@
 #include <boost/numeric/conversion/converter.hpp>
 
 #include "BConverter.hh"
+#include "OPTICKS_LOG.hh"
 
 /*
 
@@ -124,38 +125,88 @@ void test_ShortCompressor()
 }
 
 
+/**
+test_BConverter_0
+--------------------
 
-void test_BConverter()
+Fails on macOS/clang : seems execeptions not percolating up thru the layers with clang ?
+Have to directly catch where the exception is thrown, unlike on Linux.
+
+::
+
+    epsilon:boostrap blyth$ BConverterTest 
+    libc++abi.dylib: terminating with uncaught exception of type boost::numeric::negative_overflow: bad numeric conversion: negative overflow
+    Abort trap: 6
+
+**/
+
+void test_BConverter_0(const std::vector<float>& fvs )
 {
-    std::vector<float> fvs = { -1.5f, 0.f, 0.5f, 100.5f, 200.5f, 254.5f, 254.5f , 255.5f , 256.5f , 300.5f } ; 
-
     for(unsigned i=0 ; i < fvs.size() ; i++)
     {
         float fv = fvs[i] ; 
+
         unsigned char uc(0);  
+
         try 
         {
             uc = BConverter::my__float2uint_rn(fv ) ;
         }     
-        catch( boost::numeric::positive_overflow& e  )
-        {
-            std::cout << e.what() << std::endl ;  
-        }
         catch( boost::numeric::negative_overflow& e  )
         {
             std::cout << e.what() << std::endl ;  
         }
+        catch( boost::numeric::positive_overflow& e  )
+        {
+            std::cout << e.what() << std::endl ;  
+        }
 
-        std::cout 
-            << " fv " << fv  
+        LOG(info) 
+            << " i " << std::setw(4) << i    
+            << " fv " << std::setw(16) << std::fixed << std::setprecision(8) << fv
             << " uc " << (int)uc
-            << std::endl ; 
+            ;
+
+    }
+}
+
+void test_BConverter_1(const std::vector<float>& fvs )
+{
+    for(unsigned i=0 ; i < fvs.size() ; i++)
+    {
+        float fv = fvs[i] ; 
+
+        unsigned char uc(0);  
+        uc = BConverter::my__float2uint_rn_kludge(fv ) ;
+
+        LOG(info) 
+            << " i " << std::setw(4) << i    
+            << " fv " << std::setw(16) << std::fixed << std::setprecision(8) << fv
+            << " uc " << (int)uc
+            ;
+
     }
 }
 
 
-int main() 
+void test_BConverter()
 {
+    std::vector<float> fvs = { -1.5f, 0.f, 0.5f, 100.5f, 200.5f, 254.5f, 254.5f , 255.0f, 255.45f, 255.49999f,  255.5f , 256.5f , 300.5f } ; 
+
+    //test_BConverter_0(fvs); 
+    test_BConverter_1(fvs); 
+
+
+
+}
+
+
+
+
+int main(int argc, char** argv) 
+{
+    OPTICKS_LOG(argc, argv);
+
     //test_ShortCompressor(); 
    
     test_BConverter(); 

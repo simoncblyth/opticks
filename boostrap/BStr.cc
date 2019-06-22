@@ -250,6 +250,14 @@ T BStr::LexicalCast(const char* str, T fallback, bool& badcast )
 
 
 
+/**
+BStr::atoi
+-----------
+
+Note that badlex does happen as part of usual 
+operations with BFile::pathEndsWithInt
+
+**/
 
 int BStr::atoi( const char* str, int fallback )
 {
@@ -278,8 +286,9 @@ int BStr::atoi( const char* str, int fallback )
                    << " str " << str  
                    << " fallback " << fallback
                    ;  
-       // assert(0); 
-        std::raise(SIGINT); 
+        // assert(0); 
+        //std::raise(SIGINT); 
+        
     }
 
     return i ;

@@ -6,12 +6,7 @@
 #include <glm/fwd.hpp>
 struct nd ; 
 
-#ifdef OLD_PARAMETERS
-class X_BParameters ; 
-#else
 class NMeta ; 
-#endif
-
 
 class NCSG ; 
 struct NSceneConfig ; 
@@ -44,11 +39,7 @@ class NPY_API NGeometry
        virtual int                      getLogicalVolumeIndex(int mesh_id) = 0 ; 
 
 
-#ifdef OLD_PARAMETERS
-       virtual X_BParameters*           getCSGMetadata(int mesh_id) = 0 ;
-#else
        virtual NMeta*                   getCSGMetadata(int mesh_id) = 0 ;
-#endif
 
        virtual NCSG*                    getCSG(int mesh_id) = 0 ; 
 

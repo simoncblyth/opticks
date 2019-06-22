@@ -52,12 +52,21 @@ include(EchoTarget)
 set(BUILD_SHARED_LIBS ON)
 
 
-# add the automatically determined parts of the RPATH
-# which point to directories outside the build tree to the install RPATH
-# set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+
+
+# macOS RPATH
+# ------------
 #
-# the RPATH to be used when installing, like this forces users to set LD_LIBRARY_PATH as well as PATH
-# SET(CMAKE_INSTALL_RPATH "")
+# CMAKE_INSTALL_RPATH_USE_LINK_PATH : adds the automatically determined parts of the RPATH
+# which point to directories outside the build tree to the install RPATH
+#
+# see env-;otool-;otool-rpath  
+#
+# * https://blogs.oracle.com/dipol/dynamic-libraries,-rpath,-and-mac-os
+#
+#
+# Linux RPATH 
+# --------------------
 #
 # install RPATH is prefixed with $ORIGIN/.. to simplify deployment of Opticks binaries 
 # users then only need to set PATH and the executables are able to find the libs relative to themselves  
@@ -65,7 +74,17 @@ set(BUILD_SHARED_LIBS ON)
 #
 # to check the RPATH of a library or executable use chrpath on it, eg: chrpath $(which OKTest) 
 #
+
+
+if(UNIX AND NOT APPLE)
 set(CMAKE_INSTALL_RPATH "$ORIGIN/../lib:$ORIGIN/../lib64:$ORIGIN/../externals/lib:$ORIGIN/../externals/lib64:$ORIGIN/../externals/OptiX/lib64")
+elseif(APPLE)
+set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+endif()
+
+
+
+
 
 include(OpticksCXXFlags)   
 

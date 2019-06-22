@@ -4,6 +4,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <csignal>
+#include <cmath>
 #include <math.h>
 
 #include <cassert>

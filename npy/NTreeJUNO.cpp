@@ -39,6 +39,9 @@ nnode* NTreeJUNO::Rationalize(nnode* a)   // static
 NTreeJUNO::NTreeJUNO(nnode* root_ ) 
     :
     root(root_),
+    e_axes(0.f,0.f,0.f),
+    e_zcut(0.f,0.f),
+    e_trs_unscaled(1.f),
     cone(replacement_cone())
 {
 }

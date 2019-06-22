@@ -201,7 +201,6 @@ endif()
 
 if(YoctoGL_FOUND)
    list(APPEND TEST_SOURCES  
-       NSceneTest.cc
        NSceneConfigTest.cc
        #NYMathTest.cc
        #NYShapeTest.cc
@@ -216,6 +215,16 @@ if(YoctoGL_FOUND)
 
 )
 endif()
+
+
+
+set( _TEST_SOURCES_SKIPPED
+
+       NSceneTest.cc
+
+
+)
+
 
 
 

@@ -27,11 +27,14 @@ struct NPY_API NTreeJUNO
     NTreeJUNO(nnode* root_) ;
 
     nnode* root ; 
-    ncone* cone ; 
 
     glm::vec3 e_axes ; 
     glm::vec2 e_zcut ; 
     glm::mat4 e_trs_unscaled ; 
+
+    ncone* cone ; 
+
+
 
     ncone* replacement_cone() ; 
     void rationalize();

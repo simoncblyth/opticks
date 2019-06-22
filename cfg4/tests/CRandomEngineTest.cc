@@ -10,7 +10,7 @@
 #include "Randomize.hh"
 
 #include "CG4.hh"
-#include "CFG4_LOG.hh"
+#include "OPTICKS_LOG.hh"
 #include "CRandomEngine.hh"
 
 
@@ -66,8 +66,7 @@ struct CRandomEngineTest
 
 int main(int argc, char** argv)
 {
-    PLOG_(argc, argv);
-    CFG4_LOG__ ; 
+    OPTICKS_LOG(argc, argv);
 
     LOG(info) << argv[0] ; 
 

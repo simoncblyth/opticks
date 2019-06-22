@@ -301,6 +301,19 @@ float nglmext::compDiff(const glm::mat4& a , const glm::mat4& b )
     return glm::compMax(colmax) ; 
 }
 
+float nglmext::compDiff(const glm::mat3& a , const glm::mat3& b )
+{
+    glm::mat3 amb = a - b ; 
+
+    glm::mat3 aamb ; 
+    for(unsigned i=0 ; i < 3 ; i++) aamb[i] = glm::abs(amb[i]) ; 
+
+    glm::vec3 colmax ; 
+    for(unsigned i=0 ; i < 3 ; i++) colmax[i] = glm::compMax(aamb[i]) ; // compMax returns float, here using index addressing of vec4
+
+    return glm::compMax(colmax) ; 
+}
+
 
 
 
@@ -640,8 +653,8 @@ glm::vec3 nmat4triple::get_translation() const
 
 bool nmat4triple::is_translation(float eps) const 
 {
-    glm::mat3 i3(1.f); 
-    glm::mat3 t3(t) ; 
+    const glm::mat3 i3(1.f); 
+    const glm::mat3 t3(t) ; 
     float dt = nglmext::compDiff(t3, i3);
     return dt < eps ; 
 }

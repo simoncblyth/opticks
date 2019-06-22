@@ -1,4 +1,4 @@
-#!/bin/bash -l
+#!/bin/bash -l 
 
 tboolean-sh-notes(){ cat << EON
 /**

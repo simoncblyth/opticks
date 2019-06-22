@@ -443,7 +443,7 @@ void CRandomEngine::preTrack()
     m_jump_count = 0 ; 
 
     unsigned use_index ; 
-    assert( m_ok->isAlign() );    // --align 
+    // assert( m_ok->isAlign() );    // not true for tests/CRandomEngineTest 
     bool align_mask = m_ok->hasMask() ;  
 
     // --pindexlog too ?
