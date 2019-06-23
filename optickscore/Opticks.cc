@@ -1991,24 +1991,31 @@ which will get translated back as -timemax.
 
 Initial rule of thumb  2.f*extent/speed_of_light results in 
 some times trying to go over domain, so upped the factor to 3.f
+Now the factor can be changed with --timemaxthumb option
+and are upping the default to 6.f
 
+NB its better not to change this frequently, as it effects 
+event records 
 
 **/
 
 void Opticks::setupTimeDomain(float extent)
 {
+    float timemaxthumb = m_cfg->getTimeMaxThumb();  // factor
     float timemax = m_cfg->getTimeMax();  // ns
     float animtimemax = m_cfg->getAnimTimeMax() ; 
 
     float speed_of_light = 300.f ;        // mm/ns 
-    float rule_of_thumb_timemax = 3.f*extent/speed_of_light ;
+    
+    float rule_of_thumb_timemax = timemaxthumb*extent/speed_of_light ;
 
     float u_timemin = 0.f ;  // ns
     float u_timemax = timemax < 0.f ? rule_of_thumb_timemax : timemax ;  
     float u_animtimemax = animtimemax < 0.f ? u_timemax : animtimemax ; 
 
     LOG(info)
-        << " cfg.getTimeMax [--timemax] " << timemax 
+        << " cfg.getTimeMaxThumb [--timemaxthumb] " << timemaxthumb 
+        << " cfg.getAnimTimeMax [--animtimemax] " << animtimemax 
         << " cfg.getAnimTimeMax [--animtimemax] " << animtimemax 
         << " speed_of_light (mm/ns) " << speed_of_light
         << " extent (mm) " << extent 

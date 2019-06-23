@@ -9,6 +9,28 @@ get back into context with it.
 
 * :doc:`deviation-comparison-review`
 
+
+Command shortcuts
+---------------------
+
+::
+
+    lv(){ echo 21 ; }
+    # default geometry LV index to test 
+
+    ts(){  LV=${1:-$(lv)} tboolean.sh --align --dbgskipclearzero --dbgnojumpzero --dbgkludgeflatzero $* ; } 
+    # **simulate** : aligned bi-simulation creating OK+G4 events 
+
+    tv(){  LV=${1:-$(lv)} tboolean.sh --load $* ; } 
+    # **visualize** : load events and visualize the propagation
+
+    tv4(){  LV=${1:-$(lv)} tboolean.sh --load --vizg4 $* ; } 
+    # **visualize** the geant4 propagation 
+
+    ta(){  tboolean-;LV=${1:-$(lv)} tboolean-proxy-ip ; } 
+    # **analyse** : load events and analyse the propagation
+
+
 TODO
 ----------
 
@@ -27,25 +49,43 @@ DONE
 * have an RC for every line,  doing it as WARN/ERROR/FATAL for each line, that gets combined into max RC for each section 
 
 
-Command shortcuts
----------------------
+DONE : Deviation comparisons with history misaligned excluded ?
+------------------------------------------------------------------
 
 ::
 
-    lv(){ echo 21 ; }
-    # default geometry LV index to test 
+    In [5]: ab.a.psel = ab.align
 
-    ts(){  PROXYLV=${1:-$(lv)} tboolean.sh --align --dbgskipclearzero --dbgnojumpzero --dbgkludgeflatzero $* ; } 
-    # **simulate** : aligned bi-simulation creating OK+G4 events 
+    In [6]: ab.b.psel = ab.align
 
-    tv(){  PROXYLV=${1:-$(lv)} tboolean.sh --load $* ; } 
-    # **visualize** : load events and visualize the propagation
+    In [7]: ab.his
+    Out[7]: 
+    ab.his
+    .                seqhis_ana  1:tboolean-proxy-11:tboolean-proxy-11   -1:tboolean-proxy-11:tboolean-proxy-11        c2        ab        ba 
+    .                               9975      9975         0.00/15 =  0.00  (pval:1.000 prob:0.000)  
+    0000             8ccd      7506      7506      0             0.00        1.000 +- 0.012        1.000 +- 0.012  [4 ] TO BT BT SA
+    0001              8bd       514       514      0             0.00        1.000 +- 0.044        1.000 +- 0.044  [3 ] TO BR SA
+    0002            8cbcd       471       471      0             0.00        1.000 +- 0.046        1.000 +- 0.046  [5 ] TO BT BR BT SA
+    0003              86d       415       415      0             0.00        1.000 +- 0.049        1.000 +- 0.049  [3 ] TO SC SA
+    0004            86ccd       400       400      0             0.00        1.000 +- 0.050        1.000 +- 0.050  [5 ] TO BT BT SC SA
+    0005              4cd       156       156      0             0.00        1.000 +- 0.080        1.000 +- 0.080  [3 ] TO BT AB
+    0006            8cc6d        65        65      0             0.00        1.000 +- 0.124        1.000 +- 0.124  [5 ] TO SC BT BT SA
+    0007            8c6cd        61        61      0             0.00        1.000 +- 0.128        1.000 +- 0.128  [5 ] TO BT SC BT SA
+    0008          8cc6ccd        52        52      0             0.00        1.000 +- 0.139        1.000 +- 0.139  [7 ] TO BT BT SC BT BT SA
+    0009       bbbbbbb6cd        36        36      0             0.00        1.000 +- 0.167        1.000 +- 0.167  [10] TO BT SC BR BR BR BR BR BR BR
+    0010           866ccd        30        30      0             0.00        1.000 +- 0.183        1.000 +- 0.183  [6 ] TO BT BT SC SC SA
+    0011           8cbbcd        25        25      0             0.00        1.000 +- 0.200        1.000 +- 0.200  [6 ] TO BT BR BR BT SA
+    0012             866d        23        23      0             0.00        1.000 +- 0.209        1.000 +- 0.209  [4 ] TO SC SC SA
+    0013             86bd        22        22      0             0.00        1.000 +- 0.213        1.000 +- 0.213  [4 ] TO BR SC SA
+    0014           8cbc6d        20        20      0             0.00        1.000 +- 0.224        1.000 +- 0.224  [6 ] TO SC BT BR BT SA
+    0015           86cbcd        19        19      0             0.00        1.000 +- 0.229        1.000 +- 0.229  [6 ] TO BT BR BT SC SA
+    0016           8cb6cd        14        14      0             0.00        1.000 +- 0.267        1.000 +- 0.267  [6 ] TO BT SC BR BT SA
+    0017             4bcd        14        14      0             0.00        1.000 +- 0.267        1.000 +- 0.267  [4 ] TO BT BR AB
+    0018             8b6d        12        12      0             0.00        1.000 +- 0.289        1.000 +- 0.289  [4 ] TO SC BR SA
+    0019           8b6ccd        11        11      0             0.00        1.000 +- 0.302        1.000 +- 0.302  [6 ] TO BT BT SC BR SA
+    .                               9975      9975         0.00/15 =  0.00  (pval:1.000 prob:0.000)  
 
-    tv4(){ tv --vizg4 $* ; }
-    # **visualize** the geant4 propagation 
-
-    ta(){  tboolean-;PROXYLV=${1:-$(lv)} tboolean-proxy-ip ; } 
-    # **analyse** : load events and analyse the propagation
+Hmm deviation machiney works line by line, so need to combine selections
 
 
 
@@ -103,8 +143,7 @@ LV 10-14 inclusive, very big extents 17-24m : 10:dropout-zero, 11+12+13+14:trunc
 
 Two different issues
 
-
-1. LV 10 : speckle in the hole coincidence problem
+1. LV 10 : speckle in the hole coincidence problem : FIXED
 2. LV 11,12,13,14 : truncated big bouncers loosing alignment  
 
 
@@ -125,99 +164,16 @@ Two different issues
 
 
 
+Excluding non-aligned from deviation comparisons::
 
+                   scan-- :      tboolean.py --pfx tboolean-proxy-10 ======= RC   4  RC 0x04     2/10k photons >= ox_dv.error maxdvmax:0.7034 
 
-LV:10 fixing -ve rpost times from too small time domain
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                   scan-- :      tboolean.py --pfx tboolean-proxy-11 ======= RC   0  RC 0x00 
+                   scan-- :      tboolean.py --pfx tboolean-proxy-12 ======= RC   0  RC 0x00 
 
-ta 10::
+                   scan-- :      tboolean.py --pfx tboolean-proxy-13 ======= RC   6  RC 0x06     POLZ issue for 2 multi-not-quite-normal "sphere-pole" photons  TO BT BR BT SA
+                   scan-- :      tboolean.py --pfx tboolean-proxy-14 ======= RC   4  RC 0x04     3 ph deviations above cut 0.25 
 
-    In [28]: a.rpost().shape
-    Out[28]: (23, 5, 4)
-
-    In [26]: ab.a.rpost()       # negative time at the top 
-    Out[26]: 
-    A()sliced
-    A([[[    39.5525,   -188.9732, -71998.8026,      0.    ],
-        [    39.5525,   -188.9732,  -2500.5993,    231.8218],
-        [    39.5525,   -188.9732,   1500.7991,    245.1671],
-        [    39.5525,   -188.9732,   2500.5993,    251.2319],
-        [    39.5525,   -188.9732,  72001.    ,   -480.0213]],
-
-       [[  -239.5126,    -92.2893, -71998.8026,      0.    ],
-        [  -239.5126,    -92.2893,  -2500.5993,    231.8218],
-        [  -239.5126,    -92.2893,   1500.7991,    245.1671],
-        [  -239.5126,    -92.2893,   2500.5993,    251.2319],
-        [  -239.5126,    -92.2893,  72001.    ,   -480.0213]],
-
-
-    In [29]: ab.a.fdom
-    Out[29]: 
-    A(torch,1,tboolean-proxy-10)(metadata) 3*float4 domains of position, time, wavelength (used for compression)
-    A([[[    0.    ,     0.    ,     0.    , 72001.    ]],
-
-       [[    0.    ,   480.0067,   480.0067,     0.    ]],
-
-       [[   60.    ,   820.    ,    20.    ,   760.    ]]], dtype=float32)
-
-
-Not fitting in short spits out SHRT_MIN -32767 as the compressed time
-becoming -480.0 the negated timemax : which stands out like a sore thumb.  
-
-::
-
-   TMAX=500 ts 10    ## it was close 
-
-
-
-    In [1]: ab.sel = "TO BT BT BT SA"
-    [2019-06-21 23:30:18,744] p83910 {evt.py    :876} WARNING  - _init_selection EMPTY nsel 0 len(psel) 10000 
-
-    In [2]: a.rpost().shape
-    Out[2]: (23, 5, 4)
-
-    In [3]: ab.a.rpost()
-    Out[3]: 
-    A()sliced
-    A([[[    39.5525,   -188.9732, -71998.8026,      0.    ],
-        [    39.5525,   -188.9732,  -2500.5993,    231.8339],
-        [    39.5525,   -188.9732,   1500.7991,    245.1704],
-        [    39.5525,   -188.9732,   2500.5993,    251.2284],
-        [    39.5525,   -188.9732,  72001.    ,    483.0622]],
-
-       [[  -239.5126,    -92.2893, -71998.8026,      0.    ],
-        [  -239.5126,    -92.2893,  -2500.5993,    231.8339],
-        [  -239.5126,    -92.2893,   1500.7991,    245.1704],
-        [  -239.5126,    -92.2893,   2500.5993,    251.2284],
-        [  -239.5126,    -92.2893,  72001.    ,    483.0622]],
-
-::
-
-     
-     82 /**
-     83 shortnorm
-     84 ------------
-     85 
-     86 range of short is -32768 to 32767
-     87 Expect no positions out of range, as constrained by the geometry are bouncing on,
-     88 but getting times beyond the range eg 0.:100 ns is expected
-     89 
-     90 **/
-     91 
-     92 __device__ short shortnorm( float v, float center, float extent )
-     93 {
-     94     int inorm = __float2int_rn(32767.0f * (v - center)/extent ) ;    // linear scaling into -1.f:1.f * float(SHRT_MAX)
-     95     return fitsInShort(inorm) ? short(inorm) : SHRT_MIN  ;
-     96 }   
-
-
-
-After re-simulating to fix the time domain and using automated rule of thumb to 
-set the timedomain based on geometry extent the -ve times are gone and 
-the visualized propagation looks more reasonable::
-
-    TMAX=-1 ts 10 
-    TMAX=-1 tv 10 
 
 
 LV:10 sAirTT COINCIDENCE/SPECKLE + HISTORY ALIGNMENT LOSSES
@@ -226,6 +182,8 @@ LV:10 sAirTT COINCIDENCE/SPECKLE + HISTORY ALIGNMENT LOSSES
 * large deviations from a few photons failing to stay in history alignment
 
 * :doc:`tboolean-proxy-scan-LV10-coincidence-speckle`  FIXED
+* :doc:`tboolean-proxy-scan-negative-rpost-times` FIXED
+
 * :doc:`tboolean-proxy-scan-LV10-history-misaligned-big-bouncer`
 
 
@@ -237,6 +195,8 @@ ta 11, chisq aligned : apart from one that looks like a truncation difference::
       0009       bbbbbbb6cd        43        39             0.20        1.103 +- 0.168        0.907 +- 0.145  [10] TO BT SC BR BR BR BR BR BR BR
 
 
+* excluding 25/10000 maligned, makes this go away 
+
 LV:12 sTopRock0x4bccfc0  maxdvmax:0.1836  LOOKS LIKE SAME TRUNCATION ISSUE TO LV:11 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
      
@@ -244,48 +204,24 @@ ta 12, maxdvmax:0.1836, same as LV:11::
 
       0009       bbbbbbb6cd        47        42             0.28        1.119 +- 0.163        0.894 +- 0.138  [10] TO BT SC BR BR BR BR BR BR BR
 
+* excluding 12/10000 maligned, makes this go away 
+
 
 LV:13 sTarget0x4bd4340
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Difference in big bouncers::
+* polz problem + 4 other lines 
 
-    tboolean-proxy-13/tboolean-proxy-13/torch/ -1 :  20190620-1638 maxbounce:9 maxrec:10 maxrng:3000000 /tmp/tboolean-proxy-13/evt/tboolean-proxy-13/torch/-1/fdom.npy (recstp) 
-    tboolean-proxy-13
-    .
-    ab.his
-    .                seqhis_ana  1:tboolean-proxy-13:tboolean-proxy-13   -1:tboolean-proxy-13:tboolean-proxy-13        c2        ab        ba 
-    .                              10000     10000         0.18/13 =  0.01  (pval:1.000 prob:0.000)  
-    0000             8ccd      7631      7632             0.00        1.000 +- 0.011        1.000 +- 0.011  [4 ] TO BT BT SA                        <<<<<<<<
-    0001              8bd       537       537             0.00        1.000 +- 0.043        1.000 +- 0.043  [3 ] TO BR SA
-    0002            8cbcd       470       470             0.00        1.000 +- 0.046        1.000 +- 0.046  [5 ] TO BT BR BT SA
-    0003              4cd       288       288             0.00        1.000 +- 0.059        1.000 +- 0.059  [3 ] TO BT AB
-    0004              86d       273       273             0.00        1.000 +- 0.061        1.000 +- 0.061  [3 ] TO SC SA
-    0005            86ccd       245       245             0.00        1.000 +- 0.064        1.000 +- 0.064  [5 ] TO BT BT SC SA
-    0006            8c6cd       194       194             0.00        1.000 +- 0.072        1.000 +- 0.072  [5 ] TO BT SC BT SA
-    0007       bbbbbbb6cd        47        43             0.18        1.093 +- 0.159        0.915 +- 0.140  [10] TO BT SC BR BR BR BR BR BR BR     <<<<<<<<<<<
-    0008          8cc6ccd        36        36             0.00        1.000 +- 0.167        1.000 +- 0.167  [7 ] TO BT BT SC BT BT SA
-    0009            8bccd        31        31             0.00        1.000 +- 0.180        1.000 +- 0.180  [5 ] TO BT BT BR SA
-    0010           8cbbcd        27        27             0.00        1.000 +- 0.192        1.000 +- 0.192  [6 ] TO BT BR BR BT SA
-    0011            8cc6d        24        24             0.00        1.000 +- 0.204        1.000 +- 0.204  [5 ] TO SC BT BT SA
-    0012             4bcd        21        21             0.00        1.000 +- 0.218        1.000 +- 0.218  [4 ] TO BT BR AB
-    0013             86bd        18        18             0.00        1.000 +- 0.236        1.000 +- 0.236  [4 ] TO BR SC SA
-    0014           8c6bcd        14        14             0.00        1.000 +- 0.267        1.000 +- 0.267  [6 ] TO BT BR SC BT SA
-    0015           866ccd        14        14             0.00        1.000 +- 0.267        1.000 +- 0.267  [6 ] TO BT BT SC SC SA
-    0016           86cbcd        13        13             0.00        1.000 +- 0.277        1.000 +- 0.277  [6 ] TO BT BR BT SC SA
-    0017       bbbbbbcccd        12        11             0.00        1.091 +- 0.315        0.917 +- 0.276  [10] TO BT BT BT BR BR BR BR BR BR     <<<<<<<<
-    0018             866d        11        11             0.00        1.000 +- 0.302        1.000 +- 0.302  [4 ] TO SC SC SA
-    0019             8b6d         9         9             0.00        1.000 +- 0.333        1.000 +- 0.333  [4 ] TO SC BR SA
-    .                              10000     10000         0.18/13 =  0.01  (pval:1.000 prob:0.000)  
+* :doc:`tboolean-proxy-scan-polarization`
+
+
 
 LV:14 sAcrylic0x4bd3cd0  
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-ta 14, maxdvmax:0.5522, again big bouncer truncation looses alignment ::
+ta 14, maxdvmax:0.5522
 
-    0000             8ccd      7669      7668             0.00        1.000 +- 0.011        1.000 +- 0.011  [4 ] TO BT BT SA
-    0007       bbbbbbb6cd        49        45             0.17        1.089 +- 0.156        0.918 +- 0.137  [10] TO BT SC BR BR BR BR BR BR BR
-
+* After exclude the maligned : three lines in error 
 
 
 LV 15,16 
@@ -298,10 +234,6 @@ LV 15,16
 
     15                              sStrut0x4bd4b80 ce0            0.0000,0.0000,0.0000,600.0000 ce1            0.0000,0.0000,0.0000,600.0000 15
     16                          sFasteners0x4c01080 ce0          0.0000,0.0000,-92.5000,150.0000 ce1            0.0000,0.0000,0.0000,150.0000 16
-
-
-
-
 
 
 
@@ -330,146 +262,557 @@ LV 17-22
     22                       sMask_virtual0x4c36e10 ce0          0.0000,0.0000,-79.0000,275.0500 ce1            0.0000,0.0000,0.0000,275.0500 22
 
 
+Excluding maligned from deviation comparison::
+
+                   scan-- :      tboolean.py --pfx tboolean-proxy-15 ======= RC   0  RC 0x00 
+                   scan-- :      tboolean.py --pfx tboolean-proxy-16 ======= RC   0  RC 0x00 
+                   scan-- :      tboolean.py --pfx tboolean-proxy-17 ======= RC   0  RC 0x00 
+
+                   scan-- :      tboolean.py --pfx tboolean-proxy-18 ======= RC   6  RC 0x06      ## polz ???
+
+                   scan-- :      tboolean.py --pfx tboolean-proxy-19 ======= RC   1  RC 0x01      ## leverarm, plausible explanation for 2 photons rpost deviations
+                   scan-- :      tboolean.py --pfx tboolean-proxy-20 ======= RC   1  RC 0x01      ## one more plausible leverarm  
+                   scan-- :      tboolean.py --pfx tboolean-proxy-21 ======= RC   1  RC 0x01 
+                   scan-- :      tboolean.py --pfx tboolean-proxy-22 ======= RC   0  RC 0x00 
+
+
 
 LV 18 : polarization wrong ? for "TO BT BR BR BR BT SA"  0x8cbbbcd
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* :doc:`tboolean-proxy-scan-polarization`
+
+
+
+LV 19 : after exclude maligned
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 ::
 
-    0005          8cbbbcd         7         7             0.00        1.000 +- 0.378        1.000 +- 0.378  [7 ] TO BT BR BR BR BT SA
-
-
-    ab.rpol_dv
-    maxdvmax:1.0000  level:FATAL  RC:1       skip:
-                     :                                :                   :                       :                   : 0.0078 0.0118 0.0157 :                                    
+    ab.a.metadata:/tmp/tboolean-proxy-19/evt/tboolean-proxy-19/torch/1         ox:b5458c3dfdb22d752d3e6acfa43683f3 rx:5b9da7ec4b0d939ec2545b0493a6b377 np:  10000 pr:    0.0059 COMPUTE_MODE compute_requested 
+    ab.b.metadata:/tmp/tboolean-proxy-19/evt/tboolean-proxy-19/torch/-1        ox:98867d00e936532ab32df7389e1c3ae7 rx:6de9c9b280aa5b3dd362f254fdbedcd9 np:  10000 pr:    2.9355 COMPUTE_MODE compute_requested 
+    WITH_SEED_BUFFER WITH_RECORD WITH_SOURCE WITH_ALIGN_DEV WITH_ALIGN_DEV_DEBUG WITH_LOGDOUBLE 
+    []
+    .
+    ab.rpost_dv
+    maxdvmax:0.1598  level:FATAL  RC:1       skip:
+                     :                                :                   :                       :                   : 0.0228 0.0342 0.0457 :                                    
       idx        msg :                            sel :    lcu1     lcu2  :       nitem     nelem :  nwar  nerr  nfat :   fwar   ferr   ffat :        mx        mn       avg      
-     0000            :                    TO BT BT SA :    8794     8794  :        8794    105528 :     0     0     0 : 0.0000 0.0000 0.0000 :    0.0000    0.0000    0.0000   :        INFO :  
-     0001            :                       TO BR SA :     580      580  :         580      5220 :     0     0     0 : 0.0000 0.0000 0.0000 :    0.0000    0.0000    0.0000   :        INFO :  
-     0002            :                 TO BT BR BT SA :     561      561  :         561      8415 :     0     0     0 : 0.0000 0.0000 0.0000 :    0.0000    0.0000    0.0000   :        INFO :  
-     0003            :              TO BT BR BR BT SA :      37       37  :          37       666 :     0     0     0 : 0.0000 0.0000 0.0000 :    0.0000    0.0000    0.0000   :        INFO :  
-     0004            :                       TO SC SA :       8        8  :           8        72 :     0     0     0 : 0.0000 0.0000 0.0000 :    0.0000    0.0000    0.0000   :        INFO :  
-     0005            :           TO BT BR BR BR BT SA :       7        7  :           7       147 :     4     4     4 : 0.0272 0.0272 0.0272 :    1.0000    0.0000    0.0269   :  FATAL :   > dvmax[2] 0.0157  
-     0006            :                 TO BT BT SC SA :       7        7  :           7       105 :     0     0     0 : 0.0000 0.0000 0.0000 :    0.0000    0.0000    0.0000   :        INFO :  
-     0007            :                       TO BT AB :       2        2  :           2        18 :     0     0     0 : 0.0000 0.0000 0.0000 :    0.0000    0.0000    0.0000   :        INFO :  
-     0008            :           TO BT BT SC BT BT SA :       1        1  :           1        21 :     0     0     0 : 0.0000 0.0000 0.0000 :    0.0000    0.0000    0.0000   :        INFO :  
-     0009            :        TO BT SC BR BR BR BT SA :       1        1  :           1        24 :     0     0     0 : 0.0000 0.0000 0.0000 :    0.0000    0.0000    0.0000   :        INFO :  
-     0010            :              TO BR SC BT BT SA :       1        1  :           1        18 :     0     0     0 : 0.0000 0.0000 0.0000 :    0.0000    0.0000    0.0000   :        INFO :  
-     0011            :                 TO BT SC BT SA :       1        1  :           1        15 :     0     0     0 : 0.0000 0.0000 0.0000 :    0.0000    0.0000    0.0000   :        INFO :  
+     0000            :                    TO BT BT SA :    8668     8668  :        8668    138688 :  1033     0     0 : 0.0074 0.0000 0.0000 :    0.0228    0.0000    0.0002   :              WARNING :   > dvmax[0] 0.0228  
+     0001            :                       TO BR SA :     710      710  :         710      8520 :    77     0     0 : 0.0090 0.0000 0.0000 :    0.0228    0.0000    0.0002   :              WARNING :   > dvmax[0] 0.0228  
+     0002            :                 TO BT BR BT SA :     503      503  :         503     10060 :    46     0     0 : 0.0046 0.0000 0.0000 :    0.0228    0.0000    0.0001   :              WARNING :   > dvmax[0] 0.0228  
+     0003            :              TO BT BR BR BT SA :      74       73  :          73      1752 :    17     0     0 : 0.0097 0.0000 0.0000 :    0.0228    0.0000    0.0002   :              WARNING :   > dvmax[0] 0.0228  
+     0004            :           TO BT BR BR BR BT SA :      10       11  :          10       280 :     4     0     0 : 0.0143 0.0000 0.0000 :    0.0228    0.0000    0.0003   :              WARNING :   > dvmax[0] 0.0228  
+     0005            :        TO BT BR BR BR BR BT SA :      10       10  :          10       320 :    17     6     6 : 0.0531 0.0187 0.0187 :    0.1598    0.0000    0.0020   :                FATAL :   > dvmax[2] 0.0457  
+     0006            :                       TO SC SA :       8        8  :           8        96 :     0     0     0 : 0.0000 0.0000 0.0000 :    0.0000    0.0000    0.0000   :                 INFO :  
+     0007            :                 TO BT BT SC SA :       7        7  :           7       140 :     0     0     0 : 0.0000 0.0000 0.0000 :    0.0000    0.0000    0.0000   :                 INFO :  
+     0009            :                       TO BT AB :       2        2  :           2        24 :     0     0     0 : 0.0000 0.0000 0.0000 :    0.0000    0.0000    0.0000   :                 INFO :  
+     0010            :                 TO BT SC BT SA :       2        2  :           2        40 :     0     0     0 : 0.0000 0.0000 0.0000 :    0.0000    0.0000    0.0000   :                 INFO :  
+     0011            :  TO BT BR BR BR BR BR BR BR BR :       1        1  :           1        40 :     1     0     0 : 0.0250 0.0000 0.0000 :    0.0228    0.0000    0.0006   :              WARNING :   > dvmax[0] 0.0228  
+     0012            :  TO BT BR BR BR BR BR BR BT SA :       1        1  :           1        40 :     3     1     1 : 0.0750 0.0250 0.0250 :    0.0457    0.0000    0.0023   :                FATAL :   > dvmax[2] 0.0457  
+     0013            :        TO BT BT SC BT BR BT SA :       1        1  :           1        32 :     0     0     0 : 0.0000 0.0000 0.0000 :    0.0000    0.0000    0.0000   :                 INFO :  
+     0014            :           TO BR SC BT BR BT SA :       1        1  :           1        28 :     1     0     0 : 0.0357 0.0000 0.0000 :    0.0228    0.0000    0.0008   :              WARNING :   > dvmax[0] 0.0228  
     .
-    ab.ox_dv
-    maxdvmax:0.9989  level:FATAL  RC:1       skip:
-                     :                                :                   :                       :                   : 0.0010 0.0200 0.1000 :                                    
-      idx        msg :                            sel :    lcu1     lcu2  :       nitem     nelem :  nwar  nerr  nfat :   fwar   ferr   ffat :        mx        mn       avg      
-     0000            :                    TO BT BT SA :    8794     8794  :        8794    105528 :     0     0     0 : 0.0000 0.0000 0.0000 :    0.0001    0.0000    0.0000   :        INFO :  
-     0001            :                       TO BR SA :     580      580  :         580      6960 :     0     0     0 : 0.0000 0.0000 0.0000 :    0.0000    0.0000    0.0000   :        INFO :  
-     0002            :                 TO BT BR BT SA :     561      561  :         561      6732 :    23     0     0 : 0.0034 0.0000 0.0000 :    0.0030    0.0000    0.0000   :     WARNING :   > dvmax[0] 0.0010  
-     0003            :              TO BT BR BR BT SA :      37       37  :          37       444 :     0     0     0 : 0.0000 0.0000 0.0000 :    0.0003    0.0000    0.0000   :        INFO :  
-     0004            :                       TO SC SA :       8        8  :           8        96 :     0     0     0 : 0.0000 0.0000 0.0000 :    0.0002    0.0000    0.0000   :        INFO :  
-     0005            :           TO BT BR BR BR BT SA :       7        7  :           7        84 :     3     2     2 : 0.0357 0.0238 0.0238 :    0.9989    0.0000    0.0235   :  FATAL :   > dvmax[2] 0.1000  
-     0006            :                 TO BT BT SC SA :       7        7  :           7        84 :     0     0     0 : 0.0000 0.0000 0.0000 :    0.0004    0.0000    0.0000   :        INFO :  
-     0007            :                       TO BT AB :       2        2  :           2        24 :     0     0     0 : 0.0000 0.0000 0.0000 :    0.0000    0.0000    0.0000   :        INFO :  
-     0008            :           TO BT BT SC BT BT SA :       1        1  :           1        12 :     0     0     0 : 0.0000 0.0000 0.0000 :    0.0000    0.0000    0.0000   :        INFO :  
-     0009            :        TO BT SC BR BR BR BT SA :       1        1  :           1        12 :     1     0     0 : 0.0833 0.0000 0.0000 :    0.0048    0.0000    0.0004   :     WARNING :   > dvmax[0] 0.0010  
-     0010            :              TO BR SC BT BT SA :       1        1  :           1        12 :     0     0     0 : 0.0000 0.0000 0.0000 :    0.0001    0.0000    0.0000   :        INFO :  
-     0011            :                 TO BT SC BT SA :       1        1  :           1        12 :     0     0     0 : 0.0000 0.0000 0.0000 :    0.0001    0.0000    0.0000   :        INFO :  
-    .
-    RC 0x06
 
 
-LV 19 : chisq non-zero : lost alignment for a few photons
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    In [1]: ab.aselhis = "TO BT BR BR BR BR BT SA"
+
+    In [7]: a.rpost()[1]
+    Out[7]: 
+    A()sliced
+    A([[  23.741 ,   70.5152, -746.9043,    0.    ],
+       [  23.741 ,   70.5152,  -13.925 ,    2.4449],
+       [  -1.7806,   -5.2504,  167.0085,    3.6436],
+       [ -26.0009,  -77.2038,   -4.7938,    4.7817],
+       [  54.102 ,  160.6624,   35.9082,    6.3224],
+       [  79.4637,  235.9486,  164.4975,    7.2385],
+       [  79.0072,  234.6246,  167.0085,    7.2558],
+       [-183.125 , -543.7364,  746.9956,   -7.4802]])
+
+    In [8]: b.rpost()[1]
+    Out[8]: 
+    A()sliced
+    A([[  23.741 ,   70.5152, -746.9043,    0.    ],
+       [  23.741 ,   70.5152,  -13.925 ,    2.4449],
+       [  -1.7806,   -5.2504,  167.0085,    3.6436],
+       [ -26.0009,  -77.2038,   -4.7938,    4.7817],
+       [  54.102 ,  160.6624,   35.8854,    6.3224],
+       [  79.4637,  235.9486,  164.4975,    7.2383],
+       [  79.0072,  234.6246,  167.0085,    7.2558],
+       [-183.0793, -543.5766,  746.9956,   -7.4802]])                   ## -ve times, not enough time domain
+
+    In [9]: a.rpost()[1] - b.rpost()[1]
+    Out[9]: 
+    A()sliced
+    A([[ 0.    ,  0.    ,  0.    ,  0.    ],
+       [ 0.    ,  0.    ,  0.    ,  0.    ],
+       [ 0.    ,  0.    ,  0.    ,  0.    ],
+       [ 0.    ,  0.    ,  0.    ,  0.    ],
+       [ 0.    ,  0.    ,  0.0228,  0.    ],
+       [ 0.    ,  0.    ,  0.    ,  0.0002],
+       [ 0.    ,  0.    ,  0.    ,  0.    ],
+       [-0.0457, -0.1598,  0.    ,  0.    ]])
+
+
+    In [17]: a.where
+    Out[17]: array([ 100,  360,  944, 2100, 2111, 3040, 3979, 5674, 6018, 6238])
 
 ::
 
-    ab
-    AB(1,torch,tboolean-proxy-19)  None 0 
-    A tboolean-proxy-19/tboolean-proxy-19/torch/  1 :  20190620-1639 maxbounce:9 maxrec:10 maxrng:3000000 /tmp/tboolean-proxy-19/evt/tboolean-proxy-19/torch/1/fdom.npy () 
-    B tboolean-proxy-19/tboolean-proxy-19/torch/ -1 :  20190620-1639 maxbounce:9 maxrec:10 maxrng:3000000 /tmp/tboolean-proxy-19/evt/tboolean-proxy-19/torch/-1/fdom.npy (recstp) 
-    tboolean-proxy-19
-    .
-    ab.his
-    .                seqhis_ana  1:tboolean-proxy-19:tboolean-proxy-19   -1:tboolean-proxy-19:tboolean-proxy-19        c2        ab        ba 
-    .                              10000     10000         0.01/3 =  0.00  (pval:1.000 prob:0.000)  
-    0000             8ccd      8668      8668             0.00        1.000 +- 0.011        1.000 +- 0.011  [4 ] TO BT BT SA
-    0001              8bd       710       710             0.00        1.000 +- 0.038        1.000 +- 0.038  [3 ] TO BR SA
-    0002            8cbcd       503       503             0.00        1.000 +- 0.045        1.000 +- 0.045  [5 ] TO BT BR BT SA
-    0003           8cbbcd        74        73    ####     0.01        1.014 +- 0.118        0.986 +- 0.115  [6 ] TO BT BR BR BT SA
-    0004          8cbbbcd        10        11    ####     0.00        0.909 +- 0.287        1.100 +- 0.332  [7 ] TO BT BR BR BR BT SA
-    0005         8cbbbbcd        10        10             0.00        1.000 +- 0.316        1.000 +- 0.316  [8 ] TO BT BR BR BR BR BT SA
-    0006              86d         8         8             0.00        1.000 +- 0.354        1.000 +- 0.354  [3 ] TO SC SA
-    0007            86ccd         7         7             0.00        1.000 +- 0.378        1.000 +- 0.378  [5 ] TO BT BT SC SA
-    0008            8cccd         2         0    ####     0.00        0.000 +- 0.000        0.000 +- 0.000  [5 ] TO BT BT BT SA
-    0009              4cd         2         2             0.00        1.000 +- 0.707        1.000 +- 0.707  [3 ] TO BT AB
-    0010            8c6cd         2         2             0.00        1.000 +- 0.707        1.000 +- 0.707  [5 ] TO BT SC BT SA
-    0011       bbbbbbbbcd         1         1             0.00        1.000 +- 1.000        1.000 +- 1.000  [10] TO BT BR BR BR BR BR BR BR BR
-    0012       8cbbbbbbcd         1         1             0.00        1.000 +- 1.000        1.000 +- 1.000  [10] TO BT BR BR BR BR BR BR BT SA
-    0013         8cbc6ccd         1         1             0.00        1.000 +- 1.000        1.000 +- 1.000  [8 ] TO BT BT SC BT BR BT SA
-    0014          8cbc6bd         1         1             0.00        1.000 +- 1.000        1.000 +- 1.000  [7 ] TO BR SC BT BR BT SA
-    0015           8ccccd         0         2    ####     0.00        0.000 +- 0.000        0.000 +- 0.000  [6 ] TO BT BT BT BT SA
-    .                              10000     10000         0.01/3 =  0.00  (pval:1.000 prob:0.000)  
+    In [24]: (a.rpost()[1] - b.rpost()[1])*1e4
+    Out[24]: 
+    A()sliced
+    A([[    0.    ,     0.    ,     0.    ,     0.    ],
+       [    0.    ,     0.    ,     0.    ,     0.    ],
+       [    0.    ,     0.    ,     0.    ,     0.    ],
+       [    0.    ,     0.    ,     0.    ,     0.    ],
+       [    0.    ,     0.    ,   228.2785,     0.    ],
+       [    0.    ,     0.    ,     0.    ,     2.2828],
+       [    0.    ,     0.    ,     0.    ,     0.    ],
+       [ -456.5569, -1597.9492,     0.    ,     0.    ]])
+
+
+* look like no deviation the point before, but remember this is 
+  heavily domain compressed : so cannot see deviations below compression bin size  
+
+
+Curious, how can the SA absorption y position be so different::
+
+    In [12]: a.where
+    Out[12]: array([ 100,  360,  944, 2100, 2111, 3040, 3979, 5674, 6018, 6238])
+
+
+    In [15]: a.ox[1]
+    Out[15]: 
+    A()sliced
+    A([[-183.1187, -543.7328,  747.    ,   10.6096],
+       [  -0.2607,   -0.7741,    0.5768,    1.    ],
+       [   0.963 ,   -0.1659,    0.2125,  380.    ],
+       [   0.    ,    0.    ,    0.    ,    0.    ]], dtype=float32)
+
+    In [16]: b.ox[1]
+    Out[16]: 
+    A()sliced
+    A([[-183.0687, -543.584 ,  747.    ,   10.6092],
+       [  -0.2607,   -0.7741,    0.5769,    1.    ],
+       [   0.963 ,   -0.1659,    0.2125,  380.    ],
+       [   0.    ,    0.    ,    0.    ,    0.    ]], dtype=float32)
+
+
+tv 19: with "TO BT BR BR BR BR BT SA" selected, suspect leverarm effect, 
+very small deviations from bouncing around the inside PMT gets amplified
+by the long trip up to the container where SA happens.
+
+* hmm this a situation where visualizing both at once would be useful
 
 
 
-LV 20 : chisq non-zero/alignment lost,  maxdvmax:0.0479
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Masked running with "ts 19" photon 360
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+::
+
+   ts 19 --mask 360 --pindex 0 --pindexlog 
+   
 
 ::
 
-    ab.his
-    .                seqhis_ana  1:tboolean-proxy-20:tboolean-proxy-20   -1:tboolean-proxy-20:tboolean-proxy-20        c2        ab        ba 
-    .                              10000     10000         0.00/4 =  0.00  (pval:1.000 prob:0.000)  
-    0000             8ccd      8681      8681             0.00        1.000 +- 0.011        1.000 +- 0.011  [4 ] TO BT BT SA
-    0001              8bd       696       696             0.00        1.000 +- 0.038        1.000 +- 0.038  [3 ] TO BR SA
-    0002            8cbcd       345       346             0.00        0.997 +- 0.054        1.003 +- 0.054  [5 ] TO BT BR BT SA
-    0003           8cbbcd       174       174             0.00        1.000 +- 0.076        1.000 +- 0.076  [6 ] TO BT BR BR BT SA
-    0004          8cbbbcd        54        54             0.00        1.000 +- 0.136        1.000 +- 0.136  [7 ] TO BT BR BR BR BT SA
-    0005          8cccbcd        10        10             0.00        1.000 +- 0.316        1.000 +- 0.316  [7 ] TO BT BR BT BT BT SA
-    0006         8cccbbcd         8         8             0.00        1.000 +- 0.354        1.000 +- 0.354  [8 ] TO BT BR BR BT BT BT SA
-    0007              86d         7         7             0.00        1.000 +- 0.378        1.000 +- 0.378  [3 ] TO SC SA
-    0008            86ccd         5         5             0.00        1.000 +- 0.447        1.000 +- 0.447  [5 ] TO BT BT SC SA
-    0009          8bcbbcd         3         3             0.00        1.000 +- 0.577        1.000 +- 0.577  [7 ] TO BT BR BR BT BR SA
-    0010              4cd         3         3             0.00        1.000 +- 0.577        1.000 +- 0.577  [3 ] TO BT AB
-    0011         8cbbbbcd         3         3             0.00        1.000 +- 0.577        1.000 +- 0.577  [8 ] TO BT BR BR BR BR BT SA
-    0012            8c6cd         3         3             0.00        1.000 +- 0.577        1.000 +- 0.577  [5 ] TO BT SC BT SA
-    0013          8cc6ccd         2         2             0.00        1.000 +- 0.707        1.000 +- 0.707  [7 ] TO BT BT SC BT BT SA
-    0014            8cccd         2         0             0.00        0.000 +- 0.000        0.000 +- 0.000  [5 ] TO BT BT BT SA
-    0015           8cc6bd         1         1             0.00        1.000 +- 1.000        1.000 +- 1.000  [6 ] TO BR SC BT BT SA
-    0016        8cbbbbbcd         1         1             0.00        1.000 +- 1.000        1.000 +- 1.000  [9 ] TO BT BR BR BR BR BR BT SA
-    0017          8cbcbcd         1         0             0.00        0.000 +- 0.000        0.000 +- 0.000  [7 ] TO BT BR BT BR BT SA
-    0018       bbbbbbb6cd         1         1             0.00        1.000 +- 1.000        1.000 +- 1.000  [10] TO BT SC BR BR BR BR BR BR BR
-    0019           8ccccd         0         2             0.00        0.000 +- 0.000        0.000 +- 0.000  [6 ] TO BT BT BT BT SA
-    .                              10000     10000         0.00/4 =  0.00  (pval:1.000 prob:0.000)  
+    WITH_ALIGN_DEV_DEBUG photon_id:0 bounce:0
+    propagate_to_boundary  u_OpBoundary:0.151521131 speed:299.79245
+    propagate_to_boundary  u_OpRayleigh:0.567659318   scattering_length(s.material1.z):1000000 scattering_distance:566233.812
+    propagate_to_boundary  u_OpAbsorption:0.145306677   absorption_length(s.material1.y):1e+09 absorption_distance:1.9289088e+09
+    propagate_at_surface   u_OpBoundary_DiDiReflectOrTransmit:        0.270948857
+    propagate_at_surface   u_OpBoundary_DoAbsorption:   0.620978355
+     WITH_ALIGN_DEV_DEBUG psave (-183.118683 -543.732788 747 10.6095982) ( 1, 0, 67305987, 7296 )
+
+
+After masked running, subsequent "tv 19" and "ta 19" operate with just the single photon, allowing 
+to visualize and analyse just the one.
+
+ta 19::
+
+    In [4]: ab.aselhis = "TO BT BR BR BR BR BT SA"
+
+    In [5]: ab.rpost()           ## time domain still not enough due to all the BR, this messes up the viz of final step 
+    Out[5]: 
+    (A()sliced
+     A([[[  23.741 ,   70.5152, -746.9043,    0.    ],
+         [  23.741 ,   70.5152,  -13.925 ,    2.445 ],
+         [  -1.7806,   -5.2504,  167.0085,    3.6436],
+         [ -26.0009,  -77.2038,   -4.7938,    4.7817],
+         [  54.102 ,  160.6624,   35.9082,    6.3224],
+         [  79.4637,  235.9486,  164.4975,    7.2383],
+         [  79.0072,  234.6246,  167.0085,    7.2559],
+         [-183.125 , -543.7364,  746.9956,   -9.9736]]]), A()sliced
+     A([[[  23.741 ,   70.5152, -746.9043,    0.    ],
+         [  23.741 ,   70.5152,  -13.925 ,    2.445 ],
+         [  -1.7806,   -5.2504,  167.0085,    3.6436],
+         [ -26.0009,  -77.2038,   -4.7938,    4.7817],
+         [  54.102 ,  160.6624,   35.8854,    6.3224],
+         [  79.4637,  235.9486,  164.4975,    7.2383],
+         [  79.0072,  234.6246,  167.0085,    7.2559],
+         [-183.0793, -543.5766,  746.9956,   -9.9736]]]))
+
+    In [6]: ab.fdom
+    Out[6]: 
+    A(torch,1,tboolean-proxy-19)(metadata) 3*float4 domains of position, time, wavelength (used for compression)
+    A([[[  0.    ,   0.    ,   0.    , 748.    ]],
+
+       [[  0.    ,   9.9733,   9.9733,   0.    ]],
+
+       [[ 60.    , 820.    ,  20.    , 760.    ]]], dtype=float32)
+
+
+
+
+    In [1]: ab.aselhis = "TO BT BR BR BR BR BT SA"
+
+    In [2]: ab.rpost()                  ## after increasing timedomain by introducing timemaxthumb with default of 6.0, 
+                                        ## viz now as expected : leverarm effect looks a plausible explanation 
+    Out[2]: 
+    (A()sliced
+     A([[[  23.741 ,   70.5152, -746.9043,    0.    ],
+         [  23.741 ,   70.5152,  -13.925 ,    2.4449],
+         [  -1.7806,   -5.2504,  167.0085,    3.6438],
+         [ -26.0009,  -77.2038,   -4.7938,    4.7815],
+         [  54.102 ,  160.6624,   35.9082,    6.3224],
+         [  79.4637,  235.9486,  164.4975,    7.2383],
+         [  79.0072,  234.6246,  167.0085,    7.2556],
+         [-183.125 , -543.7364,  746.9956,   10.6095]]]), A()sliced
+     A([[[  23.741 ,   70.5152, -746.9043,    0.    ],
+         [  23.741 ,   70.5152,  -13.925 ,    2.4449],
+         [  -1.7806,   -5.2504,  167.0085,    3.6438],
+         [ -26.0009,  -77.2038,   -4.7938,    4.7815],
+         [  54.102 ,  160.6624,   35.8854,    6.3224],
+         [  79.4637,  235.9486,  164.4975,    7.2383],
+         [  79.0072,  234.6246,  167.0085,    7.2556],
+         [-183.0793, -543.5766,  746.9956,   10.609 ]]]))
+
+
+
+    In [3]: ab.fdom
+    Out[3]: 
+    A(torch,1,tboolean-proxy-19)(metadata) 3*float4 domains of position, time, wavelength (used for compression)
+    A([[[  0.  ,   0.  ,   0.  , 748.  ]],
+
+       [[  0.  ,  14.96,  14.96,   0.  ]],
+
+       [[ 60.  , 820.  ,  20.  , 760.  ]]], dtype=float32)
+
+    In [4]: 748/50.
+    Out[4]: 14.96
+
+
+
+
+ts 19 : back to full
+~~~~~~~~~~~~~~~~~~~~~~
+
+::
+
+    In [1]: ab.aselhis = "TO BT BR BR BR BR BR BR BT SA"
+
+    In [5]: a.rpost()
+    Out[5]: 
+    A()sliced
+    A([[[ -66.1551,   42.8935, -746.9043,    0.    ],
+        [ -66.1551,   42.8935,   -8.1724,    2.464 ],
+        [  -1.2099,    0.7761,  167.0085,    3.6246],
+        [  64.6256,  -41.9119,  -10.5465,    4.8007],
+        [-130.3698,   84.5543,   27.1423,    6.2274],
+        [-205.8159,  133.4744,  136.2594,    7.0844],
+        [-200.223 ,  129.8448,  167.0085,    7.2748],
+        [-185.1567,  120.0745,   84.0978,    7.7889],
+        [  37.7573,  -24.4943,  -70.4696,    9.6516],
+        [ 412.3165, -267.3825, -746.9956,   12.3553]]])
+
+    In [6]: b.rpost()
+    Out[6]: 
+    A()sliced
+    A([[[ -66.1551,   42.8935, -746.9043,    0.    ],
+        [ -66.1551,   42.8935,   -8.1724,    2.464 ],
+        [  -1.2099,    0.7761,  167.0085,    3.6246],
+        [  64.6256,  -41.9119,  -10.5465,    4.8007],
+        [-130.3698,   84.5543,   27.1423,    6.2274],
+        [-205.8159,  133.4744,  136.2594,    7.0844],
+        [-200.223 ,  129.8448,  167.0085,    7.2748],
+        [-185.1567,  120.0745,   84.0978,    7.7889],
+        [  37.7573,  -24.4943,  -70.4924,    9.6516],
+        [ 412.2709, -267.3597, -746.9956,   12.3549]]])
+
+    In [7]: a.rpost() - b.rpost()
+    Out[7]: 
+    A()sliced
+    A([[[ 0.    ,  0.    ,  0.    ,  0.    ],
+        [ 0.    ,  0.    ,  0.    ,  0.    ],
+        [ 0.    ,  0.    ,  0.    ,  0.    ],
+        [ 0.    ,  0.    ,  0.    ,  0.    ],
+        [ 0.    ,  0.    ,  0.    ,  0.    ],
+        [ 0.    ,  0.    ,  0.    ,  0.    ],
+        [ 0.    ,  0.    ,  0.    ,  0.    ],
+        [ 0.    ,  0.    ,  0.    ,  0.    ],
+        [ 0.    ,  0.    ,  0.0228,  0.    ],
+        [ 0.0457, -0.0228,  0.    ,  0.0005]]])
+
+
+    In [8]: a.where
+    Out[8]: array([2180])
+
+    In [9]: b.where
+    Out[9]: array([2180])
+
+
+::
+
+   ts 19 --mask 2180 --pindex 0 --pindexlog 
+ 
+   ## viz again very plausible leverarm 
+
+
+
+
+
+LV 20 : excluding maligned : down to one plausible leverarm 2301
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+ta 20::
+
+
+    ab.mal
+    aligned     9997/  10000 : 0.9997 : 0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24 
+    maligned       3/  10000 : 0.0003 : 2879,3404,6673 
+          0   2879 : * :                               TO BT BR BT BR BT SA                                     TO BT BR BT SA 
+          1   3404 : * :                                     TO BT BT BT SA                                  TO BT BT BT BT SA 
+          2   6673 : * :                                     TO BT BT BT SA                                  TO BT BT BT BT SA 
+
+
+
+        nph:   10000 A:    0.0059 B:    3.0332 B/A:     517.7 COMPUTE_MODE compute_requested  ALIGN non-reflectcheat 
+        ab.a.metadata:/tmp/tboolean-proxy-20/evt/tboolean-proxy-20/torch/1         ox:c1d21b7240e566a9951eaed7eaea2117 rx:612caa1ae4777fa3682b6b8be58d09bd np:  10000 pr:    0.0059 COMPUTE_MODE compute_requested 
+        ab.b.metadata:/tmp/tboolean-proxy-20/evt/tboolean-proxy-20/torch/-1        ox:b6a2d9b838d5ea971a8bf58ac136a9ab rx:dca93d3040fa2ade890bd1f9d9688fa7 np:  10000 pr:    3.0332 COMPUTE_MODE compute_requested 
+        WITH_SEED_BUFFER WITH_RECORD WITH_SOURCE WITH_ALIGN_DEV WITH_ALIGN_DEV_DEBUG WITH_LOGDOUBLE 
+        []
+        .
+        ab.rpost_dv
+        maxdvmax:15.7105  level:FATAL  RC:1       skip:
+                         :                                :                   :                       :                   : 0.0240 0.0360 0.0479 :                                    
+          idx        msg :                            sel :    lcu1     lcu2  :       nitem     nelem :  nwar  nerr  nfat :   fwar   ferr   ffat :        mx        mn       avg      
+         0000            :                    TO BT BT SA :    8681     8681  :        8681    138896 :   119     0     0 : 0.0009 0.0000 0.0000 :    0.0240    0.0000    0.0000   :              WARNING :   > dvmax[0] 0.0240  
+         0001            :                       TO BR SA :     696      696  :         696      8352 :     9     0     0 : 0.0011 0.0000 0.0000 :    0.0240    0.0000    0.0000   :              WARNING :   > dvmax[0] 0.0240  
+         0002            :                 TO BT BR BT SA :     345      346  :         345      6900 :    15     1     1 : 0.0022 0.0001 0.0001 :   15.7105    0.0000    0.0023   :                FATAL :   > dvmax[2] 0.0479  
+         0003            :              TO BT BR BR BT SA :     174      174  :         174      4176 :    22     0     0 : 0.0053 0.0000 0.0000 :    0.0240    0.0000    0.0001   :              WARNING :   > dvmax[0] 0.0240  
+         0004            :           TO BT BR BR BR BT SA :      54       54  :          54      1512 :     9     0     0 : 0.0060 0.0000 0.0000 :    0.0240    0.0000    0.0001   :              WARNING :   > dvmax[0] 0.0240  
+         0005            :           TO BT BR BT BT BT SA :      10       10  :          10       280 :     2     0     0 : 0.0071 0.0000 0.0000 :    0.0240    0.0000    0.0002   :              WARNING :   > dvmax[0] 0.0240  
+         0006            :        TO BT BR BR BT BT BT SA :       8        8  :           8       256 :     4     0     0 : 0.0156 0.0000 0.0000 :    0.0240    0.0000    0.0004   :              WARNING :   > dvmax[0] 0.0240  
+         0007            :                       TO SC SA :       7        7  :           7        84 :     0     0     0 : 0.0000 0.0000 0.0000 :    0.0000    0.0000    0.0000   :                 INFO :  
+         0008            :                 TO BT BT SC SA :       5        5  :           5       100 :     0     0     0 : 0.0000 0.0000 0.0000 :    0.0000    0.0000    0.0000   :                 INFO :  
+         0009            :           TO BT BR BR BT BR SA :       3        3  :           3        84 :     3     1     1 : 0.0357 0.0119 0.0119 :    0.0479    0.0000    0.0011   :                FATAL :   > dvmax[2] 0.0479  
+         0010            :                       TO BT AB :       3        3  :           3        36 :     0     0     0 : 0.0000 0.0000 0.0000 :    0.0000    0.0000    0.0000   :                 INFO :  
+         0011            :        TO BT BR BR BR BR BT SA :       3        3  :           3        96 :     1     0     0 : 0.0104 0.0000 0.0000 :    0.0240    0.0000    0.0002   :              WARNING :   > dvmax[0] 0.0240  
+         0012            :                 TO BT SC BT SA :       3        3  :           3        60 :     0     0     0 : 0.0000 0.0000 0.0000 :    0.0000    0.0000    0.0000   :                 INFO :  
+         0013            :           TO BT BT SC BT BT SA :       2        2  :           2        56 :     0     0     0 : 0.0000 0.0000 0.0000 :    0.0000    0.0000    0.0000   :                 INFO :  
+         0015            :              TO BR SC BT BT SA :       1        1  :           1        24 :     0     0     0 : 0.0000 0.0000 0.0000 :    0.0000    0.0000    0.0000   :                 INFO :  
+         0016            :     TO BT BR BR BR BR BR BT SA :       1        1  :           1        36 :     1     0     0 : 0.0278 0.0000 0.0000 :    0.0240    0.0000    0.0007   :              WARNING :   > dvmax[0] 0.0240  
+         0018            :  TO BT SC BR BR BR BR BR BR BR :       1        1  :           1        40 :     1     0     0 : 0.0250 0.0000 0.0000 :    0.0240    0.0000    0.0006   :              WARNING :   > dvmax[0] 0.0240  
+        .
+
+
+
+Find the deviant::
+
+    In [7]: aa = a.rpost()
+
+    In [8]: bb = b.rpost()
+
+    In [27]: aa.shape
+    Out[27]: (345, 5, 4)
+
+    In [28]: bb.shape
+    Out[28]: (345, 5, 4)
+
+    In [30]: dd = np.abs(aa - bb)
+
+    In [31]: dd.max(axis=(1,2)).shape
+    Out[31]: (345,)
+
+
+    In [32]: dd.max(axis=(1,2))
+    Out[32]: 
+    A()sliced
+    A([ 0.    ,  0.    ,  0.    ,  0.    ,  0.    ,  0.    ,  0.    ,  0.    ,  0.    ,  0.    ,  0.    ,  0.    ,  0.    ,  0.    ,  0.    ,  0.    ,  0.    ,  0.    ,  0.    ,  0.    ,  0.    ,
+       ...
+        0.    ,  0.    ,  0.    , 15.7105,  0.    ,  0.    ,  0.    ,  0.    ,  0.    ,  0.    ,  0.    ,  0.    ,  0.    ,  0.    ,  0.024 ,  0.    ,  0.    ,  0.    ,  0.    ,  0.    ,  0.    ,
+        0.    ,  0.    ,  0.    ,  0.0002,  0.    ,  0.    ,  0.    ,  0.    ,  0.    ,  0.    ,  0.    ,  0.    ,  0.    ,  0.    ,  0.    ,  0.    ,  0.    ,  0.    ,  0.    ,  0.    ,  0.    ,
+        0.    ,  0.024 ,  0.    ,  0.    ,  0.    ,  0.    ,  0.    ,  0.024 ,  0.    ,  0.    ,  0.024 ,  0.    ,  0.    ,  0.    ,  0.    ,  0.    ,  0.    ,  0.    ,  0.    ,  0.    ,  0.    ,
+        0.024 ,  0.    ,  0.    ,  0.    ,  0.    ,  0.    ,  0.    ,  0.    ,  0.    ])
+
+    In [33]: a.where
+    Out[33]: 
+    array([  62,  246,  268,  327,  355,  370,  387,  433,  491,  536,  554,  575,  598,  615,  634,  662,  666,  684,  722,  731,  744,  756,  771,  805,  806,  837,  838,  902,  906,  940,  944,  975,
+           1017, 1048, 1049, 1064, 1095, 1102, 1247, 1276, 1353, 1363, 1419, 1442, 1498, 1500, 1509, 1513, 1516, 1584, 1586, 1645, 1688, 1689, 1691, 1702, 1750, 1819, 1820, 1863, 1882, 1907, 1942, 1943,
+
+
+    In [37]: a.where[np.where( dd.max(axis=(1,2)) > 1. )]
+    Out[37]: array([8021])
+
+    In [38]: a.where[np.where( dd.max(axis=(1,2)) > 0.01 )]
+    Out[38]: array([ 837, 1750, 1943, 1994, 2729, 2950, 3090, 6203, 7413, 8021, 8260, 9111, 9223, 9311, 9785])
+
+
+::
+
+   ts 20 --mask 8021 --pindex 0 --pindexlog 
+
+
+
+huh the deviant 8021 isnt deviating any more ?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+::
+
+    In [3]: ab.aselhis = None
+
+    In [4]: a.rposti(8021)
+    Out[4]: 
+    A()sliced
+    A([[ -13.3049,  -50.3907, -784.4123,    0.    ],
+       [ -13.3049,  -50.3907, -138.7303,    2.1537],
+       [  29.6063,  112.0726,  241.2138,    4.6713],
+       [  -9.4213,  -35.6954, -261.4947,    7.8554],
+       [ -83.0656, -314.4505, -784.5082,    9.8475]])
+
+    In [5]: b.rposti(8021)
+    Out[5]: 
+    A()sliced
+    A([[ -13.3049,  -50.3907, -784.4123,    0.    ],
+       [ -13.3049,  -50.3907, -138.7303,    2.1537],
+       [  29.6063,  112.0726,  241.2138,    4.6713],
+       [  -9.4213,  -35.6954, -261.4947,    7.8554],
+       [ -83.0656, -314.4505, -784.5082,    9.8475]])
+
+    In [6]: a.rposti(8021) - b.rposti(8021)
+    Out[6]: 
+    A()sliced
+    A([[0., 0., 0., 0.],
+       [0., 0., 0., 0.],
+       [0., 0., 0., 0.],
+       [0., 0., 0., 0.],
+       [0., 0., 0., 0.]])
+
+    In [7]: a.fdom
+    Out[7]: 
+    A(torch,1,tboolean-proxy-20)(metadata) 3*float4 domains of position, time, wavelength (used for compression)
+    A([[[  0.    ,   0.    ,   0.    , 785.515 ]],
+
+       [[  0.    ,  15.7103,  15.7103,   0.    ]],
+
+       [[ 60.    , 820.    ,  20.    , 760.    ]]], dtype=float32)
+
+
+Probably previously over time domain, but not after increasing --timemaxthumb from 3 to 6::
+
+    In [8]: 785.515/50.
+    Out[8]: 15.7103
+
+    In [9]: 785.515/100.
+    Out[9]: 7.85515
+
+
+Yep, reproduces old issue with::
+
+    ts 20 --timemaxthumb 3
+
+
+::
+
+    In [1]: a.rposti(8021)
+    Out[1]: 
+    A()sliced
+    A([[ -13.3049,  -50.3907, -784.4123,    0.    ],
+       [ -13.3049,  -50.3907, -138.7303,    2.1537],
+       [  29.6063,  112.0726,  241.2138,    4.6713],
+       [  -9.4213,  -35.6954, -261.4947,    7.8551],
+       [ -83.0656, -314.4505, -784.5082,   -7.8554]])
+
+    In [2]: b.rposti(8021)
+    Out[2]: 
+    A()sliced
+    A([[ -13.3049,  -50.3907, -784.4123,    0.    ],
+       [ -13.3049,  -50.3907, -138.7303,    2.1537],
+       [  29.6063,  112.0726,  241.2138,    4.6713],
+       [  -9.4213,  -35.6954, -261.4947,   -7.8554],
+       [ -83.0656, -314.4505, -784.5082,   -7.8554]])
+
+    In [3]: a.rposti(8021) - b.rposti(8021)
+    Out[3]: 
+    A()sliced
+    A([[ 0.    ,  0.    ,  0.    ,  0.    ],
+       [ 0.    ,  0.    ,  0.    ,  0.    ],
+       [ 0.    ,  0.    ,  0.    ,  0.    ],
+       [ 0.    ,  0.    ,  0.    , 15.7105],
+       [ 0.    ,  0.    ,  0.    ,  0.    ]])
+
+
+
+That leaves one for LV 20, ta 20::
+
+    In [1]: ab.aselhis = "TO BT BR BR BT BR SA"
+
+    In [2]: a.rpost()
+    Out[2]: 
+    A()sliced
+    A([[[  26.0344,   33.0824, -784.4123,    0.    ],
+        [  26.0344,   33.0824, -261.4947,    1.7443],
+        [  26.0344,   33.0824,  258.9536,    4.8981],
+        [ -34.1612,  -43.3907, -134.7268,    7.3553],
+        [  33.418 ,   42.4318, -136.2851,    8.0174],
+        [  58.5894,   74.4354,  -93.23  ,    8.215 ],
+        [ 617.6099,  784.5082, -320.7314,   11.3238]],
+        ... 
+
+    In [3]: b.rpost()
+    Out[3]: 
+    A()sliced
+    A([[[  26.0344,   33.0824, -784.4123,    0.    ],
+        [  26.0344,   33.0824, -261.4947,    1.7443],
+        [  26.0344,   33.0824,  258.9536,    4.8981],
+        [ -34.1612,  -43.3907, -134.7268,    7.3553],
+        [  33.418 ,   42.4318, -136.2851,    8.0174],
+        [  58.5894,   74.4354,  -93.23  ,    8.215 ],
+        [ 617.6099,  784.5082, -320.7793,   11.3238]],
+        ...
+
+    In [4]: a.rpost() - b.rpost()
+    Out[4]: 
+    A()sliced
+    A([[[ 0.    ,  0.    ,  0.    ,  0.    ],
+        [ 0.    ,  0.    ,  0.    ,  0.    ],
+        [ 0.    ,  0.    ,  0.    ,  0.    ],
+        [ 0.    ,  0.    ,  0.    ,  0.    ],
+        [ 0.    ,  0.    ,  0.    ,  0.    ],
+        [ 0.    ,  0.    ,  0.    ,  0.    ],
+        [ 0.    ,  0.    ,  0.0479,  0.    ]],
+        ...
+
+    In [5]: ab.rpost_dv_where(0.025)
+    Out[5]: array([2301])
+
+
+Have a look at that one::
+
+   ts 20 --mask 2301 --pindex 0 --pindexlog 
+
+
+* it transmits out and bounces off the bulb, leverarm again looks plausible 
+
 
 
 
 LV 21,  BT difference ?  maxdvmax:0.0719
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-::
+* this looks the same as 20, with same time domain issue
 
-    ab.his
-    .                seqhis_ana  1:tboolean-proxy-21:tboolean-proxy-21   -1:tboolean-proxy-21:tboolean-proxy-21        c2        ab        ba 
-    .                              10000     10000         0.00/4 =  0.00  (pval:1.000 prob:0.000)  
-    0000             8ccd      8681      8681             0.00        1.000 +- 0.011        1.000 +- 0.011  [4 ] TO BT BT SA
-    0001              8bd       696       696             0.00        1.000 +- 0.038        1.000 +- 0.038  [3 ] TO BR SA
-    0002            8cbcd       346       346             0.00        1.000 +- 0.054        1.000 +- 0.054  [5 ] TO BT BR BT SA
-    0003           8cbbcd       174       174             0.00        1.000 +- 0.076        1.000 +- 0.076  [6 ] TO BT BR BR BT SA
-    0004          8cbbbcd        54        54             0.00        1.000 +- 0.136        1.000 +- 0.136  [7 ] TO BT BR BR BR BT SA
-    0005          8cccbcd        10        10             0.00        1.000 +- 0.316        1.000 +- 0.316  [7 ] TO BT BR BT BT BT SA
-    0006         8cccbbcd         8         8             0.00        1.000 +- 0.354        1.000 +- 0.354  [8 ] TO BT BR BR BT BT BT SA
-    0007              86d         7         7             0.00        1.000 +- 0.378        1.000 +- 0.378  [3 ] TO SC SA
-    0008            86ccd         5         5             0.00        1.000 +- 0.447        1.000 +- 0.447  [5 ] TO BT BT SC SA
-    0009          8bcbbcd         3         3             0.00        1.000 +- 0.577        1.000 +- 0.577  [7 ] TO BT BR BR BT BR SA
-    0010              4cd         3         3             0.00        1.000 +- 0.577        1.000 +- 0.577  [3 ] TO BT AB
-    0011         8cbbbbcd         3         3             0.00        1.000 +- 0.577        1.000 +- 0.577  [8 ] TO BT BR BR BR BR BT SA
-    0012            8c6cd         3         3             0.00        1.000 +- 0.577        1.000 +- 0.577  [5 ] TO BT SC BT SA
-    0013          8cc6ccd         2         2             0.00        1.000 +- 0.707        1.000 +- 0.707  [7 ] TO BT BT SC BT BT SA
-    0014            8cccd         2         0   ###       0.00        0.000 +- 0.000        0.000 +- 0.000  [5 ] TO BT BT BT SA
-    0015           8cc6bd         1         1             0.00        1.000 +- 1.000        1.000 +- 1.000  [6 ] TO BR SC BT BT SA
-    0016        8cbbbbbcd         1         1             0.00        1.000 +- 1.000        1.000 +- 1.000  [9 ] TO BT BR BR BR BR BR BT SA
-    0017       bbbbbbb6cd         1         1             0.00        1.000 +- 1.000        1.000 +- 1.000  [10] TO BT SC BR BR BR BR BR BR BR
-    0018           8ccccd         0         2   ###       0.00        0.000 +- 0.000        0.000 +- 0.000  [6 ] TO BT BT BT BT SA
-    .                              10000     10000         0.00/4 =  0.00  (pval:1.000 prob:0.000)  
 
 
 LV 23-27 : small extent, chisq 0
@@ -490,6 +833,7 @@ LV 23-27 : small extent, chisq 0
                scan-- :      tboolean.py --pfx tboolean-proxy-25 ======= RC   0  RC 0x00 
                scan-- :      tboolean.py --pfx tboolean-proxy-26 ======= RC   0  RC 0x00 
                scan-- :      tboolean.py --pfx tboolean-proxy-27 ======= RC   0  RC 0x00 
+
 
 
 
@@ -514,6 +858,92 @@ LV 28-31
                scan-- :      tboolean.py --pfx tboolean-proxy-30 ======= RC   0  RC 0x00 
                scan-- :      tboolean.py --pfx tboolean-proxy-31 ======= RC   0  RC 0x00 
 
+Excluding maligned from deviation check::
+
+                   scan-- :      tboolean.py --pfx tboolean-proxy-28 ======= RC   0  RC 0x00 
+                   scan-- :      tboolean.py --pfx tboolean-proxy-29 ======= RC   0  RC 0x00 
+                   scan-- :      tboolean.py --pfx tboolean-proxy-30 ======= RC   0  RC 0x00 
+                   scan-- :      tboolean.py --pfx tboolean-proxy-31 ======= RC   1  RC 0x01       ab.rpost_dv  single photon way off ??  TO BR SC BT BR BT SA : SEE BELOW FIXED
+
+
+
+ta 31 : funny one RC 0x01 : zero maligned (its a small tubs)  : FIXED BY CHANGING TIME DOMAIN RULE OF THUMB IN Opticks::setupTimeDomain
+--------------------------------------------------------------------------------------------------------------------------------------------
+
+
+* fails ab.rpost_dv but not ab.ox_dv : very unusual : EXPLAINED BY BEING ON EDGE OF TIMEDOMAIN 
+
+ab.rpost_dv::
+
+   0020            :           TO BR SC BT BR BT SA :       1        1  :           1        28 :     1     1     1 : 0.0357 0.0357 0.0357 :  117.9218    0.0000    4.2115   :                FATAL :   > dvmax[2] 0.3599  
+
+
+
+* B has -ve last time, so the timedomain is just too short such that B goes overdomain but A doesnt 
+* rule of thumb timedomain needs tweaking ?
+
+Opticks::setupTimeDomain::
+
+    2004     //float rule_of_thumb_timemax = 3.f*extent/speed_of_light ;
+    2005     float rule_of_thumb_timemax = 4.f*extent/speed_of_light ;
+
+
+* checking in general with rpostn(10) (9) (8) .. see quite a few -ve times
+
+
+::
+
+    In [4]: a.rpost()
+    Out[4]: 
+    A()sliced
+    A([[[ -496.2666,   154.9259, -5894.9204,     0.    ],
+        [ -496.2666,   154.9259, -1964.9135,    13.1084],
+        [ -496.2666,   154.9259, -2118.2199,    13.6194],
+        [ -360.594 ,    90.3284, -1964.9135,    14.3356],
+        [  433.1087,  -287.7195,   -75.3937,    26.9636],
+        [ -275.3038,   344.0398,  1964.9135,    40.601 ],
+        [-3151.239 ,  2908.6837,  5894.9204,    58.96  ]]])
+
+    In [5]: b.rpost()
+    Out[5]: 
+    A()sliced
+    A([[[ -496.2666,   154.9259, -5894.9204,     0.    ],
+        [ -496.2666,   154.9259, -1964.9135,    13.1084],
+        [ -496.2666,   154.9259, -2118.2199,    13.6194],
+        [ -360.594 ,    90.3284, -1964.9135,    14.3356],
+        [  433.1087,  -287.7195,   -75.3937,    26.9636],
+        [ -275.3038,   344.0398,  1964.9135,    40.601 ],
+        [-3151.239 ,  2908.6837,  5894.9204,   -58.9618]]])
+
+
+    In [6]: a.fdom
+    Out[6]: 
+    A(torch,1,tboolean-proxy-31)(metadata) 3*float4 domains of position, time, wavelength (used for compression)
+    A([[[   0.  ,    0.  ,    0.  , 5896.  ]],
+
+       [[   0.  ,   58.96,   58.96,    0.  ]],
+
+       [[  60.  ,  820.  ,   20.  ,  760.  ]]], dtype=float32)
+
+    In [7]: b.fdom
+    Out[7]: 
+    A(torch,-1,tboolean-proxy-31)(metadata) 3*float4 domains of position, time, wavelength (used for compression)
+    A([[[   0.  ,    0.  ,    0.  , 5896.  ]],
+
+       [[   0.  ,   58.96,   58.96,    0.  ]],
+
+       [[  60.  ,  820.  ,   20.  ,  760.  ]]], dtype=float32)
+
+    In [8]: np.all( a.fdom == b.fdom )
+    Out[8]: 
+    A()sliced
+    A(True)
+
+
+
+
+
+
 
 
 LV 32-33, torus placeholder small boxes
@@ -528,6 +958,8 @@ LV 32-33, torus placeholder small boxes
                scan-- :      tboolean.py --pfx tboolean-proxy-33 ======= RC   0  RC 0x00 
 
 
+
+    
 
 LV 34-39, big extent 
 --------------------------
@@ -546,25 +978,159 @@ LV 34-39, big extent
 
 
                scan-- :      tboolean.py --pfx tboolean-proxy-34 ======= RC   5  RC 0x05    sphere with protrusion, non zero chisq, big bouncers again
-               scan-- :      tboolean.py --pfx tboolean-proxy-35 ======= RC   5  RC 0x05 
-               scan-- :      tboolean.py --pfx tboolean-proxy-36 ======= RC   4  RC 0x04 
-               scan-- :      tboolean.py --pfx tboolean-proxy-37 ======= RC   4  RC 0x04 
-               scan-- :      tboolean.py --pfx tboolean-proxy-38 ======= RC   4  RC 0x04 
-               scan-- :      tboolean.py --pfx tboolean-proxy-39 ======= RC   5  RC 0x05     
+               scan-- :      tboolean.py --pfx tboolean-proxy-35 ======= RC   5  RC 0x05    ditto geometry 
+               scan-- :      tboolean.py --pfx tboolean-proxy-36 ======= RC   4  RC 0x04    big cylinder 
+               scan-- :      tboolean.py --pfx tboolean-proxy-37 ======= RC   4  RC 0x04    big polycone cylinder
+               scan-- :      tboolean.py --pfx tboolean-proxy-38 ======= RC   4  RC 0x04    another big polycone
+               scan-- :      tboolean.py --pfx tboolean-proxy-39 ======= RC   5  RC 0x05    worldbox 
 
                               tp 39 : handful of photons are way out, failed to stay aligned ?
 
 
 
+Excluding maligned from deviation comparison::
+
+                   scan-- :      tboolean.py --pfx tboolean-proxy-34 ======= RC   5  RC 0x05      single truncated photon way off, handful with deviations above cut 0.25
+                   scan-- :      tboolean.py --pfx tboolean-proxy-35 ======= RC   5  RC 0x05      single truncated photon 13460.4918 off  "TO BT BT BT BR BR BR BR BR AB"
+                   scan-- :      tboolean.py --pfx tboolean-proxy-36 ======= RC   4  RC 0x04      two lines just above cut 0.25 
+                   scan-- :      tboolean.py --pfx tboolean-proxy-37 ======= RC   4  RC 0x04      one line just above cut 0.25
+                   scan-- :      tboolean.py --pfx tboolean-proxy-38 ======= RC   4  RC 0x04      two lines just above cut 
+                   scan-- :      tboolean.py --pfx tboolean-proxy-39 ======= RC   5  RC 0x05      around 25 lines in error : ~8 of them the otherside of universe
+ 
+
+* hmm, I am wrapping this huge geometry like the worldBox in a container with a x3 scaling to make an enormous domain
+  and then shooting photons from one side to the other...  thats far too much rope for the photons to play with 
+
+* clearly see more problems the larger the domain
+
+
+180m extent::
+
+    In [1]: ab.fdom
+    Out[1]: 
+    A(torch,1,tboolean-proxy-39)(metadata) 3*float4 domains of position, time, wavelength (used for compression)
+    A([[[     0.  ,      0.  ,      0.  , 180001.  ]],
+
+       [[     0.  ,   1800.01,   1800.01,      0.  ]],
+
+       [[    60.  ,    820.  ,     20.  ,    760.  ]]], dtype=float32
 
 
 
 
 
+34 : although same history the AB happens in different place
+-------------------------------------------------------------------
+
+* -ve times show timedomain not sufficient with all that reflecting 
+
+ta 34::
+
+    In [1]: ab.aselhis = "TO BT BT BT BR BR BR BR BR AB"
+
+    In [3]: a.rpost()
+    Out[3]: 
+    A()sliced
+    A([[[ -3817.5144,   -924.2403, -62699.0865,      0.    ],
+        [ -3817.5144,   -924.2403, -20511.2467,    140.7218],
+        [  -769.2435,   -185.6135,  19185.1627,    382.0193],
+        [  -514.7425,   -124.3802,  20823.1538,    387.5495],
+        [  -413.3249,    -99.5041,  20899.6955,    388.334 ],
+        [   514.7425,    124.3802,  20191.6853,    395.5481],
+        [  -514.7425,   -124.3802,  19407.1335,    403.5275],
+        [ 18706.7774,   4527.4382,   4766.6308,    552.6498],
+        [ 10275.7155,   2487.6034, -17885.8683,   -627.0291],
+        [  6454.374 ,   1561.4495, -17514.6413,   -627.0291]]])
+
+    In [4]: b.rpost()
+    Out[4]: 
+    A()sliced
+    A([[[ -3817.5144,   -924.2403, -62699.0865,      0.    ],
+        [ -3817.5144,   -924.2403, -20511.2467,    140.7218],
+        [  -769.2435,   -185.6135,  19185.1627,    382.0193],
+        [  -514.7425,   -124.3802,  20823.1538,    387.5495],
+        [  -413.3249,    -99.5041,  20899.6955,    388.334 ],
+        [   514.7425,    124.3802,  20191.6853,    395.5481],
+        [  -514.7425,   -124.3802,  19407.1335,    403.5275],
+        [ 18706.7774,   4527.4382,   4766.6308,    552.6498],
+        [ 10275.7155,   2487.6034, -17885.8683,   -627.0291],
+        [ -7005.4738,  -1695.3974, -16205.7793,   -627.0291]]])
+
+    In [6]: a.rpost() - b.rpost()
+    Out[6]: 
+    A()sliced
+    A([[[    0.    ,     0.    ,     0.    ,     0.    ],
+        [    0.    ,     0.    ,     0.    ,     0.    ],
+        [    0.    ,     0.    ,     0.    ,     0.    ],
+        [    0.    ,     0.    ,     0.    ,     0.    ],
+        [    0.    ,     0.    ,     0.    ,     0.    ],
+        [    0.    ,     0.    ,     0.    ,     0.    ],
+        [    0.    ,     0.    ,     0.    ,     0.    ],
+        [    0.    ,     0.    ,     0.    ,     0.    ],
+        [    0.    ,     0.    ,     0.    ,     0.    ],
+        [13459.8478,  3256.8469, -1308.8621,     0.    ]]])
 
 
 
+    In [5]: a.fdom
+    Out[5]: 
+    A(torch,1,tboolean-proxy-34)(metadata) 3*float4 domains of position, time, wavelength (used for compression)
+    A([[[    0.  ,     0.  ,     0.  , 62701.  ]],
 
+       [[    0.  ,   627.01,   627.01,     0.  ]],
+
+       [[   60.  ,   820.  ,    20.  ,   760.  ]]], dtype=float32)
+
+
+
+35 : same geometry as 34 just slightly different size
+-------------------------------------------------------------
+
+ta 35, same thing happens::
+
+    In [1]: ab.aselhis = "TO BT BT BT BR BR BR BR BR AB"
+
+    In [2]: a.rpost()
+    Out[2]: 
+    A()sliced
+    A([[[ -3817.6971,   -924.2846, -62702.0864,      0.    ],
+        [ -3817.6971,   -924.2846, -20512.228 ,    140.7285],
+        [  -769.2803,   -185.6224,  19187.9943,    382.0376],
+        [  -516.6808,   -124.3861,  20812.6684,    387.5297],
+        [  -401.8628,    -97.5953,  20900.6955,    388.4291],
+        [   516.6808,    124.3861,  20200.3059,    395.567 ],
+        [  -516.6808,   -124.3861,  19413.8029,    403.5851],
+        [ 18709.5861,   4527.6548,   4768.7725,    552.7145],
+        [ 10280.0344,   2487.7224, -17884.8104,   -627.0591],
+        [  6458.5101,   1563.4378, -17513.5657,   -627.0591]]])
+
+    In [3]: b.rpost()
+    Out[3]: 
+    A()sliced
+    A([[[ -3817.6971,   -924.2846, -62702.0864,      0.    ],
+        [ -3817.6971,   -924.2846, -20512.228 ,    140.7285],
+        [  -769.2803,   -185.6224,  19187.9943,    382.0376],
+        [  -516.6808,   -124.3861,  20812.6684,    387.5297],
+        [  -401.8628,    -97.5953,  20900.6955,    388.4291],
+        [   516.6808,    124.3861,  20200.3059,    395.567 ],
+        [  -516.6808,   -124.3861,  19413.8029,    403.5851],
+        [ 18709.5861,   4527.6548,   4768.7725,    552.7145],
+        [ 10280.0344,   2487.7224, -17884.8104,   -627.0591],
+        [ -7001.9817,  -1693.5649, -16210.3819,   -627.0591]]])
+
+    In [4]: a.rpost() - b.rpost()
+    Out[4]: 
+    A()sliced
+    A([[[    0.    ,     0.    ,     0.    ,     0.    ],
+        [    0.    ,     0.    ,     0.    ,     0.    ],
+        [    0.    ,     0.    ,     0.    ,     0.    ],
+        [    0.    ,     0.    ,     0.    ,     0.    ],
+        [    0.    ,     0.    ,     0.    ,     0.    ],
+        [    0.    ,     0.    ,     0.    ,     0.    ],
+        [    0.    ,     0.    ,     0.    ,     0.    ],
+        [    0.    ,     0.    ,     0.    ,     0.    ],
+        [    0.    ,     0.    ,     0.    ,     0.    ],
+        [13460.4918,  3257.0027, -1303.1838,     0.    ]]])
 
 
 

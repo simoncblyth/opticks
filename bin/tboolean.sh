@@ -28,7 +28,7 @@ EON
 
 
 default="box"
-[ -n "$PROXYLV" ] && default="proxy"
+[ -n "$LV" ] && default="proxy"
 
 
 ## only shift out the first argument when it doesnt start with a hyphen

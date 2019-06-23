@@ -71,6 +71,9 @@ class CommandLine(object):
     def __repr__(self):
         return "\n".join(self.cmdline.split())  
 
+
+ratio_ = lambda num,den:float(num)/float(den) if den != 0 else -1 
+
 class CompareMetadata(object):
     def __init__(self, am, bm):
         self.am = am 
@@ -85,7 +88,7 @@ class CompareMetadata(object):
         self.Switches = self.expected_common( "Switches", parameter=True) 
         self.align = self.cmdline.has("--align ")
         self.reflectcheat = self.cmdline.has("--reflectcheat ")
-        self.factor = float(bm.propagate0)/float(am.propagate0)
+        self.factor = ratio_(bm.propagate0, am.propagate0)
 
     def _get_crucial(self):
         """

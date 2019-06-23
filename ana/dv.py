@@ -237,11 +237,12 @@ class Dv(object):
        pass
 
        if self.ismax:
+           #pdesc = self.fn_(desc)
            pdesc = underline_(self.fn_(desc))
        else: 
            pdesc = self.fn_(desc)
        pass
-       return "%s : %s : %20s : %s " % (self.label, pdesc, self.fn_(self.lev.name), self.fn_(self.lmsg)  )
+       return "%s : %s : %s : %s " % (self.label, pdesc, self.fn_("%20s"%self.lev.name), self.fn_(self.lmsg)  )
 
 
 class DvTab(object):
@@ -265,12 +266,14 @@ class DvTab(object):
         pass
         return skip 
 
-    def __init__(self, name, seqtab, ab, skips="SC AB RE" ):
+    def __init__(self, name, seqtab, ab, skips="SC AB RE", selbase=None ):
         """
         :param name:
         :param seqtab:
         :param ab:
         :param skips: 
+        :param selbase: either None or "ALIGN" 
+
         """
         self.name = name
         self.seqtab = seqtab
@@ -284,6 +287,8 @@ class DvTab(object):
         cu = self.seqtab.cu               # eg with shape (17,3)  the 3 columns being (seqhis, a-count, b-count ) 
         assert len(labels) == len(cu)
         nsel = len(labels)
+
+        ab.aselhis = selbase
 
         dvs = []
         for i in range(nsel):
@@ -308,7 +313,7 @@ class DvTab(object):
                 dvs.append(dv)
             pass
 
-            ab.aselhis = None
+            ab.aselhis = selbase
 
         pass
         self.dvs = dvs 
@@ -321,6 +326,10 @@ class DvTab(object):
         rpost 
             extent*2/65535 is the size of shortnorm compression bins 
             so its the closest can expect values to get.
+
+            TODO: currently the time cuts are not correct, a for "t" 
+            should be using different domain 
+
         rpol 
              is extremely compressed, so bins are big : 1*2/255 
         ox
@@ -335,12 +344,46 @@ class DvTab(object):
             eps = 1.0*2.0/((0x1 << 8) - 1)
             dvmax = [eps, 1.5*eps, 2.0*eps] 
         elif self.name == "ox_dv":
-            dvmax = ab.ok.pdvmax 
+            dvmax = ab.ok.pdvmax    ## adhoc input guess at appropriate cuts
         else:
             assert self.name 
         pass 
         return dvmax 
     dvmax = property(_get_dvmax)
+
+
+    def _get_dvmaxt(self): 
+        """ 
+        ta 19::
+
+            In [1]: ab.rpost_dv.dvmax
+            Out[1]: [0.022827496757457846, 0.03424124513618677, 0.04565499351491569]
+
+            In [2]: ab.rpost_dv.dvmaxt
+            Out[2]: [0.0003043666242088853, 0.00045654993631332797, 0.0006087332484177706]
+
+        Depends on the rule-of-thumb Opticks::setupTimeDomains but time cuts should be much 
+        more stringent than position ones::
+
+            In [3]: ab.fdom[0,0,3]
+            Out[3]: 748.0
+
+            In [4]: ab.fdom[1,0,1]
+            Out[4]: 9.973333
+
+            In [5]: ab.fdom[0,0,3]/ab.fdom[1,0,1]
+            Out[5]: 75.0
+
+        """
+        ab = self.ab
+        if self.name == "rpost_dv": 
+            eps_t = ab.fdom[1,0,1]*2.0/((0x1 << 16) - 1)
+            dvmaxt = [eps_t, 1.5*eps_t, 2.0*eps_t]
+        else:
+            assert self.name  
+        pass
+        return dvmaxt 
+    dvmaxt = property(_get_dvmaxt)
 
 
     def dv_(self, i, sel, lcu):
@@ -384,7 +427,7 @@ class DvTab(object):
 
     def findmax(self):
         maxdv = map(lambda _:float(_.mx), self.dvs) 
-        mmaxdv = max(maxdv)
+        mmaxdv = max(maxdv) if len(maxdv) > 0 else -1
         for dv in self.dvs:
             if dv.mx == mmaxdv and dv.lev.level > Level.INFO:
                 dv.ismax = True
@@ -396,13 +439,14 @@ class DvTab(object):
         Overall level of the table : INFO, WARNING, ERROR or FATAL 
         based on the maximum level of the lines
         """
-        mxl = max(map(lambda dv:dv.lev.level, self.dvs))
-        return Level.FromLevel(mxl)  
+        levs = map(lambda dv:dv.lev.level, self.dvs)
+        mxl = max(levs) if len(levs) > 0 else None
+        return Level.FromLevel(mxl) if mxl is not None else None
     maxlevel = property(_get_maxlevel)  
 
     def _get_RC(self):
         maxlevel = self.maxlevel
-        return 1 if maxlevel.level > Level.WARNING else 0
+        return 1 if maxlevel is not None and  maxlevel.level > Level.WARNING else 0
     RC = property(_get_RC)
 
     fdiscreps = property(lambda self:self._get_float("fdiscrep"))  
@@ -419,11 +463,22 @@ class DvTab(object):
     def _get_brief(self):
         skips = " ".join(self.skips)
         gfmt_ = lambda _:"%.4f" % float(_) 
-        return "maxdvmax:%s  level:%s  RC:%d       skip:%s" % ( gfmt_(self.maxdvmax), self.maxlevel.fn_(self.maxlevel.name), self.RC,  skips )
+
+        if self.maxlevel is None:
+            return "maxlevel None"   
+        else:
+            return "maxdvmax:%s  level:%s  RC:%d       skip:%s" % ( gfmt_(self.maxdvmax), self.maxlevel.fn_(self.maxlevel.name), self.RC,  skips )
+        pass
+  
+
     brief = property(_get_brief)
 
     def __repr__(self):
-        return "\n".join( ["ab.%s" % self.name, self.brief, self.dvs[0].columns2(), Dv.columns()] + map(repr, filter(None,self.dvs[self.sli]) ) + ["."] )
+        if len(self.dvs) == 0:
+            return "\n".join(["ab.%s" % self.name, "no dvs" ])
+        else: 
+            return "\n".join( ["ab.%s" % self.name, self.brief, self.dvs[0].columns2(), Dv.columns()] + map(repr, filter(None,self.dvs[self.sli]) ) + ["."] )
+        pass
 
     def __getitem__(self, sli):
          self.sli = sli

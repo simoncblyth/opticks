@@ -19,6 +19,24 @@ Locations
        readonly opticksdata bitbucket clone that only pulls, this is what users see
 
 
+cleanup mess of untracked files
+---------------------------------
+
+See notes/issues/opticksdata-cleanup.rst
+
+::
+
+    [blyth@localhost juno1707]$ hg rm extras
+    not removing extras: no tracked files
+    [blyth@localhost juno1707]$ hg rm g4_00.a181a603769c1f98ad927e7367c7aa51.dae
+    not removing g4_00.a181a603769c1f98ad927e7367c7aa51.dae: no tracked files
+    [blyth@localhost juno1707]$ pwd
+    /home/blyth/local/opticks/opticksdata/export/juno1707
+    [blyth@localhost juno1707]$ 
+
+    [blyth@localhost juno1707]$ rm -rf extras g4_00.a181a603769c1f98ad927e7367c7aa51.dae
+
+
 
 big file issue
 ----------------

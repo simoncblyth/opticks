@@ -45,6 +45,12 @@ def opticks_args(**kwa):
     oad_key = "OPTICKS_ANA_DEFAULTS"
     oad = os.environ.get(oad_key,"det=g4live,src=natural,tag=1,pfx=.")
     defaults = dict(map(lambda ekv:ekv.split("="), oad.split(","))) 
+    lv = os.environ.get("LV", None)
+    if lv is not None:
+        defaults["pfx"] = "tboolean-proxy-%d" % int(lv)
+        log.info("override pfx default as LV=%s envvar defined, pfx=%s " % (lv, defaults["pfx"])) 
+    pass  
+
     log.info("envvar %s -> defaults %s " % (oad_key, repr(defaults)))
 
     det = kwa.get("det", defaults["det"])
@@ -70,7 +76,8 @@ def opticks_args(**kwa):
 
     c2max = kwa.get("c2max", "1.5,2.0,2.5")
     rdvmax = kwa.get("rdvmax", "0.01,0.10,1.0") 
-    pdvmax = kwa.get("pdvmax", "0.0010,0.0200,0.1000") 
+    #pdvmax = kwa.get("pdvmax", "0.0010,0.0200,0.1000") 
+    pdvmax = kwa.get("pdvmax", "0.10,0.25,0.50") 
     #dveps = kwa.get("dveps", 0.0002)
 
     pfxseqhis = kwa.get("pfxseqhis", "")

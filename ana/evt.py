@@ -87,7 +87,7 @@ class Evt(object):
         .                               1000000         1.00 
 
 
-    Using interative low level *psel* selection, implemented via property setter which invokes _init_selection, to 
+    Using interactive low level *psel* selection, implemented via property setter which invokes _init_selection, to 
     select photons that have SA in the topslot ::
 
         In [7]: e1.psel = e1.seqhis & np.uint64(0xf000000000000000) == np.uint64(0x8000000000000000)
@@ -705,6 +705,10 @@ class Evt(object):
         return psel
 
     def make_selection_(self, labels):
+        """
+        :param labels: usually seqhis line label strings such at "TO BT BT SA"
+        :return psel: boolean photon selection array 
+        """
         if not self.rec or len(labels) == 0:
             log.info("skip make_selection_ as no labels")
             return None
@@ -717,11 +721,15 @@ class Evt(object):
             psel = self.make_psel_startswith(lab)
         elif len(labels) == 1 and labels[0] == 'PFLAGS_DEBUG':
             psel = self.pflags2 != self.pflags
+        elif len(labels) == 1 and labels[0] == 'ALIGN':
+            psel = None
         else:
             psel = self.make_psel_or(labels)
         pass
-        if self._align is not None:
+        if self._align is not None and psel is not None:
             psel = np.logical_and( psel, self._align ) 
+        elif self._align is not None:
+            psel = self._align  
         pass
         return psel
 
@@ -817,6 +825,9 @@ class Evt(object):
 
 
     def _get_recs(self):
+        """
+        Restriction is so the shapes are all the same
+        """
         nr = self.nrec
         if nr == -1:
             log.warning("recs slicing only works when a single label selection is active ")
@@ -826,6 +837,11 @@ class Evt(object):
     recs = property(_get_recs)
 
     def make_selection(self, sel, not_):
+        """
+        :param sel: selection labels 
+        :param not_: inverts selection
+        :return psel: boolean photon selection array 
+        """
         if sel is None:
             return None
 
@@ -840,6 +856,10 @@ class Evt(object):
     def _init_selection(self, psel):
         """
         :param psel: photon length boolean selection array, make it with make_selection or directly with numpy 
+
+        * applies boolean selection array to all arrays, such that all access eg rpost() honours the selections
+        * the low level way to invoke this is by setting the psel property
+
         """
         # for first _init_selection hold on to the originals
         if self._psel is None:

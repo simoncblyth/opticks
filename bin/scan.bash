@@ -33,7 +33,7 @@ EOS
 }
 scan-photons-cmd(){ printf "tboolean.sh box --generateoverride %s --error --cvd 1 --rtx 1 --compute\n" $1 ; }
 
-#scan-proxy-cmd(){   printf "env PROXYLV=%s tboolean.sh --compute --align --dbgskipclearzero --dbgnojumpzero --dbgkludgeflatzero   \n" $1 ; }
+#scan-proxy-cmd(){   printf "env LV=%s tboolean.sh --compute --align --dbgskipclearzero --dbgnojumpzero --dbgkludgeflatzero   \n" $1 ; }
 scan-proxy-cmd(){   printf "tboolean.py --pfx tboolean-proxy-%s\n" $1  ; }
 
 

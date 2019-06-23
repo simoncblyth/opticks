@@ -91,6 +91,7 @@ class OKCORE_API OpticksCfg : public BCfg {
      int          getRngMax(); 
      int          getBounceMax(); 
      int          getRecordMax(); 
+     float        getTimeMaxThumb() const ; 
      float        getTimeMax() const ; 
      float        getAnimTimeMax() const ;  
      int          getInterpolatedViewPeriod(); 
@@ -211,6 +212,7 @@ private:
      int         m_rngmax ; 
      int         m_bouncemax ; 
      int         m_recordmax ; 
+     float       m_timemaxthumb ; 
      float       m_timemax ; 
      float       m_animtimemax ; 
      int         m_animator_period ; 

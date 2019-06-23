@@ -52,15 +52,16 @@ o-cmdline-specials()
    if [ "${cmdline/--malloc}" != "${cmdline}" ]; then
        export OPTICKS_MALLOC=1
    fi
+
    if [ "${cmdline/--debugger}" != "${cmdline}" ]; then
        export OPTICKS_DBG=1
-   fi
-   if [ "${cmdline/--strace}" != "${cmdline}" ]; then
-       export OPTICKS_DBG=2
-   fi
-
-   if [ "${cmdline/-D}" != "${cmdline}" ]; then 
+   elif [ "${cmdline/-D}" != "${cmdline}" ]; then 
        export OPTICKS_DBG=1
+   elif [ "${cmdline/-DD}" != "${cmdline}" ]; then
+       export OPTICKS_DBG=1
+       export OPTICKS_LLDB_SOURCE=/tmp/g4lldb.txt
+   elif [ "${cmdline/--strace}" != "${cmdline}" ]; then
+       export OPTICKS_DBG=2
    fi
 
    if [ "${cmdline/--load}" != "${cmdline}" ]; then
@@ -113,6 +114,51 @@ o-cmdline-binary()
    export OPTICKS_ARGS=$cmdline
 }
 
+
+
+o-gdb-update()
+{
+   local msg="=== $FUNCNAME :" 
+   echo $msg placeholder
+}
+
+
+o-lldb-update()
+{
+   # needs macOS system python with lldb python module
+   local msg="=== $FUNCNAME :" 
+   if [ -n "${OPTICKS_DBG}" -a -n "${OPTICKS_LLDB_SOURCE}" ] ; then  
+      echo $msg Updating OPTICKS_LLDB_SOURCE with stdout from g4lldb.py : ${OPTICKS_LLDB_SOURCE}
+      echo "run" > ${OPTICKS_LLDB_SOURCE}.autorun
+      g4lldb.py > ${OPTICKS_LLDB_SOURCE}
+   fi 
+}
+
+o-lldb-dump()
+{
+   local msg="=== $FUNCNAME :" 
+   if [ -n "${OPTICKS_DBG}" -a -n "${OPTICKS_LLDB_SOURCE}" -a -f "${OPTICKS_LLDB_SOURCE}" ]; then 
+        echo $msg Active OPTICKS_LLDB_SOURCE : ${OPTICKS_LLDB_SOURCE}
+        ls -l "${OPTICKS_LLDB_SOURCE}"
+        cat "${OPTICKS_LLDB_SOURCE}"
+   fi   
+}
+
+o-lldb-runline()
+{ 
+   if [ -n "${OPTICKS_LLDB_SOURCE}" -a -f "${OPTICKS_LLDB_SOURCE}" ] ; then 
+      #echo lldb -f ${OPTICKS_BINARY} -s ${OPTICKS_LLDB_SOURCE} -s ${OPTICKS_LLDB_SOURCE}.autorun -- ${OPTICKS_ARGS} 
+      # autorun manages to launch the process but output does not arrive in lldb console, 
+      # and seemingly input doesnt get to the the app
+      echo lldb -f ${OPTICKS_BINARY} -s ${OPTICKS_LLDB_SOURCE} -- ${OPTICKS_ARGS} 
+   else
+      echo lldb -f ${OPTICKS_BINARY} -- ${OPTICKS_ARGS} 
+   fi 
+}
+
+
+
+
 o-runline-notes(){ cat << EON
 
 Use "--debugger" option to set the intername envvar OPTICKS_DBG
@@ -127,6 +173,8 @@ o-runline()
       runline="python ${OPTICKS_BINARY} ${OPTICKS_ARGS} "
    elif [ "${OPTICKS_DBG}" == "1" ]; then 
       case $(uname) in
+          Darwin) runline=$(o-lldb-runline) ;;
+           MING*) runline="     ${OPTICKS_BINARY} -- ${OPTICKS_ARGS} " ;; 
                *) runline="gdb  --args ${OPTICKS_BINARY} ${OPTICKS_ARGS} " ;;
       esac
    elif [ "${OPTICKS_DBG}" == "2" ]; then 
@@ -175,6 +223,9 @@ o-main()
 {
    local msg="=== $FUNCNAME :"
    o-cmdline-parse
+    
+   [ "$(uname)" == "Linux" ] && o-gdb-update
+   [ "$(uname)" == "Darwin" ] && o-lldb-update
 
    local runline=$(o-runline)
    local postline=$(o-postline)

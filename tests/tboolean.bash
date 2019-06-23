@@ -733,11 +733,20 @@ tboolean-testobject(){ echo Vacuum///GlassSchottF2 ; }
 
 
 
+tboolean-strace()
+{
+    local pid=$(pidof OKG4Test)
+    local cmd="strace  -o /tmp/strace.log -e open -p$pid"
+    echo $cmd
+    eval $cmd
+}
 
 
 
 
-tboolean-proxy-lvidx(){    echo ${PROXYLV:--1} ; }
+
+
+tboolean-proxy-lvidx(){    echo ${LV:--1} ; }
 tboolean-proxy-name(){  echo tboolean-proxy-$(tboolean-proxy-lvidx) ; }
 
 tboolean-proxy-pdb(){ cd /tmp ; OPTICKS_EVENT_BASE=/tmp ipython --pdb $(which tboolean.py) -i -- --tag 1 --tagoffset 0 --det $(tboolean-proxy-name) --pfx $(tboolean-proxy-name) --src torch ; }
@@ -776,7 +785,7 @@ tboolean-proxy-notes(){ cat << EON
 $FUNCNAME
 =======================
 
-As changing the PROXYLV envvar value changes geometry it is necessary to 
+As changing the LV envvar value changes geometry it is necessary to 
 for it to change the geometry and event directories to avoid presenting 
 events from one geometry with another geometry. 
 
@@ -784,24 +793,24 @@ To see a list of the lvidx indices and names use::
 
    GMeshLibTest --envkey 
    
-When PROXYLV is in environment the tboolean-proxy functions are automatically invoked, rather than box etc..
+When LV is in environment the tboolean-proxy functions are automatically invoked, rather than box etc..
 These both save events::
 
-   PROXYLV=20 tboolean.sh             # defaults to compute, saving events 
-   PROXYLV=20 tboolean.sh --strace    # with monitoring of all opened files, log analysed with strace.py
-   PROXYLV=20 tboolean.sh --interop   # propagate, save and visualize  
+   LV=20 tboolean.sh             # defaults to compute, saving events 
+   LV=20 tboolean.sh --strace    # with monitoring of all opened files, log analysed with strace.py
+   LV=20 tboolean.sh --interop   # propagate, save and visualize  
 
 
 
 Load the event and visualize the propagation::
 
-   PROXYLV=20 tbooleanviz.sh         
+   LV=20 tbooleanviz.sh         
 
 For subsequent analysis of the events written by the above::
 
-   PROXYLV=20 tboolean-proxy-p        # python analysis       
-   PROXYLV=20 tboolean-proxy-ip       # ipython analysis  
-   PROXYLV=20 tboolean-proxy-a        # C++ OpticksEventCompare analysis
+   LV=20 tboolean-proxy-p        # python analysis       
+   LV=20 tboolean-proxy-ip       # ipython analysis  
+   LV=20 tboolean-proxy-a        # C++ OpticksEventCompare analysis
 
 EON
 }

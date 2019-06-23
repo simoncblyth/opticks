@@ -148,6 +148,9 @@ class UCF(list):
         path = self.printlogpath(upindex)
         xrng = self.loadrngtxt(pindex)
 
+        print_("path %s " % path )
+
+
         U.XRNG = xrng 
 
         self.pindex = pindex

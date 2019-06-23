@@ -86,6 +86,7 @@ OpticksCfg<Listener>::OpticksCfg(const char* name, Listener* listener, bool live
        m_rngmax(3000000),     
        m_bouncemax(9),     
        m_recordmax(10),
+       m_timemaxthumb(6.f),
        m_timemax(-1.f),
        m_animtimemax(-1.f),
        m_animator_period(200),
@@ -926,6 +927,20 @@ void OpticksCfg<Listener>::init()
    m_desc.add_options()
        ("recordmax,r",  boost::program_options::value<int>(&m_recordmax), recordmax );
 
+
+
+
+
+
+   char timemaxthumb[256];
+   snprintf(timemaxthumb,256, 
+"Adjust the rule-of-thumb factor for setting timemax based in spatial extent of geometry, see Opticks::setupTimeDomain. Default %f.", m_timemaxthumb);
+   m_desc.add_options()
+       ("timemaxthumb",  boost::program_options::value<float>(&m_timemaxthumb), timemaxthumb );
+
+
+
+
    char timemax[256];
    snprintf(timemax,256, 
 "Maximum time in nanoseconds. A negative value sets the timedomain using a rule of thumb based on geometry extent. Default %f.", m_timemax);
@@ -1612,6 +1627,13 @@ int OpticksCfg<Listener>::getRecordMax()
 {
     return m_recordmax ; 
 }
+
+template <class Listener>
+float OpticksCfg<Listener>::getTimeMaxThumb() const   // --timemaxthumb
+{
+    return m_timemaxthumb ; 
+}
+
 template <class Listener>
 float OpticksCfg<Listener>::getTimeMax() const   // --timemax
 {

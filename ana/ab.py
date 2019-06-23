@@ -22,67 +22,34 @@ log = logging.getLogger(__name__)
 
 
 
-class MXD(object):
-    def __init__(self, ab, key, cut, erc, shortname): 
-        """
-        :param ab:
-        :param key: property name which returns a dict with numerical values  
-        :param cut: warn/error/fatal maximum permissable deviations, exceeding error level yields non-zero RC
-        :param erc: integer return code if any of the values exceeds the cut 
+ratio_ = lambda num,den:float(num)/float(den) if den != 0 else -1 
 
-        RC passed from python to C++ via system calls 
-        are truncated beyond 0xff see: SSysTest
-        """ 
+
+class Maligned(object):
+    def __init__(self, ab):
         self.ab = ab 
-        self.key = key
-        self.cut = cut
-        self.erc = erc
-        self.shortname = shortname
+        tot = len(ab.a.seqhis)
+        self.tot = tot
+        self.maligned = ab.maligned
+        self.aligned = ab.aligned
+        self.fmaligned = ratio_(len(ab.maligned), tot)
+        self.faligned = ratio_(len(ab.aligned), tot)
+        self.sli = slice(None)
 
-    mxd = property(lambda self:getattr(self.ab, self.key))
-
-    def _get_mx(self):
-        mxd = self.mxd
-        return max(mxd.values()) if len(mxd) > 0 else 999.
-    mx = property(_get_mx)
-
-    def _get_rc(self):
-        return self.erc if self.mx > self.cut[1] else 0  
-    rc = property(_get_rc)
-
-    def __repr__(self):
-        mxd = self.mxd
-        pres_ = lambda d:" ".join(map(lambda kv:"%10s : %8.3g " % (kv[0], kv[1]),d.items()))  
-        return "\n".join(["%s  .rc %d  .mx %7.3f .cut %7.3f/%7.3f/%7.3f   %s  " % ( self.shortname, self.rc,  self.mx, self.cut[0], self.cut[1], self.cut[2], pres_(mxd) )]) 
-                       
-
-class RC(object):
-    def __init__(self, ab ):
-        self.ab = ab 
-        self.c2p = MXD(ab, "c2p",  ab.ok.c2max,  77, "ab.rc.c2p") 
-        self.rdv = MXD(ab, "rmxs", ab.ok.rdvmax, 88, "ab.rc.rdv") 
-        self.pdv = MXD(ab, "pmxs", ab.ok.pdvmax, 99, "ab.rc.pdv") 
-
-    def _get_rcs(self):
-        return map(lambda _:_.rc, [self.c2p, self.rdv, self.pdv])
-    rcs = property(_get_rcs) 
-        
-    def _get_rc(self):
-        return max(self.rcs+[0])
-    rc = property(_get_rc) 
+    def __getitem__(self, sli):
+         self.sli = sli
+         return self
 
     def __repr__(self):
         return "\n".join([
-                "ab.rc     .rc %3d      %r " % (self.rc, self.rcs) , 
-                 repr(self.c2p),
-                 repr(self.rdv),
-                 repr(self.pdv),
-                 "."
-                  ])
+               "ab.mal", 
+               "aligned  %7d/%7d : %.4f : %s " % ( len(self.aligned), self.tot, self.faligned,   ",".join(map(lambda _:"%d"%_, self.aligned[:25])) ),
+               "maligned %7d/%7d : %.4f : %s " % ( len(self.maligned), self.tot, self.fmaligned,  ",".join(map(lambda _:"%d"%_, self.maligned[:25])) ),
+                ]  + map(lambda iq:self.ab.recline(iq), enumerate(self.maligned[self.sli]))
+                ) 
 
 
-
-class _RC(object):
+class RC(object):
     offset = { "rpost_dv":0, "rpol_dv":1 , "ox_dv":2 } 
 
     def __init__(self, ab):
@@ -158,7 +125,16 @@ class AB(object):
         return np.where(self.a.seqhis != self.b.seqhis)[0]
     maligned = property(_get_maligned)
 
+    def _get_aligned(self):
+        return np.where(self.a.seqhis == self.b.seqhis)[0]
+    aligned = property(_get_aligned)
+
+
     def recline(self, iq):
+        """
+        :param iq: i,q 2-tuple of i:enumeration index 0,1,2,... and q:photon index
+        :return line: comparing a and b seqhis labels  
+        """
         i, q = iq
         al = self.histype.label(self.a.seqhis[q])
         bl = self.histype.label(self.b.seqhis[q])
@@ -177,13 +153,14 @@ class AB(object):
     def dump(self):
         log.debug("[")
         self.print_(self.cfm)  
+        self.print_(self.mal)
         self.print_(self)
         self.print_(self.cfm)  
         self.print_(self.rpost_dv)
         self.print_(self.rpol_dv)
         self.print_(self.ox_dv)
-        self.print_(self._rc)
         self.print_(self.rc)
+        self.print_(self.cfm)  
         log.debug("]")
 
     def __init__(self, ok):
@@ -194,6 +171,7 @@ class AB(object):
         self.dvtabs = []
         self.load()
         self.cfm = self.compare_meta()
+        self.mal = self.check_alignment()
         self.compare_domains()
         self.compare()
         self.init_point()
@@ -258,7 +236,7 @@ class AB(object):
         if len(self.mat.lines) > lmx:
             self.mat.sli = slice(0,lmx)
         pass
-        return "\n".join(map(repr, [self,self.his,self.flg,self.mat]))
+        return "\n".join(map(repr, [self,self.ahis,self.flg,self.mat]))
 
 
 
@@ -277,6 +255,10 @@ class AB(object):
         self.dvskips = "" if cfm.align == 1 else non_aligned_skips   
 
         return cfm 
+
+    def check_alignment(self):
+        mal = Maligned(self)
+        return mal 
         
     def compare(self):
         log.debug("[")
@@ -288,7 +270,6 @@ class AB(object):
         if self.ok.promat:self.promat()
 
         self.rc = RC(self) 
-        self._rc = _RC(self) 
         log.debug("]")
 
 
@@ -422,7 +403,7 @@ class AB(object):
         self.warn_empty = False
         seqtab = self.ahis
 
-        dv_tab = DvTab(ana, seqtab, self, self.dvskips) 
+        dv_tab = DvTab(ana, seqtab, self, skips=self.dvskips, selbase="ALIGN" ) 
         self.dvtabs.append(dv_tab)
 
         self.warn_empty = we
@@ -489,7 +470,7 @@ class AB(object):
     def _get_cf(self, ana, shortname):
         """
         Changing *sel* property invokes _set_sel 
-        results in a change to the SeqAna in the A B Evt,
+        resulting in a change to the SeqAna in the A B Evt,
         thus all AB comparison tables are marked dirty, causing 
         them to be recreated at next access.
         """
@@ -965,6 +946,56 @@ class AB(object):
         av = self.a.rpost()
         bv = self.b.rpost()
         return av, bv
+
+    def rpost_dv_max(self):
+        """
+        :return max a-b item deviations: 
+
+        The np.amax with axis=(1,2) tuple of ints argument 
+        acts to collapse those dimensions in the aggregation
+        """ 
+        av = self.a.rpost()
+        bv = self.b.rpost()
+        dv = np.abs( av - bv )
+        return dv.max(axis=(1,2)) 
+         
+    def rpost_dv_where(self, cut):
+        """
+        :return photon indices with item deviations exceeding the cut: 
+        """
+        av = self.a.rpost()
+        bv = self.b.rpost()
+        dv = np.abs( av - bv )
+        return self.a.where[np.where(dv.max(axis=(1,2)) > cut) ]  
+
+
+    def rpol_dv_max(self):
+        """
+        :return max a-b item deviations: 
+        """ 
+        av = self.a.rpol()
+        bv = self.b.rpol()
+        dv = np.abs( av - bv )
+        return dv.max(axis=(1,2)) 
+
+
+    def rpol_dv_where_(self, cut):
+        """
+        :return photon indices with item deviations exceeding the cut: 
+        """
+        av = self.a.rpol()
+        bv = self.b.rpol()
+        dv = np.abs( av - bv )
+        return np.where(dv.max(axis=(1,2)) > cut)   
+
+    def rpol_dv_where(self, cut):
+        """
+        :return photon indices with item deviations exceeding the cut: 
+        """
+        av = self.a.rpol()
+        bv = self.b.rpol()
+        dv = np.abs( av - bv )
+        return self.a.where[np.where(dv.max(axis=(1,2)) > cut) ]  
 
 
     def _set_warn_empty(self, we):
