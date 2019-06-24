@@ -221,9 +221,7 @@ def opticks_args(**kwa):
 
     ok = OK()
     args = parser.parse_args(namespace=ok)
-
-    print(args.loglevel) 
-
+    # dont write to stdout here it messes up tboolean picking ip TESTCONFIG
     init_logging(level=args.loglevel)
 
 

@@ -26,11 +26,11 @@ endforeach()
 
 set(SCRIPT tboolean.sh)
 get_filename_component(TGT ${SCRIPT} NAME_WE)
-set(ARG box)
+set(LV box)
 
-set(TEST ${name}.${TGT}.${ARG})
-add_test(${TEST} ${SCRIPT} ${ARG} )
-#set_tests_properties(${TEST} PROPERTIES ENVIRONMENT "SEnvTest_COLOR=${COLOR}")
+set(TEST ${name}.${TGT}.${LV})
+add_test(${TEST} ${SCRIPT} )
+set_tests_properties(${TEST} PROPERTIES ENVIRONMENT "LV=${LV}")
 
 
 #[=[

@@ -707,7 +707,7 @@ std::string BFile::preparePath(const char* dir_, const char* name, bool create )
             << " dir_ " << dir_ 
             << " name " << name 
             ;
-         std::raise(SIGINT); 
+         //std::raise(SIGINT); 
     }
     std::string empty ; 
     return empty ; 

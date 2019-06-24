@@ -6,8 +6,9 @@
 void load_dump()
 {
     LOG(info) ; 
-    const char* dir = "$TMP/evt/dayabay/torch/1" ; 
-    BTimesTable* tt = new BTimesTable("t_absolute,t_delta"); 
+    const char* dir = "$TMP/tboolean-box/evt/tboolean-box/torch/2" ; 
+
+    BTimesTable* tt = new BTimesTable("Time,DeltaTime"); 
     tt->load(dir);  // attempts to load t_absolute.ini and t_delta.ini from the directory : corresponding to table columns
     tt->dump();
 }
