@@ -23,9 +23,9 @@ Command shortcuts
 ::
 
     lv(){ echo 21 ; }
-    # default geometry LV index to test 
+    # default geometry LV index or tboolean-geomname eg "box" "sphere" etc.. 
 
-    ts(){  LV=${1:-$(lv)} tboolean.sh --align --dbgskipclearzero --dbgnojumpzero --dbgkludgeflatzero $* ; } 
+    ts(){  LV=${1:-$(lv)} tboolean.sh $* ; } 
     # **simulate** : aligned bi-simulation creating OK+G4 events 
 
     tv(){  LV=${1:-$(lv)} tboolean.sh --load $* ; } 
@@ -34,8 +34,59 @@ Command shortcuts
     tv4(){  LV=${1:-$(lv)} tboolean.sh --load --vizg4 $* ; } 
     # **visualize** the geant4 propagation 
 
-    ta(){  tboolean-;LV=${1:-$(lv)} tboolean-proxy-ip ; } 
+    ta(){  LV=${1:-$(lv)} tboolean.sh --ip ; } 
     # **analyse** : load events and analyse the propagation
+
+
+rejigged shortcuts moving the above options within tboolean-lv
+------------------------------------------------------------------
+
+::
+
+    [blyth@localhost ana]$ t opticks-tboolean-shortcuts
+    opticks-tboolean-shortcuts is a function
+    opticks-tboolean-shortcuts () 
+    { 
+        : default geometry LV index or tboolean-geomname eg "box" "sphere" etc..;
+        function lv () 
+        { 
+            echo 21
+        };
+        : **simulate** : aligned bi-simulation creating OK+G4 events;
+        function ts () 
+        { 
+            LV=${1:-$(lv)} tboolean.sh $*
+        };
+        : **visualize** : load events and visualize the propagation;
+        function tv () 
+        { 
+            LV=${1:-$(lv)} tboolean.sh --load $*
+        };
+        : **visualize** the geant4 propagation;
+        function tv4 () 
+        { 
+            LV=${1:-$(lv)} tboolean.sh --load --vizg4 $*
+        };
+        : **analyse** : load events and analyse the propagation;
+        function ta () 
+        { 
+            LV=${1:-$(lv)} tboolean.sh --ip
+        }
+    }
+
+
+
+
+
+
+Revive non proxy tboolean to check polz with them
+-----------------------------------------------------
+
+::
+
+
+   LV=boxsphere tboolean.sh --align --dbgskipclearzero --dbgnojumpzero --dbgkludgeflatzero
+   LV=boxsphere ipython --pdb -i tboolean.py
 
 
 

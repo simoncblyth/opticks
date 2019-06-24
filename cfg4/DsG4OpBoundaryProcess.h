@@ -61,7 +61,7 @@
 
 
 // SCB
-#define SCB_REFLECT_CHEAT 1
+#define WITH_REFLECT_CHEAT_DEBUG 1
 #define GEANT4_BT_GROUPVEL_FIX 1
 #define SCB_DEBUG 1
 //#define SCB_BND_DEBUG 1
@@ -200,7 +200,7 @@ private:
     CG4*          m_g4 ; 
     CMaterialLib* m_mlib ; 
     Opticks*      m_ok ; 
-#ifdef SCB_REFLECT_CHEAT
+#ifdef WITH_REFLECT_CHEAT_DEBUG
     bool          m_reflectcheat ; 
 #endif
 

@@ -22,48 +22,33 @@ Legacy Approach
   using --okg4 option to select OKG4Test 
 
 
+Minimizing this
+-----------------
+
+Bash on macOS dislikes too many layers of bash scripts
+and functions (its failing to pass in a TESTCONFIG),
+so moved most of the argument setup into tboolean-
+leaving just directory and environment setup here. 
+
 **/
 EON
 }
 
 
-default="box"
-[ -n "$LV" ] && default="proxy"
-
-
-## only shift out the first argument when it doesnt start with a hyphen
-## this avoids the need to provide the default arg when wish to set options
-
-if [ ${#} -eq 0 ]; then
-   arg=$default 
-elif [ "${1:0:1}" == "-" ]; then  
-   arg=$default 
-else
-   arg=$1
-   shift
-fi 
-
-
 cd /tmp
-
 DIRECT=1
 
-
-if [ $DIRECT -eq 1 ]
-then 
+if [ $DIRECT -eq 1 ]; then 
     unset IDPATH
     geocache-
     geocache-key-export
     [ -n "$IDPATH" ] && echo $0 ERROR IDPATH should not be defined in direct running : $IDPATH && exit 101
 fi
 
-
 echo ====== $0 $arg $* ====== PWD $PWD =================
 
 tboolean-
-cmd="tboolean-$arg --okg4  $*"
-
-## removed --compute will default to interop mode, now that viz+propagate are working together 
+cmd="tboolean-lv $*"
 
 echo $cmd
 eval $cmd

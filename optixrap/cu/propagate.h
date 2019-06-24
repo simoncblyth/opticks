@@ -273,7 +273,7 @@ __device__ void propagate_at_boundary_geant4_style( Photon& p, State& s, curandS
     const float n2 = s.material2.x ;   
     const float eta = n1/n2 ; 
 
-    const float c1 = -dot(p.direction, s.surface_normal ); // c1 arranged to be +ve   
+    const float c1 = -dot(p.direction, s.surface_normal ); // c1 arranged to be +ve  (G4 "cost1") 
     const float eta_c1 = eta * c1 ; 
 
     const float c2c2 = 1.f - eta*eta*(1.f - c1 * c1 ) ;   // Snells law 
@@ -319,8 +319,17 @@ __device__ void propagate_at_boundary_geant4_style( Photon& p, State& s, curandS
     //  above 0.0f was until 2016/3/4 incorrectly a 1.0f 
     //  resulting in TIR yielding BT where BR is expected
 
+
+#ifdef WITH_REFLECT_CHEAT_DEBUG
+    // Debugging trick that increases "accidental" history alignment in non-aligned running. 
+    // Enabling this also requires "--reflectcheat" option to set s.ureflectcheat to a fraction 
+    // from 0 to 1 according to photon record_id 
     const float u_reflect = s.ureflectcheat >= 0.f ? s.ureflectcheat : curand_uniform(&rng) ;
     bool reflect = u_reflect > TransCoeff  ;
+#else
+    const float u_reflect = curand_uniform(&rng) ;
+    bool reflect = u_reflect > TransCoeff  ;
+#endif 
 
 #ifdef WITH_ALIGN_DEV_DEBUG
     rtPrintf("propagate_at_boundary  u_OpBoundary_DiDiTransCoeff:%.9g  reflect:%d   TransCoeff:%10.5f  c2c2:%10.4f tir:%d  pos (%10.4f %10.4f %10.4f)   \n",

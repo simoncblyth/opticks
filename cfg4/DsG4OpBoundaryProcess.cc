@@ -81,6 +81,7 @@
 #endif
 
 #include "Opticks.hh"
+#include "OpticksSwitches.h"
 #include "CG4.hh"
 #include "CTrack.hh"
 #include "CMaterialLib.hh"
@@ -119,8 +120,11 @@ std::string DsG4OpBoundaryProcess::description() const
     ss << "DsG4OpBoundaryProcess " ; 
     ss << GetProcessName() ; 
     ss << " (" ; 
-#ifdef SCB_REFLECT_CHEAT
-    ss << "SCB_REFLECT_CHEAT " ; 
+#ifdef WITH_REFLECT_CHEAT_DEBUG
+    ss << "WITH_REFLECT_CHEAT_DEBUG " ; 
+#endif
+#ifdef WITH_ALIGN_DEV_DEBUG
+    ss << "WITH_ALIGN_DEV_DEBUG " ; 
 #endif
 #ifdef SCB_BND_DEBUG
     ss << "SCB_BND_DEBUG " ; 
@@ -136,7 +140,7 @@ DsG4OpBoundaryProcess::DsG4OpBoundaryProcess(CG4* g4, const G4String& processNam
              m_g4(g4),
              m_mlib(g4->getMaterialLib()),
              m_ok(g4->getOpticks()),
-#ifdef SCB_REFLECT_CHEAT
+#ifdef WITH_REFLECT_CHEAT_DEBUG
              m_reflectcheat(m_ok->isReflectCheat()),
 #endif
 #ifdef SCB_DEBUG
@@ -681,8 +685,12 @@ DsG4OpBoundaryProcess::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
             {
 
 
-#ifdef SCB_REFLECT_CHEAT
+#ifdef WITH_ALIGN_DEV_DEBUG
+#ifdef WITH_REFLECT_CHEAT_DEBUG
                 G4double _u = m_reflectcheat ? m_g4->getCtxRecordFraction()  : CG4UniformRand("DiDiReflectOrTransmit", -1) ;   // --reflectcheat 
+#else
+                G4double _u = CG4UniformRand("DiDiReflectOrTransmit", -1) ;  
+#endif
                 bool _reflect = _u < theReflectivity ;
                 if( !_reflect )    // (*lldb*) DiDiReflectOrTransmit
 #else
@@ -1051,8 +1059,12 @@ void DsG4OpBoundaryProcess::DielectricDielectric()
 
 	      G4double E2_abs, C_parl, C_perp;
 
-#ifdef SCB_REFLECT_CHEAT 
+#ifdef WITH_ALIGN_DEV_DEBUG
+#ifdef WITH_REFLECT_CHEAT_DEBUG 
           G4double _u = m_reflectcheat ? m_g4->getCtxRecordFraction()  : CG4UniformRand("DiDiTransCoeff",-1) ;   // --reflectcheat 
+#else
+          G4double _u = CG4UniformRand("DiDiTransCoeff",-1) ;  
+#endif
           bool _transmit = _u < TransCoeff ;  
 	      if ( !_transmit ) {    // (*lldb*) DiDiTransCoeff
 #else
@@ -1268,8 +1280,8 @@ void DsG4OpBoundaryProcess::DoAbsorption()
     theStatus = Ds::Absorption;
 
 
-#ifdef SCB_REFLECT_CHEAT
-    //G4double _u = CG4UniformRand(__FILE__,__LINE__) ;  
+
+#ifdef WITH_ALIGN_DEV_DEBUG
     G4double _u = CG4UniformRand("DoAbsorption", -1) ;  
     bool _detect = _u < theEfficiency ;
     if( _detect ) 

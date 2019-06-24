@@ -906,7 +906,10 @@ class Evt(object):
         self.c4 = self.c4_[psel]
         self.wl = self.wl_[psel]
         self.rx = self.rx_[psel]
-        self.so = self.so_[psel]
+
+        if not self.so_.missing:
+            self.so = self.so_[psel]
+        pass
 
         self.seqhis_ana = self.make_seqhis_ana( self.seqhis[psel] )   # sequence history with selection applied
         self.seqmat_ana = self.make_seqmat_ana( self.seqmat[psel] )   

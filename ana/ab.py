@@ -34,7 +34,7 @@ class Maligned(object):
         self.aligned = ab.aligned
         self.fmaligned = ratio_(len(ab.maligned), tot)
         self.faligned = ratio_(len(ab.aligned), tot)
-        self.sli = slice(None)
+        self.sli = slice(0,25)
 
     def __getitem__(self, sli):
          self.sli = sli
@@ -43,9 +43,10 @@ class Maligned(object):
     def __repr__(self):
         return "\n".join([
                "ab.mal", 
-               "aligned  %7d/%7d : %.4f : %s " % ( len(self.aligned), self.tot, self.faligned,   ",".join(map(lambda _:"%d"%_, self.aligned[:25])) ),
-               "maligned %7d/%7d : %.4f : %s " % ( len(self.maligned), self.tot, self.fmaligned,  ",".join(map(lambda _:"%d"%_, self.maligned[:25])) ),
-                ]  + map(lambda iq:self.ab.recline(iq), enumerate(self.maligned[self.sli]))
+               "aligned  %7d/%7d : %.4f : %s " % ( len(self.aligned), self.tot, self.faligned,   ",".join(map(lambda _:"%d"%_, self.aligned[self.sli])) ),
+               "maligned %7d/%7d : %.4f : %s " % ( len(self.maligned), self.tot, self.fmaligned,  ",".join(map(lambda _:"%d"%_, self.maligned[self.sli])) ),
+                repr(self.sli)
+                ] + map(lambda iq:self.ab.recline(iq), enumerate(self.maligned[self.sli])) + ["."]
                 ) 
 
 

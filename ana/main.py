@@ -2,7 +2,7 @@
 """
 """
 import numpy as np
-import os, sys, logging, argparse
+import os, sys, re, logging, argparse
 from opticks.ana.env import opticks_environment
 from opticks.ana.OpticksQuery import OpticksQuery 
 from opticks.ana.nload import tagdir_
@@ -46,8 +46,11 @@ def opticks_args(**kwa):
     oad = os.environ.get(oad_key,"det=g4live,src=natural,tag=1,pfx=.")
     defaults = dict(map(lambda ekv:ekv.split("="), oad.split(","))) 
     lv = os.environ.get("LV", None)
+
     if lv is not None:
-        defaults["pfx"] = "tboolean-proxy-%d" % int(lv)
+        lv_is_int = re.compile("\d+").match(lv) is not None
+        lvn = lv if not lv_is_int else "proxy-%d" % int(lv)
+        defaults["pfx"] = "tboolean-%s" % lvn 
         log.info("override pfx default as LV=%s envvar defined, pfx=%s " % (lv, defaults["pfx"])) 
     pass  
 
@@ -111,7 +114,8 @@ def opticks_args(**kwa):
     apmtpathtmpl = kwa.get("apmtpathtmpl", "$OPTICKS_INSTALL_PREFIX/opticksdata/export/DayaBay/GPmt/%(apmtidx)s/GPmt.npy" )
     apmtidx = kwa.get("apmtidx", 2 )
 
-    csgpath = kwa.get("csgpath", "$TMP/tboolean-csg-pmt-py")
+    csgname = kwa.get("csgname", "tboolean-dummy")
+    csgpath = kwa.get("csgpath", None)
     #gltfpath = kwa.get("gltfpath", "$TMP/tgltf/tgltf-gdml--.gltf")
 
     container = kwa.get("container","Rock//perfectAbsorbSurface/Vacuum") 
@@ -189,6 +193,7 @@ def opticks_args(**kwa):
     parser.add_argument(     "--addpath",   default=addpath, help="Path to detdesc xml file for topdown testing. %(default)s ")
     parser.add_argument(     "--yes", action="store_true", help="Confirm any YES dialogs. %(default)s ")
     parser.add_argument(     "--csgpath",   default=csgpath, help="Directory of the NCSG input serialization. %(default)s ")
+    parser.add_argument(     "--csgname",   default=csgname, help="Name of the Directory of the NCSG input serialization. %(default)s ")
     #parser.add_argument(     "--gltfpath",   default=gltfpath, help="Path to glTF json file. %(default)s ")
     parser.add_argument(     "--container",   default=container, help="Boundary specification for container. %(default)s ")
     parser.add_argument(     "--testobject",  default=testobject, help="Boundary specification for testobject. %(default)s ")
@@ -207,6 +212,7 @@ def opticks_args(**kwa):
     parser.add_argument(     "--gltfsave", default=gltfsave, action="store_true", help="Save GDML parsed scene as glTF, see analytic/sc.py. %(default)s ")
     parser.add_argument(     "--lvnlist", default=lvnlist, help="Path to file containing list of lv names. %(default)s ")
     parser.add_argument(     "--j1707", action="store_true", help="Bash level option passthru. %(default)s ")
+    parser.add_argument(     "--ip", action="store_true", help="Bash level option passthru. %(default)s ")
     parser.add_argument(     "--extras", action="store_true", help="Bash level option passthru. %(default)s ")
     parser.add_argument(     "--disco", action="store_true", help="Disable container, investigate suspected  inefficient raytrace of objects inside spacious containers. %(default)s ")
 

@@ -329,7 +329,8 @@ void NCSG::postload()
     std::string gpuoffset = m_meta->getValue<std::string>("gpuoffset", "0,0,0" );
     m_gpuoffset = gvec3(gpuoffset);  
 
-    int verbosity = m_meta->getIntFromString("verbosity", "0") ;
+    //int verbosity = m_meta->getIntFromString("verbosity", "0") ;
+    int verbosity = m_meta->getValue<int>("verbosity", "0") ;
 
     increaseVerbosity(verbosity);
 }

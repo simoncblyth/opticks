@@ -27,6 +27,44 @@ command shortcuts
 
 
 
+rejigged shortcuts moving the above options within tboolean-lv
+------------------------------------------------------------------
+
+::
+
+    [blyth@localhost ana]$ t opticks-tboolean-shortcuts
+    opticks-tboolean-shortcuts is a function
+    opticks-tboolean-shortcuts () 
+    { 
+        : default geometry LV index or tboolean-geomname eg "box" "sphere" etc..;
+        function lv () 
+        { 
+            echo 21
+        };
+        : **simulate** : aligned bi-simulation creating OK+G4 events;
+        function ts () 
+        { 
+            LV=${1:-$(lv)} tboolean.sh $*
+        };
+        : **visualize** : load events and visualize the propagation;
+        function tv () 
+        { 
+            LV=${1:-$(lv)} tboolean.sh --load $*
+        };
+        : **visualize** the geant4 propagation;
+        function tv4 () 
+        { 
+            LV=${1:-$(lv)} tboolean.sh --load --vizg4 $*
+        };
+        : **analyse** : load events and analyse the propagation;
+        function ta () 
+        { 
+            LV=${1:-$(lv)} tboolean.sh --ip
+        }
+    }
+
+
+
 ISSUE 2 : times(ns) of propagation milestones (eg BT) shown on animation slider vary as change AnimTimeMax
 ----------------------------------------------------------------------------------------------------------------
 

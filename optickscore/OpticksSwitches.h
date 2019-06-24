@@ -20,6 +20,7 @@ NB when searching for switches in python include the space at the end, eg::
 #define WITH_SOURCE 1 
 #define WITH_ALIGN_DEV 1
 #define WITH_ALIGN_DEV_DEBUG 1
+//#define WITH_REFLECT_CHEAT_DEBUG 1
 #define WITH_LOGDOUBLE 1
 
 
@@ -46,6 +47,9 @@ static std::string OpticksSwitches()
 #endif
 #ifdef WITH_ALIGN_DEV_DEBUG
     ss << "WITH_ALIGN_DEV_DEBUG " ;   
+#endif
+#ifdef WITH_REFLECT_CHEAT_DEBUG
+    ss << "WITH_REFLECT_CHEAT_DEBUG " ;   
 #endif
 #ifdef WITH_LOGDOUBLE
     ss << "WITH_LOGDOUBLE " ;   

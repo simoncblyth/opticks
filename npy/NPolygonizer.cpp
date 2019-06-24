@@ -82,7 +82,8 @@ NPolygonizer::NPolygonizer(NCSG* csg)
     assert(m_root);
     assert(m_meta);
 
-    m_verbosity = m_meta->getIntFromString("verbosity", "0" ) ; 
+    m_verbosity = m_meta->get<int>("verbosity", "0" ) ; 
+    //m_verbosity = m_meta->getIntFromString("verbosity", "0" ) ; 
 
     std::string poly = m_meta->get<std::string>("poly", "DCS");
 
@@ -195,6 +196,7 @@ bool NPolygonizer::checkTris(NTrianglesNPY* tris)
 NTrianglesNPY* NPolygonizer::marchingCubesNPY()
 {
     int nx = m_meta->get<int>("nx", "15" );
+    //int nx = m_meta->getIntFromString("nx", "15" );
     NMarchingCubesNPY poly(nx) ;
     NTrianglesNPY* tris = poly(m_root);
     return tris ; 
@@ -220,7 +222,8 @@ NTrianglesNPY* NPolygonizer::implicitMesher()
     NTrianglesNPY* tris = NULL ; 
 #ifdef OPTICKS_ImplicitMesher
 
-    int   resolution = m_meta->getIntFromString("resolution", "100" );
+    //int   resolution = m_meta->getIntFromString("resolution", "100" );
+    int   resolution = m_meta->get<int>("resolution", "100" );
     int   ctrl = m_meta->get<int>("ctrl", "0" );
     float expand_bb = 1e-4 ; 
     std::string seeds = m_meta->get<std::string>("seeds", "" );
