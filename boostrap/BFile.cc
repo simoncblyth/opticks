@@ -4,6 +4,7 @@
 #include "BStr.hh"
 #include "BResource.hh"
 
+#include <csignal>
 #include <cstring>
 #include <ctime>
 #include <fstream>
@@ -700,10 +701,13 @@ std::string BFile::preparePath(const char* dir_, const char* name, bool create )
     }
     else
     {
-        LOG(warning)<< " FAILED " 
-                    << " dir " << dir 
-                    << " dir_ " << dir_ 
-                    << " name " << name ;
+        LOG(error)
+            << " FAILED " 
+            << " dir " << dir 
+            << " dir_ " << dir_ 
+            << " name " << name 
+            ;
+         std::raise(SIGINT); 
     }
     std::string empty ; 
     return empty ; 

@@ -30,25 +30,27 @@
 #include "ORenderer.hh"
 
 
+const plog::Severity OKGLTracer::LEVEL = debug ; 
+
 OKGLTracer* OKGLTracer::fInstance = NULL ; 
 OKGLTracer* OKGLTracer::GetInstance(){ return fInstance ;}
 
 OKGLTracer::OKGLTracer(OpEngine* ope, OpticksViz* viz, bool immediate) 
-   :
-      m_log(new SLog("OKGLTracer::OKGLTracer")),
-      m_ope(ope),
-      m_viz(viz),
-      m_hub(m_viz->getHub()),
-      m_immediate(immediate),
-      m_scene(m_viz->getScene()),
+    :
+    m_log(new SLog("OKGLTracer::OKGLTracer","", LEVEL)),
+    m_ope(ope),
+    m_viz(viz),
+    m_hub(m_viz->getHub()),
+    m_immediate(immediate),
+    m_scene(m_viz->getScene()),
 
-      m_ocontext(NULL),   // defer 
-      m_composition(m_hub->getComposition()),
-      m_interactor(m_viz->getInteractor()),
-      m_oframe(NULL),
-      m_orenderer(NULL),
-      m_otracer(NULL),
-      m_trace_count(0)
+    m_ocontext(NULL),   // defer 
+    m_composition(m_hub->getComposition()),
+    m_interactor(m_viz->getInteractor()),
+    m_oframe(NULL),
+    m_orenderer(NULL),
+    m_otracer(NULL),
+    m_trace_count(0)
 {
     init();
     (*m_log)("DONE");

@@ -140,7 +140,7 @@ class MaskType(BaseType):
             assert 0
         pass
 
-        log.debug(" i : %s %s " % (repr(i), type(i)))
+        #log.debug(" i : %s %s " % (repr(i), type(i)))
         codes = filter(lambda c:int(i) & c, self.flags.codes)
         codes = sorted(codes,reverse=True)
         d = self.code2abbr
@@ -342,8 +342,8 @@ class SeqTable(object):
         codes = cu[:,0]
         counts = cu[:,1]
 
-        log.debug("codes  : %s " % repr(codes))
-        log.debug("counts : %s " % repr(counts))
+        #log.debug("codes  : %s " % repr(codes))
+        #log.debug("counts : %s " % repr(counts))
 
         labels = map(lambda i:af.label(i), codes )
         nstep = map(lambda l:len(l.split(af.delim)),labels)

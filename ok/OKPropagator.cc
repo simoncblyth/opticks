@@ -34,7 +34,7 @@ OKPropagator* OKPropagator::GetInstance(){ return fInstance ;}
 
 OKPropagator::OKPropagator(OpticksHub* hub, OpticksIdx* idx, OpticksViz* viz) 
     :
-    m_log(new SLog("OKPropagator::OKPropagator")),
+    m_log(new SLog("OKPropagator::OKPropagator", "", LEVEL)),
     m_hub(hub),    
     m_idx(idx),
     m_viz(viz),    

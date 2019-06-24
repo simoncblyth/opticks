@@ -1782,23 +1782,28 @@ void OpticksEvent::importParameters()
 
 void OpticksEvent::saveReport(const char* dir)
 {
-    if(!m_report) return ; 
-    LOG(debug) << "OpticksEvent::saveReport to " << dir  ; 
+    assert(m_report);  
+    LOG(LEVEL) << "[ " << dir  ; 
 
     m_profile->save(dir); 
     m_report->save(dir);  
     m_launch_times->save(dir);
     m_prelaunch_times->save(dir);
 
+    LOG(LEVEL) << "] " << dir  ; 
 }
 
 void OpticksEvent::loadReport()
 {
-    std::string tagdir = getTagDir();
-    m_profile = OpticksProfile::Load( tagdir.c_str() );  
-    m_report = Report::load(tagdir.c_str());
-    m_launch_times = BTimes::Load(tagdir.c_str(), LAUNCH_LABEL );
-    m_prelaunch_times = BTimes::Load(tagdir.c_str(), PRELAUNCH_LABEL );
+    std::string tagdir_ = getTagDir();
+    const char* tagdir = tagdir_.c_str();  
+    //LOG(error) << "tagdir " << tagdir ;  
+
+    m_profile = OpticksProfile::Load( tagdir );  
+    m_report = Report::load(tagdir );
+
+    m_launch_times = BTimes::Load(LAUNCH_LABEL, tagdir );
+    m_prelaunch_times = BTimes::Load(PRELAUNCH_LABEL, tagdir );
 
 }
 
@@ -2017,7 +2022,7 @@ void OpticksEvent::loadBuffers(bool verbose)
 
     OK_PROFILE("OpticksEvent::loadBuffers"); 
 
-    LOG(info) << "OpticksEvent::load " << getShapeString() ; 
+    LOG(info) << getShapeString() ; 
 
     if(verbose)
     {
@@ -2036,7 +2041,7 @@ void OpticksEvent::loadBuffers(bool verbose)
 
     if(!isIndexed())
     {
-         LOG(warning) << "OpticksEvent::load IS NOT INDEXED " 
+         LOG(warning) << "IS NOT INDEXED " 
                       << brief()
                       ;
     }

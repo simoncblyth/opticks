@@ -200,6 +200,11 @@ p0,p1
 Param.w
     uniform propagation time coming from the Animator (or slider) which 
     is in range m_domain_time.x(timemin), m_domain_time.z(animTimeMax)
+
+    Added "--animtimerange tmin,tmax" to directly set this, defaulting to 
+    "-1,-1" which corresponds to full time domain 
+
+
  
 TimeDomain.y
     from Composition::getTimeDomain which is set at OpticksViz::uploadGeometry 

@@ -30,6 +30,7 @@ class GlobalStyle;
 class Animator ; 
 class Bookmarks ; 
 class FlightPath ; 
+class Opticks ; 
 class OpticksEvent ; 
 
 
@@ -122,7 +123,7 @@ class OKCORE_API Composition : public NConfigurable {
       static const glm::vec3 Y ; 
       static const glm::vec3 Z ; 
   public:
-      Composition();
+      Composition(Opticks* ok);
       void addConstituentConfigurables(NState* state);
       virtual ~Composition();
    public:
@@ -489,6 +490,7 @@ class OKCORE_API Composition : public NConfigurable {
 
   private:
       // residents
+      Opticks*    m_ok ; 
       Animator*   m_animator ; 
       Animator*   m_rotator ; 
       Camera*    m_camera ;

@@ -9,6 +9,8 @@
 #include "View.hh"
 
 
+#include "OPTICKS_LOG.hh"
+#include "Opticks.hh"
 #include "Composition.hh"
 
 
@@ -60,7 +62,7 @@ void test_rotate()
 
 
 
-void test_center_extent()
+void test_center_extent(Opticks* ok)
 {
    NPY<float>* dom = NPY<float>::load("domain", "1", "dayabay");
    if(!dom) return ; 
@@ -69,16 +71,16 @@ void test_center_extent()
    glm::vec4 ce = dom->getQuad(0,0);
    print(ce, "ce");
 
-   Composition c ; 
+   Composition c(ok) ; 
    c.setCenterExtent(ce);
    c.update();
    c.dumpAxisData();
 }
 
 
-void test_depth()
+void test_depth(Opticks* ok)
 {
-   Composition* comp = new Composition ;
+   Composition* comp = new Composition(ok) ;
    View* view = comp->getView();
    Camera* cam = comp->getCamera();
 
@@ -243,12 +245,18 @@ void test_setCenterExtent()
 
 
 
-int main()
+int main(int argc, char** argv)
 {
+    OPTICKS_LOG(argc, argv); 
+
+    Opticks ok(argc, argv); 
+    ok.configure(); 
+
+
    //test_rotate();
-   //test_center_extent();
+   //test_center_extent(&ok);
    test_setCenterExtent();
-   //test_depth();
+   //test_depth(&ok);
 
     
    return 0 ;

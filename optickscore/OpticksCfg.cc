@@ -88,6 +88,7 @@ OpticksCfg<Listener>::OpticksCfg(const char* name, Listener* listener, bool live
        m_recordmax(10),
        m_timemaxthumb(6.f),
        m_timemax(-1.f),
+       m_animtimerange("-1,-1"),
        m_animtimemax(-1.f),
        m_animator_period(200),
        m_ivperiod(100),
@@ -947,6 +948,14 @@ void OpticksCfg<Listener>::init()
    m_desc.add_options()
        ("timemax",  boost::program_options::value<float>(&m_timemax), timemax );
 
+
+   char animtimerange[256];
+   snprintf(animtimerange,256, 
+"Comma delimited times in nanoseconds specifying the animation time range, negative value sets the range using a rule of thumb based on geometry extent. Default %s.", m_animtimerange.c_str());
+   m_desc.add_options()
+       ("animtimerange",  boost::program_options::value<std::string>(&m_animtimerange), animtimerange );
+
+
    char animtimemax[128];
    snprintf(animtimemax,128, 
 "Maximum animation time in nanoseconds. Default %f ", m_animtimemax);
@@ -1638,6 +1647,13 @@ template <class Listener>
 float OpticksCfg<Listener>::getTimeMax() const   // --timemax
 {
     return m_timemax ; 
+}
+
+
+template <class Listener>
+const std::string& OpticksCfg<Listener>::getAnimTimeRange() const 
+{
+    return m_animtimerange  ;
 }
 
 template <class Listener>

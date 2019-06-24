@@ -16,26 +16,52 @@ Overview
 * the geometry LV 13 and 18 featuring spheres or ellipsoids with 
   close to pole reflections
 
+* contrast with "ts box" which does many exactly normal incidence reflections
+  which are in perfect agreement, in which case polz doesnt change
 
-Command shortcuts
----------------------
+* probably problem is with the transition from normal incidence treatment to 
+  non-normal incidence treatment, maybe need WITH_NORMALDOUBLE 
+
+
+
+ta box : at perfectly normal incidence the polz just stays the same
+----------------------------------------------------------------------
 
 ::
 
-    lv(){ echo 21 ; }
-    # default geometry LV index or tboolean-geomname eg "box" "sphere" etc.. 
+    In [1]: ab.aselhis = "TO BT BR BT SA"
 
-    ts(){  LV=${1:-$(lv)} tboolean.sh $* ; } 
-    # **simulate** : aligned bi-simulation creating OK+G4 events 
+    In [2]: ab.rpol()
+    Out[2]: 
+    (A()sliced
+     A([[[ 0., -1.,  0.],
+         [ 0., -1.,  0.],
+         [ 0., -1.,  0.],
+         [ 0., -1.,  0.],
+         [ 0., -1.,  0.]],
+     
+        [[ 0., -1.,  0.],
+         [ 0., -1.,  0.],
+         [ 0., -1.,  0.],
+         [ 0., -1.,  0.],
+         [ 0., -1.,  0.]],
 
-    tv(){  LV=${1:-$(lv)} tboolean.sh --load $* ; } 
-    # **visualize** : load events and visualize the propagation
 
-    tv4(){  LV=${1:-$(lv)} tboolean.sh --load --vizg4 $* ; } 
-    # **visualize** the geant4 propagation 
 
-    ta(){  LV=${1:-$(lv)} tboolean.sh --ip ; } 
-    # **analyse** : load events and analyse the propagation
+Added tboolean-boxrot to check near normal : but find CG machinery not passing the transform to G4
+----------------------------------------------------------------------------------------------------
+
+::
+
+    tv boxrot
+    tv4 boxrot   # useful to see the problem directly, much faster than interpreting the numbers 
+
+
+::
+
+    box = CSG("box3", param=[300,300,200,0], emit=0,  boundary="Vacuum///GlassSchottF2"  )
+    box.transform = rotate([1,0,0,45])
+
 
 
 rejigged shortcuts moving the above options within tboolean-lv
@@ -47,35 +73,27 @@ rejigged shortcuts moving the above options within tboolean-lv
     opticks-tboolean-shortcuts is a function
     opticks-tboolean-shortcuts () 
     { 
-        : default geometry LV index or tboolean-geomname eg "box" "sphere" etc..;
-        function lv () 
-        { 
-            echo 21
-        };
         : **simulate** : aligned bi-simulation creating OK+G4 events;
         function ts () 
         { 
-            LV=${1:-$(lv)} tboolean.sh $*
+            LV=$1 tboolean.sh ${@:2}
         };
         : **visualize** : load events and visualize the propagation;
         function tv () 
         { 
-            LV=${1:-$(lv)} tboolean.sh --load $*
+            LV=$1 tboolean.sh --load ${@:2}
         };
         : **visualize** the geant4 propagation;
         function tv4 () 
         { 
-            LV=${1:-$(lv)} tboolean.sh --load --vizg4 $*
+            LV=$1 tboolean.sh --load --vizg4 ${@:2}
         };
         : **analyse** : load events and analyse the propagation;
         function ta () 
         { 
-            LV=${1:-$(lv)} tboolean.sh --ip
+            LV=$1 tboolean.sh --ip ${@:2}
         }
     }
-
-
-
 
 
 
@@ -83,7 +101,6 @@ Revive non proxy tboolean to check polz with them
 -----------------------------------------------------
 
 ::
-
 
    LV=boxsphere tboolean.sh --align --dbgskipclearzero --dbgnojumpzero --dbgkludgeflatzero
    LV=boxsphere ipython --pdb -i tboolean.py

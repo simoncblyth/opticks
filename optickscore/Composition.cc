@@ -30,6 +30,7 @@
 
 
 // okc-
+#include "Opticks.hh"
 #include "View.hh"
 #include "ViewCfg.hh"
 #include "Camera.hh"
@@ -132,7 +133,7 @@ const char* Composition::getGeometryStyleName(Composition::GeometryStyle_t style
 
 
 
-Composition::Composition()
+Composition::Composition(Opticks* ok)
   :
   m_lodcut(5000.f,10000.f,0.f,0.f),
   m_model2world(),
@@ -157,6 +158,7 @@ Composition::Composition()
   m_scanparam(0.f,1.0f,0.5f,0.01f),   // ct scan  x:clip-z-cut y:slice-width
   m_nrmparam(DEF_NORMAL,NRMCOL_GEOMETRY,0,0),
   m_animated(false),
+  m_ok(ok),
   m_animator(NULL),
   m_rotator(NULL),
   m_camera(NULL),
@@ -771,13 +773,33 @@ all the action happens early in the period.
 Historically for DYB AD (~5m extent) a TimeMax of 200ns 
 and AnimTimeMax of 50ns was used typically.
 
+
+IDEAS
+~~~~~~
+
+Can the anim time range be made dynamic somehow with a GUI interface to 
+change the range ?
+
+
+
 **/
 
 void Composition::initAnimator()
 {
     float* target = glm::value_ptr(m_param) + 3 ;   // offset to ".w" 
 
+
+#ifdef OLD_ANIM
     m_animator = new Animator(target, m_animator_period, m_domain_time.x, m_domain_time.z ); 
+#else
+    glm::vec4 animtimerange(0.f, m_domain_time.y, 0.f, 0.f) ;  
+    m_ok->getAnimTimeRange(animtimerange); 
+
+    float tmin = animtimerange.x < 0.f ? m_domain_time.x : animtimerange.x ; 
+    float tmax = animtimerange.y < 0.f ? m_domain_time.y : animtimerange.y ; 
+
+    m_animator = new Animator(target, m_animator_period, tmin , tmax  ); 
+#endif
     m_animator->setModeRestrict(Animator::FAST);
     m_animator->Summary("Composition::gui setup Animation");
 }

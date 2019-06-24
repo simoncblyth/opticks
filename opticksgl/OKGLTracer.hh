@@ -27,6 +27,7 @@ class OpticksViz ;
 
 #include "OKGL_API_EXPORT.hh"
 
+#include "plog/Severity.h"
 #include "SRenderer.hh"
 
 /**
@@ -43,6 +44,7 @@ SRenderer protocol base, just: "void render()"
 
 
 class OKGL_API OKGLTracer : public SRenderer {
+       static const plog::Severity LEVEL ; 
     public:
        static OKGLTracer* GetInstance();
     public:

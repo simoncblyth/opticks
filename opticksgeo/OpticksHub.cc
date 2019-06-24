@@ -178,7 +178,7 @@ OpticksHub::OpticksHub(Opticks* ok)
    m_geometry(NULL),
    m_ggeo(GGeo::GetInstance()),   // if there is a GGeo instance already extant adopt it, otherwise load one  
    m_gscene(NULL),
-   m_composition(new Composition),
+   m_composition(new Composition(m_ok)),
 #ifdef OPTICKS_NPYSERVER
    m_delegate(NULL),
    m_server(NULL)
@@ -809,7 +809,7 @@ void OpticksHub::anaEvent(OpticksEvent* evt)
 
 void OpticksHub::anaEvent()
 {
-    LOG(info) << "OpticksHub::anaEvent" ;
+    LOG(LEVEL) << "[" ;
 
     OpticksEvent* evt = m_run->getEvent();
     anaEvent(evt); 
@@ -818,6 +818,8 @@ void OpticksHub::anaEvent()
     anaEvent(g4evt); 
 
     m_run->anaEvent();
+
+    LOG(LEVEL) << "]" ;
 }
 
 

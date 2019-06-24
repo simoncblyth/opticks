@@ -98,12 +98,16 @@ void BList<A,B>::save(const char* path)
 template<typename A, typename B> 
 void BList<A,B>::load(const char* dir, const char* name)
 {
-    LOG(verbose) << "load"
-              << " dir [" << dir << "]" 
-              << " name [" << name << "]" 
-              ;
+    LOG(verbose) 
+        << " dir [" << dir << "]" 
+        << " name [" << name << "]" 
+        ;
 
     std::string path = BFile::preparePath(dir, name, false);
+
+    //LOG(info) << path ; 
+
+
     if(!path.empty())
     {
         std::string shortpath = BFile::prefixShorten( path.c_str(), "$OPTICKS_PREFIX/opticksdata/export/" ); // cosmetic shortening only

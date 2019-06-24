@@ -137,29 +137,29 @@ void  OpticksAim::setTarget(unsigned target, bool aim)
 void OpticksAim::target()
 {
     int target_ = getTarget() ;
-    bool geocenter  = m_ok->hasOpt("geocenter");
+    bool geocenter  = m_ok->hasOpt("geocenter");  // --geocenter
     bool autocam = true ; 
 
     OpticksEvent* evt = m_hub->getEvent();
 
     if(target_ != 0)
     {
-        LOG(info) << "OpticksAim::target SKIP as geometry target already set  " << target_ ; 
+        LOG(info) << "SKIP as geometry target already set  " << target_ ; 
     }
     else if(geocenter )
     {
         glm::vec4 mmce = getCenterExtent();
         m_composition->setCenterExtent( mmce , autocam );
-        LOG(info) << "OpticksAim::target (geocenter) mmce " << gformat(mmce) ; 
+        LOG(info) << "[--geocenter] mmce " << gformat(mmce) ; 
     }
     else if(evt && evt->hasGenstepData())
     {
         glm::vec4 gsce = evt->getGenstepCenterExtent();  // need to setGenStepData before this will work 
         m_composition->setCenterExtent( gsce , autocam );
-        LOG(info) << "OpticksAim::target"
-                  << " evt " << evt->brief()
-                  << " gsce " << gformat(gsce) 
-                  ; 
+        LOG(info) 
+            << " evt " << evt->brief()
+            << " gsce " << gformat(gsce) 
+            ; 
     }
 }
 

@@ -568,6 +568,25 @@ tboolean-testname()
     echo $testname
 }
 
+tboolean-funcname()
+{
+    local funcname
+    if [ -n "$LV" ]; then 
+        if [[ $LV =~ ^[0-9]+ ]]; then
+           funcname="tboolean-proxy"
+        else
+           funcname="tboolean-$LV"
+        fi 
+    else
+        funcname=$(tboolean-testname-default)
+    fi 
+    echo $funcname
+}
+
+
+
+
+
 tboolean-testconfig()
 {
     local testconfig
@@ -808,6 +827,7 @@ EON
 tboolean-lv()
 {
    local msg="=== $FUNCNAME :"
+   local funcname=$(tboolean-funcname)
    local testname=$(tboolean-testname)
    local RC
    echo $msg $testname
@@ -816,12 +836,14 @@ tboolean-lv()
    if [ "${cmdline/--ip}" != "${cmdline}" ]; then
        TESTNAME=$testname tboolean-ipy- $* 
    elif [ "${cmdline/--chk}" != "${cmdline}" ]; then
-       ${testname}-
+       ${funcname}-
+   elif [ "${cmdline/--noalign}" != "${cmdline}" ]; then
+       $funcname --okg4  $*   
    else
-       $testname --okg4 --align --dbgskipclearzero --dbgnojumpzero --dbgkludgeflatzero $*   
+       $funcname --okg4 --align --dbgskipclearzero --dbgnojumpzero --dbgkludgeflatzero $*   
        RC=$?
    fi 
-   echo $msg $testname RC $RC
+   echo $msg $funcname RC $RC
    return $RC
 }
 
@@ -900,6 +922,38 @@ EON
 
 
 
+tboolean-boxrot(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null) tboolean-- $* ; } 
+tboolean-boxrot-(){  $FUNCNAME- | python $* ; }
+tboolean-boxrot--(){ cat << EOP 
+import logging
+log = logging.getLogger(__name__)
+from opticks.ana.main import opticks_main
+from opticks.analytic.polyconfig import PolyConfig
+from opticks.analytic.csg import CSG  
+from opticks.analytic.glm import rotate  
+
+
+# 0x3f is all 6 
+autoemitconfig="photons:600000,wavelength:380,time:0.2,posdelta:0.1,sheetmask:0x1,umin:0.45,umax:0.55,vmin:0.45,vmax:0.55,diffuse:1,ctmindiffuse:0.5,ctmaxdiffuse:1.0"
+args = opticks_main(csgname="${FUNCNAME/--}", autoemitconfig=autoemitconfig)
+
+emitconfig = "photons:100000,wavelength:380,time:0.0,posdelta:0.1,sheetmask:0x1,umin:0.45,umax:0.55,vmin:0.45,vmax:0.55" 
+
+CSG.kwa = dict(poly="IM",resolution=20, verbosity=0, ctrl=0, containerscale=3.0, emitconfig=emitconfig  )
+
+container = CSG("box", emit=-1, boundary='Rock//perfectAbsorbSurface/Vacuum', container=1 )  # no param, container=1 switches on auto-sizing
+
+box = CSG("box3", param=[300,300,200,0], emit=0,  boundary="Vacuum///GlassSchottF2"  )
+box.transform = rotate([1,0,0,45])
+
+CSG.Serialize([container, box], args )
+EOP
+}
+
+
+
+
+
 
 
 
@@ -923,7 +977,7 @@ args = opticks_main(csgname="${FUNCNAME/--}", autoemitconfig=autoemitconfig)
 
 #emitconfig = "photons:100000,wavelength:380,time:0.2,posdelta:0.1,sheetmask:0x1,umin:0.25,umax:0.75,vmin:0.25,vmax:0.75" 
 #emitconfig = "photons:1,wavelength:380,time:0.2,posdelta:0.1,sheetmask:0x1,umin:0.25,umax:0.75,vmin:0.25,vmax:0.75" 
-emitconfig = "photons:100000,wavelength:380,time:0.2,posdelta:0.1,sheetmask:0x1,umin:0.45,umax:0.55,vmin:0.45,vmax:0.55" 
+emitconfig = "photons:100000,wavelength:380,time:0.0,posdelta:0.1,sheetmask:0x1,umin:0.45,umax:0.55,vmin:0.45,vmax:0.55" 
 
 CSG.kwa = dict(poly="IM",resolution=20, verbosity=0, ctrl=0, containerscale=3.0, emitconfig=emitconfig  )
 
@@ -1345,7 +1399,7 @@ args = opticks_main(csgname="${FUNCNAME/--}")
 
 container = CSG("box", param=[0,0,0,1000], boundary="Rock//perfectAbsorbSurface/Vacuum" )
 
-im = dict(poly="IM", resolution=40, verbosity="1", ctrl=0 )
+im = dict(poly="IM", resolution=40, verbosity=1, ctrl=0 )
 
 
 sp = CSG("sphere", param=[0,0,-1,100] )   # zrange -100:100
@@ -1482,7 +1536,7 @@ from opticks.analytic.csg import CSG
         
 args = opticks_main(csgname="${FUNCNAME/--}")
 
-container = CSG("box", param=[0,0,0,1200], boundary=args.container, poly="MC", nx="20" )
+container = CSG("box", param=[0,0,0,1200], boundary=args.container, poly="MC", nx=20 )
 
 dcs = dict(poly="DCS", nominal="7", coarse="6", threshold="1", verbosity=0)
 hy = dict(poly="HY", level="4", polycfg="contiguous=1,reversed=0,numsubdiv=0,offsave=1", verbosity=0 )
@@ -1568,10 +1622,10 @@ from opticks.analytic.csg import CSG
 
 args = opticks_main(csgname="${FUNCNAME/--}")
 
-container = CSG("box", param=[0,0,0,1000], boundary=args.container, poly="MC", nx="20" )
+container = CSG("box", param=[0,0,0,1000], boundary=args.container, poly="MC", nx=20 )
 
 CSG.boundary = args.testobject
-CSG.kwa = dict(poly="IM", resolution=50, verbosity="1", ctrl=0 )
+CSG.kwa = dict(poly="IM", resolution=50, verbosity=1, ctrl=0 )
 
 
 al = CSG("sphere", param=[0,0,50,100])   # mid-right-Y, conventional difference(top-sphere,bottom-sphere)
@@ -1760,7 +1814,7 @@ from opticks.analytic.csg import CSG
 args = opticks_main(csgname="${FUNCNAME/--}")
 CSG.kwa = dict(poly="IM", resolution=40, verbosity=0, ctrl=0 )
 
-container = CSG("box", param=[0,0,0,1000], boundary="$(tboolean-container)", poly="MC", nx="20" )
+container = CSG("box", param=[0,0,0,1000], boundary="$(tboolean-container)", poly="MC", nx=20 )
 
 zsphere = CSG("zsphere", param=[0,0,0,500], param1=[100,200,0,0],param2=[0,0,0,0],  boundary="$(tboolean-testobject)" )
 
@@ -1794,9 +1848,9 @@ from opticks.ana.main import opticks_main
 from opticks.analytic.csg import CSG  
 args = opticks_main(csgname="${FUNCNAME/--}")
 
-container = CSG("box", param=[0,0,0,1000], boundary="$(tboolean-container)", poly="MC", nx="20" )
+container = CSG("box", param=[0,0,0,1000], boundary="$(tboolean-container)", poly="MC", nx=20 )
 
-CSG.kwa = dict(poly="IM", resolution=50, verbosity="3", ctrl=0 )
+CSG.kwa = dict(poly="IM", resolution=50, verbosity=3, ctrl=0 )
 
 lzs = CSG("zsphere", param=[0,0,0,500], param1=[-200,200,0,0],param2=[0,0,0,0] )
 rzs = CSG("zsphere", param=[0,0,0,500], param1=[300,400,0,0] ,param2=[0,0,0,0] )
@@ -1846,9 +1900,9 @@ from opticks.analytic.csg import CSG
 
 args = opticks_main(csgname="${FUNCNAME/--}")
 
-container = CSG("box", param=[0,0,0,1000], boundary="$(tboolean-container)", poly="MC", nx="20" )
+container = CSG("box", param=[0,0,0,1000], boundary="$(tboolean-container)", poly="MC", nx=20 )
 
-im = dict(poly="IM", resolution=50, verbosity="3", ctrl=0, seeds="0,0,0,1,0,0")
+im = dict(poly="IM", resolution=50, verbosity=3, ctrl=0, seeds="0,0,0,1,0,0")
 
 kwa = {}
 kwa.update(im)
@@ -1898,11 +1952,11 @@ args = opticks_main(csgname="${FUNCNAME/--}")
 
 container = CSG("box",   name="container",  param=[0,0,0,1000], boundary="$(tboolean-container)", poly="IM", resolution=10 )
 
-box = CSG("box", param=[0,0,0,201], boundary="$(tboolean-testobject)", level="2" )
-sph = CSG("sphere", param=[100,0,0,200], boundary="$(tboolean-testobject)", level="4"  )
+box = CSG("box", param=[0,0,0,201], boundary="$(tboolean-testobject)", level=2 )
+sph = CSG("sphere", param=[100,0,0,200], boundary="$(tboolean-testobject)", level=4  )
 
 polycfg="contiguous=1,reversed=0,numsubdiv=0,offsave=1"
-obj = CSG("union", left=box, right=sph, boundary="$(tboolean-testobject)", poly="HY", level="4", verbosity="2", polycfg=polycfg  )
+obj = CSG("union", left=box, right=sph, boundary="$(tboolean-testobject)", poly="HY", level=4, verbosity=2, polycfg=polycfg  )
 
 # only root node poly and polycfg are obeyed, and distributed to the entire tree
 
@@ -1959,7 +2013,7 @@ ctrl = "666"  # hexpatch
 cfg0="phased=1,split=1,flip=1,numflip=0,reversed=0,maxflip=0,offsave=1"
 cfg1="contiguous=1,reversed=1,numsubdiv=1,offsave=1"
 
-box = CSG("box", param=[0,0,0,500], boundary="$(tboolean-testobject)", poly="HY", level="0", ctrl=ctrl, verbosity="4", polycfg=cfg1 )
+box = CSG("box", param=[0,0,0,500], boundary="$(tboolean-testobject)", poly="HY", level=0, ctrl=ctrl, verbosity=4,  polycfg=cfg1 )
 
 
 
@@ -2011,7 +2065,7 @@ from opticks.analytic.csg import CSG
 args = opticks_main(csgname="${FUNCNAME/--}")
 
 CSG.boundary = "$(tboolean-testobject)"
-CSG.kwa = dict(verbosity="1", poly="IM", resolution=20 )
+CSG.kwa = dict(verbosity=1, poly="IM", resolution=20 )
 
 # container=1 metadata causes sphere/box to be auto sized to contain other trees
 container = CSG("sphere",  param=[0,0,0,10], container=1, containerscale=2.0, boundary="$(tboolean-container)", poly="HY", level="5" )
@@ -2141,7 +2195,7 @@ from opticks.analytic.csg import CSG
 args = opticks_main(csgname="${FUNCNAME/--}")
 
 CSG.boundary = "$(tboolean-testobject)"
-CSG.kwa = dict(verbosity="1",poly="IM")
+CSG.kwa = dict(verbosity=1,poly="IM")
 
 delta = 1.0 
 
@@ -2180,7 +2234,7 @@ from opticks.analytic.csg import CSG
 args = opticks_main(csgname="${FUNCNAME/--}")
 
 CSG.boundary = "$(tboolean-testobject)"
-CSG.kwa = dict(verbosity="1",poly="IM")
+CSG.kwa = dict(verbosity=1,poly="IM")
 
 z1,z2 = -0.050,0.050
 
@@ -2308,7 +2362,7 @@ args = opticks_main(csgname="${FUNCNAME/--}")
 
 
 CSG.boundary = "$(tboolean-testobject)"
-CSG.kwa = dict(verbosity="1")
+CSG.kwa = dict(verbosity=1)
 
 # container=1 metadata causes sphere/box to be auto sized to contain other trees
 container = CSG("sphere",  param=[0,0,0,10], container=1, containerscale=2.0, boundary="$(tboolean-container)", poly="HY", level="5" )
@@ -2344,7 +2398,7 @@ log.info("POSITIVIZED:\n"+str(orig.txt))
 obj = TreeBuilder.balance(orig)
 log.info("BALANCED:\n"+str(obj.txt))
 
-obj.meta.update(verbosity="1")
+obj.meta.update(verbosity=1)
 obj.dump(msg="BALANCED", detailed=True)
 #obj.dump_tboolean(name="esr")
 
@@ -2386,7 +2440,7 @@ from opticks.analytic.csg import CSG
 args = opticks_main(csgname="${FUNCNAME/--}")
 
 CSG.boundary = "$(tboolean-testobject)"
-CSG.kwa = dict(poly="IM", resolution=40, verbosity="1" )
+CSG.kwa = dict(poly="IM", resolution=40, verbosity=1 )
 
 container = CSG("sphere",  param=[0,0,0,1000], boundary="$(tboolean-container)", poly="HY", level="4" )
 
@@ -2468,7 +2522,7 @@ from opticks.analytic.csg import CSG
 
 args = opticks_main(csgname="${FUNCNAME/--}")
 
-container = CSG("box", param=[0,0,0,400], boundary="$(tboolean-container)", poly="MC", nx="20" )
+container = CSG("box", param=[0,0,0,400], boundary="$(tboolean-container)", poly="MC", nx=20 )
   
 radius = 200 
 inscribe = 1.3*radius/math.sqrt(3)    #  150.1110699
@@ -2527,8 +2581,8 @@ from opticks.analytic.csg import CSG
 args = opticks_main(csgname="${FUNCNAME/--}")
 
 CSG.boundary = args.testobject
-CSG.kwa = dict(poly="IM", resolution=40, verbosity="1", ctrl=0 )
-container = CSG("box", param=[0,0,0,1000], boundary=args.container, poly="MC", nx="20" )
+CSG.kwa = dict(poly="IM", resolution=40, verbosity=1, ctrl=0 )
+container = CSG("box", param=[0,0,0,1000], boundary=args.container, poly="MC", nx=20 )
 
 phi0,phi1,sz,sr = 0,45,200,300 
 
@@ -2562,8 +2616,8 @@ from opticks.analytic.csg import CSG
 args = opticks_main(csgname="${FUNCNAME/--}")
 
 CSG.boundary = args.testobject
-CSG.kwa = dict(poly="IM", resolution=40, verbosity="1", ctrl=0 )
-container = CSG("box", param=[0,0,0,1000], boundary=args.container, poly="MC", nx="20" )
+CSG.kwa = dict(poly="IM", resolution=40, verbosity=1, ctrl=0 )
+container = CSG("box", param=[0,0,0,1000], boundary=args.container, poly="MC", nx=20 )
 
 phi0,phi1,sz,sr = 0,45,202,500*1.5
 
@@ -2606,7 +2660,7 @@ args = opticks_main(csgname="${FUNCNAME/--}")
 CSG.boundary = args.testobject
 CSG.kwa = dict(poly="IM", resolution=50)
 
-container = CSG("box", param=[0,0,0,1000], boundary=args.container, poly="MC", nx="20" )
+container = CSG("box", param=[0,0,0,1000], boundary=args.container, poly="MC", nx=20 )
   
 ca = CSG("cylinder", param=[0,0,0,500], param1=[-100,100,0,0] )
 cb = CSG("cylinder", param=[0,0,0,400], param1=[-101,101,0,0] )
@@ -2683,7 +2737,7 @@ args = opticks_main(csgname="${FUNCNAME/--}")
 CSG.boundary = args.testobject
 CSG.kwa = dict(poly="IM", resolution=50)
 
-container = CSG("box", param=[0,0,0,4], boundary=args.container, poly="MC", nx="20" )
+container = CSG("box", param=[0,0,0,4], boundary=args.container, poly="MC", nx=20 )
   
 a = CSG.MakeUndefined(name="$FUNCNAME", src_type="hello")
 
@@ -2710,7 +2764,7 @@ args = opticks_main(csgname="${FUNCNAME/--}")
 CSG.boundary = args.testobject
 CSG.kwa = dict(poly="IM", resolution=50)
 
-container = CSG("box", param=[0,0,0,400], boundary=args.container, poly="MC", nx="20", emit=-1, emitconfig="$(tboolean-emitconfig)" )  
+container = CSG("box", param=[0,0,0,400], boundary=args.container, poly="MC", nx=20, emit=-1, emitconfig="$(tboolean-emitconfig)" )  
 CSG.Serialize([container], args )
 
 EOP
@@ -2737,7 +2791,7 @@ osur = ""
 isur = "perfectAbsorbSurface"
 imat = "Pyrex"
 
-box = CSG("box", param=[0,0,0,400], boundary="/".join([omat,osur,isur,imat]), poly="MC", nx="20", emit=-1, emitconfig="$(tboolean-emitconfig)" )  
+box = CSG("box", param=[0,0,0,400], boundary="/".join([omat,osur,isur,imat]), poly="MC", nx=20, emit=-1, emitconfig="$(tboolean-emitconfig)" )  
 CSG.Serialize( [box], args )
 
 EOP
@@ -2901,7 +2955,7 @@ CSG.kwa = dict(poly="IM", resolution=50)
 
 emit = -1
 
-container = CSG("box3", param=[2*150+1,2*150+1,2*50+1,0], boundary=args.container, poly="IM", nx="20", emit=emit, emitconfig="$(tboolean-emitconfig)" )
+container = CSG("box3", param=[2*150+1,2*150+1,2*50+1,0], boundary=args.container, poly="IM", nx=20, emit=emit, emitconfig="$(tboolean-emitconfig)" )
   
 a = CSG.MakeTorus(R=100, r=50)
 
@@ -2930,7 +2984,7 @@ CSG.boundary = args.testobject
 #CSG.kwa = dict(poly="MC", resolution="100")
 CSG.kwa = dict(poly="IM", resolution=50)
 
-container = CSG("box", param=[0,0,0,400], boundary=args.container, poly="MC", nx="20" )
+container = CSG("box", param=[0,0,0,400], boundary=args.container, poly="MC", nx=20 )
   
 #a = CSG.MakeHyperboloid(r0=100, zf=100, z1=-100, z2=100)
 a = CSG.MakeHyperboloid(r0=100, zf=100, z1=0, z2=100)
@@ -2956,7 +3010,7 @@ args = opticks_main(csgname="${FUNCNAME/--}")
 CSG.boundary = args.testobject
 CSG.kwa = dict(poly="IM", resolution=50)
 
-container = CSG("box", param=[0,0,0,200], boundary=args.container, poly="MC", nx="20" )
+container = CSG("box", param=[0,0,0,200], boundary=args.container, poly="MC", nx=20 )
   
 #a = CSG.MakeCubic(A=0.0001, B=2, C=2, D=2, z1=-10, z2=10)   ## 
 
@@ -3033,7 +3087,7 @@ args = opticks_main(csgname="${FUNCNAME/--}")
 CSG.boundary = args.testobject
 CSG.kwa = dict(poly="IM", resolution=50)
 
-container = CSG("box", param=[0,0,0,400], boundary=args.container, poly="MC", nx="20" )
+container = CSG("box", param=[0,0,0,400], boundary=args.container, poly="MC", nx=20 )
 
 
 class Tor(object):
@@ -3195,7 +3249,7 @@ args = opticks_main(csgname="${FUNCNAME/--}")
 CSG.boundary = args.testobject
 CSG.kwa = dict(poly="IM", resolution=50)
 
-container = CSG("box", param=[0,0,0,1000], boundary=args.container, poly="MC", nx="20" )
+container = CSG("box", param=[0,0,0,1000], boundary=args.container, poly="MC", nx=20 )
   
 #a = CSG.MakeEllipsoid(axes=[100,200,100] )
 #a = CSG.MakeEllipsoid(axes=[100,200,100], zcut1=-50, zcut2=50 )
@@ -3239,7 +3293,7 @@ args = opticks_main(csgname="${FUNCNAME/--}")
 CSG.boundary = args.testobject
 CSG.kwa = dict(poly="IM", resolution=50)
 
-container = CSG("box", param=[0,0,0,1000], boundary=args.container, poly="MC", nx="20" )
+container = CSG("box", param=[0,0,0,1000], boundary=args.container, poly="MC", nx=20 )
   
 a = CSG("sphere", param=[0,0,0,500] )
 b = CSG("sphere", param=[0,0,0,490] )
@@ -3274,7 +3328,7 @@ args = opticks_main(csgname="${FUNCNAME/--}")
 CSG.boundary = args.testobject
 CSG.kwa = dict(poly="IM", resolution=50)
 
-container = CSG("box", param=[0,0,0,1000], boundary=args.container, poly="MC", nx="20" )
+container = CSG("box", param=[0,0,0,1000], boundary=args.container, poly="MC", nx=20 )
   
 slab   = CSG("slab", param=[1,1,1,0],param1=[-500,100,0,0] )  # normalization done in NSlab.hpp/init_slab
 sphere = CSG("sphere", param=[0,0,0,500] )
@@ -3325,10 +3379,10 @@ from opticks.analytic.csg import CSG
 args = opticks_main(csgname="${FUNCNAME/--}")
 
 CSG.boundary = args.testobject 
-CSG.kwa = dict(poly="IM", resolution=50, verbosity="1" )
+CSG.kwa = dict(poly="IM", resolution=50, verbosity=1 )
 
 
-container = CSG("box", param=[0,0,0,1000], boundary=args.container, poly="MC", nx="20", verbosity=0 )
+container = CSG("box", param=[0,0,0,1000], boundary=args.container, poly="MC", nx=20, verbosity=0 )
   
 plane  = CSG("plane",  param=[0,0,1,100], complement=False )
 sphere = CSG("sphere", param=[0,0,0,500] )
@@ -3358,11 +3412,11 @@ from opticks.ana.main import opticks_main
 from opticks.analytic.csg import CSG  
 args = opticks_main(csgname="${FUNCNAME/--}")
 
-container = CSG("box", param=[0,0,0,1000], boundary="$(tboolean-container)", poly="MC", nx="20", verbosity=0 )
+container = CSG("box", param=[0,0,0,1000], boundary="$(tboolean-container)", poly="MC", nx=20, verbosity=0 )
 
 plane  = CSG("plane",  param=[0,0,1,100] )
 box    = CSG("box", param=[0,0,0,200]  )
-object = CSG("intersection", left=plane, right=box, boundary="$(tboolean-testobject)", poly="IM", resolution=50, verbosity="1" )
+object = CSG("intersection", left=plane, right=box, boundary="$(tboolean-testobject)", poly="IM", resolution=50, verbosity=1 )
 
 CSG.Serialize([container, object], args )
 
@@ -3382,11 +3436,11 @@ from opticks.ana.main import opticks_main
 from opticks.analytic.csg import CSG  
 args = opticks_main(csgname="${FUNCNAME/--}")
 
-container = CSG("box", param=[0,0,0,1000], boundary="$(tboolean-container)", poly="MC", nx="20", verbosity=0 )
+container = CSG("box", param=[0,0,0,1000], boundary="$(tboolean-container)", poly="MC", nx=20, verbosity=0 )
 
 bigbox = CSG("box", param=[0,0,0,999] )
 plane  = CSG("plane",  param=[0,0,1,100] )
-object = CSG("intersection", left=plane, right=bigbox, boundary="$(tboolean-testobject)", poly="IM", resolution=50, verbosity="1" )
+object = CSG("intersection", left=plane, right=bigbox, boundary="$(tboolean-testobject)", poly="IM", resolution=50, verbosity=1 )
 
 CSG.Serialize([container, object], args )
 
@@ -3421,9 +3475,9 @@ from opticks.analytic.csg import CSG
 args = opticks_main(csgname="${FUNCNAME/--}")
 
 CSG.boundary = args.testobject
-CSG.kwa = dict(verbosity="1", poly="HY", resolution="4" )
+CSG.kwa = dict(verbosity=1, poly="HY", resolution=4 )
 
-container = CSG("box", param=[0,0,0,1000], boundary=args.container, poly="HY", resolution="4", verbosity=0 )
+container = CSG("box", param=[0,0,0,1000], boundary=args.container, poly="HY", resolution=4, verbosity=0 )
 
 ra = 200 
 z1 = -100
@@ -3460,9 +3514,9 @@ from opticks.analytic.csg import CSG
 args = opticks_main(csgname="${FUNCNAME/--}")
 
 CSG.boundary = args.testobject
-CSG.kwa = dict(verbosity="1", poly="IM", resolution="4" )
+CSG.kwa = dict(verbosity=1, poly="IM", resolution=4 )
 
-container = CSG("box", param=[0,0,0,1000], boundary=args.container, poly="IM", resolution="4", verbosity=0 )
+container = CSG("box", param=[0,0,0,1000], boundary=args.container, poly="IM", resolution=4, verbosity=0 )
 
 ra = 200 
 z1 = -100
@@ -3512,9 +3566,9 @@ from opticks.analytic.csg import CSG
 args = opticks_main(csgname="${FUNCNAME/--}")
 
 CSG.boundary = "$(tboolean-testobject)"
-CSG.kwa = dict(verbosity="1", poly="IM", resolution="30" )
+CSG.kwa = dict(verbosity=1, poly="IM", resolution="30" )
 
-container = CSG("box", param=[0,0,0,1000], boundary="$(tboolean-container)", poly="MC", nx="20", verbosity=0 )
+container = CSG("box", param=[0,0,0,1000], boundary="$(tboolean-container)", poly="MC", nx=20, verbosity=0 )
 
 z1 = -100
 z2 = 100
@@ -3598,7 +3652,7 @@ left  = CSG("difference", left=lbox, right=lsph, boundary="$(tboolean-testobject
 
 right = CSG("sphere", param=[0,0,100,radius])
 
-object = CSG("union", left=left, right=right, boundary="$(tboolean-testobject)", poly="IM", resolution="60" )
+object = CSG("union", left=left, right=right, boundary="$(tboolean-testobject)", poly="IM", resolution=60 )
 object.dump()
 
 container = CSG("box", param=[0,0,0,1000], boundary="$(tboolean-container)", poly="IM", resolution=20)
@@ -3712,7 +3766,7 @@ abc.transform = [[0.543,-0.840,0.000,0.000],[0.840,0.543,0.000,0.000],[0.000,0.0
 
 obj = abc
 
-container = CSG("sphere",  param=[0,0,0,10], container=1, containerscale=2.0, boundary="$(tboolean-container)" , poly="HY", level="5" )
+container = CSG("sphere",  param=[0,0,0,10], container=1, containerscale=2.0, boundary="$(tboolean-container)" , poly="HY", level=5 )
 CSG.Serialize([container, obj], args )
 
 EOP
@@ -3815,14 +3869,14 @@ rsph = CSG("sphere", param=[0,0,100,radius])
 tran = dict(translate="0,0,100", rotate="1,1,1,45", scale="1,1,1.5" )
 right = CSG("difference", left=rbox, right=rsph, **tran)
 
-#dcs = dict(poly="DCS", nominal="7", coarse="6", threshold="1", verbosity=0)
-im = dict(poly="IM", resolution="64", verbosity=0, ctrl=0 ) #seeds = "100,100,-100,0,0,300"
+#dcs = dict(poly="DCS", nominal=7, coarse=6, threshold=1, verbosity=0)
+im = dict(poly="IM", resolution=64, verbosity=0, ctrl=0 ) #seeds = "100,100,-100,0,0,300"
 obj = CSG("union", left=left, right=right, **im )
 #obj.translate = "0,-300,0"
 obj.meta.update(gpuoffset="0,600,0")
 
 
-#mc = dict(poly="MC", nx="20")
+#mc = dict(poly="MC", nx=20)
 container = CSG("box", param=[0,0,0,1000], boundary=args.container, poly="IM", resolution=20 )
 
 CSG.Serialize([container, obj], args )

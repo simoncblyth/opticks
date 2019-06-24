@@ -29,7 +29,12 @@ const NPYSpecList* NCSGData::MakeSPECS()
     sl->add( (unsigned)SRC_IDX         , new NPYSpec("srcidx.npy"         , 0, 4, 0, 0, 0, NPYBase::UINT  , "" , false, verbosity));
     sl->add( (unsigned)SRC_TRANSFORMS  , new NPYSpec("srctransforms.npy"  , 0, 4, 4, 0, 0, NPYBase::FLOAT , "" , false, verbosity));
     sl->add( (unsigned)SRC_PLANES      , new NPYSpec("srcplanes.npy"      , 0, 4, 0, 0, 0, NPYBase::FLOAT , "" , true , verbosity));
-    sl->add( (unsigned)SRC_FACES       , new NPYSpec("srcfaces.npy"       , 0, 3, 0, 0, 0, NPYBase::INT   , "" , true , verbosity));
+
+
+    sl->add( (unsigned)SRC_FACES       , new NPYSpec("srcfaces.npy"       , 0, 4, 0, 0, 0, NPYBase::INT   , "" , true , verbosity));
+     // analytic/prism.py _get_faces using 4       
+
+
     //                                                                       ^^^^^^  srcfaces is glm::ivec4  in nconvexpolyhedron ?????
     sl->add( (unsigned)SRC_VERTS       , new NPYSpec("srcverts.npy"       , 0, 3, 0, 0, 0, NPYBase::FLOAT , "" , true , verbosity));
     //                                                                       ^^^^^^  srcverts is glm::vec3  in nconvexpolyhedron

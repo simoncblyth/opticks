@@ -68,20 +68,18 @@ opticks-name(){   basename $(opticks-home) ; }
 
 opticks-tboolean-shortcuts(){ 
 
-   : default geometry LV index or tboolean-geomname eg "box" "sphere" etc.. 
-   lv(){ echo 21 ; }
 
    : **simulate** : aligned bi-simulation creating OK+G4 events 
-   ts(){  LV=${1:-$(lv)} tboolean.sh $* ; } 
+   ts(){  LV=$1 tboolean.sh ${@:2} ; } 
 
    : **visualize** : load events and visualize the propagation
-   tv(){  LV=${1:-$(lv)} tboolean.sh --load $* ; } 
+   tv(){  LV=$1 tboolean.sh --load ${@:2} ; } 
 
    : **visualize** the geant4 propagation 
-   tv4(){  LV=${1:-$(lv)} tboolean.sh --load --vizg4 $* ; } 
+   tv4(){  LV=$1 tboolean.sh --load --vizg4 ${@:2} ; } 
 
    : **analyse** : load events and analyse the propagation
-   ta(){  LV=${1:-$(lv)} tboolean.sh --ip ; } 
+   ta(){  LV=$1 tboolean.sh --ip ${@:2} ; } 
 
 }
 

@@ -860,6 +860,12 @@ class Evt(object):
         * applies boolean selection array to all arrays, such that all access eg rpost() honours the selections
         * the low level way to invoke this is by setting the psel property
 
+        TODO:
+
+        * try to make this more lazy, perhaps seqhis_ana etc can become properties
+          as this code gets called a lot.  For example the deviations apply 
+          line by line selections 
+
         """
         # for first _init_selection hold on to the originals
         if self._psel is None:
@@ -885,8 +891,8 @@ class Evt(object):
                 self.nsel = len(self.ox_)
             else:
                 log.warning("_init_selection with psel None : no prior selection, ignoring ")
-            return  
-
+            return 
+        pass   
         log.debug("psel %s " % repr(psel))
 
         self._psel = psel 

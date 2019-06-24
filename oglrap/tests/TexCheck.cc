@@ -49,7 +49,7 @@ int main(int argc, char** argv)
     G::VERBOSE = true ; 
 
     Frame frame ; 
-    Composition composition ; 
+    Composition composition(&ok) ; 
     //Interactor interactor(&hub) ;  // why the interactor needs the hub ?
     Interactor interactor(&composition) ; 
     Renderer renderer("tex") ; 

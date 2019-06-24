@@ -332,6 +332,7 @@ class OKCORE_API Opticks {
    public:
        const char*          getPrintIndexString() const ;
        bool                 getPrintIndex(glm::ivec3& idx) const ;
+       bool                 getAnimTimeRange(glm::vec4& range) const ;
        int                  getPrintIndex(unsigned dim=0) const ; 
        bool                 isPrintIndexLog() const ; 
        bool                 isG4CodeGen() const ;

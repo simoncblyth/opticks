@@ -95,7 +95,7 @@ void ContentStyle::setContentStyle(ContentStyle_t style)
 {
     m_content_style = style ; 
     applyContentStyle();
-    LOG(fatal) << desc() ; 
+    LOG(info) << desc() ; 
 }
 
 const char* ContentStyle::getContentStyleName(ContentStyle::ContentStyle_t style) 

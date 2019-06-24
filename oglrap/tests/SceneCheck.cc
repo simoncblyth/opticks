@@ -54,7 +54,7 @@ int main(int argc, char** argv)
 
     // see App::initViz
 
-    m_composition = new Composition ; 
+    m_composition = new Composition(m_opticks) ; 
 
     m_scene = new Scene(m_hub) ; 
     m_frame = new Frame() ; 

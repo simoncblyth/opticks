@@ -798,6 +798,16 @@ bool Opticks::getPrintIndex(glm::ivec3& idx) const
     return true ; 
 }
 
+
+bool Opticks::getAnimTimeRange(glm::vec4& range) const
+{
+    const std::string& animtimerange = m_cfg->getAnimTimeRange();
+    range = gvec4(animtimerange.c_str());
+    return true  ; 
+}
+
+
+
 const char* Opticks::getPrintIndexString() const 
 {
     const std::string& printIndex = m_cfg->getPrintIndex();
@@ -2004,6 +2014,12 @@ void Opticks::setupTimeDomain(float extent)
     float timemaxthumb = m_cfg->getTimeMaxThumb();  // factor
     float timemax = m_cfg->getTimeMax();  // ns
     float animtimemax = m_cfg->getAnimTimeMax() ; 
+
+
+    glm::vec4 animtimerange(0., -1.f, 0.f, 0.f ); 
+    getAnimTimeRange( animtimerange ); 
+    LOG(error) << " animtimerange " << gformat(animtimerange) ; 
+
 
     float speed_of_light = 300.f ;        // mm/ns 
     

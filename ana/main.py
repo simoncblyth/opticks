@@ -222,6 +222,8 @@ def opticks_args(**kwa):
     ok = OK()
     args = parser.parse_args(namespace=ok)
 
+    print(args.loglevel) 
+
     init_logging(level=args.loglevel)
 
 

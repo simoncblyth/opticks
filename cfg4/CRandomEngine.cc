@@ -133,7 +133,16 @@ void CRandomEngine::setupCurandSequence(int record_id)
     }
     assert( m_curand_ni > 0 );
 
-    assert( record_id > -1 && record_id < m_curand_ni ); 
+    bool in_range = record_id > -1 && record_id < m_curand_ni ; 
+
+    if(!in_range)
+       LOG(fatal)
+           << " OUT OF RANGE " 
+           << " record_id " << record_id
+           << " m_curand_ni " << m_curand_ni
+           ; 
+
+    assert( in_range ); 
 
     assert( m_curand_nv > 0 ) ;
 
