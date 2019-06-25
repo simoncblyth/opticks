@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 tboolean-source(){   echo $(opticks-home)/tests/tboolean.bash ; }
 tboolean-vi(){       vi $(tboolean-source) ; }
 tboolean-usage(){ cat << \EOU
@@ -628,6 +630,8 @@ tboolean-info(){ cat << EOI
 $FUNCNAME
 ==================
 
+
+BASH_VERSION         : $BASH_VERSION
 TESTNAME             : $TESTNAME
 TESTCONFIG           : $TESTCONFIG
 TORCHCONFIG          : $TORCHCONFIG
@@ -643,7 +647,7 @@ EOI
 
 tboolean--(){
 
-    tboolean-
+    #tboolean-
 
     local msg="=== $FUNCNAME :"
     local cmdline=$*
@@ -962,7 +966,13 @@ tboolean-box-dbg(){ ipython --pdb $(which tboolean.py) -i -- --tag 1 --tagoffset
 tboolean-box-ip(){ TESTNAME=${FUNCNAME/-ip} tboolean-ipy- $* ; } 
 tboolean-box-p(){  TESTNAME=${FUNCNAME/-p} tboolean-py- $* ; } 
 tboolean-box-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; } 
-tboolean-box(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null) tboolean-- $* ; } 
+tboolean-box(){ 
+   local msg="=== $FUNCNAME :"
+   $FUNCNAME- 
+   local testconfig=$($FUNCNAME- 2>/dev/null)
+   echo $msg testconfig $testconfig  
+   TESTNAME=$FUNCNAME TESTCONFIG=$testconfig tboolean-- $* 
+ } 
 tboolean-box-(){  $FUNCNAME- | python $* ; }
 tboolean-box--(){ cat << EOP 
 import logging

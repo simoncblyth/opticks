@@ -337,7 +337,12 @@ EON
 
 
 geocache-j1808-v5-comment(){ echo fix-lv10-coincidence-speckle ; }
-geocache-j1808-v5-key(){     echo OKX4Test.X4PhysicalVolume.lWorld0x4bc2710_PV.f6cc352e44243f8fa536ab483ad390ce ; }
+geocache-j1808-v5-key(){     
+   case $(uname) in 
+       Linux)  echo OKX4Test.X4PhysicalVolume.lWorld0x4bc2710_PV.f6cc352e44243f8fa536ab483ad390ce  ;;
+       Darwin) echo OKX4Test.X4PhysicalVolume.lWorld0x4bc2710_PV.a717fae122a5eda2027f6cec1d4a3f67  ;;
+   esac 
+}
 geocache-j1808-v5-export(){  geocache-export ${FUNCNAME/-export} ; }
 geocache-j1808-v5(){  geocache-j1808-v5- --csgskiplv 22 --runfolder $FUNCNAME --runcomment $(${FUNCNAME}-comment) $* ; }  
 

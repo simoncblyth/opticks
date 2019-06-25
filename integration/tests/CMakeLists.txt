@@ -25,12 +25,19 @@ endforeach()
 
 
 set(SCRIPT tboolean.sh)
+#set(SCRIPT fn.sh)
 get_filename_component(TGT ${SCRIPT} NAME_WE)
 set(LV box)
 
 set(TEST ${name}.${TGT}.${LV})
 add_test(${TEST} ${SCRIPT} )
 set_tests_properties(${TEST} PROPERTIES ENVIRONMENT "LV=${LV}")
+
+
+
+
+
+
 
 
 #[=[
