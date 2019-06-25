@@ -19,6 +19,7 @@
 #include "OpticksRun.hh"
 #include "OpticksEvent.hh"
 #include "OpticksFlags.hh"
+#include "OpticksSwitches.h"
 
 #include "NPY.hpp"
 
@@ -252,7 +253,11 @@ double CRandomEngine::flat()
                ;
 #endif
 
+#ifdef WITH_KLUDGE_FLAT_ZERO_NOPEEK
+    double v = kludge ? 0.f : _flat() ; 
+#else
     double v = kludge ? _peek(-2) : _flat() ; 
+#endif
   
     if( kludge )
     {
@@ -286,7 +291,16 @@ Read more at: http://docs.nvidia.com/cuda/curand/index.html
 double CRandomEngine::_peek(int offset) const 
 {
     int idx = m_cursor + offset ; 
-    assert( idx >= 0 && idx < int(m_sequence.size()) );
+
+    bool in_range = idx >= 0 && idx < int(m_sequence.size()) ; 
+    if(!in_range)
+       LOG(fatal)
+           << " OUT OF RANGE " 
+           << " idx " << idx 
+           << " m_sequence.size() " << m_sequence.size()
+           ;
+
+    assert( in_range );
     return m_sequence[idx] ; 
 }
 

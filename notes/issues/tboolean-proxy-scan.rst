@@ -10,63 +10,36 @@ get back into context with it.
 * :doc:`deviation-comparison-review`
 
 
-Command shortcuts
----------------------
-
-::
-
-    lv(){ echo 21 ; }
-    # default geometry LV index to test 
-
-    ts(){  LV=${1:-$(lv)} tboolean.sh --align --dbgskipclearzero --dbgnojumpzero --dbgkludgeflatzero $* ; } 
-    # **simulate** : aligned bi-simulation creating OK+G4 events 
-
-    tv(){  LV=${1:-$(lv)} tboolean.sh --load $* ; } 
-    # **visualize** : load events and visualize the propagation
-
-    tv4(){  LV=${1:-$(lv)} tboolean.sh --load --vizg4 $* ; } 
-    # **visualize** the geant4 propagation 
-
-    ta(){  tboolean-;LV=${1:-$(lv)} tboolean-proxy-ip ; } 
-    # **analyse** : load events and analyse the propagation
-
-
-rejigged shortcuts moving the above options within tboolean-lv
+rejigged shortcuts moving the detailed options within tboolean-lv
 ------------------------------------------------------------------
 
 ::
 
     [blyth@localhost ana]$ t opticks-tboolean-shortcuts
-    opticks-tboolean-shortcuts is a function
+
     opticks-tboolean-shortcuts () 
     { 
-        : default geometry LV index or tboolean-geomname eg "box" "sphere" etc..;
-        function lv () 
-        { 
-            echo 21
-        };
         : **simulate** : aligned bi-simulation creating OK+G4 events;
         function ts () 
         { 
-            LV=${1:-$(lv)} tboolean.sh $*
+            LV=$1 tboolean.sh ${@:2}
         };
         : **visualize** : load events and visualize the propagation;
         function tv () 
         { 
-            LV=${1:-$(lv)} tboolean.sh --load $*
+            LV=$1 tboolean.sh --load ${@:2}
         };
         : **visualize** the geant4 propagation;
         function tv4 () 
         { 
-            LV=${1:-$(lv)} tboolean.sh --load --vizg4 $*
+            LV=$1 tboolean.sh --load --vizg4 ${@:2}
         };
         : **analyse** : load events and analyse the propagation;
         function ta () 
         { 
-            LV=${1:-$(lv)} tboolean.sh --ip
+            LV=$1 tboolean.sh --ip ${@:2}
         }
     }
-
 
 
 TODO
@@ -74,6 +47,8 @@ TODO
 
 * combine RC of up to 8 sections into the process RC  
 * try non-aligned with --relectcheat 
+* make analysis selection more lazy, its getting slow making 
+  devation comparisons for tables with many categories
 
 
 DONE
@@ -318,7 +293,7 @@ Excluding maligned from deviation comparison::
 LV 18 : polarization wrong ? for "TO BT BR BR BR BT SA"  0x8cbbbcd
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-* :doc:`tboolean-proxy-scan-polarization`
+* :doc:`tboolean-proxy-scan-polarization`  issue with matching transition to normal incidence handling ?
 
 
 
@@ -614,7 +589,6 @@ LV 20 : excluding maligned : down to one plausible leverarm 2301
 
 
 ta 20::
-
 
     ab.mal
     aligned     9997/  10000 : 0.9997 : 0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24 

@@ -280,6 +280,7 @@ class NPY_API NCSG {
     public:
         void check() const ;
     private:
+        void checkroot() const ;
         void check_r(const nnode* node) const ; 
         void check_node(const nnode* node ) const ;
     public:

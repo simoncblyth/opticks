@@ -93,6 +93,7 @@ class GGEO_API GGeoTest : public GGeoBase {
        void reuseMaterials(NCSGList* csglist);
        void prepareMeshes();
        void adjustContainer();
+       void updateWithProxiedSolid();
        void reuseMaterials(const char* spec);
     public:
        void dump(const char* msg="GGeoTest::dump");
@@ -143,6 +144,7 @@ class GGEO_API GGeoTest : public GGeoBase {
        // actors
        GMaker*          m_maker ; 
        NCSGList*        m_csglist ; 
+       unsigned         m_numtree ; 
        int              m_err ; 
 
 };

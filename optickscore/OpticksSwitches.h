@@ -23,6 +23,9 @@ NB when searching for switches in python include the space at the end, eg::
 //#define WITH_REFLECT_CHEAT_DEBUG 1
 #define WITH_LOGDOUBLE 1
 
+#define WITH_KLUDGE_FLAT_ZERO_NOPEEK 1
+
+
 
 
 #ifndef __CUDACC__
@@ -54,6 +57,13 @@ static std::string OpticksSwitches()
 #ifdef WITH_LOGDOUBLE
     ss << "WITH_LOGDOUBLE " ;   
 #endif
+#ifdef WITH_KLUDGE_FLAT_ZERO_NOPEEK
+    ss << "WITH_KLUDGE_FLAT_ZERO_NOPEEK " ;   
+#endif
+
+
+
+
     std::string switches = ss.str(); 
     return switches  ; 
 }

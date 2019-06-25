@@ -423,12 +423,13 @@ Index* Index::load(const char* idpath, const char* itemtype, const char* reldir)
     }
     else
     {
-        LOG(warning) << "Index::load FAILED to load index " 
-                     << " idpath " << ( idpath ? idpath : "NULL" )
-                     << " itemtype " << itemtype 
-                     << " Source path " << idx->getPath(idpath, "Source")
-                     << " Local path " << idx->getPath(idpath, "Local")
-                     ;
+        LOG(error)
+            << "FAILED to load index " 
+            << " idpath " << ( idpath ? idpath : "NULL" )
+            << " itemtype " << itemtype 
+            << " Source path " << idx->getPath(idpath, "Source")
+            << " Local path " << idx->getPath(idpath, "Local")
+            ;
         idx = NULL ;
     }
     return idx ; 

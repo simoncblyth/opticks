@@ -125,7 +125,7 @@ GItemIndex* OpticksIdx::makeBoundaryItemIndex()
     Index* bndidx_ = evt->getBoundaryIndex();
     if(!bndidx_)
     {
-         LOG(warning) << "OpticksIdx::makeBoundaryItemIndex NULL bndidx" ;
+         LOG(error) << "NULL bndidx from OpticksEvent" ;
          return NULL ; 
     }
  

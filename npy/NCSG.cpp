@@ -329,7 +329,6 @@ void NCSG::postload()
     std::string gpuoffset = m_meta->getValue<std::string>("gpuoffset", "0,0,0" );
     m_gpuoffset = gvec3(gpuoffset);  
 
-    //int verbosity = m_meta->getIntFromString("verbosity", "0") ;
     int verbosity = m_meta->getValue<int>("verbosity", "0") ;
 
     increaseVerbosity(verbosity);
@@ -400,8 +399,9 @@ void NCSG::import()
 
     postimport();
 
+    checkroot(); 
     if(m_verbosity > 5) check();  // recursive transform dumping 
-    if(m_verbosity > 1) LOG(info) << "NCSG::import DONE " ; 
+    if(m_verbosity > 1) LOG(info) << "]" ; 
 }
 
 void NCSG::postimport()
@@ -649,6 +649,13 @@ void NCSG::import_srcplanes(nnode* node)
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
+
+void NCSG::checkroot() const 
+{
+    assert( m_root ); 
+    //if( m_root->is_primitive() )  m_root->dump(); 
+}
+
 
 void NCSG::check() const 
 {

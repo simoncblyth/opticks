@@ -52,7 +52,7 @@
 #include "PLOG.hh"
 
 
-const plog::Severity GGeoTest::LEVEL = debug ; 
+const plog::Severity GGeoTest::LEVEL = error ; 
 
 const char* GGeoTest::UNIVERSE_LV = "UNIVERSE_LV" ; 
 const char* GGeoTest::UNIVERSE_PV = "UNIVERSE_PV" ; 
@@ -125,6 +125,7 @@ GGeoTest::GGeoTest(Opticks* ok, GGeoBase* basis)
     m_meshlib(new GMeshLib(m_ok)),
     m_maker(new GMaker(m_ok, m_bndlib, m_basemeshlib)),
     m_csglist(m_csgpath ? NCSGList::Load(m_csgpath, m_verbosity ) : NULL),
+    m_numtree( m_csglist ? m_csglist->getNumTrees() : 0 ),
     m_err(0)
 {
     assert(m_basis); 
@@ -237,8 +238,8 @@ GMergedMesh* GGeoTest::initCreateCSG()
     assert(m_analytic == true);
     assert(m_config->isNCSG());
 
-    unsigned numTree = m_csglist->getNumTrees() ;
-    if(numTree == 0 )
+    //unsigned numTree = m_csglist->getNumTrees() ;
+    if(m_numtree == 0 )
     {
         LOG(error) << "failed to load trees" ; 
         return NULL ; 
@@ -382,10 +383,10 @@ void GGeoTest::prepareMeshes()
 {
     assert(m_csgpath);
     assert(m_csglist);
-    unsigned numTree = m_csglist->getNumTrees() ;
+    //unsigned numTree = m_csglist->getNumTrees() ;
 
-    assert( numTree > 0 );
-    for(unsigned i=0 ; i < numTree ; i++)
+    assert( m_numtree > 0 );
+    for(unsigned i=0 ; i < m_numtree ; i++)
     {
         NCSG* tree = m_csglist->getTree(i) ; 
         GMesh* mesh =  tree->isProxy() ? importMeshViaProxy(tree) : m_maker->makeMeshFromCSG(tree) ; 
@@ -402,7 +403,7 @@ void GGeoTest::prepareMeshes()
     if(m_dbggeotest) 
         LOG(info)  
             << " csgpath " << m_csgpath 
-            << " numTree " << numTree 
+            << " m_numtree " << m_numtree 
             << " verbosity " << m_verbosity
             ;
 }
@@ -490,10 +491,8 @@ combo in separate method from a bb or ce or just extent.
 
 void GGeoTest::adjustContainer()
 {
-    if(!( m_csglist->hasProxy() && m_csglist->hasContainer())) 
-    {
-        return ;  
-    }
+    bool has_container = m_csglist->hasContainer() ; 
+    if(!has_container) return ; 
 
     NCSG* container = m_csglist->findContainer(); 
     assert(container) ; 
@@ -509,33 +508,18 @@ void GGeoTest::adjustContainer()
         LOG(LEVEL) << " containerautosize ENABLED by metadata on container CSG " << containerautosize  ;
     }
 
-
-    // Lookup the proxied analytic solid (NCSG) from 
-    // basis geocache and insert it into the m_csglist 
-    // then update the container size to fit it 
-    //
-    // The proxied mesh is already incorporated into m_meshes by prepareMeshes
-
-    NCSG* proxy = m_csglist->findProxy(); 
-    assert( proxy ) ; 
-
-    unsigned proxy_index = m_csglist->findProxyIndex();  
-
-    unsigned num_mesh = m_meshlib->getNumMeshes(); 
-    assert( proxy_index < num_mesh  ) ; 
+    bool has_proxy = m_csglist->hasProxy() ; 
+    if(has_proxy) 
+    {
+        updateWithProxiedSolid() ;    
+    }
 
 
-    GMesh* viaproxy = m_meshlib->getMeshSimple(proxy_index) ;
- 
-    const NCSG* replacement_solid = viaproxy->getCSG();  
-    unsigned index = viaproxy->getIndex();  
-    assert( index == proxy_index ); 
-
-    m_csglist->setTree( index, const_cast<NCSG*>(replacement_solid) ); 
-    // ^^^ awkward reachback : perhaps update this on proxying 
+    LOG(LEVEL)
+        << " m_numtree " << m_numtree
+        ; 
 
     m_csglist->adjustContainerSize();  
-
 
     // Find the adjusted analytic container (NCSG) and create corresponding 
     // triangulated geometry (GMesh) to replace the old one
@@ -544,6 +528,12 @@ void GGeoTest::adjustContainer()
     assert( container_index > -1 ) ; 
 
     nbbox container_bba = container->bbox(); 
+
+    LOG(LEVEL) 
+        << " container_index " << container_index
+        << " container_bba " << container_bba.desc()
+        ; 
+
 
     GMesh* replacement_mesh = GMeshMaker::Make(container_bba); 
     replacement_mesh->setIndex( container_index ) ; 
@@ -554,7 +544,6 @@ void GGeoTest::adjustContainer()
     if(m_dbggeotest) 
     {
         LOG(info) 
-            << " proxy_index " << proxy_index
             << " container_index " << container_index
             << " container_bba " << container_bba.description() 
             ;
@@ -562,6 +551,58 @@ void GGeoTest::adjustContainer()
         replacement_mesh->Summary("GGeoTest::adjustContainer.replacement_mesh"); 
     }
 }
+
+
+
+/**
+GGeoTest::updateWithProxiedSolid
+------------------------------------
+
+Lookup the proxied analytic solid (NCSG) from 
+basis geocache and insert it into the m_csglist 
+ 
+The proxied mesh is already incorporated into m_meshes 
+by prepareMeshes
+
+HMM : a more "together" way of doing this would be better
+
+**/
+
+void GGeoTest::updateWithProxiedSolid()
+{
+    bool has_proxy = m_csglist->hasProxy() ; 
+    assert( has_proxy ); 
+
+    NCSG* proxy = m_csglist->findProxy(); 
+    assert( proxy ) ; 
+
+    unsigned proxy_index = m_csglist->findProxyIndex();  
+
+    if(m_dbggeotest) 
+    {
+        LOG(LEVEL) 
+            << " proxy_index " << proxy_index
+            ;
+
+    }
+
+    unsigned num_mesh = m_meshlib->getNumMeshes(); 
+    assert( proxy_index < num_mesh  ) ; 
+
+    GMesh* viaproxy = m_meshlib->getMeshSimple(proxy_index) ;
+ 
+    const NCSG* replacement_solid = viaproxy->getCSG();  
+    unsigned index = viaproxy->getIndex();  
+    assert( index == proxy_index ); 
+
+    m_csglist->setTree( index, const_cast<NCSG*>(replacement_solid) ); 
+    // ^^^ awkward reachback : perhaps update this on proxying 
+
+}
+
+
+
+
 
 
 /**

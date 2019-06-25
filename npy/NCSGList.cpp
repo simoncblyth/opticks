@@ -17,7 +17,7 @@
 const char* NCSGList::FILENAME = "csg.txt" ; 
 
 
-const plog::Severity NCSGList::LEVEL = debug ; 
+const plog::Severity NCSGList::LEVEL = error ; 
 
 
 bool NCSGList::ExistsDir(const char* dir)
@@ -111,44 +111,70 @@ std::string NCSGList::getTreeDir(unsigned idx) const
     return BFile::FormPath(m_csgpath, BStr::itoa(idx));  
 }
 
+/**
+NCSGList::add
+-----------------
+
+**/
+
 void NCSGList::add(NCSG* tree)
 {
     const char* boundary = tree->getBoundary() ;
     LOG(LEVEL) << " add tree, boundary: " << boundary ; 
+    //std::raise(SIGINT);
+
     m_trees.push_back(tree);  
     m_bndspec->addLine( boundary ); 
 }
 
 
+/**
+NCSGList::updateBoundingBox
+-----------------------------
+
+Former mal-logic::
+
+   if(!is_container && exclude_container)
+         m_bbox.include(bba);
+
+**/
+
 void NCSGList::updateBoundingBox(bool exclude_container)
 {
+    LOG(LEVEL) << "[ m_bbox " << m_bbox.desc() ; 
     unsigned num_tree = m_trees.size(); 
+
     m_bbox.set_empty(); 
 
     for(unsigned i=0 ; i < num_tree ; i++)
     {
         NCSG* tree = m_trees[i] ; 
-        nbbox bba = tree->bbox();  
+        bool is_container = tree->isContainer() ; 
+        if(is_container && exclude_container) continue ; 
 
-        if(!tree->isContainer() && exclude_container)
-        {
-            m_bbox.include(bba);
-        } 
+        nbbox bba = tree->bbox();  
+        LOG(LEVEL) << " bba " << bba.desc() ; 
+
+        m_bbox.include(bba);
     }  
+    LOG(LEVEL) << "] m_bbox " << m_bbox.desc() ; 
 }
 
 void NCSGList::adjustContainerSize()
 {
+    LOG(LEVEL) << "[" ; 
+
     assert( hasContainer() ); 
     NCSG* container = findContainer(); 
     assert(container); 
 
-    bool exclude_container = true ; 
+    bool exclude_container = m_trees.size() == 1 ? false : true ; 
     updateBoundingBox(exclude_container); 
 
     float scale = container->getContainerScale(); // hmm should be prop of the list not the tree ? 
     float delta = 0.f ; 
     container->resizeToFit(m_bbox, scale, delta );
+
 
     nbbox bba2 = container->bbox();
     m_bbox.include(bba2);   // update for the auto-container, used by NCSGList::createUniverse
@@ -156,6 +182,7 @@ void NCSGList::adjustContainerSize()
     container->export_();  // after changing geometry must re-export to update the buffers destined for upload to GPU 
 
     LOG(LEVEL) 
+        << "]" 
         << " m_bbox " 
         << m_bbox.description()
         ; 

@@ -1094,16 +1094,17 @@ tboolean-truncate--(){ cat << EOP
 import logging
 log = logging.getLogger(__name__)
 from opticks.ana.main import opticks_main
-from opticks.analytic.polyconfig import PolyConfig
 from opticks.analytic.csg import CSG  
 
 args = opticks_main(csgname="${FUNCNAME/--}")
 
-emitconfig = "photons:100000,wavelength:380,time:0.2,posdelta:0.1,sheetmask:0x1" 
+emitconfig = "photons:100000,wavelength:380,time:0.0,posdelta:0.5,sheetmask:0x1" 
 
 CSG.kwa = dict(poly="IM",resolution=20, verbosity=0,ctrl=0, containerscale=3.0, emitconfig=emitconfig  )
 
-box = CSG("box", param=[0,0,0,200], emit=-1,  boundary="Rock//perfectSpecularSurface/Vacuum" )
+#smallbox = CSG("box", param=[0,0,0,10], emit=0,  boundary="Vacuum///Water"  )
+
+box = CSG("box", param=[0,0,0,200], emit=-1,  boundary="Rock//perfectSpecularSurface/Vacuum", container=1, containerautosize=1  )
 
 CSG.Serialize([box], args )
 EOP
@@ -1131,11 +1132,13 @@ get skipped.
 
 * Now fixed 
 
-* see notes/issuse/cfg4-bouncemax-not-working.rst
+* see notes/issues/cfg4-bouncemax-not-working.rst
 
 * this truncation issue motivated development of the more efficient cfg4/CRecorder/CRec recpoi approach, 
   which makes sense of steps, picking the points for posttrack writing, 
   rather than recstp blindly storing steps "canned approach" for later examination     
+
+* notes/issues/geant4_opticks_integration/tconcentric_pflags_mismatch_from_truncation_handling.rst
 
 
 EON
