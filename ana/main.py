@@ -213,6 +213,7 @@ def opticks_args(**kwa):
     parser.add_argument(     "--lvnlist", default=lvnlist, help="Path to file containing list of lv names. %(default)s ")
     parser.add_argument(     "--j1707", action="store_true", help="Bash level option passthru. %(default)s ")
     parser.add_argument(     "--ip", action="store_true", help="Bash level option passthru. %(default)s ")
+    parser.add_argument(     "--pdb", action="store_true", help="ipython level option passthru. %(default)s ")
     parser.add_argument(     "--extras", action="store_true", help="Bash level option passthru. %(default)s ")
     parser.add_argument(     "--disco", action="store_true", help="Disable container, investigate suspected  inefficient raytrace of objects inside spacious containers. %(default)s ")
 

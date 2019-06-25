@@ -534,8 +534,8 @@ tboolean-ana-(){
 }
 
 # TODO: how to pick a profile without being explicit about it ? so this doesnt depend on having it 
-tboolean-ipy-(){ ipython  --pdb  $(which tboolean.py) -i -- --det $TESTNAME --pfx $TESTNAME --tag $(tboolean-tag) $* ; }
-tboolean-ip-(){  ipython  --pdb  $(which tboolean.py) -i -- --det $(tboolean-testname) --pfx $(tboolean-testname) --tag $(tboolean-tag) $* ; }
+tboolean-ipy-(){ ipython -i --pdb -- $(which tboolean.py) --det $TESTNAME --pfx $TESTNAME --tag $(tboolean-tag) $* ; }
+tboolean-ip-(){  ipython  -i --pdb -- $(which tboolean.py) --det $(tboolean-testname) --pfx $(tboolean-testname) --tag $(tboolean-tag) $* ; }
 tboolean-py-(){ tboolean.py --det $TESTNAME --pfx $TESTNAME --tag $(tboolean-tag)  $* ; }
 tboolean-m-(){  metadata.py --det $TESTNAME --pfx $TESTNAME --tag $(tboolean-tag) ; }
 tboolean-g-(){  lldb -- CTestDetectorTest --test --testconfig "$TESTCONFIG" $* ; }
