@@ -89,7 +89,7 @@ struct NPY_API nmat4triple
     void apply_transform_v(std::vector<glm::vec3>& dst, const std::vector<glm::vec3>& src, float w=1.0f) const ;
 
     glm::vec3 get_translation() const ; 
-    bool is_translation(float epsilon=1e-5) const ; 
+    bool is_translation_only(float epsilon=1e-5) const ; 
     bool is_identity(float epsilon=1e-5) const ; 
     bool is_equal_to(const nmat4triple* other, float epsilon=1e-5) const ; 
 

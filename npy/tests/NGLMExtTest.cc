@@ -242,7 +242,7 @@ void test_nmat4triple_is_translation()
     LOG(info) << "t0 " << gformat(t0) ;   
     LOG(info) << "t1 " << gformat(t1) ;   
 
-    assert( plc->is_translation() ); 
+    assert( plc->is_translation_only() ); 
 }
 
 

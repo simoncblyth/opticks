@@ -1137,12 +1137,42 @@ bool NCSG::has_placement_translation() const
     assert(m_root);
     return m_root->has_placement_translation() ; 
 }
-
 glm::vec3 NCSG::get_placement_translation() const 
 {
     assert(m_root);
     return m_root->get_placement_translation() ; 
 }
+
+bool NCSG::has_placement_transform() const 
+{
+    assert(m_root);
+    return m_root->has_placement_transform() ; 
+}
+glm::mat4 NCSG::get_placement_transform() const 
+{
+    assert(m_root);
+    return m_root->get_placement_transform() ; 
+}
+
+bool NCSG::has_root_transform() const 
+{
+    assert(m_root);
+    return m_root->has_root_transform() ; 
+}
+glm::mat4 NCSG::get_root_transform() const 
+{
+    assert(m_root);
+    return m_root->get_root_transform() ; 
+}
+
+
+
+
+
+
+
+
+
 
 
 /**

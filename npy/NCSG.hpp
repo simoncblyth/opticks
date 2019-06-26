@@ -202,8 +202,16 @@ class NPY_API NCSG {
     public:
         bool      has_placement_translation() const ; 
         glm::vec3 get_placement_translation() const ; 
+
+        bool      has_placement_transform() const ; 
+        glm::mat4 get_placement_transform() const ; 
+
         void      set_translation( float x, float y, float z); 
         void      set_centering(); 
+
+        bool      has_root_transform() const ; 
+        glm::mat4 get_root_transform() const ; 
+
     public:
         // kept in metadata : survives persisting 
         void        set_lvname(const char* name);

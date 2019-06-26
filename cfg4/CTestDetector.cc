@@ -52,7 +52,7 @@
 #include "PLOG.hh"
 
 
-const plog::Severity CTestDetector::LEVEL = debug ; 
+const plog::Severity CTestDetector::LEVEL = error ; 
 
 
 CTestDetector::CTestDetector(OpticksHub* hub, OpticksQuery* query, CSensitiveDetector* sd)
@@ -164,6 +164,7 @@ G4VPhysicalVolume* CTestDetector::makeChildVolume(const NCSG* csg, const char* l
 
     G4VSolid* solid = CMaker::MakeSolid( have_unbalanced_alt ? altcsg : csg ); 
 
+    G4Transform3D* transform = NULL ;  
     G4ThreeVector placement(0,0,0); 
   
     if(csg->has_placement_translation())
@@ -172,10 +173,29 @@ G4VPhysicalVolume* CTestDetector::makeChildVolume(const NCSG* csg, const char* l
         LOG(LEVEL) << " csg.has_placement_translation " << gformat(tlate) ; 
         placement.set( tlate.x, tlate.y, tlate.z ); 
     }
+    else if(csg->has_placement_transform())
+    {
+        glm::mat4 txf = csg->get_placement_transform(); 
+        LOG(LEVEL) << " csg.has_placement_transform " << gformat(txf) ; 
+    }
+    else if(csg->has_root_transform())
+    {
+        glm::mat4 txf = csg->get_root_transform(); 
+        LOG(LEVEL) << " csg.has_root_transform " << gformat(txf) ; 
+        transform = CMaker::ConvertTransform(txf); 
+    }
+    else
+    {
+        LOG(LEVEL) << " csg no translate or transform " ; 
+    }
 
     G4LogicalVolume* lv = new G4LogicalVolume(solid, const_cast<G4Material*>(material), strdup(lvn), 0,0,0);
 
-    G4VPhysicalVolume* pv = new G4PVPlacement(0, placement, lv, strdup(pvn) ,mother,false,0);
+    G4VPhysicalVolume* pv = transform ? 
+                                        new G4PVPlacement( *transform, lv, strdup(pvn) ,mother,false,0)
+                                      :
+                                        new G4PVPlacement(0, placement, lv, strdup(pvn) ,mother,false,0)
+                                      ;
 
     LOG(LEVEL) 
           << " csg.spec " << spec 

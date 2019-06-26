@@ -177,6 +177,13 @@ struct NPY_API nnode
     bool      has_placement_translation() const ; 
     glm::vec3 get_placement_translation() const ; 
 
+    bool      has_placement_transform() const ; 
+    glm::mat4 get_placement_transform() const ;     
+
+    bool      has_root_transform() const ; 
+    glm::mat4 get_root_transform() const ;     
+
+
     void set_translation( float x, float y, float z );
     void set_placement( const nmat4triple* plc );
     void set_centering();

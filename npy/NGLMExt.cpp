@@ -651,7 +651,7 @@ glm::vec3 nmat4triple::get_translation() const
     return tla ; 
 }
 
-bool nmat4triple::is_translation(float eps) const 
+bool nmat4triple::is_translation_only(float eps) const 
 {
     const glm::mat3 i3(1.f); 
     const glm::mat3 t3(t) ; 

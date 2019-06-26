@@ -52,7 +52,7 @@
 #include "PLOG.hh"
 
 
-const plog::Severity GGeoTest::LEVEL = error ; 
+const plog::Severity GGeoTest::LEVEL = debug ; 
 
 const char* GGeoTest::UNIVERSE_LV = "UNIVERSE_LV" ; 
 const char* GGeoTest::UNIVERSE_PV = "UNIVERSE_PV" ; 

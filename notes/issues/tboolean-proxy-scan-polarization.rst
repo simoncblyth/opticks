@@ -48,8 +48,11 @@ ta box : at perfectly normal incidence the polz just stays the same
 
 
 
-Added tboolean-boxrot to check near normal : but find CG machinery not passing the transform to G4
-----------------------------------------------------------------------------------------------------
+Added tboolean-boxrot to check near normal : but find CG machinery not passing the transform to G4 : FIXED in CTestDetector::makeChildVolume
+-------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+* FIXED by checking for root transform in CTestDetector::makeChildVolume using NCSG::get_root_transform and translating that into the G4PVPlacement
+
 
 ::
 

@@ -353,13 +353,43 @@ bool nnode::has_placement() const
 }
 bool nnode::has_placement_translation() const
 {
-    return placement != NULL && placement->is_translation() ;  
+    return placement != NULL && placement->is_translation_only() ;  
 }
 glm::vec3 nnode::get_placement_translation() const 
 {
     assert( has_placement_translation() ); 
     return placement->get_translation() ; 
 }
+
+
+bool nnode::has_placement_transform() const
+{
+    return placement != NULL && !placement->is_translation_only() ;  
+}
+
+glm::mat4 nnode::get_placement_transform() const 
+{
+    return placement->t  ; 
+}
+
+
+
+
+bool nnode::has_root_transform() const
+{
+    return transform != NULL  ;  
+}
+glm::mat4 nnode::get_root_transform() const 
+{
+    return transform->t  ; 
+}
+
+
+
+
+
+
+
 
 
 /**

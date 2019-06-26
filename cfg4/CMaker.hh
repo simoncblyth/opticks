@@ -48,9 +48,9 @@ class CFG4_API CMaker
     public:
         static G4VSolid* MakeSolid(const NCSG* csg);                  
         static G4VSolid* MakeSolid(const nnode* node);
+        static G4Transform3D* ConvertTransform(const glm::mat4& t);
     private:
         static G4VSolid* MakeSolid_r(const nnode* node, unsigned depth );
-        static G4Transform3D* ConvertTransform(const glm::mat4& t);
         static G4VSolid*      ConvertPrimitive(const nnode* node);
         static G4VSolid*      ConvertZSphere(const nnode* node);
         static G4VSolid*      ConvertOperator( const nnode* node, G4VSolid* left, G4VSolid* right, unsigned depth ); 
