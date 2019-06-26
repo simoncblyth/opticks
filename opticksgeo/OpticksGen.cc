@@ -100,8 +100,6 @@ Upshot is that one of the below gets set
 
 void OpticksGen::init()
 {
-
-
     if(m_direct_gensteps)
     {
         initFromDirectGensteps();
@@ -142,11 +140,12 @@ void OpticksGen::initFromEmitterGensteps()
     OpticksActionControl oac(gs->getActionControlPtr());
     setLegacyGensteps(gs);
 
-    LOG(LEVEL) << "getting input photons and shim genstep "
-              << " --dbgemit " << m_dbgemit
-              << " input_photons " << m_input_photons->getNumItems()
-              << " oac : " << oac.description("oac") 
-              ; 
+    LOG(LEVEL) 
+        << "getting input photons and shim genstep "
+        << " --dbgemit " << m_dbgemit
+        << " input_photons " << m_input_photons->getNumItems()
+        << " oac : " << oac.description("oac") 
+        ; 
 }
 
 
@@ -354,8 +353,6 @@ void OpticksGen::setMaterialLine( GenstepNPY* gs )
 }
 
 
-
-
 FabStepNPY* OpticksGen::makeFabstep()
 {
     FabStepNPY* fabstep = new FabStepNPY(FABRICATED, 10, 10 );
@@ -415,11 +412,7 @@ NPY<float>* OpticksGen::loadLegacyGenstepFile(const char* label)
 
     int modulo = m_cfg->getModulo();
 
-#ifdef OLD_PARAMETERS
-    X_BParameters* parameters = gs->getParameters();
-#else
     NMeta* parameters = gs->getParameters();
-#endif
     parameters->add<int>("Modulo", modulo );
     if(modulo > 0) 
     {    
@@ -431,6 +424,5 @@ NPY<float>* OpticksGen::loadLegacyGenstepFile(const char* label)
     gs->addActionControl(OpticksActionControl::Parse(label));
     return gs ; 
 }
-
 
 

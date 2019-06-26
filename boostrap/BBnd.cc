@@ -11,14 +11,33 @@
 const char BBnd::DELIM = '/' ; 
 
 
-const char* BBnd::DuplicateOuterMaterial( const char* boundary0 )
+/**
+BBnd::DuplicateOuterMaterial
+------------------------------
+
+Fabricate a boundary spec composed of just the outer material
+from the argument spec.
+
+This is used by NCSGList::createUniverse
+
+**/
+
+const char* BBnd::DuplicateOuterMaterial( const char* boundary0 )  // static 
 {
     BBnd b(boundary0);
     return BBnd::Form(b.omat, NULL, NULL, b.omat);
 }
 
 
-const char* BBnd::Form(const char* omat_, const char* osur_, const char* isur_, const char* imat_)
+/**
+BBnd::Form
+-----------
+
+Form a spec string from arguments 
+
+**/
+
+const char* BBnd::Form(const char* omat_, const char* osur_, const char* isur_, const char* imat_)  // static 
 {
     std::vector<std::string> uelem ;  
     uelem.push_back( omat_ ? omat_ : "" );
@@ -30,6 +49,13 @@ const char* BBnd::Form(const char* omat_, const char* osur_, const char* isur_, 
     return strdup(ubnd.c_str());
 }
 
+/**
+BBnd::BBnd
+-----------
+
+Populate the omat/osur/isur/imat struct by splitting the spec string 
+
+**/
 
 BBnd::BBnd(const char* spec)
 {

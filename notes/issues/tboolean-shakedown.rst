@@ -3,8 +3,8 @@ tboolean-shakedown
 
 
 
-g4 : TO NA MI
------------------
+g4 : TO NA MI : FIXED 
+----------------------------
 
 ::
 
@@ -23,10 +23,37 @@ g4 : TO NA MI
 * :doc:`tboolean-g4-TO-NA-MI`
 
 
+
+zsphere1 : different geometry ! translation issue ?
+------------------------------------------------------
+
+Open Opticks viz in two sessions and start animations in each, shows
+clearly different geometry::
+
+   tv zsphere1
+   tv4 zsphere1
+
+  
+* OK : intended big cheese shape
+* G4 : back to back cones 
+
+* :doc:`tboolean-zsphere1-zsphere2-discrep`
+
+
+HOW TO PROCEED : intersect full G4Orb with a suitable box to get the 
+z-slicing that Opticks zsphere is   
+
+
+
 CG4 CRandomEngine::flat processName
 ------------------------------------------
 
 * calls to G4UniformRand which get routed via engine expected to be done by a process
+* probably everything that does not use emit=-1 or emit=1 will show this
+
+* using emitters and input photons is really convenient for debugging, so 
+  probably simplest to just configure emitters 
+
 
 ::
 
@@ -35,6 +62,7 @@ CG4 CRandomEngine::flat processName
     ts trapezoid
     ts union-zsphere
     ts difference-zsphere
+    ts zsphere2 
 
 ::
 
@@ -78,7 +106,6 @@ CRandomEngine OUT OF RANGE
     ts cubeplanes
 
 
-
 CRandomEngine sequence
 -----------------------------
 
@@ -91,7 +118,6 @@ CRandomEngine sequence
 ::
 
     OKG4Test: /home/blyth/opticks/cfg4/CRandomEngine.cc:296: double CRandomEngine::_flat(): Assertion `m_cursor >= 0 && m_cursor < int(m_sequence.size())' failed.
-
 
 Avoid issue with::
 

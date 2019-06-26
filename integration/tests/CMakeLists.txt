@@ -30,7 +30,7 @@ get_filename_component(TGT ${SCRIPT} NAME_WE)
 set(LV box)
 
 set(TEST ${name}.${TGT}.${LV})
-add_test(${TEST} ${SCRIPT} )
+add_test(${TEST} ${SCRIPT} --generateoverride 10000)
 set_tests_properties(${TEST} PROPERTIES ENVIRONMENT "LV=${LV}")
 
 

@@ -111,10 +111,11 @@ int main(int argc, char** argv)
     }
     else
     {
-        bool checkmaterial = false ; 
+        // bool checkmaterial = false ; 
         // TODO: avoid this switch off, loading from the extras dir misinterprets a csg.txt as the boundaries 
         //       should change the names of the file (perhaps to extras.txt)
-        NCSGList* ls = NCSGList::Load( basedir, verbosity, checkmaterial );
+
+        NCSGList* ls = NCSGList::Load( basedir, verbosity );
 
         if(!ls)
         {

@@ -173,7 +173,6 @@ G4VPhysicalVolume* CTestDetector::makeChildVolume(const NCSG* csg, const char* l
         placement.set( tlate.x, tlate.y, tlate.z ); 
     }
 
-
     G4LogicalVolume* lv = new G4LogicalVolume(solid, const_cast<G4Material*>(material), strdup(lvn), 0,0,0);
 
     G4VPhysicalVolume* pv = new G4PVPlacement(0, placement, lv, strdup(pvn) ,mother,false,0);
@@ -220,10 +219,11 @@ G4VPhysicalVolume* CTestDetector::makeDetector_NCSG()
         << " numVolumes " << numVolumes 
         ;
 
-    NCSG* universe = m_geotest->getUniverse();
+    NCSG* universe = m_geotest->getUniverse(); // slightly enlarged distinct clone of outer volume   
     assert(universe);
-    G4VPhysicalVolume* top = universe ? makeVolumeUniverse(universe) : NULL ; 
-    G4LogicalVolume* mother = top ? top->GetLogicalVolume() : NULL ; 
+    G4VPhysicalVolume* top = makeVolumeUniverse(universe) ; 
+    assert(top); 
+    G4LogicalVolume* mother = top->GetLogicalVolume() ; 
 
     if(mother)
     {
@@ -243,8 +243,6 @@ G4VPhysicalVolume* CTestDetector::makeDetector_NCSG()
 
         const GMesh* altmesh = mesh->getAlt(); 
         const NCSG* altcsg = altmesh ? altmesh->getCSG() : NULL ; 
- 
-
 
         LOG(LEVEL) << std::setw(4) << i << " spec " << ( spec ? spec : "NULL" ) ;   
         assert( spec );  

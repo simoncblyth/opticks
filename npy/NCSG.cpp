@@ -1202,20 +1202,31 @@ Only implemented for CSG_BOX, CSG_BOX3 and CSG_SPHERE.
 
 **/
 
-void NCSG::resizeToFit( const nbbox& container, float scale, float delta ) const 
+void NCSG::resizeToFit( const nbbox& fit_bb, float scale, float delta ) const 
 {
     LOG(debug) << "[" ; 
+
+    bool empty_bb = fit_bb.is_empty(); 
+
+    if(empty_bb)
+        LOG(fatal) << " EMPTY fit_bb " << fit_bb.desc()
+        ;
+
+    assert( !empty_bb );     
+
 
     nnode* root = getRoot();
 
     nbbox root_bb = root->bbox();
  
-    nnode::ResizeToFit(root, container, scale, delta );         
+    nnode::ResizeToFit(root, fit_bb, scale, delta );         
 
-    LOG(debug) << "]"
-              << " root_bb " << root_bb.desc()
-              << " container " << container.desc()
-              ;
+    LOG(LEVEL) << "]"
+               << " scale " << scale 
+               << " delta " << delta
+               << " root_bb " << root_bb.desc()
+               << " fit_bb " << fit_bb.desc()
+               ;
 }
 
 

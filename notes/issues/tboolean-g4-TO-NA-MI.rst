@@ -11,10 +11,152 @@ tboolean-g4-TO-NA-MI
 
 
 
-Status 
-----------
+Status : FIXED, but precise mechanism of the problem still unclear : possibly mal-sized Geant4 world volume
+--------------------------------------------------------------------------------------------------------------
 
 * "TO NA MI" issue with truncate FIXED,  few photons with deviant SC position is a different issue 
+
+* with cone find that the "TO NA MI" can now be made to go away simply by setting container=1 on the outer volume, 
+  but how this manages to do so is unclear
+
+* fixing the setting of m_bbox in NCSGList now avoids the need to explicitly set container too, unless necessary
+  to have the adjustable size to fit feature 
+
+
+
+What does container=1 do ?
+---------------------------------
+
+With container=0 get a zero sized universe::
+
+    2019-06-26 14:57:07.185 INFO  [11136] [OpticksHub::loadGeometry@517] --test modifying geometry
+    2019-06-26 14:57:07.186 ERROR [11136] [NCSGList::load@211]  VERBOSITY 0 basedir /tmp/blyth/opticks/tboolean-cone txtpath /tmp/blyth/opticks/tboolean-cone/csg.txt nbnd 2
+    2019-06-26 14:57:07.187 ERROR [11136] [NCSGList::add@123]  add tree, boundary: Rock//perfectAbsorbSurface/Vacuum
+    2019-06-26 14:57:07.189 ERROR [11136] [NCSGList::add@123]  add tree, boundary: Vacuum///GlassSchottF2
+    2019-06-26 14:57:07.189 ERROR [11136] [GGeoTest::checkPts@185]  proxy 0 proxy_idx -1
+    2019-06-26 14:57:07.189 ERROR [11136] [GGeoTest::checkPts@191]  basegeolib  nmm 6
+    ...
+    2019-06-26 14:57:13.019 ERROR [11136] [NCSGList::createUniverse@292]  bnd0 Rock//perfectAbsorbSurface/Vacuum ubnd Rock///Rock scale 1 delta 1
+    2019-06-26 14:57:13.019 ERROR [11136] [NCSGList::createUniverse@299]  m_bbox  mi (      0.000     0.000     0.000) mx (      0.000     0.000     0.000) si (      0.000     0.000     0.000) EMPTY
+    2019-06-26 14:57:13.021 ERROR [11136] [NCSGList::createUniverse@307]  universe.get_root_csgname box
+
+
+With container=1::
+
+    2019-06-26 14:54:24.481 INFO  [6498] [OpticksHub::loadGeometry@517] --test modifying geometry
+    2019-06-26 14:54:24.482 ERROR [6498] [NCSGList::load@211]  VERBOSITY 0 basedir /tmp/blyth/opticks/tboolean-cone txtpath /tmp/blyth/opticks/tboolean-cone/csg.txt nbnd 2
+    2019-06-26 14:54:24.483 ERROR [6498] [NCSGList::add@123]  add tree, boundary: Rock//perfectAbsorbSurface/Vacuum
+    2019-06-26 14:54:24.485 ERROR [6498] [NCSGList::add@123]  add tree, boundary: Vacuum///GlassSchottF2
+    2019-06-26 14:54:24.485 ERROR [6498] [NCSGList::adjustContainerSize@165] [
+    2019-06-26 14:54:24.485 ERROR [6498] [NCSGList::updateBoundingBox@144] [ m_bbox  mi (      0.000     0.000     0.000) mx (      0.000     0.000     0.000) si (      0.000     0.000     0.000) EMPTY
+    2019-06-26 14:54:24.485 ERROR [6498] [NCSGList::updateBoundingBox@156]  bba  mi (   -300.000  -300.000  -100.000) mx (    300.000   300.000   100.000) si (    600.000   600.000   200.000)
+    2019-06-26 14:54:24.485 ERROR [6498] [NCSGList::updateBoundingBox@160] ] m_bbox  mi (   -300.000  -300.000  -100.000) mx (    300.000   300.000   100.000) si (    600.000   600.000   200.000)
+    2019-06-26 14:54:24.486 ERROR [6498] [NCSGList::adjustContainerSize@184] ] m_bbox  mi (   -900.000  -900.000  -900.000) mx (    900.000   900.000   900.000) si (   1800.000  1800.000  1800.000)
+    2019-06-26 14:54:24.486 ERROR [6498] [GGeoTest::checkPts@185]  proxy 0 proxy_idx -1
+    2019-06-26 14:54:24.486 ERROR [6498] [GGeoTest::checkPts@191]  basegeolib  nmm 6
+    ...
+    2019-06-26 14:54:30.340 ERROR [6498] [NCSGList::createUniverse@292]  bnd0 Rock//perfectAbsorbSurface/Vacuum ubnd Rock///Rock scale 1 delta 1
+    2019-06-26 14:54:30.340 ERROR [6498] [NCSGList::createUniverse@299]  m_bbox  mi (   -900.000  -900.000  -900.000) mx (    900.000   900.000   900.000) si (   1800.000  1800.000  1800.000)
+    2019-06-26 14:54:30.341 ERROR [6498] [NCSGList::createUniverse@307]  universe.get_root_csgname box
+
+
+::
+
+     30 NCSGList* NCSGList::Load(const char* csgpath, int verbosity, bool checkmaterial)
+     31 {
+     32     if(!csgpath) return NULL ;
+     33 
+     34     if(verbosity < 0 ) verbosity = SSys::getenvint("VERBOSE", 0 ) ;
+     35 
+     36 
+     37     if(!NCSGList::ExistsDir(csgpath))
+     38     {
+     39         LOG(error) << "missing csgpath " << csgpath ;
+     40         return NULL ;
+     41     }
+     42 
+     43     NCSGList* ls = new NCSGList(csgpath, verbosity );
+     44     
+     45     ls->load();
+     46     
+     47     if(checkmaterial) ls->checkMaterialConsistency();
+     48 
+     49     if(ls->hasContainer())
+     50     {   
+     51         ls->adjustContainerSize();
+     52     }
+     53     
+     54     return ls ;
+     55 }
+
+
+::
+
+    tboolean-cone--(){ cat << EOP 
+
+    from opticks.ana.main import opticks_main
+    from opticks.analytic.polyconfig import PolyConfig
+    from opticks.analytic.csg import CSG  
+
+    args = opticks_main(csgname="${FUNCNAME/--}")
+
+    emitconfig = "photons:100000,wavelength:380,time:0.0,posdelta:0.1,sheetmask:0x1" 
+
+    CSG.kwa = dict(poly="HY",resolution=4, verbosity=0 ,ctrl=0, containerscale=3.0, emitconfig=emitconfig  )
+
+    container = CSG("box", param=[0,0,0,1000], emit=-1, boundary="Rock//perfectAbsorbSurface/Vacuum", container=0 )  
+
+    r2,r1 = 100,300
+    #r2,r1 = 300,300    ## with equal radii (a cylinder) polygonization and raytrace both yield nothing 
+    #r2,r1 = 300,100    ## radii swapped (upside-down cone) works
+
+    z2 = 100
+    z1 = -100
+
+    cone = CSG("cone", param=[r1,z1,r2,z2], boundary="Vacuum///GlassSchottF2", emit=0 )
+    cone.dump()
+
+    CSG.Serialize([container, cone], args )
+
+    EOP
+    }
+
+
+
+
+Add assert when resizing to fit an empty bbox::
+
+    (gdb) bt
+    #0  0x00007fffe2009207 in raise () from /lib64/libc.so.6
+    #1  0x00007fffe200a8f8 in abort () from /lib64/libc.so.6
+    #2  0x00007fffe2002026 in __assert_fail_base () from /lib64/libc.so.6
+    #3  0x00007fffe20020d2 in __assert_fail () from /lib64/libc.so.6
+    #4  0x00007fffe51559eb in NCSG::resizeToFit (this=0x6cb4f30, fit_bb=..., scale=1, delta=1) at /home/blyth/opticks/npy/NCSG.cpp:1215
+    #5  0x00007fffe515d9ec in NCSGList::createUniverse (this=0x5aac110, scale=1, delta=1) at /home/blyth/opticks/npy/NCSGList.cpp:317
+    #6  0x00007fffe515d675 in NCSGList::getUniverse (this=0x5aac110) at /home/blyth/opticks/npy/NCSGList.cpp:256
+    #7  0x00007fffe5ccb7d5 in GGeoTest::getUniverse (this=0x5aa7300) at /home/blyth/opticks/ggeo/GGeoTest.cc:64
+    #8  0x00007fffefdda0db in CTestDetector::makeDetector_NCSG (this=0x6cb4270) at /home/blyth/opticks/cfg4/CTestDetector.cc:222
+    #9  0x00007fffefdd9564 in CTestDetector::makeDetector (this=0x6cb4270) at /home/blyth/opticks/cfg4/CTestDetector.cc:95
+    #10 0x00007fffefdd93e2 in CTestDetector::init (this=0x6cb4270) at /home/blyth/opticks/cfg4/CTestDetector.cc:78
+    #11 0x00007fffefdd923c in CTestDetector::CTestDetector (this=0x6cb4270, hub=0x6b9500, query=0x0, sd=0x6cb1c10) at /home/blyth/opticks/cfg4/CTestDetector.cc:64
+    #12 0x00007fffefd7623a in CGeometry::init (this=0x6cb41c0) at /home/blyth/opticks/cfg4/CGeometry.cc:73
+    #13 0x00007fffefd76132 in CGeometry::CGeometry (this=0x6cb41c0, hub=0x6b9500, sd=0x6cb1c10) at /home/blyth/opticks/cfg4/CGeometry.cc:63
+    #14 0x00007fffefde7408 in CG4::CG4 (this=0x6ad1ab0, hub=0x6b9500) at /home/blyth/opticks/cfg4/CG4.cc:127
+    #15 0x00007ffff7bd5256 in OKG4Mgr::OKG4Mgr (this=0x7fffffffcc40, argc=34, argv=0x7fffffffcf78) at /home/blyth/opticks/okg4/OKG4Mgr.cc:76
+    #16 0x000000000040399a in main (argc=34, argv=0x7fffffffcf78) at /home/blyth/opticks/okg4/tests/OKG4Test.cc:8
+    (gdb) 
+
+
+Problem seems to be that m_bbox in NCSGList was not being set unless there was a container and the universe volume 
+dimension was being set based on the an empty. This might have resulted in a 1mm cube World volume ?
+
+
+cone
+--------
+
+::
+
+   ts cone --generateoverride 1000
 
 
 

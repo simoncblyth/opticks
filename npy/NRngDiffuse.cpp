@@ -10,9 +10,9 @@ NRngDiffuse::NRngDiffuse(unsigned seed, float ctmin, float ctmax )
     :
     m_pi( glm::pi<float>() ),
     m_seed(seed),
-    m_uazi(new BRng(0.f, 2.f*m_pi, seed, "uazi")),
-    m_upol(new BRng(-1.f, 1.f,   seed+1, "upol")),
-    m_unct(new BRng( ctmin, ctmax,   seed+2,  "unct"))
+    m_uazi(new BRng(0.f, 2.f*m_pi, seed, "uazi")),       // azimuthal
+    m_upol(new BRng(-1.f, 1.f,   seed+1, "upol")),       // polar 
+    m_unct(new BRng( ctmin, ctmax,   seed+2,  "unct"))   // costheta
 {
 }
 

@@ -17,7 +17,7 @@
 const char* NCSGList::FILENAME = "csg.txt" ; 
 
 
-const plog::Severity NCSGList::LEVEL = error ; 
+const plog::Severity NCSGList::LEVEL = debug ; 
 
 
 bool NCSGList::ExistsDir(const char* dir)
@@ -27,7 +27,7 @@ bool NCSGList::ExistsDir(const char* dir)
     return true ; 
 }
 
-NCSGList* NCSGList::Load(const char* csgpath, int verbosity, bool checkmaterial)
+NCSGList* NCSGList::Load(const char* csgpath, int verbosity )
 {
     if(!csgpath) return NULL ; 
 
@@ -41,12 +41,10 @@ NCSGList* NCSGList::Load(const char* csgpath, int verbosity, bool checkmaterial)
     }
 
     NCSGList* ls = new NCSGList(csgpath, verbosity );
+
     ls->load();
-    if(checkmaterial) ls->checkMaterialConsistency();
-    if(ls->hasContainer())
-    {
-        ls->adjustContainerSize(); 
-    } 
+
+    ls->postload();
 
     return ls ;
 } 
@@ -128,6 +126,24 @@ void NCSGList::add(NCSG* tree)
 }
 
 
+
+
+
+
+
+
+void NCSGList::postload(bool checkmaterial)
+{
+    if(checkmaterial) checkMaterialConsistency();
+
+    updateBoundingBox(); 
+
+    if(hasContainer())
+    {
+        adjustContainerSize(); 
+    } 
+}
+
 /**
 NCSGList::updateBoundingBox
 -----------------------------
@@ -139,18 +155,19 @@ Former mal-logic::
 
 **/
 
-void NCSGList::updateBoundingBox(bool exclude_container)
+void NCSGList::updateBoundingBox()
 {
     LOG(LEVEL) << "[ m_bbox " << m_bbox.desc() ; 
     unsigned num_tree = m_trees.size(); 
 
     m_bbox.set_empty(); 
 
+    bool exclude_container = true ; // exclude only when more than one trees
     for(unsigned i=0 ; i < num_tree ; i++)
     {
         NCSG* tree = m_trees[i] ; 
         bool is_container = tree->isContainer() ; 
-        if(is_container && exclude_container) continue ; 
+        if(is_container && exclude_container && num_tree > 1) continue ; 
 
         nbbox bba = tree->bbox();  
         LOG(LEVEL) << " bba " << bba.desc() ; 
@@ -168,13 +185,10 @@ void NCSGList::adjustContainerSize()
     NCSG* container = findContainer(); 
     assert(container); 
 
-    bool exclude_container = m_trees.size() == 1 ? false : true ; 
-    updateBoundingBox(exclude_container); 
 
     float scale = container->getContainerScale(); // hmm should be prop of the list not the tree ? 
     float delta = 0.f ; 
     container->resizeToFit(m_bbox, scale, delta );
-
 
     nbbox bba2 = container->bbox();
     m_bbox.include(bba2);   // update for the auto-container, used by NCSGList::createUniverse
@@ -186,7 +200,6 @@ void NCSGList::adjustContainerSize()
         << " m_bbox " 
         << m_bbox.description()
         ; 
-       
 }
 
 
@@ -238,12 +251,15 @@ as with full geomrtries NCSGLoadTest and NScanTest
 when reading /usr/local/opticks/opticksdata/export/DayaBay_VGDX_20140414-1300/extras/csg.txt
 takes exception to the content of "extras/248" not being a bnd
 
+This is invoked from CTestDetector::makeDetector_NCSG
+
+
 **/
        
 NCSG* NCSGList::getUniverse() 
 {
     float scale = 1.f ; 
-    float delta = 1.f ; 
+    float delta = 1.f ;  // grow by 1mm
 
     if(m_universe == NULL) m_universe = createUniverse(scale, delta); 
     return m_universe ; 
@@ -253,16 +269,43 @@ NCSG* NCSGList::getUniverse()
 NCSGList::createUniverse
 -------------------------
 
-"cheat" clone (via 2nd load) of outer volume 
-then increase size a little 
-this is only used for the Geant4 geometry
+1. form a boundary for the universe (to keep Opticks happy)
+   that repeats the outer material of boundary 0 with 
+   no surfaces "omat///omat". This outer material would 
+   typically be Rock. This is just for consistency there 
+   should never be any photons intersecting with it.
+
+2. "cheat" clone (via a 2nd load) the outer volume 
+   and assign the boundary formed above.
+
+3. resize the volume slightly, NB this doesnt cause a
+   discrepancy as photons are never allowed to cross 
+   into the space between the outer volume and  
+   universe volume  
+
+Note that the universe is not re-exported, this means that
+it will only be present in the CPU geometry and not in 
+the GPU geometry.   
+
+This is the intent as the universe wrapper which becomes the Geant4 world volume
+is needed for only for Geant4. This acts to reconcile between the G4 volume 
+based and the Opticks surface based geometry models.
+
+Note that for agreement between Opticks and Geant4 
+it is necessary to arrange geometry such that photons 
+never cross the boundary 0 surface. 
+
+Hmm : the outer volume will usually be container so this
+will yield a duplicated slightly larger container.
 
 **/
 
 NCSG* NCSGList::createUniverse(float scale, float delta) const 
 {
     const char* bnd0 = getBoundary(0);
-    const char* ubnd = BBnd::DuplicateOuterMaterial( bnd0 ); 
+    const char* ubnd = BBnd::DuplicateOuterMaterial( bnd0 );   // "omat///omat"
+
+
 
     LOG(LEVEL) 
         << " bnd0 " << bnd0 
@@ -275,24 +318,18 @@ NCSG* NCSGList::createUniverse(float scale, float delta) const
         << " m_bbox " 
         << m_bbox.description()
         ; 
- 
+
+    assert( !m_bbox.is_empty() ); 
+
 
     NCSG* universe = loadTree(0) ;    
     universe->setBoundary(ubnd);  
 
     LOG(LEVEL) << " universe.get_root_csgname " << universe->getRootCSGName() ; 
 
-
-    if( universe->isContainer() )
-    {
-        LOG(LEVEL) 
-            << " outer volume isContainer (ie auto scaled) "
-            << " universe will be scaled/delted a bit from there "
-            ;
-    }
-
     universe->resizeToFit( m_bbox, scale, delta ); 
-    /// huh : not re-exported : this means different geometry on CPU and GPU ??
+    /// universe not re-exported : this means different geometry on CPU and GPU
+
     return universe ; 
 }
 
@@ -434,9 +471,9 @@ void NCSGList::autoTestSetup(NGeoTestConfig* config)
     const char* autoseqmap     = config->getAutoSeqMap();
 
   
-    LOG(info) << " NCSGList::autoTestSetup"
-              << " override emitconfig/boundaries and seqmap "
-              ;
+    LOG(info) 
+        << " override emitconfig/boundaries and seqmap "
+        ;
 
     std::cout  
         << " autocontainer " << autocontainer

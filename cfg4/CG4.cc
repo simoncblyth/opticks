@@ -2,6 +2,9 @@
 // cfg4-;cfg4--;op --cfg4 --g4gun --dbg 
 // cfg4-;cfg4--;ggv-;ggv-g4gun --dbg
 
+
+
+#include <csignal>
 #include "CFG4_BODY.hh"
 
 #include "SLog.hh"
@@ -65,7 +68,7 @@
 
 #include "PLOG.hh"
 
-const plog::Severity CG4::LEVEL = debug ; 
+const plog::Severity CG4::LEVEL = info ; 
 
 
 CG4* CG4::INSTANCE = NULL ; 
@@ -113,6 +116,7 @@ CG4::CG4(OpticksHub* hub)
     m_log(new SLog("CG4::CG4", "", LEVEL)),
     m_hub(hub),
     m_ok(m_hub->getOpticks()),
+    m_preinit(preinit()),
     m_run(m_ok->getRun()),
     m_cfg(m_ok->getCfg()),
     m_ctx(m_ok),
@@ -147,6 +151,12 @@ CG4::CG4(OpticksHub* hub)
     (*m_log)("DONE");
 }
 
+int CG4::preinit()
+{
+    if(m_ok->hasOpt("cg4sigint")) std::raise(SIGINT); 
+    return 0 ; 
+}
+
 void CG4::init()
 {
     LOG(info) << "CG4::init"  << " ctx " << m_ctx.desc() ; 
@@ -171,6 +181,8 @@ void CG4::initialize()
     LOG(info) << "[" ;
     assert(!m_initialized && "CG4::initialize already initialized");
     m_initialized = true ; 
+
+
 
     m_runManager->SetUserAction(m_ra);
     m_runManager->SetUserAction(m_ea);

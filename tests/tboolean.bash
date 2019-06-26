@@ -586,11 +586,13 @@ tboolean-funcname()
 }
 
 
-
-
-
-tboolean-testconfig()
+tboolean-testconfig(){ echo $TESTCONFIG ; }
+tboolean-testconfig-antipattern()
 {
+    # This "bend-over-backwards" pattern is not a good idea, better not
+    # to handle expected missing config, just raise an error.
+    # Simpler is better because see and identify problems sooner/easier.
+
     local testconfig
     local testname
     if [ -n "$TESTCONFIG" ]; then
@@ -659,6 +661,7 @@ tboolean--(){
     local torchconfig=$(tboolean-torchconfig)
 
     tboolean-info
+    [ "$testconfig" == "" ] && echo $msg no testconfig : try ${testname}- && return 255 
 
     o.sh  \
             $cmdline \
@@ -1152,7 +1155,7 @@ tboolean-cone-scan(){ SCAN="0,0,100,1,0,0,0,300,10" NCSGScanTest $TMP/tboolean-c
 tboolean-cone-ip(){ TESTNAME=${FUNCNAME/-ip} tboolean-ipy- $* ; } 
 tboolean-cone-p(){ TESTNAME=${FUNCNAME/-p} tboolean-py- $* ; } 
 tboolean-cone-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; } 
-tboolean-cone(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null)    tboolean-- $* ; } 
+tboolean-cone(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null) tboolean-- $* ; } 
 tboolean-cone-(){  $FUNCNAME- | python $* ; }
 tboolean-cone--(){ cat << EOP 
 
@@ -1162,11 +1165,11 @@ from opticks.analytic.csg import CSG
 
 args = opticks_main(csgname="${FUNCNAME/--}")
 
-emitconfig = "photons:100000,wavelength:380,time:0.2,posdelta:0.1,sheetmask:0x1" 
+emitconfig = "photons:100000,wavelength:380,time:0.0,posdelta:0.1,sheetmask:0x1" 
 
 CSG.kwa = dict(poly="HY",resolution=4, verbosity=0 ,ctrl=0, containerscale=3.0, emitconfig=emitconfig  )
 
-container = CSG("box", param=[0,0,0,1000], emit=-1, boundary="Rock//perfectAbsorbSurface/Vacuum" )  
+container = CSG("box", param=[0,0,0,1000], emit=-1, boundary="Rock//perfectAbsorbSurface/Vacuum", container=0 )  
 
 r2,r1 = 100,300
 #r2,r1 = 300,300    ## with equal radii (a cylinder) polygonization and raytrace both yield nothing 
@@ -1825,9 +1828,10 @@ tboolean-zsphere2--(){ cat << EOP
 from opticks.ana.main import opticks_main
 from opticks.analytic.csg import CSG  
 args = opticks_main(csgname="${FUNCNAME/--}")
-CSG.kwa = dict(poly="IM", resolution=40, verbosity=0, ctrl=0 )
+emitconfig = "photons:100000,wavelength:380,time:0.2,posdelta:0.1,sheetmask:0x1" 
+CSG.kwa = dict(poly="IM", resolution=40, verbosity=0, ctrl=0, emitconfig=emitconfig )
 
-container = CSG("box", param=[0,0,0,1000], boundary="$(tboolean-container)", poly="MC", nx=20 )
+container = CSG("box", param=[0,0,0,1000], boundary="$(tboolean-container)", poly="MC", nx=20, emit=-1 )
 
 zsphere = CSG("zsphere", param=[0,0,0,500], param1=[100,200,0,0],param2=[0,0,0,0],  boundary="$(tboolean-testobject)" )
 

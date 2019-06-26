@@ -127,6 +127,7 @@ class CFG4_API CG4
    public:
         const std::map<std::string, unsigned>& getMaterialMap() const ;        
    private:
+        int preinit();
         void init();
         void initialize();
         void setUserInitialization(G4VUserDetectorConstruction* detector);
@@ -166,6 +167,7 @@ class CFG4_API CG4
         SLog*                 m_log ; 
         OpticksHub*           m_hub ; 
         Opticks*              m_ok ; 
+        int                   m_preinit ; 
         OpticksRun*           m_run ; 
         OpticksCfg<Opticks>*  m_cfg ; 
 

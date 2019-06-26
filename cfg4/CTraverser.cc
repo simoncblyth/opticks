@@ -31,20 +31,20 @@
 const char* CTraverser::GROUPVEL = "GROUPVEL" ; 
 
 CTraverser::CTraverser(Opticks* ok, G4VPhysicalVolume* top, NBoundingBox* bbox, OpticksQuery* query ) 
-   :
-   m_ok(ok),
-   m_top(top),
-   m_bbox(bbox ? bbox : new NBoundingBox),
-   m_query(query),
-   m_verbosity(1),
-   m_lcount(0),
-   m_ltransforms(NULL),
-   m_gcount(0),
-   m_ancestor_index(0),
-   m_center_extent(NULL),
-   m_gtransforms(NULL)
+    :
+    m_ok(ok),
+    m_top(top),
+    m_bbox(bbox ? bbox : new NBoundingBox),
+    m_query(query),
+    m_verbosity(1),
+    m_lcount(0),
+    m_ltransforms(NULL),
+    m_gcount(0),
+    m_ancestor_index(0),
+    m_center_extent(NULL),
+    m_gtransforms(NULL)
 {
-   init();
+    init();
 }
 
 
@@ -103,38 +103,37 @@ NPY<float>* CTraverser::getCenterExtent() const
 
 void CTraverser::Summary(const char* msg) const
 {
-    LOG(info) << msg 
-              << " numMaterials " << getNumMaterials() 
-              << " numMaterialsWithoutMPT " << getNumMaterialsWithoutMPT() 
-              ;
+    LOG(info) 
+        << msg 
+        << " numMaterials " << getNumMaterials() 
+        << " numMaterialsWithoutMPT " << getNumMaterialsWithoutMPT() 
+        ;
 }
 
 
 std::string CTraverser::description() const
 {   
     std::stringstream ss ; 
-
     ss 
        << " numSelected " << getNumSelected()
        << " bbox " << m_bbox->description()
        << " pvs.size " << m_pvs.size()
        << " lvs.size " << m_lvs.size()
        ;
-
     return ss.str();
 }
 
 void CTraverser::Traverse()
 {
     if(m_ok->isDbgSurf())
-        LOG(info) << "[--dbgsurf] CTraverser::Traverse START " ;
+        LOG(info) << "( [--dbgsurf] " ;
 
     VolumeTreeTraverse();
     AncestorTraverse();
 
     if(m_ok->isDbgSurf())
     {
-        LOG(info) << "[--dbgsurf] CTraverser::Traverse DONE" 
+        LOG(info) << ") [--dbgsurf] " 
                   << description() 
                   ;
     }
@@ -160,7 +159,7 @@ void CTraverser::AncestorTraverse()
 
      AncestorTraverse(ancestors, m_top, 0, false);
 
-     LOG(debug) << "CTraverser::AncestorTraverse " << description() ;
+     LOG(debug) << description() ;
 }
 
 
@@ -172,10 +171,10 @@ void CTraverser::AncestorTraverse(std::vector<const G4VPhysicalVolume*> ancestor
 
      bool selected = m_query ? m_query->selected(pvname, m_ancestor_index, depth, recursive_select) : true ;
 
-     LOG(debug) << "CTraverser::AncestorTraverse"
-               << " pvname " << pvname
-               << " selected " << selected
-               ;
+     LOG(debug) 
+         << " pvname " << pvname
+         << " selected " << selected
+         ;
 
      if(selected)
      {
@@ -222,11 +221,11 @@ void CTraverser::AncestorVisit(std::vector<const G4VPhysicalVolume*> ancestors, 
 
     updateBoundingBox(lv->GetSolid(), T, selected);
 
-    LOG(debug) << "CTraverser::AncestorVisit " 
-              << " size " << std::setw(3) << ancestors.size() 
-              << " gcount " << std::setw(6) << m_gcount 
-              << " pvname " << pv->GetName() 
-              ;
+    LOG(debug) 
+        << " size " << std::setw(3) << ancestors.size() 
+        << " gcount " << std::setw(6) << m_gcount 
+        << " pvname " << pv->GetName() 
+        ;
     m_gcount += 1 ; 
 
 
@@ -281,12 +280,12 @@ void CTraverser::updateBoundingBox(const G4VSolid* solid, const G4Transform3D& t
         m_bbox->update(low, high);
     }
 
-    LOG(debug) << "CTraverser::updateBoundingBox"
-              << " low " << gformat(low)
-              << " high " << gformat(high)
-              << " ce " << gformat(center_extent)
-              << " bb " << m_bbox->description()
-              ;
+    LOG(debug)
+        << " low " << gformat(low)
+        << " high " << gformat(high)
+        << " ce " << gformat(center_extent)
+        << " bb " << m_bbox->description()
+        ;
 
 }
 
@@ -314,11 +313,11 @@ const G4VPhysicalVolume* CTraverser::getPV(const char* name) const
     std::vector<unsigned> indices ; 
     int num_indices = BStr::index_all( indices, m_pvnames, name) ;
 
-    LOG(info) << "CTraverser::getPV"
-              << " name " << name
-              << " index " << index 
-              << " num_indices " << num_indices
-              ;     
+    LOG(info) 
+        << " name " << name
+        << " index " << index 
+        << " num_indices " << num_indices
+        ;     
 
 
     assert( m_pvs.size() == m_pvnames.size() );
@@ -327,12 +326,12 @@ const G4VPhysicalVolume* CTraverser::getPV(const char* name) const
 
     if(!valid)
     {
-        LOG(fatal) << "CTraverser::getPV" 
-                   << " name " << name 
-                   << " index " << index 
-                   << " m_pvs " << m_pvs.size()
-                   << " m_pvnames " << m_pvnames.size()
-                   ;
+        LOG(fatal) 
+            << " name " << name 
+            << " index " << index 
+            << " m_pvs " << m_pvs.size()
+            << " m_pvnames " << m_pvnames.size()
+            ;
     }
     assert( valid );
     const G4VPhysicalVolume* pv = getPV(index) ;
@@ -447,10 +446,10 @@ G4Transform3D CTraverser::VolumeTreeTraverse(const G4LogicalVolume* const lv, co
 
 void CTraverser::VisitPV(const G4VPhysicalVolume* const pv, const G4Transform3D& T )
 {
-    LOG(debug) << "CTraverser::VisitPV" 
-              << " lcount " << std::setw(6) << m_lcount 
-              << " pvname " << pv->GetName() 
-              ;
+    LOG(debug) 
+        << " lcount " << std::setw(6) << m_lcount 
+        << " pvname " << pv->GetName() 
+        ;
     m_lcount += 1 ; 
 
     collectTransformT(m_ltransforms, T );
@@ -529,11 +528,11 @@ void CTraverser::Visit(const G4LogicalVolume* const lv)
     const G4String matname = material->GetName();
 
     if(m_verbosity > 1 )
-        LOG(info) << "CTraverser::Visit"
-               << std::setw(20) << lvname
-               << std::setw(50) << geoname
-               << std::setw(20) << matname
-               ;
+        LOG(info) 
+            << std::setw(20) << lvname
+            << std::setw(50) << geoname
+            << std::setw(20) << matname
+            ;
 }
 
 
@@ -615,15 +614,15 @@ void CTraverser::createGroupVel()
             G4MaterialPropertyVector* gv = mpt->GetProperty(GROUPVEL);  
             unsigned int len = gv->GetVectorLength() ;
             if(m_verbosity > 1 )
-                 LOG(info) << "CTraverser::createGroupVel" 
-                           << " material " << material->GetName()
-                           << " groupvel len " << len
-                       ;
+                 LOG(info)
+                     << " material " << material->GetName()
+                     << " groupvel len " << len
+                     ;
         }
         else
         {
-            LOG(warning) << "CTraverser::createGroupVel"
-                         << " material lacks MPT " << i << " " << material->GetName() ;
+            LOG(warning) 
+                << " material lacks MPT " << i << " " << material->GetName() ;
         } 
     } 
 }
@@ -660,10 +659,11 @@ void CTraverser::dumpMaterialProperty(const G4String& name, const G4MaterialProp
 {
     unsigned int len = pvec->GetVectorLength() ;
 
-    LOG(info) << name 
-              << " len " << len 
-              << " h_Planck*c_light/nm " << h_Planck*c_light/nm
-              ;
+    LOG(info) 
+        << name 
+        << " len " << len 
+        << " h_Planck*c_light/nm " << h_Planck*c_light/nm
+        ;
 
     for (unsigned int i=0; i<len; i++)
     {   
@@ -672,10 +672,10 @@ void CTraverser::dumpMaterialProperty(const G4String& name, const G4MaterialProp
         G4double val = (*pvec)[i] ;
 
         LOG(info)
-                  << std::fixed << std::setprecision(3) 
-                  << " eV " << std::setw(10) << energy/eV
-                  << " nm " << std::setw(10) << wavelength/nm
-                  << " v  " << std::setw(10) << val ;
+            << std::fixed << std::setprecision(3) 
+            << " eV " << std::setw(10) << energy/eV
+            << " nm " << std::setw(10) << wavelength/nm
+            << " v  " << std::setw(10) << val ;
     }   
 }
 

@@ -9,13 +9,11 @@ template <typename T> class NPY  ;
 class BRng ; 
 
 /**
-
 NRngDiffuse
 ============
 
 This is using a sampling approach 
-similat to that used all over G4OpBoundaryProcess
-
+similar to that used all over G4OpBoundaryProcess
 
 Other potential approaches:
 

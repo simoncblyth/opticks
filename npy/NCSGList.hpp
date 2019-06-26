@@ -30,7 +30,7 @@ class NPY_API NCSGList
         typedef enum { PROXY, EMITTER, CONTAINER } NCSG_t ;
   
         static const char* FILENAME ; 
-        static NCSGList* Load(const char* csgpath, int verbosity=-1, bool checkmaterial=true) ;
+        static NCSGList* Load(const char* csgpath, int verbosity=-1 ) ;
         static bool      ExistsDir(const char* dir);
         static const char* MakeUniverseBoundary( const char* boundary0 );
         static NCSGList* Create(std::vector<NCSG*>& trees,  const char* csgpath, int verbosity ); 
@@ -41,6 +41,7 @@ class NPY_API NCSGList
         NCSGList(const char* csgpath, int verbosity);
         void init() ;
         void load() ;
+        void postload(bool checkmaterial=true);
         void checkMaterialConsistency() const  ;
 
         NCSG* loadTree(unsigned idx) const ;
@@ -84,7 +85,7 @@ class NPY_API NCSGList
     private:
         NCSG*        find( NCSG_t type ) const ;
         int          findIndex( NCSG_t type ) const ;
-        void         updateBoundingBox(bool exclude_container) ; 
+        void         updateBoundingBox() ; 
 
     private:
         const char*        m_csgpath ; 

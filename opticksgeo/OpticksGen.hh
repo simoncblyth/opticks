@@ -26,7 +26,7 @@ Canonical instance m_gen is member of OpticksHub
 and is instanciated by OpticksHub::init after 
 geometry has been loaded or adopted.
 
-m_gen copies are available in the principal users
+m_gen pointers are available in the principal users
 
 * okop/OpMgr
 * ok/OKMgr 

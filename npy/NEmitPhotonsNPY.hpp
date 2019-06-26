@@ -19,7 +19,9 @@ NEmitPhotonsNPY
 Prepares input photon buffer for an NCSG instance.
 
 Canonical m_emitter instance is ctor resident of OpticksGen
-which in turn is ctor resident of OpticksHub.
+which in turn is ctor resident of OpticksHub.  m_emitter is only 
+instanciated when there is an emitter NCSG configured 
+in the geometry.
 
 TODO:
 

@@ -296,6 +296,9 @@ void OpticksCfg<Listener>::init()
    m_desc.add_options()
        ("jwire",  "enable wire frame view, use only with workstation GPUs") ;
 
+   m_desc.add_options()
+       ("cg4sigint",  "interrupt in CG4::preinit a good place to set Geant4 breakpoints, see env-;gdb- for hints") ;
+
 
 
 
