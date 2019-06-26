@@ -80,11 +80,12 @@ class NPY_API NCSGList
         bool         hasProxy() const ;  
         bool         hasEmitter() const ;  
     public:
-        void         adjustContainerSize(); 
+        void         update() ; 
         int          polygonize();
     private:
         NCSG*        find( NCSG_t type ) const ;
         int          findIndex( NCSG_t type ) const ;
+        void         adjustContainerSize(); 
         void         updateBoundingBox() ; 
 
     private:

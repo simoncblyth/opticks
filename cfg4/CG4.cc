@@ -68,7 +68,7 @@
 
 #include "PLOG.hh"
 
-const plog::Severity CG4::LEVEL = info ; 
+const plog::Severity CG4::LEVEL = PLOG::EnvLevel("CG4", "DEBUG") ; 
 
 
 CG4* CG4::INSTANCE = NULL ; 

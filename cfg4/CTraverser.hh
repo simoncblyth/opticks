@@ -30,6 +30,7 @@ class GGeo ;
 template <typename T> class NPY ;
 class NBoundingBox ;
 
+#include "plog/Severity.h"
 
 
 /**
@@ -56,6 +57,7 @@ TODO: get rid of the VolumeTreeTraverse
 
 class CFG4_API CTraverser {
     public:
+        static const plog::Severity LEVEL ; 
         static const char* GROUPVEL ; 
     public:
         // need-to-know-basis: leads to more focussed, quicker to understand and easier to test code

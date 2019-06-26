@@ -28,6 +28,9 @@
 #include "CSolid.hh"
 #include "CTraverser.hh"
 
+
+const plog::Severity CTraverser::LEVEL = PLOG::EnvLevel("CTraverser", "DEBUG"); 
+
 const char* CTraverser::GROUPVEL = "GROUPVEL" ; 
 
 CTraverser::CTraverser(Opticks* ok, G4VPhysicalVolume* top, NBoundingBox* bbox, OpticksQuery* query ) 
@@ -103,7 +106,7 @@ NPY<float>* CTraverser::getCenterExtent() const
 
 void CTraverser::Summary(const char* msg) const
 {
-    LOG(info) 
+    LOG(LEVEL) 
         << msg 
         << " numMaterials " << getNumMaterials() 
         << " numMaterialsWithoutMPT " << getNumMaterialsWithoutMPT() 

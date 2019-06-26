@@ -6,6 +6,7 @@
 
 
 #include "PLOG.hh"
+#include "SSys.hh"
 #include "SProc.hh"
 
 PLOG* PLOG::instance = NULL ; 
@@ -14,6 +15,19 @@ PLOG* PLOG::instance = NULL ;
 
 //#define PLOG_DBG 1
 
+/**
+
+
+plog enum levels
+
+ fatal = 1,
+ error = 2,
+ warning = 3,
+ info = 4,
+ debug = 5,
+ verbose = 6 
+
+**/
 
 plog::Severity PLOG::Delta(plog::Severity level_, int delta)
 {
@@ -22,6 +36,26 @@ plog::Severity PLOG::Delta(plog::Severity level_, int delta)
     if(level > (int)verbose) level = (int)verbose ; 
     return (plog::Severity)level ; 
 }
+
+
+plog::Severity PLOG::EnvLevel( const char* key, const char* fallback)
+{
+    const char* level = SSys::getenvvar(key, fallback);  
+    plog::Severity severity = plog::severityFromString(level) ;
+
+    if(strcmp(level, fallback) != 0)
+    {
+        LOG(info) 
+            << " adjusting loglevel by envvar  "
+            << " key " << key  
+            << " level " << level
+            << " fallback " << fallback
+            ;     
+    }
+    return severity ; 
+} 
+
+
 
 
 void PLOG::_dump(const char* msg, int argc, char** argv)

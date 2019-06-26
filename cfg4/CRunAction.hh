@@ -1,11 +1,13 @@
 #pragma once
 
 #include "G4UserRunAction.hh"
+#include "plog/Severity.h"
 
 class OpticksHub ; 
 
 class CRunAction : public G4UserRunAction
 {
+        static const plog::Severity LEVEL ; 
     public:
         CRunAction(OpticksHub* hub);
         virtual ~CRunAction();

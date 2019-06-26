@@ -52,7 +52,7 @@
 #include "PLOG.hh"
 
 
-const plog::Severity CTestDetector::LEVEL = error ; 
+const plog::Severity CTestDetector::LEVEL = PLOG::EnvLevel("CTestDetector","DEBUG") ; 
 
 
 CTestDetector::CTestDetector(OpticksHub* hub, OpticksQuery* query, CSensitiveDetector* sd)

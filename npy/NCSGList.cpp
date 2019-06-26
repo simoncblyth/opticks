@@ -17,7 +17,7 @@
 const char* NCSGList::FILENAME = "csg.txt" ; 
 
 
-const plog::Severity NCSGList::LEVEL = debug ; 
+const plog::Severity NCSGList::LEVEL = PLOG::EnvLevel("NCSGList","DEBUG") ; 
 
 
 bool NCSGList::ExistsDir(const char* dir)
@@ -136,6 +136,10 @@ void NCSGList::postload(bool checkmaterial)
 {
     if(checkmaterial) checkMaterialConsistency();
 
+}
+
+void NCSGList::update()
+{
     updateBoundingBox(); 
 
     if(hasContainer())
@@ -143,6 +147,8 @@ void NCSGList::postload(bool checkmaterial)
         adjustContainerSize(); 
     } 
 }
+
+
 
 /**
 NCSGList::updateBoundingBox

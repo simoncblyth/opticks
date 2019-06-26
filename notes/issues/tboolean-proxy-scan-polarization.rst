@@ -23,7 +23,6 @@ Overview
   non-normal incidence treatment, maybe need WITH_NORMALDOUBLE 
 
 
-
 ta box : at perfectly normal incidence the polz just stays the same
 ----------------------------------------------------------------------
 
@@ -48,6 +47,18 @@ ta box : at perfectly normal incidence the polz just stays the same
 
 
 
+
+Container auto sizing with proxied in geometry has stopped working
+---------------------------------------------------------------------
+
+::
+
+   NCSGList=ERROR GGeoTest=ERROR ts 13
+
+
+
+
+
 Added tboolean-boxrot to check near normal : but find CG machinery not passing the transform to G4 : FIXED in CTestDetector::makeChildVolume
 -------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -64,6 +75,112 @@ Added tboolean-boxrot to check near normal : but find CG machinery not passing t
 
     box = CSG("box3", param=[300,300,200,0], emit=0,  boundary="Vacuum///GlassSchottF2"  )
     box.transform = rotate([1,0,0,45])
+
+
+
+tried and failed to get wholesale near normal deviation by varying boxrot angle
+-------------------------------------------------------------------------------------
+
+::
+
+   ts boxrot --generateoverride 10000
+
+
+
+* 0.1 degrees : normal incidence treatment, pol unchanged : agrees
+* 0.12 degrees : normal incidence : pol unchanged
+* 0.13 degrees : normal incidence
+* 0.14 degrees : mixed but agrees
+* 0.15 degrees : non-normal 
+* 0.25 degrees : non-normal
+* 0.5 degrees : non-normal
+* 1 degrees : non-normal incidence 
+
+
+    In [1]: ab.aselhis = "TO BT BR BT SA"
+
+    In [2]: a.rpol()           # hmm not normalized, would be good to see without the compression
+    Out[2]: 
+    A()sliced
+    A([[[ 0.    , -1.    ,  0.    ],
+        [ 0.    , -1.    , -0.0079],
+        [ 0.    , -1.    , -0.0315],
+        [ 0.    , -1.    , -0.0315],
+        [ 0.    , -1.    , -0.0315]],
+
+
+0.15::
+
+    n [1]: ab.aselhis = "TO BT BR BT SA"
+
+    In [2]: a.rpol()
+    Out[2]: 
+    A()sliced
+    A([[[ 0.    , -1.    ,  0.    ],
+        [ 0.    , -1.    ,  0.    ],
+        [ 0.    , -1.    , -0.0079],
+        [ 0.    , -1.    , -0.0079],
+        [ 0.    , -1.    , -0.0079]],
+
+
+0.14::
+
+    In [1]: ab.aselhis = "TO BT BR BT SA"
+
+    In [2]: a.rpol()
+    Out[2]: 
+    A()sliced
+    A([[[ 0.    , -1.    ,  0.    ],
+        [ 0.    , -1.    ,  0.    ],
+        [ 0.    , -1.    ,  0.    ],
+        [ 0.    , -1.    , -0.0079],
+        [ 0.    , -1.    , -0.0079]],
+
+
+
+::
+
+    ts boxrot --mask 32 --pindex 0 --pindexlog 
+
+        [blyth@localhost issues]$ cat $TMP/ox_32.log 
+    WITH_ALIGN_DEV_DEBUG photon_id:0 bounce:0 
+    propagate_to_boundary  u_OpBoundary:0.278298467 speed:299.79245 
+    propagate_to_boundary  u_OpRayleigh:0.138602942   scattering_length(s.material1.z):1000000 scattering_distance:1976142 
+    propagate_to_boundary  u_OpAbsorption:0.168458432   absorption_length(s.material1.y):1e+09 absorption_distance:1.78106624e+09 
+    propagate_at_boundary  u_OpBoundary_DiDiTransCoeff:0.154228956  reflect:0   TransCoeff:   0.93849  c2c2:    0.9999 tir:0  post (   17.8205    -8.6492  -100.1662     1.1838) pol (    0.0000    -1.0000     0.0000 ) 
+    WITH_ALIGN_DEV_DEBUG photon_id:0 bounce:0 
+    propagate_to_boundary  u_OpBoundary:0.350384057 speed:165.028061 
+    propagate_to_boundary  u_OpRayleigh:0.100355476   scattering_length(s.material1.z):1000000 scattering_distance:2299036.75 
+    propagate_to_boundary  u_OpAbsorption:0.449979275   absorption_length(s.material1.y):1000000 absorption_distance:798553.75 
+    propagate_at_boundary  u_OpBoundary_DiDiTransCoeff:0.966132045  reflect:1   TransCoeff:   0.93849  c2c2:    0.9997 tir:0  post (   17.8205   -10.0368    99.8400     2.3958) pol (   -0.0000    -1.0000    -0.0069 ) 
+    WITH_ALIGN_DEV_DEBUG photon_id:0 bounce:0 
+    propagate_to_boundary  u_OpBoundary:0.473604798 speed:165.028061 
+    propagate_to_boundary  u_OpRayleigh:0.936912239   scattering_length(s.material1.z):1000000 scattering_distance:65165.6641 
+    propagate_to_boundary  u_OpAbsorption:0.12515381   absorption_length(s.material1.y):1000000 absorption_distance:2078211.88 
+    propagate_at_boundary  u_OpBoundary_DiDiTransCoeff:0.460799575  reflect:0   TransCoeff:   0.93849  c2c2:    0.9997 tir:0  post (   17.8205    -4.4435  -100.0928     3.6078) pol (    0.0000    -0.9996    -0.0280 ) 
+    WITH_ALIGN_DEV_DEBUG photon_id:0 bounce:0 
+    propagate_to_boundary  u_OpBoundary:0.0623171441 speed:299.79245 
+    propagate_to_boundary  u_OpRayleigh:0.466440886   scattering_length(s.material1.z):1000000 scattering_distance:762624 
+    propagate_to_boundary  u_OpAbsorption:0.761280477   absorption_length(s.material1.y):1e+09 absorption_distance:272753440 
+    propagate_at_surface   u_OpBoundary_DiDiReflectOrTransmit:        0.865202129 
+    propagate_at_surface   u_OpBoundary_DoAbsorption:   0.653514087 
+     WITH_ALIGN_DEV_DEBUG psave (17.8204956 7.95593214 -455.167175 4.79290915) ( 1, 0, 67305985, 7296 ) 
+    [blyth@localhost issues]$ 
+
+
+::
+
+    In [1]: ab.aselhis = "TO BT BR BT SA"
+
+    In [2]: a.rpost()
+    Out[2]: 
+    A()sliced
+    A([[[  17.8196,   -8.6453, -455.0674,    0.    ],
+        [  17.8196,   -8.6453, -100.1655,    1.1839],
+        [  17.8196,  -10.0374,   99.8453,    2.3959],
+        [  17.8196,   -4.441 , -100.0959,    3.6079],
+        [  17.8196,    7.9492, -455.1648,    4.7929]]])
+
 
 
 
@@ -114,6 +231,8 @@ ISSUE : small numbers of photons with discrepant polarization
 ------------------------------------------------------------------
 
 * what is special about these photons ? on the edge of critical angle or smth ?
+
+  * they are very close to normal incidence 
 
 
 LV:13 sTarget0x4bd4340
@@ -228,10 +347,7 @@ to the bottom pole of the sphere and the cylinder cap.
 
 
 
-
-
 Huh pindexlog empty for 8511::
-
 
     blyth@localhost location]$ l ox_*
     -rw-rw-r--. 1 blyth blyth 3201 Jun 23 23:04 ox_6368.log

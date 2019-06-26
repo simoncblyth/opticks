@@ -951,7 +951,11 @@ CSG.kwa = dict(poly="IM",resolution=20, verbosity=0, ctrl=0, containerscale=3.0,
 container = CSG("box", emit=-1, boundary='Rock//perfectAbsorbSurface/Vacuum', container=1 )  # no param, container=1 switches on auto-sizing
 
 box = CSG("box3", param=[300,300,200,0], emit=0,  boundary="Vacuum///GlassSchottF2"  )
-box.transform = rotate([1,0,0,45])
+
+#degrees = 45
+#degrees = 0.135
+degrees = 1
+box.transform = rotate([1,0,0,degrees])
 
 CSG.Serialize([container, box], args )
 EOP
@@ -992,9 +996,9 @@ args = opticks_main(csgname="${FUNCNAME/--}", autoemitconfig=autoemitconfig)
 #emitconfig = "photons:1,wavelength:380,time:0.2,posdelta:0.1,sheetmask:0x1,umin:0.25,umax:0.75,vmin:0.25,vmax:0.75" 
 emitconfig = "photons:100000,wavelength:380,time:0.0,posdelta:0.1,sheetmask:0x1,umin:0.45,umax:0.55,vmin:0.45,vmax:0.55" 
 
-CSG.kwa = dict(poly="IM",resolution=20, verbosity=0, ctrl=0, containerscale=3.0, emitconfig=emitconfig  )
+CSG.kwa = dict(poly="IM",resolution=20, verbosity=0, ctrl=0, containerscale=3.0, containerautosize=1, emitconfig=emitconfig  )
 
-container = CSG("box", emit=-1, boundary='Rock//perfectAbsorbSurface/Vacuum', container=1 )  # no param, container=1 switches on auto-sizing
+container = CSG("box", emit=-1, boundary='Rock//perfectAbsorbSurface/Vacuum', container=1 ) 
 
 box = CSG("box3", param=[300,300,200,0], emit=0,  boundary="Vacuum///GlassSchottF2"  )
 
@@ -1019,6 +1023,11 @@ tboolean-;tboolean-box --okg4 --testauto
     PASS
 tboolean-;tboolean-box --okg4 
     PASS
+
+
+
+It now seems necessary for containerautosize=1 to be set 
+for containers with no param.
 
 
 CSG.Serialize writes separate directories for each tree containing src buffers::

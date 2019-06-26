@@ -139,6 +139,7 @@ struct SYSRAP_API PLOG
     int         maxFiles ; 
 
     static plog::Severity Delta(plog::Severity level_, int delta); 
+    static plog::Severity EnvLevel( const char* key, const char* fallback); 
 
     PLOG(int argc, char** argv, const char* fallback="VERBOSE", const char* prefix=NULL );
 
@@ -161,6 +162,7 @@ struct SYSRAP_API PLOG
     static const char* _name(int level);
     static const char* _logpath_parse_problematic(int argc, char** argv);
     static const char* _logpath();
+
 
     static PLOG* instance ; 
 };

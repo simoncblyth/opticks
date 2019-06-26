@@ -52,7 +52,7 @@
 #include "PLOG.hh"
 
 
-const plog::Severity GGeoTest::LEVEL = debug ; 
+const plog::Severity GGeoTest::LEVEL = PLOG::EnvLevel("GGeoTest", "DEBUG") ; 
 
 const char* GGeoTest::UNIVERSE_LV = "UNIVERSE_LV" ; 
 const char* GGeoTest::UNIVERSE_PV = "UNIVERSE_PV" ; 
@@ -381,6 +381,8 @@ Proxied in geometry is centered
 
 void GGeoTest::prepareMeshes()
 {
+    LOG(LEVEL) << "[" ; 
+
     assert(m_csgpath);
     assert(m_csglist);
     //unsigned numTree = m_csglist->getNumTrees() ;
@@ -400,12 +402,12 @@ void GGeoTest::prepareMeshes()
         m_meshlib->add(mesh); 
     }
 
-    if(m_dbggeotest) 
-        LOG(info)  
-            << " csgpath " << m_csgpath 
-            << " m_numtree " << m_numtree 
-            << " verbosity " << m_verbosity
-            ;
+    LOG(LEVEL)  
+        << "]"  
+        << " csgpath " << m_csgpath 
+        << " m_numtree " << m_numtree 
+        << " verbosity " << m_verbosity
+        ;
 }
 
 /**
@@ -434,13 +436,12 @@ GMesh* GGeoTest::importMeshViaProxy(NCSG* proxy)
 
     assert( spec ); 
 
-    if(m_dbggeotest) 
-        LOG(info) 
-            << "["
-            << " proxy.index " << index
-            << " proxy.spec " << spec 
-            << " proxyLV " << lvIdx 
-            ; 
+    LOG(LEVEL) 
+        << "["
+        << " proxy.index " << index
+        << " proxy.spec " << spec 
+        << " proxyLV " << lvIdx 
+        ; 
 
     GMesh* mesh = m_basemeshlib->getMeshSimple(lvIdx); 
     assert( mesh ); 
@@ -466,6 +467,7 @@ GMesh* GGeoTest::importMeshViaProxy(NCSG* proxy)
 
     mesh->applyCentering();        // applies to both GMesh and NCSG instances
 
+    LOG(LEVEL) << "]" ; 
     return mesh ;  
 }
 
@@ -514,12 +516,11 @@ void GGeoTest::adjustContainer()
         updateWithProxiedSolid() ;    
     }
 
-
     LOG(LEVEL)
         << " m_numtree " << m_numtree
         ; 
 
-    m_csglist->adjustContainerSize();  
+    m_csglist->update();  
 
     // Find the adjusted analytic container (NCSG) and create corresponding 
     // triangulated geometry (GMesh) to replace the old one
@@ -570,6 +571,8 @@ HMM : a more "together" way of doing this would be better
 
 void GGeoTest::updateWithProxiedSolid()
 {
+    LOG(LEVEL) << "[" ; 
+
     bool has_proxy = m_csglist->hasProxy() ; 
     assert( has_proxy ); 
 
@@ -578,15 +581,13 @@ void GGeoTest::updateWithProxiedSolid()
 
     unsigned proxy_index = m_csglist->findProxyIndex();  
 
-    if(m_dbggeotest) 
-    {
-        LOG(LEVEL) 
-            << " proxy_index " << proxy_index
-            ;
-
-    }
-
     unsigned num_mesh = m_meshlib->getNumMeshes(); 
+
+    LOG(LEVEL) 
+        << " proxy_index " << proxy_index
+        << " num_mesh " << num_mesh 
+        ;
+
     assert( proxy_index < num_mesh  ) ; 
 
     GMesh* viaproxy = m_meshlib->getMeshSimple(proxy_index) ;
@@ -595,9 +596,18 @@ void GGeoTest::updateWithProxiedSolid()
     unsigned index = viaproxy->getIndex();  
     assert( index == proxy_index ); 
 
+    nbbox bb = replacement_solid->bbox(); 
+
+    LOG(LEVEL) 
+        << " replacement_solid "  
+        << bb.desc()
+        ; 
+
     m_csglist->setTree( index, const_cast<NCSG*>(replacement_solid) ); 
     // ^^^ awkward reachback : perhaps update this on proxying 
 
+
+    LOG(LEVEL) << "]" ; 
 }
 
 

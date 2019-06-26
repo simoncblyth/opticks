@@ -23,7 +23,7 @@
 #include "PLOG.hh"
 
 
-const plog::Severity CGenerator::LEVEL = debug ; 
+const plog::Severity CGenerator::LEVEL = PLOG::EnvLevel("CGenerator", "DEBUG") ; 
 
 
 CGenerator::CGenerator(OpticksGen* gen, CG4* g4)
@@ -178,7 +178,7 @@ Hmm : what are the inputGensteps for with inputPhotons ? Placeholder ?
 
 CSource* CGenerator::initInputPhotonSource()
 {
-    LOG(info) << "[" ; 
+    LOG(LEVEL) << "[" ; 
     NPY<float>* inputPhotons = m_gen->getInputPhotons();
     NPY<float>* inputGensteps = m_gen->getInputGensteps();
     GenstepNPY* gsnpy = m_gen->getGenstepNPY();
@@ -196,7 +196,7 @@ CSource* CGenerator::initInputPhotonSource()
     setNumPhotonsPerG4Event( cips->getNumPhotonsPerG4Event() );
 
     CSource* source  = static_cast<CSource*>(cips); 
-    LOG(info) << "]" ; 
+    LOG(LEVEL) << "]" ; 
     return source ; 
 }
 
