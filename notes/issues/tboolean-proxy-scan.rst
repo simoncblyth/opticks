@@ -45,8 +45,9 @@ rejigged shortcuts moving the detailed options within tboolean-lv
 TODO
 ----------
 
-* combine RC of up to 8 sections into the process RC  
-* try non-aligned with --relectcheat 
+
+* see if can confirm the leverarm explanation using g4lldb.py -DD option  
+
 * make analysis selection more lazy, its getting slow making 
   devation comparisons for tables with many categories
 

@@ -1,5 +1,7 @@
 #include "CMaker.hh"
 
+#include "BStr.hh"
+
 // npy-
 #include "NGLM.hpp"
 #include "NGLMExt.hpp"
@@ -17,6 +19,7 @@
 #include "GCSG.hh"
 
 // g4-
+#include "G4Orb.hh"
 #include "G4Sphere.hh"
 #include "G4Box.hh"
 #include "G4Tubs.hh"
@@ -359,6 +362,10 @@ G4VSolid* CMaker::ConvertConvexPolyhedron(const nnode* node) // static
 
 
 
+
+
+
+
 G4VSolid* CMaker::ConvertPrimitive(const nnode* node) // static
 {
     /*
@@ -376,6 +383,7 @@ G4VSolid* CMaker::ConvertPrimitive(const nnode* node) // static
     glm::vec3 e_axes ;
     glm::vec2 e_zcut ; 
     glm::mat4 e_trs_unscaled ; 
+
     if( is_ellipsoid )
     {
         node->reconstruct_ellipsoid( e_axes, e_zcut, e_trs_unscaled ) ;   
@@ -405,6 +413,7 @@ G4VSolid* CMaker::ConvertPrimitive(const nnode* node) // static
         }
         else
         {
+#ifdef OLD_ZSPHERE
             nzsphere* n = (nzsphere*)node ; 
 
             double innerRadius = 0. ;
@@ -428,7 +437,14 @@ G4VSolid* CMaker::ConvertPrimitive(const nnode* node) // static
             assert( endTheta <= pi && endTheta >= 0.);
 
             G4Sphere* sp = new G4Sphere( name, innerRadius, outerRadius, startPhi, deltaPhi, startTheta, deltaTheta);  
+
             result = sp ; 
+#else
+            G4VSolid* zs = ConvertZSphere( node ); 
+            result = zs ; 
+#endif
+
+
         }
     }
     else if(node->type == CSG_BOX || node->type == CSG_BOX3)
@@ -576,6 +592,36 @@ G4VSolid* CMaker::ConvertPrimitive(const nnode* node) // static
         assert(0);
     }
     return result ; 
+}
+
+
+G4VSolid* CMaker::ConvertZSphere(const nnode* node) // static
+{
+    nzsphere* n = (nzsphere*)node ; 
+    const char* name = node->label ;
+
+    float r = n->radius() ;
+    float z1 = n->zmin(); 
+    float z2 = n->zmax(); 
+    float dz = z2 - z1 ; 
+    float zm = (z1+z2)/2.f ;  
+
+    assert( z2 > z1 && fabs(z2) <= r && fabs(z1) <= r ); 
+
+    G4Orb* orb = new G4Orb( BStr::concat(name,"_orb",NULL) , r );  
+
+    glm::vec3 halfside(r,r,dz/2.f ); 
+    G4Box* box = new G4Box( BStr::concat(name,"_box",NULL), halfside.x, halfside.y, halfside.z );  
+    
+    G4VSolid* left = orb ; 
+    G4VSolid* right = box ; 
+
+    glm::mat4 t_right(nglmext::make_translate(0.f, 0.f, zm )); 
+    G4Transform3D* rtransform = ConvertTransform(t_right);
+
+    G4IntersectionSolid* iso = new G4IntersectionSolid( name, left, right, *rtransform );
+
+    return iso ; 
 }
 
 

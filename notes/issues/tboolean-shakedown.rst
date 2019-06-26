@@ -24,8 +24,8 @@ g4 : TO NA MI : FIXED
 
 
 
-zsphere1 : different geometry ! translation issue ?
-------------------------------------------------------
+zsphere1 : different geometry ! translation issue ? FIXED
+-----------------------------------------------------------------
 
 Open Opticks viz in two sessions and start animations in each, shows
 clearly different geometry::
@@ -41,7 +41,9 @@ clearly different geometry::
 
 
 HOW TO PROCEED : intersect full G4Orb with a suitable box to get the 
-z-slicing that Opticks zsphere is   
+z-slicing that Opticks zsphere is intended to be   
+
+* fixed with CMaker::ConvertZSphere
 
 
 
@@ -51,9 +53,11 @@ CG4 CRandomEngine::flat processName
 * calls to G4UniformRand which get routed via engine expected to be done by a process
 * probably everything that does not use emit=-1 or emit=1 will show this
 
-* using emitters and input photons is really convenient for debugging, so 
-  probably simplest to just configure emitters 
+* using emitters and input photons is really convenient for debugging, because of 
+  the masked photon support allowing to rerun single (or a few) photons : so  
+  probably simplest to just configure emitters for the tests 
 
+* nevertheless will have to solve this for testing of genstep running 
 
 ::
 
