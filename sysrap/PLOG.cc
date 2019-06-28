@@ -37,6 +37,18 @@ plog::Severity PLOG::Delta(plog::Severity level_, int delta)
     return (plog::Severity)level ; 
 }
 
+/**
+PLOG::EnvLevel
+----------------
+
+Used to make static logging LEVEL initializers sensitive to envvars
+holding logging level strings::
+
+    const plog::Severity ClassName::LEVEL = PLOG::EnvLevel("ClassName", "DEBUG") ;  
+
+Static initializers run very early, prior to logging being setup.
+
+**/
 
 plog::Severity PLOG::EnvLevel( const char* key, const char* fallback)
 {
@@ -45,11 +57,13 @@ plog::Severity PLOG::EnvLevel( const char* key, const char* fallback)
 
     if(strcmp(level, fallback) != 0)
     {
-        LOG(info) 
+        std::cout 
+            << "PLOG::EnvLevel"
             << " adjusting loglevel by envvar  "
             << " key " << key  
             << " level " << level
             << " fallback " << fallback
+            << std::endl 
             ;     
     }
     return severity ; 

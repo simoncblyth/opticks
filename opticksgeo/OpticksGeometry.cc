@@ -23,13 +23,6 @@
 #include "GGeoLib.hh"
 #include "GSurfaceLib.hh"
 
-//#include "GBndLib.hh"
-//#include "GMaterialLib.hh"
-//#include "GPmt.hh"
-//#include "GParts.hh"
-//#include "GNodeLib.hh"
-
-
 #include "GMergedMesh.hh"
 #include "GGeo.hh"
 
@@ -47,7 +40,7 @@
 
 #include "PLOG.hh"
 
-const plog::Severity OpticksGeometry::LEVEL = debug ; 
+const plog::Severity OpticksGeometry::LEVEL = PLOG::EnvLevel("OpticksGeometry", "DEBUG") ; 
 
 
 
@@ -111,6 +104,14 @@ void OpticksGeometry::loadGeometry()
 }
 
 
+/**
+OpticksGeometry::loadGeometryBase
+------------------------------------
+
+
+
+**/
+
 void OpticksGeometry::loadGeometryBase()
 {
     LOG(LEVEL) << "[" ; 
@@ -129,7 +130,7 @@ void OpticksGeometry::loadGeometryBase()
     std::string meshversion = m_fcfg->getMeshVersion() ;;
     if(!meshversion.empty())
     {
-        LOG(warning) << "OpticksGeometry::loadGeometry using debug meshversion " << meshversion ;  
+        LOG(error) << "using debug meshversion " << meshversion ;  
         m_ggeo->getGeoLib()->setMeshVersion(meshversion.c_str());
     }
 

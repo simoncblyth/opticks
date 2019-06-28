@@ -43,7 +43,6 @@ Staged removal:
 
 1. make them optionals, remove from standard list with macros to prevent compilation of wrappers  
 2. migrate them with history into another repo, perhaps named "OpticksMisc" and delete them from Opticks 
- 
 
 
 Complications
@@ -52,5 +51,37 @@ Complications
 * need opticksgdml repo to take over from opticksdata
 * old geometry workflow still used as OKTest etc default, need an equivalent in new way using 
   sample gdml files in opticksgdml as the input  
+
+
+Reminder on Legacy Workflow 
+-----------------------------
+
+GScene is only used in legacy geometry workflow. It is intended 
+for legacy workflow and GScene to be eliminated, 
+but thats going to require major surgery : so for now have to live with it.
+
+Legacy workflow has separate triangulated and analytic geometry routes, whereas
+the direct workflow does these together.
+
+Triangulated
+   
+    * Simultaneous G4DAE export of COLLADA DAE+GDML from Geant4 in memory geometry
+    * import of G4DAE COLLADA with assimprap populating GGeo
+
+Analytic 
+
+    * python parsing of GDML writing to a transport GLTF format with binary .npy "extras" 
+      destined to become NCSG 
+
+
+
+To see where GScene comes in::
+
+    GScene=ERROR OKTest --xanalytic --gltf 1
+        ## GScene does very little postcache, it does its work precache 
+
+    GScene=ERROR GGeoLib=ERROR OKTest --xanalytic --gltf 1
+        ## and and the results get loaded via GGeoLib 
+
 
 

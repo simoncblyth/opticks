@@ -152,7 +152,7 @@ geometry.
 **/
 
 
-const plog::Severity OGeo::LEVEL = debug ; 
+const plog::Severity OGeo::LEVEL = PLOG::EnvLevel("OGeo", "DEBUG") ; 
 
 
 const char* OGeo::ACCEL = "Sbvh" ; 
@@ -234,7 +234,7 @@ void OGeo::convert()
 
 void OGeo::convertMergedMesh(unsigned i)
 {
-    LOG(info) << "( " << i  ; 
+    LOG(LEVEL) << "( " << i  ; 
     m_mmidx = i ; 
 
     GMergedMesh* mm = m_geolib->getMergedMesh(i); 
@@ -266,7 +266,7 @@ void OGeo::convertMergedMesh(unsigned i)
         numInstances = assembly->getChildCount() ; 
         m_top->addChild(assembly); 
     }
-    LOG(info) << ") " << i << " numInstances " << numInstances ; 
+    LOG(LEVEL) << ") " << i << " numInstances " << numInstances ; 
 }
 
 optix::GeometryGroup OGeo::makeGlobalGeometryGroup(GMergedMesh* mm)
@@ -298,7 +298,7 @@ optix::Group OGeo::makeRepeatedAssembly(GMergedMesh* mm, bool raylod )
     unsigned mmidx = mm->getIndex(); 
     unsigned imodulo = m_ok->getInstanceModulo( mmidx ); 
 
-    LOG(info) 
+    LOG(LEVEL) 
          << " mmidx " << mmidx 
          << " imodulo " << imodulo
          ;
@@ -318,12 +318,12 @@ optix::Group OGeo::makeRepeatedAssembly(GMergedMesh* mm, bool raylod )
     assert(numIdentity % numTransforms == 0 && "expecting numIdentity to be integer multiple of numTransforms"); 
     unsigned int numSolids = numIdentity/numTransforms ;
 
-    LOG(verbose) << "OGeo::makeRepeatedGroup"
-              << " numTransforms " << numTransforms 
-              << " numIdentity " << numIdentity  
-              << " numSolids " << numSolids  
-              << " islice " << islice->description() 
-              ; 
+    LOG(LEVEL)
+        << " numTransforms " << numTransforms 
+        << " numIdentity " << numIdentity  
+        << " numSolids " << numSolids  
+        << " islice " << islice->description() 
+        ; 
 
 
     OGeometry* omm[2] ; 
@@ -445,9 +445,9 @@ optix::Acceleration OGeo::makeAcceleration(const char* accel, bool accel_props)
 {
 
     LOG(debug)
-              << " accel " << accel 
-              << " accel_props " << accel_props
-              ; 
+        << " accel " << accel 
+        << " accel_props " << accel_props
+        ; 
  
     optix::Acceleration acceleration = m_context->createAcceleration(accel);
     if(accel_props == true)
@@ -460,10 +460,10 @@ optix::Acceleration OGeo::makeAcceleration(const char* accel, bool accel_props)
 
 optix::Material OGeo::makeMaterial()
 {
-    LOG(verbose) << "OGeo::makeMaterial " 
-               << " radiance_ray " << OContext::e_radiance_ray  
-               << " propagate_ray " << OContext::e_propagate_ray  
-               ; 
+    LOG(verbose) 
+        << " radiance_ray " << OContext::e_radiance_ray  
+        << " propagate_ray " << OContext::e_propagate_ray  
+        ; 
 
     optix::Material material = m_context->createMaterial();
     material->setClosestHitProgram(OContext::e_radiance_ray, m_ocontext->createProgram("material1_radiance.cu", "closest_hit_radiance"));
@@ -542,7 +542,7 @@ OGeometry* OGeo::makeOGeometry(GMergedMesh* mergedmesh, unsigned lod)
     }
     
 
-    LOG(info) << "ugeocode [" << (char)ugeocode << "]" ; 
+    LOG(LEVEL) << "ugeocode [" << (char)ugeocode << "]" ; 
 
     if(ugeocode == OpticksConst::GEOCODE_TRIANGULATED )
     {
@@ -618,16 +618,16 @@ optix::Geometry OGeo::makeAnalyticGeometry(GMergedMesh* mm, unsigned lod)
 
     if(pts->getPrimBuffer() == NULL)
     {
-        LOG(debug) << "( GParts::close " ; 
+        LOG(LEVEL) << "( GParts::close " ; 
         pts->close();
-        LOG(debug) << ") GParts::close " ; 
+        LOG(LEVEL) << ") GParts::close " ; 
     }
     else
     {
-        LOG(debug) << " skip GParts::close " ; 
+        LOG(LEVEL) << " skip GParts::close " ; 
     }
     
-    LOG(info) << "mm " << mm->getIndex() 
+    LOG(LEVEL) << "mm " << mm->getIndex() 
               << " verbosity: " << m_verbosity   
               << ( dbgmm ? " --dbgmm " : " " )
               << ( dbganalytic ? " --dbganalytic " : " " )
@@ -649,7 +649,7 @@ optix::Geometry OGeo::makeAnalyticGeometry(GMergedMesh* mm, unsigned lod)
     NPY<int>*       primBuf = pts->getPrimBuffer(); assert(primBuf && primBuf->hasShape(-1,4));      // prim
 
     NPY<unsigned>*  idBuf = mm->getAnalyticInstancedIdentityBuffer(); assert(idBuf && ( idBuf->hasShape(-1,4) || idBuf->hasShape(-1,1,4)));
-     // PmtInBox yielding -1,1,4 ?
+     // PmtIddnBox yielding -1,1,4 ?
 
     unsigned numPrim = primBuf->getNumItems();
     unsigned numPart = partBuf->getNumItems();
@@ -664,15 +664,16 @@ optix::Geometry OGeo::makeAnalyticGeometry(GMergedMesh* mm, unsigned lod)
         bool match = numPrim == numVolumes ;
         if(!match)
         {
-            LOG(fatal) << " NodeTree : MISMATCH (numPrim != numVolumes) "
-                       << " (this happens when using --csgskiplv) " 
-                       << " numVolumes " << numVolumes 
-                       << " numVolumesSelected " << numVolumesSelected 
-                       << " numPrim " << numPrim 
-                       << " numPart " << numPart 
-                       << " numTran " << numTran 
-                       << " numPlan " << numPlan 
-                       ; 
+            LOG(fatal) 
+                << " NodeTree : MISMATCH (numPrim != numVolumes) "
+                << " (this happens when using --csgskiplv) " 
+                << " numVolumes " << numVolumes 
+                << " numVolumesSelected " << numVolumesSelected 
+                << " numPrim " << numPrim 
+                << " numPart " << numPart 
+                << " numTran " << numTran 
+                << " numPlan " << numPlan 
+                ; 
         }
         //assert( match && "NodeTree Sanity check failed " );
         // hmm tgltf-;tgltf-- violates this ?
@@ -689,9 +690,9 @@ optix::Geometry OGeo::makeAnalyticGeometry(GMergedMesh* mm, unsigned lod)
 
     if(m_verbosity > 2)
     LOG(info) 
-                 << stat.desc()
-                 << " analytic_version " << analytic_version
-                 ;
+        << stat.desc()
+        << " analytic_version " << analytic_version
+        ;
 
     optix::Geometry geometry = m_context->createGeometry();
 
@@ -840,15 +841,15 @@ optix::Geometry OGeo::makeTriangulatedGeometry(GMergedMesh* mm, unsigned lod)
 
     unsigned numITransforms = mm->getNumITransforms();
 
-    LOG(debug) 
-              << " lod " << lod
-              << " mmIndex " << mm->getIndex() 
-              << " numFaces (PrimitiveCount) " << numFaces
-              << " numFaces0 (Outermost) " << numFaces0
-              << " uFaces " << uFaces
-              << " numVolumes " << numVolumes
-              << " numITransforms " << numITransforms 
-              ;
+    LOG(LEVEL) 
+        << " lod " << lod
+        << " mmIndex " << mm->getIndex() 
+        << " numFaces (PrimitiveCount) " << numFaces
+        << " numFaces0 (Outermost) " << numFaces0
+        << " uFaces " << uFaces
+        << " numVolumes " << numVolumes
+        << " numITransforms " << numITransforms 
+        ;
              
     GBuffer* id = mm->getAppropriateRepeatedIdentityBuffer();
     optix::Buffer identityBuffer = createInputBuffer<optix::uint4>( id, RT_FORMAT_UNSIGNED_INT4, 1 , "identityBuffer"); 
@@ -907,19 +908,19 @@ optix::Buffer OGeo::createInputBuffer(GBuffer* buf, RTformat format, unsigned in
 
 
    if(m_verbosity > 2)
-   LOG(info)<<"OGeo::createInputBuffer [GBuffer]"
-            << " fmt " << std::setw(20) << OFormat::FormatName(format)
-            << " name " << std::setw(20) << name
-            << " bytes " << std::setw(8) << bytes
-            << " bit " << std::setw(7) << bit 
-            << " nit " << std::setw(7) << nit 
-            << " nel " << std::setw(3) << nel 
-            << " mul " << std::setw(3) << mul 
-            << " fold " << std::setw(3) << fold 
-            << " sizeof(T) " << std::setw(3) << sizeof(T)
-            << " sizeof(T)*nit " << std::setw(3) << sizeof(T)*nit
-            << " id " << std::setw(3) << buffer_id 
-            ;
+   LOG(info)
+       << " fmt " << std::setw(20) << OFormat::FormatName(format)
+       << " name " << std::setw(20) << name
+       << " bytes " << std::setw(8) << bytes
+       << " bit " << std::setw(7) << bit 
+       << " nit " << std::setw(7) << nit 
+       << " nel " << std::setw(3) << nel 
+       << " mul " << std::setw(3) << mul 
+       << " fold " << std::setw(3) << fold 
+       << " sizeof(T) " << std::setw(3) << sizeof(T)
+       << " sizeof(T)*nit " << std::setw(3) << sizeof(T)*nit
+       << " id " << std::setw(3) << buffer_id 
+       ;
 
    assert(sizeof(T)*nit == buf->getNumBytes() );
    assert(nel == mul/fold );
@@ -970,21 +971,21 @@ optix::Buffer OGeo::createInputBuffer(NPY<S>* buf, RTformat format, unsigned int
    bool from_gl = buffer_id > -1 && reuse ;
 
    if(m_verbosity > 3 || strcmp(name,"tranBuffer") == 0)
-   LOG(info)<<"OGeo::createInputBuffer [NPY<T>] "
-            << " sh " << buf->getShapeString()
-            << " fmt " << std::setw(20) << OFormat::FormatName(format)
-            << " name " << std::setw(20) << name
-            << " bytes " << std::setw(8) << bytes
-            << " bit " << std::setw(7) << bit 
-            << " nit " << std::setw(7) << nit 
-            << " nel " << std::setw(3) << nel 
-            << " mul " << std::setw(3) << mul 
-            << " fold " << std::setw(3) << fold 
-            << " sizeof(T) " << std::setw(3) << sizeof(T)
-            << " sizeof(T)*nit " << std::setw(3) << sizeof(T)*nit
-            << " id " << std::setw(3) << buffer_id 
-            << " from_gl " << from_gl 
-            ;
+   LOG(info)
+       << " sh " << buf->getShapeString()
+       << " fmt " << std::setw(20) << OFormat::FormatName(format)
+       << " name " << std::setw(20) << name
+       << " bytes " << std::setw(8) << bytes
+       << " bit " << std::setw(7) << bit 
+       << " nit " << std::setw(7) << nit 
+       << " nel " << std::setw(3) << nel 
+       << " mul " << std::setw(3) << mul 
+       << " fold " << std::setw(3) << fold 
+       << " sizeof(T) " << std::setw(3) << sizeof(T)
+       << " sizeof(T)*nit " << std::setw(3) << sizeof(T)*nit
+       << " id " << std::setw(3) << buffer_id 
+       << " from_gl " << from_gl 
+       ;
 
 /*
 
@@ -1058,14 +1059,14 @@ optix::Buffer OGeo::CreateInputUserBuffer(optix::Context& ctx, NPY<T>* src, unsi
     unsigned size = numBytes/elementSize ; 
 
     if(verbosity > 2)
-    LOG(info) << "OGeo::CreateInputUserBuffer"
-              << " name " << name
-              << " ctxname " << ctxname_informational
-              << " src shape " << src->getShapeString()
-              << " numBytes " << numBytes
-              << " elementSize " << elementSize
-              << " size " << size 
-              ;
+    LOG(info) 
+        << " name " << name
+        << " ctxname " << ctxname_informational
+        << " src shape " << src->getShapeString()
+        << " numBytes " << numBytes
+        << " elementSize " << elementSize
+        << " size " << size 
+        ;
 
     optix::Buffer buffer = ctx->createBuffer( RT_BUFFER_INPUT );
 

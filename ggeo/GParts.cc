@@ -38,7 +38,7 @@
 #include "PLOG.hh"
 
 
-const plog::Severity GParts::LEVEL = debug ; 
+const plog::Severity GParts::LEVEL = PLOG::EnvLevel("GParts", "DEBUG") ; 
 
 const char* GParts::CONTAINING_MATERIAL = "CONTAINING_MATERIAL" ;  
 const char* GParts::SENSOR_SURFACE = "SENSOR_SURFACE" ;  
@@ -192,9 +192,14 @@ GMergedMesh::mergeVolumeAnalytic
 
 GParts* GParts::Create(const GPts* pts, const std::vector<const NCSG*>& solids, unsigned verbosity) // static
 {
+    LOG(LEVEL) << "[  deferred creation from GPts" ; 
+
     GParts* com = new GParts() ; 
 
     unsigned num_pt = pts->getNumPt(); 
+
+    LOG(LEVEL) << " num_pt " << num_pt ; 
+
     for(unsigned i=0 ; i < num_pt ; i++)
     {
         const GPt* pt = pts->getPt(i); 
@@ -217,6 +222,7 @@ GParts* GParts::Create(const GPts* pts, const std::vector<const NCSG*>& solids, 
           
         com->add( parts, verbosity ); 
     }
+    LOG(LEVEL) << "]" ; 
     return com ; 
 }
 
@@ -414,7 +420,7 @@ Contrast this with "solid level quantities" which are related just to the distin
 shapes of the solids.
 
 In general it is better for information to be mesh or solid level 
-where possible because there are far fewer distinc meshes/solids in a geometry 
+where possible because there are far fewer distinct meshes/solids in a geometry 
 that there are nodes in the structural tree.
 
 Because GParts requires the boundary spec are forced to create it 
@@ -1183,13 +1189,7 @@ void GParts::close()
     assert(!isClosed()); 
     m_closed = true ; 
 
-
-    //if(m_verbosity > 1)
-    LOG(LEVEL) 
-          << "START "
-          << " verbosity " << m_verbosity 
-          ; 
-
+    LOG(LEVEL) << "[" ; 
     registerBoundaries();
 
     if(!m_loaded)
@@ -1197,15 +1197,10 @@ void GParts::close()
         makePrimBuffer(); 
     }
     
-
-    if(m_verbosity > 1)
     dumpPrimBuffer(); 
 
-    //if(m_verbosity > 1)
-    LOG(LEVEL) 
-          << "DONE " 
-          << " verbosity " << m_verbosity 
-          ; 
+    LOG(LEVEL) << "]" ; 
+
 }
 
 void GParts::registerBoundaries() // convert boundary spec names into integer codes using bndlib
@@ -1367,17 +1362,6 @@ void GParts::makePrimBuffer()
 {
     unsigned int num_prim = 0 ; 
 
-    if(m_verbosity > 0)
-    LOG(info) 
-        << " verbosity " << m_verbosity
-        << " isPartList " << isPartList()
-        << " isNodeTree " << isNodeTree()
-        << " parts_per_prim.size " << m_parts_per_prim.size()
-        << " part_per_add.size " << m_part_per_add.size()
-        << " tran_per_add.size " << m_tran_per_add.size()
-        << " plan_per_add.size " << m_plan_per_add.size()
-        ; 
-
     if(isPartList())
     {
         reconstructPartsPerPrim();
@@ -1396,9 +1380,10 @@ void GParts::makePrimBuffer()
     }
 
 
-    if(m_verbosity > 2)
-    LOG(info) 
+    LOG(LEVEL) 
         << " verbosity " << m_verbosity
+        << " isPartList " << isPartList()
+        << " isNodeTree " << isNodeTree()
         << " num_prim " << num_prim
         << " parts_per_prim.size " << m_parts_per_prim.size()
         << " part_per_add.size " << m_part_per_add.size()
@@ -1417,11 +1402,9 @@ void GParts::makePrimBuffer()
         unsigned n = 0 ; 
         for(unsigned i=0 ; i < num_prim ; i++)
         {
-            unsigned int tran_for_prim = m_tran_per_add[i] ; 
-            unsigned int plan_for_prim = m_plan_per_add[i] ; 
-
-            //unsigned int parts_for_prim = m_parts_per_prim[i] ; 
-            unsigned int parts_for_prim = m_part_per_add[i] ; 
+            unsigned tran_for_prim = m_tran_per_add[i] ; 
+            unsigned plan_for_prim = m_plan_per_add[i] ; 
+            unsigned parts_for_prim = m_part_per_add[i] ; 
 
             nivec4& pri = *(priminfo+n) ;
 
@@ -1430,8 +1413,7 @@ void GParts::makePrimBuffer()
             pri.z = tran_offset ; 
             pri.w = plan_offset ; 
 
-            if(m_verbosity > 2)
-            LOG(info) << "priminfo " << pri.desc() ;       
+            LOG(LEVEL) << "(nodeTree)priminfo " << pri.desc() ;       
 
             part_offset += parts_for_prim ; 
             tran_offset += tran_for_prim ; 
@@ -1446,19 +1428,17 @@ void GParts::makePrimBuffer()
         typedef std::map<unsigned int, unsigned int> UU ; 
         for(UU::const_iterator it=m_parts_per_prim.begin() ; it != m_parts_per_prim.end() ; it++)
         {
-            //unsigned int node_index = it->first ; 
-            unsigned int parts_for_prim = it->second ; 
+            //unsigned node_index = it->first ; 
+            unsigned parts_for_prim = it->second ; 
 
             nivec4& pri = *(priminfo+n) ;
 
             pri.x = part_offset ; 
             pri.y = m_primflag == CSG_FLAGPARTLIST ? -parts_for_prim : parts_for_prim ;
             pri.z = 0 ; 
-            //pri.w = m_primflag ; 
             pri.w = 0 ; 
 
-            if(m_verbosity > 2)
-            LOG(info) << "GParts::makePrimBuffer(partList) priminfo " << pri.desc() ;       
+            LOG(LEVEL) << "(partList) priminfo " << pri.desc() ;       
 
             part_offset += parts_for_prim ; 
             n++ ; 
@@ -1550,20 +1530,32 @@ void GParts::dumpPrimBuffer(const char* msg)
     if(!primBuffer) return ; 
     if(!partBuffer) return ; 
 
-    if(m_verbosity > 2 )
-    LOG(info) 
+
+    unsigned num_prim = primBuffer->getNumItems() ; 
+    unsigned num_part = partBuffer->getNumItems() ;  
+
+    LOG(LEVEL) 
         << msg 
         << " verbosity " << m_verbosity
+        << " num_prim " << num_prim 
+        << " num_part " << num_part
         << " primBuffer " << primBuffer->getShapeString() 
         << " partBuffer " << partBuffer->getShapeString() 
-        ; 
+        ;
 
-    assert( primBuffer->hasItemShape(4,0) && primBuffer->getNumItems() > 0  );
-    assert( partBuffer->hasItemShape(4,4) && partBuffer->getNumItems() > 0 );
+    if( num_prim == 0 )
+    {
+        LOG(LEVEL) << " skip no prim " ; 
+        return ; 
+    }  
+
+
+    assert( primBuffer->hasItemShape(4,0) && num_prim > 0  );
+    assert( partBuffer->hasItemShape(4,4) && num_part > 0 );
 
     if(m_verbosity > 3)
     {
-        for(unsigned primIdx=0 ; primIdx < primBuffer->getNumItems() ; primIdx++) dumpPrim(primIdx);
+        for(unsigned primIdx=0 ; primIdx < num_prim ; primIdx++) dumpPrim(primIdx);
     }
 }
 

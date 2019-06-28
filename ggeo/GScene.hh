@@ -3,6 +3,8 @@
 #include <string>
 #include <map>
 
+class SLog ; 
+
 class Opticks ; 
 class OpticksQuery ; 
 class OpticksEvent ; 
@@ -53,6 +55,24 @@ Canonical m_gscene instance, resident in m_ggeo,
 is instanciated by GGeo::loadFromGLTF.
 GMergedMesh are currently created via GGeo and
 managed in its GGeoLib.
+
+Note that GScene does very little postcache, it does its work
+precache putting together the GParts and associating them
+with the GMergedMesh which get persisted by the GGeoLib
+into the legacy GMergedMeshAnalytic.
+
+
+Legacy Workflow Reminder
+--------------------------
+
+GScene is only used in legacy geometry workflow. It is intended 
+for legacy workflow and GScene to be eliminated, 
+but thats going to require major surgery : so for now have to live with it.
+
+Legacy workflow has separate triangulated and analytic geometry routes, whereas
+the direct workflow does these together. For more of a reminder 
+
+* notes/issues/plan-removal-of-legacy-geometry-workflow-packages-and-externals.rst
 
 
 Two very distict modes : Loaded/Created
@@ -120,9 +140,13 @@ GVolume* GScene::createVolume(nd* n, unsigned depth, bool& recursive_select  )
 */
 
 
+#include "plog/Severity.h"
+
+
 class GGEO_API GScene : public GGeoBase
 {
-   //    friend class GGeo ;  
+   //    friend class GGeo ;
+        static const plog::Severity LEVEL ;   
     public:
         static bool HasCache( Opticks* ok ); 
         static GScene* Create(Opticks* ok, GGeo* ggeo) ;
@@ -193,6 +217,7 @@ class GGEO_API GScene : public GGeoBase
     private:
         GVolume*       getNode(unsigned node_idx);
     private:
+        SLog*         m_log ;   
         Opticks*      m_ok ; 
         OpticksQuery* m_query ; 
         

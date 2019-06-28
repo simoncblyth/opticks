@@ -55,6 +55,7 @@
 
 #include "PLOG.hh"
 
+const plog::Severity Scene::LEVEL = PLOG::EnvLevel("Scene", "DEBUG"); 
 
 Scene* Scene::fInstance = NULL ; 
 Scene* Scene::GetInstance(){ return fInstance ; }
@@ -541,7 +542,7 @@ void Scene::hookupRenderers()
 
 void Scene::uploadGeometryGlobal(GMergedMesh* mm)
 {
-    LOG(debug)<< "Scene::uploadGeometryGlobal " ;
+    LOG(LEVEL)<< "[" ;
 
     assert(m_mesh0 == NULL); // not expected to Scene::uploadGeometryGlobal more than once 
     m_mesh0 = mm ; 
@@ -562,8 +563,9 @@ void Scene::uploadGeometryGlobal(GMergedMesh* mm)
     }
     else
     {
-         LOG(warning) << "Scene::uploadGeometryGlobal SKIPPING GLOBAL " ; 
+         LOG(error) << "SKIPPING GLOBAL " ; 
     }
+    LOG(LEVEL)<< "]" ;
 }
 
 
@@ -575,7 +577,7 @@ void Scene::uploadGeometryInstanced(GMergedMesh* mm)
     if(!skip && !empty)
     { 
         assert(m_num_instance_renderer < MAX_INSTANCE_RENDERER) ;
-        LOG(info)<< "Scene::uploadGeometryInstanced instance renderer " << m_num_instance_renderer << " instcull " << m_instcull ;
+        LOG(LEVEL)<< "instance renderer " << m_num_instance_renderer << " instcull " << m_instcull ;
 
         NPY<float>* ibuf = mm->getITransformsBuffer();
         assert(ibuf);
@@ -587,7 +589,7 @@ void Scene::uploadGeometryInstanced(GMergedMesh* mm)
             //m_instance_mode[m_num_instance_renderer] = true ; 
         }
 
-        LOG(verbose)<< "Scene::uploadGeometryInstanced bbox renderer " << m_num_instance_renderer  ;
+        LOG(verbose)<< "num_instance_renderer " << m_num_instance_renderer  ;
         GBBoxMesh* bb = GBBoxMesh::create(mm); assert(bb);
 
         if(m_bbox_renderer[m_num_instance_renderer])
@@ -599,10 +601,11 @@ void Scene::uploadGeometryInstanced(GMergedMesh* mm)
     }
     else
     {
-         LOG(warning) << "Scene::uploadGeometry SKIPPING " 
-                      << " empty " << empty 
-                      << " skip " << skip 
-                      ; 
+         LOG(error) 
+             << "SKIPPING " 
+             << " empty " << empty 
+             << " skip " << skip 
+             ; 
     }
 }
 
@@ -637,9 +640,9 @@ void Scene::uploadGeometry()
         }
     }
 
-    LOG(debug)<<"Scene::uploadGeometry" 
-             << " m_num_instance_renderer " << m_num_instance_renderer
-             ; 
+    LOG(LEVEL)
+        << " m_num_instance_renderer " << m_num_instance_renderer
+        ; 
 
     applyContentStyle(); // sets m_instance_mode m_bbox_mode switches, change with "B"  nextContentStyle()
 }
@@ -674,21 +677,21 @@ Rdr* Scene::getRecordRenderer(RecordStyle_t style)
 
 void Scene::upload(OpticksEvent* evt)
 {
-    LOG(debug) << "Scene::upload START  " ;
+    LOG(LEVEL) << "[" ;
         
     uploadAxis();
 
-    LOG(debug) << "Scene::upload uploadAxis  DONE " ;
+    LOG(debug) << "uploadAxis  DONE " ;
 
     uploadEvent(evt);  // Scene, Rdr uploads orchestrated by OpticksEvent/MultiViewNPY
 
-    LOG(debug) << "Scene::upload uploadEvt  DONE " ;
+    LOG(debug) << "uploadEvt  DONE " ;
 
     uploadEventSelection(evt);   // recsel upload
 
-    LOG(debug) << "Scene::upload uploadSelection  DONE " ;
+    LOG(debug) << "uploadSelection  DONE " ;
 
-    LOG(debug) << "Scene::upload DONE  " ;
+    LOG(LEVEL) << "]" ;
 }
 
 
@@ -703,7 +706,7 @@ void Scene::uploadEvent(OpticksEvent* evt)
 {
     if(!evt) 
     {
-       LOG(fatal) << "Scene::uploadEvt no evt " ;
+       LOG(fatal) << "no evt " ;
        assert(evt);
     }
 

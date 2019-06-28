@@ -23,7 +23,7 @@
 #include "PLOG.hh"
 // trace/debug/info/warning/error/fatal
 
-const plog::Severity GGeoLib::LEVEL = debug ; 
+const plog::Severity GGeoLib::LEVEL = PLOG::EnvLevel("GGeoLib","DEBUG") ; 
 
 
 const char* GGeoLib::GMERGEDMESH = "GMergedMesh" ; 
@@ -141,13 +141,13 @@ void GGeoLib::removeConstituents(const char* idpath )
         if(BFile::ExistsDir(mmpath))
         {   
             BFile::RemoveDir(mmpath); 
-            LOG(debug) << "GGeoLib::removeConstituents " << mmpath ; 
+            LOG(debug) << mmpath ; 
         }
 
         if(BFile::ExistsDir(ptpath))
         {   
             BFile::RemoveDir(ptpath); 
-            LOG(debug) << "GGeoLib::removeConstituents " << mmpath ; 
+            LOG(debug) << mmpath ; 
         }
    } 
 }
@@ -191,6 +191,19 @@ void GGeoLib::loadConstituents(const char* idpath )
         GMergedMesh* mm_ = BFile::ExistsDir(mmpath) ? GMergedMesh::Load( mmpath, ridx, m_mesh_version ) : NULL ; 
         GParts*      parts = BFile::ExistsDir(ptpath) ? GParts::Load( ptpath ) : NULL ; 
         GPts*        pts = BFile::ExistsDir(ptspath) ? GPts::Load( ptspath ) : NULL ; 
+
+
+        LOG(LEVEL) 
+            << " GMergedMesh " << mm_ 
+            << " GParts " << parts 
+            << " GPts " << pts
+            << std::endl 
+            << " mmpath " << mmpath
+            << std::endl 
+            << " ptpath " << ptpath
+            << std::endl 
+            << " ptspath " << ptspath
+            ; 
 
         if(parts)
         {

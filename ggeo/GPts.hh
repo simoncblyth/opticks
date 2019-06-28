@@ -12,6 +12,9 @@ class GItemList ;
 GPts
 ======= 
 
+Canonical m_pts instances are residents of GMergedMesh and
+are instanciated by GMergedMesh::GMergedMesh with GPts::Make.
+
 Motivation for GPts is to allow postcache deferred creation of 
 merged GParts instances.  This capability is needed in order
 to reconcile the different Opticks/Geant4 requirements 
@@ -28,6 +31,7 @@ for deferred GParts creation and merging.
 
 class GGEO_API GPts { 
     public: 
+        static const plog::Severity LEVEL ; 
         static GPts* Make(); 
         static GPts* Load(const char* path); 
         static const char* GPTS_LIST ; 

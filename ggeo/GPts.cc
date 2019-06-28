@@ -1,5 +1,7 @@
 
 #include <iostream>
+#include <csignal>
+
 #include "PLOG.hh"
 #include "NPY.hpp"
 #include "BStr.hh"
@@ -8,10 +10,18 @@
 #include "GPt.hh"
 #include "GPts.hh"
 
+
+#include "PLOG.hh"
+
+const plog::Severity GPts::LEVEL = PLOG::EnvLevel("GPts", "DEBUG") ; 
+
+
 const char* GPts::GPTS_LIST = "GPts" ; 
 
 GPts* GPts::Make()  // static
 {
+    LOG(LEVEL) ; 
+    //std::raise(SIGINT); 
     NPY<int>* ipt = NPY<int>::make(0, 4 ) ; 
     NPY<float>* plc = NPY<float>::make(0, 4, 4 ) ; 
     GItemList* specs = new GItemList(GPTS_LIST, "") ; 
@@ -20,6 +30,7 @@ GPts* GPts::Make()  // static
 
 GPts* GPts::Load(const char* dir)  // static
 {
+    LOG(LEVEL) << dir ; 
     NPY<int>* ipt = LoadBuffer<int>(dir, "ipt") ; 
     NPY<float>* plc = LoadBuffer<float>(dir, "plc"); 
     GItemList* specs = GItemList::Load(dir, GPTS_LIST, "") ; 
@@ -30,7 +41,7 @@ GPts* GPts::Load(const char* dir)  // static
 
 void GPts::save(const char* dir)
 {
-    LOG(info) << dir ; 
+    LOG(LEVEL) << dir ; 
     export_();  
     if(m_ipt_buffer) m_ipt_buffer->save(dir, BufferName("ipt"));    
     if(m_plc_buffer) m_plc_buffer->save(dir, BufferName("plc"));    
@@ -78,8 +89,8 @@ void GPts::import()  // from buffers into vector
     assert( getNumPt() == 0 );  
 
     unsigned num_pt = m_specs->getNumItems(); 
-    assert( num_pt = m_ipt_buffer->getShape(0)) ; 
-    assert( num_pt = m_plc_buffer->getShape(0)) ; 
+    assert( num_pt == m_ipt_buffer->getShape(0)) ; 
+    assert( num_pt == m_plc_buffer->getShape(0)) ; 
 
     for(unsigned i=0 ; i < num_pt ; i++)
     {
@@ -91,6 +102,7 @@ void GPts::import()  // from buffers into vector
         add(pt);  
     }
     assert( getNumPt() == num_pt );  
+    LOG(LEVEL) << " num_pt " << num_pt ; 
 }
 
 

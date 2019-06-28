@@ -470,16 +470,33 @@ void GMeshLib::loadMeshes(const char* idpath )
        ;
 }
 
+
+/**
+GMeshLib::saveMeshes
+---------------------
+
+Note that cannot assert the existance of associated NCSG solids
+as they are not present in legacy workflow, eg as exercised by "op.sh -G".
+
+In the legacy route the analytic solid info is handled precache via NScene/GScene
+and placed into GParts associated with the GMergedLib preventing 
+the need for the deferred GParts creation that is used 
+in the direct workflow.
+
+* notes/issues/geocache-create-reversion-reported-by-sam.rst
+* notes/issies/plan-removal-of-legacy-geometry-workflow-packages-and-externals.rst
+
+To see which GMergedMesh/GParts/GPts are being loaded turn up the 
+logging levels in GGeoLib::
+
+   GGeoLib=ERROR OKTest --xanalytic --gltf 1
+
+
+**/
+
 void GMeshLib::saveMeshes(const char* idpath) const 
 {
     removeDirs(idpath); // clean old meshes to avoid duplication when repeat counts go down 
-
-/*
-    typedef std::vector<const GMesh*>::const_iterator VMI ; 
-    for(VMI it=m_meshes.begin() ; it != m_meshes.end() ; it++)
-    {
-        const GMesh* mesh = *it ; 
-*/
 
     for(unsigned i=0 ; i < m_meshes.size() ; i++)
     {
@@ -490,7 +507,8 @@ void GMeshLib::saveMeshes(const char* idpath) const
         mesh->save(idpath, m_reldir, sidx); 
 
         const NCSG* solid = mesh->getCSG(); 
-        assert(solid); 
+        if(!solid) continue ; 
+        //assert(solid);   <-- tripped by legacy route, 
 
         solid->savesrc(idpath, m_reldir_solids, sidx); 
     }

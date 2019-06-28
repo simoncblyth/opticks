@@ -607,24 +607,38 @@ void GGeo::loadFromG4DAE()
 }
 
 
+/**
+GGeo::loadAnalyticFromGLTF
+----------------------------
+
+This is invoked by GGeo::loadGeometry in precache mode 
+resulting in the loading of GScene from the transport GLTF,
+that is created by the gdml2gltf python script.
+
+**/
+
 void GGeo::loadAnalyticFromGLTF()
 {
-    LOG(info) << "GGeo::loadAnalyticFromGLTF START" ; 
-    if(!m_ok->isGLTF()) return ; 
+    LOG(LEVEL) << "[" ; 
+    if(!m_ok->isGLTF()) 
+    {
+        LOG(LEVEL) << " skip loading GScene as not GLTF enabled ( needs --gltf N where N > 0 )  " ; 
+        return ; 
+    }
 
 #ifdef OPTICKS_YoctoGL
     m_gscene = GScene::Create(m_ok, this); 
 #else
-    LOG(fatal) << "GGeo::loadAnalyticFromGLTF requires YoctoGL external " ; 
+    LOG(fatal) << "requires YoctoGL external " ; 
     assert(0);
 #endif
 
-    LOG(info) << "GGeo::loadAnalyticFromGLTF DONE" ; 
+    LOG(LEVEL) << "]" ; 
 }
 
 void GGeo::saveAnalytic()
 { 
-    LOG(info) << "GGeo::saveAnalytic" ;
+    LOG(LEVEL) ;
     m_gscene->save();   // HUH: still needed ???   THIS IS VESTIGIAL SURELY 
 }
 
@@ -1292,7 +1306,7 @@ void GGeo::deferredCreateGParts()
 
         if( mm->getParts() != NULL )
         {
-            LOG(debug) << " skip as parts already present for mm " << i ;  
+            LOG(LEVEL) << " skip as parts already present for mm " << i ;  
             // this happens for test geometry eg tboolean.sh 
             continue ; 
         } 

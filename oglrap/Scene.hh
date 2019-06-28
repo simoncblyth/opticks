@@ -1,6 +1,7 @@
 #pragma once
 
 #include <glm/fwd.hpp>
+#include "plog/Severity.h"
 
 // brap-
 class BDynamicDefine ; 
@@ -107,6 +108,7 @@ InstanceStyle (I key)
 #include "OGLRAP_API_EXPORT.hh"
 
 class OGLRAP_API Scene : public NConfigurable, public SCtrl  {
+        static const plog::Severity LEVEL ; 
    public:
         static Scene*      GetInstance();
         static const char* PREFIX ;

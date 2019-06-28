@@ -1,5 +1,6 @@
 #include "OpticksConst.hh"
 
+#include "SLog.hh"
 #include "SSortKV.hh"
 
 #include "NGLM.hpp"
@@ -39,6 +40,7 @@
 
 #include "PLOG.hh"
 
+const plog::Severity GScene::LEVEL = PLOG::EnvLevel("GScene", "DEBUG") ; 
 
 
 // for some libs there is no analytic variant 
@@ -48,7 +50,6 @@ GSurfaceLib*      GScene::getSurfaceLib() const  {     return m_ggeo->getSurface
 GMaterialLib*     GScene::getMaterialLib() const {     return m_ggeo->getMaterialLib(); } 
 
 GBndLib*          GScene::getBndLib() const  {          return m_ggeo->getBndLib(); } 
-//GPmtLib*          GScene::getPmtLib() const {          return m_ggeo->getPmtLib(); } 
 GGeoLib*          GScene::getGeoLib() const {          return m_geolib ; } 
 GNodeLib*         GScene::getNodeLib() const {         return m_nodelib ; }
 GMeshLib*         GScene::getMeshLib() const {         return NULL ; }
@@ -93,6 +94,7 @@ bool GScene::HasCache( Opticks* ok ) // static
 GScene::GScene( Opticks* ok, GGeo* ggeo, bool loaded )
     :
     GGeoBase(),
+    m_log(new SLog("GScene::GScene","", LEVEL)),
     m_ok(ok),
     m_query(ok->getQuery()),
     m_ggeo(ggeo),
@@ -134,13 +136,14 @@ GScene::GScene( Opticks* ok, GGeo* ggeo, bool loaded )
     // hmm : looks like m_scene is an ingredient thats only needed when creating the libs, 
     // when loading the libs m_scene stays NULL  
 
+
     if(m_loaded == false)
     {
         assert( m_scene );
-        LOG(info) << "GScene::GScene (NScene)m_scene " << m_scene->desc() ; 
+        LOG(info) << "(NScene)m_scene " << m_scene->desc() ; 
         initFromGLTF();  // imports the analytic node tree from the GLTF file, and the extras (meshes/CSG)
     }
-
+    (*m_log)("DONE");
 }
 
 
@@ -167,6 +170,14 @@ guint4 GScene::getIdentity(unsigned idx) const
      return m_tri_mm0->getIdentity(m_targetnode + idx);
 }
 
+/**
+GScene::getVolume
+--------------------
+
+Suspect this only works precache, GVolume are not currently persisted
+with the GNodeLib.
+
+**/
 
 GVolume* GScene::getVolume(unsigned idx)
 {
@@ -184,8 +195,7 @@ void GScene::initFromGLTF()
 
     if(m_verbosity > m_ok->getVerbosity()) m_ok->setVerbosity(m_verbosity);
 
-    //if(m_verbosity > 0)
-    LOG(info) << "GScene::init START" ;
+    LOG(LEVEL) << "[" ;
 
     //modifyGeometry();  // try skipping the clear
 
@@ -226,27 +236,26 @@ void GScene::initFromGLTF()
 
     if(m_gltf == 444)  assert(0 && "GScene::init early exit for gltf==444" );
 
-    //if(m_verbosity > 0)
-    LOG(info) << "GScene::init DONE" ;
 
+    LOG(LEVEL) << "]" ;
 }
 
 
 void GScene::prepareVertexColors()
 {
-    LOG(info) << "GScene::prepareVertexColors START" ;
+    LOG(info) << "[" ;
     m_colorizer->writeVertexColors();
-    LOG(info) << "GScene::prepareVertexColors DONE " ;
+    LOG(info) << "]" ;
 }
 
 
 
 void GScene::dumpTriInfo() const 
 {
-    LOG(info) << "GScene::dumpTriInfo" 
-              << " num_nd " << m_num_nd
-              << " targetnode " << m_targetnode
-              ;
+    LOG(info)  
+        << " num_nd " << m_num_nd
+        << " targetnode " << m_targetnode
+        ;
     
     std::cout << " tri (geolib)  " << m_tri_geolib->desc() << std::endl ; 
     std::cout << " tri (nodelib) " << m_tri_nodelib->desc() << std::endl ; 
@@ -314,7 +323,7 @@ void GScene::importMeshes(NScene* scene)
 void GScene::importMeshes(NScene* scene)  // load analytic polygonized GMesh instances into m_meshlib GMeshLib
 {
     unsigned num_meshes = scene->getNumMeshes();
-    LOG(info) << "GScene::importMeshes START num_meshes " << num_meshes  ; 
+    LOG(LEVEL) << "[ num_meshes " << num_meshes  ; 
      
     for(unsigned mesh_idx=0 ; mesh_idx < num_meshes ; mesh_idx++)
     {
@@ -339,8 +348,7 @@ void GScene::importMeshes(NScene* scene)  // load analytic polygonized GMesh ins
         m_rel2abs_mesh[mesh_idx] = tri_mesh_idx ;  
         m_abs2rel_mesh[tri_mesh_idx] = mesh_idx ;  
 
-        if(m_verbosity > 2)
-        LOG(info) 
+        LOG(LEVEL) 
              << " mesh_idx " <<  std::setw(4) << mesh_idx
              << " tri_mesh_idx " <<  std::setw(4) << tri_mesh_idx
              << " soname " << soname 
@@ -363,7 +371,7 @@ void GScene::importMeshes(NScene* scene)  // load analytic polygonized GMesh ins
         if(m_meshlib)
             m_meshlib->add(mesh);
     }
-    LOG(info) << "GScene::importMeshes DONE num_meshes " << num_meshes  ; 
+    LOG(LEVEL) << "] num_meshes " << num_meshes  ; 
 }
 
 
@@ -394,10 +402,10 @@ NCSG* GScene::findCSG(const char* soname, bool startswith) const
 void GScene::dumpMeshes()
 {
     unsigned num_meshes = getNumMeshes() ; 
-    LOG(info) << "GScene::dumpMeshes" 
-              << " verbosity " << m_verbosity 
-              << " num_meshes " << num_meshes 
-              ;
+    LOG(info) 
+        << " verbosity " << m_verbosity 
+        << " num_meshes " << num_meshes 
+        ;
 
     for(unsigned r=0 ; r < num_meshes ; r++)
     {
@@ -484,13 +492,13 @@ void GScene::compareMeshes_GMeshBB()
     NSceneConfigBBoxType bbty = m_scene->bbox_type() ; 
     const char* bbty_ = m_scene->bbox_type_string() ;
 
-    LOG(info) << "GScene::compareMeshes_GMeshBB"
-              << " num_meshes " << num_meshes
-              << " cut " << cut 
-              << " bbty " << bbty_
-              << " parsurf_level " << m_scene_config->parsurf_level 
-              << " parsurf_target " << m_scene_config->parsurf_target 
-              ;
+    LOG(info)
+        << " num_meshes " << num_meshes
+        << " cut " << cut 
+        << " bbty " << bbty_
+        << " parsurf_level " << m_scene_config->parsurf_level 
+        << " parsurf_target " << m_scene_config->parsurf_target 
+        ;
 
     for(unsigned i=0 ; i < num_meshes ; i++ )
     {
@@ -575,13 +583,13 @@ void GScene::compareMeshes_GMeshBB()
         std::cout << std::endl ;
     }
 
-    LOG(info) << "GScene::compareMeshes_GMeshBB"
-              << " num_meshes " << num_meshes
-              << " cut " << cut 
-              << " bbty " << bbty_
-              << " num_discrepant " << num_discrepant
-              << " frac " << float(num_discrepant)/float(num_meshes)
-              ;
+    LOG(info) 
+        << " num_meshes " << num_meshes
+        << " cut " << cut 
+        << " bbty " << bbty_
+        << " num_discrepant " << num_discrepant
+        << " frac " << float(num_discrepant)/float(num_meshes)
+        ;
 }
 
 
@@ -591,10 +599,11 @@ void GScene::compareMeshes_GMeshBB()
 GVolume* GScene::createVolumeTree(NScene* scene) // creates analytic GVolume/GNode tree without access to triangulated GGeo info
 {
     if(m_verbosity > 0)
-    LOG(info) << "GScene::createVolumeTree START"
-              << "  verbosity " << m_verbosity  
-              << " query " << m_query->desc()
-              ; 
+    LOG(info) 
+        << "["
+        << " verbosity " << m_verbosity  
+        << " query " << m_query->desc()
+        ; 
     assert(scene);
 
     //scene->dumpNdTree("GScene::createVolumeTree");
@@ -613,8 +622,7 @@ GVolume* GScene::createVolumeTree(NScene* scene) // creates analytic GVolume/GNo
 
     assert( m_nodes.size() == nd::num_nodes()) ;
 
-    if(m_verbosity > 0)
-    LOG(info) << "GScene::createVolumeTree DONE num_nodes: " << m_nodes.size()  ; 
+    LOG(info) << "] num_nodes: " << m_nodes.size()  ; 
     return root ; 
 }
 
@@ -718,19 +726,19 @@ GVolume* GScene::createVolume(nd* n, unsigned depth, bool& recursive_select  ) /
 
 
     if(m_verbosity > 2) 
-    LOG(info) << "GScene::createVolume"
-              << " verbosity " << m_verbosity
-              << " rel_node_idx " << std::setw(5) << rel_node_idx 
-              << " abs_node_idx " << std::setw(6) << abs_node_idx 
-              << " rel_mesh_idx " << std::setw(3) << rel_mesh_idx 
-              << " abs_mesh_idx " << std::setw(3) << abs_mesh_idx 
-              << " ridx " << std::setw(3) << n->repeatIdx
-              << " volume " << volume
-              << " volume.pts " << pts 
-              << " volume.idx " << volume->getIndex()
-              << " volume.lvn " << volume->getLVName()
-              << " volume.pvn " << volume->getPVName()
-              ;
+    LOG(info) 
+        << " verbosity " << m_verbosity
+        << " rel_node_idx " << std::setw(5) << rel_node_idx 
+        << " abs_node_idx " << std::setw(6) << abs_node_idx 
+        << " rel_mesh_idx " << std::setw(3) << rel_mesh_idx 
+        << " abs_mesh_idx " << std::setw(3) << abs_mesh_idx 
+        << " ridx " << std::setw(3) << n->repeatIdx
+        << " volume " << volume
+        << " volume.pts " << pts 
+        << " volume.idx " << volume->getIndex()
+        << " volume.lvn " << volume->getLVName()
+        << " volume.pvn " << volume->getPVName()
+        ;
 
 
     addNode(volume, n );
@@ -880,13 +888,14 @@ std::string GScene::lookupBoundarySpec( const GVolume* node, const nd* n) const
 
     if( !(ana.x == tri.x && ana.w == tri.w) )
     {
-         LOG(warning) << "GScene::lookupBoundarySpec ana/tri imat/omat MISMATCH "
-                      << " tri " << tri.description()
-                      << " ana " << ana.description()
-                      << " tri_spec " << tri_spec
-                      << " ana_spec " << ana_spec
-                      << " spec " << spec
-                      ;
+         LOG(error) 
+             << "ana/tri imat/omat MISMATCH "
+             << " tri " << tri.description()
+             << " ana " << ana.description()
+             << " tri_spec " << tri_spec
+             << " ana_spec " << ana_spec
+             << " spec " << spec
+             ;
     } 
    
 /*
@@ -968,19 +977,18 @@ void GScene::makeMergedMeshAndInstancedBuffers()   // using m_geolib to makeMerg
 
     unsigned nmm_created = 0 ; 
 
-    //if(m_verbosity > 0)
-    LOG(info) << "GScene::makeMergedMeshAndInstancedBuffers.START "
-              << "  num_repeats " << num_repeats 
-              << "  num_ridx " << num_ridx 
-              ;  
+    LOG(LEVEL) 
+        << "["
+        << "  num_repeats " << num_repeats 
+        << "  num_ridx " << num_ridx 
+        ;  
 
     bool honour_selection = false ;   // in order to match GInstancer 
 
 
     for(unsigned ridx=0 ; ridx < num_ridx ; ridx++)
     {
-         if(m_verbosity > 1)
-         LOG(info) << "GScene::makeMergedMeshAndInstancedBuffers ridx " << ridx << " START " ;  
+         LOG(LEVEL) << "[ ridx " << ridx ;  
 
          bool inside = ridx == 0 ? false : false ; 
 
@@ -1002,36 +1010,37 @@ void GScene::makeMergedMeshAndInstancedBuffers()   // using m_geolib to makeMerg
 
          assert(mm);
 
+         GParts* parts = mm->getParts(); 
+
+
          mm->addInstancedBuffers(instances);
 
          mm->setGeoCode(OpticksConst::GEOCODE_ANALYTIC);
 
-         if(m_verbosity > 1)
-         std::cout << "GScene::makeMergedMeshAndInstancedBuffers"
-                   << " ridx " << ridx 
-                   << " mm " << mm->getIndex()
-                   << " nmm_created " << nmm_created
-                   << std::endl ; 
+         LOG(LEVEL) 
+             << " ridx " << ridx 
+             << " mm " << mm->getIndex()
+             << " nmm_created " << nmm_created
+             << " parts " << parts 
+             ;
 
          nmm_created++ ; 
 
          GMergedMesh* mmc = m_geolib->getMergedMesh(ridx);
          assert(mmc == mm);
 
-         if(m_verbosity > 1)
-         LOG(info) << "GScene::makeMergedMeshAndInstancedBuffers ridx " << ridx << " DONE " ;  
+         LOG(LEVEL) << "] ridx " << ridx  ;  
     }
 
     unsigned nmm = m_geolib->getNumMergedMesh();
-   
      
-    if(m_verbosity > 0)
-    LOG(info) << "GScene::makeMergedMeshAndInstancedBuffers DONE"
-              << " num_repeats " << num_repeats
-              << " num_ridx (including global 0) " << num_ridx 
-              << " nmm_created " << nmm_created
-              << " nmm " << nmm
-               ; 
+    LOG(info) 
+        << "]"
+        << " num_repeats " << num_repeats
+        << " num_ridx (including global 0) " << num_ridx 
+        << " nmm_created " << nmm_created
+        << " nmm " << nmm
+        ; 
 
     assert(nmm == nmm_created);
 }
@@ -1073,7 +1082,7 @@ void GScene::anaEvent(OpticksEvent* evt)
     float epsilon = 0.1 ; 
     //float epsilon = 0.05 ;   //  2798/100,000
 
-    LOG(info) << "GScene::anaEvent " << dbgnode << " epsilon " << epsilon  ;
+    LOG(info) << " dbgnode " << dbgnode << " epsilon " << epsilon  ;
     LOG(info) << " nodelib " << nlib->desc() ;
     LOG(info) << " volume " <<  ( volume ? volume->description() : " NONE " )  ; 
     LOG(info) << " csg.meta " << csg->meta() ; 
