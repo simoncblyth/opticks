@@ -346,7 +346,7 @@ geocache-j1808-v5-key(){
 geocache-j1808-v5-export(){  geocache-export ${FUNCNAME/-export} ; }
 geocache-j1808-v5(){  geocache-j1808-v5- --csgskiplv 22 --runfolder $FUNCNAME --runcomment $(${FUNCNAME}-comment) $* ; }  
 
-geocache-recreate(){ geocache-j1808-v5 $* ; }
+geocache-create(){ geocache-j1808-v5 $* ; }  # formerly recreate
 geocache-key-export(){   geocache-j1808-v5-export ; }
 
 

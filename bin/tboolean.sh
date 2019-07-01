@@ -5,6 +5,16 @@ tboolean-sh-notes(){ cat << EON
 tboolean.sh
 ==============
 
+NB notice the "/bin/bash -l"
+------------------------------
+
+The "-l" means that login environment scripts 
+including .bashrc are invoked before these 
+functions run.  For the below "tboolean-" to 
+be defined .bashrc needs to have defined and run
+the "opticks-" precursor function. 
+
+
 Direct Approach
 -----------------
 
@@ -21,7 +31,6 @@ Legacy Approach
 * executables and environment are setup by op.sh 
   using --okg4 option to select OKG4Test 
 
-
 Minimizing this
 -----------------
 
@@ -30,20 +39,16 @@ and functions (its failing to pass in a TESTCONFIG),
 so moved most of the argument setup into tboolean-
 leaving just directory and environment setup here. 
 
+Formerly invoked geocache-key-export from here 
+but choice of base geometry belongs in users bashrc not here. 
+
+So need to instruct users to geocache-recreate 
+and set OPTICKS_KEY in .bashrc : which is good as it shows them how 
+easy (in principal) it now is to translate a geometry.
+
 **/
 EON
 }
-
-
-cd /tmp
-DIRECT=1
-
-if [ $DIRECT -eq 1 ]; then 
-    unset IDPATH
-    geocache-
-    geocache-key-export
-    [ -n "$IDPATH" ] && echo $0 ERROR IDPATH should not be defined in direct running : $IDPATH && exit 101
-fi
 
 echo ====== $0 $arg $* ====== PWD $PWD =================
 

@@ -167,3 +167,19 @@ Also fixed up interpolationTest : it had some stale paths.
 
 
 
+
+integration tests assuming direct workflow when users dont have that setup ?
+---------------------------------------------------------------------------------
+
+* have removed the geocache-key-export from tboolean.sh it is more appropriate 
+  for base geometry to be setup in users .bashrc
+
+
+
+
+
+
+
+
+
+

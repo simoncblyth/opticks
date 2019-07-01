@@ -603,12 +603,48 @@ The *opticks-t* functions runs ctests for all the opticks projects::
     opticks-ctest : use -V to show output
 
 
-Issues With Tests
--------------------
 
-Some tests depend on the geometry cache being present. To create the geometry cache::
+Creating Legacy Workflow Geocache
+-----------------------------------
+
+Some tests depend on the geometry cache being present. To create the legacy geometry cache::
 
    op.sh -G 
+
+
+Creating Direct Workflow Geocache
+-----------------------------------
+
+The integration tests require a direct workflow geocache to exist as they 
+need it as their base geometry. The direct geocache is created by the OKX4Test executable
+which loads a GDML file and directly translates it into an Opticks GGeo geometry 
+instance and persists that into a direct geocache. 
+The bash function to do this is *geocache-create*, use that with::
+
+    geocache-              # run precursor function which defines the others 
+    type geocache-create   # take a look at what its doing 
+    geocache-create       
+
+Geocache creation is time and memory consuming, taking about 1 minute for the JUNO geometry 
+on a workstation with lots of memory. Fortunately this only needs to be done once per geometry, and 
+as the geocache is composed of binary .npy files they are fast to load and upload to the GPU.
+
+Near to the end of the logging from geocache creation you should find output 
+similar to the below which reports the OPTICKS_KEY value of the geometry::
+
+    2019-07-01 16:14:08.129 INFO  [263983] [Opticks::reportGeoCacheCoordinates@755]  ok.idpath  /home/blyth/local/opticks/geocache/OKX4Test_lWorld0x4bc2710_PV_g4live/g4ok_gltf/f6cc352e44243f8fa536ab483ad390ce/1
+    2019-07-01 16:14:08.129 INFO  [263983] [Opticks::reportGeoCacheCoordinates@756]  ok.keyspec OKX4Test.X4PhysicalVolume.lWorld0x4bc2710_PV.f6cc352e44243f8fa536ab483ad390ce
+    2019-07-01 16:14:08.129 INFO  [263983] [Opticks::reportGeoCacheCoordinates@757]  To reuse this geometry: 
+    2019-07-01 16:14:08.129 INFO  [263983] [Opticks::reportGeoCacheCoordinates@758]    1. set envvar OPTICKS_KEY=OKX4Test.X4PhysicalVolume.lWorld0x4bc2710_PV.f6cc352e44243f8fa536ab483ad390ce
+    2019-07-01 16:14:08.129 INFO  [263983] [Opticks::reportGeoCacheCoordinates@759]    2. enable envvar sensitivity with --envkey argument to Opticks executables 
+    2019-07-01 16:14:08.129 FATAL [263983] [Opticks::reportGeoCacheCoordinates@767] THE LIVE keyspec DOES NOT MATCH THAT OF THE CURRENT ENVVAR 
+    2019-07-01 16:14:08.129 INFO  [263983] [Opticks::reportGeoCacheCoordinates@768]  (envvar) OPTICKS_KEY=NONE
+    2019-07-01 16:14:08.129 INFO  [263983] [Opticks::reportGeoCacheCoordinates@769]  (live)   OPTICKS_KEY=OKX4Test.X4PhysicalVolume.lWorld0x4bc2710_PV.f6cc352e44243f8fa536ab483ad390ce
+    2019-07-01 16:14:08.129 INFO  [263983] [Opticks::dumpRC@202]  rc 0 rcmsg : -
+
+
+To reuse the geometry the OPTICKS_KEY envvar needs to be exported from 
+`.bash_profile` or `.bashrc`, see the next section for an example.
 
 
 
@@ -638,6 +674,9 @@ to is provided below:
 
     PATH=$OPTICKS_HOME/bin:$LOCAL_BASE/opticks/lib:$PATH  ## easy access to scripts and executables
     export PATH
+
+    export OPTICKS_KEY=OKX4Test.X4PhysicalVolume.lWorld0x4bc2710_PV.f6cc352e44243f8fa536ab483ad390ce
+    ## picking a geometry
 
 
 Opticks NumPy based Analysis
