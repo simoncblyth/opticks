@@ -26,6 +26,7 @@ class Key(object):
         """
         Should match bash geocache-keydir
         """
+        if key is None: return None
         elem = key.split(".")
         assert len(elem) == 4, elem 
         exe,cls,top,dig = elem 
@@ -35,7 +36,7 @@ class Key(object):
         keydir = os.path.expandvars(tmpl)
         return keydir
 
-    def __init__(self, key=os.environ["OPTICKS_KEY"]):
+    def __init__(self, key=os.environ.get("OPTICKS_KEY",None)):
         keydir = Key.Keydir(key) 
         exists = os.path.isdir(keydir)
 

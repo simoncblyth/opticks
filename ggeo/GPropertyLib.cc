@@ -37,7 +37,7 @@
 
 
 
-const plog::Severity GPropertyLib::LEVEL = debug ;
+const plog::Severity GPropertyLib::LEVEL = PLOG::EnvLevel("GPropertyLib", "DEBUG") ;
 
 
 
@@ -475,10 +475,10 @@ void GPropertyLib::saveToCache(NPYBase* buffer, const char* suffix)
 
 
     LOG(LEVEL) 
-               << " dir " << dir
-               << " name " << name 
-               << " type " << m_type 
-               ;
+        << " dir " << dir
+        << " name " << name 
+        << " type " << m_type 
+        ;
 
     if(buffer)
     {
@@ -486,18 +486,17 @@ void GPropertyLib::saveToCache(NPYBase* buffer, const char* suffix)
     }
     else
     {
-        LOG(error) << "GPropertyLib::saveToCache"
-                   << " NULL BUFFER "
-                   << " dir " << dir
-                   << " name " << name
-                   ; 
+        LOG(error) 
+            << " NULL BUFFER "
+            << " dir " << dir
+            << " name " << name
+            ; 
     }
 }
 
 void GPropertyLib::saveToCache()
 {
-
-    LOG(verbose) << "GPropertyLib::saveToCache" ; 
+    LOG(LEVEL) << "[" ; 
  
     if(!isClosed()) close();
 
@@ -519,7 +518,7 @@ void GPropertyLib::saveToCache()
         saveNames(NULL);
     }
 
-    LOG(verbose) << "GPropertyLib::saveToCache DONE" ; 
+    LOG(LEVEL) << "]" ; 
 
 }
 

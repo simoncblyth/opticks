@@ -24,9 +24,10 @@ namespace fs = boost::filesystem;
 
 #include "PLOG.hh"
 
+const plog::Severity BOpticksResource::LEVEL = PLOG::EnvLevel("BOpticksResource", "DEBUG") ; 
+
 const char* BOpticksResource::G4ENV_RELPATH = "externals/config/geant4.ini" ;
 const char* BOpticksResource::OKDATA_RELPATH = "opticksdata/config/opticksdata.ini" ; // TODO: relocate into geocache
-
 
 
 const char* BOpticksResource::EMPTY  = "" ; 
@@ -72,7 +73,6 @@ const int BOpticksResource::DEFAULT_FRAME_DYB = 3153 ;
 const int BOpticksResource::DEFAULT_FRAME_JUNO = 62593 ; 
 
 
-const plog::Severity BOpticksResource::LEVEL = debug ; 
 
 BOpticksResource::BOpticksResource(bool testgeo)
     :
@@ -675,7 +675,6 @@ Invoked from OpticksResource::init OpticksResource::readEnvironment
 
 Direct mode equivalent (loosely speaking) is setupViaKey
 
-
 **/
 
 void BOpticksResource::setupViaSrc(const char* srcpath, const char* srcdigest)
@@ -702,15 +701,8 @@ void BOpticksResource::setupViaSrc(const char* srcpath, const char* srcdigest)
      
         std::string kfn = BStr::insertField( m_srcpath, '.', -1 , m_srcdigest );
         m_idpath = strdup(kfn.c_str());
-
-        // internal setting of envvar 
-        assert(SSys::setenvvar("IDPATH", m_idpath, true )==0);  // uses putenv for windows mingw compat 
-
-        // Where is IDPATH internal envvar used ? 
-        //    Mainly by NPY tests as a resource access workaround as NPY 
-        //    is lower level than optickscore- so lacks its resource access machinery.
-        //
-        //  TODO: eliminate use of IDPATH internal envvar now that BOpticksResource has the info
+     
+        // IDPATH envvar setup for legacy workflow now done in Opticks::initResource
     } 
     else if(m_layout > 0)  // geocache decoupled from opticksdata
     {
@@ -756,11 +748,20 @@ evtbase
 
 
 
+/**
+BOpticksResource::getPropertyLibDir
+---------------------------------------
 
+
+
+
+
+**/
 
 std::string BOpticksResource::getPropertyLibDir(const char* name) const 
 {
-    return BFile::FormPath( m_idpath, name ) ;
+    const char* idpath = getIdPath();    // direct use of m_idpath would fail to honour overrides from m_ipath_tmp 
+    return BFile::FormPath( idpath, name ) ;
 }
 
 

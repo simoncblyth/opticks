@@ -19,15 +19,20 @@ if __name__ == '__main__':
     args = opticks_main()
 
 
-    base = "$TMP/InterpolationTest"
+    base = "$TMP/interpolationTest"
     blib = PropLib.load_GBndLib(base)
     names = blib.names
 
     t = blib.data # boundary texture data
 
     ext, nl = "identity", 39
-    o = np.load(os.path.expandvars(os.path.join(base,"OInterpolationTest_%s.npy" % ext))).reshape(-1,4,2,nl,4) 
-    c = np.load(os.path.expandvars(os.path.join(base,"CInterpolationTest_%s.npy" % ext))).reshape(-1,4,2,nl,4) 
+
+    #oname = "OInterpolationTest_%s.npy" % ext
+    oname = "interpolationTest_%s.npy" % ext
+    cname = "CInterpolationTest_%s.npy" % ext
+
+    o = np.load(os.path.expandvars(os.path.join(base,oname))).reshape(-1,4,2,nl,4) 
+    c = np.load(os.path.expandvars(os.path.join(base,cname))).reshape(-1,4,2,nl,4) 
     
     assert np.all(t == o)
 

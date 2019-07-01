@@ -581,6 +581,21 @@ const char* Opticks::getDbgMesh() const
 }
 
 
+/**
+Opticks::initResource
+-----------------------
+
+Instanciates m_resource OpticksResource and its base BOpticksResource
+which defines the geocache paths. Note that the fork between the legacy and
+direct geometry workflow for python scripts invoked from C++ processes 
+is effected by the setting or not of the IDPATH envvar.  
+
+When IDPATH is set the legacy route is taken by ana/env.py which is used by all 
+python scripts using opticks_main ana/main.py.
+
+See notes/issues/test-fails-from-geometry-workflow-interference.rst
+
+**/
 
 void Opticks::initResource()
 {
@@ -591,6 +606,19 @@ void Opticks::initResource()
 
     const char* idpath = m_resource->getIdPath();
     m_parameters->add<std::string>("idpath", idpath); 
+
+    bool legacy = isLegacy(); 
+    if(legacy)
+    {
+        bool overwrite = true ; 
+        LOG(info) << " (legacy mode) setting IDPATH envvar for python analysis scripts [" << idpath << "]"  ; 
+        int rc = SSys::setenvvar("IDPATH", idpath, overwrite );
+        assert( rc == 0 ); 
+    }
+    else
+    {
+        LOG(info) << " (direct mode) NOT setting IDPATH envvar  [" << idpath << "]"  ; 
+    }
 
     LOG(LEVEL) << " DONE " << m_resource->desc()  ;
 }

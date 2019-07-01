@@ -28,7 +28,7 @@
 #include "PLOG.hh"
 
 
-const plog::Severity GBndLib::LEVEL = debug ; 
+const plog::Severity GBndLib::LEVEL = PLOG::EnvLevel("GBndLib", "DEBUG") ; 
 
 const GBndLib* GBndLib::INSTANCE = NULL ; 
 const GBndLib* GBndLib::GetInstance(){ return INSTANCE ; }
@@ -1019,7 +1019,7 @@ void GBndLib::dumpBoundaries(std::vector<unsigned int>& boundaries, const char* 
 
 void GBndLib::saveAllOverride(const char* dir)
 {
-    LOG(info) << "GBndLib::saveAllOverride" ;
+    LOG(LEVEL) << "[ " << dir ;
  
     m_ok->setIdPathOverride(dir);
 
@@ -1028,6 +1028,9 @@ void GBndLib::saveAllOverride(const char* dir)
     saveOpticalBuffer();
 
     m_ok->setIdPathOverride(NULL);
+
+    LOG(LEVEL) << "]" ; 
+
 }
 
 

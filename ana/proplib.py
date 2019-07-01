@@ -191,7 +191,7 @@ class PropLib(object):
         ndarray has advantage of easy grabbing masks and index lists
         """
         
-        self._names = np.zeros( (len(names)), dtype="|S64")
+        self._names = np.zeros( (len(names)), dtype="|S128")   # 64 truncates
         self._names[:] = names
     def _get_names(self):
         return self._names

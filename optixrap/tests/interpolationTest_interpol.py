@@ -13,7 +13,7 @@ if __name__ == '__main__':
     from opticks.ana.main import opticks_main
     args = opticks_main()
 
-    base = "$TMP/InterpolationTest"
+    base = "$TMP/interpolationTest"
     blib = PropLib.load_GBndLib(base)
 
     if blib is None:
@@ -27,9 +27,13 @@ if __name__ == '__main__':
 
     ext, nl = "interpol", 820-60+1
 
-    opath = os.path.expandvars(os.path.join(base,"OInterpolationTest_%s.npy" % ext))
-    cpath = os.path.expandvars(os.path.join(base,"CInterpolationTest_%s.npy" % ext))
 
+    #oname = "OInterpolationTest_%s.npy" % ext
+    oname = "interpolationTest_%s.npy" % ext
+    cname = "CInterpolationTest_%s.npy" % ext
+
+    opath = os.path.expandvars(os.path.join(base,oname))
+    cpath = os.path.expandvars(os.path.join(base,cname))
 
     opath_exists = os.path.exists(opath)
     cpath_exists = os.path.exists(cpath)
@@ -58,6 +62,7 @@ if __name__ == '__main__':
     for i in range(n):
 
         name = names[i]
+        #print(name) 
         omat,osur,isur,imat = name.split("/")
 
         cf_omat = np.all( c[i,blib.B_OMAT,0] == o[i,blib.B_OMAT,0] )

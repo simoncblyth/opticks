@@ -39,7 +39,7 @@ namespace fs = boost::filesystem;
 #include "OpticksAttrSeq.hh"
 
 
-const plog::Severity OpticksResource::LEVEL = debug ; 
+const plog::Severity OpticksResource::LEVEL = PLOG::EnvLevel("OpticksResource", "DEBUG") ; 
 
 /*
 TODO:

@@ -22,6 +22,17 @@
 interpolationTest
 ===================
 
+NB the python scripts compare results from this interpolationtest with those from 
+cfg4/tests/CInterpolationTest.cc 
+
+Which mixes up dependency order, as CInterpolationTest is run after interpolationTest.
+
+TODO:
+
+* rearrange the python interpolationTest scripts to eliminate duplication and
+  reposition to avoid skipping or fails ion first run due to funny ordering 
+
+
 **/
 
 class interpolationTest 
@@ -30,6 +41,9 @@ class interpolationTest
         interpolationTest(Opticks* ok, OContext* ocontext, OBndLib* obnd, const char* base);
         void launch(optix::Context& context);
         int ana();
+        std::string desc() const ; 
+    private:
+        void init();    
     private:
         Opticks*    m_ok ;
         bool        m_interpol ; 
@@ -48,19 +62,23 @@ class interpolationTest
 
 
 interpolationTest::interpolationTest(Opticks* ok, OContext* ocontext, OBndLib* obnd, const char* base)
-   :
-     m_ok(ok),
-     m_interpol(!ok->hasOpt("nointerpol")),
-     m_progname( m_interpol ? "interpolationTest" : "identityTest" ),
-     m_name(NULL),
-     m_ana(NULL),
-     m_ocontext(ocontext),
-     m_obnd(obnd),
-     m_base(strdup(base)), 
-     m_nb(obnd->getNumBnd()), 
-     m_out(NULL)
+    :
+    m_ok(ok),
+    m_interpol(!ok->hasOpt("nointerpol")),
+    m_progname( m_interpol ? "interpolationTest" : "identityTest" ),
+    m_name(NULL),
+    m_ana(NULL),
+    m_ocontext(ocontext),
+    m_obnd(obnd),
+    m_base(strdup(base)), 
+    m_nb(obnd->getNumBnd()), 
+    m_out(NULL)
 {
-     
+    init(); 
+}
+
+void interpolationTest::init()
+{
     if(m_interpol)
     {
         m_name = "interpolationTest_interpol.npy" ;
@@ -75,38 +93,62 @@ interpolationTest::interpolationTest(Opticks* ok, OContext* ocontext, OBndLib* o
         m_nx = m_obnd->getWidth();   // number of wavelength samples
         m_ny = m_obnd->getHeight();  // total number of float4 props
     } 
+    LOG(info) << desc(); 
 }
 
 
+std::string interpolationTest::desc() const 
+{
+    std::stringstream ss ; 
+    ss << " name " << m_name 
+       << " base " << m_base
+       << " ana " << m_ana
+       << " nb " << std::setw(5) << m_nb 
+       << " nx " << std::setw(5) << m_nx 
+       << " ny " << std::setw(5) << m_ny 
+       << " progname " << std::setw(30) << m_progname
+       ; 
+    return ss.str(); 
+}
+
+
+/**
+Hmm is this finding the rearranged PTX locations ?
+
+tests/cu/interpolationTest.cu
+**/
+
 void interpolationTest::launch(optix::Context& context)
 {
-    LOG(info) 
-              << " nb " << std::setw(5) << m_nb
-              << " nx " << std::setw(5) << m_nx
-              << " ny " << std::setw(5) << m_ny
-              << " progname " << std::setw(30) << m_progname
-              << " name " << m_name 
-              << " base " << m_base 
-              ;
-
     optix::Buffer buffer = context->createBuffer(RT_BUFFER_OUTPUT, RT_FORMAT_FLOAT4, m_nx, m_ny);
     context["out_buffer"]->setBuffer(buffer);   
 
     // rayleighTest uses standard PTX (for loading geometry, materials etc..)
     // as well as test PTX. Hence need to shift the PTX sourcing. 
+
     OConfig* cfg = m_ocontext->getConfig();
     cfg->setCMakeTarget("interpolationTest");
     cfg->setPTXRel("tests");
 
-
     OLaunchTest olt(m_ocontext, m_ok, "interpolationTest.cu", m_progname, "exception");
+
     olt.setWidth(  m_nx );   
     olt.setHeight( m_ny/8 );   // kernel loops over eight for matsur and num_float4
     olt.launch();
 
+    LOG(info) << olt.brief() ;  
+
+
     m_out = NPY<float>::make(m_nx, m_ny, 4);
     m_out->read( buffer->map() );
     buffer->unmap(); 
+
+    LOG(info) 
+        << " save "
+        << " base " << m_base  
+        << " name " << m_name
+        ;
+
     m_out->save(m_base, m_name);
 }
 
@@ -114,7 +156,10 @@ void interpolationTest::launch(optix::Context& context)
 int interpolationTest::ana()
 {
     std::string path = BFile::FormPath(m_ana);
-    return SSys::exec("python",path.c_str());
+    LOG(info) << " path " << path ; 
+    int RC = SSys::exec("python",path.c_str());
+    LOG(info) << " RC " << RC ; 
+    return RC ; 
 }
 
 

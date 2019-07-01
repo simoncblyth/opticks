@@ -34,7 +34,7 @@
 CInterpolationTest
 ====================
 
-The GPU analogue of this is oxrap-/tests/OInterpolationTest
+The GPU analogue of this is oxrap-/tests/interpolationTest
 
 ::
 
@@ -79,9 +79,9 @@ int main(int argc, char** argv)
     unsigned nm = tex->getShape(4);   //    4: float4 props
 
     const char* path = interpolate ? 
-             "$TMP/InterpolationTest/CInterpolationTest_interpol.npy"
+             "$TMP/interpolationTest/CInterpolationTest_interpol.npy"
           :
-             "$TMP/InterpolationTest/CInterpolationTest_identity.npy"
+             "$TMP/interpolationTest/CInterpolationTest_identity.npy"
           ;
 
 
