@@ -10,38 +10,132 @@ Clone the repository from bitbucket::
    hg clone http://bitbucket.org/simoncblyth/opticks 
    hg clone ssh://hg@bitbucket.org/simoncblyth/opticks   # via SSH for developers 
 
-Bash setup, envvars
----------------------
 
-Connect the opticks bash functions to your shell by adding a line to your *.bashrc* (Linux)
-OR *.bash_profile* (macOS).  Also configure the location of the install with the LOCAL_BASE environment variable 
-and the location of the source with the OPTICKS_HOME envvar::
+
+Bash Shell Setup with .opticks_setup
+---------------------------------------
+
+Example `~/.opticks_setup`:
+
+.. code-block:: sh
+
+    # .opticks_setup
+
+    export LOCAL_BASE=$HOME/local       
+    export OPTICKS_HOME=$HOME/opticks
+    export PYTHONPATH=$HOME
+
+    opticks-(){  [ -r $OPTICKS_HOME/opticks.bash ] && . $OPTICKS_HOME/opticks.bash && opticks-env $* ; }
+    opticks-     ##  
+
+    o(){ cd $(opticks-home) ; hg st ; }
+    op(){ op.sh $* ; }
+
+    PATH=$OPTICKS_HOME/bin:$OPTICKS_HOME/ana:$LOCAL_BASE/opticks/lib:$PATH  ## easy access to scripts and executables
+    export PATH
+
+    export OPTICKS_KEY=OKX4Test.X4PhysicalVolume.lWorld0x4bc2710_PV.f6cc352e44243f8fa536ab483ad390ce
+    ## picking a geometry
+
+
+Envvars:
+
+LOCAL_BASE
+    configures the root of the install, canonically "/usr/local" but can be $HOME/local of you dont 
+    have permissions for "/usr/local" 
+
+OPTICKS_HOME
+    path to the "opticks" source directory  
+
+PYTHONPATH
+    directory containing the "opticks" source directory, allowing "import opticks" 
+    to work from python scripts 
+
+OPTICKS_KEY
+    picks a geometry geocache, created with the geocache-create function   
+
+PATH
+    Opticks executables including more than 400 tests are installed into $LOCAL_BASE/opticks/lib, 
+    setting the PATH as indicated gives easy access to these as well as many scripts
+    
+
+The most important lines of the setup are::
 
    opticks-(){ . $HOME/opticks/opticks.bash && opticks-env $* ; }
-   export LOCAL_BASE=/usr/local   
-   export OPTICKS_HOME=$HOME/opticks
+   opticks-
+
 
 The first line defines the bash function *opticks-* that is termed a precursor function 
 as running it will define other functions all starting with *opticks-* such as *opticks-vi*
-and *opticks-usage*.
+and *opticks-usage*.  The second line runs the function which defines further functions.
 
-Some further .bash_profile setup simplifies use of Opticks binaries and analysis scripts::
 
-    op(){ op.sh $* ; } 
+Recommended bash setup arrangement
+------------------------------------
 
-    export PYTHONPATH=$HOME
-    export PATH=$LOCAL_BASE/opticks/lib:$OPTICKS_HOME/bin:$OPTICKS_HOME/ana:$PATH
+The recommended arrangment of bash setup scripts:
+
+* `~/.bash_profile` should source `~/.bashrc`
+* `~/.bashrc` should source `~/.opticks_setup` (PRIOR to any early exits)
+
+Using this approach succeeds to setup the opticks bash functions
+and exports with either "bash -l" or "bash -i" or from within
+scripts using shebang line "#!/bin/bash -l". 
+
+This makes the setup immune to differing treatments of when 
+`~/.bash_profile` and `~/.bashrc` are to invoked by various Linux 
+distros and macOS. 
+
+
+
+Example `~/.bash_profile`:
+
+.. code-block:: sh
+
+    # .bash_profile
+
+    if [ -f ~/.bashrc ]; then                 ## typical setup 
+            . ~/.bashrc
+    fi
+
+
+
+Some Linux distros (Ubuntu) have a default `.bashrc` which early exits. 
+It is necessary to *source ~/.opticks_setup* prior to the early exit.  
+Example `~/.bashrc`:
+
+.. code-block:: sh
+
+    # .bashrc
+
+    vip(){ vim ~/.bash_profile ~/.bashrc ~/.opticks_setup ; } 
+    ini(){ source ~/.bashrc ; } 
+
+    source ~/.opticks_setup
+
+    ##### below from default Ubuntu .bashrc early exits if bash is not invoked with -i option 
+
+    # If not running interactively, don't do anything
+    case $- in
+        *i*) ;;
+          *) return;;
+    esac
+
+
+
+For notes about this see `notes/issues/ubuntu-bash-login-shell-differences.rst`
+
 
 
 Check your bash environment setup
 -------------------------------------
 
-If the below commandline gives errors, check your *.bash_profile* OR *.bashrc*  
+If the below commandline gives errors, compare your *.bash_profile*  *.bashrc* and *.opticks_setup* with 
+the above examples. 
 
 ::
 
-    [blyth@localhost ~]$ bash -lc "opticks- ; opticks-info "    ## RHEL, Centos
-    [blyth@localhost ~]$ bash -ic "opticks- ; opticks-info "    ## Ubuntu
+    [blyth@localhost ~]$ bash -lc "opticks- ; opticks-info "    ## RHEL, Centos (and Ubuntu too)
 
     opticks-locations
     ==================
@@ -318,7 +412,7 @@ Sometimes due to the suitable NVIDIA driver not yet being installed by
 your system admin it is necessary to use older OptiX+CUDA versions.  
 Opticks aims to allow this for recent version combinations only.
 
-Extract from .bashrc::
+Extract from .opticks_setup::
 
     # The location to look for OptiX libs defaults to $(opticks-prefix)/externals/OptiX
     # to override that while testing a non-standard OptiX version set the OPTICKS_OPTIX_INSTALL_DIR envvar 
@@ -644,39 +738,9 @@ similar to the below which reports the OPTICKS_KEY value of the geometry::
 
 
 To reuse the geometry the OPTICKS_KEY envvar needs to be exported from 
-`.bash_profile` or `.bashrc`, see the next section for an example.
+`.opticks_setup`, see the next section for an example.
 
 
-
-Running Opticks Scripts and Executables
-----------------------------------------
-
-All Opticks executables including the tests are installed 
-into $LOCAL_BASE/opticks/lib/ an example `.bash_profile` 
-to is provided below:
-
-.. code-block:: sh
-
-    # .bash_profile
-
-    if [ -f ~/.bashrc ]; then                 ## typical setup 
-            . ~/.bashrc
-    fi
-
-    export LOCAL_BASE=$HOME/local             ## opticks hookup is needed by all Opticks users 
-    export OPTICKS_HOME=$HOME/opticks
-
-    opticks-(){  [ -r $HOME/opticks/opticks.bash ] && . $HOME/opticks/opticks.bash && opticks-env $* ; }
-    opticks-                                  ## defines several bash functions beginning opticks- eg opticks-info
-
-    o(){ cd $(opticks-home) ; hg st ; }
-    op(){ op.sh $* ; }
-
-    PATH=$OPTICKS_HOME/bin:$LOCAL_BASE/opticks/lib:$PATH  ## easy access to scripts and executables
-    export PATH
-
-    export OPTICKS_KEY=OKX4Test.X4PhysicalVolume.lWorld0x4bc2710_PV.f6cc352e44243f8fa536ab483ad390ce
-    ## picking a geometry
 
 
 Opticks NumPy based Analysis
