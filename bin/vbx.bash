@@ -27,6 +27,40 @@ It would be good for me to reproduce the problem in such a system
 But lets started with the latest Ubuntu 18.04.2 
 
 
+July 4th : Startup VirtualBox with Ubuntu on Precision Workstation running CentOS7
+------------------------------------------------------------------------------------- 
+
+* Applications > System Tools > Oracle VM Virtualbox 
+* Select Ubuntu_18.04.2 in left panel and click the Green Right Arrow to Start
+* Should get to login dialog within 30s 
+
+* "ssh V" fails with ECDSA key has changed error, so switch off StrictHostKeyChecking  
+   in the config to avoid having to edit known hosts 
+
+::
+
+    host V
+        user blyth
+        hostname 127.0.0.1
+        port 2222
+        StrictHostKeyChecking no
+
+* now "ssh V" gets in with a warning 
+
+
+Installed numpy with::
+
+   sudo apt install python-numpy
+
+
+Observed Gnome desktop graphics lockups while running VirtualBox, 
+forcing remote "/bin/reboot".  Noticed lxd and snap-confine AVC denials
+whilst seeing these problems.
+
+
+
+
+
 Alt Containers 
 ------------------
 
