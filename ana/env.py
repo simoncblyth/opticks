@@ -16,11 +16,12 @@ def _dirname(path, n):
     return path
 
 
-def opticks_environment(dump=False):
+def opticks_environment(ok):
    log.debug(" ( opticks_environment") 
-   env = OpticksEnv()
-   if dump:
+   env = OpticksEnv(ok)
+   if ok.dumpenv:
        env.dump()
+   pass 
    env.bash_export() 
    log.debug(" ) opticks_environment") 
 
@@ -99,7 +100,8 @@ class OpticksEnv(object):
         return os.path.join(self.env["OPTICKS_EXPORT_DIR"], detector)
 
 
-    def __init__(self, legacy=False):
+    def __init__(self, ok, legacy=False):
+        self.ok = ok 
         self.ext = {}
         self.env = {}
 
@@ -192,7 +194,7 @@ class OpticksEnv(object):
             line = "export %s=%s " % (k,v)
             lines.append(line)    
 
-        path = os.path.expandvars(path) 
+        path = self.ok.resolve(path)
 
         dir_ = os.path.dirname(path)
         if not os.path.isdir(dir_):

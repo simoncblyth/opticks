@@ -53,13 +53,14 @@ class OK(argparse.Namespace):
         """
         :return: path with $TMP tokens replaced with a TMP envvar OR the default of /tmp/USERNAME/opticks
         """
-        path = os.path.expandvars(arg)
         token = "$TMP"
-        value = os.environ.get(token[1:], self.tmpdefault )
+        tmpd = os.environ.get(token[1:], self.tmpdefault )
         if arg.find(token) > -1:
-            path = arg.replace(token,value)   
+            path = arg.replace(token,tmpd)   
+        else:
+            path = os.path.expandvars(arg)
         pass
-        assert path.find("$") == -1, ("path", "expecting only %s tokens in paths" % token ) 
+        assert path.find("$") == -1, "failed to resolve tokens in arg %s path %s " % (arg, path ) 
         #print("resolve arg %s to path %s " % (arg, path))
         return path
 
@@ -156,7 +157,7 @@ def opticks_args(**kwa):
     gmaxnode = kwa.get("gmaxnode", 0 ) 
     gmaxdepth = kwa.get("gmaxdepth", 0 ) 
     cfordering = kwa.get("cfordering", "self" ) 
-
+    dumpenv = kwa.get("dumpenv", False) 
 
     parser = argparse.ArgumentParser(doc)
 
@@ -239,6 +240,7 @@ def opticks_args(**kwa):
     parser.add_argument(     "--ip", action="store_true", help="Bash level option passthru. %(default)s ")
     parser.add_argument(     "--pdb", action="store_true", help="ipython level option passthru. %(default)s ")
     parser.add_argument(     "--extras", action="store_true", help="Bash level option passthru. %(default)s ")
+    parser.add_argument(     "--dumpenv", default=dumpenv, action="store_true", help="Dump enviroment. %(default)s ")
     parser.add_argument(     "--disco", action="store_true", help="Disable container, investigate suspected  inefficient raytrace of objects inside spacious containers. %(default)s ")
 
     parser.add_argument('nargs', nargs='*', help='nargs : non-option args')
@@ -312,10 +314,10 @@ def opticks_args(**kwa):
 
 
 def opticks_main(**kwa):
-    args = opticks_args(**kwa)
-    opticks_environment()
+    ok = opticks_args(**kwa)
+    opticks_environment(ok)
     np.set_printoptions(suppress=True, precision=4, linewidth=200)
-    return args
+    return ok
 
 
 if __name__ == '__main__':

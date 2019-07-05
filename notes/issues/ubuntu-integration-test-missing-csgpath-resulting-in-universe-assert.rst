@@ -143,4 +143,22 @@ default /tmp/USERNAME/opticks
 * C++ side is in BFile
 
 
+FIXED : Related Issue, another TMP assumption
+-----------------------------------------------------
+
+Running "ts box" dumped "$TMP/opticks_env.bash" in the invoking directory::
+
+    [blyth@localhost ana]$ o
+    M ana/main.py
+    ? ana/$TMP/opticks_env.bash
+    [blyth@localhost opticks]$ 
+
+::
+
+    [blyth@localhost opticks]$ opticks-f opticks_env.bash
+    ./ana/tmeta.py:    writing opticks environment to /tmp/blyth/opticks/opticks_env.bash 
+    ./ana/env.py:    def bash_export(self, path="$TMP/opticks_env.bash"):
+
+
+
 
