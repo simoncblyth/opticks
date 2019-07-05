@@ -430,13 +430,13 @@ class CSG(CSG_):
         3. saves METANAME csgmeta.json containing tree level metadata at top level
 
         """
+        assert type(trees) is list 
         #base = args.csgpath 
         assert args.csgpath is None, (args.csgpath, args.csgname, "args.csgpath no longer used, replace with csgname=${FUNCNAME/--} " )
-        base = "$TMP/%s" % args.csgname 
 
-        assert type(trees) is list 
+        base = args.resolve("$TMP/%s" % args.csgname )
         assert type(base) is str and len(base) > 5, ("invalid base directory %s " % base)
-        base = os.path.expandvars(base) 
+
         log.info("CSG.Serialize : writing %d trees to directory %s " % (len(trees), base))
         if not os.path.exists(base):
             os.makedirs(base)

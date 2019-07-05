@@ -2,7 +2,7 @@
 """
 """
 import numpy as np
-import os, sys, re, logging, argparse
+import os, sys, re, logging, argparse, platform
 from opticks.ana.env import opticks_environment
 from opticks.ana.OpticksQuery import OpticksQuery 
 from opticks.ana.nload import tagdir_
@@ -37,7 +37,31 @@ class OK(argparse.Namespace):
         return tagdir_(self.det, self.src, None, pfx=self.pfx )
     catdir = property(_get_catdir)
 
+    def _get_username(self):
+        """
+        Same approach as SSys::username
+        """
+        k = "USERNAME" if platform.system() == "Windows" else "USER"
+        return os.environ[k]
+    username = property(_get_username)
 
+    def _get_tmpdefault(self):
+        return os.path.join("/tmp", self.username, "opticks")  
+    tmpdefault = property(_get_tmpdefault)
+
+    def resolve(self, arg):
+        """
+        :return: path with $TMP tokens replaced with a TMP envvar OR the default of /tmp/USERNAME/opticks
+        """
+        path = os.path.expandvars(arg)
+        token = "$TMP"
+        value = os.environ.get(token[1:], self.tmpdefault )
+        if arg.find(token) > -1:
+            path = arg.replace(token,value)   
+        pass
+        assert path.find("$") == -1, ("path", "expecting only %s tokens in paths" % token ) 
+        #print("resolve arg %s to path %s " % (arg, path))
+        return path
 
 
 def opticks_args(**kwa):
