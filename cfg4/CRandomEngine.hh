@@ -6,6 +6,7 @@
 
 #include "CFG4_API_EXPORT.hh"
 #include "CFG4_HEAD.hh"
+#include "plog/Severity.h"
 
 class Opticks ; 
 class OpticksRun ; 
@@ -52,6 +53,7 @@ template <typename T> class BLocSeq ;
 
 class CFG4_API CRandomEngine : public CRandomListener, public CLHEP::HepRandomEngine 
 {
+        static const plog::Severity LEVEL ; 
     public:
         static std::string CurrentProcessName();
         static std::string FormLocation(const char* file, int line);

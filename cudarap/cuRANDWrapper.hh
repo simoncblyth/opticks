@@ -7,45 +7,52 @@ class LaunchSequence ;
 #include "cuda.h"
 #include "curand_kernel.h"
 
-/*
+/**
+cuRANDWrapper
+================
 
-  OptiX interop issues
-  ~~~~~~~~~~~~~~~~~~~~
+TODO
+--------
 
-  cuRANDWrapper works reliably with plain CUDA, but interop
-  with OptiX is fraught with difficulties.  However cannot
-  get rid of this as need this to setup the RNG caches that raytrace
-  consumes.
-
-  [SOLVED] Inconsistent save/load digests
-  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-  Was initially getting inconsistent save and load digests, but the 
-  test digests were coming out the same. So something was
-  wrong but it was not influencing the random numbers generated.
-
-  After using cudaMemset to zero the device buffer at allocation
-  the load and save digests are matching. This suggests that the 
-  init_curand leaves some of the buffer undefined.
+* bring this ancient code upto scratch, needs a drastic rewrite to become comprehensible
+* perhaps use a simular Thrust based approach similar to TRngBufTest 
 
 
-  buffer digests do not match file digests
-  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Ancient Issues
+-----------------
 
-  A commandline digest on the file does not match the digest 
-  from the buffer ? 
+OptiX interop issues
+~~~~~~~~~~~~~~~~~~~~
 
-  ::
+cuRANDWrapper works reliably with plain CUDA, but interop
+with OptiX is fraught with difficulties.  However cannot
+get rid of this as need this to setup the RNG caches that raytrace
+consumes.
 
-        delta:cudawrap blyth$ md5 /tmp/env/cuRANDWrapperTest/cachedir/cuRANDWrapper_786432_0_0.bin
-        MD5 (/tmp/env/cuRANDWrapperTest/cachedir/cuRANDWrapper_786432_0_0.bin) = eb42d4f18f8636a9a7f70577092ff22d
+[SOLVED] Inconsistent save/load digests
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Was initially getting inconsistent save and load digests, but the 
+test digests were coming out the same. So something was
+wrong but it was not influencing the random numbers generated.
+
+After using cudaMemset to zero the device buffer at allocation
+the load and save digests are matching. This suggests that the 
+init_curand leaves some of the buffer undefined.
 
 
-TODO:
-    bring this ancient code upto scratch, needs a drastic rewrite to become comprehensible
+buffer digests do not match file digests
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+A commandline digest on the file does not match the digest 
+from the buffer ? 
 
-*/
+::
+
+    delta:cudawrap blyth$ md5 /tmp/env/cuRANDWrapperTest/cachedir/cuRANDWrapper_786432_0_0.bin
+    MD5 (/tmp/env/cuRANDWrapperTest/cachedir/cuRANDWrapper_786432_0_0.bin) = eb42d4f18f8636a9a7f70577092ff22d
+
+**/
 
 
 #include "CUDARAP_API_EXPORT.hh"
@@ -69,25 +76,30 @@ class CUDARAP_API cuRANDWrapper {
 
   public: 
      const char* getCachePath() ;
-     unsigned int getSeed();
-     unsigned int getOffset();
-     bool isVerbose();
-     LaunchSequence* getLaunchSequence();
-     unsigned int getItems();
-     bool isOwner();
+  public: 
+     unsigned getSeed() const ;
+     unsigned getOffset() const ;
+     bool isVerbose() const ;
+     LaunchSequence* getLaunchSequence() const ;
+  public: 
+     unsigned getItems() const ;
+     bool hasCacheEnabled() const ;
+  public: 
+     void setItems(unsigned items);
+     void setCacheEnabled(bool enabled);
+  public: 
+     void setDevRngStates(CUdeviceptr dev_rng_states, bool owner );
+  public: 
+     CUdeviceptr getDevRngStates() const ;
+     bool isOwner() const ;
+  public: 
+     curandState* getHostRngStates() const ;
+  public: 
      char* digest();
      char* testdigest();
-     CUdeviceptr getDevRngStates();
-     curandState* getHostRngStates();
-
   public: 
      void setCacheDir(const char* dir);
-     void setDevRngStates(CUdeviceptr dev_rng_states, bool owner );
-     void setItems(unsigned int items);
-     void setCacheEnabled(bool enabled);
      void setImod(unsigned int imod);
-     bool hasCacheEnabled();
-
   public: 
      void resize(unsigned int elements);
      int LoadIntoHostBuffer(curandState* host_rng_states, unsigned int elements);
@@ -115,7 +127,7 @@ class CUDARAP_API cuRANDWrapper {
   private: 
      void devicesync();
      void allocate_rng();
-     void test_rng(const char* tag="test_rng");
+     void test_rng(const char* tag="test_rng", bool update_states=true );
 
   private:
      unsigned long long m_seed ;
@@ -127,7 +139,7 @@ class CUDARAP_API cuRANDWrapper {
      curandState*     m_host_rng_states ;
      float*           m_test ;
      LaunchSequence*  m_launchseq ; 
-     unsigned int     m_imod ;
+     unsigned         m_imod ;
      char*            m_cache_dir ; 
      bool             m_cache_enabled ;
      bool             m_owner ; 

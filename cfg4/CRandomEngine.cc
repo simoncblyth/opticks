@@ -31,6 +31,9 @@
 #include "CRandomEngine.hh"
 
 
+const plog::Severity CRandomEngine::LEVEL = PLOG::EnvLevel("CRandomEngine", "DEBUG") ; 
+
+
 
 std::string CRandomEngine::name() const 
 {
@@ -94,16 +97,20 @@ void CRandomEngine::dumpDouble(const char* msg, double* v, unsigned width ) cons
 
 void CRandomEngine::init()
 {
+    LOG(LEVEL) << "["; 
     initCurand();
     CLHEP::HepRandom::setTheEngine( this );  
+    LOG(LEVEL) << "]"; 
 }
 
 void CRandomEngine::initCurand()
 {
-    LOG(info) << ( m_curand ? m_curand->getShapeString() : "-" ) 
-              << " curand_ni " << m_curand_ni
-              << " curand_nv " << m_curand_nv
-              ; 
+    LOG(LEVEL) 
+        << " path " << m_path  
+        << ( m_curand ? m_curand->getShapeString() : "-" ) 
+        << " curand_ni " << m_curand_ni
+        << " curand_nv " << m_curand_nv
+        ; 
 
     if(!m_curand) return ; 
 
@@ -148,6 +155,14 @@ void CRandomEngine::setupCurandSequence(int record_id)
     assert( m_curand_nv > 0 ) ;
 
     m_curand_index = record_id ; 
+
+    LOG(LEVEL) 
+        << " record_id " << record_id
+        << " m_curand_index " << m_curand_index
+        << " m_curand_ni " << m_curand_ni
+        << " m_curand_nv " << m_curand_nv
+        ; 
+
 
     double* seq = m_curand->getValues(record_id) ; 
 

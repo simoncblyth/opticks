@@ -45,6 +45,29 @@ struct CUDARAP_API Launch {
 }; 
 
 
+/**
+LaunchSequence
+===============
+
+Old defaults, chosen while using macOS mobile GPU Geforce 750M:: 
+
+    unsigned max_blocks=128
+    unsigned threads_per_block=256  
+ 
+Example of a CUDA launch using this::
+
+    init_rng<<<launch.blocks_per_launch, launch.threads_per_block>>>( launch.threads_per_launch, launch.thread_offset, dev_rng_states_launch, seed, offset );
+
+Can experimeny with envvars
+
+    THREADS_PER_BLOCK
+        rather constrained even with TITAN V,  TITAN RTX cannot exceed 1024   
+
+    MAX_BLOCKS
+        not constrained, the maximum is enormous 
+
+
+**/
 
 class CUDARAP_API LaunchSequence {
 public:
@@ -72,6 +95,7 @@ private:
              unsigned int blocks_per_launch = remaining / m_threads_per_block ;
              if(remaining % m_threads_per_block != 0) blocks_per_launch += 1 ;  
              if( blocks_per_launch > m_max_blocks ) blocks_per_launch = m_max_blocks ; 
+             // blocks_per_launch sticks at m_max_blocks until the last launch of the sequence  
 
              unsigned int threads_per_launch = blocks_per_launch * m_threads_per_block ; 
              if(threads_per_launch > remaining) threads_per_launch = remaining ;

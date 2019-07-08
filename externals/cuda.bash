@@ -1089,7 +1089,7 @@ cuda-idir(){         echo $(cuda-dir)/include ; }
 
 cuda-writable-dir(){ 
   case $(uname) in
-    Linux) echo $(local-base)/env/cuda ;;
+    Linux) echo $(local-base) ;;
     Darwin) echo /usr/local/epsilon/cuda ;;
   esac
 } 
@@ -1187,9 +1187,9 @@ cuda-guide(){               open $(cuda-dir)/doc/html/cuda-c-programming-guide/i
 cuda-doc(){                 open $(cuda-dir)/doc/html/index.html ; }
 cuda-osx-kextstat(){        kextstat | grep -i cuda ; }
 
-cuda-pdf-(){ echo $(cuda-dir)/doc/pdf/CUDA_C_Programming_Guide.pdf ; }
-cuda-pdf(){ open $(cuda-pdf-) ; }
-
+cuda-pdf-(){ echo $(cuda-dir)/doc/pdf/${1:-CUDA_C_Programming_Guide}.pdf ; }
+cuda-pdf(){ open $(cuda-pdf-)  ; }
+cuda-curand(){ open $(cuda-pdf- CURAND_Library) ; }
 
 
 

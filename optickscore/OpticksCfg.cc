@@ -83,7 +83,8 @@ OpticksCfg<Listener>::OpticksCfg(const char* name, Listener* listener, bool live
        m_seed(42),     
        m_rtx(0),
        m_renderlooplimit(0),
-       m_rngmax(3000000),     
+       m_rngmax(3),     
+       m_rngmaxscale(1000000),     
        m_bouncemax(9),     
        m_recordmax(10),
        m_timemaxthumb(6.f),
@@ -901,7 +902,7 @@ void OpticksCfg<Listener>::init()
 
    char rngmax[256];
    snprintf(rngmax,256, 
-"Maximum number of photons that can be generated/propagated as limited by the number of pre-persisted curand streams. "
+"Maximum number of photons (in millions) that can be generated/propagated as limited by the number of pre-persisted curand streams. "
 "Value must match envvar CUDAWRAP_RNG_MAX and corresponding pre-cooked seeds, see cudawrap- for details. "
 "Default %d ", m_rngmax);
 
@@ -1625,7 +1626,7 @@ int OpticksCfg<Listener>::getRenderLoopLimit() const
 template <class Listener>
 int OpticksCfg<Listener>::getRngMax()
 {
-    return m_rngmax ; 
+    return m_rngmax*m_rngmaxscale ; 
 }
 
 template <class Listener>

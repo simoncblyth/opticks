@@ -211,6 +211,7 @@ private:
      int         m_rtx ; 
      int         m_renderlooplimit ; 
      int         m_rngmax ; 
+     int         m_rngmaxscale ;  
      int         m_bouncemax ; 
      int         m_recordmax ; 
      float       m_timemaxthumb ; 

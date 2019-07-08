@@ -26,30 +26,63 @@ ORng::ORng(Opticks* ok, OContext* ocontext)
    init();
 }
 
+/**
+ORng::init
+-------------
+
+Formerly used INPUT_OUTPUT m_rng_states but Opticks does the full simulation
+in one kernel call so there is no need to persist curandState into global buffer, 
+the curandState is copied into registers and updated by curand_uniform calls::
+
+   m_rng_states = m_context->createBuffer( RT_BUFFER_INPUT_OUTPUT, RT_FORMAT_USER);
+
+
+The use of LoadIntoHostBuffer looks a bit perplexing but contrast with OContext::upload
+using memcpy to copy into a mapped host pointer is the standard way to load into an 
+OptiX buffer. However this can be done with one less GPU buffer by using interop to 
+get OptiX to adopt the CUDA buffer which already exists. 
+
+**/
+
 void ORng::init()
 {
-    unsigned int rng_max = m_ok->getRngMax();
+    unsigned rng_max = m_ok->getRngMax();
     if(rng_max == 0 )
     {
-        LOG(warning) << "ORng::init"   
-                     << " EARLY EXIT "
-                     << " rng_max " << rng_max
-                     ;
+        LOG(error) 
+            << " EARLY EXIT "
+            << " rng_max " << rng_max
+            ;
         return ;
     }
     const char* rngCacheDir = m_ok->getRNGInstallCacheDir();
     unsigned num_mask = m_mask.size() ; 
 
-    LOG(LEVEL) << "ORng::init"
-               << " rng_max " << rng_max
-               << " rngCacheDir " << rngCacheDir
-               << " num_mask " << num_mask
-               ;
+    LOG(LEVEL) 
+        << " rng_max " << rng_max
+        << " rngCacheDir " << rngCacheDir
+        << " num_mask " << num_mask
+        ;
 
-    m_rng_wrapper = cuRANDWrapper::instanciate( rng_max, rngCacheDir );
+    unsigned long long seed = 0ull ; 
+    unsigned long long offset = 0ull ; 
+
+    // these are the defaults that have been in use for years... 
+    // they should be adjusted depending on the GPU 
+    // BUT this will have no impact here, it is only relevant when  
+    // creating the curandState buffer with cudarap-prepare-installcache
+    // HMM : this API needs overhaul as it gives the wrong impression of 
+    // what is possible  
+
+    unsigned max_blocks = 128 ; 
+    unsigned threads_per_block = 256 ; 
+
+    bool verbose = false ; 
+
+    m_rng_wrapper = cuRANDWrapper::instanciate( rng_max, rngCacheDir, seed, offset, max_blocks, threads_per_block, verbose );
 
     // OptiX owned RNG states buffer (not CUDA owned)
-    m_rng_states = m_context->createBuffer( RT_BUFFER_INPUT_OUTPUT, RT_FORMAT_USER);
+    m_rng_states = m_context->createBuffer( RT_BUFFER_INPUT, RT_FORMAT_USER);      
 
     m_rng_states->setElementSize(sizeof(curandState));
 

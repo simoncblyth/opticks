@@ -1,15 +1,9 @@
-# === func-gen- : cudarap/cudarap fgp cudarap/cudarap.bash fgn cudarap fgh cudarap
-cudarap-rel(){      echo cudarap ; }
-cudarap-src(){      echo cudarap/cudarap.bash ; }
-cudarap-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(cudarap-src)} ; }
+cudarap-source(){   echo $BASH_SOURCE ; }
 cudarap-vi(){       vi $(cudarap-source) ; }
 cudarap-usage(){ cat << EOU
 
 CUDAWrap
 ==========
-
-
-
 
 CentOS7
 ----------
@@ -141,9 +135,6 @@ Tools not cooperating on macOS
 
     simon:boostrap blyth$ cudafe --display_error_number
     Command-line error #593: missing source file name
-
-
-
 
 
 CUDARAP usage
@@ -554,14 +545,30 @@ cudarap-test()
 }
 
 
-cudarap-rngmax(){ echo $(( 3*1000*1000 )) ; } # maximal number of photons that can be handled
-#cudarap-rngdir(){ echo $(opticks-prefix)/cache/rng  ; }
+#cudarap-rngmax-M(){ echo 1 ; }
+cudarap-rngmax-M(){ echo 3 ; }
+#cudarap-rngmax-M(){ echo 10 ; }
+#cudarap-rngmax-M(){ echo 100 ; }
+
+cudarap-rngmax(){ echo $(( $(cudarap-rngmax-M)*1000*1000 )) ; } # maximal number of photons that can be handled
 
 cudarap-rngdir(){ echo $(opticks-prefix)/installcache/RNG  ; }
 cudarap-prepare-installcache()
 {
    CUDARAP_RNG_DIR=$(cudarap-rngdir) CUDARAP_RNG_MAX=$(cudarap-rngmax) $(cudarap-ibin)
 }
+
+
+cudarap-test-1M()
+{
+   local path=cuRANDWrapper_1000000_0_0.bin 
+   cd $(cudarap-rngdir)
+   rm $path
+
+   cuRANDWrapper=INFO CUDARAP_RNG_DIR=$(cudarap-rngdir) CUDARAP_RNG_MAX=$(( 1*1000*1000 )) MAX_BLOCKS=4096 $(cudarap-ibin)
+   ## tried changing MAX_BLOCKS to do more in a single launch, but did not have significant effect in total kernel time
+}
+
 
 
 
