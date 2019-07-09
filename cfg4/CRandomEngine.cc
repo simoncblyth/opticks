@@ -30,6 +30,9 @@
 #include "CStepping.hh"
 #include "CRandomEngine.hh"
 
+#ifdef DYNAMIC_CURAND
+#include "TCURAND.hh"
+#endif
 
 const plog::Severity CRandomEngine::LEVEL = PLOG::EnvLevel("CRandomEngine", "DEBUG") ; 
 
@@ -53,14 +56,22 @@ CRandomEngine::CRandomEngine(CG4* g4)
     m_g4evt(NULL),
     m_mask(m_ok->getMask()),
     m_masked(m_mask.size() > 0),
-    m_path("$TMP/TRngBufTest.npy"),
     m_alignlevel(m_ok->getAlignLevel()),
     m_seed(9876),
     m_internal(false),
     m_skipdupe(true),
     m_locseq(m_alignlevel > 1 ? new BLocSeq<unsigned long long>(m_skipdupe) : NULL ),
+    m_tranche_size(100000),
+    m_tranche_id(-1),
+    m_tranche_ibase(-1),
+    m_tranche_index(-1),
+#ifdef DYNAMIC_CURAND
+    m_tcurand(new TCURAND<double>(m_tranche_size,16,16)),
+    m_curand(m_tcurand->getArray()),
+#else
+    m_path("$TMP/TRngBufTest_0.npy"),
     m_curand(NPY<double>::load(m_path)),
-    m_curand_index(-1),
+#endif
     m_curand_ni(m_curand ? m_curand->getShape(0) : 0 ),
     m_curand_nv(m_curand ? m_curand->getNumValues(1) : 0 ),  // itemvalues
     m_current_record_flat_count(0),
@@ -79,10 +90,14 @@ bool CRandomEngine::hasSequence() const
     return m_curand && m_curand_ni > 0 && m_curand_nv > 0 ; 
 }
 
+#ifdef DYNAMIC_CURAND
+#else
 const char* CRandomEngine::getPath() const 
 {
     return m_path ; 
 }
+#endif
+
 
 void CRandomEngine::dumpDouble(const char* msg, double* v, unsigned width ) const 
 {
@@ -106,15 +121,33 @@ void CRandomEngine::init()
 void CRandomEngine::initCurand()
 {
     LOG(LEVEL) 
-        << " path " << m_path  
+#ifdef DYNAMIC_CURAND
+        << " DYNAMIC_CURAND " 
+#else
+        << " STATIC_CURAND path " << m_path  
+#endif
         << ( m_curand ? m_curand->getShapeString() : "-" ) 
         << " curand_ni " << m_curand_ni
         << " curand_nv " << m_curand_nv
         ; 
 
+#ifdef DYNAMIC_CURAND
+#else
+    checkTranche();  
+#endif
+}
+
+void CRandomEngine::checkTranche()
+{
+    if(!m_curand) return ; 
+    assert( m_curand->hasShape(m_tranche_size,16,16)) ; 
+}
+
+void CRandomEngine::dumpTranche()
+{
     if(!m_curand) return ; 
 
-    assert( m_curand->hasShape(-1,16,16)) ; 
+    assert( m_curand->hasShape(m_tranche_size,16,16)) ; 
         
     unsigned w = 4 ; 
     if( m_curand_ni > 0 )
@@ -123,48 +156,95 @@ void CRandomEngine::initCurand()
     if( m_curand_ni > 1 )
          dumpDouble( "v1" , m_curand->getValues(1), w ) ; 
 
-    if( m_curand_ni > 99999 )
-        dumpDouble( "v99999" , m_curand->getValues(99999), w ) ; 
+    if( m_curand_ni > m_tranche_size - 1  )
+        dumpDouble( "v-1" , m_curand->getValues(m_tranche_size - 1), w ) ; 
 }
+
+
+#ifdef DYNAMIC_CURAND
+/**
+CRandomEngine::setupTranche
+-------------------------------
+
+Invoked from setupCurandSequence when a photon record_id
+which is not within the current tranche.
+
+HMM potential for very inefficient if G4 photon record_id 
+jumps around between tranches
+
+**/
+
+void CRandomEngine::setupTranche(int tranche_id)
+{
+    m_tranche_id = tranche_id ; 
+    m_tranche_ibase = m_tranche_id*m_tranche_size ; 
+
+    LOG(LEVEL) 
+        << " DYNAMIC_CURAND "
+        << " m_tranche_id " << m_tranche_id 
+        << " m_tranche_size " << m_tranche_size
+        << " m_tranche_ibase " << m_tranche_ibase
+        ;
+
+    m_tcurand->setIBase(m_tranche_ibase); 
+    checkTranche();
+}
+#endif
+
+
+/**
+CRandomEngine::setupCurandSequence
+-----------------------------------
+
+Invoked from preTrack to prepare the random sequence for 
+a single photon.
+
+STATIC_CURAND 
+    limited to the 16*16*100k randoms precooked for 100k photons by TRngBufTest 
+
+DYNAMIC_CURAND 
+    removes the limitation using TCURAND to dynamically generate the 16*16*100k 
+    randoms for 100k photons in tranches 
+
+
+TODO: report or assert on photons that cycle the sequence, 
+      that would cause misalignment of long history photons :
+      as on GPU there is no re-cycling it just contines calling 
+      curand_uniform beyond the precooked limit of 16*16 randoms per photon
+
+**/
 
 void CRandomEngine::setupCurandSequence(int record_id)
 {
-    if( m_curand_ni == 0 )
+#ifdef DYNAMIC_CURAND
+    int tranche_id = record_id/m_tranche_size ; 
+    if( tranche_id != m_tranche_id ) // <-- TODO: check do not get flip-flip between tranches 
     {
-        LOG(fatal) 
-            << " m_curand_ni ZERO "
-            << " no precooked RNG have been loaded from " 
-            << " m_path " << m_path
-            << " : try running : TRngBufTest "
-            ;
-
+        setupTranche(tranche_id); 
     }
-    assert( m_curand_ni > 0 );
-
+    m_tranche_index = record_id - m_tranche_ibase ; 
+    // dynamically generates the randoms in this tranche, so will always be in range 
+#else
+    assert( m_curand_ni > 0 && " no precooked RNG loaded see : TRngBufTest " );
     bool in_range = record_id > -1 && record_id < m_curand_ni ; 
-
-    if(!in_range)
-       LOG(fatal)
-           << " OUT OF RANGE " 
-           << " record_id " << record_id
-           << " m_curand_ni " << m_curand_ni
-           ; 
+    if(!in_range) LOG(fatal) << " OUT OF RANGE " << " record_id " << record_id << " m_curand_ni " << m_curand_ni ; 
 
     assert( in_range ); 
-
     assert( m_curand_nv > 0 ) ;
 
-    m_curand_index = record_id ; 
+    m_tranche_index = record_id ; 
+#endif
 
     LOG(LEVEL) 
         << " record_id " << record_id
-        << " m_curand_index " << m_curand_index
+        << " m_tranche_id " << m_tranche_id
+        << " m_tranche_size " << m_tranche_size
+        << " m_tranche_index " << m_tranche_index
         << " m_curand_ni " << m_curand_ni
         << " m_curand_nv " << m_curand_nv
         ; 
 
-
-    double* seq = m_curand->getValues(record_id) ; 
+    double* seq = m_curand->getValues(m_tranche_index) ; 
 
     setRandomSequence( seq, m_curand_nv ) ; 
 
@@ -467,9 +547,12 @@ Hmm this aint going to work for aligning generation
 as the track aint born yet... need to set the photon
 index back in the PostStepDoIt generation loop/ 
 
+Currently are avoiding this issue by only using alignment
+with input photons.
+
 And need to retain separate cursors for the streams for 
 each photon, as the generation loop generates all photons
-each consuming a vaying number of RNG  
+each consuming a varying number of RNG  
 and then starts propagating them.  This differs from Opticks
 which does generation and propagation in each thread sequentially.
 

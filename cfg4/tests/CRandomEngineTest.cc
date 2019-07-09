@@ -28,7 +28,7 @@ struct CRandomEngineTest
         if(!_engine.hasSequence())
         {
              LOG(error) << " engine has no RNG sequences loaded " 
-                        << " create input file " << _engine.getPath()
+                        << " create STATIC_CURAND input file " 
                         << " with TRngBufTest " 
                         ; 
              return ; 
@@ -70,9 +70,15 @@ int main(int argc, char** argv)
 
     LOG(info) << argv[0] ; 
 
-    int pindex = argc > 1 ? atoi(argv[1]) : 0 ; 
+    int pindex1 = argc > 1 ? atoi(argv[1]) : 0 ; 
+    int pindex2 = argc > 2 ? atoi(argv[2]) : pindex1 + 1 ; 
+    int pstep   = argc > 3 ? atoi(argv[3]) : 1 ; 
 
-    LOG(info) << " pindex " << pindex ; 
+    LOG(info) 
+        << " pindex1 " << pindex1 
+        << " pindex2 " << pindex2  
+        << " pstep " << pstep 
+        ; 
 
     Opticks ok(argc, argv );
     ok.setModeOverride( OpticksMode::CFG4_MODE );   // with GPU running this is COMPUTE/INTEROP
@@ -82,7 +88,12 @@ int main(int argc, char** argv)
     CG4* g4 = new CG4(&hub) ; 
 
     CRandomEngineTest ret(g4) ; 
-    ret.print(pindex); 
+
+    for(int pindex=pindex1 ; pindex < pindex2 ; pindex+=pstep )
+    {
+        ret.print(pindex); 
+    }
+
 
     return 0 ; 
 }

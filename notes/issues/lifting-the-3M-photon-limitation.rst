@@ -511,5 +511,14 @@ Now need higher level interface to get these randoms within CRandomEngine withou
 
 
 
+Added DYNAMIC_CURAND section to CRandomEngine
+-----------------------------------------------
+
+::
+
+    TCURAND=ERROR CRandomEngine=ERROR CRandomEngineTest
+    TCURAND=ERROR CRandomEngine=ERROR CRandomEngineTest 100000 
+    TCURAND=ERROR CRandomEngine=ERROR CRandomEngineTest 99999 100001    # check crossing tranches
+
 
 

@@ -10,6 +10,7 @@ random numbers, exposing functionality from TRngBuf
 **/
 
 #include "THRAP_API_EXPORT.hh" 
+#include "plog/Severity.h"
 
 template <typename T> class NPY ; 
 template <typename T> class TCURANDImp ; 
@@ -17,6 +18,7 @@ template <typename T> class TCURANDImp ;
 template<typename T>
 class THRAP_API TCURAND
 {
+        static const plog::Severity LEVEL ; 
     public:
         TCURAND( unsigned ni, unsigned nj, unsigned nk);  
         void     setIBase(unsigned ibase); 

@@ -51,6 +51,14 @@ WITH_ALIGN_DEV_DEBUG
 template <typename T> class BLocSeq ; 
 
 
+#define DYNAMIC_CURAND 1
+
+
+#ifdef DYNAMIC_CURAND
+template <typename T> class TCURAND ; 
+#endif
+
+
 class CFG4_API CRandomEngine : public CRandomListener, public CLHEP::HepRandomEngine 
 {
         static const plog::Severity LEVEL ; 
@@ -61,7 +69,11 @@ class CFG4_API CRandomEngine : public CRandomListener, public CLHEP::HepRandomEn
         CRandomEngine(CG4* g4);
         void dumpDouble(const char* msg, double* v, unsigned width ) const  ; 
         bool hasSequence() const ; 
+
+#ifdef DYNAMIC_CURAND
+#else
         const char* getPath() const ; 
+#endif
     protected:
         friend class CG4 ; 
         friend struct CRandomEngineTest ; 
@@ -74,6 +86,12 @@ class CFG4_API CRandomEngine : public CRandomListener, public CLHEP::HepRandomEn
     private:
         void init(); 
         void initCurand(); 
+
+        void checkTranche(); 
+        void dumpTranche(); 
+#ifdef DYNAMIC_CURAND
+        void setupTranche(int tranche_id); 
+#endif
         void setupCurandSequence(int record_id);
 
         void dump(const char* msg) const ; 
@@ -109,15 +127,21 @@ class CFG4_API CRandomEngine : public CRandomListener, public CLHEP::HepRandomEn
         const std::vector<unsigned>&  m_mask ;  
         bool                          m_masked ;  
 
-        const char*              m_path ; 
         int                      m_alignlevel ; 
         long                     m_seed ; 
         bool                     m_internal ; 
         bool                     m_skipdupe ; 
         BLocSeq<unsigned long long>*  m_locseq ; 
-
+        int                      m_tranche_size ; 
+        int                      m_tranche_id ; 
+        int                      m_tranche_ibase ; 
+        int                      m_tranche_index ; 
+#ifdef DYNAMIC_CURAND
+        TCURAND<double>*         m_tcurand ; 
+#else
+        const char*              m_path ; 
+#endif
         NPY<double>*             m_curand ; 
-        int                      m_curand_index ; 
         int                      m_curand_ni ; 
         int                      m_curand_nv ; 
         int                      m_current_record_flat_count ; 

@@ -22,8 +22,16 @@ Samples
 * https://github.com/NVIDIA/cuda-samples
 
 
+CUDA learning refs
+---------------------
 
+* https://streamhpc.com/blog/2017-01-24/many-threads-can-run-gpu/
 
+CUDA Application Design and Development, Chapter 1 - First Programs and How to Think in CUDA
+
+* https://www.sciencedirect.com/science/article/pii/B978012388426800001X
+
+* https://www.sciencedirect.com/topics/computer-science/amdahls-law
 
 
 CUDA envvars

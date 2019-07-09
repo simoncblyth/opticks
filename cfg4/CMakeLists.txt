@@ -1,7 +1,13 @@
 cmake_minimum_required(VERSION 3.5 FATAL_ERROR)
 set(name CFG4)
 project(${name} VERSION 0.1.0)
-include(OpticksBuildOptions)   
+include(OpticksBuildOptions)  
+
+if(POLICY CMP0077)  # see note/issues/cmake-3.13.4-FindCUDA-warnings.rst
+    cmake_policy(SET CMP0077 OLD)
+endif()
+
+ 
 
 find_package(G4              REQUIRED MODULE)
 find_package(ExtG4           REQUIRED CONFIG) 
@@ -9,6 +15,7 @@ find_package(ExtG4           REQUIRED CONFIG)
 
 find_package(OpticksXercesC  REQUIRED MODULE)
 find_package(OpticksGeo      REQUIRED CONFIG)
+find_package(ThrustRap       REQUIRED CONFIG)   # for TCURAND
 
 
 
@@ -260,6 +267,7 @@ target_link_libraries( ${name} PUBLIC
    Opticks::ExtG4
    Opticks::OpticksXercesC
    Opticks::OpticksGeo
+   Opticks::ThrustRap
 )
 target_compile_definitions( ${name} 
    PUBLIC OPTICKS_CFG4 

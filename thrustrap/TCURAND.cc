@@ -1,6 +1,9 @@
 #include "TCURAND.hh"
 #include "TCURANDImp.hh"
+#include "PLOG.hh"
 
+template <typename T>
+const plog::Severity TCURAND<T>::LEVEL = PLOG::EnvLevel("TCURAND", "DEBUG") ; 
 
 template <typename T>
 TCURAND<T>::TCURAND(unsigned ni, unsigned nj, unsigned nk)
@@ -12,6 +15,7 @@ TCURAND<T>::TCURAND(unsigned ni, unsigned nj, unsigned nk)
 template <typename T>
 void TCURAND<T>::setIBase(unsigned ibase)
 {
+    LOG(LEVEL) << " ibase " << ibase ; 
     m_imp->setIBase(ibase); 
 }
 
