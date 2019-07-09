@@ -19,6 +19,7 @@ DevNotes
 
 #include <string>
 #include <vector>
+#include "plog/Severity.h"
 
 
 #if defined __APPLE__
@@ -41,10 +42,12 @@ DevNotes
 
 class SYSRAP_API SDigest 
 {
+       static const plog::Severity LEVEL ;    
    public:
        static const char* hexchar ; 
        static bool IsDigest(const char* s);
 
+       static std::string DigestPathInByteRange(const char* path, int i0, int i1, unsigned bufsize=8192); 
        static std::string DigestPath(const char* path, unsigned bufsize=8192);
        static std::string DigestPath2(const char* path);
 

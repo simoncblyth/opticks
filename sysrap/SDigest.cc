@@ -1,4 +1,5 @@
 #include "SDigest.hh"
+#include "SSys.hh"
 
 #include <cstdio>
 #include <cstdlib>
@@ -6,6 +7,133 @@
 #include <cassert>
 
 #include <iostream>
+
+#include "PLOG.hh"
+
+const plog::Severity SDigest::LEVEL = PLOG::EnvLevel("SDigest", "DEBUG") ; 
+
+
+/**
+
+
+Byte range covering multiple bufsize::
+
+           ---------- 
+      i0   ~~~~~~~~~~
+           ----------  
+           
+           ----------  
+      i1   ~~~~~~~~~~
+           ----------  
+      
+Byte range within one bufsize::
+
+
+           ---------- 
+      i0   ~~~~~~~~~~
+           
+      i1   ~~~~~~~~~~
+           ----------  
+ 
+
+
+           ----------  
+
+**/
+
+std::string SDigest::DigestPathInByteRange(const char* path, int i0, int i1, unsigned bufsize)
+{
+    LOG(LEVEL) 
+        << " path " << path 
+        << " i0 " << i0 
+        << " i1 " << i1 
+        << " bufsize " << bufsize
+        ; 
+
+    FILE* fp = fopen(path, "rb");
+    if (fp == NULL) 
+    {
+        LOG(error) << "failed to open path [" << path << "]"  ; 
+        return "" ; 
+    }
+    SDigest dig ; 
+    char* data = new char[bufsize] ; 
+    int bytes ; 
+
+    int beg = 0 ; // byte index of beginning of buffer in the file
+    int end = 0 ; 
+    int tot = 0 ;  
+
+    assert( i1 > i0 ) ; 
+
+    while ((bytes = fread (data, 1, bufsize, fp)) != 0) 
+    {
+        end = beg + bytes ;  
+
+        bool starts = i0 >= beg && i0 < end ;  // capture starts within this bufsize full  
+        bool ends   = i1 <= end ;              // capture ends within this bufsize full 
+
+        int idx0(-1) ;  
+        int idx1(-1) ;  
+
+        if( starts && ends )
+        {
+            idx0 = i0 - beg ;   
+            idx1 = i1 - beg ;   
+        }
+        else if( starts && !ends )
+        {
+            idx0 = i0 - beg ;   
+            idx1 = bytes ;   
+        }
+        else if( !starts && ends )
+        { 
+            idx0 = 0 ; 
+            idx1 = i1 - beg ; 
+        }
+        else if( !starts && !ends && tot > 0 )  // entire buffer goes to update
+        {
+            idx0 = 0 ; 
+            idx1 = bytes ;   
+        } 
+
+
+        int nup =  idx1 - idx0 ; 
+        bool update = idx0 > -1 && idx1 > -1 ; 
+
+        std::string x = update ? SSys::xxd( data+idx0, nup ) : "-" ; 
+
+        LOG(LEVEL)
+           << " bytes " << std::setw(8) << bytes 
+           << " beg "  << std::setw(8) << beg
+           << " end "  << std::setw(8) << end
+           << " idx0 " << std::setw(8) << idx0 
+           << " idx1 " << std::setw(8) << idx1
+           << " nup "  << std::setw(8) << nup
+           << ( starts ? " S " : "   ")
+           << ( ends ?   " E " : "   ")
+           << ( update ? " U " : "   ")
+           << " x " << x  
+           ; 
+
+        if(update)
+        {
+            dig.update(data+idx0, nup );   
+            tot += nup ;  
+        } 
+
+        if( ends ) break ; 
+
+        beg += bytes ;   
+    }
+
+    delete[] data ; 
+
+    std::string sdig =  dig.finalize();
+    LOG(LEVEL) << " sdig " << sdig ; 
+    return sdig ; 
+}
+
 
 
 std::string SDigest::DigestPath(const char* path, unsigned bufsize)
@@ -161,6 +289,8 @@ void SDigest::update(const std::string& str)
 
 void SDigest::update(char* buffer, int length)
 {
+
+
     md5digest_str2md5_update(m_ctx, buffer, length );
 }
 

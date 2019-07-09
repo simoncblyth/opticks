@@ -109,6 +109,8 @@ int SSys::npdump(const char* path, const char* nptype, const char* postview, con
 
 void SSys::xxdump(char* buf, int num_bytes, int width, char non_printable )
 {
+
+/*
      LOG(info) << " SSys::xxdump "
              << " '0' " << (int)'0' 
              << " '9' " << (int)'9' 
@@ -117,6 +119,7 @@ void SSys::xxdump(char* buf, int num_bytes, int width, char non_printable )
              << " 'a' " << (int)'a'
              << " 'z' " << (int)'z'
              ;
+*/
 
     for(int i=0 ; i < num_bytes ; i++) 
     {   
@@ -128,6 +131,18 @@ void SSys::xxdump(char* buf, int num_bytes, int width, char non_printable )
 }
 
 
+std::string SSys::xxd( char* buf, int num_bytes, int width, char non_printable )
+{
+    std::stringstream ss ;  
+    for(int i=0 ; i < num_bytes ; i++) 
+    {   
+        char c = buf[i] ; 
+        bool printable = c >= ' ' && c <= '~' ;  // https://en.wikipedia.org/wiki/ASCII
+        ss << ( printable ? c : non_printable )  ;
+        if((i+1) % width == 0 ) ss << "\n" ; 
+   }   
+   return ss.str(); 
+}
 
 
 

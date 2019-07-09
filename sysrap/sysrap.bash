@@ -65,6 +65,25 @@ sysrap-txt(){     vi $(sysrap-sdir)/CMakeLists.txt $(sysrap-tdir)/CMakeLists.txt
 sysrap-csg(){ head -20 $(sysrap-dir)/OpticksCSG.h ; }
 
 
+sysrap-SDigestTest-(){ cat << EOF
+0123456789abcdef0123456789abcdef
+EOF
+}
+
+sysrap-SDigestTest()
+{
+    local path=/tmp/$FUNCNAME.txt
+    $FUNCNAME- > $path
+    echo $path 
+    ls -l $path
+
+    SDigestTest $path 0  16
+    SDigestTest $path 16 32
+
+}
+
+
+
 sysrap-csg-generate()
 {
     local msg="$FUNCNAME : " 

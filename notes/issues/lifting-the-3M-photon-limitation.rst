@@ -279,9 +279,49 @@ Rearranged rngmax option to be in millions, so can easily switch between which c
    --rngmax 10
    --rngmax 100
 
-TODO: find or create a tool to compute a byte range digest, so can check these match appropriately  
+
+Checking the byte digests match
+-------------------------------------
+
+DONE : added SDigest::DigestPathInByteRange  so can check the persisted curandStates match appropriately  
 
 
+::
+
+    [blyth@localhost RNG]$ l
+    total 4898892
+    -rw-r--r--. 1 blyth blyth       7453 Jul  8 22:34 cuRANDWrapperTest.log
+    -rw-rw-r--. 1 blyth blyth   44000000 Jul  8 22:34 cuRANDWrapper_1000000_0_0.bin
+    -rw-rw-r--. 1 blyth blyth 4400000000 Jul  8 21:31 cuRANDWrapper_100000000_0_0.bin
+    -rw-rw-r--. 1 blyth blyth  440000000 Jul  8 21:03 cuRANDWrapper_10000000_0_0.bin
+    -rw-rw-r--. 1 blyth blyth          0 Jul  8 21:01 cuRANDWrapper_0_0_0.bin
+    -rw-rw-r--. 1 blyth blyth     450560 Jul  6  2018 cuRANDWrapper_10240_0_0.bin
+    -rw-rw-r--. 1 blyth blyth  132000000 Jul  6  2018 cuRANDWrapper_3000000_0_0.bin
+
+    [blyth@localhost RNG]$ SDigestTest cuRANDWrapper_1000000_0_0.bin                 ## digest of 1M file  
+    cd6b269c6f64b8e03329e1fc349c21f9
+    [blyth@localhost RNG]$ SDigestTest cuRANDWrapper_10000000_0_0.bin 0 44000000     ## 1st 1M portion of 10M file matches 1M file
+    2019-07-09 19:52:26.149 INFO  [352212] [test_DigestPathInByteRange@99]  path cuRANDWrapper_10000000_0_0.bin i0 0 i1 44000000
+    cd6b269c6f64b8e03329e1fc349c21f9
+    [blyth@localhost RNG]$ 
+    [blyth@localhost RNG]$ SDigestTest cuRANDWrapper_100000000_0_0.bin 0 44000000    ## 1st 1M portion of 100M file matches 1M file
+    2019-07-09 19:52:54.181 INFO  [352937] [test_DigestPathInByteRange@99]  path cuRANDWrapper_100000000_0_0.bin i0 0 i1 44000000
+    cd6b269c6f64b8e03329e1fc349c21f9
+
+
+::
+
+    [blyth@localhost RNG]$ SDigestTest  cuRANDWrapper_10000000_0_0.bin           ## digest of 10M file
+    ffe00cfef9d97aeef4c1cf085fd46a6a
+
+    [blyth@localhost RNG]$ SDigestTest cuRANDWrapper_100000000_0_0.bin 0 440000000    ## 1st 10M portion of 100M file matches 10M file digest 
+    2019-07-09 19:56:16.421 INFO  [358104] [test_DigestPathInByteRange@99]  path cuRANDWrapper_100000000_0_0.bin i0 0 i1 440000000
+    ffe00cfef9d97aeef4c1cf085fd46a6a
+
+
+
+deviceQuery, thinking about optimizing kernel launch params 
+----------------------------------------------------------------
 
 At 12G and 24G available memory on TITAN V and TITAN RTX there is no probably no issue from the 4.1G::
 
@@ -519,6 +559,12 @@ Added DYNAMIC_CURAND section to CRandomEngine
     TCURAND=ERROR CRandomEngine=ERROR CRandomEngineTest
     TCURAND=ERROR CRandomEngine=ERROR CRandomEngineTest 100000 
     TCURAND=ERROR CRandomEngine=ERROR CRandomEngineTest 99999 100001    # check crossing tranches
+
+
+::
+
+    hg commit -m "add ThrustRap dependency to CFG4 for TCURAND, use it in CRandomEngine to remove the 100k aligned photon limit within DYNAMIC_CURAND macro"
+
 
 
 

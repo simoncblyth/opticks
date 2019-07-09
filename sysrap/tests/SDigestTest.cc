@@ -2,6 +2,7 @@
 #include <cstring>
 #include <cassert>
 #include <iostream>
+#include <fstream>
 
 #include "SSys.hh"
 #include "SDigest.hh"
@@ -92,6 +93,87 @@ void test_DigestPath(const char* path)
 }
 
 
+
+void test_DigestPathInByteRange(const char* path, int i0, int i1)
+{
+    LOG(info) 
+        << " path " << path 
+        << " i0 " << i0
+        << " i1 " << i1
+        ;
+        
+    std::string d0 = SDigest::DigestPathInByteRange(path, i0, i1 ) ; 
+    std::cout << d0 << std::endl ;
+}
+
+void test_DigestPathInByteRange()
+{
+    unsigned n = 100 ;  
+    const char* path = "/tmp/test_DigestPathInByteRange.txt" ; 
+    const char* a = "0123456789abcdef" ; 
+    unsigned bufsize = 10 ; 
+
+
+    std::ofstream out(path, std::ios::out);
+    for(unsigned i=0 ; i < n ; i++ ) out << a ; 
+    out.close(); 
+
+    LOG(info) 
+        << " path " << path 
+        << " bufsize " << bufsize 
+        ; 
+
+    std::string d0, d1 ; 
+
+    for(unsigned i=0 ; i < n ; i++)
+    { 
+        int i0 = i*strlen(a) ; 
+        int i1 = (i+1)*strlen(a) ; 
+
+        if(d0.empty()) 
+        {
+            d0 = SDigest::DigestPathInByteRange(path, i0, i1, bufsize ) ; 
+            continue ; 
+        }
+             
+        d1 = SDigest::DigestPathInByteRange(path, i0, i1, bufsize ) ;
+
+        bool match = d0.compare(d1) == 0 ;  
+
+
+        LOG(info) 
+            << " i "  << std::setw(5) << i  
+            << " i0 "  << std::setw(5) << i0  
+            << " i1 "  << std::setw(5) << i1  
+            << " d0 " << d0 
+            << " d1 " << d1
+            << ( !match ? " MISMATCH " : "" ) 
+            ; 
+
+        assert( match ); 
+    }
+
+}
+
+
+void test_main( int argc, char** argv )
+{
+    const char* path = argc > 1 ? argv[1] : argv[0] ; 
+    int i0 = argc > 2 ? atoi(argv[2]) : -1 ; 
+    int i1 = argc > 3 ? atoi(argv[3]) : -1 ; 
+
+    if( i0 > -1 && i1 > -1 ) 
+    {
+        test_DigestPathInByteRange(path, i0, i1);
+    } 
+    else
+    {
+        test_DigestPath(path);
+    }
+}
+
+
+
 int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv);
@@ -102,8 +184,11 @@ int main(int argc, char** argv)
     //test_digest_vec();
     //test_IsDigest();
 
-    const char* path = argc > 1 ? argv[1] : argv[0] ; 
-    test_DigestPath(path);
+
+    test_main(argc, argv);
+
+    //test_DigestPathInByteRange(); 
+
 
     return 0 ; 
 }
