@@ -22,6 +22,8 @@ set(SOURCES
 
     THRAP_LOG.cc
 
+    TCURAND.cc
+    TCURANDImp.cu
     TBuf_.cu
     TBufPair_.cu
     TRngBuf_.cu
@@ -39,6 +41,8 @@ SET(HEADERS
     THRAP_PUSH.hh
     THRAP_POP.hh
 
+    TCURAND.hh
+    TCURANDImp.hh
     TBuf.hh
     TRngBuf.hh
     TBufPair.hh

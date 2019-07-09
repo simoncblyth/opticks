@@ -3,8 +3,9 @@ set(name ThrustRapTest)
 project(${name} VERSION 0.1.0)
 include(OpticksBuildOptions)
 
-file(GLOB TEST_CC_SRCS "*Test.cc")
-
+set(TEST_CC_SRCS
+    TCURANDTest.cc
+)
 
 foreach(TEST_CC_SRC ${TEST_CC_SRCS})
     get_filename_component(TGT ${TEST_CC_SRC} NAME_WE)

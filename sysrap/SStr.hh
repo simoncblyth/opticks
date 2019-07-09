@@ -42,6 +42,7 @@ class SYSRAP_API SStr {
       static int  GetPointerSuffixDigits( const char* name );
 
       static const char* Concat( const char* a, const char* b, const char* c=NULL  );
+      static const char* Concat( const char* a, unsigned b   , const char* c=NULL  );
 
       static const char* Replace( const char* s,  char a, char b ); 
 

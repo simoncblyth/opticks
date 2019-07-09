@@ -370,3 +370,146 @@ At 12G and 24G available memory on TITAN V and TITAN RTX there is no probably no
     deviceQuery, CUDA Driver = CUDART, CUDA Driver Version = 10.1, CUDA Runtime Version = 10.1, NumDevs = 2
     Result = PASS
 
+
+
+Add IDBASE offset to TRngBuf 
+------------------------------
+
+::
+
+    [blyth@localhost tests]$ TRngBufTest 
+    2019-07-09 11:23:57.512 INFO  [442589] [main@23] TRngBufTest
+    TRngBuf::generate ibase 0 ni 100000 id_max 1000
+    TRngBuf::generate seq 0 id_offset          0 id_per_gen       1000 remaining     100000
+    TRngBuf::generate seq 1 id_offset       1000 id_per_gen       1000 remaining      99000
+    TRngBuf::generate seq 2 id_offset       2000 id_per_gen       1000 remaining      98000
+    ...
+    2019-07-09 11:23:58.225 INFO  [442589] [main@45]  save $TMP/TRngBufTest_0.npy
+    2019-07-09 11:23:58.226 ERROR [442589] [BFile::ResolveKey@177] replacing allowed envvar token TMP with default value /tmp/blyth/opticks as envvar not defined 
+    2019-07-09 11:23:58.598 ERROR [442589] [BFile::ResolveKey@177] replacing allowed envvar token TMP with default value /tmp/blyth/opticks as envvar not defined 
+    (100000, 16, 16)
+    [[[0.74021935 0.43845114 0.51701266 ... 0.54746926 0.65316027 0.23023781]
+      [0.33885619 0.76138884 0.54568148 ... 0.85521436 0.48867753 0.18854636]
+      [0.50652462 0.02055138 0.95822281 ... 0.74793386 0.48760796 0.31805685]
+      ...
+      [0.15299392 0.32710499 0.89352018 ... 0.93996674 0.9458555  0.19730906]
+      [0.85649884 0.65747958 0.06287431 ... 0.62356168 0.96832794 0.5317995 ]
+      [0.90195084 0.42885613 0.67444962 ... 0.59804755 0.8195923  0.14472319]]
+
+     [[0.9209938  0.46036443 0.33346406 ... 0.82454693 0.52706289 0.93013161]
+      [0.16302098 0.78515881 0.94194758 ... 0.49194995 0.54269171 0.93439281]
+      [0.47857913 0.44942591 0.12570204 ... 0.04226144 0.37903434 0.71457326]
+      ...
+      [0.86578399 0.5101068  0.15340619 ... 0.50591779 0.04876163 0.19413081]
+      [0.48308805 0.90896726 0.08700182 ... 0.64719349 0.97155493 0.01153351]
+      [0.60377067 0.73156077 0.71719307 ... 0.90172863 0.4543947  0.58696574]]
+
+     [[0.03902049 0.25021473 0.18448432 ... 0.21368156 0.34242383 0.22407883]
+      [0.52365208 0.92059976 0.99477363 ... 0.52063215 0.8407405  0.78147382]
+      [0.80086279 0.32258108 0.69522661 ... 0.59361392 0.01363767 0.67075318]
+      ...
+      [0.39412248 0.54762876 0.36133623 ... 0.74547082 0.25674096 0.83685589]
+      [0.76392841 0.87556869 0.48814872 ... 0.04153943 0.49912784 0.53801984]
+      [0.81724483 0.61697578 0.71426886 ... 0.52501678 0.02500784 0.47300982]]
+
+     ...
+
+
+::
+
+    [blyth@localhost tests]$ TRngBuf_IBASE=1 TRngBufTest 
+    2019-07-09 11:26:50.873 INFO  [447084] [main@23] TRngBufTest
+    TRngBuf::generate ibase 1 ni 100000 id_max 1000
+    TRngBuf::generate seq 0 id_offset          0 id_per_gen       1000 remaining     100000
+    TRngBuf::generate seq 1 id_offset       1000 id_per_gen       1000 remaining      99000
+    TRngBuf::generate seq 2 id_offset       2000 id_per_gen       1000 remaining      98000
+    TRngBuf::generate seq 3 id_offset       3000 id_per_gen       1000 remaining      97000
+    ...
+    TRngBuf::generate seq 98 id_offset      98000 id_per_gen       1000 remaining       2000
+    TRngBuf::generate seq 99 id_offset      99000 id_per_gen       1000 remaining       1000
+    2019-07-09 11:26:51.524 INFO  [447084] [main@45]  save $TMP/TRngBufTest_1.npy
+    2019-07-09 11:26:51.525 ERROR [447084] [BFile::ResolveKey@177] replacing allowed envvar token TMP with default value /tmp/blyth/opticks as envvar not defined 
+    2019-07-09 11:26:51.619 ERROR [447084] [BFile::ResolveKey@177] replacing allowed envvar token TMP with default value /tmp/blyth/opticks as envvar not defined 
+    (100000, 16, 16)
+    [[[0.9209938  0.46036443 0.33346406 ... 0.82454693 0.52706289 0.93013161]
+      [0.16302098 0.78515881 0.94194758 ... 0.49194995 0.54269171 0.93439281]
+      [0.47857913 0.44942591 0.12570204 ... 0.04226144 0.37903434 0.71457326]
+      ...
+      [0.86578399 0.5101068  0.15340619 ... 0.50591779 0.04876163 0.19413081]
+      [0.48308805 0.90896726 0.08700182 ... 0.64719349 0.97155493 0.01153351]
+      [0.60377067 0.73156077 0.71719307 ... 0.90172863 0.4543947  0.58696574]]
+
+     [[0.03902049 0.25021473 0.18448432 ... 0.21368156 0.34242383 0.22407883]
+      [0.52365208 0.92059976 0.99477363 ... 0.52063215 0.8407405  0.78147382]
+      [0.80086279 0.32258108 0.69522661 ... 0.59361392 0.01363767 0.67075318]
+      ...
+      [0.39412248 0.54762876 0.36133623 ... 0.74547082 0.25674096 0.83685589]
+      [0.76392841 0.87556869 0.48814872 ... 0.04153943 0.49912784 0.53801984]
+      [0.81724483 0.61697578 0.71426886 ... 0.52501678 0.02500784 0.47300982]]
+
+
+
+
+::
+
+    In [1]: a = np.load("TRngBufTest_0.npy")
+
+    In [2]: b = np.load("TRngBufTest_1.npy")
+
+    In [3]: a.shape
+    Out[3]: (100000, 16, 16)
+
+    In [4]: b.shape
+    Out[4]: (100000, 16, 16)
+
+    In [5]: np.all(a[1] == b[0])
+    Out[5]: True
+
+    In [6]: np.all(a[1:] == b[:-1])
+    Out[6]: True
+
+
+
+
+Now need higher level interface to get these randoms within CRandomEngine without going via file
+----------------------------------------------------------------------------------------------------
+
+::
+
+     43 CRandomEngine::CRandomEngine(CG4* g4)
+     44     :
+     45     m_g4(g4),
+     46     m_ctx(g4->getCtx()),
+     47     m_ok(g4->getOpticks()),
+     48     m_dbgkludgeflatzero(m_ok->isDbgKludgeFlatZero()),    // --dbgkludgeflatzero
+     49     m_run(g4->getRun()),
+     50     m_okevt(NULL),
+     51     m_okevt_seqhis(0),
+     52     m_okevt_pt(NULL),
+     53     m_g4evt(NULL),
+     54     m_mask(m_ok->getMask()),
+     55     m_masked(m_mask.size() > 0),
+     56     m_path("$TMP/TRngBufTest.npy"),
+     57     m_alignlevel(m_ok->getAlignLevel()),
+     58     m_seed(9876),
+     59     m_internal(false),
+     60     m_skipdupe(true),
+     61     m_locseq(m_alignlevel > 1 ? new BLocSeq<unsigned long long>(m_skipdupe) : NULL ),
+     62     m_curand(NPY<double>::load(m_path)),
+     63     m_curand_index(-1),
+     64     m_curand_ni(m_curand ? m_curand->getShape(0) : 0 ),
+     65     m_curand_nv(m_curand ? m_curand->getNumValues(1) : 0 ),  // itemvalues
+     66     m_current_record_flat_count(0),
+     67     m_current_step_flat_count(0),
+     68     m_jump(0),
+     69     m_jump_count(0),
+
+
+::
+
+   hg commit -m "TCURAND a high level class for using GPU generated CURAND randoms on the host, enabling GPU and CPU to use the same randoms " 
+
+
+
+
+
