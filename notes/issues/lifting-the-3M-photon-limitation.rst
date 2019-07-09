@@ -568,3 +568,41 @@ Added DYNAMIC_CURAND section to CRandomEngine
 
 
 
+
+Succeed to run 3M + 1 photons : but python analysis is taking forever and memory ramping up 5G
+---------------------------------------------------------------------------------------------------
+
+::
+
+    ts box --generateoverride 3000001 --rngmax 10
+
+
+Surely have a whopper memory bug::
+
+    374818 blyth     20   0   45.7g  34.5g 196640 R 100.0 55.1   7:41.51 OKG4Test 
+
+
+
+
+TODO: 3M+1 running : py analysis profile time and memory usage 
+------------------------------------------------------------------
+
+* https://pypi.org/project/memory-profiler/
+* https://medium.com/zendesk-engineering/hunting-for-memory-leaks-in-python-applications-6824d0518774
+
+
+TODO: 3M+1 runing : OKG4Test  profile time and memory usage
+--------------------------------------------------------------------
+
+::
+
+    OpticksProfile=ERROR ts box          ## simple showing stamps
+
+    ip tprofile.py                       ## plotting the time vs memory profile 
+
+
+
+
+    TBOOLEAN_TAG=100 ts box --generateoverride 4000000 --rngmax 10
+    # use non-default tag, to prevent accidental stomping 
+

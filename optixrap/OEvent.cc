@@ -22,7 +22,7 @@
 #include "PLOG.hh"
 
 
-const plog::Severity OEvent::LEVEL = debug ; 
+const plog::Severity OEvent::LEVEL = PLOG::EnvLevel("OEvent", "DEBUG") ; 
 
 
 OpticksEvent* OEvent::getEvent()
@@ -231,7 +231,7 @@ Abort trap: 6
 
 void OEvent::resizeBuffers(OpticksEvent* evt)
 {
-    LOG(debug) << "OEvent::resizeBuffers " << evt->getShapeString() ; 
+    LOG(LEVEL) << evt->getShapeString() ; 
 
     NPY<float>* gensteps =  evt->getGenstepData() ;
     assert(gensteps);
@@ -277,7 +277,7 @@ unsigned OEvent::upload()
 unsigned OEvent::upload(OpticksEvent* evt)   
 {
     OK_PROFILE("_OEvent::upload");
-    LOG(debug)<<"OEvent::upload id " << evt->getId()  ;
+    LOG(LEVEL) << "[ id " << evt->getId()  ;
     setEvent(evt);
 
     if(!m_buffers_created)
@@ -296,7 +296,7 @@ unsigned OEvent::upload(OpticksEvent* evt)
         assert( nsrc == npho ); 
     }
 
-    LOG(debug)<<"OEvent::upload id " << evt->getId() << " DONE "  ;
+    LOG(LEVEL) << "] id " << evt->getId()  ;
 
     OK_PROFILE("OEvent::upload");
 
@@ -312,13 +312,13 @@ unsigned OEvent::uploadGensteps(OpticksEvent* evt)
 
     if(m_ocontext->isCompute()) 
     {
-        LOG(debug) << "OEvent::uploadGensteps (COMPUTE) id " << evt->getId() << " " << gensteps->getShapeString() << " -> " << npho  ;
+        LOG(LEVEL) << "(COMPUTE) id " << evt->getId() << " " << gensteps->getShapeString() << " -> " << npho  ;
         OContext::upload<float>(m_genstep_buffer, gensteps);
     }
     else if(m_ocontext->isInterop())
     {
         assert(gensteps->getBufferId() > 0); 
-        LOG(info) << "OEvent::uploadGensteps (INTEROP) SKIP OpenGL BufferId " << gensteps->getBufferId()  ;
+        LOG(LEVEL) << "(INTEROP) SKIP OpenGL BufferId " << gensteps->getBufferId()  ;
     }
     return npho ; 
 }
@@ -332,13 +332,13 @@ unsigned OEvent::uploadSource(OpticksEvent* evt)
 
     if(m_ocontext->isCompute()) 
     {
-        LOG(info) << "OEvent::uploadSource (COMPUTE) id " << evt->getId() << " " << source->getShapeString() << " -> " << nsrc  ;
+        LOG(LEVEL) << "(COMPUTE) id " << evt->getId() << " " << source->getShapeString() << " -> " << nsrc  ;
         OContext::upload<float>(m_source_buffer, source);
     }
     else if(m_ocontext->isInterop())
     {
         assert(source->getBufferId() > 0); 
-        LOG(info) << "OEvent::uploadSource (INTEROP) SKIP OpenGL BufferId " << source->getBufferId()  ;
+        LOG(LEVEL) << "(INTEROP) SKIP OpenGL BufferId " << source->getBufferId()  ;
     }
     return nsrc ; 
 

@@ -161,9 +161,9 @@ void Scene::setRenderMode(const char* s)
 {
     // setting renderer toggles
 
-    LOG(info) << "Scene::setRenderMode" 
-              << " [" << s  << "] "
-              ;
+    LOG(LEVEL)
+        << " [" << s  << "] "
+        ;
 
     std::vector<std::string> elem ; 
     boost::split(elem, s, boost::is_any_of(","));
@@ -1127,7 +1127,7 @@ void Scene::setPhotons(Photons* photons)
 void Scene::setRecordStyle(RecordStyle_t style)
 {
     m_record_style = style ; 
-    LOG(info) << getRecordStyleName() ; 
+    LOG(LEVEL) << getRecordStyleName() ; 
 }
 Scene::RecordStyle_t Scene::getRecordStyle()
 {

@@ -2,6 +2,7 @@
 
 #include "G4VSensitiveDetector.hh"
 #include "CHit.hh"
+#include "plog/Severity.h"
 
 class G4Step ; 
 class G4TouchableHistory ;
@@ -18,6 +19,7 @@ Canonical m_sd instance is ctor resident of CG4
 class CSensitiveDetector : public G4VSensitiveDetector
 {
     public:
+        static const plog::Severity LEVEL ;  
         static CHitCollection* GetHitCollection(G4HCofThisEvent* HCE, const char* query );
         static void DumpHitCollections(G4HCofThisEvent* HCE);
 

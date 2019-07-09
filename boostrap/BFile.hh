@@ -4,10 +4,12 @@
 #include <vector>
 #include <string>
 
+#include "plog/Severity.h"
 #include "BRAP_API_EXPORT.hh"
 #include "BRAP_HEAD.hh"
 
 class BRAP_API BFile {
+       static const plog::Severity LEVEL ; 
     public:
        static std::size_t FileSize( const char* path ) ; 
        static void SplitPath(std::vector<std::string>& elem, const char* path ) ; 

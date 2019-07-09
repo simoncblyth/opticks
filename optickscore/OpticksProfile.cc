@@ -14,10 +14,10 @@
 
 #include "PLOG.hh"
 
-const plog::Severity OpticksProfile::LEVEL = debug ; 
+const plog::Severity OpticksProfile::LEVEL = PLOG::EnvLevel("OpticksProfile", "DEBUG") ; 
 
 
-OpticksProfile::OpticksProfile(const char* name, bool stamp_out) 
+OpticksProfile::OpticksProfile(const char* name ) 
    :
    m_dir(NULL),
    m_name(BStr::concat(NULL,name,".npy")),
@@ -33,8 +33,7 @@ OpticksProfile::OpticksProfile(const char* name, bool stamp_out)
    m_vmprev(0),
    m_vm(0),
 
-   m_num_stamp(0),
-   m_stamp_out(stamp_out)
+   m_num_stamp(0)
 {
 }
 
@@ -95,15 +94,14 @@ void OpticksProfile::stamp(T row, int count)
    m_tt->add<T>(row, t, dt, vm, dvm,  count );
    m_npy->add(       t, dt, vm, dvm ); 
 
-   if(m_stamp_out)
-   LOG(fatal) << "OpticksProfile::stamp " 
-              << m_tt->getLabel() 
-              << " (" 
-              << t << ","
-              << dt << ","
-              << vm << ","
-              << dvm << ")"
-              ; 
+   LOG(LEVEL)
+       << m_tt->getLabel() 
+       << " (" 
+       << t << ","
+       << dt << ","
+       << vm << ","
+       << dvm << ")"
+       ; 
 }
 
 
@@ -132,8 +130,7 @@ const char* OpticksProfile::NAME = "Opticks" ;
 
 OpticksProfile* OpticksProfile::Load( const char* dir, const char* name )
 {
-    bool stamp_verbose = false ; 
-    OpticksProfile* profile = new OpticksProfile( name ? name : NAME, stamp_verbose );
+    OpticksProfile* profile = new OpticksProfile( name ? name : NAME );
     profile->setDir(dir); 
     profile->load(); 
     return profile ;  

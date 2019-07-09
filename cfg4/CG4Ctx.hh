@@ -6,6 +6,7 @@
 #include "CStage.hh"
 
 #include "CProcessSwitches.hh"
+#include "plog/Severity.h"
 
 #ifdef USE_CUSTOM_BOUNDARY
 //#include "DsG4OpBoundaryProcess.h"
@@ -38,6 +39,8 @@ and CRecorder
 
 struct CFG4_API CG4Ctx
 {
+    static const plog::Severity LEVEL ; 
+
     Opticks* _ok ; 
     int   _pindex ; 
     bool  _print ; 

@@ -7,6 +7,9 @@
 #include "PLOG.hh"
 
 
+const plog::Severity CSensitiveDetector::LEVEL = PLOG::EnvLevel("CSensitiveDetector", "DEBUG") ; 
+
+
 const char* CSensitiveDetector::SDName = NULL ; 
 const char* CSensitiveDetector::collectionNameA = "OpHitCollectionA" ;
 const char* CSensitiveDetector::collectionNameB = "OpHitCollectionB" ;
@@ -78,7 +81,7 @@ G4bool CSensitiveDetector::ProcessHits(G4Step* step,G4TouchableHistory* )
 
 void CSensitiveDetector::Initialize(G4HCofThisEvent* HCE)
 {
-    LOG(info) 
+    LOG(LEVEL) 
         << " HCE " << HCE
         << " HCE.Capacity " << HCE->GetCapacity()
         << " SensitiveDetectorName " << SensitiveDetectorName
@@ -107,7 +110,7 @@ void CSensitiveDetector::Initialize(G4HCofThisEvent* HCE)
 
 void CSensitiveDetector::EndOfEvent(G4HCofThisEvent* HCE)
 {
-    LOG(info) 
+    LOG(LEVEL) 
         << " HCE " << HCE
         << " hitCollectionA->entries() " << hitCollectionA->entries()
         << " hitCollectionB->entries() " << hitCollectionB->entries()

@@ -207,10 +207,10 @@ DYNAMIC_CURAND
     randoms for 100k photons in tranches 
 
 
-TODO: report or assert on photons that cycle the sequence, 
-      that would cause misalignment of long history photons :
-      as on GPU there is no re-cycling it just contines calling 
-      curand_uniform beyond the precooked limit of 16*16 randoms per photon
+Note that CRandomEngine::_flat increments the cursor 
+and asserts that it is within the sequence size.  Suspect 
+vague memory of re-cycling sequence was from before 
+increased to 16*16 = 256 randoms for each photon.
 
 **/
 

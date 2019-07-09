@@ -19,6 +19,8 @@
 #include "Bookmarks.hh"
 
 
+const plog::Severity Bookmarks::LEVEL = PLOG::EnvLevel("Bookmarks", "DEBUG"); 
+
 
 Bookmarks::Bookmarks(const char* dir)  
        :
@@ -108,16 +110,12 @@ unsigned int Bookmarks::getCurrent()
 
 void Bookmarks::init(const char* dir)
 {
-    LOG(info) << "Bookmarks::init"
-              << " dir " << ( dir ? dir : "NULL" )
-              ; 
-
     std::string _dir = BFile::FormPath(dir) ;
 
-    LOG(info) << "Bookmarks::init"
-              << " expandvars dir " << _dir 
-              ; 
-
+    LOG(LEVEL)
+        << " dir " << ( dir ? dir : "NULL" )
+        << " expandvars dir " << _dir 
+        ; 
 
     m_dir = strdup(_dir.c_str());
     readdir();

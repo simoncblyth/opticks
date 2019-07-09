@@ -55,11 +55,14 @@ class RC(object):
 
     def __init__(self, ab):
         rc = {}
+        log.info("[")
         rc["rpost_dv"] = ab.rpost_dv.RC 
         rc["rpol_dv"] = ab.rpol_dv.RC 
         rc["ox_dv"] = ab.ox_dv.RC 
         assert max(rc.values()) <= 1 
-        self.rc = rc["rpost_dv"] << self.offset["rpost_dv"] | rc["rpol_dv"] << self.offset["rpol_dv"] | rc["ox_dv"] << self.offset["ox_dv"]
+        irc = rc["rpost_dv"] << self.offset["rpost_dv"] | rc["rpol_dv"] << self.offset["rpol_dv"] | rc["ox_dv"] << self.offset["ox_dv"]
+        log.info("]")
+        self.rc = irc 
 
     def __repr__(self):
         return "RC 0x%.2x" % self.rc
@@ -165,7 +168,7 @@ class AB(object):
         log.debug("]")
 
     def __init__(self, ok):
-        log.debug("[")
+        log.info("[")
         self.ok = ok
         self.histype = HisType()
         self.tabs = []
@@ -177,7 +180,7 @@ class AB(object):
         self.compare()
         self.init_point()
         self.stream = sys.stderr
-        log.debug("]")
+        log.info("]")
 
     def load(self):
         """
@@ -258,11 +261,13 @@ class AB(object):
         return cfm 
 
     def check_alignment(self):
+        log.info("[")
         mal = Maligned(self)
+        log.info("]")
         return mal 
         
     def compare(self):
-        log.debug("[")
+        log.info("[")
 
         self.ahis = self._get_cf("all_seqhis_ana", "ab.ahis")
         self.amat = self._get_cf("all_seqmat_ana", "ab.amat")
@@ -271,13 +276,14 @@ class AB(object):
         if self.ok.promat:self.promat()
 
         self.rc = RC(self) 
-        log.debug("]")
+
+        log.info("]")
 
 
     def init_point(self):
-        log.debug("AB.init_point START")
+        log.info("[")
         self.point = self.make_point()
-        log.debug("AB.init_point DONE")
+        log.info("]")
 
     def point_dtype(self):
         dtype=[
@@ -368,13 +374,17 @@ class AB(object):
 
 
     def prohis(self, rng=range(1,8)):
+        log.info("[")
         for imsk in rng:
             setattr(self, "his_%d" % imsk, self.cf("seqhis_ana_%d" % imsk)) 
         pass
+        log.info("]")
     def promat(self, rng=range(1,8)):
+        log.info("[")
         for imsk in rng:
             setattr(self, "mat_%d" % imsk, self.cf("seqmat_ana_%d" % imsk)) 
         pass
+        log.info("]")
 
     def tabname(self, ana):
         if ana.endswith("_dv"):
@@ -400,6 +410,7 @@ class AB(object):
 
 
     def _make_dv(self, ana):
+        log.info("[ %s " % ana )
         we = self.warn_empty 
         self.warn_empty = False
         seqtab = self.ahis
@@ -408,9 +419,11 @@ class AB(object):
         self.dvtabs.append(dv_tab)
 
         self.warn_empty = we
+        log.info("] %s " % ana )
         return dv_tab 
 
     def _get_dv(self, ana):
+        log.debug("[ %s " % ana )
         tabname = self.tabname(ana)
         dv_tab = getattr(self, tabname, None)
         if dv_tab is None:
@@ -421,6 +434,7 @@ class AB(object):
             pass 
         pass
         setattr(self, tabname, dv_tab) 
+        log.debug("] %s " % ana )
         return dv_tab
 
 
@@ -475,6 +489,7 @@ class AB(object):
         thus all AB comparison tables are marked dirty, causing 
         them to be recreated at next access.
         """
+        log.info("[ %s " % shortname ) 
         tabname = self.tabname(ana)
         tab = getattr(self, tabname, None)
         if tab is None:
@@ -483,6 +498,7 @@ class AB(object):
             tab = self._make_cf(ana, shortname) 
         else:
             pass 
+        log.info("] %s " % shortname ) 
         return tab
 
     def _get_his(self):
@@ -509,7 +525,7 @@ class AB(object):
 
         slice selection forces into seqhis selection
         """
-        log.debug("AB._set_sel %s " % repr(sel))
+        log.debug("[ %s " % repr(sel))
 
         if type(sel) is slice:
             clabels = self.clabels
@@ -546,6 +562,7 @@ class AB(object):
 
         self._sel = sel 
         self.dirty = True  
+        log.debug("] %s " % repr(sel))
 
     sel = property(_get_sel, _set_sel)
     

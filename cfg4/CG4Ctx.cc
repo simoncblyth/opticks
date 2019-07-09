@@ -17,6 +17,9 @@
 #include "PLOG.hh"
 
 
+const plog::Severity CG4Ctx::LEVEL = PLOG::EnvLevel("CG4Ctx", "DEBUG") ; 
+
+
 CG4Ctx::CG4Ctx(Opticks* ok)
     :
     _ok(ok),
@@ -148,12 +151,12 @@ void CG4Ctx::initEvent(const OpticksEvent* evt)
     const char* typ = evt->getTyp();
     //  _gen = OpticksFlags::SourceCode(typ);   MOVED TO FINER LEVEL OF BELOW setEvent 
 
-    LOG(info) << "CG4Ctx::initEvent"
-              << " _record_max (numPhotons from genstep summation) " << _record_max 
-              << " photons_per_g4event " << _photons_per_g4event
-              << " steps_per_photon " << _steps_per_photon
-              << " typ " << typ
-              ;
+    LOG(LEVEL)
+        << " _record_max (numPhotons from genstep summation) " << _record_max 
+        << " photons_per_g4event " << _photons_per_g4event
+        << " steps_per_photon " << _steps_per_photon
+        << " typ " << typ
+        ;
 
 }
 
@@ -186,7 +189,7 @@ void CG4Ctx::setEvent(const G4Event* event) // invoked by CEventAction::setEvent
 
     _gen = eui->gencode ;
 
-    LOG(info) 
+    LOG(LEVEL) 
         << " gen " << _gen
         << " SourceType " << OpticksFlags::SourceType(_gen)
         ;

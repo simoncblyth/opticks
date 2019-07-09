@@ -3,6 +3,7 @@
 #include <map>
 #include <vector>
 #include <string>
+#include "plog/Severity.h"
 
 // npy-
 class NConfigurable ; 
@@ -40,6 +41,7 @@ NB trackballed changes need to be collapsed into the view...
 #include "OKCORE_HEAD.hh"
 
 class OKCORE_API Bookmarks {
+   static const plog::Severity LEVEL ; 
 public:
    enum { UNSET = -1, N=10 };
    typedef std::map<unsigned int, NState*>::const_iterator MUSI ; 

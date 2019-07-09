@@ -28,7 +28,7 @@ class OKCORE_API OpticksProfile
     public:
        static OpticksProfile* Load( const char* dir, const char* name=NULL ); 
     public:
-       OpticksProfile(const char* name="OpticksProfile", bool stamp_out=false);
+       OpticksProfile(const char* name="OpticksProfile" );
        template <typename T> void stamp(T row, int count);
 
        std::vector<std::string>&  getLines(); 
@@ -65,7 +65,6 @@ class OKCORE_API OpticksProfile
        float       m_vm ; 
 
        unsigned    m_num_stamp ; 
-       bool        m_stamp_out ; 
 
 };
 

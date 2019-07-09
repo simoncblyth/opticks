@@ -93,27 +93,27 @@ G4PrimaryVertex* CInputPhotonSource::convertPhoton(unsigned pho_index)
 
 
     if(m_sourcedbg && pho_index < 10) 
-    LOG(info) << "CInputPhotonSource::convertPhoton"
-              << " pho_index " << std::setw(6) << pho_index 
-              << " nm " << wavelength
-              << " wt " << weight
-              << " time " << time
-              << " pos (" 
-              << " " << position.x()
-              << " " << position.y()
-              << " " << position.z()
-              << " )"
-              << " dir ("
-              << " " << direction.x()
-              << " " << direction.y()
-              << " " << direction.z()
-              << " )"
-              << " pol ("
-              << " " << polarization.x()
-              << " " << polarization.y()
-              << " " << polarization.z()
-              << " )"
-              ;
+    LOG(info)
+        << " pho_index " << std::setw(6) << pho_index 
+        << " nm " << wavelength
+        << " wt " << weight
+        << " time " << time
+        << " pos (" 
+        << " " << position.x()
+        << " " << position.y()
+        << " " << position.z()
+        << " )"
+        << " dir ("
+        << " " << direction.x()
+        << " " << direction.y()
+        << " " << direction.z()
+        << " )"
+        << " pol ("
+        << " " << polarization.x()
+        << " " << polarization.y()
+        << " " << polarization.z()
+        << " )"
+        ;
 
 
     G4ParticleDefinition* definition = G4OpticalPhoton::Definition(); 
@@ -146,27 +146,19 @@ CSource::collectPrimary.
 
 void CInputPhotonSource::GeneratePrimaryVertex(G4Event *evt) 
 {
+    OK_PROFILE("_CInputPhotonSource::GeneratePrimaryVertex"); 
+      
     unsigned num_photons = m_tranche->tranche_size(m_gpv_count) ; 
 
-    LOG(info) << "CInputPhotonSource::GeneratePrimaryVertex"
-              << " num_photons " << num_photons
-               ;
-
-
-
-    unsigned event_gencode = TORCH ;   // no 1-based ffs indexable space for a new code 
+    unsigned event_gencode = TORCH ;   // no 1-based ffs indexable space for a new code, so reuse TORCH 
     evt->SetUserInformation( new CEventInfo(event_gencode)) ;
 
     LOG(info)
+        << " num_photons " << num_photons
+        << " gpv_count " << m_gpv_count
         << " event_gencode " << event_gencode
         << " : " << OpticksFlags::Flag(event_gencode)
         ; 
-
-
-
-
-
-
 
 	for (unsigned i = 0; i < num_photons ; i++) 
     {
@@ -179,6 +171,7 @@ void CInputPhotonSource::GeneratePrimaryVertex(G4Event *evt)
         collectPrimaryVertex(vertex);
 	}
     m_gpv_count++ ; 
+    OK_PROFILE("CInputPhotonSource::GeneratePrimaryVertex"); 
 }
 
 

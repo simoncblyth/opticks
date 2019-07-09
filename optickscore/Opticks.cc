@@ -251,7 +251,8 @@ Opticks::Opticks(int argc, char** argv, const char* argforced )
     m_dumpenv(m_sargs->hasArg("--dumpenv")),
     m_envkey(m_sargs->hasArg("--envkey") ? BOpticksKey::SetKey(NULL) : false),  // see tests/OpticksEventDumpTest.cc makes sensitive to OPTICKS_KEY
     m_production(m_sargs->hasArg("--production")),
-    m_profile(new OpticksProfile("Opticks",m_sargs->hasArg("--stamp"))),
+    //m_profile(new OpticksProfile("Opticks",m_sargs->hasArg("--stamp"))),
+    m_profile(new OpticksProfile("Opticks")),
     m_materialprefix(NULL),
     m_photons_per_g4event(0), 
 

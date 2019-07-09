@@ -275,6 +275,7 @@ class DvTab(object):
         :param selbase: either None or "ALIGN" 
 
         """
+        log.info("[ %s " % name )
         self.name = name
         self.seqtab = seqtab
         self.ab = ab 
@@ -318,6 +319,7 @@ class DvTab(object):
         pass
         self.dvs = dvs 
         self.findmax()
+        log.info("] %s " % name )
 
     def _get_dvmax(self): 
         """
@@ -395,6 +397,8 @@ class DvTab(object):
         Accessing av and bv values within the active single line selection ab.aselhis, 
         and creating a Dv instance from them. 
         """ 
+        log.info("[")
+ 
         ab = self.ab
         if self.name == "rpost_dv": 
             av = ab.a.rpost()
@@ -413,8 +417,9 @@ class DvTab(object):
         assert ab.a.sel == ab.b.sel 
         sel = ab.a.sel 
         dv = Dv(self, i, sel, av, bv, lcu, dvmax )
-        return dv if len(dv.dv) > 0 else None
-
+        ret = dv if len(dv.dv) > 0 else None
+        log.info("]")
+        return ret 
 
     def _get_float(self, att):
         return map(lambda dv:float(getattr(dv, att)), filter(None,self.dvs))

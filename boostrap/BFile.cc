@@ -23,6 +23,9 @@ namespace fs = boost::filesystem;
 #include "PLOG.hh"
 
 
+const plog::Severity BFile::LEVEL = PLOG::EnvLevel("BFile", "DEBUG"); 
+
+
 char* BFile::OPTICKS_PATH_PREFIX = NULL ;
 
 void BFile::setOpticksPathPrefix(const char* prefix)
@@ -174,7 +177,7 @@ std::string BFile::ResolveKey( const char* key )
         else
         {
             evalue = usertmpdir("/tmp","opticks", NULL);
-            LOG(error) << "replacing allowed envvar token " << key << " with default value " << evalue << " as envvar not defined " ; 
+            LOG(LEVEL) << "replacing allowed envvar token " << key << " with default value " << evalue << " as envvar not defined " ; 
         }
     }
     else if(strcmp(key,"KEYDIR")==0 ) 

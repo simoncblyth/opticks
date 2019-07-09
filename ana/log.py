@@ -60,7 +60,8 @@ def init_logging(level="info", color=True):
         logging.StreamHandler.emit = emit_ansi(logging.StreamHandler.emit)  
     pass
     #fmt = '[%(asctime)s] p%(process)s {%(pathname)s:%(lineno)d} %(levelname)-8s - %(message)s'
-    fmt = '[%(asctime)s] p%(process)s {%(filename)-10s:%(lineno)d} %(levelname)-8s - %(message)s'
+    #fmt = '[%(asctime)s] p%(process)s {%(filename)-10s:%(lineno)d} %(levelname)-8s - %(message)s'
+    fmt = '[%(asctime)s] p%(process)s {%(funcName)-20s:%(filename)-10s:%(lineno)d} %(levelname)-8s - %(message)s'
     logging.basicConfig(level=getattr(logging,level.upper()), format=fmt)
 pass
 
