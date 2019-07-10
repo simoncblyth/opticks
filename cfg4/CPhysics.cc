@@ -7,16 +7,24 @@
 #include "OpNovicePhysicsList.hh"
 #endif
 
+#include "Opticks.hh"
 #include "OpticksHub.hh"
 #include "CG4.hh"
 #include "CPhysics.hh"
 #include "CPhysicsList.hh"
+
+int CPhysics::preinit()
+{
+    OK_PROFILE("_CPhysics::CPhysics"); 
+    return 0 ; 
+}
 
 CPhysics::CPhysics(CG4* g4) 
     :
     m_g4(g4),
     m_hub(g4->getHub()),
     m_ok(g4->getOpticks()),
+    m_preinit(preinit()),
     m_runManager(new G4RunManager),
 #ifdef OLDPHYS
     m_physicslist(new PhysicsList())
@@ -30,6 +38,7 @@ CPhysics::CPhysics(CG4* g4)
 
 void CPhysics::init()
 {
+    OK_PROFILE("CPhysics::CPhysics"); 
     m_runManager->SetNumberOfEventsToBeStored(0); 
     m_runManager->SetUserInitialization(m_physicslist);
 }

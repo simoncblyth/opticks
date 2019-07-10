@@ -136,6 +136,123 @@ After plugging the CStp CPoi leak in CRec::clear
 
 
 
+
+Investigating the knee of the profile
+-------------------------------------------
+
+::
+
+     OpticksProfile=ERROR ts box --generateoverride 100000
+
+     ip tprofile.py 
+
+
+
+
+
+* CRandomEngine is pulling 5.4G
+
+::
+
+    [blyth@localhost ana]$ ip tprofile.py
+
+    Python 2.7.15 |Anaconda, Inc.| (default, May  1 2018, 23:32:55) 
+    Type "copyright", "credits" or "license" for more information.
+
+    IPython 5.7.0 -- An enhanced Interactive Python.
+    ?         -> Introduction and overview of IPython's features.
+    %quickref -> Quick reference.
+    help      -> Python's own help system.
+    object?   -> Details about 'object', use 'object??' for extra details.
+    args: /home/blyth/opticks/ana/tprofile.py
+    [2019-07-10 22:39:29,760] p284964 {<module>            :tprofile.py:83} INFO     - pfx tboolean-box tag 1 src torch det tboolean-box c2max [1.5, 2.0, 2.5] ipython True 
+    path:/tmp/blyth/opticks/tboolean-box/evt/tboolean-box/torch/1/OpticksProfile.npy stamp:20190710-2239 
+    lpath:/tmp/blyth/opticks/tboolean-box/evt/tboolean-box/torch/1/OpticksProfileLabels.npy stamp:20190710-2239 
+     l0:_CG4::propagate l1:CG4::propagate p0:47 p1:71 v01:538.624023 
+       0 :                             OpticksRun::OpticksRun :      0.000      0.000  52736.117    446.584   
+       1 :                                   Opticks::Opticks :      0.000      0.000      0.000      0.000   
+       2 :                                  _OpticksHub::init :      0.000      0.000      0.000      0.000   
+       3 :                     _OpticksGeometry::loadGeometry :      0.012    103.748      0.012    103.748   
+       4 :                      OpticksGeometry::loadGeometry :      0.441    227.472      0.430    123.724   
+       5 :                               _GMergedMesh::Create :      0.477    233.216      0.035      5.744   
+       6 :                         GMergedMesh::Create::Count :      0.477    233.216      0.000      0.000   
+       7 :                     _GMergedMesh::Create::Allocate :      0.477    233.216      0.000      0.000   
+       8 :                      GMergedMesh::Create::Allocate :      0.477    233.520      0.000      0.304   
+       9 :                         GMergedMesh::Create::Merge :      0.480    234.312      0.004      0.792   
+      10 :                        GMergedMesh::Create::Bounds :      0.480    234.312      0.000      0.000   
+      11 :                                   OpticksHub::init :      0.609    245.596      0.129     11.284   
+      12 :                                          _CG4::CG4 :      0.609    245.596      0.000      0.000   
+      13 :                      _CRandomEngine::CRandomEngine :      0.609    245.596      0.000      0.000   
+      14 :                       CRandomEngine::CRandomEngine :      0.984   5685.600      0.375   5440.004   
+      15 :                                _CPhysics::CPhysics :      0.984   5685.600      0.000      0.000   
+      16 :                                 CPhysics::CPhysics :      1.031   5687.452      0.047      1.852   
+      17 :                                           CG4::CG4 :      1.039   5687.904      0.008      0.452   
+      18 :                           _OpticksRun::createEvent :      2.414   9706.352      1.375   4018.448   
+      19 :                            OpticksRun::createEvent :      2.414   9706.352      0.000      0.000   
+      20 :                           _OKPropagator::propagate :      2.438   9706.352      0.023      0.000   
+      21 :                                    _OEvent::upload :      2.469   9748.140      0.031     41.788   
+      22 :                                     OEvent::upload :      2.469   9748.140      0.000      0.000   
+      23 :                            _OPropagator::prelaunch :      2.480   9745.068      0.012     -3.071   
+      24 :                             OPropagator::prelaunch :      3.719  10329.632      1.238    584.563   
+      25 :                               _OPropagator::launch :      3.719  10329.632      0.000      0.000   
+      26 :                                OPropagator::launch :      3.727  10559.008      0.008    229.376   
+      27 :                          _OpIndexer::indexSequence :      3.727  10559.008      0.000      0.000   
+      28 :                   _OpIndexer::indexSequenceInterop :      3.727  10559.008      0.000      0.000   
+      29 :                       _OpIndexer::seqhisMakeLookup :      3.727  10559.008      0.000      0.000   
+      30 :                        OpIndexer::seqhisMakeLookup :      3.738  10559.008      0.012      0.000   
+      31 :                       OpIndexer::seqhisApplyLookup :      3.738  10559.008      0.000      0.000   
+
+
+
+All from TCURAND::
+
+      00 :                             OpticksRun::OpticksRun :      0.000      0.000  53489.781    446.584   
+       1 :                                   Opticks::Opticks :      0.000      0.000      0.000      0.000   
+       2 :                                  _OpticksHub::init :      0.000      0.000      0.000      0.000   
+       3 :                     _OpticksGeometry::loadGeometry :      0.012    103.748      0.012    103.748   
+       4 :                      OpticksGeometry::loadGeometry :      0.461    227.472      0.449    123.724   
+       5 :                               _GMergedMesh::Create :      0.492    233.216      0.031      5.744   
+       6 :                         GMergedMesh::Create::Count :      0.492    233.216      0.000      0.000   
+       7 :                     _GMergedMesh::Create::Allocate :      0.492    233.216      0.000      0.000   
+       8 :                      GMergedMesh::Create::Allocate :      0.492    233.520      0.000      0.304   
+       9 :                         GMergedMesh::Create::Merge :      0.496    234.312      0.004      0.792   
+      10 :                        GMergedMesh::Create::Bounds :      0.496    234.312      0.000      0.000   
+      11 :                                   OpticksHub::init :      0.613    245.596      0.117     11.284   
+      12 :                                          _CG4::CG4 :      0.613    245.596      0.000      0.000   
+      13 :                      _CRandomEngine::CRandomEngine :      0.613    245.596      0.000      0.000   
+      14 :                                  _TCURAND::TCURAND :      0.613    245.596      0.000      0.000   
+      15 :                                   TCURAND::TCURAND :      0.980   5685.636      0.367   5440.040   
+      16 :                       CRandomEngine::CRandomEngine :      0.980   5685.636      0.000      0.000   
+      17 :                                _CPhysics::CPhysics :      0.984   5685.636      0.004      0.000   
+      18 :                                 CPhysics::CPhysics :      1.023   5687.364      0.039      1.728   
+      19 :                                           CG4::CG4 :      1.031   5687.904      0.008      0.540   
+      20 :                           _OpticksRun::createEvent :      2.516   9706.352      1.484   4018.448   
+      21 :                            OpticksRun::createEvent :      2.516   9706.352      0.000      0.000   
+      22 :                           _OKPropagator::propagate :      2.547   9706.352      0.031      0.000   
+      23 :                                    _OEvent::upload :      2.574   9748.140      0.027     41.788   
+      24 :                                     OEvent::upload :      2.574   9748.140      0.000      0.000   
+      25 :                            _OPropagator::prelaunch :      2.586   9745.068      0.012     -3.071   
+      26 :                             OPropagator::prelaunch :      3.895  10329.148      1.309    584.080   
+      27 :                               _OPropagator::launch :      3.895  10329.148      0.000      0.000   
+      28 :                                OPropagator::launch :      3.902  10558.524      0.008    229.376   
+      29 :                          _OpIndexer::indexSequence :      3.902  10558.524      0.000      0.000   
+      30 :                   _OpIndexer::indexSequenceInterop :      3.902  10558.524      0.000      0.000   
+      31 :                       _OpIndexer::seqhisMakeLookup :      3.902  10558.524      0.000      0.000   
+
+
+
+
+Could understand 500M or so, but 10x that ?::
+
+    In [3]: 100000*16*16*8/(1000*1000)
+    Out[3]: 204
+
+
+
+
+
+
+
 Investigate G4Event cleanup
 ------------------------------
 

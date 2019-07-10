@@ -84,6 +84,9 @@ class CFG4_API CRandomEngine : public CRandomListener, public CLHEP::HepRandomEn
         void postTrack();
         void postStep();
     private:
+        int  precurand(); 
+        int  postcurand(); 
+        int  preinit(); 
         void init(); 
         void initCurand(); 
 
@@ -115,6 +118,7 @@ class CFG4_API CRandomEngine : public CRandomListener, public CLHEP::HepRandomEn
         CG4*                          m_g4 ; 
         CG4Ctx&                       m_ctx ; 
         Opticks*                      m_ok ; 
+        int                           m_preinit ;  
         bool                          m_dbgkludgeflatzero ; 
         OpticksRun*                   m_run ; 
 
@@ -137,7 +141,9 @@ class CFG4_API CRandomEngine : public CRandomListener, public CLHEP::HepRandomEn
         int                      m_tranche_ibase ; 
         int                      m_tranche_index ; 
 #ifdef DYNAMIC_CURAND
+        int                      m_precurand ; 
         TCURAND<double>*         m_tcurand ; 
+        int                      m_postcurand ; 
 #else
         const char*              m_path ; 
 #endif

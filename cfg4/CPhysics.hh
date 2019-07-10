@@ -31,11 +31,13 @@ class CFG4_API CPhysics
         G4RunManager* getRunManager() const ; 
         void setProcessVerbosity(int verbosity);
     private:
+        int preinit();
         void init();
     private:
         CG4*           m_g4 ;     
         OpticksHub*    m_hub ;     
         Opticks*       m_ok ;     
+        int            m_preinit ;   
         G4RunManager*  m_runManager ; 
 #ifdef OLDPHYS
         PhysicsList*          m_physicslist ; 

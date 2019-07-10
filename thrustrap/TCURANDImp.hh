@@ -8,13 +8,6 @@ cuRAND GPU generation of random numbers using thrust and NPY
 
 **/
 
-
-/*
-#include "TBuf.hh"
-
-
-*/
-
 #include <thrust/device_vector.h>
 #include "CBufSpec.hh"
 template <typename T> class NPY ; 
@@ -32,8 +25,11 @@ class THRAP_API TCURANDImp
         void     setIBase(unsigned ibase ); 
         unsigned getIBase() const ; 
     private:
+        int     preinit();  
+        void    init();  
         void    generate();   // called by setIBase, updates contents of array
     private:
+        int      m_preinit ;   
         unsigned m_ni ; 
         unsigned m_nj ; 
         unsigned m_nk ; 

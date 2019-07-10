@@ -111,6 +111,14 @@ CG4Ctx& CG4::getCtx()
     return m_ctx ; 
 }
 
+
+int CG4::preinit()
+{
+    OK_PROFILE("_CG4::CG4");
+    if(m_ok->hasOpt("cg4sigint")) std::raise(SIGINT);   // <-- handy location for setting G4 breakpoints
+    return 0 ; 
+}
+
 CG4::CG4(OpticksHub* hub) 
     :
     m_log(new SLog("CG4::CG4", "", LEVEL)),
@@ -151,11 +159,6 @@ CG4::CG4(OpticksHub* hub)
     (*m_log)("DONE");
 }
 
-int CG4::preinit()
-{
-    if(m_ok->hasOpt("cg4sigint")) std::raise(SIGINT); 
-    return 0 ; 
-}
 
 void CG4::init()
 {

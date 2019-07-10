@@ -43,11 +43,19 @@ std::string CRandomEngine::name() const
     return "CRandomEngine";
 }
 
+
+int CRandomEngine::preinit()
+{
+    OK_PROFILE("_CRandomEngine::CRandomEngine"); 
+    return 0 ; 
+}
+
 CRandomEngine::CRandomEngine(CG4* g4)
     :
     m_g4(g4),
     m_ctx(g4->getCtx()),
     m_ok(g4->getOpticks()),
+    m_preinit(preinit()),
     m_dbgkludgeflatzero(m_ok->isDbgKludgeFlatZero()),    // --dbgkludgeflatzero
     m_run(g4->getRun()),
     m_okevt(NULL),
@@ -66,7 +74,9 @@ CRandomEngine::CRandomEngine(CG4* g4)
     m_tranche_ibase(-1),
     m_tranche_index(-1),
 #ifdef DYNAMIC_CURAND
+    m_precurand(precurand()),
     m_tcurand(new TCURAND<double>(m_tranche_size,16,16)),
+    m_postcurand(postcurand()),
     m_curand(m_tcurand->getArray()),
 #else
     m_path("$TMP/TRngBufTest_0.npy"),
@@ -84,6 +94,30 @@ CRandomEngine::CRandomEngine(CG4* g4)
 {
     init();
 }
+
+void CRandomEngine::init()
+{
+    OK_PROFILE("CRandomEngine::CRandomEngine"); 
+    LOG(LEVEL) << "["; 
+    initCurand();
+    CLHEP::HepRandom::setTheEngine( this );  
+    LOG(LEVEL) << "]"; 
+}
+
+
+int CRandomEngine::precurand()
+{
+    OK_PROFILE("_TCURAND::TCURAND"); 
+    return 0 ; 
+}
+int CRandomEngine::postcurand()
+{
+    OK_PROFILE("TCURAND::TCURAND"); 
+    return 0 ; 
+}
+
+
+
 
 bool CRandomEngine::hasSequence() const 
 {
@@ -110,13 +144,6 @@ void CRandomEngine::dumpDouble(const char* msg, double* v, unsigned width ) cons
     }
 }
 
-void CRandomEngine::init()
-{
-    LOG(LEVEL) << "["; 
-    initCurand();
-    CLHEP::HepRandom::setTheEngine( this );  
-    LOG(LEVEL) << "]"; 
-}
 
 void CRandomEngine::initCurand()
 {
