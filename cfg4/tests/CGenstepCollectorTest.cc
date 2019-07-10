@@ -1,4 +1,4 @@
-//#include "SProc.hh"
+#include "SStr.hh"
 #include "SSys.hh"
 
 #include "NLookup.hpp"
@@ -61,7 +61,7 @@ int main(int argc, char** argv)
 
         SSys::npdump(path, "np.uint32" );
 
-        ok.profile(e) ; 
+        ok.profile(SStr::Concat(NULL, e)) ; 
     }
 
     ok.dumpProfile(argv[0]); 

@@ -26,10 +26,13 @@ class OKCORE_API OpticksProfile
        static const plog::Severity LEVEL ; 
        static const char* NAME ; 
     public:
-       static OpticksProfile* Load( const char* dir, const char* name=NULL ); 
+       static OpticksProfile* Load( const char* dir); 
     public:
-       OpticksProfile(const char* name="OpticksProfile" );
-       template <typename T> void stamp(T row, int count);
+       OpticksProfile();
+       template <typename T> void stampOld(T row, int count);
+       void stamp(const char* label, int count);
+
+       void setStamp(bool stamp); 
 
        std::vector<std::string>&  getLines(); 
        void save();
@@ -50,11 +53,15 @@ class OKCORE_API OpticksProfile
        void setVM(float vm);
        void load(const char* dir);
     private:
+       bool        m_stamp ;  
        const char* m_dir ; 
        const char* m_name ; 
+       const char* m_lname ; 
        const char* m_columns ; 
        BTimesTable* m_tt ; 
+
        NPY<float>* m_npy ;
+       NPY<char>*  m_lpy ;
  
        float       m_t0 ; 
        float       m_tprev ; 

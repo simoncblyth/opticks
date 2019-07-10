@@ -16,14 +16,18 @@
 
 const plog::Severity OpticksProfile::LEVEL = PLOG::EnvLevel("OpticksProfile", "DEBUG") ; 
 
+const char* OpticksProfile::NAME = "OpticksProfile" ; 
 
-OpticksProfile::OpticksProfile(const char* name ) 
+OpticksProfile::OpticksProfile() 
    :
+   m_stamp(false),
    m_dir(NULL),
-   m_name(BStr::concat(NULL,name,".npy")),
+   m_name(BStr::concat(NULL,NAME,".npy")),
+   m_lname(BStr::concat(NULL,NAME,"Labels.npy")),
    m_columns("Time,DeltaTime,VM,DeltaVM"),
    m_tt(new BTimesTable(m_columns)),
    m_npy(NPY<float>::make(0,1,m_tt->getNumColumns())),
+   m_lpy(NPY<char>::make(0,1,64)),
 
    m_t0(0),
    m_tprev(0),
@@ -35,6 +39,12 @@ OpticksProfile::OpticksProfile(const char* name )
 
    m_num_stamp(0)
 {
+}
+
+
+void OpticksProfile::setStamp(bool stamp)
+{
+    m_stamp = stamp ; 
 }
 
 
@@ -76,8 +86,18 @@ void OpticksProfile::setVM(float vm)
    m_vm = vm ; 
 }
 
+
+/**
+OpticksProfile::stamp
+-----------------------
+
+Called from Opticks::profile canonically with 
+const char* labels from OK_PROFILE invokations.
+
+**/
+
 template <typename T>
-void OpticksProfile::stamp(T row, int count)
+void OpticksProfile::stampOld(T label, int count)
 {
    setT(BTimeStamp::RealTime()) ;
    setVM(SProc::VirtualMemoryUsageMB()) ;
@@ -91,8 +111,9 @@ void OpticksProfile::stamp(T row, int count)
 
    // the prev start at zero, so first dt and dvm give absolute m_t0 m_vm0 valules
 
-   m_tt->add<T>(row, t, dt, vm, dvm,  count );
+   m_tt->add<T>(label, t, dt, vm, dvm,  count );
    m_npy->add(       t, dt, vm, dvm ); 
+   //m_lpy->addString( label ) ; 
 
    LOG(LEVEL)
        << m_tt->getLabel() 
@@ -103,6 +124,44 @@ void OpticksProfile::stamp(T row, int count)
        << dvm << ")"
        ; 
 }
+
+
+void OpticksProfile::stamp(const char* label, int count)
+{
+   setT(BTimeStamp::RealTime()) ;
+   setVM(SProc::VirtualMemoryUsageMB()) ;
+   m_num_stamp += 1 ; 
+
+   float  t   = m_t - m_t0 ;      // time since instanciation
+   float dt   = m_t - m_tprev ;   // time since previous stamp
+
+   float vm   = m_vm - m_vm0 ;     // vm since instanciation
+   float dvm  = m_vm - m_vmprev ;  // vm since previous stamp
+
+   // the prev start at zero, so first dt and dvm give absolute m_t0 m_vm0 valules
+
+   m_tt->add<const char*>(label, t, dt, vm, dvm,  count );
+   m_npy->add(       t, dt, vm, dvm ); 
+   m_lpy->addString( label ) ; 
+
+   LOG(LEVEL)
+       << m_tt->getLabel() 
+       << " (" 
+       << t << ","
+       << dt << ","
+       << vm << ","
+       << dvm << ")"
+       ; 
+}
+
+
+
+
+
+
+
+
+
 
 
 
@@ -123,14 +182,14 @@ void OpticksProfile::save(const char* dir)
    LOG(LEVEL) << brief() ; 
    m_tt->save(dir);
    m_npy->save(dir, m_name);
+   m_lpy->save(dir, m_lname);
 }
 
 
-const char* OpticksProfile::NAME = "Opticks" ; 
 
-OpticksProfile* OpticksProfile::Load( const char* dir, const char* name )
+OpticksProfile* OpticksProfile::Load( const char* dir )
 {
-    OpticksProfile* profile = new OpticksProfile( name ? name : NAME );
+    OpticksProfile* profile = new OpticksProfile();
     profile->setDir(dir); 
     profile->load(); 
     return profile ;  
@@ -142,6 +201,7 @@ void OpticksProfile::load(const char* dir)
    assert(dir);
    m_tt->load(dir);
    m_npy = NPY<float>::load(dir, m_name);
+   m_lpy = NPY<char>::load(dir, m_lname);
 }
 
 std::string OpticksProfile::brief()
@@ -171,9 +231,9 @@ void OpticksProfile::dump(const char* msg, const char* startswith, const char* s
 
 
 
-template OKCORE_API void OpticksProfile::stamp<unsigned>(unsigned , int);
-template OKCORE_API void OpticksProfile::stamp<int>(int  , int);
-template OKCORE_API void OpticksProfile::stamp<char*>(char*, int);
-template OKCORE_API void OpticksProfile::stamp<const char*>(const char*, int);
+template OKCORE_API void OpticksProfile::stampOld<unsigned>(unsigned , int);
+template OKCORE_API void OpticksProfile::stampOld<int>(int  , int);
+template OKCORE_API void OpticksProfile::stampOld<char*>(char*, int);
+template OKCORE_API void OpticksProfile::stampOld<const char*>(const char*, int);
 
 

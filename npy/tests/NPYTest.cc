@@ -465,8 +465,101 @@ void test_ullstring()
               ;
 
     }
-
 }
+
+void test_getShape()
+{
+   LOG(info) ; 
+ 
+   NPY<char>* a = NPY<char>::make(2,1,4) ;
+   assert( a->getShape(-1) == 4 ); 
+   assert( a->getShape(-2) == 1 ); 
+   assert( a->getShape(-3) == 2 ); 
+
+   NPY<char>* b = NPY<char>::make(1,4) ;
+   assert( b->getShape(-1) == 4 ); 
+   assert( b->getShape(-2) == 1 ); 
+}
+
+
+void test_setString()
+{
+   LOG(info) ; 
+   const char* path = "$TMP/test_setString.npy" ; 
+
+   NPY<char>* buf = NPY<char>::make(3,5) ;
+   buf->zero();
+   buf->setString("hello", 0 ); 
+   buf->setString("world", 1 ); 
+   buf->setString("truncated", 2 ); 
+   buf->save(path); 
+}
+
+void test_getString()
+{
+   LOG(info) ; 
+   const char* path = "$TMP/test_setString.npy" ; 
+   NPY<char>* buf = NPY<char>::load(path) ;
+
+  const char* s0 = buf->getString(0) ; 
+  const char* s1 = buf->getString(1) ;
+  const char* s2 = buf->getString(2) ;
+ 
+   for(unsigned i=0 ; i < buf->getShape(0) ; i++)
+   {
+       const char* s = buf->getString(i); 
+       LOG(info) << s ;    
+   } 
+
+  assert( strcmp( s0, "hello") == 0 );  
+  assert( strcmp( s1, "world") == 0 );  
+  assert( strcmp( s2, "trunc") == 0 );  
+}
+
+void test_addString()
+{
+   LOG(info) ; 
+   const char* path = "$TMP/test_addString.npy" ; 
+
+   NPY<char>* buf = NPY<char>::make(0,5) ;
+   buf->zero();
+   buf->addString("hello"); 
+   buf->addString("world"); 
+   buf->addString("truncated"); 
+   buf->save(path); 
+}
+
+void test_addStringLoad()
+{
+   LOG(info) ; 
+   const char* path = "$TMP/test_addString.npy" ; 
+
+   NPY<char>* buf = NPY<char>::load(path) ;
+   for(unsigned i=0 ; i < buf->getShape(0) ; i++)
+   {
+       const char* s = buf->getString(i); 
+       LOG(info) << s ;    
+   } 
+}
+
+
+
+
+
+/*
+In [9]: a
+Out[9]: 
+array([[104, 101, 108, 108, 111],
+       [119, 111, 114, 108, 100],
+       [116, 114, 117, 110,  99]], dtype=int8)
+
+In [10]: a.view("|S5")
+Out[10]: 
+array([['hello'],
+       ['world'],
+       ['trunc']], dtype='|S5')
+
+*/
 
 
 
@@ -532,7 +625,16 @@ int main(int argc, char** argv )
     //test_getData();
     //test_getUSum();
     //test_string();
-    test_ullstring();
+    //test_ullstring();
+    //test_getShape();
+
+    //test_setString();
+    //test_getString();
+
+    test_addString();
+    test_addStringLoad();
+
+
 
    /* 
     test_getBufSpec();

@@ -251,8 +251,7 @@ Opticks::Opticks(int argc, char** argv, const char* argforced )
     m_dumpenv(m_sargs->hasArg("--dumpenv")),
     m_envkey(m_sargs->hasArg("--envkey") ? BOpticksKey::SetKey(NULL) : false),  // see tests/OpticksEventDumpTest.cc makes sensitive to OPTICKS_KEY
     m_production(m_sargs->hasArg("--production")),
-    //m_profile(new OpticksProfile("Opticks",m_sargs->hasArg("--stamp"))),
-    m_profile(new OpticksProfile("Opticks")),
+    m_profile(new OpticksProfile()),
     m_materialprefix(NULL),
     m_photons_per_g4event(0), 
 
@@ -295,6 +294,9 @@ Opticks::Opticks(int argc, char** argv, const char* argforced )
     m_internal(false),
     m_frame_renderer(NULL)
 {
+
+    m_profile->setStamp(m_sargs->hasArg("--stamp"));
+
     OK_PROFILE("Opticks::Opticks");
 
     if(fInstance != NULL)
@@ -359,12 +361,24 @@ std::string Opticks::getArgLine()
 }
 
 
+/*
 template <typename T>
 void Opticks::profile(T label)
 {
     m_profile->stamp<T>(label, m_tagoffset);
+}
+*/
+
+
+void Opticks::profile(const char* label)
+{
+    m_profile->stamp(label, m_tagoffset);
    // m_tagoffset is set by Opticks::makeEvent
 }
+
+
+
+
 void Opticks::dumpProfile(const char* msg, const char* startswith, const char* spacewith, double tcut)
 {
    m_profile->dump(msg, startswith, spacewith, tcut);
@@ -2960,11 +2974,12 @@ void Opticks::set(const char* name, T value)
 
 
 
+/*
 template OKCORE_API void Opticks::profile<unsigned>(unsigned);
 template OKCORE_API void Opticks::profile<int>(int);
 template OKCORE_API void Opticks::profile<char*>(char*);
 template OKCORE_API void Opticks::profile<const char*>(const char*);
-
+*/
 
 template OKCORE_API void Opticks::set(const char* name, bool value);
 template OKCORE_API void Opticks::set(const char* name, int value);

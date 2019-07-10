@@ -10,8 +10,8 @@ int main(int argc, char** argv)
     LOG(info) << argv[0] ;
 
 
-    OpticksProfile* op = new OpticksProfile("OpticksProfileTest") ;
-
+    OpticksProfile* op = new OpticksProfile() ;
+    op->setStamp(true); 
 
     op->setDir("$TMP/OpticksProfileTest") ; // canonically done from Opticks::configure 
 

@@ -91,7 +91,7 @@ class NPY_API NPYBase {
        unsigned int getNumElements() const ;   // size of last dimension
        unsigned int getDimensions() const ;
        std::string  getShapeString(unsigned int ifr=0) const ;
-       unsigned int getShape(unsigned int dim) const ;
+       unsigned int getShape(int dim) const ;
        unsigned int getValueIndex(unsigned i, unsigned j, unsigned k, unsigned l=0, unsigned m=0) const ;
        unsigned int getNumValues(unsigned int from_dim=0) const ;
 

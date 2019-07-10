@@ -591,8 +591,59 @@ TODO: 3M+1 running : py analysis profile time and memory usage
 * https://medium.com/zendesk-engineering/hunting-for-memory-leaks-in-python-applications-6824d0518774
 
 
-TODO: 3M+1 runing : OKG4Test  profile time and memory usage
---------------------------------------------------------------------
+The dv for each sel is whats taking the time
+
+* given that the tail of the sel has very few entries, this is kinda surprising 
+
+::
+
+    args: /home/blyth/opticks/ana/tboolean.py --tagoffset 0 --tag 100 --det tboolean-box --pfx tboolean-box --src torch
+    [2019-07-09 22:57:30,728] p248164 {<module>            :tboolean.py:63} INFO     - pfx tboolean-box tag 100 src torch det tboolean-box c2max [1.5, 2.0, 2.5] ipython False 
+    [2019-07-09 22:57:30,728] p248164 {__init__            :ab.py     :171} INFO     - [
+    [2019-07-09 22:57:31,244] p248164 {check_ox_fdom       :evt.py    :446} WARNING  -  t :   0.000   9.020 : tot 4000000 over 42 0.000  under 0 0.000 : mi      0.021 mx     11.205  
+    [2019-07-09 22:57:36,688] p248164 {check_ox_fdom       :evt.py    :446} WARNING  -  t :   0.000   9.020 : tot 4000000 over 41 0.000  under 0 0.000 : mi      0.021 mx     11.205  
+    [2019-07-09 22:57:43,011] p248164 {check_alignment     :ab.py     :264} INFO     - [
+    [2019-07-09 22:57:43,080] p248164 {check_alignment     :ab.py     :266} INFO     - ]
+    [2019-07-09 22:57:43,081] p248164 {compare             :ab.py     :270} INFO     - [
+    [2019-07-09 22:57:43,081] p248164 {_get_cf             :ab.py     :492} INFO     - [ ab.ahis 
+    [2019-07-09 22:57:43,088] p248164 {_get_cf             :ab.py     :501} INFO     - ] ab.ahis 
+    [2019-07-09 22:57:43,088] p248164 {_get_cf             :ab.py     :492} INFO     - [ ab.amat 
+    [2019-07-09 22:57:43,091] p248164 {_get_cf             :ab.py     :501} INFO     - ] ab.amat 
+    [2019-07-09 22:57:43,091] p248164 {__init__            :ab.py     :58} INFO     - [
+    [2019-07-09 22:57:43,091] p248164 {_make_dv            :ab.py     :413} INFO     - [ rpost_dv 
+    [2019-07-09 22:57:43,092] p248164 {__init__            :dv.py     :278} INFO     - [ rpost_dv 
+    [2019-07-09 22:57:54,083] p248164 {dv_                 :dv.py     :400} INFO     - [
+    [2019-07-09 22:57:56,533] p248164 {dv_                 :dv.py     :421} INFO     - ]
+    [2019-07-09 22:58:02,638] p248164 {dv_                 :dv.py     :400} INFO     - [
+    [2019-07-09 22:58:02,775] p248164 {dv_                 :dv.py     :421} INFO     - ]
+    [2019-07-09 22:58:07,792] p248164 {dv_                 :dv.py     :400} INFO     - [
+    ...
+    [2019-07-09 23:01:55,006] p248164 {dv_                 :dv.py     :421} INFO     - ]
+    [2019-07-09 23:01:58,702] p248164 {dv_                 :dv.py     :400} INFO     - [
+    [2019-07-09 23:01:58,703] p248164 {dv_                 :dv.py     :421} INFO     - ]
+    [2019-07-09 23:02:01,755] p248164 {dv_                 :dv.py     :400} INFO     - [
+    [2019-07-09 23:02:01,759] p248164 {dv_                 :dv.py     :421} INFO     - ]
+    [2019-07-09 23:02:05,486] p248164 {__init__            :dv.py     :322} INFO     - ] rpost_dv 
+    [2019-07-09 23:02:05,487] p248164 {_make_dv            :ab.py     :422} INFO     - ] rpost_dv 
+    [2019-07-09 23:02:05,487] p248164 {_make_dv            :ab.py     :413} INFO     - [ rpol_dv 
+    [2019-07-09 23:02:05,487] p248164 {__init__            :dv.py     :278} INFO     - [ rpol_dv 
+    [2019-07-09 23:02:12,621] p248164 {dv_                 :dv.py     :400} INFO     - [
+    [2019-07-09 23:02:14,004] p248164 {dv_                 :dv.py     :421} INFO     - ]
+    [2019-07-09 23:02:18,832] p248164 {dv_                 :dv.py     :400} INFO     - [
+    [2019-07-09 23:02:18,879] p248164 {dv_                 :dv.py     :421} INFO     - ]
+     ...
+    [2019-07-09 23:03:35,286] p248164 {dv_                 :dv.py     :421} INFO     - ]
+    [2019-07-09 23:03:38,205] p248164 {dv_                 :dv.py     :400} INFO     - [
+    [2019-07-09 23:03:38,205] p248164 {dv_                 :dv.py     :421} INFO     - ]
+    [2019-07-09 23:03:41,383] p248164 {dv_                 :dv.py     :400} INFO     - [
+    [2019-07-09 23:03:41,384] p248164 {dv_                 :dv.py     :421} INFO     - ]
+
+
+
+
+
+TODO: PLUG SOME LEAKS : 4M running : OKG4Test  profile time and memory usage, looks real leaky, DYNAMIC_CURAND doesnt bend over like 
+-------------------------------------------------------------------------------------------------------------------------------------------
 
 ::
 
@@ -601,8 +652,32 @@ TODO: 3M+1 runing : OKG4Test  profile time and memory usage
     ip tprofile.py                       ## plotting the time vs memory profile 
 
 
-
-
     TBOOLEAN_TAG=100 ts box --generateoverride 4000000 --rngmax 10
     # use non-default tag, to prevent accidental stomping 
+
+    TBOOLEAN_TAG=200 ts box --generateoverride 2000000 --rngmax 3
+
+::
+
+    .  PID USER      PR  NI    VIRT    RES    SHR S  %CPU %MEM     TIME+ COMMAND    
+    232213 blyth     20   0   55.4g  43.8g 195952 R  99.3 70.0   9:26.92 OKG4Test      
+
+    232213 blyth     20   0   55.6g  44.0g 195952 R 100.0 70.4   9:29.95 OKG4Test            # during python ana
+
+
+* HMM : but the Opticks.npy with profile info is placed above tag, TODO Change this 
+
+
+
+105M prior to each::
+
+          1.254         534.527          1.254      55126.379        104.449 : _CInputPhotonSource::GeneratePrimaryVertex_0
+          0.012         534.539          0.012      55126.379          0.000 : CInputPhotonSource::GeneratePrimaryVertex_0
+          1.281         535.820          1.281      55231.848        105.469 : _CInputPhotonSource::GeneratePrimaryVertex_0
+          0.012         535.832          0.012      55231.848          0.000 : CInputPhotonSource::GeneratePrimaryVertex_0
+          1.273         537.105          1.273      55336.297        104.449 : _CInputPhotonSource::GeneratePrimaryVertex_0
+          0.012         537.117          0.012      55336.297          0.000 : CInputPhotonSource::GeneratePrimaryVertex_0
+          1.242         538.359          1.242      55441.770        105.473 : _CInputPhotonSource::GeneratePrimaryVertex_0
+          0.012         538.371          0.012      55441.770          0.000 : CInputPhotonSource::GeneratePrimaryVertex_0
+
 

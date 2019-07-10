@@ -1,6 +1,7 @@
 #include "CFG4_BODY.hh"
 #include <sstream>
 #include <cmath>
+#include <csignal>
 
 // sysrap-
 #include "STranche.hh"
@@ -142,12 +143,31 @@ does the remainder.  The G4PrimaryVertex created for each input photon
 as well as being added to the G4Event is collected using the base class
 CSource::collectPrimary.
 
+
+::
+
+    (gdb) bt
+    #0  0x00007fffe7b3049b in raise () from /lib64/libpthread.so.0
+    #1  0x00007ffff4c9c598 in CInputPhotonSource::GeneratePrimaryVertex (this=0x7ca13b0, evt=0xd2e88c0) at /home/blyth/opticks/cfg4/CInputPhotonSource.cc:152
+    #2  0x00007ffff4c78b66 in CPrimaryGeneratorAction::GeneratePrimaries (this=0x7ca1520, event=0xd2e88c0) at /home/blyth/opticks/cfg4/CPrimaryGeneratorAction.cc:15
+    #3  0x00007ffff1564ba7 in G4RunManager::GenerateEvent (this=0x7a68230, i_event=0) at /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/run/src/G4RunManager.cc:460
+    #4  0x00007ffff156463c in G4RunManager::ProcessOneEvent (this=0x7a68230, i_event=0) at /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/run/src/G4RunManager.cc:398
+    #5  0x00007ffff15644d7 in G4RunManager::DoEventLoop (this=0x7a68230, n_event=10, macroFile=0x0, n_select=-1) at /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/run/src/G4RunManager.cc:367
+    #6  0x00007ffff1563d2d in G4RunManager::BeamOn (this=0x7a68230, n_event=10, macroFile=0x0, n_select=-1) at /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/run/src/G4RunManager.cc:273
+    #7  0x00007ffff4ca3c62 in CG4::propagate (this=0x67f66e0) at /home/blyth/opticks/cfg4/CG4.cc:348
+    #8  0x00007ffff7bd570f in OKG4Mgr::propagate_ (this=0x7fffffffcc40) at /home/blyth/opticks/okg4/OKG4Mgr.cc:177
+    #9  0x00007ffff7bd55cf in OKG4Mgr::propagate (this=0x7fffffffcc40) at /home/blyth/opticks/okg4/OKG4Mgr.cc:117
+    #10 0x00000000004039a9 in main (argc=32, argv=0x7fffffffcf78) at /home/blyth/opticks/okg4/tests/OKG4Test.cc:9
+    (gdb) 
+
 **/
 
 void CInputPhotonSource::GeneratePrimaryVertex(G4Event *evt) 
 {
     OK_PROFILE("_CInputPhotonSource::GeneratePrimaryVertex"); 
       
+    //std::raise(SIGINT); 
+
     unsigned num_photons = m_tranche->tranche_size(m_gpv_count) ; 
 
     unsigned event_gencode = TORCH ;   // no 1-based ffs indexable space for a new code, so reuse TORCH 

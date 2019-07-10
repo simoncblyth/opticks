@@ -189,6 +189,7 @@ class NPY_API NPY : public NPYBase {
     public:
        void add(NPY<T>* other);   // add another buffer, it must have same itemsize (ie size after 1st dimension)
        void add(const T* values, unsigned int nvals);   // add values, nvals must be integral multiple of the itemsize  
+       void addString(const char* s );   // add string, assumes a char array, strings truncated to size of last dimension  
        void add(void* bytes, unsigned int nbytes); // add bytes,  nbytes must be integral multiple of itemsize in bytes
        void add(T x, T y, T z, T w) ;   // add values of a quad, itemsize must be 4 
        void add(const glm::vec4& v ) ;  // add quad, itemsize must be 4 
@@ -300,6 +301,8 @@ class NPY_API NPY : public NPYBase {
        nmat4triple* getMat4TriplePtr(int i) const ;
        void         setMat4Triple(const nmat4triple* mpair, unsigned i );
 
+       void         setString( const char* s , unsigned i, unsigned j=0, unsigned k=0 );
+       const char*  getString( unsigned i, unsigned j=0, unsigned k=0 );
 
        void         copyTo(std::vector<glm::ivec4>& dst );
        void         copyTo(std::vector<glm::vec3>& dst );

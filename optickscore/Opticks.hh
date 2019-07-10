@@ -157,7 +157,8 @@ class OKCORE_API Opticks {
 
    public:
        // profile ops
-       template <typename T> void profile(T label);
+       //template <typename T> void profile(T label);
+       void profile(const char* label);
        void dumpProfile(const char* msg="Opticks::dumpProfile", const char* startswith=NULL, const char* spacewith=NULL, double tcut=0 );
        void saveProfile();
    private:

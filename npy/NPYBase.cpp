@@ -359,10 +359,12 @@ const std::vector<int>& NPYBase::getShapeVector() const
 {
     return m_shape.size();
 }
- unsigned int NPYBase::getShape(unsigned int n) const 
+ unsigned int NPYBase::getShape(int n) const 
 {
-    return n < m_shape.size() ? m_shape[n] : 0 ;
+    if( n < 0 ) n += m_shape.size() ; 
+    return n < int(m_shape.size()) ? m_shape[n] : 0 ;
 }
+
 
 
 

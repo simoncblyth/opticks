@@ -2,7 +2,7 @@
 #include <iostream>
 #include <iomanip>
 
-#include "PLOG.hh"
+#include "OPTICKS_LOG.hh"
 
 typedef std::vector<const char*> VC ; 
 
@@ -26,7 +26,7 @@ void dump(const OpticksActionControl& ctrl, const char* msg="")
 
 int main(int argc, char** argv)
 {
-     PLOG_(argc, argv);
+     OPTICKS_LOG(argc, argv);
 
      const char* ctrl_ = "GS_LOADED,GS_FABRICATED,GS_TRANSLATED" ;
      unsigned long long mask = OpticksActionControl::Parse(ctrl_) ;

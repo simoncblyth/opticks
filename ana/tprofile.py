@@ -30,7 +30,7 @@ if __name__ == '__main__':
     ok = opticks_main(doc=__doc__)  
     log.info(ok.brief)
 
-    tag = None
+    tag = 100
     tfold = tagdir_( ok.det, ok.src, tag, pfx=ok.pfx )  
     path = os.path.join( tfold, "Opticks.npy")   # quads from OpticksProfile  
     print("path:%s stamp:%s " % (path, stamp_(path) ))
@@ -39,9 +39,9 @@ if __name__ == '__main__':
 
     t,dt,v,dv = a[:,0,0], a[:,0,1], a[:,0,2], a[:,0,3]
     plt.plot( t, v, 'o' )
+    plt.ion()
     plt.show()
 
-    plt.ion()
 
 
 

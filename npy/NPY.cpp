@@ -299,6 +299,22 @@ void NPY<T>::add(const T* values, unsigned int nvals)
 
 
 template <typename T>
+void NPY<T>::addString(const char* s)  
+{
+    unsigned nl = getNumValues(1) ;
+  
+    char* cc = new char[nl] ; 
+    for( unsigned l=0 ; l < nl ; l++ ) cc[l] = l < strlen(s) ? s[l] : '\0' ; 
+
+    add( cc, nl ) ; 
+
+    delete [] cc ; 
+}
+
+
+
+
+template <typename T>
 void NPY<T>::add(void* bytes, unsigned int nbytes)  
 {
     unsigned int orig = getNumItems();
@@ -362,8 +378,6 @@ void NPY<T>::add(T x, T y, T z, T w)
 
     setNumItems( orig + extra );
 }
-
-
 
 
 
@@ -2174,9 +2188,32 @@ void NPY<T>::setMat4Triple(const nmat4triple* triple, unsigned i )
 }
 
 
+template <typename T> 
+void NPY<T>::setString(const char* s, unsigned i, unsigned j, unsigned k )
+{
+    unsigned nl = getShape(-1); 
+    unsigned sl = strlen(s); 
 
+    for(unsigned l=0 ; l < nl ; l++) 
+    { 
+        char c = l < sl ? s[l] : '\0' ; 
+        setValue(i,j,k,l, c  ); 
+    }
+}
 
-
+template <typename T> 
+const char* NPY<T>::getString(unsigned i, unsigned j, unsigned k )
+{
+    unsigned nl = getShape(-1); 
+    char* s = new char[nl+1] ; 
+    for(unsigned l=0 ; l < nl ; l++) 
+    { 
+        char c = getValue(i,j,k,l);
+        s[l] = c ; 
+    }
+    s[nl] = '\0' ; 
+    return s ; 
+}
 
 
 
