@@ -176,6 +176,8 @@ jumps around between tranches
 
 void CRandomEngine::setupTranche(int tranche_id)
 {
+    OK_PROFILE("CRandomEngine::setupTranche"); 
+
     m_tranche_id = tranche_id ; 
     m_tranche_ibase = m_tranche_id*m_tranche_size ; 
 

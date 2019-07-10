@@ -1,11 +1,16 @@
 #pragma once
 
 template <typename T> class NPY ;
+#include "plog/Severity.h"
 #include "CFG4_API_EXPORT.hh"
 
 /**
 CPhotonCollector
 ===================
+
+Canonical instance m_photon_collector resident of C4PhotonCollector
+
+
 
 NB : **No Geant4 dependency** use C4PhotonCollector for that 
 
@@ -20,6 +25,7 @@ Photons (item shape 4*4, 4 quads)
 
 class CFG4_API CPhotonCollector 
 {
+        static const plog::Severity LEVEL ; 
     public:
         static CPhotonCollector* Instance();
     public:

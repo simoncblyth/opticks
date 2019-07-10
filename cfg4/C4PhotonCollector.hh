@@ -2,10 +2,15 @@
 
 #include "CFG4_API_EXPORT.hh"
 #include <string>
+#include "plog/Severity.h"
 
 /**
 C4PhotonCollector
 ===================
+
+
+
+
 
 **/
 
@@ -13,8 +18,10 @@ class G4VParticleChange ;
 class CPhotonCollector ; 
 template <typename T> class NPY ;
 
+
 class CFG4_API C4PhotonCollector 
 {
+        static const plog::Severity LEVEL ;   
     public:
         C4PhotonCollector(); 
     public:

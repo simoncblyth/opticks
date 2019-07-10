@@ -2,6 +2,16 @@ lifting-the-3M-photon-limitation
 ==================================
 
 
+Next
+-----------
+
+* :doc:`plugging-cfg4-leaks`
+
+
+
+Issues : 3M photon limit from curandState and 100k limit from precooked rng 
+--------------------------------------------------------------------------------
+
 ::
 
      ts box --generateoverride 3000001                ## asserts from enoughRng too many photons
@@ -77,6 +87,8 @@ Hmm the precooked RNG for aligned running would be better placed in the installc
 Hmm that begs question what happens between 100k and 3M. 
 Is it cycling in ni and well as nv ? Nope, there are asserts.  
 Seems have not pushed aligned comparisons beyond 100k yet.
+
+* this cycling can still happen in CAlignEngine (not CRandomEngine)
 
 
 
@@ -577,10 +589,9 @@ Succeed to run 3M + 1 photons : but python analysis is taking forever and memory
     ts box --generateoverride 3000001 --rngmax 10
 
 
-Surely have a whopper memory bug::
+Surely have a whopper memory leak::
 
     374818 blyth     20   0   45.7g  34.5g 196640 R 100.0 55.1   7:41.51 OKG4Test 
-
 
 
 
@@ -639,45 +650,5 @@ The dv for each sel is whats taking the time
     [2019-07-09 23:03:41,384] p248164 {dv_                 :dv.py     :421} INFO     - ]
 
 
-
-
-
-TODO: PLUG SOME LEAKS : 4M running : OKG4Test  profile time and memory usage, looks real leaky, DYNAMIC_CURAND doesnt bend over like 
--------------------------------------------------------------------------------------------------------------------------------------------
-
-::
-
-    OpticksProfile=ERROR ts box          ## simple showing stamps
-
-    ip tprofile.py                       ## plotting the time vs memory profile 
-
-
-    TBOOLEAN_TAG=100 ts box --generateoverride 4000000 --rngmax 10
-    # use non-default tag, to prevent accidental stomping 
-
-    TBOOLEAN_TAG=200 ts box --generateoverride 2000000 --rngmax 3
-
-::
-
-    .  PID USER      PR  NI    VIRT    RES    SHR S  %CPU %MEM     TIME+ COMMAND    
-    232213 blyth     20   0   55.4g  43.8g 195952 R  99.3 70.0   9:26.92 OKG4Test      
-
-    232213 blyth     20   0   55.6g  44.0g 195952 R 100.0 70.4   9:29.95 OKG4Test            # during python ana
-
-
-* HMM : but the Opticks.npy with profile info is placed above tag, TODO Change this 
-
-
-
-105M prior to each::
-
-          1.254         534.527          1.254      55126.379        104.449 : _CInputPhotonSource::GeneratePrimaryVertex_0
-          0.012         534.539          0.012      55126.379          0.000 : CInputPhotonSource::GeneratePrimaryVertex_0
-          1.281         535.820          1.281      55231.848        105.469 : _CInputPhotonSource::GeneratePrimaryVertex_0
-          0.012         535.832          0.012      55231.848          0.000 : CInputPhotonSource::GeneratePrimaryVertex_0
-          1.273         537.105          1.273      55336.297        104.449 : _CInputPhotonSource::GeneratePrimaryVertex_0
-          0.012         537.117          0.012      55336.297          0.000 : CInputPhotonSource::GeneratePrimaryVertex_0
-          1.242         538.359          1.242      55441.770        105.473 : _CInputPhotonSource::GeneratePrimaryVertex_0
-          0.012         538.371          0.012      55441.770          0.000 : CInputPhotonSource::GeneratePrimaryVertex_0
 
 

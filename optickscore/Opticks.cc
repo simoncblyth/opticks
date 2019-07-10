@@ -1,3 +1,5 @@
+
+
 #ifdef _MSC_VER
 // object allocated on the heap may not be aligned 16
 // https://github.com/g-truc/glm/issues/235
@@ -375,6 +377,29 @@ void Opticks::profile(const char* label)
     m_profile->stamp(label, m_tagoffset);
    // m_tagoffset is set by Opticks::makeEvent
 }
+
+
+unsigned Opticks::accumulateAdd(const char* label)
+{
+    return m_profile->accumulateAdd(label);
+}
+void Opticks::accumulateStart(unsigned idx)
+{
+    m_profile->accumulateStart(idx);  
+}
+void Opticks::accumulateStop(unsigned idx)
+{
+    m_profile->accumulateStop(idx);  
+}
+std::string Opticks::accumulateDesc(unsigned idx)
+{
+    return m_profile->accumulateDesc(idx);
+}
+
+
+
+
+
 
 
 

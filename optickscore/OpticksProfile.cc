@@ -19,25 +19,25 @@ const plog::Severity OpticksProfile::LEVEL = PLOG::EnvLevel("OpticksProfile", "D
 const char* OpticksProfile::NAME = "OpticksProfile" ; 
 
 OpticksProfile::OpticksProfile() 
-   :
-   m_stamp(false),
-   m_dir(NULL),
-   m_name(BStr::concat(NULL,NAME,".npy")),
-   m_lname(BStr::concat(NULL,NAME,"Labels.npy")),
-   m_columns("Time,DeltaTime,VM,DeltaVM"),
-   m_tt(new BTimesTable(m_columns)),
-   m_npy(NPY<float>::make(0,1,m_tt->getNumColumns())),
-   m_lpy(NPY<char>::make(0,1,64)),
+    :
+    m_stamp(false),
+    m_dir(NULL),
+    m_name(BStr::concat(NULL,NAME,".npy")),
+    m_lname(BStr::concat(NULL,NAME,"Labels.npy")),
+    m_columns("Time,DeltaTime,VM,DeltaVM"),
+    m_tt(new BTimesTable(m_columns)),
+    m_npy(NPY<float>::make(0,1,m_tt->getNumColumns())),
+    m_lpy(NPY<char>::make(0,1,64)),
 
-   m_t0(0),
-   m_tprev(0),
-   m_t(0),
+    m_t0(0),
+    m_tprev(0),
+    m_t(0),
 
-   m_vm0(0),
-   m_vmprev(0),
-   m_vm(0),
+    m_vm0(0),
+    m_vmprev(0),
+    m_vm(0),
 
-   m_num_stamp(0)
+    m_num_stamp(0)
 {
 }
 
@@ -156,7 +156,58 @@ void OpticksProfile::stamp(const char* label, int count)
 
 
 
+unsigned OpticksProfile::accumulateAdd(const char* label)
+{
+    unsigned idx = m_acc.size(); 
 
+    m_acc_labels.push_back(label); 
+
+    OpticksAcc acc ; 
+    OpticksAcc::Init(acc);  
+    m_acc.push_back(acc);  
+
+    return idx ; 
+}
+
+void OpticksProfile::accumulateStart(unsigned idx)
+{
+    OpticksAcc& acc = m_acc[idx] ; 
+    acc.t0 = BTimeStamp::RealTime() ; 
+    acc.v0 = SProc::VirtualMemoryUsageKB() ; 
+}
+
+void OpticksProfile::accumulateStop(unsigned idx)
+{
+    OpticksAcc& acc = m_acc[idx] ; 
+
+    float dt = BTimeStamp::RealTime() - acc.t0 ; 
+    float dv = SProc::VirtualMemoryUsageKB() - acc.v0 ; 
+
+    acc.n += 1 ; 
+    acc.t += dt ; 
+    acc.v += dv ; 
+
+    if(acc.n % 1000 == 0 )
+    {
+        LOG(LEVEL) << accumulateDesc(idx) ; 
+    }
+
+
+}
+
+std::string OpticksProfile::accumulateDesc(unsigned idx)
+{
+    OpticksAcc& acc = m_acc[idx] ; 
+    std::stringstream ss ; 
+    ss 
+       << "Acc "    
+       << std::setw(50) << m_acc_labels[idx]
+       << " n " << std::setw(9) << acc.n 
+       << " t " << std::setw(9) << std::fixed << std::setprecision(4) << acc.t 
+       << " v " << std::setw(9) << std::fixed << std::setprecision(4) << acc.v
+       ; 
+    return ss.str(); 
+}
 
 
 

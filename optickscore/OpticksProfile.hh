@@ -19,6 +19,23 @@ Recording time and virtual memory as various points during Opticks running.
 
 **/
 
+struct OKCORE_API OpticksAcc
+{
+    unsigned n ; 
+    float    t ; 
+    float    v ; 
+    float    t0 ; 
+    float    v0 ; 
+
+    static void Init(OpticksAcc& acc )
+    { 
+        acc.n = 0 ; 
+        acc.t = 0.f ; 
+        acc.v = 0.f ; 
+        acc.t0 = 0.f ; 
+        acc.v0 = 0.f ;
+    }  
+};
 
 class OKCORE_API OpticksProfile 
 {
@@ -31,6 +48,11 @@ class OKCORE_API OpticksProfile
        OpticksProfile();
        template <typename T> void stampOld(T row, int count);
        void stamp(const char* label, int count);
+
+       unsigned accumulateAdd(const char* label); 
+       void     accumulateStart(unsigned idx); 
+       void     accumulateStop(unsigned idx); 
+       std::string accumulateDesc(unsigned idx);
 
        void setStamp(bool stamp); 
 
@@ -72,6 +94,9 @@ class OKCORE_API OpticksProfile
        float       m_vm ; 
 
        unsigned    m_num_stamp ; 
+
+       std::vector<OpticksAcc>   m_acc ; 
+       std::vector<std::string>  m_acc_labels  ; 
 
 };
 

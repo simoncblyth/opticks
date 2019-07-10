@@ -12,6 +12,7 @@ CTrackingAction : G4 to CG4 interface for tracks
 #include <string>
 #include "G4TrackStatus.hh"
 #include "G4UserTrackingAction.hh"
+#include "plog/Severity.h"
 #include "globals.hh"
 
 class G4Event ; 
@@ -26,6 +27,7 @@ class CG4 ;
 
 class CFG4_API CTrackingAction : public G4UserTrackingAction
 {
+    static const plog::Severity LEVEL ; 
     friend class CG4 ;  
   public:
     virtual ~CTrackingAction();

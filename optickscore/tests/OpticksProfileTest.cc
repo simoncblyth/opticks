@@ -3,32 +3,153 @@
 #include "OpticksProfile.hh"
 #include "OPTICKS_LOG.hh"
 
+
+
+struct Leak
+{
+    static unsigned count ; 
+
+    unsigned n ; 
+    unsigned i ; 
+    char*    d ;
+ 
+    Leak(unsigned n_) 
+        :
+        n(n_),
+        i(count),
+        d(new char[n])
+    {
+        count += 1 ;   
+    } 
+
+    std::string desc() const
+    {
+        std::stringstream ss ; 
+        ss 
+            << " i " << i 
+            << " n " << n
+            ;
+        return ss.str();   
+    }
+
+    ~Leak()
+    {
+        LOG(info) << desc() ; 
+        delete[] d ; 
+    }
+
+};
+
+
+unsigned Leak::count = 0 ; 
+
+
+
+
+struct OpticksProfileTest 
+{
+    OpticksProfile* op ;
+    unsigned long long KB ;  
+    unsigned long long MB ;  
+    unsigned acc ; 
+    unsigned tagoffset ; 
+
+    std::vector<Leak*>  m_leak ; 
+ 
+
+    OpticksProfileTest() 
+        : 
+        op(new OpticksProfile),
+        //KB(1024),
+        KB(1000),
+        MB(KB*KB), 
+        acc(op->accumulateAdd("OpticksProfileTest::check")),
+        tagoffset(0)   
+    {
+        //unsigned long long MB2 = 1 << 10 << 10 ; 
+        //assert( MB == MB2 );  
+
+        op->setDir("$TMP/OpticksProfileTest") ; // canonically done from Opticks::configure 
+        op->setStamp(true); 
+    }
+
+
+    void basics()
+    {
+        new char[MB] ; 
+        op->stamp( "red:yellow:purple", tagoffset);
+        new char[MB] ; 
+        op->stamp( "green:pink:violet", tagoffset);
+        new char[MB] ; 
+        op->stamp( "blue:cyan:indigo", tagoffset);
+        op->save(); 
+    } 
+
+
+    void testAccOne()
+    {
+         op->accumulateStart(acc); 
+         new char[KB] ; 
+         op->accumulateStop(acc); 
+    }
+
+    void testAccMany()
+    {
+         op->stamp("_loopcheck", tagoffset); 
+         for(unsigned i=0 ; i < 100000 ; i++ ) testAccOne(); 
+         op->stamp("loopcheck", tagoffset); 
+
+         op->dump();
+    }
+
+
+
+    void testVecLeak()
+    {
+        op->stamp( "_testVecLeak", tagoffset);
+          
+        for(unsigned i=0 ; i < 200 ; i++)
+        {
+            m_leak.push_back(new Leak(MB)); 
+        }
+
+
+        for(unsigned i=0 ; i < m_leak.size() ; i++)
+        {
+             Leak* l = m_leak[i] ; 
+             delete l ; 
+        }
+        m_leak.clear(); 
+
+
+        op->stamp( "testVecLeak", tagoffset);
+        op->dump();
+    }
+
+
+
+
+};
+
+
+
+
+
+
+
 int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc,argv);
     
     LOG(info) << argv[0] ;
 
-
-    OpticksProfile* op = new OpticksProfile() ;
-    op->setStamp(true); 
-
-    op->setDir("$TMP/OpticksProfileTest") ; // canonically done from Opticks::configure 
-
-    int tagoffset = 0 ;      
-
-    unsigned long long MB = 1 << 10 << 10 ; 
-
-    new char[MB] ; 
-    op->stamp( "red:yellow:purple", tagoffset);
-    new char[MB] ; 
-    op->stamp( "green:pink:violet", tagoffset);
-    new char[MB] ; 
-    op->stamp( "blue:cyan:indigo", tagoffset);
+    OpticksProfileTest opt ;  
 
 
+    //opt.basics();  
+    //opt.testAccMany();  
+    opt.testVecLeak();  
 
-    op->save(); 
 
 
     return 0 ;

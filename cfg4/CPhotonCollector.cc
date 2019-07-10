@@ -1,8 +1,12 @@
 #include "NPY.hpp"
 #include "CPhotonCollector.hh"
+#include "Opticks.hh"
 #include "PLOG.hh"
 
 CPhotonCollector* CPhotonCollector::INSTANCE = NULL ;
+
+const plog::Severity CPhotonCollector::LEVEL = PLOG::EnvLevel("CPhotonCollector", "DEBUG") ; 
+
 
 CPhotonCollector* CPhotonCollector::Instance()
 {
@@ -113,6 +117,11 @@ void CPhotonCollector::collectPhoton(
      m_photon->add(pr, m_photon_itemsize);
 
      m_photon_count += 1 ;
+
+     if( m_photon_count % 10000 == 0 )
+     {
+         LOG(LEVEL) << " photon_count " << m_photon_count ;     
+     }
 
 }
 

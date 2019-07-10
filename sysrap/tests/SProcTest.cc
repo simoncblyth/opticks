@@ -79,8 +79,8 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv);
 
-    //test_leaking(argc, argv); 
-    test_ExecutablePath(argc, argv); 
+    test_leaking(argc, argv); 
+    //test_ExecutablePath(argc, argv); 
 
     return 0 ; 
 }

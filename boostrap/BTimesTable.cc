@@ -179,7 +179,11 @@ void BTimesTable::dump(const char* msg, const char* startswith, const char* spac
             bool cut = tcut == 0.0 ? false : delta < tcut ;   // suppress lines with delta less than tcut 
 
             if(!cut)
-            std::cout << std::fixed << std::setw(WIDTH) << std::setprecision(3) << delta << " " << line << std::endl ;  
+            std::cout 
+                << std::setw(5) << i 
+                << std::fixed << std::setw(WIDTH) << std::setprecision(3) << delta << " "
+                << line 
+                << std::endl ;  
 
             prior_first = first ; 
         }

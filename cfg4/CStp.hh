@@ -22,6 +22,8 @@ class CFG4_API CStp
        CStp(const G4Step* step, int step_id,   G4OpBoundaryProcessStatus boundary_status, CStage::CStage_t stage, const G4ThreeVector& origin);
        CStp(const G4Step* step, int step_id,   G4OpBoundaryProcessStatus boundary_status, unsigned premat, unsigned postmat, unsigned preflag, unsigned postflag, CStage::CStage_t stage, int action, const G4ThreeVector& origin); 
 #endif
+       ~CStp();  
+
         std::string description();
         std::string origin();
 

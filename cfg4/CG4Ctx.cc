@@ -177,6 +177,8 @@ std::string CG4Ctx::desc_event() const
 
 void CG4Ctx::setEvent(const G4Event* event) // invoked by CEventAction::setEvent
 {
+     //OKI_PROFILE("CG4Ctx::setEvent") ; 
+
     _event = const_cast<G4Event*>(event) ; 
     _event_id = event->GetEventID() ;
 
@@ -265,6 +267,10 @@ void CG4Ctx::setTrackOptical() // invoked by CG4Ctx::setTrack
      // retaining original photon_id from prior to reemission effects the continuation
     _record_id = _photons_per_g4event*_event_id + _photon_id ; 
     _record_fraction = double(_record_id)/double(_record_max) ;  
+
+
+    //if(_record_id % 1000 == 0) OKI_PROFILE("CG4Ctx::setTrackOptical_1k"); 
+
 
     // moved from CTrackingAction::setTrack
     _debug = _ok->isDbgPhoton(_record_id) ; // from option: --dindex=1,100,1000,10000 

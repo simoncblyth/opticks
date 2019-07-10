@@ -13,7 +13,12 @@
 
 #include "C4PhotonCollector.hh"
 #include "CPhotonCollector.hh"
+#include "Opticks.hh"
 #include "PLOG.hh"
+
+
+const plog::Severity C4PhotonCollector::LEVEL = PLOG::EnvLevel("C4PhotonCollector", "DEBUG") ; 
+
 
 C4PhotonCollector::C4PhotonCollector() 
     :

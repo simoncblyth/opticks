@@ -29,7 +29,8 @@
 
 #include "PLOG.hh"
 
-const plog::Severity CRecorder::LEVEL = debug ; 
+
+const plog::Severity CRecorder::LEVEL = PLOG::EnvLevel("CRecorder", "DEBUG") ; 
 
 const char* CRecorder::PRE  = "PRE" ; 
 const char* CRecorder::POST = "POST" ; 
@@ -53,8 +54,6 @@ unsigned long long CRecorder::getSeqMat() const
     return m_photon._seqmat ; 
 }
 
-
-
 CRecorder::CRecorder(CG4* g4, CGeometry* geometry, bool dynamic) 
     :
     m_g4(g4),
@@ -75,6 +74,8 @@ CRecorder::CRecorder(CG4* g4, CGeometry* geometry, bool dynamic)
     m_live(false),
     m_writer(new CWriter(g4, m_photon, m_dynamic)),
     m_not_done_count(0)
+
+    //m_postTrack_acc(m_ok->accumulateAdd("CRecorder::postTrack"))
 {   
     LOG(LEVEL) << " " << ( m_dynamic ? "DYNAMIC" : "STATIC" ) ;
 }
@@ -88,6 +89,7 @@ void CRecorder::postinitialize()
     if(m_dbg) m_dbg->setMaterialBridge( m_material_bridge );
 }
 
+
 void CRecorder::initEvent(OpticksEvent* evt)  // called by CG4::initEvent
 {
     assert(evt);
@@ -97,6 +99,8 @@ void CRecorder::initEvent(OpticksEvent* evt)  // called by CG4::initEvent
 
 void CRecorder::postTrack() // invoked from CTrackingAction::PostUserTrackingAction
 {
+    //m_ok->accumulateStart(m_postTrack_acc);  
+
     assert(!m_live);
 
     if(m_ctx._dbgrec) LOG(info) << "CRecorder::postTrack" ; 
@@ -146,7 +150,7 @@ void CRecorder::postTrack() // invoked from CTrackingAction::PostUserTrackingAct
                   << " pho " << m_photon.brief() 
                   ; 
     }
-
+    //m_ok->accumulateStop(m_postTrack_acc);  
 }
 
 

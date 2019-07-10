@@ -56,6 +56,12 @@ int parseLine(char* line){
 
 float SProc::VirtualMemoryUsageMB()
 {
+    float result = VirtualMemoryUsageKB() ; 
+    return result/1000.f ;   
+}
+
+float SProc::VirtualMemoryUsageKB()
+{
     FILE* file = fopen("/proc/self/status", "r");
     float result = 0.f ;
     char line[128];
@@ -63,13 +69,16 @@ float SProc::VirtualMemoryUsageMB()
     while (fgets(line, 128, file) != NULL){
         if (strncmp(line, "VmSize:", 7) == 0){
             result = parseLine(line);   // value in Kb 
-            result /= 1000.f ;          // convert to MB
             break;
         }
     }
     fclose(file);
     return result;
 }
+
+
+
+
 #endif
 
 

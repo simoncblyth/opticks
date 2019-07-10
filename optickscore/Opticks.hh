@@ -161,6 +161,12 @@ class OKCORE_API Opticks {
        void profile(const char* label);
        void dumpProfile(const char* msg="Opticks::dumpProfile", const char* startswith=NULL, const char* spacewith=NULL, double tcut=0 );
        void saveProfile();
+
+       unsigned accumulateAdd(const char* label); 
+       void     accumulateStart(unsigned idx); 
+       void     accumulateStop(unsigned idx); 
+       std::string accumulateDesc(unsigned idx);
+
    private:
        void checkOptionValidity();
    public:

@@ -15,6 +15,7 @@ void SVec<T>::Dump( const char* label, const std::vector<T>& a  )
     std::cout << std::endl ; 
 } 
 
+
 template <typename T>
 void SVec<T>::Dump2( const char* label, const std::vector<T>& a  )
 {

@@ -31,6 +31,9 @@
 
 #include "PLOG.hh"
 
+
+const plog::Severity CInputPhotonSource::LEVEL = PLOG::EnvLevel("CInputPhotonSource", "DEBUG") ; 
+
 unsigned CInputPhotonSource::getNumG4Event() const { return m_tranche->num_tranche ; }
 unsigned CInputPhotonSource::getNumPhotonsPerG4Event() const { return m_numPhotonsPerG4Event ; }
 
@@ -164,7 +167,7 @@ CSource::collectPrimary.
 
 void CInputPhotonSource::GeneratePrimaryVertex(G4Event *evt) 
 {
-    OK_PROFILE("_CInputPhotonSource::GeneratePrimaryVertex"); 
+    //OK_PROFILE("_CInputPhotonSource::GeneratePrimaryVertex"); 
       
     //std::raise(SIGINT); 
 
@@ -191,7 +194,8 @@ void CInputPhotonSource::GeneratePrimaryVertex(G4Event *evt)
         collectPrimaryVertex(vertex);
 	}
     m_gpv_count++ ; 
-    OK_PROFILE("CInputPhotonSource::GeneratePrimaryVertex"); 
+
+    //OK_PROFILE("CInputPhotonSource::GeneratePrimaryVertex"); 
 }
 
 

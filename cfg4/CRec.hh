@@ -94,6 +94,7 @@ class CFG4_API CRec
         std::vector<CPoi*>          m_poi ; 
 
    private:
+        //unsigned                   m_add_acc ;   
 #ifdef USE_CUSTOM_BOUNDARY
         Ds::DsG4OpBoundaryProcessStatus m_prior_boundary_status ; 
         Ds::DsG4OpBoundaryProcessStatus m_boundary_status ; 
@@ -101,8 +102,6 @@ class CFG4_API CRec
         G4OpBoundaryProcessStatus m_prior_boundary_status ; 
         G4OpBoundaryProcessStatus m_boundary_status ; 
 #endif
-
-
 
 
 };

@@ -720,13 +720,8 @@ void OpticksEvent::setNote(const char* note)
 }
 void OpticksEvent::appendNote(const char* note)
 {
-
-#ifdef OLD_PARAMETERS
-    m_parameters->append<std::string>("Note", note ? note : "" );
-#else
     std::string n = note ? note : "" ; 
     m_parameters->appendString("Note", n );
-#endif
 }
 
 
@@ -924,11 +919,7 @@ void OpticksEvent::setBufferControl(NPYBase* data)
                      << " SKIPPED FOR " << name 
                      << " AS NO spec "
                      ;
-#ifdef OLD_PARAMETERS
-        X_BParameters* param = data->getParameters();
-#else
         NMeta*       param = data->getParameters();
-#endif
         if(param)
             param->dump("OpticksEvent::setBufferControl FATAL: BUFFER LACKS SPEC"); 
         assert(0);
@@ -955,18 +946,24 @@ void OpticksEvent::setBufferControl(NPYBase* data)
 }
 
 
+/**
+OpticksEvent::createBuffers
+-----------------------------
+
+Invoked by Opticks::makeEvent 
+
+NB allocation is deferred until zeroing and they start at 0 items anyhow
+   
+NB by default gs = NULL and genstep buffer creation is excluded, 
+   those coming externally
+   however they are needed for "template" zero events 
+
+
+**/
+
 
 void OpticksEvent::createBuffers(NPY<float>* gs)
 {
-    // invoked by Opticks::makeEvent 
-
-    // NB allocation is deferred until zeroing and they start at 0 items anyhow
-    //
-    // NB by default gs = NULL and genstep buffer creation is excluded, 
-    //    those coming externally
-    //    however they are needed for "template" zero events 
-    //
-    
     if(gs)   
     {
         bool progenitor = false ;    
@@ -1040,13 +1037,14 @@ subsequent resize makes no difference to those buffers but pulls
 up the counts for phosel and recsel (and seed) ready to 
 hold the CPU indices. 
 
+
+NB are all photon level qtys on the first dimension
+   including recsel and record thanks to structured arrays (num_photons, maxrec, ...)
+
 **/
 
 void OpticksEvent::resize()
 {
-    // NB these are all photon level qtys on the first dimension
-    //    including recsel and record thanks to structured arrays (num_photons, maxrec, ...)
-
     assert(m_photon_data);
     assert(m_sequence_data);
     assert(m_phosel_data);
@@ -1061,19 +1059,20 @@ void OpticksEvent::resize()
     unsigned rng_max = getRngMax(); 
     bool enoughRng = num_photons <= rng_max ; 
     if(!enoughRng)
-        LOG(fatal) << "OpticksEvent::resize  NOT ENOUGH RNG "
-                   << " num_photons " << num_photons
-                   << " rng_max " << rng_max 
-                   ;
+        LOG(fatal) 
+             << "NOT ENOUGH RNG : USE OPTION --rngmax 3/10/100 "
+             << " num_photons " << num_photons
+             << " rng_max " << rng_max 
+             ;
     assert(enoughRng && " need to prepare and persist more RNG states up to maximual per propagation number" );
 
 
-    LOG(debug) << "OpticksEvent::resize " 
-              << " num_photons " << num_photons  
-              << " num_records " << num_records 
-              << " maxrec " << maxrec
-              << " " << getDir()
-              ;
+    LOG(debug) 
+        << " num_photons " << num_photons  
+        << " num_records " << num_records 
+        << " maxrec " << maxrec
+        << " " << getDir()
+        ;
 
     m_photon_data->setNumItems(num_photons);
     m_sequence_data->setNumItems(num_photons);

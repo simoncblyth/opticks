@@ -1,4 +1,5 @@
 #include "CRunAction.hh"
+#include "Opticks.hh"
 #include "PLOG.hh"
 
 const plog::Severity CRunAction::LEVEL = PLOG::EnvLevel("CRunAction", "DEBUG"); 
@@ -18,11 +19,13 @@ CRunAction::~CRunAction()
 }
 void CRunAction::BeginOfRunAction(const G4Run*)
 {
+    OKI_PROFILE("CRunAction::BeginOfRunAction");
     m_count += 1 ; 
     LOG(info) << "count " << m_count  ;
 }
 void CRunAction::EndOfRunAction(const G4Run*)
 {
+    OKI_PROFILE("CRunAction::EndOfRunAction"); 
     LOG(info) << "count " << m_count  ;
 }
 

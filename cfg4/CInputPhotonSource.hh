@@ -10,6 +10,7 @@ class GenstepNPY ;
 class G4PrimaryVertex ;
 
 #include <string>
+#include "plog/Severity.h"
 #include "CSource.hh"
 #include "CFG4_API_EXPORT.hh"
 
@@ -28,6 +29,7 @@ Implements the G4VPrimaryGenerator interface : GeneratePrimaryVertex
 
 class CFG4_API CInputPhotonSource: public CSource
 {
+        static const plog::Severity LEVEL ; 
     public:
         CInputPhotonSource(Opticks* ok, NPY<float>* input_photons, GenstepNPY* gsnpy );
     public:

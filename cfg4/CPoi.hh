@@ -21,6 +21,8 @@ class CFG4_API CPoi
         G4OpBoundaryProcessStatus getBoundaryStatus() const  ;
         CPoi(const G4StepPoint* point, unsigned flag,  unsigned material, G4OpBoundaryProcessStatus boundary_status, CStage::CStage_t stage, const G4ThreeVector& origin);
 #endif
+        ~CPoi(); 
+
         const G4StepPoint* getPoint() const ; 
         unsigned           getFlag() const ; 
         unsigned           getMaterial() const ; 

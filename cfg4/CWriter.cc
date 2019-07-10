@@ -26,7 +26,7 @@
 #include "CWriter.hh"
 #include "PLOG.hh"
 
-const plog::Severity CWriter::LEVEL = debug ; 
+const plog::Severity CWriter::LEVEL = PLOG::EnvLevel("CWriter", "DEBUG") ; 
 
 
 CWriter::CWriter(CG4* g4, CPhoton& photon, bool dynamic)
@@ -75,13 +75,13 @@ void CWriter::initEvent(OpticksEvent* evt)  // called by CRecorder::initEvent/CG
 
     m_evt->setDynamic( m_dynamic ? 1 : 0 ) ;  
 
-    LOG(info) << "CWriter::initEvent"
-              << " dynamic " << ( m_dynamic ? "DYNAMIC(CPU style)" : "STATIC(GPU style)" )
-              << " _record_max " << m_ctx._record_max
-              << " _bounce_max  " << m_ctx._bounce_max 
-              << " _steps_per_photon " << m_ctx._steps_per_photon 
-              << " num_g4event " << m_evt->getNumG4Event() 
-              ;
+    LOG(info) 
+        << ( m_dynamic ? "DYNAMIC(CPU style)" : "STATIC(GPU style)" )
+        << " _record_max " << m_ctx._record_max
+        << " _bounce_max  " << m_ctx._bounce_max 
+        << " _steps_per_photon " << m_ctx._steps_per_photon 
+        << " num_g4event " << m_evt->getNumG4Event() 
+        ;
 
     if(m_dynamic)
     {

@@ -9,8 +9,7 @@
 #include "CAlignEngine.hh"
 
 
-const plog::Severity CAlignEngine::LEVEL = debug ; 
-//const plog::Severity CAlignEngine::LEVEL = fatal ; 
+const plog::Severity CAlignEngine::LEVEL = PLOG::EnvLevel("CAlignEngine", "DEBUG") ; 
 
 const char* CAlignEngine::LOGNAME = "CAlignEngine.log" ; 
 CAlignEngine* CAlignEngine::INSTANCE = NULL ; 
@@ -63,7 +62,7 @@ CAlignEngine::CAlignEngine(const char* ssdir)
     m_cur(NPY<int>::make(m_seq_ni)),
     m_cur_values(m_cur->fill(0)),
     m_seq_index(-1),
-    m_recycle(true),
+    m_recycle(false),
     m_default(CLHEP::HepRandom::getTheEngine()),
     m_sslogpath(InitSimLog(ssdir)),
     m_backtrace(true),

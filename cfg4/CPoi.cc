@@ -26,6 +26,12 @@ CPoi::CPoi(const G4StepPoint* point, unsigned flag, unsigned material, G4OpBound
 {
 }
 
+CPoi::~CPoi()
+{
+   delete m_point ;  
+}
+
+
 
 const G4StepPoint* CPoi::getPoint() const 
 {

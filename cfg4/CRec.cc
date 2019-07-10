@@ -34,6 +34,7 @@ CRec::CRec(CG4* g4, CRecState& state)
     m_point_limited(false),
     m_point_terminated(false),
     m_material_bridge(NULL),
+    //m_add_acc(m_ok->accumulateAdd("CRec::add")),
 #ifdef USE_CUSTOM_BOUNDARY
     m_prior_boundary_status(Ds::Undefined),
     m_boundary_status(Ds::Undefined)
@@ -176,6 +177,16 @@ void CRec::dump(const char* msg)
 }
 
 
+
+/**
+CRec::clear
+------------
+
+NB explicit delete, skipping these and not having proper dtors for CStp and CPoi 
+caused terrible leaking see notes/issues/plugging-cfg4-leaks.rst
+
+**/
+
 void CRec::clear()
 {
     if(m_ctx._dbgrec) 
@@ -183,9 +194,22 @@ void CRec::clear()
               << " stp " << m_stp.size() 
               << " poi " << m_poi.size() 
               ;
- 
+
+
+    for(unsigned i=0 ; i < m_stp.size() ; i++)
+    {
+        CStp* stp = m_stp[i] ; 
+        delete stp ;  
+    }   
     m_stp.clear();
+
+    for(unsigned i=0 ; i < m_poi.size() ; i++)
+    {
+        CPoi* poi = m_poi[i] ; 
+        delete poi ;  
+    }   
     m_poi.clear();
+
     m_step_limited = false ; 
     m_point_limited = false ; 
     m_point_terminated = false ; 
@@ -215,6 +239,8 @@ bool CRec::add(Ds::DsG4OpBoundaryProcessStatus boundary_status )
 bool CRec::add(G4OpBoundaryProcessStatus boundary_status )
 #endif
 {
+    //m_ok->accumulateStart(m_add_acc); 
+
     setBoundaryStatus(boundary_status);
 
     m_step_limited = m_stp.size() >= m_ctx.step_limit() ;
@@ -231,6 +257,7 @@ bool CRec::add(G4OpBoundaryProcessStatus boundary_status )
 
     bool done = ( m_recpoialign || !m_recpoi ) ? m_step_limited : ( m_point_terminated || m_point_limited ) ;
 
+    //m_ok->accumulateStop(m_add_acc); 
     return done ;  // (*lldb*) add
 }
 

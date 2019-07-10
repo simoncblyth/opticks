@@ -18,6 +18,9 @@
 #include "PLOG.hh"
 
 
+const plog::Severity CTrackingAction::LEVEL = PLOG::EnvLevel("CTrackingAction", "DEBUG") ; 
+
+
 /**
 CTrackingAction
 =================
@@ -47,17 +50,18 @@ void CTrackingAction::postinitialize()
 }
 
 
-
 /**
+CTrackingAction::PreUserTrackingAction
+-----------------------------------------
 
-PreUserTrackingAction is invoked by G4TrackingManager::ProcessOneTrack 
-immediately after 
+Invoked by G4TrackingManager::ProcessOneTrack immediately after:: 
+
    G4SteppingManager::SetInitialStep(G4Track* valueTrack)
    G4Step::InitializeStep( G4Track* aValue )
    
-      g4-;g4-cls G4TrackingManager
-      g4-;g4-cls G4SteppingManager
-      g4-;g4-cls G4Step
+   g4-;g4-cls G4TrackingManager
+   g4-;g4-cls G4SteppingManager
+   g4-;g4-cls G4Step
 
 **/
 
@@ -65,7 +69,7 @@ void CTrackingAction::PreUserTrackingAction(const G4Track* track)
 {
     setTrack(track);
 
-    LOG(verbose) << "CTrackingAction::PreUserTrackingAction" << brief()  ;
+    LOG(LEVEL) << brief()  ;
 
     if(m_ctx._optical)
     {
@@ -84,7 +88,7 @@ void CTrackingAction::PostUserTrackingAction(const G4Track* track)
     assert( track_id == m_ctx._track_id );
     assert( track == m_ctx._track );
 
-    LOG(verbose) << "CTrackingAction::PostUserTrackingAction"  << brief() ;
+    LOG(LEVEL) << brief()  ;
 
     if(m_ctx._optical)
     {

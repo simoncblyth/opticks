@@ -52,6 +52,15 @@ CStp::CStp(const G4Step* step, int step_id,  G4OpBoundaryProcessStatus boundary_
 {
 }
 
+
+CStp::~CStp()
+{
+    delete m_step ; 
+}
+
+
+
+
 const G4Step* CStp::getStep()
 {
    return m_step ; 

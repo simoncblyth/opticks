@@ -36,11 +36,13 @@ CEventAction::~CEventAction()
 
 void CEventAction::BeginOfEventAction(const G4Event* anEvent)
 {
+    OKI_PROFILE("CEventAction::BeginOfEventAction"); 
     setEvent(anEvent);
 }
 
 void CEventAction::EndOfEventAction(const G4Event* /*anEvent*/)
 {
+    OKI_PROFILE("CEventAction::EndOfEventAction"); 
 }
 
 void CEventAction::setEvent(const G4Event* event)

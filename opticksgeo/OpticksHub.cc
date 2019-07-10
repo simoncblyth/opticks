@@ -207,6 +207,8 @@ void OpticksHub::setCtrl(SCtrl* ctrl)
 
 void OpticksHub::init()
 {
+    OK_PROFILE("_OpticksHub::init");  
+
     pLOG(LEVEL,0) << "[" ;   // -1 : one notch more easily seen than LEVEL
 
     //m_composition->setCtrl(this); 
@@ -248,6 +250,7 @@ void OpticksHub::init()
     m_gen = new OpticksGen(this) ;
 
     pLOG(LEVEL,0) << "]" ; 
+    OK_PROFILE("OpticksHub::init");  
 }
 
 

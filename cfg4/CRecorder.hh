@@ -164,6 +164,9 @@ class CFG4_API CRecorder {
         CWriter*           m_writer ; 
         unsigned           m_not_done_count ; 
 
+        //unsigned           m_postTrack_acc ; 
+  
+
 };
 #include "CFG4_TAIL.hh"
 

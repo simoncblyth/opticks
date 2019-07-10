@@ -30,6 +30,7 @@ CPhysics::CPhysics(CG4* g4)
 
 void CPhysics::init()
 {
+    m_runManager->SetNumberOfEventsToBeStored(0); 
     m_runManager->SetUserInitialization(m_physicslist);
 }
 

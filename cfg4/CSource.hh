@@ -54,6 +54,7 @@ class CFG4_API CSource : public G4VPrimaryGenerator
   protected: 
     Opticks*              m_ok ;  
     CRecorder*            m_recorder ; 
+    unsigned              m_vtx_count ; 
 };
 #include "CFG4_TAIL.hh"
 

@@ -11,8 +11,18 @@ template <typename T> class NPY ;
 CAlignEngine
 ==============
 
+* TODO: move all use of CAlignEngine to CRandomEngine ?
+  which uses dynamuic TCURAND approach
+
+Used by::
+
+   CCerenkovGenerator::GeneratePhotonsFromGenstep  when ALIGN_DEBUG active 
+   G4Opticks::setAlignIndex   
+
+
+
 CAlignEngine isa CLHEP::HepRandomEngine, when enabled it 
-arranges that G4UniformRand() will return multiple 
+
 independant streams of pre-cooked random numbers.
 Enabling and disabling are done via the static method:: 
 
