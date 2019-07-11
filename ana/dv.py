@@ -275,13 +275,14 @@ class DvTab(object):
         :param selbase: either None or "ALIGN" 
 
         """
-        log.info("[ %s " % name )
+        log.info("[ sel %s selbase %s  " % (name, selbase) )
         self.name = name
         self.seqtab = seqtab
         self.ab = ab 
         self.dirty = False
         self.skips = skips.split()
-        self.sli = slice(None)
+        #self.sli = slice(None)
+        self.sli = slice(0,10)
 
         labels = self.seqtab.labels       # eg list of length 17 : ['TO BT BT SA', 'TO BR SA', ... ]
 
@@ -292,7 +293,7 @@ class DvTab(object):
         ab.aselhis = selbase
 
         dvs = []
-        for i in range(nsel):
+        for i in range(nsel)[self.sli]:
             sel = labels[i]
 
             if self.is_skip(sel):
@@ -397,7 +398,7 @@ class DvTab(object):
         Accessing av and bv values within the active single line selection ab.aselhis, 
         and creating a Dv instance from them. 
         """ 
-        log.info("[")
+        log.info("[  %s " % sel )
  
         ab = self.ab
         if self.name == "rpost_dv": 

@@ -233,6 +233,10 @@ class SeqType(BaseType):
 
 class SeqList(object):
     def __init__(self, ls, af, sli ):
+        """
+        :param ls: seqhis or seqmat array of integers
+        :param af: histype or mattype able to decode integers into labels 
+        """
         self.ls = ls
         self.afl = af.label
         self.sli = sli

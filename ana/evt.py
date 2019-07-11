@@ -173,6 +173,9 @@ class Evt(object):
         self.nom = nom
         self.smry = smry
         self._psel = None
+        self._seqhis = None
+        self._seqmat = None
+        self._pflags = None
         self._labels = []
 
         self.align = None
@@ -302,6 +305,9 @@ class Evt(object):
 
 
     def _get_seqhis_labels(self):
+        """
+        HUH: duplicates seqhis_ls ??
+        """
         af = self.histype 
         return "\n".join(map(lambda _:af.label(_), self.seqhis[:100] ))
     seqhis_labels = property(_get_seqhis_labels)
@@ -369,6 +375,15 @@ class Evt(object):
     def make_pflags_ana(self, pflags):
         return SeqAna( pflags, self.hismask, cnames=[self.cn], dbgseq=self.dbgmskhis, dbgzero=self.dbgzero, cmx=self.cmx, smry=self.smry )
 
+    def _get_pflags(self):
+        if self._pflags is None:
+            self._pflags = self.allpflags if self._psel is None else self.allpflags[self._psel]
+        pass
+        return self._pflags 
+    pflags = property(_get_pflags)
+
+
+
 
     def init_photons(self):
         """
@@ -394,7 +409,10 @@ class Evt(object):
         self.post = ox[:,0] 
         self.dirw = ox[:,1]
         self.polw = ox[:,2]
-        self.pflags = ox.view(np.uint32)[:,3,3]
+
+        allpflags = ox.view(np.uint32)[:,3,3]
+        self.allpflags = allpflags 
+
         self.c4 = c4
 
         all_pflags_ana = self.make_pflags_ana( self.pflags )
@@ -534,6 +552,11 @@ class Evt(object):
         return SeqList( self.seqmat, self.mattype, slice(0,50) )
 
 
+    
+
+
+
+
     def init_sequence(self):
         """
         Sequence values seqhis and seqmat for each photon::
@@ -563,17 +586,19 @@ class Evt(object):
             log.debug(" ph missing ==> no history aka seqhis_ana  ")
             return 
 
-        seqhis = ph[:,0,0]
-        seqmat = ph[:,0,1]
+        allseqhis = ph[:,0,0]
+        allseqmat = ph[:,0,1]
+
+        self.allseqhis = allseqhis
+        self.allseqmat = allseqmat
 
         # full history without selection
-        all_seqhis_ana = self.make_seqhis_ana(seqhis)
-        all_seqmat_ana = self.make_seqmat_ana(seqmat)
+        all_seqhis_ana = self.make_seqhis_ana(allseqhis)
+        all_seqmat_ana = self.make_seqmat_ana(allseqmat)
 
-
-        self.seqhis = seqhis
+        #self.seqhis = seqhis
         self.seqhis_ls = self.make_seqhis_ls()
-        self.pflags2 = seq2msk(seqhis) # 16 seq nibbles OR-ed into mask 
+        self.pflags2 = seq2msk(allseqhis)          # 16 seq nibbles OR-ed into mask 
 
         self.msk_mismatch = self.pflags != self.pflags2
         self.num_msk_mismatch = np.count_nonzero(self.msk_mismatch)
@@ -584,11 +609,11 @@ class Evt(object):
             log.info("pflags2(=seq2msk(seqhis)) and pflags  MISMATCH    num_msk_mismatch: %d " % self.num_msk_mismatch )
         pass
 
-        self.seqmat = seqmat
+        #self.seqmat = seqmat
         self.seqmat_ls = self.make_seqmat_ls()
 
-        useqhis = len(np.unique(seqhis))
-        useqmat = len(np.unique(seqmat))
+        useqhis = len(np.unique(allseqhis))
+        useqmat = len(np.unique(allseqmat))
 
         if useqhis <= 1:
             log.warning("init_records %s finds too few (ph)seqhis uniques : %s : EMPTY HISTORY" % (self.label,useqhis) ) 
@@ -603,10 +628,10 @@ class Evt(object):
         self.seqmat_ana = all_seqmat_ana
 
 
-
         for imsk in range(1,10):
             msk = msk_(imsk) 
-            setattr(self, "seqhis_ana_%d" % imsk, SeqAna(seqhis & msk, self.histype, cnames=[self.cn])) 
+            setattr(self, "seqhis_ana_%d" % imsk, SeqAna(allseqhis & msk, self.histype, cnames=[self.cn])) 
+        pass
 
         log.debug("init_sequence DONE")
 
@@ -853,6 +878,49 @@ class Evt(object):
         return psel
 
 
+    def _reset_selection(self):
+        if hasattr(self, 'ox_'):
+            log.debug("_reset_selection with psel None : resetting selection to original ")
+            self.ox = self.ox_
+            self.oxa = self.oxa_
+            self.c4 = self.c4_
+            self.wl = self.wl_
+            self.rx = self.rx_
+            self.so = self.so_
+            self.seqhis_ana = self.all_seqhis_ana  
+            self.seqmat_ana = self.all_seqmat_ana   
+            self.pflags_ana = self.all_pflags_ana
+            #self.seqhis_ana = self.make_seqhis_ana( self.seqhis )   
+            #self.seqmat_ana = self.make_seqmat_ana( self.seqmat )   
+            #self.pflags_ana = self.make_pflags_ana( self.pflags ) 
+            self.nsel = len(self.ox_)
+        else:
+            log.warning("_reset_selection with psel None : no prior selection, ignoring ")
+        pass
+
+
+    def _get_seqhis(self):
+        if self._seqhis is None:
+            self._seqhis = self.allseqhis[self._psel] if not self._psel is None else self.allseqhis
+        return self._seqhis
+    seqhis = property(_get_seqhis) 
+
+    def _get_seqmat(self):
+        if self._seqmat is None:
+            self._seqmat = self.allseqmat[self._psel] if not self._psel is None else self.allseqmat
+        return self._seqmat
+    seqmat = property(_get_seqmat) 
+
+
+    def _get_seqhis_ana(self):
+        if self._seqhis_ana is None:
+            self._seqhis_ana = self.make_seqhis_ana(self.seqhis)
+        return self._seqhis_ana
+    def _set_seqhis_ana(self, sa ):
+        self._seqhis_ana = sa
+    seqhis_ana = property( _get_seqhis_ana, _set_seqhis_ana ) 
+
+
     def _init_selection(self, psel):
         """
         :param psel: photon length boolean selection array, make it with make_selection or directly with numpy 
@@ -877,20 +945,7 @@ class Evt(object):
             self.so_ = self.so
         pass
         if psel is None: 
-            if hasattr(self, 'ox_'):
-                log.debug("_init_selection with psel None : resetting selection to original ")
-                self.ox = self.ox_
-                self.oxa = self.oxa_
-                self.c4 = self.c4_
-                self.wl = self.wl_
-                self.rx = self.rx_
-                self.so = self.so_
-                self.seqhis_ana = self.make_seqhis_ana( self.seqhis )   
-                self.seqmat_ana = self.make_seqmat_ana( self.seqmat )   
-                self.pflags_ana = self.make_pflags_ana( self.pflags ) 
-                self.nsel = len(self.ox_)
-            else:
-                log.warning("_init_selection with psel None : no prior selection, ignoring ")
+            self._reset_selection()
             return 
         pass   
         log.debug("psel %s " % repr(psel))
@@ -917,9 +972,9 @@ class Evt(object):
             self.so = self.so_[psel]
         pass
 
-        self.seqhis_ana = self.make_seqhis_ana( self.seqhis[psel] )   # sequence history with selection applied
-        self.seqmat_ana = self.make_seqmat_ana( self.seqmat[psel] )   
-        self.pflags_ana = self.make_pflags_ana( self.pflags[psel] )
+        #self.seqhis_ana = self.make_seqhis_ana( self.seqhis[psel] )   # sequence history with selection applied
+        #self.seqmat_ana = self.make_seqmat_ana( self.seqmat[psel] )   
+        #self.pflags_ana = self.make_pflags_ana( self.pflags[psel] )
 
 
     def _get_reclab(self):

@@ -6,7 +6,7 @@ Next
 -----------
 
 * :doc:`plugging-cfg4-leaks`
-
+* :doc:`py-analysis-too-slow-for-big-events`
 
 
 Issues : 3M photon limit from curandState and 100k limit from precooked rng 
@@ -579,8 +579,6 @@ Added DYNAMIC_CURAND section to CRandomEngine
 
 
 
-
-
 Succeed to run 3M + 1 photons : but python analysis is taking forever and memory ramping up 5G
 ---------------------------------------------------------------------------------------------------
 
@@ -594,61 +592,8 @@ Surely have a whopper memory leak::
     374818 blyth     20   0   45.7g  34.5g 196640 R 100.0 55.1   7:41.51 OKG4Test 
 
 
-
-TODO: 3M+1 running : py analysis profile time and memory usage 
-------------------------------------------------------------------
-
-* https://pypi.org/project/memory-profiler/
-* https://medium.com/zendesk-engineering/hunting-for-memory-leaks-in-python-applications-6824d0518774
-
-
-The dv for each sel is whats taking the time
-
-* given that the tail of the sel has very few entries, this is kinda surprising 
-
-::
-
-    args: /home/blyth/opticks/ana/tboolean.py --tagoffset 0 --tag 100 --det tboolean-box --pfx tboolean-box --src torch
-    [2019-07-09 22:57:30,728] p248164 {<module>            :tboolean.py:63} INFO     - pfx tboolean-box tag 100 src torch det tboolean-box c2max [1.5, 2.0, 2.5] ipython False 
-    [2019-07-09 22:57:30,728] p248164 {__init__            :ab.py     :171} INFO     - [
-    [2019-07-09 22:57:31,244] p248164 {check_ox_fdom       :evt.py    :446} WARNING  -  t :   0.000   9.020 : tot 4000000 over 42 0.000  under 0 0.000 : mi      0.021 mx     11.205  
-    [2019-07-09 22:57:36,688] p248164 {check_ox_fdom       :evt.py    :446} WARNING  -  t :   0.000   9.020 : tot 4000000 over 41 0.000  under 0 0.000 : mi      0.021 mx     11.205  
-    [2019-07-09 22:57:43,011] p248164 {check_alignment     :ab.py     :264} INFO     - [
-    [2019-07-09 22:57:43,080] p248164 {check_alignment     :ab.py     :266} INFO     - ]
-    [2019-07-09 22:57:43,081] p248164 {compare             :ab.py     :270} INFO     - [
-    [2019-07-09 22:57:43,081] p248164 {_get_cf             :ab.py     :492} INFO     - [ ab.ahis 
-    [2019-07-09 22:57:43,088] p248164 {_get_cf             :ab.py     :501} INFO     - ] ab.ahis 
-    [2019-07-09 22:57:43,088] p248164 {_get_cf             :ab.py     :492} INFO     - [ ab.amat 
-    [2019-07-09 22:57:43,091] p248164 {_get_cf             :ab.py     :501} INFO     - ] ab.amat 
-    [2019-07-09 22:57:43,091] p248164 {__init__            :ab.py     :58} INFO     - [
-    [2019-07-09 22:57:43,091] p248164 {_make_dv            :ab.py     :413} INFO     - [ rpost_dv 
-    [2019-07-09 22:57:43,092] p248164 {__init__            :dv.py     :278} INFO     - [ rpost_dv 
-    [2019-07-09 22:57:54,083] p248164 {dv_                 :dv.py     :400} INFO     - [
-    [2019-07-09 22:57:56,533] p248164 {dv_                 :dv.py     :421} INFO     - ]
-    [2019-07-09 22:58:02,638] p248164 {dv_                 :dv.py     :400} INFO     - [
-    [2019-07-09 22:58:02,775] p248164 {dv_                 :dv.py     :421} INFO     - ]
-    [2019-07-09 22:58:07,792] p248164 {dv_                 :dv.py     :400} INFO     - [
-    ...
-    [2019-07-09 23:01:55,006] p248164 {dv_                 :dv.py     :421} INFO     - ]
-    [2019-07-09 23:01:58,702] p248164 {dv_                 :dv.py     :400} INFO     - [
-    [2019-07-09 23:01:58,703] p248164 {dv_                 :dv.py     :421} INFO     - ]
-    [2019-07-09 23:02:01,755] p248164 {dv_                 :dv.py     :400} INFO     - [
-    [2019-07-09 23:02:01,759] p248164 {dv_                 :dv.py     :421} INFO     - ]
-    [2019-07-09 23:02:05,486] p248164 {__init__            :dv.py     :322} INFO     - ] rpost_dv 
-    [2019-07-09 23:02:05,487] p248164 {_make_dv            :ab.py     :422} INFO     - ] rpost_dv 
-    [2019-07-09 23:02:05,487] p248164 {_make_dv            :ab.py     :413} INFO     - [ rpol_dv 
-    [2019-07-09 23:02:05,487] p248164 {__init__            :dv.py     :278} INFO     - [ rpol_dv 
-    [2019-07-09 23:02:12,621] p248164 {dv_                 :dv.py     :400} INFO     - [
-    [2019-07-09 23:02:14,004] p248164 {dv_                 :dv.py     :421} INFO     - ]
-    [2019-07-09 23:02:18,832] p248164 {dv_                 :dv.py     :400} INFO     - [
-    [2019-07-09 23:02:18,879] p248164 {dv_                 :dv.py     :421} INFO     - ]
-     ...
-    [2019-07-09 23:03:35,286] p248164 {dv_                 :dv.py     :421} INFO     - ]
-    [2019-07-09 23:03:38,205] p248164 {dv_                 :dv.py     :400} INFO     - [
-    [2019-07-09 23:03:38,205] p248164 {dv_                 :dv.py     :421} INFO     - ]
-    [2019-07-09 23:03:41,383] p248164 {dv_                 :dv.py     :400} INFO     - [
-    [2019-07-09 23:03:41,384] p248164 {dv_                 :dv.py     :421} INFO     - ]
-
+* :doc:`plugging-cfg4-leaks`
+* :doc:`py-analysis-too-slow-for-big-events`
 
 
 
