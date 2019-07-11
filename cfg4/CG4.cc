@@ -295,7 +295,7 @@ void CG4::interactive()
 
 void CG4::initEvent(OpticksEvent* evt)
 {
-    LOG(info) << "[" ;
+    LOG(LEVEL) << "[" ;
     m_generator->configureEvent(evt);
 
     m_ctx.initEvent(evt);
@@ -306,15 +306,15 @@ void CG4::initEvent(OpticksEvent* evt)
     if(!nopstep) LOG(fatal) << " nopstep NULL " << " evt " << evt->getShapeString() ; 
     assert(nopstep); 
     m_steprec->initEvent(nopstep);
-    LOG(info) << "]" ;
+    LOG(LEVEL) << "]" ;
 }
 
 
 NPY<float>* CG4::propagate()
 {
-    LOG(info) << "[" ;
+    LOG(LEVEL) << "[" ;
     OpticksEvent* evt = m_run->getG4Event();
-    LOG(info) << evt->brief() <<  " " << evt->getShapeString() ;
+    LOG(LEVEL) << evt->brief() <<  " " << evt->getShapeString() ;
 
     bool isg4evt = evt && evt->isG4() ;  
 
@@ -332,20 +332,20 @@ NPY<float>* CG4::propagate()
         assert(hasGensteps);    
     }
 
-    LOG(info) << "(" << m_ok->getTagOffset() << ") " << evt->getDir() ; 
+    LOG(LEVEL) << "(" << m_ok->getTagOffset() << ") " << evt->getDir() ; 
 
     initEvent(evt);
 
     unsigned int numG4Evt = evt->getNumG4Event();
 
 
-    LOG(info) << " calling BeamOn numG4Evt " << numG4Evt ; 
+    LOG(LEVEL) << " calling BeamOn numG4Evt " << numG4Evt ; 
     OK_PROFILE("_CG4::propagate");
 
     m_runManager->BeamOn(numG4Evt);
 
     OK_PROFILE("CG4::propagate");
-    LOG(info) << " calling BeamOn numG4Evt " << numG4Evt << " DONE " ; 
+    LOG(LEVEL) << " calling BeamOn numG4Evt " << numG4Evt << " DONE " ; 
 
     std::string runmac = m_cfg->getG4RunMac();
     if(!runmac.empty()) execute(runmac.c_str());
@@ -357,10 +357,10 @@ NPY<float>* CG4::propagate()
 
     LOG(LEVEL) << "idpath " << m_ok->getIdPath();  
 
-    NPY<float>* pr = m_primary_collector->getPrimary(); 
-    pr->save("$TMP/cg4/primary.npy");   // debugging primary position issue 
+    //NPY<float>* pr = m_primary_collector->getPrimary(); 
+    //pr->save("$TMP/cg4/primary.npy");   // debugging primary position issue 
 
-    LOG(info) << "]" ;
+    LOG(LEVEL) << "]" ;
     return gs ; 
 }
 

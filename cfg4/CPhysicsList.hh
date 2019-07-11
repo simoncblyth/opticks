@@ -2,6 +2,8 @@
 
 #include <vector>
 #include <string>
+#include "plog/Severity.h"
+
 #include "CFG4_API_EXPORT.hh"
 #include "CFG4_HEAD.hh"
 
@@ -28,6 +30,7 @@ class G4VProcess ;
 
 class CFG4_API CPhysicsList : public G4VUserPhysicsList
 {
+        static const plog::Severity LEVEL ;  
     public:
         static const CPhysicsList* INSTANCE ; 
         CPhysicsList(CG4* g4);

@@ -7,13 +7,13 @@
 #include "plog/Severity.h"
 
 class CFG4_API CBorderSurfaceTable : public CSurfaceTable {
+
+         static const plog::Severity LEVEL ; 
     public:
          CBorderSurfaceTable();
          void dump(const char* msg="CBorderSurfaceTable::dump");
     private:
          void init();
-    private:
-         plog::Severity m_level ; 
 
 };
 

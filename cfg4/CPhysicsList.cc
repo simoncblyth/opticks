@@ -15,6 +15,8 @@
 #include "PLOG.hh"
 
 
+const plog::Severity CPhysicsList::LEVEL = PLOG::EnvLevel("CPhysicsList", "DEBUG") ; 
+
 const CPhysicsList* CPhysicsList::INSTANCE = NULL ; 
 
 
@@ -237,7 +239,7 @@ void CPhysicsList::constructOp()
     m_boundaryProcess = new G4OpBoundaryProcess() ;
 #endif
 
-    LOG(info) << description() ; 
+    LOG(LEVEL) << description() ; 
 
 
     for(VP::iterator it=m_particles.begin() ; it != m_particles.end() ; it++ ) constructOp(*it) ; 

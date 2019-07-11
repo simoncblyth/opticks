@@ -93,6 +93,8 @@ using CLHEP::halfpi ;
 using CLHEP::twopi ; 
 
 
+const plog::Severity DsG4OpBoundaryProcess::LEVEL = PLOG::EnvLevel("DsG4OpBoundaryProcess", "DEBUG") ; 
+
 /////////////////////////
 // Class Implementation
 /////////////////////////
@@ -160,7 +162,7 @@ DsG4OpBoundaryProcess::DsG4OpBoundaryProcess(CG4* g4, const G4String& processNam
 
         SetProcessSubType(fOpBoundary);
 
-    LOG(info) << description() ; 
+    LOG(LEVEL) << description() ; 
 
 	theStatus = Ds::Undefined;
 	theModel = glisur;

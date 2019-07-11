@@ -75,7 +75,7 @@ void CWriter::initEvent(OpticksEvent* evt)  // called by CRecorder::initEvent/CG
 
     m_evt->setDynamic( m_dynamic ? 1 : 0 ) ;  
 
-    LOG(info) 
+    LOG(LEVEL) 
         << ( m_dynamic ? "DYNAMIC(CPU style)" : "STATIC(GPU style)" )
         << " _record_max " << m_ctx._record_max
         << " _bounce_max  " << m_ctx._bounce_max 

@@ -11,22 +11,22 @@ CRunAction::CRunAction(OpticksHub* hub)
      m_hub(hub),
      m_count(0)
 {
-    LOG(info) << "count " << m_count   ;
+    LOG(LEVEL) << "count " << m_count   ;
 }
 CRunAction::~CRunAction()
 {
-    LOG(info) << "count " << m_count  ;
+    LOG(LEVEL) << "count " << m_count  ;
 }
 void CRunAction::BeginOfRunAction(const G4Run*)
 {
     OKI_PROFILE("CRunAction::BeginOfRunAction");
     m_count += 1 ; 
-    LOG(info) << "count " << m_count  ;
+    LOG(LEVEL) << "count " << m_count  ;
 }
 void CRunAction::EndOfRunAction(const G4Run*)
 {
     OKI_PROFILE("CRunAction::EndOfRunAction"); 
-    LOG(info) << "count " << m_count  ;
+    LOG(LEVEL) << "count " << m_count  ;
 }
 
 

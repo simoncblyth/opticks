@@ -9,10 +9,12 @@
 #include "G4LogicalBorderSurface.hh"
 #include "G4OpticalSurface.hh"
 
+
+const plog::Severity CBorderSurfaceTable::LEVEL = PLOG::EnvLevel("CBorderSurfaceTable", "DEBUG"); 
+
 CBorderSurfaceTable::CBorderSurfaceTable()
     :
-    CSurfaceTable("border"),
-    m_level(info)
+    CSurfaceTable("border")
 {
     init();
 }
@@ -21,9 +23,7 @@ void CBorderSurfaceTable::init()
 {
     int nsurf = G4LogicalBorderSurface::GetNumberOfBorderSurfaces();
 
-    LOG(info) << "CBorderSurfaceTable::init"
-              << " nsurf " << nsurf 
-              ;
+    LOG(LEVEL) << " nsurf " << nsurf ; 
 
     const G4LogicalBorderSurfaceTable* bst = G4LogicalBorderSurface::GetSurfaceTable();
 
@@ -35,7 +35,7 @@ void CBorderSurfaceTable::init()
         G4OpticalSurface* os = dynamic_cast<G4OpticalSurface*>(bs->GetSurfaceProperty());
         add(os);
 
-        if(m_level > info)
+        if(LEVEL > info)
         {
             const G4VPhysicalVolume* pv1 = bs->GetVolume1() ;
             const G4VPhysicalVolume* pv2 = bs->GetVolume2() ;

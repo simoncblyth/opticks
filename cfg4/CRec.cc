@@ -22,6 +22,9 @@
 
 #include "PLOG.hh"
 
+const plog::Severity CRec::LEVEL = PLOG::EnvLevel("CRec", "DEBUG") ; 
+
+
 CRec::CRec(CG4* g4, CRecState& state)
    :
     m_g4(g4),
@@ -85,7 +88,7 @@ void CRec::initEvent(OpticksEvent* evt)  // called by CRecorder::initEvent/CG4::
 
     std::string note = evt->getNote();
 
-    LOG(info) << "CRec::initEvent note " << note ; 
+    LOG(LEVEL) << "note " << note ; 
 
 }
 

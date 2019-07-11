@@ -10,6 +10,8 @@
 
 void C4FPEDetection::InvalidOperationDetection_Disable()
 {
+
+/*
       std::cout 
               << std::endl
               << "        "
@@ -23,6 +25,8 @@ void C4FPEDetection::InvalidOperationDetection_Disable()
               << "############################################" << std::endl
               << std::endl
               ; 
+
+*/
 
     (void) fedisableexcept( FE_DIVBYZERO );
     (void) fedisableexcept( FE_INVALID );

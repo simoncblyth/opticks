@@ -123,7 +123,7 @@ void  OpticksAim::setTarget(unsigned target, bool aim)
     glm::vec4 ce = m_mesh0->getCE(target);
 
 
-    LOG(info)
+    LOG(LEVEL)
         << " using CenterExtent from m_mesh0 "
         << " target " << target 
         << " aim " << aim

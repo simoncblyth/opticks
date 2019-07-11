@@ -120,7 +120,7 @@ void CGenerator::configureEvent(OpticksEvent* evt)
 {
    if(hasGensteps())
    {
-        LOG(info) 
+        LOG(LEVEL) 
             << " pre-existing gensteps (STATIC RUNNING) "
             << " type " << m_source_type
             ;
@@ -133,9 +133,9 @@ void CGenerator::configureEvent(OpticksEvent* evt)
     } 
     else
     {
-         LOG(info) << "CGenerator::configureEvent"
-                   << " no genstep (DYNAMIC RUNNING) "
-                   ;  
+         LOG(LEVEL) 
+             << " no genstep (DYNAMIC RUNNING) "
+             ;  
     }
 }
 

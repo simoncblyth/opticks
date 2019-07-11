@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include "plog/Severity.h"
 #include "G4ThreeVector.hh"
 
 #include "CBoundaryProcess.hh" 
@@ -29,6 +30,7 @@ Canonical m_crec instance is resident of CRecorder and is instanciated with it.
 
 class CFG4_API CRec 
 {
+        static const plog::Severity LEVEL ;  
     public:
         CRec(CG4* g4, CRecState& state);
         void initEvent(OpticksEvent* evt);

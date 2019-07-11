@@ -7,6 +7,10 @@
 #include "PLOG.hh"
 
 
+const plog::Severity RContext::LEVEL = PLOG::EnvLevel("RContext", "DEBUG") ; 
+
+
+
 // gl/InstLODCullContext.h
 struct InstLODCullContext
 {

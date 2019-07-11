@@ -77,6 +77,7 @@
 #include "Randomize.hh"
 
 #include <string>
+#include "plog/Severity.h"
 
 #include "G4RandomTools.hh"
 #include "G4RandomDirection.hh"
@@ -111,6 +112,7 @@ class Opticks ;
 class DsG4OpBoundaryProcess : public G4VDiscreteProcess
 {
 
+       static const plog::Severity LEVEL ; 
 private:
 
         //////////////
