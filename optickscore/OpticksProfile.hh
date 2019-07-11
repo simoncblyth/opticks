@@ -14,6 +14,11 @@ template <typename T> class NPY ;
 OpticksProfile
 ===============
 
+Canonical m_profile instance is resident of Opticks and
+is instanciated with it.
+
+
+
 Recording time and virtual memory as various points during Opticks running.
 
 
@@ -52,7 +57,10 @@ class OKCORE_API OpticksProfile
        unsigned accumulateAdd(const char* label); 
        void     accumulateStart(unsigned idx); 
        void     accumulateStop(unsigned idx); 
-       std::string accumulateDesc(unsigned idx);
+       std::string accumulateDesc(unsigned idx) const ;
+       void     accumulateDump(const char* msg) const ;
+       void     accumulateExport()  ;
+       bool     isAccExported() const ;
 
        void setStamp(bool stamp); 
 
@@ -60,6 +68,13 @@ class OKCORE_API OpticksProfile
        void save();
        void load();
        void dump(const char* msg="OpticksProfile::dump", const char* startswith=NULL, const char* spacewith=NULL, double tcut=0.0);
+
+       template<typename T>
+       void setMeta(const char* key, T value ); 
+
+       template<typename T>
+       T getMeta(const char* key, const char* fallback) const ; 
+
 
        void setDir(const char* dir);
        const char* getDir();
@@ -79,11 +94,16 @@ class OKCORE_API OpticksProfile
        const char* m_dir ; 
        const char* m_name ; 
        const char* m_lname ; 
+       const char* m_aname ; 
+       const char* m_laname ; 
+
        const char* m_columns ; 
        BTimesTable* m_tt ; 
 
        NPY<float>* m_npy ;
        NPY<char>*  m_lpy ;
+       NPY<float>* m_apy ;
+       NPY<char>*  m_lapy ;
  
        float       m_t0 ; 
        float       m_tprev ; 

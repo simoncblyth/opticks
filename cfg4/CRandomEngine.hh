@@ -163,6 +163,7 @@ class CFG4_API CRandomEngine : public CRandomListener, public CLHEP::HepRandomEn
         std::vector<double> m_sequence ; 
         int                 m_cursor; 
         int                 m_cursor_old ;
+        unsigned            m_setupTranche_acc ;  
  
         std::vector<unsigned> m_jump_photons ; 
 

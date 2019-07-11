@@ -90,7 +90,8 @@ CRandomEngine::CRandomEngine(CG4* g4)
     m_jump_count(0),
     m_flat(-1.0),
     m_cursor(-1),
-    m_cursor_old(-1)
+    m_cursor_old(-1),
+    m_setupTranche_acc(m_ok->accumulateAdd("CRandomEngine::setupTranche"))
 {
     init();
 }
@@ -203,7 +204,8 @@ jumps around between tranches
 
 void CRandomEngine::setupTranche(int tranche_id)
 {
-    OK_PROFILE("CRandomEngine::setupTranche"); 
+    m_ok->accumulateStart(m_setupTranche_acc) ; 
+    OK_PROFILE("_CRandomEngine::setupTranche"); 
 
     m_tranche_id = tranche_id ; 
     m_tranche_ibase = m_tranche_id*m_tranche_size ; 
@@ -215,8 +217,11 @@ void CRandomEngine::setupTranche(int tranche_id)
         << " m_tranche_ibase " << m_tranche_ibase
         ;
 
-    m_tcurand->setIBase(m_tranche_ibase); 
+    m_tcurand->setIBase(m_tranche_ibase);   // <-- does GPU launch to init curand and generate the randoms
     checkTranche();
+
+    OK_PROFILE("CRandomEngine::setupTranche"); 
+    m_ok->accumulateStop(m_setupTranche_acc) ; 
 }
 #endif
 

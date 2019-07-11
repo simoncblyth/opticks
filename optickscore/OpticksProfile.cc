@@ -24,10 +24,15 @@ OpticksProfile::OpticksProfile()
     m_dir(NULL),
     m_name(BStr::concat(NULL,NAME,".npy")),
     m_lname(BStr::concat(NULL,NAME,"Labels.npy")),
+    m_aname(BStr::concat(NULL,NAME,"Acc.npy")),
+    m_laname(BStr::concat(NULL,NAME,"AccLabels.npy")),
+
     m_columns("Time,DeltaTime,VM,DeltaVM"),
     m_tt(new BTimesTable(m_columns)),
-    m_npy(NPY<float>::make(0,1,m_tt->getNumColumns())),
-    m_lpy(NPY<char>::make(0,1,64)),
+    m_npy(NPY<float>::make(0,m_tt->getNumColumns())),
+    m_lpy(NPY<char>::make(0,64)),
+    m_apy(NPY<float>::make(0,4)),
+    m_lapy(NPY<char>::make(0,64)),
 
     m_t0(0),
     m_tprev(0),
@@ -52,6 +57,34 @@ std::vector<std::string>&  OpticksProfile::getLines()
 {
     return m_tt->getLines(); 
 }
+
+
+/**
+OpticksProfile::setMeta
+------------------------
+
+NOT CURRENTLY USED.  
+
+Considered adding numPhotons etc.. but there
+is so much more like number and types of GPU etc.., 
+versions of Opticks and Geant4 etc..
+that it makes no sense to duplicate a subset of the 
+full parameters here.
+
+**/
+
+template<typename T>
+void OpticksProfile::setMeta(const char* key, T value )
+{
+    m_npy->setMeta(key, value); 
+}
+
+template<typename T>
+T OpticksProfile::getMeta(const char* key, const char* fallback) const
+{
+    return m_npy->getMeta<T>(key, fallback); 
+}
+
 
 
 void OpticksProfile::setDir(const char* dir)
@@ -191,13 +224,11 @@ void OpticksProfile::accumulateStop(unsigned idx)
     {
         LOG(LEVEL) << accumulateDesc(idx) ; 
     }
-
-
 }
 
-std::string OpticksProfile::accumulateDesc(unsigned idx)
+std::string OpticksProfile::accumulateDesc(unsigned idx) const 
 {
-    OpticksAcc& acc = m_acc[idx] ; 
+    const OpticksAcc& acc = m_acc[idx] ; 
     std::stringstream ss ; 
     ss 
        << "Acc "    
@@ -210,9 +241,54 @@ std::string OpticksProfile::accumulateDesc(unsigned idx)
 }
 
 
+void OpticksProfile::accumulateDump(const char* msg) const 
+{
+    unsigned nacc = m_acc.size() ; 
+    LOG(info) << msg << " nacc " << nacc ; 
+    for(unsigned i=0 ; i < nacc ; i++) 
+        std::cout 
+            << std::setw(4) << std::setfill('0') << i 
+            << " : " 
+            << accumulateDesc(i) 
+            << std::endl
+             ; 
+}
 
 
+bool OpticksProfile::isAccExported() const 
+{
+    unsigned n_apy = m_apy->getNumItems() ;
+    unsigned n_lapy = m_lapy->getNumItems() ;
+    bool match = n_apy == n_lapy ; 
+    if(!match)
+       LOG(fatal) 
+            << "MISMATCH"
+            << " apy " << m_apy->getShapeString()
+            << " lapy " << m_lapy->getShapeString()
+            ;
 
+    assert( match ); 
+    return n_apy > 0 ; 
+}
+
+void OpticksProfile::accumulateExport() 
+{
+    if(isAccExported()) return ; 
+
+    unsigned nacc = m_acc.size() ; 
+    LOG(LEVEL) << " nacc " << nacc ; 
+    assert( m_acc_labels.size() == nacc ); 
+
+
+    for(unsigned idx=0 ; idx < nacc ; idx++) 
+    {
+        const OpticksAcc& acc = m_acc[idx] ; 
+        m_apy->add( float(acc.n), acc.t, acc.v,  0.f ); 
+
+        const std::string& label = m_acc_labels[idx]; 
+        m_lapy->addString(label.c_str()); 
+    }
+}
 
 
 
@@ -231,9 +307,14 @@ void OpticksProfile::save(const char* dir)
 {
    assert(dir);
    LOG(LEVEL) << brief() ; 
+
+   accumulateExport(); 
+
    m_tt->save(dir);
    m_npy->save(dir, m_name);
    m_lpy->save(dir, m_lname);
+   m_apy->save(dir, m_aname);
+   m_lapy->save(dir, m_laname);
 }
 
 
@@ -277,6 +358,7 @@ void OpticksProfile::dump(const char* msg, const char* startswith, const char* s
 
     LOG(info) << " npy " << m_npy->getShapeString() << " " << getPath() ; 
 
+    accumulateDump(msg); 
 }
 
 

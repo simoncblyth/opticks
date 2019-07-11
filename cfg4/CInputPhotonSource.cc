@@ -167,7 +167,7 @@ CSource::collectPrimary.
 
 void CInputPhotonSource::GeneratePrimaryVertex(G4Event *evt) 
 {
-    //OK_PROFILE("_CInputPhotonSource::GeneratePrimaryVertex"); 
+    OK_PROFILE("_CInputPhotonSource::GeneratePrimaryVertex"); 
       
     //std::raise(SIGINT); 
 
@@ -195,7 +195,7 @@ void CInputPhotonSource::GeneratePrimaryVertex(G4Event *evt)
 	}
     m_gpv_count++ ; 
 
-    //OK_PROFILE("CInputPhotonSource::GeneratePrimaryVertex"); 
+    OK_PROFILE("CInputPhotonSource::GeneratePrimaryVertex"); 
 }
 
 

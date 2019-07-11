@@ -10,10 +10,11 @@ Next
 --------
 
 * :doc:`large-vm-for-cuda-process`
+* :doc:`geant4-beamOn-profiling`
 
 
-ISSUE : Leaking like a sieve 
----------------------------------
+ISSUE : Leaking like a sieve : FIXED or ACCOUNTED FOR 
+--------------------------------------------------------
 
 
 4M running : OKG4Test  profile time and memory usage, looks real leaky, DYNAMIC_CURAND doesnt bend over like 
@@ -264,6 +265,10 @@ Pinnning down the 4G, mostly OKPropagator : confirmed to be mostly from OptiX co
        37          0.820           2.461          0.820       9675.393        281.256 : OpEngine::OpEngine_0
        38          0.037           2.498          0.037       9706.860         31.468 : OKPropagator::OKPropagator_0
        39          0.000           2.498          0.000       9706.860          0.000 : OKG4Mgr::OKG4Mgr_0
+
+
+
+
 
 
 

@@ -17,6 +17,7 @@ from opticks.ana.abstat import ABStat
 from opticks.ana.dv import Dv, DvTab
 from opticks.ana.make_rst_table import recarray_as_rst
 from opticks.ana.metadata import CompareMetadata
+from opticks.ana.profile import Profile
 
 log = logging.getLogger(__name__)
 
@@ -156,6 +157,7 @@ class AB(object):
 
     def dump(self):
         log.debug("[")
+        self.print_(self.pro)  
         self.print_(self.cfm)  
         self.print_(self.mal)
         self.print_(self)
@@ -174,6 +176,7 @@ class AB(object):
         self.tabs = []
         self.dvtabs = []
         self.load()
+        self.pro = Profile(ok)
         self.cfm = self.compare_meta()
         self.mal = self.check_alignment()
         self.compare_domains()
@@ -249,6 +252,7 @@ class AB(object):
         self.fdom = self.a.fdom
         assert np.all( self.a.idom == self.b.idom )
         self.idom = self.a.idom
+
  
     def compare_meta(self):
         cfm = CompareMetadata(self.a.metadata, self.b.metadata)

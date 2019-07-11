@@ -29,6 +29,12 @@ from opticks.ana.datedfolder import DatedFolder, dateparser
 
 
 class DeltaTime(object):
+    """
+    hmm reading from delta is brittle, as will change
+    on updates of profiling points.  Better to read two times
+    and calculate the delta : as that does not depend in 
+    interposing profile points.
+    """
     NAME = "DeltaTime.ini"  
     PROPAGATE_G4 = "CG4::propagate_0"
     PROPAGATE_OK = "OPropagator::launch_0"
