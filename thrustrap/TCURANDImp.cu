@@ -4,6 +4,11 @@
 #include "TRngBuf.hh"
 #include "TCURANDImp.hh"
 #include "Opticks.hh"
+#include "PLOG.hh"
+
+template <typename T>
+const plog::Severity TCURANDImp<T>::LEVEL = PLOG::EnvLevel("TCURANDImp", "DEBUG"); 
+ 
 
 template <typename T>
 int TCURANDImp<T>::preinit() 
@@ -21,7 +26,9 @@ TCURANDImp<T>::TCURANDImp( unsigned ni, unsigned nj, unsigned nk )
     m_nk(nk),
     m_elem( ni*nj*nk ),
     m_ox(NPY<T>::make( ni, nj, nk )),
+    m_predox(predox()),
     m_dox(m_elem),
+    m_postdox(postdox()),
     m_spec(make_bufspec<T>(m_dox)), 
     m_trb(new TRngBuf<T>( ni, nj*nk, m_spec ))
 {
@@ -32,14 +39,44 @@ TCURANDImp<T>::TCURANDImp( unsigned ni, unsigned nj, unsigned nk )
 template <typename T>
 void TCURANDImp<T>::init() 
 {
+    LOG(LEVEL) << desc() ;   
     m_ox->zero(); 
     OKI_PROFILE("TCURANDImp::TCURANDImp"); 
 }
 
 
 template <typename T>
+int TCURANDImp<T>::predox() 
+{
+    OKI_PROFILE("_dvec_dox"); 
+    return 0 ; 
+}
+
+template <typename T>
+int TCURANDImp<T>::postdox() 
+{
+    OKI_PROFILE("dvec_dox"); 
+    return 0 ; 
+}
+
+
+
+template <typename T>
+std::string TCURANDImp<T>::desc()  const 
+{
+    std::stringstream ss ; 
+    ss << "TCURANDImp"
+       << " ox " << m_ox->getShapeString() 
+       << " elem " << m_elem
+       ; 
+    return ss.str(); 
+}
+
+
+template <typename T>
 void TCURANDImp<T>::setIBase(unsigned ibase)
 {
+    LOG(LEVEL) << " ibase " << ibase ;   
     m_trb->setIBase( ibase ); 
     generate(); 
 }

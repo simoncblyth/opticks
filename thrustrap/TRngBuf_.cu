@@ -8,6 +8,7 @@
 #include "TRngBuf.hh"
 
 #include "NPY.hpp"
+#include "Opticks.hh"
 #include "PLOG.hh"
 
 
@@ -30,8 +31,16 @@ const plog::Severity TRngBuf<T>::LEVEL = PLOG::EnvLevel("TRngBuf", "DEBUG");    
 
 
 template <typename T>
+int TRngBuf<T>::preinit() const 
+{
+    OKI_PROFILE("_TRngBuf::TRngBuf"); 
+    return 0 ; 
+}
+
+template <typename T>
 TRngBuf<T>::TRngBuf(unsigned ni, unsigned nj, CBufSpec spec, unsigned long long seed, unsigned long long offset )
     :
+    m_preinit(preinit()),
     TBuf("trngbuf", spec, "\n" ),
     m_ibase(0),
     m_ni(ni),
@@ -43,7 +52,17 @@ TRngBuf<T>::TRngBuf(unsigned ni, unsigned nj, CBufSpec spec, unsigned long long 
     m_offset(offset),
     m_dev((T*)getDevicePtr())
 {
+    init(); 
 }
+
+template <typename T>
+void TRngBuf<T>::init() const 
+{
+    OKI_PROFILE("TRngBuf::TRngBuf"); 
+}
+
+
+
 
 template <typename T>
 void TRngBuf<T>::setIBase(unsigned ibase)

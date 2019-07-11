@@ -30,12 +30,16 @@ class THRAP_API TRngBuf : public TBuf {
 
       __device__ void operator()(unsigned id) ;
    private:
+      int  preinit() const ; 
+      void init() const ; 
+   private:
       void generate(unsigned id_offset, unsigned id_0, unsigned id_1);
 
    private:
+       int      m_preinit ;     
        unsigned m_ibase ;      // base photon index  
-       unsigned m_ni ;      // number of photon slots
-       unsigned m_nj ;      // number of randoms to precook per photon
+       unsigned m_ni ;         // number of photon slots
+       unsigned m_nj ;         // number of randoms to precook per photon
        unsigned m_num_elem ;   
 
        unsigned m_id_offset ; 
@@ -46,7 +50,6 @@ class THRAP_API TRngBuf : public TBuf {
        T*                 m_dev ; 
 
 };
-
 
 
 
