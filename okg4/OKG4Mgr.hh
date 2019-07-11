@@ -30,6 +30,9 @@ class OKG4_API OKG4Mgr {
    public:
        OKG4Mgr(int argc, char** argv);
        virtual ~OKG4Mgr();
+  private:  
+       int preinit() const ;  
+       void init() const ;  
   public:
        void propagate();
        void visualize();
@@ -40,6 +43,7 @@ class OKG4_API OKG4Mgr {
    private:
        SLog*          m_log ; 
        Opticks*       m_ok ; 
+       int            m_preinit ; 
        OpticksRun*    m_run ; 
        OpticksHub*    m_hub ; 
        bool           m_load ; 

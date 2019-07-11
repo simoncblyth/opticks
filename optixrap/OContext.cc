@@ -49,7 +49,7 @@ const char* OContext::CacheDir()  // static
 
 
 
-plog::Severity OContext::LEVEL = debug ; 
+plog::Severity OContext::LEVEL = PLOG::EnvLevel("OContext","DEBUG") ; 
 
 
 const char* OContext::getModeName() const 
@@ -193,8 +193,8 @@ void OContext::CheckDevices(Opticks* ok)
     {
         assert( vdev.num_devices == 1 && "expecting only a single visible device, the one driving the display, in interop mode") ; 
         const char* optix_device = vdev.devices[0].name ;
-        LOG(info) << " frame_renderer " << frame_renderer ; 
-        LOG(info) << " optix_device " << optix_device  ; 
+        LOG(LEVEL) << " frame_renderer " << frame_renderer ; 
+        LOG(LEVEL) << " optix_device " << optix_device  ; 
         bool interop_device_match = SStr::Contains( frame_renderer, optix_device )  ; 
         assert( interop_device_match && "OpenGL and OptiX must be talking to the same single device in interop mode"  ); 
 
@@ -202,13 +202,15 @@ void OContext::CheckDevices(Opticks* ok)
     }
     else
     {
-        LOG(info) << " NULL frame_renderer : compute mode ? " ;  
+        LOG(LEVEL) << " NULL frame_renderer : compute mode ? " ;  
     }
 }
 
 
 OContext* OContext::Create(Opticks* ok, const char* cmake_target, const char* ptxrel )
 {
+    OKI_PROFILE("_OContext::Create");
+
     NMeta* parameters = ok->getParameters(); 
     int rtxmode = ok->getRTX();
 #if OPTIX_VERSION_MAJOR >= 6
@@ -220,12 +222,13 @@ OContext* OContext::Create(Opticks* ok, const char* cmake_target, const char* pt
 
     CheckDevices(ok);
 
-    LOG(verbose) << "optix::Context::create() START " ; 
+    OKI_PROFILE("_optix::Context::create");
     optix::Context context = optix::Context::create();
-    LOG(verbose) << "optix::Context::create() DONE " ; 
+    OKI_PROFILE("optix::Context::create");
 
     OContext* ocontext = new OContext(context, ok, cmake_target, ptxrel );
 
+    OKI_PROFILE("OContext::Create");
     return ocontext ; 
 }
 

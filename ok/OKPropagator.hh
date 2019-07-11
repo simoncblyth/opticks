@@ -43,6 +43,9 @@ class OK_API OKPropagator {
        static OKPropagator* GetInstance();
    public:
        OKPropagator(OpticksHub* hub, OpticksIdx* idx, OpticksViz* viz);
+   private:
+       int preinit() const ; 
+       void init();  
    public:
        void propagate();
        void cleanup();
@@ -52,6 +55,7 @@ class OK_API OKPropagator {
        void indexEvent();
    private:
        static OKPropagator* fInstance ;  
+       int            m_preinit ; 
        SLog*          m_log ; 
        OpticksHub*    m_hub ; 
        OpticksIdx*    m_idx ; 

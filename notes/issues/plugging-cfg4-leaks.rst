@@ -180,8 +180,15 @@ Investigating the knee of the profile
 * The 5.4G from TCURAND is accounted for, thats just how CUDA does UVA (unified virtual addressing) :doc:`large-vm-for-cuda-process`
 
 
-Pin down the 4G 
-----------------------
+Pinnning down the 4G, mostly OKPropagator : confirmed to be mostly from OptiX context creation
+--------------------------------------------------------------------------------------------------
+
+
+::
+
+    OpticksProfile=ERROR ts box --generateoverride 100000 
+
+
 
 ::
 
@@ -191,6 +198,73 @@ Pin down the 4G
     22 :                           _OpticksRun::createEvent :      2.461   9706.856      1.426   4018.953   
     23 :                            OpticksRun::createEvent :      2.461   9706.856      0.000      0.000   
     24 :                           _OKPropagator::propagate :      2.480   9706.856      0.020      0.000   
+
+
+
+::
+
+      15 :                                  _TCURAND::TCURAND :      0.618    245.596      0.000      0.000   
+      16 :                            _TCURANDImp::TCURANDImp :      0.618    245.596      0.000      0.000   
+      17 :                                          _dvec_dox :      0.618    245.596      0.000      0.000   
+      18 :                                           dvec_dox :      1.141   5485.636      0.522   5240.040   
+      19 :                                  _TRngBuf::TRngBuf :      1.142   5485.636      0.001      0.000   
+      20 :                                   TRngBuf::TRngBuf :      1.142   5485.636      0.000      0.000   
+      21 :                             TCURANDImp::TCURANDImp :      1.257   5685.640      0.115    200.004   
+      22 :                                   TCURAND::TCURAND :      1.258   5685.640      0.001      0.000   
+      23 :                       CRandomEngine::CRandomEngine :      1.258   5685.640      0.000      0.000   
+      24 :                                _CPhysics::CPhysics :      1.258   5685.640      0.000      0.000   
+      25 :                                 CPhysics::CPhysics :      1.306   5687.368      0.048      1.728   
+      26 :                                           CG4::CG4 :      1.315   5687.904      0.010      0.536   
+      27 :                            _OpticksViz::OpticksViz :      1.323   5689.224      0.008      1.320   
+      28 :                             OpticksViz::OpticksViz :      1.327   5689.356      0.004      0.132   
+      29 :                        _OKPropagator::OKPropagator :      1.644   5751.948      0.316     62.592   
+      30 :                         OKPropagator::OKPropagator :      4.155   9706.349      2.512   3954.400   
+      31 :                                   OKG4Mgr::OKG4Mgr :      4.155   9706.349      0.000      0.000   
+      32 :                           _OpticksRun::createEvent :      4.155   9706.349      0.000      0.000   
+      33 :                            OpticksRun::createEvent :      4.157   9706.349      0.002      0.000   
+      34 :                           _OKPropagator::propagate :      4.177   9706.349      0.020      0.000   
+      35 :                                    _OEvent::upload :      4.202   9748.137      0.025     41.788   
+
+::
+
+      24 :                                _CPhysics::CPhysics :      1.007   5685.580      0.000      0.000   
+      25 :                                 CPhysics::CPhysics :      1.053   5687.456      0.046      1.876   
+      26 :                                           CG4::CG4 :      1.062   5687.904      0.009      0.448   
+      27 :                            _OpticksViz::OpticksViz :      1.069   5689.224      0.008      1.320   
+      28 :                             OpticksViz::OpticksViz :      1.073   5689.356      0.004      0.132   
+      29 :                        _OKPropagator::OKPropagator :      1.218   5751.948      0.145     62.592   
+      30 :                                _OpEngine::OpEngine :      1.218   5751.948      0.000      0.000   
+      31 :                                 OpEngine::OpEngine :      2.432   9675.900      1.214   3923.952   
+      32 :                         OKPropagator::OKPropagator :      2.464   9706.345      0.032     30.444   
+      33 :                                   OKG4Mgr::OKG4Mgr :      2.464   9706.345      0.000      0.000   
+      34 :                           _OpticksRun::createEvent :      2.464   9706.345      0.000      0.000   
+      35 :                            OpticksRun::createEvent :      2.465   9706.345      0.001      0.000   
+      36 :                           _OKPropagator::propagate :      2.486   9706.345      0.021      0.000   
+
+
+
+::
+
+       21          0.113           1.021          0.113       5685.656        200.004 : TCURANDImp::TCURANDImp_0
+       22          0.000           1.021          0.000       5685.656          0.000 : TCURAND::TCURAND_0
+       23          0.000           1.021          0.000       5685.656          0.000 : CRandomEngine::CRandomEngine_0
+       24          0.000           1.021          0.000       5685.656          0.000 : _CPhysics::CPhysics_0
+       25          0.045           1.066          0.045       5687.372          1.716 : CPhysics::CPhysics_0
+       26          0.010           1.076          0.010       5687.904          0.532 : CG4::CG4_0
+       27          0.008           1.084          0.008       5689.224          1.320 : _OpticksViz::OpticksViz_0
+       28          0.004           1.088          0.004       5689.356          0.132 : OpticksViz::OpticksViz_0
+       29          0.154           1.242          0.154       5751.948         62.592 : _OKPropagator::OKPropagator_0
+       30          0.000           1.242          0.000       5751.948          0.000 : _OpEngine::OpEngine_0
+       31          0.000           1.242          0.000       5751.948          0.000 : _OScene::OScene_0
+       32          0.000           1.242          0.000       5751.948          0.000 : _OContext::Create_0
+       33          0.020           1.262          0.020       5811.740         59.792 : _optix::Context::create_0
+       34          0.051           1.312          0.051       9384.692       3572.952 : optix::Context::create_0
+       35          0.000           1.312          0.000       9384.692          0.000 : OContext::Create_0
+       36          0.328           1.641          0.328       9394.137          9.444 : OScene::OScene_0
+       37          0.820           2.461          0.820       9675.393        281.256 : OpEngine::OpEngine_0
+       38          0.037           2.498          0.037       9706.860         31.468 : OKPropagator::OKPropagator_0
+       39          0.000           2.498          0.000       9706.860          0.000 : OKG4Mgr::OKG4Mgr_0
+
 
 
 

@@ -22,7 +22,7 @@
 #include "PLOG.hh"
 
 
-const plog::Severity OpEngine::LEVEL = debug ; 
+const plog::Severity OpEngine::LEVEL = PLOG::EnvLevel("OpEngine", "DEBUG") ; 
 
 
 unsigned OpEngine::getOptiXVersion()
@@ -40,19 +40,27 @@ OPropagator* OpEngine::getOPropagator()
     return m_propagator ; 
 }
 
+
+int OpEngine::preinit() const
+{
+    OKI_PROFILE("_OpEngine::OpEngine");
+    return 0 ; 
+}
+
 OpEngine::OpEngine(OpticksHub* hub) 
-     : 
-      m_log(new SLog("OpEngine::OpEngine","",LEVEL)),
-      m_hub(hub),
-      m_ok(m_hub->getOpticks()),
-      m_scene(new OScene(m_hub)),
-      m_ocontext(m_scene->getOContext()),
-      m_entry(NULL),
-      m_oevt(NULL),
-      m_propagator(NULL),
-      m_seeder(NULL),
-      m_zeroer(NULL),
-      m_indexer(NULL)
+    : 
+    m_preinit(preinit()),
+    m_log(new SLog("OpEngine::OpEngine","",LEVEL)),
+    m_hub(hub),
+    m_ok(m_hub->getOpticks()),
+    m_scene(new OScene(m_hub)),
+    m_ocontext(m_scene->getOContext()),
+    m_entry(NULL),
+    m_oevt(NULL),
+    m_propagator(NULL),
+    m_seeder(NULL),
+    m_zeroer(NULL),
+    m_indexer(NULL)
 {
    init();
    (*m_log)("DONE");
@@ -60,31 +68,32 @@ OpEngine::OpEngine(OpticksHub* hub)
 
 void OpEngine::init()
 {
-   m_ok->setOptiXVersion(OConfig::OptiXVersion()); 
+    m_ok->setOptiXVersion(OConfig::OptiXVersion()); 
 
-   bool is_load = m_ok->isLoad() ; 
-   bool is_tracer = m_ok->isTracer() ;
+    bool is_load = m_ok->isLoad() ; 
+    bool is_tracer = m_ok->isTracer() ;
 
-   LOG(LEVEL) 
-              << " is_load " << is_load 
-              << " is_tracer " << is_tracer
-              << " OptiXVersion " << m_ok->getOptiXVersion()
-              ; 
+    LOG(LEVEL) 
+        << " is_load " << is_load 
+        << " is_tracer " << is_tracer
+        << " OptiXVersion " << m_ok->getOptiXVersion()
+        ; 
 
-   if(is_load)
-   {
-       LOG(LEVEL) << "skip initPropagation as just loading pre-cooked event " ;
-   }
-   else if(is_tracer)
-   {
-       LOG(LEVEL) << "skip initPropagation as tracer mode is active  " ; 
-   }
-   else
-   {
-       pLOG(LEVEL,0) << "(" ;  // -1 for one notch more logging 
-       initPropagation(); 
-       pLOG(LEVEL,0) << ")" ;
-   }
+    if(is_load)
+    {
+        LOG(LEVEL) << "skip initPropagation as just loading pre-cooked event " ;
+    }
+    else if(is_tracer)
+    {
+        LOG(LEVEL) << "skip initPropagation as tracer mode is active  " ; 
+    }
+    else
+    {
+        pLOG(LEVEL,0) << "(" ;  // -1 for one notch more logging 
+        initPropagation(); 
+        pLOG(LEVEL,0) << ")" ;
+    }
+    OKI_PROFILE("OpEngine::OpEngine");
 }
 
 void OpEngine::initPropagation()

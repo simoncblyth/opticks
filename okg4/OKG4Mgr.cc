@@ -63,10 +63,17 @@ then uses OKMgr to pop the geometry up to GPU for propagation.
  
 **/
 
+int OKG4Mgr::preinit() const
+{
+    OK_PROFILE("_OKG4Mgr::OKG4Mgr"); 
+    return 0 ;  
+}
+
 OKG4Mgr::OKG4Mgr(int argc, char** argv) 
     :
     m_log(new SLog("OKG4Mgr::OKG4Mgr","",debug)),
     m_ok(new Opticks(argc, argv)),  
+    m_preinit(preinit()),
     m_run(m_ok->getRun()),
     m_hub(new OpticksHub(m_ok)),            // configure, loadGeometry and setupInputGensteps immediately
     m_load(m_ok->isLoad()),
@@ -79,7 +86,17 @@ OKG4Mgr::OKG4Mgr(int argc, char** argv)
     m_propagator(new OKPropagator(m_hub, m_idx, m_viz))
 {
     (*m_log)("DONE");
+    init(); 
 }
+
+void OKG4Mgr::init() const
+{
+    OK_PROFILE("OKG4Mgr::OKG4Mgr"); 
+}
+
+
+
+
 
 OKG4Mgr::~OKG4Mgr()
 {

@@ -46,9 +46,15 @@ OBndLib*  OScene::getOBndLib()
     return m_olib ; 
 }
 
+int OScene::preinit() const
+{
+    OKI_PROFILE("_OScene::OScene");  
+    return 0 ; 
+}  
 
 OScene::OScene(OpticksHub* hub, const char* cmake_target, const char* ptxrel) 
     :   
+    m_preinit(preinit()),
     m_log(new SLog("OScene::OScene","", LEVEL)),
     m_timer(new BTimeKeeper("OScene::")),
     m_hub(hub),
@@ -156,6 +162,7 @@ void OScene::init()
 
     LOG(info) << "]" ;
 
+    OKI_PROFILE("OScene::OScene");  
 }
 
 

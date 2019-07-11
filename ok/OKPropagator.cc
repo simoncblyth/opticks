@@ -31,9 +31,15 @@ const plog::Severity OKPropagator::LEVEL = debug ;
 OKPropagator* OKPropagator::fInstance = NULL ; 
 OKPropagator* OKPropagator::GetInstance(){ return fInstance ;}
 
+int OKPropagator::preinit() const
+{
+    OKI_PROFILE("_OKPropagator::OKPropagator"); 
+    return 0 ; 
+}
 
 OKPropagator::OKPropagator(OpticksHub* hub, OpticksIdx* idx, OpticksViz* viz) 
     :
+    m_preinit(preinit()),
     m_log(new SLog("OKPropagator::OKPropagator", "", LEVEL)),
     m_hub(hub),    
     m_idx(idx),
@@ -45,10 +51,15 @@ OKPropagator::OKPropagator(OpticksHub* hub, OpticksIdx* idx, OpticksViz* viz)
 #endif
     m_placeholder(0)
 {
-    (*m_log)("DONE");
-    fInstance = this ; 
+    init(); 
 }
 
+void OKPropagator::init()
+{
+    (*m_log)("DONE");
+    fInstance = this ; 
+    OKI_PROFILE("OKPropagator::OKPropagator"); 
+}
 
 
 void OKPropagator::propagate()

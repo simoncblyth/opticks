@@ -66,10 +66,12 @@ class OKOP_API OpEngine {
        OPropagator* getOPropagator();
     private:
        void downloadPhotonData();       // see App::dbgSeed
+       int preinit() const ;
        void init();
        void initPropagation();
     private:
        // ctor instanciated always
+       int                  m_preinit ; 
        SLog*                m_log ; 
        OpticksHub*          m_hub ; 
        Opticks*             m_ok ; 

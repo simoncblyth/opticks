@@ -88,6 +88,7 @@ class OGLRAP_API OpticksViz : public SCtrl  {
     private: 
          void uploadEvent(OpticksEvent* evt);
     private: 
+         int preinit() const ;
          void init();
          void render();
          void renderGUI();
@@ -97,6 +98,7 @@ class OGLRAP_API OpticksViz : public SCtrl  {
          void downloadData(NPY<float>* data);
          void downloadEvent();
     private:
+         int           m_preinit ; 
          SLog*         m_log ; 
          OpticksHub*   m_hub ; 
          Opticks*      m_ok ; 

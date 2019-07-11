@@ -9,6 +9,10 @@
 
 #include "PLOG.hh"
 
+
+const plog::Severity BTimesTable::LEVEL = PLOG::EnvLevel("BTimesTable", "DEBUG") ; 
+
+
 BTimesTable::BTimesTable(const std::vector<std::string>& columns)
     :
     m_tx(NULL),
@@ -142,13 +146,17 @@ void BTimesTable::makeLines()
 void BTimesTable::dump(const char* msg, const char* startswith, const char* spacewith, double tcut )
 {
     makeLines();
+    unsigned nline = m_lines.size();
+
     LOG(info) 
         << msg 
-        << " filter: " << ( startswith ? startswith : "NONE" )
+        << " startswith filter: " << ( startswith ? startswith : "NONE" )
+        << " spacewith " << ( spacewith ? spacewith  : "-" )
+        << " tcut " << tcut 
+        << " nline " << nline  
         ;
 
     assert(m_lines.size() == m_names.size());
-    unsigned nline = m_lines.size();
     std::string column_labels = getColumnLabels() ;
 
 
@@ -171,12 +179,21 @@ void BTimesTable::dump(const char* msg, const char* startswith, const char* spac
         bool include = startswith == NULL ? true  :
                         strlen(startswith) <= strlen(name) && strncmp(name,startswith,strlen(startswith))==0 ;  
 
+        LOG(LEVEL) 
+            << " i " << i
+            << " space " << space
+            << " include " << include
+            << " line " << line 
+            << " name " << name
+            ;
+   
+
         if(include) 
         {
             double delta = first - prior_first ; 
             if(space) std::cout << std::endl ; 
 
-            bool cut = tcut == 0.0 ? false : delta < tcut ;   // suppress lines with delta less than tcut 
+            bool cut = tcut <= 0.0 ? false : delta < tcut ;   // suppress lines with delta less than tcut 
 
             if(!cut)
             std::cout 

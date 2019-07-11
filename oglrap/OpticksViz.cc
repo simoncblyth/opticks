@@ -74,9 +74,17 @@
 const plog::Severity OpticksViz::LEVEL = debug ; 
 
 
+int OpticksViz::preinit() const 
+{
+    OKI_PROFILE("_OpticksViz::OpticksViz"); 
+    return 0 ; 
+}
+
+
 OpticksViz::OpticksViz(OpticksHub* hub, OpticksIdx* idx, bool immediate)
     :
     SCtrl(),
+    m_preinit(preinit()), 
     m_log(new SLog("OpticksViz::OpticksViz", "", LEVEL)),
     m_hub(hub),
     m_ok(hub->getOpticks()),
@@ -109,6 +117,8 @@ OpticksViz::OpticksViz(OpticksHub* hub, OpticksIdx* idx, bool immediate)
 
 void OpticksViz::init()
 {
+    OKI_PROFILE("OpticksViz::OpticksViz"); 
+
     m_hub->setCtrl(this);  // For "command(char* ctrl)" interface from lower levels to route via OpticksViz
 
     const char* shader_dir = getenv("OPTICKS_SHADER_DIR"); 

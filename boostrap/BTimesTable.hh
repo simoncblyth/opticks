@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <string>
+#include "plog/Severity.h"
 
 class BTimes ; 
 
@@ -40,12 +41,13 @@ as individual ".ini" files named after the column labels.
 
 class BRAP_API BTimesTable {
     public:
+        static const plog::Severity LEVEL ; 
         static const unsigned WIDTH ; 
         static const unsigned PRIME ; 
     public:
         BTimesTable(const char* columns, const char* delim=","); 
         BTimesTable(const std::vector<std::string>& columns);
-        void dump(const char* msg="BTimesTable::dump", const char* startswith=NULL, const char* spacewith=NULL, double tcut=0.0 );
+        void dump(const char* msg="BTimesTable::dump", const char* startswith=NULL, const char* spacewith=NULL, double tcut=-1.0 );
 
         unsigned getNumColumns();
         BTimes* getColumn(unsigned int j);

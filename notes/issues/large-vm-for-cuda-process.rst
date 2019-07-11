@@ -13,6 +13,12 @@ CONCLUSION : ITS A NON-ISSUE
 * thats just how CUDA works, it does not present a performance problem
 
 
+Refs
+------
+
+* http://on-demand.gputechconf.com/gtc/2018/presentation/s8430-everything-you-need-to-know-about-unified-memory.pdf
+
+
 ISSUE : profiling CUDA using application on Linux shows large VM 
 ------------------------------------------------------------------- 
 

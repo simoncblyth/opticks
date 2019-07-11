@@ -47,8 +47,10 @@ class OXRAP_API OScene {
     public:
        void cleanup();
     private:
+       int preinit() const ; 
        void init();   // creates OptiX context and populates with geometry info
     private:
+       int                  m_preinit ; 
        SLog*                m_log ; 
        BTimeKeeper*         m_timer ;
        OpticksHub*          m_hub ; 

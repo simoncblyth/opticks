@@ -421,7 +421,11 @@ void Opticks::postgeocache()
 void Opticks::postpropagate()
 {
    saveProfile();
-   dumpProfile("Opticks::postpropagate", NULL, "_OpticksRun::createEvent", 0.0001 );  // spacwith spacing at start if each evt
+
+   //double tcut = 0.0001 ; 
+   double tcut = -1.0 ;  
+
+   dumpProfile("Opticks::postpropagate", NULL, "_OpticksRun::createEvent", tcut  );  // spacwith spacing at start if each evt
 
    // startswith filtering 
    dumpProfile("Opticks::postpropagate", "OPropagator::launch");  
