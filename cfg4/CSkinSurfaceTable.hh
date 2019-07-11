@@ -6,13 +6,13 @@
 #include "plog/Severity.h"
 
 class CFG4_API CSkinSurfaceTable : public CSurfaceTable {
+         static const plog::Severity LEVEL ;  
     public:
          CSkinSurfaceTable();
          void dump(const char* msg="CSkinSurfaceTable::dump");
     private:
          void init();
     private:
-         plog::Severity m_level ;  
 
 };
 

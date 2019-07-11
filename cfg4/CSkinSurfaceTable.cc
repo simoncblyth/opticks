@@ -10,11 +10,12 @@
 #include "G4LogicalSkinSurface.hh"
 #include "G4OpticalSurface.hh"
 
+const plog::Severity CSkinSurfaceTable::LEVEL = PLOG::EnvLevel("CSkinSurfaceTable", "DEBUG") ; 
+
 
 CSkinSurfaceTable::CSkinSurfaceTable()
     :
-    CSurfaceTable("skin"),
-    m_level(info)
+    CSurfaceTable("skin")
 {
     init();
 }
@@ -22,11 +23,7 @@ CSkinSurfaceTable::CSkinSurfaceTable()
 void CSkinSurfaceTable::init()
 {
     int nsurf = G4LogicalSkinSurface::GetNumberOfSkinSurfaces();
-
-    LOG(m_level) << "CSkinSurfaceTable::init"
-                 << " nsurf " << nsurf 
-                 ;
-
+    LOG(LEVEL) << " nsurf " << nsurf ; 
     const G4LogicalSkinSurfaceTable* sst = G4LogicalSkinSurface::GetSurfaceTable();
 
     assert( int(sst->size()) == nsurf );
@@ -39,7 +36,7 @@ void CSkinSurfaceTable::init()
 
         const G4LogicalVolume* lv = ss->GetLogicalVolume() ;
 
-        if( m_level > info )
+        if( LEVEL > info )
         std::cout << std::setw(5) << i 
                   << std::setw(35) << ( ss ? ss->GetName() : "NULL" )
                   << std::setw(35) << ( os ? os->GetName() : "NULL" )

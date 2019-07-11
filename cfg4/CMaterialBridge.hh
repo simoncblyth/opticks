@@ -24,6 +24,7 @@ instanciation of CMaterialBridge.
 
 class CFG4_API CMaterialBridge 
 {
+        static const plog::Severity LEVEL ; 
     public:
         CMaterialBridge( GMaterialLib* mlib );
 
@@ -44,7 +45,6 @@ class CFG4_API CMaterialBridge
         void initMap();
     private:
         GMaterialLib*   m_mlib ; 
-        plog::Severity  m_level ; 
 
         std::map<const G4Material*, unsigned> m_g4toix ; 
         std::map<unsigned int, std::string>   m_ixtoname ; 

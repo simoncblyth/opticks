@@ -11,13 +11,16 @@
 
 #include "PLOG.hh"
 
+
+const plog::Severity CMaterialBridge::LEVEL = PLOG::EnvLevel("CMaterialBridge", "DEBUG") ; 
+
+
 CMaterialBridge::CMaterialBridge( GMaterialLib* mlib) 
     :
-    m_mlib(mlib),
-    m_level(info)
+    m_mlib(mlib)
 {
     initMap();
-    if(m_level > info)
+    if(LEVEL > info)
         dump("CMaterialBridge::CMaterialBridge");
 }
 
@@ -26,10 +29,7 @@ void CMaterialBridge::initMap()
 {
     const G4MaterialTable* mtab = G4Material::GetMaterialTable();
     unsigned nmat = G4Material::GetNumberOfMaterials();
-
-    LOG(m_level) << "CMaterialBridge::initMap" 
-              << " nmat (G4Material::GetNumberOfMaterials) " << nmat 
-              ;
+    LOG(LEVEL) << " nmat (G4Material::GetNumberOfMaterials) " << nmat ; 
 
     for(unsigned i=0 ; i < nmat ; i++)
     {
@@ -50,7 +50,7 @@ void CMaterialBridge::initMap()
         m_ixtoabbr[index] = m_mlib->getAbbr(shortname) ;
 
 
-        pLOG(m_level,+1) << " i " << std::setw(3) << i 
+        pLOG(LEVEL,+1) << " i " << std::setw(3) << i 
                   << " name " << std::setw(35) << name 
                   << " shortname " << std::setw(35) << shortname 
                   << " abbr " << std::setw(35) << abbr 
@@ -58,11 +58,11 @@ void CMaterialBridge::initMap()
                   ; 
     }
 
-    LOG(m_level)
-            << " nmat " << nmat 
-            << " m_g4toix.size() "   << m_g4toix.size() 
-            << " m_ixtoname.size() " << m_ixtoname.size() 
-             ; 
+    LOG(LEVEL)
+        << " nmat " << nmat 
+        << " m_g4toix.size() "   << m_g4toix.size() 
+        << " m_ixtoname.size() " << m_ixtoname.size() 
+        ; 
 
 
     assert( m_g4toix.size() == nmat );

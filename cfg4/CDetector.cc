@@ -40,7 +40,7 @@
 
 #include "PLOG.hh"
 
-const plog::Severity CDetector::LEVEL = debug ; 
+const plog::Severity CDetector::LEVEL = PLOG::EnvLevel("CDetector", "DEBUG")  ; 
 
 G4VPhysicalVolume* CDetector::getTop() const { return m_top ; }
 CMaterialLib* CDetector::getMaterialLib() const { return m_mlib ; }
@@ -322,7 +322,7 @@ void CDetector::attachSurfaces()
     int num_bs = G4LogicalBorderSurface::GetNumberOfBorderSurfaces();
     int num_sk = G4LogicalSkinSurface::GetNumberOfSkinSurfaces();
 
-    LOG(info) 
+    LOG(LEVEL) 
          << "["
          << " num_bs " << num_bs
          << " num_sk " << num_sk
@@ -334,12 +334,12 @@ void CDetector::attachSurfaces()
     }
     else
     {
-        LOG(error) << " no surfaces found : try to convert some from Opticks model " ; 
+        LOG(LEVEL) << " no surfaces found : try to convert some from Opticks model " ; 
         bool exclude_sensors = true ; 
         m_slib->convert(this, exclude_sensors );
     }
 
-    LOG(info) << "]" ;
+    LOG(LEVEL) << "]" ;
 
 } 
 

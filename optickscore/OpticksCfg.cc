@@ -101,8 +101,8 @@ OpticksCfg<Listener>::OpticksCfg(const char* name, Listener* listener, bool live
        m_analyticmesh(-1),
        m_cameratype(0),
        m_modulo(-1),
-       m_generateoverride(-1),
-       m_propagateoverride(-1),
+       m_generateoverride(0),
+       m_propagateoverride(0),
        m_debugidx(0),
        m_dbgnode(-1),
        m_dbgmm(-1),
@@ -670,14 +670,14 @@ void OpticksCfg<Listener>::init()
 
    char propagateoverride[256];
    snprintf(propagateoverride,256, 
-          "Override photons to propagate for debugging, eg 1 for a single photon. Values less than 1 disable any override. Default %d", m_propagateoverride);
+          "Override photons to propagate for debugging, eg 1 for a single photon. Value of zero disables any override. Negative values are assumes to in millions. Default %d", m_propagateoverride);
    m_desc.add_options()
        ("propagateoverride",  boost::program_options::value<int>(&m_propagateoverride), propagateoverride );
 
 
    char generateoverride[256];
    snprintf(generateoverride,256, 
-          "Override photons to generate for debugging, eg 1 for a single photon. Values less than 1 disable any override. Default %d", m_generateoverride);
+          "Override photons to generate for debugging, eg 1 for a single photon. Values of zero disables any override, Negative values are assumed to be in millions. Default %d", m_generateoverride);
    m_desc.add_options()
        ("generateoverride",  boost::program_options::value<int>(&m_generateoverride), generateoverride );
 
@@ -1733,13 +1733,15 @@ int OpticksCfg<Listener>::getModulo()
 template <class Listener>
 int OpticksCfg<Listener>::getGenerateOverride()
 {
-    return m_generateoverride ; 
+    int go = m_generateoverride ; 
+    return go < 0 ? -go*1000000 : go ; 
 }
 
 template <class Listener>
 int OpticksCfg<Listener>::getPropagateOverride()
 {
-    return m_propagateoverride ; 
+    int po = m_propagateoverride ; 
+    return po < 0 ? -po*1000000 : po ; 
 }
 
 

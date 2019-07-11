@@ -17,7 +17,7 @@
 #include "PLOG.hh"
 
 
-const plog::Severity OpticksAim::LEVEL = debug ; 
+const plog::Severity OpticksAim::LEVEL = PLOG::EnvLevel("OpticksAim", "DEBUG") ; 
 
 
 OpticksAim::OpticksAim(OpticksHub* hub) 
@@ -150,13 +150,13 @@ void OpticksAim::target()
     {
         glm::vec4 mmce = getCenterExtent();
         m_composition->setCenterExtent( mmce , autocam );
-        LOG(info) << "[--geocenter] mmce " << gformat(mmce) ; 
+        LOG(LEVEL) << "[--geocenter] mmce " << gformat(mmce) ; 
     }
     else if(evt && evt->hasGenstepData())
     {
         glm::vec4 gsce = evt->getGenstepCenterExtent();  // need to setGenStepData before this will work 
         m_composition->setCenterExtent( gsce , autocam );
-        LOG(info) 
+        LOG(LEVEL) 
             << " evt " << evt->brief()
             << " gsce " << gformat(gsce) 
             ; 

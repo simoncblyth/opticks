@@ -2,6 +2,9 @@
 #include "BRng.hh"
 
 
+const plog::Severity BRng::LEVEL = PLOG::EnvLevel("BRng", "DEBUG") ; 
+
+
 float BRng::getLo() const 
 {
     return m_lo ;
@@ -42,7 +45,7 @@ void BRng::two(float& a, float& b)
 
 void BRng::setSeed(unsigned _seed)
 {
-    LOG(info) << m_label << " setSeed(" << _seed << ")" ; 
+    LOG(LEVEL) << m_label << " setSeed(" << _seed << ")" ; 
 
     m_seed = _seed ; 
 

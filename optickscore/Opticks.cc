@@ -66,7 +66,7 @@
 #include "OpticksCfg.hh"
 
 
-const plog::Severity Opticks::LEVEL = debug ; 
+const plog::Severity Opticks::LEVEL = PLOG::EnvLevel("Opticks", "DEBUG")  ; 
 
 
 BPropNames* Opticks::G_MATERIAL_NAMES = NULL ; 
@@ -2135,10 +2135,33 @@ int Opticks::getCameraType() const
     return m_cfg->getCameraType();
 }
 
+
+/**
+Opticks::getGenerateOverride
+------------------------------
+
+Used by m_emitter for generated input photons, 
+see opticksgeo/OpticksGen.cc  and NEmitPhotonsNPY.
+When a value greater than zero is returned the emitcfg 
+number of photons is overridden.
+
+**/
+
 int Opticks::getGenerateOverride() const 
 {
     return m_cfg->getGenerateOverride();
 }
+
+/**
+Opticks::getPropagateOverride
+---------------------------------
+
+Used by OPropagator::prelaunch to override the size of the 
+OptiX launch see optixrap/OPropagator.cc when a value greater that 
+zero is returned.
+
+**/
+
 int Opticks::getPropagateOverride() const 
 {
     return m_cfg->getPropagateOverride();
@@ -2500,7 +2523,7 @@ OpticksEvent* Opticks::makeEvent(bool ok, unsigned tagoffset)
     evt->setOpticks(this);
     evt->setEntryCode(getEntryCode());
 
-    LOG(info) 
+    LOG(LEVEL) 
         << ( ok ? " OK " : " G4 " )
         << " tagoffset " << tagoffset 
         << " id " << evt->getId() 

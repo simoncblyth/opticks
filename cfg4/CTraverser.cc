@@ -316,7 +316,7 @@ const G4VPhysicalVolume* CTraverser::getPV(const char* name) const
     std::vector<unsigned> indices ; 
     int num_indices = BStr::index_all( indices, m_pvnames, name) ;
 
-    LOG(info) 
+    LOG(LEVEL) 
         << " name " << name
         << " index " << index 
         << " num_indices " << num_indices

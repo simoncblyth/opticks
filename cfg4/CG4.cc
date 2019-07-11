@@ -1,8 +1,3 @@
-// cfg4-;cfg4--;ggv-;ggv-pmt-test --cfg4 
-// cfg4-;cfg4--;op --cfg4 --g4gun --dbg 
-// cfg4-;cfg4--;ggv-;ggv-g4gun --dbg
-
-
 
 #include <csignal>
 #include "CFG4_BODY.hh"
@@ -23,7 +18,6 @@
 // npy-
 #include "NPY.hpp"
 #include "NLookup.hpp"
-//#include "BTimeKeeper.hh"
 
 //ggeo-
 #include "GBndLib.hh"
@@ -162,7 +156,7 @@ CG4::CG4(OpticksHub* hub)
 
 void CG4::init()
 {
-    LOG(info) << "CG4::init"  << " ctx " << m_ctx.desc() ; 
+    LOG(LEVEL) << " ctx " << m_ctx.desc() ; 
     initialize();
 }
 
@@ -181,7 +175,7 @@ void CG4::setUserInitialization(G4VUserDetectorConstruction* detector)
 
 void CG4::initialize()
 {
-    LOG(info) << "[" ;
+    LOG(LEVEL) << "[" ;
     assert(!m_initialized && "CG4::initialize already initialized");
     m_initialized = true ; 
 
@@ -195,12 +189,12 @@ void CG4::initialize()
 
     m_runManager->Initialize();
     postinitialize();
-    LOG(info) << "]" ;
+    LOG(LEVEL) << "]" ;
 }
 
 void CG4::postinitialize()
 {
-    LOG(info) << "[" ;
+    LOG(LEVEL) << "[" ;
     C4FPEDetection::InvalidOperationDetection_Disable();  // see notes/issues/OKG4Test_prelaunch_FPE_causing_fail.rst
 
     m_uiManager = G4UImanager::GetUIpointer();
@@ -232,7 +226,7 @@ void CG4::postinitialize()
 
     if(m_ok->isG4Snap()) snap() ;
 
-    LOG(info) << "]" ;
+    LOG(LEVEL) << "]" ;
 }
 
 void CG4::execute(const char* path)

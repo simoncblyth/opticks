@@ -8,6 +8,8 @@
 #include <boost/random/uniform_real.hpp>
 #include <boost/random/variate_generator.hpp>
 
+#include "plog/Severity.h"
+
 /**
 
 BRng
@@ -25,6 +27,8 @@ BRng
 
 class BRAP_API BRng 
 {
+    static const plog::Severity LEVEL ;  
+
     typedef boost::mt19937          RNG_t;
     //typedef boost::hellekalek1995   RNG_t ; 
     typedef boost::uniform_real<>   DST_t;
