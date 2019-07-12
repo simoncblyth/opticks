@@ -2,6 +2,24 @@ tboolean-generateoverride-photon-scanning
 ================================================
 
 
+Revisit with aligned running, and now with ceiling of 100M
+------------------------------------------------------------
+
+::
+
+
+    TBOOLEAN_TAG=1   ts box --generateoverride -1   --rngmax 3 
+    TBOOLEAN_TAG=10  ts box --generateoverride -10  --rngmax 10 
+    TBOOLEAN_TAG=100 ts box --generateoverride -100 --rngmax 100 
+
+
+
+
+
+
+
+
+
 WOW : TITAN RTX with RTX mode ON (R1) : giving extra 7x  : exceeding 10,000x speedup for 3M photons : this is an exceedingly simple geometry though
 --------------------------------------------------------------------------------------------------------------------------------------------------------
 

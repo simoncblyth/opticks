@@ -33,6 +33,13 @@ class OK(argparse.Namespace):
         return tagdir_(self.det, self.src, self.tag, pfx=self.pfx )
     tagdir = property(_get_tagdir)
 
+    def _get_ntagdir(self):
+        itag = int(self.tag) 
+        return tagdir_(self.det, self.src, str(-itag), pfx=self.pfx )
+    ntagdir = property(_get_ntagdir)
+
+
+
     def _get_catdir(self):
         return tagdir_(self.det, self.src, None, pfx=self.pfx )
     catdir = property(_get_catdir)

@@ -19,9 +19,7 @@ OpticksRun
 Dual G4/Opticks event handling with batton passing 
 between g4evt and evt regarding the gensteps. 
 
-
 **/
-
 
 
 #include "OKCORE_API_EXPORT.hh"
@@ -31,7 +29,7 @@ class OKCORE_API OpticksRun
     public:
         OpticksRun(Opticks* ok);
     private:
-        void passBaton();
+        void importGensteps();
     public:
         OpticksEvent* getEvent() const ;
         OpticksEvent* getG4Event() const ;
@@ -40,7 +38,7 @@ class OKCORE_API OpticksRun
         std::string brief() const ;
 
         void setGensteps(NPY<float>* gs);
-        bool hasGensteps();
+        bool hasGensteps() const ;
 
         void createEvent(unsigned tagoffset=0);  
         void resetEvent();  
@@ -55,14 +53,13 @@ class OKCORE_API OpticksRun
 
     private:
         Opticks*         m_ok ; 
+        bool             m_nog4propagate ;  
+        NPY<float>*      m_gensteps ; 
+
         OpticksEvent*    m_g4evt ; 
         OpticksEvent*    m_evt ; 
         G4StepNPY*       m_g4step ; 
-#ifdef OLD_PARAMETERS
-        X_BParameters*     m_parameters ;
-#else
         NMeta*           m_parameters ;
-#endif
 
 
 };

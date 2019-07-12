@@ -29,7 +29,7 @@ Extrapolates:
 
 * 1s for 0.010M
 * 100s for 1M       1.67 min
-* 1,000s for 10M      16.66 min
+* 1,000s for 10M      16.66 min        (measured 1060.47s)
 * 10,000s for 100M    166.66 min   2.77 hrs
 * 100,000s for 1000M  1666.66 min  27.77 hrs
 

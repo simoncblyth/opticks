@@ -344,6 +344,7 @@ class OKCORE_API Opticks {
        bool                 isPrintIndexLog() const ; 
        bool                 isG4CodeGen() const ;
        bool                 isNoSavePPM() const ; // --nosaveppm
+       bool                 isNoG4Propagate() const ;     // --nog4propagate
        bool                 isPrintEnabled() const ;
        bool                 isExceptionEnabled() const ;
        bool                 isXAnalytic() const ;

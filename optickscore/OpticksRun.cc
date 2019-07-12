@@ -14,25 +14,33 @@
 #include "PLOG.hh"
 
 
-const plog::Severity OpticksRun::LEVEL = debug ; 
+const plog::Severity OpticksRun::LEVEL = PLOG::EnvLevel("OpticksRun", "DEBUG")  ; 
 
 
 OpticksRun::OpticksRun(Opticks* ok) 
     :
     m_ok(ok),
+    m_nog4propagate(m_ok->isNoG4Propagate()),  // --nog4propagate
+    m_gensteps(NULL), 
     m_g4evt(NULL),
     m_evt(NULL),
     m_g4step(NULL),
     m_parameters(new NMeta)
 {
     OK_PROFILE("OpticksRun::OpticksRun");
+
+    LOG(LEVEL) 
+        << " m_nog4propagate " << m_nog4propagate
+        ;
 }
 
 
 std::string OpticksRun::brief() const 
 {
     std::stringstream ss ; 
-    ss << "Run " 
+    ss << "Run" 
+       << " evt " << ( m_evt ? m_evt->brief() : "-" )
+       << " g4evt " << ( m_g4evt ? m_g4evt->brief() : "-" )
        ;
     return ss.str();
 }
@@ -68,17 +76,21 @@ void OpticksRun::createEvent(unsigned tagoffset)
 
     OK_PROFILE("_OpticksRun::createEvent");
 
-    m_g4evt = m_ok->makeEvent(false, tagoffset) ;
+
     m_evt = m_ok->makeEvent(true, tagoffset) ;
+    std::string tstamp = m_evt->getTimeStamp();
 
-    LOG(verbose) << m_g4evt->brief() << " " << m_g4evt->getShapeString() ;  
-    LOG(verbose) << m_evt->brief() << " " << m_evt->getShapeString() ;  
-  
-    m_evt->setSibling(m_g4evt);
-    m_g4evt->setSibling(m_evt);
-
-    std::string tstamp = m_g4evt->getTimeStamp();
-    m_evt->setTimeStamp( tstamp.c_str() );        // align timestamps
+    if(m_nog4propagate) 
+    { 
+        m_g4evt = NULL ;   
+    }
+    else
+    {  
+        m_g4evt = m_ok->makeEvent(false, tagoffset) ;
+        m_g4evt->setSibling(m_evt);
+        m_g4evt->setTimeStamp( tstamp.c_str() );   // align timestamps
+        m_evt->setSibling(m_g4evt);
+    }
 
     LOG(LEVEL)
         << "(" 
@@ -86,8 +98,8 @@ void OpticksRun::createEvent(unsigned tagoffset)
         << ") " 
         << tstamp 
         << "[ "
-        << " ok:" << m_evt->getId() << " " << m_evt->getDir() 
-        << " g4:" << m_g4evt->getId() << " " << m_g4evt->getDir()
+        << " ok:" << m_evt->brief() 
+        << " g4:" << ( m_g4evt ? m_g4evt->brief() : "-" )
         << "] DONE "
         ; 
 
@@ -120,19 +132,23 @@ void OpticksRun::annotateEvent()
 
     if(testcsgpath)
     {  
-         m_evt->setTestCSGPath(testcsgpath);
-         m_g4evt->setTestCSGPath(testcsgpath);
-
          assert( geotestconfig ); 
+
+         m_evt->setTestCSGPath(testcsgpath);
          m_evt->setTestConfigString(geotestconfig);
-         m_g4evt->setTestConfigString(geotestconfig);
+
+         if(m_g4evt)          
+         { 
+             m_g4evt->setTestCSGPath(testcsgpath);
+             m_g4evt->setTestConfigString(geotestconfig);
+         }
     }
 }
 void OpticksRun::resetEvent()
 {
     OK_PROFILE("_OpticksRun::resetEvent");
-    m_g4evt->reset();
     m_evt->reset();
+    if(m_g4evt) m_g4evt->reset(); 
     OK_PROFILE("OpticksRun::resetEvent");
 }
 
@@ -156,47 +172,31 @@ OpticksEvent* OpticksRun::getCurrentEvent()
 OpticksRun::setGensteps
 ------------------------
 
+THIS IS CALLED FROM VERY HIGH LEVEL IN OKMgr OR OKG4Mgr 
+
 gensteps and maybe source photon data (via aux association) are lodged into m_g4evt
 before passing baton (sharing pointers) with m_evt
 
 **/
-void OpticksRun::setGensteps(NPY<float>* gensteps) // THIS IS CALLED FROM VERY HIGH LEVEL IN OKMgr OR OKG4Mgr 
+void OpticksRun::setGensteps(NPY<float>* gensteps) 
 {
-    bool no_gensteps = gensteps == NULL ; 
-    if(no_gensteps) LOG(fatal) << "OpticksRun::setGensteps given NULL gensteps" ; 
-    assert(!no_gensteps); 
+    assert(m_evt && "must OpticksRun::createEvent prior to OpticksRun::setGensteps");
 
-    LOG(LEVEL) << "genstep " << gensteps->getShapeString() ;  
+    if(!gensteps) LOG(fatal) << "NULL gensteps" ; 
+    assert(gensteps); 
 
-    assert(m_evt && m_g4evt && "must OpticksRun::createEvent prior to OpticksRun::setGensteps");
+    LOG(LEVEL) << "gensteps " << gensteps->getShapeString() ;  
 
-    bool progenitor=true ; 
+    m_gensteps = gensteps ;   
 
-    const char* oac_label = m_ok->isEmbedded() ? "GS_EMBEDDED" : NULL ; 
- 
-    m_g4step = importGenstepData(gensteps, oac_label) ;
-
-    m_g4evt->setGenstepData(gensteps, progenitor);
-
-    if(hasActionControl(gensteps, "GS_EMITSOURCE"))
-    {
-        void* aux = gensteps->getAux();
-        assert( aux );
-
-        NPY<float>* emitsource = (NPY<float>*)aux ; 
-        m_g4evt->setSourceData( emitsource ); 
-
-        LOG(LEVEL) 
-            << "GS_EMITSOURCE"
-            << " emitsource " << emitsource->getShapeString()
-            ;
-    }
-    passBaton();  
+    importGensteps();
 }
 
+
+
 /**
-OpticksRun::passBaton
------------------------
+OpticksRun::importGensteps
+----------------------------
 
 Handoff from G4Event to Opticks event of the
 Nopstep, Genstep and Source buffer pointers.
@@ -209,27 +209,51 @@ where the m_evt pointers are just weak reference guests
  
 **/
 
-void OpticksRun::passBaton()
+
+void OpticksRun::importGensteps()
 {
-    NPY<float>* nopstep = m_g4evt->getNopstepData() ;
-    NPY<float>* genstep = m_g4evt->getGenstepData() ;
-    NPY<float>* source  = m_g4evt->getSourceData() ;
+    const char* oac_label = m_ok->isEmbedded() ? "GS_EMBEDDED" : NULL ; 
+ 
+    m_g4step = importGenstepData(m_gensteps, oac_label) ;
 
-    LOG(LEVEL)
-        << " nopstep " << nopstep
-        << " genstep " << genstep
-        << " source " << source
-        ;
+    if(m_g4evt)
+    { 
+        bool progenitor=true ; 
+        m_g4evt->setGenstepData(m_gensteps, progenitor);
+    }
 
-    m_evt->setNopstepData(nopstep);  
-    m_evt->setGenstepData(genstep);
-    m_evt->setSourceData(source);
+    m_evt->setGenstepData(m_gensteps);
+
+    if(hasActionControl(m_gensteps, "GS_EMITSOURCE"))
+    {
+        void* aux = m_gensteps->getAux();
+        assert( aux );
+
+        NPY<float>* emitsource = (NPY<float>*)aux ; 
+
+        if(m_g4evt) m_g4evt->setSourceData( emitsource ); 
+
+        m_evt->setSourceData( emitsource);
+
+        LOG(LEVEL) 
+            << "GS_EMITSOURCE"
+            << " emitsource " << emitsource->getShapeString()
+            ;
+    }
+    else
+    {
+        m_evt->setSourceData( m_g4evt ? m_g4evt->getSourceData() : NULL ) ;   
+    }
+
+    m_evt->setNopstepData( m_g4evt ? m_g4evt->getNopstepData() : NULL );  
 }
 
 
-bool OpticksRun::hasGensteps()
+
+bool OpticksRun::hasGensteps() const
 {
-   return m_evt->hasGenstepData() && m_g4evt->hasGenstepData() ; 
+   //return m_evt->hasGenstepData() && m_g4evt->hasGenstepData() ; 
+   return m_gensteps != NULL ; 
 }
 
 

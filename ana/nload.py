@@ -36,6 +36,10 @@ import numpy as np
 from opticks.ana.base import ini_
 
 
+def time_(path): 
+    st = os.stat(path)  
+    return datetime.datetime.fromtimestamp(st.st_ctime)
+
 def stmp_(st, fmt="%Y%m%d-%H%M"): 
     return datetime.datetime.fromtimestamp(st.st_ctime).strftime(fmt)
 

@@ -204,6 +204,10 @@ void OpticksCfg<Listener>::init()
        ("nostep,S",  "inhibit step by step recording") ;
 
    m_desc.add_options()
+       ("nog4propagate",  "inhibit G4 propagate in a bi-simulation executable such as OKG4Test, see OpticksRun OKG4Mgr") ;
+
+
+   m_desc.add_options()
        ("nointerpol",  "inhibit interpolation in cfg4/tests/CInterpolationTest for identity check") ;
 
    m_desc.add_options()

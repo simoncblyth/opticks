@@ -24,6 +24,9 @@ class NConfigurable ;
 #include "PLOG.hh"
 #include "OKG4_BODY.hh"
 
+const plog::Severity OKG4Mgr::LEVEL = PLOG::EnvLevel("OKG4Mgr", "DEBUG"); 
+
+
 int OKG4Mgr::rc() const 
 {
     return m_ok->rc();
@@ -77,10 +80,11 @@ OKG4Mgr::OKG4Mgr(int argc, char** argv)
     m_run(m_ok->getRun()),
     m_hub(new OpticksHub(m_ok)),            // configure, loadGeometry and setupInputGensteps immediately
     m_load(m_ok->isLoad()),
+    m_nog4propagate(m_ok->isNoG4Propagate()),
     m_idx(new OpticksIdx(m_hub)),
     m_num_event(m_ok->getMultiEvent()),     // huh : m_gen should be in change of the number of events ? 
     m_gen(m_hub->getGen()),
-    m_g4(m_load ? NULL : new CG4(m_hub)),   // configure and initialize immediately 
+    m_g4(        m_load ? NULL : new CG4(m_hub)),   // configure and initialize immediately 
     m_generator( m_load ? NULL : m_g4->getGenerator()),
     m_viz(m_ok->isCompute() ? NULL : new OpticksViz(m_hub, m_idx, true)),    // true: load/create Bookmarks, setup shaders, upload geometry immediately 
     m_propagator(new OKPropagator(m_hub, m_idx, m_viz))
@@ -175,13 +179,15 @@ because this has G4 available, so gensteps can come from the
 horses mouth.
 
 
+TOFIX: when using --nog4propagate it should not be necessary to
+instanciate m_g4 and m_generator : but the machinery forces to do so
+
 
 **/
 
 void OKG4Mgr::propagate_()
 { 
     bool align = m_ok->isAlign();
-
 
     if(m_generator->hasGensteps())   // TORCH
     {
@@ -190,8 +196,9 @@ void OKG4Mgr::propagate_()
 
          if(align)
              m_propagator->propagate();
-          
-         m_g4->propagate();
+
+         if(!m_nog4propagate) 
+             m_g4->propagate();
     }
     else   // no-gensteps : G4GUN or PRIMARYSOURCE
     {
@@ -209,7 +216,6 @@ void OKG4Mgr::propagate_()
 
 
 
-
 void OKG4Mgr::visualize()
 {
     if(m_viz) m_viz->visualize();
@@ -217,19 +223,11 @@ void OKG4Mgr::visualize()
 
 void OKG4Mgr::cleanup()
 {
-#ifdef OPTICKS_OPTIX
     m_propagator->cleanup();
-#endif
     m_hub->cleanup();
     if(m_viz) m_viz->cleanup();
     m_ok->cleanup(); 
-    m_g4->cleanup(); 
+    if(m_g4) m_g4->cleanup(); 
 }
 
-
-/**
-   
-    tpmt-- --okg4 --live --compute --debugger
-
-**/
 

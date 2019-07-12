@@ -23,10 +23,12 @@ class CGenerator ;
 class OpticksViz ; 
 class OKPropagator ; 
 
+#include "plog/Severity.h"
 #include "OKG4_API_EXPORT.hh"
 #include "OKG4_HEAD.hh"
 
 class OKG4_API OKG4Mgr {
+       static const plog::Severity LEVEL ; 
    public:
        OKG4Mgr(int argc, char** argv);
        virtual ~OKG4Mgr();
@@ -47,6 +49,7 @@ class OKG4_API OKG4Mgr {
        OpticksRun*    m_run ; 
        OpticksHub*    m_hub ; 
        bool           m_load ; 
+       bool           m_nog4propagate ; 
        OpticksIdx*    m_idx ; 
        int            m_num_event ; 
        OpticksGen*    m_gen ; 

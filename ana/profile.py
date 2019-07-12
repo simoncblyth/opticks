@@ -9,46 +9,59 @@ import os, sys, logging, numpy as np
 log = logging.getLogger(__name__)
 
 from opticks.ana.nload import np_load
-from opticks.ana.nload import tagdir_, stamp_
+from opticks.ana.nload import tagdir_, stmp_, time_
 
 
-class Profile(object):
-    def __init__(self, ok):
-        self.tagdir = ok.tagdir 
-        self.ok = ok 
+
+class Prof(object):
+    def __init__(self, ok, name ):
+        self.ok = ok
+        self.name = name
+        self.fmt = "%Y%m%d-%H%M"
+
+        g4 = name.find("g4") > -1      
+
+        self.tagdir = ok.ntagdir if g4 else ok.tagdir
         self.sli = slice(0,10)
-        self.init()
+        self.loadProfile() 
+        self.loadAcc()
+
+        if g4:  
+            g4r, g40, g41 = self.deltaT("CRunAction::BeginOfRunAction","CRunAction::EndOfRunAction")   ## CG4::propagate includes significant initialization
+            stt = self.setupTrancheTime()
+            tim = g4r - stt 
+            idx = [g40, g41]  
+        else:
+            okp, ok0, ok1 = self.deltaT("OPropagator::launch")   
+            tim = okp
+            idx = [ok0, ok1]  
+        pass
+        self.tim = tim
+        self.idx = idx
+        self.sli = slice(idx[0],idx[1]+1)
+
+
+    def pfmt(self, path1, path2, path3=None):
+        t_path1 = time_(path1)
+        t_path2 = time_(path2)
+
+        if path3 is not None:
+            t_path3 = time_(path3)
+            adt3 = abs(t_path1 - t_path3)
+            assert adt3.seconds < 1  
+        pass 
+
+        adt = abs(t_path1 - t_path2)
+        assert adt.seconds < 1  
+        return "  %-90s  %s " % ( path1, t_path1.strftime(self.fmt) )
 
     def path(self, sfx=""):
         return os.path.join( self.tagdir, "OpticksProfile%s.npy" % sfx )   # quads 
-        
-    def init(self):
-        self.loadProfile() 
-        self.loadAcc() 
-
-        okp, ok0, ok1 = self.deltaT("OPropagator::launch")   
-        g4r, g40, g41 = self.deltaT("CRunAction::BeginOfRunAction","CRunAction::EndOfRunAction")   ## CG4::propagate includes significant initialization
-        stt = self.setupTrancheTime()
-
-        g4p = g4r - stt 
-        g4p_okp = -1.0 if okp == 0. else g4p/okp 
-
-        self.okp = okp
-        self.g4r = g4r
-        self.g4p = g4p 
-        self.stt = stt
-        self.g4p_okp = g4p_okp
-
-        self.oki = [ok0, ok1]
-        self.g4i = [g40, g41]
-
-
 
     def loadProfile(self):
         path = self.path("")
         lpath = self.path("Labels")  
-        print("path:%s stamp:%s " % (path, stamp_(path) ))
-        print("lpath:%s stamp:%s " % (lpath, stamp_(lpath) ))
+        self.prfmt = self.pfmt(path, lpath)
 
         a = np.load(path)
         assert a.ndim == 2
@@ -72,11 +85,10 @@ class Profile(object):
 
 
     def loadAcc(self):
+        path = self.path("")
         acpath = self.path("Acc")
         lacpath = self.path("AccLabels")
-
-        print("acpath:%s stamp:%s " % (acpath, stamp_(acpath) ))
-        print("lacpath:%s stamp:%s " % (lacpath, stamp_(lacpath) ))
+        self.acfmt = self.pfmt(acpath, lacpath, path)
 
         ac = np.load(acpath)
         assert ac.ndim == 2
@@ -98,7 +110,6 @@ class Profile(object):
         assert len(stt_acc) == 1 or len(stt_acc) == 0 
         stt = stt_acc[0,1] if len(stt_acc) == 1 else 0.  
         return stt 
-
 
     def delta(self, arg0, arg1=None ):
         """
@@ -125,29 +136,54 @@ class Profile(object):
         dv = v[p1]-v[p0]
         dt = t[p1]-t[p0]
 
-        log.info(" l0:%30s l1:%30s p0:%3d p1:%3d  (v0:%10.1f v1:%10.1f dv:%10.1f )  ( t0:%10.4f t1:%10.4f dt:%10.4f )  " % ( l0, l1, p0, p1, v[p0],v[p1], dv, t[p0],t[p1], dt  )) 
+        log.debug(" l0:%30s l1:%30s p0:%3d p1:%3d  (v0:%10.1f v1:%10.1f dv:%10.1f )  ( t0:%10.4f t1:%10.4f dt:%10.4f )  " % ( l0, l1, p0, p1, v[p0],v[p1], dv, t[p0],t[p1], dt  )) 
         return dt, dv, p0, p1  
-
 
     def deltaT(self, arg0, arg1=None):
         dt, dv, p0, p1 = self.delta(arg0, arg1)
         return dt, p0, p1 
-   
-    def brief(self): 
-        return "      okp %10.4f     g4r %-10.4f stt %-10.4f g4p %-10.4f        g4p/okp %-10.4f    " % (self.okp, self.g4r, self.stt, self.g4p, self.g4p_okp )   
-
-    def labels(self):
-        return " %3s : %50s : %10s %10s %10s %10s   " % ( "idx", "label", "t", "v", "dt", "dv" )
 
     def line(self, i):
         return " %3d : %50s : %10.4f %10.4f %10.4f %10.4f   " % ( i, self.l[i], self.t[i], self.v[i], self.dt[i], self.dv[i] )
 
+    def labels(self):
+        return " %3s : %50s : %10s %10s %10s %10s   " % ( "idx", "label", "t", "v", "dt", "dv" )
+
+    def bodylines(self):
+        nli = self.sli.stop - self.sli.start
+        if nli < 10:
+            ll = map(lambda i:self.line(i), np.arange(self.sli.start, self.sli.stop)) 
+        else:
+            ll = map(lambda i:self.line(i), np.arange(self.sli.start, self.sli.start+5) ) 
+            ll += [" ..."]
+            ll += map(lambda i:self.line(i), np.arange(self.sli.stop - 5, self.sli.stop) )   
+        pass
+        return ll
+
+    def lines(self):
+        return [self.name, self.prfmt, self.acfmt, "%r" % self.sli, self.labels()] + self.bodylines() + [self.labels()] 
+
     def __repr__(self):
-        return "\n".join(["ab.pro",  self.brief(), "%r" % self.sli, self.labels()] + map(lambda i:self.line(i), np.arange(len(self.l))[self.sli]) + [self.labels()]  )
+        return "\n".join(self.lines())
 
     def __getitem__(self, sli):
         self.sli = sli
         return self 
+
+
+
+class Profile(object):
+    def __init__(self, ok):
+        self.okp = Prof(ok, "ab.pro.okp" ) 
+        self.g4p = Prof(ok, "ab.pro.g4p" ) 
+        g4p_okp = self.g4p.tim/self.okp.tim if self.okp.tim > 0 else -1  
+        self.g4p_okp = g4p_okp
+  
+    def brief(self): 
+        return "      okp %-10.4f     g4p %-10.4f      g4p/okp %-10.4f    " % (self.okp.tim, self.g4p.tim, self.g4p_okp )   
+
+    def __repr__(self):
+        return "\n".join(["ab.pro", self.brief()] + self.okp.lines() + self.g4p.lines() )
 
 
 
@@ -156,23 +192,22 @@ if __name__ == '__main__':
     import matplotlib.pyplot as plt
 
     ok = opticks_main(doc=__doc__)  
-    log.info(ok.brief)
+    log.debug(ok.brief)
 
     op = Profile(ok) 
     print(op)
 
+    okp = op.okp
+    g4p = op.g4p
 
-    a = op.a  
-    l = op.l 
+    plt.plot( okp.t, okp.v, 'o' )
+    plt.plot( g4p.t, g4p.v, 'o' )
 
-    plt.plot( op.t, op.v, 'o' )
+    plt.axvline( okp.t[okp.idx[0]], c="b" )
+    plt.axvline( okp.t[okp.idx[1]], c="b" )
 
-    plt.axvline( op.t[op.oki[0]], c="b" )
-    plt.axvline( op.t[op.oki[1]], c="b" )
-
-    plt.axvline( op.t[op.g4i[0]], c="r" )
-    plt.axvline( op.t[op.g4i[1]], c="r" )
-
+    plt.axvline( g4p.t[g4p.idx[0]], c="r" )
+    plt.axvline( g4p.t[g4p.idx[1]], c="r" )
 
     plt.ion()
     plt.show()

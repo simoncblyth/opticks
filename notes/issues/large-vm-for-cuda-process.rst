@@ -7,6 +7,71 @@ Context
 * :doc:`plugging-cfg4-leaks`
 
 
+
+
+REOPEN : 10M run has VM plateau around 25G
+---------------------------------------------
+
+::
+
+
+    TBOOLEAN_TAG=10  ts box --generateoverride -10  --rngmax 10
+
+    ip(){ local py=${1:-dummy.py} ; ipython --pdb -i -- $(which $py)  ${@:2} ; }
+
+    ipython --pdb -i -- $(which profile.py) --tag 10
+
+
+ip profile.py --tag 10::
+
+    In [2]: op[47:48+1]
+    Out[2]: 
+    ab.pro
+          okp     0.4141     g4r 1288.3672  stt 227.8963   g4p 1060.4709         g4p/okp 2561.1375     
+    slice(47, 49, None)
+     idx :                                              label :          t          v         dt         dv   
+      47 :                               _OPropagator::launch :    21.1836 18377.0039     0.0000     0.0000   
+      48 :                                OPropagator::launch :    21.5977 18606.3809     0.4141   229.3770   
+     idx :                                              label :          t          v         dt         dv   
+
+
+    In [3]: op[70:4271+1]
+    Out[3]: 
+    ab.pro
+          okp     0.4141     g4r 1288.3672  stt 227.8963   g4p 1060.4709         g4p/okp 2561.1375     
+    slice(70, 4272, None)
+     idx :                                              label :          t          v         dt         dv   
+      70 :                       CRunAction::BeginOfRunAction :    32.0391 24535.2051     1.3555     0.0000   
+      71 :         _CInputPhotonSource::GeneratePrimaryVertex :    32.0391 24535.2051     0.0000     0.0000   
+      72 :          CInputPhotonSource::GeneratePrimaryVertex :    32.0508 24535.2051     0.0117     0.0000   
+      73 :                   CEventAction::BeginOfEventAction :    32.0547 24535.2051     0.0039     0.0000   
+      74 :                       _CRandomEngine::setupTranche :    32.0625 24535.2051     0.0078     0.0000   
+      75 :                        CRandomEngine::setupTranche :    32.2422 24600.7402     0.1797    65.5352   
+
+    n [4]: op[4271-10:4271+1]
+    Out[4]: 
+    ab.pro
+          okp     0.4141     g4r 1288.3672  stt 227.8963   g4p 1060.4709         g4p/okp 2561.1375     
+    slice(4261, 4272, None)
+     idx :                                              label :          t          v         dt         dv   
+     4261 :                   CEventAction::BeginOfEventAction :  1317.2734 25674.1562     0.0000     0.0000   
+     4262 :                     CEventAction::EndOfEventAction :  1318.3047 25674.1562     1.0312     0.0000   
+     4263 :         _CInputPhotonSource::GeneratePrimaryVertex :  1318.3047 25674.1562     0.0000     0.0000   
+     4264 :          CInputPhotonSource::GeneratePrimaryVertex :  1318.3164 25674.1562     0.0117     0.0000   
+     4265 :                   CEventAction::BeginOfEventAction :  1318.3164 25674.1562     0.0000     0.0000   
+     4266 :                     CEventAction::EndOfEventAction :  1319.3555 25674.1562     1.0391     0.0000   
+     4267 :         _CInputPhotonSource::GeneratePrimaryVertex :  1319.3594 25674.1562     0.0039     0.0000   
+     4268 :          CInputPhotonSource::GeneratePrimaryVertex :  1319.3672 25674.1562     0.0078     0.0000   
+     4269 :                   CEventAction::BeginOfEventAction :  1319.3672 25674.1562     0.0000     0.0000   
+     4270 :                     CEventAction::EndOfEventAction :  1320.4023 25674.1562     1.0352     0.0000   
+     4271 :                         CRunAction::EndOfRunAction :  1320.4062 25674.1562     0.0039     0.0000   
+     idx :                                              label :          t          v         dt         dv   
+
+
+
+
+
+
 CONCLUSION : ITS A NON-ISSUE
 ------------------------------
 

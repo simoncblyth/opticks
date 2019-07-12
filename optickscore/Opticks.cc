@@ -756,6 +756,12 @@ bool Opticks::isNoSavePPM() const  // --nosaveppm
 {
     return m_cfg->hasOpt("nosaveppm") ;
 }
+bool Opticks::isNoG4Propagate() const  // --nog4propagate
+{
+    return m_cfg->hasOpt("nog4propagate") ;
+}
+
+
 bool Opticks::canDeleteGeoCache() const   // --deletegeocache
 {
     return m_cfg->hasOpt("deletegeocache") ;
