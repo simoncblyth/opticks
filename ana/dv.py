@@ -95,7 +95,7 @@ from opticks.ana.log import fatal_, error_, warning_, info_, debug_
 from opticks.ana.log import underline_, blink_ 
 log = logging.getLogger(__name__)
 
-
+assert 0, "dont use this : use qdv.py : its much faster "
 
 class Level(object):
     FATAL = 20
@@ -268,8 +268,8 @@ class DvTab(object):
 
     def __init__(self, name, seqtab, ab, skips="SC AB RE", selbase=None ):
         """
-        :param name:
-        :param seqtab:
+        :param name: ox_dv, rpost_dv, rpol_dv 
+        :param seqtab: ab.ahis SeqTable
         :param ab:
         :param skips: 
         :param selbase: either None or "ALIGN" 
@@ -283,6 +283,7 @@ class DvTab(object):
         self.skips = skips.split()
         #self.sli = slice(None)
         self.sli = slice(0,10)
+        self.selbase = selbase
 
         labels = self.seqtab.labels       # eg list of length 17 : ['TO BT BT SA', 'TO BR SA', ... ]
 
@@ -290,11 +291,28 @@ class DvTab(object):
         assert len(labels) == len(cu)
         nsel = len(labels)
 
+        self.labels = labels
+        self.cu = cu 
+        self.nsel = nsel 
+
         ab.aselhis = selbase
 
+        self.dvs = self.make_dvs_slowly()
+
+        self.findmax()
+        log.info("] %s " % name )
+
+
+    def make_dvs_slowly(self):
+        """
+        Changing selection for every line like this 
+        is too slow for more than 100k photons
+        """
+        cu = self.cu
+        ab = self.ab 
         dvs = []
-        for i in range(nsel)[self.sli]:
-            sel = labels[i]
+        for i in range(self.nsel)[self.sli]:
+            sel = self.labels[i]
 
             if self.is_skip(sel):
                 continue
@@ -315,12 +333,11 @@ class DvTab(object):
                 dvs.append(dv)
             pass
 
-            ab.aselhis = selbase
-
+            ab.aselhis = self.selbase
         pass
-        self.dvs = dvs 
-        self.findmax()
-        log.info("] %s " % name )
+        return dvs
+
+
 
     def _get_dvmax(self): 
         """

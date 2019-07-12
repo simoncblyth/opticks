@@ -1,5 +1,5 @@
-py-analysis-too-slow-for-big-events
-=======================================
+py-analysis-too-slow-for-big-events  FIXED 
+==================================================
 
 Context
 ----------
@@ -15,6 +15,98 @@ Reproduce
 
     ts box --generateoverride -1    # 1M
     ta box
+
+
+
+FIXED : by rethinking how to do deviation checking with large numbers of photons
+-------------------------------------------------------------------------------------
+
+* fix replaces ana/dv.py with ana/qdv.py 
+
+* Looping over single line selections just to give the same shape (number
+  of record points) is too slow once going beyond 100k photons. 
+
+* So instead invert loop order, first calculate the deviations for 
+  all photons using a simple subtraction.  
+  The empty record points just give zero, so they cause no problem.
+
+* Then aggregate again the per photon max deviations into per history max deviations
+  for presentation.    
+
+
+::
+
+    In [8]: dv = np.abs(a.rposta - b.rposta)    ## could also split pos and t at this juncture
+
+    In [16]: dv.shape
+    Out[16]: (100000, 10, 4)
+
+    In [17]: dv.max(0)      ## collapse dimension 0, the photons    
+    Out[17]: 
+    A()sliced
+    A([[0.0138, 0.0138, 0.    , 0.    ],
+       [0.0138, 0.0138, 0.    , 0.    ],
+       [0.0138, 0.0138, 0.    , 0.    ],
+       [0.0138, 0.0138, 0.    , 0.    ],
+       [0.    , 0.0138, 0.    , 0.    ],
+       [0.    , 0.    , 0.    , 0.    ],
+       [0.    , 0.    , 0.    , 0.    ],
+       [0.    , 0.    , 0.    , 0.0003],
+       [0.    , 0.    , 0.0138, 0.    ],
+       [0.    , 0.    , 0.    , 0.    ]])
+
+
+    ## this is fine when agreeing, but normally start with disagreement
+    ## and need to chase photons
+
+    In [24]: dv.max(axis=(1,2)).shape     ## collapse dimensions 1,2 ie aggregate over all rpost for single photons
+    Out[24]: (100000,)
+
+    In [25]: dv.max(axis=(1,2)).max()
+    Out[25]: 
+    A(0.0138)
+
+    In [27]: np.unique(dv.max(axis=(1,2)))
+    Out[27]: 
+    A()sliced
+    A([0.    , 0.0003, 0.0138, 0.0138])
+
+
+    In [6]: a.phosel
+    Out[6]: 
+    A([1, 1, 2, ..., 1, 1, 1], dtype=uint8)
+
+    In [7]: a.phosel.shape
+    Out[7]: (100000,)
+
+    In [8]: np.where(a.phosel == 1)
+    Out[8]: (array([    0,     1,     3, ..., 99997, 99998, 99999]),)
+
+    In [9]: np.where(a.phosel == 1)[0].shape
+    Out[9]: (87782,)
+
+
+
+
+Huh::
+
+    In [12]: np.where( a.phosel != b.phosel )
+    Out[12]: (array([  595,  1230,  9041, 14510, 18921, 25113, 30272, 45629, 58189, 58609, 64663, 65850, 69653, 76467, 77962, 90322, 92353, 97887]),)
+
+    In [13]: np.where( a.seqhis != b.seqhis )
+    Out[13]: (array([], dtype=int64),)
+
+Ahhh yes, the category orders will not be the same between events in the category tail.  Hence it
+is better to use the absolute seqhis history approach.
+
+
+::
+
+    In [26]: np.all( np.where( a.phosel == 2)[0] == np.where( a.seqhis == 2237)[0] )
+    Out[26]: True
+
+    In [27]: np.all( np.where( a.phosel == 1)[0] == np.where( a.seqhis == 36045)[0] )
+    Out[27]: True
 
 
 

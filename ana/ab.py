@@ -14,7 +14,8 @@ from opticks.ana.histype import HisType
 from opticks.ana.mattype import MatType
 from opticks.ana.evt import Evt
 from opticks.ana.abstat import ABStat
-from opticks.ana.dv import Dv, DvTab
+#from opticks.ana.dv import Dv, DvTab
+from opticks.ana.qdv import QDV, QDVTab
 from opticks.ana.make_rst_table import recarray_as_rst
 from opticks.ana.metadata import CompareMetadata
 from opticks.ana.profile import Profile
@@ -56,13 +57,13 @@ class RC(object):
 
     def __init__(self, ab):
         rc = {}
-        log.info("[")
+        log.debug("[")
         rc["rpost_dv"] = ab.rpost_dv.RC 
         rc["rpol_dv"] = ab.rpol_dv.RC 
         rc["ox_dv"] = ab.ox_dv.RC 
         assert max(rc.values()) <= 1 
         irc = rc["rpost_dv"] << self.offset["rpost_dv"] | rc["rpol_dv"] << self.offset["rpol_dv"] | rc["ox_dv"] << self.offset["ox_dv"]
-        log.info("]")
+        log.debug("]")
         self.rc = irc 
 
     def __repr__(self):
@@ -170,7 +171,7 @@ class AB(object):
         log.debug("]")
 
     def __init__(self, ok):
-        log.info("[")
+        log.debug("[")
         self.ok = ok
         self.histype = HisType()
         self.tabs = []
@@ -183,7 +184,7 @@ class AB(object):
         self.compare()
         self.init_point()
         self.stream = sys.stderr
-        log.info("]")
+        log.debug("]")
 
     def load(self):
         """
@@ -265,13 +266,13 @@ class AB(object):
         return cfm 
 
     def check_alignment(self):
-        log.info("[")
+        log.debug("[")
         mal = Maligned(self)
-        log.info("]")
+        log.debug("]")
         return mal 
         
     def compare(self):
-        log.info("[")
+        log.debug("[")
 
         self.ahis = self._get_cf("all_seqhis_ana", "ab.ahis")
         self.amat = self._get_cf("all_seqmat_ana", "ab.amat")
@@ -281,13 +282,13 @@ class AB(object):
 
         self.rc = RC(self) 
 
-        log.info("]")
+        log.debug("]")
 
 
     def init_point(self):
-        log.info("[")
+        log.debug("[")
         self.point = self.make_point()
-        log.info("]")
+        log.debug("]")
 
     def point_dtype(self):
         dtype=[
@@ -413,17 +414,26 @@ class AB(object):
         return c_tab 
 
 
+
+    
+
+
+
     def _make_dv(self, ana):
-        log.info("[ %s " % ana )
+        """
+        :param ana: ox_dv, rpost_dv, rpol_dv
+        """  
+        log.debug("[ %s " % ana )
         we = self.warn_empty 
         self.warn_empty = False
         seqtab = self.ahis
 
-        dv_tab = DvTab(ana, seqtab, self, skips=self.dvskips, selbase="ALIGN" ) 
+        #dv_tab = DvTab(ana, seqtab, self, skips=self.dvskips, selbase="ALIGN" ) 
+        dv_tab = QDVTab(ana, self  ) 
         self.dvtabs.append(dv_tab)
 
         self.warn_empty = we
-        log.info("] %s " % ana )
+        log.debug("] %s " % ana )
         return dv_tab 
 
     def _get_dv(self, ana):
@@ -493,7 +503,7 @@ class AB(object):
         thus all AB comparison tables are marked dirty, causing 
         them to be recreated at next access.
         """
-        log.info("[ %s " % shortname ) 
+        log.debug("[ %s " % shortname ) 
         tabname = self.tabname(ana)
         tab = getattr(self, tabname, None)
         if tab is None:
@@ -502,7 +512,7 @@ class AB(object):
             tab = self._make_cf(ana, shortname) 
         else:
             pass 
-        log.info("] %s " % shortname ) 
+        log.debug("] %s " % shortname ) 
         return tab
 
     def _get_his(self):
@@ -957,6 +967,13 @@ class AB(object):
         pass
         return clabels
     clabels = property(_get_clabels)
+
+    def _get_rposta_dv(self):
+        """
+        absolute a.rposta - b.rposta covering entire record array 
+        """
+        return np.abs( self.a.rposta - self.b.rposta ) 
+    rposta_dv = property(_get_rposta_dv) 
 
     def rpost(self):
         """

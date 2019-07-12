@@ -231,6 +231,7 @@ class Evt(object):
         if rec:
             self.init_records()
             self.init_sequence()
+            self.init_index()
             self.init_npoint()
             self.init_source()
 
@@ -552,11 +553,7 @@ class Evt(object):
         return SeqList( self.seqmat, self.mattype, slice(0,50) )
 
 
-    
-
-
-
-
+   
     def init_sequence(self):
         """
         Sequence values seqhis and seqmat for each photon::
@@ -634,6 +631,135 @@ class Evt(object):
         pass
 
         log.debug("init_sequence DONE")
+
+
+    def init_index(self):
+        """
+        Sequence indices for each photon::
+ 
+            In [2]: a.ps.shape
+            Out[2]: (100, 1, 4)
+
+            In [1]: a.ps
+            Out[1]: 
+            A([[[ 1,  1,  0,  0]],
+               [[ 1,  1,  0,  0]],
+               [[ 3,  3,  0,  0]],
+               [[ 1,  1,  0,  0]],
+
+            In [6]: a.rs.shape      ## same information as a.ps duped by maxrec for record access
+            Out[6]: (100, 10, 1, 4)
+
+
+         The rs and ps recsel and phosel indices have fallen into disuse because its easy to derive 
+         them from seqhis and seqmat. But with bigger photon counts it makes more sense to 
+         use them again:: 
+ 
+            In [9]: np.unique(a.ps[:,0,0])
+            Out[9]: 
+            A()sliced
+            A([ 1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27], dtype=uint8)
+
+            In [10]: np.unique(a.seqhis)
+            Out[10]: 
+            A()sliced
+            A([        1229,         2157,         2237,        19405,        36045,       310221,       552141,       575181,       576461,       576621,      8833997,      9137357,      9202637,      9223117,
+                    9223277,      9225917,    147549133,    147568333,    147569613,    147569773,    147572413,    147614925,   2361158861,  37777815245,  37777861837, 806308506573, 806308525773], dtype=uint64)
+
+            In [11]: np.unique(a.seqhis).shape
+            Out[11]: (27,)
+
+
+            In [21]: np.all( a.rs[:,0,0,0] == a.ps[:,0,0] )
+            Out[21]: 
+            A(True)
+
+
+        Actually a better reason for the disuse of phosel recsel is that they are not so useful for event comparison
+        because the indices will not match in the category tail, explaining the below.
+
+        * hence it is better to use the absolute seqhis history based approach.
+
+        ::
+
+            In [12]: np.where( a.phosel != b.phosel )
+            Out[12]: (array([  595,  1230,  9041, 14510, 18921, 25113, 30272, 45629, 58189, 58609, 64663, 65850, 69653, 76467, 77962, 90322, 92353, 97887]),)
+
+            In [13]: np.where( a.seqhis != b.seqhis )
+            Out[13]: (array([], dtype=int64),)
+
+        """
+        log.debug("init_index START")
+
+        ps = self.aload("ps", optional=True) 
+        rs = self.aload("rs", optional=True) 
+
+        if not ps is None and not ps.missing:
+            ups = len(np.unique(ps))
+        else:
+            ups = -1 
+        pass
+
+        if not rs is None and not rs.missing :
+            urs = len(np.unique(rs))
+        else: 
+            urs = -1
+        pass
+
+        if ups <= 1 and not ps.missing:
+            log.warning("init_index %s finds too few (ps)phosel uniques : %s" % (self.label,ups) ) 
+        if urs <= 1 and not rs.missing:
+            log.warning("init_index %s finds too few (rs)recsel uniques : %s" % (self.label,urs) ) 
+
+        self.ps = ps
+        self.rs = rs 
+
+        if not ps is None:
+            ps.desc = "(photons) phosel sequence frequency index lookups (uniques %d)"  % ups
+            self.desc['ps'] = ps.desc
+
+        if not rs is None:
+            rs.desc = "(records) RAW recsel sequence frequency index lookups (uniques %d)"  % urs 
+            self.desc['rs'] = rs.desc
+
+        pass
+        log.debug("init_index DONE")
+
+    def _get_phosel(self):
+        return self.ps[:,0,0] 
+    phosel = property(_get_phosel)
+
+    def _get_recsel(self):
+        """matches phosel by construction""" 
+        return self.rs[:,0,0,0] 
+    recsel = property(_get_recsel)
+
+
+
+    def init_rsr(self):
+        """
+        No needed (since years) as reshaped rs at source ? 
+        """ 
+        rs = self.rs
+        if not rs is None and not rs.missing:
+            rsr = rs.reshape(-1, self.maxrec, 1, 4)        
+        else: 
+            rsr = None
+        pass
+
+        if not rsr is None:
+            ursr = len(np.unique(rsr))
+        else:
+            ursr = -1
+        pass
+        if ursr <= 1 and not rs.missing:
+            log.warning("init_rsr %s finds too few (rsr)reshaped-recsel uniques : %s" % (self.label,ursr) ) 
+        pass  
+        if not rsr is None:
+            rsr.desc = "(records) RESHAPED recsel sequence frequency index lookups (uniques %d)"  % ursr 
+            self.desc['rsr'] = rsr.desc
+        pass  
+        self.rsr = rsr 
 
 
     def init_npoint(self):
@@ -767,6 +893,9 @@ class Evt(object):
 
 
     def _get_label0(self):
+        """
+        hmm _labels is ["ALIGN"] yielding lab0 "ALIGN"
+        """
         nlab = len(self._labels) 
         if nlab == 1:
             lab0 = self._labels[0]
@@ -809,6 +938,8 @@ class Evt(object):
 
         See init_npoint for a much more efficient way of doing this for all 
         photons by counting occupied nibbles in seqhis
+
+        Hmm label0 ALIGN, yields nrec 1
         """ 
         lab0 = self.label0
         if lab0 is None:
@@ -1156,75 +1287,7 @@ class Evt(object):
         """
         return "--dindex=%s" % ",".join(map(str,self.dindex_(label, limit, reverse))) 
 
-    def init_index(self, tag, src, det, dbg):
-        """
-        Sequence indices for each photon::
- 
-            In [2]: a.ps.shape
-            Out[2]: (100, 1, 4)
 
-            In [1]: a.ps
-            Out[1]: 
-            A([[[ 1,  1,  0,  0]],
-               [[ 1,  1,  0,  0]],
-               [[ 3,  3,  0,  0]],
-               [[ 1,  1,  0,  0]],
-
-            In [6]: a.rs.shape      ## same information as a.ps duped by maxrec for record access
-            Out[6]: (100, 10, 1, 4)
-
-        """
-        log.info("init_index START")
-        ps = A.load_("ps",src,tag,det,dbg, optional=True)
-
-        if not ps is None and not ps.missing:
-            ups = len(np.unique(ps))
-        else:
-            ups = -1 
-
-        rs = A.load_("rs",src,tag,det,dbg, optional=True)
-        if not rs is None and not rs.missing :
-            urs = len(np.unique(rs))
-        else: 
-            urs = -1
-
-        if not rs is None and not rs.missing:
-            rsr = rs.reshape(-1, self.maxrec, 1, 4)        
-        else: 
-            rsr = None
-
-        if not rsr is None:
-            ursr = len(np.unique(rsr))
-        else:
-            ursr = -1
-
-
-        if ups <= 1 and not ps.missing:
-            log.warning("init_index %s finds too few (ps)phosel uniques : %s" % (self.label,ups) ) 
-        if urs <= 1 and not rs.missing:
-            log.warning("init_index %s finds too few (rs)recsel uniques : %s" % (self.label,urs) ) 
-        if ursr <= 1 and not rs.missing:
-            log.warning("init_index %s finds too few (rsr)reshaped-recsel uniques : %s" % (self.label,ursr) ) 
-
-
-        self.ps = ps
-        self.rs = rs 
-        self.rsr = rsr 
-
-        if not ps is None:
-            ps.desc = "(photons) phosel sequence frequency index lookups (uniques %d)"  % ups
-            self.desc['ps'] = ps.desc
-
-        if not rs is None:
-            rs.desc = "(records) RAW recsel sequence frequency index lookups (uniques %d)"  % urs 
-            self.desc['rs'] = rs.desc
-
-        if not rsr is None:
-            rsr.desc = "(records) RESHAPED recsel sequence frequency index lookups (uniques %d)"  % ursr 
-            self.desc['rsr'] = rsr.desc
-        pass
-
-        log.info("init_index DONE")
 
  
     x = property(lambda self:self.ox[:,0,0])
@@ -1446,6 +1509,11 @@ class Evt(object):
     def rpol_(self, fr):
         return self.rpolw_(fr)[:,:3]
 
+    def _get_rpola(self):
+        return self.rpol_(slice(None))
+    rpola = property(_get_rpola)
+
+
     def rpolw_(self, recs):
         """
         Unlike rpol_ this works with irec slices, 
@@ -1553,6 +1621,9 @@ class Evt(object):
         return self.recflags(recs) 
 
     def post_center_extent(self):
+        """
+        :return two quads: eg  (array([0., 0., 0., 0.]), array([451.  , 451.  , 451.  ,   9.02]))
+        """ 
         p_center = self.fdom[0,0,:W] 
         p_extent = self.fdom[0,0,W] 
 
@@ -1588,6 +1659,9 @@ class Evt(object):
         return pb 
 
     def rpost(self):
+        """
+        :return record sliced position time array:  sliced by self.recs eg slice(0,1,None) using self.rpost_   
+        """
         recs = self.recs
         if recs is None:
             log.warning("this only works on evt with single line seqs")
@@ -1618,6 +1692,9 @@ class Evt(object):
 
     def rpost_(self, recs):
         """
+        :param recs: record index 0 to 9 (or 0 to 15 for higher bouncemax) or slice therof  
+
+
         NB recs can be a slice, eg slice(0,5) for 1st 5 step records of each photon
 
         Record compression can be regarded as a very early choice of binning, 
@@ -1634,9 +1711,16 @@ class Evt(object):
         domain of the compression, need to find that binning then throw
         away unused edge bins according to the plotted range. 
         """
-        center, extent = self.post_center_extent()
+        center, extent = self.post_center_extent()  # center and extent are quads 
         p = self.rx[:,recs,0].astype(np.float32)*extent/32767.0 + center 
         return p 
+
+    def _get_rposta(self):
+        """
+        all record array, using slice(None) with rpost_ 
+        """
+        return self.rpost_(slice(None))
+    rposta = property(_get_rposta) 
 
     def rposti(self, i):
         """
