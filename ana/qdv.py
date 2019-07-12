@@ -3,7 +3,14 @@
 qdv.py : photon deviation reporting
 ========================================
 
-Aiming to replace the slow dv.py with this much faster implementation
+This replaces the slow dv.py with a much faster implementation
+
+* https://bitbucket.org/simoncblyth/opticks/commits/d31f4e271ee34a7fe1bf68af3e07f90ceb54565e
+
+fixed slow deviation checking for large numbers of photons by loop inversion
+from select-then-deviate to deviate-then-select so only do the expensive
+deviation check once : replaces ana/dv.py with ana/qdv.py see
+notes/issues/py-analysis-too-slow-for-big-events.rst
 
 """
 import os, sys, logging, numpy as np

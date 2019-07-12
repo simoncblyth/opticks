@@ -57,13 +57,20 @@ class RC(object):
 
     def __init__(self, ab):
         rc = {}
-        log.debug("[")
-        rc["rpost_dv"] = ab.rpost_dv.RC 
+        log.info("[ rpost_dv ")
+        rc["rpost_dv"] = ab.rpost_dv.RC
+        log.info("]")
+        
+        log.info("[ rpol_dv ")
         rc["rpol_dv"] = ab.rpol_dv.RC 
+        log.info("]")
+
+        log.info("[ ox_dv ")
         rc["ox_dv"] = ab.ox_dv.RC 
+        log.info("]")
+
         assert max(rc.values()) <= 1 
         irc = rc["rpost_dv"] << self.offset["rpost_dv"] | rc["rpol_dv"] << self.offset["rpol_dv"] | rc["ox_dv"] << self.offset["ox_dv"]
-        log.debug("]")
         self.rc = irc 
 
     def __repr__(self):
@@ -188,9 +195,10 @@ class AB(object):
 
     def load(self):
         """
-        It takes aound 6s to load 1M full AB evt pair. So avoid needing to duplicate that.
+        It takes aound 4s on Precision Workstation to load 1M full AB evt pair. 
+        So avoid needing to duplicate that.
         """
-        log.debug("AB.load START smry %d " % self.ok.smry )
+        log.info("[ %s " % self.ok.smry )
         args = self.ok
  
         if args.utag is None:
@@ -217,7 +225,7 @@ class AB(object):
         self.sel = None
         self.irec = 0
         self.qwn = "X"
-        log.debug("AB.load DONE ")
+        log.info("] ")
 
     def __repr__(self):
         abn = "AB(%s,%s,%s)  %s %s " % (self.ok.tag, self.ok.src, self.ok.det, self.sel, self.irec )
@@ -272,7 +280,11 @@ class AB(object):
         return mal 
         
     def compare(self):
-        log.debug("[")
+        """
+        * Taking around 5s for 1M events, all in RC 
+        * prohis and promat are progressively masked tables, not enabled by default
+        """
+        log.info("[")
 
         self.ahis = self._get_cf("all_seqhis_ana", "ab.ahis")
         self.amat = self._get_cf("all_seqmat_ana", "ab.amat")
@@ -282,7 +294,7 @@ class AB(object):
 
         self.rc = RC(self) 
 
-        log.debug("]")
+        log.info("]")
 
 
     def init_point(self):

@@ -169,7 +169,7 @@ class Evt(object):
 
 
     def __init__(self, tag="1", src="natural", det="g4live", pfx=".", args=None, maxrec=10, rec=True, dbg=False, label=None, seqs=[], not_=False, nom="?", smry=False):
-        log.debug("%s.__init__ START " % nom)
+        log.info("[ %s " % nom)
         self.nom = nom
         self.smry = smry
         self._psel = None
@@ -245,7 +245,7 @@ class Evt(object):
             #self.init_index(tag, src, det, dbg)
         pass
         self.check_stamps()
-        log.debug("%s.__init__ DONE " % nom)
+        log.info("] %s " % nom)
 
 
     def init_types(self):
