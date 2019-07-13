@@ -3,6 +3,7 @@
 """
 import numpy as np
 import os, sys, re, logging, argparse, platform
+from opticks.ana.base import slice_, _slice
 from opticks.ana.env import opticks_environment
 from opticks.ana.OpticksQuery import OpticksQuery 
 from opticks.ana.nload import tagdir_
@@ -105,7 +106,8 @@ def opticks_args(**kwa):
     plot = kwa.get("plot", True)
     terse = kwa.get("terse", False)
     mat = kwa.get("mat", "GdDopedLS")
-    sli = kwa.get("sli", "::1")
+    msli = kwa.get("msli", "0:100k")   # 0:1M  mmap_mode slice for quick analysis
+    sli = kwa.get("sli", "::")
     sel = kwa.get("sel", "0:5:1")
     qwn = kwa.get("qwn", "XYZT,ABCW")
 
@@ -189,6 +191,7 @@ def opticks_args(**kwa):
     parser.add_argument(     "--mrc",  default=mrc, type=int, help="script return code resulting from missing event files. Default %(default)s "  )
     parser.add_argument(     "--mat",  default=mat, help="material name, used for optical property dumping/plotting. Default %(default)s"  )
     parser.add_argument(     "--sli",  default=sli, help="slice specification delimited by colon. Default %(default)s"  )
+    parser.add_argument(     "--msli",  default=msli, help="photon np.load mmap_mode slice specification delimited by colon. Default %(default)s"  )
     parser.add_argument(     "--sel",  default=sel, help="selection slice specification delimited by colon. Default %(default)s"  )
     parser.add_argument(     "--qwn",  default=qwn, help="Quantity by single char, pages delimited by comma eg XYZT,ABCR. Default %(default)s"  )
 
@@ -303,8 +306,10 @@ def opticks_args(**kwa):
     args.dbgmskmat = int(str(args.dbgmskmat),16) 
     args.figsize = map(float, args.figsize.split(","))
 
-    args.sli = slice(*map(lambda _:int(_) if len(_) > 0 else None,args.sli.split(":")))
-    args.sel = slice(*map(lambda _:int(_) if len(_) > 0 else None,args.sel.split(":")))
+
+    args.msli = slice_(args.msli)   # from string to slice 
+    args.sli = slice_(args.sli)
+    args.sel = slice_(args.sel)
 
     args.apmtpath = args.apmtpathtmpl % dict(apmtidx=str(args.apmtidx))
     log.debug("args.apmtpathtmpl %s args.apmtidx %d -> args.apmtpath %s " % ( args.apmtpathtmpl, args.apmtidx, args.apmtpath ) ) 

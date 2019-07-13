@@ -33,7 +33,7 @@ except ImportError:
 pass
 
 import numpy as np
-from opticks.ana.base import ini_
+from opticks.ana.base import ini_, _slice, slice_, Num
 
 
 def time_(path): 
@@ -214,7 +214,7 @@ def gspath_(typ, tag, det, gsbase=None):
 
 class A(np.ndarray):
     @classmethod
-    def load_(cls, stem, typ, tag, det="dayabay", pfx="source", dbg=False, optional=False):
+    def load_(cls, stem, typ, tag, det="dayabay", pfx="source", dbg=False, optional=False, msli=None):
         """
         :param stem: gs,ox,ht,rs,so,ph,fdom,idom
         :param typ: natural
@@ -223,6 +223,11 @@ class A(np.ndarray):
         :param pfx: source for 1st executable, the name of the executable for subsequent ones eg OKG4Test 
         :param dbg: 
         :param optional: 
+        :param msli: np.load mmap_mode slice, OR None for ordinary np.load   
+
+        When msli is specified the np.load is used in memory mapped readonly mode, mmap_mode="r", 
+        meaning that the full array is not loaded into memory until later when slicing 
+        specifies how much of the array should be loaded.
         """
         if dbg:
             print("stem:%s typ:%s tag:%s det:%s pfx:%s dbg:%s optional:%s" % (stem, typ, tag, det, pfx, dbg, optional))
@@ -237,17 +242,27 @@ class A(np.ndarray):
 
         a = None
         missing = False  
+        oshape = None
         
         if os.path.exists(path):
             log.debug("loading %s " % path )
             if dbg: 
                 os.system("ls -l %s " % path)
-            arr = np.load(path)
+            pass     
+            if msli is None:  
+                arr = np.load(path) 
+            else:
+                arr = np.load(path, mmap_mode="r")  
+                oshape = arr.shape        # 
+                arr = arr[msli]
+            pass
         else:
             if not optional: 
                 raise IOError("cannot load %s " % path)
+            pass 
             arr = np.zeros(())
             missing = True
+        pass
 
         a = arr.view(cls)
         a.path = path 
@@ -257,14 +272,19 @@ class A(np.ndarray):
         a.pfx = pfx
         a.stamp = stamp_(path)
         a.missing = missing
+        a.oshape = oshape
+        a.msli = msli  
 
         return a
+
+    def origshape(self):
+        return Num.String(self.oshape) if hasattr(self, 'oshape') else "-" 
 
     def __repr__(self):
         if hasattr(self, 'typ'):
             return "A(%s,%s,%s)%s\n%s" % (self.typ, self.tag, self.det, getattr(self,'desc','-'),np.ndarray.__repr__(self))
         pass
-        return "A()sliced\n%s" % (np.ndarray.__repr__(self))
+        return "%s" % (np.ndarray.__repr__(self))
  
     def derivative_path(self, postfix="track"):
         tag = "%s_%s" % (self.tag, postfix)
@@ -277,6 +297,7 @@ class A(np.ndarray):
         else:
             log.info("saving derivative of %s to %s " % (repr(self), path ))
             np.save( path, drv )    
+        pass
 
 
 

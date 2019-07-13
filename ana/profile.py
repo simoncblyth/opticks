@@ -144,10 +144,10 @@ class Prof(object):
         return dt, p0, p1 
 
     def line(self, i):
-        return " %3d : %50s : %10.4f %10.4f %10.4f %10.4f   " % ( i, self.l[i], self.t[i], self.v[i], self.dt[i], self.dv[i] )
+        return " %6d : %50s : %10.4f %10.4f %10.4f %10.4f   " % ( i, self.l[i], self.t[i], self.v[i], self.dt[i], self.dv[i] )
 
     def labels(self):
-        return " %3s : %50s : %10s %10s %10s %10s   " % ( "idx", "label", "t", "v", "dt", "dv" )
+        return " %6s : %50s : %10s %10s %10s %10s   " % ( "idx", "label", "t", "v", "dt", "dv" )
 
     def bodylines(self):
         nli = self.sli.stop - self.sli.start

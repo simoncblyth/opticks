@@ -42,6 +42,7 @@ class Maligned(object):
          self.sli = sli
          return self
 
+
     def __repr__(self):
         return "\n".join([
                "ab.mal", 
@@ -187,6 +188,7 @@ class AB(object):
         self.pro = Profile(ok)
         self.cfm = self.compare_meta()
         self.mal = self.check_alignment()
+        self.compare_shapes()
         self.compare_domains()
         self.compare()
         self.init_point()
@@ -228,7 +230,7 @@ class AB(object):
         log.info("] ")
 
     def __repr__(self):
-        abn = "AB(%s,%s,%s)  %s %s " % (self.ok.tag, self.ok.src, self.ok.det, self.sel, self.irec )
+        abn = "AB(%s,%s,%s)  %s %s    %s " % (self.ok.tag, self.ok.src, self.ok.det, self.sel, self.irec, self.dshape )
         abr = "A %s " % self.a.brief 
         bbr = "B %s " % self.b.brief 
 
@@ -262,6 +264,9 @@ class AB(object):
         assert np.all( self.a.idom == self.b.idom )
         self.idom = self.a.idom
 
+    def compare_shapes(self):
+        assert self.a.dshape == self.b.dshape, (self.a.dshape, self.b.dshape)   
+        self.dshape = self.a.dshape  
  
     def compare_meta(self):
         cfm = CompareMetadata(self.a.metadata, self.b.metadata)

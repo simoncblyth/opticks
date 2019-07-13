@@ -18,6 +18,36 @@ Reproduce
 
 
 
+The changes make working with 1M ok, but 10M and its too slow again
+----------------------------------------------------------------------
+
+TODO: restrict analysis to first 1M 
+
+* but still loading very big arrays takes a long time 
+* need a way to slice load (partially load a numpy array)
+
+* https://stackoverflow.com/questions/34540585/how-to-partial-load-an-array-saved-with-numpy-save-in-python
+
+* TODO: try using np.memmap or np.load with mmap_mode
+
+::
+
+    In [8]: a = np.arange(1000000)
+
+    In [9]: np.save("a.npy", a)
+
+    In [10]: a2 = np.load("a.npy", mmap_mode="r")
+
+    In [11]: a2[:10]
+    Out[11]: memmap([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
+
+    In [12]: a2[-10:]
+    Out[12]: memmap([999990, 999991, 999992, 999993, 999994, 999995, 999996, 999997, 999998, 999999])
+
+
+
+
+
 FIXED : by rethinking how to do deviation checking with large numbers of photons
 -------------------------------------------------------------------------------------
 

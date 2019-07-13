@@ -18,7 +18,7 @@ except ImportError:
 
 from collections import OrderedDict as odict
 
-from opticks.ana.base import stamp_
+from opticks.ana.base import stamp_, _slice, Num
 from opticks.ana.ctx import Ctx
 from opticks.ana.nbase import count_unique, vnorm
 from opticks.ana.nload import A, I, II, tagdir_
@@ -200,6 +200,8 @@ class Evt(object):
 
         self.args = args
         self.terse = args.terse
+        self.msli = args.msli
+
         self.dbgseqhis = args.dbgseqhis
         self.dbgmskhis = args.dbgmskhis
         self.dbgseqmat = args.dbgseqmat
@@ -231,7 +233,7 @@ class Evt(object):
         if rec:
             self.init_records()
             self.init_sequence()
-            self.init_index()
+            #self.init_index()
             self.init_npoint()
             self.init_source()
 
@@ -242,9 +244,9 @@ class Evt(object):
             pass
             self.psel = psel      # psel property setter
 
-            #self.init_index(tag, src, det, dbg)
         pass
         self.check_stamps()
+        self.check_shapes()
         log.info("] %s " % nom)
 
 
@@ -314,9 +316,61 @@ class Evt(object):
     seqhis_labels = property(_get_seqhis_labels)
 
 
+    PhotonArrayStems = "ox rx ph so ps rs"
+
+    @classmethod
+    def IsPhotonArray(cls, stem):
+        """ 
+        ht is a bit different, 
+        perhaps need a hits need to carry photon indices ? and event indices for ganging ?
+        """ 
+        return stem in cls.PhotonArrayStems
+
     def aload(self, stem, optional=False):
-        a = A.load_(stem, self.src, self.tag, self.det, optional=optional, dbg=self.dbg, pfx=self.pfx ) 
+        msli = self.msli if self.IsPhotonArray(stem) else None
+        a = A.load_(stem, self.src, self.tag, self.det, optional=optional, dbg=self.dbg, pfx=self.pfx, msli=msli ) 
         return a 
+
+    def check_shapes(self):
+        log.debug("[")
+        file_photons = None
+        loaded_photons = None
+        load_slice = None 
+
+        for stem in self.PhotonArrayStems.split():
+            if not hasattr(self, stem): continue
+            a = getattr(self, stem)
+
+            if file_photons is None:
+                file_photons = a.oshape[0] 
+            else:
+                assert a.oshape[0] == file_photons
+            pass  
+
+            if loaded_photons is None:
+                loaded_photons = a.shape[0] 
+            else:
+                assert a.shape[0] == loaded_photons
+            pass  
+
+            if load_slice is None:
+                load_slice = a.msli
+            else:
+                assert a.msli == load_slice
+            pass  
+            log.debug(" %s  %15s  %15s  %15s " % (stem, Num.String(a.oshape), _slice(a.msli), Num.String(a.shape)))
+        pass
+
+        self.file_photons = file_photons
+        self.loaded_photons = loaded_photons
+        self.load_slice = load_slice
+        self.dshape = self.dshape_() 
+        log.debug( self.dshape )
+        log.debug("]")
+
+    def dshape_(self):
+        return " file_photons %s   load_slice %s   loaded_photons %s " % ( Num.String(self.file_photons), _slice(self.load_slice), Num.String(self.loaded_photons) )
+
 
     def init_metadata(self):
         log.debug("init_metadata")
@@ -690,6 +744,8 @@ class Evt(object):
 
         """
         log.debug("init_index START")
+
+        assert 0, "no point : because the indices are only valid within single event, for comparisons use absolute seqhis"
 
         ps = self.aload("ps", optional=True) 
         rs = self.aload("rs", optional=True) 
@@ -1296,7 +1352,7 @@ class Evt(object):
     t = property(lambda self:self.ox[:,0,3])
 
 
-    description = property(lambda self:"\n".join(["%7s : %20s : %s " % (k, repr(getattr(self,k).shape),  label) for k,label in self.desc.items()]))
+    description = property(lambda self:"\n".join(["%7s : %12s : %12s : %s " % (k, Num.OrigShape(getattr(self,k)),  Num.String(getattr(self,k).shape), label) for k,label in self.desc.items()]))
     paths = property(lambda self:"\n".join(["%5s : %s " % (k, repr(getattr(getattr(self,k),'path','-'))) for k,label in self.desc.items()]))
 
     def _path(self):
@@ -1337,14 +1393,14 @@ class Evt(object):
              return "%s %s" % (self.label, "EVT LOAD FAILED")
 
     brief = property(_brief)
-    summary = property(lambda self:"Evt(%3s,\"%s\",\"%s\",pfx=\"%s\", seqs=\"%s\") %s " % 
-            (self.tag, self.src, self.det,self.pfx, repr(self.seqs), self.stamp ))
+    summary = property(lambda self:"Evt(%3s,\"%s\",\"%s\",pfx=\"%s\", seqs=\"%s\", msli=\"%s\" ) %s " % 
+            (self.tag, self.src, self.det,self.pfx, repr(self.seqs), _slice(self.msli), self.stamp ))
 
     def __repr__(self):
         if self.terse:
-            elem = [self.summary, self.tagdir]
+            elem = [self.summary, self.tagdir, self.dshape]
         else:
-            elem = [self.summary, self.tagdir, self.description]
+            elem = [self.summary, self.tagdir, self.dshape, self.description]
         pass
         return "\n".join(elem)
 
