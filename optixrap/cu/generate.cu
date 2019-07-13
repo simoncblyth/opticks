@@ -113,6 +113,8 @@ rtDeclareVariable(float4,        time_domain  , , );
 rtDeclareVariable(uint4,         debug_control , , );
 rtDeclareVariable(float,         propagate_epsilon, , );
 rtDeclareVariable(unsigned int,  propagate_ray_type, , );
+
+rtDeclareVariable(unsigned int,  production, , );
 rtDeclareVariable(unsigned int,  bounce_max, , );
 rtDeclareVariable(unsigned int,  record_max, , );
 
@@ -132,6 +134,24 @@ rtDeclareVariable(rtObject,      top_object, , );
 //        so in terms of saving location into record buffer, tis constrained correctly
 //        BUT the seqhis shifts look wrong in truncation 
 //
+
+
+/**
+RSAVE
+--------
+
+Writes compressed step points into the record buffer
+
+Two in/outputs seqhis and seqmat, the rest are inputs
+specifying sources of the data and where to write it. 
+
+seqhis
+    shifts in "his" nibble obtained from ffs of s.flag 
+seqmat
+    shifts in "mat" nibble obtained from s.index.x
+
+
+**/
  
 #define RSAVE(seqhis, seqmat, p, s, slot, slot_offset)  \
 {    \
@@ -156,6 +176,15 @@ rtDeclareVariable(rtObject,      top_object, , );
              p.flags.i.x );  \
 }  \
         
+
+
+/**
+FLAGS
+-------
+
+Set the photon flags p.flags using values from state s and per-ray-data prd
+
+**/
 
 #define FLAGS(p, s, prd) \
 { \
@@ -474,15 +503,18 @@ RT_PROGRAM void generate()
     int slot_max = slot_min + MAXREC - 1 ; 
     int slot_offset = 0 ; 
 
-
     // zeroing record buffer, needed as OpZeroer not working in interop mode with OptiX 400
     int record_offset = 0 ; 
-    for(slot=0 ; slot < MAXREC ; slot++)
+
+    if( production == 0 )
     {
-         record_offset = (slot_min + slot)*RNUMQUAD ;
-         record_buffer[record_offset+0] = make_short4(0,0,0,0) ;    // 4*int16 = 64 bits
-         record_buffer[record_offset+1] = make_short4(0,0,0,0) ;    
-    }  
+        for(slot=0 ; slot < MAXREC ; slot++)
+        {
+             record_offset = (slot_min + slot)*RNUMQUAD ;
+             record_buffer[record_offset+0] = make_short4(0,0,0,0) ;    // 4*int16 = 64 bits
+             record_buffer[record_offset+1] = make_short4(0,0,0,0) ;    
+        }
+    }
     slot = 0 ; 
     record_offset = 0 ; 
 #endif
@@ -530,11 +562,15 @@ RT_PROGRAM void generate()
         s.surface_normal = prd.surface_normal ; 
         s.cos_theta = prd.cos_theta ; 
 
+        // setting p.flags for things like boundary, history flags  
         FLAGS(p, s, prd); 
 
 #ifdef WITH_RECORD
-        slot_offset =  slot < MAXREC  ? slot_min + slot : slot_max ;  
-        RSAVE(seqhis, seqmat, p, s, slot, slot_offset) ;
+        if( production == 0 )
+        {
+            slot_offset =  slot < MAXREC  ? slot_min + slot : slot_max ;  
+            RSAVE(seqhis, seqmat, p, s, slot, slot_offset) ;
+        } 
 #endif
 
 
@@ -581,6 +617,7 @@ RT_PROGRAM void generate()
     }
 
 
+    // setting p.flags for things like boundary, history flags  
     FLAGS(p, s, prd); 
 
     // breakers and maxers saved here
@@ -604,15 +641,28 @@ RT_PROGRAM void generate()
     //
 
 #ifdef WITH_RECORD
-    slot_offset =  slot < MAXREC  ? slot_min + slot : slot_max ;  
-    RSAVE(seqhis, seqmat, p, s, slot, slot_offset ) ;
+    if( production == 0 )
+    {
+        slot_offset =  slot < MAXREC  ? slot_min + slot : slot_max ;  
+        RSAVE(seqhis, seqmat, p, s, slot, slot_offset ) ;
 
-    sequence_buffer[photon_id*2 + 0] = seqhis ; 
-    sequence_buffer[photon_id*2 + 1] = seqmat ;  
+        sequence_buffer[photon_id*2 + 0] = seqhis ; 
+        sequence_buffer[photon_id*2 + 1] = seqmat ;  
+    }
 #endif
 
 
+    /**
+     rng_states
+          because the entire simulation of a single photon is done via this generate.cu 
+          with a single curandState for each photon, there is no need to save the curandState 
+          as there is no continuation 
+
+          TODO: check what happens from event to event, when the same curandState gets used
+          for another photon  
+    **/
     //rng_states[photon_id] = rng ;  // <-- brings 3 lines with .f64 : is it needed ???
+
 }
 
 

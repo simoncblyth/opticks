@@ -81,6 +81,9 @@ class CommandLine(object):
 ratio_ = lambda num,den:float(num)/float(den) if den != 0 else -1 
 
 class CompareMetadata(object):
+
+    permit_mismatch = ["cmdline", "mode"]
+
     def __init__(self, am, bm):
         self.am = am 
         self.bm = bm 
@@ -114,7 +117,20 @@ class CompareMetadata(object):
             av = getattr( self.am, key ) 
             bv = getattr( self.bm, key ) 
         pass     
-        assert av == bv, ( "expected_common mismatch", key, av,bv )          
+
+        match = av == bv  
+
+        if not match:
+            if key in self.permit_mismatch:
+                log.warning("note permitted expected_common mismatch for key %s " % key )
+                log.info(av)
+                log.info(bv)
+            else: 
+                log.fatal("expected_common mismatch for key %s " % key )
+                log.fatal(av)
+                log.fatal(bv)
+                assert match, key           
+            pass
         return av 
 
     def __repr__(self):

@@ -22,11 +22,25 @@ class Prof(object):
         g4 = name.find("g4") > -1      
 
         self.tagdir = ok.ntagdir if g4 else ok.tagdir
-        self.sli = slice(0,10)
+        self.g4 = g4  
+        self.sli = slice(0,0)  # nowt
+
+        if os.path.exists(self.tagdir):
+            self.valid = True
+            self.init()
+        else:
+            self.valid = False
+            self.tim = -1 
+            self.prfmt = "INVALID" 
+            self.acfmt = "INVALID" 
+            log.fatal("tagdir %s DOES NOT EXIST " % self.tagdir) 
+        pass  
+
+    def init(self):
         self.loadProfile() 
         self.loadAcc()
 
-        if g4:  
+        if self.g4:  
             g4r, g40, g41 = self.deltaT("CRunAction::BeginOfRunAction","CRunAction::EndOfRunAction")   ## CG4::propagate includes significant initialization
             stt = self.setupTrancheTime()
             tim = g4r - stt 
@@ -40,6 +54,8 @@ class Prof(object):
         self.idx = idx
         self.sli = slice(idx[0],idx[1]+1)
 
+    def extrapolate(self): 
+        pass
 
     def pfmt(self, path1, path2, path3=None):
         t_path1 = time_(path1)
@@ -128,8 +144,12 @@ class Prof(object):
             l0 = arg0 
             l1 = arg1 
         pass
-        p0 = np.where( self.l == l0 )[0][0]
-        p1 = np.where( self.l == l1 )[0][0]
+
+        w0 = np.where( self.l == l0 )[0]   # array of matching idx, empty if not found
+        w1 = np.where( self.l == l1 )[0]
+
+        p0 = w0[0] if len(w0) == 1 else 0
+        p1 = w1[0] if len(w1) == 1 else 0 
         v = self.v 
         t = self.t 
 
@@ -176,7 +196,12 @@ class Profile(object):
     def __init__(self, ok):
         self.okp = Prof(ok, "ab.pro.okp" ) 
         self.g4p = Prof(ok, "ab.pro.g4p" ) 
-        g4p_okp = self.g4p.tim/self.okp.tim if self.okp.tim > 0 else -1  
+        valid = self.okp.valid and self.g4p.valid 
+        if valid:
+            g4p_okp = self.g4p.tim/self.okp.tim if self.okp.tim > 0 else -1  
+        else:
+            g4p_okp = -2 
+        pass 
         self.g4p_okp = g4p_okp
   
     def brief(self): 

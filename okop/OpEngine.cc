@@ -142,6 +142,15 @@ void OpEngine::propagate()
 }
 
 
+/**
+OpEngine::indexEvent
+---------------------
+
+In production event indexing is skipped.
+
+
+**/
+
 void OpEngine::indexEvent()
 {
     if(m_ok->isProduction()) return ; 

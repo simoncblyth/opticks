@@ -111,7 +111,8 @@ rsave
 1. packs position and time into normalized shorts (4*16 = 64 bits)
 
    * NB shortnorm wastes half the bits for time, as do not get negative times,  
-     TODO: use a "ushortnorm" 
+     TODO: use a "ushortnorm" : THIS IS NOT WORTH IT AS LOTS OF ANALYSIS RELIES
+     ON TIME AND POS USING THE SAME COMPRESSION APPROACH  
 
 2. pack polarization and wavelength into 4*8 = 32 bits   
 

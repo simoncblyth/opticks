@@ -83,16 +83,15 @@ OEvent::createBuffers
 
 Invoked by OEvent::upload when buffers not yet created.
 
-**/
+NB in INTEROP mode the OptiX buffers for the evt data 
+are actually references to the OpenGL buffers created 
+with createBufferFromGLBO by Scene::uploadEvt Scene::uploadSelection
 
+**/
 
 void OEvent::createBuffers(OpticksEvent* evt)
 {
     LOG(debug) << evt->getShapeString() ; 
-    // NB in INTEROP mode the OptiX buffers for the evt data 
-    // are actually references to the OpenGL buffers created 
-    // with createBufferFromGLBO by Scene::uploadEvt Scene::uploadSelection
-
     assert(m_buffers_created==false);
     m_buffers_created = true ; 
  
@@ -165,7 +164,6 @@ void OEvent::createBuffers(OpticksEvent* evt)
 }
 
 
-
 void OEvent::markDirty()
 {
 
@@ -235,21 +233,22 @@ void OEvent::resizeBuffers(OpticksEvent* evt)
 
     NPY<float>* gensteps =  evt->getGenstepData() ;
     assert(gensteps);
-    OContext::resizeBuffer<float>(m_genstep_buffer, gensteps, "gensteps");
+    //OContext::resizeBuffer<float>(m_genstep_buffer, gensteps, "gensteps");
+    m_ocontext->resizeBuffer<float>(m_genstep_buffer, gensteps, "gensteps");
 
     NPY<unsigned>* se = evt->getSeedData() ; 
     assert(se);
-    OContext::resizeBuffer<unsigned>(m_seed_buffer, se , "seed");
+    m_ocontext->resizeBuffer<unsigned>(m_seed_buffer, se , "seed");
 
     NPY<float>* photon = evt->getPhotonData() ; 
     assert(photon);
-    OContext::resizeBuffer<float>(m_photon_buffer,  photon, "photon");
+    m_ocontext->resizeBuffer<float>(m_photon_buffer,  photon, "photon");
 
 #ifdef WITH_SOURCE
     NPY<float>* source = evt->getSourceData() ; 
     if(source)
     {
-        OContext::resizeBuffer<float>(m_source_buffer,  source, "source");
+        m_ocontext->resizeBuffer<float>(m_source_buffer,  source, "source");
     }
 #endif
 
@@ -257,11 +256,11 @@ void OEvent::resizeBuffers(OpticksEvent* evt)
 #ifdef WITH_RECORD
     NPY<short>* rx = evt->getRecordData() ; 
     assert(rx);
-    OContext::resizeBuffer<short>(m_record_buffer,  rx, "record");
+    m_ocontext->resizeBuffer<short>(m_record_buffer,  rx, "record");
 
     NPY<unsigned long long>* sq = evt->getSequenceData() ; 
     assert(sq);
-    OContext::resizeBuffer<unsigned long long>(m_sequence_buffer, sq , "sequence");
+    m_ocontext->resizeBuffer<unsigned long long>(m_sequence_buffer, sq , "sequence");
 #endif
 }
 
@@ -368,6 +367,15 @@ unsigned OEvent::downloadHits()
     return nhit ; 
 }
 
+
+/**
+OEvent::download
+-------------------
+
+In "--production" mode does not download the full event, only hits.
+
+**/
+
 unsigned OEvent::download()
 {
     if(!m_ok->isProduction()) download(m_evt, DOWNLOAD_DEFAULT);
@@ -378,19 +386,12 @@ unsigned OEvent::download()
 }
 
 
-/** OEvent::download
-
- 
-**/
-
-
 void OEvent::download(OpticksEvent* evt, unsigned mask)
 {
     OK_PROFILE("_OEvent::download");
     assert(evt) ;
 
-   
-    LOG(debug)<<"OEvent::download id " << evt->getId()  ;
+    LOG(LEVEL) << "[ id " << evt->getId()  ;
  
     if(mask & GENSTEP)
     {
@@ -425,7 +426,7 @@ void OEvent::download(OpticksEvent* evt, unsigned mask)
     }
 #endif
 
-    LOG(debug)<<"OEvent::download DONE" ;
+    LOG(LEVEL) << "]" ;
     OK_PROFILE("OEvent::download");
 }
 

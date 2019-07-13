@@ -33,7 +33,8 @@ except ImportError:
 pass
 
 import numpy as np
-from opticks.ana.base import ini_, _slice, slice_, Num
+from opticks.ana.base import ini_
+from opticks.ana.num  import _slice, slice_, Num
 
 
 def time_(path): 
@@ -121,8 +122,7 @@ def tagdir_(det, typ, tag, pfx=".", layout=2):
 
     if not os.path.exists(xdir):
         log.error("NON EXISTING tagdir : %s  expanded from %s " % (xdir, DEFAULT_DIR_TEMPLATE))
-        log.error("As relative paths are used with test geometry running, subsequent scripts or executables that intend to reuse data should be invoked from the same directory." )
-        assert 0, (xdir, tmpl, DEFAULT_DIR_TEMPLATE)
+        #assert 0, (xdir, tmpl, DEFAULT_DIR_TEMPLATE)
     pass
     return xdir
 

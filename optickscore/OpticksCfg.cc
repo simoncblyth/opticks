@@ -430,6 +430,12 @@ void OpticksCfg<Listener>::init()
        ("save",  "download generated/propagated event data from GPU and save to file") ;
 
    m_desc.add_options()
+       ("nosave",  "disable saving event data to file, --nosave option trumps any --save options on commandline  ") ;
+
+
+
+
+   m_desc.add_options()
        ("load",  "load event data from file and upload to GPU for visualization") ;
 
    m_desc.add_options()

@@ -1099,9 +1099,11 @@ bool Opticks::isReflectCheat() const  // --reflectcheat
 {
    return m_cfg->hasOpt("reflectcheat");
 }
-bool Opticks::isSave() const 
+bool Opticks::isSave() const   // --save is trumped by --nosave 
 {
-    return m_cfg->hasOpt("save");  
+    bool is_nosave = m_cfg->hasOpt("nosave");  
+    bool is_save = m_cfg->hasOpt("save");  
+    return is_nosave ? false : is_save  ;   
 }
 bool Opticks::isLoad() const
 {
@@ -1215,7 +1217,7 @@ bool Opticks::isInstanced()
 {
    return m_instanced ; 
 }
-bool Opticks::isProduction()
+bool Opticks::isProduction() const   // --production
 {
    return m_production ; 
 }

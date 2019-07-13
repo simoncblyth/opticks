@@ -65,7 +65,7 @@
 #include "PLOG.hh"
 
 
-const plog::Severity OpticksEvent::LEVEL = debug ; 
+const plog::Severity OpticksEvent::LEVEL = PLOG::EnvLevel("OpticksEvent", "DEBUG") ; 
 
 
 const char* OpticksEvent::TIMEFORMAT = "%Y%m%d_%H%M%S" ;
@@ -78,12 +78,6 @@ std::string OpticksEvent::timestamp()
 {
     std::string timestamp = BTime::now(TIMEFORMAT, 0);
     return timestamp ; 
-}
-
-
-bool OpticksEvent::CanAnalyse(OpticksEvent* evt)
-{
-    return evt && evt->hasRecordData() ; 
 }
 
 
@@ -1524,33 +1518,41 @@ void OpticksEvent::recordDigests()
 
 
 
+
+
+bool OpticksEvent::CanAnalyse(OpticksEvent* evt)  
+{
+    return evt && evt->hasRecordData() ; 
+}
+
+/**
+OpticksEvent::save
+---------------------
+
+In "--production" mode skips saving the arrays.
+
+
+Formerly skipped saving when no records resulting in CanAnalyse false, 
+
+* this  avoids writing the G4 evt domains, when running without 
+ --okg4 that leads to unhealthy mixed timestamp event loads in evt.py. 
+ 
+* Different timestamps for ab.py between A and B 
+  is tolerated, although if too much time, divergence is to be expected.
+
+**/
+
+
 void OpticksEvent::save()
 {
-    if(!CanAnalyse(this))
-    {
-        LOG(error) << "skip as CanAnalyse returns false (no rec) : " 
-                   //<< getRelDir() 
-                   ; 
-        // This avoids writing the G4 evt domains, when running without --okg4 
-        // that leads to unhealthy mixed timestamp event loads in evt.py. 
-        // Different timestamps for ab.py between A and B 
-        // is tolerated, although if too much time divergence is to be expected.
-        return ; 
-    }
-    else
-    {
-        LOG(info) << "proceed as CanAnalyse returns true (with rec) : " 
-                  //<< getRelDir()
-                   ; 
-    }
-
+    // if(!CanAnalyse(this))  return 
 
     OK_PROFILE("_OpticksEvent::save"); 
 
-
-    LOG(info) << description("") << getShapeString() 
-              << " dir " << m_event_spec->getDir()
-               ;    
+    LOG(LEVEL) 
+        << description("") << getShapeString() 
+        << " dir " << m_event_spec->getDir()
+        ;    
 
     if(m_ok->isProduction())
     {

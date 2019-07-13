@@ -894,6 +894,7 @@ Usage::
 EON
 }
 
+om-c(){  om-cls ${1:-Opticks} ; }
 om-cls()
 {
     local base=$(om-home)

@@ -22,8 +22,7 @@ class NConfigurable ;
 #include "OpPropagator.hh"  // okop-
 
 
-const plog::Severity OpMgr::LEVEL = debug ; 
-
+const plog::Severity OpMgr::LEVEL = PLOG::EnvLevel("OpMgr", "DEBUG") ; 
 
 
 // even though may end up doing the geocache check inside OpticksHub tis 
@@ -77,12 +76,18 @@ OpticksEvent* OpMgr::getG4Event() const
 }
 
 
+/**
+OpMgr::propagate
+------------------
+
+In "--production" mode post saving analysis is skipped.
 
 
+**/
 
 void OpMgr::propagate()
 {
-    LOG(info) << "\n\n[[\n\n" ; 
+    LOG(LEVEL) << "\n\n[[\n\n" ; 
 
     const Opticks& ok = *m_ok ; 
     
@@ -106,20 +111,20 @@ void OpMgr::propagate()
 
     if(ok("save")) 
     {
-        LOG(info) << "( save " ;  
+        LOG(LEVEL) << "( save " ;  
         m_run->saveEvent();
-        LOG(info) << ") save " ;  
+        LOG(LEVEL) << ") save " ;  
 
-        LOG(info) << "( ana " ;  
+        LOG(LEVEL) << "( ana " ;  
         if(!production) m_hub->anaEvent();
-        LOG(info) << ") ana " ;  
+        LOG(LEVEL) << ") ana " ;  
     }
 
-    LOG(info) << "( postpropagate " ;  
+    LOG(LEVEL) << "( postpropagate " ;  
     m_ok->postpropagate();  // profiling 
-    LOG(info) << ") postpropagate " ;  
+    LOG(LEVEL) << ") postpropagate " ;  
 
-    LOG(info) << "\n\n]]\n\n" ; 
+    LOG(LEVEL) << "\n\n]]\n\n" ; 
 }
 
 

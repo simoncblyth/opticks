@@ -2,6 +2,15 @@
 
 #include "NPY_API_EXPORT.hh"
 
+/**
+NSlice
+=========
+
+TODO: move to the py names : start/stop/step 
+
+
+**/
+
 struct NPY_API NSlice {
 
      unsigned int low ; 

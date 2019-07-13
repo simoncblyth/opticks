@@ -18,17 +18,15 @@ Reproduce
 
 
 
-The changes make working with 1M ok, but 10M and its too slow again
-----------------------------------------------------------------------
+ISSUE : changes make working with 1M fast enough, but 10M and its too slow again : AVOIDED BY MMAP_MODE SLICED ARRAY LOAD
+-------------------------------------------------------------------------------------------------------------------------------
 
-TODO: restrict analysis to first 1M 
+DONE: restrict analysis to configurable slice using --msli option 
 
-* but still loading very big arrays takes a long time 
-* need a way to slice load (partially load a numpy array)
+* uses np.load with mmap_mode="r"
+* this avoids slow loading of very big arrays 
 
 * https://stackoverflow.com/questions/34540585/how-to-partial-load-an-array-saved-with-numpy-save-in-python
-
-* TODO: try using np.memmap or np.load with mmap_mode
 
 ::
 
@@ -43,7 +41,6 @@ TODO: restrict analysis to first 1M
 
     In [12]: a2[-10:]
     Out[12]: memmap([999990, 999991, 999992, 999993, 999994, 999995, 999996, 999997, 999998, 999999])
-
 
 
 

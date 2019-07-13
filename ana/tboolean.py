@@ -65,7 +65,7 @@ if __name__ == '__main__':
     ab = AB(ok)
     ab.dump()
 
-    rc = ab.rc.rc 
+    rc = ab.get_rc() 
 
     level = "fatal" if rc > 0 else "info"
     getattr(log, level)(" RC 0x%.2x %s " % (rc,bin(rc)) )
@@ -80,8 +80,11 @@ if __name__ == '__main__':
 
     a = ab.a
     b = ab.b
-    #ab.aselhis = "TO BT BT SA"     # dev aligned comparisons
-    ab.aselhis = None    # dev aligned comparisons
+
+    if ab.is_comparable:
+        #ab.aselhis = "TO BT BT SA"     # dev aligned comparisons
+        ab.aselhis = None    # dev aligned comparisons
+    pass
   
 
     #path = "$TMP/CRandomEngine_jump_photons.npy"

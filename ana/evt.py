@@ -18,7 +18,8 @@ except ImportError:
 
 from collections import OrderedDict as odict
 
-from opticks.ana.base import stamp_, _slice, Num
+from opticks.ana.base import stamp_
+from opticks.ana.num import _slice, Num
 from opticks.ana.ctx import Ctx
 from opticks.ana.nbase import count_unique, vnorm
 from opticks.ana.nload import A, I, II, tagdir_
@@ -177,9 +178,11 @@ class Evt(object):
         self._seqmat = None
         self._pflags = None
         self._labels = []
+        self._irec = None
 
         self.align = None
         self.warn_empty = True
+        self.dshape = ""
 
         log.debug("pfx:%s" % pfx)
 
@@ -187,18 +190,18 @@ class Evt(object):
         self.src = src
         self.det = det
         self.pfx = pfx 
-        self.tagdir = tagdir_(det, src, tag, pfx=pfx)
-
-        self.cn = "%s:%s:%s" % (str(self.tag), self.det, self.pfx)
-
+        self.args = args
+        self.maxrec = maxrec
+        self.rec = rec
         self.dbg = dbg
 
-        self.valid = True   ## load failures signalled by setting False
-        self.maxrec = maxrec
+        self.tagdir = tagdir_(det, src, tag, pfx=pfx)
+        self.cn = "%s:%s:%s" % (str(self.tag), self.det, self.pfx)
+
         self.seqs = seqs
+        self.not_ = not_
         self.flv = "seqhis"  # default for selections
 
-        self.args = args
         self.terse = args.terse
         self.msli = args.msli
 
@@ -212,42 +215,53 @@ class Evt(object):
         log.debug( " seqs %s " % repr(seqs))
         log.debug(" dbgseqhis %x dbgmskhis %x dbgseqmat %x dbgmskmat %x " % (args.dbgseqhis, args.dbgmskhis, args.dbgseqmat, args.dbgmskmat ))
  
-        if label is None:
-            label = "%s/%s/%s/%3s : %s" % (pfx, det, src, tag, ",".join(self.seqs)) 
-
-        self.label = label
         self.rec = rec
         self.desc = odict()
 
-        ok = self.init_metadata()
+        if label is None:
+            label = "%s/%s/%s/%3s : %s" % (pfx, det, src, tag, ",".join(self.seqs)) 
+        pass
+        self.label = label
 
+        if os.path.exists(self.tagdir):
+            self.valid = True
+            self.init() 
+        else:
+            self.valid = False  ## load failures signalled by setting False
+            log.fatal("FAILED TO LOAD EVT : tagdir %s DOES NOT EXIST " % self.tagdir)
+        pass
+        log.info("] %s " % nom)
+
+
+    def init(self):
+        ok = self.init_metadata()
         if not ok:
-           log.warning("FAILED TO LOAD EVT %s " % label )
-           return   
+            log.warning("FAILED TO LOAD EVT %s " % self.label )
+            return   
+        pass
 
         self.init_types()
         self.init_gensteps()
         self.init_photons()
         self.init_hits()
 
-        if rec:
+        if self.rec:
             self.init_records()
             self.init_sequence()
             #self.init_index()
             self.init_npoint()
             self.init_source()
 
-            if len(seqs) == 0:
+            if len(self.seqs) == 0:
                 psel = None
             else:
-                psel = self.make_selection(seqs, not_)
+                psel = self.make_selection(self.seqs, self.not_)
             pass
             self.psel = psel      # psel property setter
-
         pass
         self.check_stamps()
         self.check_shapes()
-        log.info("] %s " % nom)
+ 
 
 
     def init_types(self):
@@ -340,6 +354,7 @@ class Evt(object):
         for stem in self.PhotonArrayStems.split():
             if not hasattr(self, stem): continue
             a = getattr(self, stem)
+            if a.missing: continue    
 
             if file_photons is None:
                 file_photons = a.oshape[0] 
@@ -369,7 +384,8 @@ class Evt(object):
         log.debug("]")
 
     def dshape_(self):
-        return " file_photons %s   load_slice %s   loaded_photons %s " % ( Num.String(self.file_photons), _slice(self.load_slice), Num.String(self.loaded_photons) )
+        dsli = _slice(self.load_slice) if not self.load_slice is None else "-"
+        return " file_photons %s   load_slice %s   loaded_photons %s " % ( Num.String(self.file_photons), dsli, Num.String(self.loaded_photons) )
 
 
     def init_metadata(self):
@@ -447,11 +463,11 @@ class Evt(object):
         log.debug("init_photons")
         ox = self.aload("ox",optional=True) 
         self.ox = ox
-        self.oxa = ox[:,:3,:]    # avoiding flags of last quad 
-
-        self.desc['ox'] = "(photons) final photon step"
+        self.desc['ox'] = "(photons) final photon step %s " % ( "MISSING" if ox.missing else "" )
 
         if ox.missing:return 
+
+        self.oxa = ox[:,:3,:]    # avoiding flags of last quad 
 
         self.check_ox_fdom()
 
@@ -633,6 +649,7 @@ class Evt(object):
         ph = self.aload("ph",optional=True)
         self.ph = ph
         self.desc['ph'] = "(records) photon history flag/material sequence"
+
         if ph.missing:
             log.debug(" ph missing ==> no history aka seqhis_ana  ")
             return 
@@ -791,33 +808,6 @@ class Evt(object):
     recsel = property(_get_recsel)
 
 
-
-    def init_rsr(self):
-        """
-        No needed (since years) as reshaped rs at source ? 
-        """ 
-        rs = self.rs
-        if not rs is None and not rs.missing:
-            rsr = rs.reshape(-1, self.maxrec, 1, 4)        
-        else: 
-            rsr = None
-        pass
-
-        if not rsr is None:
-            ursr = len(np.unique(rsr))
-        else:
-            ursr = -1
-        pass
-        if ursr <= 1 and not rs.missing:
-            log.warning("init_rsr %s finds too few (rsr)reshaped-recsel uniques : %s" % (self.label,ursr) ) 
-        pass  
-        if not rsr is None:
-            rsr.desc = "(records) RESHAPED recsel sequence frequency index lookups (uniques %d)"  % ursr 
-            self.desc['rsr'] = rsr.desc
-        pass  
-        self.rsr = rsr 
-
-
     def init_npoint(self):
         """
         self.npo[i]
@@ -836,6 +826,11 @@ class Evt(object):
 
         """
         log.debug(" ( init_npoint")
+
+        if self.ph.missing:
+            log.info("ph.missing so no seqhis ")  # hmm can do limited analysis on the hits though 
+            return 
+        pass 
 
         x = self.seqhis
 
@@ -1122,6 +1117,11 @@ class Evt(object):
           line by line selections 
 
         """
+
+        if self.ox.missing:
+             return
+        pass
+
         # for first _init_selection hold on to the originals
         if self._psel is None:
             self.ox_ = self.ox
@@ -1356,12 +1356,14 @@ class Evt(object):
     paths = property(lambda self:"\n".join(["%5s : %s " % (k, repr(getattr(getattr(self,k),'path','-'))) for k,label in self.desc.items()]))
 
     def _path(self):
-        if self.fdom is None:
+        if not hasattr(self, 'fdom'):
+             return None
+        elif self.fdom is None:
              return None
         else:
              return self.fdom.path
     path = property(_path)
-    stamp = property(lambda self:stamp_(self.path))
+    stamp = property(lambda self:stamp_(self.path) if not self.path is None else "INVALID")
 
 
     def check_stamps(self, names="fdom idom ox rx ht"):

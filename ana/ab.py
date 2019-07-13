@@ -30,6 +30,8 @@ ratio_ = lambda num,den:float(num)/float(den) if den != 0 else -1
 class Maligned(object):
     def __init__(self, ab):
         self.ab = ab 
+
+
         tot = len(ab.a.seqhis)
         self.tot = tot
         self.maligned = ab.maligned
@@ -42,14 +44,13 @@ class Maligned(object):
          self.sli = sli
          return self
 
+    def lines(self):
+        return ["aligned  %7d/%7d : %.4f : %s " % ( len(self.aligned), self.tot, self.faligned,   ",".join(map(lambda _:"%d"%_, self.aligned[self.sli])) ),
+                "maligned %7d/%7d : %.4f : %s " % ( len(self.maligned), self.tot, self.fmaligned,  ",".join(map(lambda _:"%d"%_, self.maligned[self.sli])) ) ]
 
     def __repr__(self):
-        return "\n".join([
-               "ab.mal", 
-               "aligned  %7d/%7d : %.4f : %s " % ( len(self.aligned), self.tot, self.faligned,   ",".join(map(lambda _:"%d"%_, self.aligned[self.sli])) ),
-               "maligned %7d/%7d : %.4f : %s " % ( len(self.maligned), self.tot, self.fmaligned,  ",".join(map(lambda _:"%d"%_, self.maligned[self.sli])) ),
-                repr(self.sli)
-                ] + map(lambda iq:self.ab.recline(iq), enumerate(self.maligned[self.sli])) + ["."]
+        return "\n".join( ["ab.mal"] + self.lines() + [repr(self.sli)]
+                   + map(lambda iq:self.ab.recline(iq), enumerate(self.maligned[self.sli])) + ["."]
                 ) 
 
 
@@ -167,16 +168,19 @@ class AB(object):
     def dump(self):
         log.debug("[")
         self.print_(self.pro)  
-        self.print_(self.cfm)  
-        self.print_(self.mal)
-        self.print_(self)
-        self.print_(self.cfm)  
-        self.print_(self.rpost_dv)
-        self.print_(self.rpol_dv)
-        self.print_(self.ox_dv)
-        self.print_(self.rc)
-        self.print_(self.cfm)  
+        if self.is_comparable: 
+            self.print_(self.cfm)  
+            self.print_(self.mal)
+            self.print_(self)
+            self.print_(self.cfm)  
+            self.print_(self.rpost_dv)
+            self.print_(self.rpol_dv)
+            self.print_(self.ox_dv)
+            self.print_(self.rc)
+            self.print_(self.cfm)  
+        pass
         log.debug("]")
+
 
     def __init__(self, ok):
         log.debug("[")
@@ -184,15 +188,24 @@ class AB(object):
         self.histype = HisType()
         self.tabs = []
         self.dvtabs = []
-        self.load()
-        self.pro = Profile(ok)
-        self.cfm = self.compare_meta()
-        self.mal = self.check_alignment()
-        self.compare_shapes()
-        self.compare_domains()
-        self.compare()
-        self.init_point()
         self.stream = sys.stderr
+        self._sel = None
+        self.dshape = None
+
+        self.load()
+
+        self.is_comparable = self.valid and not self.a.ph.missing and not self.b.ph.missing
+
+        self.pro = Profile(ok)
+
+        if self.is_comparable: 
+            self.cfm = self.compare_meta()
+            self.mal = self.check_alignment()
+            self.compare_shapes()
+            self.compare_domains()
+            self.compare()
+            self.init_point()
+        pass 
         log.debug("]")
 
     def load(self):
@@ -212,21 +225,28 @@ class AB(object):
             btag = "-%s" % args.utag
         pass
 
-        #try:
         a = Evt(tag=atag, src=args.src, det=args.det, pfx=args.pfx, args=args, nom="A", smry=args.smry)
         b = Evt(tag=btag, src=args.src, det=args.det, pfx=args.pfx, args=args, nom="B", smry=args.smry)
-        #except IOError as err:
-        #    log.fatal(err)
-        #    sys.exit(args.mrc)
+
         pass
         self.a = a
         self.b = b 
+
+        valid = a.valid and b.valid 
+        if not valid:
+            log.fatal("invalid loads : a.valid:%s b.valid:%s " % (a.valid, b.valid))
+        pass
+        self.valid = valid 
+
         self.align = None
         self._dirty = False
+
         ## property setters
-        self.sel = None
-        self.irec = 0
-        self.qwn = "X"
+        if valid:
+            self.sel = None
+            self.irec = 0
+            self.qwn = "X"
+        pass
         log.info("] ")
 
     def __repr__(self):
@@ -235,16 +255,16 @@ class AB(object):
         bbr = "B %s " % self.b.brief 
 
         amd = ",".join(self.a.metadata.csgbnd)
-        bmd = ",".join(self.b.metadata.csgbnd)
-        assert amd == bmd
-
         acsgp = self.a.metadata.TestCSGPath
-        bcsgp = self.b.metadata.TestCSGPath
-        assert acsgp == bcsgp
 
-        #aNote = "A:%s" % self.a.metadata.Note
-        ##bNote = "B:%s" % self.b.metadata.Note
- 
+        if self.b.valid:
+            bmd = ",".join(self.b.metadata.csgbnd)
+            bcsgp = self.b.metadata.TestCSGPath
+            assert amd == bmd
+            assert acsgp == bcsgp
+        else:
+            pass
+        pass
         return "\n".join(filter(None,["ab", abn, abr,bbr, amd, acsgp,"." ]))
 
     def __str__(self):
@@ -261,7 +281,9 @@ class AB(object):
     def compare_domains(self):
         assert np.all( self.a.fdom == self.b.fdom )
         self.fdom = self.a.fdom
-        assert np.all( self.a.idom == self.b.idom )
+
+        isli = slice(2,None)  ## permit rngmax difference 
+        assert np.all( self.a.idom[isli] == self.b.idom[isli] )
         self.idom = self.a.idom
 
     def compare_shapes(self):
@@ -301,6 +323,8 @@ class AB(object):
 
         log.info("]")
 
+    def get_rc(self):
+        return self.rc.rc if self.is_comparable else 255
 
     def init_point(self):
         log.debug("[")

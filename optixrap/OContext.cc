@@ -279,6 +279,8 @@ OContext::OContext(optix::Context context, Opticks* ok, const char* cmake_target
 
 void OContext::init()
 {
+    InitBufferNames(m_buffer_names); 
+    InitDebugBufferNames(m_debug_buffer_names); 
 
     unsigned int num_ray_type = getNumRayType() ;
     m_context->setRayTypeCount( num_ray_type );   // more static than entry type count
@@ -287,11 +289,11 @@ void OContext::init()
     m_ok->set("stacksize", stacksize_bytes );
 
     m_context->setStackSize(stacksize_bytes);
-    LOG(LEVEL) << "OContext::init " 
-              << " mode " << getModeName()
-              << " num_ray_type " << num_ray_type 
-              << " stacksize_bytes " << stacksize_bytes
-              ; 
+    LOG(LEVEL) 
+        << " mode " << getModeName()
+        << " num_ray_type " << num_ray_type 
+        << " stacksize_bytes " << stacksize_bytes
+        ; 
 
 }
 
@@ -744,6 +746,34 @@ void OContext::download(optix::Buffer& buffer, NPY<T>* npy)
 }
 
 
+void OContext::InitBufferNames(std::vector<std::string>& names)
+{
+    names.push_back("gensteps");
+    names.push_back("seed");
+    names.push_back("photon");
+    names.push_back("source");
+    names.push_back("record");
+    names.push_back("sequence");
+}
+
+void OContext::InitDebugBufferNames(std::vector<std::string>& names)
+{
+    names.push_back("record");
+    names.push_back("sequence");
+}
+
+
+bool OContext::isAllowedBufferName(const char* name) const 
+{
+    return std::find( m_buffer_names.begin(), m_buffer_names.end() , name ) != m_buffer_names.end() ; 
+}
+
+bool OContext::isDebugBufferName(const char* name) const 
+{
+    return std::find( m_debug_buffer_names.begin(), m_debug_buffer_names.end() , name ) != m_debug_buffer_names.end() ; 
+}
+
+
 
 
 
@@ -758,6 +788,15 @@ template <typename T>
 optix::Buffer OContext::createBuffer(NPY<T>* npy, const char* name)
 {
     assert(npy);
+
+    bool allowed_name = isAllowedBufferName(name); 
+    if(!allowed_name)
+    {
+        LOG(fatal) << " name " << name << " IS NOT ALLOWED " ; 
+        assert(0);   
+    } 
+
+
     OpticksBufferControl ctrl(npy->getBufferControlPtr());
     bool verbose = ctrl("VERBOSE_MODE") || SSys::IsVERBOSE() ;
 
@@ -834,6 +873,7 @@ unsigned OContext::determineBufferSize(NPY<T>* npy, const char* name)
     bool is_seed = strcmp(name, "seed")==0 ;
 
     RTformat format = getFormat(npy->getType(), is_seed);
+
     unsigned int size ; 
 
     if(format == RT_FORMAT_USER || is_seed)
@@ -843,23 +883,76 @@ unsigned OContext::determineBufferSize(NPY<T>* npy, const char* name)
     else
     {
         size = npy->getNumQuads() ;  
- 
     }
     return size ; 
 }
 
 
+
+template <typename T>
+unsigned OContext::getBufferSize(NPY<T>* npy, const char* name)
+{
+    bool allowed_buffer_name = isAllowedBufferName(name); 
+    if(!allowed_buffer_name)
+    {
+        LOG(fatal) << " name " << name << " IS NOT ALLOWED " ; 
+        assert(0);   
+    } 
+
+    unsigned size = determineBufferSize( npy, name ); 
+
+
+    bool is_debug_buffer_name = isDebugBufferName(name);
+    bool is_production =  m_ok->isProduction() ; 
+    bool is_forced_empty = is_production && is_debug_buffer_name ;     
+
+
+    LOG(LEVEL) 
+        << " name " << name 
+        << " is_debug_buffer_name " << is_debug_buffer_name
+        << " is_production " << is_production
+        << " is_forced_empty " << is_forced_empty
+        << " unforced size " << size
+        << " npy " << npy->getShapeString()
+        ;      
+
+    return is_forced_empty ? 0 : size ; 
+}
+
+
+
+
+
+/**
+OContext::configureBuffer
+---------------------------
+
+
+NB in interop mode, the OptiX buffer is just a reference to the 
+OpenGL buffer object, however despite this the size
+and format of the OptiX buffer still needs to be set as they control
+the addressing of the buffer in the OptiX programs 
+
+::
+
+    79 rtBuffer<float4>               genstep_buffer;
+    80 rtBuffer<float4>               photon_buffer;
+    ..
+    85 rtBuffer<short4>               record_buffer;     // 2 short4 take same space as 1 float4 quad
+    86 rtBuffer<unsigned long long>   sequence_buffer;   // unsigned long long, 8 bytes, 64 bits 
+
+**/
+
+
 template <typename T>
 void OContext::configureBuffer(optix::Buffer& buffer, NPY<T>* npy, const char* name)
 {
-
     bool is_seed = strcmp(name, "seed")==0 ;
 
     RTformat format = getFormat(npy->getType(), is_seed);
     buffer->setFormat(format);  // must set format, before can set ElementSize
 
-
-    unsigned size = determineBufferSize(npy, name);
+    unsigned size = getBufferSize(npy, name);
 
     const char* label ; 
     if(     format == RT_FORMAT_USER) label = "USER";
@@ -892,32 +985,30 @@ void OContext::configureBuffer(optix::Buffer& buffer, NPY<T>* npy, const char* n
 
     buffer->setSize(size); 
 
-    //
-    // NB in interop mode, the OptiX buffer is just a reference to the 
-    // OpenGL buffer object, however despite this the size
-    // and format of the OptiX buffer still needs to be set as they control
-    // the addressing of the buffer in the OptiX programs 
-    //
-    //         79 rtBuffer<float4>               genstep_buffer;
-    //         80 rtBuffer<float4>               photon_buffer;
-    //         ..
-    //         85 rtBuffer<short4>               record_buffer;     // 2 short4 take same space as 1 float4 quad
-    //         86 rtBuffer<unsigned long long>   sequence_buffer;   // unsigned long long, 8 bytes, 64 bits 
-    //
 }
 
+/**
+OContext::resizeBuffer
+-------------------------
+
+Canonical usage is from OEvent::resizeBuffers
+
+**/
 
 template <typename T>
-void OContext::resizeBuffer(optix::Buffer& buffer, NPY<T>* npy, const char* name)
+void OContext::resizeBuffer(optix::Buffer& buffer, NPY<T>* npy, const char* name)    // formerly static 
 {
     OpticksBufferControl ctrl(npy->getBufferControlPtr());
     bool verbose = ctrl("VERBOSE_MODE") ;
 
-    unsigned size = determineBufferSize(npy, name);
+    unsigned size = getBufferSize(npy, name);
     buffer->setSize(size); 
 
-    if(verbose)
-    LOG(info) << "OContext::resizeBuffer " << name << " shape " << npy->getShapeString() << " size " << size  ; 
+    LOG(verbose ? info : LEVEL ) 
+        << name 
+        << " shape " << npy->getShapeString() 
+        << " size " << size  
+        ; 
 }
 
 

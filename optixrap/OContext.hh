@@ -19,6 +19,7 @@ Wrapper for OptiX context providing numerous utilities including:
 
 
 #include <string>
+#include <vector>
 #include "OXPPNS.hh"
 #include "plog/Severity.h"
 
@@ -60,6 +61,11 @@ class OXRAP_API OContext {
         static const char* INTEROP_ ; 
         static plog::Severity LEVEL ; 
 
+     private:
+            static void InitBufferNames(std::vector<std::string>& names);  
+            static void InitDebugBufferNames(std::vector<std::string>& names);  
+            bool isAllowedBufferName(const char* name) const ; 
+            bool isDebugBufferName(const char* name) const ; 
      public:
             static const char* LaunchLogPath(unsigned index); 
             const char* getPrintIndexLogPath() const  ; 
@@ -143,9 +149,13 @@ class OXRAP_API OContext {
 
             template <typename T>
             static unsigned determineBufferSize(NPY<T>* npy, const char* name);
+
+            template <typename T>
+            unsigned getBufferSize(NPY<T>* npy, const char* name);
       public:
             template<typename T>
-            static void resizeBuffer(optix::Buffer& buffer, NPY<T>* npy, const char* name);  
+            void resizeBuffer(optix::Buffer& buffer, NPY<T>* npy, const char* name);    // formerly static 
+      private:
      private:
             optix::Context    m_context ; 
             optix::Group      m_top ; 
@@ -160,6 +170,9 @@ class OXRAP_API OContext {
             unsigned          m_launch_count ; 
             const char*       m_runlabel ; 
             const char*       m_runresultsdir ; 
+
+            std::vector<std::string> m_buffer_names ; 
+            std::vector<std::string> m_debug_buffer_names ; 
      
 };
 

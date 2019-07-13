@@ -10,12 +10,39 @@ Revisit with aligned running, and now with ceiling of 100M
 
     TBOOLEAN_TAG=1   ts box --generateoverride -1   --rngmax 3 
     TBOOLEAN_TAG=10  ts box --generateoverride -10  --rngmax 10 
-    TBOOLEAN_TAG=100 ts box --generateoverride -100 --rngmax 100 
+
+    OpticksProfile=ERROR TBOOLEAN_TAG=100 ts box --generateoverride -100 --rngmax 100 --nog4propagate 
+
+
+
+* things to vary "--compute" "--rtx 0" "--rtx 1" "--cvd 0" "--cvd 1" 
+
+
+
+100M illegal address
+~~~~~~~~~~~~~~~~~~~~~~
+
+::
+
+    OpticksProfile=ERROR TBOOLEAN_TAG=100 ts box --generateoverride -100 --rngmax 100 --nog4propagate 
+
+
+    OpticksProfile=ERROR TBOOLEAN_TAG=10  ts box --generateoverride -10  --rngmax 100 --nog4propagate        ##  0.417472
+
+    ta box --tag 10    # had to permit some cmdline and rngmax differences between A and B : due to prior Geant4 -10 with smaller rngmax   
+
+
+    OpticksProfile=ERROR TBOOLEAN_TAG=20  ts box --generateoverride -20  --rngmax 100 --nog4propagate        ##  0.797826 
+
+    ta box --tag 20    # non-existing tagdir for g4, made ana/ab.py changes to still operate to some extent with missing B 
+
+
+    OpticksProfile=ERROR TBOOLEAN_TAG=30  ts box --generateoverride -30  --rngmax 100 --nog4propagate
 
 
 
 
-
+* :doc:`30M-interop-launch-CUDA-invalid-address`
 
 
 
