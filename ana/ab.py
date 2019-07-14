@@ -262,6 +262,7 @@ class AB(object):
         abr = "A %s " % self.a.brief 
         bbr = "B %s " % self.b.brief 
 
+
         amd = ",".join(self.a.metadata.csgbnd)
         acsgp = self.a.metadata.TestCSGPath
 

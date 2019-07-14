@@ -260,6 +260,7 @@ Opticks::Opticks(int argc, char** argv, const char* argforced )
     m_spec(NULL),
     m_nspec(NULL),
     m_resource(NULL),
+    m_direct_gdmlpath(NULL),
     m_state(NULL),
     m_apmtslice(NULL),
     m_apmtmedium(NULL),
@@ -274,6 +275,7 @@ Opticks::Opticks(int argc, char** argv, const char* argforced )
     m_parameters(new NMeta), 
     m_runtxt(new BTxt),  
     m_cachemeta(new NMeta), 
+    m_origin_cachemeta(NULL), 
 
     m_scene_config(NULL),
     m_lod_config(NULL),
@@ -1528,6 +1530,15 @@ void Opticks::appendCacheMeta(const char* key, NMeta* obj)
 
 
 
+/**
+Opticks::updateCacheMeta
+---------------------------
+
+Invoked by Opticks::configure after initResource
+
+
+
+**/
 
 void Opticks::updateCacheMeta()  
 {
@@ -1587,6 +1598,50 @@ void Opticks::saveCacheMeta() const
     const char* cachemetapath = getCacheMetaPath();
     m_cachemeta->save(cachemetapath);
 }
+
+
+/**
+Opticks::loadOriginCacheMeta
+-----------------------
+
+Hmm, this is done in GGeo::loadCacheMeta
+
+**/
+
+void Opticks::loadOriginCacheMeta() 
+{
+    const char* cachemetapath = getCacheMetaPath();
+    LOG(info) << " cachemetapath " << cachemetapath ; 
+    m_origin_cachemeta = NMeta::Load(cachemetapath); 
+    m_origin_cachemeta->dump("Opticks::loadOriginCacheMeta"); 
+    std::string gdmlpath = ExtractCacheMetaGDMLPath(m_origin_cachemeta); 
+    LOG(info) << " gdmlpath " << gdmlpath ; 
+
+    m_direct_gdmlpath = strdup(gdmlpath.c_str()); 
+}
+
+/**
+Opticks::ExtractCacheMetaGDMLPath
+------------------------------------
+
+TODO: avoid having to fish around in the geocache argline to get the gdmlpath in direct mode
+
+**/
+
+std::string Opticks::ExtractCacheMetaGDMLPath(const NMeta* meta)  // static
+{
+    std::string argline = meta->get<std::string>("argline", "-");  
+    LOG(info) << " argline " << argline ; 
+    SArgs sa(0, NULL, argline.c_str()); 
+    const char* gdmlpath = sa.get_arg_after("--gdmlpath", NULL) ; 
+    LOG(info) << " gdmlpath " << gdmlpath ;  
+    return gdmlpath ? gdmlpath : "" ; 
+}
+
+
+
+
+
 
 
 
@@ -1859,9 +1914,15 @@ void Opticks::configure()
 
 
 
-    initResource();   // <-- RECENT ATTEMPT TO MOVE OpticksResource setup after commandline parsing done
+    initResource();  
 
     updateCacheMeta(); 
+
+    if(isDirect())
+    {
+        loadOriginCacheMeta();  // sets m_direct_gdmlpath
+    }
+
 
     defineEventSpec();  
 
@@ -2957,10 +3018,14 @@ const char*      Opticks::getKeySpec() const {       BOpticksKey* key = getKey()
 
 const char*     Opticks::getSrcGDMLPath() const {  return m_resource ? m_resource->getSrcGDMLPath() : NULL ; }
 const char*     Opticks::getGDMLPath()    const {  return m_resource ? m_resource->getGDMLPath() : NULL ; }
+
+const char*     Opticks::getDirectGDMLPath() const { return m_direct_gdmlpath ; }
+
 const char*     Opticks::getCurrentGDMLPath() const 
 {
-    bool is_embedded = isEmbedded() ;   
-    return is_embedded ? getGDMLPath() : getSrcGDMLPath() ;
+    bool is_direct   = isDirect() ;   
+    //bool is_embedded = isEmbedded() ;   
+    return is_direct ? getDirectGDMLPath() : getSrcGDMLPath() ;
     // GDML path for embedded Opticks (ie direct from Geant4) is within the geocache directory 
 }
 

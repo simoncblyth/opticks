@@ -204,6 +204,7 @@ class OKCORE_API Opticks {
    public:
        const char* getGDMLPath() const ;
        const char* getSrcGDMLPath() const ;
+       const char* getDirectGDMLPath() const ;
        const char* getCurrentGDMLPath() const ;
    public:
        NSensorList* getSensorList();
@@ -296,7 +297,9 @@ class OKCORE_API Opticks {
        void        updateCacheMeta() ; 
        void        appendCacheMeta(const char* key, NMeta* obj);
        void        saveCacheMeta() const ; 
+       void        loadOriginCacheMeta() ; 
        void        dumpCacheMeta(const char* msg="Opticks::dumpCacheMeta") const ; 
+       static std::string ExtractCacheMetaGDMLPath(const NMeta* meta) ; 
 
        const char* getRunComment() const ;
        int         getRunStamp() const ; 
@@ -590,6 +593,7 @@ class OKCORE_API Opticks {
        OpticksEventSpec*    m_spec ; 
        OpticksEventSpec*    m_nspec ; 
        OpticksResource*     m_resource ; 
+       const char*          m_direct_gdmlpath ;  
        NState*              m_state ; 
        NSlice*              m_apmtslice ; 
        const char*          m_apmtmedium ; 
@@ -607,6 +611,7 @@ class OKCORE_API Opticks {
        NMeta*               m_parameters ; 
        BTxt*                m_runtxt ;  
        NMeta*               m_cachemeta ;  
+       NMeta*               m_origin_cachemeta ;  
        NSceneConfig*        m_scene_config ; 
        NLODConfig*          m_lod_config ; 
        NSnapConfig*         m_snap_config ; 

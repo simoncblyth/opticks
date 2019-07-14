@@ -53,7 +53,7 @@ log = logging.getLogger(__name__)
 
 from opticks.ana.main import opticks_main
 from opticks.ana.nload import np_load
-from opticks.ana.ab   import AB, RC
+from opticks.ana.ab   import AB
 from opticks.ana.seq import seq2msk
 
 

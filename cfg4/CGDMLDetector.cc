@@ -182,7 +182,7 @@ void CGDMLDetector::addMPTLegacyGDML()
             << " nmat " << nmat 
             << " nmat_without_mpt " << nmat_without_mpt
             ;
-        assert(0);
+        //assert(0);
     }
  
 

@@ -17,7 +17,7 @@ Observations
   * :doc:`big-running-causing-disk-space-pressure`
   * :doc:`revive-production-running-mode` 
 
-* TODO: push this higher, see if can reach the ceiling of 100M 
+* DONE : push this higher, see if can reach the ceiling of 100M, yep reached it  
 
 
 
@@ -329,6 +329,8 @@ nvidia-smi during the 80M compute run
 
 80M, 100M compute RTX ON with aligned (input photons) gives OOM with TITAN RTX
 ---------------------------------------------------------------------------------
+
+* FIXED : by setting debug buffers to zero size in production running mode 
 
 ::
 

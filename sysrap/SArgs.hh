@@ -126,6 +126,21 @@ struct SArgs
     }
 
 
+    const char* get_arg_after(const char* option, const char* fallback) const
+    {
+        for(int i=1 ; i < int(elem.size()) - 1 ; i++ ) 
+        {
+            const char* a0 = elem[i].c_str() ; 
+            const char* a1 = elem[i+1].c_str() ;
+            if(a0 && strcmp(a0, option) == 0) return a1 ;   
+        }
+        return fallback ; 
+    }
+
+
+
+
+
 };
 
 

@@ -60,6 +60,9 @@ struct OpticksTest
     }
 */
 
+
+
+
     const Opticks* ok ; 
 
 };
@@ -137,6 +140,15 @@ void test_gpumon(Opticks* ok)
 }
 
 
+void test_getCurrentGDMLPath(Opticks* ok)
+{
+    const char* gdmlpath = ok->getCurrentGDMLPath();
+    LOG(info) << gdmlpath ;  
+}
+
+
+
+
 
 int main(int argc, char** argv)
 {
@@ -158,12 +170,14 @@ int main(int argc, char** argv)
     test_getDbgSeqhisMap(&ok);
     test_gpumon(&ok);
     test_getGDMLPath(&ok);  
+    test_loadCacheMeta(&ok);  
     */
 
-    OpticksTest okt(&ok); 
+    test_getCurrentGDMLPath(&ok); 
 
+    //OpticksTest okt(&ok); 
     //okt.test_getGenstepPath();  
-    okt.test_getDirectGenstepPath();  
+    //okt.test_getDirectGenstepPath();  
 
 
     return 0 ;

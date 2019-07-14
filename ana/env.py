@@ -119,6 +119,7 @@ class OpticksEnv(object):
         * IDPATH is not allowed as an input, it is an internal envvar only 
 
         """ 
+
         assert not os.environ.has_key("IDPATH"), "IDPATH envvar as input is forbidden"
         assert os.environ.has_key("OPTICKS_KEY"), "OPTICKS_KEY envvar is required"
         self.key = Key(os.environ["OPTICKS_KEY"])
@@ -130,12 +131,16 @@ class OpticksEnv(object):
         os.environ["IDPATH"] = keydir   ## <-- to be removed, switch to GEOCACHE signally direct workflow 
         os.environ["GEOCACHE"] = keydir    
 
+        log.info("direct_init keydir %s "  % keydir )
+
+
+
         self.install_prefix = _dirname(keydir, 5)
 
         self.setdefault("OPTICKS_INSTALL_PREFIX",  self.install_prefix)
         self.setdefault("OPTICKS_INSTALL_CACHE",   os.path.join(self.install_prefix, "installcache"))
 
-        #self.setdefault("OPTICKS_EVENT_BASE",      os.path.join(keydir, "source" ))
+        #self.setdefault("OPTICKS_EVENT_BASE",      os.path.join(keydir, "source" ))   
         self.setdefault("OPTICKS_EVENT_BASE",       keydir )
 
 

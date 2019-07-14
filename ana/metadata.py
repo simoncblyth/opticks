@@ -91,6 +91,7 @@ class CompareMetadata(object):
         self.GEOCACHE = self.expected_common("GEOCACHE", parameter=False)
         self.numPhotons = self.expected_common("numPhotons", parameter=False)
         self.mode =  self.expected_common("mode", parameter=False)
+
         self.TestCSGPath =  self.expected_common("TestCSGPath", parameter=False)
         self.csgmeta0 = self.expected_common("csgmeta0", parameter=False)  # container metadata, usually an emitter 
 
@@ -268,6 +269,9 @@ class Metadata(object):
 
         * observed no newline at end
         """
+        if self.TestCSGPath is None:
+            return []
+        pass 
         csgtxt = os.path.join(self.TestCSGPath, "csg.txt")    
         csgbnd = splitlines_(csgtxt) if os.path.exists(csgtxt) else []
         return csgbnd
@@ -289,6 +293,9 @@ class Metadata(object):
              u'verbosity': u'0'}
 
         """ 
+        if self.TestCSGPath is None:
+            return None
+        pass 
         csgmeta0_ = os.path.join(self.TestCSGPath, "0", "meta.json")
         csgmeta0 = json_(csgmeta0_) if os.path.exists(csgmeta0_) else []
         return csgmeta0
@@ -297,12 +304,18 @@ class Metadata(object):
 
     def _get_lv(self):
         path = self.TestCSGPath
-        name = os.path.basename(path)
-        return name.split("-")[-1]
+        if path is None or len(path) == 0:
+            lv = None
+        else:  
+            name = os.path.basename(path)
+            lv = name.split("-")[-1]
+        return lv
     lv = property(_get_lv)
 
     def _get_solid(self):
         lv = self.lv
+        if lv is None: return None
+
         try:
             ilv = int(lv)
             solid = self.solids[ilv]

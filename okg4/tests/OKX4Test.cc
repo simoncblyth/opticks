@@ -78,6 +78,12 @@ int main(int argc, char** argv)
         return 0 ; 
     } 
 
+    /**
+    TODO: collect this gdmlpath into metadata stored in geocache, 
+          to avoid having to extract it by parsing the argline 
+
+    **/
+
     const char* csgskiplv = PLOG::instance->get_arg_after("--csgskiplv", NULL) ; 
     LOG(info) << " csgskiplv " << ( csgskiplv ? csgskiplv : "NONE" ) ;  
     // need this prior to Opticks instanciation 

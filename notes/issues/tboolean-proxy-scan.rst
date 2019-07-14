@@ -10,11 +10,63 @@ get back into context with it.
 * :doc:`deviation-comparison-review`
 
 
-TODO : ab.smry : summarize results into a table of 40 lines, one line for each solid
+DONE : ab.smry : summarize results into a table of 40 lines, one line for each solid
 ---------------------------------------------------------------------------------------
 
 * lvidx, lvname, binary-return-code, max-deviation-in-different-categories, fraction-maligned, num-photons-used-for-test
 * make the smry persistable as ab_smry.json for collection and presentation by a smry.py 
+
+
+::
+
+    [blyth@localhost ana]$ absmry.py
+    args: /home/blyth/opticks/ana/absmry.py
+    [2019-07-14 22:03:57,217] p116563 {__init__            :absmry.py :34} INFO     - base /home/blyth/local/opticks/tmp 
+    ABSmryTab
+        LV   level   RC npho    fmal(%)  nmal                 rpost_dv.max              rpol_dv.max                ox_dv.max      solid
+         0 WARNING 0x00   1M      0.002     2       WARNING     0.1603     0      INFO     0.0000     0   WARNING     0.1215     0      Upper_LS_tube0x5b2e9f0
+         1 WARNING 0x00   1M      0.001     1       WARNING     0.1603     0      INFO     0.0000     0      INFO     0.0750     0      Upper_Steel_tube0x5b2eb10
+         2 WARNING 0x00   1M      0.000     0       WARNING     0.1603     0      INFO     0.0000     0      INFO     0.0591     0      Upper_Tyvek_tube0x5b2ec30
+         3 WARNING 0x00   1M      0.002     2       WARNING     0.1603     0      INFO     0.0000     0      INFO     0.0276     0      Upper_Chimney0x5b2e8e0
+         4 WARNING 0x00   1M      0.000     0       WARNING     0.3141     0      INFO     0.0000     0      INFO     0.0132     0      sBar0x5b34ab0
+         5 WARNING 0x00   1M      0.000     0       WARNING     0.3141     0      INFO     0.0000     0      INFO     0.0132     0      sBar0x5b34920
+         6 WARNING 0x00   1M      0.004     4       WARNING     0.3141     0      INFO     0.0000     0      INFO     0.0132     0      sModuleTape0x5b34790
+         7 WARNING 0x00   1M      0.000     0       WARNING     0.3141     0      INFO     0.0000     0      INFO     0.0137     0      sModule0x5b34600
+         8 WARNING 0x00   1M      0.000     0       WARNING     0.3141     0      INFO     0.0000     0      INFO     0.0137     0      sPlane0x5b34470
+         9 WARNING 0x00   1M      0.000     0       WARNING     0.3141     0      INFO     0.0000     0      INFO     0.0132     0      sWall0x5b342e0
+        10   ERROR 0x04   1M      0.031    31       WARNING     2.1974     0      INFO     0.0000     0     ERROR     0.3281     1      sAirTT0x5b34000
+        11 WARNING 0x00   1M      0.239   239       WARNING     2.1974     0      INFO     0.0000     0   WARNING     0.1567     0      sExpHall0x4bcd390
+        12 WARNING 0x00   1M      0.294   294       WARNING     2.4720     0      INFO     0.0000     0   WARNING     0.1807     0      sTopRock0x4bccfc0
+        13 _FATAL_ 0x06   1M      0.296   296       WARNING     1.6261     0   _FATAL_     1.9764     3   _FATAL_     1.9908     8      sTarget0x4bd4340
+        14 _FATAL_ 0x07   1M      0.233   233       _FATAL_    11.4209     1   _FATAL_     1.9764     2   _FATAL_    11.3033     9      sAcrylic0x4bd3cd0
+        15 WARNING 0x00   1M      0.001     1       WARNING     0.0550     0      INFO     0.0000     0      INFO     0.0493     0      sStrut0x4bd4b80
+        16 WARNING 0x00   1M      0.000     0       WARNING     0.0138     0      INFO     0.0000     0      INFO     0.0005     0      sFasteners0x4c01080
+        17 WARNING 0x00   1M      0.000     0       WARNING     0.0252     0      INFO     0.0000     0      INFO     0.0051     0      sMask0x4ca38d0
+        18 _FATAL_ 0x06   1M      0.000     0       WARNING     0.0228     0   _FATAL_     1.9764     2   _FATAL_     1.9779     2      PMT_20inch_inner1_solid0x4cb3610
+        19 _FATAL_ 0x05   1M      0.020    20       _FATAL_   429.2548    52   WARNING     0.0079     0   _FATAL_   429.2452     6      PMT_20inch_inner2_solid0x4cb3870
+        20 _FATAL_ 0x07   1M      0.011    11       _FATAL_   611.2571     1   _FATAL_     1.9764     2   _FATAL_   611.2682     2      PMT_20inch_body_solid0x4c90e50
+        21 _FATAL_ 0x07   1M      0.011    11       _FATAL_   611.2594     1   _FATAL_     1.9764     2   _FATAL_   611.2719     2      PMT_20inch_pmt_solid0x4c81b40
+        22 WARNING 0x00   1M      0.000     0       WARNING     0.0252     0      INFO     0.0000     0      INFO     0.0014     0      sMask_virtual0x4c36e10
+        23 _FATAL_ 0x07   1M      0.000     0       _FATAL_     0.0491     1   _FATAL_     1.9764     2   _FATAL_     1.9779     1      PMT_3inch_inner1_solid_ell_helper0x510ae30
+        24 WARNING 0x00   1M      0.000     0       WARNING     0.0035     0      INFO     0.0000     0      INFO     0.0001     0      PMT_3inch_inner2_solid_ell_helper0x510af10
+        25 _FATAL_ 0x06   1M      0.000     0       WARNING     0.0037     0   _FATAL_     1.9764     2   _FATAL_     1.9779     1      PMT_3inch_body_solid_ell_ell_helper0x510ada0
+        26 WARNING 0x00   1M      0.000     0       WARNING     0.0028     0      INFO     0.0000     0      INFO     0.0000     0      PMT_3inch_cntr_solid0x510afa0
+        27 WARNING 0x00   1M      0.001     1       WARNING     0.0053     0   WARNING     0.0079     0      INFO     0.0062     0      PMT_3inch_pmt_solid0x510aae0
+        28 WARNING 0x00   1M      0.000     0       WARNING     0.0476     0      INFO     0.0000     0      INFO     0.0038     0      sChimneyAcrylic0x5b310c0
+        29 WARNING 0x00   1M      0.000     0       WARNING     0.1799     0      INFO     0.0000     0      INFO     0.0256     0      sChimneyLS0x5b312e0
+        30 WARNING 0x00   1M      0.000     0       WARNING     0.1525     0      INFO     0.0000     0   WARNING     0.1437     0      sChimneySteel0x5b314f0
+        31 WARNING 0x00   1M      0.001     1       WARNING     0.1799     0      INFO     0.0000     0      INFO     0.0225     0      sWaterTube0x5b30eb0
+        32 WARNING 0x00   1M      0.000     0       WARNING     0.0004     0      INFO     0.0000     0      INFO     0.0000     0      svacSurftube0x5b3bf50
+        33    INFO 0x00   1M      0.000     0          INFO     0.0000     0      INFO     0.0000     0      INFO     0.0000     0      sSurftube0x5b3ab80
+        34 _FATAL_ 0x06   1M      0.414   414       WARNING     1.9135     0   _FATAL_     1.9764     2   _FATAL_     1.9779    47      sInnerWater0x4bd3660
+        35 _FATAL_ 0x06   1M      0.424   424       WARNING     1.9136     0   _FATAL_     1.9764     2   _FATAL_     1.9779    35      sReflectorInCD0x4bd3040
+        36 WARNING 0x00   1M      0.462   462       WARNING     1.9914     0      INFO     0.0000     0   WARNING     0.1367     0      sOuterWaterPool0x4bd2960
+        37 WARNING 0x00   1M      0.462   462       WARNING     1.9916     0      INFO     0.0000     0   WARNING     0.2188     0      sPoolLining0x4bd1eb0
+        38 WARNING 0x00   1M      0.531   531       WARNING     2.2660     0      INFO     0.0000     0   WARNING     0.1406     0      sBottomRock0x4bcd770
+        39 _FATAL_ 0x04   1M      2.939  2939       WARNING     5.4934     0      INFO     0.0000     0   _FATAL_     2.9766    78      sWorld0x4bc2350
+
+
+
 
 
 rejigged shortcuts moving the detailed options within tboolean-lv
@@ -116,11 +168,16 @@ DONE : visualization needs auto time domain : to be of any use for large geometr
 * :doc:`large-extent-geometry-sparse-photon-visualization`
 
 
-TODO : python scanning "ali.py" 
-------------------------------------
 
-Hmm need more detailed summary information than just RC ... 
-eg names of proxies, extents 
+
+
+
+
+
+
+
+
+
 
 
 LV 0-9 inclusive, chisq 0, no serious deviations : extents all less than 3.5m

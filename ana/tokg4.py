@@ -11,36 +11,40 @@ compares their bounce histories.
 import os, sys, logging, argparse, numpy as np
 log = logging.getLogger(__name__)
 
-from opticks.ana.base import opticks_main
+from opticks.ana.main import opticks_main
+from opticks.ana.ab   import AB
 from opticks.ana.nbase import vnorm
-from opticks.ana.evt  import Evt
+from opticks.ana.seq import seq2msk
 
 
 
 if __name__ == '__main__':
-    np.set_printoptions(precision=4, linewidth=200)
+    ok = opticks_main(doc=__doc__, tag="1", src="torch", det="g4live", pfx="source", tagoffset=0)
+    #ok = opticks_main(doc=__doc__)  
 
-    args = opticks_main(doc=__doc__, tag="1", src="torch", det="dayabay", c2max=2.0, tagoffset=0)
+    log.info(ok.brief)
 
-    log.info("tag %s src %s det %s c2max %s  " % (args.utag,args.src,args.det, args.c2max))
+    ab = AB(ok)
+    ab.dump()
 
+    rc = ab.RC
+
+    level = "fatal" if rc > 0 else "info"
+    getattr(log, level)(" RC 0x%.2x %s " % (rc,bin(rc)) )
+
+
+    if not ok.ipython:
+        log.info("early exit as non-interactive")
+        sys.exit(rc)
+    else:
+        pass
+    pass
+
+    a = ab.a
+    b = ab.b
 
     
 
-    seqs=[]
-    try:
-        a = Evt(tag="%s" % args.utag, src=args.src, det=args.det, seqs=seqs, args=args)
-        b = Evt(tag="-%s" % args.utag , src=args.src, det=args.det, seqs=seqs, args=args )
-    except IOError as err:
-        log.fatal(err)
-        sys.exit(args.mrc)
-  
-
-    log.info( " a : %s " % a.brief)
-    log.info( " b : %s " % b.brief )
-
-    print "A",a
-    print "B",b
 
 
 
@@ -58,12 +62,5 @@ if 0:
         b0r = vnorm(b0[:,:2])
         if len(b0r)>0:
             print " ".join(map(lambda _:"%6.3f" % _, (b0r.min(),b0r.max())))
-
-if 1:
-    Evt.compare_table(a,b, "seqhis_ana seqmat_ana".split(), lmx=20, c2max=None, cf=False)
-    Evt.compare_table(a,b, "pflags_ana hflags_ana".split(), lmx=20, c2max=None, cf=False)
-
-    #a.history_table(slice(0,20))
-    #b.history_table(slice(0,20))
 
 

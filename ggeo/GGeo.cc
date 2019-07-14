@@ -102,6 +102,7 @@ GGeo::GGeo(Opticks* ok, bool live)
    m_prepared(false), 
    m_loadedcachemeta(NULL),
    m_lv2sd(NULL),
+   m_origin_gdmlpath(NULL),
    m_lookup(NULL), 
    m_meshlib(NULL),
    m_geolib(NULL),
@@ -324,7 +325,10 @@ std::pair<std::string,std::string> GGeo::getLVSD(unsigned idx) const
     return std::pair<std::string,std::string>( lv, sd ); 
 }
 
-
+const char* GGeo::getOriginGDMLPath() const
+{
+    return m_origin_gdmlpath ; 
+}
 
 
 
@@ -753,6 +757,17 @@ void GGeo::saveCacheMeta() const
 }
 
 
+/**
+GGeo::loadCacheMeta
+----------------------
+
+Invoked at the tail of GGeo::loadFromCache 
+
+* hmm : perhaps most of this belongs inside Opticks ??
+
+
+**/
+
 void GGeo::loadCacheMeta() // loads metadata that the process that created the geocache persisted into the geocache
 {
     const char* path = m_ok->getCacheMetaPath(); 
@@ -786,7 +801,16 @@ void GGeo::loadCacheMeta() // loads metadata that the process that created the g
     {
          m_lv2sd = lv2sd ;  
     }
+
+
+    std::string gdmlpath = Opticks::ExtractCacheMetaGDMLPath( m_loadedcachemeta ) ; 
+    m_origin_gdmlpath = gdmlpath.empty() ? NULL : strdup(gdmlpath.c_str() ); 
+
+    LOG(fatal) << " origin_gdmlpath " << m_origin_gdmlpath ; 
+
 }
+
+
 
 
  

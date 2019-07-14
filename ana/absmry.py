@@ -11,6 +11,7 @@ from __future__ import print_function
 import os, sys, logging, numpy as np
 from collections import OrderedDict as odict
 from opticks.ana.base import json_save_, json_load_
+from opticks.ana.num import Num
 from opticks.ana.level import Level
 
 log = logging.getLogger(__name__)
@@ -30,6 +31,7 @@ def findfile(base, name, relative=True):
 class ABSmryTab(object):
     def __init__(self, base="$TMP"):
         base = os.path.expandvars(base)
+        log.info("base %s " % base)
         relp = findfile(base, ABSmry.NAME )
         self.base = base
         s = odict() 
@@ -100,6 +102,7 @@ class ABSmry(odict):
     level = property(lambda self:self["ab.level"])
     fmal = property(lambda self:self["ab.mal.fmaligned"])
     nmal = property(lambda self:self.get("ab.mal.nmal",-1))
+    npho = property(lambda self:self.get("ab.cfm.numPhotons",-1))
     solid = property(lambda self:self["ab.a.metadata.solid"])
 
     def __init__(self):
@@ -123,14 +126,14 @@ class ABSmry(odict):
         """
         level uses ansi codes in table, so has 9 invisble characters in it 
         """
-        head = " %5s %7s %4s %10s %5s " % ("LV", "level", "RC", "fmal(%)", "nmal" ) 
+        head = " %5s %7s %4s %4s %10s %5s " % ("LV", "level", "RC", "npho", "fmal(%)", "nmal" ) 
         space = "   "
         body = cls.label_dv()
         tail = "solid" 
         return " ".join([head,space,body,space, tail]) 
 
     def __repr__(self):
-        head = " %5s %16s 0x%.2x %10.3f %5d " % ( self.key, self.lev.fn_(self.lev.nam) , self.RC, self.fmal*100.0, self.nmal )
+        head = " %5s %16s 0x%.2x %4s %10.3f %5d " % ( self.key, self.lev.fn_(self.lev.nam) , self.RC, Num.String(self.npho), self.fmal*100.0, self.nmal )
         space = "   "
         body = self.desc_dv()
         tail = "%s"  % self.solid
