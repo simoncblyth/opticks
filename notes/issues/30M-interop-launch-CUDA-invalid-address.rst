@@ -125,18 +125,205 @@ Compare COMPUTE mode
 
     OpticksProfile=ERROR TBOOLEAN_TAG=80  ts box --generateoverride -80  --rngmax 100  --nog4propagate --compute --cvd 1 --rtx 1 --production --savehit    ## 80M   --> OOM
 
+    OpticksProfile=ERROR TBOOLEAN_TAG=80  ts box --generateoverride -80  --rngmax 100  --nog4propagate --compute --cvd 1 --rtx 1 --production --savehit    ## 80M  0.1376
+
+         # after create empty sequence and record buffers, can reach 80M, and times are reduced a lot 
+
 
     OpticksProfile=ERROR TBOOLEAN_TAG=100  ts box --generateoverride -100  --rngmax 100  --nog4propagate --compute --cvd 1 --rtx 1 --production --savehit    ## 100M   --> OOM 
 
-    ## Hmm generating the input photons on CPU takes quite a while 
-    ## the point of doing so is for easy aligned OK/G4 debugging : but this
-    ## kind of big running aint very practical with G4.   
-    ##
-    ## So need to do generation on GPU for big running, which is closer to real "production" anyhow.
- 
+    OpticksProfile=ERROR TBOOLEAN_TAG=100  ts box --generateoverride -100  --rngmax 100  --nog4propagate --compute --cvd 1 --rtx 1 --production --savehit    ## 100M   0.27114
 
+        ta box --tag 100 
+
+
+
+Contrast with G4 extrapolations
+-------------------------------------
+
+
+Extrapolates:
+
+* 1s for 0.010M
+* 100s for 1M       1.67 min 
+* 1,000s for 10M      16.66 min        (measured 1060.47s)
+
+*  8,000s for 80M
+* 10,000s for 100M    166.66 min   2.77 hrs 
+* 100,000s for 1000M  1666.66 min  27.77 hrs 
+
+
+100M ratios, is this real ?::
+
+    In [1]: 10000/0.27114
+    Out[1]: 36881.31592535222
+
+    In [2]: 8000/0.1376
+    Out[2]: 58139.53488372093
+
+
+TODO : detailed profiling of OptiX side : see what the overheads are 
+-------------------------------------------------------------------------
+
+* eg OpSeeder which populates the seed buffer providing the connection
+  between gensteps and photons
+
+* hmm not relevant for input photons ?
+
+
+TODO: back to GPU photon generation
+--------------------------------------
+
+* Hmm generating >50M input photons on CPU takes quite a while, 
+  the point of doing so was for easy aligned OK/G4 debugging : but this
+  kind of big running aint very practical with G4.   
+    
+* So need to do generation on GPU for big running, which is closer to real "production" anyhow.
+    
+* given experience with empyting "sequence" and "record" buffers this will push performance too, 
+  by avoiding the big "source" buffer
+
+* aligned running (and running G4) is a debug activity : not to be done in production ...
+  perhaps use OKTest, getting rid for G4 entirely 
+
+
+TODO : delete the eventdirs option, to avoid mixage 
+------------------------------------------------------
+
+* analogous to --deletegeocache  --deletetagdir 
+
+* hmm, the paired G4 and OK event pattern is not very convenient with big running :
+  because dont do the G4 
+
+* Rearrange such that everything goes in tagdirs ? Tagdirs originally for 
+  multievent. Maybe better to resume that, and use the prefix for 
+  campaigns with names like "50M". Using tagdirs for different photon counts
+  is not a good approach.
+
+* ini no longer needed?
+
+::
+
+    [blyth@localhost torch]$ l
+    total 120
+    -rw-rw-r--.   1 blyth blyth 1821 Jul 13 22:36 DeltaVM.ini
+    -rw-rw-r--.   1 blyth blyth  144 Jul 13 22:36 OpticksProfileAccLabels.npy
+    -rw-rw-r--.   1 blyth blyth   96 Jul 13 22:36 OpticksProfileAcc.npy
+    -rw-rw-r--.   1 blyth blyth 4112 Jul 13 22:36 OpticksProfileLabels.npy
+    -rw-rw-r--.   1 blyth blyth 1088 Jul 13 22:36 OpticksProfile.npy
+    -rw-rw-r--.   1 blyth blyth 2397 Jul 13 22:36 VM.ini
+    -rw-rw-r--.   1 blyth blyth 1874 Jul 13 22:36 DeltaTime.ini
+    -rw-rw-r--.   1 blyth blyth 2189 Jul 13 22:36 Time.ini
+    drwxrwxr-x.   4 blyth blyth 4096 Jul 13 22:36 100
+    drwxrwxr-x.   4 blyth blyth 4096 Jul 13 22:36 -100
+    drwxrwxr-x.   3 blyth blyth 4096 Jul 13 22:23 80
+    drwxrwxr-x.   3 blyth blyth 4096 Jul 13 22:23 -80
+    drwxrwxr-x. 108 blyth blyth 8192 Jul 13 22:19 1
+    drwxrwxr-x. 108 blyth blyth 8192 Jul 13 22:19 -1
+    drwxrwxr-x.   3 blyth blyth 4096 Jul 13 20:59 50
+    drwxrwxr-x.   3 blyth blyth 4096 Jul 13 20:59 -50
+    drwxrwxr-x.   3 blyth blyth 4096 Jul 13 20:47 40
+    drwxrwxr-x.   3 blyth blyth 4096 Jul 13 20:47 -40
+    drwxrwxr-x.   4 blyth blyth 4096 Jul 13 20:37 30
+    drwxrwxr-x.   4 blyth blyth 4096 Jul 13 20:37 -30
+    drwxrwxr-x.   4 blyth blyth 4096 Jul 13 17:02 20
+    drwxrwxr-x.   6 blyth blyth 4096 Jul 13 16:55 10
+    drwxrwxr-x.   3 blyth blyth 4096 Jul 12 17:50 -10
+    drwxrwxr-x.   3 blyth blyth 4096 Jul 10 11:43 200
+    drwxrwxr-x.   3 blyth blyth 4096 Jul 10 11:43 -200
+    drwxrwxr-x.   2 blyth blyth   29 Jun 24 14:28 0
+    [blyth@localhost torch]$ 
+
+
+
+
+
+TODO : some "hit" analysis 
+--------------------------------------
+
+
+
+
+
+
+Creating the "debug" buffers "sequence" and "record" as empties, allows reaching 80M and 100M, and close to halves the time  
+-------------------------------------------------------------------------------------------------------------------------------------
+
+::
+
+    OpticksProfile=ERROR TBOOLEAN_TAG=80  ts box --generateoverride -80  --rngmax 100  --nog4propagate --compute --cvd 1 --rtx 1 --production --savehit 
+
+
+Huh difference between these 2.  These event dirs are mixed up a bit with prior running::
+
+    2019-07-13 22:23:04.787 INFO  [179114] [OPropagator::launch@180] 1 : (0;80000000,1) 
+    2019-07-13 22:23:04.787 INFO  [179114] [BTimes::dump@146] OPropagator::launch
+                    launch001                 0.137608
+    ...
+    [2019-07-13 22:23:05,858] p182969 {load                :ab.py     :250} INFO     - ] 
+    ab.pro
+          okp 0.1406         g4p 0.0000          g4p/okp 0.0000        
+
+
+
+
+nvidia-smi during the 80M compute run
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * hmm though about trying to run nvidia-smi while running these to see memory list, but the launch is less than 0.5s  
+* but seems i got lucky:
+
+::
+
+    blyth@localhost optixrap]$ nvidia-smi
+    Sat Jul 13 22:23:03 2019       
+    +-----------------------------------------------------------------------------+
+    | NVIDIA-SMI 418.56       Driver Version: 418.56       CUDA Version: 10.1     |
+    |-------------------------------+----------------------+----------------------+
+    | GPU  Name        Persistence-M| Bus-Id        Disp.A | Volatile Uncorr. ECC |
+    | Fan  Temp  Perf  Pwr:Usage/Cap|         Memory-Usage | GPU-Util  Compute M. |
+    |===============================+======================+======================|
+    |   0  TITAN RTX           Off  | 00000000:73:00.0  On |                  N/A |
+    | 40%   41C    P2    65W / 280W |  15457MiB / 24189MiB |     24%      Default |
+    +-------------------------------+----------------------+----------------------+
+    |   1  TITAN V             Off  | 00000000:A6:00.0 Off |                  N/A |
+    | 33%   48C    P8    28W / 250W |      0MiB / 12036MiB |      0%      Default |
+    +-------------------------------+----------------------+----------------------+
+                                                                               
+    +-----------------------------------------------------------------------------+
+    | Processes:                                                       GPU Memory |
+    |  GPU       PID   Type   Process name                             Usage      |
+    |=============================================================================|
+    |    0     13840      G   /usr/bin/X                                   131MiB |
+    |    0     15631      G   /usr/bin/gnome-shell                         157MiB |
+    |    0    179114      C   /home/blyth/local/opticks/lib/OKG4Test     15157MiB |
+    +-----------------------------------------------------------------------------+
+    [blyth@localhost optixrap]$ nvidia-smi
+    Sat Jul 13 22:23:07 2019       
+    +-----------------------------------------------------------------------------+
+    | NVIDIA-SMI 418.56       Driver Version: 418.56       CUDA Version: 10.1     |
+    |-------------------------------+----------------------+----------------------+
+    | GPU  Name        Persistence-M| Bus-Id        Disp.A | Volatile Uncorr. ECC |
+    | Fan  Temp  Perf  Pwr:Usage/Cap|         Memory-Usage | GPU-Util  Compute M. |
+    |===============================+======================+======================|
+    |   0  TITAN RTX           Off  | 00000000:73:00.0  On |                  N/A |
+    | 41%   43C    P0    99W / 280W |    290MiB / 24189MiB |     34%      Default |
+    +-------------------------------+----------------------+----------------------+
+    |   1  TITAN V             Off  | 00000000:A6:00.0 Off |                  N/A |
+    | 33%   48C    P8    28W / 250W |      0MiB / 12036MiB |      0%      Default |
+    +-------------------------------+----------------------+----------------------+
+                                                                               
+    +-----------------------------------------------------------------------------+
+    | Processes:                                                       GPU Memory |
+    |  GPU       PID   Type   Process name                             Usage      |
+    |=============================================================================|
+    |    0     13840      G   /usr/bin/X                                   131MiB |
+    |    0     15631      G   /usr/bin/gnome-shell                         157MiB |
+    +-----------------------------------------------------------------------------+
+    [blyth@localhost optixrap]$ 
+
+
+
 
 
 

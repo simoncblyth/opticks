@@ -65,7 +65,7 @@ if __name__ == '__main__':
     ab = AB(ok)
     ab.dump()
 
-    rc = ab.get_rc() 
+    rc = ab.RC
 
     level = "fatal" if rc > 0 else "info"
     getattr(log, level)(" RC 0x%.2x %s " % (rc,bin(rc)) )

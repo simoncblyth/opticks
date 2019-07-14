@@ -10,6 +10,13 @@ get back into context with it.
 * :doc:`deviation-comparison-review`
 
 
+TODO : ab.smry : summarize results into a table of 40 lines, one line for each solid
+---------------------------------------------------------------------------------------
+
+* lvidx, lvname, binary-return-code, max-deviation-in-different-categories, fraction-maligned, num-photons-used-for-test
+* make the smry persistable as ab_smry.json for collection and presentation by a smry.py 
+
+
 rejigged shortcuts moving the detailed options within tboolean-lv
 ------------------------------------------------------------------
 
@@ -138,6 +145,10 @@ LV 0-9 inclusive, chisq 0, no serious deviations : extents all less than 3.5m
                scan-- :       tboolean.py --pfx tboolean-proxy-7 ======= RC   0  RC 0x00 
                scan-- :       tboolean.py --pfx tboolean-proxy-8 ======= RC   0  RC 0x00 
                scan-- :       tboolean.py --pfx tboolean-proxy-9 ======= RC   0  RC 0x00 
+
+
+
+     GMeshLibTest 
 
      0                       Upper_LS_tube0x5b2e9f0 ce0           0.0000,0.0000,0.0000,1750.0000 ce1           0.0000,0.0000,0.0000,1750.0000  0
      1                    Upper_Steel_tube0x5b2eb10 ce0           0.0000,0.0000,0.0000,1750.0000 ce1           0.0000,0.0000,0.0000,1750.0000  1

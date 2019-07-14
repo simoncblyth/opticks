@@ -78,8 +78,15 @@ opticks-tboolean-shortcuts(){
    : **visualize** the geant4 propagation 
    tv4(){  LV=$1 tboolean.sh --load --vizg4 ${@:2} ; } 
 
-   : **analyse** : load events and analyse the propagation
+   : **analyse interactively** : load events and analyse the propagation in ipython
    ta(){  LV=$1 tboolean.sh --ip ${@:2} ; } 
+
+   : **analyse** : load events and run python analysis script the propagation
+   tp(){  LV=$1 tboolean.sh --py ${@:2} ; } 
+
+
+
+
 
 }
 

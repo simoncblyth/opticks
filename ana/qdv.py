@@ -14,36 +14,13 @@ notes/issues/py-analysis-too-slow-for-big-events.rst
 
 """
 import os, sys, logging, numpy as np
-from opticks.ana.log import fatal_, error_, warning_, info_, debug_
+#from opticks.ana.log import fatal_, error_, warning_, info_, debug_
 from opticks.ana.log import underline_, blink_ 
+
+from opticks.ana.level import Level 
+
 log = logging.getLogger(__name__)
 
-
-class Level(object):
-    FATAL = 20
-    ERROR = 10
-    WARNING = 0 
-    INFO = -10
-    DEBUG = -20
-
-    level2name = { FATAL:"FATAL", ERROR:"ERROR", WARNING:"WARNING", INFO:"INFO", DEBUG:"DEBUG" }
-    name2level = { "FATAL":FATAL, "ERROR":ERROR, "WARNING":WARNING, "INFO":INFO, "DEBUG":DEBUG  }
-    level2func = { FATAL:fatal_, ERROR:error_, WARNING:warning_, INFO:info_, DEBUG:debug_ }
-
-
-    @classmethod
-    def FromName(cls, name):
-        level = cls.name2level[name] 
-        return cls(name, level) 
-    @classmethod
-    def FromLevel(cls, level):
-        name = cls.level2name[level] 
-        return cls(name, level) 
-
-    def __init__(self, name, level):
-        self.name = name
-        self.level = level
-        self.fn_ = self.level2func[level]
 
 
 class QDV(object):
@@ -155,8 +132,8 @@ class QDV(object):
        clabel = cls.clabel 
        return "%s : %s  " % (clabel, cdesc )
 
-   def columns2(self):
-       cdesc2 = self.CFMT_CUTS % ("","","","","", self.dvmax[0], self.dvmax[1], self.dvmax[2], "", "", "") 
+   def columns2(self, tdisc):
+       cdesc2 = self.CFMT_CUTS % ("","",tdisc[0],tdisc[1],tdisc[2], self.dvmax[0], self.dvmax[1], self.dvmax[2], "", "", "") 
        return "%s : %s  " % (self.cblank, cdesc2 )
 
 
@@ -213,6 +190,7 @@ class QDVTab(object):
         self.labels = labels
         self.cu = cu 
         self.nsel = nsel 
+        self._ndisc = None
 
         self.aligned = self.a.seqhis == self.b.seqhis 
         self.init_qdv()
@@ -296,6 +274,12 @@ class QDVTab(object):
         return max(maxdv_) if len(maxdv_) > 0 else -1 
     maxdvmax   = property(_get_maxdvmax)  
 
+    def _get_ndvp(self):
+        """total number of deviant (ERROR or FATAL) photons"""
+        return self.ndisc[1]  
+    ndvp = property(_get_ndvp)
+
+
     def findmax(self):
         maxdv = map(lambda _:float(_.mx), self.dvs) 
         mmaxdv = max(maxdv) if len(maxdv) > 0 else -1
@@ -304,6 +288,8 @@ class QDVTab(object):
                 dv.ismax = True
             pass
         pass 
+
+    level = property(lambda self:self.maxlevel.name)    
 
     def _get_maxlevel(self):
         """
@@ -314,6 +300,18 @@ class QDVTab(object):
         mxl = max(levs) if len(levs) > 0 else None
         return Level.FromLevel(mxl) if mxl is not None else None
     maxlevel = property(_get_maxlevel)  
+
+    def _get_ndisc(self):
+        if self._ndisc is None:
+            ndisc = np.zeros(3, dtype=np.int)
+            for dv in self.dvs:
+                ndisc += dv.ndisc
+            pass
+            self._ndisc = ndisc
+        pass
+        return self._ndisc
+    ndisc = property(_get_ndisc) 
+
 
     def _get_RC(self):
         maxlevel = self.maxlevel
@@ -338,7 +336,7 @@ class QDVTab(object):
         if self.maxlevel is None:
             return "maxlevel None"   
         else:
-            return "maxdvmax:%s  level:%s  RC:%d       skip:%s" % ( gfmt_(self.maxdvmax), self.maxlevel.fn_(self.maxlevel.name), self.RC,  skips )
+            return "maxdvmax:%s  ndvp:%4d  level:%s  RC:%d       skip:%s" % ( gfmt_(self.maxdvmax), self.ndvp, self.maxlevel.fn_(self.maxlevel.name), self.RC,  skips )
         pass
   
 
@@ -348,7 +346,7 @@ class QDVTab(object):
         if len(self.dvs) == 0:
             return "\n".join(["ab.%s" % self.name, "no dvs" ])
         else: 
-            return "\n".join( ["ab.%s" % self.name, self.brief, self.dvs[0].columns2(), QDV.columns()] + map(repr, filter(None,self.dvs[self.sli]) ) + ["."] )
+            return "\n".join( ["ab.%s" % self.name, self.brief, self.dvs[0].columns2(self.ndisc), QDV.columns()] + map(repr, filter(None,self.dvs[self.sli]) ) + ["."] )
         pass
 
     def __getitem__(self, sli):

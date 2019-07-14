@@ -88,8 +88,10 @@ class CompareMetadata(object):
         self.am = am 
         self.bm = bm 
 
+        self.GEOCACHE = self.expected_common("GEOCACHE", parameter=False)
         self.numPhotons = self.expected_common("numPhotons", parameter=False)
         self.mode =  self.expected_common("mode", parameter=False)
+        self.TestCSGPath =  self.expected_common("TestCSGPath", parameter=False)
         self.csgmeta0 = self.expected_common("csgmeta0", parameter=False)  # container metadata, usually an emitter 
 
         cmdline = self.expected_common( "cmdline", parameter=True) 
@@ -98,6 +100,8 @@ class CompareMetadata(object):
         self.align = self.cmdline.has("--align ")
         self.reflectcheat = self.cmdline.has("--reflectcheat ")
         self.factor = ratio_(bm.propagate0, am.propagate0)
+
+    
 
     def _get_crucial(self):
         """
@@ -225,6 +229,9 @@ class Metadata(object):
         self.propagate0 = float(self.delta_times.propagate) 
         self.propagate = float(self.launch_times.propagate) 
 
+        self._solids = None
+ 
+
     # parameter accessors (from the json)
     mode = property(lambda self:self.parameters.get('mode',"no-mode") )  # eg COMPUTE_MODE
     photonData = property(lambda self:self.parameters.get('photonData',"no-photonData") ) # digest
@@ -232,6 +239,7 @@ class Metadata(object):
     sequenceData = property(lambda self:self.parameters.get('sequenceData',"no-sequenceData") )  # digest
     numPhotons = property(lambda self:int(self.parameters.get('NumPhotons',"-1")) ) 
     TestCSGPath = property(lambda self:self.parameters.get('TestCSGPath',None) )  # eg tboolean-box
+    GEOCACHE = property(lambda self:self.parameters.get('GEOCACHE',None) ) 
     Note = property(lambda self:self.parameters.get('Note',"") )
 
     def _flags(self):
@@ -285,6 +293,34 @@ class Metadata(object):
         csgmeta0 = json_(csgmeta0_) if os.path.exists(csgmeta0_) else []
         return csgmeta0
     csgmeta0 = property(_get_csgmeta0)
+
+
+    def _get_lv(self):
+        path = self.TestCSGPath
+        name = os.path.basename(path)
+        return name.split("-")[-1]
+    lv = property(_get_lv)
+
+    def _get_solid(self):
+        lv = self.lv
+        try:
+            ilv = int(lv)
+            solid = self.solids[ilv]
+        except ValueError:  
+            solid = lv
+        pass
+        return solid
+    solid = property(_get_solid)
+
+    def _get_solids(self):
+        """
+        List of solids (aka meshes) obtained from "GItemList/GMeshLib.txt" within the basis geocache 
+        """
+        if self._solids is None:  
+            path = os.path.join(self.GEOCACHE, "GItemList/GMeshLib.txt")
+            self._solids = splitlines_(path)
+        return self._solids
+    solids = property(_get_solids) 
        
 
     def dump(self):

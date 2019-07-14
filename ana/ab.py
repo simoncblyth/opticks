@@ -8,6 +8,7 @@ from collections import OrderedDict as odict
 
 from opticks.ana.ctx import Ctx
 from opticks.ana.cfh import CFH
+from opticks.ana.base import json_save_
 from opticks.ana.nbase import chi2, vnorm
 from opticks.ana.decompression import decompression_bins
 from opticks.ana.histype import HisType
@@ -19,6 +20,7 @@ from opticks.ana.qdv import QDV, QDVTab
 from opticks.ana.make_rst_table import recarray_as_rst
 from opticks.ana.metadata import CompareMetadata
 from opticks.ana.profile import Profile
+from opticks.ana.absmry import ABSmry
 
 log = logging.getLogger(__name__)
 
@@ -31,12 +33,13 @@ class Maligned(object):
     def __init__(self, ab):
         self.ab = ab 
 
-
         tot = len(ab.a.seqhis)
         self.tot = tot
         self.maligned = ab.maligned
         self.aligned = ab.aligned
-        self.fmaligned = ratio_(len(ab.maligned), tot)
+        self.nmal = len(ab.maligned)
+
+        self.fmaligned = ratio_(self.nmal, tot)
         self.faligned = ratio_(len(ab.aligned), tot)
         self.sli = slice(0,25)
 
@@ -52,6 +55,7 @@ class Maligned(object):
         return "\n".join( ["ab.mal"] + self.lines() + [repr(self.sli)]
                    + map(lambda iq:self.ab.recline(iq), enumerate(self.maligned[self.sli])) + ["."]
                 ) 
+
 
 
 class RC(object):
@@ -71,9 +75,11 @@ class RC(object):
         rc["ox_dv"] = ab.ox_dv.RC 
         log.info("]")
 
+
         assert max(rc.values()) <= 1 
         irc = rc["rpost_dv"] << self.offset["rpost_dv"] | rc["rpol_dv"] << self.offset["rpol_dv"] | rc["ox_dv"] << self.offset["ox_dv"]
         self.rc = irc 
+        self.level = max(ab.rpost_dv.maxlevel.level,ab.ox_dv.maxlevel.level,ab.ox_dv.maxlevel.level) 
 
     def __repr__(self):
         return "RC 0x%.2x" % self.rc
@@ -176,7 +182,7 @@ class AB(object):
             self.print_(self.rpost_dv)
             self.print_(self.rpol_dv)
             self.print_(self.ox_dv)
-            self.print_(self.rc)
+            self.print_(self.rc_)
             self.print_(self.cfm)  
         pass
         log.debug("]")
@@ -205,6 +211,8 @@ class AB(object):
             self.compare_domains()
             self.compare()
             self.init_point()
+            self.smry = ABSmry.Make(self)
+            self.smry.save()  
         pass 
         log.debug("]")
 
@@ -319,12 +327,21 @@ class AB(object):
         if self.ok.prohis:self.prohis()
         if self.ok.promat:self.promat()
 
-        self.rc = RC(self) 
+        self.rc_ = RC(self) 
 
         log.info("]")
 
-    def get_rc(self):
-        return self.rc.rc if self.is_comparable else 255
+    def _get_RC(self):
+        return self.rc_.rc if self.is_comparable else 255
+    RC = property(_get_RC) 
+
+    def _get_level(self):
+        return self.rc_.level if self.is_comparable else 255
+    level = property(_get_level) 
+
+
+    numPhotons = property(lambda self:self.cfm.numPhotons) 
+
 
     def init_point(self):
         log.debug("[")

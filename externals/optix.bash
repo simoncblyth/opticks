@@ -104,6 +104,31 @@ Exceptions
 
 
 
+DLDenoiser : Deep-learning-based denoiser
+-------------------------------------------
+
+OptiX 600, optix-pdf p79
+
+Image areas that have not yet fully converged during rendering will often exhibit pixel-scale
+grainy noise due to the insufficient amount of color information gathered by the renderer.
+OptiX can estimate the converged image from a partially converged one, a process called
+denoising. Instead of further improving image quality through a large number of path tracing
+iterations, the denoiser can produce images of acceptable quality with far fewer iterations by
+post-processing the image.
+
+...
+
+You can also create a custom model by training the denoiser with your own set of images and
+use the resulting training data in OptiX, but this process is not part of OptiX itself. To learn
+how to generate your own training data based on your renderer’s images you can attend the
+course "Rendered Image Denoising using Autoencoders", which is part of the NVIDIA Deep
+Learning Institute.
+
+
+* :google:`Rendered Image Denoising using Autoencoders`
+
+* https://www.mahmoudhesham.net/blog/post/using-autoencoder-neural-network-denoise-renders
+
 
 
 nvrtc : runtime compilation for OptiX 

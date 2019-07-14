@@ -12,6 +12,7 @@
 #
 
 OKTest --envkey --xanalytic --geocenter
+#OKG4Test --envkey --xanalytic --geocenter
 
 
  

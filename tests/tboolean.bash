@@ -842,6 +842,8 @@ tboolean-lv()
    local cmdline="$*"
    if [ "${cmdline/--ip}" != "${cmdline}" ]; then
        TESTNAME=$testname tboolean-ipy- $* 
+   elif [ "${cmdline/--py}" != "${cmdline}" ]; then
+       TESTNAME=$testname tboolean-py- $* 
    elif [ "${cmdline/--chk}" != "${cmdline}" ]; then
        ${funcname}-
    elif [ "${cmdline/--noalign}" != "${cmdline}" ]; then
