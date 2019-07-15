@@ -526,6 +526,8 @@ class OKCORE_API Opticks {
        bool isCompute();
        bool isInterop();
        bool isCfG4();   // needs manual override to set to CFG4_MODE
+
+       bool isUTailDebug() const ; // --utaildebug
        bool isProduction() const ; // --production
 
        bool isAlign() const ; // --align

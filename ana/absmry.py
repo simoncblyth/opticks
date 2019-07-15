@@ -31,18 +31,32 @@ def findfile(base, name, relative=True):
 class ABSmryTab(object):
     def __init__(self, base="$TMP"):
         base = os.path.expandvars(base)
-        log.info("base %s " % base)
+        LV=os.environ.get("LV", None)
+        log.info("base %s LV %s " % (base, LV))
         relp = findfile(base, ABSmry.NAME )
         self.base = base
         s = odict() 
         for rp in relp:
             path = os.path.join(base, rp)
             smry = ABSmry.Load(os.path.dirname(path))
-            s[smry.key] = smry   
+
+            if LV is not None and smry.key != LV: continue
+
+            try:
+                fkey = float(smry.key)
+            except ValueError:
+                fkey = 1000.0+len(s)    
+            pass
+            log.debug("rp:%s smry.key:%s fkey:%s" % (rp, smry.key, fkey))
+
+            while fkey in s:
+                fkey += 0.001
+            pass 
+            s[fkey] = smry   
         pass
         self.s = s
     def __repr__(self):
-        return "\n".join(["ABSmryTab", ABSmry.Labels()]+map(lambda kv:repr(kv[1]), sorted(self.s.items(), key=lambda kv:int(kv[0]))  ))
+        return "\n".join(["ABSmryTab", ABSmry.Labels()]+map(lambda kv:repr(kv[1]), sorted(self.s.items(), key=lambda kv:float(kv[0]))  ))
              
 
 
@@ -184,8 +198,6 @@ def test_MakeLoad(ok):
     s.save(dir_)
 
     s2 = ABSmry.Load(dir_)
-
-
 
 
 

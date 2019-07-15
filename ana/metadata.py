@@ -99,10 +99,9 @@ class CompareMetadata(object):
         self.cmdline = CommandLine(cmdline)
         self.Switches = self.expected_common( "Switches", parameter=True) 
         self.align = self.cmdline.has("--align ")
+        self.utaildebug = self.cmdline.has("--utaildebug ")
         self.reflectcheat = self.cmdline.has("--reflectcheat ")
         self.factor = ratio_(bm.propagate0, am.propagate0)
-
-    
 
     def _get_crucial(self):
         """
@@ -111,6 +110,7 @@ class CompareMetadata(object):
         return " ".join([ 
             "ALIGN" if self.align==1 else "non-align" , 
             "REFLECTCHEAT" if self.reflectcheat==1 else "non-reflectcheat" ,
+            "UTAILDEBUG" if self.utaildebug==1 else "non-utaildebug"     
             ]) 
     crucial = property(_get_crucial)
 

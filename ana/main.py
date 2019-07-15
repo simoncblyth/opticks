@@ -102,7 +102,7 @@ def opticks_args(**kwa):
     multievent = kwa.get("multievent", 1)
     stag = kwa.get("stag", None)
     ptag = kwa.get("ptag", None)
-    show = kwa.get("show", True)
+    show = kwa.get("show", False)
     plot = kwa.get("plot", True)
     terse = kwa.get("terse", False)
     mat = kwa.get("mat", "GdDopedLS")

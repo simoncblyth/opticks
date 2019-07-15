@@ -604,6 +604,14 @@ class Evt(object):
         :param jp: subsample array of photon indices
         :param abbrev: step history abbeviation eg SC, AB, BR
         :return: indices from jp subsample which have seqhis-tories including the abbrev param
+
+        :: 
+
+            path = "$TMP/CRandomEngine_jump_photons.npy"
+            jp = np_load(path)
+            a_jpsc = ab.a.pflags_subsample_where(jp, "SC")
+            b_jpsc = ab.b.pflags_subsample_where(jp, "SC")
+
         """
         co = self.hismask.code(abbrev) 
         jpsc = jp[np.where( seq2msk(self.seqhis[jp]) & co )]
@@ -1159,9 +1167,17 @@ class Evt(object):
             self.so = self.so_[psel]
         pass
 
-        #self.seqhis_ana = self.make_seqhis_ana( self.seqhis[psel] )   # sequence history with selection applied
-        #self.seqmat_ana = self.make_seqmat_ana( self.seqmat[psel] )   
-        #self.pflags_ana = self.make_pflags_ana( self.pflags[psel] )
+        self.seqhis_ana = self.make_seqhis_ana( self.seqhis[psel] )   # sequence history with selection applied
+        self.seqmat_ana = self.make_seqmat_ana( self.seqmat[psel] )   
+        self.pflags_ana = self.make_pflags_ana( self.pflags[psel] )
+
+
+    def _get_utail(self):
+        """
+        p.flags.f.y  is stomped with extra random when using --utaildebug 
+        """
+        return self.ox[:,3,1]    
+    utail = property(_get_utail) 
 
 
     def _get_reclab(self):
@@ -1307,6 +1323,15 @@ class Evt(object):
         :param label: seqhis or seqmat label
         :param limit:
         :return array: list of photon record_id that match the seqhis label 
+
+        ::  
+
+            In [36]: ab.a.dindex("TO BT AB")
+            Out[36]: '--dindex=2084,4074,15299,20870,25748,26317,43525,51563,57355,61602'
+
+            In [37]: ab.b.dindex("TO BT AB")
+            Out[37]: '--dindex=2084,4074,15299,20870,25748,26317,43525,51563,57355,61602'
+
         """
         select = self.select_(label)
         a = np.where(select)[0]

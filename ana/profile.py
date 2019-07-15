@@ -14,16 +14,18 @@ from opticks.ana.nload import tagdir_, stmp_, time_
 
 
 class Prof(object):
-    def __init__(self, ok, name ):
-        self.ok = ok
+    def __init__(self, tagdir, name ):
+        self.tagdir = tagdir
+        tag = os.path.basename(tagdir)
+        g4 = tag[0] == "-"
+        log.info(" tagdir:%s name:%s tag:%s g4:%s " % (tagdir, name, tag, g4))
+
         self.name = name
-        self.fmt = "%Y%m%d-%H%M"
+        self.tag = tag
+        self.g4 = g4
 
-        g4 = name.find("g4") > -1      
-
-        self.tagdir = ok.ntagdir if g4 else ok.tagdir
-        self.g4 = g4  
         self.sli = slice(0,0)  # nowt
+        self.fmt = "%Y%m%d-%H%M"
 
         if os.path.exists(self.tagdir):
             self.valid = True
@@ -193,22 +195,22 @@ class Prof(object):
 
 
 class Profile(object):
-    def __init__(self, ok):
-        self.okp = Prof(ok, "ab.pro.okp" ) 
-        self.g4p = Prof(ok, "ab.pro.g4p" ) 
-        valid = self.okp.valid and self.g4p.valid 
+    def __init__(self, atagdir, btagdir):
+        self.ap = Prof(atagdir, "ab.pro.ap" ) 
+        self.bp = Prof(btagdir, "ab.pro.bp" ) 
+        valid = self.ap.valid and self.bp.valid 
         if valid:
-            g4p_okp = self.g4p.tim/self.okp.tim if self.okp.tim > 0 else -1  
+            boa = self.bp.tim/self.ap.tim if self.ap.tim > 0 else -1  
         else:
-            g4p_okp = -2 
+            boa = -2 
         pass 
-        self.g4p_okp = g4p_okp
+        self.boa = boa
   
     def brief(self): 
-        return "      okp %-10.4f     g4p %-10.4f      g4p/okp %-10.4f    " % (self.okp.tim, self.g4p.tim, self.g4p_okp )   
+        return "      ap.tim %-10.4f     bp.tim %-10.4f      bp.tim/ap.tim %-10.4f    " % (self.ap.tim, self.bp.tim, self.boa )   
 
     def __repr__(self):
-        return "\n".join(["ab.pro", self.brief()] + self.okp.lines() + self.g4p.lines() )
+        return "\n".join(["ab.pro", self.brief()] + self.ap.lines() + self.bp.lines() )
 
 
 
@@ -219,20 +221,20 @@ if __name__ == '__main__':
     ok = opticks_main(doc=__doc__)  
     log.debug(ok.brief)
 
-    op = Profile(ok) 
+    op = Profile(ok.tagdir, ok.ntagdir)   # assumes ok/g4 
     print(op)
 
-    okp = op.okp
-    g4p = op.g4p
+    ap = op.ap
+    bp = op.bp
 
-    plt.plot( okp.t, okp.v, 'o' )
-    plt.plot( g4p.t, g4p.v, 'o' )
+    plt.plot( ap.t, ap.v, 'o' )
+    plt.plot( bp.t, bp.v, 'o' )
 
-    plt.axvline( okp.t[okp.idx[0]], c="b" )
-    plt.axvline( okp.t[okp.idx[1]], c="b" )
+    plt.axvline( ap.t[ap.idx[0]], c="b" )
+    plt.axvline( ap.t[ap.idx[1]], c="b" )
 
-    plt.axvline( g4p.t[g4p.idx[0]], c="r" )
-    plt.axvline( g4p.t[g4p.idx[1]], c="r" )
+    plt.axvline( bp.t[bp.idx[0]], c="r" )
+    plt.axvline( bp.t[bp.idx[1]], c="r" )
 
     plt.ion()
     plt.show()

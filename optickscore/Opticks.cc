@@ -1197,6 +1197,7 @@ std::string Opticks::brief()
     ss << "OK" ;
     ss << ( isCompute() ? " COMPUTE" : " INTEROP" ) ;
     ss << ( isProduction() ? " PRODUCTION" : " DEVELOPMENT" ) ;
+    ss << ( isUTailDebug() ? " UTAILDEBUG " : "" ) ;
     return ss.str();
 }
 
@@ -1223,6 +1224,11 @@ bool Opticks::isProduction() const   // --production
 {
    return m_production ; 
 }
+bool Opticks::isUTailDebug() const   // --utaildebug
+{
+   return m_cfg->hasOpt("utaildebug") ; 
+}
+
 
 
 

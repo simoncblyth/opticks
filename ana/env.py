@@ -131,7 +131,7 @@ class OpticksEnv(object):
         os.environ["IDPATH"] = keydir   ## <-- to be removed, switch to GEOCACHE signally direct workflow 
         os.environ["GEOCACHE"] = keydir    
 
-        log.info("direct_init keydir %s "  % keydir )
+        log.debug("direct_init keydir %s "  % keydir )
 
 
 

@@ -10,6 +10,7 @@ from opticks.ana.ctx import Ctx
 from opticks.ana.cfh import CFH
 from opticks.ana.base import json_save_
 from opticks.ana.nbase import chi2, vnorm
+from opticks.ana.nload import np_load
 from opticks.ana.decompression import decompression_bins
 from opticks.ana.histype import HisType
 from opticks.ana.mattype import MatType
@@ -38,6 +39,7 @@ class Maligned(object):
         self.maligned = ab.maligned
         self.aligned = ab.aligned
         self.nmal = len(ab.maligned)
+        self.nmut = len(ab.misutailed) 
 
         self.fmaligned = ratio_(self.nmal, tot)
         self.faligned = ratio_(len(ab.aligned), tot)
@@ -149,6 +151,14 @@ class AB(object):
     def _get_aligned(self):
         return np.where(self.a.seqhis == self.b.seqhis)[0]
     aligned = property(_get_aligned)
+    
+    def _get_misutailed(self):
+        return np.where(self.a.utail != self.b.utail)[0]
+    misutailed = property(_get_misutailed)
+
+    def _get_utailed(self):
+        return np.where(self.a.utail == self.b.utail)[0]
+    utailed = property(_get_utailed)
 
 
     def recline(self, iq):
@@ -171,6 +181,32 @@ class AB(object):
         pass
         self.print_( "\n".join( map(lambda iq:self.recline(iq), enumerate(wh))))
 
+
+    
+
+
+    def check_utaildebug(self):
+        """
+        notes/issues/ts-box-utaildebug-decouple-maligned-from-deviant.rst
+
+        Looking at utail mismatches that do not correspond to seqhis mismatches. 
+
+        Hmm can use this approach to examine the random consumption of each photon 
+        """
+        u = self.u 
+        w = np.where(np.logical_and( self.a.utail != self.b.utail, self.a.seqhis == self.b.seqhis ))[0]
+        log.info(" u.shape:%r w.shape: %r " % (u.shape, w.shape) )
+        for i in w:
+            uu = u[i].ravel()
+            ua = self.a.utail[i]
+            ub = self.b.utail[i]
+            wa = np.where( uu == ua )[0][0]
+            wb = np.where( uu == ub )[0][0]
+            print(" ua %10.4f ub %10.4f  wa %3d wb %3d  %s  " % (ua, ub, wa, wb, self.recline((i,i))  ))
+        pass
+
+
+
     def dump(self):
         log.debug("[")
         self.print_(self.pro)  
@@ -188,9 +224,14 @@ class AB(object):
         log.debug("]")
 
 
-    def __init__(self, ok):
+    def __init__(self, ok, overridetag=0):
+        """
+        :param ok: arguments instance from opticks_main
+        :param overridetag: when non-zero overrides the tags of events to be loaded NOT YET IMPLEMENTED
+        """
         log.debug("[")
         self.ok = ok
+        self.overridetag = overridetag
         self.histype = HisType()
         self.tabs = []
         self.dvtabs = []
@@ -199,10 +240,11 @@ class AB(object):
         self.dshape = None
 
         self.load()
+        self.load_u()
 
         self.is_comparable = self.valid and not self.a.ph.missing and not self.b.ph.missing
 
-        self.pro = Profile(ok)
+        self.pro = Profile(self.a.tagdir, self.b.tagdir)
 
         if self.is_comparable: 
             self.cfm = self.compare_meta()
@@ -226,8 +268,8 @@ class AB(object):
  
         if args.utag is None:
             assert len(args.utags) == 2, ( "expecting 2 utags ", args.utags )
-            atag = "-%s" % args.utags[0]
-            btag = "-%s" % args.utags[1]
+            atag = "%s" % args.utags[0]
+            btag = "%s" % args.utags[1]
         else:
             atag = "%s" % args.utag
             btag = "-%s" % args.utag
@@ -285,6 +327,11 @@ class AB(object):
         pass
         return "\n".join(map(repr, [self,self.ahis,self.flg,self.mat]))
 
+
+    def load_u(self):
+        upath = "/tmp/blyth/opticks/TRngBufTest.npy"
+        u = np_load(upath).astype(np.float32)
+        self.u = u 
 
 
     def compare_domains(self):
@@ -597,6 +644,12 @@ class AB(object):
         as the labels can diverge, expecially out in the tail
 
         slice selection forces into seqhis selection
+
+        ::
+
+            ab.sel = "[TO] BT BT BT BT SA" 
+            hh = ab.hh
+
         """
         log.debug("[ %s " % repr(sel))
 

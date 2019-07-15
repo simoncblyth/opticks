@@ -82,6 +82,7 @@ void OPropagator::init()
 void OPropagator::initParameters()
 {
     m_context[ "propagate_epsilon"]->setFloat( m_ok->getEpsilon() );       // TODO: check impact of changing propagate_epsilon
+    m_context[ "utaildebug" ]->setUint( m_ok->isUTailDebug() ? 1 : 0 );    //   --utaildebug 
     m_context[ "production" ]->setUint( m_ok->isProduction() ? 1 : 0 );    //   --production 
     m_context[ "bounce_max" ]->setUint( m_ok->getBounceMax() );
     m_context[ "record_max" ]->setUint( m_ok->getRecordMax() );

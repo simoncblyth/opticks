@@ -6,7 +6,7 @@
 #include "G4ThreeVector.hh"
 #include "G4SystemOfUnits.hh"
 #include "G4PhysicalConstants.hh"
-
+#include "Randomize.hh"
 
 
 #include "BConverter.hh"
@@ -15,6 +15,7 @@
 #include "CRecorder.h"
 #include "CG4Ctx.hh"
 #include "CPhoton.hh"
+#include "Opticks.hh"
 #include "CG4.hh"
 
 #include "NGLM.hpp"
@@ -281,7 +282,7 @@ void CWriter::writePhoton(const G4StepPoint* point )
     G4double time = point->GetGlobalTime();
     G4double energy = point->GetKineticEnergy();
     G4double wavelength = h_Planck*c_light/energy ;
-    G4double weight = 1.0 ; 
+    G4double weight = 1.0 ;  
 
     NPY<float>* target = m_dynamic ? m_dynamic_photons : m_photons_buffer ; 
     unsigned target_record_id = m_dynamic ? 0 : m_ctx._record_id ; 
@@ -291,7 +292,17 @@ void CWriter::writePhoton(const G4StepPoint* point )
     target->setQuad(target_record_id, 2, 0, pol.x(), pol.y(), pol.z(), wavelength/nm  );
 
     target->setUInt(target_record_id, 3, 0, 0, m_photon._slot_constrained );
-    target->setUInt(target_record_id, 3, 0, 1, 0u );
+
+    if( m_ok->isUTailDebug() )     // --utaildebug
+    { 
+        G4double u = G4UniformRand() ; 
+        target->setValue(target_record_id, 3, 0, 1, u );
+    }
+    else
+    {
+        target->setUInt(target_record_id, 3, 0, 1, 0u );
+    }     
+
     target->setUInt(target_record_id, 3, 0, 2, m_photon._c4.u );
     target->setUInt(target_record_id, 3, 0, 3, m_photon._mskhis );
 

@@ -484,7 +484,7 @@ tboolean-cd(){  cd $(tboolean-dir); }
 
 join(){ local IFS="$1"; shift; echo "$*"; }
 
-tboolean-tag(){  echo ${TBOOLEAN_TAG:-1} ; }
+tboolean-tag(){  echo ${TAG:-1} ; }
 tboolean-det(){  echo boolean ; }
 tboolean-src(){  echo torch ; }
 tboolean-args(){ echo  --det $(tboolean-det) --src $(tboolean-src) ; }
@@ -534,7 +534,7 @@ tboolean-ana-(){
 }
 
 # TODO: how to pick a profile without being explicit about it ? so this doesnt depend on having it 
-tboolean-ipy-(){ ipython -i --pdb -- $(which tboolean.py) --det $TESTNAME --pfx $TESTNAME --tag $(tboolean-tag) $* ; }
+tboolean-ipy-(){ ipython -i --pdb -- $(which tboolean.py) --det $TESTNAME --pfx $TESTNAME --tag="$(tboolean-tag)" $* ; }
 tboolean-ip-(){  ipython  -i --pdb -- $(which tboolean.py) --det $(tboolean-testname) --pfx $(tboolean-testname) --tag $(tboolean-tag) $* ; }
 tboolean-py-(){ tboolean.py --det $TESTNAME --pfx $TESTNAME --tag $(tboolean-tag)  $* ; }
 tboolean-m-(){  metadata.py --det $TESTNAME --pfx $TESTNAME --tag $(tboolean-tag) ; }

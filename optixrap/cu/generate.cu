@@ -114,6 +114,7 @@ rtDeclareVariable(uint4,         debug_control , , );
 rtDeclareVariable(float,         propagate_epsilon, , );
 rtDeclareVariable(unsigned int,  propagate_ray_type, , );
 
+rtDeclareVariable(unsigned int,  utaildebug, , );
 rtDeclareVariable(unsigned int,  production, , );
 rtDeclareVariable(unsigned int,  bounce_max, , );
 rtDeclareVariable(unsigned int,  record_max, , );
@@ -619,6 +620,13 @@ RT_PROGRAM void generate()
 
     // setting p.flags for things like boundary, history flags  
     FLAGS(p, s, prd); 
+
+
+    if( utaildebug )   // --utaildebug    see notes/issues/ts-box-utaildebug-decouple-maligned-from-deviant.rst
+    {
+        //p.weight = curand_uniform(&rng) ;
+        p.flags.f.y = curand_uniform(&rng) ;
+    }
 
     // breakers and maxers saved here
     psave(p, photon_buffer, photon_offset ); 

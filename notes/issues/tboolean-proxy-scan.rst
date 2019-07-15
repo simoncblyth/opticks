@@ -10,12 +10,64 @@ get back into context with it.
 * :doc:`deviation-comparison-review`
 
 
+
+
+TODO : extend random alignment checking beyond history match, also do a u match at tail ?
+-------------------------------------------------------------------------------------------
+
+Currently random mis-alignment judgement is based entirely on seqhis history of photons.  
+Extending to also do a umatch, eg by recording a random at the tail 
+and storing into p.weight slot.
+
+Objective:
+
+* decouple probable coupling between "maligned" and "deviant" issues
+
+* :doc:`ts-box-utaildebug-decouple-maligned-from-deviant`
+
+
+::
+
+    ts box --utaildebug
+
+
+
+::
+
+    In [3]: a.ox[:,1,3]
+    Out[3]: A([0.5475, 0.8245, 0.8068, ..., 0.8001, 0.0093, 0.7396], dtype=float32)
+
+    In [4]: b.ox[:,1,3]
+    Out[4]: A([0.5475, 0.8245, 0.8068, ..., 0.8001, 0.0093, 0.7396], dtype=float32)
+
+    In [5]: np.all( a.ox[:,1,3] == b.ox[:,1,3] )
+    Out[5]: A(False)
+
+    In [6]: np.where( a.ox[:,1,3] != b.ox[:,1,3] )
+    Out[6]: 
+    (array([ 2084,  4074, 14747, 15299, 19361, 20870, 25113, 25748, 26317, 26635, 30272, 33262, 36621, 43525, 45629, 51563, 53964, 57355, 60803, 61602, 65894, 71978, 73241, 77062, 78744, 79117, 86814,
+            94891]),)
+
+    In [7]: a.ox.shape
+    Out[7]: (100000, 4, 4)
+
+    In [8]: len(np.where( a.ox[:,1,3] != b.ox[:,1,3] ))
+    Out[8]: 1
+
+    In [9]: len(np.where( a.ox[:,1,3] != b.ox[:,1,3] )[0])
+    Out[9]: 28
+
+
+
+
 DONE : ab.smry : summarize results into a table of 40 lines, one line for each solid
 ---------------------------------------------------------------------------------------
 
 * lvidx, lvname, binary-return-code, max-deviation-in-different-categories, fraction-maligned, num-photons-used-for-test
 * make the smry persistable as ab_smry.json for collection and presentation by a smry.py 
 
+
+* observations : solids with more malignment also have more deviation, suspect some mixage between these issues 
 
 ::
 

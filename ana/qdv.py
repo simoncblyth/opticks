@@ -192,7 +192,13 @@ class QDVTab(object):
         self.nsel = nsel 
         self._ndisc = None
 
-        self.aligned = self.a.seqhis == self.b.seqhis 
+        if self.ab.cfm.utaildebug == 1:  
+            aligned = np.logical_and( self.a.utail == self.b.utail, self.a.seqhis == self.b.seqhis )
+        else:
+            aligned = self.a.seqhis == self.b.seqhis
+        pass    
+
+        self.aligned = aligned
         self.init_qdv()
         self.dvs = self.make_selection_dvs()
         self.findmax()

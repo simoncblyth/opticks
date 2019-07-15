@@ -293,6 +293,10 @@ void OpticksCfg<Listener>::init()
    m_desc.add_options()
        ("stamp",  "output profile stamps as they are made, see OpticksProfile") ; 
 
+
+   m_desc.add_options()
+       ("utaildebug",  "switch on the debug storing of an extra random float at the tail of the photon simulation as an additional check of random alignment") ; 
+
    m_desc.add_options()
        ("production",  "skip all debug/test features, do only what is needed in production") ; 
 
