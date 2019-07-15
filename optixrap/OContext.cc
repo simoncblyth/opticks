@@ -553,6 +553,15 @@ unsigned int OContext::getNumEntryPoint()
 }
 
 
+/**
+OContext::launch
+------------------
+
+Invoked by OPropagator::launch and prelaunch
+
+
+**/
+
 void OContext::launch(unsigned int lmode, unsigned int entry, unsigned int width, unsigned int height, BTimes* times )
 {
     if(!m_closed) close();

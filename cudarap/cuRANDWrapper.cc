@@ -651,6 +651,8 @@ Invoked by ORng::init from OPropagator::OPropagator when a --mask is active
 1. loads m_host_rng_states curandStates from cache
 2. copies just the masked states into the argument pointer 
 
+Hence this fabricates a GPU buffer with the curandStates needed just 
+for the mask list of photon indices. 
 
 **/
 

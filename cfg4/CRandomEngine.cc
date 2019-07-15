@@ -572,10 +572,18 @@ CRandomEngine::preTrack
 
 Invoked from CG4::preTrack following CG4Ctx::setTrack
 
-Use of the maskIndex allows a partial run on a single 
-input photon to use the same RNG sequence as a full run 
+
+Masked Running 
+~~~~~~~~~~~~~~~~~~
+
+Use of the maskIndex allows a partial run on a selection of  
+photons to use the same RNG sequence as a full run 
 over many photons, buy jumping forwards to the appropriate 
 place in RNG sequence.
+
+
+Masked Running Currently Limited to input photons 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Hmm this aint going to work for aligning generation 
 as the track aint born yet... need to set the photon
@@ -597,36 +605,15 @@ void CRandomEngine::preTrack()
     m_jump = 0 ; 
     m_jump_count = 0 ; 
 
-    unsigned use_index ; 
     // assert( m_ok->isAlign() );    // not true for tests/CRandomEngineTest 
     bool align_mask = m_ok->hasMask() ;  
 
-    // --pindexlog too ?
-
+    unsigned use_index ; 
     if(align_mask)
     {
-        // Access to the Opticks event, relies on Opticks GPU propagation
-        // going first, which is only the case in align mode.
-
-        if(!m_okevt) m_okevt = m_run->getEvent();  // is the defer needed ?
-        m_okevt_seqhis  = m_okevt ? m_okevt->getSeqHis(m_ctx._record_id ) : 0ull ;
-
-        unsigned mask_index = m_ok->getMaskIndex( m_ctx._record_id );  
+        unsigned mask_index = m_ok->getMaskIndex( m_ctx._record_id );   // "original" index 
         use_index = mask_index ; 
-
-        LOG(info) 
-           << " [ --align --mask ] " 
-           << " m_ctx._record_id:  " << m_ctx._record_id 
-           << " mask_index: " << mask_index 
-           << " ( m_okevt_seqhis: " << std::hex << m_okevt_seqhis << std::dec
-           << " " << OpticksFlags::FlagSequence(m_okevt_seqhis) << " ) "
-           ;
-
-        const char* cmd = BStr::concat<unsigned>("ucf.py ", mask_index, NULL );  
-        LOG(info) << "[ cmd \"" << cmd << "\"";   
-        int rc = SSys::run(cmd) ;  // NB must not write to stdout, stderr is ok though 
-        assert( rc == 0 );
-        LOG(info) << "] cmd \"" << cmd << "\"";   
+        run_ucf_script( mask_index ) ; 
     }
     else
     {
@@ -642,7 +629,38 @@ void CRandomEngine::preTrack()
         << " use_index " << use_index 
         << " align_mask " << ( align_mask ? "YES" : "NO" )
         ;
- 
+}
+
+
+
+/**
+CRandomEngine::run_ucf_script
+----------------------------------
+
+Access to the Opticks event, relies on Opticks GPU propagation
+going first, which is only the case in align mode.
+
+**/
+
+
+void CRandomEngine::run_ucf_script(unsigned mask_index) 
+{
+    if(!m_okevt) m_okevt = m_run->getEvent();  // is the defer needed ?
+    m_okevt_seqhis  = m_okevt ? m_okevt->getSeqHis(m_ctx._record_id ) : 0ull ;
+
+    LOG(info) 
+       << " [ --align --mask ] " 
+       << " m_ctx._record_id:  " << m_ctx._record_id 
+       << " mask_index: " << mask_index 
+       << " ( m_okevt_seqhis: " << std::hex << m_okevt_seqhis << std::dec
+       << " " << OpticksFlags::FlagSequence(m_okevt_seqhis) << " ) "
+       ;
+
+    const char* cmd = BStr::concat<unsigned>("ucf.py ", mask_index, NULL );  
+    LOG(info) << "[ cmd \"" << cmd << "\"";   
+    int rc = SSys::run(cmd) ;  // NB must not write to stdout, stderr is ok though 
+    assert( rc == 0 );
+    LOG(info) << "] cmd \"" << cmd << "\"";   
 }
 
 

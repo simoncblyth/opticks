@@ -23,14 +23,9 @@ which in turn is ctor resident of OpticksHub.  m_emitter is only
 instanciated when there is an emitter NCSG configured 
 in the geometry.
 
-TODO:
+Masked running is handled by generating all photons as with 
+normal runing and then making a masked copy of them.
 
-* dependency sink gencode (OpticksPhoton.h) 
-  to avoid the gencode EMITSOURCE having to be passed 
-  down from higher levels 
-  
-* perhaps a lowest level OpticksBase package ? to hold enums and such like.
-  Hmm but on other hand generality of NPY is good.
 
 **/
 

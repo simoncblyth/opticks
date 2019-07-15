@@ -16,6 +16,8 @@
 #include "PLOG.hh"
 
 
+
+
 NEmitPhotonsNPY::NEmitPhotonsNPY(NCSG* csg, unsigned gencode, unsigned seed, bool emitdbg, NPY<unsigned>* mask, int num_photons )
     :
     m_csg(csg),

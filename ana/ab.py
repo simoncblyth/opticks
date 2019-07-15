@@ -193,6 +193,12 @@ class AB(object):
 
         Hmm can use this approach to examine the random consumption of each photon 
         """
+
+        if self.cfm.utaildebug == 0:
+            log.info("requires both A and B to have been run with --utaildebug option")
+            return 
+        pass 
+
         u = self.u 
         w = np.where(np.logical_and( self.a.utail != self.b.utail, self.a.seqhis == self.b.seqhis ))[0]
         log.info(" u.shape:%r w.shape: %r " % (u.shape, w.shape) )

@@ -1461,6 +1461,7 @@ tboxlaser-(){  . $(opticks-home)/tests/tboxlaser.bash && tboxlaser-env $* ; }
 tdefault-(){   . $(opticks-home)/tests/tdefault.bash  && tdefault-env $* ; }
 tconcentric-(){   . $(opticks-home)/tests/tconcentric.bash  && tconcentric-env $* ; }
 tboolean-(){      . $(opticks-home)/tests/tboolean.bash  && tboolean-env $* ; }
+t-(){             . $(opticks-home)/tests/t.bash         && t-env $* ; }
 fn-(){            . $(opticks-home)/bin/fn.bash          && fn-env $* ; }
 
 

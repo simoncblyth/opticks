@@ -20,6 +20,37 @@ to work with that parser follow some rules:
 3. bullet lines to be included in the summary should be in bold
 
 
+2019 July
+-----------
+
+* proposal writing 
+
+* raise the photon ceiling from 3M to 100M, by generation of curandstate files
+  and adoption of dynamic TCURAND for curand randoms on host without having to 
+  store enormous files of randoms  
+
+* Virtual Memory time profiling finds memory bugs, eventually get to plateau profile
+* fix CUDA OOM crashes on way to 100M by making production mode zero size the debug buffers 
+
+* fix slow deviation analysis with large files by loop inversion
+* adopt np.load mmap_mode to only read slices of large arrays into memory   
+
+* absmry.py for an overview of aligned matching across the 40 solids
+* investigate utaildebug idea for decoupling maligned from deviant 
+
+
+2019 June
+----------
+
+* revive the tboolean test machinery
+* standardize profiling with OK_PROFILE
+* RTX mode photon count performance scanning with tboolean-box, > 10,000x at 3M photons only 
+* implement proxied in solids from base geometry in tboolean-proxy 
+* generalize hit selection functor
+* tboolean-proxy scan over 40 JUNO solids, with aligned randoms
+* improve python analysis deviation checking 
+
+
 2019 May 
 --------
 
@@ -64,7 +95,6 @@ to work with that parser follow some rules:
   scales well up to 4 GPUs 
   
 
-
 2019 April
 -----------
 
@@ -78,7 +108,8 @@ to work with that parser follow some rules:
 
   * NVIDIA driver update somehow conspired with long dormant "sleeper" visualization bug 
     to wakeup at just the wrong moment : causing a week of frenzied debugging 
-    due to limited time to borrow the 
+    due to limited time to borrow the GPU, which eventually bouch anyhow : as it had perplexing 
+    3x worse RTX performance
 
   * resulted in a development of quite a few OpenGL + OptiX minimal test case examples 
   * optix::GeometryTriangles 

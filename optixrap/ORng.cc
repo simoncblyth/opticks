@@ -36,11 +36,18 @@ the curandState is copied into registers and updated by curand_uniform calls::
 
    m_rng_states = m_context->createBuffer( RT_BUFFER_INPUT_OUTPUT, RT_FORMAT_USER);
 
-
 The use of LoadIntoHostBuffer looks a bit perplexing but contrast with OContext::upload
 using memcpy to copy into a mapped host pointer is the standard way to load into an 
 OptiX buffer. However this can be done with one less GPU buffer by using interop to 
 get OptiX to adopt the CUDA buffer which already exists. 
+
+
+masked running
+~~~~~~~~~~~~~~~~~
+
+For masked running the LoadIntoHostBufferMasked fabricates an OptiX buffer
+with just the curandStates needes for the mask list of photon indices.
+
 
 **/
 

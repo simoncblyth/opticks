@@ -1098,6 +1098,17 @@ bool NPY<T>::hasMsk() const
 }
 
 
+/**
+NPY::make_masked
+------------------
+
+memcpy the masked source items to the destination 
+which is sized to fit 
+
+Canonical usage is from NEmitPhotonsNPY::NEmitPhotonsNPY
+for masking input photons for Masked running.
+
+**/
 
 template <typename T>
 NPY<T>* NPY<T>::make_masked(NPY<T>* src, NPY<unsigned>* msk )

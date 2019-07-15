@@ -11,6 +11,24 @@ OKG4Test-envkey-shakedown
 
 
 
+Lots of issues : need aligned+masked running for the shakedown
+-------------------------------------------------------------------
+
+* For a review of masked running see :doc:`where_mask_running` 
+
+* upshot from that is : without lots of development are limited to input photons 
+
+* BUT currently input photons only work for test geometry using NEmitPhotonsNPY
+
+* how to make input photons work with full geometry ? 
+
+
+Torch config input photons ?
+-------------------------------------
+
+
+
+
 
 Added code to find direct mode gdmlpath
 --------------------------------------------
@@ -131,171 +149,6 @@ Huh, long time voxeling::
 Saves inside geocache::
 
 
-    2019-07-14 22:55:09.373 ERROR [168745] [OpticksProfile::stamp@180] OpIndexer::indexBoundaries_0 (1088.66,0.015625,11190.6,0)
-    2019-07-14 22:55:09.373 INFO  [168745] [OpEngine::propagate@141] ]
-    2019-07-14 22:55:09.373 ERROR [168745] [OpticksProfile::stamp@180] OKPropagator::propagate_0 (1088.66,0,11190.6,0)
-    2019-07-14 22:55:09.384 INFO  [168745] [OpEngine::downloadEvent@167] .
-    2019-07-14 22:55:09.384 ERROR [168745] [OpticksProfile::stamp@180] _OEvent::download_0 (1088.67,0.0078125,11192.7,2.04785)
-    2019-07-14 22:55:09.384 INFO  [168745] [OContext::download@727] PROCEED for sequence as OPTIX_NON_INTEROP
-    2019-07-14 22:55:09.385 ERROR [168745] [OpticksProfile::stamp@180] OEvent::download_0 (1088.68,0.00390625,11192.7,0)
-    2019-07-14 22:55:09.385 ERROR [168745] [OpticksProfile::stamp@180] _OEvent::downloadHitsInterop_0 (1088.68,0,11192.7,0)
-    2019-07-14 22:55:09.386 ERROR [168745] [OpticksProfile::stamp@180] OEvent::downloadHitsInterop_0 (1088.68,0,11192.7,0)
-    2019-07-14 22:55:09.386 INFO  [168745] [OEvent::downloadHits@359]  nhit 2385 --dbghit N hitmask 0x18a0 SC|SA|BT|TO BULK_SCATTER|SURFACE_ABSORB|BOUNDARY_TRANSMIT|TORCH
-    2019-07-14 22:55:09.386 ERROR [168745] [OpticksProfile::stamp@180] OKPropagator::propagate-download_0 (1088.68,0,11192.7,0)
-    2019-07-14 22:55:09.386 ERROR [168745] [OpticksProfile::stamp@180] _OpticksRun::saveEvent_0 (1088.68,0,11192.7,0)
-    2019-07-14 22:55:09.386 ERROR [168745] [OpticksProfile::stamp@180] _OpticksEvent::save_0 (1088.68,0,11192.7,0)
-    2019-07-14 22:55:09.396 ERROR [168745] [OpticksProfile::stamp@180] OpticksEvent::save_0 (1088.69,0.0117188,11192.7,0)
-    2019-07-14 22:55:09.396 INFO  [168745] [OpticksEvent::makeReport@1689] tagdir /home/blyth/local/opticks/geocache/OKX4Test_lWorld0x4bc2710_PV_g4live/g4ok_gltf/f6cc352e44243f8fa536ab483ad390ce/1/source/evt/g4live/torch/-1
-    2019-07-14 22:55:09.397 ERROR [168745] [OpticksProfile::save@309]  dir /home/blyth/local/opticks/geocache/OKX4Test_lWorld0x4bc2710_PV_g4live/g4ok_gltf/f6cc352e44243f8fa536ab483ad390ce/1/source/evt/g4live/torch name OpticksProfile.npy num_stamp 66
-    2019-07-14 22:55:09.397 ERROR [168745] [OpticksProfile::accumulateExport@279]  nacc 0
-    2019-07-14 22:55:09.400 ERROR [168745] [OpticksProfile::save@309]  dir /home/blyth/local/opticks/geocache/OKX4Test_lWorld0x4bc2710_PV_g4live/g4ok_gltf/f6cc352e44243f8fa536ab483ad390ce/1/source/evt/g4live/torch name OpticksProfile.npy num_stamp 66
-    2019-07-14 22:55:09.400 ERROR [168745] [OpticksProfile::accumulateExport@279]  nacc 0
-    2019-07-14 22:55:09.403 ERROR [168745] [OpticksProfile::stamp@180] _OpticksEvent::save_0 (1088.69,0.00390625,11192.7,0)
-    2019-07-14 22:55:09.412 ERROR [168745] [OpticksProfile::stamp@180] OpticksEvent::save_0 (1088.7,0.0117188,11192.7,0)
-    2019-07-14 22:55:09.412 INFO  [168745] [OpticksEvent::makeReport@1689] tagdir /home/blyth/local/opticks/geocache/OKX4Test_lWorld0x4bc2710_PV_g4live/g4ok_gltf/f6cc352e44243f8fa536ab483ad390ce/1/source/evt/g4live/torch/1
-    2019-07-14 22:55:09.413 ERROR [168745] [OpticksProfile::save@309]  dir /home/blyth/local/opticks/geocache/OKX4Test_lWorld0x4bc2710_PV_g4live/g4ok_gltf/f6cc352e44243f8fa536ab483ad390ce/1/source/evt/g4live/torch name OpticksProfile.npy num_stamp 68
-    2019-07-14 22:55:09.413 ERROR [168745] [OpticksProfile::accumulateExport@279]  nacc 0
-    2019-07-14 22:55:09.416 ERROR [168745] [OpticksProfile::save@309]  dir /home/blyth/local/opticks/geocache/OKX4Test_lWorld0x4bc2710_PV_g4live/g4ok_gltf/f6cc352e44243f8fa536ab483ad390ce/1/source/evt/g4live/torch name OpticksProfile.npy num_stamp 68
-    2019-07-14 22:55:09.416 ERROR [168745] [OpticksProfile::accumulateExport@279]  nacc 0
-    2019-07-14 22:55:09.419 ERROR [168745] [OpticksProfile::stamp@180] OpticksRun::saveEvent_0 (1088.71,0.00390625,11192.7,0)
-    2019-07-14 22:55:09.419 WARN  [168745] [GGeo::anaEvent@1910] GGeo::anaEvent evt 0x2c263bc0
-    2019-07-14 22:55:09.419 WARN  [168745] [GGeo::anaEvent@1910] GGeo::anaEvent evt 0x2c269030
-    2019-07-14 22:55:09.419 ERROR [168745] [OpticksProfile::stamp@180] _OpticksRun::anaEvent_0 (1088.71,0,11192.7,0)
-    2019-07-14 22:55:09.419 INFO  [168745] [OpticksAna::run@70]  anakey (null) enabled N
-    2019-07-14 22:55:09.419 ERROR [168745] [OpticksProfile::stamp@180] OpticksRun::anaEvent_0 (1088.71,0,11192.7,0)
-    2019-07-14 22:55:09.419 ERROR [168745] [OpticksProfile::stamp@180] _OpticksRun::resetEvent_0 (1088.71,0,11192.7,0)
-    2019-07-14 22:55:09.420 ERROR [168745] [OpticksProfile::stamp@180] OpticksRun::resetEvent_0 (1088.71,0.00390625,11192.7,0)
-    2019-07-14 22:55:09.420 ERROR [168745] [OpticksProfile::save@309]  dir /home/blyth/local/opticks/geocache/OKX4Test_lWorld0x4bc2710_PV_g4live/g4ok_gltf/f6cc352e44243f8fa536ab483ad390ce/1/source/evt/g4live/torch name OpticksProfile.npy num_stamp 73
-    2019-07-14 22:55:09.420 ERROR [168745] [OpticksProfile::accumulateExport@279]  nacc 0
-    2019-07-14 22:55:09.422 INFO  [168745] [OpticksProfile::dump@354] Opticks::postpropagate dir /home/blyth/local/opticks/geocache/OKX4Test_lWorld0x4bc2710_PV_g4live/g4ok_gltf/f6cc352e44243f8fa536ab483ad390ce/1/source/evt/g4live/torch name OpticksProfile.npy num_stamp 73
-    2019-07-14 22:55:09.423 INFO  [168745] [BTimesTable::dump@151] Opticks::postpropagate startswith filter: NONE spacewith _OpticksRun::createEvent tcut -1 nline 73
-     diffListedTime           Time      DeltaTime             VM        DeltaVM
-        0          0.000           0.000      52620.711          0.000        446.624 : OpticksRun::OpticksRun_0
-        1          0.000           0.000          0.000          0.000          0.000 : Opticks::Opticks_0
-        2          0.000           0.000          0.000          0.000          0.000 : _OKG4Mgr::OKG4Mgr_0
-        3          0.000           0.000          0.000          0.000          0.000 : _OpticksHub::init_0
-        4          0.012           0.012          0.012        103.620        103.620 : _OpticksGeometry::loadGeometry_0
-        5          0.438           0.449          0.438        227.460        123.840 : OpticksGeometry::loadGeometry_0
-        6          0.004           0.453          0.004        227.612          0.152 : OpticksHub::init_0
-        7          0.000           0.453          0.000        227.612          0.000 : _CG4::CG4_0
-        8          0.000           0.453          0.000        227.612          0.000 : _CPhysics::CPhysics_0
-        9          0.039           0.492          0.039        229.404          1.792 : CPhysics::CPhysics_0
-       10         21.934          22.426         21.934        541.248        311.844 : CG4::CG4_0
-       11          0.094          22.520          0.094        541.248          0.000 : _OpticksViz::OpticksViz_0
-       12          0.004          22.523          0.004        541.248          0.000 : OpticksViz::OpticksViz_0
-       13          0.387          22.910          0.387        596.840         55.592 : _OKPropagator::OKPropagator_0
-       14          0.004          22.914          0.004        596.840          0.000 : _OpEngine::OpEngine_0
-       15          0.000          22.914          0.000        596.840          0.000 : _OScene::OScene_0
-       16          0.000          22.914          0.000        596.840          0.000 : _OContext::Create_0
-       17          0.305          23.219          0.305       5241.544       4644.704 : _optix::Context::create_0
-       18          1.156          24.375          1.156       8810.436       3568.892 : optix::Context::create_0
-       19          0.000          24.375          0.000       8810.436          0.000 : OContext::Create_0
-       20          2.008          26.383          2.008       9548.764        738.328 : OScene::OScene_0
-       21          1.070          27.453          1.070       9830.020        281.256 : OpEngine::OpEngine_0
-       22          0.098          27.551          0.098       9862.688         32.668 : OKPropagator::OKPropagator_0
-       23          0.000          27.551          0.000       9862.688          0.000 : OKG4Mgr::OKG4Mgr_0
-
-       24          0.000          27.551          0.000       9862.688          0.000 : _OpticksRun::createEvent_0
-       25          0.000          27.551          0.000       9862.688          0.000 : OpticksRun::createEvent_0
-       26          0.004          27.555          0.004       9865.088          2.400 : _CG4::propagate_0
-       27       1056.332        1083.887       1056.332      10067.564        202.477 : CRunAction::BeginOfRunAction_0
-       28          0.020        1083.906          0.020      10071.160          3.596 : CEventAction::BeginOfEventAction_0
-       29          2.473        1086.379          2.473      10076.768          5.607 : CEventAction::EndOfEventAction_0
-       30          0.000        1086.379          0.000      10076.768          0.000 : CRunAction::EndOfRunAction_0
-       31          0.000        1086.379          0.000      10076.768          0.000 : CG4::propagate_0
-       32          0.000        1086.379          0.000      10076.768          0.000 : _OpticksEvent::indexPhotonsCPU_0
-       33          0.031        1086.410          0.031      10077.372          0.604 : OpticksEvent::indexPhotonsCPU_0
-       34          0.000        1086.410          0.000      10077.372          0.000 : _OpticksEvent::collectPhotonHitsCPU_0
-       35          0.004        1086.414          0.004      10077.372          0.000 : OpticksEvent::collectPhotonHitsCPU_0
-       36          0.000        1086.414          0.000      10077.372          0.000 : _OKPropagator::propagate_0
-       37          0.004        1086.418          0.004      10080.688          3.315 : _OEvent::upload_0
-       38          0.000        1086.418          0.000      10080.688          0.000 : OEvent::upload_0
-       39          0.039        1086.457          0.039      10086.968          6.280 : _OPropagator::prelaunch_0
-       40          2.148        1088.605          2.148      10731.888        644.920 : OPropagator::prelaunch_0
-       41          0.000        1088.605          0.000      10731.888          0.000 : _OPropagator::launch_0
-       42          0.016        1088.621          0.016      11190.640        458.752 : OPropagator::launch_0
-       43          0.000        1088.621          0.000      11190.640          0.000 : _OpIndexer::indexSequence_0
-       44          0.000        1088.621          0.000      11190.640          0.000 : _OpIndexer::indexSequenceInterop_0
-       45          0.000        1088.621          0.000      11190.640          0.000 : _OpIndexer::seqhisMakeLookup_0
-       46          0.012        1088.633          0.012      11190.640          0.000 : OpIndexer::seqhisMakeLookup_0
-       47          0.000        1088.633          0.000      11190.640          0.000 : OpIndexer::seqhisApplyLookup_0
-       48          0.000        1088.633          0.000      11190.640          0.000 : _OpIndexer::seqmatMakeLookup_0
-       49          0.012        1088.645          0.012      11190.640          0.000 : OpIndexer::seqmatMakeLookup_0
-       50          0.004        1088.648          0.004      11190.640          0.000 : OpIndexer::seqmatApplyLookup_0
-       51          0.000        1088.648          0.000      11190.640          0.000 : _OpIndexer::download_0
-       52          0.000        1088.648          0.000      11190.640          0.000 : OpIndexer::download_0
-       53          0.000        1088.648          0.000      11190.640          0.000 : OpIndexer::indexSequenceInterop_0
-       54          0.000        1088.648          0.000      11190.640          0.000 : OpIndexer::indexSequence_0
-       55          0.000        1088.648          0.000      11190.640          0.000 : _OpIndexer::indexBoundaries_0
-       56          0.016        1088.664          0.016      11190.640          0.000 : OpIndexer::indexBoundaries_0
-       57          0.000        1088.664          0.000      11190.640          0.000 : OKPropagator::propagate_0
-       58          0.008        1088.672          0.008      11192.688          2.048 : _OEvent::download_0
-       59          0.004        1088.676          0.004      11192.688          0.000 : OEvent::download_0
-       60          0.000        1088.676          0.000      11192.688          0.000 : _OEvent::downloadHitsInterop_0
-       61          0.000        1088.676          0.000      11192.688          0.000 : OEvent::downloadHitsInterop_0
-       62          0.000        1088.676          0.000      11192.688          0.000 : OKPropagator::propagate-download_0
-       63          0.000        1088.676          0.000      11192.688          0.000 : _OpticksRun::saveEvent_0
-       64          0.000        1088.676          0.000      11192.688          0.000 : _OpticksEvent::save_0
-       65          0.012        1088.688          0.012      11192.688          0.000 : OpticksEvent::save_0
-       66          0.004        1088.691          0.004      11192.688          0.000 : _OpticksEvent::save_0
-       67          0.012        1088.703          0.012      11192.688          0.000 : OpticksEvent::save_0
-       68          0.004        1088.707          0.004      11192.688          0.000 : OpticksRun::saveEvent_0
-       69          0.000        1088.707          0.000      11192.688          0.000 : _OpticksRun::anaEvent_0
-       70          0.000        1088.707          0.000      11192.688          0.000 : OpticksRun::anaEvent_0
-       71          0.000        1088.707          0.000      11192.688          0.000 : _OpticksRun::resetEvent_0
-       72          0.004        1088.711          0.004      11192.688          0.000 : OpticksRun::resetEvent_0
-    2019-07-14 22:55:09.423 INFO  [168745] [OpticksProfile::dump@359]  npy 73,4 /home/blyth/local/opticks/geocache/OKX4Test_lWorld0x4bc2710_PV_g4live/g4ok_gltf/f6cc352e44243f8fa536ab483ad390ce/1/source/evt/g4live/torch/OpticksProfile.npy
-    2019-07-14 22:55:09.423 INFO  [168745] [OpticksProfile::accumulateDump@247] Opticks::postpropagate nacc 0
-    2019-07-14 22:55:09.423 INFO  [168745] [OpticksProfile::dump@354] Opticks::postpropagate dir /home/blyth/local/opticks/geocache/OKX4Test_lWorld0x4bc2710_PV_g4live/g4ok_gltf/f6cc352e44243f8fa536ab483ad390ce/1/source/evt/g4live/torch name OpticksProfile.npy num_stamp 73
-    2019-07-14 22:55:09.424 INFO  [168745] [BTimesTable::dump@151] Opticks::postpropagate startswith filter: OPropagator::launch spacewith - tcut 0 nline 73
-     diffListedTime           Time      DeltaTime             VM        DeltaVM
-       42       1088.621        1088.621          0.016      11190.640        458.752 : OPropagator::launch_0
-    2019-07-14 22:55:09.424 INFO  [168745] [OpticksProfile::dump@359]  npy 73,4 /home/blyth/local/opticks/geocache/OKX4Test_lWorld0x4bc2710_PV_g4live/g4ok_gltf/f6cc352e44243f8fa536ab483ad390ce/1/source/evt/g4live/torch/OpticksProfile.npy
-    2019-07-14 22:55:09.424 INFO  [168745] [OpticksProfile::accumulateDump@247] Opticks::postpropagate nacc 0
-    2019-07-14 22:55:09.424 INFO  [168745] [OpticksProfile::dump@354] Opticks::postpropagate dir /home/blyth/local/opticks/geocache/OKX4Test_lWorld0x4bc2710_PV_g4live/g4ok_gltf/f6cc352e44243f8fa536ab483ad390ce/1/source/evt/g4live/torch name OpticksProfile.npy num_stamp 73
-    2019-07-14 22:55:09.424 INFO  [168745] [BTimesTable::dump@151] Opticks::postpropagate startswith filter: CG4::propagate spacewith - tcut 0 nline 73
-     diffListedTime           Time      DeltaTime             VM        DeltaVM
-       31       1086.379        1086.379          0.000      10076.768          0.000 : CG4::propagate_0
-    2019-07-14 22:55:09.424 INFO  [168745] [OpticksProfile::dump@359]  npy 73,4 /home/blyth/local/opticks/geocache/OKX4Test_lWorld0x4bc2710_PV_g4live/g4ok_gltf/f6cc352e44243f8fa536ab483ad390ce/1/source/evt/g4live/torch/OpticksProfile.npy
-    2019-07-14 22:55:09.424 INFO  [168745] [OpticksProfile::accumulateDump@247] Opticks::postpropagate nacc 0
-    2019-07-14 22:55:09.424 INFO  [168745] [NMeta::dump@129] Opticks::postpropagate
-    {
-        "--envkey": 1,
-        "ANA_DEFAULTS": "det=tboolean-box,src=torch,tag=1,pfx=tboolean-box",
-        "CMDLINE": "/home/blyth/local/opticks/lib/OKG4Test --envkey --xanalytic --geocenter --save ",
-        "COMPUTE_CAPABILITY": "70",
-        "DEFAULT_INTEROP_CVD": "1",
-        "EVENT_BASE": "/home/blyth/local/opticks/tmp",
-        "FrameRenderer": "TITAN RTX/PCIe/SSE2",
-        "HOME": "/home/blyth/opticks",
-        "KEY": "OKX4Test.X4PhysicalVolume.lWorld0x4bc2710_PV.f6cc352e44243f8fa536ab483ad390ce",
-        "NumDevices": 1,
-        "OptiXVersion": 60000,
-        "RESULTS_PREFIX": "/home/blyth/local/opticks",
-        "RTXMode": 0,
-        "VisibleDevices": "TITAN_RTX",
-        "idpath": "/home/blyth/local/opticks/geocache/OKX4Test_lWorld0x4bc2710_PV_g4live/g4ok_gltf/f6cc352e44243f8fa536ab483ad390ce/1",
-        "stacksize": 2180
-    }
-    2019-07-14 22:55:09.424 INFO  [168745] [Opticks::saveParameters@989]  postpropagate save parameters.json into TagZeroDir /home/blyth/local/opticks/geocache/OKX4Test_lWorld0x4bc2710_PV_g4live/g4ok_gltf/f6cc352e44243f8fa536ab483ad390ce/1/source/evt/g4live/torch/0
-    2019-07-14 22:55:09.424 INFO  [168745] [Bookmarks::create@247] Bookmarks::create : persisting state to slot 0
-    2019-07-14 22:55:09.424 INFO  [168745] [Bookmarks::collect@271] Bookmarks::collect 0
-    2019-07-14 22:55:09.520 INFO  [168745] [Animator::Summary@405] Composition::gui setup Animation T0:  OFF 0/0/    0.0000
-    2019-07-14 22:55:09.520 INFO  [168745] [Animator::Summary@405] Composition::initRotator T0:  OFF 0/0/    0.0000
-    2019-07-14 22:55:15.236 INFO  [168745] [GlobalStyle::setGlobalStyle@97] GlobalStyle GINVIS
-    2019-07-14 22:55:15.668 INFO  [168745] [GlobalStyle::setGlobalStyle@97] GlobalStyle GVIS
-    2019-07-14 22:55:19.172 INFO  [168745] [ContentStyle::setContentStyle@98] ContentStyle bbox inst 0 bbox 1 wire 0 asis 0 m_num_content_style 0 NUM_CONTENT_STYLE 5
-    2019-07-14 22:55:20.772 INFO  [168745] [Animator::setMode@167]  T1:SLOW32 0/6400/    0.0000
-    2019-07-14 22:55:22.039 INFO  [168745] [Animator::setMode@167]  T2:SLOW16 76/3200/   14.2522
-    2019-07-14 22:55:23.105 INFO  [168745] [Frame::key_pressed@798] Frame::key_pressed escape
-    2019-07-14 22:55:23.108 INFO  [168745] [Opticks::dumpRC@204]  rc 0 rcmsg : -
-    2019-07-14 22:55:23.108 INFO  [168745] [main@13]  RC 0
-    [Thread 0x7fffc36b6700 (LWP 169630) exited]
-    [Thread 0x7fffc2eb5700 (LWP 169631) exited]
-    [Thread 0x7fffc26b4700 (LWP 169632) exited]
-
-
-
 
 
 * unset OPTICKS_EVENT_BASE (it was set to $TMP avoids the need to set it like below)
@@ -358,5 +211,19 @@ Saves inside geocache::
          ph :      10k,1,2 :      10k,1,2 : (records) photon history flag/material sequence 
          so :            - :              : (source) input CPU side emitconfig photons, or initial cerenkov/scintillation 
     [blyth@localhost ana]$ 
+
+
+::
+
+    [blyth@localhost opticks]$ echo $TMP
+    /home/blyth/local/opticks/tmp
+    [blyth@localhost opticks]$ echo $OPTICKS_EVENT_BASE
+    /home/blyth/local/opticks/tmp
+
+    [blyth@localhost opticks]$ unset TMP ; unset OPTICKS_EVENT_BASE
+    [blyth@localhost opticks]$ 
+    [blyth@localhost opticks]$ tokg4.py 
+
+
 
 

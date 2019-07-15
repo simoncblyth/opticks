@@ -116,6 +116,16 @@ void OPropagator::initParameters()
 }
 
 
+/**
+OPropagator::setSize
+-----------------------
+
+Canonically invoked by OPropagator::prelaunch with width the number of photons
+from the OpticksEvent and height 1 
+
+
+**/
+
 void OPropagator::setSize(unsigned width, unsigned height)
 {
     m_width = width ; 

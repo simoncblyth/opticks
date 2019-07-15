@@ -89,6 +89,7 @@ class CFG4_API CRandomEngine : public CRandomListener, public CLHEP::HepRandomEn
         int  preinit(); 
         void init(); 
         void initCurand(); 
+        void run_ucf_script(unsigned mask_index) ; 
 
         void checkTranche(); 
         void dumpTranche(); 

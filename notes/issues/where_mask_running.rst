@@ -146,8 +146,8 @@ okg-/OpticksGen::
 
 
 
-GPU Side
-----------
+GPU Side 
+----------------------
 
 Although not particularly useful for debugging, have to apply 
 masking to GPU sim too for the output events to match those from CPU.
@@ -199,17 +199,182 @@ rng_states[photon_id]
 
 
 
+GPU Side implemented 
+----------------------------------------------------------------------------------
 
+* provide an OpticksEvent with a fewer input "source" photons, just the masked
+* mask the curandStates 
+
+
+::
+
+    [blyth@localhost opticks]$ opticks-fl Mask | grep optixrap
+
+    ./optixrap/ORng.cc
+          fabricates curandStates rng_states OptiX buffer with just the states of the mask photon indices 
+    ./optixrap/OContext.cc 
+          sets the kernel output logpath with the absolute (ie original) photon index 
+    ./optixrap/OEvent.cc
+          has m_mask buffer, but not used
 
 
 
 CPU Side
 ----------
 
+configure the mask : just a list of photon indices
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+OpticksCfg.cc::
+
+    .833    m_desc.add_options()
+     834        ("mask",     boost::program_options::value<std::string>(&m_mask),
+     835                     "comma delimited list of photon indices specifying mask selection to apply to both simulations"
+     836                     "see OpticksDbg, CInputPhotonSource, CRandomEngine"
+     837                     "notes/issues/where_mask_running.rst "
+     838                  );
+
+
+    102 void OpticksDbg::postconfigure()
+    103 {
+    104    LOG(verbose) << "setting up"  ;
+    105    m_cfg = m_ok->getCfg();
+    ...
+    111    const std::string& mask = m_cfg->getMask() ;
+    121    postconfigure( mask, m_mask );
+    ...
+    134    if(m_mask.size() > 0)
+    135    {
+    136        m_mask_buffer = NPY<unsigned>::make_from_vec(m_mask);
+    137    }
+    140 }
+
+
+Opticks.hh::
+
+    383    public:
+    384        // from OpticksDbg --dindex and --oindex options  
+    385        // NB these are for cfg4 debugging  (Opticks uses different approach with --pindex option)
+    386        NPY<unsigned>* getMaskBuffer() const ;
+    387        const std::vector<unsigned>&  getMask() const ;
+    388        unsigned getMaskIndex(unsigned idx) const ;  // original pre-masked index OR idx if no mask 
+    389        bool hasMask() const ;
+    393        bool isMaskPhoton(unsigned record_id) const ;
+
+
+Mask buffer is passed to NEmitPhotonsNPY::
+
+    035 OpticksGen::OpticksGen(OpticksHub* hub)
+     36     :
+     37     m_hub(hub),
+     38     m_gun(new OpticksGun(hub)),
+     39     m_ok(hub->getOpticks()),
+     40     m_cfg(m_ok->getCfg()),
+     41     m_ggb(hub->getGGeoBase()),
+     42     m_blib(m_ggb->getBndLib()),
+     43     m_lookup(hub->getLookup()),
+     44     m_torchstep(NULL),
+     45     m_fabstep(NULL),
+     46     m_csg_emit(hub->findEmitter()),
+     47     m_dbgemit(m_ok->isDbgEmit()),
+     48     m_emitter(m_csg_emit ? new NEmitPhotonsNPY(m_csg_emit, EMITSOURCE, m_ok->getSeed(), m_dbgemit, m_ok->getMaskBuffer(), m_ok->getGenerateOverride() ) : NULL ),
+     49     m_input_photons(NULL),
+
+    117 void OpticksGen::initFromEmitterGensteps()
+    118 {
+    119     // emitter bits and pieces get dressed up 
+    120     // perhaps make a class to do this ?   
+    121 
+    122     NPY<float>* iox = m_emitter->getPhotons();  // these photons maybe masked 
+    123     setInputPhotons(iox);
+    124 
+    125 
+    126     m_fabstep = m_emitter->getFabStep();
+    127 
+    128     NPY<float>* gs = m_emitter->getFabStepData();
+    129     assert( gs );
+    130 
+    131     gs->setAux((void*)iox); // under-radar association of input photons with the fabricated genstep
+    132 
+    133     // this gets picked up by OpticksRun::setGensteps 
+    134 
+    135 
+    136     const char* oac_ = "GS_EMITSOURCE" ;
+    137 
+    138     gs->addActionControl(OpticksActionControl::Parse(oac_));
+    139 
+    140     OpticksActionControl oac(gs->getActionControlPtr());
+    141     setLegacyGensteps(gs);
+    142 
+    143     LOG(LEVEL)
+    144         << "getting input photons and shim genstep "
+    145         << " --dbgemit " << m_dbgemit
+    146         << " input_photons " << m_input_photons->getNumItems()
+    147         << " oac : " << oac.description("oac")
+    148         ;
+    149 }
+
+
+::
+
+    ./npy/NEmitPhotonsNPY.hpp
+    ./npy/NPY.cpp
+         Masked running is handled by generating all photons as normal and then making 
+         a masked copy of them 
+
+
+
+
+CRandomEngine::preTrack sets up the original curand sequence of randoms using mask index
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+::
+
+
+    603 void CRandomEngine::preTrack()
+    604 {   
+    605     m_jump = 0 ; 
+    606     m_jump_count = 0 ;
+    607 
+    608     // assert( m_ok->isAlign() );    // not true for tests/CRandomEngineTest 
+    609     bool align_mask = m_ok->hasMask() ;
+    610     
+    611     unsigned use_index ;
+    612     if(align_mask)
+    613     {   
+    614         unsigned mask_index = m_ok->getMaskIndex( m_ctx._record_id );   // "original" index 
+    615         use_index = mask_index ; 
+    616         run_ucf_script( mask_index ) ;
+    617     }
+    618     else
+    619     {   
+    620         use_index = m_ctx._record_id ;
+    621     }
+    622     
+    623     setupCurandSequence(use_index) ;
+    624  
+    625  
+    626     LOG(debug)
+    627         << "record_id: "    // (*lldb*) preTrack
+    628         << " ctx.record_id " << m_ctx._record_id
+    629         << " use_index " << use_index 
+    630         << " align_mask " << ( align_mask ? "YES" : "NO" )
+    631         ;
+    632 }
+
+
+
+
+
+
+
+
 where mask running
 ~~~~~~~~~~~~~~~~~~~~
 
-Running on a subselection, picked via a where-mask of indices.
+Running on a subselection, picked via a where-mask of in
+[blyth@localhost opticks]$ 
+ces.
 Apply mask to emitconfig photons, and to the rng inputs.
 
 ::
@@ -245,4 +410,10 @@ Apply mask to emitconfig photons, and to the rng inputs.
      15     m_source->GeneratePrimaryVertex(event);
      16 }
 
+   
+
     
+
+
+
+ 
