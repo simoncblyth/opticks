@@ -83,6 +83,8 @@ to work with that parser follow some rules:
 * develop equirectangular bench360 as a benchmark for raytrace 
   performance using a view that sees all PMTs at once
 
+  * geocache-360 
+
 * start cleanup of optixrap, formerly had all .cu together 
   (mainly because of the CMake setup pain) 
 

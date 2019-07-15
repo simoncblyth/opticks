@@ -12,7 +12,7 @@ float SProc::VirtualMemoryUsageMB()
 
 #include<mach/mach.h>
 
-float SProc::VirtualMemoryUsageMB()
+float SProc::VirtualMemoryUsageKB()
 {
     struct mach_task_basic_info info;
     mach_msg_type_number_t size = MACH_TASK_BASIC_INFO_COUNT;
@@ -25,8 +25,8 @@ float SProc::VirtualMemoryUsageMB()
     {
         vm_size_t vsize_ = info.virtual_size  ;  
         unsigned long long vsize(vsize_); 
-        unsigned long long MB = 1000000 ; 
-        float usage = float(vsize/MB) ; 
+        unsigned long long KB = 1000 ; 
+        float usage = float(vsize/KB) ; 
         return usage  ;
     }
 
@@ -54,12 +54,6 @@ int parseLine(char* line){
     return i;
 }
 
-float SProc::VirtualMemoryUsageMB()
-{
-    float result = VirtualMemoryUsageKB() ; 
-    return result/1000.f ;   
-}
-
 float SProc::VirtualMemoryUsageKB()
 {
     FILE* file = fopen("/proc/self/status", "r");
@@ -76,11 +70,13 @@ float SProc::VirtualMemoryUsageKB()
     return result;
 }
 
-
-
-
 #endif
 
+float SProc::VirtualMemoryUsageMB()
+{
+    float result = VirtualMemoryUsageKB() ; 
+    return result/1000.f ;   
+}
 
 
 /**

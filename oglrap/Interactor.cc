@@ -324,6 +324,7 @@ const char* Interactor::keys =
 "\n 0-9: jump to preexisting bookmark  " 
 "\n 0-9 + shift: create or update bookmark  " 
 "\n SPACE: update the current bookmark, commiting trackballing into the view and persisting "
+"\n TAB  : frame->snap saving PPM file "
 "\n "
 "\n Animator modes are changed by pressing keys A,V,T"
 "\n "
@@ -538,7 +539,7 @@ void Interactor::key_pressed(unsigned int key)
             space_pressed();
             break;
         case GLFW_KEY_TAB:
-            tab_pressed();
+            tab_pressed();   // m_frame->snap()
             break;
         case GLFW_KEY_BACKSLASH:
             m_composition->nextPixelTimeStyle(modifiers);  

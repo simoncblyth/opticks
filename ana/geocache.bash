@@ -584,6 +584,26 @@ Uses an equirectangular "projection" : actually
 just a mapping from pixels (x,y) to 
 azimuthal (-pi:pi) and polar(-pi/2:pi/2) angles. 
 
+Default frame size is 1920x1080 
+Typical presentation size is 1280x720
+Double that 2560x1440
+
+To take a frame snap press TAB, which saves to /tmp/Frame.ppm
+
+::
+
+    geocache-360 --size 2560,1440,1
+
+Hmm doing this, end up with 2560x1340 seems to be constrained by monitor size
+
+
+Convert to png with 
+
+   env-;libpng-;libpng-- Frame.ppm
+
+
+
+
 EON
 }
 
@@ -648,8 +668,9 @@ geocache-snap360()
    UseOptiX --cvd $cvd 
 
    local cameratype=2  # EQUIRECTANGULAR : all PMTs in view 
-   local factor=4   # 4: 58.98 M pixels
-   #local factor=2    # 2: 14.75 M pixels
+   #local factor=4     # 4: 58.98 M pixels
+   #local factor=2     # 2: 14.75 M pixels
+   local factor=1      # 1: 2560x1440 : twice typical presentation resolution
 
    local dbg
    [ -n "$DBG" ] && dbg="gdb --args" || dbg=""
