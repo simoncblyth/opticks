@@ -20,7 +20,6 @@ const plog::Severity OpticksRun::LEVEL = PLOG::EnvLevel("OpticksRun", "DEBUG")  
 OpticksRun::OpticksRun(Opticks* ok) 
     :
     m_ok(ok),
-    m_nog4propagate(m_ok->isNoG4Propagate()),  // --nog4propagate
     m_gensteps(NULL), 
     m_g4evt(NULL),
     m_evt(NULL),
@@ -28,10 +27,6 @@ OpticksRun::OpticksRun(Opticks* ok)
     m_parameters(new NMeta)
 {
     OK_PROFILE("OpticksRun::OpticksRun");
-
-    LOG(LEVEL) 
-        << " m_nog4propagate " << m_nog4propagate
-        ;
 }
 
 
@@ -71,6 +66,8 @@ This
 
 void OpticksRun::createEvent(unsigned tagoffset)
 {
+    bool nog4propagate = m_ok->isNoG4Propagate() ;   // --nog4propagate
+
     m_ok->setTagOffset(tagoffset);
     // tagoffset is recorded with Opticks::setTagOffset within the makeEvent, but need it here before that 
 
@@ -80,7 +77,7 @@ void OpticksRun::createEvent(unsigned tagoffset)
     m_evt = m_ok->makeEvent(true, tagoffset) ;
     std::string tstamp = m_evt->getTimeStamp();
 
-    if(m_nog4propagate) 
+    if(nog4propagate) 
     { 
         m_g4evt = NULL ;   
     }

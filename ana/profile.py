@@ -196,13 +196,20 @@ class Profile(object):
     def plt_axvline(self, ax):
         """
         """
-        w0, w1 = self.delta_(*self.OKDT)
-        assert len(w0) == len(w1)
-        for i in range(len(w0)):         
-            i0 = w0[i]
+        #w0 = np.where( self.l == "_OEvent::uploadSource")[0]
+        w1, w2 = self.delta_(*self.OKDT)
+
+        #assert len(w0) == len(w1)
+        assert len(w1) == len(w2) 
+
+        for i in range(len(w1)):         
+            #i0 = w0[i]
             i1 = w1[i]
-            ax.axvline( self.t[i0], c="b" )
-            ax.axvline( self.t[i1], c="b" )
+            i2 = w2[i]
+            #ax.axvline( self.t[i0], c="r" )
+            ax.axvline( self.t[i1], c="g" )
+            ax.axvline( self.t[i2], c="b" )
+
         pass
 
 
@@ -324,24 +331,45 @@ if __name__ == '__main__':
     adt0 = np.average(dt0)    
     adt1 = np.average(dt1) 
 
-    overhead = adt0/at01   # ratio of average time between launches to average launch time 
-
+    ratio = adt0/at01   #  (average time between launches)/(average launch time 
 
     print("launch                avg %10.4f   t1-t0 %r   " % ( at01, t01 ))   
     print("times between starts  avg %10.4f   np.diff(t0) %r " % ( adt0 , dt0) )   
     print("times between stops   avg %10.4f   np.diff(t1) %r " % ( adt1 , dt1) )   
 
-    print(" between-launch %10.4f  launch-time %10.4f   overhead ratio %10.4f " % ( adt0, at01, overhead ) )
+    print(" between-launch %10.4f  launch-time %10.4f   betweenLaunch/launch  %10.4f (perfect=1) " % ( adt0, at01, ratio ) )
 
 
 
+    w0 = np.where(pr.l == "_OpticksRun::createEvent")[0]
+    w1 = np.where(pr.l == "OpticksRun::resetEvent")[0]
+
+    assert len(w0) == len(w1)
+
+    w10 = w1 - w0 
+    uw10 = np.unique(w10[1:])
+    assert len(uw10) == 1
+    uw = uw10[0]
+
+    ## each event after the 1st has the same set of labels 
+    for j in range(2, len(w0)): assert np.all( pr.l[w0[1]:w1[1]] == pr.l[w0[j]:w1[j]] )
+
+    tt = np.zeros( [9, uw] )
+    for j in range(1, len(w0)): tt[j-1] = pr.dt[w0[j]:w1[j]] 
+
+    print("pr[w0[1]:w1[1]]")
+    print(pr[w0[1]:w1[1]])
+    
+
+   
 
 
     fig = plt.figure(figsize=(6,5.5))
 
     ax = fig.add_subplot(111)
-    #ax.set_ylim([-350,200])
-    ax.set_xlim([4,6])
+
+    ax.set_xlim( [pr.t[w0[0]], pr.t[w1[-1]] + 0.5 ])
+
 
     plt.plot( pr.t, pr.v, 'o' )
 

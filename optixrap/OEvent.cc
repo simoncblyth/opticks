@@ -305,6 +305,7 @@ unsigned OEvent::upload(OpticksEvent* evt)
 
 unsigned OEvent::uploadGensteps(OpticksEvent* evt)
 {
+    OK_PROFILE("_OEvent::uploadGensteps");
     NPY<float>* gensteps =  evt->getGenstepData() ;
 
     unsigned npho = evt->getNumPhotons();
@@ -319,11 +320,13 @@ unsigned OEvent::uploadGensteps(OpticksEvent* evt)
         assert(gensteps->getBufferId() > 0); 
         LOG(LEVEL) << "(INTEROP) SKIP OpenGL BufferId " << gensteps->getBufferId()  ;
     }
+    OK_PROFILE("OEvent::uploadGensteps");
     return npho ; 
 }
 
 unsigned OEvent::uploadSource(OpticksEvent* evt)
 {
+    OK_PROFILE("_OEvent::uploadSource");
     NPY<float>* source =  evt->getSourceData() ;
     if(!source) return 0 ; 
 
@@ -339,8 +342,8 @@ unsigned OEvent::uploadSource(OpticksEvent* evt)
         assert(source->getBufferId() > 0); 
         LOG(LEVEL) << "(INTEROP) SKIP OpenGL BufferId " << source->getBufferId()  ;
     }
+    OK_PROFILE("OEvent::uploadSource");
     return nsrc ; 
-
 }
 
 

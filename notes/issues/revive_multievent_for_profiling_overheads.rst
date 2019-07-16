@@ -24,15 +24,36 @@ DONE
 -----
 
 * reduced time between launches from 0.25s to 0.05s by making ViewNPY lazy on bounds
-
-TODO
-------
-
 * get rid of OpticksRun m_g4evt when using  "--nog4propagate" it takes 0.025s (just like m_evt)
 
 
-ISSUE 
-------
+
+TODO : find cause of random sprinkles of additional 0.0039
+------------------------------------------------------------------
+
+::
+
+    In [3]: tt[:, 10:33]
+    Out[3]: 
+    array([[0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.0156, 0.    , 0.    , 0.    , 0.0078, 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    ],
+           [0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.0156, 0.    , 0.    , 0.    , 0.0078, 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    ],
+           [0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.0156, 0.    , 0.0039, 0.    , 0.0039, 0.    , 0.    , 0.    , 0.    , 0.0039, 0.    , 0.    , 0.    , 0.    ],
+           [0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.0156, 0.    , 0.    , 0.    , 0.0078, 0.    , 0.    , 0.0039, 0.    , 0.    , 0.    , 0.    , 0.    , 0.    ],
+           [0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.0156, 0.    , 0.    , 0.    , 0.0078, 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    ],
+           [0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.0039, 0.    , 0.0117, 0.    , 0.    , 0.    , 0.0078, 0.0039, 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    ],
+           [0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.0156, 0.    , 0.    , 0.    , 0.0078, 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    ],
+           [0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.0117, 0.    , 0.0039, 0.    , 0.0039, 0.    , 0.    , 0.0039, 0.    , 0.    , 0.    , 0.    , 0.    , 0.    ],
+           [0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.0156, 0.    , 0.    , 0.    , 0.0078, 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    ]])
+
+    In [5]: 0.0117+0.0039
+    Out[5]: 0.0156
+
+
+
+
+
+AVOIDED ISSUE  by "--nog4propagate"
+-------------------------------------------
 
 ::
 
@@ -402,6 +423,213 @@ OpticksEvent::save is next in line, can be halved by avoiding m_g4evt with --nog
       442          0.025           5.449          0.025      10284.960          0.000 : OpticksRun::saveEvent_8
       443          0.000           5.449          0.000      10284.960          0.000 : _OpticksRun::resetEvent_8
       444          0.000           5.449          0.000      10284.960          0.000 : OpticksRun::resetEvent_8
+
+
+
+Skipping creation and saving of the report in production greatly reduces OpticksEvent::save leaving next up OEvent::upload 
+-------------------------------------------------------------------------------------------------------------------------------
+
+* taking twice the time of the launch 
+
+
+::
+
+    In [6]: pr[w0[1]:w1[1]]
+    Out[6]: 
+    pro
+      /home/blyth/local/opticks/tmp/scan-ph/evt/cvd_1_rtx_1/torch/OpticksProfile.npy              20190716-1737 
+      /home/blyth/local/opticks/tmp/scan-ph/evt/cvd_1_rtx_1/torch/OpticksProfileAcc.npy           20190716-1737 
+    slice(74, 107, None)
+        idx :                                              label :          t          v         dt         dv   
+         74 :                           _OpticksRun::createEvent :     4.9102 10284.9238     0.0000     0.0000   
+         75 :                      _OpticksEvent::setNopstepData :     4.9102 10284.9238     0.0000     0.0000   
+         76 :                       OpticksEvent::setNopstepData :     4.9102 10284.9238     0.0000     0.0000   
+         77 :                            OpticksRun::createEvent :     4.9102 10284.9238     0.0000     0.0000   
+         78 :                           _OpticksRun::setGensteps :     4.9102 10284.9238     0.0000     0.0000   
+         79 :                        _OpticksRun::importGensteps :     4.9102 10284.9238     0.0000     0.0000   
+         80 :                     _OpticksRun::importGenstepData :     4.9102 10284.9238     0.0000     0.0000   
+         81 :                      OpticksRun::importGenstepData :     4.9102 10284.9238     0.0000     0.0000   
+         82 :                      _OpticksEvent::setGenstepData :     4.9102 10284.9238     0.0000     0.0000   
+         83 :                       OpticksEvent::setGenstepData :     4.9102 10284.9238     0.0000     0.0000   
+         84 :                       _OpticksEvent::setSourceData :     4.9102 10284.9238     0.0000     0.0000   
+         85 :          _OpticksEvent::setSourceData.MultiViewNPY :     4.9102 10284.9238     0.0000     0.0000   
+         86 :           OpticksEvent::setSourceData.MultiViewNPY :     4.9102 10284.9238     0.0000     0.0000   
+         87 :                        OpticksEvent::setSourceData :     4.9102 10284.9238     0.0000     0.0000   
+         88 :                      _OpticksEvent::setNopstepData :     4.9102 10284.9238     0.0000     0.0000   
+         89 :                         OpticksRun::importGensteps :     4.9102 10284.9238     0.0000     0.0000   
+         90 :                            OpticksRun::setGensteps :     4.9102 10284.9238     0.0000     0.0000   
+         91 :                           _OKPropagator::propagate :     4.9102 10284.9238     0.0000     0.0000   
+         92 :                                    _OEvent::upload :     4.9102 10284.9238     0.0000     0.0000   
+         93 :                                     OEvent::upload :     4.9258 10284.9238     0.0156     0.0000   
+         94 :         _OpSeeder::seedPhotonsFromGenstepsViaOptiX :     4.9258 10284.9238     0.0000     0.0000   
+         95 :          OpSeeder::seedPhotonsFromGenstepsViaOptiX :     4.9258 10284.9238     0.0000     0.0000   
+         96 :                               _OPropagator::launch :     4.9258 10284.9238     0.0000     0.0000   
+         97 :                                OPropagator::launch :     4.9336 10284.9238     0.0078     0.0000   
+         98 :                            OKPropagator::propagate :     4.9336 10284.9238     0.0000     0.0000   
+         99 :                       _OEvent::downloadHitsCompute :     4.9336 10284.9238     0.0000     0.0000   
+        100 :                        OEvent::downloadHitsCompute :     4.9336 10284.9238     0.0000     0.0000   
+        101 :                   OKPropagator::propagate-download :     4.9336 10284.9238     0.0000     0.0000   
+        102 :                             _OpticksRun::saveEvent :     4.9336 10284.9238     0.0000     0.0000   
+        103 :                                _OpticksEvent::save :     4.9336 10284.9238     0.0000     0.0000   
+        104 :                                 OpticksEvent::save :     4.9336 10284.9238     0.0000     0.0000   
+        105 :                              OpticksRun::saveEvent :     4.9336 10284.9238     0.0000     0.0000   
+        106 :                            _OpticksRun::resetEvent :     4.9336 10284.9238     0.0000     0.0000   
+        idx :                                              label :          t          v         dt         dv   
+
+    In [7]: 0.0156 + 0.0078
+    Out[7]: 0.023399999999999997
+
+    In [8]: (0.0156 + 0.0078)/0.0078
+    Out[8]: 2.9999999999999996
+
+    In [9]: (0.0156)/0.0078
+    Out[9]: 2.0
+
+
+quantization problem with the timing, need longer times 
+---------------------------------------------------------
+
+* ignoring this quantization, see that upload for 1M photons takes twice the time as the launch 
+* this is the end of the road for input photons, need proper on GPU generation to take overhead checking further
+
+::
+
+    ip profile.py --tag 0 --cat cvd_1_rtx_1
+    .. 
+      /home/blyth/local/opticks/tmp/scan-ph/evt/cvd_1_rtx_1/torch/OpticksProfile.npy              20190716-2127 
+      /home/blyth/local/opticks/tmp/scan-ph/evt/cvd_1_rtx_1/torch/OpticksProfileAcc.npy           20190716-2127 
+    slice(0, 1, None)
+        idx :                                              label :          t          v         dt         dv   
+          0 :                             OpticksRun::OpticksRun :     0.0000     0.0000 48431.7070   446.6280   
+        idx :                                              label :          t          v         dt         dv   
+    launch t0 %r  [4.8789 4.9062 4.9336 4.957  4.9883 5.0117 5.043  5.0664 5.0938 5.1211]
+    launch t1 %r  [4.8867 4.9141 4.9414 4.9648 4.9922 5.0195 5.0469 5.0742 5.1016 5.1289]
+    launch                avg     0.0070   t1-t0 array([0.0078, 0.0078, 0.0078, 0.0078, 0.0039, 0.0078, 0.0039, 0.0078, 0.0078, 0.0078], dtype=float32)   
+    times between starts  avg     0.0269   np.diff(t0) array([0.0273, 0.0273, 0.0234, 0.0312, 0.0234, 0.0312, 0.0234, 0.0273, 0.0273], dtype=float32) 
+    times between stops   avg     0.0269   np.diff(t1) array([0.0273, 0.0273, 0.0234, 0.0273, 0.0273, 0.0273, 0.0273, 0.0273, 0.0273], dtype=float32) 
+     between-launch     0.0269  launch-time     0.0070   betweenLaunch/launch      3.8272 (perfect=1) 
+    pr[w0[1]:w1[1]]
+    pro
+      /home/blyth/local/opticks/tmp/scan-ph/evt/cvd_1_rtx_1/torch/OpticksProfile.npy              20190716-2127 
+      /home/blyth/local/opticks/tmp/scan-ph/evt/cvd_1_rtx_1/torch/OpticksProfileAcc.npy           20190716-2127 
+    slice(78, 115, None)
+        idx :                                              label :          t          v         dt         dv   
+         78 :                           _OpticksRun::createEvent :     4.8867 10284.9316     0.0000     0.0000   
+         79 :                      _OpticksEvent::setNopstepData :     4.8867 10284.9316     0.0000     0.0000   
+         80 :                       OpticksEvent::setNopstepData :     4.8867 10284.9316     0.0000     0.0000   
+         81 :                            OpticksRun::createEvent :     4.8867 10284.9316     0.0000     0.0000   
+         82 :                           _OpticksRun::setGensteps :     4.8867 10284.9316     0.0000     0.0000   
+         83 :                        _OpticksRun::importGensteps :     4.8906 10284.9316     0.0039     0.0000   
+         84 :                     _OpticksRun::importGenstepData :     4.8906 10284.9316     0.0000     0.0000   
+         85 :                      OpticksRun::importGenstepData :     4.8906 10284.9316     0.0000     0.0000   
+         86 :                      _OpticksEvent::setGenstepData :     4.8906 10284.9316     0.0000     0.0000   
+         87 :                       OpticksEvent::setGenstepData :     4.8906 10284.9316     0.0000     0.0000   
+         88 :                       _OpticksEvent::setSourceData :     4.8906 10284.9316     0.0000     0.0000   
+         89 :          _OpticksEvent::setSourceData.MultiViewNPY :     4.8906 10284.9316     0.0000     0.0000   
+         90 :           OpticksEvent::setSourceData.MultiViewNPY :     4.8906 10284.9316     0.0000     0.0000   
+         91 :                        OpticksEvent::setSourceData :     4.8906 10284.9316     0.0000     0.0000   
+         92 :                      _OpticksEvent::setNopstepData :     4.8906 10284.9316     0.0000     0.0000   
+         93 :                         OpticksRun::importGensteps :     4.8906 10284.9316     0.0000     0.0000   
+         94 :                            OpticksRun::setGensteps :     4.8906 10284.9316     0.0000     0.0000   
+         95 :                           _OKPropagator::propagate :     4.8906 10284.9316     0.0000     0.0000   
+         96 :                                    _OEvent::upload :     4.8906 10284.9316     0.0000     0.0000   
+         97 :                            _OEvent::uploadGensteps :     4.8906 10284.9316     0.0000     0.0000   
+         98 :                             OEvent::uploadGensteps :     4.8906 10284.9316     0.0000     0.0000   
+         99 :                              _OEvent::uploadSource :     4.8906 10284.9316     0.0000     0.0000   
+        100 :                               OEvent::uploadSource :     4.9062 10284.9316     0.0156     0.0000   ####
+        101 :                                     OEvent::upload :     4.9062 10284.9316     0.0000     0.0000   
+        102 :         _OpSeeder::seedPhotonsFromGenstepsViaOptiX :     4.9062 10284.9316     0.0000     0.0000   
+        103 :          OpSeeder::seedPhotonsFromGenstepsViaOptiX :     4.9062 10284.9316     0.0000     0.0000   
+        104 :                               _OPropagator::launch :     4.9062 10284.9316     0.0000     0.0000   
+        105 :                                OPropagator::launch :     4.9141 10284.9316     0.0078     0.0000    ####  
+        106 :                            OKPropagator::propagate :     4.9141 10284.9316     0.0000     0.0000   
+        107 :                       _OEvent::downloadHitsCompute :     4.9141 10284.9316     0.0000     0.0000   
+        108 :                        OEvent::downloadHitsCompute :     4.9141 10284.9316     0.0000     0.0000   
+        109 :                   OKPropagator::propagate-download :     4.9141 10284.9316     0.0000     0.0000   
+        110 :                             _OpticksRun::saveEvent :     4.9141 10284.9316     0.0000     0.0000   
+        111 :                                _OpticksEvent::save :     4.9141 10284.9316     0.0000     0.0000   
+        112 :                                 OpticksEvent::save :     4.9141 10284.9316     0.0000     0.0000   
+        113 :                              OpticksRun::saveEvent :     4.9141 10284.9316     0.0000     0.0000   
+        114 :                            _OpticksRun::resetEvent :     4.9141 10284.9316     0.0000     0.0000   
+        idx :                                              label :          t          v         dt         dv   
+
+
+
+
+
+
+
+
+::
+
+    In [1]: tt
+    Out[1]: 
+    array([[0.    , 0.    , 0.    , 0.    , 0.    , 0.0039, 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.0156,
+            0.    , 0.    , 0.    , 0.    , 0.0078, 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    ],
+           [0.    , 0.    , 0.    , 0.    , 0.    , 0.0039, 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.0156,
+            0.    , 0.    , 0.    , 0.    , 0.0078, 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    ],
+           [0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.0156,
+            0.    , 0.    , 0.    , 0.    , 0.0078, 0.    , 0.    , 0.0039, 0.    , 0.    , 0.    , 0.    , 0.    , 0.    ],
+           [0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.0156,
+            0.    , 0.    , 0.0039, 0.    , 0.0039, 0.    , 0.0039, 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    ],
+           [0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.0039, 0.    , 0.    , 0.0117,
+            0.    , 0.    , 0.    , 0.    , 0.0078, 0.    , 0.    , 0.0039, 0.    , 0.    , 0.    , 0.    , 0.    , 0.    ],
+           [0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.0156,
+            0.    , 0.    , 0.    , 0.0039, 0.0039, 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.0039, 0.    , 0.    ],
+           [0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.0156,
+            0.    , 0.    , 0.    , 0.    , 0.0078, 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    ],
+           [0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.0039, 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.0156,
+            0.    , 0.    , 0.    , 0.    , 0.0078, 0.    , 0.    , 0.0039, 0.    , 0.    , 0.    , 0.    , 0.    , 0.    ],
+           [0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.0156,
+            0.    , 0.    , 0.    , 0.    , 0.0078, 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    , 0.    ]])
+
+    In [2]: 0.0039*np.arange(5)
+    Out[2]: array([0.    , 0.0039, 0.0078, 0.0117, 0.0156])
+
+
+
+
+
+Try 10M : time of upload and launch about the same
+------------------------------------------------------
+
+
+
+
+::
+
+     tmp ; rm -rf scan-ph ; OpticksProfile=ERROR ts box --pfx scan-ph --cat cvd_1_rtx_1 --generateoverride -10 --rngmax 10 --compute --production --cvd 1 --rtx 1 --multievent 10 --nog4propagate
+
+     tmp ; rm -rf scan-ph ; ts box --pfx scan-ph --cat cvd_1_rtx_1 --generateoverride 10000000 --compute --production --nog4propagate --rngmax 10 --cvd 1 --rtx 1 --multievent 10 
+
+     ip profile.py --tag 0 --cat cvd_1_rtx_1
+
+
+::
+
+    [2019-07-16 22:06:47,584] p34569 {<module>            :profile.py:314} INFO     - tagdir: /home/blyth/local/opticks/tmp/scan-ph/evt/cvd_1_rtx_1/torch 
+    [2019-07-16 22:06:47,584] p34569 {__init__            :profile.py:24} INFO     -  tagdir:/home/blyth/local/opticks/tmp/scan-ph/evt/cvd_1_rtx_1/torch name:pro tag:torch g4:False 
+    pro
+      /home/blyth/local/opticks/tmp/scan-ph/evt/cvd_1_rtx_1/torch/OpticksProfile.npy              20190716-2152 
+      /home/blyth/local/opticks/tmp/scan-ph/evt/cvd_1_rtx_1/torch/OpticksProfileAcc.npy           20190716-2152 
+    slice(0, 1, None)
+        idx :                                              label :          t          v         dt         dv   
+          0 :                             OpticksRun::OpticksRun :     0.0000     0.0000 49946.0977   446.6280   
+        idx :                                              label :          t          v         dt         dv   
+    launch t0 %r  [18.1367 18.2969 18.4531 18.6016 18.75   18.957  19.1094 19.2617 19.4102 19.5625]
+    launch t1 %r  [18.2148 18.3711 18.5234 18.6719 18.8203 19.0312 19.1836 19.332  19.4844 19.6328]
+    launch                avg     0.0727   t1-t0 array([0.0781, 0.0742, 0.0703, 0.0703, 0.0703, 0.0742, 0.0742, 0.0703, 0.0742, 0.0703], dtype=float32)   
+    times between starts  avg     0.1584   np.diff(t0) array([0.1602, 0.1562, 0.1484, 0.1484, 0.207 , 0.1523, 0.1523, 0.1484, 0.1523], dtype=float32) 
+    times between stops   avg     0.1576   np.diff(t1) array([0.1562, 0.1523, 0.1484, 0.1484, 0.2109, 0.1523, 0.1484, 0.1523, 0.1484], dtype=float32) 
+     between-launch     0.1584  launch-time     0.0727   betweenLaunch/launch      2.1804 (perfect=1) 
+
+
+
+
+
+
+
+
 
 
 

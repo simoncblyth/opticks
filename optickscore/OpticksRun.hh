@@ -53,7 +53,6 @@ class OKCORE_API OpticksRun
 
     private:
         Opticks*         m_ok ; 
-        bool             m_nog4propagate ;  
         NPY<float>*      m_gensteps ; 
 
         OpticksEvent*    m_g4evt ; 

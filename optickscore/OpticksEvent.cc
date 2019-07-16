@@ -1572,7 +1572,9 @@ void OpticksEvent::save()
         << " dir " << m_event_spec->getDir()
         ;    
 
-    if(m_ok->isProduction())
+    bool production = m_ok->isProduction() ; 
+
+    if(production)
     {
         if(m_ok->hasOpt("savehit")) saveHitData();  // FOR production hit check
     }
@@ -1587,16 +1589,20 @@ void OpticksEvent::save()
         saveSequenceData();
         //saveSeedData();
         saveIndex();
+
+        recordDigests();
+        saveDomains();
+        saveParameters();
     }
 
-    recordDigests();
-    saveDomains();
-    saveParameters();
 
     OK_PROFILE("OpticksEvent::save"); 
 
-    makeReport(false);  // after timer save, in order to include that in the report
-    saveReport();
+    if(!production)
+    {
+        makeReport(false);  // after timer save, in order to include that in the report
+        saveReport();
+    }
 }
 
 

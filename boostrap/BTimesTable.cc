@@ -129,7 +129,7 @@ void BTimesTable::makeLines()
             else
                 assert(entry.first.compare(rowname) == 0) ;
 
-             ss << std::fixed << std::setw(wid) << std::setprecision(3) << entry.second ;
+             ss << std::fixed << std::setw(wid) << std::setprecision(4) << entry.second ;
 
             if(j==PRIME) first = entry.second ;   // 1st column only
         }

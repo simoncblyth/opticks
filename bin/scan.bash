@@ -134,18 +134,45 @@ scan-ph-cat(){
 }
 
 scan-ph-cats(){ cat << EOC
+cvd_1_rtx_1
+EOC
+}
+
+scan-ph-cats_in_waiting(){ cat << EOC
 cvd_1_rtx_0
 cvd_1_rtx_1
 EOC
 }
 
+
+
+
+
+
 scan-ph-cmd(){   
    local num_photons=$1
    local cat=$2
-   local cmd="ts $(scan-ph-lv) --pfx scan-ph --cat $cat --generateoverride ${num_photons} --compute --production  "  ; 
+   local cmd="ts $(scan-ph-lv) --pfx scan-ph --cat $cat --generateoverride ${num_photons} --compute --production --multievent 10 "  ; 
    if [ $num_photons -gt 1000000 ]; then
        cmd="$cmd --nog4propagate"  
    fi
+
+   local M=$(( 1000000 ))
+   local M3=$(( 3*M ))
+   local M10=$(( 10*M ))
+   local M100=$(( 100*M ))
+
+   if [ $num_photons -gt $M100 ]; then
+      echo $msg num_photons $num_photons is above the ceiling 
+      sleep M 
+   elif [ $num_photons -gt $M10 ]; then 
+       cmd="$cmd --rngmax 100"
+   elif [ $num_photons -gt $M3 ]; then 
+       cmd="$cmd --rngmax 10"
+   else
+       cmd="$cmd --rngmax 3"
+   fi
+
    cmd="$cmd $(scan-ph-cat $cat)"
    echo $cmd
 }
