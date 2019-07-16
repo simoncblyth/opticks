@@ -1,7 +1,9 @@
 #!/usr/bin/env python
 """
 """
+from __future__ import print_function
 import numpy as np
+
 import os, sys, re, logging, argparse, platform
 from opticks.ana.num import slice_, _slice
 from opticks.ana.env import opticks_environment
@@ -76,7 +78,7 @@ class OK(argparse.Namespace):
 def opticks_args(**kwa):
 
     oad_key = "OPTICKS_ANA_DEFAULTS"
-    oad = os.environ.get(oad_key,"det=g4live,src=natural,tag=1,pfx=.")
+    oad = os.environ.get(oad_key,"det=g4live,cat=g4live,src=natural,tag=1,pfx=.")
     defaults = dict(map(lambda ekv:ekv.split("="), oad.split(","))) 
     lv = os.environ.get("LV", None)
 
@@ -90,9 +92,13 @@ def opticks_args(**kwa):
     log.info("envvar %s -> defaults %s " % (oad_key, repr(defaults)))
 
     det = kwa.get("det", defaults["det"])
+    cat = kwa.get("cat", defaults["cat"])
     src = kwa.get("src", defaults["src"])
     tag = kwa.get("tag", defaults["tag"])
     pfx = kwa.get("pfx", defaults["pfx"])
+
+    print("defaults det %s cat %s src %s tag %s pfx %s " % (det, cat, src, tag, pfx), file=sys.stderr)
+
 
     llv = kwa.get("loglevel", "info")
     llv2 = kwa.get("log-level", "info")
@@ -172,6 +178,7 @@ def opticks_args(**kwa):
 
     parser.add_argument(     "--tag",  default=tag, help="tag identifiying a simulation within a specific source and detector geometry, negated tag for Geant4 equivalent. Default %(default)s" )
     parser.add_argument(     "--det",  default=det, help="detector geometry: eg g4live, PmtInBox, dayabay. Default %(default)s. "  )
+    parser.add_argument(     "--cat",  default=cat, help="category that overrides det. Will replace det, to match C++. Default %(default)s. "  )
     parser.add_argument(     "--src",  default=src, help="photon source: torch, natural, scintillation OR cerenkov. Default %(default)s " )
     parser.add_argument(     "--pfx",  default=pfx, help="either \"source\" for 1st executable or the name of the executable for subsequent eg \"OKG4Test\". Default %(default)s " )
 
@@ -268,10 +275,12 @@ def opticks_args(**kwa):
 
     assert args.cfordering in "max self other".split() 
 
+    
+    args.det = args.cat  # todo update use of det for cat, to avoid this 
 
-    if args.det != "g4live" and args.pfx != ".":
-        args.det = args.pfx 
-    pass
+    #if args.det != "g4live" and args.pfx != ".":
+    #    args.det = args.pfx 
+    #pass
 
     args.c2max = map(float, args.c2max.split(",")) 
     args.rdvmax = map(float, args.rdvmax.split(",")) 

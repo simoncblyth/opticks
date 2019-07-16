@@ -20,7 +20,7 @@ from opticks.ana.abstat import ABStat
 from opticks.ana.qdv import QDV, QDVTab
 from opticks.ana.make_rst_table import recarray_as_rst
 from opticks.ana.metadata import CompareMetadata
-from opticks.ana.profile import Profile
+from opticks.ana.profile import ABProfile
 from opticks.ana.absmry import ABSmry
 
 log = logging.getLogger(__name__)
@@ -250,7 +250,7 @@ class AB(object):
 
         self.is_comparable = self.valid and not self.a.ph.missing and not self.b.ph.missing
 
-        self.pro = Profile(self.a.tagdir, self.b.tagdir)
+        self.pro = ABProfile(self.a.tagdir, self.b.tagdir)
 
         if self.is_comparable: 
             self.cfm = self.compare_meta()

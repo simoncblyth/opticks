@@ -5,6 +5,7 @@
 
 #include "SAr.hh"
 #include "STime.hh"
+#include "SSys.hh"
 #include "BStr.hh"
 #include "NGLM.hpp"
 #include "OpticksCfg.hh"
@@ -31,7 +32,8 @@ OpticksCfg<Listener>::OpticksCfg(const char* name, Listener* listener, bool live
        m_dbgcsgpath(""),
        m_logname(""),
        m_event_cat(""),
-       m_event_pfx("source"),
+       //m_event_pfx("source"),
+       m_event_pfx(""),
        m_event_tag("1"),
        m_integrated_event_tag("100"),
        m_liveline(""),
@@ -754,7 +756,7 @@ void OpticksCfg<Listener>::init()
        ("fullscreen,f",  "start in fullscreen mode") ;
 
    m_desc.add_options()
-       ("tag",   boost::program_options::value<std::string>(&m_event_tag), "eventtag to load/save" );
+       ("tag",   boost::program_options::value<std::string>(&m_event_tag), "non zero positive integer string identifying an event" );
 
    m_desc.add_options()
        ("itag",   boost::program_options::value<std::string>(&m_integrated_event_tag), "integrated eventtag to load/save, used from OPG4 package" );
@@ -1293,12 +1295,14 @@ const char* OpticksCfg<Listener>::getEventTag() const
 template <class Listener>
 const char* OpticksCfg<Listener>::getEventCat() const 
 {
-    return m_event_cat.empty() ? NULL : m_event_cat.c_str() ;
+    const char* cat_envvar_default = SSys::getenvvar("TESTNAME" , NULL ); 
+    return m_event_cat.empty() ? cat_envvar_default : m_event_cat.c_str() ;
 }
 template <class Listener>
 const char* OpticksCfg<Listener>::getEventPfx() const 
 {
-    return m_event_pfx.empty() ? NULL : m_event_pfx.c_str() ;
+    const char* pfx_envvar_default = SSys::getenvvar("TESTNAME" , NULL ); 
+    return m_event_pfx.empty() ? pfx_envvar_default : m_event_pfx.c_str() ;
 }
 
 

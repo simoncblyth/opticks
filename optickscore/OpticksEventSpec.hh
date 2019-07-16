@@ -8,6 +8,19 @@
 
 class OpticksEventSpec ; 
 
+/**
+OpticksEventSpec
+==================
+
+Base clase of OpticksEvent.
+
+Instances m_spec (positive tag) and m_nspec (negative tag) 
+are instanciated by Opticks::defineEventSpec as part of Opticks::configure.
+
+
+
+**/
+
 class OKCORE_API OpticksEventSpec {
    public:
         static const char* OK_ ; 

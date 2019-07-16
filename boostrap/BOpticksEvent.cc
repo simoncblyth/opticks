@@ -58,8 +58,12 @@ std::string BOpticksEvent::directory_template(bool notag)
 BOpticksEvent::directory_
 ----------------------------
 
+pfx 
+    highest level directory name, eg "source"  
+
 top (geometry)
     old and new: BoxInBox,PmtInBox,dayabay,prism,reflect,juno,... 
+
 sub 
     old: cerenkov,oxcerenkov,oxtorch,txtorch   (constituent+source)
     new: cerenkov,scintillation,natural,torch  (source only)
@@ -70,6 +74,14 @@ tag
 anno
     normally NULL, used for example with metadata for a timestamp folder
     within the tag folder
+
+
+When a tag is provided the DEFAULT_DIR_TEMPLATE yields::
+
+    $OPTICKS_EVENT_BASE/{pfx}/evt/{top}/{sub}/{tag}
+
+This is appended with ANNO when that is provided
+
 
 **/
 
@@ -100,6 +112,14 @@ std::string BOpticksEvent::reldir(const char* pfx, const char* top, const char* 
     return base ; 
 }
 
+/**
+BOpticksEvent::replace
+------------------------
+
+Inplace replaces tokens in base argument. 
+
+
+**/
 
 void BOpticksEvent::replace( std::string& base , const char* pfx, const char* top, const char* sub, const char* tag )
 {
@@ -117,6 +137,8 @@ void BOpticksEvent::replace( std::string& base , const char* pfx, const char* to
 }
 
 
+
+
 std::string BOpticksEvent::path_(const char* pfx, const char* top, const char* sub, const char* tag, const char* stem, const char* ext)
 {
     const char* anno = NULL ;  
@@ -131,8 +153,84 @@ std::string BOpticksEvent::path_(const char* pfx, const char* top, const char* s
 
 
 
+/**
+BOpticksEvent::path
+----------------------
 
-std::string BOpticksEvent::path(const char* pfx, const char* top, const char* sub, const char* tag, const char* stem, const char* ext)
+Canonical usage from OpticksEvent::getPath::
+
+    1862 const char* OpticksEvent::getPath(const char* xx)
+    1863 {   
+    1864     std::string name = m_abbrev.count(xx) == 1 ? m_abbrev[xx] : xx ;
+    1865     const char* udet = getUDet(); // cat overrides det if present 
+    1866     std::string path = BOpticksEvent::path(m_pfx, udet, m_typ, m_tag, name.c_str() );
+    1867     return strdup(path.c_str()) ;
+    1868 }
+
+
+::
+
+    $OPTICKS_EVENT_BASE/{pfx}/evt/{top}/{sub}/{tag}/{stem}{ext} 
+
+
+Examples::
+
+     /home/blyth/local/opticks/tmp/tboolean-proxy-19/evt/tboolean-proxy-19/torch/1/ox.npy
+     /home/blyth/local/opticks/geocache/OKX4Test_lWorld0x4bc2710_PV_g4live/g4ok_gltf/f6cc352e44243f8fa536ab483ad390ce/1/source/evt/g4live/torch/-1/ox.npy
+
+
+     OPTICKS_EVENT_BASE 
+           /home/blyth/local/opticks/tmp
+           /home/blyth/local/opticks/geocache/OKX4Test_lWorld0x4bc2710_PV_g4live/g4ok_gltf/f6cc352e44243f8fa536ab483ad390ce/1
+     pfx                
+           tboolean-proxy-19
+           source
+           scan-ph
+    
+           OpticksEvent::m_pfx  control via "--pfx" option 
+
+     evt
+           fixed marker
+
+     top                
+           tboolean-proxy-19
+           g4live
+
+           OpticksEvent::getUDet() providing  m_cat ? m_cat : m_det      control via "--cat" option 
+
+     sub                
+           torch               
+           torch               
+
+           identifies photon source, eg cerenkov, scintillation, natural, torch  
+
+           OpticksEvent::m_typ 
+
+     tag      
+           1 
+
+           non-zero integer string, default "1"
+
+           OpticksEvent::m_tag
+
+     stem               
+           ox
+
+           filename without extension eg "ox", "ph", "rx" 
+
+           OpticksEvent::m_abbrev[xx]   where xx is array name
+
+     ext   
+           .npy 
+
+           filename extension including the dot, eg ".txt" ".npy", defaults to ".npy"
+
+
+**/
+
+
+
+std::string BOpticksEvent::path(const char* pfx, const char* top, const char* sub, const char* tag, const char* stem, const char* ext)  // static 
 {
 
     std::string p_ ; 

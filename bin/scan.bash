@@ -17,7 +17,6 @@ tp
     this is the non-ipython version of ta    
 
 
-
 Workflow
 -----------
 
@@ -83,15 +82,14 @@ scan-seq(){
 
 scan-ph-args(){ cat << EOS | tr -d " ,"  | grep -v \#
           1
+         10
+        100
        1000
      10,000
-#    50,000
     100,000
-    200,000
-    500,000
   1,000,000
-  2,000,000
-  3,000,000
+ 10,000,000
+100,000,000
 EOS
 }
 
@@ -115,13 +113,44 @@ tv
     vizualization, using tv from opticks-tboolean-shortcuts
 
 
+## to reduce logging output dramatically use "--error"
+
+How to handle variations of a scan, eg changing RTX mode or numbers of GPUs
+
 
 EON
 }
 
 scan-ph-lv(){ echo box ; }
-scan-ph-cmd(){   printf "ts $(scan-ph-lv) --generateoverride $1 --error --cvd 1 --rtx 1 --compute\n"  ; }
-scan-ts-cmd(){   printf "ts $1 --cvd 1 --rtx 1 --compute --generateoverride -1 \n" ; }
+
+scan-ph-cat(){
+   case $cat in
+       cvd_0_rtx_1) echo --cvd 0 --rtx 0  ;;  
+       cvd_0_rtx_1) echo --cvd 0 --rtx 1  ;;  
+       cvd_1_rtx_0) echo --cvd 1 --rtx 0  ;;  
+       cvd_1_rtx_1) echo --cvd 1 --rtx 1  ;;  
+       cvd_01_rtx_1) echo --cvd 0,1 --rtx 0  ;;  
+   esac 
+}
+
+scan-ph-cats(){ cat << EOC
+cvd_1_rtx_0
+cvd_1_rtx_1
+EOC
+}
+
+scan-ph-cmd(){   
+   local num_photons=$1
+   local cat=$2
+   local cmd="ts $(scan-ph-lv) --pfx scan-ph --cat $cat --generateoverride ${num_photons} --compute --production  "  ; 
+   if [ $num_photons -gt 1000000 ]; then
+       cmd="$cmd --nog4propagate"  
+   fi
+   cmd="$cmd $(scan-ph-cat $cat)"
+   echo $cmd
+}
+
+scan-ts-cmd(){   printf "ts $1            --pfx scan-ts --generateoverride -1 --cvd 1 --rtx 1 --compute\n" ; }
 scan-tp-cmd(){   printf "tp $1 \n" ; }
 scan-tv-cmd(){   printf "tv $1 \n" ; }
 
@@ -133,20 +162,21 @@ scan-cmds-all(){
    local mode=$(scan-mode)
    local cmd
    local arg
-   scan-$mode-args | while read arg
-   do 
-      scan-$mode-cmd $arg
+   local cat 
+   scan-$mode-cats | while read cat 
+   do
+       scan-$mode-args | while read arg
+       do 
+          scan-$mode-cmd $arg $cat
+       done
    done
 }
 
 
-#scan-cmds(){ scan-cmds-all ; }
-scan-cmds(){ scan-cmds-all  ; }
-
 scan--()
 {
    local cmd
-   scan-cmds | while read cmd
+   scan-cmds-all | while read cmd
    do
       local rc
       if [ -n "$VERBOSE" ]; then
@@ -161,4 +191,10 @@ scan--()
    done
 }
 
-scan--v(){ VERBOSE=1 scan-- ; }
+
+scan-ph-cmds(){ SCAN_MODE=ph scan-cmds-all ; }
+scan-ph(){      SCAN_MODE=ph scan-- ; }
+scan-ph-v(){    VERBOSE=1 scan-ph ; }
+
+
+

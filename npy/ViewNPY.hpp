@@ -33,6 +33,9 @@ class MultiViewNPY ;
 #include "NPY_HEAD.hh"
 
 class NPY_API ViewNPY {
+
+        friend struct OpticksEvent ; 
+        friend struct test_ViewNPY ; 
     public:
         static const char* BYTE_ ; 
         static const char* UNSIGNED_BYTE_ ; 
@@ -98,7 +101,8 @@ class NPY_API ViewNPY {
         const char*  getTypeName();
         const char*  getName();
 
-    public:
+    //public:
+    private:
         glm::vec4&   getCenterExtent();
         glm::mat4 &  getModelToWorld();
         float*       getModelToWorldPtr();

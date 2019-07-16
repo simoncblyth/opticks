@@ -32,6 +32,7 @@ class CFG4_API CInputPhotonSource: public CSource
         static const plog::Severity LEVEL ; 
     public:
         CInputPhotonSource(Opticks* ok, NPY<float>* input_photons, GenstepNPY* gsnpy );
+        void reset(); 
     public:
         virtual ~CInputPhotonSource();
     public:

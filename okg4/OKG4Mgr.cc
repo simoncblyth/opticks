@@ -81,6 +81,7 @@ OKG4Mgr::OKG4Mgr(int argc, char** argv)
     m_hub(new OpticksHub(m_ok)),            // configure, loadGeometry and setupInputGensteps immediately
     m_load(m_ok->isLoad()),
     m_nog4propagate(m_ok->isNoG4Propagate()),
+    m_production(m_ok->isProduction()), 
     m_idx(new OpticksIdx(m_hub)),
     m_num_event(m_ok->getMultiEvent()),     // huh : m_gen should be in change of the number of events ? 
     m_gen(m_hub->getGen()),
@@ -140,9 +141,8 @@ void OKG4Mgr::propagate()
             if(ok("save"))
             {
                 m_run->saveEvent();
-                m_hub->anaEvent();
+                if(!m_production)  m_hub->anaEvent();
             }
-
             m_run->resetEvent();
 
         }

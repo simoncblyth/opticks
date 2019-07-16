@@ -84,8 +84,40 @@ ViewNPY::ViewNPY(const char* name, NPYBase* npy, unsigned int j, unsigned int k,
     init();
 }
 
+
+void ViewNPY::init()
+{
+    assert(m_npy);
+
+    m_bytes    = m_npy->getBytes() ;
+
+    assert(m_item_from_dim == 1 || m_item_from_dim == 2);
+
+    // these dont require the data, just the shape
+    m_numbytes = m_npy->getNumBytes(0) ;
+    m_stride   = m_npy->getNumBytes(m_item_from_dim) ;
+    m_offset   = m_npy->getByteIndex(0,m_j,m_k,m_l) ;  //  i*nj*nk*nl + j*nk*nl + k*nl + l     scaled by sizeoftype
+
+
+/*
+   // too expensive 
+    if( m_npy->hasData() )
+    { 
+        addressNPY();
+    } 
+*/
+
+}
+
+
+
+
 glm::vec4& ViewNPY::getCenterExtent()
 {
+    if(!m_addressed && m_npy->hasData()) 
+    {
+        addressNPY();    
+    }
     return m_center_extent ; 
 } 
 glm::mat4& ViewNPY::getModelToWorld()
@@ -136,24 +168,6 @@ unsigned int ViewNPY::getNumQuads()
     return m_npy->getNumQuads();
 }
 
-void ViewNPY::init()
-{
-    assert(m_npy);
-
-    m_bytes    = m_npy->getBytes() ;
-
-    assert(m_item_from_dim == 1 || m_item_from_dim == 2);
-
-    // these dont require the data, just the shape
-    m_numbytes = m_npy->getNumBytes(0) ;
-    m_stride   = m_npy->getNumBytes(m_item_from_dim) ;
-    m_offset   = m_npy->getByteIndex(0,m_j,m_k,m_l) ;  //  i*nj*nk*nl + j*nk*nl + k*nl + l     scaled by sizeoftype
-
-    if( m_npy->hasData() )
-    { 
-        addressNPY();
-    } 
-}
 
 unsigned int ViewNPY::getCount()
 {
@@ -270,6 +284,19 @@ void ViewNPY::dump(const char* msg)
 }
 
 
+/**
+ViewNPY::findBounds
+--------------------
+
+What uses these bounds ?  They are very expensive for large numbers of input photons.
+from OpticksEvent::setSourceData
+
+Its dominating the time between launches. 
+
+
+**/
+
+
 void ViewNPY::findBounds()
 {
     // Views into compressed integer buffers when viewed 
@@ -308,8 +335,9 @@ void ViewNPY::findBounds()
         hi.x = std::max( hi.x, v.x);
         hi.y = std::max( hi.y, v.y);
         hi.z = std::max( hi.z, v.z);
-
     }
+
+    // TODO: fix this is a very expensive style of doing things
 
     m_low = new glm::vec3(lo.x, lo.y, lo.z);
     m_high = new glm::vec3(hi.x, hi.y, hi.z);

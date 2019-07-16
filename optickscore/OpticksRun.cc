@@ -180,6 +180,7 @@ before passing baton (sharing pointers) with m_evt
 **/
 void OpticksRun::setGensteps(NPY<float>* gensteps) 
 {
+    OK_PROFILE("_OpticksRun::setGensteps");
     assert(m_evt && "must OpticksRun::createEvent prior to OpticksRun::setGensteps");
 
     if(!gensteps) LOG(fatal) << "NULL gensteps" ; 
@@ -190,6 +191,7 @@ void OpticksRun::setGensteps(NPY<float>* gensteps)
     m_gensteps = gensteps ;   
 
     importGensteps();
+    OK_PROFILE("OpticksRun::setGensteps");
 }
 
 
@@ -212,9 +214,12 @@ where the m_evt pointers are just weak reference guests
 
 void OpticksRun::importGensteps()
 {
+    OK_PROFILE("_OpticksRun::importGensteps");
+
     const char* oac_label = m_ok->isEmbedded() ? "GS_EMBEDDED" : NULL ; 
  
     m_g4step = importGenstepData(m_gensteps, oac_label) ;
+
 
     if(m_g4evt)
     { 
@@ -223,6 +228,9 @@ void OpticksRun::importGensteps()
     }
 
     m_evt->setGenstepData(m_gensteps);
+
+
+
 
     if(hasActionControl(m_gensteps, "GS_EMITSOURCE"))
     {
@@ -246,6 +254,7 @@ void OpticksRun::importGensteps()
     }
 
     m_evt->setNopstepData( m_g4evt ? m_g4evt->getNopstepData() : NULL );  
+    OK_PROFILE("OpticksRun::importGensteps");
 }
 
 
@@ -326,6 +335,7 @@ translations performed.
 
 G4StepNPY* OpticksRun::importGenstepData(NPY<float>* gs, const char* oac_label)
 {
+    OK_PROFILE("_OpticksRun::importGenstepData");
     NMeta* gsp = gs->getParameters();
     m_parameters->append(gsp);
 
@@ -394,6 +404,7 @@ G4StepNPY* OpticksRun::importGenstepData(NPY<float>* gs, const char* oac_label)
          ;
 
 
+    OK_PROFILE("OpticksRun::importGenstepData");
     return g4step ; 
 
 }

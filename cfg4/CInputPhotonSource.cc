@@ -51,6 +51,13 @@ CInputPhotonSource::CInputPhotonSource(Opticks* ok, NPY<float>* input_photons, G
 }
 
 
+void CInputPhotonSource::reset() 
+{
+    m_gpv_count = 0 ; 
+}
+
+
+
 CInputPhotonSource::~CInputPhotonSource() 
 {
 }
@@ -132,8 +139,6 @@ G4PrimaryVertex* CInputPhotonSource::convertPhoton(unsigned pho_index)
 
     return vertex ; 
 }
-
-
 
 
 /**

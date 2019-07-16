@@ -43,9 +43,12 @@ std::string OpticksAna::getArgs(const char* /*anakey*/)
     ss
          << "--tagoffset " << m_ok->getTagOffset() << " "
          << "--tag " << m_ok->getEventTag() << " "
-         << "--det " << m_ok->getEventDet() << " "
+         //<< "--det " << m_ok->getEventDet() << " "
+         //<< "--cat " << m_ok->getInputUDet() << " "     # cat overrides not handled in python yet 
+         << "--det " << m_ok->getInputUDet() << " "
          << "--pfx " << m_ok->getEventPfx() << " "
          << "--src " << m_ok->getSourceType() << " "
+         << "--show " 
          << ( anakeyargs ? anakeyargs : "" )
          ;
 
@@ -75,6 +78,8 @@ void OpticksAna::run()
    if(!enabled) return ; 
 
    std::string cmdline = getCommandline(anakey);
+
+   LOG(info) << " cmdline " << cmdline ;  
 
    std::cout << std::endl ;  
 

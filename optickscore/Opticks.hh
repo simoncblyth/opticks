@@ -451,8 +451,8 @@ class OKCORE_API Opticks {
        int                  getEventITag() const ; 
        const char*          getEventCat() const ;
        const char*          getEventDet() const ;
-   private: 
        const char*          getInputUDet() const ;
+   private: 
    public:
        std::string          getPreferenceDir(const char* type, const char* subtype);
    public:

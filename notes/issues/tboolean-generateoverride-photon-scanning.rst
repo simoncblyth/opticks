@@ -15,12 +15,17 @@ Revisit with aligned running, and now with ceiling of 100M
 
 
 
-* things to vary "--compute" "--rtx 0" "--rtx 1" "--cvd 0" "--cvd 1" 
+Things to vary only change GPU side::
+
+    --compute 
+    --rtx 0/1 
+    --cvd 0   1   0,1
+    --stack 
+ 
 
 
-
-100M illegal address
-~~~~~~~~~~~~~~~~~~~~~~
+Issue : 100M CUDA illegal address : fixed by revivng production running  
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ::
 
@@ -41,14 +46,86 @@ Revisit with aligned running, and now with ceiling of 100M
 
 
 
-
 * :doc:`30M-interop-launch-CUDA-invalid-address`
 
 
 
 
+Revisit now with production mode
+-----------------------------------
+
+::
+
+    [blyth@localhost opticks]$ scan-ph-cmds
+    ts box --pfx scan-ph --cat cvd_1_rtx_0 --generateoverride 1 --compute --production --cvd 1 --rtx 0
+    ts box --pfx scan-ph --cat cvd_1_rtx_0 --generateoverride 10 --compute --production --cvd 1 --rtx 0
+    ts box --pfx scan-ph --cat cvd_1_rtx_0 --generateoverride 100 --compute --production --cvd 1 --rtx 0
+    ts box --pfx scan-ph --cat cvd_1_rtx_0 --generateoverride 1000 --compute --production --cvd 1 --rtx 0
+    ts box --pfx scan-ph --cat cvd_1_rtx_0 --generateoverride 10000 --compute --production --cvd 1 --rtx 0
+    ts box --pfx scan-ph --cat cvd_1_rtx_0 --generateoverride 100000 --compute --production --cvd 1 --rtx 0
+    ts box --pfx scan-ph --cat cvd_1_rtx_0 --generateoverride 1000000 --compute --production --cvd 1 --rtx 0
+    ts box --pfx scan-ph --cat cvd_1_rtx_0 --generateoverride 10000000 --compute --production --nog4propagate --cvd 1 --rtx 0
+    ts box --pfx scan-ph --cat cvd_1_rtx_0 --generateoverride 100000000 --compute --production --nog4propagate --cvd 1 --rtx 0
+    ts box --pfx scan-ph --cat cvd_1_rtx_1 --generateoverride 1 --compute --production --cvd 1 --rtx 1
+    ts box --pfx scan-ph --cat cvd_1_rtx_1 --generateoverride 10 --compute --production --cvd 1 --rtx 1
+    ts box --pfx scan-ph --cat cvd_1_rtx_1 --generateoverride 100 --compute --production --cvd 1 --rtx 1
+    ts box --pfx scan-ph --cat cvd_1_rtx_1 --generateoverride 1000 --compute --production --cvd 1 --rtx 1
+    ts box --pfx scan-ph --cat cvd_1_rtx_1 --generateoverride 10000 --compute --production --cvd 1 --rtx 1
+    ts box --pfx scan-ph --cat cvd_1_rtx_1 --generateoverride 100000 --compute --production --cvd 1 --rtx 1
+    ts box --pfx scan-ph --cat cvd_1_rtx_1 --generateoverride 1000000 --compute --production --cvd 1 --rtx 1
+    ts box --pfx scan-ph --cat cvd_1_rtx_1 --generateoverride 10000000 --compute --production --nog4propagate --cvd 1 --rtx 1
+    ts box --pfx scan-ph --cat cvd_1_rtx_1 --generateoverride 100000000 --compute --production --nog4propagate --cvd 1 --rtx 1
+    [blyth@localhost opticks]$ 
+
+
+
+Revisit tboolean arguments pfx and cat for easier organization
+------------------------------------------------------------------
+
+* cut thru some tboolean bash thickets by making OpticksCfg sensitive to TESTNAME envvar as a default for cat and pfx 
+
+  * allows to remove cat and pfx options from tboolean-- so can use from higher level scanning 
+  * succeeds to write into tagdir /home/blyth/local/opticks/tmp/scan-ph/evt/cvd_1_rtx_0/torch/1
+
+::
+
+    blyth@localhost optickscore]$ echo $OPTICKS_ANA_DEFAULTS
+    det=g4live,cat=cvd_1_rtx_0,src=torch,tag=1,pfx=scan-ph
+    [blyth@localhost optickscore]$ ip profile.py 
+    Python 2.7.15 |Anaconda, Inc.| (default, May  1 2018, 23:32:55) 
+    Type "copyright", "credits" or "license" for more information.
+
+    IPython 5.7.0 -- An enhanced Interactive Python.
+    ?         -> Introduction and overview of IPython's features.
+    %quickref -> Quick reference.
+    help      -> Python's own help system.
+    object?   -> Details about 'object', use 'object??' for extra details.
+    defaults det g4live cat cvd_1_rtx_0 src torch tag 1 pfx scan-ph 
+    [2019-07-16 13:34:27,792] p114672 {__init__            :profile.py:21} INFO     -  tagdir:/home/blyth/local/opticks/tmp/scan-ph/evt/cvd_1_rtx_0/torch/1 name:ab.pro.ap tag:1 g4:False 
+    [2019-07-16 13:34:27,796] p114672 {__init__            :profile.py:21} INFO     -  tagdir:/home/blyth/local/opticks/tmp/scan-ph/evt/cvd_1_rtx_0/torch/-1 name:ab.pro.bp tag:-1 g4:True 
+    ab.pro
+
+
+
+Multievent
+------------
+
+::
+
+    OpticksProfile=ERROR ts box --pfx scan-ph --cat cvd_1_rtx_0 --generateoverride 1 --compute --production --cvd 1 --rtx 0 --multievent 2 -D
+
+
+* :doc:`revive_multievent_for_profiling_overheads`
+
+Opticks photon scanning performance begs the question : what are the overheads ?
+
+
+
 WOW : TITAN RTX with RTX mode ON (R1) : giving extra 7x  : exceeding 10,000x speedup for 3M photons : this is an exceedingly simple geometry though
 --------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+* this is not changing tag, just defaulting to 1, it just overwrites the arrays 
 
 ::
 

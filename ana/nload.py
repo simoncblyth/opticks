@@ -108,13 +108,15 @@ def tagdir_(det, typ, tag, pfx=".", layout=2):
         tmpl = tmpl.replace("$0", pfx)
         tmpl = tmpl.replace("$1", det)
         tmpl = tmpl.replace("$2", typ)
-        if tag is not None:  
-            tmpl = tmpl.replace("$3", str(tag))
-        else:
+
+        if tag is None or tag == "0" or tag == 0:
             tmpl = tmpl.replace("$3", "/")
+        else:
+            tmpl = tmpl.replace("$3", str(tag))
         pass
     else:
         assert 0, "bad layout"
+    pass 
 
     log.debug("tagdir_ tmpl %s " % tmpl )
     xdir = os.path.expandvars(tmpl)

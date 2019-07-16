@@ -1096,16 +1096,22 @@ void OpticksEvent::zero()
 }
 
 
+
+
+/**
+OpticksEvent::setGenstepData
+---------------------------------
+
+Called for OpticksRun::m_g4evt from OpticksRun::setGensteps by OKMgr::propagate 
+
+oac_label
+      adds to the OpticksActionControl to customize the import for different genstep types 
+
+**/
+
 void OpticksEvent::setGenstepData(NPY<float>* genstep_data, bool progenitor)
 {
-    // gets called for OpticksRun::m_g4evt from OpticksRun::setGensteps by OKMgr::propagate 
-
-    /**
-    :param genstep_data:
-    :param progenitor:
-    :param oac_label:   adds to the OpticksActionControl to customize the import for different genstep types 
-    **/
-
+    OK_PROFILE("_OpticksEvent::setGenstepData");
 
     int nitems = NPYBase::checkNumItems(genstep_data);
     if(nitems < 1)
@@ -1138,6 +1144,9 @@ void OpticksEvent::setGenstepData(NPY<float>* genstep_data, bool progenitor)
         bool resize_ = progenitor ; 
         setNumPhotons(num_photons, resize_); // triggers a resize   <<<<<<<<<<<<< SPECIAL HANDLING OF GENSTEP <<<<<<<<<<<<<<
     }
+
+    OK_PROFILE("OpticksEvent::setGenstepData");
+
 }
 
 const glm::vec4& OpticksEvent::getGenstepCenterExtent()
@@ -1267,6 +1276,7 @@ void OpticksEvent::setPhotonData(NPY<float>* photon_data)
 
 void OpticksEvent::setSourceData(NPY<float>* source_data)
 {
+    OK_PROFILE("_OpticksEvent::setSourceData");
     if(!source_data) return ; 
 
     source_data->setBufferSpec(m_source_spec);  
@@ -1288,6 +1298,8 @@ void OpticksEvent::setSourceData(NPY<float>* source_data)
         assert(m_num_source == source_data->getShape(0));
     }
 
+    OK_PROFILE("_OpticksEvent::setSourceData.MultiViewNPY");
+
     //m_source_data->setDynamic();  // need to update with seeding so GL_DYNAMIC_DRAW needed 
     m_source_attr = new MultiViewNPY("source_attr");
     //                                                  j k l,sz   type          norm   iatt  item_from_dim
@@ -1295,6 +1307,10 @@ void OpticksEvent::setSourceData(NPY<float>* source_data)
     m_source_attr->add(new ViewNPY("vdir",m_source_data,1,0,0,4,ViewNPY::FLOAT, false, false, 1));      // 2nd quad
     m_source_attr->add(new ViewNPY("vpol",m_source_data,2,0,0,4,ViewNPY::FLOAT, false, false, 1));      // 3rd quad
     m_source_attr->add(new ViewNPY("iflg",m_source_data,3,0,0,4,ViewNPY::INT  , false, true , 1));      // 4th quad
+
+    OK_PROFILE("OpticksEvent::setSourceData.MultiViewNPY");
+
+    OK_PROFILE("OpticksEvent::setSourceData");
 }
 
 
@@ -1303,6 +1319,7 @@ void OpticksEvent::setSourceData(NPY<float>* source_data)
 
 void OpticksEvent::setNopstepData(NPY<float>* nopstep)
 {
+    OK_PROFILE("_OpticksEvent::setNopstepData");
    /*
     int nitems = NPYBase::checkNumItems(nopstep);
     if(nitems < 1)
@@ -1336,6 +1353,7 @@ void OpticksEvent::setNopstepData(NPY<float>* nopstep)
     m_nopstep_attr->add(vdir);
     m_nopstep_attr->add(vpol);
 
+    OK_PROFILE("OpticksEvent::setNopstepData");
 }
 
 
@@ -1850,6 +1868,14 @@ void OpticksEvent::loadBuffersImportSpec(NPYBase* npy, NPYSpec* spec)
     npy->setBufferSpec(spec);
 }
 
+
+/**
+OpticksEvent::getPath
+------------------------
+
+See BOpticksEvent::path for notes on the composition of the path.
+
+**/
 
 const char* OpticksEvent::getPath(const char* xx)
 {

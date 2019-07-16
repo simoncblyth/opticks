@@ -12,8 +12,11 @@ from opticks.ana.nload import np_load
 from opticks.ana.nload import tagdir_, stmp_, time_
 
 
+class Profile(object):
 
-class Prof(object):
+    G4DT = ("CRunAction::BeginOfRunAction","CRunAction::EndOfRunAction",)
+    OKDT = ("_OPropagator::launch", "OPropagator::launch",)
+
     def __init__(self, tagdir, name ):
         self.tagdir = tagdir
         tag = os.path.basename(tagdir)
@@ -43,12 +46,12 @@ class Prof(object):
         self.loadAcc()
 
         if self.g4:  
-            g4r, g40, g41 = self.deltaT("CRunAction::BeginOfRunAction","CRunAction::EndOfRunAction")   ## CG4::propagate includes significant initialization
+            g4r, g40, g41 = self.deltaT(*self.G4DT)   ## CG4::propagate includes significant initialization
             stt = self.setupTrancheTime()
             tim = g4r - stt 
             idx = [g40, g41]  
         else:
-            okp, ok0, ok1 = self.deltaT("OPropagator::launch")   
+            okp, ok0, ok1 = self.deltaT(*self.OKDT)   
             tim = okp
             idx = [ok0, ok1]  
         pass
@@ -102,6 +105,9 @@ class Prof(object):
         self.dv = dv
 
 
+    def __len__(self):
+        return len(self.a)
+
     def loadAcc(self):
         path = self.path("")
         acpath = self.path("Acc")
@@ -129,11 +135,12 @@ class Prof(object):
         stt = stt_acc[0,1] if len(stt_acc) == 1 else 0.  
         return stt 
 
-    def delta(self, arg0, arg1=None ):
+
+    def delta_(self, arg0, arg1=None ):
         """
         :param arg0: start label 
         :param arg1: end label 
-        :return dt, dv:  deltaTime, deltaVM between two OK_PROFILE code points 
+        :return w0,w1: arrays of indices of matching labels 
 
         If arg1 is not provided assume arg0 specifies a pair 
         using the underscore convention. For example with arg0 
@@ -150,16 +157,54 @@ class Prof(object):
         w0 = np.where( self.l == l0 )[0]   # array of matching idx, empty if not found
         w1 = np.where( self.l == l1 )[0]
 
-        p0 = w0[0] if len(w0) == 1 else 0
-        p1 = w1[0] if len(w1) == 1 else 0 
+        return w0, w1
+
+    def dv_(self, i0, i1 ):
+        return self.v[i1]-self.v[i0]
+
+    def dt_(self, i0, i1 ):
+        return self.t[i1]-self.t[i0]
+
+
+    def delta(self, arg0, arg1=None):
+        """ 
+        :param arg0: start label 
+        :param arg1: end label 
+        :return dt, dv:  deltaTime, deltaVM between two OK_PROFILE code points 
+        """
+        w0, w1 = self.delta_(arg0,arg1 )  
+
+        i0 = w0[0] if len(w0) == 1 else 0
+        i1 = w1[0] if len(w1) == 1 else 0 
+
         v = self.v 
         t = self.t 
 
-        dv = v[p1]-v[p0]
-        dt = t[p1]-t[p0]
+        dv = self.dv_(i0,i1)
+        dt = self.dt_(i0,i1)
 
-        log.debug(" l0:%30s l1:%30s p0:%3d p1:%3d  (v0:%10.1f v1:%10.1f dv:%10.1f )  ( t0:%10.4f t1:%10.4f dt:%10.4f )  " % ( l0, l1, p0, p1, v[p0],v[p1], dv, t[p0],t[p1], dt  )) 
-        return dt, dv, p0, p1  
+        log.debug(" i0:%3d i1:%3d  (v0:%10.1f v1:%10.1f dv:%10.1f )  ( t0:%10.4f t1:%10.4f dt:%10.4f )  " % ( i0, i1, self.v[i0],self.v[i1], dv, self.t[i0],self.t[i1], dt  )) 
+        return dt, dv, i0, i1  
+
+    def times(self, l0="_OPropagator::launch"):
+        """
+        """ 
+        pr = self
+        tt = pr.t[np.where(pr.l == l0 )] 
+        return tt 
+
+    def plt_axvline(self, ax):
+        """
+        """
+        w0, w1 = self.delta_(*self.OKDT)
+        assert len(w0) == len(w1)
+        for i in range(len(w0)):         
+            i0 = w0[i]
+            i1 = w1[i]
+            ax.axvline( self.t[i0], c="b" )
+            ax.axvline( self.t[i1], c="b" )
+        pass
+
 
     def deltaT(self, arg0, arg1=None):
         dt, dv, p0, p1 = self.delta(arg0, arg1)
@@ -172,13 +217,21 @@ class Prof(object):
         return " %6s : %50s : %10s %10s %10s %10s   " % ( "idx", "label", "t", "v", "dt", "dv" )
 
     def bodylines(self):
-        nli = self.sli.stop - self.sli.start
-        if nli < 10:
-            ll = map(lambda i:self.line(i), np.arange(self.sli.start, self.sli.stop)) 
+
+        start = self.sli.start
+        stop = self.sli.stop
+        if start is None: start = 0 
+        if stop is None: stop = len(self) 
+
+        stop = min(len(self), stop)
+
+        nli = stop - start
+        if nli < 1000:
+            ll = map(lambda i:self.line(i), np.arange(start, stop)) 
         else:
-            ll = map(lambda i:self.line(i), np.arange(self.sli.start, self.sli.start+5) ) 
+            ll = map(lambda i:self.line(i), np.arange(start, start+5) ) 
             ll += [" ..."]
-            ll += map(lambda i:self.line(i), np.arange(self.sli.stop - 5, self.sli.stop) )   
+            ll += map(lambda i:self.line(i), np.arange(stop - 5, stop) )   
         pass
         return ll
 
@@ -194,10 +247,10 @@ class Prof(object):
 
 
 
-class Profile(object):
+class ABProfile(object):
     def __init__(self, atagdir, btagdir):
-        self.ap = Prof(atagdir, "ab.pro.ap" ) 
-        self.bp = Prof(btagdir, "ab.pro.bp" ) 
+        self.ap = Profile(atagdir, "ab.pro.ap" ) 
+        self.bp = Profile(btagdir, "ab.pro.bp" ) 
         valid = self.ap.valid and self.bp.valid 
         if valid:
             boa = self.bp.tim/self.ap.tim if self.ap.tim > 0 else -1  
@@ -214,14 +267,12 @@ class Profile(object):
 
 
 
-if __name__ == '__main__':
-    from opticks.ana.main import opticks_main
-    import matplotlib.pyplot as plt
 
-    ok = opticks_main(doc=__doc__)  
-    log.debug(ok.brief)
 
-    op = Profile(ok.tagdir, ok.ntagdir)   # assumes ok/g4 
+
+def test_ABProfile(ok, plt):
+
+    op = ABProfile(ok.tagdir, ok.ntagdir)   # assumes ok/g4 
     print(op)
 
     ap = op.ap
@@ -240,4 +291,64 @@ if __name__ == '__main__':
     plt.show()
 
 
+
+
+
+
+if __name__ == '__main__':
+    from opticks.ana.main import opticks_main
+    import matplotlib.pyplot as plt
+
+    ok = opticks_main(doc=__doc__)  
+    log.debug(ok.brief)
+
+    #test_ABProfile( ok, plt )
+
+    log.info("tagdir: %s " % ok.tagdir)
+
+    pr = Profile(ok.tagdir, "pro") 
+    print(pr)
+
+
+    t0 = pr.times(pr.OKDT[0])
+    t1 = pr.times(pr.OKDT[1])
+
+    t01 = t1-t0 
+    at01 = np.average(t01)
+
+    print("launch t0 %r ", t0 )   
+    print("launch t1 %r ", t1 )   
+
+    dt0 = np.diff(t0) 
+    dt1 = np.diff(t1) 
+    adt0 = np.average(dt0)    
+    adt1 = np.average(dt1) 
+
+    overhead = adt0/at01   # ratio of average time between launches to average launch time 
+
+
+    print("launch                avg %10.4f   t1-t0 %r   " % ( at01, t01 ))   
+    print("times between starts  avg %10.4f   np.diff(t0) %r " % ( adt0 , dt0) )   
+    print("times between stops   avg %10.4f   np.diff(t1) %r " % ( adt1 , dt1) )   
+
+    print(" between-launch %10.4f  launch-time %10.4f   overhead ratio %10.4f " % ( adt0, at01, overhead ) )
+
+
+
+
+
+    fig = plt.figure(figsize=(6,5.5))
+
+    ax = fig.add_subplot(111)
+    #ax.set_ylim([-350,200])
+    ax.set_xlim([4,6])
+
+    plt.plot( pr.t, pr.v, 'o' )
+
+    pr.plt_axvline(ax) 
+
+    plt.ion()
+    fig.show()
+
+ 
 

@@ -1792,6 +1792,14 @@ void  Opticks::setVerbosity(unsigned verbosity)
 
 
 
+/**
+Opticks::getInputUDet
+-------------------------
+
+
+
+**/
+
 const char* Opticks::getInputUDet() const 
 {
     const char* det = m_detector ;           // set by initResource
@@ -1804,7 +1812,22 @@ const char* Opticks::getInputUDet() const
 Opticks::defineEventSpec
 -------------------------
 
-Invoked from Opticks::configure after commandline parse and initResource
+Invoked from Opticks::configure after commandline parse and initResource.
+The components of the spec determine file system paths of event files.
+
+
+OpticksCfg::m_event_pfx "--pfx"
+   event prefix for organization of event files, typically "source" or the name of 
+   the creating executable or the testname 
+
+OpticksCfg::m_event_cat "--cat" 
+   event category for organization of event files, typically used instead of detector 
+   for test geometries such as prism and lens, default ""
+
+OpticksCfg::m_event_tag "--tag"
+   event tag, non zero positive integer string identifying an event 
+
+
 
 **/
 

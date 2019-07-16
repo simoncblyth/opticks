@@ -534,11 +534,10 @@ tboolean-ana-(){
 }
 
 # TODO: how to pick a profile without being explicit about it ? so this doesnt depend on having it 
-tboolean-ipy-(){ ipython -i --pdb -- $(which tboolean.py) --det $TESTNAME --pfx $TESTNAME --tag="$(tboolean-tag)" $* ; }
-tboolean-ip-(){  ipython  -i --pdb -- $(which tboolean.py) --det $(tboolean-testname) --pfx $(tboolean-testname) --tag $(tboolean-tag) $* ; }
-tboolean-py-(){ tboolean.py --det $TESTNAME --pfx $TESTNAME --tag $(tboolean-tag)  $* ; }
-tboolean-m-(){  metadata.py --det $TESTNAME --pfx $TESTNAME --tag $(tboolean-tag) ; }
-tboolean-g-(){  lldb -- CTestDetectorTest --test --testconfig "$TESTCONFIG" $* ; }
+
+
+
+
 
 
 tboolean-testname-notes(){ cat << EON
@@ -569,6 +568,7 @@ tboolean-testname()
     fi 
     echo $testname
 }
+
 
 tboolean-funcname()
 {
@@ -647,6 +647,62 @@ EOI
 }
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+tboolean-lv-notes(){ cat << EON
+$FUNCNAME
+===================
+
+What to run depends on envvars TESTNAME and LV 
+
+EON
+}
+
+tboolean-lv()
+{
+   local msg="=== $FUNCNAME :"
+   local funcname=$(tboolean-funcname)
+   local testname=$(tboolean-testname)
+   local RC
+   echo $msg $testname
+
+   local cmdline="$*"
+   if [ "${cmdline/--ip}" != "${cmdline}" ]; then
+       TESTNAME=$testname tboolean-ipy- $* 
+   elif [ "${cmdline/--py}" != "${cmdline}" ]; then
+       TESTNAME=$testname tboolean-py- $* 
+   elif [ "${cmdline/--chk}" != "${cmdline}" ]; then
+       ${funcname}-
+   elif [ "${cmdline/--noalign}" != "${cmdline}" ]; then
+       $funcname --okg4  $*   
+   else
+       $funcname --okg4 --align --dbgskipclearzero --dbgnojumpzero --dbgkludgeflatzero $*   
+       RC=$?
+   fi 
+   echo $msg $funcname RC $RC
+   return $RC
+}
+
+
+
+tboolean-pfx(){ echo ${PFX:-$TESTNAME} ; }
+tboolean-cat(){ echo ${CAT:-$TESTNAME} ; }
+
+tboolean-ipy-(){ ipython -i --pdb -- $(which tboolean.py) --det $(tboolean-cat) --pfx $(tboolean-pfx) --tag="$(tboolean-tag)" $* ; }
+tboolean-py-(){                               tboolean.py --det $(tboolean-cat) --pfx $(tboolean-pfx) --tag="$(tboolean-tag)"  $* ; }
+tboolean-m-(){  metadata.py --det $(tboolean-cat) --pfx $(tboolean-pfx) --tag="$(tboolean-tag)" ; }
+tboolean-g-(){  lldb -- CTestDetectorTest --test --testconfig "$TESTCONFIG" $* ; }
+
 tboolean--(){
 
     #tboolean-
@@ -656,7 +712,6 @@ tboolean--(){
 
     local stack=2180  # default
 
-    local testname=$(tboolean-testname)
     local testconfig=$(tboolean-testconfig)
     local torchconfig=$(tboolean-torchconfig)
 
@@ -676,8 +731,6 @@ tboolean--(){
             --torchconfig "$torchconfig" \
             --torchdbg \
             --tag $(tboolean-tag) \
-            --pfx $testname \
-            --cat $testname \
             --anakey tboolean \
             --args \
             --save 
@@ -694,6 +747,9 @@ tboolean--(){
             --args \
             --timemax $tmax \
             --animtimemax $tmax \
+            --pfx $(tboolean-pfx) \
+            --cat $(tboolean-cat) \
+
 
 
 EON
@@ -822,45 +878,11 @@ tboolean-strace()
 }
 
 
-tboolean-lv-notes(){ cat << EON
-$FUNCNAME
-===================
-
-What to run depends on envvars TESTNAME and LV 
-
-EON
-}
-
-tboolean-lv()
-{
-   local msg="=== $FUNCNAME :"
-   local funcname=$(tboolean-funcname)
-   local testname=$(tboolean-testname)
-   local RC
-   echo $msg $testname
-
-   local cmdline="$*"
-   if [ "${cmdline/--ip}" != "${cmdline}" ]; then
-       TESTNAME=$testname tboolean-ipy- $* 
-   elif [ "${cmdline/--py}" != "${cmdline}" ]; then
-       TESTNAME=$testname tboolean-py- $* 
-   elif [ "${cmdline/--chk}" != "${cmdline}" ]; then
-       ${funcname}-
-   elif [ "${cmdline/--noalign}" != "${cmdline}" ]; then
-       $funcname --okg4  $*   
-   else
-       $funcname --okg4 --align --dbgskipclearzero --dbgnojumpzero --dbgkludgeflatzero $*   
-       RC=$?
-   fi 
-   echo $msg $funcname RC $RC
-   return $RC
-}
-
 
 tboolean-proxy-lvidx(){    echo ${LV:--1} ; }
 tboolean-proxy-name(){  echo tboolean-proxy-$(tboolean-proxy-lvidx) ; }
 
-tboolean-proxy-pdb(){ ipython --pdb $(which tboolean.py) -i -- --tag 1 --tagoffset 0 --det $(tboolean-proxy-name) --pfx $(tboolean-proxy-name) --src torch ; }
+tboolean-proxy-pdb(){ ipython --pdb $(which tboolean.py) -i -- --tag 1 --tagoffset 0 --cat $(tboolean-cat) --pfx $(tboolean-pfx) --src torch ; }
 tboolean-proxy-ip(){ TESTNAME=$(tboolean-proxy-name) tboolean-ipy- $* ; } 
 tboolean-proxy-p(){ TESTNAME=$(tboolean-proxy-name) tboolean-py- $* ; } 
 tboolean-proxy-a(){ TESTNAME=$(tboolean-proxy-name) tboolean-ana- $* ; } 

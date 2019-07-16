@@ -192,7 +192,8 @@ class QDVTab(object):
         self.nsel = nsel 
         self._ndisc = None
 
-        if self.ab.cfm.utaildebug == 1:  
+        use_utaildebug = False   # suspect it caused some a.rposta with dimensions 1 off b.rposta 
+        if self.ab.cfm.utaildebug == 1 and use_utaildebug:  
             aligned = np.logical_and( self.a.utail == self.b.utail, self.a.seqhis == self.b.seqhis )
         else:
             aligned = self.a.seqhis == self.b.seqhis
@@ -399,7 +400,7 @@ class QDVTab(object):
         ab = self.ab
         if self.name == "rpost_dv": 
             eps = ab.fdom[0,0,3]*2.0/((0x1 << 16) - 1)
-            dvmax = [eps, 1.5*eps, 2.0*eps] 
+            dvmax = [eps*1.1, 1.6*eps, 2.1*eps] 
         elif self.name == "rpol_dv": 
             eps = 1.0*2.0/((0x1 << 8) - 1)
             dvmax = [eps, 1.5*eps, 2.0*eps] 
