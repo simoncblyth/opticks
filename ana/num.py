@@ -112,8 +112,7 @@ slice_ = lambda s:slice(*map(lambda _:Num.Int(_) if len(_) > 0 else None,s.split
 _slice = lambda s:":".join(map(lambda _:Num.String(_) if not _ is None else "", (s.start,s.stop,s.step)))   # slice to string
 
 
-if __name__ == '__main__':
-
+def test_roundtrip():
     for i in [(20000000, 4, 4), 200000000, 2, 20, 30,300,3000,30000,100000,1000000,10000000,101000]:
         s = Num.String(i)
         i2 = Num.Int(s)
@@ -121,5 +120,10 @@ if __name__ == '__main__':
         assert i == i2, ( i, s, i2)
     pass
 
+
+
+
+if __name__ == '__main__':
+    pass
 
 

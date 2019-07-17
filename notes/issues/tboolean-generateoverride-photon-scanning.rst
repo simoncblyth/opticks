@@ -50,32 +50,53 @@ Issue : 100M CUDA illegal address : fixed by revivng production running
 
 
 
+profilesmry.py plotting results
+------------------------------------
+
+* ~/simoncblyth.bitbucket.io/env/presentation/ana/
+
+::
+
+    ip profilesmry.py
+
+    226     O("Opticks_vs_Geant4",  "Extrapolated G4 times compared to Opticks launch+interval times with RTX mode ON and OFF")
+    227     O("Opticks_Speedup",    "Ratio of extrapolated G4 times to Opticks launch+interval times with RTX mode ON and OFF")
+    228     O("Overheads",   "Comparison of Opticks GPU launch times and intervals with RTX mode ON and OFF")
+    229     O("RTX_Speedup", "Ratio of launch times with RTX mode OFF to ON ")
+
+
+
 
 Revisit now with production mode
 -----------------------------------
 
+* do not trust very small times, so not much point in starting at less than 1M
+
 ::
 
-    [blyth@localhost opticks]$ scan-ph-cmds
-    ts box --pfx scan-ph --cat cvd_1_rtx_0 --generateoverride 1 --compute --production --cvd 1 --rtx 0
-    ts box --pfx scan-ph --cat cvd_1_rtx_0 --generateoverride 10 --compute --production --cvd 1 --rtx 0
-    ts box --pfx scan-ph --cat cvd_1_rtx_0 --generateoverride 100 --compute --production --cvd 1 --rtx 0
-    ts box --pfx scan-ph --cat cvd_1_rtx_0 --generateoverride 1000 --compute --production --cvd 1 --rtx 0
-    ts box --pfx scan-ph --cat cvd_1_rtx_0 --generateoverride 10000 --compute --production --cvd 1 --rtx 0
-    ts box --pfx scan-ph --cat cvd_1_rtx_0 --generateoverride 100000 --compute --production --cvd 1 --rtx 0
-    ts box --pfx scan-ph --cat cvd_1_rtx_0 --generateoverride 1000000 --compute --production --cvd 1 --rtx 0
-    ts box --pfx scan-ph --cat cvd_1_rtx_0 --generateoverride 10000000 --compute --production --nog4propagate --cvd 1 --rtx 0
-    ts box --pfx scan-ph --cat cvd_1_rtx_0 --generateoverride 100000000 --compute --production --nog4propagate --cvd 1 --rtx 0
-    ts box --pfx scan-ph --cat cvd_1_rtx_1 --generateoverride 1 --compute --production --cvd 1 --rtx 1
-    ts box --pfx scan-ph --cat cvd_1_rtx_1 --generateoverride 10 --compute --production --cvd 1 --rtx 1
-    ts box --pfx scan-ph --cat cvd_1_rtx_1 --generateoverride 100 --compute --production --cvd 1 --rtx 1
-    ts box --pfx scan-ph --cat cvd_1_rtx_1 --generateoverride 1000 --compute --production --cvd 1 --rtx 1
-    ts box --pfx scan-ph --cat cvd_1_rtx_1 --generateoverride 10000 --compute --production --cvd 1 --rtx 1
-    ts box --pfx scan-ph --cat cvd_1_rtx_1 --generateoverride 100000 --compute --production --cvd 1 --rtx 1
-    ts box --pfx scan-ph --cat cvd_1_rtx_1 --generateoverride 1000000 --compute --production --cvd 1 --rtx 1
-    ts box --pfx scan-ph --cat cvd_1_rtx_1 --generateoverride 10000000 --compute --production --nog4propagate --cvd 1 --rtx 1
-    ts box --pfx scan-ph --cat cvd_1_rtx_1 --generateoverride 100000000 --compute --production --nog4propagate --cvd 1 --rtx 1
-    [blyth@localhost opticks]$ 
+    tmp ; scan- ; rm -rf scan-ph ; VERBOSE=1 scan-ph
+
+    [blyth@localhost ~]$ scan-ph-cmds
+    ts box --pfx scan-ph --cat cvd_1_rtx_1_1M --generateoverride 1000000 --compute --production --multievent 10 --nog4propagate --rngmax 3 --cvd 1 --rtx 1
+    ts box --pfx scan-ph --cat cvd_1_rtx_1_10M --generateoverride 10000000 --compute --production --multievent 10 --nog4propagate --rngmax 10 --cvd 1 --rtx 1
+    ts box --pfx scan-ph --cat cvd_1_rtx_1_20M --generateoverride 20000000 --compute --production --multievent 10 --nog4propagate --rngmax 100 --cvd 1 --rtx 1
+    ts box --pfx scan-ph --cat cvd_1_rtx_1_30M --generateoverride 30000000 --compute --production --multievent 10 --nog4propagate --rngmax 100 --cvd 1 --rtx 1
+    ts box --pfx scan-ph --cat cvd_1_rtx_1_40M --generateoverride 40000000 --compute --production --multievent 10 --nog4propagate --rngmax 100 --cvd 1 --rtx 1
+    ts box --pfx scan-ph --cat cvd_1_rtx_1_50M --generateoverride 50000000 --compute --production --multievent 10 --nog4propagate --rngmax 100 --cvd 1 --rtx 1
+    ts box --pfx scan-ph --cat cvd_1_rtx_1_60M --generateoverride 60000000 --compute --production --multievent 10 --nog4propagate --rngmax 100 --cvd 1 --rtx 1
+    ts box --pfx scan-ph --cat cvd_1_rtx_1_70M --generateoverride 70000000 --compute --production --multievent 10 --nog4propagate --rngmax 100 --cvd 1 --rtx 1
+    ts box --pfx scan-ph --cat cvd_1_rtx_1_80M --generateoverride 80000000 --compute --production --multievent 10 --nog4propagate --rngmax 100 --cvd 1 --rtx 1
+    ts box --pfx scan-ph --cat cvd_1_rtx_1_90M --generateoverride 90000000 --compute --production --multievent 10 --nog4propagate --rngmax 100 --cvd 1 --rtx 1
+    ts box --pfx scan-ph --cat cvd_1_rtx_1_100M --generateoverride 100000000 --compute --production --multievent 10 --nog4propagate --rngmax 100 --cvd 1 --rtx 1
+    [blyth@localhost ~]$ 
+
+
+::
+
+     ip profile.py --tag 0 --cat cvd_1_rtx_1_10M 
+
+
+    tmp ; scan- ; VERBOSE=1 scan-ph
 
 
 

@@ -698,9 +698,9 @@ tboolean-lv()
 tboolean-pfx(){ echo ${PFX:-$TESTNAME} ; }
 tboolean-cat(){ echo ${CAT:-$TESTNAME} ; }
 
-tboolean-ipy-(){ ipython -i --pdb -- $(which tboolean.py) --det $(tboolean-cat) --pfx $(tboolean-pfx) --tag="$(tboolean-tag)" $* ; }
-tboolean-py-(){                               tboolean.py --det $(tboolean-cat) --pfx $(tboolean-pfx) --tag="$(tboolean-tag)"  $* ; }
-tboolean-m-(){  metadata.py --det $(tboolean-cat) --pfx $(tboolean-pfx) --tag="$(tboolean-tag)" ; }
+tboolean-ipy-(){ ipython -i --pdb -- $(which tboolean.py) --cat $(tboolean-cat) --pfx $(tboolean-pfx) --tag="$(tboolean-tag)" $* ; }
+tboolean-py-(){                               tboolean.py --cat $(tboolean-cat) --pfx $(tboolean-pfx) --tag="$(tboolean-tag)"  $* ; }
+tboolean-m-(){  metadata.py --cat $(tboolean-cat) --pfx $(tboolean-pfx) --tag="$(tboolean-tag)" ; }
 tboolean-g-(){  lldb -- CTestDetectorTest --test --testconfig "$TESTCONFIG" $* ; }
 
 tboolean--(){

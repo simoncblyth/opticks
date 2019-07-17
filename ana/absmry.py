@@ -10,22 +10,11 @@ from bi-simulation event comparisons.
 from __future__ import print_function
 import os, sys, logging, numpy as np
 from collections import OrderedDict as odict
-from opticks.ana.base import json_save_, json_load_
+from opticks.ana.base import json_save_, json_load_, findfile
 from opticks.ana.num import Num
 from opticks.ana.level import Level
 
 log = logging.getLogger(__name__)
-
-
-def findfile(base, name, relative=True):
-    paths = []
-    for root, dirs, files in os.walk(base):
-        if name in files: 
-            path = os.path.join(root,name)
-            paths.append(path[len(base)+1:] if relative else path)
-        pass
-    pass 
-    return paths
 
 
 class ABSmryTab(object):

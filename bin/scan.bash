@@ -81,14 +81,16 @@ scan-seq(){
 
 
 scan-ph-args(){ cat << EOS | tr -d " ,"  | grep -v \#
-          1
-         10
-        100
-       1000
-     10,000
-    100,000
   1,000,000
  10,000,000
+ 20,000,000
+ 30,000,000
+ 40,000,000
+ 50,000,000
+ 60,000,000
+ 70,000,000
+ 80,000,000
+ 90,000,000
 100,000,000
 EOS
 }
@@ -134,7 +136,7 @@ scan-ph-cat(){
 }
 
 scan-ph-cats(){ cat << EOC
-cvd_1_rtx_1
+cvd_1_rtx_0
 EOC
 }
 
@@ -146,16 +148,28 @@ EOC
 
 
 
+scan-ph-cmd-notes(){ cat << EON
+
+--multievent fails without --nog4propagate 
+
+EON
+}
 
 
+scan-num(){  python -c "from opticks.ana.num import Num ; print(Num.String($1))" ; }
 
 scan-ph-cmd(){   
    local num_photons=$1
    local cat=$2
-   local cmd="ts $(scan-ph-lv) --pfx scan-ph --cat $cat --generateoverride ${num_photons} --compute --production --multievent 10 "  ; 
-   if [ $num_photons -gt 1000000 ]; then
+
+   local num_abbrev=$(scan-num $num_photons)
+
+   local cmd="ts $(scan-ph-lv) --pfx scan-ph --cat ${cat}_${num_abbrev} --generateoverride ${num_photons} --compute --production --multievent 10 "  ; 
+   
+
+   #if [ $num_photons -gt 1000000 ]; then
        cmd="$cmd --nog4propagate"  
-   fi
+   #fi
 
    local M=$(( 1000000 ))
    local M3=$(( 3*M ))

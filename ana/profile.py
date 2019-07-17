@@ -14,6 +14,7 @@ from opticks.ana.nload import tagdir_, stmp_, time_
 
 class Profile(object):
 
+    NAME = "OpticksProfile.npy"
     G4DT = ("CRunAction::BeginOfRunAction","CRunAction::EndOfRunAction",)
     OKDT = ("_OPropagator::launch", "OPropagator::launch",)
 
@@ -33,6 +34,7 @@ class Profile(object):
         if os.path.exists(self.tagdir):
             self.valid = True
             self.init()
+            self.initLaunch()
         else:
             self.valid = False
             self.tim = -1 
@@ -59,8 +61,6 @@ class Profile(object):
         self.idx = idx
         self.sli = slice(idx[0],idx[1]+1)
 
-    def extrapolate(self): 
-        pass
 
     def pfmt(self, path1, path2, path3=None):
         t_path1 = time_(path1)
@@ -209,9 +209,7 @@ class Profile(object):
             #ax.axvline( self.t[i0], c="r" )
             ax.axvline( self.t[i1], c="g" )
             ax.axvline( self.t[i2], c="b" )
-
         pass
-
 
     def deltaT(self, arg0, arg1=None):
         dt, dv, p0, p1 = self.delta(arg0, arg1)
@@ -223,8 +221,39 @@ class Profile(object):
     def labels(self):
         return " %6s : %50s : %10s %10s %10s %10s   " % ( "idx", "label", "t", "v", "dt", "dv" )
 
-    def bodylines(self):
 
+    launch_start = property(lambda self:self.times(self.OKDT[0]))
+    launch_stop = property(lambda self:self.times(self.OKDT[1]))
+    launch = property(lambda self:self.launch_stop - self.launch_start)
+
+    start_interval = property(lambda self:np.diff(self.launch_start))
+    stop_interval = property(lambda self:np.diff(self.launch_stop))
+
+    def initLaunch(self):
+        self.avg_start_interval = np.average(self.start_interval)
+        self.avg_stop_interval = np.average(self.stop_interval)
+        self.avg_launch = np.average(self.launch)
+        self.overhead_ratio = self.avg_start_interval/self.avg_launch
+
+    def overheads(self):
+
+        print(".launch_start %r ", self.launch_start )   
+        print(".launch_stop  %r ", self.launch_stop  )   
+
+        print(".launch           avg %10.4f     %r " % (  avg_launch         , self.launch  ))   
+        print(".start_interval   avg %10.4f     %r " % (  avg_start_interval , self.start_interval) )   
+        print(".stop_interval    avg %10.4f     %r " % (  avg_stop_interval  , self.stop_interval ) )   
+
+
+    @classmethod
+    def Labels(cls):
+        return " %20s %15s %15s %15s %50s " % ( "name","avg interval","avg launch","avg overhead", "launch" )
+
+    def brief(self):
+        return " %20s %10.4f %10.4f %10.4f %50s " % (self.name, self.avg_start_interval, self.avg_launch, self.overhead_ratio, repr(self.launch) )
+
+
+    def bodylines(self):
         start = self.sli.start
         stop = self.sli.stop
         if start is None: start = 0 
@@ -245,8 +274,12 @@ class Profile(object):
     def lines(self):
         return [self.name, self.prfmt, self.acfmt, "%r" % self.sli, self.labels()] + self.bodylines() + [self.labels()] 
 
-    def __repr__(self):
+
+    def __str__(self):
         return "\n".join(self.lines())
+
+    def __repr__(self):
+        return self.brief()
 
     def __getitem__(self, sli):
         self.sli = sli
@@ -317,28 +350,6 @@ if __name__ == '__main__':
     print(pr)
 
 
-    t0 = pr.times(pr.OKDT[0])
-    t1 = pr.times(pr.OKDT[1])
-
-    t01 = t1-t0 
-    at01 = np.average(t01)
-
-    print("launch t0 %r ", t0 )   
-    print("launch t1 %r ", t1 )   
-
-    dt0 = np.diff(t0) 
-    dt1 = np.diff(t1) 
-    adt0 = np.average(dt0)    
-    adt1 = np.average(dt1) 
-
-    ratio = adt0/at01   #  (average time between launches)/(average launch time 
-
-    print("launch                avg %10.4f   t1-t0 %r   " % ( at01, t01 ))   
-    print("times between starts  avg %10.4f   np.diff(t0) %r " % ( adt0 , dt0) )   
-    print("times between stops   avg %10.4f   np.diff(t1) %r " % ( adt1 , dt1) )   
-
-    print(" between-launch %10.4f  launch-time %10.4f   betweenLaunch/launch  %10.4f (perfect=1) " % ( adt0, at01, ratio ) )
-
 
 
     w0 = np.where(pr.l == "_OpticksRun::createEvent")[0]
@@ -360,8 +371,6 @@ if __name__ == '__main__':
     print("pr[w0[1]:w1[1]]")
     print(pr[w0[1]:w1[1]])
     
-
-   
 
 
     fig = plt.figure(figsize=(6,5.5))

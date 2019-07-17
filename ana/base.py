@@ -27,6 +27,19 @@ uidp_ = lambda _:_.replace(os.environ["IDPATH"],"$IDPATH")
 gcp_ = lambda _:"%s/%s" % (os.environ["GEOCACHE"],_) 
 
 
+
+
+def findfile(base, name, relative=True):
+    paths = []
+    for root, dirs, files in os.walk(base):
+        if name in files: 
+            path = os.path.join(root,name)
+            paths.append(path[len(base)+1:] if relative else path)
+        pass
+    pass 
+    return paths
+
+
 def translate_xml_identifier_(name):
     return name.replace("__","/").replace("--","#").replace("..",":") 
 
