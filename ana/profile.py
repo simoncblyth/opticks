@@ -11,6 +11,9 @@ log = logging.getLogger(__name__)
 from opticks.ana.nload import np_load
 from opticks.ana.nload import tagdir_, stmp_, time_
 
+from IPython.core.debugger import Pdb
+ipdb = Pdb()
+
 
 class Profile(object):
 
@@ -22,7 +25,7 @@ class Profile(object):
         self.tagdir = tagdir
         tag = os.path.basename(tagdir)
         g4 = tag[0] == "-"
-        log.info(" tagdir:%s name:%s tag:%s g4:%s " % (tagdir, name, tag, g4))
+        log.debug(" tagdir:%s name:%s tag:%s g4:%s " % (tagdir, name, tag, g4))
 
         self.name = name
         self.tag = tag
@@ -230,10 +233,21 @@ class Profile(object):
     stop_interval = property(lambda self:np.diff(self.launch_stop))
 
     def initLaunch(self):
-        self.avg_start_interval = np.average(self.start_interval)
-        self.avg_stop_interval = np.average(self.stop_interval)
+        """
+        intervals only defined with "--multievent 2+" running 
+        """
+        log.debug("[")
         self.avg_launch = np.average(self.launch)
-        self.overhead_ratio = self.avg_start_interval/self.avg_launch
+        nsta = len(self.start_interval)  
+        nsto = len(self.stop_interval)
+        assert nsta == nsto
+        if nsta > 0:
+            self.avg_start_interval = np.average(self.start_interval)
+            self.avg_stop_interval = np.average(self.stop_interval)
+            self.overhead_ratio = self.avg_start_interval/self.avg_launch
+        pass
+        #ipdb.set_trace()       
+        log.debug("]")
 
     def overheads(self):
 
@@ -262,7 +276,7 @@ class Profile(object):
         stop = min(len(self), stop)
 
         nli = stop - start
-        if nli < 1000:
+        if nli < 50:
             ll = map(lambda i:self.line(i), np.arange(start, stop)) 
         else:
             ll = map(lambda i:self.line(i), np.arange(start, start+5) ) 
@@ -348,8 +362,6 @@ if __name__ == '__main__':
 
     pr = Profile(ok.tagdir, "pro") 
     print(pr)
-
-
 
 
     w0 = np.where(pr.l == "_OpticksRun::createEvent")[0]

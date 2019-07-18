@@ -97,7 +97,7 @@ def opticks_args(**kwa):
     tag = kwa.get("tag", defaults["tag"])
     pfx = kwa.get("pfx", defaults["pfx"])
 
-    print("defaults det %s cat %s src %s tag %s pfx %s " % (det, cat, src, tag, pfx), file=sys.stderr)
+    #print("defaults det %s cat %s src %s tag %s pfx %s " % (det, cat, src, tag, pfx), file=sys.stderr)
 
 
     llv = kwa.get("loglevel", "info")

@@ -31,8 +31,6 @@ Workflow
 
        scan-;VERBOSE=1 scan--
 
-
-
 EOU
 }
 
@@ -80,6 +78,13 @@ scan-seq(){
 }
 
 
+scan-ph-args-mini(){ cat << EOS | tr -d " ,"  | grep -v \#
+  1,000,000
+ 10,000,000
+100,000,000
+EOS
+}
+
 scan-ph-args(){ cat << EOS | tr -d " ,"  | grep -v \#
   1,000,000
  10,000,000
@@ -94,6 +99,10 @@ scan-ph-args(){ cat << EOS | tr -d " ,"  | grep -v \#
 100,000,000
 EOS
 }
+
+
+
+
 
 #scan-proxy-cmd(){   printf "env LV=%s tboolean.sh --compute --align --dbgskipclearzero --dbgnojumpzero --dbgkludgeflatzero   \n" $1 ; }
 
@@ -135,16 +144,18 @@ scan-ph-cat(){
    esac 
 }
 
-scan-ph-cats(){ cat << EOC
+scan-cats(){ cat << EOC
 cvd_1_rtx_0
 EOC
 }
 
-scan-ph-cats_in_waiting(){ cat << EOC
+scan-cats_in_waiting(){ cat << EOC
 cvd_1_rtx_0
 cvd_1_rtx_1
 EOC
 }
+
+
 
 
 
@@ -164,12 +175,8 @@ scan-ph-cmd(){
 
    local num_abbrev=$(scan-num $num_photons)
 
-   local cmd="ts $(scan-ph-lv) --pfx scan-ph --cat ${cat}_${num_abbrev} --generateoverride ${num_photons} --compute --production --multievent 10 "  ; 
-   
-
-   #if [ $num_photons -gt 1000000 ]; then
-       cmd="$cmd --nog4propagate"  
-   #fi
+   local cmd="ts $(scan-ph-lv) --pfx scan-ph --cat ${cat}_${num_abbrev} --generateoverride ${num_photons} --compute --production --savehit --multievent 10 --xanalytic "  ; 
+   cmd="$cmd --nog4propagate"  
 
    local M=$(( 1000000 ))
    local M3=$(( 3*M ))
@@ -191,9 +198,9 @@ scan-ph-cmd(){
    echo $cmd
 }
 
-scan-ts-cmd(){   printf "ts $1            --pfx scan-ts --generateoverride -1 --cvd 1 --rtx 1 --compute\n" ; }
-scan-tp-cmd(){   printf "tp $1 \n" ; }
-scan-tv-cmd(){   printf "tv $1 \n" ; }
+scan-ts-cmd(){   echo ts $1 --pfx scan-ts --generateoverride -1 --cvd 1 --rtx 1 --compute ; }
+scan-tp-cmd(){   echo tp $1 --msli :1M  ; }
+scan-tv-cmd(){   echo tv $1 ; }
 
 scan-ph-post(){  scan.py $TMP/tboolean-$(scan-ph-lv) ; }
 scan-ts-post(){  absmry.py  ; }
@@ -204,7 +211,7 @@ scan-cmds-all(){
    local cmd
    local arg
    local cat 
-   scan-$mode-cats | while read cat 
+   scan-cats | while read cat 
    do
        scan-$mode-args | while read arg
        do 
@@ -233,9 +240,13 @@ scan--()
 }
 
 
-scan-ph-cmds(){ SCAN_MODE=ph scan-cmds-all ; }
+scan-ph-(){     SCAN_MODE=ph scan-cmds-all ; }
 scan-ph(){      SCAN_MODE=ph scan-- ; }
-scan-ph-v(){    VERBOSE=1 scan-ph ; }
+scan-ph-v(){    VERBOSE=1 OpticksProfile=ERROR scan-ph ; }
+
+scan-tp-(){     SCAN_MODE=tp scan-cmds-all ; }
+scan-tp(){      SCAN_MODE=tp scan-- ; }
+scan-tp-v(){    VERBOSE=1 scan-tp ; }
 
 
 

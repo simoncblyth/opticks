@@ -50,6 +50,71 @@ Issue : 100M CUDA illegal address : fixed by revivng production running
 
 
 
+
+
+checking "hit" counts
+---------------------------
+
+* :doc:`scan-ph-hits-not-scaling`  
+
+
+::
+
+   OpticksProfile=ERROR ts box --pfx scan-ph --cat cvd_1_rtx_0_1M --generateoverride 1000000 --compute --production --multievent 10 --nog4propagate --rngmax 3 --cvd 1 --rtx 0
+
+   OpticksProfile=ERROR ts box --pfx scan-ph --cat cvd_1_rtx_0_1M --generateoverride 1000000 --compute --production --multievent 10 --nog4propagate --rngmax 3 --cvd 1 --rtx 0 --savehit 
+
+   OpticksProfile=ERROR ts box --pfx scan-ph --cat cvd_1_rtx_0_10M --generateoverride 10000000 --compute --production --multievent 10 --nog4propagate --rngmax 10 --cvd 1 --rtx 0 --savehit 
+
+
+Hits are being downloaded but not saved ?::
+
+    2019-07-17 16:27:14.639 INFO  [324023] [OpEngine::propagate@141] ]
+    2019-07-17 16:27:14.639 ERROR [324023] [OpticksProfile::stamp@180] OKPropagator::propagate_9 (5.35156,0.00195312,10805.7,0)
+    2019-07-17 16:27:14.639 INFO  [324023] [OpEngine::downloadEvent@167] .
+    2019-07-17 16:27:14.640 ERROR [324023] [OpticksProfile::stamp@180] _OEvent::downloadHitsCompute_9 (5.35156,0,10805.7,0)
+    2019-07-17 16:27:14.640 ERROR [324023] [OpticksProfile::stamp@180] OEvent::downloadHitsCompute_9 (5.35156,0,10805.7,0)
+    2019-07-17 16:27:14.640 INFO  [324023] [OEvent::downloadHits@362]  nhit 516 --dbghit N hitmask 0x18a0 SC|SA|BT|TO BULK_SCATTER|SURFACE_ABSORB|BOUNDARY_TRANSMIT|TORCH
+    2019-07-17 16:27:14.640 ERROR [324023] [OpticksProfile::stamp@180] OKPropagator::propagate-download_9 (5.35156,0,10805.7,0)
+    2019-07-17 16:27:14.640 ERROR [324023] [OpticksProfile::stamp@180] _OpticksRun::saveEvent_9 (5.35156,0,10805.7,0)
+    2019-07-17 16:27:14.640 ERROR [324023] [OpticksProfile::stamp@180] _OpticksEvent::save_9 (5.35156,0,10805.7,0)
+    2019-07-17 16:27:14.640 ERROR [324023] [OpticksProfile::stamp@180] OpticksEvent::save_9 (5.35156,0,10805.7,0)
+    2019-07-17 16:27:14.641 ERROR [324023] [OpticksProfile::stamp@180] OpticksRun::saveEvent_9 (5.35156,0,10805.7,0)
+    2019-07-17 16:27:14.641 ERROR [324023] [OpticksProfile::stamp@180] _OpticksRun::resetEvent_9 (5.35156,0,10805.7,0)
+
+Pilot error, forgot "--savehit"::
+
+    1575     bool production = m_ok->isProduction() ;
+    1576 
+    1577     if(production)
+    1578     {
+    1579         if(m_ok->hasOpt("savehit")) saveHitData();  // FOR production hit check
+    1580     }
+    1581     else
+
+::
+
+    blyth@localhost torch]$ np.py 
+    /home/blyth/local/opticks/tmp/scan-ph/evt/cvd_1_rtx_0_1M/torch
+    . :                                         ./OpticksProfile.npy :             (420, 4) : 9aab0574d990163a362b286fd36ad767 : 20190717-1632 
+    . :                                      ./OpticksProfileAcc.npy :               (1, 4) : d11a3cd8e2ab1b70be1393c26e768b3d : 20190717-1632 
+    . :                                ./OpticksProfileAccLabels.npy :              (1, 64) : 7cb1a64597d383104287f68e2ab27c9f : 20190717-1632 
+    . :                                   ./OpticksProfileLabels.npy :            (420, 64) : bc9a4c7aa4d8a325aca3a63a542deab6 : 20190717-1632 
+    . :                                                   ./1/ht.npy :          (516, 4, 4) : 38ecf5480303c99589f98e9c0f12700b : 20190717-1632 
+    . :                                                   ./2/ht.npy :          (516, 4, 4) : 38ecf5480303c99589f98e9c0f12700b : 20190717-1632 
+    . :                                                   ./3/ht.npy :          (516, 4, 4) : 38ecf5480303c99589f98e9c0f12700b : 20190717-1632 
+    . :                                                   ./4/ht.npy :          (516, 4, 4) : 38ecf5480303c99589f98e9c0f12700b : 20190717-1632 
+    . :                                                   ./5/ht.npy :          (516, 4, 4) : 38ecf5480303c99589f98e9c0f12700b : 20190717-1632 
+    . :                                                   ./6/ht.npy :          (516, 4, 4) : 38ecf5480303c99589f98e9c0f12700b : 20190717-1632 
+    . :                                                   ./7/ht.npy :          (516, 4, 4) : 38ecf5480303c99589f98e9c0f12700b : 20190717-1632 
+    . :                                                   ./8/ht.npy :          (516, 4, 4) : 38ecf5480303c99589f98e9c0f12700b : 20190717-1632 
+    . :                                                   ./9/ht.npy :          (516, 4, 4) : 38ecf5480303c99589f98e9c0f12700b : 20190717-1632 
+    . :                                                  ./10/ht.npy :          (516, 4, 4) : 38ecf5480303c99589f98e9c0f12700b : 20190717-1632 
+    [blyth@localhost torch]$ 
+
+
+
+
 profilesmry.py plotting results
 ------------------------------------
 
@@ -63,7 +128,6 @@ profilesmry.py plotting results
     227     O("Opticks_Speedup",    "Ratio of extrapolated G4 times to Opticks launch+interval times with RTX mode ON and OFF")
     228     O("Overheads",   "Comparison of Opticks GPU launch times and intervals with RTX mode ON and OFF")
     229     O("RTX_Speedup", "Ratio of launch times with RTX mode OFF to ON ")
-
 
 
 
