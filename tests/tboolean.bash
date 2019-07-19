@@ -36,6 +36,23 @@ Define the shortcut bash functions with::
    ta truncate
 
 
+
+viewpoint control
+---------------------
+
+::
+
+    tv 34 --size 1280,720,1 --eye 1,0,0 --up 0,-1,0 
+
+        # view from +X, with +Y up puts -Z to the right
+        # view from +X, with -Y up puts +Z to the right
+
+        Useful for making screenshots because changing the 
+        initial view changes V rotation axis.
+
+
+
+
 common issues
 -------------------
 
@@ -703,6 +720,10 @@ tboolean-py-(){                               tboolean.py --cat $(tboolean-cat) 
 tboolean-m-(){  metadata.py --cat $(tboolean-cat) --pfx $(tboolean-pfx) --tag="$(tboolean-tag)" ; }
 tboolean-g-(){  lldb -- CTestDetectorTest --test --testconfig "$TESTCONFIG" $* ; }
 
+tboolean-eye(){ echo ${EYE:-1,0,0} ; }
+tboolean-up(){  echo ${UP:-0,0,1} ; }
+
+
 tboolean--(){
 
     #tboolean-
@@ -724,7 +745,8 @@ tboolean--(){
             --rendermode +global,+axis \
             --geocenter \
             --stack $stack \
-            --eye 1,0,0 \
+            --eye $(tboolean-eye) \
+            --up $(tboolean-up) \
             --test \
             --testconfig "$testconfig" \
             --torch \
@@ -898,11 +920,16 @@ autoemitconfig="photons:600000,wavelength:380,time:0.2,posdelta:0.1,sheetmask:0x
 args = opticks_main(csgname="$(tboolean-proxy-name)", autoemitconfig=autoemitconfig)
 
 
-# 0x3f is all 6 
-# 0x1 is -Z
-# 0x2 is +Z   havent succeed to get this to work yet 
+# see nbox::par_posnrm_model
 
-emitconfig = "photons:10000,wavelength:380,time:0.0,posdelta:0.1,sheetmask:0x2,umin:0.45,umax:0.55,vmin:0.45,vmax:0.55" 
+# 0x0 all sheets
+# 0x1 -Z
+# 0x2 +Z  
+# 0x3 -Z and +Z
+# 0x3f all 6 
+
+#emitconfig = "photons:10000,wavelength:380,time:0.0,posdelta:0.1,sheetmask:0x1,umin:0.35,umax:0.65,vmin:0.35,vmax:0.65" 
+emitconfig = "photons:10000,wavelength:380,time:0.0,posdelta:0.1,sheetmask:0x1,umin:0.45,umax:0.45,vmin:0.45,vmax:0.45" 
 
 CSG.kwa = dict(poly="IM",resolution=20, verbosity=0, ctrl=0, containerscale=3.0, emitconfig=emitconfig  )
 
