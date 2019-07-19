@@ -1761,6 +1761,14 @@ void nnode::par_posnrm_model(glm::vec3& , glm::vec3& , unsigned, float, float ) 
     assert(0 && "nnode::par_posnrm_model needs override in all primitives ");
 }
 
+/**
+nnode::selectSheets
+---------------------
+
+Converts a mask integer into a vector of sheet indices.
+For a box with 6 sheets, the indices will be from 0,1,2,3,4,5
+
+**/
 
 void nnode::selectSheets( std::vector<unsigned>& sheets, unsigned sheetmask ) const 
 {
@@ -1775,16 +1783,19 @@ void nnode::selectSheets( std::vector<unsigned>& sheets, unsigned sheetmask ) co
         for(unsigned sheet = 0 ; sheet < nsa ; sheet++) if((sheetmask & (0x1 << sheet)) != 0  ) sheets.push_back(sheet) ;
     } 
 
-    LOG(info) << "nnode::selectSheets"
-              << " nsa " << nsa
-              << " sheetmask " << std::hex << sheetmask << std::dec
-              << " ns " << sheets.size() 
-              ;
+    LOG(error) 
+        << " nsa " << nsa
+        << " sheetmask " << std::hex << sheetmask << std::dec
+        << " ns " << sheets.size() 
+        ;
 }
 
 
 void nnode::generateParPoints(unsigned seed, const glm::vec4& uvdom, std::vector<glm::vec3>& points, std::vector<glm::vec3>& normals, unsigned num_total, unsigned sheetmask ) const  
 {
+
+    LOG(error) << " sheetmask " << std::hex << sheetmask ; 
+
     std::vector<unsigned> sheets ; 
     selectSheets(sheets, sheetmask);
     unsigned ns = sheets.size() ; 
@@ -1793,9 +1804,10 @@ void nnode::generateParPoints(unsigned seed, const glm::vec4& uvdom, std::vector
     BRng ugen(uvdom.x,uvdom.y, seed,   "U") ;  
     BRng vgen(uvdom.z,uvdom.w, seed+1, "V") ;  
 
-    for(unsigned sheet = 0 ; sheet < ns  ; sheet++) 
+    for(unsigned i = 0 ; i < ns  ; i++) 
     {
-        unsigned num = sheet == ns - 1 ? num_total - cumsum : num_total/ns  ; 
+        unsigned num = i == ns - 1 ? num_total - cumsum : num_total/ns  ;  // divided total or remainder for last  
+        unsigned sheet = sheets[i] ;    // <-- fixed buglet, was conflating the "i" with the "sheet" 
         generateParPointsSheet(points, normals, ugen, vgen,  sheet, num ) ;
         cumsum += num ; 
     }
@@ -1806,10 +1818,10 @@ void nnode::generateParPointsSheet(std::vector<glm::vec3>& points, std::vector<g
     glm::vec3 pos ; 
     glm::vec3 nrm ; 
 
-    LOG(verbose) << "nnode::generateParPointsSheet"
-              << " sheet " << sheet 
-              << " num " << num
-              ;
+    LOG(info) 
+        << " sheet " << sheet 
+        << " num " << num
+        ;
 
     bool dump = false ; 
 
