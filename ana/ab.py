@@ -221,9 +221,11 @@ class AB(object):
             self.print_(self.mal)
             self.print_(self)
             self.print_(self.cfm)  
+            self.print_(self.brief)
             self.print_(self.rpost_dv)
             self.print_(self.rpol_dv)
             self.print_(self.ox_dv)
+            self.print_(self.brief)
             self.print_(self.rc_)
             self.print_(self.cfm)  
         pass
@@ -305,11 +307,16 @@ class AB(object):
         pass
         log.info("] ")
 
-    def __repr__(self):
+
+    def _get_brief(self):
         abn = "AB(%s,%s,%s)  %s %s    %s " % (self.ok.tag, self.ok.src, self.ok.det, self.sel, self.irec, self.dshape )
+        return abn
+    brief = property(_get_brief)
+
+    def __repr__(self):
+        abn = self.brief
         abr = "A %s " % self.a.brief 
         bbr = "B %s " % self.b.brief 
-
 
         amd = ",".join(self.a.metadata.csgbnd)
         acsgp = self.a.metadata.TestCSGPath

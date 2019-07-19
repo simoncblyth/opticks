@@ -19,12 +19,8 @@ from opticks.ana.bench import Bench
 from mpl_toolkits.axes_grid1.axes_divider import make_axes_area_auto_adjustable
 import matplotlib.pyplot as plt
 
-fontsize = 12  
-figsize = 12.8,7.20   # png of 1280,720   fontsize 20 too big 
-
-plt.rcParams['figure.figsize'] = figsize    
-plt.rcParams['font.size'] = fontsize
-
+from opticks.ana.plot import init_rcParams
+init_rcParams(plt)
 
 
 def barplot(labels, values):

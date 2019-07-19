@@ -86,7 +86,8 @@ def opticks_args(**kwa):
         lv_is_int = re.compile("\d+").match(lv) is not None
         lvn = lv if not lv_is_int else "proxy-%d" % int(lv)
         defaults["pfx"] = "tboolean-%s" % lvn 
-        log.info("override pfx default as LV=%s envvar defined, pfx=%s " % (lv, defaults["pfx"])) 
+        defaults["cat"] = defaults["pfx"]
+        log.info("override pfx, cat defaults as LV=%s envvar defined, %s " % (lv, defaults["pfx"])) 
     pass  
 
     log.info("envvar %s -> defaults %s " % (oad_key, repr(defaults)))

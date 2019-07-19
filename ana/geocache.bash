@@ -585,7 +585,7 @@ just a mapping from pixels (x,y) to
 azimuthal (-pi:pi) and polar(-pi/2:pi/2) angles. 
 
 Default frame size is 1920x1080 
-Typical presentation size is 1280x720
+Typical presentation size is 1280x720    --size 1280,720,1
 Double that 2560x1440
 
 To take a frame snap press TAB, which saves to /tmp/Frame.ppm

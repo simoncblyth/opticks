@@ -21,8 +21,18 @@ from opticks.ana.profile import Profile
 
 class ProfileSmry(object):
     @classmethod
-    def Load(cls, pfx, base="$TMP", startswith=None):
+    def LoadHit_(cls, htpath):
+        return np.load(htpath) if os.path.exists(htpath) else None
 
+
+    @classmethod
+    def Load_(cls, pfx, base="$TMP", startswith=None):
+        """
+        :return s: odict keyed by cat with Profile instances 
+
+        Finds persisted profiles meeting selection, collecting
+        them into an odict which is returned.
+        """ 
         base = os.path.expandvars(os.path.join(base,pfx))
 
         if startswith is None:
@@ -49,22 +59,22 @@ class ProfileSmry(object):
             prof.npho = npho 
 
             htpath1 = os.path.join(dir_, "1", "ht.npy")
-            if os.path.exists(htpath1):
-                ht = np.load(htpath1)
-                nhit = ht.shape[0]
-                prof.ht = ht
-                prof.nhit = nhit
-            else:
-                prof.ht = None
-                prof.nhit = -1  
-            pass 
+            ht = cls.LoadHit_(htpath1)
+            nhit = ht.shape[0] if not ht is None else -1
+            prof.ht = ht
+            prof.nhit = nhit
 
-            ihit = npho/nhit
+            ihit = prof.npho/prof.nhit
 
             print("car %20s npho %9d nhit %9d ihit %5d     path %s " % (cat, prof.npho, prof.nhit, ihit,  path))
             s[cat] = prof
         pass
+        return s  
 
+
+    @classmethod
+    def Load(cls, pfx, base="$TMP", startswith=None):
+        s = cls.Load_(pfx, base, startswith)
         ps = cls.FromDict(s)
         ps.base = base
         return ps 
@@ -131,8 +141,6 @@ class ProfileSmry(object):
 
     def __repr__(self):
         return "\n".join(["ProfileSmry", Profile.Labels()]+map(lambda kv:repr(kv[1]), sorted(self.s.items(), key=lambda kv:kv[1].npho )  ))
-
-
 
 
 

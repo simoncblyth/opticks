@@ -51,6 +51,11 @@ class ABSmryTab(object):
 
 class ABSmry(odict):
     """
+
+    After adding keys can usually update the summary just via redoing analysis
+    with scan-tp    
+
+
     """
     NAME = "ABSmry.json"
     DVS = "rpost_dv rpol_dv ox_dv".split()
@@ -69,6 +74,9 @@ class ABSmry(odict):
     ab.cfm.numPhotons 
     ab.mal.fmaligned
     ab.mal.nmal
+    ab.pro.ap.tim
+    ab.pro.bp.tim
+    ab.pro.boa
     """
 
     @classmethod
@@ -77,8 +85,12 @@ class ABSmry(odict):
         s.dir_ = ab.a.tagdir
 
         for q in filter(None, map(str.strip,cls.KEYS.split("\n"))):
-            log.info("eval %s " % q )
-            s[q] = eval(q)
+            v = eval(q)
+            #log.info("eval(%s) -> %s  %r " % (q, v, type(v)) )
+            if type(v) is np.float32:
+                v = float(v)
+            pass 
+            s[q] = v
         pass
         for dv in cls.DVS:
             for q in cls.DVSQ:
@@ -108,6 +120,11 @@ class ABSmry(odict):
     npho = property(lambda self:self.get("ab.cfm.numPhotons",-1))
     solid = property(lambda self:self["ab.a.metadata.solid"])
 
+    ati = property(lambda self:self.get("ab.pro.ap.tim",-1))
+    bti = property(lambda self:self.get("ab.pro.bp.tim",-1))
+    boa = property(lambda self:self.get("ab.pro.boa",-1))
+
+
     def __init__(self):
         odict.__init__(self)
 
@@ -127,20 +144,22 @@ class ABSmry(odict):
     @classmethod
     def Labels(cls):
         """
-        level uses ansi codes in table, so has 9 invisble characters in it 
+        level uses ansi codes in table, so has 9 invisible characters that take no screen space
         """
         head = " %5s %7s %4s %4s %10s %5s " % ("LV", "level", "RC", "npho", "fmal(%)", "nmal" ) 
+        head2 = " %7s %7s %7s " % ( "ati", "bti", "boa" )    
         space = "   "
         body = cls.label_dv()
         tail = "solid" 
-        return " ".join([head,space,body,space, tail]) 
+        return " ".join([head,head2,space,body,space, tail]) 
 
     def __repr__(self):
         head = " %5s %16s 0x%.2x %4s %10.3f %5d " % ( self.key, self.lev.fn_(self.lev.nam) , self.RC, Num.String(self.npho), self.fmal*100.0, self.nmal )
+        head2 = " %7.4f %7.1f %7.1f " % (self.ati, self.bti, self.boa ) 
         space = "   "
         body = self.desc_dv()
         tail = "%s"  % self.solid
-        return " ".join([head,space,body,space,tail]) 
+        return " ".join([head,head2,space,body,space,tail]) 
  
 
     @classmethod

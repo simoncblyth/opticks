@@ -2,12 +2,21 @@
 """
 profile.py
 =============
+
+::
+
+    LV=0 ip profile.py 
+
+    LV=box ip profile.py --cat cvd_1_rtx_1_1M --pfx scan-ph --tag 0
+
+
 """
 
 from __future__ import print_function
 import os, sys, logging, numpy as np
 log = logging.getLogger(__name__)
 
+from opticks.ana.log import bold_, blink_
 from opticks.ana.nload import np_load
 from opticks.ana.nload import tagdir_, stmp_, time_
 
@@ -22,6 +31,10 @@ class Profile(object):
     OKDT = ("_OPropagator::launch", "OPropagator::launch",)
 
     def __init__(self, tagdir, name ):
+        """
+        :param tagdir: directory from which to load OpticksProfile.npy and siblings
+        :param name: informational name for outputs
+        """  
         self.tagdir = tagdir
         tag = os.path.basename(tagdir)
         g4 = tag[0] == "-"
@@ -109,7 +122,7 @@ class Profile(object):
 
 
     def __len__(self):
-        return len(self.a)
+        return len(self.a) if self.valid else 0
 
     def loadAcc(self):
         path = self.path("")
@@ -219,7 +232,15 @@ class Profile(object):
         return dt, p0, p1 
 
     def line(self, i):
-        return " %6d : %50s : %10.4f %10.4f %10.4f %10.4f   " % ( i, self.l[i], self.t[i], self.v[i], self.dt[i], self.dv[i] )
+        li = self.l[i]
+        if li in self.OKDT:
+            fn_ = bold_
+        elif li in self.G4DT:
+            fn_ = blink_
+        else:
+            fn_ = lambda _:_
+        pass
+        return " %6d : %50s : %10.4f %10.4f %10.4f %10.4f   " % ( i, fn_(self.l[i]), self.t[i], self.v[i], self.dt[i], self.dv[i] )
 
     def labels(self):
         return " %6s : %50s : %10s %10s %10s %10s   " % ( "idx", "label", "t", "v", "dt", "dv" )
@@ -242,9 +263,15 @@ class Profile(object):
         nsto = len(self.stop_interval)
         assert nsta == nsto
         if nsta > 0:
+            self.multievent = True
             self.avg_start_interval = np.average(self.start_interval)
             self.avg_stop_interval = np.average(self.stop_interval)
             self.overhead_ratio = self.avg_start_interval/self.avg_launch
+        else:
+            self.avg_start_interval = -1
+            self.avg_stop_interval = -1
+            self.overhead_ratio = -1
+            self.multievent = False
         pass
         #ipdb.set_trace()       
         log.debug("]")
@@ -253,18 +280,24 @@ class Profile(object):
 
         print(".launch_start %r ", self.launch_start )   
         print(".launch_stop  %r ", self.launch_stop  )   
+        print(".launch           avg %10.4f     %r " % (  self.avg_launch         , self.launch  ))   
 
-        print(".launch           avg %10.4f     %r " % (  avg_launch         , self.launch  ))   
-        print(".start_interval   avg %10.4f     %r " % (  avg_start_interval , self.start_interval) )   
-        print(".stop_interval    avg %10.4f     %r " % (  avg_stop_interval  , self.stop_interval ) )   
+        if self.multievent:
+            print(".start_interval   avg %10.4f     %r " % (  self.avg_start_interval , self.start_interval) )   
+            print(".stop_interval    avg %10.4f     %r " % (  self.avg_stop_interval  , self.stop_interval ) )   
+        pass
+
+    def _get_note(self):
+        return "MULTIEVT" if self.multievent else "not-multi"
+    note = property(_get_note)
 
 
     @classmethod
     def Labels(cls):
-        return " %20s %15s %15s %15s %50s " % ( "name","avg interval","avg launch","avg overhead", "launch" )
+        return " %20s %10s %15s %15s %15s %50s " % ( "name", "note", "avg interval","avg launch","avg overhead", "launch" )
 
     def brief(self):
-        return " %20s %10.4f %10.4f %10.4f %50s " % (self.name, self.avg_start_interval, self.avg_launch, self.overhead_ratio, repr(self.launch) )
+        return " %20s %10s %10.4f %10.4f %10.4f %50s " % (self.name, self.note, self.avg_start_interval, self.avg_launch, self.overhead_ratio, repr(self.launch) )
 
 
     def bodylines(self):
@@ -276,7 +309,7 @@ class Profile(object):
         stop = min(len(self), stop)
 
         nli = stop - start
-        if nli < 50:
+        if nli < 1000:
             ll = map(lambda i:self.line(i), np.arange(start, stop)) 
         else:
             ll = map(lambda i:self.line(i), np.arange(start, start+5) ) 
@@ -346,27 +379,10 @@ def test_ABProfile(ok, plt):
 
 
 
-
-
-
-if __name__ == '__main__':
-    from opticks.ana.main import opticks_main
-    import matplotlib.pyplot as plt
-
-    ok = opticks_main(doc=__doc__)  
-    log.debug(ok.brief)
-
-    #test_ABProfile( ok, plt )
-
-    log.info("tagdir: %s " % ok.tagdir)
-
-    pr = Profile(ok.tagdir, "pro") 
-    print(pr)
-
+def multievent_plot( pr, plt ):
 
     w0 = np.where(pr.l == "_OpticksRun::createEvent")[0]
     w1 = np.where(pr.l == "OpticksRun::resetEvent")[0]
-
     assert len(w0) == len(w1)
 
     w10 = w1 - w0 
@@ -383,21 +399,55 @@ if __name__ == '__main__':
     print("pr[w0[1]:w1[1]]")
     print(pr[w0[1]:w1[1]])
     
-
-
-    fig = plt.figure(figsize=(6,5.5))
-
+    fig = plt.figure()
     ax = fig.add_subplot(111)
 
-    ax.set_xlim( [pr.t[w0[0]], pr.t[w1[-1]] + 0.5 ])
+
+    #ax.set_xlim( [pr.t[w0[0]], pr.t[w1[-1]] + 0.5 ])
+
+    ax.set_xlim( 4.9, 5.3 )
 
 
     plt.plot( pr.t, pr.v, 'o' )
 
     pr.plt_axvline(ax) 
 
+    ax.set_ylabel("Process Virtual Memory (MB)")
+    ax.set_xlabel("Time since executable start (s)")
+
+
     plt.ion()
     fig.show()
 
  
+
+
+
+if __name__ == '__main__':
+    from opticks.ana.main import opticks_main
+    from opticks.ana.plot import init_rcParams
+    import matplotlib.pyplot as plt
+    init_rcParams(plt)
+
+
+    ok = opticks_main(doc=__doc__)  
+    log.debug(ok.brief)
+
+    #test_ABProfile( ok, plt )
+
+    log.info("tagdir: %s " % ok.tagdir)
+
+    pr = Profile(ok.tagdir, "pro") 
+    print(pr)
+
+    if not pr.valid: 
+        log.fatal(" pr not valid exiting ")
+        sys.exit(0)   
+    pass 
+
+    if pr.multievent:
+        multievent_plot(pr, plt)  
+    pass
+
+
 
