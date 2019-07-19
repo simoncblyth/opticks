@@ -61,16 +61,29 @@ __device__ int propagate_to_boundary( Photon& p, State& s, curandState &rng)
     float speed = s.m1group2.x ;  // .x:group_velocity  (group velocity of light in the material) see: opticks-find GROUPVEL
 
 #ifdef WITH_ALIGN_DEV
+#ifdef WITH_LOGDOUBLE
+
     float u_boundary_burn = curand_uniform(&rng) ;
     float u_scattering = curand_uniform(&rng) ;
     float u_absorption = curand_uniform(&rng) ;
 
-#ifdef WITH_LOGDOUBLE
     //  these two doubles brings about 100 lines of PTX with .f64
     //  see notes/issues/AB_SC_Position_Time_mismatch.rst      
     float scattering_distance = -s.material1.z*log(double(u_scattering)) ;   // .z:scattering_length
     float absorption_distance = -s.material1.y*log(double(u_absorption)) ;   // .y:absorption_length 
+
+#elif WITH_LOGDOUBLE_ALT
+    float u_boundary_burn = curand_uniform(&rng) ;
+    double u_scattering = curand_uniform_double(&rng) ;
+    double u_absorption = curand_uniform_double(&rng) ;
+
+    float scattering_distance = -s.material1.z*log(u_scattering) ;   // .z:scattering_length
+    float absorption_distance = -s.material1.y*log(u_absorption) ;   // .y:absorption_length 
+
 #else
+    float u_boundary_burn = curand_uniform(&rng) ;
+    float u_scattering = curand_uniform(&rng) ;
+    float u_absorption = curand_uniform(&rng) ;
     float scattering_distance = -s.material1.z*logf(u_scattering) ;   // .z:scattering_length
     float absorption_distance = -s.material1.y*logf(u_absorption) ;   // .y:absorption_length 
 #endif

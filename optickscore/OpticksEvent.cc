@@ -1298,7 +1298,7 @@ void OpticksEvent::setSourceData(NPY<float>* source_data)
         assert(m_num_source == source_data->getShape(0));
     }
 
-    OK_PROFILE("_OpticksEvent::setSourceData.MultiViewNPY");
+    OK_PROFILE("_OpticksEvent::setSourceData_MultiViewNPY");  // NB dont use "." in the labels it messes up the ini
 
     //m_source_data->setDynamic();  // need to update with seeding so GL_DYNAMIC_DRAW needed 
     m_source_attr = new MultiViewNPY("source_attr");
@@ -1308,7 +1308,7 @@ void OpticksEvent::setSourceData(NPY<float>* source_data)
     m_source_attr->add(new ViewNPY("vpol",m_source_data,2,0,0,4,ViewNPY::FLOAT, false, false, 1));      // 3rd quad
     m_source_attr->add(new ViewNPY("iflg",m_source_data,3,0,0,4,ViewNPY::INT  , false, true , 1));      // 4th quad
 
-    OK_PROFILE("OpticksEvent::setSourceData.MultiViewNPY");
+    OK_PROFILE("OpticksEvent::setSourceData_MultiViewNPY");
 
     OK_PROFILE("OpticksEvent::setSourceData");
 }

@@ -18,6 +18,14 @@ const plog::Severity OpticksProfile::LEVEL = PLOG::EnvLevel("OpticksProfile", "D
 
 const char* OpticksProfile::NAME = "OpticksProfile" ; 
 
+/**
+
+TODO 
+
+* get rid of m_tt is almost been fully replaced by the NPY arrays 
+
+**/
+
 OpticksProfile::OpticksProfile() 
     :
     m_stamp(false),
@@ -158,6 +166,16 @@ void OpticksProfile::stampOld(T label, int count)
        ; 
 }
 
+/**
+OpticksProfile::stamp
+------------------------
+
+Hmm the NPY::add will have to do memcpy sometimes, 
+maybe cause of 0.0039s glitches
+
+TODO: minimize whats done in here 
+
+**/
 
 void OpticksProfile::stamp(const char* label, int count)
 {
@@ -331,7 +349,7 @@ OpticksProfile* OpticksProfile::Load( const char* dir )
 void OpticksProfile::load(const char* dir)
 {
    assert(dir);
-   m_tt->load(dir);
+   //m_tt->load(dir);
    m_npy = NPY<float>::load(dir, m_name);
    m_lpy = NPY<char>::load(dir, m_lname);
 }
@@ -352,7 +370,8 @@ std::string OpticksProfile::brief()
 void OpticksProfile::dump(const char* msg, const char* startswith, const char* spacewith, double tcut)
 {
     LOG(info) << msg << brief() ; 
-  
+ 
+    if(m_tt) 
     m_tt->dump(msg, startswith, spacewith, tcut );
     //m_npy->dump(msg);
 

@@ -44,8 +44,8 @@ std::string OpticksAna::getArgs(const char* /*anakey*/)
          << "--tagoffset " << m_ok->getTagOffset() << " "
          << "--tag " << m_ok->getEventTag() << " "
          //<< "--det " << m_ok->getEventDet() << " "
-         //<< "--cat " << m_ok->getInputUDet() << " "     # cat overrides not handled in python yet 
-         << "--det " << m_ok->getInputUDet() << " "
+         << "--cat " << m_ok->getInputUDet() << " "     
+         //<< "--det " << m_ok->getInputUDet() << " "
          << "--pfx " << m_ok->getEventPfx() << " "
          << "--src " << m_ok->getSourceType() << " "
          << "--show " 

@@ -844,8 +844,16 @@ bool Opticks::isPrintIndexLog() const
 
 bool Opticks::isXAnalytic() const 
 {
-    return m_cfg->hasOpt("xanalytic") ;
+    bool is_xanalytic = m_cfg->hasOpt("xanalytic") ; 
+    bool is_xtriangle = m_cfg->hasOpt("xtriangle") ; 
+    if(is_xanalytic)
+    {
+        LOG(error) << " --xanalytic is now ON by default and the config option is ignored, use --xtriangle to switch off \"xanalytic\"  " ;   
+    } 
+    return is_xtriangle == false  ;
 }
+
+
 bool Opticks::isXGeometryTriangles() const 
 {
     return m_cfg->hasOpt("xgeometrytriangles") ;

@@ -12,9 +12,10 @@ class OKCORE_API OpticksCfg : public BCfg {
   public:
      void dump(const char* msg="OpticksCfg::dump");
 
+     static const std::string SIZE_P ; 
 
      const std::string& getCVD();
-     const std::string& getSize();
+     const std::string& getSize() const ;
      const std::string& getPosition();
      const std::string& getDbgCSGPath();
      const std::string& getLogName();

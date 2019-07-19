@@ -170,7 +170,13 @@ void OpticksCfg<Listener>::init()
        ("nopropagate,P",  "inhibit generation/propagation") ;
 
    m_desc.add_options()
-       ("xanalytic",  "try switching on analytic ray tracing from GGeo without the analytic toggle from GScene etc...") ;
+       ("xanalytic",  "FORMERLY switched on analytic geometry in optixrap, now enabled by default with this option ignored, used --xtriangle to switch OFF") ;
+
+   m_desc.add_options()
+       ("xtriangle",  "disable --xanalytic ") ;
+
+
+
 
    m_desc.add_options()
        ("xgeometrytriangles",  
@@ -1264,9 +1270,14 @@ const std::string& OpticksCfg<Listener>::getCVD()
 
 
 template <class Listener>
-const std::string& OpticksCfg<Listener>::getSize()
+const std::string OpticksCfg<Listener>::SIZE_P = "1280,720,1" ; 
+
+
+template <class Listener>
+const std::string& OpticksCfg<Listener>::getSize() const 
 {
-    return m_size ;
+    bool is_p = strcmp(m_size.c_str(), "p") == 0 ; 
+    return is_p ? SIZE_P : m_size ;
 }
 
 
