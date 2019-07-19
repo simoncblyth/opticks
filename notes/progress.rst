@@ -25,9 +25,9 @@ to work with that parser follow some rules:
 
 * proposal writing 
 
-* raise the photon ceiling from 3M to 100M, by generation of curandstate files
+* try raising the photon ceiling from 3M to 100M, by generation of curandstate files
   and adoption of dynamic TCURAND for curand randoms on host without having to 
-  store enormous files of randoms  
+  store enormous files of randoms : only manage to get to 60M   
 
 * Virtual Memory time profiling finds memory bugs, eventually get to plateau profile
 * fix CUDA OOM crashes on way to 100M by making production mode zero size the debug buffers 
@@ -37,6 +37,8 @@ to work with that parser follow some rules:
 
 * absmry.py for an overview of aligned matching across the 40 solids
 * investigate utaildebug idea for decoupling maligned from deviant 
+
+* profilesmryplot.py benchplot.py for results plotting  
 
 
 2019 June
@@ -110,7 +112,7 @@ to work with that parser follow some rules:
 
   * NVIDIA driver update somehow conspired with long dormant "sleeper" visualization bug 
     to wakeup at just the wrong moment : causing a week of frenzied debugging 
-    due to limited time to borrow the GPU, which eventually bouch anyhow : as it had perplexing 
+    due to limited time to borrow the GPU, which eventually bought anyhow : as it had perplexing 
     3x worse RTX performance
 
   * resulted in a development of quite a few OpenGL + OptiX minimal test case examples 

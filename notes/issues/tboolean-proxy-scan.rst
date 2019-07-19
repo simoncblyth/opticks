@@ -17,7 +17,9 @@ TODO : extend random alignment checking beyond history match, also do a u match 
 
 Currently random mis-alignment judgement is based entirely on seqhis history of photons.  
 Extending to also do a umatch, eg by recording a random at the tail 
-and storing into p.weight slot.
+and storing into p.weight slot. 
+
+* Actually used p.flags.y to avoid tripping ox deviation errors weights
 
 Objective:
 

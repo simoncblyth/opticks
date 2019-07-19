@@ -98,7 +98,7 @@ int main(void)
 
     int count(0);
     bool exitloop(false);
-    int renderlooplimit(200); 
+    int renderlooplimit(20000); 
 
     while (!glfwWindowShouldClose(window) && !exitloop)
     {

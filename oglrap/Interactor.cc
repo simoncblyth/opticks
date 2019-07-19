@@ -300,7 +300,7 @@ const char* Interactor::keys =
 "\n J: Scene::jump  "
 "\n K: Composition::nextPickPhotonStyle OR toggle scrub mode "
 "\n L: Composition::nextNormalStyle     flip normal in shaders "
-"\n M: Composition::nextColorStyle      m1/m2/f1/f2/p1/p2      "
+"\n M: Composition::nextColorStyle      m1/m2/f1/f2/p1/p2  (window title shows eg col:flag2) "
 "\n N: near mode toggle : swipe up/down to change frustum near "  
 "\n O: OptiX render mode           raytrace/hybrid/OpenGL "
 "\n P: Scene::nextPhotonStyle       dot/longline/shortline  "
@@ -338,6 +338,15 @@ const char* Interactor::keys =
 "\n "
 "\n Holding SHIFT+OPTION+T resets an InterpolatedView back to the start "
 "\n "
+"\n M: Composition::nextColorStyle   flag1/flag2 colors (note window title   "
+"\n    flag1(flag2) colors photon representation according to previous(next) point flag"
+"\n "
+"\n     TO:white    torch "
+"\n     BT:cyan     boundary transmit"
+"\n     BR:yellow   boundary reflect "
+"\n     AB:red      bulk absorb "  
+"\n     SA:brown    surface absorb "
+"\n     SC:scatter  bulk scatter "
 "\n ";
 
 
@@ -541,6 +550,9 @@ void Interactor::key_pressed(unsigned int key)
         case GLFW_KEY_TAB:
             tab_pressed();   // m_frame->snap()
             break;
+        case GLFW_KEY_MENU:
+            menu_pressed();   
+            break;
         case GLFW_KEY_BACKSLASH:
             m_composition->nextPixelTimeStyle(modifiers);  
             break;
@@ -654,6 +666,11 @@ void Interactor::tab_pressed()
     LOG(LEVEL) ;   
     m_frame->snap(); 
 }
+void Interactor::menu_pressed()
+{
+    LOG(LEVEL) ;   
+}
+
 
 
 void Interactor::space_pressed()
