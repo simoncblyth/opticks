@@ -34,7 +34,7 @@ class MultiViewNPY ;
 
 class NPY_API ViewNPY {
 
-        friend struct OpticksEvent ; 
+        friend class OpticksEvent ; 
         friend struct test_ViewNPY ; 
     public:
         static const char* BYTE_ ; 

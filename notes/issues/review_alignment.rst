@@ -10,6 +10,195 @@ State of play
 
 
 
+
+G4Navigator
+------------
+
+::
+
+   g4-cc ZeroStep
+
+    
+g4-cls G4Navigator::
+
+    290   inline G4int SeverityOfZeroStepping( G4int* noZeroSteps ) const;
+    291     // Report on severity of error and number of zero steps,
+    292     // in case Navigator is stuck and is returning zero steps.
+    293     // Values: 1 (small problem),  5 (correcting), 
+    294     //         9 (ready to abandon), 10 (abandoned)
+    ...
+    437   // Count zero steps - as one or two can occur due to changing momentum at
+    438   //                    a boundary or at an edge common between volumes
+    439   //                  - several are likely a problem in the geometry
+    440   //                    description or in the navigation
+    441   //
+    442   G4bool fLastStepWasZero;
+    443     // Whether the last ComputeStep moved Zero. Used to check for edges.
+    444 
+    445   G4bool fLocatedOnEdge;
+    446     // Whether the Navigator has detected an edge
+    447   G4int fNumberZeroSteps;
+    448     // Number of preceding moves that were Zero. Reset to 0 after finite step
+    449   G4int fActionThreshold_NoZeroSteps;
+    450     // After this many failed/zero steps, act (push etc) 
+    451   G4int fAbandonThreshold_NoZeroSteps;
+    452     // After this many failed/zero steps, abandon track
+
+
+
+    437   // Count zero steps - as one or two can occur due to changing momentum at
+    438   //                    a boundary or at an edge common between volumes
+    439   //                  - several are likely a problem in the geometry
+    440   //                    description or in the navigation
+    441   //
+    442   G4bool fLastStepWasZero;
+    443     // Whether the last ComputeStep moved Zero. Used to check for edges.
+    444 
+    445   G4bool fLocatedOnEdge;
+    446     // Whether the Navigator has detected an edge
+    447   G4int fNumberZeroSteps;
+    448     // Number of preceding moves that were Zero. Reset to 0 after finite step
+    449   G4int fActionThreshold_NoZeroSteps;
+    450     // After this many failed/zero steps, act (push etc) 
+    451   G4int fAbandonThreshold_NoZeroSteps;
+    452     // After this many failed/zero steps, abandon track
+    453 
+    454   G4ThreeVector  fPreviousSftOrigin;
+    455   G4double       fPreviousSafety;
+    456     // Memory of last safety origin & value. Used in ComputeStep to ensure
+    457     // that origin of current Step is in the same volume as the point of the
+    458     // last relocation
+
+
+    0058 G4Navigator::G4Navigator()
+      59   : fWasLimitedByGeometry(false), fVerbose(0),
+      60     fTopPhysical(0), fCheck(false), fPushed(false), fWarnPush(true)
+      61 {
+      62   fActive= false;
+      63   fLastTriedStepComputation= false;
+      64 
+      65   ResetStackAndState();
+      66     // Initialises also all 
+      67     // - exit / entry flags
+      68     // - flags & variables for exit normals
+      69     // - zero step counters
+      70     // - blocked volume 
+      71 
+      72   fActionThreshold_NoZeroSteps  = 10;
+      73   fAbandonThreshold_NoZeroSteps = 25;
+      74 
+
+
+
+    444 // ********************************************************************
+    445 // SeverityOfZeroStepping
+    446 //
+    447 // Reports on severity of error in case Navigator is stuck
+    448 // and is returning zero steps
+    449 // ********************************************************************
+    450 //
+    451 inline
+    452 G4int G4Navigator::SeverityOfZeroStepping( G4int* noZeroSteps ) const
+    453 { 
+    454   G4int severity=0, noZeros= fNumberZeroSteps;
+    455   if( noZeroSteps) *noZeroSteps = fNumberZeroSteps;
+    456   
+    457   if( noZeros >= fAbandonThreshold_NoZeroSteps )
+    458   { 
+    459     severity = 10;
+    460   }
+    461   if( noZeros > 0 && noZeros < fActionThreshold_NoZeroSteps )
+    462   { 
+    463     severity =  5 * noZeros / fActionThreshold_NoZeroSteps;
+    464   }
+    465   else if( noZeros == fActionThreshold_NoZeroSteps )
+    466   { 
+    467     severity =  5;
+    468   }
+    469   else if( noZeros >= fAbandonThreshold_NoZeroSteps - 2 )
+    470   { 
+    471     severity =  9;
+    472   }
+    473   else if( noZeros < fAbandonThreshold_NoZeroSteps - 2 )
+    474   { 
+    475     severity =  5 + 4 * (noZeros-fAbandonThreshold_NoZeroSteps)
+    476                       / fActionThreshold_NoZeroSteps;
+    477   }
+    478   return severity;
+
+
+
+* TODO: lldb look at ZeroSteps
+
+::
+
+    0972   // Count zero steps - one can occur due to changing momentum at a boundary
+     973   //                  - one, two (or a few) can occur at common edges between
+     974   //                    volumes
+     975   //                  - more than two is likely a problem in the geometry
+     976   //                    description or the Navigation 
+     977 
+     978   // Rule of thumb: likely at an Edge if two consecutive steps are zero,
+     979   //                because at least two candidate volumes must have been
+     980   //                checked
+     981   //
+     982   fLocatedOnEdge   = fLastStepWasZero && (Step==0.0);
+     983   fLastStepWasZero = (Step<fMinStep);
+     984   if (fPushed)  { fPushed = fLastStepWasZero; }
+     985 
+     986   // Handle large number of consecutive zero steps
+     987   //
+     988   if ( fLastStepWasZero )
+     989   {
+     990     fNumberZeroSteps++;
+     991 #ifdef G4DEBUG_NAVIGATION
+     992     if( fNumberZeroSteps > 1 )
+     993     {
+     994        G4cout << "G4Navigator::ComputeStep(): another 'zero' step, # "
+     995               << fNumberZeroSteps
+     996               << ", at " << pGlobalpoint
+     997               << ", in volume " << motherPhysical->GetName()
+     998               << ", nav-comp-step calls # " << sNavCScalls
+     999               << ", Step= " << Step
+    1000               << G4endl;
+    1001     }
+    1002 #endif
+
+    1003     if( fNumberZeroSteps > fActionThreshold_NoZeroSteps-1 )
+    1004     {  
+    1005        // Act to recover this stuck track. Pushing it along direction
+    1006        //
+    1007        Step += 100*kCarTolerance;
+    1008 #ifdef G4VERBOSE
+    1009        if ((!fPushed) && (fWarnPush))
+    1010        { 
+    1011          std::ostringstream message;
+    1012          message.precision(16);
+    1013          message << "Track stuck or not moving." << G4endl
+    1014                  << "          Track stuck, not moving for "
+    1015                  << fNumberZeroSteps << " steps" << G4endl
+    1016                  << "          in volume -" << motherPhysical->GetName()
+    1017                  << "- at point " << pGlobalpoint
+    1018                  << " (local point " << newLocalPoint << ")" << G4endl
+    1019                  << "          direction: " << pDirection
+    1020                  << " (local direction: " << localDirection << ")." << G4endl
+    1021                  << "          Potential geometry or navigation problem !"
+    1022                  << G4endl
+    1023                  << "          Trying pushing it of " << Step << " mm ...";
+    1024          G4Exception("G4Navigator::ComputeStep()", "GeomNav1002",
+    1025                      JustWarning, message, "Potential overlap in geometry!");
+    1026        }
+    1027 #endif 
+    1028        fPushed = true;
+    1029     }
+
+
+
+
+
+
+
+
 OKG4Mgr alignment with input photons
 ---------------------------------------------
 

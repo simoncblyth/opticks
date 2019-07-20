@@ -61,13 +61,26 @@ CSteppingAction::CSteppingAction(CG4* g4, bool dynamic)
    m_mlib(g4->getMaterialLib()),
    m_recorder(g4->getRecorder()),
    m_steprec(g4->getStepRec()),
+   m_trman(NULL),
+   m_nav(NULL),
    m_steprec_store_count(0)
 { 
 }
 
+/**
+CSteppingAction::postinitialize
+---------------------------------
+
+Called from CG4::postinitialize
+
+m_nav
+    G4Navigator 
+
+
+**/
+
 void CSteppingAction::postinitialize()
 {
-   // called from CG4::postinitialize
     m_material_bridge = m_geometry->getMaterialBridge();
     assert(m_material_bridge);
 
@@ -145,7 +158,13 @@ void CSteppingAction::UserSteppingAction(const G4Step* step)
 }
 
 
+/**
+CSteppingAction::setStep
+-------------------------
 
+For a look into Geant4 ZeroStepping see notes/issues/review_alignment.rst 
+
+**/
 
 bool CSteppingAction::setStep(const G4Step* step)
 {
