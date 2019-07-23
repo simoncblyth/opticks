@@ -410,6 +410,16 @@ void Opticks::dumpProfile(const char* msg, const char* startswith, const char* s
 {
    m_profile->dump(msg, startswith, spacewith, tcut);
 }
+
+
+const char* Opticks::getProfileDir() const
+{
+    return m_profile->getDir(); 
+}
+void Opticks::setProfileDir(const char* dir)
+{
+    m_profile->setDir(dir);
+}
 void Opticks::saveProfile()
 {
    m_profile->save();
@@ -842,16 +852,34 @@ bool Opticks::isPrintIndexLog() const
     return m_cfg->hasOpt("pindexlog") ;
 }
 
+/**
+Opticks::isXAnalytic
+-----------------------
+
+Attempt to switch this on by default causing 11 test fails, so back off for now.
+Need to sort out the testing geometry in opticksdata before can make this move.
+
+See notes/issues/switching-to-xanalytic-as-default-causes-11-test-fails-so-revert.rst
+
+**/
+
 bool Opticks::isXAnalytic() const 
 {
     bool is_xanalytic = m_cfg->hasOpt("xanalytic") ; 
+    /*
     bool is_xtriangle = m_cfg->hasOpt("xtriangle") ; 
     if(is_xanalytic)
     {
         LOG(error) << " --xanalytic is now ON by default and the config option is ignored, use --xtriangle to switch off \"xanalytic\"  " ;   
     } 
     return is_xtriangle == false  ;
+
+    */
+    return is_xanalytic ; 
 }
+
+
+
 
 
 bool Opticks::isXGeometryTriangles() const 
@@ -1839,6 +1867,8 @@ OpticksCfg::m_event_tag "--tag"
 
 **/
 
+const char* Opticks::DEFAULT_PFX = "default_pfx" ; 
+
 void Opticks::defineEventSpec()
 {
     const char* cat = m_cfg->getEventCat(); // expected to be defined for tests and equal to the TESTNAME from bash functions like tboolean-
@@ -1852,6 +1882,7 @@ void Opticks::defineEventSpec()
     const char* pfx = config_pfx ? config_pfx : resource_pfx ;  
     if( !pfx )
     { 
+        pfx = DEFAULT_PFX ; 
         LOG(fatal) 
             << " resource_pfx " << resource_pfx 
             << " config_pfx " << config_pfx 
@@ -1862,7 +1893,7 @@ void Opticks::defineEventSpec()
             << " tag " << tag
             ;
     }
-    assert( pfx ); 
+    //assert( pfx ); 
 
 
     m_spec  = new OpticksEventSpec(pfx, typ,  tag, udet, cat );
@@ -2289,7 +2320,9 @@ void Opticks::postgeometry()
 {
     configureDomains();
 
-    m_profile->setDir(getEventFold());
+
+    setProfileDir(getEventFold());
+
 }
 
 

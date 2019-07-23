@@ -725,7 +725,9 @@ opticks-prepare-installcache()
     cudarap-
     cudarap-prepare-installcache
 
-    OpticksPrepareInstallCache_OKC
+    #OpticksPrepareInstallCache_OKC
+    OpticksPrepareInstallCacheTest '$INSTALLCACHE_DIR/OKC'
+
 }
 
 opticks-check-installcache()

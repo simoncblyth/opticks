@@ -99,6 +99,7 @@ class OKCORE_API Opticks {
    public:
        static const plog::Severity LEVEL ;  
        static const float F_SPEED_OF_LIGHT ;  // mm/ns
+       static const char* DEFAULT_PFX ; 
    public:
    public:
        static BPropNames* G_MATERIAL_NAMES ;
@@ -160,6 +161,8 @@ class OKCORE_API Opticks {
        //template <typename T> void profile(T label);
        void profile(const char* label);
        void dumpProfile(const char* msg="Opticks::dumpProfile", const char* startswith=NULL, const char* spacewith=NULL, double tcut=0 );
+       void setProfileDir(const char* dir);
+       const char* getProfileDir() const ;   
        void saveProfile();
 
        unsigned accumulateAdd(const char* label); 

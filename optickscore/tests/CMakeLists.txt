@@ -25,8 +25,9 @@ set(TEST_SOURCES
     OpticksActionControlTest.cc
 
     OpticksProfileTest.cc
+    OK_PROFILE_Test.cc
     OpticksIDPATH.cc
-    OpticksPrepareInstallCache_OKC.cc
+    OpticksPrepareInstallCacheTest.cc
     OpticksAnaTest.cc
     OpticksDbgTest.cc
     OpticksSwitchesTest.cc
