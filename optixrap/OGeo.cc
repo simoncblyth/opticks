@@ -696,7 +696,18 @@ optix::Geometry OGeo::makeAnalyticGeometry(GMergedMesh* mm, unsigned lod)
 
     optix::Geometry geometry = m_context->createGeometry();
 
-    assert( numPrim >= 1 );
+    bool someprim = numPrim >= 1 ; 
+    if(!someprim)
+        LOG(fatal) 
+            << " someprim fails " 
+            << " mm.index " << mm->getIndex()
+            << " numPrim " << numPrim 
+            << " numPart " << numPart 
+            << " numTran " << numTran 
+            << " numPlan " << numPlan 
+            ;
+
+    assert( someprim );
     geometry->setPrimitiveCount( lod > 0 ? 1 : numPrim );  // lazy lod, dont change buffers, just ignore all but the 1st prim for lod > 0
 
     geometry["primitive_count"]->setUint( numPrim );       // needed GPU side, for instanced offset into buffers 

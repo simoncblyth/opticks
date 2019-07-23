@@ -103,6 +103,9 @@ const unsigned BTimesTable::WIDTH = 15 ;
 const unsigned BTimesTable::PRIME = 0 ; 
 
 
+
+
+
 void BTimesTable::makeLines()
 {
     unsigned wid = WIDTH ; 
@@ -129,7 +132,7 @@ void BTimesTable::makeLines()
             else
                 assert(entry.first.compare(rowname) == 0) ;
 
-             ss << std::fixed << std::setw(wid) << std::setprecision(4) << entry.second ;
+             ss << std::fixed << std::setw(wid) << std::setprecision(10) << entry.second ;
 
             if(j==PRIME) first = entry.second ;   // 1st column only
         }

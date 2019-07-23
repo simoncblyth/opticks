@@ -100,7 +100,7 @@ void OpticksProfile::setDir(const char* dir)
     m_dir = strdup(dir);
 }
 
-const char* OpticksProfile::getDir()
+const char* OpticksProfile::getDir() const
 {
     return m_dir ; 
 }
@@ -179,7 +179,7 @@ TODO: minimize whats done in here
 
 void OpticksProfile::stamp(const char* label, int count)
 {
-   setT(BTimeStamp::RealTime()) ;
+   setT(BTimeStamp::RealTime2()) ;
    setVM(SProc::VirtualMemoryUsageMB()) ;
    m_num_stamp += 1 ; 
 

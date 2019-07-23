@@ -11,5 +11,14 @@ double BTimeStamp::RealTime()
     return d.total_nanoseconds()/unit ;    
 }
 
+double BTimeStamp::RealTime2()
+{
+    boost::posix_time::ptime now = boost::posix_time::microsec_clock::local_time();
+    long microseconds = now.time_of_day().total_microseconds() ;  
+    double sec = double(microseconds)/1000000.0;
+    return sec ;    
+}
+
+
 
 

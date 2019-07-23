@@ -113,7 +113,7 @@ int main(int argc, char** argv)
  
     Evt* evt0 = new Evt(0) ;
 
-    optix::Buffer m_genstep_buffer = ctx->createBuffer<float>( evt0->genstep, "genstep");
+    optix::Buffer m_genstep_buffer = ctx->createBuffer<float>( evt0->genstep, "gensteps");
     context["genstep_buffer"]->set( m_genstep_buffer );
 
     optix::Buffer m_photon_buffer = ctx->createBuffer<float>( evt0->photon, "photon");

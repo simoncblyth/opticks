@@ -211,6 +211,11 @@ std::string BFile::ResolveKey( const char* key )
         } 
         LOG(verbose) << "replacing $OPTICKS_EVENT_BASE  with " << evalue ; 
     }
+    else if(strcmp(key,"INSTALLCACHE_DIR")==0) 
+    {
+        const char* installcache_dir = BResource::GetDir("installcache_dir") ; 
+        evalue = installcache_dir ; 
+    }
     else
     {
         evalue = key ; 

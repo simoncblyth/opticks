@@ -462,7 +462,7 @@ cudarap-env(){
 
 
 cudarap-idir(){ echo $(opticks-idir); }
-cudarap-bdir(){ echo $(opticks-bdir)/$(cudarap-rel) ; }
+cudarap-bdir(){ echo $(opticks-bdir)/cudarap ; }
 cudarap-sdir(){ echo $(opticks-home)/cudarap ; }
 cudarap-tdir(){ echo $(opticks-home)/cudarap/tests ; }
 cudarap-ibin(){ echo $(cudarap-idir)/lib/cuRANDWrapperTest ; }

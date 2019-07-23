@@ -763,6 +763,8 @@ void OContext::InitBufferNames(std::vector<std::string>& names)
     names.push_back("source");
     names.push_back("record");
     names.push_back("sequence");
+
+    names.push_back("demo");
 }
 
 void OContext::InitDebugBufferNames(std::vector<std::string>& names)

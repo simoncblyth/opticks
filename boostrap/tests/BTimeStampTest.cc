@@ -93,7 +93,32 @@ void test_counting_2()
 }
 
 
-
+void test_quickfire()
+{
+    std::vector<double> times(1000000); 
+    std::vector<double> times2(1000000); 
+    for(unsigned i=0 ; i < times.size() ; i++ ) 
+    {
+        times[i] = BTimeStamp::RealTime() ;
+        times2[i] = BTimeStamp::RealTime2() ;
+    }
+    for(unsigned i=1 ; i < times.size() ; i++ )
+    {
+        if(i % 1000 == 0) 
+        {
+            std::cout 
+                << " i " << std::setw(9) << i 
+                << " t " << std::fixed << std::setprecision(10) << times[i] 
+                << " t2 " << std::fixed << std::setprecision(10) << times2[i] 
+                << " t(i)-t(0) " << std::fixed << std::setprecision(10) << times[i] - times[0]  
+                << " t2(i)-t2(0) " << std::fixed << std::setprecision(10) << times2[i] - times2[0]  
+                << " t(i)-t(i-1) " << std::fixed << std::setprecision(10) << times[i] - times[i-1]  
+                << " t2(i)-t2(i-1) " << std::fixed << std::setprecision(10) << times2[i] - times2[i-1]  
+                << std::endl 
+                ; 
+        }
+    }  
+}
 
 
 
@@ -104,7 +129,8 @@ int main(int argc, char** argv)
 
     //test_timing_1s(); 
     //test_counting(); 
-    test_counting_2(); 
+    //test_counting_2(); 
+    test_quickfire(); 
 
     return 0 ; 
 }

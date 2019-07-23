@@ -1727,10 +1727,27 @@ void OpticksEvent::saveReport()
     std::string tagdir = getTagDir();
     saveReport(tagdir.c_str());
 
+
     std::string anno = getTimeStamp() ;
     std::string tagdir_ts = getTagDir(anno.c_str());
     saveReport(tagdir_ts.c_str());
 }
+
+
+void OpticksEvent::saveTimes()
+{
+    std::string tagdir = getTagDir();
+    saveTimes(tagdir.c_str());
+
+    std::string anno = getTimeStamp() ;
+    std::string tagdir_ts = getTagDir(anno.c_str());
+    saveTimes(tagdir_ts.c_str());
+}
+
+
+
+
+
 
 
 
@@ -1812,11 +1829,9 @@ void OpticksEvent::saveReport(const char* dir)
 
     m_profile->save(dir); 
     m_report->save(dir);  
-    m_launch_times->save(dir);
-    m_prelaunch_times->save(dir);
-
     LOG(LEVEL) << "] " << dir  ; 
 }
+
 
 void OpticksEvent::loadReport()
 {
@@ -1826,11 +1841,28 @@ void OpticksEvent::loadReport()
 
     m_profile = OpticksProfile::Load( tagdir );  
     m_report = Report::load(tagdir );
+}
+
+
+
+void OpticksEvent::saveTimes(const char* dir)
+{
+    LOG(LEVEL) << "[ " << dir  ; 
+    m_launch_times->save(dir);
+    m_prelaunch_times->save(dir);
+    LOG(LEVEL) << "] " << dir  ; 
+}
+void OpticksEvent::loadTimes()
+{
+    std::string tagdir_ = getTagDir();
+    const char* tagdir = tagdir_.c_str();  
 
     m_launch_times = BTimes::Load(LAUNCH_LABEL, tagdir );
     m_prelaunch_times = BTimes::Load(PRELAUNCH_LABEL, tagdir );
-
 }
+
+
+
 
 void OpticksEvent::setFakeNopstepPath(const char* path)
 {

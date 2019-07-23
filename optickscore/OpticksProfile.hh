@@ -21,6 +21,11 @@ is instanciated with it.
 
 Recording time and virtual memory as various points during Opticks running.
 
+Ideas to improve stopwatch 
+
+* https://codereview.stackexchange.com/questions/196245/extremely-simple-timer-class-in-c
+
+
 
 **/
 
@@ -77,7 +82,7 @@ class OKCORE_API OpticksProfile
 
 
        void setDir(const char* dir);
-       const char* getDir();
+       const char* getDir() const ;
        const char* getName();
        std::string getPath();
 

@@ -43,10 +43,22 @@ std::pair<std::string, double>&  BTimes::getEntry(unsigned int i)
     return m_times[i] ;
 }
 
+
+/**
+BTimes::add
+---------------
+
+Collects into m_times vector of (string, double) pairs.
+
+**/
+
+
 void BTimes::add(const char* name_, double t )
 {
     m_times.push_back(SD(name_, t));
 }
+
+
 
 void BTimes::add(const char* name_, int idx, double t )
 {

@@ -11,6 +11,41 @@ Context
 Opticks photon scanning performance begs the question : what are the overheads ?
 
 
+
+
+
+
+1./256. = 0.00390625
+------------------------
+
+::
+
+    In [8]: np.arange(10, dtype=np.float64)/256.
+    Out[8]: 
+    array([0.        , 0.00390625, 0.0078125 , 0.01171875, 0.015625  ,
+           0.01953125, 0.0234375 , 0.02734375, 0.03125   , 0.03515625])
+
+
+::
+
+     06 double BTimeStamp::RealTime()
+      7 {
+      8     ptime t(microsec_clock::universal_time());
+      9     time_duration d = t.time_of_day();
+     10     double unit = 1e9 ;
+     11     return d.total_nanoseconds()/unit ;
+     12 }
+
+
+
+* https://stackoverflow.com/questions/6749621/how-to-create-a-high-resolution-timer-in-linux-to-measure-program-performance
+
+
+* https://www.boost.org/doc/libs/1_43_0/doc/html/date_time/posix_time.html
+
+
+
+
 Approach, "--multievent 10 --nog4propagate" runs of 1M photons each
 -----------------------------------------------------------------------
 
@@ -18,7 +53,7 @@ Approach, "--multievent 10 --nog4propagate" runs of 1M photons each
 
      tmp ; rm -rf scan-ph ; OpticksProfile=ERROR ts box --pfx scan-ph --cat cvd_1_rtx_1 --generateoverride -1 --compute --production --cvd 1 --rtx 1 --multievent 10 --nog4propagate
 
-     ip profile.py --tag 0 --cat cvd_1_rtx_1
+     ip profile.py --tag 0 --cat cvd_1_rtx_1_1M
 
 DONE
 -----

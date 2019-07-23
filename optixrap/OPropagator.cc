@@ -165,6 +165,16 @@ void OPropagator::prelaunch()
     prelaunch_times->dump("OPropagator::prelaunch");
 }
 
+
+/**
+OPropagator::launch
+----------------------
+
+Launch times may be collected into BTimes instance held by OpticksEvent.
+
+
+**/
+
 void OPropagator::launch()
 {
     if(m_prelaunch == false) prelaunch();

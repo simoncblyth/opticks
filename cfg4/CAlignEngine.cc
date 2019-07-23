@@ -54,7 +54,7 @@ CAlignEngine::~CAlignEngine()
 
 CAlignEngine::CAlignEngine(const char* ssdir)
     :
-    m_seq_path("$TMP/TRngBufTest.npy"),
+    m_seq_path("$TMP/TRngBufTest_0.npy"),
     m_seq(NPY<double>::load(m_seq_path)),
     m_seq_values(m_seq ? m_seq->getValues() : NULL),
     m_seq_ni(m_seq ? m_seq->getShape(0) : 0 ),

@@ -208,8 +208,11 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec
        void makeReport(bool verbose=false);
        void saveReport();
        void loadReport();
+       void saveTimes();
+       void loadTimes();
    private:
        void saveReport(const char* dir);
+       void saveTimes(const char* dir);
    public:
        // G4 related qtys used by cfg4- when OpticksEvent used to store G4 propagations
        void setNumG4Event(unsigned int n);
