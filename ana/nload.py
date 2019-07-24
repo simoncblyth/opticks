@@ -118,9 +118,9 @@ def tagdir_(det, typ, tag, pfx=".", layout=2):
         assert 0, "bad layout"
     pass 
 
-    log.debug("tagdir_ tmpl %s " % tmpl )
     xdir = os.path.expandvars(tmpl)
     while xdir.endswith("/"):xdir = xdir[:-1]
+    log.debug("tagdir_ tmpl %s xdir %s " % (tmpl, xdir) )
 
     if not os.path.exists(xdir):
         log.error("NON EXISTING tagdir : %s  expanded from %s " % (xdir, DEFAULT_DIR_TEMPLATE))

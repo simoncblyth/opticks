@@ -57,6 +57,7 @@ class LaunchTimes(object):
     def __init__(self, base, tag):
         path = os.path.join(base, self.NAME)
         if not os.path.exists(path):
+            ini = None
             propagate = -99.
             log.info("path %s does not exist " % path )
         else:  

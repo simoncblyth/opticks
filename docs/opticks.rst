@@ -38,6 +38,13 @@ Example `~/.opticks_setup`:
     ## picking a geometry
 
 
+    export TMP=/home/blyth/local/opticks/tmp
+    tmp(){ cd $TMP ; pwd ;  }
+    export OPTICKS_EVENT_BASE=$TMP
+    ## define a directory in which to store test events, used by integration tests 
+
+
+
 Envvars:
 
 LOCAL_BASE
@@ -57,6 +64,23 @@ OPTICKS_KEY
 PATH
     Opticks executables including more than 400 tests are installed into $LOCAL_BASE/opticks/lib, 
     setting the PATH as indicated gives easy access to these as well as many scripts
+
+TMP
+    when undefined a default directory of /tmp/username/opticks is used as scratch space by unit tests 
+
+OPTICKS_EVENT_BASE
+    The OPTICKS_EVENT_BASE envvar is used by both C++ boostrap/BOpticksEvent.cc and 
+    python ana/nload.py to define a directory beneath with events are stored.
+    When undefined this defaults to the TMP envvar value or its default.
+
+    Some integration tests write photon propagation OpticksEvents which are loaded into
+    python for analysis by scripts directly invoked from the C++ executable.  
+    OpticksEvents comprise several .npy arrays  necessitating the NumPy python module for loading. 
+
+
+
+
+
     
 
 The most important lines of the setup are::

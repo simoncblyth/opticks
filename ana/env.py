@@ -110,6 +110,7 @@ class OpticksEnv(object):
         else:
             self.direct_init()
         pass
+        self.common_init()
 
 
     def direct_init(self): 
@@ -140,9 +141,14 @@ class OpticksEnv(object):
         self.setdefault("OPTICKS_INSTALL_PREFIX",  self.install_prefix)
         self.setdefault("OPTICKS_INSTALL_CACHE",   os.path.join(self.install_prefix, "installcache"))
 
-        #self.setdefault("OPTICKS_EVENT_BASE",      os.path.join(keydir, "source" ))   
-        self.setdefault("OPTICKS_EVENT_BASE",       keydir )
 
+    def _get_TMP(self):
+        return os.environ.get("TMP", os.path.expandvars("/tmp/$USER/opticks"))
+    TMP = property(_get_TMP)
+
+    def common_init(self): 
+        self.setdefault("OPTICKS_EVENT_BASE",      self.TMP )
+        self.setdefault("TMP",                     self.TMP )
 
     def legacy_init(self): 
         assert os.environ.has_key("IDPATH"), "IDPATH envvar is required, for legacy running"
@@ -189,9 +195,7 @@ class OpticksEnv(object):
 
         self.setdefault("OPTICKS_DETECTOR",        self._detector())
         self.setdefault("OPTICKS_DETECTOR_DIR",    self._detector_dir())
-        self.setdefault("OPTICKS_EVENT_BASE",      os.path.expandvars("/tmp/$USER/opticks") )
         self.setdefault("OPTICKS_QUERY",           "")
-        self.setdefault("TMP",                     os.path.expandvars("/tmp/$USER/opticks") )
 
     def bash_export(self, path="$TMP/opticks_env.bash"):
         lines = []
