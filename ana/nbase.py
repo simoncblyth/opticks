@@ -262,6 +262,7 @@ def test_count_unique_(fn, a):
 
 def test_count_unique():
 
+    log.info("test_count_unique")
     vals=[0xfedcba9876543210,0xffffffffffffffff]
 
     msk_ = lambda n:(1 << 4*n) - 1 
@@ -281,14 +282,50 @@ def test_chi2():
     c2,c2n,c2c = chi2(a,b, cut=30)
 
 
+def test_count_unique_2():
+    log.info("test_count_unique_2")
+    t = np.array( [1,2,2,3,3,3,4,4,4,4,5,5,5,5,5], dtype=np.uint32 )
+    x = np.array( [[1,1],[2,2],[3,3],[4,4], [5,5]], dtype=np.uint64 )
+
+    r1 = count_unique( t )
+    assert np.all( r1 == x )
+
+    r2 = count_unique_old( t )
+    assert np.all( r2 == x )
+
+
+def test_count_unique_sorted():
+    log.info("test_count_unique_sorted")
+    t = np.array( [1,2,2,3,3,3,4,4,4,4,5,5,5,5,5], dtype=np.uint32 )
+    y = np.array( [[5,5],[4,4],[3,3],[2,2], [1,1]], dtype=np.uint64 )
+
+    r = count_unique_sorted( t )
+    assert np.all( r == y )
+
+
+def test_count_unique_sorted_empty():
+    log.info("test_count_unique_sorted_empty")
+    t = np.array( [], dtype=np.uint32 )
+    r = count_unique_sorted( t )
+
+    u = np.array( [], dtype=np.uint64 )
+    c = np.array( [], dtype=np.uint64 )
+    x = np.vstack( (u,c) ).T 
+
+    assert np.all( r == x )
 
 
 
 if __name__ == '__main__':
 
     logging.basicConfig(level=logging.INFO)
+    log.info("np.__version__ %s " % np.__version__ )
+
     #test_count_unique()
     #test_chi2()
+    test_count_unique_2()
+    test_count_unique_sorted()
+    test_count_unique_sorted_empty()
 
 
 
