@@ -342,8 +342,9 @@ class AB(object):
 
 
     def load_u(self):
-        upath = "/tmp/blyth/opticks/TRngBufTest.npy"
-        u = np_load(upath).astype(np.float32)
+        upath = "$TMP/TRngBufTest_0.npy"
+        u = np_load(upath)
+        u = None if u is None else u.astype(np.float32)
         self.u = u 
 
 

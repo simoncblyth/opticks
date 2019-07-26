@@ -358,7 +358,7 @@ std::string OpticksProfile::brief()
 {
    std::stringstream ss ;
    ss
-       << " dir " << m_dir 
+       << " dir " << ( m_dir ? m_dir : "-" ) 
        << " name " << m_name
        << " num_stamp " << m_num_stamp 
        ; 

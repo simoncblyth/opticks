@@ -59,17 +59,27 @@ def count_unique_truncating(vals):
     return np.vstack((uniq, np.bincount(bins))).T
 
 def count_unique_old(vals):
+    """
+    """ 
     uniq = np.unique(vals)
     bins = uniq.searchsorted(vals)
     cnts = np.bincount(bins)
     return np.vstack((uniq, cnts.astype(np.uint64))).T
 
-def count_unique(vals):
+def count_unique_new(vals):
     """
-    np.unique return_counts option requires at lease numpy 1.9 
+    np.unique return_counts option requires at least numpy 1.9 
     """
     uniq, cnts = np.unique(vals, return_counts=True)
     return np.vstack((uniq, cnts.astype(np.uint64))).T 
+
+def count_unique(vals):
+    try:
+        cu = count_unique_new(vals)
+    except TypeError:
+        cu = count_unique_old(vals)
+    pass
+    return cu 
 
 
 def unique2D_subarray(a):
@@ -96,10 +106,7 @@ def array_digest(a):
 
 def count_unique_sorted(vals):
     vals = vals.astype(np.uint64)
-    try:
-        cu = count_unique(vals)
-    except TypeError:
-        cu = count_unique_old(vals)
+    cu = count_unique(vals) 
     cu = cu[np.argsort(cu[:,1])[::-1]]  # descending frequency order
     return cu.astype(np.uint64)
 
@@ -253,11 +260,8 @@ def test_count_unique_(fn, a):
          msg = "OK" 
     else:
          msg = "FAIL"
-
-
+    pass
     log.info("test_count_unique_ %16x %16x %s  %s %s  " % (a, a_, msg, a, a_) )
-
-        
 
 
 def test_count_unique():
@@ -270,7 +274,7 @@ def test_count_unique():
         msk = msk_(n)    
         vals.append(msk)
 
-    for fn in [count_unique, count_unique_old, count_unique_truncating]:
+    for fn in [count_unique_new, count_unique_old, count_unique_truncating]:
         log.info(fn.__name__)
         map(lambda v:test_count_unique_(fn, v), vals)
 
@@ -289,9 +293,6 @@ def test_count_unique_2():
 
     r1 = count_unique( t )
     assert np.all( r1 == x )
-
-    r2 = count_unique_old( t )
-    assert np.all( r2 == x )
 
 
 def test_count_unique_sorted():

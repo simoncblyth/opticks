@@ -78,7 +78,7 @@ class OK(argparse.Namespace):
 def opticks_args(**kwa):
 
     oad_key = "OPTICKS_ANA_DEFAULTS"
-    oad = os.environ.get(oad_key,"det=g4live,cat=g4live,src=natural,tag=1,pfx=.")
+    oad = os.environ.get(oad_key,"det=g4live,cat=g4live,src=torch,tag=1,pfx=.")
     defaults = dict(map(lambda ekv:ekv.split("="), oad.split(","))) 
     lv = os.environ.get("LV", None)
 
