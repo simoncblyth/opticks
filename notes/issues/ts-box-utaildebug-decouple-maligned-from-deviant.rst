@@ -9,7 +9,7 @@ Context
 
 
 
-TODO : extend random alignment checking beyond history match, also do a u match at tail ?
+DONE : added --utaildebug which records an extra random following propagation
 -------------------------------------------------------------------------------------------
 
 Currently random mis-alignment judgement is based entirely on seqhis history of photons.  
@@ -26,6 +26,91 @@ Conclusion
 ------------
 
 * looks like utaildebug can be helpful, after getting the "tail" consumption to match 
+
+
+
+generate.cu
+--------------
+
+::
+
+    625     if( utaildebug )   // --utaildebug    see notes/issues/ts-box-utaildebug-decouple-maligned-from-deviant.rst
+    626     {
+    627         //p.weight = curand_uniform(&rng) ;
+    628         p.flags.f.y = curand_uniform(&rng) ;
+    629     }
+    630 
+    631     // breakers and maxers saved here
+    632     psave(p, photon_buffer, photon_offset );
+
+
+propagate.h::
+
+    103     if (absorption_distance <= scattering_distance)
+    104     {
+    105         if (absorption_distance <= s.distance_to_boundary)
+    106         {
+    107             p.time += absorption_distance/speed ;
+    108             p.position += absorption_distance*p.direction;
+    109 
+    110             float uniform_sample_reemit = curand_uniform(&rng);
+    111             if (uniform_sample_reemit < s.material1.w)                       // .w:reemission_prob
+    112             {
+    113                 // no materialIndex input to reemission_lookup as both scintillators share same CDF 
+    114                 // non-scintillators have zero reemission_prob
+    115                 p.wavelength = reemission_lookup(curand_uniform(&rng));
+    116                 p.direction = uniform_sphere(&rng);
+    117                 p.polarization = normalize(cross(uniform_sphere(&rng), p.direction));
+    118                 p.flags.i.x = 0 ;   // no-boundary-yet for new direction
+    119 
+    120                 s.flag = BULK_REEMIT ;
+    121                 return CONTINUE;
+    122             }
+    123             else
+    124             {
+    125                 s.flag = BULK_ABSORB ;
+    126                 return BREAK;
+    127             }
+
+
+modify::
+
+    103     if (absorption_distance <= scattering_distance)
+    104     {
+    105         if (absorption_distance <= s.distance_to_boundary)
+    106         {
+    107             p.time += absorption_distance/speed ;
+    108             p.position += absorption_distance*p.direction;
+    109 
+    110             const float& reemission_prob = s.material1.w ;
+    111             float u_reemit = reemission_prob == 0.f ? 2.f : curand_uniform(&rng);  // avoid consumption at absorption when not scintillator
+    112             
+    113             if (u_reemit < reemission_prob)
+    114             {   
+    115                 // no materialIndex input to reemission_lookup as both scintillators share same CDF 
+    116                 // non-scintillators have zero reemission_prob
+    117                 p.wavelength = reemission_lookup(curand_uniform(&rng));
+    118                 p.direction = uniform_sphere(&rng);
+    119                 p.polarization = normalize(cross(uniform_sphere(&rng), p.direction));
+    120                 p.flags.i.x = 0 ;   // no-boundary-yet for new direction
+    121                 
+    122                 s.flag = BULK_REEMIT ;
+    123                 return CONTINUE;
+    124             }                   
+    125             else
+    126             {   
+    127                 s.flag = BULK_ABSORB ;
+    128                 return BREAK;
+    129             }
+    130         }
+    131         //  otherwise sail to boundary  
+    132     }
+    133     else
+
+
+
+
+
 
 
 
@@ -257,6 +342,9 @@ Looks like utail mismatch for truncation and absorption::
 
 
 * all ending with "AB" : Opticks (A) consumes 1 more than G4 (B)
+
+  * the extra was u_reemit which was being done even when reemission_prob for material was zero  
+
 * all the G4 truncated consuming more (5~13), some variations by 3/4 even within same history 
 
 

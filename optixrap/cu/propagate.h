@@ -107,8 +107,10 @@ __device__ int propagate_to_boundary( Photon& p, State& s, curandState &rng)
             p.time += absorption_distance/speed ;   
             p.position += absorption_distance*p.direction;
 
-            float uniform_sample_reemit = curand_uniform(&rng);
-            if (uniform_sample_reemit < s.material1.w)                       // .w:reemission_prob
+            const float& reemission_prob = s.material1.w ; 
+            float u_reemit = reemission_prob == 0.f ? 2.f : curand_uniform(&rng);  // avoid consumption at absorption when not scintillator
+
+            if (u_reemit < reemission_prob)    
             {
                 // no materialIndex input to reemission_lookup as both scintillators share same CDF 
                 // non-scintillators have zero reemission_prob
@@ -136,7 +138,7 @@ __device__ int propagate_to_boundary( Photon& p, State& s, curandState &rng)
             p.position += scattering_distance*p.direction;
 
             //rayleigh_scatter(p, rng);
-            rayleigh_scatter_align(p, rng);
+            rayleigh_scatter_align(p, rng);   // consumes 5u at each turn of the loop
 
             s.flag = BULK_SCATTER;
             p.flags.i.x = 0 ;  // no-boundary-yet for new direction
