@@ -20,6 +20,7 @@
 #include "CStep.hh"
 #include "CAction.hh"
 
+#include "CRandomEngine.hh"
 #include "CBoundaryProcess.hh"
 #include "CRecorder.h"
 
@@ -57,6 +58,7 @@ unsigned long long CRecorder::getSeqMat() const
 CRecorder::CRecorder(CG4* g4, CGeometry* geometry, bool dynamic) 
     :
     m_g4(g4),
+    m_engine(g4->getRandomEngine()),
     m_ctx(g4->getCtx()),
     m_ok(g4->getOpticks()),
     m_recpoi(m_ok->isRecPoi()),

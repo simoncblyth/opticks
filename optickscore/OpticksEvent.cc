@@ -1378,6 +1378,11 @@ rpos
    with norm=true, so within the shaders rpos values are mapped to -1.f:1.f  
 
 
+rflq
+    
+
+
+
 
 **/
 
@@ -1391,10 +1396,10 @@ void OpticksEvent::setRecordData(NPY<short>* record_data)
     ViewNPY* rpol = new ViewNPY("rpol",m_record_data,0,1,0 ,4,ViewNPY::UNSIGNED_BYTE  ,true,  false, 2);   
 
     ViewNPY* rflg = new ViewNPY("rflg",m_record_data,0,1,2 ,2,ViewNPY::UNSIGNED_SHORT ,false, true,  2);   
-    // NB k=2, value offset from which to start accessing data to fill the shaders uvec4 x y (z, w)  
+    // NB l=2, value offset from which to start accessing data to fill the shaders uvec4 x y (z, w)  
 
     ViewNPY* rflq = new ViewNPY("rflq",m_record_data,0,1,2 ,4,ViewNPY::UNSIGNED_BYTE  ,false, true,  2);   
-    // NB k=2 again : try a UBYTE view of the same data for access to boundary,m1,history-hi,history-lo
+    // NB l=2 again : UBYTE view of the same data for access to  m1,m2,boundary,flag
 
     m_record_attr = new MultiViewNPY("record_attr");
 

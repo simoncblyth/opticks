@@ -108,7 +108,7 @@ class CFG4_API CRandomEngine : public CRandomListener, public CLHEP::HepRandomEn
         double flat() ;  
         double flat_instrumented(const char* file, int line) ;  
         void flatArray (const int size, double* vect);
-
+        int    getCursor() const ; 
     public:
         void setRandomSequence(double* s, int n);
         int  findIndexOfValue(double s, double tolerance=1e-6) ; 
@@ -167,6 +167,8 @@ class CFG4_API CRandomEngine : public CRandomListener, public CLHEP::HepRandomEn
         unsigned            m_setupTranche_acc ;  
  
         std::vector<unsigned> m_jump_photons ; 
+        std::vector<int>      m_step_cursors ; 
+      
 
     private:
         void setSeed(long , int) ; 

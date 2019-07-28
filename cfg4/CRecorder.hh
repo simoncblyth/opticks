@@ -21,6 +21,7 @@ struct CG4Ctx ;
 class CDebug ; 
 class CRec ; 
 class CGeometry ; 
+class CRandomEngine ; 
 class CMaterialBridge ; 
 class CWriter ; 
 class CStp ; 
@@ -147,6 +148,7 @@ class CFG4_API CRecorder {
         std::string desc() const ; 
    private:
         CG4*               m_g4; 
+        CRandomEngine*     m_engine ; 
         CG4Ctx&            m_ctx; 
         Opticks*           m_ok; 
         bool               m_recpoi ; 

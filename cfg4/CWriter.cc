@@ -117,12 +117,21 @@ void CWriter::initEvent(OpticksEvent* evt)  // called by CRecorder::initEvent/CG
 }
 
 
-        
+/**
+CWriter::writeStepPoint
+------------------------
+   
+Invoked by CRecorder::RecordStepPoint
 
-// invoked by CRecorder::RecordStepPoint
+* writes point-by-point records
+* when done writes final photons
+
+
+**/     
+
 bool CWriter::writeStepPoint(const G4StepPoint* point, unsigned flag, unsigned material )
 {
-    m_photon.add(flag, material);
+    m_photon.add(flag, material);  // building seqhis seqmat slot by slot 
 
     bool hard_truncate = m_photon.is_hard_truncate();
 

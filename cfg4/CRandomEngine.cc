@@ -405,6 +405,14 @@ double CRandomEngine::flat()
     return m_flat ; 
 }
 
+
+int CRandomEngine::getCursor() const 
+{
+    return m_cursor ; 
+}
+
+
+
 /*
 __device__ float 
 curand_uniform (curandState_t *state)
@@ -432,6 +440,16 @@ double CRandomEngine::_peek(int offset) const
     assert( in_range );
     return m_sequence[idx] ; 
 }
+
+
+/**
+CRandomEngine::_flat
+----------------------
+
+Returns random double from the canned m_sequence and increments the cursor, 
+asserts that are in range.
+
+**/
 
 double CRandomEngine::_flat() 
 {
@@ -556,6 +574,9 @@ void CRandomEngine::postStep()
     }
 
     m_current_step_flat_count = 0 ;   // (*lldb*) postStep 
+
+    m_step_cursors.push_back(m_cursor) ; 
+
 
     if( m_locseq )
     {
