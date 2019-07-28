@@ -929,7 +929,7 @@ args = opticks_main(csgname="$(tboolean-proxy-name)", autoemitconfig=autoemitcon
 # 0x3f all 6 
 
 #emitconfig = "photons:10000,wavelength:380,time:0.0,posdelta:0.1,sheetmask:0x1,umin:0.35,umax:0.65,vmin:0.35,vmax:0.65" 
-emitconfig = "photons:10000,wavelength:380,time:0.0,posdelta:0.1,sheetmask:0x1,umin:0.45,umax:0.45,vmin:0.45,vmax:0.45" 
+emitconfig = "photons:10000,wavelength:380,time:0.0,posdelta:0.1,sheetmask:0x1,umin:0.45,umax:0.55,vmin:0.45,vmax:0.55" 
 
 CSG.kwa = dict(poly="IM",resolution=20, verbosity=0, ctrl=0, containerscale=3.0, emitconfig=emitconfig  )
 

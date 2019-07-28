@@ -1,4 +1,5 @@
 #include <sstream>
+
 #include "CFG4_BODY.hh"
 
 // okc-
@@ -61,8 +62,8 @@ CRecorder::CRecorder(CG4* g4, CGeometry* geometry, bool dynamic)
     m_engine(g4->getRandomEngine()),
     m_ctx(g4->getCtx()),
     m_ok(g4->getOpticks()),
-    m_recpoi(m_ok->isRecPoi()),
-    m_reccf(m_ok->isRecCf()),
+    m_recpoi(m_ok->isRecPoi()),   // --recpoi
+    m_reccf(m_ok->isRecCf()),     // --reccf
     m_state(m_ctx),
     m_photon(m_ctx, m_state),
 
@@ -79,8 +80,25 @@ CRecorder::CRecorder(CG4* g4, CGeometry* geometry, bool dynamic)
 
     //m_postTrack_acc(m_ok->accumulateAdd("CRecorder::postTrack"))
 {   
-    LOG(LEVEL) << " " << ( m_dynamic ? "DYNAMIC" : "STATIC" ) ;
+    LOG(LEVEL) << brief() ;
 }
+
+
+
+std::string CRecorder::brief() const 
+{
+    std::stringstream ss ; 
+    ss 
+       << " m_recpoi " << m_recpoi
+       << " m_reccf " << m_reccf
+       << " m_dbg " << ( m_dbg ? "Y" : "N" ) 
+       << ( m_dynamic ? " DYNAMIC " : " STATIC " )
+       ;
+   return ss.str();
+}
+
+
+
 
 void CRecorder::postinitialize()
 {
@@ -91,15 +109,40 @@ void CRecorder::postinitialize()
     if(m_dbg) m_dbg->setMaterialBridge( m_material_bridge );
 }
 
+/**
+CRecorder::initEvent
+----------------------
 
-void CRecorder::initEvent(OpticksEvent* evt)  // called by CG4::initEvent
+Invoked by CG4::initEvent
+
+**/
+
+
+void CRecorder::initEvent(OpticksEvent* evt)
 {
     assert(evt);
     m_writer->initEvent(evt);
     m_crec->initEvent(evt);
 }
 
-void CRecorder::postTrack() // invoked from CTrackingAction::PostUserTrackingAction
+
+/**
+CRecorder::postTrack
+------------------------
+
+Invoked by CTrackingAction::PostUserTrackingAction
+
+--recpoi
+     not the default, has some truncation differences with --recstp  
+     in principal it is more efficent : as it makes decision at collection 
+
+--recstp 
+     default
+     unavoidably stores loads of StepTooSmall steps which are subsequently chucked
+    
+**/
+
+void CRecorder::postTrack() 
 {
     //m_ok->accumulateStart(m_postTrack_acc);  
 
@@ -107,39 +150,14 @@ void CRecorder::postTrack() // invoked from CTrackingAction::PostUserTrackingAct
 
     if(m_ctx._dbgrec) LOG(info) << "CRecorder::postTrack" ; 
 
-    if(m_recpoi)
+    if(m_recpoi)  // --recpoi 
     {
-        postTrackWritePoints();  // experimental alt 
-
-        if(m_reccf)
-        {
-            CPhoton pp(m_photon); 
-
-            m_writer->setEnabled(false);
-
-            m_photon.clear();
-            m_state.clear(); 
-            postTrackWriteSteps();
-
-            m_writer->setEnabled(true);
-
-            CPhoton ps(m_photon); 
-
-            if(ps._seqhis != pp._seqhis)
-            {
-                 LOG(info) << m_ctx.desc() ; 
-                 LOG(info) << "ps:" << ps.desc() ; 
-                 LOG(info) << "pp:" << pp.desc() ;  
-            }  
-
-            assert( ps._seqhis == pp._seqhis );
-            assert( ps._seqmat == pp._seqmat );
-        }
+        postTrackWritePoints();  
+        if(m_reccf) compareModes() ; 
     }
     else
     {
         postTrackWriteSteps();
-
     } 
 
     if(m_dbg) m_dbg->postTrack(); 
@@ -154,6 +172,42 @@ void CRecorder::postTrack() // invoked from CTrackingAction::PostUserTrackingAct
     }
     //m_ok->accumulateStop(m_postTrack_acc);  
 }
+
+
+/**
+CRecorder::compareModes
+----------------------------
+
+Invoked from CRecorder::postTrack when using --reccf.
+Asserts that the seqhis and seqmat obtained by --recpoi and --recstp modes match.
+
+**/
+
+void CRecorder::compareModes()
+{
+    CPhoton pp(m_photon); 
+
+    m_writer->setEnabled(false);
+
+    m_photon.clear();
+    m_state.clear(); 
+    postTrackWriteSteps();
+
+    m_writer->setEnabled(true);
+
+    CPhoton ps(m_photon); 
+
+    if(ps._seqhis != pp._seqhis)
+    {
+        LOG(info) << m_ctx.desc() ; 
+        LOG(info) << "ps:" << ps.desc() ; 
+        LOG(info) << "pp:" << pp.desc() ;  
+    }  
+
+    assert( ps._seqhis == pp._seqhis );
+    assert( ps._seqmat == pp._seqmat );
+}
+
 
 
 /**
@@ -191,6 +245,13 @@ If not so, this will "join" unrelated tracks ?
 using record_id)
 
 TODO: find how to check this is the case and assert on it
+
+
+
+Caution the recording and the writing are split
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
 
 **/
 
@@ -244,6 +305,18 @@ void CRecorder::zeroPhoton()
     if(m_dbg) m_dbg->Clear();
 }
 
+
+
+
+/**
+CRecorder::postTrackWritePoints
+----------------------------------
+
+When using --recpoi mode this is invoked from CRecorder::postTrack 
+
+**/
+
+
 void CRecorder::postTrackWritePoints()
 { 
 #ifdef USE_CUSTOM_BOUNDARY
@@ -263,41 +336,23 @@ void CRecorder::postTrackWritePoints()
         unsigned material = poi->getMaterial() ; 
         boundary_status = poi->getBoundaryStatus() ; 
 
-        RecordStepPoint( point, flag, material, boundary_status, NULL );
+        bool last = i == numPoi - 1 ; 
+
+        bool done = WriteStepPoint( point, flag, material, boundary_status, NULL, last );
+
+        if(done && !last) 
+        {
+            LOG(LEVEL) 
+                << " done and not last "
+                << " i " << i 
+                << " numPoi " << numPoi
+                ;   
+        } 
 
         if(m_dbg) m_dbg->Collect(point, boundary_status, m_photon );
-
     } 
-
-    //if(m_photon._slot_constrained < 9 ) LOG(info) << m_photon.desc() << " numPoi " << numPoi ; 
-
-    //if( numPoi < 2 )
-    //   m_crec->dump("CRecorder::postTrackWritePoints numPoi < 2 ");
-
-
 }
 
-
-
-
-
-/**
-CRecorder::postTrackWriteSteps
--------------------------------
-
-CRecorder::postTrackWriteSteps is invoked from CRecorder::postTrack, 
-once for the primary photon track and then for 0 or more reemtracks
-via the record_id (which survives reemission) the info is written 
-onto the correct place in the photon record buffer
-
-
-The steps recorded into m_crec(CRec) are used to determine 
-flags and the m_state(CRecState) is updated enabling 
-appropriate step points are to be saved with RecordStepPoint.
-
-
-
-**/
 
 void CRecorder::pointDump( const char* msg, const G4StepPoint* point ) const 
 {
@@ -312,6 +367,20 @@ void CRecorder::pointDump( const char* msg, const G4StepPoint* point ) const
 }
 
 
+/**
+CRecorder::postTrackWriteSteps
+-------------------------------
+
+CRecorder::postTrackWriteSteps is invoked from CRecorder::postTrack in --recstp mode (not --recpoi), 
+once for the primary photon track and then for 0 or more reemtracks
+via the record_id (which survives reemission) the info is written 
+onto the correct place in the photon record buffer
+
+The steps recorded into m_crec(CRec) are used to determine 
+flags and the m_state(CRecState) is updated enabling 
+appropriate step points are to be saved with WriteStepPoint.
+
+**/
 
 void CRecorder::postTrackWriteSteps()
 {
@@ -438,13 +507,13 @@ void CRecorder::postTrackWriteSteps()
 
             m_state._step_action |= CAction::PRE_SAVE ; 
 
-            done = RecordStepPoint( pre , preFlag,  u_premat,  prior_boundary_status, PRE );   
+            done = WriteStepPoint( pre , preFlag,  u_premat,  prior_boundary_status, PRE, false);   
 
             if(done) m_state._step_action |= CAction::PRE_DONE ; 
 
             if(!done)
             {
-                 done = RecordStepPoint( post, postFlag, u_postmat, boundary_status,       POST );  
+                 done = WriteStepPoint( post, postFlag, u_postmat, boundary_status,       POST, false );  
 
                  m_state._step_action |= CAction::POST_SAVE ; 
 
@@ -457,7 +526,7 @@ void CRecorder::postTrackWriteSteps()
             {
                 m_state._step_action |= CAction::POST_SAVE ; 
 
-                done = RecordStepPoint( post, postFlag, u_postmat, boundary_status, POST );
+                done = WriteStepPoint( post, postFlag, u_postmat, boundary_status, POST, false );
 
                 if(done) m_state._step_action |= CAction::POST_DONE ; 
             }
@@ -499,8 +568,22 @@ void CRecorder::postTrackWriteSteps()
 }
 
 
+
+
+/**
+CRecorder::WriteStepPoint
+---------------------------
+
+* In --recpoi mode is invoked from CRecorder::postTrackWritePoints very simply.
+* In --recstp mode is invoked several times from CRecorder::postTrackWriteSteps.
+
+NB the last argumnent is only relevant to --recpoi mode
+
+**/
+
+
 #ifdef USE_CUSTOM_BOUNDARY
-bool CRecorder::RecordStepPoint(const G4StepPoint* point, unsigned flag, unsigned int material, Ds::DsG4OpBoundaryProcessStatus boundary_status, const char* )
+bool CRecorder::WriteStepPoint(const G4StepPoint* point, unsigned flag, unsigned int material, Ds::DsG4OpBoundaryProcessStatus boundary_status, const char*, bool last )
 {
     if(flag == 0)
     {
@@ -508,10 +591,10 @@ bool CRecorder::RecordStepPoint(const G4StepPoint* point, unsigned flag, unsigne
             LOG(warning) << " boundary_status not handled : " << OpStatus::OpBoundaryAbbrevString(boundary_status) ; 
     }
     // the below adds flag and material to the shared m_photon struct
-    return m_writer->writeStepPoint( point, flag, material );
+    return m_writer->writeStepPoint( point, flag, material, last );
 }
 #else
-bool CRecorder::RecordStepPoint(const G4StepPoint* point, unsigned flag, unsigned int material, G4OpBoundaryProcessStatus boundary_status, const char* )
+bool CRecorder::WriteStepPoint(const G4StepPoint* point, unsigned flag, unsigned int material, G4OpBoundaryProcessStatus boundary_status, const char*, bool last )
 {
     if(flag == 0)
     {
@@ -519,7 +602,7 @@ bool CRecorder::RecordStepPoint(const G4StepPoint* point, unsigned flag, unsigne
             LOG(warning) << " boundary_status not handled : " << OpStatus::OpBoundaryAbbrevString(boundary_status) ; 
     }
     // the below adds flag and material to the shared m_photon struct
-    return m_writer->writeStepPoint( point, flag, material );
+    return m_writer->writeStepPoint( point, flag, material, last );
 }
 #endif
 
@@ -542,8 +625,6 @@ bool CRecorder::RecordStepPoint(const G4StepPoint* point, unsigned flag, unsigne
         } 
 
 */
-
-
 
 
 
@@ -580,4 +661,6 @@ std::string CRecorder::desc() const
 
    return ss.str();
 }
+
+
 

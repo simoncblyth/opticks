@@ -60,7 +60,21 @@ void CRecState::decrementSlot()  // NB not just live
 }
 
 
- // constrain slot to inclusive range (0,_steps_per_photon-1) 
+/**
+CRecState::constrained_slot
+-------------------------------
+
+Canonically invoked by CPhoton::add
+
+Returns _slot if within constraints, otherwise returns top slot.
+So the returned slot is constrained to inclusive range (0,_steps_per_photon-1) 
+
+Side effects:
+
+* _record_truncate is set when the slot returned is the top one
+
+**/
+
 unsigned CRecState::constrained_slot()
 {
     unsigned slot =  _slot < _ctx._steps_per_photon ? _slot : _ctx._steps_per_photon - 1 ;
@@ -72,10 +86,22 @@ unsigned CRecState::constrained_slot()
     return slot ; 
 } 
 
+/**
+CRecState::increment_slot_regardless
+--------------------------------------
+
+Canonically invoked by CPhoton::increment_slot which is done by CWriter::writeStepPoint
+
+* _slot is incremented regardless of truncation, only the local (and returned) *slot* is constrained to recording range
+
+TODO: can constrained_slot and 
+
+
+**/
 
 void CRecState::increment_slot_regardless()
 {
-    _slot += 1 ;    // _slot is incremented regardless of truncation, only local *slot* is constrained to recording range
+    _slot += 1 ;    
 
     _bounce_truncate = _slot > _ctx._bounce_max  ;   
 
@@ -84,10 +110,18 @@ void CRecState::increment_slot_regardless()
     if(_bounce_truncate) _step_action |= CAction::BOUNCE_TRUNCATE ; 
 }
 
+
+/**
+CRecState::is_truncate
+-----------------------
+
+true for bounce or record truncate
+
+**/
+
 bool CRecState::is_truncate() const 
 {
     return _bounce_truncate || _record_truncate  ;
 }
-
 
 

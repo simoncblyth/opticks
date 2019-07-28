@@ -16,14 +16,14 @@
 #include "PLOG.hh"
 
 
+const plog::Severity NEmitPhotonsNPY::LEVEL = PLOG::EnvLevel("NEmitPhotonsNPY", "DEBUG") ; 
 
-
-NEmitPhotonsNPY::NEmitPhotonsNPY(NCSG* csg, unsigned gencode, unsigned seed, bool emitdbg, NPY<unsigned>* mask, int num_photons )
+NEmitPhotonsNPY::NEmitPhotonsNPY(NCSG* csg, unsigned gencode, unsigned seed, bool dbgemit, NPY<unsigned>* mask, int num_photons )
     :
     m_csg(csg),
     m_gencode(gencode),
     m_seed(seed),
-    m_emitdbg(emitdbg),
+    m_dbgemit(dbgemit),   // --dbgemit
     m_mask(mask),
     m_emit( csg->get_emit() ),
     m_emitcfg_( csg->get_emitconfig() ),
@@ -108,13 +108,15 @@ void NEmitPhotonsNPY::init()
 
     m_photons->zero();   
 
-    if(m_emitdbg) m_emitcfg->dump();
+    if(m_dbgemit) m_emitcfg->dump();   // --dbgemit
 
     unsigned numPhoton = m_photons->getNumItems();
 
-    LOG(debug) << desc() 
-              << " numPhoton " << numPhoton 
-               ;
+    LOG(LEVEL) 
+        << desc() 
+        << " m_num_photons " << m_num_photons 
+        << " numPhoton " << numPhoton 
+        ;
 
     std::vector<glm::vec3> points ; 
     std::vector<glm::vec3> normals ; 
@@ -159,7 +161,7 @@ void NEmitPhotonsNPY::init()
             pos += dir*fposdelta ; 
         }
 
-        bool dump = i < 10 && m_emitdbg ; 
+        bool dump = i < 10 && m_dbgemit ; 
         glm::vec3 pol = nglmext::pick_transverse_direction( dir, false );
         glm::vec3 posnrm = glm::normalize( pos ); 
 

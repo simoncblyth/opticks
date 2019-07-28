@@ -201,14 +201,15 @@ class AB(object):
 
         u = self.u 
         w = np.where(np.logical_and( self.a.utail != self.b.utail, self.a.seqhis == self.b.seqhis ))[0]
-        log.info(" u.shape:%r w.shape: %r " % (u.shape, w.shape) )
-        for i in w:
-            uu = u[i].ravel()
-            ua = self.a.utail[i]
-            ub = self.b.utail[i]
+        log.info("utail mismatch but seqhis matched u.shape:%r w.shape: %r " % (u.shape, w.shape) )
+        for i,p in enumerate(w):
+            uu = u[p].ravel()        # randoms for photon record_id p 
+            ua = self.a.utail[p]
+            ub = self.b.utail[p]
             wa = np.where( uu == ua )[0][0]
-            wb = np.where( uu == ub )[0][0]
-            print(" ua %10.4f ub %10.4f  wa %3d wb %3d  %s  " % (ua, ub, wa, wb, self.recline((i,i))  ))
+            wb = -1 if ub == 0 else np.where( uu == ub )[0][0]
+            wd = 0 if wb == -1 else wb - wa 
+            print(" i %5d p %7d ua %10.4f ub %10.4f  wa %3d wb %3d wd %3d : %s  " % (i, p, ua, ub, wa, wb, wd, self.recline((p,p))  ))
         pass
 
 
@@ -342,7 +343,32 @@ class AB(object):
 
 
     def load_u(self):
-        upath = "$TMP/TRngBufTest_0.npy"
+        """
+        This array of randoms is used by below check_utaildebug.
+
+        Default u array is (100k,16,16) containing doubles. 
+        To generate an extra large array (1M,16,16)::
+
+            TRngBuf_NI=1000000 TRngBufTest 
+
+        Which creates a 2GB file::  
+
+            In [6]: 16*16*1000000*8/1e9
+            Out[6]: 2.048
+
+            [blyth@localhost sysrap]$ ls -l "$TMP/TRngBufTest_0_1000000.npy"
+            -rw-rw-r--. 1 blyth blyth 2048000096 Jul 28 12:02 /home/blyth/local/opticks/tmp/TRngBufTest_0_1000000.npy
+
+        """
+        upath0 = "$TMP/TRngBufTest_0.npy"
+        upath1 = "$TMP/TRngBufTest_0_1000000.npy"
+
+        if os.path.exists(os.path.expandvars(upath1)):
+            upath = upath1 
+            log.info("using the extra large random array %s " % upath ) 
+        else: 
+            upath = upath0
+        pass
         u = np_load(upath)
         u = None if u is None else u.astype(np.float32)
         self.u = u 
@@ -549,7 +575,10 @@ class AB(object):
         seqtab = self.ahis
 
         #dv_tab = DvTab(ana, seqtab, self, skips=self.dvskips, selbase="ALIGN" ) 
-        dv_tab = QDVTab(ana, self  ) 
+
+        use_utaildebug = self.cfm.utaildebug   
+        log.info("_make_dv ana %s use_utaildebug %s " % (ana, use_utaildebug)) 
+        dv_tab = QDVTab(ana, self, use_utaildebug=use_utaildebug ) 
         self.dvtabs.append(dv_tab)
 
         self.warn_empty = we

@@ -1185,17 +1185,17 @@ bool Opticks::isDbgZero() const
 {
     return m_cfg->hasOpt("dbgzero") ;
 }
-bool Opticks::isRecPoi() const
+bool Opticks::isRecPoi() const  // --recpoi
 {
     return m_cfg->hasOpt("recpoi") ;
 }
-bool Opticks::isRecPoiAlign() const
+bool Opticks::isRecPoiAlign() const  // --recpoialign
 {
     return m_cfg->hasOpt("recpoialign") ;
 }
 
 
-bool Opticks::isRecCf() const
+bool Opticks::isRecCf() const     // --reccf
 {
     return m_cfg->hasOpt("reccf") ;
 }
@@ -1346,7 +1346,7 @@ unsigned long long Opticks::getDbgSeqmat()
     const std::string& seqmat = m_cfg->getDbgSeqmat();
     return BHex<unsigned long long>::hex_lexical_cast( seqmat.c_str() );
 }
-unsigned long long Opticks::getDbgSeqhis()
+unsigned long long Opticks::getDbgSeqhis()  // --dbgseqhis
 {
     const std::string& seqhis = m_cfg->getDbgSeqhis();
     return BHex<unsigned long long>::hex_lexical_cast( seqhis.c_str() );

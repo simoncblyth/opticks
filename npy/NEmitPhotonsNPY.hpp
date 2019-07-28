@@ -3,6 +3,7 @@
 template <typename T> class NPY ; 
 
 #include "NPY_API_EXPORT.hh"
+#include "plog/Severity.h"
 
 class NCSG ; 
 class NRngDiffuse ; 
@@ -31,8 +32,9 @@ normal runing and then making a masked copy of them.
 
 class NPY_API NEmitPhotonsNPY 
 {
+      static const plog::Severity LEVEL ; 
    public:
-      NEmitPhotonsNPY(NCSG* csg, unsigned gencode, unsigned seed, bool emitdbg, NPY<unsigned>* mask, int num_photons=-1 );
+      NEmitPhotonsNPY(NCSG* csg, unsigned gencode, unsigned seed, bool dbgemit, NPY<unsigned>* mask, int num_photons=-1 );
 
       NPY<float>* getPhotons() const ;
       NPY<float>* getPhotonsRaw() const  ;
@@ -51,7 +53,7 @@ class NPY_API NEmitPhotonsNPY
       NCSG*          m_csg ; 
       unsigned       m_gencode ; 
       unsigned       m_seed ; 
-      bool           m_emitdbg ; 
+      bool           m_dbgemit ;   // --dbgemit
       NPY<unsigned>* m_mask ; 
    private:
       int            m_emit ; 

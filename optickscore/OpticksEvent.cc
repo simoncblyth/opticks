@@ -432,8 +432,31 @@ const glm::vec4& OpticksEvent::getSpaceDomain() const {      return m_domain->ge
 const glm::vec4& OpticksEvent::getTimeDomain() const {       return m_domain->getTimeDomain() ; } 
 const glm::vec4& OpticksEvent::getWavelengthDomain() const { return m_domain->getWavelengthDomain() ; } 
 
+
+/**
+OpticksEvent::getMaxRec
+-------------------------
+
+Domain configured a.idom[0,0,3] (.w) maximum number of photon steps to record into the record buffer, 
+default is 10 but it can be increased up to 16 via option. 
+
+**/
 unsigned OpticksEvent::getMaxRec() const {     return m_domain->getMaxRec() ; } 
-unsigned OpticksEvent::getMaxBounce() const  { return m_domain->getMaxBounce() ; }  // caution there is a getBounceMax 
+
+
+/**
+OpticksEvent::getMaxBounce
+---------------------------
+
+Domain configured a.idom[0,0,2] (.z) maximum number of bounces prior to truncation.  
+Default is 9, one less than the getMaxRec default for alignment/debugging clarity but it does not need to be.
+Can bounce much more than is practical to record if necessary.
+
+TODO: get rid of confusingly similarly named getBounceMax which comes from parameters
+
+**/
+
+unsigned OpticksEvent::getMaxBounce() const  { return m_domain->getMaxBounce() ; } 
 unsigned OpticksEvent::getMaxRng() const {     return m_domain->getMaxRng() ; } 
 
 void OpticksEvent::setMaxRec(unsigned maxrec) {       m_domain->setMaxRec(maxrec); } 

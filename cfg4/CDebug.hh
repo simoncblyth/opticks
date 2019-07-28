@@ -27,6 +27,11 @@ class CG4 ;
 CDebug
 =========
 
+Canonical instance m_dbg is resident of CRecorder and is instanciated with it 
+only when CG4Ctx::is_dbg returns true, which requires a debug option such as::
+
+     --dbgseqhis 0xbbbbbbbbcd
+
 
 **/
 

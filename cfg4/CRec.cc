@@ -31,11 +31,10 @@ CRec::CRec(CG4* g4, CRecState& state)
     m_state(state),
     m_ctx(g4->getCtx()),
     m_ok(g4->getOpticks()),
-    m_recpoi(m_ok->isRecPoi()),
-    m_recpoialign(m_ok->isRecPoiAlign()),
+    m_recpoi(m_ok->isRecPoi()),             // --recpoi
+    m_recpoialign(m_ok->isRecPoiAlign()),   // --recpoialign
     m_step_limited(false),
-    m_point_limited(false),
-    m_point_terminated(false),
+    m_point_done(false),
     m_material_bridge(NULL),
     //m_add_acc(m_ok->accumulateAdd("CRec::add")),
 #ifdef USE_CUSTOM_BOUNDARY
@@ -66,7 +65,7 @@ std::string CRec::desc() const
        << " point_limit " 
        << std::setw(2) 
        << m_ctx.point_limit()
-       << ( m_point_limited ? "POINT_LIMTED" : "-" )
+       << ( m_point_done ? "POINT_DONE" : "-" )
        ;
 
     return ss.str();
@@ -83,7 +82,7 @@ void CRec::initEvent(OpticksEvent* evt)  // called by CRecorder::initEvent/CG4::
     }
     else
     {
-        evt->appendNote( "recstp");
+        evt->appendNote( "recstp");    //  b.metadata.Note from ab.py 
     }
 
     std::string note = evt->getNote();
@@ -117,16 +116,20 @@ bool CRec::is_step_limited() const
 {
     return m_step_limited ;
 }
+
+/*
 bool CRec::is_point_limited() const
 {
     return m_point_limited ;
 }
+
 
 bool CRec::is_limited() const
 {
     return m_recpoi ? m_point_limited : m_step_limited  ;
 }
 
+*/
 
 
 void CRec::setOrigin(const G4ThreeVector& origin)
@@ -214,8 +217,7 @@ void CRec::clear()
     m_poi.clear();
 
     m_step_limited = false ; 
-    m_point_limited = false ; 
-    m_point_terminated = false ; 
+    m_point_done = false ; 
 }
 
 
@@ -226,9 +228,20 @@ CRec::add
 CRec::add is step-by-step invoked from CRecorder::Record
 returning true kills the track, as needed for truncation of big bouncers
 
-*m_recpoialign*
+m_step_limited
+    becomes true when collected steps reaches CG4Ctx::step_limit() which is 
+    about twice the size you might expect because of StepTooSmall turnarounds : 
+    this means that a photon will typically reach m_point_limited long before 
+    it reaches m_step_limited 
+    
+m_point_limited
+    becomes true when collected points reaches CG4Ctx::point_limit() which 
+    is what you would expect : the larger of bouncemax and points to record
+
+m_recpoialign
     aligns recpoi truncation according to step limit so both recpoi and recstp
-    kill the track at same juncture  
+    kill the track at same juncture.  This means the kill will happen later
+    that with just "--recpoi"  
 
     This spins G4 wheels with the more efficient recpoi 
     in order to keep random sequence aligned with the less efficient !recpoi(aka recstp)
@@ -246,19 +259,22 @@ bool CRec::add(G4OpBoundaryProcessStatus boundary_status )
 
     setBoundaryStatus(boundary_status);
 
-    m_step_limited = m_stp.size() >= m_ctx.step_limit() ;
-    m_point_limited = m_poi.size() >= m_ctx.point_limit() ;
+    m_step_limited = m_stp.size() >= m_ctx.step_limit() ;    
+    //m_point_limited = m_poi.size() >= m_ctx.point_limit() ;
 
     CStp* stp = new CStp(m_ctx._step, m_ctx._step_id, m_boundary_status, m_ctx._stage, m_origin) ;
     m_stp.push_back(stp);
 
     // collect points from each step until reach termination or point limit 
-    if(m_recpoi && !m_point_terminated && !m_point_limited)  
+    if(m_recpoi && !m_point_done )  
     {
-        m_point_terminated = addPoi(stp) ;
+        m_point_done = addPoi(stp) ;  // <-- point_done happens from a lastPost with a terminal flag OR fill point limit 
     }
 
-    bool done = ( m_recpoialign || !m_recpoi ) ? m_step_limited : ( m_point_terminated || m_point_limited ) ;
+    // hmm the point_limited is based on the size before 
+    // so 11-pointers will cause a problem as they will add 2 
+
+    bool done = ( m_recpoialign || !m_recpoi ) ? m_step_limited : m_point_done  ;
 
     //m_ok->accumulateStop(m_add_acc); 
     return done ;  // (*lldb*) add
@@ -270,6 +286,18 @@ CRec::addPoi
 --------------
 
 Invoked by CRec::add when using the alternative m_recpoi mode 
+
+
+There are two styles of pre/post recording, addPoi is using live style
+
+canned 
+   pre+post,post,post,...   (with canned style can look into future when need arises)
+live   
+   pre,pre,pre,pre+post     (with live style cannot look into future, so need to operate with pre to allow peeking at post)
+
+
+* some pre are skipped as they are G4 StepTooSmall technicalities that happen at reflections
+* at lastPost pre+post are appended to m_poi
 
 **/
 
@@ -317,10 +345,7 @@ bool CRec::addPoi(CStp* stp )
 #else
     bool preSkip = m_prior_boundary_status == StepTooSmall && m_ctx._stage != CStage::REJOIN  && m_ctx._stage != CStage::START  ;  
 #endif
-
-
-    // cannot preSkip CStage::START as that yields seqhis zero for "TO AB" 
-    // bool preSkip = m_prior_boundary_status == StepTooSmall && m_ctx._stage != CStage::REJOIN  ;  
+    // CStage::START is never preSkip as want to record the m_ctx._gen eg "TO" into zeroth flag 
 
     bool matSwap = postFlag == NAN_ABORT ; // StepTooSmall coming up next, which will be preSkip 
 
@@ -331,18 +356,18 @@ bool CRec::addPoi(CStp* stp )
 
     unsigned u_preMat  = matSwap ? postMat : preMat ;
     unsigned u_postMat = ( matSwap || postMat == 0 )  ? preMat  : postMat ;
-    
-    // canned style  :  pre+post,post,post,...   (with canned style can look into future when need arises)
-    // live   style  :  pre,pre,pre,pre+post     (with live style cannot look into future, so need to operate with pre to allow peeking at post)
+
+
+    bool limited = false ; 
 
     if(!preSkip)    
     {
-        m_poi.push_back(new CPoi(pre, preFlag, u_preMat, m_prior_boundary_status, m_ctx._stage, m_origin));
+        limited = addPoi_(new CPoi(pre, preFlag, u_preMat, m_prior_boundary_status, m_ctx._stage, m_origin));
     }
 
-    if(lastPost)
+    if(lastPost && !limited)
     {
-        m_poi.push_back(new CPoi(post, postFlag, u_postMat, m_boundary_status, m_ctx._stage, m_origin));
+        limited = addPoi_(new CPoi(post, postFlag, u_postMat, m_boundary_status, m_ctx._stage, m_origin));
     }
 
     if(stp) // debug notes for dumping
@@ -352,7 +377,31 @@ bool CRec::addPoi(CStp* stp )
         stp->setAction( m_state._step_action );
     }
 
-    return lastPost ;   
+    bool done = lastPost || limited ; 
+    return done  ;   
+}
+
+
+/**
+CRec::addPoi_
+-----------------
+
+Hmm : limiting like this is not the real solution, because it 
+conflates bounce_max with record_max and prevents matching 
+final photon unless bounce_max is less than record_max 
+
+
+**/
+
+
+bool CRec::addPoi_(CPoi* poi)
+{
+    bool limited = m_poi.size() >= m_ctx.point_limit() ;
+    if( !limited )
+    {
+        m_poi.push_back(poi); 
+    }
+    return limited  ; 
 }
 
 

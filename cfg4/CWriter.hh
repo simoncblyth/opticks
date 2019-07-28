@@ -46,7 +46,7 @@ class CFG4_API CWriter
         CWriter(CG4* g4, CPhoton& photon, bool dynamic);        
 
         void setEnabled(bool enabled);
-        bool writeStepPoint(const G4StepPoint* point, unsigned flag, unsigned material );
+        bool writeStepPoint(const G4StepPoint* point, unsigned flag, unsigned material, bool last );
         void writePhoton(const G4StepPoint* point );
         // *writePhoton* overwrites prior entries for REJOIN updating target_record_id 
    private:

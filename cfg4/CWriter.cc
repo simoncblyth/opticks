@@ -121,21 +121,41 @@ void CWriter::initEvent(OpticksEvent* evt)  // called by CRecorder::initEvent/CG
 CWriter::writeStepPoint
 ------------------------
    
-Invoked by CRecorder::RecordStepPoint
+Invoked by CRecorder::WriteStepPoint
 
 * writes point-by-point records
 * when done writes final photons
 
+* NB the "done" returned here **DOES NOT** kill tracks, 
+  that happens on collection NOT on writing 
+
+*hard_truncate* does happen for top slot without reemission rejoinders
+
+* hmm: suspect its causing seqhis zeros ?
+
+
+HMM : LOOKS LIKE SOME CONFLATION BETWEEN REAL bounce_max truncation 
+and recording truncation 
+
+* hard_truncate is only expected the 2nd time adding into top slot 
+
+
+
+
+* *last* argument is only used in --recpoi mode where it prevents 
+   truncated photons from never being "done" and giving seqhis zeros
+
 
 **/     
 
-bool CWriter::writeStepPoint(const G4StepPoint* point, unsigned flag, unsigned material )
+bool CWriter::writeStepPoint(const G4StepPoint* point, unsigned flag, unsigned material, bool last )
 {
-    m_photon.add(flag, material);  // building seqhis seqmat slot by slot 
+    m_photon.add(flag, material);  // sets seqhis/seqmat nibbles in current constrained slot  
 
-    bool hard_truncate = m_photon.is_hard_truncate();
 
-    bool done = false ; 
+    bool hard_truncate = m_photon.is_hard_truncate();    
+
+    bool done = false ;   
 
     if(hard_truncate) 
     {
@@ -149,12 +169,13 @@ bool CWriter::writeStepPoint(const G4StepPoint* point, unsigned flag, unsigned m
 
         done = m_photon.is_done() ;  // caution truncation/is_done may change after increment
 
-        if( done && m_enabled )
+        if( (done || last) && m_enabled )
         {
             writePhoton(point);
             if(m_dynamic) m_records_buffer->add(m_dynamic_records);
         }
     }        
+
 
     if( flag == BULK_ABSORB )
     {

@@ -22,10 +22,13 @@ int main(int argc, char** argv)
 
     LOG(info) << argv[0] ;
 
+    static const unsigned NI_DEFAULT = 100000 ; 
     static const unsigned IBASE = SSys::getenvint("TRngBuf_IBASE", 0) ; 
-    static const unsigned NI = 100000 ; 
+    static const unsigned NI = SSys::getenvint("TRngBuf_NI", NI_DEFAULT ); 
     static const unsigned NJ = 16 ; 
     static const unsigned NK = 16 ; 
+
+    bool default_ni = NI == NI_DEFAULT ;  
 
 
     NPY<double>* ox = NPY<double>::make(NI, NJ, NK);
@@ -45,9 +48,12 @@ int main(int argc, char** argv)
     trb.download<double>(ox, true) ; 
 
 
+    const char* path = default_ni ? 
+                                     SStr::Concat("$TMP/TRngBufTest_", IBASE, ".npy") 
+                                  :
+                                     SStr::Concat("$TMP/TRngBufTest_", IBASE, "_", NI, ".npy") 
+                                  ; 
 
-  
-    const char* path = SStr::Concat("$TMP/TRngBufTest_", IBASE, ".npy") ; 
 
     LOG(info) << " save " << path ; 
 

@@ -164,11 +164,15 @@ class QDVTab(object):
     Skips eg "SC AB RE" only relevant for non-aligned "accidental" comparisons
 
     """
-    def __init__(self, name, ab, skips="" ):
+    def __init__(self, name, ab, skips="", use_utaildebug=False ):
         """
         :param name: ox_dv, rpost_dv, rpol_dv 
         :param ab:
         :param skips: 
+
+        use_utaildebug 
+             suspect it caused some a.rposta with dimensions 1 off b.rposta 
+
         """
         log.debug("[ sel %s  " % (name) )
         self.name = name
@@ -192,7 +196,6 @@ class QDVTab(object):
         self.nsel = nsel 
         self._ndisc = None
 
-        use_utaildebug = False   # suspect it caused some a.rposta with dimensions 1 off b.rposta 
         if self.ab.cfm.utaildebug == 1 and use_utaildebug:  
             aligned = np.logical_and( self.a.utail == self.b.utail, self.a.seqhis == self.b.seqhis )
         else:

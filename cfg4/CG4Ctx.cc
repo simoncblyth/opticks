@@ -39,28 +39,55 @@ bool CG4Ctx::is_dbg() const
 }
 
 
+/**
+CG4Ctx::step_limit
+-------------------
+
+*step_limit* is used by CRec::addStp (recstp) the "canned" step collection approach, 
+which just collects steps and makes sense of them later...
+This has the disadvantage of needing to collect StepTooSmall steps (eg from BR turnaround)  
+that are subsequently thrown : this results in the step limit needing to 
+be twice the size you might expect to handle hall-of-mirrors tboolean-truncate.
+
+This also has disadvantage that tail consumption as checked with "--utaildebug" 
+does not match between Opticks and Geant4, see 
+
+* notes/issues/ts-box-utaildebug-decouple-maligned-from-deviant.rst
+
+
+**/
+
 unsigned CG4Ctx::step_limit() const 
 {
-    // *step_limit* is used by CRec::addStp (recstp) the "canned" step collection approach, 
-    // which just collects steps and makes sense of them later...
-    // This has the disadvantage of needing to collect StepTooSmall steps (eg from BR turnaround)  
-    // that are subsequently thrown : this results in the stem limit needing to 
-    // be twice the size you might expect to handle hall-of-mirrors tboolean-truncate.
     assert( _ok_event_init ); 
     return 1 + 2*( _steps_per_photon > _bounce_max ? _steps_per_photon : _bounce_max ) ;
 }
 
+/**
+CG4Ctx::point_limit
+---------------------
+
+Returns the larger of the below:
+
+_steps_per_photon
+     number of photon step points to record into record array
+_bounce_max
+     number of bounces before truncation, often 1 less than _steps_per_photon but need not be  
+
+*point_limit* is used by CRec::addPoi (recpoi) the "live" point collection approach, 
+which makes sense of the points as they arrive, 
+this has advantage of only storing the needed points. 
+
+DO NOT ADD +1 LEEWAY HERE : OTHERWISE TRUNCATION BEHAVIOUR IS CHANGED
+see notes/issues/cfg4-point-recording.rst
+
+**/
+
 unsigned CG4Ctx::point_limit() const 
 {
-    // *point_limit* is used by CRec::addPoi (recpoi) the "live" point collection approach, 
-    // which makes sense of the points as they arrive, 
-    // this has advantage of only storing the needed points. 
-    //
-    // DO NOT ADD +1 LEEWAY HERE : OTHERWISE TRUNCATION BEHAVIOUR IS CHANGED
-    // see notes/issues/cfg4-point-recording.rst
-    //
     assert( _ok_event_init ); 
-    return ( _steps_per_photon > _bounce_max ? _steps_per_photon : _bounce_max ) ;
+    //return ( _steps_per_photon > _bounce_max ? _steps_per_photon : _bounce_max ) ;
+    return _bounce_max  ;
 }
 
 
@@ -122,11 +149,7 @@ void CG4Ctx::init()
     _prior_boundary_status = Undefined ; 
 #endif
 
-
-
- 
 }
-
 
 
 std::string CG4Ctx::desc_stats() const 
@@ -144,9 +167,13 @@ void CG4Ctx::initEvent(const OpticksEvent* evt)
 {
     _ok_event_init = true ;
     _photons_per_g4event = evt->getNumPhotonsPerG4Event() ; 
-    _steps_per_photon = evt->getMaxRec() ;    
-    _record_max = evt->getNumPhotons();   // from the genstep summation
-    _bounce_max = evt->getBounceMax();
+    _steps_per_photon = evt->getMaxRec() ;   // number of points to be recorded into record buffer   
+    _record_max = evt->getNumPhotons();      // from the genstep summation
+
+    _bounce_max = evt->getBounceMax();       // maximum bounce allowed before truncation will often be 1 less than _steps_per_photon but need not be 
+    unsigned bounce_max_2 = evt->getMaxBounce();    
+    assert( _bounce_max == bounce_max_2 ) ; // TODO: eliminate or rename one of those
+
 
     const char* typ = evt->getTyp();
     //  _gen = OpticksFlags::SourceCode(typ);   MOVED TO FINER LEVEL OF BELOW setEvent 
@@ -154,7 +181,8 @@ void CG4Ctx::initEvent(const OpticksEvent* evt)
     LOG(LEVEL)
         << " _record_max (numPhotons from genstep summation) " << _record_max 
         << " photons_per_g4event " << _photons_per_g4event
-        << " steps_per_photon " << _steps_per_photon
+        << " _steps_per_photon (maxrec) " << _steps_per_photon
+        << " _bounce_max " << _bounce_max
         << " typ " << typ
         ;
 
@@ -174,8 +202,15 @@ std::string CG4Ctx::desc_event() const
 }
 
 
+/**
+CG4Ctx::setEvent
+-----------------
 
-void CG4Ctx::setEvent(const G4Event* event) // invoked by CEventAction::setEvent
+Invoked by CEventAction::setEvent
+
+**/
+
+void CG4Ctx::setEvent(const G4Event* event) 
 {
      //OKI_PROFILE("CG4Ctx::setEvent") ; 
 
@@ -199,7 +234,16 @@ void CG4Ctx::setEvent(const G4Event* event) // invoked by CEventAction::setEvent
     assert( _gen == TORCH || _gen == G4GUN || _gen == CERENKOV || _gen == SCINTILLATION );
 }
 
-void CG4Ctx::setTrack(const G4Track* track) // invoked by CTrackingAction::setTrack
+
+/**
+CG4Ctx::setTrack
+------------------
+
+Invoked by CTrackingAction::setTrack
+
+**/
+
+void CG4Ctx::setTrack(const G4Track* track) 
 {
     G4ParticleDefinition* particle = track->GetDefinition();
 
@@ -225,33 +269,15 @@ void CG4Ctx::setTrack(const G4Track* track) // invoked by CTrackingAction::setTr
 }
 
 
+/**
+CG4Ctx::setTrackOptical
+--------------------------
 
+Invoked by CG4Ctx::setTrack
 
-void CG4Ctx::setStep(const G4Step* step, int noZeroSteps) // invoked by CSteppingAction::setStep
-{
-    _step = const_cast<G4Step*>(step) ; 
-    _noZeroSteps = noZeroSteps ;  
-    _step_id = CTrack::StepId(_track);
-    if(_noZeroSteps == 0) _step_id_valid += 1;
+**/
 
-    _step_total += 1 ; 
-    _track_step_count += 1 ; 
-
-    const G4StepPoint* pre = _step->GetPreStepPoint() ;
-    const G4StepPoint* post = _step->GetPostStepPoint() ;
-
-    _step_pre_status = pre->GetStepStatus();
-    _step_post_status = post->GetStepStatus();
-
-    if(_step_id == 0)
-    {
-        _step_origin = pre->GetPosition();
-    }
-
-    if(_optical) setStepOptical();
-}
-
-void CG4Ctx::setTrackOptical() // invoked by CG4Ctx::setTrack
+void CG4Ctx::setTrackOptical() 
 {
     LOG(debug) << "CTrackingAction::setTrack setting UseGivenVelocity for optical " ; 
 
@@ -287,11 +313,55 @@ void CG4Ctx::setTrackOptical() // invoked by CG4Ctx::setTrack
     // essential for clearing counts otherwise, photon steps never cleared 
     _rejoin_count = 0 ; 
     _primarystep_count = 0 ; 
-
-
 }
 
-void CG4Ctx::setStepOptical() // invoked by CG4Ctx::setStep
+
+
+
+
+/**
+CG4Ctx::setStep
+----------------
+
+Invoked by CSteppingAction::setStep
+
+**/
+
+void CG4Ctx::setStep(const G4Step* step, int noZeroSteps) 
+{
+    _step = const_cast<G4Step*>(step) ; 
+    _noZeroSteps = noZeroSteps ;  
+    _step_id = CTrack::StepId(_track);
+    if(_noZeroSteps == 0) _step_id_valid += 1;
+
+    _step_total += 1 ; 
+    _track_step_count += 1 ; 
+
+    const G4StepPoint* pre = _step->GetPreStepPoint() ;
+    const G4StepPoint* post = _step->GetPostStepPoint() ;
+
+    _step_pre_status = pre->GetStepStatus();
+    _step_post_status = post->GetStepStatus();
+
+    if(_step_id == 0)
+    {
+        _step_origin = pre->GetPosition();
+    }
+
+    if(_optical) setStepOptical();
+}
+
+
+/**
+CG4Ctx::setStepOptical
+-----------------------
+
+Invoked by CG4Ctx::setStep
+
+**/
+
+
+void CG4Ctx::setStepOptical() 
 {
     if( !_reemtrack )     // primary photon, ie not downstream from reemission 
     {
@@ -313,6 +383,8 @@ void CG4Ctx::setStepOptical() // invoked by CG4Ctx::setStep
         <<  " _boundary_status " << std::setw(35) << CBoundaryProcess::OpBoundaryString(_boundary_status)
         ;
 }
+
+
 
 
 std::string CG4Ctx::desc_step() const 

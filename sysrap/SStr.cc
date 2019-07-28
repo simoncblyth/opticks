@@ -219,6 +219,20 @@ const char* SStr::Concat( const char* a, unsigned b, const char* c  )
     return strdup(s.c_str());
 }
 
+const char* SStr::Concat( const char* a, unsigned b, const char* c, unsigned d, const char* e  )
+{
+    std::stringstream ss ; 
+
+    if(a) ss << a ; 
+    ss << b ; 
+    if(c) ss << c ; 
+    ss << d ; 
+    if(e) ss << e ; 
+
+    std::string s = ss.str();
+    return strdup(s.c_str());
+}
+
 
 
 

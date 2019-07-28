@@ -309,7 +309,7 @@ class Profile(object):
         stop = min(len(self), stop)
 
         nli = stop - start
-        if nli < 1000:
+        if nli < 10:
             ll = map(lambda i:self.line(i), np.arange(start, stop)) 
         else:
             ll = map(lambda i:self.line(i), np.arange(start, start+5) ) 

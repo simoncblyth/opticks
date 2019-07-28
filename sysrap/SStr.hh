@@ -43,6 +43,7 @@ class SYSRAP_API SStr {
 
       static const char* Concat( const char* a, const char* b, const char* c=NULL  );
       static const char* Concat( const char* a, unsigned b   , const char* c=NULL  );
+      static const char* Concat( const char* a, unsigned b, const char* c, unsigned d, const char* e  ) ; 
 
       static const char* Replace( const char* s,  char a, char b ); 
 

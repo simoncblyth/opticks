@@ -58,7 +58,13 @@ void CPhoton::clear()
 CPhoton::add
 ---------------
 
-Building seqhis seqmat bitfields slot by slot 
+Inserts the argument flag and material into the 
+seqhis and seqmat nibbles of the current constrained slot. 
+
+* sets _flag _material 
+* updates priors to hold what will be overwritten
+* DOES NOT update the slot 
+* via CRecState::constrained_slot sets _state._record_truncate when at top slot 
 
 **/
 
@@ -119,6 +125,14 @@ void CPhoton::add(unsigned flag, unsigned  material)
     if(flag == BULK_REEMIT) scrub_mskhis(BULK_ABSORB)  ;
 }
 
+/**
+CPhoton::increment_slot
+-----------------------
+
+Canonically invoked by CWriter::writeStepPoint
+
+**/
+
 void CPhoton::increment_slot()
 {   
     _state.increment_slot_regardless();
@@ -146,16 +160,44 @@ void CPhoton::scrub_mskhis( unsigned flag )
     _mskhis = _mskhis & (~flag)  ;
 }
 
-bool CPhoton::is_rewrite_slot() const  // smth already layed down in current seqmat/seqhis bitfield slot
+
+/**
+CPhoton::is_rewrite_slot
+--------------------------
+
+Prior non-zeros in current slot of seqmat/seqhis indicate are overwriting nibbles
+
+**/
+
+bool CPhoton::is_rewrite_slot() const  
 {
     return _his_prior != 0 && _mat_prior != 0 ;
 }
+
+
+/**
+CPhoton::is_flag_done
+------------------------
+
+Returns true when _flag is terminal.
+
+**/
 
 bool CPhoton::is_flag_done() const 
 {
     bool flag_done = ( _flag & (BULK_ABSORB | SURFACE_ABSORB | SURFACE_DETECT | MISS)) != 0 ;
     return flag_done ;  
 }
+
+
+/**
+CPhoton::is_done
+---------------------
+
+Returns true when last added _flag is terminal  
+
+**/
+
 
 bool CPhoton::is_done() const 
 {
@@ -167,7 +209,13 @@ bool CPhoton::is_done() const
 CPhoton::is_hard_truncate
 ----------------------------
 
-* notes/issues/geant4_opticks_integration/tconcentric_pflags_mismatch_from_truncation_handling.rst
+Canonically invoked from CWriter::writeStepPoint
+
+* hard truncation means that are prevented from rewriting the top slot.
+
+* hmm: because of the is_rewrite_slot check should not return true
+  when the top slot is first written, only subsequently  
+
     
 Formerly at truncation, rerunning overwrote "the top slot" 
 of seqhis,seqmat bitfields (which are persisted in photon buffer)
@@ -175,13 +223,15 @@ and the record buffer.
 As that is different from Opticks behaviour for the record buffer
 where truncation is truncation, a HARD_TRUNCATION has been adopted.
 
+* notes/issues/geant4_opticks_integration/tconcentric_pflags_mismatch_from_truncation_handling.rst
+
 **/
 
 bool CPhoton::is_hard_truncate()
 {
     bool hard_truncate = false ; 
 
-    if(_state._record_truncate && is_rewrite_slot() )  // try to overwrite top slot 
+    if(_state._record_truncate && is_rewrite_slot() )  // trying to overwrite top slot 
     {
         _state._topslot_rewrite += 1 ; 
 

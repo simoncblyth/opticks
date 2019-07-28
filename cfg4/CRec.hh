@@ -35,9 +35,12 @@ class CFG4_API CRec
         CRec(CG4* g4, CRecState& state);
         void initEvent(OpticksEvent* evt);
 
-        bool is_limited() const ; 
         bool is_step_limited() const ; 
+
+/*
+        bool is_limited() const ; 
         bool is_point_limited() const ;    // relevant to recpoi mode only
+*/
         std::string desc() const ;
 
         void setOrigin(const G4ThreeVector& origin);
@@ -63,6 +66,7 @@ class CFG4_API CRec
 
    private:
         bool addPoi(CStp* stp);
+        bool addPoi_(CPoi* poi);
 
 #ifdef USE_CUSTOM_BOUNDARY
         void setBoundaryStatus(Ds::DsG4OpBoundaryProcessStatus boundary_status);
@@ -86,8 +90,7 @@ class CFG4_API CRec
         bool                        m_recpoialign ; 
 
         bool                        m_step_limited ; 
-        bool                        m_point_limited ; 
-        bool                        m_point_terminated ; 
+        bool                        m_point_done ; 
 
         CMaterialBridge*            m_material_bridge ; 
     private:

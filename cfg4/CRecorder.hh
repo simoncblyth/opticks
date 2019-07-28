@@ -126,6 +126,7 @@ class CFG4_API CRecorder {
         bool Record(G4OpBoundaryProcessStatus boundary_status);
 #endif
    private:
+        void compareModes(); 
         void zeroPhoton();
         void decrementSlot(); // for reemission continuation
 
@@ -133,9 +134,9 @@ class CFG4_API CRecorder {
         void postTrackWritePoints();  // experimental alternative using CPoi
  
 #ifdef USE_CUSTOM_BOUNDARY
-        bool RecordStepPoint(const G4StepPoint* point, unsigned int flag, unsigned int material, Ds::DsG4OpBoundaryProcessStatus boundary_status, const char* label);
+        bool WriteStepPoint(const G4StepPoint* point, unsigned int flag, unsigned int material, Ds::DsG4OpBoundaryProcessStatus boundary_status, const char* label, bool last);
 #else
-        bool RecordStepPoint(const G4StepPoint* point, unsigned int flag, unsigned int material, G4OpBoundaryProcessStatus boundary_status, const char* label);
+        bool WriteStepPoint(const G4StepPoint* point, unsigned int flag, unsigned int material, G4OpBoundaryProcessStatus boundary_status, const char* label, bool last );
 #endif
         void checkTopSlotRewrite(unsigned flag);
 
@@ -146,6 +147,7 @@ class CFG4_API CRecorder {
         void Summary(const char* msg);
         void dump(const char* msg="CRecorder::dump");
         std::string desc() const ; 
+        std::string brief() const ; 
    private:
         CG4*               m_g4; 
         CRandomEngine*     m_engine ; 
