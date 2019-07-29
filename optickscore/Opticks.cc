@@ -1094,6 +1094,11 @@ bool Opticks::isDbgNoJumpZero() const  // --dbgnojumpzero
 {
    return m_cfg->hasOpt("dbgnojumpzero");
 }
+bool Opticks::isDbgFlat() const  // --dbgflat
+{
+   return m_cfg->hasOpt("dbgflat");
+}
+
 bool Opticks::isDbgSkipClearZero() const  // --dbgskipclearzero
 {
    return m_cfg->hasOpt("dbgskipclearzero");

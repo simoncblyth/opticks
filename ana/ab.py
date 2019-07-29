@@ -81,7 +81,9 @@ class RC(object):
         assert max(rc.values()) <= 1 
         irc = rc["rpost_dv"] << self.offset["rpost_dv"] | rc["rpol_dv"] << self.offset["rpol_dv"] | rc["ox_dv"] << self.offset["ox_dv"]
         self.rc = irc 
-        self.level = max(ab.rpost_dv.maxlevel.level,ab.ox_dv.maxlevel.level,ab.ox_dv.maxlevel.level) 
+
+        levels = map(lambda _:_.level, filter(None, [ab.rpost_dv.maxlevel,ab.ox_dv.maxlevel,ab.ox_dv.maxlevel]))
+        self.level = max(levels) if len(levels) > 0 else None
 
     def __repr__(self):
         return "RC 0x%.2x" % self.rc
@@ -161,7 +163,7 @@ class AB(object):
     utailed = property(_get_utailed)
 
 
-    def recline(self, iq):
+    def recline(self, iq, u=False):
         """
         :param iq: i,q 2-tuple of i:enumeration index 0,1,2,... and q:photon index
         :return line: comparing a and b seqhis labels  
@@ -170,19 +172,29 @@ class AB(object):
         al = self.histype.label(self.a.seqhis[q])
         bl = self.histype.label(self.b.seqhis[q])
         mk = " " if al == bl else "*"
-        return " %6d %6d : %s : %50s %50s " % ( i, q, mk, al, bl )
+        head = " %6d %6d : %s : %50s %50s " % ( i, q, mk, al, bl )
+        if u==True: 
+            u = self.u 
+            uu = u[q].ravel()        # randoms for photon record_id q
+            ua = self.a.utail[q]
+            ub = self.b.utail[q]
+            wa = np.where( uu == ua )[0][0]
+            wb = -1 if ub == 0 else np.where( uu == ub )[0][0]
+            wd = 0 if wb == -1 else wb - wa 
+            tail = " ua %6.4f ub %6.4f wa %2d wb %2d wd %2d " % ( ua, ub, wa, wb, wd ) 
+        else:
+            tail = None
+        pass
+        return " ".join(filter(None, [head, tail]))
 
-    def dumpline(self, wh):
+    def dumpline(self, wh, u=False):
         if type(wh) is slice:
             start = wh.start if wh.start is not None else 0
             stop = wh.stop if wh.stop is not None else 1
             step = wh.step if wh.step is not None else 1
             wh = range(start,stop, step) 
         pass
-        self.print_( "\n".join( map(lambda iq:self.recline(iq), enumerate(wh))))
-
-
-    
+        self.print_( "\n".join( map(lambda iq:self.recline(iq, u=u), enumerate(wh))))
 
 
     def check_utaildebug(self):
@@ -192,6 +204,10 @@ class AB(object):
         Looking at utail mismatches that do not correspond to seqhis mismatches. 
 
         Hmm can use this approach to examine the random consumption of each photon 
+
+
+        Hmm for analysis of events created with a mask active the q will not 
+        correspond.
         """
 
         if self.cfm.utaildebug == 0:
@@ -199,17 +215,26 @@ class AB(object):
             return 
         pass 
 
+        mask = self.ok.mask
+        if not mask is None:
+            qmask = map(int, mask.split(","))
+            assert len(qmask) == len(self.a.seqhis)
+        else:
+            qmask = None
+        pass 
+
         u = self.u 
         w = np.where(np.logical_and( self.a.utail != self.b.utail, self.a.seqhis == self.b.seqhis ))[0]
         log.info("utail mismatch but seqhis matched u.shape:%r w.shape: %r " % (u.shape, w.shape) )
-        for i,p in enumerate(w):
-            uu = u[p].ravel()        # randoms for photon record_id p 
-            ua = self.a.utail[p]
-            ub = self.b.utail[p]
+        for i,q in enumerate(w):
+            q_ = q if qmask is None else qmask[q]            
+            uu = u[q_].ravel()        # randoms for photon record_id q 
+            ua = self.a.utail[q]
+            ub = self.b.utail[q]
             wa = np.where( uu == ua )[0][0]
             wb = -1 if ub == 0 else np.where( uu == ub )[0][0]
             wd = 0 if wb == -1 else wb - wa 
-            print(" i %5d p %7d ua %10.4f ub %10.4f  wa %3d wb %3d wd %3d : %s  " % (i, p, ua, ub, wa, wb, wd, self.recline((p,p))  ))
+            print(" i %5d q_ %7d ua %10.4f ub %10.4f  wa %3d wb %3d wd %3d : %s  " % (i, q_, ua, ub, wa, wb, wd, self.recline((i,q))  ))
         pass
 
 
@@ -385,6 +410,12 @@ class AB(object):
     def compare_shapes(self):
         assert self.a.dshape == self.b.dshape, (self.a.dshape, self.b.dshape)   
         self.dshape = self.a.dshape  
+
+        # description of the load_slice
+        assert self.a.dsli == self.b.dsli, ( self.a.dsli, self.b.dsli )
+        self.dsli = self.a.dsli 
+
+
  
     def compare_meta(self):
         cfm = CompareMetadata(self.a.metadata, self.b.metadata)

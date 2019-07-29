@@ -31,7 +31,7 @@ from opticks.ana.metadata import Metadata
 from opticks.ana.nibble import msk_, nib_, make_msk, make_nib
 
 msk = make_msk(16)
-nib = make_nib(16)
+NIB = make_nib(16)
 
 
 def count_nonzero(a):
@@ -383,9 +383,10 @@ class Evt(object):
         log.debug( self.dshape )
         log.debug("]")
 
+    dsli = property(lambda self:_slice(self.load_slice) if not self.load_slice is None else "-") # description of the load_slice 
+
     def dshape_(self):
-        dsli = _slice(self.load_slice) if not self.load_slice is None else "-"
-        return " file_photons %s   load_slice %s   loaded_photons %s " % ( Num.String(self.file_photons), dsli, Num.String(self.loaded_photons) )
+        return " file_photons %s   load_slice %s   loaded_photons %s " % ( Num.String(self.file_photons), self.dsli, Num.String(self.loaded_photons) )
 
 
     def init_metadata(self):
@@ -849,7 +850,7 @@ class Evt(object):
         for i in range(16):
             qpo[i] = np.where( x >> (4*i) != 0 )
             npo[qpo[i]] = i+1
-            wpo[i] = np.where( (x & ~msk[i] == 0) & (x & nib[i] != 0) )
+            wpo[i] = np.where( (x & ~msk[i] == 0) & (x & NIB[i] != 0) )
         pass
         self.wpo = wpo
         self.npo = npo

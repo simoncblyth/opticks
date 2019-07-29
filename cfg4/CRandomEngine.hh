@@ -119,6 +119,7 @@ class CFG4_API CRandomEngine : public CRandomListener, public CLHEP::HepRandomEn
         CG4*                          m_g4 ; 
         CG4Ctx&                       m_ctx ; 
         Opticks*                      m_ok ; 
+        bool                          m_dbgflat ;   
         int                           m_preinit ;  
         bool                          m_dbgkludgeflatzero ; 
         OpticksRun*                   m_run ; 

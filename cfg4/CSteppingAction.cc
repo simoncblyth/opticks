@@ -48,12 +48,16 @@
 #include "PLOG.hh"
 
 
+const plog::Severity CSteppingAction::LEVEL = PLOG::EnvLevel("CSteppingAction", "DEBUG") ; 
+
+
 CSteppingAction::CSteppingAction(CG4* g4, bool dynamic)
    : 
    G4UserSteppingAction(),
    m_g4(g4),
    m_ctx(g4->getCtx()),
    m_ok(g4->getOpticks()),
+   m_dbgflat(m_ok->isDbgFlat()), 
    m_dbgrec(m_ok->isDbgRec()),
    m_dynamic(dynamic),
    m_geometry(g4->getGeometry()),
@@ -139,10 +143,22 @@ void CSteppingAction::UserSteppingAction(const G4Step* step)
 
         if(skipClear)
         {
-            LOG(debug) << " --dbgskipclearzero  skipping CProcessManager::ClearNumberOfInteractionLengthLeft " ; 
+            if(m_dbgflat) 
+                LOG(LEVEL) 
+                    << " --dbgskipclearzero  "
+                    << " m_ctx._noZeroSteps " << m_ctx._noZeroSteps 
+                    << " skipping CProcessManager::ClearNumberOfInteractionLengthLeft " 
+                    ; 
         }  
         else
         {
+            if(m_dbgflat) 
+                LOG(LEVEL) 
+                    <<  " --dbgflat "
+                    << " m_ctx._noZeroSteps " << m_ctx._noZeroSteps 
+                    << " proceed CProcessManager::ClearNumberOfInteractionLengthLeft " 
+                    ; 
+
             CProcessManager::ClearNumberOfInteractionLengthLeft( m_ctx._process_manager, *m_ctx._track, *m_ctx._step );
         }
 

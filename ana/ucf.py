@@ -109,7 +109,7 @@ class U(object):
 class UCF(list):
     @classmethod
     def rngpath(cls):
-        return os.path.expandvars("$TMP/TRngBufTest.npy" )
+        return os.path.expandvars("$TMP/TRngBufTest_0.npy" )
     @classmethod
     def rngpathtxt(cls, pindex):
         return os.path.expandvars("$TMP/TRngBufTest_%s.txt" % pindex )

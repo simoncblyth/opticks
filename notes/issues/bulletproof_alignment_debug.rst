@@ -10,6 +10,11 @@ Point-by-point random consumption cursor ? seqcon
 
   * :doc:`ts-box-utaildebug-decouple-maligned-from-deviant`
 
+  * that doc does some u-counting : showing that apart from SC where 
+    do not known how many turns of the scattering loop (which each consume 5u) 
+    can predict the consumption from the history 
+
+
 * how about storing point-by-point random cursor index for the consumption ?  
 
   * thats bulletproof : ie if it matches are as sure as is possible 
@@ -33,6 +38,12 @@ Point-by-point random consumption cursor ? seqcon
   consumption index into a "seqcon" for up to 16 points.
   
 * hmm need to deal with the kludge nudges G4 side 
+
+
+
+
+
+
 
 
 Want to visualize where seqcon gets out of step ?

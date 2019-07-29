@@ -299,7 +299,7 @@ class QDVTab(object):
             pass
         pass 
 
-    level = property(lambda self:self.maxlevel.name)    
+    level = property(lambda self:self.maxlevel.name if not self.maxlevel is None else None)    
 
     def _get_maxlevel(self):
         """

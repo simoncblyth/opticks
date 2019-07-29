@@ -362,6 +362,11 @@ void OpticksCfg<Listener>::init()
        ("align",  "attempt to use cuRAND GPU generated random number sequence within Geant4") ;
    m_desc.add_options()
        ("dbgnojumpzero",  "debug of the maligned six, see notes/issues/RNG_seq_off_by_one.rst") ;
+
+   m_desc.add_options()
+       ("dbgflat",  "see CRandomEngine::dumpFlat") ;
+
+
    m_desc.add_options()
        ("dbgskipclearzero",  "debug of the maligned six, see notes/issues/RNG_seq_off_by_one.rst") ;
    m_desc.add_options()

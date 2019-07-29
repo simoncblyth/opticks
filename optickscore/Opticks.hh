@@ -535,6 +535,7 @@ class OKCORE_API Opticks {
 
        bool isAlign() const ; // --align
        bool isDbgNoJumpZero() const ; // --dbgnojumpzero
+       bool isDbgFlat() const ; // --dbgflat
        bool isDbgSkipClearZero() const ; // --dbgskipclearzero
        bool isDbgKludgeFlatZero() const ; // --dbgkludgeflatzero
        bool isDbgTex() const ; // --dbgtex

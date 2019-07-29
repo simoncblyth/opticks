@@ -1,0 +1,656 @@
+ts19-1872
+=============
+
+::
+
+    TAG=2 ts 19 --pfx scan-ts-utail --recpoi --utaildebug --xanalytic --generateoverride -1
+    TAG=2 ta 19 --pfx scan-ts-utail --msli :1M 
+
+
+    ts 19 --pfx scan-ts-utail --mask 1872 --pindex 0 --dbgseqhis 0xbbbbbbbbcd --pindexlog --recpoi --utaildebug --xanalytic --dbgflat 
+
+    ta 19 --pfx scan-ts-utail --mask 1872
+
+
+       ## add --dbgflat to dump the u on G4 side  
+
+    CSteppingAction=ERROR CRandomEngine=ERROR ts 19 --pfx scan-ts-utail --mask 1872 --pindex 0 --dbgseqhis 0xbbbbbbbbcd --pindexlog --recpoi --utaildebug --xanalytic --dbgflat
+
+
+
+
+Need to automate debugging
+---------------------------------
+
+
+::
+
+   96 #define CG4UniformRand(file, line) CG4::INSTANCE->flat_instrumented((file), (line))
+
+
+DsG4OpBoundaryProcess::
+
+    1063 
+    1064 #ifdef WITH_ALIGN_DEV_DEBUG
+    1065 #ifdef WITH_REFLECT_CHEAT_DEBUG 
+    1066           G4double _u = m_reflectcheat ? m_g4->getCtxRecordFraction()  : CG4UniformRand("DiDiTransCoeff",-1) ;   // --reflectcheat 
+    1067 #else
+    1068           G4double _u = CG4UniformRand("DiDiTransCoeff",-1) ;
+    1069 #endif
+    1070           bool _transmit = _u < TransCoeff ;
+    1071           if ( !_transmit ) {    // (*lldb*) DiDiTransCoeff
+    1072 #else
+    1073           if ( !G4BooleanRand(TransCoeff) ) {
+    1074 #endif
+    1075 
+    1076              // Simulate reflection
+    1077 
+
+
+
+Given how messed up the dbgflat history amazing that matches at all
+----------------------------------------------------------------------
+
+* what you get is mostly coming from the geometry
+* the values of the randoms have little effect (a wide latitude, they need to be extreme to mess up the decisions)
+
+  * so comparing histories is too fragile, need to compare A:(codepoint,u) and B:(codepoint,u)
+  
+* Opticks (A) codepoints are extremely regular and predictable unlike Geant4 
+
+* need a systematic way to map a codepoint in B with its u to its contemporary  
+
+
+::
+
+
+    ta 19 --pfx scan-ts-utail --mask 1872
+
+    In [1]: a.rposta
+    Out[1]: 
+    A([[[  71.9534,    6.5288, -746.9043,    0.    ],
+        [  71.9534,    6.5288,  -16.71  ,    2.4357],
+        [  -8.88  ,   -0.799 ,  167.0085,    3.6529],
+        [ -83.2532,   -7.556 ,   -2.0089,    4.7724],
+        [ 174.7243,   15.8654,   39.9944,    6.3626],
+        [ 242.4774,   22.0289,  167.0085,    7.2355],
+        [ 247.6136,   22.4854,  157.3523,    7.3022],
+        [ 147.9016,   13.4228,   23.3301,    8.3157],
+        [-117.6547,  -10.6834,    9.4279,    9.9338],
+        [-244.8515,  -22.2343,  138.702 ,   11.035 ]]])
+
+    In [2]: b.rposta
+    Out[2]: 
+    A([[[  71.9534,    6.5288, -746.9043,    0.    ],
+        [  71.9534,    6.5288,  -16.71  ,    2.4357],
+        [  -8.88  ,   -0.799 ,  167.0085,    3.6529],
+        [ -83.2532,   -7.556 ,   -2.0089,    4.7724],
+        [ 174.7243,   15.8654,   39.9716,    6.3626],
+        [ 242.4774,   22.0289,  167.0085,    7.2355],
+        [ 247.6136,   22.4854,  157.3523,    7.3022],
+        [ 147.9016,   13.4228,   23.3301,    8.3157],
+        [-117.6547,  -10.6834,    9.4279,    9.9338],
+        [-244.8515,  -22.2343,  138.702 ,   11.035 ]]])
+
+    In [3]: a.rposta - b.rposta
+    Out[3]: 
+    A([[[0.    , 0.    , 0.    , 0.    ],
+        [0.    , 0.    , 0.    , 0.    ],
+        [0.    , 0.    , 0.    , 0.    ],
+        [0.    , 0.    , 0.    , 0.    ],
+        [0.    , 0.    , 0.0228, 0.    ],
+        [0.    , 0.    , 0.    , 0.    ],
+        [0.    , 0.    , 0.    , 0.    ],
+        [0.    , 0.    , 0.    , 0.    ],
+        [0.    , 0.    , 0.    , 0.    ],
+        [0.    , 0.    , 0.    , 0.    ]]])
+
+
+
+
+masked run on 1872
+------------------------
+
+Observations:
+
+* zeroSteps happens once amd subsequnently effects all steps by preventing jump backs, that cannot be correct 
+
+  * not so : it gets reset at every CSteppingAction::setStep
+
+* many TIR following StepTooSmall
+
+
+::
+
+    2019-07-29 15:34:40.796 INFO  [271546] [CInputPhotonSource::GeneratePrimaryVertex@184]  num_photons 1 gpv_count 0 event_gencode 4096 : TORCH
+    2019-07-29 15:34:40.797 INFO  [271546] [CRandomEngine::run_ucf_script@683]  [ --align --mask ]  m_ctx._record_id:  0 mask_index: 1872 ( m_okevt_seqhis: bbbbbbbbcd TO BT BR BR BR BR BR BR BR BR                    ) 
+    2019-07-29 15:34:40.798 INFO  [271546] [CRandomEngine::run_ucf_script@692] [ cmd "ucf.py 1872"
+    path /home/blyth/local/opticks/tmp/ox_1872.log 
+        1872 : /home/blyth/local/opticks/tmp/ox_1872.log  
+     [  0|  0]                                         OpBoundary :      : 0.307137638 : 0.307137638 : 2 
+     [  1|  1]                                         OpRayleigh :      : 0.331418544 : 0.331418544 : 1 
+     [  2|  2]                                       OpAbsorption :      : 0.530182064 : 0.530182064 : 1 
+     [  3|  3]                          OpBoundary_DiDiTransCoeff :      : 0.068389878 : 0.068389878 : 1 
+     [  4|  4]                                         OpBoundary :      : 0.655026615 : 0.655026615 : 2 
+     [  5|  5]                                         OpRayleigh :      : 0.967509329 : 0.967509329 : 1 
+     [  6|  6]                                       OpAbsorption :      : 0.544462025 : 0.544462025 : 1 
+     [  7|  7]                          OpBoundary_DiDiTransCoeff :      : 0.901645601 : 0.901645601 : 1 
+     [  8|  8]                                         OpBoundary :      : 0.560242951 : 0.560242951 : 2 
+     [  9|  9]                                         OpRayleigh :      : 0.697937012 : 0.697937012 : 1 
+     [ 10| 10]                                       OpAbsorption :      : 0.152508929 : 0.152508929 : 1 
+     [ 11| 11]                          OpBoundary_DiDiTransCoeff :      : 0.877556682 : 0.877556682 : 1 
+     [ 12| 12]                                         OpBoundary :      : 0.480818212 : 0.480818212 : 2 
+     [ 13| 13]                                         OpRayleigh :      : 0.006420656 : 0.006420656 : 1 
+     [ 14| 14]                                       OpAbsorption :      : 0.503428161 : 0.503428161 : 1 
+     [ 15| 15]                          OpBoundary_DiDiTransCoeff :      : 0.472876906 : 0.472876906 : 1 
+     [ 16| 16]                                         OpBoundary :      : 0.399395764 : 0.399395764 : 2 
+     [ 17| 17]                                         OpRayleigh :      : 0.439358085 : 0.439358085 : 1 
+     [ 18| 18]                                       OpAbsorption :      : 0.377539158 : 0.377539158 : 1 
+     [ 19| 19]                          OpBoundary_DiDiTransCoeff :      : 0.842424333 : 0.842424333 : 1 
+     [ 20| 20]                                         OpBoundary :      : 0.700280845 : 0.700280845 : 2 
+     [ 21| 21]                                         OpRayleigh :      : 0.510347307 : 0.510347307 : 1 
+     [ 22| 22]                                       OpAbsorption :      : 0.029762292 : 0.029762292 : 1 
+     [ 23| 23]                          OpBoundary_DiDiTransCoeff :      : 0.494870305 : 0.494870305 : 1 
+     [ 24| 24]                                         OpBoundary :  +0* : 0.091417939 : 0.091417938 : 2 
+     [ 25| 25]                                         OpRayleigh :      : 0.982020676 : 0.982020676 : 1 
+     [ 26| 26]                                       OpAbsorption :      : 0.256925344 : 0.256925344 : 1 
+     [ 27| 27]                          OpBoundary_DiDiTransCoeff :      : 0.469000012 : 0.469000012 : 1 
+     [ 28| 28]                                         OpBoundary :      : 0.481715500 : 0.481715500 : 2 
+     [ 29| 29]                                         OpRayleigh :      : 0.957990050 : 0.957990050 : 1 
+     [ 30| 30]                                       OpAbsorption :      : 0.639118016 : 0.639118016 : 1 
+     [ 31| 31]                          OpBoundary_DiDiTransCoeff :      : 0.979600251 : 0.979600251 : 1 
+     [ 32| 32]                                         OpBoundary :      : 0.023185812 : 0.023185812 : 2 
+     [ 33| 33]                                         OpRayleigh :      : 0.770136058 : 0.770136058 : 1 
+     [ 34| 34]                                       OpAbsorption :      : 0.231035694 : 0.231035694 : 1 
+     [ 35| 35]                          OpBoundary_DiDiTransCoeff :      : 0.543443441 : 0.543443441 : 1 
+    2019-07-29 15:34:41.016 INFO  [271546] [SSys::run@72] ucf.py 1872 rc_raw : 0 rc : 0
+    2019-07-29 15:34:41.016 INFO  [271546] [CRandomEngine::run_ucf_script@695] ] cmd "ucf.py 1872"
+    2019-07-29 15:34:41.017 ERROR [271546] [CRandomEngine::setupTranche@215]  DYNAMIC_CURAND  m_tranche_id 0 m_tranche_size 100000 m_tranche_ibase 0
+    2019-07-29 15:34:41.225 ERROR [271546] [CRandomEngine::setupCurandSequence@274]  record_id 1872 m_tranche_id 0 m_tranche_size 100000 m_tranche_index 1872 m_curand_ni 100000 m_curand_nv 256
+     dumpFlat CRandomEngine rec.stp1   0.0 crf     1 csf     1 loc                                         OpBoundary     0   0.307138            Undefined CPro      OpBoundary LenLeft         -1 LenTrav          0 AtRest/AlongStep/PostStep NNY alignlevel 0
+     dumpFlat CRandomEngine rec.stp1   0.0 crf     2 csf     2 loc                                         OpRayleigh     1   0.331419            Undefined CPro      OpRayleigh LenLeft         -1 LenTrav          0 AtRest/AlongStep/PostStep NNY alignlevel 0
+     dumpFlat CRandomEngine rec.stp1   0.0 crf     3 csf     3 loc                                       OpAbsorption     2   0.530182     PostStepDoItProc CPro    OpAbsorption LenLeft         -1 LenTrav          0 AtRest/AlongStep/PostStep NNY alignlevel 0
+     dumpFlat CRandomEngine rec.stp1   0.0 crf     4 csf     4 loc                          OpBoundary_DiDiTransCoeff     3  0.0683899         GeomBoundary CPro      OpBoundary LenLeft    1.18046 LenTrav          0 AtRest/AlongStep/PostStep NNY alignlevel 0
+    2019-07-29 15:34:41.229 ERROR [271546] [CSteppingAction::UserSteppingAction@156]  --dbgflat  m_ctx._noZeroSteps 0 proceed CProcessManager::ClearNumberOfInteractionLengthLeft 
+     dumpFlat CRandomEngine rec.stp1   0.1 crf     5 csf     1 loc                                         OpBoundary     4   0.655027         GeomBoundary CPro      OpBoundary LenLeft         -1 LenTrav          0 AtRest/AlongStep/PostStep NNY alignlevel 0
+     dumpFlat CRandomEngine rec.stp1   0.1 crf     6 csf     2 loc                                         OpRayleigh     5   0.967509         GeomBoundary CPro      OpRayleigh LenLeft         -1 LenTrav          0 AtRest/AlongStep/PostStep NNY alignlevel 0
+     dumpFlat CRandomEngine rec.stp1   0.1 crf     7 csf     3 loc                                       OpAbsorption     6   0.544462     PostStepDoItProc CPro    OpAbsorption LenLeft         -1 LenTrav          0 AtRest/AlongStep/PostStep NNY alignlevel 0
+     dumpFlat CRandomEngine rec.stp1   0.1 crf     8 csf     4 loc                          OpBoundary_DiDiTransCoeff     7   0.901646         GeomBoundary CPro      OpBoundary LenLeft   0.423079 LenTrav          0 AtRest/AlongStep/PostStep NNY alignlevel 0
+    2019-07-29 15:34:41.230 ERROR [271546] [CSteppingAction::UserSteppingAction@156]  --dbgflat  m_ctx._noZeroSteps 0 proceed CProcessManager::ClearNumberOfInteractionLengthLeft 
+     dumpFlat CRandomEngine rec.stp1   0.2 crf     9 csf     1 loc                                         OpBoundary     8   0.560243         GeomBoundary CPro      OpBoundary LenLeft         -1 LenTrav          0 AtRest/AlongStep/PostStep NNY alignlevel 0
+     dumpFlat CRandomEngine rec.stp1   0.2 crf    10 csf     2 loc                                         OpRayleigh     9   0.697937         GeomBoundary CPro      OpRayleigh LenLeft         -1 LenTrav          0 AtRest/AlongStep/PostStep NNY alignlevel 0
+     dumpFlat CRandomEngine rec.stp1   0.2 crf    11 csf     3 loc                                       OpAbsorption    10   0.152509     PostStepDoItProc CPro    OpAbsorption LenLeft         -1 LenTrav          0 AtRest/AlongStep/PostStep NNY alignlevel 0
+    2019-07-29 15:34:41.231 ERROR [271546] [CRandomEngine::postStep@559]  _noZeroSteps 1 backseq -3 --dbgnojumpzero YES
+    2019-07-29 15:34:41.231 ERROR [271546] [CSteppingAction::UserSteppingAction@147]  --dbgskipclearzero   m_ctx._noZeroSteps 1 skipping CProcessManager::ClearNumberOfInteractionLengthLeft 
+    2019-07-29 15:34:41.231 ERROR [271546] [CRandomEngine::flat@395]  --dbgkludgeflatzero   first flat call following boundary status StepTooSmall after FresnelReflection yields  _peek(-2) or zero value  v 0
+     dumpFlat CRandomEngine rec.stp1   0.3 crf    12 csf     1 loc                                         OpBoundary    10          0         GeomBoundary CPro      OpBoundary LenLeft         -1 LenTrav          0 AtRest/AlongStep/PostStep NNY alignlevel 0
+     dumpFlat CRandomEngine rec.stp1   0.3 crf    13 csf     2 loc                          OpBoundary_DiDiTransCoeff    11   0.877557         GeomBoundary CPro      OpBoundary LenLeft     709.09 LenTrav          0 AtRest/AlongStep/PostStep NNY alignlevel 0
+    2019-07-29 15:34:41.232 ERROR [271546] [CSteppingAction::UserSteppingAction@156]  --dbgflat  m_ctx._noZeroSteps 0 proceed CProcessManager::ClearNumberOfInteractionLengthLeft 
+     dumpFlat CRandomEngine rec.stp1   0.4 crf    14 csf     1 loc                                         OpBoundary    12   0.480818         GeomBoundary CPro      OpBoundary LenLeft         -1 LenTrav          0 AtRest/AlongStep/PostStep NNY alignlevel 0
+     dumpFlat CRandomEngine rec.stp1   0.4 crf    15 csf     2 loc                                         OpRayleigh    13 0.00642066         GeomBoundary CPro      OpRayleigh LenLeft         -1 LenTrav          0 AtRest/AlongStep/PostStep NNY alignlevel 0
+     dumpFlat CRandomEngine rec.stp1   0.4 crf    16 csf     3 loc                                       OpAbsorption    14   0.503428     PostStepDoItProc CPro    OpAbsorption LenLeft         -1 LenTrav          0 AtRest/AlongStep/PostStep NNY alignlevel 0
+    2019-07-29 15:34:41.233 ERROR [271546] [CRandomEngine::postStep@559]  _noZeroSteps 1 backseq -3 --dbgnojumpzero YES
+    2019-07-29 15:34:41.233 ERROR [271546] [CSteppingAction::UserSteppingAction@147]  --dbgskipclearzero   m_ctx._noZeroSteps 1 skipping CProcessManager::ClearNumberOfInteractionLengthLeft 
+    2019-07-29 15:34:41.233 ERROR [271546] [CRandomEngine::flat@395]  --dbgkludgeflatzero   first flat call following boundary status StepTooSmall after FresnelReflection yields  _peek(-2) or zero value  v 0
+     dumpFlat CRandomEngine rec.stp1   0.5 crf    17 csf     1 loc                                         OpBoundary    14          0         GeomBoundary CPro      OpBoundary LenLeft         -1 LenTrav          0 AtRest/AlongStep/PostStep NNY alignlevel 0
+    2019-07-29 15:34:41.234 ERROR [271546] [CSteppingAction::UserSteppingAction@156]  --dbgflat  m_ctx._noZeroSteps 0 proceed CProcessManager::ClearNumberOfInteractionLengthLeft 
+     dumpFlat CRandomEngine rec.stp1   0.6 crf    18 csf     1 loc                                         OpBoundary    15   0.472877         GeomBoundary CPro      OpBoundary LenLeft         -1 LenTrav          0 AtRest/AlongStep/PostStep NNY alignlevel 0
+     dumpFlat CRandomEngine rec.stp1   0.6 crf    19 csf     2 loc                                         OpRayleigh    16   0.399396         GeomBoundary CPro      OpRayleigh LenLeft         -1 LenTrav          0 AtRest/AlongStep/PostStep NNY alignlevel 0
+     dumpFlat CRandomEngine rec.stp1   0.6 crf    20 csf     3 loc                                       OpAbsorption    17   0.439358     PostStepDoItProc CPro    OpAbsorption LenLeft         -1 LenTrav          0 AtRest/AlongStep/PostStep NNY alignlevel 0
+    2019-07-29 15:34:41.235 ERROR [271546] [CRandomEngine::postStep@559]  _noZeroSteps 1 backseq -3 --dbgnojumpzero YES
+    2019-07-29 15:34:41.235 ERROR [271546] [CSteppingAction::UserSteppingAction@147]  --dbgskipclearzero   m_ctx._noZeroSteps 1 skipping CProcessManager::ClearNumberOfInteractionLengthLeft 
+     dumpFlat CRandomEngine rec.stp1   0.7 crf    21 csf     1 loc                                         OpBoundary    18   0.377539         GeomBoundary CPro      OpBoundary LenLeft         -1 LenTrav          0 AtRest/AlongStep/PostStep NNY alignlevel 0
+     dumpFlat CRandomEngine rec.stp1   0.7 crf    22 csf     2 loc                          OpBoundary_DiDiTransCoeff    19   0.842424         GeomBoundary CPro      OpBoundary LenLeft   0.974081 LenTrav          0 AtRest/AlongStep/PostStep NNY alignlevel 0
+    2019-07-29 15:34:41.236 ERROR [271546] [CSteppingAction::UserSteppingAction@156]  --dbgflat  m_ctx._noZeroSteps 0 proceed CProcessManager::ClearNumberOfInteractionLengthLeft 
+     dumpFlat CRandomEngine rec.stp1   0.8 crf    23 csf     1 loc                                         OpBoundary    20   0.700281         GeomBoundary CPro      OpBoundary LenLeft         -1 LenTrav          0 AtRest/AlongStep/PostStep NNY alignlevel 0
+     dumpFlat CRandomEngine rec.stp1   0.8 crf    24 csf     2 loc                                         OpRayleigh    21   0.510347         GeomBoundary CPro      OpRayleigh LenLeft         -1 LenTrav          0 AtRest/AlongStep/PostStep NNY alignlevel 0
+     dumpFlat CRandomEngine rec.stp1   0.8 crf    25 csf     3 loc                                       OpAbsorption    22  0.0297623     PostStepDoItProc CPro    OpAbsorption LenLeft         -1 LenTrav          0 AtRest/AlongStep/PostStep NNY alignlevel 0
+    2019-07-29 15:34:41.236 ERROR [271546] [CRandomEngine::postStep@559]  _noZeroSteps 1 backseq -3 --dbgnojumpzero YES
+    2019-07-29 15:34:41.236 ERROR [271546] [CSteppingAction::UserSteppingAction@147]  --dbgskipclearzero   m_ctx._noZeroSteps 1 skipping CProcessManager::ClearNumberOfInteractionLengthLeft 
+    2019-07-29 15:34:41.236 ERROR [271546] [CRandomEngine::flat@395]  --dbgkludgeflatzero   first flat call following boundary status StepTooSmall after FresnelReflection yields  _peek(-2) or zero value  v 0
+     dumpFlat CRandomEngine rec.stp1   0.9 crf    26 csf     1 loc                                         OpBoundary    22          0         GeomBoundary CPro      OpBoundary LenLeft         -1 LenTrav          0 AtRest/AlongStep/PostStep NNY alignlevel 0
+    2019-07-29 15:34:41.237 ERROR [271546] [CSteppingAction::UserSteppingAction@156]  --dbgflat  m_ctx._noZeroSteps 0 proceed CProcessManager::ClearNumberOfInteractionLengthLeft 
+     dumpFlat CRandomEngine rec.stp1  0.10 crf    27 csf     1 loc                                         OpBoundary    23    0.49487         GeomBoundary CPro      OpBoundary LenLeft         -1 LenTrav          0 AtRest/AlongStep/PostStep NNY alignlevel 0
+     dumpFlat CRandomEngine rec.stp1  0.10 crf    28 csf     2 loc                                         OpRayleigh    24  0.0914179         GeomBoundary CPro      OpRayleigh LenLeft         -1 LenTrav          0 AtRest/AlongStep/PostStep NNY alignlevel 0
+     dumpFlat CRandomEngine rec.stp1  0.10 crf    29 csf     3 loc                                       OpAbsorption    25   0.982021     PostStepDoItProc CPro    OpAbsorption LenLeft         -1 LenTrav          0 AtRest/AlongStep/PostStep NNY alignlevel 0
+    2019-07-29 15:34:41.238 ERROR [271546] [CRandomEngine::postStep@559]  _noZeroSteps 1 backseq -3 --dbgnojumpzero YES
+    2019-07-29 15:34:41.238 ERROR [271546] [CSteppingAction::UserSteppingAction@147]  --dbgskipclearzero   m_ctx._noZeroSteps 1 skipping CProcessManager::ClearNumberOfInteractionLengthLeft 
+     dumpFlat CRandomEngine rec.stp1  0.11 crf    30 csf     1 loc                                         OpBoundary    26   0.256925         GeomBoundary CPro      OpBoundary LenLeft         -1 LenTrav          0 AtRest/AlongStep/PostStep NNY alignlevel 0
+    2019-07-29 15:34:41.238 ERROR [271546] [CSteppingAction::UserSteppingAction@156]  --dbgflat  m_ctx._noZeroSteps 0 proceed CProcessManager::ClearNumberOfInteractionLengthLeft 
+     dumpFlat CRandomEngine rec.stp1  0.12 crf    31 csf     1 loc                                         OpBoundary    27      0.469         GeomBoundary CPro      OpBoundary LenLeft         -1 LenTrav          0 AtRest/AlongStep/PostStep NNY alignlevel 0
+     dumpFlat CRandomEngine rec.stp1  0.12 crf    32 csf     2 loc                                         OpRayleigh    28   0.481716         GeomBoundary CPro      OpRayleigh LenLeft         -1 LenTrav          0 AtRest/AlongStep/PostStep NNY alignlevel 0
+     dumpFlat CRandomEngine rec.stp1  0.12 crf    33 csf     3 loc                                       OpAbsorption    29    0.95799     PostStepDoItProc CPro    OpAbsorption LenLeft         -1 LenTrav          0 AtRest/AlongStep/PostStep NNY alignlevel 0
+    2019-07-29 15:34:41.239 ERROR [271546] [CRandomEngine::postStep@559]  _noZeroSteps 1 backseq -3 --dbgnojumpzero YES
+    2019-07-29 15:34:41.239 ERROR [271546] [CSteppingAction::UserSteppingAction@147]  --dbgskipclearzero   m_ctx._noZeroSteps 1 skipping CProcessManager::ClearNumberOfInteractionLengthLeft 
+     dumpFlat CRandomEngine rec.stp1  0.13 crf    34 csf     1 loc                                         OpBoundary    30   0.639118         GeomBoundary CPro      OpBoundary LenLeft         -1 LenTrav          0 AtRest/AlongStep/PostStep NNY alignlevel 0
+    2019-07-29 15:34:41.239 ERROR [271546] [CSteppingAction::UserSteppingAction@156]  --dbgflat  m_ctx._noZeroSteps 0 proceed CProcessManager::ClearNumberOfInteractionLengthLeft 
+     dumpFlat CRandomEngine rec.stp1  0.14 crf    35 csf     1 loc                                         OpBoundary    31     0.9796         GeomBoundary CPro      OpBoundary LenLeft         -1 LenTrav          0 AtRest/AlongStep/PostStep NNY alignlevel 0
+     dumpFlat CRandomEngine rec.stp1  0.14 crf    36 csf     2 loc                                         OpRayleigh    32  0.0231858         GeomBoundary CPro      OpRayleigh LenLeft         -1 LenTrav          0 AtRest/AlongStep/PostStep NNY alignlevel 0
+     dumpFlat CRandomEngine rec.stp1  0.14 crf    37 csf     3 loc                                       OpAbsorption    33   0.770136     PostStepDoItProc CPro    OpAbsorption LenLeft         -1 LenTrav          0 AtRest/AlongStep/PostStep NNY alignlevel 0
+    2019-07-29 15:34:41.240 ERROR [271546] [CRandomEngine::postStep@559]  _noZeroSteps 1 backseq -3 --dbgnojumpzero YES
+    2019-07-29 15:34:41.240 ERROR [271546] [CSteppingAction::UserSteppingAction@147]  --dbgskipclearzero   m_ctx._noZeroSteps 1 skipping CProcessManager::ClearNumberOfInteractionLengthLeft 
+     dumpFlat CRandomEngine rec.stp1  0.15 crf    38 csf     1 loc                                         OpBoundary    34   0.231036         GeomBoundary CPro      OpBoundary LenLeft         -1 LenTrav          0 AtRest/AlongStep/PostStep NNY alignlevel 0
+    2019-07-29 15:34:41.240 ERROR [271546] [CSteppingAction::UserSteppingAction@156]  --dbgflat  m_ctx._noZeroSteps 0 proceed CProcessManager::ClearNumberOfInteractionLengthLeft 
+     dumpFlat CRandomEngine rec.stp1  0.16 crf    39 csf     1 loc                                         OpBoundary    35   0.543443         GeomBoundary CPro      OpBoundary LenLeft         -1 LenTrav          0 AtRest/AlongStep/PostStep NNY alignlevel 0
+     dumpFlat CRandomEngine rec.stp1  0.16 crf    40 csf     2 loc                                         OpRayleigh    36   0.809464         GeomBoundary CPro      OpRayleigh LenLeft         -1 LenTrav          0 AtRest/AlongStep/PostStep NNY alignlevel 0
+     dumpFlat CRandomEngine rec.stp1  0.16 crf    41 csf     3 loc                                       OpAbsorption    37    0.84821     PostStepDoItProc CPro    OpAbsorption LenLeft         -1 LenTrav          0 AtRest/AlongStep/PostStep NNY alignlevel 0
+    2019-07-29 15:34:41.241 ERROR [271546] [CRandomEngine::postStep@559]  _noZeroSteps 1 backseq -3 --dbgnojumpzero YES
+    2019-07-29 15:34:41.241 ERROR [271546] [CSteppingAction::UserSteppingAction@147]  --dbgskipclearzero   m_ctx._noZeroSteps 1 skipping CProcessManager::ClearNumberOfInteractionLengthLeft 
+     dumpFlat CRandomEngine rec.stp1  0.17 crf    42 csf     1 loc                                         OpBoundary    38   0.875377         GeomBoundary CPro      OpBoundary LenLeft         -1 LenTrav          0 AtRest/AlongStep/PostStep NNY alignlevel 0
+     dumpFlat CRandomEngine rec.stp1  0.17 crf    43 csf     2 loc                          OpBoundary_DiDiTransCoeff    39  0.0769937         GeomBoundary CPro      OpBoundary LenLeft   0.133101 LenTrav          0 AtRest/AlongStep/PostStep NNY alignlevel 0
+    2019-07-29 15:34:41.241 ERROR [271546] [CSteppingAction::UserSteppingAction@156]  --dbgflat  m_ctx._noZeroSteps 0 proceed CProcessManager::ClearNumberOfInteractionLengthLeft 
+     dumpFlat CRandomEngine rec.stp1  0.18 crf    44 csf     1 loc                                         OpBoundary    40   0.863248         GeomBoundary CPro      OpBoundary LenLeft         -1 LenTrav          0 AtRest/AlongStep/PostStep NNY alignlevel 0
+     dumpFlat CRandomEngine rec.stp1  0.18 crf    45 csf     2 loc                                         OpRayleigh    41   0.394464         GeomBoundary CPro      OpRayleigh LenLeft         -1 LenTrav          0 AtRest/AlongStep/PostStep NNY alignlevel 0
+     dumpFlat CRandomEngine rec.stp1  0.18 crf    46 csf     3 loc                                       OpAbsorption    42   0.323533     PostStepDoItProc CPro    OpAbsorption LenLeft         -1 LenTrav          0 AtRest/AlongStep/PostStep NNY alignlevel 0
+     dumpFlat CRandomEngine rec.stp1  0.18 crf    47 csf     4 loc                   OpBoundary_DiDiReflectOrTransmit    43   0.167849         GeomBoundary CPro      OpBoundary LenLeft   0.147054 LenTrav          0 AtRest/AlongStep/PostStep NNY alignlevel 0
+     dumpFlat CRandomEngine rec.stp1  0.18 crf    48 csf     5 loc                            OpBoundary_DoAbsorption    44   0.662644         GeomBoundary CPro      OpBoundary LenLeft   0.147054 LenTrav          0 AtRest/AlongStep/PostStep NNY alignlevel 0
+     dumpFlat CRandomEngine rec.stp1  0.19 crf    49 csf     1 loc                                         OpBoundary    45   0.187102         GeomBoundary CPro      OpBoundary LenLeft         -1 LenTrav          0 AtRest/AlongStep/PostStep NNY alignlevel 0
+    2019-07-29 15:34:41.243 INFO  [271546] [CDebug::dump@159] CDebug::postTrack
+    2019-07-29 15:34:41.243 INFO  [271546] [CRec::dump@169] CDebug::dump record_id 0  origin[ 71.9526.535-746.900]   Ori[ 71.9526.535-746.900] 
+    2019-07-29 15:34:41.243 INFO  [271546] [CRec::dump@175]  nstp 19
+    ( 0)  TO/BT     FrT                                          STEP_START 
+    [   0](Stp ;opticalphoton stepNum   19(tk ;opticalphoton tid 1 pid 0 nm    380 mm  ori[   71.952   6.535-746.900]  pos[   78.583   7.1371493.900]  )
+      pre                  box_pv0_          Vacuum          noProc           Undefined pos[      0.000     0.000     0.000]  dir[   -0.000  -0.000   1.000]  pol[    0.000  -1.000   0.000]  ns  0.000 nm 380.000 mm/ns 299.792
+     post                union_pv0_   GlassSchottF2  Transportation        GeomBoundary pos[      0.000     0.000   730.192]  dir[   -0.402  -0.037   0.915]  pol[    0.000  -0.999  -0.040]  ns  2.436 nm 380.000 mm/ns 165.028
+     )
+    ( 1)  BT/BR     FrR                                                     
+    [   1](Stp ;opticalphoton stepNum   19(tk ;opticalphoton tid 1 pid 0 nm    380 mm  ori[   71.952   6.535-746.900]  pos[   78.583   7.1371493.900]  )
+      pre                union_pv0_   GlassSchottF2  Transportation        GeomBoundary pos[      0.000     0.000   730.192]  dir[   -0.402  -0.037   0.915]  pol[    0.000  -0.999  -0.040]  ns  2.436 nm 380.000 mm/ns 165.028
+     post                  box_pv0_          Vacuum  Transportation        GeomBoundary pos[    -80.838    -7.342   913.905]  dir[   -0.402  -0.037  -0.915]  pol[    0.129  -0.991  -0.017]  ns  3.653 nm 380.000 mm/ns 165.028
+     )
+    ( 2)  BR/NA     STS                                            MAT_SWAP 
+    [   2](Stp ;opticalphoton stepNum   19(tk ;opticalphoton tid 1 pid 0 nm    380 mm  ori[   71.952   6.535-746.900]  pos[   78.583   7.1371493.900]  )
+      pre                  box_pv0_          Vacuum  Transportation        GeomBoundary pos[    -80.838    -7.342   913.905]  dir[   -0.402  -0.037  -0.915]  pol[    0.129  -0.991  -0.017]  ns  3.653 nm 380.000 mm/ns 165.028
+     post                union_pv0_   GlassSchottF2  Transportation        GeomBoundary pos[    -80.838    -7.342   913.905]  dir[   -0.402  -0.037  -0.915]  pol[    0.129  -0.991  -0.017]  ns  3.653 nm 380.000 mm/ns 165.028
+     )
+    ( 3)  NA/BR     FrR                                            PRE_SKIP 
+    [   3](Stp ;opticalphoton stepNum   19(tk ;opticalphoton tid 1 pid 0 nm    380 mm  ori[   71.952   6.535-746.900]  pos[   78.583   7.1371493.900]  )
+      pre                union_pv0_   GlassSchottF2  Transportation        GeomBoundary pos[    -80.838    -7.342   913.905]  dir[   -0.402  -0.037  -0.915]  pol[    0.129  -0.991  -0.017]  ns  3.653 nm 380.000 mm/ns 165.028
+     post                  box_pv0_          Vacuum  Transportation        GeomBoundary pos[   -155.210   -14.096   744.888]  dir[    0.983   0.089   0.160]  pol[    0.089  -0.996   0.007]  ns  4.772 nm 380.000 mm/ns 165.028
+     )
+    ( 4)  BR/NA     STS                                            MAT_SWAP 
+    [   4](Stp ;opticalphoton stepNum   19(tk ;opticalphoton tid 1 pid 0 nm    380 mm  ori[   71.952   6.535-746.900]  pos[   78.583   7.1371493.900]  )
+      pre                  box_pv0_          Vacuum  Transportation        GeomBoundary pos[   -155.210   -14.096   744.888]  dir[    0.983   0.089   0.160]  pol[    0.089  -0.996   0.007]  ns  4.772 nm 380.000 mm/ns 165.028
+     post                union_pv0_   GlassSchottF2  Transportation        GeomBoundary pos[   -155.210   -14.096   744.888]  dir[    0.983   0.089   0.160]  pol[    0.089  -0.996   0.007]  ns  4.772 nm 380.000 mm/ns 165.028
+     )
+    ( 5)  NA/BR     TIR                                            PRE_SKIP 
+    [   5](Stp ;opticalphoton stepNum   19(tk ;opticalphoton tid 1 pid 0 nm    380 mm  ori[   71.952   6.535-746.900]  pos[   78.583   7.1371493.900]  )
+      pre                union_pv0_   GlassSchottF2  Transportation        GeomBoundary pos[   -155.210   -14.096   744.888]  dir[    0.983   0.089   0.160]  pol[    0.089  -0.996   0.007]  ns  4.772 nm 380.000 mm/ns 165.028
+     post                  box_pv0_          Vacuum  Transportation        GeomBoundary pos[    102.770     9.333   786.883]  dir[    0.470   0.043   0.882]  pol[   -0.097   0.995   0.004]  ns  6.363 nm 380.000 mm/ns 165.028
+     )
+    ( 6)  BR/NA     STS                                            MAT_SWAP 
+    [   6](Stp ;opticalphoton stepNum   19(tk ;opticalphoton tid 1 pid 0 nm    380 mm  ori[   71.952   6.535-746.900]  pos[   78.583   7.1371493.900]  )
+      pre                  box_pv0_          Vacuum  Transportation        GeomBoundary pos[    102.770     9.333   786.883]  dir[    0.470   0.043   0.882]  pol[   -0.097   0.995   0.004]  ns  6.363 nm 380.000 mm/ns 165.028
+     post                union_pv0_   GlassSchottF2  Transportation        GeomBoundary pos[    102.770     9.333   786.883]  dir[    0.470   0.043   0.882]  pol[   -0.097   0.995   0.004]  ns  6.363 nm 380.000 mm/ns 165.028
+     )
+    ( 7)  NA/BR     FrR                                            PRE_SKIP 
+    [   7](Stp ;opticalphoton stepNum   19(tk ;opticalphoton tid 1 pid 0 nm    380 mm  ori[   71.952   6.535-746.900]  pos[   78.583   7.1371493.900]  )
+      pre                union_pv0_   GlassSchottF2  Transportation        GeomBoundary pos[    102.770     9.333   786.883]  dir[    0.470   0.043   0.882]  pol[   -0.097   0.995   0.004]  ns  6.363 nm 380.000 mm/ns 165.028
+     post                  box_pv0_          Vacuum  Transportation        GeomBoundary pos[    170.520    15.486   913.905]  dir[    0.470   0.043  -0.882]  pol[   -0.092   0.996  -0.001]  ns  7.236 nm 380.000 mm/ns 165.028
+     )
+    ( 8)  BR/NA     STS                                            MAT_SWAP 
+    [   8](Stp ;opticalphoton stepNum   19(tk ;opticalphoton tid 1 pid 0 nm    380 mm  ori[   71.952   6.535-746.900]  pos[   78.583   7.1371493.900]  )
+      pre                  box_pv0_          Vacuum  Transportation        GeomBoundary pos[    170.520    15.486   913.905]  dir[    0.470   0.043  -0.882]  pol[   -0.092   0.996  -0.001]  ns  7.236 nm 380.000 mm/ns 165.028
+     post                union_pv0_   GlassSchottF2  Transportation        GeomBoundary pos[    170.520    15.486   913.905]  dir[    0.470   0.043  -0.882]  pol[   -0.092   0.996  -0.001]  ns  7.236 nm 380.000 mm/ns 165.028
+     )
+    ( 9)  NA/BR     TIR                                            PRE_SKIP 
+    [   9](Stp ;opticalphoton stepNum   19(tk ;opticalphoton tid 1 pid 0 nm    380 mm  ori[   71.952   6.535-746.900]  pos[   78.583   7.1371493.900]  )
+      pre                union_pv0_   GlassSchottF2  Transportation        GeomBoundary pos[    170.520    15.486   913.905]  dir[    0.470   0.043  -0.882]  pol[   -0.092   0.996  -0.001]  ns  7.236 nm 380.000 mm/ns 165.028
+     post                  box_pv0_          Vacuum  Transportation        GeomBoundary pos[    175.667    15.954   904.256]  dir[   -0.596  -0.054  -0.801]  pol[    0.089  -0.996   0.001]  ns  7.302 nm 380.000 mm/ns 165.028
+     )
+    (10)  BR/NA     STS                                            MAT_SWAP 
+    [  10](Stp ;opticalphoton stepNum   19(tk ;opticalphoton tid 1 pid 0 nm    380 mm  ori[   71.952   6.535-746.900]  pos[   78.583   7.1371493.900]  )
+      pre                  box_pv0_          Vacuum  Transportation        GeomBoundary pos[    175.667    15.954   904.256]  dir[   -0.596  -0.054  -0.801]  pol[    0.089  -0.996   0.001]  ns  7.302 nm 380.000 mm/ns 165.028
+     post                union_pv0_   GlassSchottF2  Transportation        GeomBoundary pos[    175.667    15.954   904.256]  dir[   -0.596  -0.054  -0.801]  pol[    0.089  -0.996   0.001]  ns  7.302 nm 380.000 mm/ns 165.028
+     )
+    (11)  NA/BR     TIR                                            PRE_SKIP 
+    [  11](Stp ;opticalphoton stepNum   19(tk ;opticalphoton tid 1 pid 0 nm    380 mm  ori[   71.952   6.535-746.900]  pos[   78.583   7.1371493.900]  )
+      pre                union_pv0_   GlassSchottF2  Transportation        GeomBoundary pos[    175.667    15.954   904.256]  dir[   -0.596  -0.054  -0.801]  pol[    0.089  -0.996   0.001]  ns  7.302 nm 380.000 mm/ns 165.028
+     post                  box_pv0_          Vacuum  Transportation        GeomBoundary pos[     75.956     6.898   770.231]  dir[   -0.995  -0.090  -0.052]  pol[   -0.091   0.996   0.001]  ns  8.316 nm 380.000 mm/ns 165.028
+     )
+    (12)  BR/NA     STS                                            MAT_SWAP 
+    [  12](Stp ;opticalphoton stepNum   19(tk ;opticalphoton tid 1 pid 0 nm    380 mm  ori[   71.952   6.535-746.900]  pos[   78.583   7.1371493.900]  )
+      pre                  box_pv0_          Vacuum  Transportation        GeomBoundary pos[     75.956     6.898   770.231]  dir[   -0.995  -0.090  -0.052]  pol[   -0.091   0.996   0.001]  ns  8.316 nm 380.000 mm/ns 165.028
+     post                union_pv0_   GlassSchottF2  Transportation        GeomBoundary pos[     75.956     6.898   770.231]  dir[   -0.995  -0.090  -0.052]  pol[   -0.091   0.996   0.001]  ns  8.316 nm 380.000 mm/ns 165.028
+     )
+    (13)  NA/BR     TIR                                            PRE_SKIP 
+    [  13](Stp ;opticalphoton stepNum   19(tk ;opticalphoton tid 1 pid 0 nm    380 mm  ori[   71.952   6.535-746.900]  pos[   78.583   7.1371493.900]  )
+      pre                union_pv0_   GlassSchottF2  Transportation        GeomBoundary pos[     75.956     6.898   770.231]  dir[   -0.995  -0.090  -0.052]  pol[   -0.091   0.996   0.001]  ns  8.316 nm 380.000 mm/ns 165.028
+     post                  box_pv0_          Vacuum  Transportation        GeomBoundary pos[   -189.606   -17.220   756.334]  dir[   -0.700  -0.064   0.711]  pol[    0.091  -0.996   0.001]  ns  9.934 nm 380.000 mm/ns 165.028
+     )
+    (14)  BR/NA     STS                                            MAT_SWAP 
+    [  14](Stp ;opticalphoton stepNum   19(tk ;opticalphoton tid 1 pid 0 nm    380 mm  ori[   71.952   6.535-746.900]  pos[   78.583   7.1371493.900]  )
+      pre                  box_pv0_          Vacuum  Transportation        GeomBoundary pos[   -189.606   -17.220   756.334]  dir[   -0.700  -0.064   0.711]  pol[    0.091  -0.996   0.001]  ns  9.934 nm 380.000 mm/ns 165.028
+     post                union_pv0_   GlassSchottF2  Transportation        GeomBoundary pos[   -189.606   -17.220   756.334]  dir[   -0.700  -0.064   0.711]  pol[    0.091  -0.996   0.001]  ns  9.934 nm 380.000 mm/ns 165.028
+     )
+    (15)  NA/BR     TIR                                            PRE_SKIP 
+    [  15](Stp ;opticalphoton stepNum   19(tk ;opticalphoton tid 1 pid 0 nm    380 mm  ori[   71.952   6.535-746.900]  pos[   78.583   7.1371493.900]  )
+      pre                union_pv0_   GlassSchottF2  Transportation        GeomBoundary pos[   -189.606   -17.220   756.334]  dir[   -0.700  -0.064   0.711]  pol[    0.091  -0.996   0.001]  ns  9.934 nm 380.000 mm/ns 165.028
+     post                  box_pv0_          Vacuum  Transportation        GeomBoundary pos[   -316.810   -28.772   885.594]  dir[    0.333   0.030   0.942]  pol[   -0.089   0.996  -0.000]  ns 11.035 nm 380.000 mm/ns 165.028
+     )
+    (16)  BR/NA     STS                                            MAT_SWAP 
+    [  16](Stp ;opticalphoton stepNum   19(tk ;opticalphoton tid 1 pid 0 nm    380 mm  ori[   71.952   6.535-746.900]  pos[   78.583   7.1371493.900]  )
+      pre                  box_pv0_          Vacuum  Transportation        GeomBoundary pos[   -316.810   -28.772   885.594]  dir[    0.333   0.030   0.942]  pol[   -0.089   0.996  -0.000]  ns 11.035 nm 380.000 mm/ns 165.028
+     post                union_pv0_   GlassSchottF2  Transportation        GeomBoundary pos[   -316.810   -28.772   885.594]  dir[    0.333   0.030   0.942]  pol[   -0.089   0.996  -0.000]  ns 11.035 nm 380.000 mm/ns 165.028
+     )
+    (17)  NA/BT     FrT                                            PRE_SKIP 
+    [  17](Stp ;opticalphoton stepNum   19(tk ;opticalphoton tid 1 pid 0 nm    380 mm  ori[   71.952   6.535-746.900]  pos[   78.583   7.1371493.900]  )
+      pre                union_pv0_   GlassSchottF2  Transportation        GeomBoundary pos[   -316.810   -28.772   885.594]  dir[    0.333   0.030   0.942]  pol[   -0.089   0.996  -0.000]  ns 11.035 nm 380.000 mm/ns 165.028
+     post                  box_pv0_          Vacuum  Transportation        GeomBoundary pos[   -306.806   -27.864   913.905]  dir[    0.553   0.050   0.832]  pol[   -0.092   0.996   0.001]  ns 11.217 nm 380.000 mm/ns 299.792
+     )
+    (18)  BT/SA     Abs                                  LAST_POST SURF_ABS 
+    [  18](Stp ;opticalphoton stepNum   19(tk ;opticalphoton tid 1 pid 0 nm    380 mm  ori[   71.952   6.535-746.900]  pos[   78.583   7.1371493.900]  )
+      pre                  box_pv0_          Vacuum  Transportation        GeomBoundary pos[   -306.806   -27.864   913.905]  dir[    0.553   0.050   0.832]  pol[   -0.092   0.996   0.001]  ns 11.217 nm 380.000 mm/ns 299.792
+     post               UNIVERSE_PV            Rock  Transportation        GeomBoundary pos[     78.583     7.137  1493.900]  dir[    0.553   0.050   0.832]  pol[   -0.092   0.996   0.001]  ns 13.543 nm 380.000 mm/ns 299.792
+     )
+    2019-07-29 15:34:41.246 INFO  [271546] [CRec::dump@179]  npoi 10
+    ( 0)  CPoi TO     Und
+      Poi                  box_pv0_          Vacuum          noProc           Undefined pos[      0.000     0.000     0.000]  dir[   -0.000  -0.000   1.000]  pol[    0.000  -1.000   0.000]  ns  0.000 nm 380.000 mm/ns 299.792
+    ( 1)  CPoi BT     FrT
+      Poi                union_pv0_   GlassSchottF2  Transportation        GeomBoundary pos[      0.000     0.000   730.192]  dir[   -0.402  -0.037   0.915]  pol[    0.000  -0.999  -0.040]  ns  2.436 nm 380.000 mm/ns 165.028
+    ( 2)  CPoi BR     FrR
+      Poi                  box_pv0_          Vacuum  Transportation        GeomBoundary pos[    -80.838    -7.342   913.905]  dir[   -0.402  -0.037  -0.915]  pol[    0.129  -0.991  -0.017]  ns  3.653 nm 380.000 mm/ns 165.028
+    ( 3)  CPoi BR     FrR
+      Poi                  box_pv0_          Vacuum  Transportation        GeomBoundary pos[   -155.210   -14.096   744.888]  dir[    0.983   0.089   0.160]  pol[    0.089  -0.996   0.007]  ns  4.772 nm 380.000 mm/ns 165.028
+    ( 4)  CPoi BR     TIR
+      Poi                  box_pv0_          Vacuum  Transportation        GeomBoundary pos[    102.770     9.333   786.883]  dir[    0.470   0.043   0.882]  pol[   -0.097   0.995   0.004]  ns  6.363 nm 380.000 mm/ns 165.028
+    ( 5)  CPoi BR     FrR
+      Poi                  box_pv0_          Vacuum  Transportation        GeomBoundary pos[    170.520    15.486   913.905]  dir[    0.470   0.043  -0.882]  pol[   -0.092   0.996  -0.001]  ns  7.236 nm 380.000 mm/ns 165.028
+    ( 6)  CPoi BR     TIR
+      Poi                  box_pv0_          Vacuum  Transportation        GeomBoundary pos[    175.667    15.954   904.256]  dir[   -0.596  -0.054  -0.801]  pol[    0.089  -0.996   0.001]  ns  7.302 nm 380.000 mm/ns 165.028
+    ( 7)  CPoi BR     TIR
+      Poi                  box_pv0_          Vacuum  Transportation        GeomBoundary pos[     75.956     6.898   770.231]  dir[   -0.995  -0.090  -0.052]  pol[   -0.091   0.996   0.001]  ns  8.316 nm 380.000 mm/ns 165.028
+    ( 8)  CPoi BR     TIR
+      Poi                  box_pv0_          Vacuum  Transportation        GeomBoundary pos[   -189.606   -17.220   756.334]  dir[   -0.700  -0.064   0.711]  pol[    0.091  -0.996   0.001]  ns  9.934 nm 380.000 mm/ns 165.028
+    ( 9)  CPoi BR     TIR
+      Poi                  box_pv0_          Vacuum  Transportation        GeomBoundary pos[   -316.810   -28.772   885.594]  dir[    0.333   0.030   0.942]  pol[   -0.089   0.996  -0.000]  ns 11.035 nm 380.000 mm/ns 165.028
+    2019-07-29 15:34:41.247 INFO  [271546] [CDebug::dump_brief@176] CRecorder::dump_brief m_ctx._record_id        0 m_photon._badflag     0 --dbgseqhis  sas: RECORD_TRUNCATE BOUNCE_TRUNCATE 
+    2019-07-29 15:34:41.247 INFO  [271546] [CDebug::dump_brief@185]  seqhis       bbbbbbbbcd    TO BT BR BR BR BR BR BR BR BR                   
+    2019-07-29 15:34:41.247 INFO  [271546] [CDebug::dump_brief@190]  mskhis             1c00    BR|BT|TO
+    2019-07-29 15:34:41.247 INFO  [271546] [CDebug::dump_brief@195]  seqmat       1111111114    Vacuum GlassSchottF2 GlassSchottF2 GlassSchottF2 GlassSchottF2 GlassSchottF2 GlassSchottF2 GlassSchottF2 GlassSchottF2 GlassSchottF2 - - - - - - 
+    2019-07-29 15:34:41.247 INFO  [271546] [CDebug::dump_sequence@203] CDebug::dump_sequence
+       0                d TO                                              
+       1               cd TO BT                                           
+       2              bcd TO BT BR                                        
+       3             bbcd TO BT BR BR                                     
+       4            bbbcd TO BT BR BR BR                                  
+       5           bbbbcd TO BT BR BR BR BR                               
+       6          bbbbbcd TO BT BR BR BR BR BR                            
+       7         bbbbbbcd TO BT BR BR BR BR BR BR                         
+       8        bbbbbbbcd TO BT BR BR BR BR BR BR BR                      
+       9       bbbbbbbbcd TO BT BR BR BR BR BR BR BR BR                   
+       0             1000 TO
+       1             1800 BT|TO
+       2             1c00 BR|BT|TO
+       3             1c00 BR|BT|TO
+       4             1c00 BR|BT|TO
+       5             1c00 BR|BT|TO
+       6             1c00 BR|BT|TO
+       7             1c00 BR|BT|TO
+       8             1c00 BR|BT|TO
+       9             1c00 BR|BT|TO
+       0                4 Vacuum - - - - - - - - - - - - - - - 
+       1               14 Vacuum GlassSchottF2 - - - - - - - - - - - - - - 
+       2              114 Vacuum GlassSchottF2 GlassSchottF2 - - - - - - - - - - - - - 
+       3             1114 Vacuum GlassSchottF2 GlassSchottF2 GlassSchottF2 - - - - - - - - - - - - 
+       4            11114 Vacuum GlassSchottF2 GlassSchottF2 GlassSchottF2 GlassSchottF2 - - - - - - - - - - - 
+       5           111114 Vacuum GlassSchottF2 GlassSchottF2 GlassSchottF2 GlassSchottF2 GlassSchottF2 - - - - - - - - - - 
+       6          1111114 Vacuum GlassSchottF2 GlassSchottF2 GlassSchottF2 GlassSchottF2 GlassSchottF2 GlassSchottF2 - - - - - - - - - 
+       7         11111114 Vacuum GlassSchottF2 GlassSchottF2 GlassSchottF2 GlassSchottF2 GlassSchottF2 GlassSchottF2 GlassSchottF2 - - - - - - - - 
+       8        111111114 Vacuum GlassSchottF2 GlassSchottF2 GlassSchottF2 GlassSchottF2 GlassSchottF2 GlassSchottF2 GlassSchottF2 GlassSchottF2 - - - - - - - 
+       9       1111111114 Vacuum GlassSchottF2 GlassSchottF2 GlassSchottF2 GlassSchottF2 GlassSchottF2 GlassSchottF2 GlassSchottF2 GlassSchottF2 GlassSchottF2 - - - - - - 
+    2019-07-29 15:34:41.248 INFO  [271546] [CDebug::dump_points@229] CDeug::dump_points
+     TO      0             Vacuum   Und                  box_pv0_          Vacuum          noProc           Undefined pos[      0.000     0.000     0.000]  dir[   -0.000  -0.000   1.000]  pol[    0.000  -1.000   0.000]  ns  0.000 nm 380.000 mm/ns 299.792
+     BT      1      GlassSchottF2   FrT                union_pv0_   GlassSchottF2  Transportation        GeomBoundary pos[      0.000     0.000   730.192]  dir[   -0.402  -0.037   0.915]  pol[    0.000  -0.999  -0.040]  ns  2.436 nm 380.000 mm/ns 165.028
+     BR      2      GlassSchottF2   FrR                  box_pv0_          Vacuum  Transportation        GeomBoundary pos[    -80.838    -7.342   913.905]  dir[   -0.402  -0.037  -0.915]  pol[    0.129  -0.991  -0.017]  ns  3.653 nm 380.000 mm/ns 165.028
+     BR      3      GlassSchottF2   FrR                  box_pv0_          Vacuum  Transportation        GeomBoundary pos[   -155.210   -14.096   744.888]  dir[    0.983   0.089   0.160]  pol[    0.089  -0.996   0.007]  ns  4.772 nm 380.000 mm/ns 165.028
+     BR      4      GlassSchottF2   TIR                  box_pv0_          Vacuum  Transportation        GeomBoundary pos[    102.770     9.333   786.883]  dir[    0.470   0.043   0.882]  pol[   -0.097   0.995   0.004]  ns  6.363 nm 380.000 mm/ns 165.028
+     BR      5      GlassSchottF2   FrR                  box_pv0_          Vacuum  Transportation        GeomBoundary pos[    170.520    15.486   913.905]  dir[    0.470   0.043  -0.882]  pol[   -0.092   0.996  -0.001]  ns  7.236 nm 380.000 mm/ns 165.028
+     BR      6      GlassSchottF2   TIR                  box_pv0_          Vacuum  Transportation        GeomBoundary pos[    175.667    15.954   904.256]  dir[   -0.596  -0.054  -0.801]  pol[    0.089  -0.996   0.001]  ns  7.302 nm 380.000 mm/ns 165.028
+     BR      7      GlassSchottF2   TIR                  box_pv0_          Vacuum  Transportation        GeomBoundary pos[     75.956     6.898   770.231]  dir[   -0.995  -0.090  -0.052]  pol[   -0.091   0.996   0.001]  ns  8.316 nm 380.000 mm/ns 165.028
+     BR      8      GlassSchottF2   TIR                  box_pv0_          Vacuum  Transportation        GeomBoundary pos[   -189.606   -17.220   756.334]  dir[   -0.700  -0.064   0.711]  pol[    0.091  -0.996   0.001]  ns  9.934 nm 380.000 mm/ns 165.028
+     BR      9      GlassSchottF2   TIR                  box_pv0_          Vacuum  Transportation        GeomBoundary pos[   -316.810   -28.772   885.594]  dir[    0.333   0.030   0.942]  pol[   -0.089   0.996  -0.000]  ns 11.035 nm 380.000 mm/ns 165.028
+    2019-07-29 15:34:41.249 INFO  [271546] [CG4::postpropagate@369] [ (0) ctx CG4Ctx::desc_stats dump_count 0 event_total 1 event_track_count 1
+    2019-07-29 15:34:41.249 INFO  [271546] [OpticksEvent::postPropagateGeant4@2209] OpticksEvent::postPropagateGeant4 shape  genstep 1,6,4 nopstep 0,4,4 photon 1,4,4 source 1,4,4 record 1,10,2,4 phosel 1,1,4 recsel 1,10,1,4 sequence 1,1,2 seed 1,1,1 hit 0,4,4 num_photons 1 dynamic 0
+    2019-07-29 15:34:41.249 INFO  [271546] [OpticksEvent::indexPhotonsCPU@2281] OpticksEvent::indexPhotonsCPU sequence 1,1,2 phosel 1,1,4 phosel.hasData 0 recsel0 1,10,1,4 recsel0.hasData 0
+    2019-07-29 15:34:41.249 INFO  [271546] [OpticksEvent::indexPhotonsCPU@2314] indexSequence START 
+
+
+
+
+
+tag 2 run on full 1M to see where 1872 is coming from 
+-------------------------------------------------------------
+
+::
+
+    TAG=2 ts 19 --pfx scan-ts-utail --recpoi --utaildebug --xanalytic --generateoverride -1
+    TAG=2 ta 19 --pfx scan-ts-utail --msli :1M 
+
+
+* 9/5/6/8 more consumption on G4 side 
+
+* wierd thing is that managed to get tail consumption to match with point_limit set to max_bounce 
+
+  * something special about the last step ?  
+
+
+::
+
+    In [5]: np.where(np.logical_and( a.seqhis == b.seqhis, a.utail != b.utail ))[0].shape
+    Out[5]: (131,)
+
+
+    In [10]: t = np.unique(a.seqhis[np.where(np.logical_and( a.seqhis == b.seqhis, a.utail != b.utail ))])
+
+    In [11]: map(a.histype.label, t )
+    Out[11]: 
+    ['TO BT BT SA',
+     'TO BT BR BT SC SA',
+     'TO BT SC BR BR BR BR BR BR BR',
+     'TO BT BR BR BR BR BR BR BR BR',
+     'TO BT BT SC BT BR BR BR BR BR',
+     'TO BT BR BR BR BR BR BR BT BR',
+     'TO BT SC BR BR BR BR BR BR BT',
+     'TO BT BR BR BR BR BR BR BR BT',
+     'TO BT BT SC BT BR BR BR BR BT',
+     'TO BT SC BT BT BR BR BR BR BT',
+     'TO BT BT SC BT BT BT BR BR BT',
+     'TO BT BR SC BT BT BR BR BT BT',
+     'TO BT BR BT SC BT BR BT BT BT',
+     'TO SC BT BR BT BT BR BT BT BT']
+
+    In [13]: s = a.seqhis[np.where(np.logical_and( a.seqhis == b.seqhis, a.utail != b.utail ))]
+
+    In [15]: count_unique(s)
+    Out[15]: 
+    array([[       36045,            5],
+           [     8833997,            2],
+           [806308525773,           12],
+           [806308527053,           76],
+           [806308572365,            4],
+           [810603494349,            2],
+           [875028002509,            2],
+           [875028003789,           22],
+           [875028049101,            1],
+           [875028072141,            1],
+           [875045874893,            1],
+           [879324064717,            1],
+           [879592131533,            1],
+           [879592520813,            1]], dtype=uint64)
+
+    In [16]: a.histype.label(806308527053)
+    Out[16]: 'TO BT BR BR BR BR BR BR BR BR'
+
+    In [18]: np.where( a.seqhis == 0xbbbbbbbbcd )
+    Out[18]: 
+    (array([  1872,  28413,  29118,  65189,  65895,  70511,  71280,  76056,  81607,  86702,  97118, 133597, 134001, 173028, 181493, 188722, 193421, 224442, 230971, 238905, 239936, 249877, 273479, 285218,
+            290370, 317426, 318849, 351371, 352477, 386759, 401299, 407992, 417808, 421401, 431187, 435571, 467229, 498959, 502109, 516530, 516940, 520157, 540467, 545713, 548713, 554621, 559439, 560482,
+            564019, 576531, 577305, 583774, 631414, 663782, 686822, 692662, 744288, 750602, 766921, 772219, 783358, 808184, 845912, 855291, 863454, 863919, 869206, 873738, 882672, 890442, 932081, 934177,
+            950126, 957180, 991707, 999373]),)
+
+    In [19]: np.where( a.seqhis == 0xbbbbbbbbcd )[0].shape          ## all with this history are mis-utailed 
+    Out[19]: (76,)
+
+
+    In [21]: ab.dumpline( np.where( a.seqhis == 0xbbbbbbbbcd )[0] , u=True)          ## they are all 9 or 6 off : and what caused the zeros ?
+
+          0   1872 :   :                      TO BT BR BR BR BR BR BR BR BR                      TO BT BR BR BR BR BR BR BR BR   ua 0.8095 ub 0.1871 wa 36 wb 45 wd  9 
+          1  28413 :   :                      TO BT BR BR BR BR BR BR BR BR                      TO BT BR BR BR BR BR BR BR BR   ua 0.7844 ub 0.0212 wa 36 wb 45 wd  9 
+          2  29118 :   :                      TO BT BR BR BR BR BR BR BR BR                      TO BT BR BR BR BR BR BR BR BR   ua 0.7897 ub 0.2034 wa 36 wb 45 wd  9 
+          3  65189 :   :                      TO BT BR BR BR BR BR BR BR BR                      TO BT BR BR BR BR BR BR BR BR   ua 0.3840 ub 0.7007 wa 36 wb 45 wd  9 
+          4  65895 :   :                      TO BT BR BR BR BR BR BR BR BR                      TO BT BR BR BR BR BR BR BR BR   ua 0.8852 ub 0.4157 wa 36 wb 45 wd  9 
+          5  70511 :   :                      TO BT BR BR BR BR BR BR BR BR                      TO BT BR BR BR BR BR BR BR BR   ua 0.1619 ub 0.0000 wa 36 wb -1 wd  0 
+          6  71280 :   :                      TO BT BR BR BR BR BR BR BR BR                      TO BT BR BR BR BR BR BR BR BR   ua 0.5162 ub 0.1054 wa 36 wb 45 wd  9 
+          7  76056 :   :                      TO BT BR BR BR BR BR BR BR BR                      TO BT BR BR BR BR BR BR BR BR   ua 0.4942 ub 0.8756 wa 36 wb 45 wd  9 
+          8  81607 :   :                      TO BT BR BR BR BR BR BR BR BR                      TO BT BR BR BR BR BR BR BR BR   ua 0.0474 ub 0.5089 wa 36 wb 45 wd  9 
+          9  86702 :   :                      TO BT BR BR BR BR BR BR BR BR                      TO BT BR BR BR BR BR BR BR BR   ua 0.3869 ub 0.8174 wa 36 wb 45 wd  9 
+         10  97118 :   :                      TO BT BR BR BR BR BR BR BR BR                      TO BT BR BR BR BR BR BR BR BR   ua 0.6177 ub 0.1149 wa 36 wb 45 wd  9 
+         11 133597 :   :                      TO BT BR BR BR BR BR BR BR BR                      TO BT BR BR BR BR BR BR BR BR   ua 0.3362 ub 0.4040 wa 36 wb 45 wd  9 
+         12 134001 :   :                      TO BT BR BR BR BR BR BR BR BR                      TO BT BR BR BR BR BR BR BR BR   ua 0.3896 ub 0.9174 wa 36 wb 42 wd  6 
+         13 173028 :   :                      TO BT BR BR BR BR BR BR BR BR                      TO BT BR BR BR BR BR BR BR BR   ua 0.1073 ub 0.4230 wa 36 wb 45 wd  9 
+         14 181493 :   :                      TO BT BR BR BR BR BR BR BR BR                      TO BT BR BR BR BR BR BR BR BR   ua 0.7031 ub 0.2977 wa 36 wb 45 wd  9 
+         15 188722 :   :                      TO BT BR BR BR BR BR BR BR BR                      TO BT BR BR BR BR BR BR BR BR   ua 0.6362 ub 0.2168 wa 36 wb 45 wd  9 
+
+
+
+
+
+    [2019-07-29 15:52:09,539] p300421 {<module>            :tboolean.py:38} CRITICAL -  RC 0x05 0b101 
+    [2019-07-29 15:52:09,554] p300421 {check_utaildebug    :ab.py     :228} INFO     - utail mismatch but seqhis matched u.shape:(1000000, 16, 16) w.shape: (131,) 
+     i     0 q_    1872 ua     0.8095 ub     0.1871  wa  36 wb  45 wd   9 :       0   1872 :   :                      TO BT BR BR BR BR BR BR BR BR                      TO BT BR BR BR BR BR BR BR BR   
+     i     1 q_   11341 ua     0.2997 ub     0.7499  wa  36 wb  41 wd   5 :       1  11341 :   :                      TO BT BR BR BR BR BR BR BR BT                      TO BT BR BR BR BR BR BR BR BT   
+     i     2 q_   14747 ua     0.6346 ub     0.3680  wa  40 wb  46 wd   6 :       2  14747 :   :                      TO BT SC BR BR BR BR BR BR BR                      TO BT SC BR BR BR BR BR BR BR   
+     i     3 q_   28413 ua     0.7844 ub     0.0212  wa  36 wb  45 wd   9 :       3  28413 :   :                      TO BT BR BR BR BR BR BR BR BR                      TO BT BR BR BR BR BR BR BR BR   
+     i     4 q_   29118 ua     0.7897 ub     0.2034  wa  36 wb  45 wd   9 :       4  29118 :   :                      TO BT BR BR BR BR BR BR BR BR                      TO BT BR BR BR BR BR BR BR BR   
+     i     5 q_   55856 ua     0.8077 ub     0.1347  wa  36 wb  41 wd   5 :       5  55856 :   :                      TO BT BR BR BR BR BR BR BR BT                      TO BT BR BR BR BR BR BR BR BT   
+     i     6 q_   65189 ua     0.3840 ub     0.7007  wa  36 wb  45 wd   9 :       6  65189 :   :                      TO BT BR BR BR BR BR BR BR BR                      TO BT BR BR BR BR BR BR BR BR   
+     i     7 q_   65895 ua     0.8852 ub     0.4157  wa  36 wb  45 wd   9 :       7  65895 :   :                      TO BT BR BR BR BR BR BR BR BR                      TO BT BR BR BR BR BR BR BR BR   
+     i     8 q_   69653 ua     0.4836 ub     0.3343  wa  40 wb  49 wd   9 :       8  69653 :   :                      TO BT SC BR BR BR BR BR BR BR                      TO BT SC BR BR BR BR BR BR BR   
+     i     9 q_   70510 ua     0.8297 ub     0.4156  wa  13 wb  12 wd  -1 :       9  70510 :   :                                        TO BT BT SA                                        TO BT BT SA   
+     i    10 q_   70511 ua     0.1619 ub     0.0000  wa  36 wb  -1 wd   0 :      10  70511 :   :                      TO BT BR BR BR BR BR BR BR BR                      TO BT BR BR BR BR BR BR BR BR   
+     i    11 q_   71280 ua     0.5162 ub     0.1054  wa  36 wb  45 wd   9 :      11  71280 :   :                      TO BT BR BR BR BR BR BR BR BR                      TO BT BR BR BR BR BR BR BR BR   
+     i    12 q_   73533 ua     0.7189 ub     0.3708  wa  50 wb  56 wd   6 :      12  73533 :   :                      TO BT BT SC BT BR BR BR BR BR                      TO BT BT SC BT BR BR BR BR BR   
+     i    13 q_   76056 ua     0.4942 ub     0.8756  wa  36 wb  45 wd   9 :      13  76056 :   :                      TO BT BR BR BR BR BR BR BR BR                      TO BT BR BR BR BR BR BR BR BR   
+     i    14 q_   81607 ua     0.0474 ub     0.5089  wa  36 wb  45 wd   9 :      14  81607 :   :                      TO BT BR BR BR BR BR BR BR BR                      TO BT BR BR BR BR BR BR BR BR   
+     i    15 q_   86702 ua     0.3869 ub     0.8174  wa  36 wb  45 wd   9 :      15  86702 :   :                      TO BT BR BR BR BR BR BR BR BR                      TO BT BR BR BR BR BR BR BR BR   
+     i    16 q_   97118 ua     0.6177 ub     0.1149  wa  36 wb  45 wd   9 :      16  97118 :   :                      TO BT BR BR BR BR BR BR BR BR                      TO BT BR BR BR BR BR BR BR BR   
+     i    17 q_   98796 ua     0.6535 ub     0.8339  wa  36 wb  41 wd   5 :      17  98796 :   :                      TO BT BR BR BR BR BR BR BR BT                      TO BT BR BR BR BR BR BR BR BT   
+     i    18 q_  107799 ua     0.6279 ub     0.1445  wa  40 wb  46 wd   6 :      18 107799 :   :                      TO BT SC BR BR BR BR BR BR BR                      TO BT SC BR BR BR BR BR BR BR   
+     i    19 q_  133597 ua     0.3362 ub     0.4040  wa  36 wb  45 wd   9 :      19 133597 :   :                      TO BT BR BR BR BR BR BR BR BR                      TO BT BR BR BR BR BR BR BR BR   
+     i    20 q_  134001 ua     0.3896 ub     0.9174  wa  36 wb  42 wd   6 :      20 134001 :   :                      TO BT BR BR BR BR BR BR BR BR                      TO BT BR BR BR BR BR BR BR BR   
+     i    21 q_  161958 ua     0.1926 ub     0.5091  wa  36 wb  41 wd   5 :      21 161958 :   :                      TO BT BR BR BR BR BR BR BR BT                      TO BT BR BR BR BR BR BR BR BT   
+     i    22 q_  173028 ua     0.1073 ub     0.4230  wa  36 wb  45 wd   9 :      22 173028 :   :                      TO BT BR BR BR BR BR BR BR BR                      TO BT BR BR BR BR BR BR BR BR   
+     i    23 q_  181493 ua     0.7031 ub     0.2977  wa  36 wb  45 wd   9 :      23 181493 :   :                      TO BT BR BR BR BR BR BR BR BR                      TO BT BR BR BR BR BR BR BR BR   
+     i    24 q_  188722 ua     0.6362 ub     0.2168  wa  36 wb  45 wd   9 :      24 188722 :   :                      TO BT BR BR BR BR BR BR BR BR                      TO BT BR BR BR BR BR BR BR BR   
+     i    25 q_  193421 ua     0.2367 ub     0.3518  wa  36 wb  45 wd   9 :      25 193421 :   :                      TO BT BR BR BR BR BR BR BR BR                      TO BT BR BR BR BR BR BR BR BR   
+     i    26 q_  214880 ua     0.7284 ub     0.4032  wa  45 wb  53 wd   8 :      26 214880 :   :                      TO BT BT SC BT BT BT BR BR BT                      TO BT BT SC BT BT BT BR BR BT   
+     i    27 q_  224442 ua     0.1189 ub     0.5755  wa  36 wb  45 wd   9 :      27 224442 :   :                      TO BT BR BR BR BR BR BR BR BR                      TO BT BR BR BR BR BR BR BR BR   
+     i    28 q_  225620 ua     0.2323 ub     0.3256  wa  45 wb  51 wd   6 :      28 225620 :   :                      TO BT BT SC BT BR BR BR BR BR                      TO BT BT SC BT BR BR BR BR BR   
+     i    29 q_  228255 ua     0.0643 ub     0.1953  wa  45 wb  51 wd   6 :      29 228255 :   :                      TO BT SC BR BR BR BR BR BR BR                      TO BT SC BR BR BR BR BR BR BR   
+     i    30 q_  230971 ua     0.9279 ub     0.2343  wa  36 wb  45 wd   9 :      30 230971 :   :                      TO BT BR BR BR BR BR BR BR BR                      TO BT BR BR BR BR BR BR BR BR   
+     i    31 q_  238905 ua     0.0739 ub     0.0443  wa  36 wb  45 wd   9 :      31 238905 :   :                      TO BT BR BR BR BR BR BR BR BR                      TO BT BR BR BR BR BR BR BR BR   
+     i    32 q_  239936 ua     0.0040 ub     0.8644  wa  36 wb  45 wd   9 :      32 239936 :   :                      TO BT BR BR BR BR BR BR BR BR                      TO BT BR BR BR BR BR BR BR BR   
+     i    33 q_  245751 ua     0.8306 ub     0.1994  wa  40 wb  49 wd   9 :      33 245751 :   :                      TO BT SC BR BR BR BR BR BR BR                      TO BT SC BR BR BR BR BR BR BR   
+     i    34 q_  249877 ua     0.1762 ub     0.4933  wa  36 wb  42 wd   6 :      34 249877 :   :                      TO BT BR BR BR BR BR BR BR BR                      TO BT BR BR BR BR BR BR BR BR   
+     i    35 q_  258609 ua     0.2699 ub     0.5301  wa  35 wb  30 wd  -5 :      35 258609 :   :                                  TO BT BR BT SC SA                                  TO BT BR BT SC SA   
+     i    36 q_  273478 ua     0.9081 ub     0.1368  wa  13 wb  12 wd  -1 :      36 273478 :   :                                        TO BT BT SA                                        TO BT BT SA   
+     i    37 q_  273479 ua     0.0259 ub     0.0000  wa  36 wb  -1 wd   0 :      37 273479 :   :                      TO BT BR BR BR BR BR BR BR BR                      TO BT BR BR BR BR BR BR BR BR   
+     i    38 q_  277020 ua     0.3378 ub     0.9429  wa  36 wb  41 wd   5 :      38 277020 :   :                      TO BT BR BR BR BR BR BR BR BT                      TO BT BR BR BR BR BR BR BR BT   
+     i    39 q_  279901 ua     0.0662 ub     0.8247  wa  50 wb  56 wd   6 :      39 279901 :   :                      TO BT BT SC BT BR BR BR BR BR                      TO BT BT SC BT BR BR BR BR BR   
+     i    40 q_  285218 ua     0.9254 ub     0.0000  wa  36 wb  -1 wd   0 :      40 285218 :   :                      TO BT BR BR BR BR BR BR BR BR                      TO BT BR BR BR BR BR BR BR BR   
+     i    41 q_  289122 ua     0.9409 ub     0.2575  wa  36 wb  41 wd   5 :      41 289122 :   :                      TO BT BR BR BR BR BR BR BR BT                      TO BT BR BR BR BR BR BR BR BT   
+     i    42 q_  290370 ua     0.8984 ub     0.6007  wa  36 wb  45 wd   9 :      42 290370 :   :                      TO BT BR BR BR BR BR BR BR BR                      TO BT BR BR BR BR BR BR BR BR   
+     i    43 q_  298272 ua     0.1088 ub     0.3684  wa  36 wb  41 wd   5 :      43 298272 :   :                      TO BT BR BR BR BR BR BR BR BT                      TO BT BR BR BR BR BR BR BR BT   
+     i    44 q_  317426 ua     0.6457 ub     0.5580  wa  36 wb  45 wd   9 :      44 317426 :   :                      TO BT BR BR BR BR BR BR BR BR                      TO BT BR BR BR BR BR BR BR BR   
+     i    45 q_  318849 ua     0.7922 ub     0.6396  wa  36 wb  45 wd   9 :      45 318849 :   :                      TO BT BR BR BR BR BR BR BR BR                      TO BT BR BR BR BR BR BR BR BR   
+     i    46 q_  319783 ua     0.9959 ub     0.1055  wa  36 wb  41 wd   5 :      46 319783 :   :                      TO BT BR BR BR BR BR BR BR BT                      TO BT BR BR BR BR BR BR BR BT   
+     i    47 q_  351371 ua     0.0695 ub     0.1821  wa  36 wb  45 wd   9 :      47 351371 :   :                      TO BT BR BR BR BR BR BR BR BR                      TO BT BR BR BR BR BR BR BR BR   
+     i    48 q_  352477 ua     0.2692 ub     0.0893  wa  36 wb  45 wd   9 :      48 352477 :   :                      TO BT BR BR BR BR BR BR BR BR                      TO BT BR BR BR BR BR BR BR BR   
+     i    49 q_  355996 ua     0.8041 ub     0.8757  wa  13 wb  12 wd  -1 :      49 355996 :   :                                        TO BT BT SA                                        TO BT BT SA   
+     i    50 q_  355997 ua     0.7868 ub     0.0000  wa  36 wb  -1 wd   0 :      50 355997 :   :                      TO BT BR BR BR BR BR BR BR BT                      TO BT BR BR BR BR BR BR BR BT   
+     i    51 q_  364398 ua     0.0659 ub     0.8508  wa  36 wb  41 wd   5 :      51 364398 :   :                      TO BT BR BR BR BR BR BR BR BT                      TO BT BR BR BR BR BR BR BR BT   
+     i    52 q_  372061 ua     0.6139 ub     0.8802  wa  40 wb  46 wd   6 :      52 372061 :   :                      TO BT SC BR BR BR BR BR BR BR                      TO BT SC BR BR BR BR BR BR BR   
+     i    53 q_  386759 ua     0.1761 ub     0.0000  wa  36 wb  -1 wd   0 :      53 386759 :   :                      TO BT BR BR BR BR BR BR BR BR                      TO BT BR BR BR BR BR BR BR BR   
+     i    54 q_  388029 ua     0.3394 ub     0.1716  wa  45 wb  51 wd   6 :      54 388029 :   :                      TO BT BT SC BT BR BR BR BR BR                      TO BT BT SC BT BR BR BR BR BR   
+     i    55 q_  401299 ua     0.7509 ub     0.6602  wa  36 wb  45 wd   9 :      55 401299 :   :                      TO BT BR BR BR BR BR BR BR BR                      TO BT BR BR BR BR BR BR BR BR   
+     i    56 q_  407992 ua     0.1084 ub     0.3139  wa  36 wb  45 wd   9 :      56 407992 :   :                      TO BT BR BR BR BR BR BR BR BR                      TO BT BR BR BR BR BR BR BR BR   
+     i    57 q_  417808 ua     0.8490 ub     0.0984  wa  36 wb  45 wd   9 :      57 417808 :   :                      TO BT BR BR BR BR BR BR BR BR                      TO BT BR BR BR BR BR BR BR BR   
+     i    58 q_  421401 ua     0.1556 ub     0.7179  wa  36 wb  45 wd   9 :      58 421401 :   :                      TO BT BR BR BR BR BR BR BR BR                      TO BT BR BR BR BR BR BR BR BR   
+     i    59 q_  431187 ua     0.9960 ub     0.6612  wa  36 wb  45 wd   9 :      59 431187 :   :                      TO BT BR BR BR BR BR BR BR BR                      TO BT BR BR BR BR BR BR BR BR   
+     i    60 q_  435571 ua     0.8925 ub     0.6282  wa  36 wb  45 wd   9 :      60 435571 :   :                      TO BT BR BR BR BR BR BR BR BR                      TO BT BR BR BR BR BR BR BR BR   
+     i    61 q_  448259 ua     0.5924 ub     0.7352  wa  36 wb  41 wd   5 :      61 448259 :   :                      TO BT BR BR BR BR BR BR BR BT                      TO BT BR BR BR BR BR BR BR BT   
+     i    62 q_  453130 ua     0.5723 ub     0.3774  wa  40 wb  45 wd   5 :      62 453130 :   :                      TO BT SC BR BR BR BR BR BR BT                      TO BT SC BR BR BR BR BR BR BT   
+     i    63 q_  464597 ua     0.8055 ub     0.6311  wa  45 wb  50 wd   5 :      63 464597 :   :                      TO BT SC BR BR BR BR BR BR BT                      TO BT SC BR BR BR BR BR BR BT   
+     i    64 q_  467229 ua     0.7974 ub     0.9217  wa  36 wb  45 wd   9 :      64 467229 :   :                      TO BT BR BR BR BR BR BR BR BR                      TO BT BR BR BR BR BR BR BR BR   
+     i    65 q_  477571 ua     0.7656 ub     0.1102  wa  36 wb  41 wd   5 :      65 477571 :   :                      TO BT BR BR BR BR BR BR BR BT                      TO BT BR BR BR BR BR BR BR BT   
+     i    66 q_  498959 ua     0.7112 ub     0.9823  wa  36 wb  45 wd   9 :      66 498959 :   :                      TO BT BR BR BR BR BR BR BR BR                      TO BT BR BR BR BR BR BR BR BR   
+     i    67 q_  502109 ua     0.1353 ub     0.5100  wa  36 wb  45 wd   9 :      67 502109 :   :                      TO BT BR BR BR BR BR BR BR BR                      TO BT BR BR BR BR BR BR BR BR   
+     i    68 q_  516530 ua     0.6851 ub     0.6600  wa  36 wb  45 wd   9 :      68 516530 :   :                      TO BT BR BR BR BR BR BR BR BR                      TO BT BR BR BR BR BR BR BR BR   
+     i    69 q_  516940 ua     0.5531 ub     0.4043  wa  36 wb  45 wd   9 :      69 516940 :   :                      TO BT BR BR BR BR BR BR BR BR                      TO BT BR BR BR BR BR BR BR BR   
+     i    70 q_  520157 ua     0.4128 ub     0.8375  wa  36 wb  45 wd   9 :      70 520157 :   :                      TO BT BR BR BR BR BR BR BR BR                      TO BT BR BR BR BR BR BR BR BR   
+     i    71 q_  528635 ua     0.4282 ub     0.3789  wa  45 wb  50 wd   5 :      71 528635 :   :                      TO BT SC BT BT BR BR BR BR BT                      TO BT SC BT BT BR BR BR BR BT   
+     i    72 q_  540467 ua     0.5749 ub     0.6082  wa  36 wb  42 wd   6 :      72 540467 :   :                      TO BT BR BR BR BR BR BR BR BR                      TO BT BR BR BR BR BR BR BR BR   
+     i    73 q_  545713 ua     0.0265 ub     0.2544  wa  36 wb  45 wd   9 :      73 545713 :   :                      TO BT BR BR BR BR BR BR BR BR                      TO BT BR BR BR BR BR BR BR BR   
+     i    74 q_  548713 ua     0.4790 ub     0.9657  wa  36 wb  45 wd   9 :      74 548713 :   :                      TO BT BR BR BR BR BR BR BR BR                      TO BT BR BR BR BR BR BR BR BR   
+     i    75 q_  554621 ua     0.9464 ub     0.1579  wa  36 wb  42 wd   6 :      75 554621 :   :                      TO BT BR BR BR BR BR BR BR BR                      TO BT BR BR BR BR BR BR BR BR   
+     i    76 q_  559439 ua     0.8957 ub     0.0995  wa  36 wb  42 wd   6 :      76 559439 :   :                      TO BT BR BR BR BR BR BR BR BR                      TO BT BR BR BR BR BR BR BR BR   
+     i    77 q_  560482 ua     0.2379 ub     0.7813  wa  36 wb  45 wd   9 :      77 560482 :   :                      TO BT BR BR BR BR BR BR BR BR                      TO BT BR BR BR BR BR BR BR BR   
+     i    78 q_  561437 ua     0.0133 ub     0.7909  wa  40 wb  46 wd   6 :      78 561437 :   :                      TO BT SC BR BR BR BR BR BR BR                      TO BT SC BR BR BR BR BR BR BR   
+     i    79 q_  564019 ua     0.7817 ub     0.8410  wa  36 wb  45 wd   9 :      79 564019 :   :                      TO BT BR BR BR BR BR BR BR BR                      TO BT BR BR BR BR BR BR BR BR   
+     i    80 q_  568638 ua     0.4596 ub     0.5402  wa  36 wb  41 wd   5 :      80 568638 :   :                      TO BT BR BR BR BR BR BR BR BT                      TO BT BR BR BR BR BR BR BR BT   
+     i    81 q_  576531 ua     0.0506 ub     0.4958  wa  36 wb  45 wd   9 :      81 576531 :   :                      TO BT BR BR BR BR BR BR BR BR                      TO BT BR BR BR BR BR BR BR BR   
+     i    82 q_  577305 ua     0.6429 ub     0.6741  wa  36 wb  45 wd   9 :      82 577305 :   :                      TO BT BR BR BR BR BR BR BR BR                      TO BT BR BR BR BR BR BR BR BR   
+     i    83 q_  583774 ua     0.9987 ub     0.8680  wa  36 wb  45 wd   9 :      83 583774 :   :                      TO BT BR BR BR BR BR BR BR BR                      TO BT BR BR BR BR BR BR BR BR   
+     i    84 q_  609690 ua     0.0979 ub     0.0409  wa  45 wb  51 wd   6 :      84 609690 :   :                      TO BT SC BR BR BR BR BR BR BR                      TO BT SC BR BR BR BR BR BR BR   
+     i    85 q_  624923 ua     0.2381 ub     0.3229  wa  36 wb  41 wd   5 :      85 624923 :   :                      TO BT BR BR BR BR BR BR BR BT                      TO BT BR BR BR BR BR BR BR BT   
+     i    86 q_  631414 ua     0.0705 ub     0.1543  wa  36 wb  45 wd   9 :      86 631414 :   :                      TO BT BR BR BR BR BR BR BR BR                      TO BT BR BR BR BR BR BR BR BR   
+     i    87 q_  635009 ua     0.8044 ub     0.9229  wa  36 wb  41 wd   5 :      87 635009 :   :                      TO BT BR BR BR BR BR BR BT BR                      TO BT BR BR BR BR BR BR BT BR   
+     i    88 q_  652232 ua     0.8982 ub     0.5747  wa  36 wb  41 wd   5 :      88 652232 :   :                      TO BT BR BR BR BR BR BR BR BT                      TO BT BR BR BR BR BR BR BR BT   
+     i    89 q_  654075 ua     0.2292 ub     0.2560  wa  40 wb  45 wd   5 :      89 654075 :   :                      TO BT BR BT SC BT BR BT BT BT                      TO BT BR BT SC BT BR BT BT BT   
+     i    90 q_  661182 ua     0.5034 ub     0.4958  wa  40 wb  49 wd   9 :      90 661182 :   :                      TO BT BR SC BT BT BR BR BT BT                      TO BT BR SC BT BT BR BR BT BT   
+     i    91 q_  663782 ua     0.9945 ub     0.2235  wa  36 wb  45 wd   9 :      91 663782 :   :                      TO BT BR BR BR BR BR BR BR BR                      TO BT BR BR BR BR BR BR BR BR   
+     i    92 q_  686822 ua     0.7863 ub     0.7923  wa  36 wb  45 wd   9 :      92 686822 :   :                      TO BT BR BR BR BR BR BR BR BR                      TO BT BR BR BR BR BR BR BR BR   
+     i    93 q_  692662 ua     0.2528 ub     0.3836  wa  36 wb  42 wd   6 :      93 692662 :   :                      TO BT BR BR BR BR BR BR BR BR                      TO BT BR BR BR BR BR BR BR BR   
+     i    94 q_  695221 ua     0.5503 ub     0.0000  wa  40 wb  -1 wd   0 :      94 695221 :   :                      TO BT SC BR BR BR BR BR BR BR                      TO BT SC BR BR BR BR BR BR BR   
+     i    95 q_  738436 ua     0.9236 ub     0.6148  wa  13 wb  12 wd  -1 :      95 738436 :   :                                        TO BT BT SA                                        TO BT BT SA   
+     i    96 q_  738437 ua     0.1920 ub     0.0000  wa  50 wb  -1 wd   0 :      96 738437 :   :                      TO BT SC BR BR BR BR BR BR BR                      TO BT SC BR BR BR BR BR BR BR   
+     i    97 q_  744288 ua     0.1917 ub     0.7918  wa  36 wb  45 wd   9 :      97 744288 :   :                      TO BT BR BR BR BR BR BR BR BR                      TO BT BR BR BR BR BR BR BR BR   
+     i    98 q_  750602 ua     0.2740 ub     0.0380  wa  36 wb  45 wd   9 :      98 750602 :   :                      TO BT BR BR BR BR BR BR BR BR                      TO BT BR BR BR BR BR BR BR BR   
+     i    99 q_  766921 ua     0.5970 ub     0.4576  wa  36 wb  45 wd   9 :      99 766921 :   :                      TO BT BR BR BR BR BR BR BR BR                      TO BT BR BR BR BR BR BR BR BR   
+     i   100 q_  772218 ua     0.4119 ub     0.9920  wa  13 wb  12 wd  -1 :     100 772218 :   :                                        TO BT BT SA                                        TO BT BT SA   
+     i   101 q_  772219 ua     0.6158 ub     0.0000  wa  36 wb  -1 wd   0 :     101 772219 :   :                      TO BT BR BR BR BR BR BR BR BR                      TO BT BR BR BR BR BR BR BR BR   
+     i   102 q_  772748 ua     0.1623 ub     0.9252  wa  40 wb  46 wd   6 :     102 772748 :   :                      TO BT SC BR BR BR BR BR BR BR                      TO BT SC BR BR BR BR BR BR BR   
+     i   103 q_  783358 ua     0.4593 ub     0.0897  wa  36 wb  45 wd   9 :     103 783358 :   :                      TO BT BR BR BR BR BR BR BR BR                      TO BT BR BR BR BR BR BR BR BR   
+     i   104 q_  789803 ua     0.7017 ub     0.8636  wa  36 wb  41 wd   5 :     104 789803 :   :                      TO BT BR BR BR BR BR BR BR BT                      TO BT BR BR BR BR BR BR BR BT   
+     i   105 q_  806347 ua     0.1282 ub     0.6928  wa  45 wb  54 wd   9 :     105 806347 :   :                      TO BT SC BR BR BR BR BR BR BR                      TO BT SC BR BR BR BR BR BR BR   
+     i   106 q_  808184 ua     0.7502 ub     0.4591  wa  36 wb  45 wd   9 :     106 808184 :   :                      TO BT BR BR BR BR BR BR BR BR                      TO BT BR BR BR BR BR BR BR BR   
+     i   107 q_  845912 ua     0.3131 ub     0.3685  wa  36 wb  45 wd   9 :     107 845912 :   :                      TO BT BR BR BR BR BR BR BR BR                      TO BT BR BR BR BR BR BR BR BR   
+     i   108 q_  848968 ua     0.5710 ub     0.9500  wa  36 wb  41 wd   5 :     108 848968 :   :                      TO BT BR BR BR BR BR BR BR BT                      TO BT BR BR BR BR BR BR BR BT   
+     i   109 q_  849372 ua     0.4283 ub     0.6197  wa  36 wb  41 wd   5 :     109 849372 :   :                      TO BT BR BR BR BR BR BR BR BT                      TO BT BR BR BR BR BR BR BR BT   
+     i   110 q_  855291 ua     0.3338 ub     0.9877  wa  36 wb  45 wd   9 :     110 855291 :   :                      TO BT BR BR BR BR BR BR BR BR                      TO BT BR BR BR BR BR BR BR BR   
+     i   111 q_  862111 ua     0.6154 ub     0.8222  wa  40 wb  45 wd   5 :     111 862111 :   :                      TO SC BT BR BT BT BR BT BT BT                      TO SC BT BR BT BT BR BT BT BT   
+     i   112 q_  863454 ua     0.6738 ub     0.8882  wa  36 wb  42 wd   6 :     112 863454 :   :                      TO BT BR BR BR BR BR BR BR BR                      TO BT BR BR BR BR BR BR BR BR   
+     i   113 q_  863919 ua     0.3037 ub     0.2259  wa  36 wb  45 wd   9 :     113 863919 :   :                      TO BT BR BR BR BR BR BR BR BR                      TO BT BR BR BR BR BR BR BR BR   
+     i   114 q_  869206 ua     0.6501 ub     0.8848  wa  36 wb  45 wd   9 :     114 869206 :   :                      TO BT BR BR BR BR BR BR BR BR                      TO BT BR BR BR BR BR BR BR BR   
+     i   115 q_  873738 ua     0.7971 ub     0.9781  wa  36 wb  45 wd   9 :     115 873738 :   :                      TO BT BR BR BR BR BR BR BR BR                      TO BT BR BR BR BR BR BR BR BR   
+     i   116 q_  882672 ua     0.9432 ub     0.1646  wa  36 wb  45 wd   9 :     116 882672 :   :                      TO BT BR BR BR BR BR BR BR BR                      TO BT BR BR BR BR BR BR BR BR   
+     i   117 q_  890442 ua     0.1891 ub     0.0959  wa  36 wb  45 wd   9 :     117 890442 :   :                      TO BT BR BR BR BR BR BR BR BR                      TO BT BR BR BR BR BR BR BR BR   
+     i   118 q_  891275 ua     0.4650 ub     0.3799  wa  36 wb  41 wd   5 :     118 891275 :   :                      TO BT BR BR BR BR BR BR BR BT                      TO BT BR BR BR BR BR BR BR BT   
+     i   119 q_  892900 ua     0.1056 ub     0.3332  wa  35 wb  25 wd -10 :     119 892900 :   :                                  TO BT BR BT SC SA                                  TO BT BR BT SC SA   
+     i   120 q_  900787 ua     0.7865 ub     0.7694  wa  36 wb  41 wd   5 :     120 900787 :   :                      TO BT BR BR BR BR BR BR BR BT                      TO BT BR BR BR BR BR BR BR BT   
+     i   121 q_  903656 ua     0.8225 ub     0.9248  wa  36 wb  41 wd   5 :     121 903656 :   :                      TO BT BR BR BR BR BR BR BR BT                      TO BT BR BR BR BR BR BR BR BT   
+     i   122 q_  932081 ua     0.2098 ub     0.0000  wa  36 wb  -1 wd   0 :     122 932081 :   :                      TO BT BR BR BR BR BR BR BR BR                      TO BT BR BR BR BR BR BR BR BR   
+     i   123 q_  934177 ua     0.4595 ub     0.1673  wa  36 wb  45 wd   9 :     123 934177 :   :                      TO BT BR BR BR BR BR BR BR BR                      TO BT BR BR BR BR BR BR BR BR   
+     i   124 q_  950126 ua     0.7747 ub     0.2721  wa  36 wb  45 wd   9 :     124 950126 :   :                      TO BT BR BR BR BR BR BR BR BR                      TO BT BR BR BR BR BR BR BR BR   
+     i   125 q_  957180 ua     0.7978 ub     0.3677  wa  36 wb  42 wd   6 :     125 957180 :   :                      TO BT BR BR BR BR BR BR BR BR                      TO BT BR BR BR BR BR BR BR BR   
+     i   126 q_  980005 ua     0.1625 ub     0.4914  wa  36 wb  41 wd   5 :     126 980005 :   :                      TO BT BR BR BR BR BR BR BT BR                      TO BT BR BR BR BR BR BR BT BR   
+     i   127 q_  990780 ua     0.5879 ub     0.2975  wa  36 wb  41 wd   5 :     127 990780 :   :                      TO BT BR BR BR BR BR BR BR BT                      TO BT BR BR BR BR BR BR BR BT   
+     i   128 q_  991707 ua     0.0686 ub     0.6337  wa  36 wb  45 wd   9 :     128 991707 :   :                      TO BT BR BR BR BR BR BR BR BR                      TO BT BR BR BR BR BR BR BR BR   
+     i   129 q_  996623 ua     0.2310 ub     0.7198  wa  40 wb  45 wd   5 :     129 996623 :   :                      TO BT BT SC BT BR BR BR BR BT                      TO BT BT SC BT BR BR BR BR BT   
+     i   130 q_  999373 ua     0.9452 ub     0.7500  wa  36 wb  45 wd   9 :     130 999373 :   :                      TO BT BR BR BR BR BR BR BR BR                      TO BT BR BR BR BR BR BR BR BR   
+
+
+
+
+

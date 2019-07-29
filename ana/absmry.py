@@ -65,10 +65,17 @@ class ABSmry(odict):
     def Path(cls, dir_):
         return os.path.join(dir_, cls.NAME) 
 
+    @classmethod
+    def Pfx(cls, dir_):
+        e = dir_.split("/")
+        return e[e.index("evt")-1]
+
+
     KEYS = r"""
     ab.a.tagdir
     ab.a.metadata.lv
     ab.a.metadata.solid
+    ab.dsli
     ab.RC
     ab.level
     ab.cfm.numPhotons 
@@ -103,6 +110,7 @@ class ABSmry(odict):
 
     @classmethod
     def Load(cls, dir_):
+        log.debug("dir_ %s " % dir_ )
         d = json_load_(cls.Path(dir_))
         s = cls()
         for k, v in d.items():
@@ -111,8 +119,10 @@ class ABSmry(odict):
         s.init()
         return s 
 
-
+    pfx = property(lambda self:self.Pfx(self.tdir)) 
+    tdir = property(lambda self:self["ab.a.tagdir"]) 
     key = property(lambda self:self["ab.a.metadata.lv"]) 
+    dsli = property(lambda self:self.get("ab.dsli","."))
     RC = property(lambda self:self["ab.RC"])
     level = property(lambda self:self["ab.level"])
     fmal = property(lambda self:self["ab.mal.fmaligned"])
@@ -129,7 +139,7 @@ class ABSmry(odict):
         odict.__init__(self)
 
     def init(self):
-        self.lev = Level.FromLevel(self.level)
+        self.lev = None if self.level is None else Level.FromLevel(self.level)
 
     def save(self, dir_=None):
         if dir_ is None:
@@ -140,26 +150,28 @@ class ABSmry(odict):
         json_save_(path, self )
 
 
+    HEAD2 = False
+
 
     @classmethod
     def Labels(cls):
         """
         level uses ansi codes in table, so has 9 invisible characters that take no screen space
         """
-        head = " %5s %7s %4s %4s %10s %5s " % ("LV", "level", "RC", "npho", "fmal(%)", "nmal" ) 
-        head2 = " %7s %7s %7s " % ( "ati", "bti", "boa" )    
+        head = " %5s %10s %4s %7s %4s %4s %10s %5s " % ("pfx", "dsli", "LV", "level", "RC", "npho", "fmal(%)", "nmal" ) 
+        head2 = " %7s %7s %7s " % ( "ati", "bti", "boa" )  if cls.HEAD2 else None  
         space = "   "
         body = cls.label_dv()
         tail = "solid" 
-        return " ".join([head,head2,space,body,space, tail]) 
+        return " ".join(filter(None,[head,head2,space,body,space, tail])) 
 
     def __repr__(self):
-        head = " %5s %16s 0x%.2x %4s %10.3f %5d " % ( self.key, self.lev.fn_(self.lev.nam) , self.RC, Num.String(self.npho), self.fmal*100.0, self.nmal )
-        head2 = " %7.4f %7.1f %7.1f " % (self.ati, self.bti, self.boa ) 
+        head = " %5s %10s %4s %16s 0x%.2x %4s %10.3f %5d " % ( self.pfx[-5:], self.dsli, self.key, self.lev.fn_(self.lev.nam) , self.RC, Num.String(self.npho), self.fmal*100.0, self.nmal )
+        head2 = " %7.4f %7.1f %7.1f " % (self.ati, self.bti, self.boa ) if self.HEAD2 else None
         space = "   "
         body = self.desc_dv()
         tail = "%s"  % self.solid
-        return " ".join([head,head2,space,body,space,tail]) 
+        return " ".join(filter(None,[head,head2,space,body,space,tail])) 
  
 
     @classmethod

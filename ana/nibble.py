@@ -23,6 +23,9 @@ def make_msk(n):
 nib_ = lambda n:( 0xf << 4*(n-1) ) if n > 0 else 0    # nib_(0)=0xf nib_(1)=0xf0 nib_(2)=0xf00 nib_(3)=0xf000
 
 def make_nib(n):
+    """
+    :return nib: array of n uint64 with nibble masks of 4 bits each for slots from 0 to n-1 
+    """  
     nib = np.zeros( n, dtype=np.uint64  )
     for i in range(n): 
         nib[i] = nib_(i)

@@ -1031,6 +1031,13 @@ So these 7 (utail mismatch but seqhis matched) would cause invalid deviations if
     Out[7]: (389,)
 
 
+    In [2]: w = np.logical_or( a.utail != b.utail , a.seqhis != b.seqhis )
+
+    In [6]: np.where( w )[0].shape 
+    Out[6]: (396,)                         ## extra 7 
+
+
+
 ::
 
     def _get_misutailed(self):
@@ -1044,4 +1051,223 @@ So these 7 (utail mismatch but seqhis matched) would cause invalid deviations if
           3   5477 : * :                                     TO BT BT BT SA                                  TO BT BT BT BT SA 
           4  11341 : * :                      TO BT BR BR BR BR BR BR BR BT                         TO BT BR BR BR BR BR BR BR 
           5  12338 : * :                                     TO BT BR BT SA                         TO BT BR BR BR BR BR BR BR 
+
+
+
+
+Scale this up under pfx scan-ts-utail
+------------------------------------------
+
+::
+
+
+    [blyth@localhost issues]$ scan-ts-
+    ts 0 --pfx scan-ts-utail --generateoverride -1 --cvd 1 --rtx 1 --compute --recpoi --utaildebug --xanalytic
+    ts 1 --pfx scan-ts-utail --generateoverride -1 --cvd 1 --rtx 1 --compute --recpoi --utaildebug --xanalytic
+    ts 2 --pfx scan-ts-utail --generateoverride -1 --cvd 1 --rtx 1 --compute --recpoi --utaildebug --xanalytic
+    ts 3 --pfx scan-ts-utail --generateoverride -1 --cvd 1 --rtx 1 --compute --recpoi --utaildebug --xanalytic
+    ts 4 --pfx scan-ts-utail --generateoverride -1 --cvd 1 --rtx 1 --compute --recpoi --utaildebug --xanalytic
+    ts 5 --pfx scan-ts-utail --generateoverride -1 --cvd 1 --rtx 1 --compute --recpoi --utaildebug --xanalytic
+    ts 6 --pfx scan-ts-utail --generateoverride -1 --cvd 1 --rtx 1 --compute --recpoi --utaildebug --xanalytic
+    ...
+
+
+Update the absmry to show the pfx and the load slice dsli and up the load slice too all 1M::
+
+    [blyth@localhost ana]$ scan-tp-
+    tp 0 --pfx scan-ts-utail --msli :1M
+    tp 1 --pfx scan-ts-utail --msli :1M
+    tp 2 --pfx scan-ts-utail --msli :1M
+    tp 3 --pfx scan-ts-utail --msli :1M
+    tp 4 --pfx scan-ts-utail --msli :1M
+    tp 5 --pfx scan-ts-utail --msli :1M
+    tp 6 --pfx scan-ts-utail --msli :1M
+    ...
+
+
+
+
+Checking the AB comparison now with tail consumption aligned
+---------------------------------------------------------------
+
+Checking absmry.py across all 40 solids shows the effect of utaildebug is to more correctly assess 
+the random alignment so the split between maligned and deviant is better 
+
+* deviant photon counts go down  
+* BUT fmal goes up 
+
+But comparing a.ahis and b.ahis shows that b tops out at 9 whereas a tops at 10 
+which is bizarre as the tail consumption is aligned.  So must be a seqhis writing bug 
+rather than a simulation/collection one.
+
+* so all truncated will show as seqhis differences, have to fix this before 
+  examining absmry.py in depth  
+
+::
+
+   ta 39 --pfx scan-ts-utail --msli :1M 
+   ta 19 --pfx scan-ts-utail --msli :1M 
+
+::
+
+    ab.mal
+    aligned   999611/1000000 : 0.9996 : 0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24 
+    maligned     389/1000000 : 0.0004 : 1872,2180,2908,4860,5477,11341,12338,14747,17891,18117,28413,28709,29118,32764,37671,38187,43675,45874,46032,47325,49872,55856,56239,57334,60178 
+    slice(0, 25, None)
+          0   1872 : * :                      TO BT BR BR BR BR BR BR BR BR                         TO BT BR BR BR BR BR BR BR 
+          1   2180 : * :                      TO BT BR BR BR BR BR BR BT SA                         TO BT BR BR BR BR BR BR BT 
+          2   2908 : * :                                  TO BT BR BR BT SA                               TO BT BR BR BR BT SA 
+          3   4860 : * :                                     TO BT BT BT SA                                  TO BT BT BT BT SA 
+          4   5477 : * :                                     TO BT BT BT SA                                  TO BT BT BT BT SA 
+          5  11341 : * :                      TO BT BR BR BR BR BR BR BR BT                         TO BT BR BR BR BR BR BR BR 
+          6  12338 : * :                                     TO BT BR BT SA                         TO BT BR BR BR BR BR BR BR 
+          7  14747 : * :                      TO BT SC BR BR BR BR BR BR BR                         TO BT SC BR BR BR BR BR BR 
+     
+
+
+
+G4 seqhis truncation at 9 slots
+----------------------------------
+
+::
+
+    In [13]: a.seqhis[1872]
+    Out[13]: 806308527053
+
+    In [15]: "%x" % a.seqhis[1872]
+    Out[15]: 'bbbbbbbbcd'
+
+    In [16]: b.seqhis[1872]
+    Out[16]: 50394282957
+
+    In [17]: "%x" % b.seqhis[1872]
+    Out[17]: 'bbbbbbbcd'
+
+
+::
+
+    ts 19 --pfx scan-ts-utail --mask 1872 --pindex 0 --dbgseqhis 0xbbbbbbbbcd --pindexlog 
+
+        ## this matches with no deviation, because its not using recpoi
+
+    ts 19 --pfx scan-ts-utail --mask 1872 --pindex 0 --dbgseqhis 0xbbbbbbbbcd --pindexlog --recpoi --utaildebug --xanalytic
+  
+
+    ta 19 --pfx scan-ts-utail 
+
+        ## gives full report on the single photon
+        ## see expected truncation diff
+
+         
+::
+
+     86 unsigned CG4Ctx::point_limit() const
+     87 {
+     88     assert( _ok_event_init );
+     89     return ( _steps_per_photon > _bounce_max ? _steps_per_photon : _bounce_max ) ;
+     90     //return _bounce_max  ;
+     91 }
+
+
+::
+
+    ta 19 --pfx scan-ts-utail --mask 1872
+
+        ## returning to customary point_limit gets chisq back to zero
+        ## but tail consumption is pushed off again
+        ## with G4 consuming 9u more
+
+    .
+    [2019-07-29 14:14:23,824] p130843 {<module>            :tboolean.py:38} INFO     -  RC 0x00 0b0 
+    [2019-07-29 14:14:23,824] p130843 {check_utaildebug    :ab.py     :228} INFO     - utail mismatch but seqhis matched u.shape:(1000000, 16, 16) w.shape: (1,) 
+     i     0 q_    1872 ua     0.8095 ub     0.1871  wa  36 wb  45 wd   9 :       0      0 :   :                      TO BT BR BR BR BR BR BR BR BR                      TO BT BR BR BR BR BR BR BR BR   
+
+     9*3 + 9 = 36   expected consumption : 3u for to_boundary and 1u for BR/BT 
+
+
+    ts 19 --pfx scan-ts-utail --mask 1872 --pindex 0 --dbgseqhis 0xbbbbbbbbcd --pindexlog --recpoi --utaildebug --xanalytic --dbgflat 
+
+       ## add --dbgflat to dump the u on G4 side  
+
+    CSteppingAction=ERROR CRandomEngine=ERROR ts 19 --pfx scan-ts-utail --mask 1872 --pindex 0 --dbgseqhis 0xbbbbbbbbcd --pindexlog --recpoi --utaildebug --xanalytic --dbgflat
+
+
+
+* :doc:`ts19-1872`
+
+
+
+u counting for "TO BR SA" : how it consumes 9u 
+----------------------------------------------------
+
+::
+
+    In [7]: ab.dumpline( np.where( ab.a.seqhis == 0x8bd )[0][:10] , u=True )
+          0      2 :   :                                           TO BR SA                                           TO BR SA   ua 0.8068 ub 0.8068 wa  9 wb  9 wd  0 
+          1      5 :   :                                           TO BR SA                                           TO BR SA   ua 0.6204 ub 0.6204 wa  9 wb  9 wd  0 
+          2     11 :   :                                           TO BR SA                                           TO BR SA   ua 0.0927 ub 0.0927 wa  9 wb  9 wd  0 
+          3     19 :   :                                           TO BR SA                                           TO BR SA   ua 0.9871 ub 0.9871 wa  9 wb  9 wd  0 
+          4     28 :   :                                           TO BR SA                                           TO BR SA   ua 0.5076 ub 0.5076 wa  9 wb  9 wd  0 
+          5     38 :   :                                           TO BR SA                                           TO BR SA   ua 0.4392 ub 0.4392 wa  9 wb  9 wd  0 
+          6     39 :   :                                           TO BR SA                                           TO BR SA   ua 0.2598 ub 0.2598 wa  9 wb  9 wd  0 
+          7     64 :   :                                           TO BR SA                                           TO BR SA   ua 0.7783 ub 0.7783 wa  9 wb  9 wd  0 
+          8     86 :   :                                           TO BR SA                                           TO BR SA   ua 0.2653 ub 0.2653 wa  9 wb  9 wd  0 
+          9     92 :   :                                           TO BR SA                                           TO BR SA   ua 0.1398 ub 0.1398 wa  9 wb  9 wd  0 
+
+    In [8]: 
+
+
+* hmm : how does a single "TO BR SA" reflect reach 9u ?
+
+propagate_to_boundary           
+   3u : its a sail, decide not to bulk AB/SC/RE  u_boundary_burn, u_scattering, u_absorption 
+
+propagate_at_boundary_geant4_style  
+   1u : BR or BT decision  u_reflect 
+
+propagate_to_boundary           
+   3u : again its a sail, decide not to bulk AB/SC/RE u_boundary_burn, u_scattering, u_absorption
+
+propagate_at_surface 
+   2u : u_surface, u_surface_burn 
+
+
+
+u counting for "TO BT BT SA"
+------------------------------
+
+* 3 for gaps, 1 for BT/BR, 2 for SA ->   3*3+2+2 = 13 
+
+
+::
+
+    [2019-07-29 12:24:20,658] p416932 {check_utaildebug    :ab.py     :214} INFO     - utail mismatch but seqhis matched u.shape:(1000000, 16, 16) w.shape: (7,) 
+     i     0 q   73532 ua     0.3248 ub     0.9248  wa  13 wb  12 wd  -1 :       0  73532 :   :                                        TO BT BT SA                                        TO BT BT SA   
+     i     1 q  193420 ua     0.0879 ub     0.9583  wa  17 wb  16 wd  -1 :       1 193420 :   :                                     TO BT BR BT SA                                     TO BT BR BT SA   
+     i     2 q  258609 ua     0.2699 ub     0.5301  wa  35 wb  30 wd  -5 :       2 258609 :   :                                  TO BT BR BT SC SA                                  TO BT BR BT SC SA   
+     i     3 q  583773 ua     0.2128 ub     0.9355  wa  13 wb  12 wd  -1 :       3 583773 :   :                                        TO BT BT SA                                        TO BT BT SA   
+     i     4 q  635008 ua     0.5399 ub     0.5543  wa  13 wb  12 wd  -1 :       4 635008 :   :                                        TO BT BT SA                                        TO BT BT SA   
+     i     5 q  663781 ua     0.6080 ub     0.2725  wa  13 wb  12 wd  -1 :       5 663781 :   :                                        TO BT BT SA                                        TO BT BT SA   
+     i     6 q  892900 ua     0.1056 ub     0.3332  wa  35 wb  25 wd -10 :       6 892900 :   :                                  TO BT BR BT SC SA                                  TO BT BR BT SC SA   
+
+
+    In [1]: ab.dumpline( np.where( ab.a.seqhis == 0x8ccd )[0][:10] , u=True )
+          0      0 :   :                                        TO BT BT SA                                        TO BT BT SA   ua 0.5475 ub 0.5475 wa 13 wb 13 wd  0 
+          1      1 :   :                                        TO BT BT SA                                        TO BT BT SA   ua 0.8245 ub 0.8245 wa 13 wb 13 wd  0 
+          2      3 :   :                                        TO BT BT SA                                        TO BT BT SA   ua 0.8976 ub 0.8976 wa 13 wb 13 wd  0 
+          3      4 :   :                                        TO BT BT SA                                        TO BT BT SA   ua 0.4892 ub 0.4892 wa 13 wb 13 wd  0 
+          4      6 :   :                                        TO BT BT SA                                        TO BT BT SA   ua 0.4336 ub 0.4336 wa 13 wb 13 wd  0 
+          5      7 :   :                                        TO BT BT SA                                        TO BT BT SA   ua 0.4134 ub 0.4134 wa 13 wb 13 wd  0 
+          6      8 :   :                                        TO BT BT SA                                        TO BT BT SA   ua 0.4220 ub 0.4220 wa 13 wb 13 wd  0 
+          7      9 :   :                                        TO BT BT SA                                        TO BT BT SA   ua 0.9651 ub 0.9651 wa 13 wb 13 wd  0 
+          8     10 :   :                                        TO BT BT SA                                        TO BT BT SA   ua 0.4924 ub 0.4924 wa 13 wb 13 wd  0 
+          9     12 :   :                                        TO BT BT SA                                        TO BT BT SA   ua 0.5837 ub 0.5837 wa 13 wb 13 wd  0 
+
+
+
+
+* TODO: an efficient way to predict consumption from the seqhis (see eg ana/nibble.py)
+
+
+
 

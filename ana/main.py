@@ -130,6 +130,9 @@ def opticks_args(**kwa):
     dbgseqmat = kwa.get("dbgseqmat", "0")
     dbgmskhis = kwa.get("dbgmskhis", "0")
     dbgmskmat = kwa.get("dbgmskmat", "0")
+
+    mask = kwa.get("mask", None)
+
     smry = kwa.get("smry", False)
     dbgzero = kwa.get("dbgzero", False)
     lmx = kwa.get("lmx", 20)
@@ -213,6 +216,10 @@ def opticks_args(**kwa):
     parser.add_argument(     "--dbgseqmat",  default=dbgseqmat, help="Seqmat hexstring prefix for dumping. Default %(default)s"  )
     parser.add_argument(     "--dbgmskhis",  default=dbgmskhis, help="History mask hexstring for selection/dumping. Default %(default)s"  )
     parser.add_argument(     "--dbgmskmat",  default=dbgmskmat, help="Material mask hexstring for selection/dumping. Default %(default)s"  )
+
+    parser.add_argument(     "--mask",  default=mask, help="For analysis of masked events. Default %(default)s"  )
+
+
     parser.add_argument(     "--figsize",  default=figsize, help="Comma delimited figure width,height in inches. Default %(default)s"  )
     parser.add_argument(     "--size",  default=size, help="Comma delimited figure width,height in inches. Default %(default)s"  )
     parser.add_argument(     "--position",  default=position, help="Comma delimited window position. Default %(default)s"  )

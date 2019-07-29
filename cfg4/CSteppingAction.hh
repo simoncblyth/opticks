@@ -43,12 +43,14 @@ class G4Navigator ;
 class G4TransportationManager ; 
 
 
+#include "plog/Severity.h"
 
 #include "CFG4_API_EXPORT.hh"
 #include "CFG4_HEAD.hh"
 
 class CFG4_API CSteppingAction : public G4UserSteppingAction
 {
+   static const plog::Severity LEVEL ;  
    friend class CTrackingAction ; 
 
   public:
@@ -66,6 +68,7 @@ class CFG4_API CSteppingAction : public G4UserSteppingAction
     CG4*              m_g4 ; 
     CG4Ctx&           m_ctx ; 
     Opticks*          m_ok ; 
+    bool              m_dbgflat ; 
     bool              m_dbgrec ; 
     bool              m_dynamic ; 
     CGeometry*        m_geometry ; 

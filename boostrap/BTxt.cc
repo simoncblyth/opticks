@@ -15,6 +15,15 @@
 
 
 
+BTxt* BTxt::Load(const char* path)
+{
+    std::string p = BFile::FormPath(path); 
+    BTxt* txt = new BTxt(p.c_str());
+    txt->read(); 
+    return txt ; 
+}
+
+
 BTxt::BTxt(const char* path)
    :
    m_path(path ? strdup(path) : NULL)
@@ -38,6 +47,11 @@ std::string BTxt::desc() const
     return ss.str();
 }
 
+
+const std::string& BTxt::getString(unsigned int num) const
+{
+    return m_lines[num]; 
+}
 
 const char* BTxt::getLine(unsigned int num) const 
 {

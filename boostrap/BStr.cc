@@ -313,6 +313,25 @@ float BStr::atof( const char* str, float fallback )
     return f ;
 }
 
+double BStr::atod( const char* str, double fallback )
+{
+    double f(fallback) ;   
+    if(!str) return f ; 
+ 
+    try{ 
+        f = boost::lexical_cast<double>(str) ;
+    }   
+    catch (const boost::bad_lexical_cast& e ) { 
+        LOG(warning)  << "Caught bad lexical cast with error [" << e.what() << "] "
+                      << " for str [" << str << "]" 
+                      ;
+    }   
+    catch( ... ){
+        LOG(warning) << "Unknown exception caught!" ;
+    }   
+    return f ;
+}
+
 
 
 

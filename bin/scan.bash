@@ -198,8 +198,12 @@ scan-ph-cmd(){
    echo $cmd
 }
 
-scan-ts-cmd(){   echo ts $1 --pfx scan-ts --generateoverride -1 --cvd 1 --rtx 1 --compute ; }
-scan-tp-cmd(){   echo tp $1 --msli :1M  ; }
+
+
+
+scan-pfx(){ echo scan-ts-utail ; }
+scan-ts-cmd(){   echo ts $1 --pfx $(scan-pfx) --generateoverride -1 --cvd 1 --rtx 1 --compute --recpoi --utaildebug --xanalytic ; }
+scan-tp-cmd(){   echo tp $1 --pfx $(scan-pfx) --msli :1M  ; }
 scan-tv-cmd(){   echo tv $1 ; }
 
 scan-ph-post(){  scan.py $TMP/tboolean-$(scan-ph-lv) ; }
@@ -247,6 +251,10 @@ scan-ph-v(){    VERBOSE=1 OpticksProfile=ERROR scan-ph ; }
 scan-tp-(){     SCAN_MODE=tp scan-cmds-all ; }
 scan-tp(){      SCAN_MODE=tp scan-- ; }
 scan-tp-v(){    VERBOSE=1 scan-tp ; }
+
+scan-ts-(){     SCAN_MODE=ts scan-cmds-all ; }
+scan-ts(){      SCAN_MODE=ts scan-- ; }
+scan-ts-v(){    VERBOSE=1 scan-ts ; }
 
 
 

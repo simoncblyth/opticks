@@ -50,6 +50,7 @@ set(SOURCES
   Map.cc
   BParameters.cc 
   BTxt.cc
+  BLog.cc
   BPropNames.cc
 
   BList.cc
@@ -98,6 +99,7 @@ set(HEADERS
   Map.hh
   BParameters.hh 
   BTxt.hh
+  BLog.hh
   BPropNames.hh
 
 

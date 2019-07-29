@@ -55,6 +55,7 @@ CRandomEngine::CRandomEngine(CG4* g4)
     m_g4(g4),
     m_ctx(g4->getCtx()),
     m_ok(g4->getOpticks()),
+    m_dbgflat(m_ok->isDbgFlat()),
     m_preinit(preinit()),
     m_dbgkludgeflatzero(m_ok->isDbgKludgeFlatZero()),    // --dbgkludgeflatzero
     m_run(g4->getRun()),
@@ -314,6 +315,16 @@ std::string CRandomEngine::CurrentProcessName()
     return ss.str();
 }
 
+/**
+CRandomEngine::FormLocation
+----------------------------
+
+Forms a location of form::
+
+   OpBoundary_DiDiTransCoeff
+
+**/
+
 std::string CRandomEngine::FormLocation(const char* file, int line)
 {
     assert( file ) ;  // actually the label when line is -1
@@ -333,13 +344,24 @@ std::string CRandomEngine::FormLocation(const char* file, int line)
 }
 
 
-// NB not all invokations are instrumented, 
-//    ie there are some internal calls to flat
-//    and some external, so distinguish with m_internal
+/**
+CRandomEngine::flat_instrumented
+------------------------------------
+
+This is invoked via CG4 from a macro:: 
+ 
+    CG4UniformRand("DiDiTransCoeff",-1)   # from DsG4OpBoundaryProcess.cc
+
+NB not all invokations are instrumented, 
+ie there are some internal calls to flat
+and some external, so distinguish with m_internal
+
+When the line argument is negative the file is regarded as a label
+
+**/
 
 double CRandomEngine::flat_instrumented(const char* file, int line)
 {
-    // when line is negative file is regarded as a label
     m_location = FormLocation(file, line) ;
     m_internal = true ; 
     double _flat = flat();
@@ -368,17 +390,19 @@ double CRandomEngine::flat()
     assert( m_current_record_flat_count < m_curand_nv ); 
 
 
+   // adding TotalInternalReflection changes history 
+
 #ifdef USE_CUSTOM_BOUNDARY 
     bool kludge = m_dbgkludgeflatzero 
                && m_current_step_flat_count == 0
                && m_ctx._boundary_status == Ds::StepTooSmall
-               && m_ctx._prior_boundary_status == Ds::FresnelReflection 
+               && m_ctx._prior_boundary_status == Ds::FresnelReflection
                ;
 #else
     bool kludge = m_dbgkludgeflatzero 
                && m_current_step_flat_count == 0
                && m_ctx._boundary_status == StepTooSmall
-               && m_ctx._prior_boundary_status == FresnelReflection 
+               && m_ctx._prior_boundary_status == FresnelReflection
                ;
 #endif
 
@@ -388,11 +412,11 @@ double CRandomEngine::flat()
     double v = kludge ? _peek(-2) : _flat() ; 
 #endif
   
-    if( kludge )
+    if( kludge && m_dbgflat )
     {
-        LOG(debug) 
+        LOG(LEVEL) 
             << " --dbgkludgeflatzero  "
-            << " first flat call following boundary status StepTooSmall after FresnelReflection yields  _peek(-2) value "
+            << " first flat call following boundary status StepTooSmall after FresnelReflection yields  _peek(-2) or zero value "
             << " v " << v 
             ;
             // actually the value does not matter, its just OpBoundary which is not used 
@@ -401,6 +425,9 @@ double CRandomEngine::flat()
     m_flat = v ; 
     m_current_record_flat_count++ ;  // (*lldb*) flat 
     m_current_step_flat_count++ ; 
+
+
+    if(m_dbgflat) dumpFlat(); 
 
     return m_flat ; 
 }
@@ -505,15 +532,20 @@ void CRandomEngine::dumpFlat()
 
     G4VProcess* proc = CProcess::CurrentProcess() ; 
     CSteppingState ss = CStepping::CurrentState(); 
-    std::cerr 
+
+    //LOG(fatal)
+    std::cerr
+        << " dumpFlat " 
         << desc()
+        << " "
+        << std::setw(5) << m_cursor 
         << " "
         << std::setw(10) << m_flat 
         << " " 
         << std::setw(20) << CStepStatus::Desc(ss.fStepStatus)
         << " " << CProcess::Desc(proc)       
         << " alignlevel " << m_alignlevel
-        <<  std::endl 
+        << std::endl 
         ; 
 }
 
@@ -545,11 +577,12 @@ void CRandomEngine::postStep()
         int backseq = -m_current_step_flat_count ; 
         bool dbgnojumpzero = m_ok->isDbgNoJumpZero() ; 
 
-        LOG(debug) 
-            << " _noZeroSteps " << m_ctx._noZeroSteps
-            << " backseq " << backseq
-            << " --dbgnojumpzero " << ( dbgnojumpzero ? "YES" : "NO" )
-            ;
+        if(m_dbgflat)
+            LOG(LEVEL) 
+              << " _noZeroSteps " << m_ctx._noZeroSteps
+              << " backseq " << backseq
+              << " --dbgnojumpzero " << ( dbgnojumpzero ? "YES" : "NO" )
+              ;
 
         if( dbgnojumpzero )
         {

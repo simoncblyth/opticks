@@ -86,8 +86,8 @@ see notes/issues/cfg4-point-recording.rst
 unsigned CG4Ctx::point_limit() const 
 {
     assert( _ok_event_init ); 
-    //return ( _steps_per_photon > _bounce_max ? _steps_per_photon : _bounce_max ) ;
-    return _bounce_max  ;
+    return ( _steps_per_photon > _bounce_max ? _steps_per_photon : _bounce_max ) ;
+    //return _bounce_max  ;
 }
 
 

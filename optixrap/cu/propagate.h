@@ -21,6 +21,7 @@ see /usr/local/env/chroma_env/src/chroma/chroma/cuda/photon.h
 
   #. advance .position .time to boundary 
   #. sail to boundary(PASS)  
+  #. consumes 3u 
 
 Inputs:
 
@@ -94,7 +95,7 @@ __device__ int propagate_to_boundary( Photon& p, State& s, curandState &rng)
 #endif
 
 #ifdef WITH_ALIGN_DEV_DEBUG
-    rtPrintf("propagate_to_boundary  u_OpBoundary:%.9g speed:%.9g \n", u_boundary_burn, speed );
+    rtPrintf("propagate_to_boundary  u_OpBoundary:%.9g speed:%.9g s.distance_to_boundary:%.9g \n", u_boundary_burn, speed, s.distance_to_boundary );
     rtPrintf("propagate_to_boundary  u_OpRayleigh:%.9g   scattering_length(s.material1.z):%.9g scattering_distance:%.9g \n", u_scattering, s.material1.z, scattering_distance );
     rtPrintf("propagate_to_boundary  u_OpAbsorption:%.9g   absorption_length(s.material1.y):%.9g absorption_distance:%.9g \n", u_absorption, s.material1.y, absorption_distance );
 #endif

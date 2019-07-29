@@ -11,11 +11,13 @@ class BRAP_API BTxt {
    public:
        typedef std::vector<std::string> VS_t ; 
    public:
+       static BTxt* Load(const char* path); 
        BTxt(const char* path = NULL); 
        void read();
    public:
        std::string desc() const ; 
        void dump(const char* msg="BTxt::dump") const ;
+       const std::string& getString(unsigned int num) const ; 
        const char* getLine(unsigned int num) const ; 
        unsigned int getNumLines() const ;
        unsigned int getIndex(const char* line) const ; // index of line or UINT_MAX if not found

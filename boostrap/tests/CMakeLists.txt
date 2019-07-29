@@ -21,6 +21,7 @@ set(TEST_SOURCES
    BStrTest.cc
    BBitTest.cc
    BLogTest.cc
+   BPLOGTest.cc
    BFileTest.cc
    BPathTest.cc
    BBufSpecTest.cc
