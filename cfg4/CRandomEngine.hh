@@ -12,6 +12,7 @@ class Opticks ;
 class OpticksRun ; 
 class OpticksEvent ; 
 
+class BLog ; 
 class CG4 ; 
 struct CG4Ctx ; 
 template <typename T> class NPY ; 
@@ -65,6 +66,7 @@ class CFG4_API CRandomEngine : public CRandomListener, public CLHEP::HepRandomEn
     public:
         static std::string CurrentProcessName();
         static std::string FormLocation(const char* file, int line);
+        static const char* PindexLogPath(unsigned mask_index);
     public:
         CRandomEngine(CG4* g4);
         void dumpDouble(const char* msg, double* v, unsigned width ) const  ; 
@@ -90,6 +92,7 @@ class CFG4_API CRandomEngine : public CRandomListener, public CLHEP::HepRandomEn
         void init(); 
         void initCurand(); 
         void run_ucf_script(unsigned mask_index) ; 
+        void dumpPindexLog(const char* msg);
 
         void checkTranche(); 
         void dumpTranche(); 
@@ -99,7 +102,8 @@ class CFG4_API CRandomEngine : public CRandomListener, public CLHEP::HepRandomEn
         void setupCurandSequence(int record_id);
 
         void dump(const char* msg) const ; 
-        void dumpFlat(); 
+        void dbgFlat(); 
+        void compareLogs(const char* msg);
 
     public:
         std::string desc() const ; 
@@ -127,6 +131,9 @@ class CFG4_API CRandomEngine : public CRandomListener, public CLHEP::HepRandomEn
         OpticksEvent*                 m_okevt ; 
         unsigned long long            m_okevt_seqhis ; 
         const char*                   m_okevt_pt ; 
+        const char*                   m_pindexlogpath ; 
+        BLog*                         m_pindexlog ;  
+        BLog*                         m_dbgflatlog ;  
 
         OpticksEvent*                 m_g4evt ; 
 

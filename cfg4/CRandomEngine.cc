@@ -12,6 +12,7 @@
 #include "SSys.hh"
 
 #include "BStr.hh"
+#include "BLog.hh"
 #include "BFile.hh"
 #include "BLocSeq.hh"
 
@@ -62,6 +63,9 @@ CRandomEngine::CRandomEngine(CG4* g4)
     m_okevt(NULL),
     m_okevt_seqhis(0),
     m_okevt_pt(NULL),
+    m_pindexlogpath(NULL),
+    m_pindexlog(NULL),
+    m_dbgflatlog(NULL),
     m_g4evt(NULL),
     m_mask(m_ok->getMask()),
     m_masked(m_mask.size() > 0),
@@ -427,7 +431,7 @@ double CRandomEngine::flat()
     m_current_step_flat_count++ ; 
 
 
-    if(m_dbgflat) dumpFlat(); 
+    if(m_dbgflat) dbgFlat(); 
 
     return m_flat ; 
 }
@@ -524,21 +528,28 @@ int CRandomEngine::findIndexOfValue(double s, double tolerance)
 
 
 
-void CRandomEngine::dumpFlat()
+void CRandomEngine::dbgFlat()
 {
+
+    const char* location = m_location.c_str() ;  
+
     // locseq was just for development, not needed in ordinary usage
     if(m_locseq)
-    m_locseq->add(m_location.c_str(), m_ctx._record_id, m_ctx._step_id); 
+    m_locseq->add(location, m_ctx._record_id, m_ctx._step_id); 
 
     G4VProcess* proc = CProcess::CurrentProcess() ; 
     CSteppingState ss = CStepping::CurrentState(); 
 
+    int idx = findIndexOfValue(m_flat) ; 
+
     //LOG(fatal)
     std::cerr
-        << " dumpFlat " 
+        << " dbgFlat " 
         << desc()
-        << " "
+        << " cur:"
         << std::setw(5) << m_cursor 
+        << " idx:"
+        << std::setw(5) << idx
         << " "
         << std::setw(10) << m_flat 
         << " " 
@@ -547,6 +558,14 @@ void CRandomEngine::dumpFlat()
         << " alignlevel " << m_alignlevel
         << std::endl 
         ; 
+
+
+   if(m_dbgflatlog && m_flat > 0.)
+   {
+       m_dbgflatlog->add(location, m_flat );  
+   } 
+
+
 }
 
 
@@ -572,6 +591,8 @@ the --dbgnojumpzero option.
 void CRandomEngine::postStep()
 {
 
+
+/*
     if(m_ctx._noZeroSteps > 0)
     {
         int backseq = -m_current_step_flat_count ; 
@@ -593,6 +614,7 @@ void CRandomEngine::postStep()
             jump(backseq);
         }
     }
+*/
 
 
     if(m_masked)
@@ -659,15 +681,19 @@ void CRandomEngine::preTrack()
     m_jump = 0 ; 
     m_jump_count = 0 ; 
 
-    // assert( m_ok->isAlign() );    // not true for tests/CRandomEngineTest 
-    bool align_mask = m_ok->hasMask() ;  
+    unsigned use_index ;
 
-    unsigned use_index ; 
-    if(align_mask)
+    bool has_mask = m_ok->hasMask() ; 
+
+    if(has_mask) 
     {
-        unsigned mask_index = m_ok->getMaskIndex( m_ctx._record_id );   // "original" index 
-        use_index = mask_index ; 
-        run_ucf_script( mask_index ) ; 
+        use_index = m_ctx._mask_index ;   
+        run_ucf_script( use_index ) ; 
+
+        m_pindexlogpath = PindexLogPath(use_index) ;   
+        m_pindexlog = BLog::Load(m_pindexlogpath); 
+        m_dbgflatlog = new BLog ; 
+        //m_pindexlog->dump("CRandomEngine::preTrack.pindexlog"); 
     }
     else
     {
@@ -676,14 +702,61 @@ void CRandomEngine::preTrack()
 
     setupCurandSequence(use_index) ;   
 
+   
+    if(has_mask)
+    {
+        dumpPindexLog("CRandomEngine::preTrack.dumpPindexLog"); 
+    }
 
     LOG(debug)
         << "record_id: "    // (*lldb*) preTrack
-        << " ctx.record_id " << m_ctx._record_id 
+        << " ctx._record_id " << m_ctx._record_id 
+        << " ctx._mask_index " << m_ctx._mask_index
         << " use_index " << use_index 
-        << " align_mask " << ( align_mask ? "YES" : "NO" )
+        << " has_mask " << ( has_mask ? "YES" : "NO" )
+        << " pindexlogpath " << m_pindexlogpath 
         ;
 }
+
+const char* CRandomEngine::PindexLogPath(unsigned mask_index)
+{
+    return BStr::concat<unsigned>("$TMP/ox_", mask_index, ".log" );  
+}
+
+void CRandomEngine::dumpPindexLog(const char* msg)
+{
+    LOG(info) << msg ; 
+    const BLog* log = m_pindexlog ; 
+    unsigned ni = log->getNumKeys(); 
+    for(unsigned i=0 ; i < ni ; i++)
+    {
+        const char* key = log->getKey(i); 
+        double value = log->getValue(i); 
+        int idx = findIndexOfValue(value); 
+        std::cerr 
+             << std::setw(40) << key 
+             << ":" 
+             << std::setw(3) << idx
+             << ":" 
+             << std::setw(10) << std::fixed << std::setprecision(9) << value
+             << std::endl 
+             ;
+    }  
+}
+
+void CRandomEngine::compareLogs(const char* msg)
+{
+    LOG(info) << msg ; 
+    BLog* a = m_pindexlog ; 
+    BLog* b = m_dbgflatlog ; 
+
+    a->setSequence(&m_sequence) ;  
+    b->setSequence(&m_sequence) ;  
+
+    int RC = BLog::Compare( a, b );  
+    LOG(info) << msg << " RC " << RC ; 
+}
+
 
 
 
@@ -732,6 +805,12 @@ void CRandomEngine::postTrack()
         m_locseq->mark(seqhis);
         LOG(info) << CProcessManager::Desc(m_ctx._process_manager) ; 
     }
+
+    if(m_dbgflat)
+    {
+        compareLogs("CRandomEngine::postTrack");  
+    }
+
 }
 
 void CRandomEngine::dump(const char* msg) const 

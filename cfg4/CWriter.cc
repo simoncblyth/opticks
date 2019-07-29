@@ -325,7 +325,7 @@ void CWriter::writePhoton(const G4StepPoint* point )
 
     if( m_ok->isUTailDebug() )     // --utaildebug
     { 
-        G4double u = G4UniformRand() ; 
+        G4double u = CG4UniformRand("taildebug",-1) ; 
         target->setValue(target_record_id, 3, 0, 1, u );
     }
     else

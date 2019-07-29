@@ -82,6 +82,8 @@ struct CFG4_API CG4Ctx
     bool _reemtrack ; 
     int  _record_id ;
     double _record_fraction ; // used with --reflectcheat
+    int  _mask_index ;        // original _record_id when using mask  
+
     // zeroed in CG4Ctx::setTrackOptical incremented in CG4Ctx::setStep
     int  _rejoin_count ; 
     int  _primarystep_count ; 

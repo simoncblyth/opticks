@@ -123,6 +123,8 @@ void CG4Ctx::init()
     _primary_id = -1 ; 
     _photon_id = -1 ; 
     _record_id = -1 ; 
+    _mask_index = -1 ; 
+
     _reemtrack = false ; 
 
     _rejoin_count = 0 ; 
@@ -281,6 +283,10 @@ void CG4Ctx::setTrackOptical()
 {
     LOG(debug) << "CTrackingAction::setTrack setting UseGivenVelocity for optical " ; 
 
+
+
+
+
     _track->UseGivenVelocity(true);
 
     // NB without this BoundaryProcess proposed velocity to get correct GROUPVEL for material after refraction 
@@ -294,9 +300,9 @@ void CG4Ctx::setTrackOptical()
     _record_id = _photons_per_g4event*_event_id + _photon_id ; 
     _record_fraction = double(_record_id)/double(_record_max) ;  
 
+    _mask_index = _ok->hasMask() ?_ok->getMaskIndex( _record_id ) : -1 ;   // "original" index 
 
     //if(_record_id % 1000 == 0) OKI_PROFILE("CG4Ctx::setTrackOptical_1k"); 
-
 
     // moved from CTrackingAction::setTrack
     _debug = _ok->isDbgPhoton(_record_id) ; // from option: --dindex=1,100,1000,10000 

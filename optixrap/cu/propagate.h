@@ -640,8 +640,8 @@ propagate_at_surface(Photon &p, State &s, curandState &rng)
     float u_surface_burn = curand_uniform(&rng);  
 #endif
 #ifdef WITH_ALIGN_DEV_DEBUG
-    rtPrintf("propagate_at_surface   u_OpBoundary_DiDiReflectOrTransmit:        %.9g \n", u_surface);
-    rtPrintf("propagate_at_surface   u_OpBoundary_DoAbsorption:   %.9g \n", u_surface_burn);
+    rtPrintf("propagate_at_surface   u_OpBoundary_DiDiReflectOrTransmit:%.9g \n", u_surface);
+    rtPrintf("propagate_at_surface   u_OpBoundary_DoAbsorption:%.9g \n", u_surface_burn);
 #endif
 
     if( u_surface < s.surface.y )   // absorb   

@@ -624,8 +624,11 @@ RT_PROGRAM void generate()
 
     if( utaildebug )   // --utaildebug    see notes/issues/ts-box-utaildebug-decouple-maligned-from-deviant.rst
     {
-        //p.weight = curand_uniform(&rng) ;
-        p.flags.f.y = curand_uniform(&rng) ;
+        float u_taildebug = curand_uniform(&rng) ;
+        p.flags.f.y = u_taildebug ; 
+#ifdef WITH_ALIGN_DEV_DEBUG
+        rtPrintf("generate u_OpBoundary_taildebug:%.9g \n", u_taildebug ); 
+#endif
     }
 
     // breakers and maxers saved here

@@ -24,6 +24,12 @@ BTxt* BTxt::Load(const char* path)
 }
 
 
+
+
+
+
+
+
 BTxt::BTxt(const char* path)
    :
    m_path(path ? strdup(path) : NULL)
@@ -116,14 +122,17 @@ void BTxt::prepDir(const char* path_) const
 void BTxt::write(const char* path_) const 
 {
     const char* path = path_ ? path_ : m_path ; 
+
     assert(path); 
 
-    prepDir(path);
+    std::string p = BFile::preparePath(path) ;  
 
-    std::ofstream out(path, std::ios::out);
+    //prepDir(path);
+
+    std::ofstream out(p.c_str(), std::ios::out);
     if(!out.is_open()) 
     {   
-        LOG(fatal) << "failed to open " << path ; 
+        LOG(fatal) << "failed to open " << p.c_str() ; 
         return ;
     }   
 
