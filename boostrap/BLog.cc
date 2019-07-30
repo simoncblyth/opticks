@@ -5,6 +5,9 @@
 #include "SVec.hh"
 #include "PLOG.hh"
 
+#include <cmath>
+#include <cstdlib>
+
 
 const double BLog::TOLERANCE = 1e-6 ; 
 
@@ -168,7 +171,7 @@ int BLog::Compare( const BLog* a , const BLog* b )
          double av      = i < ai ? a->getValue(i) : -1. ; 
          double bv      = i < bi ? b->getValue(i) : -1. ; 
          double dv      = av - bv ; 
-         bool mv = std::abs(dv) < TOLERANCE ; 
+         bool mv = std::fabs(dv) < TOLERANCE ; 
          if( !mv ) rc |= 0x10 ;   
 
          int ax = a->getSequenceIndex(i) ;   
