@@ -120,6 +120,7 @@ class CFG4_API CG4
         void postpropagate();
    public:
         int getPrintIndex() const ;
+        void addRandomNote(const char* note, int value=-1); 
 
         void postStep();
         void preTrack();

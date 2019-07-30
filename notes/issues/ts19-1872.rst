@@ -17,115 +17,10 @@ ts19-1872
     CSteppingAction=ERROR CRandomEngine=ERROR ts 19 --pfx scan-ts-utail --mask 1872 --pindex 0 --dbgseqhis 0xbbbbbbbbcd --pindexlog --recpoi --utaildebug --xanalytic --dbgflat
 
 
+Next
+--------
 
-Find some ordinary photons for machinery dev with non-problematics
---------------------------------------------------------------------
-
-::
-
-    TAG=2 ta 19 --pfx scan-ts-utail --msli :1M 
-
-    In [2]: ab.dumpline( np.where( a.seqhis == 0x8cbbbbcd )[0] )
-          0    100 :   :                            TO BT BR BR BR BR BT SA                            TO BT BR BR BR BR BT SA 
-          1    360 :   :                            TO BT BR BR BR BR BT SA                            TO BT BR BR BR BR BT SA 
-          2    944 :   :                            TO BT BR BR BR BR BT SA                            TO BT BR BR BR BR BT SA 
-          3   2100 :   :                            TO BT BR BR BR BR BT SA                            TO BT BR BR BR BR BT SA 
-          4   2111 :   :                            TO BT BR BR BR BR BT SA                            TO BT BR BR BR BR BT SA 
-          5   3040 :   :                            TO BT BR BR BR BR BT SA                            TO BT BR BR BR BR BT SA 
-
-    CSteppingAction=ERROR CRandomEngine=ERROR ts 19 --pfx scan-ts-utail --mask 100 --pindex 0 --dbgseqhis 0xbbbbbbbbcd --pindexlog --recpoi --utaildebug --xanalytic --dbgflat
-
-
-Although it all matches, the automated comparison reveals that the codepoints diverged in the middle and them came back on track, 
-so it only matched due to luck that did not get extreme randoms in that diverged section to throw off the decisions.
-
-::
-
-    dbgFlat CRandomEngine rec.stp1   0.0 crf     1 csf     1 loc                                         OpBoundary cur:    0 idx:    0 0.157769859            Undefined CPro      OpBoundary LenLeft         -1 LenTrav          0 AtRest/AlongStep/PostStep NNY alignlevel 0
-     dbgFlat CRandomEngine rec.stp1   0.0 crf     2 csf     2 loc                                         OpRayleigh cur:    1 idx:    1 0.409740657            Undefined CPro      OpRayleigh LenLeft         -1 LenTrav          0 AtRest/AlongStep/PostStep NNY alignlevel 0
-     dbgFlat CRandomEngine rec.stp1   0.0 crf     3 csf     3 loc                                       OpAbsorption cur:    2 idx:    2 0.909059703     PostStepDoItProc CPro    OpAbsorption LenLeft         -1 LenTrav          0 AtRest/AlongStep/PostStep NNY alignlevel 0
-     dbgFlat CRandomEngine rec.stp1   0.0 crf     4 csf     4 loc                          OpBoundary_DiDiTransCoeff cur:    3 idx:    3 0.007763659         GeomBoundary CPro      OpBoundary LenLeft    1.84662 LenTrav          0 AtRest/AlongStep/PostStep NNY alignlevel 0
-    2019-07-29 23:56:57.021 ERROR [188757] [CSteppingAction::UserSteppingAction@156]  --dbgflat  m_ctx._noZeroSteps 0 proceed CProcessManager::ClearNumberOfInteractionLengthLeft 
-     dbgFlat CRandomEngine rec.stp1   0.1 crf     5 csf     1 loc                                         OpBoundary cur:    4 idx:    4 0.945110857         GeomBoundary CPro      OpBoundary LenLeft         -1 LenTrav          0 AtRest/AlongStep/PostStep NNY alignlevel 0
-     dbgFlat CRandomEngine rec.stp1   0.1 crf     6 csf     2 loc                                         OpRayleigh cur:    5 idx:    5 0.112468801         GeomBoundary CPro      OpRayleigh LenLeft         -1 LenTrav          0 AtRest/AlongStep/PostStep NNY alignlevel 0
-     dbgFlat CRandomEngine rec.stp1   0.1 crf     7 csf     3 loc                                       OpAbsorption cur:    6 idx:    6 0.908116281     PostStepDoItProc CPro    OpAbsorption LenLeft         -1 LenTrav          0 AtRest/AlongStep/PostStep NNY alignlevel 0
-     dbgFlat CRandomEngine rec.stp1   0.1 crf     8 csf     4 loc                          OpBoundary_DiDiTransCoeff cur:    7 idx:    7 0.993079603         GeomBoundary CPro      OpBoundary LenLeft   0.056453 LenTrav          0 AtRest/AlongStep/PostStep NNY alignlevel 0
-    2019-07-29 23:56:57.021 ERROR [188757] [CSteppingAction::UserSteppingAction@156]  --dbgflat  m_ctx._noZeroSteps 0 proceed CProcessManager::ClearNumberOfInteractionLengthLeft 
-     dbgFlat CRandomEngine rec.stp1   0.2 crf     9 csf     1 loc                                         OpBoundary cur:    8 idx:    8 0.923281610         GeomBoundary CPro      OpBoundary LenLeft         -1 LenTrav          0 AtRest/AlongStep/PostStep NNY alignlevel 0
-     dbgFlat CRandomEngine rec.stp1   0.2 crf    10 csf     2 loc                                         OpRayleigh cur:    9 idx:    9 0.968241632         GeomBoundary CPro      OpRayleigh LenLeft         -1 LenTrav          0 AtRest/AlongStep/PostStep NNY alignlevel 0
-     dbgFlat CRandomEngine rec.stp1   0.2 crf    11 csf     3 loc                                       OpAbsorption cur:   10 idx:   10 0.499408484     PostStepDoItProc CPro    OpAbsorption LenLeft         -1 LenTrav          0 AtRest/AlongStep/PostStep NNY alignlevel 0
-    2019-07-29 23:56:57.022 ERROR [188757] [CSteppingAction::UserSteppingAction@147]  --dbgskipclearzero   m_ctx._noZeroSteps 1 skipping CProcessManager::ClearNumberOfInteractionLengthLeft 
-    2019-07-29 23:56:57.022 ERROR [188757] [CRandomEngine::flat@421]  --dbgkludgeflatzero   first flat call following boundary status StepTooSmall after FresnelReflection yields  _peek(-2) or zero value  v 0
-     dbgFlat CRandomEngine rec.stp1   0.3 crf    12 csf     1 loc                                         OpBoundary cur:   10 idx:   -1 0.000000000         GeomBoundary CPro      OpBoundary LenLeft         -1 LenTrav          0 AtRest/AlongStep/PostStep NNY alignlevel 0
-     dbgFlat CRandomEngine rec.stp1   0.3 crf    13 csf     2 loc                          OpBoundary_DiDiTransCoeff cur:   11 idx:   11 0.847486854         GeomBoundary CPro      OpBoundary LenLeft     709.09 LenTrav          0 AtRest/AlongStep/PostStep NNY alignlevel 0
-    2019-07-29 23:56:57.022 ERROR [188757] [CSteppingAction::UserSteppingAction@156]  --dbgflat  m_ctx._noZeroSteps 0 proceed CProcessManager::ClearNumberOfInteractionLengthLeft 
-     dbgFlat CRandomEngine rec.stp1   0.4 crf    14 csf     1 loc                                         OpBoundary cur:   12 idx:   12 0.520009637         GeomBoundary CPro      OpBoundary LenLeft         -1 LenTrav          0 AtRest/AlongStep/PostStep NNY alignlevel 0
-     dbgFlat CRandomEngine rec.stp1   0.4 crf    15 csf     2 loc                                         OpRayleigh cur:   13 idx:   13 0.078150898         GeomBoundary CPro      OpRayleigh LenLeft         -1 LenTrav          0 AtRest/AlongStep/PostStep NNY alignlevel 0
-     dbgFlat CRandomEngine rec.stp1   0.4 crf    16 csf     3 loc                                       OpAbsorption cur:   14 idx:   14 0.574374497     PostStepDoItProc CPro    OpAbsorption LenLeft         -1 LenTrav          0 AtRest/AlongStep/PostStep NNY alignlevel 0
-    2019-07-29 23:56:57.022 ERROR [188757] [CSteppingAction::UserSteppingAction@147]  --dbgskipclearzero   m_ctx._noZeroSteps 1 skipping CProcessManager::ClearNumberOfInteractionLengthLeft 
-    2019-07-29 23:56:57.022 ERROR [188757] [CRandomEngine::flat@421]  --dbgkludgeflatzero   first flat call following boundary status StepTooSmall after FresnelReflection yields  _peek(-2) or zero value  v 0
-     dbgFlat CRandomEngine rec.stp1   0.5 crf    17 csf     1 loc                                         OpBoundary cur:   14 idx:   -1 0.000000000         GeomBoundary CPro      OpBoundary LenLeft         -1 LenTrav          0 AtRest/AlongStep/PostStep NNY alignlevel 0
-    2019-07-29 23:56:57.023 ERROR [188757] [CSteppingAction::UserSteppingAction@156]  --dbgflat  m_ctx._noZeroSteps 0 proceed CProcessManager::ClearNumberOfInteractionLengthLeft 
-     dbgFlat CRandomEngine rec.stp1   0.6 crf    18 csf     1 loc                                         OpBoundary cur:   15 idx:   15 0.020794503         GeomBoundary CPro      OpBoundary LenLeft         -1 LenTrav          0 AtRest/AlongStep/PostStep NNY alignlevel 0
-     dbgFlat CRandomEngine rec.stp1   0.6 crf    19 csf     2 loc                                         OpRayleigh cur:   16 idx:   16 0.115618370         GeomBoundary CPro      OpRayleigh LenLeft         -1 LenTrav          0 AtRest/AlongStep/PostStep NNY alignlevel 0
-     dbgFlat CRandomEngine rec.stp1   0.6 crf    20 csf     3 loc                                       OpAbsorption cur:   17 idx:   17 0.169269904     PostStepDoItProc CPro    OpAbsorption LenLeft         -1 LenTrav          0 AtRest/AlongStep/PostStep NNY alignlevel 0
-    2019-07-29 23:56:57.023 ERROR [188757] [CSteppingAction::UserSteppingAction@147]  --dbgskipclearzero   m_ctx._noZeroSteps 1 skipping CProcessManager::ClearNumberOfInteractionLengthLeft 
-     dbgFlat CRandomEngine rec.stp1   0.7 crf    21 csf     1 loc                                         OpBoundary cur:   18 idx:   18 0.622605622         GeomBoundary CPro      OpBoundary LenLeft         -1 LenTrav          0 AtRest/AlongStep/PostStep NNY alignlevel 0
-    2019-07-29 23:56:57.023 ERROR [188757] [CSteppingAction::UserSteppingAction@156]  --dbgflat  m_ctx._noZeroSteps 0 proceed CProcessManager::ClearNumberOfInteractionLengthLeft 
-     dbgFlat CRandomEngine rec.stp1   0.8 crf    22 csf     1 loc                                         OpBoundary cur:   19 idx:   19 0.879230320         GeomBoundary CPro      OpBoundary LenLeft         -1 LenTrav          0 AtRest/AlongStep/PostStep NNY alignlevel 0
-     dbgFlat CRandomEngine rec.stp1   0.8 crf    23 csf     2 loc                                         OpRayleigh cur:   20 idx:   20 0.038228933         GeomBoundary CPro      OpRayleigh LenLeft         -1 LenTrav          0 AtRest/AlongStep/PostStep NNY alignlevel 0
-     dbgFlat CRandomEngine rec.stp1   0.8 crf    24 csf     3 loc                                       OpAbsorption cur:   21 idx:   21 0.560237229     PostStepDoItProc CPro    OpAbsorption LenLeft         -1 LenTrav          0 AtRest/AlongStep/PostStep NNY alignlevel 0
-    2019-07-29 23:56:57.023 ERROR [188757] [CSteppingAction::UserSteppingAction@147]  --dbgskipclearzero   m_ctx._noZeroSteps 1 skipping CProcessManager::ClearNumberOfInteractionLengthLeft 
-     dbgFlat CRandomEngine rec.stp1   0.9 crf    25 csf     1 loc                                         OpBoundary cur:   22 idx:   22 0.321802348         GeomBoundary CPro      OpBoundary LenLeft         -1 LenTrav          0 AtRest/AlongStep/PostStep NNY alignlevel 0
-     dbgFlat CRandomEngine rec.stp1   0.9 crf    26 csf     2 loc                          OpBoundary_DiDiTransCoeff cur:   23 idx:   23 0.098945051         GeomBoundary CPro      OpBoundary LenLeft    1.13382 LenTrav          0 AtRest/AlongStep/PostStep NNY alignlevel 0
-    2019-07-29 23:56:57.024 ERROR [188757] [CSteppingAction::UserSteppingAction@156]  --dbgflat  m_ctx._noZeroSteps 0 proceed CProcessManager::ClearNumberOfInteractionLengthLeft 
-     dbgFlat CRandomEngine rec.stp1  0.10 crf    27 csf     1 loc                                         OpBoundary cur:   24 idx:   24 0.819752872         GeomBoundary CPro      OpBoundary LenLeft         -1 LenTrav          0 AtRest/AlongStep/PostStep NNY alignlevel 0
-     dbgFlat CRandomEngine rec.stp1  0.10 crf    28 csf     2 loc                                         OpRayleigh cur:   25 idx:   25 0.124628305         GeomBoundary CPro      OpRayleigh LenLeft         -1 LenTrav          0 AtRest/AlongStep/PostStep NNY alignlevel 0
-     dbgFlat CRandomEngine rec.stp1  0.10 crf    29 csf     3 loc                                       OpAbsorption cur:   26 idx:   26 0.397397667     PostStepDoItProc CPro    OpAbsorption LenLeft         -1 LenTrav          0 AtRest/AlongStep/PostStep NNY alignlevel 0
-     dbgFlat CRandomEngine rec.stp1  0.10 crf    30 csf     4 loc                   OpBoundary_DiDiReflectOrTransmit cur:   27 idx:   27 0.106698811         GeomBoundary CPro      OpBoundary LenLeft   0.198752 LenTrav          0 AtRest/AlongStep/PostStep NNY alignlevel 0
-     dbgFlat CRandomEngine rec.stp1  0.10 crf    31 csf     5 loc                            OpBoundary_DoAbsorption cur:   28 idx:   28 0.602350235         GeomBoundary CPro      OpBoundary LenLeft   0.198752 LenTrav          0 AtRest/AlongStep/PostStep NNY alignlevel 0
-     dbgFlat CRandomEngine rec.stp1  0.11 crf    32 csf     1 loc                               OpBoundary_taildebug cur:   29 idx:   29 0.243380114         GeomBoundary CPro      OpBoundary LenLeft         -1 LenTrav          0 AtRest/AlongStep/PostStep NNY alignlevel 0
-    2019-07-29 23:56:57.025 INFO  [188757] [CRandomEngine::compareLogs@749] CRandomEngine::postTrack
-     i    0 rc    0 ak/bk                               OpBoundary/OpBoundary                                    ax/bx  0/ 0    av/bv 0.1577698590/0.1577698588    dv  0.0000000002
-     i    1 rc    0 ak/bk                               OpRayleigh/OpRayleigh                                    ax/bx  1/ 1    av/bv 0.4097406570/0.4097406566    dv  0.0000000004
-     i    2 rc    0 ak/bk                             OpAbsorption/OpAbsorption                                  ax/bx  2/ 2    av/bv 0.9090597030/0.9090597034    dv -0.0000000004
-     i    3 rc    0 ak/bk                OpBoundary_DiDiTransCoeff/OpBoundary_DiDiTransCoeff                     ax/bx  3/ 3    av/bv 0.0077636586/0.0077636587    dv -0.0000000000
-     i    4 rc    0 ak/bk                               OpBoundary/OpBoundary                                    ax/bx  4/ 4    av/bv 0.9451108570/0.9451108575    dv -0.0000000005
-     i    5 rc    0 ak/bk                               OpRayleigh/OpRayleigh                                    ax/bx  5/ 5    av/bv 0.1124688010/0.1124688014    dv -0.0000000004
-     i    6 rc    0 ak/bk                             OpAbsorption/OpAbsorption                                  ax/bx  6/ 6    av/bv 0.9081162810/0.9081162810    dv -0.0000000000
-     i    7 rc    0 ak/bk                OpBoundary_DiDiTransCoeff/OpBoundary_DiDiTransCoeff                     ax/bx  7/ 7    av/bv 0.9930796030/0.9930796027    dv  0.0000000003
-     i    8 rc    0 ak/bk                               OpBoundary/OpBoundary                                    ax/bx  8/ 8    av/bv 0.9232816100/0.9232816100    dv -0.0000000000
-     i    9 rc    0 ak/bk                               OpRayleigh/OpRayleigh                                    ax/bx  9/ 9    av/bv 0.9682416320/0.9682416320    dv  0.0000000000
-     i   10 rc    0 ak/bk                             OpAbsorption/OpAbsorption                                  ax/bx 10/10    av/bv 0.4994084840/0.4994084835    dv  0.0000000005
-     i   11 rc    0 ak/bk                OpBoundary_DiDiTransCoeff/OpBoundary_DiDiTransCoeff                     ax/bx 11/11    av/bv 0.8474868540/0.8474868536    dv  0.0000000004
-     i   12 rc    0 ak/bk                               OpBoundary/OpBoundary                                    ax/bx 12/12    av/bv 0.5200096370/0.5200096369    dv  0.0000000001
-     i   13 rc    0 ak/bk                               OpRayleigh/OpRayleigh                                    ax/bx 13/13    av/bv 0.0781508982/0.0781508982    dv -0.0000000000
-     i   14 rc    0 ak/bk                             OpAbsorption/OpAbsorption                                  ax/bx 14/14    av/bv 0.5743744970/0.5743744969    dv  0.0000000001
-     i   15 rc    1 ak/bk                OpBoundary_DiDiTransCoeff/OpBoundary                                *   ax/bx 15/15    av/bv 0.0207945034/0.0207945034    dv  0.0000000000
-     i   16 rc    1 ak/bk                               OpBoundary/OpRayleigh                                *   ax/bx 16/16    av/bv 0.1156183700/0.1156183705    dv -0.0000000005
-     i   17 rc    1 ak/bk                               OpRayleigh/OpAbsorption                              *   ax/bx 17/17    av/bv 0.1692699040/0.1692699045    dv -0.0000000005
-     i   18 rc    1 ak/bk                             OpAbsorption/OpBoundary                                *   ax/bx 18/18    av/bv 0.6226056220/0.6226056218    dv  0.0000000002
-     i   19 rc    1 ak/bk                OpBoundary_DiDiTransCoeff/OpBoundary                                *   ax/bx 19/19    av/bv 0.8792303200/0.8792303205    dv -0.0000000005
-     i   20 rc    1 ak/bk                               OpBoundary/OpRayleigh                                *   ax/bx 20/20    av/bv 0.0382289328/0.0382289328    dv  0.0000000000
-     i   21 rc    1 ak/bk                               OpRayleigh/OpAbsorption                              *   ax/bx 21/21    av/bv 0.5602372290/0.5602372289    dv  0.0000000001
-     i   22 rc    1 ak/bk                             OpAbsorption/OpBoundary                                *   ax/bx 22/22    av/bv 0.3218023480/0.3218023479    dv  0.0000000001
-     i   23 rc    0 ak/bk                OpBoundary_DiDiTransCoeff/OpBoundary_DiDiTransCoeff                     ax/bx 23/23    av/bv 0.0989450514/0.0989450514    dv -0.0000000000
-     i   24 rc    0 ak/bk                               OpBoundary/OpBoundary                                    ax/bx 24/24    av/bv 0.8197528720/0.8197528720    dv  0.0000000000
-     i   25 rc    0 ak/bk                               OpRayleigh/OpRayleigh                                    ax/bx 25/25    av/bv 0.1246283050/0.1246283054    dv -0.0000000004
-     i   26 rc    0 ak/bk                             OpAbsorption/OpAbsorption                                  ax/bx 26/26    av/bv 0.3973976670/0.3973976672    dv -0.0000000002
-     i   27 rc    0 ak/bk         OpBoundary_DiDiReflectOrTransmit/OpBoundary_DiDiReflectOrTransmit              ax/bx 27/27    av/bv 0.1066988110/0.1066988111    dv -0.0000000001
-     i   28 rc    0 ak/bk                  OpBoundary_DoAbsorption/OpBoundary_DoAbsorption                       ax/bx 28/28    av/bv 0.6023502350/0.6023502350    dv  0.0000000000
-     i   29 rc    0 ak/bk                     OpBoundary_taildebug/OpBoundary_taildebug                          ax/bx 29/29    av/bv 0.2433801140/0.2433801144    dv -0.0000000004
-    2019-07-29 23:56:57.032 INFO  [188757] [BLog::Compare@206]  ai 30 bi 30 RC 1 tol         1e-06
-    2019-07-29 23:56:57.032 INFO  [188757] [CRandomEngine::compareLogs@757] CRandomEngine::postTrack RC 1
-
-
-
-
-
-
-
-
+* :doc:`ts19-100` investigate a matched photon, with codepoint excursion 
 
 
 
@@ -134,10 +29,11 @@ Need to automate debugging without lldb
 
 * add BLog for a C++ version of ucf.py 
 
+* Need something like the output from :doc:`RNG_seq_off_by_one` without lldb 
 
-Need something like the output from :doc:`RNG_seq_off_by_one` without lldb 
 
-
+Instrumented flat
+-------------------
 
 ::
 
@@ -161,20 +57,6 @@ DsG4OpBoundaryProcess::
     1075 
     1076              // Simulate reflection
     1077 
-
-
-
-Given how messed up the dbgflat history amazing that matches at all
-----------------------------------------------------------------------
-
-* what you get is mostly coming from the geometry
-* the values of the randoms have little effect (a wide latitude, they need to be extreme to mess up the decisions)
-
-  * so comparing histories is too fragile, need to compare A:(codepoint,u) and B:(codepoint,u)
-  
-* Opticks (A) codepoints are extremely regular and predictable unlike Geant4 
-
-* need a systematic way to map a codepoint in B with its u to its contemporary  
 
 
 ::

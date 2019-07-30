@@ -65,6 +65,8 @@
 #define GEANT4_BT_GROUPVEL_FIX 1
 #define SCB_DEBUG 1
 //#define SCB_BND_DEBUG 1
+#define WITH_FLAT_DEBUG 1 
+
 
 
 /////////////

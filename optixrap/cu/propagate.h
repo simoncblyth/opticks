@@ -276,9 +276,12 @@ Outputs:
 
 Tacitly returns CONTINUE
 
+Notes:
+
+*  when geometry dictates TIR there is no dependence on u_reflect, 
+   just always get reflection
+
 */
-
-
 
 
 __device__ void propagate_at_boundary_geant4_style( Photon& p, State& s, curandState &rng)
@@ -348,7 +351,7 @@ __device__ void propagate_at_boundary_geant4_style( Photon& p, State& s, curandS
 #endif 
 
 #ifdef WITH_ALIGN_DEV_DEBUG
-    rtPrintf("propagate_at_boundary  u_OpBoundary_DiDiTransCoeff:%.9g  reflect:%d   TransCoeff:%10.5f  c2c2:%10.4f tir:%d  post (%10.4f %10.4f %10.4f %10.4f) pol (%10.4f %10.4f %10.4f ) \n",
+    rtPrintf("propagate_at_boundary  u_OpBoundary_DiDiTransCoeff:%.9g  n_reflect:%d   c_TransCoeff:%.9g  c2c2:%10.4f tir:%d  post (%10.4f %10.4f %10.4f %10.4f) pol (%10.4f %10.4f %10.4f ) \n",
          u_reflect, reflect, TransCoeff, c2c2, tir, p.position.x, p.position.y, p.position.z, p.time, p.polarization.x, p.polarization.y, p.polarization.z  );
 #endif
 
@@ -639,6 +642,7 @@ propagate_at_surface(Photon &p, State &s, curandState &rng)
 #ifdef WITH_ALIGN_DEV
     float u_surface_burn = curand_uniform(&rng);  
 #endif
+
 #ifdef WITH_ALIGN_DEV_DEBUG
     rtPrintf("propagate_at_surface   u_OpBoundary_DiDiReflectOrTransmit:%.9g \n", u_surface);
     rtPrintf("propagate_at_surface   u_OpBoundary_DoAbsorption:%.9g \n", u_surface_burn);

@@ -6,21 +6,36 @@
 
 #include "BRAP_API_EXPORT.hh"
 #include "BRAP_HEAD.hh"
+#include "plog/Severity.h"
 
 class BTxt ; 
 
+
 class BRAP_API BLog {
    public:
+       static const plog::Severity LEVEL ; 
        static const double TOLERANCE ; 
+
+       static const char* VALUE ; 
+       static const char* CUT ; 
+       static const char* NOTE ; 
+
+       static const char* DELIM ; 
+       static const char* END ; 
+
        static BLog* Load(const char* path); 
-       static int ParseLine( const std::string& line,  std::string& k, std::string& v ); 
+       static int ParseKV( const std::string& line,  const char* start, const char* delim, const char* end, std::string& k, std::string& v ); 
        static int Compare( const BLog* a , const BLog* b ) ; 
    public:
        BLog(); 
 
        void setSequence(const std::vector<double>*  sequence);   
 
-       void add( const char* key, double value ); 
+       void addValue( const char* key,  double value ); 
+       int getIdx() const ; 
+
+       void addCut(   const char* ckey, double cvalue ); 
+       void addNote(  const char* nkey, int nvalue ); 
 
        unsigned    getNumKeys() const ;  
        const char* getKey(unsigned i) const ; 
@@ -30,7 +45,13 @@ class BRAP_API BLog {
 
        void        dump(const char* msg="BLog::dump") const ; 
 
+
        std::string  makeLine(unsigned i) const ; 
+
+       std::string  makeValueString(unsigned i, bool present=false) const ; 
+       std::string  makeCutString(  unsigned i, bool present=false) const ; 
+       std::string  makeNoteString (unsigned i, bool present=false) const ; 
+
        BTxt*        makeTxt() const ; 
        void         write(const char* path) const ; 
 
@@ -40,6 +61,18 @@ class BRAP_API BLog {
    private:
        std::vector<std::string>     m_keys ; 
        std::vector<double>          m_values ; 
+
+
+       typedef std::pair<int, std::string>   PIS_t ; 
+       typedef std::pair<int, double>        PID_t ; 
+       typedef std::pair<int, int>           PII_t ; 
+
+       std::vector<PIS_t> m_ckeys ;   
+       std::vector<PID_t> m_cvalues ;   
+
+       std::vector<PIS_t> m_nkeys ;   
+       std::vector<PII_t> m_nvalues ;   
+
        const std::vector<double>*   m_sequence ;    
 
 

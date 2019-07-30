@@ -141,6 +141,8 @@ void CSteppingAction::UserSteppingAction(const G4Step* step)
         bool zeroStep = m_ctx._noZeroSteps > 0 ;   // usually means there was a jump back 
         bool skipClear = zeroStep && m_ok->isDbgSkipClearZero()  ;  // --dbgskipclearzero
 
+
+
         if(skipClear)
         {
             if(m_dbgflat) 
@@ -193,6 +195,13 @@ bool CSteppingAction::setStep(const G4Step* step)
               << " severity " << severity
               << " ctx " << m_ctx.desc()
               ;
+
+
+    if(m_dbgflat)
+    {
+        m_g4->addRandomNote("noZeroSteps", noZeroSteps ); 
+    }
+
 
     bool done = false ; 
 

@@ -7,52 +7,81 @@
 
 #include <cmath>
 #include <cstdlib>
+#include "PLOG.hh"
 
+const plog::Severity BLog::LEVEL = PLOG::EnvLevel("BLog", "DEBUG"); 
 
 const double BLog::TOLERANCE = 1e-6 ; 
+
+const char* BLog::VALUE = " u_" ; 
+const char* BLog::CUT = " c_" ; 
+const char* BLog::NOTE = " n_" ; 
+
+const char* BLog::DELIM = ":" ; 
+const char* BLog::END = " " ; 
 
 
 BLog* BLog::Load(const char* path)
 {
     BTxt* txt = BTxt::Load(path); 
     BLog* log = new BLog ; 
-    LOG(info) << txt->desc();  
+
+    log->addNote("checknote",101); 
+
+    LOG(LEVEL) 
+        << " path " << path 
+        << " txt " << txt->desc()
+        ;  
     unsigned ni = txt->getNumLines(); 
     for(unsigned i=0 ; i < ni ; i++)
     {
         const std::string& line = txt->getString(i); 
-        std::string k, v ;  
-        if(0==ParseLine(line, k, v ))
+        LOG(LEVEL) << line ; 
+
+        std::string uk, uv ;  
+        int urc = ParseKV(line, VALUE, DELIM, END, uk, uv ) ; 
+
+        if(urc == 0)
         { 
-            double vf = BStr::atod(v.c_str(), 0. ); 
-            log->add( k.c_str(),  vf ); 
+            log->addValue( uk.c_str(),  BStr::atod(uv.c_str(), -1. )); 
+        
+            std::string ck, cv ;  
+            int crc = ParseKV(line, CUT, DELIM, END, ck, cv ) ; 
+            if(crc == 0)
+            {
+                log->addCut( ck.c_str(), BStr::atod(cv.c_str(), -1. )); 
+            }
+
+            std::string nk, nv ;  
+            int nrc = ParseKV(line, NOTE, DELIM, END, nk, nv ) ; 
+            if(nrc == 0)
+            {
+                log->addNote( nk.c_str(), BStr::atoi(nv.c_str(), -1 )); 
+            }
+
         }
     }
     return log ; 
 }
 
-
-int BLog::ParseLine( const std::string& line,  std::string& k, std::string& v )
+int BLog::ParseKV( const std::string& line,  const char* start, const char* delim, const char* end, std::string& k, std::string& v )
 {
-    std::size_t pu = line.find("u_") ; 
-    if( pu == std::string::npos ) return 1  ;
-    pu += 2 ;     
+    std::size_t ps = line.find(start) ; 
+    if( ps == std::string::npos ) return 1  ;
+    ps += strlen(start) ;     
 
-    std::size_t pc = line.find(":", pu) ; 
-    if( pc == std::string::npos ) return 2 ;   
-    pc += 1 ;  
+    std::size_t pd = line.find(delim, ps) ; 
+    if( pd == std::string::npos ) return 2 ;   
+    pd += 1 ;  
 
-    std::size_t ps = line.find(" ", pc) ; 
-    if( ps == std::string::npos ) return 3 ;   
+    std::size_t pe = line.find(end, pd) ; 
+    if( pe == std::string::npos ) return 3 ;   
 
-    k = line.substr(pu,pc-pu-1); 
-    v = line.substr(pc,ps-pc); 
+    k = line.substr(ps,pd-ps-1); 
+    v = line.substr(pd,pe-pd); 
+
     return 0 ;  
 }
-
-
-
-
 
 
 
@@ -66,10 +95,29 @@ void BLog::setSequence(const std::vector<double>*  sequence)
     m_sequence = sequence ;
 }
 
-void BLog::add(const char* key, double value )
+void BLog::addValue(const char* key, double value )
 {
     m_keys.push_back(key); 
     m_values.push_back(value); 
+}
+
+int BLog::getIdx() const   // returns -1, before adding any keys
+{
+    return m_keys.size() - 1 ; 
+}
+
+void BLog::addCut( const char* ckey, double cvalue )
+{
+    int idx = getIdx(); 
+    m_ckeys.push_back( std::pair<int, std::string>(idx, ckey ) ); 
+    m_cvalues.push_back( std::pair<int, double>(idx, cvalue ) ); 
+}
+
+void BLog::addNote( const char* nkey, int nvalue )
+{
+    int idx = getIdx(); 
+    m_nkeys.push_back( std::pair<int, std::string>(idx, nkey ) ); 
+    m_nvalues.push_back( std::pair<int, int>(idx, nvalue ) ); 
 }
 
 unsigned BLog::getNumKeys() const 
@@ -82,7 +130,7 @@ const char* BLog::getKey(unsigned i) const
 }
 double BLog::getValue(unsigned i) const 
 {
-    return m_values[i] ; 
+    return i < m_values.size() ? m_values[i] : -1. ; 
 }
 
 int BLog::getSequenceIndex(unsigned i) const 
@@ -97,36 +145,104 @@ const std::vector<double>& BLog::getValues() const
     return m_values ; 
 }
 
-
-
 void BLog::dump(const char* msg) const 
 {
     LOG(info) << msg ; 
     assert( m_keys.size() == m_values.size() ) ; 
+
+    std::cerr 
+         << makeNoteString(-1) 
+         << std::endl 
+         ;
+
     for( unsigned i=0 ; i < m_keys.size() ; i++ ) 
     {
-        int idx = getSequenceIndex(i) ;   
+        int idx = getSequenceIndex(i) ;
+   
         std::cerr 
-             << std::setw(30) << m_keys[i]
-             << ":" 
              << std::setw(4) << idx
-             << " "  
-             << ":" 
-             << std::setw(10) << std::fixed << std::setprecision(9) << m_values[i]
+             << makeValueString(i, true) 
+             << makeCutString(i) 
+             << makeNoteString(i) 
              << std::endl 
              ;
     }
 }
 
-std::string BLog::makeLine(unsigned i) const 
+std::string BLog::makeValueString(unsigned i, bool present) const 
 {
     std::stringstream ss ; 
-    ss << "u_" 
+    ss << VALUE
+       << std::setw(present ? 40 : 0)  
        << m_keys[i]  
-       << ":"
+       << DELIM
        << std::setprecision(9) << m_values[i]
-       << " " 
+       << END
        ; 
+    return ss.str(); 
+}
+
+std::string BLog::makeCutString(unsigned i, bool ) const 
+{
+    std::stringstream ss ; 
+    assert( m_ckeys.size() == m_cvalues.size() ) ;
+    for( unsigned j=0 ; j < m_ckeys.size() ; j++)
+    {
+        const PIS_t& ick = m_ckeys[j]; 
+        const PID_t& icv = m_cvalues[j]; 
+
+        int idx = ick.first ; 
+        assert( icv.first == idx );  
+
+        if( idx != i ) continue ;  
+
+        const std::string& ck = ick.second ;    
+        const double&      cv = icv.second ;    
+
+        ss << CUT
+           << ck  
+           << DELIM
+           << std::setprecision(9) << cv
+           << END
+           ; 
+    }
+    return ss.str(); 
+}
+
+std::string BLog::makeNoteString(unsigned i, bool ) const 
+{
+    std::stringstream ss ; 
+    assert( m_nkeys.size() == m_nvalues.size() ) ;
+    for( unsigned j=0 ; j < m_nkeys.size() ; j++)
+    {
+        const PIS_t& ink = m_nkeys[j]; 
+        const PII_t& inv = m_nvalues[j]; 
+
+        int idx = ink.first ; 
+        assert( inv.first == idx );  
+
+        if( idx != i ) continue ;  
+
+        const std::string& nk = ink.second ;    
+        const int&         nv = inv.second ;    
+
+        ss << NOTE
+           << nk  
+           << DELIM
+           << nv
+           << END
+           ; 
+    }
+    return ss.str(); 
+}
+
+
+std::string BLog::makeLine(unsigned i) const
+{
+    std::stringstream ss ; 
+    ss << makeValueString(i); 
+    ss << makeCutString(i); 
+    ss << makeNoteString(i); 
     return ss.str(); 
 }
 

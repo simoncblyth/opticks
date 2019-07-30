@@ -106,6 +106,7 @@ class CFG4_API CRandomEngine : public CRandomListener, public CLHEP::HepRandomEn
         void compareLogs(const char* msg);
 
     public:
+        void addNote(const char* note, int value); 
         std::string desc() const ; 
     public:
         std::string name() const ;

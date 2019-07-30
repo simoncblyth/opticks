@@ -1,5 +1,6 @@
 #include "OPTICKS_LOG.hh"
 #include "BLog.hh"
+#include "BStr.hh"
 #include "BTxt.hh"
 #include "BFile.hh"
 
@@ -7,8 +8,10 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv);
 
-    const char* logpath = "$TMP/ox_1872.log" ; 
-    const char* txtpath = "$TMP/ox_1872.txt" ; 
+    int pindex = argc > 1 ? BStr::atoi(argv[1]) : 1872 ; 
+
+    const char* logpath = BStr::concat<int>("$TMP/ox_", pindex, ".log") ; 
+    const char* txtpath = BStr::concat<int>("$TMP/ox_", pindex, ".txt") ; 
 
     BLog* a = BLog::Load(logpath); 
     const std::vector<double>&  av = a->getValues() ; 

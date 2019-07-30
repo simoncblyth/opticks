@@ -1,0 +1,391 @@
+ts19-2
+---------
+
+
+Context
+----------
+
+* :doc:`ts19-100`
+
+
+Find some ordinary photons for machinery dev with non-problematics
+--------------------------------------------------------------------
+
+::
+
+    TAG=2 ta 19 --pfx scan-ts-utail --msli :1M 
+
+    In [3]: ab.dumpline( np.where( a.seqhis == 0x8bd )[0][:10] )
+          0      2 :   :                                           TO BR SA                                           TO BR SA 
+          1      5 :   :                                           TO BR SA                                           TO BR SA 
+          2     11 :   :                                           TO BR SA                                           TO BR SA 
+          3     19 :   :                                           TO BR SA                                           TO BR SA 
+          4     28 :   :                                           TO BR SA                                           TO BR SA 
+          5     38 :   :                                           TO BR SA                                           TO BR SA 
+          6     39 :   :                                           TO BR SA                                           TO BR SA 
+          7     64 :   :                                           TO BR SA                                           TO BR SA 
+          8     86 :   :                                           TO BR SA                                           TO BR SA 
+          9     92 :   :                                           TO BR SA                                           TO BR SA 
+
+
+
+    DsG4OpBoundaryProcess=ERROR CSteppingAction=ERROR CRandomEngine=ERROR ts 19 --pfx scan-ts-utail --mask 2 --pindex 0 --dbgseqhis 0xbbbbbbbbcd --pindexlog --recpoi --utaildebug --xanalytic --dbgflat
+
+    DsG4OpBoundaryProcess=ERROR CSteppingAction=ERROR CRandomEngine=ERROR ts 19 --pfx scan-ts-utail --mask 2 --pindex 0 --dbgseqhis 0xbbbbbbbbcd --pindexlog --recpoi --utaildebug --xanalytic --dbgflat --flatsigint -D
+
+
+
+
+
+Code
+------
+
+::
+
+   g4-;g4-cls G4SteppingManager
+
+
+
+Backtraces for all 10 consumptions
+-----------------------------------
+
+::
+
+    2019-07-30 14:03:54.290 INFO  [174625] [CRandomEngine::dumpPindexLog@736] CRandomEngine::preTrack.dumpPindexLog
+    2019-07-30 14:03:54.290 INFO  [174625] [BLog::dump@150] CRandomEngine::dumpPindexLog
+     n_checknote:101 
+       0 u_                              OpBoundary:0.0390204899 
+       1 u_                              OpRayleigh:0.250214726 
+       2 u_                            OpAbsorption:0.184484318 
+       3 u_               OpBoundary_DiDiTransCoeff:0.962422252  c_TransCoeff:0.84136188  n_reflect:1 
+       4 u_                              OpBoundary:0.520554602 
+       5 u_                              OpRayleigh:0.93996495 
+       6 u_                            OpAbsorption:0.830578208 
+       7 u_        OpBoundary_DiDiReflectOrTransmit:0.409732848 
+       8 u_                 OpBoundary_DoAbsorption:0.0816219673 
+       9 u_                    OpBoundary_taildebug:0.806770921 
+     dbgFlat CRandomEngine rec.stp1   0.0 crf     1 csf     1 loc                                         OpBoundary cur:    0 idx:    0  0.0390205            Undefined CPro      OpBoundary LenLeft         -1 LenTrav          0 AtRest/AlongStep/PostStep NNY alignlevel 0
+    
+    Program received signal SIGINT, Interrupt.
+    0x00007fffe7b1049b in raise () from /lib64/libpthread.so.0
+    Missing separate debuginfos, use: debuginfo-install boost-filesystem-1.53.0-27.el7.x86_64 boost-program-options-1.53.0-27.el7.x86_64 boost-regex-1.53.0-27.el7.x86_64 boost-system-1.53.0-27.el7.x86_64 expat-2.1.0-10.el7_3.x86_64 glfw-3.2.1-2.el7.x86_64 glibc-2.17-260.el7_6.3.x86_64 keyutils-libs-1.5.8-3.el7.x86_64 krb5-libs-1.15.1-37.el7_6.x86_64 libX11-1.6.5-2.el7.x86_64 libX11-devel-1.6.5-2.el7.x86_64 libXau-1.0.8-2.1.el7.x86_64 libXcursor-1.1.15-1.el7.x86_64 libXext-1.3.3-3.el7.x86_64 libXfixes-5.0.3-1.el7.x86_64 libXinerama-1.1.3-2.1.el7.x86_64 libXrandr-1.5.1-2.el7.x86_64 libXrender-0.9.10-1.el7.x86_64 libXxf86vm-1.1.4-1.el7.x86_64 libcom_err-1.42.9-13.el7.x86_64 libdrm-2.4.91-3.el7.x86_64 libgcc-4.8.5-36.el7_6.1.x86_64 libglvnd-1.0.1-0.8.git5baa1e5.el7.x86_64 libglvnd-glx-1.0.1-0.8.git5baa1e5.el7.x86_64 libicu-50.1.2-17.el7.x86_64 libselinux-2.5-14.1.el7.x86_64 libstdc++-4.8.5-36.el7_6.1.x86_64 libxcb-1.13-1.el7.x86_64 openssl-libs-1.0.2k-16.el7_6.1.x86_64 pcre-8.32-17.el7.x86_64 xerces-c-3.1.1-9.el7.x86_64 zlib-1.2.7-18.el7.x86_64
+    (gdb) bt
+    #0  0x00007fffe7b1049b in raise () from /lib64/libpthread.so.0
+    #1  0x00007ffff4ca7575 in CRandomEngine::dbgFlat (this=0x5e3a6c0) at /home/blyth/opticks/cfg4/CRandomEngine.cc:569
+    #2  0x00007ffff4ca6d77 in CRandomEngine::flat (this=0x5e3a6c0) at /home/blyth/opticks/cfg4/CRandomEngine.cc:435
+    #3  0x00007fffefe4506e in G4VProcess::ResetNumberOfInteractionLengthLeft (this=0x743eec0) at /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/processes/management/src/G4VProcess.cc:98
+    #4  0x00007fffefe44904 in G4VDiscreteProcess::PostStepGetPhysicalInteractionLength (this=0x743eec0, track=..., previousStepSize=0, condition=0x7229548) at /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/processes/management/src/G4VDiscreteProcess.cc:79
+    #5  0x00007ffff0fd79b2 in G4VProcess::PostStepGPIL (this=0x743eec0, track=..., previousStepSize=0, condition=0x7229548) at /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/processes/management/include/G4VProcess.hh:506
+    #6  0x00007ffff0fd6161 in G4SteppingManager::DefinePhysicalStepLength (this=0x72293c0) at /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/tracking/src/G4SteppingManager2.cc:175
+    #7  0x00007ffff0fd3410 in G4SteppingManager::Stepping (this=0x72293c0) at /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/tracking/src/G4SteppingManager.cc:180
+    #8  0x00007ffff0fdf236 in G4TrackingManager::ProcessOneTrack (this=0x7229380, apValueG4Track=0xa6c3990) at /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/tracking/src/G4TrackingManager.cc:126
+    #9  0x00007ffff1257d46 in G4EventManager::DoProcessing (this=0x72292f0, anEvent=0x8767fb0) at /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/event/src/G4EventManager.cc:185
+    #10 0x00007ffff1258572 in G4EventManager::ProcessOneEvent (this=0x72292f0, anEvent=0x8767fb0) at /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/event/src/G4EventManager.cc:338
+    #11 0x00007ffff155a665 in G4RunManager::ProcessOneEvent (this=0x70ae440, i_event=0) at /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/run/src/G4RunManager.cc:399
+    #12 0x00007ffff155a4d7 in G4RunManager::DoEventLoop (this=0x70ae440, n_event=1, macroFile=0x0, n_select=-1) at /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/run/src/G4RunManager.cc:367
+    #13 0x00007ffff1559d2d in G4RunManager::BeamOn (this=0x70ae440, n_event=1, macroFile=0x0, n_select=-1) at /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/run/src/G4RunManager.cc:273
+    #14 0x00007ffff4c9bdec in CG4::propagate (this=0x5e3a400) at /home/blyth/opticks/cfg4/CG4.cc:345
+    #15 0x00007ffff7bd4a5f in OKG4Mgr::propagate_ (this=0x7fffffffca40) at /home/blyth/opticks/okg4/OKG4Mgr.cc:201
+    #16 0x00007ffff7bd48fa in OKG4Mgr::propagate (this=0x7fffffffca40) at /home/blyth/opticks/okg4/OKG4Mgr.cc:139
+    #17 0x00000000004039a9 in main (argc=44, argv=0x7fffffffcd88) at /home/blyth/opticks/okg4/tests/OKG4Test.cc:9
+    (gdb) c
+    Continuing.
+     dbgFlat CRandomEngine rec.stp1   0.0 crf     2 csf     2 loc                                         OpRayleigh cur:    1 idx:    1   0.250215            Undefined CPro      OpRayleigh LenLeft         -1 LenTrav          0 AtRest/AlongStep/PostStep NNY alignlevel 0
+    
+    Program received signal SIGINT, Interrupt.
+    0x00007fffe7b1049b in raise () from /lib64/libpthread.so.0
+    (gdb) bt
+    #0  0x00007fffe7b1049b in raise () from /lib64/libpthread.so.0
+    #1  0x00007ffff4ca7575 in CRandomEngine::dbgFlat (this=0x5e3a6c0) at /home/blyth/opticks/cfg4/CRandomEngine.cc:569
+    #2  0x00007ffff4ca6d77 in CRandomEngine::flat (this=0x5e3a6c0) at /home/blyth/opticks/cfg4/CRandomEngine.cc:435
+    #3  0x00007fffefe4506e in G4VProcess::ResetNumberOfInteractionLengthLeft (this=0x743dd10) at /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/processes/management/src/G4VProcess.cc:98
+    #4  0x00007fffefe44904 in G4VDiscreteProcess::PostStepGetPhysicalInteractionLength (this=0x743dd10, track=..., previousStepSize=0, condition=0x7229548) at /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/processes/management/src/G4VDiscreteProcess.cc:79
+    #5  0x00007ffff0fd79b2 in G4VProcess::PostStepGPIL (this=0x743dd10, track=..., previousStepSize=0, condition=0x7229548) at /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/processes/management/include/G4VProcess.hh:506
+    #6  0x00007ffff0fd6161 in G4SteppingManager::DefinePhysicalStepLength (this=0x72293c0) at /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/tracking/src/G4SteppingManager2.cc:175
+    #7  0x00007ffff0fd3410 in G4SteppingManager::Stepping (this=0x72293c0) at /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/tracking/src/G4SteppingManager.cc:180
+    #8  0x00007ffff0fdf236 in G4TrackingManager::ProcessOneTrack (this=0x7229380, apValueG4Track=0xa6c3990) at /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/tracking/src/G4TrackingManager.cc:126
+    #9  0x00007ffff1257d46 in G4EventManager::DoProcessing (this=0x72292f0, anEvent=0x8767fb0) at /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/event/src/G4EventManager.cc:185
+    #10 0x00007ffff1258572 in G4EventManager::ProcessOneEvent (this=0x72292f0, anEvent=0x8767fb0) at /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/event/src/G4EventManager.cc:338
+    #11 0x00007ffff155a665 in G4RunManager::ProcessOneEvent (this=0x70ae440, i_event=0) at /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/run/src/G4RunManager.cc:399
+    #12 0x00007ffff155a4d7 in G4RunManager::DoEventLoop (this=0x70ae440, n_event=1, macroFile=0x0, n_select=-1) at /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/run/src/G4RunManager.cc:367
+    #13 0x00007ffff1559d2d in G4RunManager::BeamOn (this=0x70ae440, n_event=1, macroFile=0x0, n_select=-1) at /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/run/src/G4RunManager.cc:273
+    #14 0x00007ffff4c9bdec in CG4::propagate (this=0x5e3a400) at /home/blyth/opticks/cfg4/CG4.cc:345
+    #15 0x00007ffff7bd4a5f in OKG4Mgr::propagate_ (this=0x7fffffffca40) at /home/blyth/opticks/okg4/OKG4Mgr.cc:201
+    #16 0x00007ffff7bd48fa in OKG4Mgr::propagate (this=0x7fffffffca40) at /home/blyth/opticks/okg4/OKG4Mgr.cc:139
+    #17 0x00000000004039a9 in main (argc=44, argv=0x7fffffffcd88) at /home/blyth/opticks/okg4/tests/OKG4Test.cc:9
+    (gdb) c
+    Continuing.
+     dbgFlat CRandomEngine rec.stp1   0.0 crf     3 csf     3 loc                                       OpAbsorption cur:    2 idx:    2   0.184484     PostStepDoItProc CPro    OpAbsorption LenLeft         -1 LenTrav          0 AtRest/AlongStep/PostStep NNY alignlevel 0
+    
+    Program received signal SIGINT, Interrupt.
+    0x00007fffe7b1049b in raise () from /lib64/libpthread.so.0
+    (gdb) bt
+    #0  0x00007fffe7b1049b in raise () from /lib64/libpthread.so.0
+    #1  0x00007ffff4ca7575 in CRandomEngine::dbgFlat (this=0x5e3a6c0) at /home/blyth/opticks/cfg4/CRandomEngine.cc:569
+    #2  0x00007ffff4ca6d77 in CRandomEngine::flat (this=0x5e3a6c0) at /home/blyth/opticks/cfg4/CRandomEngine.cc:435
+    #3  0x00007fffefe4506e in G4VProcess::ResetNumberOfInteractionLengthLeft (this=0x743cb60) at /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/processes/management/src/G4VProcess.cc:98
+    #4  0x00007fffefe44904 in G4VDiscreteProcess::PostStepGetPhysicalInteractionLength (this=0x743cb60, track=..., previousStepSize=0, condition=0x7229548) at /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/processes/management/src/G4VDiscreteProcess.cc:79
+    #5  0x00007ffff0fd79b2 in G4VProcess::PostStepGPIL (this=0x743cb60, track=..., previousStepSize=0, condition=0x7229548) at /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/processes/management/include/G4VProcess.hh:506
+    #6  0x00007ffff0fd6161 in G4SteppingManager::DefinePhysicalStepLength (this=0x72293c0) at /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/tracking/src/G4SteppingManager2.cc:175
+    #7  0x00007ffff0fd3410 in G4SteppingManager::Stepping (this=0x72293c0) at /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/tracking/src/G4SteppingManager.cc:180
+    #8  0x00007ffff0fdf236 in G4TrackingManager::ProcessOneTrack (this=0x7229380, apValueG4Track=0xa6c3990) at /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/tracking/src/G4TrackingManager.cc:126
+    #9  0x00007ffff1257d46 in G4EventManager::DoProcessing (this=0x72292f0, anEvent=0x8767fb0) at /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/event/src/G4EventManager.cc:185
+    #10 0x00007ffff1258572 in G4EventManager::ProcessOneEvent (this=0x72292f0, anEvent=0x8767fb0) at /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/event/src/G4EventManager.cc:338
+    #11 0x00007ffff155a665 in G4RunManager::ProcessOneEvent (this=0x70ae440, i_event=0) at /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/run/src/G4RunManager.cc:399
+    #12 0x00007ffff155a4d7 in G4RunManager::DoEventLoop (this=0x70ae440, n_event=1, macroFile=0x0, n_select=-1) at /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/run/src/G4RunManager.cc:367
+    #13 0x00007ffff1559d2d in G4RunManager::BeamOn (this=0x70ae440, n_event=1, macroFile=0x0, n_select=-1) at /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/run/src/G4RunManager.cc:273
+    #14 0x00007ffff4c9bdec in CG4::propagate (this=0x5e3a400) at /home/blyth/opticks/cfg4/CG4.cc:345
+    #15 0x00007ffff7bd4a5f in OKG4Mgr::propagate_ (this=0x7fffffffca40) at /home/blyth/opticks/okg4/OKG4Mgr.cc:201
+    #16 0x00007ffff7bd48fa in OKG4Mgr::propagate (this=0x7fffffffca40) at /home/blyth/opticks/okg4/OKG4Mgr.cc:139
+    #17 0x00000000004039a9 in main (argc=44, argv=0x7fffffffcd88) at /home/blyth/opticks/okg4/tests/OKG4Test.cc:9
+    (gdb) c
+    Continuing.
+    2019-07-30 14:05:39.668 ERROR [174625] [DsG4OpBoundaryProcess::PostStepDoIt@210] [
+     dbgFlat CRandomEngine rec.stp1   0.0 crf     4 csf     4 loc                          OpBoundary_DiDiTransCoeff cur:    3 idx:    3   0.962422         GeomBoundary CPro      OpBoundary LenLeft    3.24367 LenTrav          0 AtRest/AlongStep/PostStep NNY alignlevel 0
+    
+    Program received signal SIGINT, Interrupt.
+    0x00007fffe7b1049b in raise () from /lib64/libpthread.so.0
+    (gdb) bt
+    #0  0x00007fffe7b1049b in raise () from /lib64/libpthread.so.0
+    #1  0x00007ffff4ca7575 in CRandomEngine::dbgFlat (this=0x5e3a6c0) at /home/blyth/opticks/cfg4/CRandomEngine.cc:569
+    #2  0x00007ffff4ca6d77 in CRandomEngine::flat (this=0x5e3a6c0) at /home/blyth/opticks/cfg4/CRandomEngine.cc:435
+    #3  0x00007ffff4ca6aa2 in CRandomEngine::flat_instrumented (this=0x5e3a6c0, file=0x7ffff4cb1112 "DiDiTransCoeff", line=-1) at /home/blyth/opticks/cfg4/CRandomEngine.cc:372
+    #4  0x00007ffff4c99f71 in CG4::flat_instrumented (this=0x5e3a400, file=0x7ffff4cb1112 "DiDiTransCoeff", line=-1) at /home/blyth/opticks/cfg4/CG4.cc:101
+    #5  0x00007ffff4c0872c in DsG4OpBoundaryProcess::DielectricDielectric (this=0x743eec0) at /home/blyth/opticks/cfg4/DsG4OpBoundaryProcess.cc:1127
+    #6  0x00007ffff4c0663a in DsG4OpBoundaryProcess::PostStepDoIt (this=0x743eec0, aTrack=..., aStep=...) at /home/blyth/opticks/cfg4/DsG4OpBoundaryProcess.cc:764
+    #7  0x00007ffff0fd70e9 in G4SteppingManager::InvokePSDIP (this=0x72293c0, np=3) at /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/tracking/src/G4SteppingManager2.cc:538
+    #8  0x00007ffff0fd6f79 in G4SteppingManager::InvokePostStepDoItProcs (this=0x72293c0) at /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/tracking/src/G4SteppingManager2.cc:510
+    #9  0x00007ffff0fd3567 in G4SteppingManager::Stepping (this=0x72293c0) at /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/tracking/src/G4SteppingManager.cc:209
+    #10 0x00007ffff0fdf236 in G4TrackingManager::ProcessOneTrack (this=0x7229380, apValueG4Track=0xa6c3990) at /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/tracking/src/G4TrackingManager.cc:126
+    #11 0x00007ffff1257d46 in G4EventManager::DoProcessing (this=0x72292f0, anEvent=0x8767fb0) at /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/event/src/G4EventManager.cc:185
+    #12 0x00007ffff1258572 in G4EventManager::ProcessOneEvent (this=0x72292f0, anEvent=0x8767fb0) at /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/event/src/G4EventManager.cc:338
+    #13 0x00007ffff155a665 in G4RunManager::ProcessOneEvent (this=0x70ae440, i_event=0) at /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/run/src/G4RunManager.cc:399
+    #14 0x00007ffff155a4d7 in G4RunManager::DoEventLoop (this=0x70ae440, n_event=1, macroFile=0x0, n_select=-1) at /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/run/src/G4RunManager.cc:367
+    #15 0x00007ffff1559d2d in G4RunManager::BeamOn (this=0x70ae440, n_event=1, macroFile=0x0, n_select=-1) at /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/run/src/G4RunManager.cc:273
+    #16 0x00007ffff4c9bdec in CG4::propagate (this=0x5e3a400) at /home/blyth/opticks/cfg4/CG4.cc:345
+    #17 0x00007ffff7bd4a5f in OKG4Mgr::propagate_ (this=0x7fffffffca40) at /home/blyth/opticks/okg4/OKG4Mgr.cc:201
+    #18 0x00007ffff7bd48fa in OKG4Mgr::propagate (this=0x7fffffffca40) at /home/blyth/opticks/okg4/OKG4Mgr.cc:139
+    #19 0x00000000004039a9 in main (argc=44, argv=0x7fffffffcd88) at /home/blyth/opticks/okg4/tests/OKG4Test.cc:9
+    (gdb) c
+    Continuing.
+    2019-07-30 14:06:10.723 ERROR [174625] [DsG4OpBoundaryProcess::PostStepDoIt@835] ] 
+    2019-07-30 14:06:10.724 ERROR [174625] [CSteppingAction::UserSteppingAction@158]  --dbgflat  m_ctx._noZeroSteps 0 proceed CProcessManager::ClearNumberOfInteractionLengthLeft 
+     dbgFlat CRandomEngine rec.stp1   0.1 crf     5 csf     1 loc                                         OpBoundary cur:    4 idx:    4   0.520555         GeomBoundary CPro      OpBoundary LenLeft         -1 LenTrav          0 AtRest/AlongStep/PostStep NNY alignlevel 0
+    
+    Program received signal SIGINT, Interrupt.
+    0x00007fffe7b1049b in raise () from /lib64/libpthread.so.0
+    (gdb) bt
+    #0  0x00007fffe7b1049b in raise () from /lib64/libpthread.so.0
+    #1  0x00007ffff4ca7575 in CRandomEngine::dbgFlat (this=0x5e3a6c0) at /home/blyth/opticks/cfg4/CRandomEngine.cc:569
+    #2  0x00007ffff4ca6d77 in CRandomEngine::flat (this=0x5e3a6c0) at /home/blyth/opticks/cfg4/CRandomEngine.cc:435
+    #3  0x00007fffefe4506e in G4VProcess::ResetNumberOfInteractionLengthLeft (this=0x743eec0) at /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/processes/management/src/G4VProcess.cc:98
+    #4  0x00007fffefe44904 in G4VDiscreteProcess::PostStepGetPhysicalInteractionLength (this=0x743eec0, track=..., previousStepSize=726.34932591139614, condition=0x7229548)
+        at /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/processes/management/src/G4VDiscreteProcess.cc:79
+    #5  0x00007ffff0fd79b2 in G4VProcess::PostStepGPIL (this=0x743eec0, track=..., previousStepSize=726.34932591139614, condition=0x7229548) at /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/processes/management/include/G4VProcess.hh:506
+    #6  0x00007ffff0fd6161 in G4SteppingManager::DefinePhysicalStepLength (this=0x72293c0) at /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/tracking/src/G4SteppingManager2.cc:175
+    #7  0x00007ffff0fd3410 in G4SteppingManager::Stepping (this=0x72293c0) at /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/tracking/src/G4SteppingManager.cc:180
+    #8  0x00007ffff0fdf236 in G4TrackingManager::ProcessOneTrack (this=0x7229380, apValueG4Track=0xa6c3990) at /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/tracking/src/G4TrackingManager.cc:126
+    #9  0x00007ffff1257d46 in G4EventManager::DoProcessing (this=0x72292f0, anEvent=0x8767fb0) at /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/event/src/G4EventManager.cc:185
+    #10 0x00007ffff1258572 in G4EventManager::ProcessOneEvent (this=0x72292f0, anEvent=0x8767fb0) at /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/event/src/G4EventManager.cc:338
+    #11 0x00007ffff155a665 in G4RunManager::ProcessOneEvent (this=0x70ae440, i_event=0) at /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/run/src/G4RunManager.cc:399
+    #12 0x00007ffff155a4d7 in G4RunManager::DoEventLoop (this=0x70ae440, n_event=1, macroFile=0x0, n_select=-1) at /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/run/src/G4RunManager.cc:367
+    #13 0x00007ffff1559d2d in G4RunManager::BeamOn (this=0x70ae440, n_event=1, macroFile=0x0, n_select=-1) at /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/run/src/G4RunManager.cc:273
+    #14 0x00007ffff4c9bdec in CG4::propagate (this=0x5e3a400) at /home/blyth/opticks/cfg4/CG4.cc:345
+    #15 0x00007ffff7bd4a5f in OKG4Mgr::propagate_ (this=0x7fffffffca40) at /home/blyth/opticks/okg4/OKG4Mgr.cc:201
+    #16 0x00007ffff7bd48fa in OKG4Mgr::propagate (this=0x7fffffffca40) at /home/blyth/opticks/okg4/OKG4Mgr.cc:139
+    #17 0x00000000004039a9 in main (argc=44, argv=0x7fffffffcd88) at /home/blyth/opticks/okg4/tests/OKG4Test.cc:9
+    (gdb) c
+    Continuing.
+     dbgFlat CRandomEngine rec.stp1   0.1 crf     6 csf     2 loc                                         OpRayleigh cur:    5 idx:    5   0.939965         GeomBoundary CPro      OpRayleigh LenLeft         -1 LenTrav          0 AtRest/AlongStep/PostStep NNY alignlevel 0
+    
+    Program received signal SIGINT, Interrupt.
+    0x00007fffe7b1049b in raise () from /lib64/libpthread.so.0
+    (gdb) bt
+    #0  0x00007fffe7b1049b in raise () from /lib64/libpthread.so.0
+    #1  0x00007ffff4ca7575 in CRandomEngine::dbgFlat (this=0x5e3a6c0) at /home/blyth/opticks/cfg4/CRandomEngine.cc:569
+    #2  0x00007ffff4ca6d77 in CRandomEngine::flat (this=0x5e3a6c0) at /home/blyth/opticks/cfg4/CRandomEngine.cc:435
+    #3  0x00007fffefe4506e in G4VProcess::ResetNumberOfInteractionLengthLeft (this=0x743dd10) at /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/processes/management/src/G4VProcess.cc:98
+    #4  0x00007fffefe44904 in G4VDiscreteProcess::PostStepGetPhysicalInteractionLength (this=0x743dd10, track=..., previousStepSize=726.34932591139614, condition=0x7229548)
+        at /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/processes/management/src/G4VDiscreteProcess.cc:79
+    #5  0x00007ffff0fd79b2 in G4VProcess::PostStepGPIL (this=0x743dd10, track=..., previousStepSize=726.34932591139614, condition=0x7229548) at /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/processes/management/include/G4VProcess.hh:506
+    #6  0x00007ffff0fd6161 in G4SteppingManager::DefinePhysicalStepLength (this=0x72293c0) at /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/tracking/src/G4SteppingManager2.cc:175
+    #7  0x00007ffff0fd3410 in G4SteppingManager::Stepping (this=0x72293c0) at /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/tracking/src/G4SteppingManager.cc:180
+    #8  0x00007ffff0fdf236 in G4TrackingManager::ProcessOneTrack (this=0x7229380, apValueG4Track=0xa6c3990) at /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/tracking/src/G4TrackingManager.cc:126
+    #9  0x00007ffff1257d46 in G4EventManager::DoProcessing (this=0x72292f0, anEvent=0x8767fb0) at /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/event/src/G4EventManager.cc:185
+    #10 0x00007ffff1258572 in G4EventManager::ProcessOneEvent (this=0x72292f0, anEvent=0x8767fb0) at /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/event/src/G4EventManager.cc:338
+    #11 0x00007ffff155a665 in G4RunManager::ProcessOneEvent (this=0x70ae440, i_event=0) at /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/run/src/G4RunManager.cc:399
+    #12 0x00007ffff155a4d7 in G4RunManager::DoEventLoop (this=0x70ae440, n_event=1, macroFile=0x0, n_select=-1) at /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/run/src/G4RunManager.cc:367
+    #13 0x00007ffff1559d2d in G4RunManager::BeamOn (this=0x70ae440, n_event=1, macroFile=0x0, n_select=-1) at /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/run/src/G4RunManager.cc:273
+    #14 0x00007ffff4c9bdec in CG4::propagate (this=0x5e3a400) at /home/blyth/opticks/cfg4/CG4.cc:345
+    #15 0x00007ffff7bd4a5f in OKG4Mgr::propagate_ (this=0x7fffffffca40) at /home/blyth/opticks/okg4/OKG4Mgr.cc:201
+    #16 0x00007ffff7bd48fa in OKG4Mgr::propagate (this=0x7fffffffca40) at /home/blyth/opticks/okg4/OKG4Mgr.cc:139
+    #17 0x00000000004039a9 in main (argc=44, argv=0x7fffffffcd88) at /home/blyth/opticks/okg4/tests/OKG4Test.cc:9
+    (gdb) c
+    Continuing.
+     dbgFlat CRandomEngine rec.stp1   0.1 crf     7 csf     3 loc                                       OpAbsorption cur:    6 idx:    6   0.830578     PostStepDoItProc CPro    OpAbsorption LenLeft         -1 LenTrav          0 AtRest/AlongStep/PostStep NNY alignlevel 0
+    
+    Program received signal SIGINT, Interrupt.
+    0x00007fffe7b1049b in raise () from /lib64/libpthread.so.0
+    (gdb) bt
+    #0  0x00007fffe7b1049b in raise () from /lib64/libpthread.so.0
+    #1  0x00007ffff4ca7575 in CRandomEngine::dbgFlat (this=0x5e3a6c0) at /home/blyth/opticks/cfg4/CRandomEngine.cc:569
+    #2  0x00007ffff4ca6d77 in CRandomEngine::flat (this=0x5e3a6c0) at /home/blyth/opticks/cfg4/CRandomEngine.cc:435
+    #3  0x00007fffefe4506e in G4VProcess::ResetNumberOfInteractionLengthLeft (this=0x743cb60) at /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/processes/management/src/G4VProcess.cc:98
+    #4  0x00007fffefe44904 in G4VDiscreteProcess::PostStepGetPhysicalInteractionLength (this=0x743cb60, track=..., previousStepSize=726.34932591139614, condition=0x7229548)
+        at /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/processes/management/src/G4VDiscreteProcess.cc:79
+    #5  0x00007ffff0fd79b2 in G4VProcess::PostStepGPIL (this=0x743cb60, track=..., previousStepSize=726.34932591139614, condition=0x7229548) at /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/processes/management/include/G4VProcess.hh:506
+    #6  0x00007ffff0fd6161 in G4SteppingManager::DefinePhysicalStepLength (this=0x72293c0) at /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/tracking/src/G4SteppingManager2.cc:175
+    #7  0x00007ffff0fd3410 in G4SteppingManager::Stepping (this=0x72293c0) at /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/tracking/src/G4SteppingManager.cc:180
+    #8  0x00007ffff0fdf236 in G4TrackingManager::ProcessOneTrack (this=0x7229380, apValueG4Track=0xa6c3990) at /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/tracking/src/G4TrackingManager.cc:126
+    #9  0x00007ffff1257d46 in G4EventManager::DoProcessing (this=0x72292f0, anEvent=0x8767fb0) at /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/event/src/G4EventManager.cc:185
+    #10 0x00007ffff1258572 in G4EventManager::ProcessOneEvent (this=0x72292f0, anEvent=0x8767fb0) at /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/event/src/G4EventManager.cc:338
+    #11 0x00007ffff155a665 in G4RunManager::ProcessOneEvent (this=0x70ae440, i_event=0) at /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/run/src/G4RunManager.cc:399
+    #12 0x00007ffff155a4d7 in G4RunManager::DoEventLoop (this=0x70ae440, n_event=1, macroFile=0x0, n_select=-1) at /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/run/src/G4RunManager.cc:367
+    #13 0x00007ffff1559d2d in G4RunManager::BeamOn (this=0x70ae440, n_event=1, macroFile=0x0, n_select=-1) at /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/run/src/G4RunManager.cc:273
+    #14 0x00007ffff4c9bdec in CG4::propagate (this=0x5e3a400) at /home/blyth/opticks/cfg4/CG4.cc:345
+    #15 0x00007ffff7bd4a5f in OKG4Mgr::propagate_ (this=0x7fffffffca40) at /home/blyth/opticks/okg4/OKG4Mgr.cc:201
+    #16 0x00007ffff7bd48fa in OKG4Mgr::propagate (this=0x7fffffffca40) at /home/blyth/opticks/okg4/OKG4Mgr.cc:139
+    #17 0x00000000004039a9 in main (argc=44, argv=0x7fffffffcd88) at /home/blyth/opticks/okg4/tests/OKG4Test.cc:9
+    (gdb) c
+    Continuing.
+    2019-07-30 14:08:19.556 ERROR [174625] [DsG4OpBoundaryProcess::PostStepDoIt@210] [
+    2019-07-30 14:08:19.556 ERROR [174625] [DsG4OpBoundaryProcess::PostStepDoIt@293] ] StepTooSmall StepLength 0 tol/2 5e-10
+    2019-07-30 14:08:19.556 ERROR [174625] [CSteppingAction::UserSteppingAction@149]  --dbgskipclearzero   m_ctx._noZeroSteps 1 skipping CProcessManager::ClearNumberOfInteractionLengthLeft 
+    2019-07-30 14:08:19.556 ERROR [174625] [CRandomEngine::flat@422]  --dbgkludgeflatzero   first flat call following boundary status StepTooSmall after FresnelReflection yields  _peek(-2) or zero value  v 0
+     dbgFlat CRandomEngine rec.stp1   0.2 crf     8 csf     1 loc                                         OpBoundary cur:    6 idx:   -1          0         GeomBoundary CPro      OpBoundary LenLeft         -1 LenTrav          0 AtRest/AlongStep/PostStep NNY alignlevel 0
+    
+    Program received signal SIGINT, Interrupt.
+    0x00007fffe7b1049b in raise () from /lib64/libpthread.so.0
+    (gdb) bt
+    #0  0x00007fffe7b1049b in raise () from /lib64/libpthread.so.0
+    #1  0x00007ffff4ca7575 in CRandomEngine::dbgFlat (this=0x5e3a6c0) at /home/blyth/opticks/cfg4/CRandomEngine.cc:569
+    #2  0x00007ffff4ca6d77 in CRandomEngine::flat (this=0x5e3a6c0) at /home/blyth/opticks/cfg4/CRandomEngine.cc:435
+    #3  0x00007fffefe4506e in G4VProcess::ResetNumberOfInteractionLengthLeft (this=0x743eec0) at /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/processes/management/src/G4VProcess.cc:98
+    #4  0x00007fffefe44904 in G4VDiscreteProcess::PostStepGetPhysicalInteractionLength (this=0x743eec0, track=..., previousStepSize=0, condition=0x7229548) at /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/processes/management/src/G4VDiscreteProcess.cc:79
+    #5  0x00007ffff0fd79b2 in G4VProcess::PostStepGPIL (this=0x743eec0, track=..., previousStepSize=0, condition=0x7229548) at /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/processes/management/include/G4VProcess.hh:506
+    #6  0x00007ffff0fd6161 in G4SteppingManager::DefinePhysicalStepLength (this=0x72293c0) at /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/tracking/src/G4SteppingManager2.cc:175
+    #7  0x00007ffff0fd3410 in G4SteppingManager::Stepping (this=0x72293c0) at /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/tracking/src/G4SteppingManager.cc:180
+    #8  0x00007ffff0fdf236 in G4TrackingManager::ProcessOneTrack (this=0x7229380, apValueG4Track=0xa6c3990) at /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/tracking/src/G4TrackingManager.cc:126
+    #9  0x00007ffff1257d46 in G4EventManager::DoProcessing (this=0x72292f0, anEvent=0x8767fb0) at /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/event/src/G4EventManager.cc:185
+    #10 0x00007ffff1258572 in G4EventManager::ProcessOneEvent (this=0x72292f0, anEvent=0x8767fb0) at /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/event/src/G4EventManager.cc:338
+    #11 0x00007ffff155a665 in G4RunManager::ProcessOneEvent (this=0x70ae440, i_event=0) at /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/run/src/G4RunManager.cc:399
+    #12 0x00007ffff155a4d7 in G4RunManager::DoEventLoop (this=0x70ae440, n_event=1, macroFile=0x0, n_select=-1) at /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/run/src/G4RunManager.cc:367
+    #13 0x00007ffff1559d2d in G4RunManager::BeamOn (this=0x70ae440, n_event=1, macroFile=0x0, n_select=-1) at /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/run/src/G4RunManager.cc:273
+    #14 0x00007ffff4c9bdec in CG4::propagate (this=0x5e3a400) at /home/blyth/opticks/cfg4/CG4.cc:345
+    #15 0x00007ffff7bd4a5f in OKG4Mgr::propagate_ (this=0x7fffffffca40) at /home/blyth/opticks/okg4/OKG4Mgr.cc:201
+    #16 0x00007ffff7bd48fa in OKG4Mgr::propagate (this=0x7fffffffca40) at /home/blyth/opticks/okg4/OKG4Mgr.cc:139
+    #17 0x00000000004039a9 in main (argc=44, argv=0x7fffffffcd88) at /home/blyth/opticks/okg4/tests/OKG4Test.cc:9
+    (gdb) c
+    Continuing.
+    2019-07-30 14:09:09.988 ERROR [174625] [DsG4OpBoundaryProcess::PostStepDoIt@210] [
+     dbgFlat CRandomEngine rec.stp1   0.2 crf     9 csf     2 loc                   OpBoundary_DiDiReflectOrTransmit cur:    7 idx:    7   0.409733         GeomBoundary CPro      OpBoundary LenLeft     709.09 LenTrav          0 AtRest/AlongStep/PostStep NNY alignlevel 0
+    
+    Program received signal SIGINT, Interrupt.
+    0x00007fffe7b1049b in raise () from /lib64/libpthread.so.0
+    (gdb) bt
+    #0  0x00007fffe7b1049b in raise () from /lib64/libpthread.so.0
+    #1  0x00007ffff4ca7575 in CRandomEngine::dbgFlat (this=0x5e3a6c0) at /home/blyth/opticks/cfg4/CRandomEngine.cc:569
+    #2  0x00007ffff4ca6d77 in CRandomEngine::flat (this=0x5e3a6c0) at /home/blyth/opticks/cfg4/CRandomEngine.cc:435
+    #3  0x00007ffff4ca6aa2 in CRandomEngine::flat_instrumented (this=0x5e3a6c0, file=0x7ffff4cb0ee2 "DiDiReflectOrTransmit", line=-1) at /home/blyth/opticks/cfg4/CRandomEngine.cc:372
+    #4  0x00007ffff4c99f71 in CG4::flat_instrumented (this=0x5e3a400, file=0x7ffff4cb0ee2 "DiDiReflectOrTransmit", line=-1) at /home/blyth/opticks/cfg4/CG4.cc:101
+    #5  0x00007ffff4c065a0 in DsG4OpBoundaryProcess::PostStepDoIt (this=0x743eec0, aTrack=..., aStep=...) at /home/blyth/opticks/cfg4/DsG4OpBoundaryProcess.cc:744
+    #6  0x00007ffff0fd70e9 in G4SteppingManager::InvokePSDIP (this=0x72293c0, np=3) at /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/tracking/src/G4SteppingManager2.cc:538
+    #7  0x00007ffff0fd6f79 in G4SteppingManager::InvokePostStepDoItProcs (this=0x72293c0) at /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/tracking/src/G4SteppingManager2.cc:510
+    #8  0x00007ffff0fd3567 in G4SteppingManager::Stepping (this=0x72293c0) at /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/tracking/src/G4SteppingManager.cc:209
+    #9  0x00007ffff0fdf236 in G4TrackingManager::ProcessOneTrack (this=0x7229380, apValueG4Track=0xa6c3990) at /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/tracking/src/G4TrackingManager.cc:126
+    #10 0x00007ffff1257d46 in G4EventManager::DoProcessing (this=0x72292f0, anEvent=0x8767fb0) at /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/event/src/G4EventManager.cc:185
+    #11 0x00007ffff1258572 in G4EventManager::ProcessOneEvent (this=0x72292f0, anEvent=0x8767fb0) at /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/event/src/G4EventManager.cc:338
+    #12 0x00007ffff155a665 in G4RunManager::ProcessOneEvent (this=0x70ae440, i_event=0) at /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/run/src/G4RunManager.cc:399
+    #13 0x00007ffff155a4d7 in G4RunManager::DoEventLoop (this=0x70ae440, n_event=1, macroFile=0x0, n_select=-1) at /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/run/src/G4RunManager.cc:367
+    #14 0x00007ffff1559d2d in G4RunManager::BeamOn (this=0x70ae440, n_event=1, macroFile=0x0, n_select=-1) at /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/run/src/G4RunManager.cc:273
+    #15 0x00007ffff4c9bdec in CG4::propagate (this=0x5e3a400) at /home/blyth/opticks/cfg4/CG4.cc:345
+    #16 0x00007ffff7bd4a5f in OKG4Mgr::propagate_ (this=0x7fffffffca40) at /home/blyth/opticks/okg4/OKG4Mgr.cc:201
+    #17 0x00007ffff7bd48fa in OKG4Mgr::propagate (this=0x7fffffffca40) at /home/blyth/opticks/okg4/OKG4Mgr.cc:139
+    #18 0x00000000004039a9 in main (argc=44, argv=0x7fffffffcd88) at /home/blyth/opticks/okg4/tests/OKG4Test.cc:9
+    (gdb) c
+    Continuing.
+     dbgFlat CRandomEngine rec.stp1   0.2 crf    10 csf     3 loc                            OpBoundary_DoAbsorption cur:    8 idx:    8   0.081622         GeomBoundary CPro      OpBoundary LenLeft     709.09 LenTrav          0 AtRest/AlongStep/PostStep NNY alignlevel 0
+    
+    Program received signal SIGINT, Interrupt.
+    0x00007fffe7b1049b in raise () from /lib64/libpthread.so.0
+    (gdb) bt
+    #0  0x00007fffe7b1049b in raise () from /lib64/libpthread.so.0
+    #1  0x00007ffff4ca7575 in CRandomEngine::dbgFlat (this=0x5e3a6c0) at /home/blyth/opticks/cfg4/CRandomEngine.cc:569
+    #2  0x00007ffff4ca6d77 in CRandomEngine::flat (this=0x5e3a6c0) at /home/blyth/opticks/cfg4/CRandomEngine.cc:435
+    #3  0x00007ffff4ca6aa2 in CRandomEngine::flat_instrumented (this=0x5e3a6c0, file=0x7ffff4cb1148 "DoAbsorption", line=-1) at /home/blyth/opticks/cfg4/CRandomEngine.cc:372
+    #4  0x00007ffff4c99f71 in CG4::flat_instrumented (this=0x5e3a400, file=0x7ffff4cb1148 "DoAbsorption", line=-1) at /home/blyth/opticks/cfg4/CG4.cc:101
+    #5  0x00007ffff4c09ee0 in DsG4OpBoundaryProcess::DoAbsorption (this=0x743eec0) at /home/blyth/opticks/cfg4/DsG4OpBoundaryProcess.cc:1348
+    #6  0x00007ffff4c065f3 in DsG4OpBoundaryProcess::PostStepDoIt (this=0x743eec0, aTrack=..., aStep=...) at /home/blyth/opticks/cfg4/DsG4OpBoundaryProcess.cc:754
+    #7  0x00007ffff0fd70e9 in G4SteppingManager::InvokePSDIP (this=0x72293c0, np=3) at /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/tracking/src/G4SteppingManager2.cc:538
+    #8  0x00007ffff0fd6f79 in G4SteppingManager::InvokePostStepDoItProcs (this=0x72293c0) at /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/tracking/src/G4SteppingManager2.cc:510
+    #9  0x00007ffff0fd3567 in G4SteppingManager::Stepping (this=0x72293c0) at /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/tracking/src/G4SteppingManager.cc:209
+    #10 0x00007ffff0fdf236 in G4TrackingManager::ProcessOneTrack (this=0x7229380, apValueG4Track=0xa6c3990) at /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/tracking/src/G4TrackingManager.cc:126
+    #11 0x00007ffff1257d46 in G4EventManager::DoProcessing (this=0x72292f0, anEvent=0x8767fb0) at /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/event/src/G4EventManager.cc:185
+    #12 0x00007ffff1258572 in G4EventManager::ProcessOneEvent (this=0x72292f0, anEvent=0x8767fb0) at /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/event/src/G4EventManager.cc:338
+    #13 0x00007ffff155a665 in G4RunManager::ProcessOneEvent (this=0x70ae440, i_event=0) at /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/run/src/G4RunManager.cc:399
+    #14 0x00007ffff155a4d7 in G4RunManager::DoEventLoop (this=0x70ae440, n_event=1, macroFile=0x0, n_select=-1) at /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/run/src/G4RunManager.cc:367
+    #15 0x00007ffff1559d2d in G4RunManager::BeamOn (this=0x70ae440, n_event=1, macroFile=0x0, n_select=-1) at /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/run/src/G4RunManager.cc:273
+    #16 0x00007ffff4c9bdec in CG4::propagate (this=0x5e3a400) at /home/blyth/opticks/cfg4/CG4.cc:345
+    #17 0x00007ffff7bd4a5f in OKG4Mgr::propagate_ (this=0x7fffffffca40) at /home/blyth/opticks/okg4/OKG4Mgr.cc:201
+    #18 0x00007ffff7bd48fa in OKG4Mgr::propagate (this=0x7fffffffca40) at /home/blyth/opticks/okg4/OKG4Mgr.cc:139
+    #19 0x00000000004039a9 in main (argc=44, argv=0x7fffffffcd88) at /home/blyth/opticks/okg4/tests/OKG4Test.cc:9
+    (gdb) c
+    Continuing.
+    2019-07-30 14:10:10.772 ERROR [174625] [DsG4OpBoundaryProcess::PostStepDoIt@835] ] 
+     dbgFlat CRandomEngine rec.stp1   0.3 crf    11 csf     1 loc                               OpBoundary_taildebug cur:    9 idx:    9   0.806771         GeomBoundary CPro      OpBoundary LenLeft         -1 LenTrav          0 AtRest/AlongStep/PostStep NNY alignlevel 0
+    
+    Program received signal SIGINT, Interrupt.
+    0x00007fffe7b1049b in raise () from /lib64/libpthread.so.0
+    (gdb) bt
+    #0  0x00007fffe7b1049b in raise () from /lib64/libpthread.so.0
+    #1  0x00007ffff4ca7575 in CRandomEngine::dbgFlat (this=0x5e3a6c0) at /home/blyth/opticks/cfg4/CRandomEngine.cc:569
+    #2  0x00007ffff4ca6d77 in CRandomEngine::flat (this=0x5e3a6c0) at /home/blyth/opticks/cfg4/CRandomEngine.cc:435
+    #3  0x00007ffff4ca6aa2 in CRandomEngine::flat_instrumented (this=0x5e3a6c0, file=0x7ffff4cca4fc "taildebug", line=-1) at /home/blyth/opticks/cfg4/CRandomEngine.cc:372
+    #4  0x00007ffff4c99f71 in CG4::flat_instrumented (this=0x5e3a400, file=0x7ffff4cca4fc "taildebug", line=-1) at /home/blyth/opticks/cfg4/CG4.cc:101
+    #5  0x00007ffff4c7c7d4 in CWriter::writePhoton (this=0x72e8450, point=0xa81d0f0) at /home/blyth/opticks/cfg4/CWriter.cc:328
+    #6  0x00007ffff4c7bea1 in CWriter::writeStepPoint (this=0x72e8450, point=0xa81d0f0, flag=128, material=3, last=true) at /home/blyth/opticks/cfg4/CWriter.cc:174
+    #7  0x00007ffff4c731a0 in CRecorder::WriteStepPoint (this=0x72e8140, point=0xa81d0f0, flag=128, material=3, boundary_status=Ds::Absorption, last=true) at /home/blyth/opticks/cfg4/CRecorder.cc:594
+    #8  0x00007ffff4c721d5 in CRecorder::postTrackWritePoints (this=0x72e8140) at /home/blyth/opticks/cfg4/CRecorder.cc:341
+    #9  0x00007ffff4c715b6 in CRecorder::postTrack (this=0x72e8140) at /home/blyth/opticks/cfg4/CRecorder.cc:155
+    #10 0x00007ffff4c9b278 in CG4::postTrack (this=0x5e3a400) at /home/blyth/opticks/cfg4/CG4.cc:267
+    #11 0x00007ffff4c96eb5 in CTrackingAction::PostUserTrackingAction (this=0x72e7cf0, track=0xa6c3990) at /home/blyth/opticks/cfg4/CTrackingAction.cc:95
+    #12 0x00007ffff0fdf326 in G4TrackingManager::ProcessOneTrack (this=0x7229380, apValueG4Track=0xa6c3990) at /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/tracking/src/G4TrackingManager.cc:140
+    #13 0x00007ffff1257d46 in G4EventManager::DoProcessing (this=0x72292f0, anEvent=0x8767fb0) at /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/event/src/G4EventManager.cc:185
+    #14 0x00007ffff1258572 in G4EventManager::ProcessOneEvent (this=0x72292f0, anEvent=0x8767fb0) at /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/event/src/G4EventManager.cc:338
+    #15 0x00007ffff155a665 in G4RunManager::ProcessOneEvent (this=0x70ae440, i_event=0) at /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/run/src/G4RunManager.cc:399
+    #16 0x00007ffff155a4d7 in G4RunManager::DoEventLoop (this=0x70ae440, n_event=1, macroFile=0x0, n_select=-1) at /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/run/src/G4RunManager.cc:367
+    #17 0x00007ffff1559d2d in G4RunManager::BeamOn (this=0x70ae440, n_event=1, macroFile=0x0, n_select=-1) at /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/run/src/G4RunManager.cc:273
+    #18 0x00007ffff4c9bdec in CG4::propagate (this=0x5e3a400) at /home/blyth/opticks/cfg4/CG4.cc:345
+    #19 0x00007ffff7bd4a5f in OKG4Mgr::propagate_ (this=0x7fffffffca40) at /home/blyth/opticks/okg4/OKG4Mgr.cc:201
+    #20 0x00007ffff7bd48fa in OKG4Mgr::propagate (this=0x7fffffffca40) at /home/blyth/opticks/okg4/OKG4Mgr.cc:139
+    #21 0x00000000004039a9 in main (argc=44, argv=0x7fffffffcd88) at /home/blyth/opticks/okg4/tests/OKG4Test.cc:9
+    (gdb) c
+    Continuing.
+    2019-07-30 14:10:23.156 INFO  [174625] [CRandomEngine::compareLogs@744] CRandomEngine::postTrack
+    2019-07-30 14:10:23.156 INFO  [174625] [BLog::dump@150] CRandomEngine::compareLogs:B
+    
+       0 u_                              OpBoundary:0.0390204899 
+       1 u_                              OpRayleigh:0.250214726 
+       2 u_                            OpAbsorption:0.184484318 
+       3 u_               OpBoundary_DiDiTransCoeff:0.962422252  n_noZeroSteps:0 
+       4 u_                              OpBoundary:0.520554602 
+       5 u_                              OpRayleigh:0.93996495 
+       6 u_                            OpAbsorption:0.830578208  n_noZeroSteps:1 
+       7 u_        OpBoundary_DiDiReflectOrTransmit:0.409732848 
+       8 u_                 OpBoundary_DoAbsorption:0.0816219673  n_noZeroSteps:0 
+       9 u_                    OpBoundary_taildebug:0.806770921 
+     i    0 rc    0 ak/bk                               OpBoundary/OpBoundary                                    ax/bx  0/ 0    av/bv 0.0390204899/0.0390204899    dv -1.304248376e-12
+     i    1 rc    0 ak/bk                               OpRayleigh/OpRayleigh                                    ax/bx  1/ 1    av/bv  0.250214726/0.2502147257    dv 2.671966537e-10
+     i    2 rc    0 ak/bk                             OpAbsorption/OpAbsorption                                  ax/bx  2/ 2    av/bv  0.184484318/0.1844843179    dv 1.012497031e-10
+     i    3 rc    0 ak/bk                OpBoundary_DiDiTransCoeff/OpBoundary_DiDiTransCoeff                     ax/bx  3/ 3    av/bv  0.962422252/0.9624222517    dv 2.986449976e-10
+     i    4 rc    0 ak/bk                               OpBoundary/OpBoundary                                    ax/bx  4/ 4    av/bv  0.520554602/0.5205546021    dv -1.461486487e-10
+     i    5 rc    0 ak/bk                               OpRayleigh/OpRayleigh                                    ax/bx  5/ 5    av/bv   0.93996495/0.9399649501    dv -8.468625801e-11
+     i    6 rc    0 ak/bk                             OpAbsorption/OpAbsorption                                  ax/bx  6/ 6    av/bv  0.830578208/ 0.830578208    dv 3.033451268e-11
+     i    7 rc    0 ak/bk         OpBoundary_DiDiReflectOrTransmit/OpBoundary_DiDiReflectOrTransmit              ax/bx  7/ 7    av/bv  0.409732848/0.4097328484    dv -4.058380298e-10
+     i    8 rc    0 ak/bk                  OpBoundary_DoAbsorption/OpBoundary_DoAbsorption                       ax/bx  8/ 8    av/bv 0.0816219673/0.08162196726    dv 4.393081732e-11
+     i    9 rc    0 ak/bk                     OpBoundary_taildebug/OpBoundary_taildebug                          ax/bx  9/ 9    av/bv  0.806770921/0.8067709208    dv 2.465210258e-10
+    2019-07-30 14:10:23.159 INFO  [174625] [BLog::Compare@325]  ai 10 bi 10 RC 0 tol         1e-06
+    2019-07-30 14:10:23.159 INFO  [174625] [CRandomEngine::compareLogs@754] CRandomEngine::postTrack RC 0
+    2019-07-30 14:10:23.160 INFO  [174625] [CG4::postpropagate@369] [ (0) ctx CG4Ctx::desc_stats dump_count 0 event_total 1 event_track_count 1
+    
+    

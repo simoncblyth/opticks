@@ -1,5 +1,6 @@
 
 #include <iomanip>
+#include <csignal>
 
 #include "PLOG.hh"
 
@@ -562,10 +563,17 @@ void CRandomEngine::dbgFlat()
 
    if(m_dbgflatlog && m_flat > 0.)
    {
-       m_dbgflatlog->add(location, m_flat );  
+       m_dbgflatlog->addValue(location, m_flat );  
    } 
 
+   if(m_ok->hasOpt("flatsigint")) std::raise(SIGINT);
+}
 
+
+void CRandomEngine::addNote(const char* note, int value)
+{
+    assert( m_dbgflatlog ); 
+    m_dbgflatlog->addNote( note, value ); 
 }
 
 
@@ -726,22 +734,9 @@ const char* CRandomEngine::PindexLogPath(unsigned mask_index)
 void CRandomEngine::dumpPindexLog(const char* msg)
 {
     LOG(info) << msg ; 
-    const BLog* log = m_pindexlog ; 
-    unsigned ni = log->getNumKeys(); 
-    for(unsigned i=0 ; i < ni ; i++)
-    {
-        const char* key = log->getKey(i); 
-        double value = log->getValue(i); 
-        int idx = findIndexOfValue(value); 
-        std::cerr 
-             << std::setw(40) << key 
-             << ":" 
-             << std::setw(3) << idx
-             << ":" 
-             << std::setw(10) << std::fixed << std::setprecision(9) << value
-             << std::endl 
-             ;
-    }  
+    BLog* log = m_pindexlog ; 
+    log->setSequence(&m_sequence); 
+    log->dump("CRandomEngine::dumpPindexLog"); 
 }
 
 void CRandomEngine::compareLogs(const char* msg)
@@ -752,6 +747,8 @@ void CRandomEngine::compareLogs(const char* msg)
 
     a->setSequence(&m_sequence) ;  
     b->setSequence(&m_sequence) ;  
+
+    b->dump("CRandomEngine::compareLogs:B"); 
 
     int RC = BLog::Compare( a, b );  
     LOG(info) << msg << " RC " << RC ; 

@@ -128,6 +128,9 @@ std::string DsG4OpBoundaryProcess::description() const
 #ifdef WITH_ALIGN_DEV_DEBUG
     ss << "WITH_ALIGN_DEV_DEBUG " ; 
 #endif
+#ifdef WITH_FLAT_DEBUG
+    ss << "WITH_FLAT_DEBUG " ; 
+#endif
 #ifdef SCB_BND_DEBUG
     ss << "SCB_BND_DEBUG " ; 
 #endif
@@ -202,6 +205,12 @@ DsG4OpBoundaryProcess::~DsG4OpBoundaryProcess(){}
 G4VParticleChange*
 DsG4OpBoundaryProcess::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
 {
+
+#ifdef WITH_FLAT_DEBUG
+     LOG(LEVEL) << "[" ; 
+#endif
+
+
     theStatus = Ds::Undefined;
 
     aParticleChange.Initialize(aTrack);
@@ -267,6 +276,9 @@ DsG4OpBoundaryProcess::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
     if (pPostStepPoint->GetStepStatus() != fGeomBoundary)
     {
 	    theStatus = Ds::NotAtBoundary;
+#ifdef WITH_FLAT_DEBUG
+        LOG(LEVEL) << "] NotAtBoundary" ; 
+#endif
 	    return G4VDiscreteProcess::PostStepDoIt(aTrack, aStep);
 	}
 	if (aTrack.GetStepLength()<=kCarTolerance/2)
@@ -277,6 +289,12 @@ DsG4OpBoundaryProcess::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
 
         //LOG(info) << " StepTooSmall" ;   // (*lldb*) StepTooSmall
 
+#ifdef WITH_FLAT_DEBUG
+        LOG(LEVEL) << "] StepTooSmall" 
+                   << " StepLength " << aTrack.GetStepLength()
+                   << " tol/2 " << kCarTolerance/2  
+                   ; 
+#endif
 	    return change ; 
 	}
 
@@ -322,6 +340,10 @@ DsG4OpBoundaryProcess::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
         abNormalCounter++;
         std::cout << "Because of normal = 0, the number of the killed optical photons is " << abNormalCounter << std::endl;
         aParticleChange.ProposeTrackStatus(fStopAndKill);
+
+#ifdef WITH_FLAT_DEBUG
+        LOG(LEVEL) << "] abNormal StopAndKill " ; 
+#endif
         return G4VDiscreteProcess::PostStepDoIt(aTrack, aStep);
     }
 
@@ -347,6 +369,10 @@ DsG4OpBoundaryProcess::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
     {
 	    theStatus = Ds::NoRINDEX;
 		aParticleChange.ProposeTrackStatus(fStopAndKill);
+
+#ifdef WITH_FLAT_DEBUG
+        LOG(LEVEL) << "] NoRINDEX StopAndKill " ; 
+#endif
 		return G4VDiscreteProcess::PostStepDoIt(aTrack, aStep);
 	}
 
@@ -368,6 +394,11 @@ DsG4OpBoundaryProcess::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
     {
 	    theStatus = Ds::NoRINDEX;
         aParticleChange.ProposeTrackStatus(fStopAndKill);
+
+#ifdef WITH_FLAT_DEBUG
+        LOG(LEVEL) << "] NoRINDEX StopAndKill " ; 
+#endif
+
 		return G4VDiscreteProcess::PostStepDoIt(aTrack, aStep);
 	}
 
@@ -432,6 +463,12 @@ DsG4OpBoundaryProcess::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
                    {
 		              theStatus = Ds::NoRINDEX;
                       aParticleChange.ProposeTrackStatus(fStopAndKill);
+
+
+#ifdef WITH_FLAT_DEBUG
+                      LOG(LEVEL) << "] NoRINDEX StopAndKill " ; 
+#endif
+
                       return G4VDiscreteProcess::PostStepDoIt(aTrack, aStep);
                   }
               }
@@ -629,6 +666,11 @@ DsG4OpBoundaryProcess::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
        else if (theFinish == polishedbackpainted || theFinish == groundbackpainted ) 
        {
                aParticleChange.ProposeTrackStatus(fStopAndKill);
+
+#ifdef WITH_FLAT_DEBUG
+                LOG(LEVEL) << "] painted StopAndKill " ; 
+#endif
+
                return G4VDiscreteProcess::PostStepDoIt(aTrack, aStep);
        }
    }    // boundary has OpticalSurface
@@ -643,6 +685,11 @@ DsG4OpBoundaryProcess::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
 	            if (Material1 == Material2)
                 {
 		            theStatus = Ds::SameMaterial;
+
+#ifdef WITH_FLAT_DEBUG
+                    LOG(LEVEL) << "] SameMaterial " ; 
+#endif
+
 		            return G4VDiscreteProcess::PostStepDoIt(aTrack, aStep);
  	            }
                 aMaterialPropertiesTable = Material2->GetMaterialPropertiesTable();
@@ -660,6 +707,11 @@ DsG4OpBoundaryProcess::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
                 {
 		            theStatus = Ds::NoRINDEX;
                     aParticleChange.ProposeTrackStatus(fStopAndKill);
+
+#ifdef WITH_FLAT_DEBUG
+                    LOG(LEVEL) << "] NoRINDEX " ; 
+#endif
+
                     return G4VDiscreteProcess::PostStepDoIt(aTrack, aStep);
 	            }
             }
@@ -715,6 +767,11 @@ DsG4OpBoundaryProcess::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
         else 
         {
 	        G4cerr << " Error: G4BoundaryProcess: illegal boundary type " << G4endl;
+
+#ifdef WITH_FLAT_DEBUG
+            LOG(LEVEL) << "] Illegal " ; 
+#endif
+
 	        return G4VDiscreteProcess::PostStepDoIt(aTrack, aStep);
 	    }
 
@@ -772,6 +829,10 @@ DsG4OpBoundaryProcess::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
            m_mlib->dumpGroupvelMaterial("bndary.PSDIP.end", CTrack::Wavelength(thePhotonMomentum), finalVelocity, 0.f, m_g4->getStepId());
 #endif
         }    
+#endif
+
+#ifdef WITH_FLAT_DEBUG
+        LOG(LEVEL) << "] " ; 
 #endif
         return G4VDiscreteProcess::PostStepDoIt(aTrack, aStep);   // (*lldb*) ExitPostStepDoIt
 }

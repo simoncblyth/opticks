@@ -392,6 +392,13 @@ void CG4::postpropagate()
               ;
 }
 
+void CG4::addRandomNote(const char* note, int value)
+{
+    assert( m_engine ); 
+    m_engine->addNote(note, value); 
+}
+
+
 void CG4::cleanup()
 {
     LOG(info) << "[" ; 
