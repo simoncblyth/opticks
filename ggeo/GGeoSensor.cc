@@ -29,7 +29,6 @@ with the material properties of the cathode material.
 This is done so sensitivity can survive the transition betweem
 models.
 
-
 Hmm the material properties of the sensor are irrelevant currently, 
 but the surface properties are relevant (see oxrap/cu/propagate.h) 
 with 4 possibilities, with probabilities depending on the surface props:
@@ -38,6 +37,27 @@ with 4 possibilities, with probabilities depending on the surface props:
 2. SURFACE_DETECT
 3. SURFACE_DREFLECT diffuse
 4. SURFACE_SREFLECT specular  
+
+
+Issues/TODO
+~~~~~~~~~~~~~
+
+Currently assumes there is a single "cathode" material the properties
+of which are assigned as SkinSurfaces to all logical volumes returned 
+from GGeo::getNumCathodeLV GGeo::getCathodeLV.   
+
+The upshot of this is that photons that succeed to reach a boundary
+in optixrap/cu/generate.cu:generate will find surface properties associated
+with the boundary resulting in the branching to propagate.h:propagate_at_surface 
+
+Which means that one of the above SURFACE flags will be set. 
+If SURFACE_DETECT gets set the photons will be copied back as hits.
+
+Notice issues:
+
+1. no handling of pre-existing surface assigned to the LV 
+2. assumes a single cathode material (eg Bialkali for PMTs) with 
+   a non-zero EFFICIENCY property  
 
 
 **/

@@ -21,6 +21,18 @@ order.  In the new approach change order at source by changing
 the order of instanciation of the G4Material.
 
 
+Cathode material
+------------------
+
+Currently a single material with a non-zero EFFICIENCY value will
+result in the "Cathode" material being set.  This is used by 
+GGeoSensor::AddSensorSurfaces which gets invoked 
+by X4PhysicalVolume::convertSensors in the direct geometry workflow. 
+It results in the addition of "technical" GSkinSurface to the geometry 
+
+
+
+
 
 */
 #include <vector>

@@ -613,6 +613,17 @@ Inputs:
 * s.surface.z reflect_specular
 * s.surface.w reflect_diffuse
 
+These properties are setup in GSurfaceLib::createStandardSurface
+which then get interveaved with material properties into the boundary_texture 
+for GPU access.
+
+Surface and material properties are read from the texture for the
+relevant boundary index that results from the ray trace. 
+
+* optixrap/cu/state.h:fill_state 
+* optixrap/cu/boundary_lookup.h 
+
+
 Returns:
 
 * BREAK(SURFACE_ABSORB) 

@@ -301,6 +301,14 @@ From
 1. AssimpGGeo::convertSensorsVisit
 2. X4PhysicalVolume::convertSensors_r
 
+
+Issues/TODO
+~~~~~~~~~~~~~~
+
+* integrate sensor setup with the material properties, 
+  see GMaterialLib::setCathode, GGeoSensor::AddSensorSurfaces
+
+
 **/
 
 void GGeo::addLVSD(const char* lv, const char* sd)

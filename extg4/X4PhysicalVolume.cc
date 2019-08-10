@@ -176,6 +176,11 @@ X4PhysicalVolume::convertSensors
 
 Predecessor in old route is AssimpGGeo::convertSensors
 
+* note the recursive call X4PhysicalVolume::convertSensors_r 
+  which traverses the geometry looking for sensors  
+  
+
+
 **/
 
 void X4PhysicalVolume::convertSensors()
@@ -228,6 +233,27 @@ with a GDML loaded geometry, as GDML does not yet(?) persist
 the SD LV association.
 
 Names of sensitive LV are inserted into a set datastructure in GGeo. 
+
+
+
+Issues/TODO
+~~~~~~~~~~~~~
+
+* how to flexibly associate an EFFICIENCY property
+  with the sensor ?
+
+  * currently a simplifying assumption of a single "Cathode" 
+    material is made : how to generalize ?
+
+**Possible Generalization Approach**
+
+First thing to try is extend GGeo::addLVSD to GGeo::addLVSDMT
+which collects material names which are asserted to hold a
+an EFFICIENCY property. These materials can then replace the 
+GMaterialLib::setCathode getCathode
+
+* If the efficiency is zero should a sensor be created ?
+ 
 
 **/
 
