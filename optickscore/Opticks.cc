@@ -496,6 +496,10 @@ bool Opticks::hasMask() const
 {
     return m_dbg->getMask().size() > 0 ; 
 }
+unsigned Opticks::getMaskSize() const 
+{
+    return m_dbg->getMask().size() ; 
+}
 
 
 bool Opticks::isDbgPhoton(unsigned record_id) const 
@@ -3015,6 +3019,9 @@ unsigned Opticks::getRecordMax() {   return m_cfg->getRecordMax() ; }
 
 float Opticks::getEpsilon() const {            return m_cfg->getEpsilon()  ; }
 float Opticks::getPixelTimeScale() const {    return m_cfg->getPixelTimeScale()  ; }
+int   Opticks::getCurFlatSigInt() const {     return m_cfg->getCurFlatSigInt()  ; }
+int   Opticks::getBoundaryStepSigInt() const {     return m_cfg->getBoundaryStepSigInt()  ; }
+
 
 bool Opticks::hasOpt(const char* name) const { return m_cfg->hasOpt(name); }
 

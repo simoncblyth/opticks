@@ -140,6 +140,7 @@ class CFG4_API CG4
    public:
         int getPrintIndex() const ;
         void addRandomNote(const char* note, int value=-1); 
+        void addRandomCut( const char* ckey, double cvalue); 
 
         void postStep();
         void preTrack();

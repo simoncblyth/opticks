@@ -67,6 +67,7 @@
 
 
 #include <sstream>
+#include <csignal>
 
 #include "G4ios.hh"
 #include "G4OpProcessSubType.hh"
@@ -145,6 +146,8 @@ DsG4OpBoundaryProcess::DsG4OpBoundaryProcess(CG4* g4, const G4String& processNam
              m_g4(g4),
              m_mlib(g4->getMaterialLib()),
              m_ok(g4->getOpticks()),
+             m_dbgflat(m_ok->isDbgFlat()),
+             m_boundarystepsigint(m_ok->getBoundaryStepSigInt()),
 #ifdef WITH_REFLECT_CHEAT_DEBUG
              m_reflectcheat(m_ok->isReflectCheat()),
 #endif
@@ -206,10 +209,13 @@ G4VParticleChange*
 DsG4OpBoundaryProcess::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
 {
 
-#ifdef WITH_FLAT_DEBUG
-     LOG(LEVEL) << "[" ; 
-#endif
+     int step_id = aTrack.GetCurrentStepNumber() - 1 ; 
 
+
+#ifdef WITH_FLAT_DEBUG
+     LOG(LEVEL) << "[ step_id " << step_id ; 
+     if( m_boundarystepsigint == step_id ) std::raise(SIGINT) ; 
+#endif
 
     theStatus = Ds::Undefined;
 
@@ -741,12 +747,19 @@ DsG4OpBoundaryProcess::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
 
 #ifdef WITH_ALIGN_DEV_DEBUG
 #ifdef WITH_REFLECT_CHEAT_DEBUG
-                G4double _u = m_reflectcheat ? m_g4->getCtxRecordFraction()  : CG4UniformRand("DiDiReflectOrTransmit", -1) ;   // --reflectcheat 
+                G4double _u = m_reflectcheat ? m_g4->getCtxRecordFraction()  : CG4UniformRand("DiDiAbsorbDetectReflect", -1) ;   // --reflectcheat 
 #else
-                G4double _u = CG4UniformRand("DiDiReflectOrTransmit", -1) ;  
+                G4double _u = CG4UniformRand("DiDiAbsorbDetectReflect", -1) ;  
 #endif
                 bool _reflect = _u < theReflectivity ;
-                if( !_reflect )    // (*lldb*) DiDiReflectOrTransmit
+
+                if( m_dbgflat )
+                { 
+                    m_g4->addRandomCut( "Reflectivity", theReflectivity );  
+                    m_g4->addRandomNote( "reflect", _reflect );  
+                }
+
+                if( !_reflect )    // (*lldb*) DiDiAbsorbDetectReflect
 #else
                 if( !G4BooleanRand(theReflectivity) ) 
 #endif
@@ -832,7 +845,7 @@ DsG4OpBoundaryProcess::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
 #endif
 
 #ifdef WITH_FLAT_DEBUG
-        LOG(LEVEL) << "] " ; 
+        LOG(LEVEL) << "] Tail " ; 
 #endif
         return G4VDiscreteProcess::PostStepDoIt(aTrack, aStep);   // (*lldb*) ExitPostStepDoIt
 }
@@ -1128,8 +1141,15 @@ void DsG4OpBoundaryProcess::DielectricDielectric()
 #else
           G4double _u = CG4UniformRand("DiDiTransCoeff",-1) ;  
 #endif
-          bool _transmit = _u < TransCoeff ;  
-	      if ( !_transmit ) {    // (*lldb*) DiDiTransCoeff
+          bool _reflect = _u > TransCoeff ;  
+
+          if(m_dbgflat)
+          {
+              m_g4->addRandomNote("reflect", _reflect ) ; 
+              m_g4->addRandomCut("TransCoeff", TransCoeff ) ; 
+          }
+
+	      if ( _reflect ) {    // (*lldb*) DiDiTransCoeff
 #else
           if ( !G4BooleanRand(TransCoeff) ) {
 #endif
@@ -1333,6 +1353,13 @@ G4double DsG4OpBoundaryProcess::GetReflectivity(G4double E1_perp,
   return real(Reflectivity);
 }
 
+/**
+DsG4OpBoundaryProcess::DoAbsorption
+----------------------------------------
+
+Contrast with counterpart oxrap/cu/propagate.h:propagate_at_surface
+
+**/
 
 void DsG4OpBoundaryProcess::DoAbsorption()
 {
@@ -1342,11 +1369,16 @@ void DsG4OpBoundaryProcess::DoAbsorption()
 
     theStatus = Ds::Absorption;
 
-
-
 #ifdef WITH_ALIGN_DEV_DEBUG
     G4double _u = CG4UniformRand("DoAbsorption", -1) ;  
     bool _detect = _u < theEfficiency ;
+
+    if(m_dbgflat)
+    { 
+        m_g4->addRandomCut("Efficiency", theEfficiency ) ; 
+        m_g4->addRandomNote("detect", _detect );
+    }
+
     if( _detect ) 
 #else
     if ( G4BooleanRand(theEfficiency) ) 

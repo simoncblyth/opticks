@@ -204,6 +204,8 @@ private:
     CG4*          m_g4 ; 
     CMaterialLib* m_mlib ; 
     Opticks*      m_ok ; 
+    bool          m_dbgflat ; 
+    int           m_boundarystepsigint ; 
 #ifdef WITH_REFLECT_CHEAT_DEBUG
     bool          m_reflectcheat ; 
 #endif

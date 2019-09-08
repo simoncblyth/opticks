@@ -126,6 +126,7 @@ class CFG4_API CRandomEngine : public CRandomListener, public CLHEP::HepRandomEn
 
     public:
         void addNote(const char* note, int value); 
+        void addCut( const char* ckey, double cvalue); 
         std::string desc() const ; 
     public:
         std::string name() const ;
@@ -133,6 +134,8 @@ class CFG4_API CRandomEngine : public CRandomListener, public CLHEP::HepRandomEn
         double flat_instrumented(const char* file, int line) ;  
         void flatArray (const int size, double* vect);
         int    getCursor() const ; 
+        int    getCurrentStepFlatCount() const ; 
+        int    getCurrentRecordFlatCount() const ; 
     public:
         void setRandomSequence(double* s, int n);
         int  findIndexOfValue(double s, double tolerance=1e-6) ; 
@@ -144,6 +147,7 @@ class CFG4_API CRandomEngine : public CRandomListener, public CLHEP::HepRandomEn
         CG4Ctx&                       m_ctx ; 
         Opticks*                      m_ok ; 
         bool                          m_dbgflat ;   
+        int                           m_curflatsigint ; 
         int                           m_preinit ;  
         bool                          m_dbgkludgeflatzero ; 
         OpticksRun*                   m_run ; 

@@ -104,6 +104,9 @@ class OKCORE_API OpticksCfg : public BCfg {
 
      float        getEpsilon() const ; 
      float        getPixelTimeScale() const ; 
+     int          getCurFlatSigInt() const ; 
+     int          getBoundaryStepSigInt() const ; 
+
 
      unsigned     getSeed() const ; 
      int          getRTX() const ; 
@@ -227,6 +230,8 @@ private:
 
      float       m_epsilon ; 
      float       m_pixeltimescale ; 
+     int         m_curflatsigint ; 
+     int         m_boundarystepsigint ; 
      unsigned    m_seed ; 
      int         m_rtx ; 
      int         m_renderlooplimit ; 

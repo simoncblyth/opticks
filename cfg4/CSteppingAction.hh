@@ -52,6 +52,7 @@ class Opticks ;
 struct CG4Ctx ; 
 
 class CG4 ; 
+class CRandomEngine ; 
 class CMaterialLib ; 
 class CRecorder ; 
 class CGeometry ; 
@@ -82,9 +83,11 @@ class CFG4_API CSteppingAction : public G4UserSteppingAction
     virtual void UserSteppingAction(const G4Step*);
   private:
     bool setStep( const G4Step* step);
+    void prepareForNextStep( const G4Step* step);
 
   private:
     CG4*              m_g4 ; 
+    CRandomEngine*    m_engine ; 
     CG4Ctx&           m_ctx ; 
     Opticks*          m_ok ; 
     bool              m_dbgflat ; 
@@ -100,6 +103,7 @@ class CFG4_API CSteppingAction : public G4UserSteppingAction
     G4Navigator*             m_nav ; 
 
     unsigned int m_steprec_store_count ;
+    int          m_cursor_at_clear ;
 
 };
 

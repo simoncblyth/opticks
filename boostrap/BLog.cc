@@ -83,6 +83,14 @@ BLog* BLog::Load(const char* path)
     return log ; 
 }
 
+/**
+BLog::ParseKV
+----------------
+
+Extract key and value from line where keys start with VALUE "u_", CUT "c_" or NOTE "n_"
+
+**/
+
 int BLog::ParseKV( const std::string& line,  const char* start, const char* delim, const char* end, std::string& k, std::string& v )
 {
     std::size_t ps = line.find(start) ; 
@@ -114,6 +122,17 @@ void BLog::setSequence(const std::vector<double>*  sequence)
     m_sequence = sequence ;
 }
 
+
+/**
+BLog::addValue
+-----------------
+
+In the canonical usage from CRandomEngine the key is the "codepoint"
+of a random consumption and the value is the random.
+
+**/
+
+
 void BLog::addValue(const char* key, double value )
 {
     m_keys.push_back(key); 
@@ -125,12 +144,28 @@ int BLog::getIdx() const   // returns -1, before adding any keys
     return m_keys.size() - 1 ; 
 }
 
+/**
+BLog::addCut
+--------------
+
+Cuts are tied with the last added (key,value) via the idx
+
+**/
+
 void BLog::addCut( const char* ckey, double cvalue )
 {
     int idx = getIdx(); 
     m_ckeys.push_back( std::pair<int, std::string>(idx, ckey ) ); 
     m_cvalues.push_back( std::pair<int, double>(idx, cvalue ) ); 
 }
+
+/**
+BLog::addNote
+--------------
+
+Notes are tied with the last added (key,value) via the idx
+
+**/
 
 void BLog::addNote( const char* nkey, int nvalue )
 {
@@ -147,10 +182,29 @@ const char* BLog::getKey(unsigned i) const
 {
     return m_keys[i].c_str(); 
 }
+
+/**
+BLog::getValue
+----------------
+
+Returns index i random 
+
+**/
+
 double BLog::getValue(unsigned i) const 
 {
     return i < m_values.size() ? m_values[i] : -1. ; 
 }
+
+
+/**
+BLog::getSequenceIndex
+------------------------
+
+Returns sequence index corresponding to the values returned for index i   
+
+**/
+
 
 int BLog::getSequenceIndex(unsigned i) const 
 {
@@ -228,6 +282,14 @@ std::string BLog::makeCutString(unsigned i, bool ) const
     return ss.str(); 
 }
 
+/**
+BLog::makeNoteString
+----------------------
+
+Returns string combining all notes for index i 
+
+**/
+
 std::string BLog::makeNoteString(unsigned i, bool ) const 
 {
     std::stringstream ss ; 
@@ -284,6 +346,14 @@ void BLog::write(const char* path) const
 }
 
 
+/**
+BLog::Compare
+--------------
+
+* keys and values of all lines are required to match to give RC 0 
+
+**/
+
 
 int BLog::Compare( const BLog* a , const BLog* b )
 {
@@ -299,14 +369,14 @@ int BLog::Compare( const BLog* a , const BLog* b )
 
          const char* ak = i < ai ? a->getKey(i) : NULL ; 
          const char* bk = i < bi ? b->getKey(i) : NULL ; 
-         bool mk = ak && bk && strcmp(ak, bk) == 0 ; 
+         bool mk = ak && bk && strcmp(ak, bk) == 0 ;      // match key 
          if( !mk ) rc |= 0x1 ;   
 
 
          double av      = i < ai ? a->getValue(i) : -1. ; 
          double bv      = i < bi ? b->getValue(i) : -1. ; 
          double dv      = av - bv ; 
-         bool mv = std::fabs(dv) < TOLERANCE ; 
+         bool mv = std::fabs(dv) < TOLERANCE ;           // match value 
          if( !mv ) rc |= 0x10 ;   
 
          int ax = a->getSequenceIndex(i) ;   

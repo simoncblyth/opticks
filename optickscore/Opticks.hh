@@ -409,6 +409,7 @@ class OKCORE_API Opticks {
        const std::vector<unsigned>&  getMask() const ;
        unsigned getMaskIndex(unsigned idx) const ;  // original pre-masked index OR idx if no mask 
        bool hasMask() const ; 
+       unsigned getMaskSize() const ; 
 
        bool isDbgPhoton(unsigned record_id) const ;
        bool isOtherPhoton(unsigned record_id) const ;
@@ -533,6 +534,8 @@ class OKCORE_API Opticks {
        unsigned getRecordMax();
        float    getEpsilon() const ;
        float    getPixelTimeScale() const ;
+       int      getCurFlatSigInt() const ; 
+       int      getBoundaryStepSigInt() const ; 
    public:
        void setExit(bool exit=true);
    public:

@@ -76,7 +76,8 @@ CRandomEngine::CRandomEngine(CG4* g4)
     m_g4(g4),
     m_ctx(g4->getCtx()),
     m_ok(g4->getOpticks()),
-    m_dbgflat(m_ok->isDbgFlat()),
+    m_dbgflat(m_ok->isDbgFlat()),    // --dbgflat
+    m_curflatsigint(m_ok->getCurFlatSigInt()), // --curflatsigint N
     m_preinit(preinit()),
     m_dbgkludgeflatzero(m_ok->isDbgKludgeFlatZero()),    // --dbgkludgeflatzero
     m_run(g4->getRun()),
@@ -461,6 +462,14 @@ int CRandomEngine::getCursor() const
 {
     return m_cursor ; 
 }
+int CRandomEngine::getCurrentStepFlatCount() const 
+{
+    return m_current_step_flat_count ; 
+}
+int CRandomEngine::getCurrentRecordFlatCount() const 
+{
+    return m_current_record_flat_count ; 
+}
 
 
 
@@ -585,7 +594,11 @@ void CRandomEngine::dbgFlat()
        m_dbgflatlog->addValue(location, m_flat );  
    } 
 
-   if(m_ok->hasOpt("flatsigint")) std::raise(SIGINT);
+   if(m_ok->hasOpt("flatsigint") || m_curflatsigint == m_cursor ) std::raise(SIGINT);
+
+
+
+
 }
 
 
@@ -594,6 +607,15 @@ void CRandomEngine::addNote(const char* note, int value)
     assert( m_dbgflatlog ); 
     m_dbgflatlog->addNote( note, value ); 
 }
+
+void CRandomEngine::addCut(const char* ckey, double cvalue)
+{
+    assert( m_dbgflatlog ); 
+    m_dbgflatlog->addCut( ckey, cvalue ); 
+}
+
+
+
 
 
 
@@ -669,6 +691,9 @@ void CRandomEngine::postStep()
 
 
 
+
+
+
 /**
 CRandomEngine::preTrack
 -------------------------
@@ -708,30 +733,19 @@ void CRandomEngine::preTrack()
     m_jump = 0 ; 
     m_jump_count = 0 ; 
 
-    unsigned use_index ;
+    bool has_mask = m_ok->hasMask(); 
+    unsigned use_index = has_mask ? m_ctx._mask_index : m_ctx._record_id ; 
 
-    bool has_mask = m_ok->hasMask() ; 
-
-    if(has_mask) 
+    setupCurandSequence(use_index) ;   
+   
+    unsigned mask_size = m_ok->getMaskSize() ; 
+    if(mask_size == 1)
     {
-        use_index = m_ctx._mask_index ;   
         run_ucf_script( use_index ) ; 
-
         m_pindexlogpath = PindexLogPath(use_index) ;   
         m_pindexlog = BLog::Load(m_pindexlogpath); 
         m_dbgflatlog = new BLog ; 
         //m_pindexlog->dump("CRandomEngine::preTrack.pindexlog"); 
-    }
-    else
-    {
-        use_index = m_ctx._record_id ;
-    }
-
-    setupCurandSequence(use_index) ;   
-
-   
-    if(has_mask)
-    {
         dumpPindexLog("CRandomEngine::preTrack.dumpPindexLog"); 
     }
 
@@ -741,6 +755,7 @@ void CRandomEngine::preTrack()
         << " ctx._mask_index " << m_ctx._mask_index
         << " use_index " << use_index 
         << " has_mask " << ( has_mask ? "YES" : "NO" )
+        << " mask_size " << mask_size 
         << " pindexlogpath " << m_pindexlogpath 
         ;
 }
@@ -758,7 +773,15 @@ void CRandomEngine::dumpPindexLog(const char* msg)
     log->dump("CRandomEngine::dumpPindexLog"); 
 }
 
-void CRandomEngine::compareLogs(const char* msg)
+/**
+CRandomEngine::compareLogs
+----------------------------
+
+Invoked from CRandomEngine::postTrack when --dbgflat is used.
+
+**/
+
+void CRandomEngine::compareLogs(const char* msg)    // --dbgflat
 {
     LOG(info) << msg ; 
     BLog* a = m_pindexlog ; 
@@ -767,7 +790,7 @@ void CRandomEngine::compareLogs(const char* msg)
     a->setSequence(&m_sequence) ;  
     b->setSequence(&m_sequence) ;  
 
-    b->dump("CRandomEngine::compareLogs:B"); 
+    b->dump("CRandomEngine::compareLogs:B --dbgflat "); 
 
     int RC = BLog::Compare( a, b );  
     LOG(info) << msg << " RC " << RC ; 

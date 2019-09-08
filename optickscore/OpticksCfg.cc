@@ -101,6 +101,8 @@ OpticksCfg<Listener>::OpticksCfg(const char* name, Listener* listener, bool live
        m_scintillationclass("C4Scintillation1042"),
        m_epsilon(0.1f),     
        m_pixeltimescale(1e-10f),     
+       m_curflatsigint(-1),
+       m_boundarystepsigint(-1),
        m_seed(42),     
        m_rtx(0),
        m_renderlooplimit(0),
@@ -338,6 +340,16 @@ void OpticksCfg<Listener>::init()
    m_desc.add_options()
        ("flatsigint",  "interrupt in CRandomEngine::flat when using --dbgflat see notes/issues/ts19-2.rst ") ;
 
+   char curflatsigint[256];
+   snprintf(curflatsigint,256, "Interrupt in CRandomEnfine::flat at the random consumption with the cursor provided as argument. Mainly used with single photon running. Default %d", m_curflatsigint);
+   m_desc.add_options()
+       ("curflatsigint",  boost::program_options::value<int>(&m_curflatsigint), curflatsigint );
+
+
+   char boundarystepsigint[256];
+   snprintf(boundarystepsigint,256, "Interrupt in DsG4OpBoundaryProcess::PostStepDoIt for the provided step_id. Mainly used with single photon running. Default %d", m_boundarystepsigint);
+   m_desc.add_options()
+       ("boundarystepsigint",  boost::program_options::value<int>(&m_boundarystepsigint), boundarystepsigint );
 
 
 
@@ -1660,6 +1672,19 @@ float OpticksCfg<Listener>::getPixelTimeScale() const
 {
     return m_pixeltimescale ; 
 }
+template <class Listener>
+int OpticksCfg<Listener>::getCurFlatSigInt() const
+{
+    return m_curflatsigint ; 
+}
+template <class Listener>
+int OpticksCfg<Listener>::getBoundaryStepSigInt() const
+{
+    return m_boundarystepsigint ; 
+}
+
+
+
 
 
 template <class Listener>

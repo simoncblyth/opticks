@@ -29,6 +29,18 @@
 
 class BTxt ; 
 
+/**
+BLog
+======
+
+Highly structured logging and log comparison.  
+Canonically used from CRandomEngine for random consumption logging
+and comparison with the single photon GPU written logs.
+
+BLog is able to load/parse the rtPrintf GPU written "pindex" logs 
+such as $TMP/ox_100.log
+
+**/
 
 class BRAP_API BLog {
    public:

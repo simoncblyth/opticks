@@ -10,6 +10,7 @@ Next
 ---------
 
 * :doc:`ts19-2`  looking at a simple one "TO BR SA"
+* :doc:`ts19-g4-extra-point-migrations` edge related issues  
 
 
 KEY REALISATION : CAUSE OF LOW LEVEL MIS-ALIGNMENT : IS THAT SOME LIGHT AT THE END OF THE TUNNEL ?
@@ -44,6 +45,101 @@ Given how messed up the dbgflat history amazing that matches at all
 
 
 
+Checking others for how common such transient diversions are
+----------------------------------------------------------------
+
+::
+
+    DsG4OpBoundaryProcess=ERROR CSteppingAction=ERROR CRandomEngine=ERROR ts 19 --pfx scan-ts-utail --mask 100 --pindex 0 --dbgseqhis 0xbbbbbbbbcd --pindexlog --recpoi --utaildebug --xanalytic --dbgflat
+
+    DsG4OpBoundaryProcess=ERROR CSteppingAction=ERROR CRandomEngine=ERROR ts 19 --pfx scan-ts-utail --mask 360 --pindex 0 --dbgseqhis 0xbbbbbbbbcd --pindexlog --recpoi --utaildebug --xanalytic --dbgflat
+    DsG4OpBoundaryProcess=ERROR CSteppingAction=ERROR CRandomEngine=ERROR ts 19 --pfx scan-ts-utail --mask 944 --pindex 0 --dbgseqhis 0xbbbbbbbbcd --pindexlog --recpoi --utaildebug --xanalytic --dbgflat
+    
+
+       ## also get divergence following " 14 u_                            OpAbsorption:0.949005961  n_noZeroSteps:1  n_noZeroSteps:0 "
+
+
+
+Update after adding some more structured BLog notes/cuts and some codepoint renames for clarity
+----------------------------------------------------------------------------------------------------
+
+::
+
+    DsG4OpBoundaryProcess=ERROR CSteppingAction=ERROR CRandomEngine=ERROR ts 19 --pfx scan-ts-utail --mask 100 --pindex 0 --dbgseqhis 0xbbbbbbbbcd --pindexlog --recpoi --utaildebug --xanalytic --dbgflat
+
+
+
+
+CSteppingAction::prepareForNextStep changed skipClear to only proceed when some consumption since last clear
+---------------------------------------------------------------------------------------------------------------
+
+* brings the codepoints closer : but still two diffs "OpBoundary_DiDiTransCoeff/OpBoundary"
+* from the TransCoeff zeros from Opticks : they are both TIRs ... 
+* so what is the Geant4 code path for TIR ?  Add 
+
+
+::
+
+
+     i    0 rc    0 ak/bk                               OpBoundary/OpBoundary                                    ax/bx  0/ 0    av/bv  0.157769859/0.1577698588    dv 1.628723267e-10
+     i    1 rc    0 ak/bk                               OpRayleigh/OpRayleigh                                    ax/bx  1/ 1    av/bv  0.409740657/0.4097406566    dv 3.856964192e-10
+     i    2 rc    0 ak/bk                             OpAbsorption/OpAbsorption                                  ax/bx  2/ 2    av/bv  0.909059703/0.9090597034    dv -3.500670864e-10
+     i    3 rc    0 ak/bk                OpBoundary_DiDiTransCoeff/OpBoundary_DiDiTransCoeff                     ax/bx  3/ 3    av/bv 0.00776365865/0.00776365865    dv -2.19440785e-13
+     i    4 rc    0 ak/bk                               OpBoundary/OpBoundary                                    ax/bx  4/ 4    av/bv  0.945110857/0.9451108575    dv -4.867248826e-10
+     i    5 rc    0 ak/bk                               OpRayleigh/OpRayleigh                                    ax/bx  5/ 5    av/bv  0.112468801/0.1124688014    dv -4.388084479e-10
+     i    6 rc    0 ak/bk                             OpAbsorption/OpAbsorption                                  ax/bx  6/ 6    av/bv  0.908116281/ 0.908116281    dv -3.25622862e-11
+     i    7 rc    0 ak/bk                OpBoundary_DiDiTransCoeff/OpBoundary_DiDiTransCoeff                     ax/bx  7/ 7    av/bv  0.993079603/0.9930796027    dv 2.81646706e-10
+     i    8 rc    0 ak/bk                               OpBoundary/OpBoundary                                    ax/bx  8/ 8    av/bv   0.92328161/  0.92328161    dv -1.205446853e-11
+     i    9 rc    0 ak/bk                               OpRayleigh/OpRayleigh                                    ax/bx  9/ 9    av/bv  0.968241632/ 0.968241632    dv 1.528932536e-11
+     i   10 rc    0 ak/bk                             OpAbsorption/OpAbsorption                                  ax/bx 10/10    av/bv  0.499408484/0.4994084835    dv 4.947509624e-10
+     i   11 rc    0 ak/bk                OpBoundary_DiDiTransCoeff/OpBoundary_DiDiTransCoeff                     ax/bx 11/11    av/bv  0.847486854/0.8474868536    dv 4.004516718e-10
+     i   12 rc    0 ak/bk                               OpBoundary/OpBoundary                                    ax/bx 12/12    av/bv  0.520009637/0.5200096369    dv 1.210327394e-10
+     i   13 rc    0 ak/bk                               OpRayleigh/OpRayleigh                                    ax/bx 13/13    av/bv 0.0781508982/0.07815089822    dv -1.815490813e-11
+     i   14 rc    0 ak/bk                             OpAbsorption/OpAbsorption                                  ax/bx 14/14    av/bv  0.574374497/0.5743744969    dv 6.320188817e-11
+     i   15 rc    1 ak/bk                OpBoundary_DiDiTransCoeff/OpBoundary                                *   ax/bx 15/15    av/bv 0.0207945034/0.02079450339    dv 9.210968793e-12
+     i   16 rc    0 ak/bk                               OpBoundary/OpBoundary                                    ax/bx 16/16    av/bv   0.11561837/0.1156183705    dv -4.733848591e-10
+     i   17 rc    0 ak/bk                               OpRayleigh/OpRayleigh                                    ax/bx 17/17    av/bv  0.169269904/0.1692699045    dv -4.942855847e-10
+     i   18 rc    0 ak/bk                             OpAbsorption/OpAbsorption                                  ax/bx 18/18    av/bv  0.622605622/0.6226056218    dv 1.85272242e-10
+     i   19 rc    1 ak/bk                OpBoundary_DiDiTransCoeff/OpBoundary                                *   ax/bx 19/19    av/bv   0.87923032/0.8792303205    dv -4.536437892e-10
+     i   20 rc    0 ak/bk                               OpBoundary/OpBoundary                                    ax/bx 20/20    av/bv 0.0382289328/0.03822893277    dv 3.189353642e-11
+     i   21 rc    0 ak/bk                               OpRayleigh/OpRayleigh                                    ax/bx 21/21    av/bv  0.560237229/0.5602372289    dv 1.29608102e-10
+     i   22 rc    0 ak/bk                             OpAbsorption/OpAbsorption                                  ax/bx 22/22    av/bv  0.321802348/0.3218023479    dv 1.015167395e-10
+     i   23 rc    0 ak/bk                OpBoundary_DiDiTransCoeff/OpBoundary_DiDiTransCoeff                     ax/bx 23/23    av/bv 0.0989450514/0.09894505143    dv -3.165588625e-11
+     i   24 rc    0 ak/bk                               OpBoundary/OpBoundary                                    ax/bx 24/24    av/bv  0.819752872/ 0.819752872    dv 9.79616388e-12
+     i   25 rc    0 ak/bk                               OpRayleigh/OpRayleigh                                    ax/bx 25/25    av/bv  0.124628305/0.1246283054    dv -4.351806693e-10
+     i   26 rc    0 ak/bk                             OpAbsorption/OpAbsorption                                  ax/bx 26/26    av/bv  0.397397667/0.3973976672    dv -1.695709129e-10
+     i   27 rc    0 ak/bk       OpBoundary_DiDiAbsorbDetectReflect/OpBoundary_DiDiAbsorbDetectReflect            ax/bx 27/27    av/bv  0.106698811/0.1066988111    dv -5.422973182e-11
+     i   28 rc    0 ak/bk                  OpBoundary_DoAbsorption/OpBoundary_DoAbsorption                       ax/bx 28/28    av/bv  0.602350235/ 0.602350235    dv 1.464839361e-11
+     i   29 rc    0 ak/bk                     OpBoundary_taildebug/OpBoundary_taildebug                          ax/bx 29/29    av/bv  0.243380114/0.2433801144    dv -4.361495887e-10
+
+
+
+::
+
+    new way of skipclear : based on consumption since clear
+
+    TAG=3 ts 19 --pfx scan-ts-utail --recpoi --utaildebug --xanalytic --generateoverride -1
+    TAG=3 ta 19 --pfx scan-ts-utail --msli :1M
+
+
+    ab.mal
+    aligned   999834/1000000 : 0.9998 : 0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24 
+    maligned     166/1000000 : 0.0002 : 2908,4860,5477,12338,17891,18117,28709,32764,37671,43675,45874,46032,60178,63381,72351,76458,78372,86277,95271,99872,114621,114824,117993,124178,128075 
+
+
+    old way of skipclear : based on zerosteps
+
+    TAG=4 ts 19 --pfx scan-ts-utail --recpoi --utaildebug --xanalytic --generateoverride -1
+    TAG=4 ta 19 --pfx scan-ts-utail --msli :1M
+
+    ab.mal
+    aligned   999833/1000000 : 0.9998 : 0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24 
+    maligned     167/1000000 : 0.0002 : 2908,4860,5477,12338,17891,18117,28709,32764,37671,43675,45874,46032,60178,63381,72351,76458,78372,86277,95271,99872,114621,114824,117993,124178,128075
+
+
+
+
+
 Find some ordinary photons for machinery dev with non-problematics
 --------------------------------------------------------------------
 
@@ -75,6 +171,7 @@ so it only matched due to luck that did not get extreme randoms in that diverged
   
   * YES: but thats testing a different code path 
 
+* the triplet consumption (OpBoundary, OpRayleigh, OpAbsorption) is the to_boundary decision making 
 
 ::
 
@@ -156,6 +253,9 @@ so it only matched due to luck that did not get extreme randoms in that diverged
     2019-07-29 23:56:57.032 INFO  [188757] [BLog::Compare@206]  ai 30 bi 30 RC 1 tol         1e-06
     2019-07-29 23:56:57.032 INFO  [188757] [CRandomEngine::compareLogs@757] CRandomEngine::postTrack RC 1
 
+
+
+* At 15 following the to_boundary triplet consumption (OpBoundary,OpRayleigh,OpAbsorption) G4 does it again 
 
 
 

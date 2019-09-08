@@ -370,7 +370,7 @@ __device__ void propagate_at_boundary_geant4_style( Photon& p, State& s, curandS
 #endif 
 
 #ifdef WITH_ALIGN_DEV_DEBUG
-    rtPrintf("propagate_at_boundary  u_OpBoundary_DiDiTransCoeff:%.9g  n_reflect:%d   c_TransCoeff:%.9g  c2c2:%10.4f tir:%d  post (%10.4f %10.4f %10.4f %10.4f) pol (%10.4f %10.4f %10.4f ) \n",
+    rtPrintf("propagate_at_boundary  u_OpBoundary_DiDiTransCoeff:%.9g  n_reflect:%d   c_TransCoeff:%.9g  c2c2:%10.4f n_tir:%d  post (%10.4f %10.4f %10.4f %10.4f) pol (%10.4f %10.4f %10.4f ) \n",
          u_reflect, reflect, TransCoeff, c2c2, tir, p.position.x, p.position.y, p.position.z, p.time, p.polarization.x, p.polarization.y, p.polarization.z  );
 #endif
 
@@ -642,13 +642,19 @@ relevant boundary index that results from the ray trace.
 * optixrap/cu/state.h:fill_state 
 * optixrap/cu/boundary_lookup.h 
 
-
 Returns:
 
 * BREAK(SURFACE_ABSORB) 
 * BREAK(SURFACE_DETECT) 
 * CONTINUE(SURFACE_DREFLECT) 
 * CONTINUE(SURFACE_SREFLECT) 
+
+
+
+Known differences vs counterpart DsG4OpBoundaryProcess::DoAbsorption
+---------------------------------------------------------------------
+
+* u_surface_burn not compared against theEfficiency to decide on detect 
 
 
 TODO
@@ -674,7 +680,7 @@ propagate_at_surface(Photon &p, State &s, curandState &rng)
 #endif
 
 #ifdef WITH_ALIGN_DEV_DEBUG
-    rtPrintf("propagate_at_surface   u_OpBoundary_DiDiReflectOrTransmit:%.9g \n", u_surface);
+    rtPrintf("propagate_at_surface   u_OpBoundary_DiDiAbsorbDetectReflect:%.9g \n", u_surface);
     rtPrintf("propagate_at_surface   u_OpBoundary_DoAbsorption:%.9g \n", u_surface_burn);
 #endif
 

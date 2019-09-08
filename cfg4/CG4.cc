@@ -411,11 +411,27 @@ void CG4::postpropagate()
               ;
 }
 
+/**
+CG4::addRandomNote
+-------------------
+
+The note is associated with the index of the last random consumption, see boostrap/BLog.cc
+
+**/
+
 void CG4::addRandomNote(const char* note, int value)
 {
     assert( m_engine ); 
     m_engine->addNote(note, value); 
 }
+
+void CG4::addRandomCut(const char* ckey, double cvalue)
+{
+    assert( m_engine ); 
+    m_engine->addCut(ckey, cvalue); 
+}
+
+
 
 
 void CG4::cleanup()

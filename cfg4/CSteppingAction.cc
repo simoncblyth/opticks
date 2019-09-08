@@ -74,6 +74,7 @@ CSteppingAction::CSteppingAction(CG4* g4, bool dynamic)
    : 
    G4UserSteppingAction(),
    m_g4(g4),
+   m_engine(m_g4->getRandomEngine()),
    m_ctx(g4->getCtx()),
    m_ok(g4->getOpticks()),
    m_dbgflat(m_ok->isDbgFlat()), 
@@ -86,7 +87,8 @@ CSteppingAction::CSteppingAction(CG4* g4, bool dynamic)
    m_steprec(g4->getStepRec()),
    m_trman(NULL),
    m_nav(NULL),
-   m_steprec_store_count(0)
+   m_steprec_store_count(0), 
+   m_cursor_at_clear(-1)
 { 
 }
 
@@ -121,6 +123,9 @@ CSteppingAction::~CSteppingAction()
 CSteppingAction::UserSteppingAction
 -------------------------------------
 
+Invoked from tail of G4SteppingManager::Stepping (g4-cls G4SteppingManager), 
+after InvokePostStepDoItProcs (g4-cls G4SteppingManager2).
+
 Action depends on the boolean "done" result of CSteppingAction::setStep.
 When done=true this stops tracking, which happens for absorption and truncation.
 
@@ -142,10 +147,11 @@ See :doc:`stepping_process_review`
 
 void CSteppingAction::UserSteppingAction(const G4Step* step)
 {
+    if(m_dbgflat) LOG(LEVEL) << "[" ; 
+
     bool done = setStep(step);
 
     m_g4->postStep();
-
 
     if(done)
     { 
@@ -154,45 +160,78 @@ void CSteppingAction::UserSteppingAction(const G4Step* step)
     }
     else
     {
-        // guess work for alignment
-        // should this be done after a jump ?
+        prepareForNextStep(step);
 
-        bool zeroStep = m_ctx._noZeroSteps > 0 ;   // usually means there was a jump back 
-        bool skipClear = zeroStep && m_ok->isDbgSkipClearZero()  ;  // --dbgskipclearzero
-
-
-
-        if(skipClear)
-        {
-            if(m_dbgflat) 
-                LOG(LEVEL) 
-                    << " --dbgskipclearzero  "
-                    << " m_ctx._noZeroSteps " << m_ctx._noZeroSteps 
-                    << " skipping CProcessManager::ClearNumberOfInteractionLengthLeft " 
-                    ; 
-        }  
-        else
-        {
-            if(m_dbgflat) 
-                LOG(LEVEL) 
-                    <<  " --dbgflat "
-                    << " m_ctx._noZeroSteps " << m_ctx._noZeroSteps 
-                    << " proceed CProcessManager::ClearNumberOfInteractionLengthLeft " 
-                    ; 
-
-            CProcessManager::ClearNumberOfInteractionLengthLeft( m_ctx._process_manager, *m_ctx._track, *m_ctx._step );
-        }
-
-        if(m_ok->hasMask())   // --mask 
-        {
-            LOG(debug) 
-                << "[--mask] CProcessManager::ClearNumberOfInteractionLengthLeft " 
-                << " preStatus " << CStepStatus::Desc(step->GetPreStepPoint()->GetStepStatus())
-                << " postStatus " << CStepStatus::Desc(step->GetPostStepPoint()->GetStepStatus())
-                ; 
-        }
     } 
+
+    if(m_dbgflat) LOG(LEVEL) << "]" ; 
 }
+
+
+/**
+CSteppingAction::prepareForNextStep
+--------------------------------------
+
+Clearing of the Number of Interation Lengths left is done in order to 
+match Opticks random consumption done propagate_to_boundary 
+
+See notes/issues/ts19-100.rst
+
+**/
+
+void CSteppingAction::prepareForNextStep(const G4Step* step)
+{
+    bool zeroStep = m_ctx._noZeroSteps > 0 ;   // usually means there was a jump back 
+    bool skipClear0 = zeroStep && m_ok->isDbgSkipClearZero()  ;  // --dbgskipclearzero
+
+    int currentStepFlatCount = m_engine->getCurrentStepFlatCount() ; 
+    int currentRecordFlatCount = m_engine->getCurrentRecordFlatCount() ; 
+    int cursor = m_engine->getCursor() ; 
+    int consumption_since_clear = m_cursor_at_clear > -1  ? cursor - m_cursor_at_clear : -1  ;  
+
+    bool skipClear1 = consumption_since_clear == 3  ;  
+
+    //bool skipClear = skipClear0 ;  // old way 
+    bool skipClear = skipClear1 ;  // new way 
+
+
+    // if only 3 (OpBoundary,OpRayleigh,OpAbsorption) are primed with no consumption beyond 
+    // propagate_to_boundary/DefinePhysicalStepLength 
+    // THIS MAY BE A BETTER WAY OF CONTROLLING THE CLEAR  
+
+    if(m_dbgflat) 
+    {
+        LOG(LEVEL) 
+            << " cursor " <<  cursor
+            << " m_cursor_at_clear " <<  m_cursor_at_clear
+            << " consumption_since_clear " << consumption_since_clear 
+            << " currentStepFlatCount " <<  currentStepFlatCount
+            << " currentRecordFlatCount " <<  currentRecordFlatCount
+            << " m_ctx._noZeroSteps " << m_ctx._noZeroSteps 
+            << " skipClear0 " << skipClear0
+            << " skipClear1 " << skipClear1
+            <<  ( skipClear ? " SKIPPING CLEAR " : " proceed with CProcessManager::ClearNumberOfInteractionLengthLeft " )
+            ; 
+    }
+
+    if(!skipClear)
+    {  
+        CProcessManager::ClearNumberOfInteractionLengthLeft( m_ctx._process_manager, *m_ctx._track, *m_ctx._step );
+        m_cursor_at_clear = cursor ; 
+    }
+
+
+    if(m_ok->hasMask())   // --mask 
+    {
+        LOG(debug) 
+            << "[--mask] CProcessManager::ClearNumberOfInteractionLengthLeft " 
+            << " preStatus " << CStepStatus::Desc(step->GetPreStepPoint()->GetStepStatus())
+            << " postStatus " << CStepStatus::Desc(step->GetPostStepPoint()->GetStepStatus())
+            ; 
+    }
+}
+
+
 
 
 /**
