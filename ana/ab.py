@@ -64,6 +64,8 @@ class Maligned(object):
         self.faligned = ratio_(len(ab.aligned), tot)
         self.sli = slice(0,25)
 
+        self.migs = self.count_migtab() 
+
     def __getitem__(self, sli):
          self.sli = sli
          return self
@@ -72,9 +74,36 @@ class Maligned(object):
         return ["aligned  %7d/%7d : %.4f : %s " % ( len(self.aligned), self.tot, self.faligned,   ",".join(map(lambda _:"%d"%_, self.aligned[self.sli])) ),
                 "maligned %7d/%7d : %.4f : %s " % ( len(self.maligned), self.tot, self.fmaligned,  ",".join(map(lambda _:"%d"%_, self.maligned[self.sli])) ) ]
 
+    def label(self, q ):
+        return "%16x %30s " % ( q, self.ab.histype.label(q) )
+
+    def count_migtab(self, dump=False):
+        """
+        Count occurrences of different history migration pairs 
+        """
+        ab = self.ab 
+        mal = ab.maligned
+        a = ab.a
+        b = ab.b
+        d = odict()
+        for i,m in enumerate(mal):
+            k = (a.seqhis[m],b.seqhis[m])
+            if not k in d: d[k]=0 
+            d[k] += 1  
+            if dump:
+                print( " %4d   :  %s  %s " % (i, self.label(a.seqhis[m]), self.label(b.seqhis[m])) )
+            pass
+        pass
+        return d 
+
+    def migtab(self):
+        tab = "\n".join([" %4d   %s  %s " % ( kv[1], self.label(kv[0][0]), self.label(kv[0][1]) )  for kv in sorted(self.migs.items(), key=lambda kv:kv[1], reverse=True)])
+        return tab
+
     def __repr__(self):
         return "\n".join( ["ab.mal"] + self.lines() + [repr(self.sli)]
-                   + map(lambda iq:self.ab.recline(iq), enumerate(self.maligned[self.sli])) + ["."]
+                   + map(lambda iq:self.ab.recline(iq), enumerate(self.maligned[self.sli])) + ["ab.mal.migtab"]
+                   + [self.migtab(), "."]
                 ) 
 
 

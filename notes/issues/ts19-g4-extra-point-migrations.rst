@@ -7,8 +7,20 @@ Investigate two maligned history categories
 * (105/1M) photons skirting along base tubs edge 
 
 
-TODO
-------
+thoughts
+---------
+
+* testing with photons neatly aligned, normal incidences etc.. is far more likely to cause edge skimmers that real operation  
+* current geometry motivated testing is bound to find such issues 
+* allowing photons to bounce around inside PMT is prone to meeting edges, whereas is reality 
+  will SA/SD at cathode 
+
+* better use more physically motivated testing with photons coming from expected directions on PMT assembly 
+  with cathode collection
+
+
+DONE : added migtab to ana/ab.py
+------------------------------------
 
 * have accounted for (105+7)/166 maligned : categorize all the migrations 
 * automate creation of migration tables from the maligned, to see the counts 
@@ -57,14 +69,6 @@ TODO
 
 
 
-thoughts
----------
-
-* testing with photons neatly aligned, normal incidences etc.. is far more likely to cause edge skimmers that real operation  
-* current geometry motivated testing is bound to find such issues 
-* better use more physically motivated testing with photons coming from expected directions on PMT assembly 
-
-
 objective : investigate some migrations
 -------------------------------------------
 ::
@@ -80,6 +84,115 @@ objective : investigate some migrations
           0   2908 : * :                                  TO BT BR BR BT SA                               TO BT BR BR BR BT SA 
           1   4860 : * :                                     TO BT BT BT SA                                  TO BT BT BT BT SA 
           2   5477 : * :                                     TO BT BT BT SA                                  TO BT BT BT BT SA 
+
+
+
+
+shoot from the top, still gives substantial maligned as happens across other side
+---------------------------------------------------------------------------------------
+
+* changed tboolean-proxy sheetmask to 0x2 to shoot from +Z
+
+::
+
+    TAG=5 ts 19 --pfx scan-ts-utail 
+
+
+Gives 8/10k maligned L mostly extra BR from G4.::
+
+    ab.mal
+    aligned     9992/  10000 : 0.9992 : 0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24 
+    maligned       8/  10000 : 0.0008 : 938,944,1016,4007,5449,5985,8006,8473 
+    slice(0, 25, None)
+          0    938 : * :                                        TO BT BT SA                                     TO BT BR BT SA 
+          1    944 : * :                                  TO BT BR BR BT SA                                     TO BT BR BT SA 
+          2   1016 : * :                                     TO BT BR BR SA                                     TO BT BR BT SA 
+          3   4007 : * :                                        TO BT BT SA                                     TO BT BR BT SA 
+          4   5449 : * :                                        TO BT BT SA                                     TO BT BR BT SA 
+          5   5985 : * :                                     TO BT BR BR SA                                     TO BT BR BT SA 
+          6   8006 : * :                                        TO BT BT SA                                     TO BT BR BT SA 
+          7   8473 : * :                                        TO BT BT SA                                     TO BT BR BT SA 
+
+Viewing just those they make beeline for edges::
+
+    TAG=5 ts 19 --pfx scan-ts-utail --mask=938,944,1016,4007,5449,5985,8006,8473
+
+
+Up the stats, gives 799/1M maligned::
+
+    TAG=5 ts 19 --pfx scan-ts-utail --generateoverride -1 
+    TAG=5 ta 19 --pfx scan-ts-utail --msli :1M
+
+::
+
+    b.mal
+    aligned   999201/1000000 : 0.9992 : 0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24 
+    maligned     799/1000000 : 0.0008 : 938,944,1016,4007,5449,5985,8006,8473,11571,14233,14618,14633,15370,15417,16913,19782,21866,22269,22415,24391,24600,25702,26823,27536,29423 
+
+
+    ab.mal.migtab
+      551               8ccd                    TO BT BT SA              8cbcd                 TO BT BR BT SA  
+      161              8bbcd                 TO BT BR BR SA              8cbcd                 TO BT BR BT SA  
+       33               8ccd                    TO BT BT SA             8cbbcd              TO BT BR BR BT SA  
+       25             8cbccd              TO BT BT BR BT SA              8cbcd                 TO BT BR BT SA  
+        9              8bbcd                 TO BT BR BR SA             8cbbcd              TO BT BR BR BT SA  
+        4             8cbbcd              TO BT BR BR BT SA              8cbcd                 TO BT BR BT SA  
+        3            8cbbccd           TO BT BT BR BR BT SA              8cbcd                 TO BT BR BT SA  
+        3               8ccd                    TO BT BT SA            8cbbbcd           TO BT BR BR BR BT SA  
+        2              8bbcd                 TO BT BR BR SA            8cbbbcd           TO BT BR BR BR BT SA  
+        2              8cccd                 TO BT BT BT SA               8ccd                    TO BT BT SA  
+        2               8cbd                    TO BR BT SA               8ccd                    TO BT BT SA  
+        1            8cbbbcd           TO BT BR BR BR BT SA             8cbbcd              TO BT BR BR BT SA  
+        1              8cbcd                 TO BT BR BT SA             8cbbcd              TO BT BR BR BT SA  
+        1               8ccd                    TO BT BT SA             86cbcd              TO BT BR BT SC SA  
+        1           8cbbbccd        TO BT BT BR BR BR BT SA              8cbcd                 TO BT BR BT SA  
+    .
+
+
+* too many to list on commandline mask argument, so save to file and load that 
+
+::
+
+     In [3]: np.save("/tmp/ts19tag5mask_maligned.npy", ab.maligned.astype(np.uint32))       ## NB load fails if do not use  np.uint32
+
+::
+
+    ts 19 --pfx scan-ts-utail --mask /tmp/ts19tag5mask_maligned.npy                         ## fails because mask indices go beyond the base
+    ts 19 --pfx scan-ts-utail --mask /tmp/ts19tag5mask_maligned.npy --generateoverride -1   ## works : all 799 photons are maligned
+
+
+Viz everything together, too confusing to glean much::
+
+    tv 19 --pfx scan-ts-utail 
+    tv 19 --pfx scan-ts-utail  --vizg4
+
+
+Select just the 161::
+
+    In [15]: np.where(np.logical_and( a.seqhis == 0x8bbcd, b.seqhis == 0x8cbcd ))
+    Out[15]: 
+    (array([  1016,   5985,  14233,  14633,  15370,  16913,  22269,  25702,  33369,  35537,  37501,  42845,  48468,  52700,  85871,  97214, 109455, 114617, 123244, 129246, 137050, 142250, 151713, 154477,
+            158001, 158429, 159184, 163708, 171450, 186287, 200089, 208320, 208981, 211623, 228554, 239596, 252555, 255151, 268535, 274196, 279098, 279538, 291110, 291755, 297292, 317059, 317339, 322507,
+            329729, 337281, 337572, 341416, 341978, 349357, 371055, 375034, 381344, 386810, 396248, 401396, 405544, 407334, 408919, 415443, 420581, 423282, 425678, 428930, 430608, 445853, 450327, 457313,
+            461282, 463858, 466271, 470138, 476925, 479665, 488315, 493612, 497291, 505162, 507388, 510106, 511845, 512212, 515900, 524997, 525346, 525927, 527639, 530988, 538629, 539375, 542675, 549181,
+            551198, 556371, 567609, 572023, 582188, 582528, 585733, 598252, 602251, 606590, 622589, 627033, 655016, 676326, 678625, 681954, 695260, 698423, 720481, 720652, 724573, 726543, 727246, 731863,
+            743708, 747574, 761992, 763830, 770221, 779155, 782181, 793993, 796415, 806097, 816677, 828446, 832090, 834603, 841586, 846619, 857556, 859837, 859930, 870418, 876614, 876820, 882864, 883838,
+            891715, 896452, 913217, 916891, 926609, 934457, 938475, 943150, 944819, 953069, 966489, 970035, 970631, 973732, 974034, 976993, 979276]),)
+
+    In [16]: np.where(np.logical_and( a.seqhis == 0x8bbcd, b.seqhis == 0x8cbcd ))[0].shape
+    Out[16]: (161,)
+
+    In [17]: m161 = np.where(np.logical_and( a.seqhis == 0x8bbcd, b.seqhis == 0x8cbcd ))[0]
+
+    In [18]: np.save("/tmp/ts19tag5mask_maligned_m161.npy", m161.astype(np.uint32))
+
+
+::
+
+    ts 19 --pfx scan-ts-utail --mask /tmp/ts19tag5mask_maligned_m161.npy --generateoverride -1   ## works : all 161 photons are maligned
+
+
+
 
 
 

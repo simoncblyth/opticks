@@ -87,6 +87,7 @@ PhotonsNPYTest.cc
 
 NCIETest.cc
 NPYTest.cc
+NPYLoadTest.cc
 NPY2Test.cc
 NPY3Test.cc
 NPYminmaxTest.cc

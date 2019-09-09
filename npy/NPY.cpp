@@ -697,7 +697,7 @@ NPY<T>* NPY<T>::load(const char* path_, bool quietly)
     {
         if(!quietly)
         {
-        LOG(warning) << "NPY<T>::load failed for path [" << path << "] use debugload to see why"  ; 
+        LOG(warning) << "NPY<T>::load failed for path [" << path << "] use debugload with NPYLoadTest to investigate (problems are usually from dtype mismatches) "  ; 
         }
     }
 
