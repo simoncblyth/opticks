@@ -4,7 +4,7 @@ nvidia-driver-fails-following-yum-update
 See Also
 ----------
 
-See onvidia-vi for how the driver was updated to fix this.
+See onvidia-vi for how the driver was updated to fix this. Plant a string: nouveau/Nouveau for future searches. 
 
 
 After the reboot
