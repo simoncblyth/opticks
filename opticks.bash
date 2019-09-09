@@ -125,7 +125,6 @@ EOI
 
 opticks-cmakecache(){ echo $(opticks-bdir)/CMakeCache.txt ; }
 
-
 opticks-pretty(){  cat ${1:-some.json} | python -m json.tool ; }
 
 opticks-key2idpath(){ local dir=$(OpticksIDPATH --envkey --fatal 2>&1) ; echo $dir ; } 
@@ -557,6 +556,7 @@ $FUNCNAME
 EOI
 }
 
+opticks-cmake-generator(){ om- ; om-cmake-generator ; } 
 
 opticks-full()
 {

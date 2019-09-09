@@ -31,8 +31,14 @@ OptiX 7 : Brand New Lower Level API
 
 * Introduced Aug 2019 : OptiX 7 API is not backwards compatible
 
+
+* https://news.developer.nvidia.com/optix-7-delivers-new-levels-of-flexibility-to-application-developers/
 * https://devtalk.nvidia.com/default/topic/1058310/optix/optix-7-0-release/
 * https://devtalk.nvidia.com/default/topic/1061831/optix/optix-debugging-and-profiling-tools/
+* https://devtalk.nvidia.com/default/topic/1058577/optix/porting-to-optix-7/
+
+  Detlef : The OptiX 7 API is completely different and the host code effectively requires a rewrite
+
 
 * https://raytracing-docs.nvidia.com/optix7/index.html
 * https://raytracing-docs.nvidia.com/optix7/guide/index.html#introduction#

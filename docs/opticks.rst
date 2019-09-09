@@ -484,16 +484,8 @@ You are recommended to try some of the Thrust examples to check your nvcc toolch
 Geant4
 ---------
 
-As installing Geant4 takes a long time and considerable storage space it is not installed by *opticks-full*. 
-You can however intall Geant4 and XercesC with::
-
-   opticks-optionals-install    # which uses the xercesc- and g4- precursors 
-
-
-Geant4 Version
-~~~~~~~~~~~~~~~~~
-
-The *g4-* precursor selects a version of Geant4.  Currently a bit dated, this is intended to be brought uptodate soon.
+Geant4 installed as the last external in the *opticks-externals* list.
+The *g4-* precursor selects a version of Geant4.  Currently a bit dated, this is intended to be brought uptodate sometime.
 The coupling between Opticks and Geant4 is intended to be weak : so a range of 
 recent versions of Geant4 are intended to be supported.
  
@@ -521,23 +513,46 @@ Externals
 The *opticks-full* command automatically downloads and installs the below external packages
 into the places required by Opticks.
 
+To list the externals installed by *opticks-full* use the *opticks-externals* function::
+
+    [blyth@localhost opticks]$ opticks-externals
+    bcm
+    glm
+    glfw
+    glew
+    gleq
+    imgui
+    assimp
+    openmesh
+    plog
+    opticksdata
+    oimplicitmesher
+    odcs
+    oyoctogl
+    ocsgbsp
+    xercesc
+    g4
+
 
 =================  =====================   ==============================================================================
 precursor          pkg name                notes
 =================  =====================   ==============================================================================
+bcm                BCM                     My fork of Boost CMake Modules, which eases use of modern CMake target import/export 
 glm-               GLM                     OpenGL mathematics, 3D transforms 
-assimp-            Assimp                  Assimp 3D asset importer, my fork that handles G4DAE extras
-openmesh-          OpenMesh                basis for mesh navigation and fixing
-glew-              GLEW                    OpenGL extensions loading library, cmake build didnt work, includes vc12 sln for windows
 glfw-              GLFW                    Interface between system and OpenGL, creating windows and receiving input
+glew-              GLEW                    OpenGL extensions loading library, cmake build didnt work, includes vc12 sln for windows
 gleq-              GLEQ                    Keyboard event handling header from GLFW author, header only
 imgui-             ImGui                   OpenGL immediate mode GUI, depends on glfw and glew
+assimp-            Assimp                  Assimp 3D asset importer, my fork that handles G4DAE extras
+openmesh-          OpenMesh                basis for mesh navigation and fixing
 plog-              PLog                    Header only logging, supporting multi dll logging on windows 
 opticksdata-       -                       Dayabay G4DAE and GDML geometry files for testing Opticks      
 oimplicitmesher-   ImplicitMesher          Polygonization of implicitly defined shapes
 odcs-              DualContouringSample    Alternate polygonization using Octree for multi-resolution, however its slow
-ocsgbsp-           CSGBSP                  Another BSP approach to polygonization under investigation
 oyoctogl-          YoctoGL                 Used for glTF geometry file format handling, parsing/serializing    
+ocsgbsp-           CSGBSP                  Another BSP approach to polygonization under investigation
+xercesc            XercesC                 XML handling dependency of Geant4, required for GDML parsing
+g4                 Geant4                  The preeminent simulation toolkit
 =================  =====================   ==============================================================================
 
 
@@ -642,14 +657,16 @@ Geant4 Dependency
 -------------------
 
 Opticks is structured as a collection of packages 
-organized by their local and external dependencies, see :doc:`overview` for a table.
-Only the two very highest level packages depend on Geant4. 
+organized by their local and external dependencies, see :doc:`overview` for a table
+or run the bash function *opticks-deps*.
+Only a few of the very highest level packages depend on Geant4. 
 
 cfg4
      validation comparisons
 okg4
      integrated Opticks+G4 for “gun running"
-
+g4ok
+     minimal interface for embedding Opticks inside Geant4 applications
 
 Opticks dependency on Geant4 is intended to be loose 
 in order to allow working with multiple G4 versions (within a certain version range), 
@@ -660,8 +677,8 @@ The weak G4 dependency allows you to test most of Opticks even
 without G4 installed.  
 
 
-Embedded Opticks 
---------------------
+Embedded Opticks using G4OK package 
+-------------------------------------
 
 In production, Opticks is intended to be run in an embedded mode 
 where, Geant4 and Opticks communicate via “gensteps” and “hits” 
@@ -677,7 +694,6 @@ that does the below:
   propagation 
 
 * pulls back the PMT hits and populates standard Geant4 hit collections with these
-
 
 Once the details of the above integration have been revisted for JUNO example 
 integration code will be provided within the Opticks repository. 
@@ -799,7 +815,8 @@ macOS 10.9.4 Mavericks : Xcode/clang toolchain
 Linux : GCC toolchain
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-* Opticks has been ported to a DELL Precision Workstation, running Ubuntu 
+* DELL Precision Workstation, running Ubuntu 
+* DELL Precision Workstation, running CentOS 7
 * NVIDIA Quadro M5000 
 
 Windows : Microsoft Visual Studio 2015, Community edition

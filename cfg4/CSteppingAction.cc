@@ -183,36 +183,45 @@ void CSteppingAction::prepareForNextStep(const G4Step* step)
 {
     bool zeroStep = m_ctx._noZeroSteps > 0 ;   // usually means there was a jump back 
     bool skipClear0 = zeroStep && m_ok->isDbgSkipClearZero()  ;  // --dbgskipclearzero
+    bool skipClear = skipClear0 ; 
+    int cursor = -1 ; 
+ 
+    if( m_engine )
+    {
+        int currentStepFlatCount = m_engine->getCurrentStepFlatCount() ; 
+        int currentRecordFlatCount = m_engine->getCurrentRecordFlatCount() ; 
+        cursor = m_engine->getCursor() ; 
+        int consumption_since_clear = m_cursor_at_clear > -1  ? cursor - m_cursor_at_clear : -1  ;  
 
-    int currentStepFlatCount = m_engine->getCurrentStepFlatCount() ; 
-    int currentRecordFlatCount = m_engine->getCurrentRecordFlatCount() ; 
-    int cursor = m_engine->getCursor() ; 
-    int consumption_since_clear = m_cursor_at_clear > -1  ? cursor - m_cursor_at_clear : -1  ;  
+        skipClear = consumption_since_clear == 3  ;  
 
-    bool skipClear1 = consumption_since_clear == 3  ;  
+        if(m_dbgflat) 
+        {
+            LOG(LEVEL) 
+                << " cursor " <<  cursor
+                << " m_cursor_at_clear " <<  m_cursor_at_clear
+                << " consumption_since_clear " << consumption_since_clear 
+                << " currentStepFlatCount " <<  currentStepFlatCount
+                << " currentRecordFlatCount " <<  currentRecordFlatCount
+                << " m_ctx._noZeroSteps " << m_ctx._noZeroSteps 
+                << " skipClear0 " << skipClear0
+                <<  ( skipClear ? " SKIPPING CLEAR " : " proceed with CProcessManager::ClearNumberOfInteractionLengthLeft " )
+                ; 
 
-    //bool skipClear = skipClear0 ;  // old way 
-    bool skipClear = skipClear1 ;  // new way 
-
+            if(m_ok->hasMask())   // --mask 
+            {
+                LOG(debug) 
+                    << "[--mask] CProcessManager::ClearNumberOfInteractionLengthLeft " 
+                    << " preStatus " << CStepStatus::Desc(step->GetPreStepPoint()->GetStepStatus())
+                    << " postStatus " << CStepStatus::Desc(step->GetPostStepPoint()->GetStepStatus())
+                    ; 
+            }
+        }
+    }
 
     // if only 3 (OpBoundary,OpRayleigh,OpAbsorption) are primed with no consumption beyond 
     // propagate_to_boundary/DefinePhysicalStepLength 
     // THIS MAY BE A BETTER WAY OF CONTROLLING THE CLEAR  
-
-    if(m_dbgflat) 
-    {
-        LOG(LEVEL) 
-            << " cursor " <<  cursor
-            << " m_cursor_at_clear " <<  m_cursor_at_clear
-            << " consumption_since_clear " << consumption_since_clear 
-            << " currentStepFlatCount " <<  currentStepFlatCount
-            << " currentRecordFlatCount " <<  currentRecordFlatCount
-            << " m_ctx._noZeroSteps " << m_ctx._noZeroSteps 
-            << " skipClear0 " << skipClear0
-            << " skipClear1 " << skipClear1
-            <<  ( skipClear ? " SKIPPING CLEAR " : " proceed with CProcessManager::ClearNumberOfInteractionLengthLeft " )
-            ; 
-    }
 
     if(!skipClear)
     {  
@@ -221,14 +230,6 @@ void CSteppingAction::prepareForNextStep(const G4Step* step)
     }
 
 
-    if(m_ok->hasMask())   // --mask 
-    {
-        LOG(debug) 
-            << "[--mask] CProcessManager::ClearNumberOfInteractionLengthLeft " 
-            << " preStatus " << CStepStatus::Desc(step->GetPreStepPoint()->GetStepStatus())
-            << " postStatus " << CStepStatus::Desc(step->GetPostStepPoint()->GetStepStatus())
-            ; 
-    }
 }
 
 
