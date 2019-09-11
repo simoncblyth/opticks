@@ -158,10 +158,20 @@ std::string BFile::expandvar(const char* s)
 const std::vector<std::string> BFile::envvars = { 
    "TMP", 
    "HOME",
-   "OPTICKS_INSTALL_PREFIX",    // needed for OpticksFlags to find the enum header, set internally at resource init
+   "OPTICKS_INSTALL_PREFIX",    // needed for OpticksFlags to find the enum header
+   "OPTICKS_GEOCACHE_PREFIX",  
    "OPTICKS_HOME",              // needed by OInterpolationTest to find a python script
    "IDPATH"
 } ; 
+
+/**
+BFile::IsAllowedEnvvar
+-----------------------
+
+Envvars listed as allowed will be resolved from strings such as $OPTICKS_GEOCACHE_PREFIX 
+by BFile path handling  
+
+**/
 
 bool BFile::IsAllowedEnvvar(const char* key_)
 {

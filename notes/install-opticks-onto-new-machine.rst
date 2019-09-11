@@ -486,5 +486,8 @@ Before NumPy in place, check opticks-t : stand at 4/411 fails
     [blyth@gilda03 cfg4]$ 
 
 
+opticks-t down to 2/411 fails after Anaconda2 installed for NumPy
+-------------------------------------------------------------------
 
+* after Anaconda2 done, down to 
 

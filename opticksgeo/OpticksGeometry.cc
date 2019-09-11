@@ -111,7 +111,7 @@ void OpticksGeometry::loadGeometry()
 
     //registerGeometry moved up to OpticksHub
 
-    if(!m_ok->isGeocache())
+    if(!m_ok->isGeocacheEnabled())
     {
         LOG(info) << "early exit due to --nogeocache/-G option " ; 
         m_ok->setExit(true); 

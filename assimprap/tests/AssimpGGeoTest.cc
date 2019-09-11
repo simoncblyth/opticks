@@ -97,7 +97,7 @@ int main(int argc, char** argv)
 
     ok.configure();
 
-    ok.setGeocache(false);  // prevent loading from any preexisting geocache, same as --nogeocache/-G option
+    ok.setGeocacheEnabled(false);  // prevent loading from any preexisting geocache, same as --nogeocache/-G option
 
     const char* path = ok.getDAEPath();
 

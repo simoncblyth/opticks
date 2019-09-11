@@ -22,7 +22,12 @@
 key.py
 ===============
 
-See also ana/geocache.bash 
+See also::
+
+   ana/geocache.bash 
+   boostrap/BOpticksResource.cc
+
+NB path layout changes need to be done in triplicate in bash/py/C++ 
 
 Analogous to bpath.py in old route 
 
@@ -51,7 +56,10 @@ class Key(object):
         exe,cls,top,dig = elem 
         assert len(dig) == 32, "OPTICKS_KEY digest %s is expected to be length 32, not %d " % (dig, len(dig))
 
-        tmpl = "$LOCAL_BASE/opticks/geocache/{exe}_{top}_g4live/g4ok_gltf/{dig}/1".format(**locals())
+        #geocache_prefix = "$LOCAL_BASE/opticks" 
+        geocache_prefix_default = os.path.expanduser("~/.opticks") 
+        geocache_prefix = os.environ.get("OPTICKS_GEOCACHE_PREFIX", geocache_prefix_default ) 
+        tmpl = "{geocache_prefix}/geocache/{exe}_{top}_g4live/g4ok_gltf/{dig}/1".format(**locals())
         keydir = os.path.expandvars(tmpl)
         return keydir
 

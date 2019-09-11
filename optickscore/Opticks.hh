@@ -202,6 +202,7 @@ class OKCORE_API Opticks {
        bool isOther();
        bool isValid();
        bool hasVolnames() const ; 
+       bool isEnabledLegacyG4DAE() const ;  // --enabled_legacy_g4dae 
    public:
        int  rc() const ;
        void dumpRC() const ;
@@ -231,7 +232,7 @@ class OKCORE_API Opticks {
    public:
        NSensorList* getSensorList();
    public:
-       bool        hasGeoCache() const ; 
+       bool        hasGeocache() const ; 
        const char* getIdPath() const ;
        const char* getIdFold() const ;
        const char* getDetectorBase();
@@ -252,8 +253,10 @@ class OKCORE_API Opticks {
    private:
        void setTagOffset(unsigned tagoffset);   // set by Opticks::makeEvent, used for uniqing profile labels
    public:
-       void setGeocache(bool geocache=true);
-       bool isGeocache();
+       void setGeocacheEnabled(bool geocache=true);
+       bool isGeocacheEnabled() const ;
+       bool isGeocacheAvailable() const ;
+
        void setInstanced(bool instanced=true);
        bool isInstanced();
        void setIntegrated(bool integrated=true);  // used to distinguish OKG4 usage 

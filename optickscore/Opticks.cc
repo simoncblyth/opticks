@@ -814,7 +814,7 @@ void Opticks::enforceNoGeoCache() const
 {
     const Opticks* ok = this ; 
     // used by OKX4Test as that is explicitly intended to write geocaches  
-    if(ok->hasGeoCache()) 
+    if(ok->hasGeocache()) 
     {   
         LOG(fatal) << "geocache exists already " << ok->getIdPath() ;
         if(!ok->canDeleteGeoCache())
@@ -826,7 +826,7 @@ void Opticks::enforceNoGeoCache() const
             ok->deleteGeoCache(); 
         }
     }   
-    assert(!ok->hasGeoCache()); 
+    assert(!ok->hasGeocache()); 
 }
 
 
@@ -1267,23 +1267,6 @@ std::string Opticks::brief()
 
 
 
-void Opticks::setGeocache(bool geocache)
-{
-    m_geocache = geocache ; 
-}
-bool Opticks::isGeocache()
-{
-    return m_geocache ;
-}
-
-void Opticks::setInstanced(bool instanced)
-{
-   m_instanced = instanced ;
-}
-bool Opticks::isInstanced()
-{
-   return m_instanced ; 
-}
 bool Opticks::isProduction() const   // --production
 {
    return m_production ; 
@@ -2122,13 +2105,58 @@ void Opticks::configureGeometryHandling()
               << " instanced " << instanced
               ;   
 
-    setGeocache(geocache);
+    setGeocacheEnabled(geocache);
     setInstanced(instanced); // find repeated geometry 
+}
+
+void Opticks::setGeocacheEnabled(bool geocache)
+{
+    m_geocache = geocache ; 
+}
+bool Opticks::isGeocacheEnabled() const 
+{
+    return m_geocache ;
+}
+
+bool Opticks::hasGeocache() const 
+{
+    const char* idpath = getIdPath(); 
+    return BFile::ExistsDir(idpath); 
+} 
+
+bool Opticks::isGeocacheAvailable() const 
+{
+    bool cache_exists = hasGeocache(); 
+    bool cache_enabled = isGeocacheEnabled() ; 
+    return cache_exists && cache_enabled ;
 }
 
 
 
 
+
+
+
+
+
+
+void Opticks::setInstanced(bool instanced)
+{
+   m_instanced = instanced ;
+}
+bool Opticks::isInstanced()
+{
+   return m_instanced ; 
+}
+
+
+
+
+
+bool Opticks::isEnabledLegacyG4DAE() const 
+{
+    return m_cfg->hasOpt("enabled_legacy_g4dae") ;  
+}
 
 
 
@@ -3093,13 +3121,6 @@ std::map<unsigned int, std::string> Opticks::getFlagNamesMap()
 Types*          Opticks::getTypes() {     return m_resource->getTypes(); }
 Typ*            Opticks::getTyp() {       return m_resource->getTyp(); }
 
-
-
-bool            Opticks::hasGeoCache() const 
-{
-    const char* idpath = getIdPath(); 
-    return BFile::ExistsDir(idpath); 
-} 
 
 
 NSensorList*    Opticks::getSensorList(){ return m_resource ? m_resource->getSensorList() : NULL ; }

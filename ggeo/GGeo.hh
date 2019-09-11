@@ -401,6 +401,7 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
         static GGeo*                  fInstance ; 
         SLog*                         m_log ; 
         Opticks*                      m_ok ;  
+        bool                          m_enabled_legacy_g4dae ; 
         bool                          m_live ;   
         bool                          m_analytic ; 
         int                           m_gltf ; 

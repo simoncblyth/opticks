@@ -158,6 +158,7 @@ void BOpticksResource::init()
     LOG(LEVEL) << " layout  : " << m_layout ; 
 
     initInstallPrefix() ;
+    initGeocachePrefix() ;
     initTopDownDirs();
     initDebuggingIDPATH();
 }
@@ -253,7 +254,62 @@ void BOpticksResource::initInstallPrefix()
 
 
 
-std::string BOpticksResource::getGeoCachePath(const char* rela, const char* relb, const char* relc, const char* reld ) const 
+
+
+const char* BOpticksResource::GEOCACHE_PREFIX_KEY = "OPTICKS_GEOCACHE_PREFIX" ; 
+
+/**
+BOpticksResource::ResolveGeocachePrefix
+----------------------------------------
+
+1. sensitive to envvar OPTICKS_GEOCACHE_PREFIX
+2. if envvar not defined defaults to $HOME/.opticks 
+3. the envvar is subsequently internally set by BOpticksResource::initGeocachePrefix
+
+NB changes to layout need to be done in triplicate C++/bash/py::
+
+   ana/geocache.bash
+   ana/key.py
+   boostrap/BOpticksResource.cc
+
+**/
+
+const char* BOpticksResource::ResolveGeocachePrefix()  // static
+{
+    const char* evalue = SSys::getenvvar(GEOCACHE_PREFIX_KEY);    
+    return evalue == NULL ?  MakeUserDir(".opticks", NULL) : evalue ; 
+}
+
+
+
+void BOpticksResource::initGeocachePrefix()
+{
+    m_geocache_prefix = ResolveGeocachePrefix();
+    m_res->addDir("geocache_prefix", m_geocache_prefix );
+
+    bool overwrite = true ; 
+    int rc = SSys::setenvvar(GEOCACHE_PREFIX_KEY, m_geocache_prefix, overwrite );  
+    // always set for uniformity 
+
+    LOG(LEVEL) 
+         << " geocache_prefix " << m_geocache_prefix  
+         << " key " << GEOCACHE_PREFIX_KEY
+         << " rc " << rc
+         ;   
+ 
+    assert(rc==0); 
+}
+
+
+
+
+
+
+
+
+
+
+std::string BOpticksResource::getGeocachePath(const char* rela, const char* relb, const char* relc, const char* reld ) const 
 {
     std::string path = BFile::FormPath(m_geocache_dir, rela, relb, relc, reld ) ;
     return path ;
@@ -282,8 +338,11 @@ std::string BOpticksResource::getIdPathPath(const char* rela, const char* relb, 
 
 void BOpticksResource::initTopDownDirs()
 { 
+
+    m_geocache_dir         = GeocacheDir() ;      // eg /usr/local/opticks/geocache
+
+
     m_opticksdata_dir      = OpticksDataDir() ;   // eg /usr/local/opticks/opticksdata
-    m_geocache_dir         = GeoCacheDir() ;      // eg /usr/local/opticks/geocache
     m_results_dir          = ResultsDir() ;       // eg /usr/local/opticks/results
     m_resource_dir         = ResourceDir() ;      // eg /usr/local/opticks/opticksdata/resource
     m_gensteps_dir         = GenstepsDir() ;      // eg /usr/local/opticks/opticksdata/gensteps
@@ -358,17 +417,16 @@ const char* BOpticksResource::getDebuggingTreedir(int argc, char** argv)
 }
 
 
-
+const char* BOpticksResource::GeocacheDir(){    return MakePath(ResolveGeocachePrefix(), "geocache",  NULL); }
 
 const char* BOpticksResource::InstallCacheDir(){return MakePath(ResolveInstallPrefix(), "installcache",  NULL); }
+const char* BOpticksResource::RNGInstallPath(){ return MakePath(ResolveInstallPrefix(), "installcache", "RNG"); }
+const char* BOpticksResource::OKCInstallPath(){ return MakePath(ResolveInstallPrefix(), "installcache", "OKC"); }
+
 const char* BOpticksResource::OpticksDataDir(){ return MakePath(ResolveInstallPrefix(), "opticksdata",  NULL); }
-const char* BOpticksResource::GeoCacheDir(){    return MakePath(ResolveInstallPrefix(), "geocache",  NULL); }
 const char* BOpticksResource::ResourceDir(){    return MakePath(ResolveInstallPrefix(), "opticksdata", "resource" ); }
 const char* BOpticksResource::GenstepsDir(){    return MakePath(ResolveInstallPrefix(), "opticksdata", "gensteps" ); }
 const char* BOpticksResource::ExportDir(){      return MakePath(ResolveInstallPrefix(), "opticksdata", "export" ); }
-
-const char* BOpticksResource::RNGInstallPath(){ return MakePath(ResolveInstallPrefix(), "installcache", "RNG"); }
-const char* BOpticksResource::OKCInstallPath(){ return MakePath(ResolveInstallPrefix(), "installcache", "OKC"); }
 
 // problematic in readonly installs : because results do not belong with install paths 
 const char* BOpticksResource::ResultsDir(){     return MakePath(ResolveResultsPrefix(), "results",  NULL); }
@@ -377,7 +435,7 @@ const char* BOpticksResource::ResultsDir(){     return MakePath(ResolveResultsPr
 
 const char* BOpticksResource::getInstallDir() {         return m_install_prefix ; }   
 const char* BOpticksResource::getOpticksDataDir() {     return m_opticksdata_dir ; }   
-const char* BOpticksResource::getGeoCacheDir() {        return m_geocache_dir ; }   
+const char* BOpticksResource::getGeocacheDir() {        return m_geocache_dir ; }   
 const char* BOpticksResource::getResultsDir() {         return m_results_dir ; }   
 const char* BOpticksResource::getResourceDir() {        return m_resource_dir ; } 
 const char* BOpticksResource::getExportDir() {          return m_export_dir ; } 
@@ -438,6 +496,22 @@ const char* BOpticksResource::MakeTmpUserDir(const char* sub, const char* rel)
     std::string path = BFile::FormPath(base, user, sub, rel ) ; 
     return strdup(path.c_str());
 }
+
+const char* BOpticksResource::MakeUserDir(const char* sub, const char* rel) 
+{
+    std::string userdir = BFile::FormPath("$HOME", sub, rel) ; 
+    return strdup(userdir.c_str());
+}
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -579,11 +653,11 @@ void BOpticksResource::setupViaKey()
     m_res->addName("idgdml", m_idgdml ); 
 
 
-    std::string fold = getGeoCachePath(  m_idname ) ; 
+    std::string fold = getGeocachePath(  m_idname ) ; 
     m_idfold = strdup(fold.c_str()) ; 
     m_res->addDir("idfold", m_idfold ); 
 
-    std::string idpath = getGeoCachePath( m_idname, m_idsubd, m_srcdigest, layout );
+    std::string idpath = getGeocachePath( m_idname, m_idsubd, m_srcdigest, layout );
     // HMM IT WOULD BE GOOD TO ARRANGE FOR THIS TO BE STATICALLY AVAILABLE FROM THE KEY ?
     // BUT ITS A LITTLE INVOLVED DUE TO DIFFERENT POSSIBILITES FOR THE OPTICKS_INSTALL_PREFIX
 
@@ -725,10 +799,10 @@ void BOpticksResource::setupViaSrc(const char* srcpath, const char* srcdigest)
     } 
     else if(m_layout > 0)  // geocache decoupled from opticksdata
     {
-        std::string fold = getGeoCachePath(  m_idname ) ; 
+        std::string fold = getGeocachePath(  m_idname ) ; 
         m_idfold = strdup(fold.c_str()) ; 
 
-        std::string idpath = getGeoCachePath( m_idname, m_idfile, m_srcdigest, layout );
+        std::string idpath = getGeocachePath( m_idname, m_idfile, m_srcdigest, layout );
         m_idpath = strdup(idpath.c_str()) ; 
     }
 

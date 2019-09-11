@@ -53,6 +53,92 @@ OptiX 7 : Brand New Lower Level API
 * ~/opticks_refs/unofficial_RayTracingGems_v1.5.pdf
 
 
+Steve Parker SIGGRAPH 2019 Video
+----------------------------------
+
+* https://devtalk.nvidia.com/default/topic/1062216/optix/optix-talks-from-siggraph-2019/
+
+16:05
+     Sounds like OptiX7 not "fork", its the future
+
+     * explicit memory management (standard CUDA)
+     * explicit build AS (accel structures)
+     * explicit multi-GPU (up to application)
+     * no state on host corresponding to scene
+
+       * zero bytes on host
+       * improves startup
+       * reduce host resources
+
+19:49
+     RAY Tracing APIs : 
+ 
+     * Microsoft DXR (DirectX 12) https://devblogs.microsoft.com/directx/announcing-microsoft-directx-raytracing/
+     * NVIDIA VKRay (Vulkan) https://developer.nvidia.com/rtx/raytracing/vkray
+     * fat OptiX 1-6
+     * thin OptiX 7 
+
+
+     * sustainable APIs 
+
+
+20:34
+     Buffers -> CUDA Pointers 
+
+     Variables -> shader binding table
+
+     Global scoped variables -> Launch parameters
+
+         * enables overlapping of launches asynchronously 
+
+     Semantic variables -> query functions to access internal state (current ray etc..)
+
+     Amorphous programs -> Tagged program types 
+
+     Geometry Group -> Geometry AS (primitives: triangles or programmable) 
+
+     Group -> Instance AS
+
+         * culling and masking availble on Instance basis
+
+     Transform -> Just Input to Instance AS build
+
+
+24:21
+     OptiX 6 : still continuing to support 
+
+26:55
+    3D DAZ STUDIO : IRAY now built on OptiX7     
+27:10
+     People from NVIDIA worked to integrate OptiX7 into Blender
+
+
+
+David Hart, "OptiX Performance Tools and Tricks" SIGGRAPH 2019
+-----------------------------------------------------------------
+
+* https://developer.nvidia.com/siggraph/2019/video/sig915-vid
+
+12:25 BVH flatten scene
+
+   Example : modelling two cars with wheels, 
+
+   * should you instance the wheels and the cars or just copy the wheels into car instances 
+   * its faster to keep it flatter, ie copy the wheels into two car instances 
+
+   * Hardware Instancing : your first level is free!
+
+     * ie it can handle one level of descent into a smaller BVH 
+
+   * flatten if you can, ie if you have the memory  
+   * better to avoid overlapped BVHs
+
+   BVH : one level of instancing comes for free (ie RT cores handle it)
+
+
+18:01 8 32-bit registers for payload and attribs
+
+
 EOU
 }
 

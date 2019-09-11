@@ -132,12 +132,22 @@ class OpticksEnv(object):
         self.common_init()
 
 
+    def get_install_prefix(self):
+        """
+        Determine based on location of opticks executables two levels down 
+        from install prefix
+        """
+        return os.path.dirname(os.path.dirname(os.popen("which OKTest").read().strip()))
+
     def direct_init(self): 
         """
         Direct approach
 
         * IDPATH is not allowed as an input, it is an internal envvar only 
 
+
+        Hmm : this assumes the geocache dir is sibling to installcache, which 
+        is no longer true.
         """ 
 
         assert not os.environ.has_key("IDPATH"), "IDPATH envvar as input is forbidden"
@@ -153,9 +163,8 @@ class OpticksEnv(object):
 
         log.debug("direct_init keydir %s "  % keydir )
 
-
-
-        self.install_prefix = _dirname(keydir, 5)
+        #self.install_prefix = _dirname(keydir, 5)
+        self.install_prefix = self.get_install_prefix()
 
         self.setdefault("OPTICKS_INSTALL_PREFIX",  self.install_prefix)
         self.setdefault("OPTICKS_INSTALL_CACHE",   os.path.join(self.install_prefix, "installcache"))

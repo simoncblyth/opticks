@@ -1133,10 +1133,31 @@ opticks-export-mingw()
 }
 
 
+opticks-okdist-dirlabel-notes(){ cat << EON
+opticks-okdist-dirlabel-notes
+-------------------------------
 
+    opticks-okdist-dirlabel : $(opticks-okdist-dirlabel)
 
-## what about OptiX version, CUDA Version, G4 Version, NVIDIA Driver Version ???
-opticks-binary-tag(){ echo $(arch)-$(opticks-linux-release)-$(opticks-compiler-version)-dbg ; }
+Examples:: 
+
+   x86_64-centos7-gcc48-geant4_10_04_p02-dbg
+
+The label is used by okdist- for naming directories that contain 
+Opticks binary distributions.
+
+Note that the below versions are not included in this directory label as
+they are encompassed by the Opticks version.
+
+* OptiX version
+* CUDA Version
+* NVIDIA Driver Version 
+
+EON
+}
+
+opticks-okdist-mode(){ echo dbg ; }
+opticks-okdist-dirlabel(){ g4- ; echo $(arch)-$(opticks-linux-release)-$(opticks-compiler-version)-$(g4-nom)-$(opticks-okdist-mode) ; }
 opticks-gcc-version(){  gcc --version |  perl -ne 'm/(\d)\.(\d)/ && print "$1$2" ' ; }   
 opticks-compiler-version(){  echo gcc$(opticks-gcc-version) ; }  ## TODO: clang 
 opticks-linux-release-(){   cat /etc/redhat-release | perl -ne 'm/(\w*) Linux release (\d)\.(\d)/ && print "${1}/${2}" ' ; }
@@ -1155,142 +1176,7 @@ opticks-linux-release()
 }
 
 
-opticks-dist-notes(){ cat << EON
-Exclude Geant4, as its too fat for quick testing 
 
-* uncompressed is convenient while testing as can add libs to the end of the tar that will overrides 
-  priots with  "tar rf" 
-* but actually creating uncompresses tar is much faster, so can just remake the whole thing 
-
-EON
-}
-
-opticks-dist-version(){ echo 0.1.0 ; }
-opticks-dist-name(){    echo Opticks-$(opticks-dist-version) ; }
-opticks-dist-ext(){     echo .tar ; }  
-
-opticks-dist-prefix(){  echo $(opticks-dist-name)/$(opticks-binary-tag) ; }
-opticks-dist-file(){    echo $(opticks-dist-name)$(opticks-dist-ext) ; }
-
-opticks-dist-path(){    echo $(opticks-dir)/$(opticks-dist-file) ; }    
-opticks-dist-ls(){      local p=$(opticks-dist-path) ; ls -l $p ; du -h $p ; }
-opticks-dist-tmp(){     echo /tmp/$USER/opticks/opticks-dist-test ; }
-opticks-dist-cd(){      cd $(opticks-dist-tmp) ; }
-opticks-dist-untar(){    
-    local msg="=== $FUNCNAME :"
-    local tmp=$(opticks-dist-tmp)
-    rm -rf $tmp
-    mkdir -p $tmp
-    local dist=$(opticks-dist-path)
-    echo $msg explode tarball $dist into tmp $tmp
-    case $(opticks-dist-ext) in 
-       .tar.gz) tar zxvf $dist --strip 2 -C $tmp  ;;
-          .tar) tar  xvf $dist --strip 2 -C $tmp  ;;
-    esac
-}
-opticks-dist-test()
-{
-    #OPTICKS_INSTALL_PREFIX=$(opticks-dist-tmp) $(opticks-dist-tmp)/lib/OpticksResourceTest --envkey 
-    #LD_TRACE_LOADED_OBJECTS=1 $(opticks-dist-tmp)/lib/OpticksResourceTest
-
-    OPTICKS_INSTALL_PREFIX=$(opticks-dist-tmp) \
-        gdb --args $(opticks-dist-tmp)/lib/OpSnapTest --envkey --target 352851 --eye -1,-1,-1 --snapconfig "steps=10,eyestartz=-1,eyestopz=5" --size 2560,1440,1 --embedded
-   
-}
-
-opticks-deploy-test()
-{
-    opticks-dist           ## collect binaries into tarball
-    opticks-dist-untar     ## explode into tmp dit
-    opticks-dist-test      ## check usage of binaries
-}
-
-
-opticks-dist(){         opticks-cd ; $FUNCNAME- | python ; opticks-dist-ls ; }
-opticks-dist-(){ cat << EOP
-import os, tarfile
-
-class Dist(object):
-
-    exclude_dir_name = ['cmake','pkgconfig',  'Geant4-10.2.1', 'Geant4-10.4.2']    # G4 exclusion temporarily 
-
-    bases = ['lib','lib64','externals/lib','externals/lib64','externals/optix/lib64', 'installcache', 'gl', 'geocache' ]
-
-    extras = ['include/OpticksCore/OpticksPhoton.h', ]
-
-    ## OpticksPhoton.h is parsed at runtime to instanciate OpticksFlags, 
-    ## so must be included with the binaries 
-
-
-    def __init__(self, prefix, ext=".tar.gz"):
-        """
-        :param prefix: example Opticks-0.1.0/x86_64-centos7-gcc48-dbg 
-
-        The tarfile is named using the first portion of the prefix and
-        such a directory structure is included in the archive
-
-        To extract into current directory without these container dirs 
-        use the strip option::
-
-            tar zxvf Opticks-0.1.0.tar.gz --strip 2
-
-        """
-        distname = os.path.dirname(prefix)
-        tarname = "%s%s" % (distname, ext)
-
-        if ext == ".tar.gz":
-            mode = "w:gz"
-        else:
-            mode = "w"
-        pass  
-
-        print("writing %s " % tarname )
-        self.prefix = prefix
-        self.tar = tarfile.open(tarname, mode)    
-        for base in self.bases:
-            self.recurse_(base, 0) 
-        pass
-        for extra in self.extras:
-            assert os.path.exists(extra), extra
-            self.add(extra)
-        pass 
-        self.tar.close()
-
-    def exclude_dir(self, name):
-        return name in self.exclude_dir_name
-
-    def exclude_file(self, name):
-        return name.startswith("libG4") or name.endswith(".log")
-
-    def add(self, path):
-        print(path)
-        arcname = os.path.join(self.prefix,path) 
-        self.tar.add(path, arcname=arcname, recursive=False)
-
-    def recurse_(self, base, depth ):
-        names = os.listdir(base)
-        for name in names:
-            path = os.path.join(base, name)
-            if os.path.isdir(path):
-                 exclude = self.exclude_dir(name)
-                 if not exclude:
-                     self.recurse_(path, depth+1)
-                 pass
-            else:
-                 exclude = self.exclude_file(name)
-                 if not exclude:
-                     self.add(path)
-                 pass
-            pass
-        pass
-    pass
-pass
-
-prefix = "$(opticks-dist-prefix)"
-dist = Dist(prefix, ext="$(opticks-dist-ext)")
-
-EOP
-}
 
 
 
@@ -1459,6 +1345,7 @@ g4x-(){             . $(opticks-home)/examples/g4x.bash && g4x-env $* ; }
 ### opticks launchers ########
 
 okr-(){             . $(opticks-home)/bin/okr.bash && okr-env $* ; }
+okdist-(){          . $(opticks-home)/bin/okdist.bash && okdist-env $* ; }
 oks-(){             . $(opticks-home)/bin/oks.bash && oks-env $* ; }
 winimportlib-(){    . $(opticks-home)/bin/winimportlib.bash && winimportlib-env $* ; }
 ggv-(){             . $(opticks-home)/bin/ggv.bash && ggv-env $* ; }

@@ -81,6 +81,7 @@ class BRAP_API  BOpticksResource {
         static const char* RESULTS_PREFIX_DEFAULT  ; 
         static const char* INSTALL_PREFIX_KEY  ; 
         static const char* INSTALL_PREFIX_KEY2  ; 
+        static const char* GEOCACHE_PREFIX_KEY  ; 
     protected:
         static const char* G4ENV_RELPATH ; 
         static const char* OKDATA_RELPATH ;
@@ -131,6 +132,7 @@ class BRAP_API  BOpticksResource {
         static const char* MakeSrcPath(const char* srcpath, const char* ext) ;
         static const char* MakeSrcDir(const char* srcpath, const char* sub) ;
         static const char* MakeTmpUserDir(const char* sub, const char* rel) ;
+        static const char* MakeUserDir(const char* sub, const char* rel) ;
 
         const char* makeIdPathPath(const char* rela, const char* relb=NULL, const char* relc=NULL, const char* reld=NULL) ;
    public:
@@ -142,8 +144,9 @@ class BRAP_API  BOpticksResource {
         static std::string BuildProduct(const char* proj, const char* name);
         static const char* ResolveResultsPrefix();
         static const char* ResolveInstallPrefix();
+        static const char* ResolveGeocachePrefix();
         static const char* OpticksDataDir();
-        static const char* GeoCacheDir();
+        static const char* GeocacheDir();
         static const char* ResultsDir();
         static const char* ResourceDir();
         static const char* GenstepsDir();
@@ -159,7 +162,7 @@ class BRAP_API  BOpticksResource {
         const char* getInstallDir();
 
         const char* getOpticksDataDir();
-        const char* getGeoCacheDir();
+        const char* getGeocacheDir();
         const char* getResultsDir();
         const char* getInstallCacheDir();
         const char* getResourceDir();
@@ -174,9 +177,9 @@ class BRAP_API  BOpticksResource {
    public:       
         const char* getDebuggingIDPATH();
         const char* getDebuggingIDFOLD();
-   public:       
+   public:      
         std::string getIdPathPath(const char* rela, const char* relb=NULL, const char* relc=NULL, const char* reld=NULL ) const ; 
-        std::string getGeoCachePath(const char* rela, const char* relb=NULL, const char* relc=NULL, const char* reld=NULL) const ;
+        std::string getGeocachePath(const char* rela, const char* relb=NULL, const char* relc=NULL, const char* reld=NULL) const ;
         std::string getResultsPath(const char* rela, const char* relb=NULL, const char* relc=NULL, const char* reld=NULL) const ;
         std::string getPropertyLibDir(const char* name) const ;
 
@@ -221,6 +224,7 @@ class BRAP_API  BOpticksResource {
   private:
         void init();
         void initInstallPrefix();
+        void initGeocachePrefix();
         void initTopDownDirs();
         void initDebuggingIDPATH(); 
    protected:
@@ -252,6 +256,7 @@ class BRAP_API  BOpticksResource {
    protected:
         int         m_layout ; 
         const char* m_install_prefix ;   // from BOpticksResourceCMakeConfig header
+        const char* m_geocache_prefix ;  
         const char* m_opticksdata_dir ; 
         const char* m_geocache_dir ; 
         const char* m_results_dir ; 

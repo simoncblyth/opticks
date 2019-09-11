@@ -192,6 +192,21 @@ geocache-keydir-test()
    [ "$a" != "$b" ] && echo $msg MISMATCH $a $b && sleep 1000000000000
 }
 
+
+
+geocache-prefix-notes(){ cat << EON
+Changes to the prefix need to be done in triplicate in bash/py/C++ in::
+
+    ana/geocache.bash
+    ana/key.py
+    boostrap/BOpticksResource.cc
+
+EON
+}
+
+geocache-prefix-default(){ echo $HOME/.opticks ; } 
+geocache-prefix(){ echo ${OPTICKS_GEOCACHE_PREFIX:-$(geocache-prefix-default)} ; } 
+
 geocache-keydir()
 {
     local k=$OPTICKS_KEY
@@ -201,7 +216,7 @@ geocache-keydir()
     local cls=${arr[1]}
     local top=${arr[2]}
     local dig=${arr[3]}
-    echo $LOCAL_BASE/opticks/geocache/${exe}_${top}_g4live/g4ok_gltf/$dig/1 
+    echo $(geocache-prefix)/geocache/${exe}_${top}_g4live/g4ok_gltf/$dig/1 
 }
 
 geocache-keydir-py(){ key.py ; }

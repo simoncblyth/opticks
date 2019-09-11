@@ -123,7 +123,7 @@ int main(int argc, char** argv)
 
     ok.configure();
 
-    ok.setGeocache(false); 
+    ok.setGeocacheEnabled(false); 
 
     const char* path = ok.getDAEPath();
 

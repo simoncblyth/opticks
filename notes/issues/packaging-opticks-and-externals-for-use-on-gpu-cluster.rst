@@ -1,16 +1,129 @@
 packaging-opticks-and-externals-for-use-on-gpu-cluster
 ========================================================
 
-
 Strategy
 ----------
 
 1. rearrange the position of libraries such as OptiX to make packaging simpler
-2. develop python or back 
+2. develop python or bash
 
 
-CPack ?
---------
+Naming the Opticks distribution
+--------------------------------
+
+* Name to include versions of gcc and Geant4.
+* Not OptiX as will incorporate that in the dist, 
+  so its covered by the Opticks version. 
+
+
+Issue : what to include in binary dist ?  
+--------------------------------------------
+
+* executables + libs + PTX  : YES
+* external libs 
+
+  * libs without overlap with offline : OptiX, yoctogl, ...   YES INCLUDE
+  * libs which offline depends on already  : exclude them and 
+    bake the versions of the overlappers into the distro name, 
+
+    * clearly needed for Geant4, ie the version of an Opticks binary dist must have Op
+    * but what about boost ? its kinda hidden so maybe not needed 
+ 
+* things needed at runtime : OpticksPhoton.h + gl shaders   
+* "public" headers, eg those from G4OK package 
+* opticks-config script 
+
+* installcache ?  probably YES
+* geocache ? probably NO
+
+
+Issue : setup for opticks executables to find libs (including externals)
+-----------------------------------------------------------------------------
+
+cmake/Modules/OpticksBuildOptions.cmake::
+
+    set(CMAKE_INSTALL_RPATH "$ORIGIN/../lib64:$ORIGIN/../externals/lib:$ORIGIN/../externals/lib64:$ORIGIN/../externals/OptiX/lib64")
+
+
+Issue : setup for offline code to build and link against Opticks
+---------------------------------------------------------------------
+
+* offline still not using CMake, so need to revive the opticks-config script to serve up 
+  locations of headers
+
+
+Issue : how to test the setup : firstly without offline 
+---------------------------------------------------------- 
+
+* setup a non-CMake simple build that uses some Opticks libs to test
+  getting the config from opticks-config
+
+* create script to explode tarball and test with another user
+
+* TODO: revive opticks-config for this
+
+
+opticksdata 
+--------------
+
+* aiming to eliminate this entirely, instead can move to admin users responsiblilty 
+  to direct geocache creation to the GDML file 
+
+
+OPTICKS_GEOCACHE_PREFIX : flexible way to direct Opticks executables to the base geocache directory 
+------------------------------------------------------------------------------------------------------
+
+* geocache is big and it changes on a different cycle to code, so must be separate from binary distro
+* also want to be able to share the geocache between all users of the GPU cluster 
+* envvar to point at the geocache base directory 
+
+* hmm what about G4Opticks and flexibile running from live geometry 
+
+  * compute digest to identify geometry and look for the geocache 
+    relative to the base, the default with no envvar can be in users home
+
+
+
+Running without geocache gives misleading error 
+---------------------------------------------------------
+
+* trys to fallback to loading from DAE, thats not what you want should instruct to run geocache-create with a gdml file as input 
+  to create the geocahce  
+
+::
+
+    okdist-test
+
+    2019-09-11 19:36:01.264 INFO  [417403] [Opticks::loadOriginCacheMeta@1688]  gdmlpath 
+    2019-09-11 19:36:01.264 INFO  [417403] [OpticksHub::loadGeometry@521] [ /tmp/blyth/opticks/okdist-test/geocache/OKX4Test_lWorld0x4bc2710_PV_g4live/g4ok_gltf/f6cc352e44243f8fa536ab483ad390ce/1
+    2019-09-11 19:36:01.265 ERROR [417403] [GGeo::init@456]  idpath /tmp/blyth/opticks/okdist-test/geocache/OKX4Test_lWorld0x4bc2710_PV_g4live/g4ok_gltf/f6cc352e44243f8fa536ab483ad390ce/1 cache_exists 0 cache_requested 1 m_loaded_from_cache 0 m_live 0 will_load_libs 0
+    2019-09-11 19:36:01.265 WARN  [417403] [OpticksColors::load@71] OpticksColors::load FAILED no file at  dir /tmp/blyth/opticks/okdist-test/opticksdata/resource/OpticksColors with name OpticksColors.json
+    2019-09-11 19:36:01.266 ERROR [417403] [GGeo::loadFromG4DAE@624] GGeo::loadFromG4DAE START
+    2019-09-11 19:36:01.266 INFO  [417403] [AssimpGGeo::load@162] AssimpGGeo::load  path NULL query all ctrl NULL importVerbosity 0 loaderVerbosity 0
+    2019-09-11 19:36:01.266 FATAL [417403] [AssimpGGeo::load@174]  missing G4DAE path (null)
+    2019-09-11 19:36:01.266 FATAL [417403] [GGeo::loadFromG4DAE@629] GGeo::loadFromG4DAE FAILED : probably you need to download opticksdata 
+    OpSnapTest: /home/blyth/opticks/ggeo/GGeo.cc:633: void GGeo::loadFromG4DAE(): Assertion `rc == 0 && "G4DAE geometry file does not exist, try : opticksdata- ; opticksdata-- "' failed.
+    Aborted (core dumped)
+    -rw-rw-r--. 1 blyth blyth 11059217 Sep 11 11:32 /home/blyth/local/opticks/tmp/snap00000.ppm
+
+
+
+
+
+
+
+
+Objective : test use of exploded binary Opticks package by other user
+--------------------------------------------------------------------------
+
+Sticking points:
+
+* geocache, installcache, optixcache 
+
+
+
+CPack ? Decided NO
+-----------------------------
 
 As not using a monolithic CMake proj this 
 aint convenient as would make 

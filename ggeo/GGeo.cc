@@ -95,7 +95,7 @@
 #define BSIZ 50
 
 
-const plog::Severity GGeo::LEVEL = debug ; 
+const plog::Severity GGeo::LEVEL = PLOG::EnvLevel("GGeo", "DEBUG")  ; 
 
 
 const char* GGeo::CATHODE_MATERIAL = "Bialkali" ; 
@@ -108,10 +108,20 @@ GGeo* GGeo::GetInstance()
     return fInstance ;    
 }
 
+/**
+GGeo::GGeo
+-------------
+
+live=true instanciation only used from G4Opticks::translateGeometry 
+
+**/
+
+
 GGeo::GGeo(Opticks* ok, bool live)
   :
    m_log(new SLog("GGeo::GGeo","",verbose)),
    m_ok(ok), 
+   m_enabled_legacy_g4dae(ok->isEnabledLegacyG4DAE()),   // --enabled_legacy_g4dae
    m_live(live),
    m_analytic(false),
    m_gltf(m_ok->getGLTF()),   
@@ -443,31 +453,29 @@ be loaded from geocache.
 
 void GGeo::init()
 {
-    LOG(verbose) << "[" ; 
+    LOG(LEVEL) << "[" ; 
     const char* idpath = m_ok->getIdPath() ;
-    LOG(verbose) << " idpath " << ( idpath ? idpath : "NULL" ) ; 
+    LOG(LEVEL) << " idpath " << ( idpath ? idpath : "NULL" ) ; 
     assert(idpath && "GGeo::init idpath is required" );
 
-    bool cache_exists = m_ok->hasGeoCache(); 
-    bool cache_requested = m_ok->isGeocache() ; 
-    m_loaded_from_cache = cache_exists && cache_requested ;
-    bool will_load_libs = m_loaded_from_cache && !m_live ; 
+    m_loaded_from_cache = m_ok->isGeocacheAvailable() ;   // cache exists and is enabled 
 
-    LOG(error) 
+    bool will_load_libs = m_loaded_from_cache && !m_live ; 
+    bool will_init_libs = !will_load_libs ; 
+
+    LOG(LEVEL) 
         << " idpath " << idpath
-        << " cache_exists " << cache_exists 
-        << " cache_requested " << cache_requested
         << " m_loaded_from_cache " << m_loaded_from_cache
         << " m_live " << m_live 
-        << " will_load_libs " << will_load_libs 
+        << " will_init_libs " << will_init_libs 
         ;
 
-    if(!will_load_libs)
+    if(will_init_libs)
     {
         initLibs() ;  
     }
 
-    LOG(verbose) << "]" ; 
+    LOG(LEVEL) << "]" ; 
 }
 
 
@@ -481,6 +489,7 @@ This only happens when operating pre-cache
 
 void GGeo::initLibs()
 {
+   LOG(LEVEL) << "[ pre-cache initializing libs " ; 
 
    m_bndlib = new GBndLib(m_ok);
    m_materiallib = new GMaterialLib(m_ok);
@@ -510,6 +519,8 @@ void GGeo::initLibs()
    m_sourcelib  = new GSourceLib(m_ok);
 
    m_pmtlib = NULL ; 
+
+   LOG(LEVEL) << "]" ; 
 }
 
 
@@ -567,6 +578,16 @@ GMergedMesh* GGeo::getMergedMesh(unsigned index) const
 
 bool GGeo::isLoadedFromCache() const { return m_loaded_from_cache ; } 
 
+/**
+GGeo::loadGeometry
+--------------------
+
+Contains legacy loading from G4DAE which is slated for removal, 
+but for now just place it behind --enabled_legacy_g4dae 
+
+**/
+
+#define WITH_LEGACY_G4DAE 1 
 
 void GGeo::loadGeometry()
 {
@@ -580,14 +601,25 @@ void GGeo::loadGeometry()
 
     if(!m_loaded_from_cache)
     {
-        loadFromG4DAE();
-        save();
-
-        if(gltf > 0 && gltf < 10) 
+#ifdef WITH_LEGACY_G4DAE
+        if(m_enabled_legacy_g4dae)
         {
-            loadAnalyticFromGLTF();
-            saveAnalytic();
+            loadFromG4DAE();
+            save();
+
+            if(gltf > 0 && gltf < 10) 
+            {
+                loadAnalyticFromGLTF();
+                saveAnalytic();
+            }
         }
+        else
+#endif
+        {
+            LOG(fatal) 
+               << "MISSING geocache : create one from GDML with geocache-;geocache-create " ; 
+            assert(0);  
+        } 
     }
     else
     {

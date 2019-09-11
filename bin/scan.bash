@@ -138,7 +138,8 @@ ph
 ts
     bi-simulation, using ts from opticks-tboolean-shortcuts
 ta
-    analysis, using ta from opticks-tboolean-shortcuts
+    python analysis, using ta from opticks-tboolean-shortcuts
+
 tv
     vizualization, using tv from opticks-tboolean-shortcuts
 
@@ -228,6 +229,13 @@ scan-tv-cmd(){   echo tv $1 ; }
 scan-ph-post(){  scan.py $TMP/tboolean-$(scan-ph-lv) ; }
 scan-ts-post(){  absmry.py  ; }
 
+
+scan-cmds-all-notes(){ cat << EOD
+
+This is invoked from mode specific functions that de
+
+EOD
+}
 
 scan-cmds-all(){
    local mode=$(scan-mode)
