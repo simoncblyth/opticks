@@ -565,17 +565,35 @@ cudarap-test()
 
 
 #cudarap-rngmax-M(){ echo 1 ; }
-cudarap-rngmax-M(){ echo 3 ; }
+cudarap-rngmax-M(){ echo ${CUDARAP_RNGMAX_M:-3} ; }
 #cudarap-rngmax-M(){ echo 10 ; }
 #cudarap-rngmax-M(){ echo 100 ; }
 
 cudarap-rngmax(){ echo $(( $(cudarap-rngmax-M)*1000*1000 )) ; } # maximal number of photons that can be handled
 
 cudarap-rngdir(){ echo $(opticks-prefix)/installcache/RNG  ; }
+
+
+cudarap-prepare-installcache-notes(){ cat << EON
+$FUNCNAME
+====================================
+
+Rerunning will load the pre-existing file and check it, 
+without changing it or consuming much time.
+
+EON
+}
+
 cudarap-prepare-installcache()
 {
    CUDARAP_RNG_DIR=$(cudarap-rngdir) CUDARAP_RNG_MAX=$(cudarap-rngmax) $(cudarap-ibin)
 }
+
+cudarap-rngdir-ls(){ ls -l $(cudarap-rngdir) ; }
+
+cudarap-prepare-installcache-100M(){ CUDARAP_RNGMAX_M=100 cudarap-prepare-installcache ; }
+cudarap-prepare-installcache-2M(){ CUDARAP_RNGMAX_M=2 cudarap-prepare-installcache ; }
+
 
 
 cudarap-test-1M()
