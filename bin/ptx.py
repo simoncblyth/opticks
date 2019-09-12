@@ -24,14 +24,16 @@ from collections import OrderedDict as odict
 log = logging.getLogger(__name__)
 
 class PTX(object):
+    TOT = "TOTAL .f64 lines in function regions of the PTX"
+   
     def __init__(self, path):
         lines = file(path).read().split("\n")
         d = odict()
-        d["TOTAL"] = 0 
+        d[self.TOT] = 0 
         region = "start"
         for i, line in enumerate(lines):
             if line.find(".entry") > -1:
-                region = "%0.4d : %s " % ( i, line )  
+                region = " line:%0.4d : %s " % ( i, line )  
                 if region not in d:
                     d[region] = 0 
                 pass
@@ -42,7 +44,7 @@ class PTX(object):
                    pass
                else:
                    d[region] += 1   
-                   d["TOTAL"] += 1   
+                   d[self.TOT] += 1   
                pass
             pass
         pass        
@@ -79,7 +81,7 @@ if __name__ == '__main__':
 
     ptxs = map(PTX, paths)
     if not args.all:
-        ptxs = filter( lambda ptx:ptx.d["TOTAL"] > 0, ptxs ) 
+        ptxs = filter( lambda ptx:ptx.d[PTX.TOT] > 0, ptxs ) 
     pass
     print("\n".join(map(repr,ptxs)))
 

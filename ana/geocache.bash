@@ -823,6 +823,27 @@ geocache-machinery-()
 }
 
 
+geocache-rtxcheck-notes(){ cat << EON
+$FUNCNAME
+========================
+
+0. used by functions such as geocache-bench360 which pass their FUNCNAME
+   as the first argument, this funcname with a dash appended is then
+   invoked with additional arguments that vary the RTX settings 
+
+1. arguments after the first are passed to the function, this is typically
+   used to switch to analytic with --xanalytic 
+
+2. depends on UseOptiX that needs to be manually built::
+
+   cd examples/UseOptiX
+   ./go.sh
+
+3. UseOptiX --uniqrec returns eg Quadro_RTX_8000/0
+
+EON
+}
+
 
 geocache-rtxcheck()
 {
@@ -836,8 +857,8 @@ geocache-rtxcheck()
    local uniqname
    local ordinal
 
-   local scan=0
-   if [ $scan -eq 1 ] || [ $ndev -eq 2 ] 
+   local scan=1
+   if [ $scan -eq 1 ] 
    then
        UseOptiX --uniqrec | while read uniqrec ; do 
            ordinal=$(basename $uniqrec)

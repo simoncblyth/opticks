@@ -24,8 +24,8 @@ profilesmry.py
 
 ::
 
-    ip profilesmry.py
-
+    an ; ip profilesmry.py    
+      ## loads times from scans, after manual adjustment of pfx and cat startswith in __main__
 
 """
 
@@ -39,6 +39,9 @@ from opticks.ana.base import findfile
 from opticks.ana.profile import Profile
 
 class ProfileSmry(object):
+    """
+    ProfileSmry finds and loads profiles and holds values obtained 
+    """
     @classmethod
     def LoadHit_(cls, htpath):
         return np.load(htpath) if os.path.exists(htpath) else None
@@ -47,10 +50,16 @@ class ProfileSmry(object):
     @classmethod
     def Load_(cls, pfx, base="$TMP", startswith=None):
         """
+        :param pfx: prefix, see scan-vi, eg scan-ph-0
+        :param base: directory 
+        :param startswith: used to select the *cat* category of runs
+                           the cat is the path element after evt, 
+                           an example of *cat* for scan-ph is cvd_0_rtx_1_100M
+
         :return s: odict keyed by cat with Profile instances 
 
-        Finds persisted profiles meeting selection, collecting
-        them into an odict which is returned.
+        Finds all persisted profiles with selected prefix that meet the startswith selection, 
+        collecting them into an odict which is returned.
         """ 
         base = os.path.expandvars(os.path.join(base,pfx))
 
@@ -60,12 +69,12 @@ class ProfileSmry(object):
             select_ = lambda n:n.find(startswith) == 0   
         pass
 
-        relp = findfile(base, Profile.NAME )
+        relp = findfile(base, Profile.NAME )   # list of relative paths beneath base
         s = odict() 
         for rp in relp:
             path = os.path.join(base, rp)
             elem = path.split("/")
-            cat = elem[elem.index("evt")+1]
+            cat = elem[elem.index("evt")+1]  
 
             if not select_(cat): continue
             name = cat 
@@ -100,7 +109,12 @@ class ProfileSmry(object):
         
     @classmethod
     def FromDict(cls, s):
- 
+        """
+        :param s: raw odict keyed with cat with Profile instance values
+
+        Creates ProfileSmry instance comprising arrays populated
+        from the Profile instances 
+        """
         launch = np.zeros( [len(s), 10], dtype=np.float32 )  
         alaunch = np.zeros( [len(s) ], dtype=np.float32 )  
         interval = np.zeros( [len(s), 9], dtype=np.float32 )  
@@ -163,17 +177,17 @@ class ProfileSmry(object):
 
 
 
-
-
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
     np.set_printoptions(precision=4, linewidth=200)
 
     ps = {}
 
-    ps[0] = ProfileSmry.Load("scan-ph", startswith="cvd_1_rtx_0")
-    ps[1] = ProfileSmry.Load("scan-ph", startswith="cvd_1_rtx_1")
-    ps[10] = ProfileSmry.Load("scan-ph-tri", startswith="cvd_1_rtx_1")
+    pfx = "scan-ph-0"
+
+    ps[0] = ProfileSmry.Load(pfx, startswith="cvd_0_rtx_0")
+    ps[1] = ProfileSmry.Load(pfx, startswith="cvd_0_rtx_1")
+    #ps[10] = ProfileSmry.Load("scan-ph-tri", startswith="cvd_1_rtx_1")
     ps[9] = ProfileSmry.FromExtrapolation( ps[0].npho,  time_for_1M=100. )
 
 

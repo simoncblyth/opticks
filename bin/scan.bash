@@ -104,6 +104,11 @@ scan-ph-args-mini(){ cat << EOS | tr -d " ,"  | grep -v \#
 EOS
 }
 
+scan-ph-args-inwaiting(){ cat << EOS | tr -d " ,"  | grep -v \#
+ 10,000,000
+EOS
+}
+
 scan-ph-args(){ cat << EOS | tr -d " ,"  | grep -v \#
   1,000,000
  10,000,000
@@ -118,6 +123,9 @@ scan-ph-args(){ cat << EOS | tr -d " ,"  | grep -v \#
 100,000,000
 EOS
 }
+
+
+
 
 
 
@@ -156,20 +164,24 @@ scan-ph-lv(){ echo box ; }
 
 scan-ph-cat(){
    case $cat in
-       cvd_0_rtx_1) echo --cvd 0 --rtx 0  ;;  
+       cvd_0_rtx_0) echo --cvd 0 --rtx 0  ;;  
        cvd_0_rtx_1) echo --cvd 0 --rtx 1  ;;  
        cvd_1_rtx_0) echo --cvd 1 --rtx 0  ;;  
        cvd_1_rtx_1) echo --cvd 1 --rtx 1  ;;  
-       cvd_01_rtx_1) echo --cvd 0,1 --rtx 0  ;;  
+       cvd_01_rtx_0) echo --cvd 0,1 --rtx 0  ;;  
+       cvd_01_rtx_1) echo --cvd 0,1 --rtx 1  ;;  
    esac 
 }
 
 scan-cats(){ cat << EOC
-cvd_1_rtx_0
+cvd_0_rtx_0
+cvd_0_rtx_1
 EOC
 }
 
 scan-cats_in_waiting(){ cat << EOC
+cvd_0_rtx_0
+cvd_0_rtx_1
 cvd_1_rtx_0
 cvd_1_rtx_1
 EOC
@@ -189,39 +201,83 @@ EON
 
 scan-num(){  python -c "from opticks.ana.num import Num ; print(Num.String($1))" ; }
 
-scan-ph-cmd(){   
-   local num_photons=$1
-   local cat=$2
 
-   local num_abbrev=$(scan-num $num_photons)
-
-   local cmd="ts $(scan-ph-lv) --pfx scan-ph --cat ${cat}_${num_abbrev} --generateoverride ${num_photons} --compute --production --savehit --multievent 10 --xanalytic "  ; 
-   cmd="$cmd --nog4propagate"  
+scan-rngmax-opt(){ 
+   local num_photons=${1:-0}
 
    local M=$(( 1000000 ))
    local M3=$(( 3*M ))
    local M10=$(( 10*M ))
    local M100=$(( 100*M ))
 
+   local opt
+
    if [ $num_photons -gt $M100 ]; then
       echo $msg num_photons $num_photons is above the ceiling 
-      sleep M 
+      sleep $M 
    elif [ $num_photons -gt $M10 ]; then 
-       cmd="$cmd --rngmax 100"
+       opt="--rngmax 100"
    elif [ $num_photons -gt $M3 ]; then 
-       cmd="$cmd --rngmax 10"
+       opt="--rngmax 10"
    else
-       cmd="$cmd --rngmax 3"
+       opt="--rngmax 3"
    fi
-
-   cmd="$cmd $(scan-ph-cat $cat)"
-   echo $cmd
+   echo $opt
 }
 
 
 
+scan-vers-notes(){ cat << EON
 
-scan-pfx(){ echo scan-ts-utail ; }
+0
+   full scan with old driver, seemed not to be able to switch on RTX
+   but may have been caused by a script bug
+1  
+   with the 435.21 driver, fixed a script bug, but even after that it 
+   seems RTX not doing anything 
+2
+   with 435.21 driver and WITH_LOGDOUBLE commented, reducing the f64 
+   did this in two goes, with some doubling up : that might have caused 
+   glitch on the first 1M point
+3
+   with 435.21 driver, WITH_LOGDOUBLE commented, all at once 
+
+EON
+}
+
+
+
+scan-vers(){ echo ${SCAN_VERS:-3} ; }
+scan-pfx(){  echo ${SCAN_PFX:-scan-$(scan-mode)-$(scan-vers)} ; }
+
+
+scan-ph-cmd-notes(){ cat << EON
+$FUNCNAME
+==================
+
+For running with more than 3M photons it is necessary to create two rngmax curandState 
+files with::
+
+    cudarap-prepare-installcache-10M
+    cudarap-prepare-installcache-100M
+
+Note that the layout of the *cat* option is parsed by ana/profilesmry.py 
+to extract the number of photons and that *cat* is used as the dictionary 
+key for parsed profile instances.
+
+
+EON
+}
+
+scan-ph-cmd(){   
+   local num_photons=$1
+   local cat=$2
+   local num_abbrev=$(scan-num $num_photons)
+   local cmd="ts $(scan-ph-lv) --pfx $(scan-pfx) --cat ${cat}_${num_abbrev} --generateoverride ${num_photons} --compute --production --savehit --multievent 10 --xanalytic "  ; 
+   cmd="$cmd --nog4propagate $(scan-rngmax-opt $num_photons) $(scan-ph-cat $cat)"
+   echo $cmd
+}
+
 scan-ts-cmd(){   echo ts $1 --pfx $(scan-pfx) --generateoverride -1 --cvd 1 --rtx 1 --compute --recpoi --utaildebug --xanalytic ; }
 scan-tp-cmd(){   echo tp $1 --pfx $(scan-pfx) --msli :1M  ; }
 scan-tv-cmd(){   echo tv $1 ; }

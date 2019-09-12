@@ -591,8 +591,10 @@ cudarap-prepare-installcache()
 
 cudarap-rngdir-ls(){ ls -l $(cudarap-rngdir) ; }
 
+
 cudarap-prepare-installcache-100M(){ CUDARAP_RNGMAX_M=100 cudarap-prepare-installcache ; }
-cudarap-prepare-installcache-2M(){ CUDARAP_RNGMAX_M=2 cudarap-prepare-installcache ; }
+cudarap-prepare-installcache-10M(){  CUDARAP_RNGMAX_M=10  cudarap-prepare-installcache ; }
+cudarap-prepare-installcache-2M(){   CUDARAP_RNGMAX_M=2   cudarap-prepare-installcache ; }
 
 
 

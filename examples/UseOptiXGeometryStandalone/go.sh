@@ -62,7 +62,7 @@ glm-get(){
 glm-get
 
 
-optix-install-dir(){ echo ${OPTIX_INSTALL_DIR:-/usr/local/OptiX_600} ; }
+optix-install-dir(){ opticks- ; echo ${OPTIX_INSTALL_DIR:-$(opticks-dir)/externals/OptiX} ; }
 
 
 echo optix-install-dir : $(optix-install-dir)

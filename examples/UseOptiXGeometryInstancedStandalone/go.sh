@@ -61,7 +61,7 @@ glm-get(){
 
 glm-get
 
-optix-install-dir(){ echo ${OPTIX_INSTALL_DIR:-/usr/local/OptiX_600} ; }
+optix-install-dir(){ opticks- ; echo ${OPTIX_INSTALL_DIR:-$(opticks-dir)/externals/OptiX} ; }
 echo optix-install-dir : $(optix-install-dir)
 
 #rm -rf $bdir && mkdir -p $bdir 
@@ -88,7 +88,7 @@ make
 make install   
 
 
-export CUDA_VISIBLE_DEVICES=1
+export CUDA_VISIBLE_DEVICES=0
 
 echo running $(which $name)
 RTX=0 $name

@@ -44,14 +44,20 @@ ipdb = Pdb()
 
 
 class Profile(object):
-
+    """
+    Opticks executables can record time and virtual memory 
+    and codepoint strings at various points throughout operations. 
+    These are recorded into NPY files  such as OpticksProfile.npy  
+    which this Profile class loads.  
+    """
     NAME = "OpticksProfile.npy"
     G4DT = ("CRunAction::BeginOfRunAction","CRunAction::EndOfRunAction",)
     OKDT = ("_OPropagator::launch", "OPropagator::launch",)
 
     def __init__(self, tagdir, name ):
         """
-        :param tagdir: directory from which to load OpticksProfile.npy and siblings
+        :param tagdir: directory from which to load OpticksProfile.npy and siblings, 
+                       leaf dir expected to be a tag integer string, negative for G4
         :param name: informational name for outputs
         """  
         self.tagdir = tagdir
@@ -98,6 +104,9 @@ class Profile(object):
 
 
     def pfmt(self, path1, path2, path3=None):
+        """
+        Check that timestamps of related files are close to each other
+        """
         t_path1 = time_(path1)
         t_path2 = time_(path2)
 
@@ -144,6 +153,9 @@ class Profile(object):
         return len(self.a) if self.valid else 0
 
     def loadAcc(self):
+        """
+        Acc are accumulated timings 
+        """
         path = self.path("")
         acpath = self.path("Acc")
         lacpath = self.path("AccLabels")
@@ -223,6 +235,8 @@ class Profile(object):
 
     def times(self, l0="_OPropagator::launch"):
         """
+        :param l0: label of the profile stamp
+        :return array of all times matching the label:
         """ 
         pr = self
         tt = pr.t[np.where(pr.l == l0 )] 
