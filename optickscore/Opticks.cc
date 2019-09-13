@@ -31,6 +31,8 @@
 #include <sstream>
 #include <iostream>
 
+#include "OKConf.hh"
+
 #include "SLog.hh"
 #include "SProc.hh"
 #include "SArgs.hh"
@@ -67,7 +69,9 @@
 #include "NLODConfig.hpp"
 #include "NSnapConfig.hpp"
 
+
 // okc-
+#include "OpticksSwitches.h"
 #include "OpticksPhoton.h"
 #include "OpticksFlags.hh"
 #include "Opticks.hh"
@@ -334,9 +338,25 @@ Opticks::Opticks(int argc, char** argv, const char* argforced )
 }
 
 
+
+/**
+Opticks::init
+---------------
+
+OKTest without options defaults to writing the below::
+
+    js.py $TMP/default_pfx/evt/dayabay/torch/0/parameters.json
+
+**/
+
 void Opticks::init()
 {
     LOG(info) << m_mode->description(); 
+
+    m_parameters->add<int>("OptiXVersion",  OKConf::OptiXVersionInteger() );
+    m_parameters->add<int>("CUDAVersion",   OKConf::CUDAVersionInteger() );
+    m_parameters->add<int>("ComputeVersion", OKConf::ComputeCapabilityInteger() );
+    m_parameters->add<int>("Geant4Version",  OKConf::Geant4VersionInteger() );
 
     m_parameters->addEnvvar("CUDA_VISIBLE_DEVICES");
     m_parameters->add<std::string>("CMDLINE", PLOG::instance->cmdline() ); 
@@ -345,8 +365,9 @@ void Opticks::init()
 
     m_parameters->add<std::string>("HOSTNAME", SSys::hostname() ); 
     m_parameters->add<std::string>("USERNAME", SSys::username() ); 
-}
 
+    m_parameters->add<std::string>("OpticksSwitches", OpticksSwitches() ); 
+}
 
 
 
