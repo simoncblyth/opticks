@@ -174,8 +174,8 @@ scan-ph-cat(){
 }
 
 scan-cats(){ cat << EOC
-cvd_1_rtx_0
-cvd_1_rtx_1
+cvd_${OPTICKS_DEFAULT_INTEROP_CVD}_rtx_0
+cvd_${OPTICKS_DEFAULT_INTEROP_CVD}_rtx_1
 EOC
 }
 
@@ -186,9 +186,6 @@ cvd_1_rtx_0
 cvd_1_rtx_1
 EOC
 }
-
-
-
 
 
 scan-ph-cmd-notes(){ cat << EON
@@ -240,17 +237,19 @@ scan-vers-notes(){ cat << EON
    did this in two goes, with some doubling up : that might have caused 
    glitch on the first 1M point
 3
-   Silver:Quadro_RTX_800, 435.21 driver, WITH_LOGDOUBLE commented, all at once 
+   Silver:Quadro_RTX_800, 435.21 driver, OptiX_600, WITH_LOGDOUBLE commented, all at once 
 4
    Gold:TITAN_RTX 418.56 WITH_LOGDOUBLE commented : NB have to flip the cvd in the cats to 1  
 5
    Gold:TITAN_RTX 418.56 WITH_LOGDOUBLE enabled : NB check cvd in cats is 1 to pick TITAN_RTX 
+6
+   Silver:Quadro_RTX_800, 435.21 drive, OptiX_650, WITH_LOGDOUBLE commented
 
 
 EON
 }
 
-scan-vers(){ echo ${SCAN_VERS:-5} ; }
+scan-vers(){ echo ${SCAN_VERS:-6} ; }
 scan-pfx(){  echo ${SCAN_PFX:-scan-$(scan-mode)-$(scan-vers)} ; }
 
 

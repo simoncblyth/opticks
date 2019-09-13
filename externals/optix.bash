@@ -41,28 +41,39 @@ See Also
 Changing OptiX version
 -------------------------
 
-1. change envvar to point at desired install dir:: 
+0. .opticks_setup typically includes a line: unset OPTICKS_OPTIX_INSTALL_DIR
+    which signals the default to be used which is  $LOCAL_BASE/opticks/externals/OptiX
 
-   OPTICKS_OPTIX_INSTALL_DIR=/usr/local/OptiX_600
+    This envvar was formerly used to configure different OptiX versions, but as that 
+    breaks RPATH based lib finding for all executables have moved to the symbolic link approach.
+    The RPATH is configured in cmake/Modules/OpticksBuildOptions.cmake, with::
+ 
+       set(CMAKE_INSTALL_RPATH "$ORIGIN/../lib64:$ORIGIN/../externals/lib:$ORIGIN/../externals/lib64:$ORIGIN/../externals/OptiX/lib64")
+
+    TODO: fully eliminate the envvar from code and docs 
+
+
+1. to test a different OptiX point the symbolic link at a different OptiX_600 OptiX_650 dir, eg:: 
+
+       cd $(opticks-dir)/externals
+       ln -s OptiX_650 OptiX  
+
 
 2. do a clean build of okconf::
 
    cd ~/opticks/okconf
-   om-clean 
-   om-install
+   om-cleaninstall
 
 3. run the OKConfTest executable and check the expected versions appear
 
 4. rebuild optickscore with changes to 
 
-   om-clean optickscore
-   om-install optickscore   
-       ## link errors from OpticksBufferSpec are expected
+   okc-c
+   om-cleaninstall
+       ## link errors from OpticksBufferSpec may occur 
        ## modify OpticksBufferSpec.hh for the new version
 
-
-
-4. clean and install all subs from optixrap onwards::
+5. clean and install all subs from optixrap onwards::
 
 
    om-visit optixrap:      # just lists the subs, note the colon 

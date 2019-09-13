@@ -41,7 +41,7 @@ NB when searching for switches in python include the space at the end, eg::
 #define WITH_ALIGN_DEV_DEBUG 1
 //#define WITH_REFLECT_CHEAT_DEBUG 1
 
-#define WITH_LOGDOUBLE 1
+//#define WITH_LOGDOUBLE 1
 //#define WITH_LOGDOUBLE_ALT 1
 
 #define WITH_KLUDGE_FLAT_ZERO_NOPEEK 1

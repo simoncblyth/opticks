@@ -1161,6 +1161,11 @@ they are encompassed by the Opticks version.
 * CUDA Version
 * NVIDIA Driver Version 
 
+
+CUDA is treated separately and lib access is from LD_LIBRARY_PATH
+so perhaps it belongs in the name ? 
+
+
 EON
 }
 
