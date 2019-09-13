@@ -30,6 +30,7 @@ set(SOURCES
     cuRANDWrapper_kernel.cu
     LaunchSequence.cc
     LaunchCommon.cc
+    CDevice.cu
     CResource.cc
     CResource_.cu
 )
@@ -45,6 +46,7 @@ SET(HEADERS
     LaunchSequence.hh
     cuRANDWrapper.hh
     cuRANDWrapper_kernel.hh
+    CDevice.hh
     CResource.hh
     CBufSpec.hh
     CBufSlice.hh

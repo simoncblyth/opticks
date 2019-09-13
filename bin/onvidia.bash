@@ -1405,8 +1405,142 @@ modprobe - Add and remove modules from the Linux Kernel
 
 
 
+Update Silver Precision Driver for Quadro RTX 8000
+-------------------------------------------------------
+
+* logout 
+* from ssh and nvidia-smi see that X and gnome are still using GPU, so 
+   
+
+From root over ssh switch to non-graphics::
+
+    [root@gilda03 ~]# systemctl isolate multi-user.target 
+
+    
+nvidia-smi now shows nothing on GPU.
+
+* run the runscript
+
+::
+
+    [root@gilda03 ~]# cd /home/blyth
+    [root@gilda03 ~]# bash NVIDIA-Linux-x86_64-430.50.run
+
+A console text GUI comes up::
+
+    There appears to already be a driver installed on your system (version:
+    418.56).  As part of installing this driver (version: 430.50), the existing
+    driver will be uninstalled.  Are you sure you want to continue?
+
+* said Y to 32-bit compatibility libs and xconfig setup
+* after that nvidia-smi shows the updated driver
 
 
+Back to X GUI::
+
+    [root@gilda03 blyth]# systemctl isolate runlevel5      ## same as init 5 ?
+
+
+
+Fixed problems with nvidia driver downloads page by adding few more sites to gfw- proxy list
+------------------------------------------------------------------------------------------------
+
+* https://www.nvidia.com/Download/Find.aspx?lang=en-us
+
+* driver list from "All" search for Quadro RTX 8000 Linux 64-bit drivers
+
+::
+
+    430.50   September 11, 2019
+    435.21   August 29, 2019
+    418.88   July 29, 2019
+    430.40   July 29, 2019
+    430.34   July 9, 2019
+    430.26   June 10, 2019
+    430.14   May 14, 2019
+    418.74   May 7, 2019
+    430.09   April 23, 2019          BETA
+    418.56   March 20, 2019          (using this on DELL Precision.Gold with OptiX 6, TITAN RTX and V)
+    418.43   February 22, 2019
+    410.104  February 22, 2019 
+    418.30   January 30, 2019        BETA
+    410.93   January 3, 2019         (added support for Quadro RTX 8000) 
+
+Looks to be three series::
+
+    430 long-lived branch 
+    435 short-lived branch and official release
+    418 
+
+    
+
+OptiX 6: minimum R418
+OptiX 7: 435.12 or newer on Linux
+
+* https://www.nvidia.com/download/driverResults.aspx/149785/en-us
+  435.17 BETA (does not list Quadro RTX 8000)
+
+* https://www.nvidia.com/download/driverResults.aspx/150803/en-us
+  435.21 2019.8.29 Quadro RTX 8000 is listed 
+
+
+
+Making sense of driver versions
+
+* https://devtalk.nvidia.com/default/topic/1048306/linux/what-are-the-different-driver-versions-long-lived-vs-short-lived-vs-geforce-com/post/5321905/#5321905
+
+Any given release branch is either long-lived or short-lived. The difference is
+in how long the branch is maintained and how many releases made from each
+branch. A short-lived branch typically has only one or two (non-beta) releases,
+while long-lived branches will have several.
+
+So both 410 and 418 are long-lived branches, and the releases for 410.104 and
+418.43 just reflect that -- some customers are still using the 410 series and
+don't want to move to 418, so we made a release from that branch even though a
+newer long-lived branch is available.
+
+When we make changes to the driver, we evaluate the oldest branch the change
+needs to go into. New features go into whatever the latest branch is, while bug
+fixes go into the older branches and are integrated through the newer branches.
+So using a *short-lived branch doesn't mean that you miss out on fixes, it just
+means that you also get the latest features*.
+
+The sticky post lists the latest releases from the current short- and
+long-lived branches.
+
+* https://devtalk.nvidia.com/default/topic/533434/linux/current-graphics-driver-releases/
+
+  Current releases (as of Sep 12, 2019)
+  Current long-lived branch release: 430.50 (x86_64)
+  Current official release: 435.21 (x86_64)
+
+  New legacy release 390.129 is now available.  Posted 07/29/2019 10:14 PM   
+  New short-lived branch release 435.21 is now available.  Posted 08/29/2019 04:59 PM   
+  New long-lived branch release 430.50 is now available.  Posted 19 hours ago (Sept 12 2019)
+
+
+* https://www.nvidia.com/en-us/drivers/unix/linux-amd64-display-archive/
+
+
+
+* https://devtalk.nvidia.com/default/topic/1030867/linux/what-does-the-short-long-lived-branch-mean-/
+
+I don't think they are more conservative with long lived branches. I think they
+just support long lived branches for six months or so and short lived branches
+for around three months only. So if 390 is a long lived branch, 393 is a short
+lived branch, 396 is a long lived branch, and so on.  In other words, it is one
+support release for three months, two for the next three months, then one again
+for another three months. 
+
+* https://wiki.ubuntu.com/NVidiaUpdates
+
+
+nvidia-smi monitoring
+------------------------
+
+::
+
+    watch -d -n 0.5 nvidia-smi
 
 EOT
 }
