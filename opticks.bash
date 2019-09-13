@@ -72,6 +72,16 @@ EOI
 }
 
 
+opticks-metadata-export()
+{
+    onvidia-
+    onvidia-export
+}
+
+
+
+
+
 olocal-()
 {
    echo -n # transitional standin for olocal-
