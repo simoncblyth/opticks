@@ -10,9 +10,12 @@ CDevice
 #include <string>
 #include <vector>
 #include <iostream>
+#include "plog/Severity.h"
 
 #include "CUDARAP_API_EXPORT.hh"
 struct CUDARAP_API CDevice {
+
+    static const plog::Severity LEVEL ; 
 
     int ordinal ; 
     int index ; 
@@ -38,9 +41,12 @@ struct CUDARAP_API CDevice {
     static int FindIndexOfMatchingDevice( const CDevice& d, const std::vector<CDevice>& all );
 
     static std::string Path(const char* dirpath); 
-    static void Dump(const std::vector<CDevice>& devices ); 
+    static void Dump(const std::vector<CDevice>& devices, const char* msg ); 
     static void Save(const std::vector<CDevice>& devices, const char* dirpath); 
     static void Load(      std::vector<CDevice>& devices, const char* dirpath); 
+
+    static void PrepDir(const char* dirpath); 
+    static std::string Brief( const std::vector<CDevice>& devices ); 
 
 };
 

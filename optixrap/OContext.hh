@@ -40,6 +40,7 @@ Wrapper for OptiX context providing numerous utilities including:
 #include <string>
 #include <vector>
 #include "OXPPNS.hh"
+#include "CDevice.hh"
 #include "plog/Severity.h"
 
 #include "NPYBase.hpp"
@@ -114,6 +115,7 @@ class OXRAP_API OContext {
      private:
             void init();
             void initPrint();
+            void initDevices();
      public:
             Opticks*     getOpticks() const ; 
             bool         hasTopGroup() const ;
@@ -192,6 +194,9 @@ class OXRAP_API OContext {
 
             std::vector<std::string> m_buffer_names ; 
             std::vector<std::string> m_debug_buffer_names ; 
+
+            std::vector<CDevice> m_visible_devices ;    
+            std::vector<CDevice> m_all_devices ;    
      
 };
 

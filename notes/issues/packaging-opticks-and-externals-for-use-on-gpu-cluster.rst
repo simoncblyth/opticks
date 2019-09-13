@@ -63,6 +63,60 @@ Issue : how to test the setup : firstly without offline
 * TODO: revive opticks-config for this
 
 
+Issue : how to run unittests for checking the binary installation
+------------------------------------------------------------------
+
+* can ctest do this ?  Perhaps YES for sysrap anyhow.
+* just need to propagate a tree of CTestTestfile.cmake
+* suspect these can be hooked together (even across projects) with "subdirs" 
+
+::
+
+    [blyth@localhost tests]$ head -10 CTestTestfile.cmake
+    # CMake generated Testfile for 
+    # Source directory: /home/blyth/opticks/sysrap/tests
+    # Build directory: /home/blyth/local/opticks/build/sysrap/tests
+    # 
+    # This file includes the relevant testing commands required for 
+    # testing this directory and lists subdirectories to be tested as well.
+    add_test(SysRapTest.SOKConfTest "SOKConfTest")
+    add_test(SysRapTest.SArTest "SArTest")
+    add_test(SysRapTest.SArgsTest "SArgsTest")
+    add_test(SysRapTest.STimesTest "STimesTest")
+
+    [blyth@localhost tests]$ tail -10 CTestTestfile.cmake
+    add_test(SysRapTest.SSetTest "SSetTest")
+    add_test(SysRapTest.STimeTest "STimeTest")
+    add_test(SysRapTest.SASCIITest "SASCIITest")
+    add_test(SysRapTest.SAbbrevTest "SAbbrevTest")
+    add_test(SysRapTest.SEnvTest.red "SEnvTest" "SEnvTest_C" "--info")
+    set_tests_properties(SysRapTest.SEnvTest.red PROPERTIES  ENVIRONMENT "SEnvTest_COLOR=red")
+    add_test(SysRapTest.SEnvTest.green "SEnvTest" "SEnvTest_C" "--info")
+    set_tests_properties(SysRapTest.SEnvTest.green PROPERTIES  ENVIRONMENT "SEnvTest_COLOR=green")
+    add_test(SysRapTest.SEnvTest.blue "SEnvTest" "SEnvTest_C" "--info")
+    set_tests_properties(SysRapTest.SEnvTest.blue PROPERTIES  ENVIRONMENT "SEnvTest_COLOR=blue")
+    [blyth@localhost tests]$ 
+
+::
+
+    [blyth@localhost tests]$ cp CTestTestfile.cmake /tmp/ss/
+    [blyth@localhost tests]$ pwd
+    /home/blyth/local/opticks/build/sysrap/tests
+       
+    cd /tmp/ss ; ctest   ## worked
+
+Ahha seems I did this before, but decided to stick with per-proj::
+
+    opticks-deps --testfile 1> $(opticks-bdir)/CTestTestfile.cmake
+
+::
+
+    strace -o /tmp/strace.log -e open ctest 
+    strace -f -o /tmp/strace.log -e open ctest    
+    ## follow forks needed : some exe are listed by not all ?
+
+
+
 opticksdata 
 --------------
 

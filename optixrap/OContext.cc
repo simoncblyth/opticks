@@ -230,6 +230,7 @@ OContext* OContext::Create(Opticks* ok, const char* cmake_target, const char* pt
 {
     OKI_PROFILE("_OContext::Create");
 
+
     NMeta* parameters = ok->getParameters(); 
     int rtxmode = ok->getRTX();
 #if OPTIX_VERSION_MAJOR >= 6
@@ -294,6 +295,7 @@ OContext::OContext(optix::Context context, Opticks* ok, const char* cmake_target
 {
     init();
     initPrint();
+    initDevices();
 }
 
 void OContext::init()
@@ -313,7 +315,39 @@ void OContext::init()
         << " num_ray_type " << num_ray_type 
         << " stacksize_bytes " << stacksize_bytes
         ; 
+}
 
+
+/**
+OContext::initDevices
+-----------------------
+
+This re-implements device introspection CUDA-centrically
+based on CDevice so it can work more generally, eg with OptiX7
+
+OKTest without options defaults to writing the below::
+
+    js.py $TMP/default_pfx/evt/dayabay/torch/0/parameters.json
+
+
+**/
+
+void OContext::initDevices()
+{
+    const char* dirpath = m_ok->getRuncacheDir(); 
+    bool nosave = false ; 
+    CDevice::Visible(m_visible_devices, dirpath, nosave ); 
+    CDevice::Load(   m_all_devices, dirpath); 
+
+    CDevice::Dump(   m_visible_devices, "Visible devices"); 
+    CDevice::Dump(   m_all_devices, "All devices"); 
+
+    NMeta* parameters = m_ok->getParameters(); 
+    std::string cdb_all = CDevice::Brief(m_all_devices) ; 
+    std::string cdb_vis = CDevice::Brief(m_visible_devices) ;
+ 
+    parameters->add<std::string>("CDeviceBriefAll", cdb_all  ) ; 
+    parameters->add<std::string>("CDeviceBriefVis", cdb_vis  ) ;
 }
 
 

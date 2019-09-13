@@ -46,6 +46,12 @@ log = logging.getLogger(__name__)
 
 class Key(object):
     @classmethod
+    def CachePrefix(cls):
+        cache_prefix_default = os.path.expanduser("~/.opticks") 
+        cache_prefix = os.environ.get("OPTICKS_CACHE_PREFIX", cache_prefix_default ) 
+        return cache_prefix 
+
+    @classmethod
     def Keydir(cls, key):
         """
         Should match bash geocache-keydir
@@ -53,13 +59,10 @@ class Key(object):
         if key is None: return None
         elem = key.split(".")
         assert len(elem) == 4, elem 
-        exe,cls,top,dig = elem 
+        exe,kls,top,dig = elem 
         assert len(dig) == 32, "OPTICKS_KEY digest %s is expected to be length 32, not %d " % (dig, len(dig))
-
-        #geocache_prefix = "$LOCAL_BASE/opticks" 
-        geocache_prefix_default = os.path.expanduser("~/.opticks") 
-        geocache_prefix = os.environ.get("OPTICKS_GEOCACHE_PREFIX", geocache_prefix_default ) 
-        tmpl = "{geocache_prefix}/geocache/{exe}_{top}_g4live/g4ok_gltf/{dig}/1".format(**locals())
+        cache_prefix = cls.CachePrefix()
+        tmpl = "{cache_prefix}/geocache/{exe}_{top}_g4live/g4ok_gltf/{dig}/1".format(**locals())
         keydir = os.path.expandvars(tmpl)
         return keydir
 

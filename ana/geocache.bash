@@ -204,9 +204,6 @@ Changes to the prefix need to be done in triplicate in bash/py/C++ in::
 EON
 }
 
-geocache-prefix-default(){ echo $HOME/.opticks ; } 
-geocache-prefix(){ echo ${OPTICKS_GEOCACHE_PREFIX:-$(geocache-prefix-default)} ; } 
-
 geocache-keydir()
 {
     local k=$OPTICKS_KEY
@@ -216,11 +213,10 @@ geocache-keydir()
     local cls=${arr[1]}
     local top=${arr[2]}
     local dig=${arr[3]}
-    echo $(geocache-prefix)/geocache/${exe}_${top}_g4live/g4ok_gltf/$dig/1 
+    echo $(opticks-cache-prefix)/geocache/${exe}_${top}_g4live/g4ok_gltf/$dig/1 
 }
 
 geocache-keydir-py(){ key.py ; }
-
 
 
 geocache-dir(){ echo $LOCAL_BASE/opticks/geocache ; }

@@ -312,6 +312,23 @@ const char* SSys::username()
 }
 
 
+#ifdef _MSC_VER
+const char* SSys::hostname()
+{
+    // https://stackoverflow.com/questions/27914311/get-computer-name-and-logged-user-name
+    return NULL ; 
+}
+#else
+
+#include <unistd.h>
+#include <limits.h>
+const char* SSys::hostname()
+{
+    char hostname[HOST_NAME_MAX];
+    gethostname(hostname, HOST_NAME_MAX);
+    return strdup(hostname) ; 
+}
+#endif
 
 
 

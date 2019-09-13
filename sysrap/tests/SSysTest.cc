@@ -72,6 +72,11 @@ void test_IsNegativeZero()
     assert( SSys::IsNegativeZero(-1.f) == false ); 
 }
 
+void test_hostname()
+{
+    LOG(info) << SSys::hostname() ; 
+}
+
 
 int main(int argc , char** argv )
 {
@@ -89,7 +94,9 @@ int main(int argc , char** argv )
    
     //test_DumpEnv();
 
-    test_IsNegativeZero(); 
+    //test_IsNegativeZero(); 
+
+    test_hostname();
 
     return rc  ; 
 }

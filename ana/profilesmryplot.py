@@ -30,6 +30,8 @@ profilesmryplot.py
     an ; ip profilesmryplot.py --pfx "scan-ph-0" --gpu Quadro_RTX_8000 --cvd 0 
     an ; ip profilesmryplot.py --pfx "scan-ph-1" --gpu Quadro_RTX_8000 --cvd 0 
     an ; ip profilesmryplot.py --pfx "scan-ph-2" --gpu Quadro_RTX_8000 --cvd 0 
+    an ; ip profilesmryplot.py --pfx "scan-ph-3" --gpu Quadro_RTX_8000 --cvd 0 
+    an ; ip profilesmryplot.py --pfx "scan-ph-4" --gpu TITAN_RTX --cvd 1 
 
 """
 
@@ -119,7 +121,7 @@ class O(object):
                     self.rr = "10" 
                     self.ylim = [0,10]          
                 elif self.key == "Interval_over_Launch":
-                    self.ylim = [0, 4]  
+                    self.ylim = [0, 5]  
                     self.rr = "00 11" 
                     self.loc = "upper right"   
                 else:
@@ -210,12 +212,12 @@ if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
     np.set_printoptions(precision=4, linewidth=200)
 
+    # TODO: use the introspected info for GPU name 
     parser = argparse.ArgumentParser(__doc__)
     parser.add_argument( "--pfx", default="scan-ph-0", help="Prefix beneath which to search for OpticksProfile.npy" )
-    parser.add_argument( "--gpu", default="Quadro RTX 8000", help="GPU Name for plots, eg TITAN RTX" )
+    parser.add_argument( "--gpu", default="Quadro_RTX_8000", help="GPU Name for plots, eg TITAN_RTX" )
     parser.add_argument( "--cvd", default="0", help="CUDA_VISIBLE_DEVICE for the named GPU" )
     args = parser.parse_args()
-
 
     # plot specifications 
 

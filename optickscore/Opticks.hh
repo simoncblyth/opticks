@@ -333,6 +333,7 @@ class OKCORE_API Opticks {
        static const char* AutoRunLabel(int rtx);
        const char* getRunFolder() const ; 
        const char* getRunResultsDir() const ; // eg /usr/local/opticks/results/OpticksResourceTest/20190422_155146 
+       const char* getRuncacheDir() const ;   // eg ~/.opticks/runcache
    public:
        bool        isTest() const ;
        bool        isTestAuto() const ;

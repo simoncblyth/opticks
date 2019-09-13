@@ -81,7 +81,7 @@ class BRAP_API  BOpticksResource {
         static const char* RESULTS_PREFIX_DEFAULT  ; 
         static const char* INSTALL_PREFIX_KEY  ; 
         static const char* INSTALL_PREFIX_KEY2  ; 
-        static const char* GEOCACHE_PREFIX_KEY  ; 
+        static const char* CACHE_PREFIX_KEY  ; 
     protected:
         static const char* G4ENV_RELPATH ; 
         static const char* OKDATA_RELPATH ;
@@ -144,9 +144,10 @@ class BRAP_API  BOpticksResource {
         static std::string BuildProduct(const char* proj, const char* name);
         static const char* ResolveResultsPrefix();
         static const char* ResolveInstallPrefix();
-        static const char* ResolveGeocachePrefix();
+        static const char* ResolveCachePrefix();
         static const char* OpticksDataDir();
         static const char* GeocacheDir();
+        static const char* RuncacheDir();
         static const char* ResultsDir();
         static const char* ResourceDir();
         static const char* GenstepsDir();
@@ -159,10 +160,12 @@ class BRAP_API  BOpticksResource {
         static const char* MakePath( const char* prefix, const char* main, const char* sub );
    public:       
         const char* getInstallPrefix();
+        const char* getCachePrefix();
         const char* getInstallDir();
 
         const char* getOpticksDataDir();
         const char* getGeocacheDir();
+        const char* getRuncacheDir();
         const char* getResultsDir();
         const char* getInstallCacheDir();
         const char* getResourceDir();
@@ -224,7 +227,7 @@ class BRAP_API  BOpticksResource {
   private:
         void init();
         void initInstallPrefix();
-        void initGeocachePrefix();
+        void initCachePrefix();
         void initTopDownDirs();
         void initDebuggingIDPATH(); 
    protected:
@@ -256,9 +259,10 @@ class BRAP_API  BOpticksResource {
    protected:
         int         m_layout ; 
         const char* m_install_prefix ;   // from BOpticksResourceCMakeConfig header
-        const char* m_geocache_prefix ;  
+        const char* m_cache_prefix ;  
         const char* m_opticksdata_dir ; 
         const char* m_geocache_dir ; 
+        const char* m_runcache_dir ; 
         const char* m_results_dir ; 
         const char* m_resource_dir ; 
         const char* m_gensteps_dir ; 

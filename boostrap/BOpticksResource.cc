@@ -105,6 +105,7 @@ BOpticksResource::BOpticksResource(bool testgeo)
     m_install_prefix(NULL),
     m_opticksdata_dir(NULL),
     m_geocache_dir(NULL),
+    m_runcache_dir(NULL),
     m_resource_dir(NULL),
     m_gensteps_dir(NULL),
     m_export_dir(NULL),
@@ -158,7 +159,7 @@ void BOpticksResource::init()
     LOG(LEVEL) << " layout  : " << m_layout ; 
 
     initInstallPrefix() ;
-    initGeocachePrefix() ;
+    initCachePrefix() ;
     initTopDownDirs();
     initDebuggingIDPATH();
 }
@@ -167,6 +168,11 @@ const char* BOpticksResource::getInstallPrefix() // canonically /usr/local/optic
 {
     return m_install_prefix ; 
 }
+const char* BOpticksResource::getCachePrefix() // canonically  ~/.opticks with tilde expanded
+{
+    return m_cache_prefix ; 
+}
+
 
 const char* BOpticksResource::InstallPath(const char* relpath) 
 {
@@ -256,15 +262,15 @@ void BOpticksResource::initInstallPrefix()
 
 
 
-const char* BOpticksResource::GEOCACHE_PREFIX_KEY = "OPTICKS_GEOCACHE_PREFIX" ; 
+const char* BOpticksResource::CACHE_PREFIX_KEY = "OPTICKS_CACHE_PREFIX" ; 
 
 /**
-BOpticksResource::ResolveGeocachePrefix
+BOpticksResource::ResolveCachePrefix
 ----------------------------------------
 
-1. sensitive to envvar OPTICKS_GEOCACHE_PREFIX
+1. sensitive to envvar OPTICKS_CACHE_PREFIX
 2. if envvar not defined defaults to $HOME/.opticks 
-3. the envvar is subsequently internally set by BOpticksResource::initGeocachePrefix
+3. the envvar is subsequently internally set by BOpticksResource::initCachePrefix
 
 NB changes to layout need to be done in triplicate C++/bash/py::
 
@@ -274,26 +280,26 @@ NB changes to layout need to be done in triplicate C++/bash/py::
 
 **/
 
-const char* BOpticksResource::ResolveGeocachePrefix()  // static
+const char* BOpticksResource::ResolveCachePrefix()  // static
 {
-    const char* evalue = SSys::getenvvar(GEOCACHE_PREFIX_KEY);    
+    const char* evalue = SSys::getenvvar(CACHE_PREFIX_KEY);    
     return evalue == NULL ?  MakeUserDir(".opticks", NULL) : evalue ; 
 }
 
 
 
-void BOpticksResource::initGeocachePrefix()
+void BOpticksResource::initCachePrefix()
 {
-    m_geocache_prefix = ResolveGeocachePrefix();
-    m_res->addDir("geocache_prefix", m_geocache_prefix );
+    m_cache_prefix = ResolveCachePrefix();
+    m_res->addDir("cache_prefix", m_cache_prefix );
 
     bool overwrite = true ; 
-    int rc = SSys::setenvvar(GEOCACHE_PREFIX_KEY, m_geocache_prefix, overwrite );  
+    int rc = SSys::setenvvar(CACHE_PREFIX_KEY, m_cache_prefix, overwrite );  
     // always set for uniformity 
 
     LOG(LEVEL) 
-         << " geocache_prefix " << m_geocache_prefix  
-         << " key " << GEOCACHE_PREFIX_KEY
+         << " cache_prefix " << m_cache_prefix  
+         << " key " << CACHE_PREFIX_KEY
          << " rc " << rc
          ;   
  
@@ -338,9 +344,8 @@ std::string BOpticksResource::getIdPathPath(const char* rela, const char* relb, 
 
 void BOpticksResource::initTopDownDirs()
 { 
-
-    m_geocache_dir         = GeocacheDir() ;      // eg /usr/local/opticks/geocache
-
+    m_geocache_dir         = GeocacheDir() ;      // eg ~/.opticks/geocache
+    m_runcache_dir         = RuncacheDir() ;      // eg ~/.opticks/runcache
 
     m_opticksdata_dir      = OpticksDataDir() ;   // eg /usr/local/opticks/opticksdata
     m_results_dir          = ResultsDir() ;       // eg /usr/local/opticks/results
@@ -357,6 +362,7 @@ void BOpticksResource::initTopDownDirs()
 
     m_res->addDir("opticksdata_dir", m_opticksdata_dir);
     m_res->addDir("geocache_dir",    m_geocache_dir );
+    m_res->addDir("runcache_dir",    m_runcache_dir );
     m_res->addDir("results_dir",     m_results_dir );
     m_res->addDir("resource_dir",    m_resource_dir );
     m_res->addDir("gensteps_dir",    m_gensteps_dir );
@@ -417,7 +423,8 @@ const char* BOpticksResource::getDebuggingTreedir(int argc, char** argv)
 }
 
 
-const char* BOpticksResource::GeocacheDir(){    return MakePath(ResolveGeocachePrefix(), "geocache",  NULL); }
+const char* BOpticksResource::GeocacheDir(){    return MakePath(ResolveCachePrefix(), "geocache",  NULL); }
+const char* BOpticksResource::RuncacheDir(){    return MakePath(ResolveCachePrefix(), "runcache",  NULL); }
 
 const char* BOpticksResource::InstallCacheDir(){return MakePath(ResolveInstallPrefix(), "installcache",  NULL); }
 const char* BOpticksResource::RNGInstallPath(){ return MakePath(ResolveInstallPrefix(), "installcache", "RNG"); }
@@ -436,6 +443,7 @@ const char* BOpticksResource::ResultsDir(){     return MakePath(ResolveResultsPr
 const char* BOpticksResource::getInstallDir() {         return m_install_prefix ; }   
 const char* BOpticksResource::getOpticksDataDir() {     return m_opticksdata_dir ; }   
 const char* BOpticksResource::getGeocacheDir() {        return m_geocache_dir ; }   
+const char* BOpticksResource::getRuncacheDir() {        return m_runcache_dir ; }   
 const char* BOpticksResource::getResultsDir() {         return m_results_dir ; }   
 const char* BOpticksResource::getResourceDir() {        return m_resource_dir ; } 
 const char* BOpticksResource::getExportDir() {          return m_export_dir ; } 

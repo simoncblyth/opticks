@@ -103,14 +103,12 @@ opticks-tboolean-shortcuts(){
    : **analyse** : load events and run python analysis script the propagation
    tp(){  LV=$1 tboolean.sh --py ${@:2} ; } 
 
-
-
-
-
 }
 
 
 
+opticks-cache-prefix-default(){ echo $HOME/.opticks ; }
+opticks-cache-prefix(){ echo ${OPTICKS_CACHE_PREFIX:-$(opticks-cache-prefix-default)} ; } 
 
 
 opticks-id(){ cat << EOI

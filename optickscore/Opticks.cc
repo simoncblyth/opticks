@@ -342,6 +342,9 @@ void Opticks::init()
     m_parameters->add<std::string>("CMDLINE", PLOG::instance->cmdline() ); 
     if(m_envkey) m_parameters->add<int>("--envkey", 1 ); // OPTICKS_KEY envvar is only relevant when use --envkey to switch on sensitivity 
     m_parameters->addEnvvarsWithPrefix("OPTICKS_"); 
+
+    m_parameters->add<std::string>("HOSTNAME", SSys::hostname() ); 
+    m_parameters->add<std::string>("USERNAME", SSys::username() ); 
 }
 
 
@@ -1442,6 +1445,14 @@ const char* Opticks::getRunResultsDir() const
 {
     return m_resource ? m_resource->getRunResultsDir() : NULL ; 
 }
+const char* Opticks::getRuncacheDir() const 
+{
+    return m_resource ? m_resource->getRuncacheDir() : NULL ; 
+}
+
+
+
+
 
 
 NSlice* Opticks::getAnalyticPMTSlice()
