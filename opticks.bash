@@ -116,24 +116,43 @@ opticks-tboolean-shortcuts(){
 }
 
 
-
-
 opticks-shared-cache-prefix-default(){ echo $HOME/.opticks ; }
 opticks-user-cache-prefix-default(){   echo $HOME/.opticks ; }
+
+
+
 opticks-shared-cache-prefix(){ echo ${OPTICKS_SHARED_CACHE_PREFIX:-$(opticks-shared-cache-prefix-default)} ; } 
 opticks-user-cache-prefix(){   echo ${OPTICKS_USER_CACHE_PREFIX:-$(opticks-user-cache-prefix-default)} ; } 
+
+
+opticks-geocachedir(){ echo $(opticks-shared-cache-prefix)/geocache ; } 
+opticks-rngcachedir(){ echo $(opticks-shared-cache-prefix)/rngcache ; }
+opticks-rngdir(){      echo $(opticks-rngcachedir)/RNG ; }
+opticks-rngdir-cd(){   cd $(opticks-rngdir) ; }
+
 
 opticks-cache-info(){ cat << EON
 $FUNCNAME
 =====================
 
+    opticks-prefix                      : $(opticks-prefix)
+    opticks-installcachedir             : $(opticks-installcachedir)
+
+
     OPTICKS_SHARED_CACHE_PREFIX         : $OPTICKS_SHARED_CACHE_PREFIX
     OPTICKS_USER_CACHE_PREFIX           : $OPTICKS_USER_CACHE_PREFIX
 
-    opticks-shared-cache-prefix-default : $(opticks-shared-cache-prefix-default)
-    opticks-user-cache-prefix-default   : $(opticks-user-cache-prefix-default)
 
+    opticks-shared-cache-prefix-default : $(opticks-shared-cache-prefix-default)
     opticks-shared-cache-prefix         : $(opticks-shared-cache-prefix)
+
+    opticks-geocachedir                 : $(opticks-geocachedir)
+    opticks-rngcachedir                 : $(opticks-rngcachedir)
+
+    opticks-rngdir                      : $(opticks-rngdir)
+
+
+    opticks-user-cache-prefix-default   : $(opticks-user-cache-prefix-default)
     opticks-user-cache-prefix           : $(opticks-user-cache-prefix)
 
 
@@ -781,17 +800,40 @@ opticks--(){
 
 
 
+opticks-prepare-installcache-notes(){ cat << EON
+
+$FUNCNAME
+===================================
+
+Name of the function becoming vestigial.
+
+
+Only PTX remains in the installcache.
+
+OKC has been eliminated, the below should NOT be run::
+
+    OpticksPrepareInstallCacheTest '$INSTALLCACHE_DIR/OKC'
+
+RNG has been relocated from the installcache to the rngcache 
+which is positioned under OPTICKS_SHARED_CACHE_PREFIX
+
+The default RNG dir is ~/.opticks/rngcache/RNG but this is expected
+to be moved to a shared location, eg for use on a GPU cluster, 
+using envvar OPTICKS_SHARED_CACHE_PREFIX which positions 
+the RNG dir at $OPTICKS_SHARED_CACHE_PREFIX/rngcache/RNG
+
+EON
+}
+
+
 opticks-prepare-installcache()
 {
     local msg="=== $FUNCNAME :"
     echo $msg generating RNG seeds into installcache 
 
     cudarap-
-    cudarap-prepare-installcache
-
-    #OpticksPrepareInstallCache_OKC
-    OpticksPrepareInstallCacheTest '$INSTALLCACHE_DIR/OKC'
-
+    cudarap-prepare-rng
+    cudarap-check-rng
 }
 
 opticks-check-installcache()
@@ -799,16 +841,16 @@ opticks-check-installcache()
     local msg="=== $FUNCNAME :"
     local rc=0
     local iwd=$PWD
+
     local dir=$(opticks-installcachedir)
     if [ ! -d "$dir" ]; then
         echo $msg missing dir $dir 
         rc=100
     else
         cd $dir
-        [ ! -d "$dir/PTX" ] && echo $msg $PWD : missing PTX : compiled OptiX programs created when building oxrap-  && rc=101
-        [ ! -d "$dir/RNG" ] && echo $msg $PWD : missing RNG : curand seeds created by opticks-prepare-installcache cudarap-prepare-installcache  && rc=102
-        [ ! -d "$dir/OKC" ] && echo $msg $PWD : missing OKC : GFlags ini files classifying photon source and history states : created by opticks-prepare-installcache OpticksPrepareInstallCache_OKC  && rc=103
+        [ ! -d "PTX" ] && echo $msg $PWD : missing PTX : compiled OptiX programs created when building oxrap-  && rc=101
     fi
+
     cd $iwd
     return $rc
 }

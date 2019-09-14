@@ -184,11 +184,8 @@ $FUNCNAME
   geocache-tstdir    : $(geocache-tstdir)
       directory derived from the OPTICKS_KEY envvar 
 
-  opticks-shared-cache-prefix : $(opticks-shared-cache-prefix)    
-
   geocache-dir       : $(geocache-dir) 
      formerly placed in install location $LOCAL_BASE/opticks/geocache 
-     but now moved under opticks-shared-cache-prefix 
 
 EOI
 
@@ -218,7 +215,7 @@ geocache-keydir()
 geocache-keydir-py(){ key.py ; }
 
 
-geocache-dir(){ echo $(opticks-shared-cache-prefix)/geocache ; }
+geocache-dir(){ echo $(opticks-geocachedir) ; }
 geocache-cd(){ cd $(geocache-dir) ; }
 geocache-tstdir(){ echo $(geocache-keydir)/g4codegen/tests ; }
 geocache-kcd(){ cd $(geocache-keydir) ; pwd ; cat runcomment.txt ;  }

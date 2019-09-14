@@ -19,7 +19,7 @@
 
 cudarap-source(){   echo $BASH_SOURCE ; }
 cudarap-vi(){       vi $(cudarap-source) ; }
-cudarap-usage(){ cat << EOU
+cudarap-usage(){ cat << "EOU"
 
 CUDAWrap
 ==========
@@ -486,15 +486,13 @@ cudarap-sdir(){ echo $(opticks-home)/cudarap ; }
 cudarap-tdir(){ echo $(opticks-home)/cudarap/tests ; }
 cudarap-ibin(){ echo $(cudarap-idir)/lib/cuRANDWrapperTest ; }
 
-cudarap-rng-dir(){ echo $(local-base)/env/CUDARap/rngcache ; }
-cudarap-rng(){  ls -l $(cudarap-rng-dir) ; }
 
 cudarap-c(){    cd $(cudarap-sdir); }
 cudarap-cd(){   cd $(cudarap-sdir); }
 cudarap-scd(){  cd $(cudarap-sdir); }
 cudarap-tcd(){  cd $(cudarap-tdir); }
 cudarap-bcd(){  cd $(cudarap-bdir); }
-cudarap-ccd(){  cd $(cudarap-rng-dir); }
+
 
 cudarap-wipe(){ local bdir=$(cudarap-bdir) ;  rm -rf $bdir ; } 
 
@@ -512,25 +510,6 @@ cudarap-genproj() { cudarap-scd ; opticks-genproj $(cudarap-name) $(cudarap-tag)
 cudarap-gentest() { cudarap-tcd ; opticks-gentest ${1:-CExample} $(cudarap-tag) ; } 
 cudarap-txt(){ vi $(cudarap-sdir)/CMakeLists.txt $(cudarap-tdir)/CMakeLists.txt ; } 
 
-
-
-cudarap-cmake-deprecated(){
-   local iwd=$PWD
-
-   [ -n "$WIPE" ] && cudarap-wipe
-
-   local bdir=$(cudarap-bdir)
-   mkdir -p $bdir
-
-   cudarap-bcd
- 
-   cmake -DCMAKE_BUILD_TYPE=Debug \
-         -DCMAKE_INSTALL_PREFIX=$(cudarap-idir) \
-         -DCUDA_NVCC_FLAGS="$(cuda-nvcc-flags)" \
-          $(cudarap-sdir) 
-
-   cd $iwd
-}
 
 
 cudarap-bin(){ echo $(cudarap-bdir)/$(cudarap-name)Test ; }
@@ -555,14 +534,6 @@ cudarap-run(){
       $(cudarap-bin) $*
   fi
 }
-cudarap-test()
-{
-   local iwd=$PWD
-   cudarap-bcd
-   CUDARAP_RNG_DIR=$(cudarap-rng-dir) DYLD_LIBRARY_PATH=. WORK=$(( 1024*768 )) ./cuRANDWrapperTest 
-   cd $iwd
-}
-
 
 #cudarap-rngmax-M(){ echo 1 ; }
 cudarap-rngmax-M(){ echo ${CUDARAP_RNGMAX_M:-3} ; }
@@ -571,53 +542,85 @@ cudarap-rngmax-M(){ echo ${CUDARAP_RNGMAX_M:-3} ; }
 
 cudarap-rngmax(){ echo $(( $(cudarap-rngmax-M)*1000*1000 )) ; } # maximal number of photons that can be handled
 
-cudarap-rngdir(){ echo $(opticks-prefix)/installcache/RNG  ; }
+cudarap-rngdir(){ echo $(opticks-rngdir)  ; }
 
 
-cudarap-prepare-installcache-notes(){ cat << EON
+cudarap-prepare-rng-notes(){ cat << EON
 $FUNCNAME
 ====================================
 
 Rerunning will load the pre-existing file and check it, 
 without changing it or consuming much time.
 
+Tried varying MAX_BLOCKS to do more in a single launch
+in cudarap-test-1M but did not have significant effect 
+in total kernel time. 
+
+TODO: check again with different GPUs
+
 EON
 }
 
-cudarap-prepare-installcache()
+
+cudarap-prepare-rng()
+{
+   CUDARAP_RNGMAX_M=1  $FUNCNAME- 
+   CUDARAP_RNGMAX_M=3  $FUNCNAME- 
+   CUDARAP_RNGMAX_M=10 $FUNCNAME- 
+}
+cudarap-check-rng()
+{
+   CUDARAP_RNGMAX_M=1  $FUNCNAME- 
+   CUDARAP_RNGMAX_M=3  $FUNCNAME- 
+   CUDARAP_RNGMAX_M=10 $FUNCNAME- 
+}
+
+
+cudarap-prepare-rng-()
 {
    CUDARAP_RNG_DIR=$(cudarap-rngdir) CUDARAP_RNG_MAX=$(cudarap-rngmax) $(cudarap-ibin)
 }
 
 cudarap-rngdir-ls(){ ls -l $(cudarap-rngdir) ; }
 
-
-cudarap-prepare-installcache-100M(){ CUDARAP_RNGMAX_M=100 cudarap-prepare-installcache ; }
-cudarap-prepare-installcache-10M(){  CUDARAP_RNGMAX_M=10  cudarap-prepare-installcache ; }
-cudarap-prepare-installcache-2M(){   CUDARAP_RNGMAX_M=2   cudarap-prepare-installcache ; }
-
-
+cudarap-prepare-rng-100M(){ CUDARAP_RNGMAX_M=100 cudarap-prepare-rng ; }
+cudarap-prepare-rng-10M(){  CUDARAP_RNGMAX_M=10  cudarap-prepare-rng ; }
+cudarap-prepare-rng-2M(){   CUDARAP_RNGMAX_M=2   cudarap-prepare-rng ; }
+cudarap-prepare-rng-1M(){   CUDARAP_RNGMAX_M=1   cudarap-prepare-rng ; }
 
 cudarap-test-1M()
 {
-   local path=cuRANDWrapper_1000000_0_0.bin 
-   cd $(cudarap-rngdir)
+   local rngdir=$(cudarap-rngdir)
+   mkdir -p $rngdir
+   cd $rngdir 
+
+   local path=$(cudadap-rngname-1M)
    rm $path
 
-   cuRANDWrapper=INFO CUDARAP_RNG_DIR=$(cudarap-rngdir) CUDARAP_RNG_MAX=$(( 1*1000*1000 )) MAX_BLOCKS=4096 $(cudarap-ibin)
-   ## tried changing MAX_BLOCKS to do more in a single launch, but did not have significant effect in total kernel time
+   cuRANDWrapper=INFO MAX_BLOCKS=4096 cudarap-prepare-rng-1M 
 }
 
+cudarap-rngname(){ echo cuRANDWrapper_$(cudarap-rngmax)_0_0.bin ; }
+cudarap-rngname-1M(){  CUDARAP_RNGMAX_M=1 cudarap-rngname ; }
 
-
-
-cudarap-test-full()
+cudarap-check-rng-()
 {
-   local iwd=$PWD
-   cudarap-bcd
-   CUDARAP_RNG_DIR=$(cudarap-rng-dir) DYLD_LIBRARY_PATH=. WORK=$(( 1440*900 )) ./cuRANDWrapperTest 
-   cd $iwd
+    local msg="$FUNCNAME :"
+    local iwd=$PWD
+    local rngdir=$(cudarap-rngdir)
+    if [ ! -f "$rngdir" ]; then
+        echo $msg ERROR rngdir missing $rngdir
+        sleep 10000000
+    fi 
+    cd $rngdir    
+
+    local name=$(cudarap-rngname) 
+    echo $name
+    if [ ! -f $name ]; then
+         echo $msg error : missing expected rng file $name
+         sleep 10000000
+         return 101 
+    fi    
+    cd $iwd
 }
-
-
 

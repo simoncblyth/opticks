@@ -27,8 +27,6 @@ class Dist(object):
          
     lib 
          contains order 400 executables
-   
-
 
     Not installed things which perhaps should be 
 
@@ -37,13 +35,12 @@ class Dist(object):
  
  
     """
-    exclude_dir_name = ['cmake','pkgconfig',  'Geant4-10.2.1', 'Geant4-10.4.2']    # G4 exclusion temporarily 
-    #exclude_dir_name = ['Geant4-10.2.1', 'Geant4-10.4.2']    # G4 exclusion temporarily 
+    exclude_dir_name = ['cmake','pkgconfig',  'Geant4-10.2.1', 'Geant4-10.4.2']  
 
-    #bases = ['lib','lib64','externals/lib','externals/lib64','externals/OptiX/lib64', 'installcache', 'gl', 'geocache' ]
-    bases = ['lib','lib64','externals/lib','externals/lib64','externals/OptiX/lib64', 'installcache', 'gl' ]
+    bases = ['include', 'lib','lib64','externals/lib','externals/lib64','externals/OptiX/lib64', 'installcache/PTX', 'gl' ]
+    ## hmm need to construct an installed bin too, with scripts 
 
-    extras = ['include/OpticksCore/OpticksPhoton.h', ]
+    extras = []
 
 
     def __init__(self, prefix, ext=".tar.gz"):

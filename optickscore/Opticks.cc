@@ -3121,7 +3121,7 @@ bool Opticks::isValid() {   return m_resource->isValid(); }
 bool Opticks::hasCtrlKey(const char* key) const  { return m_resource->hasCtrlKey(key); }
 bool Opticks::hasVolnames() const { return !hasCtrlKey("novolnames") ; }
 
-const char* Opticks::getRNGInstallCacheDir() { return m_resource->getRNGInstallCacheDir(); } 
+const char* Opticks::getRNGDir() { return m_resource->getRNGDir(); } 
 
 std::string Opticks::getPreferenceDir(const char* type, const char* subtype)
 {

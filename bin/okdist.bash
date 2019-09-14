@@ -46,9 +46,13 @@ okdist-path(){    echo $(opticks-dir)/$(okdist-file) ; }
 okdist-ls(){      local p=$(okdist-path) ; ls -l $p ; du -h $p ; }
 okdist-tmp(){     echo /tmp/$USER/opticks/okdist-test ; }
 okdist-cd(){      cd $(okdist-tmp) ; }
+
+okdist-cvmfs-base-fake(){ echo /cvmfs/opticks.ihep.ac.cn ; } 
+
 okdist-untar(){    
     local msg="=== $FUNCNAME :"
-    local tmp=$(okdist-tmp)
+    local base=$(okdist-cvmfs-base-fake)
+    local tmp=$base/tmp
     rm -rf $tmp
     mkdir -p $tmp
     local dist=$(okdist-path)

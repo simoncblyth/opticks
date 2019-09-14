@@ -159,8 +159,8 @@ add_custom_command(
          ${HDR}
 )
 add_custom_target(PythonINI ALL DEPENDS ${PYINI} )
-
-
+# ALL : Indicates that this custom target should be added to the 
+# default build target so that it will be run every time.
 
 set(CCFL ${CMAKE_CURRENT_SOURCE_DIR}/OpticksFlags.cc)
 set(PYJS ${CMAKE_CURRENT_BINARY_DIR}/OpticksFlags_Abbrev.json)

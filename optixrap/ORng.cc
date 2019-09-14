@@ -32,7 +32,7 @@ using namespace optix ;
 #include "cuRANDWrapper.hh"
 
 
-const plog::Severity ORng::LEVEL = debug ; 
+const plog::Severity ORng::LEVEL = PLOG::EnvLevel("ORng", "DEBUG") ; 
 
 ORng::ORng(Opticks* ok, OContext* ocontext) 
    :
@@ -81,12 +81,12 @@ void ORng::init()
             ;
         return ;
     }
-    const char* rngCacheDir = m_ok->getRNGInstallCacheDir();
+    const char* RNGDir = m_ok->getRNGDir();
     unsigned num_mask = m_mask.size() ; 
 
     LOG(LEVEL) 
         << " rng_max " << rng_max
-        << " rngCacheDir " << rngCacheDir
+        << " RNGDir " << RNGDir
         << " num_mask " << num_mask
         ;
 
@@ -105,7 +105,7 @@ void ORng::init()
 
     bool verbose = false ; 
 
-    m_rng_wrapper = cuRANDWrapper::instanciate( rng_max, rngCacheDir, seed, offset, max_blocks, threads_per_block, verbose );
+    m_rng_wrapper = cuRANDWrapper::instanciate( rng_max, RNGDir, seed, offset, max_blocks, threads_per_block, verbose );
 
     // OptiX owned RNG states buffer (not CUDA owned)
     m_rng_states = m_context->createBuffer( RT_BUFFER_INPUT, RT_FORMAT_USER);      

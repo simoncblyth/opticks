@@ -19,35 +19,37 @@ Naming the Opticks distribution
 Issue : what to include in binary dist ?  
 --------------------------------------------
 
-* executables + libs + PTX  : YES
-* external libs 
+* things needed to run opticks executables 
 
-  * libs without overlap with offline : OptiX, yoctogl, ...   YES INCLUDE
-  * libs which offline depends on already  : exclude them and 
-    bake the versions of the overlappers into the distro name, 
+  * executables + libs + PTX + gl shaders : YES
+  * installcache/PTX ? YES
+  * installcache/RNG ? NO : DONE : relocated RNG to OPTICKS_SHARED_CACHE_PREFIX/rngcache/RNG
+  * installcache/OKC ? NO : DONE : eliminated this using CMake custom command+target 
+  * geocache ? NO : relocated to OPTICKS_SHARED_CACHE_PREFIX/geocache 
+  * external libs 
 
-    * clearly needed for Geant4, ie the version of an Opticks binary dist must have Op
-    * but what about boost ? its kinda hidden so maybe not needed 
+    * libs assumed not to overlap with user (offline) : OptiX, yoctogl, ...   YES 
+    * libs which offline depends on already (eg Geant4) : exclude them and bake versions into distro name 
+    * what about boost libs ? try without : boost version into name ?
  
-* things needed at runtime : OpticksPhoton.h + gl shaders   
-* "public" headers, eg those from G4OK package 
-* opticks-config script 
+* directory tree of CTest files for unit testing of installed executables 
 
-* installcache/PTX ? YES
-* installcache/RNG ? NO : TODO: move the RNG under OPTICKS_SHARED_CACHE_PREFIX/rngcache/RNG
-* installcache/OKC ? 
+* bash and python scripts, to be collected into an installed "bin" dir 
 
-  * see if can eliminate this metadata, instead get ana/base.py opticks_main python to parse headers ?
+  * things needed by scripts at runtime 
+  * python "headers" .ini and .json in include   
 
-* geocache ? NO : mo moved to OPTICKS_SHARED_CACHE_PREFIX/geocache 
+* things needed to build against Opticks 
+
+  * includes (all ? or a selection ? "public" headers )
+  * opticks-config script 
 
 
 Lots of the python assumes OPTICKS_HOME is available
 -------------------------------------------------------
 
-
-Eliminate installcache/OKC
----------------------------------
+DONE : Eliminate installcache/OKC
+-------------------------------------
 
 The ini and json files in OKC are used from python, they are kinda the python equivalent
 of includes.  They however cannot entirely be derived from includes.  
@@ -56,9 +58,27 @@ of includes.  They however cannot entirely be derived from includes.
   along with includes rather than current approach of requiring users to run an 
   executable at runtime
 
+* DONE: added custom commands to optickscore/CMakeLists.txt to generate and install them 
+
+::
+
+    -- Installing: /home/blyth/local/opticks/include/OpticksCore/OpticksPhoton_Enum.ini
+    -- Installing: /home/blyth/local/opticks/include/OpticksCore/OpticksFlags_Abbrev.json
+
+::
+
+    [blyth@localhost opticks]$ opticks-f OKC/
+    ./ana/base.py:    def __init__(self, path="$OPTICKS_INSTALL_CACHE/OKC/GFlagIndexLocal.ini"):
+    ./ana/base.py:        self.abbrev = Abbrev("$OPTICKS_INSTALL_CACHE/OKC/OpticksFlagsAbbrevMeta.json")
+    ./ana/base.py:        self.abbrev = Abbrev("$OPTICKS_INSTALL_CACHE/OKC/OpticksFlagsAbbrevMeta.json")
+    [blyth@localhost opticks]$ 
 
 
-Old way uses Opticks::prepareInstallCache
+
+Old way required users to run OpticksPrepareInstallCacheTest
+-------------------------------------------------------------
+
+Old way used Opticks::prepareInstallCache
 
    OpticksPrepareInstallCacheTest '$INSTALLCACHE_DIR/OKC'
    

@@ -219,7 +219,7 @@ class OKCORE_API Opticks {
    public:
        void prepareInstallCache(const char* dir=NULL);
    public:
-       const char* getRNGInstallCacheDir();
+       const char* getRNGDir();
        const char* getInstallPrefix();
        const char* getMaterialPrefix();
        std::string getObjectPath(const char* name, unsigned int ridx, bool relative=false);
