@@ -168,17 +168,27 @@ geocache-py()
 }
 
 geocache-info(){ cat << EOI
-
+$FUNCNAME
+===============
 
   IDPATH  : $IDPATH
   IDPATH2 : $IDPATH2
        dependency on IDPATH on way out 
 
   OPTICKS_KEY        :  ${OPTICKS_KEY}
+
   geocache-keydir    : $(geocache-keydir)
   geocache-keydir-py : $(geocache-keydir-py)
+      above two directories should match 
+
   geocache-tstdir    : $(geocache-tstdir)
       directory derived from the OPTICKS_KEY envvar 
+
+  opticks-shared-cache-prefix : $(opticks-shared-cache-prefix)    
+
+  geocache-dir       : $(geocache-dir) 
+     formerly placed in install location $LOCAL_BASE/opticks/geocache 
+     but now moved under opticks-shared-cache-prefix 
 
 EOI
 
@@ -193,17 +203,6 @@ geocache-keydir-test()
 }
 
 
-
-geocache-prefix-notes(){ cat << EON
-Changes to the prefix need to be done in triplicate in bash/py/C++ in::
-
-    ana/geocache.bash
-    ana/key.py
-    boostrap/BOpticksResource.cc
-
-EON
-}
-
 geocache-keydir()
 {
     local k=$OPTICKS_KEY
@@ -213,19 +212,19 @@ geocache-keydir()
     local cls=${arr[1]}
     local top=${arr[2]}
     local dig=${arr[3]}
-    echo $(opticks-cache-prefix)/geocache/${exe}_${top}_g4live/g4ok_gltf/$dig/1 
+    echo $(geocache-dir)/${exe}_${top}_g4live/g4ok_gltf/$dig/1 
 }
 
 geocache-keydir-py(){ key.py ; }
 
 
-geocache-dir(){ echo $LOCAL_BASE/opticks/geocache ; }
+geocache-dir(){ echo $(opticks-shared-cache-prefix)/geocache ; }
 geocache-cd(){ cd $(geocache-dir) ; }
 geocache-tstdir(){ echo $(geocache-keydir)/g4codegen/tests ; }
 geocache-kcd(){ cd $(geocache-keydir) ; pwd ; cat runcomment.txt ;  }
 geocache-tcd(){ cd $(geocache-tstdir) ; pwd ; }
 
-geocache-tmp(){ echo /tmp/$USER/opticks/$1 ; }
+geocache-tmp(){ echo /tmp/$USER/opticks/$1 ; }  ## TODO: 
 
 
 geocache-create-()

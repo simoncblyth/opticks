@@ -81,7 +81,9 @@ class BRAP_API  BOpticksResource {
         static const char* RESULTS_PREFIX_DEFAULT  ; 
         static const char* INSTALL_PREFIX_KEY  ; 
         static const char* INSTALL_PREFIX_KEY2  ; 
-        static const char* CACHE_PREFIX_KEY  ; 
+    protected:
+        static const char* SHARED_CACHE_PREFIX_KEY  ; 
+        static const char* USER_CACHE_PREFIX_KEY  ; 
     protected:
         static const char* G4ENV_RELPATH ; 
         static const char* OKDATA_RELPATH ;
@@ -144,7 +146,8 @@ class BRAP_API  BOpticksResource {
         static std::string BuildProduct(const char* proj, const char* name);
         static const char* ResolveResultsPrefix();
         static const char* ResolveInstallPrefix();
-        static const char* ResolveCachePrefix();
+        static const char* ResolveSharedCachePrefix();
+        static const char* ResolveUserCachePrefix();
         static const char* OpticksDataDir();
         static const char* GeocacheDir();
         static const char* RuncacheDir();
@@ -160,7 +163,8 @@ class BRAP_API  BOpticksResource {
         static const char* MakePath( const char* prefix, const char* main, const char* sub );
    public:       
         const char* getInstallPrefix();
-        const char* getCachePrefix();
+        const char* getSharedCachePrefix();
+        const char* getUserCachePrefix();
         const char* getInstallDir();
 
         const char* getOpticksDataDir();
@@ -227,7 +231,8 @@ class BRAP_API  BOpticksResource {
   private:
         void init();
         void initInstallPrefix();
-        void initCachePrefix();
+        void initSharedCachePrefix();
+        void initUserCachePrefix();
         void initTopDownDirs();
         void initDebuggingIDPATH(); 
    protected:
@@ -259,7 +264,8 @@ class BRAP_API  BOpticksResource {
    protected:
         int         m_layout ; 
         const char* m_install_prefix ;   // from BOpticksResourceCMakeConfig header
-        const char* m_cache_prefix ;  
+        const char* m_shared_cache_prefix ;  
+        const char* m_user_cache_prefix ;  
         const char* m_opticksdata_dir ; 
         const char* m_geocache_dir ; 
         const char* m_runcache_dir ; 

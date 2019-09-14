@@ -147,6 +147,39 @@ target_link_libraries( ${name}
 )
 
 
+
+set(HDR   ${CMAKE_CURRENT_SOURCE_DIR}/OpticksPhoton.h)
+set(PYINI ${CMAKE_CURRENT_BINARY_DIR}/OpticksPhoton_Enum.ini)
+add_custom_command(
+   OUTPUT 
+         ${PYINI}
+   COMMAND 
+          enum.py ${HDR} --quiet --inipath ${PYINI}
+   DEPENDS 
+         ${HDR}
+)
+add_custom_target(PythonINI ALL DEPENDS ${PYINI} )
+
+
+
+set(CCFL ${CMAKE_CURRENT_SOURCE_DIR}/OpticksFlags.cc)
+set(PYJS ${CMAKE_CURRENT_BINARY_DIR}/OpticksFlags_Abbrev.json)
+add_custom_command(
+   OUTPUT 
+         ${PYJS}
+   COMMAND 
+          OpticksFlags.py ${CCFL} --quiet --jsonpath ${PYJS}
+   DEPENDS 
+         ${CCFL}
+)
+add_custom_target(PythonJSON ALL DEPENDS ${PYJS} )
+
+list(APPEND HEADERS 
+  ${PYINI} 
+  ${PYJS}
+) 
+
+
 bcm_deploy(TARGETS ${name} NAMESPACE Opticks:: SKIP_HEADER_INSTALL)
 install(FILES ${HEADERS}  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 

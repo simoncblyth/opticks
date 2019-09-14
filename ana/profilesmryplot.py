@@ -32,6 +32,7 @@ profilesmryplot.py
     an ; ip profilesmryplot.py --pfx "scan-ph-2" --gpu Quadro_RTX_8000 --cvd 0 
     an ; ip profilesmryplot.py --pfx "scan-ph-3" --gpu Quadro_RTX_8000 --cvd 0 
     an ; ip profilesmryplot.py --pfx "scan-ph-4" --gpu TITAN_RTX --cvd 1 
+    an ; ip profilesmryplot.py --pfx "scan-ph-5" --gpu TITAN_RTX --cvd 1 
 
 """
 

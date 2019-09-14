@@ -117,8 +117,45 @@ opticks-tboolean-shortcuts(){
 
 
 
-opticks-cache-prefix-default(){ echo $HOME/.opticks ; }
-opticks-cache-prefix(){ echo ${OPTICKS_CACHE_PREFIX:-$(opticks-cache-prefix-default)} ; } 
+
+opticks-shared-cache-prefix-default(){ echo $HOME/.opticks ; }
+opticks-user-cache-prefix-default(){   echo $HOME/.opticks ; }
+opticks-shared-cache-prefix(){ echo ${OPTICKS_SHARED_CACHE_PREFIX:-$(opticks-shared-cache-prefix-default)} ; } 
+opticks-user-cache-prefix(){   echo ${OPTICKS_USER_CACHE_PREFIX:-$(opticks-user-cache-prefix-default)} ; } 
+
+opticks-cache-info(){ cat << EON
+$FUNCNAME
+=====================
+
+    OPTICKS_SHARED_CACHE_PREFIX         : $OPTICKS_SHARED_CACHE_PREFIX
+    OPTICKS_USER_CACHE_PREFIX           : $OPTICKS_USER_CACHE_PREFIX
+
+    opticks-shared-cache-prefix-default : $(opticks-shared-cache-prefix-default)
+    opticks-user-cache-prefix-default   : $(opticks-user-cache-prefix-default)
+
+    opticks-shared-cache-prefix         : $(opticks-shared-cache-prefix)
+    opticks-user-cache-prefix           : $(opticks-user-cache-prefix)
+
+
+shared-cache-prefix
+   geocache, rngcache
+
+user-cache-prefix
+   runcache
+  
+
+Changes to the cache prefix layouts or envvars names 
+need to be done in triplicate in bash/py/C++ in::
+
+    opticks.bash 
+    ana/geocache.bash
+    ana/key.py
+    boostrap/BOpticksResource.cc
+
+EON
+}
+
+
 
 
 opticks-id(){ cat << EOI

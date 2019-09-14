@@ -46,10 +46,14 @@ log = logging.getLogger(__name__)
 
 class Key(object):
     @classmethod
-    def CachePrefix(cls):
-        cache_prefix_default = os.path.expanduser("~/.opticks") 
-        cache_prefix = os.environ.get("OPTICKS_CACHE_PREFIX", cache_prefix_default ) 
-        return cache_prefix 
+    def SharedCachePrefix(cls):
+        shared_cache_prefix_default = os.path.expanduser("~/.opticks") 
+        shared_cache_prefix = os.environ.get("OPTICKS_SHARED_CACHE_PREFIX", shared_cache_prefix_default ) 
+        return shared_cache_prefix 
+
+    @classmethod
+    def GeocacheDir(cls):
+        return "%s/geocache" % cls.SharedCachePrefix()
 
     @classmethod
     def Keydir(cls, key):
@@ -61,8 +65,8 @@ class Key(object):
         assert len(elem) == 4, elem 
         exe,kls,top,dig = elem 
         assert len(dig) == 32, "OPTICKS_KEY digest %s is expected to be length 32, not %d " % (dig, len(dig))
-        cache_prefix = cls.CachePrefix()
-        tmpl = "{cache_prefix}/geocache/{exe}_{top}_g4live/g4ok_gltf/{dig}/1".format(**locals())
+        geocache_dir = cls.GeocacheDir()
+        tmpl = "{geocache_dir}/{exe}_{top}_g4live/g4ok_gltf/{dig}/1".format(**locals())
         keydir = os.path.expandvars(tmpl)
         return keydir
 

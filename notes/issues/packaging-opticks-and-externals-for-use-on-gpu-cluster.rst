@@ -5,7 +5,7 @@ Strategy
 ----------
 
 1. rearrange the position of libraries such as OptiX to make packaging simpler
-2. develop python or bash
+2. develop python + bash scripts to make tarball 
 
 
 Naming the Opticks distribution
@@ -33,8 +33,75 @@ Issue : what to include in binary dist ?
 * "public" headers, eg those from G4OK package 
 * opticks-config script 
 
-* installcache ?  probably YES
-* geocache ? probably NO
+* installcache/PTX ? YES
+* installcache/RNG ? NO : TODO: move the RNG under OPTICKS_SHARED_CACHE_PREFIX/rngcache/RNG
+* installcache/OKC ? 
+
+  * see if can eliminate this metadata, instead get ana/base.py opticks_main python to parse headers ?
+
+* geocache ? NO : mo moved to OPTICKS_SHARED_CACHE_PREFIX/geocache 
+
+
+Lots of the python assumes OPTICKS_HOME is available
+-------------------------------------------------------
+
+
+Eliminate installcache/OKC
+---------------------------------
+
+The ini and json files in OKC are used from python, they are kinda the python equivalent
+of includes.  They however cannot entirely be derived from includes.  
+
+* it would be more convenient to derive these files during the build and install them 
+  along with includes rather than current approach of requiring users to run an 
+  executable at runtime
+
+
+
+Old way uses Opticks::prepareInstallCache
+
+   OpticksPrepareInstallCacheTest '$INSTALLCACHE_DIR/OKC'
+   
+::
+
+    3203 void Opticks::prepareInstallCache(const char* dir)
+    3204 {
+    3205     if(dir == NULL) dir = m_resource->getOKCInstallCacheDir() ;
+    3206     LOG(info) << ( dir ? dir : "NULL" )  ;
+    3207     m_resource->saveFlags(dir);
+    3208     m_resource->saveTypes(dir);
+    3209 }
+
+    1063 void OpticksResource::saveFlags(const char* dir)
+    1064 {
+    1065     OpticksFlags* flags = getFlags();
+    1066     LOG(info) << " dir " << dir ;
+    1067     flags->save(dir);
+    1068 }
+
+    439 void OpticksFlags::save(const char* installcachedir)
+    440 {
+    441     LOG(info) << installcachedir ;
+    442     m_index->setExt(".ini");
+    443     m_index->save(installcachedir);
+    444     m_abbrev_meta->save( installcachedir, ABBREV_META_NAME );
+    445 }
+
+
+    1115 void OpticksResource::saveTypes(const char* dir)
+    1116 {
+    1117     LOG(info) << "OpticksResource::saveTypes " << dir ;
+    1118 
+    1119     Types* types = getTypes();
+    1120     types->saveFlags(dir, ".ini");
+    1121 }
+    1122 
+
+
+Arranged a CMake custom target/command to install to /home/blyth/local/opticks/include/OpticksCore/OpticksPhotonEnum.ini
+
+
+
 
 
 Issue : setup for opticks executables to find libs (including externals)

@@ -306,8 +306,9 @@ class ItemList(object): # formerly ListFlags
 
 class IniFlags(object):
     """
+    Formerly from $OPTICKS_INSTALL_CACHE/OKC/GFlagIndexLocal.ini
     """
-    def __init__(self, path="$OPTICKS_INSTALL_CACHE/OKC/GFlagIndexLocal.ini"):
+    def __init__(self, path="$OPTICKS_INSTALL_PREFIX/include/OpticksCore/OpticksPhoton_Enum.ini"):
         ini = ini_(path)
         assert len(ini) > 0, "IniFlags bad path/flags %s " % path 
 
@@ -358,19 +359,19 @@ class PhotonMaskFlags(EnumFlags):
     """
     Note this is partially duplicating optickscore/OpticksFlags.cc 
 
-    Abbrev used to come "$OPTICKS_DATA_DIR/resource/GFlags/abbrev.json"
+    Former positions of Abbrev : $OPTICKS_INSTALL_CACHE/OKC/OpticksFlagsAbbrevMeta.json
     """
     def __init__(self):
-        EnumFlags.__init__(self, path="$OPTICKS_HOME/optickscore/OpticksPhoton.h", mask2int=False) 
-        self.abbrev = Abbrev("$OPTICKS_INSTALL_CACHE/OKC/OpticksFlagsAbbrevMeta.json")
+        EnumFlags.__init__(self, path="$OPTICKS_INSTALL_PREFIX/include/OpticksCore/OpticksPhoton.h", mask2int=False) 
+        self.abbrev = Abbrev("$OPTICKS_INSTALL_PREFIX/include/OpticksCore/OpticksFlags_Abbrev.json")
 
 
 class PhotonCodeFlags(EnumFlags):
     """
     """
     def __init__(self):
-        EnumFlags.__init__(self, path="$OPTICKS_HOME/optickscore/OpticksPhoton.h", mask2int=True) 
-        self.abbrev = Abbrev("$OPTICKS_INSTALL_CACHE/OKC/OpticksFlagsAbbrevMeta.json")
+        EnumFlags.__init__(self, path="$OPTICKS_INSTALL_PREFIX/include/OpticksCore/OpticksPhoton.h", mask2int=True) 
+        self.abbrev = Abbrev("$OPTICKS_INSTALL_PREFIX/include/OpticksCore/OpticksFlags_Abbrev.json")
 
 
 
