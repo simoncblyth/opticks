@@ -166,6 +166,13 @@ void test_getCurrentGDMLPath(Opticks* ok)
 }
 
 
+void test_getEventFold(Opticks* ok)
+{
+    const char* ef = ok->getEventFold();
+    LOG(info) << ef ;  
+}
+
+
 
 
 
@@ -190,14 +197,15 @@ int main(int argc, char** argv)
     test_gpumon(&ok);
     test_getGDMLPath(&ok);  
     test_loadCacheMeta(&ok);  
+    test_getCurrentGDMLPath(&ok); 
     */
 
-    test_getCurrentGDMLPath(&ok); 
 
     //OpticksTest okt(&ok); 
     //okt.test_getGenstepPath();  
     //okt.test_getDirectGenstepPath();  
 
+    test_getEventFold(&ok); 
 
     return 0 ;
 }

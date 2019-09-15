@@ -182,6 +182,9 @@ void OpticksCfg<Listener>::init()
    m_desc.add_options()
        ("enable_legacy_g4dae",  "enable use of legacy G4DAE loading") ;
 
+   m_desc.add_options()
+       ("localg4",  "enable loading Geant4 data envvars from ini file and setting into environment, see OpticksResource::readG4Environment ") ;
+
 
    m_desc.add_options()
        ("deletegeocache",  "deletes the geocache before recreating") ;

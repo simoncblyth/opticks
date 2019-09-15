@@ -18,7 +18,9 @@
 ##
 
 okdist-source(){ echo $BASH_SOURCE ; }
-okdist-vi(){ vi $(okdist-source) $(opticks-home)/notes/issues/packaging-opticks-and-externals-for-use-on-gpu-cluster.rst ; }
+okdist-sdir(){ echo $(dirname $(okdist-source)) ; }
+okdist-py(){ echo $(okdist-sdir)/okdist.py ; }
+okdist-vi(){ vi $(okdist-source) $(okdist-py) $(opticks-home)/notes/issues/packaging-opticks-and-externals-for-use-on-gpu-cluster.rst ; }
 okdist-env(){ echo -n ; }
 okdist-usage(){  cat << \EOU
 
@@ -30,38 +32,145 @@ Dev Notes
 
 * notes/issues/packaging-opticks-and-externals-for-use-on-gpu-cluster.rst
 
+
+cvmfs layout
+----------------
+
+::
+
+    /cvmfs/opticks.ihep.ac.cn/ok/releases/Opticks/0.0.0-alpha/x86_64-centos7-gcc48-geant4_10_04_p02-dbg/
+
+
+
 EOU
 }
 
-
-
-okdist-version(){ echo 0.1.0 ; }
-okdist-name(){    echo Opticks-$(okdist-version) ; }
-okdist-ext(){     echo .tar ; }  
-
-okdist-prefix(){  echo $(okdist-name)/$(opticks-okdist-dirlabel) ; }   ## hmm wrong way around ?
-okdist-file(){    echo $(okdist-name)$(okdist-ext) ; }
-
-okdist-path(){    echo $(opticks-dir)/$(okdist-file) ; }    
-okdist-ls(){      local p=$(okdist-path) ; ls -l $p ; du -h $p ; }
 okdist-tmp(){     echo /tmp/$USER/opticks/okdist-test ; }
 okdist-cd(){      cd $(okdist-tmp) ; }
 
-okdist-cvmfs-base-fake(){ echo /cvmfs/opticks.ihep.ac.cn ; } 
+okdist-releases-dir-default(){ echo /cvmfs/opticks.ihep.ac.cn/ok/releases ; }
+okdist-releases-dir(){ echo ${OKDIST_RELEASES_DIR:-$(okdist-releases-dir-default)} ; } 
+okdist-rcd(){ cd $(okdist-releases-dir) ; }
 
-okdist-untar(){    
+
+okdist-title(){   echo Opticks ; }
+okdist-version(){ echo 0.0.0_alpha ; }
+#okdist-ext(){     echo .tar.gz ; }   # slow to create and only half the size, .tar is better while testing
+okdist-ext(){     echo .tar ; }  
+okdist-prefix(){ echo $(okdist-title)-$(okdist-version)/$(opticks-okdist-dirlabel) ; }  
+okdist-name(){   echo $(okdist-title)-$(okdist-version)$(okdist-ext) ; }
+okdist-path(){   echo $(opticks-dir)/$(okdist-name) ; }    
+
+okdist-release-prefix(){ echo $(okdist-releases-dir)/$(okdist-prefix) ; } 
+
+
+okdist-info(){ cat << EOI
+$FUNCNAME
+=============
+
+   okdist-ext    : $(okdist-ext)
+   okdist-prefix : $(okdist-prefix)
+   okdist-name   : $(okdist-name)
+   okdist-path   : $(okdist-path)
+
+   okdist-tmp    : $(okdist-tmp)
+
+   opticks-dir   : $(opticks-dir)
+       Opticks installation directory 
+
+   okdist-releases-dir : $(okdist-releases-dir)
+        Directory holding binary releases, from which tarballs are exploded   
+
+   okdist-create
+        Creates distribution file in the installation directory  
+
+   okdist-explode
+        Explode distribution file from the releases directory 
+
+   okdist-release-prefix : $(okdist-release-prefix) 
+        Absolute path to exploded release distribution
+
+   okdist--
+       From the installation directory, creates tarball with 
+       all paths starting with the okdist-prefix  
+
+EOI
+}
+
+okdist-create()
+{
+   opticks-
+   opticks-cd  ## install directory 
+   okdist.py --distprefix $(okdist-prefix) --distname $(okdist-name)  
+
+   ls -al $(okdist-name) 
+   du -h $(okdist-name) 
+}
+
+
+okdist-ls(){      echo $FUNCNAME ; local p=$(okdist-path) ; ls -l $p ; du -h $p ; }
+
+okdist-explode(){ $FUNCNAME- $(okdist-path) ; }
+okdist-explode-(){    
     local msg="=== $FUNCNAME :"
-    local base=$(okdist-cvmfs-base-fake)
-    local tmp=$base/tmp
-    rm -rf $tmp
-    mkdir -p $tmp
-    local dist=$(okdist-path)
-    echo $msg explode tarball $dist into tmp $tmp
+
+    local path=$1 
+
+    if [ -z "$path" ]; then 
+        echo $msg expects path argument
+        return 1 
+    fi  
+    
+    if [ ! -f "$path" ]; then 
+        echo $msg path $path does not exist
+        return 2 
+    fi 
+
+    local iwd=$PWD
+    local releases_dir=$(okdist-releases-dir)
+    if [ ! -d $releases_dir ]; then 
+        echo $msg creating releases dir $releases_dir
+        mkdir -p $releases_dir
+    fi 
+    cd $releases_dir
+
+    local opt=""
+    [ -n "$VERBOSE" ] && opt="v"  
+
+    echo $msg exploding distribution $path from PWD $PWD
     case $(okdist-ext) in 
-       .tar.gz) tar zxvf $dist --strip 2 -C $tmp  ;;
-          .tar) tar  xvf $dist --strip 2 -C $tmp  ;;
+       .tar.gz) tar zx${opt}f $path ;;
+          .tar) tar  x${opt}f $path ;;
+    esac
+
+    cd $iwd
+}
+
+okdist-lst(){
+    local path=$(okdist-path)
+    case $(okdist-ext) in 
+       .tar.gz) tar ztvf $path ;;
+          .tar) tar  tvf $path ;;
     esac
 }
+
+okdist--(){        
+
+   okdist-create
+   okdist-explode
+
+   okdist-ls  
+}
+
+
+
+
+
+
+
+
+
+
 okdist-test-notes(){ cat << EON
 
 * ppm snaps defaulting to triangulated, still need --xanalytic switch.
@@ -80,7 +189,6 @@ EON
 okdist-snap-()
 {
     PATH=$(okdist-tmp)/lib:$PATH which OpSnapTest   
-
 }
 
 okdist-test()
@@ -96,31 +204,6 @@ okdist-test()
     local ppm=$(opticks-dir)/tmp/snap00000.ppm 
     ls -l $ppm
     open $ppm
-}
-
-
-okdist-t()
-{
-    okdist--         ## collect binaries into tarball
-
-    okdist-untar     ## explode into tmp dir
-    okdist-test      ## check usage of binaries
-}
-
-okdist--(){        
-   opticks-
-   opticks-cd       ## install directory 
-   okdist.py --prefix $(okdist-prefix) --ext $(okdist-ext) 
-   okdist-ls  
-}
-
-okdist-info(){ cat << EOI
-
-   okdist-prefix : $(okdist-prefix)
-   okdist-ext    : $(okdist-ext)
-   okdist-tmp    : $(okdist-tmp)
-
-EOI
 }
 
 

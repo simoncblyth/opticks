@@ -140,12 +140,7 @@ void OpticksViz::init()
 
     m_hub->setCtrl(this);  // For "command(char* ctrl)" interface from lower levels to route via OpticksViz
 
-    const char* shader_dir = getenv("OPTICKS_SHADER_DIR"); 
-    const char* shader_incl_path = getenv("OPTICKS_SHADER_INCL_PATH"); 
-    const char* shader_dynamic_dir = getenv("OPTICKS_SHADER_DYNAMIC_DIR"); 
-    // envvars normally not defined, using cmake configure_file values instead
-
-    m_scene      = new Scene(m_hub, shader_dir, shader_incl_path, shader_dynamic_dir ) ;
+    m_scene      = new Scene(m_hub) ;
     m_frame       = new Frame ; 
     m_interactor  = new Interactor(m_composition) ;  
 

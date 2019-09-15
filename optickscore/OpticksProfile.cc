@@ -18,6 +18,7 @@
  */
 
 #include <cstring>
+#include <csignal>
 #include <sstream>
 
 #include "SProc.hh"
@@ -116,7 +117,9 @@ T OpticksProfile::getMeta(const char* key, const char* fallback) const
 
 void OpticksProfile::setDir(const char* dir)
 {
+    LOG(LEVEL) << "dir " << m_dir ;  
     m_dir = strdup(dir);
+    //std::raise(SIGINT); 
 }
 
 const char* OpticksProfile::getDir() const
@@ -331,11 +334,12 @@ void OpticksProfile::accumulateExport()
 
 void OpticksProfile::save()
 {
-   save(m_dir); 
+    LOG(LEVEL) << "dir " << m_dir ;  
+    save(m_dir); 
 }
 void OpticksProfile::load()
 {
-   load(m_dir); 
+    load(m_dir); 
 }
 
 

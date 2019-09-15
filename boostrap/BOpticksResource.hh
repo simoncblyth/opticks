@@ -79,6 +79,10 @@ class BRAP_API  BOpticksResource {
     protected:
         static const char* RESULTS_PREFIX_KEY  ; 
         static const char* RESULTS_PREFIX_DEFAULT  ; 
+    protected:
+        static const char* EVENT_BASE_KEY  ; 
+        static const char* EVENT_BASE_DEFAULT  ; 
+    protected:
         static const char* INSTALL_PREFIX_KEY  ; 
         static const char* INSTALL_PREFIX_KEY2  ; 
     protected:
@@ -145,6 +149,7 @@ class BRAP_API  BOpticksResource {
         static std::string BuildDir(const char* proj);
         static std::string BuildProduct(const char* proj, const char* name);
         static const char* ResolveResultsPrefix();
+        static const char* ResolveEventBase();
         static const char* ResolveInstallPrefix();
         static const char* ResolveSharedCachePrefix();
         static const char* ResolveUserCachePrefix();
@@ -153,6 +158,7 @@ class BRAP_API  BOpticksResource {
         static const char* RNGCacheDir();
         static const char* RNGDir();
         static const char* RuncacheDir();
+        static const char* ShaderDir();
         static const char* ResultsDir();
         static const char* ResourceDir();
         static const char* GenstepsDir();

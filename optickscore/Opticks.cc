@@ -461,6 +461,17 @@ const char* Opticks::getProfileDir() const
 }
 void Opticks::setProfileDir(const char* dir)
 {
+    LOG(fatal) << " dir " << dir ; 
+    bool is_cvmfs = 
+           dir[0] == '/' && 
+           dir[1] == 'c' && 
+           dir[2] == 'v' &&
+           dir[3] == 'm' &&
+           dir[4] == 'f' &&
+           dir[5] == 's' &&
+           dir[6] == '/' ;
+
+    assert( !is_cvmfs );   
     m_profile->setDir(dir);
 }
 void Opticks::saveProfile()
@@ -2190,6 +2201,14 @@ bool Opticks::isEnabledLegacyG4DAE() const
     return m_cfg->hasOpt("enabled_legacy_g4dae") ;  
 }
 
+bool Opticks::isLocalG4() const 
+{
+    return m_cfg->hasOpt("localg4") ;  
+}
+
+
+
+
 
 
 
@@ -2407,10 +2426,7 @@ Invoked by Opticks::setSpaceDomain
 void Opticks::postgeometry()
 {
     configureDomains();
-
-
     setProfileDir(getEventFold());
-
 }
 
 

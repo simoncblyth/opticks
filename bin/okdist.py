@@ -22,7 +22,6 @@ class Dist(object):
          These are the cmake exported targets, 
           so for CMake level integration will need to include them  
 
-
     Bases
          
     lib 
@@ -43,9 +42,14 @@ class Dist(object):
     extras = []
 
 
-    def __init__(self, prefix, ext=".tar.gz"):
+    def __init__(self, distprefix, distname):
         """
-        :param prefix: example Opticks-0.1.0/x86_64-centos7-gcc48-dbg 
+        :param distprefix: top level dir structure within distribution 
+        :param distname:
+
+        Example of three element prefix::
+
+             Opticks/0.0.0_alpha/x86_64-centos7-gcc48-geant4_10_04_p02-dbg
 
         Create a tarfile named using the first portion of the prefix 
         with upper containing directory structure using the prefix 
@@ -57,21 +61,24 @@ class Dist(object):
             tar zxvf Opticks-0.1.0.tar.gz --strip 2
 
         """
-        assert len(prefix.split("/")) == 2 , "expecting two element prefix %s " % prefix 
+        assert len(distprefix.split("/")) in [2,3] , "expecting 2 or 3 element distprefix %s " % distprefix 
 
-        distname = os.path.dirname(prefix)  
-        tarname = "%s%s" % (distname, ext)
-
-        if ext == ".tar.gz":
+        if distname.endswith(".tar.gz"): 
             mode = "w:gz"
-        else:
+        elif distname.endswith(".tar"):
             mode = "w"
-        pass  
+        elif distname.endswith(".zip"):
+            mode = None
+        else:
+            mode = None
+        pass 
 
-        log.info("writing %s " % tarname )
+        assert not mode is None, "distribution format for distname %s is not supported " % (distname)
+        log.info("writing distname %s mode %s " % (distname, mode) )
 
-        self.prefix = prefix
-        self.tar = tarfile.open(tarname, mode)    
+        self.prefix = distprefix
+        self.dist = tarfile.open(distname, mode)    
+
         for base in self.bases:
             self.recurse_(base, 0) 
         pass
@@ -79,7 +86,7 @@ class Dist(object):
             assert os.path.exists(extra), extra
             self.add(extra)
         pass 
-        self.tar.close()
+        self.dist.close()
 
     def exclude_dir(self, name):
         return name in self.exclude_dir_name
@@ -88,9 +95,9 @@ class Dist(object):
         return name.startswith("libG4") or name.endswith(".log")
 
     def add(self, path):
-        print(path)
+        #print(path)
         arcname = os.path.join(self.prefix,path) 
-        self.tar.add(path, arcname=arcname, recursive=False)
+        self.dist.add(path, arcname=arcname, recursive=False)
 
     def recurse_(self, base, depth ):
         """
@@ -120,16 +127,17 @@ pass
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(__doc__)
-    parser.add_argument(     "--prefix",  help="Distribution prefix" )
-    parser.add_argument(     "--ext",  default=".tar", help="Distribution extension, expect .tar or .tar.gz" )
+    parser.add_argument(     "--distname",  help="Distribution name including the extension, expect .tar or .tar.gz" )
+    parser.add_argument(     "--distprefix",  help="Distribution prefix, ie the top level directory structure within distribution file." )
     parser.add_argument(     "--level", default="info", help="logging level" ) 
     args = parser.parse_args()
 
     fmt = '[%(asctime)s] p%(process)s {%(pathname)s:%(lineno)d} %(levelname)s - %(message)s'
     logging.basicConfig(level=getattr(logging,args.level.upper()), format=fmt)
-    log.info("prefix %s ext %s " % (args.prefix, args.ext))
 
-    dist = Dist(args.prefix, ext=args.ext )
+    log.info("distprefix %s distname %s " % (args.distprefix, args.distname))
+
+    dist = Dist(args.distprefix, args.distname )
 
 
 

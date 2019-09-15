@@ -61,14 +61,18 @@ namespace fs = boost::filesystem;
 const plog::Severity OpticksResource::LEVEL = PLOG::EnvLevel("OpticksResource", "DEBUG") ; 
 
 /*
-TODO:
-   migrate everything that does not need the Opticks instance (ie the commandline arguments) 
+OpticksResource::OpticksResource
+----------------------------------
+
+Instanciated by Opticks::initResource during configure.
+
+TODO
+~~~~~
+
+1. migrate everything that does not need the Opticks instance (ie the commandline arguments) 
    down into the base class  BOpticksResource
 
-
-   Ideally want to slim this class... to almost nothing 
-    
-
+2. Ideally want to slim this class... to almost nothing 
 
 */
 
@@ -245,7 +249,7 @@ void OpticksResource::init()
    BStr::split(m_detector_types, "GScintillatorLib,GMaterialLib,GSurfaceLib,GBndLib,GSourceLib", ',' ); 
    BStr::split(m_resource_types, "GFlags,OpticksColors", ',' ); 
 
-   readG4Environment();
+   // readG4Environment();  moved to OpticksResource::SetupG4Environment invoked from CG4::init when --localg4 
    readOpticksEnvironment();
 
    if( hasKey() )  
@@ -485,7 +489,7 @@ void OpticksResource::assignDetectorName()
 
 
 
-void OpticksResource::readG4Environment()
+void OpticksResource::SetupG4Environment()
 {
     // NB this relpath needs to match that in g4-;g4-export-ini
     //    it is relative to the install_prefix which 
@@ -493,10 +497,10 @@ void OpticksResource::readG4Environment()
     //
     const char* inipath = InstallPathG4ENV();
 
-    m_g4env = readIniEnvironment(inipath);
-    if(m_g4env)
+    BEnv* g4env = ReadIniEnvironment(inipath);
+    if(g4env)
     {
-        m_g4env->setEnvironment();
+        g4env->setEnvironment();
     }
     else
     {
@@ -508,16 +512,41 @@ void OpticksResource::readG4Environment()
 }
 
 
+
+
+
+
+/**
+OpticksResource::readOpticksEnvironment
+-------------------------------------------
+
+NB this relpath needs to match that in opticksdata-;opticksdata-export-ini
+   it is relative to the install_prefix which 
+   is canonically /usr/local/opticks
+
+Formerly used to setup OPTICKSDATA_DAEPATH envvars::
+
+    [blyth@localhost opticks]$ cat opticksdata/config/opticksdata.ini
+    OPTICKSDATA_DAEPATH_DFAR=/home/blyth/local/opticks/opticksdata/export/Far_VGDX_20140414-1256/g4_00.dae
+    OPTICKSDATA_DAEPATH_DLIN=/home/blyth/local/opticks/opticksdata/export/Lingao_VGDX_20140414-1247/g4_00.dae
+    OPTICKSDATA_DAEPATH_DPIB=/home/blyth/local/opticks/opticksdata/export/dpib/cfg4.dae
+    OPTICKSDATA_DAEPATH_DYB=/home/blyth/local/opticks/opticksdata/export/DayaBay_VGDX_20140414-1300/g4_00.dae
+    OPTICKSDATA_DAEPATH_J1707=/home/blyth/local/opticks/opticksdata/export/juno1707/g4_00.dae
+    OPTICKSDATA_DAEPATH_J1808=/home/blyth/local/opticks/opticksdata/export/juno1808/g4_00.dae
+    OPTICKSDATA_DAEPATH_JPMT=/home/blyth/local/opticks/opticksdata/export/juno/test3.dae
+    OPTICKSDATA_DAEPATH_LXE=/home/blyth/local/opticks/opticksdata/export/LXe/g4_00.dae
+    [blyth@localhost opticks]$ 
+
+**/
+
 void OpticksResource::readOpticksEnvironment()
 {
-    // NB this relpath needs to match that in opticksdata-;opticksdata-export-ini
-    //    it is relative to the install_prefix which 
-    //    is canonically /usr/local/opticks
-    //
+    // assert(0) ; // around 90/412 fails with this in place
+
     const char* inipath = InstallPathOKDATA();
     LOG(LEVEL) << " inipath " << inipath ; 
 
-    m_okenv = readIniEnvironment(inipath);
+    m_okenv = ReadIniEnvironment(inipath);
     if(m_okenv)
     {
         m_okenv->setEnvironment();
@@ -531,12 +560,12 @@ void OpticksResource::readOpticksEnvironment()
     }
 }
 
-BEnv* OpticksResource::readIniEnvironment(const std::string& inipath)
+BEnv* OpticksResource::ReadIniEnvironment(const std::string& inipath)
 {
     BEnv* env = NULL ; 
     if(BFile::ExistsFile(inipath.c_str()))
     {
-        LOG(verbose) << "OpticksResource::readIniEnvironment" 
+        LOG(verbose) 
                   << " from " << inipath
                   ;
 

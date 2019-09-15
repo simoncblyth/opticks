@@ -35,6 +35,8 @@ const char* OpticksEventSpec::G4_ = "G4" ;
 const char* OpticksEventSpec::OK_ = "OK" ; 
 const char* OpticksEventSpec::NO_ = "NO" ; 
 
+const plog::Severity OpticksEventSpec::LEVEL = PLOG::EnvLevel("OpticksEventSpec", "DEBUG") ; 
+
 
 OpticksEventSpec::OpticksEventSpec(OpticksEventSpec* spec) 
     :
@@ -146,6 +148,15 @@ const char* OpticksEventSpec::formDir() const
     const char* tag = m_tag ; 
     const char* anno = NULL ; 
     std::string dir = BOpticksEvent::directory(pfx, top, sub, tag, anno);    
+
+    LOG(LEVEL) 
+        << " pfx " << pfx
+        << " top " << top
+        << " sub " << sub
+        << " tag " << tag
+        << " dir " << dir
+        ;
+
     return strdup(dir.c_str()) ; 
 }
 const char* OpticksEventSpec::formRelDir() const  
@@ -165,6 +176,14 @@ const char* OpticksEventSpec::formFold() const
     const char* tag = NULL ; 
     const char* anno = NULL ; 
     std::string dir = BOpticksEvent::directory(pfx, top, sub, tag, anno);    
+
+    LOG(LEVEL) 
+        << " pfx " << pfx
+        << " top " << top
+        << " sub " << sub
+        << " dir " << dir
+        ;
+
     return strdup(dir.c_str()) ; 
 }
 

@@ -17,18 +17,14 @@
  * limitations under the License.
  */
 
-// ggv-;ggv-pmt-test --cdetector
-// ggv-;ggv-pmt-test --cdetector --export --exportconfig /tmp/test.dae
-
 #include <cassert>
 #include "CFG4_BODY.hh"
 
 #include "Opticks.hh"
+#include "OpticksResource.hh"
 #include "OpticksHub.hh"
 #include "OpticksMode.hh"
 #include "OpticksCfg.hh"
-
-//#include "NGeoTestConfig.hpp"
 
 #include "CG4.hh"
 #include "CMaterialLib.hh"
@@ -37,31 +33,13 @@
 
 #include "G4VPhysicalVolume.hh"
 
-#ifdef WITH_G4DAE
-#include "G4DAEParser.hh"
-#endif
-
 #include "NBoundingBox.hpp"
 
-#include "BRAP_LOG.hh"
-#include "NPY_LOG.hh"
-#include "GGEO_LOG.hh"
-#include "OKCORE_LOG.hh"
-#include "OKGEO_LOG.hh"
-#include "CFG4_LOG.hh"
-#include "PLOG.hh"
+#include "OPTICKS_LOG.hh"
 
 int main(int argc, char** argv)
 {
-    //PLOG_(argc, argv)
-    PLOG_COLOR(argc, argv)
-
-    BRAP_LOG__ ; 
-    NPY_LOG__ ; 
-    GGEO_LOG__ ; 
-    OKCORE_LOG__ ; 
-    OKGEO_LOG__ ; 
-    CFG4_LOG__ ; 
+    OPTICKS_LOG(argc, argv)
 
     LOG(info) << argv[0] ; 
 
@@ -71,6 +49,9 @@ int main(int argc, char** argv)
 
     Opticks ok(argc, argv, forced);
     ok.setModeOverride( OpticksMode::CFG4_MODE );  // override COMPUTE/INTEROP mode, as those do not apply to CFG4
+
+    OpticksResource::SetupG4Environment(); 
+
 
     OpticksHub hub(&ok);
 
@@ -96,8 +77,6 @@ int main(int argc, char** argv)
 
     G4VPhysicalVolume* world_pv = detector->getTop();
     assert(world_pv);
-
-
 
 
 

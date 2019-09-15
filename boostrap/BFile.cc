@@ -238,7 +238,11 @@ std::string BFile::ResolveKey( const char* key )
         {
             evalue = usertmpdir("/tmp","opticks",NULL);
         } 
-        LOG(verbose) << "replacing $OPTICKS_EVENT_BASE  with " << evalue ; 
+        LOG(LEVEL) 
+           << "replacing $OPTICKS_EVENT_BASE  " 
+           << " evalue " << evalue
+           << " evtbase " << evtbase
+           ; 
     }
     else if(strcmp(key,"INSTALLCACHE_DIR")==0) 
     {

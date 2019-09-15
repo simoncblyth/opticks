@@ -214,6 +214,15 @@ const char* BOpticksResource::ResolveResultsPrefix()  // static
     return SSys::getenvvar(RESULTS_PREFIX_KEY, RESULTS_PREFIX_DEFAULT);  
 }
 
+const char* BOpticksResource::EVENT_BASE_DEFAULT = "$TMP" ; 
+const char* BOpticksResource::EVENT_BASE_KEY = "OPTICKS_EVENT_BASE" ; 
+const char* BOpticksResource::ResolveEventBase()  // static
+{
+    return SSys::getenvvar(EVENT_BASE_KEY, EVENT_BASE_DEFAULT);  
+}
+
+
+
 const char* BOpticksResource::INSTALL_PREFIX_KEY = "OPTICKS_INSTALL_PREFIX" ; 
 const char* BOpticksResource::INSTALL_PREFIX_KEY2 = "OPTICKSINSTALLPREFIX" ; 
 
@@ -242,11 +251,11 @@ void BOpticksResource::initInstallPrefix()
     int rc = SSys::setenvvar(INSTALL_PREFIX_KEY, m_install_prefix, overwrite );  
     // always set for uniformity 
 
-    LOG(verbose) << "OpticksResource::adoptInstallPrefix " 
-               << " install_prefix " << m_install_prefix  
-               << " key " << INSTALL_PREFIX_KEY
-               << " rc " << rc
-              ;   
+    LOG(verbose) 
+        << " install_prefix " << m_install_prefix  
+        << " key " << INSTALL_PREFIX_KEY
+        << " rc " << rc
+        ;   
  
     assert(rc==0); 
 
@@ -465,6 +474,7 @@ const char* BOpticksResource::RNGDir(){         return MakePath(RNGCacheDir(), "
 
 const char* BOpticksResource::RuncacheDir(){    return MakePath(ResolveUserCachePrefix(), "runcache",  NULL); }
 
+const char* BOpticksResource::ShaderDir(){      return MakePath(ResolveInstallPrefix(), "gl",  NULL); }
 const char* BOpticksResource::InstallCacheDir(){return MakePath(ResolveInstallPrefix(), "installcache",  NULL); }
 const char* BOpticksResource::OKCInstallPath(){ return MakePath(ResolveInstallPrefix(), "installcache", "OKC"); }
 
@@ -497,10 +507,6 @@ const char* BOpticksResource::getDebuggingIDPATH() {    return m_debugging_idpat
 const char* BOpticksResource::getDebuggingIDFOLD() {    return m_debugging_idfold ; } 
 
 
-
-
-
-
 // note taking from GGeoTest::initCreateCSG for inclusion in evt metadata
 
 void BOpticksResource::setTestCSGPath(const char* testcsgpath)
@@ -519,9 +525,6 @@ const char* BOpticksResource::getTestConfig() const
 {
     return m_testconfig  ;
 }
-
-
-
 
 
 const char* BOpticksResource::MakeSrcPath(const char* srcpath, const char* ext) 
@@ -550,20 +553,6 @@ const char* BOpticksResource::MakeUserDir(const char* sub, const char* rel)
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 // cannot be static as IDPATH not available statically 
 const char* BOpticksResource::makeIdPathPath(const char* rela, const char* relb, const char* relc, const char* reld) 
 {
@@ -572,14 +561,19 @@ const char* BOpticksResource::makeIdPathPath(const char* rela, const char* relb,
 }
 
 
+/**
+BOpticksResource::setSrcPath  THIS IS SLATED FOR REMOVAL
+-----------------------------------------------------------
+
+Invoked by setupViaSrc or setupViaID
+
+example srcpath : /usr/local/opticks/opticksdata/export/DayaBay_VGDX_20140414-1300/g4_00.dae
+NB not in geocache, points to actual G4DAE export from opticksdata 
+
+**/
+
 void BOpticksResource::setSrcPath(const char* srcpath)  
 {
-    // invoked by setupViaSrc or setupViaID
-    //
-    //
-    // example srcpath : /usr/local/opticks/opticksdata/export/DayaBay_VGDX_20140414-1300/g4_00.dae
-    // NB not in geocache, points to actual G4DAE export from opticksdata 
-
     assert( srcpath );
     m_srcpath = strdup( srcpath );
 
@@ -617,10 +611,6 @@ void BOpticksResource::setSrcPath(const char* srcpath)
 
     m_res->addName("idname", m_idname ); 
     m_res->addName("idfile", m_idfile ); 
-
-
-
-
 }
 
 void BOpticksResource::setSrcDigest(const char* srcdigest)
@@ -648,21 +638,42 @@ BOpticksResource::setupViaKey
 ===============================
 
 Invoked from OpticksResource::init only when 
-BOpticksKey::SetKey called prior to Opticks instanciation.   
+BOpticksKey::SetKey called prior to Opticks instanciation, 
+ie when using "--envkey" option.
+There is no opticksdata srcpath or associated 
+opticksdata paths for running in this direct mode.
 
 Legacy mode alternative to this is setupViaSrc.
 
 This is used for live/direct mode running, 
 see for example CerenkovMinimal ckm- 
 
+
+Formerly
+------------
+
+* first geometry + genstep collecting and writing executable is special, 
+  it writes its event and genstep into a distinctive "standard" directory (resource "srcevtbase") 
+  within the geocache keydir 
+
+* all other executables sharing the same keydir can put their events underneath 
+  a relpath named after the executable (resource "evtbase")   
+
+
+Where to place events with shared geocache ?
+-----------------------------------------------
+
+In order to support running from a shared geocache cannot standardly
+write events into geocache.
+
+When working with lots of geometries it makes sense for events to
+reside in geocache, but thats not the standard mode of operation. 
+Hmm could append the geocache digest to the directory path ?
+
 **/
 
 void BOpticksResource::setupViaKey()
 {
-    // * this in invoked only for G4LIVE running 
-    // * there is no opticksdata srcpath or associated 
-    //   opticksdata paths for live running 
-
     assert( !m_setup ) ;  
     m_setup = true ; 
     assert( m_key ) ; // BOpticksResource::setupViaKey called with a NULL key 
@@ -771,6 +782,7 @@ void BOpticksResource::setupViaKey()
     if(!m_testgeo)
     {
         m_evtbase = m_idpath ;  
+        LOG(LEVEL) << " evtbase from idpath " << m_evtbase ;    
         m_res->addDir( "evtbase", m_evtbase ); 
     }
 
@@ -782,22 +794,7 @@ void BOpticksResource::setupViaKey()
     // KeySource means name of current executable is same as the one that created the geocache
     m_evtbase = isKeySource() ? strdup(m_srcevtbase) : makeIdPathPath(exename ) ;  
     m_res->addDir( "evtbase", m_evtbase ); 
-
 */
-
-
-
-
-/**
-   
-* first geometry + genstep collecting and writing executable is special, 
-  it writes its event and genstep into a distinctive "standard" directory (resource "srcevtbase") 
-  within the geocache keydir 
-
-* all other executables sharing the same keydir can put their events underneath 
-  a relpath named after the executable (resource "evtbase")   
-
-**/
 
 }
 

@@ -16,6 +16,27 @@ Naming the Opticks distribution
   so its covered by the Opticks version. 
 
 
+CVMFS releases layout
+--------------------------
+
+Maybe like this::
+
+    [blyth@lxslc701 releases]$ l /cvmfs/sft.cern.ch/lcg/releases/XercesC/3.1.3-b3bf1/x86_64-centos7-gcc9-opt/
+    total 21
+    drwxr-xr-x 3 cvmfs cvmfs 4096 Jul 13 00:05 lib
+    -rw-r--r-- 1 cvmfs cvmfs    0 Jul 12 18:04 gen-post-install.log
+    -rw-r--r-- 1 cvmfs cvmfs 1315 Jul 12 18:04 XercesC-env.sh
+    drwxr-xr-x 2 cvmfs cvmfs 4096 Jul 12 18:04 logs
+    -rw-r--r-- 1 cvmfs cvmfs   14 Jul 12 18:04 version.txt
+    drwxr-xr-x 2 cvmfs cvmfs 4096 Jul 12 18:04 bin
+    drwxr-xr-x 3 cvmfs cvmfs 4096 Jul 12 18:04 include
+    [blyth@lxslc701 releases]$ 
+
+::
+
+    /cvmfs/opticks.ihep.ac.cn/ok/releases/Opticks/0.0.0-alpha/x86_64-centos7-gcc48-geant4_10_04_p02-dbg/
+
+
 Issue : what to include in binary dist ?  
 --------------------------------------------
 

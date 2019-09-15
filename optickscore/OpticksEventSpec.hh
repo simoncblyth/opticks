@@ -22,6 +22,8 @@
 #include <cstddef>
 #include <string>
 
+#include "plog/Severity.h"
+
 #include "OKCORE_API_EXPORT.hh"
 #include "OKCORE_HEAD.hh"
 
@@ -41,6 +43,8 @@ are instanciated by Opticks::defineEventSpec as part of Opticks::configure.
 **/
 
 class OKCORE_API OpticksEventSpec {
+   public:
+        static const plog::Severity LEVEL ; 
    public:
         static const char* OK_ ; 
         static const char* G4_ ; 

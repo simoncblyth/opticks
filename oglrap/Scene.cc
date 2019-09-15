@@ -45,6 +45,7 @@
 
 // opticks-
 #include "Opticks.hh"
+#include "OpticksResource.hh"
 #include "OpticksConst.hh"
 #include "OpticksEvent.hh"
 
@@ -130,49 +131,106 @@ const char* Scene::getRecordStyleName(Scene::RecordStyle_t style)
    return NULL ; 
 }
 
-
-
-
-
-
 const char* Scene::getRecordStyleName()
 {
    return getRecordStyleName(getRecordStyle());
 }
+
+/**
+Scene::Scene
+--------------
+
+Instanciated from OpticksViz::init 
+
+
+**/
+
+Scene::Scene(OpticksHub* hub) 
+    :
+    m_hub(hub),
+    m_ok(hub->getOpticks()),
+    m_shader_dir(NULL),
+    m_shader_dynamic_dir(NULL),
+    m_shader_incl_path(NULL),
+    m_device(NULL),
+    m_colors(NULL),
+    m_interactor(NULL),
+    m_num_instance_renderer(0),
+    m_geometry_renderer(NULL),
+    m_global_renderer(NULL),
+    m_globalvec_renderer(NULL),
+    m_raytrace_renderer(NULL),
+    m_axis_renderer(NULL),
+    m_genstep_renderer(NULL),
+    m_nopstep_renderer(NULL),
+    m_photon_renderer(NULL),
+    m_source_renderer(NULL),
+    m_record_renderer(NULL),
+    m_altrecord_renderer(NULL),
+    m_devrecord_renderer(NULL),
+    m_photons(NULL),
+    m_geolib(NULL),
+    m_mesh0(NULL),
+    m_composition(m_hub->getComposition()),
+    m_colorbuffer(NULL),
+    m_touch(0),
+    m_global_mode_ptr(NULL),
+    m_globalvec_mode_ptr(NULL),
+    m_axis_mode(true),
+    m_genstep_mode(true),
+    m_nopstep_mode(true),
+    m_photon_mode(true),
+    m_source_mode(false),
+    m_record_mode(true),
+    m_record_style(ALTREC),
+    m_instance_style(IVIS),
+    m_skipgeo_style(NOSKIPGEO),
+    m_skipevt_style(NOSKIPEVT),
+    m_initialized(false),
+    m_time_fraction(0.f),
+    m_instcull(true),
+    m_verbosity(0),
+    m_render_count(0)
+{
+    init();
+    fInstance = this ; 
+
+    for(unsigned int i=0 ; i < MAX_INSTANCE_RENDERER ; i++ ) 
+    {
+        m_instance_renderer[i] = NULL ; 
+        m_instlodcull[i] = NULL ; 
+        m_bbox_renderer[i] = NULL ; 
+        m_instance_mode[i] = false ; 
+        m_bbox_mode[i] = false ; 
+    }
+}
+
  
 void Scene::init()
 {
-
     m_content_style = m_composition->getContentStyle(); 
     m_global_mode_ptr = m_composition->getGlobalModePtr(); 
     m_globalvec_mode_ptr = m_composition->getGlobalVecModePtr(); 
 
 
-    LOG(debug) << "Scene::init" ; 
-    LOG(verbose) << "Scene::init (config from cmake)"
-              << " OGLRAP_INSTALL_PREFIX " << OGLRAP_INSTALL_PREFIX
-              << " OGLRAP_SHADER_DIR " << OGLRAP_SHADER_DIR
-              << " OGLRAP_SHADER_INCL_PATH " << OGLRAP_SHADER_INCL_PATH
-              << " OGLRAP_SHADER_DYNAMIC_DIR " << OGLRAP_SHADER_DYNAMIC_DIR
-              ;   
+/*
+    LOG(LEVEL)
+          << " OGLRAP_INSTALL_PREFIX " << OGLRAP_INSTALL_PREFIX
+          << " OGLRAP_SHADER_DIR " << OGLRAP_SHADER_DIR
+          << " OGLRAP_SHADER_INCL_PATH " << OGLRAP_SHADER_INCL_PATH
+          << " OGLRAP_SHADER_DYNAMIC_DIR " << OGLRAP_SHADER_DYNAMIC_DIR
+          ;   
+*/
 
-
-    if(m_shader_dir == NULL)
-    {
-        m_shader_dir = strdup(OGLRAP_SHADER_DIR);
-    }
-    if(m_shader_incl_path == NULL)
-    {
-        m_shader_incl_path = strdup(OGLRAP_SHADER_INCL_PATH);
-    }
-    if(m_shader_dynamic_dir == NULL)
-    {
-        m_shader_dynamic_dir = strdup(OGLRAP_SHADER_DYNAMIC_DIR);
-    }
+    const char* shader_dir = OpticksResource::ShaderDir(); 
+    m_shader_dir = strdup(shader_dir) ; 
+    m_shader_incl_path = strdup(shader_dir);
+    m_shader_dynamic_dir = strdup(shader_dir);
 }
 
 void Scene::write(BDynamicDefine* dd)
 {
+    LOG(LEVEL) << "shader_dynamic_dir " << m_shader_dynamic_dir ; 
     dd->write( m_shader_dynamic_dir, "dynamic.h" );
 }
 
@@ -965,67 +1023,6 @@ unsigned int Scene::getTarget()
     return m_hub->getTarget() ;
 }
 
-
-
-Scene::Scene(OpticksHub* hub, const char* shader_dir, const char* shader_incl_path, const char* shader_dynamic_dir) 
-    :
-    m_hub(hub),
-    m_ok(hub->getOpticks()),
-    m_shader_dir(shader_dir ? strdup(shader_dir): NULL ),
-    m_shader_dynamic_dir(shader_dynamic_dir ? strdup(shader_dynamic_dir): NULL),
-    m_shader_incl_path(shader_incl_path ? strdup(shader_incl_path): NULL),
-    m_device(NULL),
-    m_colors(NULL),
-    m_interactor(NULL),
-    m_num_instance_renderer(0),
-    m_geometry_renderer(NULL),
-    m_global_renderer(NULL),
-    m_globalvec_renderer(NULL),
-    m_raytrace_renderer(NULL),
-    m_axis_renderer(NULL),
-    m_genstep_renderer(NULL),
-    m_nopstep_renderer(NULL),
-    m_photon_renderer(NULL),
-    m_source_renderer(NULL),
-    m_record_renderer(NULL),
-    m_altrecord_renderer(NULL),
-    m_devrecord_renderer(NULL),
-    m_photons(NULL),
-    m_geolib(NULL),
-    m_mesh0(NULL),
-    m_composition(m_hub->getComposition()),
-    m_colorbuffer(NULL),
-    m_touch(0),
-    m_global_mode_ptr(NULL),
-    m_globalvec_mode_ptr(NULL),
-    m_axis_mode(true),
-    m_genstep_mode(true),
-    m_nopstep_mode(true),
-    m_photon_mode(true),
-    m_source_mode(false),
-    m_record_mode(true),
-    m_record_style(ALTREC),
-    m_instance_style(IVIS),
-    m_skipgeo_style(NOSKIPGEO),
-    m_skipevt_style(NOSKIPEVT),
-    m_initialized(false),
-    m_time_fraction(0.f),
-    m_instcull(true),
-    m_verbosity(0),
-    m_render_count(0)
-{
-    init();
-    fInstance = this ; 
-
-    for(unsigned int i=0 ; i < MAX_INSTANCE_RENDERER ; i++ ) 
-    {
-        m_instance_renderer[i] = NULL ; 
-        m_instlodcull[i] = NULL ; 
-        m_bbox_renderer[i] = NULL ; 
-        m_instance_mode[i] = false ; 
-        m_bbox_mode[i] = false ; 
-    }
-}
 
 void Scene::setVerbosity(unsigned verbosity)
 {

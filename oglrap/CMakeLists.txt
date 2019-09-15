@@ -16,7 +16,6 @@ find_package(OpticksGeo  REQUIRED CONFIG)
 Note that the OGLRap_Config.hh generated header is not installed, 
 as it is just used internally by Scene.cc direct from inc in the build dir. 
 This is how the shader sources are found at runtime.
-#]=]
 
 set(OGLRAP_GENERATED_HEADER OGLRap_Config.hh)
 set(OGLRAP_INSTALL_PREFIX     "${CMAKE_INSTALL_PREFIX}")
@@ -24,6 +23,8 @@ set(OGLRAP_SHADER_DIR         "${CMAKE_INSTALL_PREFIX}/gl")
 set(OGLRAP_SHADER_DYNAMIC_DIR "${CMAKE_INSTALL_PREFIX}/gl")
 set(OGLRAP_SHADER_INCL_PATH   "${CMAKE_INSTALL_PREFIX}/gl")
 configure_file( ${OGLRAP_GENERATED_HEADER}.in inc/${OGLRAP_GENERATED_HEADER} )
+
+#]=]
 
 
 ## NB only classes needing OpenGL should be here 

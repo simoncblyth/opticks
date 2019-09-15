@@ -25,6 +25,7 @@
 
 // okc-
 #include "Opticks.hh"
+#include "OpticksResource.hh"
 #include "OpticksFlags.hh"
 #include "OpticksEvent.hh"
 #include "OpticksPhoton.h"
@@ -129,6 +130,10 @@ int CG4::preinit()
 {
     OK_PROFILE("_CG4::CG4");
     if(m_ok->hasOpt("cg4sigint")) std::raise(SIGINT);   // <-- handy location for setting G4 breakpoints
+
+    //if(m_ok->isLocalG4())
+    OpticksResource::SetupG4Environment();  // <-- requires the g4- config ini file
+
     return 0 ; 
 }
 
@@ -172,10 +177,10 @@ CG4::CG4(OpticksHub* hub)
     (*m_log)("DONE");
 }
 
-
 void CG4::init()
 {
     LOG(LEVEL) << " ctx " << m_ctx.desc() ; 
+
     initialize();
 }
 

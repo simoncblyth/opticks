@@ -79,10 +79,12 @@ TODO:
 
 
 class OKCORE_API OpticksResource : public BOpticksResource {
+
+    public:
+       static void SetupG4Environment();
+       static BEnv* ReadIniEnvironment(const std::string& relpath);
     public:
        static const plog::Severity LEVEL ;  
-
-
     public:
        static bool existsFile(const char* path);
        static bool existsFile(const char* dir, const char* name);
@@ -92,8 +94,6 @@ class OKCORE_API OpticksResource : public BOpticksResource {
        bool isValid();
     private:
        void init();
-       BEnv* readIniEnvironment(const std::string& relpath);
-       void readG4Environment();
        void readOpticksEnvironment();
        void readEnvironment();
        void readMetadata();

@@ -32,7 +32,7 @@
 #include "PLOG.hh"
 
 
-const plog::Severity BOpticksEvent::LEVEL = debug ; 
+const plog::Severity BOpticksEvent::LEVEL = PLOG::EnvLevel("BOpticksEvent", "DEBUG" ) ; 
 
 const char* BOpticksEvent::DEFAULT_DIR_TEMPLATE_NOTAG = "$OPTICKS_EVENT_BASE/$0/evt/$1/$2" ;  
 const char* BOpticksEvent::DEFAULT_DIR_TEMPLATE       = "$OPTICKS_EVENT_BASE/$0/evt/$1/$2/$3" ; 

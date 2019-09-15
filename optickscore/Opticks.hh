@@ -203,6 +203,7 @@ class OKCORE_API Opticks {
        bool isValid();
        bool hasVolnames() const ; 
        bool isEnabledLegacyG4DAE() const ;  // --enabled_legacy_g4dae 
+       bool isLocalG4() const ; // --localg4 
    public:
        int  rc() const ;
        void dumpRC() const ;

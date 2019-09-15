@@ -207,7 +207,7 @@ class OGLRAP_API Scene : public NConfigurable, public SCtrl  {
         void setInstanceStyle(int style);
         void applyInstanceStyle();
    public:
-        Scene(OpticksHub* hub, const char* shader_dir=NULL, const char* shader_incl_path=NULL, const char* shader_dynamic_dir=NULL );
+        Scene(OpticksHub* hub);
    private:
         void init();
    public:
