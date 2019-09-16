@@ -21,6 +21,7 @@
 
 #include "NPY.hpp"
 #include "OXPPNS.hh"
+#include "OContext.hh"
 #include "OConfig.hh"
 #include "OPTICKS_LOG.hh"
 
@@ -29,6 +30,7 @@ int main(int argc, char** argv)
     OPTICKS_LOG(argc, argv);    
     LOG(info) << " ok " ; 
 
+    OContext::SetupOptiXCachePathEnvvar(); 
     optix::Context context = optix::Context::create();
 
     unsigned num_ray_type = context->getRayTypeCount(); 

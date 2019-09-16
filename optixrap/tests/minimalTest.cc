@@ -18,6 +18,7 @@
  */
 
 #include "OptiXTest.hh"
+#include "OContext.hh"
 #include "NPY.hpp"
 #include "OPTICKS_LOG.hh"
 
@@ -26,11 +27,13 @@ int main( int argc, char** argv )
 {
     OPTICKS_LOG(argc, argv);
 
+    OContext::SetupOptiXCachePathEnvvar(); 
     optix::Context context = optix::Context::create();
 
-    const char* buildrel = "optixrap/tests" ; 
+    //const char* buildrel = "optixrap/tests" ; 
+    const char* ptxrel = "tests" ; 
     const char* cmake_target = "minimalTest" ; 
-    OptiXTest* test = new OptiXTest(context, "minimalTest.cu", "minimal", "exception", buildrel, cmake_target ) ;
+    OptiXTest* test = new OptiXTest(context, "minimalTest.cu", "minimal", "exception", ptxrel, cmake_target ) ;
     test->Summary(argv[0]);
 
     // for inknown reasons this has become slow, taking 30s for 512x512

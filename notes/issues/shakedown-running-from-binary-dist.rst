@@ -755,3 +755,376 @@ OKTest now runs from binary dist with fairly minimal environment
 Getting the tests to run from binary dist 
 ------------------------------------------------
 
+Need the CTestTestfile.cmake from the build tree to be installed::
+
+    [blyth@localhost build]$ find . -name 'CTestTestfile.cmake' 
+    ./g4csg/tests/CTestTestfile.cmake
+    ./g4csg/CTestTestfile.cmake
+    ./y4csg/tests/CTestTestfile.cmake
+    ./y4csg/CTestTestfile.cmake
+    ./okconf/tests/CTestTestfile.cmake
+    ./okconf/CTestTestfile.cmake
+    ./sysrap/tests/CTestTestfile.cmake
+    ./sysrap/CTestTestfile.cmake
+    ./npy/tests/CTestTestfile.cmake
+    ./npy/CTestTestfile.cmake
+    ...
+
+
+First get tests to run from outside build tree, so the executables are being plucked from the PATH
+----------------------------------------------------------------------------------------------------
+
+* :google:`CMake install CTestTestfile.cmake`
+
+Created bin/CTestTestfile.py to do this.::
+
+   [blyth@localhost ~]$  CTestTestfile.py $(opticks-bdir) --dest /tmp/tests
+    remove dest tree /tmp/tests 
+    Copying CTestTestfile.cmake files from buildtree /home/blyth/local/opticks/build into a new destination tree /tmp/tests 
+    write testfile to /tmp/tests/CTestTestfile.cmake 
+
+    blyth@localhost tests]$ ctest.sh 
+    Mon Sep 16 20:03:05 CST 2019
+    Test project /tmp/tests
+            Start   1: OKConfTest.OKConfTest
+      1/411 Test   #1: OKConfTest.OKConfTest .......................................   Passed    0.01 sec
+            Start   2: SysRapTest.SOKConfTest
+      2/411 Test   #2: SysRapTest.SOKConfTest ......................................   Passed    0.01 sec
+            Start   3: SysRapTest.SArTest
+      3/411 Test   #3: SysRapTest.SArTest ..........................................   Passed    0.01 sec
+            Start   4: SysRapTest.SArgsTest
+
+    ...
+
+    99% tests passed, 3 tests failed out of 411
+
+    Total Test time (real) = 137.42 sec
+
+    The following tests FAILED:
+        323 - OptiXRapTest.Roots3And4Test (Child aborted)
+        340 - OptiXRapTest.intersectAnalyticTest.iaTorusTest (Child aborted)
+        411 - IntegrationTests.tboolean.box (Failed)
+    Errors while running CTest
+    Mon Sep 16 20:05:22 CST 2019
+
+* 3 known fails
+
+
+Integrate this with okdist--
+----------------------------------
+
+* okdist bundles up things from the $(opticks-dir) into the tarball, 
+  so "install" the tests into $(opticks-dir)/tests with okdist-install-tests
+  and add "tests" to okdist.py
+
+
+
+Running the tests from exploded tarball with "simon"
+-------------------------------------------------------
+
+* lack the ctest.sh wrapper : need to install 
+* running ctest from non-writable dir just causes warnings
+* get 75/411 fails 
+
+  * all that use Geant4 "Failed" to find libs presumably, they are excluded from externals/lib64 
+  * ~13 from OptiXCache permissions, the lower level ones not already using OContext::Create
+
+::
+
+
+    [simon@localhost ~]$ cd /cvmfs/opticks.ihep.ac.cn/ok/releases/Opticks-0.0.0_alpha/x86_64-centos7-gcc48-geant4_10_04_p02-dbg/tests
+
+    [simon@localhost tests]$ ctest 
+    Test project /cvmfs/opticks.ihep.ac.cn/ok/releases/Opticks-0.0.0_alpha/x86_64-centos7-gcc48-geant4_10_04_p02-dbg/tests
+    Cannot create directory /cvmfs/opticks.ihep.ac.cn/ok/releases/Opticks-0.0.0_alpha/x86_64-centos7-gcc48-geant4_10_04_p02-dbg/tests/Testing/Temporary
+    Cannot create log file: LastTest.log
+            Start   1: OKConfTest.OKConfTest
+      1/411 Test   #1: OKConfTest.OKConfTest .......................................   Passed    0.00 sec
+            Start   2: SysRapTest.SOKConfTest
+      2/411 Test   #2: SysRapTest.SOKConfTest ......................................   Passed    0.01 sec
+            Start   3: SysRapTest.SArTest
+      3/411 Test   #3: SysRapTest.SArTest ..........................................   Passed    0.01 sec
+            Start   4: SysRapTest.SArgsTest
+    ...
+    Unable to find executable: tboolean.sh
+    411/411 Test #411: IntegrationTests.tboolean.box ...............................***Not Run   0.00 sec
+
+    82% tests passed, 75 tests failed out of 411
+
+    Total Test time (real) = 135.29 sec
+
+    The following tests FAILED:
+    Cannot create directory /cvmfs/opticks.ihep.ac.cn/ok/releases/Opticks-0.0.0_alpha/x86_64-centos7-gcc48-geant4_10_04_p02-dbg/tests/Testing/Temporary
+    Cannot create log file: LastTestsFailed.log
+
+        159 - NPYTest.NLoadTest (Child aborted)
+                  fail to load gensteps from an opticksdata path 
+                     /cvmfs/opticks.ihep.ac.cn/ok/releases/Opticks-0.0.0_alpha/x86_64-centos7-gcc48-geant4_10_04_p02-dbg/opticksdata/gensteps/dayabay/cerenkov/1.npy   
+
+        205 - YoctoGLRapTest.YOGTFTest (Child aborted)
+                   permissions writing /tmp/YOGTFTest.gltf 
+
+        261 - GGeoTest.GItemIndex2Test (Child aborted)
+                   permissions creating dir /cvmfs/opticks.ihep.ac.cn/ok/shared/geocache/OKX4Test_lWorld0x4bc2710_PV_g4live/g4ok_gltf/f6cc352e44243f8fa536ab483ad390ce/1/MeshIndex
+
+        282 - GGeoTest.GPropertyTest (SEGFAULT)
+                   fail to load $OPTICKS_INSTALL_PREFIX/opticksdata/refractiveindex/tmp/glass/schott/F2.npy 
+
+        291 - AssimpRapTest.AssimpGGeoTest (Child aborted)
+        295 - OpticksGeoTest.OpenMeshRapTest (Child aborted)
+                   getDAEPath assertion
+
+
+        322 - OptiXRapTest.LTOOContextUploadDownloadTest (Child aborted)
+                   fail to load /cvmfs/opticks.ihep.ac.cn/ok/releases/Opticks-0.0.0_alpha/x86_64-centos7-gcc48-geant4_10_04_p02-dbg/opticksdata/gensteps/juno/cerenkov/1.npy
+
+        321 - OptiXRapTest.OScintillatorLibTest (Child aborted)
+        323 - OptiXRapTest.Roots3And4Test (Child aborted)
+        328 - OptiXRapTest.texTest (Child aborted)
+        329 - OptiXRapTest.tex0Test (Child aborted)
+        330 - OptiXRapTest.minimalTest (Child aborted)
+        333 - OptiXRapTest.writeBufferLowLevelTest (Child aborted)
+        334 - OptiXRapTest.redirectLogTest (Child aborted)
+        337 - OptiXRapTest.interpolationTest (Failed)
+        339 - OptiXRapTest.intersectAnalyticTest.iaDummyTest (Child aborted)
+        340 - OptiXRapTest.intersectAnalyticTest.iaTorusTest (Child aborted)
+        341 - OptiXRapTest.intersectAnalyticTest.iaSphereTest (Child aborted)
+        342 - OptiXRapTest.intersectAnalyticTest.iaConeTest (Child aborted)
+        343 - OptiXRapTest.intersectAnalyticTest.iaConvexpolyhedronTest (Child aborted)
+
+            terminate called after throwing an instance of 'optix::Exception'
+              what():  OptiX was unable to open the disk cache with sufficient privileges. Please make sure the database file is writeable by the current user.
+             HMM THIS SHOULD HAVE BEEN FIXED
+
+
+
+        356 - ExtG4Test.X4Test (Failed)
+        357 - ExtG4Test.X4EntityTest (Failed)
+        358 - ExtG4Test.X4SolidTest (Failed)
+        359 - ExtG4Test.X4SolidLoadTest (Failed)
+        360 - ExtG4Test.X4MeshTest (Failed)
+        361 - ExtG4Test.X4SolidExtentTest (Failed)
+        362 - ExtG4Test.X4SolidListTest (Failed)
+        363 - ExtG4Test.X4PhysicsVectorTest (Failed)
+        364 - ExtG4Test.X4MaterialTest (Failed)
+        365 - ExtG4Test.X4MaterialTableTest (Failed)
+        366 - ExtG4Test.X4PhysicalVolumeTest (Failed)
+        367 - ExtG4Test.X4PhysicalVolume2Test (Failed)
+        368 - ExtG4Test.X4Transform3DTest (Failed)
+        369 - ExtG4Test.X4AffineTransformTest (Failed)
+        370 - ExtG4Test.X4ThreeVectorTest (Failed)
+        371 - ExtG4Test.X4CSGTest (Failed)
+        372 - ExtG4Test.X4PolyconeTest (Failed)
+        373 - ExtG4Test.X4GDMLParserTest (Failed)
+        374 - CFG4Test.CMaterialLibTest (Failed)
+        375 - CFG4Test.CMaterialTest (Failed)
+        376 - CFG4Test.CTestDetectorTest (Failed)
+        377 - CFG4Test.CGDMLTest (Failed)
+        378 - CFG4Test.CGDMLDetectorTest (Failed)
+        379 - CFG4Test.CGeometryTest (Failed)
+        380 - CFG4Test.CG4Test (Failed)
+        381 - CFG4Test.G4MaterialTest (Failed)
+        382 - CFG4Test.G4StringTest (Failed)
+        383 - CFG4Test.G4SphereTest (Failed)
+        384 - CFG4Test.CSolidTest (Failed)
+        385 - CFG4Test.G4PhysicsOrderedFreeVectorTest (Failed)
+        386 - CFG4Test.CVecTest (Failed)
+        387 - CFG4Test.G4MaterialPropertiesTableTest (Failed)
+        388 - CFG4Test.CMPTTest (Failed)
+        389 - CFG4Test.G4UniformRandTest (Failed)
+        390 - CFG4Test.G4PhysicalConstantsTest (Failed)
+        391 - CFG4Test.EngineTest (Failed)
+        392 - CFG4Test.EngineMinimalTest (Failed)
+        393 - CFG4Test.G4BoxTest (Failed)
+        394 - CFG4Test.G4ThreeVectorTest (Failed)
+        395 - CFG4Test.CGenstepCollectorTest (Failed)
+        396 - CFG4Test.CInterpolationTest (Failed)
+        397 - CFG4Test.OpRayleighTest (Failed)
+        398 - CFG4Test.CGROUPVELTest (Failed)
+        399 - CFG4Test.CMakerTest (Failed)
+        400 - CFG4Test.CTreeJUNOTest (Failed)
+        401 - CFG4Test.CPhotonTest (Failed)
+        402 - CFG4Test.CRandomEngineTest (Failed)
+        403 - CFG4Test.CAlignEngineTest (Failed)
+        404 - CFG4Test.CMixMaxRngTest (Failed)
+        405 - CFG4Test.CCerenkovGeneratorTest (Failed)
+        406 - CFG4Test.CGenstepSourceTest (Failed)
+        407 - CFG4Test.C4FPEDetectionTest (Failed)
+        408 - OKG4Test.OKG4Test (Failed)
+        409 - G4OKTest.G4OKTest (Failed)
+
+        411 - IntegrationTests.tboolean.box (Not Run)
+    Errors while running CTest
+
+
+
+optixrap : some not using OContext got OptiXCache permissions problem : added envvar setup
+------------------------------------------------------------------------------------------------
+
+
+1. OPTIX_CACHE added envvar setup to the low level ones  
+
+
+optixrap : OptiXTest users were looking for PTX in build tree : moved them to get PTX from install tree
+--------------------------------------------------------------------------------------------------------------
+
+Several cannot find their PTX::
+
+    simon@localhost ~]$ minimalTest
+    2019-09-16 21:22:08.824 ERROR [67982] [OContext::SetupOptiXCachePathEnvvar@284] envvar OPTIX_CACHE_PATHnot defined setting it internally to /var/tmp/simon/OptiXCache
+    2019-09-16 21:22:09.003 FATAL [67982] [OptiXTest::OptiXTest@61] /cvmfs/opticks.ihep.ac.cn/ok/releases/Opticks-0.0.0_alpha/x86_64-centos7-gcc48-geant4_10_04_p02-dbg/build/optixrap/tests/minimalTest_generated_minimalTest.cu.ptx
+    2019-09-16 21:22:09.003 INFO  [67982] [OptiXTest::init@67] OptiXTest::init cu minimalTest.cu ptxpath /cvmfs/opticks.ihep.ac.cn/ok/releases/Opticks-0.0.0_alpha/x86_64-centos7-gcc48-geant4_10_04_p02-dbg/build/optixrap/tests/minimalTest_generated_minimalTest.cu.ptx raygen minimal exception exception
+    terminate called after throwing an instance of 'optix::Exception'
+      what():  File not found (Details: Function "RTresult _rtProgramCreateFromPTXFile(RTcontext, const char*, const char*, RTprogram_api**)" caught exception: File not found - /cvmfs/opticks.ihep.ac.cn/ok/releases/Opticks-0.0.0_alpha/x86_64-centos7-gcc48-geant4_10_04_p02-dbg/build/optixrap/tests/minimalTest_generated_minimalTest.cu.ptx)
+    Aborted (core dumped)
+    [simon@localhost ~]$ 
+
+
+::
+
+    58% tests passed, 10 tests failed out of 24
+
+    Total Test time (real) =  31.95 sec
+
+    The following tests FAILED:
+    Cannot create directory /cvmfs/opticks.ihep.ac.cn/ok/releases/Opticks-0.0.0_alpha/x86_64-centos7-gcc48-geant4_10_04_p02-dbg/tests/optixrap/Testing/Temporary
+    Cannot create log file: LastTestsFailed.log
+          3 - OptiXRapTest.LTOOContextUploadDownloadTest (Child aborted)
+         18 - OptiXRapTest.interpolationTest (Failed)
+
+          4 - OptiXRapTest.Roots3And4Test (Child aborted)
+         11 - OptiXRapTest.minimalTest (Child aborted)
+         15 - OptiXRapTest.redirectLogTest (Child aborted)
+         20 - OptiXRapTest.intersectAnalyticTest.iaDummyTest (Child aborted)
+         21 - OptiXRapTest.intersectAnalyticTest.iaTorusTest (Child aborted)
+         22 - OptiXRapTest.intersectAnalyticTest.iaSphereTest (Child aborted)
+         23 - OptiXRapTest.intersectAnalyticTest.iaConeTest (Child aborted)
+         24 - OptiXRapTest.intersectAnalyticTest.iaConvexpolyhedronTest (Child aborted)
+
+                    this lot failing to find PTX
+
+::
+
+    [blyth@localhost tests]$ grep -l OptiXTest *.cc
+    downloadTest.cc
+    intersectAnalyticTest.cc
+    LTOOContextUploadDownloadTest.cc
+    minimalTest.cc
+    redirectLogTest.cc
+    Roots3And4Test.cc
+    writeBufferTest.cc
+
+
+
+
+After fix those : down to 4/24 fails : 2 are torus expected 
+-------------------------------------------------------------
+
+::
+
+    83% tests passed, 4 tests failed out of 24
+
+    Total Test time (real) =  35.00 sec
+
+    The following tests FAILED:
+    Cannot create directory /cvmfs/opticks.ihep.ac.cn/ok/releases/Opticks-0.0.0_alpha/x86_64-centos7-gcc48-geant4_10_04_p02-dbg/tests/optixrap/tests/Testing/Temporary
+    Cannot create log file: LastTestsFailed.log
+          3 - OptiXRapTest.LTOOContextUploadDownloadTest (Child aborted)
+                  fails to load gensteps  
+
+         18 - OptiXRapTest.interpolationTest (Failed)
+                  failing in python
+
+          4 - OptiXRapTest.Roots3And4Test (Child aborted)
+         21 - OptiXRapTest.intersectAnalyticTest.iaTorusTest (Child aborted)
+                  expected  
+
+
+
+
+interpolationTest failing in python, binary.simon running
+--------------------------------------------------------------
+
+::
+
+    2019-09-16 22:12:14.934 INFO  [156472] [interpolationTest::launch@165]  save  base $TMP/interpolationTest name interpolationTest_interpol.npy
+    2019-09-16 22:12:14.936 INFO  [156472] [interpolationTest::ana@178]  path /tmp/simon/opticks/optixrap/tests/interpolationTest_interpol.py
+    python: can't open file '/tmp/simon/opticks/optixrap/tests/interpolationTest_interpol.py': [Errno 2] No such file or directory
+    2019-09-16 22:12:15.106 INFO  [156472] [SSys::run@91] python /tmp/simon/opticks/optixrap/tests/interpolationTest_interpol.py rc_raw : 512 rc : 2
+    2019-09-16 22:12:15.106 ERROR [156472] [SSys::run@98] FAILED with  cmd python /tmp/simon/opticks/optixrap/tests/interpolationTest_interpol.py RC 2
+    2019-09-16 22:12:15.106 INFO  [156472] [interpolationTest::ana@180]  RC 2
+
+
+
+
+
+
+Issue : test evt paths not being prefixed : FIXED by allowing OPTICKS_EVENT_BASE envvar
+-------------------------------------------------------------------------------------------
+
+::
+
+    BOpticksEvent=ERROR LV=box tboolean.sh --generateoverride 10000
+
+
+::
+
+    2019-09-16 19:33:02.590 INFO  [322026] [Opticks::setupTimeDomain@2381]  cfg.getTimeMaxThumb [--timemaxthumb] 6 cfg.getAnimTimeMax [--animtimemax] -1 cfg.getAnimTimeMax [--animtimemax] -1 speed_of_light (mm/ns) 300 extent (mm) 450 rule_of_thumb_timemax (ns) 9 u_timemax 9 u_animtimemax 9
+    2019-09-16 19:33:02.590 ERROR [322026] [BOpticksEvent::replace@145]  pfx tboolean-box top tboolean-box sub torch tag NULL
+    2019-09-16 19:33:02.590 ERROR [322026] [BOpticksEvent::directory@117]  base0 $OPTICKS_EVENT_BASE/$0/evt/$1/$2 anno NULL base $OPTICKS_EVENT_BASE/tboolean-box/evt/tboolean-box/torch dir /tboolean-box/evt/tboolean-box/torch
+    2019-09-16 19:33:02.590 FATAL [322026] [Opticks::setProfileDir@492]  dir /tboolean-box/evt/tboolean-box/torch
+    2019-09-16 19:33:02.591 INFO  [322026] [OpticksHub::loadGeometry@565] ]
+
+
+    [blyth@localhost tests]$ echo $OPTICKS_EVENT_BASE
+    /home/blyth/local/opticks/tmp
+
+
+
+Switching to not exclude libG4 in the dist tarball : get to 21/411 fails
+----------------------------------------------------------------------------
+
+::
+
+    95% tests passed, 21 tests failed out of 411
+
+    Total Test time (real) = 144.59 sec
+
+    The following tests FAILED:
+    Cannot create directory /cvmfs/opticks.ihep.ac.cn/ok/releases/Opticks-0.0.0_alpha/x86_64-centos7-gcc48-geant4_10_04_p02-dbg/tests/Testing/Temporary
+    Cannot create log file: LastTestsFailed.log
+        159 - NPYTest.NLoadTest (Child aborted)
+        205 - YoctoGLRapTest.YOGTFTest (Child aborted)
+        261 - GGeoTest.GItemIndex2Test (Child aborted)
+        282 - GGeoTest.GPropertyTest (SEGFAULT)
+
+        291 - AssimpRapTest.AssimpGGeoTest (Child aborted)
+        295 - OpticksGeoTest.OpenMeshRapTest (Child aborted)
+
+
+        322 - OptiXRapTest.LTOOContextUploadDownloadTest (Child aborted)
+
+        323 - OptiXRapTest.Roots3And4Test (Child aborted)
+        337 - OptiXRapTest.interpolationTest (Failed)
+        340 - OptiXRapTest.intersectAnalyticTest.iaTorusTest (Child aborted)
+
+        358 - ExtG4Test.X4SolidTest (Child aborted)
+               /tmp permissions : FIXED with $TMP
+
+        373 - ExtG4Test.X4GDMLParserTest (Child aborted)
+
+
+        376 - CFG4Test.CTestDetectorTest (SEGFAULT)
+        378 - CFG4Test.CGDMLDetectorTest (Child aborted)
+        379 - CFG4Test.CGeometryTest (Child aborted)
+        380 - CFG4Test.CG4Test (SEGFAULT)
+        395 - CFG4Test.CGenstepCollectorTest (Child aborted)
+        396 - CFG4Test.CInterpolationTest (SEGFAULT)
+        402 - CFG4Test.CRandomEngineTest (SEGFAULT)
+        408 - OKG4Test.OKG4Test (SEGFAULT)
+        411 - IntegrationTests.tboolean.box (Not Run)
+    Errors while running CTest
+
+
+
+

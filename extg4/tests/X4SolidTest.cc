@@ -86,7 +86,7 @@ void test_solid(G4VSolid* so)
 
     GParts* cpts = GParts::Combine(pts); 
 
-    const char* path = "/tmp/X4SolidTest/GParts" ;
+    const char* path = "$TMP/X4SolidTest/GParts" ;
     cpts->save(path);
 
     const char* cmdline = BStr::concat("prim.py ", path, NULL ); 
@@ -95,7 +95,7 @@ void test_solid(G4VSolid* so)
 
 
     X4Mesh* xm = new X4Mesh(so) ; 
-    xm->save(BStr::concat("/tmp/X4SolidTest/",so->GetName().c_str(),".gltf")); 
+    xm->save(BStr::concat("$TMP/X4SolidTest/",so->GetName().c_str(),".gltf")); 
 
 }
 

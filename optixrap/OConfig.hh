@@ -33,6 +33,8 @@ OptiX utilities for raytrace program creation.
 #include <map>
 #include <vector>
 
+#include "plog/Severity.h"
+
 #include "OXPPNS.hh"
 #include <optixu/optixu_math_namespace.h>
 
@@ -55,6 +57,7 @@ ptxrel
 class OXRAP_API OConfig {
 
 public:
+  static const plog::Severity LEVEL ;  
 
   static const char* _RT_FORMAT_UNKNOWN;
 

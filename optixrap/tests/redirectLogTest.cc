@@ -18,6 +18,7 @@
  */
 
 #include "OptiXTest.hh"
+#include "OContext.hh"
 
 #include "SSys.hh"
 #include "S_freopen_redirect.hh"
@@ -32,11 +33,13 @@ int main( int argc, char** argv )
 {
     OPTICKS_LOG(argc, argv);
 
+    OContext::SetupOptiXCachePathEnvvar(); 
     optix::Context context = optix::Context::create();
 
-    const char* buildrel = "optixrap/tests" ; 
+    //const char* buildrel = "optixrap/tests" ; 
+    const char* ptxrel = "tests" ; 
     const char* cmake_target = "redirectLogTest" ; 
-    OptiXTest* test = new OptiXTest(context, "redirectLogTest.cu", "minimal", "exception", buildrel, cmake_target ) ;
+    OptiXTest* test = new OptiXTest(context, "redirectLogTest.cu", "minimal", "exception", ptxrel, cmake_target ) ;
     test->Summary(argv[0]);
 
     //unsigned width = 512 ; 

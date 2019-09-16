@@ -31,6 +31,8 @@
 #include "PLOG.hh"
 
 
+const plog::Severity OConfig::LEVEL = PLOG::EnvLevel("OConfig", "DEBUG" ); 
+
 OConfig::OConfig(optix::Context context, const char* cmake_target, const char* ptxrel )
         : 
         m_context(context),
@@ -50,10 +52,6 @@ void OConfig::setPTXRel(const char* ptxrel)
 {
     m_ptxrel = ptxrel ? strdup(ptxrel) : nullptr ; 
 }
-
-
-
-
 
 void OConfig::Print(const char* msg)
 {
@@ -112,6 +110,14 @@ bool OConfig::DefaultWithTop()
 optix::Program OConfig::createProgram(const char* cu_name, const char* progname )
 {
     std::string path = OKConf::PTXPath(  m_cmake_target, cu_name, m_ptxrel ); 
+
+    LOG(LEVEL)
+           << " cu_name " << cu_name
+           << " progname " << progname 
+           << " m_cmake_target " << m_cmake_target
+           << " m_ptxrel " << m_ptxrel
+           << " path " << path  
+           ; 
 
     std::string key = path + ":" + progname ; 
 

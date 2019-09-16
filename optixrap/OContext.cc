@@ -280,11 +280,10 @@ void OContext::SetupOptiXCachePathEnvvar()
     const char* dir = GetOptiXCachePathEnvvar() ; 
     if( dir == NULL )
     {
-        
         dir = Opticks::OptiXCachePathDefault();    
         LOG(error) 
             << "envvar " << key 
-            << "not defined "
+            << " not defined "
             << "setting it internally to " << dir 
             ; 
 
@@ -302,15 +301,6 @@ void OContext::SetupOptiXCachePathEnvvar()
             ;
     }
 }
-
-
-
-
-
-
-
-
-
 
 
 

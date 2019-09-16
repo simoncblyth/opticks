@@ -21,6 +21,7 @@
 
 #include "NPY.hpp"
 #include "OXPPNS.hh"
+#include "OContext.hh"
 #include "OConfig.hh"
 #include "OPTICKS_LOG.hh"
 
@@ -60,6 +61,7 @@ int main(int argc, char** argv)
     //inp->dump();
     inp->save("$TMP/texTest_inp.npy");
 
+    OContext::SetupOptiXCachePathEnvvar(); 
     optix::Context context = optix::Context::create();
     context->setRayTypeCount(1); 
     context->setExceptionEnabled( RT_EXCEPTION_ALL , true ); 

@@ -20,6 +20,7 @@
 
 #include "OXPPNS.hh"
 #include "OKConf.hh"
+#include "OContext.hh"
 #include "NPY.hpp"
 
 #include "OPTICKS_LOG.hh"
@@ -29,6 +30,7 @@ int main( int argc, char** argv )
 {
     OPTICKS_LOG(argc, argv);
 
+    OContext::SetupOptiXCachePathEnvvar(); 
     optix::Context context = optix::Context::create();
     context->setEntryPointCount(1);
     context->setRayTypeCount(1);    // <-- without this segments at launch (new behaviour in OptiX_600)  

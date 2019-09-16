@@ -36,11 +36,12 @@ class Dist(object):
     """
     exclude_dir_name = ['cmake','pkgconfig',  'Geant4-10.2.1', 'Geant4-10.4.2']  
 
-    bases = ['include', 'lib','lib64','externals/lib','externals/lib64','externals/OptiX/lib64', 'installcache/PTX', 'gl' ]
+    bases = ['include', 'lib','lib64','externals/lib','externals/lib64','externals/OptiX/lib64', 'installcache/PTX', 'gl', 'tests' ]
     ## hmm need to construct an installed bin too, with scripts 
 
     extras = []
 
+    exclude_g4lib = False
 
     def __init__(self, distprefix, distname):
         """
@@ -92,7 +93,13 @@ class Dist(object):
         return name in self.exclude_dir_name
 
     def exclude_file(self, name):
-        return name.startswith("libG4") or name.endswith(".log")
+        if name.endswith(".log"):
+            return True
+        pass
+        if name.startswith("libG4") and self.exclude_g4lib:
+            return True
+        pass
+        return False
 
     def add(self, path):
         #print(path)

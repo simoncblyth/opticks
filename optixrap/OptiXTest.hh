@@ -39,10 +39,13 @@ Usage examples:
 #include "OXRAP_POP.hh"
 
 #include <string>
+#include "plog/Severity.h"
 #include "OXRAP_API_EXPORT.hh"
 
 class OXRAP_API OptiXTest {
    public:
+      static const plog::Severity LEVEL ; 
+
       static std::string ptxname_(const char* projname, const char* name);
       static const char* buildptxpath_( const char* cu, const char* buildrel, const char* cmake_target) ;
    public:

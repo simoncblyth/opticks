@@ -160,6 +160,7 @@ const std::vector<std::string> BFile::envvars = {
    "HOME",
    "OPTICKS_INSTALL_PREFIX",    // needed for OpticksFlags to find the enum header
    "OPTICKS_GEOCACHE_PREFIX",  
+   "OPTICKS_EVENT_BASE",
    "OPTICKS_HOME",              // needed by OInterpolationTest to find a python script
    "IDPATH"
 } ; 
@@ -225,7 +226,7 @@ std::string BFile::ResolveKey( const char* key )
     }
     else if(strcmp(key,"OPTICKS_EVENT_BASE")==0) 
     {
-        const char* evtbase = BResource::GetDir("evtbase") ; 
+        const char* evtbase = BResource::GetDir("evtbase") ;   // <-- from BOpticksResource
         if( evtbase != NULL )
         {
             evalue = evtbase ; 
@@ -243,6 +244,10 @@ std::string BFile::ResolveKey( const char* key )
            << " evalue " << evalue
            << " evtbase " << evtbase
            ; 
+
+       if(evalue.empty()) LOG(fatal) << "Failed to resolve OPTICKS_EVENT_BASE " ; 
+       assert(!evalue.empty());  
+
     }
     else if(strcmp(key,"INSTALLCACHE_DIR")==0) 
     {
@@ -487,13 +492,12 @@ std::string BFile::FormPath(const char* path, const char* sub, const char* name,
 {
 
    bool prepare = false ; 
-   LOG(verbose) << "BFile::FormPath"
-              << " path " << path 
-              << " sub " << sub
-              << " name " << name
-              << " prepare " << prepare
-              ;   
-
+   LOG(LEVEL) 
+       << " path " << path 
+       << " sub " << sub
+       << " name " << name
+       << " prepare " << prepare
+       ;   
 
 
    std::string empty ; 
@@ -539,23 +543,24 @@ std::string BFile::FormPath(const char* path, const char* sub, const char* name,
 
    if(path[0] == '$')
    {
-      xpath.assign(expandvar(path));
+       LOG(LEVEL) << "expandvar for dollar " << path ; 
+       xpath.assign(expandvar(path));
    } 
    else if(path[0] == '~')
    {
-      xpath.assign(expandhome(path));
+       xpath.assign(expandhome(path));
    }
    else if(OPTICKS_PATH_PREFIX)
    { 
-      //  eg windows prefix C:\msys64
-      if(strlen(path) > 1 && path[1] == ':') 
-      { 
-          if(dbg) std::cerr << "BFile::FormPath path is already prefixed " << path << std::endl ; 
-      } 
-      else
-      {
-          p /= OPTICKS_PATH_PREFIX ;
-      } 
+       //  eg windows prefix C:\msys64
+       if(strlen(path) > 1 && path[1] == ':') 
+       { 
+           if(dbg) std::cerr << "BFile::FormPath path is already prefixed " << path << std::endl ; 
+       } 
+       else
+       {
+           p /= OPTICKS_PATH_PREFIX ;
+       } 
    } 
 
    p /= xpath.empty() ? path : xpath ; 

@@ -18,6 +18,7 @@
  */
 
 #include "OptiXTest.hh"
+#include "OContext.hh"
 
 #include "NPY.hpp"
 
@@ -28,9 +29,13 @@ int main( int argc, char** argv )
 {
     OPTICKS_LOG(argc, argv);
 
+    OContext::SetupOptiXCachePathEnvvar(); 
     optix::Context context = optix::Context::create();
 
-    OptiXTest* test = new OptiXTest(context, "Roots3And4Test.cu", "Roots3And4Test",  "exception", "optixrap", "OptiXRap" ) ;
+    //const char* buildrel = "optixrap" ; 
+    const char* ptxrel = "" ; 
+
+    OptiXTest* test = new OptiXTest(context, "Roots3And4Test.cu", "Roots3And4Test",  "exception", ptxrel, "OptiXRap" ) ;
     test->Summary(argv[0]);
 
     //unsigned width = 512 ; 

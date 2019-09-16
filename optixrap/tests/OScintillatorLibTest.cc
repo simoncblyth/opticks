@@ -20,6 +20,7 @@
 
 #include "OScintillatorLib.hh"
 #include "Opticks.hh"
+#include "OContext.hh"
 #include "GScintillatorLib.hh"
 
 #include "OPTICKS_LOG.hh"
@@ -35,6 +36,7 @@ int main(int argc, char** argv)
     GScintillatorLib* slib = GScintillatorLib::load(&ok);
     slib->dump();
 
+    OContext::SetupOptiXCachePathEnvvar(); 
     optix::Context context = optix::Context::create();
 
     OScintillatorLib* oscin ;  

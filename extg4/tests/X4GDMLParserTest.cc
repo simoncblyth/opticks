@@ -113,7 +113,9 @@ int main( int argc , char** argv )
     bool refs = false ; // add pointer refs : false because already present
  
     X4GDMLParser::Write( solid, NULL, refs ) ; // to stdout 
-    X4GDMLParser::Write( solid, "/tmp/out.gdml", refs ) ; // to file
+
+
+    X4GDMLParser::Write( solid, "$TMP/extg4/X4GDMLParserTest/out.gdml", refs ) ; // to file
     std::string gdml = X4GDMLParser::ToString(solid, refs) ; 
     LOG(fatal) << gdml ; 
 

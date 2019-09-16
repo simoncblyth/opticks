@@ -803,16 +803,13 @@ void BOpticksResource::setupViaKey()
     bool legacy = BOpticksResource::IsLegacyGeometryEnabled(); 
     if( legacy )
     { 
-        if(!m_testgeo)
-        {
-            m_evtbase = m_idpath ;  
-        }
+        if( !m_testgeo ) m_evtbase = m_idpath ; 
+        // huh normally NULL for testgeo ?
     }
     else
     {
         m_evtbase = ResolveEventBase(); 
     }
-
 
     LOG(LEVEL) 
          << ( legacy ? " OPTICKS_LEGACY_GEOMETRY_ENABLED " : " non-legacy " )
@@ -823,7 +820,6 @@ void BOpticksResource::setupViaKey()
          ;    
 
     m_res->addDir( "evtbase", m_evtbase ); 
-
 
 
 /*

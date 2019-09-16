@@ -24,10 +24,14 @@
 #include <cstdlib>
 #include <cstring>
 
+#include "OKConf.hh"
 #include "BOpticksResource.hh"
 #include "OptiXTest.hh"
 
 #include "PLOG.hh"
+
+const plog::Severity OptiXTest::LEVEL = PLOG::EnvLevel("OptiXTest", "DEBUG") ; 
+
 
 std::string OptiXTest::ptxname_( const char* projname, const char* name)
 {
@@ -40,7 +44,31 @@ const char* OptiXTest::buildptxpath_( const char* cu, const char* buildrel, cons
 {
    std::string ptxname = ptxname_(cmake_target, cu) ; 
    std::string ptxpath = BOpticksResource::BuildProduct(buildrel, ptxname.c_str());
-   return strdup(ptxpath.c_str()) ; 
+
+   LOG(LEVEL) 
+       << " (BOpticksResource::BuildProduct) "
+       << " cu " << cu
+       << " buildrel " << buildrel
+       << " cmake_target " << cmake_target
+       << " ptxname " << ptxname 
+       << " ptxpath " << ptxpath
+       ; 
+       
+   const char* cu_name = cu ; 
+   const char* ptxrel = buildrel ;  
+   std::string path = OKConf::PTXPath( cmake_target, cu, ptxrel ); 
+
+   LOG(LEVEL)
+       << " (OKConf::PTXPath) "
+       << " cu_name " << cu_name
+       << " cmake_target " << cmake_target
+       << " ptxrel " << ptxrel
+       << " path " << path  
+       ; 
+
+
+   //return strdup(ptxpath.c_str()) ; 
+   return strdup(path.c_str()) ; 
 
    // projdir is needed as build products have paths like
    //      /home/blyth/local/opticks/build/optixrap/tests/tex0Test_generated_tex0Test.cu.ptx 

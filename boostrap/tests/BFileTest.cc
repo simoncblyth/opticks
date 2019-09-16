@@ -495,7 +495,7 @@ int main(int argc, char** argv)
    //test_ExistsDir();
    //test_CreateDir();
    //test_ParentDir();
-   //test_FormPath();
+   test_FormPath();
    //test_Name_ParentDir();
    //test_ChangeExt();
 
@@ -523,8 +523,8 @@ int main(int argc, char** argv)
    //test_IsAllowedEnvvar();
    //test_ResolveKey();
 
-   test_CWD(); 
-   test_Absolute(); 
+   //test_CWD(); 
+   //test_Absolute(); 
 
    return 0 ; 
 }

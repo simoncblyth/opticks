@@ -81,11 +81,14 @@ $FUNCNAME
    okdist-releases-dir : $(okdist-releases-dir)
         Directory holding binary releases, from which tarballs are exploded   
 
+   okdist-install-tests 
+        Creates $(opticks-dir)/tests populated with CTestTestfile.cmake files 
+
    okdist-create
-        Creates distribution file in the installation directory  
+        Creates distribution tarball in the installation directory  
 
    okdist-explode
-        Explode distribution file from the releases directory 
+        Explode distribution tarball from the releases directory 
 
    okdist-release-prefix : $(okdist-release-prefix) 
         Absolute path to exploded release distribution
@@ -97,14 +100,31 @@ $FUNCNAME
 EOI
 }
 
-okdist-create()
+
+okdist-install-tests()
 {
    opticks-
+   local bdir=$(opticks-bdir)
+   local dest=$(opticks-dir)/tests
+   CTestTestfile.py $bdir --dest $dest
+}
+
+
+okdist-create()
+{
+   local iwd=$PWD
+
+   opticks-
    opticks-cd  ## install directory 
+
+   okdist-install-tests 
+
    okdist.py --distprefix $(okdist-prefix) --distname $(okdist-name)  
 
    ls -al $(okdist-name) 
    du -h $(okdist-name) 
+
+   cd $iwd
 }
 
 
@@ -113,7 +133,7 @@ okdist-ls(){      echo $FUNCNAME ; local p=$(okdist-path) ; ls -l $p ; du -h $p 
 okdist-explode(){ $FUNCNAME- $(okdist-path) ; }
 okdist-explode-(){    
     local msg="=== $FUNCNAME :"
-
+    local iwd=$PWD
     local path=$1 
 
     if [ -z "$path" ]; then 
@@ -126,12 +146,12 @@ okdist-explode-(){
         return 2 
     fi 
 
-    local iwd=$PWD
     local releases_dir=$(okdist-releases-dir)
     if [ ! -d $releases_dir ]; then 
         echo $msg creating releases dir $releases_dir
         mkdir -p $releases_dir
     fi 
+
     cd $releases_dir
 
     local opt=""
@@ -158,7 +178,6 @@ okdist--(){
 
    okdist-create
    okdist-explode
-
    okdist-ls  
 }
 

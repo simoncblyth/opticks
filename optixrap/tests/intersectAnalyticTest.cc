@@ -30,6 +30,7 @@
 #include "OptiXTest.hh"
 
 #include "SPath.hh"
+#include "OContext.hh"
 #include "OGeo.hh"
 #include "NPY.hpp"
 #include "OPTICKS_LOG.hh"
@@ -56,6 +57,7 @@ int main( int argc, char** argv )
          << " progname " << progname 
          ;
 
+    OContext::SetupOptiXCachePathEnvvar(); 
     optix::Context context = optix::Context::create();
 
     RTsize stack_size = context->getStackSize(); 
@@ -63,10 +65,11 @@ int main( int argc, char** argv )
     //context->setStackSize(6000);
 
 
-    const char* buildrel = "optixrap/tests" ; 
+    //const char* buildrel = "optixrap/tests" ; 
+    const char* ptxrel = "tests" ; 
     const char* cmake_target = "intersectAnalyticTest" ;  
 
-    OptiXTest* test = new OptiXTest(context, cu_name, progname, "exception", buildrel, cmake_target ) ;
+    OptiXTest* test = new OptiXTest(context, cu_name, progname, "exception", ptxrel, cmake_target ) ;
 
     std::cout << test->description() << std::endl ; 
 
