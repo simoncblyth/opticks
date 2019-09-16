@@ -59,8 +59,8 @@ class OXRAP_API OContext {
         friend class LTOOContextUploadDownloadTest ;
         friend class OAxisTest ;
     public:
-        static const char* OPTIX_CACHE_LINUX ;   
-        static const char* CacheDir() ;   
+        //static const char* OPTIX_CACHE_LINUX ;   
+        //static const char* CacheDir() ;   
     public:
         enum {
                 e_propagate_ray,
@@ -96,6 +96,9 @@ class OXRAP_API OContext {
 #if OPTIX_VERSION_MAJOR >= 6
             static void InitRTX(int rtxmode);
 #endif
+            static const char* OPTIX_CACHE_PATH_KEY ; 
+            static const char* GetOptiXCachePathEnvvar(); 
+            static void SetupOptiXCachePathEnvvar();
             static void CheckDevices(Opticks* ok);
             ~OContext();
      private:

@@ -120,6 +120,8 @@ class OKCORE_API Opticks {
        static const float F_SPEED_OF_LIGHT ;  // mm/ns
        static const char* DEFAULT_PFX ; 
    public:
+       static bool IsLegacyGeometryEnabled(); 
+       static const char* OptiXCachePathDefault(); 
    public:
        static BPropNames* G_MATERIAL_NAMES ;
        static const char* Material(const unsigned int mat);
@@ -149,6 +151,9 @@ class OKCORE_API Opticks {
        static Opticks* GetInstance();  // creates if not existing 
        static bool     HasInstance();
        static bool     HasKey();
+
+   private:
+       bool envkey(); 
    public:
        Opticks(int argc=0, char** argv=NULL, const char* argforced=NULL );
    private:
@@ -217,8 +222,6 @@ class OKCORE_API Opticks {
        // verbosity typically comes from geometry metadata
        unsigned getVerbosity() const ;
        void setVerbosity(unsigned verbosity);
-   public:
-       void prepareInstallCache(const char* dir=NULL);
    public:
        const char* getRNGDir();
        const char* getInstallPrefix();
@@ -335,6 +338,7 @@ class OKCORE_API Opticks {
        const char* getRunFolder() const ; 
        const char* getRunResultsDir() const ; // eg /usr/local/opticks/results/OpticksResourceTest/20190422_155146 
        const char* getRuncacheDir() const ;   // eg ~/.opticks/runcache
+       const char* getOptiXCacheDirDefault() const ; // eg /var/tmp/simon/OptiXCache where "simon" is username  
    public:
        bool        isTest() const ;
        bool        isTestAuto() const ;

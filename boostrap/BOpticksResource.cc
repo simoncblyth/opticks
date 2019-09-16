@@ -19,6 +19,7 @@
 
 #include <cassert>
 #include <cstring>
+#include <csignal>
 #include <iostream>
 
 #include <boost/filesystem.hpp>
@@ -113,8 +114,9 @@ BOpticksResource::BOpticksResource(bool testgeo)
     m_gensteps_dir(NULL),
     m_export_dir(NULL),
     m_installcache_dir(NULL),
+    m_optixcachedefault_dir(NULL),
     m_rng_dir(NULL),
-    m_okc_installcache_dir(NULL),
+    //m_okc_installcache_dir(NULL),
     m_tmpuser_dir(NULL),
     m_srcpath(NULL),
     m_srcfold(NULL),
@@ -204,6 +206,13 @@ std::string BOpticksResource::getInstallPath(const char* relpath) const
 {
     std::string path = BFile::FormPath(m_install_prefix, relpath) ;
     return path ;
+}
+
+const char* BOpticksResource::LEGACY_GEOMETRY_ENABLED_KEY = "OPTICKS_LEGACY_GEOMETRY_ENABLED" ; 
+bool BOpticksResource::IsLegacyGeometryEnabled()
+{
+   int lge = SSys::getenvint(LEGACY_GEOMETRY_ENABLED_KEY, -1);
+   return lge == 1 ; 
 }
 
 
@@ -397,9 +406,9 @@ void BOpticksResource::initTopDownDirs()
     m_export_dir           = ExportDir() ;        // eg /usr/local/opticks/opticksdata/export
     m_installcache_dir     = InstallCacheDir() ;  // eg /usr/local/opticks/installcache
 
-    m_okc_installcache_dir = OKCInstallPath() ;   // eg /usr/local/opticks/installcache/OKC
+    m_optixcachedefault_dir  = OptiXCachePathDefault() ;   // eg /var/tmp/simon/OptiXCache
 
-    //m_ptx_installcache_dir = PTXInstallPath() ;   // eg /usr/local/opticks/installcache/PTX
+    //m_okc_installcache_dir = OKCInstallPath() ;   // eg /usr/local/opticks/installcache/OKC
 
 
     m_res->addDir("opticksdata_dir", m_opticksdata_dir);
@@ -413,11 +422,11 @@ void BOpticksResource::initTopDownDirs()
     m_res->addDir("gensteps_dir",    m_gensteps_dir );
     m_res->addDir("export_dir",      m_export_dir);
     m_res->addDir("installcache_dir", m_installcache_dir );
+    m_res->addDir("optixcachedefault_dir",  m_optixcachedefault_dir ); 
 
     m_res->addDir("rng_dir", m_rng_dir );
-    m_res->addDir("okc_installcache_dir", m_okc_installcache_dir );
 
-    //m_res->addDir("ptx_installcache_dir", m_ptx_installcache_dir );
+    //m_res->addDir("okc_installcache_dir", m_okc_installcache_dir );
 
 
     m_tmpuser_dir = MakeTmpUserDir("opticks", NULL) ; 
@@ -476,7 +485,7 @@ const char* BOpticksResource::RuncacheDir(){    return MakePath(ResolveUserCache
 
 const char* BOpticksResource::ShaderDir(){      return MakePath(ResolveInstallPrefix(), "gl",  NULL); }
 const char* BOpticksResource::InstallCacheDir(){return MakePath(ResolveInstallPrefix(), "installcache",  NULL); }
-const char* BOpticksResource::OKCInstallPath(){ return MakePath(ResolveInstallPrefix(), "installcache", "OKC"); }
+//const char* BOpticksResource::OKCInstallPath(){ return MakePath(ResolveInstallPrefix(), "installcache", "OKC"); }
 
 const char* BOpticksResource::OpticksDataDir(){ return MakePath(ResolveInstallPrefix(), "opticksdata",  NULL); }
 const char* BOpticksResource::ResourceDir(){    return MakePath(ResolveInstallPrefix(), "opticksdata", "resource" ); }
@@ -498,8 +507,7 @@ const char* BOpticksResource::getExportDir() {          return m_export_dir ; }
 
 const char* BOpticksResource::getInstallCacheDir() {    return m_installcache_dir ; } 
 const char* BOpticksResource::getRNGDir() {             return m_rng_dir ; } 
-const char* BOpticksResource::getOKCInstallCacheDir() { return m_okc_installcache_dir ; } 
-//const char* BOpticksResource::getPTXInstallCacheDir() { return m_ptx_installcache_dir ; } 
+const char* BOpticksResource::getOptiXCacheDirDefault() const { return m_optixcachedefault_dir ; } 
 const char* BOpticksResource::getTmpUserDir() const {   return m_tmpuser_dir ; } 
 
 
@@ -545,6 +553,20 @@ const char* BOpticksResource::MakeTmpUserDir(const char* sub, const char* rel)
     std::string path = BFile::FormPath(base, user, sub, rel ) ; 
     return strdup(path.c_str());
 }
+
+const char* BOpticksResource::OptiXCachePathDefault() 
+{
+    const char* base = "/var/tmp" ; 
+    const char* user = SSys::username(); 
+    const char* sub = "OptiXCache" ; 
+    std::string path = BFile::FormPath(base, user, sub ) ; 
+    return strdup(path.c_str());
+}
+
+
+
+
+
 
 const char* BOpticksResource::MakeUserDir(const char* sub, const char* rel) 
 {
@@ -777,14 +799,31 @@ void BOpticksResource::setupViaKey()
     m_evtpfx = isKeySource() ? "source" : exename ; 
     m_res->addName("evtpfx", m_evtpfx ); 
 
-     // what to do in legacy ?
 
-    if(!m_testgeo)
-    {
-        m_evtbase = m_idpath ;  
-        LOG(LEVEL) << " evtbase from idpath " << m_evtbase ;    
-        m_res->addDir( "evtbase", m_evtbase ); 
+    bool legacy = BOpticksResource::IsLegacyGeometryEnabled(); 
+    if( legacy )
+    { 
+        if(!m_testgeo)
+        {
+            m_evtbase = m_idpath ;  
+        }
     }
+    else
+    {
+        m_evtbase = ResolveEventBase(); 
+    }
+
+
+    LOG(LEVEL) 
+         << ( legacy ? " OPTICKS_LEGACY_GEOMETRY_ENABLED " : " non-legacy " )
+         << " evtbase from idpath in legacy for non-testgeo, from envvar or default in non-legacy " 
+         << " evtbase " << m_evtbase 
+         << " idpath " << m_idpath
+         << " testgeo " << m_testgeo 
+         ;    
+
+    m_res->addDir( "evtbase", m_evtbase ); 
+
 
 
 /*
@@ -933,23 +972,34 @@ const char* BOpticksResource::getIdMapPath() const { return m_idmappath ; }
 const char* BOpticksResource::getEventBase() const { return m_evtbase ; } 
 const char* BOpticksResource::getEventPfx() const {  return m_evtpfx ; } 
 
+/**
+BOpticksResource::setEventBase
+-------------------------------
+
+
+**/
+
+
 void BOpticksResource::setEventBase(const char* rela, const char* relb)
 {
     std::string abs = BFile::Absolute( rela, relb );  
     m_evtbase = strdup(abs.c_str()); 
     m_res->setDir( "evtbase", m_evtbase ); 
+
+    LOG(fatal) 
+        << " rela " << rela   
+        << " relb " << relb
+        << " evtbase " <<  m_evtbase 
+        ;
+
+    std::raise(SIGINT); 
+ 
 }
 void BOpticksResource::setEventPfx(const char* pfx)
 {
     m_evtpfx = strdup(pfx); 
     m_res->setName( "evtpfx", m_evtpfx ); 
 }
-
-
-
-
-
-
 
 
 bool  BOpticksResource::hasKey() const

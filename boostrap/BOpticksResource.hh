@@ -72,10 +72,11 @@ BRANCHES OF OPERATION : USING RELATIVE APPROACH
 **/
 
 class BRAP_API  BOpticksResource {
-       
     public:
         static const plog::Severity  LEVEL ; 
-
+    public:
+        static const char* LEGACY_GEOMETRY_ENABLED_KEY ; 
+        static bool IsLegacyGeometryEnabled() ; 
     protected:
         static const char* RESULTS_PREFIX_KEY  ; 
         static const char* RESULTS_PREFIX_DEFAULT  ; 
@@ -138,6 +139,7 @@ class BRAP_API  BOpticksResource {
         static const char* MakeSrcPath(const char* srcpath, const char* ext) ;
         static const char* MakeSrcDir(const char* srcpath, const char* sub) ;
         static const char* MakeTmpUserDir(const char* sub, const char* rel) ;
+        static const char* OptiXCachePathDefault() ; 
         static const char* MakeUserDir(const char* sub, const char* rel) ;
 
         const char* makeIdPathPath(const char* rela, const char* relb=NULL, const char* relc=NULL, const char* reld=NULL) ;
@@ -164,7 +166,7 @@ class BRAP_API  BOpticksResource {
         static const char* GenstepsDir();
         static const char* ExportDir();
         static const char* InstallCacheDir();
-        static const char* OKCInstallPath();
+        //static const char* OKCInstallPath();
    private:
 
         static const char* MakePath( const char* prefix, const char* main, const char* sub );
@@ -185,7 +187,7 @@ class BRAP_API  BOpticksResource {
 
         const char* getRNGDir();
 
-        const char* getOKCInstallCacheDir();
+        const char* getOptiXCacheDirDefault() const ;
         const char* getTmpUserDir() const ;
 
         const char* getDebuggingTreedir(int argc, char** argv);
@@ -283,9 +285,8 @@ class BRAP_API  BOpticksResource {
         const char* m_gensteps_dir ; 
         const char* m_export_dir ; 
         const char* m_installcache_dir ; 
+        const char* m_optixcachedefault_dir ; 
         const char* m_rng_dir ; 
-        const char* m_okc_installcache_dir ; 
-        //const char* m_ptx_installcache_dir ; 
         const char* m_tmpuser_dir ; 
    protected:
         const char* m_srcpath ; 

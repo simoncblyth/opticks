@@ -60,11 +60,14 @@ using namespace optix ;
 const char* OContext::COMPUTE_ = "COMPUTE" ; 
 const char* OContext::INTEROP_ = "INTEROP" ; 
 
+
+/*
 const char* OContext::OPTIX_CACHE_LINUX = "/var/tmp/OptixCache" ; 
 const char* OContext::CacheDir()  // static
 {
    return OPTIX_CACHE_LINUX ;  
 }
+*/
 
 
 
@@ -210,6 +213,7 @@ void OContext::CheckDevices(Opticks* ok)
     const char* frame_renderer = Opticks::Instance()->getFrameRenderer();
     if( frame_renderer != NULL)
     {
+        if(vdev.num_devices != 1) LOG(fatal) << "vdev.num_devices " << vdev.num_devices ;   
         assert( vdev.num_devices == 1 && "expecting only a single visible device, the one driving the display, in interop mode") ; 
         const char* optix_device = vdev.devices[0].name ;
         LOG(LEVEL) << " frame_renderer " << frame_renderer ; 
@@ -230,6 +234,7 @@ OContext* OContext::Create(Opticks* ok, const char* cmake_target, const char* pt
 {
     OKI_PROFILE("_OContext::Create");
 
+    SetupOptiXCachePathEnvvar();
 
     NMeta* parameters = ok->getParameters(); 
     int rtxmode = ok->getRTX();
@@ -251,6 +256,62 @@ OContext* OContext::Create(Opticks* ok, const char* cmake_target, const char* pt
     OKI_PROFILE("OContext::Create");
     return ocontext ; 
 }
+
+
+/**
+OContext::SetupOptiXCachePathEnvvar
+-------------------------------------
+
+Avoids permissions problems between multiple 
+OptiX users on same node.
+
+**/
+
+const char* OContext::OPTIX_CACHE_PATH_KEY = "OPTIX_CACHE_PATH" ; 
+const char* OContext::GetOptiXCachePathEnvvar()
+{
+    const char* dir = SSys::getenvvar(OPTIX_CACHE_PATH_KEY , NULL ); 
+    return dir ;  
+}
+
+void OContext::SetupOptiXCachePathEnvvar()
+{
+    const char* key = OPTIX_CACHE_PATH_KEY ; 
+    const char* dir = GetOptiXCachePathEnvvar() ; 
+    if( dir == NULL )
+    {
+        
+        dir = Opticks::OptiXCachePathDefault();    
+        LOG(error) 
+            << "envvar " << key 
+            << "not defined "
+            << "setting it internally to " << dir 
+            ; 
+
+        bool overwrite = true ; 
+        SSys::setenvvar( key, dir, overwrite ); 
+
+        const char* dir2 = GetOptiXCachePathEnvvar() ; 
+        assert( strcmp( dir, dir2) == 0 );   
+    }
+    else
+    {
+        LOG(LEVEL) 
+            << "envvar " << key 
+            << " already defined " << dir 
+            ;
+    }
+}
+
+
+
+
+
+
+
+
+
+
 
 
 #if OPTIX_VERSION_MAJOR >= 6
@@ -492,13 +553,17 @@ void OContext::cleanUp()
     m_context->destroy();
     m_context = 0;
 
-    cleanUpCache();
+    // cleanUpCache();
 }
 
 
 /**
 OContext::cleanUpCache
 --------------------------
+
+Now that control the OPTIX_CACHE_PATH envvar, 
+setting it to a path with username such as /var/tmp/simon/OptiXCache
+there is less need to delete the cache.
 
 The cache directory on Linux uses a common
 path for all users /var/tmp/OptixCache 
@@ -515,12 +580,11 @@ will cause context creation to fail for subsequent users with::
     what():  OptiX was unable to open the disk cache with sufficient privileges. Please make sure the database file is writeable by the current user.
 
 **/
-
 void OContext::cleanUpCache()
 {
     const char* key = "OPTICKS_KEEPCACHE" ; 
     int keepcache = SSys::getenvint( key, 0 ); 
-    const char* cachedir = CacheDir(); 
+    const char* cachedir = GetOptiXCachePathEnvvar(); 
     if( keepcache > 0 ) 
     {
         LOG(fatal) << " keeping cache " << cachedir 
@@ -533,6 +597,7 @@ void OContext::cleanUpCache()
         BFile::RemoveDir( cachedir ); 
     }
 }
+
 
 
 optix::Program OContext::createProgram(const char* cu_filename, const char* progname )

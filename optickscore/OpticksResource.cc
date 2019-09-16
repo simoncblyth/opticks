@@ -250,16 +250,27 @@ void OpticksResource::init()
    BStr::split(m_resource_types, "GFlags,OpticksColors", ',' ); 
 
    // readG4Environment();  moved to OpticksResource::SetupG4Environment invoked from CG4::init when --localg4 
-   readOpticksEnvironment();
 
-   if( hasKey() )  
+
+   if(Opticks::IsLegacyGeometryEnabled())  // envvar OPTICKS_LEGACY_GEOMETRY_ENABLED is set to 1 
    {
-       setupViaKey();    // from BOpticksResource base
-   } 
+       if( hasKey() )  
+       {
+           setupViaKey();    // from BOpticksResource base
+       } 
+       else
+       {
+           readOpticksEnvironment();   // reads the opticksdata ini file
+           readEnvironment();          // invokes BOpticksResource::setupViaSrc after getting daepath from envvar
+       }
+
+   }
    else
    {
-       readEnvironment();  // invokes BOpticksResource::setupViaSrc after getting daepath from envvar
+       assert( hasKey() && "an OPTICKS_KEY is required unless running in legacy geometry mode" );
+       setupViaKey();    // from BOpticksResource base
    }
+
 
    readMetadata();
    identifyGeometry();

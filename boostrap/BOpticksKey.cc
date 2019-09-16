@@ -21,6 +21,7 @@
 #include <iomanip>
 #include <cassert>
 #include <cstring>
+#include <csignal>
 #include <vector>
 
 #include "SAr.hh"
@@ -31,7 +32,7 @@
 
 #include "PLOG.hh"
 
-const plog::Severity BOpticksKey::LEVEL = debug ; 
+const plog::Severity BOpticksKey::LEVEL = PLOG::EnvLevel("BOpticksKey", "DEBUG") ; 
 
 BOpticksKey* BOpticksKey::fKey = NULL ; 
 
@@ -56,7 +57,14 @@ const char* BOpticksKey::StemName( const char* ext, const char* sep )
 
 bool BOpticksKey::SetKey(const char* spec)
 {
-    assert( fKey == NULL ); // SetKey is only expected to be called once 
+    if( fKey != NULL )
+    {
+        LOG(error) << "SetKey is already set, ignoring update with spec " << spec ;
+        Desc();   
+        // std::raise(SIGINT) ;  
+        return true ;  
+    }
+    // assert( fKey == NULL && "SetKey is only expected to be called once" );  
 
     if(spec == NULL)
     {

@@ -11,9 +11,9 @@ Context
 Workflow for testing binary dist
 -----------------------------------
 
-0. build Opticks, then create and explode the release binary distribution:: 
+0. as "blyth" build Opticks, then create and explode the release binary distribution onto fake /cvmfs:: 
 
-   okdist--
+   o && om- && om-- && okdist- && okdist--
 
 1. login as simon, and run some tests::
 
@@ -79,6 +79,91 @@ OKTest::
     #14 0x00007ffff7bd59cf in OKMgr::OKMgr (this=0x7fffffffd810, argc=1, argv=0x7fffffffd988, argforced=0x0) at /home/blyth/opticks/ok/OKMgr.cc:54
     #15 0x0000000000402ead in main (argc=1, argv=0x7fffffffd988) at /home/blyth/opticks/ok/tests/OKTest.cc:32
     (gdb) 
+
+
+Add OPTICKS_LEGACY_GEOMETRY_ENABLED envvar Opticks::IsLegacyGeometyEnabled() without which "--envkey" is default
+--------------------------------------------------------------------------------------------------------------------
+
+Without the envvar the key based geometry setup is on by default and there is no need 
+for the "--envkey" option.  
+
+
+::
+
+   BOpticksResource::IsLegacyGeometyEnabled 
+   Opticks::IsLegacyGeometyEnabled 
+        envvar check  
+
+   Opticks::envkey   
+        require the key to be setup in non-legacy    
+
+Doing these contortions to keep tests passing in legacy approach while being able 
+to work to fix test fails in non-legacy approach.
+
+With the envvar (legacy enabled) get 3/412 known fails without it get 10 fails (hmm was expecting more, not just +7)::
+
+    FAILS:  10  / 412   :  Mon Sep 16 12:25:32 2019   
+
+      13 /31  Test #13 : OpticksCoreTest.OpticksTwoTest                Child aborted***Exception:     0.08   
+      11 /18  Test #11 : ExtG4Test.X4PhysicalVolumeTest                Child aborted***Exception:     0.15   
+      12 /18  Test #12 : ExtG4Test.X4PhysicalVolume2Test               Child aborted***Exception:     0.15   
+
+                        UNEXPECTED double setting of key 
+                           BOpticksKey::SetKey (spec=0x4064c8 "CX4GDMLTest.X4PhysicalVolume.World0xc15cfc0_PV.27c39be4e46a36ea28a3c4da52522c9e") at /home/blyth/opticks/boostrap/BOpticksKey.cc:59
+
+                        Change behaviour : 1st SetKey wins, subsequent are ignored with a warning 
+
+
+      3  /3   Test #3  : AssimpRapTest.AssimpGGeoTest                  Child aborted***Exception:     0.09  
+      3  /3   Test #3  : OpticksGeoTest.OpenMeshRapTest                Child aborted***Exception:     0.08   
+                        
+                        same issue : assert on NULL path from getDAEPath()  
+                        EXPECTED  : AssimpGGeo and OpenMeshRap will be removed in non-legacy 
+
+
+      4  /24  Test #4  : OptiXRapTest.Roots3And4Test                   Child aborted***Exception:     1.92   
+      21 /24  Test #21 : OptiXRapTest.intersectAnalyticTest.iaTorusTest Child aborted***Exception:     2.20   
+
+                        known OptiX 600 torus issue
+
+      18 /24  Test #18 : OptiXRapTest.interpolationTest                ***Failed                      7.85   
+
+                        huh : did not reproduce fail from commandline
+
+
+      22 /34  Test #22 : CFG4Test.CGenstepCollectorTest                Child aborted***Exception:     1.17   
+
+                        CGenstepCollectorTest: /home/blyth/opticks/npy/NLookup.cpp:186: void NLookup::close(const char*): Assertion `m_alabel && m_blabel' failed.    
+
+      2  /2   Test #2  : IntegrationTests.tboolean.box                 ***Failed                      11.69 
+     
+                        EXPECTED analysis RC fail from scattering as WITH_LOGDOUBLE is commented
+
+
+CGenstepCollectorTest
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+::
+
+    (gdb) bt
+    #0  0x00007fffe4e7f207 in raise () from /lib64/libc.so.6
+    #1  0x00007fffe4e808f8 in abort () from /lib64/libc.so.6
+    #2  0x00007fffe4e78026 in __assert_fail_base () from /lib64/libc.so.6
+    #3  0x00007fffe4e780d2 in __assert_fail () from /lib64/libc.so.6
+    #4  0x00007fffec89d18c in NLookup::close (this=0x6afb20, msg=0x407a40 "NLookup::close") at /home/blyth/opticks/npy/NLookup.cpp:186
+    #5  0x000000000040469c in main (argc=1, argv=0x7fffffffda18) at /home/blyth/opticks/cfg4/tests/CGenstepCollectorTest.cc:65
+    (gdb) f 5
+    #5  0x000000000040469c in main (argc=1, argv=0x7fffffffda18) at /home/blyth/opticks/cfg4/tests/CGenstepCollectorTest.cc:65
+    65      lookup->close(); 
+    (gdb) f 4
+    #4  0x00007fffec89d18c in NLookup::close (this=0x6afb20, msg=0x407a40 "NLookup::close") at /home/blyth/opticks/npy/NLookup.cpp:186
+    186     assert(m_alabel && m_blabel) ; // have to setA and setB before close
+    (gdb) p m_alabel
+    $1 = 0x0
+    (gdb) p m_blabel
+    $2 = 0x5b0c270 "GGeo::setupLookup/m_bndlib"
+    (gdb) 
+
 
 
 
@@ -154,10 +239,139 @@ how to keep tests passing with opticksdata gone ?
 
 
 
+
+Trying without OPTICKS_LEGACY_GEOMETRY_ENABLED makes CG4Test very slow
+--------------------------------------------------------------------------
+
+* this is because current OPTICKS_KEY is pointing at JUNO geometry... and voxeling takes ages
+* need to configure plucking a lighter geometry like DYB near for test running
+* also need a way to configure a default key when the envvar is not defined   
+
+Connect to the test process::
+
+   [blyth@localhost cfg4]$ gdb -p 167266
+
+    (gdb) bt
+    #0  0x00007ff8604acb6c in std::__uninitialized_copy<false>::__uninit_copy<std::move_iterator<HepGeom::Plane3D<double>*>, HepGeom::Plane3D<double>*> (__first=..., __last=..., __result=0xc0fc0d0) at /usr/include/c++/4.8.2/bits/stl_uninitialized.h:75
+    #1  0x00007ff8604aca62 in std::uninitialized_copy<std::move_iterator<HepGeom::Plane3D<double>*>, HepGeom::Plane3D<double>*> (__first=..., __last=..., __result=0xc0fc0d0) at /usr/include/c++/4.8.2/bits/stl_uninitialized.h:117
+    #2  0x00007ff8604ac80c in std::__uninitialized_copy_a<std::move_iterator<HepGeom::Plane3D<double>*>, HepGeom::Plane3D<double>*, HepGeom::Plane3D<double> > (__first=..., __last=..., __result=0xc0fc0d0) at /usr/include/c++/4.8.2/bits/stl_uninitialized.h:258
+    #3  0x00007ff8604ac2e0 in std::__uninitialized_move_if_noexcept_a<HepGeom::Plane3D<double>*, HepGeom::Plane3D<double>*, std::allocator<HepGeom::Plane3D<double> > > (__first=0xc0fbf70, __last=0xc0fbff0, __result=0xc0fc0d0, __alloc=...)
+        at /usr/include/c++/4.8.2/bits/stl_uninitialized.h:281
+    #4  0x00007ff85a6ee366 in std::vector<HepGeom::Plane3D<double>, std::allocator<HepGeom::Plane3D<double> > >::_M_emplace_back_aux<HepGeom::Plane3D<double> >(HepGeom::Plane3D<double>&&) (this=0x7ffdafe8bd30) at /usr/include/c++/4.8.2/bits/vector.tcc:412
+    #5  0x00007ff85a6ed7c9 in std::vector<HepGeom::Plane3D<double>, std::allocator<HepGeom::Plane3D<double> > >::emplace_back<HepGeom::Plane3D<double> >(HepGeom::Plane3D<double>&&) (this=0x7ffdafe8bd30) at /usr/include/c++/4.8.2/bits/vector.tcc:101
+    #6  0x00007ff85a6ec658 in std::vector<HepGeom::Plane3D<double>, std::allocator<HepGeom::Plane3D<double> > >::push_back(HepGeom::Plane3D<double>&&) (this=0x7ffdafe8bd30, 
+        __x=<unknown type in /home/blyth/local/opticks/externals/lib64/libG4geometry.so, CU 0x281cd2, DIE 0x29c783>) at /usr/include/c++/4.8.2/bits/stl_vector.h:920
+    #7  0x00007ff85a6e678a in G4BoundingEnvelope::CreateListOfPlanes (this=0x7ffdafe8c110, baseA=std::vector of length 6, capacity 6 = {...}, baseB=std::vector of length 6, capacity 6 = {...}, pPlanes=std::vector of length 4, capacity 4 = {...})
+        at /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/geometry/management/src/G4BoundingEnvelope.cc:778
+    #8  0x00007ff85a6e460d in G4BoundingEnvelope::CalculateExtent (this=0x7ffdafe8c110, pAxis=kYAxis, pVoxelLimits=..., pTransform3D=..., pMin=@0x7ffdafe8c3c8: 8.9999999999999999e+99, pMax=@0x7ffdafe8c3c0: -8.9999999999999999e+99)
+        at /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/geometry/management/src/G4BoundingEnvelope.cc:547
+    #9  0x00007ff85a80cde0 in G4Polycone::CalculateExtent (this=0x18e2b980, pAxis=kYAxis, pVoxelLimit=..., pTransform=..., pMin=@0x7ffdafe8c9d8: 8.9999999999999999e+99, pMax=@0x7ffdafe8c9d0: -8.9999999999999999e+99)
+        at /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/geometry/solids/specific/src/G4Polycone.cc:695
+    #10 0x00007ff85a70e61e in G4SmartVoxelHeader::BuildNodes (this=0xc0f8b60, pVolume=0x18e4d7c0, pLimits=..., pCandidates=0xc0e5040, pAxis=kYAxis) at /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/geometry/management/src/G4SmartVoxelHeader.cc:852
+    #11 0x00007ff85a70d75f in G4SmartVoxelHeader::BuildVoxelsWithinLimits (this=0xc0f8b60, pVolume=0x18e4d7c0, pLimits=..., pCandidates=0xc0e5040) at /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/geometry/management/src/G4SmartVoxelHeader.cc:476
+    #12 0x00007ff85a70c7fc in G4SmartVoxelHeader::G4SmartVoxelHeader (this=0xc0f8b60, pVolume=0x18e4d7c0, pLimits=..., pCandidates=0xc0e5040, pSlice=470) at /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/geometry/management/src/G4SmartVoxelHeader.cc:119
+    #13 0x00007ff85a70f37c in G4SmartVoxelHeader::RefineNodes (this=0xc0bdbe0, pVolume=0x18e4d7c0, pLimits=...) at /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/geometry/management/src/G4SmartVoxelHeader.cc:1244
+    #14 0x00007ff85a70dae7 in G4SmartVoxelHeader::BuildVoxelsWithinLimits (this=0xc0bdbe0, pVolume=0x18e4d7c0, pLimits=..., pCandidates=0xb5b5950) at /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/geometry/management/src/G4SmartVoxelHeader.cc:568
+    #15 0x00007ff85a70c7fc in G4SmartVoxelHeader::G4SmartVoxelHeader (this=0xc0bdbe0, pVolume=0x18e4d7c0, pLimits=..., pCandidates=0xb5b5950, pSlice=61) at /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/geometry/management/src/G4SmartVoxelHeader.cc:119
+    #16 0x00007ff85a70f37c in G4SmartVoxelHeader::RefineNodes (this=0xb25d240, pVolume=0x18e4d7c0, pLimits=...) at /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/geometry/management/src/G4SmartVoxelHeader.cc:1244
+    #17 0x00007ff85a70dae7 in G4SmartVoxelHeader::BuildVoxelsWithinLimits (this=0xb25d240, pVolume=0x18e4d7c0, pLimits=..., pCandidates=0x7ffdafe8d420) at /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/geometry/management/src/G4SmartVoxelHeader.cc:568
+    #18 0x00007ff85a70ccdb in G4SmartVoxelHeader::BuildVoxels (this=0xb25d240, pVolume=0x18e4d7c0) at /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/geometry/management/src/G4SmartVoxelHeader.cc:258
+    #19 0x00007ff85a70c70d in G4SmartVoxelHeader::G4SmartVoxelHeader (this=0xb25d240, pVolume=0x18e4d7c0, pSlice=0) at /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/geometry/management/src/G4SmartVoxelHeader.cc:82
+    #20 0x00007ff85a6f9d2d in G4GeometryManager::BuildOptimisations (this=0xb252780, allOpts=true, verbose=false) at /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/geometry/management/src/G4GeometryManager.cc:200
+    #21 0x00007ff85a6f9aa5 in G4GeometryManager::CloseGeometry (this=0xb252780, pOptimise=true, verbose=false, pVolume=0x0) at /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/geometry/management/src/G4GeometryManager.cc:102
+    #22 0x00007ff85e2e7589 in G4RunManagerKernel::ResetNavigator (this=0x1c071b0) at /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/run/src/G4RunManagerKernel.cc:757
+    #23 0x00007ff85e2e73a6 in G4RunManagerKernel::RunInitialization (this=0x1c071b0, fakeRun=false) at /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/run/src/G4RunManagerKernel.cc:699
+    #24 0x00007ff85e2d7f69 in G4RunManager::RunInitialization (this=0x1c07220) at /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/run/src/G4RunManager.cc:313
+    #25 0x00007ff85e2d7d0f in G4RunManager::BeamOn (this=0x1c07220, n_event=1, macroFile=0x0, n_select=-1) at /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/run/src/G4RunManager.cc:272
+    #26 0x00007ff861a1a660 in CG4::propagate (this=0x70a63b0) at /home/blyth/opticks/cfg4/CG4.cc:369
+    #27 0x00000000004047fa in main (argc=1, argv=0x7ffdafe90048) at /home/blyth/opticks/cfg4/tests/CG4Test.cc:71
+    (gdb) c
+
+
+Non-Legacy 6/412 FAILS, 3 expected, 2 can be igored : 1 CGenstepCollectorTest needs investigating
+-----------------------------------------------------------------------------------------------------------
+
+::
+
+    unset OPTICKS_LEGACY_GEOMETRY_ENABLED  # in setup
+    ini
+    opticks-t 
+
+::
+
+    FAILS:  6   / 412   :  Mon Sep 16 13:55:37 2019   
+      3  /3   Test #3  : AssimpRapTest.AssimpGGeoTest                  Child aborted***Exception:     0.08   
+      3  /3   Test #3  : OpticksGeoTest.OpenMeshRapTest                Child aborted***Exception:     0.10   
+      4  /24  Test #4  : OptiXRapTest.Roots3And4Test                   Child aborted***Exception:     1.95   
+      21 /24  Test #21 : OptiXRapTest.intersectAnalyticTest.iaTorusTest Child aborted***Exception:     2.32   
+      22 /34  Test #22 : CFG4Test.CGenstepCollectorTest                Child aborted***Exception:     1.14   
+      2  /2   Test #2  : IntegrationTests.tboolean.box                 ***Failed                      11.86  
+
+Also 2 tests that pass, but take far too long for unit tests. Need to get faster DYB geom working in non-legacy::
+
+  7  /34  Test #7  : CFG4Test.CG4Test                              Passed                         1025.91 
+  1  /1   Test #1  : OKG4Test.OKG4Test                             Passed                         1036.86 
+
+
+
+Legacy running::
+
+    unset OPTICKS_LEGACY_GEOMETRY_ENABLED  # in setup
+    export OPTICKS_LEGACY_GEOMETRY_ENABLED 1
+    ini
+    opticks-t 
+
+
+
+     7/34 Test  #7: CFG4Test.CG4Test ..........................   Passed   16.55 sec
+     1/1 Test #1  : OKG4Test.OKG4Test ................   Passed   18.92 sec
+
+
+    FAILS:  4   / 412   :  Mon Sep 16 14:19:08 2019   
+      4  /24  Test #4  : OptiXRapTest.Roots3And4Test                   Child aborted***Exception:     1.94   
+      18 /24  Test #18 : OptiXRapTest.interpolationTest                ***Failed                      2.13   
+      21 /24  Test #21 : OptiXRapTest.intersectAnalyticTest.iaTorusTest Child aborted***Exception:     2.31   
+      2  /2   Test #2  : IntegrationTests.tboolean.box                 ***Failed                      11.93  
+    [blyth@localhost cfg4]$ 
+
+
+Checking ctest.log::
+
+   oxrap-bcd
+   vi ctest.log
+
+Failure from a python assert::
+
+    116 2019-09-16 14:17:43.212 INFO  [278770] [interpolationTest::ana@178]  path /home/blyth/opticks/optixrap/tests/interpolationTest_interpol.py
+    117 [2019-09-16 14:17:43,347] p278872 {legacy_init         :env.py    :185} WARNING  - ^[[33mlegacy_init : OPTICKS_KEY envvar deleted for legacy running, unset IDPATH to use direct_init^[[0m
+    118 [2019-09-16 14:17:43,357] p278872 {__init__            :proplib.py:172} WARNING  - ^[[33mdirect data override^[[0m
+    119 [2019-09-16 14:17:43,358] p278872 {<module>            :interpolationTest_interpol.py:59} INFO     - ^[[32m opath : Y : /home/blyth/local/opticks/tmp/interpolationTest/interpolationTest_interpol.npy ^[[0m
+    120 [2019-09-16 14:17:43,358] p278872 {<module>            :interpolationTest_interpol.py:60} INFO     - ^[[32m cpath : Y : /home/blyth/local/opticks/tmp/interpolationTest/CInterpolationTest_interpol.npy ^[[0m
+    121 Traceback (most recent call last):
+    122   File "/home/blyth/opticks/optixrap/tests/interpolationTest_interpol.py", line 75, in <module>
+    123     assert len(t) == len(c)
+    124 AssertionError
+    125 2019-09-16 14:17:43.393 INFO  [278770] [SSys::run@91] python /home/blyth/opticks/optixrap/tests/interpolationTest_interpol.py rc_raw : 256 rc : 1
+    126 2019-09-16 14:17:43.393 ERROR [278770] [SSys::run@98] FAILED with  cmd python /home/blyth/opticks/optixrap/tests/interpolationTest_interpol.py RC 1
+    127 2019-09-16 14:17:43.393 INFO  [278770] [interpolationTest::ana@180]  RC 1
+
+
+* could an error due to flipping between geometries, which trips a consistency check ?
+
+* running "interpolationTest" on commandline doesnt fail 
+
+::
+
+    unset OPTICKS_LEGACY_GEOMETRY_ENABLED
+    interpolationTest      # fails again
+    interpolationTest      # still fails 
+
+
+
 Commented opticksdata hookup
 ------------------------------
 
-Causes 89 fails...
+Causes 89 fails... this was before switched to keyed setup as default. 
 
 ::
 
@@ -252,13 +466,6 @@ Causes 89 fails...
       1  /1   Test #1  : OKG4Test.OKG4Test                             Child aborted***Exception:     0.30   
       2  /2   Test #2  : IntegrationTests.tboolean.box                 ***Failed                      3.52   
     [blyth@localhost opticks]$ 
-
-
-
-
-
-
-
 
 
 
@@ -446,6 +653,10 @@ Flipping between users optix cache issue
     sudo rm -rf /var/tmp/OptixCache
 
 
+    OPTIX_CACHE_PATH=/var/tmp/simon/OptiXCache OKTest
+
+
+
 OpticksTest permissions checking existance of results_dir
 -------------------------------------------------------------
 
@@ -509,4 +720,38 @@ Investigate where event paths inside geocache are coming from
 
 
 
+
+
+OKTest now runs from binary dist with fairly minimal environment
+-------------------------------------------------------------------
+
+::
+
+    [simon@localhost ~]$ cat .opticks_setup_minimal 
+    # ~/.opticks_setup_minimal
+    
+    export OPTICKS_INSTALL_PREFIX=/cvmfs/opticks.ihep.ac.cn/ok/releases/Opticks-0.0.0_alpha/x86_64-centos7-gcc48-geant4_10_04_p02-dbg
+    export PATH=${OPTICKS_INSTALL_PREFIX}/lib:$PATH
+    
+    export OPTICKS_SHARED_CACHE_PREFIX=/cvmfs/opticks.ihep.ac.cn/ok/shared
+    
+    unset OPTICKS_KEY
+    export OPTICKS_KEY=OKX4Test.X4PhysicalVolume.lWorld0x4bc2710_PV.f6cc352e44243f8fa536ab483ad390ce   ## geocache-j1808-v5-export 
+    
+    export OPTICKS_DEFAULT_INTEROP_CVD=1
+    # cvd setting pointing at the GPU that is connected to the monitor, need on multi-gpu machines
+    
+    unset OPTICKS_RESULTS_PREFIX
+    export OPTICKS_RESULTS_PREFIX=$HOME/results_prefix
+    
+    unset OPTICKS_EVENT_BASE
+    export OPTICKS_EVENT_BASE=$HOME/event_base
+    
+
+
+
+
+
+Getting the tests to run from binary dist 
+------------------------------------------------
 

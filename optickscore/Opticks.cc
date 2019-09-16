@@ -234,6 +234,19 @@ void Opticks::dumpRC() const
 
 Opticks*    Opticks::fInstance = NULL ; 
 
+
+bool Opticks::IsLegacyGeometryEnabled() // static
+{
+    return BOpticksResource::IsLegacyGeometryEnabled() ;  // returns true when envvar OPTICKS_LEGACY_GEOMETRY_ENABLED is set to 1 
+}
+
+const char* Opticks::OptiXCachePathDefault()  // static
+{
+    return BOpticksResource::OptiXCachePathDefault() ; 
+}
+
+
+
 bool Opticks::HasInstance() 
 {
     return fInstance != NULL ; 
@@ -262,19 +275,34 @@ Opticks* Opticks::GetInstance()
 }
 
 
+bool Opticks::envkey()
+{
+    bool legacy = Opticks::IsLegacyGeometryEnabled(); 
+    bool result = false ; 
+    if(legacy)
+    {
+        result = m_sargs->hasArg("--envkey") ? BOpticksKey::SetKey(NULL) : false ;    //  see tests/OpticksEventDumpTest.cc makes sensitive to OPTICKS_KEY
+    }
+    else
+    {
+        result =  BOpticksKey::SetKey(NULL) ; 
+        assert( result == true && "a valid key is required in non-legacy running " );    
+    }
 
+    return result ; 
+}
 
 Opticks::Opticks(int argc, char** argv, const char* argforced )
     :
     m_log(new SLog("Opticks::Opticks","",debug)),
     m_ok(this),
-    m_sargs(new SArgs(argc, argv, argforced)), 
+    m_sargs(new SArgs(argc, argv, argforced)),  
     m_argc(m_sargs->argc),
     m_argv(m_sargs->argv),
     m_lastarg(m_argc > 1 ? strdup(m_argv[m_argc-1]) : NULL),
     m_mode(new OpticksMode(this)),
     m_dumpenv(m_sargs->hasArg("--dumpenv")),
-    m_envkey(m_sargs->hasArg("--envkey") ? BOpticksKey::SetKey(NULL) : false),  // see tests/OpticksEventDumpTest.cc makes sensitive to OPTICKS_KEY
+    m_envkey(envkey()),
     m_production(m_sargs->hasArg("--production")),
     m_profile(new OpticksProfile()),
     m_materialprefix(NULL),
@@ -1481,6 +1509,11 @@ const char* Opticks::getRuncacheDir() const
 {
     return m_resource ? m_resource->getRuncacheDir() : NULL ; 
 }
+const char* Opticks::getOptiXCacheDirDefault() const 
+{
+    return m_resource ? m_resource->getOptiXCacheDirDefault() : NULL ; 
+}
+
 
 
 
@@ -3199,30 +3232,6 @@ const char*     Opticks::getCurrentGDMLPath() const
     // GDML path for embedded Opticks (ie direct from Geant4) is within the geocache directory 
 }
 
-
-/**
-Opticks::prepareInstallCache
------------------------------
-
-Moved save directory from IdPath to ResourceDir as
-the IdPath is not really appropriate  
-for things such as the flags that are a feature of an 
-Opticks installation, not a feature of the geometry.
-
-But ResourceDir is not appropriate either as that requires 
-manual management via opticksdata repo.
-
-
-**/
-
-
-void Opticks::prepareInstallCache(const char* dir)
-{
-    if(dir == NULL) dir = m_resource->getOKCInstallCacheDir() ;
-    LOG(info) << ( dir ? dir : "NULL" )  ; 
-    m_resource->saveFlags(dir);
-    m_resource->saveTypes(dir);
-}
 
 
 void Opticks::setIdPathOverride(const char* idpath_tmp) // used for saves into non-standard locations whilst testing
