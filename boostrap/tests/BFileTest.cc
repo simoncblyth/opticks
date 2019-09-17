@@ -158,6 +158,16 @@ void test_ParentDir()
 
 }
 
+void test_ParentParentDir()
+{
+    const char* path = "/home/blyth/local/opticks/lib/OKX4Test" ; 
+    const char* xpp =  "/home/blyth/local/opticks" ; 
+ 
+    std::string spp = BFile::ParentParentDir(path);
+    assert( strcmp( spp.c_str(), xpp ) == 0 );
+}
+
+
 
 
 void test_FormPath_reldir()
@@ -537,7 +547,8 @@ int main(int argc, char** argv)
 
    //test_CWD(); 
    //test_Absolute(); 
-   test_preparePath();
+   //test_preparePath();
+   test_ParentParentDir();
 
    return 0 ; 
 }

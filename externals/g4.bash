@@ -596,7 +596,9 @@ g4-export-ini()
     local dir=$(dirname $ini)
     mkdir -p $dir 
     echo $msg writing G4 environment to $ini
-    env | grep G4 > $ini
+
+    #env | grep G4 > $ini
+    envg4.py > $ini
 
     cat $ini
 

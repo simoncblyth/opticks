@@ -508,6 +508,8 @@ void OpticksResource::SetupG4Environment()
     //
     const char* inipath = InstallPathG4ENV();
 
+    LOG(error) << "inipath " << inipath ; 
+
     BEnv* g4env = ReadIniEnvironment(inipath);
     if(g4env)
     {
@@ -581,6 +583,8 @@ BEnv* OpticksResource::ReadIniEnvironment(const std::string& inipath)
                   ;
 
          env = BEnv::load(inipath.c_str()); 
+         //env->dump("OpticksResource::ReadIniEnvironment");
+
     }
     return env ;  
 }

@@ -173,7 +173,8 @@ opticksdata-jv5(){ echo $(opticksdata-xpath j1808)_v5.gdml ; }
 opticksdata-jv5-vi(){ vi $(opticksdata-jv5) ; }
 
 
-
+opticksdata-dx(){  echo $(opticksdata-xpath dybexport).gdml ; }
+opticksdata-dx-vi(){ vi $(opticksdata-dx) ; }
 
 
 opticksdata-j-info(){ cat << EOI
@@ -249,6 +250,7 @@ opticksdata-xpath(){
   local base=$(opticksdata-dir)/export
   case $1 in 
        dyb) echo $base/DayaBay_VGDX_20140414-1300/g4_00 ;;
+       dybexport) echo $base/DayaBay_VGDX_20140414-1300/g4_00_CGeometry_export ;;
       dlin) echo $base/Lingao_VGDX_20140414-1247/g4_00 ;;
       dfar) echo $base/Far_VGDX_20140414-1256/g4_00 ;;
       dpib) echo $base/dpib/cfg4 ;; 

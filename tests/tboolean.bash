@@ -19,7 +19,7 @@
 ##
 
 
-tboolean-source(){   echo $(opticks-home)/tests/tboolean.bash ; }
+tboolean-source(){   echo $BASH_SOURCE ; }
 tboolean-vi(){       vi $(tboolean-source) ; }
 tboolean-usage(){ cat << \EOU
 
@@ -515,7 +515,7 @@ EOU
 }
 
 tboolean-env(){      olocal- ;  }
-tboolean-dir(){ echo $(opticks-home)/tests ; }
+tboolean-dir(){ echo $(dirname $(tboolean-source)) ; }
 tboolean-cd(){  cd $(tboolean-dir); }
 
 join(){ local IFS="$1"; shift; echo "$*"; }

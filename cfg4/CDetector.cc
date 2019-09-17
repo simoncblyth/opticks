@@ -388,6 +388,10 @@ void CDetector::export_dae(const char* dir, const char* name)
 
 void CDetector::export_gdml(const char* dir, const char* name)
 {
+    LOG(LEVEL) 
+        << " dir " << dir
+        << " name " << name
+        ; 
     m_check->checkSurf();
     G4VPhysicalVolume* world = getTop();
     CGDML::Export(dir, name, world ); 

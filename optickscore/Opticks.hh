@@ -121,6 +121,7 @@ class OKCORE_API Opticks {
        static const char* DEFAULT_PFX ; 
    public:
        static bool IsLegacyGeometryEnabled(); 
+       static bool IsForeignGeant4Enabled(); 
        static const char* OptiXCachePathDefault(); 
    public:
        static BPropNames* G_MATERIAL_NAMES ;
@@ -208,7 +209,7 @@ class OKCORE_API Opticks {
        bool isValid();
        bool hasVolnames() const ; 
        bool isEnabledLegacyG4DAE() const ;  // --enabled_legacy_g4dae 
-       bool isLocalG4() const ; // --localg4 
+       //bool isLocalG4() const ; // --localg4 
    public:
        int  rc() const ;
        void dumpRC() const ;

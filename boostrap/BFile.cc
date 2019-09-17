@@ -337,6 +337,13 @@ std::string BFile::ParentDir(const char* path)
     return fold ; 
 }
 
+std::string BFile::ParentParentDir(const char* path)
+{
+    fs::path fsp(path);
+    std::string fold = fsp.parent_path().parent_path().string() ;
+    return fold ; 
+}
+
 
 std::string BFile::ParentName(const char* path)
 {

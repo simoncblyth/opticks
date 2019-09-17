@@ -215,6 +215,15 @@ bool BOpticksResource::IsLegacyGeometryEnabled()
    return lge == 1 ; 
 }
 
+const char* BOpticksResource::FOREIGN_GEANT4_ENABLED_KEY = "OPTICKS_FOREIGN_GEANT4_ENABLED" ; 
+bool BOpticksResource::IsForeignGeant4Enabled()
+{
+   int fge = SSys::getenvint(FOREIGN_GEANT4_ENABLED_KEY, -1);
+   return fge == 1 ; 
+}
+
+
+
 
 const char* BOpticksResource::RESULTS_PREFIX_DEFAULT = "$TMP" ; 
 const char* BOpticksResource::RESULTS_PREFIX_KEY = "OPTICKS_RESULTS_PREFIX" ; 

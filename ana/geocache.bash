@@ -254,6 +254,8 @@ geocache-j1808-v5-(){ opticksdata- ; geocache-create- --gdmlpath $(opticksdata-j
 
 
 
+
+
 geocache-j1808-v4-comment(){ echo torus-less-skipping-just-lv-22-maskVirtual ; }
 geocache-j1808-v4-key(){     echo OKX4Test.X4PhysicalVolume.lWorld0x4bc2710_PV.f6cc352e44243f8fa536ab483ad390ce ; }
 geocache-j1808-v4-export(){  geocache-export ${FUNCNAME/-export} ; }
@@ -372,7 +374,16 @@ geocache-j1808-v5-key(){
 geocache-j1808-v5-export(){  geocache-export ${FUNCNAME/-export} ; }
 geocache-j1808-v5(){  geocache-j1808-v5- --csgskiplv 22 --runfolder $FUNCNAME --runcomment $(${FUNCNAME}-comment) $* ; }  
 
-geocache-create(){ geocache-j1808-v5 $* ; }  # formerly recreate
+
+
+geocache-dx-v0-(){  opticksdata- ; geocache-create- --gdmlpath $(opticksdata-dx) $* ; }     
+geocache-dx-v0-comment(){ echo export-dyb-near-for-regeneration ; }     
+geocache-dx-v0(){   geocache-dx-v0- -runfolder $FUNCNAME --runcomment $(${FUNCNAME}-comment) $* ; } 
+
+
+
+
+geocache-create(){ geocache-j1808-v5 $* ; }  
 geocache-key-export(){   geocache-j1808-v5-export ; }
 
 

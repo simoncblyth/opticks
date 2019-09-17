@@ -31,15 +31,33 @@ class Dist(object):
 
     bin/ok.sh 
  
+
+
+    externals/share/Geant4-10.4.2/data
+        adds about 1.6G to the .tar
  
  
     """
     exclude_dir_name = ['cmake','pkgconfig',  'Geant4-10.2.1', 'Geant4-10.4.2']  
 
-    bases = ['include', 'lib','lib64','externals/lib','externals/lib64','externals/OptiX/lib64', 'installcache/PTX', 'gl', 'tests', 'py', 'bin' ]
-    ## hmm need to construct an installed bin too, with scripts 
+    bases = ['include', 
+             'lib',
+             'lib64',
+             'externals/config',
+             'externals/lib',
+             'externals/lib64',
+             'externals/OptiX/lib64', 
+             'externals/share/Geant4-10.4.2/data',
+             'installcache/PTX', 
+             'gl', 
+             'tests', 
+             'py', 
+             'bin' ]
 
-    extras = []
+    extras = [
+             'opticksdata/export/juno1808/g4_00_v5.gdml',
+             'opticksdata/export/DayaBay_VGDX_20140414-1300/g4_00_CGeometry_export.gdml', 
+             ]
 
     exclude_g4lib = False
 

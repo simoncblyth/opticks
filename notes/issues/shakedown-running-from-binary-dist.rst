@@ -1226,26 +1226,254 @@ Python scripts need opticks/ana/... in PYTHONPATH::
     The following tests FAILED:
     Cannot create directory /cvmfs/opticks.ihep.ac.cn/ok/releases/Opticks-0.0.0_alpha/x86_64-centos7-gcc48-geant4_10_04_p02-dbg/tests/Testing/Temporary
     Cannot create log file: LastTestsFailed.log
+
         159 - NPYTest.NLoadTest (SEGFAULT)
         283 - GGeoTest.GPropertyTest (SEGFAULT)
+
+              opticksdata missing items
+
         292 - AssimpRapTest.AssimpGGeoTest (Child aborted)
         296 - OpticksGeoTest.OpenMeshRapTest (Child aborted)
+
+              skipable : DAE access   
+
         324 - OptiXRapTest.Roots3And4Test (Child aborted)
         341 - OptiXRapTest.intersectAnalyticTest.iaTorusTest (Child aborted)
+
+              known
+
         377 - CFG4Test.CTestDetectorTest (SEGFAULT)
         379 - CFG4Test.CGDMLDetectorTest (Child aborted)
         380 - CFG4Test.CGeometryTest (Child aborted)
         381 - CFG4Test.CG4Test (SEGFAULT)
-        396 - CFG4Test.CGenstepCollectorTest (Child aborted)
         397 - CFG4Test.CInterpolationTest (SEGFAULT)
         403 - CFG4Test.CRandomEngineTest (SEGFAULT)
+
+              fixed as shown below, by making the G4 data movable  
+
+        396 - CFG4Test.CGenstepCollectorTest (Child aborted)
+
+              lookup issue
+
         409 - OKG4Test.OKG4Test (SEGFAULT)
+
+              now works, but too slowly like CG4Test 
+
         412 - IntegrationTests.tboolean.box (Not Run)
+
+              need to install bash scripts as well as the python 
+
+
     Errors while running CTest
     == okr-t : tbeg Tue Sep 17 16:44:59 CST 2019
     == okr-t : tend Tue Sep 17 16:47:19 CST 2019
     == okr-t : tdir /cvmfs/opticks.ihep.ac.cn/ok/releases/Opticks-0.0.0_alpha/x86_64-centos7-gcc48-geant4_10_04_p02-dbg/tests
     == okr-t : tlog /home/simon/okr-t.log
+
+
+
+hmm giving "simon" access to "blyth" kinda invalidates the test
+-----------------------------------------------------------------
+
+* for the test to be useful : everything must go via the tarball distribution, or be otherwise provided
+* giving direct access to opticksdata from "blyth" breaks down the walls far too much 
+
+::
+
+    [blyth@localhost ~]$ chmod go+x .
+    [blyth@localhost ~]$ chmod go-x .
+
+
+tboolean.sh bash hookup : need to install these too
+----------------------------------------------------------
+
+* make ~/opticks/bin as propa proj with CMakeLists in order to install things like tboolean.sh 
+
+* TODO: migrate ~/opticks/tests into ~/opticks/integration as om- machinery cannot handle tests/tests 
+
+
+Geant4 failers : below fixes all except CGenstepCollectorTest : BUT CG4Test taking 17min for JUNO geometry
+-------------------------------------------------------------------------------------------------------------
+
+* add the G4 data files to okdist-- 
+* with bin/envg4.py change externals/config/geant4.ini to use a token prefix instead of absolute path, so can work across installs
+* add extra opticksdata path for the GDML to okdist.py
+* modify Opticks::ExtractCacheMetaGDMLPath to determine the prefix and replace it with a token that 
+  gets interpolated into the appropriate path for the current install  
+
+
+::
+
+    [simon@localhost x86_64-centos7-gcc48-geant4_10_04_p02-dbg]$ okr-t cfg4
+    == okr-t : tdir /cvmfs/opticks.ihep.ac.cn/ok/releases/Opticks-0.0.0_alpha/x86_64-centos7-gcc48-geant4_10_04_p02-dbg/tests/cfg4
+    == okr-t : tlog /home/simon/okr-t-cfg4.log
+    == okr-t : tbeg Tue Sep 17 20:43:51 CST 2019
+    == okr-t : tlog /home/simon/okr-t-cfg4.log
+    Test project /cvmfs/opticks.ihep.ac.cn/ok/releases/Opticks-0.0.0_alpha/x86_64-centos7-gcc48-geant4_10_04_p02-dbg/tests/cfg4
+    Cannot create directory /cvmfs/opticks.ihep.ac.cn/ok/releases/Opticks-0.0.0_alpha/x86_64-centos7-gcc48-geant4_10_04_p02-dbg/tests/cfg4/Testing/Temporary
+    Cannot create log file: LastTest.log
+          Start  1: CFG4Test.CMaterialLibTest
+     1/34 Test  #1: CFG4Test.CMaterialLibTest .................   Passed    0.57 sec
+          Start  2: CFG4Test.CMaterialTest
+     2/34 Test  #2: CFG4Test.CMaterialTest ....................   Passed    0.53 sec
+          Start  3: CFG4Test.CTestDetectorTest
+     ... 
+     6/34 Test  #6: CFG4Test.CGeometryTest ....................   Passed   22.14 sec
+          Start  7: CFG4Test.CG4Test
+     7/34 Test  #7: CFG4Test.CG4Test ..........................   Passed  995.96 sec
+          Start  8: CFG4Test.G4MaterialTest
+     8/34 Test  #8: CFG4Test.G4MaterialTest ...................   Passed    0.08 sec
+          Start  9: CFG4Test.G4StringTest
+     ...
+          Start 22: CFG4Test.CGenstepCollectorTest
+    22/34 Test #22: CFG4Test.CGenstepCollectorTest ............Child aborted***Exception:   1.13 sec
+     ...
+
+    2019-09-17 21:01:36.773 INFO  [44460] [OpticksGen::targetGenstep@328] setting frame 0 Id
+    CGenstepCollectorTest: /home/blyth/opticks/npy/NLookup.cpp:186: void NLookup::close(const char*): Assertion m_alabel && m_blabel failed.
+
+          Start 23: CFG4Test.CInterpolationTest
+    23/34 Test #23: CFG4Test.CInterpolationTest ...............   Passed   22.14 sec
+          Start 24: CFG4Test.OpRayleighTest
+    24/34 Test #24: CFG4Test.OpRayleighTest ...................   Passed    1.66 sec
+          Start 25: CFG4Test.CGROUPVELTest
+     
+    97% tests passed, 1 tests failed out of 34
+
+    Total Test time (real) = 1116.35 sec
+
+    The following tests FAILED:
+    Cannot create directory /cvmfs/opticks.ihep.ac.cn/ok/releases/Opticks-0.0.0_alpha/x86_64-centos7-gcc48-geant4_10_04_p02-dbg/tests/cfg4/Testing/Temporary
+    Cannot create log file: LastTestsFailed.log
+         22 - CFG4Test.CGenstepCollectorTest (Child aborted)
+    Errors while running CTest
+    == okr-t : tbeg Tue Sep 17 20:43:51 CST 2019
+    == okr-t : tend Tue Sep 17 21:02:27 CST 2019
+    == okr-t : tdir /cvmfs/opticks.ihep.ac.cn/ok/releases/Opticks-0.0.0_alpha/x86_64-centos7-gcc48-geant4_10_04_p02-dbg/tests/cfg4
+    == okr-t : tlog /home/simon/okr-t-cfg4.log
+
+
+
+
+JUNO gdml too big for quick testing
+-------------------------------------------
+
+::
+
+    CG4Test
+    OKG4Test 
+
+How to export DYB into GDML ?::
+
+    CGeometry::export_
+
+There are options::
+
+   --export
+   --exportconfig $TMP   # the default   getExportConfig
+
+
+::
+
+    148 void CGeometry::export_()
+    149 {
+    150     bool expo = m_cfg->hasOpt("export");
+    151     if(!expo) return ;
+    152     //std::string expodir = m_cfg->getExportConfig();
+    153 
+    154     const char* expodir = "$TMP/CGeometry" ;
+    155 
+    156     if(BFile::ExistsDir(expodir))
+    157     {
+    158         BFile::RemoveDir(expodir);
+    159         LOG(info) << "CGeometry::export_ removed " << expodir ;
+    160     }
+    161 
+    162     BFile::CreateDir(expodir);
+    163     m_detector->export_dae(expodir, "CGeometry.dae");
+    164     m_detector->export_gdml(expodir, "CGeometry.gdml");
+    165 }
+
+
+::
+
+    OKG4Test --export 
+    ...
+    2019-09-17 21:32:31.254 INFO  [96888] [CGDML::Export@65] export to /home/blyth/local/opticks/tmp/CGeometry/CGeometry.gdml
+
+::
+
+    cd /home/blyth/local/opticks/opticksdata/export/DayaBay_VGDX_20140414-1300
+    cp /home/blyth/local/opticks/tmp/CGeometry/CGeometry.gdml g4_00_CGeometry_export.gdml
+
+
+::
+
+    [blyth@localhost ~]$ opticksdata-dx
+    /home/blyth/local/opticks/opticksdata/export/DayaBay_VGDX_20140414-1300/g4_00_CGeometry_export.gdml
+
+
+::
+
+    [blyth@localhost ~]$ geocache-dx-v0
+    === o-cmdline-binary-match : --okx4
+    === o-gdb-update : placeholder
+    === o-main : /home/blyth/local/opticks/lib/OKX4Test --okx4 --g4codegen --deletegeocache --gdmlpath /home/blyth/local/opticks/opticksdata/export/DayaBay_VGDX_20140414-1300/g4_00_CGeometry_export.gdml -runfolder geocache-dx-v0 --runcomment export-dyb-near-for-regeneration ======= PWD /tmp/blyth/opticks/geocache-create- Tue Sep 17 21:55:08 CST 2019
+    2019-09-17 21:55:08.928 INFO  [130758] [main@90] 0 /home/blyth/local/opticks/lib/OKX4Test
+    2019-09-17 21:55:08.928 INFO  [130758] [main@90] 1 --okx4
+    2019-09-17 21:55:08.928 INFO  [130758] [main@90] 2 --g4codegen
+    2019-09-17 21:55:08.928 INFO  [130758] [main@90] 3 --deletegeocache
+    2019-09-17 21:55:08.928 INFO  [130758] [main@90] 4 --gdmlpath
+    2019-09-17 21:55:08.928 INFO  [130758] [main@90] 5 /home/blyth/local/opticks/opticksdata/export/DayaBay_VGDX_20140414-1300/g4_00_CGeometry_export.gdml
+    2019-09-17 21:55:08.928 INFO  [130758] [main@90] 6 -runfolder
+    2019-09-17 21:55:08.928 INFO  [130758] [main@90] 7 geocache-dx-v0
+    2019-09-17 21:55:08.928 INFO  [130758] [main@90] 8 --runcomment
+    2019-09-17 21:55:08.928 INFO  [130758] [main@90] 9 export-dyb-near-for-regeneration
+    2019-09-17 21:55:08.928 INFO  [130758] [main@107]  csgskiplv NONE
+    2019-09-17 21:55:08.928 INFO  [130758] [main@111]  parsing /home/blyth/local/opticks/opticksdata/export/DayaBay_VGDX_20140414-1300/g4_00_CGeometry_export.gdml
+    G4GDML: Reading '/home/blyth/local/opticks/opticksdata/export/DayaBay_VGDX_20140414-1300/g4_00_CGeometry_export.gdml'...
+    G4GDML: Reading definitions...
+
+    -------- EEEE ------- G4Exception-START -------- EEEE -------
+
+    *** ExceptionHandler is not defined ***
+    *** G4Exception : InvalidExpression
+          issued by : G4GDMLEvaluator::DefineConstant()
+    Redefinition of constant or variable: SCINTILLATIONYIELD
+    *** Fatal Exception ***
+    -------- EEEE -------- G4Exception-END --------- EEEE -------
+
+
+Indeed the below are duplicated::
+
+   71     <constant name="SCINTILLATIONYIELD" value="10"/>
+   72     <constant name="RESOLUTIONSCALE" value="1"/>
+   73     <constant name="FASTTIMECONSTANT" value="3.6399998664856"/>
+   74     <constant name="SLOWTIMECONSTANT" value="12.1999998092651"/>
+   75     <constant name="YIELDRATIO" value="0.860000014305115"/>
+
+
+
+Comment out and try again::
+
+    opticksdata-dx-vi
+    geocache-dx-v0
+
+    -------- EEEE ------- G4Exception-START -------- EEEE -------
+
+    *** ExceptionHandler is not defined ***
+    *** G4Exception : ReadError
+          issued by : G4GDMLReadDefine::getMatrix()
+    Matrix 'SCINTILLATIONYIELD' was not found!
+    *** Fatal Exception ***
+    -------- EEEE -------- G4Exception-END --------- EEEE -------
+
+
+
+TODO:
+
+* contrast original GDML with the regenerated and exported
+* check for property overrides in code
 
 
 

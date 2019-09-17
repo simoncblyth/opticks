@@ -32,6 +32,9 @@
 
 #include "PLOG.hh"
 
+const plog::Severity BEnv::LEVEL = PLOG::EnvLevel("BEnv","DEBUG"); 
+
+
 #ifdef _MSC_VER
 #else
 #include <unistd.h>
@@ -170,6 +173,7 @@ std::string BEnv::nativePath(const char* val)
     std::string p = val ; 
 
     bool is_fspath = 
+                p.find("$") == 0 || 
                 p.find("/") == 0 || 
                 p.find("\\") == 0 || 
                 p.find(":") == 1  ;
@@ -183,11 +187,11 @@ std::string BEnv::nativePath(const char* val)
 
     std::string npath = BFile::FormPath(bpath.c_str());
 
-    LOG(verbose) << "BEnv::nativePath"
-               << " val " << val
-               << " bpath " << bpath
-               << " npath " << npath
-               ;    
+    LOG(LEVEL)
+        << " val " << val
+        << " bpath " << bpath
+        << " npath " << npath
+        ;    
 
 
     return npath ; 

@@ -239,6 +239,13 @@ bool Opticks::IsLegacyGeometryEnabled() // static
 {
     return BOpticksResource::IsLegacyGeometryEnabled() ;  // returns true when envvar OPTICKS_LEGACY_GEOMETRY_ENABLED is set to 1 
 }
+bool Opticks::IsForeignGeant4Enabled() // static
+{
+    return BOpticksResource::IsForeignGeant4Enabled() ;  // returns true when envvar OPTICKS_FOREIGN_GEANT4_ENABLED is set to 1 
+}
+
+
+
 
 const char* Opticks::OptiXCachePathDefault()  // static
 {
@@ -1755,21 +1762,55 @@ Opticks::ExtractCacheMetaGDMLPath
 
 TODO: avoid having to fish around in the geocache argline to get the gdmlpath in direct mode
 
+Going via the tokpath enables sharing of geocaches across different installs. 
+
 **/
 
 std::string Opticks::ExtractCacheMetaGDMLPath(const NMeta* meta)  // static
 {
     std::string argline = meta->get<std::string>("argline", "-");  
+
     LOG(info) << " argline " << argline ; 
+
     SArgs sa(0, NULL, argline.c_str()); 
+
+
+    const char* executable = sa.elem[0].c_str(); 
+  
+    std::string sprefix = BFile::ParentParentDir(executable) ; 
+
+    const char* prefix = sprefix.empty() ? NULL : sprefix.c_str(); 
+
     const char* gdmlpath = sa.get_arg_after("--gdmlpath", NULL) ; 
-    LOG(info) << " gdmlpath " << gdmlpath ;  
-    return gdmlpath ? gdmlpath : "" ; 
+
+    bool consistent_prefix = prefix && gdmlpath && strncmp( gdmlpath, prefix, strlen(prefix) ) == 0 ;
+
+    const char* relpath = consistent_prefix ? gdmlpath + strlen(prefix) + 1 : NULL ; 
+
+    std::string tokpath ; 
+
+    if(relpath) 
+    {
+        tokpath = BFile::FormPath("$OPTICKS_INSTALL_PREFIX", relpath ) ;
+    } 
+    else if( gdmlpath )
+    {
+        tokpath = gdmlpath ; 
+    }   
+    
+
+    LOG(info) 
+        << "\n argline " << argline
+        << "\n executable " << executable 
+        << "\n gdmlpath " << gdmlpath
+        << "\n prefix " << prefix
+        << "\n relpath " << relpath
+        << "\n tokpath " << tokpath
+        << "\n consistent_prefix " << consistent_prefix
+        ;  
+
+    return tokpath ; 
 }
-
-
-
-
 
 
 
@@ -2234,11 +2275,8 @@ bool Opticks::isEnabledLegacyG4DAE() const
     return m_cfg->hasOpt("enabled_legacy_g4dae") ;  
 }
 
-bool Opticks::isLocalG4() const 
-{
-    return m_cfg->hasOpt("localg4") ;  
-}
 
+//bool Opticks::isLocalG4() const { return m_cfg->hasOpt("localg4") ;  }
 
 
 

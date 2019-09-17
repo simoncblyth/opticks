@@ -76,7 +76,9 @@ class BRAP_API  BOpticksResource {
         static const plog::Severity  LEVEL ; 
     public:
         static const char* LEGACY_GEOMETRY_ENABLED_KEY ; 
+        static const char* FOREIGN_GEANT4_ENABLED_KEY ; 
         static bool IsLegacyGeometryEnabled() ; 
+        static bool IsForeignGeant4Enabled() ;   // foreign Geant4 means not managed as an Opticks external
     protected:
         static const char* RESULTS_PREFIX_KEY  ; 
         static const char* RESULTS_PREFIX_DEFAULT  ; 

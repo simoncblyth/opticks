@@ -68,7 +68,7 @@ OpticksColors* OpticksColors::load(const char* dir, const char* name)
     OpticksColors* gc = new OpticksColors ; 
     if(!BFile::ExistsFile(dir, name))
     {
-        LOG(warning) << "OpticksColors::load FAILED no file at  dir " << dir << " with name " << name ; 
+        LOG(error) << "FAILED no file at  dir " << dir << " with name " << name ; 
     } 
     else
     {

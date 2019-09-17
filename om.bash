@@ -166,6 +166,8 @@ okg4
 g4ok
 integration
 ana
+bin
+tests
 EOS
 }
 
