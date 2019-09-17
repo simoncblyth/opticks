@@ -2292,10 +2292,21 @@ template <typename T>
 
 // type shifting quad setters
 template <typename T> 
- void NPY<T>::setQuadI(const glm::ivec4& vec, unsigned int i, unsigned int j, unsigned int k )
+void NPY<T>::setQuadI(const glm::ivec4& vec, unsigned int i, unsigned int j, unsigned int k )
 {
     for(unsigned int l=0 ; l < 4 ; l++) setInt(i,j,k,l,vec[l]); 
 }
+
+template <typename T> 
+void NPY<T>::setQuadI(const nivec4& vec, unsigned int i, unsigned int j, unsigned int k )
+{
+    setInt(i,j,k,0,vec.x); 
+    setInt(i,j,k,1,vec.y); 
+    setInt(i,j,k,2,vec.z); 
+    setInt(i,j,k,3,vec.w); 
+}
+
+
 template <typename T> 
  void NPY<T>::setQuadU(const glm::uvec4& vec, unsigned int i, unsigned int j, unsigned int k )
 {

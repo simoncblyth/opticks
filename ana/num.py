@@ -144,5 +144,6 @@ def test_roundtrip():
 
 if __name__ == '__main__':
     pass
+    test_roundtrip()
 
 

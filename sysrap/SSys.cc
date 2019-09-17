@@ -102,11 +102,50 @@ int SSys::run(const char* cmd)
             ;
         LOG(verbose) << " possibly you need to set export PATH=$OPTICKS_HOME/ana:$OPTICKS_HOME/bin:/usr/local/opticks/lib:$PATH " ;
     }
-    
-
-
     return rc ;  
 }
+
+/**
+SSys::POpen
+-------------
+Run command and get output into string, 
+Newlines are removed when chomp is true.
+
+**/
+
+std::string SSys::POpen(const char* cmd, bool chomp)
+{
+    std::stringstream ss ; 
+    FILE *fp = popen(cmd, "r");
+    char line[512];    
+    while (fgets(line, sizeof(line), fp) != NULL) 
+    {
+       if(chomp) line[strcspn(line, "\n")] = 0;
+       //LOG(info) << "[" << line << "]" ; 
+       ss << line ;  
+    }
+    pclose(fp);
+    return ss.str(); 
+}
+
+std::string SSys::POpen(const char* cmda, const char* cmdb, bool chomp)
+{
+    std::stringstream ss ; 
+    if(cmda) ss << cmda ; 
+    ss << " " ; 
+    if(cmdb) ss << cmdb ; 
+
+    std::string s = ss.str(); 
+    return POpen(s.c_str(), chomp ); 
+}
+
+
+
+
+
+
+
+
 
 int SSys::npdump(const char* path, const char* nptype, const char* postview, const char* printoptions)
 {

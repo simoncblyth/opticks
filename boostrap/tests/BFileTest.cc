@@ -30,6 +30,9 @@
 #include "OPTICKS_LOG.hh"
 
 
+const plog::Severity LEVEL = info ; 
+
+
 void test_FindFile_(const char* dirlist, const char* sub, const char* name)
 {
     std::string aa = BFile::FindFile( dirlist, sub, name );
@@ -480,9 +483,18 @@ void test_Absolute()
     } 
 }
 
+void test_preparePath()
+{
+    const char* p = "$TMP/extg4/X4GDMLParserTest/out.gdml" ; 
 
+    std::string s = BFile::preparePath(p) ; 
 
-
+    LOG(LEVEL) 
+        << " p " << p  
+        << " s " << s
+        ;  
+}
+ 
 
 int main(int argc, char** argv)
 {
@@ -495,7 +507,7 @@ int main(int argc, char** argv)
    //test_ExistsDir();
    //test_CreateDir();
    //test_ParentDir();
-   test_FormPath();
+   //test_FormPath();
    //test_Name_ParentDir();
    //test_ChangeExt();
 
@@ -525,6 +537,7 @@ int main(int argc, char** argv)
 
    //test_CWD(); 
    //test_Absolute(); 
+   test_preparePath();
 
    return 0 ; 
 }

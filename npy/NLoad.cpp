@@ -50,6 +50,7 @@ NPY<float>* NLoad::Gensteps(const char* det, const char* typ, const char* tag)
 {
     std::string path = GenstepsPath(det, typ, tag);
     NPY<float>* gs = NPY<float>::load(path.c_str()) ;
+    gs->setMeta("path", path);  
     return gs ; 
 }
 

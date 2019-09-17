@@ -23,7 +23,7 @@
 #include "OContext.hh"
 
 #include "NPY.hpp"
-#include "NLoad.hpp"
+#include "DummyGenstepsNPY.hpp"
 
 #include "OBuf.hh"
 
@@ -44,14 +44,17 @@ int main( int argc, char** argv )
     Opticks* ok = new Opticks(argc, argv, "--compute" );
     ok->configure();
 
+    //NPY<float>* npy = NLoad::Gensteps("juno", "cerenkov", "1") ; 
+    NPY<float>* npy = DummyGenstepsNPY::Make(100) ; 
 
-    NPY<float>* npy = NLoad::Gensteps("juno", "cerenkov", "1") ; 
     assert(npy);
+    std::string path = npy->getMeta<std::string>("path", ""); 
+    LOG(info) << " path " << path ; 
+
     npy->dump("NPY::dump::before", 2);
 
     // manual buffer control, normally done via spec in okc-/OpticksEvent 
     npy->setBufferControl(OpticksBufferControl::Parse("OPTIX_INPUT_OUTPUT"));
-
 
 
     OContext* ctx = OContext::Create( ok );
@@ -91,7 +94,7 @@ int main( int argc, char** argv )
     NPYBase::setGlobalVerbose();
 
     // npy->dump();
-    npy->save("$TMP/OOContextUploadDownloadTest_1.npy");
+    npy->save("$TMP/tests/oxrap/OOContextUploadDownloadTest_1.npy");
 
     delete ctx ; 
 

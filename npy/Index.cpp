@@ -37,6 +37,9 @@
 #include "PLOG.hh"
 
 
+const plog::Severity Index::LEVEL = PLOG::EnvLevel("Index", "DEBUG") ; 
+
+
 Index::Index(const char* itemtype, const char* reldir, const char* title, bool onebased)
    : 
    NSequence(),
@@ -360,11 +363,13 @@ void Index::save(const char* pfold, const char* rfold)
 
 void Index::save(const char* idpath)
 {
+    LOG(LEVEL) << "[ " << idpath  ;
+
     std::string dir = BFile::FormPath(idpath, m_reldir) ; 
     std::string sname = getPrefixedString("Source") ;
     std::string lname = getPrefixedString("Local") ;
 
-    LOG(verbose) 
+    LOG(LEVEL) 
               << " sname " << sname 
               << " lname " << lname 
               << " itemtype " << m_itemtype
@@ -376,7 +381,7 @@ void Index::save(const char* idpath)
     BMap<std::string, unsigned int>::save( &m_source, dir.c_str(), sname.c_str() );  
     BMap<std::string, unsigned int>::save( &m_local , dir.c_str(), lname.c_str() );  
 
-    LOG(verbose) << "Index::save DONE" ;
+    LOG(LEVEL) << "]" ;
 
 }
 std::string Index::getPrefixedString(const char* tail)
@@ -384,10 +389,15 @@ std::string Index::getPrefixedString(const char* tail)
     std::string prefix(m_itemtype); 
     return prefix + tail + m_ext ; 
 }
-std::string Index::getPath(const char* idpath, const char* prefix)
+std::string Index::getPath(const char* idpath, const char* prefix, bool create_idpath_dir)
 {
+    LOG(LEVEL)
+        << " idpath " << idpath
+        << " prefix " << prefix
+        << " create_idpath_dir " << create_idpath_dir
+        ;
+
     std::string dir = BFile::FormPath(idpath, m_reldir) ; 
-    bool create_idpath_dir = true ; 
     std::string path = BFile::preparePath(dir.c_str(), getPrefixedString(prefix).c_str(), create_idpath_dir);
     return path;
 }
@@ -425,10 +435,12 @@ void Index::dumpPaths(const char* idpath, const char* msg)
     bool sx = BFile::ExistsFile(dir.c_str(), getPrefixedString("Source").c_str());
     bool lx = BFile::ExistsFile(dir.c_str(), getPrefixedString("Local").c_str());
 
+    bool createdir = false ; 
+
     LOG(info) << msg ;
     LOG(info) 
-              << " Source:" << ( sx ? "EXISTS " : "MISSING" ) << getPath(idpath, "Source")
-              << "  Local:" << ( lx ? "EXISTS " : "MISSING" ) << getPath(idpath, "Local")
+              << " Source:" << ( sx ? "EXISTS " : "MISSING" ) << getPath(idpath, "Source", createdir)
+              << "  Local:" << ( lx ? "EXISTS " : "MISSING" ) << getPath(idpath, "Local",  createdir)
               ;
 }
 
@@ -442,12 +454,13 @@ Index* Index::load(const char* idpath, const char* itemtype, const char* reldir)
     }
     else
     {
+        bool createdir = false ; 
         LOG(error)
             << "FAILED to load index " 
             << " idpath " << ( idpath ? idpath : "NULL" )
             << " itemtype " << itemtype 
-            << " Source path " << idx->getPath(idpath, "Source")
-            << " Local path " << idx->getPath(idpath, "Local")
+            << " Source path " << idx->getPath(idpath, "Source", createdir)
+            << " Local path " << idx->getPath(idpath, "Local", createdir)
             ;
         idx = NULL ;
     }

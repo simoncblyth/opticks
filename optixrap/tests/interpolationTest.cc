@@ -68,7 +68,7 @@ class interpolationTest
         bool        m_interpol ; 
         const char* m_progname ; 
         const char* m_name ; 
-        const char* m_ana ; 
+        const char* m_script ; 
         OContext*   m_ocontext;
         OBndLib*    m_obnd ;
         const char* m_base ;  
@@ -86,7 +86,7 @@ interpolationTest::interpolationTest(Opticks* ok, OContext* ocontext, OBndLib* o
     m_interpol(!ok->hasOpt("nointerpol")),
     m_progname( m_interpol ? "interpolationTest" : "identityTest" ),
     m_name(NULL),
-    m_ana(NULL),
+    m_script(NULL),
     m_ocontext(ocontext),
     m_obnd(obnd),
     m_base(strdup(base)), 
@@ -101,14 +101,14 @@ void interpolationTest::init()
     if(m_interpol)
     {
         m_name = "interpolationTest_interpol.npy" ;
-        m_ana = "$OPTICKS_HOME/optixrap/tests/interpolationTest_interpol.py" ;
+        m_script = "interpolationTest_interpol.py" ;
         m_nx = 820 - 60 + 1 ;     // 761 : 1 nm steps 
         m_ny = m_obnd->getHeight();  // total number of float4 props
     }
     else  // identity 
     {
         m_name = "interpolationTest_identity.npy" ;
-        m_ana = "$OPTICKS_HOME/optixrap/tests/interpolationTest_identity.py" ;
+        m_script = "interpolationTest_identity.py" ;
         m_nx = m_obnd->getWidth();   // number of wavelength samples
         m_ny = m_obnd->getHeight();  // total number of float4 props
     } 
@@ -121,7 +121,7 @@ std::string interpolationTest::desc() const
     std::stringstream ss ; 
     ss << " name " << m_name 
        << " base " << m_base
-       << " ana " << m_ana
+       << " script " << m_script
        << " nb " << std::setw(5) << m_nb 
        << " nx " << std::setw(5) << m_nx 
        << " ny " << std::setw(5) << m_ny 
@@ -174,12 +174,18 @@ void interpolationTest::launch(optix::Context& context)
 
 int interpolationTest::ana()
 {
-    std::string path = BFile::FormPath(m_ana);
-    LOG(info) << " path " << path ; 
+    bool chomp = true ; 
+    std::string path = SSys::POpen("which", m_script, chomp);
+    LOG(info) 
+         << " m_script " << m_script
+         << " path " << path 
+         ; 
+
     int RC = SSys::exec("python",path.c_str());
     LOG(info) << " RC " << RC ; 
     return RC ; 
 }
+
 
 
 int main(int argc, char** argv)

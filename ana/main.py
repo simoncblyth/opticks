@@ -25,10 +25,10 @@ import numpy as np
 
 import os, sys, re, logging, argparse, platform
 from opticks.ana.num import slice_, _slice
+from opticks.ana.log import init_logging
 from opticks.ana.env import opticks_environment
 from opticks.ana.OpticksQuery import OpticksQuery 
 from opticks.ana.nload import tagdir_
-from opticks.ana.log import init_logging
 
 log = logging.getLogger(__name__) 
 

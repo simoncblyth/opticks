@@ -142,6 +142,7 @@ set(SOURCES
     BoundariesNPY.cpp
     MaterialLibNPY.cpp
     DummyPhotonsNPY.cpp
+    DummyGenstepsNPY.cpp
 
     PyMCubes/marchingcubes.cpp
     NMarchingCubesNPY.cpp
@@ -253,6 +254,9 @@ RecordsNPY.hpp
 BoundariesNPY.hpp
 MaterialLibNPY.hpp
 DummyPhotonsNPY.hpp
+DummyGenstepsNPY.hpp
+
+
 SequenceNPY.hpp
 SeqNPY.hpp
 AxisNPY.hpp

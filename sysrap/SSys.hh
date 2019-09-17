@@ -47,6 +47,10 @@ class SYSRAP_API SSys {
      static const char* fmt(const char* tmpl="hello%u.npy", unsigned val=0);
      static int run(const char* cmd);
      static int exec(const char* exe, const char* path);
+     static std::string POpen(const char* cmd, bool chomp); 
+     static std::string POpen(const char* cmda, const char* cmdb, bool chomp); 
+
+
      static int npdump(const char* path="$TMP/torchstep.npy", const char* nptype="np.int32", const char* postview=NULL, const char* printoptions=NULL);
      static void xxdump(char* buf, int num_bytes, int width=16, char non_printable='.' ); 
      static std::string xxd(char* buf, int num_bytes, int width=16, char non_printable='.' ); 

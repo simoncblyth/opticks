@@ -17,22 +17,14 @@
  * limitations under the License.
  */
 
-#include "SSys.hh"
 #include "OPTICKS_LOG.hh"
 
-#include "DummyPhotonsNPY.hpp"
-#include "NPY.hpp"
-
-int main(int argc, char** argv)
+int main(int argc , char** argv )
 {
     OPTICKS_LOG(argc, argv);
 
-    unsigned hitmask = 0x1 << 6 ;  // 64
-    NPY<float>* npy = DummyPhotonsNPY::Make(100, hitmask);
-    const char* path = "$TMP/npy/DummyPhotonsNPYTest.npy" ;
-    npy->save(path);
+    LOG(info) << "placeholder to make ana pkg the same as any other " ; 
 
-    SSys::npdump(path);
-
-    return 0 ; 
+    return 0  ;   
 }
+

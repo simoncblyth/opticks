@@ -19,6 +19,7 @@
 
 #include "OPTICKS_LOG.hh"
 #include "BStr.hh"
+#include "BFile.hh"
 #include "NGLM.hpp"
 
 #include "YOG.hh"
@@ -61,7 +62,7 @@ int main(int argc, char** argv)
 
     TF tf(&sc); 
 
-    const char* path = "/tmp/YOGTFTest.gltf" ; 
+    const char* path = "$TMP/yog/YOGTFTest.gltf" ; 
     tf.save(path);     
 
 

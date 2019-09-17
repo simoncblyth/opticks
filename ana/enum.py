@@ -71,7 +71,8 @@ class Enum(dict):
 
 if __name__ == '__main__':
 
-    default_path = "$OPTICKS_HOME/optickscore/OpticksPhoton.h"
+    #default_path = "$OPTICKS_HOME/optickscore/OpticksPhoton.h"
+    default_path = "$OPTICKS_INSTALL_PREFIX/include/OpticksCore/OpticksPhoton.h"
     parser = argparse.ArgumentParser(__doc__)
     parser.add_argument(     "path",  nargs="?", help="Path to input header", default=default_path )
     parser.add_argument(     "--inipath", default=None, help="When a path is provided an ini file will be written to it." ) 

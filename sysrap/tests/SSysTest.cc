@@ -78,6 +78,43 @@ void test_hostname()
 }
 
 
+void test_POpen(bool chomp)
+{
+    std::vector<std::string> cmds = {"which python", "ls -l" }; 
+
+    for(unsigned i=0 ; i < cmds.size() ; i++)
+    {
+        const char* cmd = cmds[i].c_str() ; 
+        LOG(info) << " cmd " << cmd  <<  " chomp " << chomp ;  
+        std::string out = SSys::POpen(cmd, chomp) ; 
+        LOG(info) << " out " << out ; 
+    }
+}
+
+
+void test_POpen2(bool chomp)
+{
+    std::vector<std::string> cmds = {"which", "python", "ls", "-l" }; 
+
+    for(unsigned i=0 ; i < cmds.size()/2 ; i++)
+    {
+        const char* cmda = cmds[i*2+0].c_str() ; 
+        const char* cmdb = cmds[i*2+1].c_str() ; 
+        LOG(info) 
+           << " cmda " << cmda  
+           << " cmdb " << cmdb  
+           << " chomp " << chomp
+           ;  
+        std::string out = SSys::POpen(cmda, cmdb, chomp) ; 
+        LOG(info) << " out " << out ; 
+    }
+}
+
+
+
+
+
+
 int main(int argc , char** argv )
 {
     OPTICKS_LOG(argc, argv);
@@ -96,7 +133,16 @@ int main(int argc , char** argv )
 
     //test_IsNegativeZero(); 
 
-    test_hostname();
+    //test_hostname();
+
+    //test_POpen(true);
+    //test_POpen(false);
+
+    test_POpen2(true);
+    test_POpen2(false);
+
+
+
 
     return rc  ; 
 }

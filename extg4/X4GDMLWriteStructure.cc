@@ -19,12 +19,16 @@
 
 #include "X4GDMLWriteStructure.hh"
 #include "X4GDMLParser.hh"
+#include "BFile.hh"
 
 #include <cstring>
 
 #include <xercesc/framework/StdOutFormatTarget.hpp>
 #include <xercesc/framework/MemBufFormatTarget.hpp>
 
+#include "PLOG.hh"
+
+const plog::Severity X4GDMLWriteStructure::LEVEL = PLOG::EnvLevel("X4GDMLWriteStructure", "DEBUG" ); 
 
 X4GDMLWriteStructure::X4GDMLWriteStructure(bool refs)
 {
@@ -119,7 +123,14 @@ std::string X4GDMLWriteStructure::write(const char* path)
    }  
    else
    {
-       target = new xercesc::LocalFileFormatTarget(path) ;
+       std::string xpath = BFile::preparePath(path); 
+      // NB logging output from here gets swallowed by stream redirection in X4GDMLParser   
+       LOG(LEVEL) 
+           << " path " << path
+           << " xpath " << xpath
+           ;
+
+       target = new xercesc::LocalFileFormatTarget(xpath.c_str()) ;
    }
 
    try

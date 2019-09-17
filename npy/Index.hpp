@@ -25,6 +25,8 @@
 #include <map>
 #include <vector>
 
+#include "plog/Severity.h"
+
 #include "NSequence.hpp"
 
 
@@ -33,6 +35,7 @@
 
 class NPY_API Index : public NSequence {
    public:
+        static const plog::Severity LEVEL ; 
         typedef std::vector<std::string> VS ;
    public:
         Index(const char* itemtype, const char* reldir, const char* title=NULL, bool onebased=true);
@@ -46,7 +49,7 @@ class NPY_API Index : public NSequence {
         std::string description();
    public:
        // debugging only
-        std::string getPath(const char* idpath, const char* prefix);
+        std::string getPath(const char* idpath, const char* prefix, bool create_idpath_dir );
         void dumpPaths(const char* idpath, const char* msg="Index::dumpPaths");
    public:
         const char* getItemType();

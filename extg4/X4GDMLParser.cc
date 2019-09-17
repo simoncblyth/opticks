@@ -73,6 +73,7 @@ Stream redirection from SDirect avoids non-error output from G4GDMLParser
 
 void X4GDMLParser::write(const G4VSolid* solid, const char* path )
 {
+
     std::stringstream coutbuf;
     std::stringstream cerrbuf;
     {   
@@ -80,13 +81,12 @@ void X4GDMLParser::write(const G4VSolid* solid, const char* path )
        cerr_redirect err(cerrbuf.rdbuf());
 
        writer->write( solid, path ); 
-
     }   
 
     std::string cout_ = coutbuf.str() ; 
     std::string cerr_ = cerrbuf.str() ; 
 
-    //if(cout_.size() > 0) LOG(info)    << "cout:" << cout_ ; 
+    //if(cout_.size() > 0) LOG(info)  << "cout:" << cout_ ; 
     if(cerr_.size() > 0) LOG(error) << "cerr:"<< cerr_ ; 
 }
 

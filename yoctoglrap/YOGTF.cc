@@ -22,6 +22,7 @@
 #include <fstream>
 
 #include "YOGTF.hh"
+#include "BFile.hh"
 
 using ygltf::glTF_t ; 
 using ygltf::scene_t ; 
@@ -78,7 +79,7 @@ void TF::convert()
 }
 
 
-void TF::save(const char* path)
+void TF::save(const char* path_)
 {
     if( gltf == NULL ) convert();
 
@@ -86,7 +87,10 @@ void TF::save(const char* path)
     bool save_shaders = false ;
     bool save_images = false ;
 
-    std::cout << "writing " << path << std::endl ;
+    std::string xpath = BFile::preparePath(path_);
+    const char* path = xpath.c_str();  
+
+    std::cout << "writing " << path << std::endl ; 
     save_gltf(path, gltf, save_bin, save_shaders, save_images);
 
     std::ifstream fp(path);

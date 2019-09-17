@@ -38,6 +38,16 @@ void test_Gensteps()
     assert(gs_2);
     assert(gs_3);
 
+    std::string p0 = gs_0->getMeta<std::string>("path", ""); 
+    std::string p1 = gs_1->getMeta<std::string>("path", ""); 
+    std::string p2 = gs_2->getMeta<std::string>("path", ""); 
+    std::string p3 = gs_3->getMeta<std::string>("path", ""); 
+
+    LOG(info) << " p0 " << p0 ;  
+    LOG(info) << " p1 " << p1 ;  
+    LOG(info) << " p2 " << p2 ;  
+    LOG(info) << " p3 " << p3 ;  
+
     //gs_0->dump();
     //gs_1->dump();
     //gs_2->dump();

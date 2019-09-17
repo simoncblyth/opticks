@@ -36,7 +36,7 @@ class Dist(object):
     """
     exclude_dir_name = ['cmake','pkgconfig',  'Geant4-10.2.1', 'Geant4-10.4.2']  
 
-    bases = ['include', 'lib','lib64','externals/lib','externals/lib64','externals/OptiX/lib64', 'installcache/PTX', 'gl', 'tests' ]
+    bases = ['include', 'lib','lib64','externals/lib','externals/lib64','externals/OptiX/lib64', 'installcache/PTX', 'gl', 'tests', 'py', 'bin' ]
     ## hmm need to construct an installed bin too, with scripts 
 
     extras = []

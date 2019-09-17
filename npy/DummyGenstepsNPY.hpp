@@ -19,42 +19,26 @@
 
 #pragma once
 
-#include "X4_API_EXPORT.hh"
-#include "plog/Severity.h"
-#include <string>
-
-class G4VSolid ; 
+template <typename T> class NPY ; 
+#include "NPY_API_EXPORT.hh"
 
 /**
-X4GDMLWrite
-=============
-
-g4-;g4-cls G4GDMLWrite
-
+DummyGenstepsNPY
+================
 
 **/
 
-
-#include "G4GDMLWriteStructure.hh"
-
-class X4_API X4GDMLWriteStructure : public G4GDMLWriteStructure 
+class NPY_API DummyGenstepsNPY 
 {
     public:
-        static const plog::Severity LEVEL ; 
-    public:
-        X4GDMLWriteStructure(bool refs) ; 
-
-        void write(const G4VSolid* solid, const char* path=NULL ); // to file or stdout when path is NULL
-        std::string to_string( const G4VSolid* solid ); 
-   private:
-        void init(bool refs);
-        void add( const G4VSolid* solid ); 
-        std::string write( const char* path=NULL ) ; 
-  
-   private:
-        xercesc::DOMElement* gdml ; 
-        xercesc::DOMImplementation* impl ;
-
-
+       static NPY<float>* Make(unsigned num_gensteps);
+    private:
+       DummyGenstepsNPY(unsigned num_gensteps);
+       NPY<float>* getNPY();
+       void        init();
+    private:
+       NPY<float>* m_data    ; 
 };
+
+
 

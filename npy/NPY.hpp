@@ -295,6 +295,7 @@ class NPY_API NPY : public NPYBase {
        void         setQuad(unsigned int i, unsigned int j, unsigned int k, float x, float y=0.f, float z=0.f, float w=0.f );
 
        void         setQuadI(const glm::ivec4& vec, unsigned int i, unsigned int j=0, unsigned int k=0 );
+       void         setQuadI(const     nivec4& vec, unsigned int i, unsigned int j=0, unsigned int k=0 );
        void         setQuadU(const glm::uvec4& vec, unsigned int i, unsigned int j=0, unsigned int k=0 );
        void         setQuadU(const     nuvec4& vec, unsigned int i, unsigned int j=0, unsigned int k=0 );
 

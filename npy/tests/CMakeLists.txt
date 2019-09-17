@@ -97,6 +97,7 @@ NLoadTest.cc
 
 
 DummyPhotonsNPYTest.cc
+DummyGenstepsNPYTest.cc
 
 NMarchingCubesNPYTest.cc
 NCSGTest.cc

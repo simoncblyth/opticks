@@ -35,16 +35,8 @@
 //brap- 
 #include "BFile.hh"
 #include "BStr.hh"
-//#include "BOpticksEvent.hh"
 
-
-#ifdef OLD_PARAMETERS
-#include "X_BParameters.hh"
-#else
 #include "NMeta.hpp"
-#endif
-
-
 #include "NPYSpec.hpp"
 #include "PLOG.hh"
 

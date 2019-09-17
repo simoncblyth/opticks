@@ -145,6 +145,11 @@ set(CU_HEADERS
     cu/photon.h
 )
 
+set(SCRIPTS
+    tests/interpolationTest_interpol.py
+    tests/interpolationTest_identity.py 
+)
+
 
 
 # setup nvcc compilation of OptiX RTProgram sources into PTX and CUDA sources into OBJ
@@ -190,6 +195,7 @@ endif()
 install(FILES ${_generated_PTX_files} DESTINATION installcache/PTX)
 install(FILES ${CU_HEADERS}           DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/cu)
 install(FILES ${HEADERS}              DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+install(PROGRAMS ${SCRIPTS}           DESTINATION bin)
 
 bcm_deploy(TARGETS ${name} NAMESPACE Opticks:: SKIP_HEADER_INSTALL )
 

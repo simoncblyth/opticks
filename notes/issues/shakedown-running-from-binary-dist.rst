@@ -1128,3 +1128,124 @@ Switching to not exclude libG4 in the dist tarball : get to 21/411 fails
 
 
 
+
+17/411
+----------
+
+::
+
+    96% tests passed, 17 tests failed out of 411
+
+    Total Test time (real) = 138.00 sec
+
+    The following tests FAILED:
+    Cannot create directory /cvmfs/opticks.ihep.ac.cn/ok/releases/Opticks-0.0.0_alpha/x86_64-centos7-gcc48-geant4_10_04_p02-dbg/tests/Testing/Temporary
+    Cannot create log file: LastTestsFailed.log
+
+        159 - NPYTest.NLoadTest (Child aborted)
+        282 - GGeoTest.GPropertyTest (SEGFAULT)
+        291 - AssimpRapTest.AssimpGGeoTest (Child aborted)
+        295 - OpticksGeoTest.OpenMeshRapTest (Child aborted)
+
+              All from missing opticksdata
+
+        322 - OptiXRapTest.LTOOContextUploadDownloadTest (Child aborted)
+
+              load failed for path [/cvmfs/opticks.ihep.ac.cn/ok/releases/Opticks-0.0.0_alpha/x86_64-centos7-gcc48-geant4_10_04_p02-dbg/opticksdata/gensteps/juno/cerenkov/1.npy
+              FIXED by switching to DummyGensteps 
+
+        323 - OptiXRapTest.Roots3And4Test (Child aborted)
+        340 - OptiXRapTest.intersectAnalyticTest.iaTorusTest (Child aborted)
+
+              known 
+
+        337 - OptiXRapTest.interpolationTest (Failed)
+
+              assumes access to source tree for running python scripts  
+
+        378 - CFG4Test.CGDMLDetectorTest (Child aborted)
+        379 - CFG4Test.CGeometryTest (Child aborted)
+
+              boost::filesystem::status: Permission denied: "/home/blyth/local/opticks/opticksdata/export/juno1808/g4_00_v5.gdml"
+
+        376 - CFG4Test.CTestDetectorTest (SEGFAULT)
+        380 - CFG4Test.CG4Test (SEGFAULT)
+        396 - CFG4Test.CInterpolationTest (SEGFAULT)
+        402 - CFG4Test.CRandomEngineTest (SEGFAULT)
+        408 - OKG4Test.OKG4Test (SEGFAULT)
+
+              G4 envvar 
+
+        395 - CFG4Test.CGenstepCollectorTest (Child aborted)
+
+              /home/blyth/opticks/npy/NLookup.cpp:186: void NLookup::close(const char): Assertion m_alabel && m_blabel failed. 
+
+        411 - IntegrationTests.tboolean.box (Not Run)
+
+              fails to find script tboolean.sh
+
+
+    Errors while running CTest
+    Tue Sep 17 11:15:49 CST 2019
+    == okr-t : tdir /cvmfs/opticks.ihep.ac.cn/ok/releases/Opticks-0.0.0_alpha/x86_64-centos7-gcc48-geant4_10_04_p02-dbg/tests
+    == okr-t : tlog /home/simon/okr-t.log
+
+
+
+NLoadTest + GPropertyTest : opticksdata missing
+-----------------------------------------------------
+
+::
+
+    load failed for path [/cvmfs/opticks.ihep.ac.cn/ok/releases/Opticks-0.0.0_alpha/x86_64-centos7-gcc48-geant4_10_04_p02-dbg/opticksdata/gensteps/dayabay/cerenkov/1.npy]
+
+    load FAILED for path $OPTICKS_INSTALL_PREFIX/opticksdata/refractiveindex/tmp/glass/schott/F2.npy
+
+
+interpolationTest + IntegrationTests.tboolean.box  : missing scripts
+--------------------------------------------------------------------------
+
+Python scripts need opticks/ana/... in PYTHONPATH::
+
+    from opticks.ana.proplib import PropLib
+
+* installing the python ana 
+
+
+
+
+15/412
+----------
+
+::
+
+    96% tests passed, 15 tests failed out of 412
+
+    Total Test time (real) = 139.66 sec
+
+    The following tests FAILED:
+    Cannot create directory /cvmfs/opticks.ihep.ac.cn/ok/releases/Opticks-0.0.0_alpha/x86_64-centos7-gcc48-geant4_10_04_p02-dbg/tests/Testing/Temporary
+    Cannot create log file: LastTestsFailed.log
+        159 - NPYTest.NLoadTest (SEGFAULT)
+        283 - GGeoTest.GPropertyTest (SEGFAULT)
+        292 - AssimpRapTest.AssimpGGeoTest (Child aborted)
+        296 - OpticksGeoTest.OpenMeshRapTest (Child aborted)
+        324 - OptiXRapTest.Roots3And4Test (Child aborted)
+        341 - OptiXRapTest.intersectAnalyticTest.iaTorusTest (Child aborted)
+        377 - CFG4Test.CTestDetectorTest (SEGFAULT)
+        379 - CFG4Test.CGDMLDetectorTest (Child aborted)
+        380 - CFG4Test.CGeometryTest (Child aborted)
+        381 - CFG4Test.CG4Test (SEGFAULT)
+        396 - CFG4Test.CGenstepCollectorTest (Child aborted)
+        397 - CFG4Test.CInterpolationTest (SEGFAULT)
+        403 - CFG4Test.CRandomEngineTest (SEGFAULT)
+        409 - OKG4Test.OKG4Test (SEGFAULT)
+        412 - IntegrationTests.tboolean.box (Not Run)
+    Errors while running CTest
+    == okr-t : tbeg Tue Sep 17 16:44:59 CST 2019
+    == okr-t : tend Tue Sep 17 16:47:19 CST 2019
+    == okr-t : tdir /cvmfs/opticks.ihep.ac.cn/ok/releases/Opticks-0.0.0_alpha/x86_64-centos7-gcc48-geant4_10_04_p02-dbg/tests
+    == okr-t : tlog /home/simon/okr-t.log
+
+
+
