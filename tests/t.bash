@@ -19,8 +19,9 @@
 ##
 
 
-t-source(){   echo $BASH_SOURCE ; }
-t-vi(){       vi $(t-source) ; }
+t-source(){ echo $BASH_SOURCE ; }
+t-dir(){    echo $(dirname $BASH_SOURCE) ; }
+t-vi(){     vi $(t-source) ; }
 t-usage(){ cat << \EOU
 
 t- 
@@ -38,7 +39,6 @@ EOU
 }
 
 t-env(){ olocal- ;  }
-t-dir(){ echo $(opticks-home)/tests ; }
 t-cd(){  cd $(t-dir); }
 
 join(){ local IFS="$1"; shift; echo "$*"; }

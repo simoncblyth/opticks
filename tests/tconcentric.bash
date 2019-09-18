@@ -17,7 +17,7 @@
 ## limitations under the License.
 ##
 
-tconcentric-source(){   echo $(opticks-home)/tests/tconcentric.bash ; }
+tconcentric-source(){   echo $BASH_SOURCE ; }
 tconcentric-vi(){       vi $(tconcentric-source) ; }
 tconcentric-usage(){ cat << \EOU
 
@@ -36,7 +36,7 @@ tconcentric-
 EOU
 }
 tconcentric-env(){      olocal- ;  }
-tconcentric-dir(){ echo $(opticks-home)/tests ; }
+tconcentric-dir(){ echo $(dirname $BASH_SOURCE) ; }
 tconcentric-cd(){  cd $(tconcentric-dir); }
 
 join(){ local IFS="$1"; shift; echo "$*"; }

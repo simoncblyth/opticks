@@ -17,8 +17,9 @@
 ## limitations under the License.
 ##
 
-tprism-source(){   echo $(opticks-home)/tests/tprism.bash ; }
-tprism-vi(){       vi $(tprism-source) ; }
+tprism-source(){ echo $BASH_SOURCE ; }
+tprism-dir(){    echo $(dirname $BASH_SOURCE) ; }
+tprism-vi(){     vi $(tprism-source) ; }
 tprism-usage(){ cat << \EOU
 
 tprism- : Cylindrical light source focussed on prism face point 
@@ -74,7 +75,6 @@ With **invcylinder** source type
 EOU
 }
 tprism-env(){      olocal- ;  }
-tprism-dir(){ echo $(opticks-home)/tests ; }
 tprism-cd(){  cd $(tprism-dir); }
 
 join(){ local IFS="$1"; shift; echo "$*"; }

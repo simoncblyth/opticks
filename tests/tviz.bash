@@ -17,8 +17,9 @@
 ## limitations under the License.
 ##
 
-tviz-source(){   echo $(opticks-home)/tests/tviz.bash ; }
-tviz-vi(){       vi $(tviz-source) ; }
+tviz-source(){ echo $BASH_SOURCE ; }
+tviz-dir(){    echo $(dirname $BASH_SOURCE) ; }
+tviz-vi(){     vi $(tviz-source) ; }
 tviz-usage(){ cat << \EOU
 
 tviz- : Visualization Examples
@@ -81,7 +82,6 @@ For guidance on usage of interactive Opticks see :doc:`../docs/visualization`
 EOU
 }
 tviz-env(){      olocal- ;  }
-tviz-dir(){ echo $(opticks-home)/tests ; }
 tviz-cd(){  cd $(tviz-dir); }
 
 

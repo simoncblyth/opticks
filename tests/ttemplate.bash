@@ -17,8 +17,9 @@
 ## limitations under the License.
 ##
 
-ttemplate-source(){   echo $(opticks-home)/tests/ttemplate.bash ; }
-ttemplate-vi(){       vi $(ttemplate-source) ; }
+ttemplate-source(){ echo $BASH_SOURCE ; }
+ttemplate-dir(){    echo $(dirname $BASH_SOURCE) ; }
+ttemplate-vi(){     vi $(ttemplate-source) ; }
 ttemplate-usage(){ cat << \EOU
 
 ttemplate- : Integration Tests Template
@@ -52,7 +53,6 @@ ttemplate- : Integration Tests Template
 EOU
 }
 ttemplate-env(){      olocal- ;  }
-ttemplate-dir(){ echo $(opticks-home)/tests ; }
 ttemplate-cd(){  cd $(ttemplate-dir); }
 
 join(){ local IFS="$1"; shift; echo "$*"; }

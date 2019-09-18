@@ -17,8 +17,10 @@
 ## limitations under the License.
 ##
 
-tlaser-source(){   echo $(opticks-home)/tests/tlaser.bash ; }
-tlaser-asource(){  echo $(opticks-home)/ana/tlaser.py ; }
+tlaser-source(){   echo $BASH_SOURCE ; }
+tlaser-dir(){      echo $(dirname $BASH_SOURCE) ; }
+tlaser-dirdir(){   echo $(dirname $(dirname $BASH_SOURCE)) ; }
+tlaser-asource(){  echo $(tlaser-dirdir)/ana/tlaser.py ; }
 tlaser-vi(){       vi $(tlaser-source) $(tlaser-asource) ; }
 tlaser-usage(){ cat << \EOU
 
@@ -31,7 +33,6 @@ See :doc:`notes/issues/geant4_opticks_integration/reemission_review`
 EOU
 }
 tlaser-env(){      olocal- ;  }
-tlaser-dir(){ echo $(opticks-home)/tests ; }
 tlaser-cd(){  cd $(tlaser-dir); }
 
 join(){ local IFS="$1"; shift; echo "$*"; }

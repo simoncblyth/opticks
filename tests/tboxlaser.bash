@@ -17,7 +17,7 @@
 ## limitations under the License.
 ##
 
-tboxlaser-source(){   echo $(opticks-home)/tests/tboxlaser.bash ; }
+tboxlaser-source(){   echo $BASH_SOURCE ; }
 tboxlaser-vi(){       vi $(tboxlaser-source) ; }
 tboxlaser-usage(){ cat << \EOU
 
@@ -35,7 +35,7 @@ tboxlaser- : laser beam onto sample cube inside mineral oil box
 EOU
 }
 tboxlaser-env(){      olocal- ;  }
-tboxlaser-dir(){ echo $(opticks-home)/tests ; }
+tboxlaser-dir(){ echo $(dirname $BASH_SOURCE) ; }
 tboxlaser-cd(){  cd $(tboxlaser-dir); }
 
 join(){ local IFS="$1"; shift; echo "$*"; }

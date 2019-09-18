@@ -17,8 +17,8 @@
 ## limitations under the License.
 ##
 
-tdefault-source(){   echo $(opticks-home)/tests/tdefault.bash ; }
-tdefault-asource(){  echo $(opticks-home)/ana/tdefault.py ; }
+tdefault-source(){   echo $BASH_SOURCE ; }
+tdefault-asource(){  echo $(tdefault-dirdir)/ana/tdefault.py ; }
 tdefault-vi(){       vi $(tdefault-source) $(tdefault-asource) ; }
 tdefault-usage(){ cat << \EOU
 
@@ -29,7 +29,8 @@ tdefault-
 EOU
 }
 tdefault-env(){      olocal- ;  }
-tdefault-dir(){ echo $(opticks-home)/tests ; }
+tdefault-dir(){ echo $(dirname $BASH_SOURCE) ; }
+tdefault-dirdir(){ echo $(dirname $(tdefault-dir)); }
 tdefault-cd(){  cd $(tdefault-dir); }
 
 join(){ local IFS="$1"; shift; echo "$*"; }

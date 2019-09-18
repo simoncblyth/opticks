@@ -17,8 +17,9 @@
 ## limitations under the License.
 ##
 
-tpmt-source(){   echo $(opticks-home)/tests/tpmt.bash ; }
-tpmt-vi(){       vi $(tpmt-source) ; }
+tpmt-source(){ echo $BASH_SOURCE ; }
+tpmt-dir(){    echo $(dirname $BASH_SOURCE) ; }
+tpmt-vi(){     vi $(tpmt-source) ; }
 tpmt-usage(){ cat << \EOU
 
 tpmt- : Opticks Simulation PMT Tests 
@@ -125,7 +126,6 @@ EON
 
 
 tpmt-env(){      olocal- ;  }
-tpmt-dir(){ echo $(opticks-home)/tests ; }
 tpmt-cd(){  cd $(tpmt-dir); }
 
 join(){ local IFS="$1"; shift; echo "$*"; }

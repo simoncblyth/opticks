@@ -17,8 +17,9 @@
 ## limitations under the License.
 ##
 
-twhite-source(){   echo $(opticks-home)/tests/twhite.bash ; }
-twhite-vi(){       vi $(twhite-source) ; }
+twhite-source(){ echo $BASH_SOURCE ; }
+twhite-dir(){    echo $(dirname $BASH_SOURCE) ; }
+twhite-vi(){     vi $(twhite-source) ; }
 twhite-usage(){ cat << \EOU
 
 twhite- : Pencil beam of white light incident on Glass prism
@@ -44,7 +45,6 @@ This was based on tnewton- just changing to using a white light source.
 EOU
 }
 twhite-env(){      olocal- ;  }
-twhite-dir(){ echo $(opticks-home)/tests ; }
 twhite-cd(){  cd $(twhite-dir); }
 
 join(){ local IFS="$1"; shift; echo "$*"; }

@@ -17,7 +17,7 @@
 ## limitations under the License.
 ##
 
-tg4gun-source(){   echo $(opticks-home)/tests/tg4gun.bash ; }
+tg4gun-source(){   echo $BASH_SOURCE ; }
 tg4gun-vi(){       vi $(tg4gun-source) ; }
 tg4gun-usage(){ cat << \EOU
 
@@ -61,7 +61,7 @@ Initial configuration of G4Gun:
 EOU
 }
 tg4gun-env(){      olocal- ;  }
-tg4gun-dir(){ echo $(opticks-home)/tests ; }
+tg4gun-dir(){ echo $(dirname $BASH_SOURCE) ; }
 tg4gun-cd(){  cd $(tg4gun-dir); }
 
 join(){ local IFS="$1"; shift; echo "$*"; }

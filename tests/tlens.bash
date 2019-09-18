@@ -17,8 +17,9 @@
 ## limitations under the License.
 ##
 
-tlens-source(){   echo $(opticks-home)/tests/tlens.bash ; }
-tlens-vi(){       vi $(tlens-source) ; }
+tlens-source(){ echo $BASH_SOURCE ; }
+tlens-dir(){    echo $(dirname $BASH_SOURCE) ; }
+tlens-vi(){     vi $(tlens-source) ; }
 tlens-usage(){ cat << \EOU
 
 tlens- : Disc shaped beam of white light incident on convex lens  
@@ -92,7 +93,6 @@ TIPS
 EOU
 }
 tlens-env(){      olocal- ;  }
-tlens-dir(){ echo $(opticks-home)/tests ; }
 tlens-cd(){  cd $(tlens-dir); }
 
 join(){ local IFS="$1"; shift; echo "$*"; }

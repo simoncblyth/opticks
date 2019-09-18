@@ -17,7 +17,8 @@
 ## limitations under the License.
 ##
 
-tgltf-source(){   echo $(opticks-home)/tests/tgltf.bash ; }
+tgltf-source(){   echo $BASH_SOURCE; }
+tgltf-dir(){ echo $(dirname $BASH_SOURCE) ; }
 tgltf-vi(){       vi $(tgltf-source) ; }
 tgltf-usage(){ cat << \EOU
 
@@ -45,7 +46,6 @@ EOU
 }
 
 tgltf-env(){      olocal- ;  }
-tgltf-dir(){ echo $(opticks-home)/tests ; }
 tgltf-cd(){  cd $(tgltf-dir); }
 
 join(){ local IFS="$1"; shift; echo "$*"; }

@@ -17,8 +17,9 @@
 ## limitations under the License.
 ##
 
-trainbow-source(){   echo $(opticks-home)/tests/trainbow.bash ; }
-trainbow-vi(){       vi $(trainbow-source) ; }
+trainbow-source(){ echo $BASH_SOURCE ; }
+trainbow-dir(){    echo $(dirname $BASH_SOURCE) ; }
+trainbow-vi(){     vi $(trainbow-source) ; }
 trainbow-usage(){ cat << \EOU
 
 trainbow- : Rainbow geometry with torch source
@@ -68,7 +69,6 @@ EOU
 }
 
 trainbow-env(){      olocal- ;  }
-trainbow-dir(){ echo $(opticks-home)/tests ; }
 trainbow-cd(){  cd $(trainbow-dir); }
 
 join(){ local IFS="$1"; shift; echo "$*"; }

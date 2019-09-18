@@ -17,9 +17,7 @@
 ## limitations under the License.
 ##
 
-tests-rel(){      echo tests ; }
-tests-src(){      echo tests/tests.bash ; }
-tests-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(tests-src)} ; }
+tests-source(){   echo $BASH_SOURCE ; }
 tests-vi(){       vi $(tests-source) ; }
 tests-usage(){ cat << \EOU
 
@@ -155,10 +153,10 @@ EOS
 
 tests-env(){
     olocal-
-    opticks-
+  #  opticks-
 }
 
-tests-dir(){  echo $(opticks-home)/tests ; }
+tests-dir(){  echo $(dirname $BASH_SOURCE) ; }
 tests-cd(){   cd $(tests-dir); }
 
 

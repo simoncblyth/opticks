@@ -17,8 +17,9 @@
 ## limitations under the License.
 ##
 
-treflect-source(){   echo $(opticks-home)/tests/treflect.bash ; }
-treflect-vi(){       vi $(treflect-source) ; }
+treflect-source(){ echo $BASH_SOURCE ; }
+treflect-dir(){    echo $(dirname $BASH_SOURCE) ; }
+treflect-vi(){     vi $(treflect-source) ; }
 treflect-usage(){ cat << \EOU
 
 treflect- : Fresnel reflection vs incident angle check  
@@ -50,7 +51,6 @@ For background on analysis tools see :doc:`../ana/tools`
 EOU
 }
 treflect-env(){      olocal- ;  }
-treflect-dir(){ echo $(opticks-home)/tests ; }
 treflect-cd(){  cd $(treflect-dir); }
 
 join(){ local IFS="$1"; shift; echo "$*"; }

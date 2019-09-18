@@ -17,8 +17,9 @@
 ## limitations under the License.
 ##
 
-tjuno-source(){   echo $(opticks-home)/tests/tjuno.bash ; }
-tjuno-vi(){       vi $(tjuno-source) ; }
+tjuno-source(){ echo $BASH_SOURCE ; }
+tjuno-dir(){    echo $(dirname $BASH_SOURCE) ; }
+tjuno-vi(){     vi $(tjuno-source) ; }
 tjuno-usage(){ cat << \EOU
 tjuno- 
 ======================================================
@@ -29,7 +30,6 @@ EOU
 }
 
 tjuno-env(){      olocal- ;  }
-tjuno-dir(){ echo $(opticks-home)/tests ; }
 tjuno-cd(){  cd $(tjuno-dir); }
 
 join(){ local IFS="$1"; shift; echo "$*"; }

@@ -17,7 +17,7 @@
 ## limitations under the License.
 ##
 
-tbox-source(){   echo $(opticks-home)/tests/tbox.bash ; }
+tbox-source(){   echo $BASH_SOURCE ; }
 tbox-vi(){       vi $(tbox-source) ; }
 tbox-usage(){ cat << \EOU
 
@@ -52,7 +52,7 @@ tbox- : Pyrex Cube inside Mineral Oil Cube Test
 EOU
 }
 tbox-env(){      olocal- ;  }
-tbox-dir(){ echo $(opticks-home)/tests ; }
+tbox-dir(){ echo $(dirname $(tbox-source)) ; }
 tbox-cd(){  cd $(tbox-dir); }
 
 join(){ local IFS="$1"; shift; echo "$*"; }

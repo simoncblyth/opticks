@@ -17,7 +17,8 @@
 ## limitations under the License.
 ##
 
-tnewton-source(){   echo $(opticks-home)/tests/tnewton.bash ; }
+tnewton-source(){   echo $BASH_SOURCE ; }
+tnewton-dir(){      echo $(dirname $BASH_SOURCE) ; }
 tnewton-vi(){       vi $(tnewton-source) ; }
 tnewton-usage(){ cat << \EOU
 
@@ -48,7 +49,6 @@ causing missing solid warning and segv.
 EOU
 }
 tnewton-env(){      olocal- ;  }
-tnewton-dir(){ echo $(opticks-home)/tests ; }
 tnewton-cd(){  cd $(tnewton-dir); }
 
 join(){ local IFS="$1"; shift; echo "$*"; }

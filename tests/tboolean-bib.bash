@@ -17,7 +17,7 @@
 ## limitations under the License.
 ##
 
-tboolean-bib-source(){   echo $(opticks-home)/tests/tboolean-bib.bash ; }
+tboolean-bib-source(){   echo $BASH_SOURCE ; }
 tboolean-bib-vi(){       vi $(tboolean-bib-source) ; }
 tboolean-bib-usage(){ cat << \EOU
 
@@ -72,7 +72,7 @@ EOU
 
 
 tboolean-bib-env(){      olocal- ; tboolean- ;   }
-tboolean-bib-dir(){ echo $(opticks-home)/tests ; }
+tboolean-bib-dir(){ echo $(dirname $(tboolean-bib-dir)) ; }
 tboolean-bib-cd(){  cd $(tboolean-bib-dir); }
 
 join(){ local IFS="$1"; shift; echo "$*"; }
