@@ -32,6 +32,8 @@ class Dist(object):
     bin/ok.sh 
  
 
+    tests
+        tree of CTestTestfile.cmake 
 
     externals/share/Geant4-10.4.2/data
         adds about 1.6G to the .tar
@@ -50,7 +52,8 @@ class Dist(object):
              'externals/share/Geant4-10.4.2/data',
              'installcache/PTX', 
              'gl', 
-             'tests', 
+             'tests',
+             'integration', 
              'py', 
              'bin' ]
 

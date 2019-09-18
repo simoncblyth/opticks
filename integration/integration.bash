@@ -4,6 +4,9 @@ integration-source(){ echo $BASH_SOURCE ; }
 integration-dir(){    echo $(dirname $BASH_SOURCE) ; }
 integration-vi(){     vi $BASH_SOURCE ; }
 
+
+tboolean-(){     . $(integration-dir)/tests/tboolean.bash  && tboolean-env $* ; }
+
 tviz-(){         . $(integration-dir)/tests/tviz.bash      && tviz-env $* ; }
 tpmt-(){         . $(integration-dir)/tests/tpmt.bash      && tpmt-env $* ; }
 trainbow-(){     . $(integration-dir)/tests/trainbow.bash  && trainbow-env $* ; }
@@ -18,7 +21,6 @@ tlaser-(){       . $(integration-dir)/tests/tlaser.bash    && tlaser-env $* ; }
 tboxlaser-(){    . $(integration-dir)/tests/tboxlaser.bash && tboxlaser-env $* ; }
 tdefault-(){     . $(integration-dir)/tests/tdefault.bash  && tdefault-env $* ; }
 tconcentric-(){  . $(integration-dir)/tests/tconcentric.bash  && tconcentric-env $* ; }
-tboolean-(){     . $(integration-dir)/tests/tboolean.bash  && tboolean-env $* ; }
 t-(){            . $(integration-dir)/tests/t.bash         && t-env $* ; }
 
 tboolean-bib-(){ . $(integration-dir)/tests/tboolean-bib.bash  && tboolean-bib-env $* ; }

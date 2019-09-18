@@ -95,8 +95,7 @@ if __name__ == '__main__':
         tg.a[k,-1] = "F%d"%k      # right column
     pass
 
-
-    print tg 
+    print(tg) 
 
 
 

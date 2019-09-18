@@ -3,8 +3,9 @@ set(name Bin)
 project(${name} VERSION 0.1.0)
 include(OpticksBuildOptions)
 
-# order of increasing dependency 
+# increasing dependency order
 set(SCRIPTS
+   o.sh
    tboolean.sh
 )
 

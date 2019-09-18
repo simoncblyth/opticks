@@ -1055,7 +1055,6 @@ tboolean-box--(){ cat << EOP
 import logging
 log = logging.getLogger(__name__)
 from opticks.ana.main import opticks_main
-from opticks.analytic.polyconfig import PolyConfig
 from opticks.analytic.csg import CSG  
 
 # 0x3f is all 6 

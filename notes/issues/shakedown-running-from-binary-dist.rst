@@ -1477,3 +1477,40 @@ TODO:
 
 
 
+getting IntegrationTests.tboolean.box to run from install
+------------------------------------------------------------
+
+* rearrange bash hookup for relocatability
+* make analytic and sysrap standard projs and install python modules from them
+
+
+::
+
+   ctest -R IntegrationTests.tboolean. --output-on-failure
+
+
+This test runs commandline:: 
+
+     LV=box tboolean.sh --generateoverride 10000
+
+
+polyconfig not needed but other analytic ones like csg are::
+
+    [simon@localhost ~]$ ini
+    [simon@localhost ~]$ tboolean-
+    [simon@localhost ~]$ tboolean-box-
+    Traceback (most recent call last):
+      File "<stdin>", line 4, in <module>
+    ImportError: No module named analytic.polyconfig
+
+
+Now it runs but fails to load test materials::
+
+    opticksdata/refractiveindex/tmp/glass/schott/F2.npy
+    opticksdata/refractiveindex/tmp/main/H2O/Hale.npy
+
+
+Need opticksaux to take over from opticksdata
+------------------------------------------------
+
+

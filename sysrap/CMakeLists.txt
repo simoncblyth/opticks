@@ -126,6 +126,14 @@ target_compile_definitions( ${name} PUBLIC OPTICKS_SYSRAP )
 bcm_deploy(TARGETS ${name} NAMESPACE Opticks:: SKIP_HEADER_INSTALL)
 install(FILES ${HEADERS}  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
+
+set( SCRIPTS 
+    __init__.py
+    OpticksCSG.py
+)
+install(PROGRAMS ${SCRIPTS}  DESTINATION py/opticks/sysrap)
+
+
 add_subdirectory(tests)
 
 
