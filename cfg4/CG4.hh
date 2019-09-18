@@ -136,6 +136,7 @@ class CFG4_API CG4
         NPY<float>* propagate();
    private:
         void postinitialize();
+        void postinitializeMaterialLookup(); 
         void postpropagate();
    public:
         int getPrintIndex() const ;

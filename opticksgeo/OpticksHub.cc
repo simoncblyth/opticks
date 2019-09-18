@@ -476,11 +476,24 @@ void OpticksHub::configureState(NConfigurable* scene)
 OpticksHub::configureLookupA
 -----------------------------
 
-Invoked in init 
+Invoked in init, but only in legacy mode. 
 
-This is trying and failing to load from 
+However the lookup remains essenstial for genstep collection
+in non-legacy running to translate raw Geant4 material indices 
+into GPU texture lines.
+
+This means non-legacy must call OpticksHub::overrideMaterialMapA 
+before collecting any gensteps or closing/cross-referencing
+the lookup.
+
+Contrast with embedded mode which does not use the hub, see 
+G4Opticks::setupMaterialLookup
+
+
+This was trying and failing to load from 
    /home/blyth/local/opticks/opticksdata/export/OKX4Test/ChromaMaterialMap.json
 in direct mode when everything should be from geocache ?
+
 
 **/
 
@@ -489,7 +502,7 @@ void OpticksHub::configureLookupA()
     const char* path = m_ok->getMaterialMap();   // eg "/home/blyth/local/opticks/opticksdata/export/CerenkovMinimal/ChromaMaterialMap.json"
     const char* prefix = m_ok->getMaterialPrefix(); 
 
-    LOG(debug)
+    LOG(info)
         << " loading genstep material index map "
         << " path " << path
         << " prefix " << prefix
@@ -501,9 +514,17 @@ void OpticksHub::configureLookupA()
     m_lookup->setA(A, prefix, path);
 }
 
+/**
+OpticksHub::overrideMaterialMapA
+---------------------------------
+
+Used from CG4::postinitializeMaterialLookup which gets the
+material to int mapping from the Geant4 material table.
+
+**/
+
 void OpticksHub::overrideMaterialMapA(const std::map<std::string, unsigned>& A, const char* msg)
 {
-   // Used from OKG4Mgr to override the default mapping when using G4 steps directly 
     m_lookup->setA( A, "", msg);
 }
 

@@ -62,6 +62,8 @@ class NPY_API NLookup {
        const std::map<std::string, unsigned>& getA() const ;
        const std::map<std::string, unsigned>& getB() const ;
 
+       void dumpA(const char* msg) ;
+       void dumpB(const char* msg) ;
 
        void setA( const char* json );
        void setA( const std::map<std::string, unsigned>& A, const char* aprefix="/dd/Materials/", const char* alabel="-");

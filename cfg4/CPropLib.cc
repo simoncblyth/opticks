@@ -57,23 +57,23 @@
 
 
 
-const plog::Severity CPropLib::LEVEL = debug ; 
+const plog::Severity CPropLib::LEVEL = PLOG::EnvLevel("CPropLib", "DEBUG") ; 
 
 const char* CPropLib::SENSOR_MATERIAL = "Bialkali" ;
 
 
 CPropLib::CPropLib(OpticksHub* hub, int verbosity)
-  : 
-  m_hub(hub),
-  m_ok(m_hub->getOpticks()),
-  m_verbosity(verbosity),
-  m_bndlib(m_hub->getBndLib()),
-  m_mlib(m_hub->getMaterialLib()),
-  m_slib(m_hub->getSurfaceLib()),
-  m_sclib(m_hub->getScintillatorLib()),
-  m_domain(m_mlib->getDefaultDomain()),
-  m_dscale(1),
-  m_level(verbose)
+    : 
+    m_hub(hub),
+    m_ok(m_hub->getOpticks()),
+    m_verbosity(verbosity),
+    m_bndlib(m_hub->getBndLib()),
+    m_mlib(m_hub->getMaterialLib()),
+    m_slib(m_hub->getSurfaceLib()),
+    m_sclib(m_hub->getScintillatorLib()),
+    m_domain(m_mlib->getDefaultDomain()),
+    m_dscale(1),
+    m_level(verbose)
 {
     init();
 }
@@ -227,8 +227,12 @@ G4LogicalBorderSurface* CPropLib::makeCathodeSurface(const char* name, G4VPhysic
 CPropLib::makeMaterialPropertiesTable
 ---------------------------------------
 
+Converts Opticks GGeo GMaterial as originally obtained from G4DAE 
+into Geant4 G4MaterialPropertiesTable.
 
-
+This gets invoked from CGDMLDetector::addMPTLegacyGDML 
+bringing together the geometry from ancient GDML 
+with the material properties from ancient G4DAE.
 
 **/
 
@@ -284,28 +288,42 @@ G4MaterialPropertiesTable* CPropLib::makeMaterialPropertiesTable(const GMaterial
         //CMPT::Dump(mpt);
 
         assert( CMPT::HasProperty(mpt, "EFFICIENCY")) ; 
-
         // REFLECTIVITY ?
     }
 
-
     if(is_scintillator)
     {
-        GPropertyMap<float>* scintillator = m_sclib->getRaw(name);
-        assert(scintillator && "non-zero reemission prob materials should has an associated raw scintillator");
-        LOG(debug) << "CPropLib::makeMaterialPropertiesTable found corresponding scintillator from sclib " 
-                  << " name " << name 
-                  << " keys " << scintillator->getKeysString() 
-                   ; 
-        bool keylocal, constant ; 
-        addProperties(mpt, scintillator, "SLOWCOMPONENT,FASTCOMPONENT", keylocal=false, constant=false);
-        addProperties(mpt, scintillator, "SCINTILLATIONYIELD,RESOLUTIONSCALE,YIELDRATIO,FASTTIMECONSTANT,SLOWTIMECONSTANT", keylocal=false, constant=true );
-
-        // NB the above skips prefixed versions of the constants: Alpha, 
-        //addProperties(mpt, scintillator, "ALL",          keylocal=false, constant=true );
+        addScintillatorMaterialProperties(mpt, name ) ; 
     }
     return mpt ;
 }
+
+
+/**
+CPropLib::addScintillatorMaterialProperties
+--------------------------------------------
+
+**/
+
+void CPropLib::addScintillatorMaterialProperties( G4MaterialPropertiesTable* mpt, const char* name )
+{
+    GPropertyMap<float>* scintillator = m_sclib->getRaw(name);
+    assert(scintillator && "non-zero reemission prob materials should has an associated raw scintillator");
+    LOG(LEVEL) 
+        << " found corresponding scintillator from sclib " 
+        << " name " << name 
+        << " keys " << scintillator->getKeysString() 
+        ; 
+
+    bool keylocal = false ; 
+    bool constant = false ; 
+    addProperties(mpt, scintillator, "SLOWCOMPONENT,FASTCOMPONENT", keylocal, constant);
+    addProperties(mpt, scintillator, "SCINTILLATIONYIELD,RESOLUTIONSCALE,YIELDRATIO,FASTTIMECONSTANT,SLOWTIMECONSTANT", keylocal, constant ); // this used constant=true formerly
+
+    // NB the above skips prefixed versions of the constants: Alpha, 
+    //addProperties(mpt, scintillator, "ALL",          keylocal=false, constant=true );
+}
+
 
 
 /**
@@ -314,7 +332,6 @@ CPropLib::addProperties
 
 Add properties from GPropertyMap.pmap to the G4MaterialPropertiesTable.mpt 
 identified by the _keys comma delimited list of local keys (eg EFFICIENCY)
-
 
 **/
 
@@ -330,11 +347,11 @@ void CPropLib::addProperties(G4MaterialPropertiesTable* mpt, GPropertyMap<float>
     unsigned int nprop = pmap->getNumProperties();
 
     //if(m_verbosity > 1)
-    pLOG(m_level,0) << "CPropLib::addProperties"
-                   << " keys " << _keys
-                   << " matname " << matname 
-                   << " nprop " << nprop
-                    ;
+    pLOG(m_level,0) 
+        << " keys " << _keys
+        << " matname " << matname 
+        << " nprop " << nprop
+        ;
 
     //pmap->dump("CPropLib::addProperties"); 
 
@@ -359,7 +376,8 @@ void CPropLib::addProperties(G4MaterialPropertiesTable* mpt, GPropertyMap<float>
                ; 
         assert(ukey);
 
-        pLOG(m_level,+1) << "CPropLib::addProperties " << matname << " " << i  << " key " << key << " lkey " << lkey << " ukey " << ukey  ;
+        pLOG(m_level,+1)
+            << matname << " " << i  << " key " << key << " lkey " << lkey << " ukey " << ukey  ;
 
         bool select = all ? true : std::find(keys.begin(), keys.end(), ukey) != keys.end() ;
         if(select)
@@ -374,11 +392,13 @@ void CPropLib::addProperties(G4MaterialPropertiesTable* mpt, GPropertyMap<float>
         }
         else
         {
-            pLOG(m_level,0) << "CPropLib::addProperties " << std::setw(30) << matname << " skipped " << ukey ;
+            pLOG(m_level,0) 
+                << std::setw(30) << matname << " skipped " << ukey ;
         }
     }
     std::string lka = ss.str(); 
-    pLOG(m_level,-1) << "CPropLib::addProperties MPT of " << std::setw(30) << matname << " keys: " << lka ; ; 
+    pLOG(m_level,-1) 
+         << "MPT of " << std::setw(30) << matname << " keys: " << lka ; ; 
 }
 
 
@@ -391,7 +411,10 @@ void CPropLib::addConstProperty(G4MaterialPropertiesTable* mpt, const char* matn
     }
 
     float value = prop->getConstant();
-    float uvalue =  m_const_override.count(matname)==1 && m_const_override[matname].count(lkey) == 1 ? m_const_override[matname][lkey] : value ;  
+
+    bool has_const_override = m_const_override.count(matname)==1 && m_const_override[matname].count(lkey) == 1 ; 
+
+    float uvalue =  has_const_override ? m_const_override[matname][lkey] : value ;  
           
     if( value != uvalue )
     {
@@ -410,25 +433,23 @@ void CPropLib::addProperty(G4MaterialPropertiesTable* mpt, const char* matname, 
 {
     // matname only used for debug dumping 
 
-
     bool abslength = strcmp(lkey, "ABSLENGTH") == 0 ;
     bool rayleigh = strcmp(lkey, "RAYLEIGH") == 0 ;
     bool length = abslength || rayleigh ;
-    //bool groupvel = strcmp(lkey, "GROUPVEL") == 0 ; 
 
     unsigned int nval  = prop->getLength();
 
     if(m_verbosity>2)
     prop->Summary(lkey);   
 
-    if(m_verbosity>1)
-    LOG(info) << "CPropLib::addProperty" 
-               << " lkey " << std::setw(40) << lkey
-               << " nval " << std::setw(10) << nval
-               << " length " << std::setw(10) << length
-               << " mm " << std::setw(10) << mm 
-               << " matname " << matname
-               ;   
+    LOG(LEVEL) 
+        << " nval " << std::setw(3) << nval  
+        << " lkey " << std::setw(40) << lkey
+        << " nval " << std::setw(10) << nval
+        << " length " << std::setw(10) << length
+        << " mm " << std::setw(10) << mm 
+        << " matname " << matname
+        ;   
 
 
     // TODO: adopt CMPT::addProperty by moving the special casing elsewhere 
@@ -455,9 +476,7 @@ void CPropLib::addProperty(G4MaterialPropertiesTable* mpt, const char* matname, 
         dval[nval-1-j] = G4double(value) ;
     }
 
-
     //LOG(info) << "CPropLib::addProperty lkey " << lkey ; 
-
     G4MaterialPropertyVector* mpv = mpt->AddProperty(lkey, ddom, dval, nval);
 
     if(abslength)

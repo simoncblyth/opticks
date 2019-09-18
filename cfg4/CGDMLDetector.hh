@@ -45,6 +45,8 @@ from m_ok->getGDMLPath().
 class CFG4_API CGDMLDetector : public CDetector
 {
   public:
+    static const plog::Severity LEVEL ;  
+  public:
     CGDMLDetector(OpticksHub* hub, OpticksQuery* query, CSensitiveDetector* sd);
     void saveBuffers();
     virtual ~CGDMLDetector();
@@ -62,7 +64,6 @@ class CFG4_API CGDMLDetector : public CDetector
     void addSurfaces();
     //void kludge_cathode_efficiency();
 
-    plog::Severity m_level ;
 
 };
 

@@ -103,7 +103,8 @@ class CFG4_API CPropLib {
        GProperty<float>* convertVector(G4PhysicsVector* pvec);
        GPropertyMap<float>* convertTable(G4MaterialPropertiesTable* mpt, const char* name);
        GPropertyMap<float>* convertTable_OLD(G4MaterialPropertiesTable* mpt, const char* name);
-
+   private:
+       void addScintillatorMaterialProperties( G4MaterialPropertiesTable* mpt, const char* name ); 
    protected:
        OpticksHub*        m_hub ; 
        Opticks*           m_ok ; 

@@ -37,6 +37,8 @@
 #include "PLOG.hh"
 #include "CCheck.hh"
 
+const plog::Severity CCheck::LEVEL = PLOG::EnvLevel("CCheck", "DEBUG"); 
+
 
 CCheck::CCheck(Opticks* ok, G4VPhysicalVolume* top) 
    :
@@ -49,9 +51,9 @@ CCheck::CCheck(Opticks* ok, G4VPhysicalVolume* top)
 void CCheck::checkSurf()
 {
     G4int nsurf = G4LogicalBorderSurface::GetNumberOfBorderSurfaces();
-    LOG(info) << "CCheck::checkSurf" 
-              << " NumberOfBorderSurfaces " << nsurf
-              ; 
+    LOG(info)
+        << " NumberOfBorderSurfaces " << nsurf
+        ; 
     
     assert(m_top); 
     G4LogicalVolume* lv = m_top->GetLogicalVolume() ;
@@ -85,12 +87,11 @@ void CCheck::checkSurfTraverse(const G4LogicalVolume* const lv, const int depth)
 {
     const G4int daughterCount = lv->GetNoDaughters();    
 
-    std::cout 
-          << " checkSurfTraverse "
+    LOG(debug)
           << " depth " << depth
           << " daughterCount " << daughterCount
           << " lv " << lv->GetName() 
-          << std::endl ; 
+          ;
 
     for (G4int i=0;i<daughterCount;i++) 
     {
@@ -104,12 +105,13 @@ void CCheck::checkSurfTraverse(const G4LogicalVolume* const lv, const int depth)
         const G4VPhysicalVolume* bsurf_v1 = bsurf ? bsurf->GetVolume1() : NULL ; 
         const G4VPhysicalVolume* bsurf_v2 = bsurf ? bsurf->GetVolume2() : NULL ; 
 
-        std::cout << " daughter " << i 
-                  << " pv " << pv->GetName()
-                  << " bsurf " << bsurf 
-                  << " bsurf_v1 " << ( bsurf_v1 ? bsurf_v1->GetName() : "-" )
-                  << " bsurf_v2 " << ( bsurf_v2 ? bsurf_v2->GetName() : "-" )
-                  << std::endl ; 
+        LOG(debug)
+            << " daughter " << i 
+            << " pv " << pv->GetName()
+            << " bsurf " << bsurf 
+            << " bsurf_v1 " << ( bsurf_v1 ? bsurf_v1->GetName() : "-" )
+            << " bsurf_v2 " << ( bsurf_v2 ? bsurf_v2->GetName() : "-" )
+            ;
     }
 }
 

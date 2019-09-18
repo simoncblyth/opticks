@@ -18,6 +18,8 @@
  */
 
 
+#include "NLookup.hpp"
+
 #include "Opticks.hh"
 #include "OpticksHub.hh"
 
@@ -41,7 +43,9 @@ int main(int argc, char** argv)
 
     if(hub.getErr()) LOG(fatal) << "hub error " << hub.getErr() ; 
 
-    // hub calls configure
+    // NLookup* lookup = hub.getLookup();
+    // lookup->close();  
+
 
     return 0 ; 
 }

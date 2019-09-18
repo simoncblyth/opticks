@@ -52,15 +52,16 @@
 
 #include "PLOG.hh"
 
+const plog::Severity CGDMLDetector::LEVEL = PLOG::EnvLevel("CGDMLDetector", "DEBUG") ; 
+
 
 CGDMLDetector::CGDMLDetector(OpticksHub* hub, OpticksQuery* query, CSensitiveDetector* sd)
     : 
-    CDetector(hub, query, sd),
-    m_level(info)
+    CDetector(hub, query, sd)
 {
-    LOG(m_level) << "[" ; 
+    LOG(LEVEL) << "[" ; 
     init();
-    LOG(m_level) << "]" ; 
+    LOG(LEVEL) << "]" ; 
 }
 
 CGDMLDetector::~CGDMLDetector()
@@ -85,7 +86,7 @@ void CGDMLDetector::init()
          return ; 
     }
 
-    LOG(m_level) << "parse " << path ; 
+    LOG(LEVEL) << "parse " << path ; 
 
     G4VPhysicalVolume* world = parseGDML(path);
 
@@ -148,33 +149,26 @@ void CGDMLDetector::saveBuffers()
 
 
 /**
-CGDMLDetector::addMPT
-----------------------
+CGDMLDetector::addMPTLegacyGDML
+-----------------------------------
+
+The GDML exported by geant4 that comes with nuwa lack material properties 
+so use the properties from the G4DAE export, to enable recovery of the materials.
 
 Have observed, Bialkali looses its EFFICIENCY, once thru Opticks standardization, the
 EFFICIENCY gets planted onto the fake SensorSurfaces::
 
-    2018-08-03 15:32:55.668 ERROR [7953232] [X4Material::init@99] name Bialkali
-    2018-08-03 15:32:55.668 ERROR [7953232] [X4MaterialPropertiesTable::AddProperties@41] ABSLENGTH
-    2018-08-03 15:32:55.669 ERROR [7953232] [X4MaterialPropertiesTable::AddProperties@41] GROUPVEL
-    2018-08-03 15:32:55.669 ERROR [7953232] [X4MaterialPropertiesTable::AddProperties@41] RAYLEIGH
-    2018-08-03 15:32:55.669 ERROR [7953232] [X4MaterialPropertiesTable::AddProperties@41] REEMISSIONPROB
-    2018-08-03 15:32:55.669 ERROR [7953232] [X4MaterialPropertiesTable::AddProperties@41] RINDEX
-
 **/
-
-
-
 
 void CGDMLDetector::addMPTLegacyGDML()
 {
-    // GDML exported by geant4 that comes with nuwa lack material properties 
-    // so use the properties from the G4DAE export 
-
     unsigned nmat = m_traverser->getNumMaterials();
     unsigned nmat_without_mpt = m_traverser->getNumMaterialsWithoutMPT();
     //assert( nmat > 0 && nmat_without_mpt == 0 );  // hmm this will prevent use of old GDML   
-
+    LOG(LEVEL) 
+        << " nmat " << nmat
+        << " nmat_without_mpt " << nmat_without_mpt
+        ; 
 
     if(nmat > 0 && nmat_without_mpt == 0 )
     {

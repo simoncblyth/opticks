@@ -50,12 +50,20 @@ CGenstepCollector::CGenstepCollector(const NLookup* lookup)
     m_machinery_count(0)
 {
     assert( m_genstep_itemsize == 6*4 );
-    assert( m_lookup && m_lookup->isClosed() ); 
+
+    bool lookup_complete = m_lookup && m_lookup->isClosed() ;
+    if(!lookup_complete)
+    {
+       LOG(error)
+          << " lookup is not complete : will not be able to collect real gensteps, only machinery ones " ;  
+    }
+    //assert( lookup_complete ); 
     INSTANCE = this ; 
 }
 
 int CGenstepCollector::translate(int acode) const // raw G4 materialId translated into GBndLib material line for GPU usage 
 {
+    assert( m_lookup && m_lookup->isClosed() ); 
     int bcode = m_lookup->a2b(acode) ;
     return bcode ; 
 }

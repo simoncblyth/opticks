@@ -387,6 +387,16 @@ OKTest without options defaults to writing the below::
 void Opticks::init()
 {
     LOG(info) << m_mode->description(); 
+    if(IsLegacyGeometryEnabled())
+    {
+        LOG(fatal) << "OPTICKS_LEGACY_GEOMETRY_ENABLED mode is active " 
+                   << " : ie dae src access to geometry, opticksdata  "  
+                    ;
+    }
+    else
+    {
+        LOG(info) << " non-legacy mode : ie mandatory keyed access to geometry, opticksaux " ; 
+    } 
 
     m_parameters->add<int>("OptiXVersion",  OKConf::OptiXVersionInteger() );
     m_parameters->add<int>("CUDAVersion",   OKConf::CUDAVersionInteger() );

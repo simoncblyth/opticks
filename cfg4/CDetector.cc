@@ -382,7 +382,7 @@ void CDetector::export_dae(const char* dir, const char* name)
 
     g4dae->Write(path, world_pv, refs, recreatePoly, nodeIndex );
 #else
-    LOG(warning) << " export requires WITH_G4DAE " ; 
+    LOG(error) << " DAE export requires WITH_G4DAE " ; 
 #endif
 }
 

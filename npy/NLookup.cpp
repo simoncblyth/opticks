@@ -82,6 +82,17 @@ void NLookup::setA( const char* json )
     BMap<std::string, unsigned>::dump(&m_A, "NLookup::setA" );
 }
 
+void NLookup::dumpA(const char* msg) 
+{
+    BMap<std::string, unsigned>::dump(&m_A, msg );
+}
+void NLookup::dumpB(const char* msg)  
+{
+    BMap<std::string, unsigned>::dump(&m_B, msg );
+}
+
+
+
 
 void NLookup::setA( const std::map<std::string, unsigned>& A, const char* aprefix, const char* alabel )
 {
@@ -141,8 +152,8 @@ std::string NLookup::brief() const
     std::stringstream ss ; 
 
     ss 
-        << " A " << ( m_alabel ? m_alabel : "NULL" ) << " " <<  m_A.size()
-        << " B " << ( m_blabel ? m_blabel : "NULL" ) << " " <<  m_B.size() 
+        << " A: " << ( m_alabel ? m_alabel : "NULL" ) << " " <<  m_A.size()
+        << " B: " << ( m_blabel ? m_blabel : "NULL" ) << " " <<  m_B.size() 
         ;
  
     return ss.str();
@@ -183,7 +194,23 @@ void NLookup::close(const char* msg)
 
     LOG(LEVEL) << msg << brief() ;
 
-    assert(m_alabel && m_blabel) ; // have to setA and setB before close
+
+    bool complete = m_alabel && m_blabel ; 
+
+    if(!complete)
+    {
+        LOG(fatal) 
+           << " lookup missing A or B, cannot crossReference and close " 
+           << " msg : " << msg 
+           << " brief : " << brief()
+           ; 
+
+        if(m_alabel) dumpA(m_alabel); 
+        if(m_blabel) dumpB(m_blabel); 
+    } 
+
+    assert(m_alabel) ; // have to setA and setB before close
+    assert(m_blabel) ; // have to setA and setB before close
 
     crossReference();
 

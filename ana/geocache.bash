@@ -381,6 +381,15 @@ geocache-dx-v0-comment(){ echo export-dyb-near-for-regeneration ; }
 geocache-dx-v0(){   geocache-dx-v0- -runfolder $FUNCNAME --runcomment $(${FUNCNAME}-comment) $* ; } 
 
 
+geocache-dxtmp-(){  opticksdata- ; geocache-create- --gdmlpath $(opticksdata-dxtmp) $* ; }
+geocache-dxtmp-comment(){  echo gdml-insitu-created-by-OKG4Test-export ; }
+geocache-dxtmp(){   $FUNCNAME- --runfolder $FUNCNAME --runcomment $(${FUNCNAME}-comment) $* ; }
+
+geocache-dxtmp-key(){ echo OKX4Test.X4PhysicalVolume.World0xc15cfc00x5d42890_PV.5aa828335373870398bf4f738781da6c ; }
+geocache-dxtmp-keydir(){ OPTICKS_KEY=$(geocache-dxtmp-key) geocache-keydir ; }
+
+
+
 
 
 geocache-create(){ geocache-j1808-v5 $* ; }  

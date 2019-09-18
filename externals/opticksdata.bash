@@ -173,6 +173,15 @@ opticksdata-jv5(){ echo $(opticksdata-xpath j1808)_v5.gdml ; }
 opticksdata-jv5-vi(){ vi $(opticksdata-jv5) ; }
 
 
+ 
+opticksdata-d0-gdml(){   echo $(opticksdata-xpath dyb).gdml ; }
+opticksdata-d0-dae(){    echo $(opticksdata-xpath dyb).dae ; }
+opticksdata-d0-gdml-vi(){ vi $(opticksdata-d0-gdml) ; }
+opticksdata-d0-dae-vi(){  vi $(opticksdata-d0-dae) ; }
+
+opticksdata-dxtmp(){    echo $(opticks-dir)/tmp/CGeometry/CGeometry.gdml ; }
+opticksdata-dxtmp-vi(){ vi $(opticksdata-dxtmp) ; }
+
 opticksdata-dx(){  echo $(opticksdata-xpath dybexport).gdml ; }
 opticksdata-dx-vi(){ vi $(opticksdata-dx) ; }
 

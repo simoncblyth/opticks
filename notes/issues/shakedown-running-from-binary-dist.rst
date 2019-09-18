@@ -7,6 +7,11 @@ Context
 * :doc:`packaging-opticks-and-externals-for-use-on-gpu-cluster`
 * :doc:`shakedown-running-from-expanded-binary-tarball` am earlier look at the same thing from April 2019
 
+Next
+--------
+
+* :doc:`export-dyb-gdml-from-g4-10-4-2-to-support-geocache-creation`
+
 
 Workflow for testing binary dist
 -----------------------------------
@@ -1355,126 +1360,6 @@ Geant4 failers : below fixes all except CGenstepCollectorTest : BUT CG4Test taki
 
 
 
-JUNO gdml too big for quick testing
--------------------------------------------
-
-::
-
-    CG4Test
-    OKG4Test 
-
-How to export DYB into GDML ?::
-
-    CGeometry::export_
-
-There are options::
-
-   --export
-   --exportconfig $TMP   # the default   getExportConfig
-
-
-::
-
-    148 void CGeometry::export_()
-    149 {
-    150     bool expo = m_cfg->hasOpt("export");
-    151     if(!expo) return ;
-    152     //std::string expodir = m_cfg->getExportConfig();
-    153 
-    154     const char* expodir = "$TMP/CGeometry" ;
-    155 
-    156     if(BFile::ExistsDir(expodir))
-    157     {
-    158         BFile::RemoveDir(expodir);
-    159         LOG(info) << "CGeometry::export_ removed " << expodir ;
-    160     }
-    161 
-    162     BFile::CreateDir(expodir);
-    163     m_detector->export_dae(expodir, "CGeometry.dae");
-    164     m_detector->export_gdml(expodir, "CGeometry.gdml");
-    165 }
-
-
-::
-
-    OKG4Test --export 
-    ...
-    2019-09-17 21:32:31.254 INFO  [96888] [CGDML::Export@65] export to /home/blyth/local/opticks/tmp/CGeometry/CGeometry.gdml
-
-::
-
-    cd /home/blyth/local/opticks/opticksdata/export/DayaBay_VGDX_20140414-1300
-    cp /home/blyth/local/opticks/tmp/CGeometry/CGeometry.gdml g4_00_CGeometry_export.gdml
-
-
-::
-
-    [blyth@localhost ~]$ opticksdata-dx
-    /home/blyth/local/opticks/opticksdata/export/DayaBay_VGDX_20140414-1300/g4_00_CGeometry_export.gdml
-
-
-::
-
-    [blyth@localhost ~]$ geocache-dx-v0
-    === o-cmdline-binary-match : --okx4
-    === o-gdb-update : placeholder
-    === o-main : /home/blyth/local/opticks/lib/OKX4Test --okx4 --g4codegen --deletegeocache --gdmlpath /home/blyth/local/opticks/opticksdata/export/DayaBay_VGDX_20140414-1300/g4_00_CGeometry_export.gdml -runfolder geocache-dx-v0 --runcomment export-dyb-near-for-regeneration ======= PWD /tmp/blyth/opticks/geocache-create- Tue Sep 17 21:55:08 CST 2019
-    2019-09-17 21:55:08.928 INFO  [130758] [main@90] 0 /home/blyth/local/opticks/lib/OKX4Test
-    2019-09-17 21:55:08.928 INFO  [130758] [main@90] 1 --okx4
-    2019-09-17 21:55:08.928 INFO  [130758] [main@90] 2 --g4codegen
-    2019-09-17 21:55:08.928 INFO  [130758] [main@90] 3 --deletegeocache
-    2019-09-17 21:55:08.928 INFO  [130758] [main@90] 4 --gdmlpath
-    2019-09-17 21:55:08.928 INFO  [130758] [main@90] 5 /home/blyth/local/opticks/opticksdata/export/DayaBay_VGDX_20140414-1300/g4_00_CGeometry_export.gdml
-    2019-09-17 21:55:08.928 INFO  [130758] [main@90] 6 -runfolder
-    2019-09-17 21:55:08.928 INFO  [130758] [main@90] 7 geocache-dx-v0
-    2019-09-17 21:55:08.928 INFO  [130758] [main@90] 8 --runcomment
-    2019-09-17 21:55:08.928 INFO  [130758] [main@90] 9 export-dyb-near-for-regeneration
-    2019-09-17 21:55:08.928 INFO  [130758] [main@107]  csgskiplv NONE
-    2019-09-17 21:55:08.928 INFO  [130758] [main@111]  parsing /home/blyth/local/opticks/opticksdata/export/DayaBay_VGDX_20140414-1300/g4_00_CGeometry_export.gdml
-    G4GDML: Reading '/home/blyth/local/opticks/opticksdata/export/DayaBay_VGDX_20140414-1300/g4_00_CGeometry_export.gdml'...
-    G4GDML: Reading definitions...
-
-    -------- EEEE ------- G4Exception-START -------- EEEE -------
-
-    *** ExceptionHandler is not defined ***
-    *** G4Exception : InvalidExpression
-          issued by : G4GDMLEvaluator::DefineConstant()
-    Redefinition of constant or variable: SCINTILLATIONYIELD
-    *** Fatal Exception ***
-    -------- EEEE -------- G4Exception-END --------- EEEE -------
-
-
-Indeed the below are duplicated::
-
-   71     <constant name="SCINTILLATIONYIELD" value="10"/>
-   72     <constant name="RESOLUTIONSCALE" value="1"/>
-   73     <constant name="FASTTIMECONSTANT" value="3.6399998664856"/>
-   74     <constant name="SLOWTIMECONSTANT" value="12.1999998092651"/>
-   75     <constant name="YIELDRATIO" value="0.860000014305115"/>
-
-
-
-Comment out and try again::
-
-    opticksdata-dx-vi
-    geocache-dx-v0
-
-    -------- EEEE ------- G4Exception-START -------- EEEE -------
-
-    *** ExceptionHandler is not defined ***
-    *** G4Exception : ReadError
-          issued by : G4GDMLReadDefine::getMatrix()
-    Matrix 'SCINTILLATIONYIELD' was not found!
-    *** Fatal Exception ***
-    -------- EEEE -------- G4Exception-END --------- EEEE -------
-
-
-
-TODO:
-
-* contrast original GDML with the regenerated and exported
-* check for property overrides in code
-
 
 
 getting IntegrationTests.tboolean.box to run from install
@@ -1571,8 +1456,8 @@ Need opticksaux to take over from opticksdata
 
 
 
-Analysis issue with old numpy
---------------------------------
+Analysis issue with old numpy : fixed by special casing empties
+-------------------------------------------------------------------
 
 ::
 
@@ -1622,6 +1507,171 @@ Analysis issue with old numpy
 
     In [8]: np.__version__
     Out[8]: '1.7.1'
+
+
+
+
+OpticksColors only in opticksdata : used by ?
+------------------------------------------------
+
+::
+
+    [blyth@localhost opticksdata]$ js.py resource/OpticksColors/OpticksColors.json
+    {u'aliceblue': u'#F0F8FF',
+     u'antiquewhite': u'#FAEBD7',
+     u'aqua': u'#00FFFF',
+     u'aquamarine': u'#7FFFD4',
+     u'azure': u'#F0FFFF',
+     u'beige': u'#F5F5DC',
+     u'bisque': u'#FFE4C4',
+     u'black': u'#000000',
+     u'blanchedalmond': u'#FFEBCD',
+     u'blue': u'#0000FF',
+     u'blueviolet': u'#8A2BE2',
+
+
+CGenstepCollectorTest NLookup::close assert with "simon" from binary dist
+------------------------------------------------------------------------------
+
+::
+
+    [simon@localhost integration]$ CGenstepCollectorTest 
+    2019-09-18 16:44:00.727 INFO  [37563] [Opticks::init@389] INTEROP_MODE
+    2019-09-18 16:44:00.728 INFO  [37563] [Opticks::configure@2111]  setting CUDA_VISIBLE_DEVICES envvar internally to 1
+    ..
+    2019-09-18 16:44:01.181 ERROR [37563] [OpticksGen::makeTorchstep@396]  as torchstep isDefault replacing placeholder frame  frameIdx : 0 detectorDefaultFrame : 0
+    2019-09-18 16:44:01.181 INFO  [37563] [OpticksGen::targetGenstep@328] setting frame 0 Id
+    CGenstepCollectorTest: /home/blyth/opticks/npy/NLookup.cpp:186: void NLookup::close(const char*): Assertion `m_alabel && m_blabel' failed.
+    Aborted (core dumped)
+
+
+CGenstepCollectorTest::
+
+     55 int main(int argc, char** argv)
+     56 {
+     57     OPTICKS_LOG(argc, argv);
+     58 
+     59     unsigned mock_num_evt = 10 ;
+     60 
+     61     Opticks ok(argc, argv);
+     62     OpticksHub hub(&ok);
+     63 
+     64     NLookup* lookup = hub.getLookup();
+     65     lookup->close();
+     66 
+     67     CGenstepCollector cc(lookup);
+        
+* issue happens before CGenstepCollector instanciated, so added this to okg/OpticksHubTest too
+
+
+::
+
+    2640 bool Opticks::hasKey() const { return m_resource->hasKey() ; }
+    2641 bool Opticks::isDirect() const { return isEmbedded() || hasKey() ; }
+    2642 bool Opticks::isLegacy() const { return !isDirect() ; }
+
+
+In non-legacy OpticksHub::init is not setting up the lookup::
+
+     227 void OpticksHub::init()
+     228 {
+     229     OK_PROFILE("_OpticksHub::init");
+     230 
+     231     pLOG(LEVEL,0) << "[" ;   // -1 : one notch more easily seen than LEVEL
+     232 
+     233     //m_composition->setCtrl(this); 
+     234 
+     235     add(m_fcfg);
+     236 
+     237     configure();
+     238     // configureGeometryPrep();
+     239     configureServer();
+     240     configureCompositionSize();
+     241 
+     242 
+     243     if(m_ok->isLegacy())
+     244     {
+     245         LOG(fatal) << m_ok->getLegacyDesc();
+     246         configureLookupA();
+     247     }
+
+::
+
+     504 /**
+     505 OpticksHub::overrideMaterialMapA
+     506 ---------------------------------
+     507 
+     508 Used from OKG4Mgr to override the default mapping when using G4 steps directly 
+     509 
+     510 **/
+     511 
+     512 void OpticksHub::overrideMaterialMapA(const std::map<std::string, unsigned>& A, const char* msg)
+     513 {
+     514     m_lookup->setA( A, "", msg);
+     515 }
+     516 
+
+
+Hmm lookup is still essential in non-legacy for translating G4 material indices
+into GPU tex lines.  This is done at genstep collection by CGenstepCollector::translate.
+
+
+As CGenstepCollectorTest is only collecting machinery steps the lookup
+is actually not needed, so just skip the issue::
+
+         NLookup* lookup = hub.getLookup(); 
+    -    lookup->close(); 
+    +
+    +    if(ok.isLegacy())
+    +    {
+    +        lookup->close(); 
+    +    }
+    +    // For real genstep collection it is essential 
+    +    // to close the lookup and do cross-referencing
+    +    // which will need OpticksHub::overrideMaterialMapA
+    +    // using the Geant4 material map, but for machinery testing
+    +    // the lookup is not used, so can like without this setup.
+     
+
+
+6/412 with 2 slow
+----------------------
+
+::
+
+    99% tests passed, 6 tests failed out of 412
+
+    Total Test time (real) = 2291.13 sec
+
+    The following tests FAILED:
+    Cannot create directory /cvmfs/opticks.ihep.ac.cn/ok/releases/Opticks-0.0.0_alpha/x86_64-centos7-gcc48-geant4_10_04_p02-dbg/tests/Testing/Temporary
+    Cannot create log file: LastTestsFailed.log
+
+        292 - AssimpRapTest.AssimpGGeoTest (Child aborted)
+        296 - OpticksGeoTest.OpenMeshRapTest (Child aborted)
+        
+        skipable
+
+        324 - OptiXRapTest.Roots3And4Test (Child aborted)
+        341 - OptiXRapTest.intersectAnalyticTest.iaTorusTest (Child aborted)
+
+        known  
+
+        396 - CFG4Test.CGenstepCollectorTest (Child aborted)
+
+        fixed by avoiding the issue for machinery genstep collection which needs no lookup
+
+        412 - IntegrationTests.tboolean.box (Failed)
+
+        analysis level fail as WITH_LOGDOUBLE is commented
+
+
+    Errors while running CTest
+    == okr-t : tbeg Wed Sep 18 17:54:54 CST 2019
+    == okr-t : tend Wed Sep 18 18:33:05 CST 2019
+    == okr-t : tdir /cvmfs/opticks.ihep.ac.cn/ok/releases/Opticks-0.0.0_alpha/x86_64-centos7-gcc48-geant4_10_04_p02-dbg/tests
+    == okr-t : tlog /home/simon/okr-t.log
+
 
 
 

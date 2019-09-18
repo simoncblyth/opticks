@@ -108,6 +108,14 @@ G4Opticks::~G4Opticks()
     CAlignEngine::Finalize() ;
 }
 
+/**
+G4Opticks::G4Opticks
+----------------------
+
+NB no OpticksHub, this is trying to be minimal 
+
+**/
+
 G4Opticks::G4Opticks()
     :
     m_world(NULL),

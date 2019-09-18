@@ -205,8 +205,6 @@ void CG4::initialize()
     assert(!m_initialized && "CG4::initialize already initialized");
     m_initialized = true ; 
 
-
-
     m_runManager->SetUserAction(m_ra);
     m_runManager->SetUserAction(m_ea);
     m_runManager->SetUserAction(m_pga);
@@ -214,7 +212,12 @@ void CG4::initialize()
     m_runManager->SetUserAction(m_sa);
 
     m_runManager->Initialize();
+
     postinitialize();
+    postinitializeMaterialLookup(); 
+
+    if(m_ok->isG4Snap()) snap() ;
+
     LOG(LEVEL) << "]" ;
 }
 
@@ -242,18 +245,38 @@ void CG4::postinitialize()
     m_ta->postinitialize();
     m_sa->postinitialize();
 
-    // for translation of material indices into GPU texture lines 
+    LOG(LEVEL) << "]" ;
+}
+
+/**
+CG4::postinitializeMaterialLookup
+------------------------------------
+
+The lookup is used to translate of material indices 
+into GPU texture lines. 
+
+See NLookup for details, essentially two sets of material name to int
+pairings are associated by matching names giving an int to int mapping.
+
+Traditionally in the legacy workflow with input genstep files 
+the A pairing was from the ChromaMaterialMap.json file
+and the B pairing from the layout of the boundary texture.
+
+In non-legacy direct running the A pairing comes from the 
+Geant4 material table.
+
+**/
+
+void CG4::postinitializeMaterialLookup()
+{
     m_hub->overrideMaterialMapA( getMaterialMap(), "CG4::postinitialize/g4mm") ; 
 
     NLookup* lookup = m_hub->getLookup();
     lookup->close() ;  // hmm what about B (from GBndLiB)  
 
     m_collector = new CGenstepCollector(lookup) ; 
-
-    if(m_ok->isG4Snap()) snap() ;
-
-    LOG(LEVEL) << "]" ;
 }
+
 
 void CG4::execute(const char* path)
 {

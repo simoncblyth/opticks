@@ -19,6 +19,7 @@
 
 #include "SStr.hh"
 #include "SSys.hh"
+#include "BFile.hh"
 
 #include "NLookup.hpp"
 #include "NGLM.hpp"
@@ -61,8 +62,19 @@ int main(int argc, char** argv)
     Opticks ok(argc, argv);
     OpticksHub hub(&ok);
 
+
+
     NLookup* lookup = hub.getLookup(); 
-    lookup->close(); 
+
+    if(ok.isLegacy())
+    {
+        lookup->close(); 
+    }
+    // For real genstep collection it is essential 
+    // to close the lookup and do cross-referencing
+    // which will need OpticksHub::overrideMaterialMapA
+    // using the Geant4 material map, but for machinery testing
+    // the lookup is not used, so can live without this setup.
 
     CGenstepCollector cc(lookup);
     NPY<float>* gs = cc.getGensteps(); 
@@ -74,7 +86,10 @@ int main(int argc, char** argv)
 
         for(unsigned i=0 ; i < num_steps ; i++) CGenstepCollector::Instance()->collectMachineryStep(e*1000+i);
 
-        const char* path = SSys::fmt("$TMP/CGenstepCollectorTest%u.npy",e) ;
+        const char* path_ = SSys::fmt("$TMP/CGenstepCollectorTest%u.npy",e) ;
+        std::string spath = BFile::preparePath(path_);
+        const char* path = spath.c_str();  
+
         gs->save(path);
         gs->reset();
 

@@ -24,6 +24,8 @@ class G4VPhysicalVolume ;
 class G4LogicalVolume ;
 class G4LogicalBorderSurface ;
 
+#include "plog/Severity.h"
+
 /**
 CCheck
 ========
@@ -39,6 +41,8 @@ of G4GDMLWriter.
 #include "CFG4_HEAD.hh"
 
 class CFG4_API CCheck {
+    public:
+        static const plog::Severity LEVEL ; 
     public:
         CCheck(Opticks* ok, G4VPhysicalVolume* top);
     public:
