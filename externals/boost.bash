@@ -17,8 +17,7 @@
 ## limitations under the License.
 ##
 
-boost-src(){      echo externals/boost.bash ; }
-boost-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(boost-src)} ; }
+boost-source(){   echo $BASH_SOURCE ; }
 boost-vi(){       vim $(boost-source) ; }
 boost-usage(){ cat << EOU
 

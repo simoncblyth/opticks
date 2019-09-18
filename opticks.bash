@@ -19,6 +19,7 @@
 
 opticks-(){         source $(opticks-source) && opticks-env $* ; }
 opticks-source(){   echo $BASH_SOURCE ; }
+opticks-ldir(){     echo $(dirname $BASH_SOURCE) ; }
 opticks-vi(){       vi $(opticks-source) ; }
 opticks-help(){ opticks-usage ; }
 opticks-usage(){   cat << \EOU
@@ -54,7 +55,8 @@ EOU
 
 opticks-env(){      
    # dont pollute : otherwise will get infinite loops : as opticks is used in many other -env
-   . $(opticks-home)/externals/externals.bash   ## just precursors
+   . $(opticks-ldir)/externals/externals.bash       ## just precursors
+   . $(opticks-ldir)/integration/integration.bash   ## just precursors
 }
 
 opticks-env-info(){
@@ -1443,30 +1445,9 @@ winimportlib-(){    . $(opticks-home)/bin/winimportlib.bash && winimportlib-env 
 ggv-(){             . $(opticks-home)/bin/ggv.bash && ggv-env $* ; }
 vids-(){            . $(opticks-home)/bin/vids.bash && vids-env $* ; }
 op-(){              . $(opticks-home)/bin/op.sh ; }
+fn-(){              . $(opticks-home)/bin/fn.bash && fn-env $* ; }
 
 #### opticks top level tests ########
-
-tviz-(){       . $(opticks-home)/tests/tviz.bash      && tviz-env $* ; }
-tpmt-(){       . $(opticks-home)/tests/tpmt.bash      && tpmt-env $* ; }
-trainbow-(){   . $(opticks-home)/tests/trainbow.bash  && trainbow-env $* ; }
-tnewton-(){    . $(opticks-home)/tests/tnewton.bash   && tnewton-env $* ; }
-tprism-(){     . $(opticks-home)/tests/tprism.bash    && tprism-env $* ; }
-tbox-(){       . $(opticks-home)/tests/tbox.bash      && tbox-env $* ; }
-treflect-(){   . $(opticks-home)/tests/treflect.bash  && treflect-env $* ; }
-twhite-(){     . $(opticks-home)/tests/twhite.bash    && twhite-env $* ; }
-tlens-(){      . $(opticks-home)/tests/tlens.bash     && tlens-env $* ; }
-tg4gun-(){     . $(opticks-home)/tests/tg4gun.bash    && tg4gun-env $* ; }
-tlaser-(){     . $(opticks-home)/tests/tlaser.bash    && tlaser-env $* ; }
-tboxlaser-(){  . $(opticks-home)/tests/tboxlaser.bash && tboxlaser-env $* ; }
-tdefault-(){   . $(opticks-home)/tests/tdefault.bash  && tdefault-env $* ; }
-tconcentric-(){   . $(opticks-home)/tests/tconcentric.bash  && tconcentric-env $* ; }
-tboolean-(){      . $(opticks-home)/tests/tboolean.bash  && tboolean-env $* ; }
-t-(){             . $(opticks-home)/tests/t.bash         && t-env $* ; }
-fn-(){            . $(opticks-home)/bin/fn.bash          && fn-env $* ; }
-
-tboolean-bib-(){      . $(opticks-home)/tests/tboolean-bib.bash  && tboolean-bib-env $* ; }
-tjuno-(){      . $(opticks-home)/tests/tjuno.bash  && tjuno-env $* ; }
-tgltf-(){         . $(opticks-home)/tests/tgltf.bash  && tgltf-env $* ; }
 
 
 

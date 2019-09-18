@@ -17,37 +17,41 @@
 ## limitations under the License.
 ##
 
-boost-(){            . $(opticks-home)/externals/boost.bash             && boost-env $* ; }
-ocmake-(){           . $(opticks-home)/externals/ocmake.bash            && ocmake-env $* ; }
-glm-(){              . $(opticks-home)/externals/glm.bash               && glm-env $* ; }
-plog-(){             . $(opticks-home)/externals/plog.bash              && plog-env $* ; }
-gleq-(){             . $(opticks-home)/externals/gleq.bash              && gleq-env $* ; }
-glfw-(){             . $(opticks-home)/externals/glfw.bash              && glfw-env $* ; }
-glew-(){             . $(opticks-home)/externals/glew.bash              && glew-env $* ; }
-imgui-(){            . $(opticks-home)/externals/imgui.bash             && imgui-env $* ; }
-assimp-(){           . $(opticks-home)/externals/assimp.bash            && assimp-env $* ; }
-openmesh-(){         . $(opticks-home)/externals/openmesh.bash          && openmesh-env $* ; }
-cuda-(){             . $(opticks-home)/externals/cuda.bash              && cuda-env $* ; }
-cudamac-(){          . $(opticks-home)/externals/cudamac.bash           && cudamac-env $* ; }
-cudalin-(){          . $(opticks-home)/externals/cudalin.bash           && cudalin-env $* ; }
-cu-(){               . $(opticks-home)/externals/cuda.bash              && cuda-env $* ; }
-thrust-(){           . $(opticks-home)/externals/thrust.bash            && thrust-env $* ; }
-optix-(){            . $(opticks-home)/externals/optix.bash             && optix-env $* ; }
-optix7-(){           . $(opticks-home)/externals/optix7.bash            && optix7-env $* ; }
-optixnote-(){        . $(opticks-home)/externals/optixnote.bash         && optixnote-env $* ; }
-xercesc-(){          . $(opticks-home)/externals/xercesc.bash           && xercesc-env $* ; }
-g4-(){               . $(opticks-home)/externals/g4.bash                && g4-env $* ; }
-zmq-(){              . $(opticks-home)/externals/zmq.bash               && zmq-env $* ; }
-asiozmq-(){          . $(opticks-home)/externals/asiozmq.bash           && asiozmq-env $* ; }
-opticksdata-(){      . $(opticks-home)/externals/opticksdata.bash       && opticksdata-env $* ; }
+externals-source(){ echo $BASH_SOURCE ; }
+externals-vi(){     vi $BASH_SOURCE ; }
+externals-dir(){    echo $(dirname $BASH_SOURCE) ; }
 
-oimplicitmesher-(){  . $(opticks-home)/externals/oimplicitmesher.bash   && oimplicitmesher-env $* ; }
-odcs-(){             . $(opticks-home)/externals/odcs.bash              && odcs-env $* ; }
-oyoctogl-(){         . $(opticks-home)/externals/oyoctogl.bash          && oyoctogl-env $* ; }
-ocsgbsp-(){          . $(opticks-home)/externals/ocsgbsp.bash           && ocsgbsp-env $* ; }
-oof-(){              . $(opticks-home)/externals/oof.bash               && oof-env $* ; }
-bcm-(){              . $(opticks-home)/externals/bcm.bash               && bcm-env $* ; }
+boost-(){            . $(externals-dir)/boost.bash             && boost-env $* ; }
+ocmake-(){           . $(externals-dir)/ocmake.bash            && ocmake-env $* ; }
+glm-(){              . $(externals-dir)/glm.bash               && glm-env $* ; }
+plog-(){             . $(externals-dir)/plog.bash              && plog-env $* ; }
+gleq-(){             . $(externals-dir)/gleq.bash              && gleq-env $* ; }
+glfw-(){             . $(externals-dir)/glfw.bash              && glfw-env $* ; }
+glew-(){             . $(externals-dir)/glew.bash              && glew-env $* ; }
+imgui-(){            . $(externals-dir)/imgui.bash             && imgui-env $* ; }
+assimp-(){           . $(externals-dir)/assimp.bash            && assimp-env $* ; }
+openmesh-(){         . $(externals-dir)/openmesh.bash          && openmesh-env $* ; }
+cuda-(){             . $(externals-dir)/cuda.bash              && cuda-env $* ; }
+cudamac-(){          . $(externals-dir)/cudamac.bash           && cudamac-env $* ; }
+cudalin-(){          . $(externals-dir)/cudalin.bash           && cudalin-env $* ; }
+cu-(){               . $(externals-dir)/cuda.bash              && cuda-env $* ; }
+thrust-(){           . $(externals-dir)/thrust.bash            && thrust-env $* ; }
+optix-(){            . $(externals-dir)/optix.bash             && optix-env $* ; }
+optix7-(){           . $(externals-dir)/optix7.bash            && optix7-env $* ; }
+optixnote-(){        . $(externals-dir)/optixnote.bash         && optixnote-env $* ; }
+xercesc-(){          . $(externals-dir)/xercesc.bash           && xercesc-env $* ; }
+g4-(){               . $(externals-dir)/g4.bash                && g4-env $* ; }
+zmq-(){              . $(externals-dir)/zmq.bash               && zmq-env $* ; }
+asiozmq-(){          . $(externals-dir)/asiozmq.bash           && asiozmq-env $* ; }
+opticksdata-(){      . $(externals-dir)/opticksdata.bash       && opticksdata-env $* ; }
 
-g4dev-(){            . $(opticks-home)/externals/g4dev.bash             && g4dev-env $* ; }
-g4dae-(){            . $(opticks-home)/externals/g4dae.bash             && g4dae-env $* ; }
+oimplicitmesher-(){  . $(externals-dir)/oimplicitmesher.bash   && oimplicitmesher-env $* ; }
+odcs-(){             . $(externals-dir)/odcs.bash              && odcs-env $* ; }
+oyoctogl-(){         . $(externals-dir)/oyoctogl.bash          && oyoctogl-env $* ; }
+ocsgbsp-(){          . $(externals-dir)/ocsgbsp.bash           && ocsgbsp-env $* ; }
+oof-(){              . $(externals-dir)/oof.bash               && oof-env $* ; }
+bcm-(){              . $(externals-dir)/bcm.bash               && bcm-env $* ; }
+
+g4dev-(){            . $(externals-dir)/g4dev.bash             && g4dev-env $* ; }
+g4dae-(){            . $(externals-dir)/g4dae.bash             && g4dae-env $* ; }
 
