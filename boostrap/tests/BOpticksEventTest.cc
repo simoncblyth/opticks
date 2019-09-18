@@ -21,6 +21,7 @@
 
 #include <cassert>
 
+#include "BFile.hh"
 #include "BOpticksResource.hh"
 #include "BOpticksEvent.hh"
 #include "OPTICKS_LOG.hh"
@@ -39,6 +40,7 @@ void BOpticksEventTest::check_base_override(const char* det, const char* source,
     p0 = BOpticksEvent::path(det,source,tag,stem, ext) ; 
     
     const char* gensteps_dir = BOpticksResource::GenstepsDir(); 
+
     BOpticksEvent::SetOverrideEventBase(gensteps_dir) ;
     p1 = BOpticksEvent::path(det,source,tag,stem, ext) ; 
     BOpticksEvent::SetOverrideEventBase(NULL) ;

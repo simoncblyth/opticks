@@ -1084,8 +1084,8 @@ void GMaterialLib::addTestMaterials()
 
     VSS rix ; 
 
-    rix.push_back(SS("GlassSchottF2", "$OPTICKS_INSTALL_PREFIX/opticksdata/refractiveindex/tmp/glass/schott/F2.npy"));
-    rix.push_back(SS("MainH2OHale",   "$OPTICKS_INSTALL_PREFIX/opticksdata/refractiveindex/tmp/main/H2O/Hale.npy"));
+    rix.push_back(SS("GlassSchottF2", "$OPTICKS_INSTALL_PREFIX/opticksaux/refractiveindex/tmp/glass/schott/F2.npy"));
+    rix.push_back(SS("MainH2OHale",   "$OPTICKS_INSTALL_PREFIX/opticksaux/refractiveindex/tmp/main/H2O/Hale.npy"));
     
     // NB when adding test materials also need to set in prefs ~/.opticks/GMaterialLib
     //

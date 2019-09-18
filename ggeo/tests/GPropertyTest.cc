@@ -74,7 +74,7 @@ typedef GDomain<float> D ;
 
 void test_loadRefractiveIndex()
 {
-   P* ri = P::load("$OPTICKS_INSTALL_PREFIX/opticksdata/refractiveindex/tmp/glass/schott/F2.npy");
+   P* ri = P::load("$OPTICKS_INSTALL_PREFIX/opticksaux/refractiveindex/tmp/glass/schott/F2.npy");
    if(ri == NULL)
    {
        LOG(error) << " load failed " ;
@@ -229,7 +229,7 @@ void test_inverseCDF_lookup()
 
 void test_GROUPVEL()
 {
-    P* ri = P::load("$OPTICKS_INSTALL_PREFIX/opticksdata/refractiveindex/tmp/glass/schott/F2.npy");
+    P* ri = P::load("$OPTICKS_INSTALL_PREFIX/opticksaux/refractiveindex/tmp/glass/schott/F2.npy");
     ri->Summary("ri(nm)");
    
     P* vg = GProperty<float>::make_GROUPVEL(ri); 

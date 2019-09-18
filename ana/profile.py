@@ -35,12 +35,24 @@ from __future__ import print_function
 import os, sys, logging, numpy as np
 log = logging.getLogger(__name__)
 
+#from opticks.ana.debug import MyPdb
+try:
+    from IPython.core.debugger import Pdb as MyPdb
+except ImportError:
+    class MyPdb(object):
+        def set_trace(self):
+            log.error("IPython is required for ipdb.set_trace() " )
+        pass  
+    pass
+pass
+ipdb = MyPdb()
+
 from opticks.ana.log import bold_, blink_
 from opticks.ana.nload import np_load
 from opticks.ana.nload import tagdir_, stmp_, time_
 
-from IPython.core.debugger import Pdb
-ipdb = Pdb()
+
+
 
 
 class Profile(object):

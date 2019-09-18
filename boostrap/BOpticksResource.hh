@@ -158,15 +158,18 @@ class BRAP_API  BOpticksResource {
         static const char* ResolveSharedCachePrefix();
         static const char* ResolveUserCachePrefix();
         static const char* OpticksDataDir();
+        static const char* OpticksAuxDir();
         static const char* GeocacheDir();
         static const char* RNGCacheDir();
         static const char* RNGDir();
         static const char* RuncacheDir();
         static const char* ShaderDir();
         static const char* ResultsDir();
+
         static const char* ResourceDir();
         static const char* GenstepsDir();
         static const char* ExportDir();
+
         static const char* InstallCacheDir();
         //static const char* OKCInstallPath();
    private:
@@ -279,6 +282,7 @@ class BRAP_API  BOpticksResource {
         const char* m_shared_cache_prefix ;  
         const char* m_user_cache_prefix ;  
         const char* m_opticksdata_dir ; 
+        const char* m_opticksaux_dir ; 
         const char* m_geocache_dir ; 
         const char* m_rngcache_dir ; 
         const char* m_runcache_dir ; 

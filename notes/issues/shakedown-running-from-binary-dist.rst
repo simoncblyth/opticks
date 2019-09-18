@@ -1510,7 +1510,118 @@ Now it runs but fails to load test materials::
     opticksdata/refractiveindex/tmp/main/H2O/Hale.npy
 
 
+
+
+8/412 but 2 are too slow
+---------------------------
+
+::
+
+    ...
+            Start 381: CFG4Test.CG4Test
+    381/412 Test #381: CFG4Test.CG4Test ............................................   Passed  991.80 sec
+    ...
+            Start 409: OKG4Test.OKG4Test
+    409/412 Test #409: OKG4Test.OKG4Test ...........................................   Passed  1019.75 sec
+
+
+::
+
+    98% tests passed, 8 tests failed out of 412
+
+    Total Test time (real) = 2254.78 sec
+
+    The following tests FAILED:
+    Cannot create directory /cvmfs/opticks.ihep.ac.cn/ok/releases/Opticks-0.0.0_alpha/x86_64-centos7-gcc48-geant4_10_04_p02-dbg/tests/Testing/Temporary
+    Cannot create log file: LastTestsFailed.log
+        159 - NPYTest.NLoadTest (SEGFAULT)
+        283 - GGeoTest.GPropertyTest (SEGFAULT)
+        412 - IntegrationTests.tboolean.box (Failed)
+
+              opticksdata  
+
+        292 - AssimpRapTest.AssimpGGeoTest (Child aborted)
+        296 - OpticksGeoTest.OpenMeshRapTest (Child aborted)
+
+              will skip
+
+        324 - OptiXRapTest.Roots3And4Test (Child aborted)
+        341 - OptiXRapTest.intersectAnalyticTest.iaTorusTest (Child aborted)
+
+              known 
+
+        396 - CFG4Test.CGenstepCollectorTest (Child aborted)
+
+              lookup? unknown problem
+
+
+    Errors while running CTest
+    == okr-t : tbeg Wed Sep 18 11:52:27 CST 2019
+    == okr-t : tend Wed Sep 18 12:30:02 CST 2019
+    == okr-t : tdir /cvmfs/opticks.ihep.ac.cn/ok/releases/Opticks-0.0.0_alpha/x86_64-centos7-gcc48-geant4_10_04_p02-dbg/tests
+    == okr-t : tlog /home/simon/okr-t.log
+
+
+
 Need opticksaux to take over from opticksdata
 ------------------------------------------------
+
+* setup and populate git repo on bitbucket, opticksaux-
+* opticksdata-migrate-to-opticksaux
+
+
+
+Analysis issue with old numpy
+--------------------------------
+
+::
+
+    In [1]: from opticks.ana.nbase import chi2, chi2_pvalue, ratio, count_unique_sorted
+
+    In [2]: a = np.array( [], dtype=np.uint32 )
+
+    In [3]: count_unique_sorted(a)
+    Out[3]: array([], shape=(0, 2), dtype=uint64)
+
+    In [4]: np.__version__
+    Out[4]: '1.14.3'
+
+
+
+
+
+::
+
+    n [1]: a = np.array( [], dtype=np.uint32 )
+
+    In [2]: a
+    Out[2]: array([], dtype=uint32)
+
+    In [4]: from opticks.ana.nbase import chi2, chi2_pvalue, ratio, count_unique_sorted
+
+    In [7]: count_unique_sorted(a)
+    ---------------------------------------------------------------------------
+    IndexError                                Traceback (most recent call last)
+    <ipython-input-7-9989b23863ee> in <module>()
+    ----> 1 count_unique_sorted(a)
+
+    /cvmfs/opticks.ihep.ac.cn/ok/releases/Opticks-0.0.0_alpha/x86_64-centos7-gcc48-geant4_10_04_p02-dbg/py/opticks/ana/nbase.py in count_unique_sorted(vals)
+        127     vals = vals.astype(np.uint64)
+        128     cu = count_unique(vals)
+    --> 129     cu = cu[np.argsort(cu[:,1])[::-1]]  # descending frequency order
+        130     return cu.astype(np.uint64)
+        131 
+
+    IndexError: index 0 is out of bounds for axis 0 with size 0
+    > /cvmfs/opticks.ihep.ac.cn/ok/releases/Opticks-0.0.0_alpha/x86_64-centos7-gcc48-geant4_10_04_p02-dbg/py/opticks/ana/nbase.py(129)count_unique_sorted()
+        128     cu = count_unique(vals)
+    --> 129     cu = cu[np.argsort(cu[:,1])[::-1]]  # descending frequency order
+        130     return cu.astype(np.uint64)
+
+    ipdb> 
+
+    In [8]: np.__version__
+    Out[8]: '1.7.1'
+
 
 

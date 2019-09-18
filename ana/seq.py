@@ -22,8 +22,22 @@ import os, datetime, logging, re, signal
 log = logging.getLogger(__name__)
 import numpy as np
 
-from IPython.core.debugger import Pdb
-ipdb = Pdb()
+
+# this doesnt work, have to insert the code
+#from opticks.ana.debug import MyPdb
+
+try:
+    from IPython.core.debugger import Pdb as MyPdb
+except ImportError:
+    class MyPdb(object):
+        def set_trace(self):
+            log.error("IPython is required for ipdb.set_trace() " )
+        pass  
+    pass
+pass
+ipdb = MyPdb()
+
+
 
 
 

@@ -47,7 +47,7 @@ namespace fs = boost::filesystem;
 const plog::Severity BOpticksResource::LEVEL = PLOG::EnvLevel("BOpticksResource", "DEBUG") ; 
 
 const char* BOpticksResource::G4ENV_RELPATH = "externals/config/geant4.ini" ;
-const char* BOpticksResource::OKDATA_RELPATH = "opticksdata/config/opticksdata.ini" ; // TODO: relocate into geocache
+const char* BOpticksResource::OKDATA_RELPATH = "opticksdata/config/opticksdata.ini" ; 
 
 
 const char* BOpticksResource::EMPTY  = "" ; 
@@ -93,6 +93,16 @@ const int BOpticksResource::DEFAULT_FRAME_DYB = 3153 ;
 const int BOpticksResource::DEFAULT_FRAME_JUNO = 62593 ; 
 
 
+/**
+BOpticksResource::BOpticksResource
+----------------------------------------
+
+Instanciated as base class of okc/OpticksResource 
+
+TODO: eliminate testgeo param 
+
+**/
+
 
 BOpticksResource::BOpticksResource(bool testgeo)
     :
@@ -107,6 +117,7 @@ BOpticksResource::BOpticksResource(bool testgeo)
     m_shared_cache_prefix(NULL),
     m_user_cache_prefix(NULL),
     m_opticksdata_dir(NULL),
+    m_opticksaux_dir(NULL),
     m_geocache_dir(NULL),
     m_rngcache_dir(NULL),
     m_runcache_dir(NULL),
@@ -387,6 +398,9 @@ std::string BOpticksResource::getResultsPath(const char* rela, const char* relb,
 }
 
 
+
+
+
 std::string BOpticksResource::getIdPathPath(const char* rela, const char* relb, const char* relc, const char* reld ) const 
 {
     const char* idpath = getIdPath(); 
@@ -407,20 +421,25 @@ void BOpticksResource::initTopDownDirs()
     m_runcache_dir         = RuncacheDir() ;      // eg ~/.opticks/runcache
     m_rngcache_dir         = RNGCacheDir() ;      // eg ~/.opticks/rngcache
     m_rng_dir              = RNGDir() ;           // eg ~/.opticks/rngcache/RNG
+    m_results_dir          = ResultsDir() ;       // eg /usr/local/opticks/results
 
     m_opticksdata_dir      = OpticksDataDir() ;   // eg /usr/local/opticks/opticksdata
-    m_results_dir          = ResultsDir() ;       // eg /usr/local/opticks/results
+    m_opticksaux_dir       = OpticksAuxDir() ;    // eg /usr/local/opticks/opticksaux or /usr/local/opticks/opticksdata depending on OPTICKS_LEGACY_GEOMETRY_ENABLED
+   
+    // TRANSITIONAL : opticksdata IS TO BE REMOVED
+ 
     m_resource_dir         = ResourceDir() ;      // eg /usr/local/opticks/opticksdata/resource
     m_gensteps_dir         = GenstepsDir() ;      // eg /usr/local/opticks/opticksdata/gensteps
     m_export_dir           = ExportDir() ;        // eg /usr/local/opticks/opticksdata/export
+
     m_installcache_dir     = InstallCacheDir() ;  // eg /usr/local/opticks/installcache
 
     m_optixcachedefault_dir  = OptiXCachePathDefault() ;   // eg /var/tmp/simon/OptiXCache
 
-    //m_okc_installcache_dir = OKCInstallPath() ;   // eg /usr/local/opticks/installcache/OKC
 
 
     m_res->addDir("opticksdata_dir", m_opticksdata_dir);
+    m_res->addDir("opticksaux_dir",  m_opticksaux_dir);
 
     m_res->addDir("geocache_dir",    m_geocache_dir );
     m_res->addDir("rngcache_dir",    m_rngcache_dir );
@@ -497,9 +516,12 @@ const char* BOpticksResource::InstallCacheDir(){return MakePath(ResolveInstallPr
 //const char* BOpticksResource::OKCInstallPath(){ return MakePath(ResolveInstallPrefix(), "installcache", "OKC"); }
 
 const char* BOpticksResource::OpticksDataDir(){ return MakePath(ResolveInstallPrefix(), "opticksdata",  NULL); }
-const char* BOpticksResource::ResourceDir(){    return MakePath(ResolveInstallPrefix(), "opticksdata", "resource" ); }
-const char* BOpticksResource::GenstepsDir(){    return MakePath(ResolveInstallPrefix(), "opticksdata", "gensteps" ); }
-const char* BOpticksResource::ExportDir(){      return MakePath(ResolveInstallPrefix(), "opticksdata", "export" ); }
+const char* BOpticksResource::OpticksAuxDir(){  return MakePath(ResolveInstallPrefix(),  IsLegacyGeometryEnabled() ? "opticksdata" : "opticksaux" ,  NULL); }
+
+const char* BOpticksResource::ResourceDir(){    return MakePath(OpticksAuxDir() , "resource", NULL ); }
+const char* BOpticksResource::GenstepsDir(){    return MakePath(OpticksAuxDir() , "gensteps", NULL ); }
+const char* BOpticksResource::ExportDir(){      return MakePath(OpticksAuxDir() , "export",  NULL  ); }
+
 
 // problematic in readonly installs : because results do not belong with install paths 
 const char* BOpticksResource::ResultsDir(){     return MakePath(ResolveResultsPrefix(), "results",  NULL); }

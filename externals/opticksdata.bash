@@ -18,7 +18,7 @@
 ##
 
 opticksdata-src(){      echo opticksdata.bash ; }
-opticksdata-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(opticksdata-src)} ; }
+opticksdata-source(){   echo $BASH_SOURCE ; }
 opticksdata-vi(){       vi $(opticksdata-source) ; }
 opticksdata-usage(){ cat << EOU
 
@@ -353,5 +353,48 @@ opticksdata-export-du()
    du -sh * 
 
 }
+
+
+
+opticksdata-cherries-(){ cat << EOC
+refractiveindex/tmp/glass/schott/F2.npy
+refractiveindex/tmp/main/H2O/Hale.npy
+gensteps/dayabay/cerenkov/1.npy
+gensteps/dayabay/scintillation/1.npy
+gensteps/juno/cerenkov/1.npy
+gensteps/juno/scintillation/1.npy
+export/juno1808/g4_00_v5.gdml
+EOC
+}
+
+opticksdata-migrate-to-opticksaux()
+{
+   local src=$(opticksdata-dir)
+   local dst=$HOME/opticksaux
+   [ ! -d "$src" ] && return 
+   [ ! -d "$dst" ] && return 
+
+    
+   local path
+   local fold
+   opticksdata-cherries- | while read path ; do
+
+       fold=$(dirname $path)
+
+       cd $src
+       [ ! -f $path ] && echo $msg src path $path missing from $src && return 
+       cd $dst 
+       [ -f $path ] && echo $msg dst path $path already exists at $dst && continue 
+ 
+       mkdir -p $fold
+       echo $msg proceed to copy $path 
+       cp $src/$path $fold/
+   done
+
+}
+
+
+
+
 
 

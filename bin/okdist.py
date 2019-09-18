@@ -55,7 +55,9 @@ class Dist(object):
              'tests',
              'integration', 
              'py', 
-             'bin' ]
+             'bin',
+             'opticksaux',
+             ]
 
     extras = [
              'opticksdata/export/juno1808/g4_00_v5.gdml',

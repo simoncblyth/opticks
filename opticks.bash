@@ -547,7 +547,7 @@ imgui
 assimp
 openmesh
 plog
-opticksdata
+opticksaux
 oimplicitmesher
 odcs
 oyoctogl

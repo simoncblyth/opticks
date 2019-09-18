@@ -30,10 +30,25 @@
 import os, logging, stat, datetime
 import numpy as np
 
+
+#from opticks.ana.debug import MyPdb
+try:
+    from IPython.core.debugger import Pdb as MyPdb
+except ImportError:
+    class MyPdb(object):
+        def set_trace(self):
+            log.error("IPython is required for ipdb.set_trace() " )
+        pass  
+    pass
+pass
+ipdb = MyPdb()
+
 try:
     import matplotlib.pyplot as plt
 except ImportError:
     plt = None
+pass
+
 
 from collections import OrderedDict as odict
 
@@ -564,6 +579,7 @@ class Evt(object):
         self.ht = ht
         self.desc['ht'] = "(hits) surface detect SD final photon steps"
 
+
         if ht.missing:return
 
         hwl = ht[:,2,W] 
@@ -576,6 +592,7 @@ class Evt(object):
         self.hflags = ht.view(np.uint32)[:,3,3]
         self.hc4 = hc4
 
+        #ipdb.set_trace() 
         self.hflags_ana = SeqAna( self.hflags, self.hismask, cnames=[self.cn], dbgseq=self.dbgmskhis, dbgzero=self.dbgzero, cmx=self.cmx, smry=self.smry)
  
         self.desc['hwl'] = "(hits) wavelength"

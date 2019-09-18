@@ -124,9 +124,14 @@ def array_digest(a):
 
 
 def count_unique_sorted(vals):
+    """
+    Older numpy has problem with the argsort line when cu is empty
+    """
     vals = vals.astype(np.uint64)
     cu = count_unique(vals) 
-    cu = cu[np.argsort(cu[:,1])[::-1]]  # descending frequency order
+    if len(cu) != 0:
+        cu = cu[np.argsort(cu[:,1])[::-1]]  # descending frequency order
+    pass
     return cu.astype(np.uint64)
 
 def vnorm(a):
@@ -324,7 +329,7 @@ def test_count_unique_sorted():
 
 
 def test_count_unique_sorted_empty():
-    log.info("test_count_unique_sorted_empty")
+    log.info("test_count_unique_sorted_empty np.__version__ %s " % np.__version__ )
     t = np.array( [], dtype=np.uint32 )
     r = count_unique_sorted( t )
 
