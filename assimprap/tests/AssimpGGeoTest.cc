@@ -99,7 +99,22 @@ int main(int argc, char** argv)
 
     ok.setGeocacheEnabled(false);  // prevent loading from any preexisting geocache, same as --nogeocache/-G option
 
+    bool legacy = Opticks::IsLegacyGeometryEnabled() ; 
+
     const char* path = ok.getDAEPath();
+
+    if(!legacy)
+    {
+        assert( path == NULL ); 
+        LOG(info) << " this test is not relevant to non-legacy running, and will be skipped in future" ; 
+        return 0 ; 
+    }
+    else
+    {
+        assert(path);
+    }   
+      
+
 
     OpticksResource* resource = ok.getResource();
 
@@ -113,7 +128,6 @@ int main(int argc, char** argv)
              << " ctrl " << ( ctrl ? ctrl : "NULL" )
              ;    
 
-    assert(path);
     assert(query);
     assert(ctrl);
 

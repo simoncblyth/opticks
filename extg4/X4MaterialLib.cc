@@ -82,6 +82,19 @@ X4MaterialLib::X4MaterialLib(G4MaterialTable* mtab, const GMaterialLib* mlib)
 }
 
 
+const char* X4MaterialLib::DD_MATERIALS_PREFIX = "/dd/Materials/" ; 
+
+/**
+X4MaterialLib::init
+---------------------
+
+* Geant4 material names with the prefix "/dd/Materials/" 
+  such as "/dd/Materials/LiquidScintillator" are regarded 
+  to match Opticks unprefixed names "LiquidScintillator".
+ 
+* Currently no name changes are made to the Geant4 materials.
+
+**/
 
 void X4MaterialLib::init()
 {
@@ -106,21 +119,27 @@ void X4MaterialLib::init()
 
         const char* pmap_name = pmap->getName(); 
         const std::string& m4_name = m4->GetName();  
-        bool name_match = strcmp( m4_name.c_str(), pmap_name) == 0 ;
+
+        bool has_prefix = strncmp( m4_name.c_str(), DD_MATERIALS_PREFIX, strlen(DD_MATERIALS_PREFIX) ) == 0 ; 
+        const char* m4_name_base = has_prefix ? m4_name.c_str() + strlen(DD_MATERIALS_PREFIX) : m4_name.c_str() ; 
+        bool name_match = strcmp( m4_name_base, pmap_name) == 0 ;
 
         LOG(info) 
              << std::setw(5) << i 
-             << " okmat " << std::setw(30) << pmap_name
-             << " g4mat " << std::setw(30) << m4_name
+             << " ok pmap_name " << std::setw(30) << pmap_name
+             << " g4 m4_name  " << std::setw(30) << m4_name
+             << " g4 m4_name_base  " << std::setw(30) << m4_name_base
+             << " has_prefix " << has_prefix 
              ;     
-
 
         if(!name_match)
             LOG(fatal) 
                 << " MATERIAL NAME MISMATCH " 
-                << " index " << i 
-                << " pmap_name " << pmap_name
-                << " m4_name " << m4_name
+                << std::setw(5) << i 
+                << " ok pmap_name " << std::setw(30) << pmap_name
+                << " g4 m4_name  " << std::setw(30) << m4_name
+                << " g4 m4_name_base  " << std::setw(30) << m4_name_base
+                << " has_prefix " << has_prefix 
                 ;
 
         assert(name_match ); 

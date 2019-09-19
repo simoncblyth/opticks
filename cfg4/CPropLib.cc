@@ -109,7 +109,7 @@ void CPropLib::init()
 
     initCheckConstants(); 
 
-    initSetupOverrides();
+    //initSetupOverrides();
  
     //convert();
     LOG(LEVEL) << "]" ; 
@@ -204,13 +204,20 @@ G4LogicalBorderSurface* CPropLib::makeConstantSurface(const char* name, G4VPhysi
     return lbs ; 
 }
 
+/**
+CPropLib::makeCathodeSurface
+------------------------------
+
+dielectric_metal is required so DsG4OpBoundaryProcess can doAbsorption 
+where EFFICIENCY is consulted and detect can happen
+
+**/
+
 G4LogicalBorderSurface* CPropLib::makeCathodeSurface(const char* name, G4VPhysicalVolume* pv1, G4VPhysicalVolume* pv2)
 {
     G4OpticalSurface* os = makeOpticalSurface(name);
-    os->SetType(dielectric_metal); 
-    // dielectric_metal is required so DsG4OpBoundaryProcess can doAbsorption 
-    // where EFFICIENCY is consulted and detect can happen
-
+    os->SetType(dielectric_metal);
+ 
     GProperty<float>* detect = m_sensor_surface->getProperty("detect"); assert(detect);
     GProperty<float>* reflectivity = m_mlib->makeConstantProperty(0.f);
 
@@ -234,8 +241,11 @@ This gets invoked from CGDMLDetector::addMPTLegacyGDML
 bringing together the geometry from ancient GDML 
 with the material properties from ancient G4DAE.
 
-**/
+Materials with name "Bialkali" are termed sensor materials
+and when present a sensor surface is required to be 
+in the surface lib.
 
+**/
 
 G4MaterialPropertiesTable* CPropLib::makeMaterialPropertiesTable(const GMaterial* ggmat)
 {
@@ -245,58 +255,88 @@ G4MaterialPropertiesTable* CPropLib::makeMaterialPropertiesTable(const GMaterial
     bool is_sensor_material = strcmp(name, SENSOR_MATERIAL) == 0 ;
     bool is_scintillator = _ggmat->hasNonZeroProperty("reemission_prob") ;
 
-    LOG(debug) 
+    LOG(LEVEL) 
          << " name " << name
          << " " << ( is_sensor_material ? "is_sensor_material" : "" ) 
          << " " << ( is_scintillator ? "is_scintillator" : "" ) 
-          ; 
+         ; 
         
     G4MaterialPropertiesTable* mpt = new G4MaterialPropertiesTable();
     addProperties(mpt, _ggmat, "RINDEX,ABSLENGTH,RAYLEIGH,REEMISSIONPROB,GROUPVEL");
 
     if(is_sensor_material)
     {
-        GPropertyMap<float>* surf = m_sensor_surface ; 
-
-        if(!surf)
-        {
-            LOG(fatal) << "CPropLib::makeMaterialPropertiesTable"  
-                       << " material with SENSOR_MATERIAL name " << name 
-                       << " but no sensor_surface "
-                       ; 
-            LOG(fatal) << "m_sensor_surface is obtained from slib at CPropLib::init " 
-                       << " when Bialkai material is in the mlib " 
-                       << " it is required for a sensor surface (with EFFICIENCY/detect) property "
-                       << " to be in the slib " 
-                       ;
-        }
-        assert(surf);
-
-        LOG(error) 
-             << " name " << name 
-             << " adding EFFICIENCY : START " << surf->brief() ;  
-
-        //surf->dump("transfer detect to EFFICIENCY");
-
-
-        GProperty<float>* detect = surf->getProperty("detect"); 
-        assert( detect ); 
-
-        //addProperties(mpt, surf, "EFFICIENCY");
-        addProperty( mpt, name, "EFFICIENCY", detect );   // name arg is for debug only 
-
-        //CMPT::Dump(mpt);
-
-        assert( CMPT::HasProperty(mpt, "EFFICIENCY")) ; 
-        // REFLECTIVITY ?
+        addSensorMaterialProperties(mpt, name ) ; 
     }
-
     if(is_scintillator)
     {
         addScintillatorMaterialProperties(mpt, name ) ; 
     }
     return mpt ;
 }
+
+
+/**
+CPropLib::addSensorMaterialProperties
+----------------------------------------
+
+For sensor materials, currently those with name "Bialkali" 
+it is required that a surface surface has been collected 
+into the surface lib.  That sensor surface must have a
+"detect" property that is taken from the surface and
+added as an EFFICIENCY property into the G4MaterialPropertiesTable.
+
+Hmm suspect (eg due to hardcoded Bialkali name) this may be a remnant 
+of fixup for the peculiar mixture of GDML and G4DAE geometry information 
+that was used in the legacy workflow in the era before Geant4 
+persisted material properties in GDML. 
+
+It might have been needed only for that first generation ?
+
+Relevant discussion in: 
+
+* :doc:`notes/issues/direct_route_needs_AssimpGGeo_convertSensors_equivalent`
+
+  
+**/
+
+void CPropLib::addSensorMaterialProperties( G4MaterialPropertiesTable* mpt, const char* name )
+{
+    GPropertyMap<float>* surf = m_sensor_surface ; 
+
+    if(!surf)
+    {
+        LOG(fatal) 
+            << " material with SENSOR_MATERIAL name " << name 
+            << " but no sensor_surface "
+            ; 
+        LOG(fatal) 
+            << "m_sensor_surface is obtained from slib at CPropLib::init " 
+            << " when Bialkali material is in the mlib " 
+            << " it is required for a sensor surface (with EFFICIENCY/detect) property "
+            << " to be in the slib " 
+            ;
+    }
+    assert(surf);
+
+    LOG(error) 
+         << " name " << name 
+         << " adding EFFICIENCY : START " << surf->brief() ;  
+
+    //surf->dump("transfer detect to EFFICIENCY");
+
+    GProperty<float>* detect = surf->getProperty("detect"); 
+    assert( detect ); 
+
+    //addProperties(mpt, surf, "EFFICIENCY");
+    addProperty( mpt, name, "EFFICIENCY", detect );   // name arg is for debug only 
+
+    //CMPT::Dump(mpt);
+
+    assert( CMPT::HasProperty(mpt, "EFFICIENCY")) ; 
+    // REFLECTIVITY ?
+}
+
 
 
 /**

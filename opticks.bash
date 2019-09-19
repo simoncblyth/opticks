@@ -1409,6 +1409,7 @@ x4-(){              . $(opticks-home)/extg4/x4.bash  && x4-env $* ; }
 x4gen-(){           . $(opticks-home)/extg4/x4gen.bash  && x4gen-env $* ; }
 yog-(){             . $(opticks-home)/yoctoglrap/yog.bash && yog-env $* ; }
 
+integration-(){     . $(opticks-home)/integration/integration.bash && integration-env $* ; }
 
 
 ## opticks misc including python analysis/debugging ##

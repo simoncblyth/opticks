@@ -104,6 +104,7 @@ class CFG4_API CPropLib {
        GPropertyMap<float>* convertTable(G4MaterialPropertiesTable* mpt, const char* name);
        GPropertyMap<float>* convertTable_OLD(G4MaterialPropertiesTable* mpt, const char* name);
    private:
+       void addSensorMaterialProperties( G4MaterialPropertiesTable* mpt, const char* name ); 
        void addScintillatorMaterialProperties( G4MaterialPropertiesTable* mpt, const char* name ); 
    protected:
        OpticksHub*        m_hub ; 

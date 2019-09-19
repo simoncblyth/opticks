@@ -36,7 +36,12 @@
 
 const plog::Severity GMeshLib::LEVEL = debug ; 
 
-const unsigned GMeshLib::MAX_MESH = 250 ;   // <-- hmm 500 too large ? it means a lot of filesystem checking 
+const unsigned GMeshLib::MAX_MESH = 300 ;   // <-- hmm 500 too large ? it means a lot of filesystem checking 
+/**
+TODO: be more clever about the introspection to avoid the filesystem checking for every index
+**/
+
+
 
 const char* GMeshLib::GMESHLIB = "GMeshLib" ; 
 const char* GMeshLib::GMESHLIB_LIST = "GMeshLib" ; 
@@ -165,6 +170,15 @@ void GMeshLib::saveAltReferences()
 
     }
 }
+
+
+/**
+GMeshLib::loadAltReferences
+-----------------------------
+
+
+**/
+
 
 void GMeshLib::loadAltReferences() 
 {

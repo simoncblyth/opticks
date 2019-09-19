@@ -609,3 +609,583 @@ No geo selection, means that very old huge world problem again.
 
 
 
+
+OKTest : non-legacy with the newly created DYB geocache
+-----------------------------------------------------------
+
+vip::
+
+    146 export OPTICKS_KEY_JV5=OKX4Test.X4PhysicalVolume.lWorld0x4bc2710_PV.f6cc352e44243f8fa536ab483ad390ce   ## geocache-j1808-v5-export 
+    147 export OPTICKS_KEY_DYBXTMP=OKX4Test.X4PhysicalVolume.World0xc15cfc00x5d42890_PV.5aa828335373870398bf4f738781da6c
+    148 export OPTICKS_KEY=$OPTICKS_KEY_DYBXTMP
+    149 unset OPTICKS_LEGACY_GEOMETRY_ENABLED
+    150 #export OPTICKS_LEGACY_GEOMETRY_ENABLED=1
+
+
+::
+    
+    OKTest
+
+    /home/blyth/opticks/ggeo/GMeshLib.cc:181: void GMeshLib::loadAltReferences(): Assertion `unsigned(altindex) < m_meshes.size()' failed.
+    
+    Program received signal SIGABRT, Aborted.
+    (gdb) bt
+    ...
+    #4  0x00007ffff50e5c8b in GMeshLib::loadAltReferences (this=0x1a1ee00) at /home/blyth/opticks/ggeo/GMeshLib.cc:181
+    #5  0x00007ffff50e5614 in GMeshLib::loadFromCache (this=0x1a1ee00) at /home/blyth/opticks/ggeo/GMeshLib.cc:71
+    #6  0x00007ffff50e555d in GMeshLib::Load (ok=0x626840) at /home/blyth/opticks/ggeo/GMeshLib.cc:59
+    #7  0x00007ffff50da828 in GGeo::loadFromCache (this=0x653e40) at /home/blyth/opticks/ggeo/GGeo.cc:898
+    #8  0x00007ffff50d8b5f in GGeo::loadGeometry (this=0x653e40) at /home/blyth/opticks/ggeo/GGeo.cc:626
+    #9  0x00007ffff64e1cff in OpticksGeometry::loadGeometryBase (this=0x653730) at /home/blyth/opticks/opticksgeo/OpticksGeometry.cc:156
+    #10 0x00007ffff64e1723 in OpticksGeometry::loadGeometry (this=0x653730) at /home/blyth/opticks/opticksgeo/OpticksGeometry.cc:98
+    #11 0x00007ffff64e640a in OpticksHub::loadGeometry (this=0x640bd0) at /home/blyth/opticks/opticksgeo/OpticksHub.cc:546
+    #12 0x00007ffff64e4e4e in OpticksHub::init (this=0x640bd0) at /home/blyth/opticks/opticksgeo/OpticksHub.cc:253
+    #13 0x00007ffff64e4b3f in OpticksHub::OpticksHub (this=0x640bd0, ok=0x626840) at /home/blyth/opticks/opticksgeo/OpticksHub.cc:217
+    #14 0x00007ffff7bd59cf in OKMgr::OKMgr (this=0x7fffffffd780, argc=1, argv=0x7fffffffd8f8, argforced=0x0) at /home/blyth/opticks/ok/OKMgr.cc:54
+    #15 0x0000000000402ead in main (argc=1, argv=0x7fffffffd8f8) at /home/blyth/opticks/ok/tests/OKTest.cc:32
+    (gdb) 
+
+
+::
+
+    (gdb) f 5
+    #5  0x00007ffff50e5614 in GMeshLib::loadFromCache (this=0x1a1ee00) at /home/blyth/opticks/ggeo/GMeshLib.cc:71
+    71      loadAltReferences();  
+    (gdb) list
+    66  
+    67      m_meshnames = GItemList::Load(idpath, GMESHLIB_LIST, "GItemList" ) ;
+    68      assert(m_meshnames);
+    69  
+    70      loadMeshes(idpath);
+    71      loadAltReferences();  
+    72  }
+    73  
+    74  void GMeshLib::save() 
+    75  {
+    (gdb) p idpath
+    $1 = 0x650cb0 "/home/blyth/.opticks/geocache/OKX4Test_World0xc15cfc00x5d42890_PV_g4live/g4ok_gltf/5aa828335373870398bf4f738781da6c/1"
+    (gdb) 
+
+
+    (gdb) f 4
+    #4  0x00007ffff50e5c8b in GMeshLib::loadAltReferences (this=0x1a1ee00) at /home/blyth/opticks/ggeo/GMeshLib.cc:181
+    181         assert( unsigned(altindex) < m_meshes.size() ); 
+    (gdb) p altindex
+    $2 = 250
+    (gdb) p m_meshes.size()
+    $3 = 250
+    (gdb) 
+
+
+
+Hmm quite a few altindex out of range ?::
+
+    (gdb) p m_solids[249]->get_altindex()
+    $14 = 0
+    (gdb) p i
+    $15 = 56
+    (gdb) p m_solids[56]->get_altindex()
+    $16 = 250
+    (gdb) p m_solids[55]->get_altindex()
+    $17 = -1
+    (gdb) p m_solids[57]->get_altindex()
+    $18 = 251
+    (gdb) p m_solids[58]->get_altindex()
+    $19 = 252
+    (gdb) p m_solids[59]->get_altindex()
+    $20 = 253
+    (gdb) p m_solids[60]->get_altindex()
+    $21 = 254
+    (gdb) p m_solids[61]->get_altindex()
+    $22 = 255
+    (gdb) p m_solids[62]->get_altindex()
+    $23 = 256
+    (gdb) p m_solids[63]->get_altindex()
+    $24 = -1
+    (gdb) p m_solids[64]->get_altindex()
+    $25 = -1
+    (gdb) p m_solids[65]->get_altindex()
+    $26 = 257
+    (gdb) p m_solids[66]->get_altindex()
+    $27 = -1
+    (gdb) p m_solids[67]->get_altindex()
+    $28 = -1
+    (gdb) p m_solids[68]->get_altindex()
+    $29 = -1
+    (gdb) p m_solids[69]->get_altindex()
+    $30 = 258
+    (gdb) p m_solids[70]->get_altindex()
+    $31 = -1
+    (gdb) p m_solids[75]->get_altindex()
+    $36 = -1
+    (gdb) 
+
+
+Looks like MAX_MESH problem ?::
+
+     37 const plog::Severity GMeshLib::LEVEL = debug ;
+     38 
+     39 const unsigned GMeshLib::MAX_MESH = 250 ;   // <-- hmm 500 too large ? it means a lot of filesystem checking 
+     40 
+     41
+
+
+
+From perusing the geocache looks like 300 would be enough, but may have been effects precache : so up to 300 and export again.
+
+::
+
+    [blyth@localhost issues]$ geocache-
+    [blyth@localhost issues]$ geocache-kcd
+    /home/blyth/.opticks/geocache/OKX4Test_World0xc15cfc00x5d42890_PV_g4live/g4ok_gltf/5aa828335373870398bf4f738781da6c/1
+    rundate
+    20190918_224845
+    runstamp
+    1568818125
+    argline
+    /home/blyth/local/opticks/lib/OKX4Test --okx4 --g4codegen --deletegeocache --gdmlpath /home/blyth/local/opticks/tmp/CGeometry/CGeometry.gdml --runfolder geocache-dxtmp --runcomment gdml-insitu-created-by-OKG4Test-export --x4polyskip 211,232 
+    runcomment
+    gdml-insitu-created-by-OKG4Test-export
+    runlabel
+    R0_cvd_1
+    runfolder
+    geocache-dxtmp
+    [blyth@localhost 1]$ pwd
+    /home/blyth/.opticks/geocache/OKX4Test_World0xc15cfc00x5d42890_PV_g4live/g4ok_gltf/5aa828335373870398bf4f738781da6c/1
+    [blyth@localhost 1]$ 
+
+
+
+
+Up to 300, export and create geocache again
+-----------------------------------------------
+
+
+Rebuild with limit upped to 300::
+
+    o
+    om--
+
+Switch back to legacy geometry mode (vip)::
+
+    export OPTICKS_LEGACY_GEOMETRY_ENABLED=1 
+    ini
+
+    OKTest   # check get the usual DYB geometry via legacy route, resource handling revolves around G4DAE path in legacy 
+
+    OKG4Test --export    # OKG4Test uses CG4 functionality to load the old GDML, merge in info from G4DAE
+
+    ## exports the GDML
+
+::
+
+    [blyth@localhost opticks]$ opticksdata-
+    [blyth@localhost opticks]$ opticksdata-dxtmp
+    /home/blyth/local/opticks/tmp/CGeometry/CGeometry.gdml
+    [blyth@localhost opticks]$ l $(opticksdata-dxtmp)
+    -rw-rw-r--. 1 blyth blyth 4544475 Sep 19 18:37 /home/blyth/local/opticks/tmp/CGeometry/CGeometry.gdml
+     
+
+Now switch to non-legacy (vip) and create geocache::
+
+
+    150 unset OPTICKS_LEGACY_GEOMETRY_ENABLED 
+    151 #export OPTICKS_LEGACY_GEOMETRY_ENABLED=1
+
+    ini
+
+    geocache- ; geocache-dxtmp --x4polyskip 211,232
+
+
+* there are 0:248 (ie 249) distinct solids but there are altmesh for 23 of those : so total of 249+23=272 
+  (if i recall correctly the alt meshes are to simulataneously keep balanced and unbalanced geometry)
+
+
+::
+
+    2019-09-19 18:42:23.581 INFO  [107750] [GMeshLib::addAltMeshes@116]  num_indices_with_alt 23
+    2019-09-19 18:42:23.581 INFO  [107750] [GMeshLib::addAltMeshes@126]  index with alt 0
+    2019-09-19 18:42:23.581 INFO  [107750] [GMeshLib::addAltMeshes@126]  index with alt 56
+    2019-09-19 18:42:23.581 INFO  [107750] [GMeshLib::addAltMeshes@126]  index with alt 57
+    2019-09-19 18:42:23.581 INFO  [107750] [GMeshLib::addAltMeshes@126]  index with alt 58
+    2019-09-19 18:42:23.581 INFO  [107750] [GMeshLib::addAltMeshes@126]  index with alt 59
+    2019-09-19 18:42:23.581 INFO  [107750] [GMeshLib::addAltMeshes@126]  index with alt 60
+    2019-09-19 18:42:23.581 INFO  [107750] [GMeshLib::addAltMeshes@126]  index with alt 61
+    2019-09-19 18:42:23.581 INFO  [107750] [GMeshLib::addAltMeshes@126]  index with alt 62
+    2019-09-19 18:42:23.581 INFO  [107750] [GMeshLib::addAltMeshes@126]  index with alt 65
+    2019-09-19 18:42:23.581 INFO  [107750] [GMeshLib::addAltMeshes@126]  index with alt 69
+    2019-09-19 18:42:23.581 INFO  [107750] [GMeshLib::addAltMeshes@126]  index with alt 105
+    2019-09-19 18:42:23.581 INFO  [107750] [GMeshLib::addAltMeshes@126]  index with alt 112
+    2019-09-19 18:42:23.581 INFO  [107750] [GMeshLib::addAltMeshes@126]  index with alt 132
+    2019-09-19 18:42:23.581 INFO  [107750] [GMeshLib::addAltMeshes@126]  index with alt 140
+    2019-09-19 18:42:23.581 INFO  [107750] [GMeshLib::addAltMeshes@126]  index with alt 142
+    2019-09-19 18:42:23.581 INFO  [107750] [GMeshLib::addAltMeshes@126]  index with alt 145
+    2019-09-19 18:42:23.581 INFO  [107750] [GMeshLib::addAltMeshes@126]  index with alt 200
+    2019-09-19 18:42:23.581 INFO  [107750] [GMeshLib::addAltMeshes@126]  index with alt 211
+    2019-09-19 18:42:23.581 INFO  [107750] [GMeshLib::addAltMeshes@126]  index with alt 213
+    2019-09-19 18:42:23.581 INFO  [107750] [GMeshLib::addAltMeshes@126]  index with alt 232
+    2019-09-19 18:42:23.581 INFO  [107750] [GMeshLib::addAltMeshes@126]  index with alt 234
+    2019-09-19 18:42:23.581 INFO  [107750] [GMeshLib::addAltMeshes@126]  index with alt 236
+    2019-09-19 18:42:23.581 INFO  [107750] [GMeshLib::addAltMeshes@126]  index with alt 245
+    2019-09-19 18:42:23.581 INFO  [107750] [GMeshLib::dump@227] addAltMeshes meshnames 272 meshes 272
+
+     i   0 aidx   0 midx   0 name               near_top_cover_box0xc23f9700x42cebb0 mesh  nv     34 nf     64
+     i   1 aidx   1 midx   1 name                         RPCStrip0xc04bcb00x42cea80 mesh  nv      8 nf     12
+     i   2 aidx   2 midx   2 name                      RPCGasgap140xbf4c6600x42ceb50 mesh  nv      8 nf     12
+
+     i  56 aidx  56 midx  56 name                 RadialShieldUnit0xc3d7da80x42db120 mesh  nv    304 nf    628
+     i  57 aidx  57 midx  57 name                    TopESRCutHols0xbf9de100x42e5980 mesh  nv    578 nf   1188
+
+     i  58 aidx  58 midx  58 name                 TopRefGapCutHols0xbf9cef80x42e6860 mesh  nv    296 nf    608
+     i  59 aidx  59 midx  59 name                    TopRefCutHols0xbf9bd500x42e7710 mesh  nv    296 nf    608
+     i  60 aidx  60 midx  60 name                    BotESRCutHols0xbfa73680x42e8e30 mesh  nv    330 nf    688
+     i  61 aidx  61 midx  61 name                 BotRefGapCutHols0xc34bb280x42e9b20 mesh  nv    144 nf    304
+     i  62 aidx  62 midx  62 name                       BotRefHols0xc3cd3800x42ea7c0 mesh  nv    144 nf    304
+
+     i  65 aidx  65 midx  65 name                 SstBotCirRibBase0xc26e2d00x42eba20 mesh  nv     16 nf     28
+     i  69 aidx  69 midx  69 name                 SstTopCirRibBase0xc264f780x42ee5b0 mesh  nv     34 nf     64
+
+     i 105 aidx 105 midx 105 name                  led-source-assy0xc3061d00x42fa480 mesh  nv   1022 nf   2016
+     i 112 aidx 112 midx 112 name                      source-assy0xc2d5d780x42fda80 mesh  nv   1022 nf   2016
+     i 132 aidx 132 midx 132 name              amcco60-source-assy0xc0b1df80x43026c0 mesh  nv   1022 nf   2016
+     i 140 aidx 140 midx 140 name                        LsoOflTnk0xc17d9280x4303ab0 mesh  nv    488 nf    976
+     i 142 aidx 142 midx 142 name                        GdsOflTnk0xc3d51600x4305940 mesh  nv    880 nf   1760
+     i 145 aidx 145 midx 145 name                  OflTnkContainer0xc17cf500x4307970 mesh  nv    344 nf    672
+
+     i 200 aidx 200 midx 200 name                  table_panel_box0xc00f5580x430c870 mesh  nv     58 nf    116
+     i 211 aidx 211 midx 211 name    PLACEHOLDER_near_pool_iws_box0xc288ce80x430fa20 mesh  nv     36 nf     12
+     i 213 aidx 213 midx 213 name            near_pool_curtain_box0xc2cef480x4310760 mesh  nv     34 nf     64
+
+     i 232 aidx 232 midx 232 name    PLACEHOLDER_near_pool_ows_box0xbf8c8a80x4317310 mesh  nv     36 nf     12
+     i 234 aidx 234 midx 234 name              near_pool_liner_box0xc2dcc280x4318080 mesh  nv     34 nf     64
+     i 236 aidx 236 midx 236 name               near_pool_dead_box0xbf8a2800x4318dd0 mesh  nv     34 nf     64
+
+     i 245 aidx 245 midx 245 name               near-radslab-box-90xcd31ea00x4319f60 mesh  nv     34 nf     64
+
+    2019-09-19 18:42:23.584 ERROR [107750] [GMeshLib::getMeshSimple@321]  mesh indices do not match  m_meshes index 249 mesh.index 0
+     i 249 aidx   0 midx   0 name               near_top_cover_box0xc23f9700x42cebb0 mesh  nv     34 nf     64
+    2019-09-19 18:42:23.584 ERROR [107750] [GMeshLib::getMeshSimple@321]  mesh indices do not match  m_meshes index 250 mesh.index 56
+     i 250 aidx  56 midx  56 name                 RadialShieldUnit0xc3d7da80x42db120 mesh  nv    304 nf    628
+    2019-09-19 18:42:23.584 ERROR [107750] [GMeshLib::getMeshSimple@321]  mesh indices do not match  m_meshes index 251 mesh.index 57
+     i 251 aidx  57 midx  57 name                    TopESRCutHols0xbf9de100x42e5980 mesh  nv    578 nf   1188
+    2019-09-19 18:42:23.584 ERROR [107750] [GMeshLib::getMeshSimple@321]  mesh indices do not match  m_meshes index 252 mesh.index 58
+     i 252 aidx  58 midx  58 name                 TopRefGapCutHols0xbf9cef80x42e6860 mesh  nv    296 nf    608
+    2019-09-19 18:42:23.584 ERROR [107750] [GMeshLib::getMeshSimple@321]  mesh indices do not match  m_meshes index 253 mesh.index 59
+     i 253 aidx  59 midx  59 name                    TopRefCutHols0xbf9bd500x42e7710 mesh  nv    296 nf    608
+    2019-09-19 18:42:23.585 ERROR [107750] [GMeshLib::getMeshSimple@321]  mesh indices do not match  m_meshes index 254 mesh.index 60
+     i 254 aidx  60 midx  60 name                    BotESRCutHols0xbfa73680x42e8e30 mesh  nv    330 nf    688
+    2019-09-19 18:42:23.585 ERROR [107750] [GMeshLib::getMeshSimple@321]  mesh indices do not match  m_meshes index 255 mesh.index 61
+     i 255 aidx  61 midx  61 name                 BotRefGapCutHols0xc34bb280x42e9b20 mesh  nv    144 nf    304
+    2019-09-19 18:42:23.585 ERROR [107750] [GMeshLib::getMeshSimple@321]  mesh indices do not match  m_meshes index 256 mesh.index 62
+     i 256 aidx  62 midx  62 name                       BotRefHols0xc3cd3800x42ea7c0 mesh  nv    144 nf    304
+    2019-09-19 18:42:23.585 ERROR [107750] [GMeshLib::getMeshSimple@321]  mesh indices do not match  m_meshes index 257 mesh.index 65
+     i 257 aidx  65 midx  65 name                 SstBotCirRibBase0xc26e2d00x42eba20 mesh  nv     16 nf     28
+    2019-09-19 18:42:23.585 ERROR [107750] [GMeshLib::getMeshSimple@321]  mesh indices do not match  m_meshes index 258 mesh.index 69
+     i 258 aidx  69 midx  69 name                 SstTopCirRibBase0xc264f780x42ee5b0 mesh  nv     34 nf     64
+    2019-09-19 18:42:23.585 ERROR [107750] [GMeshLib::getMeshSimple@321]  mesh indices do not match  m_meshes index 259 mesh.index 105
+     i 259 aidx 105 midx 105 name                  led-source-assy0xc3061d00x42fa480 mesh  nv   1022 nf   2016
+    2019-09-19 18:42:23.585 ERROR [107750] [GMeshLib::getMeshSimple@321]  mesh indices do not match  m_meshes index 260 mesh.index 112
+     i 260 aidx 112 midx 112 name                      source-assy0xc2d5d780x42fda80 mesh  nv   1022 nf   2016
+    2019-09-19 18:42:23.585 ERROR [107750] [GMeshLib::getMeshSimple@321]  mesh indices do not match  m_meshes index 261 mesh.index 132
+     i 261 aidx 132 midx 132 name              amcco60-source-assy0xc0b1df80x43026c0 mesh  nv   1022 nf   2016
+    2019-09-19 18:42:23.585 ERROR [107750] [GMeshLib::getMeshSimple@321]  mesh indices do not match  m_meshes index 262 mesh.index 140
+     i 262 aidx 140 midx 140 name                        LsoOflTnk0xc17d9280x4303ab0 mesh  nv    488 nf    976
+    2019-09-19 18:42:23.585 ERROR [107750] [GMeshLib::getMeshSimple@321]  mesh indices do not match  m_meshes index 263 mesh.index 142
+     i 263 aidx 142 midx 142 name                        GdsOflTnk0xc3d51600x4305940 mesh  nv    880 nf   1760
+    2019-09-19 18:42:23.585 ERROR [107750] [GMeshLib::getMeshSimple@321]  mesh indices do not match  m_meshes index 264 mesh.index 145
+     i 264 aidx 145 midx 145 name                  OflTnkContainer0xc17cf500x4307970 mesh  nv    344 nf    672
+    2019-09-19 18:42:23.585 ERROR [107750] [GMeshLib::getMeshSimple@321]  mesh indices do not match  m_meshes index 265 mesh.index 200
+     i 265 aidx 200 midx 200 name                  table_panel_box0xc00f5580x430c870 mesh  nv     58 nf    116
+    2019-09-19 18:42:23.585 ERROR [107750] [GMeshLib::getMeshSimple@321]  mesh indices do not match  m_meshes index 266 mesh.index 211
+     i 266 aidx 211 midx 211 name    PLACEHOLDER_near_pool_iws_box0xc288ce80x430fa20 mesh  nv     36 nf     12
+    2019-09-19 18:42:23.585 ERROR [107750] [GMeshLib::getMeshSimple@321]  mesh indices do not match  m_meshes index 267 mesh.index 213
+     i 267 aidx 213 midx 213 name            near_pool_curtain_box0xc2cef480x4310760 mesh  nv     34 nf     64
+    2019-09-19 18:42:23.585 ERROR [107750] [GMeshLib::getMeshSimple@321]  mesh indices do not match  m_meshes index 268 mesh.index 232
+     i 268 aidx 232 midx 232 name    PLACEHOLDER_near_pool_ows_box0xbf8c8a80x4317310 mesh  nv     36 nf     12
+    2019-09-19 18:42:23.585 ERROR [107750] [GMeshLib::getMeshSimple@321]  mesh indices do not match  m_meshes index 269 mesh.index 234
+     i 269 aidx 234 midx 234 name              near_pool_liner_box0xc2dcc280x4318080 mesh  nv     34 nf     64
+    2019-09-19 18:42:23.585 ERROR [107750] [GMeshLib::getMeshSimple@321]  mesh indices do not match  m_meshes index 270 mesh.index 236
+     i 270 aidx 236 midx 236 name               near_pool_dead_box0xbf8a2800x4318dd0 mesh  nv     34 nf     64
+    2019-09-19 18:42:23.585 ERROR [107750] [GMeshLib::getMeshSimple@321]  mesh indices do not match  m_meshes index 271 mesh.index 245
+     i 271 aidx 245 midx 245 name               near-radslab-box-90xcd31ea00x4319f60 mesh  nv     34 nf     64
+
+
+
+Update the key, the digest is the same but the world pointer changed::
+
+    2019-09-19 18:42:23.776 INFO  [107750] [Opticks::reportGeoCacheCoordinates@933]  (envvar) OPTICKS_KEY=OKX4Test.X4PhysicalVolume.World0xc15cfc00x5d42890_PV.5aa828335373870398bf4f738781da6c
+    2019-09-19 18:42:23.776 INFO  [107750] [Opticks::reportGeoCacheCoordinates@934]  (live)   OPTICKS_KEY=OKX4Test.X4PhysicalVolume.World0xc15cfc00x4552410_PV.5aa828335373870398bf4f738781da6c
+
+
+Try to run with recreated geocache::
+
+    OKTest 
+      * cannot find geometry, world too large problem
+      * starting the propagation animation shows are positioned at photon source position
+
+    OKTest --geocenter
+      * the source is at the center of the world box, which for DYB is a bizarre location off in nowhere  
+
+    OKTest --target 2 --xanalytic
+      * find analytic geometry, but the test photon source is strangely placed   
+      * no geo selection, see RPC and other above pool volumes 
+
+    OKTest --target 3152 --xanalytic 
+      * familiar DYB viewpoint
+      * photon source still at center of world box, way off nowhere 
+
+
+TODO
+------
+
+* how to target a sensible volume for the photon source ?
+
+
+Thinking about copying this geocache to shared for "simon" testing
+-------------------------------------------------------------------------
+
+::
+
+    [blyth@localhost geocache]$ l
+    total 0
+    drwxrwxr-x. 3 blyth blyth 23 Sep 19 18:41 OKX4Test_World0xc15cfc00x4552410_PV_g4live
+    drwxrwxr-x. 3 blyth blyth 23 Sep 18 22:22 OKX4Test_World0xc15cfc00x5d42890_PV_g4live
+    drwxrwxr-x. 3 blyth blyth 23 Aug 30  2018 OKX4Test_lWorld0x4bc2710_PV_g4live
+    drwxrwxr-x. 3 blyth blyth 23 Aug 23  2018 CerenkovMinimal_World_g4live
+    drwxrwxr-x. 3 blyth blyth 23 Aug 12  2018 OKX4Test_World0xc15cfc0_PV_g4live
+    drwxrwxr-x. 3 blyth blyth 23 Jul 16  2018 X4PhysicalVolumeTest_World_g4live
+    drwxrwxr-x. 4 blyth blyth 36 Jul  6  2018 DayaBay_VGDX_20140414-1300
+    [blyth@localhost geocache]$ pwd
+    /home/blyth/.opticks/geocache
+
+
+Its not appropriate to do that due to poor audit control of this geocache, the gdmlpath is 
+not a permanent one : so this geocache is not easily reproducible. Need to mint 
+a proper "permanent" GDML path and then recreate the geocache with a bash function
+named for this purpose.
+
+::
+
+    blyth@localhost opticks]$ ini
+    [blyth@localhost opticks]$ kcd
+    /home/blyth/.opticks/geocache/OKX4Test_World0xc15cfc00x4552410_PV_g4live/g4ok_gltf/5aa828335373870398bf4f738781da6c/1
+    rundate
+    20190919_184141
+    runstamp
+    1568889701
+    argline
+    /home/blyth/local/opticks/lib/OKX4Test --okx4 --g4codegen --deletegeocache --gdmlpath /home/blyth/local/opticks/tmp/CGeometry/CGeometry.gdml --runfolder geocache-dxtmp --runcomment gdml-insitu-created-by-OKG4Test-export --x4polyskip 211,232 
+    runcomment
+    gdml-insitu-created-by-OKG4Test-export
+    runlabel
+    R0_cvd_1
+    runfolder
+    geocache-dxtmp
+    [blyth@localhost 1]$ 
+
+
+
+
+
+check legacy opticks-t with default old DYB geometry
+-------------------------------------------------------------
+
+Switch back to legacy::
+
+    FAILS:  3   / 415   :  Thu Sep 19 19:46:07 2019   
+      4  /24  Test #4  : OptiXRapTest.Roots3And4Test                   Child aborted***Exception:     1.27   
+      21 /24  Test #21 : OptiXRapTest.intersectAnalyticTest.iaTorusTest Child aborted***Exception:     1.39   
+          known  
+
+      2  /2   Test #2  : IntegrationTests.tboolean.box                 ***Failed                      15.27  
+          analysis fail from commenting  WITH_LOGDOUBLE 
+
+
+
+non-legacy mode opticks-t with the new tmp geocache and key
+-------------------------------------------------------------
+
+::
+
+    FAILS:  17  / 415   :  Thu Sep 19 19:41:54 2019   
+      3  /3   Test #3  : AssimpRapTest.AssimpGGeoTest                  Child aborted***Exception:     0.10   
+      3  /3   Test #3  : OpticksGeoTest.OpenMeshRapTest                Child aborted***Exception:     0.09   
+
+         skip these fail to access DAE with message :
+               this test is not relevant to non-legacy running and will be skipped in future 
+
+      4  /24  Test #4  : OptiXRapTest.Roots3And4Test                   Child aborted***Exception:     1.25   
+      21 /24  Test #21 : OptiXRapTest.intersectAnalyticTest.iaTorusTest Child aborted***Exception:     1.30   
+
+          known  
+
+      1  /34  Test #1  : CFG4Test.CMaterialLibTest                     Child aborted***Exception:     5.12   
+      2  /34  Test #2  : CFG4Test.CMaterialTest                        Child aborted***Exception:     4.97   
+      3  /34  Test #3  : CFG4Test.CTestDetectorTest                    Child aborted***Exception:     5.83   
+      5  /34  Test #5  : CFG4Test.CGDMLDetectorTest                    Child aborted***Exception:     5.68   
+      6  /34  Test #6  : CFG4Test.CGeometryTest                        Child aborted***Exception:     5.78   
+      7  /34  Test #7  : CFG4Test.CG4Test                              Child aborted***Exception:     5.81   
+      23 /34  Test #23 : CFG4Test.CInterpolationTest                   Child aborted***Exception:     5.79   
+      25 /34  Test #25 : CFG4Test.CGROUPVELTest                        Child aborted***Exception:     5.02   
+      29 /34  Test #29 : CFG4Test.CRandomEngineTest                    Child aborted***Exception:     5.87   
+      32 /34  Test #32 : CFG4Test.CCerenkovGeneratorTest               Child aborted***Exception:     5.04   
+      33 /34  Test #33 : CFG4Test.CGenstepSourceTest                   Child aborted***Exception:     5.00   
+      1  /1   Test #1  : OKG4Test.OKG4Test                             Child aborted***Exception:     5.82   
+
+          all these 12 cause by the below two issues   
+          
+
+      2  /2   Test #2  : IntegrationTests.tboolean.box                 ***Failed                      15.05  
+           same analysis fail   
+
+
+
+
+    
+
+non-legacy OKG4Test name match fail from DYB prefix
+----------------------------------------------------------
+
+* fixed by comparing unprefixed names for g4 materials with names 
+  prefixed with "/dd/Materials/"
+
+::
+
+    CTestDetectorTest
+    CGDMLDetectorTest
+    CGeometryTest    
+    CG4Test
+    CInterpolationTest
+    CRandomEngineTest  
+    OKG4Test
+ 
+
+
+::
+
+    2019-09-19 20:18:34.417 FATAL [265718] [CMaterialSort::sort@83]  sorting G4MaterialTable using order kv 36
+    2019-09-19 20:18:34.624 ERROR [265718] [CGDMLDetector::addMPTLegacyGDML@175]  Looks like GDML has succeded to load material MPTs   nmat 36 nmat_without_mpt 0 skipping the fixup 
+    2019-09-19 20:18:34.624 INFO  [265718] [CGDMLDetector::standardizeGeant4MaterialProperties@240] [
+    CGeometryTest: /home/blyth/opticks/extg4/X4MaterialLib.cc:126: void X4MaterialLib::init(): Assertion `name_match' failed.
+    Aborted (core dumped)
+
+
+::
+
+    (gdb) bt
+    #0  0x00007fffe1fc5207 in raise () from /lib64/libc.so.6
+    #1  0x00007fffe1fc68f8 in abort () from /lib64/libc.so.6
+    #2  0x00007fffe1fbe026 in __assert_fail_base () from /lib64/libc.so.6
+    #3  0x00007fffe1fbe0d2 in __assert_fail () from /lib64/libc.so.6
+    #4  0x00007ffff492cac8 in X4MaterialLib::init (this=0x7fffffffc480) at /home/blyth/opticks/extg4/X4MaterialLib.cc:126
+    #5  0x00007ffff492c635 in X4MaterialLib::X4MaterialLib (this=0x7fffffffc480, mtab=0x7fffed79c0c0 <G4Material::theMaterialTable>, mlib=0x6cc640) at /home/blyth/opticks/extg4/X4MaterialLib.cc:81
+    #6  0x00007ffff492c5fb in X4MaterialLib::Standardize (mtab=0x7fffed79c0c0 <G4Material::theMaterialTable>, mlib=0x6cc640) at /home/blyth/opticks/extg4/X4MaterialLib.cc:72
+    #7  0x00007ffff492c5d1 in X4MaterialLib::Standardize () at /home/blyth/opticks/extg4/X4MaterialLib.cc:67
+    #8  0x00007ffff4c7ecc1 in CGDMLDetector::standardizeGeant4MaterialProperties (this=0x5ca99d0) at /home/blyth/opticks/cfg4/CGDMLDetector.cc:241
+    #9  0x00007ffff4c7e249 in CGDMLDetector::init (this=0x5ca99d0) at /home/blyth/opticks/cfg4/CGDMLDetector.cc:106
+    #10 0x00007ffff4c7ddef in CGDMLDetector::CGDMLDetector (this=0x5ca99d0, hub=0x6b9880, query=0x6c58b0, sd=0x5ca7370) at /home/blyth/opticks/cfg4/CGDMLDetector.cc:63
+    #11 0x00007ffff4c24b12 in CGeometry::init (this=0x5ca9920) at /home/blyth/opticks/cfg4/CGeometry.cc:99
+    #12 0x00007ffff4c24924 in CGeometry::CGeometry (this=0x5ca9920, hub=0x6b9880, sd=0x5ca7370) at /home/blyth/opticks/cfg4/CGeometry.cc:82
+    #13 0x00007ffff4c9710c in CG4::CG4 (this=0x5ac5c50, hub=0x6b9880) at /home/blyth/opticks/cfg4/CG4.cc:155
+    #14 0x00007ffff7bd453f in OKG4Mgr::OKG4Mgr (this=0x7fffffffd5b0, argc=1, argv=0x7fffffffd8f8) at /home/blyth/opticks/okg4/OKG4Mgr.cc:107
+    #15 0x000000000040399a in main (argc=1, argv=0x7fffffffd8f8) at /home/blyth/opticks/okg4/tests/OKG4Test.cc:27
+    (gdb) f 4
+    #4  0x00007ffff492cac8 in X4MaterialLib::init (this=0x7fffffffc480) at /home/blyth/opticks/extg4/X4MaterialLib.cc:126
+    126         assert(name_match ); 
+    (gdb) list
+    121                 << " index " << i 
+    122                 << " pmap_name " << pmap_name
+    123                 << " m4_name " << m4_name
+    124                 ;
+    125 
+    126         assert(name_match ); 
+    127         if( m4->GetMaterialPropertiesTable() == NULL ) continue ; 
+    128 
+    129         G4MaterialPropertiesTable* mpt = X4PropertyMap::Convert( pmap ) ; 
+    130         m4->SetMaterialPropertiesTable( mpt ) ; 
+    (gdb) p pmap_name
+    $1 = 0x6d3078 "PPE"
+    (gdb) p m4_name
+    $2 = "/dd/Materials/PPE"
+    (gdb) 
+
+
+::
+
+    2019-09-19 20:14:51.907 INFO  [260276] [X4MaterialLib::init@111]     0 okmat                            PPE g4mat              /dd/Materials/PPE
+    2019-09-19 20:14:51.907 FATAL [260276] [X4MaterialLib::init@119]  MATERIAL NAME MISMATCH  index 0 pmap_name PPE m4_name /dd/Materials/PPE
+    CRandomEngineTest: /home/blyth/opticks/extg4/X4MaterialLib.cc:126: void X4MaterialLib::init(): Assertion `name_match' failed.
+    Aborted (core dumped)
+
+
+
+
+
+CFG4 tests : Bialkali surf assert
+-------------------------------------------
+
+After fixing the name prefix mismatch, cfg4-t gives five fails all from the same cause::
+
+    85% tests passed, 5 tests failed out of 34
+
+    Total Test time (real) =  78.83 sec
+
+    The following tests FAILED:
+          1 - CFG4Test.CMaterialLibTest (Child aborted)
+          2 - CFG4Test.CMaterialTest (Child aborted)
+         25 - CFG4Test.CGROUPVELTest (Child aborted)
+         32 - CFG4Test.CCerenkovGeneratorTest (Child aborted)
+         33 - CFG4Test.CGenstepSourceTest (Child aborted)
+    Errors while running CTest
+    Thu Sep 19 20:48:13 CST 2019
+    [blyth@localhost cfg4]$ 
+
+
+::
+
+    2019-09-19 20:10:16.368 INFO  [253270] [CMaterialLib::convert@172]  g4mat 0x5b10c50 name             LiquidScintillator Pmin  1.512e-06 Pmax 2.0664e-05 Wmin         60 Wmax        820
+    2019-09-19 20:10:16.368 FATAL [253270] [CPropLib::makeMaterialPropertiesTable@263] CPropLib::makeMaterialPropertiesTable material with SENSOR_MATERIAL name Bialkali but no sensor_surface 
+    2019-09-19 20:10:16.368 FATAL [253270] [CPropLib::makeMaterialPropertiesTable@267] m_sensor_surface is obtained from slib at CPropLib::init  when Bialkai material is in the mlib  it is required for a sensor surface (with EFFICIENCY/detect) property  to be in the slib 
+    CGenstepSourceTest: /home/blyth/opticks/cfg4/CPropLib.cc:273: G4MaterialPropertiesTable* CPropLib::makeMaterialPropertiesTable(const GMaterial*): Assertion `surf' failed.
+    
+    Program received signal SIGABRT, Aborted.
+    0x00007fffe4e78207 in raise () from /lib64/libc.so.6
+    Missing separate debuginfos, use: debuginfo-install boost-filesystem-1.53.0-27.el7.x86_64 boost-program-options-1.53.0-27.el7.x86_64 boost-regex-1.53.0-27.el7.x86_64 boost-system-1.53.0-27.el7.x86_64 expat-2.1.0-10.el7_3.x86_64 glibc-2.17-260.el7_6.3.x86_64 keyutils-libs-1.5.8-3.el7.x86_64 krb5-libs-1.15.1-37.el7_6.x86_64 libcom_err-1.42.9-13.el7.x86_64 libgcc-4.8.5-36.el7_6.1.x86_64 libicu-50.1.2-17.el7.x86_64 libselinux-2.5-14.1.el7.x86_64 libstdc++-4.8.5-36.el7_6.1.x86_64 openssl-libs-1.0.2k-16.el7_6.1.x86_64 pcre-8.32-17.el7.x86_64 xerces-c-3.1.1-9.el7.x86_64 zlib-1.2.7-18.el7.x86_64
+    (gdb) bt
+    #0  0x00007fffe4e78207 in raise () from /lib64/libc.so.6
+    #1  0x00007fffe4e798f8 in abort () from /lib64/libc.so.6
+    #2  0x00007fffe4e71026 in __assert_fail_base () from /lib64/libc.so.6
+    #3  0x00007fffe4e710d2 in __assert_fail () from /lib64/libc.so.6
+    #4  0x00007ffff7ae03ce in CPropLib::makeMaterialPropertiesTable (this=0x5abbbd0, ggmat=0x6f3cf0) at /home/blyth/opticks/cfg4/CPropLib.cc:273
+    #5  0x00007ffff7af24a3 in CMaterialLib::convertMaterial (this=0x5abbbd0, kmat=0x6f3cf0) at /home/blyth/opticks/cfg4/CMaterialLib.cc:260
+    #6  0x00007ffff7af1819 in CMaterialLib::convert (this=0x5abbbd0) at /home/blyth/opticks/cfg4/CMaterialLib.cc:152
+    #7  0x000000000040453b in main (argc=1, argv=0x7fffffffd8e8) at /home/blyth/opticks/cfg4/tests/CGenstepSourceTest.cc:60
+    (gdb) 
+
+
+
+::
+
+    2019-09-19 20:12:23.329 FATAL [256392] [CPropLib::makeMaterialPropertiesTable@263] CPropLib::makeMaterialPropertiesTable material with SENSOR_MATERIAL name Bialkali but no sensor_surface 
+    2019-09-19 20:12:23.329 FATAL [256392] [CPropLib::makeMaterialPropertiesTable@267] m_sensor_surface is obtained from slib at CPropLib::init  when Bialkai material is in the mlib  it is required for a sensor surface (with EFFICIENCY/detect) property  to be in the slib 
+    CCerenkovGeneratorTest: /home/blyth/opticks/cfg4/CPropLib.cc:273: G4MaterialPropertiesTable* CPropLib::makeMaterialPropertiesTable(const GMaterial*): Assertion `surf' failed.
+    
+    (gdb) bt
+    #4  0x00007ffff7ae03ce in CPropLib::makeMaterialPropertiesTable (this=0x5abac00, ggmat=0x6f2d20) at /home/blyth/opticks/cfg4/CPropLib.cc:273
+    #5  0x00007ffff7af24a3 in CMaterialLib::convertMaterial (this=0x5abac00, kmat=0x6f2d20) at /home/blyth/opticks/cfg4/CMaterialLib.cc:260
+    #6  0x00007ffff7af1819 in CMaterialLib::convert (this=0x5abac00) at /home/blyth/opticks/cfg4/CMaterialLib.cc:152
+    #7  0x000000000040433b in main (argc=1, argv=0x7fffffffd8d8) at /home/blyth/opticks/cfg4/tests/CCerenkovGeneratorTest.cc:71
+    (gdb) 
+
+
+
+
+Search for Bialkali in issues
+--------------------------------
+
+* :doc:`direct_route_needs_AssimpGGeo_convertSensors_equivalent`
+
+Hmm this looks to be an involved issue, with lots of history to review.
+
+
+

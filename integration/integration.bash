@@ -2,7 +2,11 @@
 
 integration-source(){ echo $BASH_SOURCE ; }
 integration-dir(){    echo $(dirname $BASH_SOURCE) ; }
+integration-cd(){     cd $(integration-dir) ; }
 integration-vi(){     vi $BASH_SOURCE ; }
+integration-env(){    echo -n ; }
+integration-t(){    integration-cd ; om- ; om-test ; }
+
 
 
 tboolean-(){     . $(integration-dir)/tests/tboolean.bash  && tboolean-env $* ; }

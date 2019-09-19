@@ -41,6 +41,8 @@
 
 #include "PLOG.hh"
 
+const plog::Severity CMaterialLib::LEVEL = PLOG::EnvLevel("CMaterialLib", "DEBUG"); 
+
 
 CMaterialLib::CMaterialLib(OpticksHub* hub) 
     :
@@ -139,9 +141,9 @@ void CMaterialLib::convert()
     assert(m_converted == false);
     m_converted = true ; 
 
-    LOG(fatal) << "[" ; 
-
     unsigned int ngg = getNumMaterials() ;
+    LOG(LEVEL) << "[ ngg " << ngg  ; 
+
     for(unsigned int i=0 ; i < ngg ; i++)
     {
         const GMaterial* ggmat = getMaterial(i);
@@ -168,8 +170,7 @@ void CMaterialLib::convert()
         std::string keys = getMaterialKeys(g4mat);
         assert( !keys.empty() ); 
 
-        //LOG(info) << "converted ggeo material to G4 material " << name << " with keys " << keys ;  
-        LOG(info) 
+        LOG(LEVEL) 
             << " g4mat " << (void*)g4mat
             << " name " << std::setw(30) << name 
             << " Pmin " << std::setw(10) << Pmin
@@ -178,8 +179,8 @@ void CMaterialLib::convert()
             << " Wmax " << std::setw(10) << Wmax/nm
             ;  
     }
-    LOG(info) << "CMaterialLib::convert : converted " << ngg << " ggeo materials to G4 materials " ; 
-    LOG(fatal) << "]" ; 
+    LOG(LEVEL) << " converted " << ngg << " ggeo materials to G4 materials " ; 
+    LOG(LEVEL) << "]" ; 
 }
 
 

@@ -21,6 +21,7 @@
 
 #include <map>
 #include <string>
+#include "plog/Severity.h"
 
 #include "CFG4_API_EXPORT.hh"
 #include "CFG4_HEAD.hh"
@@ -57,6 +58,8 @@ WHICH POPULATES THE MAP.
 
 class CFG4_API CMaterialLib : public CPropLib 
 {
+   public:
+       static const plog::Severity LEVEL ; 
    public:
        CMaterialLib(OpticksHub* hub);
 

@@ -127,6 +127,20 @@ int main(int argc, char** argv)
 
     const char* path = ok.getDAEPath();
 
+    bool legacy = Opticks::IsLegacyGeometryEnabled(); 
+    if( legacy )
+    {
+        assert(path);
+    }
+    else
+    {
+        assert(!path);
+        LOG(info) << "this test is not relevant to non-legacy running and will be skipped in future " ; 
+        return 0 ;   
+    }
+
+   
+
     OpticksResource* resource = ok.getResource();
 
     OpticksQuery* query = ok.getQuery() ;
@@ -139,7 +153,6 @@ int main(int argc, char** argv)
              << " ctrl " << ( ctrl ? ctrl : "NULL" )
              ;
 
-    assert(path);
     assert(query);
     assert(ctrl);
 
