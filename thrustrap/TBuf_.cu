@@ -50,7 +50,7 @@ TBuf::TBuf(const char* name, CBufSpec spec, const char* delim)
     //m_spec.Summary("TBuf::TBuf.m_spec"); 
 }
 
-CBufSlice TBuf::slice( unsigned stride, unsigned begin, unsigned end ) const 
+CBufSlice TBuf::slice( unsigned long long stride, unsigned long long begin, unsigned long long end ) const 
 {
     if(end == 0u) end = m_spec.size ;  
     return CBufSlice(m_spec.dev_ptr, m_spec.size, m_spec.num_bytes, stride, begin, end);
@@ -65,16 +65,16 @@ void* TBuf::getDevicePtr() const
 {
     return m_spec.dev_ptr ; 
 }
-unsigned int TBuf::getNumBytes() const 
+unsigned long long TBuf::getNumBytes() const 
 {
     return m_spec.num_bytes ; 
 }
-unsigned int TBuf::getSize() const 
+unsigned long long TBuf::getSize() const 
 {
     return m_spec.size ; 
 }
 
-unsigned int TBuf::getItemSize() const 
+unsigned long long TBuf::getItemSize() const 
 {
     return m_spec.size > 0 ? m_spec.num_bytes / m_spec.size : 0  ; 
 }
@@ -85,7 +85,7 @@ template <typename T>
 void TBuf::download(NPY<T>* npy, bool verbose) const 
 {
     unsigned numItems_npy = npy->getNumItems();
-    unsigned numItems_tbuf = getSize(); 
+    unsigned long long numItems_tbuf = getSize(); 
 
     bool create_empty_npy = true ; 
 
@@ -108,14 +108,14 @@ void TBuf::download(NPY<T>* npy, bool verbose) const
 
     if(numItems_npy == 0)
     {    
-        unsigned itemSize_tbuf = getItemSize();
-        unsigned itemSize_npy = sizeof(T) ;
+        unsigned long long itemSize_tbuf = getItemSize();
+        unsigned long long itemSize_npy = sizeof(T) ;
         assert(itemSize_tbuf % itemSize_npy == 0);
 
-        unsigned itemFactor = itemSize_tbuf / itemSize_npy ; 
+        unsigned long long itemFactor = itemSize_tbuf / itemSize_npy ; 
         assert(itemFactor % 4 == 0) ;
 
-        unsigned numQuad = itemFactor/4 ; 
+        unsigned long long numQuad = itemFactor/4 ; 
 
         if(verbose)
         std::cout 
@@ -195,7 +195,7 @@ unsigned TBuf::downloadSelection(const char* name, NPY<float>* selection, unsign
 {
     thrust::device_ptr<T> ptr = thrust::device_pointer_cast((T*)getDevicePtr()) ;
 
-    unsigned numItems = getSize();
+    unsigned long long numItems = getSize();
 
     TIsHit is_hit(hitmask); 
 
@@ -284,14 +284,14 @@ void TBuf::fill(T value) const
 {
     thrust::device_ptr<T> p = thrust::device_pointer_cast((T*)getDevicePtr()) ;
 
-    unsigned numval = getSize();
+    unsigned long long numval = getSize();
 
     thrust::fill(p, p+numval , value);
 }
 
 
 
-void TBuf::dump4x4(const char* msg, unsigned int stride, unsigned int begin, unsigned int end ) const 
+void TBuf::dump4x4(const char* msg, unsigned long long stride, unsigned long long begin, unsigned long long end ) const 
 {
      dump<float4x4>(msg, stride, begin, end);
 }
@@ -299,7 +299,7 @@ void TBuf::dump4x4(const char* msg, unsigned int stride, unsigned int begin, uns
 
 
 template <typename T>
-void TBuf::dump(const char* msg, unsigned int stride, unsigned int begin, unsigned int end ) const 
+void TBuf::dump(const char* msg, unsigned long long stride, unsigned long long begin, unsigned long long end ) const 
 {
     Summary(msg);
 
@@ -324,7 +324,7 @@ void TBuf::dump(const char* msg, unsigned int stride, unsigned int begin, unsign
 
 
 template <typename T>
-void TBuf::dumpint(const char* msg, unsigned int stride, unsigned int begin, unsigned int end) const 
+void TBuf::dumpint(const char* msg, unsigned long long stride, unsigned long long begin, unsigned long long end) const 
 {
 
     // dumpint necessitated in addition to dump as streaming unsigned char gives characters not integers
@@ -359,7 +359,7 @@ void TBuf::dumpint(const char* msg, unsigned int stride, unsigned int begin, uns
 
 
 template <typename T>
-T TBuf::reduce(unsigned int stride, unsigned int begin, unsigned int end ) const 
+T TBuf::reduce(unsigned long long stride, unsigned long long begin, unsigned long long end ) const 
 {
     thrust::device_ptr<T> p = thrust::device_pointer_cast((T*)getDevicePtr()) ;
 
@@ -380,7 +380,7 @@ T TBuf::reduce(unsigned int stride, unsigned int begin, unsigned int end ) const
 
 
 template <typename T>
-void TBuf::repeat_to( TBuf* other, unsigned int stride, unsigned int begin, unsigned int end, unsigned int repeats ) const 
+void TBuf::repeat_to( TBuf* other, unsigned long long stride, unsigned long long begin, unsigned long long end, unsigned long long repeats ) const 
 {
     thrust::device_ptr<T> src = thrust::device_pointer_cast((T*)getDevicePtr()) ;
     thrust::device_ptr<T> tgt = thrust::device_pointer_cast((T*)other->getDevicePtr()) ;
@@ -397,18 +397,18 @@ void TBuf::repeat_to( TBuf* other, unsigned int stride, unsigned int begin, unsi
 
 
 
-template void TBuf::dump<float4x4>(const char*, unsigned int, unsigned int, unsigned int) const ;
-template void TBuf::dump<float4>(const char*, unsigned int, unsigned int, unsigned int) const ;
-template void TBuf::dump<double>(const char*, unsigned int, unsigned int, unsigned int) const ;
-template void TBuf::dump<float>(const char*, unsigned int, unsigned int, unsigned int) const ;
-template void TBuf::dump<int>(const char*, unsigned int, unsigned int, unsigned int) const ;
-template void TBuf::dump<unsigned int>(const char*, unsigned int, unsigned int, unsigned int) const ;
-template void TBuf::dump<unsigned long long>(const char*, unsigned int, unsigned int, unsigned int) const ;
+template void TBuf::dump<float4x4>(const char*, unsigned long long, unsigned long long, unsigned long long) const ;
+template void TBuf::dump<float4>(const char*, unsigned long long, unsigned long long, unsigned long long) const ;
+template void TBuf::dump<double>(const char*, unsigned long long, unsigned long long, unsigned long long) const ;
+template void TBuf::dump<float>(const char*, unsigned long long, unsigned long long, unsigned long long) const ;
+template void TBuf::dump<int>(const char*, unsigned long long, unsigned long long, unsigned long long) const ;
+template void TBuf::dump<unsigned>(const char*, unsigned long long, unsigned long long, unsigned long long) const ;
+template void TBuf::dump<unsigned long long>(const char*, unsigned long long, unsigned long long, unsigned long long) const ;
 
-template void TBuf::dumpint<unsigned char>(const char*, unsigned int, unsigned int, unsigned int) const ;
+template void TBuf::dumpint<unsigned char>(const char*, unsigned long long, unsigned long long, unsigned long long) const ;
 
-template void TBuf::repeat_to<unsigned char>(TBuf*, unsigned int, unsigned int, unsigned int, unsigned int) const ;
-template unsigned int TBuf::reduce<unsigned int>(unsigned int, unsigned int, unsigned int) const ;
+template void TBuf::repeat_to<unsigned char>(TBuf*, unsigned long long, unsigned long long, unsigned long long, unsigned long long) const ;
+template unsigned int TBuf::reduce<unsigned int>(unsigned long long, unsigned long long, unsigned long long) const ;
 
 template void TBuf::download<double>(NPY<double>*, bool) const ;
 template void TBuf::download<float>(NPY<float>*, bool) const ;

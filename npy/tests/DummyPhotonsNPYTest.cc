@@ -27,12 +27,26 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv);
 
-    unsigned hitmask = 0x1 << 6 ;  // 64
-    NPY<float>* npy = DummyPhotonsNPY::Make(100, hitmask);
-    const char* path = "$TMP/npy/DummyPhotonsNPYTest.npy" ;
-    npy->save(path);
+    int num_photons = argc > 1 ? SSys::atoi_(argv[1]) : 100 ;  
+    if( num_photons < 0 ) num_photons = -num_photons*1000000 ; 
 
-    SSys::npdump(path);
+    unsigned hitmask = 0x1 << 6 ;  // 64
+    LOG(info)  
+        << " num_photons " << num_photons
+        << " hitmask " << hitmask
+        ;
+
+    NPY<float>* npy = DummyPhotonsNPY::Make(num_photons, hitmask);
+
+    LOG(info) << npy->description("DummyPhotonsNPY::Make") ; 
+
+
+    if( num_photons <= 1000000 )
+    {
+        const char* path = "$TMP/npy/DummyPhotonsNPYTest.npy" ;
+        npy->save(path);
+        SSys::npdump(path);
+    } 
 
     return 0 ; 
 }

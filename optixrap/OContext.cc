@@ -782,7 +782,10 @@ indicating that the cleanup is not complete::
 template <typename T>
 void OContext::upload(optix::Buffer& buffer, NPY<T>* npy)
 {
-    unsigned int numBytes = npy->getNumBytes(0) ;
+    unsigned long long numBytes = npy->getNumBytes(0) ;
+    assert( sizeof(size_t) == sizeof(unsigned long long) ); 
+
+    LOG(LEVEL) << " numBytes " << numBytes ;  
 
     OpticksBufferControl ctrl(npy->getBufferControlPtr());
     bool verbose = ctrl("VERBOSE_MODE") || SSys::IsVERBOSE() ;

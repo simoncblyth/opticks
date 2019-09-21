@@ -53,6 +53,18 @@ OptiX 7 : Brand New Lower Level API
 * ~/opticks_refs/unofficial_RayTracingGems_v1.5.pdf
 
 
+
+SIGGRAPH 2019 Videos
+------------------------
+
+* https://developer.nvidia.com/events/recordings/siggraph-2019
+
+Gems
+--------
+
+* The Iray Light Transport Simulation and Rendering System, A Keller et.al (on arxiv)
+
+
 Steve Parker SIGGRAPH 2019 Video
 ----------------------------------
 

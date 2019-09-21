@@ -34,6 +34,10 @@ profilesmryplot.py
     an ; ip profilesmryplot.py --pfx "scan-ph-4" --gpu TITAN_RTX --cvd 1 
     an ; ip profilesmryplot.py --pfx "scan-ph-5" --gpu TITAN_RTX --cvd 1 
 
+    an ; ip profilesmryplot.py --pfx "scan-ph-7" --gpu TITAN_RTX --cvd 1 
+    an ; ip profilesmryplot.py --pfx "scan-ph-8" --gpu TITAN_RTX --cvd 1 
+    an ; ip profilesmryplot.py --pfx "scan-ph-9" --gpu TITAN_RTX --cvd 1 
+
 """
 
 from __future__ import print_function
@@ -45,7 +49,7 @@ from opticks.ana.num import Num
 from opticks.ana.base import findfile
 from opticks.ana.profile import Profile
 from opticks.ana.profilesmry import ProfileSmry
-
+from opticks.ana.profilesmrytab import ProfileSmryTab
 
 
 class O(object):
@@ -231,16 +235,20 @@ if __name__ == '__main__':
 
     o = O.Get(-1)  # None for -1, corresponding to all plots OR a single plot specification selected by index
 
-    ps = {}
 
     gpu = args.gpu
     cvd = args.cvd
+
     cat0 = "cvd_%s_rtx_0" % args.cvd 
     cat1 = "cvd_%s_rtx_1" % args.cvd
 
-    ps[0] = ProfileSmry.Load(args.pfx, startswith=cat0 )
-    ps[1] = ProfileSmry.Load(args.pfx, startswith=cat1 )
-    ps[9] = ProfileSmry.FromExtrapolation( ps[0].npho,  time_for_1M=100. )
+    pfxs = [args.pfx,]
+    cats = [cat0, cat1]
+
+    pftab = ProfileSmryTab(pfxs, cats)
+    ps = pftab.ps
+
+    ## TODO: auto labelling 
 
     ps[0].fmt = "o:"  
     ps[0].label = "%s, RTX OFF" % gpu
@@ -250,7 +258,6 @@ if __name__ == '__main__':
 
     ps[9].fmt = "o--" 
     ps[9].label = "G4 Extrapolated"
-
 
 
     import matplotlib.pyplot as plt

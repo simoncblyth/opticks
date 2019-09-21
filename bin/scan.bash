@@ -225,31 +225,44 @@ scan-rngmax-opt(){
 
 
 scan-vers-notes(){ cat << EON
-
 0
-   full scan with old driver, seemed not to be able to switch on RTX
+   Silver:Quadro_RTX_8000 : full scan with old driver, seemed not to be able to switch on RTX
    but may have been caused by a script bug
 1  
-   with the 435.21 driver, fixed a script bug, but even after that it 
+   Silver:Quadro_RTX_8000 with the 435.21 driver, fixed a script bug, but even after that it 
    seems RTX not doing anything 
 2
-   with 435.21 driver and WITH_LOGDOUBLE commented, reducing the f64 
+   Silver:Quadro_RTX_8000 with 435.21 driver and WITH_LOGDOUBLE commented, reducing the f64 
    did this in two goes, with some doubling up : that might have caused 
    glitch on the first 1M point
 3
-   Silver:Quadro_RTX_800, 435.21 driver, OptiX_600, WITH_LOGDOUBLE commented, all at once 
+   Silver:Quadro_RTX_8000, 435.21 driver, OptiX_600, WITH_LOGDOUBLE commented, all at once 
 4
-   Gold:TITAN_RTX 418.56 WITH_LOGDOUBLE commented : NB have to flip the cvd in the cats to 1  
+   Gold:TITAN_RTX 418.56:OptiX 600:WITH_LOGDOUBLE commented : NB have to flip the cvd in the cats to 1  
 5
-   Gold:TITAN_RTX 418.56 WITH_LOGDOUBLE enabled : NB check cvd in cats is 1 to pick TITAN_RTX 
+   Gold:TITAN_RTX 418.56:OptiX 600:WITH_LOGDOUBLE enabled : NB check cvd in cats is 1 to pick TITAN_RTX 
 6
-   Silver:Quadro_RTX_800, 435.21 drive, OptiX_650, WITH_LOGDOUBLE commented
+   Silver:Quadro_RTX_8000, 435.21 drive, OptiX_650, WITH_LOGDOUBLE commented
+7
+   Gold:TITAN_RTX 418.56:OptiX 600:WITH_LOGDOUBLE commented:LEGACY_ENABLED:
+   reproducibility check following other okdist developments before updating driver and OptiX
+8
+   Gold:TITAN_RTX 435.21:OptiX 650:WITH_LOGDOUBLE commented:LEGACY_ENABLED:
+   after updating driver and OptiX
+9
+   Gold:TITAN_RTX 435.21:OptiX 650:WITH_LOGDOUBLE enabled:LEGACY_ENABLED:
+10
+   Gold:TITAN_RTX 435.21:OptiX 650:WITH_LOGDOUBLE enabled:LEGACY_ENABLED:
+   after removing 67.1M ceiling from the cycling of unsigned long 
 
+
+
+To check switches : OpticksSwitchesTest
 
 EON
 }
 
-scan-vers(){ echo ${SCAN_VERS:-6} ; }
+scan-vers(){ echo ${SCAN_VERS:-10} ; }
 scan-pfx(){  echo ${SCAN_PFX:-scan-$(scan-mode)-$(scan-vers)} ; }
 
 

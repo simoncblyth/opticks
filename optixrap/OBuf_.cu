@@ -68,7 +68,7 @@ OBuf::OBuf(const char* name, optix::Buffer& buffer) : OBufBase(name, buffer)
 
 
 template <typename T>
-void OBuf::dump(const char* msg, unsigned int stride, unsigned int begin, unsigned int end)
+void OBuf::dump(const char* msg, unsigned long long stride, unsigned long long begin, unsigned long long end)
 {
     Summary(msg);
 
@@ -90,7 +90,7 @@ void OBuf::dump(const char* msg, unsigned int stride, unsigned int begin, unsign
 
 
 template <typename T>
-void OBuf::dumpint(const char* msg, unsigned int stride, unsigned int begin, unsigned int end)
+void OBuf::dumpint(const char* msg, unsigned long long stride, unsigned long long begin, unsigned long long end)
 {
 
     // dumpint necessitated in addition to dump as streaming unsigned char gives characters not integers
@@ -131,15 +131,15 @@ void OBuf::dumpint(const char* msg, unsigned int stride, unsigned int begin, uns
 
 
 template <typename T>
-T OBuf::reduce(unsigned int stride, unsigned int begin, unsigned int end )
+T OBuf::reduce(unsigned long long stride, unsigned long long begin, unsigned long long end )
 {
     // hmm this assumes do not do reductions at float4 level ?
-    if(end == 0u) end = getNumAtoms(); 
+    if(end == 0ull) end = getNumAtoms(); 
 
     thrust::device_ptr<T> p = thrust::device_pointer_cast((T*)getDevicePtr()) ; 
 
     T result ; 
-    if( stride == 0 )
+    if( stride == 0ull )
     {
         result = thrust::reduce( p + begin, p + end ); 
     }
@@ -160,18 +160,18 @@ template unsigned int* OBuf::getDevicePtr<unsigned int>();
 template unsigned long long* OBuf::getDevicePtr<unsigned long long>();
 */
 
-template OXRAP_API void OBuf::dump<optix::float4>(const char*, unsigned int, unsigned int, unsigned int);
-template OXRAP_API void OBuf::dump<optix::uint4>(const char*, unsigned int, unsigned int, unsigned int);
-template OXRAP_API void OBuf::dump<unsigned int>(const char*, unsigned int, unsigned int, unsigned int);
-template OXRAP_API void OBuf::dump<unsigned long long>(const char*, unsigned int, unsigned int, unsigned int);
-template OXRAP_API void OBuf::dump<unsigned char>(const char*, unsigned int, unsigned int, unsigned int);
-template OXRAP_API void OBuf::dump<int>(const char*, unsigned int, unsigned int, unsigned int);
+template OXRAP_API void OBuf::dump<optix::float4>(const char*, unsigned long long, unsigned long long, unsigned long long);
+template OXRAP_API void OBuf::dump<optix::uint4>(const char*, unsigned long long, unsigned long long, unsigned long long);
+template OXRAP_API void OBuf::dump<unsigned int>(const char*, unsigned long long, unsigned long long, unsigned long long);
+template OXRAP_API void OBuf::dump<unsigned long long>(const char*, unsigned long long, unsigned long long, unsigned long long);
+template OXRAP_API void OBuf::dump<unsigned char>(const char*, unsigned long long, unsigned long long, unsigned long long);
+template OXRAP_API void OBuf::dump<int>(const char*, unsigned long long, unsigned long long, unsigned long long);
 
-template OXRAP_API void OBuf::dumpint<unsigned char>(const char*, unsigned int, unsigned int, unsigned int);
+template OXRAP_API void OBuf::dumpint<unsigned char>(const char*, unsigned long long, unsigned long long, unsigned long long);
 
 
-template OXRAP_API unsigned int OBuf::reduce<unsigned int>(unsigned int, unsigned int, unsigned int);
-template OXRAP_API unsigned long long OBuf::reduce<unsigned long long>(unsigned int, unsigned int, unsigned int);
+template OXRAP_API unsigned int OBuf::reduce<unsigned int>(unsigned long long, unsigned long long, unsigned long long);
+template OXRAP_API unsigned long long OBuf::reduce<unsigned long long>(unsigned long long, unsigned long long, unsigned long long);
 
 
 

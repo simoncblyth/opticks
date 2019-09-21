@@ -53,6 +53,7 @@ class NPY_API NPYBase {
        static NPYBase* Load( const char* path, Type_t type );
        static NPYBase* Make( unsigned ni, const NPYSpec* itemspec, bool zero );
    private:
+       typedef unsigned long long ULL ; 
        static bool NPDump ; 
    public:
        static void SetNPDump(bool npdump); 
@@ -73,7 +74,7 @@ class NPY_API NPYBase {
        static bool GLOBAL_VERBOSE ; 
        static int checkNumItems(NPYBase* data);
    public:
-        NPYBase(const std::vector<int>& shape, unsigned char sizeoftype, Type_t type, std::string& metadata, bool has_data);
+        NPYBase(const std::vector<int>& shape, unsigned long long sizeoftype, Type_t type, std::string& metadata, bool has_data);
         virtual ~NPYBase();
         void setHasData(bool has_data=true);
         bool hasData() const ;
@@ -103,7 +104,7 @@ class NPY_API NPYBase {
        std::string  getItemDigestString(unsigned i);
 
        static std::string  getDigestString(void* bytes, unsigned int nbytes) ; 
-       bool isEqualTo(void* bytes, unsigned int nbytes) ;
+       bool isEqualTo(void* bytes, unsigned long long nbytes) ;
        bool isEqualTo(NPYBase* other) ;
        unsigned int getNumQuads() const ;  // product of all dimensions excluding the last, which must be 4 
        unsigned int getNumItems(int ifr=0, int ito=1) const;  // default ifr/ito=0/1 is size of 1st dimension
@@ -111,8 +112,8 @@ class NPY_API NPYBase {
        unsigned int getDimensions() const ;
        std::string  getShapeString(unsigned int ifr=0) const ;
        unsigned int getShape(int dim) const ;
-       unsigned int getValueIndex(unsigned i, unsigned j, unsigned k, unsigned l=0, unsigned m=0) const ;
-       unsigned int getNumValues(unsigned int from_dim=0) const ;
+       unsigned long long getValueIndex(unsigned i, unsigned j, unsigned k, unsigned l=0, unsigned m=0) const ;
+       unsigned long long getNumValues(unsigned int from_dim=0) const ;
 
        NMeta*        getParameters() const ;
 
@@ -134,9 +135,9 @@ class NPY_API NPYBase {
        Type_t        getType() const ;
        bool          isIntegerType() const ;
        bool          isFloatType() const ;
-       unsigned char getSizeOfType() const ;
-       unsigned int  getNumBytes(unsigned int from_dim=0) const ;
-       unsigned int  getByteIndex(unsigned i, unsigned j, unsigned k, unsigned l=0, unsigned m=0) const ;
+       unsigned long long getSizeOfType() const ;
+       unsigned long long getNumBytes(unsigned int from_dim=0) const ;
+       unsigned long long getByteIndex(unsigned i, unsigned j, unsigned k, unsigned l=0, unsigned m=0) const ;
    public:
        void reshape(int ni, unsigned nj=0, unsigned nk=0, unsigned nl=0, unsigned nm=0);
    private:
@@ -216,7 +217,7 @@ class NPY_API NPYBase {
 
    protected:
        std::vector<int>   m_shape ; 
-       unsigned char      m_sizeoftype ; 
+       unsigned long long m_sizeoftype ; 
        Type_t             m_type ; 
        std::string        m_metadata ; 
        bool               m_has_data ;

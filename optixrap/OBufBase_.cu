@@ -27,8 +27,8 @@ OBufBase::OBufBase(const char* name, optix::Buffer& buffer)
    :
    m_buffer(buffer), 
    m_name(strdup(name)), 
-   m_multiplicity(0u), 
-   m_sizeofatom(0u), 
+   m_multiplicity(0ull), 
+   m_sizeofatom(0ull), 
    m_device(0u),
    m_hexdump(false)
 {
@@ -41,7 +41,7 @@ OBufBase::~OBufBase()
 }
 
 
-CBufSlice OBufBase::slice( unsigned int stride, unsigned int begin, unsigned int end )
+CBufSlice OBufBase::slice( unsigned long long stride, unsigned long long begin, unsigned long long end )
 {
    return CBufSlice( getDevicePtr(), getSize(), getNumBytes(), stride, begin, end == 0u ? getNumAtoms() : end);
 }
@@ -113,24 +113,24 @@ void OBufBase::setHexDump(bool hexdump)
 */
 
 
-unsigned int OBufBase::getSize() const 
+unsigned long long OBufBase::getSize() const 
 {
     return Size(m_buffer) ; 
 }
 
-unsigned int OBufBase::getMultiplicity() const 
+unsigned long long OBufBase::getMultiplicity() const 
 {
     return m_multiplicity ; 
 }
-unsigned int OBufBase::getNumAtoms() const  
+unsigned long long OBufBase::getNumAtoms() const  
 {
     return getSize()*m_multiplicity ; 
 }
-unsigned int OBufBase::getSizeOfAtom() const 
+unsigned long long OBufBase::getSizeOfAtom() const 
 {
     return m_sizeofatom ; 
 }
-unsigned int OBufBase::getNumBytes() const 
+unsigned long long OBufBase::getNumBytes() const 
 {
     return NumBytes(m_buffer) ; 
 }
@@ -142,8 +142,8 @@ void OBufBase::init()
 
 void OBufBase::examineBufferFormat(RTformat format)
 {
-   unsigned int mul(0) ;
-   unsigned int soa(0) ;
+   unsigned long long mul(0) ;
+   unsigned long long soa(0) ;
    bool unknown(false); 
    //std::cout << "OBufBase::examineBufferFormat " << format << std::endl  ; 
 
@@ -199,7 +199,7 @@ void OBufBase::examineBufferFormat(RTformat format)
       default:   unknown = true  ;  
    }   
 
-    unsigned int element_size_bytes = OFormat::ElementSizeInBytes(format);
+    unsigned long long element_size_bytes = OFormat::ElementSizeInBytes(format);
 
     bool expected = element_size_bytes == soa*mul && !unknown  ; 
     if(!expected ) 
@@ -220,18 +220,18 @@ void OBufBase::examineBufferFormat(RTformat format)
 }
 
 
-void OBufBase::setSizeOfAtom(unsigned int soa)
+void OBufBase::setSizeOfAtom(unsigned long long soa)
 {
     m_sizeofatom = soa ; 
 } 
-void OBufBase::setMultiplicity(unsigned int mul)
+void OBufBase::setMultiplicity(unsigned long long mul)
 {
     m_multiplicity = mul ; 
 } 
 
 
 
-unsigned int OBufBase::Size(const optix::Buffer& buffer) // static
+unsigned long long OBufBase::Size(const optix::Buffer& buffer) // static
 {
     RTsize width, height, depth ; 
     buffer->getSize(width, height, depth);
@@ -239,13 +239,13 @@ unsigned int OBufBase::Size(const optix::Buffer& buffer) // static
     return size ; 
 }
 
-unsigned int OBufBase::NumBytes(const optix::Buffer& buffer) // static
+unsigned long long OBufBase::NumBytes(const optix::Buffer& buffer) // static
 {
-    unsigned int size = Size(buffer);
+    unsigned long long size = Size(buffer);
 
     RTformat format = buffer->getFormat() ;
-    unsigned int element_size = OFormat::ElementSizeInBytes(format);
-    if(element_size == 0u && format == RT_FORMAT_USER)
+    unsigned long long element_size = OFormat::ElementSizeInBytes(format);
+    if(element_size == 0ull && format == RT_FORMAT_USER)
     {
         element_size = buffer->getElementSize();
         //printf("OBufBase::getNumBytes RT_FORMAT_USER element_size %u size %u \n", element_size, size );

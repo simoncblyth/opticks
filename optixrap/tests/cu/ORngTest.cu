@@ -18,35 +18,35 @@
  */
 
 #include <optix_world.h>
-#include "quad.h"
+#include <curand_kernel.h>
 
 using namespace optix;
 
-rtBuffer<float4>   photon_buffer ;
 rtDeclareVariable(uint2, launch_index, rtLaunchIndex, );
 rtDeclareVariable(uint2, launch_dim,   rtLaunchDim, );
-//rtDeclareVariable(unsigned int,  PNUMQUAD, , );   // in OptiX 501 510 this comes out zero 
-rtDeclareVariable(uint2,  compaction_param, , );
 
-//#define WITH_PRINT 1
+rtBuffer<curandState, 1>       rng_states ;
+
+#define WITH_PRINT 1 
 
 
-RT_PROGRAM void compactionTest()
+RT_PROGRAM void ORngTest()
 {
-    unsigned photon_id = launch_index.x ;  
-    unsigned photon_offset = photon_id*compaction_param.x ; 
+    unsigned long long photon_id = launch_index.x ;  
+    //unsigned int photon_offset = photon_id*4 ; 
+ 
+    curandState rng = rng_states[photon_id];
 
-    union quad q0,q1,q2,q3 ;
+    //photon_buffer[photon_offset+0] = make_float4( curand_uniform(&rng) , curand_uniform(&rng) , curand_uniform(&rng), curand_uniform(&rng) );
 
-    q0.f = photon_buffer[photon_offset+0] ;   
-    q1.f = photon_buffer[photon_offset+1] ;   
-    q2.f = photon_buffer[photon_offset+2] ;   
-    q3.f = photon_buffer[photon_offset+3] ;   
+    float u = curand_uniform(&rng) ; 
+
 
 #ifdef WITH_PRINT
-    rtPrintf("compactionTest.cu  %5u %5u fffu(%10f, %10f, %10f, %u) \n", photon_id, photon_offset, q0.f.x, q1.f.y, q2.f.z, q3.u.w );
+    rtPrintf("ORngTest.cu:ORngTest  d %d  (%10.4f,%10.4f,%10.4f,%10.4f)  \n", photon_id, u,u,u,u  );
 #endif
 }
+
 
 RT_PROGRAM void exception()
 {

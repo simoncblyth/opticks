@@ -24,15 +24,21 @@
 
 struct CUDARAP_API CBufSlice 
 {
-   void*        dev_ptr ;
-   unsigned int size ; 
-   unsigned int num_bytes ;  
-   unsigned int stride ; 
-   unsigned int begin ; 
-   unsigned int end ; 
-   bool         hexdump ; 
+   void*              dev_ptr ;
+   unsigned long long size ; 
+   unsigned long long num_bytes ;  
+   unsigned long long stride ; 
+   unsigned long long begin ; 
+   unsigned long long end ; 
+   bool               hexdump ; 
 
-   CBufSlice(void* dev_ptr_, unsigned int size_, unsigned int num_bytes_, unsigned int stride_, unsigned int begin_, unsigned int end_, bool hexdump_=false) 
+   CBufSlice(void* dev_ptr_, 
+             unsigned long long size_, 
+             unsigned long long num_bytes_, 
+             unsigned long long stride_, 
+             unsigned long long begin_, 
+             unsigned long long end_, 
+             bool hexdump_=false) 
      :
        dev_ptr(dev_ptr_),
        size(size_),
@@ -45,7 +51,7 @@ struct CUDARAP_API CBufSlice
    }
    void Summary(const char* msg)
    {
-       printf("%s : dev_ptr %p size %u num_bytes %u stride %u begin %u end %u hexdump %u \n", msg, dev_ptr, size, num_bytes, stride, begin, end, hexdump ); 
+       printf("%s : dev_ptr %p size %llu num_bytes %llu stride %llu begin %llu end %llu hexdump %u \n", msg, dev_ptr, size, num_bytes, stride, begin, end, hexdump ); 
    }
 
 

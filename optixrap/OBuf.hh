@@ -49,7 +49,7 @@ DevNotes
 //
 //    template class OBuf<optix::float4> ;
 //    template class OBuf<optix::uint4> ;
-//    template class OBuf<unsigned int> ;
+//    template class OBuf<unsigned long long> ;
 //
 // as opposed to having to explicly instanciate all the member functions.
 //
@@ -66,13 +66,13 @@ class OXRAP_API OBuf : public OBufBase {
 
    public:
       template <typename T>
-      void dump(const char* msg, unsigned int stride, unsigned int begin, unsigned int end );
+      void dump(const char* msg, unsigned long long stride, unsigned long long begin, unsigned long long end );
 
       template <typename T>
-      void dumpint(const char* msg, unsigned int stride, unsigned int begin, unsigned int end );
+      void dumpint(const char* msg, unsigned long long stride, unsigned long long begin, unsigned long long end );
 
       template <typename T>
-      T reduce(unsigned int stride, unsigned int begin, unsigned int end=0u );
+      T reduce(unsigned long long stride, unsigned long long begin, unsigned long long end=0ull );
 
 };
 

@@ -20,7 +20,7 @@
 #include "OFormat.hh"
 
 
-unsigned int OFormat::ElementSizeInBytes(RTformat format) // static 
+unsigned long long OFormat::ElementSizeInBytes(RTformat format) // static 
 {
     //  OptiX_600:rtuGetSizeForRTformat gives randoms for RT_FORMAT_USER
     //  so return zero 
@@ -36,14 +36,14 @@ unsigned int OFormat::ElementSizeInBytes(RTformat format) // static
     }
 
 
-    //std::cout << "OFormat::ElementSizeInBytes" << " " << FormatName(format) << " : " << element_size << std::endl ; 
-    return element_size ; 
+    unsigned long long esz = element_size ; 
+    return esz ; 
 }
 
 
-unsigned int OFormat::Multiplicity(RTformat format) // static
+unsigned long long OFormat::Multiplicity(RTformat format) // static
 {
-   unsigned int mul(0) ;
+   unsigned mul(0) ;
    switch(format)
    {
       case RT_FORMAT_UNKNOWN: mul=0 ; break ; 
@@ -118,7 +118,9 @@ unsigned int OFormat::Multiplicity(RTformat format) // static
        case RT_FORMAT_BC6H: mul=6 ; break ; 
 #endif
    }
-   return mul ; 
+
+   unsigned long long lm = mul ;  
+   return lm ; 
 }
 
 

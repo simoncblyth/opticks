@@ -246,7 +246,7 @@ void NPYBase::setArrayContentVersion(int acv)
 
 
 
-NPYBase::NPYBase(const std::vector<int>& shape, unsigned char sizeoftype, Type_t type, std::string& metadata, bool has_data) 
+NPYBase::NPYBase(const std::vector<int>& shape, unsigned long long sizeoftype, Type_t type, std::string& metadata, bool has_data) 
     :
     m_shape(shape),
     m_sizeoftype(sizeoftype),
@@ -507,33 +507,37 @@ const NPYSpec* NPYBase::getBufferSpec() const
 }
 
 
- unsigned int NPYBase::getValueIndex(unsigned i, unsigned j, unsigned k, unsigned l, unsigned m) const  
+unsigned long long NPYBase::getValueIndex(unsigned i, unsigned j, unsigned k, unsigned l, unsigned m) const  
 {
-    unsigned int nj = m_nj == 0 ? 1 : m_nj ;
-    unsigned int nk = m_nk == 0 ? 1 : m_nk ;
-    unsigned int nl = m_nl == 0 ? 1 : m_nl ;
-    unsigned int nm = m_nm == 0 ? 1 : m_nm ;
+    ULL nj = m_nj == 0 ? 1ull : ULL(m_nj) ;
+    ULL nk = m_nk == 0 ? 1ull : ULL(m_nk) ;
+    ULL nl = m_nl == 0 ? 1ull : ULL(m_nl) ;
+    ULL nm = m_nm == 0 ? 1ull : ULL(m_nm) ;
 
-    return  i*nj*nk*nl*nm + j*nk*nl*nm + k*nl*nm + l*nm + m ;
+    ULL ii = ULL(i) ; 
+    ULL jj = ULL(j) ; 
+    ULL kk = ULL(k) ; 
+    ULL ll = ULL(l) ; 
+    ULL mm = ULL(m) ; 
+
+    return  ii*nj*nk*nl*nm + jj*nk*nl*nm + kk*nl*nm + ll*nm + mm ;
 }
 
-
-
- unsigned int NPYBase::getNumValues(unsigned int from_dim) const 
+unsigned long long NPYBase::getNumValues(unsigned int from_dim) const 
 {
-    unsigned int nvals = 1 ; 
-    for(unsigned int i=from_dim ; i < m_shape.size() ; i++) nvals *= m_shape[i] ;
-    return nvals ;  
+    ULL numvals = 1 ; 
+    for(unsigned int i=from_dim ; i < m_shape.size() ; i++) numvals *= ULL(m_shape[i]) ;
+    return numvals ;  
 }
 
 
 // depending on sizeoftype
 
- unsigned char NPYBase::getSizeOfType() const 
+unsigned long long NPYBase::getSizeOfType() const 
 {
     return m_sizeoftype;
 }
- NPYBase::Type_t NPYBase::getType() const 
+NPYBase::Type_t NPYBase::getType() const 
 {
     return m_type;
 }
@@ -548,11 +552,12 @@ bool NPYBase::isFloatType() const
 }
 
 
- unsigned int NPYBase::getNumBytes(unsigned int from_dim) const 
+ unsigned long long NPYBase::getNumBytes(unsigned int from_dim) const 
 {
-    return m_sizeoftype*getNumValues(from_dim);
+    ULL numval =  getNumValues(from_dim);
+    return m_sizeoftype*numval ; 
 }
- unsigned int NPYBase::getByteIndex(unsigned i, unsigned j, unsigned k, unsigned l, unsigned m) const 
+ unsigned long long NPYBase::getByteIndex(unsigned i, unsigned j, unsigned k, unsigned l, unsigned m) const 
 {
     return m_sizeoftype*getValueIndex(i,j,k,l,m);
 }
@@ -715,8 +720,8 @@ std::string NPYBase::getItemDigestString(unsigned i)
 {
     assert( i < getNumItems() );
 
-    unsigned bufSize =  getNumBytes(0);  // buffer size   
-    unsigned itemSize = getNumBytes(1);  // item size in bytes (from dimension d)  
+    unsigned long long bufSize =  getNumBytes(0);  // buffer size   
+    unsigned long long itemSize = getNumBytes(1);  // item size in bytes (from dimension d)  
 
     assert( i*itemSize < bufSize );
 
@@ -735,7 +740,7 @@ bool NPYBase::isEqualTo(NPYBase* other)
     return isEqualTo(other->getBytes(), other->getNumBytes(0));
 }
 
-bool NPYBase::isEqualTo(void* bytes, unsigned int nbytes) 
+bool NPYBase::isEqualTo(void* bytes, unsigned long long nbytes) 
 {
     std::string self = getDigestString();
     std::string other = getDigestString(bytes, nbytes);

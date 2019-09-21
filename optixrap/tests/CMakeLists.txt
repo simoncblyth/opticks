@@ -29,6 +29,8 @@ set(PAIRED_TEST_SOURCES  # tests with paired cc and cu
     downloadTest.cc
     eventTest.cc
     interpolationTest.cc
+    ORngTest.cc
+
 
 )
 

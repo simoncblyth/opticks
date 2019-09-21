@@ -56,24 +56,23 @@ Changing OptiX version
 1. to test a different OptiX point the symbolic link at a different OptiX_600 OptiX_650 dir, eg:: 
 
        cd $(opticks-dir)/externals
-       ln -s OptiX_650 OptiX  
+       rm OptiX ; ln -s OptiX_650 OptiX  
 
 
-2. do a clean build of okconf::
+2. do a clean build of okconf and run OKConfTest to check expected versions appear::
 
    cd ~/opticks/okconf
    om-cleaninstall
+   OKConfTest  
 
-3. run the OKConfTest executable and check the expected versions appear
-
-4. rebuild optickscore with changes to 
+3. rebuild optickscore with changes to 
 
    okc-c
    om-cleaninstall
        ## link errors from OpticksBufferSpec may occur 
        ## modify OpticksBufferSpec.hh for the new version
 
-5. clean and install all subs from optixrap onwards::
+4. clean and install all subs from optixrap onwards::
 
 
    om-visit optixrap:      # just lists the subs, note the colon 

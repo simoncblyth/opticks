@@ -1431,6 +1431,7 @@ ezgdml-(){          . $(opticks-home)/bin/ezgdml.bash  && ezgdml-env $* ; }
 odocker-(){         . $(opticks-home)/bin/odocker.bash && odocker-env $* ; }
 olxd-(){            . $(opticks-home)/bin/olxd.bash    && olxd-env $* ; }
 onvidia-(){         . $(opticks-home)/bin/onvidia.bash && onvidia-env $* ; }
+nsight-(){          . $(opticks-home)/bin/nsight.bash  && nsight-env $* ; }
 
 # override old original from env, $(env-home)/nuwa/detdesc/pmt/pmt.bash
 

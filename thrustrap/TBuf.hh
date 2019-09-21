@@ -40,13 +40,13 @@ class THRAP_API TBuf {
       void zero();
 
       void* getDevicePtr() const ;
-      unsigned int getNumBytes() const ;
-      unsigned int getSize() const ;      // NumItems might be better name
-      unsigned int getItemSize() const ;  //  NumBytes/Size
+      unsigned long long getNumBytes() const ;
+      unsigned long long getSize() const ;      // NumItems might be better name
+      unsigned long long getItemSize() const ;  //  NumBytes/Size
 
      
       unsigned downloadSelection4x4(const char* name, NPY<float>* npy, unsigned mskhis, bool verbose=false) const ; // selection done on items of size float4x4
-      void dump4x4(const char* msg, unsigned int stride, unsigned int begin, unsigned int end ) const ;
+      void dump4x4(const char* msg, unsigned long long stride, unsigned long long begin, unsigned long long end ) const ;
 
       template <typename T> unsigned downloadSelection(const char* name, NPY<float>* npy, unsigned mskhis, bool verbose=false) const ; // selection done on items of size T
       template <typename T> void fill(T value) const ;
@@ -54,12 +54,12 @@ class THRAP_API TBuf {
       template <typename T> void upload(NPY<T>* npy) const ;
       template <typename T> void download(NPY<T>* npy, bool verbose=false) const ;
 
-      template <typename T> void repeat_to(TBuf* other, unsigned int stride, unsigned int begin, unsigned int end, unsigned int repeats) const ;
-      template <typename T> void dump(const char* msg, unsigned int stride, unsigned int begin, unsigned int end ) const ;
-      template <typename T> void dumpint(const char* msg, unsigned int stride, unsigned int begin, unsigned int end ) const ;
-      template <typename T> T  reduce(unsigned int stride, unsigned int begin, unsigned int end=0u ) const ;
+      template <typename T> void repeat_to(TBuf* other, unsigned long long stride, unsigned long long begin, unsigned long long end, unsigned long long repeats) const ;
+      template <typename T> void dump(const char* msg, unsigned long long stride, unsigned long long begin, unsigned long long end ) const ;
+      template <typename T> void dumpint(const char* msg, unsigned long long stride, unsigned long long begin, unsigned long long end ) const ;
+      template <typename T> T  reduce(unsigned long long stride, unsigned long long begin, unsigned long long end=0ull ) const ;
 
-      CBufSlice slice( unsigned int stride, unsigned int begin=0u, unsigned int end=0u ) const ; 
+      CBufSlice slice( unsigned long long stride, unsigned long long begin=0ull, unsigned long long end=0ull ) const ; 
 
       void Summary(const char* msg="TBuf::Summary") const ; 
    private:
