@@ -30,7 +30,7 @@
 #include "PLOG.hh"
 
 
-const plog::Severity GenstepNPY::LEVEL = debug ; 
+const plog::Severity GenstepNPY::LEVEL = PLOG::EnvLevel("GenstepNPY", "DEBUG") ; 
 
 
 GenstepNPY::GenstepNPY(unsigned genstep_type, unsigned num_step, const char* config, bool is_default ) 
@@ -130,6 +130,16 @@ frame #11: 0x0000000101e27610 libOpticksGeometry.dylib`OpticksHub::OpticksHub(th
 frame #12: 0x0000000101e277ad libOpticksGeometry.dylib`OpticksHub::OpticksHub(this=0x0000000105609f20, ok=0x0000000105421710) + 29 at OpticksHub.cc:83
 frame #13: 0x0000000103790294 libOK.dylib`OKMgr::OKMgr(this=0x00007fff5fbfedd8, argc=1, argv=0x00007fff5fbfeeb8) + 260 at OKMgr.cc:46
 */
+
+/**
+GenstepNPY::addStep
+-----------------------
+
+Settings from the quads are passed into the genstep by addStep, which 
+is called from OpticksGen::makeTorchstep 
+
+
+**/
 
 void GenstepNPY::addStep(bool verbose)
 {

@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-scanvers.py
+scannotes.py
 ==============
 
 Present the scan notes for versions provided in integer arguments, 
@@ -8,20 +8,20 @@ or present all.
 
 Usage::
 
-    scanvers.py 
-    scanvers.py 8 9
+    scannotes.py 
+    scannotes.py 8 9
 
 """
 import sys, re
 from collections import OrderedDict as odict
 from opticks.ana.base import _subprocess_output
 
-class ScanVersNotes(object):
+class ScanNotes(object):
     """
     Parse the output of bashfunc that holds notes about 
     the intent of each scan version. 
     """
-    bashfunc = "scan-;scan-vers-notes"  
+    bashfunc = "scan-;scan-notes"  
     startptn = re.compile("^(\d*)\s*$")  # integer starting a blank line
     blankptn = re.compile("^\s*$")   # blank line
     def __init__(self):
@@ -58,12 +58,12 @@ class ScanVersNotes(object):
 
 
 if __name__ == '__main__':
-    vn = ScanVersNotes()
+    sn = ScanNotes()
     if len(sys.argv) == 1:
-        print(vn) 
+        print(sn) 
     else:
         for v in map(int, sys.argv[1:]):
-            print(vn(v))
+            print(sn(v))
         pass
     pass
 

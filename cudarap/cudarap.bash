@@ -578,6 +578,8 @@ cudarap-prepare-rng-()
    CUDARAP_RNG_DIR=$(cudarap-rngdir) CUDARAP_RNG_MAX=$(cudarap-rngmax) $(cudarap-ibin)
 }
 
+
+cudarap-prepare-rng-200M(){ CUDARAP_RNGMAX_M=200 cudarap-prepare-rng- ; }
 cudarap-prepare-rng-100M(){ CUDARAP_RNGMAX_M=100 cudarap-prepare-rng- ; }
 cudarap-prepare-rng-10M(){  CUDARAP_RNGMAX_M=10  cudarap-prepare-rng- ; }
 cudarap-prepare-rng-2M(){   CUDARAP_RNGMAX_M=2   cudarap-prepare-rng- ; }

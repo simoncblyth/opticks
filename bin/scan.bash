@@ -50,6 +50,29 @@ Workflow
 
        scan-;VERBOSE=1 scan--
 
+
+Migration from TMP to OPTICKS_EVENT_BASE for scan events
+-------------------------------------------------------------
+
+Have been using the below for a while::
+
+   export OPTICKS_INSTALL_PREFIX=$LOCAL_BASE/opticks
+   export TMP=$OPTICKS_INSTALL_PREFIX/tmp
+   export OPTICKS_EVENT_BASE=$OPTICKS_INSTALL_PREFIX/tmp
+
+But this mingles scan result folders with a great deal of 
+output from opticks-t tests that changes frequently, 
+so change event base to::
+
+   export OPTICKS_EVENT_BASE=$OPTICKS_INSTALL_PREFIX/evtbase
+
+And move the results over::
+
+    [blyth@localhost opticks]$ mv tmp/scan-ph-? evtbase/
+    [blyth@localhost opticks]$ mv tmp/scan-ph-?? evtbase/
+
+
+
 EOU
 }
 
@@ -196,6 +219,7 @@ EON
 }
 
 
+
 scan-num(){  python -c "from opticks.ana.num import Num ; print(Num.String($1))" ; }
 
 
@@ -224,7 +248,7 @@ scan-rngmax-opt(){
 
 
 
-scan-vers-notes(){ cat << EON
+scan-notes(){ cat << EON
 0
    Silver:Quadro_RTX_8000 : full scan with old driver, seemed not to be able to switch on RTX
    but may have been caused by a script bug
@@ -259,14 +283,16 @@ scan-vers-notes(){ cat << EON
    after removing 67.1M ceiling from the cycling of unsigned long 
 
 
-
-
 To check switches : OpticksSwitchesTest
 
 EON
 }
 
-scan-vers(){ echo ${SCAN_VERS:-11} ; }
+scan-v(){ scannotes.py $(scan-vers) ; }
+scan-smry(){ profilesmry.py ${1:-$(scan-vers)} ${@:2} ; }
+scan-ismry(){ ipython --pdb -i -- $(which profilesmry.py)     ${1:-$(scan-vers)} ${@:2} ; }
+scan-plot(){  ipython --pdb -i -- $(which profilesmryplot.py) ${1:-$(scan-vers)} ${@:2}  ; }
+scan-vers(){ echo ${SCAN_VERS:-10} ; }
 scan-pfx(){  echo ${SCAN_PFX:-scan-$(scan-mode)-$(scan-vers)} ; }
 
 
@@ -303,6 +329,16 @@ scan-tv-cmd(){   echo tv $1 ; }
 
 scan-ph-post(){  scan.py $TMP/tboolean-$(scan-ph-lv) ; }
 scan-ts-post(){  absmry.py  ; }
+
+scan-rsync(){ 
+   [ -z "$OPTICKS_EVENT_BASE" ] && echo OPTICKS_EVENT_BASE not defined && return 0  
+
+   local src=$OPTICKS_EVENT_BASE
+   local dst=P:$OPTICKS_EVENT_BASE
+cat << EOC
+rsync -av $src/ $dst 
+EOC
+}
 
 
 scan-cmds-all-notes(){ cat << EOD
@@ -344,6 +380,20 @@ scan--()
       printf " %20s : %40s ======= RC %3d  RC 0x%.2x \n"  $FUNCNAME "$cmd" $rc $rc  
    done
 }
+
+
+scan-info(){ cat << EOI
+
+    OPTICKS_INSTALL_PREFIX : $OPTICKS_INSTALL_PREFIX
+    OPTICKS_EVENT_BASE     : $OPTICKS_EVENT_BASE
+    TMP                    : $TMP
+
+    scan-vers              : $(scan-vers)
+
+EOI
+    scan-v
+}
+
 
 
 scan-ph-(){     SCAN_MODE=ph scan-cmds-all ; }

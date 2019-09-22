@@ -49,7 +49,7 @@ log = logging.getLogger(__name__)
 from opticks.ana.num import Num
 from opticks.ana.base import findfile
 from opticks.ana.profile import Profile
-from opticks.ana.profilesmry import ProfileSmry
+from opticks.ana.profilesmry import ProfileSmry, ProfileMain
 from opticks.ana.profilesmrytab import ProfileSmryTab
 
 
@@ -218,12 +218,7 @@ if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
     np.set_printoptions(precision=4, linewidth=200)
 
-    # TODO: use the introspected info for GPU name 
-    parser = argparse.ArgumentParser(__doc__)
-    parser.add_argument( "--pfx", default="scan-ph-0", help="Prefix beneath which to search for OpticksProfile.npy" )
-    parser.add_argument( "--gpu", default="Quadro_RTX_8000", help="GPU Name for plots, eg TITAN_RTX" )
-    parser.add_argument( "--cvd", default="0", help="CUDA_VISIBLE_DEVICE for the named GPU" )
-    args = parser.parse_args()
+    pm = ProfileMain.ParseArgs(__doc__) 
 
     # plot specifications 
 
@@ -236,26 +231,28 @@ if __name__ == '__main__':
 
     o = O.Get(-1)  # None for -1, corresponding to all plots OR a single plot specification selected by index
 
+    pfx = pm.pfx0
+    cvd = pm.cvd
 
-    gpu = args.gpu
-    cvd = args.cvd
+    cat0 = "cvd_%s_rtx_0" % cvd 
+    cat1 = "cvd_%s_rtx_1" % cvd
 
-    cat0 = "cvd_%s_rtx_0" % args.cvd 
-    cat1 = "cvd_%s_rtx_1" % args.cvd
-
-    pfxs = [args.pfx,]
+    pfxs = [pfx,]
     cats = [cat0, cat1]
 
-    pftab = ProfileSmryTab(pfxs, cats)
+
+    pftab = ProfileSmryTab(pfxs, cats, pm.gpufallback)
     ps = pftab.ps
 
-    ## TODO: auto labelling 
 
     ps[0].fmt = "o:"  
-    ps[0].label = "%s, RTX OFF" % gpu
+    ps[0].label = ps[0].autolabel
 
     ps[1].fmt = "o-"
-    ps[1].label = "%s, RTX ON" % gpu
+    ps[1].label = ps[1].autolabel
+
+    assert ps[0].gpu == ps[1].gpu, (ps[0].gpu, ps[1].gpu) 
+    gpu = ps[0].gpu 
 
     ps[9].fmt = "o--" 
     ps[9].label = "G4 Extrapolated"
@@ -274,32 +271,34 @@ if __name__ == '__main__':
             if o.cfg4: 
                 rs["09l"] = ProfileSmry.FromAB( ps[0], ps[9], att="alaunch" )
                 rs["09l"].fmt = "ro--"
-                rs["09l"].label = "G4 Extrapolated / %s, RTX OFF (launch)" % gpu
+                rs["09l"].label = "G4 Extrapolated / %s (launch)" % ps[0].label
 
                 rs["09i"] = ProfileSmry.FromAB( ps[0], ps[9], att="ainterval" )
                 rs["09i"].fmt = "bo--"
-                rs["09i"].label = "G4 Extrapolated / %s, RTX OFF (interval)" % gpu
+                rs["09i"].label = "G4 Extrapolated / %s (interval)" % ps[0].label
 
                 rs["19l"] = ProfileSmry.FromAB( ps[1], ps[9], att="alaunch")
                 rs["19l"].fmt = "ro-"
-                rs["19l"].label = "G4 Extrapolated / %s, RTX ON (launch)" % gpu
+                rs["19l"].label = "G4 Extrapolated / %s (launch)" % ps[1].label
 
                 rs["19i"] = ProfileSmry.FromAB( ps[1], ps[9], att="ainterval")
                 rs["19i"].fmt = "bo-"
-                rs["19i"].label = "G4 Extrapolated / %s, RTX ON (interval)" % gpu 
+                rs["19i"].label = "G4 Extrapolated / %s (interval)" % ps[1].label 
 
             else:
+
+
                 rs["10"] = ProfileSmry.FromAB( ps[1], ps[0], att="alaunch" )
                 rs["10"].fmt = "ro--"
                 rs["10"].label = "%s, RTX OFF/ON (launch)" % gpu
 
                 rs["00"] = ProfileSmry.FromAtt( ps[0], num_att="ainterval", den_att="alaunch" )
                 rs["00"].fmt = "bo--"
-                rs["00"].label = "%s, RTX OFF  interval / launch " % gpu
+                rs["00"].label = "%s  interval / launch " % ps[0].label
 
                 rs["11"] = ProfileSmry.FromAtt( ps[1], num_att="ainterval", den_att="alaunch" )
                 rs["11"].fmt = "ro--"
-                rs["11"].label = "%s, RTX ON  interval / launch " % gpu 
+                rs["11"].label = "%s interval / launch " % ps[1].label 
             pass 
         pass
 

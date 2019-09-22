@@ -34,7 +34,7 @@ class ProfileSmryTab(object):
         ipfx = ( idx - icat ) / ncat
         return self.pfxs[ipfx], self.cats[icat]
 
-    def __init__(self, pfxs, cats):
+    def __init__(self, pfxs, cats, gpufallback):
         self.pfxs = pfxs
         self.cats = cats
         ps = odict()  
@@ -46,7 +46,7 @@ class ProfileSmryTab(object):
                 assert cat2 == cat  
                 print(" %5s %5s -> %2d   " % ( pfx, cat, idx )) 
 
-                ps[idx] = ProfileSmry.Load(pfx, startswith=cat )
+                ps[idx] = ProfileSmry.Load(pfx, startswith=cat, gpufallback=gpufallback )
             pass
         pass
         assert len(ps) < 9 and len(ps) > 0, len(ps) 

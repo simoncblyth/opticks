@@ -606,6 +606,14 @@ tboolean-testname()
 }
 
 
+tboolean-funcname-notes(){ cat << EON
+
+* LV integers handled by tboolean-proxy
+* string names such as box by tboolean-box for example
+
+EON
+}
+
 tboolean-funcname()
 {
     local funcname
@@ -719,6 +727,8 @@ tboolean-lv()
        TESTNAME=$testname tboolean-py- $* 
    elif [ "${cmdline/--chk}" != "${cmdline}" ]; then
        ${funcname}-
+   elif [ "${cmdline/--nog4}" != "${cmdline}" ]; then
+       $funcname $*   
    elif [ "${cmdline/--noalign}" != "${cmdline}" ]; then
        $funcname --okg4  $*   
    else
@@ -3968,7 +3978,7 @@ right = CSG("difference", left=rbox, right=rsph, **tran)
 im = dict(poly="IM", resolution=64, verbosity=0, ctrl=0 ) #seeds = "100,100,-100,0,0,300"
 obj = CSG("union", left=left, right=right, **im )
 #obj.translate = "0,-300,0"
-obj.meta.update(gpuoffset="0,600,0")
+#obj.meta.update(gpuoffset="0,600,0")
 
 
 #mc = dict(poly="MC", nx=20)

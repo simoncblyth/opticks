@@ -407,6 +407,23 @@ TorchStepNPY* OpticksGen::makeTorchstep()
     setMaterialLine(torchstep);
     torchstep->addActionControl(OpticksActionControl::Parse("GS_TORCH"));
 
+    unsigned num_photons0 = torchstep->getNumPhotons(); 
+    int generateoverride = m_ok->getGenerateOverride(); 
+
+    if( generateoverride > 0)
+    { 
+        LOG(error) << " overriding number of photons with --generateoverride " ; 
+        torchstep->setNumPhotons( generateoverride ); 
+    }
+    unsigned num_photons = torchstep->getNumPhotons(); 
+
+    LOG(error)
+        << " generateoverride " << generateoverride
+        << " num_photons0 " << num_photons0
+        << " num_photons " << num_photons
+        ; 
+
+
     bool torchdbg = m_ok->hasOpt("torchdbg");
     torchstep->addStep(torchdbg);  // copyies above configured step settings into the NPY and increments the step index, ready for configuring the next step 
 

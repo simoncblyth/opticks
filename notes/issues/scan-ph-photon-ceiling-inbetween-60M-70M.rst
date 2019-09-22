@@ -1,8 +1,8 @@
 scan-ph-photon-ceiling-inbetween-60M-70M ELIMINATED
 =======================================================
 
-Issue 
---------
+FIXED Issue 
+------------
 
 scan-ph scanning of "ts box" revealed a ceiling on single launch 
 photon counts somewhere between 60M and 70M photons : with no error returned

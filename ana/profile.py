@@ -48,6 +48,7 @@ pass
 ipdb = MyPdb()
 
 from opticks.ana.log import bold_, blink_
+from opticks.ana.base import json_load_
 from opticks.ana.nload import np_load
 from opticks.ana.nload import tagdir_, stmp_, time_
 
@@ -65,11 +66,14 @@ class Profile(object):
     NAME = "OpticksProfile.npy"
     G4DT = ("CRunAction::BeginOfRunAction","CRunAction::EndOfRunAction",)
     OKDT = ("_OPropagator::launch", "OPropagator::launch",)
+    PARM = "parameters.json"
 
     def __init__(self, tagdir, name ):
         """
         :param tagdir: directory from which to load OpticksProfile.npy and siblings, 
                        leaf dir expected to be a tag integer string, negative for G4
+                       ... hmm but its torch dir ?
+
         :param name: informational name for outputs
         """  
         self.tagdir = tagdir
@@ -99,6 +103,7 @@ class Profile(object):
     def init(self):
         self.loadProfile() 
         self.loadAcc()
+        self.loadMeta()
 
         if self.g4:  
             g4r, g40, g41 = self.deltaT(*self.G4DT)   ## CG4::propagate includes significant initialization
@@ -134,6 +139,15 @@ class Profile(object):
 
     def path(self, sfx=""):
         return os.path.join( self.tagdir, "OpticksProfile%s.npy" % sfx )   # quads 
+
+    def metapath(self):
+        return os.path.join( self.tagdir, "0", self.PARM ) 
+
+    def loadMeta(self):
+        path = self.metapath()
+        self.meta = json_load_(path)
+        log.debug("loaded %s keys %s " % (path, len(self.meta))) 
+
 
     def loadProfile(self):
         path = self.path("")
@@ -339,7 +353,7 @@ class Profile(object):
 
     @classmethod
     def Labels(cls):
-        return " %20s %10s %15s %15s %15s %50s " % ( "name", "note", "avg interval","avg launch","avg overhead", "launch" )
+        return " %20s %10s %10s %10s %10s %50s " % ( "name", "note", "av.interv","av.launch","av.overhd", "launch" )
 
     def brief(self):
         return " %20s %10s %10.4f %10.4f %10.4f %50s " % (self.name, self.note, self.avg_start_interval, self.avg_launch, self.overhead_ratio, repr(self.launch) )
