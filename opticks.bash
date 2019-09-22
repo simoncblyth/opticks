@@ -648,8 +648,7 @@ opticks-full()
     cd $(om-home)
     om-install
 
-
-    opticks-prepare-installcache
+    opticks-prepare-installation
 
     echo $msg DONE $(date)
 }
@@ -802,33 +801,33 @@ opticks--(){
 
 
 
-opticks-prepare-installcache-notes(){ cat << EON
+opticks-prepare-installation-notes(){ cat << EON
 
 $FUNCNAME
 ===================================
 
-Name of the function becoming vestigial.
+PTX 
+    remains in the installcache.
 
+OKC 
+    has been eliminated, the below should NOT be run::
 
-Only PTX remains in the installcache.
+       OpticksPrepareInstallCacheTest '$INSTALLCACHE_DIR/OKC'
 
-OKC has been eliminated, the below should NOT be run::
+RNG 
+    has been relocated from the installcache to the rngcache 
+    which is positioned under OPTICKS_SHARED_CACHE_PREFIX
 
-    OpticksPrepareInstallCacheTest '$INSTALLCACHE_DIR/OKC'
-
-RNG has been relocated from the installcache to the rngcache 
-which is positioned under OPTICKS_SHARED_CACHE_PREFIX
-
-The default RNG dir is ~/.opticks/rngcache/RNG but this is expected
-to be moved to a shared location, eg for use on a GPU cluster, 
-using envvar OPTICKS_SHARED_CACHE_PREFIX which positions 
-the RNG dir at $OPTICKS_SHARED_CACHE_PREFIX/rngcache/RNG
+    The default RNG dir is ~/.opticks/rngcache/RNG but this is expected
+    to be moved to a shared location, eg for use on a GPU cluster, 
+    using envvar OPTICKS_SHARED_CACHE_PREFIX which positions 
+    the RNG dir at $OPTICKS_SHARED_CACHE_PREFIX/rngcache/RNG
 
 EON
 }
 
 
-opticks-prepare-installcache()
+opticks-prepare-installation()
 {
     local msg="=== $FUNCNAME :"
     echo $msg generating RNG seeds into installcache 
@@ -838,7 +837,7 @@ opticks-prepare-installcache()
     cudarap-check-rng
 }
 
-opticks-check-installcache()
+opticks-check-installation()
 {
     local msg="=== $FUNCNAME :"
     local rc=0
@@ -849,11 +848,18 @@ opticks-check-installcache()
         echo $msg missing dir $dir 
         rc=100
     else
-        cd $dir
-        [ ! -d "PTX" ] && echo $msg $PWD : missing PTX : compiled OptiX programs created when building oxrap-  && rc=101
+        if [ ! -d "$dir/PTX" ]; then  
+            echo $msg $dir/PTX : missing PTX : compiled OptiX programs created when building oxrap-  
+            rc=101
+        else
+            cudarap-
+            cudarap-check-installation
+            rc=$?
+        fi 
     fi
 
     cd $iwd
+    echo $msg rc $rc
     return $rc
 }
 
@@ -889,9 +895,9 @@ opticks-t-()
    local iwd=$PWD
 
    local rc=0
-   opticks-check-installcache 
+   opticks-check-installation
    rc=$?
-   [ "$rc" != "0" ] && echo $msg ABORT : missing installcache components : create with opticks-prepare-installcache && return $rc
+   [ "$rc" != "0" ] && echo $msg ABORT : missing installcache components : create with opticks-prepare-installation && return $rc
 
 
    ## if 1st arg is a directory, cd there to run ctest     

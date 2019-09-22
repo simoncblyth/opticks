@@ -37,6 +37,7 @@ profilesmryplot.py
     an ; ip profilesmryplot.py --pfx "scan-ph-7" --gpu TITAN_RTX --cvd 1 
     an ; ip profilesmryplot.py --pfx "scan-ph-8" --gpu TITAN_RTX --cvd 1 
     an ; ip profilesmryplot.py --pfx "scan-ph-9" --gpu TITAN_RTX --cvd 1 
+    an ; ip profilesmryplot.py --pfx "scan-ph-10" --gpu TITAN_RTX --cvd 1 
 
 """
 
@@ -58,7 +59,7 @@ class O(object):
     """
     ID = "scan-ph (profilesmryplot.py)"
     TT = odict()
-    SLI = slice(0,7)
+    SLI = slice(0,None)
 
     @classmethod
     def Get(cls, key):

@@ -545,7 +545,7 @@ cudarap-rngmax(){ echo $(( $(cudarap-rngmax-M)*1000*1000 )) ; } # maximal number
 cudarap-rngdir(){ echo $(opticks-rngdir)  ; }
 
 
-cudarap-prepare-rng-notes(){ cat << EON
+cudarap-prepare-installation-notes(){ cat << EON
 $FUNCNAME
 ====================================
 
@@ -562,31 +562,94 @@ EON
 }
 
 
-cudarap-prepare-rng()
+cudarap-prepare-installation()
 {
-   CUDARAP_RNGMAX_M=1  $FUNCNAME- 
-   CUDARAP_RNGMAX_M=3  $FUNCNAME- 
-   CUDARAP_RNGMAX_M=10 $FUNCNAME- 
+   CUDARAP_RNGMAX_M=1  cudarap-prepare-rng-
+   CUDARAP_RNGMAX_M=3  cudarap-prepare-rng-
+   CUDARAP_RNGMAX_M=10 cudarap-prepare-rng-
 }
-cudarap-check-rng()
-{
-   CUDARAP_RNGMAX_M=1  $FUNCNAME- 
-   CUDARAP_RNGMAX_M=3  $FUNCNAME- 
-   CUDARAP_RNGMAX_M=10 $FUNCNAME- 
-}
-
 
 cudarap-prepare-rng-()
 {
+   local msg="=== $FUNCNAME :"
+   local path=$(cudarap-rngpath)
+   [ -f "$path" ] && echo $msg path $path exists already && return 0
+
    CUDARAP_RNG_DIR=$(cudarap-rngdir) CUDARAP_RNG_MAX=$(cudarap-rngmax) $(cudarap-ibin)
 }
 
-cudarap-rngdir-ls(){ ls -l $(cudarap-rngdir) ; }
+cudarap-prepare-rng-100M(){ CUDARAP_RNGMAX_M=100 cudarap-prepare-rng- ; }
+cudarap-prepare-rng-10M(){  CUDARAP_RNGMAX_M=10  cudarap-prepare-rng- ; }
+cudarap-prepare-rng-2M(){   CUDARAP_RNGMAX_M=2   cudarap-prepare-rng- ; }
+cudarap-prepare-rng-1M(){   CUDARAP_RNGMAX_M=1   cudarap-prepare-rng- ; }
 
-cudarap-prepare-rng-100M(){ CUDARAP_RNGMAX_M=100 cudarap-prepare-rng ; }
-cudarap-prepare-rng-10M(){  CUDARAP_RNGMAX_M=10  cudarap-prepare-rng ; }
-cudarap-prepare-rng-2M(){   CUDARAP_RNGMAX_M=2   cudarap-prepare-rng ; }
-cudarap-prepare-rng-1M(){   CUDARAP_RNGMAX_M=1   cudarap-prepare-rng ; }
+cudarap-rngdir-ls(){ ls -l $(cudarap-rngdir) ; }
+cudarap-rngdir-du(){ du -h $(cudarap-rngdir)/* ; }
+
+cudarap-rngname(){ echo cuRANDWrapper_$(cudarap-rngmax)_0_0.bin ; }
+cudarap-rngname-1M(){  CUDARAP_RNGMAX_M=1 cudarap-rngname ; }
+cudarap-rngpath(){ echo $(cudarap-rngdir)/$(cudarap-rngname) ; } 
+
+
+
+
+cudarap-check-installation()
+{
+   local msg="=== $FUNCNAME :"
+
+   local rc=0
+   cudarap-check-rngdir-
+   rc=$? ; [ $rc -ne 0 ] && return $rc 
+
+   CUDARAP_RNGMAX_M=1  cudarap-check-rngpath- 
+   rc=$? ; [ $rc -ne 0 ] && return $rc 
+
+   CUDARAP_RNGMAX_M=3  cudarap-check-rngpath-
+   rc=$? ; [ $rc -ne 0 ] && return $rc 
+
+   CUDARAP_RNGMAX_M=10 cudarap-check-rngpath-
+   rc=$? ; [ $rc -ne 0 ] && return $rc 
+
+   local rcx=0
+   CUDARAP_RNGMAX_M=100 cudarap-check-rngpath-
+   rcx=$?  
+   if [ $rcx -ne 0 ]; then 
+       echo $msg to operate with more than 10M photons you need to run : cudarap-prepare-rng-100M 
+   fi 
+
+   return $rc
+}
+
+
+cudarap-check-rngdir-()
+{
+    local msg="$FUNCNAME :"
+    local rc=0
+    local rngdir=$(cudarap-rngdir)
+    local err=""
+    if [ ! -d "$rngdir" ]; then
+        rc=201
+        err="ERROR MISSING DIR"
+    fi 
+    echo $msg $rngdir $err rc $rc
+    return $rc
+}
+
+cudarap-check-rngpath-()
+{
+    local msg="$FUNCNAME :"
+    local rc=0
+    local path=$(cudarap-rngpath)
+    local err=""
+    if [ ! -f $path ]; then
+        rc=202
+        err="ERROR MISSING PATH"
+    fi    
+    echo $msg $path $err rc $rc
+    return $rc
+}
+
+
 
 cudarap-test-1M()
 {
@@ -594,33 +657,9 @@ cudarap-test-1M()
    mkdir -p $rngdir
    cd $rngdir 
 
-   local path=$(cudadap-rngname-1M)
-   rm $path
+   local name=$(cudadap-rngname-1M)
+   rm $name
 
    cuRANDWrapper=INFO MAX_BLOCKS=4096 cudarap-prepare-rng-1M 
-}
-
-cudarap-rngname(){ echo cuRANDWrapper_$(cudarap-rngmax)_0_0.bin ; }
-cudarap-rngname-1M(){  CUDARAP_RNGMAX_M=1 cudarap-rngname ; }
-
-cudarap-check-rng-()
-{
-    local msg="$FUNCNAME :"
-    local iwd=$PWD
-    local rngdir=$(cudarap-rngdir)
-    if [ ! -f "$rngdir" ]; then
-        echo $msg ERROR rngdir missing $rngdir
-        sleep 10000000
-    fi 
-    cd $rngdir    
-
-    local name=$(cudarap-rngname) 
-    echo $name
-    if [ ! -f $name ]; then
-         echo $msg error : missing expected rng file $name
-         sleep 10000000
-         return 101 
-    fi    
-    cd $iwd
 }
 

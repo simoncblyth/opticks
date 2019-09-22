@@ -254,6 +254,10 @@ scan-vers-notes(){ cat << EON
 10
    Gold:TITAN_RTX 435.21:OptiX 650:WITH_LOGDOUBLE enabled:LEGACY_ENABLED:
    after removing 67.1M ceiling from the cycling of unsigned long 
+11
+   Silver:Quadro_RTX_8000 435.21:OptiX 650:WITH_LOGDOUBLE enabled:LEGACY_ENABLED:
+   after removing 67.1M ceiling from the cycling of unsigned long 
+
 
 
 
@@ -262,7 +266,7 @@ To check switches : OpticksSwitchesTest
 EON
 }
 
-scan-vers(){ echo ${SCAN_VERS:-10} ; }
+scan-vers(){ echo ${SCAN_VERS:-11} ; }
 scan-pfx(){  echo ${SCAN_PFX:-scan-$(scan-mode)-$(scan-vers)} ; }
 
 

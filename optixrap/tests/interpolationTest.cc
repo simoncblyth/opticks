@@ -174,14 +174,13 @@ void interpolationTest::launch(optix::Context& context)
 
 int interpolationTest::ana()
 {
-    bool chomp = true ; 
-    std::string path = SSys::POpen("which", m_script, chomp);
+    std::string path = SSys::Which(m_script);
     LOG(info) 
          << " m_script " << m_script
          << " path " << path 
          ; 
 
-    int RC = SSys::exec("python",path.c_str());
+    int RC = path.empty() ? 101 : SSys::exec("python",path.c_str()) ;
     LOG(info) << " RC " << RC ; 
     return RC ; 
 }

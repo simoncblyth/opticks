@@ -105,6 +105,31 @@ int SSys::run(const char* cmd)
     return rc ;  
 }
 
+
+
+
+
+
+
+
+
+std::string SSys::Which(const char* script)
+{
+    bool chomp = true ; 
+
+    int rc(0); 
+    std::string path = SSys::POpen("which", script, chomp, rc );
+    LOG(info) 
+         << " script " << script
+         << " path " << path 
+         << " rc " << rc
+         ;
+
+    std::string empty ; 
+    return rc == 0 ? path : empty ; 
+}
+
+
 /**
 SSys::POpen
 -------------
@@ -113,8 +138,11 @@ Newlines are removed when chomp is true.
 
 **/
 
-std::string SSys::POpen(const char* cmd, bool chomp)
+
+std::string SSys::POpen(const char* cmd, bool chomp, int& rc)
 {
+    LOG(info) << "[ " << cmd ; 
+
     std::stringstream ss ; 
     FILE *fp = popen(cmd, "r");
     char line[512];    
@@ -124,11 +152,16 @@ std::string SSys::POpen(const char* cmd, bool chomp)
        //LOG(info) << "[" << line << "]" ; 
        ss << line ;  
     }
-    pclose(fp);
-    return ss.str(); 
+
+    rc=0 ; 
+    int st = pclose(fp);
+    if(WIFEXITED(st)) rc=WEXITSTATUS(st);
+    LOG(info) << "] " << cmd << " rc " << rc ; 
+
+    return ss.str() ; 
 }
 
-std::string SSys::POpen(const char* cmda, const char* cmdb, bool chomp)
+std::string SSys::POpen(const char* cmda, const char* cmdb, bool chomp, int& rc)
 {
     std::stringstream ss ; 
     if(cmda) ss << cmda ; 
@@ -136,7 +169,7 @@ std::string SSys::POpen(const char* cmda, const char* cmdb, bool chomp)
     if(cmdb) ss << cmdb ; 
 
     std::string s = ss.str(); 
-    return POpen(s.c_str(), chomp ); 
+    return POpen(s.c_str(), chomp, rc ); 
 }
 
 

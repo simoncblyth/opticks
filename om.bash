@@ -556,6 +556,13 @@ om-make-one()
        return $rc
     fi 
 
+    if [ ! -f $bdir/Makefile ]; then
+       echo $msg ERROR bdir $bdir exists but does not contain a Makefile : you need to om-install OR om-conf once before using om-make or the om-- shortcut  
+       rc=2
+       return $rc
+    fi 
+
+
     cd $bdir
     local t0=$(date +"%s")
 

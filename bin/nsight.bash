@@ -72,6 +72,15 @@ nsight-sys
     * hover cursor in timeline to see tooltips of callstack 
 
 
+::
+
+    [blyth@localhost nsight_systems]$ which nsys
+    /opt/nvidia/nsight-systems/2019.5.1/bin/nsys
+
+    [blyth@localhost nsight_systems]$ which nsight-sys
+    /opt/nvidia/nsight-systems/2019.5.1/bin/nsight-sys
+
+
 
 NVIDIA Nsight Compute : Metrics and Events of single kernel
 ------------------------------------------------------------------
@@ -82,6 +91,38 @@ NVIDIA Nsight Compute : Metrics and Events of single kernel
 NVIDIA Nsight Graphics
 ----------------------
 
+
+NVTX
+-------
+
+* https://devblogs.nvidia.com/cuda-pro-tip-generate-custom-application-profile-timelines-nvtx/
+* https://docs.nvidia.com/cuda/profiler-users-guide/index.html#nvtx
+* https://github.com/NVIDIA-developer-blog/code-samples/tree/master/posts/nvtx
+
+Looks like two headers but only one lib::
+
+    [blyth@localhost cuda-10.1]$ find . -name  nvToolsExt.h -exec ls -l {} \;
+    -rw-r--r--. 1 root root 52247 Apr  8 14:43 ./targets/x86_64-linux/include/nvtx3/nvToolsExt.h
+    -rw-r--r--. 1 root root 52247 Apr  8 14:43 ./NsightSystems-2018.3/Target-x86_64/nvtx/include/nvtx3/nvToolsExt.h
+
+    -rw-r--r--. 1 root root 53680 Apr  8 14:43 ./targets/x86_64-linux/include/nvToolsExt.h
+
+    [blyth@localhost cuda-10.1]$ find . -name 'libnvToolsExt.so'
+    ./targets/x86_64-linux/lib/libnvToolsExt.so
+
+    [blyth@localhost cuda-10.1]$ pwd
+    /usr/local/cuda-10.1
+
+    [blyth@localhost nsight_systems]$ nsight-
+    [blyth@localhost nsight_systems]$ find /opt/nvidia/ -name nvToolsExt.h
+    /opt/nvidia/nsight-systems/2019.5.1/target-linux-x64/nvtx/include/nvtx3/nvToolsExt.h
+
+
+
+* https://docs.nvidia.com/gameworks/content/gameworkslibrary/nvtx/nvidia_tools_extension_library_nvtx.htm
+
+More information is available as comments in nvToolsExt.h. NVTX v3 is a header-only C library. 
+The headers ship with CUDA Toolkit and Nsight tools such as Nsight Graphics and Nsight Systems.
 
 
 
@@ -97,9 +138,27 @@ $FUNCNAME
 Installation
 --------------
 
-[root@gilda03 Downloads]# bash NVIDIA_Nsight_Systems_Linux_2019.5.1.58.run
+silver.precision::
 
-To uninstall the Nsight Systems 2019.5.1, please delete "/opt/nvidia/nsight-systems/2019.5.1"
+    [root@gilda03 Downloads]# bash NVIDIA_Nsight_Systems_Linux_2019.5.1.58.run
+
+    To uninstall the Nsight Systems 2019.5.1, please delete "/opt/nvidia/nsight-systems/2019.5.1"
+
+gold.precision::
+
+    [root@localhost Downloads]# bash NVIDIA_Nsight_Systems_Linux_2019.5.1.58.run
+    Verifying archive integrity...  100%   All good.
+    Uncompressing NVIDIA Nsight Systems  100%  
+    Can't locate Env.pm in @INC (@INC contains: /usr/local/lib64/perl5 /usr/local/share/perl5 /usr/lib64/perl5/vendor_perl /usr/share/perl5/vendor_perl /usr/lib64/perl5 /usr/share/perl5 .) at ./install-linux.pl line 10.
+    BEGIN failed--compilation aborted at ./install-linux.pl line 10.
+    [root@localhost Downloads]# 
+
+    [root@localhost Downloads]# yum install perl-Env
+
+    After that the install works
+
+    To uninstall the Nsight Systems 2019.5.1, please delete "/opt/nvidia/nsight-systems/2019.5.1"
+
 
 EON
 }
@@ -136,6 +195,13 @@ https://developer.nvidia.com/ERR_NVGPUCTRPERM
     ...
     parm:           NVreg_RestrictProfilingToAdminUsers:int
     ...
+
+::
+
+    [blyth@localhost modprobe.d]$ su
+    [root@localhost modprobe.d]# . ~blyth/opticks/bin/nsight.bash
+
+
 
 EON
 }

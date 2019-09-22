@@ -124,6 +124,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(__doc__)
     parser.add_argument( "base", nargs="*",  help="Dump tree" )
     parser.add_argument( "--withtop", action="store_true", help="Switch on handling of the usually skipped top level test results" )
+    parser.add_argument( "--slow", default="15", help="Slow test time cut in seconds" )
     args = parser.parse_args()
 
     if len(args.base) == 0:
@@ -149,6 +150,14 @@ if __name__ == '__main__':
     for lg in lgs:
         print(repr(lg))
     pass
+
+    print("\n\nSLOW: tests taking longer that %s seconds" % args.slow )
+    for lg in lgs:
+        for tst in filter(lambda tst:float(tst['time'])>float(args.slow),lg.tests):
+            print(tst)
+        pass
+    pass
+
     print("\n\nFAILS:  %s  :  %s   " % ( CTestLog.desc_totals(), CTestLog.dt.strftime("%c")))
     for lg in lgs:
         for tst in lg.fails:

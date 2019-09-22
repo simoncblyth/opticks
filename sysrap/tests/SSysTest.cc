@@ -81,13 +81,18 @@ void test_hostname()
 void test_POpen(bool chomp)
 {
     std::vector<std::string> cmds = {"which python", "ls -l" }; 
+    int rc(0); 
 
     for(unsigned i=0 ; i < cmds.size() ; i++)
     {
         const char* cmd = cmds[i].c_str() ; 
         LOG(info) << " cmd " << cmd  <<  " chomp " << chomp ;  
-        std::string out = SSys::POpen(cmd, chomp) ; 
-        LOG(info) << " out " << out ; 
+        std::string out = SSys::POpen(cmd, chomp, rc ) ; 
+
+        LOG(info) 
+            << " out " << out 
+            << " rc " << rc
+            ; 
     }
 }
 
@@ -95,6 +100,7 @@ void test_POpen(bool chomp)
 void test_POpen2(bool chomp)
 {
     std::vector<std::string> cmds = {"which", "python", "ls", "-l" }; 
+    int rc(0); 
 
     for(unsigned i=0 ; i < cmds.size()/2 ; i++)
     {
@@ -105,12 +111,31 @@ void test_POpen2(bool chomp)
            << " cmdb " << cmdb  
            << " chomp " << chomp
            ;  
-        std::string out = SSys::POpen(cmda, cmdb, chomp) ; 
-        LOG(info) << " out " << out ; 
+        std::string out = SSys::POpen(cmda, cmdb, chomp, rc ) ; 
+        LOG(info) 
+            << " out " << out 
+            << " rc " << rc
+            ; 
+
     }
 }
 
+void test_Which()
+{
+    std::vector<std::string> scripts = {"python", "nonexisting" }; 
 
+    for(unsigned i=0 ; i < scripts.size() ; i++)
+    {
+        const char* script = scripts[i].c_str(); 
+        std::string path = SSys::Which( script ); 
+        LOG(info) 
+           << " script " << script 
+           << " path " << path 
+           << ( path.empty() ? " EMPTY PATH " : "" )
+           ;  
+
+    }
+}
 
 
 
@@ -138,10 +163,10 @@ int main(int argc , char** argv )
     //test_POpen(true);
     //test_POpen(false);
 
-    test_POpen2(true);
-    test_POpen2(false);
+    //test_POpen2(true);
+    //test_POpen2(false);
 
-
+    test_Which(); 
 
 
     return rc  ; 

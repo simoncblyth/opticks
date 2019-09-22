@@ -57,15 +57,21 @@ TODO : memory accounting to determine theoretical photon ceiling
 
 Memory::
 
-    NVIDIA Quadro RTX 8000 : 48598MiB 
-    NVIDIA TITAN RTX       : 24219MiB
-    NVIDIA TITAN V         : 12066MiB   
+
+    4*Tesla V100-SXM2-32GB              128G
+    NVIDIA Quadro RTX 8000 : 48598MiB    48G
+    Tesla V100-SXM2-32GB   : 32480MiB    32G
+    NVIDIA TITAN RTX       : 24219MiB    24G
+    NVIDIA TITAN V         : 12066MiB    12G  
+
 
 * push current 100M largest attempt further : 
 
   * 67.1M photons corresponds to 4G of photon buffer
   * 671M will get to 40G of photon buffer : which might still work in Quadro RTX 8000 
  
+* hmm what about with 4xV100, that might reach 1000M photons in one launch 
+
 
 
 okop/compactionTest

@@ -78,6 +78,12 @@ heuristic, and make that device 0, leaving the order of the rest of the devices
 unspecified. PCI_BUS_ID orders devices by PCI bus ID in ascending order. 
 
 
+CURAND
+--------
+
+* http://richiesams.blogspot.com/2015/03/creating-randomness-and-acummulating.html
+
+
 
 Measuring Bandwidth
 -----------------------
