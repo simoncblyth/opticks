@@ -52,7 +52,7 @@ o-binary-names(){ type o-binary-name | perl -ne 'm,--(\w*)\), && print "$1\n" ' 
 o-binary-name()
 {
    case $1 in 
-           --nog4) echo OKTest ;;
+           --oktest) echo OKTest ;;
            --okg4) echo OKG4Test ;;
            --okx4) echo OKX4Test ;;
          --tracer) echo OTracerTest ;;

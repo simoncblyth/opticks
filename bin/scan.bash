@@ -310,6 +310,9 @@ scan-px-notes(){ cat << EON
 0
    Gold:TITAN_RTX checking torchconfig based GPU generation of photons with tboolean-interlocked 
 1
+   Gold:TITAN_RTX checking torchconfig based GPU generation of photons with tboolean-interlocked 
+   reproducibility check 
+2
    Silver:Quadro_RTX_8000 checking torchconfig based GPU generation of photons with tboolean-interlocked 
 
 

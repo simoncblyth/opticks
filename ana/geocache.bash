@@ -200,7 +200,7 @@ geocache-keydir-test()
 }
 
 
-geocache-keydir()
+geocache-keydir-()
 {
     local k=$OPTICKS_KEY
     local arr=(${k//./ })
@@ -209,8 +209,28 @@ geocache-keydir()
     local cls=${arr[1]}
     local top=${arr[2]}
     local dig=${arr[3]}
-    echo $(geocache-dir)/${exe}_${top}_g4live/g4ok_gltf/$dig/1 
+    echo ${exe}_${top}_g4live/g4ok_gltf/$dig/1 
 }
+
+geocache-keydir(){        echo $(geocache-dir)/$(geocache-keydir-) ; }
+geocache-keydir-shared(){ echo $(geocache-dir-shared)/$(geocache-keydir-) ; }
+
+geocache-dir-shared(){ echo /cvmfs/opticks.ihep.ac.cn/ok/shared/geocache ; }
+
+geocache-keydir-copy-to-shared(){
+    local src=$(geocache-keydir)
+    local dst=$(geocache-keydir-shared)
+
+    [ ! -d "$src" ] && echo $msg src $src does not exist && return 1 
+    [ -d "$dst" ] && echo $msg dst $dst exists already && return 1
+
+    mkdir -p $(dirname $dst)
+    echo cp -r $src $(dirname $dst)/ 
+}
+
+
+
+
 
 geocache-keydir-py(){ key.py ; }
 
@@ -218,7 +238,7 @@ geocache-keydir-py(){ key.py ; }
 geocache-dir(){ echo $(opticks-geocachedir) ; }
 geocache-cd(){ cd $(geocache-dir) ; }
 geocache-tstdir(){ echo $(geocache-keydir)/g4codegen/tests ; }
-geocache-kcd(){ cd $(geocache-keydir) ; pwd ; cat runcomment.txt ;  }
+geocache-kcd(){ echo $OPTICKS_KEY ; cd $(geocache-keydir) ; pwd ; cat runcomment.txt ;  }
 geocache-tcd(){ cd $(geocache-tstdir) ; pwd ; }
 
 geocache-tmp(){ echo /tmp/$USER/opticks/$1 ; }  ## TODO: 
@@ -388,8 +408,6 @@ geocache-dxtmp(){   $FUNCNAME- --runfolder $FUNCNAME --runcomment $(${FUNCNAME}-
 
 geocache-dxtmp-key(){ echo OKX4Test.X4PhysicalVolume.World0xc15cfc00x5d42890_PV.5aa828335373870398bf4f738781da6c ; }
 geocache-dxtmp-keydir(){ OPTICKS_KEY=$(geocache-dxtmp-key) geocache-keydir ; }
-
-
 
 
 

@@ -1055,14 +1055,125 @@ Silver::
       2  /2   Test #2  : IntegrationTests.tboolean.box                 ***Failed                      13.95  
 
 
+* more fails as omitted to add the new GDML to opticksaux repo 
+
+
+opticks-t check again after fixes
+---------------------------------------
+
+Gold::
+
+    SLOW: tests taking longer that 15 seconds
+      7  /34  Test #7  : CFG4Test.CG4Test                              Passed                         17.29  
+      1  /1   Test #1  : OKG4Test.OKG4Test                             Passed                         21.48  
+
+    FAILS:  0   / 416   :  Mon Sep 23 15:04:09 2019   
+
+
+Silver::
+
+    SLOW: tests taking longer that 15 seconds
+      7  /34  Test #7  : CFG4Test.CG4Test                              Passed                         18.07  
+      1  /1   Test #1  : OKG4Test.OKG4Test                             Passed                         21.63  
+
+    FAILS:  1   / 416   :  Mon Sep 23 15:05:02 2019   
+      18 /25  Test #18 : OptiXRapTest.interpolationTest                ***Failed                      6.89   
+
+
+/home/blyth/local/opticks/build/optixrap/ctest.log::
+
+    147 [2019-09-23 15:02:21,970] p227096 {__init__            :proplib.py:172} WARNING  - ^[[33mdirect data override^[[0m
+    148 [2019-09-23 15:02:21,972] p227096 {<module>            :interpolationTest_interpol.py:59} INFO     - ^[[32m opath : Y : /home/blyth/local/opticks/tmp/interpolationTest/interpolationTest_interpol.npy ^[[0m
+    149 [2019-09-23 15:02:21,973] p227096 {<module>            :interpolationTest_interpol.py:60} INFO     - ^[[32m cpath : Y : /home/blyth/local/opticks/tmp/interpolationTest/CInterpolationTest_interpol.npy ^[[0m
+    150 Traceback (most recent call last):
+    151   File "/home/blyth/local/opticks/bin/interpolationTest_interpol.py", line 75, in <module>
+    152     assert len(t) == len(c)
+    153 AssertionError
+    154 2019-09-23 15:02:22.007 INFO  [227001] [SSys::run@91] python /home/blyth/local/opticks/bin/interpolationTest_interpol.py rc_raw : 256 rc : 1
+    155 2019-09-23 15:02:22.007 ERROR [227001] [SSys::run@98] FAILED with  cmd python /home/blyth/local/opticks/bin/interpolationTest_interpol.py RC 1
+
+* this fail always happens on hopping between geometries, going away in 2nd run in new geometry
+
+  * TODO: geo digest or smth in the output path to avoid this ? 
+
+
+
+Simon (binary dist check)::
+
+    okdist-
+    okdist-- 
+
+    * note that the state of opticksaux is bundled up into the distribution
+      but the geometry goes into shared geocache, perhaps these should fly together ?
+
+
+    [blyth@localhost ~]$ su - simon
+    Password: 
+    Last login: Tue Sep 17 22:09:59 CST 2019 on pts/5
+    [simon@localhost ~]$ 
+
+    vip  # set the key to geocache-dx-v0-key (without benefit of geocache funcs)
+    ini
+    okr-t   # runs all ctests together 
+
+40 fails from missing geocache::
+
+    90% tests passed, 40 tests failed out of 413
+
+    /cvmfs/opticks.ihep.ac.cn/ok/shared/geocache/OKX4Test_World0xc15cfc00x40f7000_PV_g4live/g4ok_gltf/5aa828335373870398bf4f738781da6c/1
+
+::
+
+    [simon@localhost ~]$ l /cvmfs/opticks.ihep.ac.cn/ok/shared/geocache/
+    total 0
+    drwxrwxr-x. 3 blyth blyth 23 Sep 15 15:43 CerenkovMinimal_World_g4live
+    drwxrwxr-x. 4 blyth blyth 36 Sep 15 15:43 DayaBay_VGDX_20140414-1300
+    drwxrwxr-x. 3 blyth blyth 23 Sep 15 15:43 OKX4Test_lWorld0x4bc2710_PV_g4live
+    drwxrwxr-x. 3 blyth blyth 23 Sep 15 15:43 OKX4Test_World0xc15cfc0_PV_g4live
+    drwxrwxr-x. 3 blyth blyth 23 Sep 15 15:43 X4PhysicalVolumeTest_World_g4live
+    [simon@localhost ~]$ 
+
+
+Copy geocache to fake cvmfs::
+
+    [blyth@localhost opticks]$ t geocache-keydir-copy-to-shared 
+    geocache-keydir-copy-to-shared is a function
+    geocache-keydir-copy-to-shared () 
+    { 
+        local src=$(geocache-keydir);
+        local dst=$(geocache-keydir-shared);
+        [ ! -d "$src" ] && echo $msg src $src does not exist && return 1;
+        [ -d "$dst" ] && echo $msg dst $dst exists already && return 1;
+        mkdir -p $(dirname $dst);
+        echo cp -r $src $(dirname $dst)/
+    }
+
+    [blyth@localhost opticks]$ geocache-
+    [blyth@localhost opticks]$ geocache-keydir-copy-to-shared
+    cp -r /home/blyth/.opticks/geocache/OKX4Test_World0xc15cfc00x40f7000_PV_g4live/g4ok_gltf/5aa828335373870398bf4f738781da6c/1 /cvmfs/opticks.ihep.ac.cn/ok/shared/geocache/OKX4Test_World0xc15cfc00x40f7000_PV_g4live/g4ok_gltf/5aa828335373870398bf4f738781da6c/
+    [blyth@localhost opticks]$ geocache-keydir-copy-to-shared | sh 
+
+
+Rerun okr-t gives usual geo-hopping failure from interpolationTest, rerun and it passes:: 
+
+    99% tests passed, 1 tests failed out of 413
+
+    Total Test time (real) = 256.57 sec
+
+    The following tests FAILED:
+    Cannot create directory /cvmfs/opticks.ihep.ac.cn/ok/releases/Opticks-0.0.0_alpha/x86_64-centos7-gcc48-geant4_10_04_p02-dbg/tests/Testing/Temporary
+    Cannot create log file: LastTestsFailed.log
+        338 - OptiXRapTest.interpolationTest (Failed)
+    Errors while running CTest
+    == okr-t : tbeg Mon Sep 23 15:52:11 CST 2019
+    == okr-t : tend Mon Sep 23 15:56:28 CST 2019
+    == okr-t : tdir /cvmfs/opticks.ihep.ac.cn/ok/releases/Opticks-0.0.0_alpha/x86_64-centos7-gcc48-geant4_10_04_p02-dbg/tests
+    == okr-t : tlog /home/simon/okr-t.log
 
 
 
 
-
- 
-
-TODO
+ TODO
 ------
 
 * how to target a sensible volume for the photon source ?
