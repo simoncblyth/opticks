@@ -314,6 +314,10 @@ scan-px-notes(){ cat << EON
    reproducibility check 
 2
    Silver:Quadro_RTX_8000 checking torchconfig based GPU generation of photons with tboolean-interlocked 
+   interlocked is heavy
+3
+   Gold:TITAN_RTX checking torchconfig based GPU generation of photons with tboolean-boxx
+
 
 
 EON
@@ -378,7 +382,8 @@ scan-ph-cmd(){
    echo $cmd
 }
 
-scan-px-lv(){ echo interlocked ; }   
+#scan-px-lv(){ echo interlocked ; }   
+scan-px-lv(){ echo boxx ; }   
 scan-px-cmd(){
    local num_photons=$1
    local cat=$2

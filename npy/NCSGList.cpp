@@ -163,7 +163,19 @@ void NCSGList::update()
 
     if(hasContainer())
     {
-        adjustContainerSize(); 
+        NCSG* container = findContainer(); 
+        assert(container); 
+        bool autosize = container->isContainerAutoSize() ; 
+        if(autosize)
+        {
+            adjustContainerSize(); 
+        }
+        else
+        {
+           LOG(LEVEL) 
+               << " not adjusting container size due to containerautosize setting " 
+               ;  
+        } 
     } 
 }
 
@@ -202,6 +214,9 @@ void NCSGList::updateBoundingBox()
     LOG(LEVEL) << "] m_bbox " << m_bbox.desc() ; 
 }
 
+
+
+
 void NCSGList::adjustContainerSize()
 {
     LOG(LEVEL) << "[" ; 
@@ -209,6 +224,8 @@ void NCSGList::adjustContainerSize()
     assert( hasContainer() ); 
     NCSG* container = findContainer(); 
     assert(container); 
+
+    bool autosize = container->isContainerAutoSize() ; 
 
 
     float scale = container->getContainerScale(); // hmm should be prop of the list not the tree ? 

@@ -130,7 +130,10 @@ EOU
 }
 
 
+
 nsight-systems-dir(){ echo /opt/nvidia/nsight-systems/2019.5.1 ; } 
+nsight-systems-nvtx-include-dir(){ echo $(nsight-systems-dir)/target-linux-x64/nvtx/include ; }
+
 nsight-systems-export(){ PATH=$(nsight-systems-dir)/bin:$PATH ; }
 nsight-systems-notes(){ cat << EON
 $FUNCNAME

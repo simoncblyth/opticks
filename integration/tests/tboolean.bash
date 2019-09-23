@@ -728,7 +728,7 @@ tboolean-lv()
    elif [ "${cmdline/--chk}" != "${cmdline}" ]; then
        ${funcname}-
    elif [ "${cmdline/--oktest}" != "${cmdline}" ]; then
-       $funcname $*   
+       $funcname $* --nog4propagate  
    elif [ "${cmdline/--noalign}" != "${cmdline}" ]; then
        $funcname --okg4test  $*   
    else
@@ -852,7 +852,7 @@ tboolean-torchconfig-disc()
                  transform=$(tboolean-identity)
                  source=${source_}
                  target=0,0,0
-                 time=0.1
+                 time=0.0
                  radius=${radius}
                  distance=200
                  zenithazimuth=0,1,0,1
@@ -1173,6 +1173,44 @@ a BR on the 1st step, ie "TO BR SA" and not all "BR".
 
 EON
 }
+
+
+
+
+
+
+
+
+
+tboolean-boxx(){ 
+   local msg="=== $FUNCNAME :"
+   $FUNCNAME- 
+   local testconfig=$($FUNCNAME- 2>/dev/null)
+   echo $msg testconfig $testconfig  
+   TESTNAME=$FUNCNAME TESTCONFIG=$testconfig tboolean-- $* 
+ } 
+tboolean-boxx-(){  $FUNCNAME- | python $* ; }
+tboolean-boxx--(){ cat << EOP 
+import logging
+log = logging.getLogger(__name__)
+from opticks.ana.main import opticks_main
+from opticks.analytic.csg import CSG  
+
+args = opticks_main(csgname="${FUNCNAME/--}")
+
+CSG.kwa = dict(poly="IM",resolution=20, verbosity=0, ctrl=0, containerscale=3.0, containerautosize=0 )
+
+container = CSG("box", param=[0,0,0,600], boundary='Rock//perfectAbsorbSurface/Vacuum', container=1  ) 
+
+box = CSG("box3", param=[300,300,200,0],  boundary="Vacuum///GlassSchottF2"  )
+
+CSG.Serialize([container, box], args )
+EOP
+}
+
+
+
+
 
 
 
