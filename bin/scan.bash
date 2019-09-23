@@ -136,19 +136,13 @@ scan-seq(){
 }
 
 
-scan-numphoton-mini(){ cat << EOS | tr -d " ,"  | grep -v \#
-  1,000,000
- 10,000,000
-100,000,000
+scan-numphoton-inwaiting(){ cat << EOS | tr -d " ,"  | grep -v \#
+200,000,000
+400,000,000
 EOS
 }
 
 scan-numphoton(){ cat << EOS | tr -d " ,"  | grep -v \#
-200,000,000
-EOS
-}
-
-scan-numphoton-inwaiting(){ cat << EOS | tr -d " ,"  | grep -v \#
   1,000,000
  10,000,000
  20,000,000
