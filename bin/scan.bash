@@ -25,6 +25,20 @@ scan-usage(){ cat << EOU
 scan
 ===================
 
+Usage
+------
+
+::
+
+   scan-smry 0 --pfx scan-px    # summary of the scan with prefix scan-px-0
+   scan-ismry 0 --pfx scan-px   # summary with ipython, giving interactive access to objects
+
+   scan-smry 10 11 --pfx scan-ph   # summary of scans with prefix scan-ph-10 scan-ph-11
+
+   scan-plot 0 --pfx scan-px 
+
+
+
 Scan Modes
 ------------
 
@@ -84,6 +98,8 @@ scan-mode(){ echo ${SCAN_MODE:-ts} ; }
 
 scan-ts-args(){  scan-seq ; }
 scan-tp-args(){  scan-seq ; } 
+scan-ph-args(){  scan-numphoton ; } 
+scan-px-args(){  scan-numphoton ; } 
 
 
 scan-seq-notes(){ cat << EON
@@ -120,19 +136,19 @@ scan-seq(){
 }
 
 
-scan-ph-args-mini(){ cat << EOS | tr -d " ,"  | grep -v \#
+scan-numphoton-mini(){ cat << EOS | tr -d " ,"  | grep -v \#
   1,000,000
  10,000,000
 100,000,000
 EOS
 }
 
-scan-ph-args-inwaiting(){ cat << EOS | tr -d " ,"  | grep -v \#
+scan-numphoton-inwaiting(){ cat << EOS | tr -d " ,"  | grep -v \#
  10,000,000
 EOS
 }
 
-scan-ph-args(){ cat << EOS | tr -d " ,"  | grep -v \#
+scan-numphoton(){ cat << EOS | tr -d " ,"  | grep -v \#
   1,000,000
  10,000,000
  20,000,000
@@ -146,7 +162,6 @@ scan-ph-args(){ cat << EOS | tr -d " ,"  | grep -v \#
 100,000,000
 EOS
 }
-
 
 
 
@@ -183,9 +198,8 @@ How to handle variations of a scan, eg changing RTX mode or numbers of GPUs
 EON
 }
 
-scan-ph-lv(){ echo box ; }
 
-scan-ph-cat(){
+scan-cat(){
    case $cat in
        cvd_0_rtx_0) echo --cvd 0 --rtx 0  ;;  
        cvd_0_rtx_1) echo --cvd 0 --rtx 1  ;;  
@@ -248,7 +262,8 @@ scan-rngmax-opt(){
 
 
 
-scan-notes(){ cat << EON
+scan-ph-note(){ bashnotes.py ${1:-$(scan-vers)} --bashcmd "scan-;scan-ph-notes" ; }
+scan-ph-notes(){ cat << EON
 0
    Silver:Quadro_RTX_8000 : full scan with old driver, seemed not to be able to switch on RTX
    but may have been caused by a script bug
@@ -288,7 +303,20 @@ To check switches : OpticksSwitchesTest
 EON
 }
 
-scan-v(){ scannotes.py $(scan-vers) ; }
+
+
+scan-px-note(){ bashnotes.py ${1:-$(scan-vers)} --bashcmd "scan-;scan-px-notes" ; }
+scan-px-notes(){ cat << EON
+0
+   Gold:TITAN_RTX checking torchconfig based GPU generation of photons with tboolean-interlocked 
+1
+   Silver:Quadro_RTX_8000 checking torchconfig based GPU generation of photons with tboolean-interlocked 
+
+
+EON
+}
+
+
 scan-smry(){ profilesmry.py ${1:-$(scan-vers)} ${@:2} ; }
 scan-ismry(){ ipython --pdb -i -- $(which profilesmry.py)     ${1:-$(scan-vers)} ${@:2} ; }
 scan-plot(){  ipython --pdb -i -- $(which profilesmryplot.py) ${1:-$(scan-vers)} ${@:2}  ; }
@@ -296,7 +324,7 @@ scan-vers(){ echo ${SCAN_VERS:-10} ; }
 scan-pfx(){  echo ${SCAN_PFX:-scan-$(scan-mode)-$(scan-vers)} ; }
 
 
-scan-ph-cmd-notes(){ cat << EON
+scan-xx-cmd-notes(){ cat << "EON"
 $FUNCNAME
 ==================
 
@@ -310,18 +338,54 @@ Note that the layout of the *cat* option is parsed by ana/profilesmry.py
 to extract the number of photons and that *cat* is used as the dictionary 
 key for parsed profile instances.
 
+Running stack topdown::
+
+    scan-<mode> 
+    scan-- 
+    scan-cmds-all
+    scan-<mode>-cmd <num_photons> <cat>
+
+Listing commands stack topdown::
+
+    scan-<mode>- 
+    scan-cmds-all
+    scan-<mode>-cmd <num_photon> <cat>
+
+
+scan-px-cmd
+    the geometry used by scan-px should not use emitter sources, pick an older
+    one using the default torchconfig approach to configure on GPU photon 
+    generation of test sources
+
+    TODO: make tboolean-boxx so can compare the approaches
+
+    Use of --oktest switches to OKTest executable and hence no alignment stuff in tboolean-lv
+
 
 EON
 }
 
+scan-ph-lv(){ echo box ; }
 scan-ph-cmd(){   
    local num_photons=$1
    local cat=$2
    local num_abbrev=$(scan-num $num_photons)
    local cmd="ts $(scan-ph-lv) --pfx $(scan-pfx) --cat ${cat}_${num_abbrev} --generateoverride ${num_photons} --compute --production --savehit --multievent 10 --xanalytic "  ; 
-   cmd="$cmd --nog4propagate $(scan-rngmax-opt $num_photons) $(scan-ph-cat $cat)"
+   cmd="$cmd --nog4propagate $(scan-rngmax-opt $num_photons) $(scan-cat $cat)"
    echo $cmd
 }
+
+scan-px-lv(){ echo interlocked ; }   
+scan-px-cmd(){
+   local num_photons=$1
+   local cat=$2
+   local num_abbrev=$(scan-num $num_photons)
+   local cmd="ts $(scan-px-lv) --oktest --pfx $(scan-pfx) --cat ${cat}_${num_abbrev} --generateoverride ${num_photons} --compute --production --savehit --multievent 10 --xanalytic "  ; 
+   cmd="$cmd $(scan-rngmax-opt $num_photons) $(scan-cat $cat)"
+   echo $cmd
+}
+
+
 
 scan-ts-cmd(){   echo ts $1 --pfx $(scan-pfx) --generateoverride -1 --cvd 1 --rtx 1 --compute --recpoi --utaildebug --xanalytic ; }
 scan-tp-cmd(){   echo tp $1 --pfx $(scan-pfx) --msli :1M  ; }
@@ -399,6 +463,11 @@ EOI
 scan-ph-(){     SCAN_MODE=ph scan-cmds-all ; }
 scan-ph(){      SCAN_MODE=ph scan-- ; }
 scan-ph-v(){    VERBOSE=1 OpticksProfile=ERROR scan-ph ; }
+
+scan-px-(){     SCAN_MODE=px scan-cmds-all ; }
+scan-px(){      SCAN_MODE=px scan-- ; }
+scan-px-v(){    VERBOSE=1 OpticksProfile=ERROR scan-px ; }
+
 
 scan-tp-(){     SCAN_MODE=tp scan-cmds-all ; }
 scan-tp(){      SCAN_MODE=tp scan-- ; }

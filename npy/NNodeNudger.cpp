@@ -19,6 +19,7 @@
 
 
 #include <sstream>
+#include <csignal>
 #include <map>
 
 #include "SSys.hh"
@@ -33,6 +34,9 @@
 #include "NNode.hpp"
 #include "NNodeNudger.hpp"
 #include "NNodeCoincidence.hpp"
+
+
+const plog::Severity NNodeNudger::LEVEL = PLOG::EnvLevel("NNodeNudger", "DEBUG"); 
 
 
 std::vector<unsigned>* NNodeNudger::TreeList = NULL ;  
@@ -52,8 +56,7 @@ NNodeNudger::NNodeNudger(nnode* root_, float epsilon_, unsigned /*verbosity*/)
      epsilon(epsilon_), 
      verbosity(SSys::getenvint("VERBOSITY",1)),
      listed(false),
-     enabled(true),
-     level(debug)
+     enabled(true)
 {
     root->check_tree( FEATURE_GTRANSFORMS | FEATURE_PARENT_LINKS );
     init();
@@ -61,7 +64,7 @@ NNodeNudger::NNodeNudger(nnode* root_, float epsilon_, unsigned /*verbosity*/)
 
 void NNodeNudger::init()
 {
-    LOG(level) << " init " ; 
+    LOG(LEVEL) << " init " ; 
 
     //if( TreeList == NULL )
     //     TreeList = new std::vector<unsigned> {24, 42, 37, 22};   // iav, oav, lso, gds
@@ -81,7 +84,7 @@ void NNodeNudger::init()
 
     if(NudgeBuffer) NudgeBuffer->add(root->treeidx, prim.size(), coincidence.size(), nudges.size() );   
 
-    LOG(level) << brief() ; 
+    LOG(LEVEL) << brief() ; 
 
 }
 
@@ -147,7 +150,7 @@ so as to avoid the issue and not change geometry.
 
 void NNodeNudger::collect_coincidence()
 {
-    LOG(level) << " collect_concidence " << root->treeidx ;  
+    LOG(LEVEL) << " collect_concidence " << root->treeidx ;  
 
     if(root->treeidx < 0) return ; 
 
@@ -212,7 +215,7 @@ NNodeNudger::collect_coincidence(unsigned i, unsigned j)
 
 void NNodeNudger::collect_coincidence(unsigned i, unsigned j)
 {
-    LOG(level) << " collect_concidence " 
+    LOG(LEVEL) << " collect_concidence " 
                << " treeidx : " << root->treeidx 
                << " prim pair (i,j) : (" << i << "," << j << ")" 
                ;
@@ -233,7 +236,7 @@ void NNodeNudger::collect_coincidence(unsigned i, unsigned j)
 
         NNodeJoinType join = NNodeEnum::JoinClassify( zi, zj, epsilon );
 
-        LOG(level) 
+        LOG(LEVEL) 
                << " pair: " << NNodeEnum::PairType(pair) 
                << " zi: " << std::fixed << std::setw(10) << std::setprecision(3) << zi
                << " zj: " << std::fixed << std::setw(10) << std::setprecision(3) << zj
@@ -305,10 +308,12 @@ bool NNodeNudger::can_znudge_difference_minmin(const NNodeCoincidence* coin) con
 
 void NNodeNudger::znudge_difference_minmin(NNodeCoincidence* coin)
 {
-    std::cout << "NNodeNudger::znudge_difference_minmin"
+    LOG(LEVEL) << "NNodeNudger::znudge_difference_minmin"
               << " coin " << coin->desc()
               << std::endl ; 
-    LOG(fatal) << " NOT IMPLEMENTED " ; 
+    LOG(LEVEL) << " NOT IMPLEMENTED " ;
+
+    //std::raise(SIGINT);  
 }
 
 

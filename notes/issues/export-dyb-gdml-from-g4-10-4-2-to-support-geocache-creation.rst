@@ -29,8 +29,6 @@ I export the GDML geometry and use that, allowing the legacy
 code to be retired ?
 
 
-
-
 Creating geocache from the first GDML export
 -----------------------------------------------
 
@@ -769,6 +767,7 @@ Rebuild with limit upped to 300::
 Switch back to legacy geometry mode (vip)::
 
     export OPTICKS_LEGACY_GEOMETRY_ENABLED=1 
+
     ini
 
     OKTest   # check get the usual DYB geometry via legacy route, resource handling revolves around G4DAE path in legacy 
@@ -784,6 +783,9 @@ Switch back to legacy geometry mode (vip)::
     /home/blyth/local/opticks/tmp/CGeometry/CGeometry.gdml
     [blyth@localhost opticks]$ l $(opticksdata-dxtmp)
     -rw-rw-r--. 1 blyth blyth 4544475 Sep 19 18:37 /home/blyth/local/opticks/tmp/CGeometry/CGeometry.gdml
+
+
+
      
 
 Now switch to non-legacy (vip) and create geocache::
@@ -809,19 +811,7 @@ Now switch to non-legacy (vip) and create geocache::
     2019-09-19 18:42:23.581 INFO  [107750] [GMeshLib::addAltMeshes@126]  index with alt 57
     2019-09-19 18:42:23.581 INFO  [107750] [GMeshLib::addAltMeshes@126]  index with alt 58
     2019-09-19 18:42:23.581 INFO  [107750] [GMeshLib::addAltMeshes@126]  index with alt 59
-    2019-09-19 18:42:23.581 INFO  [107750] [GMeshLib::addAltMeshes@126]  index with alt 60
-    2019-09-19 18:42:23.581 INFO  [107750] [GMeshLib::addAltMeshes@126]  index with alt 61
-    2019-09-19 18:42:23.581 INFO  [107750] [GMeshLib::addAltMeshes@126]  index with alt 62
-    2019-09-19 18:42:23.581 INFO  [107750] [GMeshLib::addAltMeshes@126]  index with alt 65
-    2019-09-19 18:42:23.581 INFO  [107750] [GMeshLib::addAltMeshes@126]  index with alt 69
-    2019-09-19 18:42:23.581 INFO  [107750] [GMeshLib::addAltMeshes@126]  index with alt 105
-    2019-09-19 18:42:23.581 INFO  [107750] [GMeshLib::addAltMeshes@126]  index with alt 112
-    2019-09-19 18:42:23.581 INFO  [107750] [GMeshLib::addAltMeshes@126]  index with alt 132
-    2019-09-19 18:42:23.581 INFO  [107750] [GMeshLib::addAltMeshes@126]  index with alt 140
-    2019-09-19 18:42:23.581 INFO  [107750] [GMeshLib::addAltMeshes@126]  index with alt 142
-    2019-09-19 18:42:23.581 INFO  [107750] [GMeshLib::addAltMeshes@126]  index with alt 145
-    2019-09-19 18:42:23.581 INFO  [107750] [GMeshLib::addAltMeshes@126]  index with alt 200
-    2019-09-19 18:42:23.581 INFO  [107750] [GMeshLib::addAltMeshes@126]  index with alt 211
+    ...
     2019-09-19 18:42:23.581 INFO  [107750] [GMeshLib::addAltMeshes@126]  index with alt 213
     2019-09-19 18:42:23.581 INFO  [107750] [GMeshLib::addAltMeshes@126]  index with alt 232
     2019-09-19 18:42:23.581 INFO  [107750] [GMeshLib::addAltMeshes@126]  index with alt 234
@@ -870,40 +860,9 @@ Now switch to non-legacy (vip) and create geocache::
      i 251 aidx  57 midx  57 name                    TopESRCutHols0xbf9de100x42e5980 mesh  nv    578 nf   1188
     2019-09-19 18:42:23.584 ERROR [107750] [GMeshLib::getMeshSimple@321]  mesh indices do not match  m_meshes index 252 mesh.index 58
      i 252 aidx  58 midx  58 name                 TopRefGapCutHols0xbf9cef80x42e6860 mesh  nv    296 nf    608
+    ...
     2019-09-19 18:42:23.584 ERROR [107750] [GMeshLib::getMeshSimple@321]  mesh indices do not match  m_meshes index 253 mesh.index 59
-     i 253 aidx  59 midx  59 name                    TopRefCutHols0xbf9bd500x42e7710 mesh  nv    296 nf    608
-    2019-09-19 18:42:23.585 ERROR [107750] [GMeshLib::getMeshSimple@321]  mesh indices do not match  m_meshes index 254 mesh.index 60
-     i 254 aidx  60 midx  60 name                    BotESRCutHols0xbfa73680x42e8e30 mesh  nv    330 nf    688
-    2019-09-19 18:42:23.585 ERROR [107750] [GMeshLib::getMeshSimple@321]  mesh indices do not match  m_meshes index 255 mesh.index 61
-     i 255 aidx  61 midx  61 name                 BotRefGapCutHols0xc34bb280x42e9b20 mesh  nv    144 nf    304
-    2019-09-19 18:42:23.585 ERROR [107750] [GMeshLib::getMeshSimple@321]  mesh indices do not match  m_meshes index 256 mesh.index 62
-     i 256 aidx  62 midx  62 name                       BotRefHols0xc3cd3800x42ea7c0 mesh  nv    144 nf    304
-    2019-09-19 18:42:23.585 ERROR [107750] [GMeshLib::getMeshSimple@321]  mesh indices do not match  m_meshes index 257 mesh.index 65
-     i 257 aidx  65 midx  65 name                 SstBotCirRibBase0xc26e2d00x42eba20 mesh  nv     16 nf     28
-    2019-09-19 18:42:23.585 ERROR [107750] [GMeshLib::getMeshSimple@321]  mesh indices do not match  m_meshes index 258 mesh.index 69
-     i 258 aidx  69 midx  69 name                 SstTopCirRibBase0xc264f780x42ee5b0 mesh  nv     34 nf     64
-    2019-09-19 18:42:23.585 ERROR [107750] [GMeshLib::getMeshSimple@321]  mesh indices do not match  m_meshes index 259 mesh.index 105
-     i 259 aidx 105 midx 105 name                  led-source-assy0xc3061d00x42fa480 mesh  nv   1022 nf   2016
-    2019-09-19 18:42:23.585 ERROR [107750] [GMeshLib::getMeshSimple@321]  mesh indices do not match  m_meshes index 260 mesh.index 112
-     i 260 aidx 112 midx 112 name                      source-assy0xc2d5d780x42fda80 mesh  nv   1022 nf   2016
-    2019-09-19 18:42:23.585 ERROR [107750] [GMeshLib::getMeshSimple@321]  mesh indices do not match  m_meshes index 261 mesh.index 132
-     i 261 aidx 132 midx 132 name              amcco60-source-assy0xc0b1df80x43026c0 mesh  nv   1022 nf   2016
-    2019-09-19 18:42:23.585 ERROR [107750] [GMeshLib::getMeshSimple@321]  mesh indices do not match  m_meshes index 262 mesh.index 140
-     i 262 aidx 140 midx 140 name                        LsoOflTnk0xc17d9280x4303ab0 mesh  nv    488 nf    976
-    2019-09-19 18:42:23.585 ERROR [107750] [GMeshLib::getMeshSimple@321]  mesh indices do not match  m_meshes index 263 mesh.index 142
-     i 263 aidx 142 midx 142 name                        GdsOflTnk0xc3d51600x4305940 mesh  nv    880 nf   1760
-    2019-09-19 18:42:23.585 ERROR [107750] [GMeshLib::getMeshSimple@321]  mesh indices do not match  m_meshes index 264 mesh.index 145
-     i 264 aidx 145 midx 145 name                  OflTnkContainer0xc17cf500x4307970 mesh  nv    344 nf    672
-    2019-09-19 18:42:23.585 ERROR [107750] [GMeshLib::getMeshSimple@321]  mesh indices do not match  m_meshes index 265 mesh.index 200
-     i 265 aidx 200 midx 200 name                  table_panel_box0xc00f5580x430c870 mesh  nv     58 nf    116
-    2019-09-19 18:42:23.585 ERROR [107750] [GMeshLib::getMeshSimple@321]  mesh indices do not match  m_meshes index 266 mesh.index 211
-     i 266 aidx 211 midx 211 name    PLACEHOLDER_near_pool_iws_box0xc288ce80x430fa20 mesh  nv     36 nf     12
-    2019-09-19 18:42:23.585 ERROR [107750] [GMeshLib::getMeshSimple@321]  mesh indices do not match  m_meshes index 267 mesh.index 213
-     i 267 aidx 213 midx 213 name            near_pool_curtain_box0xc2cef480x4310760 mesh  nv     34 nf     64
-    2019-09-19 18:42:23.585 ERROR [107750] [GMeshLib::getMeshSimple@321]  mesh indices do not match  m_meshes index 268 mesh.index 232
-     i 268 aidx 232 midx 232 name    PLACEHOLDER_near_pool_ows_box0xbf8c8a80x4317310 mesh  nv     36 nf     12
-    2019-09-19 18:42:23.585 ERROR [107750] [GMeshLib::getMeshSimple@321]  mesh indices do not match  m_meshes index 269 mesh.index 234
-     i 269 aidx 234 midx 234 name              near_pool_liner_box0xc2dcc280x4318080 mesh  nv     34 nf     64
+    i 269 aidx 234 midx 234 name              near_pool_liner_box0xc2dcc280x4318080 mesh  nv     34 nf     64
     2019-09-19 18:42:23.585 ERROR [107750] [GMeshLib::getMeshSimple@321]  mesh indices do not match  m_meshes index 270 mesh.index 236
      i 270 aidx 236 midx 236 name               near_pool_dead_box0xbf8a2800x4318dd0 mesh  nv     34 nf     64
     2019-09-19 18:42:23.585 ERROR [107750] [GMeshLib::getMeshSimple@321]  mesh indices do not match  m_meshes index 271 mesh.index 245
@@ -917,7 +876,7 @@ Update the key, the digest is the same but the world pointer changed::
     2019-09-19 18:42:23.776 INFO  [107750] [Opticks::reportGeoCacheCoordinates@934]  (live)   OPTICKS_KEY=OKX4Test.X4PhysicalVolume.World0xc15cfc00x4552410_PV.5aa828335373870398bf4f738781da6c
 
 
-Try to run with recreated geocache::
+Try to visualize with recreated geocache::
 
     OKTest 
       * cannot find geometry, world too large problem
@@ -935,10 +894,131 @@ Try to run with recreated geocache::
       * photon source still at center of world box, way off nowhere 
 
 
+
+
+Repeat the export and place the GDML into more permanent location
+--------------------------------------------------------------------------
+
+
+::
+
+    export OPTICKS_LEGACY_GEOMETRY_ENABLED=1 
+
+    ini
+
+    OKTest   # check get the usual DYB geometry via legacy route, resource handling revolves around G4DAE path in legacy 
+
+    OKG4Test --export    # OKG4Test uses CG4 functionality to load the old GDML, merge in info from G4DAE
+
+    tmp
+    [blyth@localhost tmp]$ diff CGeometry.Sep19/CGeometry.gdml CGeometry/CGeometry.gdml   ## pointer refs everywhere so diff not informative
+
+
+
+Promote that to a more permanent location::
+
+    opticksaux-dx-
+    /home/blyth/local/opticks/opticksaux/export/DayaBay_VGDX_20140414-1300/g4_00_CGeometry_export
+
+    p=$(opticksaux-dx-)_v0.gdml
+    mkdir -p $(dirname $p)
+    cp $TMP/CGeometry/CGeometry.gdml $p
+
+    [blyth@localhost tmp]$ l $p
+    -rw-rw-r--. 1 blyth blyth 4544579 Sep 23 13:46 /home/blyth/local/opticks/opticksaux/export/DayaBay_VGDX_20140414-1300/g4_00_CGeometry_export_v0.gdml
+
+
+Functions for this version::
+
+    geocache-dx-v0-(){  opticksdata- ; geocache-create- --gdmlpath $(opticksaux-dx-)_v0.gdml --x4polyskip 211,232  --geocenter $* ; }     
+    geocache-dx-v0-comment(){ echo export-dyb-gdml-from-g4-10-4-2-to-support-geocache-creation.rst ; }     
+    geocache-dx-v0(){   geocache-dx-v0- --runfolder $FUNCNAME --runcomment $(${FUNCNAME}-comment) $* ; }  
+
+    * --geocenter avoids black screen viz, but the world box too large problem is apparent 
+
+
+Create geocache:
+
+1. vip: switch off legacy in environment:: 
+
+    150 unset OPTICKS_LEGACY_GEOMETRY_ENABLED 
+    151 #export OPTICKS_LEGACY_GEOMETRY_ENABLED=1
+
+2. ini ; eo 
+
+3. geocache- ; geocache-dx-v0
+
+4. record the new live key::
+
+    2019-09-23 13:55:49.399 INFO  [114990] [OpticksProfile::accumulateDump@287] Opticks::postgeocache nacc 0
+    2019-09-23 13:55:49.399 INFO  [114990] [Opticks::reportGeoCacheCoordinates@920]  ok.idpath  /home/blyth/.opticks/geocache/OKX4Test_World0xc15cfc00x40f7000_PV_g4live/g4ok_gltf/5aa828335373870398bf4f738781da6c/1
+    2019-09-23 13:55:49.399 INFO  [114990] [Opticks::reportGeoCacheCoordinates@921]  ok.keyspec OKX4Test.X4PhysicalVolume.World0xc15cfc00x40f7000_PV.5aa828335373870398bf4f738781da6c
+    2019-09-23 13:55:49.399 INFO  [114990] [Opticks::reportGeoCacheCoordinates@922]  To reuse this geometry: 
+    2019-09-23 13:55:49.399 INFO  [114990] [Opticks::reportGeoCacheCoordinates@923]    1. set envvar OPTICKS_KEY=OKX4Test.X4PhysicalVolume.World0xc15cfc00x40f7000_PV.5aa828335373870398bf4f738781da6c
+    2019-09-23 13:55:49.399 INFO  [114990] [Opticks::reportGeoCacheCoordinates@924]    2. enable envvar sensitivity with --envkey argument to Opticks executables 
+    2019-09-23 13:55:49.399 FATAL [114990] [Opticks::reportGeoCacheCoordinates@932] THE LIVE keyspec DOES NOT MATCH THAT OF THE CURRENT ENVVAR 
+    2019-09-23 13:55:49.399 INFO  [114990] [Opticks::reportGeoCacheCoordinates@933]  (envvar) OPTICKS_KEY=OKX4Test.X4PhysicalVolume.World0xc15cfc00x4552410_PV.5aa828335373870398bf4f738781da6c
+    2019-09-23 13:55:49.399 INFO  [114990] [Opticks::reportGeoCacheCoordinates@934]  (live)   OPTICKS_KEY=OKX4Test.X4PhysicalVolume.World0xc15cfc00x40f7000_PV.5aa828335373870398bf4f738781da6c
+    2019-09-23 13:55:49.399 INFO  [114990] [Opticks::dumpRC@227]  rc 0 rcmsg : -
+
+::
+
+    382 geocache-dx-v0-key(){ echo OKX4Test.X4PhysicalVolume.World0xc15cfc00x40f7000_PV.5aa828335373870398bf4f738781da6c ; }
+
+    export OPTICKS_KEY=$(geocache-;geocache-dx-v0-key)  
+
+Tidy up OPTICKS_KEY envvar setup in .opticks_setup::
+
+    unset OPTICKS_KEY
+    #export OPTICKS_KEY=$(geocache-;geocache-j1808-v5-key)
+    export OPTICKS_KEY=$(geocache-;geocache-dx-v0-key) 
+
+
+kcd::
+
+    [blyth@localhost ~]$ kcd
+    /home/blyth/.opticks/geocache/OKX4Test_World0xc15cfc00x40f7000_PV_g4live/g4ok_gltf/5aa828335373870398bf4f738781da6c/1
+    rundate
+    20190923_135502
+    runstamp
+    1569218102
+    argline
+    /home/blyth/local/opticks/lib/OKX4Test --okx4test --g4codegen --deletegeocache --gdmlpath /home/blyth/local/opticks/opticksaux/export/DayaBay_VGDX_20140414-1300/g4_00_CGeometry_export_v0.gdml --x4polyskip 211,232 --geocenter --runfolder geocache-dx-v0 --runcomment export-dyb-gdml-from-g4-10-4-2-to-support-geocache-creation.rst 
+    runcomment
+    export-dyb-gdml-from-g4-10-4-2-to-support-geocache-creation.rst
+    runlabel
+    R0_cvd_1
+    runfolder
+    geocache-dx-v0
+
+
+
+Copy the geocache just created from P to C::
+
+   ssh C
+
+   (base) [blyth@gilda03 1]$ p=/home/blyth/.opticks/geocache/OKX4Test_World0xc15cfc00x40f7000_PV_g4live/g4ok_gltf/5aa828335373870398bf4f738781da6c/1
+   (base) [blyth@gilda03 1]$ l $p
+   ls: cannot access /home/blyth/.opticks/geocache/OKX4Test_World0xc15cfc00x40f7000_PV_g4live/g4ok_gltf/5aa828335373870398bf4f738781da6c/1: No such file or directory
+   (base) [blyth@gilda03 1]$ mkdir -p $(dirname $p) ; scp -r P:$p $(dirname $p)/
+
+
+
+
+ 
+
 TODO
 ------
 
 * how to target a sensible volume for the photon source ?
+* adapt old geo selection functionality from legacy to geocache route  ?
+
+  * :doc:`geoselection-in-new-geometry-workflow`
+
+* for testing on silver and gold using a common /cvmfs/opticks.ihep.ac.cn/ok/shared/geocache/ would be useful
+
+  * before real /cvmfs can fake it with rsync 
+  * :doc:`cvmfs-for-shared-geocache-would-be-useful`
 
 
 Thinking about copying this geocache to shared for "simon" testing
@@ -982,6 +1062,12 @@ named for this purpose.
     runfolder
     geocache-dxtmp
     [blyth@localhost 1]$ 
+
+
+
+
+
+
 
 
 
@@ -1037,8 +1123,6 @@ non-legacy mode opticks-t with the new tmp geocache and key
 
       2  /2   Test #2  : IntegrationTests.tboolean.box                 ***Failed                      15.05  
            same analysis fail   
-
-
 
 
     
@@ -1116,8 +1200,6 @@ non-legacy OKG4Test name match fail from DYB prefix
     2019-09-19 20:14:51.907 FATAL [260276] [X4MaterialLib::init@119]  MATERIAL NAME MISMATCH  index 0 pmap_name PPE m4_name /dd/Materials/PPE
     CRandomEngineTest: /home/blyth/opticks/extg4/X4MaterialLib.cc:126: void X4MaterialLib::init(): Assertion `name_match' failed.
     Aborted (core dumped)
-
-
 
 
 

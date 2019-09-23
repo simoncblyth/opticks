@@ -77,6 +77,8 @@ template <typename T> class  NPY ;
 
 struct NPY_API NNodeNudger 
 {
+    static const plog::Severity LEVEL ; 
+
     static std::vector<unsigned>*  TreeList ;  
     static NPY<unsigned>* NudgeBuffer ; 
     static void SaveBuffer(const char* path) ; 
@@ -86,7 +88,6 @@ struct NPY_API NNodeNudger
     const unsigned verbosity ; 
     bool listed ; 
     bool enabled ; 
-    plog::Severity level ; 
 
 
     std::vector<nnode*>       prim ; 

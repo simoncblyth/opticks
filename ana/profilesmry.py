@@ -37,7 +37,7 @@ log = logging.getLogger(__name__)
 from opticks.ana.num import Num
 from opticks.ana.base import findfile
 from opticks.ana.profile import Profile
-from opticks.ana.scannotes import ScanNotes
+from opticks.ana.bashnotes import BashNotes
 
 class ProfileSmry(object):
     """
@@ -252,24 +252,33 @@ class ProfileMain(object):
     def ParseArgs(cls, doc):
         parser = argparse.ArgumentParser(__doc__)
         default_cvd = os.environ.get("OPTICKS_DEFAULT_INTEROP_CVD", "0")
-        parser.add_argument( "--pfx", default="scan-ph-%d", help="Prefix template filled with ipfx integer, beneath which to search for OpticksProfile.npy" )
-        parser.add_argument( "vers", nargs="+", default=[10], type=int, help="Prefix beneath which to search for OpticksProfile.npy" )
+        parser.add_argument( "--pfx", default="scan-ph", help="Start of prefix to be appended with a hyphen and integer, beneath which to search for OpticksProfile.npy" )
+        parser.add_argument( "vers", nargs="*", default=[10], type=int, help="Prefix beneath which to search for OpticksProfile.npy" )
         parser.add_argument( "--cvd", default=default_cvd, help="CUDA_VISIBLE_DEVICE for the named GPU" )
         parser.add_argument( "--gpufallback", default="Quadro_RTX_8000", help="Fallback GPU Name for older scans without this metadata, eg TITAN_RTX" )
         args = parser.parse_args()
         return cls(args)
 
     def get_pfx(self, v):
-        return self.args.pfx % v    # filling pfx template
+        return "%s-%s" % ( self.args.pfx, v) 
+
+    def _get_bashcmd(self):
+        pfx = self.args.pfx  # without version tail -0 -1 
+        elem = pfx.split("-")
+        assert len(elem) == 2 
+        return "%s-;%s-notes" % (elem[0], pfx)
+    bashcmd = property(_get_bashcmd)
 
     def __init__(self, args):
-
         self.args = args 
         self.vers = args.vers
         self.pfx0 = self.get_pfx(self.vers[0])
         self.cvd = args.cvd 
         self.gpufallback = args.gpufallback 
-        self.snote = ScanNotes()
+
+        bashcmd = self.bashcmd
+        log.info("lookup BashNotes from %s " % bashcmd )
+        self.bnote = BashNotes(bashcmd)
 
 
 if __name__ == '__main__':
@@ -282,13 +291,16 @@ if __name__ == '__main__':
     for v in pm.vers:
         pfx = pm.get_pfx(v) 
 
-        print(" v %d  pfx %s %s  " % (v, pfx, pm.snote(v)))
+        print(" v %d  pfx %s " % (v, pfx))
+        print(" %s " % (pm.bnote(v)))
 
         ps[0] = ProfileSmry.Load(pfx, startswith="cvd_%s_rtx_0" % pm.cvd)
         ps[1] = ProfileSmry.Load(pfx, startswith="cvd_%s_rtx_1" % pm.cvd)
         #ps[9] = ProfileSmry.FromExtrapolation( ps[0].npho,  time_for_1M=100. )
 
+        print("\n")
         print(ps[0])
+        print("\n")
         print(ps[1])
         #print(ps[9])
     pass

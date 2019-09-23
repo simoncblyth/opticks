@@ -727,12 +727,12 @@ tboolean-lv()
        TESTNAME=$testname tboolean-py- $* 
    elif [ "${cmdline/--chk}" != "${cmdline}" ]; then
        ${funcname}-
-   elif [ "${cmdline/--nog4}" != "${cmdline}" ]; then
+   elif [ "${cmdline/--oktest}" != "${cmdline}" ]; then
        $funcname $*   
    elif [ "${cmdline/--noalign}" != "${cmdline}" ]; then
-       $funcname --okg4  $*   
+       $funcname --okg4test  $*   
    else
-       $funcname --okg4 --align --dbgskipclearzero --dbgnojumpzero --dbgkludgeflatzero $*   
+       $funcname --okg4test --align --dbgskipclearzero --dbgnojumpzero --dbgkludgeflatzero $*   
        RC=$?
    fi 
    echo $msg $funcname RC $RC

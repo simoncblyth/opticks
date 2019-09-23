@@ -47,7 +47,8 @@ opticksaux-url-ssh(){   echo git@bitbucket.org:simoncblyth/opticksaux.git ; }
 opticksaux-jv5(){ echo $(opticksaux-dir)/$(opticksaux-xpath j1808)_v5.gdml ; }  
 opticksaux-jv5-vi(){ vi $(opticksaux-jv5) ; }
 
-opticksaux-dx(){  echo $(opticksaux-dir)/$(opticksaux-xpath dybx).gdml ; }
+opticksaux-dx-(){  echo $(opticksaux-dir)/$(opticksaux-xpath dybx) ; }
+opticksaux-dx(){   echo $(opticksaux-dx-).gdml ; }
 opticksaux-dx-vi(){ vi $(opticksaux-dx) ; }
 
 opticksaux-xpath(){

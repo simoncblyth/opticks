@@ -51,7 +51,7 @@
 
 #include "PLOG.hh"
 
-const plog::Severity NCSG::LEVEL = debug ; 
+const plog::Severity NCSG::LEVEL = PLOG::EnvLevel("NCSG", "DEBUG") ; 
 
 const float NCSG::SURFACE_EPSILON = 1e-5f ; 
 
@@ -247,6 +247,7 @@ NCSG::NCSG(nnode* root )
 Private constructor used by NCSG::Adopt booting from in memory nnode tree
 
 * cannot be const because of the nudger 
+* TODO: nudger should know the lvIdx for identificatoin of problem solids
 
 **/
 
@@ -1366,8 +1367,12 @@ NNodeNudger* NCSG::get_nudger() const
 NNodeNudger* NCSG::make_nudger(const char* msg) const 
 {
     // when test running from nnode there is no metadata or treedir
-    // LOG(info) << soname() << " treeNameIdx " << getTreeNameIdx() ; 
-    //LOG(error) << " make_nudger " << msg ; 
+    LOG(LEVEL) 
+        <<  " lvIdx " << m_lvIdx
+        <<  " soname " << get_soname() 
+        << " treeNameIdx " << getTreeNameIdx()
+         ; 
+
     NNodeNudger* nudger = new NNodeNudger(m_root, m_surface_epsilon, m_root->verbosity);
     return nudger ; 
 }

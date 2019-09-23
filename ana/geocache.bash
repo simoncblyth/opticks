@@ -230,7 +230,7 @@ geocache-create-()
     local tmp=$(geocache-tmp $FUNCNAME)
     mkdir -p $tmp && cd $tmp
          
-    o.sh --okx4 --g4codegen --deletegeocache $*
+    o.sh --okx4test --g4codegen --deletegeocache $*
 
     cd $iwd
 }
@@ -376,9 +376,10 @@ geocache-j1808-v5(){  geocache-j1808-v5- --csgskiplv 22 --runfolder $FUNCNAME --
 
 
 
-geocache-dx-v0-(){  opticksdata- ; geocache-create- --gdmlpath $(opticksdata-dx) $* ; }     
-geocache-dx-v0-comment(){ echo export-dyb-near-for-regeneration ; }     
-geocache-dx-v0(){   geocache-dx-v0- -runfolder $FUNCNAME --runcomment $(${FUNCNAME}-comment) $* ; } 
+geocache-dx-v0-(){  opticksdata- ; geocache-create- --gdmlpath $(opticksaux-dx-)_v0.gdml --x4polyskip 211,232  --geocenter $* ; }     
+geocache-dx-v0-comment(){ echo export-dyb-gdml-from-g4-10-4-2-to-support-geocache-creation.rst ; }     
+geocache-dx-v0(){   geocache-dx-v0- --runfolder $FUNCNAME --runcomment $(${FUNCNAME}-comment) $* ; } 
+geocache-dx-v0-key(){ echo OKX4Test.X4PhysicalVolume.World0xc15cfc00x40f7000_PV.5aa828335373870398bf4f738781da6c ; }
 
 
 geocache-dxtmp-(){  opticksdata- ; geocache-create- --gdmlpath $(opticksdata-dxtmp) $* ; }
