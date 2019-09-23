@@ -266,6 +266,12 @@ class A(np.ndarray):
         oshape = None
         
         if os.path.exists(path):
+
+            st = os.stat(path)
+            sz = st.st_size 
+
+            log.info(" path %s size %s " % (path, sz) )
+
             log.debug("loading %s " % path )
             if dbg: 
                 os.system("ls -l %s " % path)

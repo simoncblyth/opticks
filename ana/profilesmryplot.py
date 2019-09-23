@@ -232,7 +232,7 @@ if __name__ == '__main__':
     o = O.Get(-1)  # None for -1, corresponding to all plots OR a single plot specification selected by index
 
     pfx = pm.pfx0
-    cvd = pm.cvd
+    cvd = pm.get_cvd(pfx) 
 
     cat0 = "cvd_%s_rtx_0" % cvd 
     cat1 = "cvd_%s_rtx_1" % cvd

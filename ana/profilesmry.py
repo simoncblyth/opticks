@@ -30,7 +30,7 @@ profilesmry.py
 """
 
 from __future__ import print_function
-import os, sys, logging, numpy as np, argparse, textwrap
+import os, sys, re, logging, numpy as np, argparse, textwrap
 from collections import OrderedDict as odict
 log = logging.getLogger(__name__)
 
@@ -107,15 +107,41 @@ class ProfileSmry(object):
         pass
         return s  
 
-
     @classmethod
-    def Load(cls, pfx, base=None, startswith=None, gpufallback=None):
-
+    def Base(cls, pfx, base=None):
         if base is None:
             base = cls.BASE  
         pass
         base = os.path.expandvars(os.path.join(base,pfx))
+        return base
 
+
+    CATPTN = re.compile("^cvd_(?P<cvd>\d)_rtx_(?P<rtx>\d)_(?P<M>\d*)M$")
+
+    @classmethod
+    def ExamineCats(cls, pfx, base=None):
+        base = cls.Base(pfx, base)
+        evtdir = os.path.join(base, "evt")
+        cats = os.listdir(evtdir)
+        c = {}
+        for cat in cats:
+            m = cls.CATPTN.match(cat)
+            if not m:
+                log.error("failed to match %s " % cat )
+                continue 
+            pass
+            c[cat] = m.groupdict()
+        pass
+        return c 
+
+    @classmethod
+    def UCVD(cls, c ):
+        ucvd = list(set(map(lambda d:d["cvd"], c.values())))
+        return ucvd  
+
+    @classmethod
+    def Load(cls, pfx, base=None, startswith=None, gpufallback=None):
+        base = cls.Base(pfx, base)
         s = cls.Load_(pfx, base, startswith)
         ps = cls.FromDict(s, pfx, startswith)
         ps.base = base
@@ -251,7 +277,7 @@ class ProfileMain(object):
     @classmethod
     def ParseArgs(cls, doc):
         parser = argparse.ArgumentParser(__doc__)
-        default_cvd = os.environ.get("OPTICKS_DEFAULT_INTEROP_CVD", "0")
+        default_cvd = os.environ.get("OPTICKS_DEFAULT_INTEROP_CVD", "0")  ## hmm this is broken by scan-rsync when looking as scans from another machine
         parser.add_argument( "--pfx", default="scan-ph", help="Start of prefix to be appended with a hyphen and integer, beneath which to search for OpticksProfile.npy" )
         parser.add_argument( "vers", nargs="*", default=[10], type=int, help="Prefix beneath which to search for OpticksProfile.npy" )
         parser.add_argument( "--cvd", default=default_cvd, help="CUDA_VISIBLE_DEVICE for the named GPU" )
@@ -261,6 +287,21 @@ class ProfileMain(object):
 
     def get_pfx(self, v):
         return "%s-%s" % ( self.args.pfx, v) 
+
+    def get_cvd(self, pfx):
+        """
+        When only one cvd in the cats return it, 
+        otherwise return the argument
+        """ 
+        c = ProfileSmry.ExamineCats(pfx)
+        ucvd = ProfileSmry.UCVD(c)         
+        if len(ucvd) == 1:
+            cvd = ucvd[0]
+        else:
+            log.info("mixed cvd using argument %s " % pm.cvd ) 
+            cvd = pm.cvd
+        pass 
+        return cvd 
 
     def _get_bashcmd(self):
         pfx = self.args.pfx  # without version tail -0 -1 
@@ -290,12 +331,13 @@ if __name__ == '__main__':
     ps = {}
     for v in pm.vers:
         pfx = pm.get_pfx(v) 
+        cvd = pm.get_cvd(pfx) 
 
         print(" v %d  pfx %s " % (v, pfx))
         print(" %s " % (pm.bnote(v)))
 
-        ps[0] = ProfileSmry.Load(pfx, startswith="cvd_%s_rtx_0" % pm.cvd)
-        ps[1] = ProfileSmry.Load(pfx, startswith="cvd_%s_rtx_1" % pm.cvd)
+        ps[0] = ProfileSmry.Load(pfx, startswith="cvd_%s_rtx_0" % cvd)
+        ps[1] = ProfileSmry.Load(pfx, startswith="cvd_%s_rtx_1" % cvd)
         #ps[9] = ProfileSmry.FromExtrapolation( ps[0].npho,  time_for_1M=100. )
 
         print("\n")

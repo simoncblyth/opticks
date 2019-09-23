@@ -38,11 +38,6 @@ from opticks.ana.ab   import AB
 from opticks.ana.seq import seq2msk
 
 
-
-
-
-
-
 if __name__ == '__main__':
     ok = opticks_main(doc=__doc__)  
 
