@@ -115,8 +115,7 @@ opticksaux-pull()
    local iwd=$PWD
    opticksaux-cd
    echo $msg PWD $PWD
-   git pull 
-   git up
+   git pull    # equivalent to : hg pull + hg up 
    cd $iwd  
 }
 

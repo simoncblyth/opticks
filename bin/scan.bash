@@ -143,12 +143,12 @@ scan-numphoton-mini(){ cat << EOS | tr -d " ,"  | grep -v \#
 EOS
 }
 
-scan-numphoton-inwaiting(){ cat << EOS | tr -d " ,"  | grep -v \#
- 10,000,000
+scan-numphoton(){ cat << EOS | tr -d " ,"  | grep -v \#
+200,000,000
 EOS
 }
 
-scan-numphoton(){ cat << EOS | tr -d " ,"  | grep -v \#
+scan-numphoton-inwaiting(){ cat << EOS | tr -d " ,"  | grep -v \#
   1,000,000
  10,000,000
  20,000,000
@@ -236,6 +236,19 @@ EON
 
 scan-num(){  python -c "from opticks.ana.num import Num ; print(Num.String($1))" ; }
 
+scan-rngmax-opt-notes(){ cat << EON
+
+* this simple approach of a range of fixed sizes means
+  that will almost always be using a lot more memory 
+  for rng_states than is necessary 
+
+* better to use the building block approach with each block 
+  corresponding to 10M slots 
+
+
+EON
+}
+
 
 scan-rngmax-opt(){ 
    local num_photons=${1:-0}
@@ -244,12 +257,17 @@ scan-rngmax-opt(){
    local M3=$(( 3*M ))
    local M10=$(( 10*M ))
    local M100=$(( 100*M ))
+   local M200=$(( 200*M ))
+   local M400=$(( 400*M ))
 
    local opt
 
-   if [ $num_photons -gt $M100 ]; then
+   if [ $num_photons -gt $M400 ]; then
       echo $msg num_photons $num_photons is above the ceiling 
-      sleep $M 
+   elif [ $num_photons -gt $M200 ]; then
+       opt="--rngmax 400"
+   elif [ $num_photons -gt $M100 ]; then
+       opt="--rngmax 200"
    elif [ $num_photons -gt $M10 ]; then 
        opt="--rngmax 100"
    elif [ $num_photons -gt $M3 ]; then 
@@ -317,6 +335,9 @@ scan-px-notes(){ cat << EON
    interlocked is heavy
 3
    Gold:TITAN_RTX checking torchconfig based GPU generation of photons with tboolean-boxx
+4
+   Silver:Quadro_RTX_8000 torchconfig tboolean-boxx push to 200M
+
 
 
 
@@ -327,7 +348,7 @@ EON
 scan-smry(){ profilesmry.py ${1:-$(scan-vers)} ${@:2} ; }
 scan-ismry(){ ipython --pdb -i -- $(which profilesmry.py)     ${1:-$(scan-vers)} ${@:2} ; }
 scan-plot(){  ipython --pdb -i -- $(which profilesmryplot.py) ${1:-$(scan-vers)} ${@:2}  ; }
-scan-vers(){ echo ${SCAN_VERS:-10} ; }
+scan-vers(){ echo ${SCAN_VERS:-3} ; }
 scan-pfx(){  echo ${SCAN_PFX:-scan-$(scan-mode)-$(scan-vers)} ; }
 
 

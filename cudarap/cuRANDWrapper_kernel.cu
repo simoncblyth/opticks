@@ -19,6 +19,8 @@
 
 #include <cstdio>
 #include <cassert>
+#include "PLOG.hh"
+
 
 #ifdef __clang__
 #pragma clang diagnostic push
@@ -61,7 +63,16 @@ CUdeviceptr allocate_rng_wrapper( LaunchSequence* launchseq)
     unsigned int items = launchseq->getItems(); 
     size_t nbytes = items*sizeof(curandState) ;
     int value = 0 ; 
+    int M = 1000000 ;   
 
+    LOG(info) 
+         << " items  " << items
+         << " items/M " << items/M
+         << " sizeof(curandState) " << sizeof(curandState)
+         << " nbytes " << nbytes
+         << " nbytes/M " << nbytes/M
+         ;  
+   
     CUdeviceptr dev_rng_states ;
 
     CUDA_SAFE_CALL( cudaMalloc((void**)&dev_rng_states, nbytes )); 

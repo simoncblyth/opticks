@@ -327,3 +327,112 @@ minimal understanding to be able to read PTX to some extent
     262 }
 
 
+
+revisit : the hunt for f64
+-------------------------------
+
+* having rtPrintf in the code but without print enabled in runtime still adding f64 to PTX
+
+::
+
+    [blyth@localhost optickscore]$ OpticksSwitchesTest 
+    2019-09-23 21:34:14.063 INFO  [66724] [main@30] WITH_SEED_BUFFER WITH_RECORD WITH_SOURCE WITH_ALIGN_DEV WITH_ALIGN_DEV_DEBUG WITH_LOGDOUBLE WITH_KLUDGE_FLAT_ZERO_NOPEEK 
+
+    blyth@localhost optickscore]$ ptx.py /home/blyth/local/opticks/installcache/PTX/OptiXRap_generated_generate.cu.ptx | c++filt
+    ptx.py /home/blyth/local/opticks/installcache/PTX/OptiXRap_generated_generate.cu.ptx
+     202 : TOTAL .f64 lines in function regions of the PTX 
+       0 :  line:0228 : .visible .entry nothing()(  
+       0 :  line:0239 : .visible .entry dumpseed()(  
+       0 :  line:0318 : .visible .entry trivial()(  
+       0 :  line:0423 : .visible .entry zrngtest()(  
+       0 :  line:0653 : .visible .entry tracetest()(  
+     189 :  line:1487 : .visible .entry generate()(  
+      13 :  line:5428 : .visible .entry exception()(  
+    [blyth@localhost optickscore]$ 
+
+
+Comment WITH_ALIGN_DEV_DEBUG and rebuild::
+
+    [blyth@localhost cu]$ OpticksSwitchesTest
+    2019-09-23 21:35:49.711 INFO  [78655] [main@30] WITH_SEED_BUFFER WITH_RECORD WITH_SOURCE WITH_ALIGN_DEV WITH_LOGDOUBLE WITH_KLUDGE_FLAT_ZERO_NOPEEK 
+
+    [blyth@localhost cu]$ ptx.py /home/blyth/local/opticks/installcache/PTX/OptiXRap_generated_generate.cu.ptx | c++filt
+    ptx.py /home/blyth/local/opticks/installcache/PTX/OptiXRap_generated_generate.cu.ptx
+     116 : TOTAL .f64 lines in function regions of the PTX 
+       0 :  line:0212 : .visible .entry nothing()(  
+       0 :  line:0223 : .visible .entry dumpseed()(  
+       0 :  line:0302 : .visible .entry trivial()(  
+       0 :  line:0407 : .visible .entry zrngtest()(  
+       0 :  line:0637 : .visible .entry tracetest()(  
+     103 :  line:1471 : .visible .entry generate()(  
+      13 :  line:4710 : .visible .entry exception()(  
+    [blyth@localhost cu]$ 
+
+
+Comment WITH_LOGDOUBLE and rebuild::
+
+    [blyth@localhost opticks]$ OpticksSwitchesTest
+    2019-09-23 21:38:22.272 INFO  [91560] [main@30] WITH_SEED_BUFFER WITH_RECORD WITH_SOURCE WITH_ALIGN_DEV WITH_KLUDGE_FLAT_ZERO_NOPEEK 
+
+
+    [blyth@localhost opticks]$ ptx.py /home/blyth/local/opticks/installcache/PTX/OptiXRap_generated_generate.cu.ptx | c++filt
+    ptx.py /home/blyth/local/opticks/installcache/PTX/OptiXRap_generated_generate.cu.ptx
+      13 : TOTAL .f64 lines in function regions of the PTX 
+       0 :  line:0212 : .visible .entry nothing()(  
+       0 :  line:0223 : .visible .entry dumpseed()(  
+       0 :  line:0302 : .visible .entry trivial()(  
+       0 :  line:0407 : .visible .entry zrngtest()(  
+       0 :  line:0637 : .visible .entry tracetest()(  
+       0 :  line:1471 : .visible .entry generate()(  
+      13 :  line:4510 : .visible .entry exception()(  
+    [blyth@localhost opticks]$ 
+
+
+
+Add WITH_EXCEPTION switch::
+
+    701 RT_PROGRAM void exception()
+    702 {
+    703     //const unsigned int code = rtGetExceptionCode();
+    704 #ifdef WITH_EXCEPTION
+    705     rtPrintExceptionDetails();
+    706 #endif
+    707     photon_buffer[launch_index.x] = make_float4(-1.f, -1.f, -1.f, -1.f);
+    708 }
+    709 
+
+
+Gets down to zero f64::
+
+    [blyth@localhost cudarap]$ ptx.py /home/blyth/local/opticks/installcache/PTX/OptiXRap_generated_generate.cu.ptx | c++filt
+    ptx.py /home/blyth/local/opticks/installcache/PTX/OptiXRap_generated_generate.cu.ptx
+       0 : TOTAL .f64 lines in function regions of the PTX 
+       0 :  line:0192 : .visible .entry nothing()(  
+       0 :  line:0203 : .visible .entry dumpseed()(  
+       0 :  line:0282 : .visible .entry trivial()(  
+       0 :  line:0387 : .visible .entry zrngtest()(  
+       0 :  line:0617 : .visible .entry tracetest()(  
+       0 :  line:1451 : .visible .entry generate()(  
+       0 :  line:4490 : .visible .entry exception()(  
+    [blyth@localhost cudarap]$ 
+
+                
+Put back WITH_LOGDOUBLE, gets to 103 lines with f64::
+
+    [blyth@localhost opticks]$ OpticksSwitchesTest 
+    2019-09-23 22:00:19.720 INFO  [159869] [main@30] WITH_SEED_BUFFER WITH_RECORD WITH_SOURCE WITH_ALIGN_DEV WITH_LOGDOUBLE WITH_KLUDGE_FLAT_ZERO_NOPEEK 
+
+    [blyth@localhost opticks]$  ptx.py /home/blyth/local/opticks/installcache/PTX/OptiXRap_generated_generate.cu.ptx | c++filt
+    ptx.py /home/blyth/local/opticks/installcache/PTX/OptiXRap_generated_generate.cu.ptx
+     103 : TOTAL .f64 lines in function regions of the PTX 
+       0 :  line:0192 : .visible .entry nothing()(  
+       0 :  line:0203 : .visible .entry dumpseed()(  
+       0 :  line:0282 : .visible .entry trivial()(  
+       0 :  line:0387 : .visible .entry zrngtest()(  
+       0 :  line:0617 : .visible .entry tracetest()(  
+     103 :  line:1451 : .visible .entry generate()(  
+       0 :  line:4690 : .visible .entry exception()(  
+    [blyth@localhost opticks]$ 
+
+
+

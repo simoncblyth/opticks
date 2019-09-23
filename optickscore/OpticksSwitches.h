@@ -38,14 +38,14 @@ NB when searching for switches in python include the space at the end, eg::
 #define WITH_RECORD 1 
 #define WITH_SOURCE 1 
 #define WITH_ALIGN_DEV 1
-#define WITH_ALIGN_DEV_DEBUG 1
+//#define WITH_ALIGN_DEV_DEBUG 1
 //#define WITH_REFLECT_CHEAT_DEBUG 1
 
 #define WITH_LOGDOUBLE 1
 //#define WITH_LOGDOUBLE_ALT 1
 
 #define WITH_KLUDGE_FLAT_ZERO_NOPEEK 1
-
+//#define WITH_EXCEPTION 1 
 
 
 
@@ -85,6 +85,10 @@ static std::string OpticksSwitches()
 
 #ifdef WITH_KLUDGE_FLAT_ZERO_NOPEEK
     ss << "WITH_KLUDGE_FLAT_ZERO_NOPEEK " ;   
+#endif
+
+#ifdef WITH_EXCEPTION
+    ss << "WITH_EXCEPTION " ;   
 #endif
 
 

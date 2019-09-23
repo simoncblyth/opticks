@@ -4,9 +4,15 @@ gpu-photon-generation-needed-to-push-ceiling
 issue
 -------
 
-* want to push the limits of how many photons, current max is 100M
+* want to push the limits of how many photons, current max is 100M (now 200M)
 * scanning high photon counts is slow because of having to generate
   loadsa input photons on the gpu : this was done for alignment. 
+
+* cudarap rngmax monolithic files not scaling well to large photon counts, 
+  needs overhaul to a building block approach to reduce GPU memory and disk 
+  space waste
+
+
 * when not doing G4/alignment can return to GPU photon generation, but how ? 
 
   * emitter stuff in the geometry ?
@@ -14,6 +20,70 @@ issue
 ::
 
    emitconfig = "photons:100000,wavelength:380,time:0.0,posdelta:0.1,sheetmask:0x1,umin:0.45,umax:0.55,vmin:0.45,vmax:0.55" 
+
+
+
+Can I reach the memory limit ceiling ?
+-----------------------------------------
+
+::
+
+     4*Tesla GV100   : 128G   
+     Quadro RTX 8000 :  48G
+     Tesla GV100     :  32G      
+     TITAN RTX       :  24G
+     TITAN V         :  12G         
+
+
+* photons and rng_states, only buffers needed in production that scale with num_photons.
+* geometry does not scale, gensteps scale but they are tiny, step records not used in production.
+
+::
+
+    photons       : 64 bytes 
+    curandState   : 48 bytes 
+                   112 bytes   per photon
+
+::
+
+    In [3]: 112*100e6/1e9      ## suggests TITAN V will not reach 100M 
+    Out[3]: 11.2
+
+    In [4]: 112*200e6/1e9      ## TITAN RTX may just reach 200M,   got 95% GPU memory warnings while doing this 
+    Out[4]: 22.4
+
+    In [5]: 112*400e6/1e9      ## Quadro RTX 8000 may just reach 400M
+    Out[5]: 44.8
+
+    In [6]: 112*1000e6/1e9     ## 4*Tesla GV100 should manage 1000M : but whether OptiX 6.5 has the smarts is unclear
+    Out[6]: 112.0
+
+
+* needs development to enable multiple curandState files to be used
+  in order to reach the 1000M, this would actually be convenient for 
+  smaller usage too : as currently have to duplicate content and disk usage
+  across the file sizes 
+
+* even with this its unclear if OptiX 6.5 is clever enough to
+  handle overlarge buffers 
+
+
+* :doc:`curandState-persisting-needs-overhaul-for-better-memory-efficiency`
+
+
+
+Gold CUDARap TITAN RTX
+------------------------
+
+::
+
+    [blyth@localhost cudarap]$ cudarap-prepare-rng-500M
+    2019-09-23 20:12:56.492 INFO  [381582] [main@54]  work 500000000 max_blocks 128 seed 0 offset 0 threads_per_block 256 cachedir /home/blyth/.opticks/rngcache/RNG
+    2019-09-23 20:12:56.496 INFO  [381582] [allocate_rng_wrapper@68]  items  500000000 items/M 500 sizeof(curandState) 48 nbytes 24000000000 nbytes/M 24000
+    Cuda error in file '/home/blyth/opticks/cudarap/cuRANDWrapper_kernel.cu' in line 78 : out of memory.
+
+
+* observation of nvidia-smi : looks like cudarap is using TITAN V 
 
 
 
@@ -27,6 +97,8 @@ how to proceed
 
    tboolean-interlocked --nog4
 
+
+* interlocked is heavy, created boxx which uses torchconfig 
 
 
 * see documentation in tboolean : Configuring Photon Sources 

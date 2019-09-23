@@ -22,6 +22,7 @@ onvidia-vi(){ vi $(onvidia-source)  ; }
 onvidia-env(){  olocal- ; opticks- ; }
 onvidia-driver-version(){  nvidia-smi --query-gpu=driver_version --format=csv,noheader | uniq ; }
 onvidia-export(){ export OPTICKS_NVIDIA_DRIVER_VERSION=$(onvidia-driver-version) ; }
+onvidia-smi(){ watch -d -n 0.5 nvidia-smi ; }
 
 onvidia-usage(){ cat << EOU
 
