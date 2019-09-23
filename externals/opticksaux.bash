@@ -35,6 +35,22 @@ $OPTICKS_INSTALL_PREFIX/opticksaux
        readonly opticksaux bitbucket git clone that only pulls, this is what users see
 
 
+
+Pushing from the https clone requires password::
+
+    [blyth@localhost opticksaux]$ git push 
+    Username for 'https://bitbucket.org': simoncblyth
+    Password for 'https://simoncblyth@bitbucket.org': 
+    Counting objects: 7, done.
+    Delta compression using up to 48 threads.
+    Compressing objects: 100% (5/5), done.
+    Writing objects: 100% (5/5), 221.03 KiB | 0 bytes/s, done.
+    Total 5 (delta 0), reused 0 (delta 0)
+    To https://bitbucket.org/simoncblyth/opticksaux.git
+       995b46d..0faa056  master -> master
+    [blyth@localhost opticksaux]$ 
+
+
 EOU
 }
 opticksaux-env(){ echo -n ;  }

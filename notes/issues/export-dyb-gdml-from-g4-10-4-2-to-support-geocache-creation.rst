@@ -1003,6 +1003,61 @@ Copy the geocache just created from P to C::
    (base) [blyth@gilda03 1]$ mkdir -p $(dirname $p) ; scp -r P:$p $(dirname $p)/
 
 
+opticks-t check
+----------------------
+
+Gold::
+
+    SLOW: tests taking longer that 15 seconds
+      7  /34  Test #7  : CFG4Test.CG4Test                              Passed                         17.09  
+      1  /1   Test #1  : OKG4Test.OKG4Test                             Passed                         21.53  
+      2  /2   Test #2  : IntegrationTests.tboolean.box                 ***Failed                      17.60  
+
+    FAILS:  6   / 416   :  Mon Sep 23 14:36:27 2019   
+      1  /34  Test #1  : CFG4Test.CMaterialLibTest                     Child aborted***Exception:     4.94   
+      2  /34  Test #2  : CFG4Test.CMaterialTest                        Child aborted***Exception:     4.91   
+      25 /34  Test #25 : CFG4Test.CGROUPVELTest                        Child aborted***Exception:     5.03   
+      32 /34  Test #32 : CFG4Test.CCerenkovGeneratorTest               Child aborted***Exception:     4.91   
+      33 /34  Test #33 : CFG4Test.CGenstepSourceTest                   Child aborted***Exception:     4.92   
+      2  /2   Test #2  : IntegrationTests.tboolean.box                 ***Failed                      17.60  
+    [blyth@localhost opticks]$ 
+
+Mostly Bialkali sensor surface assert presumably. Skipping for non-legacy in CPropLib makes all but IntegrationTests.tboolean.box pass::
+
+    +    bool legacy = Opticks::IsLegacyGeometryEnabled() ; 
+    +    if(is_sensor_material && legacy)
+         {
+             addSensorMaterialProperties(mpt, name ) ; 
+         }
+    +
+
+IntegrationTests.tboolean.box failing for lack of parameter.json in Profile.loadMeta.
+
+
+Silver::
+
+    SLOW: tests taking longer that 15 seconds
+
+    FAILS:  14  / 416   :  Mon Sep 23 14:36:07 2019   
+      18 /25  Test #18 : OptiXRapTest.interpolationTest                ***Failed                      7.00   
+      1  /34  Test #1  : CFG4Test.CMaterialLibTest                     Child aborted***Exception:     5.94   
+      2  /34  Test #2  : CFG4Test.CMaterialTest                        Child aborted***Exception:     5.62   
+      3  /34  Test #3  : CFG4Test.CTestDetectorTest                    ***Exception: SegFault         5.66   
+      5  /34  Test #5  : CFG4Test.CGDMLDetectorTest                    Child aborted***Exception:     5.58   
+      6  /34  Test #6  : CFG4Test.CGeometryTest                        Child aborted***Exception:     5.59   
+      7  /34  Test #7  : CFG4Test.CG4Test                              ***Exception: SegFault         5.66   
+      23 /34  Test #23 : CFG4Test.CInterpolationTest                   ***Exception: SegFault         5.73   
+      25 /34  Test #25 : CFG4Test.CGROUPVELTest                        Child aborted***Exception:     5.62   
+      29 /34  Test #29 : CFG4Test.CRandomEngineTest                    ***Exception: SegFault         5.67   
+      32 /34  Test #32 : CFG4Test.CCerenkovGeneratorTest               Child aborted***Exception:     5.66   
+      33 /34  Test #33 : CFG4Test.CGenstepSourceTest                   Child aborted***Exception:     5.71   
+      1  /1   Test #1  : OKG4Test.OKG4Test                             ***Exception: SegFault         5.80   
+      2  /2   Test #2  : IntegrationTests.tboolean.box                 ***Failed                      13.95  
+
+
+
+
+
 
 
  

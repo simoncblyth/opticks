@@ -264,10 +264,13 @@ G4MaterialPropertiesTable* CPropLib::makeMaterialPropertiesTable(const GMaterial
     G4MaterialPropertiesTable* mpt = new G4MaterialPropertiesTable();
     addProperties(mpt, _ggmat, "RINDEX,ABSLENGTH,RAYLEIGH,REEMISSIONPROB,GROUPVEL");
 
-    if(is_sensor_material)
+    bool legacy = Opticks::IsLegacyGeometryEnabled() ; 
+    if(is_sensor_material && legacy)
     {
         addSensorMaterialProperties(mpt, name ) ; 
     }
+
+
     if(is_scintillator)
     {
         addScintillatorMaterialProperties(mpt, name ) ; 

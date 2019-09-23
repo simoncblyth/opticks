@@ -145,7 +145,12 @@ class Profile(object):
 
     def loadMeta(self):
         path = self.metapath()
-        self.meta = json_load_(path)
+        exists = os.path.exists(path) 
+        if not exists:
+            log.info("path %s does not exist " % path ) 
+        pass
+        meta = json_load_(path) if exists else {}
+        self.meta = meta
         log.debug("loaded %s keys %s " % (path, len(self.meta))) 
 
 
