@@ -88,9 +88,11 @@ class BRAP_API BStr {
      static void fsplit( std::vector<float>& elem, const char* line, char delim );
      static void fsplitEnv( std::vector<float>& elem, const char* envvar, const char* fallback, char delim=' ' );
      static bool existsEnv( const char* envvar );
-     static bool StartsWith( const char* s, const char* q );
 
+     static bool StartsWith( const char* s, const char* q );
      static bool EndsWith( const char* s, const char* q );
+     static bool StartsEndsWith( const char* s, const char* b, const char* e );
+
      static const char* WithoutEnding(const char* s, const char* q);
 
 

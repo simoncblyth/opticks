@@ -13,60 +13,59 @@ class Dist(object):
     """
     Creates a mostly binary tarball of the Opticks build products 
     along with some txt files that are needed at runtime.  These
-    include the OpenGL shader sources and OpticksPhoton.h which is parsed 
-    at runtime to instanciate OpticksFlags.
+    include the OpenGL shader sources. 
 
+    With Geant4 libs and data excluded
 
-    lib64/cmake 
-    lib64/pkgconfig
-         These are the cmake exported targets, 
-          so for CMake level integration will need to include them  
+    305M    /home/blyth/local/opticks/Opticks-0.0.0_alpha.tar
 
-    Bases
-         
-    lib 
-         contains order 400 executables
-
-    Not installed things which perhaps should be 
-
-    bin/ok.sh 
- 
-
-    tests
-        tree of CTestTestfile.cmake 
-
-    externals/share/Geant4-10.4.2/data
-        adds about 1.6G to the .tar
- 
- 
     """
-    exclude_dir_name = ['cmake','pkgconfig',  'Geant4-10.2.1', 'Geant4-10.4.2']  
+    exclude_dir_name = [ '.git', 
+                         '.hg', 
+                         'cmake',     # cmake exported targets and config
+                         'pkgconfig',  
+                         'Geant4-10.2.1', 
+                         'Geant4-10.4.2']  
 
     bases = ['include', 
-             'lib',
-             'lib64',
-             'externals/config',
+             'lib',                  # order 400 executables
+             'lib64',              
              'externals/lib',
              'externals/lib64',
              'externals/OptiX/lib64', 
-             'externals/share/Geant4-10.4.2/data',
              'installcache/PTX', 
-             'gl', 
-             'tests',
+             'gl',                   # shaders 
+             'tests',                # tree of CTestTestfile.cmake  
              'integration', 
-             'py', 
+             'py',                   # installed python module tree
              'bin',
-             'opticksaux',
+             'opticksaux',           # a few example GDML files
              ]
+
+    bases_g4 = [
+             'externals/config',
+             'externals/share/Geant4-10.4.2/data',       # adds about 1.6G to .tar when included
+               ] 
 
     extras = [
-             'opticksdata/export/juno1808/g4_00_v5.gdml',
-             'opticksdata/export/DayaBay_VGDX_20140414-1300/g4_00_CGeometry_export.gdml', 
              ]
 
-    exclude_g4lib = False
+    """
+             'opticksdata/export/juno1808/g4_00_v5.gdml',
+             'opticksdata/export/DayaBay_VGDX_20140414-1300/g4_00_CGeometry_export.gdml', 
+    """
 
-    def __init__(self, distprefix, distname):
+
+
+    @classmethod
+    def Create(cls, distprefix, distname, exclude_geant4=False ):
+        if not exclude_geant4:
+             cls.bases.extend(cls.bases_g4)
+        pass
+        return cls(distprefix, distname, exclude_g4lib=exclude_geant4 )
+ 
+
+    def __init__(self, distprefix, distname, exclude_g4lib=False):
         """
         :param distprefix: top level dir structure within distribution 
         :param distname:
@@ -85,6 +84,8 @@ class Dist(object):
             tar zxvf Opticks-0.1.0.tar.gz --strip 2
 
         """
+        self.exclude_g4lib = exclude_g4lib
+
         assert len(distprefix.split("/")) in [2,3] , "expecting 2 or 3 element distprefix %s " % distprefix 
 
         if distname.endswith(".tar.gz"): 
@@ -113,19 +114,29 @@ class Dist(object):
         self.dist.close()
 
     def exclude_dir(self, name):
-        return name in self.exclude_dir_name
+        exclude = name in self.exclude_dir_name
+        if exclude:
+            log.info("exclude_dir %s " % name) 
+        pass
+        return exclude  
 
     def exclude_file(self, name):
+        exclude = False 
         if name.endswith(".log"):
-            return True
+            exclude = True
         pass
-        if name.startswith("libG4") and self.exclude_g4lib:
-            return True
+        if name.startswith("libG4OK"):  ## Opticks Geant4 interface lib named like g4 libs
+            exclude = False
+        elif name.startswith("libG4") and self.exclude_g4lib:
+            exclude = True
         pass
-        return False
+        #if exclude:
+        #    log.info("exclude_file %s " % name) 
+        pass
+        return exclude
 
     def add(self, path):
-        #print(path)
+        log.debug(path)
         arcname = os.path.join(self.prefix,path) 
         self.dist.add(path, arcname=arcname, recursive=False)
 
@@ -134,6 +145,8 @@ class Dist(object):
         NB all paths are relative to base 
         """
         assert os.path.isdir(base), "expected directory %s does not exist " % base
+
+        log.info("base %s depth %s " % (base, depth))
 
         names = os.listdir(base)
         for name in names:
@@ -159,6 +172,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(__doc__)
     parser.add_argument(     "--distname",  help="Distribution name including the extension, expect .tar or .tar.gz" )
     parser.add_argument(     "--distprefix",  help="Distribution prefix, ie the top level directory structure within distribution file." )
+    parser.add_argument(     "--exclude_geant4",   action="store_true", help="Exclude Geant4 libraries and datafiles from the distribution" )
     parser.add_argument(     "--level", default="info", help="logging level" ) 
     args = parser.parse_args()
 
@@ -167,7 +181,7 @@ if __name__ == '__main__':
 
     log.info("distprefix %s distname %s " % (args.distprefix, args.distname))
 
-    dist = Dist(args.distprefix, args.distname )
+    dist = Dist.Create(args.distprefix, args.distname, exclude_geant4=args.exclude_geant4  )
 
 
 

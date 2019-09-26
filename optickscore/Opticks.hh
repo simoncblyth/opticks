@@ -122,6 +122,8 @@ class OKCORE_API Opticks {
    public:
        static bool IsLegacyGeometryEnabled(); 
        static bool IsForeignGeant4Enabled(); 
+       static bool IsGeant4EnvironmentDetected(); 
+
        static const char* OptiXCachePathDefault(); 
    public:
        static BPropNames* G_MATERIAL_NAMES ;

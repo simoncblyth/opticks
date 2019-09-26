@@ -41,19 +41,28 @@ const plog::Severity BEnv::LEVEL = PLOG::EnvLevel("BEnv","DEBUG");
 extern char **environ;
 #endif
 
-BEnv* BEnv::load(const char* dir, const char* name) 
+BEnv* BEnv::Load(const char* dir, const char* name) 
 {
-   BEnv* e = new BEnv ;  
-   e->readFile(dir, name);
-   return e ; 
+    BEnv* e = new BEnv ;  
+    e->readFile(dir, name);
+    return e ; 
 }
 
-BEnv* BEnv::load(const char* path) 
+BEnv* BEnv::Load(const char* path) 
 {
-   BEnv* e = new BEnv ;  
-   e->readFile(path);
-   return e ; 
+    BEnv* e = new BEnv ;  
+    e->readFile(path);
+    return e ; 
 }
+
+BEnv* BEnv::Create(const char* prefix)
+{
+    BEnv* e = new BEnv(environ); 
+    e->setPrefix(prefix); 
+    //e->dump("BEnv::Create"); 
+    return e ; 
+}
+
 
 
 BEnv::BEnv(char** envp) 
@@ -138,7 +147,6 @@ void BEnv::setPrefix(const char* prefix)
 void BEnv::dump(const char* msg)
 {
     LOG(info) << msg << " prefix " << ( m_prefix ? m_prefix : "NULL" ) ; 
-    typedef std::map<std::string, std::string> SS ; 
 
     MSS* mss = m_selection ? m_selection : m_all ; 
 
@@ -165,6 +173,56 @@ void BEnv::dump(const char* msg)
                   << std::endl ;  
     }
 }
+
+
+/**
+BEnv::getNumberOfEnvvars
+-------------------------------
+
+Count envvar keys that start with "head" and end with "tail".
+For example Geant4 data envvars start with "G4" and end with "DATA". 
+
+**/
+
+unsigned BEnv::getNumberOfEnvvars(const char* head, const char* tail, bool require_existing_dir ) const 
+{
+    MSS* mss = m_selection ? m_selection : m_all  ;
+    assert(mss);  
+
+    SS m = mss->getMap();
+
+    unsigned count(0); 
+
+    LOG(LEVEL)
+        << " head " << head
+        << " tail " << tail
+        << " require_existing_dir " << require_existing_dir
+        ;
+
+    for(SS::iterator it=m.begin() ; it != m.end() ; it++)
+    {
+        std::string k = it->first ; 
+        std::string v = it->second ; 
+        bool match = BStr::StartsEndsWith(k.c_str(), head, tail ); 
+        bool exists = require_existing_dir ? BFile::ExistsDir( v.c_str() ) : true ; 
+
+        LOG(LEVEL)
+            << " k " << std::setw(30) << k 
+            << " v " <<std::setw(100) << v 
+            << " match " << match 
+            << " exists " << exists
+            ; 
+
+        if( match && exists ) count += 1 ; 
+    }
+    return count ;
+}
+
+
+
+
+
+
 
 
 

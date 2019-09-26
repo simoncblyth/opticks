@@ -582,7 +582,7 @@ BEnv* OpticksResource::ReadIniEnvironment(const std::string& inipath)
                   << " from " << inipath
                   ;
 
-         env = BEnv::load(inipath.c_str()); 
+         env = BEnv::Load(inipath.c_str()); 
          //env->dump("OpticksResource::ReadIniEnvironment");
 
     }

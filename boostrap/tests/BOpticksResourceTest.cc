@@ -74,13 +74,10 @@ void test_ViaSrc()
 }
 
 
-
-int main(int argc, char** argv)
+void test_Setup()
 {
-    OPTICKS_LOG(argc, argv);
-
     const char* idpath  = SSys::getenvvar("IDPATH");
-    if(!idpath) return 0 ;     
+    if(!idpath) return  ;     
 
     LOG(info) << " starting from IDPATH " << idpath ; 
     BOpticksResourceTest brt(idpath) ; 
@@ -88,7 +85,21 @@ int main(int argc, char** argv)
 
     // the two setup approaches, should yield exactly the same paths 
     BResource::Dump("BOpticksResourceTest"); 
+}
 
+
+void test_IsGeant4EnvironmentDetected()
+{
+    bool detect = BOpticksResource::IsGeant4EnvironmentDetected()  ; 
+    LOG(info) << detect ; 
+}
+
+
+int main(int argc, char** argv)
+{
+    OPTICKS_LOG(argc, argv);
+  
+    test_IsGeant4EnvironmentDetected(); 
 
     return 0 ; 
 }

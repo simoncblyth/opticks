@@ -243,6 +243,11 @@ bool Opticks::IsForeignGeant4Enabled() // static
 {
     return BOpticksResource::IsForeignGeant4Enabled() ;  // returns true when envvar OPTICKS_FOREIGN_GEANT4_ENABLED is set to 1 
 }
+bool Opticks::IsGeant4EnvironmentDetected() // static
+{
+    return BOpticksResource::IsGeant4EnvironmentDetected() ;  // returns true when find 10 G4...DATA envvars pointing at existing directories 
+}
+
 
 
 

@@ -591,20 +591,20 @@ g4-export(){ source $(g4-sh) ; }
 g4-export-ini()
 {
     local msg="=== $FUNCNAME :"
-    g4-export
     local ini=$(g4-ini)
     local dir=$(dirname $ini)
     mkdir -p $dir 
     echo $msg writing G4 environment to $ini
 
-    #env | grep G4 > $ini
-    envg4.py > $ini
-
+    g4-envg4  > $ini
     cat $ini
-
 }
 
 
+g4-envg4(){ 
+    g4-export
+    envg4.py $*
+}
 
 
 ################# below funcions for studying G4 source ##################################

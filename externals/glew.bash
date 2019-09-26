@@ -36,9 +36,8 @@ GLEW has been tested on a variety of operating systems, including Windows,
 Linux, Mac OS X, FreeBSD, Irix, and Solaris.
 
 
-
-glew-cmake fails
------------------
+With glew 1.13.0 glew-cmake fails, so are using the Makefile 
+----------------------------------------------------------------
 
 ::
 
@@ -50,8 +49,6 @@ glew-cmake fails
     Call Stack (most recent call first):
       /opt/local/share/cmake-2.8/Modules/FindPkgConfig.cmake:333 (_pkg_check_modules_internal)
       CMakeLists.txt:26 (pkg_check_modules)
-
-
 
 
 
@@ -78,6 +75,7 @@ glew-ecd(){  cd $(glew-edir); }
 
 #glew-version(){ echo 1.12.0 ; }
 glew-version(){ echo 1.13.0 ; }
+#glew-version(){ echo 2.1.0 ; }
 glew-name(){ echo glew-$(glew-version) ;}
 
 glew-url(){ 
@@ -117,6 +115,15 @@ glew-export (){
 glew-edit(){ vi $(opticks-home)/cmake/Modules/FindGLEW.cmake ; }
 
 
+
+glew-make-notes(){ cat << EON
+
+* LIBDIR override is to install into lib rather than lib64
+  see notes/issues/glew-is-only-external-other-that-geant4-installing-into-lib64.rst
+
+EON
+}
+
 glew-make(){
 
    local target=${1:-install}
@@ -126,7 +133,7 @@ glew-make(){
    local gen=$(opticks-cmake-generator)
    case $gen in 
       "Visual Studio 14 2015") glew-install-win ;; 
-                            *) make $target GLEW_PREFIX=$(glew-prefix) GLEW_DEST=$(glew-prefix)  ;;
+                            *) make $target GLEW_PREFIX=$(glew-prefix) GLEW_DEST=$(glew-prefix) LIBDIR=$(glew-prefix)/lib  ;;
    esac
    cd $iwd
 }

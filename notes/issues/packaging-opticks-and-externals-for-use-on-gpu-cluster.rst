@@ -4,8 +4,8 @@ packaging-opticks-and-externals-for-use-on-gpu-cluster
 Strategy
 ----------
 
-1. rearrange the position of libraries such as OptiX to make packaging simpler
-2. develop python + bash scripts to make tarball 
+1. DONE : rearrange the position of libraries such as OptiX to make packaging simpler
+2. DONE : develop python + bash scripts to make tarball, okdist-- 
 
 
 Naming the Opticks distribution
@@ -13,7 +13,97 @@ Naming the Opticks distribution
 
 * Name to include versions of gcc and Geant4.
 * Not OptiX as will incorporate that in the dist, 
-  so its covered by the Opticks version. 
+  so its covered by the Opticks version 
+* optixrap for 6.5 and 7.0 need to be totally different
+
+
+Excluding G4 from distro and getting it as a "foreign" external 
+------------------------------------------------------------------------
+
+* :doc:`glew-is-only-external-other-that-geant4-installing-into-lib64`
+* Moved it from lib64 to lib, leaving only G4 
+
+
+Excluding the G4 libs and data results means::
+
+     55 tests failed out of 413
+
+::
+
+    [simon@localhost ~]$ G4OKTest
+    G4OKTest: error while loading shared libraries: libG4Tree.so: cannot open shared object file: No such file or directory
+
+
+
+"simon" : Mockup environment of a foreign Geant4 install to check Opticks binary dist can work with that situation
+------------------------------------------------------------------------------------------------------------------------------- 
+
+::
+
+    export LD_LIBRARY_PATH=/home/blyth/local/opticks/externals/lib64   # for G4 libs
+    source ~blyth/g4-envg4.bash
+
+
+::
+
+    100% tests passed, 0 tests failed out of 413
+
+    Total Test time (real) = 251.82 sec
+    == okr-t : tbeg Thu Sep 26 15:52:07 CST 2019
+    == okr-t : tend Thu Sep 26 15:56:19 CST 2019
+    == okr-t : tdir /cvmfs/opticks.ihep.ac.cn/ok/releases/Opticks-0.0.0_alpha/x86_64-centos7-gcc48-geant4_10_04_p02-dbg/tests
+    == okr-t : tlog /home/simon/okr-t.log
+
+
+
+
+Mockup usage with a foreign Geant4 install : ie one not installed as part of Opticks
+----------------------------------------------------------------------------------------------
+
+::
+
+    [blyth@localhost ~]$ g4-envg4 --token ASIS --export 
+    export G4NEUTRONHPDATA=/home/blyth/local/opticks/externals/share/Geant4-10.4.2/data/G4NDL4.5
+    export G4NEUTRONXSDATA=/home/blyth/local/opticks/externals/share/Geant4-10.4.2/data/G4NEUTRONXS1.4
+    export G4LEDATA=/home/blyth/local/opticks/externals/share/Geant4-10.4.2/data/G4EMLOW7.3
+    export G4REALSURFACEDATA=/home/blyth/local/opticks/externals/share/Geant4-10.4.2/data/RealSurface2.1.1
+    export G4ENSDFSTATEDATA=/home/blyth/local/opticks/externals/share/Geant4-10.4.2/data/G4ENSDFSTATE2.2
+    export G4ABLADATA=/home/blyth/local/opticks/externals/share/Geant4-10.4.2/data/G4ABLA3.1
+    export G4RADIOACTIVEDATA=/home/blyth/local/opticks/externals/share/Geant4-10.4.2/data/RadioactiveDecay5.2
+    export G4PIIDATA=/home/blyth/local/opticks/externals/share/Geant4-10.4.2/data/G4PII1.3
+    export G4LEVELGAMMADATA=/home/blyth/local/opticks/externals/share/Geant4-10.4.2/data/PhotonEvaporation5.2
+    export G4SAIDXSDATA=/home/blyth/local/opticks/externals/share/Geant4-10.4.2/data/G4SAIDDATA1.1
+
+    [blyth@localhost ~]$ g4-envg4 --token ASIS --export > g4-envg4.bash
+
+
+::
+
+    [simon@localhost ~]$ source ~blyth/g4-envg4.bash
+
+    [simon@localhost ~]$ grep LD_LIBRARY_PATH .opticks_setup_minimal 
+    export LD_LIBRARY_PATH=/home/blyth/local/opticks/externals/lib64   # for G4 libs
+
+::
+
+    okr-t
+
+
+Foreign Geant4 ? Instead of requiring yet another envvar just detect the G4...DATA envvars
+------------------------------------------------------------------------------------------------
+
+::
+
+    [blyth@localhost opticks]$ opticks-f Foreign
+    ./cfg4/CG4.cc:    if(!Opticks::IsForeignGeant4Enabled())
+    ./cfg4/CG4.cc:        LOG(error) << "non-Foreign Geant4 " ; 
+    ./boostrap/BOpticksResource.hh:        static bool IsForeignGeant4Enabled() ;   // foreign Geant4 means not managed as an Opticks external
+    ./boostrap/BOpticksResource.cc:bool BOpticksResource::IsForeignGeant4Enabled()
+    ./optickscore/Opticks.hh:       static bool IsForeignGeant4Enabled(); 
+    ./optickscore/Opticks.cc:bool Opticks::IsForeignGeant4Enabled() // static
+    ./optickscore/Opticks.cc:    return BOpticksResource::IsForeignGeant4Enabled() ;  // returns true when envvar OPTICKS_FOREIGN_GEANT4_ENABLED is set to 1 
+    [blyth@localhost opticks]$ 
+
 
 
 CVMFS releases layout

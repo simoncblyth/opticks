@@ -240,6 +240,7 @@ void NCSGList::adjustContainerSize()
     LOG(LEVEL) 
         << "]" 
         << " m_bbox " 
+        << " autosize " << autosize 
         << m_bbox.description()
         ; 
 }

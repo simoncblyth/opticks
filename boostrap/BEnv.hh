@@ -21,6 +21,7 @@
 
 #include <cstddef>
 #include <string>
+#include <map>
 #include "plog/Severity.h"
 
 #include "BRAP_API_EXPORT.hh"
@@ -30,9 +31,16 @@ template <typename A, typename B> class Map ;
 class BRAP_API BEnv {
    public:
       static const plog::Severity LEVEL ; 
+
       typedef Map<std::string, std::string> MSS ; 
-      static BEnv* load(const char* dir, const char* name);
-      static BEnv* load(const char* path);
+      typedef std::map<std::string, std::string> SS ; 
+
+      static BEnv* Load(const char* dir, const char* name);
+      static BEnv* Load(const char* path);
+      static BEnv* Create(const char* prefix);
+
+      unsigned getNumberOfEnvvars(const char* head, const char* tail, bool require_existing_dir=false ) const ; 
+
       static void dumpEnvironment(const char* msg="BEnv::dumpEnvironment", const char* prefix="G4,OPTICKS,DAE,IDPATH");
    public:
       BEnv(char** envp=NULL);

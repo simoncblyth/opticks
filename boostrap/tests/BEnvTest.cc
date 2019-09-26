@@ -52,7 +52,7 @@ void testCreateSave(char** envp)
 
 void testLoad()
 {
-    BEnv* f = BEnv::load(dir, name);
+    BEnv* f = BEnv::Load(dir, name);
     f->dump("loaded from ini");
 
     f->setEnvironment();
@@ -63,9 +63,9 @@ void testLoad()
 void testIniLoad(const char* path)
 {
     //std::string fpath = BFile::FormPath(path);
-    //BEnv* e = BEnv::load(fpath.c_str());
+    //BEnv* e = BEnv::Load(fpath.c_str());
 
-    BEnv* e = BEnv::load(path);
+    BEnv* e = BEnv::Load(path);
 
     if(!e)
     {
@@ -110,6 +110,22 @@ void testTraverse()
 }
 
 
+void test_Create()
+{
+    BEnv* e = BEnv::Create("G4"); 
+    assert(e); 
+}
+void test_getNumberOfEnvvars()
+{
+    BEnv* e = BEnv::Create("G4"); 
+    assert(e); 
+    bool require_existing_dir = true ; 
+    unsigned n = e->getNumberOfEnvvars("G4", "DATA", require_existing_dir ) ; 
+    LOG(info) << n ; 
+}
+
+
+
 
 int main(int argc, char** argv, char** /*envp*/)
 {
@@ -122,9 +138,11 @@ int main(int argc, char** argv, char** /*envp*/)
 /*
     testIniLoad("$OPTICKS_INSTALL_PREFIX/externals/config/geant4.ini") ;
     testIniLoad("$OPTICKS_INSTALL_PREFIX/opticksdata/config/opticksdata.ini") ;
-*/
     testTraverse(); 
+    test_Create(); 
+*/
 
+    test_getNumberOfEnvvars(); 
 
     return 0 ;  
 }

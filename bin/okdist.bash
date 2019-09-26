@@ -41,6 +41,16 @@ cvmfs layout
     /cvmfs/opticks.ihep.ac.cn/ok/releases/Opticks/0.0.0-alpha/x86_64-centos7-gcc48-geant4_10_04_p02-dbg/
 
 
+workflow for Opticks binary releases
+----------------------------------------
+
+
+
+
+
+
+
+
 
 EOU
 }
@@ -119,7 +129,7 @@ okdist-create()
 
    okdist-install-tests 
 
-   okdist.py --distprefix $(okdist-prefix) --distname $(okdist-name)  
+   okdist.py --distprefix $(okdist-prefix) --distname $(okdist-name)  --exclude_geant4
 
    ls -al $(okdist-name) 
    du -h $(okdist-name) 
@@ -156,6 +166,19 @@ okdist-explode-(){
 
     local opt=""
     [ -n "$VERBOSE" ] && opt="v"  
+
+
+    local prefix=$(okdist-prefix)   # eg Opticks-0.0.0_alpha/x86_64-centos7-gcc48-geant4_10_04_p02-dbg
+
+    if [ -d "$prefix" ]; then
+       echo $msg an exploded tarball is already present at prefix $prefix
+       local ans
+       #read -p "Enter Y to delete this directory : " ans
+       ans="Y"
+       [ "$ans" == "Y" ] && echo $msg proceeding to delete $prefix && rm -rf $prefix  
+    fi 
+
+
 
     echo $msg exploding distribution $path from PWD $PWD
     case $(okdist-ext) in 

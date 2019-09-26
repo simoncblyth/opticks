@@ -38,6 +38,7 @@ namespace fs = boost::filesystem;
 #include "BFile.hh"
 #include "BStr.hh"
 #include "BPath.hh"
+#include "BEnv.hh"
 #include "BResource.hh"
 #include "BOpticksResource.hh"
 #include "BOpticksKey.hh"
@@ -232,6 +233,34 @@ bool BOpticksResource::IsForeignGeant4Enabled()
    int fge = SSys::getenvint(FOREIGN_GEANT4_ENABLED_KEY, -1);
    return fge == 1 ; 
 }
+
+
+/**
+BOpticksResource::IsGeant4EnvironmentDetected
+----------------------------------------------
+
+Look for G4...DATA envvars with values that point 
+at existing directories. Returns true when 10 
+of these are found.
+
+This may change with new Geant4 versions. 
+
+**/
+
+bool BOpticksResource::IsGeant4EnvironmentDetected()
+{
+    BEnv* e = BEnv::Create("G4"); 
+    bool require_existing_dir = true ; 
+    unsigned n = e->getNumberOfEnvvars("G4", "DATA", require_existing_dir ) ;     
+    bool detect = n == 10 ;  
+    return detect ; 
+}
+
+
+
+
+
+
 
 
 

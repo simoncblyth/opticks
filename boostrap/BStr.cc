@@ -75,6 +75,15 @@ bool BStr::StartsWith(const char* s, const char* q)
     return boost::starts_with(s, q);
 }
 
+bool BStr::StartsEndsWith(const char* s, const char* b, const char* e)
+{
+    return boost::starts_with(s, b) && boost::ends_with(s, e);
+}
+
+
+
+
+
 int BStr::index_first( const std::vector<std::string>& elem, const char* item )
 {
     typedef std::vector<std::string> VS ; 

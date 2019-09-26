@@ -131,10 +131,14 @@ int CG4::preinit()
     OK_PROFILE("_CG4::CG4");
     if(m_ok->hasOpt("cg4sigint")) std::raise(SIGINT);   // <-- handy location for setting G4 breakpoints
 
-    if(!Opticks::IsForeignGeant4Enabled())
+    if(Opticks::IsGeant4EnvironmentDetected())
     {
-        LOG(error) << "non-Foreign Geant4 " ; 
-        OpticksResource::SetupG4Environment();  // <-- requires the g4- config ini file
+        LOG(error) << "External Geant4 environment is detected, not changing this. " ; 
+    }
+    else
+    {
+        LOG(error) << "No external Geant4 environment, will setup internally using g4- config ini file " ; 
+        OpticksResource::SetupG4Environment(); 
     }
     return 0 ; 
 }
