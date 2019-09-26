@@ -23,6 +23,7 @@
 
 #include "X4GDMLParser.hh"
 #include "X4GDMLWriteStructure.hh"
+#include "X4GDMLReadStructure.hh"
 
 #include "PLOG.hh"
 
@@ -39,8 +40,17 @@ const char* X4GDMLParser::PreparePath( const char* prefix, int lvidx, const char
 void X4GDMLParser::Write( const G4VSolid* solid, const char* path, bool refs )  // static
 {
     X4GDMLParser parser(refs) ; 
-    parser.write(solid, path) ; 
+    //parser.write(solid, path) ; 
+    parser.write_noisily(solid, path) ; 
 }
+
+
+const G4VSolid* X4GDMLParser::Read( const char* path )
+{
+    X4GDMLParser parser(false) ;
+    return parser.read_solid( path); 
+}
+
 
 std::string X4GDMLParser::ToString( const G4VSolid* solid, bool refs ) // static
 {
@@ -48,12 +58,16 @@ std::string X4GDMLParser::ToString( const G4VSolid* solid, bool refs ) // static
     return parser.to_string(solid); 
 }
 
+
 X4GDMLParser::X4GDMLParser(bool refs)
     :
-    writer(NULL)
+    
+    writer(NULL),
+    reader(NULL)
 {
     xercesc::XMLPlatformUtils::Initialize();
     writer = new X4GDMLWriteStructure(refs) ; 
+    reader = new X4GDMLReadStructure() ; 
 }
 
 void X4GDMLParser::write_noisily(const G4VSolid* solid, const char* path )
@@ -111,5 +125,13 @@ std::string X4GDMLParser::to_string( const G4VSolid* solid )
     if(cerr_.size() > 0) LOG(error) << "cerr:"<< cerr_ ; 
     return gdml ; 
 }
+
+
+const G4VSolid* X4GDMLParser::read_solid( const char* path )
+{
+    std::string p = BFile::FormPath(path); 
+    return reader->read_solid(p.c_str()) ; 
+}
+
 
 

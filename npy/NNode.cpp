@@ -89,6 +89,13 @@ std::string nnode::ana_desc() const
 {
     return NTreeAnalyse<nnode>::Desc(this) ; 
 }
+std::string nnode::ana_brief() const
+{
+    return NTreeAnalyse<nnode>::Brief(this) ; 
+}
+
+
+
 
 unsigned nnode::desc_indent = 10 ; 
 

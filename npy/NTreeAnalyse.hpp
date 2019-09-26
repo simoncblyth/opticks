@@ -37,6 +37,7 @@ template <typename T>
 struct NPY_API NTreeAnalyse
 {
     static std::string Desc(const T* root_);
+    static std::string Brief(const T* root_);
   
     NTreeAnalyse(const T* root_); 
     ~NTreeAnalyse(); 
@@ -46,6 +47,7 @@ struct NPY_API NTreeAnalyse
     unsigned depth_(bool label);
     unsigned depth_r(const T* node, unsigned depth, bool label);
     std::string desc() const ;
+    std::string brief() const ;
 
     const T*           root ; 
     unsigned           height ; 

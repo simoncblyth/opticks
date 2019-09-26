@@ -80,11 +80,22 @@ void X4GDMLWriteStructure::init(bool refs)
 
 
 
+/**
+X4GDMLWriteStructure::add
+---------------------------
 
+
+**/
 
 void X4GDMLWriteStructure::add(const G4VSolid* solid )
 {
    SolidsWrite(gdml);
+
+   G4String type = solid->GetEntityType() ; 
+
+   LOG(info) << type ;  
+
+   if( type != "G4DisplacedSolid" )
    AddSolid( solid );
 }
 

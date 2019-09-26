@@ -50,6 +50,8 @@ set(SOURCES
 
     X4GDMLParser.cc
     X4GDMLWriteStructure.cc
+    X4GDMLReadStructure.cc
+    X4SolidStore.cc
 
     X4Material.cc
     X4MaterialTable.cc
@@ -101,6 +103,8 @@ set(HEADERS
 
     X4GDMLParser.hh
     X4GDMLWriteStructure.hh
+    X4GDMLReadStructure.hh
+    X4SolidStore.hh
 
     X4Material.hh
     X4MaterialTable.hh

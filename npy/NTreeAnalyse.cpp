@@ -32,6 +32,15 @@ std::string  NTreeAnalyse<T>::Desc(const T* root)  // static
     return ana.desc(); 
 }
 
+template <typename T>
+std::string  NTreeAnalyse<T>::Brief(const T* root)  // static
+{
+    NTreeAnalyse<T> ana(root); 
+    return ana.brief(); 
+}
+
+
+
 
 template <typename T>
 NTreeAnalyse<T>::NTreeAnalyse(const T* root_)
@@ -108,6 +117,31 @@ std::string NTreeAnalyse<T>::desc() const
 
     return ss.str(); 
 }
+
+
+template <typename T>
+std::string NTreeAnalyse<T>::brief() const 
+{
+    std::stringstream ss ; 
+    ss 
+       << "NTreeAnalyse"
+       << " height " << height 
+       << " count " << count 
+       ;
+
+    return ss.str(); 
+}
+
+
+
+
+
+
+
+
+
+
+
 
 
 

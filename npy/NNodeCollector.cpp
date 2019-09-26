@@ -76,7 +76,7 @@ void NNodeCollector<T>::collect_preorder_r( const  T* node )
 template <typename T>
 void NNodeCollector<T>::dump(const char* msg, std::vector<const T*>& order ) 
 {
-    std::cout << msg  ; 
+    std::cout << msg << std::endl ; 
     std::cout << desc(order); 
 }
 

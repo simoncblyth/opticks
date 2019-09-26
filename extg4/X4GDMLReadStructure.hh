@@ -26,42 +26,35 @@
 class G4VSolid ; 
 
 /**
-X4GDMLWrite
-=============
+X4GDMLReadStructure
+========================
 
-Subclass of the standard Geant4 G4GDMLWriteStructure
-that adds methods for writing single solids to GDML snippets
-either in files or strings.
+Subclass of the standard Geant4 G4GDMLReadStructure
 
-g4-;g4-cls G4GDMLWrite
-g4-;g4-cls G4GDMLWriteStructure
+   
+Inheritance chain::
 
-Note that the G4 GDML implementation uses
-a bizarre long inheritance chain : so you just have to 
-resort to searching for methods.
+   X4GDMLReadStructure
+   G4GDMLReadStructure
+   G4GDMLReadParamvol
+   G4GDMLReadSetup
+   G4GDMLReadSolids
+   G4GDMLReadMaterials
+   G4GDMLReadDefine
+   G4GDMLRead   
 
 **/
 
 
-#include "G4GDMLWriteStructure.hh"
+#include "G4GDMLReadStructure.hh"
 
-class X4_API X4GDMLWriteStructure : public G4GDMLWriteStructure 
+class X4_API X4GDMLReadStructure : public G4GDMLReadStructure 
 {
     public:
         static const plog::Severity LEVEL ; 
     public:
-        X4GDMLWriteStructure(bool refs) ; 
-
-        void write(const G4VSolid* solid, const char* path=NULL ); // to file or stdout when path is NULL
-        std::string to_string( const G4VSolid* solid ); 
-   private:
-        void init(bool refs);
-        void add( const G4VSolid* solid ); 
-        std::string write( const char* path=NULL ) ; 
-  
-   private:
-        xercesc::DOMElement* gdml ; 
-        xercesc::DOMImplementation* impl ;
+        X4GDMLReadStructure() ; 
+        const G4VSolid* read_solid(const char* path);
 
 
 };
