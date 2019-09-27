@@ -30,6 +30,7 @@
 #include "X4GDMLParser.hh"
 #include "X4SolidStore.hh"
 #include "Opticks.hh"
+#include "BFile.hh"
 #include "NNode.hpp"
 
 
@@ -44,6 +45,12 @@ int main( int argc , char** argv )
     ok.configure();
     
     const char* path = argc > 1 ? argv[1] : "$HOME/Opticks_install_guide/x375.gdml" ; 
+
+    if(!BFile::ExistsFile(path)) 
+    {
+        LOG(error) << " NON EXISTING path " << path  ; 
+        return 0 ; 
+    }
 
     const G4VSolid* solid = X4GDMLParser::Read(path) ;
     LOG(info) << " solid " << solid ; 

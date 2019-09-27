@@ -1448,6 +1448,7 @@ g4x-(){             . $(opticks-home)/examples/g4x.bash && g4x-env $* ; }
 
 okr-(){             . $(opticks-home)/bin/okr.bash && okr-env $* ; }
 okdist-(){          . $(opticks-home)/bin/okdist.bash && okdist-env $* ; }
+scdist-(){          . $(opticks-home)/bin/scdist.bash && scdist-env $* ; }
 oks-(){             . $(opticks-home)/bin/oks.bash && oks-env $* ; }
 winimportlib-(){    . $(opticks-home)/bin/winimportlib.bash && winimportlib-env $* ; }
 ggv-(){             . $(opticks-home)/bin/ggv.bash && ggv-env $* ; }

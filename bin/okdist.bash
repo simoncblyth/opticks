@@ -228,7 +228,7 @@ okdist-create()
    okdist-install-tests 
 
    echo $msg create tarball
-   okdist.py --distprefix $(okdist-prefix) --distname $(okdist-name)  --exclude_geant4
+   okdist.py --distprefix $(okdist-prefix) --distname $(okdist-name) 
 
    echo $msg list tarball
    ls -al $(okdist-name) 
