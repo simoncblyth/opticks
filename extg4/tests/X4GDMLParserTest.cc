@@ -19,12 +19,6 @@
 
 /**
 
-::
-
-    X4GDMLParserTest $HOME/Opticks_install_guide/x375.gdml
-    X4GDMLParserTest $HOME/Opticks_install_guide/x376.gdml
-
-
 
 **/
 
@@ -147,14 +141,7 @@ int main( int argc , char** argv )
     Opticks ok(argc, argv); 
     ok.configure();
     
-    const char* path = argc > 1 ? argv[1] : "$HOME/Opticks_install_guide/x375.gdml" ; 
-
-    const G4VSolid* solid = X4GDMLParser::Read(path) ;
-    LOG(info) << " solid " << solid ; 
-
-    X4SolidStore::Dump(); 
-
-
-
+    test_write_read() ; 
+  
     return 0 ; 
 }

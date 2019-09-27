@@ -25,6 +25,7 @@ set(TEST_SOURCES
     X4PolyconeTest.cc
 
     X4GDMLParserTest.cc
+    X4GDMLBalanceTest.cc
 )
 
 

@@ -183,3 +183,17 @@ glew-make-not-working(){
    cd $iwd
 }
 
+
+glew-lib64-rm()
+{
+   local iwd=$PWD
+   cd $(glew-prefix)/lib64
+   
+   ls libGLEW*
+   rm libGLEW*
+   rm -rf pkgconfig 
+ 
+   cd $iwd 
+}
+
+

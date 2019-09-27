@@ -40,6 +40,7 @@ class Dist(object):
              'py',                   # installed python module tree
              'bin',
              'opticksaux',           # a few example GDML files
+             'metadata',
              ]
 
     bases_g4 = [
@@ -47,13 +48,7 @@ class Dist(object):
              'externals/share/Geant4-10.4.2/data',       # adds about 1.6G to .tar when included
                ] 
 
-    extras = [
-             ]
-
-    """
-             'opticksdata/export/juno1808/g4_00_v5.gdml',
-             'opticksdata/export/DayaBay_VGDX_20140414-1300/g4_00_CGeometry_export.gdml', 
-    """
+    extras = []
 
 
 

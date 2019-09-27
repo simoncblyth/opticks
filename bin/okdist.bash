@@ -44,13 +44,76 @@ cvmfs layout
 workflow for Opticks binary releases
 ----------------------------------------
 
+0. workstation: get to clean revision by commit and push, then build and test::
+
+     o
+     om--
+     opticks-t 
+
+0.5 workstation: test creating and exploding tarball onto fake /cvmfs::
+
+    okdist--
+
+0.6 workstation: test the binary release by running tests as unpriviled simon::
+
+     su - simon 
+     okr-t
+
+1. lxslc: update repo and build 
+
+2. lxslc: create tarball and test exploding it into releases:: 
+ 
+     okdist--
+
+3. lxslc: copy tarball to stratum zero node::
+
+      scp $(okdist-path) O:  
+
+4. publish the tarball release onto cvmfs::
+
+   ssh O   
+       ## login to stratum zero
+
+   cvmfs_server transaction opticks.ihep.ac.cn 
+       ## start transaction 
+
+   cd /cvmfs/opticks.ihep.ac.cn
+   mkdir -p ok/releases                
+       ## create top folders if this is first release 
+
+   cd /cvmfs/opticks.ihep.ac.cn/ok/releases 
+       ## get into releases folder
+
+   tar tvf ~/Opticks-0.0.0_alpha.tar   
+       ## list tarball contents, check relative paths are correct 
+
+   rm -rf Opticks-0.0.0_alpha/x86_64-slc7-gcc48-geant4_10_04_p02-dbg  
+       ## delete any prior attempts for this architecture/versions 
+
+   tar xvf ~/Opticks-0.0.0_alpha.tar   
+       ## explode the tarball
+
+   cd /cvmfs
+       ## get out of dodge
+
+   cvmfs_server publish -m "First Release Opticks-0.0.0_alpha/x86_64-slc7-gcc48-geant4_10_04_p02-dbg" opticks.ihep.ac.cn
+       ## close and publish this transaction
 
 
 
 
 
+okdist testing on workstation
+-----------------------------------
 
+To test running from exploded tarball onto fake /cvmfs 
+on gold workstation add the below to setup::
 
+    unset OKDIST_RELEASES_DIR
+    export OKDIST_RELEASES_DIR=/cvmfs/opticks.ihep.ac.cn/ok/releases
+
+This will override the default okdist-releases-dir which is a releases 
+folder inside the normal opticks-dir.
 
 EOU
 }
@@ -58,9 +121,21 @@ EOU
 okdist-tmp(){     echo /tmp/$USER/opticks/okdist-test ; }
 okdist-cd(){      cd $(okdist-tmp) ; }
 
-okdist-releases-dir-default(){ echo /cvmfs/opticks.ihep.ac.cn/ok/releases ; }
-okdist-releases-dir(){ echo ${OKDIST_RELEASES_DIR:-$(okdist-releases-dir-default)} ; } 
-okdist-rcd(){ cd $(okdist-releases-dir) ; }
+okdist-revision(){   
+  if [ -d "$(opticks-home)/.hg" ]; then 
+     okdist-revision-hg
+  elif [ -d "$(opticks-home)/.git" ]; then 
+     okdist-revision-git
+  else
+     echo $FUNCNAME-error 
+  fi 
+}
+okdist-revision-hg(){   hg --debug id -i $(opticks-home) ; } 
+okdist-revision-git(){  ( cd $(opticks-home) && git rev-parse HEAD ) ; } 
+
+okdist-releases-dir-default(){ echo $(opticks-dir)/releases ; }
+okdist-releases-dir(){         echo ${OKDIST_RELEASES_DIR:-$(okdist-releases-dir-default)} ; } 
+okdist-rcd(){                  cd $(okdist-releases-dir) ; }
 
 
 okdist-title(){   echo Opticks ; }
@@ -78,15 +153,22 @@ okdist-info(){ cat << EOI
 $FUNCNAME
 =============
 
+   date             : $(date)
+   epoch            : $(date +"%s")
+   uname -a         : $(uname -a)
+   okdist-revision  : $(okdist-revision)   
+
    okdist-ext    : $(okdist-ext)
    okdist-prefix : $(okdist-prefix)
    okdist-name   : $(okdist-name)
    okdist-path   : $(okdist-path)
 
-   okdist-tmp    : $(okdist-tmp)
-
    opticks-dir   : $(opticks-dir)
        Opticks installation directory 
+
+
+   okdist-releases-dir-default : $(okdist-releases-dir-default)
+   OKDIST_RELEASES_DIR         : $OKDIST_RELEASES_DIR 
 
    okdist-releases-dir : $(okdist-releases-dir)
         Directory holding binary releases, from which tarballs are exploded   
@@ -120,17 +202,35 @@ okdist-install-tests()
 }
 
 
+okdist-metadata()
+{
+   local mdir="$(opticks-dir)/metadata"
+
+   [ ! -d "$mdir" ] && mkdir -p "$mdir"
+
+   okdist-info     > $mdir/okdist-info.txt
+   okdist-revision > $mdir/okdist-revision.txt
+}
+
+
 okdist-create()
 {
+   local msg="=== $FUNCNAME :"
    local iwd=$PWD
 
    opticks-
    opticks-cd  ## install directory 
 
+   echo $msg write metadata
+   okdist-metadata
+
+   echo $msg install tests
    okdist-install-tests 
 
+   echo $msg create tarball
    okdist.py --distprefix $(okdist-prefix) --distname $(okdist-name)  --exclude_geant4
 
+   echo $msg list tarball
    ls -al $(okdist-name) 
    du -h $(okdist-name) 
 
@@ -140,11 +240,33 @@ okdist-create()
 
 okdist-ls(){      echo $FUNCNAME ; local p=$(okdist-path) ; ls -l $p ; du -h $p ; }
 
+
+
+okdist-explode-notes(){ cat << EON
+$FUNCNAME
+======================
+
+* okdist-path argument is the absolute path of the tarball, which 
+  is typically directly inside the install dir opticks-dir 
+
+* relative paths inside tarballs are such that the tarballs 
+  should always be exploded from the releases dir in order to get the intended layout,  
+  okdist-explode does this
+
+* directories with preexisting exploded tarballs are deleted, to 
+  avoid mixing 
+
+
+EON
+}
+
 okdist-explode(){ $FUNCNAME- $(okdist-path) ; }
 okdist-explode-(){    
     local msg="=== $FUNCNAME :"
     local iwd=$PWD
     local path=$1 
+
+
 
     if [ -z "$path" ]; then 
         echo $msg expects path argument
@@ -163,6 +285,7 @@ okdist-explode-(){
     fi 
 
     cd $releases_dir
+    echo $msg explode tarball $path from $PWD
 
     local opt=""
     [ -n "$VERBOSE" ] && opt="v"  
