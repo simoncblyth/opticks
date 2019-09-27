@@ -5,6 +5,7 @@ include(OpticksBuildOptions)
 
 # increasing dependency order
 set(SCRIPTS
+   release.bash
    o.sh
    tboolean.sh
 )
