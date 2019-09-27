@@ -9,7 +9,7 @@ sharedcache-cd(){     cd $(sharedcache-prefix) ; }
 
 sharedcache-usage(){ cat << EOU
 $FUNCNAME
-============
+==================
 
 This sharedcache.bash script sets up access to the geocache and rngcache, 
 which are needed by the Opticks libraries, executables and scripts.
@@ -24,7 +24,7 @@ EOU
 
 sharedcache-info(){ cat << EOI
 $FUNCNAME
-============
+==================
 
   sharedcache-source : $(sharedcache-source)
   sharedcache-dir    : $(sharedcache-dir)

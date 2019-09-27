@@ -21,21 +21,30 @@ Workflow to publish a shared cache
 
 1. workstation: collect geocache and rngcache into /opticks/sharedcache
 
-2. workstation: delete files that are not needed from  /opticks/sharedcache
+2. workstation: delete files that are not needed from /opticks/sharedcache
 
-3. workstation: create the tarball, explode it as a test::
+3. workstation: create tarball, explode it as a test::
 
    scdist--
 
-4. workstation: test usage from other user, example environment setup next section:: 
+4. workstation: test usage from other user, example environment setup in next section:: 
 
    su - simon 
 
    release-test
 
+5. workstation: copy tarball to remote node for publishing::
 
-4. copy tarball to remote node for publishing 
+   scdist-publish 
 
+6: from GPU cluster gateway node (lxslc): check tarball relative paths and explode::
+
+   scdist-publish-cd
+
+   ls -l  
+   tar tvf ...
+
+   scdist-publish-explode
 
 
 Example environment setup for use of Opticks binary distribuation and shared cache (from ~simon/.bashrc)
@@ -178,15 +187,49 @@ $FUNCNAME
 EON
 }
 
-scdist-explode(){ $FUNCNAME- $(scdist-path) ; }
-scdist-explode-(){    
-    local msg="=== $FUNCNAME :"
+
+
+scdist-test-explode(){ 
     local iwd=$PWD
+
+    local releases_dir=$(scdist-releases-dir)
+
+    scdist-prepare-releases-dir $releases_dir
+    rc=$?
+    [ $rc -ne 0 ] && echo $msg ERROR rc $rc && return $rc
+
+    cd $releases_dir
+    rc=$?
+    [ $rc -ne 0 ] && echo $msg ERROR rc $rc && return 4
+
+    scdist-explode-here- $(scdist-path) ;
+
+    cd $iwd
+}
+
+
+scdist-prepare-releases-dir()
+{
+    local msg="=== $FUNCNAME :"
+    local rc=0
+    local releases_dir=$1
+    if [ ! -d $releases_dir ]; then 
+        echo $msg creating releases dir $releases_dir
+        mkdir -p $releases_dir
+        rc=$?
+        [ $rc -ne 0 ] && echo $msg ERROR rc $rc && return $rc
+    fi 
+    return $rc
+}
+
+
+scdist-explode-here-(){    
+    local msg="=== $FUNCNAME :"
     local path=$1 
     local rc=0
 
     if [ -z "$path" ]; then 
-        echo $msg expects path argument
+        echo $msg expects path argument to tarball to be exploded
         return 1 
     fi  
     
@@ -194,24 +237,10 @@ scdist-explode-(){
         echo $msg path $path does not exist
         return 2 
     fi 
-
-    local releases_dir=$(scdist-releases-dir)
-    if [ ! -d $releases_dir ]; then 
-        echo $msg creating releases dir $releases_dir
-        mkdir -p $releases_dir
-        rc=$?
-        [ $rc -ne 0 ] && echo $msg ERROR rc $rc && return 3
-    fi 
-
-    cd $releases_dir
-    rc=$?
-    [ $rc -ne 0 ] && echo $msg ERROR rc $rc && return 4
  
     echo $msg explode tarball $path from $PWD
-
     local opt=""
     [ -n "$VERBOSE" ] && opt="v"  
-
 
     local prefix=$(scdist-prefix) 
 
@@ -229,7 +258,6 @@ scdist-explode-(){
           .tar) tar  x${opt}f $path ;;
     esac
 
-    cd $iwd
 }
 
 scdist-lst(){
@@ -243,26 +271,52 @@ scdist-lst(){
 scdist--(){        
 
     scdist-create
-    scdist-explode
+    scdist-test-explode
     scdist-ls  
 }
 
 
 scdist-publish-notes(){ cat << EON
 
-* copies tarball to remote publish node 
+scdist-publish
+    done from workstation, copies tarball from workstation to GPU cluster OR gateway node
+
+scdist-publish-explode
+    done from GPU cluster or gateway node (lxslc), explodes tarball with pre-deletion to avoid mixing 
+    NB this is only significant scdist- function done from gateway or GPU cluster node
 
 EON
 }
 
 scdist-publish-node(){ echo ${SCDIST_PUBLISH_NODE:-L7} ; }
-scdist-publish-base(){ echo ${SCDIST_PUBLISH_BASE:-/hpcfs/juno/junogpu/blyth/opticks.ihep.ac.cn/ok/releases} ; }
+scdist-publish-base(){ echo ${SCDIST_PUBLISH_BASE:-/hpcfs/juno/junogpu/blyth/opticks.ihep.ac.cn/sc/releases} ; }
 scdist-publish()
 {
-    local rnode=$(scdist-publish-node)
-    local rbase=$(scdist-publish-base)
-    ssh $rnode mkdir -p $rbase
-    scp $(scdist-path) $rnode:$rbase/
+    local pnode=$(scdist-publish-node)
+    local pbase=$(scdist-publish-base)
+    local cmd
+
+    cmd="ssh $pnode mkdir -p $pbase"
+    echo $cmd
+    eval $cmd
+
+    cmd="scp $(scdist-path) $pnode:$pbase/"
+    echo $cmd
+    eval $cmd
 }
 
 scdist-publish-cd(){  cd $(scdist-publish-base) ; }
+
+scdist-publish-explode()
+{
+    local msg="=== $FUNCNAME :"
+    local pbase=$(scdist-publish-base)
+    [ ! -d "$pbase" ] && echo $msg ERROR NON EXISTING pbase $pbase && return 1
+
+    cd $pbase
+
+    local pname=$(scdist-name)   
+    scdist-explode-here- $pname 
+}
+
+
