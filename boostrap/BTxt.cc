@@ -34,9 +34,9 @@
 
 
 
-BTxt* BTxt::Load(const char* path)
+BTxt* BTxt::Load(const char* path, const char* pathb)
 {
-    std::string p = BFile::FormPath(path); 
+    std::string p = BFile::FormPath(path, pathb); 
     BTxt* txt = new BTxt(p.c_str());
     txt->read(); 
     return txt ; 

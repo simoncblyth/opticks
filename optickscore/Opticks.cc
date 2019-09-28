@@ -391,7 +391,7 @@ OKTest without options defaults to writing the below::
 
 void Opticks::init()
 {
-    LOG(info) << m_mode->description(); 
+    LOG(info) << m_mode->description() << " hostname " << SSys::hostname() ; 
     if(IsLegacyGeometryEnabled())
     {
         LOG(fatal) << "OPTICKS_LEGACY_GEOMETRY_ENABLED mode is active " 

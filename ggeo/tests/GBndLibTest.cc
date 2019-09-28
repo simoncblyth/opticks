@@ -36,6 +36,8 @@
 
 #include "OPTICKS_LOG.hh"
 
+const char* TMPDIR = "$TMP/ggeo/GBndLibTest" ; 
+
 
 class GBndLibTest 
 {
@@ -54,7 +56,7 @@ void GBndLibTest::test_add()
     m_blib->add(spec, flip);
 
     m_blib->setBuffer(m_blib->createBuffer());
-    m_blib->getBuffer()->save("$TMP/bbuf.npy");
+    m_blib->getBuffer()->save(TMPDIR, "bbuf.npy");
 }
 
 
@@ -90,7 +92,7 @@ int main(int argc, char** argv)
 
     assert( blib->getNames() == NULL && " expect NULL names before the close ") ; 
 
-    blib->saveAllOverride("$TMP"); // writing to geocache in tests not allowed, as needs to work from shared install
+    blib->saveAllOverride(TMPDIR); // writing to geocache in tests not allowed, as needs to work from shared install
 
     assert( blib->getNames() != NULL && " expect non-NULL names after the close ") ; 
 

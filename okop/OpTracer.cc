@@ -120,9 +120,13 @@ at various positions configured via --snapconfig
 
 **/
 
-void OpTracer::snap()   // --snapconfig="steps=5,eyestartz=0,eyestopz=0"
+void OpTracer::snap(const char* dir)   // --snapconfig="steps=5,eyestartz=0,eyestopz=0"
 {
-    LOG(info) << "(" << m_snap_config->desc();
+
+    LOG(info) 
+        << "(" << m_snap_config->desc()
+        << " dir " << dir 
+        ;
 
     int num_steps = m_snap_config->steps ; 
 
@@ -136,9 +140,9 @@ void OpTracer::snap()   // --snapconfig="steps=5,eyestartz=0,eyestopz=0"
 
     for(int i=0 ; i < num_steps ; i++)
     {
-        std::string path_ = m_snap_config->getSnapPath(i) ; 
+        std::string name = m_snap_config->getSnapName(i) ; 
         bool create = true ; 
-        std::string path = BFile::preparePath(path_.c_str(), create);  
+        std::string path = BFile::preparePath(dir ? dir : "$TMP", name.c_str(), create);  
 
 
         float frac = num_steps > 1 ? float(i)/float(num_steps-1) : 0.f ; 

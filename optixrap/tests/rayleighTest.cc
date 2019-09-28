@@ -40,6 +40,7 @@ ORayleighTest
 
 **/
 
+const char* TMPDIR = "$TMP/optixrap/rayleighTest" ; 
 
 struct rayleighTest 
 {
@@ -72,7 +73,7 @@ struct rayleighTest
         NPY<float>* out = NPY<float>::make(nx, ny, 4);
         out->read( rayleighBuffer->map() );
         rayleighBuffer->unmap(); 
-        out->save("$TMP/rayleighTest/ok.npy");
+        out->save(TMPDIR,"ok.npy");
     }
 };
 

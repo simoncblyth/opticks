@@ -21,8 +21,7 @@
 #include <cassert>
 #include "CFG4_BODY.hh"
 
-#include "PLOG.hh"
-#include "CFG4_LOG.hh"
+#include "OPTICKS_LOG.hh"
 
 #include "NPY.hpp"
 
@@ -119,8 +118,7 @@ guint4 rayleigh_scatter(const G4ThreeVector& OldMomentumDirection,
 
 int main(int argc, char** argv)
 {
-    PLOG_(argc, argv);
-    CFG4_LOG_ ;
+    OPTICKS_LOG(argc, argv);
 
     enum { OLDMOM, OLDPOL, NEWMOM, NEWPOL } ;
 
@@ -167,7 +165,7 @@ int main(int argc, char** argv)
     LOG(info) << " tots " << tot.description() ; 
 
 
-    buf->save("$TMP/RayleighTest/cfg4.npy");
+    buf->save("$TMP/cfg4/OpRayleighTest/cfg4.npy");
     return 0 ;
 }
 

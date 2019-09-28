@@ -20,7 +20,10 @@
 #include "NPY.hpp"
 #include "GLMFormat.hpp"
 #include "NRngDiffuse.hpp"
-#include "PLOG.hh"
+#include "OPTICKS_LOG.hh"
+
+
+const char* TMPDIR = "$TMP/npy/NRngDiffuseTest" ; 
 
 void test_uniform_sphere(NRngDiffuse& rng, const glm::vec3& dir)
 {
@@ -51,7 +54,7 @@ void test_uniform_sphere_sample(NRngDiffuse& rng)
 {
     NPY<float>* samp = rng.uniform_sphere_sample(1000) ;
     samp->dump();
-    samp->save("$TMP/NRngDiffuseDiffuseTest_sphere.npy");
+    samp->save(TMPDIR, "NRngDiffuseDiffuseTest_sphere.npy");
 }
 
 void test_diffuse_sample(NRngDiffuse& rng, const glm::vec3& dir)
@@ -59,7 +62,7 @@ void test_diffuse_sample(NRngDiffuse& rng, const glm::vec3& dir)
     NPY<float>* samp = rng.diffuse_sample(1000, dir) ;
     samp->dump();
    
-    samp->save("$TMP/NRngDiffuseDiffuseTest_diffuse.npy");
+    samp->save(TMPDIR, "NRngDiffuseDiffuseTest_diffuse.npy");
 }
 
 
@@ -67,7 +70,7 @@ void test_diffuse_sample(NRngDiffuse& rng, const glm::vec3& dir)
 
 int main(int argc, char** argv)
 {
-    PLOG_(argc, argv);
+    OPTICKS_LOG(argc, argv);
 
     glm::vec3 dir(0,1,0); 
     dir = glm::normalize(dir );    

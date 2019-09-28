@@ -48,6 +48,11 @@ void NNodeNudger::SaveBuffer(const char* path)  // static
 {
     NudgeBuffer->save(path); 
 }
+void NNodeNudger::SaveBuffer(const char* dir, const char* name)  // static
+{
+    NudgeBuffer->save(dir, name); 
+}
+
 
 
 NNodeNudger::NNodeNudger(nnode* root_, float epsilon_, unsigned /*verbosity*/) 

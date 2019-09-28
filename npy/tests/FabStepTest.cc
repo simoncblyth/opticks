@@ -22,10 +22,7 @@
 #include "SSys.hh"
 #include "NPY.hpp"
 
-#include "SYSRAP_LOG.hh"
-#include "NPY_LOG.hh"
-#include "PLOG.hh"
-
+#include "OPTICKS_LOG.hh"
 
 unsigned TORCH     =  0x1 << 12 ; 
 unsigned FABRICATED = 0x1 << 15 ; 
@@ -37,7 +34,7 @@ void test_fabstep_0()
     FabStepNPY* fab = new FabStepNPY(FABRICATED, nstep, 100 ) ;  
     NPY<float>* npy = fab->getNPY();
 
-    const char* path = "$TMP/fabstep_0.npy" ;
+    const char* path = "$TMP/npy/FabStepTest/fabstep_0.npy" ;
     npy->save(path);
 
     SSys::npdump(path, "np.int32");
@@ -45,14 +42,9 @@ void test_fabstep_0()
 
 int main(int argc, char** argv )
 {
-
-    PLOG_(argc, argv);
-
-    SYSRAP_LOG__ ; 
-    NPY_LOG__ ; 
+    OPTICKS_LOG(argc, argv);
 
     test_fabstep_0();
-
 
     return 0 ;
 }

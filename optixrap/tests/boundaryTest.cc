@@ -31,6 +31,8 @@
 #include "OPTICKS_LOG.hh"
 
 
+const char* TMPDIR = "$TMP/optixrap/boundaryTest" ; 
+
 int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv);    
@@ -75,14 +77,14 @@ int main(int argc, char** argv)
 
 
     NPY<float>* ori = blib->getBuffer() ; 
-    ori->save("$TMP/boundaryTest/ori.npy");
+    ori->save(TMPDIR, "ori.npy");
 
     //bool use_debug_buffer = true ;  
     bool use_debug_buffer = false ; 
 
     NPY<float>* inp = use_debug_buffer ? NPY<float>::make_dbg_like(ori, 0) : ori ; 
     //inp->dump();
-    inp->save("$TMP/boundaryTest/inp.npy");
+    inp->save(TMPDIR, "inp.npy");
 
 
     OBndLib obnd(context, blib );
@@ -121,7 +123,7 @@ int main(int argc, char** argv)
     outBuffer->unmap(); 
 
     //out->dump();
-    out->save("$TMP/boundaryTest/out.npy");
+    out->save(TMPDIR, "out.npy");
 
     bool dump = true ;  
     float maxdiff = inp->maxdiff(out, dump);

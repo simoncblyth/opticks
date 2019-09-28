@@ -64,6 +64,8 @@ The GPU analogue of this is oxrap-/tests/interpolationTest
 **/
 
 
+const char* TMPDIR = "$TMP/cfg4/CInterpolationTest" ; 
+
 int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv);
@@ -97,11 +99,15 @@ int main(int argc, char** argv)
     unsigned nl = interpolate ? nl_interpolate : tex->getShape(3);   //   39: wl samples   OR   820 - 60 + 1 = 761
     unsigned nm = tex->getShape(4);   //    4: float4 props
 
-    const char* path = interpolate ? 
-             "$TMP/interpolationTest/CInterpolationTest_interpol.npy"
+
+    
+
+    const char* name = interpolate ? 
+             "CInterpolationTest_interpol.npy"
           :
-             "$TMP/interpolationTest/CInterpolationTest_identity.npy"
+             "CInterpolationTest_identity.npy"
           ;
+
 
 
     NPY<float>* out = NPY<float>::make(ni,nj,nk,nl,nm);
@@ -109,7 +115,7 @@ int main(int argc, char** argv)
 
     LOG(info) 
        << " interpolate (control with option: --nointerpol) " << interpolate
-       << " path " << path
+       << " name " << name
        << " tex " << tex->getShapeString()
        << " out " << out->getShapeString()
        ;
@@ -220,7 +226,7 @@ int main(int argc, char** argv)
 
     } 
 
-    out->save(path);
+    out->save(TMPDIR,name);
 
     return 0 ; 
 }

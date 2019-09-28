@@ -55,6 +55,7 @@ class BRAP_API BLog {
        static const char* END ; 
 
        static BLog* Load(const char* path); 
+       static BLog* Load(const char* path, const char* pathb); 
        static int ParseKV( const std::string& line,  const char* start, const char* delim, const char* end, std::string& k, std::string& v ); 
        static int Compare( const BLog* a , const BLog* b ) ; 
    public:
@@ -85,6 +86,7 @@ class BRAP_API BLog {
 
        BTxt*        makeTxt() const ; 
        void         write(const char* path) const ; 
+       void         write(const char* path, const char* pathb) const ; 
 
    private:
        void init();  

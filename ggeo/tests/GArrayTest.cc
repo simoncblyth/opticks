@@ -19,16 +19,18 @@
 
 #include <cassert>
 
+#include "BFile.hh"
 #include "GBuffer.hh"
 #include "GArray.hh"
 
-#include "PLOG.hh"
-#include "GGEO_LOG.hh"
+#include "OPTICKS_LOG.hh"
+
+
+const char* TMPDIR = "$TMP/ggeo/GArrayTest" ; 
 
 int main(int argc, char** argv)
 {
-    PLOG_(argc, argv);
-    GGEO_LOG_ ;
+    OPTICKS_LOG(argc, argv);
 
 
     LOG(info) << argv[0] ;
@@ -42,12 +44,15 @@ int main(int argc, char** argv)
     assert( a->getLength() == 3 );
 
 
-    const char* path = "$TMP/GArrayTest.npy" ;
-    LOG(info) << "saving to " << path ; 
+    const char* name = "GArrayTest.npy" ;
+    std::string p = BFile::preparePath(TMPDIR, name); 
+    const char* path = p.c_str(); 
+
+    LOG(info) << "saving to " 
+              << " path " << path
+              ; 
 
     a->save<float>(path);
-
-
 
 
     return 0 ;

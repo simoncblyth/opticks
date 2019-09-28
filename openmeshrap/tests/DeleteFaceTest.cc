@@ -235,7 +235,7 @@ int main()
 
   try {
 
-        std::string path = BFile::preparePath("$TMP/DeleteFaceTest.off");
+        std::string path = BFile::preparePath("$TMP/openmeshrap/DeleteFaceTest/DeleteFaceTest.off");
 
         if ( !OpenMesh::IO::write_mesh(mesh, path.c_str()) ) {
           std::cerr << "Cannot write mesh to file " << path << std::endl;

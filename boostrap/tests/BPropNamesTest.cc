@@ -18,6 +18,7 @@
  */
 
 #include "BPropNames.hh"
+#include "BFile.hh"
 #include "BTxt.hh"
 
 #include <iostream>
@@ -26,11 +27,14 @@
 #include <climits>
 
 
+const char* TMPDIR = "$TMP/boostrap/BPropNamesTest" ; 
+
 int main(int, char**)
 {
 
-    //const char* lib = "GMaterialLib.txt" ;   // requires geocache 
-    const char* lib = "$TMP/GMaterialLib.txt" ;  // absolute path mode for testing
+    std::string p = BFile::FormPath(TMPDIR, "BPropNamesTest.txt" ); 
+    const char* lib = p.c_str();  // absolute path mode for testing 
+
 
     BTxt txt(lib);
     txt.addLine("red");

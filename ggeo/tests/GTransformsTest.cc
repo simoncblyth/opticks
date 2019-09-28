@@ -28,7 +28,7 @@ int main()
     t->add();
     t->add();
 
-    t->save("$TMP/transforms.npy");
+    t->save("$TMP/ggeo/GTransformsTest/transforms.npy");
 
     return 0 ; 
 }

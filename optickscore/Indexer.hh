@@ -36,7 +36,7 @@ template <typename T>
 class OKCORE_API Indexer {
    public:
        Indexer(NPY<T>* seq);
-       void indexSequence(const char* seqhis_label, const char* seqmat_label, bool dump=false);
+       void indexSequence(const char* seqhis_label, const char* seqmat_label, bool dump=false, const char* dir=NULL);
 
        template <typename S> 
        void applyLookup(S* target);
@@ -45,7 +45,7 @@ class OKCORE_API Indexer {
        Index* getMaterialIndex();
    private:
        void splitSequence();
-       void save();
+       void save(const char* dir);
    private:
        NPY<T>*       m_seq ;
    private:

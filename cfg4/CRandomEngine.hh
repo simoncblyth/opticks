@@ -81,6 +81,7 @@ template <typename T> class TCURAND ;
 
 class CFG4_API CRandomEngine : public CRandomListener, public CLHEP::HepRandomEngine 
 {
+        static const char* TMPDIR ; 
         static const plog::Severity LEVEL ; 
     public:
         static std::string CurrentProcessName();

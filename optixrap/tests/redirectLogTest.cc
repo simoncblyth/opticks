@@ -17,6 +17,7 @@
  * limitations under the License.
  */
 
+#include "BFile.hh"
 #include "OptiXTest.hh"
 #include "OContext.hh"
 
@@ -28,6 +29,7 @@
 
 #include "OPTICKS_LOG.hh"
 
+const char* TMPDIR = "$TMP/optixrap/redirectLogTest" ; 
 
 int main( int argc, char** argv ) 
 {
@@ -80,7 +82,9 @@ int main( int argc, char** argv )
 */
 
 
-    const char* path = "/tmp/redirectLogTest.log" ; 
+
+    std::string p = BFile::FormPath(TMPDIR, "redirectLogTest.log" ); 
+    const char* path = p.c_str(); 
 
     SSys::Dump(path);
     {
@@ -99,10 +103,8 @@ int main( int argc, char** argv )
     npy->read( ptr );
     buffer->unmap(); 
 
-    const char* bufpath = "$TMP/redirectLogTest.npy";
-    std::cerr << "save result npy to " << bufpath << std::endl ; 
  
-    npy->save(bufpath);
+    npy->save(TMPDIR, "redirectLogTest.npy");
 
 
     return 0;

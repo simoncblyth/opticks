@@ -19,6 +19,9 @@
 
 #include "Report.hpp"
 
+const char* TMPDIR = "$TMP/npy/ReportTest" ; 
+
+
 void test_save()
 {
     std::vector<std::string> lines ; 
@@ -27,13 +30,13 @@ void test_save()
 
     Report r ; 
     r.add(lines);
-    r.save("$TMP");
+    r.save(TMPDIR);
 }
 
 
 void test_load()
 {
-    Report* r = Report::load("$TMP");
+    Report* r = Report::load(TMPDIR);
     r->dump(); 
 }
 

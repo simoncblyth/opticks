@@ -188,11 +188,8 @@ void test_createAbbrevMeta()
 
     libmeta->dump() ; 
 
-    //libmeta->save("$IDPATH/GMaterialLib/GPropertyLibMetadata.json");
-    libmeta->save("$TMP/GMaterialLib/GPropertyLibMetadata.json");
-
+    libmeta->save("$TMP/ggeo/GMaterialLib/GPropertyLibMetadata.json");
 }
-
 
 
 

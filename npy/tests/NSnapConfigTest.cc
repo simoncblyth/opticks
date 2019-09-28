@@ -34,7 +34,7 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv);
 
-    const char* fallback = "steps=5,prefix=/some/dir/base,postfix=.ppm" ; 
+    const char* fallback = "steps=5,prefix=photo_,postfix=.ppm" ; 
     std::string snapconfig = get_option<std::string>(argc, argv, "--snapconfig", fallback ) ;
 
     NSnapConfig cfg(snapconfig.c_str());
@@ -42,7 +42,7 @@ int main(int argc, char** argv)
   
     for(int i=0 ; i < cfg.steps ; i++)
     {
-        std::cout << cfg.getSnapPath(i) << std::endl ; 
+        std::cout << cfg.getSnapName(i) << std::endl ; 
     }
 
 

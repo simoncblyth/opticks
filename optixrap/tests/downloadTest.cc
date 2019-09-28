@@ -28,6 +28,9 @@
 #include "OPTICKS_LOG.hh"
 
 
+const char* TMPDIR = "$TMP/optixrap/downloadTest" ; 
+
+
 int main( int argc, char** argv ) 
 {
     OPTICKS_LOG(argc, argv);
@@ -49,7 +52,7 @@ int main( int argc, char** argv )
 
     NPY<float>* npy = NPY<float>::make(ni, nj, nk) ;
     npy->fill(42.);
-    npy->save("$TMP/downloadTest_0.npy");
+    npy->save(TMPDIR, "downloadTest_0.npy");
 
 
     //const char* ctrl = "OPTIX_SETSIZE,OPTIX_INPUT_OUTPUT" ;  <-- all zeros in OptiX 600 ?
@@ -73,7 +76,7 @@ int main( int argc, char** argv )
     NPYBase::setGlobalVerbose();
 
     npy->dump();
-    npy->save("$TMP/downloadTest_1.npy");
+    npy->save(TMPDIR,"downloadTest_1.npy");
 
     delete ctx ; 
 

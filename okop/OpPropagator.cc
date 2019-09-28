@@ -112,10 +112,10 @@ void OpPropagator::cleanup()
     m_engine->cleanup();
 }
 
-void OpPropagator::snap()
+void OpPropagator::snap(const char* dir)
 {
-    LOG(info) << "OpPropagator::snap" ; 
-    m_tracer->snap();
+    LOG(info) << " dir " << dir  ; 
+    m_tracer->snap(dir);
 
 }
 

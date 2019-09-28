@@ -200,7 +200,7 @@ int main(int argc, char** argv)
     OContext* ocontext = sc.getOContext();
     optix::Context context = ocontext->getContext();
 
-    const char* base = "$TMP/interpolationTest"  ; 
+    const char* base = "$TMP/optixrap/interpolationTest"  ; 
 
     OBndLib* obnd = sc.getOBndLib();
 

@@ -97,7 +97,7 @@ void GSourceLib::generateBlackBodySample(unsigned int n)
     GSource* bbs = GSource::make_blackbody_source("D65", 0, 6500.f );    
     GProperty<float>* icdf = constructInvertedSourceCDF(bbs);
     GAry<float>* sample = icdf->lookupCDF(n);     
-    sample->save("$TMP/blackbody.npy");
+    sample->save("$TMP/ggeo/GSourceLib/blackbody.npy");
 }
 
 

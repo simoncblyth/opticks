@@ -57,7 +57,7 @@ void test_lv( int lv )
     std::string gdml = X4GDMLParser::ToString(solid, refs) ; 
     LOG(fatal) << gdml ; 
 
-    const char* path = X4GDMLParser::PreparePath("$TMP/CTreeJUNOTest", lv, ".gdml" );  
+    const char* path = X4GDMLParser::PreparePath("$TMP/cfg4/CTreeJUNOTest", lv, ".gdml" );  
     LOG(info) << "writing gdml to " << path ; 
     X4GDMLParser::Write( solid, path, refs ); 
 

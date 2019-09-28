@@ -47,7 +47,8 @@ int main(int argc, char** argv)
 
     NPY<float>* buf = sl->createBuffer();
 
-    buf->save("$TMP/gsrclib.npy");
+    buf->save("$TMP/ggeo/GSourceLibTest/gsrclib.npy");  // read by ana/planck.py 
+
 
     return 0 ; 
 }

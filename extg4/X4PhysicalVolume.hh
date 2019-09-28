@@ -90,6 +90,7 @@ struct X4_API X4Nd
 class X4_API X4PhysicalVolume : public X4Named 
 {
     public:
+        static const char* TMPDIR ; 
         static const plog::Severity  LEVEL ; 
         static const bool            DBG ; 
         static const G4VPhysicalVolume* const Top();

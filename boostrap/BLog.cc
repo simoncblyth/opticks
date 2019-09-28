@@ -18,6 +18,7 @@
  */
 
 
+#include "BFile.hh"
 #include "BLog.hh"
 #include "BTxt.hh"
 #include "BStr.hh"
@@ -38,6 +39,13 @@ const char* BLog::NOTE = " n_" ;
 
 const char* BLog::DELIM = ":" ; 
 const char* BLog::END = " " ; 
+
+
+BLog* BLog::Load(const char* path, const char* pathb)
+{
+    std::string p = BFile::FormPath(path, pathb); 
+    return Load(p.c_str()); 
+}
 
 
 BLog* BLog::Load(const char* path)
@@ -338,6 +346,14 @@ BTxt* BLog::makeTxt() const
     }
     return txt ; 
 }
+
+
+void BLog::write(const char* path, const char* pathb) const 
+{
+    std::string p = BFile::FormPath(path, pathb); 
+    write(p.c_str());
+}
+
 
 void BLog::write(const char* path) const 
 {

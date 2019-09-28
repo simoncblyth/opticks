@@ -47,6 +47,8 @@
 
 #include "OPTICKS_LOG.hh"
 
+const char* TMPDIR = "$TMP/cfg4/CGDMLDetectorTest" ; 
+
 
 int main(int argc, char** argv)
 {
@@ -73,7 +75,7 @@ int main(int argc, char** argv)
 
     LOG(error) << "//////////////////////////  AFTER CGDMLDetector instanciation ///////////////////////////////////// " ; 
 
-    ok.setIdPathOverride("$TMP");
+    ok.setIdPathOverride(TMPDIR);
     detector->saveBuffers();
     ok.setIdPathOverride(NULL);
 
@@ -88,7 +90,7 @@ int main(int argc, char** argv)
     detector->setVerbosity(2) ;
 
     NPY<float>* gtransforms = detector->getGlobalTransforms();
-    gtransforms->save("$TMP/gdml.npy");
+    gtransforms->save(TMPDIR, "gdml.npy");
 
     unsigned int index = 3160 ; 
 

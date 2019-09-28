@@ -36,7 +36,7 @@ int main(int argc, char** argv)
 
     pts->dump();  
 
-    const char* dir = "$TMP/GGeo/GPtsTest" ; 
+    const char* dir = "$TMP/ggeo/GPtsTest" ; 
     pts->save(dir); 
 
     GPts* pts2 = GPts::Load(dir); 

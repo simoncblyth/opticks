@@ -33,6 +33,7 @@
 #include "OPTICKS_LOG.hh"
 
 
+const char* TMPDIR = "$TMP/npy/NPY2Test" ; 
 
 void test_grow()
 {
@@ -57,7 +58,7 @@ void test_grow()
         genstep->add(onestep);
     }
     
-   genstep->save("$TMP/test_grow.npy");
+   genstep->save(TMPDIR, "test_grow.npy");
 
    LOG(info) << " numItems " << genstep->getNumItems() 
              << " shapeString " << genstep->getShapeString() 
@@ -83,14 +84,14 @@ void test_make_inverted_transforms()
 
         transforms->setMat4( m, i, -1, false ); // dont transpose  
     }
-    transforms->save("$TMP/test_make_inverted_transforms/transforms.npy");
+    transforms->save(TMPDIR, "test_make_inverted_transforms/transforms.npy");
 
 
     NPY<float>* itransforms = NPY<float>::make_inverted_transforms( transforms, false );
     NPY<float>* itransforms_T = NPY<float>::make_inverted_transforms( transforms, true );
 
-    itransforms->save("$TMP/test_make_inverted_transforms/itransforms.npy");
-    itransforms_T->save("$TMP/test_make_inverted_transforms/itransforms_T.npy");
+    itransforms->save(TMPDIR, "test_make_inverted_transforms/itransforms.npy");
+    itransforms_T->save(TMPDIR, "test_make_inverted_transforms/itransforms_T.npy");
 }
 
 
@@ -144,8 +145,8 @@ void test_Mat4Pairs()
         transforms1->setMat4( tr   , i*2 + 0 ); 
         transforms1->setMat4( irit , i*2 + 1 ); 
     }
-    transforms->save("$TMP/test_Mat4Pairs/transforms.npy");
-    transforms1->save("$TMP/test_Mat4Pairs/transforms1.npy");
+    transforms->save(TMPDIR, "test_Mat4Pairs/transforms.npy");
+    transforms1->save(TMPDIR, "test_Mat4Pairs/transforms1.npy");
 
 
     for(int i=0 ; i < 3 ; i++)
@@ -174,7 +175,7 @@ void test_make_paired_transforms()
 
     NPY<float>* paired = NPY<float>::make_paired_transforms(src);
     assert(paired->hasShape(3,2,4,4));
-    paired->save("$TMP/test_make_paired_transforms/transforms.npy");
+    paired->save(TMPDIR, "test_make_paired_transforms/transforms.npy");
 
 
     NPY<float>* empty = NPY<float>::make(0, 4, 4);
@@ -182,7 +183,7 @@ void test_make_paired_transforms()
  
     NPY<float>* epaired = NPY<float>::make_paired_transforms(empty);
     assert(epaired->hasShape(0,2,4,4));
-    epaired->save("$TMP/test_make_paired_transforms/epaired.npy");
+    epaired->save(TMPDIR, "test_make_paired_transforms/epaired.npy");
 
    // hmm again, refuses to save an empty 
 
@@ -193,10 +194,10 @@ void test_save_load_empty()
 {
     NPY<float>* empty = NPY<float>::make(0, 4, 4);
     empty->zero();
-    const char* path = "$TMP/npy/test_save_load_empty.npy" ; 
-    empty->save(path); 
+    const char* path = "test_save_load_empty.npy" ; 
+    empty->save(TMPDIR, path); 
 
-    NPY<float>* empty2 = NPY<float>::load(path); 
+    NPY<float>* empty2 = NPY<float>::load(TMPDIR, path); 
     assert( empty2 ); 
 
     LOG(info) 
@@ -234,14 +235,14 @@ void test_make_inverted_transforms_empty()
     NPY<float>* empty = NPY<float>::make(0, 4, 4);
     empty->zero();
     NPY<float>* iempty = NPY<float>::make_inverted_transforms( empty, false );
-    empty->save("$TMP/test_make_inverted_transforms/empty.npy");
-    iempty->save("$TMP/test_make_inverted_transforms/iempty.npy");
+    empty->save(TMPDIR, "test_make_inverted_transforms/empty.npy");
+    iempty->save(TMPDIR, "test_make_inverted_transforms/iempty.npy");
 }
 
 void test_make_identity_transforms()
 {
     NPY<float>* ids = NPY<float>::make_identity_transforms(10) ;
-    ids->save("$TMP/test_make_identity_transforms/ids.npy");
+    ids->save(TMPDIR, "test_make_identity_transforms/ids.npy");
 }
 
 
@@ -294,7 +295,7 @@ void test_addItemUnique()
 
     }
     assert( uniq->getNumItems() == 3 );
-    uniq->save("$TMP/test_addItemUnique/uniq.npy");
+    uniq->save(TMPDIR, "test_addItemUnique/uniq.npy");
 
 
 }
@@ -303,7 +304,7 @@ void test_addItemUnique()
 
 void test_uint32()
 {
-    NPY<unsigned>* u = NPY<unsigned>::load("$TMP/c.npy") ;
+    NPY<unsigned>* u = NPY<unsigned>::load(TMPDIR, "c.npy") ;
     if(!u) return ; 
 
     u->dump();

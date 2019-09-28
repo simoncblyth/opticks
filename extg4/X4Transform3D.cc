@@ -57,6 +57,11 @@ void X4Transform3D::SaveBuffer(const char* path)
 {
     if(TranBuffer) TranBuffer->save(path); 
 }
+void X4Transform3D::SaveBuffer(const char* dir, const char* name)
+{
+    if(TranBuffer) TranBuffer->save(dir, name); 
+}
+
 
 
 glm::mat4 X4Transform3D::GetDisplacementTransform(const G4DisplacedSolid* const disp)

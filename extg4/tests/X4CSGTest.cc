@@ -40,6 +40,8 @@ G4VSolid* make_solid()
 // end of portion to be generated ---------------------
 
 
+const char* TMPDIR = "$TMP/extg4/X4CSGTest" ; 
+
 int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv);
@@ -52,7 +54,7 @@ int main(int argc, char** argv)
     //const char* csgpath = "$TMP/X4CSGTest" ; 
     //X4CSG::Serialize( solid, csgpath ) ;
      
-    const char* prefix = "$TMP/x4gen/tests" ; 
+    const char* prefix = TMPDIR ; 
     unsigned lvidx = 1 ; 
     X4CSG::GenerateTest( solid, &ok, prefix, lvidx ) ;
 

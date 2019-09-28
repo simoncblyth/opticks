@@ -784,6 +784,8 @@ used.
 **/
 
 
+const char* X4PhysicalVolume::TMPDIR = "$TMP/extg4/X4PhysicalVolume" ; 
+
 void X4PhysicalVolume::convertStructure()
 {
     LOG(info) << "[ creating large tree of GVolume instances" ; 
@@ -808,9 +810,9 @@ void X4PhysicalVolume::convertStructure()
 
 
 
-    NTreeProcess<nnode>::SaveBuffer("$TMP/NTreeProcess.npy");      
-    NNodeNudger::SaveBuffer("$TMP/NNodeNudger.npy"); 
-    X4Transform3D::SaveBuffer("$TMP/X4Transform3D.npy"); 
+    NTreeProcess<nnode>::SaveBuffer(TMPDIR, "NTreeProcess.npy");      
+    NNodeNudger::SaveBuffer(TMPDIR, "NNodeNudger.npy"); 
+    X4Transform3D::SaveBuffer(TMPDIR, "X4Transform3D.npy"); 
 
     LOG(info) 
         << "] " 

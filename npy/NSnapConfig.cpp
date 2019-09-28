@@ -38,7 +38,7 @@ NSnapConfig::NSnapConfig(const char* cfg)
     eyestopx(-0.f),
     eyestopy(-0.f),
     eyestopz(1.f),
-    prefix("$TMP/snap"),
+    prefix("snap"),
     postfix(".ppm")
 {
     LOG(LEVEL)
@@ -83,10 +83,11 @@ std::string NSnapConfig::SnapIndex(unsigned index, unsigned width)
 }
 
 
-std::string NSnapConfig::getSnapPath(unsigned index)
+std::string NSnapConfig::getSnapName(unsigned index)
 {
     std::stringstream ss ;
-    ss << prefix 
+    ss 
+       << prefix 
        << SnapIndex(index, fmtwidth)
        << postfix 
        ; 

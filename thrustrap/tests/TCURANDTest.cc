@@ -29,6 +29,9 @@
 #include "OPTICKS_LOG.hh"
 
 
+const char* TMPDIR = "$TMP/thrustrap/TCURANDTest" ; 
+
+
 struct TCURANDTest
 {
     unsigned          m_ni ; 
@@ -57,8 +60,8 @@ struct TCURANDTest
     const char* getPath()
     {
         unsigned ibase = m_tc->getIBase(); 
-        const char* path = SStr::Concat("$TMP/TCURANDTest_", ibase, ".npy") ; 
-        std::string spath = BFile::FormPath(path); 
+        const char* path = SStr::Concat("TCURANDTest_", ibase, ".npy") ; 
+        std::string spath = BFile::FormPath(TMPDIR, path); 
         return strdup(spath.c_str()) ; 
     }
     void save()

@@ -40,6 +40,7 @@ struct NPY_API NTreeProcess
     static std::vector<unsigned>*  LVList ;  
     static NPY<unsigned>* ProcBuffer ; 
     static void SaveBuffer(const char* path) ; 
+    static void SaveBuffer(const char* dir, const char* name) ; 
 
     NTreeProcess(T* root_); 
     void init();

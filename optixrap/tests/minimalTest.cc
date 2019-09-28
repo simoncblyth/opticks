@@ -22,6 +22,7 @@
 #include "NPY.hpp"
 #include "OPTICKS_LOG.hh"
 
+const char* TMPDIR = "$TMP/optixrap/minimalTest" ; 
 
 int main( int argc, char** argv ) 
 {
@@ -62,11 +63,8 @@ int main( int argc, char** argv )
     npy->read( ptr );
     buffer->unmap(); 
 
-    const char* path = "$TMP/minimalTest.npy";
-    std::cerr << "save result npy to " << path << std::endl ; 
- 
-    npy->save(path);
-
+    const char* name = "minimalTest.npy";
+    npy->save(TMPDIR, name);
 
     return 0;
 }

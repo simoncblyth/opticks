@@ -39,7 +39,7 @@ int main()
 
 
     BTimesTable* tt = tk.makeTable();
-    tt->save("$TMP");
+    tt->save("$TMP/boostrap/BTimeKeeperTest");
 
     tt->dump();
 

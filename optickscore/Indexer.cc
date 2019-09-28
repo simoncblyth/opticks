@@ -44,10 +44,14 @@ Indexer<T>::Indexer(NPY<T>* seq)
 
 
 template <typename T>
-void Indexer<T>::indexSequence(const char* seqhis_label, const char* seqmat_label, bool dump)
+void Indexer<T>::indexSequence(const char* seqhis_label, const char* seqmat_label, bool dump, const char* dir)
 {
     splitSequence();
-    save();
+
+    if(dir!=NULL)
+    {
+        save(dir);
+    }
 
     m_seqhis = new Sparse<T>(seqhis_label, m_his);
     m_seqhis->make_lookup();
@@ -122,11 +126,11 @@ void Indexer<T>::splitSequence()
 }
 
 template <typename T>
-void Indexer<T>::save()
+void Indexer<T>::save(const char* dir)
 {
-    m_seq->save("$TMP/seq.npy");    
-    m_his->save("$TMP/his.npy");    
-    m_mat->save("$TMP/mat.npy");    
+    m_seq->save(dir,"seq.npy");    
+    m_his->save(dir,"his.npy");    
+    m_mat->save(dir,"mat.npy");    
 }
 
 

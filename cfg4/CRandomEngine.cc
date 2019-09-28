@@ -858,6 +858,9 @@ void CRandomEngine::dump(const char* msg) const
     m_locseq->dump(msg);
 }
 
+
+const char* CRandomEngine::TMPDIR = "$TMP/cfg4/CRandomEngine"  ; 
+
 void CRandomEngine::postpropagate()
 {
     LOG(info) 
@@ -865,7 +868,7 @@ void CRandomEngine::postpropagate()
         ;
 
     NPY<unsigned>* jump = NPY<unsigned>::make_from_vec(m_jump_photons) ;
-    jump->save("$TMP/CRandomEngine_jump_photons.npy");
+    jump->save(TMPDIR, "CRandomEngine_jump_photons.npy");
 
 
     dump("CRandomEngine::postpropagate");

@@ -77,7 +77,7 @@ int main(int argc, char** argv)
 
     LOG(info) << nl->desc() ; 
 
-    const char* dir = "$TMP/NPYListTest" ; 
+    const char* dir = "$TMP/npy/NPYListTest" ; 
     nl->saveBuffer( dir, (int)GTRANSFORMS ); 
 
     SSys::run( BStr::concat("np.py ", dir, "/gtransforms.npy" ));  

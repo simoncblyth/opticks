@@ -38,12 +38,15 @@ Loads geometry from cache, creates sequence of ppm raytrace snapshots of geometr
 
 **/
 
+
+const char* TMPDIR = "$TMP/okop/OpSnapTest" ; 
+
 int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv);
     Opticks ok(argc, argv, "--tracer");   // tempted to put --embedded here 
     OpMgr op(&ok);
-    op.snap();
+    op.snap(TMPDIR);
     return 0 ; 
 }
 

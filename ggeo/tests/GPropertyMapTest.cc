@@ -20,6 +20,7 @@
 #include <cassert>
 // op --gpropertymap
 
+#include "BFile.hh"
 #include "BOpticksResource.hh"
 
 #include "GProperty.hh"
@@ -29,6 +30,8 @@
 #include "GPropertyMap.hh"
 
 #include "OPTICKS_LOG.hh"
+
+const char* TMPDIR = "$TMP/ggeo/GPropertyMapTest" ; 
 
 
 int main(int argc, char** argv)
@@ -63,17 +66,20 @@ int main(int argc, char** argv)
     pmap->addPropertyStandardized(ri, f2 );
    
     GProperty<float>* rip = pmap->getProperty(ri);
-    rip->save("$TMP/f2.npy");
+    rip->save(TMPDIR, NULL, "f2.npy");
 
 
+
+
+    std::string idir = BFile::CreateDir(TMPDIR, "GPropertyMapTest_Interpolated"); 
     GPropertyMap<float>* imap = pmap->spawn_interpolated(1.f);
-    imap->save("$TMP/GPropertyMapTest_Interpolated");
+    imap->save(idir.c_str());
 
 
 
 
-    const char* matdir = "$TMP/GPropertyMapTest";
-
+    std::string mdir = BFile::CreateDir(TMPDIR, "GPropertyMapTest_Material" ); 
+    const char* matdir = mdir.c_str() ;
     pmap->save(matdir);
 
     GPropertyMap<float>* qmap = GPropertyMap<float>::load(matdir, matname, "material");

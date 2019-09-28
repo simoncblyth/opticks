@@ -68,7 +68,7 @@ int main( int argc, char** argv )
     npy->read( ptr );
     buffer->unmap(); 
 
-    const char* path = "$TMP/Roots3And4Test.npy";
+    const char* path = "$TMP/optixrap/Roots3And4Test/Roots3And4Test.npy";
     std::cerr << "save result npy to " << path << std::endl ; 
  
     npy->save(path);

@@ -54,7 +54,7 @@ int main(int argc, char** argv)
 
     clib->dump();
 
-    clib->saveGROUPVEL("$TMP/CGROUPVELTest");
+    clib->saveGROUPVEL("$TMP/cfg4/CGROUPVELTest");
 
 
 

@@ -81,6 +81,10 @@ class GGEO_API GBuffer {
         void save(const char* path);
 
         template<typename T>
+        void save(const char* dir, const char* name);
+
+
+        template<typename T>
         static GBuffer* load(const char* path);
 
         template<typename T>

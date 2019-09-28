@@ -86,7 +86,7 @@ int main(int argc, char** argv)
 
         for(unsigned i=0 ; i < num_steps ; i++) CGenstepCollector::Instance()->collectMachineryStep(e*1000+i);
 
-        const char* path_ = SSys::fmt("$TMP/CGenstepCollectorTest%u.npy",e) ;
+        const char* path_ = SSys::fmt("$TMP/cfg4/CGenstepCollectorTest/%u.npy",e) ;
         std::string spath = BFile::preparePath(path_);
         const char* path = spath.c_str();  
 

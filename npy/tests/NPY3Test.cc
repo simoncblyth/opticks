@@ -24,6 +24,9 @@
 #include "BFile.hh"
 #include "NPY.hpp"
 
+
+const char* TMPDIR = "$TMP/npy/NPY3Test" ; 
+
 void test_getBufferSize()
 {
    NPY<float>* buf = NPY<float>::make(1,1,4) ;
@@ -36,8 +39,8 @@ void test_getBufferSize()
    NBufferSpec spec = buf->getBufferSpec();  
    std::size_t data_size = spec.dataSize() ; // bufferSize - headerSize
 
-   const char* path = "$TMP/test_getBufferSize.npy" ; 
-   buf->save(path); 
+   const char* path = "test_getBufferSize.npy" ; 
+   buf->save(TMPDIR, path); 
    std::size_t file_size = BFile::FileSize(path) ; 
 
    LOG(info) 
@@ -66,7 +69,9 @@ void test_saveToBuffer()
 
    SSys::xxdump( (char*)vdst.data(), vdst.size(), 16 );  
 
-   const char* path = "/tmp/test_saveToBuffer.npy" ; 
+
+   std::string p = BFile::preparePath(TMPDIR, "test_saveToBuffer.npy"); 
+   const char* path = p.c_str() ; 
    LOG(info) << " write to " << path ; 
    std::ofstream fp(path, std::ios::out | std::ios::binary ); 
    fp.write( (char*)vdst.data(), vdst.size() ) ;
@@ -94,10 +99,10 @@ void test_loadFromBuffer()
    assert( spec.headerByteLength == spec2.headerByteLength );
    assert( spec.bufferByteLength == spec2.bufferByteLength );
 
-   const char* path = "/tmp/test_loadFromBuffer.npy" ; 
+   const char* path = "test_loadFromBuffer.npy" ; 
    LOG(info) << " write to " << path ; 
 
-   buf2->save(path); 
+   buf2->save(TMPDIR, path); 
 
 }
 
@@ -150,7 +155,7 @@ void test_u()
     idx->zero();  
     glm::uvec4 id(1,2,3,4) ; 
     idx->setQuad(id, 0) ; 
-    idx->save("$TMP/idx.npy"); 
+    idx->save(TMPDIR, "idx.npy"); 
 }
 
 
@@ -159,7 +164,9 @@ void test_setMeta()
     LOG(info) << "." ; 
     NPY<unsigned>* idx = NPY<unsigned>::make(1,4);  
     idx->zero();  
-    const char* path = "$TMP/setMeta.npy"; 
+
+    std::string p = BFile::preparePath(TMPDIR, "setMeta.npy") ; 
+    const char* path = p.c_str() ; 
     idx->save(path); 
     NPY<unsigned>* idx2 = NPY<unsigned>::load(path) ; 
 
@@ -180,7 +187,7 @@ void test_setMeta()
 
 int main(int argc, char** argv )
 {
-    OPTICKS_LOG_COLOR__(argc, argv); 
+    OPTICKS_LOG(argc, argv); 
 
     //test_getBufferSize(); 
     //test_saveToBuffer(); 

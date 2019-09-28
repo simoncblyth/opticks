@@ -45,7 +45,7 @@ int main(int argc, char** argv)
     NPY<float>* a_planes = a->getPlaneBuffer();     
     LOG(info) << " a_planes " << a_planes->getShapeString() ; 
 
-    const char* treedir = "$TMP/NPY/NCSGRoundTripTest/nconvexpolyhedron/1" ;
+    const char* treedir = "$TMP/npy/NCSGRoundTripTest/nconvexpolyhedron/1" ;
     a->savesrc(treedir);     
 
     NCSG* b = NCSG::Load(treedir) ;     

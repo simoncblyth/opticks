@@ -18,6 +18,7 @@
  */
 
 #include "SSys.hh"
+#include "BFile.hh"
 
 #include "NGLM.hpp"
 #include "NPY.hpp"
@@ -58,6 +59,7 @@ of using a float4x4 type for the Thrust photons buffer description.
 
 **/
 
+const char* TMPDIR = "$TMP/okop/compactionTest" ; 
 
 int main(int argc, char** argv)
 {
@@ -95,7 +97,7 @@ int main(int argc, char** argv)
 
     if(verbose)
     { 
-        pho->save("$TMP/okop/compactionTestDummyPhotons.npy"); 
+        pho->save(TMPDIR,"compactionTestDummyPhotons.npy"); 
     }
 
 
@@ -162,7 +164,8 @@ int main(int argc, char** argv)
     
     if(verbose)
     {
-        const char* path = "$TMP/okop/compactionTestHits.npy";
+        std::string p = BFile::FormPath(TMPDIR,"compactionTestHits.npy");  
+        const char* path = p.c_str() ;
         hit->save(path);
         SSys::npdump(path, "np.int32");
         SSys::npdump(path, "np.float32");

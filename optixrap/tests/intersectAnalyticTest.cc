@@ -112,7 +112,7 @@ int main( int argc, char** argv )
     npy->read( ptr );
     buffer->unmap(); 
 
-    const char* path = "$TMP/oxrap/intersectAnalyticTest.npy";
+    const char* path = "$TMP/optixrap/intersectAnalyticTest/intersectAnalyticTest.npy";
     std::cerr << "save result npy to " << path << std::endl ; 
  
     npy->save(path);

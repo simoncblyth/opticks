@@ -41,7 +41,7 @@ def opticks_environment(ok):
    if ok.dumpenv:
        env.dump()
    pass 
-   env.bash_export() 
+   #env.bash_export() 
    log.debug(" ) opticks_environment") 
 
 
@@ -226,6 +226,8 @@ class OpticksEnv(object):
         self.setdefault("OPTICKS_QUERY",           "")
 
     def bash_export(self, path="$TMP/opticks_env.bash"):
+        """
+        """ 
         lines = []
         for k,v in self.env.items():
             line = "export %s=%s " % (k,v)

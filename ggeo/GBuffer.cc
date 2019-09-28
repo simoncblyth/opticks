@@ -201,7 +201,13 @@ float GBuffer::fractionDifferent(GBuffer* other)
 
 
 
-
+template<typename T>
+void GBuffer::save(const char* dir, const char* name)
+{
+    std::string path = BFile::FormPath(dir, name);
+    GBuffer::save<T>(path.c_str()); 
+}
+ 
 
 
 template<typename T>
@@ -408,6 +414,13 @@ template GGEO_API void GBuffer::save<unsigned char>(const char* );
 template GGEO_API void GBuffer::save<float>(const char* );
 template GGEO_API void GBuffer::save<short>(const char* );
 template GGEO_API void GBuffer::save<unsigned long long>(const char* );
+
+template GGEO_API void GBuffer::save<int>(const char* , const char* );
+template GGEO_API void GBuffer::save<unsigned int>(const char* , const char* );
+template GGEO_API void GBuffer::save<unsigned char>(const char* , const char* );
+template GGEO_API void GBuffer::save<float>(const char* , const char* );
+template GGEO_API void GBuffer::save<short>(const char* , const char* );
+template GGEO_API void GBuffer::save<unsigned long long>(const char* , const char* );
 
 template GGEO_API GBuffer* GBuffer::load<int>(const char* );
 template GGEO_API GBuffer* GBuffer::load<unsigned int>(const char* );

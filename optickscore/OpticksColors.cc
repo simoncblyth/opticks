@@ -35,9 +35,7 @@
 
 using namespace std ; 
 
-//const char* OpticksColors::NAME = "GColors.json" ;
 const char* OpticksColors::NAME = "OpticksColors.json" ;
-
 
 
 OpticksColors::OpticksColors()  
@@ -209,7 +207,7 @@ void OpticksColors::test(const char* msg)
     LOG(info) << msg ;  
 
     NPY<unsigned char>* buffer = make_buffer();
-    buffer->save("$TMP/OpticksColors.npy");
+    //buffer->save("$TMP/OpticksColors.npy");
 
     unsigned char* data = buffer->getValues();
 

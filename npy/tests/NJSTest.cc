@@ -22,8 +22,7 @@
 #include <map>
 
 #include "NJS.hpp"
-#include "NPY_LOG.hh"
-#include "PLOG.hh"
+#include "OPTICKS_LOG.hh"
 
 
 using json = nlohmann::json;
@@ -31,7 +30,7 @@ using json = nlohmann::json;
 
 void test_write_read()
 {
-    const char* path = "$TMP/NJSTest/test_write_read.json" ;
+    const char* path = "$TMP/npy/NJSTest/test_write_read.json" ;
 
     std::map<std::string, int> m { {"one", 1}, {"two", 2}, {"three", 3} };
     json js(m) ; 
@@ -49,10 +48,7 @@ void test_write_read()
 
 int main(int argc, char** argv)
 {
-
-    PLOG_(argc, argv);
-    NPY_LOG__ ; 
-
+    OPTICKS_LOG(argc, argv);
 
     test_write_read();
 

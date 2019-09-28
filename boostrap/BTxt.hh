@@ -30,7 +30,7 @@ class BRAP_API BTxt {
    public:
        typedef std::vector<std::string> VS_t ; 
    public:
-       static BTxt* Load(const char* path); 
+       static BTxt* Load(const char* path, const char* pathb=NULL); 
        BTxt(const char* path = NULL); 
        void read();
    public:

@@ -23,22 +23,25 @@
 #include "BTxt.hh"
 #include "BFile.hh"
 
+const char* TMPDIR = "$TMP/boostrap/BLogTest" ; 
+
+
 int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv);
 
     int pindex = argc > 1 ? BStr::atoi(argv[1]) : 1872 ; 
 
-    const char* logpath = BStr::concat<int>("$TMP/ox_", pindex, ".log") ; 
-    const char* txtpath = BStr::concat<int>("$TMP/ox_", pindex, ".txt") ; 
+    const char* logpath = BStr::concat<int>("ox_", pindex, ".log") ; 
+    const char* txtpath = BStr::concat<int>("ox_", pindex, ".txt") ; 
 
-    BLog* a = BLog::Load(logpath); 
+    BLog* a = BLog::Load(TMPDIR, logpath); 
     const std::vector<double>&  av = a->getValues() ; 
     a->setSequence(&av) ; 
     a->dump("a"); 
-    a->write(txtpath); 
+    a->write(TMPDIR, txtpath); 
 
-    BLog* b = BLog::Load(txtpath); 
+    BLog* b = BLog::Load(TMPDIR, txtpath); 
     b->dump("b"); 
 
     int RC = BLog::Compare(a, b ); 

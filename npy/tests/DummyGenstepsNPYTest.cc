@@ -20,15 +20,21 @@
 #include "SSys.hh"
 #include "OPTICKS_LOG.hh"
 
+#include "BFile.hh"
 #include "DummyGenstepsNPY.hpp"
 #include "NPY.hpp"
+
+const char* TMPDIR = "$TMP/npy/DummyGenstepsNPYTest" ; 
 
 int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv);
 
     NPY<float>* npy = DummyGenstepsNPY::Make(100);
-    const char* path = "$TMP/npy/DummyGenstepsNPYTest.npy" ;
+
+
+    std::string p = BFile::FormPath(TMPDIR, "DummyGenstepsNPYTest.npy"); 
+    const char* path = p.c_str() ;
     npy->save(path);
 
     SSys::npdump(path);

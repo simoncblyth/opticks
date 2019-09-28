@@ -29,6 +29,9 @@ using YOG::Geometry ;
 using YOG::Sc ; 
 using YOG::Maker ; 
 
+const char* TMPDIR = "$TMP/yoctoglrap/YOGMakerTest" ; 
+
+
 void test_demo_geom()
 {
     Geometry geom(3) ; 
@@ -38,7 +41,7 @@ void test_demo_geom()
     Maker ym(sc) ; 
     ym.demo_create(geom); 
 
-    std::string path = BFile::FormPath("$TMP/yoctoglrap/tests/YOGMakerTest/YOGMakerTest.gltf");
+    std::string path = BFile::FormPath(TMPDIR, "YOGMakerTest.gltf");
 
     ym.convert();
     ym.save(path.c_str());

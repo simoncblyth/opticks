@@ -28,6 +28,9 @@
 
 #include "OPTICKS_LOG.hh"
 
+
+const char* TMPDIR = "$TMP/boostrap/BTxtTest" ; 
+
 void test_read()
 {
     char* idp = getenv("IDPATH") ;
@@ -60,7 +63,7 @@ void test_write()
 
 void test_load()
 {
-    BTxt* txt = BTxt::Load("$TMP/ox_1872.log"); 
+    BTxt* txt = BTxt::Load(TMPDIR, "ox_1872.log"); 
     LOG(info) << txt->desc();  
 
     unsigned ni = txt->getNumLines(); 

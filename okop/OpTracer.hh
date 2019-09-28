@@ -62,7 +62,7 @@ class OKOP_API OpTracer : public SRenderer {
     public:
        void prepareTracer();
        void render();     // fulfils SRenderer protocol
-       void snap();
+       void snap(const char* dir);
     private:
        void init();
     private:

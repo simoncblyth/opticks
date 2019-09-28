@@ -52,6 +52,8 @@ using YOG::Sc ;
 using YOG::Maker ; 
 
 
+const char* TMPDIR = "$TMP/yoctoglrap/YOGMakerMonolithicTest" ; 
+
 namespace YOG {
 
 void demo_create_monolithic( Maker& mk, const Geometry& geom )
@@ -186,7 +188,7 @@ int main(int argc, char** argv)
 
     demo_create_monolithic(ym, geom);
 
-    std::string path = BFile::FormPath("$TMP/yoctoglrap/tests/YOGMakerMonolithicTest/YOGMakerMonolithicTest.gltf");
+    std::string path = BFile::FormPath(TMPDIR, "YOGMakerMonolithicTest.gltf");
 
     ym.convert();
 

@@ -82,6 +82,7 @@ struct NPY_API NNodeNudger
     static std::vector<unsigned>*  TreeList ;  
     static NPY<unsigned>* NudgeBuffer ; 
     static void SaveBuffer(const char* path) ; 
+    static void SaveBuffer(const char* dir, const char* name) ; 
 
     nnode* root ; 
     const float epsilon ; 

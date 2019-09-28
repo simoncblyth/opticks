@@ -30,6 +30,8 @@
 
 #include "OPTICKS_LOG.hh"
 
+const char* TMPDIR = "$TMP/optixrap/boundaryLookupTest" ; 
+
 int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv);    
@@ -73,14 +75,14 @@ int main(int argc, char** argv)
     blib->createDynamicBuffers();
 
     NPY<float>* ori = blib->getBuffer() ; 
-    ori->save("$TMP/boundaryLookupTest/ori.npy");
+    ori->save(TMPDIR,"ori.npy");
 
     //bool use_debug_buffer = true ;  
     bool use_debug_buffer = false ; 
 
     NPY<float>* inp = use_debug_buffer ? NPY<float>::make_dbg_like(ori, 0) : ori ; 
     //inp->dump();
-    inp->save("$TMP/boundaryLookupTest/inp.npy");
+    inp->save(TMPDIR,"inp.npy");
 
 
     OBndLib obnd(context, blib );
@@ -124,7 +126,7 @@ int main(int argc, char** argv)
     outBuffer->unmap(); 
 
     //out->dump();
-    out->save("$TMP/boundaryLookupTest/out.npy");
+    out->save(TMPDIR,"out.npy");
 
     //bool dump = true ;  
     bool dump = false ;  

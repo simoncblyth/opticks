@@ -94,10 +94,9 @@ int main( int argc, char** argv )
     NPYBase::setGlobalVerbose();
 
     // npy->dump();
-    npy->save("$TMP/tests/oxrap/OOContextUploadDownloadTest_1.npy");
+    npy->save("$TMP/optixrap/LTOOContextUploadDownloadTest/OOContextUploadDownloadTest_1.npy");
 
     delete ctx ; 
-
 
     return 0;
 }

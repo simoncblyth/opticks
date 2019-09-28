@@ -25,6 +25,9 @@
 #include "OConfig.hh"
 #include "OPTICKS_LOG.hh"
 
+
+const char* TMPDIR = "$TMP/optixrap/tex0Test" ; 
+
 int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv);    
@@ -38,7 +41,6 @@ int main(int argc, char** argv)
     context->setRayTypeCount(1);  // not setting this OR setting it to zero  
     num_ray_type = context->getRayTypeCount(); 
     assert( num_ray_type == 1 ); 
-
 
 
     int nx = 16 ; 
@@ -57,7 +59,7 @@ int main(int argc, char** argv)
     }
 
     inp->dump();
-    inp->save("$TMP/tex0Test_inp.npy");
+    inp->save(TMPDIR,"tex0Test_inp.npy");
 
     optix::Buffer outBuffer = context->createBuffer(RT_BUFFER_OUTPUT, RT_FORMAT_FLOAT, nx, ny);
     optix::Buffer texBuffer = context->createBuffer(RT_BUFFER_INPUT, RT_FORMAT_FLOAT, nx, ny);
@@ -137,7 +139,7 @@ int main(int argc, char** argv)
     outBuffer->unmap(); 
 
     out->dump();
-    out->save("$TMP/tex0Test_out.npy");
+    out->save(TMPDIR, "tex0Test_out.npy");
 
     float maxdiff = inp->maxdiff(out) ;
 

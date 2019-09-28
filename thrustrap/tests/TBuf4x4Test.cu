@@ -19,6 +19,9 @@
 
 #include "SSys.hh"
 
+#include <string>
+#include <sstream>
+
 #include <thrust/for_each.h>
 #include <thrust/device_vector.h>
 #include <thrust/count.h>
@@ -37,6 +40,18 @@
 #include "OPTICKS_LOG.hh"
 
 // nvcc cannot stomach GLM
+
+
+const char* TMPPath( const char* name)
+{
+    std::stringstream ss ;
+    ss << "$TMP/thrustrap/TBuf4x4Test/" 
+       << name
+       ;
+
+    std::string s = ss.str(); 
+    return strdup(s.c_str());    
+}
 
 
 
@@ -183,7 +198,7 @@ void test_copy4x4()
     NPY<float>* hit = NPY<float>::make(numHit, 4,4);
     thit.download(hit);
 
-    const char* path = "$TMP/hit.npy";
+    const char* path = TMPPath("hit.npy");
     hit->save(path);
     SSys::npdump(path);
 }
@@ -240,7 +255,7 @@ void test_copy4x4_ptr()
     NPY<float>* hit = NPY<float>::make(numHit, 4,4);
     thit.download(hit);
 
-    const char* path = "$TMP/hit.npy";
+    const char* path = TMPPath("hit.npy");
     hit->save(path);
     SSys::npdump(path);
 }
@@ -277,7 +292,7 @@ void test_copy4x4_encapsulated()
     assert( num_hit == x_num_hit ); 
 
 
-    const char* path = "$TMP/hit.npy";
+    const char* path = TMPPath("hit.npy");
     hit->save(path);
     SSys::npdump(path);
 }

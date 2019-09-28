@@ -57,6 +57,7 @@ struct YOG_API TF
 
     void convert();
     void save(const char* path);
+    void save(const char* patha, const char* pathb);
 };
 
 } // namespace

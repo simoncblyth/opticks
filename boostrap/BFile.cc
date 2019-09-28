@@ -737,6 +737,7 @@ std::string BFile::preparePath(const char* path_, bool create )
 
 std::string BFile::preparePath(const char* dir_, const char* name, bool create )
 {
+
     std::string dir = BFile::FormPath(dir_) ; 
     fs::path fdir(dir.c_str());
     if(!fs::exists(fdir) && create)
@@ -765,6 +766,7 @@ std::string BFile::preparePath(const char* dir_, const char* name, bool create )
     std::string empty ; 
     return empty ; 
 }
+
 
 
 

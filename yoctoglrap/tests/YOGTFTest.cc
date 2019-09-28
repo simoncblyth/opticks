@@ -30,6 +30,8 @@ using YOG::Nd ;
 
 using YOG::TF ; 
 
+const char* TMPDIR = "$TMP/yoctoglrap/YOGTFTest" ; 
+
 
 int main(int argc, char** argv)
 {
@@ -62,8 +64,7 @@ int main(int argc, char** argv)
 
     TF tf(&sc); 
 
-    const char* path = "$TMP/yog/YOGTFTest.gltf" ; 
-    tf.save(path);     
+    tf.save(TMPDIR, "YOGTFTest.gltf" );     
 
 
     return 0 ; 

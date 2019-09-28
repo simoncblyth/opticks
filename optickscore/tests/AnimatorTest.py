@@ -19,5 +19,9 @@
 #
 
 
-a = np.load("/tmp/animator.npy")
+import numpy as np
+import os 
+
+
+a = np.load(os.path.expandvars("$TMP/optickscore/AnimatorTest/animator.npy"))
 plt.plot(a[:,0,0], a[:,0,1])

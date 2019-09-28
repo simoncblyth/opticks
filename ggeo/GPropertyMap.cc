@@ -1073,8 +1073,6 @@ void GPropertyMap<T>::addStandardized(GPropertyMap<T>* other, const char* prefix
 
 
 
-
-
 template <typename T>
 void GPropertyMap<T>::save(const char* path)
 {

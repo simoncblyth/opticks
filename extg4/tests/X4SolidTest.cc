@@ -37,6 +37,7 @@
 #include "X4Mesh.hh"
 #include "NNode.hpp"
 #include "BStr.hh"
+#include "BFile.hh"
 #include "NCSG.hpp"
 #include "GParts.hh"
 #include "GMaterialLib.hh"
@@ -47,6 +48,8 @@
 
 #include "OPTICKS_LOG.hh"
 
+
+const char* TMPDIR = "$TMP/extg4/X4SolidTest" ; 
 
 
 void test_solid(G4VSolid* so)
@@ -66,7 +69,9 @@ void test_solid(G4VSolid* so)
     root->dump();
 
     root->dump_g4code(); 
-    root->write_g4code("$TMP/g4code.cc"); 
+
+    std::string pcc = BFile::FormPath(TMPDIR, "g4code.cc");  
+    root->write_g4code(pcc.c_str()); 
 
     NCSG* csg = NCSG::Adopt( root ); 
 
@@ -86,7 +91,9 @@ void test_solid(G4VSolid* so)
 
     GParts* cpts = GParts::Combine(pts); 
 
-    const char* path = "$TMP/X4SolidTest/GParts" ;
+    std::string p = BFile::CreateDir(TMPDIR, "GParts");  
+    const char* path = p.c_str() ;
+
     cpts->save(path);
 
     const char* cmdline = BStr::concat("prim.py ", path, NULL ); 
@@ -95,7 +102,8 @@ void test_solid(G4VSolid* so)
 
 
     X4Mesh* xm = new X4Mesh(so) ; 
-    xm->save(BStr::concat("$TMP/X4SolidTest/",so->GetName().c_str(),".gltf")); 
+    std::string pxm = BFile::FormPath(TMPDIR, BStr::concat("", so->GetName().c_str(),".gltf")); 
+    xm->save(pxm.c_str()); 
 
 }
 

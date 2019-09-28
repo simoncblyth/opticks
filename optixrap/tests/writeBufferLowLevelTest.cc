@@ -25,6 +25,7 @@
 
 #include "OPTICKS_LOG.hh"
 
+const char* TMPDIR = "$TMP/optixrap/writeBufferLowLevelTest" ; 
 
 int main( int argc, char** argv ) 
 {
@@ -66,7 +67,7 @@ int main( int argc, char** argv )
     NPYBase::setGlobalVerbose();
 
     npy->dump();
-    npy->save("$TMP/writeBufferLowLevelTest.npy");
+    npy->save(TMPDIR,"writeBufferLowLevelTest.npy");
 
     return 0;
 }

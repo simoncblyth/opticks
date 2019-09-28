@@ -115,6 +115,7 @@ follow ggeo-/GProperty<T>::createInverseCDF
 
 """
 
+import os
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -220,7 +221,8 @@ class Planck(object):
 
 
 def cf_gsrclib():
-    sl = np.load("/tmp/gsrclib.npy")
+    p = os.path.expandvars("$TMP/ggeo/GSourceLibTest/gsrclib.npy")
+    sl = np.load(p)
     return sl[0,:,0]
     
 

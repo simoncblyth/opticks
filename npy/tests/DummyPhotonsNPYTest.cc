@@ -21,7 +21,11 @@
 #include "OPTICKS_LOG.hh"
 
 #include "DummyPhotonsNPY.hpp"
+#include "BFile.hh"
 #include "NPY.hpp"
+
+
+const char* TMPDIR = "$TMP/npy/DummyPhotonsNPYTest" ; 
 
 int main(int argc, char** argv)
 {
@@ -43,7 +47,9 @@ int main(int argc, char** argv)
 
     if( num_photons <= 1000000 )
     {
-        const char* path = "$TMP/npy/DummyPhotonsNPYTest.npy" ;
+
+        std::string p = BFile::FormPath(TMPDIR, "DummyPhotonsNPYTest.npy");  
+        const char* path = p.c_str() ;
         npy->save(path);
         SSys::npdump(path);
     } 

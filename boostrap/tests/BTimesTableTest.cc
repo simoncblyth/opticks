@@ -18,6 +18,7 @@
  */
 
 #include "BTimesTable.hh"
+#include "BFile.hh"
 
 #include "OPTICKS_LOG.hh"
 
@@ -46,7 +47,7 @@ void quad_add()
     tt->add(check, 43, 43, 43, 43 );
 
     tt->dump();
-    const char* dir = "$TMP/BTimesTableTest/quad_add" ;
+    const char* dir = "$TMP/boostrap/BTimesTableTest/quad_add" ;
     tt->save(dir) ; 
 
     BTimesTable* zz = new BTimesTable(columns); 

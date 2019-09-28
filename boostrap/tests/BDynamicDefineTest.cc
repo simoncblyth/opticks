@@ -19,20 +19,19 @@
 
 #include <cstdio>
 #include "BDynamicDefine.hh"
-#include "PLOG.hh"
+#include "OPTICKS_LOG.hh"
 
 int main(int argc, char** argv)
 {
-    PLOG_(argc, argv);
+    OPTICKS_LOG(argc, argv);
 
-    printf("%s\n", argv[0]);
+    LOG(info) << argv[0] ; 
 
     BDynamicDefine dd ;
     dd.add<unsigned int>("MAXREC", 10);
     dd.add<float>("OTHER", 20.0);
 
-    printf("%s write...\n", argv[0]);
-    dd.write("$TMP", "DynamicDefineTest.h");
+    dd.write("$TMP/boostrap/BDynamicDefineTest", "DynamicDefineTest.h");
 
     return 0 ; 
 }

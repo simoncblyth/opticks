@@ -76,6 +76,7 @@ class BRAP_API BFile {
         static std::string preparePath(const char* path_, bool create=true );
         static std::string preparePath(const char* dir_, const char* name, bool create=true );
         static std::string preparePath(const char* dir_, const char* reldir_, const char* name, bool create=true );
+        static std::string createDir(const char* basedir, const char* subdir=NULL ) ; 
         static std::string prefixShorten( const char* path, const char* prefix_);
 
 

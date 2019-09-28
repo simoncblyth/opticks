@@ -29,6 +29,7 @@
 #include "SSys.hh"
 #include "SStr.hh"
 
+#include "BFile.hh"
 #include "BOpticksEvent.hh"
 #include "BBufSpec.hh"
 
@@ -41,7 +42,7 @@
 #include "OPTICKS_LOG.hh"
 
 
-
+const char* TMPDIR = "$TMP/npy/NPYTest" ; 
 
 void test_selection_write()
 {
@@ -61,7 +62,8 @@ void test_selection_write()
     assert( ht->getNumItems() == numHits );
     assert( numHits <= numPhotons);  
 
-    const char* path = "$TMP/NPYTest/ht2.npy" ;
+    std::string p = BFile::preparePath(TMPDIR, "ht2.npy"); 
+    const char* path = p.c_str() ;
     ht->save(path);
     SSys::npdump(path);
 }
@@ -86,7 +88,9 @@ void test_selection()
     assert( ht->getNumItems() == numHits );
     assert( numHits <= numPhotons);  
 
-    const char* path = "$TMP/NPYTest/ht.npy" ;
+    std::string p = BFile::preparePath(TMPDIR, "ht.npy"); 
+    const char* path = p.c_str() ;
+
     ht->save(path);
     SSys::npdump(path);
 }
@@ -114,10 +118,10 @@ void test_repeat()
 
    unsigned int n = 10 ; 
    NPY<int>* bb = NPY<int>::make_repeat(aa, n) ; 
-   aa->save("$TMP/aa.npy"); 
-   bb->save("$TMP/bb.npy"); 
+   aa->save(TMPDIR, "aa.npy"); 
+   bb->save(TMPDIR, "bb.npy"); 
    bb->reshape(-1, n, 1, 4);
-   bb->save("$TMP/cc.npy"); 
+   bb->save(TMPDIR, "cc.npy"); 
 }
 
 
@@ -171,7 +175,9 @@ void test_transform()
 
 void test_dump()
 {
-   const char* path = "$TMP/dom.npy";  
+    std::string p = BFile::preparePath(TMPDIR, "dom.npy"); 
+    const char* path = p.c_str() ;
+
    typedef unsigned int T ; 
 
    NPY<T>* a = NPY<T>::make(10,1,4) ;
@@ -201,7 +207,7 @@ void test_empty_add()
    }
 
    a->dump();
-   a->save("$TMP/test_empty_add.npy");
+   a->save(TMPDIR, "test_empty_add.npy");
 }
 
 
@@ -218,7 +224,7 @@ void test_add()
    dom->add(ext);
    dom->dump();
 
-   dom->save("$TMP/test_add.npy");
+   dom->save(TMPDIR, "test_add.npy");
 
 }
 
@@ -250,7 +256,7 @@ void test_setQuad()
    dom->setQuad(q1, 1,0);
    dom->setQuad(q9, 9,0);
     
-   dom->save("$TMP/test_setQuad.npy");
+   dom->save(TMPDIR, "test_setQuad.npy");
 }
 
 
@@ -306,7 +312,7 @@ void test_save_path()
     if(npy)
     { 
        std::cout << npy->description("npy") << std::endl ; 
-       npy->save("$TMP/test_save_path.npy");
+       npy->save(TMPDIR, "test_save_path.npy");
     }
 }
 
@@ -315,7 +321,8 @@ void test_load_path_throws()
 {
     LOG(info) << "test_load_path (throws std::runtime_error causing abort as not caught)" ; 
 
-    const char* path = "$TMP/slowcomponent.npy" ;
+    std::string p = BFile::preparePath(TMPDIR, "slowcomponent.npy"); 
+    const char* path = p.c_str() ;
     NPY<float>* npy = NPY<float>::debugload(path);
     if(npy) npy->Summary(path);
 }
@@ -396,7 +403,7 @@ void test_string()
 
     NPY<ULL>* s = NPY<ULL>::make(1, 1, 1);
     s->setData(vals);
-    s->save("$TMP/test_string.npy");
+    s->save(TMPDIR, "test_string.npy");
 
 /*
 
@@ -461,7 +468,7 @@ void test_ullstring()
     typedef unsigned long long ULL ; 
     assert( sizeof(ULL) == 8 ); 
 
-    NPY<ULL>* s8buf = NPY<ULL>::load("/tmp/s8.npy");
+    NPY<ULL>* s8buf = NPY<ULL>::load(TMPDIR, "s8.npy");
     if(!s8buf) return ; 
 
     unsigned n = s8buf->getNumItems() ; 
@@ -504,21 +511,21 @@ void test_getShape()
 void test_setString()
 {
    LOG(info) ; 
-   const char* path = "$TMP/test_setString.npy" ; 
+   const char* name = "test_setString.npy" ; 
 
    NPY<char>* buf = NPY<char>::make(3,5) ;
    buf->zero();
    buf->setString("hello", 0 ); 
    buf->setString("world", 1 ); 
    buf->setString("truncated", 2 ); 
-   buf->save(path); 
+   buf->save(TMPDIR, name); 
 }
 
 void test_getString()
 {
    LOG(info) ; 
-   const char* path = "$TMP/test_setString.npy" ; 
-   NPY<char>* buf = NPY<char>::load(path) ;
+   const char* name = "test_setString.npy" ; 
+   NPY<char>* buf = NPY<char>::load(TMPDIR, name) ;
 
   const char* s0 = buf->getString(0) ; 
   const char* s1 = buf->getString(1) ;
@@ -538,22 +545,22 @@ void test_getString()
 void test_addString()
 {
    LOG(info) ; 
-   const char* path = "$TMP/test_addString.npy" ; 
+   const char* name = "test_addString.npy" ; 
 
    NPY<char>* buf = NPY<char>::make(0,5) ;
    buf->zero();
    buf->addString("hello"); 
    buf->addString("world"); 
    buf->addString("truncated"); 
-   buf->save(path); 
+   buf->save(TMPDIR, name); 
 }
 
 void test_addStringLoad()
 {
    LOG(info) ; 
-   const char* path = "$TMP/test_addString.npy" ; 
+   const char* name = "test_addString.npy" ; 
 
-   NPY<char>* buf = NPY<char>::load(path) ;
+   NPY<char>* buf = NPY<char>::load(TMPDIR, name) ;
    for(unsigned i=0 ; i < buf->getShape(0) ; i++)
    {
        const char* s = buf->getString(i); 

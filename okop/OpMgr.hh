@@ -85,7 +85,7 @@ class OKOP_API OpMgr {
        OpticksEvent* getG4Event() const ; 
        void reset();
 
-       void snap();
+       void snap(const char* dir);
    private:
        void init();
        void cleanup();

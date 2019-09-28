@@ -166,10 +166,10 @@ void OpMgr::cleanup()
 }
 
 
-void OpMgr::snap()
+void OpMgr::snap(const char* dir)
 {
     LOG(LEVEL) ; 
-    m_propagator->snap(); 
+    m_propagator->snap(dir); 
 }
 
 

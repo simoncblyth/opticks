@@ -43,6 +43,15 @@ void NTreeProcess<T>::SaveBuffer(const char* path)
 {
     ProcBuffer->save(path); 
 }
+template <typename T>
+void NTreeProcess<T>::SaveBuffer(const char* dir, const char* name)
+{
+    ProcBuffer->save(dir, name); 
+}
+
+
+
+
 
 template <typename T>
 T* NTreeProcess<T>::Process( T* root_ , unsigned soIdx, unsigned lvIdx )  // static

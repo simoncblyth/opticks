@@ -79,6 +79,12 @@ void TF::convert()
 }
 
 
+void TF::save(const char* patha, const char* pathb)
+{
+    std::string p = BFile::FormPath(patha, pathb); 
+    save(p.c_str()); 
+}
+
 void TF::save(const char* path_)
 {
     if( gltf == NULL ) convert();

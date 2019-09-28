@@ -72,7 +72,7 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv);
 
-    const char* dir = "$TMP/NPYMetaTest" ; 
+    const char* dir = "$TMP/npy/NPYMetaTest" ; 
 
     NPYMeta ym ; 
     test_save( ym, dir ); 

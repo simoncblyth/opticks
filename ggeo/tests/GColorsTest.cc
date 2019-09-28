@@ -28,14 +28,17 @@
 
 #include "OpticksColors.hh"
 
-#include "PLOG.hh"
+#include "OPTICKS_LOG.hh"
 
 // see tests/GColorsTest.py 
 
 
+const char* TMPDIR = "$TMP/ggeo/GColorsTest" ; 
+
+
 int main(int argc, char** argv)
 {
-    PLOG_(argc, argv);    
+    OPTICKS_LOG(argc, argv);    
 
 
     OpticksColors* m_colors = OpticksColors::load("$HOME/.opticks/GCache","GColors.json");
@@ -62,7 +65,7 @@ int main(int argc, char** argv)
 
     m_color_buffer->Summary();
 
-    m_color_buffer->save("$TMP/colors_NPY.npy");
+    m_color_buffer->save(TMPDIR, "colors_NPY.npy");
 
 
 }

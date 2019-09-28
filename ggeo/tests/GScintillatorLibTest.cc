@@ -130,6 +130,9 @@ Out[9]: (1, 4096, 1)
 */
 
 
+const char* TMPDIR = "$TMP/ggeo/GScintillatorLibTest" ; 
+
+
 int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc,argv);
@@ -158,25 +161,27 @@ int main(int argc, char** argv)
 
     NPY<float>* buf = slib->getBuffer();
     buf->Summary();
-    const char* path = "$TMP/GScintillatorLib.npy" ;
+    const char* name_ = "GScintillatorLib.npy" ;
 
     LOG(info) << " save GScintillatorLib buf  "
-              << " to path " << path
+              << " to dir  " << TMPDIR
+              << " name_ " << name_
               << " shape " << buf->getShapeString()
               ; 
 
-    buf->save(path);
+    buf->save(TMPDIR, name_);
 
 
     NPY<float>* buf0 = buf->make_slice("0:1") ;
-    const char* path0 = "$TMP/GScintillatorLib0.npy" ;
+    const char* name0 = "GScintillatorLib0.npy" ;
 
     LOG(info) << " save GScintillatorLib buf0  "
-              << " to path " << path0
+              << " to dir " << TMPDIR
+              << " name0 " << name0
               << " shape " << buf0->getShapeString()
               ; 
 
-    buf0->save(path0);
+    buf0->save(TMPDIR, name0);
 
     
 

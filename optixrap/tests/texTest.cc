@@ -36,6 +36,8 @@ Technical tex roundtrip test.
 **/
 
 
+const char* TMPDIR = "$TMP/optixrap/texTest" ; 
+
 int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv);    
@@ -59,7 +61,7 @@ int main(int argc, char** argv)
     }
     }
     //inp->dump();
-    inp->save("$TMP/texTest_inp.npy");
+    inp->save(TMPDIR,"texTest_inp.npy");
 
     OContext::SetupOptiXCachePathEnvvar(); 
     optix::Context context = optix::Context::create();
@@ -126,7 +128,7 @@ int main(int argc, char** argv)
     outBuffer->unmap(); 
 
     //out->dump();
-    out->save("$TMP/texTest_out.npy");
+    out->save(TMPDIR,"texTest_out.npy");
 
     float maxdiff = inp->maxdiff(out);
     LOG(info) << "maxdiff " << maxdiff  ; 

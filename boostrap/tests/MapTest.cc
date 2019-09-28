@@ -26,6 +26,9 @@
 #include "OPTICKS_LOG.hh"
 #include "Map.hh"
 
+const char* TMPDIR = "$TMP/boostrap/MapTest" ; 
+
+
 void testSaveLoad()
 {
     Map<std::string, unsigned int>* a = new Map<std::string, unsigned int>() ; 
@@ -36,9 +39,9 @@ void testSaveLoad()
 
     const char* name = "MapTest.json" ;
 
-    a->save("$TMP", name);
+    a->save(TMPDIR, name);
 
-    Map<std::string, unsigned int>* b = Map<std::string, unsigned int>::load("$TMP", name);
+    Map<std::string, unsigned int>* b = Map<std::string, unsigned int>::load(TMPDIR, name);
     b->dump();
 
 }

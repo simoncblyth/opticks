@@ -61,6 +61,7 @@ struct X4_API X4Transform3D
 {
     static NPY<float>* TranBuffer ; 
     static void SaveBuffer(const char* path);
+    static void SaveBuffer(const char* dir, const char* name);
 
     static std::string Digest(const G4Transform3D&  transform ); 
     static G4Transform3D Convert( const glm::mat4&     trs );
