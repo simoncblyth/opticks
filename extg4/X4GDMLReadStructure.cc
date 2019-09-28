@@ -29,7 +29,7 @@ X4GDMLReadStructure::X4GDMLReadStructure()
 {
 }
 
-const G4VSolid* X4GDMLReadStructure::read_solid(const char* path )
+const G4VSolid* X4GDMLReadStructure::read_solid(const char* path, int offset)
 {
      G4String fileName = path ; 
      G4bool validation = false ; 
@@ -38,7 +38,7 @@ const G4VSolid* X4GDMLReadStructure::read_solid(const char* path )
 
      Read( fileName, validation, isModule, strip ); 
 
-     return X4SolidStore::Get(-1) ;    // last solid in store
+     return X4SolidStore::Get(offset) ;    
 }
 
 

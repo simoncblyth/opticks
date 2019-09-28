@@ -116,7 +116,8 @@ void test_write_solid(const char* path)
 
 void test_read_solid( const char* path )
 {
-    const G4VSolid* solid = X4GDMLParser::Read(path) ;
+    int offset = -1 ; 
+    const G4VSolid* solid = X4GDMLParser::Read(path, offset) ;
     LOG(info) << " solid " << solid ; 
 
     X4SolidStore::Dump(); 

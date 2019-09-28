@@ -102,7 +102,7 @@ release-test()
     local iwd=$PWD
 
     local ldir=$(release-logdir)
-    local tdir=$OPTICKS_INSTALL_PREFIX/tests
+    local tdir=$(release-prefix)/tests
     local tlog
 
     if [ -n "$proj" -a -d "$tdir/$proj" ]; then

@@ -10,6 +10,8 @@ set(TEST_SOURCES
 
     LTOOContextUploadDownloadTest.cc
     Roots3And4Test.cc
+
+    UseOptiXTest.cc 
 )
 
 

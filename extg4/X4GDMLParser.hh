@@ -45,14 +45,14 @@ class X4_API X4GDMLParser
         static void Write( const G4VSolid* solid, const char* path, bool refs );  // NULL path writes to stdout
         static std::string ToString( const G4VSolid* solid, bool refs ) ;  
     public:
-        static const G4VSolid* Read( const char* path ); 
+        static const G4VSolid* Read( const char* path, int offset ); 
     private:
         X4GDMLParser(bool refs) ; 
         void write(const G4VSolid* solid, const char* path);
         void write_noisily(const G4VSolid* solid, const char* path);
         std::string to_string( const G4VSolid* solid);
     private:
-        const G4VSolid* read_solid( const char* path ); 
+        const G4VSolid* read_solid( const char* path, int offset ); 
     private:
         X4GDMLWriteStructure* writer ;  
         X4GDMLReadStructure*  reader ;  

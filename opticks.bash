@@ -1199,6 +1199,30 @@ opticks-join(){ local ifs=$IFS ; IFS="$1"; shift; echo "$*" ; IFS=$ifs ;  }
 opticks-llp(){  opticks-join : $($FUNCNAME- $*) ; } 
 
 
+opticks-dump(){ cat << EOD
+
+Standardize all paths to be "physical" as given by "pwd -P" 
+for om-cd toggling between source and build trees to work 
+
+This also seems to make building Opticks significantly faster. 
+
+   G                          : $G 
+   PYTHONPATH                 : $PYTHONPATH
+   ENV_HOME                   : $ENV_HOME
+   OPTICKS_HOME               : $OPTICKS_HOME 
+   TMP                        : $TMP
+   LOCAL_BASE                 : $LOCAL_BASE
+   OPTICKS_RESULTS_PREFIX     : $OPTICKS_RESULTS_PREFIX
+
+   OPTICKS_OPTIX_INSTALL_DIR  : $OPTICKS_OPTIX_INSTALL_DIR
+   OPTICKS_COMPUTE_CAPABILITY : $OPTICKS_COMPUTE_CAPABILITY
+   OPTICKS_KEY                : $OPTICKS_KEY 
+
+EOD
+
+   echo $PATH | tr ":" "\n" ;
+}
+
 
 
 opticks-export()

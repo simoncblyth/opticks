@@ -65,11 +65,27 @@ workflow for Opticks binary releases
  
      okdist--
 
-3. lxslc: copy tarball to stratum zero node::
+3. lxslc: test release from user like environment, 
+   
+   * switch from developer_setup to user_setup in ~/.bash_profile and ssh into another tab  
+   * see scdist- for examples of the source lines for user setup
+
+   * run tests::
+
+     release-check  
+     release-test    ## everything that needs GPU will fail 
+
+
+
+
+
+
+
+4. lxslc: copy tarball to stratum zero node::
 
       scp $(okdist-path) O:  
 
-4. publish the tarball release onto cvmfs::
+5. publish the tarball release onto cvmfs::
 
    ssh O   
        ## login to stratum zero

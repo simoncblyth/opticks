@@ -54,7 +54,7 @@ class X4_API X4GDMLReadStructure : public G4GDMLReadStructure
         static const plog::Severity LEVEL ; 
     public:
         X4GDMLReadStructure() ; 
-        const G4VSolid* read_solid(const char* path);
+        const G4VSolid* read_solid(const char* path, int offset);  // offset:-1 last solid in store
 
 
 };

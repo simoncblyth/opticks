@@ -28,10 +28,13 @@
 **/
 
 #include "X4GDMLParser.hh"
-#include "X4SolidStore.hh"
+#include "X4Solid.hh"
 #include "Opticks.hh"
 #include "BFile.hh"
 #include "NNode.hpp"
+#include "NCSG.hpp"
+#include "NTreeProcess.hpp"
+#include "NSceneConfig.hpp"
 
 
 #include "OPTICKS_LOG.hh"
@@ -52,11 +55,37 @@ int main( int argc , char** argv )
         return 0 ; 
     }
 
-    const G4VSolid* solid = X4GDMLParser::Read(path) ;
+    int offset = -2 ; 
+    const G4VSolid* solid = X4GDMLParser::Read(path, offset) ;
+
+    if( solid == NULL ) 
+    {
+        LOG(error) 
+            << " NULL SOLID " 
+            << " path " << path 
+            << " offset " << offset
+            ; 
+        return 0 ; 
+    }
+
     LOG(info) << " solid " << solid ; 
 
-    X4SolidStore::Dump(); 
+    nnode* raw = X4Solid::Convert(solid, &ok); 
+    LOG(info)  << raw->ana_brief() ;  
+    //LOG(info)  << raw->ana_desc() ;  
 
+    unsigned soIdx = 0 ; 
+    unsigned lvIdx = 0 ; 
+    nnode* bal = NTreeProcess<nnode>::Process(raw, soIdx, lvIdx) ; 
+
+    LOG(info)  << "bal\n" << bal->ana_desc() ;  
+
+    const NSceneConfig* config = NULL ; 
+    NCSG* tree = NCSG::Adopt( bal, config, soIdx, lvIdx) ; 
+
+    LOG(info) 
+        << " tree " << tree
+        ;  
 
     return 0 ; 
 }

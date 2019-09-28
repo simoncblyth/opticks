@@ -45,10 +45,10 @@ void X4GDMLParser::Write( const G4VSolid* solid, const char* path, bool refs )  
 }
 
 
-const G4VSolid* X4GDMLParser::Read( const char* path )
+const G4VSolid* X4GDMLParser::Read( const char* path, int offset )
 {
     X4GDMLParser parser(false) ;
-    return parser.read_solid( path); 
+    return parser.read_solid( path, offset ); 
 }
 
 
@@ -127,10 +127,10 @@ std::string X4GDMLParser::to_string( const G4VSolid* solid )
 }
 
 
-const G4VSolid* X4GDMLParser::read_solid( const char* path )
+const G4VSolid* X4GDMLParser::read_solid( const char* path, int offset )
 {
     std::string p = BFile::FormPath(path); 
-    return reader->read_solid(p.c_str()) ; 
+    return reader->read_solid(p.c_str(), offset) ; 
 }
 
 

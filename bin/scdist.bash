@@ -47,14 +47,44 @@ Workflow to publish a shared cache
    scdist-publish-explode
 
 
+
+TODO : slim the cache
+--------------------------
+
+::
+
+    7.5G    /opticks/sharedcache/OpticksSharedCache-0.0.0_alpha.tar
+
+
+The rngmax storage approach for curandStates is simple, 
+but it wastes probably 3-4 GB with duplicated curandStates.
+
+
+
 Environment setup for use of Opticks binary distribution and shared cache from GPU cluster/gateway node
 -----------------------------------------------------------------------------------------------------------
 
 ::
 
     source /hpcfs/juno/junogpu/blyth/local/opticks/externals/envg4.bash
-    source /cvmfs/opticks.ihep.ac.cn/ok/releases/Opticks-0.0.0_alpha/x86_64-slc7-gcc48-geant4_10_04_p02-dbg/bin/release.bash  # real /cvmfs
+
+    #source /cvmfs/opticks.ihep.ac.cn/ok/releases/Opticks-0.0.0_alpha/x86_64-slc7-gcc48-geant4_10_04_p02-dbg/bin/release.bash  
+    # real /cvmfs
+
+    source /hpcfs/juno/junogpu/blyth/local/opticks/releases/Opticks-0.0.0_alpha/x86_64-slc7-gcc48-geant4_10_04_p02-dbg/bin/release.bash
+    # testing release on /hpcfs before push it to /cvmfs
+
     source /hpcfs/juno/junogpu/blyth/opticks.ihep.ac.cn/sc/releases/OpticksSharedCache-0.0.0_alpha/bin/sharedcache.bash
+
+
+TODO
+------
+
+Need a single script location so this triplet of paths doesnt 
+have to be duplicated by each user : perhaps:: 
+
+    source /hpcfs/opticks.ihep.ac.cn/Opticks-0.0.0_alpha/oki.bash
+
 
 
 Workstation : Test Environment setup for use of Opticks binary distribution and shared cache (from ~simon/.bashrc)
@@ -62,8 +92,12 @@ Workstation : Test Environment setup for use of Opticks binary distribution and 
 ::
 
     source /home/blyth/local/opticks/externals/envg4.bash
+
     source /cvmfs/opticks.ihep.ac.cn/ok/releases/Opticks-0.0.0_alpha/x86_64-centos7-gcc48-geant4_10_04_p02-dbg/bin/release.bash  # fake /cvmfs
+
     source /opticks/opticks.ihep.ac.cn/sc/releases/OpticksSharedCache-0.0.0_alpha/bin/sharedcache.bash
+
+
 
 EOU
 }
