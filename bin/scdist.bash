@@ -47,29 +47,23 @@ Workflow to publish a shared cache
    scdist-publish-explode
 
 
-Example environment setup for use of Opticks binary distribuation and shared cache (from ~simon/.bashrc)
-----------------------------------------------------------------------------------------------------------
+Environment setup for use of Opticks binary distribution and shared cache from GPU cluster/gateway node
+-----------------------------------------------------------------------------------------------------------
 
 ::
 
-    export LD_LIBRARY_PATH=/home/blyth/local/opticks/externals/lib64:$LD_LIBRARY_PATH    
-    source ~blyth/g4-envg4.bash
+    source /hpcfs/juno/junogpu/blyth/local/opticks/externals/envg4.bash
+    source /cvmfs/opticks.ihep.ac.cn/ok/releases/Opticks-0.0.0_alpha/x86_64-slc7-gcc48-geant4_10_04_p02-dbg/bin/release.bash  # real /cvmfs
+    source /hpcfs/juno/junogpu/blyth/opticks.ihep.ac.cn/sc/releases/OpticksSharedCache-0.0.0_alpha/bin/sharedcache.bash
 
-       ## setup access to Geant4 libs and data 
 
-    source /cvmfs/opticks.ihep.ac.cn/ok/releases/Opticks-0.0.0_alpha/x86_64-centos7-gcc48-geant4_10_04_p02-dbg/bin/release.bash
+Workstation : Test Environment setup for use of Opticks binary distribution and shared cache (from ~simon/.bashrc)
+-----------------------------------------------------------------------------------------------------------------------
+::
 
-       ## setup access to Opticks executables, scripts and libs including externals other than Geant4
-
+    source /home/blyth/local/opticks/externals/envg4.bash
+    source /cvmfs/opticks.ihep.ac.cn/ok/releases/Opticks-0.0.0_alpha/x86_64-centos7-gcc48-geant4_10_04_p02-dbg/bin/release.bash  # fake /cvmfs
     source /opticks/opticks.ihep.ac.cn/sc/releases/OpticksSharedCache-0.0.0_alpha/bin/sharedcache.bash
-
-       ## setup access to the shared cache 
-
-    export OPTICKS_DEFAULT_INTEROP_CVD=1  
-
-       ## fixup for interop running on machines with multiple GPUs, 
-       ## selects the GPU cvd (CUDA_VISIBLE_DEVICES) ordinal that is connected to monitor
-
 
 EOU
 }
