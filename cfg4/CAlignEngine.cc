@@ -48,9 +48,17 @@ void CAlignEngine::Finalize() // static
 }
 
 
-void CAlignEngine::SetSequenceIndex(int seq_index) // static
+void CAlignEngine::SetSequenceIndex(int seq_index ) // static
 {
-    if(INSTANCE == NULL ) INSTANCE = new CAlignEngine(NULL) ; 
+    //if(INSTANCE == NULL ) INSTANCE = new CAlignEngine(NULL) ; 
+    if(INSTANCE == NULL ) 
+    {
+         LOG(debug) 
+             << " SetSequenceIndex " << seq_index
+             << " requires CAlignEngine::Initialize first "
+             ;
+         return ;   
+    }
     INSTANCE->setSequenceIndex(seq_index); 
 }
 

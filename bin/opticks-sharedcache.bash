@@ -43,21 +43,30 @@ $FUNCNAME
   opticks-sharedcache-dir     : $(opticks-sharedcache-dir)
   opticks-sharedcache-prefix  : $(opticks-sharedcache-prefix)
 
-  OPTICKS_SHARED_CACHE_PREFIX : $OPTICKS_SHARED_CACHE_PREFIX
+  OPTICKS_GEOCACHE_PREFIX     : $OPTICKS_GEOCACHE_PREFIX
+  OPTICKS_RNGCACHE_PREFIX     : $OPTICKS_RNGCACHE_PREFIX
   OPTICKS_KEY                 : $OPTICKS_KEY
+
+The GEO and RNG cache prefixes default to being the same and equal to the sharedcache prefix.
+
+* they can be individually overridden as needed
 
 EOI
 }
 
 opticks-sharedcache-unset(){
-   unset OPTICKS_SHARED_CACHE_PREFIX
+   unset OPTICKS_GEOCACHE_PREFIX
+   unset OPTICKS_RNGCACHE_PREFIX
    unset OPTICKS_KEY
 }
 
 opticks-sharedcache-main(){
 
-   unset OPTICKS_SHARED_CACHE_PREFIX
-   export OPTICKS_SHARED_CACHE_PREFIX=$(opticks-sharedcache-prefix)
+   unset OPTICKS_GEOCACHE_PREFIX
+   export OPTICKS_GEOCACHE_PREFIX=$(opticks-sharedcache-prefix)
+
+   unset OPTICKS_RNGCACHE_PREFIX
+   export OPTICKS_RNGCACHE_PREFIX=$(opticks-sharedcache-prefix)
 
    unset OPTICKS_KEY
    #export OPTICKS_KEY=OKX4Test.X4PhysicalVolume.lWorld0x4bc2710_PV.f6cc352e44243f8fa536ab483ad390ce   ## geocache-j1808-v5-key

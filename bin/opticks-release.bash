@@ -11,7 +11,7 @@ opticks-release-usage(){ cat << EOU
 $FUNCNAME
 =======================
 
-This release.bash script sets up a minimal environment for the 
+This opticks-release.bash script sets up a minimal environment for the 
 use of an Opticks binary distribution.
 
 Use it by including a line in your ~/.bashrc similar to one of the below, 

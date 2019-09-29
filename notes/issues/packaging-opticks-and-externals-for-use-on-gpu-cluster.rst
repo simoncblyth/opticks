@@ -15,7 +15,7 @@ whats left for release ?
 
   * interate on that from "su - simon" account first 
 
-* structure of includes
+* structure of includes ?
 
   * probably need to install flattened like /home/blyth/local/opticks/externals/include/Geant4/
   * not needed fpor CMake approach 
@@ -27,11 +27,11 @@ whats left for release ?
   * check it with simple non-CMake Makefile based building against the binary release using opticks-config
   * this is a stand in for CMT, as would rather not touch that 
 
-* IN PROGRESS : investigate CMake based building against the release
+* DONE : CMake based build against the release
 
   * what needs to be included in the distribution for this to work ? 
   * lib64/cmake has tree of .cmake with the exported targets
-  * examples/Geant4/CerenkovMinimal can be the canary 
+  * examples/Geant4/CerenkovMinimal builds from simon
 
 * release-test from other users account on GPU cluster
 
@@ -113,21 +113,16 @@ Depends on bash enviromnent with::
     source /cvmfs/opticks.ihep.ac.cn/ok/releases/Opticks-0.0.0_alpha/x86_64-centos7-gcc48-geant4_10_04_p02-dbg/bin/opticks-release.bash
     source /opticks/opticks.ihep.ac.cn/sc/releases/OpticksSharedCache-0.0.0_alpha/bin/opticks-sharedcache.bash
 
+    # hmm not convenient to keep flipping this, how to detect when shared geocache is appropriate ?
+    #unset OPTICKS_GEOCACHE_PREFIX
+
+    export OPTICKS_DEFAULT_INTEROP_CVD=1   # GPU that is connected to the monitor for multi-gpu machines
+    export PATH=/tmp/$USER/lib:$PATH
 
 
-Hmm unsetting these gets further, but assumption of geocache and rngcache being siblings not working then::
-
-    [simon@localhost CerenkovMinimal]$ unset OPTICKS_SHARED_CACHE_PREFIX
-    [simon@localhost CerenkovMinimal]$ unset OPTICKS_KEY 
-
-::
-
-    ...
-    2019-09-29 17:11:11.873 INFO  [62619] [OScene::init@182] ]
-    2019-09-29 17:11:11.874 ERROR [62619] [cuRANDWrapper::LoadIntoHostBuffer@652]  MISSING RNG CACHE /home/simon/.opticks/rngcache/RNG/cuRANDWrapper_3000000_0_0.bin
-     create with bash functions cudarap-;cudarap-prepare-installcache 
-     should have been invoked by opticks-prepare-installcache 
-    CerenkovMinimal: /home/blyth/opticks/cudarap/cuRANDWrapper.cc:658: int cuRANDWrapper::LoadIntoHostBuffer(curandState*, unsigned int): Assertion `0' failed.
+* had to split the shared cached envvar control into rngcache and geocache : 
+  as normally the shared rngcache is appropriate but often (eg CerekovMinimal) 
+  cannot use shared geocache : cause will try to write there 
 
 
 
@@ -182,7 +177,8 @@ examples/Geant4/CerenkovMinimal/go.sh : CMake without source tree
 
 
 
-RUNPATH ORIGIN setup not going to work
+FIXED : RUNPATH ORIGIN setup not working : using absolute RUNPATH when user build detected
+---------------------------------------------------------------------------------------------- 
 
 * as executable not in expected place relative to libs 
 * 

@@ -118,17 +118,17 @@ opticks-tboolean-shortcuts(){
 }
 
 
-opticks-shared-cache-prefix-default(){ echo $HOME/.opticks ; }
-opticks-user-cache-prefix-default(){   echo $HOME/.opticks ; }
+opticks-sharedcache-prefix-default(){ echo $HOME/.opticks ; }
+opticks-usercache-prefix-default(){   echo $HOME/.opticks ; }
 
 
+opticks-geocache-prefix(){    echo ${OPTICKS_GEOCACHE_PREFIX:-$(opticks-sharedcache-prefix-default)} ; } 
+opticks-rngcache-prefix(){    echo ${OPTICKS_RNGCACHE_PREFIX:-$(opticks-sharedcache-prefix-default)} ; } 
+opticks-usercache-prefix(){   echo ${OPTICKS_USERCACHE_PREFIX:-$(opticks-usercache-prefix-default)} ; } 
 
-opticks-shared-cache-prefix(){ echo ${OPTICKS_SHARED_CACHE_PREFIX:-$(opticks-shared-cache-prefix-default)} ; } 
-opticks-user-cache-prefix(){   echo ${OPTICKS_USER_CACHE_PREFIX:-$(opticks-user-cache-prefix-default)} ; } 
 
-
-opticks-geocachedir(){ echo $(opticks-shared-cache-prefix)/geocache ; } 
-opticks-rngcachedir(){ echo $(opticks-shared-cache-prefix)/rngcache ; }
+opticks-geocachedir(){ echo $(opticks-geocache-prefix)/geocache ; } 
+opticks-rngcachedir(){ echo $(opticks-rngcache-prefix)/rngcache ; }
 opticks-rngdir(){      echo $(opticks-rngcachedir)/RNG ; }
 opticks-rngdir-cd(){   cd $(opticks-rngdir) ; }
 
@@ -140,28 +140,27 @@ $FUNCNAME
     opticks-prefix                      : $(opticks-prefix)
     opticks-installcachedir             : $(opticks-installcachedir)
 
+    OPTICKS_GEOCACHE_PREFIX             : $OPTICKS_GEOCACHE_PREFIX
+    OPTICKS_RNGCACHE_PREFIX             : $OPTICKS_RNGCACHE_PREFIX
+    OPTICKS_USERCACHE_PREFIX            : $OPTICKS_USERCACHE_PREFIX
 
-    OPTICKS_SHARED_CACHE_PREFIX         : $OPTICKS_SHARED_CACHE_PREFIX
-    OPTICKS_USER_CACHE_PREFIX           : $OPTICKS_USER_CACHE_PREFIX
-
-
-    opticks-shared-cache-prefix-default : $(opticks-shared-cache-prefix-default)
-    opticks-shared-cache-prefix         : $(opticks-shared-cache-prefix)
+    opticks-sharedcache-prefix-default  : $(opticks-sharedcache-prefix-default)
+    opticks-geocache-prefix             : $(opticks-geocache-prefix)
+    opticks-rngcache-prefix             : $(opticks-rngcache-prefix)
 
     opticks-geocachedir                 : $(opticks-geocachedir)
     opticks-rngcachedir                 : $(opticks-rngcachedir)
 
     opticks-rngdir                      : $(opticks-rngdir)
 
+    opticks-usercache-prefix-default    : $(opticks-usercache-prefix-default)
+    opticks-usercache-prefix            : $(opticks-usercache-prefix)
 
-    opticks-user-cache-prefix-default   : $(opticks-user-cache-prefix-default)
-    opticks-user-cache-prefix           : $(opticks-user-cache-prefix)
 
-
-shared-cache-prefix
+sharedcache-prefix
    geocache, rngcache
 
-user-cache-prefix
+usercache-prefix
    runcache
   
 

@@ -168,7 +168,7 @@ void G4Opticks::setGeometry(const G4VPhysicalVolume* world, bool standardize_gea
     createCollectors(); 
     LOG(fatal) << ") createCollectors " ; 
 
-    CAlignEngine::Initialize(m_ok->getIdPath()) ;
+    //CAlignEngine::Initialize(m_ok->getIdPath()) ;
 
     // OpMgr instanciates OpticksHub which adopts the pre-existing m_ggeo instance just translated
     LOG(fatal) << "( OpMgr " ; 

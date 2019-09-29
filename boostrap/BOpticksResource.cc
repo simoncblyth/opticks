@@ -115,8 +115,9 @@ BOpticksResource::BOpticksResource(bool testgeo)
     m_res(new BResource),
     m_layout(SSys::getenvint("OPTICKS_RESOURCE_LAYOUT", 0)),
     m_install_prefix(NULL),
-    m_shared_cache_prefix(NULL),
-    m_user_cache_prefix(NULL),
+    m_geocache_prefix(NULL),
+    m_rngcache_prefix(NULL),
+    m_usercache_prefix(NULL),
     m_opticksdata_dir(NULL),
     m_opticksaux_dir(NULL),
     m_geocache_dir(NULL),
@@ -176,7 +177,8 @@ void BOpticksResource::init()
     LOG(LEVEL) << " layout  : " << m_layout ; 
 
     initInstallPrefix() ;
-    initSharedCachePrefix() ;
+    initGeoCachePrefix() ;
+    initRngCachePrefix() ;
     initUserCachePrefix() ;
     initTopDownDirs();
     initDebuggingIDPATH();
@@ -186,13 +188,17 @@ const char* BOpticksResource::getInstallPrefix() // canonically /usr/local/optic
 {
     return m_install_prefix ; 
 }
-const char* BOpticksResource::getSharedCachePrefix() // canonically  ~/.opticks with tilde expanded
+const char* BOpticksResource::getGeoCachePrefix() // canonically  ~/.opticks with tilde expanded
 {
-    return m_shared_cache_prefix ; 
+    return m_geocache_prefix ; 
+}
+const char* BOpticksResource::getRngCachePrefix() // canonically  ~/.opticks with tilde expanded
+{
+    return m_rngcache_prefix ; 
 }
 const char* BOpticksResource::getUserCachePrefix() // canonically  ~/.opticks with tilde expanded
 {
-    return m_user_cache_prefix ; 
+    return m_usercache_prefix ; 
 }
 
 
@@ -337,14 +343,15 @@ void BOpticksResource::initInstallPrefix()
 
 
 
-const char* BOpticksResource::SHARED_CACHE_PREFIX_KEY = "OPTICKS_SHARED_CACHE_PREFIX" ; 
-const char* BOpticksResource::USER_CACHE_PREFIX_KEY = "OPTICKS_USER_CACHE_PREFIX" ; 
+const char* BOpticksResource::GEOCACHE_PREFIX_KEY = "OPTICKS_GEOCACHE_PREFIX" ; 
+const char* BOpticksResource::RNGCACHE_PREFIX_KEY = "OPTICKS_RNGCACHE_PREFIX" ; 
+const char* BOpticksResource::USERCACHE_PREFIX_KEY = "OPTICKS_USERCACHE_PREFIX" ; 
 
 /**
-BOpticksResource::ResolveSharedCachePrefix
+BOpticksResource::ResolveGeoCachePrefix
 ----------------------------------------
 
-1. sensitive to envvar OPTICKS_SHARED_CACHE_PREFIX
+1. sensitive to envvar OPTICKS_GEOCACHE_PREFIX
 2. if envvar not defined defaults to $HOME/.opticks 
 3. the envvar is subsequently internally set by BOpticksResource::initCachePrefix
 
@@ -356,31 +363,55 @@ NB changes to layout need to be done in triplicate C++/bash/py::
 
 **/
 
-const char* BOpticksResource::ResolveSharedCachePrefix()  // static
+const char* BOpticksResource::ResolveGeoCachePrefix()  // static
 {
-    const char* evalue = SSys::getenvvar(SHARED_CACHE_PREFIX_KEY);    
+    const char* evalue = SSys::getenvvar(GEOCACHE_PREFIX_KEY);    
     return evalue == NULL ?  MakeUserDir(".opticks", NULL) : evalue ; 
 }
-
+const char* BOpticksResource::ResolveRngCachePrefix()  // static
+{
+    const char* evalue = SSys::getenvvar(RNGCACHE_PREFIX_KEY);    
+    return evalue == NULL ?  MakeUserDir(".opticks", NULL) : evalue ; 
+}
 const char* BOpticksResource::ResolveUserCachePrefix()  // static
 {
-    const char* evalue = SSys::getenvvar(USER_CACHE_PREFIX_KEY);    
+    const char* evalue = SSys::getenvvar(USERCACHE_PREFIX_KEY);    
     return evalue == NULL ?  MakeUserDir(".opticks", NULL) : evalue ; 
 }
 
 
-void BOpticksResource::initSharedCachePrefix()
+
+
+void BOpticksResource::initGeoCachePrefix()
 {
-    m_shared_cache_prefix = ResolveSharedCachePrefix();
-    m_res->addDir("shared_cache_prefix", m_shared_cache_prefix );
+    m_geocache_prefix = ResolveGeoCachePrefix();
+    m_res->addDir("geocache_prefix", m_geocache_prefix );
 
     bool overwrite = true ; 
-    int rc = SSys::setenvvar(SHARED_CACHE_PREFIX_KEY, m_shared_cache_prefix, overwrite );  
+    int rc = SSys::setenvvar(GEOCACHE_PREFIX_KEY, m_geocache_prefix, overwrite );  
     // always set for uniformity 
 
     LOG(LEVEL) 
-         << " shared_cache_prefix " << m_shared_cache_prefix  
-         << " key " << SHARED_CACHE_PREFIX_KEY
+         << " geocache_prefix " << m_geocache_prefix  
+         << " key " << GEOCACHE_PREFIX_KEY
+         << " rc " << rc
+         ;   
+ 
+    assert(rc==0); 
+}
+
+void BOpticksResource::initRngCachePrefix()
+{
+    m_rngcache_prefix = ResolveRngCachePrefix();
+    m_res->addDir("rngcache_prefix", m_rngcache_prefix );
+
+    bool overwrite = true ; 
+    int rc = SSys::setenvvar(RNGCACHE_PREFIX_KEY, m_rngcache_prefix, overwrite );  
+    // always set for uniformity 
+
+    LOG(LEVEL) 
+         << " rngcache_prefix " << m_rngcache_prefix  
+         << " key " << RNGCACHE_PREFIX_KEY
          << " rc " << rc
          ;   
  
@@ -389,16 +420,16 @@ void BOpticksResource::initSharedCachePrefix()
 
 void BOpticksResource::initUserCachePrefix()
 {
-    m_user_cache_prefix = ResolveUserCachePrefix();
-    m_res->addDir("user_cache_prefix", m_user_cache_prefix );
+    m_usercache_prefix = ResolveUserCachePrefix();
+    m_res->addDir("usercache_prefix", m_usercache_prefix );
 
     bool overwrite = true ; 
-    int rc = SSys::setenvvar(USER_CACHE_PREFIX_KEY, m_user_cache_prefix, overwrite );  
+    int rc = SSys::setenvvar(USERCACHE_PREFIX_KEY, m_usercache_prefix, overwrite );  
     // always set for uniformity 
 
     LOG(LEVEL) 
-         << " user_cache_prefix " << m_user_cache_prefix  
-         << " key " << USER_CACHE_PREFIX_KEY
+         << " usercache_prefix " << m_usercache_prefix  
+         << " key " << USERCACHE_PREFIX_KEY
          << " rc " << rc
          ;   
  
@@ -534,8 +565,8 @@ const char* BOpticksResource::getDebuggingTreedir(int argc, char** argv)
 }
 
 
-const char* BOpticksResource::GeocacheDir(){    return MakePath(ResolveSharedCachePrefix(), "geocache",  NULL); }
-const char* BOpticksResource::RNGCacheDir(){    return MakePath(ResolveSharedCachePrefix(), "rngcache",  NULL); }
+const char* BOpticksResource::GeocacheDir(){    return MakePath(ResolveGeoCachePrefix(), "geocache",  NULL); }
+const char* BOpticksResource::RNGCacheDir(){    return MakePath(ResolveRngCachePrefix(), "rngcache",  NULL); }
 const char* BOpticksResource::RNGDir(){         return MakePath(RNGCacheDir(), "RNG", NULL); }
 
 const char* BOpticksResource::RuncacheDir(){    return MakePath(ResolveUserCachePrefix(), "runcache",  NULL); }
