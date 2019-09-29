@@ -24,14 +24,49 @@ opticks-
 sdir=$(pwd)
 name=$(basename $sdir)
 bdir=/tmp/$USER/opticks/examples/$name/build 
+idir=/tmp/$USER/opticks/examples/$name
+
+
+go-cmake-with-source-tree()
+{
+   local pfx=$1
+   local sdir=$2
+   cmake $sdir \
+        -DCMAKE_BUILD_TYPE=Debug \
+        -DCMAKE_PREFIX_PATH=$pfx/externals \
+        -DCMAKE_INSTALL_PREFIX=$pfx \
+        -DOPTICKS_PREFIX=$pfx \
+        -DCMAKE_MODULE_PATH=$(opticks-home)/cmake/Modules 
+}
+
+go-cmake-from-install-tree()
+{
+   local pfx=$1
+   local sdir=$2
+   local idir=$3
+
+   cmake $sdir \
+        -DCMAKE_BUILD_TYPE=Debug \
+        -DCMAKE_PREFIX_PATH="$pfx/externals;$pfx" \
+        -DCMAKE_MODULE_PATH=$pfx/cmake/Modules \
+        -DCMAKE_INSTALL_PREFIX=$idir \
+        $* 
+
+}
+
+
+#pfx=$(opticks-;opticks-prefix)        
+pfx=$(okdist-;okdist-release-prefix)   
+
+echo pfx $pfx
+
 
 rm -rf $bdir 
 if [ ! -d "$bdir" ]; then 
-    mkdir -p $bdir && cd $bdir 
-    cmake $sdir -DCMAKE_BUILD_TYPE=Debug \
-                -DCMAKE_PREFIX_PATH=$(opticks-prefix)/externals \
-                -DCMAKE_INSTALL_PREFIX=$(opticks-prefix) \
-                -DCMAKE_MODULE_PATH=$(opticks-home)/cmake/Modules 
+   mkdir -p $bdir && cd $bdir 
+   #go-cmake-with-source-tree $pfx $sdir $idir
+   #go-cmake-from-install-tree $pfx $sdir $idir
+   go-cmake-from-install-tree $pfx $sdir $idir -DGeant4_DIR=$(opticks-dir)/externals/lib64/Geant4-10.4.2
 else
    cd $bdir 
 fi 
@@ -43,17 +78,18 @@ rc=$?
 
 make install   
 
+#exit 0
+
 
 g4-
 g4-export
 
-arch=$(uname) 
-exe=$(opticks-prefix)/lib/$name
+exe=$idir/lib/$name
 echo $exe
 
 
 if [ -n "$DEBUG" ]; then 
-    case $arch in 
+    case $(uname) in 
         Linux)  gdb $exe ;;
         Darwin) lldb $exe  ;;
     esac

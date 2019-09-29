@@ -19,7 +19,8 @@
 
 scan-source(){ echo $BASH_SOURCE ; }
 scan-vi(){ vi $(scan-source)  ; }
-scan-env(){  olocal- ; opticks- ; }
+#scan-env(){  olocal- ; opticks- ; }
+scan-env(){  echo -n ; }
 scan-usage(){ cat << EOU
 
 scan

@@ -38,6 +38,18 @@ if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
 endif()
 
 
+if(NOT OPTICKS_PREFIX)
+    get_filename_component(OBO_MODULE_DIR ${CMAKE_CURRENT_LIST_FILE} DIRECTORY)
+    get_filename_component(OBO_MODULE_DIRDIR ${OBO_MODULE_DIR} DIRECTORY)
+    get_filename_component(OBO_MODULE_DIRDIRDIR ${OBO_MODULE_DIRDIR} DIRECTORY)
+    set(OPTICKS_PREFIX ${OBO_MODULE_DIRDIRDIR})
+    # this gives correct prefix when this module is included from installed tree
+    # but when included from source tree it gives home
+    # hence use -DOPTICKS_PREFIX=$(om-prefix) for cmake internal source builds
+    # so that OPTICKS_PREFIX is always correct
+endif()
+
+
 include(CTest)
 #add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND})
 
@@ -77,7 +89,18 @@ set(BUILD_SHARED_LIBS ON)
 
 
 if(UNIX AND NOT APPLE)
-set(CMAKE_INSTALL_RPATH "$ORIGIN/../lib64:$ORIGIN/../externals/lib:$ORIGIN/../externals/lib64:$ORIGIN/../externals/OptiX/lib64")
+    if(CMAKE_INSTALL_PREFIX STREQUAL ${OPTICKS_PREFIX})
+       set(CMAKE_INSTALL_RPATH "$ORIGIN/../lib64:$ORIGIN/../externals/lib:$ORIGIN/../externals/lib64:$ORIGIN/../externals/OptiX/lib64")
+    else()
+       set(ABSOLUTE_INSTALL_RPATH
+                     ${OPTICKS_PREFIX}/lib64  
+                     ${OPTICKS_PREFIX}/externals/lib  
+                     ${OPTICKS_PREFIX}/externals/lib64  
+                     ${OPTICKS_PREFIX}/externals/OptiX/lib64  
+          ) 
+       set(CMAKE_INSTALL_RPATH  "${ABSOLUTE_INSTALL_RPATH}")
+    endif()
+
 elseif(APPLE)
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 endif()

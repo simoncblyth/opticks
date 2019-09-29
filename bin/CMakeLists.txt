@@ -5,9 +5,10 @@ include(OpticksBuildOptions)
 
 # increasing dependency order
 set(SCRIPTS
-   release.bash
+   opticks-release.bash
    o.sh
    tboolean.sh
+   scan.bash
 )
 
 install(PROGRAMS ${SCRIPTS}   DESTINATION bin)

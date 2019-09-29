@@ -21,20 +21,31 @@ class OKDist(Dist):
 
     305M    /home/blyth/local/opticks/Opticks-0.0.0_alpha.tar
 
+
     """
     exclude_dir_name = [ '.git', 
                          '.hg', 
-                         'cmake',     # cmake exported targets and config
-                         'pkgconfig',  
                          'Geant4-10.2.1', 
                          'Geant4-10.4.2']  
+
+    exclude_dir_name_prev = [ 
+                         'cmake',     # cmake exported targets and config
+                         'pkgconfig',  
+                           ]   
 
     bases = ['include', 
              'lib',                  # order 400 executables
              'lib64',              
+             'externals/share/bcm',  #  cmake infrastructure enhancement 
              'externals/lib',
              'externals/lib64',
              'externals/OptiX/lib64', 
+             'externals/glm/glm',
+             'externals/plog/include',
+             'externals/include/OpenMesh',
+             'externals/include/assimp',
+             'externals/include/YoctoGL',
+             'externals/include/DualContouringSample',
              'installcache/PTX', 
              'gl',                   # shaders 
              'tests',                # tree of CTestTestfile.cmake  
@@ -43,6 +54,7 @@ class OKDist(Dist):
              'bin',
              'opticksaux',           # a few example GDML files
              'metadata',
+             'cmake/Modules',        # infraastructure for Finding, configuring etc..
              ]
 
     bases_g4 = [

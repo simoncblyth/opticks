@@ -1,6 +1,15 @@
 
 set(OpenMesh_MODULE "${CMAKE_CURRENT_LIST_FILE}")
-set(OpenMesh_PREFIX "${CMAKE_INSTALL_PREFIX}/externals")
+
+if(NOT OPTICKS_PREFIX)
+    # this works when this module is included from installed tree
+    get_filename_component(OpenMesh_MODULE_DIR ${CMAKE_CURRENT_LIST_FILE} DIRECTORY)
+    get_filename_component(OpenMesh_MODULE_DIRDIR ${OpenMesh_MODULE_DIR} DIRECTORY)
+    get_filename_component(OpenMesh_MODULE_DIRDIRDIR ${OpenMesh_MODULE_DIRDIR} DIRECTORY)
+    set(OPTICKS_PREFIX ${OpenMesh_MODULE_DIRDIRDIR})
+endif()
+
+set(OpenMesh_PREFIX "${OPTICKS_PREFIX}/externals")
 
 find_path( OpenMesh_INCLUDE_DIR
            NAMES "OpenMesh/Core/Mesh/TriMesh_ArrayKernelT.hh"

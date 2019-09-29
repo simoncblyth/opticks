@@ -1,6 +1,19 @@
 
 set(G4_MODULE "${CMAKE_CURRENT_LIST_FILE}")
-set(G4_PREFIX "${CMAKE_INSTALL_PREFIX}/externals")
+
+if(NOT G4_PREFIX)
+    # this works when this module is included from installed tree
+    get_filename_component(G4_MODULE_DIR ${CMAKE_CURRENT_LIST_FILE} DIRECTORY)
+    get_filename_component(G4_MODULE_DIRDIR ${G4_MODULE_DIR} DIRECTORY)
+    get_filename_component(G4_MODULE_DIRDIRDIR ${G4_MODULE_DIRDIR} DIRECTORY)
+    set(G4_PREFIX      ${G4_MODULE_DIRDIRDIR}/externals)
+endif()
+
+# huh : the G4_PREFIX is doing nothing to help with
+# finding, but its used below 
+# the below finds Geant4 using 
+#     -DGeant4_DIR=$(opticks-dir)/externals/lib64/Geant4-10.2.1
+
 
 find_package(Geant4 CONFIG QUIET)   
 
@@ -20,11 +33,16 @@ if(G4_FOUND)
    endforeach()
 else()
    message(STATUS "FindG4.cmake:Geant4 NOT-FOUND ")
+   message(STATUS "G4_MODULE      : ${G4_MODULE} ")
+   message(STATUS "G4_PREFIX      : ${G4_PREFIX} ")
 endif()
 
 
 if(Geant4_FOUND)
+
   set(G4_DIR         ${Geant4_DIR})
+  get_filename_component(G4_DIRDIR ${G4_DIR} DIRECTORY)
+
   set(G4_VERSION     ${Geant4_VERSION})
   set(G4_VERSION_INTEGER ${Geant4_VERSION_INTEGER})
   set(G4_INCLUDE_DIR ${Geant4_INCLUDE_DIR})
@@ -35,9 +53,10 @@ if(Geant4_FOUND)
   set(_targets)
   foreach(_lib ${Geant4_LIBRARIES})
      set(_loc "${_lib}-NOTFOUND" ) # https://cmake.org/pipermail/cmake/2007-February/012966.html     
+     #message(STATUS "_lib ${_lib} ") 
      find_library( _loc 
           NAMES ${_lib}
-          PATHS ${G4_PREFIX}/lib )
+          PATHS ${G4_DIRDIR} )
 
      if(_loc)
          set(_tgt "Opticks::${_lib}")
@@ -46,7 +65,7 @@ if(Geant4_FOUND)
          set_target_properties(${_tgt} PROPERTIES IMPORTED_LOCATION "${_loc}")
          list(APPEND _targets ${_tgt})
      else()
-         message(FATAL_ERROR "failed to locate expected lib ${_lib}")
+         message(FATAL_ERROR "failed to locate expected lib ${_lib}  Geant4_DIR : ${Geant4_DIR}   G4_DIRDIR : ${G4_DIRDIR} ")
      endif()
   endforeach()  
 
@@ -79,10 +98,12 @@ endif()
 
 
 if(G4_VERBOSE)
+  message(STATUS "OPTICKS_PREFIX     : ${OPTICKS_PREFIX} " )
   message(STATUS "G4_MODULE          : ${G4_MODULE} " )
   message(STATUS "G4_PREFIX          : ${G4_PREFIX} " )
   message(STATUS "G4_FOUND           : ${G4_FOUND} " )
   message(STATUS "G4_DIR             : ${G4_DIR} " )
+  message(STATUS "G4_DIRDIR          : ${G4_DIRDIR} " )
   message(STATUS "G4_VERSION         : ${G4_VERSION} " )
   message(STATUS "G4_VERSION_INTEGER : ${G4_VERSION_INTEGER} " )
   message(STATUS "G4_INCLUDE_DIR     : ${G4_INCLUDE_DIR} " )

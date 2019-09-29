@@ -1,13 +1,13 @@
-release-source(){ echo $BASH_SOURCE ; }
-release-vi(){     vi $BASH_SOURCE ; } 
-release-(){       source $BASH_SOURCE ; }
+opticks-release-source(){ echo $BASH_SOURCE ; }
+opticks-release-vi(){     vi $BASH_SOURCE ; } 
+opticks-release-(){       source $BASH_SOURCE ; }
 
-release-dir(){    echo $(dirname $BASH_SOURCE) ; }
-release-prefix(){ echo $(dirname $(dirname $BASH_SOURCE)) ; }
-release-cd(){     cd $(release-prefix) ; }
+opticks-release-dir(){    echo $(dirname $BASH_SOURCE) ; }
+opticks-release-prefix(){ echo $(dirname $(dirname $BASH_SOURCE)) ; }
+opticks-release-cd(){     cd $(opticks-release-prefix) ; }
 
 
-release-usage(){ cat << EOU
+opticks-release-usage(){ cat << EOU
 $FUNCNAME
 ============
 
@@ -32,13 +32,13 @@ the shared cache.
 FUNCTIONS
 ----------
 
-release-main
+opticks-release-main
     environment setup function which is run on sourcing this script
 
-release-check
+opticks-release-check
     dumps environment 
 
-release-test
+opticks-release-test
     runs more than 400 tests of the Opticks distribution using ctest
     roughly 20% of them will fail if Geant4 libraries or data are not found.
     Many tests will also fail if access to the shared cache with 
@@ -47,18 +47,18 @@ release-test
 EOU
 }
 
-release-info(){ cat << EOI
+opticks-release-info(){ cat << EOI
 $FUNCNAME
 ============
 
-  release-source : $(release-source)
-  release-dir    : $(release-dir)
-  release-prefix : $(release-prefix)
+  opticks-release-source : $(opticks-release-source)
+  opticks-release-dir    : $(opticks-release-dir)
+  opticks-release-prefix : $(opticks-release-prefix)
 
 EOI
 }
 
-release-check(){ 
+opticks-release-check(){ 
    local msg="=== $FUNCNAME :"
 
    echo $msg PATH 
@@ -80,29 +80,29 @@ release-check(){
 
 }
 
-release-main(){
+opticks-release-main(){
 
-   export OPTICKS_INSTALL_PREFIX=$(release-prefix)   
+   export OPTICKS_INSTALL_PREFIX=$(opticks-release-prefix)   
 
-   export PATH=$(release-prefix)/bin:$(release-prefix)/lib:$(release-prefix)/py/opticks/ana:$PATH 
+   export PATH=$(opticks-release-prefix)/bin:$(opticks-release-prefix)/lib:$(opticks-release-prefix)/py/opticks/ana:$PATH 
 
-   export PYTHONPATH=$(release-prefix)/py:$PYTHONPATH
+   export PYTHONPATH=$(opticks-release-prefix)/py:$PYTHONPATH
 
-   source $(release-prefix)/integration/integration.bash   ## bash precursor hookup, eg tboolean- which is used by some tests
+   source $(opticks-release-prefix)/integration/integration.bash   ## bash precursor hookup, eg tboolean- which is used by some tests
 
    olocal-(){ echo -n ; }   ## many bash env functions expect this function to be defined
 }
 
-release-logdir(){ echo $HOME/.opticks/logs ; }
+opticks-release-logdir(){ echo $HOME/.opticks/logs ; }
 
-release-test()
+opticks-release-test()
 {
     local proj=$1
     local msg="== $FUNCNAME :"
     local iwd=$PWD
 
-    local ldir=$(release-logdir)
-    local tdir=$(release-prefix)/tests
+    local ldir=$(opticks-release-logdir)
+    local tdir=$(opticks-release-prefix)/tests
     local tlog
 
     if [ -n "$proj" -a -d "$tdir/$proj" ]; then
@@ -134,5 +134,5 @@ release-test()
 }
 
 
-release-main
+opticks-release-main
 

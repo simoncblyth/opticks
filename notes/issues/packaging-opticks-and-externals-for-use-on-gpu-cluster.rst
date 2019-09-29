@@ -8,6 +8,222 @@ Strategy
 2. DONE : develop python + bash scripts to make tarball, okdist-- 
 
 
+whats left for release ?
+-------------------------
+
+* scan- is handy and fairly standalone, want to get it into the release
+
+  * interate on that from "su - simon" account first 
+
+* structure of includes
+
+  * probably need to install flattened like /home/blyth/local/opticks/externals/include/Geant4/
+  * see examples/UseG4
+
+* revive opticks-config
+
+  * do this with bash functions inside release.bash which should be renamed to opticks.bash 
+  * check it with simple non-CMake Makefile based building against the binary release using opticks-config
+  * this is a stand in for CMT, as would rather not touch that 
+
+* investigate CMake based building against the release
+
+  * what needs to be included in the distribution for this to work ? 
+  * lib64/cmake has tree of .cmake with the exported targets
+  * examples/Geant4/CerenkovMinimal can be the canary 
+
+* release-test from other users account on GPU cluster
+
+  * looking for permissions problems
+
+* single top level setup script 
+
+  * avoid users duplicating three source lines  
+  * need a better path to put it in : /hpcfs/opticks/ ?
+
+
+
+DONE
+-------
+
+1. replace all use of CMAKE_INSTALL_PREFIX in the cmake/Modules/FindXX.cmake with OPTICKS_PREFIX
+   and detect that automatically for FindXX.cmake modules that are picked up from install tree. 
+
+   * this allows the cmake/Modules/FindXX.cmake to work from user projects, 
+     where CMAKE_INSTALL_PREFIX is not OPTICKS_PREFIX 
+
+   * this means cmake usage from source tree needs to specify -DOPTICKS_PREFIX=$(om-prefix) 
+     as the auto determined one is opticks-home not prefix
+
+2. cmake/Modules/OpticksBuildOptions.cmake : fixed runpath setup to use absolute paths when a foreign install is detected
+
+
+ISSUES
+----------
+
+* currently install dir has no automatic cleaning, so for example
+  old projects and headers languish there unless manually deleted before
+
+* examples/Geant4/CerenkovMinimal/go.sh 
+
+  needs access to OpticksBuildOptions.cmake and FindG4.cmake etc from  cmake/Modules
+
+  * can i combine :  cmake/Modules with lib64/cmake ??  
+
+    * decided against : simpler to keep generated and edited things separate
+
+
+examples/Geant4/CerenkovMinimal/go.sh : CMake without source tree
+---------------------------------------------------------------------
+
+1. installed cmake/Modules to avoid use of opticks-home
+
+2. FindGLM.cmake is using CMAKE_INSTALL_PREFIX : which doesnt 
+   work when thats pointing elsewhere 
+
+
+
+::
+
+     29 go-cmake-0()
+     30 {
+     31    local sdir=$1
+     32    cmake $sdir \
+     33         -DCMAKE_BUILD_TYPE=Debug \
+     34         -DCMAKE_PREFIX_PATH=$(opticks-prefix)/externals \
+     35         -DCMAKE_INSTALL_PREFIX=$(opticks-prefix) \
+     36         -DCMAKE_MODULE_PATH=$(opticks-home)/cmake/Modules
+     37 }
+     38 
+     39 go-cmake-without-source-tree()
+     40 {
+     41    local sdir=$1
+     42    cmake $sdir \
+     43         -DCMAKE_BUILD_TYPE=Debug \
+     44         -DCMAKE_PREFIX_PATH="$(opticks-prefix)/externals;$(opticks-prefix)" \
+     45         -DCMAKE_INSTALL_PREFIX=/tmp/$FUNCNAME \
+     46         -DCMAKE_MODULE_PATH=$(opticks-prefix)/cmake/Modules
+     47 }
+     48 
+
+
+
+
+RUNPATH ORIGIN setup not going to work
+
+* as executable not in expected place relative to libs 
+* 
+
+::
+
+    -- Installing: /tmp/go-cmake-without-source-tree/lib/CerenkovMinimal
+    -- Set runtime path of "/tmp/go-cmake-without-source-tree/lib/CerenkovMinimal" to "$ORIGIN/../lib64:$ORIGIN/../externals/lib:$ORIGIN/../externals/lib64:$ORIGIN/../externals/OptiX/lib64"
+    [blyth@localhost CerenkovMinimal]$ 
+    [blyth@localhost CerenkovMinimal]$ 
+    [blyth@localhost CerenkovMinimal]$ /tmp/go-cmake-without-source-tree/lib/CerenkovMinimal
+    /tmp/go-cmake-without-source-tree/lib/CerenkovMinimal: error while loading shared libraries: libG4OK.so: cannot open shared object file: No such file or directory
+
+
+* if CMAKE_INSTALL_PREFIX does not match the determined or provided OPTICKS_PREFIX can change to absolute runtime path 
+
+
+
+
+Tryinh to run from release missng BCM
+---------------------------------------------
+
+* fixed by installing : externals/share/bcm
+
+::
+
+    [blyth@localhost opticks]$ bcm-ls
+    /home/blyth/local/opticks/externals/share/bcm/cmake/BCMConfig.cmake
+    /home/blyth/local/opticks/externals/share/bcm/cmake/BCMDeploy.cmake
+    /home/blyth/local/opticks/externals/share/bcm/cmake/BCMExport.cmake
+    /home/blyth/local/opticks/externals/share/bcm/cmake/BCMFuture.cmake
+    /home/blyth/local/opticks/externals/share/bcm/cmake/BCMIgnorePackage.cmake
+    /home/blyth/local/opticks/externals/share/bcm/cmake/BCMInstallTargets.cmake
+    /home/blyth/local/opticks/externals/share/bcm/cmake/BCMPkgConfig.cmake
+    /home/blyth/local/opticks/externals/share/bcm/cmake/BCMProperties.cmake
+    /home/blyth/local/opticks/externals/share/bcm/cmake/BCMSetupVersion.cmake
+    /home/blyth/local/opticks/externals/share/bcm/cmake/BCMTest.cmake
+    /home/blyth/local/opticks/externals/share/bcm/cmake/BCMToSnakeCase.cmake
+    /home/blyth/local/opticks/externals/share/bcm/cmake/version.hpp
+    [blyth@localhost opticks]$ opticks-
+
+
+Running from release fails to find G4
+-----------------------------------------
+
+* geant4 libs are excluded from the release, so 
+  need to communicate the alt location to the build ? 
+
+
+
+
+opticks-config
+------------------
+
+::
+
+    [blyth@localhost bin]$ opticks-f opticks-config
+    ./cmake/Modules/OpticksConfigureConfigScript.cmake:# - Script for configuring and installing opticks-config script
+    ./cmake/Modules/OpticksConfigureConfigScript.cmake:# The opticks-config script provides an sh based interface to provide
+    ./cmake/Modules/OpticksConfigureConfigScript.cmake:      ${CMAKE_SOURCE_DIR}/opticks-config.in
+    ./cmake/Modules/OpticksConfigureConfigScript.cmake:      ${PROJECT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/opticks-config
+    ./cmake/Modules/OpticksConfigureConfigScript.cmake:      ${PROJECT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/opticks-config
+    ./cmake/Modules/OpticksConfigureConfigScript.cmake:  install(FILES ${PROJECT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/opticks-config
+    ./cmake/Modules/inactive/FindOpticks.cmake:find_program(OPTICKS_CONFIG NAMES opticks-config
+    ./cudarap/cudarap.bash:    opticks-configure
+    ./okconf/CMakeLists.txt:# generate opticks-config sh script into lib dir
+    ./oldopticks.bash:   [ -f "$bdir/CMakeCache.txt" ] && echo $msg configured already use opticks-configure to wipe build dir and re-configure && return  
+    ./oldopticks.bash:opticks-configure()
+
+
+
+release-test fail : tboolean- 
+--------------------------------
+
+::
+
+    /hpcfs/juno/junogpu/blyth/local/opticks/releases/Opticks-0.0.0_alpha/x86_64-slc7-gcc48-geant4_10_04_p02-dbg/bin/tboolean.sh: line 74: tboolean-: command not found
+
+
+* try making tboolean.sh more standalone at accessing tboolean.bash 
+* for release running do not want the full opticks- machinery  
+
+
+release testing
+-------------------
+
+::
+
+    user_setup()
+    {
+        export HOME=/hpcfs/juno/junogpu/$USER
+
+        ## hmm this works avoiding afs permissions issues with original HOME
+        ## but seems not a good idea as liable to confuse  
+        ## TODO: switch all use of HOME to be sensitive to OPTICKS_USER_HOME with HOME as fallback default 
+        ##      so can switch that 
+
+        export TMP=$HOME/tmp
+        ## /tmp is a black hole as not same filesystem on GPU cluster and gateway  
+
+
+        source /hpcfs/juno/junogpu/blyth/local/opticks/externals/envg4.bash
+
+        ##source /cvmfs/opticks.ihep.ac.cn/ok/releases/Opticks-0.0.0_alpha/x86_64-slc7-gcc48-geant4_10_04_p02-dbg/bin/release.bash  # real /cvmfs
+        source /hpcfs/juno/junogpu/blyth/local/opticks/releases/Opticks-0.0.0_alpha/x86_64-slc7-gcc48-geant4_10_04_p02-dbg/bin/release.bash
+
+        source /hpcfs/juno/junogpu/blyth/opticks.ihep.ac.cn/sc/releases/OpticksSharedCache-0.0.0_alpha/bin/sharedcache.bash
+    }
+
+
+
+
+
+
 Naming the Opticks distribution
 --------------------------------
 
@@ -15,6 +231,8 @@ Naming the Opticks distribution
 * Not OptiX as will incorporate that in the dist, 
   so its covered by the Opticks version 
 * optixrap for 6.5 and 7.0 need to be totally different
+
+
 
 
 Excluding G4 from distro and getting it as a "foreign" external 

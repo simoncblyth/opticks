@@ -481,6 +481,7 @@ om-cmake-okconf()
        -G "$(om-cmake-generator)" \
        -DCMAKE_BUILD_TYPE=$(opticks-buildtype) \
        -DCMAKE_PREFIX_PATH=$(om-prefix)/externals \
+       -DOPTICKS_PREFIX=$(om-prefix) \
        -DCMAKE_INSTALL_PREFIX=$(om-prefix) \
        -DCMAKE_MODULE_PATH=$(om-home)/cmake/Modules \
        -DOptiX_INSTALL_DIR=$(opticks-optix-install-dir) \
@@ -501,6 +502,7 @@ om-cmake()
     cmake $sdir \
        -G "$(om-cmake-generator)" \
        -DCMAKE_BUILD_TYPE=$(opticks-buildtype) \
+       -DOPTICKS_PREFIX=$(om-prefix) \
        -DCMAKE_PREFIX_PATH=$(om-prefix)/externals \
        -DCMAKE_INSTALL_PREFIX=$(om-prefix) \
        -DCMAKE_MODULE_PATH=$(om-home)/cmake/Modules 

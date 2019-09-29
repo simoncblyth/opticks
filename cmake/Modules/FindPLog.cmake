@@ -1,6 +1,5 @@
 
 set(PLog_MODULE ${CMAKE_CURRENT_LIST_FILE})
-set(PLog_PREFIX ${CMAKE_INSTALL_PREFIX}/externals)
 set(PLog_VERBOSE OFF)
 
 #[=[
@@ -9,10 +8,19 @@ handling multiple versions of opticks that want to share externals
 #]=]
 
 
+if(NOT OPTICKS_PREFIX)
+    # this works when this module is included from installed tree
+    get_filename_component(PLog_MODULE_DIR ${CMAKE_CURRENT_LIST_FILE} DIRECTORY)
+    get_filename_component(PLog_MODULE_DIRDIR ${PLog_MODULE_DIR} DIRECTORY)
+    get_filename_component(PLog_MODULE_DIRDIRDIR ${PLog_MODULE_DIRDIR} DIRECTORY)
+    set(OPTICKS_PREFIX ${PLog_MODULE_DIRDIRDIR})
+endif()
+
+
 find_path(
     PLog_INCLUDE_DIR 
     NAMES "plog/Log.h"
-    PATHS "${PLog_PREFIX}/plog/include"
+    PATHS "${OPTICKS_PREFIX}/externals/plog/include"
 )
 
 
@@ -35,7 +43,7 @@ endif()
 
 if(PLog_VERBOSE)
     message(STATUS "FindPLog.cmake : PLog_MODULE      : ${PLog_MODULE} ")
-    message(STATUS "FindPLog.cmake : PLog_PREFIX      : ${PLog_PREFIX} ")
+    message(STATUS "FindPLog.cmake : OPTICKS_PREFIX   : ${OPTICKS_PREFIX} ")
     message(STATUS "FindPLog.cmake : PLog_INCLUDE_DIR : ${PLog_INCLUDE_DIR} ")
     message(STATUS "FindPLog.cmake : PLog_FOUND       : ${PLog_FOUND}  ")
 endif()

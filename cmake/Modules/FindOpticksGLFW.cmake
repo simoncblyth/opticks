@@ -1,7 +1,18 @@
 
 set(OpticksGLFW_MODULE "${CMAKE_CURRENT_LIST_FILE}")
-set(OpticksGLFW_PREFIX "${CMAKE_INSTALL_PREFIX}/externals")
+
+if(NOT OPTICKS_PREFIX)
+    # this works when this module is included from installed tree
+    get_filename_component(OpticksGLFW_MODULE_DIR ${CMAKE_CURRENT_LIST_FILE} DIRECTORY)
+    get_filename_component(OpticksGLFW_MODULE_DIRDIR ${OpticksGLFW_MODULE_DIR} DIRECTORY)
+    get_filename_component(OpticksGLFW_MODULE_DIRDIRDIR ${OpticksGLFW_MODULE_DIRDIR} DIRECTORY)
+    set(OPTICKS_PREFIX ${OpticksGLFW_MODULE_DIRDIRDIR})
+endif()
+
+
+set(OpticksGLFW_PREFIX "${OPTICKS_PREFIX}/externals")
 set(OpticksGLFW_ALT "ON")
+
 
 find_path( OpticksGLFW_INCLUDE_DIR
            NAMES GLFW/glfw3.h

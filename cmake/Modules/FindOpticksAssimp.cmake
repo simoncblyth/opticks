@@ -1,6 +1,16 @@
 
 set(OpticksAssimp_MODULE "${CMAKE_CURRENT_LIST_FILE}")
-set(OpticksAssimp_PREFIX "${CMAKE_INSTALL_PREFIX}/externals")
+
+if(NOT OPTICKS_PREFIX)
+    # this works when this module is included from installed tree
+    get_filename_component(OpticksAssimp_MODULE_DIR ${CMAKE_CURRENT_LIST_FILE} DIRECTORY)
+    get_filename_component(OpticksAssimp_MODULE_DIRDIR ${OpticksAssimp_MODULE_DIR} DIRECTORY)
+    get_filename_component(OpticksAssimp_MODULE_DIRDIRDIR ${OpticksAssimp_MODULE_DIRDIR} DIRECTORY)
+    set(OPTICKS_PREFIX ${OpticksAssimp_MODULE_DIRDIRDIR})
+endif()
+
+set(OpticksAssimp_PREFIX "${OPTICKS_PREFIX}/externals")
+
 
 find_path(
     OpticksAssimp_INCLUDE_DIR

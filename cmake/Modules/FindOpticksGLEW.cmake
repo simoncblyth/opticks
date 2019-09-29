@@ -1,6 +1,15 @@
 
 set(OpticksGLEW_MODULE "${CMAKE_CURRENT_LIST_FILE}")
-set(OpticksGLEW_PREFIX "${CMAKE_INSTALL_PREFIX}/externals")
+
+if(NOT OPTICKS_PREFIX)
+    # this works when this module is included from installed tree
+    get_filename_component(OpticksGLEW_MODULE_DIR ${CMAKE_CURRENT_LIST_FILE} DIRECTORY)
+    get_filename_component(OpticksGLEW_MODULE_DIRDIR ${OpticksGLEW_MODULE_DIR} DIRECTORY)
+    get_filename_component(OpticksGLEW_MODULE_DIRDIRDIR ${OpticksGLEW_MODULE_DIRDIR} DIRECTORY)
+    set(OPTICKS_PREFIX ${OpticksGLEW_MODULE_DIRDIRDIR})
+endif()
+
+set(OpticksGLEW_PREFIX "${OPTICKS_PREFIX}/externals")
 
 find_path( OpticksGLEW_INCLUDE_DIR
            NAMES "GL/glew.h"

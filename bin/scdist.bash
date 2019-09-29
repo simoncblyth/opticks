@@ -93,7 +93,7 @@ Workstation : Test Environment setup for use of Opticks binary distribution and 
 
     source /home/blyth/local/opticks/externals/envg4.bash
 
-    source /cvmfs/opticks.ihep.ac.cn/ok/releases/Opticks-0.0.0_alpha/x86_64-centos7-gcc48-geant4_10_04_p02-dbg/bin/release.bash  # fake /cvmfs
+    source /cvmfs/opticks.ihep.ac.cn/ok/releases/Opticks-0.0.0_alpha/x86_64-centos7-gcc48-geant4_10_04_p02-dbg/bin/opticks-release.bash  # fake /cvmfs
 
     source /opticks/opticks.ihep.ac.cn/sc/releases/OpticksSharedCache-0.0.0_alpha/bin/sharedcache.bash
 
@@ -179,7 +179,7 @@ scdist-create()
 
    echo $msg install setup script
    mkdir -p bin
-   cp $(opticks-home)/bin/sharedcache.bash bin/
+   cp $(opticks-home)/bin/opticks-sharedcache.bash bin/
 
    echo $msg write metadata
    scdist-metadata

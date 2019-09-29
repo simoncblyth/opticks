@@ -217,6 +217,14 @@ okdist-install-tests()
    CTestTestfile.py $bdir --dest $dest
 }
 
+okdist-install-cmake-modules()
+{
+   opticks-
+   local home=$(opticks-home)
+   local dest=$(opticks-dir)
+
+   CMakeModules.py --home $home --dest $dest
+}
 
 okdist-metadata()
 {
@@ -242,6 +250,9 @@ okdist-create()
 
    echo $msg install tests
    okdist-install-tests 
+
+   echo $msg install cmake/Modules 
+   okdist-install-cmake-modules 
 
    echo $msg create tarball
    okdist.py --distprefix $(okdist-prefix) --distname $(okdist-name) 
