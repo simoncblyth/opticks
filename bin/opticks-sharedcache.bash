@@ -19,6 +19,19 @@ Configure access to the shared cache by including a line in your ~/.bashrc simil
    source /hpcfs/juno/junogpu/blyth/opticks.ihep.ac.cn/sc/releases/OpticksSharedCache-0.0.0_alpha/bin/opticks-sharedcache.bash 
    source                  /opticks/opticks.ihep.ac.cn/sc/releases/OpticksSharedCache-0.0.0_alpha/bin/opticks-sharedcache.bash 
 
+
+FUNCTIONS
+-----------
+
+opticks-sharedcache-main
+    sets two envvars configuring geocache, run on sourcing this script
+
+opticks-sharedcache-unset
+    unsets the two envvars 
+
+opticks-sharedcache-info
+    dump function outputs and envvars
+
 EOU
 }
 
@@ -26,16 +39,24 @@ opticks-sharedcache-info(){ cat << EOI
 $FUNCNAME
 ==========================
 
-  opticks-sharedcache-source : $(opticks-sharedcache-source)
-  opticks-sharedcache-dir    : $(opticks-sharedcache-dir)
-  opticks-sharedcache-prefix : $(opticks-sharedcache-prefix)
+  opticks-sharedcache-source  : $(opticks-sharedcache-source)
+  opticks-sharedcache-dir     : $(opticks-sharedcache-dir)
+  opticks-sharedcache-prefix  : $(opticks-sharedcache-prefix)
+
+  OPTICKS_SHARED_CACHE_PREFIX : $OPTICKS_SHARED_CACHE_PREFIX
+  OPTICKS_KEY                 : $OPTICKS_KEY
 
 EOI
 }
 
+opticks-sharedcache-unset(){
+   unset OPTICKS_SHARED_CACHE_PREFIX
+   unset OPTICKS_KEY
+}
 
 opticks-sharedcache-main(){
 
+   unset OPTICKS_SHARED_CACHE_PREFIX
    export OPTICKS_SHARED_CACHE_PREFIX=$(opticks-sharedcache-prefix)
 
    unset OPTICKS_KEY

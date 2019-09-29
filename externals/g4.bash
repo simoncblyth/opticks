@@ -623,14 +623,14 @@ g4-export-ini()
 g4-envg4-notes(){ cat << EON
 
 g4-envg4
-    generates envg4.bash that exports the G4..DATA envvars and appends to LD_LIBRARY_PATH
+    generates opticks-envg4.bash that exports the G4..DATA envvars and appends to LD_LIBRARY_PATH
     This is done using BASH_SOURCE which makes the Geant4 installation relocatable, 
     assuming the relative paths between which script, data and libs are kept the same.
 
     Then can relocatably setup library and data access with 
     a single absolute path upfront::
 
-        source /path/to/envg4.bash
+        source /path/to/opticks-envg4.bash
 
 EON
 }
@@ -639,7 +639,7 @@ g4-envg4()
 {
     local msg="=== $FUNCNAME :"
     local externals=$OPTICKS_INSTALL_PREFIX/externals
-    local script="envg4.bash"
+    local script="opticks-envg4.bash"
     echo $msg writing script $script to externals $externals/$script
     envg4.py --token here  --prefix $externals --bash  > $externals/$script
     cat $externals/$script

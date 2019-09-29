@@ -200,10 +200,14 @@ GGeo* G4Opticks::translateGeometry( const G4VPhysicalVolume* top )
     assert(idpath);
     LOG(info) << ") Opticks " << idpath ;
 
+    /*
+    cannot do this with shared geocache due to permissions 
+
     const char* gdmlpath = ok->getGDMLPath();   // inside geocache, not SrcGDMLPath from opticksdata
     LOG(info) << "( CGDML" ;
     CGDML::Export( gdmlpath, top ); 
     LOG(info) << ") CGDML" ;
+    */
 
     LOG(info) << "( GGeo instanciate" ;
     bool live = true ;       // <--- for now this ignores preexisting cache in GGeo::init 
@@ -218,11 +222,18 @@ GGeo* G4Opticks::translateGeometry( const G4VPhysicalVolume* top )
     gg->postDirectTranslation(); 
     LOG(info) << ") GGeo::postDirectTranslation " ;
 
+
+    /*
+    again permissions prevents this
+    
     int root = 0 ; 
     const char* gltfpath = ok->getGLTFPath();   // inside geocache
     LOG(info) << "( gltf " ;
     GGeoGLTF::Save(gg, gltfpath, root );
     LOG(info) << ") gltf " ;
+
+    */
+
 
     return gg ; 
 }

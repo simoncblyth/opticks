@@ -18,6 +18,7 @@ whats left for release ?
 * structure of includes
 
   * probably need to install flattened like /home/blyth/local/opticks/externals/include/Geant4/
+  * not needed fpor CMake approach 
   * see examples/UseG4
 
 * revive opticks-config
@@ -26,7 +27,7 @@ whats left for release ?
   * check it with simple non-CMake Makefile based building against the binary release using opticks-config
   * this is a stand in for CMT, as would rather not touch that 
 
-* investigate CMake based building against the release
+* IN PROGRESS : investigate CMake based building against the release
 
   * what needs to be included in the distribution for this to work ? 
   * lib64/cmake has tree of .cmake with the exported targets
@@ -56,6 +57,78 @@ DONE
      as the auto determined one is opticks-home not prefix
 
 2. cmake/Modules/OpticksBuildOptions.cmake : fixed runpath setup to use absolute paths when a foreign install is detected
+
+
+simon CerenkovMinimal test
+---------------------------
+
+* CMake based build completes from a release on fake /cvmfs but get runtime permission problem
+
+::
+
+    [simon@localhost ~]$ cp -r ~blyth/opticks/examples/Geant4/CerenkovMinimal .
+    [simon@localhost CerenkovMinimal]$ ./go-release.sh 
+    pfx /cvmfs/opticks.ihep.ac.cn/ok/releases/Opticks-0.0.0_alpha/x86_64-centos7-gcc48-geant4_10_04_p02-dbg
+    -- The C compiler identification is GNU 4.8.5
+    -- The CXX compiler identification is GNU 4.8.5
+    ...
+    2019-09-29 16:51:24.815 INFO  [31256] [Opticks::loadOriginCacheMeta@1769]  gdmlpath 
+    2019-09-29 16:51:24.816 INFO  [31256] [G4Opticks::translateGeometry@201] ) Opticks /opticks/opticks.ihep.ac.cn/sc/releases/OpticksSharedCache-0.0.0_alpha/geocache/CerenkovMinimal_World_g4live/g4ok_gltf/27d088654714cda61096045ff5eacc02/1
+    2019-09-29 16:51:24.816 INFO  [31256] [G4Opticks::translateGeometry@204] ( CGDML
+    terminate called after throwing an instance of 'boost::filesystem::filesystem_error'
+      what():  boost::filesystem::remove: Permission denied: "/opticks/opticks.ihep.ac.cn/sc/releases/OpticksSharedCache-0.0.0_alpha/geocache/CerenkovMinimal_World_g4live/g4ok_gltf/27d088654714cda61096045ff5eacc02/1/g4ok.gdml"
+    ./go-release.sh: line 33: 31256 Aborted                 (core dumped) $exe
+    [simon@localhost CerenkovMinimal]$ 
+
+    [simon@localhost CerenkovMinimal]$ gdb /tmp/simon/opticks/examples/CerenkovMinimal/lib/CerenkovMinimal
+
+    (gdb) bt
+    #0  0x00007fffe3089207 in raise () from /lib64/libc.so.6
+    #1  0x00007fffe308a8f8 in abort () from /lib64/libc.so.6
+    #2  0x00007fffe39987d5 in __gnu_cxx::__verbose_terminate_handler() () from /lib64/libstdc++.so.6
+    #3  0x00007fffe3996746 in ?? () from /lib64/libstdc++.so.6
+    #4  0x00007fffe3996773 in std::terminate() () from /lib64/libstdc++.so.6
+    #5  0x00007fffe3996993 in __cxa_throw () from /lib64/libstdc++.so.6
+    #6  0x00007fffeb62b309 in (anonymous namespace)::error(bool, boost::filesystem::path const&, boost::system::error_code*, std::string const&) () from /lib64/libboost_filesystem-mt.so.1.53.0
+    #7  0x00007fffeb62b83f in (anonymous namespace)::remove_file_or_directory(boost::filesystem::path const&, boost::filesystem::file_type, boost::system::error_code*) () from /lib64/libboost_filesystem-mt.so.1.53.0
+    #8  0x00007fffeb62c9a0 in boost::filesystem::detail::remove(boost::filesystem::path const&, boost::system::error_code*) () from /lib64/libboost_filesystem-mt.so.1.53.0
+    #9  0x00007fffebb794a7 in boost::filesystem::remove (p=...) at /usr/include/boost/filesystem/operations.hpp:496
+    #10 0x00007fffebb77df3 in BFile::RemoveFile (path=0xd70990 "/opticks/opticks.ihep.ac.cn/sc/releases/OpticksSharedCache-0.0.0_alpha/geocache/CerenkovMinimal_World_g4live/g4ok_gltf/27d088654714cda61096045ff5eacc02/1/g4ok.gdml", sub=0x0, name=0x0)
+        at /home/blyth/opticks/boostrap/BFile.cc:653
+    #11 0x00007ffff792127e in CGDML::Export (path=0xd70990 "/opticks/opticks.ihep.ac.cn/sc/releases/OpticksSharedCache-0.0.0_alpha/geocache/CerenkovMinimal_World_g4live/g4ok_gltf/27d088654714cda61096045ff5eacc02/1/g4ok.gdml", world=0x911ed0) at /home/blyth/opticks/cfg4/CGDML.cc:59
+    #12 0x00007ffff7bd1466 in G4Opticks::translateGeometry (this=0x8b21f0, top=0x911ed0) at /home/blyth/opticks/g4ok/G4Opticks.cc:205
+    #13 0x00007ffff7bd0819 in G4Opticks::setGeometry (this=0x8b21f0, world=0x911ed0, standardize_geant4_materials=true) at /home/blyth/opticks/g4ok/G4Opticks.cc:152
+    #14 0x00000000004187d8 in RunAction::BeginOfRunAction (this=0x8dbeb0) at /home/simon/CerenkovMinimal/RunAction.cc:43
+    #15 0x00007ffff41f42e5 in G4RunManager::RunInitialization (this=0x6f5b50) at /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/run/src/G4RunManager.cc:347
+    #16 0x00007ffff41f3d0f in G4RunManager::BeamOn (this=0x6f5b50, n_event=1, macroFile=0x0, n_select=-1) at /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/run/src/G4RunManager.cc:272
+    #17 0x0000000000419bc2 in G4::beamOn (this=0x7fffffffdaa0, nev=1) at /home/simon/CerenkovMinimal/G4.cc:81
+    #18 0x0000000000419a7f in G4::G4 (this=0x7fffffffdaa0, nev=1) at /home/simon/CerenkovMinimal/G4.cc:69
+    #19 0x0000000000409a40 in main (argc=1, argv=0x7fffffffdc18) at /home/simon/CerenkovMinimal/CerenkovMinimal.cc:26
+    (gdb) 
+
+
+Depends on bash enviromnent with::
+
+    source /home/blyth/local/opticks/externals/opticks-envg4.bash
+    source /cvmfs/opticks.ihep.ac.cn/ok/releases/Opticks-0.0.0_alpha/x86_64-centos7-gcc48-geant4_10_04_p02-dbg/bin/opticks-release.bash
+    source /opticks/opticks.ihep.ac.cn/sc/releases/OpticksSharedCache-0.0.0_alpha/bin/opticks-sharedcache.bash
+
+
+
+Hmm unsetting these gets further, but assumption of geocache and rngcache being siblings not working then::
+
+    [simon@localhost CerenkovMinimal]$ unset OPTICKS_SHARED_CACHE_PREFIX
+    [simon@localhost CerenkovMinimal]$ unset OPTICKS_KEY 
+
+::
+
+    ...
+    2019-09-29 17:11:11.873 INFO  [62619] [OScene::init@182] ]
+    2019-09-29 17:11:11.874 ERROR [62619] [cuRANDWrapper::LoadIntoHostBuffer@652]  MISSING RNG CACHE /home/simon/.opticks/rngcache/RNG/cuRANDWrapper_3000000_0_0.bin
+     create with bash functions cudarap-;cudarap-prepare-installcache 
+     should have been invoked by opticks-prepare-installcache 
+    CerenkovMinimal: /home/blyth/opticks/cudarap/cuRANDWrapper.cc:658: int cuRANDWrapper::LoadIntoHostBuffer(curandState*, unsigned int): Assertion `0' failed.
+
 
 
 ISSUES

@@ -31,7 +31,7 @@ Workflow to publish a shared cache
 
    su - simon 
 
-   release-test
+   opticks-release-test
 
 5. workstation: copy tarball to remote node for publishing::
 
@@ -68,13 +68,13 @@ Environment setup for use of Opticks binary distribution and shared cache from G
 
     source /hpcfs/juno/junogpu/blyth/local/opticks/externals/envg4.bash
 
-    #source /cvmfs/opticks.ihep.ac.cn/ok/releases/Opticks-0.0.0_alpha/x86_64-slc7-gcc48-geant4_10_04_p02-dbg/bin/release.bash  
+    #source /cvmfs/opticks.ihep.ac.cn/ok/releases/Opticks-0.0.0_alpha/x86_64-slc7-gcc48-geant4_10_04_p02-dbg/bin/opticks-release.bash  
     # real /cvmfs
 
-    source /hpcfs/juno/junogpu/blyth/local/opticks/releases/Opticks-0.0.0_alpha/x86_64-slc7-gcc48-geant4_10_04_p02-dbg/bin/release.bash
+    source /hpcfs/juno/junogpu/blyth/local/opticks/releases/Opticks-0.0.0_alpha/x86_64-slc7-gcc48-geant4_10_04_p02-dbg/bin/opticks-release.bash
     # testing release on /hpcfs before push it to /cvmfs
 
-    source /hpcfs/juno/junogpu/blyth/opticks.ihep.ac.cn/sc/releases/OpticksSharedCache-0.0.0_alpha/bin/sharedcache.bash
+    source /hpcfs/juno/junogpu/blyth/opticks.ihep.ac.cn/sc/releases/OpticksSharedCache-0.0.0_alpha/bin/opticks-sharedcache.bash
 
 
 TODO
@@ -95,7 +95,7 @@ Workstation : Test Environment setup for use of Opticks binary distribution and 
 
     source /cvmfs/opticks.ihep.ac.cn/ok/releases/Opticks-0.0.0_alpha/x86_64-centos7-gcc48-geant4_10_04_p02-dbg/bin/opticks-release.bash  # fake /cvmfs
 
-    source /opticks/opticks.ihep.ac.cn/sc/releases/OpticksSharedCache-0.0.0_alpha/bin/sharedcache.bash
+    source /opticks/opticks.ihep.ac.cn/sc/releases/OpticksSharedCache-0.0.0_alpha/bin/opticks-sharedcache.bash
 
 
 

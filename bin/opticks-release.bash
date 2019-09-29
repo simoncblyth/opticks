@@ -9,7 +9,7 @@ opticks-release-cd(){     cd $(opticks-release-prefix) ; }
 
 opticks-release-usage(){ cat << EOU
 $FUNCNAME
-============
+=======================
 
 This release.bash script sets up a minimal environment for the 
 use of an Opticks binary distribution.
@@ -49,7 +49,7 @@ EOU
 
 opticks-release-info(){ cat << EOI
 $FUNCNAME
-============
+=====================
 
   opticks-release-source : $(opticks-release-source)
   opticks-release-dir    : $(opticks-release-dir)
