@@ -43,6 +43,13 @@ whats left for release ?
   * need a better path to put it in : /hpcfs/opticks/ ?
 
 
+* example sources in the binary install ?  
+
+  * feels wrong 
+  * hmm : i favor a separate separate repo ?
+
+
+
 
 DONE
 -------

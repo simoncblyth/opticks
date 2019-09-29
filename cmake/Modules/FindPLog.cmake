@@ -8,13 +8,13 @@ handling multiple versions of opticks that want to share externals
 #]=]
 
 
-if(NOT OPTICKS_PREFIX)
-    # this works when this module is included from installed tree
-    get_filename_component(PLog_MODULE_DIR ${CMAKE_CURRENT_LIST_FILE} DIRECTORY)
-    get_filename_component(PLog_MODULE_DIRDIR ${PLog_MODULE_DIR} DIRECTORY)
-    get_filename_component(PLog_MODULE_DIRDIRDIR ${PLog_MODULE_DIRDIR} DIRECTORY)
-    set(OPTICKS_PREFIX ${PLog_MODULE_DIRDIRDIR})
-endif()
+#if(NOT OPTICKS_PREFIX)
+#    # this works when this module is included from installed tree
+#    get_filename_component(PLog_MODULE_DIR ${CMAKE_CURRENT_LIST_FILE} DIRECTORY)
+#    get_filename_component(PLog_MODULE_DIRDIR ${PLog_MODULE_DIR} DIRECTORY)
+#    get_filename_component(PLog_MODULE_DIRDIRDIR ${PLog_MODULE_DIRDIR} DIRECTORY)
+#    set(OPTICKS_PREFIX ${PLog_MODULE_DIRDIRDIR})
+#endif()
 
 
 find_path(

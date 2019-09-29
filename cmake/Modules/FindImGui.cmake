@@ -1,13 +1,13 @@
 
 set(ImGui_MODULE "${CMAKE_CURRENT_LIST_FILE}")
 
-if(NOT OPTICKS_PREFIX)
-    # this works when this module is included from installed tree
-    get_filename_component(ImGui_MODULE_DIR ${CMAKE_CURRENT_LIST_FILE} DIRECTORY)
-    get_filename_component(ImGui_MODULE_DIRDIR ${ImGui_MODULE_DIR} DIRECTORY)
-    get_filename_component(ImGui_MODULE_DIRDIRDIR ${ImGui_MODULE_DIRDIR} DIRECTORY)
-    set(OPTICKS_PREFIX ${ImGui_MODULE_DIRDIRDIR})
-endif()
+#if(NOT OPTICKS_PREFIX)
+#    # this works when this module is included from installed tree
+#    get_filename_component(ImGui_MODULE_DIR ${CMAKE_CURRENT_LIST_FILE} DIRECTORY)
+#    get_filename_component(ImGui_MODULE_DIRDIR ${ImGui_MODULE_DIR} DIRECTORY)
+#    get_filename_component(ImGui_MODULE_DIRDIRDIR ${ImGui_MODULE_DIRDIR} DIRECTORY)
+#    set(OPTICKS_PREFIX ${ImGui_MODULE_DIRDIRDIR})
+#endif()
 
 set(ImGui_PREFIX "${OPTICKS_PREFIX}/externals")
 
@@ -59,5 +59,4 @@ if(ImGui_VERBOSE)
   message(STATUS "FindImGui.cmake : ImGui_LIBRARY     : ${ImGui_LIBRARY} " )
   message(STATUS "FindImGui.cmake : ImGui_INCLUDE_DIR : ${ImGui_INCLUDE_DIR} " )
 endif()
-
 

@@ -92,6 +92,9 @@ if(UNIX AND NOT APPLE)
     if(CMAKE_INSTALL_PREFIX STREQUAL ${OPTICKS_PREFIX})
        set(CMAKE_INSTALL_RPATH "$ORIGIN/../lib64:$ORIGIN/../externals/lib:$ORIGIN/../externals/lib64:$ORIGIN/../externals/OptiX/lib64")
     else()
+       message(STATUS " Below two strings differ : forced to use absolute RPATH ")
+       message(STATUS " CMAKE_INSTALL_PREFIX : ${CMAKE_INSTALL_PREFIX} ")
+       message(STATUS " OPTICKS_PREFIX       : ${OPTICKS_PREFIX} ")
        set(ABSOLUTE_INSTALL_RPATH
                      ${OPTICKS_PREFIX}/lib64  
                      ${OPTICKS_PREFIX}/externals/lib  

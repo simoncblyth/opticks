@@ -3,13 +3,13 @@
 set(GLM_MODULE "${CMAKE_CURRENT_LIST_FILE}")
 set(GLM_VERBOSE OFF)
 
-if(NOT OPTICKS_PREFIX)
-    # this works when this module is included from installed tree
-    get_filename_component(GLM_MODULE_DIR ${CMAKE_CURRENT_LIST_FILE} DIRECTORY)
-    get_filename_component(GLM_MODULE_DIRDIR ${GLM_MODULE_DIR} DIRECTORY)
-    get_filename_component(GLM_MODULE_DIRDIRDIR ${GLM_MODULE_DIRDIR} DIRECTORY)
-    set(OPTICKS_PREFIX ${GLM_MODULE_DIRDIRDIR})
-endif()
+#if(NOT OPTICKS_PREFIX)
+#    # this works when this module is included from installed tree
+#    get_filename_component(GLM_MODULE_DIR ${CMAKE_CURRENT_LIST_FILE} DIRECTORY)
+#    get_filename_component(GLM_MODULE_DIRDIR ${GLM_MODULE_DIR} DIRECTORY)
+#    get_filename_component(GLM_MODULE_DIRDIRDIR ${GLM_MODULE_DIRDIR} DIRECTORY)
+#    set(OPTICKS_PREFIX ${GLM_MODULE_DIRDIRDIR})
+#endif()
 
 find_path(
     GLM_INCLUDE_DIR

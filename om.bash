@@ -385,7 +385,7 @@ om-one-or-all()
     rc=$?
     [ "$rc" != "0" ] && echo $msg ERROR om-check failed && om-info && return $rc 
 
-    if [ "${iwd}/" == "$(om-sdir)" -o "${iwd}/" == "$(om-bdir)" -o  "${arg/:}" != "$arg" ]; then
+    if [ "${iwd}/" == "$(om-sdir)" -o "${iwd}/" == "$(om-bdir)" -o  "${arg/:}" != "$arg" -o  "${arg/+}" != "$arg"    ]; then
         om-$func-all $arg 
         rc=$?
     else
