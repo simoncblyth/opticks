@@ -44,6 +44,7 @@ class OKDist(Dist):
              'externals/plog/include',
              'externals/include/OpenMesh',
              'externals/include/assimp',
+             'externals/include/xercesc',
              'externals/include/YoctoGL',
              'externals/include/DualContouringSample',
              'installcache/PTX', 
