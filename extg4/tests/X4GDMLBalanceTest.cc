@@ -70,18 +70,20 @@ int main( int argc , char** argv )
 
     LOG(info) << " solid " << solid ; 
 
+    unsigned soIdx = 0 ; 
+    unsigned lvIdx = 0 ; 
+
     nnode* raw = X4Solid::Convert(solid, &ok); 
     LOG(info)  << raw->ana_brief() ;  
     //LOG(info)  << raw->ana_desc() ;  
 
-    unsigned soIdx = 0 ; 
-    unsigned lvIdx = 0 ; 
-    nnode* bal = NTreeProcess<nnode>::Process(raw, soIdx, lvIdx) ; 
+    bool balance = false ; 
+    nnode* use = balance ? NTreeProcess<nnode>::Process(raw, soIdx, lvIdx) : raw  ; 
 
-    LOG(info)  << "bal\n" << bal->ana_desc() ;  
+    LOG(info)  << "use\n" << use->ana_desc() ;  
 
     const NSceneConfig* config = NULL ; 
-    NCSG* tree = NCSG::Adopt( bal, config, soIdx, lvIdx) ; 
+    NCSG* tree = NCSG::Adopt( use, config, soIdx, lvIdx) ; 
 
     LOG(info) 
         << " tree " << tree
