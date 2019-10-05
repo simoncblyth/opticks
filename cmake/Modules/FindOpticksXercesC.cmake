@@ -1,22 +1,33 @@
 
 set(OpticksXercesC_MODULE "${CMAKE_CURRENT_LIST_FILE}")
 
-find_path(OpticksXercesC_INCLUDE_DIR 
-   NAMES "xercesc/parsers/SAXParser.hpp"
-   PATHS 
-      /usr/include 
-      /usr/local/include
-      /opt/local/include
-)
+if(XERCESC_INCLUDE_DIR)
+    set(OpticksXercesC_INCLUDE_DIR ${XERCESC_INCLUDE_DIR}) 
+else()
+    find_path(OpticksXercesC_INCLUDE_DIR 
+       NAMES "xercesc/parsers/SAXParser.hpp"
+       PATHS 
+          /usr/include 
+          /usr/local/include
+          /opt/local/include
+    )
+endif()
 
-find_library(OpticksXercesC_LIBRARY
-   NAMES xerces-c 
-   PATHS
-     /usr/lib 
-     /usr/lib64
-     /usr/local/lib
-     /opt/local/lib
-)
+
+if(XERCESC_LIBRARY) 
+    set(OpticksXercesC_LIBRARY ${XERCESC_LIBRARY})
+else()
+    find_library(OpticksXercesC_LIBRARY
+       NAMES xerces-c 
+       PATHS
+         /usr/lib 
+         /usr/lib64
+         /usr/local/lib
+         /opt/local/lib
+    )
+endif()
+
+
 
 if(OpticksXercesC_INCLUDE_DIR AND OpticksXercesC_LIBRARY)
    set(OpticksXercesC_FOUND "YES")

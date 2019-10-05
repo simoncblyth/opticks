@@ -8,6 +8,8 @@ if(POLICY CMP0077)  # see note/issues/cmake-3.13.4-FindCUDA-warnings.rst
 endif()
 
 
+set(OpticksXercesC_VERBOSE ON)
+
 find_package(G4OK CONFIG REQUIRED)   
 
 

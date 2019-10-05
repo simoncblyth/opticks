@@ -374,6 +374,8 @@ g4-cmake
     552 }
 
 
+
+
 ::
 
     [blyth@lxslc701 Modules]$ xercesc-info
@@ -399,6 +401,42 @@ g4-cmake
 
 
 
+Examine G4 installs more closely
+---------------------------------
 
+::
+
+    [blyth@localhost Geant4-10.4.2]$ l
+    total 72
+    lrwxrwxrwx. 1 blyth blyth     2 Aug 29  2018 Linux-g++ -> ..
+    drwxr-xr-x. 2 blyth blyth   157 Aug 17  2018 Modules
+    -rw-r--r--. 1 blyth blyth 28186 Aug 17  2018 Geant4Config.cmake
+    -rw-r--r--. 1 blyth blyth  1050 Aug 17  2018 Geant4ConfigVersion.cmake
+    -rw-r--r--. 1 blyth blyth 18098 Aug 17  2018 Geant4LibraryDepends.cmake
+    -rw-r--r--. 1 blyth blyth 13404 Aug 17  2018 Geant4LibraryDepends-debug.cmake
+    -rw-r--r--. 1 blyth blyth  3851 May 25  2018 UseGeant4.cmake
+    [blyth@localhost Geant4-10.4.2]$ vi Geant4LibraryDepends.cmake
+    [blyth@localhost Geant4-10.4.2]$ pwd
+    /home/blyth/local/opticks/externals/lib64/Geant4-10.4.2
+
+    [blyth@localhost Geant4-10.4.2]$ grep erces *.cmake
+    Geant4LibraryDepends.cmake:  INTERFACE_LINK_LIBRARIES "G4geometry;G4global;G4graphics_reps;G4intercoms;G4materials;G4particles;G4digits_hits;G4event;G4processes;G4run;G4track;G4tracking;/usr/lib64/libxerces-c-3.1.so"
+
+
+::
+
+    162 # Create imported target G4persistency
+    163 add_library(G4persistency SHARED IMPORTED)
+    164 
+    165 set_target_properties(G4persistency PROPERTIES
+    166   INTERFACE_COMPILE_FEATURES "cxx_alias_templates;cxx_auto_type;cxx_delegating_constructors;cxx_enum_forward_declarations;cxx_explicit_conversions;cxx_final;cxx_lambdas;cxx_nullptr;cxx_override;cxx_range_for;cxx_strong_e    nums;cxx_uniform_initialization"
+    167   INTERFACE_LINK_LIBRARIES "G4geometry;G4global;G4graphics_reps;G4intercoms;G4materials;G4particles;G4digits_hits;G4event;G4processes;G4run;G4track;G4tracking;/usr/lib64/libxerces-c-3.1.so"
+    168 )
+
+
+::
+
+    [blyth@lxslc701 Geant4-10.4.2]$ grep erces *.cmake 
+    Geant4LibraryDepends.cmake:  INTERFACE_LINK_LIBRARIES "G4geometry;G4global;G4graphics_reps;G4intercoms;G4materials;G4particles;G4digits_hits;G4event;G4processes;G4run;G4track;G4tracking;/afs/ihep.ac.cn/users/b/blyth/g/local/opticks/externals/lib/libxerces-c-3.1.so"
 
 
