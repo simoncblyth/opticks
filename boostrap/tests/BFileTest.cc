@@ -504,6 +504,21 @@ void test_preparePath()
         << " s " << s
         ;  
 }
+
+void test_OPTICKS_USER_HOME()
+{
+    const char* p = "$HOME/a/b/c/d" ; 
+
+    std::string s = BFile::preparePath(p) ; 
+
+    LOG(info) 
+        << " p " << p  
+        << " s " << s
+        ;  
+
+}
+
+
  
 
 int main(int argc, char** argv)
@@ -548,7 +563,9 @@ int main(int argc, char** argv)
    //test_CWD(); 
    //test_Absolute(); 
    //test_preparePath();
-   test_ParentParentDir();
+   //test_ParentParentDir();
+
+   test_OPTICKS_USER_HOME(); 
 
    return 0 ; 
 }

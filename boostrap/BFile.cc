@@ -155,6 +155,10 @@ std::string BFile::expandvar(const char* s)
 
 
 
+
+
+
+
 const std::vector<std::string> BFile::envvars = { 
    "TMP", 
    "HOME",
@@ -162,6 +166,7 @@ const std::vector<std::string> BFile::envvars = {
    "OPTICKS_GEOCACHE_PREFIX",  
    "OPTICKS_EVENT_BASE",
    "OPTICKS_HOME",              // needed by OInterpolationTest to find a python script
+   "OPTICKS_USER_HOME",         // overrides HOME within Opticks
    "IDPATH"
 } ; 
 
@@ -181,18 +186,31 @@ bool BFile::IsAllowedEnvvar(const char* key_)
 }
 
 
-
 /**
 BFile::ResolveKey
 ---------------------
 
-NB no longer replacing any envvar, better to restrict for clarity + control 
+NB only allowed envvars are replaced, for clarity and control 
+
+The HOME key is special cased, it is replaced by OPTICKS_USER_HOME 
+if that envvar is defined.  This is convenient to internally 
+change the HOME directory for Opticks executables on clusters 
+where HOME is prone to permissions problems, eg from expiring AFS tokens.
+
+::
+
+   OPTICKS_USER_HOME=/hpcfs/juno/junogpu/blyth BFileTest
+
 
 **/
 
+const char* BFile::OPTICKS_USER_HOME_KEY = "OPTICKS_USER_HOME" ; 
 
-std::string BFile::ResolveKey( const char* key )
+std::string BFile::ResolveKey( const char* _key )
 {
+    bool is_home = strcmp(_key, "HOME") == 0  ; 
+    bool has_home_override = SSys::getenvvar(OPTICKS_USER_HOME_KEY) != NULL ; 
+    const char* key = is_home && has_home_override ? OPTICKS_USER_HOME_KEY  : _key ;   
 
     const char* envvar = SSys::getenvvar(key) ;
     std::string evalue ; 
@@ -202,7 +220,7 @@ std::string BFile::ResolveKey( const char* key )
         if( envvar != NULL )  
         {
             evalue = envvar ; 
-            LOG(verbose) << "replacing allowed envvar token " << key << " with value of tenvvar " << evalue ; 
+            LOG(verbose) << "replacing allowed envvar token " << key << " with value of the envvar " << evalue ; 
         }   
         else
         {
@@ -298,7 +316,6 @@ std::string BFile::AbsoluteCanonical(const char* relpath)
 
     return a.string();
 }
-
 
 
 

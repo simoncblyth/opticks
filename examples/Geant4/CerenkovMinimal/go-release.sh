@@ -30,20 +30,19 @@ rc=$?
 make install   
 
 
+exe=$idir/lib/$name
+
+
 cat << EOX
 
 # how to run example
 
 unset OPTICKS_GEOCACHE_PREFIX 
 
-# for simple geometry tests must unset the geocache prefix
+# for simple geometry testing must unset the geocache prefix
 # which will cause the default to be used ~/.opticks
 # otherwise will see permission errors on attempting 
 # to write into the shared cache
-
-export PATH=$HOME/lib:$PATH
-exe=$(which $name)
-echo $exe
 
 $exe
 
