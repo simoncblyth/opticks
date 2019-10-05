@@ -63,6 +63,8 @@ class EnvG4(object):
     opticks-envg4-source(){ echo $BASH_SOURCE ; }
     opticks-envg4-vi(){  vi $BASH_SOURCE ; }
     opticks-envg4-dir(){ echo $(dirname $BASH_SOURCE) ; }
+    opticks-envg4-dirdir(){ echo $(dirname $(dirname $BASH_SOURCE)) ; }
+    opticks-envg4-prefix(){ echo $(opticks-envg4-dirdir) ; }
 
     opticks-envg4-name(){ echo %s ; } 
     opticks-envg4-Geant4_DIR(){ echo $(opticks-envg4-dir)/lib64/$(opticks-envg4-name) ; } 
@@ -71,6 +73,8 @@ class EnvG4(object):
 
         opticks-envg4-source      : $(opticks-envg4-source)
         opticks-envg4-dir         : $(opticks-envg4-dir)
+        opticks-envg4-dirdir      : $(opticks-envg4-dirdir)
+        opticks-envg4-prefix      : $(opticks-envg4-prefix)
         opticks-envg4-name        : $(opticks-envg4-name)
         opticks-envg4-Geant4_DIR  : $(opticks-envg4-Geant4_DIR)
 

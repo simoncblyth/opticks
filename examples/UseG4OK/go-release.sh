@@ -31,15 +31,38 @@ bdir=/tmp/$USER/opticks/$(basename $sdir)/build
 idir=$HOME
 
 rm -rf $bdir && mkdir -p $bdir && cd $bdir && pwd 
-  
-cmake3 $sdir \
-    -DCMAKE_BUILD_TYPE=Debug \
-    -DCMAKE_PREFIX_PATH="$pfx;$pfx/externals" \
-    -DCMAKE_MODULE_PATH=$pfx/cmake/Modules \
-    -DCMAKE_INSTALL_PREFIX=$idir \
-    -DGeant4_DIR=$g4d \
-    -DXERCESC_LIBRARY=/hpcfs/juno/junogpu/blyth/local/opticks/externals/lib/libxerces-c.so \
-    -DXERCESC_INCLUDE_DIR=/hpcfs/juno/junogpu/blyth/local/opticks/externals/include
+ 
+
+explicit()
+{
+    local spfx=$(opticks-envg4-prefix)    
+    # use of source prefix here is naughty : but it avoids having to install geant4 again
+    # just to mimic a users separately managed geant4 
+    cmake3 $sdir \
+        -DCMAKE_BUILD_TYPE=Debug \
+        -DCMAKE_PREFIX_PATH="$pfx;$pfx/externals" \
+        -DCMAKE_MODULE_PATH=$pfx/cmake/Modules \
+        -DCMAKE_INSTALL_PREFIX=$idir \
+        -DGeant4_DIR=$g4d \
+        -DXERCESC_LIBRARY=$spfx/externals/lib/libxerces-c.so \
+        -DXERCESC_INCLUDE_DIR=$spfx/externals/include
+}
+
+implicit()
+{
+    cmake3 $sdir \
+        -DCMAKE_BUILD_TYPE=Debug \
+        -DCMAKE_PREFIX_PATH="$pfx;$pfx/externals" \
+        -DCMAKE_MODULE_PATH=$pfx/cmake/Modules \
+        -DCMAKE_INSTALL_PREFIX=$idir \
+        -DGeant4_DIR=$g4d 
+}
+
+
+#explicit
+implicit
+
+
 
 make
 make install   
