@@ -21,10 +21,12 @@ whats left for release ?
   * not needed fpor CMake approach 
   * see examples/UseG4
 
-* revive opticks-config
+* something to replace opticks-config
 
-  * do this with bash functions inside release.bash which should be renamed to opticks.bash 
-  * check it with simple non-CMake Makefile based building against the binary release using opticks-config
+  * do this with bash functions inside opticks-release.bash ? opticks-release-config ?
+  * OR : follow something like CMake pkgconfig : but for a multi-proj  
+ 
+  * check it with simple non-CMake Makefile based building against the binary release using opticks-release-config
   * this is a stand in for CMT, as would rather not touch that 
 
 * DONE : CMake based build against the release
@@ -33,21 +35,22 @@ whats left for release ?
   * lib64/cmake has tree of .cmake with the exported targets
   * examples/Geant4/CerenkovMinimal builds from simon
 
-* release-test from other users account on GPU cluster
+* NEXT : single top level setup bash function 
 
-  * looking for permissions problems
+  * avoid cluster users duplicating the setup function, three source lines plus
+  * easier management when need to change it for new release etc.. 
+  * intended to be cluster local script  
+  * once debugged, need a better path to put it in : /hpcfs/opticks/ ?
 
-* single top level setup script 
+* opticks-release-test from other users account on GPU cluster
 
-  * avoid users duplicating three source lines  
-  * need a better path to put it in : /hpcfs/opticks/ ?
+  * checking the single top level setup,  
+  * permissions problems, output to appropriate places
 
+* example: sources,scripts etc.. in the install ?  
 
-* example sources in the binary install ?  
-
-  * feels wrong 
-  * hmm : i favor a separate separate repo ?
-
+  * THIS can be deferred, until CerenkovMinimal more operational 
+  * for now can just keep them in source tree and instruct users how to clone it if needed
 
 
 
@@ -64,6 +67,23 @@ DONE
      as the auto determined one is opticks-home not prefix
 
 2. cmake/Modules/OpticksBuildOptions.cmake : fixed runpath setup to use absolute paths when a foreign install is detected
+
+
+CerenkovMinimal built against release, cluster batch run test
+---------------------------------------------------------------
+
+* fixed build issue of not finding OpticksXercesC
+* runtime still writing into blackhole /tmp paths
+* need to iterate on this
+
+::
+
+    sj # modify job
+    sb # submit it 
+    so # check output 
+
+   
+
 
 
 simon CerenkovMinimal test

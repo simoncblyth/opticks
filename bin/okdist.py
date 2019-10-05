@@ -40,7 +40,7 @@ class OKDist(Dist):
              'externals/lib',
              'externals/lib64',
              'externals/OptiX/lib64', 
-             'externals/glm/glm',
+             'externals/glm/glm/glm',
              'externals/plog/include',
              'externals/include/OpenMesh',
              'externals/include/assimp',
@@ -66,6 +66,7 @@ class OKDist(Dist):
              'externals/include/xercesc',
                    ]
 
+
     extras = []
 
     def __init__(self, distprefix, distname, include_geant4, include_xercesc ):
@@ -81,6 +82,8 @@ class OKDist(Dist):
 
         self.include_geant4 = include_geant4 
         self.include_xercesc = include_xercesc 
+        self.include_optix_big = False 
+
         Dist.__init__(self, distprefix, distname, extra_bases)
 
     def exclude_file(self, name):
@@ -93,6 +96,8 @@ class OKDist(Dist):
         elif name.startswith("libG4") and self.include_geant4 == False:
             exclude = True
         elif name.startswith("libxerces") and self.include_xercesc == False:
+            exclude = True
+        elif (name.startswith("liboptix_denoiser") or name.startswith("libcudnn")) and self.include_optix_big == False:  
             exclude = True
         pass
         return exclude
@@ -116,7 +121,7 @@ if __name__ == '__main__':
 
     dist = OKDist(args.distprefix, args.distname, include_geant4=args.include_geant4, include_xercesc=args.include_xercesc)
 
-
+    print(dist.large())
 
 
 

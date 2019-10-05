@@ -1,12 +1,17 @@
 #!/bin/bash -l
 
+
+pfx=$(opticks-release-prefix)
+rc=$?
+[ $rc -ne 0 ] && echo $0 requires opticks-release-prefix from user_setup && exit $rc
+
+
 sdir=$(pwd)
 name=$(basename $sdir)
 bdir=/tmp/$USER/opticks/examples/$name/build 
-idir=$HOME
+idir=$(opticks-release-user-home)   # OPTICKS_USER_HOME falling back to HOME
 # /tmp is not same on GPU cluster gateway and nodes, so cannot install there 
 
-pfx=$(opticks-release-prefix)
 echo pfx $pfx
 
 rm -rf $bdir 

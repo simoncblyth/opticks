@@ -50,6 +50,8 @@ class Dist(object):
         assert not mode is None, "distribution format for distname %s is not supported " % (distname)
         log.info("writing distname %s mode %s " % (distname, mode) )
 
+        self.sztot = 0 
+        self.sz = {} 
         self.prefix = distprefix
         self.dist = tarfile.open(distname, mode)    
 
@@ -65,10 +67,32 @@ class Dist(object):
         pass 
         self.dist.close()
 
+
+    def get_size(self, path):
+        if os.path.islink(path):
+            sz = 0 
+        else: 
+            st = os.stat(path) 
+            sz = st.st_size
+        pass
+        return sz
+
     def add(self, path):
         log.debug(path)
         arcname = os.path.join(self.prefix,path) 
         self.dist.add(path, arcname=arcname, recursive=False)
+
+        sz = self.get_size(path)
+        self.sztot += sz 
+        self.sz[path] = sz 
+
+        if sz > 1e6:
+            print(" %10.3f : %10.3f M : %s " % ( self.sztot/1e6, sz/1e6, path )) 
+        pass
+
+    def large(self, cut=5e6):
+        msg = "tarball files exceeding %d bytes,  %10.3f M  in ascending order" % ( cut, cut/1e6 ) 
+        return "\n".join([msg]+map(lambda kv:"% 10.3f : %s " % (kv[1]/1e6, kv[0]),sorted(filter(lambda kv:kv[1] > cut, self.sz.items()),key=lambda kv:kv[1]) ))
 
     def exclude_dir(self, name):
         exclude = name in self.exclude_dir_name

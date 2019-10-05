@@ -55,6 +55,15 @@ $FUNCNAME
   opticks-release-dir    : $(opticks-release-dir)
   opticks-release-prefix : $(opticks-release-prefix)
 
+
+  HOME                      : $HOME  
+  OPTICKS_USER_HOME         : $OPTICKS_USER_HOME
+      optional envvar that overrides HOME within Opticks
+
+  opticks-release-user-home : $(opticks-release-user-home)
+
+  opticks-release-logdir    : $(opticks-release-logdir)
+
 EOI
 }
 
@@ -93,7 +102,13 @@ opticks-release-main(){
    olocal-(){ echo -n ; }   ## many bash env functions expect this function to be defined
 }
 
-opticks-release-logdir(){ echo $HOME/.opticks/logs ; }
+
+opticks-release-user-home(){ echo ${OPTICKS_USER_HOME:-$HOME} ; }
+
+opticks-release-logdir(){ echo $(opticks-release-user-home)/.opticks/logs ; }
+
+opticks-release-cd(){  cd $(opticks-release-prefix) ; } 
+
 
 opticks-release-test()
 {
@@ -116,19 +131,19 @@ opticks-release-test()
     local tbeg=$(date)
     mkdir -p $(dirname $tlog)
 
-    echo $msg tdir $tdir | tee $tlog
-    echo $msg tlog $tlog | tee $tlog
-    echo $msg tbeg $tbeg | tee $tlog
-    echo $msg tlog $tlog | tee $tlog
+    echo $msg tdir $tdir | tee    $tlog
+    echo $msg tlog $tlog | tee -a $tlog
+    echo $msg tbeg $tbeg | tee -a $tlog
+    echo $msg tlog $tlog | tee -a $tlog
 
     ctest $* --interactive-debug-mode 0 --output-on-failure 2>&1 | tee -a $tlog
 
     local tend=$(date)
 
-    echo $msg tbeg $tbeg | tee $tlog
-    echo $msg tend $tend | tee $tlog
-    echo $msg tdir $tdir | tee $tlog
-    echo $msg tlog $tlog | tee $tlog
+    echo $msg tbeg $tbeg | tee -a $tlog
+    echo $msg tend $tend | tee -a $tlog
+    echo $msg tdir $tdir | tee -a $tlog
+    echo $msg tlog $tlog | tee -a $tlog
 
     cd $iwd
 }
