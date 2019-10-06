@@ -30,6 +30,7 @@
 class BRAP_API BFile {
        static const plog::Severity LEVEL ; 
        static const char* OPTICKS_USER_HOME_KEY ; 
+       static const char* OPTICKS_USER_TMP_KEY ; 
     public:
        static std::size_t FileSize( const char* path ) ; 
        static void SplitPath(std::vector<std::string>& elem, const char* path ) ; 
@@ -41,7 +42,6 @@ class BRAP_API BFile {
 
        static std::string expandvar(const char* s);
        static std::string expandhome(const char* s);
-       static std::string usertmpdir(const char* base, const char* sub, const char* rel );
 
        static bool IsAllowedEnvvar(const char* key);
        static std::string ResolveKey( const char* key );
@@ -71,6 +71,11 @@ class BRAP_API BFile {
        static std::time_t* SinceLastWriteTime(const char* path,  const char* sub=NULL, const char* name=NULL);
 
        static std::string CreateDir(const char* base, const char* asub=NULL, const char* bsub=NULL);
+
+    public:
+       static std::string UserTmpDir();
+    private:
+       static std::string usertmpdir(const char* base, const char* sub, const char* rel );
 
     public:
         // refugees from BJson in need of de-duping

@@ -18,4 +18,5 @@ bcm_deploy(TARGETS ${name} NAMESPACE Opticks:: SKIP_HEADER_INSTALL)
 install(FILES ${HEADERS}  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
 echo_target_std(${name})
+echo_target_std(Opticks::SysRap)
 

@@ -85,6 +85,24 @@ void dump(boost::cmatch& m)
 }
 
 
+
+/**
+BFile::UserTmpDir
+-----------------
+
+When TMP envvar is defined return that, otherwise 
+defaults to /tmp/<username>/opticks
+
+**/
+
+std::string BFile::UserTmpDir()
+{
+    const char* tmp = SSys::getenvvar(OPTICKS_USER_TMP_KEY) ;
+    if(tmp) return tmp ; 
+    return usertmpdir("/tmp", "opticks", NULL ) ; 
+}
+
+
 std::string BFile::usertmpdir(const char* base, const char* sub, const char* rel )
 {
     fs::path p(base) ; 
@@ -205,6 +223,10 @@ where HOME is prone to permissions problems, eg from expiring AFS tokens.
 **/
 
 const char* BFile::OPTICKS_USER_HOME_KEY = "OPTICKS_USER_HOME" ; 
+const char* BFile::OPTICKS_USER_TMP_KEY  = "TMP" ; 
+
+
+
 
 std::string BFile::ResolveKey( const char* _key )
 {
@@ -224,7 +246,7 @@ std::string BFile::ResolveKey( const char* _key )
         }   
         else
         {
-            evalue = usertmpdir("/tmp","opticks", NULL);
+            evalue = UserTmpDir();
             LOG(LEVEL) << "replacing allowed envvar token " << key << " with default value " << evalue << " as envvar not defined " ; 
         }
     }
@@ -255,7 +277,7 @@ std::string BFile::ResolveKey( const char* _key )
         }
         else
         {
-            evalue = usertmpdir("/tmp","opticks",NULL);
+            evalue = UserTmpDir();
         } 
         LOG(LEVEL) 
            << "replacing $OPTICKS_EVENT_BASE  " 

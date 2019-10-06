@@ -162,6 +162,10 @@ TODO
 
   * eg g4-envg4 will modify the envg4 
 
+* currently okdist-opticks-site-deploy as invoked by okdist-create will stomp on any 
+  admin customizations made to this script in its depoyed location, 
+  instead keep site customizations in an ini file or smth and grab them with this 
+
 
 EOU
 }
@@ -209,10 +213,9 @@ opticks-site-deploy()
 
     [ "$path" == "$src" ] && echo $msg src and path are same $path nothing to do && return 0
 
-    cat << EOC
-# pipe this to your shell if you agree 
-cp $src $path 
-EOC
+    local cmd="cp $src $path"
+    echo $cmd 
+    eval $cmd 
 }
 
 

@@ -23,8 +23,9 @@ whats left for release ?
 
 * something to replace opticks-config
 
-  * do this with bash functions inside opticks-release.bash ? opticks-release-config ?
+  * do this manually with bash functions inside opticks-release.bash ? opticks-release-config ?
   * OR : follow something like CMake pkgconfig : but for a multi-proj  
+  * OR : python parse the CMake/BCM exported targets 
  
   * check it with simple non-CMake Makefile based building against the binary release using opticks-release-config
   * this is a stand in for CMT, as would rather not touch that 
@@ -35,14 +36,22 @@ whats left for release ?
   * lib64/cmake has tree of .cmake with the exported targets
   * examples/Geant4/CerenkovMinimal builds from simon
 
-* NEXT : single top level setup bash function 
+* DONE : single top level setup bash function, bin/opticks-site.bash  
 
   * avoid cluster users duplicating the setup function, three source lines plus
   * easier management when need to change it for new release etc.. 
   * intended to be cluster local script  
   * once debugged, need a better path to put it in : /hpcfs/opticks/ ?
 
-* opticks-release-test from other users account on GPU cluster
+* NEXT : CerenkovMinimal still writing to some blackhole /tmp paths::
+
+   opticks-site-demojob- > demojob.sh 
+   sbatch demojob.sh
+   so 
+   grep /tmp nnnn.out  
+
+
+* opticks-release-test from other users account, Yan, on GPU cluster
 
   * checking the single top level setup,  
   * permissions problems, output to appropriate places
@@ -50,6 +59,7 @@ whats left for release ?
 * example: sources,scripts etc.. in the install ?  
 
   * THIS can be deferred, until CerenkovMinimal more operational 
+  * installing source code feels plain wrong, because of no repository backing 
   * for now can just keep them in source tree and instruct users how to clone it if needed
 
 

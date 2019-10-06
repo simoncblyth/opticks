@@ -509,6 +509,15 @@ const char* Opticks::getProfileDir() const
 {
     return m_profile->getDir(); 
 }
+
+/**
+Opticks::setProfileDir
+------------------------
+
+Canonically invoked by Opticks::postgeometry
+
+**/
+
 void Opticks::setProfileDir(const char* dir)
 {
     LOG(fatal) << " dir " << dir ; 

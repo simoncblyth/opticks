@@ -237,6 +237,18 @@ okdist-metadata()
 }
 
 
+okdist-deploy-opticks-site()
+{
+   local script=bin/opticks-site.bash
+   if [ -f "$script" ]; then
+       source $script
+       opticks-site-deploy
+   else
+       echo $msg missing script $script
+   fi
+}
+
+
 okdist-create()
 {
    local msg="=== $FUNCNAME :"
@@ -260,6 +272,10 @@ okdist-create()
    echo $msg list tarball
    ls -al $(okdist-name) 
    du -h $(okdist-name) 
+
+   echo $msg okdist-deploy-opticks-site
+   okdist-deploy-opticks-site
+
 
    cd $iwd
 }
