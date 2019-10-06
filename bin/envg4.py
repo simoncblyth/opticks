@@ -66,6 +66,27 @@ class EnvG4(object):
     opticks-envg4-dirdir(){ echo $(dirname $(dirname $BASH_SOURCE)) ; }
     opticks-envg4-prefix(){ echo $(opticks-envg4-dirdir) ; }
 
+    opticks-envg4-usage(){ cat << EOU
+    $FUNCNAME
+    =====================
+
+    Configures access to the libs and data of a Geant4 installation.
+  
+    FUNCTIONS
+    ----------
+
+    opticks-envg4-main
+        function run on sourcing this script, that sets the Geant4
+        data envvars and library path with paths relative to the 
+        path of this script
+
+    opticks-envg4-info
+        dumps values 
+  
+    EOU
+    }
+
+
     opticks-envg4-name(){ echo %s ; } 
     opticks-envg4-Geant4_DIR(){ echo $(opticks-envg4-dir)/lib64/$(opticks-envg4-name) ; } 
 

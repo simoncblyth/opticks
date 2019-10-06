@@ -144,6 +144,7 @@ class BRAP_API  BOpticksResource {
    public:
         static const char* MakeSrcPath(const char* srcpath, const char* ext) ;
         static const char* MakeSrcDir(const char* srcpath, const char* sub) ;
+        static const char* MakeTmpUserDir_(const char* sub, const char* rel) ;
         static const char* MakeTmpUserDir(const char* sub, const char* rel) ;
         static const char* OptiXCachePathDefault() ; 
         static const char* MakeUserDir(const char* sub, const char* rel) ;

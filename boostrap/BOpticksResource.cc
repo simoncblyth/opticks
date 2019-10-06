@@ -517,7 +517,7 @@ void BOpticksResource::initTopDownDirs()
     //m_res->addDir("okc_installcache_dir", m_okc_installcache_dir );
 
 
-    m_tmpuser_dir = MakeTmpUserDir("opticks", NULL) ; 
+    m_tmpuser_dir = MakeTmpUserDir("opticks", NULL) ;  // now usurped with $TMP
     m_res->addDir( "tmpuser_dir", m_tmpuser_dir ); 
 }
 
@@ -637,13 +637,24 @@ const char* BOpticksResource::MakeSrcDir(const char* srcpath, const char* sub)
     std::string path = BFile::FormPath(srcdir.c_str(), sub ); 
     return strdup(path.c_str());
 }
-const char* BOpticksResource::MakeTmpUserDir(const char* sub, const char* rel) 
+const char* BOpticksResource::MakeTmpUserDir_(const char* sub, const char* rel) 
 {
     const char* base = "/tmp" ; 
     const char* user = SSys::username(); 
     std::string path = BFile::FormPath(base, user, sub, rel ) ; 
     return strdup(path.c_str());
 }
+
+const char* BOpticksResource::MakeTmpUserDir(const char* sub, const char* rel) 
+{
+    assert( strcmp(sub, "opticks") == 0 ); 
+    assert( rel == NULL ); 
+    std::string path = BFile::FormPath("$TMP") ; 
+    return strdup(path.c_str());
+}
+
+
+
 
 const char* BOpticksResource::OptiXCachePathDefault() 
 {
