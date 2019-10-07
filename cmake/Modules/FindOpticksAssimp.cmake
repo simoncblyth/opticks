@@ -45,8 +45,11 @@ if(OpticksAssimp_FOUND AND NOT TARGET Opticks::OpticksAssimp)
     add_library(Opticks::OpticksAssimp UNKNOWN IMPORTED) 
     set_target_properties(Opticks::OpticksAssimp PROPERTIES
         IMPORTED_LOCATION "${OpticksAssimp_LIBRARY}"
+        INTERFACE_IMPORTED_LOCATION "${OpticksAssimp_LIBRARY}"
         INTERFACE_INCLUDE_DIRECTORIES "${OpticksAssimp_INCLUDE_DIR}"
     )
+
+    set(OpticksAssimp_targets OpticksAssimp)
 
 endif()
 

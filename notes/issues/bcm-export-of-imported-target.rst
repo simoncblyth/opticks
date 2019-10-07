@@ -12,6 +12,18 @@ Context
 * :google:`cmake export an imported target`
 
 
+NEXT
+--------
+
+* provide the start of an opticks-config.py interface, so 
+  can start non-CMake building with some Makefiles perhaps 
+  within subdirectories of the examples/Use* 
+
+  * need to unify the parsed config from:
+
+    1. real CMake exported targets
+    2. TOPMETA fallback for non-native CMake imported targets
+
 
 Issue
 ---------
@@ -74,6 +86,59 @@ Problems
 
 1. get_property refuses for non-whitelisted properties, workaround by duplicating some with "INTERFACE_" prefix 
 2. with boost are using the CMake internal finding, so cannot workaround the non-whitelisting easily 
+
+
+
+
+Issue : boost has horrible FindBoost 
+----------------------------------------
+
+
+Issue : YoctoGL is CMake installed directly into Opticks prefix
+---------------------------------------------------------------------
+
+* thats my fork of YoctoGL on github
+
+::
+
+   oyoctogl-c  # to see my CMakeLists.txt which uses BCM already 
+
+
+::
+
+    oyoctogl--
+    ...
+
+    -- Up-to-date: /home/blyth/local/opticks/externals/lib/libYoctoGL.so
+    -- Up-to-date: /home/blyth/local/opticks/externals/lib/pkgconfig/yoctogl.pc
+    -- Up-to-date: /home/blyth/local/opticks/externals/lib/cmake/yoctogl/properties-yoctogl-targets.cmake
+    -- Up-to-date: /home/blyth/local/opticks/externals/lib/cmake/yoctogl/yoctogl-targets.cmake
+    -- Installing: /home/blyth/local/opticks/externals/lib/cmake/yoctogl/yoctogl-targets-debug.cmake
+    -- Up-to-date: /home/blyth/local/opticks/externals/lib/cmake/yoctogl/yoctogl-config.cmake
+    -- Up-to-date: /home/blyth/local/opticks/externals/lib/cmake/yoctogl/yoctogl-config-version.cmake
+    -- Installing: /home/blyth/local/opticks/lib/ygltf_reader
+    -- Set runtime path of "/home/blyth/local/opticks/lib/ygltf_reader" to "/home/blyth/opticks/lib64:/home/blyth/opticks/externals/lib:/home/blyth/opticks/externals/lib64:/home/blyth/opticks/externals/OptiX/lib64"
+    (base) [blyth@gilda03 UseYoctoGL]$ 
+    (base) [blyth@gilda03 UseYoctoGL]$ 
+
+
+This is already in the release.
+
+::
+
+    (base) [blyth@gilda03 opticks]$ bcm.py -t yoctogl -p
+    yoctogl :  :  
+    /home/blyth/local/opticks/externals/lib/cmake/yoctogl/yoctogl-config.cmake
+    (base) [blyth@gilda03 opticks]$ vi /home/blyth/local/opticks/externals/lib/cmake/yoctogl/yoctogl-config.cmake   ## no TOPMETA yet 
+
+::
+
+    (base) [blyth@gilda03 opticks]$ bcm.py -t assimp -p
+    assimp :  :  
+    /home/blyth/local/opticks/externals/lib/cmake/assimp-3.1/assimp-config.cmake           ## non-BCM targets 
+
+
+
 
 
 

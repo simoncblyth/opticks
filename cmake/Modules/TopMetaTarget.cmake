@@ -38,6 +38,12 @@ function(top_meta_target _out _name _tgts )
     string(APPEND _TOPMETA "#[=[ TOPMETA ${_name}\n\n") 
 
     foreach(tgt ${_tgts})
+
+       string(FIND "${tgt}" "Opticks::" _pos )
+       if(_pos EQUAL 0)
+          message(FATAL_ERROR "${tgt} : target arguments to top_meta_target must not be Opticks:: qualified" )
+       endif() 
+
        set(qtgt "Opticks::${tgt}")    
 
        if(TARGET ${qtgt})

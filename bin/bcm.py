@@ -68,10 +68,38 @@ properties all have same pattern
 
 """
 
-import os, re, logging, sys
-from opticks.bin.cfg import Cfg
-
+import os, re, logging, sys, argparse
 log = logging.getLogger(__name__)
+
+import StringIO, textwrap
+from collections import OrderedDict as odict
+from ConfigParser import ConfigParser
+
+class Cfg(object):
+    def __init__(self, txt):
+        sfp = StringIO.StringIO(txt)
+        c = ConfigParser()
+        c.readfp(sfp)
+        self.c = c 
+        self.d = self.full(c) 
+
+    def full(self, c):
+        d = odict()
+        for s in c.sections(): 
+            d[s] = dict(c.items(s))
+        pass  
+        return d
+
+    def sections(self):
+        return self.c.sections()
+
+    def sect(self, s):
+        return dict(self.c.items(s))
+
+    def __repr__(self):
+        return "\n".join(["%s\n%s" % (k,repr(v)) for k, v in self.d.items()])
+
+
 
 
 class CMakeTargets(object):
@@ -103,7 +131,7 @@ class CMakeTargets(object):
         pass 
 
     def parse_targets(self, path):
-        log.info("parse_targets %s " % path) 
+        log.debug("parse_targets %s " % path) 
         lib = None
         props = {}
         prefix = None
@@ -140,7 +168,7 @@ class CMakeTargets(object):
                 props[key] = val 
             elif mtail:
                 assert not lib is None
-                log.info("parse_targets lib %s props %s " % (lib, repr(props)))
+                log.debug("parse_targets lib %s props %s " % (lib, repr(props)))
                 self.targets[lib] =  props.copy() 
                 props.clear()
                 lib = None
@@ -150,8 +178,9 @@ class CMakeTargets(object):
         pass
 
     def __repr__(self):
-        return self.targets 
+        return repr(self.targets) 
  
+
 
 
 class TopMeta(object):
@@ -160,26 +189,16 @@ class TopMeta(object):
 
     def __init__(self, path):
          self.ini = self.parse_topmeta(path)
-         self.cfg = {}
-         for name in self.ini.keys():
-             self.cfg[name] = Cfg(self.ini[name]) 
-         pass
-    
-    def targets(self):
-        return self.cfg.sections() 
-
-    def target_dict(self, tgt):
-        return self.cfg.sect(tgt) 
-  
+   
     def parse_topmeta(self, path):
-        log.info("parse_topmeta %s " % path) 
+        log.debug("parse_topmeta %s " % path) 
         idx = -1 
         lines = []
         name = None
         ini = {}
 
         for line in file(path, "r").readlines():
-            log.debug(line)
+            #print(line)
             bmat = self.BEG.match(line) 
             if bmat:
                 name = bmat.groupdict()["name"] 
@@ -205,78 +224,294 @@ class TopMeta(object):
         return "\n".join([repr(self.ini.keys())])
 
 
+
+
+
 class CMakeConfig(object):
 
     LIB = re.compile("^# Library: (?P<lib>\S*)\s*$")
     DEP = re.compile("^find_dependency\((?P<dep>.*)\)\s*$")
 
     def __init__(self, path, pfx):
+        """
+        :param path:
+        :param pfx:
+
+        parsed TOPMETA for externals doesnt belong inside a sub, 
+        it should be regarded as referenced from a sub : but have its 
+        own external collection
+        """
         assert os.path.exists(path) 
+        self.path = path 
+        self.pfx = pfx
+        self.parse_config(path)  # collects libs and deps
+
+
         targets_path = path.replace("-config.cmake","-targets.cmake")
         targets_debug_path = path.replace("-config.cmake","-targets-debug.cmake")
 
-        assert os.path.exists(targets_path) 
-        assert os.path.exists(targets_debug_path) 
+        
+        tpaths = [] 
+        if os.path.exists(targets_path):
+            tpaths.append(targets_path)
+        pass 
+        if os.path.exists(targets_debug_path): 
+            tpaths.append(targets_debug_path)
+        pass 
+        # assimp using non-BCM manual CMake export 
+        targets = CMakeTargets(tpaths)
 
-        self.path = path 
-        self.pfx = pfx
-        self.parse_config(path)
-        self.targets = CMakeTargets([targets_path, targets_debug_path])
-        self.topmeta = TopMeta(path) 
-        log.info("topmeta %s " % repr(self.topmeta))
-
+        self.topmeta = TopMeta(path)
+        self.externals = self.topmeta.ini.keys()
+ 
 
     def parse_config(self, path):
-        log.info("parse_config %s " % path) 
+        libs = []
+        deps = []
+
+        log.debug("parse_config %s " % path) 
         for line in file(path, "r").readlines():
             mlib = self.LIB.match(line)
             mdep = self.DEP.match(line)
             if mlib:
                 lib = mlib.groupdict()["lib"]
-                print("lib %s " % lib) 
+                log.debug("lib %s " % lib) 
+                assert lib.startswith("Opticks::") or lib.startswith("Boost::"), lib
+                lib = lib.split("::")[1] 
+                libs.append(lib)
             if mdep:
                 dep = mdep.groupdict()["dep"]
-                print("dep %s " % dep) 
+                log.debug("dep %s " % dep) 
+                deps.append(dep.replace(" ","_"))
             pass 
         pass   
+        assert len(libs) == len(deps)
+        self.libs = libs
+        self.deps = deps   # find_dependency tee-d up
 
     def __repr__(self):
-        return self.path 
+        return "%s : %s : %s " % ( self.pfx, " ".join(self.libs), " ".join(self.externals) ) 
  
 
+class Targets(dict):
+    def __init__(self):
+        dict.__init__(self)
 
-class CMakeExport(object):
+class Externals(dict):
+    def __init__(self):
+        dict.__init__(self)
+
+
+
+class CMakeInstall(object):
+    """ 
+    Encompasses all the installed metadata of internal subprojs and externals
+    as gleaned from parsing the CMake exported targets, including the 
+    TOPMETA from externals  
+    """
     CONFIG = re.compile("(?P<pfx>\S*)-config.cmake")
-    def __init__(self, base):
-        self.base = base 
-        self.cfg = {}   
-        self.find_config() 
+    def __init__(self, bases, sub):
+        paths = [] 
+        for base in bases:
+            path = os.path.join(*filter(None,[base, sub])) 
+            if not os.path.isdir(path): continue
+            paths.append(path)  
+        pass
+        self.paths = paths
+        self.targets = Targets()  
+        self.externals = Externals()
+        self.find_exported_targets() 
 
-    def find_config(self):
-        self.find_config_r(self.base, 0) 
- 
-    def find_config_r(self, base, depth ):
+    def find_exported_targets(self):
+        for path in self.paths: 
+            self.find_exported_targets_r(path, 0) 
+        pass 
+
+    def find_exported_targets_r(self, base, depth ):
         assert os.path.isdir(base), "expected directory %s does not exist " % base
-        log.info("base %s depth %s " % (base, depth))
+        log.debug("base %s depth %s " % (base, depth))
         names = os.listdir(base)
         for name in names:
             path = os.path.join(base, name)
             if os.path.isdir(path):
-                self.find_config_r(path, depth+1)
+                self.find_exported_targets_r(path, depth+1)
             else:
                 m = self.CONFIG.match(name)
                 if not m: continue
                 pfx = m.groupdict()['pfx']
-                cfg = CMakeConfig(path, pfx) 
-                self.cfg[pfx] = cfg
+                pass
+                exported_targets = CMakeConfig(path, pfx) 
+                pass 
+                for name in exported_targets.externals:  # collect TOPMETA for externals
+                    cfg = Cfg(exported_targets.topmeta.ini[name]) 
+                    cfg.path = path 
+                    cfg.name = name
+                    cfg.deps = []
+                    self.externals[name.lower()] = cfg
+                pass
+                self.targets[pfx] = exported_targets
             pass
+        pass
+
+    def get_target(self, pfx):
+        assert pfx in self.targets
+        return self.targets[pfx]     
+
+    def get_external(self, x):
+        assert x in self.externals
+        return self.externals[x]     
+
+    def query(self, q ):
+        """
+        :param q: subname (eg okconf, sysrap) or external name (eg GLM, OptiX) 
+        :return r: 
+        """
+        rt = self.target(q)
+        rx = self.external(q)
+
+        if rt and rx:
+            assert False, (rt, rx, "both target and external ?") 
+            r = None
+        elif rt:
+            r = rt  
+        elif rx:
+            r = rx  
+        else:
+            r = None
+        pass
+        return r
+
+    def rquery(self, q ):
+        rr = []
+        def query_r(q, depth):
+            r = self.query(q)
+
+            log.info(" q %s r %s depth %s " % (q, repr(r), depth))  
+
+            if r is None:
+                log.info("r None for q %s " % q)
+                return
+            pass  
+
+            if not r in rr:
+                rr.append(r)
+            pass
+            for d in r.deps:
+                query_r(d, depth+1)
+            pass
+        pass
+        query_r(q, 0)
+        return rr 
+
+    def external(self, x ):
+        if x.lower() in self.externals:
+            r = self.get_external(x.lower()) 
+        else: 
+            r = None
+        pass
+        return r
+
+    def target(self, t ):
+        if t in self.targets:
+            r = self.get_target(t) 
+        elif t.lower() in self.targets:
+            r = self.get_target(t.lower()) 
+        else: 
+            r = None
+        pass
+        return r
+
+
+    def dump_targets(self):
+        return "\n".join(map(repr, self.targets.values()))  
+
+    def dump_externals(self):
+        return "\n".join(map(repr, self.externals.values()))  
+
+    def __repr__(self):
+        return "\n".join(map(repr, self.targets.values() + self.externals.values() ))  
+
+
+
+    @classmethod
+    def ParseArgs(cls):
+        """
+        See man pkg-config
+
+        --cflags
+        --libdir
+        --libs 
+        ...
+        """ 
+        parser = argparse.ArgumentParser(__doc__)
+        bases = "$OPTICKS_INSTALL_PREFIX/lib64/cmake:$OPTICKS_INSTALL_PREFIX/externals/lib/cmake"
+        parser.add_argument( "--bases", default=bases, help="Possibly colon delimited list of directories containing the exported CMake targets, eg $OPTICKS_INSTALL_PREFIX/lib64/cmake" ) 
+        parser.add_argument( "--sub", default=None, help="Base relative directory to restrict parsing during development.")
+        parser.add_argument( "--level", default="info", help="logging level" ) 
+        parser.add_argument( "-q", "--query", default=None, help="Query target or external" )
+        parser.add_argument( "-x", "--external", default=None, help="Query external" )
+        parser.add_argument( "-t", "--target",  default=None, help="Query target" )
+        parser.add_argument( "-d", "--dump",  default=False, action="store_true", help="Dump all targets and externals" )
+        parser.add_argument( "-T", "--dumptargets",  default=False, action="store_true", help="Dump all targets" )
+        parser.add_argument( "-X", "--dumpexternals",  default=False, action="store_true", help="Dump all externals" )
+        parser.add_argument( "-p", "--path",  default=False, action="store_true", help="Show path of source files" )
+        parser.add_argument( "-r", "--recursive",  default=False, action="store_true", help="Recursively follow query dependencies" )
+        args = parser.parse_args()
+        fmt = '[%(asctime)s] p%(process)s {%(pathname)s:%(lineno)d} %(levelname)s - %(message)s'
+        logging.basicConfig(level=getattr(logging,args.level.upper()), format=fmt)
+        return args 
+
+    @classmethod
+    def Main(cls):
+        args = cls.ParseArgs() 
+        bases = map(lambda _:os.path.expandvars(_), args.bases.split(":"))
+        cmi = CMakeInstall(bases, args.sub)    
+        if args.dump:
+            print(cmi)
+            if args.path:
+                print(cmi.path)
+            pass            
+        pass 
+        if args.dumptargets:
+            print(cmi.dump_targets())
+        if args.dumpexternals:
+            print(cmi.dump_externals())
+
+
+        if args.query and args.recursive:
+            rr = cmi.rquery(args.query)   
+            for i, r in enumerate(rr):
+                print("---------------- %d " % i )
+                print(r)
+                if args.path:
+                    print(r.path)
+                pass 
+            pass 
+        elif args.query:
+            r = cmi.query(args.query)   
+            print(r)
+            if args.path:
+                print(r.path)
+            pass       
+        pass 
+
+
+        if args.external: 
+            r = cmi.external(args.external)   
+            print(r)
+            if args.path:
+                print(r.path)
+            pass            
+        pass 
+        if args.target: 
+            r = cmi.target(args.target)   
+            print(r)
+            if args.path:
+                print(r.path)
+            pass            
         pass
 
 
 if __name__ == '__main__':
-
-    logging.basicConfig(level=logging.INFO)
-    base = sys.argv[1] if len(sys.argv) > 1 else os.path.expandvars("$OPTICKS_INSTALL_PREFIX/lib64/cmake")
-
-    cx = CMakeExport(base)    
+    CMakeInstall.Main()    
 

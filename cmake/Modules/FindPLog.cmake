@@ -35,7 +35,7 @@ if(PLog_FOUND AND NOT TARGET ${_tgt})
     set_target_properties(${_tgt} PROPERTIES
         INTERFACE_INCLUDE_DIRECTORIES "${PLog_INCLUDE_DIR}"
     )
-    list(APPEND PLog_targets ${_tgt})
+    list(APPEND PLog_targets "PLog")
 
 endif()
 

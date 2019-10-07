@@ -430,6 +430,12 @@ target_link_libraries( ${name}
      Opticks::PLog
 )
 
+
+top_meta_target(GLM_TOPMETA      "GLM"      "${GLM_targets}" )
+top_meta_target(OpenMesh_TOPMETA "OpenMesh" "${OpenMesh_targets}" )
+
+
+
 if(YoctoGL_FOUND)
    target_link_libraries( ${name} PUBLIC Opticks::YoctoGL )  # headers included into PUBLIC headers need to be PUBLIC
    target_compile_definitions(${name} PUBLIC OPTICKS_YoctoGL )
@@ -455,7 +461,18 @@ if(UNIX AND NOT APPLE)
 endif()
 
 
-bcm_deploy(TARGETS ${name} NAMESPACE Opticks:: SKIP_HEADER_INSTALL)
+
+
+
+bcm_deploy(TARGETS ${name} NAMESPACE Opticks:: SKIP_HEADER_INSTALL TOPMATTER "
+## NPY TOPMATTER 
+
+${GLM_TOPMETA}
+${OpenMesh_TOPMETA}
+
+
+## end NPY TOPMATTER 
+")
 install(FILES ${HEADERS}  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
 add_subdirectory(tests)

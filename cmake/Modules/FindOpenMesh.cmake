@@ -43,11 +43,13 @@ if(OpenMesh_FOUND AND NOT TARGET Opticks::OpenMesh)
     add_library(Opticks::OpenMeshCore UNKNOWN IMPORTED) 
     set_target_properties(Opticks::OpenMeshCore PROPERTIES
         IMPORTED_LOCATION "${OpenMeshCore_LIBRARY}"
+        INTERFACE_IMPORTED_LOCATION "${OpenMeshCore_LIBRARY}"
     )
 
     add_library(Opticks::OpenMeshTools  UNKNOWN IMPORTED) 
     set_target_properties(Opticks::OpenMeshTools PROPERTIES
         IMPORTED_LOCATION "${OpenMeshTools_LIBRARY}"
+        INTERFACE_IMPORTED_LOCATION "${OpenMeshTools_LIBRARY}"
     )
 
     add_library(Opticks::OpenMesh INTERFACE IMPORTED)
@@ -57,6 +59,8 @@ if(OpenMesh_FOUND AND NOT TARGET Opticks::OpenMesh)
     )
 
     # https://cmake.org/cmake/help/v3.3/prop_tgt/INTERFACE_COMPILE_DEFINITIONS.html
+
+    set(OpenMesh_targets  OpenMeshCore OpenMeshTools OpenMesh)
 
 
 endif()
