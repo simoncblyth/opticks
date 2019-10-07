@@ -68,8 +68,6 @@ set(OKConf_GENERATED_HEADER  "OKConf_Config.hh")
 configure_file( ${OKConf_GENERATED_HEADER}.in inc/${OKConf_GENERATED_HEADER} )
 
 
-
-
 # generate opticks-config sh script into lib dir
 #include(OpticksConfigureConfigScript)
 
@@ -98,7 +96,21 @@ target_include_directories( ${name} PRIVATE
 target_compile_definitions( ${name} PUBLIC OPTICKS_OKCONF )
 add_subdirectory(tests)
 
- 
+
+
+# <findname>_targets is my convention
+message(STATUS "OpticksCUDA_targets:${OpticksCUDA_targets}")
+message(STATUS "OptiX_targets:${OptiX_targets}")
+message(STATUS "G4_targets:${G4_targets}")
+
+## top_meta_target(TOPMETA..)  function call from cmake/Modules/TopMetaTarget.cmake creates TOPMETA string into this scope
+top_meta_target(OpticksCUDA_TOPMETA "OpticksCUDA" "${OpticksCUDA_targets}" )
+top_meta_target(OptiX_TOPMETA       "OptiX"       "${OptiX_targets}" )
+top_meta_target(G4_TOPMETA          "G4"          "${G4_targets}" )
+
+#message(STATUS "${OpticksCUDA_TOPMETA}")
+#message(STATUS "${OptiX_TOPMETA}")
+#message(STATUS "${G4_TOPMETA}")
 
 bcm_deploy(TARGETS ${name} NAMESPACE Opticks:: SKIP_HEADER_INSTALL TOPMATTER "
 ## OKConf generated TOPMATTER
@@ -113,13 +125,18 @@ if(OKConf_VERBOSE)
 endif()
 
 include(OpticksCUDAFlags)
-
 ## see notes/issues/OpticksCUDAFlags.rst
 
-" )
+${OpticksCUDA_TOPMETA}
 
+${OptiX_TOPMETA}
+
+${G4_TOPMETA}
+
+
+## end of OKConf generated TOPMATTER
+" )
 
 install(FILES ${HEADERS}  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/inc/${OKConf_GENERATED_HEADER}  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
-
 

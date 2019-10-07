@@ -116,6 +116,8 @@ function(OptiX_add_imported_library name lib_location dll_lib dependent_libs)
       #IMPORTED_LINK_INTERFACE_LIBRARIES "glu32;opengl32"
       IMPORTED_LOCATION "${dll_lib}"
       IMPORTED_LINK_INTERFACE_LIBRARIES "${dependent_libs}"
+      INTERFACE_IMPORTED_LOCATION "${lib_location}"             # workaround 3.14 whitelisting
+      INTERFACE_IMPORTED_LINK_INTERFACE_LIBRARIES "${dependent_libs}"
       )
   elseif(UNIX)
     set_target_properties(${name} PROPERTIES
@@ -124,6 +126,8 @@ function(OptiX_add_imported_library name lib_location dll_lib dependent_libs)
       # We don't have versioned filenames for now, and it may not even matter.
       #IMPORTED_SONAME "${optix_soname}"
       IMPORTED_LINK_INTERFACE_LIBRARIES "${dependent_libs}"
+      INTERFACE_IMPORTED_LOCATION "${lib_location}"             # workaround 3.14 whitelisting
+      INTERFACE_IMPORTED_LINK_INTERFACE_LIBRARIES "${dependent_libs}"
       )
   else()
     # Unknown system, but at least try and provide the minimum required
@@ -131,6 +135,8 @@ function(OptiX_add_imported_library name lib_location dll_lib dependent_libs)
     set_target_properties(${name} PROPERTIES
       IMPORTED_LOCATION "${lib_location}"
       IMPORTED_LINK_INTERFACE_LIBRARIES "${dependent_libs}"
+      INTERFACE_IMPORTED_LOCATION "${lib_location}"             # workaround 3.14 whitelisting
+      INTERFACE_IMPORTED_LINK_INTERFACE_LIBRARIES "${dependent_libs}"
       )
   endif()
 
@@ -142,6 +148,24 @@ endfunction()
 OptiX_add_imported_library(optix "${optix_LIBRARY}" "${optix_DLL}" "${OPENGL_LIBRARIES}")
 OptiX_add_imported_library(optixu   "${optixu_LIBRARY}"   "${optixu_DLL}"   "")
 OptiX_add_imported_library(optix_prime "${optix_prime_LIBRARY}"  "${optix_prime_DLL}"  "")
+
+
+set(OptiX_targets)
+
+if(TARGET optix)
+list(APPEND OptiX_targets optix)
+endif()
+
+if(TARGET optixu)
+list(APPEND OptiX_targets optixu)
+endif()
+
+if(TARGET optix_prime)
+list(APPEND OptiX_targets optix_prime)
+endif()
+
+
+
 
 macro(OptiX_check_same_path libA libB)
   if(_optix_path_to_${libA})
@@ -220,6 +244,8 @@ if(OptiX_FOUND)
         INTERFACE_INCLUDE_DIRECTORIES "${OptiX_INCLUDE}"
         INTERFACE_LINK_LIBRARIES "optix;optixu;optix_prime"
    )
+
+   list(APPEND OptiX_targets OptiX)
 
 endif()
 

@@ -32,6 +32,7 @@ or to dump the paths and their existance::
     opticks-site-usage
     opticks-site-info
     opticks-site-check
+    opticks-site-vi
 
 
 Details of what this script does 
@@ -293,6 +294,9 @@ job-head(){
    hostname 
    date 
    nvidia-smi   
+}
+
+job-env(){
    env | grep OPTICKS_
    env | grep TMP
 }
@@ -325,6 +329,7 @@ job-body()
 
 job-head
 job-setup 
+job-env
 job-body
 job-tail
 

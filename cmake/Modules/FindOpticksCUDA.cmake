@@ -88,9 +88,13 @@ endif()
 if(OpticksCUDA_FOUND AND NOT TARGET Opticks::CUDA)
     add_library(Opticks::cudart_static UNKNOWN IMPORTED)
     set_target_properties(Opticks::cudart_static PROPERTIES IMPORTED_LOCATION "${CUDA_cudart_static_LIBRARY}") 
+    set_target_properties(Opticks::cudart_static PROPERTIES INTERFACE_IMPORTED_LOCATION "${CUDA_cudart_static_LIBRARY}") 
+    # duplicate with INTERFACE_ to workaround CMake 3.13 whitelisting restriction
 
     add_library(Opticks::curand UNKNOWN IMPORTED)
     set_target_properties(Opticks::curand PROPERTIES IMPORTED_LOCATION "${CUDA_curand_LIBRARY}") 
+    set_target_properties(Opticks::curand PROPERTIES INTERFACE_IMPORTED_LOCATION "${CUDA_curand_LIBRARY}") 
+    # duplicate with INTERFACE_ to workaround CMake 3.13 whitelisting restriction
 
     add_library(Opticks::CUDA INTERFACE IMPORTED)
     set_target_properties(Opticks::CUDA  PROPERTIES INTERFACE_FIND_PACKAGE_NAME "OpticksCUDA MODULE REQUIRED")
@@ -103,6 +107,13 @@ if(OpticksCUDA_FOUND AND NOT TARGET Opticks::CUDA)
         target_include_directories(Opticks::CUDASamples INTERFACE "${HELPER_CUDA_INCLUDE_DIR}")  
         ## for CUDA error strings from helper_cuda.h and helper_string.h 
     endif()
+
+    set(OpticksCUDA_targets
+         cudart_static
+         curand
+         CUDA
+         CUDASamples  
+    )
 endif()
 
 

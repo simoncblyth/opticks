@@ -170,7 +170,12 @@ if(UNIX AND NOT APPLE)
 target_link_libraries( ${name} PUBLIC ssl crypto )
 endif()
 
-bcm_deploy(TARGETS ${name} NAMESPACE Opticks:: SKIP_HEADER_INSTALL)
+bcm_deploy(TARGETS ${name} NAMESPACE Opticks:: SKIP_HEADER_INSTALL TOPMATTER "
+## begin TOPMATTER 
+
+
+## end TOPMATTER
+")
 install(FILES ${HEADERS}  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
 add_subdirectory(tests)

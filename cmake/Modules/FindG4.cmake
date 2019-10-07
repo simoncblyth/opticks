@@ -50,6 +50,8 @@ if(Geant4_FOUND)
   set(G4_LIBRARIES   ${Geant4_LIBRARIES})
   set(G4_DEFINITIONS ${Geant4_DEFINITIONS})
 
+  set(G4_targets) 
+
   set(_targets)
   foreach(_lib ${Geant4_LIBRARIES})
      set(_loc "${_lib}-NOTFOUND" ) # https://cmake.org/pipermail/cmake/2007-February/012966.html     
@@ -63,7 +65,9 @@ if(Geant4_FOUND)
          #message(STATUS "${_tgt} ${_loc} ") 
          add_library(${_tgt}  UNKNOWN IMPORTED) 
          set_target_properties(${_tgt} PROPERTIES IMPORTED_LOCATION "${_loc}")
+         set_target_properties(${_tgt} PROPERTIES INTERFACE_IMPORTED_LOCATION "${_loc}")  # workaround whitelisting restriction
          list(APPEND _targets ${_tgt})
+         list(APPEND G4_targets ${_lib})
      else()
          message(FATAL_ERROR "failed to locate expected lib ${_lib}  Geant4_DIR : ${Geant4_DIR}   G4_DIRDIR : ${G4_DIRDIR} ")
      endif()
@@ -75,6 +79,7 @@ if(Geant4_FOUND)
   add_library(Opticks::G4 INTERFACE IMPORTED)
 
   set_target_properties(Opticks::G4  PROPERTIES INTERFACE_FIND_PACKAGE_NAME "G4 MODULE REQUIRED")
+  list(APPEND G4_targets "G4")  
 
   ## Above target_properties INTERFACE_FIND_PACKAGE_NAME kludge tees up the arguments 
   ## to find_dependency in BCM generated exports such as /usr/local/opticks-cmake-overhaul/lib/cmake/useg4/useg4-config.cmake
@@ -90,6 +95,7 @@ if(Geant4_FOUND)
   target_include_directories(Opticks::G4 INTERFACE "${Geant4_INCLUDE_DIRS}" )
   target_link_libraries(Opticks::G4 INTERFACE "${_targets}" ) 
   target_compile_definitions(Opticks::G4 INTERFACE "${_defs}" )
+
 
   # https://cmake.org/cmake/help/v3.3/prop_tgt/INTERFACE_LINK_LIBRARIES.html
   # https://cmake.org/cmake/help/v3.3/prop_tgt/INTERFACE_COMPILE_DEFINITIONS.html

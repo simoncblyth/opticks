@@ -50,6 +50,10 @@ if(NOT OPTICKS_PREFIX)
 endif()
 
 
+# initialize a list into which targets found by cmake/Modules/FindXXX.cmake are appended
+set(OPTICKS_TARGETS_FOUND)
+
+
 include(CTest)
 #add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND})
 
@@ -60,6 +64,7 @@ find_package(BCM)
 include(BCMDeploy)
 include(BCMSetupVersion)  # not yet used in anger, see examples/UseGLM
 include(EchoTarget)
+include(TopMetaTarget)
 
 set(BUILD_SHARED_LIBS ON)
 

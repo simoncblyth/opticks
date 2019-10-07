@@ -122,8 +122,23 @@ target_include_directories( ${name} PUBLIC
 target_compile_definitions( ${name} PUBLIC OPTICKS_SYSRAP )
 
 
+# <findname>_targets is my convention
+message(STATUS "PLog_targets:${PLog_targets}")
 
-bcm_deploy(TARGETS ${name} NAMESPACE Opticks:: SKIP_HEADER_INSTALL)
+## top_meta_target(TOPMETA..)  function call from cmake/Modules/TopMetaTarget.cmake creates TOPMETA string into this scope
+top_meta_target(PLog_TOPMETA    "PLog" "${PLog_targets}" )
+
+message(STATUS "${PLog_TOPMETA}")
+ 
+
+bcm_deploy(TARGETS ${name} NAMESPACE Opticks:: SKIP_HEADER_INSTALL TOPMATTER  "
+## SysRap TOPMATTER
+
+${PLog_TOPMETA}
+
+## end SysRap TOPMATTER
+")
+
 install(FILES ${HEADERS}  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
 
@@ -135,5 +150,9 @@ install(PROGRAMS ${SCRIPTS}  DESTINATION py/opticks/sysrap)
 
 
 add_subdirectory(tests)
+
+
+
+
 
 

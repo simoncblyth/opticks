@@ -68,7 +68,9 @@ properties all have same pattern
 
 """
 
-import os, re, logging, sys 
+import os, re, logging, sys
+from opticks.bin.cfg import Cfg
+
 log = logging.getLogger(__name__)
 
 
@@ -101,7 +103,7 @@ class CMakeTargets(object):
         pass 
 
     def parse_targets(self, path):
-        print(path)
+        log.info("parse_targets %s " % path) 
         lib = None
         props = {}
         prefix = None
@@ -138,7 +140,7 @@ class CMakeTargets(object):
                 props[key] = val 
             elif mtail:
                 assert not lib is None
-                print( "lib %s props %s " % (lib, repr(props)))
+                log.info("parse_targets lib %s props %s " % (lib, repr(props)))
                 self.targets[lib] =  props.copy() 
                 props.clear()
                 lib = None
@@ -150,6 +152,58 @@ class CMakeTargets(object):
     def __repr__(self):
         return self.targets 
  
+
+
+class TopMeta(object):
+    BEG = re.compile("\#\[=\[ TOPMETA (?P<name>\S*)\s*$")
+    END = "#]=]"
+
+    def __init__(self, path):
+         self.ini = self.parse_topmeta(path)
+         self.cfg = {}
+         for name in self.ini.keys():
+             self.cfg[name] = Cfg(self.ini[name]) 
+         pass
+    
+    def targets(self):
+        return self.cfg.sections() 
+
+    def target_dict(self, tgt):
+        return self.cfg.sect(tgt) 
+  
+    def parse_topmeta(self, path):
+        log.info("parse_topmeta %s " % path) 
+        idx = -1 
+        lines = []
+        name = None
+        ini = {}
+
+        for line in file(path, "r").readlines():
+            log.debug(line)
+            bmat = self.BEG.match(line) 
+            if bmat:
+                name = bmat.groupdict()["name"] 
+                idx = 0 
+            elif line.startswith(self.END):
+                idx = -1
+                assert not name is None
+                ini[name] = "\n".join(lines)
+                lines[:] = []
+            elif idx > -1:
+                idx += 1
+            else:
+                pass
+            pass  
+            if idx > 0:
+               lines.append(line[:-1])
+            pass
+        pass
+        return ini 
+
+
+    def __repr__(self):
+        return "\n".join([repr(self.ini.keys())])
+
 
 class CMakeConfig(object):
 
@@ -168,9 +222,12 @@ class CMakeConfig(object):
         self.pfx = pfx
         self.parse_config(path)
         self.targets = CMakeTargets([targets_path, targets_debug_path])
+        self.topmeta = TopMeta(path) 
+        log.info("topmeta %s " % repr(self.topmeta))
+
 
     def parse_config(self, path):
-        print(path) 
+        log.info("parse_config %s " % path) 
         for line in file(path, "r").readlines():
             mlib = self.LIB.match(line)
             mdep = self.DEP.match(line)
@@ -186,6 +243,7 @@ class CMakeConfig(object):
     def __repr__(self):
         return self.path 
  
+
 
 class CMakeExport(object):
     CONFIG = re.compile("(?P<pfx>\S*)-config.cmake")
@@ -217,6 +275,8 @@ class CMakeExport(object):
 
 if __name__ == '__main__':
 
+    logging.basicConfig(level=logging.INFO)
     base = sys.argv[1] if len(sys.argv) > 1 else os.path.expandvars("$OPTICKS_INSTALL_PREFIX/lib64/cmake")
+
     cx = CMakeExport(base)    
 
