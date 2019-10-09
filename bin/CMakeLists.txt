@@ -7,6 +7,7 @@ include(OpticksBuildOptions)
 set(SCRIPTS
    opticks-release.bash
    opticks-site.bash
+   opticks-site-local.bash
    o.sh
    tboolean.sh
    scan.bash

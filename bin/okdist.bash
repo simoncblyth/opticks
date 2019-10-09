@@ -32,13 +32,33 @@ Dev Notes
 
 * notes/issues/packaging-opticks-and-externals-for-use-on-gpu-cluster.rst
 
+Recall the many trees 
+------------------------
 
-cvmfs layout
-----------------
+1. source tree, in the repository 
+2. build tree, in which Makefiles are CMake generated and build products are made
+3. install tree,  where source build products end up after an install 
+4. distribution tarball, collection of products of the install  
+5. release tree, the result of exploding the distribution tarball 
 
-::
+* a bitbucket clone gives you 1
+* running *om--* yields 2 and 3
+* runnning *okdist--* yields 4 and 5 
 
-    /cvmfs/opticks.ihep.ac.cn/ok/releases/Opticks/0.0.0-alpha/x86_64-centos7-gcc48-geant4_10_04_p02-dbg/
+Note that this needs to be repeated on the workstation 
+and the GPU cluster gateway node.
+
+
+Gotchas
+---------
+
+1. development not user environment required, otherwise fails with python modules not found 
+2. even scripts need to be installed before okdist-- can package them
+   for consistency reasons, to do this:
+
+   * list them as needing install in eg bin/CMakeLists.txt 
+   * run the om-- for the package, eg bin
+   * only then can okdist-- package the updated/added scripts into tarball
 
 
 workflow for Opticks binary releases
@@ -57,7 +77,7 @@ workflow for Opticks binary releases
 0.6 workstation: test the binary release by running tests as unpriviled simon::
 
      su - simon 
-     okr-t
+     opticks-release-test 
 
 1. lxslc: update repo and build 
 
@@ -72,20 +92,30 @@ workflow for Opticks binary releases
 
    * run tests::
 
-     release-check  
-     release-test    ## everything that needs GPU will fail 
+     opticks-release-check  
+     opticks-release-test    ## everything that needs GPU will fail 
 
 
+4. lxslc: copy tarball and python script to stratum zero node::
+
+      scp $(okdist-path) ~/opticks/bin/oktar.py O:  
+
+5a. automated way::
+
+   ssh O   
+       ## login to stratum zero
+
+   cvmfs_server transaction opticks.ihep.ac.cn 
+       ## start transaction 
+
+    ~/oktar.py ~/Opticks-0.0.0_alpha.tar   ## check the tarball
+    ~/oktar.py ~/Opticks-0.0.0_alpha.tar --explode --base /cvmfs/opticks.ihep.ac.cn/ok/releases  ## explode the tarball
+
+   cvmfs_server publish -m "First Release Opticks-0.0.0_alpha/x86_64-slc7-gcc48-geant4_10_04_p02-dbg" opticks.ihep.ac.cn
+       ## close and publish this transaction
 
 
-
-
-
-4. lxslc: copy tarball to stratum zero node::
-
-      scp $(okdist-path) O:  
-
-5. publish the tarball release onto cvmfs::
+5b. manual way of publishing the tarball release onto cvmfs::
 
    ssh O   
        ## login to stratum zero
@@ -239,6 +269,8 @@ okdist-metadata()
 
 okdist-deploy-opticks-site()
 {
+   local msg="=== $FUNCNAME :"
+   echo $msg $PWD
    local script=bin/opticks-site.bash
    if [ -f "$script" ]; then
        source $script
@@ -303,13 +335,17 @@ $FUNCNAME
 EON
 }
 
-okdist-explode(){ $FUNCNAME- $(okdist-path) ; }
-okdist-explode-(){    
+
+
+
+okdist-explode(){ oktar.py $(okdist-path) --explode --base $(okdist-releases-dir) ; }
+
+
+okdist-explode-old(){ $FUNCNAME- $(okdist-path) ; }
+okdist-explode-old-(){    
     local msg="=== $FUNCNAME :"
     local iwd=$PWD
     local path=$1 
-
-
 
     if [ -z "$path" ]; then 
         echo $msg expects path argument
