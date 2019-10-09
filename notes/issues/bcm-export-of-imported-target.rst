@@ -145,6 +145,179 @@ This is already in the release.
 
 
 
+Take a look at CMake generated pkgconfig
+---------------------------------------------
+
+* not really expecting this to be a complete solution, but can learn from it 
+
+::
+
+    (base) [blyth@gilda03 pkgconfig]$ PKG_CONFIG_PATH=. pkg-config sysrap --libs
+    Empty package name in Requires or Conflicts in file './sysrap.pc'
+
+
+    (base) [blyth@gilda03 pkgconfig]$ l
+    total 84
+    -rw-r--r--. 1 blyth blyth 270 Sep 13 22:57 g4ok.pc
+    -rw-r--r--. 1 blyth blyth 262 Sep 13 22:56 okg4.pc
+    -rw-r--r--. 1 blyth blyth 281 Sep 13 22:56 cfg4.pc
+    -rw-r--r--. 1 blyth blyth 260 Sep 13 22:56 extg4.pc
+    -rw-r--r--. 1 blyth blyth 272 Sep 13 22:56 ok.pc
+    -rw-r--r--. 1 blyth blyth 281 Sep 13 22:56 opticksgl.pc
+    -rw-r--r--. 1 blyth blyth 284 Sep 13 22:56 oglrap.pc
+    -rw-r--r--. 1 blyth blyth 263 Sep 13 22:55 okop.pc
+    -rw-r--r--. 1 blyth blyth 295 Sep 13 22:55 optixrap.pc
+    -rw-r--r--. 1 blyth blyth 288 Sep 13 22:54 optickscore.pc
+    -rw-r--r--. 1 blyth blyth 236 Sep 13 22:50 okconf.pc
+    -rw-r--r--. 1 blyth blyth 373 Sep  9 21:08 thrustrap.pc
+    -rw-r--r--. 1 blyth blyth 368 Sep  9 21:08 cudarap.pc
+    -rw-r--r--. 1 blyth blyth 307 Sep  9 21:08 opticksgeo.pc
+    -rw-r--r--. 1 blyth blyth 295 Sep  9 21:08 openmeshrap.pc
+    -rw-r--r--. 1 blyth blyth 276 Sep  9 21:08 assimprap.pc
+    -rw-r--r--. 1 blyth blyth 277 Sep  9 21:03 ggeo.pc
+    -rw-r--r--. 1 blyth blyth 275 Sep  9 21:02 yoctoglrap.pc
+    -rw-r--r--. 1 blyth blyth 369 Sep  9 21:02 npy.pc
+    -rw-r--r--. 1 blyth blyth 286 Sep  9 21:02 boostrap.pc
+    -rw-r--r--. 1 blyth blyth 282 Sep  9 21:02 sysrap.pc
+    (base) [blyth@gilda03 pkgconfig]$ pwd
+    /home/blyth/local/opticks/lib64/pkgconfig
+    (base) [blyth@gilda03 pkgconfig]$ cd
+    (base) [blyth@gilda03 ~]$ 
+    (base) [blyth@gilda03 ~]$ 
+    (base) [blyth@gilda03 ~]$ 
+    (base) [blyth@gilda03 ~]$ PKG_CONFIG_PATH=/home/blyth/local/opticks/lib64/pkgconfig pkg-config sysrap --libs
+    Empty package name in Requires or Conflicts in file '/home/blyth/local/opticks/lib64/pkgconfig/sysrap.pc'
+    (base) [blyth@gilda03 ~]$ 
+
+
+
+::
+
+     01 
+      2 prefix=/home/blyth/local/opticks
+      3 exec_prefix=${prefix}
+      4 libdir=${exec_prefix}/lib64
+      5 includedir=${exec_prefix}/include/SysRap
+      6 Name: sysrap
+      7 Description: No description
+      8 Version: 0.1.0
+      9 
+     10 Cflags:  -I${includedir} -DOPTICKS_SYSRAP
+     11 Libs: -L${libdir}  -lSysRap ssl crypto
+     12 Requires: okconf,,
+
+
+Removing the ",,"::
+
+    (base) [blyth@gilda03 pkgconfig]$ PKG_CONFIG_PATH=/home/blyth/local/opticks/lib64/pkgconfig pkg-config sysrap --libs
+    ssl crypto -L/home/blyth/local/opticks/lib64 -lSysRap  
+
+
+::
+
+    (base) [blyth@gilda03 pkgconfig]$ grep "Requires:" *.pc
+    assimprap.pc:Requires: ggeo
+    boostrap.pc:Requires: sysrap,,
+    cfg4.pc:Requires: extg4,opticksgeo,thrustrap
+    cudarap.pc:Requires: ,,,,sysrap,okconf,
+    extg4.pc:Requires: ggeo
+    g4ok.pc:Requires: cfg4,extg4,okop
+    ggeo.pc:Requires: optickscore,yoctoglrap
+    npy.pc:Requires: sysrap,boostrap,yoctogl,dualcontouringsample
+    oglrap.pc:Requires: opticksgeo,
+    okconf.pc:Requires: 
+    okg4.pc:Requires: ok,cfg4
+    okop.pc:Requires: optixrap
+    ok.pc:Requires: opticksgl
+    openmeshrap.pc:Requires: optickscore,ggeo
+    optickscore.pc:Requires: npy,okconf
+    opticksgeo.pc:Requires: optickscore,assimprap,openmeshrap
+    opticksgl.pc:Requires: oglrap,okop
+    optixrap.pc:Requires: okconf,opticksgeo,thrustrap
+    sysrap.pc:Requires: okconf
+    thrustrap.pc:Requires: ,,,,optickscore,cudarap
+    yoctoglrap.pc:Requires: npy
+    (base) [blyth@gilda03 pkgconfig]$ 
+
+
+
+* :google:`"Empty package name in Requires or Conflicts in file"`
+
+BCM is generating these files::
+   
+    bcm- 
+    bcm-cd
+    vi share/bcm/cmake/BCMPkgConfig.cmake
+
+    19 function(bcm_generate_pkgconfig_file)
+    20     set(options)
+    21     set(oneValueArgs NAME LIB_DIR INCLUDE_DIR DESCRIPTION)
+    22     set(multiValueArgs TARGETS CFLAGS LIBS REQUIRES)
+    23 
+
+
+::
+
+    (base) [blyth@gilda03 cmake]$ grep auto *.cmake
+    BCMDeploy.cmake:    bcm_auto_pkgconfig(TARGET ${PARSE_TARGETS})
+    BCMDeploy.cmake:    bcm_auto_export(TARGETS ${PARSE_TARGETS} NAMESPACE ${PARSE_NAMESPACE} COMPATIBILITY ${PARSE_COMPATIBILITY} TOPMATTER ${PARSE_TOPMATTER})
+    BCMExport.cmake:function(bcm_auto_export)
+    BCMPkgConfig.cmake:function(bcm_auto_pkgconfig_each)
+    BCMPkgConfig.cmake:        message(SEND_ERROR "Target is required for auto pkg config")
+    BCMPkgConfig.cmake:function(bcm_auto_pkgconfig)
+    BCMPkgConfig.cmake:        bcm_auto_pkgconfig_each(TARGET ${PARSE_TARGET} NAME ${PARSE_NAME})
+    BCMPkgConfig.cmake:            bcm_auto_pkgconfig_each(TARGET ${TARGET} NAME ${TARGET})
+    (base) [blyth@gilda03 cmake]$ 
+
+
+::
+
+    204 function(bcm_auto_pkgconfig)
+    205     set(options)
+    206     set(oneValueArgs NAME)
+    207     set(multiValueArgs TARGET) # TODO: Rename to TARGETS
+    208 
+    209     cmake_parse_arguments(PARSE "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+    210 
+    211     list(LENGTH PARSE_TARGET TARGET_COUNT)
+    212 
+    213     if(TARGET_COUNT EQUAL 1)
+    214         bcm_auto_pkgconfig_each(TARGET ${PARSE_TARGET} NAME ${PARSE_NAME})
+    215     else()
+    216         string(TOLOWER ${PROJECT_NAME} PROJECT_NAME_LOWER)
+    217         set(PACKAGE_NAME ${PROJECT_NAME})
+    218 
+    219         if(PARSE_NAME)
+    220             set(PACKAGE_NAME ${PARSE_NAME})
+    221         endif()
+    222 
+    223         string(TOLOWER ${PACKAGE_NAME} PACKAGE_NAME_LOWER)
+    224 
+    225         set(GENERATE_PROJECT_PC On)
+    226         foreach(TARGET ${PARSE_TARGET})
+    227             if("${TARGET}" STREQUAL "${PACKAGE_NAME_LOWER}")
+    228                 set(GENERATE_PROJECT_PC Off)
+    229             endif()
+    230             bcm_auto_pkgconfig_each(TARGET ${TARGET} NAME ${TARGET})
+    231         endforeach()
+    232 
+    233         string(REPLACE ";" "," REQUIRES "${PARSE_TARGET}")
+    ^^^^^^^^  REQUIRES is output with ; -> ,
+    234         # TODO: Get description from project
+    235         set(DESCRIPTION "No description")
+    236 
+    237         if(GENERATE_PROJECT_PC)
+    238             file(GENERATE OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${PACKAGE_NAME_LOWER}.pc CONTENT
+    239 "
+    240 Name: ${PACKAGE_NAME_LOWER}
+    241 Description: ${DESCRIPTION}
+    242 Version: ${PROJECT_VERSION}
+    243 Requires: ${REQUIRES}
+    244 "
+    245             )
+    246         endif()
+    247     endif()
+
 
 
 

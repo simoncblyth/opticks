@@ -562,10 +562,10 @@ int main(int argc, char** argv)
 
    //test_CWD(); 
    //test_Absolute(); 
-   //test_preparePath();
+   test_preparePath();
    //test_ParentParentDir();
 
-   test_OPTICKS_USER_HOME(); 
+   //test_OPTICKS_USER_HOME(); 
 
    return 0 ; 
 }
