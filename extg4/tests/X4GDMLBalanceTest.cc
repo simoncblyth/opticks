@@ -77,7 +77,8 @@ int main( int argc , char** argv )
     LOG(info)  << raw->ana_brief() ;  
     //LOG(info)  << raw->ana_desc() ;  
 
-    bool balance = false ; 
+    //bool balance = false ;  // <-- causes OOM death  
+    bool balance = true ; 
     nnode* use = balance ? NTreeProcess<nnode>::Process(raw, soIdx, lvIdx) : raw  ; 
 
     LOG(info)  << "use\n" << use->ana_desc() ;  

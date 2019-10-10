@@ -658,11 +658,14 @@ opticks-ext-installer(){
    local msg="=== $FUNCNAME :"
    echo $msg START $(date)
    local ext
+   local rc 
    while read ext 
    do
         echo $msg $ext
         $ext-
         $ext--
+        rc=$?
+        [ $rc -ne 0 ] && echo $msg RC $rc from ext $ext : ABORTING && return $rc
    done
    echo $msg DONE $(date)
 }

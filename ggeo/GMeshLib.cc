@@ -459,15 +459,22 @@ void GMeshLib::loadMeshes(const char* idpath )
         {   
             if( m_direct )
             {
+                if(!soliddir_exists)
+                { 
+                    LOG(error)
+                        << " idpath " << idpath
+                        << " idx " << idx 
+                        ; 
+                    LOG(error) 
+                        << " MISSING expected soliddir "
+                        << " meshdir " << meshdir 
+                        << " meshdir_exists " << meshdir_exists 
+                        << " soliddir " << soliddir 
+                        << " soliddir_exists " << soliddir_exists 
+                        ; 
+                }
                 assert( soliddir_exists && "GMeshLib persisted GMesh are expected to have paired GMeshLibNCSG dirs"); 
             }
-
-            LOG(debug) 
-                << " meshdir " << meshdir 
-                << " meshdir_exists " << meshdir_exists 
-                << " soliddir " << soliddir 
-                << " soliddir_exists " << soliddir_exists 
-                ; 
 
             GMesh* mesh = GMesh::load( meshdir );
             NCSG* solid = NCSG::Load( soliddir );  
