@@ -98,7 +98,7 @@ workflow for Opticks binary releases
 
 4. lxslc: copy tarball and python script to stratum zero node::
 
-      scp $(okdist-path) ~/opticks/bin/oktar.py O:  
+      okdist- ; scp $(okdist-path) $(which oktar.py) O:  
 
 5a. automated way::
 
@@ -111,7 +111,7 @@ workflow for Opticks binary releases
     ~/oktar.py ~/Opticks-0.0.0_alpha.tar   ## check the tarball
     ~/oktar.py ~/Opticks-0.0.0_alpha.tar --explode --base /cvmfs/opticks.ihep.ac.cn/ok/releases  ## explode the tarball
 
-   cvmfs_server publish -m "First Release Opticks-0.0.0_alpha/x86_64-slc7-gcc48-geant4_10_04_p02-dbg" opticks.ihep.ac.cn
+   cvmfs_server publish -m "First technical release Opticks-0.0.0_alpha/x86_64-slc7-gcc48-geant4_10_04_p02-dbg" opticks.ihep.ac.cn
        ## close and publish this transaction
 
 

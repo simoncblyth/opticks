@@ -8,6 +8,13 @@ This script is source "included" from the parent script opticks-site.bash,
 it acts to collect local customizations for a site allowing the main script 
 to stay generic.
 
+After updates here use::
+
+    opticks-site-      # redefine the optick-site bash functions picking up the changes
+    opticks-site-info
+    opticks-site-check
+
+
 EON
 }
 
