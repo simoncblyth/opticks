@@ -210,6 +210,7 @@ ocsgbsp-cmake()
     opticks-
 
     cmake \
+       -DOPTICKS_PREFIX=$(opticks-prefix) \
        -DCMAKE_BUILD_TYPE=Debug \
        -DCMAKE_INSTALL_PREFIX=$(opticks-prefix) \
        -DCMAKE_PREFIX_PATH=$(opticks-prefix)/externals \

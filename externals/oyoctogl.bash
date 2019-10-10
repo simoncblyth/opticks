@@ -280,6 +280,7 @@ oyoctogl-cmake()
 
 
     cmake \
+       -DOPTICKS_PREFIX=$(opticks-prefix) \
        -DCMAKE_PREFIX_PATH=$(opticks-prefix)/externals \
        -DCMAKE_MODULE_PATH=$(opticks-home)/cmake/Modules \
        -DCMAKE_BUILD_TYPE=Debug \

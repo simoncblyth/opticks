@@ -71,6 +71,7 @@ odcs-cmake()
     opticks-
 
     cmake \
+       -DOPTICKS_PREFIX=$(opticks-prefix) \
        -DCMAKE_MODULE_PATH=$(opticks-home)/cmake/Modules \
        -DCMAKE_PREFIX_PATH=$(opticks-prefix)/externals \
        -DCMAKE_BUILD_TYPE=Debug \
