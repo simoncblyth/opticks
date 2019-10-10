@@ -6,6 +6,9 @@ include(OpticksBuildOptions)
 find_package(ImGui       REQUIRED MODULE)
 find_package(OpticksGLEW REQUIRED MODULE)
 
+
+set(OpticksGLFW_ALT ON)
+set(OpticksGLFW_VERBOSE ON)
 find_package(OpticksGLFW REQUIRED MODULE)
 # should come along with ImGui ?
 

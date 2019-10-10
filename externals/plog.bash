@@ -133,7 +133,13 @@ plog-get(){
    local dir=$(dirname $(plog-dir)) &&  mkdir -p $dir && cd $dir
    local url=$(plog-url)
    echo $msg url $url 
-   [ ! -d plog ] && git clone $url
+   if [ ! -d plog ]; then  
+       local cmd="git clone $url"
+       echo $cmd
+       eval $cmd
+   else
+       echo $msg plog already cloned
+   fi 
 }
 
 plog--()

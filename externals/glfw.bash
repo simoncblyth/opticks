@@ -360,6 +360,9 @@ glfw-cmake(){
                    $(glfw-dir)
   fi 
 
+  #                 -DOPTICKS_PREFIX=$(opticks-prefix) \
+
+
   cd $iwd
 }
 

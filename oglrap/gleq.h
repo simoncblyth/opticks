@@ -358,7 +358,7 @@ GLEQDEF void gleqInit(void)
 {
     glfwSetMonitorCallback(gleq_monitor_callback);
 #if GLFW_VERSION_MINOR >= 2
-    glfwSetJoystickCallback(gleq_joystick_callback);
+    //glfwSetJoystickCallback(gleq_joystick_callback);
 #endif
 }
 
