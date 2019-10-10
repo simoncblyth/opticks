@@ -17,8 +17,8 @@ use of an Opticks binary distribution.
 Use it by including a line in your ~/.bashrc similar to one of the below, 
 corresponding to your operating system architecture and package versions::
 
-   source /cvmfs/opticks.ihep.ac.cn/ok/releases/Opticks-0.0.0_alpha/x86_64-slc7-gcc48-geant4_10_04_p02-dbg/bin/release.bash
-   source /cvmfs/opticks.ihep.ac.cn/ok/releases/Opticks-0.0.0_alpha/x86_64-centos7-gcc48-geant4_10_04_p02-dbg/bin/release.bash
+   source /cvmfs/opticks.ihep.ac.cn/ok/releases/Opticks-0.0.0_alpha/x86_64-slc7-gcc48-geant4_10_04_p02-dbg/bin/opticks-release.bash
+   source /cvmfs/opticks.ihep.ac.cn/ok/releases/Opticks-0.0.0_alpha/x86_64-centos7-gcc48-geant4_10_04_p02-dbg/bin/opticks-release.bash
    
 By default Opticks binary distributions do not include Geant4 libs or data, 
 those are assumed to be separately provided and environment configured.

@@ -275,6 +275,9 @@ okdist-deploy-opticks-site()
    if [ -f "$script" ]; then
        source $script
        opticks-site-deploy
+
+       source $(opticks-site-path)   # replace all opticks-site functions with the deployed ones
+       opticks-site-deploy-html 
    else
        echo $msg missing script $script
    fi

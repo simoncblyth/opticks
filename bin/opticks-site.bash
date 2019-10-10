@@ -256,18 +256,29 @@ opticks-site-diff()
     eval $cmd
 }
 
+opticks-site-deploy-notes(){ cat << EON
+$FUNCNAME
+==========================
+
+This canonically invoked from okdist-- with okdist-deploy-opticks-site 
+
+EON
+}
+
+
 opticks-site-deploy()
 {
     local msg="=== $FUNCNAME : "
 
     local src=$(opticks-site-source)
-    local lsrc=$(opticks-site-source-local)   # satellite for customization, initial example
+    local lsrc=$(opticks-site-source-local)   # sidecar for customization, initial example
 
     local path=$(opticks-site-path)
-    local lpath=$(opticks-site-path-local)   # satelliite for customization, under adminstrators control
+    local lpath=$(opticks-site-path-local)   # sidecar for customization, under adminstrators control
 
     [ "$path" == "$src" ] && echo $msg src and path are same $path nothing to do && return 0
 
+    mkdir -p $(dirname $path)
     local cmd="cp $src $path"     # any changes to installed generic script are stomped 
     echo $cmd 
     eval $cmd 
@@ -281,10 +292,27 @@ opticks-site-deploy()
         echo $cmd 
         eval $cmd 
     fi 
-
 }
 
+opticks-site-deploy-html()
+{
+    local msg="=== $FUNCNAME :"
+    local script=$(opticks-site-path)
+    if [ ! -f "$script" ]; then 
+       echo $msg the usage text contains customized paths hence needs to be run when sourced from deployed location
+       return 0   
+    fi 
 
+    local rst=$(dirname $script)/opticks-site-usage.rst
+    local html=${rst/.rst/.html}
+
+    echo $msg generating rst and html usage documentation
+    echo $msg rst $rst
+    echo $msg html $html
+
+    opticks-site-usage > $rst
+    rst2html5.py -stg $rst $html
+}
 
 
 

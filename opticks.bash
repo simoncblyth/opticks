@@ -593,19 +593,19 @@ $FUNCNAME
 EOI
 }
 
-opticks-externals-install(){ echo $FUNCNAME ; opticks-externals | -opticks-installer ; }
-opticks-externals-url(){     echo $FUNCNAME ; opticks-externals | -opticks-url ; }
-opticks-externals-dist(){    echo $FUNCNAME ; opticks-externals | -opticks-dist ; }
-opticks-externals-dir(){     echo $FUNCNAME ; opticks-externals | -opticks-dir ; }
-opticks-externals-status(){  echo $FUNCNAME ; opticks-externals | -opticks-status ; }
+opticks-externals-install(){ echo $FUNCNAME ; opticks-externals | opticks-installer ; }
+opticks-externals-url(){     echo $FUNCNAME ; opticks-externals | opticks-url ; }
+opticks-externals-dist(){    echo $FUNCNAME ; opticks-externals | opticks-dist ; }
+opticks-externals-dir(){     echo $FUNCNAME ; opticks-externals | opticks-dir ; }
+opticks-externals-status(){  echo $FUNCNAME ; opticks-externals | opticks-status ; }
 
-opticks-optionals-install(){ echo $FUNCNAME ; opticks-optionals | -opticks-installer ; }
-opticks-optionals-url(){     echo $FUNCNAME ; opticks-optionals | -opticks-url ; }
-opticks-optionals-dist(){    echo $FUNCNAME ; opticks-optionals | -opticks-dist ; }
+opticks-optionals-install(){ echo $FUNCNAME ; opticks-optionals | opticks-installer ; }
+opticks-optionals-url(){     echo $FUNCNAME ; opticks-optionals | opticks-url ; }
+opticks-optionals-dist(){    echo $FUNCNAME ; opticks-optionals | opticks-dist ; }
 
-opticks-possibles-install(){ echo $FUNCNAME ; opticks-possibles | -opticks-installer ; }
-opticks-possibles-url(){     echo $FUNCNAME ; opticks-possibles | -opticks-url ; }
-opticks-possibles-dist(){    echo $FUNCNAME ; opticks-possibles | -opticks-dist ; }
+opticks-possibles-install(){ echo $FUNCNAME ; opticks-possibles | opticks-installer ; }
+opticks-possibles-url(){     echo $FUNCNAME ; opticks-possibles | opticks-url ; }
+opticks-possibles-dist(){    echo $FUNCNAME ; opticks-possibles | opticks-dist ; }
 
 
 # for finding system boost 
@@ -654,7 +654,7 @@ opticks-full()
 
 
 
--opticks-installer(){
+opticks-installer(){
    local msg="=== $FUNCNAME :"
    echo $msg START $(date)
    local ext
@@ -667,7 +667,7 @@ opticks-full()
    echo $msg DONE $(date)
 }
 
--opticks-url(){
+opticks-url(){
    local ext
    while read ext 
    do
@@ -676,7 +676,7 @@ opticks-full()
    done
 }
 
--opticks-dist(){
+opticks-dist(){
    local ext
    local dist
    while read ext 
@@ -687,7 +687,7 @@ opticks-full()
    done
 }
 
--opticks-dir(){
+opticks-dir(){
    local ext
    local dir
    while read ext 
@@ -697,7 +697,7 @@ opticks-full()
         printf "%30s :  %s \n" $ext $dir
    done
 }
--opticks-status(){
+opticks-status(){
    local ext
    local dir
    local iwd=$PWD 
