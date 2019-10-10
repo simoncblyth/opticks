@@ -138,14 +138,16 @@ class OpticksCMakeProj(object):
         return tag 
 
     @classmethod
-    def read_pkgs(cls):
-        root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        log.debug("root %s " % root)    
+    def read_pkgs(cls, home=None):
+        if home is None:
+            home = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        pass
+        log.info("home %s " % home)    
         pkgs = {} 
-        for dirpath, dirs, names in os.walk(root):
+        for dirpath, dirs, names in os.walk(home):
             if CMakeLists.NAME in names:
                 log.debug("proceed %s " % dirpath ) 
-                reldir = dirpath[len(root)+1:]
+                reldir = dirpath[len(home)+1:]
                 path = os.path.join(dirpath, CMakeLists.NAME)
                 tag = cls.find_export_tag(names)
                 lines = map(str.strip, file(path,"r").readlines() ) 
@@ -166,8 +168,8 @@ class OpticksCMakeProj(object):
         return pkgs
 
 
-    def __init__(self):
-        pkgs = self.read_pkgs()
+    def __init__(self, home=None):
+        pkgs = self.read_pkgs(home=home)
         keys = pkgs.keys()
         log.debug(repr(keys))
         self.pkgs = pkgs
@@ -226,6 +228,7 @@ class OpticksCMakeProj(object):
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(__doc__)
+    parser.add_argument(     "--home",  default=None, help="Project home, eg OPTICKS_HOME " )
     parser.add_argument(     "--dump",  action="store_true", help="Dump CMakeLists repr" )
     parser.add_argument(     "--tree",  action="store_true", help="Dump tree" )
     parser.add_argument(     "--subdirs",  action="store_true", help="Dump just the subdirs" )
@@ -239,7 +242,7 @@ if __name__ == '__main__':
     fmt = '[%(asctime)s] p%(process)s {%(pathname)s:%(lineno)d} %(levelname)s - %(message)s'
     logging.basicConfig(level=getattr(logging,args.level.upper()), format=fmt)
 
-    ok = OpticksCMakeProj()
+    ok = OpticksCMakeProj(args.home)
     
     if args.testfile:
         ok.write_testfile(args.testfilepath) 

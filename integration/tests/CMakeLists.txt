@@ -46,5 +46,11 @@ Debug fabricated tests with::
   ctest -R IntegrationTests.tboolean. --output-on-failure 
 
 
+
+Run without ctest::
+
+   LV=box tboolean.sh --generateoverride 10000
+
+
 #]=]
 

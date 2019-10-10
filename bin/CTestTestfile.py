@@ -59,6 +59,8 @@ class BuildTree(object):
     def __init__(self, root, projs):
         self.root = root
         self.projs = projs
+        log.info("root %s " % root)
+        log.info("projs %r " % projs)
 
     def filtercopy(self, dstbase):
         for proj in self.projs:
@@ -94,13 +96,14 @@ class BuildTree(object):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(__doc__)
     parser.add_argument(     "root",  nargs=1, help="Base directory in which to look for CTestTestfile.cmake " )
+    parser.add_argument(     "--home", default=os.path.expandvars("$OPTICKS_HOME"), help="source HOME under which to look for CMakeLists.txt" ) 
     parser.add_argument(     "--level", default="info", help="logging level" ) 
     parser.add_argument(     "--dest", default="/tmp/tests", help="destination directory tree to be removed, recreated and populated" ) 
     args = parser.parse_args()
     fmt = '[%(asctime)s] p%(process)s {%(pathname)s:%(lineno)d} %(levelname)s - %(message)s'
     logging.basicConfig(level=getattr(logging,args.level.upper()), format=fmt)
 
-    ok = OpticksCMakeProj()
+    ok = OpticksCMakeProj(args.home)
     
     bdir = args.root[0]
     dest = args.dest

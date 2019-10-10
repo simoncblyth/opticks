@@ -241,9 +241,11 @@ EOI
 
 okdist-install-tests()
 {
+   local msg="=== $FUNCNAME :"
    opticks-
    local bdir=$(opticks-bdir)
    local dest=$(opticks-dir)/tests
+   echo $msg bdir $bdir dest $dest
    CTestTestfile.py $bdir --dest $dest
 }
 

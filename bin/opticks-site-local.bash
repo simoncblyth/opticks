@@ -14,6 +14,18 @@ After updates here use::
     opticks-site-info
     opticks-site-check
 
+OPTICKS_SITE_RELEASE_DIR
+    envvar override allowing to switch release directory, usage examples::
+
+    export OPTICKS_SITE_RELEASE_DIR=/hpcfs/juno/junogpu/blyth/local/opticks/releases/Opticks-0.0.0_alpha/x86_64-slc7-gcc48-geant4_10_04_p02-dbg
+
+         check a release candidate before publishing it to /cvmfs
+
+    export OPTICKS_SITE_RELEASE_DIR=$(opticks-dir)
+
+        check the source "release" for fast debugging, without needed to make releases, 
+        while using mostly the same machinery as actual releases  
+
 
 EON
 }
@@ -30,12 +42,13 @@ opticks-site-sharedcache(){      echo $(opticks-site-user-prefix)/blyth/opticks.
 opticks-site-path(){             echo $(opticks-site-user-prefix)/blyth/opticks.ihep.ac.cn/opticks-site.bash ; }
 opticks-site-path-local(){       local path=$(opticks-site-path) ; echo ${path/.bash/-local.bash} ;  }
 
-opticks-site-release-base(){     echo $(opticks-site-user-prefix)/blyth/local/opticks/releases ; }
-#opticks-site-release-base(){    echo /cvmfs/opticks.ihep.ac.cn/ok/releases ; }
-
+opticks-site-release-base(){    echo /cvmfs/opticks.ihep.ac.cn/ok/releases ; }
 opticks-site-release-version(){  echo Opticks-0.0.0_alpha/x86_64-slc7-gcc48-geant4_10_04_p02-dbg  ; }
 
-opticks-site-release(){          echo $(opticks-site-release-base)/$(opticks-site-release-version)/bin/opticks-release.bash ; }
+opticks-site-release-dir(){      echo ${OPTICKS_SITE_RELEASE_DIR:-$(opticks-site-release-base)/$(opticks-site-release-version)} ; }
+
+
+opticks-site-release(){          echo $(opticks-site-release-dir)/bin/opticks-release.bash ; }
 
 
 

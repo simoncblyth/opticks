@@ -228,7 +228,11 @@ customization script, which is sourced by this script:
    opticks-site-release-version   : $(opticks-site-release-version)
    opticks-site-release-base      : $(opticks-site-release-base)
 
-   opticks-site-release      : $(opticks-site-release)
+   opticks-site-release-dir       : $(opticks-site-release-dir)
+   OPTICKS_SITE_RELEASE_DIR       : $OPTICKS_SITE_RELEASE_DIR   
+
+
+   opticks-site-release           : $(opticks-site-release)
 
 
 EOI
@@ -413,7 +417,22 @@ EOJ
 
 
 
+opticks-site-main-notes(){ cat << EON
+$FUNCNAME
+==========
 
+opticks-site-envg4
+    hookup Geant4 data envvars and libs via LD_LIBRARY_PATH
+
+opticks-site-release
+    exports OPTICKS_INSTALL_PREFIX, PATH (bin,lib,py/opticks/ana), PYTHONPATH
+    all based on opticks-release-prefix which comes from the directory of the opticks-release.bash script  
+
+opticks-site-sharedcache
+    exports OPTICKS_KEY, OPTICKS_GEOCACHE_PREFIX, OPTICKS_RNGCACHE_PREFIX
+
+EON
+}
 
 
 
