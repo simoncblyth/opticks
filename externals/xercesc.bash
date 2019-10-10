@@ -196,7 +196,6 @@ xercesc-name(){ local dist=$(xercesc-dist) ; echo ${dist/.tar.gz} ; }
 xercesc-base(){ echo $(opticks-prefix)/externals/xercesc ; }
 
 xercesc-dir(){  echo $(xercesc-prefix)/xercesc/$(xercesc-name) ; }
-xercesc-bdir(){ echo $(xercesc-prefix)/xercesc/$(xercesc-name).build ; }
 
 xercesc-info(){ cat << EOI
 
@@ -215,7 +214,6 @@ ONLY RELEVANT WHEN BUILDING MANUALLY
    xercesc-name   : $(xercesc-name)
    xercesc-base   : $(xercesc-base)
    xercesc-dir    : $(xercesc-dir)
-   xercesc-bdir   : $(xercesc-bdir)
 
    xercesc-prefix  : $(xercesc-prefix)
 
@@ -228,13 +226,20 @@ ONLY RELEVANT WHEN BUILDING MANUALLY
    see g4-cmake-modify-adopt-macports-xercesc
 
 
+NB configure BASED BUILD 
+
+* source and build dirs are not separated
+* avoided configure being run at every invokation by checking for a Makefile
+  in order to avoid rebuilding this 
+* despite this G4persistency is still being rebuilt 
+  everytime opticks-externals-install is run 
+
 EOI
 }
 
 
 
 xercesc-cd(){   cd $(xercesc-dir); }
-xercesc-bcd(){  cd $(xercesc-bdir); }
 
 xercesc-get(){
    local dir=$(dirname $(xercesc-dir)) &&  mkdir -p $dir && cd $dir
@@ -247,8 +252,14 @@ xercesc-get(){
 
 xercesc-configure()
 {
+   local msg="=== $FUNCNAME :"
    xercesc-cd
-   ./configure --prefix=$(xercesc-prefix)
+
+   if [ -f $(xercesc-dir)/Makefile -a -f $(xercesc-dir)/xerces-c.pc ]; then
+      echo $msg looks to have been configured already 
+   else
+      ./configure --prefix=$(xercesc-prefix)
+   fi 
 }
 
 xercesc-make()

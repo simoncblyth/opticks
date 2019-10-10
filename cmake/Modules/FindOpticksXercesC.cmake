@@ -59,7 +59,8 @@ if(TARGET G4persistency)
     endif()
 
 else()
-    message(FATAL_ERROR "G4persistency target is required" )
+    #message(FATAL_ERROR "G4persistency target is required" )
+    message(STATUS "Did not find G4persistency target : so look for system XercesC or one provided by cmake arguments " )
 endif()
 
 
