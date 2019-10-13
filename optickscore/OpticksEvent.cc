@@ -30,6 +30,7 @@
 #include <cassert>
 #include <sstream>
 #include <cstring>
+#include <csignal>
 #include <iomanip>
 
 
@@ -1534,7 +1535,7 @@ void OpticksEvent::Summary(const char* msg)
     LOG(info) << description(msg) ; 
 }
 
-std::string OpticksEvent::brief()
+std::string OpticksEvent::brief()   // cannot be const, due to OpticksEventSpec::formDir
 {
     std::stringstream ss ; 
     ss << "Evt " 
@@ -1594,6 +1595,10 @@ bool OpticksEvent::CanAnalyse(OpticksEvent* evt)
 OpticksEvent::save
 ---------------------
 
+Canonically invoked by OpticksRun::saveEvent which is 
+invoked from top level managers such as OKMgr::propagate.
+
+
 In "--production" mode skips saving the arrays.
 
 
@@ -1610,7 +1615,7 @@ Formerly skipped saving when no records resulting in CanAnalyse false,
 
 void OpticksEvent::save()
 {
-    // if(!CanAnalyse(this))  return 
+    //std::raise(SIGINT); 
 
     OK_PROFILE("_OpticksEvent::save"); 
 
@@ -1680,7 +1685,14 @@ void OpticksEvent::saveHitData(NPY<float>* ht) const
     {
         unsigned num_hit = ht->getNumItems(); 
         ht->save(m_pfx, "ht", m_typ,  m_tag, m_udet);  // even when zero hits
-        if(num_hit == 0) LOG(info) << "saveHitData zero hits " ; 
+        LOG(info) 
+             << " num_hit " << num_hit
+             << " ht " << ht->getShapeString() 
+             << " tag " << m_tag 
+             ; 
+
+        
+
     }
 }
 

@@ -287,6 +287,10 @@ class OKCORE_API Opticks {
        int   getDbgMM() const ;
        int   getDbgLV() const ;
        int   getStack() const ;
+       int   getMaxCallableProgramDepth() const ;
+       int   getMaxTraceDepth() const ;
+       int   getUsageReportLevel() const ; 
+
        int getMeshVerbosity() const ;
        const char* getFlightPathDir() const ;
        const char* getAccel() const ;
@@ -422,6 +426,8 @@ class OKCORE_API Opticks {
        unsigned getMaskIndex(unsigned idx) const ;  // original pre-masked index OR idx if no mask 
        bool hasMask() const ; 
        unsigned getMaskSize() const ; 
+
+       unsigned getDbgHitMask() const ;  // --dbghitmask=TO,BT,SD 
 
        bool isDbgPhoton(unsigned record_id) const ;
        bool isOtherPhoton(unsigned record_id) const ;

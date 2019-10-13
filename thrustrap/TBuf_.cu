@@ -166,6 +166,23 @@ This hides the float4x4 type down in here in the _.cu
 where nvcc makes it available by default, such that the  
 user doesnt need access to the type.
 
+Canonically invoked by::
+
+    OEvent::downloadHitsCompute
+    OEvent::downloadHitsInterop
+
+Using hitmask that is hardcoded into OEvent ctor::
+
+     65 OEvent::OEvent(Opticks* ok, OContext* ocontext)
+     66    :
+     67    m_log(new SLog("OEvent::OEvent", "", LEVEL)),
+     68    m_ok(ok),
+     69    //m_hitmask(SURFACE_DETECT),
+     70    m_hitmask(TORCH | BULK_SCATTER | BOUNDARY_TRANSMIT | SURFACE_ABSORB),
+     71    m_compute(ok->isCompute()),
+     72    m_dbghit(m_ok->isDbgHit()),            // --dbghi
+
+
 **/
 
 unsigned TBuf::downloadSelection4x4(const char* name, NPY<float>* npy, unsigned hitmask, bool verbose) const 

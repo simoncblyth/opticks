@@ -329,8 +329,20 @@ void OContext::InitRTX(int rtxmode)  // static
 #endif
 
 
+
+
+
+//frm optixMeshViewer/optixMeshViewer.cpp
+void UsageReportLogger::log( int lvl, const char* tag, const char* msg )
+{
+    LOG(info) << "[" << lvl << "][" << std::left << std::setw( 12 ) << tag << "] " << msg;
+}
+
+
+
 OContext::OContext(optix::Context context, Opticks* ok, const char* cmake_target, const char* ptxrel ) 
     : 
+    m_logger(new UsageReportLogger),
     m_context(context),
     m_ok(ok),
     m_cfg(new OConfig(m_context, cmake_target, ptxrel)),
@@ -349,6 +361,40 @@ OContext::OContext(optix::Context context, Opticks* ok, const char* cmake_target
     initDevices();
 }
 
+
+/**
+
+TODO: investigate new API for controlling stack in OptiX 6 with RTX enabled
+
+* https://devtalk.nvidia.com/default/topic/1047558/optix/stack-overflow-with-optix6-0-0-rtx-2080ti/
+* https://raytracing-docs.nvidia.com/optix6/api_6_5/html/group___context.html#gac9dbd3baa30e9f2ece268726862def0a
+
+::
+
+   rtContextSetMaxTraceDepth 
+   rtContextSetMaxCallableProgramDepth
+
+* https://raytracing-docs.nvidia.com/optix6/api_6_5/html/group___context.html#ga1da5629dbb8d0090e1ea5590d1e67206
+
+  * default of both these depths is 5, 
+    but i can probably set them to 1 !!! THIS MIGHT BE A BIG WIN 
+
+**/
+
+
+
+void usageReportCallback( int lvl, const char* tag, const char* msg, void* cbdata )
+{
+    //frm optixMeshViewer/optixMeshViewer.cpp
+    // Route messages to a C++ object (the "logger"), as a real app might do.
+    // We could have printed them directly in this simple case.
+
+    UsageReportLogger* logger = reinterpret_cast<UsageReportLogger*>( cbdata );
+    logger->log( lvl, tag, msg );  
+}
+
+
+
 void OContext::init()
 {
     InitBufferNames(m_buffer_names); 
@@ -366,6 +412,35 @@ void OContext::init()
         << " num_ray_type " << num_ray_type 
         << " stacksize_bytes " << stacksize_bytes
         ; 
+
+
+    int maxCallableProgramDepth = m_ok->getMaxCallableProgramDepth();
+    if(maxCallableProgramDepth > 0)
+    {
+        unsigned _maxCallableProgramDepth = m_context->getMaxCallableProgramDepth() ; 
+        m_context->setMaxCallableProgramDepth( maxCallableProgramDepth ) ;  
+        assert( unsigned(maxCallableProgramDepth) == m_context->getMaxCallableProgramDepth()) ; 
+
+        LOG(error) << " --maxCallableProgramDepth changed from " << _maxCallableProgramDepth << " to " << maxCallableProgramDepth ;  
+    }
+
+
+    int maxTraceDepth = m_ok->getMaxTraceDepth();
+    if(maxTraceDepth > 0)
+    {
+        unsigned _maxTraceDepth = m_context->getMaxTraceDepth() ; 
+        m_context->setMaxTraceDepth( maxTraceDepth ) ;  
+        assert( unsigned(maxTraceDepth) == m_context->getMaxTraceDepth()) ; 
+
+        LOG(error) << " --maxTraceDepth changed from " << _maxTraceDepth << " to " << maxTraceDepth ;  
+    }
+
+    int usageReportLevel = m_ok->getUsageReportLevel();
+    if(usageReportLevel > 0)
+    {
+        m_context->setUsageReportCallback( usageReportCallback, usageReportLevel, m_logger ); 
+    } 
+
 }
 
 

@@ -45,6 +45,7 @@ History
 #include <map>
 #include <string>
 #include <vector>
+#include "plog/Severity.h"
 
 class SLog ; 
 
@@ -57,6 +58,7 @@ class Index ;
 #include "OKCORE_HEAD.hh"
 
 class OKCORE_API OpticksAttrSeq {
+        static const plog::Severity LEVEL ; 
     public:
         static unsigned int UNSET ; 
         static unsigned int ERROR_COLOR ; 
@@ -82,6 +84,7 @@ class OKCORE_API OpticksAttrSeq {
         void setSequence(NSequence* seq);
         bool hasSequence();
     public:
+        //std::string  getCtrlDesc() const ; 
         std::string  getLabel(Index* index, const char* key, unsigned int& colorcode);
         std::string  getAbbr(const char* key);
         unsigned int getColorCode(const char* key );

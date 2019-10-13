@@ -544,6 +544,20 @@ Find targets by geocache-kcd and looking at GNodeLib/GTreePresent.txt eg::
     65593    352856 [  5:   0/   2]    0 ( 2)        pMask0x4c3bf20  sMask0x4ca38d0
     65594    352857 [  5:   1/   2]    1 ( 2)        PMT_20inch_log_phys0x4ca16b0  PMT_20inch_pmt_solid0x4c81b40
 
+
+
+::
+
+    OKTest --target 62590 --xanalytic    
+    ## 62590 : pOuterWaterPool0x4bd2b70  sOuterWaterPool0x4bd2960  
+    ## with this target calib photons appear at center (by eye with orthographic view anyhow)
+
+
+    OKTest --target 62590 --xanalytic --eye -0.9,0,0
+    ## canonical position
+
+
+
 EON
 }
 

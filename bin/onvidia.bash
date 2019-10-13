@@ -24,6 +24,9 @@ onvidia-driver-version(){  nvidia-smi --query-gpu=driver_version --format=csv,no
 onvidia-export(){ export OPTICKS_NVIDIA_DRIVER_VERSION=$(onvidia-driver-version) ; }
 onvidia-smi(){ watch -d -n 0.5 nvidia-smi ; }
 
+onvidia-open(){ open https://www.nvidia.com/Download/Find.aspx?lang=en-us ; }
+
+
 onvidia-usage(){ cat << EOU
 
 NVIDIA Linux : notes on drivers setup etc..
@@ -1546,7 +1549,30 @@ nvidia-smi monitoring
 
     watch -d -n 0.5 nvidia-smi
 
+
+J : Gold.Precision Update NVIDIA Driver from 418.56 to 435.21
+---------------------------------------------------------------
+
+1. logout from the machine, connect from laptop "ssh J"
+2. become root and "init 3" killing X, gnome etc..
+3. nvidia-smi  : check nothing using GPUs
+4. cd /usr/local ; bash NVIDIA-Linux-x86_64-435.21.run
+
+5. continue from warning : There appears to already be a driver installed on your system (version: 418.56). 
+6. 32-bit compat: Y
+7. X config update: Y
+
+8. init 5 : after few seconds the login panel appears
+9. login : X and gnome are working as normal
+10. nvidia-smi shows the updated driver version 435.21
+11. update Opticks to use OptiX 6.5.0 following instructions in optix-vi
+
+
+
+
 EOT
 }
+
+
 
 

@@ -70,7 +70,12 @@ int main(int, char** argv)
     LOG(level) << "gello " ; 
     LOG((plog::Severity)ilevel) << "i-gello " ; 
 
-
+    std::cout << " (int)fatal   " << (int)fatal << std::endl ;  
+    std::cout << " (int)error   " << (int)error << std::endl ;  
+    std::cout << " (int)warning " << (int)warning << std::endl ;  
+    std::cout << " (int)info    " << (int)info << std::endl ;  
+    std::cout << " (int)debug   " << (int)debug << std::endl ;  
+    std::cout << " (int)verbose " << (int)verbose << std::endl ;  
 
 
 

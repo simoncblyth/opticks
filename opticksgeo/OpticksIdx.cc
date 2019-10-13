@@ -47,6 +47,9 @@
 
 #include "PLOG.hh"
 
+const plog::Severity OpticksIdx::LEVEL = PLOG::EnvLevel("OpticksIdx", "debug"); 
+
+
 /**
 OpticksIdx
 ===========
@@ -54,6 +57,7 @@ OpticksIdx
 Canonical instance is ctor resident of OKMgr or OKG4Mgr 
 
 **/
+
 
 OpticksIdx::OpticksIdx(OpticksHub* hub)
    :
@@ -80,7 +84,12 @@ GItemIndex* OpticksIdx::makeHistoryItemIndex()
     }
  
     OpticksAttrSeq* qflg = m_hub->getFlagNames();
-    //qflg->dumpTable(seqhis, "OpticksIdx::makeHistoryItemIndex seqhis"); 
+
+    if(LEVEL < debug) // see PLogTest for levels ints
+    {
+        qflg->dumpTable(seqhis_, "OpticksIdx::makeHistoryItemIndex seqhis"); 
+    }
+
 
     GItemIndex* seqhis = new GItemIndex(seqhis_) ;  
     seqhis->setTitle("Photon Flag Sequence Selection");

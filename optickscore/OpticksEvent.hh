@@ -410,7 +410,7 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec
        void resize();
    public:
        void Summary(const char* msg="OpticksEvent::Summary");
-       std::string  brief();
+       std::string  brief() ;  // cannot be const 
        std::string  description(const char* msg="OpticksEvent::description");
 
        bool         isInterop();

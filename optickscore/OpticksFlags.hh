@@ -135,6 +135,7 @@ class OKCORE_API OpticksFlags {
        static unsigned BitPos(unsigned flag);
        static unsigned AbbrevToFlag( const char* abbrev );
        static unsigned long long AbbrevToFlagSequence( const char* abbseq, char delim=' ');
+       static unsigned AbbrevSequenceToMask( const char* abbseq, char delim=' ');
        static void AbbrevToFlagValSequence( unsigned long long& seqhis, unsigned long long& seqval, const char* seqmap, char edelim=' ') ;
 
        static unsigned PointVal1( const unsigned long long& seqval , unsigned bitpos );

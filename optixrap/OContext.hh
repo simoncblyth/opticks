@@ -51,6 +51,18 @@ class Opticks ;
 class BTimes ; 
 //struct STimes ; 
 
+
+
+
+
+//frm optixMeshViewer/optixMeshViewer.cpp
+struct UsageReportLogger
+{
+  void log( int lvl, const char* tag, const char* msg ); 
+};
+
+
+
 #include "OXRAP_API_EXPORT.hh"
 class OXRAP_API OContext {
 
@@ -181,6 +193,7 @@ class OXRAP_API OContext {
             void resizeBuffer(optix::Buffer& buffer, NPY<T>* npy, const char* name);    // formerly static 
       private:
      private:
+            UsageReportLogger* m_logger ; 
             optix::Context    m_context ; 
             optix::Group      m_top ; 
             Opticks*          m_ok ; 

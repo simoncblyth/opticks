@@ -101,6 +101,7 @@ scan-ts-args(){  scan-seq ; }
 scan-tp-args(){  scan-seq ; } 
 scan-ph-args(){  scan-numphoton ; } 
 scan-px-args(){  scan-numphoton ; } 
+scan-pf-args(){  scan-numphoton ; } 
 
 
 scan-seq-notes(){ cat << EON
@@ -143,7 +144,7 @@ scan-numphoton-inwaiting(){ cat << EOS | tr -d " ,"  | grep -v \#
 EOS
 }
 
-scan-numphoton(){ cat << EOS | tr -d " ,"  | grep -v \#
+scan-numphoton-by10(){ cat << EOS | tr -d " ,"  | grep -v \#
   1,000,000
  10,000,000
  20,000,000
@@ -158,7 +159,11 @@ scan-numphoton(){ cat << EOS | tr -d " ,"  | grep -v \#
 EOS
 }
 
-
+scan-numphoton(){ cat << EOS | tr -d " ,"  | grep -v \#
+  1,000,000
+ 10,000,000
+EOS
+}
 
 
 
@@ -334,16 +339,31 @@ scan-px-notes(){ cat << EON
    Silver:Quadro_RTX_8000 torchconfig tboolean-boxx push to 200M
 
 
+EON
+}
+
+scan-pf-note(){ bashnotes.py ${1:-$(scan-vers)} --bashcmd "scan-;scan-pf-notes" ; }
+scan-pf-notes(){ cat << EON
+0
+   Gold:TITAN_RTX checking torchconfig based GPU generation of photons with OKTest targeting JUNO CD center
+
+   Former hardcoded dbghitmask TO,BT,SC,SA yields too many photons (30%) 
+   so mask it more difficult with a reemission TO,BT,RE,SC,SA
+
+
 
 
 EON
 }
 
 
+scan-vers(){ echo ${SCAN_VERS:-0} ; }
+
+
+
 scan-smry(){ profilesmry.py ${1:-$(scan-vers)} ${@:2} ; }
 scan-ismry(){ ipython --pdb -i -- $(which profilesmry.py)     ${1:-$(scan-vers)} ${@:2} ; }
 scan-plot(){  ipython --pdb -i -- $(which profilesmryplot.py) ${1:-$(scan-vers)} ${@:2}  ; }
-scan-vers(){ echo ${SCAN_VERS:-3} ; }
 scan-pfx(){  echo ${SCAN_PFX:-scan-$(scan-mode)-$(scan-vers)} ; }
 
 
@@ -409,6 +429,14 @@ scan-px-cmd(){
    echo $cmd
 }
 
+scan-pf-cmd(){
+   local num_photons=$1
+   local cat=$2
+   local num_abbrev=$(scan-num $num_photons)
+   local cmd="OKTest --target 62590  --pfx $(scan-pfx) --cat ${cat}_${num_abbrev} --generateoverride ${num_photons} --compute --save --production --savehit --dbghitmask TO,BT,RE,SC,SA --multievent 10 --xanalytic " 
+   cmd="$cmd $(scan-rngmax-opt $num_photons) $(scan-cat $cat)"
+   echo $cmd
+}
 
 
 scan-ts-cmd(){   echo ts $1 --pfx $(scan-pfx) --generateoverride -1 --cvd 1 --rtx 1 --compute --recpoi --utaildebug --xanalytic ; }
@@ -491,6 +519,11 @@ scan-ph-v(){    VERBOSE=1 OpticksProfile=ERROR scan-ph ; }
 scan-px-(){     SCAN_MODE=px scan-cmds-all ; }
 scan-px(){      SCAN_MODE=px scan-- ; }
 scan-px-v(){    VERBOSE=1 OpticksProfile=ERROR scan-px ; }
+
+scan-pf-(){     SCAN_MODE=pf scan-cmds-all ; }
+scan-pf(){      SCAN_MODE=pf scan-- ; }
+scan-pf-v(){    VERBOSE=1 OpticksProfile=ERROR scan-pf ; }
+
 
 
 scan-tp-(){     SCAN_MODE=tp scan-cmds-all ; }

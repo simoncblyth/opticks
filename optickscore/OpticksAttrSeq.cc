@@ -42,11 +42,12 @@
 #include "OpticksResource.hh"
 #include "OpticksColors.hh"
 
+#include "PLOG.hh"
+
 unsigned int OpticksAttrSeq::UNSET = UINT_MAX ; 
 unsigned int OpticksAttrSeq::ERROR_COLOR = 0xAAAAAA ; 
 
-
-
+const plog::Severity OpticksAttrSeq::LEVEL = PLOG::EnvLevel("OpticksAttrSeq", "debug"); 
 
 
 OpticksAttrSeq::OpticksAttrSeq(Opticks* ok, const char* type)
@@ -107,17 +108,17 @@ void OpticksAttrSeq::loadPrefs()
 {
     if(m_resource->loadPreference(m_color, m_type, "color.json"))
     {
-        LOG(debug) << "OpticksAttrSeq::loadPrefs color " << m_type ;
+        LOG(LEVEL) << "color " << m_type ;
     }
 
     if(m_resource->loadPreference(m_abbrev, m_type, "abbrev.json"))
     {
-        LOG(debug) << "OpticksAttrSeq::loadPrefs abbrev " << m_type ;
+        LOG(LEVEL) << "abbrev " << m_type ;
     }
 
     if(m_resource->loadPreference(m_order, m_type, "order.json"))
     {
-        LOG(debug) << "OpticksAttrSeq::loadPrefs order " << m_type ;
+        LOG(LEVEL) << "order " << m_type ;
     }
 }
 
@@ -260,10 +261,16 @@ void OpticksAttrSeq::dumpKey(const char* key)
 }
 
 
+/**
+OpticksAttrSeq::decodeHexSequenceString
+-----------------------------------------
+
+Decodes hex keys like "4ccc1"  eg those from seqmat and seqhis
+
+**/
 
 std::string OpticksAttrSeq::decodeHexSequenceString(const char* seq, unsigned char ctrl)
 {
-    // decodes hex keys like "4ccc1"  eg those from seqmat and seqhis 
     if(!seq) return "NULL" ;
 
     std::string lseq(seq);
@@ -320,6 +327,7 @@ std::string OpticksAttrSeq::getLabel(Index* index, const char* key, unsigned int
         << std::setw(10) << source 
         << std::setw(10) << std::setprecision(3) << std::fixed << fraction 
         << std::setw(18) << ( key ? key : "-" ) 
+        << " "  
         << std::setw(50) << dseq 
         ; 
     

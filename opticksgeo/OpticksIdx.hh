@@ -28,6 +28,9 @@ class OpticksEvent ;
 
 class OpticksAttrSeq ;
 
+#include "plog/Severity.h"
+
+
 #include "OKGEO_API_EXPORT.hh"
 
 /**
@@ -41,6 +44,7 @@ Wrapper around hostside(only?) indexing functionality
 
 
 class OKGEO_API OpticksIdx {
+       static const plog::Severity LEVEL ; 
    public:
        OpticksIdx(OpticksHub* hub);
    public:

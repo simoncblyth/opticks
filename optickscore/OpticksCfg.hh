@@ -80,6 +80,7 @@ class OKCORE_API OpticksCfg : public BCfg {
 
      const std::string& getDbgMesh() const ;
      const std::string& getMask() const ;
+     const std::string& getDbgHitMask() const ;
      const std::string& getX4PolySkip() const ;
      const std::string& getCSGSkipLV() const ;    // --csgskiplv
      const std::string& getAccel();
@@ -136,6 +137,9 @@ class OKCORE_API OpticksCfg : public BCfg {
      int          getDbgMM() const ;  
      int          getDbgLV() const ;  
      int          getStack() const ; 
+     int          getMaxCallableProgramDepth() const ; 
+     int          getMaxTraceDepth() const ; 
+     int          getUsageReportLevel() const ; 
 
      int          getNumPhotonsPerG4Event(); 
      int          getLoadVerbosity(); 
@@ -210,6 +214,7 @@ private:
      std::string m_oindex ;
      std::string m_gindex ;
      std::string m_mask ;
+     std::string m_dbghitmask ;
      std::string m_x4polyskip ;
      std::string m_csgskiplv ; 
      std::string m_accel ;
@@ -260,6 +265,9 @@ private:
      int         m_dbgmm ; 
      int         m_dbglv ; 
      int         m_stack ; 
+     int         m_maxCallableProgramDepth ; 
+     int         m_maxTraceDepth ; 
+     int         m_usageReportLevel ; 
      int         m_num_photons_per_g4event;
      int         m_loadverbosity ; 
      int         m_importverbosity ; 

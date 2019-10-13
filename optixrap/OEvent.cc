@@ -67,7 +67,8 @@ OEvent::OEvent(Opticks* ok, OContext* ocontext)
    m_log(new SLog("OEvent::OEvent", "", LEVEL)),
    m_ok(ok),
    //m_hitmask(SURFACE_DETECT),
-   m_hitmask(TORCH | BULK_SCATTER | BOUNDARY_TRANSMIT | SURFACE_ABSORB),
+   //m_hitmask(TORCH | BULK_SCATTER | BOUNDARY_TRANSMIT | SURFACE_ABSORB),
+   m_hitmask(ok->getDbgHitMask()), 
    m_compute(ok->isCompute()),
    m_dbghit(m_ok->isDbgHit()),            // --dbghit
    m_dbgdownload(m_ok->isDbgDownload()),  // --dbgdownload
@@ -403,6 +404,7 @@ unsigned OEvent::download()
     if(!m_ok->isProduction()) download(m_evt, DOWNLOAD_DEFAULT);
 
     unsigned nhit = downloadHits();  
+    LOG(LEVEL) << " nhit " << nhit ; 
 
     return nhit ; 
 }
@@ -487,6 +489,11 @@ unsigned OEvent::downloadHitsCompute(OpticksEvent* evt)
 
     OK_PROFILE("OEvent::downloadHitsCompute");
 
+    LOG(LEVEL) 
+         << " nhit " << nhit
+         << " hit " << hit->getShapeString()
+         ; 
+
     return nhit ; 
 }
 
@@ -513,7 +520,12 @@ unsigned OEvent::downloadHitsInterop(OpticksEvent* evt)
     // hit buffer (0,4,4) resized to fit downloaded hits (nhit,4,4)
     assert(hit->hasShape(nhit,4,4));
 
+
     OK_PROFILE("OEvent::downloadHitsInterop");
+    LOG(LEVEL) 
+         << " nhit " << nhit
+         << " hit " << hit->getShapeString()
+         ; 
 
     return nhit ; 
 }

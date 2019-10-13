@@ -148,7 +148,55 @@ David Hart, "OptiX Performance Tools and Tricks" SIGGRAPH 2019
    BVH : one level of instancing comes for free (ie RT cores handle it)
 
 
+16:24 Reduce memory access
+
+    Quadro RTX 6000 memory bandwidth : 672 GB/s
+    *IF* 10 GRays/s is goal, then :
+
+    672 GB/s /  10 GRays/s = 67.2 bytes/ray  (includes traversal)
+
+    => Care must be taken to stay in this budget
+    => way to calculate the upper bound of the ray tracer
+  
+    ::
+
+       BUT : for me, I dont need to pull all the photons back to 
+       the GPU, only interested in those that hit PMTs : so I think
+       this memory bandwidth should not be a problem
+
 18:01 8 32-bit registers for payload and attribs
+
+
+
+GTC Silicon Valley 2019 ID:S9768 : New Features in OptiX 6.0 
+----------------------------------------------------------------
+
+* https://developer.nvidia.com/gtc/2019/video/S9768/video
+
+20:17
+    Performance with RT cores
+
+                               1
+    Amdahl's Law :   S =  -------------    
+                           (1-p) + p/s
+
+    For RT core speedup to be large, need to be traversal bound
+    50:50 shade/traverse  (shade on SM, traverse on RT cores) 
+    -> maximum factor 2 speedup
+
+36:39
+    rtContextSetUsageReportCallback
+
+39:34
+    BVH compaction : can save 1.5x-2x on memory for +10% build time
+    on by default, can be switched off    
+
+
+
+
+
+
+
 
 
 EOU

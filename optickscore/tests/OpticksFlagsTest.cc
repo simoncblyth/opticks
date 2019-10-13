@@ -183,6 +183,44 @@ void test_getAbbrevMeta(Opticks* ok)
     m->dump();
 }
 
+void test_AbbrevSequenceToMask()
+{
+    const char* abrseq = "TO SD BT" ; 
+    unsigned x_mask = TORCH | SURFACE_DETECT | BOUNDARY_TRANSMIT ;       
+    char delim = ' ' ; 
+    unsigned mask = OpticksFlags::AbbrevSequenceToMask( abrseq, delim ); 
+
+    assert( mask == x_mask ) ; 
+
+    LOG(info) 
+          << " abrseq " << abrseq 
+          << " mask " << mask 
+          ;
+}
+
+
+/**
+test_Opticks_getDbgHitMask
+----------------------------
+
+::
+
+    OpticksFlagsTest --dbghitmask TO,BT,SD,SC
+
+**/
+
+void test_Opticks_getDbgHitMask(Opticks* ok)
+{
+    unsigned msk = ok->getDbgHitMask(); 
+
+    LOG(info) 
+        << " (dec) " << msk 
+        << " (hex) " << std::setw(10) << std::hex << msk << std::dec 
+        << " flagmask(abbrev) " << OpticksFlags::FlagMask(msk, true) 
+        << " flagmask " << OpticksFlags::FlagMask(msk, false)
+        ; 
+}
+
 
 int main(int argc, char** argv)
 {
@@ -200,8 +238,12 @@ int main(int argc, char** argv)
     test_PointAbbrev();
     test_PointVal1();
     test_cfTypes(&ok);
-    */
     test_getAbbrevMeta(&ok);
+    */
+
+    //test_AbbrevSequenceToMask(); 
+
+    test_Opticks_getDbgHitMask(&ok);
 
 
     return 0 ; 

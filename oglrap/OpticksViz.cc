@@ -90,7 +90,7 @@
 #include "Interactor.hh"
 #include "InteractorCfg.hh"
 
-const plog::Severity OpticksViz::LEVEL = debug ; 
+const plog::Severity OpticksViz::LEVEL = PLOG::EnvLevel("OpticksViz", "debug") ; 
 
 
 int OpticksViz::preinit() const 

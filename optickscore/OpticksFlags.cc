@@ -249,6 +249,21 @@ unsigned long long OpticksFlags::AbbrevToFlagSequence( const char* abbseq, char 
 }
 
 
+unsigned OpticksFlags::AbbrevSequenceToMask( const char* abbseq, char delim)  // static
+{
+   std::vector<std::string> elem ; 
+   BStr::split(elem, abbseq,  delim ); 
+   unsigned mask = 0 ; 
+
+   for(unsigned i=0 ; i < elem.size() ; i++)
+   {
+       unsigned flag = AbbrevToFlag( elem[i].c_str() );
+       mask |= flag  ; 
+   }   
+   return mask ; 
+}
+
+
 
 /**
 

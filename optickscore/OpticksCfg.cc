@@ -83,6 +83,8 @@ OpticksCfg<Listener>::OpticksCfg(const char* name, Listener* listener, bool live
        m_oindex(""),
        m_gindex(""),
        m_mask(""),
+       //m_dbghitmask("SD"),
+       m_dbghitmask("TO,SC,BT,SA"),  // see OEvent::OEvent
        m_x4polyskip(""),
        m_csgskiplv(""),
        m_accel(""),
@@ -131,6 +133,9 @@ OpticksCfg<Listener>::OpticksCfg(const char* name, Listener* listener, bool live
        m_dbgmm(-1),
        m_dbglv(-1),
        m_stack(2180),
+       m_maxCallableProgramDepth(0),
+       m_maxTraceDepth(0),
+       m_usageReportLevel(0),
        m_num_photons_per_g4event(10000),
        m_loadverbosity(0),
        m_importverbosity(0),
@@ -785,9 +790,28 @@ void OpticksCfg<Listener>::init()
 
 
    char stack[128];
-   snprintf(stack,128, "OptiX stack size, smaller the faster util get overflows. Default %d", m_stack);
+   snprintf(stack,128, "OptiX stack size, smaller the faster util get overflows. WARNING: ignored in RTX mode. Default %d", m_stack);
    m_desc.add_options()
        ("stack",  boost::program_options::value<int>(&m_stack), stack );
+
+
+   char maxCallableProgramDepth[128];
+   snprintf(maxCallableProgramDepth,128, "Influences OptiX stack size in RTX mode. Range 2-20. 0:leave as is (OptiX default 5). Set as low as possible. Default %d", m_maxCallableProgramDepth);
+   m_desc.add_options()
+       ("maxCallableProgramDepth",  boost::program_options::value<int>(&m_maxCallableProgramDepth), maxCallableProgramDepth );
+
+   char maxTraceDepth[128];
+   snprintf(maxTraceDepth,128, "Influences OptiX stack size in RTX mode. Range 2-20. 0:leave as is (OptiX default 5). Set as low as possible. Default %d", m_maxTraceDepth);
+   m_desc.add_options()
+       ("maxTraceDepth",  boost::program_options::value<int>(&m_maxTraceDepth), maxTraceDepth );
+
+   char usageReportLevel[128];
+   snprintf(usageReportLevel,128, "Configure Optix UsageReportCallback, see rtContextSetUsageReportCallback. Range 0-3. Default %d", m_usageReportLevel);
+   m_desc.add_options()
+       ("usageReportLevel",  boost::program_options::value<int>(&m_usageReportLevel), usageReportLevel );
+
+
+
 
    char epsilon[128];
    snprintf(epsilon,128, "OptiX propagate epsilon. Default %10.4f", m_epsilon);
@@ -890,6 +914,13 @@ void OpticksCfg<Listener>::init()
                     "comma delimited list of photon indices specifying mask selection to apply to both simulations"
                     "see OpticksDbg, CInputPhotonSource, CRandomEngine"
                     "notes/issues/where_mask_running.rst "
+                 );
+
+
+   m_desc.add_options()
+       ("dbghitmask",     boost::program_options::value<std::string>(&m_dbghitmask), 
+                    "comma delimited list of history flag abbreviations eg TO,BT,SD "
+                    "to form hitmask of the photon hits copied back from GPU buffers"
                  );
 
 
@@ -1554,6 +1585,13 @@ const std::string& OpticksCfg<Listener>::getMask() const
 {
     return m_mask ;
 }
+template <class Listener>
+const std::string& OpticksCfg<Listener>::getDbgHitMask() const 
+{
+    return m_dbghitmask ;
+}
+
+
 
 template <class Listener>
 const std::string& OpticksCfg<Listener>::getX4PolySkip() const 
@@ -1871,6 +1909,28 @@ int OpticksCfg<Listener>::getStack() const
 {
     return m_stack ; 
 }
+
+
+template <class Listener>
+int OpticksCfg<Listener>::getMaxCallableProgramDepth() const 
+{
+    return m_maxCallableProgramDepth  ; 
+}
+
+template <class Listener>
+int OpticksCfg<Listener>::getMaxTraceDepth() const 
+{
+    return m_maxTraceDepth ; 
+}
+
+template <class Listener>
+int OpticksCfg<Listener>::getUsageReportLevel() const 
+{
+    return m_usageReportLevel ; 
+}
+
+
+
 
 
 

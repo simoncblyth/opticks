@@ -51,7 +51,7 @@ using namespace optix ;
 #include "PLOG.hh"
 
 
-const plog::Severity OPropagator::LEVEL = debug ; 
+const plog::Severity OPropagator::LEVEL = PLOG::EnvLevel("OPropagator", "debug") ; 
 
 void OPropagator::setOverride(unsigned int override_)
 {

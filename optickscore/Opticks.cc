@@ -595,6 +595,14 @@ unsigned Opticks::getMaskSize() const
     return m_dbg->getMask().size() ; 
 }
 
+unsigned Opticks::getDbgHitMask() const 
+{
+    const std::string& _dbghitmask = m_cfg->getDbgHitMask(); 
+    unsigned dbghitmask = OpticksFlags::AbbrevSequenceToMask( _dbghitmask.c_str(), ',' ); 
+    return dbghitmask ; 
+}
+
+
 
 bool Opticks::isDbgPhoton(unsigned record_id) const 
 {
@@ -720,14 +728,27 @@ int Opticks::getDbgLV() const
 
 
 
-
-
-
-
 int Opticks::getStack() const 
 {
    return m_cfg->getStack();
 }
+int Opticks::getMaxCallableProgramDepth() const 
+{
+   return m_cfg->getMaxCallableProgramDepth();
+}
+int Opticks::getMaxTraceDepth() const 
+{
+   return m_cfg->getMaxTraceDepth();
+}
+int Opticks::getUsageReportLevel() const 
+{
+   return m_cfg->getUsageReportLevel();
+}
+
+
+
+
+
 int Opticks::getMeshVerbosity() const 
 {
    return m_cfg->getMeshVerbosity();
