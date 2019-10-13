@@ -77,7 +77,9 @@ OPropagator::OPropagator(Opticks* ok, OEvent* oevt, OpticksEntry* entry)
     m_prelaunch(false),
     m_count(0),
     m_width(0),
-    m_height(0)
+    m_height(0),
+    m_launch_acc(m_ok->accumulateAdd("OPropagator::launch")),
+    m_launch_lis(m_ok->lisAdd("OPropagator::launch"))
 {
     init();
     (*m_log)("DONE");
@@ -212,8 +214,11 @@ void OPropagator::launch()
     LOG(info) << "LAUNCH NOW " << ( llogpath ? llogpath : "-" ) ; 
 
     OK_PROFILE("_OPropagator::launch");
-    m_ocontext->launch( OContext::LAUNCH,  m_entry_index,  m_width, m_height, launch_times);
+    double dt = m_ocontext->launch( OContext::LAUNCH,  m_entry_index,  m_width, m_height, launch_times);
     OK_PROFILE("OPropagator::launch");
+
+    m_ok->accumulateSet(m_launch_acc, dt ); 
+    m_ok->lisAppend(m_launch_lis, dt ); 
 
     LOG(info) << "LAUNCH DONE" ; 
 

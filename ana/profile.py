@@ -29,6 +29,49 @@ profile.py
     LV=box ip profile.py --cat cvd_1_rtx_1_1M --pfx scan-ph --tag 0
 
 
+
+    ip profile.py --cat cvd_1_rtx_0_1M --pfx scan-pf-0 --tag 0
+         OKG4Test run  
+
+
+scan-pf-0 OKG4Test 239s for 1M::
+
+    In [17]: ap.times("CRunAction::BeginOfRunAction")
+    Out[17]: array([1206.6406, 1464.2812, 1708.2578, 1950.6406, 2191.8984, 2439.336 , 2681.1562, 2916.8828, 3153.2656, 3389.5   ], dtype=float32)
+
+    In [18]: ap.times("CRunAction::EndOfRunAction")
+    Out[18]: array([1460.2266, 1706.0625, 1948.4453, 2189.6719, 2436.9219, 2678.9219, 2914.6875, 3151.0625, 3387.3281, 3622.4453], dtype=float32)
+
+    In [19]: ap.times("CRunAction::EndOfRunAction") - ap.times("CRunAction::BeginOfRunAction")
+    Out[19]: array([253.5859, 241.7812, 240.1875, 239.0312, 245.0234, 239.5859, 233.5312, 234.1797, 234.0625, 232.9453], dtype=float32)
+
+    In [25]: np.average( ap.times("CRunAction::EndOfRunAction") - ap.times("CRunAction::BeginOfRunAction") )
+    Out[25]: 239.3914
+
+
+
+
+
+    In [22]: ap.times("OPropagator::launch")
+    Out[22]: array([1463.7578, 1707.7422, 1950.1172, 2191.3594, 2438.7422, 2680.625 , 2916.3516, 3152.7344, 3388.9844, 3624.125 ], dtype=float32)
+
+    In [24]: ap.times("OPropagator::launch") - ap.times("_OPropagator::launch")
+    Out[24]: array([0.6875, 0.6953, 0.6875, 0.6953, 0.8125, 0.7188, 0.6953, 0.6953, 0.6953, 0.6875], dtype=float32)
+
+
+::
+
+    ip profile.py --cat cvd_1_rtx_1_1M --pfx scan-pf-0 --tag 0
+
+
+    In [2]: pr.q
+    Out[2]: array([0.0204, 0.0182, 0.0208, 0.0191, 0.0179, 0.02  , 0.0193, 0.018 , 0.0178, 0.0196])
+
+    In [1]: pr.q
+    Out[1]: array([0.0214, 0.0189, 0.019 , 0.0186, 0.0187, 0.0206, 0.0183, 0.0183, 0.0191, 0.0188])
+
+
+
 """
 
 from __future__ import print_function
@@ -54,8 +97,6 @@ from opticks.ana.nload import tagdir_, stmp_, time_
 
 
 
-
-
 class Profile(object):
     """
     Opticks executables can record time and virtual memory 
@@ -68,27 +109,29 @@ class Profile(object):
     OKDT = ("_OPropagator::launch", "OPropagator::launch",)
     PARM = "parameters.json"
 
-    def __init__(self, tagdir, name ):
+    def __init__(self, pdir, name, g4=False ):
         """
-        :param tagdir: directory from which to load OpticksProfile.npy and siblings, 
-                       leaf dir expected to be a tag integer string, negative for G4
-                       ... hmm but its torch dir ?
+        :param pdir: directory from which to load OpticksProfile.npy and siblings, 
+                       
+             This was formerly tagdir with expected to be the tag integer string, 
+             negative for G4 ... hmm but its now one up at the torch dir ?
 
         :param name: informational name for outputs
         """  
-        self.tagdir = tagdir
-        tag = os.path.basename(tagdir)
-        g4 = tag[0] == "-"
-        log.debug(" tagdir:%s name:%s tag:%s g4:%s " % (tagdir, name, tag, g4))
+        self.pdir = pdir
+
+        #tag = os.path.basename(pdir)  # now "torch" ?
+        #g4 = tag[0] == "-"
+        #log.debug(" pdir:%s name:%s tag:%s g4:%s " % (pdir, name, tag, g4))
+        #self.tag = tag
 
         self.name = name
-        self.tag = tag
         self.g4 = g4
 
         self.sli = slice(0,0)  # nowt
         self.fmt = "%Y%m%d-%H%M"
 
-        if os.path.exists(self.tagdir):
+        if os.path.exists(self.pdir):
             self.valid = True
             self.init()
             self.initLaunch()
@@ -97,7 +140,7 @@ class Profile(object):
             self.tim = -1 
             self.prfmt = "INVALID" 
             self.acfmt = "INVALID" 
-            log.fatal("tagdir %s DOES NOT EXIST " % self.tagdir) 
+            log.fatal("pdir %s DOES NOT EXIST " % self.pdir) 
         pass  
 
     def init(self):
@@ -138,10 +181,10 @@ class Profile(object):
         return "  %-90s  %s " % ( path1, t_path1.strftime(self.fmt) )
 
     def path(self, sfx=""):
-        return os.path.join( self.tagdir, "OpticksProfile%s.npy" % sfx )   # quads 
+        return os.path.join( self.pdir, "OpticksProfile%s.npy" % sfx )   # quads 
 
     def metapath(self):
-        return os.path.join( self.tagdir, "0", self.PARM ) 
+        return os.path.join( self.pdir, "0", self.PARM ) 
 
     def loadMeta(self):
         path = self.metapath()
@@ -155,8 +198,12 @@ class Profile(object):
 
 
     def loadProfile(self):
+        """
+        """
         path = self.path("")
-        lpath = self.path("Labels")  
+        lpath = self.path("Labels")
+        qpath = self.path("Lis")
+
         self.prfmt = self.pfmt(path, lpath)
 
         a = np.load(path)
@@ -171,6 +218,10 @@ class Profile(object):
 
         t,dt,v,dv = a[:,0], a[:,1], a[:,2], a[:,3]
 
+
+        q = np.load(qpath)
+
+     
         self.l = lll 
         self.a = a 
 
@@ -178,6 +229,8 @@ class Profile(object):
         self.dt = dt
         self.v = v
         self.dv = dv
+
+        self.q = q  
 
 
     def __len__(self):
@@ -190,6 +243,7 @@ class Profile(object):
         path = self.path("")
         acpath = self.path("Acc")
         lacpath = self.path("AccLabels")
+
         self.acfmt = self.pfmt(acpath, lacpath, path)
 
         ac = np.load(acpath)
@@ -395,51 +449,6 @@ class Profile(object):
     def __getitem__(self, sli):
         self.sli = sli
         return self 
-
-
-
-class ABProfile(object):
-    def __init__(self, atagdir, btagdir):
-        self.ap = Profile(atagdir, "ab.pro.ap" ) 
-        self.bp = Profile(btagdir, "ab.pro.bp" ) 
-        valid = self.ap.valid and self.bp.valid 
-        if valid:
-            boa = self.bp.tim/self.ap.tim if self.ap.tim > 0 else -1  
-        else:
-            boa = -2 
-        pass 
-        self.boa = boa
-  
-    def brief(self): 
-        return "      ap.tim %-10.4f     bp.tim %-10.4f      bp.tim/ap.tim %-10.4f    " % (self.ap.tim, self.bp.tim, self.boa )   
-
-    def __repr__(self):
-        return "\n".join(["ab.pro", self.brief()] + self.ap.lines() + self.bp.lines() )
-
-
-
-
-
-
-def test_ABProfile(ok, plt):
-
-    op = ABProfile(ok.tagdir, ok.ntagdir)   # assumes ok/g4 
-    print(op)
-
-    ap = op.ap
-    bp = op.bp
-
-    plt.plot( ap.t, ap.v, 'o' )
-    plt.plot( bp.t, bp.v, 'o' )
-
-    plt.axvline( ap.t[ap.idx[0]], c="b" )
-    plt.axvline( ap.t[ap.idx[1]], c="b" )
-
-    plt.axvline( bp.t[bp.idx[0]], c="r" )
-    plt.axvline( bp.t[bp.idx[1]], c="r" )
-
-    plt.ion()
-    plt.show()
 
 
 

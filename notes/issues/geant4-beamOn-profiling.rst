@@ -15,7 +15,86 @@ ISSUE : old estimate broken by more detailed profiling, need a better Geant4 "la
 * see opticks.ana.profile  ana/profile.py 
 
 
-Rationale
+Repeat this check with scan-pf
+-----------------------------------
+
+* this is a multievent run, so avoids initialization for the first 
+
+::
+
+    [blyth@localhost opticks]$ kcd
+    OKX4Test.X4PhysicalVolume.lWorld0x4bc2710_PV.f6cc352e44243f8fa536ab483ad390ce
+    /home/blyth/.opticks/geocache/OKX4Test_lWorld0x4bc2710_PV_g4live/g4ok_gltf/f6cc352e44243f8fa536ab483ad390ce/1
+    rundate
+    20190701_161306
+    runstamp
+    1561968786
+    argline
+    /home/blyth/local/opticks/lib/OKX4Test --okx4 --g4codegen --deletegeocache --gdmlpath /home/blyth/local/opticks/opticksdata/export/juno1808/g4_00_v5.gdml --csgskiplv 22 --runfolder geocache-j1808-v5 --runcomment fix-lv10-coincidence-speckle 
+    runcomment
+    fix-lv10-coincidence-speckle
+    runlabel
+    R0_cvd_1
+    runfolder
+    geocache-j1808-v5
+    [blyth@localhost 1]$ 
+
+
+::
+
+    gdb --args OKG4Test --target 62590 --pfx scan-pf-0 --cat cvd_1_rtx_0_1M --generateoverride 1000000 --compute --save --production --savehit --dbghitmask TO,BT,RE,SC,SA --multievent 10 --xanalytic --rngmax 3 --cvd 1 --rtx 0
+
+
+Scratch timing from logs is 239 seconds for 1M before alignment shakedown::
+
+    2019-10-13 20:21:39.373 INFO  [106845] [OEvent::downloadHits@382]  nhit 21988 --dbghit N hitmask 0x18b0 RE|SC|SA|BT|TO BULK_REEMIT|BULK_SCATTER|SURFACE_ABSORB|BOUNDARY_TRANSMIT|TORCH
+    2019-10-13 20:21:39.378 INFO  [106845] [OpticksEvent::saveHitData@1688]  num_hit 117652 ht 117652,4,4 tag -3
+    2019-10-13 20:21:39.379 INFO  [106845] [OpticksEvent::saveHitData@1688]  num_hit 21988 ht 21988,4,4 tag 3
+    2019-10-13 20:21:39.639 INFO  [106845] [CG4::propagate@395]  calling BeamOn numG4Evt 100
+    2019-10-13 20:21:39.888 INFO  [106845] [CTorchSource::GeneratePrimaryVertex@288]  event_gencode 4096 : TORCH
+    2019-10-13 20:21:42.286 INFO  [106845] [CTorchSource::GeneratePrimaryVertex@288]  event_gencode 4096 : TORCH
+    ...
+    2019-10-13 20:25:36.541 INFO  [106845] [CTorchSource::GeneratePrimaryVertex@288]  event_gencode 4096 : TORCH
+    2019-10-13 20:25:38.925 INFO  [106845] [CG4::propagate@401]  calling BeamOn numG4Evt 100 DONE 
+
+
+    In [11]: from dateutil import parser
+
+    In [12]: t0 = parser.parse("2019-10-13 20:21:39.639")
+
+    In [15]: t1 = parser.parse("2019-10-13 20:25:38.925")
+
+    In [16]: t1 - t0 
+    Out[16]: datetime.timedelta(0, 239, 286000)
+
+    In [17]: dt=(t1 - t0) 
+
+    In [18]: dt.seconds
+    Out[18]: 239
+
+    In [19]: 239./60.
+    Out[19]: 3.9833333333333334
+
+
+
+Use the machinery::
+
+    ip profile.py --cat cvd_1_rtx_0_1M --pfx scan-pf-0 --tag 0
+
+
+See scan-pf-notes the average af 10 matches the 239 for 1M
+
+
+
+
+
+
+
+
+
+
+
+Rationale 
 ------------
 
 Excluding CRandomEngine::setupTranche makes every G4 event take the same time(a good sign) 

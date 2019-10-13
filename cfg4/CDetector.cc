@@ -121,8 +121,7 @@ void CDetector::traverse(G4VPhysicalVolume* /*top*/)
 {
     // invoked from CGDMLDetector::init OR CTestDetector::init via CDetector::setTop
 
-    if(m_dbgsurf)
-         LOG(info) << "[--dbgsurf] CDetector::traverse START " ;
+    LOG(info) << "[" ;
 
     m_check = new CCheck(m_ok, m_top );
     
@@ -130,8 +129,7 @@ void CDetector::traverse(G4VPhysicalVolume* /*top*/)
     m_traverser->Traverse();
     m_traverser->Summary("CDetector::traverse");
 
-    if(m_dbgsurf)
-         LOG(info) << "[--dbgsurf] CDetector::traverse DONE " ;
+    LOG(info) << "]" ;
 }
 
 

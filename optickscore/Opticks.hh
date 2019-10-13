@@ -197,6 +197,10 @@ class OKCORE_API Opticks {
        void     accumulateStop(unsigned idx); 
        std::string accumulateDesc(unsigned idx);
 
+       void     accumulateSet(unsigned idx, float value); 
+       unsigned lisAdd(const char* label); 
+       void lisAppend(unsigned idx, double t); 
+
    private:
        void checkOptionValidity();
    public:

@@ -50,7 +50,7 @@ class ProfileSmryTab(object):
             pass
         pass
         assert len(ps) < 9 and len(ps) > 0, len(ps) 
-        ps[9] = ProfileSmry.FromExtrapolation( ps[0].npho )
+        ps[9] = ProfileSmry.FromExtrapolation( ps[0].npho, time_for_1M=239. )
         self.ps = ps
 
 

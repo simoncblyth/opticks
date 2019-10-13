@@ -492,10 +492,19 @@ std::string Opticks::accumulateDesc(unsigned idx)
 }
 
 
+void Opticks::accumulateSet(unsigned idx, float dt)
+{
+    m_profile->accumulateSet(idx, dt);  
+}
 
-
-
-
+unsigned Opticks::lisAdd(const char* label)
+{
+    return m_profile->lisAdd(label); 
+}
+void Opticks::lisAppend(unsigned idx, double t)
+{
+    m_profile->lisAppend(idx, t ); 
+}
 
 
 
@@ -548,9 +557,10 @@ void Opticks::postpropagate()
    saveProfile();
 
    //double tcut = 0.0001 ; 
+   /*
    double tcut = -1.0 ;  
-
    dumpProfile("Opticks::postpropagate", NULL, "_OpticksRun::createEvent", tcut  );  // spacwith spacing at start if each evt
+   */
 
    // startswith filtering 
    dumpProfile("Opticks::postpropagate", "OPropagator::launch");  

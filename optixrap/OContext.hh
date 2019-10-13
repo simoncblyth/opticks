@@ -137,7 +137,7 @@ class OXRAP_API OContext {
             optix::Group getTopGroup();    // creates if not existing 
             void         createTopGroup();
      public:
-            void launch(unsigned lmode, unsigned entry, unsigned width, unsigned height=1, BTimes* times=NULL);
+            double launch(unsigned lmode, unsigned entry, unsigned width, unsigned height=1, BTimes* times=NULL);
      private:
             double validate_();
             double compile_();

@@ -1629,6 +1629,7 @@ void OpticksEvent::save()
     if(production)
     {
         if(m_ok->hasOpt("savehit")) saveHitData();  // FOR production hit check
+        saveTimes(); 
     }
     else
     {
@@ -1796,6 +1797,9 @@ void OpticksEvent::saveReport()
 void OpticksEvent::saveTimes()
 {
     std::string tagdir = getTagDir();
+
+    LOG(fatal) << " tagdir " << tagdir ; 
+
     saveTimes(tagdir.c_str());
 
     std::string anno = getTimeStamp() ;

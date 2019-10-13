@@ -37,6 +37,7 @@ Usage
    scan-smry 10 11 --pfx scan-ph   # summary of scans with prefix scan-ph-10 scan-ph-11
 
    scan-plot 0 --pfx scan-px 
+   scan-plot 0 --pfx scan-pf
 
 
 
@@ -144,7 +145,7 @@ scan-numphoton-inwaiting(){ cat << EOS | tr -d " ,"  | grep -v \#
 EOS
 }
 
-scan-numphoton-by10(){ cat << EOS | tr -d " ,"  | grep -v \#
+scan-numphoton(){ cat << EOS | tr -d " ,"  | grep -v \#
   1,000,000
  10,000,000
  20,000,000
@@ -159,7 +160,7 @@ scan-numphoton-by10(){ cat << EOS | tr -d " ,"  | grep -v \#
 EOS
 }
 
-scan-numphoton(){ cat << EOS | tr -d " ,"  | grep -v \#
+scan-numphoton-1-10(){ cat << EOS | tr -d " ,"  | grep -v \#
   1,000,000
  10,000,000
 EOS
@@ -428,6 +429,39 @@ scan-px-cmd(){
    cmd="$cmd $(scan-rngmax-opt $num_photons) $(scan-cat $cat)"
    echo $cmd
 }
+
+scan-pf-notes(){ cat << EON
+
+OKG4Test 239s for 1M
+-------------------------
+
+To get the G4 times for use by profile.py FromExtrapolation 
+switch OKTest to OKG4Test : and use profile.py : tis a bit manual 
+(next time reduce multievent 10 to ~4)
+
+::
+
+    ip profile.py --cat cvd_1_rtx_0_1M --pfx scan-pf-0 --tag 0
+         OKG4Test run  
+
+scan-pf-0 OKG4Test 239s for 1M::
+
+    In [17]: ap.times("CRunAction::BeginOfRunAction")
+    Out[17]: array([1206.6406, 1464.2812, 1708.2578, 1950.6406, 2191.8984, 2439.336 , 2681.1562, 2916.8828, 3153.2656, 3389.5   ], dtype=float32)
+
+    In [18]: ap.times("CRunAction::EndOfRunAction")
+    Out[18]: array([1460.2266, 1706.0625, 1948.4453, 2189.6719, 2436.9219, 2678.9219, 2914.6875, 3151.0625, 3387.3281, 3622.4453], dtype=float32)
+
+    In [19]: ap.times("CRunAction::EndOfRunAction") - ap.times("CRunAction::BeginOfRunAction")
+    Out[19]: array([253.5859, 241.7812, 240.1875, 239.0312, 245.0234, 239.5859, 233.5312, 234.1797, 234.0625, 232.9453], dtype=float32)
+
+    In [25]: np.average( ap.times("CRunAction::EndOfRunAction") - ap.times("CRunAction::BeginOfRunAction") )
+    Out[25]: 239.3914
+
+
+EON
+}
+
 
 scan-pf-cmd(){
    local num_photons=$1

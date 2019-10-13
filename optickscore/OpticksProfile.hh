@@ -66,6 +66,15 @@ struct OKCORE_API OpticksAcc
     }  
 };
 
+
+struct OKCORE_API OpticksLis
+{
+    std::vector<double> tt ; 
+};
+
+
+
+
 class OKCORE_API OpticksProfile 
 {
     private:
@@ -78,10 +87,17 @@ class OKCORE_API OpticksProfile
        template <typename T> void stampOld(T row, int count);
        void stamp(const char* label, int count);
 
+       unsigned lisAdd(const char* label); 
+       void lisAppend(unsigned idx, double t ); 
+
        unsigned accumulateAdd(const char* label); 
        void     accumulateStart(unsigned idx); 
        void     accumulateStop(unsigned idx); 
        std::string accumulateDesc(unsigned idx) const ;
+
+       void     accumulateSet(unsigned idx, float dt); 
+
+
        void     accumulateDump(const char* msg) const ;
        void     accumulateExport()  ;
        bool     isAccExported() const ;
@@ -121,6 +137,11 @@ class OKCORE_API OpticksProfile
        const char* m_aname ; 
        const char* m_laname ; 
 
+       const char* m_qname ; 
+       const char* m_lqname ; 
+
+
+
        const char* m_columns ; 
        BTimesTable* m_tt ; 
 
@@ -128,6 +149,9 @@ class OKCORE_API OpticksProfile
        NPY<char>*  m_lpy ;
        NPY<float>* m_apy ;
        NPY<char>*  m_lapy ;
+       NPY<double>* m_qpy ;
+       NPY<char>*  m_lqpy ;
+ 
  
        float       m_t0 ; 
        float       m_tprev ; 
@@ -141,6 +165,10 @@ class OKCORE_API OpticksProfile
 
        std::vector<OpticksAcc>   m_acc ; 
        std::vector<std::string>  m_acc_labels  ; 
+
+       std::vector<OpticksLis>   m_lis ; 
+       std::vector<std::string>  m_lis_labels  ; 
+
 
 };
 

@@ -39,7 +39,7 @@ from opticks.ana.abstat import ABStat
 from opticks.ana.qdv import QDV, QDVTab
 from opticks.ana.make_rst_table import recarray_as_rst
 from opticks.ana.metadata import CompareMetadata
-from opticks.ana.profile import ABProfile
+from opticks.ana.abprofile import ABProfile
 from opticks.ana.absmry import ABSmry
 
 log = logging.getLogger(__name__)

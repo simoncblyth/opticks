@@ -392,13 +392,13 @@ NPY<float>* CG4::propagate()
     unsigned int numG4Evt = evt->getNumG4Event();
 
 
-    LOG(LEVEL) << " calling BeamOn numG4Evt " << numG4Evt ; 
+    LOG(info) << " calling BeamOn numG4Evt " << numG4Evt ; 
     OK_PROFILE("_CG4::propagate");
 
     m_runManager->BeamOn(numG4Evt);
 
     OK_PROFILE("CG4::propagate");
-    LOG(LEVEL) << " calling BeamOn numG4Evt " << numG4Evt << " DONE " ; 
+    LOG(info) << " calling BeamOn numG4Evt " << numG4Evt << " DONE " ; 
 
     std::string runmac = m_cfg->getG4RunMac();
     if(!runmac.empty()) execute(runmac.c_str());

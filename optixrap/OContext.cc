@@ -335,7 +335,7 @@ void OContext::InitRTX(int rtxmode)  // static
 //frm optixMeshViewer/optixMeshViewer.cpp
 void UsageReportLogger::log( int lvl, const char* tag, const char* msg )
 {
-    LOG(info) << "[" << lvl << "][" << std::left << std::setw( 12 ) << tag << "] " << msg;
+    std::cout << "[" << lvl << "][" << std::left << std::setw( 12 ) << tag << "] " << msg;
 }
 
 
@@ -745,7 +745,7 @@ Invoked by OPropagator::launch and prelaunch
 
 **/
 
-void OContext::launch(unsigned int lmode, unsigned int entry, unsigned int width, unsigned int height, BTimes* times )
+double OContext::launch(unsigned int lmode, unsigned int entry, unsigned int width, unsigned int height, BTimes* times )
 {
     if(!m_closed) close();
 
@@ -755,36 +755,39 @@ void OContext::launch(unsigned int lmode, unsigned int entry, unsigned int width
               << " height " << height 
               ;
 
+    double dt(0.) ; 
 
     if(lmode & VALIDATE)
     {
-        double dt = validate_();
+        dt = validate_();
         LOG(LEVEL) << "VALIDATE time: " << dt ;
         if(times) times->add("validate", m_launch_count,  dt) ;
     }
 
     if(lmode & COMPILE)
     {
-        double dt = compile_();
+        dt = compile_();
         LOG(LEVEL) << "COMPILE time: " << dt ;
         if(times) times->add("compile", m_launch_count,  dt) ;
     }
 
     if(lmode & PRELAUNCH)
     {
-        double dt = launch_(entry, 0u, 0u );
+        dt = launch_(entry, 0u, 0u );
         LOG(LEVEL) << "PRELAUNCH time: " << dt ;
         if(times) times->add("prelaunch", m_launch_count,  dt) ;
     }
 
     if(lmode & LAUNCH)
     {
-        double dt = m_llogpath ? launch_redirected_(entry, width, height ) : launch_(entry, width, height );
+        dt = m_llogpath ? launch_redirected_(entry, width, height ) : launch_(entry, width, height );
         LOG(LEVEL) << "LAUNCH time: " << dt  ;
         if(times) times->add("launch", m_launch_count,  dt) ;
     }
 
     m_launch_count += 1 ; 
+
+    return dt ; 
 }
 
 

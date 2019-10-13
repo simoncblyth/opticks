@@ -55,12 +55,19 @@ OpticksProfile::OpticksProfile()
     m_aname(BStr::concat(NULL,NAME,"Acc.npy")),
     m_laname(BStr::concat(NULL,NAME,"AccLabels.npy")),
 
+    m_qname(BStr::concat(NULL,NAME,"Lis.npy")),
+    m_lqname(BStr::concat(NULL,NAME,"LisLabels.npy")),
+
+
     m_columns("Time,DeltaTime,VM,DeltaVM"),
     m_tt(new BTimesTable(m_columns)),
     m_npy(NPY<float>::make(0,m_tt->getNumColumns())),
     m_lpy(NPY<char>::make(0,64)),
     m_apy(NPY<float>::make(0,4)),
     m_lapy(NPY<char>::make(0,64)),
+
+    m_qpy(NPY<double>::make(0,4)),
+    m_lqpy(NPY<char>::make(0,64)),
 
     m_t0(0),
     m_tprev(0),
@@ -229,6 +236,35 @@ void OpticksProfile::stamp(const char* label, int count)
 
 
 
+
+
+
+unsigned OpticksProfile::lisAdd(const char* label)
+{
+    unsigned idx = m_lis.size(); 
+
+    m_lis_labels.push_back(label); 
+
+    OpticksLis ls ; 
+    m_lis.push_back(ls);  
+
+    return idx ; 
+}
+
+
+void OpticksProfile::lisAppend(unsigned idx, double t )
+{
+    OpticksLis& lis = m_lis[idx] ; 
+
+    lis.tt.push_back(t) ; 
+}
+
+
+
+
+
+
+
 unsigned OpticksProfile::accumulateAdd(const char* label)
 {
     unsigned idx = m_acc.size(); 
@@ -265,6 +301,22 @@ void OpticksProfile::accumulateStop(unsigned idx)
         LOG(LEVEL) << accumulateDesc(idx) ; 
     }
 }
+
+
+
+
+
+void OpticksProfile::accumulateSet(unsigned idx, float dt )
+{
+    OpticksAcc& acc = m_acc[idx] ; 
+
+    acc.n += 1 ; 
+    acc.t += dt ; 
+    acc.v += 0.f ; 
+}
+
+
+
 
 std::string OpticksProfile::accumulateDesc(unsigned idx) const 
 {
@@ -328,6 +380,30 @@ void OpticksProfile::accumulateExport()
         const std::string& label = m_acc_labels[idx]; 
         m_lapy->addString(label.c_str()); 
     }
+
+
+    unsigned nlis = m_lis.size() ; 
+    LOG(LEVEL) << " nlis " << nlis ; 
+    assert( m_lis_labels.size() == nlis ); 
+
+    // TODO: handle more than one list using 
+    //       2d NPY with zero padding to the longest ?
+    //       then can tend to use for event level things
+    //       so will line up anyhow as same numbers of events 
+    //
+    //       so labels will be of the rows   
+
+    assert( nlis < 2 ); 
+    if( nlis == 1)
+    {
+        unsigned idx = 0 ; 
+        const OpticksLis& lis = m_lis[idx] ; 
+        const std::vector<double>& tt = lis.tt ;   
+        m_qpy = NPY<double>::make_from_vec(tt) ; 
+        const std::string& label = m_lis_labels[idx]; 
+        m_lqpy->addString(label.c_str()); 
+    }
+
 }
 
 
@@ -356,6 +432,11 @@ void OpticksProfile::save(const char* dir)
    m_lpy->save(dir, m_lname);
    m_apy->save(dir, m_aname);
    m_lapy->save(dir, m_laname);
+
+   m_qpy->save(dir, m_qname);
+   m_lqpy->save(dir, m_lqname);
+
+
 }
 
 

@@ -92,6 +92,8 @@ class OXRAP_API OPropagator {
         unsigned             m_count ; 
         unsigned             m_width ; 
         unsigned             m_height ; 
+        unsigned             m_launch_acc ; 
+        unsigned             m_launch_lis ; 
 
  
 };

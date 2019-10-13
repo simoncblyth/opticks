@@ -192,7 +192,15 @@ class ProfileSmry(object):
 
 
     @classmethod
-    def FromExtrapolation(cls, npho, time_for_1M=100. ):
+    def FromExtrapolation(cls, npho, time_for_1M=0. ):
+        """
+        See notes/issues/geant4-beamOn-profiling.rst
+
+        100 s : for tboolean-box scan-ph
+        239 s : for full JUNO  scan-pf before alignment shakedown
+        """
+        assert time_for_1M > 0, time_for_1M
+
         s = odict()
         ps = cls(s)
         ps.npho = npho
@@ -338,7 +346,8 @@ if __name__ == '__main__':
 
         ps[0] = ProfileSmry.Load(pfx, startswith="cvd_%s_rtx_0" % cvd)
         ps[1] = ProfileSmry.Load(pfx, startswith="cvd_%s_rtx_1" % cvd)
-        #ps[9] = ProfileSmry.FromExtrapolation( ps[0].npho,  time_for_1M=100. )
+
+        #ps[9] = ProfileSmry.FromExtrapolation( ps[0].npho,  time_for_1M=239. )
 
         print("\n")
         print(ps[0])
