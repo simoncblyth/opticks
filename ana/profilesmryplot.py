@@ -76,8 +76,7 @@ class O(object):
 
     @classmethod
     def XLabel(cls, sli):
-        mxph = 100 if sli.stop is None else (sli.stop - 1)*10   
-        return "Number of Photons (1M to %dM)" % mxph
+        return "Number of Photons (Millions)"
 
     def _get_xlabel(self):
         return self.XLabel(self.sli)
@@ -115,10 +114,11 @@ class O(object):
         if self.ratio:
             if self.cfg4:
                 if self.key == "Opticks_Speedup":
-                    self.ylim = [0, 20000]  
+                    self.ylim = [0, 3000]  
                     self.rr = "19l 19i 09l 09i"
                     self.ylog = False
-                    self.loc = [0.4, 0.45 ] 
+                    #self.loc = [0.4, 0.45 ] 
+                    self.loc = "upper right" 
                 else:
                     assert 0, self.key 
                 pass
@@ -127,7 +127,7 @@ class O(object):
                     self.rr = "10" 
                     self.ylim = [0,10]          
                 elif self.key == "Interval_over_Launch":
-                    self.ylim = [0, 5]  
+                    self.ylim = [0, 4]  
                     self.rr = "00 11" 
                     self.loc = "upper right"   
                 else:
@@ -168,19 +168,21 @@ def make_fig( plt, o, ps, rs ):
     ax = fig.add_subplot(111)
     plt.title(o.title, fontsize=o.fontsize)
 
+    pscale = 1e6 
+
     if not o.ratio:
         for i in o.ii:
             p = ps[i]
             g4 = p.label[:2] == "G4"
             if not g4:
                 if i == 1 and o.key == "NHit":
-                    plt.plot( p.npho[sli], p.nhit[sli],   p.fmt, c="r", label="%s NHit" % p.label )
+                    plt.plot( p.npho[sli]/pscale, p.nhit[sli],   p.fmt, c="r", label="%s NHit" % p.label )
                 else:
-                    plt.plot( p.npho[sli], p.ainterval[sli], p.fmt, c="b", label="%s (interval)" % p.label )
-                    plt.plot( p.npho[sli], p.alaunch[sli],   p.fmt, c="r", label="%s (launch)" % p.label )
+                    plt.plot( p.npho[sli]/pscale, p.ainterval[sli], p.fmt, c="b", label="%s (interval)" % p.label )
+                    plt.plot( p.npho[sli]/pscale, p.alaunch[sli],   p.fmt, c="r", label="%s (launch)" % p.label )
                 pass
             else:
-                plt.plot( p.npho[sli], p.ainterval[sli], p.fmt, c="g", label="%s" % p.label )
+                plt.plot( p.npho[sli]/pscale, p.ainterval[sli], p.fmt, c="g", label="%s" % p.label )
             pass
         pass
     pass
@@ -189,7 +191,7 @@ def make_fig( plt, o, ps, rs ):
         for j in o.rr.split():
             r = rs[j]
             print(j)
-            plt.plot( r.npho[sli],  r.ratio[sli],  r.fmt, label=r.label  ) 
+            plt.plot( r.npho[sli]/pscale,  r.ratio[sli],  r.fmt, label=r.label  ) 
         pass
     pass
 

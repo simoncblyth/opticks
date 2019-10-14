@@ -139,13 +139,13 @@ scan-seq(){
 }
 
 
-scan-numphoton-inwaiting(){ cat << EOS | tr -d " ,"  | grep -v \#
+scan-numphoton(){ cat << EOS | tr -d " ,"  | grep -v \#
 200,000,000
 400,000,000
 EOS
 }
 
-scan-numphoton(){ cat << EOS | tr -d " ,"  | grep -v \#
+scan-numphoton-1to100(){ cat << EOS | tr -d " ,"  | grep -v \#
   1,000,000
  10,000,000
  20,000,000
@@ -350,7 +350,8 @@ scan-pf-notes(){ cat << EON
 
    Former hardcoded dbghitmask TO,BT,SC,SA yields too many photons (30%) 
    so mask it more difficult with a reemission TO,BT,RE,SC,SA
-
+1
+   Silver:Quadro RTX 8000
 
 
 

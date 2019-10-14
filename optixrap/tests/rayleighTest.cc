@@ -46,7 +46,8 @@ struct rayleighTest
 {
     rayleighTest( Opticks* ok, OContext* ocontext, optix::Context& context)
     {
-        unsigned nx = 1000000 ; 
+        //unsigned nx = 1000000 ; 
+        unsigned nx = 100000 ; 
         unsigned ny = 4 ;      // total number of float4 props
 
         LOG(info) 
