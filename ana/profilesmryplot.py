@@ -150,7 +150,8 @@ class O(object):
                 self.ylabel = "Number of Hits " 
             elif self.key == "Opticks_vs_Geant4":
                 self.ylog = True
-                self.loc = [0.6, 0.5 ] 
+                #self.loc = [0.6, 0.5 ] 
+                self.loc = "lower right"
             else:
                 pass
             pass
