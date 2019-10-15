@@ -41,7 +41,7 @@ from opticks.ana.bashnotes import BashNotes
 
 class ProfileSmry(object):
     """
-    ProfileSmry finds and loads profiles and holds values obtained 
+    A ProfileSmry is an ordered dict of Profiles, keyed by cat 
     """
 
     BASE = "$OPTICKS_EVENT_BASE" 
@@ -94,7 +94,9 @@ class ProfileSmry(object):
             prof = Profile(dir_, name)
             prof.npho = npho 
 
-            htpath1 = os.path.join(dir_, "1", "ht.npy")
+            htpath1 = os.path.join(dir_, "1", "ht.npy")  
+            ## with multi-event running, currently get all the same hits for tags 1,2,3,... 
+            ## the differences are between cats
             ht = cls.LoadHit_(htpath1)
             nhit = ht.shape[0] if not ht is None else -1
             prof.ht = ht
@@ -232,6 +234,8 @@ class ProfileSmry(object):
 
     def __init__(self, s):
         self.s = s 
+        self.d = odict()
+        self.gpufallback = "?"
 
 
     COMMON = r"""
@@ -244,11 +248,9 @@ class ProfileSmry(object):
         return filter(None,textwrap.dedent(self.COMMON).split("\n"))
 
     def postinit(self):
-        d = odict()
         for k in self.commonk():
-            d[k] = self.metacommon(k)
+            self.d[k] = self.metacommon(k)
         pass
-        self.d = d
 
     def descmeta(self):
         return "\n".join(["%25s : %s " % (k, v) for k,v in self.d.items()])
@@ -274,7 +276,7 @@ class ProfileSmry(object):
         return vv[0] if len(vv) == 1 else None
 
     def desc(self):
-        return "ProfileSmry %s %s %s " % (self.creator, getattr(self, 'base',""), self.d['CDeviceBriefVis'] ) 
+        return "ProfileSmry %s %s %s " % (self.creator, getattr(self, 'base',""), self.d.get('CDeviceBriefVis','-') ) 
 
     def __repr__(self):
         return "\n".join([self.desc(), self.autolabel, self.descmeta(), Profile.Labels()]+map(lambda kv:repr(kv[1]), sorted(self.s.items(), key=lambda kv:kv[1].npho )  ))
@@ -286,7 +288,7 @@ class ProfileMain(object):
     def ParseArgs(cls, doc):
         parser = argparse.ArgumentParser(__doc__)
         default_cvd = os.environ.get("OPTICKS_DEFAULT_INTEROP_CVD", "0")  ## hmm this is broken by scan-rsync when looking as scans from another machine
-        parser.add_argument( "--pfx", default="scan-ph", help="Start of prefix to be appended with a hyphen and integer, beneath which to search for OpticksProfile.npy" )
+        parser.add_argument( "--pfx", default="scan-pf", help="Start of prefix to be appended with a hyphen and integer, beneath which to search for OpticksProfile.npy" )
         parser.add_argument( "vers", nargs="*", default=[10], type=int, help="Prefix beneath which to search for OpticksProfile.npy" )
         parser.add_argument( "--cvd", default=default_cvd, help="CUDA_VISIBLE_DEVICE for the named GPU" )
         parser.add_argument( "--gpufallback", default="Quadro_RTX_8000", help="Fallback GPU Name for older scans without this metadata, eg TITAN_RTX" )

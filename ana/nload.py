@@ -60,6 +60,9 @@ def time_(path):
     st = os.stat(path)  
     return datetime.datetime.fromtimestamp(st.st_ctime)
 
+def tfmt_(dt, fmt="%Y%m%d-%H%M"):
+    return dt.strftime(fmt) if not dt is None else "-" 
+
 def stmp_(st, fmt="%Y%m%d-%H%M"): 
     return datetime.datetime.fromtimestamp(st.st_ctime).strftime(fmt)
 

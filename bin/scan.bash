@@ -337,8 +337,8 @@ scan-px-notes(){ cat << EON
 3
    Gold:TITAN_RTX checking torchconfig based GPU generation of photons with tboolean-boxx
 4
-   Silver:Quadro_RTX_8000 torchconfig tboolean-boxx push to 200M
-
+   Silver:Quadro_RTX_8000 torchconfig tboolean-boxx push to 400M
+   scan-px-4/cvd_0_rtx_1  
 
 EON
 }

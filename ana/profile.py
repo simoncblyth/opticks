@@ -93,9 +93,14 @@ ipdb = MyPdb()
 from opticks.ana.log import bold_, blink_
 from opticks.ana.base import json_load_
 from opticks.ana.nload import np_load
-from opticks.ana.nload import tagdir_, stmp_, time_
+from opticks.ana.nload import tagdir_, stmp_, time_, tfmt_ 
 
 
+def fmtarray_(a):
+    if a is None:
+        return "-"
+    pass 
+    return " ".join(map(lambda v:"%8.4f" % v, a)) 
 
 class Profile(object):
     """
@@ -169,15 +174,30 @@ class Profile(object):
         """
         t_path1 = time_(path1)
         t_path2 = time_(path2)
+        t_path3 = time_(path3) if path3 is not None else None
 
-        if path3 is not None:
-            t_path3 = time_(path3)
+        flag = 0 
+
+        if t_path3 is not None:
             adt3 = abs(t_path1 - t_path3)
-            assert adt3.seconds < 1  
+            if adt3.seconds > 1:
+                flag += 1  
+            pass
+            #assert adt3.seconds < 1  
         pass 
 
         adt = abs(t_path1 - t_path2)
-        assert adt.seconds < 1  
+        if adt.seconds > 1:
+            flag += 1 
+        pass
+
+        if flag > 0:
+            log.warning("pfmt related files timestamps differ by more than 1s 1-3: %10.3f 1-2 %10.3f" % ( adt3.seconds, adt.seconds ))
+            log.info("path1 %s : %s " % (path1, tfmt_(t_path1)))
+            log.info("path2 %s : %s " % (path2, tfmt_(t_path2)))
+            log.info("path3 %s : %s " % (path3, tfmt_(t_path3)))
+        pass     
+        #assert adt.seconds < 1  
         return "  %-90s  %s " % ( path1, t_path1.strftime(self.fmt) )
 
     def path(self, sfx=""):
@@ -219,7 +239,7 @@ class Profile(object):
         t,dt,v,dv = a[:,0], a[:,1], a[:,2], a[:,3]
 
 
-        q = np.load(qpath)
+        q = np.load(qpath) if os.path.exists(qpath) else None
 
      
         self.l = lll 
@@ -412,10 +432,10 @@ class Profile(object):
 
     @classmethod
     def Labels(cls):
-        return " %20s %10s %10s %10s %10s %50s " % ( "name", "note", "av.interv","av.launch","av.overhd", "launch" )
+        return " %20s %10s %10s %10s %10s : %50s : %50s " % ( "name", "note", "av.interv","av.launch","av.overhd", "launch", "q" )
 
     def brief(self):
-        return " %20s %10s %10.4f %10.4f %10.4f %50s " % (self.name, self.note, self.avg_start_interval, self.avg_launch, self.overhead_ratio, repr(self.launch) )
+        return " %20s %10s %10.4f %10.4f %10.4f : %50s : %50s " % (self.name, self.note, self.avg_start_interval, self.avg_launch, self.overhead_ratio, fmtarray_(self.launch), fmtarray_(self.q) )
 
 
     def bodylines(self):

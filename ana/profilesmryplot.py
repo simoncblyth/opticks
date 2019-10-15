@@ -97,13 +97,6 @@ class O(object):
         self.fontsize = 15  
         self.figsize = 12.8,7.20   # png of 1280,720   fontsize 20 too big 
 
-        self.path = os.path.expandvars(os.path.join("$TMP/ana", "%s.png" % self.key )) 
-        self.dir_ = os.path.dirname(self.path)
-        if not os.path.exists(self.dir_):
-            log.info("creating dir %s " % self.dir_)
-            os.makedirs(self.dir_)   
-        pass
-
         self.ylabel = "Times (s)" if not self.ratio else "Ratio"
 
         self.ylim = None
@@ -159,7 +152,7 @@ class O(object):
         pass
 
 
-def make_fig( plt, o, ps, rs ):
+def make_fig( plt, o, ps, rs, idlabel=None ):
 
     sli = o.sli
     plt.rcParams['figure.figsize'] = o.figsize    
@@ -212,7 +205,23 @@ def make_fig( plt, o, ps, rs ):
         ax.set_ylim(o.ylim)
     pass
     ax.legend(loc=o.loc, fontsize=o.fontsize, shadow=True)
+
+    if idlabel is None:
+        pass
+    else:
+        plt.text( 1.0, -0.07, idlabel , transform=ax.transAxes, verticalalignment='top', horizontalalignment='right', fontsize=7 )
+    pass
     return fig 
+
+def figpath(key, scanid):
+    elem = filter(None,["$TMP/ana", scanid, "%s.png" % key ])
+    path = os.path.expandvars(os.path.join(*elem)) 
+    dir_ = os.path.dirname(path)
+    if not os.path.exists(dir_):
+        log.info("creating dir %s " % dir_)
+        os.makedirs(dir_)   
+    pass
+    return path
 
 
 
@@ -242,15 +251,17 @@ if __name__ == '__main__':
 
     pfxs = [pfx,]
     cats = [cat0, cat1]
+    pftab = ProfileSmryTab.FromCrossList(pfxs, cats)
 
+    print(repr(pftab)) 
 
-    pftab = ProfileSmryTab(pfxs, cats, pm.gpufallback)
     ps = pftab.ps
 
-
+    # RTX OFF
     ps[0].fmt = "o:"  
     ps[0].label = ps[0].autolabel
 
+    # RTX ON 
     ps[1].fmt = "o-"
     ps[1].label = ps[1].autolabel
 
@@ -290,7 +301,6 @@ if __name__ == '__main__':
 
             else:
 
-
                 rs["10"] = ProfileSmry.FromAB( ps[1], ps[0], att="alaunch" )
                 rs["10"].fmt = "ro--"
                 rs["10"].label = "%s, RTX OFF/ON (launch)" % gpu
@@ -305,10 +315,14 @@ if __name__ == '__main__':
             pass 
         pass
 
-        fig = make_fig( plt, o, ps, rs )
+
+
+        fig = make_fig( plt, o, ps, rs, idlabel=pftab.scanid )
         fig.show()
 
-        plt.savefig(o.path)
+        path = figpath(o.key, pftab.scanid)
+        log.info("savefig %s " % path ) 
+        plt.savefig(path)
 
     pass
 
