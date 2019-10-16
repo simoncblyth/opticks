@@ -351,12 +351,54 @@ scan-pf-notes(){ cat << EON
    Former hardcoded dbghitmask TO,BT,SC,SA yields too many photons (30%) 
    so mask it more difficult with a reemission TO,BT,RE,SC,SA
 1
-   Silver:Quadro RTX 8000
-
+   Silver:Quadro RTX 8000 : up to 400M
 
 
 EON
 }
+
+scan-pf-notes-extra(){ cat << EON
+
+OKG4Test 239s for 1M
+-------------------------
+
+To get the G4 times for use by profile.py FromExtrapolation 
+switch OKTest to OKG4Test : and use profile.py : tis a bit manual 
+(next time reduce multievent 10 to ~4)
+
+::
+
+    ip profile.py --cat cvd_1_rtx_0_1M --pfx scan-pf-0 --tag 0
+         OKG4Test run  
+
+scan-pf-0 OKG4Test 239s for 1M::
+
+    In [17]: ap.times("CRunAction::BeginOfRunAction")
+    Out[17]: array([1206.6406, 1464.2812, 1708.2578, 1950.6406, 2191.8984, 2439.336 , 2681.1562, 2916.8828, 3153.2656, 3389.5   ], dtype=float32)
+
+    In [18]: ap.times("CRunAction::EndOfRunAction")
+    Out[18]: array([1460.2266, 1706.0625, 1948.4453, 2189.6719, 2436.9219, 2678.9219, 2914.6875, 3151.0625, 3387.3281, 3622.4453], dtype=float32)
+
+    In [19]: ap.times("CRunAction::EndOfRunAction") - ap.times("CRunAction::BeginOfRunAction")
+    Out[19]: array([253.5859, 241.7812, 240.1875, 239.0312, 245.0234, 239.5859, 233.5312, 234.1797, 234.0625, 232.9453], dtype=float32)
+
+    In [25]: np.average( ap.times("CRunAction::EndOfRunAction") - ap.times("CRunAction::BeginOfRunAction") )
+    Out[25]: 239.3914
+
+
+EON
+}
+
+
+
+
+
+
+
+
+
+
+
 
 
 scan-vers(){ echo ${SCAN_VERS:-0} ; }
@@ -429,38 +471,6 @@ scan-px-cmd(){
    local cmd="ts $(scan-px-lv) --oktest --pfx $(scan-pfx) --cat ${cat}_${num_abbrev} --generateoverride ${num_photons} --compute --production --savehit --multievent 10 --xanalytic "  ; 
    cmd="$cmd $(scan-rngmax-opt $num_photons) $(scan-cat $cat)"
    echo $cmd
-}
-
-scan-pf-notes(){ cat << EON
-
-OKG4Test 239s for 1M
--------------------------
-
-To get the G4 times for use by profile.py FromExtrapolation 
-switch OKTest to OKG4Test : and use profile.py : tis a bit manual 
-(next time reduce multievent 10 to ~4)
-
-::
-
-    ip profile.py --cat cvd_1_rtx_0_1M --pfx scan-pf-0 --tag 0
-         OKG4Test run  
-
-scan-pf-0 OKG4Test 239s for 1M::
-
-    In [17]: ap.times("CRunAction::BeginOfRunAction")
-    Out[17]: array([1206.6406, 1464.2812, 1708.2578, 1950.6406, 2191.8984, 2439.336 , 2681.1562, 2916.8828, 3153.2656, 3389.5   ], dtype=float32)
-
-    In [18]: ap.times("CRunAction::EndOfRunAction")
-    Out[18]: array([1460.2266, 1706.0625, 1948.4453, 2189.6719, 2436.9219, 2678.9219, 2914.6875, 3151.0625, 3387.3281, 3622.4453], dtype=float32)
-
-    In [19]: ap.times("CRunAction::EndOfRunAction") - ap.times("CRunAction::BeginOfRunAction")
-    Out[19]: array([253.5859, 241.7812, 240.1875, 239.0312, 245.0234, 239.5859, 233.5312, 234.1797, 234.0625, 232.9453], dtype=float32)
-
-    In [25]: np.average( ap.times("CRunAction::EndOfRunAction") - ap.times("CRunAction::BeginOfRunAction") )
-    Out[25]: 239.3914
-
-
-EON
 }
 
 
@@ -569,5 +579,77 @@ scan-ts-(){     SCAN_MODE=ts scan-cmds-all ; }
 scan-ts(){      SCAN_MODE=ts scan-- ; }
 scan-ts-v(){    VERBOSE=1 scan-ts ; }
 
+
+scan-pubroot(){ echo ${SCAN_PUBROOT:-/Users/blyth/simoncblyth.bitbucket.io} ; }
+scan-pubdir(){ echo ${SCAN_PUBDIR:-env/presentation/ana} ; }
+scan-pub(){
+   local msg="# $FUNCNAME :"
+   local scanid=${1:-scan-pf-0}
+   local pubdir=$(scan-pubroot)/$(scan-pubdir)
+   [ ! -d "$pubdir" ] && echo $msg pubdir $pubdir does not exist && return 1
+
+   echo $msg pipe to shell  
+   cat << EOC
+   scp -r J:local/opticks/tmp/ana/$scanid $pubdir/
+EOC
+
+}
+
+scan-pubrst--(){
+   local scanid=${1:-scan-pf-0}
+   local pubdir=$(scan-pubroot)/$(scan-pubdir)
+ 
+   cd $(scan-pubroot)
+   ls -1 $(scan-pubdir)/$scanid/*.png
+
+}
+
+scan-pubrst-notes(){ cat << EON
+
+Prepare RST source for including plots in presentations.::
+
+   scan-pubrst scan-pf-1
+
+EON
+}
+
+scan-pubrst-(){
+   local path
+   local name
+   local stem
+   local parent
+   local indent="    "
+   local key 
+
+   printf "\n" 
+
+   if [ "$PASS" == "1" ]; then
+      printf ".. comment\n\n"
+   fi
+
+   $FUNCNAME- $* | while read path ; do 
+       name=$(basename $path)
+       stem=${name/.png}
+       parent=$(basename $(dirname $path))
+       key=${parent}_${stem}
+
+       if [ "$PASS" == "0" ]; then 
+           printf "%s%s\n" "$indent" $key
+           printf "%s/%s %s\n" "$indent" $path "1280px_720px"
+           printf "\n" 
+       elif [ "$PASS" == "1" ]; then 
+           printf "%s:i:\`%s\`\n" "$indent" $key
+       fi 
+   done
+
+   if [ "$PASS" == "1" ]; then
+      printf "\n"
+   fi
+}
+
+scan-pubrst(){
+   PASS=0 $FUNCNAME- $*
+   PASS=1 $FUNCNAME- $*
+}
 
 
