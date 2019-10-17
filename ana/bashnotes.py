@@ -21,6 +21,8 @@ class BashNotes(object):
     """
     Parse the output of bashfunc that is assumed to return 
     an RST style definition list keyed with integers. 
+
+    NB must not be blank lines in the note items
     """
     startptn = re.compile("^(\d*)\s*$")  # integer starting a blank line
     blankptn = re.compile("^\s*$")   # blank line
@@ -30,6 +32,7 @@ class BashNotes(object):
         self.d = self.parse(out) 
 
     def parse(self, out):
+        #print(out)
         d = odict() 
         v = None
         for line in out.split("\n"):
@@ -63,6 +66,8 @@ if __name__ == '__main__':
     parser.add_argument( "--bashcmd", default="scan-;scan-ph-notes", help="Bash command returning a definition list keyed with integers" )
     parser.add_argument( "vers", nargs="*", default=[1], type=int, help="Prefix beneath which to search for OpticksProfile.npy" )
     args = parser.parse_args()
+
+    #print(args)
  
     bn = BashNotes(args.bashcmd)
     if len(args.vers) == 0:

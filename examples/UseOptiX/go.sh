@@ -68,6 +68,7 @@ if [ ! -f CMakeCache.txt ]; then
  
     cmake $sdir \
           -DCMAKE_BUILD_TYPE=Debug \
+          -DOPTICKS_PREFIX=$(opticks-prefix) \
           -DCMAKE_PREFIX_PATH=$(opticks-prefix)/externals \
           -DCMAKE_INSTALL_PREFIX=$(opticks-prefix) \
           -DCMAKE_MODULE_PATH=$(opticks-home)/cmake/Modules \

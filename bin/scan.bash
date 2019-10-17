@@ -103,6 +103,7 @@ scan-tp-args(){  scan-seq ; }
 scan-ph-args(){  scan-numphoton ; } 
 scan-px-args(){  scan-numphoton ; } 
 scan-pf-args(){  scan-numphoton ; } 
+scan-pt-args(){  scan-numphoton ; } 
 
 
 scan-seq-notes(){ cat << EON
@@ -139,13 +140,13 @@ scan-seq(){
 }
 
 
-scan-numphoton(){ cat << EOS | tr -d " ,"  | grep -v \#
+scan-numphoton-big(){ cat << EOS | tr -d " ,"  | grep -v \#
 200,000,000
 400,000,000
 EOS
 }
 
-scan-numphoton-1to100(){ cat << EOS | tr -d " ,"  | grep -v \#
+scan-numphoton-fine(){ cat << EOS | tr -d " ,"  | grep -v \#
   1,000,000
  10,000,000
  20,000,000
@@ -160,9 +161,10 @@ scan-numphoton-1to100(){ cat << EOS | tr -d " ,"  | grep -v \#
 EOS
 }
 
-scan-numphoton-1-10(){ cat << EOS | tr -d " ,"  | grep -v \#
+scan-numphoton(){ cat << EOS | tr -d " ,"  | grep -v \#
   1,000,000
  10,000,000
+100,000,000
 EOS
 }
 
@@ -204,18 +206,40 @@ scan-cat(){
    case $cat in
        cvd_0_rtx_0) echo --cvd 0 --rtx 0  ;;  
        cvd_0_rtx_1) echo --cvd 0 --rtx 1  ;;  
+       cvd_0_rtx_2) echo --cvd 0 --rtx 2  ;;  
        cvd_1_rtx_0) echo --cvd 1 --rtx 0  ;;  
        cvd_1_rtx_1) echo --cvd 1 --rtx 1  ;;  
+       cvd_1_rtx_2) echo --cvd 1 --rtx 2  ;;  
        cvd_01_rtx_0) echo --cvd 0,1 --rtx 0  ;;  
        cvd_01_rtx_1) echo --cvd 0,1 --rtx 1  ;;  
+       cvd_01_rtx_2) echo --cvd 0,1 --rtx 2  ;;  
    esac 
 }
 
-scan-cats(){ cat << EOC
+scan-cats(){
+  case $(scan-mode) in 
+     pt) scan-cats-tri ;;
+      *) scan-cats-ana ;;  
+  esac
+}
+
+
+scan-cats-ana(){ cat << EOC
 cvd_${OPTICKS_DEFAULT_INTEROP_CVD}_rtx_0
 cvd_${OPTICKS_DEFAULT_INTEROP_CVD}_rtx_1
 EOC
 }
+scan-cats-tri(){ cat << EOC
+cvd_${OPTICKS_DEFAULT_INTEROP_CVD}_rtx_0
+cvd_${OPTICKS_DEFAULT_INTEROP_CVD}_rtx_1
+cvd_${OPTICKS_DEFAULT_INTEROP_CVD}_rtx_2
+EOC
+}
+
+
+
+
+
 
 scan-cats_in_waiting(){ cat << EOC
 cvd_0_rtx_0
@@ -224,6 +248,7 @@ cvd_1_rtx_0
 cvd_1_rtx_1
 EOC
 }
+
 
 
 scan-ph-cmd-notes(){ cat << EON
@@ -347,11 +372,13 @@ scan-pf-note(){ bashnotes.py ${1:-$(scan-vers)} --bashcmd "scan-;scan-pf-notes" 
 scan-pf-notes(){ cat << EON
 0
    Gold:TITAN_RTX checking torchconfig based GPU generation of photons with OKTest targeting JUNO CD center
-
    Former hardcoded dbghitmask TO,BT,SC,SA yields too many photons (30%) 
    so mask it more difficult with a reemission TO,BT,RE,SC,SA
 1
    Silver:Quadro RTX 8000 : up to 400M
+2
+   Gold:TITAN_RTX with v6 geocache, with SD
+
 
 
 EON
@@ -401,7 +428,7 @@ EON
 
 
 
-scan-vers(){ echo ${SCAN_VERS:-0} ; }
+scan-vers(){ echo ${SCAN_VERS:-2} ; }
 
 
 
@@ -482,6 +509,17 @@ scan-pf-cmd(){
    cmd="$cmd $(scan-rngmax-opt $num_photons) $(scan-cat $cat)"
    echo $cmd
 }
+
+scan-pt-cmd(){
+   local num_photons=$1
+   local cat=$2
+   local num_abbrev=$(scan-num $num_photons)
+   local cmd="OKTest --target 62590  --pfx $(scan-pfx) --cat ${cat}_${num_abbrev} --generateoverride ${num_photons} --compute --save --production --savehit --dbghitmask TO,BT,RE,SC,SA --multievent 10  " 
+   cmd="$cmd $(scan-rngmax-opt $num_photons) $(scan-cat $cat)"
+   echo $cmd
+}
+
+
 
 
 scan-ts-cmd(){   echo ts $1 --pfx $(scan-pfx) --generateoverride -1 --cvd 1 --rtx 1 --compute --recpoi --utaildebug --xanalytic ; }
@@ -568,6 +606,13 @@ scan-px-v(){    VERBOSE=1 OpticksProfile=ERROR scan-px ; }
 scan-pf-(){     SCAN_MODE=pf scan-cmds-all ; }
 scan-pf(){      SCAN_MODE=pf scan-- ; }
 scan-pf-v(){    VERBOSE=1 OpticksProfile=ERROR scan-pf ; }
+
+scan-pt-(){     SCAN_MODE=pt scan-cmds-all ; }
+scan-pt(){      SCAN_MODE=pt scan-- ; }
+scan-pt-v(){    VERBOSE=1 OpticksProfile=ERROR scan-pt ; }
+
+
+
 
 
 

@@ -21,16 +21,25 @@
 
 opticks-
 
+
+echo HIGHLY EXPERIMENTAL COMPOSITE BUILDING : USERS SHOULD BUILD EXAMPLES INDIVIDUALLY 
+
+exit 1 
+
+
+
 sdir=$(pwd)
 name=$(basename $sdir)
 bdir=/tmp/$USER/opticks/$name/build 
 
 rm -rf $bdir && mkdir -p $bdir && cd $bdir && pwd 
  
-cmake $sdir -DCMAKE_BUILD_TYPE=Debug \
-            -DCMAKE_PREFIX_PATH=$(opticks-prefix)/externals \
-            -DCMAKE_INSTALL_PREFIX=$(opticks-prefix) \
-            -DCMAKE_MODULE_PATH=$(opticks-home)/cmake/Modules 
+cmake $sdir \
+   -DCMAKE_BUILD_TYPE=Debug \
+   -DOPTICKS_PREFIX=$(opticks-prefix) \
+   -DCMAKE_PREFIX_PATH=$(opticks-prefix)/externals \
+   -DCMAKE_INSTALL_PREFIX=$(opticks-prefix) \
+   -DCMAKE_MODULE_PATH=$(opticks-home)/cmake/Modules 
 
 make
 make install   
