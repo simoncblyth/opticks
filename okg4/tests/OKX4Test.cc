@@ -105,7 +105,12 @@ int main(int argc, char** argv)
 
     const char* csgskiplv = PLOG::instance->get_arg_after("--csgskiplv", NULL) ; 
     LOG(info) << " csgskiplv " << ( csgskiplv ? csgskiplv : "NONE" ) ;  
-    // need this prior to Opticks instanciation 
+
+
+    const char* digestextra2 = PLOG::instance->get_arg_after("--digestextra", NULL) ; 
+    LOG(info) << " digestextra2 " << ( digestextra2 ? digestextra2 : "NONE" ) ;  
+
+    // need these prior to Opticks instanciation 
 
 
     LOG(info) << " parsing " << gdmlpath ; 
@@ -114,8 +119,8 @@ int main(int argc, char** argv)
     LOG(info) << "///////////////////////////////// " ; 
 
 
-    const char* digestextra = csgskiplv ;    // kludge the digest to be sensitive to csgskiplv
-    const char* spec = X4PhysicalVolume::Key(top, digestextra) ; 
+    const char* digestextra1 = csgskiplv ;    // kludge the digest to be sensitive to csgskiplv
+    const char* spec = X4PhysicalVolume::Key(top, digestextra1, digestextra2 ) ; 
 
     Opticks::SetKey(spec);
 

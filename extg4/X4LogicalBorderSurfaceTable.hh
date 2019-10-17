@@ -26,6 +26,8 @@ class GSurfaceLib ;
 #include "G4LogicalBorderSurface.hh"   // forced to include for the typedef 
 #include "X4_API_EXPORT.hh"
 
+#include "plog/Severity.h"
+
 /**
 X4LogicalBorderSurfaceTable
 ============================
@@ -34,6 +36,7 @@ X4LogicalBorderSurfaceTable
 
 class X4_API X4LogicalBorderSurfaceTable 
 {
+        static const plog::Severity LEVEL ; 
     public:
         static void Convert(GSurfaceLib* dst);
     private:

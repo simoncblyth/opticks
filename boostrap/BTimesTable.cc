@@ -118,7 +118,7 @@ const char* BTimesTable::getLabel()
     return m_label ;
 }
 
-const unsigned BTimesTable::WIDTH = 15 ; 
+const unsigned BTimesTable::WIDTH = 18 ; 
 const unsigned BTimesTable::PRIME = 0 ; 
 
 

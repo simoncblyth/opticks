@@ -40,8 +40,8 @@ const char* X4GDMLParser::PreparePath( const char* prefix, int lvidx, const char
 void X4GDMLParser::Write( const G4VSolid* solid, const char* path, bool refs )  // static
 {
     X4GDMLParser parser(refs) ; 
-    //parser.write(solid, path) ; 
-    parser.write_noisily(solid, path) ; 
+    parser.write(solid, path) ; 
+    //parser.write_noisily(solid, path) ; 
 }
 
 

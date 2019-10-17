@@ -90,7 +90,7 @@ template struct nxform<X4Nd> ;
 #include "OpticksQuery.hh"
 
 
-const plog::Severity X4PhysicalVolume::LEVEL = debug ;
+const plog::Severity X4PhysicalVolume::LEVEL = PLOG::EnvLevel("X4PhysicalVolume", "DEBUG") ;
 const bool           X4PhysicalVolume::DBG = true ;
 
 
@@ -177,7 +177,9 @@ GGeo* X4PhysicalVolume::getGGeo()
 
 void X4PhysicalVolume::init()
 {
-    LOG(info) << "query : " << m_query->desc() ; 
+    LOG(LEVEL) << "[" ; 
+    LOG(LEVEL) << " query : " << m_query->desc() ; 
+
 
     convertMaterials();
     convertSurfaces();
@@ -186,6 +188,8 @@ void X4PhysicalVolume::init()
     convertSolids();
     convertStructure();
     convertCheck();
+
+    LOG(LEVEL) << "]" ; 
 }
 
 
@@ -290,14 +294,19 @@ void X4PhysicalVolume::convertSensors_r(const G4VPhysicalVolume* const pv, int d
     if( is_lvsdname || is_sd )
     {
         std::string name = BFile::Name(lvname); 
-        std::string nameref = SGDML::GenerateName( name.c_str() , lv , true );   
-        LOG(info) 
+        bool addPointerToName = false ;   // <-- maybe this should depend on if booting from GDML or not ?
+        std::string nameref = SGDML::GenerateName( name.c_str() , lv , addPointerToName );   
+
+        /*
+        LOG(LEVEL) 
             << " is_lvsdname " << is_lvsdname
             << " is_sd " << is_sd
+            << " sdn " << sdn 
             << " name " << name 
             << " nameref " << nameref 
             ;
-
+        */
+ 
         m_ggeo->addLVSD(nameref.c_str(), sdn.c_str()) ;
     }  
 
@@ -415,7 +424,7 @@ void X4PhysicalVolume::Digest( const G4LogicalVolume* const lv, const G4int dept
 }
 
 
-std::string X4PhysicalVolume::Digest( const G4VPhysicalVolume* const top, const char* digestextra)
+std::string X4PhysicalVolume::Digest( const G4VPhysicalVolume* const top, const char* digestextra, const char* digestextra2 )
 {
     SDigest dig ;
     const G4LogicalVolume* lv = top->GetLogicalVolume() ;
@@ -429,14 +438,20 @@ std::string X4PhysicalVolume::Digest( const G4VPhysicalVolume* const top, const 
         LOG(info) << "digestextra " << digestextra ; 
         dig.update_str( digestextra );  
     }
+    if(digestextra2)
+    {
+        LOG(info) << "digestextra2 " << digestextra2 ; 
+        dig.update_str( digestextra2 );  
+    }
+
 
     return dig.finalize();
 }
 
 
-const char* X4PhysicalVolume::Key(const G4VPhysicalVolume* const top, const char* digestextra )
+const char* X4PhysicalVolume::Key(const G4VPhysicalVolume* const top, const char* digestextra, const char* digestextra2 )
 {
-    std::string digest = Digest(top, digestextra);
+    std::string digest = Digest(top, digestextra, digestextra2 );
     const char* exename = PLOG::instance->args.exename() ; 
     std::stringstream ss ; 
     ss 
@@ -502,7 +517,7 @@ Done this way to have consistent lvIdx soIdx indexing with GDML ?
 void X4PhysicalVolume::convertSolids()
 {
     OK_PROFILE("_X4PhysicalVolume::convertSolids");
-    LOG(info) << "[" ; 
+    LOG(LEVEL) << "[" ; 
 
     const G4VPhysicalVolume* pv = m_top ; 
     int depth = 0 ;
@@ -513,7 +528,7 @@ void X4PhysicalVolume::convertSolids()
 
     dumpTorusLV();
 
-    LOG(info) << "]" ;
+    LOG(LEVEL) << "]" ;
     OK_PROFILE("X4PhysicalVolume::convertSolids");
 
 }
@@ -631,7 +646,7 @@ GMesh* X4PhysicalVolume::convertSolid( int lvIdx, int soIdx, const G4VSolid* con
      bool dbglv = lvIdx == m_ok->getDbgLV() ; 
      const std::string& soname = solid->GetName() ; 
 
-     LOG(info)
+     LOG(LEVEL)
           << "[ "  
           << lvIdx
           << ( dbglv ? " --dbglv " : "" ) 
@@ -663,7 +678,7 @@ GMesh* X4PhysicalVolume::convertSolid( int lvIdx, int soIdx, const G4VSolid* con
      GMesh* mesh =  is_x4polyskip ? X4Mesh::Placeholder(solid ) : X4Mesh::Convert(solid ) ; 
      mesh->setCSG( csg ); 
 
-     LOG(info) << "] " << lvIdx ; 
+     LOG(LEVEL) << "] " << lvIdx ; 
      return mesh ; 
 }
 

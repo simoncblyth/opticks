@@ -33,6 +33,7 @@ class OKCORE_API OpticksCfg : public BCfg {
 
      static const std::string SIZE_P ; 
 
+     const std::string& getKey();
      const std::string& getCVD();
      const std::string& getSize() const ;
      const std::string& getPosition();
@@ -173,6 +174,7 @@ private:
      void init();
 private:
      Listener*   m_listener ; 
+     std::string m_key ;
      std::string m_cvd ;
      std::string m_size ;
      std::string m_position ;

@@ -28,6 +28,8 @@
 
 #include "PLOG.hh"
 
+const plog::Severity X4LogicalSkinSurfaceTable::LEVEL = PLOG::EnvLevel("X4LogicalSkinSurfaceTable","DEBUG"); 
+
 
 void X4LogicalSkinSurfaceTable::Convert( GSurfaceLib* dst )
 {
@@ -48,13 +50,13 @@ void X4LogicalSkinSurfaceTable::init()
     unsigned num_src = G4LogicalSkinSurface::GetNumberOfSkinSurfaces() ; 
     assert( num_src == m_src->size() );
 
-    LOG(debug) << " NumberOfSkinSurfaces num_src " << num_src ;  
+    LOG(LEVEL) << " NumberOfSkinSurfaces num_src " << num_src ;  
     
     for(size_t i=0 ; i < m_src->size() ; i++)
     {
         G4LogicalSkinSurface* src = (*m_src)[i] ; 
 
-        //LOG(info) << src->GetName() ; 
+        LOG(LEVEL) << src->GetName() ; 
 
         GSkinSurface* dst = X4LogicalSkinSurface::Convert( src );
 

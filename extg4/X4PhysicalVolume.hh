@@ -98,8 +98,8 @@ class X4_API X4PhysicalVolume : public X4Named
     public:
         // digestextra is a kludge for things like csgskiplv arguments that change geometry, 
         // see notes/issues/opticks_key_digest_no_updating_for_changed_geometry.rst
-        static const char* Key(const G4VPhysicalVolume* const top, const char* digestextra=NULL);
-        static std::string Digest( const G4VPhysicalVolume* const top, const char* digestextra=NULL);
+        static const char* Key(const G4VPhysicalVolume* const top, const char* digestextra=NULL, const char* digestextra2=NULL);
+        static std::string Digest( const G4VPhysicalVolume* const top, const char* digestextra=NULL, const char* digestextra2=NULL);
         static void        Digest( const G4LogicalVolume* const lv, const G4int depth, SDigest* dig );
         std::string brief() const ;
     public:

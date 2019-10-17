@@ -34,6 +34,9 @@
 #include "PLOG.hh"
 
 
+const plog::Severity X4LogicalBorderSurface::LEVEL = PLOG::EnvLevel("X4LogicalBorderSurface", "DEBUG"); 
+
+
 GBorderSurface* X4LogicalBorderSurface::Convert(const G4LogicalBorderSurface* src)
 {
     const char* name = X4::Name( src ); 

@@ -29,6 +29,8 @@
 #include "PLOG.hh"
 
 
+const plog::Severity  X4OpticalSurface::LEVEL = PLOG::EnvLevel("X4OpticalSurface", "DEBUG"); 
+
 const char* X4OpticalSurface::Type(G4SurfaceType type)
 {
    const char* t = NULL ; 
@@ -56,7 +58,7 @@ GOpticalSurface* X4OpticalSurface::Convert( const G4OpticalSurface* const surf )
 
     G4SurfaceType type = surf->GetType() ; 
 
-    //LOG(info) << " name " << name << " type " << Type(type) ; 
+    //LOG(LEVEL) << " name " << name << " type " << Type(type) ; 
 
     switch( type )
     {
@@ -100,7 +102,7 @@ GOpticalSurface* X4OpticalSurface::Convert( const G4OpticalSurface* const surf )
     assert( value >= 0. && value <= 1. ); 
     std::string value_s = X4::Value( value ) ;   
 
-    LOG(error) 
+    LOG(LEVEL) 
         << " name " << std::setw(30) << name
         << " type " << type  
         << " model " << model  

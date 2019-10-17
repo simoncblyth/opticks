@@ -28,6 +28,8 @@
 #include "GProperty.hh"
 #include "PLOG.hh"
 
+const plog::Severity X4MaterialPropertiesTable::LEVEL = PLOG::EnvLevel("X4MaterialPropertiesTable", "DEBUG"); 
+
 
 void X4MaterialPropertiesTable::Convert( GPropertyMap<float>* pmap,  const G4MaterialPropertiesTable* const mpt )
 {
@@ -54,16 +56,16 @@ void X4MaterialPropertiesTable::AddProperties(GPropertyMap<float>* pmap, const G
     G4bool warning ; 
 
     std::vector<G4String> pns = mpt->GetMaterialPropertyNames() ;
-    LOG(debug) << " pns " << pns.size() ; 
+
+    unsigned pns_null = 0 ; 
+
     for( unsigned i=0 ; i < pns.size() ; i++)
     {   
         const std::string& pname = pns[i]; 
         G4int pidx = mpt->GetPropertyIndex(pname, warning=true); 
         assert( pidx > -1 );  
         MPV* pvec = const_cast<G4MaterialPropertiesTable*>(mpt)->GetProperty(pidx, warning=false );  
-        if(pvec == NULL) continue ; 
-
-        LOG(debug)
+        LOG(LEVEL)
             << " pname : " 
             << std::setw(30) << pname  
             << " pidx : " 
@@ -72,25 +74,40 @@ void X4MaterialPropertiesTable::AddProperties(GPropertyMap<float>* pmap, const G
             << std::setw(16) << pvec 
             ;   
 
+        if(pvec == NULL) 
+        {
+            pns_null += 1 ;  
+            continue ; 
+        }
+
         GProperty<float>* prop = X4PhysicsVector<float>::Convert(pvec) ; 
         pmap->addPropertyStandardized( pname.c_str(), prop );  // interpolates onto standard domain 
     }
+    LOG(LEVEL) 
+        << " pns " << pns.size()
+        << " pns_null " << pns_null
+         ; 
 
 
     std::vector<G4String> cpns = mpt->GetMaterialConstPropertyNames() ;
-    LOG(debug) << " cpns " << cpns.size() ; 
+
+    unsigned cpns_null = 0 ; 
 
     for( unsigned i=0 ; i < cpns.size() ; i++)
     {   
         const std::string& pname = cpns[i]; 
         G4bool exists = mpt->ConstPropertyExists( pname.c_str() ) ;
-        if(!exists) continue ; 
-
+        if(!exists)
+        { 
+            cpns_null += 1 ; 
+            continue ; 
+        } 
+ 
         G4int pidx = mpt->GetConstPropertyIndex(pname, warning=true); 
         assert( pidx > -1 );  
         G4double pval = mpt->GetConstProperty(pidx);  
 
-        LOG(debug)
+        LOG(LEVEL)
             << " pname : " 
             << std::setw(30) << pname  
             << " pidx : " 
@@ -101,6 +118,15 @@ void X4MaterialPropertiesTable::AddProperties(GPropertyMap<float>* pmap, const G
 
         pmap->addConstantProperty( pname.c_str(), pval );   // asserts without standard domain
     }
+
+    LOG(LEVEL) 
+        << " cpns " << cpns.size()
+        << " cpns_null " << cpns_null
+         ; 
+
+
+
+
 }
 
 
@@ -115,7 +141,7 @@ std::string X4MaterialPropertiesTable::Digest(const G4MaterialPropertiesTable* m
     G4bool warning ; 
 
     std::vector<G4String> pns = mpt->GetMaterialPropertyNames() ;
-    LOG(debug) << " pns " << pns.size() ; 
+    LOG(LEVEL) << " NumProp " << pns.size() ; 
     for( unsigned i=0 ; i < pns.size() ; i++)
     {   
         const std::string& n = pns[i]; 
@@ -130,7 +156,7 @@ std::string X4MaterialPropertiesTable::Digest(const G4MaterialPropertiesTable* m
     }
 
     std::vector<G4String> cpns = mpt->GetMaterialConstPropertyNames() ;
-    LOG(debug) << " cpns " << cpns.size() ; 
+    LOG(LEVEL) << " NumPropConst " << cpns.size() ; 
 
     for( unsigned i=0 ; i < cpns.size() ; i++)
     {   

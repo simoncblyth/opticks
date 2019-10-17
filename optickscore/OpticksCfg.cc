@@ -46,6 +46,7 @@ OpticksCfg<Listener>::OpticksCfg(const char* name, Listener* listener, bool live
        : 
        BCfg(name, live),
        m_listener(listener),
+       m_key(BOpticksResource::DefaultKey()),
        m_cvd(""),
        m_size(""),
        m_position(""),
@@ -205,7 +206,11 @@ void OpticksCfg<Listener>::init()
        ("nopropagate,P",  "inhibit generation/propagation") ;
 
    m_desc.add_options()
-       ("xanalytic",  "FORMERLY switched on analytic geometry in optixrap, now enabled by default with this option ignored, used --xtriangle to switch OFF") ;
+       ("xanalytic",  
+             "FORMERLY switched on analytic geometry in optixrap,"
+             " now enabled by default with this option ignored "
+             " used --xtriangle to switch OFF"
+             "(NOT TRUE STILL NEEDED see Opticks::isXAnalytic) ") ; 
 
    m_desc.add_options()
        ("xtriangle",  "disable --xanalytic ") ;
@@ -754,7 +759,7 @@ void OpticksCfg<Listener>::init()
    snprintf(generateoverride,256, 
           "Override photons to generate for debugging, eg 1 for a single photon. Values of zero disables any override, Negative values are assumed to be in millions. Default %d", m_generateoverride);
    m_desc.add_options()
-       ("generateoverride",  boost::program_options::value<int>(&m_generateoverride), generateoverride );
+       ("generateoverride,g",  boost::program_options::value<int>(&m_generateoverride), generateoverride );
 
 
 
@@ -1163,6 +1168,16 @@ void OpticksCfg<Listener>::init()
             "String CUDA_VISIBLE_DEVICES to be set as an envvar internally within Opticks resource setup."
             "Useful when using an external envvar is inconvenient, such as when using gdb ");
 
+   m_desc.add_options()
+       ("key",  boost::program_options::value<std::string>(&m_key),
+            "Normally the opticks key which picks the geocache is controlled via envvar OPTICKS_KEY. "
+            "However this --key argument can also be used, for convenience when testing different keys."
+            "The default key comes from the envvar "
+            "NOT YET WORKING DUE TO Opticks::envkey COMPLICATIONS"
+        );
+
+
+
 
    m_desc.add_options()
        ("size",  boost::program_options::value<std::string>(&m_size),
@@ -1339,6 +1354,11 @@ const std::string& OpticksCfg<Listener>::getLogName()
     return m_logname ;
 }
 
+template <class Listener>
+const std::string& OpticksCfg<Listener>::getKey()
+{
+    return m_key ;
+}
 template <class Listener>
 const std::string& OpticksCfg<Listener>::getCVD()
 {

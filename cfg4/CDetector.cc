@@ -143,6 +143,13 @@ void CDetector::hookupSD()
 {
     unsigned nlvsd = m_ggeo->getNumLVSD() ;
     const std::string sdname = m_sd ? m_sd->GetName() : "noSD" ; 
+
+    LOG(LEVEL) 
+        << " nlvsd " << nlvsd
+        << " m_sd " << m_sd 
+        << " sdname " << sdname
+        ;
+
     if(nlvsd == 0 || m_sd == NULL )
     {
         LOG(error) 
@@ -174,7 +181,11 @@ void CDetector::hookupSD()
              << " lv " << lv 
              ; 
 
-        if(!lv) LOG(fatal) << " no lv " << lvn ; 
+        if(!lv) 
+        {
+            LOG(fatal) << " no lv " << lvn ; 
+            m_traverser->dumpLV("CDetector::hookupSD FAIL");  
+        }
         assert(lv); 
 
         const_cast<G4LogicalVolume*>(lv)->SetSensitiveDetector(m_sd) ; 

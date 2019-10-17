@@ -29,6 +29,9 @@
 #include "PLOG.hh"
 
 
+
+const plog::Severity X4LogicalBorderSurfaceTable::LEVEL = PLOG::EnvLevel("X4LogicalBorderSurfaceTable","DEBUG"); 
+
 void X4LogicalBorderSurfaceTable::Convert( GSurfaceLib* dst )
 {
     X4LogicalBorderSurfaceTable xtab(dst); 
@@ -48,13 +51,13 @@ void X4LogicalBorderSurfaceTable::init()
     unsigned num_src = G4LogicalBorderSurface::GetNumberOfBorderSurfaces() ; 
     assert( num_src == m_src->size() );
 
-    LOG(debug) << " NumberOfBorderSurfaces " << num_src ;  
+    LOG(LEVEL) << " NumberOfBorderSurfaces " << num_src ;  
     
     for(size_t i=0 ; i < m_src->size() ; i++)
     {
         G4LogicalBorderSurface* src = (*m_src)[i] ; 
 
-        //LOG(info) << src->GetName() ; 
+        LOG(LEVEL) << src->GetName() ; 
 
         GBorderSurface* dst = X4LogicalBorderSurface::Convert( src );
 

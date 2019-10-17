@@ -238,7 +238,16 @@ geocache-keydir-py(){ key.py ; }
 geocache-dir(){ echo $(opticks-geocachedir) ; }
 geocache-cd(){ cd $(geocache-dir) ; }
 geocache-tstdir(){ echo $(geocache-keydir)/g4codegen/tests ; }
-geocache-kcd(){ echo $OPTICKS_KEY ; cd $(geocache-keydir) ; pwd ; cat runcomment.txt ;  }
+geocache-kcd(){ 
+   local msg="=== $FUNCNAME :"
+   if [ -z "$OPTICKS_KEY" ] ; then 
+      echo $msg OPTICKS_KEY is not defined  
+   else
+      echo $msg OPTICKS_KEY $OPTICKS_KEY 
+      cd $(geocache-keydir) ; pwd ; cat runcomment.txt ; 
+   fi 
+
+ }
 geocache-tcd(){ cd $(geocache-tstdir) ; pwd ; }
 
 geocache-tmp(){ echo /tmp/$USER/opticks/$1 ; }  ## TODO: 
@@ -272,8 +281,7 @@ geocache-j1808-v3(){  opticksdata- ; geocache-create- --gdmlpath $(opticksdata-j
 geocache-j1808-v4-(){ opticksdata- ; geocache-create- --gdmlpath $(opticksdata-jv4) $* ; }
 geocache-j1808-v5-(){ opticksdata- ; geocache-create- --gdmlpath $(opticksdata-jv5) $* ; }
 
-
-
+geocache-j1808-v6-(){ opticksdata- ; geocache-create- --gdmlpath $(opticksdata-jv5) --digestextra v6  $* ; }   
 
 
 geocache-j1808-v4-comment(){ echo torus-less-skipping-just-lv-22-maskVirtual ; }
@@ -395,6 +403,25 @@ geocache-j1808-v5-export(){  geocache-export ${FUNCNAME/-export} ; }
 geocache-j1808-v5(){  geocache-j1808-v5- --csgskiplv 22 --runfolder $FUNCNAME --runcomment $(${FUNCNAME}-comment) $* ; }  
 
 
+geocache-j1808-v6-key(){ echo OKX4Test.X4PhysicalVolume.lWorld0x4bc2710_PV.41b09364643f9479b9ab4f31451ce538 ; }
+geocache-j1808-v6-comment(){ echo same-gdml-as-v5-but-fixes-lack-of-SD-with-isSensor-based-on-surface-EFFICIENCY ; }
+geocache-j1808-v6(){  geocache-j1808-v6- --csgskiplv 22 --runfolder $FUNCNAME --runcomment $(${FUNCNAME}-comment) $* ; }  
+geocache-j1808-v6-notes(){ cat << EON
+
+v6 uses same gdml as v5, but 
+
+1. initally changed conversion arguments such as adding --lvsdname inch_inner1_log
+   but this old world approach is not appropriate when GDML is succeeding to persist surface props
+
+2. instead changed to base GPropertyMap::isSensor on the existance of an EFFICIENCY property, this
+   avoids the need to add kludge SensorSurfaces : regaining SD 
+
+See notes/issues/missing-SD-again.rst
+
+EON
+}
+
+
 
 geocache-dx-v0-(){  opticksdata- ; geocache-create- --gdmlpath $(opticksaux-dx-)_v0.gdml --x4polyskip 211,232  --geocenter $* ; }     
 geocache-dx-v0-comment(){ echo export-dyb-gdml-from-g4-10-4-2-to-support-geocache-creation.rst ; }     
@@ -485,17 +512,6 @@ v5::
 
 EON
 }
-
-
-
-
-
-
-
-
-
-
-
 
 
 

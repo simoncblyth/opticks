@@ -52,6 +52,7 @@ template <class T>
 class GGEO_API GPropertyMap {
 
   static const plog::Severity LEVEL ;
+  static const char* EFFICIENCY ;
   static const char* NOT_DEFINED ;
   typedef std::map<std::string,GProperty<T>*> GPropertyMap_t ;
   public:
@@ -184,7 +185,9 @@ class GGEO_API GPropertyMap {
       std::string m_type ;
 
       unsigned int m_index ;
+#ifdef OLD_SENSOR
       bool         m_sensor ;  
+#endif
       bool         m_valid ;  
 
       GPropertyMap_t           m_prop ; 

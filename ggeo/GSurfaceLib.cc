@@ -340,7 +340,15 @@ GSurfaceLib::add(GBorderSurface* raw)
 
 void GSurfaceLib::add(GBorderSurface* raw)
 {
-    LOG(debug) << " GBorderSurface " << raw->getName() ; 
+    bool has_EFFICIENCY = raw->hasProperty("EFFICIENCY"); 
+    LOG(LEVEL) 
+        << " GBorderSurface " 
+        << " name " << raw->getName() 
+        << " pv1 " << raw->getPV1()
+        << " pv2 " << raw->getPV2()
+        << " keys " << raw->getKeysString()   
+        << " has_EFFICIENCY " << has_EFFICIENCY
+        ; 
 
     m_border_surfaces.push_back(raw);
 
@@ -392,11 +400,25 @@ GSurfaceLib::add(GSkinSurface* raw)
 1. collect the object as a GPropertyMap 
 2. setMetaKV key "sslv" onto the GPropertyMap 
 
+DYB sensors surfaces did not enter thru front door, 
+they came via Bialkali material.
+With modern G4 and GDML perhaps can now do so though.
+
 **/
 
 void GSurfaceLib::add(GSkinSurface* raw)
 {
-    LOG(debug) << " GSkinSurface " << raw->getName() ; 
+
+    bool has_EFFICIENCY = raw->hasProperty("EFFICIENCY"); 
+
+    LOG(LEVEL) 
+        << " GSkinSurface " 
+        << " name " << raw->getName()
+        << " keys " << raw->getKeysString()     
+        << " has_EFFICIENCY " << has_EFFICIENCY
+        ;
+
+ 
     /*
     // this dont work : the sensors dont enter thru the front door
 
@@ -611,7 +633,10 @@ GPropertyMap<float>* GSurfaceLib::createStandardSurface(GPropertyMap<float>* src
 
     GPropertyMap<float>* dst = new GPropertyMap<float>(src);
 
+#ifdef OLD_SENSOR
     dst->setSensor( src ? src->isSensor() : false ); 
+#endif
+
     dst->addProperty( detect          , _detect          );
     dst->addProperty( absorb          , _absorb          );
     dst->addProperty( reflect_specular, _reflect_specular);

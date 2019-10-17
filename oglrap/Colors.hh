@@ -23,8 +23,10 @@ class Device ;
 template <typename T> class NPY ; 
 
 #include "OGLRAP_API_EXPORT.hh"
+#include "plog/Severity.h"
 
 class OGLRAP_API Colors {
+      static const plog::Severity LEVEL ; 
   public:
       Colors(Device* dev);
   public: 

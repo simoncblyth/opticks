@@ -287,6 +287,16 @@ Opticks* Opticks::GetInstance()
 }
 
 
+/**
+Opticks::envkey
+----------------
+
+TODO: handle in OpticksResource ? Why it need to be here ?
+Which makes it difficult for the key to be overridible from command line.
+
+
+**/
+
 bool Opticks::envkey()
 {
     bool legacy = Opticks::IsLegacyGeometryEnabled(); 

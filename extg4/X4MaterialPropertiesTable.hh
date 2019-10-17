@@ -20,6 +20,7 @@
 #pragma once
 
 #include "X4_API_EXPORT.hh"
+#include "plog/Severity.h"
 
 class G4MaterialPropertiesTable ; 
 template <typename T> class GPropertyMap ; 
@@ -38,6 +39,7 @@ map accessors will be removed in 11
 
 class X4_API X4MaterialPropertiesTable 
 {
+        static const plog::Severity LEVEL ; 
     public:
         static void Convert(GPropertyMap<float>* pmap,  const G4MaterialPropertiesTable* const mpt);
         static std::string Digest(const G4MaterialPropertiesTable* mpt);

@@ -93,7 +93,7 @@ void X4GDMLWriteStructure::add(const G4VSolid* solid )
 
    G4String type = solid->GetEntityType() ; 
 
-   LOG(info) << type ;  
+   LOG(LEVEL) << type ;  
 
    if( type != "G4DisplacedSolid" )
    AddSolid( solid );

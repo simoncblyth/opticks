@@ -248,6 +248,13 @@ int BOpticksResource::DefaultTarget() // static
    return target  ; 
 }
 
+const char* BOpticksResource::DEFAULT_KEY_KEY = "OPTICKS_KEY" ; 
+std::string BOpticksResource::DefaultKey() // static
+{
+   const char* key = SSys::getenvvar(DEFAULT_KEY_KEY, "");
+   return key  ; 
+}
+
 
 
 

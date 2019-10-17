@@ -27,6 +27,9 @@
 
 #include "X4MaterialPropertiesTable.hh"
 #include "GPropertyMap.hh"
+#include "PLOG.hh"
+
+const plog::Severity X4LogicalSurface::LEVEL = PLOG::EnvLevel("X4LogicalSurface","DEBUG") ; 
 
 void X4LogicalSurface::Convert(GPropertyMap<float>* dst,  const G4LogicalSurface* src)
 {
@@ -35,6 +38,8 @@ void X4LogicalSurface::Convert(GPropertyMap<float>* dst,  const G4LogicalSurface
     assert( opsurf );   
     G4MaterialPropertiesTable* mpt = opsurf->GetMaterialPropertiesTable() ;
     X4MaterialPropertiesTable::Convert( dst, mpt );
+
+    LOG(LEVEL); 
 }
 
 

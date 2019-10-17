@@ -379,6 +379,13 @@ const G4LogicalVolume* CTraverser::getLV(const char* name) const
 }
 
 
+/*
+const G4LogicalVolume* CTraverser::getLVMatch(const char* name) const
+{
+   return m_lvm.count(name) == 1 ? m_lvm.at(name) : NULL ; 
+}
+
+*/
 
 
 

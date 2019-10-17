@@ -23,6 +23,7 @@
 
 class GSurfaceLib ; 
 
+#include "plog/Severity.h"
 #include "G4LogicalSkinSurface.hh"   // forced to include for the typedef 
 #include "X4_API_EXPORT.hh"
 
@@ -34,6 +35,7 @@ X4LogicalSkinSurfaceTable
 
 class X4_API X4LogicalSkinSurfaceTable 
 {
+        static const plog::Severity LEVEL ; 
     public:
         static void Convert(GSurfaceLib* dst);
     private:

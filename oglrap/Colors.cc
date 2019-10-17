@@ -26,6 +26,8 @@
 #include "PLOG.hh"
 // trace/debug/info/warning/error/fatal
 
+const plog::Severity Colors::LEVEL = PLOG::EnvLevel("Colors", "DEBUG") ; 
+
 
 Colors::Colors(Device* device)
     :
@@ -51,13 +53,13 @@ void Colors::upload()
 {
     if(!m_colorbuffer)
     {
-         LOG(warning) <<"Colors::upload no colorbuffer skipping " ;  
+         LOG(error) <<"no colorbuffer skipping " ;  
          return ; 
     }
 
     if(m_colors_uploaded)
     {
-         LOG(warning) <<"Colors::upload already uploaded " ;  
+         LOG(error) <<"already uploaded " ;  
          return ; 
     }
     m_colors_uploaded = true ; 
@@ -65,7 +67,7 @@ void Colors::upload()
     unsigned int ncol = getNumColors() ;
     if(ncol == 0)
     {
-         LOG(warning) <<"Colors::upload empty colorbuffer " ;  
+         LOG(error) <<"empty colorbuffer " ;  
          return ; 
     }
 
@@ -76,7 +78,7 @@ void Colors::upload()
 
     //unsigned char* colors = (unsigned char*)m_colorbuffer->getPointer();
     unsigned char* colors = m_colorbuffer->getValues();
-    LOG(debug) <<"Colors::upload ncol " << ncol ;  
+    LOG(LEVEL) << " ncol " << ncol ;  
 
     // https://open.gl/textures
     GLenum  target = GL_TEXTURE_1D ;   // Must be GL_TEXTURE_1D or GL_PROXY_TEXTURE_1D

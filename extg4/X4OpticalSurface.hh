@@ -20,6 +20,7 @@
 #pragma once
 
 #include "X4_API_EXPORT.hh"
+#include "plog/Severity.h"
 
 class G4OpticalSurface ; 
 class GOpticalSurface ; 
@@ -35,6 +36,7 @@ has been ported to Opticks.
 
 class X4_API X4OpticalSurface 
 {
+        static const plog::Severity LEVEL ; 
     public:
         static const char* Type(G4SurfaceType type);
         static GOpticalSurface* Convert(const G4OpticalSurface* const src );
