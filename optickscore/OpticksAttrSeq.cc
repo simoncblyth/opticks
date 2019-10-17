@@ -48,7 +48,7 @@
 unsigned int OpticksAttrSeq::UNSET = UINT_MAX ; 
 unsigned int OpticksAttrSeq::ERROR_COLOR = 0xAAAAAA ; 
 
-const plog::Severity OpticksAttrSeq::LEVEL = PLOG::EnvLevel("OpticksAttrSeq", "debug"); 
+const plog::Severity OpticksAttrSeq::LEVEL = PLOG::EnvLevel("OpticksAttrSeq", "DEBUG"); 
 
 
 OpticksAttrSeq::OpticksAttrSeq(Opticks* ok, const char* type)

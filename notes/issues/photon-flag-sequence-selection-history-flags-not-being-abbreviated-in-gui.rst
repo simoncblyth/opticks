@@ -291,6 +291,47 @@ There is no longer any need to get this key->abbrev MSS from file, its compiled 
 
 
 
+Issue : Photon history coloring also missing
+-----------------------------------------------
+
+
+* getting release to work involved a lot of resource reorganization, 
+  this issue as well as flag name abbreviations being missung is a casualty of that 
+
+
+Old opticksdata::
+
+    calhost opticksdata]$ cat resource/GFlags/color.json
+    {
+        "CERENKOV":"white",
+        "SCINTILLATION":"white",
+        "TORCH":"white",
+        "MISS":"grey",
+        "BULK_ABSORB":"red",
+        "BULK_REEMIT":"green", 
+        "BULK_SCATTER":"blue",    
+        "SURFACE_DETECT":"purple",
+        "SURFACE_ABSORB":"orange",      
+        "SURFACE_DREFLECT":"pink",
+        "SURFACE_SREFLECT":"magenta",
+        "BOUNDARY_REFLECT":"yellow",
+        "BOUNDARY_TRANSMIT":"cyan",
+        "NAN_ABORT":"grey"
+    }
+
+
+    [blyth@localhost opticksdata]$ find . -name OpticksColors.json
+    ./resource/OpticksColors/OpticksColors.json
+    [blyth@localhost opticksdata]$ cat resource/OpticksColors/OpticksColors.json
+    {"indigo": "#4B0082", "gold": "#FFD700", "hotpink": "#FF69B4", "firebrick": "#B22222",  ...
+
+
+
+
+
+
+savehit ?
+-------------
 
 
 
@@ -342,42 +383,5 @@ There is no longer any need to get this key->abbrev MSS from file, its compiled 
     [blyth@localhost torch]$ np.py 1/ht.npy 
     a :                                                     1/ht.npy :       (239820, 4, 4) : 28292e1615e48297d1954b76b181ad97 : 20191013-1647 
 
-
-
-
-
-Issue : Photon history coloring also missing
------------------------------------------------
-
-
-* getting release to work involved a lot of resource reorganization, 
-  this issue as well as flag name abbreviations being missung is a casualty of that 
-
-
-Old opticksdata::
-
-    calhost opticksdata]$ cat resource/GFlags/color.json
-    {
-        "CERENKOV":"white",
-        "SCINTILLATION":"white",
-        "TORCH":"white",
-        "MISS":"grey",
-        "BULK_ABSORB":"red",
-        "BULK_REEMIT":"green", 
-        "BULK_SCATTER":"blue",    
-        "SURFACE_DETECT":"purple",
-        "SURFACE_ABSORB":"orange",      
-        "SURFACE_DREFLECT":"pink",
-        "SURFACE_SREFLECT":"magenta",
-        "BOUNDARY_REFLECT":"yellow",
-        "BOUNDARY_TRANSMIT":"cyan",
-        "NAN_ABORT":"grey"
-    }
-
-
-    [blyth@localhost opticksdata]$ find . -name OpticksColors.json
-    ./resource/OpticksColors/OpticksColors.json
-    [blyth@localhost opticksdata]$ cat resource/OpticksColors/OpticksColors.json
-    {"indigo": "#4B0082", "gold": "#FFD700", "hotpink": "#FF69B4", "firebrick": "#B22222",  ...
 
 

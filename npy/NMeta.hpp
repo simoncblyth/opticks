@@ -21,6 +21,7 @@
 
 #include <vector>
 #include <string>
+#include "plog/Severity.h"
 
 #include "NPY_API_EXPORT.hh"
 #include "NYJSON.hpp"
@@ -42,6 +43,7 @@ https://nlohmann.github.io/json/
 **/
 
 class NPY_API NMeta {
+       static const plog::Severity LEVEL ; 
    public:
        static NMeta* Load(const char* path);
        static NMeta* Load(const char* dir, const char* name);

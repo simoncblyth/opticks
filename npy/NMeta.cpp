@@ -41,6 +41,9 @@ extern char **environ;
 #include "PLOG.hh"
 
 
+const plog::Severity NMeta::LEVEL = PLOG::EnvLevel("NMeta", "DEBUG"); 
+
+
 NMeta::NMeta(const NMeta& other)
     :
     m_js(other.cjs())
@@ -162,17 +165,20 @@ void NMeta::prepLines()
 void NMeta::fillMap(std::map<std::string, std::string>& mss )
 {
     unsigned nk = getNumKeys(); 
+    LOG(LEVEL) << " nk " << nk ; 
     for(unsigned i=0 ; i < nk ; i++)
     {
         const char* key = getKey(i); 
         std::string val = get<std::string>(key); 
 
+        /*
         std::cout 
             << std::setw(20) << key 
             << " : " 
             << std::setw(20) << val 
             << std::endl 
             ; 
+        */
 
         mss[key] = val ;  
     }
