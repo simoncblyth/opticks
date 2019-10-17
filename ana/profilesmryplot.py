@@ -107,7 +107,7 @@ class O(object):
         if self.ratio:
             if self.cfg4:
                 if self.key == "Opticks_Speedup":
-                    self.ylim = [0, 3000]  
+                    self.ylim = [0, 2800]  
                     self.rr = "19l 19i 09l 09i"
                     self.ylog = False
                     #self.loc = [0.4, 0.45 ] 
@@ -120,7 +120,7 @@ class O(object):
                     self.rr = "10" 
                     self.ylim = [0,10]          
                 elif self.key == "Interval_over_Launch":
-                    self.ylim = [0, 4]  
+                    self.ylim = [0, 1.5]  
                     self.rr = "00 11" 
                     self.loc = "upper right"   
                 else:
@@ -157,6 +157,10 @@ def make_fig( plt, o, ps, rs, idlabel=None ):
     sli = o.sli
     plt.rcParams['figure.figsize'] = o.figsize    
     plt.rcParams['font.size'] = o.fontsize
+
+    plt.rcParams['ytick.right'] = plt.rcParams['ytick.labelright'] = True
+    plt.rcParams['ytick.left'] = plt.rcParams['ytick.labelleft'] = True
+
 
     fig = plt.figure()
     ax = fig.add_subplot(111)
@@ -206,6 +210,10 @@ def make_fig( plt, o, ps, rs, idlabel=None ):
     pass
     ax.legend(loc=o.loc, fontsize=o.fontsize, shadow=True)
 
+
+    #ax.yaxis.tick_right()
+    #ax.yaxis.set_ticks_position('both')
+
     if idlabel is None:
         pass
     else:
@@ -253,6 +261,9 @@ if __name__ == '__main__':
     cats = [cat0, cat1]
     pftab = ProfileSmryTab.FromCrossList(pfxs, cats)
 
+    g4_seconds_1M = pm.g4_seconds_1M 
+    pftab.addG4Extrapolation(g4_seconds_1M=g4_seconds_1M)
+
     print(repr(pftab)) 
 
     ps = pftab.ps
@@ -269,7 +280,7 @@ if __name__ == '__main__':
     gpu = ps[0].gpu 
 
     ps[9].fmt = "o--" 
-    ps[9].label = "G4 Extrapolated"
+    ps[9].label = "G4 Extrapolated (from %4.1f s for 1M) " % g4_seconds_1M
 
 
     import matplotlib.pyplot as plt

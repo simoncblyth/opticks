@@ -68,13 +68,17 @@ class ProfileSmryTab(object):
             pass
             ps[idx] = ProfileSmry.Load(pfx, startswith=cat, gpufallback=None )
         pass
-        assert len(ps) < 9 and len(ps) > 0, len(ps) 
-        pass
-        ps[9] = ProfileSmry.FromExtrapolation( ps[0].npho, time_for_1M=239. )
         self.ps = ps
         self.pfxcats = pfxcats  
         self.upfxs = upfxs 
         self.ucats = ucats 
+
+    def addG4Extrapolation(self, g4_seconds_1M=239.):
+        ps = self.ps 
+        assert len(ps) < 9 and len(ps) > 0, len(ps) 
+        pass
+        ps[9] = ProfileSmry.FromExtrapolation( ps[0].npho, seconds_1M=g4_seconds_1M )
+
 
     def idx(self, pfx, cat):
         pfxcat = "/".join([pfx,cat])

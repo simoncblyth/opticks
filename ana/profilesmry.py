@@ -194,19 +194,19 @@ class ProfileSmry(object):
 
 
     @classmethod
-    def FromExtrapolation(cls, npho, time_for_1M=0. ):
+    def FromExtrapolation(cls, npho, seconds_1M=0. ):
         """
         See notes/issues/geant4-beamOn-profiling.rst
 
         100 s : for tboolean-box scan-ph
         239 s : for full JUNO  scan-pf before alignment shakedown
         """
-        assert time_for_1M > 0, time_for_1M
+        assert seconds_1M > 0, seconds_1M
 
         s = odict()
         ps = cls(s)
         ps.npho = npho
-        xtim =  (npho/1e6)*time_for_1M 
+        xtim =  (npho/1e6)*seconds_1M 
         ps.alaunch = xtim
         ps.ainterval = xtim
         ps.creator = "FromExtrapolation" 
@@ -289,6 +289,7 @@ class ProfileMain(object):
         parser = argparse.ArgumentParser(__doc__)
         default_cvd = os.environ.get("OPTICKS_DEFAULT_INTEROP_CVD", "0")  ## hmm this is broken by scan-rsync when looking as scans from another machine
         parser.add_argument( "--pfx", default="scan-pf", help="Start of prefix to be appended with a hyphen and integer, beneath which to search for OpticksProfile.npy" )
+        parser.add_argument( "--g4_seconds_1M", default=239.0, help="Number of seconds for G4 obtained by 1M run of OKG4Test" )
         parser.add_argument( "vers", nargs="*", default=[10], type=int, help="Prefix beneath which to search for OpticksProfile.npy" )
         parser.add_argument( "--cvd", default=default_cvd, help="CUDA_VISIBLE_DEVICE for the named GPU" )
         parser.add_argument( "--gpufallback", default="Quadro_RTX_8000", help="Fallback GPU Name for older scans without this metadata, eg TITAN_RTX" )
@@ -326,6 +327,7 @@ class ProfileMain(object):
         self.pfx0 = self.get_pfx(self.vers[0])
         self.cvd = args.cvd 
         self.gpufallback = args.gpufallback 
+        self.g4_seconds_1M = args.g4_seconds_1M
 
         bashcmd = self.bashcmd
         log.info("lookup BashNotes from %s " % bashcmd )
