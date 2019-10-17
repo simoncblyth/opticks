@@ -129,6 +129,174 @@ photon-flag-sequence-selection-history-flags-not-being-abbreviated-in-gui
 
 ::
 
+    097         std::string decodeHexSequenceString(const char* seq, unsigned char ctrl=REVERSE|ABBREVIATE|ONEBASED );
+    098         std::string decodeString(const char* seq, unsigned char ctrl=ABBREVIATE|ONEBASED);
+
+
+    272 std::string OpticksAttrSeq::decodeHexSequenceString(const char* seq, unsigned char ctrl)
+    273 {
+    274     if(!seq) return "NULL" ;
+    275 
+    276     std::string lseq(seq);
+    277     if(ctrl & REVERSE)
+    278         std::reverse(lseq.begin(), lseq.end());
+    279 
+    280     std::stringstream ss ;
+    281     for(unsigned int i=0 ; i < lseq.size() ; i++)
+    282     {
+    283         std::string sub = lseq.substr(i, 1) ;
+    284         unsigned int local = BHex<unsigned int>::hex_lexical_cast(sub.c_str());
+    285         unsigned int idx =  ctrl & ONEBASED ? local - 1 : local ;
+    286         const char* key = m_sequence->getKey(idx) ;
+    287         std::string elem = ( ctrl & ABBREVIATE ) ? getAbbr(key) : key ;
+    288         ss << elem << " " ;
+    289     }
+    290     return ss.str();
+    291 }
+
+    198 std::string OpticksAttrSeq::getAbbr(const char* key)
+    199 {
+    200     if(key == NULL) return "NULL" ;
+    201     return m_abbrev.count(key) == 1 ? m_abbrev[key] : key ;  // copying key into string
+    202 }
+
+
+    107 void OpticksAttrSeq::loadPrefs()
+    108 {
+    109     if(m_resource->loadPreference(m_color, m_type, "color.json"))
+    110     {
+    111         LOG(LEVEL) << "color " << m_type ;
+    112     }
+    113 
+    114     if(m_resource->loadPreference(m_abbrev, m_type, "abbrev.json"))
+    115     {
+    116         LOG(LEVEL) << "abbrev " << m_type ;
+    117     }
+    118 
+    119     if(m_resource->loadPreference(m_order, m_type, "order.json"))
+    120     {
+    121         LOG(LEVEL) << "order " << m_type ;
+    122     }
+    123 }
+
+
+::
+
+    [blyth@localhost optickscore]$ opticks-f loadPrefs
+    ./ggeo/GPropertyLib.cc:    m_attrnames->loadPrefs(); // color.json, abbrev.json and order.json 
+    ./ggeo/GPropertyLib.cc:    LOG(debug) << "GPropertyLib::init loadPrefs-DONE " ; 
+    ./optickscore/OpticksAttrSeq.hh:        void loadPrefs();
+    ./optickscore/OpticksResource.cc:        m_flagnames->loadPrefs(); // color, abbrev and order 
+    ./optickscore/OpticksAttrSeq.cc:OpticksAttrSeq::loadPrefs
+    ./optickscore/OpticksAttrSeq.cc:void OpticksAttrSeq::loadPrefs()
+    [blyth@localhost opticks]$ 
+
+
+::
+
+    1115 OpticksAttrSeq* OpticksResource::getFlagNames()
+    1116 {
+    1117     if(!m_flagnames)
+    1118     {
+    1119         OpticksFlags* flags = getFlags();
+    1120         Index* index = flags->getIndex();
+    1121 
+    1122         m_flagnames = new OpticksAttrSeq(m_ok, "GFlags");
+    1123         m_flagnames->loadPrefs(); // color, abbrev and order 
+    1124         m_flagnames->setSequence(index);
+    1125         m_flagnames->setCtrl(OpticksAttrSeq::SEQUENCE_DEFAULTS);
+    1126     }
+    1127     return m_flagnames ;
+    1128 }
+
+
+::
+
+    [blyth@localhost optickscore]$ opticks-f getFlagNames
+    ./ggeo/tests/RecordsNPYTest.cc:    typ->setFlagNames(ok.getFlagNamesMap());
+    ./ggeo/tests/GAttrSeqTest.cc:    OpticksAttrSeq* qflg = opticks->getFlagNames();
+    ./ggeo/tests/GFlagsTest.cc:    OpticksAttrSeq* q = ok.getFlagNames(); 
+    ./ggeo/GGeo.cc:OpticksAttrSeq*  GGeo::getFlagNames() { return m_ok->getFlagNames(); } 
+    ./ggeo/GGeo.cc:    typ->setFlagNames(m_ok->getFlagNamesMap());
+    ./ggeo/GGeo.cc:    std::vector<unsigned int>& flag_codes     = m_ok->getFlagNames()->getColorCodes() ; 
+    ./ggeo/GGeo.hh:        OpticksAttrSeq*    getFlagNames(); 
+    ./oglrap/GUI.cc:    OpticksAttrSeq* qflg = m_hub->getFlagNames();
+    ./opticksgeo/OpticksHub.hh:       OpticksAttrSeq*      getFlagNames();
+    ./opticksgeo/OpticksHub.cc:OpticksAttrSeq* OpticksHub::getFlagNames()
+    ./opticksgeo/OpticksHub.cc:    return m_ok->getFlagNames();
+    ./opticksgeo/OpticksIdx.cc:    OpticksAttrSeq* qflg = m_hub->getFlagNames();
+    ./optickscore/Opticks.hh:       OpticksAttrSeq*      getFlagNames();
+    ./optickscore/Opticks.hh:       std::map<unsigned int, std::string> getFlagNamesMap();
+    ./optickscore/OpticksResource.cc:OpticksAttrSeq* OpticksResource::getFlagNames()
+    ./optickscore/OpticksResource.cc:std::map<unsigned int, std::string> OpticksResource::getFlagNamesMap()
+    ./optickscore/OpticksResource.cc:    OpticksAttrSeq* flagnames = getFlagNames();
+    ./optickscore/Opticks.cc:OpticksAttrSeq* Opticks::getFlagNames() { return m_resource->getFlagNames(); }
+    ./optickscore/Opticks.cc:std::map<unsigned int, std::string> Opticks::getFlagNamesMap()
+    ./optickscore/Opticks.cc:    return m_resource->getFlagNamesMap() ;
+    ./optickscore/OpticksResource.hh:       OpticksAttrSeq* getFlagNames();
+    ./optickscore/OpticksResource.hh:       std::map<unsigned int, std::string> getFlagNamesMap();
+    [blyth@localhost opticks]$ 
+
+
+
+
+Trying to read prefs from non-existing dir::
+
+    OpticksAttrSeq=FATAL OpticksResource=FATAL GAttrSeqTest
+    ...
+    2019-10-17 10:39:43.749 FATAL [1098] [OpticksAttrSeq::init@89] 
+    2019-10-17 10:39:43.749 FATAL [1098] [OpticksAttrSeq::loadPrefs@110] [
+    2019-10-17 10:39:43.749 FATAL [1098] [OpticksResource::loadPreference@952]  (MSS)  prefdir /home/blyth/local/opticks/opticksaux/resource/GFlags name color.json empty NO
+    2019-10-17 10:39:43.749 FATAL [1098] [OpticksResource::loadPreference@952]  (MSS)  prefdir /home/blyth/local/opticks/opticksaux/resource/GFlags name abbrev.json empty NO
+    2019-10-17 10:39:43.749 FATAL [1098] [OpticksResource::loadPreference@975]  (MSU)  prefdir /home/blyth/local/opticks/opticksaux/resource/GFlags name order.json empty NO
+    2019-10-17 10:39:43.749 FATAL [1098] [OpticksAttrSeq::loadPrefs@125] ]
+
+
+An old abbrev from opticksdata::
+
+    [blyth@localhost opticksdata]$ cat resource/GFlags/abbrev.json
+    {
+        "CERENKOV":"CK",
+        "SCINTILLATION":"SI",
+        "TORCH":"TO",
+        "MISS":"MI",
+        "BULK_ABSORB":"AB",
+        "BULK_REEMIT":"RE", 
+
+
+There is no longer any need to get this key->abbrev MSS from file, its compiled into OpticksFlags. 
+
+::
+
+    106 NMeta* OpticksFlags::makeAbbrevMeta()
+    107 {
+    108     NMeta* m = new NMeta ;
+    109     m->set<std::string>(CERENKOV_ , _CERENKOV);
+    110     m->set<std::string>(SCINTILLATION_ , _SCINTILLATION);
+    111     m->set<std::string>(TORCH_ , _TORCH);
+    112     m->set<std::string>(MISS_ , _MISS);
+    113     m->set<std::string>(BULK_ABSORB_ , _BULK_ABSORB);
+    114     m->set<std::string>(BULK_REEMIT_ , _BULK_REEMIT);
+    115     m->set<std::string>(BULK_SCATTER_ , _BULK_SCATTER);
+    116     m->set<std::string>(SURFACE_DETECT_ , _SURFACE_DETECT);
+    117     m->set<std::string>(SURFACE_ABSORB_ , _SURFACE_ABSORB);
+    118     m->set<std::string>(SURFACE_DREFLECT_ , _SURFACE_DREFLECT);
+    119     m->set<std::string>(SURFACE_SREFLECT_ , _SURFACE_SREFLECT);
+    120     m->set<std::string>(BOUNDARY_REFLECT_ , _BOUNDARY_REFLECT);
+    121     m->set<std::string>(BOUNDARY_TRANSMIT_ , _BOUNDARY_TRANSMIT);
+    122     m->set<std::string>(NAN_ABORT_ , _NAN_ABORT);
+    123     return m ;
+    124 }
+
+
+
+
+
+
+
+
+::
+
     [blyth@localhost opticks]$ opticks-f savehit
     ./bin/scan.bash:   local cmd="ts $(scan-ph-lv) --pfx $(scan-pfx) --cat ${cat}_${num_abbrev} --generateoverride ${num_photons} --compute --production --savehit --multievent 10 --xanalytic "  ; 
     ./bin/scan.bash:   local cmd="ts $(scan-px-lv) --oktest --pfx $(scan-pfx) --cat ${cat}_${num_abbrev} --generateoverride ${num_photons} --compute --production --savehit --multievent 10 --xanalytic "  ; 

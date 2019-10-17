@@ -49,9 +49,11 @@ History
 
 class SLog ; 
 
+
 class Opticks ;
 class OpticksResource ;
 class NSequence ; 
+class NMeta ; 
 class Index ; 
 
 #include "OKCORE_API_EXPORT.hh"
@@ -83,6 +85,7 @@ class OKCORE_API OpticksAttrSeq {
         std::map<std::string, unsigned int>& getOrder();
         void setSequence(NSequence* seq);
         bool hasSequence();
+        void setAbbrevMeta(NMeta* abbrev); 
     public:
         //std::string  getCtrlDesc() const ; 
         std::string  getLabel(Index* index, const char* key, unsigned int& colorcode);
@@ -110,6 +113,7 @@ class OKCORE_API OpticksAttrSeq {
         const char*                          m_type ; 
         unsigned char                        m_ctrl ; 
         NSequence*                           m_sequence ; 
+        NMeta*                               m_abbrev_meta ; 
     private:
         std::map<std::string, std::string>   m_abbrev ;
         std::map<std::string, std::string>   m_color ;

@@ -74,6 +74,8 @@ TODO
 
 2. Ideally want to slim this class... to almost nothing 
 
+3. replace use of boost::filesystem with BFile
+
 */
 
 OpticksResource::OpticksResource(Opticks* ok) 
@@ -949,11 +951,12 @@ bool OpticksResource::loadPreference(std::map<std::string, std::string>& mss, co
     std::string prefdir = getPreferenceDir(type);
     bool empty = prefdir.empty() ; 
 
-    LOG(verbose) << "OpticksResource::loadPreference(MSS)" 
-              << " prefdir " << prefdir
-              << " name " << name
-              << " empty " << ( empty ? "YES" : "NO" )
-              ; 
+    LOG(LEVEL)
+        << " (MSS) " 
+        << " prefdir " << prefdir
+        << " name " << name
+        << " empty " << ( empty ? "YES" : "NO" )
+        ; 
 
 
     typedef Map<std::string, std::string> MSS ;  
@@ -971,11 +974,13 @@ bool OpticksResource::loadPreference(std::map<std::string, unsigned int>& msu, c
     std::string prefdir = getPreferenceDir(type);
     bool empty = prefdir.empty() ; 
 
-    LOG(verbose) << "OpticksResource::loadPreference(MSU)" 
-              << " prefdir " << prefdir
-              << " name " << name
-              << " empty " << ( empty ? "YES" : "NO" )
-              ; 
+    LOG(LEVEL)
+        << " (MSU) " 
+        << " prefdir " << prefdir
+        << " name " << name
+        << " empty " << ( empty ? "YES" : "NO" )
+        ; 
+
 
     typedef Map<std::string, unsigned int> MSU ;  
     MSU* pref = empty ? NULL : MSU::load(prefdir.c_str(), name ) ; 
@@ -1117,10 +1122,14 @@ OpticksAttrSeq* OpticksResource::getFlagNames()
     if(!m_flagnames)
     {
         OpticksFlags* flags = getFlags();
+        NMeta* abbrev = flags->getAbbrevMeta(); 
+
         Index* index = flags->getIndex();
 
         m_flagnames = new OpticksAttrSeq(m_ok, "GFlags");
-        m_flagnames->loadPrefs(); // color, abbrev and order 
+        m_flagnames->loadPrefs(); // color, abbrev and order  <-- missing in direct
+        m_flagnames->setAbbrevMeta(abbrev);   // added flag abbrevs as the abbrev.json missing in direct workflow 
+
         m_flagnames->setSequence(index);
         m_flagnames->setCtrl(OpticksAttrSeq::SEQUENCE_DEFAULTS);    
     }

@@ -22,6 +22,7 @@
 #include "OpticksPhoton.h"
 #include <string>
 #include <map>
+#include "plog/Severity.h"
 
 class Index ; 
 class NMeta ; 
@@ -58,6 +59,7 @@ TODO : Repositioning
 #include "OKCORE_API_EXPORT.hh"
 
 class OKCORE_API OpticksFlags {
+       static const plog::Severity LEVEL ; 
     public:
        static const char* ABBREV_META_NAME ;  
        static const char* ENUM_HEADER_PATH ;  

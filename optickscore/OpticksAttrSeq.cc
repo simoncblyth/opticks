@@ -34,6 +34,7 @@
 #include "PLOG.hh"
 
 // npy-
+#include "NMeta.hpp"
 #include "Index.hpp"
 
 //opticks-
@@ -57,7 +58,8 @@ OpticksAttrSeq::OpticksAttrSeq(Opticks* ok, const char* type)
    m_resource(m_ok->getResource()),
    m_type(strdup(type)),
    m_ctrl(0),
-   m_sequence(NULL)
+   m_sequence(NULL),
+   m_abbrev_meta(NULL)
 {
    init();
    (*m_log)("DONE");
@@ -78,6 +80,13 @@ void OpticksAttrSeq::setCtrl(unsigned char ctrl)
     m_ctrl = ctrl ; 
 }
 
+void OpticksAttrSeq::setAbbrevMeta(NMeta* abbrev)
+{
+    m_abbrev_meta = abbrev ; 
+}
+
+
+
 bool OpticksAttrSeq::hasSequence()
 {
     return m_sequence != NULL ; 
@@ -86,6 +95,7 @@ bool OpticksAttrSeq::hasSequence()
 
 void OpticksAttrSeq::init()
 {
+    LOG(LEVEL) ; 
 }
 
 /**
@@ -106,6 +116,7 @@ can be used.
 
 void OpticksAttrSeq::loadPrefs()
 {
+    LOG(LEVEL) << "["  ; 
     if(m_resource->loadPreference(m_color, m_type, "color.json"))
     {
         LOG(LEVEL) << "color " << m_type ;
@@ -120,6 +131,7 @@ void OpticksAttrSeq::loadPrefs()
     {
         LOG(LEVEL) << "order " << m_type ;
     }
+    LOG(LEVEL) << "]"  ; 
 }
 
 void OpticksAttrSeq::setSequence(NSequence* seq)
@@ -194,16 +206,35 @@ std::vector<std::string>& OpticksAttrSeq::getLabels()
     return m_labels ; 
 }
 
+/**
+OpticksAttrSeq::getAbbr
+--------------------------
+
+See notes/issues/photon-flag-sequence-selection-history-flags-not-being-abbreviated-in-gui.rst
+
+**/
+
 
 std::string OpticksAttrSeq::getAbbr(const char* key)
 {
     if(key == NULL) return "NULL" ; 
-    return m_abbrev.count(key) == 1 ? m_abbrev[key] : key ;  // copying key into string
+
+    std::string abb = key ; 
+    if( m_abbrev_meta )
+    {
+        abb = m_abbrev_meta->get<std::string>(key, key ) ; 
+    } 
+    else
+    {
+        abb = m_abbrev.count(key) == 1 ? m_abbrev[key] : key ;  // copying key into string
+    }
+    return abb ; 
 }
 
 
 void OpticksAttrSeq::dump(const char* keys, const char* msg)
 {
+
     if(!m_sequence) 
     {
         LOG(warning) << "OpticksAttrSeq::dump no sequence " ; 
@@ -251,11 +282,11 @@ void OpticksAttrSeq::dumpKey(const char* key)
         const char* colorname = getColorName(key);  
         unsigned int colorcode = getColorCode(key);              
 
-        std::cout << std::setw(5) << idx 
-                  << std::setw(30) << key 
-                  << std::setw(10) << std::hex << colorcode << std::dec
-                  << std::setw(15) << ( colorname ? colorname : "-" ) 
-                  << std::setw(15) << abbr
+        std::cout << " idx " << std::setw(5) << idx 
+                  << " key " << std::setw(30) << key 
+                  << " colorcode " << std::setw(10) << std::hex << colorcode << std::dec
+                  << " colorname " << std::setw(15) << ( colorname ? colorname : "-" ) 
+                  << " abbr " << std::setw(15) << abbr
                   << std::endl ; 
     }
 }

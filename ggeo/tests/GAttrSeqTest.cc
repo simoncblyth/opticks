@@ -38,9 +38,7 @@
 #include "GMaterialLib.hh"
 #include "GBndLib.hh"
 
-#include "PLOG.hh"
-#include "GGEO_LOG.hh"
-#include "OKCORE_LOG.hh"
+#include "OPTICKS_LOG.hh"
 
 
 void test_history_sequence(Opticks* opticks)
@@ -51,6 +49,8 @@ void test_history_sequence(Opticks* opticks)
 
     assert(qflg);
     qflg->dump();
+
+    LOG(info) << "-------------------------------" ; 
 
     Index* seqhis = opticks->loadHistoryIndex(); 
     if(!seqhis)
@@ -114,16 +114,14 @@ void test_material_dump(Opticks* opticks)
 
 int main(int argc, char** argv)
 {
-    PLOG_(argc, argv);
-    GGEO_LOG__ ;
-    OKCORE_LOG__ ;
+    OPTICKS_LOG(argc, argv);
 
     Opticks ok(argc, argv);
     ok.configure();
 
     test_history_sequence(&ok);
-    test_material_sequence(&ok);
-    test_material_dump(&ok);
+    //test_material_sequence(&ok);
+    //test_material_dump(&ok);
     
-    test_index_boundaries(&ok);
+    //test_index_boundaries(&ok);
 }

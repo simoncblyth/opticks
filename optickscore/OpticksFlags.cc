@@ -35,6 +35,8 @@
 #include "OpticksFlags.hh"
 
 
+const plog::Severity OpticksFlags::LEVEL = PLOG::EnvLevel("OpticksFlags", "DEBUG") ; 
+
 //const char* OpticksFlags::ENUM_HEADER_PATH = "$ENV_HOME/graphics/optixrap/cu/photon.h" ;
 //const char* OpticksFlags::ENUM_HEADER_PATH = "$ENV_HOME/opticks/OpticksPhoton.h" ;
 //const char* OpticksFlags::ENUM_HEADER_PATH = "$ENV_HOME/optickscore/OpticksPhoton.h" ;
@@ -448,6 +450,7 @@ OpticksFlags::OpticksFlags(const char* path)
     m_index(parseFlags(path)),
     m_abbrev_meta(makeAbbrevMeta())
 {
+    LOG(LEVEL) << " path " << path ; 
 }
 
 
