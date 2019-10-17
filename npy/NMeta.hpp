@@ -45,6 +45,7 @@ class NPY_API NMeta {
    public:
        static NMeta* Load(const char* path);
        static NMeta* Load(const char* dir, const char* name);
+       static NMeta* FromTxt(const char* txt);
    public:
        NMeta();
        NMeta(const NMeta& other);
@@ -57,9 +58,10 @@ class NPY_API NMeta {
        const nlohmann::json& cjs() const ;
    public:
        const char* getKey(unsigned idx) const ;
-       unsigned    getNumKeys() ;            // non-const may updateKeys
+       unsigned    getNumKeys() ;             // non-const may updateKeys
        std::vector<std::string>& getLines();  // non-const may prepLines
        std::string desc(unsigned wid=0);
+       void fillMap(std::map<std::string, std::string>& mss ); 
    private:
        void        updateKeys();
        void        prepLines();
@@ -77,6 +79,7 @@ class NPY_API NMeta {
        template <typename T> T get(const char* name, const char* fallback) const ;
        int getIntFromString(const char* name, const char* fallback) const ;
        bool hasItem(const char* name) const ;
+
    public:
        template <typename T> static T Get(const NMeta* meta, const char* name, const char* fallback)  ;
    public:
@@ -94,11 +97,13 @@ class NPY_API NMeta {
    public:
        void load(const char* path);
        void load(const char* dir, const char* name);
+       void loadTxt(const char* txt);
 
    private:
        // formerly used separate NJS, but that makes copy-ctor confusing 
        void read(const char* path0, const char* path1=NULL);
        void write(const char* path0, const char* path1=NULL) const ;
+       void readTxt(const char* txt);
  
    private:
        nlohmann::json  m_js ;  

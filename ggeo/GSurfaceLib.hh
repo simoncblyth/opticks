@@ -145,6 +145,7 @@ class GGEO_API GSurfaceLib : public GPropertyLib {
    public:
        guint4               getOpticalSurface(unsigned int index);  // zero based index
        GPropertyMap<float>* getSensorSurface(unsigned int offset=0);  // 0: first, 1:second 
+       unsigned             getNumSensorSurface() const ; 
    public:
        // Check for a surface of specified name of index in m_surfaces vector
        // NB: changed behaviour, formerly named access only worked after closing
@@ -168,7 +169,7 @@ class GGEO_API GSurfaceLib : public GPropertyLib {
        NPY<unsigned int>* getOpticalBuffer();
    public:
        unsigned getNumSurfaces() const ;
-       bool isSensorSurface(unsigned int surface); // name suffix based, see AssimpGGeo::convertSensor
+       bool isSensorSurface(unsigned int surface) const ; // name suffix based, see AssimpGGeo::convertSensor
    public:
        void import();
    private:
@@ -202,7 +203,6 @@ class GGEO_API GSurfaceLib : public GPropertyLib {
        NPY<unsigned int>*                      m_optical_buffer ; 
        GSurfaceLib*                            m_basis ; 
        bool                                    m_dbgsurf ; 
-       plog::Severity                          m_level ; 
 
    private:
        // relocated from GGeo

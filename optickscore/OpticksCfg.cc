@@ -26,6 +26,7 @@
 #include "STime.hh"
 #include "SSys.hh"
 #include "BStr.hh"
+#include "BOpticksResource.hh"
 #include "NGLM.hpp"
 #include "OpticksCfg.hh"
 #include "Opticks.hh"
@@ -152,7 +153,7 @@ OpticksCfg<Listener>::OpticksCfg(const char* name, Listener* listener, bool live
        m_layout(1),
        m_lodconfig("levels=3,verbosity=3"),
        m_lod(0),
-       m_target(0),
+       m_target(BOpticksResource::DefaultTarget()),
        m_alignlevel(0),
        m_exename(SAr::Instance->exename()), 
        m_gpumonpath(BStr::concat("$TMP/",m_exename ? m_exename : "OpticksCfg","_GPUMon.npy")),
@@ -1291,7 +1292,7 @@ void OpticksCfg<Listener>::init()
 
 
    char target[128];
-   snprintf(target,128, "Integer controlling center_extent target. Default %d ", m_target );
+   snprintf(target,128, "Integer controlling center_extent target. Default target %d can be defined with envvar OPTICKS_DEFAULT_TARGET.", m_target );
    m_desc.add_options()
        ("target",  boost::program_options::value<int>(&m_target), target );
 

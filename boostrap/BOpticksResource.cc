@@ -241,6 +241,19 @@ bool BOpticksResource::IsForeignGeant4Enabled()
 }
 
 
+const char* BOpticksResource::DEFAULT_TARGET_KEY = "OPTICKS_DEFAULT_TARGET" ; 
+int BOpticksResource::DefaultTarget() // static
+{
+   int target = SSys::getenvint(DEFAULT_TARGET_KEY, 0);
+   return target  ; 
+}
+
+
+
+
+
+
+
 /**
 BOpticksResource::IsGeant4EnvironmentDetected
 ----------------------------------------------

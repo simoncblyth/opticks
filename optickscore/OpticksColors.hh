@@ -21,9 +21,13 @@
 
 #include "NQuad.hpp"
 
+class NMeta ; 
+
 #include <map>
 #include <string>
 #include <vector>
+
+#include "plog/Severity.h"
 
 template <typename T> class NPY ; 
 
@@ -60,6 +64,7 @@ this is put togther in GLoader::load
 #include "OKCORE_HEAD.hh"
 
 class OKCORE_API OpticksColors {  
+      static const plog::Severity LEVEL ; 
    public:
         enum {
            MATERIAL_COLOR_OFFSET    = 0,  
@@ -70,7 +75,9 @@ class OKCORE_API OpticksColors {
        };
    public:
        static const char* NAME ; 
+       static const char* COLORMAP_NAME2HEX ; 
        static OpticksColors* load(const char* dir, const char* name=NAME);
+       static OpticksColors* LoadMeta();
    public:
        OpticksColors();
 
@@ -108,12 +115,13 @@ class OKCORE_API OpticksColors {
        void initCompositeColorBuffer(unsigned int max_colors);
        void addColors(std::vector<unsigned int>& codes, unsigned int offset=0 );
        void loadMaps(const char* dir);
+       void loadMeta(NMeta* meta);
 
    private:
        std::vector<std::string>            m_psychedelic_names ; 
        std::vector<unsigned int>           m_psychedelic_codes ;
        std::vector<unsigned int>           m_spectral_codes ;
-       std::map<std::string, std::string>  m_name2hex ; 
+       std::map<std::string, std::string>  m_name2hex ;        // colormap
        NPY<unsigned char>*                 m_composite ;
        nuvec4                              m_composite_domain ; 
 

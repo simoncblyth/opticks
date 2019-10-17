@@ -264,3 +264,28 @@ So next question : How to get Opticks isSensor assigned for CerenkovMinimal ?
 * need to review the direct conversion : g4ok-cd x4-cd
 
 
+
+isSensor
+------------
+
+::
+
+    [blyth@localhost ggeo]$ grep isSensor *.*
+    GPropertyMap.cc:      m_sensor(other ? other->isSensor() : false),
+    GPropertyMap.cc:bool GPropertyMap<T>::isSensor()
+    GPropertyMap.hh:      bool isSensor();
+    // GPropertMap relies on higher level to set the m_sensor boolean
+
+    GSurfaceLib.cc:        if(src->isSensor())
+    GSurfaceLib.cc:    dst->setSensor( src ? src->isSensor() : false ); 
+    GSurfaceLib.cc:        if(isSensorSurface(index))
+    GSurfaceLib.cc:GSurfaceLib::isSensorSurface
+    GSurfaceLib.cc:bool GSurfaceLib::isSensorSurface(unsigned int qsurface)
+    GSurfaceLib.cc:    LOG(debug) << "GSurfaceLib::isSensorSurface"
+    GSurfaceLib.hh:       bool isSensorSurface(unsigned int surface); // name suffix based, see AssimpGGeo::convertSensor
+    [blyth@localhost ggeo]$ vi 
+
+
+
+
+

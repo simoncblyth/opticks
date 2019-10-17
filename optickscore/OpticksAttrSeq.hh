@@ -86,6 +86,7 @@ class OKCORE_API OpticksAttrSeq {
         void setSequence(NSequence* seq);
         bool hasSequence();
         void setAbbrevMeta(NMeta* abbrev); 
+        void setColorMeta(NMeta* color); 
     public:
         //std::string  getCtrlDesc() const ; 
         std::string  getLabel(Index* index, const char* key, unsigned int& colorcode);
@@ -114,6 +115,7 @@ class OKCORE_API OpticksAttrSeq {
         unsigned char                        m_ctrl ; 
         NSequence*                           m_sequence ; 
         NMeta*                               m_abbrev_meta ; 
+        NMeta*                               m_color_meta ; 
     private:
         std::map<std::string, std::string>   m_abbrev ;
         std::map<std::string, std::string>   m_color ;

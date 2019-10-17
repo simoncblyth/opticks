@@ -14,6 +14,7 @@ set(TEST_SOURCES
     TrackballTest.cc
     OpticksEventSpecTest.cc
     OpticksFlagsTest.cc
+    OpticksColorsTest.cc
     OpticksPhotonTest.cc
     OpticksCfgTest.cc
     OpticksCfg2Test.cc

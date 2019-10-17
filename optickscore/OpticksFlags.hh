@@ -152,13 +152,16 @@ class OKCORE_API OpticksFlags {
         void save(const char* installcachedir);
     private:
         Index* parseFlags(const char* path);
-        NMeta* makeAbbrevMeta(); 
+        static NMeta* MakeAbbrevMeta(); 
+        static NMeta* MakeFlag2ColorMeta(); 
     public:
         Index*             getIndex() const ;  
         NMeta*             getAbbrevMeta() const ; 
+        NMeta*             getColorMeta() const ; 
     private:
         Index*             m_index ; 
         NMeta*             m_abbrev_meta ;  
+        NMeta*             m_color_meta ;  
 };
 
  

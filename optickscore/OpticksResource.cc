@@ -1080,26 +1080,38 @@ const char* OpticksResource::getMetaValue(const char* key)
 }
 
 
+/**
+OpticksResource::loadColorMapFromPrefs
+-----------------------------------------
+
+The formerly named GCache is exceptionally is not an attribution triplet,
+to reflect this manually changed name to OpticksColors
+
+**/
+
+OpticksColors* OpticksResource::loadColorMapFromPrefs()
+{
+
+    std::string prefdir = getPreferenceDir("OpticksColors"); 
+    bool empty = prefdir.empty(); 
+    OpticksColors* colors = empty ? NULL :  OpticksColors::load(prefdir.c_str(),"OpticksColors.json");   // colorname => hexcode
+    if(empty)
+    {
+        LOG(debug) 
+                   << " empty PreferenceDir for OpticksColors " 
+                   ;
+    }
+    return colors ; 
+}
+
+
 OpticksColors* OpticksResource::getColors()
 {
     if(!m_colors)
     {
         // deferred to avoid output prior to logging setup
-        //
-        // The formerly named GCache is exceptionally is not an attribution triplet,
-        // to reflect this manually changed name to OpticksColors
-        //
-        //std::string prefdir = getPreferenceDir("GCache"); 
-        std::string prefdir = getPreferenceDir("OpticksColors"); 
-        bool empty = prefdir.empty(); 
-        m_colors = empty ? NULL :  OpticksColors::load(prefdir.c_str(),"OpticksColors.json");   // colorname => hexcode
-
-        if(empty)
-        {
-            LOG(debug) << "OpticksResource::getColors"
-                       << " empty PreferenceDir for OpticksColors " 
-                       ;
-        }
+        //m_colors = loadColorMapFromPrefs() ;  
+        m_colors = OpticksColors::LoadMeta() ;  
     }
     return m_colors ;
 }
@@ -1123,12 +1135,16 @@ OpticksAttrSeq* OpticksResource::getFlagNames()
     {
         OpticksFlags* flags = getFlags();
         NMeta* abbrev = flags->getAbbrevMeta(); 
+        NMeta* color = flags->getColorMeta(); 
 
         Index* index = flags->getIndex();
 
         m_flagnames = new OpticksAttrSeq(m_ok, "GFlags");
-        m_flagnames->loadPrefs(); // color, abbrev and order  <-- missing in direct
         m_flagnames->setAbbrevMeta(abbrev);   // added flag abbrevs as the abbrev.json missing in direct workflow 
+        m_flagnames->setColorMeta(color) ; 
+
+
+        m_flagnames->loadPrefs(); // color, abbrev and order  <-- missing in direct
 
         m_flagnames->setSequence(index);
         m_flagnames->setCtrl(OpticksAttrSeq::SEQUENCE_DEFAULTS);    

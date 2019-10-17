@@ -44,7 +44,7 @@
 // trace/debug/info/warning/error/fatal
 
 
-const plog::Severity GSurfaceLib::LEVEL = debug ; 
+const plog::Severity GSurfaceLib::LEVEL = PLOG::EnvLevel("GSurfaceLib", "DEBUG") ; 
 
 
 // surface
@@ -95,7 +95,7 @@ float GSurfaceLib::SURFACE_UNSET = -1.f ;
 
 void GSurfaceLib::save()
 {
-    LOG(m_level) << "." ; 
+    LOG(LEVEL); 
     saveToCache();
     saveOpticalBuffer();
 }
@@ -114,7 +114,7 @@ void GSurfaceLib::loadOpticalBuffer()
     std::string dir = getCacheDir(); 
     std::string name = getBufferName("Optical");
 
-    LOG(m_level) 
+    LOG(LEVEL) 
          << " dir " << dir 
          << " name " << name 
          ;
@@ -168,10 +168,9 @@ GSurfaceLib::GSurfaceLib(Opticks* ok, GSurfaceLib* basis)
     m_fake_efficiency(-1.f),
     m_optical_buffer(NULL),
     m_basis(basis),
-    m_dbgsurf(ok->isDbgSurf()),
-    m_level(debug)
+    m_dbgsurf(ok->isDbgSurf())
 {
-    LOG(m_level) << "." ; 
+    LOG(LEVEL) ; 
     init();
 }
 
@@ -181,10 +180,9 @@ GSurfaceLib::GSurfaceLib(GSurfaceLib* src, GDomain<float>* domain, GSurfaceLib* 
     m_fake_efficiency(-1.f),
     m_optical_buffer(NULL),
     m_basis(basis),
-    m_dbgsurf(m_ok->isDbgSurf()),
-    m_level(debug)
+    m_dbgsurf(m_ok->isDbgSurf())
 {
-    LOG(m_level) << "." ; 
+    LOG(LEVEL) ; 
     init();
     initInterpolatingCopy(src, domain);
 }
@@ -724,7 +722,7 @@ with all metadata for each surface.
 
 NMeta* GSurfaceLib::createMeta()
 {
-    LOG(m_level) << "." ; 
+    LOG(LEVEL) ; 
     NMeta* libmeta = new NMeta ; 
     unsigned int ni = getNumSurfaces();
     for(unsigned int i=0 ; i < ni ; i++)
@@ -856,7 +854,7 @@ NPY<float>* GSurfaceLib::createBufferOld()
 
 void GSurfaceLib::import()
 {
-    LOG(m_level) << "." ; 
+    LOG(LEVEL) ; 
     if(m_buffer == NULL)
     {
         setValid(false);
@@ -893,9 +891,9 @@ void GSurfaceLib::importForTex2d()
     unsigned int nj = m_buffer->getShape(1); // payload categories 
     unsigned int nk = m_buffer->getShape(2); // wavelength samples
     unsigned int nl = m_buffer->getShape(3); // 4 props
-    LOG(m_level) << "." 
-                 << " shape " << m_buffer->getShapeString()
-                 ; 
+    LOG(LEVEL)  
+        << " shape " << m_buffer->getShapeString()
+        ; 
 
     assert(m_standard_domain->getLength() == nk );
 
@@ -927,7 +925,7 @@ void GSurfaceLib::importForTex2d()
 
         assert(surftype); 
 
-        LOG(m_level) << " i " << std::setw(3) << i 
+        LOG(LEVEL) << " i " << std::setw(3) << i 
                      << " surftype " << std::setw(15) << surftype
                      << " key " << key 
                      ;
@@ -1134,6 +1132,27 @@ void GSurfaceLib::dump( GPropertyMap<float>* surf, const char* msg)
               ; 
 }
 
+/**
+GSurfaceLib::getNumSensorSurface
+---------------------------------
+
+Based on name ending "SensorSurface"
+
+
+**/
+
+unsigned GSurfaceLib::getNumSensorSurface() const
+{
+    unsigned count = 0 ; 
+    for(unsigned index=0 ; index < getNumSurfaces() ; index++)
+    {
+        if(isSensorSurface(index)) ;
+        {
+            count += 1 ; 
+        } 
+    } 
+    return count ; 
+}
 
 
 GPropertyMap<float>* GSurfaceLib::getSensorSurface(unsigned int offset)
@@ -1169,7 +1188,7 @@ GSurfaceLib::isSensorSurface
 Called from AssimpGGeo::convertStructureVisit
 **/
 
-bool GSurfaceLib::isSensorSurface(unsigned int qsurface)
+bool GSurfaceLib::isSensorSurface(unsigned int qsurface) const 
 {
     // "SensorSurface" name suffix based, see AssimpGGeo::convertSensor
    

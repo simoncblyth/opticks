@@ -81,6 +81,13 @@ NMeta* NMeta::Load(const char* dir, const char* name)
     m->load(dir, name); 
     return m ; 
 }
+NMeta* NMeta::FromTxt(const char* txt)
+{
+    NMeta* m = new NMeta ;
+    m->loadTxt(txt); 
+    return m ; 
+}
+
 
 
 void NMeta::load(const char* path)
@@ -91,6 +98,13 @@ void NMeta::load(const char* dir, const char* name)
 {
     read(dir, name);
 }
+void NMeta::loadTxt(const char* txt)
+{
+    readTxt(txt);
+}
+
+
+
 
 void NMeta::save(const char* path) const 
 {
@@ -100,6 +114,12 @@ void NMeta::save(const char* dir, const char* name) const
 {
     write(dir, name);
 }
+
+
+
+
+
+
 
 
 std::vector<std::string>& NMeta::getLines()
@@ -135,6 +155,31 @@ void NMeta::prepLines()
         m_lines.push_back(ss.str());
     }
 }
+
+
+
+
+void NMeta::fillMap(std::map<std::string, std::string>& mss )
+{
+    unsigned nk = getNumKeys(); 
+    for(unsigned i=0 ; i < nk ; i++)
+    {
+        const char* key = getKey(i); 
+        std::string val = get<std::string>(key); 
+
+        std::cout 
+            << std::setw(20) << key 
+            << " : " 
+            << std::setw(20) << val 
+            << std::endl 
+            ; 
+
+        mss[key] = val ;  
+    }
+}
+
+
+
 
 
 
@@ -366,6 +411,16 @@ void NMeta::read(const char* path0, const char* path1)
     }   
     in >> m_js ; 
 }
+
+
+void NMeta::readTxt(const char* txt)
+{
+    std::stringstream ss ; 
+    ss << txt ; 
+    ss >> m_js ; 
+}
+
+
 
 void NMeta::write(const char* path0, const char* path1) const 
 {

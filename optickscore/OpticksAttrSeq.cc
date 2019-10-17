@@ -59,7 +59,8 @@ OpticksAttrSeq::OpticksAttrSeq(Opticks* ok, const char* type)
    m_type(strdup(type)),
    m_ctrl(0),
    m_sequence(NULL),
-   m_abbrev_meta(NULL)
+   m_abbrev_meta(NULL),
+   m_color_meta(NULL)
 {
    init();
    (*m_log)("DONE");
@@ -84,6 +85,11 @@ void OpticksAttrSeq::setAbbrevMeta(NMeta* abbrev)
 {
     m_abbrev_meta = abbrev ; 
 }
+void OpticksAttrSeq::setColorMeta(NMeta* color)
+{
+    m_color_meta = color ; 
+}
+
 
 
 
@@ -108,6 +114,12 @@ Loads .json preferences files into the three map members :
 * m_abbrev
 * m_order
 
+
+Note that m_color is not the name2hex colormap, that is handled in OpticksColors.
+But rather m_color are attributes of items in the sequence, 
+for example with OpticksFlags it is the flag2colorname mapping.
+
+
 Different prefs for each type : GMaterialLib, GSurfaceLib etc..
 can be used.
 
@@ -117,20 +129,33 @@ can be used.
 void OpticksAttrSeq::loadPrefs()
 {
     LOG(LEVEL) << "["  ; 
-    if(m_resource->loadPreference(m_color, m_type, "color.json"))
+
+
+    if(m_color_meta)
+    {
+        m_color_meta->fillMap(m_color); 
+    }
+    if(m_abbrev_meta)
+    {
+        m_abbrev_meta->fillMap(m_abbrev); 
+    }
+
+
+/*
+    if(m_resource->loadPreference(m_color, m_type, "color.json")) 
     {
         LOG(LEVEL) << "color " << m_type ;
     }
-
     if(m_resource->loadPreference(m_abbrev, m_type, "abbrev.json"))
     {
         LOG(LEVEL) << "abbrev " << m_type ;
     }
-
     if(m_resource->loadPreference(m_order, m_type, "order.json"))
     {
         LOG(LEVEL) << "order " << m_type ;
     }
+*/
+
     LOG(LEVEL) << "]"  ; 
 }
 
@@ -219,6 +244,7 @@ std::string OpticksAttrSeq::getAbbr(const char* key)
 {
     if(key == NULL) return "NULL" ; 
 
+/*
     std::string abb = key ; 
     if( m_abbrev_meta )
     {
@@ -226,9 +252,11 @@ std::string OpticksAttrSeq::getAbbr(const char* key)
     } 
     else
     {
-        abb = m_abbrev.count(key) == 1 ? m_abbrev[key] : key ;  // copying key into string
+        abb = 
     }
-    return abb ; 
+*/
+
+    return m_abbrev.count(key) == 1 ? m_abbrev[key] : key ;  // copying key into string
 }
 
 

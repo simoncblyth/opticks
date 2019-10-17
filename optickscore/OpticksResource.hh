@@ -154,6 +154,9 @@ class OKCORE_API OpticksResource : public BOpticksResource {
        OpticksFlags*  getFlags() const ;
        OpticksAttrSeq* getFlagNames();
        std::map<unsigned int, std::string> getFlagNamesMap();
+
+   private:
+       OpticksColors* loadColorMapFromPrefs(); 
    public:
        bool isDetectorType(const char* type_);
        bool isResourceType(const char* type_);

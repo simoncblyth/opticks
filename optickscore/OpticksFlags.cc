@@ -105,7 +105,7 @@ const char* OpticksFlags::_G4GUN             = "GN" ;
 const char* OpticksFlags::_BAD_FLAG          = "XX" ; 
 
 
-NMeta* OpticksFlags::makeAbbrevMeta()
+NMeta* OpticksFlags::MakeAbbrevMeta()  // static 
 {
     NMeta* m = new NMeta ; 
     m->set<std::string>(CERENKOV_ , _CERENKOV); 
@@ -124,6 +124,35 @@ NMeta* OpticksFlags::makeAbbrevMeta()
     m->set<std::string>(NAN_ABORT_ , _NAN_ABORT); 
     return m ; 
 }
+
+NMeta* OpticksFlags::MakeFlag2ColorMeta()  // static 
+{
+    const char* flag2color = R"LITERAL(
+    {
+        "CERENKOV":"white",
+        "SCINTILLATION":"white",
+        "TORCH":"white",
+        "MISS":"grey",
+        "BULK_ABSORB":"red",
+        "BULK_REEMIT":"green", 
+        "BULK_SCATTER":"blue",    
+        "SURFACE_DETECT":"purple",
+        "SURFACE_ABSORB":"orange",      
+        "SURFACE_DREFLECT":"pink",
+        "SURFACE_SREFLECT":"magenta",
+        "BOUNDARY_REFLECT":"yellow",
+        "BOUNDARY_TRANSMIT":"cyan",
+        "NAN_ABORT":"grey"
+    }
+)LITERAL";
+
+    NMeta* m = NMeta::FromTxt(flag2color); 
+    return m ; 
+}
+
+
+
+
 
 
 const char* OpticksFlags::natural_           = "natural" ;
@@ -444,11 +473,13 @@ unsigned int OpticksFlags::SourceCode(const char* type)
 
 Index* OpticksFlags::getIndex()     const { return m_index ;  } 
 NMeta* OpticksFlags::getAbbrevMeta() const { return m_abbrev_meta ;  } 
+NMeta* OpticksFlags::getColorMeta() const { return m_color_meta ;  } 
 
 OpticksFlags::OpticksFlags(const char* path) 
     :
     m_index(parseFlags(path)),
-    m_abbrev_meta(makeAbbrevMeta())
+    m_abbrev_meta(MakeAbbrevMeta()),
+    m_color_meta(MakeFlag2ColorMeta())
 {
     LOG(LEVEL) << " path " << path ; 
 }

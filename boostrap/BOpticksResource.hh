@@ -77,10 +77,13 @@ class BRAP_API  BOpticksResource {
     public:
         static const char* LEGACY_GEOMETRY_ENABLED_KEY ; 
         static const char* FOREIGN_GEANT4_ENABLED_KEY ; 
+        static const char* DEFAULT_TARGET_KEY ; 
+
         static bool IsLegacyGeometryEnabled() ; 
         static bool IsForeignGeant4Enabled() ;   // foreign Geant4 means not managed as an Opticks external
 
         static bool IsGeant4EnvironmentDetected();    // based on the number of envvar keys of form G4...DATA 
+        static int  DefaultTarget(); 
 
     protected:
         static const char* RESULTS_PREFIX_KEY  ; 
