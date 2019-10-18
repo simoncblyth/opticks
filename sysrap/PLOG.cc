@@ -30,7 +30,7 @@
 
 PLOG* PLOG::instance = NULL ; 
 
-#define MAXARGC 50 
+const int PLOG::MAXARGC = 100 ;  
 
 //#define PLOG_DBG 1
 

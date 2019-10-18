@@ -130,7 +130,7 @@ GGeoTest::GGeoTest(Opticks* ok, GGeoBase* basis)
     m_dbganalytic(m_ok->isDbgAnalytic()),
     m_lodconfig(ok->getLODConfig()),
     m_lod(ok->getLOD()),
-    m_analytic(m_config->getAnalytic()),
+    m_input_analytic(m_config->getAnalytic()),
     m_csgpath(m_config->getCSGPath()),
     m_test(true),
     m_basis(basis),
@@ -139,8 +139,8 @@ GGeoTest::GGeoTest(Opticks* ok, GGeoBase* basis)
     m_mlib(new GMaterialLib(m_ok, basis->getMaterialLib())),
     m_slib(new GSurfaceLib(m_ok, basis->getSurfaceLib())),
     m_bndlib(new GBndLib(m_ok, m_mlib, m_slib)),
-    m_geolib(new GGeoLib(m_ok,m_analytic,m_bndlib)),
-    m_nodelib(new GNodeLib(m_ok, m_analytic, m_test, basis->getNodeLib() )),
+    m_geolib(new GGeoLib(m_ok,m_input_analytic,m_bndlib)),
+    m_nodelib(new GNodeLib(m_ok, m_input_analytic, m_test, basis->getNodeLib() )),
     m_meshlib(new GMeshLib(m_ok)),
     m_maker(new GMaker(m_ok, m_bndlib, m_basemeshlib)),
     m_csglist(m_csgpath ? NCSGList::Load(m_csgpath, m_verbosity ) : NULL),
@@ -148,6 +148,7 @@ GGeoTest::GGeoTest(Opticks* ok, GGeoBase* basis)
     m_err(0)
 {
     assert(m_basis); 
+    assert(m_input_analytic) ;  // <-- test input geometry always analytic, but the output form used in OGeo could be tri  
 
     checkPts(); 
 
@@ -170,16 +171,14 @@ void GGeoTest::init()
 
     GMergedMesh* tmm = m_lod > 0 ? GMergedMesh::MakeLODComposite(tmm_, m_lodconfig->levels ) : tmm_ ;         
 
-    char geocode =  m_analytic ? OpticksConst::GEOCODE_ANALYTIC : OpticksConst::GEOCODE_TRIANGULATED ;  // message to OGeo
 
-    assert( m_analytic ) ;  
+
+    bool output_analytic = m_ok->isXAnalytic();  
+
+    char geocode =  output_analytic ? OpticksConst::GEOCODE_ANALYTIC : OpticksConst::GEOCODE_TRIANGULATED ;  // message to OGeo
 
     tmm->setGeoCode( geocode );
 
-    if(tmm->isTriangulated()) 
-    { 
-        tmm->setITransformsBuffer(NULL); // avoiding FaceRepeated complications 
-    } 
 
 
     m_geolib->setMergedMesh( 0, tmm );  // TODO: create via standard GGeoLib::create ?
@@ -226,10 +225,6 @@ void GGeoTest::checkPts()
 GGeoTest::initCreateCSG
 -------------------------
 
-
-
-
-
 testauto mode  TODO:review to see if still relevant
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -254,7 +249,7 @@ GMergedMesh* GGeoTest::initCreateCSG()
     if(!m_csglist) return NULL ; 
 
     assert(m_csglist && "failed to load NCSGList");
-    assert(m_analytic == true);
+    assert(m_input_analytic == true);
     assert(m_config->isNCSG());
 
     //unsigned numTree = m_csglist->getNumTrees() ;
@@ -292,24 +287,47 @@ GMergedMesh* GGeoTest::initCreateCSG()
     parts->close(); 
 
     tmm->setParts(parts);  
-
-
-    // similar to GMergedMesh::addInstancedBuffers
-    // TODO: try to reuse that 
-  
+ 
     unsigned nelem = solids.size() ; 
-    GTransforms* txf = GTransforms::make(nelem); // identities
-    GIds*        aii = GIds::make(nelem);        // placeholder (n,4) of zeros
 
-    tmm->setAnalyticInstancedIdentityBuffer(aii->getBuffer());  
-    tmm->setITransformsBuffer(txf->getBuffer());
-
+    addPlaceholderBuffers(tmm, nelem ); 
 
     glm::vec4 ce = tmm->getCE(0);    
     LOG(LEVEL) << " tmm.ce " << gformat(ce) ; 
 
     return tmm ; 
 }
+
+
+/**
+GGeoTest::addPlaceholderBuffers
+--------------------------------
+
+Similar to GMergedMesh::addInstancedBuffers
+TODO: see if reuse of that is possible
+
+Although test geometry will always start analytic, it
+can happen that wish to subsequently test a triangulated 
+version of the geometry,  see 
+notes/issues/test-geometry-assert-with-rtx-2-geometrytriangles-identity-buffer-issue.rst 
+
+**/
+
+void GGeoTest::addPlaceholderBuffers( GMergedMesh* tmm, unsigned nelem )
+{
+    GTransforms* txf = GTransforms::make(nelem); // identities
+    GIds*        aii = GIds::make(nelem);        // placeholder (n,4) of zeros
+
+    NPY<unsigned>* idbuf = aii->getBuffer() ;  
+
+    tmm->setAnalyticInstancedIdentityBuffer(idbuf);  
+    tmm->setInstancedIdentityBuffer(idbuf);  
+
+    // NULL for tri avoids FaceRepeated complications
+    NPY<float>* itbuf = tmm->isTriangulated() ? NULL : txf->getBuffer() ; 
+    tmm->setITransformsBuffer(itbuf);
+}
+
 
 
 /**

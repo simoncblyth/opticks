@@ -129,9 +129,9 @@ GGeo::GGeo(Opticks* ok, bool live)
    m_instancer(NULL), 
    m_loaded_from_cache(false), 
    m_prepared(false), 
-   m_loadedcachemeta(NULL),
+   //m_loadedcachemeta(NULL),
    m_lv2sd(NULL),
-   m_origin_gdmlpath(NULL),
+   //m_origin_gdmlpath(NULL),
    m_lookup(NULL), 
    m_meshlib(NULL),
    m_geolib(NULL),
@@ -362,11 +362,13 @@ std::pair<std::string,std::string> GGeo::getLVSD(unsigned idx) const
     return std::pair<std::string,std::string>( lv, sd ); 
 }
 
+
+/*
 const char* GGeo::getOriginGDMLPath() const
 {
     return m_origin_gdmlpath ; 
 }
-
+*/
 
 
 int GGeo::findCathodeLVIndex(const char* lv) const  // -1 if not found
@@ -829,9 +831,10 @@ Invoked at the tail of GGeo::loadFromCache
 
 void GGeo::loadCacheMeta() // loads metadata that the process that created the geocache persisted into the geocache
 {
-    const char* path = m_ok->getCacheMetaPath(); 
+    LOG(LEVEL) ; 
 
-    LOG(LEVEL) << path ; 
+    /*
+    const char* path = m_ok->getCacheMetaPath(); 
 
     assert( m_loadedcachemeta == NULL ); 
     m_loadedcachemeta = NMeta::Load(path);
@@ -840,6 +843,15 @@ void GGeo::loadCacheMeta() // loads metadata that the process that created the g
         m_loadedcachemeta->dump("GGeo::loadCacheMeta");  
     }
     NMeta* lv2sd = m_loadedcachemeta->getObj("lv2sd"); 
+
+    std::string gdmlpath = Opticks::ExtractCacheMetaGDMLPath( m_loadedcachemeta ) ; 
+    m_origin_gdmlpath = gdmlpath.empty() ? NULL : strdup(gdmlpath.c_str() ); 
+
+    LOG(fatal) << " origin_gdmlpath " << m_origin_gdmlpath ; 
+    */
+    
+
+    NMeta* lv2sd = m_ok->getOriginCacheMeta("lv2sd"); 
 
 
     if( lv2sd )
@@ -860,13 +872,6 @@ void GGeo::loadCacheMeta() // loads metadata that the process that created the g
     {
          m_lv2sd = lv2sd ;  
     }
-
-
-    std::string gdmlpath = Opticks::ExtractCacheMetaGDMLPath( m_loadedcachemeta ) ; 
-    m_origin_gdmlpath = gdmlpath.empty() ? NULL : strdup(gdmlpath.c_str() ); 
-
-    LOG(fatal) << " origin_gdmlpath " << m_origin_gdmlpath ; 
-
 }
 
 

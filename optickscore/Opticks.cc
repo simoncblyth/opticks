@@ -333,7 +333,7 @@ Opticks::Opticks(int argc, char** argv, const char* argforced )
     m_spec(NULL),
     m_nspec(NULL),
     m_resource(NULL),
-    m_direct_gdmlpath(NULL),
+    m_origin_gdmlpath(NULL),
     m_state(NULL),
     m_apmtslice(NULL),
     m_apmtmedium(NULL),
@@ -825,13 +825,13 @@ void Opticks::initResource()
     if(legacy)
     {
         bool overwrite = true ; 
-        LOG(info) << " (legacy mode) setting IDPATH envvar for python analysis scripts [" << idpath << "]"  ; 
+        LOG(error) << " (legacy mode) setting IDPATH envvar for python analysis scripts [" << idpath << "]"  ; 
         int rc = SSys::setenvvar("IDPATH", idpath, overwrite );
         assert( rc == 0 ); 
     }
     else
     {
-        LOG(info) << " (direct mode) NOT setting IDPATH envvar  [" << idpath << "]"  ; 
+        LOG(LEVEL) << " (direct mode) NOT setting IDPATH envvar  [" << idpath << "]"  ; 
     }
 
     LOG(LEVEL) << " DONE " << m_resource->desc()  ;
@@ -1019,21 +1019,23 @@ Need to sort out the testing geometry in opticksdata before can make this move.
 
 See notes/issues/switching-to-xanalytic-as-default-causes-11-test-fails-so-revert.rst
 
+In the mean time, use --xtriangle as a way to switch off --xanalytic in the same commandline
+
 **/
 
 bool Opticks::isXAnalytic() const 
 {
     bool is_xanalytic = m_cfg->hasOpt("xanalytic") ; 
-    /*
     bool is_xtriangle = m_cfg->hasOpt("xtriangle") ; 
-    if(is_xanalytic)
-    {
-        LOG(error) << " --xanalytic is now ON by default and the config option is ignored, use --xtriangle to switch off \"xanalytic\"  " ;   
-    } 
-    return is_xtriangle == false  ;
 
-    */
-    return is_xanalytic ; 
+    bool ret = is_xanalytic ; 
+
+    if(is_xanalytic && is_xtriangle)
+    {
+        LOG(error) << " --xanalytic option overridded by --xtriangle  " ;   
+        ret = false ;  
+    } 
+    return ret ; 
 }
 
 
@@ -1805,7 +1807,9 @@ void Opticks::saveCacheMeta() const
 Opticks::loadOriginCacheMeta
 -----------------------
 
-Hmm, this is done in GGeo::loadCacheMeta
+Invoked by Opticks::configure 
+
+* TODO: avoid this also being done from GGeo::loadCacheMeta
 
 **/
 
@@ -1818,8 +1822,15 @@ void Opticks::loadOriginCacheMeta()
     std::string gdmlpath = ExtractCacheMetaGDMLPath(m_origin_cachemeta); 
     LOG(info) << " gdmlpath " << gdmlpath ; 
 
-    m_direct_gdmlpath = strdup(gdmlpath.c_str()); 
+    m_origin_gdmlpath = strdup(gdmlpath.c_str()); 
 }
+
+NMeta* Opticks::getOriginCacheMeta(const char* obj) const 
+{
+    return m_origin_cachemeta ? m_origin_cachemeta->getObj(obj) : NULL ; 
+}
+
+
 
 /**
 Opticks::ExtractCacheMetaGDMLPath
@@ -1835,7 +1846,7 @@ std::string Opticks::ExtractCacheMetaGDMLPath(const NMeta* meta)  // static
 {
     std::string argline = meta->get<std::string>("argline", "-");  
 
-    LOG(info) << " argline " << argline ; 
+    LOG(LEVEL) << " argline " << argline ; 
 
     SArgs sa(0, NULL, argline.c_str()); 
 
@@ -1864,7 +1875,7 @@ std::string Opticks::ExtractCacheMetaGDMLPath(const NMeta* meta)  // static
     }   
     
 
-    LOG(info) 
+    LOG(LEVEL) 
         << "\n argline " << argline
         << "\n executable " << executable 
         << "\n gdmlpath " << gdmlpath
@@ -2181,7 +2192,7 @@ void Opticks::configure()
 
     if(isDirect())
     {
-        loadOriginCacheMeta();  // sets m_direct_gdmlpath
+        loadOriginCacheMeta();  // sets m_origin_gdmlpath
     }
 
 
@@ -3325,13 +3336,13 @@ const char*      Opticks::getKeySpec() const {       BOpticksKey* key = getKey()
 const char*     Opticks::getSrcGDMLPath() const {  return m_resource ? m_resource->getSrcGDMLPath() : NULL ; }
 const char*     Opticks::getGDMLPath()    const {  return m_resource ? m_resource->getGDMLPath() : NULL ; }
 
-const char*     Opticks::getDirectGDMLPath() const { return m_direct_gdmlpath ; }
+const char*     Opticks::getOriginGDMLPath() const { return m_origin_gdmlpath ; }
 
 const char*     Opticks::getCurrentGDMLPath() const 
 {
     bool is_direct   = isDirect() ;   
     //bool is_embedded = isEmbedded() ;   
-    return is_direct ? getDirectGDMLPath() : getSrcGDMLPath() ;
+    return is_direct ? getOriginGDMLPath() : getSrcGDMLPath() ;
     // GDML path for embedded Opticks (ie direct from Geant4) is within the geocache directory 
 }
 

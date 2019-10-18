@@ -150,7 +150,7 @@ const char* OpticksBufferSpec::source_interop_ = "OPTIX_INPUT_ONLY"  ;
 
 const char* OpticksBufferSpec::genstep_compute_ = "OPTIX_INPUT_ONLY,UPLOAD_WITH_CUDA,BUFFER_COPY_ON_DIRTY"  ;   // ,VERBOSE_MODE
 const char* OpticksBufferSpec::genstep_interop_ = "OPTIX_INPUT_ONLY"  ; 
-const char* OpticksBufferSpec::source_compute_ = "OPTIX_INPUT_ONLY,UPLOAD_WITH_CUDA,BUFFER_COPY_ON_DIRTY,VERBOSE_MODE"  ;   // 
+const char* OpticksBufferSpec::source_compute_ = "OPTIX_INPUT_ONLY,UPLOAD_WITH_CUDA,BUFFER_COPY_ON_DIRTY"  ;   //  ,VERBOSE_MODE 
 const char* OpticksBufferSpec::source_interop_ = "OPTIX_INPUT_ONLY"  ; 
 
 #endif

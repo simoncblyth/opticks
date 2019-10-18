@@ -369,7 +369,7 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
         std::pair<std::string,std::string> getLVSD(unsigned idx) const ;
     public:
         // from cachemeta
-        const char* getOriginGDMLPath() const ; 
+        //const char* getOriginGDMLPath() const ; 
     public:
         void dumpCathodeLV(const char* msg="GGeo::dumpCathodeLV") const ;
         const char* getCathodeLV(unsigned int index) const ; 

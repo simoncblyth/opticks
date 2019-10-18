@@ -51,7 +51,7 @@
 
 #include "PLOG.hh"
 
-const plog::Severity GMergedMesh::LEVEL = debug ; 
+const plog::Severity GMergedMesh::LEVEL = PLOG::EnvLevel("GMergedMesh", "DEBUG") ; 
 
 bool GMergedMesh::isSkip() const
 {
@@ -1053,6 +1053,8 @@ and/or use some thrust trickery to do the repeating at GPU upload stage
 
 void GMergedMesh::addInstancedBuffers(const std::vector<GNode*>& placements)
 {
+    LOG(LEVEL) << " placements.size() " << placements.size() ; 
+
     NPY<float>* itransforms = GTree::makeInstanceTransformsBuffer(placements); // collect GNode placement transforms into buffer
     setITransformsBuffer(itransforms);
 

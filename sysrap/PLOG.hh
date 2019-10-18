@@ -151,6 +151,8 @@ Delta
 
 struct SYSRAP_API PLOG 
 {
+    static const int MAXARGC ; 
+
     SAr         args ; 
     int         level ; 
     const char* filename ; 

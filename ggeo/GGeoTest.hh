@@ -89,6 +89,7 @@ class GGEO_API GGeoTest : public GGeoBase {
        void checkPts();
 
        GMergedMesh* initCreateCSG();
+       void addPlaceholderBuffers( GMergedMesh* tmm, unsigned nelem ); 
        void setErr(int err); 
     public:
        // GGeoBase
@@ -143,7 +144,7 @@ class GGEO_API GGeoTest : public GGeoBase {
        bool             m_dbganalytic ; 
        NLODConfig*      m_lodconfig ; 
        int              m_lod ; 
-       bool             m_analytic ; 
+       bool             m_input_analytic ; 
        const char*      m_csgpath ; 
        bool             m_test ; 
     private:

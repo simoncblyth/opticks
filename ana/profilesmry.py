@@ -261,7 +261,7 @@ class ProfileSmry(object):
 
     def _get_rtx(self):
         RTXMode = self.d.get('RTXMode', None)
-        assert RTXMode in [None,0,1]
+        assert RTXMode in [None,0,1,2]
         e = { None:"?", 0:"OFF", 1:"ON", 2:"ON.Tri" } 
         return "RTX %s" % e[RTXMode] 
     rtx = property(_get_rtx)

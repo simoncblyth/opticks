@@ -213,7 +213,7 @@ void OpticksCfg<Listener>::init()
              "(NOT TRUE STILL NEEDED see Opticks::isXAnalytic) ") ; 
 
    m_desc.add_options()
-       ("xtriangle",  "disable --xanalytic ") ;
+       ("xtriangle",  "disables --xanalytic in same commandline see Opticks::isXAnalytic, used in OGeo ") ;
 
 
 

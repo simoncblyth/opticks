@@ -217,10 +217,16 @@ scan-cat(){
 }
 
 scan-cats(){
-  case $(scan-mode) in 
-     pt) scan-cats-tri ;;
-      *) scan-cats-ana ;;  
-  esac
+  if [ "$(scan-pfx)" == "scan-ph-13" ] ; then 
+      #scan-cats-tri  
+      echo cvd_${OPTICKS_DEFAULT_INTEROP_CVD}_rtx_2
+  else
+      case $(scan-mode) in 
+         pt) scan-cats-tri ;;
+          *) scan-cats-ana ;;  
+      esac
+  fi
+
 }
 
 
@@ -340,6 +346,12 @@ scan-ph-notes(){ cat << EON
 11
    Silver:Quadro_RTX_8000 435.21:OptiX 650:WITH_LOGDOUBLE enabled:LEGACY_ENABLED:
    after removing 67.1M ceiling from the cycling of unsigned long 
+12
+   Gold:TITAN RTX repro
+13
+   Gold:TITAN RTX with --xtriangle and RTX 0/1/2
+
+
 
 
 To check switches : OpticksSwitchesTest
@@ -435,7 +447,7 @@ scan-vers(){ echo ${SCAN_VERS:-2} ; }
 scan-smry(){ profilesmry.py ${1:-$(scan-vers)} ${@:2} ; }
 scan-ismry(){ ipython --pdb -i -- $(which profilesmry.py)     ${1:-$(scan-vers)} ${@:2} ; }
 scan-plot(){  ipython --pdb -i -- $(which profilesmryplot.py) ${1:-$(scan-vers)} ${@:2}  ; }
-scan-pfx(){  echo ${SCAN_PFX:-scan-$(scan-mode)-$(scan-vers)} ; }
+scan-pfx(){  echo scan-$(scan-mode)-$(scan-vers) ; }
 
 
 scan-xx-cmd-notes(){ cat << "EON"
@@ -486,6 +498,10 @@ scan-ph-cmd(){
    local num_abbrev=$(scan-num $num_photons)
    local cmd="ts $(scan-ph-lv) --pfx $(scan-pfx) --cat ${cat}_${num_abbrev} --generateoverride ${num_photons} --compute --production --savehit --multievent 10 --xanalytic "  ; 
    cmd="$cmd --nog4propagate $(scan-rngmax-opt $num_photons) $(scan-cat $cat)"
+
+   if [ "$(scan-vers)" == "13" ]; then 
+      cmd="$cmd --xtriangle"
+   fi   
    echo $cmd
 }
 

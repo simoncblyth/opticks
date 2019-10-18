@@ -870,27 +870,27 @@ void OContext::upload(optix::Buffer& buffer, NPY<T>* npy)
 
     if(ctrl(OpticksBufferControl::OPTIX_OUTPUT_ONLY_))
     { 
-         LOG(warning) << "OContext::upload NOT PROCEEDING "
-                      << " name " << npy->getBufferName()
-                      << " as " << OpticksBufferControl::OPTIX_OUTPUT_ONLY_
-                      << " desc " << npy->description("skip-upload") 
-                      ;
+         LOG(error) 
+             << "NOT PROCEEDING "
+             << " name " << npy->getBufferName()
+             << " as " << OpticksBufferControl::OPTIX_OUTPUT_ONLY_
+             << " desc " << npy->description("skip-upload") 
+             ;
      
     }
     else if(ctrl("UPLOAD_WITH_CUDA"))
     {
-        if(verbose) LOG(info) << npy->description("UPLOAD_WITH_CUDA markDirty") ;
+        if(verbose) LOG(LEVEL) << npy->description("UPLOAD_WITH_CUDA markDirty") ;
 
         void* d_ptr = NULL;
         rtBufferGetDevicePointer(buffer->get(), 0, &d_ptr);
         cudaMemcpy(d_ptr, npy->getBytes(), numBytes, cudaMemcpyHostToDevice);
         buffer->markDirty();
-        if(verbose) LOG(info) << npy->description("UPLOAD_WITH_CUDA markDirty DONE") ;
-
+        if(verbose) LOG(LEVEL) << npy->description("UPLOAD_WITH_CUDA markDirty DONE") ;
     }
     else
     {
-        if(verbose) LOG(info) << npy->description("standard OptiX UPLOAD") ;
+        if(verbose) LOG(LEVEL) << npy->description("standard OptiX UPLOAD") ;
         memcpy( buffer->map(), npy->getBytes(), numBytes );
         buffer->unmap(); 
     }
@@ -908,7 +908,7 @@ void OContext::download(optix::Buffer& buffer, NPY<T>* npy)
     if(ctrl(OpticksBufferControl::OPTIX_INPUT_ONLY_))
     {
          proceed = false ; 
-         LOG(warning) 
+         LOG(error) 
              << "NOT PROCEEDING "
              << " name " << npy->getBufferName()
              << " as " << OpticksBufferControl::OPTIX_INPUT_ONLY_

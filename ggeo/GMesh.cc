@@ -2058,26 +2058,22 @@ void GMesh::findShortName()
 }
 
 
+/**
+GMesh::makeFaceRepeatedInstancedIdentityBuffer
+-----------------------------------------------------
 
+Canonically invoked by optixrap-/OGeo::makeTriangulatedGeometry
+Constructing a face repeated IIdentity buffer
+to be addressed with 0:numInstances*PrimitiveCount::
 
+   instanceIdx*PrimitiveCount + primIdx ;
+
+where the primIdx goes over all the volumes 
+
+**/
 
 GBuffer* GMesh::makeFaceRepeatedInstancedIdentityBuffer()
 {
-/*
-     Canonically invoked by optixrap-/OGeo::makeTriangulatedGeometry
-
-     For debugging::
-
-          ggv --ggeo
-
-     Constructing a face repeated IIdentity buffer
-     to be addressed with 0:numInstances*PrimitiveCount
-
-         instanceIdx*PrimitiveCount + primIdx ;
-
-     the primIdx goes over all the volumes 
-*/
-
     unsigned int numITransforms = getNumITransforms() ;
     if(numITransforms == 0)
     {
@@ -2093,27 +2089,27 @@ GBuffer* GMesh::makeFaceRepeatedInstancedIdentityBuffer()
     unsigned int numFaces = getNumFaces() ;
     unsigned int numRepeatedIdentity = numITransforms*numFaces ;
 
-    bool nodeinfo_ok = m_nodeinfo_buffer->getNumItems() == numVolumes ;
-    bool iidentity_ok = m_iidentity_buffer->getNumItems() == numVolumes*numITransforms ;
+    bool nodeinfo_ok = m_nodeinfo_buffer && m_nodeinfo_buffer->getNumItems() == numVolumes ;
+    bool iidentity_ok = m_iidentity_buffer && m_iidentity_buffer->getNumItems() == numVolumes*numITransforms ;
 
-    //if(!nodeinfo_ok)
-    LOG(debug) 
-               << "GMesh::makeFaceRepeatedInstancedIdentityBuffer"
-               << " nodeinfo_ok " << nodeinfo_ok
-               << " nodeinfo_buffer_items " << m_nodeinfo_buffer->getNumItems()
-               << " numVolumes " << numVolumes  
-               ;
+    if(!nodeinfo_ok)
+        LOG(fatal) 
+            << "GMesh::makeFaceRepeatedInstancedIdentityBuffer"
+            << " nodeinfo_ok " << nodeinfo_ok
+            << " nodeinfo_buffer_items " << ( m_nodeinfo_buffer ? m_nodeinfo_buffer->getNumItems() : -1 )
+            << " numVolumes " << numVolumes  
+            ;
 
-    //if(!iidentity_ok)
-    LOG(debug) 
-               << "GMesh::makeFaceRepeatedInstancedIdentityBuffer"
-               << " iidentity_ok " << iidentity_ok
-               << " iidentity_buffer_items " << m_iidentity_buffer->getNumItems() 
-               << " numFaces (sum of faces in numVolumes)" << numFaces 
-               << " numITransforms " << numITransforms
-               << " numVolumes*numITransforms " << numVolumes*numITransforms 
-               << " numRepeatedIdentity " << numRepeatedIdentity 
-               ; 
+    if(!iidentity_ok)
+       LOG(fatal) 
+           << "GMesh::makeFaceRepeatedInstancedIdentityBuffer"
+           << " iidentity_ok " << iidentity_ok
+           << " iidentity_buffer_items " << ( m_iidentity_buffer ? m_iidentity_buffer->getNumItems() : -1 )
+           << " numFaces (sum of faces in numVolumes)" << numFaces 
+           << " numITransforms " << numITransforms
+           << " numVolumes*numITransforms " << numVolumes*numITransforms 
+           << " numRepeatedIdentity " << numRepeatedIdentity 
+           ; 
 
     assert(nodeinfo_ok);
     assert(iidentity_ok);
