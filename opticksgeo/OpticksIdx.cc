@@ -79,7 +79,7 @@ GItemIndex* OpticksIdx::makeHistoryItemIndex()
     Index* seqhis_ = evt->getHistoryIndex() ;
     if(!seqhis_)
     {
-         LOG(warning) << "OpticksIdx::makeHistoryItemIndex NULL seqhis" ;
+         LOG(error) << "OpticksIdx::makeHistoryItemIndex NULL seqhis" ;
          return NULL ; 
     }
  
@@ -93,7 +93,7 @@ GItemIndex* OpticksIdx::makeHistoryItemIndex()
 
     GItemIndex* seqhis = new GItemIndex(seqhis_) ;  
     seqhis->setTitle("Photon Flag Sequence Selection");
-    seqhis->setHandler(qflg);
+    seqhis->setHandler(qflg);  // OpticksAttrSeq (attributed sequence) handler provides the labels
     seqhis->formTable();
 
     return seqhis ; 

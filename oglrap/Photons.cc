@@ -88,6 +88,21 @@ void Photons::gui()
 #endif
 }
 
+/**
+Photons::gui_flag_selection
+----------------------------
+
+Checkbox selector with labels::
+
+   CERENKOV
+   SCINTILLATION
+   MISS
+   BULK_ABSORB
+   ...
+
+
+
+**/
 
 void Photons::gui_flag_selection()
 {

@@ -168,6 +168,15 @@ David Hart, "OptiX Performance Tools and Tricks" SIGGRAPH 2019
 
 
 
+Multi-GPU Scheduling 
+-----------------------
+
+* https://github.com/owensgroup/mgpuscheduler
+
+
+
+
+
 GTC Silicon Valley 2019 ID:S9768 : New Features in OptiX 6.0 
 ----------------------------------------------------------------
 

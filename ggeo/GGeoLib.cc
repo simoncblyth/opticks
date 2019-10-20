@@ -365,24 +365,32 @@ void GGeoLib::dump(const char* msg)
 {
     LOG(info) << msg << " " << desc() ; 
 
+    GMergedMesh* mm0 = getMergedMesh(0) ; 
+    unsigned num_total_volumes = mm0 ?  mm0->getNumVolumes() : -1 ; 
     unsigned nmm = getNumMergedMesh();
-    unsigned num_total_volumes = 0 ; 
     unsigned num_instanced_volumes = 0 ; 
+    unsigned num_total_faces = 0 ; 
+    unsigned num_total_faces_woi = 0 ; 
 
     for(unsigned i=0 ; i < nmm ; i++)
     {   
         GMergedMesh* mm = getMergedMesh(i); 
-
         unsigned numVolumes = mm ? mm->getNumVolumes() : -1 ;
         unsigned numITransforms = mm ? mm->getNumITransforms() : -1 ;
-        if( i == 0 ) num_total_volumes = numVolumes ; 
+        unsigned numFaces = mm ? mm->getNumFaces() : -1 ; 
+
         std::cout << GMergedMesh::Desc(mm) << std::endl ; 
         num_instanced_volumes += i > 0 ? numITransforms*numVolumes : 0 ;
+        num_total_faces += numFaces ;   
+        num_total_faces_woi += numITransforms*numFaces ; 
+
     }
     std::cout
                 << " num_total_volumes " << num_total_volumes 
                 << " num_instanced_volumes " << num_instanced_volumes 
                 << " num_global_volumes " << num_total_volumes - num_instanced_volumes
+                << " num_total_faces " << num_total_faces
+                << " num_total_faces_woi " << num_total_faces_woi << " (woi:without instancing) " 
                 << std::endl
                 ;
 

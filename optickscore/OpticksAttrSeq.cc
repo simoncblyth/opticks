@@ -60,11 +60,44 @@ OpticksAttrSeq::OpticksAttrSeq(Opticks* ok, const char* type)
    m_ctrl(0),
    m_sequence(NULL),
    m_abbrev_meta(NULL),
-   m_color_meta(NULL)
+   m_color_meta(NULL),
+   m_count_width(0),
+   m_frac_width(0),
+   m_key_width(0),
+   m_val_width(0)
+
 {
    init();
    (*m_log)("DONE");
 }
+
+
+void OpticksAttrSeq::init()
+{
+    LOG(LEVEL) ; 
+    setTableCompact();
+}
+void OpticksAttrSeq::setTableCompact()
+{ 
+    m_count_width = 10 ; 
+    m_frac_width = 7 ; 
+    m_key_width = 11 ; 
+    m_val_width = 30 ; 
+}
+void OpticksAttrSeq::setTableWide()
+{ 
+    m_count_width = 10 ; 
+    m_frac_width = 10 ; 
+    m_key_width = 18 ; 
+    m_val_width = 50 ; 
+}
+
+
+unsigned OpticksAttrSeq::getValueWidth() const 
+{
+   return m_val_width ; 
+}
+
 
 const char* OpticksAttrSeq::getType()
 {
@@ -96,12 +129,6 @@ void OpticksAttrSeq::setColorMeta(NMeta* color)
 bool OpticksAttrSeq::hasSequence()
 {
     return m_sequence != NULL ; 
-}
-
-
-void OpticksAttrSeq::init()
-{
-    LOG(LEVEL) ; 
 }
 
 /**
@@ -243,19 +270,6 @@ See notes/issues/photon-flag-sequence-selection-history-flags-not-being-abbrevia
 std::string OpticksAttrSeq::getAbbr(const char* key)
 {
     if(key == NULL) return "NULL" ; 
-
-/*
-    std::string abb = key ; 
-    if( m_abbrev_meta )
-    {
-        abb = m_abbrev_meta->get<std::string>(key, key ) ; 
-    } 
-    else
-    {
-        abb = 
-    }
-*/
-
     return m_abbrev.count(key) == 1 ? m_abbrev[key] : key ;  // copying key into string
 }
 
@@ -383,16 +397,25 @@ std::string OpticksAttrSeq::getLabel(Index* index, const char* key, unsigned int
 
     std::stringstream ss ;  
     ss
-        << std::setw(10) << source 
-        << std::setw(10) << std::setprecision(3) << std::fixed << fraction 
-        << std::setw(18) << ( key ? key : "-" ) 
+        << std::setw(m_count_width) << source 
+        << std::setw(m_frac_width) << std::setprecision(3) << std::fixed << fraction 
+        << std::setw(m_key_width) << ( key ? key : "-" ) 
         << " "  
-        << std::setw(50) << dseq 
+        << std::setw(m_val_width) << dseq 
         ; 
     
     return ss.str();
 }
 
+
+/**
+OpticksAttrSeq::dumpTable
+----------------------------
+
+For photon flag histories this table is visible in the 
+GUI section "Photon Flag Sequence Selection".
+
+**/
 
 void OpticksAttrSeq::dumpTable(Index* seqtab, const char* msg)
 {

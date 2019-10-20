@@ -218,8 +218,8 @@ scan-cat(){
 
 scan-cats(){
   if [ "$(scan-pfx)" == "scan-ph-13" ] ; then 
-      #scan-cats-tri  
-      echo cvd_${OPTICKS_DEFAULT_INTEROP_CVD}_rtx_2
+      scan-cats-tri  
+      #echo cvd_${OPTICKS_DEFAULT_INTEROP_CVD}_rtx_2
   else
       case $(scan-mode) in 
          pt) scan-cats-tri ;;
@@ -499,7 +499,7 @@ scan-ph-cmd(){
    local cmd="ts $(scan-ph-lv) --pfx $(scan-pfx) --cat ${cat}_${num_abbrev} --generateoverride ${num_photons} --compute --production --savehit --multievent 10 --xanalytic "  ; 
    cmd="$cmd --nog4propagate $(scan-rngmax-opt $num_photons) $(scan-cat $cat)"
 
-   if [ "$(scan-vers)" == "13" ]; then 
+   if [ "$(scan-pfx)" == "scan-ph-13" ]; then 
       cmd="$cmd --xtriangle"
    fi   
    echo $cmd
@@ -525,6 +525,9 @@ scan-pf-cmd(){
    cmd="$cmd $(scan-rngmax-opt $num_photons) $(scan-cat $cat)"
    echo $cmd
 }
+
+scan-pf-check(){  OKTest --target 62590 --generateoverride -10 --rngmax 10 --cvd 1 --rtx 1 --xanalytic ; }
+
 
 scan-pt-cmd(){
    local num_photons=$1

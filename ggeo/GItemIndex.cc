@@ -48,6 +48,9 @@
 #include "PLOG.hh"
 
 
+const plog::Severity GItemIndex::LEVEL = PLOG::EnvLevel("GItemIndex", "DEBUG") ; 
+
+
 GItemIndex* GItemIndex::load(const char* idpath, const char* itemtype, const char* reldir)
 {
     GItemIndex* idx = new GItemIndex(itemtype, reldir) ;    // itemname->index
@@ -178,26 +181,26 @@ bool GItemIndex::hasIndex() const
 
 
 
-void GItemIndex::loadIndex(const char* idpath, const char* override)
+void GItemIndex::loadIndex(const char* idpath, const char* override_)
 {
-    const char* itemtype = override ? override : m_index->getItemType() ;
+    const char* itemtype = override_ ? override_ : m_index->getItemType() ;
     const char* reldir = m_index->getRelDir();
 
-    if(override)
+    if(override_)
     {
-        LOG(warning)<<"GItemIndex::loadIndex using override itemtype " << itemtype << " instead of default " << m_index->getItemType() ;
+        LOG(error)<<"GItemIndex::loadIndex using override itemtype " << itemtype << " instead of default " << m_index->getItemType() ;
     }
 
     // hmm stomps existing index ?
     m_index = Index::load(idpath, itemtype, reldir);
 
     if(!m_index)
-        LOG(warning) << "GItemIndex::loadIndex"
-                     << " failed for "
-                     << " idpath " << idpath
-                     << " reldir " << ( reldir ? reldir : "-" )
-                     << " override " << ( override ? override : "NULL" )
-                     ; 
+        LOG(error)
+            << " failed for "
+            << " idpath " << idpath
+            << " reldir " << ( reldir ? reldir : "-" )
+            << " override " << ( override_ ? override_ : "NULL" )
+            ; 
 
 }
 
@@ -298,6 +301,15 @@ void GItemIndex::dump(const char* msg)
 }
 
 
+
+/**
+GItemIndex::getLabel
+----------------------
+
+Operates via the OpticksAttrSeq handler
+
+
+**/
 
 
 std::string GItemIndex::getLabel(const char* key, unsigned int& colorcode)
@@ -411,7 +423,7 @@ std::string GItemIndex::historySeqLabeller(GItemIndex* self, const char* key_, u
 
 
 
-void GItemIndex::formTable(bool verbose)
+void GItemIndex::formTable(bool compact)
 {
    m_codes.clear(); 
    m_labels.clear(); 
@@ -421,7 +433,6 @@ void GItemIndex::formTable(bool verbose)
 
    typedef std::vector<std::string> VS ; 
 
-   if(verbose) LOG(info)<<"GItemIndex::formTable " ;
 
    VS& names = m_index->getNames(); 
    for(VS::iterator it=names.begin() ; it != names.end() ; it++ )
@@ -437,19 +448,31 @@ void GItemIndex::formTable(bool verbose)
           label += colorname ; 
        }
 
-       if(verbose) 
-           std::cout
+       LOG(LEVEL)
             << std::setw(30) << key 
             << " : " 
             << label 
-            << std::endl; 
+            ;
 
        m_codes.push_back(colorcode);
        m_labels.push_back(label);
-       m_labels_short.push_back(ShortenLabel(label.c_str(),50));
+
+       unsigned ntail = m_handler ? m_handler->getValueWidth() : 50 ; 
+       m_labels_short.push_back(ShortenLabel(label.c_str(), ntail ));
    }
 }
 
+
+/**
+GItemIndex::ShortenLabel
+----------------------------
+
+Returns the ntail last characters from the full label.
+
+The shortened label is used in the GUI to present
+the selected flag sequence eg "TO SC BT BT BT BT SD".
+
+**/
 
 const char* GItemIndex::ShortenLabel(const char* label, unsigned ntail )
 {

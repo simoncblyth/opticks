@@ -39,6 +39,7 @@ class OpticksAttrSeq ;
 // ggeo-
 class GColorMap ; 
 
+#include "plog/Severity.h"
 #include "NQuad.hpp"
 
 //
@@ -67,6 +68,8 @@ class GColorMap ;
 #include "GGEO_HEAD.hh"
 
 class GGEO_API GItemIndex {
+
+        static const plog::Severity LEVEL ; 
    public:
         GItemIndex(Index* index);
         GItemIndex(const char* itemtype, const char* reldir);
@@ -148,7 +151,7 @@ class GGEO_API GItemIndex {
         const char* getLabel(unsigned index);
         const char* getShortLabel(unsigned index);
    public:
-        void     formTable(bool verbose=false);
+        void     formTable(bool compact=false);
 
    private:
         Index*                               m_index ; 

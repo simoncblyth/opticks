@@ -306,67 +306,95 @@ void Interactor::touch(int ix, int iy )
 
 }
 
-const char* Interactor::keys = 
-"\n A: Composition::nextMode     record animation, enable and control speed  "
-"\n B: Scene::nextGeometryStyle  bbox/norm/wire "
-"\n C: Clipper::next             toggle geometry clipping "
-"\n D: Camera::nextStyle         perspective/orthographic "
-"\n E: Composition::nextGeometryStyle  lightshader/normalshader/flatvertex/facecolor "
-"\n F: far mode toggle : swipe up/down change frustum far "
-"\n G: gui mode    toggle GUI "
-"\n H: Trackball::home  "
-"\n I: Scene::nextInstanceStyle style of instanced geometry eg PMT visibility  "
-"\n J: Scene::jump  "
-"\n K: Composition::nextPickPhotonStyle OR toggle scrub mode "
-"\n L: Composition::nextNormalStyle     flip normal in shaders "
-"\n M: Composition::nextColorStyle      m1/m2/f1/f2/p1/p2  (window title shows eg col:flag2) "
-"\n N: near mode toggle : swipe up/down to change frustum near "  
-"\n O: OptiX render mode           raytrace/hybrid/OpenGL "
-"\n P: Scene::nextPhotonStyle       dot/longline/shortline  "
-"\n Q: Scene::nextGlobalStyle      non-instanced geometry style: default/normalvec/none "
-"\n R: rotate mode toggle  drag around rotate around viewpoint " 
-"\n S: screen scale mode toggle  drag up/down to change screen scale (use in Orthographic) " 
-"\n T: Composition::nextViewMode, has effect only with non-standard views (Interpolated, Track, Orbital)"
-"\n    typically changing animation speed " 
-"\n U: Composition::nextViewType, use to toggle between standard and altview : altview mode can be changed with T InterpolatedView  " 
-"\n V: View::nextMode      rotate view, with shift modifier rotates in opposite direction "    
-"\n W: decrease(increase with shift modifier) OptiX rendering resolution by multiples of 2, up to 16x"
-"\n X: pan mode toggle "
-"\n Y: yfov mode toggle "
-"\n Z: zoom mode toggle   (actually changes z position, not zoom) " 
-"\n X+ALT: -X view "
-"\n Y+ALT: -Y view "
-"\n Z+ALT: -Z view "
-"\n -: Scene::nextSkipGeoStyle skip rendering geometry, leaving all other state asis " 
-"\n =: Scene::nextSkipEvtStyle skip rendering event, leaving all other state asis " 
-"\n .: Composition::nextPauseStyle pause animators, both view interpolation and photon record " 
-"\n 0-9: jump to preexisting bookmark  " 
-"\n 0-9 + shift: create or update bookmark  " 
-"\n SPACE: update the current bookmark, commiting trackballing into the view and persisting "
-"\n TAB  : frame->snap saving PPM file "
-"\n "
-"\n Animator modes are changed by pressing keys A,V,T"
-"\n "
-"\n A: event propagation "
-"\n V: geometry rotation "
-"\n T: interpolated navigation "
-"\n "
-"\n Holding SHIFT with A,V,T reverses animation time direction "
-"\n Holding OPTION with A,V,T changes to previous animation mode, instead of next  "
-"\n Holding CONTROL with A,V,T sets animation mode to OFF  "
-"\n "
-"\n Holding SHIFT+OPTION+T resets an InterpolatedView back to the start "
-"\n "
-"\n M: Composition::nextColorStyle   flag1/flag2 colors (note window title   "
-"\n    flag1(flag2) colors photon representation according to previous(next) point flag"
-"\n "
-"\n     TO:white    torch "
-"\n     BT:cyan     boundary transmit"
-"\n     BR:yellow   boundary reflect "
-"\n     AB:red      bulk absorb "  
-"\n     SA:brown    surface absorb "
-"\n     SC:scatter  bulk scatter "
-"\n ";
+const char* Interactor::keys = R"LITERAL(
+
+ A: Composition::nextMode     record animation, enable and control speed  
+ B: Scene::nextGeometryStyle  bbox/norm/wire 
+ C: Clipper::next             toggle geometry clipping 
+ D: Camera::nextStyle         perspective/orthographic 
+ E: Composition::nextGeometryStyle  lightshader/normalshader/flatvertex/facecolor 
+ F: far mode toggle : swipe up/down change frustum far 
+ G: gui mode    toggle GUI 
+ H: Trackball::home  
+ I: Scene::nextInstanceStyle style of instanced geometry eg PMT visibility  
+ J: Scene::jump  
+ K: Composition::nextPickPhotonStyle OR toggle scrub mode 
+ L: Composition::nextNormalStyle     flip normal in shaders 
+ M: Composition::nextColorStyle      m1/m2/f1/f2/p1/p2  (window title shows eg col:flag2) 
+ N: near mode toggle : swipe up/down to change frustum near   
+ O: OptiX render mode           raytrace/hybrid/OpenGL 
+ P: Scene::nextPhotonStyle       dot/longline/shortline  
+ Q: Scene::nextGlobalStyle      non-instanced geometry style: default/normalvec/none 
+ R: rotate mode toggle  drag around rotate around viewpoint  
+ S: screen scale mode toggle  drag up/down to change screen scale (use in Orthographic)  
+ T: Composition::nextViewMode, has effect only with non-standard views (Interpolated, Track, Orbital)
+    typically changing animation speed  
+ U: Composition::nextViewType, use to toggle between standard and altview : altview mode can be changed with T InterpolatedView   
+ V: View::nextMode      rotate view, with shift modifier rotates in opposite direction     
+ W: decrease(increase with shift modifier) OptiX rendering resolution by multiples of 2, up to 16x
+ X: pan mode toggle 
+ Y: yfov mode toggle 
+ Z: zoom mode toggle   (actually changes z position, not zoom)  
+ X+ALT: -X view 
+ Y+ALT: -Y view 
+ Z+ALT: -Z view 
+ -: Scene::nextSkipGeoStyle skip rendering geometry, leaving all other state asis  
+ =: Scene::nextSkipEvtStyle skip rendering event, leaving all other state asis  
+ .: Composition::nextPauseStyle pause animators, both view interpolation and photon record  
+ 0-9: jump to preexisting bookmark   
+ 0-9 + shift: create or update bookmark   
+ SPACE: update the current bookmark, commiting trackballing into the view and persisting 
+ TAB  : frame->snap saving PPM file 
+ 
+ Animator modes are changed by pressing keys A,V,T
+ 
+ A: event propagation 
+ V: geometry rotation 
+ T: interpolated navigation 
+ 
+ Holding SHIFT with A,V,T reverses animation time direction 
+ Holding OPTION with A,V,T changes to previous animation mode, instead of next  
+ Holding CONTROL with A,V,T sets animation mode to OFF  
+ 
+ Holding SHIFT+OPTION+T resets an InterpolatedView back to the start 
+ 
+ M: Composition::nextColorStyle   flag1/flag2 colors (note window title   
+    flag1(flag2) colors photon representation according to previous(next) point flag
+ 
+     TO:white    torch 
+     BT:cyan     boundary transmit
+     BR:yellow   boundary reflect 
+     AB:red      bulk absorb   
+     SA:brown    surface absorb 
+     SC:scatter  bulk scatter 
+
+Scene Tab
+-----------
+
+Allows selection of what is visible:
+
+  global    : non-instanced geometry
+  bb0/1/..  : bbox of the instances
+  in0/1/..  : full geometry of the instances
+  axis      : red,green,blue lines for X,Y,Z axes
+  genstep   : lines for gensteps (have not seen this recently)
+  nopstep   : lines for non-optical steps (have not seen this recently) 
+  photon    : dots for final photon positions, NB to make these appear it
+              is also necessary to select one or more photon flags 
+              under GUI tab "Photon Flag Selection"
+  source    : ?
+  record    : step-by-step photon positions presented as animated photon propagation 
+
+
+Photon Flag Selection
+---------------------
+
+Tip: sometimes making changes has no immediate effect because the
+view is not updating, to avoid this switch on geometry rotation with V.
+
+
+)LITERAL";
+
 
 
 void Interactor::pan_mode_key_pressed(unsigned int modifiers)

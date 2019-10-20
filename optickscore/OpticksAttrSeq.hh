@@ -88,6 +88,10 @@ class OKCORE_API OpticksAttrSeq {
         void setAbbrevMeta(NMeta* abbrev); 
         void setColorMeta(NMeta* color); 
     public:
+        void setTableCompact();
+        void setTableWide();
+        unsigned getValueWidth() const ; 
+    public:
         //std::string  getCtrlDesc() const ; 
         std::string  getLabel(Index* index, const char* key, unsigned int& colorcode);
         std::string  getAbbr(const char* key);
@@ -123,6 +127,10 @@ class OKCORE_API OpticksAttrSeq {
     private:
         std::vector<unsigned int>            m_color_codes ; 
         std::vector<std::string>             m_labels ; 
+        unsigned                             m_count_width ;     
+        unsigned                             m_frac_width ;     
+        unsigned                             m_key_width ;     
+        unsigned                             m_val_width ;     
 
 };
 

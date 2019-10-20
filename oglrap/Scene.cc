@@ -694,7 +694,7 @@ void Scene::uploadGeometry()
 
     LOG(info) << " nmm " << nmm ;
 
-    m_geolib->dump("Scene::uploadGeometry GGeoLib" );
+    //m_geolib->dump("Scene::uploadGeometry GGeoLib" );
 
     m_context->init();  // UBO setup
 

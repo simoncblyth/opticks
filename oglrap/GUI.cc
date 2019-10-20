@@ -223,9 +223,7 @@ void GUI::show_label(bool* opened)
 
     if(m_photons)
     {
-        //const char* key   = m_photons->getSeqhisSelectedKey() ;
         const char* label = m_photons->getSeqhisSelectedLabel() ;
-        //ImGui::Text("%s : %s", key, label);
         ImGui::Text("%s", label);
     } 
     
