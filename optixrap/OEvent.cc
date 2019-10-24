@@ -92,7 +92,21 @@ OEvent::OEvent(Opticks* ok, OContext* ocontext)
 #endif
    m_buffers_created(false)
 {
+    init();
     (*m_log)("DONE");
+}
+
+
+void OEvent::init()
+{
+    std::cout << "OEvent::init ------------------------ " << std::endl ; 
+
+    LOG(LEVEL)
+        << " --dbghit " << ( m_dbghit ? "Y" : "N" )
+        << " hitmask 0x" << std::hex << m_hitmask << std::dec
+        << " " << OpticksFlags::FlagMask(m_hitmask, true)
+        << " " << OpticksFlags::FlagMask(m_hitmask, false)
+        ;
 }
 
 

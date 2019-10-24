@@ -143,6 +143,7 @@ class OXRAP_API OEvent
 #endif
         void markDirty();
     private:
+        void init(); 
         void createBuffers(OpticksEvent* evt);
         void resizeBuffers(OpticksEvent* evt);
         void setEvent(OpticksEvent* evt);

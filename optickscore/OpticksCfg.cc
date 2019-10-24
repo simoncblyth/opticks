@@ -85,8 +85,8 @@ OpticksCfg<Listener>::OpticksCfg(const char* name, Listener* listener, bool live
        m_oindex(""),
        m_gindex(""),
        m_mask(""),
-       //m_dbghitmask("SD"),
-       m_dbghitmask("TO,SC,BT,SA"),  // see OEvent::OEvent
+       m_dbghitmask("SD"),
+       //m_dbghitmask("TO,SC,BT,SA"),  // see OEvent::OEvent
        m_x4polyskip(""),
        m_csgskiplv(""),
        m_accel(""),

@@ -2379,7 +2379,7 @@ void OpticksEvent::saveIndex()
     bool is_indexed = isIndexed();
     if(!is_indexed)
     {
-        LOG(warning) << "SKIP as not indexed " ; 
+        LOG(error) << "SKIP as not indexed " ; 
         return ; 
     }
 

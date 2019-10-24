@@ -1971,8 +1971,8 @@ std::vector<std::string> GGeo::getTags()
 
 void GGeo::anaEvent(OpticksEvent* evt)
 {
-    LOG(warning) << "GGeo::anaEvent" 
-                 << " evt " << evt 
-                 ;
+    LOG(error)
+        << " evt " << evt 
+        ;
 }
 

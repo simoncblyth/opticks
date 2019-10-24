@@ -29,8 +29,13 @@
 #include "G4Box.hh"
 #include "G4LogicalVolume.hh"
 #include "G4PVPlacement.hh"
-
+#include "G4LogicalBorderSurface.hh"
+#include "G4LogicalSkinSurface.hh"
+#include "G4OpticalSurface.hh"
+#include "G4MaterialTable.hh"
 #include "G4SDManager.hh"
+#include "G4PhysicalConstants.hh"
+#include "G4SystemOfUnits.hh"
 
 DetectorConstruction::DetectorConstruction( const char* sdname_ )
     :
@@ -204,13 +209,38 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
     assert( pv_1 ); 
 
     G4Material* glass = MakeGlass();    // slab of sensitive glass in the water 
-    AddProperty(glass, "EFFICIENCY", MakeConstantProperty(0.5)); 
+    //AddProperty(glass, "EFFICIENCY", MakeConstantProperty(0.5)); 
+
 
     G4Box* so_2 = new G4Box("Det",400.,400.,10.);  // half sizes 
     G4LogicalVolume* lv_2 = new G4LogicalVolume(so_2,glass,"Det",0,0,0);
+    G4OpticalSurface* scintWrap = new G4OpticalSurface("ScintWrap");
+
+
     G4VPhysicalVolume* pv_2 = new G4PVPlacement(0,G4ThreeVector(0,0,100.),lv_2 ,"Det",lv_1,false,0);
     assert( pv_2 ); 
-
+    new G4LogicalBorderSurface("ScintWrap", pv_1,
+			       pv_2 ,
+			       scintWrap);
+    
+    scintWrap->SetType(dielectric_metal);
+    scintWrap->SetFinish(polished);
+    scintWrap->SetModel(glisur);
+    
+    G4double pp[] = {2.0*eV, 3.5*eV};
+    const G4int num = sizeof(pp)/sizeof(G4double);
+    G4double reflectivity[] = {1., 1.};
+    assert(sizeof(reflectivity) == sizeof(pp));
+    G4double efficiency[] = {0.5, 0.5};
+    assert(sizeof(efficiency) == sizeof(pp));     
+    G4MaterialPropertiesTable* scintWrapProperty 
+      = new G4MaterialPropertiesTable();
+    
+    scintWrapProperty->AddProperty("REFLECTIVITY",pp,reflectivity,num);
+    scintWrapProperty->AddProperty("EFFICIENCY",pp,efficiency,num);
+    scintWrap->SetMaterialPropertiesTable(scintWrapProperty);
+   
+ 
     G4SDManager* SDMan = G4SDManager::GetSDMpointerIfExist();        assert( SDMan && " SDMan should have been created before now " ); 
     G4VSensitiveDetector* sd = SDMan->FindSensitiveDetector(sdname); assert( sd && " failed for find sd with sdname " ); 
     lv_2->SetSensitiveDetector(sd); 
