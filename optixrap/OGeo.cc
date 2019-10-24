@@ -103,12 +103,14 @@ The geometry tree follows that show in OptiX 6.0.0 manual Fig 3.4 x6
           ggi              (GeometryInstance)        
 
        assembly.0          (Group)                m_assembly_accel      1:1 with instanced merged mesh (~6 of these for JUNO)
+
              xform.0       (Transform)                                  (at most 20k/36k different transforms)
                perxform    (GeometryGroup)
                   accel[0]                            m_instance_accel  common accel within each assembly 
                   pergi    (GeometryInstance)                           distinct pergi for every instance, with instance_index assigned  
                      omm   (Geometry)                                   the same omm and mat are child of all xform/perxform/pergi
                      mat   (Material) 
+
              xform.1       (Transform)
                perxform    (GeometryGroup)
                   pergi    (GeometryInstance)      
@@ -129,6 +131,30 @@ The geometry tree follows that show in OptiX 6.0.0 manual Fig 3.4 x6
   another acceleration structure
 
 * transforms must be assigned exactly one child of type rtGroup, rtGeometryGroup, rtTransform, or rtSelector,
+
+
+Alternate Tree Layout
+~~~~~~~~~~~~~~~~~~~~~~~~
+   
+     (Group)
+       (Transform)
+          (GeometryGroup)
+              (GeometryInstance)
+                  (Geometry)
+                   (Material)
+
+
+
+
+OptiX 7 terminology change
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+OptiX 7 changes terminology in a way which may inform 
+concerning which trees can be handled in RT cores
+
+* Geometry Group -> Geometry AS (only primitives)
+* Group -> Instance AS
+* Transform -> just input to Instance AS at build
 
 
 Why proliferate the *pergi* ? So can assign an instance index to it : ie know which PMT gets hit
