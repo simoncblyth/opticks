@@ -312,4 +312,364 @@ Investigation
 
 
 
+Sam asked why such a big tree ?, I asked why only 1 Billion ? Answer it cycled 32bit unsigned int several times
+------------------------------------------------------------------------------------------------------------------
+
+
+So what to do:
+
+* need to disallow exports of trees of heights exceeding say height 16 
+
+
+
+::
+
+     254 NCSG::NCSG(nnode* root )
+     255     :
+     256     m_treedir(NULL),
+     257     m_index(0),
+     258     m_surface_epsilon(SURFACE_EPSILON),
+     259     m_verbosity(root->verbosity),
+     260     m_usedglobally(true),   // changed to true : June 2018, see notes/issues/subtree_instances_missing_transform.rst
+     261     m_root(root),
+     262     m_points(NULL),
+     263     m_uncoincide(make_uncoincide()),
+     264     m_nudger(make_nudger("Adopt root ctor")),
+     265     m_csgdata(new NCSGData),
+     266     m_meta(new NPYMeta),
+     267     m_adopted(true),
+     268     m_boundary(NULL),
+     269     m_config(NULL),
+     270     m_gpuoffset(0,0,0),
+     271     m_proxylv(-1),
+     272     m_container(0),
+     273     m_containerscale(2.f),
+     274     m_containerautosize(-1),
+     275     m_tris(NULL),
+     276     m_soIdx(0),
+     277     m_lvIdx(0),
+     278     m_other(NULL)
+     279 {
+     280     setBoundary( root->boundary );  // boundary spec
+     281     LOG(debug) << "[" ;
+     282     m_csgdata->init_buffers(root->maxdepth()) ;
+     //                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^   
+     283     LOG(debug) << "]" ;
+     284 }
+     285 
+
+
+::
+
+     267 unsigned nnode::maxdepth() const
+     268 {
+     269     return _maxdepth(0);
+     270 }
+     271 unsigned nnode::_maxdepth(unsigned depth) const   // recursive 
+     272 {
+     273     return left && right ? nmaxu( left->_maxdepth(depth+1), right->_maxdepth(depth+1)) : depth ;
+     274 }
+
+
+
+::
+
+    085 void NCSGData::init_buffers(unsigned height)  // invoked from NCSG::NCSG(nnode* root ) ie when adopting 
+     86 {
+     87     m_height = height ;
+     88     unsigned num_nodes = NumNodes(height); // number of nodes for a complete binary tree of the needed height, with no balancing 
+     89     m_num_nodes = num_nodes ;
+     90 
+     91     bool zero = true ;
+     92     const char* msg = "init_buffer.adopt" ;
+     93 
+     94     m_npy->initBuffer( (int)SRC_NODES     ,  m_num_nodes, zero , msg );
+     95     m_npy->initBuffer( (int)SRC_TRANSFORMS,            0, zero , msg );
+     96     m_npy->initBuffer( (int)SRC_PLANES    ,            0, zero , msg );
+     97     m_npy->initBuffer( (int)SRC_IDX       ,            1, zero , msg );
+     98 
+     99     m_npy->initBuffer( (int)SRC_VERTS     ,            0, zero , msg );
+    100     m_npy->initBuffer( (int)SRC_FACES     ,            0, zero , msg );
+    101 }
+
+::
+
+    039 #define TREE_NODES(height) ( (0x1 << (1+(height))) - 1 )
+
+
+    360 unsigned NCSGData::NumNodes(unsigned height)
+    361 {
+    362    return TREE_NODES(height);
+    363 }
+
+
+
+::
+
+    [blyth@localhost npy]$ NCSGDataTest 
+     h          0 NumNodes                    1
+     h          1 NumNodes                    3
+     h          2 NumNodes                    7
+     h          3 NumNodes                   15
+     h          4 NumNodes                   31
+     h          5 NumNodes                   63
+     h          6 NumNodes                  127
+     h          7 NumNodes                  255
+     h          8 NumNodes                  511
+     h          9 NumNodes                 1023
+     h         10 NumNodes                 2047
+     h         11 NumNodes                 4095
+     h         12 NumNodes                 8191
+     h         13 NumNodes                16383
+     h         14 NumNodes                32767
+     h         15 NumNodes                65535
+     h         16 NumNodes               131071
+     h         17 NumNodes               262143
+     h         18 NumNodes               524287
+     h         19 NumNodes              1048575
+     h         20 NumNodes              2097151
+     h         21 NumNodes              4194303
+     h         22 NumNodes              8388607
+     h         23 NumNodes             16777215
+     h         24 NumNodes             33554431
+     h         25 NumNodes             67108863
+     h         26 NumNodes            134217727
+     h         27 NumNodes            268435455
+     h         28 NumNodes            536870911
+     h         29 NumNodes           1073741823
+     h         30 NumNodes           2147483647
+     h         31 NumNodes                    0
+     h         32 NumNodes                    1
+     h         33 NumNodes                    3
+     h         34 NumNodes                    7
+     h         35 NumNodes                   15
+     h         36 NumNodes                   31
+     h         37 NumNodes                   63
+     h         38 NumNodes                  127
+     h         39 NumNodes                  255
+     h         40 NumNodes                  511
+     h         41 NumNodes                 1023
+     h         42 NumNodes                 2047
+     h         43 NumNodes                 4095
+     h         44 NumNodes                 8191
+     h         45 NumNodes                16383
+     h         46 NumNodes                32767
+     h         47 NumNodes                65535
+     h         48 NumNodes               131071
+     h         49 NumNodes               262143
+     h         50 NumNodes               524287
+     h         51 NumNodes              1048575
+     h         52 NumNodes              2097151
+     h         53 NumNodes              4194303
+     h         54 NumNodes              8388607
+     h         55 NumNodes             16777215
+     h         56 NumNodes             33554431
+     h         57 NumNodes             67108863
+     h         58 NumNodes            134217727
+     h         59 NumNodes            268435455
+     h         60 NumNodes            536870911
+     h         61 NumNodes           1073741823
+     h         62 NumNodes           2147483647
+     h         63 NumNodes                    0
+     h         64 NumNodes                    1
+     h         65 NumNodes                    3
+     h         66 NumNodes                    7
+     h         67 NumNodes                   15
+     h         68 NumNodes                   31
+     h         69 NumNodes                   63
+     h         70 NumNodes                  127
+     h         71 NumNodes                  255
+     h         72 NumNodes                  511
+     h         73 NumNodes                 1023
+     h         74 NumNodes                 2047
+     h         75 NumNodes                 4095
+     h         76 NumNodes                 8191
+     h         77 NumNodes                16383
+     h         78 NumNodes                32767
+     h         79 NumNodes                65535
+     h         80 NumNodes               131071
+     h         81 NumNodes               262143
+     h         82 NumNodes               524287
+     h         83 NumNodes              1048575
+     h         84 NumNodes              2097151
+     h         85 NumNodes              4194303
+     h         86 NumNodes              8388607
+     h         87 NumNodes             16777215
+     h         88 NumNodes             33554431
+     h         89 NumNodes             67108863
+     h         90 NumNodes            134217727
+     h         91 NumNodes            268435455
+     h         92 NumNodes            536870911
+     h         93 NumNodes           1073741823
+     h         94 NumNodes           2147483647
+     h         95 NumNodes                    0
+     h         96 NumNodes                    1
+     h         97 NumNodes                    3
+     h         98 NumNodes                    7
+     h         99 NumNodes                   15
+     h        100 NumNodes                   31
+     h        101 NumNodes                   63
+     h        102 NumNodes                  127
+     h        103 NumNodes                  255
+     h        104 NumNodes                  511
+     h        105 NumNodes                 1023
+     h        106 NumNodes                 2047
+     h        107 NumNodes                 4095
+     h        108 NumNodes                 8191
+     h        109 NumNodes                16383
+     h        110 NumNodes                32767
+     h        111 NumNodes                65535
+     h        112 NumNodes               131071
+     h        113 NumNodes               262143
+     h        114 NumNodes               524287
+     h        115 NumNodes              1048575
+     h        116 NumNodes              2097151
+     h        117 NumNodes              4194303
+     h        118 NumNodes              8388607
+     h        119 NumNodes             16777215
+     h        120 NumNodes             33554431
+     h        121 NumNodes             67108863
+     h        122 NumNodes            134217727
+     h        123 NumNodes            268435455
+     h        124 NumNodes            536870911
+     h        125 NumNodes           1073741823
+     h        126 NumNodes           2147483647
+     h        127 NumNodes                    0
+     h        128 NumNodes                    1
+     h        129 NumNodes                    3
+     h        130 NumNodes                    7
+     h        131 NumNodes                   15
+     h        132 NumNodes                   31
+     h        133 NumNodes                   63
+     h        134 NumNodes                  127
+     h        135 NumNodes                  255
+     h        136 NumNodes                  511
+     h        137 NumNodes                 1023
+     h        138 NumNodes                 2047
+     h        139 NumNodes                 4095
+     h        140 NumNodes                 8191
+     h        141 NumNodes                16383
+     h        142 NumNodes                32767
+     h        143 NumNodes                65535
+     h        144 NumNodes               131071
+     h        145 NumNodes               262143
+     h        146 NumNodes               524287
+     h        147 NumNodes              1048575
+     h        148 NumNodes              2097151
+     h        149 NumNodes              4194303
+     h        150 NumNodes              8388607
+     h        151 NumNodes             16777215
+     h        152 NumNodes             33554431
+     h        153 NumNodes             67108863
+     h        154 NumNodes            134217727
+     h        155 NumNodes            268435455
+     h        156 NumNodes            536870911
+     h        157 NumNodes           1073741823
+     h        158 NumNodes           2147483647
+     h        159 NumNodes                    0
+     h        160 NumNodes                    1
+     h        161 NumNodes                    3
+     h        162 NumNodes                    7
+     h        163 NumNodes                   15
+     h        164 NumNodes                   31
+     h        165 NumNodes                   63
+     h        166 NumNodes                  127
+     h        167 NumNodes                  255
+     h        168 NumNodes                  511
+     h        169 NumNodes                 1023
+     h        170 NumNodes                 2047
+     h        171 NumNodes                 4095
+     h        172 NumNodes                 8191
+     h        173 NumNodes                16383
+     h        174 NumNodes                32767
+     h        175 NumNodes                65535
+     h        176 NumNodes               131071
+     h        177 NumNodes               262143
+     h        178 NumNodes               524287
+     h        179 NumNodes              1048575
+     h        180 NumNodes              2097151
+     h        181 NumNodes              4194303
+     h        182 NumNodes              8388607
+     h        183 NumNodes             16777215
+     h        184 NumNodes             33554431
+     h        185 NumNodes             67108863
+     h        186 NumNodes            134217727
+     h        187 NumNodes            268435455
+     h        188 NumNodes            536870911
+     h        189 NumNodes           1073741823
+     h        190 NumNodes           2147483647
+     h        191 NumNodes                    0
+     h        192 NumNodes                    1
+     h        193 NumNodes                    3
+     h        194 NumNodes                    7
+     h        195 NumNodes                   15
+     h        196 NumNodes                   31
+     h        197 NumNodes                   63
+     h        198 NumNodes                  127
+     h        199 NumNodes                  255
+     h        200 NumNodes                  511
+     h        201 NumNodes                 1023
+     h        202 NumNodes                 2047
+     h        203 NumNodes                 4095
+     h        204 NumNodes                 8191
+     h        205 NumNodes                16383
+     h        206 NumNodes                32767
+     h        207 NumNodes                65535
+     h        208 NumNodes               131071
+     h        209 NumNodes               262143
+     h        210 NumNodes               524287
+     h        211 NumNodes              1048575
+     h        212 NumNodes              2097151
+     h        213 NumNodes              4194303
+     h        214 NumNodes              8388607
+     h        215 NumNodes             16777215
+     h        216 NumNodes             33554431
+     h        217 NumNodes             67108863
+     h        218 NumNodes            134217727
+     h        219 NumNodes            268435455
+     h        220 NumNodes            536870911
+     h        221 NumNodes           1073741823
+     h        222 NumNodes           2147483647
+     h        223 NumNodes                    0
+     h        224 NumNodes                    1
+     h        225 NumNodes                    3
+     h        226 NumNodes                    7
+     h        227 NumNodes                   15
+     h        228 NumNodes                   31
+     h        229 NumNodes                   63
+     h        230 NumNodes                  127
+     h        231 NumNodes                  255
+     h        232 NumNodes                  511
+     h        233 NumNodes                 1023
+     h        234 NumNodes                 2047
+     h        235 NumNodes                 4095
+     h        236 NumNodes                 8191
+     h        237 NumNodes                16383
+     h        238 NumNodes                32767
+     h        239 NumNodes                65535
+     h        240 NumNodes               131071
+     h        241 NumNodes               262143
+     h        242 NumNodes               524287
+     h        243 NumNodes              1048575
+     h        244 NumNodes              2097151
+     h        245 NumNodes              4194303
+     h        246 NumNodes              8388607
+     h        247 NumNodes             16777215
+     h        248 NumNodes             33554431
+     h        249 NumNodes             67108863
+     h        250 NumNodes            134217727
+     h        251 NumNodes            268435455
+     h        252 NumNodes            536870911
+     h        253 NumNodes           1073741823
+     h        254 NumNodes           2147483647
+     h        255 NumNodes                    0
+     h        256 NumNodes                    1
+     h        257 NumNodes                    3
+     h        258 NumNodes                    7
+     h        259 NumNodes                   15
+
+
+
+
+
 

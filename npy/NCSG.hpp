@@ -163,6 +163,7 @@ class NPY_API NCSG {
         typedef std::map<std::string, nnode*> MSN ; 
     public:
         static const plog::Severity LEVEL ; 
+        static const unsigned MAX_EXPORT_HEIGHT ;  
         static const float SURFACE_EPSILON ; 
 
         static std::string TestVolumeName(const char* shapename, const char* suffix, int idx) ; 

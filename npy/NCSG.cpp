@@ -55,6 +55,9 @@ const plog::Severity NCSG::LEVEL = PLOG::EnvLevel("NCSG", "DEBUG") ;
 
 const float NCSG::SURFACE_EPSILON = 1e-5f ; 
 
+const unsigned NCSG::MAX_EXPORT_HEIGHT = 16 ; 
+
+
 /////////////////////////////////////////////////////////////////////////////////////////
 /**
 NCSG::Load

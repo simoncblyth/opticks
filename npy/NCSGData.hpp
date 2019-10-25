@@ -105,11 +105,11 @@ class NPY_API NCSGData
     public:
         static bool        Exists(const char* treedir);     // compat : pass thru to ExistsDir
         enum { NTRAN = 3  };
+        static unsigned NumNodes(unsigned height);
     private:
         static const char* FILENAME ; 
         enum { MAX_HEIGHT = 10 };
         static unsigned CompleteTreeHeight( unsigned num_nodes );
-        static unsigned NumNodes(unsigned height);
 
         static std::string TxtPath(const char* treedir);
         static bool        ExistsTxt(const char* treedir);  // looks for FILENAME (csg.txt) in the treedir

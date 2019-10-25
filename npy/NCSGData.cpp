@@ -357,7 +357,7 @@ unsigned NCSGData::CompleteTreeHeight( unsigned num_nodes )
     return height ; 
 }
 
-unsigned NCSGData::NumNodes(unsigned height)
+unsigned NCSGData::NumNodes(unsigned height) // static
 {
    return TREE_NODES(height);
 }

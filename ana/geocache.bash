@@ -282,6 +282,7 @@ geocache-j1808-v4-(){ opticksdata- ; geocache-create- --gdmlpath $(opticksdata-j
 geocache-j1808-v5-(){ opticksdata- ; geocache-create- --gdmlpath $(opticksdata-jv5) $* ; }
 
 geocache-j1808-v6-(){ opticksdata- ; geocache-create- --gdmlpath $(opticksdata-jv5) --digestextra v6  $* ; }   
+geocache-j1808-vt-(){ opticksdata- ; geocache-create- --gdmlpath $(opticksdata-jv5) --digestextra vt  $* ; }   
 
 
 geocache-j1808-v4-comment(){ echo torus-less-skipping-just-lv-22-maskVirtual ; }
@@ -420,6 +421,30 @@ See notes/issues/missing-SD-again.rst
 
 EON
 }
+
+
+
+geocache-j1808-vt-key(){ echo -n ; }
+geocache-j1808-vt-comment(){ echo for-technical-tests-of-geocache-creation-with-no-expectation-of-longevity ; }
+geocache-j1808-vt(){  X4PhysicalVolume=FATAL geocache-j1808-vt- --csgskiplv 22 --runfolder $FUNCNAME --runcomment $(${FUNCNAME}-comment) $* ; }  
+geocache-j1808-vt-notes(){ cat << EON
+
+vt uses same gdml as v6,v5, but its intended to be used for tests of geocache conversion after code changes, 
+eg the restriction on balanced solids exports
+
+See notes/issues/investigate-sams-x375-a-solid-that-breaks-balancing.rst
+
+EON
+}
+
+
+
+
+
+
+
+
+
 
 
 

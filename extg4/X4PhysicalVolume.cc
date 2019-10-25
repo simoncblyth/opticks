@@ -581,22 +581,47 @@ void X4PhysicalVolume::convertSolids_r(const G4VPhysicalVolume* const pv, int de
         GMesh* mesh = convertSolid( lvIdx, soIdx, solid, lvname, balance_deep_tree ) ;  
         mesh->setIndex( lvIdx ) ;   
 
-        const NCSG* csg = mesh->getCSG(); 
-
-        if( csg->is_balanced() )  // when balancing done, also convert without it 
-        {
-            balance_deep_tree = false ;  
-            GMesh* rawmesh = convertSolid( lvIdx, soIdx, solid, lvname, balance_deep_tree ) ;  
-            rawmesh->setIndex( lvIdx ) ;   
-
-            const NCSG* rawcsg = rawmesh->getCSG(); 
-            assert( rawmesh->getIndex() == rawcsg->getIndex() ) ;   
-
-            mesh->setAlt(rawmesh);  // <-- this association is preserved (and made symmetric) thru metadata by GMeshLib 
-        }
-
+        // raw unbalanced tree height  
         const nnode* root = mesh->getRoot(); 
         assert( root ); 
+        const nnode* unbalanced = root->other ? root->other : root  ; 
+        assert( unbalanced ); 
+
+        unsigned unbalanced_height = unbalanced->maxdepth() ;  
+        bool can_export_unbalanced = unbalanced_height <= NCSG::MAX_EXPORT_HEIGHT ;  
+
+        LOG(LEVEL) 
+           << " lvIdx " << lvIdx   
+           << " soIdx " << soIdx   
+           << " unbalanced_height " << unbalanced_height
+           << " NCSG::MAX_EXPORT_HEIGHT " << NCSG::MAX_EXPORT_HEIGHT
+           << " can_export_unbalanced " << can_export_unbalanced
+           ; 
+ 
+        const NCSG* csg = mesh->getCSG(); 
+        if( csg->is_balanced() )  // when balancing done, also convert without it 
+        {
+            if( can_export_unbalanced )
+            {  
+                balance_deep_tree = false ;  
+                GMesh* rawmesh = convertSolid( lvIdx, soIdx, solid, lvname, balance_deep_tree ) ;  
+                rawmesh->setIndex( lvIdx ) ;   
+
+                const NCSG* rawcsg = rawmesh->getCSG(); 
+                assert( rawmesh->getIndex() == rawcsg->getIndex() ) ;   
+
+                mesh->setAlt(rawmesh);  // <-- this association is preserved (and made symmetric) thru metadata by GMeshLib 
+            } 
+            else
+            {
+                LOG(error)
+                    << " Cannot export the unbalanced tree as raw height exceeds the maximum. " << std::endl 
+                    << " unbalanced_height " << unbalanced_height 
+                    << " NCSG::MAX_EXPORT_HEIGHT " << NCSG::MAX_EXPORT_HEIGHT
+                    ;     
+            } 
+        }
+
 
         if( root->has_torus() )
         {
