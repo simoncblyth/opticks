@@ -324,6 +324,38 @@ void GMaterialLib::addDirect(GMaterial* mat)
     m_materials.push_back(mat); 
 }
 
+/**
+GMaterialLib::createStandardMaterial
+-------------------------------------
+
+Standardization of material(and surface) properties is done to prepare
+these for inclusion into a GPU texture. Standardization involves:
+
+1. selection of a subset of properties, namely:
+
+   * refractive_index
+   * absorption_length
+   * scattering_length
+   * reemission_prob
+   * group_velocity
+
+2. use of a common wavelength domain for all properties
+
+The subset of properties are the only properties 
+needed on the GPU for the propagation.
+
+See also *GSurfaceLib* for analogous preparation of 
+surface properties. Surface and material properties
+are interleaved together by *GBndLib* into the boundary 
+array that *optixrap/OBndLib* uses to create the 
+GPU "boundary texture".
+
+Scintillation properties SLOWCOMPONENT and FASTCOMPONENT
+are treated separately, they are used to construct the 
+"reemission_texture", see GScintillatorLib.  
+
+**/
+
 GMaterial* GMaterialLib::createStandardMaterial(GMaterial* src)
 {
     assert(src);  // materials must always be defined
