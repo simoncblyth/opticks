@@ -38,6 +38,7 @@ cu-(){               . $(externals-dir)/cuda.bash              && cuda-env $* ; 
 thrust-(){           . $(externals-dir)/thrust.bash            && thrust-env $* ; }
 optix-(){            . $(externals-dir)/optix.bash             && optix-env $* ; }
 optix7-(){           . $(externals-dir)/optix7.bash            && optix7-env $* ; }
+optix7c-(){          . $(externals-dir)/optix7c.bash           && optix7c-env $* ; }
 optixnote-(){        . $(externals-dir)/optixnote.bash         && optixnote-env $* ; }
 xercesc-(){          . $(externals-dir)/xercesc.bash           && xercesc-env $* ; }
 g4-(){               . $(externals-dir)/g4.bash                && g4-env $* ; }

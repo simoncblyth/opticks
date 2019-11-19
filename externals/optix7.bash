@@ -59,6 +59,19 @@ SIGGRAPH 2019 Videos
 
 * https://developer.nvidia.com/events/recordings/siggraph-2019
 
+* https://www.nvidia.com/en-us/events/siggraph/schedule/
+
+  * links to more talk videos
+
+* http://www.realtimerendering.com/raytracing/roundup.html
+
+
+Resources
+-----------
+
+* https://gitlab.com/ingowald/optix7course
+
+
 Gems
 --------
 
@@ -176,7 +189,6 @@ Multi-GPU Scheduling
 
 
 
-
 GTC Silicon Valley 2019 ID:S9768 : New Features in OptiX 6.0 
 ----------------------------------------------------------------
 
@@ -202,7 +214,123 @@ GTC Silicon Valley 2019 ID:S9768 : New Features in OptiX 6.0
 
 
 
+Build SDK
+--------------
 
+Observations
+
+* glfw, glad and imgui are incorporated
+
+::
+
+    [blyth@localhost OptiX_700]$ mkdir SDK.build
+    [blyth@localhost OptiX_700]$ cd SDK.build
+    [blyth@localhost SDK.build]$ cmake ../SDK
+    ... 
+    -- Could NOT find OpenEXR (missing: OpenEXR_IlmImf_RELEASE OpenEXR_Half_RELEASE OpenEXR_Iex_RELEASE OpenEXR_Imath_RELEASE OpenEXR_IlmThread_RELEASE OpenEXR_INCLUDE_DIR) (found version "")
+    CMake Warning at optixDemandTexture/CMakeLists.txt:62 (message):
+      OpenEXR not found (see OpenEXR_ROOT).  Will use procedural texture in
+      optixDemandTexture.
+
+    -- Found ZLIB: /usr/lib64/libz.so (found version "1.2.7") 
+    -- Found ZlibStatic: /usr/lib64/libz.so (found version "1.2.7") 
+    -- Could NOT find OpenEXR (missing: OpenEXR_IlmImf_RELEASE OpenEXR_Half_RELEASE OpenEXR_Iex_RELEASE OpenEXR_Imath_RELEASE OpenEXR_IlmThread_RELEASE OpenEXR_INCLUDE_DIR) (found version "")
+    CMake Warning at optixDemandTextureAdvanced/CMakeLists.txt:62 (message):
+      OpenEXR not found (see OpenEXR_ROOT).  Will use procedural texture in
+      optixDemandTextureAdvanced.
+
+    -- Found OpenGL: /usr/lib64/libOpenGL.so   
+    -- Could NOT find Vulkan (missing: VULKAN_LIBRARY VULKAN_INCLUDE_DIR) 
+
+
+    [blyth@localhost SDK.build]$ make
+
+    [ 18%] Building C object support/GLFW/src/CMakeFiles/glfw.dir/egl_context.c.o
+    [ 20%] Linking C shared library ../../../lib/libglfw.so
+    [ 20%] Built target glfw
+    Scanning dependencies of target glad
+    [ 21%] Building C object support/CMakeFiles/glad.dir/glad/glad.c.o
+    [ 22%] Linking C shared library ../lib/libglad.so
+    [ 22%] Built target glad
+    Scanning dependencies of target imgui
+    [ 23%] Building CXX object support/imgui/CMakeFiles/imgui.dir/imgui.cpp.o
+    [ 25%] Building CXX object support/imgui/CMakeFiles/imgui.dir/imgui_demo.cpp.o
+    ...
+    [ 31%] Linking CXX static library ../../lib/libimgui.a
+    [ 31%] Built target imgui
+    ...
+
+
+SDK 7 examples
+--------------------
+
+Some examples require to pick the display device only::
+
+   Caught exception: GL interop is only available on display device, please use
+   display device for optimal performance.  Alternatively you can disable GL
+   interop with --no-gl-interop and run with degraded performance.
+
+::
+
+    CUDA_VISIBLE_DEVICES=1 ./optixMeshViewer    ## water bottle
+    CUDA_VISIBLE_DEVICES=1 ./optixWhitted       ## bubble and checker board
+    CUDA_VISIBLE_DEVICES=1 ./optixCutouts       ## Cornell box with cutouts in sphere and cube 
+    CUDA_VISIBLE_DEVICES=1 ./optixSimpleMotionBlur  ## blue and red blurs
+    CUDA_VISIBLE_DEVICES=1 ./optixPathTracer     ## Cornell box
+
+
+    ./optixHello   ## green frame
+    ./optixSphere  ## purple sphere
+    ./optixSphere  ## blue/cyan/magenta triangle
+    ./optixRaycasting      ## writes ppm of duck and translated duck
+    ./optixDemandTexture           ## red black checkered sphere
+    ./optixDemandTextureAdvanced   ## red black checkered sphere
+
+    CUDA_VISIBLE_DEVICES=0 ./optixMultiGPU    ## Cornell box
+    CUDA_VISIBLE_DEVICES=1 ./optixMultiGPU
+    CUDA_VISIBLE_DEVICES=0,1 ./optixMultiGPU
+    ## all work, but 0,1 has funny checker pattern on image 
+
+
+CUcontext : is specific to a thread
+-------------------------------------
+
+* https://stackoverflow.com/questions/7534892/cuda-context-creation-and-resource-association-in-runtime-api-applications
+
+
+optixProgramGroup PG and SBT
+-------------------------------
+
+* PG is just the bare program
+* SBT collects records for each program that hold associated data 
+  and reference to the program
+
+
+github search for optix7
+----------------------------
+
+* https://github.com/search?q=optix7
+* https://github.com/Hurleyworks/Optix7Sandbox
+
+  mesh instancing example (gltf duck) 
+
+* https://github.com/SpringPie/mov_ass3/tree/master/lighthouse2
+
+* https://github.com/jbikker/lighthouse2/blob/master/lib/RenderCore_Optix7Filter/rendercore.cpp
+
+
+CUSTOM_PRIMITIVES for analytic
+------------------------------------
+
+::
+
+    [blyth@localhost SDK]$ find . -type f -exec grep -H CUSTOM_PRIMITIVES {} \;
+    ./optixWhitted/optixWhitted.cpp:    aabb_input.type = OPTIX_BUILD_INPUT_TYPE_CUSTOM_PRIMITIVES;
+    ./optixSphere/optixSphere.cpp:            aabb_input.type                    = OPTIX_BUILD_INPUT_TYPE_CUSTOM_PRIMITIVES;
+    ./optixDemandTextureAdvanced/optixDemandTexture.cpp:    aabb_input.type                    = OPTIX_BUILD_INPUT_TYPE_CUSTOM_PRIMITIVES;
+    ./optixSimpleMotionBlur/optixSimpleMotionBlur.cpp:        sphere_input.type                     = OPTIX_BUILD_INPUT_TYPE_CUSTOM_PRIMITIVES;
+    ./optixCutouts/optixCutouts.cpp:        sphere_input.type                    = OPTIX_BUILD_INPUT_TYPE_CUSTOM_PRIMITIVES;
+    ./optixDemandTexture/optixDemandTexture.cpp:            aabb_input.type                    = OPTIX_BUILD_INPUT_TYPE_CUSTOM_PRIMITIVES;
 
 
 
@@ -210,5 +338,13 @@ GTC Silicon Valley 2019 ID:S9768 : New Features in OptiX 6.0
 
 EOU
 }
+
+
+optix7-pdf(){ open $OPTICKS_INSTALL_PREFIX/externals/OptiX_700/doc/OptiX_Programming_Guide_7.0.0.pdf ; }
+optix7-icd(){ cd $OPTICKS_INSTALL_PREFIX/externals/OptiX_700/include ; }
+optix7-cd(){ cd $OPTICKS_INSTALL_PREFIX/externals/OptiX_700/SDK ; }
+
+
+
 
 
