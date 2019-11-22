@@ -28,8 +28,7 @@
 
 #include <optix.h>
 
-#include "UseOptiX7GeometryModular.h"
-
+#include "Binding.h"
 #include "sutil_vec_math.h"
 
 extern "C" {

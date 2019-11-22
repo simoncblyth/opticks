@@ -39,6 +39,9 @@ list(APPEND CUDA_NVCC_FLAGS "-std=c++11")
 
 set(SOURCES
     ${name}.cc
+    Engine.cc 
+    GAS.cc 
+    PIP.cc 
 )
 
 set(OPTIX_SOURCES
