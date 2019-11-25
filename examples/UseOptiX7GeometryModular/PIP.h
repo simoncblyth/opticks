@@ -31,6 +31,18 @@ struct PIP
     OptixShaderBindingTable sbt = {};
 
 
+    CUdeviceptr  raygen_record;
+    RayGenSbtRecord rg_sbt;
+
+    CUdeviceptr miss_record;
+    MissSbtRecord ms_sbt;
+
+    CUdeviceptr hitgroup_record;
+    HitGroupSbtRecord hg_sbt;
+ 
+
+
+
     PIP(const char* ptx_path_); 
 
     void upload(); 

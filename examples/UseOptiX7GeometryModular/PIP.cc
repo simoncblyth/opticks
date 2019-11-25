@@ -44,8 +44,7 @@ void PIP::init()
     createModule(); 
     createProgramGroups();
     linkPipeline();
-
-
+    createShaderBindingTable(); 
 }
 
 void PIP::createModule()
@@ -157,31 +156,34 @@ void PIP::linkPipeline()
                 ) );
 }
 
-void PIP::setView(const glm::vec3& eye_, const glm::vec3& U_, const glm::vec3& V_, const glm::vec3& W_)
-{
-    eye = eye_ ; 
-    U = U_ ; 
-    V = V_ ; 
-    W = W_ ; 
 
-    createShaderBindingTable(); 
+void PIP::createShaderBindingTable()
+{
+    CUDA_CHECK( cudaMalloc( reinterpret_cast<void**>( &raygen_record ), sizeof(RayGenSbtRecord) ) );
+    OPTIX_CHECK( optixSbtRecordPackHeader( raygen_prog_group, &rg_sbt ) );
+
+    CUDA_CHECK( cudaMalloc( reinterpret_cast<void**>( &miss_record ), sizeof(MissSbtRecord) ) );
+    OPTIX_CHECK( optixSbtRecordPackHeader( miss_prog_group, &ms_sbt ) );
+
+    CUDA_CHECK( cudaMalloc( reinterpret_cast<void**>( &hitgroup_record ), sizeof(HitGroupSbtRecord) ) );
+    OPTIX_CHECK( optixSbtRecordPackHeader( hitgroup_prog_group, &hg_sbt ) );
+
+
+    sbt.raygenRecord                = raygen_record;
+
+    sbt.missRecordBase              = miss_record;
+    sbt.missRecordStrideInBytes     = sizeof( MissSbtRecord );
+    sbt.missRecordCount             = 1;
+
+    sbt.hitgroupRecordBase          = hitgroup_record;
+    sbt.hitgroupRecordStrideInBytes = sizeof( HitGroupSbtRecord );
+    sbt.hitgroupRecordCount         = 1;
 }
 
 
 
-// TODO: work out how to split SBT creation from updating parameters 
-
-void PIP::createShaderBindingTable()
+void PIP::updateShaderBindingTable()
 {
-    CUdeviceptr  raygen_record;
-    RayGenSbtRecord rg_sbt;
-
-    CUdeviceptr miss_record;
-    MissSbtRecord ms_sbt;
-
-    CUdeviceptr hitgroup_record;
-    HitGroupSbtRecord hg_sbt;
- 
     rg_sbt.data = {};
 
     rg_sbt.data.cam_eye.x = eye.x ;
@@ -202,28 +204,9 @@ void PIP::createShaderBindingTable()
 
 
     ms_sbt.data = { 0.3f, 0.1f, 0.2f };
+
     hg_sbt.data = { 1.5f };
 
-
-    CUDA_CHECK( cudaMalloc( reinterpret_cast<void**>( &raygen_record ), sizeof(RayGenSbtRecord) ) );
-    OPTIX_CHECK( optixSbtRecordPackHeader( raygen_prog_group, &rg_sbt ) );
-
-    CUDA_CHECK( cudaMalloc( reinterpret_cast<void**>( &miss_record ), sizeof(MissSbtRecord) ) );
-    OPTIX_CHECK( optixSbtRecordPackHeader( miss_prog_group, &ms_sbt ) );
-
-    CUDA_CHECK( cudaMalloc( reinterpret_cast<void**>( &hitgroup_record ), sizeof(HitGroupSbtRecord) ) );
-    OPTIX_CHECK( optixSbtRecordPackHeader( hitgroup_prog_group, &hg_sbt ) );
-
-
-    sbt.raygenRecord                = raygen_record;
-
-    sbt.missRecordBase              = miss_record;
-    sbt.missRecordStrideInBytes     = sizeof( MissSbtRecord );
-    sbt.missRecordCount             = 1;
-
-    sbt.hitgroupRecordBase          = hitgroup_record;
-    sbt.hitgroupRecordStrideInBytes = sizeof( HitGroupSbtRecord );
-    sbt.hitgroupRecordCount         = 1;
 
     CUDA_CHECK( cudaMemcpy(
                 reinterpret_cast<void*>( raygen_record ),
@@ -246,6 +229,19 @@ void PIP::createShaderBindingTable()
                 cudaMemcpyHostToDevice
                 ) );
 
+
 }
+
+void PIP::setView(const glm::vec3& eye_, const glm::vec3& U_, const glm::vec3& V_, const glm::vec3& W_)
+{
+    eye = eye_ ; 
+    U = U_ ; 
+    V = V_ ; 
+    W = W_ ; 
+
+    updateShaderBindingTable(); 
+}
+
+
 
 
