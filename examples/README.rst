@@ -165,8 +165,6 @@ UseOptiXRap
 
 
 
-
-
 UseOpticksGLFW
    minimal use of OpenGL via GLFW, pops up a window and renders a colorful rotating triangle. 
    Key presses cause the GLFW_KEY_XX enum name to be emitted to stdout. Press ESCAPE to exit.
@@ -222,6 +220,41 @@ UseOpticksGL
 
 UseOpticksGLEW
     Just dumping version numbers from header. CMake machinery test.
+
+
+
+
+
+Standalone-ish OptiX 7 Examples
+-----------------------------------
+
+UseOptiX7
+    Basic check of CMake machinery, finding OptiX 7
+
+UseOptiX7GeometryStandalone
+    Start from the SDK optixSphere example, which uses custom(aka analytic) geometry.
+    Follows the monolithic layout of optixSphere, just adapting to use glm for 
+    viewpoint math.
+
+UseOptiX7GeometryModular
+    Apply wrecking ball to the monolith, splitting into: 
+
+    Engine
+       context, control
+    Binding 
+       common types between CPU and GPU 
+    PIP
+       pipeline of programs creation and updating  
+    GAS
+       geometry acceleration structure building 
+
+UseOptiX7GeometryInstanced
+    Attempting to switch UseOptiX7GeometryModular to use an
+    instanced custom geometry for lots of spheres.
+
+
+
+
 
 
 
