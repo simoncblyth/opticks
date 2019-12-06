@@ -43,6 +43,20 @@ class Index ;
 
 #include "THRAP_API_EXPORT.hh"
 
+/**
+TSparse
+=========
+
+Used for photon history/material sequence indexing, yielding 
+a history/material sequence popularity ranking for every photon. 
+
+These rankings are used from the OpenGL geometry shaders such as
+oglrap/gl/rec/geom.glsl to provide interactive selection in the 
+display of photons records to render.
+
+**/
+
+
 template <typename T>
 class THRAP_API TSparse {
    public:

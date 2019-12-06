@@ -38,15 +38,22 @@
 
 #include "strided_range.h"
 
-// avoid boost as this is compiled by nvcc
+// NB no boost as this is compiled by nvcc
 
-//
-// *dev_tsparse_lookup* 
-//        is a global symbol pointing at device constant memory 
-//        **CAUTION : UNAVOIDABLE NAME COLLISION DANGER**
-//    
-//        http://stackoverflow.com/questions/7961792/device-constant-const/7963395#7963395
-//
+
+/**
+
+*dev_tsparse_lookup* 
+-----------------------
+
+*dev_tsparse_lookup* is a global symbol pointing at device constant memory 
+        
+* **CAUTION : UNAVOIDABLE NAME COLLISION DANGER**
+    
+* http://stackoverflow.com/questions/7961792/device-constant-const/7963395#7963395
+
+**/
+
 
 __constant__ unsigned long long dev_tsparse_lookup[TSPARSE_LOOKUP_N]; 
 
@@ -85,6 +92,23 @@ void TSparse<T>::make_lookup()
     populate_index(m_index_h);
 }
 
+
+/**
+TSparse::count_unique
+----------------------
+
+1. find the number of unique values by sorting and 
+   using thrust::inner_product with self shifted by one to 
+   mark edges between values with ones ready for reduction 
+   to give the total number of unique values
+
+2. find all the unique values together with their frequency counts, 
+   similar to my NumPy based count_unique, using thrust::reduce_by_key 
+ 
+3. sort keys and counts into descending count order using 
+   thrust::sort_by_key 
+
+**/
 
 template <typename T>
 void TSparse<T>::count_unique()
@@ -147,10 +171,30 @@ void TSparse<T>::count_unique()
 }
 
 
+/**
+
+TSparse::update_lookup
+-------------------------
+
+Partial pullback of a small number (32) of the most frequent history codes to the host.
+
+
+Nov 2015 
+~~~~~~~~~
+
+Fixed Issue with *update_lookup* occuring when the number of uniques 
+is less than the defined number of lookup slots, the indexing got messed up. 
+Picking a slot in GUI yielded no selection or the wrong selection.  
+The cause was zeros repesenting empty in the lookup array taking valid 
+indices. Fix was to switch to descending count sort order on device
+to avoid empties messing with the indices. 
+
+**/
+
+
 template <typename T>
 void TSparse<T>::update_lookup()
 {
-    // partial pullback, only need small number (~32) of most popular ones on host 
 
     unsigned int n = TSPARSE_LOOKUP_N ; 
 
@@ -175,15 +219,6 @@ void TSparse<T>::update_lookup()
     cudaMemcpyToSymbol(dev_tsparse_lookup,data,TSPARSE_LOOKUP_N*sizeof(T));
 }
 
-/*
-Nov 2015: 
-   Fixed Issue with *update_lookup* occuring when the number of uniques 
-   is less than the defined number of lookup slots, the indexing got messed up. 
-   Picking a slot in GUI yielded no selection or the wrong selection.  
-   The cause was zeros repesenting empty in the lookup array taking valid 
-   indices. Fix was to switch to descending count sort order on device
-   to avoid empties messing with the indices. 
-*/
 
 template <typename T>
 std::string TSparse<T>::dump_(const char* msg) const 
@@ -211,6 +246,19 @@ void TSparse<T>::dump(const char* msg) const
     std::cout << dump_(msg) ; 
 }
 
+
+/**
+apply_lookup_functor
+----------------------
+
+*dev_tsparse_lookup* 
+    constant CUDA memory holding the sequences for 
+    the 32 most popular histories "top of the pops"  
+
+* the operator find the index 
+
+
+**/
 
 
 template <typename T, typename S>
@@ -240,6 +288,17 @@ struct apply_lookup_functor : public thrust::unary_function<T,S>
         return idx ; 
     } 
 };
+
+
+/**
+TSparse::apply_lookup
+------------------------
+
+Applies the lookup functor transforming the 
+input of history sequence integers (for example)
+into popularity rank indices.
+
+**/
 
 
 template <typename T>
