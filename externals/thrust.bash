@@ -29,6 +29,31 @@ no separate install needed. Any gets done below
 are just for the documentation and source/examples perusal.
 
 
+Guides
+---------
+
+* https://devblogs.nvidia.com/expressive-algorithmic-programming-thrust/
+
+  * mother lode for introducing Thrust 
+
+* https://research.nvidia.com/publication/thrust-productivity-oriented-library-cuda
+
+Thrust aims to solve two types of problems: 
+
+1. problems that can be “implemented efficiently without a detailed mapping to the target architecture”, 
+2. and problems that don’t merit or won’t receive (for whatever reason) 
+   significant optimization attention from the programmer.
+
+
+
+
+* https://on-demand-gtc.gputechconf.com/gtcnew/sessionview.php?sessionName=s102220-thrust+by+example%3A+advanced+features+and+techniques
+
+   Thrust By Example 2010, Jared Hoberock 
+
+
+
+
 Examples
 ---------
 
@@ -70,6 +95,16 @@ Thrust sync
 * http://devblogs.nvidia.com/parallelforall/gpu-pro-tip-cuda-7-streams-simplify-concurrency/
 
 * http://www.techenablement.com/the-cuda-thrust-api-now-supports-streams-and-concurrent-tasks/
+
+
+Thrust vs CUB Async : Robert Crovella
+---------------------------------------
+
+* https://devtalk.nvidia.com/default/topic/1030184/cuda-programming-and-performance/thrust-and-concurrent-execution-on-multi-gpu/
+
+
+
+
 
 
 

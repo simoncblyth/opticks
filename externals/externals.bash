@@ -35,7 +35,6 @@ cuda-(){             . $(externals-dir)/cuda.bash              && cuda-env $* ; 
 cudamac-(){          . $(externals-dir)/cudamac.bash           && cudamac-env $* ; }
 cudalin-(){          . $(externals-dir)/cudalin.bash           && cudalin-env $* ; }
 cu-(){               . $(externals-dir)/cuda.bash              && cuda-env $* ; }
-thrust-(){           . $(externals-dir)/thrust.bash            && thrust-env $* ; }
 optix-(){            . $(externals-dir)/optix.bash             && optix-env $* ; }
 optix7-(){           . $(externals-dir)/optix7.bash            && optix7-env $* ; }
 optix7c-(){          . $(externals-dir)/optix7c.bash           && optix7c-env $* ; }
@@ -53,6 +52,10 @@ oyoctogl-(){         . $(externals-dir)/oyoctogl.bash          && oyoctogl-env $
 ocsgbsp-(){          . $(externals-dir)/ocsgbsp.bash           && ocsgbsp-env $* ; }
 oof-(){              . $(externals-dir)/oof.bash               && oof-env $* ; }
 bcm-(){              . $(externals-dir)/bcm.bash               && bcm-env $* ; }
+
+thrust-(){           . $(externals-dir)/thrust.bash            && thrust-env $* ; }
+cub-(){              . $(externals-dir)/cub.bash               && cub-env $* ; }
+mgpu-(){             . $(externals-dir)/mgpu.bash              && mgpu-env $* ; }
 
 g4dev-(){            . $(externals-dir)/g4dev.bash             && g4dev-env $* ; }
 g4dae-(){            . $(externals-dir)/g4dae.bash             && g4dae-env $* ; }
