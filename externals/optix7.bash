@@ -54,6 +54,18 @@ OptiX 7 : Brand New Lower Level API
 
 
 
+NVIDIA Collective Communications Library (NCCL)
+--------------------------------------------------
+
+* https://developer.nvidia.com/nccl
+* TODO: try this out using CuPy 
+
+DASK
+-----
+
+* https://dask.org/
+
+
 SIGGRAPH 2019 Videos
 ------------------------
 

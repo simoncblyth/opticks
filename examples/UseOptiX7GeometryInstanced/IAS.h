@@ -4,6 +4,24 @@
 #include <vector>
 #include <glm/glm.hpp>
 
+/**
+IAS
+====
+
+TODO: 
+
+* generalize to multiple GAS handles referenced from a single IAS : 
+  perhaps with similar API to lighthouse2, see::
+ 
+     env-;lighthouse2-;lighthouse2-vi 
+
+* aim for maximally flat structure in order  
+  for the traversal to be handled by RT cores  
+
+
+**/
+
+
 struct IAS
 {
     OptixTraversableHandle gas_handle ;   // geometry to be repeated
