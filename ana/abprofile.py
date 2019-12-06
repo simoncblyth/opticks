@@ -16,9 +16,18 @@ from opticks.ana.profile import Profile
 
 
 class ABProfile(object):
-    def __init__(self, pdir):
-        self.ap = Profile(pdir, "ab.pro.ap", g4=False) 
-        self.bp = Profile(pdir, "ab.pro.bp", g4=True ) 
+    def __init__(self, adir, bdir=None):
+
+        if bdir is None:  
+            # assume OK vs G4 mode : ie profiles from a bi-simulation
+            pdir = adir       
+            self.ap = Profile(pdir, "ab.pro.ap", g4=False) 
+            self.bp = Profile(pdir, "ab.pro.bp", g4=True ) 
+        else:
+            # treat arguments as two profile directories, assumed to be OK (not G4)
+            self.ap = Profile(adir, "ab.pro.ap", g4=False) 
+            self.bp = Profile(bdir, "ab.pro.bp", g4=False) 
+        pass 
         valid = self.ap.valid and self.bp.valid 
         if valid:
             boa = self.bp.tim/self.ap.tim if self.ap.tim > 0 else -1  
