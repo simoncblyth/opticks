@@ -143,6 +143,15 @@ G4Opticks::G4Opticks()
 }
 
 
+/**
+G4Opticks::setGeometry
+------------------------
+
+
+
+**/
+
+
 void G4Opticks::setGeometry(const G4VPhysicalVolume* world, bool standardize_geant4_materials)
 {
     LOG(fatal) << "[[[" ; 
@@ -179,6 +188,23 @@ void G4Opticks::setGeometry(const G4VPhysicalVolume* world, bool standardize_gea
 }
 
 
+/**
+G4Opticks::translateGeometry
+------------------------------
+
+1. A keyspec representing the identity of the world G4VPhysicalVolume geometry is formed, 
+   and this is set with BOpticksKey::SetKey prior to Opticks instanciation.
+
+   NB THIS MAKES THE GEOMETRY DEPEND ONLY ON THE WORLD ARGUMENT, 
+   THERE IS NO SENSITIVITY TO THE OPTICKS_KEY ENVVAR 
+
+2. An embedded Opticks instance is instanciated using the embedded commandline 
+
+3. any preexisting geocache is ignored, due to the live=true option to GGeo instanciation
+
+4. X4PhysicalVolume is used to do the direct translation of the Geant4 geometry into the GGeo instance 
+
+**/
 
 GGeo* G4Opticks::translateGeometry( const G4VPhysicalVolume* top )
 {
