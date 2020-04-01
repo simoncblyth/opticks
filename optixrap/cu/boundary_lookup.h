@@ -18,7 +18,21 @@
  */
 
 #pragma once
-// see cu/boundaryLookupTest.cu for usage and testing
+
+/**
+boundary_lookup.h
+-------------------
+
+Convenience functions to reading properties from the boundary texture.
+
+The boundary texture is constructed from material and surface 
+properties collected into ggeo/GBndLib and then converted into 
+a GPU texture by optixrap/OBndLib.
+
+* see cu/boundaryLookupTest.cu for usage and testing
+
+
+**/
 
 #include "GPropertyLib.hh"
 
