@@ -98,3 +98,34 @@ function(echo_pfx_vars pfx vars)
 endfunction()
 
 
+
+function(echo_introspect)
+   get_directory_property(targets BUILDSYSTEM_TARGETS)
+   message("Targets: ${targets}")
+   foreach(tgt ${targets})
+      message("--- tgt:${tgt} ")
+   endforeach()
+endfunction()
+
+function(echo_introspect_target tgt)
+   get_property(ills TARGET ${tgt} PROPERTY INTERFACE_LINK_LIBRARIES)
+   get_property(iids TARGET ${tgt} PROPERTY INTERFACE_INCLUDE_DIRECTORIES) 
+
+   message( " ills : ${ills} ")
+   message( " iids : ${iids} ")
+
+   foreach(ill ${ills})
+       echo_introspect_target(${ill})
+   #   message(" --- ill ${ill} " )
+   #   echo_target_std( ${ill} )
+   endforeach() 
+endfunction()
+
+
+
+
+
+
+
+
+

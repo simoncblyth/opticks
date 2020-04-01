@@ -149,10 +149,15 @@ set( SCRIPTS
 install(PROGRAMS ${SCRIPTS}  DESTINATION py/opticks/sysrap)
 
 
+
+#message(STATUS "[echo_introspect")
+#echo_introspect()
+#echo_introspect_target(${name})
+#message(STATUS "]echo_introspect")
+
+
+
 add_subdirectory(tests)
-
-
-
 
 
 
