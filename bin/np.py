@@ -68,6 +68,7 @@ from collections import OrderedDict as odict
 log = logging.getLogger(__name__)
 
 is_npy_ = lambda _:fnmatch.fnmatch(_,"*.npy")
+is_npj_ = lambda _:fnmatch.fnmatch(_,"*.npj")  # npj is convention for json files containing array metadata
 is_txt_ = lambda _:fnmatch.fnmatch(_,"*.txt")
 is_dir_ = lambda _:os.path.isdir(_)
 

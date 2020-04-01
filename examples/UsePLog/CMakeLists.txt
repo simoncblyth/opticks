@@ -3,6 +3,8 @@ set(name UsePLog)
 project(${name} VERSION 0.1.0)
 include(OpticksBuildOptions)
 
+set(PLog_VERBOSE ON)
+
 find_package(PLog REQUIRED MODULE)
 
 add_executable(${name} ${name}.cc)

@@ -4,7 +4,7 @@ set(PLog_MODULE ${CMAKE_CURRENT_LIST_FILE})
 message(STATUS "PLog_MODULE : ${PLog_MODULE}" )
 
 
-set(PLog_VERBOSE OFF)
+#set(PLog_VERBOSE OFF)
 
 #[=[
 Hmm tis kinda awkward for the externals to be inside the prefix when 

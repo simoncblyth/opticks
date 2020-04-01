@@ -27,11 +27,25 @@ cmdline="$*"
 
 
 o-usage(){ cat << \EOU
+/**
 o.sh
 ======
 
-Gathering the useful parts of op.sh prior to dumping that.
+Executables are selected by corresponding arguments:
 
+--oktest OKTest
+    full Opticks simulation and visualization without Geant4
+
+--okg4test OKG4Test
+    full Opticks and Geant4 imulation and visualization with comparison
+
+--okx4test OKX4Test
+    direct translation of GDML geometry to Opticks geocache
+
+
+* Gathering the useful parts of op.sh prior to dumping that.
+
+**/
 
 EOU
 }

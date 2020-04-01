@@ -20,6 +20,71 @@ to work with that parser follow some rules:
 3. bullet lines to be included in the summary should be in bold
 
 
+
+
+2019 Q4
+---------
+
+* looking ahead : start to make some headway with OptiX7 in standalone examples
+* making the release a reality, ease of usage via single top level script
+
+2019 Q3
+---------
+
+* remove photon limits, photon scanning performance testing with Quadro RTX 8000
+* developing the release and sharedcache approach
+
+2019 Q2
+---------
+
+* aligned validation scanning over 40 solids
+* OptiX 6.0.0 RTX mode, an eventful migration
+* get serious with profiling to investigate memory/time issues
+* TITAN RTX performance bottleneck investigation and resolution : f64 in the PTX 
+* RTX mode showing insane performance with very simple geometry
+
+2019 Q1
+----------
+
+
+
+2019 Dec
+----------
+
+* seminar motivated investigations of CUB and MGPU
+
+
+2019 Nov
+---------
+
+* get down to standalone OptiX7 examples : a different world, GAS, PIP, SBT : using lighthouse2 for high level guidance 
+
+2019 Oct
+----------
+
+* investigate some user geometry issues
+* bin/opticks-site.bash single top level environment script for used of shared opticks
+  release on /cvmfs for example
+* fix flags + colors breakages from the cache rejig for release running 
+* restrict height of tree exports to avoid huge binary tree crashes
+
+
+2019 Sept
+-----------
+
+* license headers
+* glance at OptiX7
+* push out the photon ceiling to 100M for Quadro RTX 8000 tests
+* develop a binary distribution approach okdist-
+* scanning result recording and plotting machinery based on persisted ana/profilesmrytab.py
+* avoid permissions problems for running from release by reorganization of caches
+
+2019 August
+------------
+
+* travel 
+
+
 2019 July
 -----------
 
@@ -39,6 +104,8 @@ to work with that parser follow some rules:
 * investigate utaildebug idea for decoupling maligned from deviant 
 
 * profilesmryplot.py benchplot.py for results plotting  
+
+
 
 
 2019 June

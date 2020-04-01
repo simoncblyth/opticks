@@ -19,26 +19,23 @@
 ##
 
 
+
+
 opticks-
+oc-
 
 sdir=$(pwd)
-name=$(basename $sdir) 
-bdir=/tmp/$USER/opticks/$name/build 
+bdir=/tmp/$USER/opticks/$(basename $sdir)/build 
 
-rm   -rf $bdir
-mkdir -p $bdir 
-cd $bdir 
-pwd 
+rm -rf $bdir && mkdir -p $bdir && cd $bdir && pwd 
 
-cmake $sdir \
-    -DCMAKE_BUILD_TYPE=Debug \
-    -DCMAKE_PREFIX_PATH=$(opticks-prefix)/externals \
-    -DCMAKE_INSTALL_PREFIX=$(opticks-prefix) \
-    -DCMAKE_MODULE_PATH=$(opticks-home)/cmake/Modules \
-    -DOPTICKS_PREFIX=$(opticks-prefix)
+gcc -c $sdir/UseSysRap.cc $(oc-cflags SysRap)
+# -I$(opticks-prefix)/include/SysRap 
 
-make
-make install   
+gcc  UseSysRap.o $sdir/TestUseSysRap.cc -o TestUseSysRap $(oc-libs SysRap)
+# -L$(opticks-prefix)/lib -lSysRap
+
+DYLD_LIBRARY_PATH=$(oc-libdir) $bdir/TestUseSysRap
 
 
 

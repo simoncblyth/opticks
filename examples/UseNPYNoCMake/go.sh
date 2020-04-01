@@ -20,25 +20,26 @@
 
 
 opticks-
+oc-
 
 sdir=$(pwd)
 name=$(basename $sdir) 
 bdir=/tmp/$USER/opticks/$name/build 
 
-rm   -rf $bdir
-mkdir -p $bdir 
-cd $bdir 
-pwd 
+rm   -rf $bdir && mkdir -p $bdir && cd $bdir && pwd 
 
-cmake $sdir \
-    -DCMAKE_BUILD_TYPE=Debug \
-    -DCMAKE_PREFIX_PATH=$(opticks-prefix)/externals \
-    -DCMAKE_INSTALL_PREFIX=$(opticks-prefix) \
-    -DCMAKE_MODULE_PATH=$(opticks-home)/cmake/Modules \
-    -DOPTICKS_PREFIX=$(opticks-prefix)
 
-make
-make install   
+gcc -c $sdir/UseNPY.cc $(oc-cflags NPY)
+gcc UseNPY.o $(oc-libs NPY) -o UseNPY 
 
+case $(uname) in 
+  Darwin) runline="DYLD_LIBRARY_PATH=$(oc-libdir) $bdir/UseNPY" ;;
+   Linux) runline="LD_LIBRARY_PATH=$(oc-libdir) $bdir/UseNPY" ;;
+esac
+
+echo "runline $runline"
+eval $runline
+
+python -c "import numpy as np ; print np.load(\"$TMP/UseNPY.npy\") " 
 
 
