@@ -29,8 +29,13 @@ bdir=/tmp/$USER/opticks/$name/build
 rm   -rf $bdir && mkdir -p $bdir && cd $bdir && pwd 
 
 
-gcc -c $sdir/UseNPY.cc $(oc-cflags NPY)
-gcc UseNPY.o $(oc-libs NPY) -o UseNPY 
+#gcc -c $sdir/UseNPY.cc $(oc-cflags NPY)
+#gcc UseNPY.o $(oc-libs NPY) -o UseNPY 
+
+
+gcc -c $sdir/UseNPY.cc $(oc.py NPY --flags)
+gcc UseNPY.o $(oc.py NPY --libs) -o UseNPY 
+
 
 case $(uname) in 
   Darwin) runline="DYLD_LIBRARY_PATH=$(oc-libdir) $bdir/UseNPY" ;;

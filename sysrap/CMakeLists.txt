@@ -1,5 +1,8 @@
 cmake_minimum_required(VERSION 3.5 FATAL_ERROR)
 set(name SysRap)
+set(desc "System Level Utilities depending")
+set(preq "plog")
+
 project(${name} VERSION 0.1.0)
 include(OpticksBuildOptions)
 
@@ -103,6 +106,11 @@ set(HEADERS
 
 
 add_library( ${name}  SHARED ${SOURCES} ${HEADERS} )
+set_target_properties( ${name} 
+                       PROPERTIES 
+                         INTERFACE_DESCRIPTION ${desc}
+                         INTERFACE_PKG_CONFIG_REQUIRES ${preq}
+                     )
 
 target_link_libraries( ${name} PUBLIC Opticks::PLog Opticks::OKConf )
 if(UNIX AND NOT APPLE)
@@ -147,14 +155,6 @@ set( SCRIPTS
     OpticksCSG.py
 )
 install(PROGRAMS ${SCRIPTS}  DESTINATION py/opticks/sysrap)
-
-
-
-#message(STATUS "[echo_introspect")
-#echo_introspect()
-#echo_introspect_target(${name})
-#message(STATUS "]echo_introspect")
-
 
 
 add_subdirectory(tests)

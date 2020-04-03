@@ -1,6 +1,12 @@
 oc-source(){ echo $BASH_SOURCE ; }
 oc-vi(){ vi $(oc-source) ; }
 oc-env(){  olocal- ; opticks- ; }
+
+oc-pkg-config(){ PKG_CONFIG_PATH=$(opticks-prefix)/lib/pkgconfig:$(opticks-prefix)/externals/lib/pkgconfig pkg-config $* ; }
+
+
+
+
 oc-usage(){ cat << EOU
 
 OC : Opticks Config Hardcoded Minimal Approach 
@@ -28,6 +34,9 @@ oc-deps-()
         SysRap) echo PLog ;;   
       BoostRap) echo SysRap CPP ;; 
            NPY) echo BoostRap GLM ;; 
+    YoctoGLRap) echo NPY ;; 
+   OpticksCore) echo NPY ;; 
+          GGeo) echo OpticksCore YoctoGLRap ;; 
    esac
 }
 
@@ -38,6 +47,9 @@ SysRap
 BoostRap
 NPY
 GLM
+YoctoGLRap
+OpticksCore
+GGeo
 EOP
 }
 
@@ -52,6 +64,7 @@ oc-libs-()
         SysRap) printf "%s " -l$pkg ;;   
       BoostRap) printf "%s " -l$pkg ;; 
            NPY) printf "%s " -l$pkg ;; 
+          GGeo) printf "%s " -l$pkg ;; 
    esac
 }
 
@@ -71,6 +84,7 @@ oc-cflags-()
         SysRap) printf "%s " -I$(oc-incdir)/$pkg ;;   
       BoostRap) printf "%s " -I$(oc-incdir)/$pkg ;; 
            NPY) printf "%s " -I$(oc-incdir)/$pkg ;; 
+          GGeo) printf "%s " -I$(oc-incdir)/$pkg ;; 
    esac
 }
 
@@ -84,12 +98,24 @@ oc-deps()
    : all deps determined recursively 
 
    local pkg=$1 
-   oc-deps- $pkg | while read dep ; do
-      printf "%s " "$dep"
-      printf "%s " "$(oc-deps $dep)"
+   local ddeps=$(oc-deps- $pkg)  # recurse over each of the direct dependencies
+
+   for ddep in $ddeps ; do
+      echo $ddep
+      local deps=$(oc-deps $ddep)
+      for dep in $deps ; do 
+          echo $dep 
+      done  
    done
-   printf "\n" 
 }
+
+
+oc-udeps(){ 
+   local deps=$(oc-deps $*) 
+   echo $deps | tr " " "\n" | sort | uniq
+}
+
+
 
 oc-libs()
 {
@@ -126,4 +152,15 @@ oc-dump()
    oc-pkgs | while read pkg ; do 
       printf "%10s %50s %50s \n" $pkg "$(oc-libs- $pkg)" "$(oc-cflags- $pkg)"  
    done
+
+   oc-pkgs | while read pkg ; do 
+      printf "%10s %50s %50s \n" $pkg "$(oc-libs $pkg)" "$(oc-cflags $pkg)"  
+   done
+
+
+
+
+
+
+
 }

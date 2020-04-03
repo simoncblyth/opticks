@@ -110,6 +110,8 @@ plog-env(){      opticks- ;  }
 plog-dir(){  echo $(opticks-prefix)/externals/plog ; }
 plog-idir(){ echo $(opticks-prefix)/externals/plog/include/plog ; }
 plog-ifold(){ echo $(opticks-prefix)/externals/plog/include ; }
+plog-pc-path(){ echo $(opticks-prefix)/externals/lib/pkgconfig/plog.pc ; }
+
 plog-c(){    cd $(plog-dir); }
 plog-cd(){   cd $(plog-dir); }
 plog-icd(){  cd $(plog-idir); }
@@ -145,7 +147,48 @@ plog-get(){
 plog--()
 {
    plog-get
+   plog-pc
 }
+
+
+plog-pc-(){ cat << EOP
+
+includedir=$(plog-dir)/include
+
+Name: plog
+Description: Logging 
+Version: 0.1.0
+
+Cflags:  -I\${includedir}
+Requires: 
+
+EOP
+}
+
+
+plog-pc(){ 
+   local msg="=== $FUNCNAME :"
+   local path=$(plog-pc-path)
+   local dir=$(dirname $path)
+
+   [ ! -d "$dir" ] && echo $msg creating dir $dir && mkdir -p $dir 
+
+   plog-pc- > $path 
+}
+
+plog-pc-info(){ cat << EOI
+
+   plog-pc-path : $(plog-pc-path)
+
+EOI
+
+   cat $(plog-pc-path)
+
+
+}
+
+
+
 
 
 

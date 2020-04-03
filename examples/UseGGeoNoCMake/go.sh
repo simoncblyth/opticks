@@ -20,6 +20,7 @@
 
 
 opticks-
+oc-
 
 sdir=$(pwd)
 name=$(basename $sdir) 
@@ -27,21 +28,21 @@ bdir=/tmp/$USER/opticks/$name/build
 
 rm   -rf $bdir && mkdir -p $bdir && cd $bdir && pwd 
 
-cmake $sdir \
-    -DCMAKE_BUILD_TYPE=Debug \
-    -DCMAKE_PREFIX_PATH=$(opticks-prefix)/externals \
-    -DCMAKE_INSTALL_PREFIX=$(opticks-prefix) \
-    -DCMAKE_MODULE_PATH=$(opticks-home)/cmake/Modules \
-    -DOPTICKS_PREFIX=$(opticks-prefix) 
+
+#echo gcc -c $sdir/UseGGeo.cc $(oc-cflags GGeo) 
+#     gcc -c $sdir/UseGGeo.cc $(oc-cflags GGeo) 
+#
+#echo gcc UseGGeo.o $(oc-libs GGeo) -o UseGGeo
+#     gcc UseGGeo.o $(oc-libs GGeo) -o UseGGeo
+#
+#LD_LIBRARY_PATH=$(oc-libdir) ./UseGGeo
 
 
-make
-make install   
 
-exe=$(opticks-prefix)/lib/${name}Test
+gcc -c $sdir/UseGGeo.cc $(oc.py GGeo --flags) 
+gcc UseGGeo.o $(oc.py GGeo --libs) -o UseGGeo
+LD_LIBRARY_PATH=$(oc.py --libdir) ./UseGGeo
 
-echo "running exe $exe"
-eval $exe
 
 
 

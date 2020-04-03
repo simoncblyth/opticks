@@ -29,13 +29,16 @@ bdir=/tmp/$USER/opticks/$(basename $sdir)/build
 
 rm -rf $bdir && mkdir -p $bdir && cd $bdir && pwd 
 
-gcc -c $sdir/UseBoostRap.cc $(oc-cflags BoostRap)
-
-gcc  UseBoostRap.o -o UseBoostRap $(oc-libs BoostRap)
-# -L$(opticks-prefix)/lib -lBoostRap -lSysRap -lstdc++
-
 idpath=/usr/local/opticks/opticksdata/export/DayaBay_VGDX_20140414-1300/g4_00.96ff965744a2f6b78c24e33c80d3a4cd.dae
 
-IDPATH=$idpath DYLD_LIBRARY_PATH=$(opticks-prefix)/lib $bdir/UseBoostRap
+# bash
+#gcc -c $sdir/UseBoostRap.cc $(oc-cflags BoostRap)
+#gcc  UseBoostRap.o -o UseBoostRap $(oc-libs BoostRap)
+#IDPATH=$idpath DYLD_LIBRARY_PATH=$(opticks-prefix)/lib $bdir/UseBoostRap
+
+# py 
+gcc -c $sdir/UseBoostRap.cc $(oc.py BoostRap --flags)
+gcc  UseBoostRap.o -o UseBoostRap $(oc.py BoostRap --libs)
+IDPATH=$idpath DYLD_LIBRARY_PATH=$(oc.py --libpath) $bdir/UseBoostRap
 
 

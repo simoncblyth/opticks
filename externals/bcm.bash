@@ -29,6 +29,20 @@ dependencies. It provides modules to reduce the boilerplate for installing,
 versioning, setting up package config, and creating tests.
 
 
+Caution where you edit, BCM gets installed::
+
+    epsilon:cmake blyth$ cd /usr/local/opticks
+    epsilon:opticks blyth$ find . -name BCMDeploy.cmake
+    ./externals/bcm/bcm/share/bcm/cmake/BCMDeploy.cmake
+    ./externals/share/bcm/cmake/BCMDeploy.cmake
+
+
+To change source edit in the git repo ./externals/bcm/bcm/ 
+and install that with bcm--
+
+
+
+
 Initially looked at:
 
 * https://github.com/boost-cmake/bcm
@@ -351,4 +365,70 @@ Looks to be tied to boost tests ?
 EOR
 }
 
+bcm-pc-review(){ cat << EOR
 
+bcm-pc-review
+================
+
+bcm_deploy does::
+
+   bcm_auto_pkgconfig(TARGET ${PARSE_TARGETS})
+
+::
+
+     75 function(bcm_preprocess_pkgconfig_property VAR TARGET PROP)
+     76     get_target_property(OUT_PROP ${TARGET} ${PROP})
+     77     string(REPLACE "$<BUILD_INTERFACE:" "$<0:" OUT_PROP "${OUT_PROP}")
+     78     string(REPLACE "$<INSTALL_INTERFACE:" "$<1:" OUT_PROP "${OUT_PROP}")
+
+     ## scrubbing build interface, just passing on the install interface ?
+
+     79 
+     80     string(REPLACE "$<INSTALL_PREFIX>/${CMAKE_INSTALL_INCLUDEDIR}" "\${includedir}" OUT_PROP "${OUT_PROP}")
+     81     string(REPLACE "$<INSTALL_PREFIX>/${CMAKE_INSTALL_LIBDIR}" "\${libdir}" OUT_PROP "${OUT_PROP}")
+     82     string(REPLACE "$<INSTALL_PREFIX>" "\${prefix}" OUT_PROP "${OUT_PROP}")
+     83 
+     84     set(${VAR} ${OUT_PROP} PARENT_SCOPE)
+     85 
+     86 endfunction()
+
+
+* https://cmake.org/cmake/help/v3.0/manual/cmake-generator-expressions.7.html
+
+* https://cmake.org/cmake/help/latest/command/target_include_directories.html
+
+Include directories usage requirements commonly differ between the build-tree
+and the install-tree. The BUILD_INTERFACE and INSTALL_INTERFACE generator
+expressions can be used to describe separate usage requirements based on the
+usage location. Relative paths are allowed within the INSTALL_INTERFACE
+expression and are interpreted relative to the installation prefix. For
+example:
+
+::
+
+    target_include_directories(mylib PUBLIC
+      $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/mylib>
+      $<INSTALL_INTERFACE:include/mylib>  # <prefix>/include/mylib
+    )
+
+
+Need to set INTERFACE_PKG_CONFIG_NAME on imported targets::
+
+     32 if(PLog_FOUND AND NOT TARGET ${_tgt})
+     33 
+     34     add_library(${_tgt} INTERFACE IMPORTED)
+     35     set_target_properties(${_tgt} PROPERTIES
+     36         INTERFACE_INCLUDE_DIRECTORIES "${PLog_INCLUDE_DIR}"
+     37         INTERFACE_PKG_CONFIG_NAME "plog"
+     38     )
+     39     list(APPEND PLog_targets "PLog")
+     40     
+     41 endif()
+
+
+
+
+
+
+EOR
+} 

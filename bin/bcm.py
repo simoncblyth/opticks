@@ -11,8 +11,8 @@ can be integrated with anything, for example CMT. For this
 need an opticks-config script that can provide for each target and external 
 its libs and cflags.  
 
-Thoughts
-----------
+1st Thoughts : parse CMake BCM tea-leaves
+-------------------------------------------
 
 Original approach of parsing BCM tealeaves is reinventing the CMake wheel.
 Instead use CMake introspection, similarly to what BCM does (initially in 
@@ -26,8 +26,8 @@ CMake has all the information, so it is crazy not to directly use that
 to extract the needed info into an easily consumable form. 
 
 
-Further Thoughts
--------------------
+2nd Thoughts : oc.bash oc.py
+-------------------------------
 
 Dependencies and config information does not change very quickly 
 and they are not that complicated so the automation reflex is misplaced.
@@ -37,8 +37,14 @@ Instead pursue a manual approach in ~/opticks/oc.bash which is
 being tested in ~/opticks/examples/UseXXXNoCMake examples such 
 as UseNPYNoCMake.
 
-Possible generating pkg-config .pc files from CMake 
-might be valid compromise.
+
+3rd Thoughts : pkg-config
+---------------------------
+
+Many pkg-config .pc files are already being generated from CMake/BCM, 
+just need to shake those down. 
+
+Investigation notes in env/pkg-config-
 
 
 What about RPATH ?
