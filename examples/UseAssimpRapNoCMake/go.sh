@@ -20,6 +20,7 @@
 
 
 opticks-
+oc-
 
 sdir=$(pwd)
 name=$(basename $sdir) 
@@ -27,14 +28,13 @@ bdir=/tmp/$USER/opticks/$name/build
 
 rm   -rf $bdir && mkdir -p $bdir && cd $bdir && pwd 
 
+pkg=AssimpRap
 
-gcc -c $sdir/UseAssimpRap.cc $(oc.py AssimpRap --flags)
-gcc UseAssimpRap.o -o UseAssimpRapTest $(oc.py AssimpRap --libs) 
+gcc -c $sdir/Use$pkg.cc $(oc-cflags $pkg)
+gcc Use$pkg.o -o Use${pkg}Test $(oc-libs $pkg) 
+LD_LIBRARY_PATH=$(oc-libpath) ./Use${pkg}Test
 
 
-
-echo "running exe $exe"
-eval $exe
 
 
 

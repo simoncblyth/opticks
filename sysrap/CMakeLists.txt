@@ -1,7 +1,10 @@
 cmake_minimum_required(VERSION 3.5 FATAL_ERROR)
 set(name SysRap)
 set(desc "System Level Utilities depending")
-set(preq "plog")
+
+#set(preq "plog")
+#  this is not needed if have set INTERFACE_PKG_CONFIG_NAME on the imported targets, see cmake/Modules/FindPLog.cmake
+
 
 project(${name} VERSION 0.1.0)
 include(OpticksBuildOptions)
@@ -106,11 +109,15 @@ set(HEADERS
 
 
 add_library( ${name}  SHARED ${SOURCES} ${HEADERS} )
-set_target_properties( ${name} 
-                       PROPERTIES 
-                         INTERFACE_DESCRIPTION ${desc}
-                         INTERFACE_PKG_CONFIG_REQUIRES ${preq}
-                     )
+#set_target_properties( ${name} 
+#                       PROPERTIES 
+#                         INTERFACE_DESCRIPTION ${desc}
+#                         INTERFACE_PKG_CONFIG_REQUIRES ${preq}
+#                     )
+
+set_property( TARGET ${name} PROPERTY INTERFACE_DESCRIPTION ${desc} )
+#set_property( TARGET ${name} PROPERTY INTERFACE_PKG_CONFIG_REQUIRES ${preq} ) 
+
 
 target_link_libraries( ${name} PUBLIC Opticks::PLog Opticks::OKConf )
 if(UNIX AND NOT APPLE)

@@ -38,6 +38,7 @@ if(GLM_FOUND AND NOT TARGET ${_tgt})
     add_library(${_tgt} INTERFACE IMPORTED)
     set_target_properties(${_tgt} PROPERTIES
         INTERFACE_INCLUDE_DIRECTORIES "${GLM_INCLUDE_DIR}"
+        INTERFACE_PKG_CONFIG_NAME "glm"
     )
 
     set(GLM_targets "GLM")

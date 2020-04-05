@@ -47,6 +47,7 @@ if(OpticksAssimp_FOUND AND NOT TARGET Opticks::OpticksAssimp)
         IMPORTED_LOCATION "${OpticksAssimp_LIBRARY}"
         INTERFACE_IMPORTED_LOCATION "${OpticksAssimp_LIBRARY}"
         INTERFACE_INCLUDE_DIRECTORIES "${OpticksAssimp_INCLUDE_DIR}"
+        INTERFACE_PKG_CONFIG_NAME "assimp"
     )
 
     set(OpticksAssimp_targets OpticksAssimp)

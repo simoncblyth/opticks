@@ -29,21 +29,11 @@ bdir=/tmp/$USER/opticks/$name/build
 rm   -rf $bdir && mkdir -p $bdir && cd $bdir && pwd 
 
 
-#gcc -c $sdir/UseNPY.cc $(oc-cflags NPY)
-#gcc UseNPY.o $(oc-libs NPY) -o UseNPY 
+pkg=NPY
 
-
-gcc -c $sdir/UseNPY.cc $(oc.py NPY --flags)
-gcc UseNPY.o $(oc.py NPY --libs) -o UseNPY 
-
-
-case $(uname) in 
-  Darwin) runline="DYLD_LIBRARY_PATH=$(oc-libdir) $bdir/UseNPY" ;;
-   Linux) runline="LD_LIBRARY_PATH=$(oc-libdir) $bdir/UseNPY" ;;
-esac
-
-echo "runline $runline"
-eval $runline
+gcc -c $sdir/Use$pkg.cc $(oc-cflags $pkg) 
+gcc Use$pkg.o $(oc-libs $pkg) -o Use$pkg
+LD_LIBRARY_PATH=$(oc-libpath $pkg) ./Use$pkg
 
 python -c "import numpy as np ; print np.load(\"$TMP/UseNPY.npy\") " 
 

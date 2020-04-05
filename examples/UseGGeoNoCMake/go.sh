@@ -29,20 +29,10 @@ bdir=/tmp/$USER/opticks/$name/build
 rm   -rf $bdir && mkdir -p $bdir && cd $bdir && pwd 
 
 
-#echo gcc -c $sdir/UseGGeo.cc $(oc-cflags GGeo) 
-#     gcc -c $sdir/UseGGeo.cc $(oc-cflags GGeo) 
-#
-#echo gcc UseGGeo.o $(oc-libs GGeo) -o UseGGeo
-#     gcc UseGGeo.o $(oc-libs GGeo) -o UseGGeo
-#
-#LD_LIBRARY_PATH=$(oc-libdir) ./UseGGeo
+pkg=GGeo
 
-
-
-gcc -c $sdir/UseGGeo.cc $(oc.py GGeo --flags) 
-gcc UseGGeo.o $(oc.py GGeo --libs) -o UseGGeo
-LD_LIBRARY_PATH=$(oc.py --libdir) ./UseGGeo
-
-
+gcc -c $sdir/Use$pkg.cc $(oc-cflags $pkg) 
+gcc Use$pkg.o $(oc-libs $pkg) -o Use$pkg
+LD_LIBRARY_PATH=$(oc-libpath $pkg) ./Use$pkg
 
 

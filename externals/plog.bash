@@ -151,15 +151,29 @@ plog--()
 }
 
 
+
+plog-pc-scratch-(){ cat << EOS
+#prefix=\${pcfiledir}/../../..
+#includedir=\${prefix}/externals/plog/include
+
+
+EOS
+}
+
 plog-pc-(){ cat << EOP
 
-includedir=$(plog-dir)/include
+# use --define-prefix to set as the grandparent of the pkgconfig 
+# when using xlib trick that is the canonical /usr/local/opticks prefix
+
+prefix=
+includedir=\${prefix}/externals/plog/include
 
 Name: plog
 Description: Logging 
 Version: 0.1.0
 
 Cflags:  -I\${includedir}
+Libs: -lstdc++
 Requires: 
 
 EOP

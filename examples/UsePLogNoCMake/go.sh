@@ -22,16 +22,21 @@
 opticks-
 oc-
 
-
 sdir=$(pwd)
-bdir=/tmp/$USER/opticks/$(basename $sdir)/build 
-rm -rf $bdir && mkdir -p $bdir && cd $bdir && pwd 
+name=$(basename $sdir) 
+bdir=/tmp/$USER/opticks/$name/build 
 
-idpath=/usr/local/opticks/opticksdata/export/DayaBay_VGDX_20140414-1300/g4_00.96ff965744a2f6b78c24e33c80d3a4cd.dae
-pkg=BoostRap
+rm   -rf $bdir
+mkdir -p $bdir 
+cd $bdir 
+pwd 
 
-gcc -c $sdir/Use$pkg.cc $(oc-cflags $pkg)
-gcc  Use$pkg.o -o Use$pkg $(oc-libs $pkg)
-IDPATH=$idpath LD_LIBRARY_PATH=$(oc-libpath $pkg) ./Use$pkg
+
+pkg=PLog
+
+gcc -c $sdir/Use$pkg.cc $(oc-cflags $pkg) 
+gcc Use$pkg.o $(oc-libs $pkg) -o Use$pkg
+LD_LIBRARY_PATH=$(oc-libpath $pkg) ./Use$pkg
+
 
 

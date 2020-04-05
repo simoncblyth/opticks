@@ -1,166 +1,104 @@
 oc-source(){ echo $BASH_SOURCE ; }
 oc-vi(){ vi $(oc-source) ; }
 oc-env(){  olocal- ; opticks- ; }
-
-oc-pkg-config(){ PKG_CONFIG_PATH=$(opticks-prefix)/lib/pkgconfig:$(opticks-prefix)/externals/lib/pkgconfig pkg-config $* ; }
-
-
-
-
 oc-usage(){ cat << EOU
 
-OC : Opticks Config Hardcoded Minimal Approach 
+OC : Opticks Config Based on pkg-config
 ===========================================================
 
 * NB this aspires to becoming a standalone opticks-config script, 
   so keep use of other scripts to a minimum
-  
+
+
+TODO 
+-----
+
+Avoid manual edits of::
+
+   externals/lib/pkgconfig/assimp.pc
+
+
+
+Externals require addition of INTERFACE_PKG_CONFIG_NAME in cmake/modules/FindName.cmake 
+-------------------------------------------------------------------------------------------
+
+* name corresponding to pkg-config pc file eg glm.pc, assimp.pc 
+
+::
+
+     39     set_target_properties(${_tgt} PROPERTIES
+     40         INTERFACE_INCLUDE_DIRECTORIES "${GLM_INCLUDE_DIR}"
+     41         INTERFACE_PKG_CONFIG_NAME "glm"
+     42     )
+
+* after adding that, need to rebuild packages that use what was found 
+
+
+
     
 EOU
 } 
 
-oc-prefix(){ echo $(opticks-prefix) ; }
-oc-libdir(){ echo $(opticks-prefix)/lib ; }
-oc-incdir(){ echo $(opticks-prefix)/include ; }
-oc-extdir(){ echo $(opticks-prefix)/externals ; }
 
-oc-deps-()
-{
-   : direct deps only 
-   local pkg=$1 
-   case $pkg in
-          PLog) echo ;; 
-           GLM) echo ;; 
-        SysRap) echo PLog ;;   
-      BoostRap) echo SysRap CPP ;; 
-           NPY) echo BoostRap GLM ;; 
-    YoctoGLRap) echo NPY ;; 
-   OpticksCore) echo NPY ;; 
-          GGeo) echo OpticksCore YoctoGLRap ;; 
-   esac
+#oc-pkg-config(){ PKG_CONFIG_PATH=$(opticks-prefix)/lib/pkgconfig:$(opticks-prefix)/externals/lib/pkgconfig pkg-config $* ; }
+oc-pkg-config(){ PKG_CONFIG_PATH=$(opticks-prefix)/lib/pkgconfig:$(opticks-prefix)/xlib/pkgconfig pkg-config $* ; }
+oc-libpath(){ echo $(opticks-prefix)/lib:$(opticks-prefix)/externals/lib ; }
+
+
+# "public" interface
+oc-cflags(){ oc-pkg-config $1 --cflags --define-prefix ; }
+oc-libs(){   oc-pkg-config $1 --libs   --define-prefix ; }
+oc-dump(){   oc-pkg-config-dump $1 ; }
+
+
+
+oc-pkg-config-find(){
+   local pkg=${1:-NPY}
+   local lpkg=$(echo $pkg | tr [A-Z] [a-z])
+
+   local ipc=$(opticks-prefix)/lib/pkgconfig/${lpkg}.pc
+   local xpc=$(opticks-prefix)/xlib/pkgconfig/${lpkg}.pc
+
+   if [ -f "$ipc" ]; then
+      echo $ipc
+   elif [ -f "$xpc" ]; then
+      echo $xpc
+   else
+      echo $FUNCNAME failed for pkg $pkg ipc $ipc xpc $xpc
+   fi 
 }
 
-oc-pkgs(){ cat << EOP
-CPP
-PLog
-SysRap
-BoostRap
-NPY
-GLM
-YoctoGLRap
-OpticksCore
-GGeo
-EOP
-}
-
-oc-libs-()
-{
-   : direct linker line of each package 
-   local pkg=$1 
-   case $pkg in
-           CPP) printf "%s" -lstdc++ ;;    
-      PLog|GLM) printf "" ;;
-
-        SysRap) printf "%s " -l$pkg ;;   
-      BoostRap) printf "%s " -l$pkg ;; 
-           NPY) printf "%s " -l$pkg ;; 
-          GGeo) printf "%s " -l$pkg ;; 
-   esac
-}
-
-oc-cflags-()
-{
-   : direct cflags of each package 
-
-   local pkg=$1 
-   local msg="=== $FUNCNAME :"
-
-   [ -n "$DEBUG" ] && echo $msg pkg $pkg 
-
-   case $pkg in
-          PLog) printf "%s " -I$(oc-extdir)/plog/include ;;
-           GLM) printf "%s " -I$(oc-extdir)/glm/glm ;;  
-
-        SysRap) printf "%s " -I$(oc-incdir)/$pkg ;;   
-      BoostRap) printf "%s " -I$(oc-incdir)/$pkg ;; 
-           NPY) printf "%s " -I$(oc-incdir)/$pkg ;; 
-          GGeo) printf "%s " -I$(oc-incdir)/$pkg ;; 
-   esac
-}
-
-
-
-
-
-
-oc-deps()
-{
-   : all deps determined recursively 
-
-   local pkg=$1 
-   local ddeps=$(oc-deps- $pkg)  # recurse over each of the direct dependencies
-
-   for ddep in $ddeps ; do
-      echo $ddep
-      local deps=$(oc-deps $ddep)
-      for dep in $deps ; do 
-          echo $dep 
-      done  
+oc-pkg-config-dump(){
+   local pkg=${1:-NPY}
+   local opt
+   $FUNCNAME-opts- | while read opt ; do 
+       cmd="oc-pkg-config $pkg $opt"  
+       printf "\n\n# %s\n\n"  "$cmd"
+       $cmd | tr " " "\n"
    done
 }
 
+oc-pkg-config-dump-opts-(){ cat << EOC
+--print-requires --define-prefix
+--cflags 
+--cflags --define-prefix
+--libs 
+--libs --define-prefix
+--cflags-only-I --define-prefix
+EOC
+}
 
-oc-udeps(){ 
-   local deps=$(oc-deps $*) 
-   echo $deps | tr " " "\n" | sort | uniq
+oc-pkg-config-check-dirs(){
+   local pkg=${1:-NPY}
+   local line 
+   local dir
+   local exists 
+   oc-pkg-config $pkg --cflags-only-I --define-prefix | tr " " "\n" | while read line ; do 
+     dir=${line:2} 
+     [ -d "$dir" ] && exists="Y" || exists="N"  
+     printf " %s : %s \n" $exists $dir 
+   done 
 }
 
 
 
-oc-libs()
-{
-   : only oc-deps is recursive this just converts the flat list of deps into libs
-
-   local pkg=$1
-   local deps=$(oc-deps $pkg)
-
-   printf "%s " -L$(oc-libdir) 
-   printf "%s " "$(oc-libs- $pkg)"
-
-   for dep in $deps ; do
-      printf "%s " "$(oc-libs- $dep)"
-   done
-   printf "\n" 
-}
-
-oc-cflags()
-{
-   : only oc-deps is recursive this just converts the flat list of deps into cflags
-
-   local pkg=$1
-   local deps=$(oc-deps $pkg)
-
-   printf "%s " "$(oc-cflags- $pkg)"
-   for dep in $deps ; do
-      printf "%s " "$(oc-cflags- $dep)"
-   done
-   printf "\n" 
-}
-
-oc-dump()
-{
-   oc-pkgs | while read pkg ; do 
-      printf "%10s %50s %50s \n" $pkg "$(oc-libs- $pkg)" "$(oc-cflags- $pkg)"  
-   done
-
-   oc-pkgs | while read pkg ; do 
-      printf "%10s %50s %50s \n" $pkg "$(oc-libs $pkg)" "$(oc-cflags $pkg)"  
-   done
-
-
-
-
-
-
-
-}

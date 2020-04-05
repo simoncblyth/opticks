@@ -163,8 +163,14 @@ EOU
 }
 glm-env(){     opticks- ;  }
 glm-dir(){  echo $(opticks-prefix)/externals/glm/$(glm-name) ; }
+glm-dir2(){  echo $(opticks-prefix)/externals/glm/glm ; }
 glm-idir(){  echo $(glm-dir)/glm ; }
 glm-sdir(){  echo $(opticks-home)/graphics/glm ; }
+
+
+glm-pc-path(){ echo $(opticks-prefix)/externals/lib/pkgconfig/glm.pc ; }
+
+
 glm-tdir(){ echo $(glm-dir)/_test ; }
 glm-cd(){   cd $(glm-dir); }
 glm-tcd(){  cd $(glm-tdir); }
@@ -367,5 +373,39 @@ glm-nvcc(){
 
    cd $iwd
 }
+
+
+glm-pc-(){ cat << EOP
+
+# use --define-prefix to set prefix to the grandparent of the pcfiledir, eg /usr/local/opticks/externals 
+# hmm when using the xlib trick to make the two pkgconfig dirs at the same level, need the externals 
+prefix=
+includedir=\${prefix}/externals/glm/glm
+
+Name: GLM
+Description: Mathematics 
+Version: 0.1.0
+
+Cflags:  -I\${includedir}
+Libs: -lstdc++
+Requires: 
+
+EOP
+}
+
+
+glm-pc(){ 
+   local msg="=== $FUNCNAME :"
+   local path=$(glm-pc-path)
+   local dir=$(dirname $path)
+
+   [ ! -d "$dir" ] && echo $msg creating dir $dir && mkdir -p $dir 
+
+   glm-pc- > $path 
+}
+
+
+
+
 
 

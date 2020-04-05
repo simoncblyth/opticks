@@ -30,26 +30,11 @@ bdir=/tmp/$USER/opticks/$(basename $sdir)/build
 rm -rf $bdir && mkdir -p $bdir && cd $bdir && pwd 
 
 
-# manual 
-#gcc -c $sdir/UseSysRap.cc -I$(opticks-prefix)/include/SysRap 
-#gcc  UseSysRap.o $sdir/TestUseSysRap.cc -o TestUseSysRap -L$(opticks-prefix)/lib -lSysRap
+pkg=SysRap
 
-
-
-# bash
-#gcc -c $sdir/UseSysRap.cc $(oc-cflags SysRap)
-#gcc  UseSysRap.o $sdir/TestUseSysRap.cc -o TestUseSysRap $(oc-libs SysRap)
-#DYLD_LIBRARY_PATH=$(oc-libdir) $bdir/TestUseSysRap
-
-# py : generated strings like $(opticks-prefix) do not interpolated, so have done that in the python emitting absolutes here
-echo gcc -c $sdir/UseSysRap.cc $(oc.py SysRap --flags)  
-     gcc -c $sdir/UseSysRap.cc $(oc.py SysRap --flags)
-
-echo gcc  UseSysRap.o $sdir/TestUseSysRap.cc -o TestUseSysRap $(oc.py SysRap --libs)
-     gcc  UseSysRap.o $sdir/TestUseSysRap.cc -o TestUseSysRap $(oc.py SysRap --libs)
-
-echo DYLD_LIBRARY_PATH=$(oc.py --libdir) $bdir/TestUseSysRap
-     DYLD_LIBRARY_PATH=$(oc.py --libdir) $bdir/TestUseSysRap
+gcc -c $sdir/Use$pkg.cc $(oc-cflags $pkg)
+gcc  Use$pkg.o $sdir/TestUse$pkg.cc -o TestUse$pkg $(oc-libs $pkg)
+LD_LIBRARY_PATH=$(oc-libpath $pkg) ./TestUse$pkg
 
 
 
