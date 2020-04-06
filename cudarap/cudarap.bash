@@ -562,11 +562,26 @@ EON
 }
 
 
+
+cudarap-prepare-sizes-Linux-(){ cat << EOS
+1
+3
+10
+EOS
+}
+cudarap-prepare-sizes-Darwin-(){ cat << EOS
+1
+3
+EOS
+}
+cudarap-prepare-sizes(){ $FUNCNAME-$(uname)- ; }
+
 cudarap-prepare-installation()
 {
-   CUDARAP_RNGMAX_M=1  cudarap-prepare-rng-
-   CUDARAP_RNGMAX_M=3  cudarap-prepare-rng-
-   CUDARAP_RNGMAX_M=10 cudarap-prepare-rng-
+   local size
+   cudarap-prepare-sizes | while read size ; do    
+      CUDARAP_RNGMAX_M=$size  cudarap-prepare-rng-
+   done 
 }
 
 cudarap-prepare-rng-()
@@ -604,24 +619,26 @@ cudarap-check-installation()
    cudarap-check-rngdir-
    rc=$? ; [ $rc -ne 0 ] && return $rc 
 
-   CUDARAP_RNGMAX_M=1  cudarap-check-rngpath- 
-   rc=$? ; [ $rc -ne 0 ] && return $rc 
+   local size 
+   cudarap-prepare-sizes | while read size ; do    
+       CUDARAP_RNGMAX_M=$size  cudarap-check-rngpath- 
+       rc=$? ; [ $rc -ne 0 ] && return $rc 
+   done 
 
-   CUDARAP_RNGMAX_M=3  cudarap-check-rngpath-
-   rc=$? ; [ $rc -ne 0 ] && return $rc 
+   return $rc
+}
 
-   CUDARAP_RNGMAX_M=10 cudarap-check-rngpath-
-   rc=$? ; [ $rc -ne 0 ] && return $rc 
-
+cudarap-check-installation-extra()
+{
+   local msg="=== $FUNCNAME :"
    local rcx=0
    CUDARAP_RNGMAX_M=100 cudarap-check-rngpath-
    rcx=$?  
    if [ $rcx -ne 0 ]; then 
-       echo $msg to operate with more than 10M photons you need to run : cudarap-prepare-rng-100M 
+       echo $msg to operate with up to 100M photons you need to run : cudarap-prepare-rng-100M 
    fi 
-
-   return $rc
 }
+
 
 
 cudarap-check-rngdir-()

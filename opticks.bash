@@ -838,8 +838,10 @@ opticks-prepare-installation()
     echo $msg generating RNG seeds into installcache 
 
     cudarap-
-    cudarap-prepare-rng
-    cudarap-check-rng
+    #cudarap-prepare-rng
+    #cudarap-check-rng
+
+    cudarap-prepare-installation
 }
 
 opticks-check-installation()
