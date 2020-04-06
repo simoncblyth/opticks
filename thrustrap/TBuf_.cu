@@ -429,12 +429,15 @@ template unsigned int TBuf::reduce<unsigned int>(unsigned long long, unsigned lo
 
 template void TBuf::download<double>(NPY<double>*, bool) const ;
 template void TBuf::download<float>(NPY<float>*, bool) const ;
+template void TBuf::download<unsigned>(NPY<unsigned>*, bool) const ;
 template void TBuf::download<unsigned char>(NPY<unsigned char>*, bool) const ;
+template void TBuf::download<unsigned long long>(NPY<unsigned long long>*, bool) const ;
 
 template void TBuf::upload<double>(NPY<double>*) const ;
 template void TBuf::upload<float>(NPY<float>*) const ;
 template void TBuf::upload<unsigned>(NPY<unsigned>*) const ;
 template void TBuf::upload<unsigned char>(NPY<unsigned char>*) const ;
+template void TBuf::upload<unsigned long long>(NPY<unsigned long long>*) const ;
 
 template void TBuf::fill<unsigned>(unsigned value) const ;
 template void TBuf::fill<unsigned char>(unsigned char value) const ;

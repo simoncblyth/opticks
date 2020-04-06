@@ -190,8 +190,10 @@ struct Devices
 #if OPTIX_VERSION_MAJOR >= 6
             RT_CHECK_ERROR(rtDeviceGetAttribute(i, RT_DEVICE_ATTRIBUTE_PCI_BUS_ID, sizeof(busid), busid));
             RT_CHECK_ERROR(rtDeviceGetAttribute(i, RT_DEVICE_ATTRIBUTE_COMPATIBLE_DEVICES, sizeof(compat), &compat));
+#else
+            busid[0] = '\0' ;
+            compat[0] = 0 ; 
 #endif
-
 
             ordinals.push_back(ordinal);
 

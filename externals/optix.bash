@@ -777,5 +777,44 @@ $FUNCNAME
 EOI
 }
 
+optix-pc-path(){ echo $(opticks-prefix)/externals/lib/pkgconfig/optix.pc ; }
+optix-pc-(){ 
+
+  local prefix=$(opticks-prefix)
+  local includedir=${prefix}/externals/OptiX/include
+  local libdir=${prefix}/externals/OptiX/lib64
+
+  cat << EOP
+
+
+libdir=$libdir
+
+## $FUNCNAME
+## NB no variables, as this prevents --define-prefix from having any effect 
+## as there is no pc prefix variable. This is appropriate with OptiX and CUDA 
+## as these are "system install", ie not something that is distributed OR relocatable.   
+##
+
+Name: OptiX
+Description: Ray Tracing Engine
+Version:  $(optix-version)
+Libs: -L\${libdir} -loptix -loptixu -lstdc++
+Cflags: -I${includedir}
+
+EOP
+
+}
+optix-pc(){
+   local msg="=== $FUNCNAME :"
+   local path=$(optix-pc-path)
+   local dir=$(dirname $path)
+   [ ! -d "$dir" ] && echo $msg creating dir $dir && mkdir -p $dir 
+   optix-pc- > $path 
+}
+
+
+
+
+
 
 

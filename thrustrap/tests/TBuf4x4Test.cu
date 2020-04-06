@@ -277,7 +277,15 @@ void test_copy4x4_encapsulated()
 
     assert( cpho.dev_ptr != NULL );
     assert( cpho.size == num_photons );
-    assert( cpho.num_bytes == num_photons*sizeof(float4x4) ); 
+
+    LOG(info) 
+       << " num_photons " << num_photons
+       << " sizeof(float4x4) " << sizeof(float4x4)
+       << " num_photons*sizeof(float4x4) " << num_photons*sizeof(float4x4)
+       << " cpho.num_bytes " << cpho.num_bytes
+       ;
+
+    assert( cpho.num_bytes == num_photons*sizeof(float4x4) );  // <-- flakey fails, see  notes/issues/longer-thrap-tests-flakey-on-macOS.rst 
 
     TBuf tpho("tpho", cpho);
     tpho.upload(pho);

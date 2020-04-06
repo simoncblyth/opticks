@@ -243,6 +243,7 @@ if(OptiX_FOUND)
    set_target_properties(Opticks::OptiX PROPERTIES
         INTERFACE_INCLUDE_DIRECTORIES "${OptiX_INCLUDE}"
         INTERFACE_LINK_LIBRARIES "optix;optixu;optix_prime"
+        INTERFACE_PKG_CONFIG_NAME "optix"
    )
 
    list(APPEND OptiX_targets OptiX)

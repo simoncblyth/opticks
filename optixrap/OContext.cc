@@ -414,6 +414,7 @@ void OContext::init()
         ; 
 
 
+#if OPTIX_VERSION_MAJOR >= 6
     int maxCallableProgramDepth = m_ok->getMaxCallableProgramDepth();
     if(maxCallableProgramDepth > 0)
     {
@@ -423,8 +424,9 @@ void OContext::init()
 
         LOG(error) << " --maxCallableProgramDepth changed from " << _maxCallableProgramDepth << " to " << maxCallableProgramDepth ;  
     }
+#endif
 
-
+#if OPTIX_VERSION_MAJOR >= 6
     int maxTraceDepth = m_ok->getMaxTraceDepth();
     if(maxTraceDepth > 0)
     {
@@ -434,6 +436,7 @@ void OContext::init()
 
         LOG(error) << " --maxTraceDepth changed from " << _maxTraceDepth << " to " << maxTraceDepth ;  
     }
+#endif
 
     int usageReportLevel = m_ok->getUsageReportLevel();
     if(usageReportLevel > 0)

@@ -133,7 +133,7 @@ void test_f4()
 
 
 
-void test_dump()
+void test_dump0()
 {
 
     const char* pfx = NULL ;  
@@ -144,6 +144,7 @@ void test_dump()
         printf("can't load data\n");
         return  ;
     }
+
 
     thrust::device_vector<unsigned long long> d_ph(ph->begin(), ph->end());
 
@@ -159,6 +160,58 @@ void test_dump()
 
 
 
+void test_dump()
+{
+    LOG(info) << "(" ;
+    NPY<unsigned long long>* ph = NPY<unsigned long long>::make(100);
+    ph->zero(); 
+
+    thrust::device_vector<unsigned long long> d_ph(ph->begin(), ph->end());
+
+    CBufSpec cph = make_bufspec<unsigned long long>(d_ph); 
+
+    TBuf tph("tph", cph);
+
+    tph.dump<unsigned long long>("tph dump", 2, 0, 10 ); 
+
+    LOG(info) << ")" ;
+}
+
+
+void test_download()
+{
+    LOG(info) << "(" ;
+    NPY<unsigned long long>* ph = NPY<unsigned long long>::make(100);
+    ph->zero(); 
+
+    unsigned long long one = 1ull ; 
+    ph->fill(one); 
+
+    thrust::device_vector<unsigned long long> d_ph(ph->begin(), ph->end());
+
+    CBufSpec cph = make_bufspec<unsigned long long>(d_ph); 
+
+    TBuf tph("tph", cph);
+
+    tph.dump<unsigned long long>("tph dump", 2, 0, 10 ); 
+
+    bool verbose = true ; 
+
+    tph.download( ph, verbose ); 
+
+
+    LOG(info) << ")" ;
+}
+
+
+
+
+
+
+
+
+
+
 
 int main(int argc, char** argv)
 {
@@ -166,7 +219,7 @@ int main(int argc, char** argv)
 
     LOG(info) << argv[0] ;
 
-
+/*
     test_foreach();
     test_cbufspec();
 
@@ -179,6 +232,8 @@ int main(int argc, char** argv)
 
     test_f4();
     test_dump(); 
+*/
+    test_download(); 
 
 
     cudaDeviceSynchronize();  

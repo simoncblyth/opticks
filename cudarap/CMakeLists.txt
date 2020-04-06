@@ -65,6 +65,10 @@ endif()
 
 
 CUDA_ADD_LIBRARY( ${name} ${SOURCES} )
+
+get_target_property(ILL ${name} INTERFACE_LINK_LIBRARIES)
+message(STATUS "${name} INTERFACE_LINK_LIBRARIES:${ILL} " )
+
 #set_target_properties(${name}  PROPERTIES INTERFACE_LINK_LIBRARIES "" ) # kludge clear
 target_link_libraries( ${name} ${LIBRARIES})
 target_compile_definitions( ${name} PUBLIC OPTICKS_CUDARAP )

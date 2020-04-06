@@ -94,30 +94,54 @@ location of the /usr/local/opticks/libs/pkgconfig/optickscuda.pc
     epsilon:UseCUDARapNoCMake blyth$ oc-pkg-config optickscuda --cflags --define-prefix
     -I/usr/local/opticks/include
 
-Solution is to not use the variables (prefix etc..) 
-for packages that are not going to be part of the distribution.  
+Solution is to exclude the prefix variable in pc files
+of packages that are not going to be part of the distribution.  
 This prevents --define-prefix from having any effect.
-  
-
-
-
 
     
 EOU
 } 
 
 
-#oc-pkg-config(){ PKG_CONFIG_PATH=$(opticks-prefix)/lib/pkgconfig:$(opticks-prefix)/externals/lib/pkgconfig pkg-config $* ; }
-oc-pkg-config(){ PKG_CONFIG_PATH=$(opticks-prefix)/lib/pkgconfig:$(opticks-prefix)/xlib/pkgconfig pkg-config $* ; }
-oc-libpath(){ echo $(opticks-prefix)/lib:$(opticks-prefix)/externals/lib ; }
+oc-libdir0-default(){ cat << EOD
+$(opticks-prefix)/lib
+$(opticks-prefix)/externals/lib 
+EOD
+}
+
+oc-libdir0-(){ oc-pkg-config $* --variable=libdir --define-prefix ; } ## hmm relies on pc variable libdir
+oc-libdir0(){ 
+   if [ $# == 0 ]; then 
+      oc-libdir0-default
+   else
+      oc-libdir0-  $* | tr " " "\n" | sort | uniq  
+   fi 
+}
+
+oc-libdir-(){ oc-pkg-config $* --libs-only-L --define-prefix | tr -- "-L" " " ; }
+oc-libdir(){  oc-libdir- $* | tr " " "\n" | sort | uniq ; }
+
+oc-libpath(){ local dirs=$(oc-libdir $*) ; echo $dirs | tr " " ":" ; }
 
 
 # "public" interface
-oc-cflags(){ oc-pkg-config $1 --cflags --define-prefix ; }
-oc-libs(){   oc-pkg-config $1 --libs   --define-prefix ; }
-oc-dump(){   oc-pkg-config-dump $1 ; }
+oc-cflags(){ oc-pkg-config $* --cflags --define-prefix ; }
+oc-libs(){   oc-pkg-config $* --libs   --define-prefix ; }
+oc-libsl(){  oc-pkg-config $* --libs-only-L --define-prefix ; }
 
 
+oc-deps(){   oc-pkg-config $* --print-requires  ; }
+oc-dump(){   oc-pkg-config-dump $* ; }
+oc-check(){  oc-pkg-config-check-dirs $* ; }
+oc-find(){   oc-pkg-config-find $* ; }
+oc-cat(){    
+   local pc=$(oc-find $*) 
+   [ -n "$pc" -a -f "$pc" ] && cat $pc
+}
+
+# "private" interface
+#oc-pkg-config(){ PKG_CONFIG_PATH=$(opticks-prefix)/lib/pkgconfig:$(opticks-prefix)/externals/lib/pkgconfig pkg-config $* ; }
+oc-pkg-config(){ PKG_CONFIG_PATH=$(opticks-prefix)/lib/pkgconfig:$(opticks-prefix)/xlib/pkgconfig pkg-config $* ; }
 
 oc-pkg-config-find(){
    local pkg=${1:-NPY}
@@ -131,7 +155,7 @@ oc-pkg-config-find(){
    elif [ -f "$xpc" ]; then
       echo $xpc
    else
-      echo $FUNCNAME failed for pkg $pkg ipc $ipc xpc $xpc
+      echo $FUNCNAME failed for pkg $pkg ipc $ipc xpc $xpc 1>&2
    fi 
 }
 
@@ -166,6 +190,4 @@ oc-pkg-config-check-dirs(){
      printf " %s : %s \n" $exists $dir 
    done 
 }
-
-
 
