@@ -3,6 +3,9 @@ set(name UseOpenMesh)
 project(${name})
 include(OpticksBuildOptions)
 
+
+set(OpenMesh_VERBOSE ON)
+
 find_package(OpenMesh REQUIRED MODULE)   
 
 message(STATUS "OpenMesh_DIR : ${OpenMesh_DIR} ")

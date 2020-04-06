@@ -18,11 +18,20 @@ Avoid manual edits of::
    externals/lib/pkgconfig/assimp.pc
 
 
+Requirements for pkg-config hookup
+-------------------------------------
 
-Externals require addition of INTERFACE_PKG_CONFIG_NAME in cmake/modules/FindName.cmake 
--------------------------------------------------------------------------------------------
+1. all packages (internal and external) need a .pc file to be 
+   installed into lib/pkgconfig or externals/lib/pkgconfig : often 
+   the simplest way to do that is via the bash functions that install
+   the package 
+  
 
-* name corresponding to pkg-config pc file eg glm.pc, assimp.pc 
+2. CMake machinery needs to be informed for externals by addition 
+   of the INTERFACE_PKG_CONFIG_NAME property to found targets, this 
+   is most conveniently done in cmake/modules/FindName.cmake 
+
+   The name corresponding to pkg-config pc file eg glm.pc, assimp.pc 
 
 ::
 
@@ -31,7 +40,65 @@ Externals require addition of INTERFACE_PKG_CONFIG_NAME in cmake/modules/FindNam
      41         INTERFACE_PKG_CONFIG_NAME "glm"
      42     )
 
-* after adding that, need to rebuild packages that use what was found 
+
+   Despite pkg-config being usable without CMake the Opticks 
+   build remains CMake based and most of the .pc files are generated
+   by the BCMPkgConfig CMake machinery. It is because of this that 
+   the CMake build needs to the INTERFACE_PKG_CONFIG_NAME for 
+   inclusion into the generated pc files.
+
+   After adding that property, need to rebuild and install 
+   packages that use the dependency in order to re-generate the pc files.
+
+
+Typical Usage
+----------------
+
+::
+
+    opticks-
+    oc-
+
+    pkg=OpenMeshRap
+
+    gcc -c $sdir/Use$pkg.cc $(oc-cflags $pkg)
+    gcc Use$pkg.o -o Use$pkg $(oc-libs $pkg) 
+    LD_LIBRARY_PATH=$(oc-libpath $pkg) ./Use$pkg
+
+
+
+FIXED : define-prefix is scrubbing the CUDA include dir ?
+-----------------------------------------------------------
+
+define-prefix assumes the prefix can be obtained from the 
+location of the /usr/local/opticks/libs/pkgconfig/optickscuda.pc 
+
+/usr/local/opticks/externals/lib/pkgconfig/optickscuda.pc
+/usr/local/opticks/xlib/pkgconfig/optickscuda.pc::
+
+    prefix=/usr/local/cuda
+    includedir=${prefix}/include
+    libdir=${prefix}/lib
+
+    Name: CUDA
+    Description: 
+    Version: 9.1 
+    Libs: -L${libdir} -lcudart -lcurand
+    Cflags: -I${includedir}
+
+::
+
+    epsilon:UseCUDARapNoCMake blyth$ oc-pkg-config optickscuda --cflags
+    -I/usr/local/cuda/include
+
+    epsilon:UseCUDARapNoCMake blyth$ oc-pkg-config optickscuda --cflags --define-prefix
+    -I/usr/local/opticks/include
+
+Solution is to not use the variables (prefix etc..) 
+for packages that are not going to be part of the distribution.  
+This prevents --define-prefix from having any effect.
+  
+
 
 
 

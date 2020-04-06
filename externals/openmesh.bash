@@ -21,6 +21,8 @@
 openmesh-src(){      echo externals/openmesh.bash ; }
 openmesh-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(openmesh-src)} ; }
 openmesh-vi(){       vi $(openmesh-source) ; }
+
+
 openmesh-usage(){ cat << EOU
 
 OpenMesh
@@ -1116,6 +1118,7 @@ openmesh-base(){ echo $(opticks-prefix)/externals/openmesh ; }
 
 openmesh-prefix(){ echo $(opticks-prefix)/externals ; }
 openmesh-idir(){ echo $(openmesh-prefix) ; }
+openmesh-pc-path(){ echo $(opticks-prefix)/externals/lib/pkgconfig/openmesh.pc ; }
 
 openmesh-dir(){  echo $(openmesh-base)/$(openmesh-name) ; }
 openmesh-bdir(){ echo $(openmesh-base)/$(openmesh-name).build ; }
@@ -1190,10 +1193,38 @@ openmesh--(){
   openmesh-get 
   openmesh-cmake
   openmesh-make install
+  openmesh-pc
 }
 
 
 openmesh-libs(){
   ls -l $(openmesh-prefix)/lib/libOpenMesh*
 }
+
+openmesh-pc-(){ cat << EOP
+
+prefix=/usr/local/opticks
+exec_prefix=\${prefix}/lib
+libdir=\${prefix}/externals/lib
+includedir=\${prefix}/externals/include
+
+Name: OpenMesh
+Description: Mesh Traversal and Manipulations
+Version: $(openmesh-vers)
+Libs: -L\${libdir} -lOpenMeshTools -lOpenMeshCore -lstdc++
+Cflags: -I\${includedir}
+
+EOP
+}
+
+openmesh-pc(){ 
+   local msg="=== $FUNCNAME :"
+   local path=$(openmesh-pc-path)
+   local dir=$(dirname $path)
+
+   [ ! -d "$dir" ] && echo $msg creating dir $dir && mkdir -p $dir 
+
+   openmesh-pc- > $path 
+}
+
 

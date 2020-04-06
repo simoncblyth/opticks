@@ -21,7 +21,6 @@
 //
 
 #include "UseCUDA.h"
-#include <cuda_runtime_api.h>
 
 #include <cstdio>
 #include <cstring>
@@ -29,22 +28,6 @@
 // Print device properties
 void printDevProp(cudaDeviceProp devProp)
 {
-
-
-#ifndef CUDART_VERSION
-#error CUDART_VERSION Undefined!
-#elif (CUDART_VERSION >= 10000)
-    printf(" CUDART_VERSION >= 10000 : %d \n", CUDART_VERSION ); 
-#elif (CUDART_VERSION >= 9000)
-    printf(" CUDART_VERSION >= 9000 : %d \n", CUDART_VERSION ); 
-#elif (CUDART_VERSION >= 8000)
-    printf(" CUDART_VERSION >= 8000 : %d \n", CUDART_VERSION ); 
-#elif (CUDART_VERSION >= 7050)
-    printf(" CUDART_VERSION >= 7050 : %d \n", CUDART_VERSION ); 
-#else
-#error Unknown CUDART_VERSION!
-#endif
-
     printf("Major revision number:         %d\n",  devProp.major);
     printf("Minor revision number:         %d\n",  devProp.minor);
     printf("Name:                          %s\n",  devProp.name);

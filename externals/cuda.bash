@@ -1283,3 +1283,40 @@ cuda-samples-bin-smokeParticles(){ cuda-samples-bin-run smokeParticles $* ; }
 cuda-samples-bin-fluidsGL(){       cuda-samples-bin-run fluidsGL $* ; }
 
 cuda-deviceQuery(){ cuda-samples-bin-run deviceQuery $* ; } 
+
+cuda-pc-path(){ echo $(opticks-prefix)/externals/lib/pkgconfig/optickscuda.pc ; }
+cuda-pc-(){ 
+  local prefix=/usr/local/cuda
+  local includedir=${prefix}/include
+  local libdir=${prefix}/lib
+
+  cat << EOP
+
+## $FUNCNAME
+## NB no variables, as this prevents --define-prefix from having any effect 
+## as there is no prefix variable. This is appropriate with CUDA as it is 
+## a system install, not something that is distributed OR relocatable.   
+
+Name: CUDA
+Description: 
+Version: 9.1 
+Libs: -L${libdir} -lcudart -lcurand
+Cflags: -I${includedir}
+
+EOP
+}
+
+
+cuda-pc(){
+
+   local msg="=== $FUNCNAME :"
+   local path=$(cuda-pc-path)
+   local dir=$(dirname $path)
+
+   [ ! -d "$dir" ] && echo $msg creating dir $dir && mkdir -p $dir 
+
+   cuda-pc- > $path 
+}
+
+
+

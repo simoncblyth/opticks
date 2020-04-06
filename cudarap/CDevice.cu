@@ -5,6 +5,9 @@
 #include <cstdlib>
 #include <fstream>
 
+#include <cuda_runtime_api.h>
+
+
 #include "CDevice.hh"
 #include "LaunchCommon.hh"   // mkdirp
 #include "PLOG.hh"
@@ -56,11 +59,16 @@ void CDevice::Collect(std::vector<CDevice>& devices, bool ordinal_from_index)
 
         CDevice d ;   
 
-        assert( sizeof(p.name) == sizeof(name) ) ;  
+        assert( sizeof(p.name) == sizeof(char)*256 ) ;  
         strncpy( d.name, p.name, sizeof(p.name) ); 
 
+#ifndef CUDART_VERSION
+#error CUDART_VERSION Undefined!
+#elif (CUDART_VERSION >= 10000)
         assert( sizeof(p.uuid) == sizeof(uuid) ); 
         strncpy( d.uuid, p.uuid.bytes, sizeof(p.uuid) ); 
+#elif (CUDART_VERSION >= 9000)
+#endif
 
         d.index = i ; 
         d.ordinal = ordinal_from_index ? i : -1 ;    
@@ -78,15 +86,15 @@ void CDevice::Collect(std::vector<CDevice>& devices, bool ordinal_from_index)
 int CDevice::Size() 
 {
     return 
-        sizeof(ordinal) + 
-        sizeof(index) + 
-        sizeof(name) + 
-        sizeof(uuid) + 
-        sizeof(major) + 
-        sizeof(minor) + 
-        sizeof(compute_capability) + 
-        sizeof(multiProcessorCount) + 
-        sizeof(totalGlobalMem) ;  
+        sizeof(int) +   // ordinal
+        sizeof(int) +   // index
+        sizeof(char)*256 +  // name 
+        sizeof(char)*16 +     // uuid
+        sizeof(int) +     // major 
+        sizeof(int) +     // minor 
+        sizeof(int) +   // compute_capability
+        sizeof(int) +   // multiProcessorCount 
+        sizeof(size_t) ;   // totalGlobalMem
 }
 void CDevice::write( std::ostream& out ) const
 {

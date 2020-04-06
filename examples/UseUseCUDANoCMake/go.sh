@@ -20,18 +20,17 @@
 
 
 opticks-
+oc-
 
 sdir=$(pwd)
 bdir=/tmp/$USER/opticks/$(basename $sdir)/build 
 
 rm -rf $bdir && mkdir -p $bdir && cd $bdir && pwd 
- 
-cmake $sdir -DCMAKE_BUILD_TYPE=Debug \
-            -DCMAKE_PREFIX_PATH=$(opticks-prefix)/externals \
-            -DCMAKE_INSTALL_PREFIX=$(opticks-prefix) \
-            -DCMAKE_MODULE_PATH=$(opticks-home)/cmake/Modules \
-            -DOPTICKS_PREFIX=$(opticks-prefix)
 
-make
-make install   
+
+nvcc -c $sdir/UseCUDA.cu
+nvcc UseCUDA.o $sdir/UseUseCUDA.cc -o UseUseCUDA
+
+./UseUseCUDA
+ 
 
