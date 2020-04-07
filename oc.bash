@@ -25,6 +25,25 @@ The reason for this is because are using pkg-config with --define-prefix
 in order to work in a relocatable way for distributions.
 
 
+pkg-config versions
+---------------------
+
+* https://www.freedesktop.org/wiki/Software/pkg-config/
+* https://pkg-config.freedesktop.org/releases/
+
+
+::
+
+    [blyth@localhost UseSysRapNoCMake]$ pkg-config --version  ## from pkgconfig-0.27.1-4.el7.i686 
+    0.27.1
+    ## arghh : from 2012 : 0.27.1 doesnt have --define-prefix
+
+    epsilon:cfg4 blyth$ pkg-config --version
+    0.29.2
+
+
+
+
 Requirements for pkg-config hookup
 -------------------------------------
 
@@ -153,18 +172,21 @@ oc-libdir0(){
    fi 
 }
 
-oc-libdir-(){ oc-pkg-config $* --libs-only-L --define-prefix | tr -- "-L" " " ; }
+#oc-extra(){ echo --define-prefix ; }
+oc-extra(){ echo ; }
+
+oc-libdir-(){ oc-pkg-config $* --libs-only-L $(oc-extra) | tr -- "-L" " " ; }
 oc-libdir(){  oc-libdir- $* | tr " " "\n" | sort | uniq ; }
 
 oc-libpath(){ local dirs=$(oc-libdir $*) ; echo $dirs | tr " " ":" ; }
 
-oc-cflags-(){ oc-pkg-config $* --cflags --define-prefix ; }
+oc-cflags-(){ oc-pkg-config $* --cflags $(oc-extra) ; }
 
 # "public" interface
 oc-cflags(){ echo $(oc-cflags- $*) -std=c++11 ; }
 
-oc-libs(){   oc-pkg-config $* --libs   --define-prefix ; }
-oc-libsl(){  oc-pkg-config $* --libs-only-L --define-prefix ; }
+oc-libs(){   oc-pkg-config $* --libs   $(oc-extra) ; }
+oc-libsl(){  oc-pkg-config $* --libs-only-L $(oc-extra) ; }
 oc-deps(){   oc-pkg-config $* --print-requires  ; }
 
 oc-dump(){   oc-pkg-config-dump $* ; }
@@ -175,9 +197,23 @@ oc-cat(){
    [ -n "$pc" -a -f "$pc" ] && cat $pc
 }
 
+oc-setup()
+{
+   local iwd=$pwd
+   cd $(opticks-prefix)
+   [ ! -x xlib ] && ln -s externals/lib xlib 
+   cd $iwd 
+
+   plog-
+   plog-pc
+}
+
+
+
 # "private" interface
 oc-pkg-config-path--(){ cat << EOP
 $(opticks-prefix)/lib/pkgconfig
+$(opticks-prefix)/lib64/pkgconfig
 $(opticks-prefix)/xlib/pkgconfig
 /opt/local/lib/pkgconfig
 EOP

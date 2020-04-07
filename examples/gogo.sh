@@ -19,7 +19,9 @@
 ##
 
 
-gogo-find(){ find . -name go.sh ; }
+#gogo-find(){ find . -name go.sh ; }
+gogo-find(){ ls -1 *NoCMake/go.sh ; }
+
 gogo-all(){
     local go
     gogo-find | while read go ; do 
