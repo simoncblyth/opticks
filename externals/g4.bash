@@ -785,3 +785,48 @@ g4-find-(){ find $(g4-dir) $* ; }
 g4-find-gdml(){ g4-find- -name '*.gdml' ; } 
 
 
+g4-pc-path(){ echo $(opticks-prefix)/externals/lib/pkgconfig/g4.pc ; }
+
+g4-libs--(){ cat << EOL
+G4Tree;G4FR;G4GMocren;G4visHepRep;G4RayTracer;G4VRML;G4vis_management;G4modeling;G4interfaces;G4persistency;G4analysis;G4error_propagation;G4readout;G4physicslists;G4run;G4event;G4tracking;G4parmodels;G4processes;G4digits_hits;G4track;G4particles;G4geometry;G4materials;G4graphics_reps;G4intercoms;G4global;G4clhep;G4zlib
+EOL
+}
+
+
+g4-libs-(){ g4-libs-- | tr ";" "\n" ; }
+g4-libs(){
+ g4-libs- | while read lib ; do
+    printf "%s " "-l$lib" 
+ done   
+}
+
+
+
+g4-pc-(){ cat << EOP
+
+prefix=$(opticks-prefix)
+includedir=\${prefix}/externals/include/Geant4
+libdir=\${prefix}/externals/lib
+
+Name: Geant4
+Description: 
+Version: 
+Libs: -L\${libdir} $(g4-libs) -lstdc++
+Cflags: -I\${includedir}
+
+
+EOP
+}
+g4-pc(){
+    local msg="=== $FUNCNAME :";
+    local path=$(g4-pc-path);
+    local dir=$(dirname $path);
+    [ ! -d "$dir" ] && echo $msg creating dir $dir && mkdir -p $dir;
+    g4-pc- > $path
+}
+
+
+
+
+
+

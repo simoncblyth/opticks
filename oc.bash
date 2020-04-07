@@ -158,9 +158,11 @@ oc-libdir(){  oc-libdir- $* | tr " " "\n" | sort | uniq ; }
 
 oc-libpath(){ local dirs=$(oc-libdir $*) ; echo $dirs | tr " " ":" ; }
 
+oc-cflags-(){ oc-pkg-config $* --cflags --define-prefix ; }
 
 # "public" interface
-oc-cflags(){ oc-pkg-config $* --cflags --define-prefix ; }
+oc-cflags(){ echo $(oc-cflags- $*) -std=c++11 ; }
+
 oc-libs(){   oc-pkg-config $* --libs   --define-prefix ; }
 oc-libsl(){  oc-pkg-config $* --libs-only-L --define-prefix ; }
 oc-deps(){   oc-pkg-config $* --print-requires  ; }
