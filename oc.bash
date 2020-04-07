@@ -15,7 +15,14 @@ TODO
 
 Avoid manual edits of::
 
-   externals/lib/pkgconfig/assimp.pc
+   /usr/local/opticks/externals/lib/pkgconfig/assimp.pc
+   /usr/local/opticks/externals/lib/pkgconfig/glfw3.pc
+   /usr/local/opticks/externals/lib/pkgconfig/glew.pc
+
+The edits move the "externals" from the prefix into the libdir and includedir.
+
+The reason for this is because are using pkg-config with --define-prefix 
+in order to work in a relocatable way for distributions.
 
 
 Requirements for pkg-config hookup
@@ -66,14 +73,14 @@ Typical Usage
     LD_LIBRARY_PATH=$(oc-libpath $pkg) ./Use$pkg
 
 
-
 FIXED : define-prefix is scrubbing the CUDA include dir ?
 -----------------------------------------------------------
 
-define-prefix assumes the prefix can be obtained from the 
-location of the /usr/local/opticks/libs/pkgconfig/optickscuda.pc 
+define-prefix assumes the prefix can be obtained from the grandparent
+dir of the /usr/local/opticks/xlib/pkgconfig/optickscuda.pc 
+which yeilds /usr/local/opticks. This replaces the prefix variable 
+if there is one defined in the pc file.
 
-/usr/local/opticks/externals/lib/pkgconfig/optickscuda.pc
 /usr/local/opticks/xlib/pkgconfig/optickscuda.pc::
 
     prefix=/usr/local/cuda
@@ -86,7 +93,7 @@ location of the /usr/local/opticks/libs/pkgconfig/optickscuda.pc
     Libs: -L${libdir} -lcudart -lcurand
     Cflags: -I${includedir}
 
-::
+The result is the wrong prefix.::
 
     epsilon:UseCUDARapNoCMake blyth$ oc-pkg-config optickscuda --cflags
     -I/usr/local/cuda/include
@@ -94,10 +101,9 @@ location of the /usr/local/opticks/libs/pkgconfig/optickscuda.pc
     epsilon:UseCUDARapNoCMake blyth$ oc-pkg-config optickscuda --cflags --define-prefix
     -I/usr/local/opticks/include
 
-Solution is to exclude the prefix variable in pc files
+One solution is to exclude the prefix variable in pc files
 of packages that are not going to be part of the distribution.  
 This prevents --define-prefix from having any effect.
-
     
 EOU
 } 
@@ -128,9 +134,8 @@ oc-libpath(){ local dirs=$(oc-libdir $*) ; echo $dirs | tr " " ":" ; }
 oc-cflags(){ oc-pkg-config $* --cflags --define-prefix ; }
 oc-libs(){   oc-pkg-config $* --libs   --define-prefix ; }
 oc-libsl(){  oc-pkg-config $* --libs-only-L --define-prefix ; }
-
-
 oc-deps(){   oc-pkg-config $* --print-requires  ; }
+
 oc-dump(){   oc-pkg-config-dump $* ; }
 oc-check(){  oc-pkg-config-check-dirs $* ; }
 oc-find(){   oc-pkg-config-find $* ; }

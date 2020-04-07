@@ -900,14 +900,14 @@ void BOpticksResource::setupViaKey()
     m_res->addPath("directphotonspath", m_directphotonspath ); 
 
     const char* exename = SProc::ExecutableName() ;
-    bool exename_allowed = SStr::EndsWith(exename, "Test") || SStr::EndsWith(exename, "Minimal") ;  
+    bool exename_allowed = SStr::StartsWith(exename, "Use") || SStr::EndsWith(exename, "Test") || SStr::EndsWith(exename, "Minimal") ;  
 
     if(!exename_allowed)
     {
         LOG(fatal) << "exename " << exename
                    << " is not allowed "  
                    << " (this is to prevent stomping on geocache content). " 
-                   << " Names ending with Test or Minimal are permitted" 
+                   << " Names starting with Use or ending with Test or Minimal are permitted" 
                    ; 
     }   
     assert( exename_allowed ); 

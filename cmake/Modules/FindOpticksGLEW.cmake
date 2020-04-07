@@ -39,6 +39,7 @@ if(OpticksGLEW_FOUND AND NOT TARGET Opticks::OpticksGLEW)
     set_target_properties(Opticks::OpticksGLEW PROPERTIES
         IMPORTED_LOCATION "${OpticksGLEW_LIBRARY}"
         INTERFACE_INCLUDE_DIRECTORIES "${OpticksGLEW_INCLUDE_DIR}"
+        INTERFACE_PKG_CONFIG_NAME "glew"
     )
 endif()
 

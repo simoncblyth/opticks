@@ -20,6 +20,7 @@
 
 
 opticks-
+oc-
 
 sdir=$(pwd)
 bdir=/tmp/$USER/opticks/$(basename $sdir)/build 
@@ -27,14 +28,14 @@ bdir=/tmp/$USER/opticks/$(basename $sdir)/build
 rm -rf $bdir && mkdir -p $bdir && cd $bdir && pwd 
 
 
-cmake $sdir \
-     -DCMAKE_BUILD_TYPE=Debug \
-     -DCMAKE_PREFIX_PATH=$(opticks-prefix)/externals \
-     -DCMAKE_INSTALL_PREFIX=$(opticks-prefix) \
-     -DCMAKE_MODULE_PATH=$(opticks-home)/cmake/Modules \
-     -DOptiX_INSTALL_DIR=$(opticks-optix-install-dir) \
-     -DOPTICKS_PREFIX=$(opticks-prefix)
 
-make
-make install   
+pkg=OpticksGLEW
+pc=glew
+
+gcc -c $sdir/Use$pkg.cc $(oc-cflags $pc)
+gcc Use$pkg.o -o Use$pkg $(oc-libs $pc) -lstdc++
+LD_LIBRARY_PATH=$(oc-libpath $pc) ./Use$pkg
+
+
+
 

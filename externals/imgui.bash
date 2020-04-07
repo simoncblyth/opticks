@@ -498,4 +498,34 @@ imgui--(){
   cd $iwd
 }
 
+imgui-pc-path(){ echo $(opticks-prefix)/externals/lib/pkgconfig/imgui.pc ; }
+imgui-pc-(){ cat << EOP
+
+prefix=$(opticks-prefix)
+includedir=\${prefix}/externals/include
+libdir=\${prefix}/externals/lib
+
+Name: ImGui
+Description: OpenGL Graphics Interface 
+Version: 0.1.0
+
+Cflags:  -I\${includedir}
+Libs: -L\${libdir} -lImGui
+Requires: 
+
+EOP
+}
+
+imgui-pc () 
+{ 
+    local msg="=== $FUNCNAME :";
+    local path=$(imgui-pc-path);
+    local dir=$(dirname $path);
+    [ ! -d "$dir" ] && echo $msg creating dir $dir && mkdir -p $dir;
+    imgui-pc- > $path
+}
+
+
+
+
 

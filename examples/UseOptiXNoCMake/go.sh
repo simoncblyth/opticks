@@ -33,16 +33,15 @@ rm -rf $bdir && mkdir -p $bdir
 cd $bdir && pwd 
 
 pkg=OptiX
-pkgs="OptiX cuda"
 
-echo gcc -c $sdir/Use$pkg.cc $(oc-cflags $pkgs)
-     gcc -c $sdir/Use$pkg.cc $(oc-cflags $pkgs)
+echo gcc -c $sdir/Use$pkg.cc $(oc-cflags $pkg)
+     gcc -c $sdir/Use$pkg.cc $(oc-cflags $pkg)
 
-echo gcc Use$pkg.o -o Use$pkg $(oc-libs $pkgs) 
-     gcc Use$pkg.o -o Use$pkg $(oc-libs $pkgs) 
+echo gcc Use$pkg.o -o Use$pkg $(oc-libs $pkg) 
+     gcc Use$pkg.o -o Use$pkg $(oc-libs $pkg) 
 
-echo LD_LIBRARY_PATH=$(oc-libpath $pkgs) ./Use$pkg
-     LD_LIBRARY_PATH=$(oc-libpath $pkgs) ./Use$pkg
+echo LD_LIBRARY_PATH=$(oc-libpath $pkg) ./Use$pkg
+     LD_LIBRARY_PATH=$(oc-libpath $pkg) ./Use$pkg
 
 
 

@@ -17,23 +17,21 @@
  * limitations under the License.
  */
 
-#include "OPTICKS_LOG.hh"
-#include "Opticks.hh"
-#include "OpMgr.hh"
+#include <cassert>
+#include <ImGui/imgui.h>
 
-/**
-OpTest
-================
-**/
 
-const char* TMPDIR = "$TMP/UseOKOP" ;
-
-int main(int argc, char** argv)
+int main()
 {
-    OPTICKS_LOG(argc, argv); 
-    Opticks ok(argc, argv, "--tracer");
-    OpMgr op(&ok);
-    op.snap(TMPDIR);
+    float vx = 1.f ; 
+    float vy = 2.f ; 
+
+    ImVec2 v(vx,vy); 
+    assert( v.x == vx ); 
+    assert( v.y == vy ); 
+
+
+    assert( ImGuiWindowFlags_NoTitleBar == 1 << 0 ); 
+
     return 0 ; 
 }
-

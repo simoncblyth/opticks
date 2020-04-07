@@ -23,6 +23,44 @@ geocache-sdir(){ echo $(dirname $(geocache-source)) ; }
 geocache-scd(){  cd $(geocache-dir) ; }
 geocache-usage(){ cat << EOU
 
+
+Geocache
+==========
+
+
+Directories
+-------------
+
+laptop::
+
+
+    epsilon:boostrap blyth$ opticks-geocachedir
+    /Users/blyth/.opticks/geocache
+
+    opticks-geocachedir () 
+    { 
+        echo $(opticks-geocache-prefix)/geocache
+    }
+
+    opticks-geocache-prefix () 
+    { 
+        echo ${OPTICKS_GEOCACHE_PREFIX:-$(opticks-sharedcache-prefix-default)}
+    }
+
+    epsilon:boostrap blyth$ echo ${OPTICKS_GEOCACHE_PREFIX}
+
+    opticks-sharedcache-prefix-default () 
+    { 
+        echo $HOME/.opticks
+    }
+
+
+Used to be:
+
+    /usr/local/opticks/geocache
+
+
+
 Screen Capture Movies 
 --------------------------
 

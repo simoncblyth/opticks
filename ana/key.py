@@ -79,7 +79,7 @@ class Key(object):
         self.exists = exists
         self.digest = key.split(".")[-1]
 
-        assert exists, "keydir does not exist %s " % str(self)
+        #assert exists, "keydir does not exist %s " % str(self)
     
 
     def __str__(self):

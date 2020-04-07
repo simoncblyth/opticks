@@ -41,7 +41,9 @@ endif()
 if(OpticksGLFW_FOUND AND NOT TARGET Opticks::OpticksGLFW)
     set(tgt Opticks::OpticksGLFW)
     add_library(${tgt} UNKNOWN IMPORTED) 
-    set_target_properties(${tgt} PROPERTIES IMPORTED_LOCATION "${OpticksGLFW_LIBRARY}")
+    set_target_properties(${tgt} PROPERTIES 
+                           IMPORTED_LOCATION "${OpticksGLFW_LIBRARY}"
+                         )
 
     if(APPLE)
        find_library( Cocoa_FRAMEWORK NAMES Cocoa )
@@ -91,6 +93,7 @@ NB cannot just use "-framework Cocoa" etc, theres some secret distinguishing fra
     set_target_properties(${tgt} PROPERTIES 
         INTERFACE_INCLUDE_DIRECTORIES "${OpticksGLFW_INCLUDE_DIR}" 
         INTERFACE_FIND_PACKAGE_NAME "OpticksGLFW MODULE REQUIRED"
+        INTERFACE_PKG_CONFIG_NAME "glfw3"
     )
 
     ## Above target_properties INTERFACE_FIND_PACKAGE_NAME kludge tees up the arguments 

@@ -800,6 +800,7 @@ Description: Ray Tracing Engine
 Version:  $(optix-version)
 Libs: -L\${libdir} -loptix -loptixu -lstdc++
 Cflags: -I${includedir}
+Requires: cuda
 
 EOP
 
