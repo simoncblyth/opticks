@@ -73,6 +73,35 @@ Typical Usage
     LD_LIBRARY_PATH=$(oc-libpath $pkg) ./Use$pkg
 
 
+
+Hmm always using define-prefix means have to get rid of prefix var in below ?
+------------------------------------------------------------------------------
+
+* suppose use of macports xerces-c means have to add /opt/local/lib/pkgconfig 
+  to PKG_CONFIG_PATH so --define-prefix then can operate correctly without changes
+  to the pc
+
+* hmm but its problematic from a cross platform point of view
+
+
+::
+
+    epsilon:UseOpticksXercesC blyth$ cat /opt/local/lib/pkgconfig/xerces-c.pc
+    prefix=/opt/local
+    exec_prefix=${prefix}
+    libdir=${exec_prefix}/lib
+    includedir=${prefix}/include
+
+    Name: Xerces-C++
+    Description: Validating XML parser library for C++
+    Version: 3.2.1
+    Libs: -L${libdir} -lxerces-c
+    Libs.private: -lcurl
+    Cflags: -I${includedir}
+
+
+
+
 FIXED : define-prefix is scrubbing the CUDA include dir ?
 -----------------------------------------------------------
 
@@ -145,8 +174,22 @@ oc-cat(){
 }
 
 # "private" interface
-#oc-pkg-config(){ PKG_CONFIG_PATH=$(opticks-prefix)/lib/pkgconfig:$(opticks-prefix)/externals/lib/pkgconfig pkg-config $* ; }
-oc-pkg-config(){ PKG_CONFIG_PATH=$(opticks-prefix)/lib/pkgconfig:$(opticks-prefix)/xlib/pkgconfig pkg-config $* ; }
+oc-pkg-config-path--(){ cat << EOP
+$(opticks-prefix)/lib/pkgconfig
+$(opticks-prefix)/xlib/pkgconfig
+/opt/local/lib/pkgconfig
+EOP
+}
+oc-pkg-config-path-(){
+   $FUNCNAME- | while read dir ; do
+      [ -d "$dir" ] && echo $dir
+   done
+}
+oc-pkg-config-path(){ echo $(oc-pkg-config-path-) | tr " " ":" ; }
+
+
+
+oc-pkg-config(){ PKG_CONFIG_PATH=$(oc-pkg-config-path) pkg-config $* ; }
 
 oc-pkg-config-find(){
    local pkg=${1:-NPY}

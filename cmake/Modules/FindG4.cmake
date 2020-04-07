@@ -78,7 +78,10 @@ if(Geant4_FOUND)
 
   add_library(Opticks::G4 INTERFACE IMPORTED)
 
-  set_target_properties(Opticks::G4  PROPERTIES INTERFACE_FIND_PACKAGE_NAME "G4 MODULE REQUIRED")
+  set_target_properties(Opticks::G4  PROPERTIES 
+                              INTERFACE_FIND_PACKAGE_NAME "G4 MODULE REQUIRED"
+                              INTERFACE_PKG_CONFIG_NAME "g4"
+                       )
   list(APPEND G4_targets "G4")  
 
   ## Above target_properties INTERFACE_FIND_PACKAGE_NAME kludge tees up the arguments 

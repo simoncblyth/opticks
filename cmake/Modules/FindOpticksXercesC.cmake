@@ -60,7 +60,7 @@ if(TARGET G4persistency)
 
 else()
     #message(FATAL_ERROR "G4persistency target is required" )
-    message(STATUS "Did not find G4persistency target : so look for system XercesC or one provided by cmake arguments " )
+    message(STATUS "FindOpticksXercesC.cmake. Did not find G4persistency target : so look for system XercesC or one provided by cmake arguments " )
 endif()
 
 
@@ -117,6 +117,7 @@ if(OpticksXercesC_FOUND AND NOT TARGET ${tgt})
          PROPERTIES 
             IMPORTED_LOCATION             "${OpticksXercesC_LIBRARY}"
             INTERFACE_INCLUDE_DIRECTORIES "${OpticksXercesC_INCLUDE_DIR}"
+            INTERFACE_PKG_CONFIG_NAME     "xerces-c"
     )
 endif()
 
