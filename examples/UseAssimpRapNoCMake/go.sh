@@ -30,9 +30,12 @@ rm   -rf $bdir && mkdir -p $bdir && cd $bdir && pwd
 
 pkg=AssimpRap
 
-gcc -c $sdir/Use$pkg.cc $(oc-cflags $pkg)
-gcc Use$pkg.o -o Use${pkg}Test $(oc-libs $pkg) 
-LD_LIBRARY_PATH=$(oc-libpath) ./Use${pkg}Test
+echo gcc -c $sdir/Use$pkg.cc $(oc-cflags $pkg)
+     gcc -c $sdir/Use$pkg.cc $(oc-cflags $pkg)
+echo gcc Use$pkg.o -o Use${pkg}Test $(oc-libs $pkg) 
+     gcc Use$pkg.o -o Use${pkg}Test $(oc-libs $pkg) 
+echo LD_LIBRARY_PATH=$(oc-libpath $pkg) ./Use${pkg}Test
+     LD_LIBRARY_PATH=$(oc-libpath $pkg) ./Use${pkg}Test
 
 
 

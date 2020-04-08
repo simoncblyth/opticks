@@ -157,41 +157,65 @@ EOU
 } 
 
 
-oc-libdir0-default(){ cat << EOD
-$(opticks-prefix)/lib
-$(opticks-prefix)/externals/lib 
-EOD
-}
-
-oc-libdir0-(){ oc-pkg-config $* --variable=libdir --define-prefix ; } ## hmm relies on pc variable libdir
-oc-libdir0(){ 
-   if [ $# == 0 ]; then 
-      oc-libdir0-default
-   else
-      oc-libdir0-  $* | tr " " "\n" | sort | uniq  
-   fi 
-}
-
-#oc-extra(){ echo --define-prefix ; }
+#oc-extra(){ echo --define-prefix ; }  ## --define-prefix is a "recent" pkg-config addition, so better not to use it 
 oc-extra(){ echo ; }
+oc-lower(){ 
+   local arg
+   local larg
+   for arg in "$@"
+   do
+      larg=$(echo $arg | tr "[A-Z]" "[a-z]")
+      printf "%s " $larg
+   done
+}
 
-oc-libdir-(){ oc-pkg-config $* --libs-only-L $(oc-extra) | tr -- "-L" " " ; }
-oc-libdir(){  oc-libdir- $* | tr " " "\n" | sort | uniq ; }
+oc-args-(){
+   local arg
+   for arg in "$@"
+   do
+      printf "%s\n" $arg
+   done
+}
 
-oc-libpath(){ local dirs=$(oc-libdir $*) ; echo $dirs | tr " " ":" ; }
+oc-args(){ oc-args- $(oc-lower $*) ; }
 
-oc-cflags-(){ oc-pkg-config $* --cflags $(oc-extra) ; }
+
+oc-libdir-(){ oc-pkg-config $(oc-lower $*) --libs-only-L $(oc-extra) | tr -- "-L" " " ; }
+oc-cflags-(){ oc-pkg-config $(oc-lower $*) --cflags $(oc-extra) ; }
 
 # "public" interface
+
+oc-notes(){ cat << EON
+oc-notes
+=========
+
+Originally developed on macOS with a case-insensitive file system
+that unfortunately pkg-config does nothing to avoid : ie pkg-config
+on macOS operates in a case-insensitive way but this is not the 
+case on Linux.
+
+As all pc filenames are lowercase, have decided to stick with this 
+convention and automate conversion of pc name arguments to lowercase 
+in order to get Linux to work in the same way as macOS : that is 
+case insensitively.
+
+EON
+}
+
+
 oc-cflags(){ echo $(oc-cflags- $*) -std=c++11 ; }
+oc-libs(){   oc-pkg-config $(oc-lower $*) --libs   $(oc-extra) ; }
+oc-libsl(){  oc-pkg-config $(oc-lower $*) --libs-only-L $(oc-extra) ; }
+oc-deps(){   oc-pkg-config $(oc-lower $*) --print-requires  ; }
+oc-dump(){   oc-pkg-config-dump $(oc-lower $*) ; }
+oc-check(){  oc-pkg-config-check-dirs $(oc-lower $*) ; }
+oc-find(){   oc-pkg-config-find $(oc-lower $*) ; }
 
-oc-libs(){   oc-pkg-config $* --libs   $(oc-extra) ; }
-oc-libsl(){  oc-pkg-config $* --libs-only-L $(oc-extra) ; }
-oc-deps(){   oc-pkg-config $* --print-requires  ; }
 
-oc-dump(){   oc-pkg-config-dump $* ; }
-oc-check(){  oc-pkg-config-check-dirs $* ; }
-oc-find(){   oc-pkg-config-find $* ; }
+oc-libdir(){  oc-libdir- $* | tr " " "\n" | sort | uniq ; }
+oc-libpath(){ local dirs=$(oc-libdir $*) ; echo $dirs | tr " " ":" ; }
+
+
 oc-cat(){    
    local pc=$(oc-find $*) 
    [ -n "$pc" -a -f "$pc" ] && cat $pc
@@ -201,11 +225,16 @@ oc-setup()
 {
    local iwd=$pwd
    cd $(opticks-prefix)
-   [ ! -x xlib ] && ln -s externals/lib xlib 
+   [ ! -x xlib ] && ln -s externals/lib xlib    ## now that cannot use --define-prefix not needed ?
    cd $iwd 
 
+   ## the below is transient, they should be done on installing  
+ 
    plog-
    plog-pc
+   glm-
+   glm-pc 
+
 }
 
 

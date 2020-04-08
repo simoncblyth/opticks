@@ -32,5 +32,5 @@ pkg=OpticksGeo
 
 gcc -c $sdir/Use$pkg.cc $(oc-cflags $pkg)
 gcc Use$pkg.o -o Use${pkg}Test $(oc-libs $pkg) 
-LD_LIBRARY_PATH=$(oc-libpath $pkg) ./Use${pkg}Test
+#LD_LIBRARY_PATH=$(oc-libpath $pkg) ./Use${pkg}Test
 

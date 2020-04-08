@@ -36,8 +36,8 @@ echo gcc -c $sdir/Use$pkg.cc $(oc-cflags $pkg)
      gcc -c $sdir/Use$pkg.cc $(oc-cflags $pkg)
 echo gcc Use$pkg.o -o Use$pkg $(oc-libs $pkg) 
      gcc Use$pkg.o -o Use$pkg $(oc-libs $pkg) 
-echo LD_LIBRARY_PATH=$(oc-libpath $pkg) ./Use$pkg --printenabled
-     LD_LIBRARY_PATH=$(oc-libpath $pkg) ./Use$pkg --printenabled
+#echo LD_LIBRARY_PATH=$(oc-libpath $pkg) ./Use$pkg --printenabled
+#     LD_LIBRARY_PATH=$(oc-libpath $pkg) ./Use$pkg --printenabled
 
 
 

@@ -165,7 +165,7 @@ plog-pc-(){ cat << EOP
 # use --define-prefix to set as the grandparent of the pkgconfig 
 # when using xlib trick that is the canonical /usr/local/opticks prefix
 
-prefix=
+prefix=$(opticks-prefix)
 includedir=\${prefix}/externals/plog/include
 
 Name: plog

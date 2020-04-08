@@ -379,7 +379,8 @@ glm-pc-(){ cat << EOP
 
 # use --define-prefix to set prefix to the grandparent of the pcfiledir, eg /usr/local/opticks/externals 
 # hmm when using the xlib trick to make the two pkgconfig dirs at the same level, need the externals 
-prefix=
+
+prefix=$(opticks-prefix)
 includedir=\${prefix}/externals/glm/glm
 
 Name: GLM
