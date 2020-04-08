@@ -262,16 +262,14 @@ oc-pkg-config-find(){
    local pkg=${1:-NPY}
    local lpkg=$(echo $pkg | tr [A-Z] [a-z])
 
-   local ipc=$(opticks-prefix)/lib/pkgconfig/${lpkg}.pc
-   local xpc=$(opticks-prefix)/xlib/pkgconfig/${lpkg}.pc
-
-   if [ -f "$ipc" ]; then
-      echo $ipc
-   elif [ -f "$xpc" ]; then
-      echo $xpc
-   else
-      echo $FUNCNAME failed for pkg $pkg ipc $ipc xpc $xpc 1>&2
-   fi 
+   local dir
+   local pc
+   oc-pkg-config-path- | while read dir ; do 
+      pc=$dir/${lpkg}.pc
+      if [ -f "$pc" ]; then
+         echo $pc
+      fi 
+   done
 }
 
 oc-pkg-config-dump(){

@@ -32,9 +32,13 @@ rm -rf $bdir && mkdir -p $bdir && cd $bdir && pwd
 
 pkg=SysRap
 
-gcc -c $sdir/Use$pkg.cc $(oc-cflags $pkg)
-gcc  Use$pkg.o $sdir/TestUse$pkg.cc -o TestUse$pkg $(oc-libs $pkg)
-LD_LIBRARY_PATH=$(oc-libpath $pkg) ./TestUse$pkg
+
+echo gcc -c $sdir/Use$pkg.cc $(oc-cflags $pkg)
+     gcc -c $sdir/Use$pkg.cc $(oc-cflags $pkg)
+echo gcc  Use$pkg.o $sdir/TestUse$pkg.cc -o TestUse$pkg $(oc-libs $pkg)
+     gcc  Use$pkg.o $sdir/TestUse$pkg.cc -o TestUse$pkg $(oc-libs $pkg)
+echo LD_LIBRARY_PATH=$(oc-libpath $pkg) ./TestUse$pkg
+     LD_LIBRARY_PATH=$(oc-libpath $pkg) ./TestUse$pkg
 
 
 

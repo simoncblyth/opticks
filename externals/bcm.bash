@@ -140,9 +140,9 @@ EOI
 
 
 bcm-url(){ 
-  case $NODE_TAG in 
-      E) echo git@github.com:simoncblyth/bcm.git ;; 
-      *) echo http://github.com/simoncblyth/bcm.git ;; 
+  case $(whoami) in 
+      blyth) echo git@github.com:simoncblyth/bcm.git ;; 
+          *) echo http://github.com/simoncblyth/bcm.git ;; 
   esac
 }   
 

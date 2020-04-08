@@ -83,10 +83,13 @@ set(HEADERS
     OKCONF_API_EXPORT.hh
 )
 
-add_library( ${name}  SHARED ${SOURCES})
+add_library( ${name}  SHARED ${SOURCES} ${HEADERS} )
 
 # hmm reluctant to make PUBLIC as just want to communicate to the tests 
 # but for integrated it seems need to, unless just use ".." from the tests
+
+
+
 
 target_include_directories( ${name} PRIVATE
    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
@@ -111,6 +114,8 @@ top_meta_target(G4_TOPMETA          "G4"          "${G4_targets}" )
 #message(STATUS "${OpticksCUDA_TOPMETA}")
 #message(STATUS "${OptiX_TOPMETA}")
 #message(STATUS "${G4_TOPMETA}")
+
+set(PC_VERBOSE ON)
 
 bcm_deploy(TARGETS ${name} NAMESPACE Opticks:: SKIP_HEADER_INSTALL TOPMATTER "
 ## OKConf generated TOPMATTER

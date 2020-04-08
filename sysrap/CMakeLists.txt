@@ -1,13 +1,9 @@
 cmake_minimum_required(VERSION 3.5 FATAL_ERROR)
 set(name SysRap)
 set(desc "System Level Utilities depending")
-
-#set(preq "plog")
-#  this is not needed if have set INTERFACE_PKG_CONFIG_NAME on the imported targets, see cmake/Modules/FindPLog.cmake
-
-
 project(${name} VERSION 0.1.0)
 include(OpticksBuildOptions)
+
 
 #[=[
 SysRap
@@ -145,7 +141,7 @@ top_meta_target(PLog_TOPMETA    "PLog" "${PLog_targets}" )
 
 message(STATUS "${PLog_TOPMETA}")
  
-
+set(PC_VERBOSE ON)
 bcm_deploy(TARGETS ${name} NAMESPACE Opticks:: SKIP_HEADER_INSTALL TOPMATTER  "
 ## SysRap TOPMATTER
 
