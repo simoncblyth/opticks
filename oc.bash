@@ -18,6 +18,9 @@ Avoid manual edits of::
    /usr/local/opticks/externals/lib/pkgconfig/assimp.pc
    /usr/local/opticks/externals/lib/pkgconfig/glfw3.pc
    /usr/local/opticks/externals/lib/pkgconfig/glew.pc
+   /usr/local/opticks/externals/lib/pkgconfig/yoctogl.pc
+       adding Libs: -L${libdir} -lYoctoGL -lstdc++ 
+       the yoctogl.pc is written by bcm_deploy from oyoctogl-cmake
 
 The edits move the "externals" from the prefix into the libdir and includedir.
 
@@ -202,7 +205,6 @@ case insensitively.
 EON
 }
 
-
 oc-cflags(){ echo $(oc-cflags- $*) -std=c++11 ; }
 oc-libs(){   oc-pkg-config $(oc-lower $*) --libs   $(oc-extra) ; }
 oc-libsl(){  oc-pkg-config $(oc-lower $*) --libs-only-L $(oc-extra) ; }
@@ -211,7 +213,6 @@ oc-dump(){   oc-pkg-config-dump $(oc-lower $*) ; }
 oc-check(){  oc-pkg-config-check-dirs $(oc-lower $*) ; }
 oc-find(){   oc-pkg-config-find $(oc-lower $*) ; }
 
-
 oc-libdir(){  oc-libdir- $* | tr " " "\n" | sort | uniq ; }
 oc-libpath(){ local dirs=$(oc-libdir $*) ; echo $dirs | tr " " ":" ; }
 
@@ -219,6 +220,10 @@ oc-libpath(){ local dirs=$(oc-libdir $*) ; echo $dirs | tr " " ":" ; }
 oc-cat(){    
    local pc=$(oc-find $*) 
    [ -n "$pc" -a -f "$pc" ] && cat $pc
+}
+oc-edit(){    
+   local pc=$(oc-find $*) 
+   [ -n "$pc" -a -f "$pc" ] && vi $pc
 }
 
 oc-setup()
