@@ -232,7 +232,12 @@ EOU
 }
 
 oyoctogl-edit(){ vi $(opticks-home)/cmake/Modules/FindYoctoGL.cmake ; }
-oyoctogl-url(){ echo https://github.com/simoncblyth/yocto-gl ; }
+oyoctogl-url(){ 
+  case $(whoami) in
+     blyth) echo git@github.com:simoncblyth/yocto-gl.git ;;
+         *) echo https://github.com/simoncblyth/yocto-gl ;;
+   esac 
+}
 oyoctogl-open(){ open $(oyoctogl-url) ; }
 
 
