@@ -35,7 +35,12 @@ EOU
 }
 
 odcs-edit(){ vi $(opticks-home)/cmake/Modules/FindDualContouringSample.cmake ; }
-odcs-url(){ echo https://github.com/simoncblyth/DualContouringSample ; }
+odcs-url(){ 
+   case $(whoami) in 
+    blyth) echo git@github.com:simoncblyth/DualContouringSample.git ;; 
+        *) echo https://github.com/simoncblyth/DualContouringSample ;;
+   esac
+}
 
 odcs-dir(){  echo $(opticks-prefix)/externals/DualContouringSample/DualContouringSample ; }
 odcs-bdir(){ echo $(opticks-prefix)/externals/DualContouringSample/DualContouringSample.build ; }
@@ -46,7 +51,7 @@ odcs-bcd(){ cd $(odcs-bdir) ; }
 odcs-fullwipe()
 {
     rm -rf $(opticks-prefix)/externals/DualContouringSample
-    rm -f  $(opticks-prefix)/externals/lib/libDualContouringSample.dylib 
+    rm -f  $(opticks-prefix)/externals/lib/libDualContouringSample.*
     rm -rf $(opticks-prefix)/externals/include/DualContouringSample
     ## test executables not removed
 }

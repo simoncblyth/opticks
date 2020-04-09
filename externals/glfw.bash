@@ -33,6 +33,11 @@ applications and does not lay claim to the main loop.
 
 Version 3.1.1 released on March 19, 2015
 
+Headless
+-----------
+
+* https://github.com/intel-isl/Open3D/issues/17
+
 
 Linux CentOS 7 
 ----------------

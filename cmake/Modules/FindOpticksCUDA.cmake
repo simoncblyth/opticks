@@ -98,7 +98,7 @@ if(OpticksCUDA_FOUND AND NOT TARGET Opticks::CUDA)
 
     add_library(Opticks::CUDA INTERFACE IMPORTED)
     set_target_properties(Opticks::CUDA  PROPERTIES INTERFACE_FIND_PACKAGE_NAME "OpticksCUDA MODULE REQUIRED")
-    set_target_properties(Opticks::CUDA  PROPERTIES INTERFACE_PKG_CONFIG_NAME   "optickscuda")
+    set_target_properties(Opticks::CUDA  PROPERTIES INTERFACE_PKG_CONFIG_NAME   "cuda")
 
     target_link_libraries(Opticks::CUDA INTERFACE Opticks::cudart_static Opticks::curand )
     target_include_directories(Opticks::CUDA INTERFACE "${CUDA_INCLUDE_DIRS}" )

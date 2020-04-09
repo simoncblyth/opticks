@@ -1284,11 +1284,28 @@ cuda-samples-bin-fluidsGL(){       cuda-samples-bin-run fluidsGL $* ; }
 
 cuda-deviceQuery(){ cuda-samples-bin-run deviceQuery $* ; } 
 
+
+
+
+cuda-prefix(){ echo /usr/local/cuda ; }
+cuda-libdir-(){ cat << EOD
+$(cuda-prefix)/lib64
+$(cuda-prefix)/lib
+EOD
+}
+cuda-libdir(){
+   local dir
+   $FUNCNAME- | while read dir ; do 
+     [ -d "$dir" ] && echo $dir
+   done
+}
+
+
 cuda-pc-path(){ echo $(opticks-prefix)/externals/lib/pkgconfig/cuda.pc ; }
 cuda-pc-(){ 
-  local prefix=/usr/local/cuda
+  local prefix=$(cuda-prefix)
   local includedir=${prefix}/include
-  local libdir=${prefix}/lib
+  local libdir=$(cuda-libdir)
 
   cat << EOP
 

@@ -510,7 +510,7 @@ Description: OpenGL Graphics Interface
 Version: 0.1.0
 
 Cflags:  -I\${includedir}
-Libs: -L\${libdir} -lImGui
+Libs: -L\${libdir} -lImGui -lGLEW
 Requires: 
 
 EOP

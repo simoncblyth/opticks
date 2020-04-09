@@ -430,8 +430,8 @@ target_link_libraries( ${name}
      Opticks::SysRap 
      Opticks::BoostRap 
      Opticks::OpenMesh
-  PRIVATE
      Opticks::PLog
+  PRIVATE
 )
 
 
@@ -446,7 +446,7 @@ if(YoctoGL_FOUND)
 endif()
 
 if(ImplicitMesher_FOUND)
-   target_link_libraries( ${name} PRIVATE Opticks::ImplicitMesher )
+   target_link_libraries( ${name} PUBLIC Opticks::ImplicitMesher )
    target_compile_definitions(${name} PUBLIC OPTICKS_ImplicitMesher )
 endif()
 
@@ -456,7 +456,7 @@ if(DualContouringSample_FOUND)
 endif()
 
 if(CSGBSP_FOUND)
-   target_link_libraries( ${name} PRIVATE Opticks::CSGBSP )
+   target_link_libraries( ${name} PUBLIC Opticks::CSGBSP )
    target_compile_definitions(${name} PUBLIC OPTICKS_CSGBSP  )
 endif()
 
@@ -467,7 +467,7 @@ endif()
 
 
 
-
+set(PC_VERBOSE ON)
 bcm_deploy(TARGETS ${name} NAMESPACE Opticks:: SKIP_HEADER_INSTALL TOPMATTER "
 ## NPY TOPMATTER 
 

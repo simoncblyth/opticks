@@ -10,10 +10,10 @@ OC : Opticks Config Based on pkg-config
   so keep use of other scripts to a minimum
 
 
-TODO 
------
+TODO : Avoid manual pc edits 
+-----------------------------
 
-Avoid manual edits of::
+::
 
    /usr/local/opticks/externals/lib/pkgconfig/assimp.pc
    /usr/local/opticks/externals/lib/pkgconfig/glfw3.pc
@@ -26,6 +26,28 @@ The edits move the "externals" from the prefix into the libdir and includedir.
 
 The reason for this is because are using pkg-config with --define-prefix 
 in order to work in a relocatable way for distributions.
+
+Perhaps use (see odcs-)::
+
+    include(GNUInstallDirs)
+    set(CMAKE_INSTALL_INCLUDEDIR "externals/include/${name}")
+    set(CMAKE_INSTALL_LIBDIR     "externals/lib")
+    set(CMAKE_INSTALL_BINDIR     "lib")
+
+
+TODO : regularize imgui CMakeLists.txt its not using bcm_deploy forcing manual pc
+-----------------------------------------------------------------------------------
+
+
+TODO : pc Libs.private ?
+--------------------------
+
+NPY : had to make all libs PUBLIC for UseNPYNoCMake to work on Linux 
+
+
+* https://stackoverflow.com/questions/45334645/which-cmake-property-should-hold-privately-linked-shared-libraries-for-imported
+* https://stackoverflow.com/questions/32756195/recursive-list-of-link-libraries-in-cmake
+* https://gitlab.kitware.com/cmake/cmake/issues/12435
 
 
 pkg-config versions
@@ -241,7 +263,12 @@ oc-setup()
    glm-pc 
    openmesh-
    openmesh-pc
-
+   imgui-
+   imgui-pc
+   optix-
+   optix-pc
+   cuda-
+   cuda-pc
 }
 
 
