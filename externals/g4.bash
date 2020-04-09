@@ -801,12 +801,28 @@ g4-libs(){
 }
 
 
+g4-libdir-(){ cat << EOD
+externals/lib64
+externals/lib
+EOD
+}
+
+g4-libdir(){
+   local rdir
+   local dir
+   $FUNCNAME- | while read rdir ; do 
+      dir=$(opticks-prefix)/$rdir
+      [ -f "$dir/libG4Tree.dylib" -o -f "$dir/libG4Tree.so" ] && echo $rdir
+   done
+}
 
 g4-pc-(){ cat << EOP
 
+# $FUNCNAME $(date)
+
 prefix=$(opticks-prefix)
 includedir=\${prefix}/externals/include/Geant4
-libdir=\${prefix}/externals/lib
+libdir=\${prefix}/$(g4-libdir)
 
 Name: Geant4
 Description: 

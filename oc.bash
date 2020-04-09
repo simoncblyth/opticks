@@ -35,6 +35,16 @@ Perhaps use (see odcs-)::
     set(CMAKE_INSTALL_BINDIR     "lib")
 
 
+TODO : OptiXRap Linux linker warning
+---------------------------------------
+
+::
+
+    /usr/bin/ld: warning: liboptix_prime.so.6.5.0, needed by /home/blyth/local/opticks/lib64/libOptiXRap.so, not found (try using -rpath or -rpath-link)
+
+
+
+
 TODO : regularize imgui CMakeLists.txt its not using bcm_deploy forcing manual pc
 -----------------------------------------------------------------------------------
 

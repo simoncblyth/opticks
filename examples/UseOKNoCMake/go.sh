@@ -29,11 +29,19 @@ rm -rf $bdir && mkdir -p $bdir && cd $bdir && pwd
 
 
 
-pkg=ok
+pkg=OK
 
-gcc -c $sdir/Use$pkg.cc $(oc-cflags $pkg)
-gcc Use$pkg.o -o Use$pkg $(oc-libs $pkg) 
-#LD_LIBRARY_PATH=$(oc-libpath $pkg) ./Use$pkg
-#exit 1
+echo gcc -c $sdir/Use$pkg.cc $(oc-cflags $pkg)
+     gcc -c $sdir/Use$pkg.cc $(oc-cflags $pkg)
+echo gcc Use$pkg.o -o Use$pkg $(oc-libs $pkg) 
+     gcc Use$pkg.o -o Use$pkg $(oc-libs $pkg) 
+echo LD_LIBRARY_PATH=$(oc-libpath $pkg) ./Use$pkg
+     LD_LIBRARY_PATH=$(oc-libpath $pkg) ./Use$pkg
 
+cat << EON
+Linux warning
+
+/usr/bin/ld: warning: liboptix_prime.so.6.5.0, needed by /home/blyth/local/opticks/lib64/libOK.so, not found (try using -rpath or -rpath-link)
+
+EON
 
