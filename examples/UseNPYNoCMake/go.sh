@@ -31,9 +31,12 @@ rm   -rf $bdir && mkdir -p $bdir && cd $bdir && pwd
 
 pkg=NPY
 
-gcc -c $sdir/Use$pkg.cc $(oc-cflags $pkg) 
-gcc Use$pkg.o $(oc-libs $pkg) -o Use$pkg
-LD_LIBRARY_PATH=$(oc-libpath $pkg) ./Use$pkg
+echo gcc -c $sdir/Use$pkg.cc $(oc-cflags $pkg) 
+     gcc -c $sdir/Use$pkg.cc $(oc-cflags $pkg) 
+echo gcc Use$pkg.o $(oc-libs $pkg) -o Use$pkg
+     gcc Use$pkg.o $(oc-libs $pkg) -o Use$pkg
+echo LD_LIBRARY_PATH=$(oc-libpath $pkg) ./Use$pkg
+     LD_LIBRARY_PATH=$(oc-libpath $pkg) ./Use$pkg
 
 python -c "import numpy as np ; print np.load(\"$TMP/UseNPY.npy\") " 
 

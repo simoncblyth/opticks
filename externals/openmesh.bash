@@ -1203,7 +1203,9 @@ openmesh-libs(){
 
 openmesh-pc-(){ cat << EOP
 
-prefix=/usr/local/opticks
+# $FUNCNAME $(date)
+
+prefix=$(opticks-prefix)
 exec_prefix=\${prefix}/lib
 libdir=\${prefix}/externals/lib
 includedir=\${prefix}/externals/include
@@ -1211,7 +1213,7 @@ includedir=\${prefix}/externals/include
 Name: OpenMesh
 Description: Mesh Traversal and Manipulations
 Version: $(openmesh-vers)
-Libs: -L\${libdir} -lOpenMeshTools -lOpenMeshCore -lstdc++
+Libs: -L\${libdir} -lOpenMeshTools -lOpenMeshCore -lstdc++ -lm
 Cflags: -I\${includedir}
 
 EOP

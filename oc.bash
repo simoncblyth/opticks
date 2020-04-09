@@ -239,6 +239,8 @@ oc-setup()
    plog-pc
    glm-
    glm-pc 
+   openmesh-
+   openmesh-pc
 
 }
 
