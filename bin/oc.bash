@@ -348,3 +348,13 @@ oc-pkg-config-check-dirs(){
    done 
 }
 
+oc-main(){
+   local arg
+   for arg in $* ; do 
+      echo $arg 
+   done
+}
+
+
+[ "$0" == "opticks-config" -o "$0" == "oc" ] && oc-main
+

@@ -1413,7 +1413,7 @@ opticks-open()
 ## [WIP] modern CMake proj-by-proj style building 
 
 om-(){       . $(opticks-home)/om.bash      && om-env $* ; }
-oc-(){       . $(opticks-home)/oc.bash      && oc-env $* ; }
+oc-(){       . $(opticks-home)/bin/oc.bash  && oc-env $* ; }
 opnovice-(){ . $(opticks-home)/notes/geant4/opnovice.bash      && opnovice-env $* ; }
 
 

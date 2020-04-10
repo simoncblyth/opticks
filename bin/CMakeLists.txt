@@ -22,7 +22,14 @@ set(SCRIPTS
 # but modules that need to be imported must go to py/opticks/bin
 
 
+macro(install_symlink filepath sympath)
+    install(CODE "execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink ${filepath} ${sympath})")
+    install(CODE "message(\"-- Created symlink: ${sympath} -> ${filepath}\")")
+endmacro(install_symlink)
+
+
 install(PROGRAMS ${SCRIPTS}   DESTINATION bin)
+#install_symlink( bin/oc.bash oc )
 
 
 set(PYSCRIPTS
