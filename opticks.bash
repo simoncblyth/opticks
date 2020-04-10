@@ -1187,7 +1187,7 @@ opticks-make-()
 opticks-path(){ echo $PATH | tr ":" "\n" ; }
 opticks-path-add(){
   local dir=$1 
-  #[ ! -d "$dir" ] && return  
+  : only prepend the dir when not already there 
   [ "${PATH/$dir}" == "${PATH}" ] && export PATH=$dir:$PATH
 }
 
@@ -1235,6 +1235,7 @@ EOD
 opticks-export()
 {
    opticks-path-add $(opticks-prefix)/lib
+   opticks-path-add $(opticks-prefix)/bin
    opticks-path-add $(opticks-home)/bin
    opticks-path-add $(opticks-home)/ana
 

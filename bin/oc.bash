@@ -1,13 +1,85 @@
 oc-source(){ echo $BASH_SOURCE ; }
 oc-vi(){ vi $(oc-source) ; }
 oc-env(){  olocal- ; opticks- ; }
+
+
+oc-help(){ cat << EOH
+
+opticks-config
+===============
+
+Provides cflags, libs and lippath for all opticks externals
+and sub-packages based on underlying pkg-config .pc files
+which are generated from the Opticks CMake/bash infrastructure.  
+
+This allows C++ code using any of the Opticks packages to 
+be compiled, linked and executed without using CMake.  
+Many demonstrations of usage are in examples/Use*NoCMake/go.sh  
+
+Usage examples:
+
+    opticks-config --cflags NPY
+    opticks-config --libs   NPY
+    opticks-config --libpath NPY
+
+Both opticks-config and oc are symbolic links to oc.bash::
+
+    oc -cflags NPY
+    oc -f NPY
+    oc -f npy 
+    oc --help
+
+The pkg arguments are names such as NPY, optix, OptiXRap, PLog, G4
+which are intepreted case insensitively.
+If the pkg name is not recognized an error message from 
+pkg-config is returned.
+
+EOH
+}
+
 oc-usage(){ cat << EOU
 
-OC : Opticks Config Based on pkg-config
+opticks-config notes for developers
 ===========================================================
 
-* NB this aspires to becoming a standalone opticks-config script, 
-  so keep use of other scripts to a minimum
+Overview for Developers
+-------------------------
+
+Note that this file acts as both a sourced collection 
+of bash functions ~/opticks/bin/oc.bash for development oc-vi
+and as a deployed bash script when used via the installed 
+\$(opticks-prefix)/bin/oc OR \$(opticks-prefix)/bin/opticks-config 
+scripts which are actually symbolic links to the installed 
+version of this file \$(opticks-prefix)/bin/oc.bash
+
+Updating and Usage
+---------------------
+
+Update::
+ 
+    oc-
+    oc-vi
+
+    cd ~/opticks/bin
+    om-
+    om--  
+
+The last command installs oc.bash into the CMAKE_INSTALL_PREFIX/bin 
+and plants symbolic links.
+
+Developer Usage via bash functions
+-------------------------------------
+
+Use as bash functions::
+
+   oc-
+   oc-cflags NPY 
+   oc-vi         # editing from the source tree 
+
+Contrast with enduser usage via script::
+
+   oc -cflags NPY
+   oc --cflags NPY
 
 
 TODO : Avoid manual pc edits 
@@ -44,10 +116,8 @@ TODO : OptiXRap Linux linker warning
 
 
 
-
 TODO : regularize imgui CMakeLists.txt its not using bcm_deploy forcing manual pc
 -----------------------------------------------------------------------------------
-
 
 TODO : pc Libs.private ?
 --------------------------
@@ -60,12 +130,18 @@ NPY : had to make all libs PUBLIC for UseNPYNoCMake to work on Linux
 * https://gitlab.kitware.com/cmake/cmake/issues/12435
 
 
+TODO : get relocatable operation from a distributed installation to work
+-------------------------------------------------------------------------- 
+
+Cannot use "--define-prefix" for this as that demands a 
+newer version of pkg-config that is commonly available.
+
+
 pkg-config versions
 ---------------------
 
 * https://www.freedesktop.org/wiki/Software/pkg-config/
 * https://pkg-config.freedesktop.org/releases/
-
 
 ::
 
@@ -75,8 +151,6 @@ pkg-config versions
 
     epsilon:cfg4 blyth$ pkg-config --version
     0.29.2
-
-
 
 
 Requirements for pkg-config hookup
@@ -187,7 +261,7 @@ The result is the wrong prefix.::
 One solution is to exclude the prefix variable in pc files
 of packages that are not going to be part of the distribution.  
 This prevents --define-prefix from having any effect.
-    
+
 EOU
 } 
 
@@ -214,28 +288,9 @@ oc-args-(){
 
 oc-args(){ oc-args- $(oc-lower $*) ; }
 
-
 oc-libdir-(){ oc-pkg-config $(oc-lower $*) --libs-only-L $(oc-extra) | tr -- "-L" " " ; }
 oc-cflags-(){ oc-pkg-config $(oc-lower $*) --cflags $(oc-extra) ; }
 
-# "public" interface
-
-oc-notes(){ cat << EON
-oc-notes
-=========
-
-Originally developed on macOS with a case-insensitive file system
-that unfortunately pkg-config does nothing to avoid : ie pkg-config
-on macOS operates in a case-insensitive way but this is not the 
-case on Linux.
-
-As all pc filenames are lowercase, have decided to stick with this 
-convention and automate conversion of pc name arguments to lowercase 
-in order to get Linux to work in the same way as macOS : that is 
-case insensitively.
-
-EON
-}
 
 oc-cflags(){ echo $(oc-cflags- $*) -std=c++11 ; }
 oc-libs(){   oc-pkg-config $(oc-lower $*) --libs   $(oc-extra) ; }
@@ -248,7 +303,6 @@ oc-find(){   oc-pkg-config-find $(oc-lower $*) ; }
 oc-libdir(){  oc-libdir- $* | tr " " "\n" | sort | uniq ; }
 oc-libpath(){ local dirs=$(oc-libdir $*) ; echo $dirs | tr " " ":" ; }
 
-
 oc-cat(){    
    local pc=$(oc-find $*) 
    [ -n "$pc" -a -f "$pc" ] && cat $pc
@@ -260,6 +314,7 @@ oc-edit(){
 
 oc-setup()
 {
+   : TODO eliminate this transient  
    local iwd=$pwd
    cd $(opticks-prefix)
    [ ! -x xlib ] && ln -s externals/lib xlib    ## now that cannot use --define-prefix not needed ?
@@ -282,12 +337,22 @@ oc-setup()
 }
 
 
+oc-prefix(){
+   : opticks-prefix is only defined when sourced 
+   if [ "$0" == "-bash" ]
+   then
+       opticks-prefix
+   else
+       echo $(dirname $(dirname $0)) 
+   fi
+}
+
 
 # "private" interface
 oc-pkg-config-path--(){ cat << EOP
-$(opticks-prefix)/lib/pkgconfig
-$(opticks-prefix)/lib64/pkgconfig
-$(opticks-prefix)/xlib/pkgconfig
+$(oc-prefix)/lib/pkgconfig
+$(oc-prefix)/lib64/pkgconfig
+$(oc-prefix)/xlib/pkgconfig
 /opt/local/lib/pkgconfig
 EOP
 }
@@ -298,6 +363,27 @@ oc-pkg-config-path-(){
 }
 oc-pkg-config-path(){ echo $(oc-pkg-config-path-) | tr " " ":" ; }
 
+
+oc-info(){
+   local pkg=${1:-NPY}
+
+   cat << EOI
+
+oc-info $pkg
+========================
+
+   oc-prefix          : $(oc-prefix)
+   oc-pkg-config-path : $(oc-pkg-config-path)
+
+   oc-find $pkg : $(oc-find $pkg) 
+   oc-cat $pkg  : 
+
+   $(oc-cat $pkg) 
+
+
+EOI
+
+}
 
 
 oc-pkg-config(){ PKG_CONFIG_PATH=$(oc-pkg-config-path) pkg-config $* ; }
@@ -324,16 +410,23 @@ oc-pkg-config-dump(){
        printf "\n\n# %s\n\n"  "$cmd"
        $cmd | tr " " "\n"
    done
+   oc-info $pkg
 }
 
 oc-pkg-config-dump-opts-(){ cat << EOC
---print-requires --define-prefix
+--print-requires
 --cflags 
---cflags --define-prefix
+--cflags-only-I 
 --libs 
+EOC
+
+cat << EOO > /dev/null
+--print-requires --define-prefix
+--cflags --define-prefix
 --libs --define-prefix
 --cflags-only-I --define-prefix
-EOC
+EOO
+
 }
 
 oc-pkg-config-check-dirs(){
@@ -348,13 +441,30 @@ oc-pkg-config-check-dirs(){
    done 
 }
 
+
 oc-main(){
-   local arg
-   for arg in $* ; do 
-      echo $arg 
-   done
+   if [ "$#" == "0" ]; then
+       oc-help 
+   else 
+       local cmd=$1
+       shift
+       #printf "cmd:%s:\n" $cmd 
+       case $cmd in 
+         --cflags|-cflags|-f) oc-cflags $* ;; 
+             --libs|-libs|-l) oc-libs $* ;; 
+       --libpath|-libpath|-p) oc-libpath $* ;; 
+             --dump|-dump|-d) oc-dump $* ;; 
+             --find|-find|-n) oc-find $* ;; 
+               --cat|-cat|-c) oc-cat  $* ;; 
+             --info|-info|-i) oc-info  $* ;; 
+             --help|-help|-h) oc-help $* ;; 
+                           *) oc-dump $cmd $* ;;   ## assume unrecognized command is a pkg name 
+       esac
+   fi 
 }
 
 
-[ "$0" == "opticks-config" -o "$0" == "oc" ] && oc-main
+if [ ! "$0" == "-bash" -o "$0" == "bash" ]; then   ## when used as a script rather than being sourced 
+   [ "$(basename $0)" == "opticks-config" -o "$(basename $0)" == "oc"  ] && oc-main $*
+fi
 

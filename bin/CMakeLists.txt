@@ -11,6 +11,7 @@ set(SCRIPTS
    o.sh
    tboolean.sh
    scan.bash
+   oc.bash
 
    CTestTestfile.py 
    CMakeModules.py 
@@ -22,14 +23,21 @@ set(SCRIPTS
 # but modules that need to be imported must go to py/opticks/bin
 
 
-macro(install_symlink filepath sympath)
-    install(CODE "execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink ${filepath} ${sympath})")
+macro(install_bin_symlink filepath sympath)
+    #install(CODE "execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink ${CMAKE_INSTALL_PREFIX}/${filepath} ${sympath})")
+    # create_symlink seems not to be able to create relative symlinks
+    install(CODE "execute_process(COMMAND ${CMAKE_COMMAND} -E chdir ${CMAKE_INSTALL_PREFIX}/bin ln -sf ${filepath} ${sympath})")
     install(CODE "message(\"-- Created symlink: ${sympath} -> ${filepath}\")")
-endmacro(install_symlink)
+endmacro()
+
+
+include(GNUInstallDirs)
+message(STATUS "Bin.CMAKE_INSTALL_BINDIR:${CMAKE_INSTALL_BINDIR}")
 
 
 install(PROGRAMS ${SCRIPTS}   DESTINATION bin)
-#install_symlink( bin/oc.bash oc )
+install_bin_symlink( oc.bash oc )
+install_bin_symlink( oc.bash opticks-config )
 
 
 set(PYSCRIPTS
