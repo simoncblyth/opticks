@@ -31,6 +31,9 @@ mkdir -p $bdir && cd $bdir && pwd
 
 pkg=YoctoGL
 
+oc-info $pkg
+
+
 echo gcc -c $sdir/Use$pkg.cc $(oc-cflags $pkg)
      gcc -c $sdir/Use$pkg.cc $(oc-cflags $pkg)
 echo gcc Use$pkg.o -o Use$pkg $(oc-libs $pkg)

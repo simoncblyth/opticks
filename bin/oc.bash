@@ -1,8 +1,6 @@
 oc-source(){ echo $BASH_SOURCE ; }
 oc-vi(){ vi $(oc-source) ; }
 oc-env(){  olocal- ; opticks- ; }
-
-
 oc-help(){ cat << EOH
 
 opticks-config
@@ -85,26 +83,134 @@ Contrast with enduser usage via script::
 TODO : Avoid manual pc edits 
 -----------------------------
 
-::
+Decided that a kludge with bin/pc.py following installation 
+is best way to handle this allowing a common approach to the 
+three afflicted externals : assimp, gflw3, glew 
+
+Edits move the "externals" from the prefix into the libdir and includedir,
+in order for prefix to have the same meaning for both internals and externals, 
+aiming for ease of relocatability by changing prefix when operating from 
+distributions::
 
    /usr/local/opticks/externals/lib/pkgconfig/assimp.pc
    /usr/local/opticks/externals/lib/pkgconfig/glfw3.pc
    /usr/local/opticks/externals/lib/pkgconfig/glew.pc
-   /usr/local/opticks/externals/lib/pkgconfig/yoctogl.pc
-       adding Libs: -L${libdir} -lYoctoGL -lstdc++ 
-       the yoctogl.pc is written by bcm_deploy from oyoctogl-cmake
 
-The edits move the "externals" from the prefix into the libdir and includedir.
-
-The reason for this is because are using pkg-config with --define-prefix 
-in order to work in a relocatable way for distributions.
-
-Perhaps use (see odcs-)::
+Overriding of INCLUDEDIR and LIBDIR are demonstated in the CMakeLists.txt 
+if odcs- and oyoctogl- with::
 
     include(GNUInstallDirs)
     set(CMAKE_INSTALL_INCLUDEDIR "externals/include/${name}")
     set(CMAKE_INSTALL_LIBDIR     "externals/lib")
     set(CMAKE_INSTALL_BINDIR     "lib")
+
+BUT it Looks difficult to induce the standard generation to create what want, 
+so need an after the install fix in a assimp-pc glfw-pc glew-pc 
+invoked at install from  assimp-- glfw-- glew--
+
+Probaby a python script that parses the pc variables would be 
+the obvious way to kludge it.
+
+
+assimp
+~~~~~~~~
+
+::
+
+    epsilon:assimp-fork blyth$ cat assimp.pc.in
+    prefix=@CMAKE_INSTALL_PREFIX@
+    exec_prefix=@CMAKE_INSTALL_PREFIX@/@ASSIMP_BIN_INSTALL_DIR@
+    libdir=@CMAKE_INSTALL_PREFIX@/@ASSIMP_LIB_INSTALL_DIR@
+    includedir=@CMAKE_INSTALL_PREFIX@/@ASSIMP_INCLUDE_INSTALL_DIR@/assimp
+
+    Name: @CMAKE_PROJECT_NAME@
+    Description: Import various well-known 3D model formats in an uniform manner.
+    Version: @PROJECT_VERSION@
+    Libs: -L${libdir} -lassimp@ASSIMP_LIBRARY_SUFFIX@
+    Libs.private: @LIBSTDC++_LIBRARIES@ @ZLIB_LIBRARIES_LINKED@
+    Cflags: -I${includedir}
+
+glew
+~~~~~
+
+build/cmake/CMakeLists.txt::
+
+    107 set (requireslib glu)
+    108 configure_file (${GLEW_DIR}/glew.pc.in ${GLEW_DIR}/glew.pc @ONLY)
+
+::
+
+    epsilon:glew-1.13.0 blyth$ cat glew.pc.in 
+    prefix=@prefix@
+    exec_prefix=${prefix}
+    libdir=@libdir@
+    includedir=${prefix}/include
+
+    Name: glew
+    Description: The OpenGL Extension Wrangler library
+    Version: @version@
+    Cflags: -I${includedir} @cflags@
+    Libs: -L${libdir} -l@libname@
+    Requires: @requireslib@
+
+
+glfw : pc via CMakePackageConfigHelpers
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* https://cmake.org/cmake/help/latest/module/CMakePackageConfigHelpers.html
+
+Despite the name that is not for pkg-config
+
+::
+
+    514 include(CMakePackageConfigHelpers)
+    515 
+    516 if (UNIX)
+    517     set(GLFW_CONFIG_PATH "${CMAKE_INSTALL_PREFIX}/lib/cmake/glfw3/")
+    518 else()
+    519     set(GLFW_CONFIG_PATH "${CMAKE_INSTALL_PREFIX}/")
+    520 endif()
+    521 
+    522 configure_package_config_file("${GLFW_SOURCE_DIR}/src/glfw3Config.cmake.in"
+    523                               "${GLFW_BINARY_DIR}/src/glfw3Config.cmake"
+    524                               INSTALL_DESTINATION "${GLFW_CONFIG_PATH}"
+    525                               PATH_VARS CMAKE_INSTALL_PREFIX
+    526                               NO_CHECK_REQUIRED_COMPONENTS_MACRO)
+    527 
+    528 write_basic_package_version_file("${GLFW_BINARY_DIR}/src/glfw3ConfigVersion.cmake"
+    529                                  VERSION ${GLFW_VERSION_FULL}
+    530                                  COMPATIBILITY SameMajorVersion)
+    531 
+    532 if (GLFW_BUILD_DOCS)
+    533     configure_file("${GLFW_SOURCE_DIR}/docs/Doxyfile.in"
+    534                    "${GLFW_BINARY_DIR}/docs/Doxyfile" @ONLY)
+    535 endif()
+    536 
+    537 configure_file("${GLFW_SOURCE_DIR}/src/glfw_config.h.in"
+    538                "${GLFW_BINARY_DIR}/src/glfw_config.h" @ONLY)
+    539 
+    540 configure_file("${GLFW_SOURCE_DIR}/src/glfw3.pc.in"
+    541                "${GLFW_BINARY_DIR}/src/glfw3.pc" @ONLY)
+
+    ## @ONLY means only substitute @VAR@ 
+
+::
+
+    epsilon:glfw-3.1.1 blyth$ cat src/glfw3.pc.in
+    prefix=@CMAKE_INSTALL_PREFIX@
+    exec_prefix=${prefix}
+    includedir=${prefix}/include
+    libdir=${exec_prefix}/lib@LIB_SUFFIX@
+
+    Name: GLFW
+    Description: A multi-platform library for OpenGL, window and input
+    Version: @GLFW_VERSION_FULL@
+    URL: http://www.glfw.org/
+    Requires.private: @GLFW_PKG_DEPS@
+    Libs: -L${libdir} -l@GLFW_LIB_NAME@
+    Libs.private: @GLFW_PKG_LIBS@
+    Cflags: -I${includedir}
+
 
 
 TODO : OptiXRap Linux linker warning
@@ -113,6 +219,10 @@ TODO : OptiXRap Linux linker warning
 ::
 
     /usr/bin/ld: warning: liboptix_prime.so.6.5.0, needed by /home/blyth/local/opticks/lib64/libOptiXRap.so, not found (try using -rpath or -rpath-link)
+
+
+TODO : operation with non-Opticks controlled boost and G4 
+------------------------------------------------------------
 
 
 
@@ -201,7 +311,6 @@ Typical Usage
     LD_LIBRARY_PATH=$(oc-libpath $pkg) ./Use$pkg
 
 
-
 Hmm always using define-prefix means have to get rid of prefix var in below ?
 ------------------------------------------------------------------------------
 
@@ -210,7 +319,6 @@ Hmm always using define-prefix means have to get rid of prefix var in below ?
   to the pc
 
 * hmm but its problematic from a cross platform point of view
-
 
 ::
 
@@ -226,8 +334,6 @@ Hmm always using define-prefix means have to get rid of prefix var in below ?
     Libs: -L${libdir} -lxerces-c
     Libs.private: -lcurl
     Cflags: -I${includedir}
-
-
 
 
 FIXED : define-prefix is scrubbing the CUDA include dir ?
@@ -337,13 +443,26 @@ oc-setup()
 }
 
 
+
+oc-prefix-notes(){ cat << EON
+
+opticks-prefix is only defined when sourced 
+when run from a script like ./go.sh that becomes $0
+
+When using these functions from oc or opticks-config plucked
+off the PATH the prefix should be determined from the path 
+to this script, otherwise rely on having opticks-prefix function.
+
+EON
+}
+
 oc-prefix(){
-   : opticks-prefix is only defined when sourced 
-   if [ "$0" == "-bash" ]
+   local arg=$0
+   if [ "${arg:(-2)}" == "oc" -o "${arg:(-14)}" == "opticks-config" ]
    then
-       opticks-prefix
-   else
        echo $(dirname $(dirname $0)) 
+   else
+       opticks-prefix
    fi
 }
 
@@ -372,6 +491,7 @@ oc-info(){
 oc-info $pkg
 ========================
 
+   \$0                : $0
    oc-prefix          : $(oc-prefix)
    oc-pkg-config-path : $(oc-pkg-config-path)
 
@@ -387,6 +507,8 @@ EOI
 
 
 oc-pkg-config(){ PKG_CONFIG_PATH=$(oc-pkg-config-path) pkg-config $* ; }
+oc-pcfix(){      PKG_CONFIG_PATH=$(oc-pkg-config-path) pc.py $* ; }
+
 
 oc-pkg-config-find(){
    local pkg=${1:-NPY}

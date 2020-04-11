@@ -124,6 +124,9 @@ bcm-env(){  olocal- ; opticks- ; }
 bcm-ls(){ ls -1 $(opticks-prefix)/externals/share/bcm/cmake/* ; }
 bcm-view(){ vim -R $(bcm-ls) ; }
 #bcm-edit(){ vim    $(bcm-ls) ; }   ## dont do that, these are installed files not under management
+
+
+bcm-pc(){ cd $(bcm-dir)/share/bcm/cmake ; vim BCMPkgConfig.cmake ; }
 bcm-info(){ cat << EOI
 
     url  : $(bcm-url)

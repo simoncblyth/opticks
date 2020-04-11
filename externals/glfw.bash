@@ -365,6 +365,14 @@ glfw-cmake(){
                    $(glfw-dir)
   fi 
 
+  cat << EON > /dev/null
+
+     -DCMAKE_INSTALL_LIBDIR=externals/lib \
+     -DCMAKE_INSTALL_INCLUDEDIR=externals/include
+
+EON 
+
+
   #                 -DOPTICKS_PREFIX=$(opticks-prefix) \
 
 
