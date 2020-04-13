@@ -269,7 +269,10 @@ xercesc-make()
 }
 
 
-xercesc-pc(){ echo $FUNCNAME placeholder ; }
+xercesc-pc(){ 
+   oc-
+   oc-pcfix xerces-c
+}
 
 xercesc--()
 {
