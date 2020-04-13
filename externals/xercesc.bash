@@ -268,6 +268,9 @@ xercesc-make()
    make ${1:-install}
 }
 
+
+xercesc-pc(){ echo $FUNCNAME placeholder ; }
+
 xercesc--()
 {
    xercesc-info
@@ -277,6 +280,7 @@ xercesc--()
    xercesc-get
    xercesc-configure
    xercesc-make
+   xercesc-pc
 }
 
 xercesc-darwin(){ cat << EOD

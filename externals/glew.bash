@@ -166,6 +166,7 @@ glew-install-win(){
 glew--() {
     glew-get
     glew-make install
+    glew-pc
 }
 
 glew-cmake-not-working(){
@@ -194,6 +195,21 @@ glew-lib64-rm()
    rm -rf pkgconfig 
  
    cd $iwd 
+}
+
+
+
+glew-pc-unglu(){
+   local path=$(oc-find glew)
+   if [ "$(uname)" == "Darwin" ]; then 
+       perl -pi -e 's/^Requires: glu/#Requires: glu/' $path 
+   fi 
+}
+
+glew-pc(){
+   oc-
+   oc-pcfix glew 
+   glew-pc-unglu  
 }
 
 

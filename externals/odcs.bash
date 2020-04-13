@@ -97,11 +97,15 @@ odcs-make()
 }
 
 
+odcs-pc(){ echo $FUNCNAME placeholder ; }
+
+
 odcs--()
 {
    odcs-get
    odcs-cmake
    odcs-make install
+   odcs-pc
 }
 
 odcs-t()

@@ -288,6 +288,7 @@ gleq-hdr(){
 
 gleq--(){
    gleq-get
+   gleq-pc
 }
 
 gleq-diff()
@@ -296,4 +297,7 @@ gleq-diff()
     echo $cmd
     eval $cmd
 }
+
+gleq-pc(){ echo $FUNCNAME placeholder ; }
+
 

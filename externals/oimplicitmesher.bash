@@ -197,12 +197,14 @@ oimplicitmesher-make()
     cd $iwd
 }
 
+oimplicitmesher-pc(){ echo $FUNCNAME placeholder ; }
 
 oimplicitmesher--()
 {
    oimplicitmesher-get
    oimplicitmesher-cmake
    oimplicitmesher-make install
+   oimplicitmesher-pc
 }
 
 oimplicitmesher-t()

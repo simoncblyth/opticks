@@ -186,7 +186,7 @@ plog-pc(){
    local dir=$(dirname $path)
 
    [ ! -d "$dir" ] && echo $msg creating dir $dir && mkdir -p $dir 
-
+   echo $msg $path
    plog-pc- > $path 
 }
 

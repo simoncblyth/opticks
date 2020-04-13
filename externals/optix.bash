@@ -786,7 +786,6 @@ optix-pc-(){
 
   cat << EOP
 
-
 libdir=$libdir
 
 ## $FUNCNAME
@@ -810,6 +809,7 @@ optix-pc(){
    local path=$(optix-pc-path)
    local dir=$(dirname $path)
    [ ! -d "$dir" ] && echo $msg creating dir $dir && mkdir -p $dir 
+   echo $msg $path 
    optix-pc- > $path 
 }
 

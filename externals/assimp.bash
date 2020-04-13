@@ -562,6 +562,7 @@ assimp--() {
    assimp-make install
 
    assimp-rpath-kludge
+   assimp-pc
 }
 
 assimp-build(){
@@ -611,5 +612,12 @@ assimp-test(){
 
    $pfx/bin/assimp info $srcpath
 
+}
+
+
+assimp-pc()
+{
+   oc-
+   oc-pcfix assimp   
 }
 

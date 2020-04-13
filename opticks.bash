@@ -556,6 +556,14 @@ g4
 EOL
 }
 
+opticks-preqs(){
+: emits to stdout the names of the bash precursors that configure and check pre-requisite packages
+   cat <<  EOP
+cuda
+optix
+EOP
+}
+
 opticks-optionals(){ cat << EOL
 EOL
 }
@@ -598,6 +606,10 @@ opticks-externals-url(){     echo $FUNCNAME ; opticks-externals | opticks-ext-ur
 opticks-externals-dist(){    echo $FUNCNAME ; opticks-externals | opticks-ext-dist ; }
 opticks-externals-dir(){     echo $FUNCNAME ; opticks-externals | opticks-ext-dir ; }
 opticks-externals-status(){  echo $FUNCNAME ; opticks-externals | opticks-ext-status ; }
+
+opticks-externals-pc(){      echo $FUNCNAME ; opticks-externals | opticks-ext-pc ; }
+opticks-preqs-pc(){          echo $FUNCNAME ; opticks-preqs     | opticks-ext-pc ; }
+
 
 opticks-optionals-install(){ echo $FUNCNAME ; opticks-optionals | opticks-ext-installer ; }
 opticks-optionals-url(){     echo $FUNCNAME ; opticks-optionals | opticks-ext-url ; }
@@ -652,6 +664,20 @@ opticks-full()
     echo $msg DONE $(date)
 }
 
+
+opticks-ext-pc()
+{
+   local msg="=== $FUNCNAME :"
+   local rc 
+   while read ext 
+   do
+        echo $msg $ext
+        $ext-
+        $ext-pc
+        rc=$?
+        [ $rc -ne 0 ] && echo $msg RC $rc from ext $ext : ABORTING && return $rc
+   done
+}
 
 
 opticks-ext-installer(){
@@ -842,6 +868,9 @@ opticks-prepare-installation()
     #cudarap-check-rng
 
     cudarap-prepare-installation
+
+
+    opticks-preqs-pc 
 }
 
 opticks-check-installation()

@@ -1201,14 +1201,12 @@ openmesh-libs(){
   ls -l $(openmesh-prefix)/lib/libOpenMesh*
 }
 
-openmesh-pc-(){ cat << EOP
+openmesh-pc-(){ 
+   oc-
+   oc-variables-
+   cat << EOP
 
 # $FUNCNAME $(date)
-
-prefix=$(opticks-prefix)
-exec_prefix=\${prefix}/lib
-libdir=\${prefix}/externals/lib
-includedir=\${prefix}/externals/include
 
 Name: OpenMesh
 Description: Mesh Traversal and Manipulations
@@ -1225,7 +1223,7 @@ openmesh-pc(){
    local dir=$(dirname $path)
 
    [ ! -d "$dir" ] && echo $msg creating dir $dir && mkdir -p $dir 
-
+   echo $msg $path 
    openmesh-pc- > $path 
 }
 

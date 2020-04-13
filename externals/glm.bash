@@ -285,6 +285,7 @@ glm-test-make(){
 glm--()
 {
    glm-get
+   glm-pc
 }
 
 glm-test(){

@@ -107,7 +107,10 @@ opticksaux-get(){
 opticksaux--()
 {
    opticksaux-get
+   opticksaux-pc
 }
+
+opticksaux-pc(){ echo $FUNCNAME placeholder ; }
 
 opticksaux-pull()
 {

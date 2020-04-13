@@ -304,6 +304,8 @@ oyoctogl-make()
     cmake --build . --config Release --target ${1:-install}
     cd $iwd
 }
+oyoctogl-pc(){ echo $FUNCNAME placeholder ; }
+
 
 
 oyoctogl--()
@@ -318,6 +320,7 @@ oyoctogl--()
    fi 
 
    oyoctogl-make install
+   oyoctogl-pc
 }
 
 oyoctogl-reader()

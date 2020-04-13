@@ -1331,6 +1331,7 @@ cuda-pc(){
    local path=$(cuda-pc-path)
    local dir=$(dirname $path)
    [ ! -d "$dir" ] && echo $msg creating dir $dir && mkdir -p $dir 
+   echo $msg $path 
    cuda-pc- > $path 
 }
 

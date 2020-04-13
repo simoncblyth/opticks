@@ -20,6 +20,9 @@
 glfw-src(){      echo externals/glfw.bash ; }
 glfw-source(){   echo ${BASH_SOURCE} ; }
 glfw-vi(){       vi $(glfw-source) ; }
+
+
+
 glfw-usage(){ cat << EOU
 
 GLFW
@@ -285,6 +288,8 @@ EOU
 }
 
 
+
+
 glfw-env(){      opticks- ;  }
 
 
@@ -306,15 +311,20 @@ glfw-cd(){  cd $(glfw-dir); }
 glfw-bcd(){ cd $(glfw-bdir); }
 glfw-icd(){ cd $(glfw-idir); }
 
-
-glfw-pc(){
-  PKG_CONFIG_PATH=$(glfw-prefix)/lib/pkgconfig pkg-config GLFW3 $*
+glfw-pc(){ 
+   oc- 
+   oc-pcfix glfw3 
 }
 
-glfw-pc-kludge(){
-   cd $(glfw-prefix)/lib/pkgconfig
-   mv glfw3.pc GLFW3.pc
-}
+
+#glfw-pcc(){
+#  PKG_CONFIG_PATH=$(glfw-prefix)/lib/pkgconfig pkg-config GLFW3 $*
+#}
+#
+#glfw-pcc-kludge(){
+#   cd $(glfw-prefix)/lib/pkgconfig
+#   mv glfw3.pc GLFW3.pc
+#}
 
 glfw-version(){ echo 3.1.1 ; }
 glfw-name(){ echo glfw-$(glfw-version) ; }
@@ -365,19 +375,9 @@ glfw-cmake(){
                    $(glfw-dir)
   fi 
 
-  cat << EON > /dev/null
-
-     -DCMAKE_INSTALL_LIBDIR=externals/lib \
-     -DCMAKE_INSTALL_INCLUDEDIR=externals/include
-
-EON 
-
-
-  #                 -DOPTICKS_PREFIX=$(opticks-prefix) \
-
-
   cd $iwd
 }
+glfw-check(){ echo TEST6 ; }
 
 glfw-configure()
 {
@@ -403,12 +403,13 @@ glfw-make(){
 }
 
 
-glfw--(){
+glfw--()
+{
    glfw-get
    glfw-cmake
    glfw-make install
+   glfw-pc
 }
-
 
 
 
@@ -465,7 +466,6 @@ glfw-keyname-line()
     [ "$2" == "GLFW_KEY_LAST" ] && return 
     printf "        case %-30s : s = %-30s ; break ; \n" $2 \"$2\"    
 }
-
 
 
 

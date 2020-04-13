@@ -491,19 +491,21 @@ imgui--(){
   imgui-get
   imgui-cmake
   imgui-make install 
-
    
   [ $? -ne 0 ] && echo $FUNCNAME ERROR && return 1
+
+  imgui-pc 
+
 
   cd $iwd
 }
 
 imgui-pc-path(){ echo $(opticks-prefix)/externals/lib/pkgconfig/imgui.pc ; }
-imgui-pc-(){ cat << EOP
+imgui-pc-(){ 
 
-prefix=$(opticks-prefix)
-includedir=\${prefix}/externals/include
-libdir=\${prefix}/externals/lib
+   oc-
+   oc-variables-
+   cat << EOP
 
 Name: ImGui
 Description: OpenGL Graphics Interface 
@@ -522,6 +524,7 @@ imgui-pc ()
     local path=$(imgui-pc-path);
     local dir=$(dirname $path);
     [ ! -d "$dir" ] && echo $msg creating dir $dir && mkdir -p $dir;
+    echo $msg path $path 
     imgui-pc- > $path
 }
 

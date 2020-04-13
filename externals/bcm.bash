@@ -126,7 +126,8 @@ bcm-view(){ vim -R $(bcm-ls) ; }
 #bcm-edit(){ vim    $(bcm-ls) ; }   ## dont do that, these are installed files not under management
 
 
-bcm-pc(){ cd $(bcm-dir)/share/bcm/cmake ; vim BCMPkgConfig.cmake ; }
+bcm-pc(){ echo $FUNCNAME placeholder ; }
+bcm-epc(){ cd $(bcm-dir)/share/bcm/cmake ; vim BCMPkgConfig.cmake ; }
 bcm-info(){ cat << EOI
 
     url  : $(bcm-url)

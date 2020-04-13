@@ -409,6 +409,7 @@ g4--()
     g4-build
 
     g4-export-ini
+    g4-pc
 
 }
 
@@ -838,10 +839,9 @@ g4-pc(){
     local path=$(g4-pc-path);
     local dir=$(dirname $path);
     [ ! -d "$dir" ] && echo $msg creating dir $dir && mkdir -p $dir;
+    echo $msg $path 
     g4-pc- > $path
 }
-
-
 
 
 

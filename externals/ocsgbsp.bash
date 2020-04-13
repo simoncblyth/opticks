@@ -229,6 +229,8 @@ ocsgbsp-make()
     cd $iwd
 }
 
+ocsgbsp-pc(){ echo $FUNCNAME placeholder ; }
+
 ocsgbsp--()
 {
    ocsgbsp-get
@@ -241,5 +243,6 @@ ocsgbsp--()
    #fi  
    
    ocsgbsp-make install
+   ocsgbsp-pc
 }
 
