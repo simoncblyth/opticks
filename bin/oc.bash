@@ -32,6 +32,10 @@ which are intepreted case insensitively.
 If the pkg name is not recognized an error message from 
 pkg-config is returned.
 
+
+    oc-pkg-config-path : $(oc-pkg-config-path)
+
+
 EOH
 }
 
@@ -414,6 +418,7 @@ $(oc-prefix)/externals/lib/pkgconfig
 EOP
 }
 oc-pkg-config-path-(){
+   local dir
    $FUNCNAME- | while read dir ; do
       [ -d "$dir" ] && echo $dir
    done
@@ -565,6 +570,8 @@ oc-main(){
 
 
 if [ ! "$0" == "-bash" -o "$0" == "bash" ]; then   ## when used as a script rather than being sourced 
-   [ "$(basename $0)" == "opticks-config" -o "$(basename $0)" == "oc"  ] && oc-main $*
+   if [ "$(basename $0)" == "opticks-config" -o "$(basename $0)" == "oc"  ]; then
+       oc-main $*
+   fi
 fi
 

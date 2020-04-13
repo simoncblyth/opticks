@@ -131,13 +131,23 @@ oimplicitmesher-bdir(){ echo $(opticks-prefix)/externals/ImplicitMesher/Implicit
 oimplicitmesher-cd(){  cd $(oimplicitmesher-dir); }
 oimplicitmesher-bcd(){ cd $(oimplicitmesher-bdir) ; }
 
+
 oimplicitmesher-fullwipe()
 {
-   # rm -rf  $(opticks-prefix)/externals/implicitmesher
-   # moving dev into here .. so dont blow it away 
- 
-    rm -f  $(opticks-prefix)/externals/lib/libImplicitMesher.dylib 
-    rm -rf $(opticks-prefix)/externals/include/ImplicitMesher
+    local iwd=$PWD
+    cd $(opticks-prefix)
+
+    rm -f  externals/lib/libImplicitMesher.*
+    rm -rf externals/include/ImplicitMesher
+    rm -rf externals/lib/cmake/implicitmesher
+    rm -f  externals/lib/pkgconfig/implicitmesher.pc
+
+    rm -f  lib/libImplicitMesher.*
+    rm -rf include/ImplicitMesher
+    rm -rf lib/cmake/implicitmesher
+    rm -f  lib/pkgconfig/implicitmesher.pc
+
+    cd $iwd
 }
 
 oimplicitmesher-update()
@@ -182,12 +192,28 @@ oimplicitmesher-cmake()
        -DCMAKE_PREFIX_PATH=$(opticks-prefix)/externals \
        -DCMAKE_BUILD_TYPE=Debug \
        -DCMAKE_INSTALL_PREFIX=$(opticks-prefix) \
-       $* \
+      $* \
        $(oimplicitmesher-dir)
 
 
     cd $iwd
 }
+
+oimplicitmesher-cmake-notes(){ cat << EON
+
+OpticksBuildOptions.cmake sets CMAKE_INSTALL_INCLUDEDIR to include/$name 
+where name is ImplicitMesher. Because of this cannot control from the 
+cmake commandline::
+
+       -DCMAKE_INSTALL_LIBDIR=externals/lib \
+       -DCMAKE_INSTALL_INCLUDEDIR=externals/include/ImplicitMesher \
+ 
+Instead have to do it within the CMakeLists.txt
+
+
+EON
+}
+
 
 oimplicitmesher-make()
 {
