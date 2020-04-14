@@ -159,15 +159,6 @@ A common prefix should eases relocatability when operating from
 distributions.
 
 
-
-TODO : OptiXRap Linux linker warning
----------------------------------------
-
-::
-
-    /usr/bin/ld: warning: liboptix_prime.so.6.5.0, needed by /home/blyth/local/opticks/lib64/libOptiXRap.so, not found (try using -rpath or -rpath-link)
-
-
 TODO : operation with non-Opticks controlled boost and G4 
 ------------------------------------------------------------
 
@@ -216,11 +207,10 @@ pkg-config versions
 Requirements for pkg-config hookup
 -------------------------------------
 
-1. all packages (internal and external) need a .pc file to be 
+1. all packages (internal, external and preqs) need a .pc file to be 
    installed into lib/pkgconfig or externals/lib/pkgconfig : often 
    the simplest way to do that is via the bash functions that install
    the package 
-  
 
 2. CMake machinery needs to be informed for externals by addition 
    of the INTERFACE_PKG_CONFIG_NAME property to found targets, this 
