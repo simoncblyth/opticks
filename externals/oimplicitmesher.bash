@@ -142,10 +142,16 @@ oimplicitmesher-fullwipe()
     rm -rf externals/lib/cmake/implicitmesher
     rm -f  externals/lib/pkgconfig/implicitmesher.pc
 
-    rm -f  lib/libImplicitMesher.*
     rm -rf include/ImplicitMesher
+
+    rm -f  lib/libImplicitMesher.*
     rm -rf lib/cmake/implicitmesher
     rm -f  lib/pkgconfig/implicitmesher.pc
+
+    rm -f  lib64/libImplicitMesher.*
+    rm -rf lib64/cmake/implicitmesher
+    rm -f  lib64/pkgconfig/implicitmesher.pc
+
 
     cd $iwd
 }
