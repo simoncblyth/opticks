@@ -282,7 +282,15 @@ geocache-kcd(){
       echo $msg OPTICKS_KEY is not defined  
    else
       echo $msg OPTICKS_KEY $OPTICKS_KEY 
-      cd $(geocache-keydir) ; pwd ; cat runcomment.txt ; 
+      local keydir=$(geocache-keydir)
+
+      if [ -d "$keydir" ]; then  
+          cd $keydir 
+          pwd 
+          cat runcomment.txt 
+      else
+          echo $msg keydir $keydir does not exist 
+      fi 
    fi 
 
  }
@@ -486,11 +494,15 @@ EON
 
 
 
-geocache-dx-v0-(){  opticksdata- ; geocache-create- --gdmlpath $(opticksaux-dx-)_v0.gdml --x4polyskip 211,232  --geocenter $* ; }     
+geocache-dx-v0-(){  opticksaux- ; geocache-create- --gdmlpath $(opticksaux-dx-)_v0.gdml --x4polyskip 211,232  --geocenter $* ; }     
 geocache-dx-v0-comment(){ echo export-dyb-gdml-from-g4-10-4-2-to-support-geocache-creation.rst ; }     
 geocache-dx-v0(){   geocache-dx-v0- --runfolder $FUNCNAME --runcomment $(${FUNCNAME}-comment) $* ; } 
-geocache-dx-v0-key(){ echo OKX4Test.X4PhysicalVolume.World0xc15cfc00x40f7000_PV.5aa828335373870398bf4f738781da6c ; }
-
+geocache-dx-v0-key(){ 
+   case $(uname) in 
+      Linux)  echo OKX4Test.X4PhysicalVolume.World0xc15cfc00x40f7000_PV.5aa828335373870398bf4f738781da6c ;;
+      Darwin) echo OKX4Test.X4PhysicalVolume.World0xc15cfc00x40f7000_PV.50a18baaf29b18fae8c1642927003ee3 ;;
+   esac
+}
 
 geocache-dxtmp-(){  opticksdata- ; geocache-create- --gdmlpath $(opticksdata-dxtmp) $* ; }
 geocache-dxtmp-comment(){  echo gdml-insitu-created-by-OKG4Test-export ; }

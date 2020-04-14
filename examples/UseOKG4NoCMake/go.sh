@@ -32,7 +32,7 @@ pkg=OKG4
 
 gcc -c $sdir/Use$pkg.cc $(oc-cflags $pkg)
 gcc Use$pkg.o -o Use$pkg $(oc-libs $pkg) 
-#LD_LIBRARY_PATH=$(oc-libpath $pkg) ./Use$pkg
+LD_LIBRARY_PATH=$(oc-libpath $pkg) ./Use$pkg
 
 
 
