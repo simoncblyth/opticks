@@ -27,6 +27,18 @@
 #include "NPY.hpp"
 #include "Randomize.hh"
 
+/**
+CAlignEngineTest
+==================
+
+CAlignEngine loads from $TMP/TRngBufTest_0.npy requiring 
+TRngBufTest to have been run previously.
+
+The buffer sizes at creation need to match those
+asserted on below, see thrustrap/tests/TRngBufTest.cu
+
+**/
+
 
 struct CAlignEngineTest
 {
@@ -52,14 +64,15 @@ CAlignEngineTest::CAlignEngineTest()
     ni(ae->m_seq_ni), 
     nv(ae->m_seq_nv)  
 {
-    assert( seq ); 
-    assert( nv == 256 );      
-    assert( ni == 100000 );      
-
     LOG(info) 
         << " ni " << ni 
         << " nv " << nv
         ;
+
+    assert( seq ); 
+    assert( nv == 256 );      
+    assert( ni == 10000 );      
+
 
     spin(10, true) ; 
 

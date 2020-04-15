@@ -10,6 +10,8 @@ set(SCRIPTS
    opticks-site-local.bash
    o.sh
    tboolean.sh
+   env.sh
+   env-l.sh
    scan.bash
    oc.bash
 

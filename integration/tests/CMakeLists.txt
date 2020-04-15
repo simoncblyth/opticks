@@ -41,10 +41,19 @@ set_tests_properties(${TEST} PROPERTIES ENVIRONMENT "LV=${LV}")
 
 
 #[=[
+
+List tests::
+
+    
+    cd ~/integration/tests
+    om-cd   # flip to bdir
+
+    ctest -N # list tests 
+
+
 Debug fabricated tests with::
 
-  ctest -R IntegrationTests.tboolean. --output-on-failure 
-
+    ctest -R IntegrationTests.tboolean. --output-on-failure 
 
 
 Run without ctest::

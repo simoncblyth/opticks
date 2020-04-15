@@ -1172,18 +1172,31 @@ cuda-libdir(){
    esac
 }
 
+cuda-path-add () 
+{ 
+    local dir=$1;
+    : only prepend the dir when not already there;
+    [ "${PATH/$dir}" == "${PATH}" ] && export PATH=$dir:$PATH
+}
+
+cuda-libpath-add () 
+{ 
+    local dir=$1;
+    : only prepend the dir when not already there;
+    [ "${LD_LIBRARY_PATH/$dir}" == "${LD_LIBRARY_PATH}" ] && export LD_LIBRARY_PATH=$dir:$LD_LIBRARY_PATH
+}
+
+
+
+
+
 cuda-path(){
     local dir=$(cuda-dir)
     [ ! -d $dir ] && return 1
-    export PATH=$dir/bin:$PATH
-    local libdir=$(cuda-libdir)
+    cuda-path-add $dir/bin
 
-    if [ "$(uname)" == "Darwin" ]; then 
-       export DYLD_LIBRARY_PATH=$libdir:$DYLD_LIBRARY_PATH      # not documented ??? links from this to $dir/lib
-    else
-       export LD_LIBRARY_PATH=$libdir:$LD_LIBRARY_PATH
-    fi
-    # these are not seen by the pycuda build
+    local libdir=$(cuda-libdir)
+    cuda-libpath-add $libdir
 }
 
 
