@@ -12,11 +12,17 @@ set(COMPONENTS system program_options filesystem regex )
 find_package(Boost REQUIRED COMPONENTS ${COMPONENTS} )
 set_target_properties(Boost::system  PROPERTIES INTERFACE_FIND_PACKAGE_NAME "Boost REQUIRED COMPONENTS ${COMPONENTS}")
 
-
-
-## kludge that tees up arguments to find_dependency in generated export useboost-config.cmake 
-## so downstream will automatically do the above find_package 
+#[=[
+setting INTERFACE_FIND_PACKAGE_NAME is a kludge 
+that tees up arguments to find_dependency in generated export useboost-config.cmake 
+so downstream will automatically do the above find_package 
 #set_target_properties(Boost::filesystem PROPERTIES INTERFACE_FIND_PACKAGE_NAME "Boost REQUIRED COMPONENTS filesystem")
+
+share/bcm/cmake/BCMExport.cmake generates the useboost-config.cmake  and is invoked by the bcm_deploy
+
+#]=]
+
+
 
 echo_pfx_vars(Boost "VERSION;DIR;FOUND;FILESYSTEM_FOUND;SYSTEM_FOUND;INCLUDE_DIRS;LIBRARY_DIRS;FIND_COMPONENTS")
 echo_target_std(Boost::filesystem)
@@ -33,6 +39,7 @@ target_link_libraries(${name} PUBLIC
 )
 
 
+#[=[
 set(example PTreeMinimal)
 add_executable(${example} ${example}.cc)
 target_link_libraries( ${example} PUBLIC 
@@ -41,6 +48,8 @@ target_link_libraries( ${example} PUBLIC
    Boost::filesystem
    Boost::regex
 )
+#]=]
+
 
 
 

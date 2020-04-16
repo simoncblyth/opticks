@@ -27,6 +27,9 @@
 
 #include <boost/filesystem.hpp>
 
+#include <boost/version.hpp>
+
+
 namespace fs = boost::filesystem;
 
 
@@ -48,6 +51,20 @@ const char* UseBoost::concat_path(int argc, char** argv)
     std::string x = p.string() ;
     return strdup(x.c_str());
 }
+
+
+void UseBoost::dump_version()
+{
+   std::cout 
+          << "Using Boost "         
+          << BOOST_VERSION / 100000     << "."  // major version
+          << BOOST_VERSION / 100 % 1000 << "."  // minor version
+          << BOOST_VERSION % 100                // patch level
+          << std::endl;
+}
+
+
+
 
 
 /*

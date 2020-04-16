@@ -48,7 +48,8 @@ export CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:$(opticks-prefix)/externals
 cmake $sdir \
      -DCMAKE_BUILD_TYPE=Debug \
      -DCMAKE_INSTALL_PREFIX=$(opticks-prefix) \
-     -DCMAKE_MODULE_PATH=$(opticks-home)/cmake/Modules 
+     -DCMAKE_MODULE_PATH=$(opticks-home)/cmake/Modules \
+     -DOPTICKS_PREFIX=$(opticks-prefix)
 
 cat << EOC > /dev/null
 

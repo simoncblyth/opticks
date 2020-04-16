@@ -26,9 +26,10 @@ RPATH setup docs
 
 #]=]
 
-
-#message(STATUS "OpticksBuildOptions.cmake Configuring ${name}")
 message(STATUS "Configuring ${name}")
+if(OBO_VERBOSE)
+message(STATUS "OpticksBuildOptions.cmake Configuring ${name} [")
+endif()
 
 
 if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
@@ -118,5 +119,9 @@ endif()
 
 
 include(OpticksCXXFlags)   
+
+if(OBO_VERBOSE)
+message(STATUS "OpticksBuildOptions.cmake Configuring ${name} ]")
+endif()
 
 

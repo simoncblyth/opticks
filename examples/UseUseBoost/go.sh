@@ -34,7 +34,8 @@ cmake $sdir \
     -DCMAKE_BUILD_TYPE=Debug \
     -DCMAKE_INSTALL_PREFIX=$(opticks-prefix) \
     -DCMAKE_PREFIX_PATH=$(opticks-prefix)/externals \
-    -DCMAKE_MODULE_PATH=$(opticks-home)/cmake/Modules
+    -DCMAKE_MODULE_PATH=$(opticks-home)/cmake/Modules \
+    -DOPTICKS_PREFIX=$(opticks-prefix)
 
 
 cat << EON > /dev/null
