@@ -6,7 +6,7 @@ set(OBO_VERBOSE ON)
 
 include(OpticksBuildOptions)
 
-
+#set(Boost_DEBUG ON)
 
 #[=[
 

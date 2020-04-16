@@ -83,20 +83,21 @@ rc=$? && [ "$rc" != "0" ] && echo install RC $rc && exit $rc
 
 exe=$(opticks-prefix)/lib/$name
 
-if [ "$(uname)" == "Linux" ]; then
-   ldd $exe
-fi 
+ls -l $exe
+
+case "$(uname)" in 
+   Linux) ldd $exe ;;
+   Darwin) otool -L $exe ;; 
+esac
 
 
+case "$(uname)" in 
+   Linux) $exe ;; 
+   Darwin) DYLD_LIBRARY_PATH=$(opticks-prefix)/externals/lib $exe ;;
+esac
 
-if [ -f "$exe" ]; then
-    ls -l $exe
-    echo running installed exe $exe
-    $exe
-else 
-    echo failed to install exe to $exe 
-fi 
-
+# SOMETHING IS WROING WITH THE DEFAULT RPATH SETUP FOR BOOST LIBS ?
+# https://stackoverflow.com/questions/3431619/how-to-force-boost-to-use-rpath
 
 
 cat << EON > /dev/null
@@ -126,7 +127,8 @@ EON
 cat << EOX > /dev/null
 
 
-Wierd CMake find boost mixup 
+Wierd CMake find boost mixup  : related to the INTERFACE_PACKAGE_NAME kludge 
+and version numbers 
 
 
 -- Detecting CXX compile features - done

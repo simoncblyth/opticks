@@ -31,6 +31,21 @@ TODO
 * see if the repeated finding can be avoided, 
   perhaps by using an FindOpticksBoost.cmake that mediates 
 
+* the below BoostRap headers directly include boost headers : leaking dependency 
+
+::
+
+    epsilon:boostrap blyth$ grep -l boost *.hh
+    BCfg.hh
+    BJSONParser.hh
+    BLogDeprecated.hh
+    BMap.hh
+    BOpticksEvent.hh
+    BRegex.hh
+    BRng.hh
+    BTimeKeeper.hh
+    BTree.hh
+
 
 #]=]
 

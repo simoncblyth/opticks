@@ -23,6 +23,23 @@ opticks-
 oc-
 
 
+notes(){ cat << EON
+
+This succeeds despite there being no boost.pc. How ? 
+
+* no direct usage of boost headers in UseBoostRap  
+* BOpticksResource.cc uses boost_filesystem but not fs in header
+
+
+Check the otool -L to see which boost gets used, 
+before rebuilding BoostRap its still the macports one
+from /opt/local/lib/
+
+EON
+}
+
+
+
 sdir=$(pwd)
 bdir=/tmp/$USER/opticks/$(basename $sdir)/build 
 rm -rf $bdir && mkdir -p $bdir && cd $bdir && pwd 
@@ -30,8 +47,17 @@ rm -rf $bdir && mkdir -p $bdir && cd $bdir && pwd
 idpath=/usr/local/opticks/opticksdata/export/DayaBay_VGDX_20140414-1300/g4_00.96ff965744a2f6b78c24e33c80d3a4cd.dae
 pkg=BoostRap
 
-gcc -c $sdir/Use$pkg.cc $(oc-cflags $pkg)
-gcc  Use$pkg.o -o Use$pkg $(oc-libs $pkg)
-IDPATH=$idpath LD_LIBRARY_PATH=$(oc-libpath $pkg) ./Use$pkg
+echo gcc -c $sdir/Use$pkg.cc $(oc-cflags $pkg)
+     gcc -c $sdir/Use$pkg.cc $(oc-cflags $pkg)
+echo gcc  Use$pkg.o -o Use$pkg $(oc-libs $pkg)
+     gcc  Use$pkg.o -o Use$pkg $(oc-libs $pkg)
+
+if [ "$(uname)" == "Darwin" ]; then 
+    otool -L ./Use$pkg 
+    otool -L $(opticks-prefix)/lib/lib$pkg.dylib
+fi
+
+echo IDPATH=$idpath LD_LIBRARY_PATH=$(oc-libpath $pkg) ./Use$pkg
+     IDPATH=$idpath LD_LIBRARY_PATH=$(oc-libpath $pkg) ./Use$pkg
 
 

@@ -28,6 +28,45 @@ BOOST
 * http://www.boost.org/users/history/
 
 
+b2 docs
+----------
+
+* https://boostorg.github.io/build/manual/master/index.html#bbv2.faq.dll-path
+
+
+Boost and Opticks
+------------------
+
+* boost is not listed in opticks-externals 
+* boost is regarded as a pre-requisite 
+
+  * huh : but it is not listed in opticks-preqs ?
+
+* on macOS boost comes from macports ? 
+ 
+  * huh : there is no boost.pc ?
+
+
+Boost and CMake 
+------------------
+
+* :google:`Boost 1.70.0 CMake` shows lots of issues
+* presumably Boost 1.70.0 has overhauled its CMake machinery.
+
+
+
+
+
+
+
+Boost and pkg-config : no offical solution
+--------------------------------------------
+
+* https://stackoverflow.com/questions/3971703/how-to-use-c-boost-library-with-pkg-config
+* https://svn.boost.org/trac10/ticket/1094
+
+
+
 On CentOS 7 got boost 1.53 from base repo 
 ---------------------------------------------
 
@@ -428,7 +467,8 @@ boost-env(){      olocal- ; opticks- ;  }
 boost-ver(){ 
     #echo 1.54.0 
     #echo 1.60.0 
-    echo 1.61.0 
+    #echo 1.61.0 
+    echo  1.70.0
 }
 boost-name(){ local ver=$(boost-ver) ; echo boost_${ver//./_} ; }
 boost-url(){ echo "http://downloads.sourceforge.net/project/boost/boost/$(boost-ver)/$(boost-name).tar.gz" ;  }
@@ -447,9 +487,6 @@ boost-icd(){  cd $(boost-idir); }
 boost-fcd(){  cd $(boost-fold); }
 
 
-boost-dir-old(){ echo $(local-base)/env/boost/$(boost-name) ; }
-boost-prefix-old(){ echo $(boost-dir).local ; }
-
 boost-get(){
    local iwd=$PWD
    local dir=$(dirname $(boost-dir)) &&  mkdir -p $dir && cd $dir
@@ -462,7 +499,6 @@ boost-get(){
 
    cd $iwd
 }
-
 
 
 boost--() {
@@ -507,7 +543,7 @@ boost-b2(){
 
    case $(opticks-cmake-generator) in
      "Visual Studio 14 2015") cmd "/C b2 --prefix=$(boost-prefix-win) --build-dir=$(boost-bdir-win) $*  " ;;
-                           *) ./b2 --prefix=$(boost-prefix) --build-dir=$(boost-bdir) $* ;;
+                           *) ./b2  hardcode-dll-paths=true dll-path=$(boost-prefix)/lib --prefix=$(boost-prefix) --build-dir=$(boost-bdir) $* ;;
    esac
 }
 
@@ -551,54 +587,98 @@ boost-example(){
 
 
 
+boost-components-(){ cat << EOC
+system
+program_options
+filesystem
+regex
+EOC
+}
 
-old-boost-export() {
-    # hmm this was being called from env-env : what is using it ?
-    export BOOST_INSTALL_DIR=$(old-boost-install-dir)
-    export BOOST_SUFFIX=$(old-boost-suffix)
+boost-libs(){
+   local comp
+   boost-components- | while read comp ; do 
+      printf -- "-lboost_%s " "$comp"
+   done
 }
-old-boost-install-dir() {
-    case $NODE_TAG in
-        D) echo /opt/local ;;
-        LT) echo /home/ihep/data/doc/home/ihep/juno-dev-new/ExternalLibs/Boost/1.55.0/ ;;
-        GTL) echo /afs/ihep.ac.cn/soft/juno/JUNO-ALL-SLC6/Release/J15v1r1/ExternalLibs/Boost/1.55.0/ ;;
-        *) echo $(local-base);;
-    esac
+
+
+
+boost-pc-path(){ echo $(opticks-prefix)/externals/lib/pkgconfig/boost.pc ; }
+boost-pc-() 
+{ 
+   ## hmm need to branch depending on system boost or self-installed boost 
+
+    cat <<EOP
+
+# $FUNCNAME $(date)
+
+prefix=$(opticks-prefix)
+includedir=\${prefix}/externals/include
+libdir=\${prefix}/externals/lib
+
+Name: Boost
+Description: 
+Version: $(boost-ver)
+Libs: -L\${libdir} $(boost-libs) -lstdc++ 
+Cflags: -I\${includedir}
+
+EOP
 }
-old-boost-suffix() {
-    case $NODE_TAG in
-        D) echo '-mt' ;;
-        *) echo ;;
-    esac
+
+boost-pc() 
+{ 
+    local msg="=== $FUNCNAME :";
+    local path=$(boost-pc-path);
+    local dir=$(dirname $path);
+    [ ! -d "$dir" ] && echo $msg creating dir $dir && mkdir -p $dir;
+    echo $msg $path;
+    boost-pc- > $path
 }
-old-boost-nuwa-plat(){
-  case $NODE_TAG in
-     N) echo i686-slc5-gcc41-dbg ;;
-     C) echo i686-slc4-gcc34-dbg ;;
-  esac
+
+
+
+boost-rpath-fix-notes(){ cat << EON
+
+https://stackoverflow.com/questions/33665781/dependencies-on-boost-library-dont-have-full-path/33893062#33893062
+
+EON
 }
-old-boost-libdir(){  
-   case $(boost-ver) in 
-     nuwa) echo $DYB/external/Boost/1.38.0_python2.7/$(boost-nuwa-plat)/lib ;;
-        *) echo  $(boost-prefix)/lib ;;
-   esac
+
+
+
+boost-rpath-fix-Darwin(){
+   local lib
+   ls -1 libboost_*.dylib | while read lib ; do 
+        install_name_tool $lib -id @rpath/$lib
+   done
 }
-old-boost-incdir(){  
-   case $(boost-ver) in 
-    nuwa) echo $DYB/external/Boost/1.38.0_python2.7/$(boost-nuwa-plat)/include/boost-1_38 ;; 
-       *) echo  $(boost-prefix)/include ;; 
-   esac
+boost-rpath-fix-Linux(){
+   local lib
+   ls -1 libboost_*.so | while read lib ; do 
+        chrpath --replace @rpath/$lib $lib
+   done
 }
-old-boost-python-lib(){
-   case $(boost-ver) in 
-     nuwa) echo $(boost-python-lib-nuwa) ;; 
-        *) echo boost_python ;; 
-   esac
+boost-rpath-fix(){
+   cd $(opticks-prefix)/externals/lib
+   boost-rpath-fix-$(uname) 
 }
-old-boost-python-lib-nuwa(){
-  case $NODE_TAG in 
-     N) echo boost_python-gcc41-mt ;;
-     C) echo boost_python-gcc34-mt ;;
-  esac   
+
+
+boost-rpath-Darwin(){
+   local lib
+   ls -1 libboost_*.dylib | while read lib ; do 
+        otool -L $lib
+   done
+}
+boost-rpath-Linux(){
+   local lib
+   ls -1 libboost_*.so | while read lib ; do 
+        chrpath $lib
+   done
+}
+boost-rpath(){ 
+   cd $(opticks-prefix)/externals/lib
+   boost-rpath-$(uname) 
 }
 
