@@ -45,11 +45,17 @@ fi
 
 export CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:$(opticks-prefix)/externals
 
+echo $CMAKE_PREFIX_PATH | tr ":" "\n"
+
+
 cmake $sdir \
      -DCMAKE_BUILD_TYPE=Debug \
      -DCMAKE_INSTALL_PREFIX=$(opticks-prefix) \
      -DCMAKE_MODULE_PATH=$(opticks-home)/cmake/Modules \
      -DOPTICKS_PREFIX=$(opticks-prefix)
+
+# no prefix path arg means are sensitive to the envvar, so will find the juno Boost 
+
 
 cat << EOC > /dev/null
 

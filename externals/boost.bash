@@ -53,6 +53,56 @@ Boost and CMake
 * :google:`Boost 1.70.0 CMake` shows lots of issues
 * presumably Boost 1.70.0 has overhauled its CMake machinery.
 
+Querying the CMake cache for boost variables ? From UseBoost bdir::
+
+    [blyth@localhost build]$ cmake -LA -N . | grep Boost_
+    Boost_DIR:PATH=Boost_DIR-NOTFOUND
+    Boost_FILESYSTEM_LIBRARY_DEBUG:FILEPATH=/usr/lib64/libboost_filesystem-mt.so
+    Boost_FILESYSTEM_LIBRARY_RELEASE:FILEPATH=/usr/lib64/libboost_filesystem-mt.so
+    Boost_INCLUDE_DIR:PATH=/usr/include
+    Boost_LIBRARY_DIR_DEBUG:PATH=/usr/lib64
+    Boost_LIBRARY_DIR_RELEASE:PATH=/usr/lib64
+    Boost_PROGRAM_OPTIONS_LIBRARY_DEBUG:FILEPATH=/usr/lib64/libboost_program_options-mt.so
+    Boost_PROGRAM_OPTIONS_LIBRARY_RELEASE:FILEPATH=/usr/lib64/libboost_program_options-mt.so
+    Boost_REGEX_LIBRARY_DEBUG:FILEPATH=/usr/lib64/libboost_regex-mt.so
+    Boost_REGEX_LIBRARY_RELEASE:FILEPATH=/usr/lib64/libboost_regex-mt.so
+    Boost_SYSTEM_LIBRARY_DEBUG:FILEPATH=/usr/lib64/libboost_system-mt.so
+    Boost_SYSTEM_LIBRARY_RELEASE:FILEPATH=/usr/lib64/libboost_system-mt.so
+       
+This means can know which Boost FindBoost found, but what is the source 
+of truth ? How to influence the FindBoost at a higher level ? So can 
+just use that as "truth", eg with::
+
+   opticks-boost-libdir
+   opticks-boost-includedir
+
+Which present envvars.
+
+
+* https://cmake.org/cmake/help/latest/command/find_package.html
+
+Could use CMAKE_PREFIX_PATH envvar as the arbiter and as a standin for "truth", 
+but that means need to duplicate the CMake Find logic ? 
+Or just generate a simple CMakeLists.txt like cmak- and parse the output.
+Too complicated. Something simple that works mostly is better than something 
+complicated that always works : need to balance complexity and correctness. 
+
+
+
+
+Boost and RPATH on CentOS7
+------------------------------
+
+Yum managed system boost has RPATH in which there are no boost libs ?::
+
+    [blyth@localhost lib64]$ chrpath libboost_*.so
+    libboost_atomic-mt.so: RPATH=/usr/lib:/usr/lib/python2.7/config
+    libboost_atomic.so: RPATH=/usr/lib:/usr/lib/python2.7/config
+    libboost_chrono-mt.so: RPATH=/usr/lib:/usr/lib/python2.7/config
+    libboost_chrono.so: RPATH=/usr/lib:/usr/lib/python2.7/config
+    libboost_context-mt.so: RPATH=/usr/lib:/usr/lib/python2.7/config
+
+    /lib64 -> /usr/lib64
 
 
 
@@ -656,12 +706,18 @@ boost-rpath-fix-Darwin(){
 boost-rpath-fix-Linux(){
    local lib
    ls -1 libboost_*.so | while read lib ; do 
-        chrpath --replace @rpath/$lib $lib
+        chrpath --replace $PWD $lib
+       # @rpath is a Darwinism ? 
    done
 }
 boost-rpath-fix(){
    cd $(opticks-prefix)/externals/lib
-   boost-rpath-fix-$(uname) 
+
+   if [ "$(uname)" == "Darwin" ]; then 
+       boost-rpath-fix-$(uname) 
+   else
+       echo not running boost-rpath-fix-$(uname) 
+   fi
 }
 
 
