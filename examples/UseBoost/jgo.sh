@@ -45,6 +45,7 @@ fi
 
 export CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:$(opticks-prefix)/externals
 
+echo CMAKE_PREFIX_PATH
 echo $CMAKE_PREFIX_PATH | tr ":" "\n"
 
 
@@ -57,11 +58,23 @@ cmake $sdir \
 # no prefix path arg means are sensitive to the envvar, so will find the juno Boost 
 
 
+echo PKG_CONFIG_PATH
+echo $PKG_CONFIG_PATH | tr ":" "\n"
+
+echo pkg-config --libs boost
+     pkg-config --libs boost
+echo pkg-config --cflags boost
+     pkg-config --cflags boost
+
+
+
+
 cat << EOC > /dev/null
 
      -DCMAKE_PREFIX_PATH=$(opticks-prefix)/externals \
 
 Huh : somehow CMake finds the juno boost without any assistance ?
+Presumably from CMAKE_PREFIX_PATH envvar.
 
 
      -DBOOST_INCLUDEDIR=$(opticks-boost-includedir) \
@@ -77,6 +90,22 @@ Huh : somehow CMake finds the juno boost without any assistance ?
 /home/blyth/junotop/ExternalLibs/Build/cmake-3.15.2/Modules/FindBoost.cmake
 /home/blyth/junotop/ExternalLibs/Cmake/3.15.2/share/cmake-3.15/Modules/FindBoost.cmake
 /usr/share/cmake3/Modules/FindBoost.cmake
+
+
+/home/blyth/junotop/ExternalLibs/Boost/1.70.0/bashrc::
+
+     12 if [ -d ${JUNO_EXTLIB_Boost_HOME}/lib/pkgconfig ];
+     13 then
+     14 export PKG_CONFIG_PATH=${JUNO_EXTLIB_Boost_HOME}/lib/pkgconfig:${PKG_CONFIG_PATH}
+     15 fi
+     ..
+     25 if [ -d ${JUNO_EXTLIB_Boost_HOME}/lib64/pkgconfig ];
+     26 then
+     27 export PKG_CONFIG_PATH=${JUNO_EXTLIB_Boost_HOME}/lib64/pkgconfig:${PKG_CONFIG_PATH}
+     28 fi
+
+
+
 
 
 
