@@ -43,6 +43,18 @@ Introductions
   111 slides of Geant4 intro 
 
 
+Install non-default Geant4 version
+------------------------------------
+
+::
+
+
+   OPTICKS_GEANT4_PREFIX=/usr/local/foreign OPTICKS_GEANT4_NOM=geant4.10.05.p01  g4-info
+   OPTICKS_GEANT4_PREFIX=/usr/local/foreign OPTICKS_GEANT4_NOM=geant4.10.05.p01  g4--
+
+
+
+
 
 Migration to 10 (Multithreaded)
 --------------------------------
@@ -252,24 +264,12 @@ g4-env(){
    opticks-
 }
 
-g4-edir(){ echo $(opticks-home)/g4 ; }
-
-#g4-dir(){  echo $(local-base)/env/g4/$(g4-name) ; }
-#g4-dir(){  echo $(opticks-prefix)/externals/g4/$(g4-name) ; }
-
-#g4-prefix(){  echo $(opticks-prefix)/externals ; }
-
 g4-prefix(){ 
-    if [ -n "$OPTICKS_GEANT4_HOME" ];then
-        echo "$OPTICKS_GEANT4_HOME"
-    else
-        case $NODE_TAG in 
-           MGB) echo $HOME/local/opticks/externals ;;
-             D) echo /usr/local/opticks/externals ;;
-             X) echo /opt/geant4 ;;
-             *) echo ${LOCAL_BASE:-/usr/local}/opticks/externals ;;
-        esac
-    fi
+   if [ -n "$OPTICKS_GEANT4_HOME" ]; then
+       echo $OPTICKS_GEANT4_HOME        # backward compat for a poor name 
+   else
+       echo ${OPTICKS_GEANT4_PREFIX:-$(opticks-prefix)/externals} 
+   fi
 }
 
 g4-libsuffix(){ 
@@ -279,8 +279,6 @@ g4-libsuffix(){
     esac
 }
 
-
-
 g4-idir(){ echo $(g4-prefix) ; }
 g4-dir(){   echo $(g4-prefix)/$(g4-tag)/$(g4-name) ; } 
 
@@ -288,15 +286,7 @@ g4-dir(){   echo $(g4-prefix)/$(g4-tag)/$(g4-name) ; }
 
 
 
-
-g4-nom()
-{
-   case $NODE_TAG in
-     E) echo geant4_10_04_p02 ;;   ## macOS
-   OLD) echo Geant4-10.2.1 ;;  
-     *) echo geant4_10_04_p02 ;;
-   esac
-}
+g4-nom(){ echo ${OPTICKS_GEANT4_NOM:-geant4_10_04_p02} ; }
 
 g4-title()
 {
@@ -340,6 +330,7 @@ g4-url(){
         geant4_10_04_p01) echo http://geant4-data.web.cern.ch/geant4-data/releases/geant4_10_04_p01.zip  ;; 
         geant4_10_04_p02) echo http://geant4-data.web.cern.ch/geant4-data/releases/geant4.10.04.p02.tar.gz ;; 
         geant4.10.05.b01) echo http://geant4-data.web.cern.ch/geant4-data/releases/geant4.10.05.b01.tar.gz ;; 
+        geant4.10.05.p01) echo http://cern.ch/geant4-data/releases/geant4.10.05.p01.tar.gz ;; 
    esac
 }
 
@@ -361,7 +352,6 @@ g4-examples-dir(){  echo $(g4-prefix)/share/$(g4-nom)/examples ; }
 g4-gdml-dir(){      echo $(g4-dir)/source/persistency/gdml ; }
 g4-optical-dir(){   echo $(g4-dir)/source/processes/optical/src ; }
 
-g4-ecd(){  cd $(g4-edir); }
 g4-c(){    cd $(g4-dir); }
 g4-cd(){   cd $(g4-dir); }
 g4-icd(){  cd $(g4-prefix); }
@@ -845,4 +835,42 @@ g4-pc(){
 
 
 
+g4-pcc-(){ 
+
+   local prefix=$(cd $(geant4-config --prefix) ; pwd )
+
+   cat << EOP
+
+prefix=$prefix
+
+Name: Geant4
+Description:
+Version: $(geant4-config --version)
+Libs: $(geant4-config --libs)
+Cflags: $(geant4-config --cflags)
+
+EOP
+}
+
+g4-pcc-path(){
+   local prefix=$(cd $(geant4-config --prefix) ; pwd )
+   local libs="lib lib64"
+   local libdir
+   for lib in $libs ; do
+      libdir="$prefix/$lib"
+      if [ -d "$libdir" ]; then 
+         echo $libdir/pkgconfig/geant4.pc 
+      fi  
+   done
+}
+
+g4-pcc()
+{
+    local msg="=== $FUNCNAME :";
+    local path=$(g4-pcc-path);
+    local dir=$(dirname $path);
+    [ ! -d "$dir" ] && echo $msg creating dir $dir && mkdir -p $dir;
+    echo $msg $path 
+    g4-pcc- > $path
+}
 

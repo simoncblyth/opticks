@@ -20,7 +20,7 @@
 
 
 opticks-
-om-
+opticks-boost-info
 
 sdir=$(pwd)
 bdir=/tmp/$USER/opticks/$(basename $sdir)/build 
@@ -28,33 +28,24 @@ bdir=/tmp/$USER/opticks/$(basename $sdir)/build
 rm -rf $bdir && mkdir -p $bdir && cd $bdir && pwd 
 
 
-thoughts(){ cat << EOT
-
-Finding Geant4
-=================
-
-Note that Geant4 is found via:: 
-
-  -DCMAKE_PREFIX_PATH=$(opticks-prefix)/externals 
-
-There is no need (so long as only one G4 version in externals) to use::
-
-  -DGeant4_DIR=$(g4-cmake-dir)
-
-  -DCMAKE_PREFIX_PATH=$(opticks-prefix)/externals 
-
-
-
-EOT
-}
-
-om-export
+om-
+om-export 
 om-export-info
-  
-cmake $sdir -DCMAKE_BUILD_TYPE=Debug \
-            -DCMAKE_INSTALL_PREFIX=$(opticks-prefix) \
-            -DCMAKE_MODULE_PATH=$(opticks-home)/cmake/Modules 
+
+
+cmake $sdir \
+     -DCMAKE_BUILD_TYPE=Debug \
+     -DCMAKE_INSTALL_PREFIX=$(opticks-prefix) \
+     -DCMAKE_MODULE_PATH=$(opticks-home)/cmake/Modules \
+     -DOPTICKS_PREFIX=$(opticks-prefix)
+
 
 make
 make install   
+
+
+
+# DYLD_LIBRARY_PATH=/usr/local/opticks/externals/lib $(which UseBoostFS)
+
+
 

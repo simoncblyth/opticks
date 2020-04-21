@@ -30,22 +30,20 @@ bdir=/tmp/$USER/$name/build
 
 rm   -rf $bdir && mkdir -p $bdir && cd $bdir && pwd 
 
+om-
+om-export
+om-export-info
+
+find_package.py Boost 
+libdir=$(find_package.py Boost --libdir --first) 
+echo find_package.py libdir : $libdir
+
+
 cmake $sdir \
     -DCMAKE_BUILD_TYPE=Debug \
     -DCMAKE_INSTALL_PREFIX=$(opticks-prefix) \
-    -DCMAKE_PREFIX_PATH=$(opticks-prefix)/externals \
     -DCMAKE_MODULE_PATH=$(opticks-home)/cmake/Modules \
     -DOPTICKS_PREFIX=$(opticks-prefix)
-
-
-cat << EON > /dev/null
-Need to know basis, the below confuses finding boost
-
-    -DBOOST_INCLUDEDIR=$(opticks-boost-includedir) \
-    -DBOOST_LIBRARYDIR=$(opticks-boost-libdir) \
-    -DBoost_NO_SYSTEM_PATHS=1 
-
-EON
 
 
 
@@ -56,17 +54,13 @@ exe=$(opticks-prefix)/lib/$name
 
 if [ "$(uname)" == "Linux" ]; then
    ldd $exe
+   ls -l $exe
+   
+elif [ "$(uname)" == "Darwin" ]; then 
+    otool -L $exe
+    DYLD_LIBRARY_PATH=$libdir $exe
+    ## hmm this depends on the CMAKE_PREFIX_PATH in force
+    ## forced to do this due to boost RPATH not being properly set 
 fi 
-
-
-
-if [ -f "$exe" ]; then
-    ls -l $exe
-    echo running installed exe $exe
-    $exe
-else 
-    echo failed to install exe to $exe 
-fi 
-
 
 

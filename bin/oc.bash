@@ -159,12 +159,71 @@ A common prefix should eases relocatability when operating from
 distributions.
 
 
+Overarching Thoughts on integated building of Opticks together with other frameworks like JUNO
+------------------------------------------------------------------------------------------------
+
+Opticks build is based on CMake and its find_package machinery 
+that revolves around CMAKE_PREFIX_PATH envvar. 
+
+Library symbol consistency makes it necessary for the Opticks build to 
+use precisely the same installations of the common externals:: 
+
+    boost 
+    geant4  
+    xerces-c
+
+Integrated usage of Opticks (without CMake) with for example the CMT based
+JUNO build is provided by using the opticks-config script which is built on 
+top of pkg-config which revolves around the PKG_CONFIG_PATH envvar.  
+In order to support this usage, the entire Opticks tree of packages, externals and
+pre-requisites generates pkg-config pc files allowing any "node" of the Opticks  
+tree of packages to be used without CMake.  
+This is tested in examples/UseNameNoCMake/go.sh for around 32 such "Name"
+
+Agreement in package finding between the pkg-config and CMake based 
+systems is necessary. This means that CMAKE_PREFIX_PATH and PKG_CONFIG_PATH 
+must be tied together to achieve the match.
+
+
+TODO : generate the omitted geant4.pc and boost.pc in JUNOTOP
+------------------------------------------------------------------
+
+Annoyingly boost and geant4 do not provided pkg-config pc as part of their
+installs : so have to fix this omission before can hope for pkg-config
+and CMake resolvers to yield the same thing.
+
+geant4.pc : bash generation using geant4-config
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+For Geant4 just need a single geant4.pc similar to g4-pc-. 
+The real solution would be to generate the .pc with CMake 
+similar to what BCM/CMake does for the Opticks packages, because that has
+the full information. But that is much more effort that some simple 
+generation like g4-pc-. 
+
+Checking github Geant4 shows that still no pc generation.
+
+* https://github.com/Geant4/geant4/blob/master/cmake/Modules/G4ConfigurePkgConfigHelpers.cmake
+* BUT realise that should use geant4-config rather than starting from scratch to generate the pc
+
+boost.pc : adhoc bash generation
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+For Boost could make separate pc for the libs or do it all in one.
+As Opticks is the only user and these pc are workarounds just do the simplest
+single file. Because of the non-CMake boost build system have to just
+use a workaround approach like boost-pc- 
+
+
+TODO: test with UseBoost and UseGeant4
+-----------------------------------------
+
+
 TODO : operation with non-Opticks controlled boost and G4 
 ------------------------------------------------------------
 
 Perhaps use the pc files as inputs in this case that carry the 
 locations plucked by the Find ?
-
 
 
 TODO : regularize imgui CMakeLists.txt its not using bcm_deploy forcing manual pc
@@ -338,7 +397,7 @@ oc-libdir-(){ oc-pkg-config $(oc-lower $*) --libs-only-L $(oc-extra) | tr -- "-L
 oc-cflags-(){ oc-pkg-config $(oc-lower $*) --cflags $(oc-extra) ; }
 
 
-oc-cflags(){ echo $(oc-cflags- $*) -std=c++11 ; }
+oc-cflags(){ echo $(oc-cflags- $*) -std=c++11 ; }  ## seems the wrong place for c++11 ??
 oc-libs(){   oc-pkg-config $(oc-lower $*) --libs   $(oc-extra) ; }
 oc-libsl(){  oc-pkg-config $(oc-lower $*) --libs-only-L $(oc-extra) ; }
 oc-deps(){   oc-pkg-config $(oc-lower $*) --print-requires  ; }

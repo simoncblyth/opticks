@@ -47,6 +47,42 @@ Boost and Opticks
   * huh : there is no boost.pc ?
 
 
+FindBoost
+------------
+
+* /opt/local/share/cmake-3.12/Modules/FindBoost.cmake
+* https://cmake.org/cmake/help/latest/module/FindBoost.html
+
+If Boost was built using the boost-cmake project or from Boost 1.70.0 on it
+provides a package configuration file for use with find_package’s config mode. 
+
+::
+
+    [blyth@localhost ~]$ find $JUNOTOP/ExternalLibs  -path $JUNOTOP/ExternalLibs/Build -prune -o -name BoostConfig.cmake
+    /home/blyth/junotop/ExternalLibs/Build
+    /home/blyth/junotop/ExternalLibs/Boost/1.70.0/lib/cmake/Boost-1.70.0/BoostConfig.cmake
+
+
+Testing resolution of a foreign Boost 
+---------------------------------------
+
+Install a newer boost than the default under a foreign prefix::
+
+    OPTICKS_BOOST_PREFIX=/usr/local/foreign OPTICKS_BOOST_VERSION=1.72.0 boost--
+
+Note that the installation of BoostConfig.cmake as standard with boost only
+started from 1.70.0 so this will not work with older Boost, such as the 
+old macports one until after updating.
+
+
+macports boost
+--------------
+
+Needs a variant to get the CMake scripts in 1.71.0::
+
+   sudo port install boost +cmake_scripts
+
+
 Boost and CMake 
 ------------------
 
@@ -86,6 +122,48 @@ but that means need to duplicate the CMake Find logic ?
 Or just generate a simple CMakeLists.txt like cmak- and parse the output.
 Too complicated. Something simple that works mostly is better than something 
 complicated that always works : need to balance complexity and correctness. 
+
+* opticks/bin/find_package.py does this by searching for NameConfig.cmake etc..
+  files in CMAKE_PREFIX_PATH dirs
+
+The detailed CMake search procedure is described under "find_file"
+
+* https://cmake.org/cmake/help/latest/command/find_file.html
+
+Notably: 
+
+* CMake commandline "-Dvar=" options should be semi-colon delimited
+* envvar variables should be colon delimited 
+
+
+Boost and ICU
+----------------
+
+The /usr/local/opticks/externals boost build links against a version 
+of ICU that was replaced 
+
+::
+
+    epsilon:UseBoostFS blyth$ otool -L /usr/local/opticks/externals/lib/libboost_regex.dylib
+    /usr/local/opticks/externals/lib/libboost_regex.dylib:
+        @rpath/libboost_regex.dylib (compatibility version 0.0.0, current version 0.0.0)
+        /opt/local/lib/libicudata.58.dylib (compatibility version 58.0.0, current version 58.2.0)
+        /opt/local/lib/libicui18n.58.dylib (compatibility version 58.0.0, current version 58.2.0)
+        /opt/local/lib/libicuuc.58.dylib (compatibility version 58.0.0, current version 58.2.0)
+        /usr/lib/libc++.1.dylib (compatibility version 1.0.0, current version 400.9.0)
+        /usr/lib/libSystem.B.dylib (compatibility version 1.0.0, current version 1252.50.4)
+    epsilon:UseBoostFS blyth$ 
+    epsilon:UseBoostFS blyth$ 
+    epsilon:UseBoostFS blyth$ which icu-config
+    /opt/local/bin/icu-config
+    epsilon:UseBoostFS blyth$ 
+
+    epsilon:UseBoostFS blyth$ l /opt/local/lib/libicu*
+    -rwxr-xr-x  1 root  admin  27979872 Nov 21 13:50 /opt/local/lib/libicudata.65.1.dylib
+    lrwxr-xr-x  1 root  admin        21 Nov 21 13:50 /opt/local/lib/libicudata.65.dylib -> libicudata.65.1.dylib
+    lrwxr-xr-x  1 root  admin        21 Nov 21 13:50 /opt/local/lib/libicudata.dylib -> libicudata.65.1.dylib
+    -rwxr-xr-x  1 root  admin  27978280 Nov 21 13:50 /opt/local/lib/libicudata.a
+
 
 
 
@@ -514,19 +592,22 @@ EOU
 }
 
 boost-env(){      olocal- ; opticks- ;  }
-boost-ver(){ 
+boost-ver-(){ 
     #echo 1.54.0 
     #echo 1.60.0 
     #echo 1.61.0 
     echo  1.70.0
 }
+
+boost-ver(){    echo ${OPTICKS_BOOST_VERSION:-$(boost-ver-)} ; }
+boost-prefix(){ echo ${OPTICKS_BOOST_PREFIX:-$(opticks-prefix)/externals}  ; }
+
 boost-name(){ local ver=$(boost-ver) ; echo boost_${ver//./_} ; }
 boost-url(){ echo "http://downloads.sourceforge.net/project/boost/boost/$(boost-ver)/$(boost-name).tar.gz" ;  }
 
 
-boost-fold(){   echo $(opticks-prefix)/externals/boost ; }
-boost-dir(){    echo $(opticks-prefix)/externals/boost/$(boost-name) ; }
-boost-prefix(){ echo $(opticks-prefix)/externals  ; }
+boost-fold(){   echo $(boost-prefix)/boost ; }
+boost-dir(){    echo $(boost-prefix)/boost/$(boost-name) ; }
 
 boost-bdir(){   echo $(boost-dir).build ; }
 boost-idir(){   echo $(boost-prefix)/include/boost ; }
@@ -556,6 +637,7 @@ boost--() {
    boost-bootstrap-build
    boost-build
 }
+
 
 
 boost-bootstrap-help(){
@@ -593,7 +675,7 @@ boost-b2(){
 
    case $(opticks-cmake-generator) in
      "Visual Studio 14 2015") cmd "/C b2 --prefix=$(boost-prefix-win) --build-dir=$(boost-bdir-win) $*  " ;;
-                           *) ./b2  hardcode-dll-paths=true dll-path=$(boost-prefix)/lib --prefix=$(boost-prefix) --build-dir=$(boost-bdir) $* ;;
+                           *) ./b2  --prefix=$(boost-prefix) --build-dir=$(boost-bdir) $* ;;
    esac
 }
 
@@ -607,9 +689,69 @@ boost-b2-options(){ cat << EOO
 EOO
 }
 
+boost-b2-notes(){ cat << EON
+
+A build with b2 command line options::
+ 
+   hardcode-dll-paths=true dll-path=$(boost-prefix)/lib
+
+Found to fail following some macports updates::
+
+    epsilon:UseBoostFS blyth$ UseBoostFS
+    dyld: Library not loaded: /opt/local/lib/libicudata.58.dylib
+      Referenced from: /usr/local/opticks/externals/lib/libboost_regex.dylib
+      Reason: image not found
+    Abort trap: 6
+
+epsilon:UseBoostFS blyth$ otool -L /usr/local/opticks/externals/lib/libboost_regex.dylib
+/usr/local/opticks/externals/lib/libboost_regex.dylib:
+	@rpath/libboost_regex.dylib (compatibility version 0.0.0, current version 0.0.0)
+	/opt/local/lib/libicudata.58.dylib (compatibility version 58.0.0, current version 58.2.0)
+	/opt/local/lib/libicui18n.58.dylib (compatibility version 58.0.0, current version 58.2.0)
+	/opt/local/lib/libicuuc.58.dylib (compatibility version 58.0.0, current version 58.2.0)
+	/usr/lib/libc++.1.dylib (compatibility version 1.0.0, current version 400.9.0)
+	/usr/lib/libSystem.B.dylib (compatibility version 1.0.0, current version 1252.50.4)
+
+The ICU 58 being outdated.
+
+Doing a boost-rebuild (with the -a option and a clean) was needed to 
+fix the problem. After which::
+
+    epsilon:UseBoostFS blyth$ otool -L /usr/local/opticks/externals/lib/libboost_regex.dylib
+    /usr/local/opticks/externals/lib/libboost_regex.dylib:
+        libboost_regex.dylib (compatibility version 0.0.0, current version 0.0.0)
+        /usr/lib/libc++.1.dylib (compatibility version 1.0.0, current version 400.9.0)
+        /usr/lib/libSystem.B.dylib (compatibility version 1.0.0, current version 1252.50.4)
+    epsilon:UseBoostFS blyth$ 
+
+
+
+
+
+
+
+EON
+}
+
+
+
 boost-build(){
   boost-b2 $(boost-b2-options) install  
 }
+
+boost-rebuild()
+{
+    boost-cd
+
+    ./b2 clean
+
+    boost-b2 -a $(boost-b2-options) install  
+
+    # -a to rebuild all targets
+}
+
+
+
 
 
 
@@ -654,7 +796,7 @@ boost-libs(){
 
 
 
-boost-pc-path(){ echo $(opticks-prefix)/externals/lib/pkgconfig/boost.pc ; }
+boost-pc-path(){ echo $(boost-prefix)/lib/pkgconfig/boost.pc ; }
 boost-pc-() 
 { 
    ## hmm need to branch depending on system boost or self-installed boost 
@@ -711,7 +853,7 @@ boost-rpath-fix-Linux(){
    done
 }
 boost-rpath-fix(){
-   cd $(opticks-prefix)/externals/lib
+   cd $(boost-prefix)/lib
 
    if [ "$(uname)" == "Darwin" ]; then 
        boost-rpath-fix-$(uname) 
@@ -734,7 +876,118 @@ boost-rpath-Linux(){
    done
 }
 boost-rpath(){ 
-   cd $(opticks-prefix)/externals/lib
+   cd $(boost-prefix)/lib
    boost-rpath-$(uname) 
+}
+
+
+
+
+boost-pcc-libs-(){
+   case $(uname) in
+    Linux) ls -1 libboost_*.so ;; 
+   Darwin) ls -1 libboost_*.dylib ;; 
+   esac 
+}
+boost-pcc-libs(){
+   local libdir=$1
+   local iwd=$PWD
+   cd $libdir  
+   local lib
+   boost-pcc-libs- | while read lib ; do 
+        lib=${lib/.so}
+        lib=${lib/.dylib}
+        lib=${lib/lib}
+        printf -- "-l$lib " 
+   done
+   cd $iwd
+}
+
+
+
+boost-pcc-notes(){ cat << EON
+
+boost-pcc
+----------
+
+Writes an adhoc pkg-config boost.pc file to the standard 
+lib/pkgconfig/boost.pc location of the first found Boost 
+installation using find_package.py which seeks to duplicate the
+package that would be found by CMake by using CMAKE_PREFIX_PATH 
+as the guide to where to look for NameConfig.cmake or Name-config.cmake 
+files.
+
+
+EON
+}
+
+
+boost-pcc(){ 
+   local index=${1:-0}
+   local pkg=Boost
+   local msg="=== $FUNCNAME :"
+
+   if [ -z "$CMAKE_PREFIX_PATH" ]; then 
+      echo $msg CMAKE_PREFIX_PATH is not defined CANNOT proceed
+      return 1
+   fi 
+
+   local prefix=$(find_package.py $pkg --prefix --index $index)
+   local libdir=$(find_package.py $pkg --libdir --index $index)
+   local includedir=$(find_package.py $pkg --includedir --index $index)
+   local hpp="$includedir/boost/version.hpp"
+   local version
+   if [ -f "$hpp" ]; then 
+      version=$(perl -n -e 'm,BOOST_LIB_VERSION\s*"(\S*)", && print $1' $hpp | tr "_" "." )
+   fi 
+
+
+   local writable=$(test -w $libdir && echo 1 || echo 0)
+   local path=$libdir/pkgconfig/boost.pc 
+
+   if [ "$writable" == "1" -a ! -d "$(dirname $path)" ]; then
+      mkdir -p $(dirname $path)
+   fi 
+
+
+   if [ "$writable" == "1" ]; then 
+       echo $msg writing path $path  
+   else
+       echo $msg path $path is not writable : use sudo vi $path and copy the below into it instead 
+       path=/dev/stdout 
+   fi 
+
+   cat << EOP > $path
+
+# $FUNCNAME $(date)
+
+prefix=$prefix
+includedir=$includedir
+libdir=$libdir
+
+Name: Boost
+Description: 
+Version: $version
+Libs: -L\${libdir} $(boost-pcc-libs $libdir) -lstdc++ 
+Cflags: -I\${includedir}
+
+EOP
+}
+
+
+boost-pcc-all(){
+   local pkg=Boost
+   local num=$(find_package.py $pkg --count)
+
+   if [ "$num" == "0" ]; then
+       echo $msg FAILED to find_package.py $pkg 
+       return 
+   fi 
+
+   local idxs=$(seq 0 $(( $num - 1 )))  
+   for idx in $idxs ; do 
+       boost-pcc $idx 
+   done
+
 }
 

@@ -27,13 +27,46 @@ bdir=/tmp/$USER/opticks/$(basename $sdir)/build
 
 rm -rf $bdir && mkdir -p $bdir && cd $bdir && pwd 
 
+
+find-package-notes(){ cat << EON
+
+$(opticks-prefix)/externals 
+    needed for BCM even when getting Boost from elsewhere
+    hmm thats not good, maybe BCM should go into opticks-prefix
+    rather than externals because it is so fundamental 
+
+    packages in externals have a high shadowing risk, those in 
+    opticks-prefix have no such problems 
+
+CMake is never going to find macports Boost below /opt/local/
+without assistance, as there is no config in /opt/local/lib/cmake/ 
+This is no longer the case from 1.70 as cmake config is included, 
+so long as install the +cmake_scripts macports variant.
+
+EON
+}
+
+
+om-
+om-export 
+om-export-info
+
+
+find_package.py Boost 
+libdir=$(find_package.py Boost --libdir --first) 
+echo find_package.py libdir : $libdir
+
+
 cmake $sdir \
      -DCMAKE_BUILD_TYPE=Debug \
      -DCMAKE_INSTALL_PREFIX=$(opticks-prefix) \
-     -DCMAKE_PREFIX_PATH=$(opticks-prefix)/externals \
-     -DCMAKE_MODULE_PATH=$(opticks-home)/cmake/Modules 
+     -DCMAKE_MODULE_PATH=$(opticks-home)/cmake/Modules \
+     -DOPTICKS_PREFIX=$(opticks-prefix)
+
 
 cat << EOC > /dev/null
+
+     -DCMAKE_PREFIX_PATH=$pp \
 
      -DBOOST_INCLUDEDIR=$(opticks-boost-includedir) \
      -DBOOST_LIBRARYDIR=$(opticks-boost-libdir) \

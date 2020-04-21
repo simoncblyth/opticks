@@ -46,6 +46,30 @@ are generated.
 * need to understand "bash junoenv libs all" for this
 
 
+Opticks build workhorse om- 
+-------------------------------------------------------------------------------------------------------
+
+* needs to be sensitive to foreign CMAKE_PREFIX_PATH using foreign Boost, Geant4, XercesC
+
+
+Switching between 3 boost versions across dependent libs via CMAKE_PREFIX_PATH working
+-------------------------------------------------------------------------------------------
+
+In examples/UseBoost and examples/UseUseBoost succeeded to pick between boosts 1.70 1.71 and 1.72 
+simply by setting CMAKE_PREFIX_PATH in om-export.
+
+::
+
+    # find_package.py Boost 
+
+    Boost                          : /opt/local/lib/cmake/Boost-1.71.0/BoostConfig.cmake 
+    Boost                          : /usr/local/foreign/lib/cmake/Boost-1.72.0/BoostConfig.cmake 
+    Boost                          : /usr/local/opticks/externals/lib/cmake/Boost-1.70.0/BoostConfig.cmake 
+
+
+
+
+
 Locations
 -----------
 

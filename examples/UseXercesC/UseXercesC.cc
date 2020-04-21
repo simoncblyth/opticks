@@ -17,7 +17,7 @@
  * limitations under the License.
  */
 
-
+#include <iostream>
 
 #include <xercesc/dom/DOM.hpp>
 #include <xercesc/util/XMLString.hpp>
@@ -33,6 +33,9 @@ int main(int argc, char** argv )
 
      xercesc::XMLPlatformUtils::Initialize();
 
+     xercesc::DOMDocument* doc; 
+     XMLCh tempStr[10000];
+
      
      // G4GDMLWrite::Write   g4-;g4-cls G4GDMLWrite
 
@@ -45,6 +48,7 @@ int main(int argc, char** argv )
    xercesc::XMLString::transcode("gdml", tempStr, 9999);
    doc = impl->createDocument(0,tempStr,0);
    xercesc::DOMElement* gdml = doc->getDocumentElement();
+   assert(gdml);
 
 #if XERCES_VERSION_MAJOR >= 3
                                              // DOM L3 as per Xerces 3.0 API
@@ -66,9 +70,11 @@ int main(int argc, char** argv )
 
 
 
+     std::cout << "XERCES_VERSION_MAJOR " << XERCES_VERSION_MAJOR << std::endl ; 
+     std::cout << "XERCES_VERSION_MINOR " << XERCES_VERSION_MINOR << std::endl ; 
+     std::cout << "XERCES_VERSION_REVISION " << XERCES_VERSION_REVISION << std::endl ; 
 
-
-
+     std::cout << "XERCES_FULLVERSIONDOT " << XERCES_FULLVERSIONDOT << std::endl ;
 
      return 0 ; 
 }

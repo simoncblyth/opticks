@@ -113,6 +113,99 @@ om-local(){  echo ${LOCAL_BASE:-/usr/local} ; }
 om-name(){   echo $(basename $(om-home)) ; }
 om-fold(){   echo $(om-local)/$(om-name) ; }
 om-prefix(){ echo $(om-fold) ; }
+
+
+om-path-prepend(){
+   local var=${1:-PATH}
+   local dir=${2:-/tmp}
+   local l=${3:-:}  # delim
+  
+   if [ -z "${!var}" ]; then 
+      eval $var=$dir
+   else
+      [[ "$l${!var}$l" != *"$l${dir}$l"* ]] && eval $var=$dir$l${!var} 
+   fi 
+}
+
+om-path-append(){
+   local var=${1:-PATH}
+   local dir=${2:-/tmp}
+   local l=${3:-:}  # delim
+   if [ -z "${!var}" ]; then 
+      eval $var=$dir
+   else
+      [[ "$l${!var}$l" != *"$l${dir}$l"* ]] && eval $var=${!var}$l$dir 
+   fi
+}
+
+om-export(){
+   local pfx
+   local pdir
+
+   local pfxs="$(om-prefix) $(om-prefix)/externals"
+   for pfx in $pfxs ; do  
+
+      om-path-append CMAKE_PREFIX_PATH $pfx
+
+      local libs="lib lib64"
+      for lib in $libs ; do 
+         pdir=$pfx/$lib/pkgconfig
+         if [ -d "$pdir" ]; then 
+
+            om-path-append PKG_CONFIG_PATH $pdir
+
+         fi 
+      done
+   done   
+
+   export CMAKE_PREFIX_PATH  
+   export PKG_CONFIG_PATH  
+}
+
+om-export-test(){
+
+   unset CMAKE_PREFIX_PATH
+   unset PKG_CONFIG_PATH
+  
+   export CMAKE_PREFIX_PATH=/opt/local:/usr/local/foreign  
+   om-export
+
+   #export CMAKE_PREFIX_PATH=$(om-prefix):$(om-prefix)/externals:/usr/local/foreign:/opt/local
+   #export CMAKE_PREFIX_PATH=/usr/local/foreign:/opt/local:$(om-prefix):$(om-prefix)/externals 
+   #export CMAKE_PREFIX_PATH=/opt/local:/usr/local/foreign:$(om-prefix):$(om-prefix)/externals 
+}
+
+om-export-notes(){ cat << EON
+
+Succeeded to pick between 3 installed Boosts 1.70 1.71 and 1.72 across 
+examples/UseBoost and examples/UseUseBoost simply by changing the 
+CMAKE_PREFIX_PATH, see::
+
+    find_package.py Boost 
+    Boost                          : /opt/local/lib/cmake/Boost-1.71.0/BoostConfig.cmake 
+    Boost                          : /usr/local/foreign/lib/cmake/Boost-1.72.0/BoostConfig.cmake 
+    Boost                          : /usr/local/opticks/externals/lib/cmake/Boost-1.70.0/BoostConfig.cmake 
+
+To do this with opticks-config/pkg-config (ie without CMake) need to plant 
+boost.pc into the relevant lib/pkgconfig locations.
+This needs to be done both for system and self-installed boosts.
+
+
+EON
+
+}
+
+
+om-export-info(){
+   echo CMAKE_PREFIX_PATH
+   echo $CMAKE_PREFIX_PATH | tr ":" "\n"
+
+   echo PKG_CONFIG_PATH
+   echo $PKG_CONFIG_PATH | tr ":" "\n"
+}
+
+
+
 om-cmake-generator(){ echo ${OPTICKS_CMAKE_GENERATOR:-Unix Makefiles} ; }
 om-bdir(){  
    local gen=$(om-cmake-generator)
@@ -137,6 +230,11 @@ om-info(){ cat << EOI
    om-cmake-generator : $(om-cmake-generator)
    om-bdir            : $(om-bdir)
    om-sdir            : $(om-sdir)
+
+
+   CMAKE_PREFIX_PATH  : $CMAKE_PREFIX_PATH
+   PKG_CONFIG_PATH    : $PKG_CONFIG_PATH 
+
 
 EOI
 }

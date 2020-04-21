@@ -54,8 +54,8 @@ echo pkg-config --cflags xerces-c
 
 
 
-#make
-#make install   
+make
+make install   
 
 cat << EON > /dev/null
 
