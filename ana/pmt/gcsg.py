@@ -165,7 +165,7 @@ Buffer Layout
 import logging, hashlib, sys, os
 import numpy as np
 np.set_printoptions(precision=2) 
-from opticks.ana.base import Buf 
+from opticks.ana.nbase import Buf 
 
 log = logging.getLogger(__name__)
 

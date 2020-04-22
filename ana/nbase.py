@@ -37,6 +37,11 @@ except ImportError:
     _chi2 = None 
 
 
+
+class Buf(np.ndarray): pass
+
+
+
 def ahash(a):
     """
     * http://stackoverflow.com/questions/16589791/most-efficient-property-to-hash-for-numpy-array    

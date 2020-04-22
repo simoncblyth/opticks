@@ -7,11 +7,14 @@ include(OpticksBuildOptions)
 #set(Boost_NO_BOOST_CMAKE ON)
 set(COMPONENTS system program_options filesystem regex )
 find_package(Boost REQUIRED COMPONENTS ${COMPONENTS} )
-set_target_properties(Boost::system  PROPERTIES INTERFACE_FIND_PACKAGE_NAME "Boost REQUIRED COMPONENTS ${COMPONENTS}")
+#set_target_properties(Boost::system  PROPERTIES INTERFACE_FIND_PACKAGE_NAME "Boost REQUIRED COMPONENTS ${COMPONENTS}")
+set_target_properties(Boost::system  PROPERTIES INTERFACE_FIND_PACKAGE_EXACT "REQUIRED COMPONENTS ${COMPONENTS}")
 
 #[=[
 BoostRap
 ==========
+
+See examples/UseBoost examples/UseUseBoost
 
 Kludging the INTERFACE_FIND_PACKAGE_NAME gets all deps in the tree to repeat 
 the Boost find. This find uses the monstrous FindBoost.cmake from the cmake distribution, 

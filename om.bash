@@ -19,7 +19,7 @@
 
 om-source(){ echo $BASH_SOURCE ; }
 om-vi(){ vi $(om-source) ; }
-om-env(){  olocal- ; opticks- ; }
+om-env(){  olocal- ; opticks- ; om-export ; }
 om-usage(){ cat << EOU
 
 OM : Opticks Minimal Approach to Configuring and Building
@@ -109,6 +109,7 @@ EOU
 
 om-home-default(){  echo $(dirname $(om-source)) ; } 
 om-home(){   echo ${OPTICKS_HOME:-$(om-home-default)} ; }
+om-userhome(){  echo $(dirname $(om-home)) ; }
 om-local(){  echo ${LOCAL_BASE:-/usr/local} ; }
 om-name(){   echo $(basename $(om-home)) ; }
 om-fold(){   echo $(om-local)/$(om-name) ; }
@@ -188,8 +189,9 @@ om-export-setup-artificial-env(){
        #export CMAKE_PREFIX_PATH=/usr/local/foreign  
 
    elif [ "$(uname)" == "Linux" ]; then 
+
        local sh=$JUNOTOP/bashrc.sh
-       [ -f "$sh" ] && source $sh     # use JUNO externals 
+       [ -f "$sh" ] && source $sh     # use JUNO externals when available 
    fi 
 
    [ -n "$CMAKE_PREFIX_PATH" ] && export PKG_CONFIG_PATH=$(om-pkg-config-path)
@@ -217,7 +219,7 @@ om-export(){
 
    # /usr too ?
 
-
+   export PYTHONPATH=$(om-userhome)   # python modules from source tree, not installed as used while building eg okc- optickscore  
 }
 
 
@@ -668,12 +670,16 @@ om-cmake-okconf()
     cmake $sdir \
        -G "$(om-cmake-generator)" \
        -DCMAKE_BUILD_TYPE=$(opticks-buildtype) \
-       -DCMAKE_PREFIX_PATH=$(om-prefix)/externals \
        -DOPTICKS_PREFIX=$(om-prefix) \
        -DCMAKE_INSTALL_PREFIX=$(om-prefix) \
        -DCMAKE_MODULE_PATH=$(om-home)/cmake/Modules \
        -DOptiX_INSTALL_DIR=$(opticks-optix-install-dir) \
        -DCOMPUTE_CAPABILITY=$(opticks-compute-capability)
+
+    #  -DCMAKE_PREFIX_PATH=$(om-prefix)/externals \
+    #  doing this overrides the envvar  
+    #
+    # TODO: cmake scripts so prefix resolution can find optix ?
 
     rc=$?
     return $rc
@@ -691,14 +697,15 @@ om-cmake()
        -G "$(om-cmake-generator)" \
        -DCMAKE_BUILD_TYPE=$(opticks-buildtype) \
        -DOPTICKS_PREFIX=$(om-prefix) \
-       -DCMAKE_PREFIX_PATH=$(om-prefix)/externals \
        -DCMAKE_INSTALL_PREFIX=$(om-prefix) \
        -DCMAKE_MODULE_PATH=$(om-home)/cmake/Modules 
 
+    #   -DCMAKE_PREFIX_PATH=$(om-prefix)/externals \
+    #  doing this overrides the envvar, see om-export
+ 
+
     rc=$?
     return $rc
-#   -DBOOST_INCLUDEDIR=$(opticks-boost-includedir) \
-#   -DBOOST_LIBRARYDIR=$(opticks-boost-libdir)
 }
 
 om-cmake-info(){ cat << EOI

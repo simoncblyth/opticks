@@ -19,7 +19,14 @@
 
 #pragma once
 
-void UseG4_dump_version();
+#define API  __attribute__ ((visibility ("default")))
+
+
+struct API UseG4
+{
+   static void dump_version();
+};
+
 
 
 

@@ -19,12 +19,11 @@
 #
 
 """
-Mostly Non-numpy basics, just numpy configuration
+Strictly Non-numpy basics
 
 
 """
 
-import numpy as np
 import os, logging, json, ctypes, subprocess, datetime, re
 from collections import OrderedDict as odict 
 from opticks.ana.enum import Enum 
@@ -62,7 +61,6 @@ def findfile(base, name, relative=True):
 def translate_xml_identifier_(name):
     return name.replace("__","/").replace("--","#").replace("..",":") 
 
-class Buf(np.ndarray): pass
 
 splitlines_ = lambda txtpath:file(txtpath).read().splitlines()
 

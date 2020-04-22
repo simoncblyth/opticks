@@ -24,7 +24,8 @@ import numpy as np
 np.set_printoptions(precision=2) 
 
 
-from opticks.ana.base import opticks_main, Buf, manual_mixin
+from opticks.ana.base import opticks_main, manual_mixin
+from opticks.ana.nbase import Buf
 
 from ddbase import Dddb
 from ddpart import Parts, ddpart_manual_mixin

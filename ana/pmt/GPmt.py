@@ -32,7 +32,8 @@ GPmt.py
 import os, logging
 log = logging.getLogger(__name__)
 import numpy as np
-from opticks.ana.base import opticks_main, Buf, splitlines_
+from opticks.ana.base import opticks_main, splitlines_
+from opticks.ana.nbase import Buf
 from gcsg import GCSG
 
 class GPmt(object):

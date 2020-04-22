@@ -21,6 +21,6 @@
 
 int main()
 {
-    UseG4_dump_version();
+    UseG4::dump_version();
     return 0 ; 
 }

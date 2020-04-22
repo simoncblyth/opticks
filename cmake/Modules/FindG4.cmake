@@ -37,8 +37,7 @@ else()
    message(STATUS "G4_PREFIX      : ${G4_PREFIX} ")
 endif()
 
-
-if(Geant4_FOUND)
+if(Geant4_FOUND AND NOT TARGET Opticks::G4)
 
   set(G4_DIR         ${Geant4_DIR})
   get_filename_component(G4_DIRDIR ${G4_DIR} DIRECTORY)

@@ -40,10 +40,12 @@ om-export-find $pkg
 
 
   
-cmake $sdir -DCMAKE_BUILD_TYPE=Debug \
-            -DCMAKE_INSTALL_PREFIX=$(opticks-prefix) \
-            -DCMAKE_MODULE_PATH=$(opticks-home)/cmake/Modules 
+#cmake $sdir \
+#    -DCMAKE_BUILD_TYPE=Debug \
+#    -DCMAKE_INSTALL_PREFIX=$(opticks-prefix) \
+#    -DCMAKE_MODULE_PATH=$(opticks-home)/cmake/Modules 
 
+om-cmake $sdir
 make
 make install   
 

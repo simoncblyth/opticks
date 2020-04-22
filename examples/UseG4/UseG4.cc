@@ -20,8 +20,10 @@
 #include <iostream>
 #include "G4Version.hh"
 
+#include "UseG4.hh"
 
-void UseG4_dump_version()
+
+void UseG4::dump_version()
 {
     std::cout << "G4VERSION_NUMBER " << G4VERSION_NUMBER << std::endl ; 
     std::cout << "G4VERSION_TAG    " << G4VERSION_TAG << std::endl ; 
@@ -33,7 +35,7 @@ void UseG4_dump_version()
 #ifdef WITH_MAIN
 int main()
 {
-    UseG4_dump_version();
+    UseG4::dump_version();
     return 0 ; 
 }
 #endif
