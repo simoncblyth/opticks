@@ -14,6 +14,12 @@ class Line(object):
     enum = ["NO-VARFIX","VARFIX","-"]
 
     def __init__(self, i_line):
+        """
+        :param i_line: 
+
+        Match key=val lines of the pc file
+
+        """
         i, line = i_line
         self.l = line
         self.i = i  
@@ -24,8 +30,8 @@ class Line(object):
             k = d["key"]
             v = d["val"]
             if k in self.fixkey:
-                fv = self.vargs[k]      
-                s = 0 if v == fv else 1 
+                fv = self.vargs[k]        ## from commandline inputs or defaults      
+                s = 0 if v == fv else 1   ## is a fix needed 
             else:
                 fv = v 
                 s = 0
@@ -37,7 +43,7 @@ class Line(object):
         pass
         self.k = k 
         self.v = v 
-        self.fv = fv if s == 1 else v 
+        self.fv = fv if s == 1 else v     ## fixed value 
         self.s = s
         self.e = self.enum[s]
 
@@ -63,6 +69,12 @@ class PC(object):
     """
     @classmethod
     def Find(cls, name):
+        """
+        :param name:
+        :return pc: PC instance or None
+
+        Search the PKG_CONFIG_PATH dirs for name.pc where name is lowercased. 
+        """
         pcp = os.environ.get("PKG_CONFIG_PATH","")
         dirs = filter(None,pcp.split(":"))
         for d in dirs:
@@ -76,12 +88,20 @@ class PC(object):
         return None
 
     def __init__(self, path):
+        """
+        :param path: to a pc file
+     
+        Read the lines of a pc file
+        """
         pass
         self.path = path 
         lines =  map(str.strip, file(path).readlines())
         self.ls = map(Line, enumerate(lines))
   
     def _get_numfix(self):
+        """
+        count the number of fixes
+        """
         nf = 0 
         for l in self.ls:
             if l.s == 1: nf += 1 
@@ -112,6 +132,13 @@ class Main(object):
         return args
 
     def __init__(self):
+        """
+        Hmm the appropriate variables should depend on 
+        the location of the found pc file.  
+
+        With some exceptions, eg for optix, cuda which 
+        could be avoided. 
+        """
         args = self.Parse() 
         Line.vargs = vars(args)
         self.args = args

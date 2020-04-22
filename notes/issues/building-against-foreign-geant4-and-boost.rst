@@ -50,6 +50,7 @@ Opticks build workhorse om-
 -------------------------------------------------------------------------------------------------------
 
 * needs to be sensitive to foreign CMAKE_PREFIX_PATH using foreign Boost, Geant4, XercesC
+* also non CMake workflow with oc.bash must follow PKG_CONFIG_PATH
 
 
 Switching between 3 boost versions across dependent libs via CMAKE_PREFIX_PATH working

@@ -30,29 +30,41 @@ rm -rf $bdir && mkdir -p $bdir && cd $bdir && pwd
 
 om-
 
-#om-export 
+#om-export
 #om-export-info
 
-om-export-test
+om-export-test   # artifical setting CMAKE_PREFIX_PATH and PKG_CONFIG_PATH to test resolution
+
+libdir=$(find_package.py boost --libdir --index 0)
+
+oc-
 
 pkg=Boost
+name=${pkg}FS
+
 find_package.py $pkg
-pkg_config.py $pkg
-
-libdir=$(find_package.py $pkg --libdir --index 0)
-
-cmake $sdir \
-     -DCMAKE_BUILD_TYPE=Debug \
-     -DCMAKE_INSTALL_PREFIX=$(opticks-prefix) \
-     -DCMAKE_MODULE_PATH=$(opticks-home)/cmake/Modules \
-     -DOPTICKS_PREFIX=$(opticks-prefix)
+pkg_config.py $pkg 
 
 
-make
-make install   
+#PKG_CONFIG_PATH=$(om-pkg-config-path-reversed)
+#pkg_config.py $pkg 
+
+
+echo gcc -c $sdir/Use$name.cc $(oc-cflags $pkg)
+     gcc -c $sdir/Use$name.cc $(oc-cflags $pkg)
+echo gcc Use$name.o -o Use$name $(oc-libs $pkg) #-lpython2.7
+     gcc Use$name.o -o Use$name $(oc-libs $pkg) #-lpython2.7
+
+# with boost-python present in the libs get missing symbol without -lpython2.7
+# now adding this in the boost-pcc libs list when a boost_python lib is seen
+
 
 if [ "$(uname)" == "Darwin" ]; then 
-    DYLD_LIBRARY_PATH=$libdir $(which UseBoostFS)
+    echo DYLD_LIBRARY_PATH=$(oc-libpath $pkg) ./Use$name
+         DYLD_LIBRARY_PATH=$(oc-libpath $pkg) ./Use$name
+else
+    echo LD_LIBRARY_PATH=$(oc-libpath $pkg) ./Use$name
+         LD_LIBRARY_PATH=$(oc-libpath $pkg) ./Use$name
 fi
 
 

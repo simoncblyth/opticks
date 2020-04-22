@@ -69,6 +69,7 @@ Testing resolution of a foreign Boost
 Install a newer boost than the default under a foreign prefix::
 
     OPTICKS_BOOST_PREFIX=/usr/local/foreign OPTICKS_BOOST_VERSION=1.72.0 boost--
+    OPTICKS_BOOST_PREFIX=/usr/local/foreign OPTICKS_BOOST_VERSION=1.72.0 boost-rebuild
 
 Note that the installation of BoostConfig.cmake as standard with boost only
 started from 1.70.0 so this will not work with older Boost, such as the 
@@ -183,7 +184,20 @@ Yum managed system boost has RPATH in which there are no boost libs ?::
     /lib64 -> /usr/lib64
 
 
+macports
+----------
 
+::
+
+    DYLD_LIBRARY_PATH=/opt/local/lib ./UseBoostFS
+    dyld: Symbol not found: _PyBaseObject_Type
+      Referenced from: /opt/local/lib/libboost_python38-mt.dylib
+      Expected in: flat namespace
+     in /opt/local/lib/libboost_python38-mt.dylib
+
+::
+
+    sudo port install boost +cmake_scripts +python27
 
 
 
@@ -881,6 +895,37 @@ boost-rpath(){
 }
 
 
+boost-pylib-(){ cat << EPY
+import re, sys
+
+if __name__ == '__main__':
+    arg = "$1" 
+    ptn = re.compile("^boost_python(?P<py>\d{2})")
+    m = ptn.match(arg)
+    if m:
+        py = m.groupdict()["py"]
+        print("-lpython%d.%s" % tuple(map(int,py)))
+    else:
+        print("-lboost-pylib-FAILED_TO_MATCH_%s " % arg )
+    pass
+EPY
+}
+boost-pylib(){ boost-pylib- $1 | python  ; }
+boost-pylib-test(){
+   local x="-lpython2.7"
+   local y=$(boost-pylib boost_python27-mt)
+   [ "$x" == "$y" ] && echo OK || echo ERRROR expect $x got $y    
+}
+
+boost-pylib-notes(){ cat << EON
+
+When boost includes boost_python need to 
+also link with python to avoid macOS runtime error::
+
+   dyld: Symbol not found: _PyBaseObject_Type
+
+EON
+}
 
 
 boost-pcc-libs-(){
@@ -899,6 +944,11 @@ boost-pcc-libs(){
         lib=${lib/.dylib}
         lib=${lib/lib}
         printf -- "-l$lib " 
+
+        if [ "${lib/boost_python}" != "$lib" ]; then 
+            local pylib=$(boost-pylib $lib)
+            printf -- "%s " $pylib
+        fi 
    done
    cd $iwd
 }
@@ -976,6 +1026,10 @@ EOP
 
 
 boost-pcc-all(){
+
+   : NOT A GOOD APPROACH : AS THE PC WILL GO STALE WHEN PACKAGES ARE REINSTALLED 
+   : BETTER TO PLANT THE PC AS PART OF THE INSTALLATION 
+
    local pkg=Boost
    local num=$(find_package.py $pkg --count)
 
@@ -984,8 +1038,10 @@ boost-pcc-all(){
        return 
    fi 
 
-   local idxs=$(seq 0 $(( $num - 1 )))  
+   local idxs=$(seq 0 $(( $num - 1 )) | tr "\n" " ")  
+
    for idx in $idxs ; do 
+       echo boost-pcc $idx 
        boost-pcc $idx 
    done
 

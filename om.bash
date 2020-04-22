@@ -138,22 +138,29 @@ om-path-append(){
    fi
 }
 
+
 om-export(){
+   : appends standard prefixes to CMAKE_PREFIX_PATH and pkgconfig paths to PKG_CONFIG_PATH and exports them
+
+   om-export- $(om-prefix) $(om-prefix)/externals
+}
+
+
+om-export-(){
+
+   local msg="=== $FUNCNAME :"
    local pfx
    local pdir
+   for pfx in $* ; do  
 
-   local pfxs="$(om-prefix) $(om-prefix)/externals"
-   for pfx in $pfxs ; do  
-
+      #echo $msg pfx $pfx 
       om-path-append CMAKE_PREFIX_PATH $pfx
 
       local libs="lib lib64"
       for lib in $libs ; do 
          pdir=$pfx/$lib/pkgconfig
          if [ -d "$pdir" ]; then 
-
             om-path-append PKG_CONFIG_PATH $pdir
-
          fi 
       done
    done   
@@ -162,17 +169,50 @@ om-export(){
    export PKG_CONFIG_PATH  
 }
 
+om-pkg-config-path-(){ cat << EPY
+import os
+dirs=[]
+for pfx in os.environ["CMAKE_PREFIX_PATH"].split(":"):
+    for lib in ["lib","lib64"]:
+        path = os.path.join(pfx,lib,"pkgconfig")
+        if os.path.isdir(path):
+            dirs.append(path)
+            break   # second sub:lib64 ignored if there is a lib 
+        pass
+    pass
+print(":".join(dirs))
+EPY
+}
+om-pkg-config-path(){ $FUNCNAME- | python ; }
+
+om-pkg-config-path-reversed-(){ cat << EPY
+import os
+dirs=os.environ["PKG_CONFIG_PATH"].split(":")
+print ":".join(reversed(dirs))
+EPY
+}
+om-pkg-config-path-reversed(){ $FUNCNAME- | python ; }
+
+
+
 om-export-test(){
 
    unset CMAKE_PREFIX_PATH
    unset PKG_CONFIG_PATH
   
    export CMAKE_PREFIX_PATH=/opt/local:/usr/local/foreign  
+   #export CMAKE_PREFIX_PATH=/usr/local/foreign  
+
+   [ -n "$CMAKE_PREFIX_PATH" ] && export PKG_CONFIG_PATH=$(om-pkg-config-path)
+
    om-export
 
    #export CMAKE_PREFIX_PATH=$(om-prefix):$(om-prefix)/externals:/usr/local/foreign:/opt/local
    #export CMAKE_PREFIX_PATH=/usr/local/foreign:/opt/local:$(om-prefix):$(om-prefix)/externals 
    #export CMAKE_PREFIX_PATH=/opt/local:/usr/local/foreign:$(om-prefix):$(om-prefix)/externals 
+
+   om-export-info
+
 }
 
 om-export-notes(){ cat << EON

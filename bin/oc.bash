@@ -163,7 +163,7 @@ Overarching Thoughts on integated building of Opticks together with other framew
 ------------------------------------------------------------------------------------------------
 
 Opticks build is based on CMake and its find_package machinery 
-that revolves around CMAKE_PREFIX_PATH envvar. 
+that is steered via the CMAKE_PREFIX_PATH envvar. 
 
 Library symbol consistency makes it necessary for the Opticks build to 
 use precisely the same installations of the common externals:: 
@@ -174,7 +174,7 @@ use precisely the same installations of the common externals::
 
 Integrated usage of Opticks (without CMake) with for example the CMT based
 JUNO build is provided by using the opticks-config script which is built on 
-top of pkg-config which revolves around the PKG_CONFIG_PATH envvar.  
+top of pkg-config which is controlled by the PKG_CONFIG_PATH envvar.  
 In order to support this usage, the entire Opticks tree of packages, externals and
 pre-requisites generates pkg-config pc files allowing any "node" of the Opticks  
 tree of packages to be used without CMake.  
@@ -185,8 +185,8 @@ systems is necessary. This means that CMAKE_PREFIX_PATH and PKG_CONFIG_PATH
 must be tied together to achieve the match.
 
 
-TODO : generate the omitted geant4.pc and boost.pc in JUNOTOP
-------------------------------------------------------------------
+TODO : generate omitted geant4.pc and boost.pc in JUNOTOP and system dirs for boost
+-------------------------------------------------------------------------------------
 
 Annoyingly boost and geant4 do not provided pkg-config pc as part of their
 installs : so have to fix this omission before can hope for pkg-config
@@ -206,13 +206,18 @@ Checking github Geant4 shows that still no pc generation.
 * https://github.com/Geant4/geant4/blob/master/cmake/Modules/G4ConfigurePkgConfigHelpers.cmake
 * BUT realise that should use geant4-config rather than starting from scratch to generate the pc
 
-boost.pc : adhoc bash generation
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+boost.pc : adhoc bash generation with boost-pcc
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 For Boost could make separate pc for the libs or do it all in one.
 As Opticks is the only user and these pc are workarounds just do the simplest
 single file. Because of the non-CMake boost build system have to just
 use a workaround approach like boost-pc- 
+
+boost-pcc 
+
+
+
 
 
 TODO: test with UseBoost and UseGeant4
@@ -525,8 +530,14 @@ EOI
 }
 
 
-oc-pkg-config(){ PKG_CONFIG_PATH=$(oc-pkg-config-path) pkg-config $* ; }
-oc-pcfix(){      PKG_CONFIG_PATH=$(oc-pkg-config-path) pc.py $* --fix ; }
+
+# internally controlled search path, isolated from the envvar  
+#oc-pkg-config(){ PKG_CONFIG_PATH=$(oc-pkg-config-path) pkg-config $* ; }
+#oc-pcfix(){      PKG_CONFIG_PATH=$(oc-pkg-config-path) pc.py $* --fix ; }
+
+# at the whims of the envvar : having moved envvar control to om-export 
+oc-pkg-config(){ pkg-config $* ; }
+oc-pcfix(){      pc.py $* --fix ; }
 
 
 oc-pkg-config-find(){
