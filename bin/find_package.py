@@ -188,7 +188,7 @@ if __name__ == '__main__':
     pp = os.environ.get("CMAKE_PREFIX_PATH","")
     bases = filter(None, pp.split(":"))
 
-    #log.info("\n".join(["bases:"]+bases)) 
+    log.debug("\n".join(["bases:"]+bases)) 
 
     fpk = FindPkgs(bases)
     pkgs = fpk.select(args)

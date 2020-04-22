@@ -35,8 +35,7 @@ om-export
 om-export-info
 
 pkg=Geant4
-find_package.py $pkg
-pkg_config.py $pkg #--level debug
+om-export-find $pkg
 
 
 echo gcc -c $sdir/Use$pkg.cc $(oc-cflags $pkg)
@@ -46,18 +45,7 @@ echo gcc Use$pkg.o -o Use$pkg $(oc-libs $pkg)  #-lstdc++
 
 # on Darwin with clang should be -lc++ but I think there is some compat to make -lstdc++ work 
 
-if [ "$(uname)" == "Linux" ]; then 
-
-    echo LD_LIBRARY_PATH=$(oc-libpath $pkg) ./Use$pkg
-         LD_LIBRARY_PATH=$(oc-libpath $pkg) ./Use$pkg
-
-elif [ "$(uname)" == "Darwin" ]; then 
-
-    echo DYLD_LIBRARY_PATH=$(oc-libpath $pkg) ./Use$pkg
-         DYLD_LIBRARY_PATH=$(oc-libpath $pkg) ./Use$pkg
-
-fi 
-
+./Use$pkg
 
 
 

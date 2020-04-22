@@ -857,14 +857,11 @@ EOP
 
 g4-pcc-path(){
    local prefix=$1
-   local libs="lib lib64"
-   local libdir
-   for lib in $libs ; do
-      libdir="$prefix/$lib"
-      if [ -d "$libdir" ]; then 
-         echo $libdir/pkgconfig/geant4.pc 
-      fi  
-   done
+   if [ -d "$prefix/lib64" ]; then  
+      echo $prefix/lib64/pkgconfig/geant4.pc 
+   elif [ -d "$prefix/lib" ]; then  
+      echo $prefix/lib/pkgconfig/geant4.pc 
+   fi   
 }
 
 g4-pcc()

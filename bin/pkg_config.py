@@ -66,7 +66,11 @@ class FindPkgs(object):
 
     def find_config(self):
         for base in self.bases:  
-            self.find_config_(base)
+            if not os.path.isdir(base):
+                log.debug("base %s does not exist " % base)
+            else:    
+                self.find_config_(base)
+            pass
         pass   
 
     def find_config_(self, base):

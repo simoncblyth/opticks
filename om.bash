@@ -153,9 +153,9 @@ import os
 dirs=[]
 for pfx in os.environ["CMAKE_PREFIX_PATH"].split(":"):
     for lib in ["lib","lib64"]:
-        path = os.path.join(pfx,lib,"pkgconfig")
-        if os.path.isdir(path):
-            dirs.append(path)
+        libdir = os.path.join(pfx,lib)
+        if os.path.isdir(libdir):   # judge on libdir not pkgconfig dir as need to create initially for some
+            dirs.append(os.path.join(libdir, "pkgconfig"))
             break   # second sub:lib64 ignored if there is a lib 
         pass
     pass
@@ -171,23 +171,41 @@ EPY
 om-export-setup-artificial-env(){
 
    : transient testing environment setup
-   : in real usage the detector simulation framework should define  CMAKE_PREFIX_PATH PKG_CONFIG_PATH 
+   : in real usage the detector simulation framework should define  the paths, especially : CMAKE_PREFIX_PATH PKG_CONFIG_PATH 
 
+   unset CMAKE_PREFIX_PATH
+   unset PKG_CONFIG_PATH
+   unset LD_LIBRARY_PATH 
+   unset DYLD_LIBRARY_PATH 
+
+   unset PYTHONPATH
+   unset CPATH
+   unset MANPATH
+ 
    if [ "$(uname)" == "Darwin" ]; then 
 
-       unset CMAKE_PREFIX_PATH
-       unset PKG_CONFIG_PATH
-      
-       #export CMAKE_PREFIX_PATH=/opt/local:/usr/local/foreign  
+       export CMAKE_PREFIX_PATH=/opt/local:/usr/local/foreign  
        #export CMAKE_PREFIX_PATH=/usr/local/foreign  
 
-       [ -n "$CMAKE_PREFIX_PATH" ] && export PKG_CONFIG_PATH=$(om-pkg-config-path)
-
-       #export CMAKE_PREFIX_PATH=$(om-prefix):$(om-prefix)/externals:/usr/local/foreign:/opt/local
-       #export CMAKE_PREFIX_PATH=/usr/local/foreign:/opt/local:$(om-prefix):$(om-prefix)/externals 
-       #export CMAKE_PREFIX_PATH=/opt/local:/usr/local/foreign:$(om-prefix):$(om-prefix)/externals 
+   elif [ "$(uname)" == "Linux" ]; then 
+       local sh=$JUNOTOP/bashrc.sh
+       [ -f "$sh" ] && source $sh     # use JUNO externals 
    fi 
+
+   [ -n "$CMAKE_PREFIX_PATH" ] && export PKG_CONFIG_PATH=$(om-pkg-config-path)
 }
+
+om-export-unset(){
+   unset CMAKE_PREFIX_PATH
+   unset PKG_CONFIG_PATH
+   unset LD_LIBRARY_PATH 
+   unset DYLD_LIBRARY_PATH 
+
+   unset PYTHONPATH   # JUNO pythonpath messes with mercurial : TypeError: openssl_md5() takes no keyword arguments
+   unset CPATH
+   unset MANPATH
+ }
+
 
 
 om-export(){
@@ -195,14 +213,35 @@ om-export(){
 
    om-export-setup-artificial-env  
 
-   om-export- $(om-prefix) $(om-prefix)/externals
+   om-export- $(om-prefix) $(om-prefix)/externals 
+
+   # /usr too ?
+
+
+}
+
+
+om-export-info(){
+   echo CMAKE_PREFIX_PATH
+   echo $CMAKE_PREFIX_PATH | tr ":" "\n"
+
+   echo PKG_CONFIG_PATH
+   echo $PKG_CONFIG_PATH | tr ":" "\n"
+
+   if [ "$(uname)" == "Linux" ]; then  
+       echo LD_LIBRARY_PATH
+       echo $LD_LIBRARY_PATH | tr ":" "\n"
+   elif [ "$(uname)" == "Darwin" ]; then  
+       echo DYLD_LIBRARY_PATH
+       echo $DYLD_LIBRARY_PATH | tr ":" "\n"
+   fi  
 }
 
 om-export-(){
 
    local msg="=== $FUNCNAME :"
    local pfx
-   local pdir
+   local libdir
    for pfx in $* ; do  
 
       #echo $msg pfx $pfx 
@@ -210,15 +249,27 @@ om-export-(){
 
       local libs="lib lib64"
       for lib in $libs ; do 
-         pdir=$pfx/$lib/pkgconfig
-         if [ -d "$pdir" ]; then 
-            om-path-append PKG_CONFIG_PATH $pdir
+         libdir=$pfx/$lib
+         if [ -d "$libdir" ]; then 
+            om-path-append PKG_CONFIG_PATH $libdir/pkgconfig
+            om-path-append LD_LIBRARY_PATH $libdir 
+            [ "$(uname)" == "Darwin" ] && om-path-append DYLD_LIBRARY_PATH $libdir   
          fi 
       done
    done   
 
    export CMAKE_PREFIX_PATH  
    export PKG_CONFIG_PATH  
+   export LD_LIBRARY_PATH
+   [ "$(uname)" == "Darwin" ] && export DYLD_LIBRARY_PATH
+
+}
+
+om-export-find(){
+   echo find_package.py $*
+        find_package.py $*
+   echo pkg_config.py $* 
+        pkg_config.py $* 
 }
 
 
@@ -243,16 +294,6 @@ This needs to be done both for system and self-installed boosts.
 EON
 
 }
-
-
-om-export-info(){
-   echo CMAKE_PREFIX_PATH
-   echo $CMAKE_PREFIX_PATH | tr ":" "\n"
-
-   echo PKG_CONFIG_PATH
-   echo $PKG_CONFIG_PATH | tr ":" "\n"
-}
-
 
 
 om-cmake-generator(){ echo ${OPTICKS_CMAKE_GENERATOR:-Unix Makefiles} ; }

@@ -28,33 +28,15 @@ bdir=/tmp/$USER/opticks/$(basename $sdir)/build
 rm -rf $bdir && mkdir -p $bdir && cd $bdir && pwd 
 
 
-thoughts(){ cat << EOT
-
-Finding Geant4
-=================
-
-Note that Geant4 is found via:: 
-
-  -DCMAKE_PREFIX_PATH=$(opticks-prefix)/externals 
-
-There is no need (so long as only one G4 version in externals) to use::
-
-  -DGeant4_DIR=$(g4-cmake-dir)
-
-  -DCMAKE_PREFIX_PATH=$(opticks-prefix)/externals 
 
 
-
-EOT
-}
 
 om-
 om-export
 om-export-info
 
 pkg=Geant4
-find_package.py $pkg
-pkg_config.py $pkg #--level debug
+om-export-find $pkg
 
 
   
@@ -65,6 +47,6 @@ cmake $sdir -DCMAKE_BUILD_TYPE=Debug \
 make
 make install   
 
-
 UseGeant4
+
 

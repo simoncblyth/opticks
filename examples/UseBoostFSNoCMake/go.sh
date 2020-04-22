@@ -32,37 +32,28 @@ om-
 om-export
 om-export-info
 
-libdir=$(find_package.py boost --libdir --index 0)
-
 oc-
 
 pkg=Boost
 name=${pkg}FS
 
-find_package.py $pkg
-pkg_config.py $pkg 
-
-
-#PKG_CONFIG_PATH=$(om-pkg-config-path-reversed)
-#pkg_config.py $pkg 
+om-export-find $pkg
 
 
 echo gcc -c $sdir/Use$name.cc $(oc-cflags $pkg)
      gcc -c $sdir/Use$name.cc $(oc-cflags $pkg)
-echo gcc Use$name.o -o Use$name $(oc-libs $pkg) #-lpython2.7
-     gcc Use$name.o -o Use$name $(oc-libs $pkg) #-lpython2.7
+echo gcc Use$name.o -o Use$name $(oc-libs $pkg) 
+     gcc Use$name.o -o Use$name $(oc-libs $pkg) 
 
 # with boost-python present in the libs get missing symbol without -lpython2.7
 # now adding this in the boost-pcc libs list when a boost_python lib is seen
 
+./Use$name
 
-if [ "$(uname)" == "Darwin" ]; then 
-    echo DYLD_LIBRARY_PATH=$(oc-libpath $pkg) ./Use$name
-         DYLD_LIBRARY_PATH=$(oc-libpath $pkg) ./Use$name
-else
-    echo LD_LIBRARY_PATH=$(oc-libpath $pkg) ./Use$name
-         LD_LIBRARY_PATH=$(oc-libpath $pkg) ./Use$name
-fi
+
+# this fails with system boost for lack of boost.pc
+# as the pkg_config.py resolution is not looking for /usr/lib64/pkgconfig/boost.pc
+
 
 
 

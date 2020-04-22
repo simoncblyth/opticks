@@ -33,10 +33,8 @@ om-export
 om-export-info
 
 pkg=Boost
-find_package.py $pkg
-pkg_config.py $pkg
+om-export-find $pkg
 
-libdir=$(find_package.py $pkg --libdir --index 0)
 
 cmake $sdir \
      -DCMAKE_BUILD_TYPE=Debug \
@@ -48,9 +46,9 @@ cmake $sdir \
 make
 make install   
 
-if [ "$(uname)" == "Darwin" ]; then 
-    DYLD_LIBRARY_PATH=$libdir $(which UseBoostFS)
-fi
 
+UseBoostFS
+
+# boost before 1.70 does not have the CMake scripts, so find_package.py doesnt see it 
 
 
