@@ -139,12 +139,64 @@ om-path-append(){
 }
 
 
+om-pkg-config-path-reversed(){ $FUNCNAME- | python ; }
+om-pkg-config-path-reversed-(){ cat << EPY
+import os
+dirs=os.environ["PKG_CONFIG_PATH"].split(":")
+print(":".join(reversed(dirs)))
+EPY
+}
+
+om-pkg-config-path(){ $FUNCNAME- | python ; }
+om-pkg-config-path-(){ cat << EPY
+import os
+dirs=[]
+for pfx in os.environ["CMAKE_PREFIX_PATH"].split(":"):
+    for lib in ["lib","lib64"]:
+        path = os.path.join(pfx,lib,"pkgconfig")
+        if os.path.isdir(path):
+            dirs.append(path)
+            break   # second sub:lib64 ignored if there is a lib 
+        pass
+    pass
+print(":".join(dirs))
+EPY
+}
+
+
+
+
+
+
+om-export-setup-artificial-env(){
+
+   : transient testing environment setup
+   : in real usage the detector simulation framework should define  CMAKE_PREFIX_PATH PKG_CONFIG_PATH 
+
+   if [ "$(uname)" == "Darwin" ]; then 
+
+       unset CMAKE_PREFIX_PATH
+       unset PKG_CONFIG_PATH
+      
+       #export CMAKE_PREFIX_PATH=/opt/local:/usr/local/foreign  
+       #export CMAKE_PREFIX_PATH=/usr/local/foreign  
+
+       [ -n "$CMAKE_PREFIX_PATH" ] && export PKG_CONFIG_PATH=$(om-pkg-config-path)
+
+       #export CMAKE_PREFIX_PATH=$(om-prefix):$(om-prefix)/externals:/usr/local/foreign:/opt/local
+       #export CMAKE_PREFIX_PATH=/usr/local/foreign:/opt/local:$(om-prefix):$(om-prefix)/externals 
+       #export CMAKE_PREFIX_PATH=/opt/local:/usr/local/foreign:$(om-prefix):$(om-prefix)/externals 
+   fi 
+}
+
+
 om-export(){
    : appends standard prefixes to CMAKE_PREFIX_PATH and pkgconfig paths to PKG_CONFIG_PATH and exports them
 
+   om-export-setup-artificial-env  
+
    om-export- $(om-prefix) $(om-prefix)/externals
 }
-
 
 om-export-(){
 
@@ -169,51 +221,8 @@ om-export-(){
    export PKG_CONFIG_PATH  
 }
 
-om-pkg-config-path-(){ cat << EPY
-import os
-dirs=[]
-for pfx in os.environ["CMAKE_PREFIX_PATH"].split(":"):
-    for lib in ["lib","lib64"]:
-        path = os.path.join(pfx,lib,"pkgconfig")
-        if os.path.isdir(path):
-            dirs.append(path)
-            break   # second sub:lib64 ignored if there is a lib 
-        pass
-    pass
-print(":".join(dirs))
-EPY
-}
-om-pkg-config-path(){ $FUNCNAME- | python ; }
-
-om-pkg-config-path-reversed-(){ cat << EPY
-import os
-dirs=os.environ["PKG_CONFIG_PATH"].split(":")
-print ":".join(reversed(dirs))
-EPY
-}
-om-pkg-config-path-reversed(){ $FUNCNAME- | python ; }
 
 
-
-om-export-test(){
-
-   unset CMAKE_PREFIX_PATH
-   unset PKG_CONFIG_PATH
-  
-   export CMAKE_PREFIX_PATH=/opt/local:/usr/local/foreign  
-   #export CMAKE_PREFIX_PATH=/usr/local/foreign  
-
-   [ -n "$CMAKE_PREFIX_PATH" ] && export PKG_CONFIG_PATH=$(om-pkg-config-path)
-
-   om-export
-
-   #export CMAKE_PREFIX_PATH=$(om-prefix):$(om-prefix)/externals:/usr/local/foreign:/opt/local
-   #export CMAKE_PREFIX_PATH=/usr/local/foreign:/opt/local:$(om-prefix):$(om-prefix)/externals 
-   #export CMAKE_PREFIX_PATH=/opt/local:/usr/local/foreign:$(om-prefix):$(om-prefix)/externals 
-
-   om-export-info
-
-}
 
 om-export-notes(){ cat << EON
 

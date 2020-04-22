@@ -20,7 +20,7 @@
 
 
 opticks-
-opticks-boost-info
+
 
 sdir=$(pwd)
 bdir=/tmp/$USER/opticks/$(basename $sdir)/build 
@@ -28,41 +28,36 @@ bdir=/tmp/$USER/opticks/$(basename $sdir)/build
 rm -rf $bdir && mkdir -p $bdir && cd $bdir && pwd 
 
 
+oc-
+
 om-
 om-export
 om-export-info
 
-libdir=$(find_package.py boost --libdir --index 0)
-
-oc-
-
-pkg=Boost
-name=${pkg}FS
-
+pkg=Geant4
 find_package.py $pkg
-pkg_config.py $pkg 
+pkg_config.py $pkg #--level debug
 
 
-#PKG_CONFIG_PATH=$(om-pkg-config-path-reversed)
-#pkg_config.py $pkg 
+echo gcc -c $sdir/Use$pkg.cc $(oc-cflags $pkg)
+     gcc -c $sdir/Use$pkg.cc $(oc-cflags $pkg)
+echo gcc Use$pkg.o -o Use$pkg $(oc-libs $pkg)  #-lstdc++
+     gcc Use$pkg.o -o Use$pkg $(oc-libs $pkg) #-lstdc++
 
+# on Darwin with clang should be -lc++ but I think there is some compat to make -lstdc++ work 
 
-echo gcc -c $sdir/Use$name.cc $(oc-cflags $pkg)
-     gcc -c $sdir/Use$name.cc $(oc-cflags $pkg)
-echo gcc Use$name.o -o Use$name $(oc-libs $pkg) #-lpython2.7
-     gcc Use$name.o -o Use$name $(oc-libs $pkg) #-lpython2.7
+if [ "$(uname)" == "Linux" ]; then 
 
-# with boost-python present in the libs get missing symbol without -lpython2.7
-# now adding this in the boost-pcc libs list when a boost_python lib is seen
+    echo LD_LIBRARY_PATH=$(oc-libpath $pkg) ./Use$pkg
+         LD_LIBRARY_PATH=$(oc-libpath $pkg) ./Use$pkg
 
+elif [ "$(uname)" == "Darwin" ]; then 
 
-if [ "$(uname)" == "Darwin" ]; then 
-    echo DYLD_LIBRARY_PATH=$(oc-libpath $pkg) ./Use$name
-         DYLD_LIBRARY_PATH=$(oc-libpath $pkg) ./Use$name
-else
-    echo LD_LIBRARY_PATH=$(oc-libpath $pkg) ./Use$name
-         LD_LIBRARY_PATH=$(oc-libpath $pkg) ./Use$name
-fi
+    echo DYLD_LIBRARY_PATH=$(oc-libpath $pkg) ./Use$pkg
+         DYLD_LIBRARY_PATH=$(oc-libpath $pkg) ./Use$pkg
+
+fi 
+
 
 
 

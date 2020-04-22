@@ -29,11 +29,8 @@ rm -rf $bdir && mkdir -p $bdir && cd $bdir && pwd
 
 
 om-
-
-#om-export 
-#om-export-info
-
-om-export-test
+om-export 
+om-export-info
 
 pkg=Boost
 find_package.py $pkg

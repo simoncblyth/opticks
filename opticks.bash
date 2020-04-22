@@ -627,6 +627,9 @@ opticks-boost-info(){ cat << EOI
 $FUNCNAME
 ===================
 
+NB have moved to a more flexible approach to control the version of 
+Boost to use via CMAKE_PREFIX_PATH/PKG_CONFIG_PATH see oc.bash om.bash 
+
    opticks-boost-includedir : $(opticks-boost-includedir)
    opticks-boost-libdir     : $(opticks-boost-libdir)
 

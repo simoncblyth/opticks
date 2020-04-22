@@ -120,12 +120,12 @@ if __name__ == '__main__':
     if args.first:
        args.index = 0 
     pass
-    #print(args)
+    log.debug(args)
    
     pp = os.environ.get("PKG_CONFIG_PATH","")
     bases = filter(None, pp.split(":"))
 
-    #log.info("\n".join(["bases:"]+bases)) 
+    log.debug("\n".join(["bases:"]+bases)) 
 
     fpk = FindPkgs(bases)
     pkgs = fpk.select(args)

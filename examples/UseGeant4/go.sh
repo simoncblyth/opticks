@@ -20,7 +20,7 @@
 
 
 opticks-
-om-
+
 
 sdir=$(pwd)
 bdir=/tmp/$USER/opticks/$(basename $sdir)/build 
@@ -48,8 +48,15 @@ There is no need (so long as only one G4 version in externals) to use::
 EOT
 }
 
+om-
 om-export
 om-export-info
+
+pkg=Geant4
+find_package.py $pkg
+pkg_config.py $pkg #--level debug
+
+
   
 cmake $sdir -DCMAKE_BUILD_TYPE=Debug \
             -DCMAKE_INSTALL_PREFIX=$(opticks-prefix) \
@@ -57,4 +64,7 @@ cmake $sdir -DCMAKE_BUILD_TYPE=Debug \
 
 make
 make install   
+
+
+UseGeant4
 

@@ -835,25 +835,28 @@ g4-pc(){
 
 
 
+
+
+
 g4-pcc-(){ 
-
-   local prefix=$(cd $(geant4-config --prefix) ; pwd )
-
+   local config=$1
    cat << EOP
 
-prefix=$prefix
+prefix=$(cd $($config --prefix) ; pwd)
 
 Name: Geant4
 Description:
-Version: $(geant4-config --version)
-Libs: $(geant4-config --libs)
-Cflags: $(geant4-config --cflags)
+Version: $($config --version)
+Libs: $($config --libs) -lstdc++
+Cflags: $($config --cflags)
+
+# on Darwin with clang should be -lc++ but I think there is some compat to make -lstdc++ work 
 
 EOP
 }
 
 g4-pcc-path(){
-   local prefix=$(cd $(geant4-config --prefix) ; pwd )
+   local prefix=$1
    local libs="lib lib64"
    local libdir
    for lib in $libs ; do
@@ -866,11 +869,45 @@ g4-pcc-path(){
 
 g4-pcc()
 {
-    local msg="=== $FUNCNAME :";
-    local path=$(g4-pcc-path);
-    local dir=$(dirname $path);
+    local index=${1:-0}
+    local msg="=== $FUNCNAME :"
+    local prefix=$(find_package.py Geant4 --prefix --index $index)
+
+    local config=$prefix/bin/geant4-config
+    local prefix2
+    if [ -x "$config" ]; then 
+        prefix2=$(cd $($config --prefix) ; pwd )
+        if [ "$prefix" != "$prefix2" ]; then 
+           echo $msg ERROR prefix inconsitent $prefix $prefix2 
+        fi  
+    fi 
+
+    local path=$(g4-pcc-path $prefix)
+
+    local dir=$(dirname $path)
     [ ! -d "$dir" ] && echo $msg creating dir $dir && mkdir -p $dir;
-    echo $msg $path 
-    g4-pcc- > $path
+
+    echo $msg writing to path $path 
+    g4-pcc- $config  > $path
 }
+
+
+g4-pcc-all () 
+{ 
+    : NOT A GOOD APPROACH : AS THE PC WILL GO STALE WHEN PACKAGES ARE REINSTALLED;
+    : BETTER TO PLANT THE PC AS PART OF THE INSTALLATION;
+    local pkg=Geant4
+    local num=$(find_package.py $pkg --count);
+    if [ "$num" == "0" ]; then
+        echo $msg FAILED to find_package.py $pkg;
+        return;
+    fi;
+    local idxs=$(seq 0 $(( $num - 1 )) | tr "\n" " ");
+    for idx in $idxs;
+    do
+        echo g4-pcc $idx;
+        g4-pcc $idx;
+    done
+}
+
 
