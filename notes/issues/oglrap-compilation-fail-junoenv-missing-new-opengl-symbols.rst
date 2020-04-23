@@ -1,7 +1,20 @@
 oglrap-compilation-fail-junoenv-missing-new-opengl-symbols
 ==============================================================
 
-JUNOTOP envvars causing old OpenGL symbols from some ROOT libGLEW.so
+libGLEW.so glew.h Issue
+-------------------------
+
+OGLRap compilation fails when build against JUNO externals, due to 
+the GL/glew.h coming from ROOT lacking defines from modern OpenGL.
+
+Investigating this below, observe that the glew.h from ROOT stops 
+at OpenGL 3.0
+
+See examples/UseOpticksGLEW
+
+
+Dirty Fix
+------------
 
 Fixed after manual edit of JUNOTOP/bashrc.sh excluding ROOT which brings in wrong libGLEW.so::
 
@@ -10,6 +23,350 @@ Fixed after manual edit of JUNOTOP/bashrc.sh excluding ROOT which brings in wron
      15 #source /home/blyth/junotop/ExternalLibs/ROOT/6.18.00/bashrc
      16 source /home/blyth/junotop/ExternalLibs/HepMC/2.06.09/bashrc
      17 source /home/blyth/junotop/ExternalLibs/Geant4/10.05.p01/bashrc
+
+
+Attempt for a better fix by rebuilding ROOT 
+---------------------------------------------
+
+Remove the old lib and headers::
+
+    rm -rf /home/blyth/junotop/ExternalLibs/ROOT/6.18.00/include/GL
+    [blyth@localhost junoenv]$ rm /home/blyth/junotop/ExternalLibs/ROOT/6.18.00/lib/libGLEW.so
+
+Then try to rebuild ROOT with "-Dbuiltin_glew=OFF"::
+
+    [blyth@localhost ~]$ cd $JUNOTOP/junoenv
+    [blyth@localhost junoenv]$ bash junoenv libs all ROOT
+
+Hmm, this is not what we want : ROOT build should be independent of Opticks one::
+
+    [ROOT-conf] -- Could NOT find TIFF (missing: TIFF_LIBRARY TIFF_INCLUDE_DIR) 
+    [ROOT-conf] -- Building AfterImage library included in ROOT itself
+    [ROOT-conf] -- Looking for GSL
+    [ROOT-conf] -- Looking for python
+    [ROOT-conf] -- Looking for OpenGL
+    [ROOT-conf] -- Looking for GLEW
+    [ROOT-conf] -- Found GLEW: /home/blyth/local/opticks/externals/include (found version "1.13.0") 
+    [ROOT-conf] -- Looking for LibXml2
+    [ROOT-conf] -- Looking for MySQL
+    [ROOT-conf] -- Looking for SQLite
+    [ROOT-conf] -- Looking for FFTW3
+    [ROOT-conf] -- Looking for CFITSIO
+    [ROOT-conf] -- Looking for XROOTD
+
+After preventing running om- in environment by default which causes om-export to set CMAKE_PREFIX_PATH::
+
+    [ROOT-conf] -- Could NOT find TIFF (missing: TIFF_LIBRARY TIFF_INCLUDE_DIR) 
+    [ROOT-conf] -- Building AfterImage library included in ROOT itself
+    [ROOT-conf] -- Looking for GSL
+    [ROOT-conf] -- Looking for python
+    [ROOT-conf] -- Looking for OpenGL
+    [ROOT-conf] -- Looking for GLEW
+    [ROOT-conf] -- Looking for LibXml2
+    [ROOT-conf] -- Looking for MySQL
+    [ROOT-conf] -- Looking for SQLite
+    [ROOT-conf] -- Looking for FFTW3
+    [ROOT-conf] -- Looking for CFITSIO
+    [ROOT-conf] -- Looking for XROOTD
+    [ROOT-conf] -- Looking for TBB
+    [ROOT-conf] -- Looking for BLAS for optional parts of TMVA
+
+
+
+Investigating the issue : compare the glew.h
+------------------------------------------------
+
+* Geometry shaders were introduces at about OpenGL 3.2 
+
+::
+
+    [blyth@localhost junotop]$ l $JUNOTOP/ExternalLibs/ROOT/6.18.00/include/GL/
+    total 668
+    -rw-r--r--. 1 blyth blyth 624322 Jun 25  2019 glew.h
+    -rw-r--r--. 1 blyth blyth  55303 Jun 25  2019 glxew.h
+
+    epsilon:glew-1.13.0 blyth$ l /usr/local/opticks/externals/glew/glew-1.13.0/include/GL/
+    total 2312
+    -rw-rw-r--  1 blyth  staff  1038562 Aug 10  2015 glew.h
+    -rw-rw-r--  1 blyth  staff    74912 Aug 10  2015 glxew.h
+    -rw-rw-r--  1 blyth  staff    64836 Aug 10  2015 wglew.h
+
+
+/usr/local/opticks/externals/glew/glew-1.13.0/include/GL/glew.h::
+
+     2333 /* ----------------------------- GL_VERSION_3_2 ---------------------------- */
+     2334 
+     2335 #ifndef GL_VERSION_3_2
+     2336 #define GL_VERSION_3_2 1
+     2337 
+     2338 #define GL_CONTEXT_CORE_PROFILE_BIT 0x00000001
+     2339 #define GL_CONTEXT_COMPATIBILITY_PROFILE_BIT 0x00000002
+     2340 #define GL_LINES_ADJACENCY 0x000A
+     2341 #define GL_LINE_STRIP_ADJACENCY 0x000B
+     2342 #define GL_TRIANGLES_ADJACENCY 0x000C
+     2343 #define GL_TRIANGLE_STRIP_ADJACENCY 0x000D
+     2344 #define GL_PROGRAM_POINT_SIZE 0x8642
+     2345 #define GL_GEOMETRY_VERTICES_OUT 0x8916
+     2346 #define GL_GEOMETRY_INPUT_TYPE 0x8917
+     2347 #define GL_GEOMETRY_OUTPUT_TYPE 0x8918
+     2348 #define GL_MAX_GEOMETRY_TEXTURE_IMAGE_UNITS 0x8C29
+     2349 #define GL_FRAMEBUFFER_ATTACHMENT_LAYERED 0x8DA7
+     2350 #define GL_FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS 0x8DA8
+     2351 #define GL_GEOMETRY_SHADER 0x8DD9
+     2352 #define GL_MAX_GEOMETRY_UNIFORM_COMPONENTS 0x8DDF
+     2353 #define GL_MAX_GEOMETRY_OUTPUT_VERTICES 0x8DE0
+     2354 #define GL_MAX_GEOMETRY_TOTAL_OUTPUT_COMPONENTS 0x8DE1
+
+::
+
+    epsilon:glew-1.13.0 blyth$ grep define\ GL_VERSION_ /usr/local/opticks/externals/glew/glew-1.13.0/include/GL/glew.h
+    #define GL_VERSION_1_1 1
+    #define GL_VERSION_1_2 1
+    #define GL_VERSION_1_2_1 1
+    #define GL_VERSION_1_3 1
+    #define GL_VERSION_1_4 1
+    #define GL_VERSION_1_5 1
+    #define GL_VERSION_2_0 1
+    #define GL_VERSION_2_1 1
+    #define GL_VERSION_3_0 1
+    #define GL_VERSION_3_1 1
+    #define GL_VERSION_3_2 1
+    #define GL_VERSION_3_3 1
+    #define GL_VERSION_4_0 1
+    #define GL_VERSION_4_1 1
+    #define GL_VERSION_4_2 1
+    #define GL_VERSION_4_3 1
+    #define GL_VERSION_4_4 1
+    #define GL_VERSION_4_5 1
+    epsilon:glew-1.13.0 blyth$ 
+
+    epsilon:glew-1.13.0 blyth$ grep define\ GLEW_VERSION /usr/local/opticks/externals/glew/glew-1.13.0/include/GL/glew.h
+    #define GLEW_VERSION_1_1 GLEW_GET_VAR(__GLEW_VERSION_1_1)
+    #define GLEW_VERSION_1_2 GLEW_GET_VAR(__GLEW_VERSION_1_2)
+    #define GLEW_VERSION_1_2_1 GLEW_GET_VAR(__GLEW_VERSION_1_2_1)
+    #define GLEW_VERSION_1_3 GLEW_GET_VAR(__GLEW_VERSION_1_3)
+    #define GLEW_VERSION_1_4 GLEW_GET_VAR(__GLEW_VERSION_1_4)
+    #define GLEW_VERSION_1_5 GLEW_GET_VAR(__GLEW_VERSION_1_5)
+    #define GLEW_VERSION_2_0 GLEW_GET_VAR(__GLEW_VERSION_2_0)
+    #define GLEW_VERSION_2_1 GLEW_GET_VAR(__GLEW_VERSION_2_1)
+    #define GLEW_VERSION_3_0 GLEW_GET_VAR(__GLEW_VERSION_3_0)
+    #define GLEW_VERSION_3_1 GLEW_GET_VAR(__GLEW_VERSION_3_1)
+    #define GLEW_VERSION_3_2 GLEW_GET_VAR(__GLEW_VERSION_3_2)
+    #define GLEW_VERSION_3_3 GLEW_GET_VAR(__GLEW_VERSION_3_3)
+    #define GLEW_VERSION_4_0 GLEW_GET_VAR(__GLEW_VERSION_4_0)
+    #define GLEW_VERSION_4_1 GLEW_GET_VAR(__GLEW_VERSION_4_1)
+    #define GLEW_VERSION_4_2 GLEW_GET_VAR(__GLEW_VERSION_4_2)
+    #define GLEW_VERSION_4_3 GLEW_GET_VAR(__GLEW_VERSION_4_3)
+    #define GLEW_VERSION_4_4 GLEW_GET_VAR(__GLEW_VERSION_4_4)
+    #define GLEW_VERSION_4_5 GLEW_GET_VAR(__GLEW_VERSION_4_5)
+    #define GLEW_VERSION 1
+    #define GLEW_VERSION_MAJOR 2
+    #define GLEW_VERSION_MINOR 3
+    #define GLEW_VERSION_MICRO 4
+    epsilon:glew-1.13.0 blyth$ 
+
+
+The glew.h from ROOT just doesnt have the symbols::
+
+    [blyth@localhost ~]$ grep define\ GL_VERSION_ /home/blyth/junotop/ExternalLibs/ROOT/6.18.00/include/GL/glew.h
+    #define GL_VERSION_1_1 1
+    #define GL_VERSION_1_2 1
+    #define GL_VERSION_1_3 1
+    #define GL_VERSION_1_4 1
+    #define GL_VERSION_1_5 1
+    #define GL_VERSION_2_0 1
+    #define GL_VERSION_2_1 1
+    #define GL_VERSION_3_0 1
+    [blyth@localhost ~]$ 
+
+    [blyth@localhost GL]$ grep define\ GL_VERSION_ /home/blyth/junotop/ExternalLibs/Build/root-6.18.00/root-6.18.00/graf3d/glew/inc/GL/glew.h
+    #define GL_VERSION_1_1 1
+    #define GL_VERSION_1_2 1
+    #define GL_VERSION_1_3 1
+    #define GL_VERSION_1_4 1
+    #define GL_VERSION_1_5 1
+    #define GL_VERSION_2_0 1
+    #define GL_VERSION_2_1 1
+    #define GL_VERSION_3_0 1
+
+
+    [blyth@localhost ~]$ grep define\ GLEW_VERSION /home/blyth/junotop/ExternalLibs/ROOT/6.18.00/include/GL/glew.h
+    #define GLEW_VERSION_1_1 GLEW_GET_VAR(__GLEW_VERSION_1_1)
+    #define GLEW_VERSION_1_2 GLEW_GET_VAR(__GLEW_VERSION_1_2)
+    #define GLEW_VERSION_1_3 GLEW_GET_VAR(__GLEW_VERSION_1_3)
+    #define GLEW_VERSION_1_4 GLEW_GET_VAR(__GLEW_VERSION_1_4)
+    #define GLEW_VERSION_1_5 GLEW_GET_VAR(__GLEW_VERSION_1_5)
+    #define GLEW_VERSION_2_0 GLEW_GET_VAR(__GLEW_VERSION_2_0)
+    #define GLEW_VERSION_2_1 GLEW_GET_VAR(__GLEW_VERSION_2_1)
+    #define GLEW_VERSION_3_0 GLEW_GET_VAR(__GLEW_VERSION_3_0)
+    #define GLEW_VERSION 1
+    #define GLEW_VERSION_MAJOR 2
+    #define GLEW_VERSION_MINOR 3
+    #define GLEW_VERSION_MICRO 4
+    [blyth@localhost ~]$ 
+
+
+Investigate the ROOT build
+------------------------------
+
+
+/home/blyth/junotop/ExternalLibs/Build/root-6.18.00/root-6.18.00/graf3d/CMakeLists.txt::
+
+     16 if (opengl)
+     17    add_subdirectory(eve) # special CMakeLists.txt
+     18    add_subdirectory(gl) # special CMakeLists.txt
+     19    if(builtin_glew)
+     20       add_subdirectory(glew)
+     21    endif()
+     22    if(builtin_ftgl)
+     23       add_subdirectory(ftgl)
+     24    endif()
+     25   add_subdirectory(gviz3d) # special CMakeLists.txt
+     26 endif()
+
+::
+
+    [blyth@localhost modules]$ grep builtin *.cmake
+    RootBuildOptions.cmake:ROOT_BUILD_OPTION(builtin_afterimage ON "Build bundled copy of libAfterImage")
+    RootBuildOptions.cmake:ROOT_BUILD_OPTION(builtin_cfitsio OFF "Build CFITSIO internally (requires network)")
+    RootBuildOptions.cmake:ROOT_BUILD_OPTION(builtin_clang ON "Build bundled copy of Clang")
+    RootBuildOptions.cmake:ROOT_BUILD_OPTION(builtin_davix OFF "Build Davix internally (requires network)")
+    RootBuildOptions.cmake:ROOT_BUILD_OPTION(builtin_fftw3 OFF "Build FFTW3 internally (requires network)")
+    RootBuildOptions.cmake:ROOT_BUILD_OPTION(builtin_freetype OFF "Build bundled copy of freetype")
+    RootBuildOptions.cmake:ROOT_BUILD_OPTION(builtin_ftgl ON "Build bundled copy of FTGL")
+    RootBuildOptions.cmake:ROOT_BUILD_OPTION(builtin_gl2ps OFF "Build bundled copy of gl2ps")
+    RootBuildOptions.cmake:ROOT_BUILD_OPTION(builtin_glew ON "Build bundled copy of GLEW")
+    RootBuildOptions.cmake:ROOT_BUILD_OPTION(builtin_gsl OFF "Build GSL internally (requires network)")
+    RootBuildOptions.cmake:ROOT_BUILD_OPTION(builtin_llvm ON "Build bundled copy of LLVM")
+    RootBuildOptions.cmake:ROOT_BUILD_OPTION(builtin_lz4 OFF "Build bundled copy of lz4")
+
+* https://root.cern.ch/building-root#options
+
+::
+
+    [blyth@localhost glew]$ pwd
+    /home/blyth/junotop/ExternalLibs/Build/root-6.18.00/root-6.18.00/graf3d/glew
+    [blyth@localhost glew]$ find . 
+    .
+    ./CMakeLists.txt
+    ./inc
+    ./inc/GL
+    ./inc/GL/glew.h
+    ./inc/GL/glxew.h
+    ./inc/GL/wglew.h
+    ./isystem
+    ./isystem/GL
+    ./isystem/GL/gl.h
+    ./isystem/OpenGL
+    ./isystem/OpenGL/gl.h
+    ./src
+    ./src/glew.c
+    [blyth@localhost glew]$ 
+
+
+
+Check on root forum
+---------------------
+
+* https://root-forum.cern.ch/t/what-is-mt-option-when-compiling-root-6-12-and-compilation-failure-within-builtin-glew/28806/4
+
+I think there is a typo in our build system that fails to detect the case when
+OpenGL is found, but not GLU. I will look into it and fix, but for your build
+you can simply do sudo apt-get install libglew-dev and disable builtin_glew in
+ROOT.
+
+
+JUNO root build config
+-----------------------
+
+::
+
+    173 function juno-ext-libs-ROOT-conf-cmake {
+    174     local msg="===== $FUNCNAME: "
+    175     cmake .. -DCMAKE_INSTALL_PREFIX=$(juno-ext-libs-ROOT-install-dir) \
+    176           -DVc=ON \
+    177           -DVecCore=ON \
+    178           -Dxrootd=ON \
+    179           -Dminuit2=ON \
+    180           -Droofit=ON \
+    181           -Dtbb=ON \
+    182           -Dgdml=ON \
+    183           -Dcastor=OFF \
+    184           -Drfio=OFF \
+    185           -Dsqlite=ON \
+    186           -DGSL_DIR=$(juno-ext-libs-gsl-install-dir) \
+    187           -DFFTW3_DIR=$(juno-ext-libs-fftw3-install-dir) \
+    188           -DTBB=$(juno-ext-libs-tbb-install-dir) \
+    189           -DXROOTD_ROOT_DIR=$(juno-ext-libs-xrootd-install-dir) \
+    190           -DXROOTD_INCLUDE_DIR=$(juno-ext-libs-xrootd-install-dir)/include/xrootd \
+    191           -DSQLITE_LIBRARIES=$(juno-ext-libs-sqlite3-install-dir)/lib/libsqlite3.so
+    192 }
+
+
+
+Check the system GLEW on Linux and macports one on Darwin
+------------------------------------------------------------
+
+
+::
+
+    [blyth@localhost ~]$ repoquery --list glew-devel.x86_64 | grep glew.h
+    /usr/include/GL/glew.h
+    /usr/include/GL/wglew.h
+    /usr/share/doc/glew-devel-1.10.0/glew.html
+    /usr/share/doc/glew-devel-1.10.0/wglew.html
+
+::
+
+    [blyth@localhost ~]$ grep define\ GL_VERSION /usr/include/GL/glew.h
+    #define GL_VERSION_1_1 1
+    #define GL_VERSION 0x1F02
+    #define GL_VERSION_1_2 1
+    #define GL_VERSION_1_2_1 1
+    #define GL_VERSION_1_3 1
+    #define GL_VERSION_1_4 1
+    #define GL_VERSION_1_5 1
+    #define GL_VERSION_2_0 1
+    #define GL_VERSION_2_1 1
+    #define GL_VERSION_3_0 1
+    #define GL_VERSION_3_1 1
+    #define GL_VERSION_3_2 1
+    #define GL_VERSION_3_3 1
+    #define GL_VERSION_4_0 1
+    #define GL_VERSION_4_1 1
+    #define GL_VERSION_4_2 1
+    #define GL_VERSION_4_3 1
+    #define GL_VERSION_4_4 1
+
+
+    epsilon:glew-1.13.0 blyth$ grep define\ GL_VERSION_ /opt/local/include/GL/glew.h
+    #define GL_VERSION_1_1 1
+    #define GL_VERSION_1_2 1
+    #define GL_VERSION_1_2_1 1
+    #define GL_VERSION_1_3 1
+    #define GL_VERSION_1_4 1
+    #define GL_VERSION_1_5 1
+    #define GL_VERSION_2_0 1
+    #define GL_VERSION_2_1 1
+    #define GL_VERSION_3_0 1
+    #define GL_VERSION_3_1 1
+    #define GL_VERSION_3_2 1
+    #define GL_VERSION_3_3 1
+    #define GL_VERSION_4_0 1
+    #define GL_VERSION_4_1 1
+    #define GL_VERSION_4_2 1
+    #define GL_VERSION_4_3 1
+    #define GL_VERSION_4_4 1
+    #define GL_VERSION_4_5 1
+    #define GL_VERSION_4_6 1
+
+
+
+
+
+
+
+
 
 
 All newish OpenGL symbols initially not present::

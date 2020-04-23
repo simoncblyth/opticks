@@ -20,6 +20,13 @@
 // oglrap/tests/AxisAppCheck.cc
 #include "AxisApp.hh"
 #include "Opticks.hh"
+
+
+#include <GL/glew.h>
+#include <GLFW/glfw3.h>
+
+
+
 #include "OPTICKS_LOG.hh"
 
 int main(int argc, char** argv)
@@ -33,6 +40,10 @@ int main(int argc, char** argv)
     ok.configure(); 
 
     AxisApp aa(&ok); 
+
+
+    std::cout << "GL_VERSION : " << glGetString(GL_VERSION) << std::endl ; 
+
 
     aa.renderLoop();
 

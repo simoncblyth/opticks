@@ -26,25 +26,70 @@ int main()
 #ifdef GL_VERSION_1_1
     std::cout << "GL_VERSION_1_1" << std::endl ; 
 #endif
+#ifdef GL_VERSION_1_5
+    std::cout << "GL_VERSION_1_5" << std::endl ; 
+#endif
+
 
 #ifdef GL_VERSION_2_0
     std::cout << "GL_VERSION_2_0" << std::endl ; 
 #endif
+#ifdef GL_VERSION_2_1
+    std::cout << "GL_VERSION_2_1" << std::endl ; 
+#endif
+
 
 #ifdef GL_VERSION_3_0
     std::cout << "GL_VERSION_3_0" << std::endl ; 
 #endif
+#ifdef GL_VERSION_3_1
+    std::cout << "GL_VERSION_3_1" << std::endl ; 
+#endif
+#ifdef GL_VERSION_3_2
+    std::cout << "GL_VERSION_3_2" << std::endl ; 
+#endif
+#ifdef GL_VERSION_3_3
+    std::cout << "GL_VERSION_3_3" << std::endl ; 
+#endif
+
 
 #ifdef GL_VERSION_4_0
     std::cout << "GL_VERSION_4_0" << std::endl ; 
 #endif
-
+#ifdef GL_VERSION_4_1
+    std::cout << "GL_VERSION_4_1" << std::endl ; 
+#endif
+#ifdef GL_VERSION_4_2
+    std::cout << "GL_VERSION_4_2" << std::endl ; 
+#endif
+#ifdef GL_VERSION_4_3
+    std::cout << "GL_VERSION_4_3" << std::endl ; 
+#endif
+#ifdef GL_VERSION_4_4
+    std::cout << "GL_VERSION_4_4" << std::endl ; 
+#endif
 #ifdef GL_VERSION_4_5
     std::cout << "GL_VERSION_4_5" << std::endl ; 
 #endif
 
+   // all these are defined on mac, although only OpenGL upto 4.1(?) is supported
 
-    // all these are defined on mac, although only OpenGL upto 4.1(?) is supported
+
+
+   // cannot initialize glew without glfw 
+   // GLenum err = glewInit();
+   // if (GLEW_OK != err)
+   // {
+   //     std::cerr << "Error: " << glewGetErrorString(err) << std::endl ;
+   // }
+
+   // but the version check works 
+   std::cout << "GLEW_VERSION : " << glewGetString(GLEW_VERSION) << std::endl ;
+
+
+    // cannot do this without GLFW, see UseOGLRap 
+    // std::cout << " GL_VERSION : " <<  glGetString(GL_VERSION)  << std::endl ;
+
 
     return 0 ; 
 }

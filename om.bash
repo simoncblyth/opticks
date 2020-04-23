@@ -185,16 +185,19 @@ om-export-setup-artificial-env(){
  
    if [ "$(uname)" == "Darwin" ]; then 
 
-       export CMAKE_PREFIX_PATH=/opt/local:/usr/local/foreign  
-       #export CMAKE_PREFIX_PATH=/usr/local/foreign  
+       #OM_EXPORT_MODE=prepend om-export- /opt/local
+       OM_EXPORT_MODE=prepend om-export- /usr/local/foreign
 
    elif [ "$(uname)" == "Linux" ]; then 
 
        local sh=$JUNOTOP/bashrc.sh
        [ -f "$sh" ] && source $sh     # use JUNO externals when available 
+
+       [ -n "$CMAKE_PREFIX_PATH" ] && export PKG_CONFIG_PATH=$(om-pkg-config-path)
+       # hmm recreating the PKG_CONFIG_PATH ??? is this needed 
+
    fi 
 
-   [ -n "$CMAKE_PREFIX_PATH" ] && export PKG_CONFIG_PATH=$(om-pkg-config-path)
 }
 
 om-export-unset(){
@@ -215,7 +218,7 @@ om-export(){
 
    om-export-setup-artificial-env  
 
-   om-export- $(om-prefix) $(om-prefix)/externals 
+   OM_EXPORT_MODE=append om-export- $(om-prefix) $(om-prefix)/externals 
 
    # /usr too ?
 
@@ -239,23 +242,29 @@ om-export-info(){
    fi  
 }
 
+
+om-export-mode(){ echo ${OM_EXPORT_MODE:-append} ; }
+
 om-export-(){
 
    local msg="=== $FUNCNAME :"
    local pfx
    local libdir
+
+   local mode=$(om-export-mode)
+
    for pfx in $* ; do  
 
-      #echo $msg pfx $pfx 
-      om-path-append CMAKE_PREFIX_PATH $pfx
+      #echo $msg pfx $pfx mode $mode 
+      om-path-$mode CMAKE_PREFIX_PATH $pfx
 
       local libs="lib lib64"
       for lib in $libs ; do 
          libdir=$pfx/$lib
          if [ -d "$libdir" ]; then 
-            om-path-append PKG_CONFIG_PATH $libdir/pkgconfig
-            om-path-append LD_LIBRARY_PATH $libdir 
-            [ "$(uname)" == "Darwin" ] && om-path-append DYLD_LIBRARY_PATH $libdir   
+            om-path-$mode PKG_CONFIG_PATH $libdir/pkgconfig
+            om-path-$mode LD_LIBRARY_PATH $libdir 
+            [ "$(uname)" == "Darwin" ] && om-path-$mode DYLD_LIBRARY_PATH $libdir   
          fi 
       done
    done   

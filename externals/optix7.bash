@@ -32,10 +32,19 @@ OptiX 7 : Brand New Lower Level API
 * Introduced Aug 2019 : OptiX 7 API is not backwards compatible
 
 
+
 * https://www.nvidia.com/en-us/gtc/session-catalog/?search=OptiX
 * https://developer.nvidia.com/gtc/2020/video/s21904
 
   GTC 2020: New Features in OptiX 7
+
+
+* https://developer.nvidia.com/gtc/2020/video/s21425 
+
+  ESI Group Report, on OptiX 7 from 41 min
+  GTC 2020: Leveraging OptiX 7 for High-Performance Multi-GPU Ray Tracing on Head-Mounted Displays
+   
+
 
 
 * https://news.developer.nvidia.com/optix-7-delivers-new-levels-of-flexibility-to-application-developers/
