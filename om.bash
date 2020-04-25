@@ -19,7 +19,7 @@
 
 om-source(){ echo $BASH_SOURCE ; }
 om-vi(){ vi $(om-source) ; }
-om-env(){  olocal- ; opticks- ; om-export ; }
+om-env(){  olocal- ; opticks- ; oe- ; }
 om-usage(){ cat << EOU
 
 OM : Opticks Minimal Approach to Configuring and Building
@@ -109,35 +109,10 @@ EOU
 
 om-home-default(){  echo $(dirname $(om-source)) ; } 
 om-home(){   echo ${OPTICKS_HOME:-$(om-home-default)} ; }
-om-userhome(){  echo $(dirname $(om-home)) ; }
 om-local(){  echo ${LOCAL_BASE:-/usr/local} ; }
 om-name(){   echo $(basename $(om-home)) ; }
 om-fold(){   echo $(om-local)/$(om-name) ; }
 om-prefix(){ echo $(om-fold) ; }
-
-
-om-path-prepend(){
-   local var=${1:-PATH}
-   local dir=${2:-/tmp}
-   local l=${3:-:}  # delim
-  
-   if [ -z "${!var}" ]; then 
-      eval $var=$dir
-   else
-      [[ "$l${!var}$l" != *"$l${dir}$l"* ]] && eval $var=$dir$l${!var} 
-   fi 
-}
-
-om-path-append(){
-   local var=${1:-PATH}
-   local dir=${2:-/tmp}
-   local l=${3:-:}  # delim
-   if [ -z "${!var}" ]; then 
-      eval $var=$dir
-   else
-      [[ "$l${!var}$l" != *"$l${dir}$l"* ]] && eval $var=${!var}$l$dir 
-   fi
-}
 
 
 om-pkg-config-path-reversed(){ $FUNCNAME- | python ; }
@@ -167,144 +142,6 @@ EPY
 
 
 
-
-
-om-export-setup-artificial-env(){
-
-   : transient testing environment setup
-   : in real usage the detector simulation framework should define  the paths, especially : CMAKE_PREFIX_PATH PKG_CONFIG_PATH 
-
-   unset CMAKE_PREFIX_PATH
-   unset PKG_CONFIG_PATH
-   unset LD_LIBRARY_PATH 
-   unset DYLD_LIBRARY_PATH 
-
-   unset PYTHONPATH
-   unset CPATH
-   unset MANPATH
- 
-   if [ "$(uname)" == "Darwin" ]; then 
-
-       #OM_EXPORT_MODE=prepend om-export- /opt/local
-       OM_EXPORT_MODE=prepend om-export- /usr/local/foreign
-
-   elif [ "$(uname)" == "Linux" ]; then 
-
-       local sh=$JUNOTOP/bashrc.sh
-       [ -f "$sh" ] && source $sh     # use JUNO externals when available 
-
-       [ -n "$CMAKE_PREFIX_PATH" ] && export PKG_CONFIG_PATH=$(om-pkg-config-path)
-       # hmm recreating the PKG_CONFIG_PATH ??? is this needed 
-
-   fi 
-
-}
-
-om-export-unset(){
-   unset CMAKE_PREFIX_PATH
-   unset PKG_CONFIG_PATH
-   unset LD_LIBRARY_PATH 
-   unset DYLD_LIBRARY_PATH 
-
-   unset PYTHONPATH   # JUNO pythonpath messes with mercurial : TypeError: openssl_md5() takes no keyword arguments
-   unset CPATH
-   unset MANPATH
- }
-
-
-
-om-export(){
-   : appends standard prefixes to CMAKE_PREFIX_PATH and pkgconfig paths to PKG_CONFIG_PATH and exports them
-
-   om-export-setup-artificial-env  
-
-   OM_EXPORT_MODE=append om-export- $(om-prefix) $(om-prefix)/externals 
-
-   # /usr too ?
-
-   export PYTHONPATH=$(om-userhome)   # python modules from source tree, not installed as used while building eg okc- optickscore  
-}
-
-
-om-export-info(){
-   echo CMAKE_PREFIX_PATH
-   echo $CMAKE_PREFIX_PATH | tr ":" "\n"
-
-   echo PKG_CONFIG_PATH
-   echo $PKG_CONFIG_PATH | tr ":" "\n"
-
-   if [ "$(uname)" == "Linux" ]; then  
-       echo LD_LIBRARY_PATH
-       echo $LD_LIBRARY_PATH | tr ":" "\n"
-   elif [ "$(uname)" == "Darwin" ]; then  
-       echo DYLD_LIBRARY_PATH
-       echo $DYLD_LIBRARY_PATH | tr ":" "\n"
-   fi  
-}
-
-
-om-export-mode(){ echo ${OM_EXPORT_MODE:-append} ; }
-
-om-export-(){
-
-   local msg="=== $FUNCNAME :"
-   local pfx
-   local libdir
-
-   local mode=$(om-export-mode)
-
-   for pfx in $* ; do  
-
-      #echo $msg pfx $pfx mode $mode 
-      om-path-$mode CMAKE_PREFIX_PATH $pfx
-
-      local libs="lib lib64"
-      for lib in $libs ; do 
-         libdir=$pfx/$lib
-         if [ -d "$libdir" ]; then 
-            om-path-$mode PKG_CONFIG_PATH $libdir/pkgconfig
-            om-path-$mode LD_LIBRARY_PATH $libdir 
-            [ "$(uname)" == "Darwin" ] && om-path-$mode DYLD_LIBRARY_PATH $libdir   
-         fi 
-      done
-   done   
-
-   export CMAKE_PREFIX_PATH  
-   export PKG_CONFIG_PATH  
-   export LD_LIBRARY_PATH
-   [ "$(uname)" == "Darwin" ] && export DYLD_LIBRARY_PATH
-
-}
-
-om-export-find(){
-   echo find_package.py $*
-        find_package.py $*
-   echo pkg_config.py $* 
-        pkg_config.py $* 
-}
-
-
-
-
-om-export-notes(){ cat << EON
-
-Succeeded to pick between 3 installed Boosts 1.70 1.71 and 1.72 across 
-examples/UseBoost and examples/UseUseBoost simply by changing the 
-CMAKE_PREFIX_PATH, see::
-
-    find_package.py Boost 
-    Boost                          : /opt/local/lib/cmake/Boost-1.71.0/BoostConfig.cmake 
-    Boost                          : /usr/local/foreign/lib/cmake/Boost-1.72.0/BoostConfig.cmake 
-    Boost                          : /usr/local/opticks/externals/lib/cmake/Boost-1.70.0/BoostConfig.cmake 
-
-To do this with opticks-config/pkg-config (ie without CMake) need to plant 
-boost.pc into the relevant lib/pkgconfig locations.
-This needs to be done both for system and self-installed boosts.
-
-
-EON
-
-}
 
 
 om-cmake-generator(){ echo ${OPTICKS_CMAKE_GENERATOR:-Unix Makefiles} ; }

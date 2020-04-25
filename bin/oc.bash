@@ -1,5 +1,42 @@
-oc-source(){ echo $BASH_SOURCE ; }
-oc-vi(){ vi $(oc-source) ; }
+#!/bin/bash
+
+OC_IS_SCRIPT=0
+unset OC_PREFIX
+
+if [ "${0:(-2)}" == "oc" -o "${0:(-14)}" == "opticks-config" ]; then
+   OC_IS_SCRIPT=1
+   OC_PREFIX=$(dirname $(dirname $0))
+fi 
+
+oc-prefix-(){ echo ${OC_PREFIX:-$(opticks-prefix)} ; }
+
+oc-prefix(){ 
+  if [ $# -eq 0 ] ; then 
+     oc-prefix-
+  else
+     oc-pkg-config --variable=prefix $*
+  fi 
+}
+
+oc-prefix-notes(){ cat << EON
+
+The prefix is not really defined until installed, 
+so getting it during the build is more of 
+an intention.
+
+opticks-prefix is only defined when sourced 
+when run from a script like ./go.sh that becomes $0
+
+When using these functions from oc or opticks-config plucked
+off the PATH the prefix should be determined from the path 
+to this script, otherwise rely on having opticks-prefix function.
+
+EON
+}
+
+oc-source(){ echo $BASH_SOURCE ; } 
+oc-sdir(){  echo $(dirname $(oc-source)) ; }
+oc-vi(){ vi $BASH_SOURCE ; }
 oc-env(){  olocal- ; opticks- ; }
 oc-help(){ cat << EOH
 
@@ -14,7 +51,7 @@ This allows C++ code using any of the Opticks packages to
 be compiled, linked and executed without using CMake.  
 Many demonstrations of usage are in examples/Use*NoCMake/go.sh  
 
-Usage examples:
+Usage examples::
 
     opticks-config --cflags NPY
     opticks-config --libs   NPY
@@ -36,8 +73,63 @@ pkg-config is returned.
     oc-pkg-config-path : $(oc-pkg-config-path)
 
 
+Other commands::
+
+    oc --help
+    oc -h
+
+    oc --meta
+    oc -m
+ 
+        ## metadata about this script or function 
+
+    oc --prefix
+    oc -prefix
+    oc -x
+
+        ## emit just the prefix, determined from the script installed location 
+ 
+    oc --find geant4
+    oc -find geant4
+    oc -n geant4
+
+        ## show path to the first pc file found
+
+    oc --cat NPY
+    oc -c geant4
+
+        ## cat the first pc file found
+
+    oc --info NPY
+    oc -info NPY
+    oc -i NPY
+
+
+    oc --dump NPY
+    oc -dump NPY
+    oc -d NPY
+
+
+
 EOH
 }
+
+oc-meta(){ cat << EOM
+
+   OC_IS_SCRIPT   : $OC_IS_SCRIPT
+   OC_PREFIX      : $OC_PREFIX
+   \$0            : $0
+   BASH_SOURCE    : $BASH_SOURCE 
+   oc-source      : $(oc-source) 
+   oc-sdir        : $(oc-sdir) 
+   oc-prefix      : $(oc-prefix)
+   oc-pkg-config-path : $(oc-pkg-config-path)
+
+
+EOM
+
+}
+
 
 oc-pc-notes(){ cat << EON
 
@@ -115,20 +207,19 @@ and as a deployed bash script when used via the installed
 scripts which are actually symbolic links to the installed 
 version of this file \$(opticks-prefix)/bin/oc.bash
 
+
 Updating and Usage
 ---------------------
 
 Update::
  
     oc-
-    oc-vi
+    oc-vi  # edit from source tree
+    oc--   # shorthand for oc-install
 
-    cd ~/opticks/bin
-    om-
-    om--  
+The last command installs oc.bash and other scripts from the source bin directory 
+into the CMAKE_INSTALL_PREFIX/bin and plants symbolic links.
 
-The last command installs oc.bash into the CMAKE_INSTALL_PREFIX/bin 
-and plants symbolic links.
 
 Developer Usage via bash functions
 -------------------------------------
@@ -137,7 +228,6 @@ Use as bash functions::
 
    oc-
    oc-cflags NPY 
-   oc-vi         # editing from the source tree 
 
 Contrast with enduser usage via script::
 
@@ -171,6 +261,7 @@ use precisely the same installations of the common externals::
     boost 
     geant4  
     xerces-c
+    glew
 
 Integrated usage of Opticks (without CMake) with for example the CMT based
 JUNO build is provided by using the opticks-config script which is built on 
@@ -218,19 +309,6 @@ boost-pcc
 
 
 
-
-
-TODO: test with UseBoost and UseGeant4
------------------------------------------
-
-
-TODO : operation with non-Opticks controlled boost and G4 
-------------------------------------------------------------
-
-Perhaps use the pc files as inputs in this case that carry the 
-locations plucked by the Find ?
-
-
 TODO : regularize imgui CMakeLists.txt its not using bcm_deploy forcing manual pc
 -----------------------------------------------------------------------------------
 
@@ -250,6 +328,9 @@ TODO : get relocatable operation from a distributed installation to work
 
 Cannot use "--define-prefix" for this as that demands a 
 newer version of pkg-config that is commonly available.
+
+
+
 
 
 pkg-config versions
@@ -376,7 +457,6 @@ EOU
 } 
 
 
-#oc-extra(){ echo --define-prefix ; }  ## --define-prefix is a "recent" pkg-config addition, so better not to use it 
 oc-extra(){ echo ; }
 oc-lower(){ 
    local arg
@@ -414,7 +494,9 @@ oc-libdir(){  oc-libdir- $* | tr " " "\n" | sort | uniq ; }
 oc-libpath(){ local dirs=$(oc-libdir $*) ; echo $dirs | tr " " ":" ; }
 
 oc-cat(){    
+   local msg="=== $FUNCNAME :"
    local pc=$(oc-find $*) 
+   echo $msg pc $pc 
    [ -n "$pc" -a -f "$pc" ] && cat $pc
 }
 oc-edit(){    
@@ -427,50 +509,25 @@ oc-setup()
    : TODO eliminate this transient  
    local iwd=$pwd
    cd $(opticks-prefix)
-   # [ ! -x xlib ] && ln -s externals/lib xlib    ## now that cannot use --define-prefix not needed ?
-   cd $iwd 
 
    ## the below is transient, they should be done on installing  
- 
    optix-
    optix-pc
    cuda-
    cuda-pc
+
+   cd $iwd 
 }
 
 
 
-oc-prefix-notes(){ cat << EON
 
-opticks-prefix is only defined when sourced 
-when run from a script like ./go.sh that becomes $0
-
-When using these functions from oc or opticks-config plucked
-off the PATH the prefix should be determined from the path 
-to this script, otherwise rely on having opticks-prefix function.
-
-EON
+oc-pkg-config-path--(){ 
+   if [ -n "$PKG_CONFIG_PATH" ]; then 
+       echo $PKG_CONFIG_PATH | tr ":" "\n"
+   fi 
 }
 
-oc-prefix(){
-   local arg=$0
-   if [ "${arg:(-2)}" == "oc" -o "${arg:(-14)}" == "opticks-config" ]
-   then
-       echo $(dirname $(dirname $0)) 
-   else
-       opticks-prefix
-   fi
-}
-
-
-# "private" interface
-oc-pkg-config-path--(){ cat << EOP
-$(oc-prefix)/lib/pkgconfig
-$(oc-prefix)/lib64/pkgconfig
-$(oc-prefix)/externals/lib/pkgconfig
-/opt/local/lib/pkgconfig
-EOP
-}
 oc-pkg-config-path-(){
    local dir
    $FUNCNAME- | while read dir ; do
@@ -530,12 +587,17 @@ EOI
 }
 
 
+oc-pkg-config-notes(){ cat << EON
 
-# internally controlled search path, isolated from the envvar  
-#oc-pkg-config(){ PKG_CONFIG_PATH=$(oc-pkg-config-path) pkg-config $* ; }
-#oc-pcfix(){      PKG_CONFIG_PATH=$(oc-pkg-config-path) pc.py $* --fix ; }
+Initially took the approach of an internally controlled search path, 
+isolated from the PKG_CONFIG_PATH envvar. 
+But that way cannot be integrated so have moved to being steered 
+by the envvar which is set either by oe- when using Opticks 
+standalone or via the setup of the sim framework when integrated.
 
-# at the whims of the envvar : having moved envvar control to om-export 
+EON
+}
+
 oc-pkg-config(){ pkg-config $* ; }
 oc-pcfix(){      pc.py $* --fix ; }
 
@@ -550,6 +612,7 @@ oc-pkg-config-find(){
       pc=$dir/${lpkg}.pc
       if [ -f "$pc" ]; then
          echo $pc
+         return
       fi 
    done
 }
@@ -623,15 +686,25 @@ oc-main(){
                --cat|-cat|-c) oc-cat  $* ;; 
              --info|-info|-i) oc-info  $* ;; 
              --help|-help|-h) oc-help $* ;; 
+             --meta|-meta|-m) oc-meta $* ;; 
+         --prefix|-prefix|-x) oc-prefix $* ;; 
                            *) oc-dump $cmd $* ;;   ## assume unrecognized command is a pkg name 
        esac
    fi 
 }
 
 
-if [ ! "$0" == "-bash" -o "$0" == "bash" ]; then   ## when used as a script rather than being sourced 
-   if [ "$(basename $0)" == "opticks-config" -o "$(basename $0)" == "oc"  ]; then
-       oc-main $*
-   fi
+if [ "$OC_IS_SCRIPT" == "1" ]; then 
+    oc-main $*
+else
+    oc-install(){
+        local sdir=$(oc-sdir)
+        local msg="=== $FUNCNAME :"
+        echo $msg sdir $sdir
+        cd $sdir
+        om-
+        om--
+    } 
+    oc--(){ oc-install ; }
 fi
 

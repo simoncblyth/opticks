@@ -18,6 +18,7 @@
 ##
 
 opticks-(){         source $(opticks-source) && opticks-env $* ; }
+
 opticks-source(){   echo $BASH_SOURCE ; }
 opticks-ldir(){     echo $(dirname $BASH_SOURCE) ; }
 opticks-vi(){       vi $(opticks-source) ; }
@@ -1273,22 +1274,6 @@ opticks-export()
 
    opticksdata-
    opticksdata-export
-
-   case $(uname -s) in
-      MINGW*) opticks-export-mingw ;;
-   esac
-}
-opticks-export-mingw()
-{
-  local dirs="lib externals/bin externals/lib"
-  local dir
-  for dir in $dirs 
-  do
-      opticks-path-add $(opticks-prefix)/$dir
-  done 
-
-  # see brap-/fsutil
-  export OPTICKS_PATH_PREFIX="C:\\msys64" 
 }
 
 
@@ -1347,7 +1332,6 @@ opticks-linux-release()
 ########### bitbucket commits
 
 opticks-co(){      opticks-open  https://bitbucket.org/simoncblyth/opticks/commits/all ; } 
-opticks-co2(){     opticks-open  https://bitbucket.org/simoncblyth/opticks-cmake-overhaul/commits/all ; } 
 
 
 
@@ -1446,6 +1430,7 @@ opticks-open()
 ## [WIP] modern CMake proj-by-proj style building 
 
 om-(){       . $(opticks-home)/om.bash      && om-env $* ; }
+oe-(){       . $(opticks-home)/oe.bash      && oe-env $* ; }
 oc-(){       . $(opticks-home)/bin/oc.bash  && oc-env $* ; }
 opnovice-(){ . $(opticks-home)/notes/geant4/opnovice.bash      && opnovice-env $* ; }
 

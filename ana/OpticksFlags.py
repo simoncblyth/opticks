@@ -6,8 +6,24 @@ OpticksFlags.py
 Used from optickscore/CMakeLists.txt
 
 """
-import os, re, logging, argparse
-from opticks.ana.base import json_save_
+import os, re, logging, argparse, json
+
+## json_save_ duplicates opticks.ana.base 
+## to make this script self contained 
+## as this is used from the okc- build 
+
+def makedirs_(path):
+    pdir = os.path.dirname(path)
+    if not os.path.exists(pdir):
+        os.makedirs(pdir)
+    pass
+    return path 
+
+expand_ = lambda path:os.path.expandvars(os.path.expanduser(path))
+json_load_ = lambda path:json.load(file(expand_(path)))
+json_save_ = lambda path, d:json.dump(d, file(makedirs_(expand_(path)),"w"))
+
+
 
 log = logging.getLogger(__name__) 
 
@@ -64,6 +80,8 @@ if __name__ == '__main__':
 
     if args.path == default_path:
         log.info("using default input path %s " % args.path)
+    else:
+        log.info("using argument input path %s " % args.path)
     pass  
 
     flags = OpticksFlags(args.path)

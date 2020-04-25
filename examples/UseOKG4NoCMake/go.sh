@@ -19,8 +19,9 @@
 ##
 
 
+type opticks-
 opticks-
-oc-
+oe-
 
 sdir=$(pwd)
 bdir=/tmp/$USER/opticks/$(basename $sdir)/build 
@@ -30,10 +31,21 @@ rm -rf $bdir && mkdir -p $bdir && cd $bdir && pwd
 
 pkg=OKG4
 
-gcc -c $sdir/Use$pkg.cc $(oc-cflags $pkg)
-gcc Use$pkg.o -o Use$pkg $(oc-libs $pkg) 
-LD_LIBRARY_PATH=$(oc-libpath $pkg) ./Use$pkg
+gcc -c $sdir/Use$pkg.cc $(oc --cflags $pkg)
+gcc Use$pkg.o -o Use$pkg $(oc --libs $pkg) 
+./Use$pkg
 
 
+cat << EON
 
+g4 environment file is empty 
+
+
+epsilon:UseOKG4NoCMake blyth$ l /usr/local/opticks/externals/config/geant4.ini
+-rw-r--r--  1 blyth  staff  0 Apr 20 17:46 /usr/local/opticks/externals/config/geant4.ini
+epsilon:UseOKG4NoCMake blyth$ date
+Fri Apr 24 20:03:31 BST 2020
+epsilon:UseOKG4NoCMake blyth$ 
+
+EON
 

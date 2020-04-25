@@ -20,7 +20,8 @@
 
 
 opticks-
-oc-
+oe-
+
 
 sdir=$(pwd)
 bdir=/tmp/$USER/opticks/$(basename $sdir)/build 
@@ -30,8 +31,8 @@ rm -rf $bdir && mkdir -p $bdir && cd $bdir && pwd
 
 pkg=CFG4
 
-gcc -c $sdir/Use$pkg.cc $(oc-cflags $pkg) 
-gcc Use$pkg.o -o Use$pkg $(oc-libs $pkg) 
-LD_LIBRARY_PATH=$(oc-libpath $pkg) ./Use$pkg
+gcc -c $sdir/Use$pkg.cc $(oc --cflags $pkg) 
+gcc Use$pkg.o -o Use$pkg $(oc --libs $pkg) 
+./Use$pkg
 
 

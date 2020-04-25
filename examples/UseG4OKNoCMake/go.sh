@@ -20,7 +20,8 @@
 
 
 opticks-
-oc-
+oe-
+oe-info
 
 sdir=$(pwd)
 name=$(basename $sdir)
@@ -31,9 +32,9 @@ mkdir -p $bdir && cd $bdir && pwd
 
 pkg=G4OK
 
-gcc -c $sdir/Use$pkg.cc $(oc-cflags $pkg)
-gcc Use$pkg.o -o Use$pkg $(oc-libs $pkg) 
-LD_LIBRARY_PATH=$(oc-libpath $pkg) ./Use$pkg
+gcc -c $sdir/Use$pkg.cc $(oc --cflags $pkg)
+gcc Use$pkg.o -o Use$pkg $(oc --libs $pkg) 
+./Use$pkg
 
 
 

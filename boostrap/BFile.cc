@@ -47,6 +47,14 @@ const plog::Severity BFile::LEVEL = PLOG::EnvLevel("BFile", "DEBUG");
 
 char* BFile::OPTICKS_PATH_PREFIX = NULL ;
 
+/**
+Formerly uses the below prefix on a windows build:
+
+case $(uname -s) in 
+MINGW*) export OPTICKS_PATH_PREFIX="C:\\msys64" ;;
+esac
+**/
+
 void BFile::setOpticksPathPrefix(const char* prefix)
 {
     OPTICKS_PATH_PREFIX = prefix ? strdup(prefix) : NULL ;

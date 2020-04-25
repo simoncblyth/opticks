@@ -21,29 +21,24 @@
 
 opticks-
 
+# depends on having oc in PATH which is setup by opticks-export
 
 sdir=$(pwd)
 bdir=/tmp/$USER/opticks/$(basename $sdir)/build 
-
 rm -rf $bdir && mkdir -p $bdir && cd $bdir && pwd 
 
 
-oc-
-
-om-
-om-export
-om-export-info
+oe-
+oe-info
 
 pkg=Geant4
-om-export-find $pkg
+oe-find $pkg
 
+echo gcc -c $sdir/Use$pkg.cc $(oc --cflags $pkg)
+     gcc -c $sdir/Use$pkg.cc $(oc --cflags $pkg)
+echo gcc Use$pkg.o -o Use$pkg $(oc --libs $pkg) 
+     gcc Use$pkg.o -o Use$pkg $(oc --libs $pkg) 
 
-echo gcc -c $sdir/Use$pkg.cc $(oc-cflags $pkg)
-     gcc -c $sdir/Use$pkg.cc $(oc-cflags $pkg)
-echo gcc Use$pkg.o -o Use$pkg $(oc-libs $pkg)  #-lstdc++
-     gcc Use$pkg.o -o Use$pkg $(oc-libs $pkg) #-lstdc++
-
-# on Darwin with clang should be -lc++ but I think there is some compat to make -lstdc++ work 
 
 ./Use$pkg
 

@@ -36,6 +36,7 @@ class Enum(dict):
         dict.__init__(self)
         log.info("parsing %s " % path )
         path = os.path.expandvars(path)
+        log.info("path expands to %s " % path )
         self.parse(path, mskval=mskval)
 
     def __repr__(self):
@@ -73,6 +74,8 @@ if __name__ == '__main__':
 
     #default_path = "$OPTICKS_HOME/optickscore/OpticksPhoton.h"
     default_path = "$OPTICKS_INSTALL_PREFIX/include/OpticksCore/OpticksPhoton.h"
+    ## NB envvar not needed when absolute path argument given   
+
     parser = argparse.ArgumentParser(__doc__)
     parser.add_argument(     "path",  nargs="?", help="Path to input header", default=default_path )
     parser.add_argument(     "--inipath", default=None, help="When a path is provided an ini file will be written to it." ) 
@@ -86,6 +89,8 @@ if __name__ == '__main__':
 
     if args.path == default_path:
         log.info("using default path %s " % args.path)
+    else:
+        log.info("using argument input path %s " % args.path) 
     pass  
 
     d = Enum(args.path, mskval=args.mskval)
