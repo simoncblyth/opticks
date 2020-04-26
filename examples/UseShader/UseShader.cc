@@ -89,8 +89,18 @@ void print_shader_info_log(unsigned id)
 }
 
 
+// on macOS with 
+//    #version 460 core
+// get runtime error, unsupported version
+//
+// on macOS with 
+//    #version 410 core
+// note that a trailing semicolon after the main curly brackets 
+// gives a syntax error, that did not see on Linux with "#version 460 core"
+//
+
 static const char* vertex_shader_text = R"glsl(
-#version 460 core
+#version 410 core
 uniform mat4 MVP;
 in vec3 vCol;
 in vec2 vPos;
@@ -99,19 +109,20 @@ void main()
 {
     gl_Position = MVP * vec4(vPos, 0.0, 1.0);
     color = vCol;
-};
+}
 
 )glsl";
 
 static const char* fragment_shader_text = R"glsl(
-#version 460 core
+#version 410 core
 in vec3 color;
 out vec4 frag_color;
 
 void main()
 {
     frag_color = vec4(color, 1.0);
-};
+}
+
 )glsl";
 
 

@@ -46,7 +46,7 @@ int main(int argc, char** argv)
     ok.configure(); 
 
 
-    Composition* m_composition = new Composition ; 
+    Composition* m_composition = new Composition(&ok) ; 
 
     // OpticksViz::init
     Frame* m_frame = new Frame ; 

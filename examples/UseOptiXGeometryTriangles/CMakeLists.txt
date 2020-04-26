@@ -7,13 +7,13 @@ if(POLICY CMP0077)  # see note/issues/cmake-3.13.4-FindCUDA-warnings.rst
     cmake_policy(SET CMP0077 OLD)
 endif()
 
-
+set(OptiX_VERBOSE ON)
 
 find_package(OKConf      REQUIRED CONFIG)   
 find_package(SysRap      REQUIRED CONFIG)
 find_package(NPY         REQUIRED CONFIG)
 
-find_package(OptiX       REQUIRED MODULE)   
+find_package(OptiX 6.0.0     REQUIRED MODULE)   
 find_package(OpticksCUDA REQUIRED MODULE) 
 
 set(SOURCES

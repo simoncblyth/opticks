@@ -20,6 +20,9 @@
 
 
 opticks-
+optix-prefix(){ echo $(opticks-prefix)/externals/OptiX_700 ; }
+[ ! -d "$(optix-prefix)" ] && echo no optix-prefix dir $(optix-prefix) && exit 0 
+
 
 sdir=$(pwd)
 name=$(basename $sdir)
@@ -72,7 +75,6 @@ glm-get(){
 glm-get
 
 
-optix-prefix(){ echo $(opticks-prefix)/externals/OptiX_700 ; }
 
  
 cmake $sdir \

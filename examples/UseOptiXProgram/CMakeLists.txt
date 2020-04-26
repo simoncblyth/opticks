@@ -3,6 +3,13 @@ set(name UseOptiXProgram)
 project(${name})
 include(OpticksBuildOptions)
 
+if(POLICY CMP0077)  # see note/issues/cmake-3.13.4-FindCUDA-warnings.rst
+    cmake_policy(SET CMP0077 OLD)
+endif()
+
+
+
+
 find_package(OKConf      REQUIRED CONFIG)   
 find_package(OptiX       REQUIRED MODULE)   
 find_package(OpticksCUDA REQUIRED MODULE) 

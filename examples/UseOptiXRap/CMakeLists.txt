@@ -2,6 +2,12 @@ cmake_minimum_required(VERSION 3.5 FATAL_ERROR)
 set(name UseOptiXRap)
 project(${name} VERSION 0.1.0)
 include(OpticksBuildOptions)
+
+if(POLICY CMP0077)  # see note/issues/cmake-3.13.4-FindCUDA-warnings.rst
+    cmake_policy(SET CMP0077 OLD)
+endif()
+
+
     
 set(OptiX_VERBOSE ON)
 

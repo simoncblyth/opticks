@@ -21,6 +21,11 @@
 
 opticks-
 
+optix-prefix(){ echo $(opticks-prefix)/externals/OptiX_700 ; }
+[ ! -d "$(optix-prefix)" ] && echo no optix-prefix dir $(optix-prefix) && exit 0 
+
+
+
 sdir=$(pwd)
 
 name=$(basename $sdir)
@@ -32,7 +37,6 @@ rm -rf $bdir && mkdir -p $bdir
 cd $bdir && pwd 
 
 
-optix-prefix(){ echo $(opticks-prefix)/externals/OptiX_700 ; }
 
 if [ ! -f CMakeCache.txt ]; then 
  

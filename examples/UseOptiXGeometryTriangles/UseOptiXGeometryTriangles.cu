@@ -110,6 +110,8 @@ RT_PROGRAM void miss()
 RT_PROGRAM void triangle_attributes()
 {
     const int3   v_idx = index_buffer[rtGetPrimitiveIndex()];
+    // rtGetPrimitiveIndex() fails to compile with OptiX 5.0.1
+
     const float3 v0    = vertex_buffer[v_idx.x];
     const float3 v1    = vertex_buffer[v_idx.y];
     const float3 v2    = vertex_buffer[v_idx.z];

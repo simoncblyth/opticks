@@ -3,6 +3,12 @@ set(name UseOKOP)
 project(${name} VERSION 0.1.0)
 include(OpticksBuildOptions)
 
+if(POLICY CMP0077)  # see note/issues/cmake-3.13.4-FindCUDA-warnings.rst
+    cmake_policy(SET CMP0077 OLD)
+endif()
+
+
+
 find_package(OKOP REQUIRED CONFIG)   
 
 message(STATUS "OKOP_DIR     : ${OKOP_DIR} ")  

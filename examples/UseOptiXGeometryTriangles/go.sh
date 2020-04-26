@@ -20,6 +20,8 @@
 
 
 opticks-
+oe-
+om-
 
 sdir=$(pwd)
 name=$(basename $sdir)
@@ -32,12 +34,7 @@ cd $bdir && pwd
 #ls -l 
 
 if [ ! -f CMakeCache.txt ]; then  
-    cmake $sdir \
-       -DCMAKE_BUILD_TYPE=Debug \
-       -DCMAKE_PREFIX_PATH=$(opticks-prefix)/externals \
-       -DCMAKE_INSTALL_PREFIX=$(opticks-prefix) \
-       -DCMAKE_MODULE_PATH=$(opticks-home)/cmake/Modules \
-       -DOptiX_INSTALL_DIR=$(opticks-optix-install-dir) 
+    om-cmake $sdir 
 fi
 
 make
@@ -48,5 +45,18 @@ $name
 ls -l /tmp/$name.ppm
 
 open /tmp/$name.ppm
+
+
+
+cat << EON > /dev/null
+
+Compilation fails with OptiX 501
+
+/Users/blyth/opticks/examples/UseOptiXGeometryTriangles/UseOptiXGeometryTriangles.cu(112): error: identifier "rtGetPrimitiveIndex" is undefined
+
+The CMake find_package with a version 6.0.0 fails to notify that got too old an OptiX 
+
+
+EON
 
 

@@ -36,6 +36,8 @@ EOU
 }
 
 opticks-
+oe-
+om-
 
 sdir=$(pwd)
 name=$(basename $sdir) 
@@ -46,17 +48,12 @@ mkdir -p $bdir
 cd $bdir 
 pwd 
 
-cmake $sdir \
-      -DCMAKE_BUILD_TYPE=Debug \
-      -DCMAKE_INSTALL_PREFIX=$(opticks-prefix) \
-      -DCMAKE_MODULE_PATH=$(opticks-home)/cmake/Modules \
-      -DCMAKE_PREFIX_PATH=$(opticks-prefix)/externals
+om-cmake $sdir 
+make
+make install   
 
 # CONFIG mode find_package rules allow the BCM machinery in  <prefix>/share/bcm/cmake/ 
 # to be found without assistance (ie no need to modify CMAKE_MODULE_PATH)
-
-make
-make install   
 
 
 
