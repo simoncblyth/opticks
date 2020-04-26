@@ -84,10 +84,15 @@ Other commands::
         ## metadata about this script or function 
 
     oc --prefix
-    oc -prefix
     oc -x
 
-        ## emit just the prefix, determined from the script installed location 
+        ## without argument : emit just the prefix, determined from the script installed location 
+
+    oc -x geant4 
+
+        ## with pkg name provides prefix dir of the package
+        ## note that this is using the PKG_CONFIG_PATH 
+
  
     oc --find geant4
     oc -find geant4
@@ -457,7 +462,6 @@ EOU
 } 
 
 
-oc-extra(){ echo ; }
 oc-lower(){ 
    local arg
    local larg
@@ -478,13 +482,13 @@ oc-args-(){
 
 oc-args(){ oc-args- $(oc-lower $*) ; }
 
-oc-libdir-(){ oc-pkg-config $(oc-lower $*) --libs-only-L $(oc-extra) | tr -- "-L" " " ; }
-oc-cflags-(){ oc-pkg-config $(oc-lower $*) --cflags $(oc-extra) ; }
+oc-libdir-(){ oc-pkg-config $(oc-lower $*) --libs-only-L  | tr -- "-L" " " ; }
+oc-cflags-(){ oc-pkg-config $(oc-lower $*) --cflags  ; }
 
 
 oc-cflags(){ echo $(oc-cflags- $*) -std=c++11 ; }  ## seems the wrong place for c++11 ??
-oc-libs(){   oc-pkg-config $(oc-lower $*) --libs   $(oc-extra) ; }
-oc-libsl(){  oc-pkg-config $(oc-lower $*) --libs-only-L $(oc-extra) ; }
+oc-libs(){   oc-pkg-config $(oc-lower $*) --libs   ; }
+oc-libsl(){  oc-pkg-config $(oc-lower $*) --libs-only-L  ; }
 oc-deps(){   oc-pkg-config $(oc-lower $*) --print-requires  ; }
 oc-dump(){   oc-pkg-config-dump $(oc-lower $*) ; }
 oc-check(){  oc-pkg-config-check-dirs $(oc-lower $*) ; }

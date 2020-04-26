@@ -25,8 +25,13 @@ with CMake is being treated as a black box.
 #]=]
 
 
-#find_package(CUDA   REQUIRED MODULE) # eg /opt/local/share/cmake-3.12/Modules/FindCUDA.cmake
-find_package(CUDA   MODULE) # eg /opt/local/share/cmake-3.12/Modules/FindCUDA.cmake
+#find_package(CUDA   REQUIRED MODULE) 
+find_package(CUDA   MODULE) 
+
+# actual finding done by module supplied with CMake such as:
+# /opt/local/share/cmake-3.17/Modules/FindCUDA.cmake
+
+
 
 if(CUDA_LIBRARIES AND CUDA_INCLUDE_DIRS AND CUDA_curand_LIBRARY)
   set(OpticksCUDA_FOUND "YES")
@@ -80,6 +85,8 @@ if(OpticksCUDA_VERBOSE)
   message(STATUS "FindOpticksCUDA.cmake:CUDA_LIBRARIES           : ${CUDA_LIBRARIES} ")
   message(STATUS "FindOpticksCUDA.cmake:CUDA_INCLUDE_DIRS        : ${CUDA_INCLUDE_DIRS} ")
   message(STATUS "FindOpticksCUDA.cmake:CUDA_curand_LIBRARY      : ${CUDA_curand_LIBRARY}")
+
+   
 
   include(EchoTarget)
   echo_pfx_vars(CUDA "cudart_static_LIBRARY;curand_LIBRARY") 

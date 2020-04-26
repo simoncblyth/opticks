@@ -20,7 +20,7 @@
 
 
 opticks-
-opticks-boost-info
+oe-
 
 sdir=$(pwd)
 bdir=/tmp/$USER/opticks/$(basename $sdir)/build 
@@ -28,28 +28,18 @@ bdir=/tmp/$USER/opticks/$(basename $sdir)/build
 rm -rf $bdir && mkdir -p $bdir && cd $bdir && pwd 
 
 
-om-
-om-export
-om-export-info
-
-oc-
-
 pkg=Boost
 name=${pkg}FS
 
-om-export-find $pkg
+oc -n $pkg
 
 
-echo gcc -c $sdir/Use$name.cc $(oc-cflags $pkg)
-     gcc -c $sdir/Use$name.cc $(oc-cflags $pkg)
-echo gcc Use$name.o -o Use$name $(oc-libs $pkg) 
-     gcc Use$name.o -o Use$name $(oc-libs $pkg) 
-
-# with boost-python present in the libs get missing symbol without -lpython2.7
-# now adding this in the boost-pcc libs list when a boost_python lib is seen
-
-./Use$name
-
+echo gcc -c $sdir/Use$name.cc $(oc -cflags $pkg)
+     gcc -c $sdir/Use$name.cc $(oc -cflags $pkg)
+echo gcc Use$name.o -o Use$name $(oc -libs $pkg) 
+     gcc Use$name.o -o Use$name $(oc -libs $pkg) 
+echo ./Use$name
+     ./Use$name
 
 # this fails with system boost for lack of boost.pc
 # as the pkg_config.py resolution is not looking for /usr/lib64/pkgconfig/boost.pc

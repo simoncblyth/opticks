@@ -20,7 +20,9 @@
 
 
 #gogo-find(){ find . -name go.sh ; }
-gogo-find(){ ls -1 *NoCMake/go.sh ; }
+#gogo-find(){ ls -1 *NoCMake/go.sh ; }
+gogo-find(){ ls -1 */go.sh | grep -v NoCMake ; }
+
 
 gogo-all(){
     local go

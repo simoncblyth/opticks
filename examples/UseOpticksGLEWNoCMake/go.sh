@@ -20,7 +20,7 @@
 
 
 opticks-
-oc-
+oe-
 
 sdir=$(pwd)
 bdir=/tmp/$USER/opticks/$(basename $sdir)/build 
@@ -32,9 +32,12 @@ rm -rf $bdir && mkdir -p $bdir && cd $bdir && pwd
 pkg=OpticksGLEW
 pc=glew
 
-gcc -c $sdir/Use$pkg.cc $(oc-cflags $pc)
-gcc Use$pkg.o -o Use$pkg $(oc-libs $pc) -lstdc++
-LD_LIBRARY_PATH=$(oc-libpath $pc) ./Use$pkg
+echo gcc -c $sdir/Use$pkg.cc $(oc -cflags $pc)
+     gcc -c $sdir/Use$pkg.cc $(oc -cflags $pc)
+echo gcc Use$pkg.o -o Use$pkg $(oc -libs $pc)
+     gcc Use$pkg.o -o Use$pkg $(oc -libs $pc)
+echo ./Use$pkg
+     ./Use$pkg
 
 
 

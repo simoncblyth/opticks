@@ -32,9 +32,15 @@ mkdir -p $bdir && cd $bdir && pwd
 
 pkg=G4OK
 
-gcc -c $sdir/Use$pkg.cc $(oc --cflags $pkg)
-gcc Use$pkg.o -o Use$pkg $(oc --libs $pkg) 
-./Use$pkg
+echo gcc -c $sdir/Use$pkg.cc $(oc --cflags $pkg)
+     gcc -c $sdir/Use$pkg.cc $(oc --cflags $pkg)
+echo gcc Use$pkg.o -o Use$pkg $(oc --libs $pkg) 
+     gcc Use$pkg.o -o Use$pkg $(oc --libs $pkg) 
+echo ./Use$pkg
+     ./Use$pkg
 
+
+
+## on Darwin : C4FPEDetection::InvalidOperationDetection_Disable       NOT IMPLEMENTED 
 
 

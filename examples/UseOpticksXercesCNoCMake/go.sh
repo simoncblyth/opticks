@@ -20,7 +20,7 @@
 
 
 opticks-
-oc-
+oe-
 
 sdir=$(pwd)
 bdir=/tmp/$USER/opticks/$(basename $sdir)/build 
@@ -30,12 +30,12 @@ rm -rf $bdir && mkdir -p $bdir && cd $bdir && pwd
 pkg=OpticksXercesC
 pc=xerces-c
 
-echo gcc -c $sdir/Use$pkg.cc $(oc-cflags $pc)
-     gcc -c $sdir/Use$pkg.cc $(oc-cflags $pc)
-echo gcc Use$pkg.o -o Use$pkg $(oc-libs $pc) -lstdc++
-     gcc Use$pkg.o -o Use$pkg $(oc-libs $pc) -lstdc++
-echo LD_LIBRARY_PATH=$(oc-libpath $pc) ./Use$pkg
-     LD_LIBRARY_PATH=$(oc-libpath $pc) ./Use$pkg
+echo gcc -c $sdir/Use$pkg.cc $(oc -cflags $pc)
+     gcc -c $sdir/Use$pkg.cc $(oc -cflags $pc)
+echo gcc Use$pkg.o -o Use$pkg $(oc -libs $pc) -lstdc++
+     gcc Use$pkg.o -o Use$pkg $(oc -libs $pc) -lstdc++
+echo ./Use$pkg
+     ./Use$pkg
 
 
 

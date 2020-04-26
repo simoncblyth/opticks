@@ -20,7 +20,7 @@
 
 
 opticks-
-oc-
+oe-
 
 sdir=$(pwd)
 name=$(basename $sdir)
@@ -31,12 +31,12 @@ rm -rf $bdir && mkdir -p $bdir && cd $bdir && pwd
 pkg=OpticksGLFW
 pc=glfw3    
 
-echo gcc -c $sdir/Use$pkg.cc $(oc-cflags $pc)
-     gcc -c $sdir/Use$pkg.cc $(oc-cflags $pc)
-echo gcc Use$pkg.o -o Use$pkg $(oc-libs $pc --static) -lstdc++ 
-     gcc Use$pkg.o -o Use$pkg $(oc-libs $pc --static) -lstdc++
-echo DISPLAY=:0 LD_LIBRARY_PATH=$(oc-libpath $pc) ./Use$pkg
-     DISPLAY=:0 LD_LIBRARY_PATH=$(oc-libpath $pc) ./Use$pkg
+echo gcc -c $sdir/Use$pkg.cc $(oc -cflags $pc)
+     gcc -c $sdir/Use$pkg.cc $(oc -cflags $pc)
+echo gcc Use$pkg.o -o Use$pkg $(oc -libs $pc --static) -lstdc++ 
+     gcc Use$pkg.o -o Use$pkg $(oc -libs $pc --static) -lstdc++
+echo DISPLAY=:0 ./Use$pkg
+     DISPLAY=:0 ./Use$pkg
 
 printf "\n\n%s\n"  "known to fail when headless"
 

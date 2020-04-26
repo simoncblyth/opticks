@@ -20,16 +20,14 @@
 
 
 opticks-
-
-# depends on having oc in PATH which is setup by opticks-export
+oe-
+oe-info
+# depends on having oc in PATH which is setup by oe-
 
 sdir=$(pwd)
 bdir=/tmp/$USER/opticks/$(basename $sdir)/build 
 rm -rf $bdir && mkdir -p $bdir && cd $bdir && pwd 
 
-
-oe-
-oe-info
 
 pkg=Geant4
 oe-find $pkg
@@ -38,9 +36,8 @@ echo gcc -c $sdir/Use$pkg.cc $(oc --cflags $pkg)
      gcc -c $sdir/Use$pkg.cc $(oc --cflags $pkg)
 echo gcc Use$pkg.o -o Use$pkg $(oc --libs $pkg) 
      gcc Use$pkg.o -o Use$pkg $(oc --libs $pkg) 
-
-
-./Use$pkg
+echo ./Use$pkg
+     ./Use$pkg
 
 
 

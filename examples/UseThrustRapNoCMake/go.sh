@@ -20,7 +20,7 @@
 
 
 opticks-
-oc-
+oe-
 
 sdir=$(pwd)
 bdir=/tmp/$USER/opticks/$(basename $sdir)/build 
@@ -31,43 +31,17 @@ rm -rf $bdir && mkdir -p $bdir && cd $bdir && pwd
 
 pkg=ThrustRap
 
-oc-dump $pkg
-echo nvcc -c $sdir/Use$pkg.cu $(oc-cflags $pkg)
-     nvcc -c $sdir/Use$pkg.cu $(oc-cflags $pkg)
+oc -dump $pkg
+echo nvcc -c $sdir/Use$pkg.cu $(oc -cflags $pkg)
+     nvcc -c $sdir/Use$pkg.cu $(oc -cflags $pkg)
 
-echo gcc Use$pkg.o -o Use$pkg $(oc-libs $pkg) 
-     gcc Use$pkg.o -o Use$pkg $(oc-libs $pkg) 
+echo gcc Use$pkg.o -o Use$pkg $(oc -libs $pkg) 
+     gcc Use$pkg.o -o Use$pkg $(oc -libs $pkg) 
 
-echo LD_LIBRARY_PATH=$(oc-libpath $pkg) ./Use$pkg
-     LD_LIBRARY_PATH=$(oc-libpath $pkg) ./Use$pkg
+echo ./Use$pkg
+     ./Use$pkg
 
 
-
-cat << EOS > /dev/null
-
-gcc UseThrustRap.o -o UseThrustRap \
-       -L/usr/local/opticks/lib \
-       -L/usr/local/opticks/externals/lib \
-       -L/usr/local/cuda/lib \
-       -lThrustRap \
-        /Developer/NVIDIA/CUDA-9.1/lib/libcudart_static.a \
-     -lOpticksCore \
-     -lNPY \
-     -lBoostRap \
-     -lOpenMeshTools \
-     -lOpenMeshCore \
-     -lstdc++ \
-     -lDualContouringSample \
-     -lstdc++ \
-     -lCUDARap \
-     /Developer/NVIDIA/CUDA-9.1/lib/libcudart_static.a \
-     -lSysRap \
-     -lstdc++ \
-     -lcudart \
-     -lcurand \
-    -Wl,-rpath,/usr/local/cuda/lib 
-
-EOS
 
 
 nvcc-notes(){ cat << EON

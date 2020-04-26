@@ -20,7 +20,7 @@
 
 
 opticks-
-oc-
+oe-
 
 sdir=$(pwd)
 bdir=/tmp/$USER/opticks/$(basename $sdir)/build 
@@ -28,9 +28,12 @@ bdir=/tmp/$USER/opticks/$(basename $sdir)/build
 rm -rf $bdir && mkdir -p $bdir && cd $bdir && pwd 
 
 
-nvcc -c $sdir/UseCUDA.cu
-nvcc UseCUDA.o $sdir/UseUseCUDA.cc -o UseUseCUDA
+echo nvcc -c $sdir/UseCUDA.cu
+     nvcc -c $sdir/UseCUDA.cu
+echo nvcc UseCUDA.o $sdir/UseUseCUDA.cc -o UseUseCUDA
+     nvcc UseCUDA.o $sdir/UseUseCUDA.cc -o UseUseCUDA
 
-./UseUseCUDA
+echo ./UseUseCUDA
+     ./UseUseCUDA
  
 

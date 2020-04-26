@@ -140,3 +140,69 @@ g4-cls G4FPEDetection::
 
 
 
+
+
+
+UseOKG4NoCMake/go.sh EXC_ARITHMETIC with Geant4 10.5 from /usr/local/foreign
+--------------------------------------------------------------------------------
+
+* using Apple graphical report see that G4FPE detection is involved 
+
+
+
+::
+
+    .    0x7fff54c07435 <+325>: vucomisd %xmm0, %xmm1
+        0x7fff54c07439 <+329>: jne    0x7fff54c0747f            ; <+399>
+    Target 0: (UseOKG4) stopped.
+    (lldb) bt
+    * thread #1, queue = 'com.apple.main-thread', stop reason = EXC_ARITHMETIC (code=EXC_I386_SSEEXTERR, subcode=0x1d33)
+      * frame #0: 0x00007fff54c0742b CoreFoundation`CFNumberCreate + 315
+        frame #1: 0x00007fff56d6b848 Foundation`-[NSPlaceholderNumber initWithDouble:] + 36
+        frame #2: 0x00007fff5ffe4b6b QuartzCore`+[CALayer defaultValueForKey:] + 823
+        frame #3: 0x00007fff5ffe3dd9 QuartzCore`classDescription_locked(objc_class*) + 3309
+        frame #4: 0x00007fff5ffe3262 QuartzCore`classDescription_locked(objc_class*) + 374
+        frame #5: 0x00007fff5ffe3262 QuartzCore`classDescription_locked(objc_class*) + 374
+        frame #6: 0x00007fff5ffe2b8f QuartzCore`classDescription(objc_class*) + 208
+        frame #7: 0x00007fff5ffe27ba QuartzCore`CA::Layer::class_state(objc_class*) + 26
+        frame #8: 0x00007fff5ffe267d QuartzCore`-[CALayer init] + 101
+        frame #9: 0x00007fff52da091b AppKit`-[_NSBackingLayer init] + 44
+        frame #10: 0x00007fff52223e3a AppKit`-[NSView makeBackingLayer] + 50
+        frame #11: 0x00007fff52223ca3 AppKit`-[NSView(NSInternal) _createLayerAndInitialize] + 128
+        frame #12: 0x00007fff52ac3b07 AppKit`-[NSView _updateLayerBackedness] + 508
+        frame #13: 0x00007fff52ac253f AppKit`-[NSView didChangeValueForKey:] + 60
+        frame #14: 0x00007fff5222fcbe AppKit`__49-[NSThemeFrame _floatTitlebarAndToolbarFromInit:]_block_invoke + 316
+        frame #15: 0x00007fff52ba4985 AppKit`+[NSAnimationContext runAnimationGroup:] + 55
+        frame #16: 0x00007fff5222f910 AppKit`-[NSThemeFrame _floatTitlebarAndToolbarFromInit:] + 93
+        frame #17: 0x00007fff5222d4f9 AppKit`-[NSThemeFrame initWithFrame:styleMask:owner:] + 247
+        frame #18: 0x00007fff5222bfa2 AppKit`-[NSWindow _commonInitFrame:styleMask:backing:defer:] + 567
+        frame #19: 0x00007fff5222a7d5 AppKit`-[NSWindow _initContent:styleMask:backing:defer:contentView:] + 1345
+        frame #20: 0x00007fff5222a28e AppKit`-[NSWindow initWithContentRect:styleMask:backing:defer:] + 45
+        frame #21: 0x00000001003c3bbd libglfw.3.dylib`createWindow + 669
+        frame #22: 0x00000001003c366e libglfw.3.dylib`_glfwPlatformCreateWindow + 62
+        frame #23: 0x00000001003be95a libglfw.3.dylib`glfwCreateWindow + 858
+        frame #24: 0x000000010019a92e libOGLRap.dylib`Frame::init(this=0x0000000119e202c0) at Frame.cc:287
+        frame #25: 0x00000001001aafd9 libOGLRap.dylib`OpticksViz::prepareScene(this=0x0000000119e1e140, rendermode=0x0000000000000000) at OpticksViz.cc:328
+        frame #26: 0x00000001001aadd8 libOGLRap.dylib`OpticksViz::init(this=0x0000000119e1e140) at OpticksViz.cc:171
+        frame #27: 0x00000001001aa870 libOGLRap.dylib`OpticksViz::OpticksViz(this=0x0000000119e1e140, hub=0x0000000112a01090, idx=0x0000000117a849f0, immediate=true) at OpticksViz.cc:133
+        frame #28: 0x00000001001aae54 libOGLRap.dylib`OpticksViz::OpticksViz(this=0x0000000119e1e140, hub=0x0000000112a01090, idx=0x0000000117a849f0, immediate=true) at OpticksViz.cc:132
+        frame #29: 0x00000001000c7928 libOKG4.dylib`OKG4Mgr::OKG4Mgr(this=0x00007ffeefbfefe0, argc=1, argv=0x00007ffeefbff0b8) at OKG4Mgr.cc:109
+        frame #30: 0x00000001000c7b13 libOKG4.dylib`OKG4Mgr::OKG4Mgr(this=0x00007ffeefbfefe0, argc=1, argv=0x00007ffeefbff0b8) at OKG4Mgr.cc:111
+        frame #31: 0x0000000100001ad8 UseOKG4`main + 1560
+        frame #32: 0x00007fff7cad0015 libdyld.dylib`start + 1
+        frame #33: 0x00007fff7cad0015 libdyld.dylib`start + 1
+    (lldb) f 21
+
+
+Commented the /usr/local/foreign in oe-export to pick up the old Geant4 10.4.2 and 
+did om-cleaninstall of Opticks 
+
+This made the problem go away.
+
+::
+
+    cd examples/UseOKG4NoCMake
+    ./go.sh
+
+
+

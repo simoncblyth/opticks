@@ -17,30 +17,30 @@
  * limitations under the License.
  */
 
-#include <iostream>
+#include <cstdio>
 #include <GL/glew.h>
 
 int main()
 {
 
 #ifdef GL_VERSION_1_1
-    std::cout << "GL_VERSION_1_1" << std::endl ; 
+    printf("GL_VERSION_1_1\n") ; 
 #endif
 
 #ifdef GL_VERSION_2_0
-    std::cout << "GL_VERSION_2_0" << std::endl ; 
+    printf("GL_VERSION_2_0\n"); 
 #endif
 
 #ifdef GL_VERSION_3_0
-    std::cout << "GL_VERSION_3_0" << std::endl ; 
+    printf("GL_VERSION_3_0\n"); 
 #endif
 
 #ifdef GL_VERSION_4_0
-    std::cout << "GL_VERSION_4_0" << std::endl ; 
+    printf("GL_VERSION_4_0\n") ; 
 #endif
 
 #ifdef GL_VERSION_4_5
-    std::cout << "GL_VERSION_4_5" << std::endl ; 
+    printf("GL_VERSION_4_5\n"); 
 #endif
 
 

@@ -20,7 +20,7 @@
 
 
 opticks-
-opticks-path-add $(opticks-prefix)/bin
+oe-
 
 
 sdir=$(pwd)
@@ -29,34 +29,14 @@ bdir=/tmp/$USER/opticks/$(basename $sdir)/build
 rm -rf $bdir && mkdir -p $bdir && cd $bdir && pwd 
 
 pkg=Boost
-libdir=$(oc --libpath boost)
 
 echo gcc -c $sdir/Use$pkg.cc $(oc --cflags $pkg)
      gcc -c $sdir/Use$pkg.cc $(oc --cflags $pkg)
-echo gcc Use$pkg.o -o Use$pkg $(oc --libs $pkg) -Wl,-rpath $libdir
-     gcc Use$pkg.o -o Use$pkg $(oc --libs $pkg) -Wl,-rpath $libdir
+echo gcc Use$pkg.o -o Use$pkg $(oc --libs $pkg) 
+     gcc Use$pkg.o -o Use$pkg $(oc --libs $pkg) 
 echo ./Use$pkg
      ./Use$pkg
 
-
-# on Darwin needs boost-rpath-fix otherwise have to set DYLD_LIBRARY_PATH 
-# https://stackoverflow.com/questions/33665781/dependencies-on-boost-library-dont-have-full-path/33893062#33893062
-
-
-cat << EON > /dev/null
-
-if [ "$(uname)" == "Linux" ]; then 
-
-echo LD_LIBRARY_PATH=$(oc --libpath $pkg) ./Use$pkg
-     LD_LIBRARY_PATH=$(oc --libpath $pkg) ./Use$pkg
-
-elif [ "$(uname)" == "Darwin" ]; then 
-
-echo DYLD_LIBRARY_PATH=$(oc --libpath $pkg) ./Use$pkg
-     DYLD_LIBRARY_PATH=$(oc --libpath $pkg) ./Use$pkg
-
-fi 
-
-EON
-
+#libdir=$(oc --libpath boost)
+# -Wl,-rpath $libdir
 

@@ -20,7 +20,7 @@
 
 
 opticks-
-oc-
+oe-
 
 sdir=$(pwd)
 name=$(basename $sdir)
@@ -32,21 +32,16 @@ cd $bdir && pwd
 
 pkg=OptiXRap
 
-echo gcc -c $sdir/Use$pkg.cc $(oc-cflags $pkg)
-     gcc -c $sdir/Use$pkg.cc $(oc-cflags $pkg)
-echo gcc Use$pkg.o -o Use$pkg $(oc-libs $pkg) 
-     gcc Use$pkg.o -o Use$pkg $(oc-libs $pkg) 
-echo LD_LIBRARY_PATH=$(oc-libpath $pkg) ./Use$pkg --printenabled
-     LD_LIBRARY_PATH=$(oc-libpath $pkg) ./Use$pkg --printenabled
+echo gcc -c $sdir/Use$pkg.cc $(oc -cflags $pkg)
+     gcc -c $sdir/Use$pkg.cc $(oc -cflags $pkg)
+echo gcc Use$pkg.o -o Use$pkg $(oc -libs $pkg) 
+     gcc Use$pkg.o -o Use$pkg $(oc -libs $pkg) 
 
-
-cat << EON
-Linux warning
-
-/usr/bin/ld: warning: liboptix_prime.so.6.5.0, needed by /home/blyth/local/opticks/lib64/libOptiXRap.so, not found (try using -rpath or -rpath-link)
-EON
-
-
-
-
+if [ -n "$DEBUG" ]; then 
+    echo gdb ./Use$pkg -- --printenabled
+         gdb ./Use$pkg -- --printenabled
+else
+    echo ./Use$pkg -- --printenabled
+         ./Use$pkg -- --printenabled
+fi 
 

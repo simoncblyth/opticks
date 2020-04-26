@@ -169,7 +169,7 @@ int main(int argc, char** argv)
  
     Evt* evt0 = new Evt(0) ;
 
-    optix::Buffer m_genstep_buffer = ctx->createBuffer<float>( evt0->genstep, "genstep");
+    optix::Buffer m_genstep_buffer = ctx->createBuffer<float>( evt0->genstep, "gensteps");
     context["genstep_buffer"]->set( m_genstep_buffer );
 
     optix::Buffer m_photon_buffer = ctx->createBuffer<float>( evt0->photon, "photon");
@@ -212,21 +212,5 @@ int main(int argc, char** argv)
 
     return 0 ;     
 }
-
-/*
-
-delta:optixrap blyth$ bufferTest 
-2016-09-16 19:42:19.236 FATAL [8117] [OpticksProfile::stamp@87] OpticksProfile::stamp OpticksRun::OpticksRun_0 (0,42139.2,0,2583)
-2016-09-16 19:42:19.236 FATAL [8117] [OpticksProfile::stamp@87] OpticksProfile::stamp Opticks::Opticks_0 (0.00390625,0.00390625,10,10)
-2016-09-16 19:42:19.237 INFO  [8117] [main@107] bufferTest OPTIX_VERSION 3080
-2016-09-16 19:42:19.724 INFO  [8117] [OContext::close@209] OContext::close numEntryPoint 1
-2016-09-16 19:42:19.733 INFO  [8117] [OContext::launch@235] OContext::launch entry 0 width 0 height 0
-libc++abi.dylib: terminating with uncaught exception of type optix::Exception: Invalid context (Details: Function "RTresult _rtContextValidate(RTcontext)" caught exception: Validation error: Node validation failed for 'top_object':
-Validation error: Group does not have an Acceleration Structure, [4915492], [4915305])
-Abort trap: 6
-
-
-*/
-
 
 

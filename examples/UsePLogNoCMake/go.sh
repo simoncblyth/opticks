@@ -20,7 +20,7 @@
 
 
 opticks-
-oc-
+oe-
 
 sdir=$(pwd)
 name=$(basename $sdir) 
@@ -34,9 +34,12 @@ pwd
 
 pkg=PLog
 
-gcc -c $sdir/Use$pkg.cc $(oc-cflags $pkg) 
-gcc Use$pkg.o $(oc-libs $pkg) -o Use$pkg
-LD_LIBRARY_PATH=$(oc-libpath $pkg) ./Use$pkg
+echo gcc -c $sdir/Use$pkg.cc $(oc -cflags $pkg) 
+     gcc -c $sdir/Use$pkg.cc $(oc -cflags $pkg) 
+echo gcc Use$pkg.o $(oc -libs $pkg) -o Use$pkg
+     gcc Use$pkg.o $(oc -libs $pkg) -o Use$pkg
+echo ./Use$pkg
+     ./Use$pkg
 
 
 

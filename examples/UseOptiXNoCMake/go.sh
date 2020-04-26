@@ -20,7 +20,8 @@
 
 
 opticks-
-oc-
+oe-
+oe-info
 
 sdir=$(pwd)
 
@@ -34,14 +35,15 @@ cd $bdir && pwd
 
 pkg=OptiX
 
-echo gcc -c $sdir/Use$pkg.cc $(oc-cflags $pkg)
-     gcc -c $sdir/Use$pkg.cc $(oc-cflags $pkg)
+echo gcc -c $sdir/Use$pkg.cc $(oc -cflags $pkg)
+     gcc -c $sdir/Use$pkg.cc $(oc -cflags $pkg)
 
-echo gcc Use$pkg.o -o Use$pkg $(oc-libs $pkg) 
-     gcc Use$pkg.o -o Use$pkg $(oc-libs $pkg) 
+echo gcc Use$pkg.o -o Use$pkg $(oc -libs $pkg) 
+     gcc Use$pkg.o -o Use$pkg $(oc -libs $pkg) 
 
-echo LD_LIBRARY_PATH=$(oc-libpath $pkg) ./Use$pkg
-     LD_LIBRARY_PATH=$(oc-libpath $pkg) ./Use$pkg
+echo ./Use$pkg
+     ./Use$pkg
+
 
 
 

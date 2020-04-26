@@ -20,7 +20,7 @@
 
 
 opticks-
-oc-
+oe-
 
 sdir=$(pwd)
 bdir=/tmp/$USER/opticks/$(basename $sdir)/build 
@@ -31,13 +31,13 @@ rm -rf $bdir && mkdir -p $bdir && cd $bdir && pwd
 
 pkg=CUDARap
 
-echo gcc -c $sdir/Use$pkg.cc $(oc-cflags $pkg)
-     gcc -c $sdir/Use$pkg.cc $(oc-cflags $pkg)
+echo gcc -c $sdir/Use$pkg.cc $(oc -cflags $pkg)
+     gcc -c $sdir/Use$pkg.cc $(oc -cflags $pkg)
 
-echo gcc Use$pkg.o -o Use$pkg $(oc-libs $pkg) 
-     gcc Use$pkg.o -o Use$pkg $(oc-libs $pkg) 
+echo gcc Use$pkg.o -o Use$pkg $(oc -libs $pkg) 
+     gcc Use$pkg.o -o Use$pkg $(oc -libs $pkg) 
 
-echo LD_LIBRARY_PATH=$(oc-libpath $pkg) ./Use$pkg
-     LD_LIBRARY_PATH=$(oc-libpath $pkg) ./Use$pkg
+echo ./Use$pkg
+     ./Use$pkg
  
 

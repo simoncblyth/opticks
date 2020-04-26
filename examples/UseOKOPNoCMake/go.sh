@@ -20,7 +20,7 @@
 
 
 opticks-
-oc-
+oe-
 
 sdir=$(pwd)
 name=$(basename $sdir)
@@ -30,7 +30,13 @@ rm -rf $bdir && mkdir -p $bdir && cd $bdir && pwd
 
 pkg=OKOP
 
-gcc -c $sdir/Use$pkg.cc $(oc-cflags $pkg)
-gcc Use$pkg.o -o Use$pkg $(oc-libs $pkg) 
-LD_LIBRARY_PATH=$(oc-libpath $pkg) ./Use$pkg
+echo gcc -c $sdir/Use$pkg.cc $(oc -cflags $pkg)
+     gcc -c $sdir/Use$pkg.cc $(oc -cflags $pkg)
+echo gcc Use$pkg.o -o Use$pkg $(oc -libs $pkg) 
+     gcc Use$pkg.o -o Use$pkg $(oc -libs $pkg) 
+echo ./Use$pkg
+     ./Use$pkg
+
+
+# makes ppm snapshots : with DYB this gives very distant views, need to sort out aiming 
 
