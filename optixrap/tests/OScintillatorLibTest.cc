@@ -36,8 +36,17 @@ int main(int argc, char** argv)
     GScintillatorLib* slib = GScintillatorLib::load(&ok);
     slib->dump();
 
-    OContext::SetupOptiXCachePathEnvvar(); 
-    optix::Context context = optix::Context::create();
+    // Sajan reports that with some unreported versions of OptiX+CUDA+Driver 
+    // this alone fails to init giving "GPU not found" error 
+    // OContext::SetupOptiXCachePathEnvvar(); 
+    // optix::Context context = optix::Context::create();
+
+    const char* cmake_target = "OScintillatorLibTest"  ;
+    const char* ptxrel = "tests" ; 
+    OContext* ctx = OContext::Create(&ok, cmake_target, ptxrel);
+    optix::Context context = ctx->getContext();
+ 
+
 
     OScintillatorLib* oscin ;  
     oscin = new OScintillatorLib(context, slib );
