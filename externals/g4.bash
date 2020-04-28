@@ -908,3 +908,9 @@ g4-pcc-all ()
 }
 
 
+
+g4-setup(){ cat << EOS
+# $FUNCNAME
+EOS
+}
+

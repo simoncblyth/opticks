@@ -532,3 +532,8 @@ EOI
 }
 
 
+plog-setup(){ cat << EOS
+# $FUNCNAME
+EOS
+}
+

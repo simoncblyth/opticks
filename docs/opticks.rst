@@ -402,7 +402,7 @@ use an older OptiX version contemporary with the CUDA version that your kernel s
 Version combinations that have been used:
 
 *current*
-   CUDA 10.1, OptiX 6.0.0
+   CUDA 10.1, OptiX 6.5.0
 
 *previous*
    CUDA 9.1, OptiX 5.1.1
@@ -458,6 +458,79 @@ Extract from .opticks_setup::
     [ -n "$OPTICKS_OPTIX_INSTALL_DIR" ] && LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${OPTICKS_OPTIX_INSTALL_DIR}/lib64
 
      
+
+
+
+Building Opticks against "foreign" externals such as Geant4, Boost
+-------------------------------------------------------------------
+
+When integrating Opticks with a detector simulation framework 
+it is important that externals that are incommon between Opticks and the framework
+are one and the same to avoid symbol inconsistency between different versions of libraries. 
+The most likely packages to be in common are::
+
+     Boost 
+     Geant4 
+     XercesC
+     GLEW  
+
+The Opticks build is sensitive to the CMAKE_PREFIX_PATH envvar 
+allowing Opticks to build against "foreign" externals. To check which external that
+the CMake based build will pick use the find_package.py script::  
+
+    epsilon:opticks blyth$ find_package.py Geant4
+    Geant4                         : /usr/local/foreign/lib/Geant4-10.5.1/Geant4Config.cmake 
+    Geant4                         : /usr/local/opticks/externals/lib/Geant4-10.4.2/Geant4Config.cmake 
+
+If you can integrate Opticks with your framework using CMake then the non-CMake 
+opticks-config system which is based on pkg-config pc files is not relevant to you. 
+Conversely if you need to integrate with legacy build systems such as CMT 
+then it is necessary to arrange consistency between the two config systems.
+To check which external that non-CMake pkg-config based builds will pick use the 
+pkg_config.py script::
+
+    epsilon:~ blyth$ pkg_config.py Geant4
+    geant4                         : /usr/local/foreign/lib/pkgconfig/geant4.pc 
+    geant4                         : /usr/local/opticks/externals/lib/pkgconfig/geant4.pc  
+
+And also directly with opticks-config (or shorthand oc)::
+
+     opticks-config --cflags Geant4
+     opticks-config --help
+
+To keep consistency between the CMake and pkg-config configuration systems it is 
+necessary for do several things:
+
+1. ensure that the original CMAKE_PREFIX_PATH and PKG_CONFIG_PATH are consistent, for example::
+
+    export CMAKE_PREFIX_PATH=/usr/local/foreign
+    export PKG_CONFIG_PATH=/usr/local/foreign/lib/pkgconfig
+    
+2. ensure that pc files are present for relevant packages in the lib/pkgconfig 
+   or lib64/pkgconfig directories beneath all relevant prefix dirs, for example::
+
+    /usr/local/foreign/lib/pkgconfig/geant4.pc  
+    /usr/local/foreign/lib/pkgconfig/boost.pc  
+
+3. generate any missing pc files with::
+
+      g4-pcc-all
+      boost-pcc-all
+
+   These use find_package.py which iterates over prefixes in CMAKE_PREFIX_PATH
+   writing .pc files.
+
+4. check consistency with::
+
+    find_package.py Boost 
+    pkg_config.py Boost 
+
+5. do cleaninstalls following changes to CMAKE_PREFIX_PATH and PKG_CONFIG_PATH with::
+
+    cd ~/opticks
+    om-
+    om-cleaninstall
+
 
 
  

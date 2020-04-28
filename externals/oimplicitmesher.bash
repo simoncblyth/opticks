@@ -244,3 +244,9 @@ oimplicitmesher-t()
    oimplicitmesher-make test
 }
 
+
+oimplicitmesher-setup(){ cat << EOS
+# $FUNCNAME
+EOS
+}
+

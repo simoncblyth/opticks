@@ -19,15 +19,18 @@
 ##
 
 notes(){ cat << EON
-Clean environment test::
+Minimal environment test::
 
-   env -i HOME=$HOME LOCAL_BASE=$LOCAL_BASE ./gob.sh
+   env -i HOME=$HOME OPTICKS_PREFIX=$OPTICKS_PREFIX OPTICKS_OPTIX_PREFIX=/usr/local/optix PATH=/usr/local/cuda/bin:/opt/local/bin:/usr/bin:/bin ./gob.sh
+
+Above commandline allows to check opticks setup from a minimal environment. 
+Note that /usr/local/optix and /usr/local/cuda are symbolic links the optix one being non-standard.
 
 EON
 }
 
 env 
-export PATH=$LOCAL_BASE/opticks/bin:$PATH
+source $OPTICKS_PREFIX/bin/opticks-setup.sh 
 
 
 sdir=$(pwd)
@@ -39,8 +42,14 @@ mkdir -p $bdir && cd $bdir && pwd
 
 pkg=G4OK
 
-gcc -c $sdir/Use$pkg.cc $(oc --cflags $pkg)
-gcc Use$pkg.o -o Use$pkg $(oc --libs $pkg) 
-LD_LIBRARY_PATH=$(oc --libpath $pkg) ./Use$pkg
+echo gcc -c $sdir/Use$pkg.cc $(oc --cflags $pkg)
+     gcc -c $sdir/Use$pkg.cc $(oc --cflags $pkg)
+echo gcc Use$pkg.o -o Use$pkg $(oc --libs $pkg) 
+     gcc Use$pkg.o -o Use$pkg $(oc --libs $pkg) 
+echo ./Use$pkg
+     ./Use$pkg
+
+
+
 
 

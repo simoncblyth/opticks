@@ -113,3 +113,8 @@ odcs-t()
    odcs-make test
 }
 
+odcs-setup(){ cat << EOS
+# $FUNCNAME
+EOS
+}
+

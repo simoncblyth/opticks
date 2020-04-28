@@ -1227,4 +1227,7 @@ openmesh-pc(){
    openmesh-pc- > $path 
 }
 
-
+openmesh-setup(){ cat << EOS
+# $FUNCNAME
+EOS
+}

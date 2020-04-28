@@ -814,7 +814,10 @@ optix-pc(){
 }
 
 
-
+optix-setup(){ cat << EOS
+# $FUNCNAME 
+EOS
+}
 
 
 

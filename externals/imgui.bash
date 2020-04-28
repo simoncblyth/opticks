@@ -529,6 +529,8 @@ imgui-pc ()
 }
 
 
-
-
+imgui-setup(){ cat << EOS
+# $FUNCNAME
+EOS
+}
 

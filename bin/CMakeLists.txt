@@ -19,6 +19,9 @@ set(SCRIPTS
    CMakeModules.py 
    okdist.py  
    oktar.py
+
+   find_package.py
+   pkg_config.py
 )
 
 # top level python needs to go in bin, 

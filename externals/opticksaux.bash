@@ -123,3 +123,7 @@ opticksaux-pull()
 }
 
 
+opticksaux-setup(){ cat << EOS
+# $FUNCNAME
+EOS
+}

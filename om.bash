@@ -109,10 +109,15 @@ EOU
 
 om-home-default(){  echo $(dirname $(om-source)) ; } 
 om-home(){   echo ${OPTICKS_HOME:-$(om-home-default)} ; }
-om-local(){  echo ${LOCAL_BASE:-/usr/local} ; }
-om-name(){   echo $(basename $(om-home)) ; }
-om-fold(){   echo $(om-local)/$(om-name) ; }
-om-prefix(){ echo $(om-fold) ; }
+
+#om-local(){  echo ${LOCAL_BASE:-/usr/local} ; }
+#om-name(){   echo $(basename $(om-home)) ; }
+#om-fold(){   echo $(om-local)/$(om-name) ; }
+#om-prefix(){ echo $(om-fold) ; }
+# this is the crucial prefix : need a more obvious way to set it  : OPTICKS_PREFIX envvar ?
+
+om-prefix(){ echo ${OPTICKS_PREFIX:-/usr/local/opticks} ; }
+
 
 
 om-pkg-config-path-reversed(){ $FUNCNAME- | python ; }

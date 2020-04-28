@@ -413,6 +413,14 @@ glfw--()
 
 
 
+glfw-setup(){ cat << EOS
+# $FUNCNAME 
+EOS
+}
+
+
+
+
 
 glfw-keyname-notes(){ cat << EON
 $FUNCNAME

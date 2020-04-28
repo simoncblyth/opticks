@@ -962,6 +962,10 @@ cuda-dir()
 }
 
 
+
+
+
+
 cuda-edit(){ vi /opt/local/share/cmake-3.11/Modules/FindCUDA.cmake ; }
 
 cuda-uninstall-notes(){ cat << EON
@@ -1348,5 +1352,11 @@ cuda-pc(){
    cuda-pc- > $path 
 }
 
+
+# cuda-setup is too crucial to hide here, moved to opticks-
+cuda-setup(){ cat << EOS
+# $FUNCNAME
+EOS
+}
 
 

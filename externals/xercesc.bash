@@ -295,3 +295,8 @@ EOD
 
 
 
+xercesc-setup(){ cat << EOS
+# $FUNCNAME
+EOS
+}
+

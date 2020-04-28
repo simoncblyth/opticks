@@ -621,3 +621,9 @@ assimp-pc()
    oc-pcfix assimp   
 }
 
+assimp-setup(){ cat << EOS
+# $FUNCNAME
+EOS
+}
+
+

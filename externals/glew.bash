@@ -212,4 +212,8 @@ glew-pc(){
    glew-pc-unglu  
 }
 
+glew-setup(){ cat << EOS
+# $FUNCNAME
+EOS
+}
 

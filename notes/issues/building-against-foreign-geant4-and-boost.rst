@@ -80,6 +80,15 @@ simply by setting CMAKE_PREFIX_PATH in om-export.
 
 
 
+Issue : g4-export-ini not run when using foreign Geant4
+----------------------------------------------------------
+
+* instead need to use standard geant4 env setup
+
+  * done in oe-export-geant4
+
+
+
 
 Locations
 -----------

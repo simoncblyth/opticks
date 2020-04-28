@@ -407,7 +407,10 @@ glm-pc(){
 }
 
 
-
+glm-setup(){ cat << EOS
+# $FUNCNAME 
+EOS
+}
 
 
 

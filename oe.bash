@@ -18,10 +18,6 @@ a JUNO external. In that case the JUNOTOP/bashrc
 sets up the paths.
 
 
-TODO : move PATH setup into here, from opticks-export 
-
-TODO : avoid build needin HOME in PYTHONPATH
-
 * by controlling the environment of the CMake custom command
   used in okc independently from this enviroment : then 
   this script needs to know nothing of the source tree
@@ -44,7 +40,9 @@ oe-env()
 { 
     olocal-;
     opticks-;
-    oe-export
+
+    #oe-export
+    source $OPTICKS_PREFIX/bin/opticks-setup.sh 
 }
 
 

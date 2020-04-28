@@ -30,6 +30,27 @@ as preliminary to finding whats going wrong with 6.0.0
 #include <optix_world.h>
 #include <optixu/optixpp_namespace.h>
 
+struct APIError
+{   
+    APIError( RTresult c, const std::string& f, int l ) 
+        : code( c ), file( f ), line( l ) {}
+    RTresult     code;
+    std::string  file;
+    int          line;
+};
+
+// Error check/report helper for users of the C API 
+#define RT_CHECK_ERROR( func )                                     \
+  do {                                                             \
+    RTresult code = func;                                          \
+    if( code != RT_SUCCESS )                                       \
+      throw APIError( code, __FILE__, __LINE__ );           \
+  } while(0)
+
+
+
+
+
 #include "OPTICKS_LOG.hh"
 #include "OKConf.hh"
 
@@ -89,6 +110,14 @@ int main(int argc, char** argv)
         ;
 
 
+
+    unsigned num_devices;
+    unsigned version ; 
+    RT_CHECK_ERROR(rtDeviceGetDeviceCount(&num_devices));
+    RT_CHECK_ERROR(rtGetVersion(&version));
+
+    LOG(info) << " num_devices " << num_devices ; 
+    LOG(info) << " version " <<  version ; 
 
 
     optix::Context context = optix::Context::create();

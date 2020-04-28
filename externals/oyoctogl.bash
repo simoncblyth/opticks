@@ -335,7 +335,10 @@ oyoctogl-t()
 }
 
 
-
+oyoctogl-setup(){ cat << EOS
+# $FUNCNAME
+EOS
+}
 
 
 

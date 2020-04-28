@@ -608,7 +608,7 @@ oc-pcfix(){      pc.py $* --fix ; }
 
 oc-pkg-config-find(){
    local pkg=${1:-NPY}
-   local lpkg=$(echo $pkg | tr [A-Z] [a-z])
+   local lpkg=$(echo $pkg | tr "[A-Z]" "[a-z]")
 
    local dir
    local pc
