@@ -1,0 +1,4 @@
+﻿2020-04-29 19:43:47.257 DEBUG [34264280] [main@15] Hello from app!
+2020-04-29 19:43:47.259 INFO  [34264280] [foo@23] Hello from shared lib!
+2020-04-29 19:56:09.184 DEBUG [34284621] [main@15] Hello from app!
+2020-04-29 19:56:09.185 INFO  [34284621] [foo@23] Hello from shared lib!
