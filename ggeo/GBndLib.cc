@@ -781,6 +781,11 @@ NPY<float>* GBndLib::createBufferForTex2d()
      buffer is memcpy into the texture buffer
      high side is constained by not wanting to change texture line indices 
 
+
+     The 39 wavelength samples is historical. There is a way to increase this
+     to 1nm FINE_DOMAIN binning.
+
+
     */
 
     LOG(verbose) << "GBndLib::createBufferForTex2d" ;
