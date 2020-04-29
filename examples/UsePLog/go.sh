@@ -18,8 +18,9 @@
 ## limitations under the License.
 ##
 
-
 opticks-
+#source /opt/rh/devtoolset-8/enable 
+
 
 sdir=$(pwd)
 name=$(basename $sdir) 
