@@ -424,6 +424,109 @@ your machine crashes and continues to crash until the bad driver is removed
 (on macOS the removal can be done by resetting NVRAM).
 
 
+NVIDIA Driver Versions
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+   ========  ===============  ===================  ============================================  =================================== 
+    OptiX     Date              Driver (Linux)       Working                                       Problems Reported
+   ========  ===============  ===================  ============================================  ===================================
+     6.5.0     Aug 26, 2019       435.17             435.21 CUDA 10.1  TITAN RTX, TITAN V          Sajan: 440.33.01 and CUDA 10.2
+     7.0.0     July 29, 2019      435.12
+     6.0.0     Feb 2018           418.30 
+   ========  ===============  ===================  ============================================  ===================================
+
+
+The release notes from every version of OptiX states the 
+required minimum version of the NVIDIA Driver that must be used
+for that version of OptiX. In recent releases that driver version 
+has been from the so called short-lived series. 
+
+From https://www.nvidia.com/en-gb/drivers/unix/ on April 29, 2020::
+
+   Latest Long Lived Branch version: 440.82
+   Latest Short Lived Branch version: 435.21
+
+Note that the long-lived series may have version numbers that exceed those 
+of the short-lived series but the features needed for OptiX take much longer
+to appear in that series. 
+
+The releases from the longer-lived driver branches are intended for 
+users who do not need the latest and greatest features. 
+
+If you cannot change your driver version this sometimes means that 
+an older version of OptiX must be used to work with your driver.
+ 
+
+OptiX 6.5.0 (August 26, 2019)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Quote from release notes::
+
+   OptiX 6.5.0 requires that you install the 436.02 driver on Windows or the 435.17 Driver for linux. Operating System:
+
+   * Windows 7/8.1/10 64-bit
+   * Linux RHEL 4.8+ or Ubuntu 10.10+ 64-bit
+
+
+Problems with OptiX 6.5.0, Driver 440.33.01, CUDA 10.2
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* https://www.nvidia.com/en-gb/drivers/unix/
+
+Search the OptiX forum for "driver" and looking for Linux reports:
+
+* https://forums.developer.nvidia.com/search?q=driver%20%20category%3A167
+* https://forums.developer.nvidia.com/t/optix7-and-game-ready-driver-440-97/83907
+
+From droettger of NVIDIA on Nov 20, 2019 regarding a problem with optix7::
+
+    Yes, there was a bug in R440 drivers and a serious test escape.
+
+    This has been fixed in the meantime. The just released Windows driver 441.28 has picked up the fix already.
+    Unfortunately Linux 440.31 drivers have been cut before the fix. The next 441 Linux drivers should have it.
+
+    If you already hacked that integer field to 0 when preTransform is null, the expected value when preTransform is actually containing 3x4 matrices is 0x21E1.
+
+
+
+OptiX 7.0.0 (July 29, 2019)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+**An entirely new API : not yet supported by Opticks.**
+
+Quote from release notes::
+
+   OptiX 7.0.0 requires that you install the 435.80 driver on Windows or the 435.12 Driver for linux. 
+   Note OptiX dll from the SDK are no longer needed since the symbols are loaded from the driver.
+
+   * Windows 7/8.1/10 64-bit; 
+   * Linux RHEL 4.8+ or Ubuntu 10.10+ 64-bit
+
+
+OptiX 6.0.0 (February 2018)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+**first version of OptiX with support for Turing GPUs and RT Cores**
+
+Quote from release notes::
+
+   Graphics Driver:
+
+   * Windows: driver version 418.81 or later is required.
+   * Linux: driver version 418.30 or later is required.
+
+   OS:
+
+   * Windows 7/8.1/10 64-bit
+   * Linux RHEL 4.8+ or Ubuntu 10.10+ 64-bit
+
+
+
+
+
+
+
 Using a non-standard OptiX version
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
