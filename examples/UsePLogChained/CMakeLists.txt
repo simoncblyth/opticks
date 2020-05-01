@@ -55,9 +55,25 @@ if(MSVC)
     string(REPLACE "/RTC1" "" CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}")
 elseif(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_IS_CLANGXX)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wconversion -Wnon-virtual-dtor -Wundef -pedantic -Werror")
+
+    #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fvisibility=hidden ")
+    #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fvisibility-inlines-hidden ")
+
+    # below is a higher level way of doing the above which is not specific to gcc 
     set(CMAKE_CXX_VISIBILITY_PRESET hidden)
     set(CMAKE_VISIBILITY_INLINES_HIDDEN 1)
 endif()
+
+#[=[
+Commenting the visibility causes::
+
+/tmp/blyth/opticks/lib/ChainedApp
+ChainedApp: /home/blyth/local/opticks/externals/plog/include/plog/Logger.h:22: plog::Logger<instance>& plog::Logger<instance>::addAppender(plog::IAppender*) [with int instance = 0]: Assertion `appender != this' failed.
+./go.sh: line 43: 41877 Aborted                 (core dumped) $bin
+#]=]
+
+
+
 
 
 add_executable(ChainedApp ChainedApp/Main.cpp)
