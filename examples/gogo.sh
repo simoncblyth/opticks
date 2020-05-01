@@ -21,7 +21,8 @@
 
 #gogo-find(){ find . -name go.sh ; }
 #gogo-find(){ ls -1 *NoCMake/go.sh ; }
-gogo-find(){ ls -1 */go.sh | grep -v NoCMake ; }
+#gogo-find(){ ls -1 */go.sh | grep -v NoCMake ; }
+gogo-find(){ ls -1 */goc.sh ; }
 
 
 gogo-all(){
@@ -34,8 +35,10 @@ gogo-all(){
 
 gogo-one-()
 {
+    local go=$1
+    local nam=$(basename $go)
     local rc
-    ./go.sh > /dev/null 2>&1
+    ./$nam > /dev/null 2>&1
     rc=$?
     printf "%-40s %d \n" $go $rc 
 }
@@ -52,7 +55,7 @@ gogo-one(){
     if [ -f "SKIP" ]; then
         printf "%-40s %s %s \n" $go "SKIP" "$(head -1 SKIP)"
     else 
-        gogo-one-  
+        gogo-one- $go 
     fi 
 
     cd $iwd
