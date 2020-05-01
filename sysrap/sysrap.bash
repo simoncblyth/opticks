@@ -18,8 +18,8 @@
 ##
 
 sysrap-src(){      echo sysrap/sysrap.bash ; }
-sysrap-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(sysrap-src)} ; }
-sysrap-vi(){       vi $(sysrap-source) ; }
+sysrap-source(){   echo $BASH_SOURCE ; }
+sysrap-vi(){       vi $BASH_SOURCE ; }
 sysrap-usage(){ cat << \EOU
 
 System Rap
@@ -252,4 +252,3 @@ $(sysrap-tags-foreach sysrap-genlog-check-)
 
 EOI
 }
-
