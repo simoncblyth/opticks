@@ -23,19 +23,54 @@ opticks-
 oe-
 
 sdir=$(pwd)
-bdir=/tmp/$USER/opticks/$(basename $sdir)/build 
+snam=$(basename $sdir)
+bdir=/tmp/$USER/opticks/$snam/build 
 rm -rf $bdir && mkdir -p $bdir && cd $bdir && pwd 
 
+pkg=${snam/NoCMake}
+pkg=${pkg/Use}
 
-pkg=SysRap
+echo snam $snam pkg $pkg 
+ccs=$sdir/*.cc
+
+num_main=0
+
+: compile cc which do not have mains
+for cc in $ccs
+do 
+    if [[ "$(grep ^int\ main $cc)" == "int main"* ]]; then 
+        num_main=$(( ${num_main} + 1 ))
+    else
+        echo gcc -c $cc $(oc -cflags $pkg) -fpic
+             gcc -c $cc $(oc -cflags $pkg) -fpic
+    fi
+done
+
+sfx=""
+case $(uname) in 
+  Darwin) sfx=dylib ;; 
+   Linux) sfx=so ;; 
+esac
+
+: create a library of the non-mains
+echo gcc -shared -o libUse$pkg.$sfx $(ls *.o) $(oc -libs $pkg)
+     gcc -shared -o libUse$pkg.$sfx $(ls *.o) $(oc -libs $pkg)
 
 
-echo gcc -c $sdir/Use$pkg.cc $(oc -cflags $pkg)
-     gcc -c $sdir/Use$pkg.cc $(oc -cflags $pkg)
-echo gcc  Use$pkg.o $sdir/TestUse$pkg.cc -o TestUse$pkg $(oc -libs $pkg)
-     gcc  Use$pkg.o $sdir/TestUse$pkg.cc -o TestUse$pkg $(oc -libs $pkg)
-echo ./TestUse$pkg
-     ./TestUse$pkg
+: compile and link the mains and run them 
+for cc in $ccs
+do 
+    if [[ "$(grep ^int\ main $cc)" == "int main"* ]]; then 
+        main=$cc
+        name=$(basename $cc)
+        name=${name/.cc}
+        echo main $main name $name 
+        echo gcc -o $name $main -L$(pwd) -lUse$pkg $(oc -libs $pkg) 
+             gcc -o $name $main -L$(pwd) -lUse$pkg $(oc -libs $pkg) 
+        echo ./$name
+             ./$name
+    fi 
+done 
 
 
 

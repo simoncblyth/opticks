@@ -18,10 +18,36 @@
 ## limitations under the License.
 ##
 
+thoughts(){ cat << EOT
 
+Is this userland or developer land ?  
+
+In userland should be using the setup script directly 
+and not relying on bash functions.
+
+EOT
+}
+
+
+NAME=$(basename $BASH_SOURCE)
+MSG="=== $NAME :"
+
+echo $MSG opticks-
 opticks-
-oe-
+
+echo $MSG om- invokes om-env which invokes oe- running the setup
 om-
+rc=$?
+
+if [ ! $rc -eq 0 ]; then 
+   echo $MSG om- setup failed rc $rc
+   exit $rc
+fi 
+
+
+echo $MSG oe-info
+oe-info
+
 
 sdir=$(pwd)
 name=$(basename $sdir)
@@ -31,14 +57,30 @@ rm -rf $bdir
 mkdir -p $bdir && cd $bdir && pwd 
 
 
+echo $MSG om-cmake
 om-cmake $sdir
+
+
+#cmake $sdir \
+#     -G "$(om-cmake-generator)" \
+#     -DCMAKE_BUILD_TYPE=$(opticks-buildtype) \
+#     -DOPTICKS_PREFIX=$(om-prefix) \
+#     -DCMAKE_INSTALL_PREFIX=$(om-prefix) \
+#     -DCMAKE_MODULE_PATH=$(om-home)/cmake/Modules
+
+
+
+echo $MSG make
 make
 [ "$(uname)" == "Darwin" ] && echo "Kludge sleep 2s" && sleep 2 
-make install   
 
+echo $MSG make install
+make install   
 
 bin=$(which $name)
 ls -l $bin
+
+echo $MSG $bin
 $bin
 
 

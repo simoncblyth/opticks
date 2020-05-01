@@ -19,37 +19,17 @@
 ##
 
 notes(){ cat << EON
-Minimal environment test::
 
-   env -i HOME=$HOME OPTICKS_PREFIX=$OPTICKS_PREFIX OPTICKS_OPTIX_PREFIX=/usr/local/optix PATH=/usr/local/cuda/bin:/opt/local/bin:/usr/bin:/bin ./gob.sh
+Use of the opticks-setup.sh script allows to run on almost empty env::
 
-Above commandline allows to check opticks setup from a minimal environment. 
-Note that /usr/local/optix and /usr/local/cuda are symbolic links the optix one being non-standard.
+   env -i PATH=/opt/local/bin:/usr/bin:/bin OPTICKS_PREFIX=$OPTICKS_PREFIX ./goc.sh
 
 EON
 }
 
 env 
 source $OPTICKS_PREFIX/bin/opticks-setup.sh 
-
-
-sdir=$(pwd)
-name=$(basename $sdir)
-bdir=/tmp/$USER/opticks/$name/build 
-
-rm -rf $bdir 
-mkdir -p $bdir && cd $bdir && pwd 
-
-pkg=G4OK
-
-echo gcc -c $sdir/Use$pkg.cc $(oc --cflags $pkg)
-     gcc -c $sdir/Use$pkg.cc $(oc --cflags $pkg)
-echo gcc Use$pkg.o -o Use$pkg $(oc --libs $pkg) 
-     gcc Use$pkg.o -o Use$pkg $(oc --libs $pkg) 
-echo ./Use$pkg
-     ./Use$pkg
-
-
-
+opticks-setup-info
+opticks-goc 
 
 
