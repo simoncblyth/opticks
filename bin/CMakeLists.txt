@@ -22,6 +22,8 @@ set(SCRIPTS
 
    find_package.py
    pkg_config.py
+   findpkg.py
+   find.py
 )
 
 # top level python needs to go in bin, 

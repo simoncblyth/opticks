@@ -5,8 +5,47 @@ Find.py
 
 Common stuff used by find_package.py and pkg_config.py 
 
+
+CMake and not pc
+-------------------
+
+::
+
+    a-b set([
+      'boost_filesystem', 
+      'boost_regex', 
+      'boost_headers', 
+      'boost_system', 
+      'boost_chrono', 
+      'boost_date_time', 
+      'boost_thread', 
+      'boost_program_options', 
+      'boost_log', 
+      'boost_log_setup', 
+      'boost_atomic', 
+
+      'Geant4', 
+      'g4dae', 
+      'Opticks', 
+      'Boost', 
+      'csgbsp']) 
+
+
+PC and not CMake
+------------------
+
+::
+
+    b-a set(['imgui', 'g4', 'glm', 'openmesh', 'opticksoptix', 'plog', 'cuda', 'glew', 'geant4', 'boost', 'optix']) 
+
+These are mostly the ones that cmake finds with the help of cmake/Modules/FindName.cmake but the 
+simple cmake resolution used here just looks from CONFIG files not MODULE ones.
+
+
+
+
 """
-import os, re, logging, argparse
+import os, re, logging, argparse, sys
 log = logging.getLogger(__name__)
 
 
@@ -29,12 +68,33 @@ def getlibdir(path):
 
 class Pkg(object):
     @classmethod
-    def Compare(cls, a, b ):
-        log.info("Compare num_pkgs %d %d " % (len(a), len(b))) 
+    def Compare(cls, aa, bb ):
 
-    def __init__(self, path, pkg):
+        an = map(lambda _:_.name, aa) 
+        bn = map(lambda _:_.name, bb) 
+
+        ab = set(an) - set(bn)
+        ba = set(bn) - set(an)
+      
+        print("a-b %s " % ab)
+        print("b-a %s " % ba)
+
+        if len(aa) != len(bb):
+            log.fatal("Different num_pkgs %d %d " % (len(aa), len(bb)))
+            return 1
+        for i in range(len(aa)):
+            a = aa[i]
+            b = bb[i]
+            if not a == b:
+                log.fatal(" a and b are not equal\n%s\n%s" % (repr(a), repr(b)))
+                return 2
+            pass
+            return 0
+
+
+    def __init__(self, path, name):
         self.path = path
-        self.pkg = pkg
+        self.name = name
 
         libdir = getlibdir(path)   
         prefix = os.path.dirname(libdir)
@@ -44,8 +104,16 @@ class Pkg(object):
         self.prefix = prefix
         self.includedir = includedir
 
+    def __eq__(self, other): 
+        """
+        NB the path is excluded, as need pc and cmake Pkgs to be equable
+        """
+        if not isinstance(other, Pkg):
+            return NotImplemented
+        return self.name == other.name and self.libdir == other.libdir and self.prefix == other.prefix and self.includedir == other.includedir 
+    
     def __repr__(self):
-        return "%-30s : %s " % (self.pkg, self.path)
+        return "%-30s : %s " % (self.name, self.path)
 
 
 class Find(object):
@@ -57,10 +125,11 @@ class Find(object):
         parser.add_argument( "-p", "--prefix",  default=False, action="store_true"  )
         parser.add_argument( "-l", "--libdir",  default=False, action="store_true" )
         parser.add_argument( "-i", "--includedir",  default=False, action="store_true" )
+        parser.add_argument( "-n", "--name",  default=False, action="store_true" )
         parser.add_argument( "-f", "--first",   default=False, action="store_true" )
         parser.add_argument( "-x", "--index",  type=int, default=-1 )
         parser.add_argument( "-c", "--count",  action="store_true", default=False )
-        parser.add_argument( "-m", "--mode",  choices=['pc', 'cmake', 'cf'], default=default_mode  )
+        parser.add_argument( "-m", "--mode",  choices=['pc', 'cmake', 'cf', 'compare'], default=default_mode  )
 
 
         parser.add_argument( "--casesensitive",  action="store_true", default=False )
@@ -88,9 +157,9 @@ class Find(object):
 
     def select(self, args):
         if len(args.names) > 0 and args.casesensitive:
-            pkgs = filter(lambda pkg:pkg.pkg in args.names, self.pkgs)
+            pkgs = filter(lambda pkg:pkg.name in args.names, self.pkgs)
         elif len(args.lnames) > 0:
-            pkgs = filter(lambda pkg:pkg.pkg.lower() in args.lnames, self.pkgs)
+            pkgs = filter(lambda pkg:pkg.name.lower() in args.lnames, self.pkgs)
         else:
             pkgs = self.pkgs
         pass
@@ -148,6 +217,10 @@ class FindCMakePkgs(Find):
         Find.__init__(self, bases)
 
     def find_config(self):
+        """
+        Constructs a list of unique existing libdirs from all the bases
+        then invokes find_config_r for each of them    
+        """
         vbases = []
         for base in self.bases:
             for sub in self.SUBS:
@@ -161,6 +234,18 @@ class FindCMakePkgs(Find):
         pass   
 
     def find_config_r(self, base, depth):
+        """
+        :param base: directory
+        :param depth: integer
+
+        Recursively traverses a directory heirarchy steered 
+        by directory names to skip in self.PRUNE and self.BUILD.
+        For each file name matching self.CONFIG creates and collects
+        a Pkg instance.
+
+        Note there is no selection at this stage all pkgs 
+        are collected.
+        """
         log.debug("find_config_r %2d %s " % (depth, base)) 
         names = os.listdir(base)
         for name in names:
@@ -209,6 +294,7 @@ class Main(object):
         fpc = FindPkgConfigPkgs(pc_bases)
         pc_pkgs = fpc.select(args)
 
+        rc = 0 
         if args.mode in ["pc", "cmake"]:
             pkgs = []
             if args.mode == "pc":
@@ -219,13 +305,16 @@ class Main(object):
                 assert 0 
             pass
             self.dump(pkgs)
-        else:
-            print("CMake")
+        elif args.mode in ["cf", "compare"]:
+            print("--- CMake")
             self.dump(cm_pkgs)
-            print("pkg-config")
+            print("--- pkg-config")
             self.dump(pc_pkgs)
-            Pkg.Compare(cm_pkgs, pc_pkgs) 
+            rc = Pkg.Compare(cm_pkgs, pc_pkgs) 
+            print("compare RC %d " % rc)
         pass
+        sys.exit(rc)
+
 
     def dump(self, pkgs):
         args = self.args
@@ -241,6 +330,8 @@ class Main(object):
                     print(pkg.includedir)
                 elif args.prefix:
                     print(pkg.prefix)
+                elif args.name:
+                    print(pkg.name)
                 else:
                     print(pkg)
                 pass
