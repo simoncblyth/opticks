@@ -26,7 +26,6 @@ set(MODS
     Modules/FindOpticksGLFW.cmake
     Modules/FindOpticksXercesC.cmake
     Modules/FindPLog.cmake
-    Modules/FindPPM.cmake
     Modules/OpticksBuildOptions.cmake
     Modules/OpticksCUDAFlags.cmake
     Modules/OpticksCXXFlags.cmake

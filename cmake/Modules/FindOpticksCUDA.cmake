@@ -35,6 +35,9 @@ find_package(CUDA   MODULE)
 
 if(CUDA_LIBRARIES AND CUDA_INCLUDE_DIRS AND CUDA_curand_LIBRARY)
   set(OpticksCUDA_FOUND "YES")
+  set(OpticksCUDA_INCLUDE_DIRS ${CUDA_INCLUDE_DIRS})
+  set(OpticksCUDA_LIBRARIES    ${CUDA_LIBRARIES}) 
+  get_filename_component(OpticksCUDA_LIBDIR ${CUDA_curand_LIBRARY} DIRECTORY) 
 else()
   set(OpticksCUDA_FOUND "NO")
 endif()
@@ -92,7 +95,11 @@ if(OpticksCUDA_VERBOSE)
   echo_pfx_vars(CUDA "cudart_static_LIBRARY;curand_LIBRARY") 
 endif()
 
-if(OpticksCUDA_FOUND AND NOT TARGET Opticks::CUDA)
+
+#set(tgt Opticks::CUDA)
+set(tgt Opticks::OpticksCUDA)
+
+if(OpticksCUDA_FOUND AND NOT TARGET ${tgt})
     add_library(Opticks::cudart_static UNKNOWN IMPORTED)
     set_target_properties(Opticks::cudart_static PROPERTIES IMPORTED_LOCATION "${CUDA_cudart_static_LIBRARY}") 
     set_target_properties(Opticks::cudart_static PROPERTIES INTERFACE_IMPORTED_LOCATION "${CUDA_cudart_static_LIBRARY}") 
@@ -103,12 +110,12 @@ if(OpticksCUDA_FOUND AND NOT TARGET Opticks::CUDA)
     set_target_properties(Opticks::curand PROPERTIES INTERFACE_IMPORTED_LOCATION "${CUDA_curand_LIBRARY}") 
     # duplicate with INTERFACE_ to workaround CMake 3.13 whitelisting restriction
 
-    add_library(Opticks::CUDA INTERFACE IMPORTED)
-    set_target_properties(Opticks::CUDA  PROPERTIES INTERFACE_FIND_PACKAGE_NAME "OpticksCUDA MODULE REQUIRED")
-    set_target_properties(Opticks::CUDA  PROPERTIES INTERFACE_PKG_CONFIG_NAME   "cuda")
+    add_library(${tgt} INTERFACE IMPORTED)
+    set_target_properties(${tgt}  PROPERTIES INTERFACE_FIND_PACKAGE_NAME "OpticksCUDA MODULE REQUIRED")
+    set_target_properties(${tgt}  PROPERTIES INTERFACE_PKG_CONFIG_NAME   "cuda")
 
-    target_link_libraries(Opticks::CUDA INTERFACE Opticks::cudart_static Opticks::curand )
-    target_include_directories(Opticks::CUDA INTERFACE "${CUDA_INCLUDE_DIRS}" )
+    target_link_libraries(${tgt} INTERFACE Opticks::cudart_static Opticks::curand )
+    target_include_directories(${tgt} INTERFACE "${CUDA_INCLUDE_DIRS}" )
 
     if(OpticksHELPER_CUDA_FOUND)
         add_library(Opticks::CUDASamples INTERFACE IMPORTED)

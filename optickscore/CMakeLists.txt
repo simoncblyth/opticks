@@ -148,13 +148,19 @@ target_link_libraries( ${name}
 
 
 
+# using absolute ANADIR avoids build environment requiring it in PATH 
+get_filename_component(ANADIR ../ana ABSOLUTE)
+
+message(STATUS "CMAKE_CURRENT_SOURCE_DIR : ${CMAKE_CURRENT_SOURCE_DIR}")
+message(STATUS "ANADIR : ${ANADIR}")
+
 set(HDR   ${CMAKE_CURRENT_SOURCE_DIR}/OpticksPhoton.h)
 set(PYINI ${CMAKE_CURRENT_BINARY_DIR}/OpticksPhoton_Enum.ini)
 add_custom_command(
    OUTPUT 
          ${PYINI}
    COMMAND 
-          enum.py ${HDR} --quiet --inipath ${PYINI}
+          ${ANADIR}/enum.py ${HDR} --quiet --inipath ${PYINI}
    DEPENDS 
          ${HDR}
 )
@@ -168,7 +174,7 @@ add_custom_command(
    OUTPUT 
          ${PYJS}
    COMMAND 
-          OpticksFlags.py ${CCFL} --quiet --jsonpath ${PYJS}
+         ${ANADIR}/OpticksFlags.py ${CCFL} --quiet --jsonpath ${PYJS}
    DEPENDS 
          ${CCFL}
 )

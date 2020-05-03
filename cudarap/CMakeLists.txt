@@ -55,7 +55,7 @@ SET(HEADERS
 
 set(LIBRARIES
    Opticks::SysRap
-   Opticks::CUDA
+   Opticks::OpticksCUDA
    Opticks::CUDASamples
    Opticks::OKConf
 )

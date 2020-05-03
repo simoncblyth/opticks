@@ -16,6 +16,7 @@ find_path( OpenMesh_INCLUDE_DIR
            PATHS "${OpenMesh_PREFIX}/include"
 )
 
+
 find_library( OpenMeshCore_LIBRARY 
               NAMES OpenMeshCore${OpenMesh_SUFFIX}
               PATHS ${OpenMesh_PREFIX}/lib )
@@ -26,6 +27,7 @@ find_library( OpenMeshTools_LIBRARY
 
 if(OpenMesh_INCLUDE_DIR AND OpenMeshCore_LIBRARY AND OpenMeshTools_LIBRARY)
   set(OpenMesh_FOUND "YES")
+  get_filename_component(OpenMesh_LIBDIR ${OpenMeshCore_LIBRARY} DIRECTORY)
 else()
   set(OpenMesh_FOUND "NO")
 endif()
@@ -44,13 +46,14 @@ if(OpenMesh_FOUND AND NOT TARGET Opticks::OpenMesh)
     set_target_properties(Opticks::OpenMeshCore PROPERTIES
         IMPORTED_LOCATION "${OpenMeshCore_LIBRARY}"
         INTERFACE_IMPORTED_LOCATION "${OpenMeshCore_LIBRARY}"
-        
+        INTERFACE_LIBFOLD "${OpenMesh_PREFIX}/lib" 
     )
 
     add_library(Opticks::OpenMeshTools  UNKNOWN IMPORTED) 
     set_target_properties(Opticks::OpenMeshTools PROPERTIES
         IMPORTED_LOCATION "${OpenMeshTools_LIBRARY}"
         INTERFACE_IMPORTED_LOCATION "${OpenMeshTools_LIBRARY}"
+        INTERFACE_LIBFOLD "${OpenMesh_PREFIX}/lib" 
     )
 
     add_library(Opticks::OpenMesh INTERFACE IMPORTED)
@@ -58,6 +61,7 @@ if(OpenMesh_FOUND AND NOT TARGET Opticks::OpenMesh)
         INTERFACE_INCLUDE_DIRECTORIES "${OpenMesh_INCLUDE_DIR}"
         INTERFACE_LINK_LIBRARIES "Opticks::OpenMeshCore;Opticks::OpenMeshTools"
         INTERFACE_PKG_CONFIG_NAME "openmesh"
+        INTERFACE_LIBFOLD "${OpenMesh_PREFIX}/lib" 
     )
 
     # https://cmake.org/cmake/help/v3.3/prop_tgt/INTERFACE_COMPILE_DEFINITIONS.html

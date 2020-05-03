@@ -6,43 +6,6 @@ Find.py
 Common stuff used by find_package.py and pkg_config.py 
 
 
-CMake and not pc
--------------------
-
-::
-
-    a-b set([
-      'boost_filesystem', 
-      'boost_regex', 
-      'boost_headers', 
-      'boost_system', 
-      'boost_chrono', 
-      'boost_date_time', 
-      'boost_thread', 
-      'boost_program_options', 
-      'boost_log', 
-      'boost_log_setup', 
-      'boost_atomic', 
-
-      'Geant4', 
-      'g4dae', 
-      'Opticks', 
-      'Boost', 
-      'csgbsp']) 
-
-
-PC and not CMake
-------------------
-
-::
-
-    b-a set(['imgui', 'g4', 'glm', 'openmesh', 'opticksoptix', 'plog', 'cuda', 'glew', 'geant4', 'boost', 'optix']) 
-
-These are mostly the ones that cmake finds with the help of cmake/Modules/FindName.cmake but the 
-simple cmake resolution used here just looks from CONFIG files not MODULE ones.
-
-
-
 
 """
 import os, re, logging, argparse, sys
@@ -51,14 +14,19 @@ log = logging.getLogger(__name__)
 
 def getlibdir(path):
     """
-    Often no lib ?
+    :return libdir: parent directory of path ending with lib or lib64 or blank if none found 
     """
+    libs = ["lib","lib64"]
     fold, name = os.path.split(path) 
+    if name in libs:
+        return path
+    pass 
+
     elem = fold.split("/")
     jlib = -1
     for i in range(len(elem)):
         j = len(elem)-i-1
-        if elem[j] in ["lib","lib64"]:
+        if elem[j] in libs:
             jlib = j
             break
         pass   
@@ -89,7 +57,7 @@ class Pkg(object):
                 log.fatal(" a and b are not equal\n%s\n%s" % (repr(a), repr(b)))
                 return 2
             pass
-            return 0
+        return 0
 
 
     def __init__(self, path, name):
@@ -126,10 +94,11 @@ class Find(object):
         parser.add_argument( "-l", "--libdir",  default=False, action="store_true" )
         parser.add_argument( "-i", "--includedir",  default=False, action="store_true" )
         parser.add_argument( "-n", "--name",  default=False, action="store_true" )
+        parser.add_argument( "-d", "--dump",  default=False, action="store_true", help="Dump extra details for debugging" )
         parser.add_argument( "-f", "--first",   default=False, action="store_true" )
         parser.add_argument( "-x", "--index",  type=int, default=-1 )
         parser.add_argument( "-c", "--count",  action="store_true", default=False )
-        parser.add_argument( "-m", "--mode",  choices=['pc', 'cmake', 'cf', 'compare'], default=default_mode  )
+        parser.add_argument( "-m", "--mode",  choices=['pc', 'cmake', 'cf', 'compare', 'cmake_direct'], default=default_mode  )
 
 
         parser.add_argument( "--casesensitive",  action="store_true", default=False )

@@ -15,7 +15,7 @@ find_package(OKConf REQUIRED CONFIG)
 find_package(OpticksCUDA REQUIRED MODULE) 
 
 cuda_add_executable(${name} ${name}.cu)
-target_link_libraries(${name} Opticks::CUDA Opticks::CUDASamples)
+target_link_libraries(${name} Opticks::OpticksCUDA Opticks::CUDASamples)
 
 install(TARGETS ${name} DESTINATION lib)
 

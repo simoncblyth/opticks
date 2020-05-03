@@ -42,7 +42,7 @@ add_executable(${name} ${name}.cc)
 target_link_libraries(${name} 
      PUBLIC 
          Opticks::OptiX
-         Opticks::CUDA
+         Opticks::OpticksCUDA
 )
 install(TARGETS ${name}  DESTINATION lib)
 
