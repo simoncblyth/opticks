@@ -230,9 +230,9 @@ oimplicitmesher-make()
     local iwd=$PWD
     local rc
     oimplicitmesher-bcd
-    cmake --build . --config $(opticks-buildtype) --target ${1:-install}
 
-    #make ${1:-install}
+    #cmake --build . --config $(opticks-buildtype) --target ${1:-install}
+    make $1
 
     rc=$?
     cd $iwd
@@ -243,19 +243,21 @@ oimplicitmesher-pc(){ echo $FUNCNAME placeholder ; }
 
 oimplicitmesher--()
 {
-   local rc
+   local msg="=== $FUNCNAME :"
    oimplicitmesher-get
-   rc=$?
-   [ ! $rc -eq 0 ] && return $rc
+   [ $? -ne 0 ] && echo $msg get FAIL && return 1
    oimplicitmesher-cmake
-   rc=$?
-   [ ! $rc -eq 0 ] && return $rc
+   [ $? -ne 0 ] && echo $msg cmake FAIL && return 2
+   oimplicitmesher-make
+   [ $? -ne 0 ] && echo $msg build FAIL && return 3
+
+   #[ $(uname) == "Darwin" ] && sleep 2 && echo $msg after sleep 
+
    oimplicitmesher-make install
-   rc=$?
-   [ ! $rc -eq 0 ] && return $rc
+   [ $? -ne 0 ] && echo $msg install FAIL && return 4
    oimplicitmesher-pc
-   rc=$?
-   return $rc
+   [ $? -ne 0 ] && echo $msg pc FAIL && return 5
+   return 0
 }
 
 oimplicitmesher-t()

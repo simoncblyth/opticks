@@ -106,8 +106,12 @@ opticksaux-get(){
 
 opticksaux--()
 {
+   local msg="=== $FUNCNAME :"
    opticksaux-get
+   [ $? -ne 0 ] && echo $msg get FAIL && return 1
    opticksaux-pc
+   [ $? -ne 0 ] && echo $msg pc FAIL && return 2
+   return 0 
 }
 
 opticksaux-pc(){ echo $FUNCNAME placeholder ; }

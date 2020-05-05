@@ -68,24 +68,39 @@ class PC(object):
 
     """
     @classmethod
-    def Find(cls, name):
+    def Resolve(cls, name):
         """
         :param name:
         :return pc: PC instance or None
 
         Search the PKG_CONFIG_PATH dirs for name.pc where name is lowercased. 
+        unless name looks like an absolute path.
         """
+        if name[0] == "/" and os.path.exists(name):
+            path = name
+            return path
+        pass 
         pcp = os.environ.get("PKG_CONFIG_PATH","")
         dirs = filter(None,pcp.split(":"))
         for d in dirs:
-            path = os.path.join(d, "%s.pc" % name.lower() )
+            #path = os.path.join(d, "%s.pc" % name.lower() )
+            path = os.path.join(d, "%s.pc" % name )
             if os.path.exists(path):
-                return cls(path)
+                return path
             pass
         pass
-        log.fatal("failed to find %s in any PKG_CONFIG_PATH directory %s " % (name, pcp)) 
         assert 0
         return None
+
+    @classmethod
+    def Find(cls, name):
+        path = cls.Resolve(name)
+        if path is None:
+            log.fatal("failed to find %s in any PKG_CONFIG_PATH " % (name)) 
+            return None
+        pass
+        return cls(path) 
+
 
     def __init__(self, path):
         """
@@ -125,9 +140,14 @@ class Main(object):
         parser = argparse.ArgumentParser(__doc__)
         parser.add_argument( "name", nargs='*', help="Name of pc file(s) eg glfw3,assimp,glew " )
         parser.add_argument( "--fix" , action="store_true", default=False )
-        parser.add_argument( "--prefix", type=str,    default="/usr/local/opticks" )
-        parser.add_argument( "--includedir", type=str,default="${prefix}/externals/include" )
-        parser.add_argument( "--libdir", type=str,    default="${prefix}/externals/lib" )
+
+        default_prefix = os.environ.get("OPTICKS_PREFIX","/usr/local/opticks")
+        default_includedir = "${prefix}/externals/include" 
+        default_libdir = "${prefix}/externals/lib"
+
+        parser.add_argument( "--prefix", type=str,    default=default_prefix )
+        parser.add_argument( "--includedir", type=str,default=default_includedir )
+        parser.add_argument( "--libdir", type=str,    default=default_libdir )
         args = parser.parse_args()
         return args
 

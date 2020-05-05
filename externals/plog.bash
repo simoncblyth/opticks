@@ -146,8 +146,12 @@ plog-get(){
 
 plog--()
 {
+   local msg="=== $FUNCNAME :"
    plog-get
+   [ $? -ne 0 ] && echo $msg get FAIL && return 1
    plog-pc
+   [ $? -ne 0 ] && echo $msg pc FAIL && return 2
+   return 0
 }
 
 

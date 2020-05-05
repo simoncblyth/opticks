@@ -390,17 +390,25 @@ g4-get(){
    if [ "${dst/.tar.gz}" != "${dst}" ]; then
         [ ! -d "$nam" ] && tar zxvf $dst
    fi
+
+   [ -d "$nam" ]
 }
 
 g4--()
 {
+    local msg="=== $FUNCNAME :"
     g4-get
+    [ $? -ne 0 ] && echo $msg get FAIL && return 1
     g4-configure 
+    [ $? -ne 0 ] && echo $msg configure FAIL && return 2
     g4-build
-
+    [ $? -ne 0 ] && echo $msg build FAIL && return 3
     g4-export-ini
+    [ $? -ne 0 ] && echo $msg export-ini FAIL && return 4
     g4-pc
+    [ $? -ne 0 ] && echo $msg pc FAIL && return 5
 
+    return 0 
 }
 
 
@@ -518,6 +526,7 @@ EON
 
 g4-cmake(){
    local iwd=$PWD
+   local rc=0
 
    local bdir=$(g4-bdir)
    mkdir -p $bdir
@@ -539,7 +548,10 @@ g4-cmake(){
        -DCMAKE_INSTALL_PREFIX=$idir \
        $(g4-dir)
 
+   rc=$?
+
    cd $iwd
+   return $rc
 }
 
 g4-cmake-modify(){
@@ -571,10 +583,13 @@ g4-cmake-modify-xercesc-system()
 }
 
 g4-build(){
+   local rc=0
    g4-bcd
    date
    cmake --build . --config $(g4-config) --target ${1:-install}
+   rc=$?
    date
+   return $rc
 }
 
 g4-sh(){   echo $(g4-idir)/bin/geant4.sh ; }
@@ -603,7 +618,7 @@ g4-export-ini()
 
     g4-export
 
-    envg4.py  > $dir/geant4.ini
+    $(opticks-home)/bin/envg4.py  > $dir/geant4.ini
     cat $dir/geant4.ini
 
     g4-envg4
@@ -629,10 +644,10 @@ EON
 g4-envg4()
 {
     local msg="=== $FUNCNAME :"
-    local externals=$OPTICKS_INSTALL_PREFIX/externals
+    local externals=$OPTICKS_PREFIX/externals
     local script="opticks-envg4.bash"
     echo $msg writing script $script to externals $externals/$script
-    envg4.py --token here  --prefix $externals --bash  > $externals/$script
+    $(opticks-home)/bin/envg4.py --token here  --prefix $externals --bash  > $externals/$script
     cat $externals/$script
 }
 

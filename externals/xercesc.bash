@@ -276,14 +276,23 @@ xercesc-pc(){
 
 xercesc--()
 {
+   local msg="=== $FUNCNAME :"
+
    xercesc-info
 
-   [ "$(uname -s)" == "Darwin" ] && xercesc-darwin && return  
+   [ "$(uname -s)" == "Darwin" ] && xercesc-darwin && return 0
 
    xercesc-get
+   [ $? -ne 0 ] && echo $msg get FAIL && return 1
+
    xercesc-configure
+   [ $? -ne 0 ] && echo $msg configure FAIL && return 2
    xercesc-make
+   [ $? -ne 0 ] && echo $msg make FAIL && return 3
    xercesc-pc
+   [ $? -ne 0 ] && echo $msg pc FAIL && return 4
+
+   return 0 
 }
 
 xercesc-darwin(){ cat << EOD

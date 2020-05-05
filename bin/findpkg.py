@@ -1,10 +1,9 @@
 #!/usr/bin/env python
 """
-Find.py
-========
+findpkg.py
+============
 
-Common stuff used by find_package.py and pkg_config.py 
-
+Combination of the old find_package.py and pkg_config.py 
 
 
 """

@@ -199,6 +199,7 @@ ocsgbsp-get(){
 
 ocsgbsp-cmake()
 {
+    local rc=0
     local iwd=$PWD
     local bdir=$(ocsgbsp-bdir)
     local sdir=$(ocsgbsp-dir)
@@ -211,31 +212,41 @@ ocsgbsp-cmake()
 
     cmake \
        -DOPTICKS_PREFIX=$(opticks-prefix) \
-       -DCMAKE_BUILD_TYPE=Debug \
+       -DCMAKE_BUILD_TYPE=$(opticks-buildtype) \
        -DCMAKE_INSTALL_PREFIX=$(opticks-prefix) \
        -DCMAKE_PREFIX_PATH=$(opticks-prefix)/externals \
        -DCMAKE_MODULE_PATH=$(opticks-home)/cmake/Modules \
        $* \
        $sdir
 
+    rc=$?
     cd $iwd
+    return $rc
 }
 
 ocsgbsp-make()
 {
     local iwd=$PWD
+    local rc=0
     ocsgbsp-bcd
-    cmake --build . --config Debug --target ${1:-install}
+    cmake --build . --config $(opticks-buildtype) --target ${1:-install}
+    rc=$?
     cd $iwd
+    return $rc 
 }
 
 ocsgbsp-pc(){ echo $FUNCNAME placeholder ; }
 
 ocsgbsp--()
 {
+   local msg="=== $FUNCNAME :"
+
    ocsgbsp-get
+   [ $? -ne 0 ] && echo $msg get FAIL && return 1 
    ocsgbsp-cmake
+   [ $? -ne 0 ] && echo $msg cmake FAIL && return 2
    ocsgbsp-make all
+   [ $? -ne 0 ] && echo $msg make FAIL && return 3
 
    #if [ "$(uname)" == "Darwin" ]; then
    #    echo sleeping for 2s : see and env/tools/cmak.bash and https://gitlab.kitware.com/cmake/cmake/issues/16155
@@ -243,6 +254,10 @@ ocsgbsp--()
    #fi  
    
    ocsgbsp-make install
+   [ $? -ne 0 ] && echo $msg install FAIL && return 4
    ocsgbsp-pc
+   [ $? -ne 0 ] && echo $msg pc FAIL && return 5
+
+   return 0 
 }
 

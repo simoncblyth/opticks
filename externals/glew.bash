@@ -198,18 +198,19 @@ glew-lib64-rm()
 }
 
 
+glew-pc() 
+{ 
+    local msg="=== $FUNCNAME :";
+    local path="$OPTICKS_PREFIX/externals/lib/pkgconfig/glew.pc";
+    if [ -f "$path" ]; then
+        $(opticks-home)/bin/pc.py $path --fix;
 
-glew-pc-unglu(){
-   local path=$(oc-find glew)
-   if [ "$(uname)" == "Darwin" ]; then 
-       perl -pi -e 's/^Requires: glu/#Requires: glu/' $path 
-   fi 
-}
-
-glew-pc(){
-   oc-
-   oc-pcfix glew 
-   glew-pc-unglu  
+        if [ "$(uname)" == "Darwin" ]; then 
+            perl -pi -e 's/^Requires: glu/#Requires: glu/' $path 
+        fi 
+    else
+        echo $msg no such path $path;
+    fi
 }
 
 glew-setup(){ cat << EOS

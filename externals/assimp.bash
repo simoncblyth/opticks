@@ -556,13 +556,20 @@ assimp-make(){
 }
 
 assimp--() {
+   local msg="=== $FUNCNAME :"
    assimp-get
+   [ $? -ne 0 ] && echo $msg get FAIL && return 1
    assimp-cmake
+   [ $? -ne 0 ] && echo $msg cmake FAIL && return 2
    assimp-make
+   [ $? -ne 0 ] && echo $msg make FAIL && return 3
    assimp-make install
-
+   [ $? -ne 0 ] && echo $msg install FAIL && return 4
    assimp-rpath-kludge
+   [ $? -ne 0 ] && echo $msg kludge FAIL && return 5
    assimp-pc
+   [ $? -ne 0 ] && echo $msg pc FAIL && return 6
+   return 0 
 }
 
 assimp-build(){
@@ -615,11 +622,20 @@ assimp-test(){
 }
 
 
-assimp-pc()
-{
-   oc-
-   oc-pcfix assimp   
+
+assimp-pc () 
+{ 
+    local msg="=== $FUNCNAME :";
+    local path="$OPTICKS_PREFIX/externals/lib/pkgconfig/assimp.pc";
+    if [ -f "$path" ]; then
+        $(opticks-home)/bin/pc.py $path --fix;
+    else
+        echo $msg no such path $path;
+    fi
 }
+
+
+
 
 assimp-setup(){ cat << EOS
 # $FUNCNAME

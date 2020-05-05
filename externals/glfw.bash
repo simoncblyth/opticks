@@ -312,8 +312,13 @@ glfw-bcd(){ cd $(glfw-bdir); }
 glfw-icd(){ cd $(glfw-idir); }
 
 glfw-pc(){ 
-   oc- 
-   oc-pcfix glfw3 
+   local msg="=== $FUNCNAME :"
+   local path="$OPTICKS_PREFIX/externals/lib/pkgconfig/glfw3.pc"
+   if [ -f "$path" ]; then  
+       $(opticks-home)/bin/pc.py $path --fix
+   else
+       echo $msg no such path $path
+   fi  
 }
 
 
@@ -326,9 +331,18 @@ glfw-pc(){
 #   mv glfw3.pc GLFW3.pc
 #}
 
-glfw-version(){ echo 3.1.1 ; }
+#glfw-version(){ echo 3.1.1 ; }
+glfw-version(){ echo 3.3.2 ; }
+
 glfw-name(){ echo glfw-$(glfw-version) ; }
-glfw-url(){  echo http://downloads.sourceforge.net/project/glfw/glfw/$(glfw-version)/$(glfw-name).zip ; }
+glfw-url(){  
+   case $(glfw-version) in
+      3.1.1) echo http://downloads.sourceforge.net/project/glfw/glfw/$(glfw-version)/$(glfw-name).zip ;;
+          *) echo https://github.com/glfw/glfw/releases/download/$(glfw-version)/$(glfw-name).zip ;;
+   esac
+}
+
+
 glfw-dist(){ echo $(dirname $(glfw-dir))/$(basename $(glfw-url)) ; }
 
 glfw-edit(){  vi $(opticks-home)/cmake/Modules/FindGLFW.cmake ; }
@@ -337,6 +351,7 @@ glfw-edit(){  vi $(opticks-home)/cmake/Modules/FindGLFW.cmake ; }
 glfw-get(){
    local dir=$(dirname $(glfw-dir)) &&  mkdir -p $dir && cd $dir
 
+   local rc=0
    local url=$(glfw-url)
    local zip=$(basename $url)
    local opt=$( [ -n "${VERBOSE}" ] && echo "" || echo "-q" )
@@ -344,9 +359,13 @@ glfw-get(){
    local nam=${zip/.zip}
    [ ! -f "$zip" ] && curl -L -O $url
    [ ! -d "$nam" ] && unzip $opt $zip 
-
+   
+   [ ! -d "$nam" ] && rc=1
+ 
    #ln -sfnv $nam glfw
    # try to avoid having to pass the version around via symbolic link
+
+   return $rc
 }
 
 
@@ -405,10 +424,20 @@ glfw-make(){
 
 glfw--()
 {
+   local msg="=== $FUNCNAME :"
    glfw-get
+   [ $? -ne 0 ] && echo $msg get FAIL && return 1
+
    glfw-cmake
+   [ $? -ne 0 ] && echo $msg cmake FAIL && return 2
+
    glfw-make install
+   [ $? -ne 0 ] && echo $msg make/instal FAIL && return 3
+
    glfw-pc
+   [ $? -ne 0 ] && echo $msg pc FAIL && return 4
+
+   return 0
 }
 
 

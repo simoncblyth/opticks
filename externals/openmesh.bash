@@ -1137,6 +1137,7 @@ openmesh-get(){
    local nam=${tgz/.tar.gz}
    [ ! -f "$tgz" ] && curl -L -O $url
    [ ! -d "$nam" ] && tar zxf $tgz 
+   return 0 
 }
 
 openmesh-doc(){ openmesh-html ; }
@@ -1182,18 +1183,33 @@ openmesh-configure()
 
 openmesh-make(){
   local iwd=$PWD
+  local rc
   openmesh-bcd
 
   cmake --build . --config Release --target ${1:-install}
+  rc=$? 
 
   cd $iwd
+  return $rc
 }
 
 openmesh--(){
+
+  local msg="=== $FUNCNAME :"
+
   openmesh-get 
+  [ $? -ne 0 ] && echo $msg get FAIL && return 1
+
   openmesh-cmake
+  [ $? -ne 0 ] && echo $msg cmake FAIL && return 2
+
   openmesh-make install
+  [ $? -ne 0 ] && echo $msg make FAIL && return 3
+
   openmesh-pc
+  [ $? -ne 0 ] && echo $msg pc FAIL && return 4
+
+  return 0 
 }
 
 

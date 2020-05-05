@@ -67,7 +67,7 @@ odcs-cmake()
 {
     local iwd=$PWD
     local bdir=$(odcs-bdir)
-
+    local rc=0
     mkdir -p $bdir
     #[ -f "$bdir/CMakeCache.txt" ] && echo $msg configured already && return  
     rm -f "$bdir/CMakeCache.txt"
@@ -79,21 +79,26 @@ odcs-cmake()
        -DOPTICKS_PREFIX=$(opticks-prefix) \
        -DCMAKE_MODULE_PATH=$(opticks-home)/cmake/Modules \
        -DCMAKE_PREFIX_PATH=$(opticks-prefix)/externals \
-       -DCMAKE_BUILD_TYPE=Debug \
+       -DCMAKE_BUILD_TYPE=$(opticks-buildtype) \
        -DCMAKE_INSTALL_PREFIX=$(opticks-prefix) \
        $* \
        $(odcs-dir)
 
+    rc=$?
 
     cd $iwd
+    return $rc
 }
 
 odcs-make()
 {
     local iwd=$PWD
+    local rc=0
     odcs-bcd
-    cmake --build . --config Release --target ${1:-install}
+    cmake --build . --config $(opticks-buildtype) --target ${1:-install}
+    rc=$?
     cd $iwd
+    return $rc
 }
 
 
@@ -102,10 +107,19 @@ odcs-pc(){ echo $FUNCNAME placeholder ; }
 
 odcs--()
 {
+   local msg="=== $FUNCNAME :"
    odcs-get
+   [ $? -ne 0 ] && echo $msg get FAIL && return 1
+
    odcs-cmake
+   [ $? -ne 0 ] && echo $msg cmake FAIL && return 2
+
    odcs-make install
+   [ $? -ne 0 ] && echo $msg make/install FAIL && return 3
+
    odcs-pc
+   [ $? -ne 0 ] && echo $msg pc FAIL && return 4
+   return 0
 }
 
 odcs-t()

@@ -42,7 +42,7 @@ oe-env()
     opticks-;
 
     #oe-export
-    source $OPTICKS_PREFIX/bin/opticks-setup.sh 
+    source $OPTICKS_PREFIX/bin/opticks-setup.sh 1>&2 
 }
 
 

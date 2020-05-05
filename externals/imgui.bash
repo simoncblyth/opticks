@@ -35,30 +35,6 @@ that allows usage of env/cmake/Modules/FindImGui.cmake
 This is tested by imguitest-
 
 
-CMake issue reported by Axel 
--------------------------------
-
-The command: imgui-configure gives::
-
-    CMake Error at CMakeLists.txt:10 (include):
-      include could not find load file:
-
-        EnvBuildOptions
-
-This is due to dirty OPTICKS_HOME envvar dependency in the CMakeLists.txt::
-
-      1 cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
-      2 # this file is copied from imgui-edir to imgui-sdir by imgui-get
-      3 set(name ImGui)
-      4 project(${name})
-      5 
-      6 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} 
-      7                       "$ENV{OPTICKS_HOME}/cmake/Modules"
-      8           )
-      9 
-     10 include(EnvBuildOptions)
-
-
 Other issues
 ---------------
 
@@ -340,8 +316,6 @@ imgui-icd(){  cd $(imgui-idir); }
 imgui-bcd(){  cd $(imgui-bdir); }
 imgui-scd(){  cd $(imgui-sdir); }
 
-imgui-EnvBuildOptions(){ echo $OPTICKS_HOME/cmake/Modules/EnvBuildOptions.cmake ; }
-imgui-EnvBuildOptions-ls(){ ls -l $(${FUNCNAME/-ls}) ; }
 
 imgui-info(){ cat << EOI
 
@@ -354,15 +328,10 @@ $FUNCNAME
     imgui-bdir : $(imgui-bdir)
     imgui-sdir : $(imgui-sdir)
     imgui-dir  : $(imgui-dir)
-
-    OPTICKS_HOME : $OPTICKS_HOME
-    opticks-home  : $(opticks-home)
-
-    imgui-EnvBuildOptions : $(imgui-EnvBuildOptions)
-    imgui-EnvBuildOptions-ls : $(imgui-EnvBuildOptions-ls)
-
    
     imgui-url  : $(imgui-url)
+
+    opticks-home : $(opticks-home)
 
 EOI
 }
@@ -484,20 +453,23 @@ imgui-make(){
 
 imgui--(){
 
+  local msg="=== $FUNCNAME :"
   local iwd=$PWD
 
   imgui-info 
 
   imgui-get
+  [ $? -ne 0 ] && echo $msg get FAIL && return 1
   imgui-cmake
+  [ $? -ne 0 ] && echo $msg cmake FAIL && return 2
   imgui-make install 
-   
-  [ $? -ne 0 ] && echo $FUNCNAME ERROR && return 1
+  [ $? -ne 0 ] && echo $msg make/install FAIL && return 3
 
   imgui-pc 
-
+  [ $? -ne 0 ] && echo $msg pc FAIL && return 4
 
   cd $iwd
+  return 0
 }
 
 imgui-pc-path(){ echo $(opticks-prefix)/externals/lib/pkgconfig/imgui.pc ; }

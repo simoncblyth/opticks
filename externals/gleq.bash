@@ -278,16 +278,24 @@ gleq-url(){ echo https://github.com/simoncblyth/gleq ; }
 
 gleq-get(){
    local iwd=$PWD
+   local rc=0
    local dir=$(dirname $(gleq-dir)) &&  mkdir -p $dir && cd $dir
    [ ! -d gleq ] && git clone $(gleq-url)
+
+   [ -d gleq ] 
+   rc=$?
    cd $iwd
+   return $rc
 }
 gleq-hdr(){
    echo $(gleq-dir)/gleq.h
 }
 
 gleq--(){
+   local rc=0
    gleq-get
+   rc=$?
+   return $rc
 }
 
 gleq-diff()

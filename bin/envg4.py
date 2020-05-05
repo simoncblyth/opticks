@@ -23,12 +23,12 @@ class EnvG4(object):
     """
     Collects envvars starting with G4 into a dict and 
     modifies the values, which are required to start with the
-    expanded OPTICKS_INSTALL_PREFIX path to use a token. 
+    expanded OPTICKS_PREFIX path to use a token. 
     
     Replacing the hard coded install prefix with a token, 
     allows mobility for the data.
     """
-    TOKEN = "OPTICKS_INSTALL_PREFIX"
+    TOKEN = "OPTICKS_PREFIX"
     def __init__(self, prefix, token, bash=False):
         self.bash = bash 
         d = odict()

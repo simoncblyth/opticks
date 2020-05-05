@@ -204,6 +204,7 @@ glm-url(){    echo https://github.com/g-truc/glm/releases/download/$(glm-version
 glm-dist(){    echo $(dirname $(glm-dir))/$(basename $(glm-url)) ; }
 
 glm-get(){
+   local msg="=== $FUNCNAME :"
    local dir=$(dirname $(glm-dir)) &&  mkdir -p $dir && cd $dir
    local url=$(glm-url)
    local zip=$(basename $url)
@@ -212,8 +213,15 @@ glm-get(){
 
    [ ! -f "$zip" ] && curl -L -O $url
    [ ! -d "$nam" ] && unzip $opt $zip -d $nam
-   ln -sfnv $(glm-name)/glm glm 
-   echo symbolic link for access without version in path
+
+   if [ -d glm -a ! -L glm ]; then
+      echo $msg ERROR cannot plant symbolic link as a non-link glm directory exists in PWD $PWD
+      echo $msg solution is to delete is to delete the dir and rerun glm-- BUT not automating that as want to fix the root cause
+   else
+      ln -sfnv $(glm-name)/glm glm 
+      echo $msg planting symbolic link for access without version in path
+   fi  
+
 }
 
 glm-get-notes(){ cat << 'EON'

@@ -583,7 +583,23 @@ $FUNCNAME
 EOI
 }
 
-opticks-externals-install(){ echo $FUNCNAME ; opticks-externals | opticks-ext-installer ; }
+opticks-externals-install(){ 
+    echo $FUNCNAME 
+    local msg="=== $FUNCNAME :"
+    local exts=$(opticks-externals) 
+    local ext
+    for ext in $exts ; do 
+
+        printf "\n\n\n############## %s ###############\n\n\n" $ext
+
+        echo $ext | opticks-ext-installer 
+        rc=$?
+        [ $rc -ne 0 ] && echo $msg RC $rc from ext $ext : ABORTING && return $rc
+    done
+    return 0 
+}
+
+
 opticks-externals-url(){     echo $FUNCNAME ; opticks-externals | opticks-ext-url ; }
 opticks-externals-dist(){    echo $FUNCNAME ; opticks-externals | opticks-ext-dist ; }
 opticks-externals-dir(){     echo $FUNCNAME ; opticks-externals | opticks-ext-dir ; }
@@ -1208,6 +1224,7 @@ opticks-ext-installer(){
         [ $rc -ne 0 ] && echo $msg RC $rc from ext $ext : ABORTING && return $rc
    done
    echo $msg DONE $(date)
+   return 0 
 }
 
 opticks-ext-url(){

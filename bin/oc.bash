@@ -603,7 +603,31 @@ EON
 }
 
 oc-pkg-config(){ pkg-config $* ; }
-oc-pcfix(){      pc.py $* --fix ; }
+
+
+oc-pcfix-notes(){ cat << EON
+
+This requires bin in PATH to find the pc.py and envvar PKG_CONFIG_PATH 
+but it needs to be run on installing externals : so its problematic
+as setup will not have been done at that time for a fresh install.
+
+Also oc is a usercentric thing wheras oc is a build-centric so 
+it should not be here. It is kludging the pc written by 
+glfw, assimp, glew...
+
+Where to do this ? Or can it be avoided 
+
+ $(opticks-home)/bin/pc.py 
+
+
+Simplified glfw-pc to handle these issues
+
+
+EON
+}
+
+
+#oc-pcfix(){      pc.py $* --fix ; }
 
 
 oc-pkg-config-find(){

@@ -310,9 +310,13 @@ oyoctogl-pc(){ echo $FUNCNAME placeholder ; }
 
 oyoctogl--()
 {
+   local msg="=== $FUNCNAME :"
    oyoctogl-get
+   [ $? -ne 0 ] && echo $msg get FAIL && return 1 
    oyoctogl-cmake
+   [ $? -ne 0 ] && echo $msg cmake FAIL && return 2
    oyoctogl-make all
+   [ $? -ne 0 ] && echo $msg make FAIL && return 3
 
    if [ "$(uname)" == "Darwin" ]; then
        echo sleeping for 2s : see and env/tools/cmak.bash and https://gitlab.kitware.com/cmake/cmake/issues/16155
@@ -320,7 +324,10 @@ oyoctogl--()
    fi 
 
    oyoctogl-make install
+   [ $? -ne 0 ] && echo $msg install FAIL && return 4
    oyoctogl-pc
+   [ $? -ne 0 ] && echo $msg pc FAIL && return 5
+   return 0 
 }
 
 oyoctogl-reader()
