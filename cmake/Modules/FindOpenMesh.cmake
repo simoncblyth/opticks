@@ -60,7 +60,7 @@ if(OpenMesh_FOUND AND NOT TARGET Opticks::OpenMesh)
     set_target_properties(Opticks::OpenMesh PROPERTIES
         INTERFACE_INCLUDE_DIRECTORIES "${OpenMesh_INCLUDE_DIR}"
         INTERFACE_LINK_LIBRARIES "Opticks::OpenMeshCore;Opticks::OpenMeshTools"
-        INTERFACE_PKG_CONFIG_NAME "openmesh"
+        INTERFACE_PKG_CONFIG_NAME "OpenMesh"
         INTERFACE_LIBFOLD "${OpenMesh_PREFIX}/lib" 
     )
 

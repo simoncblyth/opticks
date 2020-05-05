@@ -32,13 +32,9 @@ set(PLog_targets)
 if(PLog_FOUND AND NOT TARGET ${_tgt})
 
     add_library(${_tgt} INTERFACE IMPORTED)
-    #set_target_properties(${_tgt} PROPERTIES
-    #    INTERFACE_INCLUDE_DIRECTORIES "${PLog_INCLUDE_DIR}"
-    #    INTERFACE_PKG_CONFIG_NAME "plog"
-    #)
 
     set_property( TARGET ${_tgt} PROPERTY INTERFACE_INCLUDE_DIRECTORIES "${PLog_INCLUDE_DIR}" )
-    set_property( TARGET ${_tgt} PROPERTY INTERFACE_PKG_CONFIG_NAME "plog" )
+    set_property( TARGET ${_tgt} PROPERTY INTERFACE_PKG_CONFIG_NAME "PLog" )
 
     list(APPEND PLog_targets "PLog")
 

@@ -117,7 +117,7 @@ if(OpticksXercesC_FOUND AND NOT TARGET ${tgt})
          PROPERTIES 
             IMPORTED_LOCATION             "${OpticksXercesC_LIBRARY}"
             INTERFACE_INCLUDE_DIRECTORIES "${OpticksXercesC_INCLUDE_DIR}"
-            INTERFACE_PKG_CONFIG_NAME     "xerces-c"
+            INTERFACE_PKG_CONFIG_NAME     "OpticksXercesC"
     )
 endif()
 

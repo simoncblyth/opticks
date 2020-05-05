@@ -1,3 +1,6 @@
+#[=[
+See notes/issues/glfw-update-perhaps.rst 
+#]=]
 
 set(OpticksGLFW_MODULE "${CMAKE_CURRENT_LIST_FILE}")
 
@@ -93,7 +96,7 @@ NB cannot just use "-framework Cocoa" etc, theres some secret distinguishing fra
     set_target_properties(${tgt} PROPERTIES 
         INTERFACE_INCLUDE_DIRECTORIES "${OpticksGLFW_INCLUDE_DIR}" 
         INTERFACE_FIND_PACKAGE_NAME "OpticksGLFW MODULE REQUIRED"
-        INTERFACE_PKG_CONFIG_NAME "glfw3"
+        INTERFACE_PKG_CONFIG_NAME "OpticksGLFW"
     )
 
     ## Above target_properties INTERFACE_FIND_PACKAGE_NAME kludge tees up the arguments 

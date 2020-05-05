@@ -45,7 +45,7 @@ if(ImGui_FOUND AND NOT TARGET ${tgt})
     set_target_properties(${tgt} PROPERTIES 
         INTERFACE_INCLUDE_DIRECTORIES "${ImGui_INCLUDE_DIR}" 
         INTERFACE_FIND_PACKAGE_NAME "ImGui MODULE REQUIRED"
-        INTERFACE_PKG_CONFIG_NAME   "imgui"
+        INTERFACE_PKG_CONFIG_NAME   "ImGui"
     )
     ## Above target_properties INTERFACE_FIND_PACKAGE_NAME kludge tees up the arguments 
     ## to find_dependency in BCM generated exports 
