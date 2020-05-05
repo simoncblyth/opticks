@@ -472,7 +472,7 @@ imgui--(){
   return 0
 }
 
-imgui-pc-path(){ echo $(opticks-prefix)/externals/lib/pkgconfig/imgui.pc ; }
+imgui-pc-path(){ echo $(opticks-prefix)/externals/lib/pkgconfig/ImGui.pc ; }
 imgui-pc-(){ 
 
    oc-

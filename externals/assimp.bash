@@ -625,12 +625,18 @@ assimp-test(){
 
 assimp-pc () 
 { 
-    local msg="=== $FUNCNAME :";
-    local path="$OPTICKS_PREFIX/externals/lib/pkgconfig/assimp.pc";
-    if [ -f "$path" ]; then
-        $(opticks-home)/bin/pc.py $path --fix;
+    local msg="=== $FUNCNAME :"
+    local path="$OPTICKS_PREFIX/externals/lib/pkgconfig/assimp.pc"
+    local path2=$(dirname $path)/OpticksAssimp.pc
+
+    # when a new path is generated, does the fix and rename again
+    if [ -f "$path2" -a ! -f "$path" ]; then
+        echo $msg path2 already exists $path2 and there is a no $path 
+    elif [ -f "$path" ]; then
+        $(opticks-home)/bin/pc.py $path --fix
+        mv $path $path2
     else
-        echo $msg no such path $path;
+        echo $msg no such path $path 
     fi
 }
 

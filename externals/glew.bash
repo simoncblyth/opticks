@@ -125,7 +125,7 @@ EON
 }
 
 glew-make(){
-
+   local rc=0
    local target=${1:-install}
    local iwd=$PWD
    glew-scd
@@ -135,7 +135,10 @@ glew-make(){
       "Visual Studio 14 2015") glew-install-win ;; 
                             *) make $target GLEW_PREFIX=$(glew-prefix) GLEW_DEST=$(glew-prefix) LIBDIR=$(glew-prefix)/lib  ;;
    esac
+   rc=$?
+
    cd $iwd
+   return $rc
 }
 
 
@@ -164,9 +167,16 @@ glew-install-win(){
 }
 
 glew--() {
+    local msg="=== $FUNCNAME :"   
+
     glew-get
+    [ $? -ne 0 ] && echo $msg get FAIL && return 1
     glew-make install
+    [ $? -ne 0 ] && echo $msg install FAIL && return 2
     glew-pc
+    [ $? -ne 0 ] && echo $msg pc FAIL && return 3
+
+    return 0 
 }
 
 glew-cmake-not-working(){
@@ -202,12 +212,18 @@ glew-pc()
 { 
     local msg="=== $FUNCNAME :";
     local path="$OPTICKS_PREFIX/externals/lib/pkgconfig/glew.pc";
-    if [ -f "$path" ]; then
+    local path2="$OPTICKS_PREFIX/externals/lib/pkgconfig/OpticksGLEW.pc";
+    if [ -f "$path2" -a ! -f "$path" ]; then
+        echo $msg path2 already exists $path2 
+    elif [ -f "$path" ]; then
         $(opticks-home)/bin/pc.py $path --fix;
 
         if [ "$(uname)" == "Darwin" ]; then 
             perl -pi -e 's/^Requires: glu/#Requires: glu/' $path 
         fi 
+
+        mv $path $path2
+
     else
         echo $msg no such path $path;
     fi

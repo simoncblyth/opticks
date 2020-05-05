@@ -107,6 +107,17 @@ Get rid of imposters::
     simon:lib blyth$ rm -f libDualContouringSample.dylib libxerces-c-3.1.dylib libxerces-c.dylib libImplicitMesher.dylib libYoctoGL.dylib
 
 
+
+Avoided the below on Darwin by sleeping 2s between make and install
+---------------------------------------------------------------------
+
+::
+
+
+    error: /opt/local/bin/install_name_tool: no LC_RPATH load command with path: /usr/local/opticks/externals/ImplicitMesher/ImplicitMesher.build found in: /usr/local/opticks/lib/ImplicitMesherFTest (for architecture x86_64), required for specified option "-delete_rpath /usr/local/opticks/externals/ImplicitMesher/ImplicitMesher.build"
+
+
+
 EOU
 }
 

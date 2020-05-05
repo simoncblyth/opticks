@@ -791,7 +791,7 @@ g4-find-(){ find $(g4-dir) $* ; }
 g4-find-gdml(){ g4-find- -name '*.gdml' ; } 
 
 
-g4-pc-path(){ echo $(opticks-prefix)/externals/lib/pkgconfig/g4.pc ; }
+g4-pc-path(){ echo $(opticks-prefix)/externals/lib/pkgconfig/G4.pc ; }
 
 g4-libs--(){ cat << EOL
 G4Tree;G4FR;G4GMocren;G4visHepRep;G4RayTracer;G4VRML;G4vis_management;G4modeling;G4interfaces;G4persistency;G4analysis;G4error_propagation;G4readout;G4physicslists;G4run;G4event;G4tracking;G4parmodels;G4processes;G4digits_hits;G4track;G4particles;G4geometry;G4materials;G4graphics_reps;G4intercoms;G4global;G4clhep;G4zlib

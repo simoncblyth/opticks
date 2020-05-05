@@ -1118,7 +1118,7 @@ openmesh-base(){ echo $(opticks-prefix)/externals/openmesh ; }
 
 openmesh-prefix(){ echo $(opticks-prefix)/externals ; }
 openmesh-idir(){ echo $(openmesh-prefix) ; }
-openmesh-pc-path(){ echo $(opticks-prefix)/externals/lib/pkgconfig/openmesh.pc ; }
+openmesh-pc-path(){ echo $(opticks-prefix)/externals/lib/pkgconfig/OpenMesh.pc ; }
 
 openmesh-dir(){  echo $(openmesh-base)/$(openmesh-name) ; }
 openmesh-bdir(){ echo $(openmesh-base)/$(openmesh-name).build ; }

@@ -110,7 +110,7 @@ plog-env(){      opticks- ;  }
 plog-dir(){  echo $(opticks-prefix)/externals/plog ; }
 plog-idir(){ echo $(opticks-prefix)/externals/plog/include/plog ; }
 plog-ifold(){ echo $(opticks-prefix)/externals/plog/include ; }
-plog-pc-path(){ echo $(opticks-prefix)/externals/lib/pkgconfig/plog.pc ; }
+plog-pc-path(){ echo $(opticks-prefix)/externals/lib/pkgconfig/PLog.pc ; }
 
 plog-c(){    cd $(plog-dir); }
 plog-cd(){   cd $(plog-dir); }

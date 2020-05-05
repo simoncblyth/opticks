@@ -314,8 +314,13 @@ glfw-icd(){ cd $(glfw-idir); }
 glfw-pc(){ 
    local msg="=== $FUNCNAME :"
    local path="$OPTICKS_PREFIX/externals/lib/pkgconfig/glfw3.pc"
-   if [ -f "$path" ]; then  
+   local path2="$OPTICKS_PREFIX/externals/lib/pkgconfig/OpticksGLFW.pc"
+
+   if [ -f "$path2" -a ! -f "$path" ]; then  
+       echo $msg path2 exists already $path2
+   elif [ -f "$path" ]; then  
        $(opticks-home)/bin/pc.py $path --fix
+       mv $path $path2
    else
        echo $msg no such path $path
    fi  

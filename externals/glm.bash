@@ -168,7 +168,7 @@ glm-idir(){  echo $(glm-dir)/glm ; }
 glm-sdir(){  echo $(opticks-home)/graphics/glm ; }
 
 
-glm-pc-path(){ echo $(opticks-prefix)/externals/lib/pkgconfig/glm.pc ; }
+glm-pc-path(){ echo $(opticks-prefix)/externals/lib/pkgconfig/GLM.pc ; }
 
 
 glm-tdir(){ echo $(glm-dir)/_test ; }
