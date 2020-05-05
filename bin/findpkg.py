@@ -6,6 +6,19 @@ findpkg.py
 Combination of the old find_package.py and pkg_config.py 
 
 
+::
+
+    cm-pc set([u'OpticksXercesC', u'Geant4', u'Boost', u'OptiX', u'OpticksCUDA']) 
+
+        find with CMake but not pc :  all the preqs, that is kinda understandable : need to add pc for preqs   
+
+    pc-cm set(['ImplicitMesher', 'YoctoGL', 'DualContouringSample', 'CSGBSP']) 
+
+        find with pc but not CMake : HUH these should have been CMake found CONFIG-wise  
+
+
+
+
 """
 import os, re, logging, argparse, sys, json
 import shutil, tempfile, commands, stat, glob, fnmatch
@@ -259,7 +272,7 @@ def getlibdir(path):
 
 class Pkg(object):
     @classmethod
-    def Compare(cls, aa, bb ):
+    def Compare(cls, al, aa, bl, bb ):
 
         an = map(lambda _:_.name, aa) 
         bn = map(lambda _:_.name, bb) 
@@ -267,11 +280,11 @@ class Pkg(object):
         ab = set(an) - set(bn)
         ba = set(bn) - set(an)
       
-        print("a-b %s " % ab)
-        print("b-a %s " % ba)
+        print("%s-%s %s " % (al,bl,ab))
+        print("%s-%s %s " % (bl,al,ba))
 
         if len(aa) != len(bb):
-            log.fatal("Different num_pkgs %d %d " % (len(aa), len(bb)))
+            log.fatal("Different num_pkgs %s:%d %s:%d " % (al,len(aa), bl,len(bb)))
             return 1
         for i in range(len(aa)):
             a = aa[i]
@@ -335,7 +348,7 @@ class Find(object):
         log.debug(args)
         return args 
 
-    def __init__(self, bases):
+    def __init__(self, bases, args):
         ubases = []  
         for base in bases:
             if not base in ubases:
@@ -343,6 +356,7 @@ class Find(object):
             pass   
         pass
         self.bases = ubases
+        self.args = args
         self.pkgs = []
         self.find_config()
 
@@ -364,8 +378,8 @@ class FindPkgConfigPkgs(Find):
 
     CONFIG = re.compile("(?P<pfx>\S*?).pc$")
 
-    def __init__(self, bases):
-        Find.__init__(self, bases)
+    def __init__(self, bases, args):
+        Find.__init__(self, bases, args)
 
     def find_config(self):
         for base in self.bases:  
@@ -437,6 +451,10 @@ class FindCMakePkgDirect(Find):
     FIND = re.compile("^Find(?P<pkg>\S*)\.cmake$") 
     NAME = re.compile("# PROJECT_NAME\s*(?P<name>\S*)\s*$")
 
+    def __init__(self, bases, args):
+        Find.__init__(self, bases, args)
+
+
     def find_config_names(self):
         """
         find . -name '*-config.cmake'  -exec grep -H PROJECT_NAME {} \;
@@ -489,7 +507,6 @@ class FindCMakePkgDirect(Find):
         pass
         return names 
 
-
     def find_config(self):
         pass
         self.module_names = self.find_module_names()
@@ -497,6 +514,27 @@ class FindCMakePkgDirect(Find):
         self.other_config_names = self.find_other_config_names()
         self.all_names = self.module_names + self.config_names + self.other_config_names
 
+        if self.args.dump: 
+            self.dump_names()
+        pass
+
+        for name in self.all_names:
+            pkg = self.find_package(name)
+            if pkg["rc"] != 0:
+                print(" -------------- %s ------------- " % name )
+                print("FAILED TO FIND %s " % name)
+                print(pkg["out"])
+            else:
+                if self.args.dump:
+                    print(" -------------- %s ------------- " % name )
+                    print(pkg["out"])
+                    print(str(pkg))
+                pass
+                #print(repr(pkg))
+                pass
+                self.pkgs.append(pkg)
+            pass
+        pass
 
     def dump_names(self):
         print("\n".join(["---module_names---"]+self.module_names))
@@ -574,8 +612,8 @@ class FindCMakePkgs(Find):
     SUBS = ["lib", "lib64"]
 
 
-    def __init__(self, bases):
-        Find.__init__(self, bases)
+    def __init__(self, bases, args):
+        Find.__init__(self, bases, args)
 
     def find_config(self):
         """
@@ -647,12 +685,14 @@ class Main(object):
         args = Find.parse_args(__doc__, default_mode=default_mode)
         self.args = args
 
-        cm_bases = self.get_bases("CMAKE_PREFIX_PATH")
-        fcm = FindCMakePkgs(cm_bases)
+        #cm_bases = self.get_bases("CMAKE_PREFIX_PATH")
+        #fcm = FindCMakePkgs(cm_bases, args)
+
+        fcm = FindCMakePkgDirect([], args)  
         cm_pkgs = fcm.select(args)
 
         pc_bases = self.get_bases("PKG_CONFIG_PATH")
-        fpc = FindPkgConfigPkgs(pc_bases)
+        fpc = FindPkgConfigPkgs(pc_bases, args)
         pc_pkgs = fpc.select(args)
 
         rc = 0 
@@ -665,13 +705,15 @@ class Main(object):
             else:
                 assert 0 
             pass
+            log.debug("[dumping %d pkgs " % len(pkgs))
             self.dump(pkgs)
+            log.debug("]dumping %d pkgs " % len(pkgs))
         elif args.mode in ["cf", "compare"]:
             print("--- CMake")
             self.dump(cm_pkgs)
             print("--- pkg-config")
             self.dump(pc_pkgs)
-            rc = Pkg.Compare(cm_pkgs, pc_pkgs) 
+            rc = Pkg.Compare("cm",cm_pkgs, "pc",pc_pkgs) 
             print("compare RC %d " % rc)
         pass
         sys.exit(rc)
@@ -694,43 +736,15 @@ class Main(object):
                 elif args.name:
                     print(pkg.name)
                 else:
-                    print(pkg)
+                    print(repr(pkg))
                 pass
             pass
         pass
 
 
 
-if __name__ == 'x__main__':
+if __name__ == '__main__':
     Main(default_mode="compare")
   
-
-
-if __name__ == '__main__':
-    args = Find.parse_args(__doc__, default_mode="cmake_direct")
-    #print(args)
-    fd = FindCMakePkgDirect([])  
-    if args.dump: 
-        fd.dump_names()
-    pass
-    names = args.names if len(args.names) > 0 else fd.all_names
-    for name in names:
-        pkg = fd.find_package(name)
-        if pkg["rc"] != 0:
-            print(" -------------- %s ------------- " % name )
-            print("FAILED TO FIND %s " % name)
-            print(pkg["out"])
-        else:
-            if args.dump:
-                print(" -------------- %s ------------- " % name )
-                print(pkg["out"])
-                print(str(pkg))
-            pass
-            print(repr(pkg))
-        pass
-    pass
-
-
-
 
 
