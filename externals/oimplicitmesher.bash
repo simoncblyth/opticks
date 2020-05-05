@@ -137,6 +137,8 @@ oimplicitmesher-fullwipe()
     local iwd=$PWD
     cd $(opticks-prefix)
 
+    rm -rf externals/ImplicitMesher/ImplicitMesher.build
+
     rm -f  externals/lib/libImplicitMesher.*
     rm -rf externals/include/ImplicitMesher
     rm -rf externals/lib/cmake/implicitmesher
@@ -183,6 +185,7 @@ oimplicitmesher-get(){
 oimplicitmesher-cmake()
 {
     local iwd=$PWD
+    local rc
     local bdir=$(oimplicitmesher-bdir)
 
     mkdir -p $bdir
@@ -196,13 +199,14 @@ oimplicitmesher-cmake()
        -DOPTICKS_PREFIX=$(opticks-prefix) \
        -DCMAKE_MODULE_PATH=$(opticks-home)/cmake/Modules \
        -DCMAKE_PREFIX_PATH=$(opticks-prefix)/externals \
-       -DCMAKE_BUILD_TYPE=Debug \
+       -DCMAKE_BUILD_TYPE=$(opticks-buildtype) \
        -DCMAKE_INSTALL_PREFIX=$(opticks-prefix) \
       $* \
        $(oimplicitmesher-dir)
 
-
+    rc=$?
     cd $iwd
+    return $rc
 }
 
 oimplicitmesher-cmake-notes(){ cat << EON
@@ -224,19 +228,34 @@ EON
 oimplicitmesher-make()
 {
     local iwd=$PWD
+    local rc
     oimplicitmesher-bcd
-    cmake --build . --config Release --target ${1:-install}
+    cmake --build . --config $(opticks-buildtype) --target ${1:-install}
+
+    #make ${1:-install}
+
+    rc=$?
     cd $iwd
+    return $rc
 }
 
 oimplicitmesher-pc(){ echo $FUNCNAME placeholder ; }
 
 oimplicitmesher--()
 {
+   local rc
    oimplicitmesher-get
+   rc=$?
+   [ ! $rc -eq 0 ] && return $rc
    oimplicitmesher-cmake
+   rc=$?
+   [ ! $rc -eq 0 ] && return $rc
    oimplicitmesher-make install
+   rc=$?
+   [ ! $rc -eq 0 ] && return $rc
    oimplicitmesher-pc
+   rc=$?
+   return $rc
 }
 
 oimplicitmesher-t()
