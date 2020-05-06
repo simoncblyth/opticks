@@ -543,6 +543,7 @@ opticks-preqs(){
    cat <<  EOP
 cuda
 optix
+boost
 EOP
 }
 
@@ -604,6 +605,26 @@ opticks-externals-url(){     echo $FUNCNAME ; opticks-externals | opticks-ext-ur
 opticks-externals-dist(){    echo $FUNCNAME ; opticks-externals | opticks-ext-dist ; }
 opticks-externals-dir(){     echo $FUNCNAME ; opticks-externals | opticks-ext-dir ; }
 opticks-externals-status(){  echo $FUNCNAME ; opticks-externals | opticks-ext-status ; }
+
+
+
+opticks-preqs-config(){ 
+    echo $FUNCNAME 
+    local msg="=== $FUNCNAME :"
+    local preqs=$(opticks-preqs) 
+    local preq
+    for preq in $preqs ; do 
+
+        printf "\n\n\n############## %s ###############\n\n\n" $preq
+
+        $preq-
+        $preq-pc
+ 
+        rc=$?
+        [ $rc -ne 0 ] && echo $msg RC $rc from preq $preq : ABORTING && return $rc
+    done
+    return 0 
+}
 
 
 
@@ -1168,7 +1189,9 @@ opticks-full()
         echo $msg installing the below externals into $(opticks-prefix)/externals
         opticks-externals 
         opticks-externals-install
-
+        echo $msg config-ing the below preqs 
+        opticks-preqs
+        opticks-preqs-config 
     else
         echo $msg using preexisting externals from $(opticks-prefix)/externals
     fi 

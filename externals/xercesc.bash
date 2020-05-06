@@ -270,8 +270,19 @@ xercesc-make()
 
 
 xercesc-pc(){ 
-   oc-
-   oc-pcfix xerces-c
+   local msg="=== $FUNCNAME :"
+   local paths="$OPTICKS_PREFIX/externals/lib/pkgconfig/xerces-c.pc /opt/local/lib/pkgconfig/xerces-c.pc"
+   local path2="$OPTICKS_PREFIX/externals/lib/pkgconfig/OpticksXercesC.pc"
+   local path
+   for path in $paths ; do 
+       if [ -f "$path" -a ! -f "$path2" ]; then
+           echo $msg $path to $path2
+           cp $path $path2  
+           # no-fixing when comes from macports 
+       elif [ -f "$path2" ]; then 
+           echo $msg $path $path2 exists already
+       fi 
+   done
 }
 
 xercesc--()
@@ -280,15 +291,20 @@ xercesc--()
 
    xercesc-info
 
-   [ "$(uname -s)" == "Darwin" ] && xercesc-darwin && return 0
+   if [ "$(uname)" == "Darwin" ]; then 
 
-   xercesc-get
-   [ $? -ne 0 ] && echo $msg get FAIL && return 1
+       xercesc-darwin 
 
-   xercesc-configure
-   [ $? -ne 0 ] && echo $msg configure FAIL && return 2
-   xercesc-make
-   [ $? -ne 0 ] && echo $msg make FAIL && return 3
+   elif [ "$(uname)" == "Linux" ]; then 
+   
+       xercesc-get
+       [ $? -ne 0 ] && echo $msg get FAIL && return 1
+       xercesc-configure
+       [ $? -ne 0 ] && echo $msg configure FAIL && return 2
+       xercesc-make
+       [ $? -ne 0 ] && echo $msg make FAIL && return 3
+   fi 
+
    xercesc-pc
    [ $? -ne 0 ] && echo $msg pc FAIL && return 4
 
@@ -301,8 +317,6 @@ $FUNCNAME : on OSX use macports xercesc
 
 EOD
 }
-
-
 
 xercesc-setup(){ cat << EOS
 # $FUNCNAME

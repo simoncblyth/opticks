@@ -777,20 +777,25 @@ $FUNCNAME
 EOI
 }
 
-optix-pc-path(){ echo $(opticks-prefix)/externals/lib/pkgconfig/optix.pc ; }
+
+
+optix-prefix-default(){ echo $(opticks-prefix)/externals/OptiX ; }
+optix-prefix(){ echo ${OPTICKS_OPTIX_PREFIX:-$(optix-prefix-default)} ; }
+
+optix-pc-path(){ echo $(opticks-prefix)/externals/lib/pkgconfig/OptiX.pc ; }
 optix-pc-(){ 
 
-  local prefix=$(opticks-prefix)
-  local includedir=${prefix}/externals/OptiX/include
-  local libdir=${prefix}/externals/OptiX/lib64
+  local includedir=$(optix-prefix)/include
+  local libdir=$(optix-prefix)/lib64
 
   cat << EOP
 
 libdir=$libdir
+includedir=$includedir
 
 ## $FUNCNAME
-## NB no variables, as this prevents --define-prefix from having any effect 
-## as there is no pc prefix variable. This is appropriate with OptiX and CUDA 
+## NB no prefix varianble, as this prevents --define-prefix from having any effect 
+## This is appropriate with OptiX and CUDA 
 ## as these are "system install", ie not something that is distributed OR relocatable.   
 ##
 
@@ -798,7 +803,7 @@ Name: OptiX
 Description: Ray Tracing Engine
 Version:  $(optix-version)
 Libs: -L\${libdir} -loptix -loptixu -loptix_prime -lstdc++
-Cflags: -I${includedir}
+Cflags: -I\${includedir}
 Requires: cuda
 
 EOP

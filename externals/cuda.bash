@@ -1120,7 +1120,7 @@ cuda-uninstall-()
 }
 
 
-cuda-prefix(){       echo $(cuda-dir) ; }
+#cuda-prefix(){       echo $(cuda-dir) ; }
 cuda-edir(){         echo $(opticks-home)/cuda ; }
 cuda-idir(){         echo $(cuda-dir)/include ; }
 
@@ -1303,8 +1303,8 @@ cuda-deviceQuery(){ cuda-samples-bin-run deviceQuery $* ; }
 
 
 
-
-cuda-prefix(){ echo /usr/local/cuda ; }
+cuda-prefix-default(){ echo /usr/local/cuda ; }
+cuda-prefix(){ echo ${OPTICKS_CUDA_PREFIX:-$(cuda-prefix-default)} ; }
 cuda-libdir-(){ cat << EOD
 $(cuda-prefix)/lib64
 $(cuda-prefix)/lib
@@ -1318,7 +1318,7 @@ cuda-libdir(){
 }
 
 
-cuda-pc-path(){ echo $(opticks-prefix)/externals/lib/pkgconfig/cuda.pc ; }
+cuda-pc-path(){ echo $(opticks-prefix)/externals/lib/pkgconfig/OpticksCUDA.pc ; }
 cuda-pc-(){ 
   local prefix=$(cuda-prefix)
   local includedir=${prefix}/include
@@ -1328,16 +1328,17 @@ cuda-pc-(){
 
 ## $FUNCNAME
 ## NB no prefix variable, as this prevents --define-prefix from having any effect 
-## as there is no prefix variable. This is appropriate with CUDA as it is 
+## This is appropriate with CUDA as it is 
 ## a system install, not something that is distributed OR relocatable.   
 
+includedir=$includedir
 libdir=$libdir
 
 Name: CUDA
 Description: 
 Version: 9.1 
 Libs: -L\${libdir} -lcudart -lcurand
-Cflags: -I${includedir}
+Cflags: -I\${includedir}
 
 EOP
 }

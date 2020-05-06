@@ -810,7 +810,7 @@ boost-libs(){
 
 
 
-boost-pc-path(){ echo $(boost-prefix)/lib/pkgconfig/boost.pc ; }
+boost-pc-path(){ echo $(boost-prefix)/lib/pkgconfig/Boost.pc ; }
 boost-pc-() 
 { 
    ## hmm need to branch depending on system boost or self-installed boost 

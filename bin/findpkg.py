@@ -6,19 +6,6 @@ findpkg.py
 Combination of the old find_package.py and pkg_config.py 
 
 
-::
-
-    cm-pc set([u'OpticksXercesC', u'Geant4', u'Boost', u'OptiX', u'OpticksCUDA']) 
-
-        find with CMake but not pc :  all the preqs, that is kinda understandable : need to add pc for preqs   
-
-    pc-cm set(['ImplicitMesher', 'YoctoGL', 'DualContouringSample', 'CSGBSP']) 
-
-        find with pc but not CMake : HUH these should have been CMake found CONFIG-wise  
-
-
-
-
 """
 import os, re, logging, argparse, sys, json
 import shutil, tempfile, commands, stat, glob, fnmatch
@@ -35,8 +22,6 @@ expand_ = lambda path:os.path.expandvars(os.path.expanduser(path))
 json_load_ = lambda path:json.load(file(expand_(path)))
 json_save_ = lambda path, d:json.dump(d, file(makedirs_(expand_(path)),"w"))
 json_save_pretty_ = lambda path, d:json.dump(d, file(makedirs_(expand_(path)),"w"), sort_keys=True, indent=4, separators=(',', ': '))
-
-
 
 
 log = logging.getLogger(__name__)
@@ -180,7 +165,7 @@ class DirectPkg(odict):
         return "\n".join(["%-40s = %s" % tuple(kv) for kv in self.items()])
 
     def __repr__(self):
-        return "%-20s : %-60s : %s  " % (self.name, self.includedir, self.libdir )  
+        return repr_pkg(self)
 
     @classmethod
     def Path(cls, name):
@@ -248,6 +233,9 @@ class DirectPkg(odict):
 
 
 
+
+
+
 def getlibdir(path):
     """
     :return libdir: parent directory of path ending with lib or lib64 or blank if none found 
@@ -270,9 +258,14 @@ def getlibdir(path):
     return "/".join(elem[:jlib+1]) if jlib > -1 else ""  
 
 
-class Pkg(object):
-    @classmethod
-    def Compare(cls, al, aa, bl, bb ):
+
+
+def repr_pkg(pkg):
+    return "%-30s : %-50s : %-50s " % (pkg.name, pkg.includedir, pkg.libdir)
+
+
+class Compare(object):
+    def __init__(self, al, aa, bl, bb ):
 
         an = map(lambda _:_.name, aa) 
         bn = map(lambda _:_.name, bb) 
@@ -286,38 +279,110 @@ class Pkg(object):
         if len(aa) != len(bb):
             log.fatal("Different num_pkgs %s:%d %s:%d " % (al,len(aa), bl,len(bb)))
             return 1
-        for i in range(len(aa)):
+        pass
+
+        if len(ab) != 0 or len(ba) != 0:
+            log.fatal("Different pkg names found by cm and pc " )
+            return 2
+        pass
+
+        bb = sorted(bb, key=lambda pkg:an.index(pkg.name)) # sort bb into the same order as aa
+
+        n_all = len(aa)
+        n_dif = 0 
+        for i in range(n_all):
             a = aa[i]
             b = bb[i]
-            if not a == b:
-                log.fatal(" a and b are not equal\n%s\n%s" % (repr(a), repr(b)))
-                return 2
+            df = Pkg.Equal(a,b)
+            if len(df) > 0:
+                log.fatal(" a and b differ %s\n%s:%s\n%s:%s" % (repr(df),al,repr(a), bl,repr(b)))
+                n_dif += 1 
+            else:
+                pass
+                #log.info(" a and b are equal\n%s:%s\n%s:%s" % (al,repr(a), bl,repr(b)))
             pass
-        return 0
+        pass
+
+        self.n_all = n_all
+        self.n_dif = n_dif
+
+    def __repr__(self):
+        return " %d / %d differences " % (self.n_dif, self.n_all)
+        
 
 
-    def __init__(self, path, name):
-        self.path = path
-        self.name = name
 
-        libdir = getlibdir(path)   
-        prefix = os.path.dirname(libdir)
-        includedir = os.path.join(prefix, "include")
-    
-        self.libdir = libdir
-        self.prefix = prefix
-        self.includedir = includedir
+
+class Pkg(odict):
+
+    VAR = re.compile("^(?P<var>\S*)=(?P<val>.*)$")
+
+    @classmethod 
+    def CreateFromPC(cls, path):
+
+        name = os.path.basename(path)
+        assert name.endswith(".pc")
+        name = name[:-3]
+
+        d = {}
+        d["path"] = path 
+        d["name"] = name
+
+        for line in file(path, "r").readlines():
+            m = cls.VAR.match(line)
+            if not m: continue
+            var = m.groupdict()["var"]
+            val = m.groupdict()["val"]
+            d[var] = val 
+            d[var+"_"] = val   # record original without interpolation
+        pass
+
+        # interpolate the variables 
+        for k,v in d.items():
+            if k.endswith("_"): continue
+            d[k] = v.replace("}",")s").replace("{","(").replace("$","%") % d
+        pass
+        return cls(d)
+
+    def _get_libdir(self):
+        return self.get("libdir","")
+    def _get_includedir(self):
+        return self.get("includedir","")
+    def _get_prefix(self):
+        return self.get("prefix","")
+
+    prefix = property(_get_prefix)
+    includedir = property(_get_includedir)
+    libdir = property(_get_libdir)
+
+    path = property(lambda self:self["path"])
+    name = property(lambda self:self["name"])
 
     def __eq__(self, other): 
         """
         NB the path is excluded, as need pc and cmake Pkgs to be equable
         """
-        if not isinstance(other, Pkg):
-            return NotImplemented
+        #if not isinstance(other, Pkg):
+        #    return NotImplemented
         return self.name == other.name and self.libdir == other.libdir and self.prefix == other.prefix and self.includedir == other.includedir 
-    
+   
+    @classmethod
+    def Equal(cls, a, b):
+        atts = "name libdir includedir".split()
+        df = []
+        for att in atts:
+            if getattr(a, att) != getattr(b, att):
+                df.append(att)
+            pass
+        pass
+        if len(df) > 0:
+            log.debug(repr(df))
+        pass
+        return df 
+
+ 
     def __repr__(self):
-        return "%-30s : %s " % (self.name, self.path)
+        return repr_pkg(self)
 
 
 class Find(object):
@@ -376,7 +441,7 @@ class Find(object):
 
 class FindPkgConfigPkgs(Find):
 
-    CONFIG = re.compile("(?P<pfx>\S*?).pc$")
+    CONFIG = re.compile("(?P<pcname>\S*?).pc$")
 
     def __init__(self, bases, args):
         Find.__init__(self, bases, args)
@@ -401,8 +466,10 @@ class FindPkgConfigPkgs(Find):
             if not os.path.isdir(path):
                 m = self.CONFIG.match(name)
                 if not m: continue
-                pfx = m.groupdict()['pfx']  
-                pkg = Pkg(path, pfx)
+                pcname = m.groupdict()['pcname']  
+                pkg = Pkg.CreateFromPC(path)
+                assert pkg.name == pcname, (pkg.name, pcname) 
+
                 self.pkgs.append(pkg) 
             pass
         pass
@@ -460,22 +527,34 @@ class FindCMakePkgDirect(Find):
         find . -name '*-config.cmake'  -exec grep -H PROJECT_NAME {} \;
         find $OPTICKS_PREFIX/externals/lib -name '*Config.cmake'
         """
-        paths = glob.glob(os.path.expandvars("$OPTICKS_PREFIX/lib/cmake/*/*-config.cmake"))
+
+        paths = []
+        for prefix in os.environ["CMAKE_PREFIX_PATH"].split(":"):
+            ppaths = glob.glob("%s/lib/cmake/*/*-config.cmake" % prefix)
+            paths += ppaths
+            log.debug(" ppaths %2d prefix %s " % (len(ppaths), prefix))
+        pass
+
         names = []
         for path in paths:
             cmd = "cat %s | grep ^#\ PROJECT_NAME -" % path 
             rc,out = commands.getstatusoutput(cmd)
+            name = None
             for line in out.split("\n"):
                 m = self.NAME.match(line)
                 if not m: continue
                 name = m.groupdict()["name"]
+            if not name is None:
+                log.debug("parsed name %s from path %s " % (name, path))
                 names.append(name)
+            else:
+                log.debug("failed to parse name from path %s " % path )
             pass
         pass
         return names
 
     def find_other_config_names(self): 
-        skip_other_config_names=['glfw3', 'GLFW3']
+        skip_other_config_names=['glfw3', 'GLFW3', 'Geant4']  # these come in under other names: OpticksGLFW, G4 
         names = []
         for root, dirnames, filenames in os.walk(os.path.expandvars("$OPTICKS_PREFIX/externals/lib")):
             fnames = fnmatch.filter(filenames, '*Config.cmake')
@@ -566,7 +645,7 @@ class FindCMakePkgDirect(Find):
         rc = 0 
         d = dict()
         d["name"] = name
-        d["args"] = vars(args)  # cannot json serialize a Namespace
+        d["args"] = vars(self.args)  # cannot json serialize a Namespace
 
         with TemporaryDirectory() as tmpdir:
             cm = CMakeLists(pkg=name, opts=opts)
@@ -713,8 +792,8 @@ class Main(object):
             self.dump(cm_pkgs)
             print("--- pkg-config")
             self.dump(pc_pkgs)
-            rc = Pkg.Compare("cm",cm_pkgs, "pc",pc_pkgs) 
-            print("compare RC %d " % rc)
+            cf = Compare("cm",cm_pkgs, "pc",pc_pkgs) 
+            print("compare : %s " % repr(cf))
         pass
         sys.exit(rc)
 
