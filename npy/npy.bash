@@ -81,8 +81,8 @@ Lots of these warnings for G4 code in cfg4-
 
 
 
-Octree errors
---------------
+Octree link errors : FIXED by odcs-update indicating cause to be GLM version shear between odcs external and Opticks
+----------------------------------------------------------------------------------------------------------------------
 
 ::
 

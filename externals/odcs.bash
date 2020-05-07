@@ -50,6 +50,7 @@ odcs-bcd(){ cd $(odcs-bdir) ; }
 
 odcs-fullwipe()
 {
+    rm -rf $(opticks-prefix)/externals/DualContouringSample/DualContouringSample.build
     rm -rf $(opticks-prefix)/externals/DualContouringSample
     rm -f  $(opticks-prefix)/externals/lib/libDualContouringSample.*
     rm -rf $(opticks-prefix)/externals/include/DualContouringSample
@@ -103,6 +104,11 @@ odcs-make()
 
 
 odcs-pc(){ echo $FUNCNAME placeholder ; }
+
+odcs-update(){
+   odcs-fullwipe
+   odcs--
+}
 
 
 odcs--()
