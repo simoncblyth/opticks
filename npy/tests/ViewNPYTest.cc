@@ -44,7 +44,7 @@ struct test_ViewNPY
 
 int main()
 {
-    test_ViewNPY tvn();
+    test_ViewNPY tvn ;
 
     return 0 ;
 }

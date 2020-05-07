@@ -34,7 +34,7 @@ add_executable( ${name} ${_generated_OBJ_files} ${_generated_PTX_files} ${SOURCE
 
 target_link_libraries(${name} 
     PUBLIC 
-       Opticks::CUDA
+       Opticks::OpticksCUDA
        Opticks::OKConf 
        Opticks::SysRap 
        Opticks::OptiXRap 

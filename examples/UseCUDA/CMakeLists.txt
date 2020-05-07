@@ -28,7 +28,7 @@ CUDA_ADD_LIBRARY( ${name} ${SOURCES} )
 get_target_property(CALILL ${name} INTERFACE_LINK_LIBRARIES )
 message(STATUS "${name} CAL.INTERFACE_LINK_LIBRARIES.bef : ${CALILL} ") 
 
-set_target_properties(${name}  PROPERTIES INTERFACE_LINK_LIBRARIES "Opticks::CUDA" )
+set_target_properties(${name}  PROPERTIES INTERFACE_LINK_LIBRARIES "Opticks::OpticksCUDA" )
 
 get_target_property(CALILL ${name} INTERFACE_LINK_LIBRARIES )
 message(STATUS "${name} CAL.INTERFACE_LINK_LIBRARIES.aft : ${CALILL} ") 

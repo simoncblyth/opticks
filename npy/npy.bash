@@ -80,6 +80,28 @@ Lots of these warnings for G4 code in cfg4-
     [ 72%] Linking CXX executable NOpenMeshFindTest
 
 
+
+Octree errors
+--------------
+
+::
+
+    [  0%] Linking CXX shared library libNPY.dylib
+    Undefined symbols for architecture x86_64:
+      "OctreeNode::GenerateVertexIndices(OctreeNode*, std::__1::vector<glm::vec<3, float, (glm::qualifier)0>, std::__1::allocator<glm::vec<3, float, (glm::qualifier)0> > >&, std::__1::vector<glm::vec<3, float, (glm::qualifier)0>, std::__1::allocator<glm::vec<3, float, (glm::qualifier)0> > >&, FGLite*)", referenced from:
+          NManager<OctreeNode>::generateMeshFromOctree() in NOctools.cpp.o
+      "OctreeNode::Corners(glm::vec<3, int, (glm::qualifier)0> const&, FGLite*, int, int)", referenced from:
+          NConstructor<OctreeNode>::corner_scan(char const*, int, int) const in NOctools.cpp.o
+          NConstructor<OctreeNode>::create_nominal() in NOctools.cpp.o
+          NConstructor<OctreeNode>::create_coarse_nominal() in NOctools.cpp.o
+      "OctreeNode::MakeLeaf(glm::vec<3, int, (glm::qualifier)0> const&, int, FGLite*, int)", referenced from:
+          NConstructor<OctreeNode>::create_nominal() in NOctools.cpp.o
+          NConstructor<OctreeNode>::create_coarse_nominal() in NOctools.cpp.o
+    ld: symbol(s) not found for architecture x86_64
+    clang: error: linker command failed with exit code 1 (use -v to see invocation)
+
+
+
 Dependencies
 ------------
 

@@ -102,11 +102,11 @@ oe-export-setup-artificial-env ()
 
 oe-find()
 {
-   local pkg=${1:-Geant4}
+   local pkg=${1:-G4}
    echo pkg_config.py $pkg
         pkg_config.py $pkg
-   echo find_package.py $pkg
-        find_package.py $pkg
+   echo find_package.py $pkg --nocache
+        find_package.py $pkg --nocache
 
 }
 

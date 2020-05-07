@@ -804,7 +804,7 @@ Description: Ray Tracing Engine
 Version:  $(optix-version)
 Libs: -L\${libdir} -loptix -loptixu -loptix_prime -lstdc++
 Cflags: -I\${includedir}
-Requires: cuda
+Requires: OpticksCUDA
 
 EOP
 

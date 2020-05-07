@@ -41,6 +41,6 @@ which $name
 $name
 
 #gdb $name
-# segmenting at the launch with 50001
+# segmenting at the launch with OptiX 50001
 
 

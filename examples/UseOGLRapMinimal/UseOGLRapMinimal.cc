@@ -70,7 +70,7 @@ int main(int argc, char** argv)
     // Scene::hookupRenderers
     m_axis_renderer->setComposition( m_composition ) ; 
 
-    glm::vec4 ce(0,0,0, 1000.); 
+    glm::vec4 ce(0.f,0.f,0.f, 1000.f); 
     bool autocam = true ; 
     m_composition->setCenterExtent( ce, autocam );  
     m_composition->update();

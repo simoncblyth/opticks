@@ -1,3 +1,4 @@
+
 #[=[
 # https://stackoverflow.com/questions/32756195/recursive-list-of-link-libraries-in-cmake
 
@@ -7,8 +8,13 @@ However not sure that is so desirable.
 
 See examples/UseG4OK for usage of this.
 
-#]=]
 
+Another way : Custom target ECHO linker language, LinkLine approach
+
+   https://stackoverflow.com/questions/34165365/retrieve-all-link-flags-in-cmake
+
+
+#]=]
 
 function(dump_target TARGET)
     get_target_property(TYPE ${TARGET} TYPE)
@@ -139,6 +145,15 @@ For PROP LOCATION getting::
     -- traverse_out.non-target:-Wl,-rpath,/usr/local/cuda/lib
     -- traverse_out.non-target:/usr/local/cuda/lib/libcudart_static.a
     -- traverse_out.non-target:-Wl,-rpath,/usr/local/cuda/lib
+
+
+Checking the TYPE of the target and excluding INTERFACE_LIBRARY
+targets is necessary to avoid whitelisting errors. 
+
+Now think this whitelisting is just CMake obnoxiously imposing that:
+
+* **INTERFACE libs do not have LOCATION properties**
+
 
 #]=]
 

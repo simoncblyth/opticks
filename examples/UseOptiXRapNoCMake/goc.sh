@@ -28,7 +28,10 @@ EON
 }
 
 env 
+
 source $OPTICKS_PREFIX/bin/opticks-setup.sh 
+[ $? -ne 0 ] && echo opticks-setup.sh ERROR : probably running from dirty shell  && exit 
+
 opticks-setup-info
 opticks-goc 
 

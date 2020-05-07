@@ -552,7 +552,7 @@ om-cmake()
        -DCMAKE_MODULE_PATH=$(om-home)/cmake/Modules 
 
     #   -DCMAKE_PREFIX_PATH=$(om-prefix)/externals \
-    #  doing this overrides the envvar, see om-export
+    #  doing this overrides the envvar, see oe-
  
 
     rc=$?

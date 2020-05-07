@@ -1171,7 +1171,7 @@ unsigned GSurfaceLib::getNumSensorSurface() const
     unsigned count = 0 ; 
     for(unsigned index=0 ; index < getNumSurfaces() ; index++)
     {
-        if(isSensorSurface(index)) ;
+        if(isSensorSurface(index)) 
         {
             count += 1 ; 
         } 

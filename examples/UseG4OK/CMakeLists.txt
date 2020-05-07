@@ -39,7 +39,7 @@ set(PROP "LOCATION")
 set(OUT_LIST)
 traverse_out(OUT_LIST ${PROP} Opticks::G4OK)
 foreach(OUT ${OUT_LIST})
-   message(STATUS ".... traverse_out.OUT: ${OUT} " )
+   message(STATUS ".... traverse_out.${PROP} : ${OUT} " )
 endforeach()
 
 

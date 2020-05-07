@@ -28,7 +28,12 @@ CUDA_WRAP_SRCS( ${name} OBJ _generated_OBJ_files ${SOURCES} )
 
 add_executable( ${name} ${_generated_OBJ_files} ${_generated_PTX_files} ${SOURCES} )
 
-target_link_libraries(${name} PUBLIC Opticks::OptiX Opticks::OKConf Opticks::SysRap Opticks::CUDA )
+target_link_libraries(${name} PUBLIC 
+   Opticks::OptiX 
+   Opticks::OKConf 
+   Opticks::SysRap 
+   Opticks::OpticksCUDA 
+)
 
 install(FILES ${_generated_PTX_files} DESTINATION installcache/PTX)
 install(TARGETS ${name}  DESTINATION lib)

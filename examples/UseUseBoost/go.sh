@@ -21,7 +21,6 @@
 
 opticks-
 opticks-id
-opticks-boost-info
 
 
 sdir=$(pwd)
@@ -31,19 +30,13 @@ bdir=/tmp/$USER/$name/build
 rm   -rf $bdir && mkdir -p $bdir && cd $bdir && pwd 
 
 om-
-om-export
-om-export-info
+om-cmake $sdir
 
-find_package.py Boost 
-libdir=$(find_package.py Boost --libdir --first) 
-echo find_package.py libdir : $libdir
-
-
-cmake $sdir \
-    -DCMAKE_BUILD_TYPE=Debug \
-    -DCMAKE_INSTALL_PREFIX=$(opticks-prefix) \
-    -DCMAKE_MODULE_PATH=$(opticks-home)/cmake/Modules \
-    -DOPTICKS_PREFIX=$(opticks-prefix)
+#cmake $sdir \
+#    -DCMAKE_BUILD_TYPE=Debug \
+#    -DCMAKE_INSTALL_PREFIX=$(opticks-prefix) \
+#    -DCMAKE_MODULE_PATH=$(opticks-home)/cmake/Modules \
+#    -DOPTICKS_PREFIX=$(opticks-prefix)
 
 
 
@@ -58,9 +51,7 @@ if [ "$(uname)" == "Linux" ]; then
    
 elif [ "$(uname)" == "Darwin" ]; then 
     otool -L $exe
-    DYLD_LIBRARY_PATH=$libdir $exe
-    ## hmm this depends on the CMAKE_PREFIX_PATH in force
-    ## forced to do this due to boost RPATH not being properly set 
+    $exe
 fi 
 
 

@@ -16,7 +16,7 @@ find_package(YoctoGL REQUIRED CONFIG)
 
 ## Optional targets
 find_package(ImplicitMesher CONFIG) 
-find_package(DualContouringSample CONFIG) 
+#find_package(DualContouringSample CONFIG) 
 
 # recently rationalized ocsgbsp- has symbol visibility issues, so for now must skip NCSGBSP
 #find_package(CSGBSP CONFIG) 

@@ -19,8 +19,11 @@
 ##
 
 
+echo "opticks-"
 opticks-
+echo "oe-"
 oe-
+echo "om-"
 om-
 
 sdir=$(pwd)
