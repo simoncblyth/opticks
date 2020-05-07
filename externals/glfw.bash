@@ -338,6 +338,7 @@ glfw-pc(){
 
 #glfw-version(){ echo 3.1.1 ; }
 glfw-version(){ echo 3.3.2 ; }
+glfw-version-grep(){ grep "^#define GLFW_VERSION" $(glfw-dir)/include/GLFW/glfw3.h ; }
 
 glfw-name(){ echo glfw-$(glfw-version) ; }
 glfw-url(){  

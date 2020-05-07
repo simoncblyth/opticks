@@ -149,7 +149,7 @@ EPY
 
 
 
-om-cmake-generator(){ echo ${OPTICKS_CMAKE_GENERATOR:-Unix Makefiles} ; }
+om-cmake-generator(){ echo $(opticks-cmake-generator) ; }
 om-bdir(){  
    local gen=$(om-cmake-generator)
    case $gen in 
@@ -524,13 +524,11 @@ om-cmake-okconf()
        -DOPTICKS_PREFIX=$(om-prefix) \
        -DCMAKE_INSTALL_PREFIX=$(om-prefix) \
        -DCMAKE_MODULE_PATH=$(om-home)/cmake/Modules \
-       -DOptiX_INSTALL_DIR=$(opticks-optix-install-dir) \
+       -DOptiX_INSTALL_DIR=$(opticks-optix-prefix) \
        -DCOMPUTE_CAPABILITY=$(opticks-compute-capability)
 
+    # NB not pinning CMAKE_PREFIX_PATH so can find foreigners, see oe-
     #  -DCMAKE_PREFIX_PATH=$(om-prefix)/externals \
-    #  doing this overrides the envvar  
-    #
-    # TODO: cmake scripts so prefix resolution can find optix ?
 
     rc=$?
     return $rc
@@ -551,8 +549,7 @@ om-cmake()
        -DCMAKE_INSTALL_PREFIX=$(om-prefix) \
        -DCMAKE_MODULE_PATH=$(om-home)/cmake/Modules 
 
-    #   -DCMAKE_PREFIX_PATH=$(om-prefix)/externals \
-    #  doing this overrides the envvar, see oe-
+    # NB not pinning CMAKE_PREFIX_PATH so can find foreigners, see oe-
  
 
     rc=$?
@@ -568,8 +565,8 @@ $FUNCNAME
    opticks-buildtype          : $(opticks-buildtype)
    om-prefix                  : $(om-prefix)
 
-   opticks-optix-install-dir  : $(opticks-optix-install-dir)
-   OPTICKS_OPTIX_INSTALL_DIR  : $OPTICKS_OPTIX_INSTALL_DIR
+   opticks-optix-prefix       : $(opticks-optix-prefix)
+   OPTICKS_OPTIX_PREFIX       : $OPTICKS_OPTIX_PREFIX
  
    opticks-compute-capability : $(opticks-compute-capability)
    OPTICKS_COMPUTE_CAPABILITY : $OPTICKS_COMPUTE_CAPABILITY 

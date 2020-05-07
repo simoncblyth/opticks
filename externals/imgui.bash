@@ -415,20 +415,24 @@ imgui-wipe(){
 
 imgui-cmake(){
   local iwd=$PWD
+  local rc=0
   local bdir=$(imgui-bdir)
   mkdir -p $bdir
   imgui-bcd
 
-  [ -f CMakeCache.txt ] && echo $msg already configured : imgui-configure to reconfigure  && return 
+  #[ -f CMakeCache.txt ] && echo $msg already configured : imgui-configure to reconfigure  && return 
   cmake \
       -G "$(opticks-cmake-generator)" \
       -DOPTICKS_PREFIX=$(opticks-prefix) \
       -DCMAKE_INSTALL_PREFIX=$(imgui-prefix) \
       -DCMAKE_MODULE_PATH=$(opticks-home)/cmake/Modules \
       -DCMAKE_PREFIX_PATH=$(opticks-prefix)/externals \
-      -DCMAKE_BUILD_TYPE=Debug \
+      -DCMAKE_BUILD_TYPE=$(opticks-buildtype) \
       $(imgui-sdir) 
+
+  rc=$? 
   cd $iwd
+  return $rc 
 }
 
 
@@ -443,12 +447,14 @@ imgui-config(){ echo Debug ; }
 imgui-make(){
   local iwd=$PWD
   imgui-bcd
+  local rc=0
 
   #make $*
   cmake --build . --config $(imgui-config) --target ${1:-install}
-
+  rc=$? 
 
   cd $iwd
+  return $rc
 }
 
 imgui--(){

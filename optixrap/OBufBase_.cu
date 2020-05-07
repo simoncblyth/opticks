@@ -83,7 +83,7 @@ std::string OBufBase::desc() const
 
 void OBufBase::Summary(const char* msg) const 
 {
-    printf("%s name %s size %u multiplicity %llu sizeofatom %llu NumAtoms %llu NumBytes %llu \n", 
+    printf("%s name %s size %llu multiplicity %llu sizeofatom %llu NumAtoms %llu NumBytes %llu \n", 
          msg, 
          m_name, 
          getSize(), 

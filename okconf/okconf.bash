@@ -63,9 +63,8 @@ okconf---
 
         ## the location to look for OptiX defaults to $(opticks-prefix)/externals/OptiX
         ## to override that while testing another OptiX version set the below envvar 
-        unset OPTICKS_OPTIX_INSTALL_DIR
-        export OPTICKS_OPTIX_INSTALL_DIR=/usr/local/OptiX_511  ## override opticks-optix-install-dir 
-
+        unset OPTICKS_OPTIX_PREFIX
+        export OPTICKS_OPTIX_PREFIX=/usr/local/optix 
 
 
 Related Notes
@@ -125,11 +124,11 @@ okconf-test-version-switching()
 {
     local dir
     ls -1d /usr/local/OptiX_??? | while read dir ; do 
-        unset OPTICKS_OPTIX_INSTALL_DIR
-        export OPTICKS_OPTIX_INSTALL_DIR=$dir 
+        unset OPTICKS_OPTIX_PREFIX
+        export OPTICKS_OPTIX_PREFIX=$dir 
         okconf---
     done
-    unset OPTICKS_OPTIX_INSTALL_DIR 
+    unset OPTICKS_OPTIX_PREFIX 
 }
 
 

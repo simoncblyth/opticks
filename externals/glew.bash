@@ -104,7 +104,7 @@ glew-get(){
    [ ! -f "$zip" ] && curl -L -O $url
    [ ! -d "$nam" ] && unzip $opt $zip 
 
-   # ln -sfnv $nam glew
+   [ -d "$nam" ] 
 }
 
 glew-export (){ 

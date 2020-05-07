@@ -41,7 +41,7 @@ See Also
 Changing OptiX version
 -------------------------
 
-0. .opticks_setup typically includes a line: unset OPTICKS_OPTIX_INSTALL_DIR
+0. .opticks_setup typically includes a line: unset OPTICKS_OPTIX_PREFIX
     which signals the default to be used which is  $LOCAL_BASE/opticks/externals/OptiX
 
     This envvar was formerly used to configure different OptiX versions, but as that 
@@ -443,14 +443,13 @@ EOU
 
 optix-export(){  echo -n ; }
 
-#optix-install-dir(){  echo $OPTICKS_OPTIX_INSTALL_DIR ; }
-optix-install-dir(){  echo $(opticks-prefix)/externals/OptiX  ; }
-optix-name(){ echo $(readlink $(optix-install-dir)) ; } 
-optix-vers(){ local name=$(optix-name) ; echo ${name/OptiX_} ; }
-optix-version(){ local vers=$(optix-vers) ; echo ${vers:0:1}.${vers:1:1}.${vers:2:1} ; }  ## assumes vers like 510 or 600 
+optix-prefix(){  echo $(opticks-optix-prefix)  ; }
+optix-vers(){ perl -ne 'm,^#define OPTIX_VERSION (\d*),&& print $1' $(opticks-optix-prefix)/include/optix.h ; }
 
-optix-api-(){ echo $(optix-install-dir)/doc/OptiX_API_Reference_$(optix-version).pdf ; }
-optix-pdf-(){ echo $(optix-install-dir)/doc/OptiX_Programming_Guide_$(optix-version).pdf ; }
+optix-version(){ local vers=$(optix-vers) ; echo ${vers:0:1}.${vers:2:1}.${vers:4:1} ; }  ## assumes vers like 60500
+
+optix-api-(){ echo $(optix-prefix)/doc/OptiX_API_Reference_$(optix-version).pdf ; }
+optix-pdf-(){ echo $(optix-prefix)/doc/OptiX_Programming_Guide_$(optix-version).pdf ; }
 optix-api(){ open $(optix-api-) ; }
 optix-pdf(){ open $(optix-pdf-) ; }
 
@@ -462,8 +461,8 @@ optix-api-html(){ open $(optix-api-html-) ; }
 
 
 
-optix-dir(){          echo $(optix-install-dir) ; }
-optix-idir(){         echo $(optix-install-dir)/include ; }
+optix-dir(){          echo $(optix-prefix) ; }
+optix-idir(){         echo $(optix-prefix)/include ; }
 
 optix-c(){     cd $(optix-dir); }
 optix-cd(){    cd $(optix-dir); }
@@ -472,11 +471,10 @@ optix-ifind(){ find $(optix-idir) -name '*.h' -exec grep ${2:--H} ${1:-setMiss} 
 
 optix-info(){ cat << EOI
 
-   optix-install-dir  : $(optix-install-dir)
+   optix-prefix  : $(optix-prefix)
    optix-dir          : $(optix-dir)
    optix-idir         : $(optix-idir)
 
-   optix-name         : $(optix-name)
    optix-vers         : $(optix-vers)
    optix-version      : $(optix-version)
 
@@ -543,9 +541,9 @@ optix-sfind(){    optix-samples-scd ; find . \( -name '*.cu' -or -name '*.h' -or
 
 optix-scd(){ optix-samples-scd  ; }
 
-optix-samples-sdir(){ echo $(optix-install-dir)/SDK-src ; }
-optix-samples-bdir(){ echo $(optix-install-dir)/SDK-src.build ; }
-optix-samples-pdir(){ echo $(optix-install-dir)/SDK-src.build/lib/ptx ; }
+optix-samples-sdir(){ echo $(optix-prefix)/SDK-src ; }
+optix-samples-bdir(){ echo $(optix-prefix)/SDK-src.build ; }
+optix-samples-pdir(){ echo $(optix-prefix)/SDK-src.build/lib/ptx ; }
 optix-samples-scd(){ cd $(optix-samples-sdir) ; }
 optix-samples-bcd(){ cd $(optix-samples-bdir) ; }
 optix-samples-pcd(){ cd $(optix-samples-pdir) ; }
@@ -573,7 +571,7 @@ EOI
 
 optix-samples-info(){ cat << EOI
 
-    optix-install-dir   : $(optix-install-dir)
+    optix-prefix   : $(optix-prefix)
     optix-samples-sdir  : $(optix-samples-sdir)
     optix-samples-bdir  : $(optix-samples-bdir)
     optix-samples-pdir  : $(optix-samples-pdir)
@@ -586,7 +584,7 @@ optix-samples-setup(){
    local msg="=== $FUNCNAME :"
 
    local iwd=$PWD
-   local idir=$(optix-install-dir)
+   local idir=$(optix-prefix)
    local sdir=$(optix-samples-sdir)
    [ -d "$sdir" ] && echo $msg already setup in $sdir && return
 
@@ -620,7 +618,7 @@ optix-samples-cmake(){
     mkdir -p $bdir
     cd $bdir
 
-    cmake -DOptiX_INSTALL_DIR=$(optix-install-dir) \
+    cmake -DOptiX_INSTALL_DIR=$(optix-prefix) \
           -DCUDA_NVCC_FLAGS="$(optix-cuda-nvcc-flags)" \
           -DCUDA_NVRTC_ENABLED=OFF \
            "$(optix-samples-sdir)"
@@ -770,9 +768,8 @@ $FUNCNAME
    optix-runfile-prefix-abs  : $(optix-runfile-prefix-abs)
 
    OPTIX_RUNFILE_VERS        : $OPTIX_RUNFILE_VERS 
-   OPTICKS_OPTIX_INSTALL_DIR : $OPTICKS_OPTIX_INSTALL_DIR
+   OPTICKS_OPTIX_PREFIX      : $OPTICKS_OPTIX_PREFIX
 
-   export OPTICKS_OPTIX_INSTALL_DIR=\$LOCAL_BASE/opticks/externals/optix
 
 EOI
 }

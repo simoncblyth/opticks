@@ -198,6 +198,11 @@ class DirectPkg(odict):
     @classmethod
     def Save(cls, d):
         path = cls.Path(d["name"])
+        fold = os.path.dirname(path)
+        if not os.path.isdir(fold):
+            log.debug("creating fold %s " % fold)
+            os.makedirs(fold)
+        pass    
         outpath = path.replace(".json",".out")
         log.debug("Save out %s " % outpath )
         file(outpath, "w").write(d["out"])

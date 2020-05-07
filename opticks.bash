@@ -477,7 +477,8 @@ opticks-sdir(){   echo $(opticks-home) ; }
 opticks-scd(){  cd $(opticks-sdir)/$1 ; }
 opticks-ncd(){  opticks-scd notes/issues ;  }
 
-opticks-buildtype(){ echo Debug  ; }
+opticks-cmake-generator(){ echo ${OPTICKS_CMAKE_GENERATOR:-Unix Makefiles} ; }
+opticks-buildtype(){       echo ${OPTICKS_BUILDTYPE:-Debug}  ; }
 
 opticks-prefix(){ echo ${OPTICKS_PREFIX:-/usr/local/opticks}  ; }
 opticks-dir(){    echo $(opticks-prefix) ; }
@@ -497,7 +498,12 @@ opticks-xcd(){  cd $(opticks-xdir); }
 
 
 
-opticks-optix-install-dir(){ echo ${OPTICKS_OPTIX_INSTALL_DIR:-$(opticks-prefix)/externals/OptiX} ; }
+opticks-optix-prefix(){ 
+   : opticks-optix-prefix is used by om-cmake-okconf to locate OptiX
+   echo ${OPTICKS_OPTIX_PREFIX:-$(opticks-prefix)/externals/OptiX} 
+}
+
+opticks-cuda-prefix(){ echo ${OPTICKS_CUDA_PREFIX:-/usr/local/cuda} ; }
 
 
 opticks-compute-capability(){ echo ${OPTICKS_COMPUTE_CAPABILITY:-$($FUNCNAME-)} ; }
@@ -533,8 +539,6 @@ oimplicitmesher
 odcs
 oyoctogl
 ocsgbsp
-xercesc
-g4
 EOL
 }
 
@@ -544,10 +548,14 @@ opticks-preqs(){
 cuda
 optix
 boost
+xercesc
+g4
 EOP
 }
 
 opticks-optionals(){ cat << EOL
+xercesc
+g4
 EOL
 }
 
@@ -584,10 +592,13 @@ $FUNCNAME
 EOI
 }
 
-opticks-externals-install(){ 
+opticks-externals-install(){ opticks-installer- $(opticks-externals) ; }
+opticks-optionals-install(){ opticks-installer- $(opticks-optionals) ; }
+
+opticks-installer-(){ 
     echo $FUNCNAME 
     local msg="=== $FUNCNAME :"
-    local exts=$(opticks-externals) 
+    local exts=$*
     local ext
     for ext in $exts ; do 
 
@@ -633,7 +644,6 @@ opticks-externals-setup(){   echo === $FUNCNAME ; opticks-externals | opticks-ex
 opticks-preqs-setup(){       echo === $FUNCNAME ; opticks-preqs     | opticks-ext-setup ; }
 
 
-opticks-optionals-install(){ echo $FUNCNAME ; opticks-optionals | opticks-ext-installer ; }
 opticks-optionals-url(){     echo $FUNCNAME ; opticks-optionals | opticks-ext-url ; }
 opticks-optionals-dist(){    echo $FUNCNAME ; opticks-optionals | opticks-ext-dist ; }
 
@@ -772,6 +782,11 @@ opticks-setup-generate(){
     local msg="=== $FUNCNAME :"
     local rc
 
+    opticks-check-geant4 
+    rc=$?
+    [ ! $rc -eq 0 ] && return $rc
+
+
     opticks-setup-check-mandatory-buildenv
     rc=$?
     [ ! $rc -eq 0 ] && return $rc
@@ -792,14 +807,16 @@ opticks-setup-generate(){
     opticks-setup-consistency-check-  CMAKE_PREFIX_PATH  >> $path 
     opticks-setup-consistency-check-  PKG_CONFIG_PATH    >> $path 
     opticks-setup-misc-                                  >> $path 
-    opticks-setup-funcs- | perl -pe 's,cd_func,cd,g' -   >> $path 
+    opticks-setup-funcs- | perl -pe 's,cd_func,cd,g' -   >> $path
 
     opticks-setup-paths-    >> $path 
     opticks-setup-libpaths- >> $path
+
     opticks-setup-geant4-   >> $path 
 
     rc=$?
     echo $msg post opticks-setup-geant4- rc $rc
+    [ ! $rc -eq 0 ] && echo $msg ABORT && return $rc
 
     opticks-externals-setup
     rc=$?
@@ -1034,11 +1051,15 @@ opticks-goc()
 
 opticks-setup-funcs-(){ 
    echo "# $FUNCNAME"
-   type opticks-setup- 
-   type opticks-setup-info-
-   type opticks-setup-info
-   type opticks-gob 
-   type opticks-goc 
+   declare -f opticks-setup- 
+   declare -f opticks-setup-info-
+   declare -f opticks-setup-info
+   declare -f opticks-gob 
+   declare -f opticks-goc 
+
+   # type emits "name is a function" in some versions of bash 
+   # requiring : perl -pe 's,^(\S* is a function),#$1,' -  
+   # but it seems declare -f is more uniform
 }
 
 opticks-setup-prefix-(){ cat << EHEAD
@@ -1176,12 +1197,20 @@ it is far to complicated to do in the setup script.
 It must be run during opticks-setup by the administrator/developer 
 that is installing opticks with the result hardcoded into the setup.
 
+Chicken-and-egg dependency probelm : 
+
+the find_package needs the setup environment, but this is 
+still trying to generate that 
+
+Instead treat OPTICKS_GEANT4_PREFIX as a user input 
+
 EON
 }
 
-opticks-geant4-prefix(){ $(opticks-home)/bin/find_package.py G4 --prefix --index 0 --nocache ; }
+#opticks-geant4-prefix(){ $(opticks-home)/bin/find_package.py G4 --prefix --index 0 --nocache ; }
+opticks-geant4-prefix(){ echo ${OPTICKS_GEANT4_PREFIX:-$(opticks-prefix)/externals} ; }
 
-opticks-setup-geant4-(){ 
+opticks-check-geant4(){
 
     local msg="=== $FUNCNAME :"
     local g4_prefix=$(opticks-geant4-prefix) 
@@ -1189,14 +1218,23 @@ opticks-setup-geant4-(){
 
     if [ -z "$g4_prefix" ]; then 
         echo $msg ERROR no g4_prefix found 
-        exit 1
+        return 1
     fi 
        
     if [ ! -f "$g4_script" ]; then 
         echo $msg ERROR g4_script $g4_script does not exist 
-        exit 2
+        return 2
     fi 
+   # $(opticks-home)/bin/find_package.py G4 --index 0 --nocache
+    return 0 
+}
 
+
+opticks-setup-geant4-(){ 
+
+    local msg="=== $FUNCNAME :"
+    local g4_prefix=$(opticks-geant4-prefix) 
+    local g4_script=${g4_prefix}/bin/geant4.sh 
 
     cat << EOS
 # $FUNCNAME  
@@ -1208,7 +1246,7 @@ if [ -n "\$OPTICKS_GEANT4_PREFIX" ]; then
         source \$OPTICKS_GEANT4_PREFIX/bin/geant4.sh
     else
         echo ERROR no \$OPTICKS_GEANT4_PREFIX/bin/geant4.sh at OPTICKS_GEANT4_PREFIX : \$OPTICKS_GEANT4_PREFIX
-        exit 1 
+        return 1 
     fi 
 fi  
 
@@ -1232,7 +1270,6 @@ Boost to use via CMAKE_PREFIX_PATH/PKG_CONFIG_PATH see oc.bash om.bash
 EOI
 }
 
-opticks-cmake-generator(){ om- ; om-cmake-generator ; } 
 
 opticks-full()
 {
@@ -1248,6 +1285,8 @@ opticks-full()
         echo $msg config-ing the below preqs 
         opticks-preqs
         opticks-preqs-config 
+        echo $msg generating setup script 
+        opticks-setup-generate 
     else
         echo $msg using preexisting externals from $(opticks-prefix)/externals
     fi 
@@ -1259,7 +1298,6 @@ opticks-full()
 
     opticks-prepare-installation
 
-    opticks-setup-generate 
 
     echo $msg DONE $(date)
 }
@@ -1276,7 +1314,7 @@ opticks-ext-setup()
         echo $msg $ext
         $ext-
 
-        type $ext-setup > /dev/null
+        type $ext-setup 1> /dev/null 2> /dev/null
         rc=$?
         if [ "$rc" == "0" ]; then 
             $ext-setup >> $(opticks-setup-path)
@@ -1389,6 +1427,10 @@ $FUNCNAME
 
       OPTICKS_PREFIX  :    $OPTICKS_PREFIX
       opticks-prefix  :    $(opticks-prefix)
+      #opticks-optix-install-dir :  
+      opticks-optix-prefix :  $(opticks-optix-prefix)
+      opticks-cuda-prefix :  $(opticks-cuda-prefix)
+
 
 
       opticks-source   :   $(opticks-source)
@@ -1404,7 +1446,6 @@ $FUNCNAME
 
       opticks-installcachedir   :  $(opticks-installcachedir)
       opticks-bindir            :  $(opticks-bindir)
-      opticks-optix-install-dir :  $(opticks-optix-install-dir)
 
 EOL
 }
@@ -1863,7 +1904,11 @@ This also seems to make building Opticks significantly faster.
    LOCAL_BASE                 : $LOCAL_BASE
    OPTICKS_RESULTS_PREFIX     : $OPTICKS_RESULTS_PREFIX
 
-   OPTICKS_OPTIX_INSTALL_DIR  : $OPTICKS_OPTIX_INSTALL_DIR
+  
+   OPTICKS_PREFIX             : $OPTICKS_PREFIX
+   OPTICKS_OPTIX_PREFIX       : $OPTICKS_OPTIX_PREFIX
+   OPTICKS_CUDA_PREFIX        : $OPTICKS_CUDA_PREFIX
+
    OPTICKS_COMPUTE_CAPABILITY : $OPTICKS_COMPUTE_CAPABILITY
    OPTICKS_KEY                : $OPTICKS_KEY 
 

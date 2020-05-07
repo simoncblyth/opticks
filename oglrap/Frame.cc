@@ -789,16 +789,19 @@ void Frame::handle_event(GLEQevent& event)
 #endif
 
 #if GLFW_VERSION_MINOR >= 1 
+//#warning "GLFW_VERSION_MINOR ge 1  "
         case GLEQ_FILE_DROPPED:
             break;
 #endif
 #ifdef NEWGLEQ
 #if GLFW_VERSION_MINOR >= 2                                                       
+//#warning "GLFW_VERSION_MINOR ge 2  "
         case GLEQ_JOYSTICK_CONNECTED:                                                      
         case GLEQ_JOYSTICK_DISCONNECTED:                                                      
             break;
 #endif
 #if GLFW_VERSION_MINOR >= 3                                                       
+//#warning "GLFW_VERSION_MINOR ge 3  "
         case GLEQ_WINDOW_MAXIMIZED: 
         case GLEQ_WINDOW_UNMAXIMIZED: 
         case GLEQ_WINDOW_SCALE_CHANGED: 
@@ -962,6 +965,18 @@ void Frame::dump_event(GLEQevent& event)
             break;
         case GLEQ_JOYSTICK_DISCONNECTED:
             printf("Joystick disconnected\n");
+            break;
+#endif
+
+#if GLFW_VERSION_MINOR >= 3 
+        case GLEQ_WINDOW_MAXIMIZED: 
+            printf("Window maximized\n");
+            break;
+        case GLEQ_WINDOW_UNMAXIMIZED: 
+            printf("Window unmaximized\n");
+            break;
+        case GLEQ_WINDOW_SCALE_CHANGED: 
+            printf("Window scale changed\n");
             break;
 #endif
 #endif

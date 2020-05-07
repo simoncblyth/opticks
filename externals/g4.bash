@@ -273,9 +273,9 @@ g4-prefix(){
 }
 
 g4-libsuffix(){ 
-    case $NODE_TAG in 
-         X) echo 64  ;;
-         *) echo -n ;;
+    case $(uname) in 
+         Linux) echo 64  ;;
+        Darwin) echo -n ;;
     esac
 }
 
