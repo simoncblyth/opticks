@@ -3,11 +3,20 @@
 findpkg.py
 ============
 
-Combination of the old find_package.py and pkg_config.py 
+Note that the functionality here is used by::
+
+     find_package.py 
+     pkg_config.py 
+
+After code changes make sure to do a --nocache or -C run with::
+
+     find_package.py -C
+
+Otherwise old errors from the cache may linger.
 
 
 """
-import os, re, logging, argparse, sys, json
+import os, re, logging, argparse, sys, json, platform
 import shutil, tempfile, commands, stat, glob, fnmatch
 from collections import OrderedDict as odict
 
@@ -111,6 +120,7 @@ unset(_props)
 
 # old style CMake usage just sets variables
 message(STATUS "DIR=${%(pkg)s_DIR}")
+message(STATUS "PREFIX=${%(pkg)s_PREFIX}")
 message(STATUS "LIBDIR=${%(pkg)s_LIBDIR}")
 message(STATUS "MODULE=${%(pkg)s_MODULE}")
 message(STATUS "LIBRARY=${%(pkg)s_LIBRARY}")
@@ -168,8 +178,17 @@ class DirectPkg(odict):
         return repr_pkg(self)
 
     @classmethod
+    def DefaultTmpDir(cls):
+        k = "USERNAME" if platform.system() == "Windows" else "USER"
+        username = os.environ[k]
+        return os.path.join("/tmp", username, "opticks")
+
+    @classmethod
     def Path(cls, name):
-        return os.path.expandvars("$OPTICKS_TMP/bin/findpkg/%s.json" % name )
+        default_tmpdir = cls.DefaultTmpDir()
+        tmpdir = os.environ.get("OPTICKS_TMP", default_tmpdir )
+        log.debug("tmpdir %s " % tmpdir)
+        return os.path.join(tmpdir, "bin/findpkg/%s.json" % name )
 
     @classmethod
     def Exists(cls, name):
@@ -180,9 +199,10 @@ class DirectPkg(odict):
     def Save(cls, d):
         path = cls.Path(d["name"])
         outpath = path.replace(".json",".out")
+        log.debug("Save out %s " % outpath )
         file(outpath, "w").write(d["out"])
         d["out"] = outpath
-        log.debug("Save %s " % path )
+        log.debug("Save json %s " % path )
         json_save_pretty_(path, d)
 
     @classmethod
@@ -211,15 +231,7 @@ class DirectPkg(odict):
         return getlibdir(self.mget(["INTERFACE_IMPORTED_LOCATION","LIBRARY","USE_FILE","DIR","LIBDIR"]))
  
     def _get_prefix(self):
-        """
-        first prefix encountered that the includedir startswith
-        """
-        incdir = self.includedir
-        for prefix in os.environ.get("CMAKE_PREFIX_PATH","").split(":"):
-            if incdir.startswith(prefix):
-                return prefix
-            pass
-        return "" 
+        return self.mget(["PREFIX"])  # eg G4_PREFIX
 
     def _get_includedir(self):
         return self.mget(["INCLUDE_DIR", "INTERFACE_INCLUDE_DIRECTORIES"])
@@ -391,11 +403,13 @@ class Find(object):
         parser = argparse.ArgumentParser(doc)
         parser.add_argument( "names", nargs="*", help="logging level" ) 
         parser.add_argument( "--level", default="info", help="logging level" ) 
+        parser.add_argument( "-C", "--nocache", dest="cache",  default=True, action="store_false"  )
         parser.add_argument( "-p", "--prefix",  default=False, action="store_true"  )
         parser.add_argument( "-l", "--libdir",  default=False, action="store_true" )
         parser.add_argument( "-i", "--includedir",  default=False, action="store_true" )
         parser.add_argument( "-n", "--name",  default=False, action="store_true" )
         parser.add_argument( "-d", "--dump",  default=False, action="store_true", help="Dump extra details for debugging" )
+        parser.add_argument( "-s", "--dumpnames",  default=False, action="store_true", help="Dump names for debugging" )
         parser.add_argument( "-f", "--first",   default=False, action="store_true" )
         parser.add_argument( "-x", "--index",  type=int, default=-1 )
         parser.add_argument( "-c", "--count",  action="store_true", default=False )
@@ -478,7 +492,11 @@ class FindPkgConfigPkgs(Find):
 
 class FindCMakePkgDirect(Find):
     """ 
-    Uses CMake directly to find packages and collect metadata instead.
+    FindCMakePkgDirect
+    -------------------
+
+    Uses CMake directly to find packages and collect metadata by parsing CMake output.
+    Implemented with a CMakeLists.txt and go.sh script generated into a temporary directory.
 
     * https://cmake.org/cmake/help/latest/command/find_package.html
 
@@ -490,30 +508,22 @@ class FindCMakePkgDirect(Find):
 
          * NB but find_package still needs the correctly cased name argument
 
-    The below are problematic, as they dont follow any standard::
+    Related investigations
+    ~~~~~~~~~~~~~~~~~~~~~~~~
 
-        epsilon:opticks blyth$ find externals/lib -name '*Config.cmake'
-        externals/lib/cmake/Boost-1.70.0/BoostConfig.cmake
-        externals/lib/cmake/glfw/glfw3Config.cmake
-        externals/lib/Geant4-10.4.2/Geant4Config.cmake
+    cmake/Modules/OpticksCMakeTraverse.cmake
+         traversing all targets from the highest level G4OK on down in 
+         a single CMake invokation offers a way to speed this up dramatically 
+         and in pricipal to implement an opticks-config with no need for pc files
+         and pkg-config 
 
-    CMake 3.17.1 even failing to find that glfw3::
+    TODO
+    ~~~~~
 
-        ## content of the config uses GLFW3_ prefix so need to use that 
-        ## for the filenames and dirnames for modern CMake to find it CONFIG-wise
-
-        ## rename via temps for case-insensitive macOS
-        epsilon:glfw blyth$ mv glfw3Config.cmake glfw3Config.cmake.tmp
-        epsilon:glfw blyth$ mv glfw3Config.cmake.tmp GLFW3Config.cmake
-        epsilon:glfw blyth$ mv glfw3ConfigVersion.cmake glfw3ConfigVersion.cmake.tmp
-        epsilon:glfw blyth$ mv glfw3ConfigVersion.cmake.tmp GLFW3ConfigVersion.cmake
-        epsilon:cmake blyth$ mv glfw GLFW3
-
-        ## ahha : cmake/Modules/FindOpticksGLFW.cmake is a workaround for this problem 
-        ## so can just exclude the GLFW3 name 
+    * try to simplify metadata extraction, currently using a mess of different properties
+      and variable dumping : whereas there should be a clean way of doing this 
 
     """
-
     PTN = re.compile("^-- (?P<var>\S*)=(?P<val>.*)\s*$")
     FIND = re.compile("^Find(?P<pkg>\S*)\.cmake$") 
     NAME = re.compile("# PROJECT_NAME\s*(?P<name>\S*)\s*$")
@@ -521,13 +531,14 @@ class FindCMakePkgDirect(Find):
     def __init__(self, bases, args):
         Find.__init__(self, bases, args)
 
-
     def find_config_names(self):
         """
-        find . -name '*-config.cmake'  -exec grep -H PROJECT_NAME {} \;
-        find $OPTICKS_PREFIX/externals/lib -name '*Config.cmake'
-        """
+        :return pkgnames: glob finds CONFIG-wise lib/cmake/*/*-config.cmake 
 
+        The lowecasename-config.cmake files are grepped for PROJECT_NAME  
+        to get the original non-lowercased names.  The PROJECT_NAMES
+        comments are planted by BCM export.
+        """
         paths = []
         for prefix in os.environ["CMAKE_PREFIX_PATH"].split(":"):
             ppaths = glob.glob("%s/lib/cmake/*/*-config.cmake" % prefix)
@@ -554,6 +565,9 @@ class FindCMakePkgDirect(Find):
         return names
 
     def find_other_config_names(self): 
+        """
+        :return pkgnames: os.walk finds '*Config.cmake' beneath $OPTICKS_PREFIX/externals/lib 
+        """
         skip_other_config_names=['glfw3', 'GLFW3', 'Geant4']  # these come in under other names: OpticksGLFW, G4 
         names = []
         for root, dirnames, filenames in os.walk(os.path.expandvars("$OPTICKS_PREFIX/externals/lib")):
@@ -588,28 +602,35 @@ class FindCMakePkgDirect(Find):
 
     def find_config(self):
         pass
-        self.module_names = self.find_module_names()
-        self.config_names = self.find_config_names()
-        self.other_config_names = self.find_other_config_names()
+        if len(self.args.names) == 0:
+            self.module_names = self.find_module_names()
+            self.config_names = self.find_config_names()
+            self.other_config_names = self.find_other_config_names()
+        else:
+            self.module_names = []
+            self.config_names = []
+            self.other_config_names = []
+        pass
         self.all_names = self.module_names + self.config_names + self.other_config_names
 
-        if self.args.dump: 
+        if self.args.dumpnames: 
             self.dump_names()
         pass
 
-        for name in self.all_names:
+        find_names = self.all_names if len(self.args.names)==0 else self.args.names
+
+        for name in find_names:
             pkg = self.find_package(name)
             if pkg["rc"] != 0:
                 print(" -------------- %s ------------- " % name )
                 print("FAILED TO FIND %s " % name)
-                print(pkg["out"])
+                #print(pkg["out"])
             else:
                 if self.args.dump:
                     print(" -------------- %s ------------- " % name )
                     print(pkg["out"])
                     print(str(pkg))
                 pass
-                #print(repr(pkg))
                 pass
                 self.pkgs.append(pkg)
             pass
@@ -622,32 +643,38 @@ class FindCMakePkgDirect(Find):
 
     def find_package(self, name):
         """
-        Finding is a bit slow so cache then 
+        Finding is a bit slow so cache them
         """
-        if DirectPkg.Exists(name):
+        
+        cache_path = DirectPkg.Path(name)
+        cache_exists = DirectPkg.Exists(name)
+        cache = self.args.cache 
+        log.debug("find_package.name:%s cache_exists:%s cache:%s cache_path:%s  " % (name,cache_exists,cache, cache_path) )
+
+        if cache_exists and cache:
             d = DirectPkg.Load(name)
         else: 
             d = self.find_package_(name)
             DirectPkg.Save(d)
+            pass
         pass
         return DirectPkg(d)
 
     def find_package_(self, name, opts="REQUIRED"): 
         """
         :param name: case sensitive name, eg OpticksGLFW OpticksGLEW OptiXRap
-
-        Hmm does it make sense to prefix all the MODULEs in 
-        cmake/Modules/FindOpticksName.cmake
-
-        OpticksCUDA gives target Opticks::CUDA
-
         """
         rc = 0 
         d = dict()
         d["name"] = name
         d["args"] = vars(self.args)  # cannot json serialize a Namespace
 
+        log.debug("find_package_.name %s " % name )
+
         with TemporaryDirectory() as tmpdir:
+
+            log.debug("find_package_.tmpdir %s " % tmpdir)
+
             cm = CMakeLists(pkg=name, opts=opts)
             go = Script()
             file("CMakeLists.txt", "w").write(str(cm))
@@ -659,6 +686,9 @@ class FindCMakePkgDirect(Find):
             os.chmod(sh, mode)
 
             rc,out = commands.getstatusoutput(sh)
+
+            log.debug("RC %d : dumping out between hashes\n#####################\n%s\n###############\n" % (rc,out) )
+
         pass
 
         d["rc"] = rc 
@@ -759,28 +789,38 @@ class Main(object):
         log.debug("\n".join(["%s:" % var]+bases)) 
         return bases
 
+    def find_pc_pkgs(self):
+        args = self.args
+        pc_bases = self.get_bases("PKG_CONFIG_PATH")
+        fpc = FindPkgConfigPkgs(pc_bases, args)
+        pc_pkgs = fpc.select(args)
+        return pc_pkgs
+
+    def find_cm_pkgs(self): 
+        """
+        Formerly used CONFIG-wise approach, missing out on MODULE finds, with::
+
+           #cm_bases = self.get_bases("CMAKE_PREFIX_PATH")
+           #fcm = FindCMakePkgs(cm_bases, args)
+         
+        """
+        args = self.args
+        fcm = FindCMakePkgDirect([], args)  
+        cm_pkgs = fcm.select(args)
+        return cm_pkgs
+
     def __init__(self, default_mode="cmake"):
 
         args = Find.parse_args(__doc__, default_mode=default_mode)
         self.args = args
 
-        #cm_bases = self.get_bases("CMAKE_PREFIX_PATH")
-        #fcm = FindCMakePkgs(cm_bases, args)
-
-        fcm = FindCMakePkgDirect([], args)  
-        cm_pkgs = fcm.select(args)
-
-        pc_bases = self.get_bases("PKG_CONFIG_PATH")
-        fpc = FindPkgConfigPkgs(pc_bases, args)
-        pc_pkgs = fpc.select(args)
-
         rc = 0 
         if args.mode in ["pc", "cmake"]:
             pkgs = []
             if args.mode == "pc":
-                pkgs = pc_pkgs
+                pkgs = self.find_pc_pkgs()
             elif args.mode == "cmake":
-                pkgs = cm_pkgs 
+                pkgs = self.find_cm_pkgs()
             else:
                 assert 0 
             pass
@@ -788,6 +828,10 @@ class Main(object):
             self.dump(pkgs)
             log.debug("]dumping %d pkgs " % len(pkgs))
         elif args.mode in ["cf", "compare"]:
+
+            cm_pkgs = self.find_cm_pkgs()
+            pc_pkgs = self.find_pc_pkgs()
+
             print("--- CMake")
             self.dump(cm_pkgs)
             print("--- pkg-config")
