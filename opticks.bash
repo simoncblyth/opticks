@@ -628,7 +628,7 @@ opticks-preqs-config(){
 
 
 
-
+# these -setup are invoked by opticks-setup-generate
 opticks-externals-setup(){   echo === $FUNCNAME ; opticks-externals | opticks-ext-setup ; }
 opticks-preqs-setup(){       echo === $FUNCNAME ; opticks-preqs     | opticks-ext-setup ; }
 
@@ -668,7 +668,7 @@ The Opticks build is sensitive to certain crucial input envvars.
 As changing these input envvars would potentially invalidate 
 the Opticks installation the setup script makes consistency 
 checks that the current envvars if present match those of the installation
-when the setup was generated. 
+when the setup was generated.  
 
 
 Distinction between build and user environments
@@ -687,6 +687,7 @@ user environment
     PKG_CONFIG_PATH, LD_LIBRARY_PATH, PATH etc..  cannot be hardcoded  
 
 
+
 Optional input envvars in build environment
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -699,6 +700,21 @@ CMAKE_PREFIX_PATH
 PKG_CONFIG_PATH
    determines which external libraries pkg-config and hence opticks-config 
    will select, used by Non-CMake integrations 
+
+
+Due to the crucial effect of these envvars a consistency check of their 
+values at build time recorded in the setup script as::
+
+   BUILD_CMAKE_PREFIX_PATH  
+   BUILD_PKG_CONFIG_PATH 
+
+Typically CMAKE_PREFIX_PATH and PKG_CONFIG_PATH will not be defined in the 
+input environment, so the BUILD_ prefixed envvars will be blank. 
+The envvars will be defined by the setup. 
+
+As running setup twice can cause such inconsistencies it is 
+inconvenient to raise an error for this. Instead a warning is
+given and they are changed to the build time versions.
 
 
 Mandatory input envvars in build environment
@@ -748,7 +764,11 @@ EON
 opticks-setup-cat(){ cat $(opticks-setup-path) ; }
 opticks-setup-vi(){  vi $(opticks-setup-path) ; }
 opticks-setup--(){   source $(opticks-setup-path) ; }
+
 opticks-setup-generate(){
+
+    : opticks-full > opticks-setup-generate
+
     local msg="=== $FUNCNAME :"
     local rc
 
@@ -864,11 +884,15 @@ BUILD_$var=${!var}
 
 if [ -n "\$$var" ]; then
    if [ "\$$var" != "\$BUILD_$var" ]; then 
-       echo \$MSG inconsistent $var between build time and usage is not allowed
+       echo \$MSG WARNING inconsistent $var between build time and usage is not allowed
        printf "%s %25s %s\n"  "\$MSG" $var \$$var  
        printf "%s %25s %s\n"  "\$MSG" BUILD_$var \$BUILD_$var  
-       echo \$MSG exiting with RC 1 
-       return 1
+
+       echo \$MSG WARNING resetting $var to the build time input value : it will be modified below  
+       export $var=\$BUILD_$var
+
+       #echo \$MSG exiting with RC 1 
+       #return 1
    else
        echo \$MSG consistent $var between build time and usage 
        printf "%s %25s %s\n"  "\$MSG" $var \$$var  
@@ -1141,11 +1165,43 @@ export OPTICKS_EVENT_BASE=\$TMP
 EOM
 }
 
-opticks-setup-geant4-(){ cat << EOS
+
+
+opticks-geant4-prefix-notes(){ cat << EON
+
+Getting the prefix relies on find_package.py which 
+depends on PATH and CMAKE_PREFIX_PATH 
+it is far to complicated to do in the setup script.
+
+It must be run during opticks-setup by the administrator/developer 
+that is installing opticks with the result hardcoded into the setup.
+
+EON
+}
+
+opticks-geant4-prefix(){ $(opticks-home)/bin/find_package.py G4 --prefix --index 0 --nocache ; }
+
+opticks-setup-geant4-(){ 
+
+    local msg="=== $FUNCNAME :"
+    local g4_prefix=$(opticks-geant4-prefix) 
+    local g4_script=${g4_prefix}/bin/geant4.sh 
+
+    if [ -z "$g4_prefix" ]; then 
+        echo $msg ERROR no g4_prefix found 
+        exit 1
+    fi 
+       
+    if [ ! -f "$g4_script" ]; then 
+        echo $msg ERROR g4_script $g4_script does not exist 
+        exit 2
+    fi 
+
+
+    cat << EOS
 # $FUNCNAME  
 
-# below find_package.py depends on PATH and CMAKE_PREFIX_PATH 
-export OPTICKS_GEANT4_PREFIX=\$(find_package.py Geant4 --prefix --index 0)
+export OPTICKS_GEANT4_PREFIX=$g4_prefix
 
 if [ -n "\$OPTICKS_GEANT4_PREFIX" ]; then
     if [ -f "\$OPTICKS_GEANT4_PREFIX/bin/geant4.sh" ]; then 
@@ -1202,6 +1258,8 @@ opticks-full()
     om-install
 
     opticks-prepare-installation
+
+    opticks-setup-generate 
 
     echo $msg DONE $(date)
 }
@@ -1427,7 +1485,6 @@ opticks-prepare-installation()
     cudarap-prepare-installation
 
 
-    opticks-preqs-setup
 }
 
 opticks-check-installation()
