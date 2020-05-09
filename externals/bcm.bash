@@ -72,6 +72,23 @@ Discussion by the author : Paul Fultz II
 * http://cget.readthedocs.io/en/latest/src/intro.html
 
 
+BCM indulges in some command shadowing
+----------------------------------------
+
+share/bcm/cmake/BCMFuture.cmake::
+
+   82     macro(add_library)
+   83         _add_library(${ARGN})
+   84         bcm_add_library_ext(${ARGN})
+   85     endmacro()
+
+
+
+* 
+* https://crascit.com/2018/09/14/do-not-redefine-cmake-commands/
+
+
+
 How close is BCM to being endorsed by Boost ? Unclear 
 -----------------------------------------------------------
 

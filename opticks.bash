@@ -490,6 +490,29 @@ opticks-installcachedir(){ echo $(opticks-prefix)/installcache ; }
 opticks-setup-path(){ echo $(opticks-prefix)/bin/opticks-setup.sh ; }
 
 
+
+opticks-setup-find-geant4-prefix(){ opticks-setup-find-config-prefix Geant4 ; }
+opticks-setup-find-boost-prefix(){  opticks-setup-find-config-prefix Boost ; }
+opticks-setup-find-config-prefix(){
+   : mimick CMake "find_package name CONFIG" identifing the first prefix in the path 
+   local name=${1:-Geant4}
+   local prefix=""
+
+   local ifs=$IFS
+   IFS=: 
+   for pfx in $CMAKE_PREFIX_PATH ; do 
+      ls -1 $pfx/lib*/$name-*/${name}Config.cmake 2>/dev/null 1>&2
+      [ $? -eq 0 ] && prefix=$pfx && break    
+      ls -1 $pfx/lib*/cmake/$name-*/${name}Config.cmake 2>/dev/null 1>&2
+      [ $? -eq 0 ] && prefix=$pfx && break    
+      # hmm more than one under the same prefix ?
+      # NB not general, doesnt find the lowercased form : but works for Geant4 and Boost 
+   done 
+   IFS=$ifs
+   echo $prefix
+}
+
+
 opticks-c(){    cd $(opticks-dir) ; }
 opticks-cd(){   cd $(opticks-dir) ; }
 opticks-icd(){  cd $(opticks-idir); }
