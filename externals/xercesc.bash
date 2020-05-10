@@ -248,6 +248,7 @@ xercesc-get(){
    local nam=$(xercesc-name)
    [ ! -f "$tgz" ] && curl -L -O $url
    [ ! -d "$nam" ] && tar zxf $tgz 
+   [ -d "$nam" ]
 }
 
 xercesc-configure()
@@ -268,21 +269,77 @@ xercesc-make()
    make ${1:-install}
 }
 
+xercesc-wipe()
+{
+   local iwd=$PWD
+   cd $(xercesc-prefix)
+
+   rm -f lib/libxerces-c*
+   rm -rf include/xercesc
+   rm -f lib/pkgconfig/xerces-c.pc
+   rm -f lib/pkgconfig/OpticksXercesC.pc
+
+   cd $iwd 
+}
+
+
+
+xercesc-pc-notes(){ cat << EON
+
+Need to somehow ensure that the xerces-c that this picks is the
+same as the one that Geant4 is built against
+
+Hmm have to trust the PKG_CONFIG_PATH ? And not try the renaming kludge ?
+But the reason for going via FindOpticksXercesC is to pick the XercesC referenced
+from G4persistency target  
+
+First thought is to take control of the Geant4 build and enforce which XercesC to use, 
+but that is not appropriate as need to work with foreign Geant4.
+
+[blyth@localhost externals]$ ldd /home/blyth/local/opticks/externals/lib64/libG4persistency.so | grep xerces-c
+    libxerces-c-3.1.so => /home/blyth/local/opticks/externals/lib/libxerces-c-3.1.so (0x00007f04eaf1f000)
+
+[blyth@localhost lib64]$ ldd /home/blyth/junotop/ExternalLibs/Geant4/10.05.p01/lib64/libG4persistency.so | grep xerces-c
+    libxerces-c-3.2.so => not found
+
+[blyth@localhost junotop]$ source $JUNOTOP/bashrc.sh
+[blyth@localhost junotop]$ ldd /home/blyth/junotop/ExternalLibs/Geant4/10.05.p01/lib64/libG4persistency.so | grep xerces-c
+    libxerces-c-3.2.so => /home/blyth/junotop/ExternalLibs/Xercesc/3.2.2/lib/libxerces-c-3.2.so (0x00007f039a6c8000)
+
+[blyth@localhost junotop]$ pkg-config xerces-c --libs
+-L/home/blyth/junotop/ExternalLibs/Xercesc/3.2.2/lib -lxerces-c  
+
+[blyth@localhost junotop]$ pkg-config xerces-c --cflags
+-I/home/blyth/junotop/ExternalLibs/Xercesc/3.2.2/include  
+
+pkg-config --variable=prefix xerces-c
+/home/blyth/junotop/ExternalLibs/Xercesc/3.2.2
+
+
+EON
+}
 
 xercesc-pc(){ 
    local msg="=== $FUNCNAME :"
-   local paths="$OPTICKS_PREFIX/externals/lib/pkgconfig/xerces-c.pc /opt/local/lib/pkgconfig/xerces-c.pc"
+
+   # trust the PKG_CONFIG_PATH to yield the XercesC that Geant4 is using
+   local name=xerces-c 
+   local prefix=$(pkg-config --variable=prefix $name)
+   local path=$prefix/lib/pkgconfig/$name.pc
+
+   # this allows to use the OpticksXercesC name that forces use of FindOpticksXercesC.cmake module
    local path2="$OPTICKS_PREFIX/externals/lib/pkgconfig/OpticksXercesC.pc"
-   local path
-   for path in $paths ; do 
-       if [ -f "$path" -a ! -f "$path2" ]; then
-           echo $msg $path to $path2
-           cp $path $path2  
-           # no-fixing when comes from macports 
-       elif [ -f "$path2" ]; then 
-           echo $msg $path $path2 exists already
-       fi 
-   done
+   local dir=$(dirname $path2)
+   if [ ! -d "$dir" ]; then
+       mkdir -p $dir   
+   fi 
+
+   if [ -f "$path" -a ! -f "$path2" ]; then
+       echo $msg copy $path to $path2
+       cp $path $path2  
+   elif [ -f "$path2" ]; then 
+       echo $msg path2 $path2 exists already
+   fi 
 }
 
 xercesc--()

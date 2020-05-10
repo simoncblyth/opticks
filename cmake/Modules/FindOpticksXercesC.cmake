@@ -29,10 +29,17 @@ message(STATUS "OpticksXercesC_MODULE : ${OpticksXercesC_MODULE} " )
 endif()
 
 
-if(TARGET G4persistency)
-    # fishing for xercesc lib and include_dir : using interface link libraries of G4persistency
-    # assumes include_dir is ../include relative to directory of the lib
+#[=[
+Fishing for XercesC within the G4persistency target allows to avoid
+problems of picking up different versions of XercesC. 
 
+::
+
+   -- G4persistency.ILL : G4geometry;G4global;G4graphics_reps;G4intercoms;G4materials;G4particles;G4digits_hits;G4event;G4processes;G4run;G4track;G4tracking;/usr/lib64/libxerces-c-3.1.so
+
+#]=]
+
+if(TARGET G4persistency)
     set(xercesc_lib)
     set(xercesc_include_dir)
 
@@ -54,8 +61,8 @@ if(TARGET G4persistency)
     endif()
 
     if(OpticksXercesC_VERBOSE)
-       message(STATUS " xercesc_lib         : ${xercesc_lib} ")
-       message(STATUS " xercesc_include_dir : ${xercesc_include_dir} ")
+       message(STATUS " G4persistency.xercesc_lib         : ${xercesc_lib} ")
+       message(STATUS " G4persistency.xercesc_include_dir : ${xercesc_include_dir} ")
     endif()
 
 else()
@@ -67,33 +74,52 @@ endif()
 set(OpticksXercesC_LIBRARY     ${xercesc_lib})
 set(OpticksXercesC_INCLUDE_DIR ${xercesc_include_dir})
 
-
-
-if(XERCESC_INCLUDE_DIR)
-    set(OpticksXercesC_INCLUDE_DIR ${XERCESC_INCLUDE_DIR}) 
+if(OpticksXercesC_INCLUDE_DIR AND OpticksXercesC_LIBRARY)
+   set(OpticksXercesC_FOUND "YES")
 else()
-    find_path(OpticksXercesC_INCLUDE_DIR 
-       NAMES "xercesc/parsers/SAXParser.hpp"
-       PATHS 
-          /usr/include 
-          /usr/local/include
-          /opt/local/include
-    )
+   set(OpticksXercesC_FOUND "NO")
 endif()
 
 
-if(XERCESC_LIBRARY) 
-    set(OpticksXercesC_LIBRARY ${XERCESC_LIBRARY})
-else()
-    find_library(OpticksXercesC_LIBRARY
-       NAMES xerces-c 
-       PATHS
-         /usr/lib 
-         /usr/lib64
-         /usr/local/lib
-         /opt/local/lib
-    )
+
+#[=[
+without NO_DEFAULT_PATH  this will look in CMAKE_PREFIX_PATH lib dirs 
+#]=]
+
+if(NOT OpticksXercesC_FOUND)
+    message(STATUS "looking for XercescC using XERCESC_INCLUDE_DIR or system paths ")
+
+    if(XERCESC_INCLUDE_DIR)
+        set(OpticksXercesC_INCLUDE_DIR ${XERCESC_INCLUDE_DIR}) 
+    else()
+        find_path(OpticksXercesC_INCLUDE_DIR 
+           NAMES "xercesc/parsers/SAXParser.hpp"
+           PATHS 
+              /usr/include 
+              /usr/local/include
+              /opt/local/include
+           NO_DEFAULT_PATH  
+        )
+        message(STATUS "find_path looking for SAXParser.hpp yields OpticksXercesC_INCLUDE_DIR ${OpticksXercesC_INCLUDE_DIR}" )
+    endif()
+
+
+    if(XERCESC_LIBRARY) 
+        set(OpticksXercesC_LIBRARY ${XERCESC_LIBRARY})
+    else()
+        find_library(OpticksXercesC_LIBRARY
+           NAMES xerces-c 
+           PATHS
+             /usr/lib 
+             /usr/lib64
+             /usr/local/lib
+             /opt/local/lib
+           NO_DEFAULT_PATH  
+        )
+    endif()
+
 endif()
+
 
 
 

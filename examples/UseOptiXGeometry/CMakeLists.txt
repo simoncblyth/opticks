@@ -35,7 +35,7 @@ target_link_libraries(${name} PUBLIC
       Opticks::OKConf 
       Opticks::SysRap 
       Opticks::NPY
-      Opticks::CUDA 
+      Opticks::OpticksCUDA 
 )
 
 install(FILES ${_generated_PTX_files} DESTINATION installcache/PTX)

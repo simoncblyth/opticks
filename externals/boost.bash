@@ -832,14 +832,35 @@ Cflags: -I\${includedir}
 EOP
 }
 
-boost-pc() 
+boost-pc-old() 
 { 
     local msg="=== $FUNCNAME :";
     local path=$(boost-pc-path);
     local dir=$(dirname $path);
     [ ! -d "$dir" ] && echo $msg creating dir $dir && mkdir -p $dir;
+
     echo $msg $path;
     boost-pc- > $path
+}
+
+boost-pc()
+{
+   local msg="=== $FUNCNAME :";
+   local name=boost
+   local prefix=$(pkg-config $name --variable=prefix)
+   local path=$prefix/lib/pkgconfig/$name.pc
+
+   local path2=$(boost-pc-path);
+   local dir=$(dirname $path2);
+   [ ! -d "$dir" ] && echo $msg creating dir $dir && mkdir -p $dir;
+   
+   if [ -f "$path" -a ! -f "$path2" ]; then
+       echo $msg copy $path to $path2
+       cp $path $path2  
+   elif [ -f "$path2" ]; then 
+       echo $msg path2 $path2 exists already
+   fi  
+
 }
 
 

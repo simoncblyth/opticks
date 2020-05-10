@@ -264,13 +264,7 @@ g4-env(){
    opticks-
 }
 
-g4-prefix(){ 
-   if [ -n "$OPTICKS_GEANT4_HOME" ]; then
-       echo $OPTICKS_GEANT4_HOME        # backward compat for a poor name 
-   else
-       echo ${OPTICKS_GEANT4_PREFIX:-$(opticks-prefix)/externals} 
-   fi
-}
+g4-prefix(){ echo ${OPTICKS_GEANT4_PREFIX:-$(opticks-prefix)/externals}  ; }
 
 g4-libsuffix(){ 
     case $(uname) in 
@@ -413,8 +407,19 @@ g4--()
 
 
 g4-wipe(){
+   local iwd=$PWD
    local bdir=$(g4-bdir)
    rm -rf $bdir
+
+   cd $(g4-prefix)
+
+   local suffix=$(g4-libsuffix) 
+
+   rm -f lib$suffix/pkgconfig/geant4.pc 
+   rm -f lib$suffix/libG4*    
+   rm -rf lib$suffix/Geant4-*
+
+   cd $iwd
 }
 
 g4-configure()
@@ -839,7 +844,7 @@ Cflags: -I\${includedir}
 
 EOP
 }
-g4-pc(){
+g4-pc-old(){
     local msg="=== $FUNCNAME :";
     local path=$(g4-pc-path);
     local dir=$(dirname $path);
@@ -848,6 +853,32 @@ g4-pc(){
     g4-pc- > $path
 }
 
+g4-pc(){
+
+   local msg="=== $FUNCNAME :"
+   local name=geant4
+   #local prefix=$(pkg-config --variable=prefix $name)
+   #local path=$prefix/lib64/pkgconfig/$name.pc 
+   local pcfiledir=$(pkg-config --variable=pcfiledir $name)
+   local path=$pcfiledir/$name.pc 
+   local path2=$(g4-pc-path)
+   local dir=$(dirname $path2)
+   if [ ! -d "$dir" ]; then
+       mkdir -p $dir   
+   fi  
+
+   if [ -f "$path" -a ! -f "$path2" ]; then
+       echo $msg copy $path to $path2
+       cp $path $path2  
+   elif [ -f "$path2" ]; then 
+       echo $msg path2 $path2 exists already
+   fi  
+
+
+
+
+
+}
 
 
 

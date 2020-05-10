@@ -1079,6 +1079,8 @@ opticks-setup-funcs-(){
    declare -f opticks-setup-info
    declare -f opticks-gob 
    declare -f opticks-goc 
+   declare -f opticks-setup-find-config-prefix
+   declare -f opticks-setup-find-geant4-prefix
 
    # type emits "name is a function" in some versions of bash 
    # requiring : perl -pe 's,^(\S* is a function),#$1,' -  
@@ -1227,16 +1229,19 @@ still trying to generate that
 
 Instead treat OPTICKS_GEANT4_PREFIX as a user input 
 
+Just use opticks-setup-find-geant4-prefix 
+
+
+
 EON
 }
 
-#opticks-geant4-prefix(){ $(opticks-home)/bin/find_package.py G4 --prefix --index 0 --nocache ; }
-opticks-geant4-prefix(){ echo ${OPTICKS_GEANT4_PREFIX:-$(opticks-prefix)/externals} ; }
+#opticks-geant4-prefix(){ echo ${OPTICKS_GEANT4_PREFIX:-$(opticks-prefix)/externals} ; }
 
 opticks-check-geant4(){
 
     local msg="=== $FUNCNAME :"
-    local g4_prefix=$(opticks-geant4-prefix) 
+    local g4_prefix=$(opticks-setup-find-geant4-prefix) 
     local g4_script=${g4_prefix}/bin/geant4.sh 
 
     if [ -z "$g4_prefix" ]; then 
@@ -1253,16 +1258,10 @@ opticks-check-geant4(){
 }
 
 
-opticks-setup-geant4-(){ 
-
-    local msg="=== $FUNCNAME :"
-    local g4_prefix=$(opticks-geant4-prefix) 
-    local g4_script=${g4_prefix}/bin/geant4.sh 
-
-    cat << EOS
+opticks-setup-geant4-(){ cat << EOS
 # $FUNCNAME  
 
-export OPTICKS_GEANT4_PREFIX=$g4_prefix
+export OPTICKS_GEANT4_PREFIX=\$(opticks-setup-find-geant4-prefix)
 
 if [ -n "\$OPTICKS_GEANT4_PREFIX" ]; then
     if [ -f "\$OPTICKS_GEANT4_PREFIX/bin/geant4.sh" ]; then 

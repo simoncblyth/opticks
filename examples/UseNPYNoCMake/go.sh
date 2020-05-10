@@ -39,6 +39,6 @@ echo ./Use$pkg
      ./Use$pkg
 
 echo TMP $TMP
-python -c "import numpy as np ; print np.load(\"$TMP/UseNPY.npy\") " 
+#python -c "import numpy as np ; print np.load(\"$TMP/UseNPY.npy\") " 
 
 

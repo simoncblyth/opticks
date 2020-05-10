@@ -1,7 +1,21 @@
 
 #include <string>
 #include "X4.hh"
+#include "X4GDMLParser.hh"
+
+#include "G4Orb.hh"
 #include "OPTICKS_LOG.hh"
+
+
+void test_GDML()
+{
+    G4VSolid* solid = new G4Orb("orb", 100.) ; 
+
+    bool refs = false ; 
+    X4GDMLParser::Write( solid, NULL, refs ) ; // to stdout 
+
+}
+
 
 void test_Name()
 {   
@@ -21,5 +35,6 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv);
     test_Name(); 
+    test_GDML();
     return 0 ; 
 }

@@ -3,6 +3,11 @@ set(name UseOKG4)
 project(${name} VERSION 0.1.0)
 include(OpticksBuildOptions)
 
+if(POLICY CMP0077)  # see note/issues/cmake-3.13.4-FindCUDA-warnings.rst
+    cmake_policy(SET CMP0077 OLD)
+endif()
+
+
 set(OKG4_VERBOSE ON)
 find_package(OKG4 REQUIRED CONFIG)   
 message(STATUS "OKG4_CONFIG  : ${OKG4_CONFIG} ")

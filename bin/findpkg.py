@@ -14,6 +14,10 @@ After code changes make sure to do a --nocache or -C run with::
 
 Otherwise old errors from the cache may linger.
 
+Hmm this depends on cmake modules from the opticks installed prefix
+whereas it should in principal be useable prior to installing Opticks
+
+
 
 """
 import os, re, logging, argparse, sys, json, platform
@@ -163,8 +167,10 @@ mkdir build && cd build
 cmake .. \
     -DCMAKE_BUILD_TYPE=Debug \
     -DCMAKE_INSTALL_PREFIX=$OPTICKS_PREFIX \
-    -DCMAKE_MODULE_PATH=$OPTICKS_PREFIX/cmake/Modules \
+    -DCMAKE_MODULE_PATH=$OPTICKS_HOME/cmake/Modules \
     -DOPTICKS_PREFIX=$OPTICKS_PREFIX
+
+
 
 """
 
@@ -283,6 +289,11 @@ def repr_pkg(pkg):
 
 class Compare(object):
     def __init__(self, al, aa, bl, bb ):
+        rc = self.compare(al,aa,bl,bb)
+
+    def compare(self, al,aa,bl,bb):
+        self.n_all = len(aa)
+        self.n_dif = 0
 
         an = map(lambda _:_.name, aa) 
         bn = map(lambda _:_.name, bb) 
@@ -305,7 +316,6 @@ class Compare(object):
 
         bb = sorted(bb, key=lambda pkg:an.index(pkg.name)) # sort bb into the same order as aa
 
-        n_all = len(aa)
         n_dif = 0 
         for i in range(n_all):
             a = aa[i]
@@ -319,8 +329,6 @@ class Compare(object):
                 #log.info(" a and b are equal\n%s:%s\n%s:%s" % (al,repr(a), bl,repr(b)))
             pass
         pass
-
-        self.n_all = n_all
         self.n_dif = n_dif
 
     def __repr__(self):
@@ -337,11 +345,13 @@ class Pkg(odict):
     @classmethod 
     def CreateFromPC(cls, path):
 
+        log.info("CreateFromPC %s " % path )
         name = os.path.basename(path)
         assert name.endswith(".pc")
         name = name[:-3]
 
         d = {}
+        d["pcfiledir"] = os.path.dirname(path)  # clhep uses this key in prefix
         d["path"] = path 
         d["name"] = name
 
@@ -359,7 +369,32 @@ class Pkg(odict):
             if k.endswith("_"): continue
             d[k] = v.replace("}",")s").replace("{","(").replace("$","%") % d
         pass
+
         return cls(d)
+
+    @classmethod
+    def Recover(cls,d):
+        """
+        # pc from geant4 has only prefix  
+        But this doesnt help need to fix the problem at source as opticks-config 
+        aka pkg-config needs to get the message   
+
+        BUT all it needs is --cflags and --libs not the variables
+
+        """
+        if "prefix" in d and not ("libdir" in d and "includedir" in d):
+            libdir = "%s/lib64" % d["prefix"]  
+            includedir = "%s/include" % d["prefix"]  
+            if os.path.isdir(libdir):
+                d["libdir"] = libdir
+            pass   
+            if os.path.isdir(includedir):
+                d["includedir"] = includedir
+            pass   
+        pass
+
+
+
 
     def _get_libdir(self):
         return self.get("libdir","")
@@ -478,7 +513,7 @@ class FindPkgConfigPkgs(Find):
         """
         :param base: directory in which to look for pc files
         """
-        log.debug("find_config_ %s " % (base)) 
+        log.info("find_config_ %s " % (base)) 
         names = os.listdir(base)
         for name in names:
             path = os.path.join(base, name)
@@ -596,7 +631,8 @@ class FindCMakePkgDirect(Find):
         :return pkgnames: list of MODULE package names of form FindName.cmake from cmake/Modules
         """
         names = []
-        path = os.path.expandvars("$OPTICKS_PREFIX/cmake/Modules")
+        path = os.path.expandvars("$OPTICKS_HOME/cmake/Modules") 
+        # not installed tree OPTICKS_PREFIX as this should work before Opticks installation
         for name in os.listdir(path):
             m = self.FIND.match(name)
             if not m: continue
@@ -650,7 +686,7 @@ class FindCMakePkgDirect(Find):
         """
         Finding is a bit slow so cache them
         """
-        
+        log.info("find_package %s " % name)
         cache_path = DirectPkg.Path(name)
         cache_exists = DirectPkg.Exists(name)
         cache = self.args.cache 
@@ -834,7 +870,9 @@ class Main(object):
             log.debug("]dumping %d pkgs " % len(pkgs))
         elif args.mode in ["cf", "compare"]:
 
+            log.info("find_cm_pkgs")  
             cm_pkgs = self.find_cm_pkgs()
+            log.info("find_pm_pkgs")  
             pc_pkgs = self.find_pc_pkgs()
 
             print("--- CMake")

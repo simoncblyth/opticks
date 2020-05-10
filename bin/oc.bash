@@ -480,19 +480,19 @@ oc-args-(){
    done
 }
 
-oc-args(){ oc-args- $(oc-lower $*) ; }
+oc-args(){ oc-args- $* ; }
 
-oc-libdir-(){ oc-pkg-config $(oc-lower $*) --libs-only-L  | tr -- "-L" " " ; }
-oc-cflags-(){ oc-pkg-config $(oc-lower $*) --cflags  ; }
+oc-libdir-(){ oc-pkg-config $* --libs-only-L  | tr -- "-L" " " ; }
+oc-cflags-(){ oc-pkg-config $* --cflags  ; }
 
 
 oc-cflags(){ echo $(oc-cflags- $*) -std=c++11 ; }  ## seems the wrong place for c++11 ??
-oc-libs(){   oc-pkg-config $(oc-lower $*) --libs   ; }
-oc-libsl(){  oc-pkg-config $(oc-lower $*) --libs-only-L  ; }
-oc-deps(){   oc-pkg-config $(oc-lower $*) --print-requires  ; }
-oc-dump(){   oc-pkg-config-dump $(oc-lower $*) ; }
-oc-check(){  oc-pkg-config-check-dirs $(oc-lower $*) ; }
-oc-find(){   oc-pkg-config-find $(oc-lower $*) ; }
+oc-libs(){   oc-pkg-config $* --libs   ; }
+oc-libsl(){  oc-pkg-config $* --libs-only-L  ; }
+oc-deps(){   oc-pkg-config $* --print-requires  ; }
+oc-dump(){   oc-pkg-config-dump $* ; }
+oc-check(){  oc-pkg-config-check-dirs $* ; }
+oc-find(){   oc-pkg-config-find $* ; }
 
 oc-libdir(){  oc-libdir- $* | tr " " "\n" | sort | uniq ; }
 oc-libpath(){ local dirs=$(oc-libdir $*) ; echo $dirs | tr " " ":" ; }

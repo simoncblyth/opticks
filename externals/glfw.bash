@@ -311,6 +311,15 @@ glfw-cd(){  cd $(glfw-dir); }
 glfw-bcd(){ cd $(glfw-bdir); }
 glfw-icd(){ cd $(glfw-idir); }
 
+
+glfw-pc-notes(){ cat << EON
+
+  fix messing up 
+  had to change lib to lib64
+
+EON
+}
+
 glfw-pc(){ 
    local msg="=== $FUNCNAME :"
    local path="$OPTICKS_PREFIX/externals/lib/pkgconfig/glfw3.pc"

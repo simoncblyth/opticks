@@ -278,7 +278,10 @@ bool BOpticksResource::IsGeant4EnvironmentDetected()
     BEnv* e = BEnv::Create("G4"); 
     bool require_existing_dir = true ; 
     unsigned n = e->getNumberOfEnvvars("G4", "DATA", require_existing_dir ) ;     
-    bool detect = n == 10 ;  
+    bool detect = n >= 10 ;  
+
+    LOG(info) << " n " << n << " detect " << detect ; 
+
     return detect ; 
 }
 

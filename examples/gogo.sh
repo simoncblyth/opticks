@@ -24,7 +24,7 @@ gogo-find-1(){ ls -1 *NoCMake/go.sh ; }
 gogo-find-2(){ ls -1 */go.sh | grep -v NoCMake ; }
 gogo-find-3(){ ls -1 */goc.sh ; }
 
-gogo-find(){ gogo-find-3 ; }
+gogo-find(){ gogo-find-1 ; }
 
 gogo-fails(){ cat << EON
 
@@ -62,7 +62,11 @@ gogo-one-()
     local rc
     ./$nam > /dev/null 2>&1
     rc=$?
-    printf "%-40s %d \n" $go $rc 
+
+    local note=""
+    [ -f "NOTE" ] && note="$(head -1 NOTE)"
+
+    printf "%-40s %d %s\n" $go $rc "$note"
 }
 
 gogo-one(){

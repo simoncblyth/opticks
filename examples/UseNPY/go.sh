@@ -39,6 +39,6 @@ exe=$(opticks-prefix)/lib/$name
 echo "running exe $exe"
 eval $exe
 
-python -c "import numpy as np ; print np.load(\"$TMP/UseNPY.npy\") " 
+#python -c "import numpy as np ; print np.load(\"$TMP/UseNPY.npy\") " 
 
 

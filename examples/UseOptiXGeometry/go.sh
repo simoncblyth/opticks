@@ -33,11 +33,8 @@ rm -rf $bdir && mkdir -p $bdir
 cd $bdir && pwd 
 ls -l 
 
-if [ ! -f CMakeCache.txt ]; then  
-    om-cmake $sdir 
+om-cmake $sdir 
 
-#       -DOptiX_INSTALL_DIR=$(opticks-optix-install-dir) 
-fi
 
 make
 make install   
