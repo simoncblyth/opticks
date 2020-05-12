@@ -132,22 +132,8 @@ G4 expecting libxerces-c-3.1.dylib::
 EOU
 }
 
-xercesc-prefix-old(){  
-
-  case $(uname -s) in 
-      Darwin) echo /opt/local ;;
-    MINGW64*) echo /mingw64 ;;
-           *) echo ${LOCAL_BASE:-/usr/local}/opticks/externals ;;
-  esac  
-}
-
-xercesc-prefix(){  
-    echo $(opticks-prefix)/externals
-}
-
-
-xercesc-edit(){ vi $(opticks-home)/cmake/Modules/FindEnvXercesC.cmake ; }
-
+xercesc-prefix(){  echo $(opticks-prefix)/externals/xercesc ; }
+xercesc-edit(){ vi $(opticks-home)/cmake/Modules/FindOpticksXercesC.cmake ; }
 
 xercesc-library-macports(){     echo /opt/local/lib/libxerces-c.dylib ; }
 xercesc-include-dir-macports(){ echo /opt/local/include ; }
@@ -193,9 +179,8 @@ xercesc-geant4-export(){
 xercesc-url(){ echo http://archive.apache.org/dist/xerces/c/3/sources/xerces-c-3.1.1.tar.gz ; }
 xercesc-dist(){ echo $(basename $(xercesc-url)); }
 xercesc-name(){ local dist=$(xercesc-dist) ; echo ${dist/.tar.gz} ; }
-xercesc-base(){ echo $(opticks-prefix)/externals/xercesc ; }
 
-xercesc-dir(){  echo $(xercesc-prefix)/xercesc/$(xercesc-name) ; }
+xercesc-dir(){  echo $(xercesc-prefix).build/$(xercesc-name) ; }
 
 xercesc-info(){ cat << EOI
 
@@ -212,11 +197,11 @@ ONLY RELEVANT WHEN BUILDING MANUALLY
    xercesc-url    : $(xercesc-url)
    xercesc-dist   : $(xercesc-dist)
    xercesc-name   : $(xercesc-name)
-   xercesc-base   : $(xercesc-base)
    xercesc-dir    : $(xercesc-dir)
+        exploded distribution dir  
 
    xercesc-prefix  : $(xercesc-prefix)
-
+        installation directory 
 
    xercesc-library-macports : $(xercesc-library-macports)
    xercesc-include-dir-macports : $(xercesc-include-dir-macports)
@@ -279,6 +264,7 @@ xercesc-wipe()
    rm -f lib/pkgconfig/xerces-c.pc
    rm -f lib/pkgconfig/OpticksXercesC.pc
 
+
    cd $iwd 
 }
 
@@ -295,6 +281,10 @@ from G4persistency target
 
 First thought is to take control of the Geant4 build and enforce which XercesC to use, 
 but that is not appropriate as need to work with foreign Geant4.
+
+To some extent this is the users problem, the user must ensure that the 
+xerces-c that is found is the correct one that is used by geant4.
+
 
 [blyth@localhost externals]$ ldd /home/blyth/local/opticks/externals/lib64/libG4persistency.so | grep xerces-c
     libxerces-c-3.1.so => /home/blyth/local/opticks/externals/lib/libxerces-c-3.1.so (0x00007f04eaf1f000)
@@ -319,28 +309,17 @@ pkg-config --variable=prefix xerces-c
 EON
 }
 
-xercesc-pc(){ 
-   local msg="=== $FUNCNAME :"
 
-   # trust the PKG_CONFIG_PATH to yield the XercesC that Geant4 is using
-   local name=xerces-c 
-   local prefix=$(pkg-config --variable=prefix $name)
-   local path=$prefix/lib/pkgconfig/$name.pc
+xercesc-pc(){
 
-   # this allows to use the OpticksXercesC name that forces use of FindOpticksXercesC.cmake module
-   local path2="$OPTICKS_PREFIX/externals/lib/pkgconfig/OpticksXercesC.pc"
-   local dir=$(dirname $path2)
-   if [ ! -d "$dir" ]; then
-       mkdir -p $dir   
-   fi 
+   : standard xercesc build generates a xerces-c.pc this just links it under a differnt name : OpticksXercesC.pc 
+   : motivation is to make the CMake FindName.cmake names the same as the pkg-config ones
+   :
+   : TODO : try to avoid this nasty workaround : is the renaming really needed
 
-   if [ -f "$path" -a ! -f "$path2" ]; then
-       echo $msg copy $path to $path2
-       cp $path $path2  
-   elif [ -f "$path2" ]; then 
-       echo $msg path2 $path2 exists already
-   fi 
+    opticks-pc-rename-kludge xerces-c OpticksXercesC
 }
+
 
 xercesc--()
 {
@@ -348,11 +327,11 @@ xercesc--()
 
    xercesc-info
 
-   if [ "$(uname)" == "Darwin" ]; then 
-
-       xercesc-darwin 
-
-   elif [ "$(uname)" == "Linux" ]; then 
+   #if [ "$(uname)" == "Darwin" ]; then 
+   #
+   #    xercesc-darwin 
+   #
+   #elif [ "$(uname)" == "Linux" ]; then 
    
        xercesc-get
        [ $? -ne 0 ] && echo $msg get FAIL && return 1
@@ -360,7 +339,7 @@ xercesc--()
        [ $? -ne 0 ] && echo $msg configure FAIL && return 2
        xercesc-make
        [ $? -ne 0 ] && echo $msg make FAIL && return 3
-   fi 
+   #fi 
 
    xercesc-pc
    [ $? -ne 0 ] && echo $msg pc FAIL && return 4

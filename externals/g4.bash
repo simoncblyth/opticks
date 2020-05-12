@@ -264,7 +264,7 @@ g4-env(){
    opticks-
 }
 
-g4-prefix(){ echo ${OPTICKS_GEANT4_PREFIX:-$(opticks-prefix)/externals}  ; }
+g4-prefix(){ echo ${OPTICKS_GEANT4_PREFIX:-$(opticks-prefix)/externals/g4}  ; }
 
 g4-libsuffix(){ 
     case $(uname) in 
@@ -273,11 +273,47 @@ g4-libsuffix(){
     esac
 }
 
-g4-idir(){ echo $(g4-prefix) ; }
-g4-dir(){   echo $(g4-prefix)/$(g4-tag)/$(g4-name) ; } 
 
-# follow env/psm1/dist/dist.psm1 approach : everythinh based off the url
+g4-info(){ cat << EOI
 
+  g4-prefix             : $(g4-prefix)
+      installation directory 
+  OPTICKS_GEANT4_PREFIX : $OPTICKS_GEANT4_PREFIX
+
+  g4-libsuffix          : $(g4-libsuffix)
+
+  g4-dir                : $(g4-dir)
+      exploded distribution dir
+
+  g4-bdir               : $(g4-bdir)
+  
+  g4-nom                : $(g4-nom)
+  g4-title              : $(g4-title)
+
+  g4-version-hh         : $(g4-version-hh)
+  g4-version-number     : $(g4-version-number)
+
+  g4-url                : $(g4-url) 
+      case statement based on g4-nom      
+
+  g4-filename           : $(g4-filename)
+      basename of url 
+
+  g4-name               : $(g4-name) 
+      from basename of url
+
+  g4-dist               : $(g4-dist)
+      distribution tarball 
+
+
+  g4-pc-path            : $(g4-pc-path) 
+
+
+EOI
+}
+
+
+g4-dir(){   echo $(g4-prefix).build/$(g4-name) ; }  # exploded distribution dir
 
 
 g4-nom(){ echo ${OPTICKS_GEANT4_NOM:-geant4_10_04_p02} ; }
@@ -293,9 +329,6 @@ g4-title()
 
 g4-version-hh() { echo $(g4-dir)/source/global/management/include/G4Version.hh ; }
 g4-version-number() { perl -n -e 'm,#define G4VERSION_NUMBER\s*(\d*), && print $1' $(g4-version-hh) ; } 
-
-
-
 
 
 g4-nom-notes(){ cat << EON
@@ -406,25 +439,70 @@ g4--()
 }
 
 
+
+
 g4-wipe(){
-   local iwd=$PWD
+   g4-wipe-build
+   g4-wipe-install
+}
+
+g4-wipe-build(){
    local bdir=$(g4-bdir)
    rm -rf $bdir
+}
+
+g4-wipe-install(){
+   local iwd=$PWD
 
    cd $(g4-prefix)
-
    local suffix=$(g4-libsuffix) 
+
+   rm -rf lib$suffix/cmake/Geant4*    ## ??
 
    rm -f lib$suffix/pkgconfig/geant4.pc 
    rm -f lib$suffix/libG4*    
    rm -rf lib$suffix/Geant4-*
+   rm -rf include/Geant4
+   rm -rf share/Geant4-*
+   rm -f bin/geant4.*
+   rm -f bin/geant4-config
+
 
    cd $iwd
 }
 
+
+
+g4-optional-hookup(){
+
+    if [ -z "$CMAKE_PREFIX_PATH" ]; then 
+        export CMAKE_PREFIX_PATH=$(g4-prefix)
+    else
+        export CMAKE_PREFIX_PATH=$(g4-prefix):$CMAKE_PREFIX_PATH
+    fi 
+
+    if [ -z "$PKG_CONFIG_PATH" ]; then 
+        export PKG_CONFIG_PATH=$(g4-prefix)
+    else
+        export PKG_CONFIG_PATH=$(g4-prefix)/lib:$PKG_CONFIG_PATH
+    fi 
+
+    case $(uname) in 
+       Darwin) libpathvar=DYLD_LIBRARY_PATH ;; 
+        Linux) libpathvar=LD_LIBRARY_PATH ;; 
+    esac
+
+    if [ -z "${!libpathvar}" ]; then 
+        export ${libpathvar}=$(g4-prefix)/lib
+    else
+        export ${libpathvar}=$(g4-prefix)/lib:${!libpathvar}
+    fi 
+}
+
+
+
 g4-configure()
 {
-   local 
    local bdir=$(g4-bdir)
    [ -f "$bdir/CMakeCache.txt" ] && g4-configure-msg  && return
 
@@ -438,26 +516,6 @@ EOM
 }
 
 
-
-g4-info(){ cat << EOI
-
-   g4-tag          : $(g4-tag)
-   g4-url          : $(g4-url)
-   g4-dist         : $(g4-dist)
-   g4-filename     : $(g4-filename)
-   g4-name         : $(g4-name)
-   g4-nom          : $(g4-nom)
-   g4-title        : $(g4-title)
-   g4-version-number : $(g4-version-number)
-
-   g4-prefix       : $(g4-prefix) 
-   g4-cmake-dir    : $(g4-cmake-dir)
-   g4-examples-dir : $(g4-examples-dir)
-   g4-bdir         : $(g4-bdir)
-   g4-dir          : $(g4-dir)
-
-EOI
-}
 
 
 
@@ -597,12 +655,9 @@ g4-build(){
    return $rc
 }
 
-g4-sh(){   echo $(g4-idir)/bin/geant4.sh ; }
 
-g4-configdir(){ echo ${G4_CONFIGDIR:-$(opticks-prefix)/externals/config} ; }
 
-g4-export(){ source $(g4-sh) ; }
-
+g4-export(){ source $(g4-prefix)/bin/geant4.sh ; }
 
 g4-export-ini-notes(){ cat << EON
 
@@ -614,17 +669,21 @@ EON
 }
 
 
+g4-inipath(){ echo $(g4-prefix)/bin/geant4.ini ; }
+
 g4-export-ini()
 {
     local msg="=== $FUNCNAME :"
-    local dir=$(g4-configdir)
+
+    local inipath=$(g4-inipath)
+    local dir=$(dirname $inipath)
     mkdir -p $dir 
-    echo $msg writing G4 environment into dir $dir
+    echo $msg writing G4 environment into $inipath 
 
     g4-export
 
-    $(opticks-home)/bin/envg4.py  > $dir/geant4.ini
-    cat $dir/geant4.ini
+    $(opticks-home)/bin/envg4.py  > $inipath
+    cat $inipath
 
     g4-envg4
 }
@@ -643,24 +702,29 @@ g4-envg4
 
         source /path/to/opticks-envg4.bash
 
+
+    TODO : eliminate this, just use the standard geant4 env setup, 
+           despite clunkiness it integrates easier
+
 EON
 }
 
+g4-envg4-path(){ echo $(g4-prefix)/opticks-envg4.bash ; }
 g4-envg4()
 {
     local msg="=== $FUNCNAME :"
-    local externals=$OPTICKS_PREFIX/externals
-    local script="opticks-envg4.bash"
-    echo $msg writing script $script to externals $externals/$script
-    $(opticks-home)/bin/envg4.py --token here  --prefix $externals --bash  > $externals/$script
-    cat $externals/$script
+    local prefix=$(g4-prefix)
+    local path=$(g4-envg4-path)
+    echo $msg writing $path
+    $(opticks-home)/bin/envg4.py --token here  --prefix $prefix --bash  > $path
+    cat $path
 }
 
 
 
 ################# below funcions for studying G4 source ##################################
 
-g4-ifind(){ find $(g4-idir) -name ${1:-G4VUserActionInitialization.hh} ; }
+g4-ifind(){ find $(g4-prefix) -name ${1:-G4VUserActionInitialization.hh} ; }
 g4-sfind(){ find $(g4-dir)/source -name ${1:-G4VUserActionInitialization.hh} ; }
 
 g4-hh(){ find $(g4-dir)/source -name '*.hh' -exec grep -H "${1:-G4GammaConversion}" {} \; ; }
@@ -796,55 +860,55 @@ g4-find-(){ find $(g4-dir) $* ; }
 g4-find-gdml(){ g4-find- -name '*.gdml' ; } 
 
 
-g4-pc-path(){ echo $(opticks-prefix)/externals/lib/pkgconfig/G4.pc ; }
 
-g4-libs--(){ cat << EOL
-G4Tree;G4FR;G4GMocren;G4visHepRep;G4RayTracer;G4VRML;G4vis_management;G4modeling;G4interfaces;G4persistency;G4analysis;G4error_propagation;G4readout;G4physicslists;G4run;G4event;G4tracking;G4parmodels;G4processes;G4digits_hits;G4track;G4particles;G4geometry;G4materials;G4graphics_reps;G4intercoms;G4global;G4clhep;G4zlib
-EOL
+g4-libsuffix(){
+   local suffix
+   case $(uname) in 
+      Linux) suffix=64 ;; 
+     Darwin) suffix=   ;;
+   esac
+   echo $suffix
 }
 
+g4-pc-notes(){ cat << EON
 
-g4-libs-(){ g4-libs-- | tr ";" "\n" ; }
-g4-libs(){
- g4-libs- | while read lib ; do
-    printf "%s " "-l$lib" 
- done   
+Standard Geant4 does not install a geant4.pc file, 
+the g4-pc function attempts to create the missing 
+pc file that corresponds exactly to what geant4-config gives.
+
+EON
 }
 
+g4-pc-path(){ echo $(g4-prefix)/lib$(g4-libsuffix)/pkgconfig/geant4.pc ; }
+g4-pcfiledir(){ pkg-config --variable=pcfiledir geant4 ; }
 
-g4-libdir-(){ cat << EOD
-externals/lib64
-externals/lib
-EOD
-}
+g4-pc-(){ 
 
-g4-libdir(){
-   local rdir
-   local dir
-   $FUNCNAME- | while read rdir ; do 
-      dir=$(opticks-prefix)/$rdir
-      [ -f "$dir/libG4Tree.dylib" -o -f "$dir/libG4Tree.so" ] && echo $rdir
-   done
-}
+   local prefix=$(g4-prefix)
+   local config=$prefix/bin/geant4-config
+   local prefix0=$($config --prefix)
+   local prefix1=$(cd $prefix0 ; pwd)
+   
+   [ "$prefix" != "$prefix1" ] && echo $msg ERROR prefix inconsistent $prefix $prefix1 && return 1
 
-g4-pc-(){ cat << EOP
-
+   cat << EOP
 # $FUNCNAME $(date)
+# prefix0 $prefix0 
+# prefix1 $prefix1 
 
-prefix=$(opticks-prefix)
-includedir=\${prefix}/externals/include/Geant4
-libdir=\${prefix}/$(g4-libdir)
+prefix=$prefix
+includedir=\${prefix}/include/Geant4
+libdir=\${prefix}/lib$(g4-libsuffix)
 
 Name: Geant4
 Description: 
-Version: 
-Libs: -L\${libdir} $(g4-libs) -lstdc++
-Cflags: -I\${includedir}
-
+Version: $($config --version)
+Libs: $($config --libs) 
+Cflags: $($config --cflags)
 
 EOP
 }
-g4-pc-old(){
+g4-pc(){
     local msg="=== $FUNCNAME :";
     local path=$(g4-pc-path);
     local dir=$(dirname $path);
@@ -853,15 +917,15 @@ g4-pc-old(){
     g4-pc- > $path
 }
 
-g4-pc(){
+
+g4-pco-path(){ echo $(opticks-prefix)/externals/lib/pkgconfig/G4.pc ; }
+g4-pco(){
 
    local msg="=== $FUNCNAME :"
    local name=geant4
-   #local prefix=$(pkg-config --variable=prefix $name)
-   #local path=$prefix/lib64/pkgconfig/$name.pc 
    local pcfiledir=$(pkg-config --variable=pcfiledir $name)
    local path=$pcfiledir/$name.pc 
-   local path2=$(g4-pc-path)
+   local path2=$(g4-pco-path)
    local dir=$(dirname $path2)
    if [ ! -d "$dir" ]; then
        mkdir -p $dir   
@@ -873,42 +937,9 @@ g4-pc(){
    elif [ -f "$path2" ]; then 
        echo $msg path2 $path2 exists already
    fi  
-
-
-
-
-
 }
 
 
-
-
-
-g4-pcc-(){ 
-   local config=$1
-   cat << EOP
-
-prefix=$(cd $($config --prefix) ; pwd)
-
-Name: Geant4
-Description:
-Version: $($config --version)
-Libs: $($config --libs) -lstdc++
-Cflags: $($config --cflags)
-
-# on Darwin with clang should be -lc++ but I think there is some compat to make -lstdc++ work 
-
-EOP
-}
-
-g4-pcc-path(){
-   local prefix=$1
-   if [ -d "$prefix/lib64" ]; then  
-      echo $prefix/lib64/pkgconfig/geant4.pc 
-   elif [ -d "$prefix/lib" ]; then  
-      echo $prefix/lib/pkgconfig/geant4.pc 
-   fi   
-}
 
 g4-pcc()
 {
@@ -934,7 +965,6 @@ g4-pcc()
     g4-pcc- $config  > $path
 }
 
-
 g4-pcc-all () 
 { 
     : NOT A GOOD APPROACH : AS THE PC WILL GO STALE WHEN PACKAGES ARE REINSTALLED;
@@ -952,7 +982,6 @@ g4-pcc-all ()
         g4-pcc $idx;
     done
 }
-
 
 
 g4-setup(){ cat << EOS

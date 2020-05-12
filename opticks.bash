@@ -570,13 +570,12 @@ opticks-preqs(){
    cat <<  EOP
 cuda
 optix
-boost
-xercesc
-g4
 EOP
 }
 
-opticks-optionals(){ cat << EOL
+opticks-optionals(){ 
+   cat << EOL
+boost
 xercesc
 g4
 EOL
@@ -642,20 +641,23 @@ opticks-externals-status(){  echo $FUNCNAME ; opticks-externals | opticks-ext-st
 
 
 
-opticks-preqs-config(){ 
+opticks-preqs-pc(){      opticks-pc- $(opticks-preqs) ; }
+opticks-optionals-pc(){  opticks-pc- $(opticks-optionals) ; }
+
+opticks-pc-(){ 
     echo $FUNCNAME 
     local msg="=== $FUNCNAME :"
-    local preqs=$(opticks-preqs) 
-    local preq
-    for preq in $preqs ; do 
+    local funcs=$*
+    local func
+    for func in $funcs ; do 
 
-        printf "\n\n\n############## %s ###############\n\n\n" $preq
+        printf "\n\n\n############## %s ###############\n\n\n" $func
 
-        $preq-
-        $preq-pc
+        $func-
+        $func-pc
  
         rc=$?
-        [ $rc -ne 0 ] && echo $msg RC $rc from preq $preq : ABORTING && return $rc
+        [ $rc -ne 0 ] && echo $msg RC $rc from func $func : ABORTING && return $rc
     done
     return 0 
 }
@@ -673,6 +675,47 @@ opticks-optionals-dist(){    echo $FUNCNAME ; opticks-optionals | opticks-ext-di
 opticks-possibles-install(){ echo $FUNCNAME ; opticks-possibles | opticks-ext-installer ; }
 opticks-possibles-url(){     echo $FUNCNAME ; opticks-possibles | opticks-ext-url ; }
 opticks-possibles-dist(){    echo $FUNCNAME ; opticks-possibles | opticks-ext-dist ; }
+
+
+
+
+opticks-pc-rename-kludge(){
+   
+   : used by xercesc-pc to pkg-config rename things 
+   : TODO : try to avoid this nasty workaround : is the renaming really needed
+
+   local msg="=== $FUNCNAME :"
+
+   # trust the PKG_CONFIG_PATH to yield the XercesC that Geant4 is using
+   local name=${1:-xerces-c}
+   local name2=${2:-OpticksXercesC}
+
+   local pcfiledir=$(pkg-config --variable=pcfiledir $name)
+   local path=$pcfiledir/$name.pc
+   local path2=$pcfiledir/$name2.pc
+   local path3=$(opticks-prefix)/externals/lib/pkgconfig/$name2.pc
+
+   if [ -w "$(dirname $path2)" ]; then 
+
+       echo $msg have write permission to path2 $path2
+       ln -svf $path $path2
+
+   elif [ -w "$(dirname $path3)" ]; then 
+
+       echo $msg NO write permission for path2 $path2 resort to path3 $path3
+       ln -svf $path $path3
+
+   else
+       echo $msg NO write permission to path3 $path3 either
+   fi  
+
+}
+
+
+
+
+
+
 
 
 
@@ -1241,21 +1284,71 @@ EON
 opticks-check-geant4(){
 
     local msg="=== $FUNCNAME :"
-    local g4_prefix=$(opticks-setup-find-geant4-prefix) 
+    local g4_prefix=$(opticks-setup-find-geant4-prefix)  # search CMAKE_PREFIX_PATH for Geant4Config.cmake
     local g4_script=${g4_prefix}/bin/geant4.sh 
 
     if [ -z "$g4_prefix" ]; then 
-        echo $msg ERROR no g4_prefix found 
+        echo $msg ERROR no g4_prefix : failed to find Geant4Config.cmake along CMAKE_PREFIX_PATH
         return 1
     fi 
        
     if [ ! -f "$g4_script" ]; then 
-        echo $msg ERROR g4_script $g4_script does not exist 
+        echo $msg ERROR g4_script $g4_script does not exist : Geant4 installation must be incomplete
         return 2
     fi 
    # $(opticks-home)/bin/find_package.py G4 --index 0 --nocache
     return 0 
 }
+
+
+opticks-prepend-prefix(){
+    local msg="=== $FUNCNAME :"
+    local prefix=$1
+    [ ! -d "$prefix" ] && echo $msg prefix $prefix does not exist && return 1
+
+    local bindir=$prefix/bin
+    local libdir=""
+    if [ -d "$prefix/lib64" ]; then 
+        libdir=$prefix/lib64
+    elif [ -d "$prefix/lib" ]; then 
+        libdir=$prefix/lib
+    fi
+
+    [ -z "$libdir" ] && echo $msg FAILED to find libdir under prefix $prefix && return 2
+
+    if [ -z "$CMAKE_PREFIX_PATH" ]; then 
+        export CMAKE_PREFIX_PATH=$prefix
+    else
+        export CMAKE_PREFIX_PATH=$prefix:$CMAKE_PREFIX_PATH
+    fi 
+
+    if [ -z "$PKG_CONFIG_PATH" ]; then 
+        export PKG_CONFIG_PATH=$libdir/pkgconfig
+    else
+        export PKG_CONFIG_PATH=$libdir/pkgconfig:$PKG_CONFIG_PATH
+    fi 
+
+    if [ -d "$bindir" ]; then 
+        if [ -z "$PATH" ]; then 
+            export PATH=$bindir
+        else
+            export PATH=$bindir:$PATH
+        fi 
+    fi 
+
+    case $(uname) in 
+       Darwin) libpathvar=DYLD_LIBRARY_PATH ;; 
+        Linux) libpathvar=LD_LIBRARY_PATH ;; 
+    esac
+
+    if [ -z "${!libpathvar}" ]; then 
+        export ${libpathvar}=$libdir
+    else
+        export ${libpathvar}=$libdir:${!libpathvar}
+    fi 
+}
+
+
 
 
 opticks-setup-geant4-(){ cat << EOS
@@ -1304,9 +1397,16 @@ opticks-full()
         echo $msg installing the below externals into $(opticks-prefix)/externals
         opticks-externals 
         opticks-externals-install
-        echo $msg config-ing the below preqs 
+
+        echo $msg config-ing the preqs 
         opticks-preqs
-        opticks-preqs-config 
+        opticks-preqs-pc
+
+        echo $msg config-ing the optionals
+        opticks-optionals
+        opticks-optionals-pc
+
+
         echo $msg generating setup script 
         opticks-setup-generate 
     else

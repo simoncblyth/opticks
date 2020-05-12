@@ -614,14 +614,13 @@ boost-ver-(){
 }
 
 boost-ver(){    echo ${OPTICKS_BOOST_VERSION:-$(boost-ver-)} ; }
-boost-prefix(){ echo ${OPTICKS_BOOST_PREFIX:-$(opticks-prefix)/externals}  ; }
+boost-prefix(){ echo ${OPTICKS_BOOST_PREFIX:-$(opticks-prefix)/externals/boost}  ; }
 
 boost-name(){ local ver=$(boost-ver) ; echo boost_${ver//./_} ; }
 boost-url(){ echo "http://downloads.sourceforge.net/project/boost/boost/$(boost-ver)/$(boost-name).tar.gz" ;  }
 
 
-boost-fold(){   echo $(boost-prefix)/boost ; }
-boost-dir(){    echo $(boost-prefix)/boost/$(boost-name) ; }
+boost-dir(){    echo $(boost-prefix).build/$(boost-name) ; }
 
 boost-bdir(){   echo $(boost-dir).build ; }
 boost-idir(){   echo $(boost-prefix)/include/boost ; }
@@ -629,7 +628,21 @@ boost-idir(){   echo $(boost-prefix)/include/boost ; }
 boost-cd(){   cd $(boost-dir); }
 boost-bcd(){  cd $(boost-bdir); }
 boost-icd(){  cd $(boost-idir); }
-boost-fcd(){  cd $(boost-fold); }
+boost-pcd(){  cd $(boost-prefix); }
+
+
+boost-info(){ cat << EOI
+
+   boost-prefix : $(boost-prefix) 
+        installation dir 
+  
+   boost-dir    : $(boost-dir)
+        exploded distribution dir 
+
+
+EOI
+}
+
 
 
 boost-get(){
@@ -656,16 +669,17 @@ boost--() {
 
 boost-bootstrap-help(){
   boost-cd
-  ./bootstrap.sh --help
+  ./tools/build/bootstrap.sh --help
 }
 
 boost-bootstrap-build(){
   boost-cd
   case $(opticks-cmake-generator) in
      "Visual Studio 14 2015") cmd "/C bootstrap.bat" ;;
-                           *) ./bootstrap.sh --prefix=$(boost-prefix) ;;  
+                           *) ./bootstrap.sh --prefix=$(boost-prefix)  ;;
   esac
 
+  # --prefix=$(boost-prefix) ;;  
   #./bootstrap.sh --prefix=$(boost-prefix) --with-libraries=python
 }
 
@@ -802,26 +816,22 @@ EOC
 }
 
 boost-libs(){
+   # could get this by looking at the libs that are present 
    local comp
    boost-components- | while read comp ; do 
       printf -- "-lboost_%s " "$comp"
    done
 }
 
-
-
-boost-pc-path(){ echo $(boost-prefix)/lib/pkgconfig/Boost.pc ; }
 boost-pc-() 
 { 
-   ## hmm need to branch depending on system boost or self-installed boost 
-
     cat <<EOP
 
 # $FUNCNAME $(date)
 
-prefix=$(opticks-prefix)
-includedir=\${prefix}/externals/include
-libdir=\${prefix}/externals/lib
+prefix=$(boost-prefix)
+includedir=\${prefix}/include
+libdir=\${prefix}/lib
 
 Name: Boost
 Description: 
@@ -832,7 +842,17 @@ Cflags: -I\${includedir}
 EOP
 }
 
-boost-pc-old() 
+
+boost-pc-notes(){ cat << EON
+
+Standard boost does not install a pc file.
+boost-pc generates one 
+
+EON
+}
+
+boost-pc-path(){ echo $(boost-prefix)/lib/pkgconfig/Boost.pc ; }
+boost-pc() 
 { 
     local msg="=== $FUNCNAME :";
     local path=$(boost-pc-path);
@@ -843,12 +863,13 @@ boost-pc-old()
     boost-pc- > $path
 }
 
-boost-pc()
+
+boost-pc-copy()
 {
    local msg="=== $FUNCNAME :";
    local name=boost
-   local prefix=$(pkg-config $name --variable=prefix)
-   local path=$prefix/lib/pkgconfig/$name.pc
+   local pcfiledir=$(pkg-config $name --variable=pcfiledir)
+   local path=$pcfiledir/$name.pc
 
    local path2=$(boost-pc-path);
    local dir=$(dirname $path2);
