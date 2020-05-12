@@ -430,8 +430,8 @@ g4--()
     [ $? -ne 0 ] && echo $msg configure FAIL && return 2
     g4-build
     [ $? -ne 0 ] && echo $msg build FAIL && return 3
-    g4-export-ini
-    [ $? -ne 0 ] && echo $msg export-ini FAIL && return 4
+    # g4-export-ini
+    # [ $? -ne 0 ] && echo $msg export-ini FAIL && return 4
     g4-pc
     [ $? -ne 0 ] && echo $msg pc FAIL && return 5
 

@@ -34,7 +34,7 @@ class EnvG4(object):
         d = odict()
         names = []
         for k,v in filter(lambda kv:kv[0].startswith("G4"), os.environ.items()):
-            assert v.startswith(prefix), (v, prefix)
+            #assert v.startswith(prefix), (v, prefix)  : not true with foreign G4
 
             e = v.split("/")
             if not e[-4] == "share" and e[-2] == "data": continue

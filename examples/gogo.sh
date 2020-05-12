@@ -24,15 +24,19 @@ gogo-find-1(){ ls -1 *NoCMake/go.sh ; }
 gogo-find-2(){ ls -1 */go.sh | grep -v NoCMake ; }
 gogo-find-3(){ ls -1 */goc.sh ; }
 
-gogo-find(){ gogo-find-2 ; }
+gogo-find(){ 
+   for arg in $* ; do 
+       gogo-find-$arg
+   done 
+}
 
 gogo-fails(){ cat << EON
 
 
-gogo-find-1
+./gogo.sh 1
    skipping UseGeant4
 
-gogo-find-2
+./gogo.sh 2
 
   macOS:
     UseOGLRapMinimal/go.sh                     1    
@@ -50,7 +54,7 @@ EON
 
 gogo-all(){
     local go
-    gogo-find | while read go ; do 
+    gogo-find $* | while read go ; do 
         gogo-one $go
     done
 }
@@ -88,6 +92,7 @@ gogo-one(){
     cd $iwd
 }
 
-gogo-all
+gogo-all $*
+#gogo-find $*
 
 

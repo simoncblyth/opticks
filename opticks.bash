@@ -870,6 +870,10 @@ opticks-setup-generate(){
     mkdir -p $(dirname $path)     
     echo $msg writing $path 
 
+    local csh=${path/.sh}.csh
+    echo "# $FUNCNAME you gotta be kidding : use bash  "  > $csh
+
+
     opticks-setup-hdr-       > $path
     rc=$?
     echo $msg post opticks-setup-hdr- rc $rc
