@@ -606,12 +606,15 @@ g4-cmake(){
        -DCMAKE_BUILD_TYPE=$(opticks-buildtype) \
        -DGEANT4_INSTALL_DATA=ON \
        -DGEANT4_USE_GDML=ON \
-       -DXERCESC_LIBRARY=$(xercesc-library) \
-       -DXERCESC_INCLUDE_DIR=$(xercesc-include-dir) \
+       -DXERCESC_LIBRARY=$(xercesc-pc-library) \
+       -DXERCESC_INCLUDE_DIR=$(xercesc-pc-includedir) \
        -DCMAKE_INSTALL_PREFIX=$idir \
        $(g4-dir)
 
    rc=$?
+
+#       -DXERCESC_ROOT_DIR=$(xercesc-prefix) \
+# huh:this fails to find it 
 
    cd $iwd
    return $rc
@@ -634,8 +637,17 @@ g4-cmake-modify-xercesc()
 {
    xercesc-
    g4-cmake-modify \
-      -DXERCESC_LIBRARY=$(xercesc-library) \
-      -DXERCESC_INCLUDE_DIR=$(xercesc-include-dir) 
+      -DXERCESC_LIBRARY=$(xercesc-pc-library) \
+      -DXERCESC_INCLUDE_DIR=$(xercesc-pc-includedir) 
+}
+
+g4-cmake-modify-xercesc-prefix()
+{
+   xercesc-
+   g4-cmake-modify \
+      -DXERCESC_ROOT_DIR=$(xercesc-prefix) 
+
+   : observe that this fails to find the xerces-c under the prefix but the above library and includedir approach does work
 }
 
 g4-cmake-modify-xercesc-system()
@@ -873,14 +885,14 @@ g4-libsuffix(){
 g4-pc-notes(){ cat << EON
 
 Standard Geant4 does not install a geant4.pc file, 
-the g4-pc function attempts to create the missing 
-pc file that corresponds exactly to what geant4-config gives.
+the g4-pc function attempts to create the missing G4.pc
+file that corresponds exactly to what geant4-config gives.
 
 EON
 }
 
-g4-pc-path(){ echo $(g4-prefix)/lib$(g4-libsuffix)/pkgconfig/geant4.pc ; }
-g4-pcfiledir(){ pkg-config --variable=pcfiledir geant4 ; }
+g4-pc-path(){ echo $(g4-prefix)/lib$(g4-libsuffix)/pkgconfig/G4.pc ; }
+g4-pcfiledir(){ pkg-config --variable=pcfiledir G4 ; }
 
 g4-pc-(){ 
 

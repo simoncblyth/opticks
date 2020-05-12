@@ -141,6 +141,17 @@ xercesc-include-dir-macports(){ echo /opt/local/include ; }
 xercesc-library(){     echo ${OPTICKS_XERCESC_LIBRARY:-$(xercesc-library-)} ; }
 xercesc-include-dir(){ echo ${OPTICKS_XERCESC_INCLUDE_DIR:-$(xercesc-include-dir-)} ; }
 
+xercesc-pc-includedir(){ pkg-config xerces-c --variable=includedir ; }
+xercesc-pc-libdir(){     pkg-config xerces-c --variable=libdir ; }
+xercesc-pc-library(){    
+   local libdir=$(xercesc-pc-libdir) 
+   case $(uname) in 
+      Darwin) echo $libdir/libxerces-c.dylib ;; 
+       Linux) echo $libdir/libxerces-c.so ;; 
+   esac
+}
+
+
 xercesc-library-(){  
 
   if [ "$NODE_TAG" == "MGB" ]; then
