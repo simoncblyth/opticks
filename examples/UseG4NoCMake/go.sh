@@ -31,8 +31,8 @@ pkg=G4
 
 echo gcc -c $sdir/Use$pkg.cc $(oc -cflags $pkg)
      gcc -c $sdir/Use$pkg.cc $(oc -cflags $pkg)
-echo gcc Use$pkg.o -o Use$pkg $(oc -libs $pkg) 
-     gcc Use$pkg.o -o Use$pkg $(oc -libs $pkg)
+echo gcc Use$pkg.o -o Use$pkg $(oc -libs $pkg) -lstdc++
+     gcc Use$pkg.o -o Use$pkg $(oc -libs $pkg) -lstdc++
 echo ./Use$pkg
      ./Use$pkg
 

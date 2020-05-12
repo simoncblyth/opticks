@@ -1,3 +1,8 @@
+
+
+Prior to splitting the prefix for g4 and xercesc suffered with library mixups
+causing problems like the below.
+
 runtime missing symbol : G4GDMLWriteDefine::DefineWrite(xercesc_3_2::DOMElement*)
 
 [blyth@localhost UseCFG4]$ nm /home/blyth/junotop/ExternalLibs/Geant4/10.05.p01/lib64/libG4persistency.so | c++filt | grep G4GDMLWriteDefine::DefineWrite

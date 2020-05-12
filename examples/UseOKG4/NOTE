@@ -1,1 +1,3 @@
-needed to g4-wipe for thius to work : clearly must not comingle geant4 prefix with others 
+
+Before splitting the prefix had to g4-wipe when using foreign G4 for thus to work 
+clearly cannot comingle geant4 prefix with others 

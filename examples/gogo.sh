@@ -24,7 +24,7 @@ gogo-find-1(){ ls -1 *NoCMake/go.sh ; }
 gogo-find-2(){ ls -1 */go.sh | grep -v NoCMake ; }
 gogo-find-3(){ ls -1 */goc.sh ; }
 
-gogo-find(){ gogo-find-1 ; }
+gogo-find(){ gogo-find-2 ; }
 
 gogo-fails(){ cat << EON
 
@@ -39,8 +39,9 @@ gogo-find-2
          link fail : Composition::setCenterExtent  GLM vec args  
          FIXED after clean install of Opticks 
 
-    UseOptiXProgramPP/go.sh                  139    segmenting at the launch with OptiX 50001
-
+    UseOptiXProgramPP/go.sh                  139    
+         segmenting at the launch with OptiX 50001
+         working fine with OptiX 650
 
 EON
 }

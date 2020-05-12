@@ -1,3 +1,7 @@
+
+
+Before splitting the prefix for g4,xercesc had wrong library syndrome causing problems like:
+
 runtime symbol lookup error libExtG4.so G4GDMLWriteDefine::DefineWrite(xercesc_3_2::DOMElement*)
 
 /home/blyth/local/opticks/lib/UseG4OK: symbol lookup error: /home/blyth/local/opticks/lib/../lib64/libExtG4.so: undefined symbol: _ZN17G4GDMLWriteDefine11DefineWriteEPN11xercesc_3_210DOMElementE
