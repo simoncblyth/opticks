@@ -616,22 +616,28 @@ EOI
 
 opticks-externals-install(){ opticks-installer- $(opticks-externals) ; }
 opticks-optionals-install(){ opticks-installer- $(opticks-optionals) ; }
+opticks-possibles-install(){ opticks-installer- $(opticks-possibles) ; }
 
 opticks-installer-(){ 
     echo $FUNCNAME 
     local msg="=== $FUNCNAME :"
-    local exts=$*
-    local ext
-    for ext in $exts ; do 
+    local pkgs=$*
+    local pkg
+    for pkg in $pkgs ; do 
 
-        printf "\n\n\n############## %s ###############\n\n\n" $ext
+        printf "\n\n\n############## %s ###############\n\n\n" $pkg
 
-        echo $ext | opticks-ext-installer 
+        $pkg-
+        $pkg--
+
         rc=$?
-        [ $rc -ne 0 ] && echo $msg RC $rc from ext $ext : ABORTING && return $rc
+        [ $rc -ne 0 ] && echo $msg RC $rc from pkg $pkg : ABORTING && return $rc
     done
     return 0 
 }
+
+
+
 
 
 opticks-externals-url(){     echo $FUNCNAME ; opticks-externals | opticks-ext-url ; }
@@ -672,7 +678,6 @@ opticks-preqs-setup(){       echo === $FUNCNAME ; opticks-preqs     | opticks-ex
 opticks-optionals-url(){     echo $FUNCNAME ; opticks-optionals | opticks-ext-url ; }
 opticks-optionals-dist(){    echo $FUNCNAME ; opticks-optionals | opticks-ext-dist ; }
 
-opticks-possibles-install(){ echo $FUNCNAME ; opticks-possibles | opticks-ext-installer ; }
 opticks-possibles-url(){     echo $FUNCNAME ; opticks-possibles | opticks-ext-url ; }
 opticks-possibles-dist(){    echo $FUNCNAME ; opticks-possibles | opticks-ext-dist ; }
 
@@ -1450,23 +1455,6 @@ opticks-ext-setup()
    return 0 
 }
 
-
-opticks-ext-installer(){
-   local msg="=== $FUNCNAME :"
-   echo $msg START $(date)
-   local ext
-   local rc 
-   while read ext 
-   do
-        echo $msg $ext
-        $ext-
-        $ext--
-        rc=$?
-        [ $rc -ne 0 ] && echo $msg RC $rc from ext $ext : ABORTING && return $rc
-   done
-   echo $msg DONE $(date)
-   return 0 
-}
 
 opticks-ext-url(){
    local ext
