@@ -123,11 +123,14 @@ EOU
 
 oimplicitmesher-edit(){ vi $(opticks-home)/cmake/Modules/FindImplicitMesher.cmake ; }
 
-oimplicitmesher-url-http(){ echo https://bitbucket.com/simoncblyth/ImplicitMesher ; }
-oimplicitmesher-url-ssh(){  echo ssh://hg@bitbucket.org/simoncblyth/ImplicitMesher ; }
+#oimplicitmesher-url-http(){ echo https://bitbucket.com/simoncblyth/ImplicitMesher ; }
+#oimplicitmesher-url-ssh(){  echo ssh://hg@bitbucket.org/simoncblyth/ImplicitMesher ; }
+oimplicitmesher-url-http(){ echo https://bitbucket.com/simoncblyth/implicitmesher ; }
+oimplicitmesher-url-git(){  echo git@bitbucket.org:simoncblyth/implicitmesher.git ; }
+
 oimplicitmesher-url(){
    case $USER in 
-      blyth) oimplicitmesher-url-ssh ;;
+      blyth) oimplicitmesher-url-git ;;
           *) oimplicitmesher-url-http ;; 
    esac
 }
@@ -189,7 +192,7 @@ oimplicitmesher-get(){
    local dir=$(dirname $(oimplicitmesher-dir)) &&  mkdir -p $dir && cd $dir
    local url=$(oimplicitmesher-url)
    local nam=$(basename $url)
-   [ ! -d $nam ] && hg clone $url
+   [ ! -d $nam ] && git clone $url
    cd $iwd
 }
 
