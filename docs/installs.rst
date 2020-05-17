@@ -27,7 +27,7 @@ Example .bash_profile
         alias vip='vi ~/.bash_profile'
         alias ini='. ~/.bash_profile'
         alias t='typeset -f'
-        alias o='cd ~/opticks ; hg status'
+        alias o='cd ~/opticks ; git status'
         alias l='ls -l'
         alias h='history'
 

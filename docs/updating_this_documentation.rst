@@ -19,18 +19,13 @@ Build the html from RST::
 Publish html to bitbucket::
 
     [blyth@localhost ~]$ cd ~/simoncblyth.bitbucket.io/
-    [blyth@localhost simoncblyth.bitbucket.io]$ hg st          
+    [blyth@localhost simoncblyth.bitbucket.io]$ git status 
 
-    ...    ## add new files    
+    ...    ## git add new and modified files    
 
-    [blyth@localhost simoncblyth.bitbucket.io]$ hg commit -m "update docs, especially wrt CMake version requirement of 3.12+ "
-    [blyth@localhost simoncblyth.bitbucket.io]$ hg push 
-    pushing to ssh://hg@bitbucket.org/simoncblyth/simoncblyth.bitbucket.io
-    searching for changes
-    remote: adding changesets
-    remote: adding manifests
-    remote: adding file changes
-    remote: added 1 changesets with 98 changes to 98 files
+    [blyth@localhost simoncblyth.bitbucket.io]$ git commit -m "update docs, especially wrt CMake version requirement of 3.12+ "
+    [blyth@localhost simoncblyth.bitbucket.io]$ git push 
+    ...
 
    
 Check the published result::

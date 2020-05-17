@@ -7,8 +7,8 @@ Get Opticks
 Clone the repository from bitbucket::
 
    cd 
-   hg clone http://bitbucket.org/simoncblyth/opticks 
-   hg clone ssh://hg@bitbucket.org/simoncblyth/opticks   # via SSH for developers 
+   git clone https://simoncblyth@bitbucket.org/simoncblyth/opticks.git
+   git clone git@bitbucket.org:simoncblyth/opticks.git   # via git url for developers, uses ssh keys for passwordless pushes
 
 
 
@@ -28,7 +28,7 @@ Example `~/.opticks_setup`:
     opticks-(){  [ -r $OPTICKS_HOME/opticks.bash ] && . $OPTICKS_HOME/opticks.bash && opticks-env $* ; }
     opticks-     ##  
 
-    o(){ cd $(opticks-home) ; hg st ; }
+    o(){ cd $(opticks-home) ; git status ; }
     op(){ op.sh $* ; }
 
     PATH=$OPTICKS_HOME/bin:$OPTICKS_HOME/ana:$LOCAL_BASE/opticks/lib:$PATH  ## easy access to scripts and executables
@@ -226,7 +226,6 @@ Getting, configuring, unpacking, building and installing Opticks and
 its externals requires unix tools including:
 
 * bash shell
-* mercurial hg 
 * git 
 * curl
 * tar
