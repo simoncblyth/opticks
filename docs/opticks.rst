@@ -7,7 +7,7 @@ Get Opticks
 Clone the repository from bitbucket::
 
    cd 
-   git clone https://simoncblyth@bitbucket.org/simoncblyth/opticks.git
+   git clone https://bitbucket.org/simoncblyth/opticks
    git clone git@bitbucket.org:simoncblyth/opticks.git   # via git url for developers, uses ssh keys for passwordless pushes
 
 

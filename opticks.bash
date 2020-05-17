@@ -28,7 +28,7 @@ opticks-usage(){   cat << \EOU
 OPTICKS BASH FUNCTIONS
 ========================
 
-*opticks-rdocs*
+*opticks-docs-remote*
      open browser on the remote html documentation
      https://simoncblyth.bitbucket.io/opticks/index.html
 
@@ -2106,8 +2106,8 @@ opticks-co(){      opticks-open  https://bitbucket.org/simoncblyth/opticks/commi
 ########## building opticks docs 
 
 opticks-bb(){      opticks-open  http://simoncblyth.bitbucket.io/opticks/index.html ; } 
-opticks-rdocs(){   opticks-open  http://simoncblyth.bitbucket.io/opticks/index.html ; } 
-opticks-rnotes(){  opticks-open  http://simoncblyth.bitbucket.io/opticks_notes/index.html ; } 
+opticks-docs-remote(){   opticks-open  http://simoncblyth.bitbucket.io/opticks/index.html ; } 
+opticks-notes-remote(){  opticks-open  http://simoncblyth.bitbucket.io/opticks_notes/index.html ; } 
 opticks-docs(){    opticks-open  $(opticks-docs-htmldir)/index.html ; } 
 opticks-docs-htmldir(){ 
    local htmldirbb=$HOME/simoncblyth.bitbucket.io/opticks 
