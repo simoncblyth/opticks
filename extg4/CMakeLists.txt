@@ -34,6 +34,11 @@ find_package(GGeo       REQUIRED CONFIG)
 find_package(OpticksXercesC REQUIRED MODULE)
 
 
+message(STATUS "CLHEP_DIR : ${CLHEP_DIR}" )
+message(STATUS "CLHEP_INCLUDE_DIRS : ${CLHEP_INCLUDE_DIRS}" )
+
+
+
 set(SOURCES
      
     X4CSG.cc
@@ -146,6 +151,7 @@ target_link_libraries( ${name} PUBLIC
     Opticks::G4
     Opticks::GGeo
     Opticks::OpticksXercesC
+    CLHEP::CLHEP
 )
 
 target_include_directories( ${name} PUBLIC 

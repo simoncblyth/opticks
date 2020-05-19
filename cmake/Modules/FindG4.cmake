@@ -79,7 +79,7 @@ if(Geant4_FOUND AND NOT TARGET Opticks::G4)
 
   set_target_properties(Opticks::G4  PROPERTIES 
                               INTERFACE_FIND_PACKAGE_NAME "G4 MODULE REQUIRED"
-                              INTERFACE_PKG_CONFIG_NAME "G4"
+                              INTERFACE_PKG_CONFIG_NAME "Geant4"
                        )
   list(APPEND G4_targets "G4")  
 

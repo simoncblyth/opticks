@@ -894,6 +894,58 @@ EON
 g4-pc-path(){ echo $(g4-prefix)/lib$(g4-libsuffix)/pkgconfig/G4.pc ; }
 g4-pcfiledir(){ pkg-config --variable=pcfiledir G4 ; }
 
+
+
+
+g4-generate-pcfile(){
+
+   local prefix=${1:-$(g4-prefix)}
+
+   local lib 
+   if [ -d "$prefix/lib64" ]; then
+      lib="lib64"
+   elif [ -d "$prefix/lib" ]; then
+      lib="lib"
+   fi  
+
+   if [ ! -d "$prefix/$lib/pkgconfig" ]; then 
+       mkdir -p $prefix/$lib/pkgconfig  
+   fi  
+
+   local config=$prefix/bin/geant4-config
+   local prefix0=$($config --prefix)
+   local prefix1=$(cd $prefix0 ; pwd)
+
+   local path=$prefix/$lib/pkgconfig/Geant4.pc
+   echo generate $path
+
+   cat << EOF > $path
+
+# $FUNCNAME $(date)
+# prefix $prefix 
+# prefix0 $prefix0 
+# prefix1 $prefix1 
+
+prefix=$prefix
+includedir=\${prefix}/include/Geant4
+libdir=\${prefix}/$lib
+
+Name: Geant4
+Description: PC generated from geant4-config outputs 
+Version: $($config --version)
+Libs: $($config --libs) 
+Cflags: $($config --cflags)
+
+# Requires: clhelp : not needed as CLHEP config included in above
+
+EOF
+
+}
+
+
+
+
+
 g4-pc-(){ 
 
    local prefix=$(g4-prefix)
