@@ -59,6 +59,7 @@ set(_TEST_SOURCES
 foreach(SRC ${TEST_SOURCES} ${_TEST_SOURCES})
 
     get_filename_component(TGT ${SRC} NAME_WE)
+    #add_compile_definitions(G4MULTITHREADED)
     add_executable(${TGT} ${SRC})
     target_link_libraries(${TGT} CFG4)
     install(TARGETS ${TGT} DESTINATION lib)

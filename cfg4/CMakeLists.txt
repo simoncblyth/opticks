@@ -17,6 +17,9 @@ find_package(OpticksXercesC  REQUIRED MODULE)
 find_package(OpticksGeo      REQUIRED CONFIG)
 find_package(ThrustRap       REQUIRED CONFIG)   # for TCURAND
 
+#message(STATUS "Geant4_DEFINITIONS:${Geant4_DEFINITIONS} ")
+#add_definitions(${Geant4_DEFINITIONS} -DG4USE_STD11)
+add_definitions(-DG4USE_STD11)
 
 
 set(SOURCES

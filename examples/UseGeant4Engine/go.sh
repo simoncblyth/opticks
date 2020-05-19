@@ -21,19 +21,31 @@
 
 opticks-
 
+
 sdir=$(pwd)
 name=$(basename $sdir)
-bdir=$(opticks-prefix)/build/$name
+bdir=/tmp/$USER/opticks/$name/build 
 
-rm -rf $bdir 
-mkdir -p $bdir && cd $bdir && pwd 
-  
+rm -rf $bdir && mkdir -p $bdir && cd $bdir && pwd 
+
+if [ -n "$NOCMAKE" ]; then
+
+#  NOCMAKE=1 ./go.sh
+gcc -c $sdir/$name.cc $(geant4-config --cflags)
+gcc $name.o -o $name $(geant4-config --libs) -lstdc++
+./$name
+
+else
+
 om-
-om-cmake $sdir 
-
+om-cmake $sdir
 make
-make install   
+[ $? -ne 0 ] && echo FAIL make && exit 1
+make install
+$name
 
-#opticks-t $bdir
+fi
+
+
 
 

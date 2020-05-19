@@ -21,19 +21,22 @@
 
 opticks-
 
+
 sdir=$(pwd)
 name=$(basename $sdir)
-bdir=$(opticks-prefix)/build/$name
+bdir=/tmp/$USER/opticks/$name/build 
 
-rm -rf $bdir 
-mkdir -p $bdir && cd $bdir && pwd 
-  
+rm -rf $bdir && mkdir -p $bdir && cd $bdir && pwd 
+
+
+
+
+
 om-
-om-cmake $sdir 
-
+om-cmake $sdir
 make
-make install   
+make install
 
-#opticks-t $bdir
+$name
 
 
