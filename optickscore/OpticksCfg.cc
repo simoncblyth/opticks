@@ -156,7 +156,7 @@ OpticksCfg<Listener>::OpticksCfg(const char* name, Listener* listener, bool live
        m_lod(0),
        m_target(BOpticksResource::DefaultTarget()),
        m_alignlevel(0),
-       m_exename(SAr::Instance->exename()), 
+       m_exename(SAr::Instance ? SAr::Instance->exename() : "OpticksEmbedded" ), 
        m_gpumonpath(BStr::concat("$TMP/",m_exename ? m_exename : "OpticksCfg","_GPUMon.npy")),
        m_runcomment(""),
        m_runstamp(STime::EpochSeconds()),

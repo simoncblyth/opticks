@@ -96,6 +96,13 @@ G4Opticks* G4Opticks::GetOpticks()
     return fOpticks ;
 }
 
+
+void G4Opticks::Initialize(const G4VPhysicalVolume* world, bool standardize_geant4_materials)
+{
+    G4Opticks* g4ok = GetOpticks(); 
+    g4ok->setGeometry(world, standardize_geant4_materials) ; 
+}
+
 void G4Opticks::Finalize()
 {
     LOG(info) << G4Opticks::GetOpticks()->desc();
@@ -210,7 +217,7 @@ GGeo* G4Opticks::translateGeometry( const G4VPhysicalVolume* top )
 {
     LOG(verbose) << "( key" ;
     const char* keyspec = X4PhysicalVolume::Key(top) ; 
-    LOG(error) << "SetKey " << keyspec  ;   
+    LOG(error) << "SetKey [" << keyspec << "]"  ;   
     BOpticksKey::SetKey(keyspec);
     LOG(verbose) << ") key" ;
 

@@ -452,7 +452,7 @@ std::string X4PhysicalVolume::Digest( const G4VPhysicalVolume* const top, const 
 const char* X4PhysicalVolume::Key(const G4VPhysicalVolume* const top, const char* digestextra, const char* digestextra2 )
 {
     std::string digest = Digest(top, digestextra, digestextra2 );
-    const char* exename = PLOG::instance->args.exename() ; 
+    const char* exename = PLOG::instance ? PLOG::instance->args.exename() : "OpticksEmbedded" ; 
     std::stringstream ss ; 
     ss 
        << exename

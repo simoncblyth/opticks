@@ -104,7 +104,7 @@ BOpticksKey::BOpticksKey(const char* spec)
     m_idgdml( StemName("gdml", ".") ),
     m_idsubd( IDSUBD ),
     m_layout( LAYOUT ),
-    m_current_exename( SAr::Instance->exename() )
+    m_current_exename( SAr::Instance ? SAr::Instance->exename() : "OpticksEmbedded" )
 {
     std::vector<std::string> elem ; 
     BStr::split(elem, spec, '.' ); 

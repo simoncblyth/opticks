@@ -85,6 +85,7 @@ class G4OK_API G4Opticks
         static std::string EmbeddedCommandLine(const char* extra=NULL); 
     public:
         static G4Opticks* GetOpticks();
+        static void Initialize(const G4VPhysicalVolume* world, bool standardize_geant4_materials);
         static void Finalize();
     public:
         G4Opticks();
@@ -92,7 +93,7 @@ class G4OK_API G4Opticks
     public:
         std::string desc() const ;  
     public:
-        void setGeometry(const G4VPhysicalVolume* world, bool standardize_geant4_materials=false); 
+        void setGeometry(const G4VPhysicalVolume* world, bool standardize_geant4_materials); 
         int propagateOpticalPhotons();
         NPY<float>* getHits() const ; 
         void setAlignIndex(int align_idx) const ; 

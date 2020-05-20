@@ -419,7 +419,7 @@ void Opticks::init()
     m_parameters->add<int>("Geant4Version",  OKConf::Geant4VersionInteger() );
 
     m_parameters->addEnvvar("CUDA_VISIBLE_DEVICES");
-    m_parameters->add<std::string>("CMDLINE", PLOG::instance->cmdline() ); 
+    m_parameters->add<std::string>("CMDLINE", PLOG::instance ? PLOG::instance->cmdline() : "OpticksEmbedded" ); 
     if(m_envkey) m_parameters->add<int>("--envkey", 1 ); // OPTICKS_KEY envvar is only relevant when use --envkey to switch on sensitivity 
     m_parameters->addEnvvarsWithPrefix("OPTICKS_"); 
 
@@ -1745,7 +1745,7 @@ Invoked by Opticks::configure after initResource
 
 void Opticks::updateCacheMeta()  
 {
-    std::string argline = PLOG::instance->args.argline() ;
+    std::string argline = PLOG::instance ? PLOG::instance->args.argline() : "OpticksEmbedded" ;
 
     int runstamp = getRunStamp() ;
     const char* rundate = getRunDate() ;

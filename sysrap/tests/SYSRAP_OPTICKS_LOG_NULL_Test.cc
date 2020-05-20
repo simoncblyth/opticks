@@ -17,32 +17,21 @@
  * limitations under the License.
  */
 
-#include <cassert>
 #include "OPTICKS_LOG.hh"
-#include "G4Opticks.hh"
 
-int main(int argc, char** argv)
+#include "SLog.hh"
+
+int main(int argc , char** argv )
 {
-    OPTICKS_LOG(argc, argv) ;
+    OPTICKS_LOG(0, NULL) ; 
 
-    G4Opticks* om = G4Opticks::GetOpticks() ; 
+    OPTICKS_LOG_::Check();
 
-    assert( om ) ;
+    SLog::Nonce();
 
-    LOG(info) << om->desc() ; 
- 
+    LOG(info) << argv[0] ; 
 
-    return 0 ;
+    return 0  ; 
 }
 
 
-/**
-+Trying to do the OPTICKS_LOG inside g4ok lib gives::
-+
-+    epsilon:g4ok blyth$ G4OKTest
-+    SAr::SAr argc_ == 0  presumably from OPTICKS_LOG__(0,0) : args_from_envvar argc_ 0
-+    SAr::args_from_envvar but no argline provided 
-+    Assertion failed: (appender != this), function addAppender, file /usr/local/opticks/externals/plog/include/plog/Logger.h, line 22.
-+    Abort trap: 6
-+    epsilon:g4ok blyth$ 
-**/

@@ -28,6 +28,7 @@ set(TEST_SOURCES
    SYSRAP_LOG_FileAppenderTest.cc
 
    SYSRAP_OPTICKS_LOG_Test.cc
+   SYSRAP_OPTICKS_LOG_NULL_Test.cc 
 
    OPTICKS_LOG_Test.cc
    pLOG_MACRO_Test.cc

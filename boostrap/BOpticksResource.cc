@@ -903,7 +903,11 @@ void BOpticksResource::setupViaKey()
     m_res->addPath("directphotonspath", m_directphotonspath ); 
 
     const char* exename = SProc::ExecutableName() ;
-    bool exename_allowed = SStr::StartsWith(exename, "Use") || SStr::EndsWith(exename, "Test") || SStr::EndsWith(exename, "Minimal") ;  
+    bool exename_allowed = SStr::StartsWith(exename, "Use") || 
+                           SStr::StartsWith(exename, "python") || 
+                           SStr::StartsWith(exename, "OpticksEmbedded") || 
+                           SStr::EndsWith(exename, "Test") || 
+                           SStr::EndsWith(exename, "Minimal") ;  
 
     if(!exename_allowed)
     {
