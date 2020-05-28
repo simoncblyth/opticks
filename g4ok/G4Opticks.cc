@@ -427,6 +427,72 @@ void G4Opticks::collectSecondaryPhotons(const G4VParticleChange* pc)
     m_genstep_idx += 1 ; 
 }
 
+void G4Opticks::collectScintillationStep
+(
+        G4int id,
+        G4int parentId,
+        G4int materialId,
+        G4int numPhotons,
+
+        G4double x0_x,
+        G4double x0_y,
+        G4double x0_z,
+        G4double t0,
+
+        G4double deltaPosition_x,
+        G4double deltaPosition_y,
+        G4double deltaPosition_z,
+        G4double stepLength,
+
+        G4int pdgCode,
+        G4double pdgCharge,
+        G4double weight,
+        G4double meanVelocity,
+
+        G4int scntId,
+        G4double slowerRatio,
+        G4double slowTimeConstant,
+        G4double slowerTimeConstant,
+
+        G4double scintillationTime,
+        G4double scintillationIntegrationMax,
+        G4double spare1 = 0,
+        G4double spare2 = 0
+        ) {
+    LOG(info) << "[";
+    m_genstep_collector->collectScintillationStep(
+             id,
+             parentId,
+             materialId,
+             numPhotons,
+
+             x0_x,
+             x0_y,
+             x0_z,
+             t0,
+
+             deltaPosition_x,
+             deltaPosition_y,
+             deltaPosition_z,
+             stepLength,
+
+             pdgCode,
+             pdgCharge,
+             weight,
+             meanVelocity,
+
+             scntId,
+             slowerRatio,
+             slowTimeConstant,
+             slowerTimeConstant,
+
+             scintillationTime,
+             scintillationIntegrationMax,
+             spare1,
+             spare2
+            );
+    LOG(info) << "]";
+}
 
 
 

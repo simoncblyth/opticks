@@ -142,7 +142,40 @@ class G4OK_API G4Opticks
             G4double             meanNumberOfPhotons1,
             G4double             meanNumberOfPhotons2,
             G4double             postVelocity
-        );  
+        );
+	   void collectScintillationStep(
+            G4int id,
+            G4int parentId,
+            G4int materialId,
+            G4int numPhotons,
+
+            G4double x0_x,
+            G4double x0_y,
+            G4double x0_z,
+            G4double t0,
+
+            G4double deltaPosition_x,
+            G4double deltaPosition_y,
+            G4double deltaPosition_z,
+            G4double stepLength,
+
+            G4int pdgCode,
+            G4double pdgCharge,
+            G4double weight,
+            G4double meanVelocity,
+
+            G4int scntId,
+            G4double slowerRatio,
+            G4double slowTimeConstant,
+            G4double slowerTimeConstant,
+
+            G4double scintillationTime,
+            G4double scintillationIntegrationMax,
+            G4double spare1,
+            G4double spare2
+            );
+
+
     public:
         void collectSecondaryPhotons(const G4VParticleChange* pc);
     public:
