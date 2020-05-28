@@ -69,6 +69,13 @@ OptiX 7 : Brand New Lower Level API
 
 
 
+Profiling
+------------
+
+GTC 2020: What the Profiler is Telling You: How to Get the Most Performance out of Your Hardware
+* https://developer.nvidia.com/gtc/2020/video/s22141
+
+
 NVIDIA Collective Communications Library (NCCL)
 --------------------------------------------------
 
@@ -367,10 +374,24 @@ EOU
 }
 
 
-optix7-pdf(){ open $OPTICKS_INSTALL_PREFIX/externals/OptiX_700/doc/OptiX_Programming_Guide_7.0.0.pdf ; }
-optix7-icd(){ cd $OPTICKS_INSTALL_PREFIX/externals/OptiX_700/include ; }
-optix7-cd(){ cd $OPTICKS_INSTALL_PREFIX/externals/OptiX_700/SDK ; }
 
+optix7-prefix(){ echo $OPTICKS_PREFIX/externals/OptiX_700 ; }
+optix6-prefix(){ echo $OPTICKS_PREFIX/externals/OptiX_650 ; }
+
+optix7-pdf(){ open $(optix7-prefix)/doc/OptiX_Programming_Guide_7.0.0.pdf ; }
+optix6-pdf(){ open $(optix6-prefix)/doc/OptiX_Programming_Guide_6.5.0.pdf ; }
+
+optix7-icd(){ cd $(optix7-prefix)/include ; }
+optix7-cd(){ cd $(optix7-prefix)/SDK ; }
+optix7-dcd(){ cd $(optix7-prefix)/doc ; }
+optix7-info(){ cat << EOI
+
+   OPTICKS_PREFIX       : $OPTICKS_PREFIX
+   OPTICKS_OPTIX_PREFIX : $OPTICKS_OPTIX_PREFIX
+   optix7-prefix : $(optix7-prefix)
+
+EOI
+}
 
 
 

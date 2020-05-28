@@ -25,12 +25,35 @@ name=$(basename $sdir)
 
 prefix=/tmp/$USER/opticks/$name
 
+mkdir -p $prefix
+[ ! -f $prefix/compute_capability ] && nvcc compute_capability.cu -o $prefix/compute_capability
+ 
+compute_capability=$($prefix/compute_capability)
+echo compute_capability : ${compute_capability}
+
 export PREFIX=$prefix
 export PATH=$PREFIX/bin:$PATH
 
 bdir=$prefix/build 
 echo bdir $bdir name $name prefix $prefix
 
+cuda-libdir(){
+   local cuda_prefix=$(dirname $(dirname $(which nvcc)))
+   if [ -d "${cuda_prefix}/lib64" ]; then
+      echo ${cuda_prefix}/lib64
+   elif [ -d "$cuda_prefix/lib" ]; then
+      echo ${cuda_prefix}/lib
+   fi
+}
+
+
+if [ "$(uname)" == "Darwin" ]; then
+   libvar=DYLD_LIBRARY_PATH
+else
+   libvar=LD_LIBRARY_PATH
+fi
+export $libvar=$(cuda-libdir):${!libvar}
+echo $libvar : ${!libvar}
 
 
 glm-dir(){  echo $prefix/externals/glm/$(glm-name) ; }
@@ -58,49 +81,54 @@ glm-get(){
    echo symbolic link for access without version in path
 }
 
+build()
+{
+    glm-get
+    optix-install-dir(){ opticks- ; echo ${OPTIX_INSTALL_DIR:-$(opticks-dir)/externals/OptiX} ; }
+    echo optix-install-dir : $(optix-install-dir)
 
-glm-get
+    rm -rf $bdir && mkdir -p $bdir 
+    cd $bdir && pwd 
+    ls -l 
 
-
-optix-install-dir(){ opticks- ; echo ${OPTIX_INSTALL_DIR:-$(opticks-dir)/externals/OptiX} ; }
-
-
-echo optix-install-dir : $(optix-install-dir)
-
-rm -rf $bdir && mkdir -p $bdir 
-cd $bdir && pwd 
-ls -l 
-
-cmake $sdir \
-   -DCMAKE_BUILD_TYPE=Debug \
-   -DCMAKE_PREFIX_PATH=$prefix/externals \
-   -DCMAKE_INSTALL_PREFIX=$prefix \
-   -DCMAKE_MODULE_PATH=$(optix-install-dir)/SDK/CMake \
-   -DOptiX_INSTALL_DIR=$(optix-install-dir) 
+    cmake $sdir \
+       -DCMAKE_BUILD_TYPE=Debug \
+       -DCMAKE_PREFIX_PATH=$prefix/externals \
+       -DCMAKE_INSTALL_PREFIX=$prefix \
+       -DCMAKE_MODULE_PATH=$(optix-install-dir)/SDK/CMake \
+       -DOptiX_INSTALL_DIR=$(optix-install-dir) \
+       -DCOMPUTE_CAPABILITY=$compute_capability
 
 
-rm -rf $prefix/ptx
-rm -rf $prefix/bin
-rm -rf $prefix/ppm
+    rm -rf $prefix/ptx
+    rm -rf $prefix/bin
+    rm -rf $prefix/ppm
 
-mkdir -p $prefix/{ptx,bin,ppm} 
-make
-make install   
-
-echo running $(which $name)
-$name
-
-rc=$?
-[ ! $rc -eq 0 ] && echo non-zero RC && exit
+    mkdir -p $prefix/{ptx,bin,ppm} 
+    make
+    make install   
+}
 
 
-ppm=$prefix/ppm/$name.ppm
+run()
+{
+   echo running $(which $name)
+   $name
+   rc=$?
+   [ ! $rc -eq 0 ] && echo non-zero RC && return 1
 
-[ ! -f "$ppm" ] && echo failed to write ppm $ppm && exit
+   ppm=$prefix/ppm/$name.ppm
+   [ ! -f "$ppm" ] && echo failed to write ppm $ppm && return 1
+   echo ppm $ppm
+
+   ls -l $ppm
+   open $ppm    ## create an open function such as "gio open" if using gnome
+}
 
 
-echo ppm $ppm
-ls -l $ppm
-open $ppm    ## create an open function such as "gio open" if using gnome
+
+build
+run
+
 
 
