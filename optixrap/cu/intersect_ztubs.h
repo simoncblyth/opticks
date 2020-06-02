@@ -35,7 +35,8 @@ Ericson, Real Time Collision Detection p196-198
 
             d = Q - P               axis
             
-            v = X - P               surface vec
+            v = X - P               surface vec, X a point on the cylinder
+                                    (point on surface in cylinder frame)
 
                   v.d
             w =  ----- d            component of v along axis
@@ -96,7 +97,9 @@ Ericson, Real Time Collision Detection p196-198
         (I-P) - (I-P).(Q-P)
 
 
-       v = L(t) - P 
+     Assume an intersection, equate parametrized ray point with X : L(t) = A + t ( B - A) 
+
+       v = L(t) - P      
 
          = (A - P) +  t(B - A)
 
@@ -120,7 +123,14 @@ Ericson, Real Time Collision Detection p196-198
             w =  -------------- d      
                       d.d 
 
-          r*r = (v - w).(v - w)   
+
+         v - w                 component of v perpendicular to axis 
+                               ie radial component of v 
+
+
+     Infinite cylinder locus
+
+          r*r = (v - w).(v - w)     
 
           r*r  = v.v + w.w - 2 v.w  
 
