@@ -561,8 +561,10 @@ void AssimpGGeo::convertMaterials(const aiScene* scene, GGeo* gg, const char* qu
 
             if(hasVectorProperty(mat, EFFICIENCY ))
             {
+#ifdef OLD_CATHODE
                 gg->setCathode(gmat) ;  
                 m_cathode_amat = mat ; 
+#endif
             }
 
         }
@@ -608,6 +610,7 @@ void AssimpGGeo::convertSensors(GGeo* gg)
 {
     assert( m_sensor_list ) ; 
 
+#ifdef OLD_CATHODE
     if(!m_cathode_amat )
     {
          LOG(warning) << "AssimpGGeo::convertSensors m_cathode_amat NULL : no aiMaterial with an efficiency property ?  " ;
@@ -623,7 +626,7 @@ void AssimpGGeo::convertSensors(GGeo* gg)
 
 
     gg->getCathode()->Summary();
-
+#endif
 
     convertSensors( gg, m_tree->getRoot(), 0); 
 
@@ -689,6 +692,12 @@ void AssimpGGeo::convertSensors(GGeo* gg, AssimpNode* node, unsigned int depth)
     for(unsigned int i = 0; i < node->getNumChildren(); i++) convertSensors(gg, node->getChild(i), depth + 1);
 }
 
+/**
+
+THIS CODE IS NEAR DEAD 
+
+**/
+
 void AssimpGGeo::convertSensorsVisit(GGeo* gg, AssimpNode* node, unsigned int depth)
 {
     unsigned int nodeIndex = node->getIndex();
@@ -706,6 +715,7 @@ void AssimpGGeo::convertSensorsVisit(GGeo* gg, AssimpNode* node, unsigned int de
     unsigned int mti = node->getMaterialIndex() ;
     GMaterial* mt = gg->getMaterial(mti);
     assert( mt );
+    const char* mt_name = mt->getName() ; 
     
     /*
     NSensor* sensor0 = sens->getSensor( nodeIndex ); 
@@ -716,16 +726,17 @@ void AssimpGGeo::convertSensorsVisit(GGeo* gg, AssimpNode* node, unsigned int de
 
     NSensor* sensor = m_sensor_list ? m_sensor_list->findSensorForNode( nodeIndex ) : NULL ; 
 
-    GMaterial* cathode = gg->getCathode() ; 
-
-    const char* cathode_material_name = gg->getCathodeMaterialName() ;
-    const char* name = mt->getName() ; 
-    bool name_match = strcmp(name, cathode_material_name) == 0 ;  
-    bool ptr_match = mt == cathode ;   // <--- always false 
- 
     //const char* sd = "SD_AssimpGGeo" ; 
     const char* sd = "SD0" ; 
 
+
+#ifdef OLD_CATHODE
+    GMaterial* cathode = gg->getCathode() ; 
+
+    const char* cathode_material_name = gg->getCathodeMaterialName() ;
+    bool name_match = strcmp(mt_name, cathode_material_name) == 0 ;  
+    bool ptr_match = mt == cathode ;   // <--- always false 
+ 
     if(sensor && name_match)
     {
          LOG(debug) << "AssimpGGeo::convertSensorsVisit " 
@@ -736,6 +747,17 @@ void AssimpGGeo::convertSensorsVisit(GGeo* gg, AssimpNode* node, unsigned int de
                    ;
          gg->addLVSD(lv, sd) ;   
     }
+
+#else
+    if(sensor)
+    {
+        gg->addLVSDMT(lv, sd, mt_name) ;     
+    }
+
+#endif
+
+
+
 }
 
 

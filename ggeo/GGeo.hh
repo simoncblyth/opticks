@@ -339,6 +339,7 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
         GMaterial* getScintillatorMaterial(unsigned int index);
     public:
     public:
+        GPropertyMap<float>* findMaterial(const char* shortname) const ;
         GPropertyMap<float>* findRawMaterial(const char* shortname) const ;
         GProperty<float>*    findRawMaterialProperty(const char* shortname, const char* propname) const ;
         void dumpRawMaterialProperties(const char* msg="GGeo::dumpRawMaterialProperties") const ;
@@ -353,30 +354,38 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
         void saveCacheMeta() const ;
         void loadCacheMeta();
     public:
-        // TODO: contrast with this earlier way 
+        // TODO: contrast with this ancient earlier way 
         void findCathodeMaterials(const char* props);
         void dumpCathodeMaterials(const char* msg="GGeo::dumpCathodeMaterials");
         unsigned int getNumCathodeMaterials();
         GMaterial* getCathodeMaterial(unsigned int index);
+#ifdef OLD_CATHODE
     public:
         // m_materiallib
         void setCathode(GMaterial* cathode);
         GMaterial* getCathode() const ;  
         const char* getCathodeMaterialName() const ;
+#endif
     public:
-        void addLVSD(const char* lv, const char* sd);
+        void addLVSDMT(const char* lv, const char* sd, const char* mt);
         unsigned getNumLVSD() const ;
+        unsigned getNumLVMT() const ;
         std::pair<std::string,std::string> getLVSD(unsigned idx) const ;
+        std::pair<std::string,std::string> getLVMT(unsigned idx) const ;
     public:
         // from cachemeta
         //const char* getOriginGDMLPath() const ; 
     public:
         void dumpCathodeLV(const char* msg="GGeo::dumpCathodeLV") const ;
         const char* getCathodeLV(unsigned int index) const ; 
+
+
+
         void getCathodeLV( std::vector<std::string>& lvnames ) const ;
         unsigned int getNumCathodeLV() const ;
         int findCathodeLVIndex(const char* lv) const ; // -1 if not found 
     public:
+        void getSensitiveLVSDMT( std::vector<std::string>& lvn, std::vector<std::string>& sdn, std::vector<std::string>& mtn ) const ;
 
 #if 0
     TODO: see if this can be reinstated
@@ -412,6 +421,7 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
 
         NMeta*                        m_loadedcachemeta ; 
         NMeta*                        m_lv2sd ; 
+        NMeta*                        m_lv2mt ; 
         const char*                   m_origin_gdmlpath ; 
 
 

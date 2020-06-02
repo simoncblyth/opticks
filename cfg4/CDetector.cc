@@ -139,6 +139,18 @@ void CDetector::dumpLV(const char* msg)
     m_traverser->dumpLV(msg);
 }
 
+
+/**
+CDetector::hookupSD
+----------------------
+
+Invoked from CGDMLDetector::init CTestDetector::init reviving 
+a geometry coming out of GDML.
+
+
+
+**/
+
 void CDetector::hookupSD()
 {
     unsigned nlvsd = m_ggeo->getNumLVSD() ;

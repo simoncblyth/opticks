@@ -131,6 +131,7 @@ GGeo::GGeo(Opticks* ok, bool live)
    m_prepared(false), 
    //m_loadedcachemeta(NULL),
    m_lv2sd(NULL),
+   m_lv2mt(NULL),
    //m_origin_gdmlpath(NULL),
    m_lookup(NULL), 
    m_meshlib(NULL),
@@ -299,6 +300,7 @@ GInstancer* GGeo::getTreeCheck()
 
 
 
+#ifdef OLD_CATHODE
 /**
 GGeo::setCathode
 ------------------
@@ -318,6 +320,8 @@ const char* GGeo::getCathodeMaterialName() const
 {
     return m_materiallib->getCathodeMaterialName() ; 
 }
+
+#endif
 
 
 
@@ -340,27 +344,54 @@ Issues/TODO
 
 **/
 
-void GGeo::addLVSD(const char* lv, const char* sd)
+void GGeo::addLVSDMT(const char* lv, const char* sd, const char* mt)
 {
    assert( lv ) ;  
    m_cathode_lv.insert(lv);
 
+
    if(sd) 
    {
+       assert(mt);
        if(m_lv2sd == NULL ) m_lv2sd = new NMeta ; 
        m_lv2sd->set<std::string>(lv, sd) ; 
+   }
+
+   if(mt) 
+   {
+       assert(sd);
+       if(m_lv2mt == NULL ) m_lv2mt = new NMeta ; 
+       m_lv2mt->set<std::string>(lv, mt) ; 
    }
 }
 unsigned GGeo::getNumLVSD() const
 {
    return m_lv2sd ? m_lv2sd->getNumKeys() : 0 ;  
 }
+unsigned GGeo::getNumLVMT() const
+{
+   return m_lv2mt ? m_lv2mt->getNumKeys() : 0 ;  
+}
+
+
+
 std::pair<std::string,std::string> GGeo::getLVSD(unsigned idx) const
 {
     const char* lv = m_lv2sd->getKey(idx) ; 
     std::string sd = m_lv2sd->get<std::string>(lv); 
     return std::pair<std::string,std::string>( lv, sd ); 
 }
+
+std::pair<std::string,std::string> GGeo::getLVMT(unsigned idx) const
+{
+    const char* lv = m_lv2mt->getKey(idx) ; 
+    std::string mt = m_lv2mt->get<std::string>(lv); 
+    return std::pair<std::string,std::string>( lv, mt ); 
+}
+
+
+
+
 
 
 /*
@@ -432,6 +463,40 @@ void GGeo::getCathodeLV( std::vector<std::string>& lvnames ) const
          lvnames.push_back(*it) ; 
 }
 
+
+void GGeo::getSensitiveLVSDMT( std::vector<std::string>& lvn, std::vector<std::string>& sdn, std::vector<std::string>& mtn ) const 
+{
+    typedef std::unordered_set<std::string>::const_iterator UCI ; 
+    for(UCI it=m_cathode_lv.begin() ; it != m_cathode_lv.end() ; it++) 
+       lvn.push_back(*it) ; 
+
+    typedef std::pair<std::string,std::string> PSS ; 
+
+    for(unsigned i=0 ; i < lvn.size() ; i++)
+    {
+        PSS lvsd = getLVSD(i);
+        PSS lvmt = getLVMT(i);
+
+        const char* lv = lvn[i].c_str();
+        const char* lv0 = lvsd.first.c_str();  
+        const char* lv1 = lvmt.first.c_str();  
+        assert( strcmp(lv, lv0) == 0 ); 
+        assert( strcmp(lv, lv1) == 0 ); 
+
+        const char* sd = lvsd.second.c_str();  
+        const char* mt = lvmt.second.c_str();  
+    
+        sdn.push_back(sd);   
+        mtn.push_back(mt);   
+
+        LOG(LEVEL)
+            << " idx " << i
+            << " lv " << lv 
+            << " sd " << sd 
+            << " mt " << mt
+            ;  
+    }
+}
 
 
 
@@ -813,6 +878,12 @@ void GGeo::saveCacheMeta() const
     {
         m_ok->appendCacheMeta("lv2sd", m_lv2sd); 
     } 
+    if(m_lv2mt)
+    {
+        m_ok->appendCacheMeta("lv2mt", m_lv2mt); 
+    } 
+
+
     m_ok->dumpCacheMeta("GGeo::saveCacheMeta"); 
     m_ok->saveCacheMeta(); 
 }
@@ -852,6 +923,7 @@ void GGeo::loadCacheMeta() // loads metadata that the process that created the g
     
 
     NMeta* lv2sd = m_ok->getOriginCacheMeta("lv2sd"); 
+    NMeta* lv2mt = m_ok->getOriginCacheMeta("lv2mt"); 
 
 
     if( lv2sd )
@@ -864,13 +936,28 @@ void GGeo::loadCacheMeta() // loads metadata that the process that created the g
     }
 
 
+    if( lv2mt )
+    {
+        lv2mt->dump("GGeo::loadCacheMeta.lv2mt"); 
+    }
+    else
+    {
+        LOG(error) << " NULL lv2mt " ;  
+    }
+
+
+
+
+
+
     if( m_ok->isTest() )   // --test : skip lv2sd association
     {
-         LOG(LEVEL) << "NOT USING the lv2sd association as --test is active " ;  
+         LOG(LEVEL) << "NOT USING the lv2sd lv2mt association as --test is active " ;  
     }
     else
     {
          m_lv2sd = lv2sd ;  
+         m_lv2mt = lv2mt ;  
     }
 }
 
@@ -1126,6 +1213,10 @@ GNode* GGeo::getNode(unsigned index) const
 GMaterial* GGeo::getMaterial(unsigned aindex) const 
 {
     return m_materiallib->getMaterialWithIndex(aindex);
+}
+GPropertyMap<float>* GGeo::findMaterial(const char* shortname) const 
+{
+    return m_materiallib->findMaterial(shortname) ; 
 }
 GPropertyMap<float>* GGeo::findRawMaterial(const char* shortname) const 
 {

@@ -130,6 +130,7 @@ std::string SASCII::getFirst(unsigned n) const
     return ss.str();  
 }
 
+
 std::string SASCII::getFirstUpper(unsigned n) const 
 {
     std::stringstream ss ; 
@@ -145,6 +146,14 @@ std::string SASCII::getFirstUpper(unsigned n) const
     }
     return ss.str();  
 }
+
+
+/**
+SASCII::getFirstLast
+----------------------
+
+Return string with first and last char
+**/
 
 std::string SASCII::getFirstLast() const 
 {

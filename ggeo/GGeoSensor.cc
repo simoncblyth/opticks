@@ -32,7 +32,7 @@
 #include "PLOG.hh"
 
 
-const plog::Severity GGeoSensor::LEVEL = debug ;
+const plog::Severity GGeoSensor::LEVEL = PLOG::EnvLevel("GGeoSensor", "DEBUG")  ;
 
 
 
@@ -76,13 +76,15 @@ Notice issues:
 
 1. no handling of pre-existing surface assigned to the LV 
 2. assumes a single cathode material (eg Bialkali for PMTs) with 
-   a non-zero EFFICIENCY property  
+   a non-zero EFFICIENCY property : that gets adopted by the potentially multiple 
+   lv with an associated SD 
 
 
 **/
 
 void GGeoSensor::AddSensorSurfaces( GGeo* gg )
 {
+#ifdef OLD_CATHODE
     GMaterial* cathode_props = gg->getCathode() ; 
     if(!cathode_props)
     {
@@ -90,19 +92,43 @@ void GGeoSensor::AddSensorSurfaces( GGeo* gg )
         return ; 
     }
     assert( cathode_props ); 
+#else
+    GMaterial* cathode_props = NULL ; 
+#endif
+
+    typedef std::vector<std::string> VS ;  
+    VS lvn ; 
+    VS sdn ; 
+    VS mtn ; 
+
+    gg->getSensitiveLVSDMT(lvn, sdn, mtn); 
+
+    assert( lvn.size() == sdn.size() ) ;
+    assert( lvn.size() == mtn.size() ) ;
+
 
     unsigned nclv = gg->getNumCathodeLV();
-
 
     if(nclv == 0)
     {
         LOG(error) << "NO CathodeLV : so not adding any GSkinSurface to translate sensitivity between models " ; 
     }
 
+    assert( nclv == lvn.size() ) ; 
+
+
 
     for(unsigned i=0 ; i < nclv ; i++)
     {
+        const char* lv = lvn[i].c_str();    
+        const char* sd = sdn[i].c_str();    
+        const char* mt = mtn[i].c_str();    
+
+        GPropertyMap<float>* mt_props = gg->findMaterial(mt);
+        assert( mt_props ); 
+
         const char* sslv = gg->getCathodeLV(i);
+        assert( strcmp(lv, sslv) == 0 );    
 
         unsigned num_mat = gg->getNumMaterials()  ;
         unsigned num_sks = gg->getNumSkinSurfaces() ;
@@ -115,6 +141,8 @@ void GGeoSensor::AddSensorSurfaces( GGeo* gg )
         LOG(LEVEL)
                   << " i " << i
                   << " sslv " << sslv
+                  << " sd " << sd
+                  << " mt " << mt
                   << " index " << index
                   << " num_mat " << num_mat
                   << " num_sks " << num_sks
@@ -124,7 +152,11 @@ void GGeoSensor::AddSensorSurfaces( GGeo* gg )
         GSkinSurface* gss = MakeSensorSurface(sslv, index);
         gss->setStandardDomain();  // default domain 
         gss->setSensor();
+#ifdef OLD_CATHODE
         gss->add(cathode_props); 
+#else
+        gss->add(mt_props);  
+#endif
 
         LOG(LEVEL) << " gss " << gss->description();
 

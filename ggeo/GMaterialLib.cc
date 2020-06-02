@@ -40,7 +40,7 @@
 #include "PLOG.hh"
 
 
-const plog::Severity GMaterialLib::LEVEL = debug ;
+const plog::Severity GMaterialLib::LEVEL = PLOG::EnvLevel("GMaterialLib", "DEBUG") ;
 
 const GMaterialLib* GMaterialLib::INSTANCE = NULL ; 
 const GMaterialLib* GMaterialLib::GetInstance(){ return INSTANCE ; }
@@ -209,8 +209,10 @@ GMaterialLib::GMaterialLib(Opticks* ok, GMaterialLib* basis)
     :
     GPropertyLib(ok, "GMaterialLib"),
     m_basis(basis),
+#ifdef OLD_CATHODE
     m_cathode(NULL),
     m_cathode_material_name(NULL),
+#endif
     m_material_order(ORDER_BY_PREFERENCE)
 {
     init();
@@ -220,8 +222,10 @@ GMaterialLib::GMaterialLib(GMaterialLib* src, GDomain<float>* domain, GMaterialL
     :
     GPropertyLib(src, domain),
     m_basis(basis),
+#ifdef OLD_CATHODE
     m_cathode(NULL),
     m_cathode_material_name(NULL),
+#endif
     m_material_order(ORDER_BY_PREFERENCE)
 {
     init();
@@ -304,7 +308,8 @@ void GMaterialLib::add(GMaterial* mat)
     {
         //LOG(LEVEL) << " MATERIAL WITH EFFICIENCY " ; 
         LOG(error) << " MATERIAL WITH EFFICIENCY " ; 
-        setCathode(mat) ; 
+        //setCathode(mat) ; 
+        addSensitiveMaterial(mat); 
     }
 
     bool with_lowercase_efficiency = mat->hasProperty("efficiency") ; 
@@ -513,7 +518,7 @@ unsigned int GMaterialLib::getMaterialIndex(const GMaterial* qmaterial)
 
 NMeta* GMaterialLib::createMeta()
 {
-    LOG(LEVEL) << "." ; 
+    LOG(LEVEL) << "[" ; 
     NMeta* libmeta = new NMeta ; 
     unsigned int ni = getNumMaterials();
 
@@ -528,6 +533,7 @@ NMeta* GMaterialLib::createMeta()
     NMeta* abbrevmeta = GPropertyLib::CreateAbbrevMeta(names); 
 
     libmeta->setObj("abbrev", abbrevmeta );  
+    LOG(LEVEL) << "]" ; 
     return libmeta ; 
 }
 
@@ -998,6 +1004,25 @@ GMaterial* GMaterialLib::getMaterialWithIndex(unsigned aindex) const
 }
 
 
+
+GPropertyMap<float>* GMaterialLib::findMaterial(const char* shortname) const 
+{
+    GMaterial* mat = NULL ; 
+    for(unsigned int i=0 ; i < m_materials.size() ; i++ )
+    { 
+        std::string sn = m_materials[i]->getShortNameString();
+        if(strcmp(sn.c_str(), shortname)==0)
+        {
+            mat = m_materials[i] ; 
+            break ; 
+        }
+    }
+    return (GPropertyMap<float>*)mat ;
+}
+
+
+
+
 GPropertyMap<float>* GMaterialLib::findRawMaterial(const char* shortname) const 
 {
     GMaterial* mat = NULL ; 
@@ -1150,10 +1175,36 @@ void GMaterialLib::addTestMaterials()
 
 
 
+void GMaterialLib::addSensitiveMaterial(GMaterial* mt)
+{
+    bool added_already = std::find(m_sensitive_materials.begin(), m_sensitive_materials.end(), mt) != m_sensitive_materials.end() ; 
+    if(added_already) return ; 
+
+    bool is_sensitive = mt->hasNonZeroProperty("EFFICIENCY") ; 
+
+    LOG(LEVEL)
+           << " add sensitive material " 
+           << " GMaterial : " << mt
+           << " name : " << mt->getName() ; 
+ 
+    if(!is_sensitive) LOG(fatal) << " material does not have non-zero EFFICIENCY prop " << mt->getName() ; 
+
+    assert( is_sensitive ) ;  
+
+    m_sensitive_materials.push_back(mt);  
+}
+unsigned GMaterialLib::getNumSensitiveMaterials() const 
+{
+    return m_sensitive_materials.size();  
+}
+GMaterial* GMaterialLib::getSensitiveMaterial(unsigned index) const
+{
+    return m_sensitive_materials[index] ; 
+}
 
 
 
-
+#ifdef OLD_CATHODE
 void GMaterialLib::setCathode(GMaterial* cathode)
 {
     assert( cathode ) ; 
@@ -1192,7 +1243,7 @@ const char* GMaterialLib::getCathodeMaterialName() const
 {
     return m_cathode_material_name ; 
 }
-
+#endif
 
 
 

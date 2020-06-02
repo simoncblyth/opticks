@@ -137,10 +137,16 @@ class GGEO_API GMaterialLib : public GPropertyLib {
        bool order_by_preference(const GMaterial& a_, const GMaterial& b_);
        bool order_by_srcidx(    const GMaterial& a_, const GMaterial& b_);
        bool operator()(const GMaterial& a_, const GMaterial& b_);
+#ifdef OLD_CATHODE
     public:
         void setCathode(GMaterial* cathode);
         GMaterial* getCathode() const ;  
         const char* getCathodeMaterialName() const ;
+#endif
+    public:
+        void addSensitiveMaterial(GMaterial* cathode);
+        unsigned getNumSensitiveMaterials() const ;  
+        GMaterial* getSensitiveMaterial(unsigned index) const ;   
    public:
        // used by GGeoTest 
        GMaterial* getBasisMaterial(const char* name) const ;
@@ -158,6 +164,7 @@ class GGEO_API GMaterialLib : public GPropertyLib {
        GMaterial* getMaterial(unsigned i) const ; // zero based index
        GMaterial* getMaterialWithIndex(unsigned aindex) const ;  
        unsigned  getMaterialIndex(const char* name) const ;    // without triggering a close
+       GPropertyMap<float>* findMaterial(const char* shortname) const ; 
        GPropertyMap<float>* findRawMaterial(const char* shortname) const ; 
        GProperty<float>* findRawMaterialProperty(const char* shortname, const char* propname) const ;
        void dumpRawMaterialProperties(const char* msg) const ;
@@ -179,8 +186,15 @@ class GGEO_API GMaterialLib : public GPropertyLib {
        std::vector<GMaterial*>       m_materials_raw ; 
 
        GMaterialLib*   m_basis ; 
+
+#ifdef OLD_CATHODE
        GMaterial*      m_cathode ; 
        const char*     m_cathode_material_name ; 
+#endif
+
+       std::vector<GMaterial*> m_sensitive_materials ;
+
+
        MaterialOrder_t m_material_order ; 
 
 

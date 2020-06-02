@@ -27,11 +27,14 @@ SAbbrev
 
 #include <string>
 #include <vector>
+#include "plog/Severity.h"
 
 #include "SYSRAP_API_EXPORT.hh"
 
 struct SYSRAP_API SAbbrev
 {
+    static const plog::Severity LEVEL ;
+
     SAbbrev( const std::vector<std::string>& names_ ); 
     void init(); 
     bool isFree(const std::string& ab) const ;

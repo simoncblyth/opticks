@@ -242,7 +242,9 @@ void X4PhysicalVolume::convertSensors()
 X4PhysicalVolume::convertSensors_r
 -----------------------------------
 
-Recurses over the geometry looking for volumes with associated SensitiveDetector.
+Recurses over the geometry looking for volumes with associated SensitiveDetector, 
+when found invokes GGeo::addLVSD persisting the association between an LV name 
+and an SD name.
 
 Sensors are identified by two approaches:
 
@@ -286,6 +288,12 @@ void X4PhysicalVolume::convertSensors_r(const G4VPhysicalVolume* const pv, int d
     const char* lvname = lv->GetName().c_str(); 
     G4VSensitiveDetector* sd = lv->GetSensitiveDetector() ; 
 
+    // aim to avoid single cathode assumption
+    const G4Material* const mt = lv->GetMaterial() ;
+    const char* mt_name = mt->GetName().c_str(); 
+
+
+
     bool is_lvsdname = m_lvsdname && BStr::Contains(lvname, m_lvsdname, ',' ) ;
     bool is_sd = sd != NULL ; 
 
@@ -297,17 +305,16 @@ void X4PhysicalVolume::convertSensors_r(const G4VPhysicalVolume* const pv, int d
         bool addPointerToName = false ;   // <-- maybe this should depend on if booting from GDML or not ?
         std::string nameref = SGDML::GenerateName( name.c_str() , lv , addPointerToName );   
 
-        /*
         LOG(LEVEL) 
             << " is_lvsdname " << is_lvsdname
             << " is_sd " << is_sd
             << " sdn " << sdn 
             << " name " << name 
             << " nameref " << nameref 
+            << " mt_name " << mt_name
             ;
-        */
  
-        m_ggeo->addLVSD(nameref.c_str(), sdn.c_str()) ;
+        m_ggeo->addLVSDMT(nameref.c_str(), sdn.c_str(), mt_name ) ;
     }  
 
     for (int i=0 ; i < lv->GetNoDaughters() ;i++ )

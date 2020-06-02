@@ -25,6 +25,9 @@
 #include "SASCII.hh"
 #include "SAbbrev.hh"
 
+#include "PLOG.hh"
+
+const plog::Severity SAbbrev::LEVEL = PLOG::EnvLevel("SAbbrev", "DEBUG") ;
 
 SAbbrev::SAbbrev( const std::vector<std::string>& names_ ) 
     :
@@ -42,7 +45,9 @@ void SAbbrev::init()
 {
     for(unsigned i=0 ; i < names.size() ; i++)
     {
-        SASCII n(names[i].c_str());  
+        const char* name = names[i].c_str(); 
+
+        SASCII n(name);  
 
         std::string ab ; 
 
@@ -55,12 +60,25 @@ void SAbbrev::init()
             ab = n.getFirst(2) ; 
         }
 
+        LOG(LEVEL) 
+            << " name [" << name << "]" 
+            << " ab [" << ab << "]" 
+            ;
+
         if(!isFree(ab))
         {
             ab = n.getFirstLast(); 
         } 
 
-        assert( isFree(ab) && "failed to abbreviate "); 
+        bool is_now_free = isFree(ab) ;  
+
+        LOG(LEVEL) 
+            << " name [" << name << "]" 
+            << " ab [" << ab << "]" 
+            << " is_now_free " << is_now_free
+            ;
+
+        assert( is_now_free && "failed to abbreviate "); 
         abbrev.push_back(ab) ;  
     }
 }
