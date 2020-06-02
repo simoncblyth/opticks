@@ -94,7 +94,10 @@ SASCII::SASCII(const char* s_)
     lower(0),
     number(0),
     other(0),
-    allowed(0)
+    allowed(0),
+    first_upper_index(-1),
+    first_other_index(-1),
+    first_number_index(-1)
 {
     init(); 
 }
@@ -109,6 +112,10 @@ void SASCII::init()
         if(IsNumber(c)) number++ ; 
         if(IsOther(c)) other++ ; 
         if(IsAllowed(c)) allowed++ ; 
+
+        if(IsUpper(c) && upper == 1) first_upper_index = int(i) ;  
+        if(IsNumber(c) && number == 1) first_number_index = int(i) ;  
+        if(IsOther(c)  && other == 1)  first_other_index = int(i) ;  
     }     
     assert( len == allowed ); 
 }
@@ -129,6 +136,15 @@ std::string SASCII::getFirst(unsigned n) const
     }
     return ss.str();  
 }
+
+
+/**
+SASCII::getFirstUpper
+----------------------
+
+Return string of length
+
+**/
 
 
 std::string SASCII::getFirstUpper(unsigned n) const 

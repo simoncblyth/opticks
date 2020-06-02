@@ -46,18 +46,39 @@ void SAbbrev::init()
     for(unsigned i=0 ; i < names.size() ; i++)
     {
         const char* name = names[i].c_str(); 
+        SASCII* n = new SASCII(name); 
 
-        SASCII n(name);  
+        bool underscored = n->other == 1 && n->first_other_index + 1 < strlen(name) ;  
+
+        LOG(LEVEL)
+           << " name [" << name << "]"
+           << " n->other " << n->other
+           ;
+
+
+        // when have an underscore abbreviate the string after it 
+        if( underscored )
+        {   
+            int idx = n->first_other_index ;  
+            delete n ; 
+            n = new SASCII(name+idx+1) ;   
+        }
 
         std::string ab ; 
 
-        if( n.upper > 1 )
+        if( n->upper > 0 && n->number > 0 ) // 1 or more upper and number 
+        {
+            int iu = n->first_upper_index ; 
+            int in = n->first_number_index ; 
+            ab = n->getTwoChar( iu < in ? iu : in ,  iu < in ? in : iu  ); 
+        }
+        else if( n->upper > 1 ) // more than one uppercase : form abbrev from first two uppercase chars 
         { 
-            ab = n.getFirstUpper(2) ; 
+            ab = n->getFirstUpper(2) ; 
         }
         else 
         {
-            ab = n.getFirst(2) ; 
+            ab = n->getFirst(2) ; 
         }
 
         LOG(LEVEL) 
@@ -67,7 +88,7 @@ void SAbbrev::init()
 
         if(!isFree(ab))
         {
-            ab = n.getFirstLast(); 
+            ab = n->getFirstLast(); 
         } 
 
         bool is_now_free = isFree(ab) ;  

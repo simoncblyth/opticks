@@ -17,7 +17,7 @@
  * limitations under the License.
  */
 
-// TEST=SAbbrevTest om-t
+// TEST=SAbbrevTest SAbbrev=INFO om-t
 
 #include <string>
 #include <vector>
@@ -26,8 +26,7 @@
 
 #include "OPTICKS_LOG.hh"
 
-
-int main(int argc, char** argv )
+void test_0()
 {
     std::vector<std::string> ss = { 
         "Acrylic",
@@ -60,6 +59,62 @@ int main(int argc, char** argv )
 
     SAbbrev ab(ss);
     ab.dump(); 
+
+}
+
+void test_1()
+{
+    std::vector<std::string> ss = { 
+        "Acrylic",
+        "Air", 
+        "Aluminium",
+        "Bialkali",
+        "DeadWater",
+        "ESR",
+        "Foam",
+        "GdDopedLS",
+        "IwsWater",
+        "LiquidScintillator",
+        "MineralOil",
+        "Nitrogen",
+        "NitrogenGas",
+        "Nylon",
+        "OwsWater",
+        "PPE",
+        "PVC",
+        "Pyrex",
+        "Rock",
+        "StainlessSteel",
+        "Tyvek",
+        "UnstStainlessSteel",
+        "Vacuum",
+        "OpaqueVacuum",
+        "Water",
+        "GlassSchottF2",
+        "photocathode",
+        "photocathode_3inch",
+        "photocathode_MCP20inch",
+        "photocathode_MCP8inch",
+        "photocathode_Ham20inch",
+        "photocathode_Ham8inch",
+        "photocathode_HZC9inch"
+    } ;
+
+    SAbbrev ab(ss);
+    ab.dump(); 
+}
+
+
+
+
+
+
+int main(int argc, char** argv )
+{
+    OPTICKS_LOG(argc, argv);
+ 
+    //test_0(); 
+    test_1(); 
 
     return 0 ; 
 }

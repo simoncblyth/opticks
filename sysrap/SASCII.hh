@@ -66,6 +66,9 @@ class SYSRAP_API SASCII
       unsigned number; 
       unsigned other ; 
       unsigned allowed ; 
+      int first_upper_index ; 
+      int first_other_index ; 
+      int first_number_index ; 
 };
 
 
