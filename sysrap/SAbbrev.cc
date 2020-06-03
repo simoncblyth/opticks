@@ -43,16 +43,20 @@ bool SAbbrev::isFree(const std::string& ab) const
 
 void SAbbrev::init()
 {
+    for(unsigned i=0 ; i < names.size() ; i++) LOG(LEVEL) << names[i].c_str();
+ 
     for(unsigned i=0 ; i < names.size() ; i++)
     {
         const char* name = names[i].c_str(); 
         SASCII* n = new SASCII(name); 
 
-        bool underscored = n->other == 1 && n->first_other_index + 1 < strlen(name) ;  
+        int chars_after_other = n->other == 1 ? strlen(name) - n->first_other_index - 1 : -1 ;   
+        bool underscored = chars_after_other > 2 ;  
 
         LOG(LEVEL)
            << " name [" << name << "]"
            << " n->other " << n->other
+           << " chars_after_other " << chars_after_other
            ;
 
 

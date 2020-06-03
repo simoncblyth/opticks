@@ -151,7 +151,8 @@ void GGeoSensor::AddSensorSurfaces( GGeo* gg )
 
         GSkinSurface* gss = MakeSensorSurface(sslv, index);
         gss->setStandardDomain();  // default domain 
-        gss->setSensor();
+
+        // gss->setSensor();   THIS ASSERTS : NOW DETERMINE THIS FROM HAVING AN EFFICIENCY PROPERTY
 #ifdef OLD_CATHODE
         gss->add(cathode_props); 
 #else

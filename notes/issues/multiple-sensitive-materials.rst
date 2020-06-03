@@ -339,3 +339,330 @@ Name abbreviation issue.
     [blyth@localhost opticks]$ 
 
 
+
+
+::
+
+    2020-06-03 02:45:43.094 INFO  [367987] [X4PhysicalVolume::convertSensors_r@308]  is_lvsdname 0 is_sd 1 sdn PMTSDMgr name PMT_20inch_veto_inner1_log nameref PMT_20inch_veto_inner1_log mt_name Vacuum
+    2020-06-03 02:45:43.094 INFO  [367987] [X4PhysicalVolume::convertSensors_r@308]  is_lvsdname 0 is_sd 1 sdn PMTSDMgr name PMT_20inch_veto_body_log nameref PMT_20inch_veto_body_log mt_name Pyrex
+    2020-06-03 02:45:43.094 INFO  [367987] [X4PhysicalVolume::convertSensors_r@308]  is_lvsdname 0 is_sd 1 sdn PMTSDMgr name PMT_20inch_veto_inner1_log nameref PMT_20inch_veto_inner1_log mt_name Vacuum
+    2020-06-03 02:45:43.094 INFO  [367987] [X4PhysicalVolume::convertSensors_r@308]  is_lvsdname 0 is_sd 1 sdn PMTSDMgr name PMT_20inch_veto_body_log nameref PMT_20inch_veto_body_log mt_name Pyrex
+    2020-06-03 02:45:43.094 INFO  [367987] [X4PhysicalVolume::convertSensors_r@308]  is_lvsdname 0 is_sd 1 sdn PMTSDMgr name PMT_20inch_veto_inner1_log nameref PMT_20inch_veto_inner1_log mt_name Vacuum
+    python: /home/blyth/opticks/npy/NMeta.cpp:255: const char* NMeta::getKey(unsigned int) const: Assertion `idx < m_keys.size()' failed.
+    Aborted (core dumped)
+    [blyth@localhost ~]$ 
+
+
+
+
+
+::
+
+    (gdb) bt
+    #0  0x00007ffff6cfa207 in raise () from /lib64/libc.so.6
+    #1  0x00007ffff6cfb8f8 in abort () from /lib64/libc.so.6
+    #2  0x00007ffff6cf3026 in __assert_fail_base () from /lib64/libc.so.6
+    #3  0x00007ffff6cf30d2 in __assert_fail () from /lib64/libc.so.6
+    #4  0x00007fffcc71e9f1 in NMeta::getKey (this=0x33571500, idx=0) at /home/blyth/opticks/npy/NMeta.cpp:255
+    #5  0x00007fffcd51ba4d in GGeo::getLVSD (this=0x33483020, idx=0) at /home/blyth/opticks/ggeo/GGeo.cc:380
+    #6  0x00007fffcd51c095 in GGeo::getSensitiveLVSDMT (this=0x33483020, lvn=std::vector of length 6, capacity 8 = {...}, sdn=std::vector of length 0, capacity 0, mtn=std::vector of length 0, capacity 0)
+        at /home/blyth/opticks/ggeo/GGeo.cc:477
+    #7  0x00007fffcd4f7e5e in GGeoSensor::AddSensorSurfaces (gg=0x33483020) at /home/blyth/opticks/ggeo/GGeoSensor.cc:104
+    #8  0x00007fffce7dfea8 in X4PhysicalVolume::convertSensors (this=0x7fffffff3680) at /home/blyth/opticks/extg4/X4PhysicalVolume.cc:219
+    #9  0x00007fffce7dfc2a in X4PhysicalVolume::init (this=0x7fffffff3680) at /home/blyth/opticks/extg4/X4PhysicalVolume.cc:186
+    #10 0x00007fffce7df9c4 in X4PhysicalVolume::X4PhysicalVolume (this=0x7fffffff3680, ggeo=0x33483020, top=0x2cc9980) at /home/blyth/opticks/extg4/X4PhysicalVolume.cc:170
+    #11 0x00007fffcf08b64f in G4Opticks::translateGeometry (this=0x20f2b950, top=0x2cc9980) at /home/blyth/opticks/g4ok/G4Opticks.cc:251
+    #12 0x00007fffcf08a8bd in G4Opticks::setGeometry (this=0x20f2b950, world=0x2cc9980, standardize_geant4_materials=true) at /home/blyth/opticks/g4ok/G4Opticks.cc:168
+    #13 0x00007fffcf08a377 in G4Opticks::Initialize (world=0x2cc9980, standardize_geant4_materials=true) at /home/blyth/opticks/g4ok/G4Opticks.cc:103
+    #14 0x00007fffcf2b6b62 in G4OpticksAnaMgr::BeginOfRunAction (this=0x255a130, aRun=0x20f2b600) at ../src/G4OpticksAnaMgr.cc:42
+    #15 0x00007fffc056057a in MgrOfAnaElem::BeginOfRunAction (this=0x7fffc076c3a0 <MgrOfAnaElem::instance()::s_mgr>, run=0x20f2b600) at ../src/MgrOfAnaElem.cc:33
+    #16 0x00007fffc0d3bd6c in LSExpRunAction::BeginOfRunAction (this=0x2c64d10, aRun=0x20f2b600) at ../src/LSExpRunAction.cc:54
+    #17 0x00007fffd006ae38 in G4RunManager::RunInitialization() () from /home/blyth/junotop/ExternalLibs/Geant4/10.04.p02/lib64/libG4run.so
+    #18 0x00007fffc0f756fc in G4SvcRunManager::initializeRM() () from /home/blyth/junotop/offline/InstallArea/Linux-x86_64/lib/libG4Svc.so
+    #19 0x00007fffc0559496 in DetSimAlg::initialize (this=0x2559640) at ../src/DetSimAlg.cc:78
+    #20 0x00007fffefcbf228 in DleSupervisor::initialize() () from /home/blyth/junotop/sniper/InstallArea/Linux-x86_64/lib/libSniperKernel.so
+    #21 0x00007fffefcc9c68 in Task::initialize() () from /home/blyth/junotop/sniper/InstallArea/Linux-x86_64/lib/libSniperKernel.so
+    #22 0x00007fffefcceda6 in TaskWatchDog::initialize() () from /home/blyth/junotop/sniper/InstallArea/Linux-x86_64/lib/libSniperKernel.so
+    #23 0x00007fffefcc9b7f in Task::run() () from /home/blyth/junotop/sniper/InstallArea/Linux-x86_64/lib/libSniperKernel.so
+    #24 0x00007ffff00077dc in TaskWrap::default_run() () from /home/blyth/junotop/sniper/InstallArea/Linux-x86_64/lib/libSniperPython.so
+
+
+    (gdb) f 7
+    #7  0x00007fffcd4f7e5e in GGeoSensor::AddSensorSurfaces (gg=0x33483020) at /home/blyth/opticks/ggeo/GGeoSensor.cc:104
+    104     gg->getSensitiveLVSDMT(lvn, sdn, mtn); 
+    (gdb) p lvn
+    $1 = std::vector of length 6, capacity 8 = {"PMT_20inch_veto_inner1_log", "PMT_3inch_inner1_log", "PMT_20inch_veto_body_log", "PMT_3inch_body_log", "NNVTMCPPMT_PMT_20inch_inner1_log", 
+      "NNVTMCPPMT_PMT_20inch_body_log"}
+    (gdb) p sdn
+    $2 = std::vector of length 0, capacity 0
+    (gdb) p mtn
+    $3 = std::vector of length 0, capacity 0
+    (gdb) 
+
+    (gdb) f 5
+    #5  0x00007fffcd51ba4d in GGeo::getLVSD (this=0x33483020, idx=0) at /home/blyth/opticks/ggeo/GGeo.cc:380
+    380     const char* lv = m_lv2sd->getKey(idx) ; 
+    (gdb) p m_lv2sd
+    $4 = (NMeta *) 0x33571500
+    (gdb) p m_lv2sd->dumpLines(0)
+    2020-06-03 03:12:28.785 INFO  [391251] [NMeta::dumpLines@136] (null)
+    NNVTMCPPMT_PMT_20inch_body_log : "PMTSDMgr"
+    NNVTMCPPMT_PMT_20inch_inner1_log : "PMTSDMgr"
+    PMT_20inch_veto_body_log : "PMTSDMgr"
+    PMT_20inch_veto_inner1_log : "PMTSDMgr"
+    PMT_3inch_body_log : "PMTSDMgr"
+    PMT_3inch_inner1_log : "PMTSDMgr"
+    $5 = void
+    (gdb) 
+
+
+    (gdb) f 5
+    #5  0x00007fffcd51ba4d in GGeo::getLVSD (this=0x33483020, idx=0) at /home/blyth/opticks/ggeo/GGeo.cc:380
+    380     const char* lv = m_lv2sd->getKey(idx) ; 
+    (gdb) p m_lv2sd
+    $4 = (NMeta *) 0x33571500
+    (gdb) p m_lv2sd->dumpLines(0)
+    2020-06-03 03:12:28.785 INFO  [391251] [NMeta::dumpLines@136] (null)
+    NNVTMCPPMT_PMT_20inch_body_log : "PMTSDMgr"
+    NNVTMCPPMT_PMT_20inch_inner1_log : "PMTSDMgr"
+    PMT_20inch_veto_body_log : "PMTSDMgr"
+    PMT_20inch_veto_inner1_log : "PMTSDMgr"
+    PMT_3inch_body_log : "PMTSDMgr"
+    PMT_3inch_inner1_log : "PMTSDMgr"
+    $5 = void
+    (gdb) f 4
+    #4  0x00007fffcc71e9f1 in NMeta::getKey (this=0x33571500, idx=0) at /home/blyth/opticks/npy/NMeta.cpp:255
+    255     assert( idx < m_keys.size() );
+    (gdb) p m_keys.size()
+    $6 = 0
+    (gdb) p this->dumpLines(0)
+    2020-06-03 03:15:33.148 INFO  [391251] [NMeta::dumpLines@136] (null)
+    NNVTMCPPMT_PMT_20inch_body_log : "PMTSDMgr"
+    NNVTMCPPMT_PMT_20inch_inner1_log : "PMTSDMgr"
+    PMT_20inch_veto_body_log : "PMTSDMgr"
+    PMT_20inch_veto_inner1_log : "PMTSDMgr"
+    PMT_3inch_body_log : "PMTSDMgr"
+    PMT_3inch_inner1_log : "PMTSDMgr"
+    $7 = void
+    (gdb) p this->desc(10)
+    $8 = "{\n          \"NNVTMCPPMT_PMT_20inch_body_log\": \"PMTSDMgr\",\n          \"NNVTMCPPMT_PMT_20inch_inner1_log\": \"PMTSDMgr\",\n          \"PMT_20inch_veto_body_log\": \"PMTSDMgr\",\n          \"PMT_20inch_veto_inner1_"...
+    (gdb) p this->getNumKeys()
+    $9 = 6
+    (gdb) p m_keys.size()
+    $10 = 6
+    (gdb) p m_keys
+    $11 = std::vector of length 6, capacity 8 = {"NNVTMCPPMT_PMT_20inch_body_log", "NNVTMCPPMT_PMT_20inch_inner1_log", "PMT_20inch_veto_body_log", "PMT_20inch_veto_inner1_log", "PMT_3inch_body_log", 
+      "PMT_3inch_inner1_log"}
+    (gdb) 
+
+
+
+
+    2020-06-03 03:30:21.215 INFO  [440410] [X4PhysicalVolume::convertSensors_r@308]  is_lvsdname 0 is_sd 1 sdn PMTSDMgr name PMT_20inch_veto_inner1_log nameref PMT_20inch_veto_inner1_log mt_name Vacuum
+    2020-06-03 03:30:21.215 INFO  [440410] [X4PhysicalVolume::convertSensors_r@308]  is_lvsdname 0 is_sd 1 sdn PMTSDMgr name PMT_20inch_veto_body_log nameref PMT_20inch_veto_body_log mt_name Pyrex
+    2020-06-03 03:30:21.215 INFO  [440410] [X4PhysicalVolume::convertSensors_r@308]  is_lvsdname 0 is_sd 1 sdn PMTSDMgr name PMT_20inch_veto_inner1_log nameref PMT_20inch_veto_inner1_log mt_name Vacuum
+    2020-06-03 03:30:21.215 INFO  [440410] [X4PhysicalVolume::convertSensors_r@308]  is_lvsdname 0 is_sd 1 sdn PMTSDMgr name PMT_20inch_veto_body_log nameref PMT_20inch_veto_body_log mt_name Pyrex
+    2:020-06-03 03:30:21.215 INFO  [440410] [X4PhysicalVolume::convertSensors_r@308]  is_lvsdname 0 is_sd 1 sdn PMTSDMgr name PMT_20inch_veto_inner1_log nameref PMT_20inch_veto_inner1_log mt_name Vacuum
+    python: /home/blyth/opticks/ggeo/GGeo.cc:487: void GGeo::getSensitiveLVSDMT(std::vector<std::basic_string<char> >&, std::vector<std::basic_string<char> >&, std::vector<std::basic_string<char> >&) const: Assertion `strcmp(lv, lv0) == 0' failed.
+    
+    Program received signal SIGABRT, Aborted.
+    0x00007ffff6cfa207 in raise () from /lib64/libc.so.6
+    Missing separate debuginfos, use: debuginfo-install bzip2-libs-1.0.6-13.el7.x86_64 cyrus-sasl-lib-2.1.26-23.el7.x86_64 expat-2.1.0-10.el7_3.x86_64 freetype-2.8-12.el7_6.1.x86_64 glibc-2.17-260.el7_6.3.x86_64 keyutils-libs-1.5.8-3.el7.x86_64 krb5-libs-1.15.1-37.el7_6.x86_64 libICE-1.0.9-9.el7.x86_64 libSM-1.2.2-2.el7.x86_64 libX11-1.6.7-2.el7.x86_64 libXau-1.0.8-2.1.el7.x86_64 libXext-1.3.3-3.el7.x86_64 libXmu-1.1.2-2.el7.x86_64 libXt-1.1.5-3.el7.x86_64 libcom_err-1.42.9-13.el7.x86_64 libcurl-7.29.0-57.el7.x86_64 libgcc-4.8.5-39.el7.x86_64 libglvnd-1.0.1-0.8.git5baa1e5.el7.x86_64 libglvnd-glx-1.0.1-0.8.git5baa1e5.el7.x86_64 libidn-1.28-4.el7.x86_64 libpng-1.5.13-7.el7_2.x86_64 libselinux-2.5-14.1.el7.x86_64 libssh2-1.8.0-3.el7.x86_64 libstdc++-4.8.5-39.el7.x86_64 libuuid-2.23.2-59.el7_6.1.x86_64 libxcb-1.13-1.el7.x86_64 mesa-libGLU-9.0.0-4.el7.x86_64 ncurses-libs-5.9-14.20130511.el7_4.x86_64 nspr-4.19.0-1.el7_5.x86_64 nss-3.36.0-7.1.el7_6.x86_64 nss-softokn-freebl-3.36.0-5.el7_5.x86_64 nss-util-3.36.0-1.1.el7_6.x86_64 openldap-2.4.44-21.el7_6.x86_64 openssl-libs-1.0.2k-19.el7.x86_64 pcre-8.32-17.el7.x86_64 xz-libs-5.2.2-1.el7.x86_64 zlib-1.2.7-18.el7.x86_64
+    (gdb) bt
+    #0  0x00007ffff6cfa207 in raise () from /lib64/libc.so.6
+    #1  0x00007ffff6cfb8f8 in abort () from /lib64/libc.so.6
+    #2  0x00007ffff6cf3026 in __assert_fail_base () from /lib64/libc.so.6
+    #3  0x00007ffff6cf30d2 in __assert_fail () from /lib64/libc.so.6
+    #4  0x00007fffcd51c1b0 in GGeo::getSensitiveLVSDMT (this=0x33483020, lvn=std::vector of length 6, capacity 8 = {...}, sdn=std::vector of length 0, capacity 0, mtn=std::vector of length 0, capacity 0)
+        at /home/blyth/opticks/ggeo/GGeo.cc:487
+    #5  0x00007fffcd4f7e5e in GGeoSensor::AddSensorSurfaces (gg=0x33483020) at /home/blyth/opticks/ggeo/GGeoSensor.cc:104
+    #6  0x00007fffce7dfea8 in X4PhysicalVolume::convertSensors (this=0x7fffffff3680) at /home/blyth/opticks/extg4/X4PhysicalVolume.cc:219
+    #7  0x00007fffce7dfc2a in X4PhysicalVolume::init (this=0x7fffffff3680) at /home/blyth/opticks/extg4/X4PhysicalVolume.cc:186
+    #8  0x00007fffce7df9c4 in X4PhysicalVolume::X4PhysicalVolume (this=0x7fffffff3680, ggeo=0x33483020, top=0x2cc9980) at /home/blyth/opticks/extg4/X4PhysicalVolume.cc:170
+    #9  0x00007fffcf08b64f in G4Opticks::translateGeometry (this=0x20f2b950, top=0x2cc9980) at /home/blyth/opticks/g4ok/G4Opticks.cc:251
+    #10 0x00007fffcf08a8bd in G4Opticks::setGeometry (this=0x20f2b950, world=0x2cc9980, standardize_geant4_materials=true) at /home/blyth/opticks/g4ok/G4Opticks.cc:168
+    #11 0x00007fffcf08a377 in G4Opticks::Initialize (world=0x2cc9980, standardize_geant4_materials=true) at /home/blyth/opticks/g4ok/G4Opticks.cc:103
+    #12 0x00007fffcf2b6b62 in G4OpticksAnaMgr::BeginOfRunAction (this=0x255a130, aRun=0x20f2b600) at ../src/G4OpticksAnaMgr.cc:42
+    #13 0x00007fffc056057a in MgrOfAnaElem::BeginOfRunAction (this=0x7fffc076c3a0 <MgrOfAnaElem::instance()::s_mgr>, run=0x20f2b600) at ../src/MgrOfAnaElem.cc:33
+    #14 0x00007fffc0d3bd6c in LSExpRunAction::BeginOfRunAction (this=0x2c64d10, aRun=0x20f2b600) at ../src/LSExpRunAction.cc:54
+    #15 0x00007fffd006ae38 in G4RunManager::RunInitialization() () from /home/blyth/junotop/ExternalLibs/Geant4/10.04.p02/lib64/libG4run.so
+v
+
+
+    (gdb) f 4
+    #4  0x00007fffcd51c1b0 in GGeo::getSensitiveLVSDMT (this=0x33483020, lvn=std::vector of length 6, capacity 8 = {...}, sdn=std::vector of length 0, capacity 0, mtn=std::vector of length 0, capacity 0)
+        at /home/blyth/opticks/ggeo/GGeo.cc:487
+    487         assert( strcmp(lv, lv0) == 0 ); 
+    (gdb) p lv
+    $1 = 0x3359cae8 "PMT_20inch_veto_inner1_log"
+    (gdb) p lv0
+    $2 = 0x3359c2a8 "NNVTMCPPMT_PMT_20inch_body_log"
+    (gdb) p lv1
+    $3 = 0x3359c268 "NNVTMCPPMT_PMT_20inch_body_log"
+    (gdb) 
+
+
+
+    2020-06-03 03:59:16.127 INFO  [26616] [X4PhysicalVolume::convertSensors_r@308]  is_lvsdname 0 is_sd 1 sdn PMTSDMgr name PMT_20inch_veto_inner1_log nameref PMT_20inch_veto_inner1_log mt_name Vacuum
+    2020-06-03 03:59:16.128 INFO  [26616] [X4PhysicalVolume::convertSensors_r@308]  is_lvsdname 0 is_sd 1 sdn PMTSDMgr name PMT_20inch_veto_body_log nameref PMT_20inch_veto_body_log mt_name Pyrex
+    2020-06-03 03:59:16.128 INFO  [26616] [X4PhysicalVolume::convertSensors_r@308]  is_lvsdname 0 is_sd 1 sdn PMTSDMgr name PMT_20inch_veto_inner1_log nameref PMT_20inch_veto_inner1_log mt_name Vacuum
+    2020-06-03 03:59:16.128 INFO  [26616] [X4PhysicalVolume::convertSensors_r@308]  is_lvsdname 0 is_sd 1 sdn PMTSDMgr name PMT_20inch_veto_body_log nameref PMT_20inch_veto_body_log mt_name Pyrex
+    2020-06-03 03:59:16.128 INFO  [26616] [X4PhysicalVolume::convertSensors_r@308]  is_lvsdname 0 is_sd 1 sdn PMTSDMgr name PMT_20inch_veto_inner1_log nameref PMT_20inch_veto_inner1_log mt_name Vacuum
+    2020-06-03 03:59:16.128 INFO  [26616] [GGeoSensor::AddSensorSurfaces@141]  i 0 sslv PMT_20inch_veto_inner1_log sd PMT_20inch_veto_inner1_log mt Vacuum index 71 num_mat 39 num_sks 3 num_bds 29
+    2020-06-03 03:59:16.128 INFO  [26616] [GGeoSensor::MakeOpticalSurface@191]  sslv PMT_20inch_veto_inner1_log name PMT_20inch_veto_inner1_logSensorSurface
+    python: /home/blyth/opticks/ggeo/GPropertyMap.cc:300: void GPropertyMap<T>::setSensor(bool) [with T = float]: Assertion `0 && "sensors are now detected by the prescense of an EFFICIENCY property"' failed.
+    
+    Program received signal SIGABRT, Aborted.
+    0x00007ffff6cfa207 in raise () from /lib64/libc.so.6
+    Missing separate debuginfos, use: debuginfo-install bzip2-libs-1.0.6-13.el7.x86_64 cyrus-sasl-lib-2.1.26-23.el7.x86_64 expat-2.1.0-10.el7_3.x86_64 freetype-2.8-12.el7_6.1.x86_64 glibc-2.17-260.el7_6.3.x86_64 keyutils-libs-1.5.8-3.el7.x86_64 krb5-libs-1.15.1-37.el7_6.x86_64 libICE-1.0.9-9.el7.x86_64 libSM-1.2.2-2.el7.x86_64 libX11-1.6.7-2.el7.x86_64 libXau-1.0.8-2.1.el7.x86_64 libXext-1.3.3-3.el7.x86_64 libXmu-1.1.2-2.el7.x86_64 libXt-1.1.5-3.el7.x86_64 libcom_err-1.42.9-13.el7.x86_64 libcurl-7.29.0-57.el7.x86_64 libgcc-4.8.5-39.el7.x86_64 libglvnd-1.0.1-0.8.git5baa1e5.el7.x86_64 libglvnd-glx-1.0.1-0.8.git5baa1e5.el7.x86_64 libidn-1.28-4.el7.x86_64 libpng-1.5.13-7.el7_2.x86_64 libselinux-2.5-14.1.el7.x86_64 libssh2-1.8.0-3.el7.x86_64 libstdc++-4.8.5-39.el7.x86_64 libuuid-2.23.2-59.el7_6.1.x86_64 libxcb-1.13-1.el7.x86_64 mesa-libGLU-9.0.0-4.el7.x86_64 ncurses-libs-5.9-14.20130511.el7_4.x86_64 nspr-4.19.0-1.el7_5.x86_64 nss-3.36.0-7.1.el7_6.x86_64 nss-softokn-freebl-3.36.0-5.el7_5.x86_64 nss-util-3.36.0-1.1.el7_6.x86_64 openldap-2.4.44-21.el7_6.x86_64 openssl-libs-1.0.2k-19.el7.x86_64 pcre-8.32-17.el7.x86_64 xz-libs-5.2.2-1.el7.x86_64 zlib-1.2.7-18.el7.x86_64
+    (gdb) bt
+    i
+    
+    (gdb) bt
+    #0  0x00007ffff6cfa207 in raise () from /lib64/libc.so.6
+    #1  0x00007ffff6cfb8f8 in abort () from /lib64/libc.so.6
+    #2  0x00007ffff6cf3026 in __assert_fail_base () from /lib64/libc.so.6
+    #3  0x00007ffff6cf30d2 in __assert_fail () from /lib64/libc.so.6
+    #4  0x00007fffcd4948c4 in GPropertyMap<float>::setSensor (this=0x3359d240, sensor=true) at /home/blyth/opticks/ggeo/GPropertyMap.cc:300
+    #5  0x00007fffcd4f8334 in GGeoSensor::AddSensorSurfaces (gg=0x33483020) at /home/blyth/opticks/ggeo/GGeoSensor.cc:154
+    #6  0x00007fffce7dfea8 in X4PhysicalVolume::convertSensors (this=0x7fffffff3680) at /home/blyth/opticks/extg4/X4PhysicalVolume.cc:219
+    #7  0x00007fffce7dfc2a in X4PhysicalVolume::init (this=0x7fffffff3680) at /home/blyth/opticks/extg4/X4PhysicalVolume.cc:186
+    #8  0x00007fffce7df9c4 in X4PhysicalVolume::X4PhysicalVolume (this=0x7fffffff3680, ggeo=0x33483020, top=0x2cc9980) at /home/blyth/opticks/extg4/X4PhysicalVolume.cc:170
+    #9  0x00007fffcf08b64f in G4Opticks::translateGeometry (this=0x20f2b950, top=0x2cc9980) at /home/blyth/opticks/g4ok/G4Opticks.cc:251
+    #10 0x00007fffcf08a8bd in G4Opticks::setGeometry (this=0x20f2b950, world=0x2cc9980, standardize_geant4_materials=true) at /home/blyth/opticks/g4ok/G4Opticks.cc:168
+    #11 0x00007fffcf08a377 in G4Opticks::Initialize (world=0x2cc9980, standardize_geant4_materials=true) at /home/blyth/opticks/g4ok/G4Opticks.cc:103
+    #12 0x00007fffcf2b6b62 in G4OpticksAnaMgr::BeginOfRunAction (this=0x255a130, aRun=0x20f2b600) at ../src/G4OpticksAnaMgr.cc:42
+    #13 0x00007fffc056057a in MgrOfAnaElem::BeginOfRunAction (this=0x7fffc076c3a0 <MgrOfAnaElem::instance()::s_mgr>, run=0x20f2b600) at ../src/MgrOfAnaElem.cc:33
+    #14 0x00007fffc0d3bd6c in LSExpRunAction::BeginOfRunAction (this=0x2c64d10, aRun=0x20f2b600) at ../src/LSExpRunAction.cc:54
+    #15 0x00007fffd006ae38 in G4RunManager::RunInitialization() () from /home/blyth/junotop/ExternalLibs/Geant4/10.04.p02/lib64/libG4run.so
+    #16 0x00007fffc0f756fc in G4SvcRunManager::initializeRM() () from /home/blyth/junotop/offline/InstallArea/Linux-x86_64/lib/libG4Svc.so
+    #17 0x00007fffc0559496 in DetSimAlg::initialize (this=0x2559640) at ../src/DetSimAlg.cc:78
+
+
+    2020-06-03 19:00:11.873 INFO  [30318] [X4PhysicalVolume::convertSensors_r@308]  is_lvsdname 0 is_sd 1 sdn PMTSDMgr name PMT_20inch_veto_body_log nameref PMT_20inch_veto_body_log mt_name Pyrex
+    2020-06-03 19:00:11.873 INFO  [30318] [X4PhysicalVolume::convertSensors_r@308]  is_lvsdname 0 is_sd 1 sdn PMTSDMgr name PMT_20inch_veto_inner1_log nameref PMT_20inch_veto_inner1_log mt_name Vacuum
+    2020-06-03 19:00:11.873 INFO  [30318] [X4PhysicalVolume::convertSensors_r@308]  is_lvsdname 0 is_sd 1 sdn PMTSDMgr name PMT_20inch_veto_body_log nameref PMT_20inch_veto_body_log mt_name Pyrex
+    2020-06-03 19:00:11.873 INFO  [30318] [X4PhysicalVolume::convertSensors_r@308]  is_lvsdname 0 is_sd 1 sdn PMTSDMgr name PMT_20inch_veto_inner1_log nameref PMT_20inch_veto_inner1_log mt_name Vacuum
+    2020-06-03 19:00:11.874 INFO  [30318] [GGeoSensor::AddSensorSurfaces@141]  i 0 sslv PMT_20inch_veto_inner1_log sd PMT_20inch_veto_inner1_log mt Vacuum index 71 num_mat 39 num_sks 3 num_bds 29
+    2020-06-03 19:00:11.874 INFO  [30318] [GGeoSensor::MakeOpticalSurface@192]  sslv PMT_20inch_veto_inner1_log name PMT_20inch_veto_inner1_logSensorSurface
+    2020-06-03 19:00:11.874 INFO  [30318] [GGeoSensor::AddSensorSurfaces@162]  gss GSS:: GPropertyMap<T>:: 71    skinsurface s: GOpticalSurface  type 0 model 1 finish 3 value     1PMT_20inch_veto_inner1_logSensorSurface k:refractive_index absorption_length scattering_length reemission_prob group_velocity extra_y extra_z extra_w
+    python: /home/blyth/opticks/ggeo/GSurfaceLib.cc:610: GPropertyMap<float>* GSurfaceLib::createStandardSurface(GPropertyMap<float>*): Assertion `_REFLECTIVITY && os && "non-sensor surfaces must have a reflectivity "' failed.
+    
+    Program received signal SIGABRT, Aborted.
+    0x00007ffff6cfa207 in raise () from /lib64/libc.so.6
+    Missing separate debuginfos, use: debuginfo-install bzip2-libs-1.0.6-13.el7.x86_64 cyrus-sasl-lib-2.1.26-23.el7.x86_64 expat-2.1.0-10.el7_3.x86_64 freetype-2.8-12.el7_6.1.x86_64 glibc-2.17-260.el7_6.3.x86_64 keyutils-libs-1.5.8-3.el7.x86_64 krb5-libs-1.15.1-37.el7_6.x86_64 libICE-1.0.9-9.el7.x86_64 libSM-1.2.2-2.el7.x86_64 libX11-1.6.7-2.el7.x86_64 libXau-1.0.8-2.1.el7.x86_64 libXext-1.3.3-3.el7.x86_64 libXmu-1.1.2-2.el7.x86_64 libXt-1.1.5-3.el7.x86_64 libcom_err-1.42.9-13.el7.x86_64 libcurl-7.29.0-57.el7.x86_64 libgcc-4.8.5-39.el7.x86_64 libglvnd-1.0.1-0.8.git5baa1e5.el7.x86_64 libglvnd-glx-1.0.1-0.8.git5baa1e5.el7.x86_64 libidn-1.28-4.el7.x86_64 libpng-1.5.13-7.el7_2.x86_64 libselinux-2.5-14.1.el7.x86_64 libssh2-1.8.0-3.el7.x86_64 libstdc++-4.8.5-39.el7.x86_64 libuuid-2.23.2-59.el7_6.1.x86_64 libxcb-1.13-1.el7.x86_64 mesa-libGLU-9.0.0-4.el7.x86_64 ncurses-libs-5.9-14.20130511.el7_4.x86_64 nspr-4.19.0-1.el7_5.x86_64 nss-3.36.0-7.1.el7_6.x86_64 nss-softokn-freebl-3.36.0-5.el7_5.x86_64 nss-util-3.36.0-1.1.el7_6.x86_64 openldap-2.4.44-21.el7_6.x86_64 openssl-libs-1.0.2k-19.el7.x86_64 pcre-8.32-17.el7.x86_64 xz-libs-5.2.2-1.el7.x86_64 zlib-1.2.7-18.el7.x86_64
+    (gdb) bt
+    #0  0x00007ffff6cfa207 in raise () from /lib64/libc.so.6
+    #1  0x00007ffff6cfb8f8 in abort () from /lib64/libc.so.6
+    #2  0x00007ffff6cf3026 in __assert_fail_base () from /lib64/libc.so.6
+    #3  0x00007ffff6cf30d2 in __assert_fail () from /lib64/libc.so.6
+    #4  0x00007fffcd4b7d8f in GSurfaceLib::createStandardSurface (this=0x33488170, src=0x3359d750) at /home/blyth/opticks/ggeo/GSurfaceLib.cc:610
+    #5  0x00007fffcd4b7428 in GSurfaceLib::add (this=0x33488170, surf=0x3359d750) at /home/blyth/opticks/ggeo/GSurfaceLib.cc:485
+    #6  0x00007fffcd4b722b in GSurfaceLib::addSkinSurface (this=0x33488170, surf=0x3359d750, sslv_=0x3359d4a0 "PMT_20inch_veto_inner1_log", direct=false) at /home/blyth/opticks/ggeo/GSurfaceLib.cc:457
+    #7  0x00007fffcd4b7112 in GSurfaceLib::add (this=0x33488170, raw=0x3359d750) at /home/blyth/opticks/ggeo/GSurfaceLib.cc:445
+    #8  0x00007fffcd51b460 in GGeo::add (this=0x334851e0, surface=0x3359d750) at /home/blyth/opticks/ggeo/GGeo.cc:212
+    #9  0x00007fffcd4f83fb in GGeoSensor::AddSensorSurfaces (gg=0x334851e0) at /home/blyth/opticks/ggeo/GGeoSensor.cc:164
+    #10 0x00007fffce7dfea8 in X4PhysicalVolume::convertSensors (this=0x7fffffff5300) at /home/blyth/opticks/extg4/X4PhysicalVolume.cc:219
+    #11 0x00007fffce7dfc2a in X4PhysicalVolume::init (this=0x7fffffff5300) at /home/blyth/opticks/extg4/X4PhysicalVolume.cc:186
+    #12 0x00007fffce7df9c4 in X4PhysicalVolume::X4PhysicalVolume (this=0x7fffffff5300, ggeo=0x334851e0, top=0x2cc66b0) at /home/blyth/opticks/extg4/X4PhysicalVolume.cc:170
+    #13 0x00007fffcf08b64f in G4Opticks::translateGeometry (this=0x20f27bc0, top=0x2cc66b0) at /home/blyth/opticks/g4ok/G4Opticks.cc:251
+    #14 0x00007fffcf08a8bd in G4Opticks::setGeometry (this=0x20f27bc0, world=0x2cc66b0, standardize_geant4_materials=true) at /home/blyth/opticks/g4ok/G4Opticks.cc:168
+    #15 0x00007fffcf08a377 in G4Opticks::Initialize (world=0x2cc66b0, standardize_geant4_materials=true) at /home/blyth/opticks/g4ok/G4Opticks.cc:103
+    #16 0x00007fffcf2b6b62 in G4OpticksAnaMgr::BeginOfRunAction (this=0x2556ef0, aRun=0x20f27870) at ../src/G4OpticksAnaMgr.cc:42
+    #17 0x00007fffc056057a in MgrOfAnaElem::BeginOfRunAction (this=0x7fffc076c3a0 <MgrOfAnaElem::instance()::s_mgr>, run=0x20f27870) at ../src/MgrOfAnaElem.cc:33
+    #18 0x00007fffc0d3bd6c in LSExpRunAction::BeginOfRunAction (this=0x2c61a40, aRun=0x20f27870) at ../src/LSExpRunAction.cc:54
+    #19 0x00007fffd006ae38 in G4RunManager::RunInitialization() () from /home/blyth/junotop/ExternalLibs/Geant4/10.04.p02/lib64/libG4run.so
+    #20 0x00007fffc0f756fc in G4SvcRunManager::initializeRM() () from /home/blyth/junotop/offline/InstallArea/Linux-x86_64/lib/libG4Svc.so
+    #21 0x00007fffc0559496 in DetSimAlg::initialize (this=0x25563c0) at ../src/DetSimAlg.cc:78
+    #22 0x00007fffefcbf228 in DleSupervisor::initialize() () from /home/blyth/junotop/sniper/InstallArea/Linux-x86_64/lib/libSniperKernel.so
+
+
+    (gdb) l
+    480 **/
+    481 
+    482 void GSurfaceLib::add(GPropertyMap<float>* surf)
+    483 {
+    484     assert(!isClosed());
+    485     GPropertyMap<float>* ssurf = createStandardSurface(surf) ;
+    486     addDirect(ssurf);
+    487 }
+    488 
+    489 void GSurfaceLib::addDirect(GPropertyMap<float>* surf)
+    (gdb) f 4
+    #4  0x00007fffcd4b7d8f in GSurfaceLib::createStandardSurface (this=0x33488170, src=0x3359d750) at /home/blyth/opticks/ggeo/GSurfaceLib.cc:610
+    610             assert(_REFLECTIVITY && os && "non-sensor surfaces must have a reflectivity " );
+    (gdb) l
+    605             }
+    606         }
+    607         else
+    608         {
+    609             GProperty<float>* _REFLECTIVITY = src->getProperty(REFLECTIVITY); 
+    610             assert(_REFLECTIVITY && os && "non-sensor surfaces must have a reflectivity " );
+    611 
+    612             if(os->isSpecular())
+    613             {
+    614                 _detect  = makeConstantProperty(0.0) ;    
+    (gdb) p src
+    $1 = (GPropertyMap<float> *) 0x3359d750
+    (gdb) p src->desc()
+    $2 = " GPropertyMap  type     skinsurface name PMT_20inch_veto_inner1_logSensorSurface isSS 1 isBS 0 isTS 0 isSU 1 isMT 0 sslv PMT_20inch_veto_inner1_log"
+    (gdb) p src->prop_desc()
+    $3 = " typ skinsurface idx   71 dig 605aa92893a85b895f7c827ea30410ee npr  8 nam PMT_20inch_veto_inner1_logSensorSurface\nrefractive_index :  constant: 1\nabsorption_length :  constant: 1e+09\nscattering_length"...
+    (gdb) 
+
+    (gdb) p src->m_keys
+    $4 = std::vector of length 8, capacity 8 = {"refractive_index", "absorption_length", "scattering_length", "reemission_prob", "group_velocity", "extra_y", "extra_z", "extra_w"}
+    (gdb) 
+
+
+
+* mixup between origin and translated props ?
+* maybe should be passing the raw material props with efficiency in ?
+
+::
+
+     587         if(src->isSensor())
+     588         {
+     589             GProperty<float>* _EFFICIENCY = src->getProperty(EFFICIENCY);
+     590             assert(_EFFICIENCY && os && "sensor surfaces must have an efficiency" );
+     591 
+     592             if(m_fake_efficiency >= 0.f && m_fake_efficiency <= 1.0f)
+     593             {
+     594                 _detect           = makeConstantProperty(m_fake_efficiency) ;
+     595                 _absorb           = makeConstantProperty(1.0-m_fake_efficiency);
+     596                 _reflect_specular = makeConstantProperty(0.0);
+     597                 _reflect_diffuse  = makeConstantProperty(0.0);
+     598             }
+     599             else
+     600             {
+     601                 _detect = _EFFICIENCY ;
+     602                 _absorb = GProperty<float>::make_one_minus( _detect );
+     603                 _reflect_specular = makeConstantProperty(0.0);
+     604                 _reflect_diffuse  = makeConstantProperty(0.0);
+     605             }
+     606         }
+     607         else
+     608         {
+     609             GProperty<float>* _REFLECTIVITY = src->getProperty(REFLECTIVITY);
+     610             assert(_REFLECTIVITY && os && "non-sensor surfaces must have a reflectivity " );
+     611 
+     612             if(os->isSpecular())
+     613             {
+     614                 _detect  = makeConstantProperty(0.0) ;
+     615                 _reflect_specular = _REFLECTIVITY ;
+     616                 _reflect_diffuse  = makeConstantProperty(0.0) ;
+     617                 _absorb  = GProperty<float>::make_one_minus(_reflect_specular);
+     618             }
+     619             else
+     620             {
+     621                 _detect  = makeConstantProperty(0.0) ;
+     622                 _reflect_specular = makeConstantProperty(0.0) ;
+     623                 _reflect_diffuse  = _REFLECTIVITY ;
+     624                 _absorb  = GProperty<float>::make_one_minus(_reflect_diffuse);
+     625             }
+     626         }
+     627     }
+
+
+
+

@@ -374,9 +374,17 @@ unsigned GGeo::getNumLVMT() const
 }
 
 
+std::pair<std::string,std::string> GGeo::getSDMT(const char* lv) const
+{
+    std::string sd = m_lv2sd->get<std::string>(lv); 
+    std::string mt = m_lv2mt->get<std::string>(lv); 
+    return std::pair<std::string,std::string>( lv, mt ); 
+}
 
 std::pair<std::string,std::string> GGeo::getLVSD(unsigned idx) const
 {
+    unsigned nk = m_lv2sd->getNumKeys();
+    assert( idx < nk ); 
     const char* lv = m_lv2sd->getKey(idx) ; 
     std::string sd = m_lv2sd->get<std::string>(lv); 
     return std::pair<std::string,std::string>( lv, sd ); 
@@ -384,6 +392,8 @@ std::pair<std::string,std::string> GGeo::getLVSD(unsigned idx) const
 
 std::pair<std::string,std::string> GGeo::getLVMT(unsigned idx) const
 {
+    unsigned nk = m_lv2mt->getNumKeys();
+    assert( idx < nk ); 
     const char* lv = m_lv2mt->getKey(idx) ; 
     std::string mt = m_lv2mt->get<std::string>(lv); 
     return std::pair<std::string,std::string>( lv, mt ); 
@@ -474,17 +484,11 @@ void GGeo::getSensitiveLVSDMT( std::vector<std::string>& lvn, std::vector<std::s
 
     for(unsigned i=0 ; i < lvn.size() ; i++)
     {
-        PSS lvsd = getLVSD(i);
-        PSS lvmt = getLVMT(i);
-
         const char* lv = lvn[i].c_str();
-        const char* lv0 = lvsd.first.c_str();  
-        const char* lv1 = lvmt.first.c_str();  
-        assert( strcmp(lv, lv0) == 0 ); 
-        assert( strcmp(lv, lv1) == 0 ); 
+        PSS sdmt = getSDMT(lv);
 
-        const char* sd = lvsd.second.c_str();  
-        const char* mt = lvmt.second.c_str();  
+        const char* sd = sdmt.first.c_str();  
+        const char* mt = sdmt.second.c_str();  
     
         sdn.push_back(sd);   
         mtn.push_back(mt);   

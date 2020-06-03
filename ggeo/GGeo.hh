@@ -370,6 +370,7 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
         void addLVSDMT(const char* lv, const char* sd, const char* mt);
         unsigned getNumLVSD() const ;
         unsigned getNumLVMT() const ;
+        std::pair<std::string,std::string> getSDMT(const char* lv) const ;
         std::pair<std::string,std::string> getLVSD(unsigned idx) const ;
         std::pair<std::string,std::string> getLVMT(unsigned idx) const ;
     public:

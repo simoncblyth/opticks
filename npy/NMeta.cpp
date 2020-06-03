@@ -248,7 +248,13 @@ unsigned NMeta::getNumKeys()
     return m_keys.size();
 }
 
+/**
+NMeta::getKey
+----------------
 
+Huh: trips assert if updateKeys not run
+
+**/
 
 const char* NMeta::getKey(unsigned idx) const 
 {

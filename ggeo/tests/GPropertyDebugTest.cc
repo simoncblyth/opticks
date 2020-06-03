@@ -23,8 +23,7 @@
 #include "GAry.hh"
 #include "GProperty.hh"
 
-#include "PLOG.hh"
-#include "GGEO_LOG.hh"
+#include "OPTICKS_LOG.hh"
 
 
 typedef GProperty<float> P ; 
@@ -194,8 +193,7 @@ array([ 799.89837646484375  ,  617.17462158203125  ,  559.5064697265625   ,
 
 int main(int argc, char** argv)
 {
-    PLOG_(argc, argv);
-    GGEO_LOG_ ; 
+    OPTICKS_LOG(argc, argv);
 
     return test_createInverseCDF_Debug();
 }
