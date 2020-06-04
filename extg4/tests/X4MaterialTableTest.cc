@@ -36,7 +36,9 @@ int main(int argc, char** argv)
 
     GMaterialLib* mlib = new GMaterialLib(&ok);
 
-    X4MaterialTable::Convert(mlib) ; 
+    std::vector<G4Material*> material_with_efficiency ; 
+
+    X4MaterialTable::Convert(mlib, material_with_efficiency) ; 
 
     assert( mlib->getNumMaterials() == 2 ); 
 

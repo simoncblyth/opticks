@@ -106,10 +106,12 @@ class GGEO_API GSurfaceLib : public GPropertyLib {
    public:
        void Summary(const char* msg="GSurfaceLib::Summary");
        void dump(const char* msg="GSurfaceLib::dump");
+       void dumpSurfaces(const char* msg="GSurfaceLib::dumpSurfaces");
        void dump(GPropertyMap<float>* surf);
        void dump(GPropertyMap<float>* surf, const char* msg);
        void dump(unsigned int index);
        std::string desc() const ; 
+     
    public:
        // concretization of GPropertyLib
        void defineDefaults(GPropertyMap<float>* defaults); 

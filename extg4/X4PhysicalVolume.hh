@@ -28,6 +28,7 @@ class G4LogicalSurface ;
 class G4LogicalVolume ; 
 class G4VPhysicalVolume ; 
 class G4VSolid ; 
+class G4Material ; 
 
 #include "G4Transform3D.hh"
 
@@ -116,6 +117,8 @@ class X4_API X4PhysicalVolume : public X4Named
         void convertStructure(); 
         void convertCheck() const ;
     private:
+        bool hasEfficiency(const G4Material* mat);
+    private:
         void convertSolids_r(const G4VPhysicalVolume* const pv, int depth);
         void dumpLV() const ;
         void dumpTorusLV() const ;
@@ -174,7 +177,7 @@ class X4_API X4PhysicalVolume : public X4Named
         std::vector<const G4LogicalVolume*>   m_lvlist ; 
         std::vector<unsigned>                 m_lv_with_torus ; 
         std::vector<std::string>              m_lvname_with_torus ; 
-
+        std::vector<G4Material*>              m_material_with_efficiency ; 
 
 };
 

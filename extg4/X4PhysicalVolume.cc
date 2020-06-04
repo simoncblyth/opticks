@@ -183,7 +183,7 @@ void X4PhysicalVolume::init()
 
     convertMaterials();
     convertSurfaces();
-    convertSensors();  // before closeSurfaces as may add some SensorSurfaces
+    // convertSensors();  // before closeSurfaces as may add some SensorSurfaces
     closeSurfaces();
     convertSolids();
     convertStructure();
@@ -284,23 +284,24 @@ GMaterialLib::setCathode getCathode
 
 void X4PhysicalVolume::convertSensors_r(const G4VPhysicalVolume* const pv, int depth)
 {
+    // hot code : minimize whats done outside the if
+
     const G4LogicalVolume* const lv = pv->GetLogicalVolume();
-    const char* lvname = lv->GetName().c_str(); 
     G4VSensitiveDetector* sd = lv->GetSensitiveDetector() ; 
 
-    // aim to avoid single cathode assumption
     const G4Material* const mt = lv->GetMaterial() ;
-    const char* mt_name = mt->GetName().c_str(); 
+    bool has_efficiency = hasEfficiency(mt) ;  
 
-
-
+    const char* lvname = lv->GetName().c_str(); 
     bool is_lvsdname = m_lvsdname && BStr::Contains(lvname, m_lvsdname, ',' ) ;
-    bool is_sd = sd != NULL ; 
+    bool is_sd = sd != NULL || is_lvsdname ; 
 
-    const std::string sdn = sd ? sd->GetName() : "SD?" ;   // perhaps GetFullPathName() 
 
-    if( is_lvsdname || is_sd )
+    if( is_sd || has_efficiency )
     {
+        const std::string sdn = sd ? sd->GetName() : "SD?" ;   // perhaps GetFullPathName() 
+        const char* mt_name = mt->GetName().c_str(); 
+
         std::string name = BFile::Name(lvname); 
         bool addPointerToName = false ;   // <-- maybe this should depend on if booting from GDML or not ?
         std::string nameref = SGDML::GenerateName( name.c_str() , lv , addPointerToName );   
@@ -308,6 +309,7 @@ void X4PhysicalVolume::convertSensors_r(const G4VPhysicalVolume* const pv, int d
         LOG(LEVEL) 
             << " is_lvsdname " << is_lvsdname
             << " is_sd " << is_sd
+            << " has_efficiency " << has_efficiency
             << " sdn " << sdn 
             << " name " << name 
             << " nameref " << nameref 
@@ -325,6 +327,12 @@ void X4PhysicalVolume::convertSensors_r(const G4VPhysicalVolume* const pv, int d
 }
 
 
+bool X4PhysicalVolume::hasEfficiency(const G4Material* mat)
+{
+    return std::find(m_material_with_efficiency.begin(), m_material_with_efficiency.end(), mat ) != m_material_with_efficiency.end() ;
+}
+
+
 void X4PhysicalVolume::convertMaterials()
 {
     OK_PROFILE("_X4PhysicalVolume::convertMaterials");
@@ -333,7 +341,10 @@ void X4PhysicalVolume::convertMaterials()
     size_t num_materials0 = m_mlib->getNumMaterials() ;
     assert( num_materials0 == 0 );
 
-    X4MaterialTable::Convert(m_mlib);
+    assert( m_material_with_efficiency.size() == 0 );
+    X4MaterialTable::Convert(m_mlib, m_material_with_efficiency);
+    size_t num_material_with_efficiency = m_material_with_efficiency.size() ;
+
 
     size_t num_materials = m_mlib->getNumMaterials() ;
     assert( num_materials > 0 );
@@ -349,9 +360,23 @@ void X4PhysicalVolume::convertMaterials()
     LOG(verbose) << "]" ;
     LOG(info)
           << " num_materials " << num_materials
+          << " num_material_with_efficiency " << num_material_with_efficiency
           ; 
+
+    m_mlib->dumpSensitiveMaterials("X4PhysicalVolume::convertMaterials");
+
     OK_PROFILE("X4PhysicalVolume::convertMaterials");
 }
+
+/**
+X4PhysicalVolume::convertSurfaces
+-------------------------------------
+
+* G4LogicalSkinSurface -> GSkinSurface -> slib
+* G4LogicalBorderSurface -> GBorderSurface -> slib
+
+
+**/
 
 void X4PhysicalVolume::convertSurfaces()
 {
@@ -367,6 +392,7 @@ void X4PhysicalVolume::convertSurfaces()
     size_t num_sks = m_slib->getNumSurfaces() - num_lbs ; 
 
     m_slib->addPerfectSurfaces();
+    m_slib->dumpSurfaces("X4PhysicalVolume::convertSurfaces");
 
     LOG(verbose) << "]" ;
 

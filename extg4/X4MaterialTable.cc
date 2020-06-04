@@ -50,10 +50,10 @@ G4Material* X4MaterialTable::Get(unsigned idx)
     return material ; 
 }
 
-void X4MaterialTable::Convert(GMaterialLib* mlib)
+void X4MaterialTable::Convert(GMaterialLib* mlib, std::vector<G4Material*>& material_with_efficiency)
 {
     assert( mlib->getNumMaterials() == 0 ); 
-    X4MaterialTable xmt(mlib) ; 
+    X4MaterialTable xmt(mlib, material_with_efficiency ) ; 
     assert( mlib == xmt.getMaterialLib() );
 }
 
@@ -62,10 +62,11 @@ GMaterialLib* X4MaterialTable::getMaterialLib()
     return m_mlib ;
 }
 
-X4MaterialTable::X4MaterialTable(GMaterialLib* mlib)
+X4MaterialTable::X4MaterialTable(GMaterialLib* mlib, std::vector<G4Material*>& material_with_efficiency)
     :
     m_mtab(G4Material::GetMaterialTable()),
-    m_mlib(mlib)
+    m_mlib(mlib),
+    m_material_with_efficiency(material_with_efficiency)
 {
     init();
 }
@@ -92,7 +93,12 @@ void X4MaterialTable::init()
             LOG(LEVEL) << " converting material with mpt " <<  material->GetName() ; 
         }
 
+
         GMaterial* mat = X4Material::Convert( material ); 
+        if(mat->hasProperty("EFFICIENCY"))
+        {
+             m_material_with_efficiency.push_back(material); 
+        }
 
         //assert( mat->getIndex() == i ); // this is not the lib, no danger of triggering a close
 

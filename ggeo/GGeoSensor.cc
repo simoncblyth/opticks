@@ -92,8 +92,6 @@ void GGeoSensor::AddSensorSurfaces( GGeo* gg )
         return ; 
     }
     assert( cathode_props ); 
-#else
-    GMaterial* cathode_props = NULL ; 
 #endif
 
     typedef std::vector<std::string> VS ;  
@@ -124,7 +122,8 @@ void GGeoSensor::AddSensorSurfaces( GGeo* gg )
         const char* sd = sdn[i].c_str();    
         const char* mt = mtn[i].c_str();    
 
-        GPropertyMap<float>* mt_props = gg->findMaterial(mt);
+        //GPropertyMap<float>* mt_props = gg->findMaterial(mt);
+        GPropertyMap<float>* mt_props = gg->findRawMaterial(mt);
         assert( mt_props ); 
 
         const char* sslv = gg->getCathodeLV(i);
@@ -159,30 +158,31 @@ void GGeoSensor::AddSensorSurfaces( GGeo* gg )
         gss->add(mt_props);  
 #endif
 
-        LOG(LEVEL) << " gss " << gss->description();
-
+        LOG(LEVEL) << "[ gg.add gss " << gss->description();
         gg->add(gss);
+        LOG(LEVEL) << "] gg.add gss " ; 
 
         {
             // not setting sensor or domain : only the standardized need those
             GSkinSurface* gss_raw = MakeSensorSurface(sslv, index);
-            gss_raw->add(cathode_props);
+            gss_raw->add(mt_props);
+
+            LOG(LEVEL) << "[ gg.addRaw gss_raw " << gss_raw->description();
             gg->addRaw(gss_raw);
+            LOG(LEVEL) << "] gg.addRaw gss_raw " ;
         }  
     }
 }
 
 
+
+
 /**
-GGeoSensor::MakeSensorSurface
-------------------------------
-
-Originally from AssimpGGeo::convertSensors but relocated 
-here to neutral GGeo territory for use from both the old Assimp 
-route and the new direct route.
-
+GGeoSensor::MakeOpticalSurface
+-------------------------------
 
 **/
+
 
 GOpticalSurface* GGeoSensor::MakeOpticalSurface( const char* sslv )
 {
@@ -208,25 +208,33 @@ GOpticalSurface* GGeoSensor::MakeOpticalSurface( const char* sslv )
     return os ; 
 }
 
+/**
+GGeoSensor::MakeSensorSurface
+------------------------------
+
+(in the old Assimp route)
+Standard materials/surfaces use the originating aiMaterial index, 
+extend that for fake SensorSurface by toting up all indices.
+
+Originally from AssimpGGeo::convertSensors but relocated
+here to neutral GGeo territory for use from both the old Assimp 
+route and the new direct route.
+
+Story continues in GBoundaryLib::standardizeSurfaceProperties
+that no longer exists, now probably GSurfaceLib::getSensorSurface
+
+**/
 
 GSkinSurface* GGeoSensor::MakeSensorSurface(const char* sslv, unsigned index ) // static 
 {
-    // standard materials/surfaces use the originating aiMaterial index, 
-    // extend that for fake SensorSurface by toting up all 
-
     GOpticalSurface* os = MakeOpticalSurface( sslv ) ; 
 
     GSkinSurface* gss = new GSkinSurface(os->getName(), index, os);
 
     gss->setSkinSurface(sslv);
+    // TODO: the associated volume is the defining feature : so should be in ctor 
 
-
-    // story continues in GBoundaryLib::standardizeSurfaceProperties
-    // that no longer exists, now probably GSurfaceLib::getSensorSurface
-
-    return gss ;   // NB are missing properties 
+    return gss ;   
 }
-
-
 
 

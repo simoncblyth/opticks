@@ -53,6 +53,7 @@ class GGEO_API GPropertyMap {
 
   static const plog::Severity LEVEL ;
   static const char* EFFICIENCY ;
+  static const char* detect ;
   static const char* NOT_DEFINED ;
   typedef std::map<std::string,GProperty<T>*> GPropertyMap_t ;
   public:
@@ -133,7 +134,7 @@ class GGEO_API GPropertyMap {
   public:
 
       void setSensor(bool sensor=true); // set in AssimpGGeo::convertSensors
-      bool isSensor();
+      bool isSensor();  // non-zero "EFFICIENCY" or "detect" property
 
       void setValid(bool valid=true);
       bool isValid();

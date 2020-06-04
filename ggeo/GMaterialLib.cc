@@ -301,6 +301,16 @@ void GMaterialLib::Summary(const char* msg)
 }
 
 
+
+/**
+GMaterialLib::add
+-------------------
+
+A translated "standardized" material is added to the lib.
+
+**/
+
+
 // invoked pre-cache by GGeo::add(GMaterial* material) AssimpGGeo::convertMaterials
 void GMaterialLib::add(GMaterial* mat)
 {
@@ -1174,6 +1184,13 @@ void GMaterialLib::addTestMaterials()
 }
 
 
+/**
+GMaterialLib::addSensitiveMaterial
+------------------------------------
+
+Invoked by GMaterialLib::add with raw (non-standarized) materials.
+
+**/
 
 void GMaterialLib::addSensitiveMaterial(GMaterial* mt)
 {
@@ -1202,7 +1219,21 @@ GMaterial* GMaterialLib::getSensitiveMaterial(unsigned index) const
     return m_sensitive_materials[index] ; 
 }
 
-
+void GMaterialLib::dumpSensitiveMaterials(const char* msg) const 
+{
+    unsigned num_sensitive_materials = getNumSensitiveMaterials() ; 
+    LOG(info) << msg << " num_sensitive_materials " << num_sensitive_materials ;
+    for(unsigned i=0 ; i < num_sensitive_materials ; i++)
+    {
+        GMaterial* mt = getSensitiveMaterial(i);
+        std::cout 
+             << std::setw(2) << i 
+             << " : "
+             << std::setw(30) << mt->getName()
+             << std::endl 
+             ;  
+    }
+}
 
 #ifdef OLD_CATHODE
 void GMaterialLib::setCathode(GMaterial* cathode)

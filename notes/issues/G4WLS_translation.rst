@@ -2,6 +2,10 @@ G4WLS Translation
 ====================
 
 
+
+Geant4 Sources for WLS process
+--------------------------------
+
 ::
 
     epsilon:geant4.10.04.p02 blyth$ find source -name *WLS*.*
@@ -278,8 +282,8 @@ G4WLS Translation
 
 
 
-
-
+Geant4 WLS Examples
+----------------------
 
 examples/extended/optical/LXe/src/LXeDetectorConstruction.cc::
 
@@ -391,6 +395,8 @@ examples/extended/optical/LXe/src/LXeWLSFiber.cc::
 
 
 
+How to add WLS to Opticks
+--------------------------
 
 Adding support for WLS to Opticks requires :
 
@@ -404,7 +410,24 @@ Adding support for WLS to Opticks requires :
    * do you have several different WLS materials, or just the one ? 
 
 
+WLS : does NOT need its own genstep
+--------------------------------------
 
+* scintillation and cerenkov : other particles -> opticalphotons
+* WLS : opticalphotons -> opticalphotons 
+
+* gensteps are the connection between G4Cerenkov and G4Scintillation and GPU generation loops
+* WLS process needs to be entirely GPU implemented 
+
+
+Re-emitting more than one photon for each absorbed photon 
+
+* drastically more difficult as breaks the use of a single CUDA thread to handle a one photon.
+
+
+
+Opticks propagate : needs to compare wlsabsorption_distance with absorption_distance and scattering_distance 
+----------------------------------------------------------------------------------------------------------------
 
 optixrap/cu/propagate.h::
 
@@ -463,6 +486,9 @@ optixrap/cu/propagate.h::
 
 
 
+
+Need to get WLS properties into the system
+---------------------------------------------
 
 Need a GWLSLib that collects WLS materials and cooks up the icdf buffer, equivalent to the G4OpWLS::BuildPhysicsTable::
 
@@ -550,6 +576,50 @@ To understand how inverse CDF is created play around with::
     ggeo/tests/GPropertyTest.cc
     ggeo/tests/GPropertyDebugTest.cc
 
+
+
+
+
+TBP : tetraphenyl butadiene 
+------------------------------
+
+
+* https://www.science.gov/topicpages/t/tetraphenyl+butadiene+tpb
+
+* https://arxiv.org/abs/1709.05002
+
+  Measurements of the intrinsic quantum efficiency and absorption length of tetraphenyl butadiene thin films in the vacuum ultraviolet regime
+
+
+::
+
+    As shown in Fig. 1, the scintillation wavelengths can range from 175 nm for
+    Xenon down to near 80 nm for Helium and Neon. Light of these wavelengths is
+    strongly absorbed by most materials, including those commonly used for
+    optical windows. Many experiments sidestep the issue of directly detecting
+    VUV light though the use of wavelength shifting (WLS) films which absorb the
+    VUV light and re-emit photons, typically in the visible spectrum. The visible
+    photons can then easily be detected using photomultiplier tubes (PMTs).
+
+
+
+* thin films sufficient, how thin ? 
+* are multiple subsequent absorbs and re-emits within the film important ? 
+
+
+photons absorbed vs photons re-emitted::
+
+    The WLSE as defined in [16] is a “black- box” definition of the efficiency that
+    includes both the intrinsic QE of the TPB as well as certain optical
+    properties of the TPB film and substrate. The resulting quantity is the effi-
+    ciency that a photon absorbed by the sample is reemitted from the sample. This
+    measurement is thus sample dependent, including effects of scattering and
+    absorption, and cannot be directly applied to other apparatus.
+
+
+    Fig. 14 The measured reemission spectra of a 1.8 μm TPB film for several
+    incident wavelengths. No dependence of the reemission spectrum of TPB on
+    incident wavelength was observed
 
 
 

@@ -281,6 +281,9 @@ bool GPropertyMap<T>::hasNameEnding(const char* end)
 template <class T>
 const char*  GPropertyMap<T>::EFFICIENCY = "EFFICIENCY" ; 
 
+template <class T>
+const char*  GPropertyMap<T>::detect = "detect" ; 
+
 
 template <class T>
 bool GPropertyMap<T>::isSensor()
@@ -288,7 +291,7 @@ bool GPropertyMap<T>::isSensor()
 #ifdef OLD_SENSOR
     return m_sensor ; 
 #else
-    return hasProperty(EFFICIENCY); 
+    return hasNonZeroProperty(EFFICIENCY) || hasNonZeroProperty(detect) ; 
 #endif
 }
 template <class T>

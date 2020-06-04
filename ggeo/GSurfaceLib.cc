@@ -370,7 +370,7 @@ void GSurfaceLib::addBorderSurface(GPropertyMap<float>* surf, const char* pv1, c
     if(direct)
         addDirect(surf);
     else
-        add(surf);
+        add(surf);   // TODO: rename this to addStandardized as confusingly makes look like a loop
 }
 
 
@@ -454,7 +454,7 @@ void GSurfaceLib::addSkinSurface(GPropertyMap<float>* surf, const char* sslv_, b
     if(direct)
         addDirect(surf);
     else
-        add(surf);
+        add(surf);  // TODO: addStandardized
 }
 void GSurfaceLib::relocateBasisSkinSurface(const char* name, const char* sslv)
 {
@@ -562,29 +562,13 @@ GPropertyMap<float>* GSurfaceLib::createStandardSurface(GPropertyMap<float>* src
     else
     {
         assert( getStandardDomain() );
-
         assert( src->getStandardDomain() );
+        assert( src->isSurface() );
 
-/*
-    
-
-        if(src->getStandardDomain())
-        {
-            assert(getStandardDomain()->isEqual(src->getStandardDomain()));
-        }
-        else
-        {
-            src->setStandardDomain(getStandardDomain());
-        }
-        // TODO-SOMETIME : tidy up the proliferation of domain instances using a singleton 
-*/
-
-
-        assert(src->isSurface());
         GOpticalSurface* os = src->getOpticalSurface() ;  // GSkinSurface and GBorderSurface ctor plant the OpticalSurface into the PropertyMap
         assert( os && " all surfaces must have associated OpticalSurface " );
 
-        if(src->isSensor())
+        if(src->isSensor())  // this means it has non-zero EFFICIENCY or detect property
         {
             GProperty<float>* _EFFICIENCY = src->getProperty(EFFICIENCY); 
             assert(_EFFICIENCY && os && "sensor surfaces must have an efficiency" );
@@ -734,6 +718,45 @@ GItemList* GSurfaceLib::createNames()
     }
     return names ; 
 }
+
+
+
+void GSurfaceLib::dumpSurfaces(const char* msg)
+{
+    unsigned ni = getNumSurfaces();
+    LOG(info) << msg << " num_surfaces " << ni ; 
+
+    for(unsigned int i=0 ; i < ni ; i++)
+    {
+        GPropertyMap<float>* surf = m_surfaces[i] ;
+        const char* name = surf->getShortName() ;
+        const char* type = surf->getType() ; 
+        bool is_sensor = surf->isSensor() ; 
+        std::cout 
+             << " index : " << std::setw(2) << i 
+             << " is_sensor : " << ( is_sensor ? "Y" : "N" )
+             << " type : " << std::setw(20) << type
+             << " name : " << std::setw(30) << name
+             ;  
+
+        if(surf->isBorderSurface())
+        {
+             std::cout 
+                  << " bpv1 " << surf->getBPV1()      
+                  << " bpv2 " << surf->getBPV2()      
+                  ;
+        }  
+        else if(surf->isSkinSurface())
+        {
+             std::cout 
+                  << " sslv " << surf->getSSLV()      
+                  ;
+ 
+        }
+        std::cout << " ." << std::endl ; 
+    }
+}
+
 
 
 /**

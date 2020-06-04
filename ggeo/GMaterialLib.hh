@@ -143,10 +143,12 @@ class GGEO_API GMaterialLib : public GPropertyLib {
         GMaterial* getCathode() const ;  
         const char* getCathodeMaterialName() const ;
 #endif
-    public:
+    private:
         void addSensitiveMaterial(GMaterial* cathode);
+    public:
         unsigned getNumSensitiveMaterials() const ;  
         GMaterial* getSensitiveMaterial(unsigned index) const ;   
+        void dumpSensitiveMaterials(const char* msg="GMaterialLib::dumpSensitiveMaterials") const ;
    public:
        // used by GGeoTest 
        GMaterial* getBasisMaterial(const char* name) const ;

@@ -1014,7 +1014,7 @@ void X4Solid::convertPolyconePrimitives( const std::vector<zplane>& zp,  std::ve
 {
     for( unsigned i=1 ; i < zp.size() ; i++ )
     {
-        const zplane& zp1 = zp[i-1] ; 
+        const zplane& zp1 = zp[i-1] ;   // zplane struct rmin, rmax, z
         const zplane& zp2 = zp[i] ; 
         double r1 = zp1.rmax ; 
         double r2 = zp2.rmax ; 
@@ -1095,9 +1095,17 @@ void X4Solid::convertPolycone()
 
     }
 
-    if( zp.size() == 2 && zp[0].z > zp[1].z )  // Aug 2018 FIX: was [0] [0] 
+    bool zascend(true);
+    for( int i=1 ; i < int(nz) ; i++)
     {
-        LOG(debug) << "Polycone swap misordered pair of zplanes for " << m_name ; 
+        zascend = zp[i-1].z < zp[i].z ; 
+    }
+
+
+    //if( zp.size() == 2 && zp[0].z > zp[1].z )  // Aug 2018 FIX: was [0] [0] 
+    if(!zascend)
+    {
+        LOG(debug) << "Polycone reverse non-zascending zplanes for " << m_name ; 
         std::reverse( std::begin(zp), std::end(zp) ) ; 
     }
 
@@ -1114,7 +1122,7 @@ void X4Solid::convertPolycone()
     {
         LOG(fatal) << " multiple Rmin is unhandled " << m_name ;  
     }
-    assert( !multi_Rmin ) ; 
+    //assert( !multi_Rmin ) ; 
 
     double rmin = *Rmin.begin() ; 
     bool has_inner = rmin > 0. ; 

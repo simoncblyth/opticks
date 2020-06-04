@@ -331,6 +331,9 @@ g4-version-hh() { echo $(g4-dir)/source/global/management/include/G4Version.hh ;
 g4-version-number() { perl -n -e 'm,#define G4VERSION_NUMBER\s*(\d*), && print $1' $(g4-version-hh) ; } 
 
 
+g4--1062(){ OPTICKS_GEANT4_NOM=geant4.10.06.p02 g4-- ; }
+
+
 g4-nom-notes(){ cat << EON
 
 ::
@@ -358,6 +361,8 @@ g4-url(){
         geant4_10_04_p02) echo http://geant4-data.web.cern.ch/geant4-data/releases/geant4.10.04.p02.tar.gz ;; 
         geant4.10.05.b01) echo http://geant4-data.web.cern.ch/geant4-data/releases/geant4.10.05.b01.tar.gz ;; 
         geant4.10.05.p01) echo http://cern.ch/geant4-data/releases/geant4.10.05.p01.tar.gz ;; 
+        geant4.10.06.p02) echo http://cern.ch/geant4-data/releases/geant4.10.06.p02.tar.gz ;;
+
    esac
 }
 
