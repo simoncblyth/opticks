@@ -25,7 +25,6 @@ could be migrated here, but probably better to re-implement
 very focussed converter classes.
 
 #]=]
-
 set(G4_VERBOSE ON)
 find_package(G4         REQUIRED MODULE)
 find_package(GGeo       REQUIRED CONFIG)   
@@ -34,8 +33,19 @@ find_package(GGeo       REQUIRED CONFIG)
 find_package(OpticksXercesC REQUIRED MODULE)
 
 
+
+#find_package(CLHEP      REQUIRED CONFIG)    Geant4 should have found it already
+
+if(CLHEP_FOUND)
 message(STATUS "CLHEP_DIR : ${CLHEP_DIR}" )
 message(STATUS "CLHEP_INCLUDE_DIRS : ${CLHEP_INCLUDE_DIRS}" )
+message(STATUS "CLHEP_LIBRARIES    : ${CLHEP_LIBRARIES}" )
+else()
+message(STATUS "CLHEP NOT FOUND")
+endif()
+
+
+
 
 
 

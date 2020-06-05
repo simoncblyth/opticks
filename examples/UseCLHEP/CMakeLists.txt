@@ -3,7 +3,7 @@ set(name UseCLHEP)
 project(${name})
 include(OpticksBuildOptions)
 
-find_package(CLHEP CONFIG)   
+find_package(CLHEP REQUIRED CONFIG)   
 
 if(CLHEP_FOUND)
     message(STATUS "CLHEP_DIR : ${CLHEP_DIR} ")

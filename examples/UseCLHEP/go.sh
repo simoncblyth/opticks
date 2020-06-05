@@ -30,19 +30,19 @@ rm -rf $bdir && mkdir -p $bdir && cd $bdir && pwd
 
 if [ -n "$NOCMAKE" ]; then
 
-#  NOCMAKE=1 ./go.sh
-gcc -c $sdir/$name.cc $(geant4-config --cflags)
-gcc $name.o -o $name $(geant4-config --libs) -lstdc++
-./$name
+    #  NOCMAKE=1 ./go.sh
+    gcc -c $sdir/$name.cc $(geant4-config --cflags)
+    gcc $name.o -o $name $(geant4-config --libs) -lstdc++
+    ./$name
 
 else
 
-om-
-om-cmake $sdir
-make
-[ $? -ne 0 ] && echo FAIL make && exit 1
-make install
-$name
+    om-
+    om-cmake $sdir
+    make
+    [ $? -ne 0 ] && echo FAIL make && exit 1
+    make install
+    $name
 
 fi
 
