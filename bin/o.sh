@@ -18,6 +18,7 @@
 ## limitations under the License.
 ##
 
+VERBOSE=1
 [ "$0" == "$BASH_SOURCE" ] && sauce=0 || sauce=1
 
 o-(){    . $(which o.sh) ; } 
@@ -58,6 +59,9 @@ o-cmdline-parse()
    o-cmdline-specials
    o-cmdline-binary-match
    o-cmdline-binary
+
+   [ -n "$VERBOSE" ] && echo $msg DONE
+   [ -n "$VERBOSE" ] && o-cmdline-info
 }
 
 
@@ -104,6 +108,7 @@ o-cmdline-specials()
    if [ "${cmdline/--oac}" != "${cmdline}" ]; then
        export OPTIX_API_CAPTURE=1
    fi
+   [ -n "$VERBOSE" ] && echo $msg 
 }
 
 o-cmdline-binary-match()
@@ -125,10 +130,6 @@ o-cmdline-binary-match()
            return 
        fi
     done
-
-    if [ -z "$OPTICKS_CMD" ]; then
-       echo $msg ERR UNSET 
-    fi 
 }
 
 o-cmdline-binary()
@@ -148,7 +149,14 @@ o-cmdline-binary()
    export OPTICKS_ARGS=$cmdline
 }
 
+o-cmdline-info(){ cat << EOI
 
+     OPTICKS_CMD    : $OPTICKS_CMD 
+     OPTICKS_BINARY : $OPTICKS_BINARY
+     OPTICKS_ARGS   : $OPTICKS_ARGS
+
+EOI
+}
 
 o-gdb-update()
 {
@@ -251,8 +259,17 @@ o-unmalloc()
 }
 
 
-export RC=0 
+o-paths(){
+   local vars="OPTICKS_MODE OPTICKS_TOP CMAKE_PREFIX_PATH PKG_CONFIG_PATH PATH LD_LIBRARY_PATH DYLD_LIBRARY_PATH"
+   local var 
+   for var in $vars ; do
+       echo $var
+       echo ${!var} | tr ":" "\n"
+       echo
+   done
+}
 
+export RC=0 
 o-main()
 {
    local msg="=== $FUNCNAME :"
@@ -263,6 +280,11 @@ o-main()
 
    local runline=$(o-runline)
    local postline=$(o-postline)
+
+   source $OPTICKS_PREFIX/bin/opticks-setup.sh 
+
+   [ -n "$VERBOSE" ] && o-paths
+
 
    echo $msg $runline ======= PWD $PWD $(date)
    eval $runline

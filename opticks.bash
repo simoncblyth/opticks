@@ -221,7 +221,7 @@ opticks-srcextras(){ echo $(opticks-srcfold)/extras ; }  # layout 1
 
 opticks-join(){ local ifs=$IFS ; IFS="$1"; shift; echo "$*" ; IFS=$ifs ;  }
 
-opticks-paths(){ cat << EON
+opticks-idpath-notes(){ cat << EON
 
 $FUNCNAME
 ===============================
@@ -576,6 +576,7 @@ EOP
 opticks-optionals(){ 
    cat << EOL
 boost
+clhep
 xercesc
 g4
 EOL
@@ -699,6 +700,20 @@ opticks-pc-rename-kludge(){
    local path=$pcfiledir/$name.pc
    local path2=$pcfiledir/$name2.pc
    local path3=$(opticks-prefix)/externals/lib/pkgconfig/$name2.pc
+
+   cat << EOI
+
+$FUNCNAME
+---------------------------
+
+   name      : $name
+   name2     : $name2
+   pcfiledir : $pcfiledir
+   path      : $path 
+   path2     : $path2
+   path3     : $path3
+
+EOI
 
    if [ -w "$(dirname $path2)" ]; then 
 
@@ -842,13 +857,26 @@ EON
 }
 
 
+opticks-paths()
+{
+   local vars="CMAKE_PREFIX_PATH PKG_CONFIG_PATH PATH LD_LIBRARY_PATH DYLD_LIBRARY_PATH"
+   local var 
+   for var in $vars ; do
+       echo $var
+       echo ${!var} | tr ":" "\n"
+       echo
+   done
+   env | grep OPTICKS | grep PREFIX
+}
+
+
 opticks-setup-cat(){ cat $(opticks-setup-path) ; }
 opticks-setup-vi(){  vi $(opticks-setup-path) ; }
 opticks-setup--(){   source $(opticks-setup-path) ; }
 
 opticks-setup-generate(){
 
-    : opticks-full > opticks-setup-generate
+    : opticks-full/opticks-setup-generate
 
     local msg="=== $FUNCNAME :"
     local rc
@@ -977,8 +1005,11 @@ BUILD_$var=${!var}
 if [ -n "\$$var" ]; then
    if [ "\$$var" != "\$BUILD_$var" ]; then 
        echo \$MSG WARNING inconsistent $var between build time and usage is not allowed
-       printf "%s %25s %s\n"  "\$MSG" $var \$$var  
-       printf "%s %25s %s\n"  "\$MSG" BUILD_$var \$BUILD_$var  
+       printf "%s %-25s \n"  "\$MSG" $var   
+       echo \$$var | tr ":" "\n"
+       printf "%s %-25s \n"  "\$MSG" BUILD_$var 
+       echo \$BUILD_$var | tr ":" "\n"  
+       echo 
 
        echo \$MSG WARNING resetting $var to the build time input value : it will be modified below  
        export $var=\$BUILD_$var
@@ -987,8 +1018,8 @@ if [ -n "\$$var" ]; then
        #return 1
    else
        echo \$MSG consistent $var between build time and usage 
-       printf "%s %25s %s\n"  "\$MSG" $var \$$var  
-       printf "%s %25s %s\n"  "\$MSG" BUILD_$var \$BUILD_$var  
+       printf "%s %25s \n"  "\$MSG" $var 
+       echo \$$var | tr ":" "\n"
     fi 
 fi  
 EOC
@@ -1227,6 +1258,7 @@ opticks-setup- append PKG_CONFIG_PATH \$OPTICKS_PREFIX/lib64/pkgconfig
 opticks-setup- append PKG_CONFIG_PATH \$OPTICKS_PREFIX/externals/lib/pkgconfig
 opticks-setup- append PKG_CONFIG_PATH \$OPTICKS_PREFIX/externals/lib64/pkgconfig
 
+
 EOS
 } 
 
@@ -1307,6 +1339,16 @@ opticks-check-geant4(){
     fi 
    # $(opticks-home)/bin/find_package.py G4 --index 0 --nocache
     return 0 
+}
+
+
+opticks-prepend-prefix-notes(){ cat << EON
+
+opticks-prepend-prefix
+    intended for build environment path setup, ie configuring access to "foreign" externals,
+    ie externals that are not built by opticks-externals-install
+
+EON
 }
 
 

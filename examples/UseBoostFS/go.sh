@@ -20,34 +20,16 @@
 
 
 opticks-
-opticks-boost-info
 
 sdir=$(pwd)
 bdir=/tmp/$USER/opticks/$(basename $sdir)/build 
 
 rm -rf $bdir && mkdir -p $bdir && cd $bdir && pwd 
 
-
 om-
-om-export 
-om-export-info
-
-pkg=Boost
-om-export-find $pkg
-
-
 om-cmake $sdir
-
-#cmake $sdir \
-#     -DCMAKE_BUILD_TYPE=Debug \
-#     -DCMAKE_INSTALL_PREFIX=$(opticks-prefix) \
-#     -DCMAKE_MODULE_PATH=$(opticks-home)/cmake/Modules \
-#     -DOPTICKS_PREFIX=$(opticks-prefix)
-
-
 make
 make install   
-
 
 UseBoostFS
 

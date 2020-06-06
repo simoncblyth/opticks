@@ -30,12 +30,14 @@ rm -rf $bdir && mkdir -p $bdir && cd $bdir && pwd
 
 
 pkg=Geant4
-oe-find $pkg
+pcfiledir=$(pkg-config --variable=pcfiledir $pkg)
+echo pkg $pkg pcfiledir $pcfiledir
+
 
 echo gcc -c $sdir/Use$pkg.cc $(oc --cflags $pkg)
      gcc -c $sdir/Use$pkg.cc $(oc --cflags $pkg)
-echo gcc Use$pkg.o -o Use$pkg $(oc --libs $pkg) 
-     gcc Use$pkg.o -o Use$pkg $(oc --libs $pkg) 
+echo gcc Use$pkg.o -o Use$pkg $(oc --libs $pkg) -lstdc++
+     gcc Use$pkg.o -o Use$pkg $(oc --libs $pkg) -lstdc++
 echo ./Use$pkg
      ./Use$pkg
 

@@ -20,9 +20,9 @@
 
 
 gogo-find-0(){ find . -name go.sh ; }
-gogo-find-1(){ ls -1 *NoCMake/go.sh ; }
-gogo-find-2(){ ls -1 */go.sh | grep -v NoCMake ; }
-gogo-find-3(){ ls -1 */goc.sh ; }
+gogo-find-1(){ ls -1 *NoCMake/go.sh ; }              # NoCMake tests
+gogo-find-2(){ ls -1 */go.sh | grep -v NoCMake ; }   # CMake based tests 
+gogo-find-3(){ ls -1 */goc.sh ; }                    # opticks-goc tests building based on opticks-config 
 
 gogo-find(){ 
    for arg in $* ; do 

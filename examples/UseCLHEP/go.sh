@@ -38,6 +38,7 @@ if [ -n "$NOCMAKE" ]; then
 else
 
     om-
+
     om-cmake $sdir
     make
     [ $? -ne 0 ] && echo FAIL make && exit 1

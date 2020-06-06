@@ -1,1 +1,0 @@
-Currently enforcing use of Geant4 thru the FindG4.cmake rather than directly from the Geant4Config.cmake : so see UseG4 

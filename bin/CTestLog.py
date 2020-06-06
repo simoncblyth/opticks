@@ -58,7 +58,7 @@ class CTestLog(object):
             if cls.NAME in names:
                 log.debug(dirpath)
                 reldir = dirpath[len(root):]
-                log.info("reldir:[%s] dirpath:[%s] root:[%s] %d " % (reldir, dirpath, root, len(root)) )
+                log.debug("reldir:[%s] dirpath:[%s] root:[%s] %d " % (reldir, dirpath, root, len(root)) )
                 if reldir == "" and not args.withtop: 
                     log.debug("skipping toplevel tests, reldir [%s]" % reldir)
                     continue 
@@ -119,7 +119,8 @@ class CTestLog(object):
 
 
 if __name__ == '__main__':
-    logging.basicConfig(level=logging.INFO)
+    fmt = '[%(asctime)s] p%(process)s {%(pathname)s:%(lineno)d} %(levelname)s - %(message)s'
+    logging.basicConfig(level=logging.INFO, format=fmt)
 
     parser = argparse.ArgumentParser(__doc__)
     parser.add_argument( "base", nargs="*",  help="Dump tree" )

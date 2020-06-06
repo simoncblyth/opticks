@@ -81,11 +81,15 @@ glm-get(){
    echo symbolic link for access without version in path
 }
 
+
+
+
 build()
 {
     glm-get
-    optix-install-dir(){ opticks- ; echo ${OPTIX_INSTALL_DIR:-$(opticks-dir)/externals/OptiX} ; }
-    echo optix-install-dir : $(optix-install-dir)
+
+    local optix_prefix=${OPTICKS_OPTIX_PREFIX}
+    echo optix_prefix : $optix_prefix
 
     rm -rf $bdir && mkdir -p $bdir 
     cd $bdir && pwd 
@@ -95,8 +99,8 @@ build()
        -DCMAKE_BUILD_TYPE=Debug \
        -DCMAKE_PREFIX_PATH=$prefix/externals \
        -DCMAKE_INSTALL_PREFIX=$prefix \
-       -DCMAKE_MODULE_PATH=$(optix-install-dir)/SDK/CMake \
-       -DOptiX_INSTALL_DIR=$(optix-install-dir) \
+       -DCMAKE_MODULE_PATH=$optix_prefix/SDK/CMake \
+       -DOptiX_INSTALL_DIR=$optix_prefix \
        -DCOMPUTE_CAPABILITY=$compute_capability
 
 

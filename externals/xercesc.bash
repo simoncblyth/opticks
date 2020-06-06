@@ -132,7 +132,7 @@ G4 expecting libxerces-c-3.1.dylib::
 EOU
 }
 
-xercesc-prefix(){  echo $(opticks-prefix)/externals/xercesc ; }
+xercesc-prefix(){  echo $(opticks-prefix)_externals/xercesc ; }
 xercesc-edit(){ vi $(opticks-home)/cmake/Modules/FindOpticksXercesC.cmake ; }
 
 xercesc-library-macports(){     echo /opt/local/lib/libxerces-c.dylib ; }
@@ -328,9 +328,23 @@ xercesc-pc(){
    :
    : TODO : try to avoid this nasty workaround : is the renaming really needed
 
-    opticks-pc-rename-kludge xerces-c OpticksXercesC
+   opticks-pc-rename-kludge xerces-c OpticksXercesC
 }
 
+
+xercesc-pc-issue(){ cat << EOI
+
+When building own xercesc this still plants link to the system one::
+
+    epsilon:externals blyth$ pwd
+    /usr/local/opticks/externals
+    epsilon:externals blyth$ l lib/pkgconfig/
+    lrwxr-xr-x  1 blyth  staff   36 Jun  6 11:06 OpticksXercesC.pc -> /opt/local/lib/pkgconfig/xerces-c.pc
+
+And its in a different prefix ?
+
+EOI
+}
 
 xercesc--()
 {
@@ -338,19 +352,12 @@ xercesc--()
 
    xercesc-info
 
-   #if [ "$(uname)" == "Darwin" ]; then 
-   #
-   #    xercesc-darwin 
-   #
-   #elif [ "$(uname)" == "Linux" ]; then 
-   
-       xercesc-get
-       [ $? -ne 0 ] && echo $msg get FAIL && return 1
-       xercesc-configure
-       [ $? -ne 0 ] && echo $msg configure FAIL && return 2
-       xercesc-make
-       [ $? -ne 0 ] && echo $msg make FAIL && return 3
-   #fi 
+   xercesc-get
+   [ $? -ne 0 ] && echo $msg get FAIL && return 1
+   xercesc-configure
+   [ $? -ne 0 ] && echo $msg configure FAIL && return 2
+   xercesc-make
+   [ $? -ne 0 ] && echo $msg make FAIL && return 3
 
    xercesc-pc
    [ $? -ne 0 ] && echo $msg pc FAIL && return 4

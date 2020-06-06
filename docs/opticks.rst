@@ -1078,3 +1078,41 @@ The permission denied error is not a problem.
 
 
 
+Visualization Finding Geometry
+-------------------------------
+
+Visualization::
+
+   OTracerTest --target 3153 --dbgaim   # just viz, fast start as does no simulation
+   OKTest --target 3153 --dbgaim        # does Opticks simulation before viz
+   OKG4Test --target 3153 --dbgaim      # does both Geant4 and Opticks simulations before viz
+
+   ## --target volume-index 
+   ## --dbgaim : dump some logging about geometry volumes and targetting  
+
+
+To avoid having to use the target option use an envvar::
+
+   export OPTICKS_DEFAULT_TARGET=3153 
+   ## do this together setting the OPTICKS_KEY which picks the geocache
+
+
+At startup things to try:
+
+* press Q twice, this toggles the global (non-instanced) geometry on/off 
+* press B several times, this swiches the render style of the instanced geometry 
+* press V, this toggles rotation of the geometry 
+* press A, this starts the optical photon propagation animation 
+* press O, switches between OpenGL rasterized and OptiX ray trace rendering  
+
+If after all that you still have a black screen, try:
+
+* changing the target to a volume appropriate to your geometry, 
+  it defaults to 0 corresponding to the world volume. However 
+  maybe you have a very large world volume causing your detector to 
+  not be visible.
+
+* press G, this brings up a GUI with help menus etc..
+
+
+

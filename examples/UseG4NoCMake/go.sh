@@ -28,11 +28,12 @@ bdir=/tmp/$USER/opticks/$(basename $sdir)/build
 rm -rf $bdir && mkdir -p $bdir && cd $bdir && pwd 
 
 pkg=G4
+pkgn=Geant4
 
-echo gcc -c $sdir/Use$pkg.cc $(oc -cflags $pkg)
-     gcc -c $sdir/Use$pkg.cc $(oc -cflags $pkg)
-echo gcc Use$pkg.o -o Use$pkg $(oc -libs $pkg) -lstdc++
-     gcc Use$pkg.o -o Use$pkg $(oc -libs $pkg) -lstdc++
+echo gcc -c $sdir/Use$pkg.cc $(oc -cflags $pkgn)
+     gcc -c $sdir/Use$pkg.cc $(oc -cflags $pkgn)
+echo gcc Use$pkg.o -o Use$pkg $(oc -libs $pkgn) -lstdc++
+     gcc Use$pkg.o -o Use$pkg $(oc -libs $pkgn) -lstdc++
 echo ./Use$pkg
      ./Use$pkg
 

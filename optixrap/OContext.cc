@@ -232,6 +232,7 @@ void OContext::CheckDevices(Opticks* ok)
 
 OContext* OContext::Create(Opticks* ok, const char* cmake_target, const char* ptxrel )
 {
+    LOG(LEVEL) << "[" ;
     OKI_PROFILE("_OContext::Create");
 
     SetupOptiXCachePathEnvvar();
@@ -254,6 +255,7 @@ OContext* OContext::Create(Opticks* ok, const char* cmake_target, const char* pt
     OContext* ocontext = new OContext(context, ok, cmake_target, ptxrel );
 
     OKI_PROFILE("OContext::Create");
+    LOG(LEVEL) << "]" ;
     return ocontext ; 
 }
 

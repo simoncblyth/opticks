@@ -41,6 +41,7 @@ optix7c-(){          . $(externals-dir)/optix7c.bash           && optix7c-env $*
 optixnote-(){        . $(externals-dir)/optixnote.bash         && optixnote-env $* ; }
 xercesc-(){          . $(externals-dir)/xercesc.bash           && xercesc-env $* ; }
 g4-(){               . $(externals-dir)/g4.bash                && g4-env $* ; }
+clhep-(){            . $(externals-dir)/clhep.bash             && clhep-env $* ; }
 zmq-(){              . $(externals-dir)/zmq.bash               && zmq-env $* ; }
 asiozmq-(){          . $(externals-dir)/asiozmq.bash           && asiozmq-env $* ; }
 opticksdata-(){      . $(externals-dir)/opticksdata.bash       && opticksdata-env $* ; }

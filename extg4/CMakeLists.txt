@@ -34,7 +34,7 @@ find_package(OpticksXercesC REQUIRED MODULE)
 
 
 
-#find_package(CLHEP      REQUIRED CONFIG)    Geant4 should have found it already
+find_package(CLHEP      REQUIRED CONFIG) #   Geant4 should have found it already
 
 if(CLHEP_FOUND)
 message(STATUS "CLHEP_DIR : ${CLHEP_DIR}" )

@@ -528,7 +528,6 @@ om-cmake-okconf()
        -DCOMPUTE_CAPABILITY=$(opticks-compute-capability)
 
     # NB not pinning CMAKE_PREFIX_PATH so can find foreigners, see oe-
-    #  -DCMAKE_PREFIX_PATH=$(om-prefix)/externals \
 
     rc=$?
     return $rc
@@ -550,7 +549,6 @@ om-cmake()
        -DCMAKE_MODULE_PATH=$(om-home)/cmake/Modules 
 
     # NB not pinning CMAKE_PREFIX_PATH so can find foreigners, see oe-
- 
 
     rc=$?
     return $rc

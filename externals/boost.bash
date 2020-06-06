@@ -614,7 +614,7 @@ boost-ver-(){
 }
 
 boost-ver(){    echo ${OPTICKS_BOOST_VERSION:-$(boost-ver-)} ; }
-boost-prefix(){ echo ${OPTICKS_BOOST_PREFIX:-$(opticks-prefix)/externals/boost}  ; }
+boost-prefix(){ echo ${OPTICKS_BOOST_PREFIX:-$(opticks-prefix)_externals/boost}  ; }
 
 boost-name(){ local ver=$(boost-ver) ; echo boost_${ver//./_} ; }
 boost-url(){ echo "http://downloads.sourceforge.net/project/boost/boost/$(boost-ver)/$(boost-name).tar.gz" ;  }

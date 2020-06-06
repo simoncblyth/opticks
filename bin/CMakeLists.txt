@@ -16,6 +16,7 @@ set(SCRIPTS
    oc.bash
 
    CTestTestfile.py 
+   CTestLog.py  
    CMakeModules.py 
    okdist.py  
    oktar.py
