@@ -46,6 +46,7 @@ target_link_libraries(${name} Opticks::G4OK )
 target_compile_definitions( ${name} 
   PRIVATE 
       WITH_OPTICKS
+      G4USE_STD11 
  )
 
 install(TARGETS ${name} DESTINATION lib)
