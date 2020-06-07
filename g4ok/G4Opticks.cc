@@ -233,14 +233,14 @@ GGeo* G4Opticks::translateGeometry( const G4VPhysicalVolume* top )
     assert(idpath);
     LOG(info) << ") Opticks " << idpath ;
 
-    /*
-    cannot do this with shared geocache due to permissions 
 
-    const char* gdmlpath = ok->getGDMLPath();   // inside geocache, not SrcGDMLPath from opticksdata
-    LOG(info) << "( CGDML" ;
-    CGDML::Export( gdmlpath, top ); 
-    LOG(info) << ") CGDML" ;
-    */
+    const char* dbggdmlpath = ok->getDbgGDMLPath(); 
+    if( dbggdmlpath != NULL )
+    { 
+        LOG(info) << "( CGDML" ;
+        CGDML::Export( dbggdmlpath, top ); 
+        LOG(info) << ") CGDML" ;
+    }
 
     LOG(info) << "( GGeo instanciate" ;
     bool live = true ;       // <--- for now this ignores preexisting cache in GGeo::init 

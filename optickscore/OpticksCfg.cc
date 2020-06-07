@@ -161,7 +161,8 @@ OpticksCfg<Listener>::OpticksCfg(const char* name, Listener* listener, bool live
        m_runcomment(""),
        m_runstamp(STime::EpochSeconds()),
        m_runlabel(""),
-       m_runfolder(strdup(m_exename))
+       m_runfolder(strdup(m_exename)),
+       m_dbggdmlpath("")
 {   
    init();  
    m_listener->setCfg(this); 
@@ -1299,7 +1300,8 @@ void OpticksCfg<Listener>::init()
    m_desc.add_options()
        ("runfolder",   boost::program_options::value<std::string>(&m_runfolder), runfolder );
 
-
+   m_desc.add_options()
+       ("dbggdmlpath",   boost::program_options::value<std::string>(&m_dbggdmlpath), "dbggdmlpath " );
 
 
 
@@ -1317,8 +1319,6 @@ void OpticksCfg<Listener>::init()
    snprintf(alignlevel,128, "Integer controlling align verbosity, see CRandomEngine. Default %d ", m_alignlevel );
    m_desc.add_options()
        ("alignlevel",  boost::program_options::value<int>(&m_alignlevel), alignlevel );
-
-
 
 
     // the below formerly called size seems not to be working, so use simpler size above 
@@ -2025,6 +2025,12 @@ const std::string& OpticksCfg<Listener>::getRunFolder() const
 {
     return m_runfolder ;  
 }
+template <class Listener>
+const std::string& OpticksCfg<Listener>::getDbgGDMLPath() const 
+{
+    return m_dbggdmlpath ;  
+}
+
 
 
 

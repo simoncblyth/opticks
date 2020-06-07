@@ -145,11 +145,15 @@ ckm--()
     [ ! -f $setup ] && echo "$msg MISSING setup script $setup : create with bash function opticks-setup-generate " && return 1   
     source $setup
 
+
     CerenkovMinimal  # NB the Opticks is embedded via G4OK : so commandline doesnt get thru 
 }
 
+
+
+ckm-export-gdml(){        G4OPTICKS_DEBUG="--dbggdmlpath /tmp/ckm.gdml" ckm-- ; }
 ckm-run-bouncemax-zero(){ G4OPTICKS_DEBUG="--bouncemax 0" ckm-- ; }
-ckm-run-lvsdname(){ G4OPTICKS_DEBUG="--lvsdname Det --args" ckm-- ; }
+ckm-run-lvsdname(){       G4OPTICKS_DEBUG="--lvsdname Det --args" ckm-- ; }
 
 ckm-load(){      OPTICKS_KEY=$(ckm-key) $(ckm-dbg) OKTest --load --natural --envkey ;}
 ckm-dump(){      OPTICKS_KEY=$(ckm-key) OpticksEventDumpTest --natural --envkey  ;}

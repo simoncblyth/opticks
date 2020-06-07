@@ -1926,6 +1926,12 @@ const char* Opticks::getRunFolder() const
     return runfolder.c_str() ;
 }
 
+const char* Opticks::getDbgGDMLPath() const 
+{
+    const std::string& dbggdmlpath = m_cfg->getDbgGDMLPath() ;
+    return dbggdmlpath.empty() ? NULL : dbggdmlpath.c_str() ;
+}
+
 
 
 

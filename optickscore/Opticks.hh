@@ -241,6 +241,8 @@ class OKCORE_API Opticks {
        const char* getOriginGDMLPath() const ;  // formerly getDirectGDMLPath
        const char* getCurrentGDMLPath() const ;
    public:
+       const char* getDbgGDMLPath() const ; // --dbggdmlpath : used for sneaky GDML exports for debugging 
+   public:
        NSensorList* getSensorList();
    public:
        bool        hasGeocache() const ; 
@@ -349,6 +351,7 @@ class OKCORE_API Opticks {
        const char* getRunLabel() const ; 
        static const char* AutoRunLabel(int rtx);
        const char* getRunFolder() const ; 
+
        const char* getRunResultsDir() const ; // eg /usr/local/opticks/results/OpticksResourceTest/20190422_155146 
        const char* getRuncacheDir() const ;   // eg ~/.opticks/runcache
        const char* getOptiXCacheDirDefault() const ; // eg /var/tmp/simon/OptiXCache where "simon" is username  
