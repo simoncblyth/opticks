@@ -1,6 +1,10 @@
 CerenkovMinimal
 ==================
 
+
+Review Sources
+-----------------
+
 CerenkovMinimal.cc
     main, includes only G4.hh
 
@@ -206,8 +210,307 @@ L4Cerenkov
 
 
 
+Following Logging Output
+----------------------------
+
+The below is a selection of the logging output from CernkovMinimal
+with some explanations.
 
 
+::
+
+    epsilon:~ blyth$ oe-      # setup the environment
+    epsilon:~ blyth$ CerenkovMinimal
+
+    **************************************************************
+     Geant4 version Name: geant4-10-04-patch-02    (25-May-2018)
+                           Copyright : Geant4 Collaboration
+
+    ...
+    2020-06-06 21:03:42.503 INFO  [61988576] [OpEngine::uploadEvent@136] .
+    2020-06-06 21:03:42.512 INFO  [61988576] [OpEngine::propagate@145] [
+    2020-06-06 21:03:42.512 INFO  [61988576] [OpSeeder::seedPhotonsFromGenstepsViaOptiX@173] SEEDING TO SEED BUF  
+    2020-06-06 21:03:42.524 INFO  [61988576] [OpEngine::propagate@155] ( propagator.launch 
+    2020-06-06 21:03:43.533 INFO  [61988576] [OPropagator::prelaunch@185] 1 : (0;221,1) 
+
+         ## (221,1) are the (width,height) dimensions of the OptiX launch 
+         ## the number of photons is always known ahead of time, coming from the 
+         ## gensteps collected from Geant4
+
+    2020-06-06 21:03:43.533 INFO  [61988576] [BTimes::dump@177] OPropagator::prelaunch
+                  validate000                  2.4e-05
+                   compile000                    2e-06
+                 prelaunch000                 0.800931
+    2020-06-06 21:03:43.533 INFO  [61988576] [OPropagator::launch@214] LAUNCH NOW -
+    2020-06-06 21:03:43.535 INFO  [61988576] [OPropagator::launch@223] LAUNCH DONE
+    2020-06-06 21:03:43.535 INFO  [61988576] [OPropagator::launch@225] 1 : (0;221,1) 
+    2020-06-06 21:03:43.535 INFO  [61988576] [BTimes::dump@177] OPropagator::launch
+                    launch001                 0.001449
+
+         ## thats the time of the launch
+
+    2020-06-06 21:03:43.535 INFO  [61988576] [OpEngine::propagate@157] ) propagator.launch 
+    2020-06-06 21:03:43.535 INFO  [61988576] [OpIndexer::indexSequenceCompute@237] OpIndexer::indexSequenceCompute
+    2020-06-06 21:03:43.539 INFO  [61988576] [OpEngine::propagate@160] ]
+    2020-06-06 21:03:43.539 INFO  [61988576] [OpEngine::downloadEvent@186] .
+    2020-06-06 21:03:43.540 INFO  [61988576] [OEvent::downloadHits@396]  nhit 44 --dbghit N hitmask 0x40 SD SURFACE_DETECT
+
+         ## the hitmask determines what is regarded as a hit, this can be changed with the "--dbghitmask" option
+
+    2020-06-06 21:03:43.540 FATAL [61988576] [OpPropagator::propagate@78] evtId(0) DONE nhit: 44
+    2020-06-06 21:03:43.540 INFO  [61988576] [OpticksEvent::saveHitData@1689]  num_hit 0 ht 0,4,4 tag -1
+
+          ## this num_hit 0 for sub-event tag -1 (4) is expected see notes below
+          ## This is because the Opticks "G4" event (with negated tag) m_g4evt in G4Opticks is not filled 
+          ## that is only currently done with CFG4 fully instrumented running. 
+
+    2020-06-06 21:03:43.542 ERROR [61988576] [OpticksEvent::saveIndex@2382] SKIP as not indexed 
+    2020-06-06 21:03:43.543 INFO  [61988576] [OpticksEvent::makeReport@1773] tagdir /tmp/blyth/opticks/source/evt/g4live/natural/-1
+    2020-06-06 21:03:43.554 INFO  [61988576] [OpticksEvent::saveHitData@1689]  num_hit 44 ht 44,4,4 tag 1
+
+          ## num_hit 44 for sub-event tag 1 (Opticks)
+
+    2020-06-06 21:03:43.558 INFO  [61988576] [OpticksEvent::makeReport@1773] tagdir /tmp/blyth/opticks/source/evt/g4live/natural/1
+    2020-06-06 21:03:43.570 ERROR [61988576] [GGeo::anaEvent@2069]  evt 0x7f9ce7ddfb50
+    2020-06-06 21:03:43.570 INFO  [61988576] [OpticksAna::run@92]  anakey (null) enabled N
+    ...
+    2020-06-06 21:03:43.577 INFO  [61988576] [Opticks::saveParameters@1185]  postpropagate save parameters.json into TagZeroDir /tmp/blyth/opticks/source/evt/g4live/natural/0
+    2020-06-06 21:03:43.578 INFO  [61988576] [OpticksEvent::saveHitData@1689]  num_hit 148 ht 148,4,4 tag -1
+
+          ## these 148 hits from standard G4 are "artificially" stuffed into m_g4evt in order to 
+
+
+    EventAction::EndOfEventAction num_hits 44 hits 0x7f9cec9a47a0
+
+    ###] EventAction::EndOfEventAction G4Opticks.propagateOpticalPhotons
+
+    EventAction::EndOfEventAction DumpHitCollections 
+    SensitiveDetector::DumpHitCollections query SD0/OpHitCollectionA hcid    0 hc 0x7f9ce990bcc0 hc.entries 118
+    SensitiveDetector::DumpHitCollections query SD0/OpHitCollectionB hcid    1 hc 0x7f9ce990bd08 hc.entries 30
+
+
+    ###[ RunAction::EndOfRunAction G4Opticks.Finalize
+
+
+
+In the above logging there is a clear discrepancy with 44 hits from Opticks and 148 from Geant4.
+There are many possible causes of this.   Debugging to attain a match is almost impossible 
+when the only information available is the hits obtained.  It is far easier when the 
+full information of the optical photon propagation is recorded. 
+The CFG4 package does full step-by-step recording Opticks and Geant4 propagations
+into two OpticksEvent instances.
+Due to its complexity this is not yet used for G4Opticks based running. 
+
+Other tricks very useful to attain a match used in CFG4 running are:
+
+* performing random aligned simulations that consume the same random numbers 
+* using common input photons generated on CPU
+
+Random aligned simulations mean that comparisons are not clouded by 
+statistics, allowing direct comparison of positions, times, wavelengths, polarizations.
+
+
+What are hits ?
+-------------------
+
+The hitmask is used to select which photons are regarded as "hits" and then only
+these are downloaded from GPU to CPU.
+
+optixrap/OEvent.cc::
+
+     65 OEvent::OEvent(Opticks* ok, OContext* ocontext)
+     66    :
+     67    m_log(new SLog("OEvent::OEvent", "", LEVEL)),
+     68    m_ok(ok),
+     69    //m_hitmask(SURFACE_DETECT),
+     70    //m_hitmask(TORCH | BULK_SCATTER | BOUNDARY_TRANSMIT | SURFACE_ABSORB),
+     71    m_hitmask(ok->getDbgHitMask()),
+     72    m_compute(ok->isCompute()),
+     73    m_dbghit(m_ok->isDbgHit()),            // --dbghit
+
+The default "ok->getDbgHitMask()" is "SD" for SURFACE_DETECT which can be seen from, optickscore/OpticksCfg.cc::
+
+      87        m_mask(""),
+      88        m_dbghitmask("SD"),
+      89        //m_dbghitmask("TO,SC,BT,SA"),  // see OEvent::OEvent
+      90        m_x4polyskip(""),
+      91        m_csgskiplv(""),
+
+The downloading is done in optixrap/OEvent.cc::
+
+    473 /**
+    474 OEvent::downloadHits
+    475 -------------------------
+    476
+    477 Downloading hits is special because a selection of the
+    478 photon buffer is required, necessitating
+    479 the use of Thrust stream compaction. This avoids allocating
+    480 memory for all the photons on the host, just need to allocate
+    481 for the hits.
+    482
+    483 In interop need CUDA/Thrust access to underlying OpenGL buffer.
+    484 In compute need CUDA/Thrust access to the OptiX buffer.
+    485
+    486 **/
+    487
+    488 unsigned OEvent::downloadHitsCompute(OpticksEvent* evt)
+    489 {
+    490     OK_PROFILE("_OEvent::downloadHitsCompute");
+    491
+    492     NPY<float>* hit = evt->getHitData();
+    493
+    494     CBufSpec cpho = m_photon_buf->bufspec();
+    495     assert( cpho.size % 4 == 0 );
+    496     cpho.size /= 4 ;    //  decrease size by factor of 4, increases cpho "item" from 1*float4 to 4*float4
+    497
+    498     bool verbose = m_dbghit ;
+    499     TBuf tpho("tpho", cpho );
+    500     unsigned nhit = tpho.downloadSelection4x4("OEvent::downloadHits", hit, m_hitmask, verbose);
+    501     // hit buffer (0,4,4) resized to fit downloaded hits (nhit,4,4)
+    502     assert(hit->hasShape(nhit,4,4));
+    503
+    504     OK_PROFILE("OEvent::downloadHitsCompute");
+    505
+    506     LOG(LEVEL)
+    507          << " nhit " << nhit
+    508          << " hit " << hit->getShapeString()
+    509          ;
+    510
+    511     return nhit ;
+    512 }
+
+The resulting (nhit,4,4) hits buffer contains all the items of the photon buffer matching the hitmask.
+The photon and hits buffers contain photon structs 
+
+optixrap/cu/photon.h::
+
+     41 struct Photon
+     42 {
+     43    float3 position ;
+     44    float  time ;
+     45 
+     46    float3 direction ;
+     47    float  weight ;
+     48
+     49    float3 polarization ;
+     50    float  wavelength ;
+     51
+     52    quad flags ;     // x:boundary  y:photon_id   z:m1   w:history
+     53                     //             [debug-only]
+     54 };
+     55
+     56
+
+
+Examining Hit Data
+---------------------
+
+CerenkovMinimal persists OpticksEvent instances from both the Opticks and Geant4 simulations, 
+the convention of using positive event tags for Opticks (1) and corresponding negated tags for Geant4 (-1) is used::
+
+    epsilon:g4ok blyth$ l /tmp/blyth/opticks/source/evt/g4live/natural/1/*.npy
+    -rw-r--r--  1 blyth  wheel    144 Jun  7 14:53 /tmp/blyth/opticks/source/evt/g4live/natural/1/OpticksProfileLisLabels.npy
+    -rw-r--r--  1 blyth  wheel     88 Jun  7 14:53 /tmp/blyth/opticks/source/evt/g4live/natural/1/OpticksProfileLis.npy
+    -rw-r--r--  1 blyth  wheel    144 Jun  7 14:53 /tmp/blyth/opticks/source/evt/g4live/natural/1/OpticksProfileAccLabels.npy
+    -rw-r--r--  1 blyth  wheel     96 Jun  7 14:53 /tmp/blyth/opticks/source/evt/g4live/natural/1/OpticksProfileAcc.npy
+    -rw-r--r--  1 blyth  wheel   5520 Jun  7 14:53 /tmp/blyth/opticks/source/evt/g4live/natural/1/OpticksProfileLabels.npy
+    -rw-r--r--  1 blyth  wheel   1440 Jun  7 14:53 /tmp/blyth/opticks/source/evt/g4live/natural/1/OpticksProfile.npy
+    -rw-r--r--  1 blyth  wheel     96 Jun  7 14:53 /tmp/blyth/opticks/source/evt/g4live/natural/1/idom.npy
+    -rw-r--r--  1 blyth  wheel    128 Jun  7 14:53 /tmp/blyth/opticks/source/evt/g4live/natural/1/fdom.npy
+    -rw-r--r--  1 blyth  wheel   8920 Jun  7 14:53 /tmp/blyth/opticks/source/evt/g4live/natural/1/rs.npy
+    -rw-r--r--  1 blyth  wheel    964 Jun  7 14:53 /tmp/blyth/opticks/source/evt/g4live/natural/1/ps.npy
+    -rw-r--r--  1 blyth  wheel   3616 Jun  7 14:53 /tmp/blyth/opticks/source/evt/g4live/natural/1/ph.npy
+    -rw-r--r--  1 blyth  wheel  35440 Jun  7 14:53 /tmp/blyth/opticks/source/evt/g4live/natural/1/rx.npy
+    -rw-r--r--  1 blyth  wheel  14224 Jun  7 14:53 /tmp/blyth/opticks/source/evt/g4live/natural/1/ox.npy
+    -rw-r--r--  1 blyth  wheel    176 Jun  7 14:53 /tmp/blyth/opticks/source/evt/g4live/natural/1/gs.npy
+    -rw-r--r--  1 blyth  wheel   2896 Jun  7 14:53 /tmp/blyth/opticks/source/evt/g4live/natural/1/ht.npy
+    epsilon:g4ok blyth$ 
+
+    epsilon:g4ok blyth$ l /tmp/blyth/opticks/source/evt/g4live/natural/-1/*.npy
+    -rw-r--r--  1 blyth  wheel  14224 Jun  7 14:53 /tmp/blyth/opticks/source/evt/g4live/natural/-1/so.npy
+    -rw-r--r--  1 blyth  wheel   9552 Jun  7 14:53 /tmp/blyth/opticks/source/evt/g4live/natural/-1/ht.npy
+    -rw-r--r--  1 blyth  wheel    144 Jun  7 14:53 /tmp/blyth/opticks/source/evt/g4live/natural/-1/OpticksProfileLisLabels.npy
+    -rw-r--r--  1 blyth  wheel     88 Jun  7 14:53 /tmp/blyth/opticks/source/evt/g4live/natural/-1/OpticksProfileLis.npy
+    -rw-r--r--  1 blyth  wheel    144 Jun  7 14:53 /tmp/blyth/opticks/source/evt/g4live/natural/-1/OpticksProfileAccLabels.npy
+    -rw-r--r--  1 blyth  wheel     96 Jun  7 14:53 /tmp/blyth/opticks/source/evt/g4live/natural/-1/OpticksProfileAcc.npy
+    -rw-r--r--  1 blyth  wheel   5392 Jun  7 14:53 /tmp/blyth/opticks/source/evt/g4live/natural/-1/OpticksProfileLabels.npy
+    -rw-r--r--  1 blyth  wheel   1408 Jun  7 14:53 /tmp/blyth/opticks/source/evt/g4live/natural/-1/OpticksProfile.npy
+    -rw-r--r--  1 blyth  wheel     96 Jun  7 14:53 /tmp/blyth/opticks/source/evt/g4live/natural/-1/idom.npy
+    -rw-r--r--  1 blyth  wheel    128 Jun  7 14:53 /tmp/blyth/opticks/source/evt/g4live/natural/-1/fdom.npy
+    -rw-r--r--  1 blyth  wheel     80 Jun  7 14:53 /tmp/blyth/opticks/source/evt/g4live/natural/-1/ph.npy
+    -rw-r--r--  1 blyth  wheel     80 Jun  7 14:53 /tmp/blyth/opticks/source/evt/g4live/natural/-1/rx.npy
+    -rw-r--r--  1 blyth  wheel     80 Jun  7 14:53 /tmp/blyth/opticks/source/evt/g4live/natural/-1/ox.npy
+    -rw-r--r--  1 blyth  wheel    176 Jun  7 14:53 /tmp/blyth/opticks/source/evt/g4live/natural/-1/gs.npy
+    epsilon:g4ok blyth$ 
+
+
+The Geant4 OpticksEvent instance m_g4evt is mostly empty as full instrumentation is 
+not used.  But the hit data in ht.npy is present.
+
+As the NPY (NumPy) serialization is used for binary array data the persisted 
+arrays are easily examined from ipython using NumPy
+
+::
+
+    epsilon:bin blyth$ ipython
+
+    # import numpy as np      # done within the ipython profile setup  
+
+    In [1]: ht = np.load("/tmp/blyth/opticks/source/evt/g4live/natural/1/ht.npy")
+
+    In [2]: ht
+    Out[2]: 
+    array([[[ 303.0482,  116.9195,   90.    ,    1.53  ],  
+            [   0.899 ,    0.3471,    0.2671,    1.    ],  
+            [  -0.4331,    0.7949,    0.4249,   64.7406],
+            [      nan,    0.    ,    0.    ,    0.    ]], 
+
+           [[ 153.1065,   16.8344,   90.    ,    0.8098],
+            [   0.858 ,    0.0946,    0.5049,    1.    ],  
+            [  -0.4882,    0.4558,    0.7442,  117.8821],
+            [      nan,    0.    ,    0.    ,    0.    ]], 
+
+    ...
+
+    In [3]: ht.shape
+    Out[3]: (44, 4, 4)     ## (nhit, 4,4)
+
+
+    In [2]: ht[:,0]    # row 0 : position, time
+    Out[2]: 
+    array([[ 303.0482,  116.9195,   90.    ,    1.53  ],
+           [ 153.1065,   16.8344,   90.    ,    0.8098],
+           [ 128.8066,  -28.0179,   90.    ,    0.7245],
+           [ 132.6022,  -13.899 ,   90.    ,    0.7302],
+           [ 248.9373,   86.2949,   90.    ,    1.2638],
+           [ 210.6323,   62.5527,   90.    ,    1.0778],
+           [ 129.7702,  -21.9672,   90.    ,    0.7237],
+           ...
+           [ 127.8584,  -37.3653,   90.    ,    0.7297],
+           [ -29.2682,  152.4176,   90.    ,   13.2224],
+           [ 135.6495,   -6.84  ,   90.    ,    0.7396],
+           [ 128.1061,  -33.5526,   90.    ,    0.7268],
+           [ 127.9607,  -43.2016,   90.    ,    0.7367],
+           [ 328.9369, -337.5704,   90.    ,    2.1781],
+           [ 131.8775,  -65.5113,   90.    ,    0.7834],
+           [ 188.6135, -165.1583,   90.    ,    1.2091]], dtype=float32)
+
+    In [3]: ht[:,0].shape
+    Out[3]: (44, 4)
+
+
+    ## The nan and wierd values of the flags in the last row when viewed as floats are expected.
+    ## Viewing them as integers is needed, which is easily done with *view*
+
+    In [4]: ht.view(np.int32)[:,3]
+    Out[4]: 
+    array([[      -3,        0, 67305985,       65],
+           [      -3,        0, 67305985,       65],
+           [      -3,        0, 67305985,       65],
+           ...
+
+    ## There is also bit packing being done, so to make sense of the flags requires some code, 
+    ## see ana/evt.py to learn more.
 
 
 

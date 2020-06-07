@@ -50,6 +50,7 @@ name=$(basename $sdir)
 bdir=/tmp/$USER/opticks/examples/$name/build 
 idir=/tmp/$USER/opticks/examples/$name
 
+msg="=== $BASH_SOURCE :"
 
 go-cmake-with-source-tree()
 {
@@ -58,12 +59,14 @@ go-cmake-with-source-tree()
    local idir=$3
 
    cmake $sdir \
+        -DCMAKE_FIND_DEBUG_MODE=0 \
         -DCMAKE_BUILD_TYPE=Debug \
-        -DCMAKE_PREFIX_PATH="$pfx/externals;$pfx" \
         -DOPTICKS_PREFIX=$pfx \
         -DCMAKE_MODULE_PATH=$(opticks-home)/cmake/Modules \
         -DCMAKE_INSTALL_PREFIX=$idir \
         $*
+
+   # -DCMAKE_PREFIX_PATH="$pfx/externals;$pfx" \
       
 }
 
@@ -82,11 +85,22 @@ go-cmake-from-install-tree()
 
 }
 
+go-cmake-notes(){ cat << EON
+
+To explicitly select the Geant4 if you have multiple, try::
+
+   -DGeant4_DIR=$(opticks-prefix)_externals/g4/lib/Geant4-10.4.2
+
+   #go-cmake-with-source-tree $pfx $sdir $idir 
+   #go-cmake-from-install-tree $pfx $sdir $idir 
+
+EON
+}
+
+
 
 
 pfx=$(opticks-;opticks-prefix)        
-#pfx=$(okdist-;okdist-release-prefix)   
-
 
 info(){ cat << EOI
 
@@ -101,12 +115,11 @@ EOI
 info
 
 
-
 rm -rf $bdir 
 if [ ! -d "$bdir" ]; then 
    mkdir -p $bdir && cd $bdir 
-   go-cmake-with-source-tree $pfx $sdir $idir -DGeant4_DIR=$(opticks-dir)/externals/lib64/Geant4-10.4.2
-   #go-cmake-from-install-tree $pfx $sdir $idir -DGeant4_DIR=$(opticks-dir)/externals/lib64/Geant4-10.4.2
+   om-
+   om-cmake $sdir
 else
    cd $bdir 
 fi 
@@ -118,15 +131,13 @@ rc=$?
 
 make install   
 
-#exit 0
+setup=$pfx/bin/opticks-setup.sh 
+[ ! -f $setup ] && echo "$msg MISSING setup script $setup : create with bash function opticks-setup-generate " && return 1   
+source $setup
 
-
-g4-
-g4-export
-
-exe=$idir/lib/$name
+exe=$(which CerenkovMinimal)
 echo $exe
-
+ls -l $exe
 
 if [ -n "$DEBUG" ]; then 
     case $(uname) in 
@@ -137,12 +148,16 @@ else
     $exe
 fi 
 
+if [ "$(uname)" == "Linux" ]; then
+    echo ldd $exe
+    ldd $exe
 
-echo ldd $exe
-ldd $exe
+    echo chrpath $exe
+    chrpath $exe
 
-echo chrpath $exe
-chrpath $exe
+elif [ "$(uname)" == "Darwin" ]; then
+    otool -L $exe
+fi 
 
 info
 

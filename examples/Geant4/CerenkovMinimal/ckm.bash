@@ -138,8 +138,13 @@ ckm-go(){ ckm-cd ; ./go.sh ; }
 
 ckm--()
 { 
-    g4-
-    g4-export        # internal envvar stuff is not done here 
+    local msg="=== $FUNCNAME :"
+
+    opticks-
+    local setup=$(opticks-prefix)/bin/opticks-setup.sh 
+    [ ! -f $setup ] && echo "$msg MISSING setup script $setup : create with bash function opticks-setup-generate " && return 1   
+    source $setup
+
     CerenkovMinimal  # NB the Opticks is embedded via G4OK : so commandline doesnt get thru 
 }
 

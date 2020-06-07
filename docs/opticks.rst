@@ -918,7 +918,7 @@ Creating Legacy Workflow Geocache
 
 Some tests depend on the geometry cache being present. To create the legacy geometry cache::
 
-   op.sh -G 
+   op.sh -G   ## NB this legacy approach is slated to be removed, instead try the below direct workflow approach
 
 
 Creating Direct Workflow Geocache

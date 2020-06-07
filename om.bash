@@ -548,6 +548,7 @@ om-cmake()
        -DCMAKE_INSTALL_PREFIX=$(om-prefix) \
        -DCMAKE_MODULE_PATH=$(om-home)/cmake/Modules 
 
+    #  -DCMAKE_FIND_DEBUG_MODE=1 \
     # NB not pinning CMAKE_PREFIX_PATH so can find foreigners, see oe-
 
     rc=$?

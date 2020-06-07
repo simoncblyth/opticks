@@ -352,11 +352,24 @@ G4Opticks::propagateOpticalPhotons
 
 Invoked from EventAction::EndOfEventAction
 
-TODO: relocate direct events inside the geocache ? 
-      and place these direct gensteps and genphotons 
-      within the OpticksEvent directory 
+Note that m_g4evt OpticksEvent here is mostly empty
+as the fully instrumented step-by-step recording 
+is not used for simplicity. This means the Geant4
+simulation is kept very simple and similar to 
+standard Geant4 usage.
 
-      done already ?
+To allow superficial hit level debugging Geant4 hits 
+collected by m_g4hit_collector CPhotonCollector are 
+persisted via the OpticksEvent machinery 
+with OpticksEvent::saveHitData
+
+optickscore/OpticksEvent.cc::
+
+    291    public:
+    292        // used from G4Opticks for the minimal G4 side instrumentation of "1st executable"
+    293        void saveHitData(NPY<float>* ht) const ;
+    294        void saveSourceData(NPY<float>* so) const ;
+
 
 **/
 
@@ -381,7 +394,7 @@ int G4Opticks::propagateOpticalPhotons()
     if(m_gpu_propagate)
     {
         m_opmgr->setGensteps(m_gensteps);      
-        m_opmgr->propagate();
+        m_opmgr->propagate();     // GPU simulation is done in here 
 
         OpticksEvent* event = m_opmgr->getEvent(); 
         m_hits = event->getHitData()->clone() ; 
@@ -566,6 +579,18 @@ void G4Opticks::collectCerenkovStep
   
 
 
+/**
+G4Opticks::collectHit
+-----------------------
+
+Intended to collect standard Geant4 hits into the m_g4hit_collector 
+CPhotonCollector instance. This allows superficial hit level  
+comparisons between Opticks and Geant4 simulations.
+
+For example this can be used from SensitiveDetector::ProcessHits 
+in examples/Geant4/CerenkovMinimal/SensitiveDetector.cc
+
+**/
 
 void G4Opticks::collectHit
     (
