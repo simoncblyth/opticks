@@ -26,7 +26,6 @@ o-vi(){ vi $(which o.sh) ; }
 
 cmdline="$*"
 
-
 o-usage(){ cat << \EOU
 /**
 o.sh
@@ -145,7 +144,7 @@ o-cmdline-binary()
       bin=$def
    fi 
 
-   export OPTICKS_BINARY=$(which $bin)
+   export OPTICKS_BINARY=$(opticks-prefix)/lib/$bin   # do not assume PATH is setup 
    export OPTICKS_ARGS=$cmdline
 }
 
@@ -186,15 +185,28 @@ o-lldb-dump()
    fi   
 }
 
+
+o-lldb-identify(){
+   : macOS has some security that prevents /usr/bin/lldb from seeing DYLD_LIBRARY_PATH envvar
+   : however direct use of the lldb binary from within the Xcode bundle does not suffer from this restriction
+
+   local lldb_bin=/Applications/Xcode/Xcode_10_1.app/Contents/Developer/usr/bin/lldb
+   [ ! -f "$lldb_bin" ] && echo $FUNCNAME : WARNING lldb_bin $lldb_bin DOES NOT EXIST && return 1 
+   export LLDB=$lldb_bin 
+   return 0 
+}
+
+
 o-lldb-runline()
-{ 
+{
+ 
    if [ -n "${OPTICKS_LLDB_SOURCE}" -a -f "${OPTICKS_LLDB_SOURCE}" ] ; then 
       #echo lldb -f ${OPTICKS_BINARY} -s ${OPTICKS_LLDB_SOURCE} -s ${OPTICKS_LLDB_SOURCE}.autorun -- ${OPTICKS_ARGS} 
       # autorun manages to launch the process but output does not arrive in lldb console, 
       # and seemingly input doesnt get to the the app
-      echo lldb -f ${OPTICKS_BINARY} -s ${OPTICKS_LLDB_SOURCE} -- ${OPTICKS_ARGS} 
+      echo $LLDB -f ${OPTICKS_BINARY} -s ${OPTICKS_LLDB_SOURCE} -- ${OPTICKS_ARGS} 
    else
-      echo lldb -f ${OPTICKS_BINARY} -- ${OPTICKS_ARGS} 
+      echo $LLDB -f ${OPTICKS_BINARY} -- ${OPTICKS_ARGS} 
    fi 
 }
 
@@ -210,6 +222,8 @@ EON
 
 o-runline()
 {
+   [ "$(uname)" == "Darwin" ] && o-lldb-identify 
+
    local runline
    if [ "${OPTICKS_BINARY: -3}" == ".py" ]; then
       runline="python ${OPTICKS_BINARY} ${OPTICKS_ARGS} "
@@ -281,10 +295,9 @@ o-main()
    local runline=$(o-runline)
    local postline=$(o-postline)
 
+   # setup here or rely on oe- 
    source $OPTICKS_PREFIX/bin/opticks-setup.sh 
-
-   [ -n "$VERBOSE" ] && o-paths
-
+   #[ -n "$VERBOSE" ] && o-paths
 
    echo $msg $runline ======= PWD $PWD $(date)
    eval $runline
