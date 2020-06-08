@@ -20,6 +20,7 @@
 #pragma once
 
 #include <vector>
+#include "plog/Severity.h"
 #include "X4_API_EXPORT.hh"
 
 #include "G4ThreeVector.hh"
@@ -77,6 +78,7 @@ class X4_API X4Solid : public X4SolidBase
         double z ; 
     };
     public:
+        static const plog::Severity  LEVEL ; 
         static void SetVerbosity(unsigned verbosity);
         static nnode* Convert(const G4VSolid* solid, Opticks* ok, const char* boundary=NULL);
         static nnode* Balance(nnode* raw, unsigned soIdx=0 , unsigned lvIdx=0 );  // cannot be const due to inplace positivization

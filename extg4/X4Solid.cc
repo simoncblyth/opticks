@@ -65,6 +65,7 @@
 
 #include "PLOG.hh"
 
+const plog::Severity X4Solid::LEVEL = PLOG::EnvLevel("X4Solid", "DEBUG") ;
 
 unsigned X4Solid::fVerbosity = 0 ; 
 void X4Solid::SetVerbosity(unsigned verbosity) // static
@@ -870,6 +871,16 @@ void X4Solid::convertTorus()
     float startPhi = solid->GetSPhi()/degree ; 
     float deltaPhi = solid->GetDPhi()/degree ; 
 
+    LOG(LEVEL) 
+       << " [ convertTorus "
+       << " rmin(mm) " << rmin
+       << " rmax(mm) " << rmax
+       << " rtor(mm) " << rtor
+       << " startPhi(deg) " << startPhi
+       << " deltaPhi(deg) " << deltaPhi
+       ; 
+
+
     if( startPhi < 0 ) 
     {
         LOG(fatal) 
@@ -885,6 +896,16 @@ void X4Solid::convertTorus()
            ;
          deltaPhi = 360.f ; 
     } 
+
+
+    LOG(LEVEL) 
+       << " ] convertTorus "
+       << " rmin(mm) " << rmin
+       << " rmax(mm) " << rmax
+       << " rtor(mm) " << rtor
+       << " startPhi(deg) " << startPhi
+       << " deltaPhi(deg) " << deltaPhi
+       ; 
 
 
     assert( rmin == 0.f ); // torus with rmin not yet handled 
