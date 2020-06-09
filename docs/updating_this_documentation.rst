@@ -5,16 +5,18 @@ Updating this documentation
 
 Edit the RST::
 
-    index.rst
-    docs/opticks.rst
-    ...
-
+    vi ../index.rst opticks.rst material_and_surface_properties.rst
 
 Build the html from RST::
 
     [blyth@localhost ~]$ cd ~/opticks
     [blyth@localhost opticks]$ make
     ## fix any major RST problems 
+
+Open the html documentation in your browser locally::
+
+    epsilon:opticks blyth$ open ~/simoncblyth.bitbucket.io/opticks/index.html
+    ## tip for gnome users, add open function to .bashrc :  open(){ gio open $* ; }
 
 Publish html to bitbucket::
 

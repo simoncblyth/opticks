@@ -18,6 +18,7 @@ Contents:
    docs/updating_this_documentation
    docs/overview
    docs/how_opticks_full_works
+   docs/material_and_surface_properties
    docs/geocache
 
    ana/tools
