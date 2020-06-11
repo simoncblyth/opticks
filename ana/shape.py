@@ -85,17 +85,17 @@ class X(object):
     def replacement_cons(self):
         """
         """ 
-        i = self.find_one("Torus")
+        i = self.find_one("STorus")
         r = i.param[0]
         R = i.param[1]
 
-        d = self.find_one("Ellipsoid")
+        d = self.find_one("SEllipsoid")
         ex = d.param[0]
         ez = d.param[1]
 
         print("r %s R %s ex %s ez %s " % (r,R,ex,ez))
-        print(" Ellipsoid d.xy %s " % repr(d.xy) ) 
-        print(" Torus     i.xy %s " % repr(i.xy) ) 
+        print(" SEllipsoid d.xy %s " % repr(d.xy) ) 
+        print(" STorus     i.xy %s " % repr(i.xy) ) 
 
         z0 = i.xy[1]   # torus z-plane in ellipsoid frame
 
@@ -109,10 +109,10 @@ class X(object):
         mz = (z0 + pz)/2.   # mid-z cone coordinate (ellipsoid frame)
         hz = (pz - z0)/2.   # cons half height 
 
-        f = Cons( "f", [r1,r2,hz] )
+        f = SCons( "f", [r1,r2,hz] )
         B = np.array( [0, mz] )  
 
-        print(" replacment Cons %s offset %s " % (repr(f),repr(B)))
+        print(" replacment SCons %s offset %s " % (repr(f),repr(B)))
 
         return f, B  
 
@@ -141,24 +141,24 @@ class X(object):
         x = copy.deepcopy(self) 
 
         # establish expectations for tree
-        e = x.find_one("Ellipsoid")
-        t = x.find_one("Torus")
+        e = x.find_one("SEllipsoid")
+        t = x.find_one("STorus")
         ss = t.parent
-        assert ss is not None and ss.shape == "SubtractionSolid"
+        assert ss is not None and ss.shape == "SSubtractionSolid"
         us = ss.parent  
-        assert us is not None and us.shape == "UnionSolid"
+        assert us is not None and us.shape == "SUnionSolid"
         assert us.left is not None and us.left == e and us.right == ss and ss.right == t
         assert us.right is not None and us.right == ss 
 
 
         if name == "x018":   # cathode vacuum cap
-            assert x.root.shape == "IntersectionSolid"
+            assert x.root.shape == "SIntersectionSolid"
             x.root = e 
             e.parent = None
         elif name == "x019":  # remainder vacuum 
-            assert x.root.shape == "SubtractionSolid"
+            assert x.root.shape == "SSubtractionSolid"
             left = x.root.left 
-            assert left.shape == "UnionSolid" 
+            assert left.shape == "SUnionSolid" 
             left.parent = None 
             x.root = left 
         else:
@@ -187,8 +187,8 @@ class Shape(object):
     KWA = dict(fill=False)
     dtype = np.float64
 
-    PRIMITIVE = ["Ellipsoid","Tubs","Torus", "Cons", "Hype", "Box"]
-    COMPOSITE = ["UnionSolid", "SubtractionSolid", "IntersectionSolid"]
+    PRIMITIVE = ["SEllipsoid","STubs","STorus", "SCons", "SHype", "SBox"]
+    COMPOSITE = ["SUnionSolid", "SSubtractionSolid", "SIntersectionSolid"]
 
     def __repr__(self):
         return "%s : %20s : %s : %s " % (
@@ -267,17 +267,17 @@ class Shape(object):
         return filter( lambda ct:ct.shape == shape, cts ) 
 
     def patches(self):
-        if self.shape == "Ellipsoid":
+        if self.shape == "SEllipsoid":
             return self.make_ellipse( self.xy, self.param, **self.kwa )
-        elif self.shape == "Tubs":
+        elif self.shape == "STubs":
             return self.make_rect( self.xy, self.param, **self.kwa)
-        elif self.shape == "Torus":
+        elif self.shape == "STorus":
             return self.make_torus( self.xy, self.param, **self.kwa)
-        elif self.shape == "Cons":
+        elif self.shape == "SCons":
             return self.make_cons( self.xy, self.param, **self.kwa)
-        elif self.shape == "Hype":
+        elif self.shape == "SHype":
             return self.make_hype( self.xy, self.param, **self.kwa)
-        elif self.shape == "Box":
+        elif self.shape == "SBox":
             return self.make_rect( self.xy, self.param, **self.kwa)
         else:
             assert self.is_composite 
@@ -389,14 +389,14 @@ class Shape(object):
         return cls.make_pathpatch( xy, vtxs, **kwa )
 
 
-class Ellipsoid(Shape):pass
-class Tubs(Shape):pass
-class Torus(Shape):pass
-class Cons(Shape):pass
-class Hype(Shape):pass
-class UnionSolid(Shape):pass
-class SubtractionSolid(Shape):pass
-class IntersectionSolid(Shape):pass
+class SEllipsoid(Shape):pass
+class STubs(Shape):pass
+class STorus(Shape):pass
+class SCons(Shape):pass
+class SHype(Shape):pass
+class SUnionSolid(Shape):pass
+class SSubtractionSolid(Shape):pass
+class SIntersectionSolid(Shape):pass
 
 
 

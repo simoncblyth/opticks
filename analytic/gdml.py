@@ -28,7 +28,7 @@ import os, re, logging, math, collections
 
 log = logging.getLogger(__name__)
 
-from opticks.ana.base import opticks_main
+from opticks.ana.main import opticks_main
 from opticks.ana.nbase import find_ranges
 from opticks.analytic.csg import CSG 
 from opticks.analytic.treebuilder import TreeBuilder
@@ -103,7 +103,11 @@ class G(object):
 
         """
         wrap_ = lambda e:self.g.kls.get(e.tag,G)(e,self.g)
-        fa = map(wrap_, self.elem.findall(expr) )
+        #fa = map(wrap_, self.elem.findall(expr) )
+        fa = map(wrap_, self.elem.xpath(expr) )
+
+
+
         kln = self.__class__.__name__
         name = self.name 
         log.debug("findall_ from %s:%s expr:%s returned %s " % (kln, name, expr, len(fa)))
@@ -860,6 +864,14 @@ class PolyCone(Primitive):
 
 class Volume(G):
     """
+    Volume : GDML volume are Geant4 Logical Volumes (LV)
+    ======================================================
+
+    As very many pv (placements of lv) share the same lv 
+    it does not make sense to simply jump from an lv to its pv.  
+    Conversely that is a question that must be asked of the whole 
+    geometry tree to select all the placements (pv) that have a particular lv.
+
     ::
 
         In [15]: for v in gdml.volumes.values():print v.material.shortname
@@ -887,7 +899,7 @@ class Volume(G):
         return filter(lambda pv:pv.name.startswith(pfx), self.physvol) 
 
     def rdump(self, depth=0):
-        print self
+        print(self)
         for pv in self.physvol:
             lv = pv.volume
             lv.rdump(depth=depth+1)
@@ -1036,11 +1048,13 @@ class GDML(G):
             e.idx = i
             self.materials[e.name] = e 
         pass
-        for i, e in enumerate(self.findall_("solids/*")):
+        # opticalsurface also in solids so switch from elem.findall to elem.xpath and exclude opticalsurface
+        for i, e in enumerate(self.findall_("solids/*[local-name() != 'opticalsurface']")):
             e.idx = i
             self.solids[e.name] = e 
         pass
-        for i, e in enumerate(self.findall_("structure/*")):
+        # skinsurface,bordersurface also in structure so : structure/* -> structure/volume 
+        for i, e in enumerate(self.findall_("structure/volume")):
             e.idx = i
             self.volumes[e.name] = e
         pass
@@ -1051,8 +1065,10 @@ class GDML(G):
 
         vvs = filter(lambda v:hasattr(v,'solid'), vv)
 
-        log.info("vv %s vvs %s " % (len(vv),len(vvs)))
+        log.info("vv %s (number of logical volumes) vvs %s (number of lv with associated solid) " % (len(vv),len(vvs)))
         #for v in vvs:print repr(v)
+        # getting the much larger number of physvol (ie placements of lv) 
+        # entails traversing the full geometry tree
 
         self.lv2so = dict([(v.idx, v.solid.idx) for v in vvs])
 

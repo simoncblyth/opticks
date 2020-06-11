@@ -176,7 +176,10 @@ class X4_API X4PhysicalVolume : public X4Named
         std::map<const G4LogicalVolume*, int> m_lvidx ; 
         std::vector<const G4LogicalVolume*>   m_lvlist ; 
         std::vector<unsigned>                 m_lv_with_torus ; 
+        std::vector<std::string>              m_lvname ; 
+        std::vector<std::string>              m_soname ; 
         std::vector<std::string>              m_lvname_with_torus ; 
+        std::vector<std::string>              m_soname_with_torus ; 
         std::vector<G4Material*>              m_material_with_efficiency ; 
 
 };

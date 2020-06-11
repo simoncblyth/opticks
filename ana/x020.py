@@ -22,7 +22,7 @@
 Aiming for this to be generated, so keep it simple
 """
 import numpy as np
-from opticks.ana.shape import X, Ellipsoid, Tubs, Torus, Cons, SubtractionSolid, UnionSolid, IntersectionSolid
+from opticks.ana.shape import X, SEllipsoid, STubs, STorus, SCons, SSubtractionSolid, SUnionSolid, SIntersectionSolid
 
 
 class x020(X):
@@ -50,19 +50,19 @@ class x020(X):
 
     """
     def __init__(self):
-        c = Ellipsoid( "c", [254.000, 184.000 ] )
-        f = Tubs(      "f", [77.976127, 21.496692] )
-        h = Torus(     "h", [ 47.010000, 97.000000] )
+        c = SEllipsoid( "c", [254.000, 184.000 ] )
+        f = STubs(      "f", [77.976127, 21.496692] )
+        h = STorus(     "h", [ 47.010000, 97.000000] )
 
         A = np.array( [0, -21.486692] )
-        e = SubtractionSolid( "e" , [f, h, A] )
+        e = SSubtractionSolid( "e" , [f, h, A] )
 
         B = np.array( [0, -197.513308] )  
-        b = UnionSolid( "b", [c, e, B] )
+        b = SUnionSolid( "b", [c, e, B] )
          
-        j = Tubs( "j", [50.010000, 60.010000] )
+        j = STubs( "j", [50.010000, 60.010000] )
         C = np.array( [0, -279.000000] )
-        a = UnionSolid( "a", [b, j, C] )
+        a = SUnionSolid( "a", [b, j, C] )
 
         self.root = a 
         self.prims = [c,f,h,j]   

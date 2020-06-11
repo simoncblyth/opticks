@@ -560,6 +560,7 @@ void X4PhysicalVolume::convertSolids()
     LOG(debug) << "]" ; 
 
     dumpTorusLV();
+    dumpLV();
 
     LOG(LEVEL) << "]" ;
     OK_PROFILE("X4PhysicalVolume::convertSolids");
@@ -609,6 +610,7 @@ void X4PhysicalVolume::convertSolids_r(const G4VPhysicalVolume* const pv, int de
 
         const G4VSolid* const solid = lv->GetSolid(); 
         const std::string& lvname = lv->GetName() ; 
+        const std::string& soname = solid->GetName() ; 
 
         bool balance_deep_tree = true ;  
         GMesh* mesh = convertSolid( lvIdx, soIdx, solid, lvname, balance_deep_tree ) ;  
@@ -656,11 +658,17 @@ void X4PhysicalVolume::convertSolids_r(const G4VPhysicalVolume* const pv, int de
         }
 
 
+
+
+        m_lvname.push_back( lvname ); 
+        m_soname.push_back( soname ); 
+ 
         if( root->has_torus() )
         {
             LOG(fatal) << " has_torus lvIdx " << lvIdx << " " << lvname ;  
             m_lv_with_torus.push_back( lvIdx ); 
             m_lvname_with_torus.push_back( lvname ); 
+            m_soname_with_torus.push_back( soname ); 
         }
 
         m_ggeo->add( mesh ) ; 
@@ -779,13 +787,21 @@ void X4PhysicalVolume::dumpLV() const
         << " m_lvlist.size() " << m_lvlist.size() 
         ;
 
+   assert( m_lvlist.size() == m_lvname.size() );  
+   assert( m_lvlist.size() == m_soname.size() );  
+
    for(unsigned i=0 ; i < m_lvlist.size() ; i++)
    {
        const G4LogicalVolume* lv = m_lvlist[i] ; 
+
+       const std::string& lvn =  lv->GetName() ; 
+       assert( strcmp(lvn.c_str(), m_lvname[i].c_str() ) == 0 ); 
+
        std::cout 
            << " i " << std::setw(5) << i
            << " idx " << std::setw(5) << m_lvidx.at(lv)  
-           << " lv "  << lv->GetName()
+           << " lvname " << std::setw(50) << m_lvname[i]
+           << " soname " << std::setw(50) << m_soname[i]
            << std::endl ;  
    }
 }
@@ -793,6 +809,7 @@ void X4PhysicalVolume::dumpLV() const
 void X4PhysicalVolume::dumpTorusLV() const 
 {
     assert( m_lv_with_torus.size() == m_lvname_with_torus.size() ); 
+    assert( m_lv_with_torus.size() == m_soname_with_torus.size() ); 
     unsigned num_afflicted = m_lv_with_torus.size() ;  
     if(num_afflicted == 0) return ; 
 
@@ -805,8 +822,9 @@ void X4PhysicalVolume::dumpTorusLV() const
     for(unsigned i=0 ; i < num_afflicted ; i++) 
     {
         std::cout 
-            << m_lv_with_torus[i] << " "  
-            << m_lvname_with_torus[i] 
+            << " lv "     << std::setw(4)  << m_lv_with_torus[i] 
+            << " lvname " << std::setw(50) << m_lvname_with_torus[i] 
+            << " soname " << std::setw(50) << m_soname_with_torus[i] 
             << std::endl 
             ; 
     }

@@ -22,7 +22,7 @@
 Aiming for this to be generated, so keep it simple
 """
 import numpy as np
-from opticks.ana.shape import X, Ellipsoid, Tubs, Torus, Cons, SubtractionSolid, UnionSolid, IntersectionSolid
+from opticks.ana.shape import X, SEllipsoid, STubs, STorus, SCons, SSubtractionSolid, SUnionSolid, SIntersectionSolid
 
 
 class x019(X):
@@ -69,24 +69,24 @@ class x019(X):
     """
 
     def __init__(self):
-        d = Ellipsoid( "d", [249.000, 179.000 ] )
-        g = Tubs(      "g", [75.951247,23.782510] )
-        i = Torus(     "i", [ 52.010000, 97.000000] )
+        d = SEllipsoid( "d", [249.000, 179.000 ] )
+        g = STubs(      "g", [75.951247,23.782510] )
+        i = STorus(     "i", [ 52.010000, 97.000000] )
 
         A = np.array( [0, -23.772510] )
-        f = SubtractionSolid( "f", [g,i, A ] )
+        f = SSubtractionSolid( "f", [g,i, A ] )
 
         B = np.array( [0, -195.227490] )
-        c = UnionSolid( "c",  [d, f, B] )
+        c = SUnionSolid( "c",  [d, f, B] )
 
-        k = Tubs(      "k", [45.010000, 57.510000] )
+        k = STubs(      "k", [45.010000, 57.510000] )
 
         C = np.array( [0, -276.500000] )
-        b = UnionSolid( "b", [c, k, C] ) 
-        m = Tubs(      "m", [254.000000, 92.000000] )
+        b = SUnionSolid( "b", [c, k, C] ) 
+        m = STubs(      "m", [254.000000, 92.000000] )
 
         D = np.array( [0, 92.000000] )
-        a = SubtractionSolid( "a", [b, m, D ] )
+        a = SSubtractionSolid( "a", [b, m, D ] )
 
         self.root = a        
 

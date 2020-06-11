@@ -22,7 +22,7 @@
 Aiming for this to be generated, so keep it simple
 """
 import numpy as np
-from opticks.ana.shape import X, Ellipsoid, Tubs, Torus, Cons, SubtractionSolid, UnionSolid, IntersectionSolid
+from opticks.ana.shape import X, SEllipsoid, STubs, STorus, SCons, SSubtractionSolid, SUnionSolid, SIntersectionSolid
 
 
 class x018(X):
@@ -74,23 +74,23 @@ class x018(X):
     """
     def __init__(self, mode=0):
 
-        d = Ellipsoid("d", [249.000, 179.000 ] )
-        g = Tubs("g", [75.951247,23.782510] )
-        i = Torus("i", [ 52.010000, 97.000000] )   
+        d = SEllipsoid("d", [249.000, 179.000 ] )
+        g = STubs("g", [75.951247,23.782510] )
+        i = STorus("i", [ 52.010000, 97.000000] )   
 
         A = np.array( [0, -23.772510] )
-        f = SubtractionSolid("f", [g,i,A] )
+        f = SSubtractionSolid("f", [g,i,A] )
         B = np.array( [0, -195.227490] )
-        c = UnionSolid("c", [d,f,B] )
+        c = SUnionSolid("c", [d,f,B] )
 
-        k = Tubs("k", [45.010000, 57.510000] )
+        k = STubs("k", [45.010000, 57.510000] )
 
         C = np.array( [0, -276.500000] )
-        b = UnionSolid("b", [c,k,C] )
-        m = Tubs("m", [254.000000, 92.000000] )
+        b = SUnionSolid("b", [c,k,C] )
+        m = STubs("m", [254.000000, 92.000000] )
 
         D = np.array( [0, 92.000000] )
-        a = IntersectionSolid("a", [b,m,D] )
+        a = SIntersectionSolid("a", [b,m,D] )
 
         self.root = a 
 
@@ -99,19 +99,19 @@ if __name__ == '__main__':
     print(repr(x))
 
 
-    i = x.find_one("Torus")
+    i = x.find_one("STorus")
     r = i.param[0]
     R = i.param[1]
 
-    d = x.find_one("Ellipsoid")
+    d = x.find_one("SEllipsoid")
     ex = d.param[0]
     ez = d.param[1]
 
     print("r %s R %s ex %s ez %s " % (r,R,ex,ez))
 
 
-    print(" Ellipsoid d.xy %s " % repr(d.xy) ) 
-    print(" Torus     i.xy %s " % repr(i.xy) ) 
+    print(" SEllipsoid d.xy %s " % repr(d.xy) ) 
+    print(" STorus     i.xy %s " % repr(i.xy) ) 
 
     z0 = i.xy[1]
 
@@ -134,10 +134,10 @@ if __name__ == '__main__':
     hz = (pz - z0)/2.   # cons galf height 
 
 
-    f = Cons( "f", [r1,r2,hz] )
+    f = SCons( "f", [r1,r2,hz] )
     B = np.array( [0, mz] )  
 
-    print(" replacment Cons %s offset %s " % (repr(f),repr(B)))
+    print(" replacment SCons %s offset %s " % (repr(f),repr(B)))
 
     # hmm how to do tree surgery 
 
