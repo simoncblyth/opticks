@@ -30,10 +30,13 @@ log = logging.getLogger(__name__)
 
 from opticks.ana.main import opticks_main
 from opticks.ana.nbase import find_ranges
+from opticks.ana.shape import X, SEllipsoid, STubs, STorus, SCons, SPolycone, SSubtractionSolid, SUnionSolid, SIntersectionSolid
+
 from opticks.analytic.csg import CSG 
 from opticks.analytic.treebuilder import TreeBuilder
 from opticks.analytic.glm import make_trs, make_transform
 from opticks.analytic.prism import make_trapezoid
+
 
 import numpy as np
 import lxml.etree as ET
@@ -165,7 +168,8 @@ class Geometry(G):
     def as_ncsg(self):
         assert 0, "Geometry.as_ncsg needs to be overridden in the subclass: %s " % self.__class__ 
 
-
+    def as_shape(self):
+        assert 0, "Geometry.as_shape needs to be overridden in the subclass: %s " % self.__class__ 
 
     def _get_subsolids(self):
         ss = []
@@ -218,9 +222,8 @@ class Boolean(Geometry):
         return "\n".join([line, lrep_("l",self.first), lrep_("r",self.second)])
 
     def as_ncsg(self):
-
         if not hasattr(self.first, 'as_ncsg'):
-            print self.first 
+            print(self.first) 
         pass
         left = self.first.as_ncsg()
         right = self.second.as_ncsg()
@@ -238,14 +241,37 @@ class Boolean(Geometry):
         cn.right = right 
         return cn 
 
+    def as_shape(self):
+        left = self.first.as_shape()
+        right = self.second.as_shape()
+        transform = self.secondtransform 
+
+        no_rotation = np.all(np.eye(3) == transform[:3,:3])
+        assert no_rotation, transform
+        xyz = transform[3,:3]
+
+        log.debug(xyz)
+        assert xyz[0] == xyz[1] == 0, ("only z shifts handled ", xyz)        
+
+        assert left, " left fail as_shape for first : %r self: %r " % (self.first, self)
+        assert right, "right fail as_shape for second : %r self: %r " % (self.second, self)
+
+        tr = np.array( [0, xyz[2]] )
+        shape = self.shape_kls(self.name, [left, right, tr])      
+        return shape   
+ 
+
 class Intersection(Boolean):
     operation = "intersection"
+    shape_kls = SIntersectionSolid
 
 class Subtraction(Boolean):
     operation = "difference"
+    shape_kls = SSubtractionSolid
 
 class Union(Boolean):
     operation = "union"
+    shape_kls = SUnionSolid
 
 class Primitive(Geometry):
     lunit = property(lambda self:self.att('lunit', 'mm', typ=str))
@@ -367,10 +393,18 @@ class Tube(Primitive):
         pass
         return self.as_disc() if pick_disc else self.as_cylinder()
 
+    def as_shape(self):
+        hz = self.z/2.
+        shape = STubs(self.name, [self.rmax, hz] )
+        return shape 
 
 
 class Sphere(Primitive):
     deltaphi_slab_segment_enabled = False
+
+    def as_shape(self):
+        shape = SEllipsoid(self.name, [self.rmax, self.rmax] )
+        return shape 
 
     def as_ncsg(self, only_inner=False):
         pass
@@ -455,7 +489,6 @@ class Ellipsoid(Primitive):
     zcut1 = property(lambda self:self.att('zcut1', 0, typ=float))
     zcut2 = property(lambda self:self.att('zcut2', 0, typ=float))
 
-
     def _get_semi_axes(self):
         ax = self.ax
         by = self.by
@@ -464,18 +497,27 @@ class Ellipsoid(Primitive):
         return a
     semi_axes = property(_get_semi_axes)    
 
-
     def as_ncsg(self):
         ax = self.semi_axes
         cn = CSG.MakeEllipsoid(axes=ax, name=self.name, zcut1=self.zcut1, zcut2=self.zcut2)
         return cn
 
+    def as_shape(self):
+        assert self.ax == self.by 
+        shape = SEllipsoid(self.name, [self.ax, self.cz] )
+        return shape 
 
 class Torus(Primitive):
     rtor = property(lambda self:self.att('rtor', 0, typ=float))
     def as_ncsg(self):
         cn = CSG.MakeTorus(R=self.rtor, r=self.rmax, name=self.name)
         return cn
+
+    def as_shape(self):
+        shape = STorus(self.name, [self.rmax, self.rtor] )
+        return shape 
+
+
 
 
 class Box(Primitive):
@@ -735,6 +777,13 @@ class PolyCone(Primitive):
     def __repr__(self):
         return self.zp
 
+    def zp_array(self):
+        a = np.zeros( [len(self.zplane), 3] )
+        for i in range(len(self.zplane)):
+            zp = self.zplane[i]
+            a[i] = [ zp.rmin, zp.rmax, zp.z ]
+        pass
+        return a
 
     def prims(self):
         """
@@ -810,6 +859,10 @@ class PolyCone(Primitive):
         #return CSG("difference", left=cn, right=inner ) if inner is not None else cn
         return cn
 
+    def as_shape(self):
+        param = self.zp_array()  
+        shape = SPolycone(self.name, param)  
+        return shape
 
     def plot(self, ax):
         self.Plot(ax, self.zplane)
@@ -1025,14 +1078,29 @@ class GDML(G):
     def find_by_prefix(self, d, prefix):
         return filter(lambda v:v.name.startswith(prefix), d.values())
 
-    def find_volumes(self, prefix="/dd/Geometry/PMT/lvPmtHemi"):
+    def find_volumes(self, prefix):
         return self.find_by_prefix(self.volumes, prefix)
 
-    def find_solids(self, prefix="pmt-hemi"):
+    def find_solids(self, prefix):
         return self.find_by_prefix(self.solids, prefix)
 
-    def find_materials(self, prefix="/dd/Materials/Acrylic"):
+    def find_materials(self, prefix):
         return self.find_by_prefix(self.materials, prefix)
+
+    def smry(self):
+        g = self
+        ns = len(g.solids.keys())
+        nv = len(g.volumes.keys()) 
+        log.info(" ns:%d nv:%d (logical volumes) " % (ns,nv))
+
+    def find_one_volume(self, prefix):
+        lvs = self.find_volumes(prefix)
+        log.info("prefix argument %s matched %d volumes : only plotting first" % (prefix, len(lvs)))
+        for i,lv in enumerate(lvs):
+            log.info(" %2d : %s" % (i,lv.name) )
+        pass 
+        return lvs[0]
+
 
     world = property(lambda self:self.volumes[self.worldvol])
 

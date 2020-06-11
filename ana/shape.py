@@ -23,6 +23,8 @@ TODO: get this to work with python3
 """
 import logging, copy 
 
+log = logging.getLogger(__name__)
+
 import numpy as np, math 
 import matplotlib.pyplot as plt
 from matplotlib.patches import Rectangle, Circle, Ellipse, PathPatch
@@ -67,6 +69,9 @@ def ellipse_closest_approach_to_point( ex, ez, _c ):
 
 
 class X(object):
+    def __init__(self, root):
+        self.root = root 
+
     def __repr__(self):
         return "\n".join( map(repr, self.constituents()))
 
@@ -187,7 +192,7 @@ class Shape(object):
     KWA = dict(fill=False)
     dtype = np.float64
 
-    PRIMITIVE = ["SEllipsoid","STubs","STorus", "SCons", "SHype", "SBox"]
+    PRIMITIVE = ["SEllipsoid","STubs","STorus", "SCons", "SHype", "SBox", "SPolycone"]
     COMPOSITE = ["SUnionSolid", "SSubtractionSolid", "SIntersectionSolid"]
 
     def __repr__(self):
@@ -242,7 +247,7 @@ class Shape(object):
         node = self
         while node is not None:
             if node.ltransform is not None:
-                print("adding ltransform ", node.ltransform)
+                log.debug("adding ltransform %s " %  node.ltransform)
                 xy += node.ltransform
             pass
             node = node.parent 
@@ -279,6 +284,8 @@ class Shape(object):
             return self.make_hype( self.xy, self.param, **self.kwa)
         elif self.shape == "SBox":
             return self.make_rect( self.xy, self.param, **self.kwa)
+        elif self.shape == "SPolycone":
+            return self.make_polycone( self.xy, self.param, **self.kwa)
         else:
             assert self.is_composite 
             pts = []
@@ -307,6 +314,7 @@ class Shape(object):
     @classmethod
     def make_circle(cls, xy , radius, **kwa ):
         return [Circle( xy,  radius=radius, **kwa  )] 
+
 
     @classmethod
     def make_torus(cls, xy, param, **kwa ):
@@ -340,6 +348,13 @@ class Shape(object):
 
     @classmethod
     def make_cons(cls, xy , param, **kwa ):
+        """
+        (-r2,z2)      (r2,z2)
+              1---------2       
+               \       /
+                0 ... 3   
+        (-r1,z1)     (r1,z1)
+        """
         r1 = param[0]
         r2 = param[1]
         hz = param[2]
@@ -352,6 +367,26 @@ class Shape(object):
         vtxs[1] = ( -r2,  z2)
         vtxs[2] = (  r2,  z2)
         vtxs[3] = (  r1,  z1)
+        return cls.make_pathpatch( xy, vtxs, **kwa )
+
+    @classmethod
+    def make_polycone(cls, xy , param, **kwa ):
+        """
+        """
+        zp = param
+        nz = len(zp)
+        assert zp.shape == (nz, 3), zp 
+        assert nz > 1 , zp
+
+        rmin = zp[:,0]
+        rmax = zp[:,1]
+        z = zp[:,2]
+
+        vtxs = np.zeros( (2*nz,2) )
+        for i in range(nz):
+            vtxs[i] = ( -rmax[i], z[i] )
+            vtxs[2*nz-i-1] = ( rmax[i], z[i] )
+        pass 
         return cls.make_pathpatch( xy, vtxs, **kwa )
 
 
@@ -394,6 +429,7 @@ class STubs(Shape):pass
 class STorus(Shape):pass
 class SCons(Shape):pass
 class SHype(Shape):pass
+class SPolycone(Shape):pass
 class SUnionSolid(Shape):pass
 class SSubtractionSolid(Shape):pass
 class SIntersectionSolid(Shape):pass

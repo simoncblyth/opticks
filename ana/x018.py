@@ -43,6 +43,7 @@ class x018(X):
         G4VSolid* c = new G4UnionSolid("PMT_20inch_inner_solid_1_20x4cb30f0", d, f, NULL, B) ; // 2
 
         G4VSolid* k = new G4Tubs("PMT_20inch_inner_solid_3_EndTube0x4cb2fc0", 0.000000, 45.010000, 57.510000, 0.000000, CLHEP::twopi) ; // 2
+                                                                         //    rmin,    rmax,      dz,        sphi,     dphi
         
         G4VSolid* b = new G4UnionSolid("PMT_20inch_inner_solid0x4cb32e0", c, k, NULL, C) ; // 1
         G4VSolid* m = new G4Tubs("Inner_Separator0x4cb3530", 0.000000, 254.000000, 92.000000, 0.000000, CLHEP::twopi) ; // 1
@@ -92,7 +93,8 @@ class x018(X):
         D = np.array( [0, 92.000000] )
         a = SIntersectionSolid("a", [b,m,D] )
 
-        self.root = a 
+        X.__init__(self, a )   # sets root
+
 
 if __name__ == '__main__':
     x = x018()

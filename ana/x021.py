@@ -63,7 +63,7 @@ class x021(X):
         C = np.array( [0.000000,-279.000500] )
         a = SUnionSolid( "a", [b, j, C] )
 
-        self.root = a 
+        X.__init__(self, a )   # sets root
 
 
 

@@ -64,7 +64,8 @@ class x020(X):
         C = np.array( [0, -279.000000] )
         a = SUnionSolid( "a", [b, j, C] )
 
-        self.root = a 
+        X.__init__(self, a )   # sets root
+
         self.prims = [c,f,h,j]   
 
 

@@ -88,7 +88,7 @@ class x019(X):
         D = np.array( [0, 92.000000] )
         a = SSubtractionSolid( "a", [b, m, D ] )
 
-        self.root = a        
+        X.__init__(self, a )   # sets root
 
 
 if __name__ == '__main__':
