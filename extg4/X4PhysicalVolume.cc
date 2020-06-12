@@ -1000,6 +1000,7 @@ unsigned X4PhysicalVolume::addBoundary(const G4VPhysicalVolume* const pv, const 
     // Why do boundaries with this material pair have surface finding problem for the old route ?
     bool problem_pair  = strcmp(omat, "UnstStainlessSteel") == 0 && strcmp(imat, "BPE") == 0 ; 
 
+    // look for a border surface defined between this and the parent volume, in either direction
     bool first_priority = true ;  
     const G4LogicalSurface* const isur_ = findSurface( pv  , pv_p , first_priority );
     const G4LogicalSurface* const osur_ = findSurface( pv_p, pv   , first_priority );  
@@ -1085,19 +1086,19 @@ unsigned X4PhysicalVolume::addBoundary(const G4VPhysicalVolume* const pv, const 
          ;
  
     unsigned boundary = 0 ; 
-    if( g_sslv == NULL && g_sslv_p == NULL  )
+    if( g_sslv == NULL && g_sslv_p == NULL  )   // no skin surface on this or parent volume, just use bordersurface if there are any
     {
         const char* osur = X4::BaseName( osur_ ); 
         const char* isur = X4::BaseName( isur_ ); 
         boundary = m_blib->addBoundary( omat, osur, isur, imat ); 
     }
-    else if( g_sslv && !g_sslv_p )
+    else if( g_sslv && !g_sslv_p )   // skin surface on this volume but not parent : set both osur and isur to this 
     {
         const char* osur = g_sslv->getName(); 
         const char* isur = osur ; 
         boundary = m_blib->addBoundary( omat, osur, isur, imat ); 
     }
-    else if( g_sslv_p && !g_sslv )
+    else if( g_sslv_p && !g_sslv )  // skin surface on parent volume but not this : set both osur and isur to this
     {
         const char* osur = g_sslv_p->getName(); 
         const char* isur = osur ; 

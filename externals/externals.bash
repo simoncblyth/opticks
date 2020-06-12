@@ -46,6 +46,7 @@ zmq-(){              . $(externals-dir)/zmq.bash               && zmq-env $* ; }
 asiozmq-(){          . $(externals-dir)/asiozmq.bash           && asiozmq-env $* ; }
 opticksdata-(){      . $(externals-dir)/opticksdata.bash       && opticksdata-env $* ; }
 opticksaux-(){       . $(externals-dir)/opticksaux.bash        && opticksaux-env $* ; }
+g4ot-(){             . $(externals-dir)/g4ot.bash              && g4ot-env $* ; }
 
 oimplicitmesher-(){  . $(externals-dir)/oimplicitmesher.bash   && oimplicitmesher-env $* ; }
 odcs-(){             . $(externals-dir)/odcs.bash              && odcs-env $* ; }

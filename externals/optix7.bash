@@ -378,8 +378,22 @@ EOU
 optix7-prefix(){ echo $OPTICKS_PREFIX/externals/OptiX_700 ; }
 optix6-prefix(){ echo $OPTICKS_PREFIX/externals/OptiX_650 ; }
 
-optix7-pdf(){ open $(optix7-prefix)/doc/OptiX_Programming_Guide_7.0.0.pdf ; }
-optix6-pdf(){ open $(optix6-prefix)/doc/OptiX_Programming_Guide_6.5.0.pdf ; }
+optix7-realprefix(){ 
+  local prefix=$OPTICKS_OPTIX_PREFIX 
+  [ -L "$prefix" ] && prefix=$(readlink $OPTICKS_OPTIX_PREFIX) 
+  echo $prefix
+} 
+
+optix7-prefix(){ echo $(dirname $(optix7-realprefix))/OptiX_700 ; }
+optix6-prefix(){ echo $(dirname $(optix7-realprefix))/OptiX_650 ; }
+
+
+optix7-pdf-(){ echo $(optix7-prefix)/doc/OptiX_Programming_Guide_7.0.0.pdf ; }
+optix6-pdf-(){ echo $(optix6-prefix)/doc/OptiX_Programming_Guide_6.5.0.pdf ; }
+
+optix7-pdf(){ open $($FUNCNAME-) ; }
+optix6-pdf(){ open $($FUNCNAME-) ; }
+
 
 optix7-icd(){ cd $(optix7-prefix)/include ; }
 optix7-cd(){ cd $(optix7-prefix)/SDK ; }

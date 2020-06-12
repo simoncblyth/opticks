@@ -168,7 +168,7 @@ class Geometry(G):
     def as_ncsg(self):
         assert 0, "Geometry.as_ncsg needs to be overridden in the subclass: %s " % self.__class__ 
 
-    def as_shape(self):
+    def as_shape(self, **kwa):
         assert 0, "Geometry.as_shape needs to be overridden in the subclass: %s " % self.__class__ 
 
     def _get_subsolids(self):
@@ -241,9 +241,9 @@ class Boolean(Geometry):
         cn.right = right 
         return cn 
 
-    def as_shape(self):
-        left = self.first.as_shape()
-        right = self.second.as_shape()
+    def as_shape(self, **kwa):
+        left = self.first.as_shape(**kwa)
+        right = self.second.as_shape(**kwa)
         transform = self.secondtransform 
 
         no_rotation = np.all(np.eye(3) == transform[:3,:3])
@@ -257,7 +257,7 @@ class Boolean(Geometry):
         assert right, "right fail as_shape for second : %r self: %r " % (self.second, self)
 
         tr = np.array( [0, xyz[2]] )
-        shape = self.shape_kls(self.name, [left, right, tr])      
+        shape = self.shape_kls(self.name, [left, right, tr], **kwa)      
         return shape   
  
 
@@ -393,17 +393,17 @@ class Tube(Primitive):
         pass
         return self.as_disc() if pick_disc else self.as_cylinder()
 
-    def as_shape(self):
+    def as_shape(self, **kwa):
         hz = self.z/2.
-        shape = STubs(self.name, [self.rmax, hz] )
+        shape = STubs(self.name, [self.rmax, hz], **kwa )
         return shape 
 
 
 class Sphere(Primitive):
     deltaphi_slab_segment_enabled = False
 
-    def as_shape(self):
-        shape = SEllipsoid(self.name, [self.rmax, self.rmax] )
+    def as_shape(self, **kwa):
+        shape = SEllipsoid(self.name, [self.rmax, self.rmax], **kwa )
         return shape 
 
     def as_ncsg(self, only_inner=False):
@@ -502,9 +502,9 @@ class Ellipsoid(Primitive):
         cn = CSG.MakeEllipsoid(axes=ax, name=self.name, zcut1=self.zcut1, zcut2=self.zcut2)
         return cn
 
-    def as_shape(self):
+    def as_shape(self, **kwa):
         assert self.ax == self.by 
-        shape = SEllipsoid(self.name, [self.ax, self.cz] )
+        shape = SEllipsoid(self.name, [self.ax, self.cz], **kwa )
         return shape 
 
 class Torus(Primitive):
@@ -513,8 +513,8 @@ class Torus(Primitive):
         cn = CSG.MakeTorus(R=self.rtor, r=self.rmax, name=self.name)
         return cn
 
-    def as_shape(self):
-        shape = STorus(self.name, [self.rmax, self.rtor] )
+    def as_shape(self, **kwa):
+        shape = STorus(self.name, [self.rmax, self.rtor], **kwa)
         return shape 
 
 
@@ -859,9 +859,9 @@ class PolyCone(Primitive):
         #return CSG("difference", left=cn, right=inner ) if inner is not None else cn
         return cn
 
-    def as_shape(self):
+    def as_shape(self, **kwa):
         param = self.zp_array()  
-        shape = SPolycone(self.name, param)  
+        shape = SPolycone(self.name, param, **kwa)  
         return shape
 
     def plot(self, ax):
@@ -1074,6 +1074,48 @@ class GDML(G):
         gg.init()
         return gg 
 
+    def get_traversed_volumes(self, lv_base, maxdepth=-1):
+        """
+        :param lv_base: base logical volume
+        :return tvol: odict of logical volumes within lv_base, obtained by recursion and keywd by index
+        """
+        tvol = odict()
+        def traverse_r(lv0, depth):
+
+            pvs = lv0.physvol
+            indent = "   " * depth 
+            print("[%2d] %s %4d %s " % (depth, indent,len(pvs),lv0.name))
+
+            local_index = len(tvol)
+            tvol[local_index] = lv0
+            lv0.local_index = local_index 
+            lv0.local_depth = depth 
+
+            if depth < maxdepth or maxdepth == -1: 
+                for pv in pvs:
+                    lv = pv.volume
+                    traverse_r(lv, depth+1)
+                pass
+            pass
+        pass
+        traverse_r(lv_base, 0)
+        self.label_traversed_volumes(tvol)
+        return tvol   
+
+    def label_traversed_volumes(self, tvol ):
+        """
+        Assign shortened local_name to the lv
+        by removing common prefix and pointer refs
+        """
+        names = map(lambda _:_.name, tvol.values())
+        unref_ = lambda _:_[:_.find("0x")] if _.find("0x") > -1 else _
+
+        prefix = os.path.commonprefix(names)
+        for lv in tvol.values():
+            lv.local_name = unref_( lv.name[len(prefix):] )
+            lv.local_title = "%d : %s : %s" % ( lv.local_index, lv.local_name, unref_(lv.material.name) ) 
+            lv.local_prefix = prefix 
+        pass
 
     def find_by_prefix(self, d, prefix):
         return filter(lambda v:v.name.startswith(prefix), d.values())
