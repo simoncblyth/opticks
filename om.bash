@@ -555,6 +555,25 @@ om-cmake()
     return $rc
 }
 
+om-cmake-dump(){ local sdir=${1:-sdir} ; cat << EOD
+
+    cmake $sdir \\
+       -G "$(om-cmake-generator)" \\
+       -DCMAKE_BUILD_TYPE=$(opticks-buildtype) \\
+       -DOPTICKS_PREFIX=$(om-prefix) \\
+       -DCMAKE_INSTALL_PREFIX=$(om-prefix) \\
+       -DCMAKE_MODULE_PATH=$(om-home)/cmake/Modules 
+
+    om-cmake-generator : $(om-cmake-generator)
+    opticks-buildtype  : $(opticks-buildtype)
+    om-prefix          : $(om-prefix)
+    om-home            : $(om-home)
+
+EOD
+}
+
+
+
 om-cmake-info(){ cat << EOI
 
 $FUNCNAME

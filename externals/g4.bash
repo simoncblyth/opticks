@@ -283,7 +283,6 @@ OPTICKS_GEANT4_PREFIX
 EON
 }
 
-g4-prefix(){ echo ${OPTICKS_GEANT4_PREFIX:-$(opticks-prefix)_externals/g4}  ; }
 
 g4-libsuffix(){ 
     case $(uname) in 
@@ -331,38 +330,21 @@ g4-info(){ cat << EOI
 EOI
 }
 
+g4-ver(){    echo ${OPTICKS_GEANT4_VER:-1042} ; }
+g4-prefix(){ echo ${OPTICKS_GEANT4_PREFIX:-$(opticks-prefix)_externals/g4_$(g4-ver)}  ; }
 
 g4-dir(){   echo $(g4-prefix).build/$(g4-name) ; }  # exploded distribution dir
 
-
-g4-nom(){ echo ${OPTICKS_GEANT4_NOM:-geant4_10_04_p02} ; }
-
-g4-title()
-{
-   case $(g4-nom) in 
-      Geant4-10.2.1)    echo Geant4 10.2 first released 4 December 2015 \(patch-03, released 27 January 2017\) ;;
-      geant4_10_04_p01) echo Geant4 10.4 patch-01, released 28 February 2018 ;; 
-      geant4_10_04_p02) echo Geant4 10.4 patch-02, released 25 May 2018 ;; 
-   esac
+g4-nom(){ 
+  case $(g4-ver) in 
+     1021) echo Geant4-10.2.1 ;;
+     1041) echo geant4_10_04_p01 ;; 
+     1042) echo geant4_10_04_p02 ;;
+     1062) echo geant4.10.06.p02 ;;
+  esac
 }
 
-g4-version-hh() { echo $(g4-dir)/source/global/management/include/G4Version.hh ; }
-g4-version-number() { perl -n -e 'm,#define G4VERSION_NUMBER\s*(\d*), && print $1' $(g4-version-hh) ; } 
-
-
-g4--1062(){ OPTICKS_GEANT4_NOM=geant4.10.06.p02 g4-- ; }
-
-
 g4-nom-notes(){ cat << EON
-
-::
-
-  geant4-9.5.0      # ancient version
-  Geant4-10.2.1     # long time default
-  Geant4-10.2.2     # used on SDU X node 
-  geant4_10_04_p01  # never proceeded with this one
-  geant4_10_04_p02  # attempt on E  
-  geant4.10.05.b01  # beta, not yet tried
 
 The nom identifier needs to match the name of the folder created by exploding the zip or tarball, 
 unfortunately this is not simply connected with the basename of the url and also Geant4 continues to 
@@ -384,6 +366,24 @@ g4-url(){
 
    esac
 }
+
+g4-title()
+{
+   case $(g4-ver) in 
+      1021) echo Geant4 10.2 first released 4 December 2015 \(patch-03, released 27 January 2017\) ;;
+      1041) echo Geant4 10.4 patch-01, released 28 February 2018 ;; 
+      1042) echo Geant4 10.4 patch-02, released 25 May 2018 ;; 
+   esac
+}
+
+g4-version-hh() { echo $(g4-dir)/source/global/management/include/G4Version.hh ; }
+g4-version-number() { perl -n -e 'm,#define G4VERSION_NUMBER\s*(\d*), && print $1' $(g4-version-hh) ; } 
+
+
+g4--1062(){ OPTICKS_GEANT4_VER=1062 g4-- ; }
+g4--1042(){ OPTICKS_GEANT4_VER=1042 g4-- ; }
+
+
 
 g4-tag(){   echo g4 ; }
 g4-dist(){ echo $(dirname $(g4-dir))/$(basename $(g4-url)) ; }

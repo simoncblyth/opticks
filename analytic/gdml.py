@@ -108,15 +108,13 @@ class G(object):
         wrap_ = lambda e:self.g.kls.get(e.tag,G)(e,self.g)
         #fa = map(wrap_, self.elem.findall(expr) )
         fa = map(wrap_, self.elem.xpath(expr) )
-
-
-
         kln = self.__class__.__name__
         name = self.name 
         log.debug("findall_ from %s:%s expr:%s returned %s " % (kln, name, expr, len(fa)))
         return fa 
 
     def findone_(self, expr):
+        """simple dumb lxml find""" 
         all_ = self.findall_(expr)
         assert len(all_) == 1
         return all_[0]
@@ -188,6 +186,28 @@ class Geometry(G):
     subsolidranges = property(lambda self:list(find_ranges(sorted(self.subsolids))))
     subsolidcount = property(lambda self:len(self.subsolids))
 
+    def find_solids(self, klsname):
+        """
+        GDML boolean aware find 
+
+        :param klsname: eg Union, Ellipsoid
+        :return ss: list of solids 
+        """
+        ss = []
+        def find_solids_r(solid):
+            if solid.__class__.__name__ == klsname:
+                ss.append(solid)
+            pass
+            if solid.is_boolean:
+                find_solids_r(solid.first)
+                find_solids_r(solid.second)
+            pass
+        pass
+        find_solids_r(self)
+        return ss
+ 
+ 
+
 
 
 class Boolean(Geometry):
@@ -242,6 +262,9 @@ class Boolean(Geometry):
         return cn 
 
     def as_shape(self, **kwa):
+        """
+        Only looking at single level of transform 
+        """
         left = self.first.as_shape(**kwa)
         right = self.second.as_shape(**kwa)
         transform = self.secondtransform 

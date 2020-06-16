@@ -241,13 +241,28 @@ class Shape(object):
 
     def _get_xy(self):
         """
-        Assumes only translations, which are just added 
+        Assumes only translations, adds the node.ltransform obtained by following 
+        parent links up the tree of shapes. 
+
+
+
+                           a                                            Intersection
+                                                                       /            \
+                      b             m(D)                          Union             m:Tubs
+                                                                  /    \  
+                c          k(C)                             Union       Tubs
+                                                           /     \
+            d     f(B)                            Ellipsoid   Subtraction    
+                                                              /          \ 
+                g(B)  i(B+A)                                Tubs         Torus
+
+
         """
         xy = np.array([0,0], dtype=self.dtype )
         node = self
         while node is not None:
             if node.ltransform is not None:
-                log.debug("adding ltransform %s " %  node.ltransform)
+                log.info("adding ltransform %s " %  node.ltransform)
                 xy += node.ltransform
             pass
             node = node.parent 
@@ -272,6 +287,12 @@ class Shape(object):
         return filter( lambda ct:ct.shape == shape, cts ) 
 
     def patches(self):
+        """
+        Positioning is relying on self.xy of the primitives
+        with nothing being passed into composites.
+
+        For composites self.param[2] is the local right transform
+        """
         if self.shape == "SEllipsoid":
             return self.make_ellipse( self.xy, self.param, **self.kwa )
         elif self.shape == "STubs":
@@ -336,9 +357,9 @@ class Shape(object):
         
         for i, vtx in enumerate(vtxs):
             act = Path.MOVETO if i == 0 else Path.LINETO
-            path_data.append( (act, (vtx[0], vtx[1])) )
+            path_data.append( (act, (vtx[0]+xy[0], vtx[1]+xy[1])) )
         pass
-        path_data.append( (Path.CLOSEPOLY, (vtxs[0,0], vtxs[0,1])) )
+        path_data.append( (Path.CLOSEPOLY, (vtxs[0,0]+xy[0], vtxs[0,1]+xy[1])) )
         pass
 
         codes, verts = zip(*path_data)
@@ -387,6 +408,7 @@ class Shape(object):
             vtxs[i] = ( -rmax[i], z[i] )
             vtxs[2*nz-i-1] = ( rmax[i], z[i] )
         pass 
+        log.info(" xy : %r " %  xy )
         return cls.make_pathpatch( xy, vtxs, **kwa )
 
 

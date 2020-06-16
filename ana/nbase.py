@@ -65,6 +65,8 @@ def find_ranges(i):
     """  
     :param i: sorted list of integers
 
+    E.g. given the set {0, 1, 2, 3, 4, 7, 8, 9, 11} I want to get { {0,4}, {7,9}, {11,11} }.
+
     http://stackoverflow.com/questions/4628333/converting-a-list-of-integers-into-range-in-python
     """
     func = lambda x,y:y-x
@@ -72,7 +74,7 @@ def find_ranges(i):
     for a, b in itertools.groupby(enumerate(i), func):
         b = list(b)
         yield b[0][1], b[-1][1]
-
+    pass
 
 def count_unique_truncating(vals):
     """  

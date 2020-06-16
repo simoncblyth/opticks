@@ -1,13 +1,13 @@
-g4ot-source(){   echo $BASH_SOURCE ; }
-g4ot-vi(){       vi $BASH_SOURCE ; }
-g4ot-env(){      olocal- ; }
-g4ot-usage(){ cat << \EOU
+g4oktest-source(){   echo $BASH_SOURCE ; }
+g4oktest-vi(){       vi $BASH_SOURCE ; }
+g4oktest-env(){      olocal- ; }
+g4oktest-usage(){ cat << \EOU
 
 G4OpticksTest : Fork of Hans Repo
 ===================================
 
-Add upstream remote and fetch from it
----------------------------------------
+git remote add upstream, git fetch upstream
+---------------------------------------------
 
 * https://help.github.com/en/github/collaborating-with-issues-and-pull-requests/syncing-a-fork
 
@@ -36,14 +36,16 @@ Add upstream remote and fetch from it
     epsilon:G4OpticksTest blyth$ 
 
 
-Merge from upstream
---------------------
+git merge upstream/master
+--------------------------
 
 ::
 
     epsilon:G4OpticksTest blyth$ git checkout master
     Already on 'master'
     Your branch is up-to-date with 'origin/master'.
+
+
     epsilon:G4OpticksTest blyth$ git merge upstream/master
     Updating b55775f..c3f4aa3
     Fast-forward
@@ -69,31 +71,28 @@ Merge from upstream
     epsilon:G4OpticksTest blyth$ 
 
 
-
-
-
 EOU
 }
 
 
-g4ot-dir(){ echo $HOME/G4OpticksTest ; } 
-g4ot-get()
+g4oktest-dir(){ echo $HOME/G4OpticksTest ; } 
+g4oktest-get()
 {
-    cd $(dirname $(g4ot-dir))
+    cd $(dirname $(g4oktest-dir))
     [ ! -d "G4OpticksTest" ] && git clone git@github.com:simoncblyth/G4OpticksTest.git
 }
-g4ot-cd(){ cd $(g4ot-dir) ; } 
-g4ot-c(){  cd $(g4ot-dir) ; } 
+g4oktest-cd(){ cd $(g4oktest-dir) ; } 
+g4oktest-c(){  cd $(g4oktest-dir) ; } 
 
-g4ot-go()
+g4oktest-om()
 {
-    g4ot-cd
+    g4oktest-cd
     ./om.sh 
 }
 
-g4ot--(){
-    g4ot-get
-    g4ot-go
+g4oktest--(){
+    g4oktest-get
+    g4oktest-om
 }
 
 
