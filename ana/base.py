@@ -360,16 +360,16 @@ class PhotonMaskFlags(EnumFlags):
     Former positions of Abbrev : $OPTICKS_INSTALL_CACHE/OKC/OpticksFlagsAbbrevMeta.json
     """
     def __init__(self):
-        EnumFlags.__init__(self, path="$OPTICKS_INSTALL_PREFIX/include/OpticksCore/OpticksPhoton.h", mask2int=False) 
-        self.abbrev = Abbrev("$OPTICKS_INSTALL_PREFIX/include/OpticksCore/OpticksFlags_Abbrev.json")
+        EnumFlags.__init__(self, path="$OPTICKS_PREFIX/include/OpticksCore/OpticksPhoton.h", mask2int=False) 
+        self.abbrev = Abbrev("$OPTICKS_PREFIX/include/OpticksCore/OpticksFlags_Abbrev.json")
 
 
 class PhotonCodeFlags(EnumFlags):
     """
     """
     def __init__(self):
-        EnumFlags.__init__(self, path="$OPTICKS_INSTALL_PREFIX/include/OpticksCore/OpticksPhoton.h", mask2int=True) 
-        self.abbrev = Abbrev("$OPTICKS_INSTALL_PREFIX/include/OpticksCore/OpticksFlags_Abbrev.json")
+        EnumFlags.__init__(self, path="$OPTICKS_PREFIX/include/OpticksCore/OpticksPhoton.h", mask2int=True) 
+        self.abbrev = Abbrev("$OPTICKS_PREFIX/include/OpticksCore/OpticksFlags_Abbrev.json")
 
 
 

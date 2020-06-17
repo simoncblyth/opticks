@@ -507,10 +507,148 @@ arrays are easily examined from ipython using NumPy
     array([[      -3,        0, 67305985,       65],
            [      -3,        0, 67305985,       65],
            [      -3,        0, 67305985,       65],
-           ...
+           [      -3,        0, 67305985,       65],
+           [      -3,        0, 67305985,       65],
+           [      -3,        0, 67305985,       65],
+           [      -3,        0, 67305985,       65],
+           [      -3,        0, 67305985,       65],
+           [      -3,        0, 67305985,       65],
+           [      -3,        0, 67305985,       65],
+           [      -3,        0, 67305985,       65],
+           [      -3,        0, 67305985,       65],
+           [      -3,        0, 67305985,       65],
+           [      -3,        0, 67305985,       65],
+           [      -3,        0, 67305985,       65],
+           [      -3,        0, 67305985,       65],
+           [      -3,        0, 67305985,       65],
+           [      -3,        0, 67305985,       65],
+           [      -3,        0, 67305985,       65],
+           [      -3,        0, 67305985,       65],
+           [      -3,        0, 67305985,       65],
+           [      -3,        0, 67305985,       65],
+           [      -3,        0, 67305985,       65],
+           [      -3,        0, 67305985,       65],
+           [      -3,        0, 67305985,       65],
+           [      -3,        0, 67305985,       65],
+           [      -3,        0, 67305985,       65],
+           [      -3,        0, 67305985,       65],
+           [      -3,        0, 67305985,       65],
+           [      -3,        0, 67305985,       65],
+           [      -3,        0, 67305985,       65],
+           [      -3,        0, 67305985,       65],
+           [      -3,        0, 67305985,       65],
+           [      -3,        0, 67305985,     1089],
+           [      -3,        0, 67305985,       65],
+           [      -3,        0, 67305985,       65],
+           [      -3,        0, 67305985,       65],
+           [      -3,        0, 67305985,     1089],
+           [      -3,        0, 67305985,       65],
+           [      -3,        0, 67305985,       65],
+           [      -3,        0, 67305985,       65],
+           [      -3,        0, 67305985,       65],
+           [      -3,        0, 67305985,       65],
+           [      -3,        0, 67305985,       65]], dtype=int32)
 
-    ## There is also bit packing being done, so to make sense of the flags requires some code, 
-    ## see ana/evt.py to learn more.
+           ## boundary, sensor idx, debug,  history mask  
+
+
+    In [12]: "%x" % 67305985
+    Out[12]: '4030201'     # view in hex 
+
+
+
+Meanings of the photon flags
+------------------------------
+
+p.flags.i.x 
+    signed integer boundary index of the last intersection boundary 
+    
+p.flags.u.y
+    sensor index, intended to hold something like a PMT identifier (TODO: revive this)
+
+p.flags.u.z
+    debugging bit field, currently 3 of the 4 bytes hold placeholder values
+
+p.flags.u.w
+    photon history mask constructed from bitwise OR of state flags for every step of the propagation 
+
+
+
+p.flags.u.z : 4 debug bytes
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The entry is used for debugging, currently holding an initial quadrant position code 
+and 3 placeholder bytes.
+
+optixrap/cu/generate.cu::
+
+    491     // initial quadrant 
+    492     uifchar4 c4 ;
+    493     c4.uchar_.x =
+    494                   (  p.position.x > 0.f ? QX : 0u )
+    495                    |
+    496                   (  p.position.y > 0.f ? QY : 0u )
+    497                    |
+    498                   (  p.position.z > 0.f ? QZ : 0u )
+    499                   ;
+    500 
+    501     c4.uchar_.y = 2u ;   // 3-bytes up for grabs
+    502     c4.uchar_.z = 3u ;
+    503     c4.uchar_.w = 4u ;
+    504 
+    505     p.flags.f.z = c4.f ;
+    506 
+    507 
+
+
+p.flags.u.w : photon history mask  
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Opticks has both C++ and python machinery to interpret the history mask and analyse events
+
+::
+
+    In [4]: from opticks.ana.hismask import HisMask 
+
+    In [5]: hm = HisMask()
+    [2020-06-17 15:06:41,227] p70385 {__init__            :enum.py   :37} INFO     - parsing $OPTICKS_PREFIX/include/OpticksCore/OpticksPhoton.h 
+    [2020-06-17 15:06:41,227] p70385 {__init__            :enum.py   :39} INFO     - path expands to /usr/local/opticks/include/OpticksCore/OpticksPhoton.h 
+
+    In [6]: hm.label(65)
+    Out[6]: 'SD|CK'
+
+    In [7]: hm.label(1089)
+    Out[7]: 'BR|SD|CK'
+
+    In [8]: hm.abbrev.abbr2name
+    Out[8]: 
+    {'/usr/local/opticks/include/OpticksCore/OpticksFlags_Abbrev.json': 'jsonLoadPath',
+     'AB': 'BULK_ABSORB',
+     'BR': 'BOUNDARY_REFLECT',
+     'BT': 'BOUNDARY_TRANSMIT',
+     'CK': 'CERENKOV',
+     'DR': 'SURFACE_DREFLECT',
+     'FD': 'FABRICATED',
+     'GN': 'G4GUN',
+     'GS': 'GENSTEPSOURCE',
+     'MI': 'MISS',
+     'MY': 'MACHINERY',
+     'NA': 'NAN_ABORT',
+     'NL': 'NATURAL',
+     'PS': 'PRIMARYSOURCE',
+     'RE': 'BULK_REEMIT',
+     'SA': 'SURFACE_ABSORB',
+     'SC': 'BULK_SCATTER',
+     'SD': 'SURFACE_DETECT',
+     'SI': 'SCINTILLATION',
+     'SO': 'EMITSOURCE',
+     'SR': 'SURFACE_SREFLECT',
+     'TO': 'TORCH',
+     'XX': 'BAD_FLAG'}
+
+
+For more detail on the content of Opticks Events and the meanings of the 
+flags see *docs/opticks_event_data.rst*
 
 
 

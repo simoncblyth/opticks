@@ -15,11 +15,15 @@ show how material/surface properties get translated into
 GPU textures and how those are accessed GPU side.
 
 
+
+GPU texture preparation 
+--------------------------
+
+
 ggeo/GScintillatorLib 
      
      scintillator lib is populated by GGeo::prepareScintillatorLib  (invoked by GGeo::prepare)
-     from raw materials with the 3 properties :
-          SLOWCOMPONENT,FASTCOMPONENT,REEMISSIONPROB
+     from raw materials with the 3 properties : SLOWCOMPONENT,FASTCOMPONENT,REEMISSIONPROB
 
      For a material to be regarded as a scintillator it must have all 
      these three properties. 
@@ -106,10 +110,19 @@ optixrap/OBndLib
 
     converts GBndLib into the GPU boundary texture and uploads its content to GPU 
 
+
+
+
+
+
+
+
+GPU texture usage
+--------------------------
+
+
 optixrap/cu/boundary_lookup.h
       static __device__ __inline__ float4 boundary_lookup( float nm, unsigned int line, unsigned int k)
-
-
  
 optixrap/cu/state.h
 

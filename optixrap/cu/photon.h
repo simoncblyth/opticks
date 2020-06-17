@@ -49,8 +49,13 @@ struct Photon
    float3 polarization ;
    float  wavelength ; 
 
-   quad flags ;     // x:boundary  y:photon_id   z:m1   w:history 
-                    //             [debug-only]
+   quad flags ;  
+
+   // flags.i.x : 1-based signed boundary index, 0 means no intersect 
+   // flags.u.y : sensor index (TODO: revive)   
+   // flags.u.z : 4 debug bytes
+   // flags.u.w : history mask (bitwise OR of all step flags)
+                   
 };
 
 

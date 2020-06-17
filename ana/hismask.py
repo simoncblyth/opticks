@@ -36,8 +36,6 @@ from opticks.ana.nload import A
 
 class HisMask(MaskType):
     """ 
-    Formerly the abbrev came from $OPTICKS_DATA_DIR/resource/GFlags/abbrev.json
-    now from the muck more appropriate installcache/OKC
     """ 
     def __init__(self):
         log.debug("HisMask.__init__")

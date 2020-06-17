@@ -48,25 +48,28 @@ NPY<float>* GTree::makeInstanceTransformsBuffer(const std::vector<GNode*>& place
 }
 
 
+/**
+GTree::makeAnalyticInstanceIdentityBuffer
+-------------------------------------------
+
+Collects identity information for each of the repeated nodes (or subtrees) aka "instances"
+NB the differences between analytic and triangulated geometry.
+    
+analytic
+   identity buffer has numInstances items (ie one entry for each repeated instance)
+    
+triangulated:  
+   identity buffer has numInstances*numVolumes items (ie one entry for every volume of every instance), 
+   downstream this gets repeated further to every triangle
+ 
+**/
+
 NPY<unsigned int>* GTree::makeAnalyticInstanceIdentityBuffer(const std::vector<GNode*>& placements) 
 {
-    // collect identity information for each of the repeated nodes (or subtrees)
-    // eg PMT sensor index
-
     unsigned int numInstances = placements.size() ;
 
     NPY<unsigned int>* buf = NPY<unsigned int>::make(numInstances, 1, 4); // huh non-analytic uses (-1,4)
     buf->zero(); 
-
-    // NB the differences:
-    //
-    //    analytic
-    //         identity buffer has numInstances items (ie one entry for each repeated instance)
-    //
-    //    triangulated:  
-    //         identity buffer has numInstances*numVolumes items (ie one entry for every volume of every instance)
-    //         ... downstream this gets repeated further to every triangle
-    //
 
     std::vector<GNode*>& progeny0 = placements[0]->getProgeny();
     unsigned numProgeny0 = placements[0]->getLastProgenyCount();

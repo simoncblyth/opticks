@@ -50,6 +50,14 @@ SensitiveDetector::SensitiveDetector(const char* name)
     SDMan->AddNewDetector(this); 
 }
 
+/**
+SensitiveDetector::ProcessHits
+-------------------------------
+
+Collects Geant4 hits into Opticks collection.
+
+**/
+
 G4bool SensitiveDetector::ProcessHits(G4Step* step,G4TouchableHistory* )
 {
     G4Track* track = step->GetTrack();
@@ -97,8 +105,6 @@ G4bool SensitiveDetector::ProcessHits(G4Step* step,G4TouchableHistory* )
         );
     }
 #endif
-
-
  
     OpHit* hit = new OpHit ; 
     hit->ene = ene ;  
@@ -114,27 +120,27 @@ G4bool SensitiveDetector::ProcessHits(G4Step* step,G4TouchableHistory* )
 }
 
 
-
 /**
-#0  0x00007fffe00b5277 in raise () from /usr/lib64/libc.so.6
-#1  0x00007fffe00b6968 in abort () from /usr/lib64/libc.so.6
-#2  0x00007fffe00ae096 in __assert_fail_base () from /usr/lib64/libc.so.6
-#3  0x00007fffe00ae142 in __assert_fail () from /usr/lib64/libc.so.6
-#4  0x000000000041ac0b in SensitiveDetector::Initialize (this=0x8b8e80, HCE=0x1f08980) at /home/blyth/opticks/examples/Geant4/CerenkovMinimal/SensitiveDetector.cc:111
-#5  0x00007ffff0b8f2d4 in G4SDStructure::Initialize (this=0x8ba890, HCE=0x1f08980) at /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/digits_hits/detector/src/G4SDStructure.cc:201
-#6  0x00007ffff0b8d6ba in G4SDManager::PrepareNewEvent (this=0x8ba830) at /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/digits_hits/detector/src/G4SDManager.cc:112
-#7  0x00007ffff396aae6 in G4EventManager::DoProcessing (this=0x8791b0, anEvent=0x1ecd1c0) at /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/event/src/G4EventManager.cc:147
-#8  0x00007ffff396b572 in G4EventManager::ProcessOneEvent (this=0x8791b0, anEvent=0x1ecd1c0) at /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/event/src/G4EventManager.cc:338
-#9  0x00007ffff3c6d665 in G4RunManager::ProcessOneEvent (this=0x6fe380, i_event=0) at /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/run/src/G4RunManager.cc:399
-#10 0x00007ffff3c6d4d7 in G4RunManager::DoEventLoop (this=0x6fe380, n_event=1, macroFile=0x0, n_select=-1) at /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/run/src/G4RunManager.cc:367
-#11 0x00007ffff3c6cd2d in G4RunManager::BeamOn (this=0x6fe380, n_event=1, macroFile=0x0, n_select=-1) at /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/run/src/G4RunManager.cc:273
-#12 0x000000000041a420 in G4::beamOn (this=0x7fffffffd310, nev=1) at /home/blyth/opticks/examples/Geant4/CerenkovMinimal/G4.cc:62
-#13 0x000000000041a2dd in G4::G4 (this=0x7fffffffd310, nev=1) at /home/blyth/opticks/examples/Geant4/CerenkovMinimal/G4.cc:50
-#14 0x00000000004097fe in main (argc=1, argv=0x7fffffffd488) at /home/blyth/opticks/examples/Geant4/CerenkovMinimal/CerenkovMinimal.cc:7
-(gdb) 
+SensitiveDetector::Initialize
+------------------------------
+
+* two example hit collections are instanciated and added to G4HCofThisEvent* HCE 
+
+Invoked at event level, by::
+
+    G4SDStructure::Initialize
+    G4SDManager::PrepareNewEvent
+    G4EventManager::DoProcessing
+    G4EventManager::ProcessOneEvent
+    G4RunManager::ProcessOneEvent
+    G4RunManager::DoEventLoop
+    G4RunManager::BeamOn
+    G4::beamOn
+
+
 **/
 
-void SensitiveDetector::Initialize(G4HCofThisEvent* HCE)   // invoked by G4EventManager::ProcessOneEvent/G4EventManager::DoProcessing/G4SDManager::PrepareNewEvent/G4SDStructure::Initialize
+void SensitiveDetector::Initialize(G4HCofThisEvent* HCE)   
 {
     G4cout
         << "SensitiveDetector::Initialize"
@@ -167,26 +173,22 @@ void SensitiveDetector::Initialize(G4HCofThisEvent* HCE)   // invoked by G4Event
 
 
 /**
-(gdb) bt
-#0  0x00007fffe00b5277 in raise () from /usr/lib64/libc.so.6
-#1  0x00007fffe00b6968 in abort () from /usr/lib64/libc.so.6
-#2  0x00007fffe00ae096 in __assert_fail_base () from /usr/lib64/libc.so.6
-#3  0x00007fffe00ae142 in __assert_fail () from /usr/lib64/libc.so.6
-#4  0x000000000041b1a3 in SensitiveDetector::EndOfEvent (this=0x8bae80, HCE=0x1f0a560) at /home/blyth/opticks/examples/Geant4/CerenkovMinimal/SensitiveDetector.cc:162
-#5  0x00007ffff0b8f3ec in G4SDStructure::Terminate (this=0x8bc890, HCE=0x1f0a560) at /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/digits_hits/detector/src/G4SDStructure.cc:211
-#6  0x00007ffff0b8d706 in G4SDManager::TerminateCurrentEvent (this=0x8bc830, HCE=0x1f0a560) at /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/digits_hits/detector/src/G4SDManager.cc:118
-#7  0x00007ffff396b153 in G4EventManager::DoProcessing (this=0x87b1b0, anEvent=0x1ec9d90) at /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/event/src/G4EventManager.cc:263
-#8  0x00007ffff396b572 in G4EventManager::ProcessOneEvent (this=0x87b1b0, anEvent=0x1ec9d90) at /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/event/src/G4EventManager.cc:338
-#9  0x00007ffff3c6d665 in G4RunManager::ProcessOneEvent (this=0x700380, i_event=0) at /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/run/src/G4RunManager.cc:399
-#10 0x00007ffff3c6d4d7 in G4RunManager::DoEventLoop (this=0x700380, n_event=1, macroFile=0x0, n_select=-1) at /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/run/src/G4RunManager.cc:367
-#11 0x00007ffff3c6cd2d in G4RunManager::BeamOn (this=0x700380, n_event=1, macroFile=0x0, n_select=-1) at /home/blyth/local/opticks/externals/g4/geant4.10.04.p02/source/run/src/G4RunManager.cc:273
-#12 0x000000000041a5e0 in G4::beamOn (this=0x7fffffffd310, nev=1) at /home/blyth/opticks/examples/Geant4/CerenkovMinimal/G4.cc:62
-#13 0x000000000041a49d in G4::G4 (this=0x7fffffffd310, nev=1) at /home/blyth/opticks/examples/Geant4/CerenkovMinimal/G4.cc:50
-#14 0x00000000004099be in main (argc=1, argv=0x7fffffffd488) at /home/blyth/opticks/examples/Geant4/CerenkovMinimal/CerenkovMinimal.cc:7
-(gdb) 
+SensitiveDetector::EndOfEvent
+-------------------------------
+
+Invoked at event level by::
+
+    G4SDStructure::Terminate
+    G4SDManager::TerminateCurrentEvent
+    G4EventManager::DoProcessing 
+    G4EventManager::ProcessOneEvent
+    G4RunManager::ProcessOneEvent
+    G4RunManager::DoEventLoop
+    G4RunManager::BeamOn
+
 **/
 
-void SensitiveDetector::EndOfEvent(G4HCofThisEvent* HCE) // invoked by G4EventManager::ProcessOneEvent/G4EventManager::DoProcessing/G4SDManager::TerminateCurrentEvent/G4SDStructure::Terminate
+void SensitiveDetector::EndOfEvent(G4HCofThisEvent* HCE) 
 {
     G4cout
         << "SensitiveDetector::EndOfEvent"
@@ -199,11 +201,14 @@ void SensitiveDetector::EndOfEvent(G4HCofThisEvent* HCE) // invoked by G4EventMa
         ; 
 }
 
+/**
+SensitiveDetector::DumpHitCollections
+--------------------------------------
 
+**/
 
 void SensitiveDetector::DumpHitCollections(G4HCofThisEvent* HCE) // static
 {
-
     G4SDManager* SDMan = G4SDManager::GetSDMpointerIfExist() ;
     assert( SDMan ) ;  
 
@@ -228,17 +233,19 @@ void SensitiveDetector::DumpHitCollections(G4HCofThisEvent* HCE) // static
     }
 }
 
+/**
+SensitiveDetector::GetHitCollection
+-------------------------------------
+
+Static method giving access to hit collections from outside 
+the normal ProceesHit machinery, eg from EventAction 
+
+Hmm ... could just accept arrays of Opticks Hits here ?
+
+**/
 
 OpHitCollection* SensitiveDetector::GetHitCollection( G4HCofThisEvent* HCE, const char* query ) // static
 {
-    /**
-       This a static method enabling access to hit collections from outside 
-       the normal ProceesHit machinery, eg from EventAction 
-
-       Hmm ... could just accept arrays of Opticks Hits here  
-
-    **/
-
     G4SDManager* SDMan = G4SDManager::GetSDMpointerIfExist() ;
     assert( SDMan ) ;  
     G4HCtable* tab = SDMan->GetHCtable();
@@ -247,5 +254,4 @@ OpHitCollection* SensitiveDetector::GetHitCollection( G4HCofThisEvent* HCE, cons
     assert(hc); 
     return hc ;  
 } 
-
 
