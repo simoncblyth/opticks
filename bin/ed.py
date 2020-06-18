@@ -4,20 +4,23 @@ ed.py : content insertion editor
 ==================================
 
 Inserts the contents of multiple files into one at positions
-located by strings at the starts of the lines before which 
-the insertions are to be done.
+located by strings at the starts of the lines before or after 
+which the insertions are to be done.
 
 ::
 
    ./ed.py /tmp/tt/.bash_profile \
-           -b "P()"   \
+           -l "before:P()"   \
            -i /tmp/tt/p  \  
-           -b "Q()" \
+           -l "after:Q()" \
            -i /tmp/tt/q  \
            -o /tmp/tt/.bash_profile_edited  
 
+   ./ed.py /tmp/tt/.bash_profile -l "before:P()" -i /tmp/tt/p -l "after:Q()" -i /tmp/tt/q -o /tmp/tt/.bash_profile_edited 
+
 * positional argument is the src file to be edited
-* the number of "-b,--before-line" options must match the number of "-i,--insert-path" options
+* number of "-l,--line" options must match the number of "-i,--insert-path" options
+* linespec argument to -l must start with "before:" or "after:" followed by the linestart to match
 * when -o,--outpath option is provided the edited file is written there
 
 """
@@ -49,24 +52,29 @@ class Path(object):
    def __repr__(self):
        return "Ed %s : %d lines " % (self.path, len(self.lines))
 
-   def find_linepos_starting(self, linestart):
+   def find_all_linepos(self, linespec):
+       before = linespec.startswith("before:")
+       after = linespec.startswith("after:")
+       assert before ^ after, (before, after)
+       linestart = linespec[len("before:"):] if before else linespec[len("after:"):]
+
        pp = []
        for i,l in enumerate(self.lines):
            if l.startswith(linestart):
-               pp.append(i)
+               pp.append(i if before else i+1)
            pass 
        return pp
 
-   def find_one_linepos_starting(self, linestart ):
-       pp = self.find_linepos_starting(linestart)
+   def find_one_linepos(self, linespec ):
+       pp = self.find_all_linepos(linespec)
        pos = -1
        if len(pp) == 0:
-          log.info("line starting [%s] not found in %d lines " % (linestart, len(self.lines))) 
+          log.info("linespec [%s] not found in %d lines " % (linespec, len(self.lines))) 
        elif len(pp) > 1:
-          log.info("line starting [%s] matches multiple positions : %s in the %d lines " % (linestart, len(pp), len(self.lines))) 
+          log.info("linespec [%s] matches multiple positions : %s in the %d lines " % (linespec, len(pp), len(self.lines))) 
        elif len(pp) == 1:
           pos = pp[0]
-          log.info("line starting [%s] matches once at position : %s in the %d lines " % (linestart, pos, len(self.lines))) 
+          log.info("linespec [%s] matches once at position : %s in the %d lines " % (linespec, pos, len(self.lines))) 
        pass
        return pos
 
@@ -78,7 +86,7 @@ class Ed(object):
         parser = argparse.ArgumentParser(doc)
         parser.add_argument( "path", nargs="?", default="~/.bash_profile", help="path to file to be edited" ) 
         parser.add_argument( "-o", "--outpath", default=None, help="path to write the edited file" ) 
-        parser.add_argument( "-b", "--before-line", action="append", default=[], help="precise start of the line prior to which text will be inserted" )
+        parser.add_argument( "-l", "--line", action="append", default=[], help="before: or after: followed by precise start of the line before/after which text will be inserted" )
         parser.add_argument( "-i", "--insert-path", action="append", default=[], help="path to file containg text to be inserted" )
         parser.add_argument( "--level", default="info", help="logging level" ) 
         args = parser.parse_args()
@@ -86,10 +94,10 @@ class Ed(object):
         fmt = '[%(asctime)s] p%(process)s {%(pathname)s:%(lineno)d} %(levelname)s - %(message)s'
         logging.basicConfig(level=getattr(logging,args.level.upper()), format=fmt)
 
-        nargmatch = len(args.before_line) == len(args.insert_path)
+        nargmatch = len(args.line) == len(args.insert_path)
         if not nargmatch:
-           log.fatal("the number of -b,--before-line options must match the number of -i,--insert-path options %d %d " % (len(args.before_line), len(args.insert_path)))
-        assert nargmatch, (len(args.before_line),len(args.insert_path))
+           log.fatal("the number of -l,--line options must match the number of -i,--insert-path options %d %d " % (len(args.line), len(args.insert_path)))
+        assert nargmatch, (len(args.line), len(args.insert_path))
 
         return args
 
@@ -97,22 +105,22 @@ class Ed(object):
         """ 
         """
         src = Path(args.path)
-        log.info("before_line %r " % args.before_line)
+        log.info("line %r " % args.line)
         log.info("insert_path %r " % args.insert_path)
 
-        before = self.get_before(src, args.before_line)
+        before = self.get_before(src, args.line)
         inserts = self.get_inserts(src, args.insert_path)
 
         dst = Ed.Merge(src, before, inserts)
         self.dst = dst
 
-    def get_before(self, src, before_line):
+    def get_before(self, src, line):
         """
         :param src: Path instance of main file to be edited
-        :param before_line: list of strings with startlines in the main file
+        :param line: list of strings with linespec in the main file
         :return before: list of before_line integer positions in the main file 
         """
-        before = map(lambda b:src.find_one_linepos_starting(b), before_line)
+        before = map(lambda b:src.find_one_linepos(b), line)
         f_before = filter(lambda b:b > -1, before)
         log.info("before %r " % before)
         before_ok = len(f_before) == len(before) 
