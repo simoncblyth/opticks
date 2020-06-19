@@ -53,6 +53,7 @@
 
 #include "G4Material.hh"
 #include "G4Event.hh"
+#include "G4Track.hh"
 #include "G4TransportationManager.hh"
 #include "G4Version.hh"
 
@@ -440,6 +441,84 @@ void G4Opticks::collectSecondaryPhotons(const G4VParticleChange* pc)
     m_genstep_idx += 1 ; 
 }
 
+/**
+G4Opticks::collectScintillationStep
+-------------------------------------
+
+This method is tied to a particular implementation of 
+scintillation and uses parameter names from that implementation.
+The GPU generation in optixrap/cu/scintillationstep.h 
+is tightly tied to this.
+
+slowerRatio
+slowTimeConstant
+slowerTimeConstant
+ScintillationTime
+     will be one of slowTimeConstant or slowerTimeConstant  
+     depending on whether have both slow and fast and on the scnt loop index 
+scnt
+     loop index, 1:fast 2:slow
+
+**/
+
+void G4Opticks::collectScintillationStep(  
+     const G4Track* aTrack, 
+     const G4Step* aStep, 
+     G4int    numPhotons, 
+     G4int    scnt,          //  1:fast 2:slow
+     G4double slowerRatio,
+     G4double slowTimeConstant,
+     G4double slowerTimeConstant,
+     G4double ScintillationTime
+    )
+{
+    G4StepPoint* pPreStepPoint  = aStep->GetPreStepPoint();
+    G4StepPoint* pPostStepPoint = aStep->GetPostStepPoint();
+
+    G4ThreeVector x0 = pPreStepPoint->GetPosition();
+    G4double      t0 = pPreStepPoint->GetGlobalTime();
+    G4ThreeVector deltaPosition = aStep->GetDeltaPosition() ;
+
+    const G4DynamicParticle* aParticle = aTrack->GetDynamicParticle();
+    const G4Material* aMaterial = aTrack->GetMaterial();
+
+    G4double meanVelocity = (pPreStepPoint->GetVelocity()+pPostStepPoint->GetVelocity())/2. ; 
+ 
+    collectScintillationStep(
+
+         1,                                             // (int)Id            (0)    LATER REPLACED WITH GENSTEP_ID ?
+         aTrack->GetTrackID(),                          // (int)ParenttId     
+         aMaterial->GetIndex(),                         // (int)MaterialIndex
+         numPhotons,                                    // (int)NumPhotons
+
+         x0.x(),                                        // x0.x               (1)
+         x0.y(),                                        // x0.y
+         x0.z(),                                        // x0.z
+         t0,                                            // t0 
+
+         deltaPosition.x(),                             // DeltaPosition.x    (2)
+         deltaPosition.y(),                             // DeltaPosition.y    
+         deltaPosition.z(),                             // DeltaPosition.z    
+         aStep->GetStepLength(),                        // step_length 
+
+         aParticle->GetDefinition()->GetPDGEncoding(),  // (int)code          (3) 
+         aParticle->GetDefinition()->GetPDGCharge(),    // charge
+         aTrack->GetWeight(),                           // weight 
+         meanVelocity,                                  // MeanVelocity 
+
+         scnt,                                          // (int) scnt    fast/slow loop index  (4)
+         slowerRatio,                                   // slowerRatio
+         slowTimeConstant,                              // slowTimeConstant
+         slowerTimeConstant,                            // slowerTimeConstant
+
+         ScintillationTime,                             //  ScintillationTime         (5)
+         0,                                             //  formerly ScintillationIntegralMax : BUT THAT IS BAKED INTO REEMISSION TEXTURE
+         0,                                             //  Other1
+         0                                              //  Other2
+    ) ;
+
+}
+
 void G4Opticks::collectScintillationStep
 (
         G4int id,
@@ -506,6 +585,76 @@ void G4Opticks::collectScintillationStep
             );
     LOG(info) << "]";
 }
+
+
+
+
+
+
+
+
+void G4Opticks::collectCerenkovStep(  
+     const G4Track*  aTrack, 
+     const G4Step*   aStep, 
+     G4int       numPhotons,
+
+     G4double    betaInverse,
+     G4double    pmin,
+     G4double    pmax,
+     G4double    maxCos,
+
+     G4double    maxSin2,
+     G4double    meanNumberOfPhotons1,
+     G4double    meanNumberOfPhotons2
+    )
+{
+    G4StepPoint* pPreStepPoint  = aStep->GetPreStepPoint();
+    G4StepPoint* pPostStepPoint = aStep->GetPostStepPoint();
+
+    G4ThreeVector x0 = pPreStepPoint->GetPosition();
+    G4double      t0 = pPreStepPoint->GetGlobalTime();
+    G4ThreeVector deltaPosition = aStep->GetDeltaPosition() ;
+
+    const G4DynamicParticle* aParticle = aTrack->GetDynamicParticle();
+    const G4Material* aMaterial = aTrack->GetMaterial();
+
+    G4double preVelocity = pPreStepPoint->GetVelocity() ;
+    G4double postVelocity = pPostStepPoint->GetVelocity() ; 
+ 
+    collectCerenkovStep(
+
+         1,                                             // (int)Id            (0)    LATER REPLACED WITH GENSTEP_ID ?
+         aTrack->GetTrackID(),                          // (int)ParenttId     
+         aMaterial->GetIndex(),                         // (int)MaterialIndex
+         numPhotons,                                    // (int)NumPhotons
+
+         x0.x(),                                        // x0.x               (1)
+         x0.y(),                                        // x0.y
+         x0.z(),                                        // x0.z
+         t0,                                            // t0 
+
+         deltaPosition.x(),                             // DeltaPosition.x    (2)
+         deltaPosition.y(),                             // DeltaPosition.y    
+         deltaPosition.z(),                             // DeltaPosition.z    
+         aStep->GetStepLength(),                        // step_length 
+
+         aParticle->GetDefinition()->GetPDGEncoding(),  // (int)code          (3) 
+         aParticle->GetDefinition()->GetPDGCharge(),    // charge
+         aTrack->GetWeight(),                           // weight 
+         preVelocity,                                   // preVelocity 
+
+         betaInverse,
+         pmin,
+         pmax,
+         maxCos,
+
+         maxSin2,
+         meanNumberOfPhotons1,
+         meanNumberOfPhotons2,
+         postVelocity
+    ) ;
+}
+
 
 
 

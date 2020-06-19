@@ -43,6 +43,8 @@ class C4PhotonCollector ;
 
 class G4Run;
 class G4Event; 
+class G4Track; 
+class G4Step; 
 class G4VPhysicalVolume ;
 class G4VParticleChange ; 
 
@@ -106,6 +108,24 @@ class G4OK_API G4Opticks
         unsigned getNumPhotons() const ;
         unsigned getNumGensteps() const ;
 
+
+
+        void collectCerenkovStep(  
+             const G4Track*  aTrack, 
+             const G4Step*   aStep, 
+             G4int       numPhotons,
+
+             G4double    betaInverse,
+             G4double    pmin,
+             G4double    pmax,
+             G4double    maxCos,
+
+             G4double    maxSin2,
+             G4double    meanNumberOfPhotons1,
+             G4double    meanNumberOfPhotons2
+            );
+
+
         /**
         2018/9/8 Geant4.1042 requires both velocities so:
              meanVelocity->preVelocity
@@ -143,6 +163,21 @@ class G4OK_API G4Opticks
             G4double             meanNumberOfPhotons2,
             G4double             postVelocity
         );
+
+
+
+        void collectScintillationStep(  
+             const G4Track* aTrack, 
+             const G4Step* aStep, 
+             G4int    numPhotons, 
+             G4int    scnt,          //  1:fast 2:slow
+             G4double slowerRatio,
+             G4double slowTimeConstant,
+             G4double slowerTimeConstant,
+             G4double ScintillationTime
+            );
+
+
 	   void collectScintillationStep(
             G4int id,
             G4int parentId,

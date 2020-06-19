@@ -208,7 +208,7 @@ generate_scintillation_photon(Photon& p, ScintillationStep& ss, curandState& rng
 
     p.time = ss.t0 + deltaTime ; 
 
-    p.position = ss.x0 + fraction * ss.DeltaPosition ; 
+    p.position = ss.x0 + fraction * ss.DeltaPosition ;      // implies DeltaPosition should not be normalized 
 
     p.weight = ss.weight ;
 

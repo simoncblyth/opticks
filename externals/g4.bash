@@ -732,18 +732,31 @@ g4-icc(){ find $(g4-dir)/source -name '*.icc' -exec grep -H "${1:-G4GammaConvers
 g4-cc(){ find $(g4-dir)/source -name '*.cc' -exec grep -H "${1:-G4GammaConversion}" {} \; ; }
 
 g4-cls-copy(){
+   local msg="=== $FUNCNAME :"
    local iwd=$PWD
-   local name=${1:-G4Scintillation}
-   local lname=${name/G4}
+   local name=${1:-G4Cerenkov}
+   local lname=Local${name}
 
    local sauce=$(g4-dir)/source
    local hh=$(find $sauce -name "$name.hh")
    local cc=$(find $sauce -name "$name.cc")
    local icc=$(find $sauce -name "$name.icc")
 
-   [ "$hh" != "" ]  && echo cp $hh $iwd/$lname.hh
-   [ "$cc" != "" ] && echo cp $cc $iwd/$lname.cc
-   [ "$icc" != "" ] && echo cp $icc $iwd/$lname.icc
+   [ "$hh" != "" ]  && cp $hh $iwd/$lname.hh
+   [ "$cc" != "" ] && cp $cc $iwd/$lname.cc
+   [ "$icc" != "" ] && cp $icc $iwd/$lname.icc
+
+   local paths="$lname.hh $lname.cc $lname.icc"
+
+   local path
+   for path in $paths ; do 
+     if [ -f "$path" ]; then 
+         perl -pi -e "s,$name,$lname,g" $path
+     else
+         echo $msg path $path does not exist 
+     fi 
+   done
+
 }
 
 g4-cls-copyv-notes(){ cat << EON
