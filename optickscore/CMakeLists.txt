@@ -133,6 +133,7 @@ set(HEADERS
     GlobalStyle.hh
 
     OpticksPhoton.h
+    OpticksGenstep.h
     OpticksQuadrant.h
 )
 
@@ -154,19 +155,35 @@ get_filename_component(ANADIR ../ana ABSOLUTE)
 message(STATUS "CMAKE_CURRENT_SOURCE_DIR : ${CMAKE_CURRENT_SOURCE_DIR}")
 message(STATUS "ANADIR : ${ANADIR}")
 
-set(HDR   ${CMAKE_CURRENT_SOURCE_DIR}/OpticksPhoton.h)
-set(PYINI ${CMAKE_CURRENT_BINARY_DIR}/OpticksPhoton_Enum.ini)
+set(HPH ${CMAKE_CURRENT_SOURCE_DIR}/OpticksPhoton.h)
+set(IPH ${CMAKE_CURRENT_BINARY_DIR}/OpticksPhoton_Enum.ini)
 add_custom_command(
    OUTPUT 
-         ${PYINI}
+         ${IPH}
    COMMAND 
-          ${ANADIR}/enum.py ${HDR} --quiet --inipath ${PYINI}
+          ${ANADIR}/enum.py ${HPH} --quiet --inipath ${IPH}
    DEPENDS 
-         ${HDR}
+         ${HPH}
 )
-add_custom_target(PythonINI ALL DEPENDS ${PYINI} )
+add_custom_target(PythonPH ALL DEPENDS ${IPH} )
 # ALL : Indicates that this custom target should be added to the 
 # default build target so that it will be run every time.
+
+
+
+set(HGS ${CMAKE_CURRENT_SOURCE_DIR}/OpticksGenstep.h)
+set(IGS ${CMAKE_CURRENT_BINARY_DIR}/OpticksGenstep_Enum.ini)
+add_custom_command(
+   OUTPUT 
+         ${IGS}
+   COMMAND 
+          ${ANADIR}/enum.py ${HGS} --quiet --simple --inipath ${IGS}
+   DEPENDS 
+         ${HGS}
+)
+add_custom_target(PythonGS ALL DEPENDS ${IGS} )
+
+
 
 set(CCFL ${CMAKE_CURRENT_SOURCE_DIR}/OpticksFlags.cc)
 set(PYJS ${CMAKE_CURRENT_BINARY_DIR}/OpticksFlags_Abbrev.json)
@@ -181,7 +198,8 @@ add_custom_command(
 add_custom_target(PythonJSON ALL DEPENDS ${PYJS} )
 
 list(APPEND HEADERS 
-  ${PYINI} 
+  ${IPH} 
+  ${IGS} 
   ${PYJS}
 ) 
 

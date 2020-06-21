@@ -32,6 +32,31 @@
 
 #include "PLOG.hh"
 
+
+
+const char* OpticksGenstep::Invalid_                 = "Invalid" ;
+const char* OpticksGenstep::G4Cerenkov_1042_         = "G4Cerenkov_1042" ;
+const char* OpticksGenstep::G4Scintillation_1042_    = "G4Scintillation_1042" ;
+const char* OpticksGenstep::DsG4Cerenkov_r3971_      = "DsG4Cerenkov_r3971" ;
+const char* OpticksGenstep::DsG4Scintillation_r3971_ = "DsG4Scintillation_r3971" ;
+
+const char* OpticksGenstep::Gentype(int gentype)
+{
+    const char* s = 0 ;
+    switch(gentype)
+    {
+        case OpticksGenstep_Invalid:                 s=Invalid_                  ; break ; 
+        case OpticksGenstep_G4Cerenkov_1042:         s=G4Cerenkov_1042_          ; break ; 
+        case OpticksGenstep_G4Scintillation_1042:    s=G4Scintillation_1042_     ; break ; 
+        case OpticksGenstep_DsG4Cerenkov_r3971:      s=DsG4Cerenkov_r3971_       ; break ; 
+        case OpticksGenstep_DsG4Scintillation_r3971: s=DsG4Scintillation_r3971_  ; break ; 
+        case OpticksGenstep_NumType:                 s=Invalid_                  ; break ; 
+        default:                                     s=Invalid_  ;
+    }
+    return s;
+}
+
+
 OpticksGenstep::OpticksGenstep(const NPY<float>* gs) 
     :  
     m_gs(gs)

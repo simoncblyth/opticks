@@ -25,10 +25,16 @@
 #include "CGenstepCollector.hh"
 
 #include "OpticksHub.hh"
-//#include "OpticksGenstep.h"
+#include "OpticksGenstep.hh"
+
+#include "OpticksGenstep.h"
 #include "OpticksPhoton.h"
 
 #include "PLOG.hh"
+
+
+
+const plog::Severity CGenstepCollector::LEVEL = PLOG::EnvLevel("CGenstepCollector", "DEBUG")  ;
 
 CGenstepCollector* CGenstepCollector::INSTANCE = NULL ;
 
@@ -133,7 +139,7 @@ void CGenstepCollector::Summary(const char* msg) const
 
 void CGenstepCollector::collectScintillationStep
 (
-            G4int                /*id*/, 
+            G4int                gentype, 
             G4int                parentId,
             G4int                materialId,
             G4int                numPhotons,
@@ -167,13 +173,17 @@ void CGenstepCollector::collectScintillationStep
      m_scintillation_count += 1 ;   // 1-based index
      m_gs_photons.push_back(numPhotons); 
 
-     LOG(debug) 
+     LOG(LEVEL)
+          << " gentype " << gentype
+          << " gentype " << OpticksGenstep::Gentype(gentype)
+          << " numPhotons " << numPhotons 
           << " scintillation_count " << m_scintillation_count ;
 
-     uif_t uifa[4] ;
-     uifa[0].i = SCINTILLATION ; 
+     assert( gentype == OpticksGenstep_G4Scintillation_1042 || gentype == OpticksGenstep_DsG4Scintillation_r3971 ); 
 
-    // id == 0 ? m_scintillation_count : id  ;   // use the 1-based index when id zero 
+
+     uif_t uifa[4] ;
+     uifa[0].i = gentype ; 
      uifa[1].i = parentId ; 
      uifa[2].i = translate(materialId) ;   // raw G4 materialId translated into GBndLib material line for GPU usage 
      uifa[3].i = numPhotons ; 
@@ -225,7 +235,7 @@ void CGenstepCollector::collectScintillationStep
 
 void CGenstepCollector::collectCerenkovStep
 (
-            G4int              /*id*/, 
+            G4int                gentype, 
             G4int                parentId,
             G4int                materialId,
             G4int                numPhotons,
@@ -259,12 +269,17 @@ void CGenstepCollector::collectCerenkovStep
      m_cerenkov_count += 1 ;   // 1-based index
      m_gs_photons.push_back(numPhotons); 
 
-     LOG(debug) 
-           << " cerenkov_count " << m_cerenkov_count ;
+     LOG(LEVEL) 
+          << " gentype " << gentype
+          << " gentype " << OpticksGenstep::Gentype(gentype)
+          << " numPhotons " << numPhotons
+          << " cerenkov_count " << m_cerenkov_count ;
+
+
+     assert( gentype == OpticksGenstep_G4Cerenkov_1042 || gentype == OpticksGenstep_DsG4Cerenkov_r3971 ); 
 
      uif_t uifa[4] ;
-     uifa[0].i = CERENKOV ; 
-   // id == 0 ? -m_cerenkov_count : id  ;   // use the negated 1-based index when id zero 
+     uifa[0].i = gentype ; 
      uifa[1].i = parentId ; 
      uifa[2].i = translate(materialId) ; 
      uifa[3].i = numPhotons ; 

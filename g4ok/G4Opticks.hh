@@ -109,8 +109,7 @@ class G4OK_API G4Opticks
         unsigned getNumGensteps() const ;
 
 
-
-        void collectCerenkovStep(  
+        void collectGenstep_G4Cerenkov_1042(  
              const G4Track*  aTrack, 
              const G4Step*   aStep, 
              G4int       numPhotons,
@@ -166,7 +165,7 @@ class G4OK_API G4Opticks
 
 
 
-        void collectScintillationStep(  
+        void collectGenstep_DsG4Scintillation_r3971(  
              const G4Track* aTrack, 
              const G4Step* aStep, 
              G4int    numPhotons, 

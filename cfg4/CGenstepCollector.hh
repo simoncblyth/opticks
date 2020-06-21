@@ -20,6 +20,7 @@
 #pragma once
 
 #include <string>
+#include "plog/Severity.h"
 #include "G4Types.hh"
 
 //class OpticksGenstep ; 
@@ -69,6 +70,7 @@ prior to the photon generation loop.
 class CFG4_API CGenstepCollector 
 {
    public:
+         static const plog::Severity LEVEL ; 
          static CGenstepCollector* Instance();
    public:
          CGenstepCollector(const NLookup* lookup);  
@@ -87,7 +89,7 @@ class CFG4_API CGenstepCollector
          void consistencyCheck() const ;
    public:
          void collectScintillationStep(
-            G4int                id, 
+            G4int                gentype, 
             G4int                parentId,
             G4int                materialId,
             G4int                numPhotons,
@@ -119,7 +121,7 @@ class CFG4_API CGenstepCollector
         );
    public:
          void collectCerenkovStep(
-            G4int                id, 
+            G4int                gentype, 
             G4int                parentId,
             G4int                materialId,
             G4int                numPhotons,

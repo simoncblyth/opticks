@@ -735,68 +735,26 @@ g4-cls-copy(){
    local msg="=== $FUNCNAME :"
    local iwd=$PWD
    local name=${1:-G4Cerenkov}
-   local lname=Local${name}
-
-   local sauce=$(g4-dir)/source
-   local hh=$(find $sauce -name "$name.hh")
-   local cc=$(find $sauce -name "$name.cc")
-   local icc=$(find $sauce -name "$name.icc")
-
-   [ "$hh" != "" ]  && cp $hh $iwd/$lname.hh
-   [ "$cc" != "" ] && cp $cc $iwd/$lname.cc
-   [ "$icc" != "" ] && cp $icc $iwd/$lname.icc
-
-   local paths="$lname.hh $lname.cc $lname.icc"
-
-   local path
-   for path in $paths ; do 
-     if [ -f "$path" ]; then 
-         perl -pi -e "s,$name,$lname,g" $path
-     else
-         echo $msg path $path does not exist 
-     fi 
-   done
-
-}
-
-g4-cls-copyv-notes(){ cat << EON
-
-Making a versioned copy of a G4 class::
-
-    epsilon:cfg4 blyth$ g4-cls-copyv G4Cerenkov 
-    cp /usr/local/opticks/externals/g4/geant4.10.04.p02/source/processes/electromagnetic/xrays/include/G4Cerenkov.hh /Users/blyth/opticks/cfg4/G4Cerenkov1042.hh
-    cp /usr/local/opticks/externals/g4/geant4.10.04.p02/source/processes/electromagnetic/xrays/src/G4Cerenkov.cc /Users/blyth/opticks/cfg4/G4Cerenkov1042.cc
-
-    epsilon:cfg4 blyth$ g4-cls-copyv G4Cerenkov | sh 
-    epsilon:cfg4 blyth$ perl -pi -e 's,G4Cerenkov,G4Cerenkov1042,g' G4Cerenkov1042.*
-
-    ## then make another to have local mods
-
-    perl -pi -e 's,G4Cerenkov1042,C4Cerenkov1042,g' C4Cerenkov1042.*
-
-
-
-
-EON
-}
-
-
-g4-cls-copyv(){
-   local iwd=$PWD
-   local name=${1:-G4Scintillation}
    local number=$(g4-version-number)
-   local lname=${name}${number}
+   local lname=Local${name}${number}
 
-   local sauce=$(g4-dir)/source
-   local hh=$(find $sauce -name "$name.hh")
-   local cc=$(find $sauce -name "$name.cc")
-   local icc=$(find $sauce -name "$name.icc")
+   local src=$(g4-dir)/source
+   local hh=$(find $src -name "$name.hh")
+   local cc=$(find $src -name "$name.cc")
+   local icc=$(find $src -name "$name.icc")
 
-   [ "$hh" != "" ]  && echo cp $hh $iwd/$lname.hh
-   [ "$cc" != "" ] && echo cp $cc $iwd/$lname.cc
-   [ "$icc" != "" ] && echo cp $icc $iwd/$lname.icc
+   local tt="hh cc icc"
+   local t
+   for t in $tt ; do 
+      [ "${!t}" == "" ] && continue
+      local p=$lname.$t
+      printf "%3s %20s %s\n"  $t ${!t} $p
+       
+      echo "// $FUNCNAME : ${!t}"        > $p
+      perl -pe "s,$name,$lname,g" ${!t} >> $p
+      echo "// $FUNCNAME : ${!t}"       >> $p
+   done 
 }
-
 
 
 

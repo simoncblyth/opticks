@@ -39,6 +39,7 @@
 
 #include "G4Opticks.hh"
 
+#include "OpticksGenstep.h"
 #include "Opticks.hh"
 #include "OpticksEvent.hh"
 #include "OpMgr.hh"
@@ -461,7 +462,9 @@ scnt
 
 **/
 
-void G4Opticks::collectScintillationStep(  
+
+
+void G4Opticks::collectGenstep_DsG4Scintillation_r3971(  
      const G4Track* aTrack, 
      const G4Step* aStep, 
      G4int    numPhotons, 
@@ -486,7 +489,7 @@ void G4Opticks::collectScintillationStep(
  
     collectScintillationStep(
 
-         1,                                             // (int)Id            (0)    LATER REPLACED WITH GENSTEP_ID ?
+         OpticksGenstep_DsG4Scintillation_r3971,        // (int)gentype       (0) 
          aTrack->GetTrackID(),                          // (int)ParenttId     
          aMaterial->GetIndex(),                         // (int)MaterialIndex
          numPhotons,                                    // (int)NumPhotons
@@ -521,7 +524,7 @@ void G4Opticks::collectScintillationStep(
 
 void G4Opticks::collectScintillationStep
 (
-        G4int id,
+        G4int gentype,
         G4int parentId,
         G4int materialId,
         G4int numPhotons,
@@ -553,7 +556,7 @@ void G4Opticks::collectScintillationStep
         ) {
     LOG(info) << "[";
     m_genstep_collector->collectScintillationStep(
-             id,
+             gentype,
              parentId,
              materialId,
              numPhotons,
@@ -593,7 +596,7 @@ void G4Opticks::collectScintillationStep
 
 
 
-void G4Opticks::collectCerenkovStep(  
+void G4Opticks::collectGenstep_G4Cerenkov_1042(  
      const G4Track*  aTrack, 
      const G4Step*   aStep, 
      G4int       numPhotons,
@@ -623,7 +626,7 @@ void G4Opticks::collectCerenkovStep(
  
     collectCerenkovStep(
 
-         1,                                             // (int)Id            (0)    LATER REPLACED WITH GENSTEP_ID ?
+         OpticksGenstep_G4Cerenkov_1042,                // (int)gentype       (0)
          aTrack->GetTrackID(),                          // (int)ParenttId     
          aMaterial->GetIndex(),                         // (int)MaterialIndex
          numPhotons,                                    // (int)NumPhotons
@@ -660,7 +663,7 @@ void G4Opticks::collectCerenkovStep(
 
 void G4Opticks::collectCerenkovStep
     (
-        G4int                id, 
+        G4int                gentype, 
         G4int                parentId,
         G4int                materialId,
         G4int                numPhotons,
@@ -693,7 +696,7 @@ void G4Opticks::collectCerenkovStep
 {
      LOG(info) << "[" ; 
      m_genstep_collector->collectCerenkovStep(
-                       id, 
+                       gentype, 
                        parentId,
                        materialId,
                        numPhotons,

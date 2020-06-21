@@ -22,6 +22,8 @@
 #include <string>
 #include <glm/fwd.hpp>
 
+#include "OpticksGenstep.h"
+
 template <typename T> class NPY ; 
 #include "OKCORE_API_EXPORT.hh"
 
@@ -50,6 +52,15 @@ TODO: incorporate npy.G4StepNPY ?
 **/
 
 class OKCORE_API OpticksGenstep {
+
+    public:
+       static const char* Gentype(int gentype);
+    public:
+       static const char* Invalid_ ;
+       static const char* G4Cerenkov_1042_ ;
+       static const char* G4Scintillation_1042_ ;
+       static const char* DsG4Cerenkov_r3971_ ;
+       static const char* DsG4Scintillation_r3971_ ;
     public:  
         static void Dump(const NPY<float>* gs, unsigned modulo, unsigned margin, const char* msg) ;
     public:  

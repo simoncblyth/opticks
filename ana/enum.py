@@ -32,12 +32,17 @@ log = logging.getLogger(__name__)
 class Enum(dict):
     lptn = re.compile("^\s*(\w+)\s*=\s*(.*?),*\s*?$")
     vptn = re.compile("^0x1 <<\s*(\d+)$")
-    def __init__(self, path, mskval=True):
+    def __init__(self, path, mskval=True, simple=False):
         dict.__init__(self)
         log.info("parsing %s " % path )
         path = os.path.expandvars(path)
         log.info("path expands to %s " % path )
-        self.parse(path, mskval=mskval)
+
+        if simple:
+            self.parse_simple(path)
+        else: 
+            self.parse(path, mskval=mskval)
+        pass
 
     def __repr__(self):
         return "\n".join([" %-2d : %s " % (kv[1], kv[0] ) for kv in sorted(self.items(), key=lambda kv:kv[1])]) 
@@ -46,28 +51,46 @@ class Enum(dict):
         return "\n".join(["%s=%s" % (kv[0], kv[1] ) for kv in sorted(self.items(), key=lambda kv:kv[1])]) 
     ini = property(_get_ini)
 
-    def parse(self, path, mskval=True):
+    def parse_simple(self, path):
+        """
+        """
         lines = map(str.strip,file(path).readlines())
         for line in lines:
             lm = self.lptn.match(line)
-            if lm:
-                 lg = lm.groups()
-                 assert len(lg) == 2 
-                 label, val = lg
+            if not lm: continue
+            lg = lm.groups()
+            assert len(lg) == 2 
+            label, val = lg
+            self[label] = int(val)
+        pass
 
-                 vm = self.vptn.match(val)
-                 assert vm 
-                 vg = vm.groups()
-                 assert len(vg) == 1
-                 n = int(vg[0])
+    def parse(self, path, mskval=True):
+        """
+        :param path: 
+        :param mskval:
+        """
+        lines = map(str.strip,file(path).readlines())
+        for line in lines:
+            lm = self.lptn.match(line)
+            if not lm: continue
 
-                 emsk = eval(val)
-                 msk = 0x1 << n 
-                 assert emsk == msk
+            lg = lm.groups()
+            assert len(lg) == 2 
+            label, val = lg
 
-                 log.debug( "%-40s     ==> [%s]    [%s]  ==> [%d] ==> [%x]  " % (line, label, val, n, msk) )
+            vm = self.vptn.match(val)
+            assert vm 
+            vg = vm.groups()
+            assert len(vg) == 1
+            n = int(vg[0])
 
-                 self[label] = msk if mskval else n + 1 
+            emsk = eval(val)
+            msk = 0x1 << n 
+            assert emsk == msk
+
+            log.debug( "%-40s     ==> [%s]    [%s]  ==> [%d] ==> [%x]  " % (line, label, val, n, msk) )
+
+            self[label] = msk if mskval else n + 1 
 
 
 if __name__ == '__main__':
@@ -81,6 +104,7 @@ if __name__ == '__main__':
     parser.add_argument(     "--inipath", default=None, help="When a path is provided an ini file will be written to it." ) 
     parser.add_argument(     "--quiet", action="store_true", default=False, help="Skip dumping" ) 
     parser.add_argument(     "--mskval", action="store_true", default=False, help="Store the mask value rather than the smaller power of two int" ) 
+    parser.add_argument(     "--simple", action="store_true", default=False, help="Simple value enum without bit shifting for masks " ) 
     parser.add_argument(     "--level", default="info", help="logging level" ) 
     args = parser.parse_args()
 
@@ -93,7 +117,7 @@ if __name__ == '__main__':
         log.info("using argument input path %s " % args.path) 
     pass  
 
-    d = Enum(args.path, mskval=args.mskval)
+    d = Enum(args.path, mskval=args.mskval, simple=args.simple)
 
     if not args.quiet:
         print(d)
