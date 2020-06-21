@@ -27,6 +27,7 @@
 #include "OpticksRun.hh"
 #include "OpticksEvent.hh"
 #include "OpticksActionControl.hh"
+#include "OpticksGenstep.hh"
 
 #include "G4StepNPY.hpp"
 
@@ -381,26 +382,30 @@ G4StepNPY* OpticksRun::importGenstepData(NPY<float>* gs, const char* oac_label)
     }
     else if(oac("GS_EMBEDDED"))
     {
-        g4step->addAllowedGencodes( CERENKOV, SCINTILLATION) ; 
+        g4step->addAllowedGencodes( OpticksGenstep_G4Cerenkov_1042, OpticksGenstep_G4Scintillation_1042) ; 
+        g4step->addAllowedGencodes( OpticksGenstep_DsG4Cerenkov_r3971, OpticksGenstep_DsG4Scintillation_r3971 ) ; 
+
         LOG(LEVEL) << " GS_EMBEDDED collected direct gensteps assumed translated at collection  " << oac.description("oac") ; 
     }
     else if(oac("GS_TORCH"))
     {
-        g4step->addAllowedGencodes(TORCH); 
+        g4step->addAllowedGencodes(OpticksGenstep_TORCH); 
         LOG(LEVEL) << " checklabel of torch steps  " << oac.description("oac") ; 
     }
     else if(oac("GS_FABRICATED"))
     {
-        g4step->addAllowedGencodes(FABRICATED); 
+        g4step->addAllowedGencodes(OpticksGenstep_FABRICATED); 
     }
     else if(oac("GS_EMITSOURCE"))
     {
-        g4step->addAllowedGencodes(EMITSOURCE); 
+        g4step->addAllowedGencodes(OpticksGenstep_EMITSOURCE); 
     }
     else
     {
         LOG(LEVEL) << " checklabel of non-legacy (collected direct) gensteps  " << oac.description("oac") ; 
-        g4step->addAllowedGencodes(CERENKOV, SCINTILLATION, EMITSOURCE);
+        g4step->addAllowedGencodes( OpticksGenstep_G4Cerenkov_1042, OpticksGenstep_G4Scintillation_1042) ; 
+        g4step->addAllowedGencodes( OpticksGenstep_DsG4Cerenkov_r3971, OpticksGenstep_DsG4Scintillation_r3971 ) ; 
+        g4step->addAllowedGencodes( OpticksGenstep_EMITSOURCE ); 
     }
     g4step->checkGencodes();
 
@@ -408,10 +413,12 @@ G4StepNPY* OpticksRun::importGenstepData(NPY<float>* gs, const char* oac_label)
 
     LOG(LEVEL) 
          << " Keys "
-         << " TORCH: " << TORCH 
-         << " CERENKOV: " << CERENKOV 
-         << " SCINTILLATION: " << SCINTILLATION  
-         << " G4GUN: " << G4GUN  
+         << " OpticksGenstep_TORCH: " << OpticksGenstep_TORCH
+         << " OpticksGenstep_G4Cerenkov_1042: " << OpticksGenstep_G4Cerenkov_1042
+         << " OpticksGenstep_G4Scintillation_1042: " << OpticksGenstep_G4Scintillation_1042
+         << " OpticksGenstep_DsG4Cerenkov_r3971: " << OpticksGenstep_DsG4Cerenkov_r3971
+         << " OpticksGenstep_DsG4Scintillation_r3971: " << OpticksGenstep_DsG4Scintillation_r3971
+         << " OpticksGenstep_G4GUN: " << OpticksGenstep_G4GUN  
          ;
 
      LOG(LEVEL) 
@@ -474,12 +481,14 @@ void OpticksRun::translateLegacyGensteps(G4StepNPY* g4step)
 
     assert(lookup); 
 
-    g4step->relabel(CERENKOV, SCINTILLATION); 
+     // these should be appropriate for all legacy gensteps 
+    int CK = OpticksGenstep_G4Cerenkov_1042 ; 
+    int SI = OpticksGenstep_DsG4Scintillation_r3971 ;  
+    g4step->relabel(CK, SI); 
 
-    // CERENKOV or SCINTILLATION codes are used depending on 
-    // the sign of the pre-label 
-    // this becomes the ghead.i.x used in cu/generate.cu
-    // which dictates what to generate
+    // Changes the old 1-based signed index into enum values  
+    // that get read into ghead.i.x used in cu/generate.cu
+    // dictating what to generate
 
     lookup->close("OpticksRun::translateLegacyGensteps GS_LEGACY");
 

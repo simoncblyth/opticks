@@ -71,6 +71,7 @@
 #include "OpticksProfile.hh"
 #include "OpticksSwitches.h"
 #include "OpticksPhoton.h"
+#include "OpticksGenstep.hh"
 #include "OpticksConst.hh"
 #include "OpticksDomain.hh"
 #include "OpticksFlags.hh"
@@ -1201,11 +1202,11 @@ const glm::vec4& OpticksEvent::getGenstepCenterExtent()
 
 bool OpticksEvent::isTorchType()
 {    
-   return strcmp(m_typ, OpticksFlags::torch_) == 0 ; 
+   return strcmp(m_typ, OpticksGenstep::TORCH_) == 0 ; 
 }
 bool OpticksEvent::isMachineryType()
 {    
-   return strcmp(m_typ, OpticksFlags::machinery_) == 0 ; 
+   return strcmp(m_typ, OpticksGenstep::MACHINERY_) == 0 ; 
 }
 
 

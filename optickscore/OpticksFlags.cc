@@ -32,6 +32,7 @@
 
 #include "Index.hpp"
 
+#include "OpticksGenstep.hh"
 #include "OpticksFlags.hh"
 
 
@@ -49,17 +50,21 @@ const char* OpticksFlags::ENUM_HEADER_PATH = "$OPTICKS_INSTALL_PREFIX/include/Op
 
 
 const char* OpticksFlags::ZERO_              = "." ;
+
+/*
 const char* OpticksFlags::NATURAL_           = "NATURAL" ;
 const char* OpticksFlags::FABRICATED_        = "FABRICATED" ;
 const char* OpticksFlags::MACHINERY_         = "MACHINERY" ;
 const char* OpticksFlags::EMITSOURCE_        = "EMITSOURCE" ;
 const char* OpticksFlags::PRIMARYSOURCE_     = "PRIMARYSOURCE" ;
 const char* OpticksFlags::GENSTEPSOURCE_     = "GENSTEPSOURCE" ;
+const char* OpticksFlags::G4GUN_             = "G4GUN" ; 
+const char* OpticksFlags::OTHER_             = "OTHER" ;
+*/
 
 const char* OpticksFlags::CERENKOV_          = "CERENKOV" ;
 const char* OpticksFlags::SCINTILLATION_     = "SCINTILLATION" ;
 const char* OpticksFlags::MISS_              = "MISS" ;
-const char* OpticksFlags::OTHER_             = "OTHER" ;
 const char* OpticksFlags::BULK_ABSORB_       = "BULK_ABSORB" ;
 const char* OpticksFlags::BULK_REEMIT_       = "BULK_REEMIT" ;
 const char* OpticksFlags::BULK_SCATTER_      = "BULK_SCATTER" ; 
@@ -70,7 +75,6 @@ const char* OpticksFlags::SURFACE_SREFLECT_  = "SURFACE_SREFLECT" ;
 const char* OpticksFlags::BOUNDARY_REFLECT_  = "BOUNDARY_REFLECT" ; 
 const char* OpticksFlags::BOUNDARY_TRANSMIT_ = "BOUNDARY_TRANSMIT" ; 
 const char* OpticksFlags::TORCH_             = "TORCH" ; 
-const char* OpticksFlags::G4GUN_             = "G4GUN" ; 
 const char* OpticksFlags::NAN_ABORT_         = "NAN_ABORT" ; 
 const char* OpticksFlags::BAD_FLAG_          = "BAD_FLAG" ; 
 
@@ -80,12 +84,17 @@ const char* OpticksFlags::BAD_FLAG_          = "BAD_FLAG" ;
 //     as these are so fixed they deserve static enshrinement for easy access from everywhere
 //
 const char* OpticksFlags::_ZERO              = "  " ;
+
+/*
 const char* OpticksFlags::_NATURAL           = "NL" ;
 const char* OpticksFlags::_FABRICATED        = "FD" ;
 const char* OpticksFlags::_MACHINERY         = "MY" ;
 const char* OpticksFlags::_EMITSOURCE        = "SO" ;
 const char* OpticksFlags::_PRIMARYSOURCE     = "PS" ;
 const char* OpticksFlags::_GENSTEPSOURCE     = "GS" ;
+const char* OpticksFlags::_G4GUN             = "GN" ; 
+*/
+
 
 const char* OpticksFlags::_CERENKOV          = "CK" ;
 const char* OpticksFlags::_SCINTILLATION     = "SI" ;
@@ -101,7 +110,6 @@ const char* OpticksFlags::_SURFACE_SREFLECT  = "SR" ;
 const char* OpticksFlags::_BOUNDARY_REFLECT  = "BR" ; 
 const char* OpticksFlags::_BOUNDARY_TRANSMIT = "BT" ; 
 const char* OpticksFlags::_NAN_ABORT         = "NA" ; 
-const char* OpticksFlags::_G4GUN             = "GN" ; 
 const char* OpticksFlags::_BAD_FLAG          = "XX" ; 
 
 
@@ -154,19 +162,29 @@ NMeta* OpticksFlags::MakeFlag2ColorMeta()  // static
 
 
 
-
+/*
 const char* OpticksFlags::natural_           = "natural" ;
 const char* OpticksFlags::fabricated_        = "fabricated" ;
 const char* OpticksFlags::machinery_         = "machinery" ;
-const char* OpticksFlags::cerenkov_          = "cerenkov" ;
-const char* OpticksFlags::scintillation_     = "scintillation" ;
-const char* OpticksFlags::torch_             = "torch" ; 
 const char* OpticksFlags::emitsource_        = "emitsource" ; 
 const char* OpticksFlags::primarysource_     = "primarysource" ; 
 const char* OpticksFlags::genstepsource_     = "genstepsource" ; 
 const char* OpticksFlags::g4gun_             = "g4gun" ; 
 const char* OpticksFlags::other_             = "other" ;
+const char* OpticksFlags::cerenkov_          = "cerenkov" ;
+const char* OpticksFlags::scintillation_     = "scintillation" ;
+const char* OpticksFlags::torch_             = "torch" ; 
+*/
 
+
+/**
+
+OpticksFlags::Flag
+--------------------
+
+Are in process of unconflating photon flags and genstep flags 
+
+**/
 
 const char* OpticksFlags::Flag(const unsigned int flag)
 {
@@ -188,13 +206,15 @@ const char* OpticksFlags::Flag(const unsigned int flag)
         case BOUNDARY_TRANSMIT:s=BOUNDARY_TRANSMIT_ ;break; 
         case TORCH:            s=TORCH_ ;break; 
         case NAN_ABORT:        s=NAN_ABORT_ ;break; 
-        case G4GUN:            s=G4GUN_ ;break; 
-        case NATURAL:          s=NATURAL_ ;break; 
-        case FABRICATED:       s=FABRICATED_ ;break; 
-        case MACHINERY:        s=MACHINERY_;break; 
-        case EMITSOURCE:       s=EMITSOURCE_;break; 
-        case PRIMARYSOURCE:    s=PRIMARYSOURCE_;break; 
-        case GENSTEPSOURCE:    s=GENSTEPSOURCE_;break; 
+/*
+        case __G4GUN:          s=G4GUN_ ;break; 
+        case __NATURAL:        s=NATURAL_ ;break; 
+        case __FABRICATED:     s=FABRICATED_ ;break; 
+        case __MACHINERY:      s=MACHINERY_;break; 
+        case __EMITSOURCE:     s=EMITSOURCE_;break; 
+        case __PRIMARYSOURCE:  s=PRIMARYSOURCE_;break; 
+        case __GENSTEPSOURCE:  s=GENSTEPSOURCE_;break; 
+*/
         default:               s=BAD_FLAG_  ;
                                LOG(debug) << "OpticksFlags::Flag BAD_FLAG [" << flag << "]" << std::hex << flag << std::dec ;             
     }
@@ -223,13 +243,15 @@ const char* OpticksFlags::Abbrev(const unsigned int flag)
         case BOUNDARY_TRANSMIT:s=_BOUNDARY_TRANSMIT ;break; 
         case TORCH:            s=_TORCH ;break; 
         case NAN_ABORT:        s=_NAN_ABORT ;break; 
-        case G4GUN:            s=_G4GUN ;break; 
-        case NATURAL:          s=_NATURAL ;break; 
-        case FABRICATED:       s=_FABRICATED ;break; 
-        case MACHINERY:        s=_MACHINERY;break; 
-        case EMITSOURCE:       s=_EMITSOURCE;break; 
-        case PRIMARYSOURCE:    s=_PRIMARYSOURCE;break; 
-        case GENSTEPSOURCE:    s=_GENSTEPSOURCE;break; 
+/*
+        case __G4GUN:          s=_G4GUN ;break; 
+        case __NATURAL:        s=_NATURAL ;break; 
+        case __FABRICATED:     s=_FABRICATED ;break; 
+        case __MACHINERY:      s=_MACHINERY;break; 
+        case __EMITSOURCE:     s=_EMITSOURCE;break; 
+        case __PRIMARYSOURCE:  s=_PRIMARYSOURCE;break; 
+        case __GENSTEPSOURCE:  s=_GENSTEPSOURCE;break; 
+*/
         default:               s=_BAD_FLAG  ;
                                LOG(verbose) << "OpticksFlags::Abbrev BAD_FLAG [" << flag << "]" << std::hex << flag << std::dec ;             
     }
@@ -395,8 +417,8 @@ std::string OpticksFlags::FlagMask(const unsigned mskhis, bool abbrev)
 {
     std::vector<const char*> labels ; 
 
-    assert( MACHINERY == 0x1 << 17 );
-    unsigned lastBit = BBit::ffs(MACHINERY) - 1 ;  
+    assert( __MACHINERY == 0x1 << 17 );
+    unsigned lastBit = BBit::ffs(__MACHINERY) - 1 ;  
     assert(lastBit == 17 ); 
  
     for(unsigned n=0 ; n <= lastBit ; n++ )
@@ -412,6 +434,7 @@ std::string OpticksFlags::FlagMask(const unsigned mskhis, bool abbrev)
 }
 
 
+/*
 const char* OpticksFlags::SourceType( int code )
 {
     const char* name = 0 ; 
@@ -429,9 +452,8 @@ const char* OpticksFlags::SourceType( int code )
        case GENSTEPSOURCE:name = GENSTEPSOURCE_ ;break;
        default           :name = OTHER_         ;break; 
     }
-    return name ; 
+    return OpticksGenstep::Gentype(code) ; 
 }
-
 const char* OpticksFlags::SourceTypeLowercase( int code )
 {
     const char* name = 0 ; 
@@ -451,7 +473,6 @@ const char* OpticksFlags::SourceTypeLowercase( int code )
     }
     return name ; 
 }
-
 unsigned int OpticksFlags::SourceCode(const char* type)
 {
     unsigned int code = 0 ; 
@@ -466,6 +487,17 @@ unsigned int OpticksFlags::SourceCode(const char* type)
     else if(strcmp(type,primarysource_)==0) code = PRIMARYSOURCE ;
     else if(strcmp(type,genstepsource_)==0) code = GENSTEPSOURCE ;
     return code ; 
+}
+*/
+
+const char* OpticksFlags::SourceType( int code )
+{
+    return OpticksGenstep::Gentype(code) ; 
+}
+
+unsigned int OpticksFlags::SourceCode(const char* type)
+{
+    return OpticksGenstep::SourceCode(type); 
 }
 
 

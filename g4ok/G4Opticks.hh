@@ -165,6 +165,15 @@ class G4OK_API G4Opticks
 
 
 
+        void collectGenstep_G4Scintillation_1042(  
+             const G4Track* aTrack, 
+             const G4Step* aStep, 
+             G4int    numPhotons, 
+             G4int    ScintillationType,
+             G4double ScintillationTime, 
+             G4double ScintillationRiseTime
+             );
+
         void collectGenstep_DsG4Scintillation_r3971(  
              const G4Track* aTrack, 
              const G4Step* aStep, 

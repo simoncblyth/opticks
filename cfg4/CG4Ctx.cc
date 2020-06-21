@@ -24,6 +24,7 @@
 #include "G4Event.hh"
 
 #include "OpticksFlags.hh"
+#include "OpticksGenstep.hh"
 #include "OpticksEvent.hh"
 #include "Opticks.hh"
 
@@ -247,12 +248,17 @@ void CG4Ctx::setEvent(const G4Event* event)
 
     _gen = eui->gencode ;
 
+
+    bool valid = OpticksGenstep::IsValid(_gen) ; 
+
     LOG(LEVEL) 
         << " gen " << _gen
-        << " SourceType " << OpticksFlags::SourceType(_gen)
+        << " OpticksGenstep::GenType " << OpticksGenstep::Gentype(_gen) 
+        << " OpticksFlags::SourceType " << OpticksFlags::SourceType(_gen)
+        << " valid " << valid 
         ;
 
-    assert( _gen == TORCH || _gen == G4GUN || _gen == CERENKOV || _gen == SCINTILLATION );
+    assert( valid );
 }
 
 

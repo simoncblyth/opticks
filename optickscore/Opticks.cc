@@ -77,6 +77,7 @@
 #include "Opticks.hh"
 #include "OpticksResource.hh"
 #include "OpticksColors.hh"
+#include "OpticksGenstep.hh"
 #include "OpticksEvent.hh"
 #include "OpticksRun.hh"
 #include "OpticksMode.hh"
@@ -2683,15 +2684,15 @@ This is not the final word, see OpticksGen
 unsigned int Opticks::getSourceCode() const
 {
     unsigned int code ;
-    if(     m_cfg->hasOpt("natural"))       code = NATURAL ;     // doing (CERENKOV | SCINTILLATION) would entail too many changes 
-    else if(m_cfg->hasOpt("cerenkov"))      code = CERENKOV ;
-    else if(m_cfg->hasOpt("scintillation")) code = SCINTILLATION ;
-    else if(m_cfg->hasOpt("torch"))         code = TORCH ;
-    else if(m_cfg->hasOpt("machinery"))     code = MACHINERY ;
-    else if(m_cfg->hasOpt("g4gun"))         code = G4GUN ;           // <-- dynamic : photon count not known ahead of time
-    else if(m_cfg->hasOpt("emitsource"))    code = EMITSOURCE ;      
-    else if(m_cfg->hasOpt("primarysource")) code = PRIMARYSOURCE ;   // <-- dynamic : photon count not known ahead of time
-    else                                    code = TORCH ;             
+    if(     m_cfg->hasOpt("natural"))       code = OpticksGenstep_NATURAL ;     // doing (CERENKOV | SCINTILLATION) would entail too many changes 
+    else if(m_cfg->hasOpt("cerenkov"))      code = OpticksGenstep_G4Cerenkov_1042  ;
+    else if(m_cfg->hasOpt("scintillation")) code = OpticksGenstep_DsG4Scintillation_r3971 ;
+    else if(m_cfg->hasOpt("torch"))         code = OpticksGenstep_TORCH ;
+    else if(m_cfg->hasOpt("machinery"))     code = OpticksGenstep_MACHINERY ;
+    else if(m_cfg->hasOpt("g4gun"))         code = OpticksGenstep_G4GUN ;           // <-- dynamic : photon count not known ahead of time
+    else if(m_cfg->hasOpt("emitsource"))    code = OpticksGenstep_EMITSOURCE ;      
+    else if(m_cfg->hasOpt("primarysource")) code = OpticksGenstep_PRIMARYSOURCE ;   // <-- dynamic : photon count not known ahead of time
+    else                                    code = OpticksGenstep_TORCH ;             
     return code ;
 }
 
@@ -2699,14 +2700,25 @@ unsigned int Opticks::getSourceCode() const
 const char* Opticks::getSourceType() const
 {
     unsigned int code = getSourceCode();
-    return OpticksFlags::SourceTypeLowercase(code) ; 
+    //return OpticksFlags::SourceTypeLowercase(code) ; 
+    return OpticksFlags::SourceType(code) ; 
 }
 
 bool Opticks::isFabricatedGensteps() const
 {
     unsigned int code = getSourceCode() ;
-    return code == TORCH || code == MACHINERY ;  
+    return code == OpticksGenstep_TORCH || code == OpticksGenstep_MACHINERY ;  
 }
+bool Opticks::isG4GUNGensteps() const
+{
+    unsigned int code = getSourceCode() ;
+    return code == OpticksGenstep_G4GUN ;  
+}
+
+
+
+
+
 
 bool Opticks::isEmbedded() const { return hasOpt("embedded"); }   
 // HMM CAN isEmbedded BE EQUATED WITH hasKey ? no the initial run which creates the geocache is

@@ -55,12 +55,22 @@ class OKCORE_API OpticksGenstep {
 
     public:
        static const char* Gentype(int gentype);
+       static unsigned SourceCode(const char* type);
+       static bool IsValid(int gentype);
     public:
-       static const char* Invalid_ ;
+       static const char* INVALID_ ;
        static const char* G4Cerenkov_1042_ ;
        static const char* G4Scintillation_1042_ ;
        static const char* DsG4Cerenkov_r3971_ ;
        static const char* DsG4Scintillation_r3971_ ;
+       static const char* TORCH_ ;
+       static const char* FABRICATED_ ;
+       static const char* EMITSOURCE_ ;
+       static const char* NATURAL_ ;
+       static const char* MACHINERY_ ;
+       static const char* G4GUN_ ;
+       static const char* PRIMARYSOURCE_ ;
+       static const char* GENSTEPSOURCE_ ;
     public:  
         static void Dump(const NPY<float>* gs, unsigned modulo, unsigned margin, const char* msg) ;
     public:  

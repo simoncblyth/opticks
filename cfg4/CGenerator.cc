@@ -19,6 +19,7 @@
 
 #include "Opticks.hh"
 #include "OpticksGen.hh"
+#include "OpticksGenstep.hh"
 #include "OpticksCfg.hh"
 #include "OpticksFlags.hh"
 #include "OpticksEvent.hh"
@@ -78,19 +79,19 @@ CSource* CGenerator::initSource(unsigned code)
 
     CSource* source = NULL ;  
 
-    if(code == G4GUN)
+    if(code == OpticksGenstep_G4GUN)
     {
         source = initG4GunSource();
     } 
-    else if(code == TORCH)      
+    else if(code == OpticksGenstep_TORCH)      
     {
         source = initTorchSource();
     } 
-    else if(code == EMITSOURCE) 
+    else if(code == OpticksGenstep_EMITSOURCE) 
     {
         source = initInputPhotonSource();
     } 
-    else if(code == GENSTEPSOURCE) 
+    else if(code == OpticksGenstep_GENSTEPSOURCE) 
     {
         source = initInputGenstepSource();
     }

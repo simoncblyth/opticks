@@ -58,13 +58,15 @@ struct ScintillationStep
     float3 p0 ;
 };
 
+
 __device__ void ssload( ScintillationStep& ss, optix::buffer<float4>& scintillation, unsigned int offset, unsigned int genstep_id)
 {
     union quad ipmn, ccwv, ssss ;
  
     ipmn.f = scintillation[offset+0];     
-    //ss.Id = ipmn.i.x ; 
-    ss.Id = genstep_id ; 
+    //int gentype = ipmn.i.x ;  
+
+    ss.Id = genstep_id ;    // usurp the encumbent gentype
     ss.ParentId = ipmn.i.y ; 
     ss.MaterialIndex = ipmn.i.z ; 
     ss.NumPhotons = ipmn.i.w ; 

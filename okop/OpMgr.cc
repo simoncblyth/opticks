@@ -34,6 +34,7 @@ class NConfigurable ;
 #include "OpticksHub.hh"    // okg-
 #include "OpticksIdx.hh"    
 #include "OpticksGen.hh"    
+#include "OpticksGenstep.hh"    
 #include "OpticksRun.hh"    
 
 #include "OpEvt.hh"    
@@ -71,7 +72,7 @@ OpMgr::~OpMgr()
 
 void OpMgr::init()
 {
-    bool g4gun = m_ok->getSourceCode() == G4GUN ;
+    bool g4gun = m_ok->getSourceCode() == OpticksGenstep_G4GUN ;
     if(g4gun)
          LOG(fatal) << "OpMgr doesnt support G4GUN, other that via loading (TO BE IMPLEMENTED) " ;
     assert(!g4gun);

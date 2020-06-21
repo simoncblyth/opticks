@@ -35,11 +35,11 @@ enum
     BOUNDARY_TRANSMIT = 0x1 << 11,
     TORCH             = 0x1 << 12,
     NAN_ABORT         = 0x1 << 13,
-    G4GUN             = 0x1 << 14,
-    FABRICATED        = 0x1 << 15,
-    NATURAL           = 0x1 << 16,
-    MACHINERY         = 0x1 << 17,
-    EMITSOURCE        = 0x1 << 18,
+    __G4GUN           = 0x1 << 14,
+    __FABRICATED      = 0x1 << 15,
+    __NATURAL         = 0x1 << 16,
+    __MACHINERY       = 0x1 << 17,
+    __EMITSOURCE      = 0x1 << 18,
     PRIMARYSOURCE     = 0x1 << 19,
     GENSTEPSOURCE     = 0x1 << 20
 }; 

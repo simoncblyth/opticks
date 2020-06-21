@@ -66,16 +66,23 @@ class OKCORE_API OpticksFlags {
     public:
        static const char* CERENKOV_ ;
        static const char* SCINTILLATION_ ;
+       static const char* TORCH_ ;
+
+  // stuff applicable to Gensteps moved to OpticksGensteps
+  // leaving only stuff that applies to photons
+
+/*
        static const char* NATURAL_ ;
        static const char* FABRICATED_ ;
        static const char* MACHINERY_ ;
-       static const char* TORCH_ ;
        static const char* G4GUN_ ;   
        static const char* EMITSOURCE_ ;   
        static const char* PRIMARYSOURCE_ ;   
        static const char* GENSTEPSOURCE_ ;   
        static const char* OTHER_ ;
+*/
     public:
+/*
        static const char* cerenkov_ ;
        static const char* scintillation_ ;
        static const char* natural_ ;
@@ -87,6 +94,7 @@ class OKCORE_API OpticksFlags {
        static const char* primarysource_ ;
        static const char* genstepsource_ ;
        static const char* other_ ;
+*/
     public:
        static const char* ZERO_ ;
        static const char* MISS_ ;
@@ -103,6 +111,7 @@ class OKCORE_API OpticksFlags {
        static const char* BAD_FLAG_ ;
     public:
        static const char* _ZERO ;
+/*
        static const char* _NATURAL ;
        static const char* _FABRICATED ;
        static const char* _MACHINERY ;
@@ -110,6 +119,7 @@ class OKCORE_API OpticksFlags {
        static const char* _EMITSOURCE ;   
        static const char* _PRIMARYSOURCE ;   
        static const char* _GENSTEPSOURCE ;   
+*/
        static const char* _CERENKOV ;
        static const char* _SCINTILLATION ;
        static const char* _TORCH ;
@@ -127,7 +137,7 @@ class OKCORE_API OpticksFlags {
        static const char* _BAD_FLAG ;
     public:
        static const char* SourceType(int code);
-       static const char* SourceTypeLowercase(int code);
+       //static const char* SourceTypeLowercase(int code);
        static unsigned int SourceCode(const char* type);
     public:
        static const char* Flag(const unsigned flag);

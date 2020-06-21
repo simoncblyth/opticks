@@ -34,27 +34,70 @@
 
 
 
-const char* OpticksGenstep::Invalid_                 = "Invalid" ;
+const char* OpticksGenstep::INVALID_                 = "INVALID" ;
 const char* OpticksGenstep::G4Cerenkov_1042_         = "G4Cerenkov_1042" ;
 const char* OpticksGenstep::G4Scintillation_1042_    = "G4Scintillation_1042" ;
 const char* OpticksGenstep::DsG4Cerenkov_r3971_      = "DsG4Cerenkov_r3971" ;
 const char* OpticksGenstep::DsG4Scintillation_r3971_ = "DsG4Scintillation_r3971" ;
+const char* OpticksGenstep::TORCH_                   = "torch" ;
+const char* OpticksGenstep::FABRICATED_              = "fabricated" ;
+const char* OpticksGenstep::EMITSOURCE_              = "emitsource" ;
+const char* OpticksGenstep::NATURAL_                 = "natural" ;
+const char* OpticksGenstep::MACHINERY_               = "machinery" ;
+const char* OpticksGenstep::G4GUN_                   = "g4gun" ;
+const char* OpticksGenstep::PRIMARYSOURCE_           = "primarysource" ;
+const char* OpticksGenstep::GENSTEPSOURCE_           = "genstepsource" ;
 
 const char* OpticksGenstep::Gentype(int gentype)
 {
     const char* s = 0 ;
     switch(gentype)
     {
-        case OpticksGenstep_Invalid:                 s=Invalid_                  ; break ; 
+        case OpticksGenstep_INVALID:                 s=INVALID_                  ; break ; 
         case OpticksGenstep_G4Cerenkov_1042:         s=G4Cerenkov_1042_          ; break ; 
         case OpticksGenstep_G4Scintillation_1042:    s=G4Scintillation_1042_     ; break ; 
         case OpticksGenstep_DsG4Cerenkov_r3971:      s=DsG4Cerenkov_r3971_       ; break ; 
         case OpticksGenstep_DsG4Scintillation_r3971: s=DsG4Scintillation_r3971_  ; break ; 
-        case OpticksGenstep_NumType:                 s=Invalid_                  ; break ; 
-        default:                                     s=Invalid_  ;
+        case OpticksGenstep_TORCH:                   s=TORCH_                    ; break ; 
+        case OpticksGenstep_FABRICATED:              s=FABRICATED_               ; break ; 
+        case OpticksGenstep_EMITSOURCE:              s=EMITSOURCE_               ; break ; 
+        case OpticksGenstep_NATURAL:                 s=NATURAL_                  ; break ; 
+        case OpticksGenstep_MACHINERY:               s=MACHINERY_                ; break ; 
+        case OpticksGenstep_G4GUN:                   s=G4GUN_                    ; break ; 
+        case OpticksGenstep_PRIMARYSOURCE:           s=PRIMARYSOURCE_            ; break ; 
+        case OpticksGenstep_GENSTEPSOURCE:           s=GENSTEPSOURCE_            ; break ; 
+        case OpticksGenstep_NumType:                 s=INVALID_                  ; break ; 
+        default:                                     s=INVALID_  ;
     }
     return s;
 }
+
+unsigned OpticksGenstep::SourceCode(const char* type)
+{
+    unsigned int code = OpticksGenstep_INVALID  ; 
+    if(     strcmp(type,G4Cerenkov_1042_)==0)          code = OpticksGenstep_G4Cerenkov_1042 ;
+    else if(strcmp(type,G4Scintillation_1042_)==0)     code = OpticksGenstep_G4Scintillation_1042 ;
+    else if(strcmp(type,DsG4Cerenkov_r3971_ )==0)      code = OpticksGenstep_DsG4Cerenkov_r3971 ;
+    else if(strcmp(type,DsG4Scintillation_r3971_)==0)  code = OpticksGenstep_DsG4Scintillation_r3971 ;
+    else if(strcmp(type,TORCH_  )==0)                  code = OpticksGenstep_TORCH ;
+    else if(strcmp(type,FABRICATED_)==0)               code = OpticksGenstep_FABRICATED ;
+    else if(strcmp(type,EMITSOURCE_)==0)               code = OpticksGenstep_EMITSOURCE ;
+    else if(strcmp(type,NATURAL_)==0)                  code = OpticksGenstep_NATURAL ;
+    else if(strcmp(type,MACHINERY_)==0)                code = OpticksGenstep_MACHINERY ;
+    else if(strcmp(type,G4GUN_)==0)                    code = OpticksGenstep_G4GUN ;
+    else if(strcmp(type,PRIMARYSOURCE_)==0)            code = OpticksGenstep_PRIMARYSOURCE ;
+    else if(strcmp(type,GENSTEPSOURCE_)==0)            code = OpticksGenstep_GENSTEPSOURCE ;
+    return code ; 
+}
+
+bool OpticksGenstep::IsValid(int gentype)
+{
+   const char* s = Gentype(gentype); 
+   bool invalid = strcmp(s, INVALID_) == 0 ;   
+   return !invalid ; 
+}
+
+
 
 
 OpticksGenstep::OpticksGenstep(const NPY<float>* gs) 

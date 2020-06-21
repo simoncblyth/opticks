@@ -58,6 +58,7 @@
 #include "G4TransportationManager.hh"
 #include "G4Version.hh"
 
+
 #include "PLOG.hh"
 
 G4Opticks* G4Opticks::fOpticks = NULL ;
@@ -441,6 +442,71 @@ void G4Opticks::collectSecondaryPhotons(const G4VParticleChange* pc)
     m_g4photon_collector->collectSecondaryPhotons( pc, m_genstep_idx );
     m_genstep_idx += 1 ; 
 }
+
+
+
+
+void G4Opticks::collectGenstep_G4Scintillation_1042(  
+     const G4Track* aTrack, 
+     const G4Step* aStep, 
+     G4int    numPhotons, 
+     G4int    ScintillationType,  // 1:Fast, 2:Slow
+     G4double ScintillationTime, 
+     G4double ScintillationRiseTime
+)
+{
+    // CAUTION : UNTESTED CODE
+
+    G4StepPoint* pPreStepPoint  = aStep->GetPreStepPoint();
+    G4StepPoint* pPostStepPoint = aStep->GetPostStepPoint();
+
+    G4ThreeVector x0 = pPreStepPoint->GetPosition();
+    G4double      t0 = pPreStepPoint->GetGlobalTime();
+    G4ThreeVector deltaPosition = aStep->GetDeltaPosition() ;
+
+    const G4DynamicParticle* aParticle = aTrack->GetDynamicParticle();
+    const G4Material* aMaterial = aTrack->GetMaterial();
+
+    G4double preVelocity  = pPreStepPoint->GetVelocity() ; 
+    G4double postVelocity = pPostStepPoint->GetVelocity() ; 
+ 
+    collectScintillationStep(
+
+         OpticksGenstep_G4Scintillation_1042,           // (int)gentype       (0) 
+         aTrack->GetTrackID(),                          // (int)ParenttId     
+         aMaterial->GetIndex(),                         // (int)MaterialIndex
+         numPhotons,                                    // (int)NumPhotons
+
+         x0.x(),                                        // x0.x               (1)
+         x0.y(),                                        // x0.y
+         x0.z(),                                        // x0.z
+         t0,                                            // t0 
+
+         deltaPosition.x(),                             // DeltaPosition.x    (2)
+         deltaPosition.y(),                             // DeltaPosition.y    
+         deltaPosition.z(),                             // DeltaPosition.z    
+         aStep->GetStepLength(),                        // step_length 
+
+         aParticle->GetDefinition()->GetPDGEncoding(),  // (int)code          (3) 
+         aParticle->GetDefinition()->GetPDGCharge(),    // charge
+         aTrack->GetWeight(),                           // weight 
+         preVelocity,                                   //  
+
+         ScintillationType,                             // (int) Fast:1 Slow:2
+         0.,                                            // 
+         0.,                                            // 
+         0.,                                            // 
+
+         ScintillationTime,                             //  ScintillationTime         (5)
+         ScintillationRiseTime,                         // 
+         postVelocity,                                  //  Other1
+         0                                              //  Other2
+    ) ;
+
+}
+ 
+
+
 
 /**
 G4Opticks::collectScintillationStep

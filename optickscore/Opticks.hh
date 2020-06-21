@@ -479,6 +479,7 @@ class OKCORE_API Opticks {
        unsigned int         getSourceCode() const ;
        const char*          getSourceType() const ;
    public:
+       bool                 isG4GUNGensteps() const ;       // G4GUN source
        bool                 isFabricatedGensteps() const ;       // TORCH or MACHINERY source
        bool                 isNoInputGensteps() const ;          // eg when loading a prior propagation
        bool                 isLiveGensteps() const ;             // --live option indicating get gensteps from G4 directly

@@ -92,6 +92,7 @@ rtBuffer<uint4>                optical_buffer;
 
 #include "state.h"
 #include "photon.h"
+#include "OpticksGenstep.h"
 
 rtDeclareVariable(uint2, launch_index, rtLaunchIndex, );
 rtDeclareVariable(uint2, launch_dim,   rtLaunchDim, );
@@ -100,7 +101,10 @@ rtDeclareVariable(uint2, launch_dim,   rtLaunchDim, );
 // not giving prd.distance_to_boundary
 
 #include "cerenkovstep.h"
+
 #include "scintillationstep.h"
+#include "Genstep_G4Scintillation_1042.h"
+
 #include "torchstep.h"
 
 #include "rayleigh.h"
@@ -428,8 +432,7 @@ RT_PROGRAM void generate()
 
     union quad ghead ; 
     ghead.f = genstep_buffer[genstep_offset+0]; 
-    int gencode = ghead.i.x ; 
-
+    int gencode = ghead.i.x ;  // 1st 4 bytes, is enumeration distinguishing cerenkov/scintillation/torch/...
 
 #ifdef DEBUG
     bool dbg = photon_id == debug_control.x ;  
@@ -447,7 +450,7 @@ RT_PROGRAM void generate()
 
     s.ureflectcheat = 0.f ; 
 
-    if(gencode == CERENKOV)   // 1st 4 bytes, is enumeration distinguishing cerenkov/scintillation/torch/...
+    if(gencode == OpticksGenstep_G4Cerenkov_1042 ) 
     {
         CerenkovStep cs ;
         csload(cs, genstep_buffer, genstep_offset, genstep_id);
@@ -457,17 +460,27 @@ RT_PROGRAM void generate()
         generate_cerenkov_photon(p, cs, rng );         
         s.flag = CERENKOV ;  
     }
-    else if(gencode == SCINTILLATION)
+    else if(gencode == OpticksGenstep_DsG4Scintillation_r3971 )
     {
         ScintillationStep ss ;
         ssload(ss, genstep_buffer, genstep_offset, genstep_id);
 #ifdef DEBUG
         if(dbg) ssdebug(ss);
 #endif
-        generate_scintillation_photon(p, ss, rng );         
+        generate_scintillation_photon(p, ss, rng );  // maybe split on gencode ?
         s.flag = SCINTILLATION ;  
     }
-    else if(gencode == TORCH)
+    else if(gencode == OpticksGenstep_G4Scintillation_1042 )
+    {
+        Genstep_G4Scintillation_1042 ss ;
+        ss.load( genstep_buffer, genstep_offset, genstep_id);
+#ifdef DEBUG
+        if(dbg) ss.debug();
+#endif
+        ss.generate_photon(p, rng ); 
+        s.flag = SCINTILLATION ;  
+    }
+    else if(gencode == OpticksGenstep_TORCH)
     {
         TorchStep ts ;
         tsload(ts, genstep_buffer, genstep_offset, genstep_id);
@@ -477,7 +490,7 @@ RT_PROGRAM void generate()
         generate_torch_photon(p, ts, rng );         
         s.flag = TORCH ;  
     }
-    else if(gencode == EMITSOURCE)
+    else if(gencode == OpticksGenstep_EMITSOURCE)
     {
         // source_buffer is input only, photon_buffer output only, 
         // photon_offset is same for both these buffers

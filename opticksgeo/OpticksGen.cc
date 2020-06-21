@@ -34,6 +34,7 @@
 #include "OpticksVersionNumber.hh"
 #include "OpticksGun.hh"
 #include "OpticksPhoton.h"
+#include "OpticksGenstep.hh"
 #include "Opticks.hh"
 #include "OpticksFlags.hh"
 #include "OpticksCfg.hh"
@@ -45,7 +46,7 @@
 
 #include "PLOG.hh"
 
-const plog::Severity OpticksGen::LEVEL = debug ; 
+const plog::Severity OpticksGen::LEVEL = PLOG::EnvLevel("OpticksGen", "debug") ; 
 
 
 NPY<float>* OpticksGen::getInputGensteps() const { return m_direct_gensteps ? m_direct_gensteps : m_legacy_gensteps ; }
@@ -64,7 +65,7 @@ OpticksGen::OpticksGen(OpticksHub* hub)
     m_fabstep(NULL),
     m_csg_emit(hub->findEmitter()),
     m_dbgemit(m_ok->isDbgEmit()),     // --dbgemit
-    m_emitter(m_csg_emit ? new NEmitPhotonsNPY(m_csg_emit, EMITSOURCE, m_ok->getSeed(), m_dbgemit, m_ok->getMaskBuffer(), m_ok->getGenerateOverride() ) : NULL ),
+    m_emitter(m_csg_emit ? new NEmitPhotonsNPY(m_csg_emit, OpticksGenstep_EMITSOURCE, m_ok->getSeed(), m_dbgemit, m_ok->getMaskBuffer(), m_ok->getGenerateOverride() ) : NULL ),
     m_input_photons(NULL),
     m_direct_gensteps(m_ok->hasKey() && m_ok->existsDirectGenstepPath() && !m_ok->isTest() ? m_ok->loadDirectGenstep() : NULL ),
     m_legacy_gensteps(NULL),
@@ -88,11 +89,11 @@ unsigned OpticksGen::initSourceCode() const
     unsigned code = 0 ; 
     if(m_direct_gensteps)
     {
-        code = GENSTEPSOURCE ; 
+        code = OpticksGenstep_GENSTEPSOURCE ; 
     }  
     else if(m_emitter) 
     {
-        code = EMITSOURCE ; 
+        code = OpticksGenstep_EMITSOURCE ; 
     }
     else
     { 
@@ -222,21 +223,21 @@ NPY<float>* OpticksGen::makeLegacyGensteps(unsigned code)
        ;
  
 
-    if( code == FABRICATED || code == MACHINERY  )
+    if( code == OpticksGenstep_FABRICATED || code == OpticksGenstep_MACHINERY  )
     {
         m_fabstep = makeFabstep();
         gs = m_fabstep->getNPY();
     }
-    else if(code == TORCH)
+    else if(code == OpticksGenstep_TORCH)
     {
         m_torchstep = makeTorchstep() ;
         gs = m_torchstep->getNPY();
     }
-    else if( code == CERENKOV || code == SCINTILLATION || code == NATURAL )
+    else if( code == OpticksGenstep_G4Cerenkov_1042 || code == OpticksGenstep_DsG4Scintillation_r3971 || code == OpticksGenstep_NATURAL )
     {
         gs = loadLegacyGenstepFile("GS_LOADED,GS_LEGACY");
     }
-    else if( code == G4GUN  )
+    else if( code == OpticksGenstep_G4GUN  )
     {
         if(m_ok->existsLegacyGenstepPath())
         {
@@ -265,11 +266,11 @@ GenstepNPY* OpticksGen::getGenstepNPY() const
 
     GenstepNPY* gsnpy = NULL ; 
 
-    if(source_code == TORCH)
+    if(source_code == OpticksGenstep_TORCH)
     {
         gsnpy = dynamic_cast<GenstepNPY*>(getTorchstep()) ;
     } 
-    else if( source_code == EMITSOURCE )
+    else if( source_code == OpticksGenstep_EMITSOURCE )
     {
         gsnpy = dynamic_cast<GenstepNPY*>(getFabStep());
     }
@@ -374,7 +375,7 @@ void OpticksGen::setMaterialLine( GenstepNPY* gs )
 
 FabStepNPY* OpticksGen::makeFabstep()
 {
-    FabStepNPY* fabstep = new FabStepNPY(FABRICATED, 10, 10 );
+    FabStepNPY* fabstep = new FabStepNPY(OpticksGenstep_FABRICATED, 10, 10 );
 
     const char* material = m_ok->getDefaultMaterial();
     fabstep->setMaterial(material);
