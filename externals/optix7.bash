@@ -368,6 +368,29 @@ CUSTOM_PRIMITIVES for analytic
 
 
 
+dhart : Writing to Buffer
+----------------------------
+
+* https://forums.developer.nvidia.com/t/how-to-write-from-closesthit-to-a-device-buffer/110361
+
+I recommend studying the OptiX 7 example called “optixRaycasting”. This sample
+is structured to write the ray tracing results to a buffer, which is then
+processed by a separate CUDA kernel.
+
+This should give you some ideas of how to handle your payload and the mechanics
+of writing to a buffer. If it doesn’t answer your questions, please write back
+and we can offer more guidance.
+
+Nsight Compute, Nsight Systems, and Nsight VSE (on Windows), should all work
+reasonably well with OptiX 7, as long as you’re using a very recent driver.
+cuda-gdb works on Linux, though it’s not as well supported as Nsight.
+
+You can use atomics to prevent two threads from writing to the same memory
+address. The best advice for performance is to try hard to avoid needing
+atomics, but you can use them if you need. There is a bit more information
+about what is allowed here:
+
+https://raytracing-docs.nvidia.com/optix7/guide/index.html#program_pipeline_creation#program-input
 
 
 EOU
@@ -402,7 +425,12 @@ optix7-info(){ cat << EOI
 
    OPTICKS_PREFIX       : $OPTICKS_PREFIX
    OPTICKS_OPTIX_PREFIX : $OPTICKS_OPTIX_PREFIX
-   optix7-prefix : $(optix7-prefix)
+
+
+   optix7-realprefix : $(optix7-realprefix)      # obtained with readlink
+   optix7-prefix     : $(optix7-prefix)
+   optix7-pdf-       : $(optix7-pdf-)
+
 
 EOI
 }
