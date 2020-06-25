@@ -123,7 +123,7 @@ class GPlot(object):
         pass
 
     def plot(self, ax, recurse=True, **kwa):
-        log.info("kwa %s " % kwa)
+        log.debug("kwa %s " % kwa)
         self.plot_r(self.root, ax, recurse=recurse, depth=0, **kwa )
 
 
@@ -166,6 +166,12 @@ class GPlot(object):
     @classmethod
     def SubPlotsFig(cls, plt, lvsl, args):
         """
+        :param plt:
+        :param lvsl: list containing one or more lvs lists of lv
+
+        A list of lists for lvsl is used to allow comparisons between two 
+        versions of the parsed GDML.
+
         All volumes on one page via subplots  
         """
         if len(lvsl) == 1:
@@ -179,9 +185,16 @@ class GPlot(object):
             lvs = lvs0
         pass 
 
-        ny, nx = 2, len(lvs)/2
+        n_lvs = len(lvs) 
 
-        log.info("SubFig ny:%d nx:%d lvs:%d" % (ny,nx,len(lvs)) )
+        if n_lvs == 3:
+            ny, nx = 2, 2
+        else:
+            ny, nx = 2, n_lvs/2
+        
+
+
+        log.info("SubFig ny:%d nx:%d n_lvs:%d" % (ny,nx,n_lvs) )
 
         kwa = dict()
         kwa["sharex"] = True 
@@ -253,7 +266,7 @@ def pmt_annotate( ax, pmt):
     add_line(ax, [-300,ztub], [300,ztub])
     add_line( ax, [0,-400], [0,400] )
 
-    if not neck.__class__.__name__ == 'PolyCone':
+    if not neck.__class__.__name__ == 'Polycone':
         tube = neck.first 
         torus = neck.second
         ztor = bulbneck.position.z + neck.position.z  # absolute neck offset 
@@ -278,9 +291,13 @@ if __name__ == '__main__':
 
 
     #lvx = "NNVTMCPPMT_PMT_20inch_log"
-    lvx = "NNVTMCPPMT_log"
+    #lvx = "NNVTMCPPMT_log"
+    lvx = "HamamatsuR12860_PMT_20inch_body_log" 
 
     lv = g.find_one_volume(lvx)
+    s = lv.solid 
+    s.sub_traverse()
+
     log.info( "lv %r " % lv )
 
     lvs = g.get_traversed_volumes( lv, maxdepth=args.maxdepth )

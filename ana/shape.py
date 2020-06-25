@@ -262,7 +262,7 @@ class Shape(object):
         node = self
         while node is not None:
             if node.ltransform is not None:
-                log.info("adding ltransform %s " %  node.ltransform)
+                log.debug("adding ltransform %s " %  node.ltransform)
                 xy += node.ltransform
             pass
             node = node.parent 
@@ -408,7 +408,7 @@ class Shape(object):
             vtxs[i] = ( -rmax[i], z[i] )
             vtxs[2*nz-i-1] = ( rmax[i], z[i] )
         pass 
-        log.info(" xy : %r " %  xy )
+        log.debug(" xy : %r " %  xy )
         return cls.make_pathpatch( xy, vtxs, **kwa )
 
 

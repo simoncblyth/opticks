@@ -49,6 +49,8 @@ parse_ = lambda _:ET.parse(os.path.expandvars(_)).getroot()
 fparse_ = lambda _:HT.fragments_fromstring(file(os.path.expandvars(_)).read())
 pp_ = lambda d:"\n".join([" %30s : %f " % (k,d[k]) for k in sorted(d.keys())])
 
+unref_ = lambda n:n[:-9] if n[-9:-7] == '0x' else n   # HamamatsuR12860_PMT_20inch_body_solid_1_90x32aa10 trim the 0x32aa10
+
 
 def construct_transform(obj):
     tla = obj.position.xyz if obj.position is not None else None
@@ -80,11 +82,10 @@ class G(object):
     is_primitive = property(lambda self:issubclass(self.__class__ , Primitive )) 
     is_boolean   = property(lambda self:issubclass(self.__class__ , Boolean )) 
 
-
     def _get_shortname(self):
         """/dd/Geometry/PMT/lvPmtHemi0xc133740 -> lvPmtHemi"""
         base = self.name.split("/")[-1]
-        return base[:-9] if base[-9:-7] == '0x' else base
+        return unref_(base) 
     shortname = property(_get_shortname)
 
     def att(self, name, default=None, typ=None):
@@ -163,6 +164,9 @@ class Scale(Transform):
 
 
 class Geometry(G):
+    """
+    Boolean and Primitive are Geometry subclasses
+    """
     def as_ncsg(self):
         assert 0, "Geometry.as_ncsg needs to be overridden in the subclass: %s " % self.__class__ 
 
@@ -206,12 +210,38 @@ class Geometry(G):
         find_solids_r(self)
         return ss
  
- 
+    def __repr__(self):
+        """for indents need to sub_traverse from root solid of interest"""
+        sub_depth = getattr(self, 'sub_depth', 0) 
+        sub_indent = "  " * sub_depth
+        sub_name = getattr(self, 'sub_name', self.name)
+        sub_prefix = getattr(self, 'sub_prefix', None)
+    
+        sub_root = getattr(self, 'sub_root', None)
+        is_sub_root = sub_root == self   
+        sub_root_marker = "[%s]" % sub_prefix if sub_root == self else ""
+
+        right_xyz = self.right_xyz if self.is_boolean else None
+        right_xyz = ": right_xyz:%s/%s/%6.3f" % tuple(right_xyz) if not right_xyz is None else ""
+
+        line = "%d%s %s %s %s%s " % (sub_depth, sub_indent, self.gidx, self.typ, sub_root_marker, sub_name )
+        line = "%-40s %s" % (line, right_xyz ) 
+
+        if is_sub_root:
+            line = "*:%s" % line 
+        pass
+
+        lrep_ = lambda label,obj:"%s:%r"%(label,obj)
+        lines = [line]
+        if self.is_boolean:
+            lines.append( lrep_("l",self.first) )  
+            lines.append( lrep_("r",self.second) )  
+        pass
+        return "\n".join(lines)
 
 
 
 class Boolean(Geometry):
-
     all_transforms = []
 
     @classmethod
@@ -236,10 +266,54 @@ class Boolean(Geometry):
     first = property(lambda self:self.g.solids[self.firstref])
     second = property(lambda self:self.g.solids[self.secondref])
 
-    def __repr__(self):
-        line = "%s %s %s  " % (self.gidx, self.typ, self.name )
-        lrep_ = lambda label,obj:"     %s:%r"%(label,obj)
-        return "\n".join([line, lrep_("l",self.first), lrep_("r",self.second)])
+    @classmethod 
+    def SubTraverse(cls, root):
+        """
+        :param root: Geometry instance, Boolean or Primitive 
+
+        Traverses from root setting "temporary" properties, sub_root, sub_depth, sub_name
+
+        As solids are reused within others cannot define a fixed 
+        depth or even a fixed parent link. 
+        Instead can only define temporary depths and parents within 
+        the context of a traversal from some root.
+
+        """
+        names = []
+        def collect_names_r(node, depth):
+            names.append(node.name) 
+            if node.is_boolean:
+                collect_names_r(node.first, depth+1)
+                collect_names_r(node.second, depth+1)
+            pass
+        pass
+        collect_names_r(root, 0)
+        prefix = os.path.commonprefix(names)
+        log.debug("\n".join(["names", "prefix:%s" % prefix] + names))
+
+        subnames = []
+        def sub_traverse_r(node, depth):
+
+            sub_name = unref_(node.name[len(prefix):]) 
+            subnames.append(sub_name)
+
+            node.sub_root = root
+            node.sub_depth = depth  
+            node.sub_prefix = prefix
+            node.sub_name = sub_name
+
+            if node.is_boolean:
+                node.first.sub_parent = node
+                node.second.sub_parent = node
+                sub_traverse_r(node.first, depth+1)
+                sub_traverse_r(node.second, depth+1) 
+            pass
+        pass
+        sub_traverse_r(root, 0)  # 2nd traverse doing sub_ labelling 
+        log.debug("\n".join(["subnames"] + subnames))
+
+    def sub_traverse(self):
+        self.SubTraverse(self)
 
     def as_ncsg(self):
         if not hasattr(self.first, 'as_ncsg'):
@@ -260,6 +334,14 @@ class Boolean(Geometry):
         cn.left = left
         cn.right = right 
         return cn 
+
+    def _get_right_xyz(self):
+        transform = self.secondtransform 
+        no_rotation = np.all(np.eye(3) == transform[:3,:3])
+        assert no_rotation, transform
+        xyz = transform[3,:3]
+        return xyz
+    right_xyz = property(_get_right_xyz)
 
     def as_shape(self, **kwa):
         """
@@ -333,14 +415,27 @@ class Primitive(Geometry):
 
         return obj_slab0_slab1
 
+    def __repr__0(self):
+        depth = getattr(self, 'depth', 0) 
+        indent = " " * depth
+        return "%d:%s %s %s %s %s rmin %s rmax %s  x %s y %s z %s  " % (depth, indent, self.gidx, self.typ, self.name, self.lunit, self.rmin, self.rmax, self.x, self.y, self.z)
+
     def __repr__(self):
-        return "%s %s %s %s rmin %s rmax %s  x %s y %s z %s  " % (self.gidx, self.typ, self.name, self.lunit, self.rmin, self.rmax, self.x, self.y, self.z)
+        grepr = Geometry.__repr__(self)
+        return "%-40s : xyz %s,%s,%5.3f  " % (grepr, self.x, self.y, self.z)
+
 
 class Tube(Primitive):
     """
     G4Tubs is GDML serialized as tube 
     """
     deltaphi_segment_enabled = True
+
+    def __repr__(self):
+        hz = self.z/2.
+        prepr = Primitive.__repr__(self)
+        return "%-80s :  rmin %s rmax %6.3f hz %6.3f " % (prepr, self.rmin, self.rmax, hz )
+
 
     @classmethod 
     def make_cylinder(cls, radius, z1, z2, name):
@@ -530,6 +625,14 @@ class Ellipsoid(Primitive):
         shape = SEllipsoid(self.name, [self.ax, self.cz], **kwa )
         return shape 
 
+    def __repr__(self):
+        prepr = Primitive.__repr__(self)
+        return "%-80s :  ax/by/cz %6.3f/%6.3f/%6.3f  zcut1 %6.3f zcut2 %6.3f  " % (prepr, self.ax, self.by, self.cz, self.zcut1, self.zcut2 )
+
+
+
+
+
 class Torus(Primitive):
     rtor = property(lambda self:self.att('rtor', 0, typ=float))
     def as_ncsg(self):
@@ -540,6 +643,9 @@ class Torus(Primitive):
         shape = STorus(self.name, [self.rmax, self.rtor], **kwa)
         return shape 
 
+    def __repr__(self):
+        prepr = Primitive.__repr__(self)
+        return "%-80s :  rmin %6.3f rmax %6.3f rtor %6.3f  " % (prepr, self.rmin, self.rmax, self.rtor  )
 
 
 
@@ -606,7 +712,7 @@ class Cone(Primitive):
         zp0 = FakeZPlane(z=0., rmin=self.rmin1,rmax=self.rmax1) 
         zp1 = FakeZPlane(z=self.z, rmin=self.rmin2,rmax=self.rmax2) 
         zp = [zp0, zp1]
-        PolyCone.Plot(ax, zp)
+        Polycone.Plot(ax, zp)
 
 
 
@@ -735,7 +841,7 @@ class Trapezoid(Primitive):
         return cn
 
 
-class PolyCone(Primitive):
+class Polycone(Primitive):
     """
     ::
 
@@ -797,8 +903,13 @@ class PolyCone(Primitive):
     zp_z = property(lambda self:list(set(map(lambda _:_.z,self.zplane))))
     zp = property(lambda self:"%s %30s %2d z:%50r rmax:%35r rmin:%20r " % (self.gidx, self.name, self.zp_num, self.zp_z, self.zp_rmax, self.zp_rmin)) 
 
+    #def __repr__(self):
+    #    return self.zp
+
     def __repr__(self):
-        return self.zp
+        prepr = Primitive.__repr__(self)
+        return "%-80s :  zp_num %2d z:%r rmax:%r rmin:%r  " % (prepr, self.zp_num, self.zp_z, self.zp_rmax, self.zp_rmin )
+
 
     def zp_array(self):
         a = np.zeros( [len(self.zplane), 3] )
@@ -1053,7 +1164,7 @@ class GDML(G):
         "ellipsoid":Ellipsoid,
         "box":Box,
         "cone":Cone,
-        "polycone":PolyCone,
+        "polycone":Polycone,
         "zplane":ZPlane,
         "trd":Trapezoid,
 

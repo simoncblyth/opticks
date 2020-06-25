@@ -57,6 +57,13 @@ Workflow::
        ## manually examine the differences to see which is ahead OR to merge changes 
        ## from both ends if there has been a mixup and changes were made in the wrong file 
 
+
+   loc> svn.py sync -p rem | grep scp 
+       ## with remote priority, show the sync scp commands 
+
+   loc> svn.py sync -p rem | grep scp | sh 
+       ## pipe those commands to shell
+
 """
 import os, commands, re, argparse, logging
 from collections import OrderedDict as odict
@@ -113,6 +120,7 @@ class WC(object):
         parser.add_argument( "--rstatpath", default="~/rstat.txt", help="path to remote status file" ) 
         parser.add_argument( "--rsvnbase", default="P:junotop/offline", help="remote svn working copy" ) 
         parser.add_argument( "--ldig", type=int, default=-1, help="length of digest" ) 
+        parser.add_argument( "-p", "--priority", choices=["loc","rem"], default="rem", help="Which version wins when a file exists at both ends" ) 
         parser.add_argument( "--level", default="info", help="logging level" ) 
         args = parser.parse_args()
         fmt = '[%(asctime)s] p%(process)s {%(pathname)s:%(lineno)d} %(levelname)s - %(message)s'
@@ -182,14 +190,19 @@ class WC(object):
         paths = []
         stfmt = "%2s %1s%1s %1s"
         dgfmt = "%5s|%5s" 
+
+        index_ = lambda ls,val:ls.index(val) if val in ls else -1 
        
-        for k in sorted(list(u), key=lambda k:max(l.keys().index(k),r.keys().index(k))):
+        for k in sorted(list(u), key=lambda k:max(index_(l.keys(),k),index_(r.keys(),k))):
             st = "".join(["l" if k in l else " ","r" if k in r else " "])
             rk = r.get(k, None)
             lk = l.get(k, None)
 
             d = dict(path=k)
             d["ldig"] = ldig
+
+            stdig = " "
+
             if st == "lr":
                 stdig = "=" if lk["dig"] == rk["dig"] else "*"
                 stdat = (st, lk["st"], rk["st"], stdig )
@@ -205,6 +218,8 @@ class WC(object):
                 d["dig5"] = dgfmt % ("-" * 5, rk["dig5"] )
             pass
             d["st"] = stfmt % stdat  
+            d["stlr"] = st 
+            d["stdig"] = stdig
             paths.append(Path(d))
         pass
         return cls(paths, "cf")
@@ -258,6 +273,7 @@ if __name__ == '__main__':
 
     if loc and rem:
         cf = WC.FromComparison(loc,rem, args.ldig)
+        #cf = None
     else:
         cf = None
     pass
@@ -279,15 +295,28 @@ if __name__ == '__main__':
             assert cf
             for p in cf.paths:
                 print(str(p))
-                st2 = p["st"][:2]
-                if st2 == "l ":
+                stlr = p["stlr"]
+                stdig = p["stdig"]
+                if stlr == "l ":
                     print(WC.PutCmd(p["path"], args.rsvnbase, args.chdir))
-                elif st2 == " r":
+                elif stlr == " r":
                     print(WC.GetCmd(p["path"], args.rsvnbase, args.chdir))
-                else:
+                elif stlr == "lr":
+                    if stdig == "*": 
+                        if args.priority == "rem":
+                            print(WC.GetCmd(p["path"], args.rsvnbase, args.chdir))
+                        elif args.priority == "loc":
+                            print(WC.PutCmd(p["path"], args.rsvnbase, args.chdir))
+                        else:
+                            assert 0, args.priority
+                        pass
                     pass
+                else:
+                    assert 0, stlr
                 pass
             pass
+        else:
+            assert 0, cmd
         pass
     pass
 
