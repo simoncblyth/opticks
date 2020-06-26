@@ -68,6 +68,37 @@ def ellipse_closest_approach_to_point( ex, ez, _c ):
 
 
 
+def ellipse_points( xy=[0,-5.], ex=254., ez=190., n=1000 ):
+    """
+    :param ec: center of ellipse
+    :param ex: xy radius of ellipse
+    :param ez: z radius of ellipse 
+    :param n: number of points
+    :return e: array of shape (n,2) of points on the ellipse
+    """
+    t = np.linspace( 0, 2*np.pi, n )
+    e = np.zeros([len(t), 2])
+    e[:,0] = ex*np.cos(t) + xy[0]
+    e[:,1] = ez*np.sin(t) + xy[1]
+    return e      
+
+def circle_points( xy=[0,0], tr=80, n=1000 ):
+    """
+    :param tc: center of circle
+    :param tr: radius of circle
+    :param n: number of points
+    :return c: array of shape (n,2) of points on the circle
+    """
+    t = np.linspace( 0, 2*np.pi, n )
+    c = np.zeros([len(t), 2])
+    c[:,0] = tr*np.cos(t) + xy[0]
+    c[:,1] = tr*np.sin(t) + xy[1]
+    return c      
+
+
+
+
+
 class X(object):
     def __init__(self, root):
         self.root = root 

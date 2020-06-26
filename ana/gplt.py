@@ -58,8 +58,8 @@ class GPlot(object):
         #defaults["lvx"] = "lInnerWater"
         defaults["lvx"] = cls.pmt_volname(2)
         defaults["maxdepth"] = -1    
-        defaults["xlim"] = "-300,300"
-        defaults["ylim"] = "-410,200"
+        defaults["xlim"] = "-330,330"  # 660
+        defaults["ylim"] = "-460,200"
         defaults["size"] = "8,8"
         defaults["color"] = "r,g,b,c,y,m,k" 
         defaults["figdir"] = "/tmp/fig"       
@@ -298,7 +298,7 @@ if __name__ == '__main__':
     s = lv.solid 
     s.sub_traverse()
 
-    log.info( "lv %r " % lv )
+    log.info( "lv %r" % lv )
 
     lvs = g.get_traversed_volumes( lv, maxdepth=args.maxdepth )
 
@@ -313,6 +313,7 @@ if __name__ == '__main__':
     fig, axs = GPlot.SubPlotsFig(plt, [lvs], args)
     fig.show()
     fig.savefig(args.pngpath("SplitFig"))
+
 
 
 

@@ -70,7 +70,7 @@ class G(object):
     """
     Base wrapper type for lxml parsed GDML elements 
     """
-    pvtype = 'PhysVol'
+    pvtype = 'Physvol'
     lvtype = 'Volume'
     postype = 'position'
 
@@ -78,6 +78,8 @@ class G(object):
     name  = property(lambda self:self.elem.attrib.get('name',None))
     xml = property(lambda self:tostring_(self.elem))
     gidx = property(lambda self:"[%d]" % self.idx if hasattr(self, 'idx') else '[]' )  # materials, volumes and top level solids have idx attribute 
+
+
 
     is_primitive = property(lambda self:issubclass(self.__class__ , Primitive )) 
     is_boolean   = property(lambda self:issubclass(self.__class__ , Boolean )) 
@@ -94,6 +96,10 @@ class G(object):
         return typ(v)
 
     def __init__(self, elem, g=None):
+        """
+        :param elem: lxml element
+        :param g: 
+        """
         self.elem = elem 
         self.g = g 
 
@@ -107,8 +113,7 @@ class G(object):
 
         """
         wrap_ = lambda e:self.g.kls.get(e.tag,G)(e,self.g)
-        #fa = map(wrap_, self.elem.findall(expr) )
-        fa = map(wrap_, self.elem.xpath(expr) )
+        fa = map(wrap_, self.elem.xpath(expr) )    # formerly used findall, moved to xpath for selective expressions
         kln = self.__class__.__name__
         name = self.name 
         log.debug("findall_ from %s:%s expr:%s returned %s " % (kln, name, expr, len(fa)))
@@ -222,7 +227,7 @@ class Geometry(G):
         sub_root_marker = "[%s]" % sub_prefix if sub_root == self else ""
 
         right_xyz = self.right_xyz if self.is_boolean else None
-        right_xyz = ": right_xyz:%s/%s/%6.3f" % tuple(right_xyz) if not right_xyz is None else ""
+        right_xyz = " : right_xyz:%s/%s/%6.3f" % tuple(right_xyz) if not right_xyz is None else ""
 
         line = "%d%s %s %s %s%s " % (sub_depth, sub_indent, self.gidx, self.typ, sub_root_marker, sub_name )
         line = "%-40s %s" % (line, right_xyz ) 
@@ -1090,7 +1095,7 @@ class Volume(G):
         for pv in self.physvol:
             lv = pv.volume
             lv.rdump(depth=depth+1)
-
+        pass
 
     def as_ncsg(self):
         """
@@ -1111,10 +1116,10 @@ class Volume(G):
     def __repr__(self):
         repr_ = lambda _:"   %r" % _ 
         pvs = map(repr_, self.physvol) 
-        line = "%s %s %s %s %s" % (self.gidx, self.typ, self.name, self.materialref, self.solidref)
-        return "\n".join([line, repr_(self.solid), repr_(self.material)] + pvs )
+        line = "%s %s %s" % (self.gidx, self.typ, self.name )
+        return "\n".join([line, "solid", repr(self.solid), "material", repr(self.material), "physvol %d" % len(self.physvol)] + pvs )
 
-class PhysVol(G):
+class Physvol(G):
     """
 
     volume
@@ -1148,13 +1153,26 @@ class PhysVol(G):
 class odict(collections.OrderedDict):
     """
     Used for GDML collections of materials, solids and volumes which are 
-    always keyed by name.  Call method for convenient indexed access. 
+    always keyed by name.  
+
+    Call method gives integer index access to materials, solids and volumes (LV)
+    The idx is set in GDML.init from the order the elements appear in the GDML.
+
+    ::
+
+        g.material(idx)
+        g.solids(idx)
+        g.volumes(idx)   # integer index
+
     """
     def __call__(self, iarg):
-        return self.items()[iarg][1]
+        return self.items()[iarg][1]   # items returns (key,value) the key is the name
 
 
 class GDML(G):
+    """
+    Parsing and wrapping 
+    """
     kls = {
         "material":Material,
 
@@ -1177,17 +1195,20 @@ class GDML(G):
         "scale":Scale,
 
         "volume":Volume,
-        "physvol":PhysVol,
+        "physvol":Physvol,
     }
 
     @classmethod
     def parse(cls, path=None):
+        """
+        :param path: to GDML file
+        """
         if path is None:
             path = os.environ['OPTICKS_GDMLPATH']   # set within opticks_main
             log.info("gdmlpath defaulting to OPTICKS_GDMLPATH %s which is derived by opticks.ana.base from the IDPATH input envvar " % path )
         pass
         log.info("parsing gdmlpath %s " % path )
-        gg = parse_(path)
+        gg = parse_(path)                   # lxml parse and return root "gdml" element
         wgg = cls.wrap(gg, path=path)
         return wgg 
 
@@ -1200,7 +1221,11 @@ class GDML(G):
 
     @classmethod
     def wrap(cls, gdml, path=None):
-        log.info("wrapping gdml element  ")
+        """
+        :param gdml: lxml root "gdml" element of parsed GDML document  
+        :param path: of the gdml as metadata
+        """
+        log.debug("wrapping gdml elements with python instances")
         gg = cls(gdml)
         gg.g = gg
         gg.path = path
@@ -1211,7 +1236,15 @@ class GDML(G):
     def get_traversed_volumes(self, lv_base, maxdepth=-1):
         """
         :param lv_base: base logical volume
-        :return tvol: odict of logical volumes within lv_base, obtained by recursion and keywd by index
+        :param maxdepth: -1 for no limit 
+        :return tvol: odict of logical volumes within lv_base, obtained by recursion and keyed by index
+
+        Recursive traversal of the lv/pv GDML structure collecting 
+        and ordered dict keyed on the traversal order index 
+
+        Note this was originally intended for assigning shortened local names 
+        within subtrees of associated volumes, eg those forming the PMT-mask and its PMT inside, 
+        that have associated names with a common prefix.
         """
         tvol = odict()
         def traverse_r(lv0, depth):
@@ -1240,6 +1273,10 @@ class GDML(G):
         """
         Assign shortened local_name to the lv
         by removing common prefix and pointer refs
+
+        NB this assumes that associated volumes have associated names 
+        with a common prefix
+
         """
         names = map(lambda _:_.name, tvol.values())
         unref_ = lambda _:_[:_.find("0x")] if _.find("0x") > -1 else _
@@ -1252,6 +1289,11 @@ class GDML(G):
         pass
 
     def find_by_prefix(self, d, prefix):
+        """
+        :param d: dict 
+        :param prefix: str
+        :return sel: list of objects from d with name starting with prefix
+        """
         return filter(lambda v:v.name.startswith(prefix), d.values())
 
     def find_volumes(self, prefix):
@@ -1270,12 +1312,16 @@ class GDML(G):
         log.info(" ns:%d nv:%d (logical volumes) " % (ns,nv))
 
     def find_one_volume(self, prefix):
+        """   
+        :param prefix: str
+        :return lv: first Volume instance with name matching starting with prefix 
+        """
         lvs = self.find_volumes(prefix)
-        log.info("prefix argument %s matched %d volumes : only plotting first" % (prefix, len(lvs)))
+        log.info("prefix argument %s matched %d volumes" % (prefix, len(lvs)))
         for i,lv in enumerate(lvs):
             log.info(" %2d : %s" % (i,lv.name) )
         pass 
-        return lvs[0]
+        return lvs[0] if len(lvs) > 0 else None
 
 
     world = property(lambda self:self.volumes[self.worldvol])
