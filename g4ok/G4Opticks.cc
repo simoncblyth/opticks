@@ -391,7 +391,7 @@ optickscore/OpticksEvent.cc::
 
 int G4Opticks::propagateOpticalPhotons() 
 {
-    LOG(LEVEL) << "[" ; 
+    LOG(LEVEL) << "[[" ; 
 
     m_gensteps = m_genstep_collector->getGensteps(); 
     const char* gspath = m_ok->getDirectGenstepPath(); 
@@ -433,7 +433,7 @@ int G4Opticks::propagateOpticalPhotons()
 
     int num_hits = m_hits ? m_hits->getNumItems() : -1 ; ; 
 
-    LOG(LEVEL) << "[ num_hits " << num_hits ; 
+    LOG(LEVEL) << "]] num_hits " << num_hits ; 
     return num_hits ;   
 }
 
