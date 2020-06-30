@@ -378,6 +378,8 @@ optickscore/OpticksEvent.cc::
 
 int G4Opticks::propagateOpticalPhotons() 
 {
+    LOG(LEVEL) << "[" ; 
+
     m_gensteps = m_genstep_collector->getGensteps(); 
     const char* gspath = m_ok->getDirectGenstepPath(); 
 
@@ -416,7 +418,10 @@ int G4Opticks::propagateOpticalPhotons()
         // clone any buffers to be retained before the reset
     }
 
-    return m_hits ? m_hits->getNumItems() : -1 ;   
+    int num_hits = m_hits ? m_hits->getNumItems() : -1 ; ; 
+
+    LOG(LEVEL) << "[ num_hits " << num_hits ; 
+    return num_hits ;   
 }
 
 NPY<float>* G4Opticks::getHits() const 
@@ -760,7 +765,7 @@ void G4Opticks::collectCerenkovStep
         G4double             postVelocity
     )
 {
-     LOG(info) << "[" ; 
+     LOG(debug) << "[" ; 
      m_genstep_collector->collectCerenkovStep(
                        gentype, 
                        parentId,
@@ -792,7 +797,7 @@ void G4Opticks::collectCerenkovStep
                        meanNumberOfPhotons2,
                        postVelocity
                        ) ;
-     LOG(info) << "]" ; 
+     LOG(debug) << "]" ; 
 }
   
 
