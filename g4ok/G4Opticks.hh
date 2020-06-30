@@ -22,6 +22,7 @@
 #include <string>
 #include <vector>
 #include <map>
+#include "plog/Severity.h"
 
 #include "G4OK_API_EXPORT.hh"
 
@@ -83,9 +84,11 @@ Notes
 class G4OK_API G4Opticks   
 {
     private:
+        static const plog::Severity LEVEL ;
         static const char* fEmbeddedCommandLine ; 
         static std::string EmbeddedCommandLine(const char* extra=NULL); 
     public:
+        static G4Opticks* Get();
         static G4Opticks* GetOpticks();
         static void Initialize(const G4VPhysicalVolume* world, bool standardize_geant4_materials);
         static void Finalize();

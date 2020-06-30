@@ -61,6 +61,10 @@
 
 #include "PLOG.hh"
 
+
+const plog::Severity G4Opticks::LEVEL = PLOG::EnvLevel("G4Opticks", "DEBUG")  ;
+
+
 G4Opticks* G4Opticks::fOpticks = NULL ;
 
 //const char* G4Opticks::fEmbeddedCommandLine = " --gltf 3 --compute --save --embedded --natural --dbgtex --printenabled --pindex 0 --bouncemax 0"  ; 
@@ -95,9 +99,18 @@ std::string G4Opticks::desc() const
 
 G4Opticks* G4Opticks::GetOpticks()
 {
+    return Get(); 
+}
+
+G4Opticks* G4Opticks::Get()
+{
     if (!fOpticks) fOpticks = new G4Opticks;
     return fOpticks ;
 }
+
+
+
+
 
 
 void G4Opticks::Initialize(const G4VPhysicalVolume* world, bool standardize_geant4_materials)
