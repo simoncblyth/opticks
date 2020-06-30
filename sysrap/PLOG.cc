@@ -318,28 +318,34 @@ const char* PLOG::get_arg_after(const char* option, const char* fallback) const
 
 
 
+PLOG::PLOG(const char* name, const char* fallback, const char* prefix)
+    :
+    args(name, "OPTICKS_LOG_ARGS" , ' '),   // when argc_ is 0 the named envvar is checked for arguments instead 
+    level(info),
+    filename(_logpath()),
+    maxFileSize(500000),
+    maxFiles(3)
+{
+    init(fallback, prefix); 
+}
+
 PLOG::PLOG(int argc_, char** argv_, const char* fallback, const char* prefix)
     :
-      args(argc_, argv_, "OPTICKS_LOG_ARGS" , ' '),   // when argc_ is 0 the named envvar is checked for arguments instead 
-      level(info),
-      filename(_logpath()),
-      maxFileSize(500000),
-      maxFiles(3)
+    args(argc_, argv_, "OPTICKS_LOG_ARGS" , ' '),   // when argc_ is 0 the named envvar is checked for arguments instead 
+    level(info),
+    filename(_logpath()),
+    maxFileSize(500000),
+    maxFiles(3)
 {
-   level = prefix == NULL ?  parse(fallback) : prefixlevel_parse(fallback, prefix ) ;    
+    init(fallback, prefix); 
+}
 
-   assert( instance == NULL && "ONLY EXPECTING A SINGLE PLOG INSTANCE" );
-   instance = this ; 
 
-/*
-   std::cerr << "PLOG::PLOG " 
-             << " instance " << instance 
-             << " this " << this 
-             << " filename " << filename
-             << std::endl
-             ;
-*/
-
+void PLOG::init(const char* fallback, const char* prefix)
+{
+    level = prefix == NULL ?  parse(fallback) : prefixlevel_parse(fallback, prefix ) ;    
+    assert( instance == NULL && "ONLY EXPECTING A SINGLE PLOG INSTANCE" );
+    instance = this ; 
 }
 
 

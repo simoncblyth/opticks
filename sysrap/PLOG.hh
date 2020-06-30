@@ -279,7 +279,9 @@ struct SYSRAP_API PLOG
     static plog::Severity Delta(plog::Severity level_, int delta); 
     static plog::Severity EnvLevel( const char* key, const char* fallback); 
 
+    PLOG(const char* name, const char* fallback="VERBOSE", const char* prefix=NULL );
     PLOG(int argc, char** argv, const char* fallback="VERBOSE", const char* prefix=NULL );
+    void init(const char* fallback, const char* prefix); 
 
     const char* name(); 
     const char* exename() const ;

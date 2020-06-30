@@ -28,6 +28,16 @@
 
 SAr* SAr::Instance = NULL ; 
 
+SAr::SAr( const char* name , const char* envvar, char delim ) 
+    :
+    _argc(1), 
+    _argv( new char*[1] ),
+    _cmdline(NULL)
+{
+    _argv[0] = strdup(name) ; 
+
+    init(envvar, delim); 
+}
 
 SAr::SAr( int argc_ , char** argv_ , const char* envvar, char delim ) 
     :
@@ -35,15 +45,18 @@ SAr::SAr( int argc_ , char** argv_ , const char* envvar, char delim )
     _argv( argc_ > 0 ? new char*[argc_] : NULL ), 
     _cmdline(NULL)
 {
-    if(argc_ == 0 )  // 0 means in-code not giving args
+    assert( _argc < 100 && "argc_ sanity check " );
+    for(int i=0 ; i < argc_ ; i++ ) _argv[i] = strdup(argv_[i]) ; 
+
+    init(envvar, delim); 
+}
+
+void SAr::init(const char* envvar, char delim)
+{
+    if(_argc == 0 )  // 0 means in-code not giving args
     {
-        std::cout << "SAr::SAr argc_ == 0  presumably from OPTICKS_LOG__(0,0) : args_from_envvar argc_ " << argc_  << std::endl ; 
+        std::cout << "SAr::init _argc == 0  presumably from OPTICKS_LOG__(0,0) : args_from_envvar _argc " << _argc  << std::endl ; 
         args_from_envvar( envvar, delim) ; 
-    }
-    else
-    { 
-        assert( argc_ < 100 && "argc_ sanity check " );
-        for(int i=0 ; i < argc_ ; i++ ) _argv[i] = strdup(argv_[i]) ; 
     }
 
     sanitycheck();
@@ -56,7 +69,6 @@ SAr::SAr( int argc_ , char** argv_ , const char* envvar, char delim )
         std::cout << _cmdline << std::endl ;     
     }
 
-
     if(Instance)
         std::cout << "SAr::SAr replacing Instance " << std::endl ; 
 
@@ -64,6 +76,7 @@ SAr::SAr( int argc_ , char** argv_ , const char* envvar, char delim )
 
     //dump();
 }
+
 
 
 void SAr::sanitycheck() const

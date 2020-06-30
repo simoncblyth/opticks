@@ -26,11 +26,19 @@
 #include "SSys.hh"
 
 
-
-int main(int argc, char** argv)
+void dump(const char* msg, const SAr& a)
 {
-    std::cout << "start" << std::endl ; 
+    std::cout << msg << std::endl ; 
 
+    std::cout << " exepath() " << a.exepath() << std::endl ; 
+    std::cout << " exename() " << a.exename() << std::endl ; 
+    std::cout << " cmdline() " << a.cmdline() << std::endl ; 
+}
+
+
+
+void test_a(int argc, char** argv)
+{
     SAr a(argc, argv );
     std::cout << "a instanciated " << std::endl ; 
     a.dump();
@@ -45,8 +53,11 @@ int main(int argc, char** argv)
         << std::endl 
         ;
 
+   dump("test_a", a );  
+}
 
-
+void test_b()
+{
     const char* key = "SAR_TEST" ; 
     const char* val = "--trace --SYSRAP warning red green blue" ; 
     bool overwrite = true ; 
@@ -58,12 +69,24 @@ int main(int argc, char** argv)
     std::cout << "b dumped " << std::endl ; 
 
     assert( b._argc == 7 ); 
+}
 
 
-    std::cout << " exepath() " << a.exepath() << std::endl ; 
-    std::cout << " exename() " << a.exename() << std::endl ; 
-    std::cout << " cmdline() " << a.cmdline() << std::endl ; 
+void test_c()
+{
+    SAr c("SArTestOne"); 
+    c.dump(); 
+    dump("test_c", c );  
+}
 
+
+int main(int argc, char** argv)
+{
+    std::cout << "start" << std::endl ; 
+
+    //test_a(argc, argv); 
+    //test_b(); 
+    test_c(); 
 
     return 0 ; 
 }

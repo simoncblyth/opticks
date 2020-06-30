@@ -239,4 +239,5 @@ class SYSRAP_API OPTICKS_LOG_ {
 #define OPTICKS_LOG_COLOR__(argc, argv) {      PLOG_COLOR(argc, argv);     OPTICKS_LOG_::Initialize(PLOG::instance, plog::get(), NULL );  }  
 #define OPTICKS_LOG__(argc, argv) {      PLOG_(argc, argv);     OPTICKS_LOG_::Initialize(PLOG::instance, plog::get(), NULL ); } 
 #define OPTICKS_LOG(argc, argv) {      PLOG_COLOR(argc, argv);     OPTICKS_LOG_::Initialize(PLOG::instance, plog::get(), NULL ); } 
+#define OPTICKS_ELOG(name) {           PLOG_ECOLOR(name);     OPTICKS_LOG_::Initialize(PLOG::instance, plog::get(), NULL ); } 
 

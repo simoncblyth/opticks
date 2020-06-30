@@ -22,6 +22,7 @@
 int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv);
+    //OPTICKS_ELOG("EmbeddedLogTest");
 
     plog::Severity level = info ; 
 
