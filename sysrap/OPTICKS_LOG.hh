@@ -104,7 +104,7 @@ To regenerate the sysrap/OPTICKS_LOG.hh header use commandline::
 class SYSRAP_API OPTICKS_LOG_ {
    public:
        // initialize all linked loggers and hookup the main logger
-       static void Initialize(PLOG* instance, void* app1, void* app2 )
+       static void Initialize(PLOG* instance, void* app1, void* /*app2*/ )
        {
            int max_level = instance->parse("info") ;  
            // note : can decrease verbosity from the max_level in the subproj, but not increase

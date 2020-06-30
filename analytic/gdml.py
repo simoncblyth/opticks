@@ -136,6 +136,9 @@ class G(object):
         return wrap_(e) if e is not None else None
 
     def __repr__(self):
+        return "path %s path_label %s " % (self.path, self.path_label) 
+
+    def __repr__0(self):
         return "%15s : %s " % ( self.elem.tag, repr(self.elem.attrib) )
 
     def __str__(self):
@@ -218,7 +221,7 @@ class Geometry(G):
     def __repr__(self):
         """for indents need to sub_traverse from root solid of interest"""
         sub_depth = getattr(self, 'sub_depth', 0) 
-        sub_indent = "  " * sub_depth
+        sub_indent = "   " * sub_depth
         sub_name = getattr(self, 'sub_name', self.name)
         sub_prefix = getattr(self, 'sub_prefix', None)
     
@@ -230,7 +233,7 @@ class Geometry(G):
         right_xyz = " : right_xyz:%s/%s/%6.3f" % tuple(right_xyz) if not right_xyz is None else ""
 
         line = "%d%s %s %s %s%s " % (sub_depth, sub_indent, self.gidx, self.typ, sub_root_marker, sub_name )
-        line = "%-40s %s" % (line, right_xyz ) 
+        line = "%-45s %s" % (line, right_xyz ) 
 
         if is_sub_root:
             line = "*:%s" % line 
@@ -427,7 +430,7 @@ class Primitive(Geometry):
 
     def __repr__(self):
         grepr = Geometry.__repr__(self)
-        return "%-40s : xyz %s,%s,%5.3f  " % (grepr, self.x, self.y, self.z)
+        return "%-45s : xyz %s,%s,%5.3f  " % (grepr, self.x, self.y, self.z)
 
 
 class Tube(Primitive):
@@ -1207,9 +1210,9 @@ class GDML(G):
             path = os.environ['OPTICKS_GDMLPATH']   # set within opticks_main
             log.info("gdmlpath defaulting to OPTICKS_GDMLPATH %s which is derived by opticks.ana.base from the IDPATH input envvar " % path )
         pass
-        log.info("parsing gdmlpath %s " % path )
-        gg = parse_(path)                   # lxml parse and return root "gdml" element
-        wgg = cls.wrap(gg, path=path)
+        log.info("parsing gdmlpath %s " % (path) )
+        gdml_elem = parse_(path)         # lxml parse and return root "gdml" element
+        wgg = cls.wrap(gdml_elem, path=path)
         return wgg 
 
     @classmethod
@@ -1226,9 +1229,17 @@ class GDML(G):
         :param path: of the gdml as metadata
         """
         log.debug("wrapping gdml elements with python instances")
+
+        if not path is None:
+            label = os.path.splitext(os.path.basename(path))[0]
+        else:
+            label = None
+        pass    
+
         gg = cls(gdml)
         gg.g = gg
         gg.path = path
+        gg.path_label = label
         gg.string = tostring_(gdml) 
         gg.init()
         return gg 
@@ -1284,8 +1295,8 @@ class GDML(G):
         prefix = os.path.commonprefix(names)
         for lv in tvol.values():
             lv.local_name = unref_( lv.name[len(prefix):] )
-            lv.local_title = "%d : %s : %s" % ( lv.local_index, lv.local_name, unref_(lv.material.name) ) 
-            lv.local_prefix = prefix 
+            lv.local_title = "%d:%s/%s" % ( lv.local_index, lv.local_name, unref_(lv.material.name) ) 
+            lv.local_prefix = "%s/%s" % (lv.g.path_label, prefix) 
         pass
 
     def find_by_prefix(self, d, prefix):
@@ -1309,7 +1320,7 @@ class GDML(G):
         g = self
         ns = len(g.solids.keys())
         nv = len(g.volumes.keys()) 
-        log.info(" ns:%d nv:%d (logical volumes) " % (ns,nv))
+        log.info(" g.path %s g.path_label %s ns:%d nv:%d (logical volumes) " % (g.path, g.path_label,ns,nv))
 
     def find_one_volume(self, prefix):
         """   
@@ -1322,6 +1333,58 @@ class GDML(G):
             log.info(" %2d : %s" % (i,lv.name) )
         pass 
         return lvs[0] if len(lvs) > 0 else None
+
+
+    def volume_summary(self):
+        """
+        1. get unique list of all volumeref/@ref lv names referenced from physvol
+        2. for each lv name count the number of physvol that references it 
+        3. for each physvol get all parent lv names 
+
+        25600 :                             PMT_3inch_log0x3a2d940 : lInnerWater0x30e6330
+        12612 :                    NNVTMCPPMTlMaskVirtual0x32a49b0 : lInnerWater0x30e6330
+         5000 :               HamamatsuR12860lMaskVirtual0x32906d0 : lInnerWater0x30e6330
+         2400 :          mask_PMT_20inch_vetolMaskVirtual0x32a6960 : lOuterWaterPool0x30e5560
+          590 :                                    lUpper0x31765d0 : lInnerWater0x30e6330
+          590 :                                 lAddition0x31bd440 : lInnerWater0x30e6330
+          590 :                                lFasteners0x312ddf0 : lInnerWater0x30e6330
+          590 :                                    lSteel0x30e9b10 : lInnerWater0x30e6330
+           64 :                                  lCoating0x45073a0 : lPanelTape0x4507210
+           64 :                                lXJfixture0x320b950 : lTarget0x30e7010 lInnerWater0x30e6330
+           63 :                                  lWallff_0x4506d50 : lAirTT0x4506ad0
+           56 :                                 lXJanchor0x3205390 : lInnerWater0x30e6330
+           36 :                                lSJFixture0x3210610 : lTarget0x30e7010
+            8 :                               lSJReceiver0x3215340 : lTarget0x30e7010
+            4 :                                    lPanel0x4507080 : lPlanef_0x4506f70
+            2 :                                  lPlanef_0x4506f70 : lWallff_0x4506d50
+            2 :                              lSJCLSanchor0x320f400 : lTarget0x30e7010
+            1 :                             lLowerChimney0x4504230 : lInnerWater0x30e6330
+            1 :                        lLowerChimneySteel0x4504880 : lLowerChimney0x4504230
+            1 :                                   lTarget0x30e7010 : lAcrylic0x30e69a0
+            1 :                             lUpperChimney0x4501f50 : lExpHall0x30dfe10
+            1 :                           lLowerChimneyLS0x4504660 : lLowerChimney0x4504230
+            1 :                                      lBar0x4507530 : lCoating0x45073a0
+            1 :                      lLowerChimneyAcrylic0x4504450 : lLowerChimney0x4504230
+            1 :                                  lBtmRock0x30e4820 : lWorld0x30d4f70
+            1 :     HamamatsuR12860_PMT_20inch_inner2_log0x32b85a0 : HamamatsuR12860_PMT_20inch_body_log0x32b8250
+            1 :                      PMT_3inch_inner2_log0x3a2db60 : PMT_3inch_body_log0x3a2d830
+            1 :                               lInnerWater0x30e6330 : lReflectorInCD0x30e5cc0
+
+
+        """
+        lvns = list(set(self.elem.xpath("//physvol/volumeref/@ref"))) 
+
+        fmt = "%5d : %50s : %s"
+        d = {}
+        p = {}
+        for lvn in lvns: 
+            d[lvn] = len(self.elem.xpath("//physvol[volumeref/@ref = '%s']" % lvn))
+            p[lvn] = self.elem.xpath("//physvol[volumeref/@ref = '%s']/../@name" % lvn)
+            log.debug(fmt  % (d[lvn], lvn, p[lvn] ))
+        pass
+        print("\n".join([fmt % (d[lvn], lvn, " ".join(p[lvn]) ) for lvn in sorted(d, reverse=True, key=lambda lvn:d[lvn])]))
+
+
 
 
     world = property(lambda self:self.volumes[self.worldvol])
@@ -1441,6 +1504,7 @@ def test_primitive_fromstring():
 if __name__ == '__main__':
 
     args = opticks_main()
+
 
 
     gsel = args.gsel            # string representing target node index integer or lvname

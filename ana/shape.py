@@ -96,6 +96,25 @@ def circle_points( xy=[0,0], tr=80, n=1000 ):
     return c      
 
 
+def points_inside_circle(points, center, radius):
+    """
+    :param points: (n,2) array of points
+    :param center: (2,) coordinates of circle center
+    :param radius:
+    :return mask: boolean array of dimension (n,2) indicating if points are within the circle 
+    """
+    return np.sqrt(np.sum(np.square(points-center),1)) - radius < 0. 
+
+
+def ellipse_points_inside_circle():
+
+    tc = np.array([torus_x,torus_z])
+    tr = m4_torus_r  
+    e = ellipse_points( xy=[0,-5.], ex=254., ez=190., n=1000000 )
+
+    
+
+
 
 
 

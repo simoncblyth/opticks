@@ -173,6 +173,18 @@ void CGenstepCollector::collectScintillationStep
      m_scintillation_count += 1 ;   // 1-based index
      m_gs_photons.push_back(numPhotons); 
 
+     enum { modulo = 10 } ; 
+
+     if(m_gs_photons.size() % modulo == 0)
+     {
+         LOG(info)
+              << " modulo " << modulo 
+              << " gentype " << gentype
+              << " gentype " << OpticksGenstep::Gentype(gentype)
+              << " numPhotons " << numPhotons 
+              << " scintillation_count " << m_scintillation_count ;
+     } 
+
      LOG(LEVEL)
           << " gentype " << gentype
           << " gentype " << OpticksGenstep::Gentype(gentype)

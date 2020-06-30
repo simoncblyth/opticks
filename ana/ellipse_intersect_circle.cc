@@ -1,4 +1,5 @@
-//  clang ellipse_intersect_circle.cc -lm -lc++ -o /tmp/ellipse_intersect_circle  && /tmp/ellipse_intersect_circle
+//  gcc ellipse_intersect_circle.cc -lm -lstdc++ -o /tmp/ellipse_intersect_circle  && /tmp/ellipse_intersect_circle
+//  head -1 ellipse_intersect_circle.cc | perl -pe 's,//,,' - | sh
 
 #include "ellipse_intersect_circle.hh"
 
@@ -17,7 +18,9 @@ int main(int argc, char** argv)
      bool verbose = false ; 
 
      Ellipse_Intersect_Circle ec = Ellipse_Intersect_Circle::make( e_cx, e_cy, e_ax, e_ay, c_cx, c_cy, c_r, n, verbose );  
-     printf(" (%10.4f, %10.4f) \n", ec.first.x, ec.first.y ); 
+
+     if(ec.intersect.count > 0)
+     printf(" (%10.4f, %10.4f) \n", ec.intersect.p[0].x, ec.intersect.p[0].y ); 
 
      return 0 ; 
 }

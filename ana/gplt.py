@@ -191,7 +191,7 @@ class GPlot(object):
             ny, nx = 2, 2
         else:
             ny, nx = 2, n_lvs/2
-        
+        pass        
 
 
         log.info("SubFig ny:%d nx:%d n_lvs:%d" % (ny,nx,n_lvs) )
@@ -206,7 +206,7 @@ class GPlot(object):
         fig, axs = plt.subplots(ny, nx, **kwa )
 
         suptitle = lvs[0].local_prefix if cf == False else "%s cf %s " % (lvs0[0].local_prefix, lvs1[0].local_prefix)
-        fig.suptitle(suptitle) 
+        fig.suptitle(suptitle, fontsize=10) 
 
         iv = 0 
         for iy in range(ny):
@@ -223,7 +223,7 @@ class GPlot(object):
                     lv = lvs[iv]
                     title = lv.local_title if cf == False else "%s cf %s" % (lvs0[iv].local_title, lvs1[iv].local_title)
 
-                    ax.set_title(title)
+                    ax.set_title(title, fontsize=10)
 
                     if cf == False:
                         gp = cls( lv, args)

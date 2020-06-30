@@ -620,7 +620,7 @@ void G4Opticks::collectScintillationStep
         G4double spare1 = 0,
         G4double spare2 = 0
         ) {
-    LOG(info) << "[";
+    LOG(debug) << "[";
     m_genstep_collector->collectScintillationStep(
              gentype,
              parentId,
@@ -652,7 +652,7 @@ void G4Opticks::collectScintillationStep
              spare1,
              spare2
             );
-    LOG(info) << "]";
+    LOG(debug) << "]";
 }
 
 

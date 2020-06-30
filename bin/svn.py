@@ -23,6 +23,12 @@ back in sync without having to commit the changes.
 NB all the below commands do no harm, they only suggest the scp commands 
 that need to be manually run in the shell or piped there.
 
+::
+
+   svn st | perl -ne 'm,\S\s*(\S*), && print "$1\n"' - | xargs md5 % 
+   svn st | perl -ne 'm,\S\s*(\S*), && print "$1\n"' - | xargs md5sum % 
+
+
 Workflow::
 
    loc> export PATH=$HOME/opticks/bin:$PATH
@@ -38,6 +44,9 @@ Workflow::
 
    loc> ssh P opticks/bin/svn.py > ~/rstat.txt     
        ## take snapshot of remote working copy digests 
+
+       ## OR instead do this with : svn.py rup
+       ## that can be combined, eg svn.py rup cf 
 
    loc> svn.py loc   
        ## list status of local working copy with file digests  
@@ -65,7 +74,7 @@ Workflow::
        ## pipe those commands to shell
 
 """
-import os, commands, re, argparse, logging
+import os, commands, re, argparse, logging, platform
 from collections import OrderedDict as odict
 try: 
     from hashlib import md5 
@@ -81,12 +90,35 @@ def md5sum_py3(path):
         pass
     return d.hexdigest()
 
+
 def md5sum(path):
-    f = open(path, mode='rb')
-    d = md5()
-    for buf in f.read(4096):
-        d.update(buf)
-    return d.hexdigest()
+    dig = md5()
+    with open(path,'rb') as f:  
+        for chunk in iter(lambda: f.read(8192),''): 
+            dig.update(chunk)
+        pass
+    pass
+    return dig.hexdigest()
+
+
+def md5sum_alt(path):
+    system =  platform.system()
+    if system == "Darwin":
+        cmd = "md5 -q %s"  ## just outputs the digest 
+        rc,out = commands.getstatusoutput(cmd % path)
+        assert rc == 0 
+        dig = out      
+    elif system == "Linux":
+        cmd = "md5sum %s"   ## outputs the digest and the path 
+        rc,out = commands.getstatusoutput(cmd % path)
+        assert rc == 0 
+        dig = out.split(" ")[0]
+    else:
+        dig = None
+        assert 0, system
+    pass
+    return dig 
+
 
 log = logging.getLogger(__name__)
 
@@ -96,7 +128,19 @@ class Path(dict):
     def __init__(self, *args, **kwa):
         dict.__init__(self, *args, **kwa)
         if not 'dig' in self:
-            self["dig"] = md5sum(self["path"])        
+            self["dig"] = md5sum(self["path"])  
+            if self.get('check', False) == True:
+                self["dig_alt"] = md5sum_alt(self["path"])  
+                match = self["dig_alt"] == self["dig"]
+
+                fmt = "%(path)s %(dig)s %(dig_alt)s"
+                if not match:
+                    log.fatal(" check FAIL : " + fmt % self ) 
+                else:
+                    log.debug(" check OK   : " + fmt % self ) 
+                pass
+                assert match, (self["dig_alt"], self["dig"])
+            pass
         pass
         if not 'dig5' in self:
             self["dig5"] = self["dig"][:5]
@@ -114,13 +158,15 @@ class WC(object):
     @classmethod
     def parse_args(cls, doc):
         parser = argparse.ArgumentParser(doc)
-        parser.add_argument( "cmd", default=["st"], nargs="*", choices=["loc","rem","st","get","put","cf","sync", ["st"]], 
+        parser.add_argument( "cmd", default=["st"], nargs="*", choices=["rup","loc","rem","st","get","put","cf","cfu","sync", ["st"]], 
             help="command specifying what to do with the working copy" ) 
         parser.add_argument( "--chdir", default="~/junotop/offline", help="chdir here" ) 
         parser.add_argument( "--rstatpath", default="~/rstat.txt", help="path to remote status file" ) 
+        parser.add_argument( "--rstatcmd", default="ssh P opticks/bin/svn.py", help="command to invoke the remote version of this script" )
         parser.add_argument( "--rsvnbase", default="P:junotop/offline", help="remote svn working copy" ) 
+        parser.add_argument( "--check", default=False, action="store_true", help="check digest with os alternative md5 or md5sum" ) 
         parser.add_argument( "--ldig", type=int, default=-1, help="length of digest" ) 
-        parser.add_argument( "-p", "--priority", choices=["loc","rem"], default="rem", help="Which version wins when a file exists at both ends" ) 
+        parser.add_argument( "-p", "--priority", choices=["loc","rem"], default="loc", help="Which version wins when a file exists at both ends" ) 
         parser.add_argument( "--level", default="info", help="logging level" ) 
         args = parser.parse_args()
         fmt = '[%(asctime)s] p%(process)s {%(pathname)s:%(lineno)d} %(levelname)s - %(message)s'
@@ -142,6 +188,7 @@ class WC(object):
         lines = map(str.rstrip, file(rstatpath, "r").readlines())
         paths = []
         for line in lines:
+            if line.startswith("Warning: Permanently added"): continue
             if len(line) == 3: continue  # skip the rem/loc title
             m = cls.rstpat.match(line)
             assert m, line
@@ -152,13 +199,15 @@ class WC(object):
         return cls(paths, "rem")
 
     @classmethod         
-    def FromStatus(cls, ldig):
+    def FromStatus(cls, ldig, check=False):
         """
         :param ldig: int length of digest
         :return loc: WC instance
 
         Parse the output of "svn status" collecting status strings and paths
         """
+        log.debug("ldig %s check %s " % (ldig,check))
+
         rc, out = commands.getstatusoutput("svn status")
         assert rc == 0 
         paths = []
@@ -167,6 +216,7 @@ class WC(object):
             assert m, line
             d = m.groupdict()
             d["ldig"] = ldig
+            d["check"] = check 
             assert d["st"] in ["M","A", "?"]
             if os.path.isdir(d["path"]):
                 log.debug("skip dir %s " % d["path"] )
@@ -262,6 +312,15 @@ class WC(object):
 if __name__ == '__main__':
     args = WC.parse_args(__doc__)
 
+    if "rup" in args.cmd or "cfu" in args.cmd:
+        log.info("running args.rstatcmd : %s " % args.rstatcmd )
+        rc,out = commands.getstatusoutput(args.rstatcmd)
+        assert rc == 0, rc
+        #print(out)
+        log.info("writing out to args.rstatpath : %s " % args.rstatpath)
+        file(args.rstatpath,"w").write(out)
+    pass
+
     if os.path.exists(args.rstatpath):
         rem = WC.FromRemoteStatusFile(args.rstatpath, args.ldig)
     else:
@@ -269,7 +328,7 @@ if __name__ == '__main__':
     pass 
 
     os.chdir(args.chdir)
-    loc = WC.FromStatus(args.ldig)
+    loc = WC.FromStatus(args.ldig, args.check)
 
     if loc and rem:
         cf = WC.FromComparison(loc,rem, args.ldig)
@@ -288,7 +347,7 @@ if __name__ == '__main__':
             print(loc.scp_put_cmds(args.rsvnbase, args.chdir))
         elif cmd == "get": # scp remote to local 
             print(rem.scp_get_cmds(args.rsvnbase, args.chdir))
-        elif cmd == "cf":
+        elif cmd == "cf" or cmd == "cfu":
             assert cf
             print(cf)
         elif cmd == "sync":
@@ -314,6 +373,8 @@ if __name__ == '__main__':
                 else:
                     assert 0, stlr
                 pass
+            pass
+        elif cmd == "rup":
             pass
         else:
             assert 0, cmd
