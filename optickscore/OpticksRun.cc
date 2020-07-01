@@ -176,10 +176,12 @@ void OpticksRun::annotateEvent()
 }
 void OpticksRun::resetEvent()
 {
+    LOG(LEVEL) << "[" ; 
     OK_PROFILE("_OpticksRun::resetEvent");
     m_evt->reset();
     if(m_g4evt) m_g4evt->reset(); 
     OK_PROFILE("OpticksRun::resetEvent");
+    LOG(LEVEL) << "]" ; 
 }
 
 

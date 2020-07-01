@@ -71,6 +71,7 @@ class OXRAP_API OPropagator {
         void init();
         void setEntry(unsigned int entry);
         void initParameters();
+        void resize(); 
         void setSize(unsigned width, unsigned height);
     private:
         SLog*                m_log ; 
@@ -89,7 +90,8 @@ class OXRAP_API OPropagator {
         bool                 m_prelaunch ;
 
     private:
-        unsigned             m_count ; 
+        unsigned             m_prelaunch_count ; 
+        unsigned             m_launch_count ; 
         unsigned             m_width ; 
         unsigned             m_height ; 
         unsigned             m_launch_acc ; 

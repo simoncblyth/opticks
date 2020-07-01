@@ -159,13 +159,11 @@ void OpMgr::propagate()
 
 
 void OpMgr::reset()
-{   
+{  
+    LOG(LEVEL) << "[" ;  
     m_run->resetEvent();
+    LOG(LEVEL) << "]" ;  
 }
-
-
-
-
 
 void OpMgr::cleanup()
 {

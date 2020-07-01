@@ -75,7 +75,8 @@ OPropagator::OPropagator(Opticks* ok, OEvent* oevt, OpticksEntry* entry)
     m_entry(entry),
     m_entry_index(entry->getIndex()),
     m_prelaunch(false),
-    m_count(0),
+    m_prelaunch_count(0),
+    m_launch_count(0),
     m_width(0),
     m_height(0),
     m_launch_acc(m_ok->accumulateAdd("OPropagator::launch")),
@@ -89,7 +90,7 @@ OPropagator::OPropagator(Opticks* ok, OEvent* oevt, OpticksEntry* entry)
 std::string OPropagator::brief()
 {
     std::stringstream ss ; 
-    ss << m_count << " : (" << m_entry_index << ";" << m_width << "," << m_height << ") " ; 
+    ss << m_launch_count << " : (" << m_entry_index << ";" << m_width << "," << m_height << ") " ; 
     return ss.str();
 }
 
@@ -159,21 +160,62 @@ void OPropagator::setNoPropagate(bool nopropagate)
 }
 
 
+/**
+OPropagator::prelaunch
+-------------------------
+
+Performs a zero sized launch, which has the effect of setting 
+up the geometry. Which means doing any compilation 
+or acceleration structure creation that is needed.  
+
+*prelaunch* only needs to be done once for a geometry, it 
+generally takes much longer than the launches.
+
+**/
+
 void OPropagator::prelaunch()
 {
-    //assert(m_prelaunch == false);
     m_prelaunch = true ; 
 
     bool entry = m_entry_index > -1 ; 
     if(!entry) LOG(fatal) << "MISSING entry " ;
     assert(entry);
 
+    setNoPropagate(m_ok->hasOpt("nopropagate"));
+
+    OpticksEvent* evt = m_oevt->getEvent(); 
+    BTimes* prelaunch_times = evt->getPrelaunchTimes() ;
+
+    OK_PROFILE("_OPropagator::prelaunch");
+    m_ocontext->launch( OContext::VALIDATE|OContext::COMPILE|OContext::PRELAUNCH,  m_entry_index ,  0, 0, prelaunch_times ); 
+    OK_PROFILE("OPropagator::prelaunch");
+
+    m_prelaunch_count += 1 ; 
+
+    LOG(info) << brief()  ;
+    prelaunch_times->dump("OPropagator::prelaunch");
+}
+
+
+/**
+OPropagator::resize
+---------------------
+
+Setting size in the prelaunch makes no sense 
+as by definition the prelaunch is zero sized
+and needs to be done only once. However resize 
+needs to be done on every launch, unless by chance 
+sequential events have the same photon count.
+
+**/
+
+void OPropagator::resize()
+{
     OpticksEvent* evt = m_oevt->getEvent(); 
     unsigned numPhotons = evt->getNumPhotons(); 
     unsigned u_numPhotons = m_propagateoverride > 0 ? m_propagateoverride : numPhotons ;  
 
     LOG(LEVEL) 
-        << " m_count " << m_count 
         << " m_oevt " << m_oevt 
         << " evt " << evt
         << " numPhotons " << numPhotons
@@ -181,18 +223,6 @@ void OPropagator::prelaunch()
         ;
 
     setSize( u_numPhotons ,  1 );
-    setNoPropagate(m_ok->hasOpt("nopropagate"));
-
-    BTimes* prelaunch_times = evt->getPrelaunchTimes() ;
-
-    OK_PROFILE("_OPropagator::prelaunch");
-    m_ocontext->launch( OContext::VALIDATE|OContext::COMPILE|OContext::PRELAUNCH,  m_entry_index ,  0, 0, prelaunch_times ); 
-    OK_PROFILE("OPropagator::prelaunch");
-
-    m_count += 1 ; 
-
-    LOG(info) << brief()  ;
-    prelaunch_times->dump("OPropagator::prelaunch");
 }
 
 
@@ -202,12 +232,26 @@ OPropagator::launch
 
 Launch times may be collected into BTimes instance held by OpticksEvent.
 
+* *prelaunch* is done only once
+* *resize* is done for every launch
 
 **/
 
 void OPropagator::launch()
 {
-    if(m_prelaunch == false) prelaunch();
+    bool _prelaunch = m_prelaunch == false ; 
+    if(_prelaunch) 
+    {
+        prelaunch();
+    }
+
+    resize(); 
+
+    LOG(LEVEL) 
+         << " _prelaunch " << _prelaunch
+         << " m_width " << m_width 
+         << " m_height " << m_height 
+         ;
 
     if(m_nopropagate)
     {
