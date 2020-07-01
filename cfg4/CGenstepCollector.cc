@@ -17,6 +17,7 @@
  * limitations under the License.
  */
 
+#include <iomanip>
 #include <sstream>
 #include <numeric>
 
@@ -66,6 +67,52 @@ CGenstepCollector::CGenstepCollector(const NLookup* lookup)
     //assert( lookup_complete ); 
     INSTANCE = this ; 
 }
+
+
+void CGenstepCollector::reset()
+{
+    m_scintillation_count = 0 ; 
+    m_cerenkov_count = 0 ; 
+    m_machinery_count = 0 ; 
+    m_genstep->reset(); 
+}
+void CGenstepCollector::save(const char* path)
+{
+    m_genstep->save(path); 
+}
+void CGenstepCollector::load(const char* path)
+{
+    reset(); 
+    m_genstep = NPY<float>::load(path);   
+    import(); 
+}
+
+void CGenstepCollector::import()
+{
+    unsigned ni = m_genstep->getNumItems() ;
+
+    assert( m_scintillation_count == 0);
+    assert( m_cerenkov_count == 0);
+    assert( m_machinery_count == 0);
+
+    for(unsigned i=0 ; i < ni ; i++)
+    {
+        unsigned gentype = m_genstep->getInt(i,0u,0u);
+        if(OpticksGenstep::IsScintillation(gentype))  m_scintillation_count += 1 ;       
+        else if(OpticksGenstep::IsCerenkov(gentype))  m_cerenkov_count += 1 ;       
+        else if(OpticksGenstep::IsMachinery(gentype)) m_machinery_count += 1 ;       
+    }
+
+    unsigned total = m_scintillation_count + m_cerenkov_count + m_machinery_count ; 
+    assert( total == ni ); 
+}
+
+
+
+
+
+
+
 
 int CGenstepCollector::translate(int acode) const // raw G4 materialId translated into GBndLib material line for GPU usage 
 {
@@ -121,11 +168,11 @@ std::string CGenstepCollector::desc() const
 {
     std::stringstream ss ; 
     ss 
-       << " ngs " << m_genstep->getNumItems() 
-       << " nsc " << m_scintillation_count
-       << " nck " << m_cerenkov_count
-       << " nma " << m_machinery_count
-       << " tot " << m_scintillation_count + m_cerenkov_count + m_machinery_count 
+       << " ngs " << std::setw(3) << m_genstep->getNumItems() 
+       << " nsc " << std::setw(3) << m_scintillation_count
+       << " nck " << std::setw(3) << m_cerenkov_count
+       << " nma " << std::setw(3) << m_machinery_count
+       << " tot " << std::setw(3) << m_scintillation_count + m_cerenkov_count + m_machinery_count 
        ;
     return ss.str();
 }
@@ -149,7 +196,6 @@ void CGenstepCollector::Summary(const char* msg) const
               << description()
               ;
 }
-
 
 void CGenstepCollector::collectScintillationStep
 (
@@ -195,8 +241,7 @@ void CGenstepCollector::collectScintillationStep
           << desc()
           ;
 
-     assert( gentype == OpticksGenstep_G4Scintillation_1042 || gentype == OpticksGenstep_DsG4Scintillation_r3971 ); 
-
+     assert( OpticksGenstep::IsScintillation(gentype) ); 
 
      uif_t uifa[4] ;
      uifa[0].i = gentype ; 
@@ -293,7 +338,7 @@ void CGenstepCollector::collectCerenkovStep
           << desc()
           ;
 
-     assert( gentype == OpticksGenstep_G4Cerenkov_1042 || gentype == OpticksGenstep_DsG4Cerenkov_r3971 ); 
+     assert( OpticksGenstep::IsCerenkov(gentype) ); 
 
      uif_t uifa[4] ;
      uifa[0].i = gentype ; 
@@ -344,8 +389,10 @@ void CGenstepCollector::collectCerenkovStep
      m_genstep->add(cs, m_genstep_itemsize);
 }
 
-void CGenstepCollector::collectMachineryStep(unsigned code)
+void CGenstepCollector::collectMachineryStep(unsigned gentype)
 {
+     assert( OpticksGenstep::IsMachinery(gentype) ); 
+
      m_machinery_count += 1 ;   // 1-based index
      LOG(debug) 
            << " machinery_count " << m_machinery_count ;
@@ -354,7 +401,7 @@ void CGenstepCollector::collectMachineryStep(unsigned code)
      float* ms = m_genstep_values ; 
 
      uif_t uif ; 
-     uif.u = code ; 
+     uif.u = gentype ; 
      for(unsigned i=0 ; i < m_genstep_itemsize ; i++) ms[i] = uif.f ; 
 
      m_genstep->add(ms, m_genstep_itemsize);

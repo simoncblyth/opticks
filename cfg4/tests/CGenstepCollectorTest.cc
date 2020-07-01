@@ -27,6 +27,7 @@
 
 #include "Opticks.hh"
 #include "OpticksHub.hh"
+#include "OpticksGenstep.h"
 
 #include "CGenstepCollector.hh"
 
@@ -53,6 +54,17 @@ unsigned mock_num_steps( unsigned e )
 }
 
 
+
+
+const char* genstep_path(unsigned e)
+{
+    const char* path_ = SSys::fmt("$TMP/cfg4/CGenstepCollectorTest/%u.npy",e) ;
+    std::string spath = BFile::preparePath(path_);
+    const char* path = spath.c_str();  
+    return strdup(path) ;  
+}
+
+
 int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv);
@@ -61,7 +73,6 @@ int main(int argc, char** argv)
 
     Opticks ok(argc, argv);
     OpticksHub hub(&ok);
-
 
 
     NLookup* lookup = hub.getLookup(); 
@@ -77,30 +88,32 @@ int main(int argc, char** argv)
     // the lookup is not used, so can live without this setup.
 
     CGenstepCollector cc(lookup);
-    NPY<float>* gs = cc.getGensteps(); 
-
+    //NPY<float>* gs = cc.getGensteps(); 
 
     for(unsigned e=0 ; e < mock_num_evt ; e++)
     {
         unsigned num_steps = mock_num_steps(e); 
+        unsigned gentype = OpticksGenstep_MACHINERY ; 
+        for(unsigned i=0 ; i < num_steps ; i++) CGenstepCollector::Instance()->collectMachineryStep(gentype);
 
-        for(unsigned i=0 ; i < num_steps ; i++) CGenstepCollector::Instance()->collectMachineryStep(e*1000+i);
-
-        const char* path_ = SSys::fmt("$TMP/cfg4/CGenstepCollectorTest/%u.npy",e) ;
-        std::string spath = BFile::preparePath(path_);
-        const char* path = spath.c_str();  
-
-        gs->save(path);
-        gs->reset();
+        const char* path = genstep_path(e); 
+        CGenstepCollector::Instance()->save(path); 
+        CGenstepCollector::Instance()->reset(); 
 
         SSys::npdump(path, "np.uint32" );
-
         ok.profile(SStr::Concat(NULL, e)) ; 
     }
 
     ok.dumpProfile(argv[0]); 
     ok.saveProfile();
    
+
+    for(unsigned e=0 ; e < mock_num_evt ; e++)
+    {
+        const char* path = genstep_path(e); 
+        CGenstepCollector::Instance()->load(path);
+        std::cout << CGenstepCollector::Instance()->desc() << std::endl ; 
+    }
 
     return ok.getRC() ; 
 }

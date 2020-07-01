@@ -247,8 +247,6 @@ void OpticksRun::importGensteps()
     m_evt->setGenstepData(m_gensteps);
 
 
-
-
     if(hasActionControl(m_gensteps, "GS_EMITSOURCE"))
     {
         void* aux = m_gensteps->getAux();

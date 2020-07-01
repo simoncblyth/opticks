@@ -90,6 +90,7 @@ class G4OK_API G4Opticks
     public:
         static G4Opticks* Get();
         static G4Opticks* GetOpticks();
+        static void Initialize(const char* gdmlpath, bool standardize_geant4_materials);
         static void Initialize(const G4VPhysicalVolume* world, bool standardize_geant4_materials);
         static void Finalize();
     public:

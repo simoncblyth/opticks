@@ -97,6 +97,20 @@ bool OpticksGenstep::IsValid(int gentype)
    return !invalid ; 
 }
 
+bool OpticksGenstep::IsCerenkov(int gentype)
+{
+   return gentype == OpticksGenstep_G4Cerenkov_1042  || gentype == OpticksGenstep_DsG4Cerenkov_r3971 ; 
+}
+bool OpticksGenstep::IsScintillation(int gentype)
+{
+   return gentype == OpticksGenstep_G4Scintillation_1042 || gentype == OpticksGenstep_DsG4Scintillation_r3971 ; 
+}
+bool OpticksGenstep::IsMachinery(int gentype)
+{
+   return gentype == OpticksGenstep_MACHINERY ; 
+}
+
+
 
 
 

@@ -108,10 +108,11 @@ G4Opticks* G4Opticks::Get()
     return fOpticks ;
 }
 
-
-
-
-
+void G4Opticks::Initialize(const char* gdmlpath, bool standardize_geant4_materials)
+{
+    const G4VPhysicalVolume* world = CGDML::Parse(gdmlpath); 
+    Initialize(world, standardize_geant4_materials); 
+}
 
 void G4Opticks::Initialize(const G4VPhysicalVolume* world, bool standardize_geant4_materials)
 {

@@ -85,9 +85,14 @@ class CFG4_API CGenstepCollector
          std::string desc() const ;
          void Summary(const char* msg="CGenstepCollector::Summary") const  ;
          int translate(int acode) const ;
+   public:
+         void reset();          
+         void save(const char* path);          
+         void load(const char* path);          
    private:
          //void setGensteps(NPY<float>* gs);
          void consistencyCheck() const ;
+         void import(); 
    public:
          void collectScintillationStep(
             G4int                gentype, 

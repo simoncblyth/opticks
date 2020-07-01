@@ -58,8 +58,7 @@ OpMgr::OpMgr(Opticks* ok )
     m_gen(m_hub->getGen()),
     m_run(m_hub->getRun()),
     m_propagator(new OpPropagator(m_hub, m_idx)),
-    m_count(0),
-    m_opevt(NULL)
+    m_count(0)
 {
     init();
     (*m_log)("DONE");
@@ -123,7 +122,9 @@ void OpMgr::propagate()
 
     m_gensteps->setBufferSpec(OpticksEvent::GenstepSpec(compute));
 
-    m_run->createEvent(0);
+    unsigned tagoffset = 0 ; 
+
+    m_run->createEvent(tagoffset);
 
     m_run->setGensteps(m_gensteps); 
 
@@ -139,6 +140,10 @@ void OpMgr::propagate()
         if(!production) m_hub->anaEvent();
         LOG(LEVEL) << ") ana " ;  
     }
+    else
+    {
+        LOG(LEVEL) << "NOT saving " ;  
+    }
 
     LOG(LEVEL) << "( postpropagate " ;  
     m_ok->postpropagate();  // profiling 
@@ -151,8 +156,6 @@ void OpMgr::propagate()
 void OpMgr::reset()
 {   
     m_run->resetEvent();
-
-    // m_opevt->resetGensteps();  ???
 }
 
 

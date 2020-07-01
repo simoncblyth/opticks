@@ -264,7 +264,7 @@ class WC(object):
         log.debug(out)  
 
         paths = []
-        for line in out.split("\n"):
+        for line in filter(None,out.split("\n")):
             log.debug("[%s]"%line)
             m = cls.lstpat.match(line)
             assert m, line

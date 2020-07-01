@@ -99,7 +99,6 @@ class OKOP_API OpMgr {
        OpticksRun*    m_run ; 
        OpPropagator*  m_propagator ; 
        int            m_count ;  
-       OpEvt*         m_opevt ; 
 
        NPY<float>*    m_gensteps ; 
        NPY<float>*    m_hits ; 
