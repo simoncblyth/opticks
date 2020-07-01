@@ -100,7 +100,7 @@ class G4OK_API G4Opticks
         std::string desc() const ;  
     public:
         void setGeometry(const G4VPhysicalVolume* world, bool standardize_geant4_materials); 
-        int propagateOpticalPhotons();
+        int propagateOpticalPhotons(G4int eventID);
         NPY<float>* getHits() const ; 
         void setAlignIndex(int align_idx) const ; 
     private:

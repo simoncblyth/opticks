@@ -84,6 +84,16 @@ This
 
 **/
 
+
+
+void OpticksRun::createEvent(NPY<float>* gensteps) 
+{
+    unsigned tagoffset = gensteps->getArrayContentIndex() ;  // eg eventID
+    LOG(LEVEL) << " tagoffset " << tagoffset ; 
+    createEvent(tagoffset); 
+    setGensteps(gensteps); 
+}
+
 void OpticksRun::createEvent(unsigned tagoffset)
 {
     bool nog4propagate = m_ok->isNoG4Propagate() ;   // --nog4propagate
@@ -124,6 +134,9 @@ void OpticksRun::createEvent(unsigned tagoffset)
 
     OK_PROFILE("OpticksRun::createEvent");
 }
+
+
+
 
 
 /**
@@ -195,7 +208,7 @@ gensteps and maybe source photon data (via aux association) are lodged into m_g4
 before passing baton (sharing pointers) with m_evt
 
 **/
-void OpticksRun::setGensteps(NPY<float>* gensteps) 
+void OpticksRun::setGensteps(NPY<float>* gensteps)   // TODO: make this const : as gensteps are not owned by OpticksRun or OpticksEvent
 {
     OK_PROFILE("_OpticksRun::setGensteps");
     assert(m_evt && "must OpticksRun::createEvent prior to OpticksRun::setGensteps");

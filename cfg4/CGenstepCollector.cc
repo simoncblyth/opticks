@@ -75,6 +75,8 @@ void CGenstepCollector::reset()
     m_cerenkov_count = 0 ; 
     m_machinery_count = 0 ; 
     m_genstep->reset(); 
+    m_gs_photons.clear(); 
+
 }
 void CGenstepCollector::save(const char* path)
 {
@@ -87,6 +89,22 @@ void CGenstepCollector::load(const char* path)
     import(); 
 }
 
+
+/**
+The below assume 1-to-1 between eventId and genstep arrays, 
+intend to break this assumption in future.
+**/
+
+void CGenstepCollector::setArrayContentIndex(unsigned eventId)
+{
+    m_genstep->setArrayContentIndex(eventId); 
+}
+unsigned CGenstepCollector::getArrayContentIndex() const 
+{
+    return m_genstep->getArrayContentIndex(); 
+}
+
+
 void CGenstepCollector::import()
 {
     unsigned ni = m_genstep->getNumItems() ;
@@ -98,9 +116,12 @@ void CGenstepCollector::import()
     for(unsigned i=0 ; i < ni ; i++)
     {
         unsigned gentype = m_genstep->getInt(i,0u,0u);
+        unsigned numPhotons = m_genstep->getInt(i,0u,3u);
         if(OpticksGenstep::IsScintillation(gentype))  m_scintillation_count += 1 ;       
         else if(OpticksGenstep::IsCerenkov(gentype))  m_cerenkov_count += 1 ;       
         else if(OpticksGenstep::IsMachinery(gentype)) m_machinery_count += 1 ;       
+
+        m_gs_photons.push_back(numPhotons); 
     }
 
     unsigned total = m_scintillation_count + m_cerenkov_count + m_machinery_count ; 

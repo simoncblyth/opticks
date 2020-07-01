@@ -3037,11 +3037,11 @@ unsigned Opticks::getGeant4Version()
 
 
 
-const char* Opticks::getDirectGenstepPath() const 
+const char* Opticks::getDirectGenstepPath(unsigned tagoffset) const 
 {
     const char* det = m_spec->getDet();
     const char* typ = m_spec->getTyp();
-    const char* tag = m_spec->getTag();
+    const char* tag = m_spec->getOffsetTag(tagoffset);
 
     const char* srctagdir = BOpticksEvent::srctagdir(det, typ, tag ); 
 
@@ -3096,9 +3096,9 @@ const char* Opticks::getGenstepPath() const
 **/
 
 
-bool Opticks::existsDirectGenstepPath() const 
+bool Opticks::existsDirectGenstepPath(unsigned tagoffset) const 
 {
-    const char* path = getDirectGenstepPath();
+    const char* path = getDirectGenstepPath(tagoffset);
     bool exists = path ? BFile::ExistsFile(path) : false ;
     LOG(LEVEL) 
        << " path " << path 
@@ -3145,9 +3145,9 @@ NPY<float>* Opticks::load(const char* path) const
     return a ; 
 }
 
-NPY<float>* Opticks::loadDirectGenstep() const 
+NPY<float>* Opticks::loadDirectGenstep(unsigned tagoffset) const 
 {
-    std::string path = getDirectGenstepPath();
+    std::string path = getDirectGenstepPath(tagoffset);
     return load(path.c_str()); 
 }
 NPY<float>* Opticks::loadLegacyGenstep() const 

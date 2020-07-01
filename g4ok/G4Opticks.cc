@@ -387,19 +387,31 @@ optickscore/OpticksEvent.cc::
     293        void saveHitData(NPY<float>* ht) const ;
     294        void saveSourceData(NPY<float>* so) const ;
 
+who owns the gensteps : who gets to reset them ?
+
+* recall that gensteps are special, they do not get reset by OpticksEvent::reset
+  but they are saved by OpticksEvent::save when not in production mode
+
+what is the relationship between gensteps and G4Event ?
+
+* eventually want to be able to gang together gensteps from multiple
+  G4Event into one genstep array : but for now are assuming
+  that there is 1-to-1 relationship between G4Event and genstep arrays
 
 **/
 
-int G4Opticks::propagateOpticalPhotons() 
+int G4Opticks::propagateOpticalPhotons(G4int eventID) 
 {
     LOG(LEVEL) << "[[" ; 
 
     m_gensteps = m_genstep_collector->getGensteps(); 
-    const char* gspath = m_ok->getDirectGenstepPath(); 
-
-    LOG(info) << " saving gensteps to " << gspath ; 
     m_gensteps->setArrayContentVersion(G4VERSION_NUMBER); 
-    m_gensteps->save(gspath); 
+    m_gensteps->setArrayContentIndex(eventID); 
+
+    unsigned tagoffset = eventID ;  // tags are 1-based : so this will normally be the Geant4 eventID + 1
+    const char* gspath = m_ok->getDirectGenstepPath(tagoffset); 
+    LOG(info) << " saving gensteps to " << gspath ; 
+    m_gensteps->save(gspath);  
 
     // initial generated photons before propagation 
     // CPU genphotons needed only while validating 

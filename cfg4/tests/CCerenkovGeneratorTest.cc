@@ -79,7 +79,8 @@ int main(int argc, char** argv)
     //
     // below needs to be done after Opticks::configure for setup of the event spec
 
-    NPY<float>* np = ok.hasKey() ? ok.loadDirectGenstep() : NULL ;   
+    unsigned tagoffset = 0 ; 
+    NPY<float>* np = ok.hasKey() ? ok.loadDirectGenstep(tagoffset) : NULL ;   
     if(np == NULL) return 0 ; 
 
     OpticksGenstep* gs = new OpticksGenstep(np) ; 

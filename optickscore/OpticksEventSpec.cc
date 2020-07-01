@@ -69,7 +69,8 @@ OpticksEventSpec::OpticksEventSpec(const char* pfx, const char* typ, const char*
 }
 
 
-OpticksEventSpec* OpticksEventSpec::clone(unsigned tagoffset) const 
+
+const char* OpticksEventSpec::getOffsetTag(unsigned tagoffset) const
 {
     int itag = getITag();
     bool iszero = itag == 0 ; 
@@ -84,6 +85,14 @@ OpticksEventSpec* OpticksEventSpec::clone(unsigned tagoffset) const
     assert( !iszero && "--tag 0 NOT ALLOWED : AS USING G4 NEGATED CONVENTION " );
     int ntag = itag > 0 ? itag + tagoffset : itag - tagoffset ; 
     const char* tag = BStr::itoa( ntag );
+    return tag ; 
+}
+
+
+
+OpticksEventSpec* OpticksEventSpec::clone(unsigned tagoffset) const 
+{
+    const char* tag = getOffsetTag(tagoffset);  
     return new OpticksEventSpec( getPfx(), getTyp(), tag, getDet(), getCat() );
 }
 

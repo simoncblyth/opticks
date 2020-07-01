@@ -244,6 +244,21 @@ void NPYBase::setArrayContentVersion(int acv)
 }
 
 
+const char* NPYBase::ArrayContentIndex = "ArrayContentIndex" ; 
+
+int NPYBase::getArrayContentIndex() const 
+{
+    return getMeta<int>(ArrayContentIndex, "0");
+}
+void NPYBase::setArrayContentIndex(int aci)
+{
+    setMeta<int>(ArrayContentIndex, aci) ;
+}
+
+
+
+
+
 
 
 NPYBase::NPYBase(const std::vector<int>& shape, unsigned long long sizeoftype, Type_t type, std::string& metadata, bool has_data) 
@@ -266,6 +281,7 @@ NPYBase::NPYBase(const std::vector<int>& shape, unsigned long long sizeoftype, T
     m_buffer_target(-1),
     m_buffer_control(0),
     m_buffer_name(NULL),
+    m_buffer_index(-1),
     m_action_control(0),
     m_aux(NULL),
     m_verbose(false),
@@ -458,6 +474,18 @@ void NPYBase::setBufferName(const char* name )
 {
     m_buffer_name = name ? strdup(name) : NULL  ;  
 }
+void NPYBase::setBufferIndex(unsigned index )
+{
+    m_buffer_index = index  ;  
+}
+unsigned NPYBase::getBufferIndex() const 
+{
+    return m_buffer_index ;  
+}
+
+
+
+
 void NPYBase::setBufferSpec(const NPYSpec* spec)
 {
     // set when OpticksEvent uses the ctor  NPY<T>::make(NPYSpec* )

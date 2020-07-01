@@ -59,7 +59,9 @@ class OKCORE_API OpticksRun
         void setGensteps(NPY<float>* gs);
         bool hasGensteps() const ;
 
+        void createEvent(NPY<float>* gensteps);
         void createEvent(unsigned tagoffset=0);  
+
         void resetEvent();  
         void loadEvent();
         void saveEvent(); 

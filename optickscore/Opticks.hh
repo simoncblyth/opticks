@@ -509,13 +509,13 @@ class OKCORE_API Opticks {
    public:
        //const char*          getGenstepPath() const ;  // either direct or legacy depending on mode : as distinguished by hasKey 
        //bool                 existsGenstepPath() const ;
-       bool                 existsDirectGenstepPath() const ;
+       bool                 existsDirectGenstepPath(unsigned tagoffset) const ;
        bool                 existsLegacyGenstepPath() const ;
-       const char*          getDirectGenstepPath() const ; 
+       const char*          getDirectGenstepPath(unsigned tagoffset) const ; 
        const char*          getLegacyGenstepPath() const ; 
 
        NPY<float>*          load(const char* path) const ;
-       NPY<float>*          loadDirectGenstep() const ;
+       NPY<float>*          loadDirectGenstep(unsigned tagoffset) const ;
        NPY<float>*          loadLegacyGenstep() const ;
 
    public:

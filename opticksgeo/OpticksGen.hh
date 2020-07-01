@@ -111,6 +111,7 @@ class OKGEO_API OpticksGen
         bool                  m_dbgemit ;   // --dbgemit
         NEmitPhotonsNPY*      m_emitter ; 
         NPY<float>*           m_input_photons ; 
+        unsigned              m_tagoffset ;  
         NPY<float>*           m_direct_gensteps ; 
         NPY<float>*           m_legacy_gensteps ; 
         unsigned              m_source_code ; 

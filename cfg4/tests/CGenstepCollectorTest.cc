@@ -97,6 +97,7 @@ int main(int argc, char** argv)
         for(unsigned i=0 ; i < num_steps ; i++) CGenstepCollector::Instance()->collectMachineryStep(gentype);
 
         const char* path = genstep_path(e); 
+        CGenstepCollector::Instance()->setArrayContentIndex(e); 
         CGenstepCollector::Instance()->save(path); 
         CGenstepCollector::Instance()->reset(); 
 
@@ -112,6 +113,10 @@ int main(int argc, char** argv)
     {
         const char* path = genstep_path(e); 
         CGenstepCollector::Instance()->load(path);
+
+        unsigned e2 = CGenstepCollector::Instance()->getArrayContentIndex(); 
+        assert( e == e2 ); 
+
         std::cout << CGenstepCollector::Instance()->desc() << std::endl ; 
     }
 

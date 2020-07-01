@@ -50,6 +50,7 @@ class NPY_API NPYBase {
        typedef enum { FLOAT, SHORT, DOUBLE, INT, UINT, CHAR, UCHAR, ULONGLONG} Type_t ;
    public:
        static const char* ArrayContentVersion ; 
+       static const char* ArrayContentIndex ; 
        static NPYBase* Load( const char* path, Type_t type );
        static NPYBase* Make( unsigned ni, const NPYSpec* itemspec, bool zero );
    private:
@@ -123,8 +124,11 @@ class NPY_API NPYBase {
        void setMeta(NMeta* meta); 
        template <typename T> void setMeta(const char* key, T value);
        template <typename T> T getMeta(const char* key, const char* fallback) const ;
+
        int getArrayContentVersion() const ;
        void setArrayContentVersion(int acv);
+       int getArrayContentIndex() const ;
+       void setArrayContentIndex(int aci);
 
    public:
        void saveMeta( const char* path, const char* ext=".json") const ; 
@@ -143,6 +147,10 @@ class NPY_API NPYBase {
    private:
        void init();
        void updateDimensions();
+   public:
+       // buffer index is used to distinguish between multiple buffers in a series, eg for eventID
+       void         setBufferIndex(unsigned buffer_index);
+       unsigned     getBufferIndex() const ; 
    public:
        // OpenGL related
        void         setBufferId(int buffer_id);
@@ -234,6 +242,8 @@ class NPY_API NPYBase {
        int                m_buffer_target ; 
        unsigned long long m_buffer_control ; 
        const char*        m_buffer_name ; 
+       int                m_buffer_index ;  
+
        unsigned long long m_action_control ; 
        void*              m_aux ; 
        bool               m_verbose ; 

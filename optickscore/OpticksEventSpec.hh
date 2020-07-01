@@ -52,6 +52,8 @@ class OKCORE_API OpticksEventSpec {
    public:
         OpticksEventSpec(OpticksEventSpec* spec);
         OpticksEventSpec(const char* pfx, const char* typ, const char* tag, const char* det, const char* cat=NULL);
+
+        const char* getOffsetTag(unsigned tagoffset) const ; 
         OpticksEventSpec* clone(unsigned tagoffset=0) const ;   // non-zero tagoffset increments if +ve, and decrements if -ve
         void Summary(const char* msg="OpticksEventSpec::Summary") const ;
         std::string brief() const ;

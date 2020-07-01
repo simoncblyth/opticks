@@ -75,6 +75,9 @@ class CFG4_API CGenstepCollector
    public:
          CGenstepCollector(const NLookup* lookup);  
    public:
+         void setArrayContentIndex(unsigned eventId); 
+         unsigned getArrayContentIndex() const ; 
+
          unsigned getNumGensteps() const ; 
          unsigned getNumPhotons() const ;  // total 
          unsigned getNumPhotons( unsigned gs_idx) const ; 

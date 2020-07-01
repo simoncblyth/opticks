@@ -67,7 +67,8 @@ OpticksGen::OpticksGen(OpticksHub* hub)
     m_dbgemit(m_ok->isDbgEmit()),     // --dbgemit
     m_emitter(m_csg_emit ? new NEmitPhotonsNPY(m_csg_emit, OpticksGenstep_EMITSOURCE, m_ok->getSeed(), m_dbgemit, m_ok->getMaskBuffer(), m_ok->getGenerateOverride() ) : NULL ),
     m_input_photons(NULL),
-    m_direct_gensteps(m_ok->hasKey() && m_ok->existsDirectGenstepPath() && !m_ok->isTest() ? m_ok->loadDirectGenstep() : NULL ),
+    m_tagoffset(0),
+    m_direct_gensteps(m_ok->hasKey() && m_ok->existsDirectGenstepPath(m_tagoffset) && !m_ok->isTest() ? m_ok->loadDirectGenstep(m_tagoffset) : NULL ),
     m_legacy_gensteps(NULL),
     m_source_code(initSourceCode())
 {
