@@ -33,6 +33,11 @@ class Enum(dict):
     lptn = re.compile("^\s*(\w+)\s*=\s*(.*?),*\s*?$")
     vptn = re.compile("^0x1 <<\s*(\d+)$")
     def __init__(self, path, mskval=True, simple=False):
+        """
+        :param path:
+        :param mskval:
+        :param simple: when True means plain int enum, ie not bitshifted 0x1 << 1 etc..
+        """
         dict.__init__(self)
         log.info("parsing %s " % path )
         path = os.path.expandvars(path)

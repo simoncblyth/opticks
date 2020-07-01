@@ -174,12 +174,17 @@ void CGenstepCollector::collectScintillationStep
      m_gs_photons.push_back(numPhotons); 
 
      // too many single photon gensteps for comfortable logging 
-     if(numPhotons > 1)   
      LOG(LEVEL)
           << " gentype " << gentype
           << " gentype " << OpticksGenstep::Gentype(gentype)
+          << " pdgCode " << pdgCode
           << " numPhotons " << numPhotons 
-          << " scintillation_count " << m_scintillation_count ;
+          << " scintillation_count " << m_scintillation_count 
+          << " cerenkov_count " << m_cerenkov_count 
+          << " machinery_count " << m_machinery_count
+          << " step_count " << m_scintillation_count + m_cerenkov_count + m_machinery_count 
+          ;
+
 
      assert( gentype == OpticksGenstep_G4Scintillation_1042 || gentype == OpticksGenstep_DsG4Scintillation_r3971 ); 
 
@@ -274,9 +279,14 @@ void CGenstepCollector::collectCerenkovStep
      LOG(LEVEL) 
           << " gentype " << gentype
           << " gentype " << OpticksGenstep::Gentype(gentype)
+          << " pdgCode " << pdgCode
           << " numPhotons " << numPhotons
-          << " cerenkov_count " << m_cerenkov_count ;
-
+          << " cerenkov_count " << m_cerenkov_count 
+          << " scintillation_count " << m_scintillation_count 
+          << " machinery_count " << m_machinery_count
+          << " step_count " << m_scintillation_count + m_cerenkov_count + m_machinery_count 
+          ;
+ 
 
      assert( gentype == OpticksGenstep_G4Cerenkov_1042 || gentype == OpticksGenstep_DsG4Cerenkov_r3971 ); 
 

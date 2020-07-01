@@ -528,6 +528,10 @@ class Tube(Primitive):
 class Sphere(Primitive):
     deltaphi_slab_segment_enabled = False
 
+    def __repr__(self):
+        prepr = Primitive.__repr__(self)
+        return "%-80s :  rmin %s rmax %6.3f  " % (prepr, self.rmin, self.rmax )
+
     def as_shape(self, **kwa):
         shape = SEllipsoid(self.name, [self.rmax, self.rmax], **kwa )
         return shape 
@@ -1090,6 +1094,23 @@ class Volume(G):
     physvol = property(lambda self:self.findall_("physvol"))
     children = property(lambda self:self.physvol)
 
+    def physvol_xyz(self, pfx="pLPMT_Hamamatsu", sub="position"):
+        """
+        :param pfx: pv name prefix
+        :param sub: element name, must be either "position" or "rotation"
+        :return xyz: array of shape (npv, 3) 
+        """
+        assert sub in ["position", "rotation"]
+        x = map(float,self.elem.xpath("./physvol[starts-with(@name,'%s')]/%s/@x" % (pfx,sub)))
+        y = map(float,self.elem.xpath("./physvol[starts-with(@name,'%s')]/%s/@y" % (pfx,sub)))
+        z = map(float,self.elem.xpath("./physvol[starts-with(@name,'%s')]/%s/@z" % (pfx,sub)))
+        assert len(x) == len(y) == len(z)
+        xyz = np.zeros( [len(x), 3]) 
+        xyz[:,0] = x 
+        xyz[:,1] = y 
+        xyz[:,2] = z 
+        return xyz 
+
     def filterpv(self, pfx):
         return filter(lambda pv:pv.name.startswith(pfx), self.physvol) 
 
@@ -1333,6 +1354,10 @@ class GDML(G):
             log.info(" %2d : %s" % (i,lv.name) )
         pass 
         return lvs[0] if len(lvs) > 0 else None
+
+
+
+
 
 
     def volume_summary(self):
