@@ -261,6 +261,14 @@ Abort trap: 6
 }
 
 
+/**
+OEvent::resizeBuffers
+----------------------
+
+Internally called by OEvent::upload
+
+**/
+
 void OEvent::resizeBuffers(OpticksEvent* evt)
 {
     LOG(LEVEL) << evt->getShapeString() ; 

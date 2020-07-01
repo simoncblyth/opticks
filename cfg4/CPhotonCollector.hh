@@ -49,7 +49,7 @@ class CFG4_API CPhotonCollector
         static CPhotonCollector* Instance();
     public:
         CPhotonCollector();  
-
+        void reset();
         std::string desc() const ;
         void Summary(const char* msg="CPhotonCollector::Summary") const  ;
     public:

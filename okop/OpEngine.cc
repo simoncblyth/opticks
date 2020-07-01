@@ -133,11 +133,10 @@ void OpEngine::initPropagation()
 
 unsigned OpEngine::uploadEvent()
 {
-    LOG(info) << "." ; 
-    LOG(verbose) << "[" ; 
-    unsigned n = m_oevt->upload();                   // creates OptiX buffers, uploads gensteps
-    LOG(verbose) << "]" ; 
-    return n ; 
+    LOG(LEVEL) << "[" ; 
+    unsigned npho = m_oevt->upload();                   // creates OptiX buffers, uploads gensteps
+    LOG(LEVEL) << "] npho " << npho ; 
+    return npho ; 
 }
 
 void OpEngine::propagate()

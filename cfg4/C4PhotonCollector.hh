@@ -43,6 +43,7 @@ class CFG4_API C4PhotonCollector
         static const plog::Severity LEVEL ;   
     public:
         C4PhotonCollector(); 
+        void reset(); 
     public:
         NPY<float>*  getPhoton() const ;
     public:

@@ -46,6 +46,7 @@ class CFG4_API CPrimaryCollector
         static CPrimaryCollector* INSTANCE ;      
     public:
         CPrimaryCollector();  
+        void reset(); 
         std::string description() const ;
         void Summary(const char* msg="CPrimaryCollector::Summary") const  ;
     public:

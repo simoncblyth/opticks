@@ -100,7 +100,10 @@ class G4OK_API G4Opticks
         std::string desc() const ;  
     public:
         void setGeometry(const G4VPhysicalVolume* world, bool standardize_geant4_materials); 
+        
         int propagateOpticalPhotons(G4int eventID);
+        void resetCollectors(); 
+
         NPY<float>* getHits() const ; 
         void setAlignIndex(int align_idx) const ; 
     private:
@@ -260,6 +263,7 @@ class G4OK_API G4Opticks
         NLookup*                   m_lookup ; 
         OpMgr*                     m_opmgr;
     private:
+        // transient pointers borrowed from the collectors 
         NPY<float>*                m_gensteps ; 
         NPY<float>*                m_genphotons ; 
         NPY<float>*                m_hits ; 

@@ -166,12 +166,52 @@ G4Opticks::G4Opticks()
     C4FPEDetection::InvalidOperationDetection_Disable();  // see notes/issues/OKG4Test_prelaunch_FPE_causing_fail.rst
 }
 
+void G4Opticks::createCollectors()
+{
+    const char* prefix = NULL ; 
+    m_mtab = new CMaterialTable(prefix); 
+
+    setupMaterialLookup();
+    m_genstep_collector = new CGenstepCollector(m_lookup);   // <-- CG4 holds an instance too : and they are singletons, so should not use G4Opticks and CG4 together
+    m_primary_collector = new CPrimaryCollector ; 
+    m_g4hit_collector = new CPhotonCollector ; 
+    m_g4photon_collector = new C4PhotonCollector ; 
+}
+
+
+
+/**
+G4Opticks::resetCollectors
+-----------------------------
+
+Resets the collectors and sets the array pointers borrowed from them to NULL.
+This *reset* should be called after both *propagateOpticalPhotons* 
+and the hit data have been copied into Geant4 hit collections and 
+before the next *propagateOpticalPhotons*. 
+
+Note that the arrays belong to their respective collectors
+and are managed by them.
+**/
+
+void G4Opticks::resetCollectors()
+{
+    m_genstep_collector->reset(); 
+    m_gensteps = NULL ; 
+
+    m_primary_collector->reset(); 
+
+    m_g4hit_collector->reset(); 
+    m_g4hit = NULL ; 
+
+    m_g4photon_collector->reset(); 
+    m_genphotons = NULL ; 
+}
+
+
 
 /**
 G4Opticks::setGeometry
 ------------------------
-
-
 
 **/
 
@@ -324,21 +364,6 @@ void G4Opticks::setupMaterialLookup()
 }
 
 
-void G4Opticks::createCollectors()
-{
-    const char* prefix = NULL ; 
-    m_mtab = new CMaterialTable(prefix); 
-
-    setupMaterialLookup();
-    m_genstep_collector = new CGenstepCollector(m_lookup);   // <-- CG4 holds an instance too : and they are singletons, so should not use G4Opticks and CG4 together
-    m_primary_collector = new CPrimaryCollector ; 
-    m_g4hit_collector = new CPhotonCollector ; 
-    m_g4photon_collector = new C4PhotonCollector ; 
-}
-
-
-
-
 
 
 
@@ -440,7 +465,7 @@ int G4Opticks::propagateOpticalPhotons(G4int eventID)
 
 
         m_opmgr->reset();   
-        // clears OpticksEvent buffers,
+        // clears OpticksEvent buffers,   excluding gensteps
         // clone any buffers to be retained before the reset
     }
 

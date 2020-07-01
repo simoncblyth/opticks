@@ -63,6 +63,11 @@ void C4PhotonCollector::savePhotons(const char* dir, const char* name) const
 }
 
 
+void C4PhotonCollector::reset()
+{
+    m_photon_collector->reset(); 
+}
+
 
 std::string C4PhotonCollector::desc() const 
 {

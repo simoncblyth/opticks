@@ -45,6 +45,19 @@ CPhotonCollector::CPhotonCollector()
     INSTANCE = this ; 
 }
 
+/**
+CPhotonCollector::reset
+-------------------------
+
+This *reset* clears the data setting the number of items back to zero.
+
+**/
+
+void CPhotonCollector::reset()
+{
+    m_photon->reset();  
+    m_photon_count = 0 ; 
+}
 
 
 NPY<float>*  CPhotonCollector::getPhoton() const 

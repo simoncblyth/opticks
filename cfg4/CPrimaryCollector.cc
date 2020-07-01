@@ -51,6 +51,13 @@ CPrimaryCollector::CPrimaryCollector()
 }
 
 
+void CPrimaryCollector::reset()
+{   
+    m_primary->reset(); 
+    m_primary_count = 0 ; 
+}  
+
+
 NPY<float>*  CPrimaryCollector::getPrimary() const 
 {
     return m_primary ; 
