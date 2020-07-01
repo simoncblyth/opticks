@@ -24,6 +24,7 @@
 #include "SSys.hh"
 #include "BOpticksKey.hh"
 #include "NLookup.hpp"
+#include "NPho.hpp"
 #include "NPY.hpp"
 
 #include "CTraverser.hh"
@@ -153,7 +154,9 @@ G4Opticks::G4Opticks()
     m_opmgr(NULL),
     m_gensteps(NULL),
     m_genphotons(NULL),
+    m_hits_(NULL),
     m_hits(NULL),
+    m_num_hits(0),
     m_g4hit_collector(NULL),
     m_g4photon_collector(NULL),
     m_genstep_idx(0),
@@ -179,16 +182,30 @@ void G4Opticks::createCollectors()
 }
 
 
+/**
+G4Opticks::reset
+-----------------
+
+This *reset* should be called after both *propagateOpticalPhotons* 
+and the hit data have been copied into Geant4 hit collections and 
+before the next *propagateOpticalPhotons*. 
+
+Omitting to run *reset* will cause gensteps to continually collect
+from event to event with each propagation redoing the simulation again.
+
+**/
+
+void G4Opticks::reset()
+{
+    resetCollectors(); 
+}
+
 
 /**
 G4Opticks::resetCollectors
 -----------------------------
 
 Resets the collectors and sets the array pointers borrowed from them to NULL.
-This *reset* should be called after both *propagateOpticalPhotons* 
-and the hit data have been copied into Geant4 hit collections and 
-before the next *propagateOpticalPhotons*. 
-
 Note that the arrays belong to their respective collectors
 and are managed by them.
 **/
@@ -453,7 +470,9 @@ int G4Opticks::propagateOpticalPhotons(G4int eventID)
         m_opmgr->propagate();     // GPU simulation is done in here 
 
         OpticksEvent* event = m_opmgr->getEvent(); 
-        m_hits = event->getHitData()->clone() ; 
+        m_hits_ = event->getHitData()->clone() ; 
+        m_hits = new NPho(m_hits_) ; 
+        m_num_hits = m_hits->getNumPhotons() ; 
 
         // minimal g4 side instrumentation in "1st executable" 
         // do after propagate, so the event will have been created already
@@ -469,15 +488,49 @@ int G4Opticks::propagateOpticalPhotons(G4int eventID)
         // clone any buffers to be retained before the reset
     }
 
-    int num_hits = m_hits ? m_hits->getNumItems() : -1 ; ; 
 
-    LOG(LEVEL) << "]] num_hits " << num_hits ; 
-    return num_hits ;   
+    LOG(LEVEL) << "]] num_hits " << m_num_hits ; 
+    return m_num_hits ;   
 }
 
 NPY<float>* G4Opticks::getHits() const 
 {
-    return m_hits ; 
+    return m_hits_ ; 
+}
+
+void G4Opticks::getHit(
+            unsigned i,
+            G4ThreeVector* position,  
+            G4double* time, 
+            G4ThreeVector* direction, 
+            G4double* weight,
+            G4ThreeVector* polarization,  
+            G4double* wavelength,
+            G4int* flags_x,
+            G4int* flags_y,
+            G4int* flags_z,
+            G4int* flags_w
+      ) const 
+{
+    assert( i < m_num_hits ); 
+
+    glm::vec4 post = m_hits->getPositionTime(i);      
+    position->set(double(post.x), double(post.y), double(post.z)); 
+    *time = double(post.w) ; 
+
+    glm::vec4 dirw = m_hits->getDirectionWeight(i);      
+    direction->set(double(dirw.x), double(dirw.y), double(dirw.z)); 
+    *weight = double(dirw.w) ; 
+
+    glm::vec4 polw = m_hits->getPolarizationWavelength(i); 
+    polarization->set(double(polw.x), double(polw.y), double(polw.z)); 
+    *wavelength = double(polw.w);  
+
+    glm::uvec4 flags = m_hits->getFlags(i);
+    *flags_x = flags.x ; 
+    *flags_y = flags.y ; 
+    *flags_z = flags.z ; 
+    *flags_w = flags.w ; 
 }
 
 

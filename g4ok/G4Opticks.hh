@@ -23,12 +23,13 @@
 #include <vector>
 #include <map>
 #include "plog/Severity.h"
+#include "G4ThreeVector.hh"
 
 #include "G4OK_API_EXPORT.hh"
 
-
 template <typename T> class NPY ; 
 class NLookup ; 
+class NPho ; 
 class Opticks;
 class OpticksEvent;
 class OpMgr;
@@ -92,29 +93,29 @@ class G4OK_API G4Opticks
         static G4Opticks* GetOpticks();
         static void Initialize(const char* gdmlpath, bool standardize_geant4_materials);
         static void Initialize(const G4VPhysicalVolume* world, bool standardize_geant4_materials);
-        static void Finalize();
     public:
         G4Opticks();
         virtual ~G4Opticks();
     public:
         std::string desc() const ;  
     public:
-        void setGeometry(const G4VPhysicalVolume* world, bool standardize_geant4_materials); 
-        
+        // workflow methods
         int propagateOpticalPhotons(G4int eventID);
-        void resetCollectors(); 
-
         NPY<float>* getHits() const ; 
+        void reset(); 
         void setAlignIndex(int align_idx) const ; 
+
+        static void Finalize();
     private:
+        void setGeometry(const G4VPhysicalVolume* world, bool standardize_geant4_materials); 
         GGeo* translateGeometry( const G4VPhysicalVolume* top );
         void standardizeGeant4MaterialProperties();
         void createCollectors();
+        void resetCollectors(); 
         void setupMaterialLookup();
     public:
         unsigned getNumPhotons() const ;
         unsigned getNumGensteps() const ;
-
 
         void collectGenstep_G4Cerenkov_1042(  
              const G4Track*  aTrack, 
@@ -250,6 +251,20 @@ class G4OK_API G4Opticks
             G4int                flags_z, 
             G4int                flags_w
          ); 
+
+        void getHit(
+            unsigned i,
+            G4ThreeVector* position,  
+            G4double* time, 
+            G4ThreeVector* direction, 
+            G4double* weight,
+            G4ThreeVector* polarization,  
+            G4double* wavelength, 
+            G4int* flags_x,
+            G4int* flags_y,
+            G4int* flags_z,
+            G4int* flags_w
+       ) const  ; 
             
      private:
         const G4VPhysicalVolume*   m_world ; 
@@ -266,7 +281,9 @@ class G4OK_API G4Opticks
         // transient pointers borrowed from the collectors 
         NPY<float>*                m_gensteps ; 
         NPY<float>*                m_genphotons ; 
-        NPY<float>*                m_hits ; 
+        NPY<float>*                m_hits_ ; 
+        NPho*                      m_hits ; 
+        unsigned                   m_num_hits ; 
     private:
         // minimal instrumentation from the G4 side of things 
         CPhotonCollector*          m_g4hit_collector ; 
