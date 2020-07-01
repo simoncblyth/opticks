@@ -40,7 +40,9 @@
 
 #include "G4Opticks.hh"
 
+#include "OpticksPhoton.h"
 #include "OpticksGenstep.h"
+
 #include "Opticks.hh"
 #include "OpticksEvent.hh"
 #include "OpMgr.hh"
@@ -509,7 +511,9 @@ void G4Opticks::getHit(
             G4int* flags_x,
             G4int* flags_y,
             G4int* flags_z,
-            G4int* flags_w
+            G4int* flags_w,
+            G4bool* is_cerenkov, 
+            G4bool* is_reemission
       ) const 
 {
     assert( i < m_num_hits ); 
@@ -531,6 +535,10 @@ void G4Opticks::getHit(
     *flags_y = flags.y ; 
     *flags_z = flags.z ; 
     *flags_w = flags.w ; 
+
+    *is_cerenkov = (flags.w & CERENKOV) != 0 ; 
+    *is_reemission = (flags.w & BULK_REEMIT) != 0 ; 
+
 }
 
 

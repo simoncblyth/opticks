@@ -263,7 +263,9 @@ class G4OK_API G4Opticks
             G4int* flags_x,
             G4int* flags_y,
             G4int* flags_z,
-            G4int* flags_w
+            G4int* flags_w,
+            G4bool* is_cerenkov, 
+            G4bool* is_reemission
        ) const  ; 
             
      private:
