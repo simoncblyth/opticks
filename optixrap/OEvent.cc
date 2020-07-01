@@ -50,6 +50,11 @@ OpticksEvent* OEvent::getEvent()
 }
 void OEvent::setEvent(OpticksEvent* evt)
 {
+    LOG(LEVEL) 
+        << " this (OEvent*) " << this
+        << " evt (OpticksEvent*) " << evt
+        ;
+ 
     m_evt = evt ; 
 
 }
@@ -58,9 +63,6 @@ OContext* OEvent::getOContext()
     return m_ocontext ; 
 }
 
-
-// canonical single OEvent instance resides in OPropagator 
-// and is instanciated with OPropagator
 
 OEvent::OEvent(Opticks* ok, OContext* ocontext)
    :
@@ -200,6 +202,7 @@ void OEvent::createBuffers(OpticksEvent* evt)
 
 void OEvent::markDirty()
 {
+    LOG(LEVEL); 
 
 #ifdef WITH_SEED_BUFFER
 

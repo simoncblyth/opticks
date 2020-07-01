@@ -63,7 +63,7 @@ void OPropagator::setEntry(unsigned int entry_index)
 }
 
 OPropagator::OPropagator(Opticks* ok, OEvent* oevt, OpticksEntry* entry) 
-   :
+    :
     m_log(new SLog("OPropagator::OPropagator","", LEVEL)),
     m_ok(ok),
     m_oevt(oevt),
@@ -144,11 +144,11 @@ OPropagator::setSize
 Canonically invoked by OPropagator::prelaunch with width the number of photons
 from the OpticksEvent and height 1 
 
-
 **/
 
 void OPropagator::setSize(unsigned width, unsigned height)
 {
+    LOG(LEVEL) << " width " << width << " height " << height ; 
     m_width = width ; 
     m_height = height ; 
 }
@@ -169,9 +169,18 @@ void OPropagator::prelaunch()
     assert(entry);
 
     OpticksEvent* evt = m_oevt->getEvent(); 
-
     unsigned numPhotons = evt->getNumPhotons(); 
-    setSize( m_propagateoverride > 0 ? m_propagateoverride : numPhotons ,  1 );
+    unsigned u_numPhotons = m_propagateoverride > 0 ? m_propagateoverride : numPhotons ;  
+
+    LOG(LEVEL) 
+        << " m_count " << m_count 
+        << " m_oevt " << m_oevt 
+        << " evt " << evt
+        << " numPhotons " << numPhotons
+        << " u_numPhotons " << u_numPhotons
+        ;
+
+    setSize( u_numPhotons ,  1 );
     setNoPropagate(m_ok->hasOpt("nopropagate"));
 
     BTimes* prelaunch_times = evt->getPrelaunchTimes() ;

@@ -61,9 +61,11 @@ class TBuf ;
 
 struct CBufSpec ; 
 
+#include "plog/Severity.h"
 #include "OKOP_API_EXPORT.hh"
 
 class OKOP_API OpSeeder {
+      static const plog::Severity LEVEL ;  
    public:
       OpSeeder(Opticks* ok, OEvent* oevt);
    public:

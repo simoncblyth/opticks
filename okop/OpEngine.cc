@@ -115,6 +115,17 @@ void OpEngine::init()
     OKI_PROFILE("OpEngine::OpEngine");
 }
 
+/**
+OpEngine::initPropagation
+--------------------------
+
+Instanciate the residents.
+
+Note that the pointer to the single m_oevt (OEvent) instance  
+is passed to all the residents.
+
+**/
+
 void OpEngine::initPropagation()
 {
     m_entry = m_ocontext->addEntry(m_ok->getEntryCode()) ;
@@ -127,14 +138,10 @@ void OpEngine::initPropagation()
     m_indexer = new OpIndexer(m_ok, m_oevt) ;
 }
 
-
-
- 
-
 unsigned OpEngine::uploadEvent()
 {
     LOG(LEVEL) << "[" ; 
-    unsigned npho = m_oevt->upload();                   // creates OptiX buffers, uploads gensteps
+    unsigned npho = m_oevt->upload();   // creates OptiX buffers, uploads gensteps
     LOG(LEVEL) << "] npho " << npho ; 
     return npho ; 
 }

@@ -46,6 +46,7 @@
 
 #include "PLOG.hh"
 
+const plog::Severity OpSeeder::LEVEL = PLOG::EnvLevel("OpSeeder", "DEBUG") ; 
 
 OpSeeder::OpSeeder(Opticks* ok, OEvent* oevt)  
    :
