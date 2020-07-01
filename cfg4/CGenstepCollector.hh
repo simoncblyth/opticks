@@ -82,6 +82,7 @@ class CFG4_API CGenstepCollector
          NPY<float>*  getGensteps() const ;
    public:
          std::string description() const ;
+         std::string desc() const ;
          void Summary(const char* msg="CGenstepCollector::Summary") const  ;
          int translate(int acode) const ;
    private:

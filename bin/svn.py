@@ -1,7 +1,11 @@
 #!/usr/bin/env python
 """
-svn.py
-========
+svn.py / git.py 
+=================
+
+git.py is a symbolic link to svn.py that detects its name
+to pick the flavor of version control 
+
 
 This script enables two svn working copies "local" and "remote"
 to be kept in sync with each other without requiring the changes
@@ -74,7 +78,7 @@ Workflow::
        ## pipe those commands to shell
 
 """
-import os, commands, re, argparse, logging, platform
+import os, sys, commands, re, argparse, logging, platform
 from collections import OrderedDict as odict
 try: 
     from hashlib import md5 
@@ -153,17 +157,59 @@ class Path(dict):
 
 class WC(object):
     rstpat = re.compile("^(?P<st>\S)\s*(?P<dig>\S*)\s*(?P<path>\S*)$")
-    lstpat = re.compile("^(?P<st>\S)\s*(?P<path>\S*)$")
+    lstpat = re.compile("^\s*(?P<st>\S*)\s*(?P<path>\S*)$")
+
+    @classmethod
+    def detect_vc_from_dir(cls):
+        if os.path.isdir(".svn"):
+            vc = "svn"
+        elif os.path.isdir(".git"):
+            vc = "git"
+        else:
+            print("FATAL must invoke from svn or git top level working copy directory")
+        pass
+        #print("detected vc %s " % vc)
+        return vc 
+
+    @classmethod
+    def detect_vc_from_scriptname(cls):
+        scriptname = os.path.basename(sys.argv[0])  
+        if scriptname == "svn.py":
+            vc = "svn"
+        elif scriptname == "git.py":
+            vc = "git"
+        else:
+            assert 0 
+        pass
+        #print("detected vc %s " % vc)
+        return vc
 
     @classmethod
     def parse_args(cls, doc):
+        vc = cls.detect_vc_from_scriptname()
+        defaults = {}
+        if vc == "svn":
+            defaults["chdir"] = "~/junotop/offline" 
+            defaults["rbase"] = "P:junotop/offline" 
+            defaults["rstatpath"] = "~/rstat.txt" 
+            defaults["rstatcmd"] = "ssh P opticks/bin/svn.py"
+            defaults["statcmd"] = "svn status"
+        elif vc == "git":
+            defaults["chdir"] = "~/opticks" 
+            defaults["rbase"] = "P:opticks" 
+            defaults["rstatpath"] = "~/rstat_opticks.txt" 
+            defaults["rstatcmd"] = "ssh P opticks/bin/git.py"
+            defaults["statcmd"] = "git status --porcelain"
+        else:
+            pass
+        pass
         parser = argparse.ArgumentParser(doc)
         parser.add_argument( "cmd", default=["st"], nargs="*", choices=["rup","loc","rem","st","get","put","cf","cfu","sync", ["st"]], 
             help="command specifying what to do with the working copy" ) 
-        parser.add_argument( "--chdir", default="~/junotop/offline", help="chdir here" ) 
-        parser.add_argument( "--rstatpath", default="~/rstat.txt", help="path to remote status file" ) 
-        parser.add_argument( "--rstatcmd", default="ssh P opticks/bin/svn.py", help="command to invoke the remote version of this script" )
-        parser.add_argument( "--rsvnbase", default="P:junotop/offline", help="remote svn working copy" ) 
+        parser.add_argument( "--chdir", default=defaults["chdir"], help="chdir here" ) 
+        parser.add_argument( "--rstatpath", default=defaults["rstatpath"], help="path to remote status file" ) 
+        parser.add_argument( "--rstatcmd", default=defaults["rstatcmd"], help="command to invoke the remote version of this script" )
+        parser.add_argument( "--rbase", default=defaults["rbase"], help="remote svn working copy" ) 
         parser.add_argument( "--check", default=False, action="store_true", help="check digest with os alternative md5 or md5sum" ) 
         parser.add_argument( "--ldig", type=int, default=-1, help="length of digest" ) 
         parser.add_argument( "-p", "--priority", choices=["loc","rem"], default="loc", help="Which version wins when a file exists at both ends" ) 
@@ -173,6 +219,9 @@ class WC(object):
         logging.basicConfig(level=getattr(logging,args.level.upper()), format=fmt)
         args.chdir = expand_(args.chdir)
         args.rstatpath = expand_(args.rstatpath)
+
+        args.vc = vc
+        args.statcmd = defaults["statcmd"]
         return args
 
     @classmethod
@@ -199,25 +248,33 @@ class WC(object):
         return cls(paths, "rem")
 
     @classmethod         
-    def FromStatus(cls, ldig, check=False):
+    def FromStatus(cls, args):
         """
-        :param ldig: int length of digest
+        :param args:
         :return loc: WC instance
 
         Parse the output of "svn status" collecting status strings and paths
         """
-        log.debug("ldig %s check %s " % (ldig,check))
 
-        rc, out = commands.getstatusoutput("svn status")
+        log.debug("ldig %s check %s statcmd %s " % (args.ldig,args.check, args.statcmd))
+
+        rc, out = commands.getstatusoutput(args.statcmd)
         assert rc == 0 
+      
+        log.debug(out)  
+
         paths = []
         for line in out.split("\n"):
+            log.debug("[%s]"%line)
             m = cls.lstpat.match(line)
             assert m, line
             d = m.groupdict()
-            d["ldig"] = ldig
-            d["check"] = check 
-            assert d["st"] in ["M","A", "?"]
+            d["ldig"] = args.ldig
+            d["check"] = args.check 
+            assert d["st"] in ["M","A", "?", "??"]
+
+            if d["st"] == "??": d["st"] = "?"   # bring git into line
+
             if os.path.isdir(d["path"]):
                 log.debug("skip dir %s " % d["path"] )
             else:    
@@ -284,20 +341,20 @@ class WC(object):
         self.d = d
 
     @classmethod
-    def PutCmd(cls, path, rsvnbase, chdir):
-        return "scp %s/%s %s/%s" % (chdir,path,rsvnbase,path)
+    def PutCmd(cls, path, rbase, chdir):
+        return "scp %s/%s %s/%s" % (chdir,path,rbase,path)
 
     @classmethod
-    def GetCmd(cls, path, rsvnbase, chdir):
-        return "scp %s/%s %s/%s" % (rsvnbase,path,chdir,path)
+    def GetCmd(cls, path, rbase, chdir):
+        return "scp %s/%s %s/%s" % (rbase,path,chdir,path)
 
-    def scp_put_cmds(self, rsvnbase, chdir):
+    def scp_put_cmds(self, rbase, chdir):
         """put from local to remote"""
-        return "\n".join(map(lambda d:self.PutCmd(d["path"],rsvnbase,chdir), self.paths))
+        return "\n".join(map(lambda d:self.PutCmd(d["path"],rbase,chdir), self.paths))
 
-    def scp_get_cmds(self, rsvnbase, chdir):
+    def scp_get_cmds(self, rbase, chdir):
         """get from remote to local"""
-        return "\n".join(map(lambda d:self.GetCmd(d["path"],rsvnbase,chdir), self.paths))
+        return "\n".join(map(lambda d:self.GetCmd(d["path"],rbase,chdir), self.paths))
 
     def _get_hdr(self):
         name = getattr(self, 'name', "noname")
@@ -328,7 +385,7 @@ if __name__ == '__main__':
     pass 
 
     os.chdir(args.chdir)
-    loc = WC.FromStatus(args.ldig, args.check)
+    loc = WC.FromStatus(args)
 
     if loc and rem:
         cf = WC.FromComparison(loc,rem, args.ldig)
@@ -344,9 +401,9 @@ if __name__ == '__main__':
         elif cmd == "rem":
             print(rem)
         elif cmd == "put": # scp local to remote
-            print(loc.scp_put_cmds(args.rsvnbase, args.chdir))
+            print(loc.scp_put_cmds(args.rbase, args.chdir))
         elif cmd == "get": # scp remote to local 
-            print(rem.scp_get_cmds(args.rsvnbase, args.chdir))
+            print(rem.scp_get_cmds(args.rbase, args.chdir))
         elif cmd == "cf" or cmd == "cfu":
             assert cf
             print(cf)
@@ -357,15 +414,15 @@ if __name__ == '__main__':
                 stlr = p["stlr"]
                 stdig = p["stdig"]
                 if stlr == "l ":
-                    print(WC.PutCmd(p["path"], args.rsvnbase, args.chdir))
+                    print(WC.PutCmd(p["path"], args.rbase, args.chdir))
                 elif stlr == " r":
-                    print(WC.GetCmd(p["path"], args.rsvnbase, args.chdir))
+                    print(WC.GetCmd(p["path"], args.rbase, args.chdir))
                 elif stlr == "lr":
                     if stdig == "*": 
                         if args.priority == "rem":
-                            print(WC.GetCmd(p["path"], args.rsvnbase, args.chdir))
+                            print(WC.GetCmd(p["path"], args.rbase, args.chdir))
                         elif args.priority == "loc":
-                            print(WC.PutCmd(p["path"], args.rsvnbase, args.chdir))
+                            print(WC.PutCmd(p["path"], args.rbase, args.chdir))
                         else:
                             assert 0, args.priority
                         pass

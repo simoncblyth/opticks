@@ -116,6 +116,20 @@ void CGenstepCollector::consistencyCheck() const
      assert(consistent);
 }
 
+
+std::string CGenstepCollector::desc() const
+{
+    std::stringstream ss ; 
+    ss 
+       << " ngs " << m_genstep->getNumItems() 
+       << " nsc " << m_scintillation_count
+       << " nck " << m_cerenkov_count
+       << " nma " << m_machinery_count
+       << " tot " << m_scintillation_count + m_cerenkov_count + m_machinery_count 
+       ;
+    return ss.str();
+}
+
 std::string CGenstepCollector::description() const
 {
     std::stringstream ss ; 
@@ -173,18 +187,13 @@ void CGenstepCollector::collectScintillationStep
      m_scintillation_count += 1 ;   // 1-based index
      m_gs_photons.push_back(numPhotons); 
 
-     // too many single photon gensteps for comfortable logging 
      LOG(LEVEL)
           << " gentype " << gentype
           << " gentype " << OpticksGenstep::Gentype(gentype)
           << " pdgCode " << pdgCode
           << " numPhotons " << numPhotons 
-          << " scintillation_count " << m_scintillation_count 
-          << " cerenkov_count " << m_cerenkov_count 
-          << " machinery_count " << m_machinery_count
-          << " step_count " << m_scintillation_count + m_cerenkov_count + m_machinery_count 
+          << desc()
           ;
-
 
      assert( gentype == OpticksGenstep_G4Scintillation_1042 || gentype == OpticksGenstep_DsG4Scintillation_r3971 ); 
 
@@ -276,17 +285,13 @@ void CGenstepCollector::collectCerenkovStep
      m_cerenkov_count += 1 ;   // 1-based index
      m_gs_photons.push_back(numPhotons); 
 
-     LOG(LEVEL) 
+     LOG(LEVEL)
           << " gentype " << gentype
           << " gentype " << OpticksGenstep::Gentype(gentype)
           << " pdgCode " << pdgCode
-          << " numPhotons " << numPhotons
-          << " cerenkov_count " << m_cerenkov_count 
-          << " scintillation_count " << m_scintillation_count 
-          << " machinery_count " << m_machinery_count
-          << " step_count " << m_scintillation_count + m_cerenkov_count + m_machinery_count 
+          << " numPhotons " << numPhotons 
+          << desc()
           ;
- 
 
      assert( gentype == OpticksGenstep_G4Cerenkov_1042 || gentype == OpticksGenstep_DsG4Cerenkov_r3971 ); 
 
