@@ -140,18 +140,24 @@ prd.identity (uint4)
 
 ggeo/GVolume.cc::
 
-    192 guint4 GVolume::getIdentity()
-    193 {
-    194     return guint4(
-    195                    m_index,           // 0-based GVolume/GNode index
-    196                    getMeshIndex(),    // 0-based GMesh/solid index
-    197                    m_boundary,        // 0-based boundary index
-    198                    getSensorSurfaceIndex()
-    199                  );
-    200 }
+    201 guint4 GVolume::getIdentity()
+    202 {
+    203     unsigned node_index = m_index ;
+    204 
+    205     //unsigned identity_index = getSensorSurfaceIndex() ;   
+    206     unsigned identity_index = m_copyNumber  ;
+    207 
+    208     return guint4(
+    209                    node_index,
+    210                    getMeshIndex(),
+    211                    m_boundary,
+    212                    identity_index
+    213                  );
+    214 }
 
 
-* Opticks GVolume/GNode corresponds to Geant4 placed volumes (ie Physical Volume, PV). 
+
+* Opticks GVolume/GNode corresponds to Geant4 placed volumes (ie Physical Volume, G4PVPlacement). 
   There are often many tens of thousands of these in the detector geometry
 
 * There are typically much fewer distinct GMesh in a geometry, these 

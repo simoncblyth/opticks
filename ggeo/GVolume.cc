@@ -17,6 +17,7 @@
  * limitations under the License.
  */
 
+#include <csignal>
 #include <cstdio>
 #include <climits>
 #include <cstring>
@@ -204,6 +205,9 @@ guint4 GVolume::getIdentity()
   
     //unsigned identity_index = getSensorSurfaceIndex() ;   
     unsigned identity_index = m_copyNumber  ;   
+
+    // surprised to get this in the global 
+    //if(identity_index > 300000 ) std::raise(SIGINT); 
 
     return guint4(
                    node_index, 

@@ -210,7 +210,27 @@ o-lldb-runline()
    fi 
 }
 
-
+o-gdb-runline()
+{
+   local H
+   local B
+   local T
+   if [ -z "$BP" ]; then
+        H="";
+        B="";
+        T="-ex r";
+    else
+        H="-ex \"set breakpoint pending on\"";
+        B="";
+        for bp in $BP;
+        do
+            B="$B -ex \"break $bp\" ";
+        done;
+        T="-ex \"info break\" -ex r";
+    fi;
+    local runline="gdb $H $B $T --args ${OPTICKS_BINARY} ${OPTICKS_ARGS}"
+    echo $runline 
+}
 
 
 o-runline-notes(){ cat << EON
@@ -231,7 +251,7 @@ o-runline()
       case $(uname) in
           Darwin) runline=$(o-lldb-runline) ;;
            MING*) runline="     ${OPTICKS_BINARY} -- ${OPTICKS_ARGS} " ;; 
-               *) runline="gdb  --args ${OPTICKS_BINARY} ${OPTICKS_ARGS} " ;;
+               *) runline=$(o-gdb-runline) ;; 
       esac
    elif [ "${OPTICKS_DBG}" == "2" ]; then 
       runline="strace -o /tmp/strace.log -e open ${OPTICKS_BINARY} ${OPTICKS_ARGS}" 

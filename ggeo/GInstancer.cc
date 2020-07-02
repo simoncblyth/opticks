@@ -71,7 +71,8 @@ GInstancer::GInstancer(Opticks* ok, GGeoLib* geolib, GNodeLib* nodelib, NSceneCo
     m_digest_count(new Counts<unsigned>("progenyDigest")),
     m_csgskiplv_count(0),
     m_repeats_count(0),
-    m_globals_count(0)
+    m_globals_count(0), 
+    m_duplicate_outernode_copynumber(true)
 {
 }
 
@@ -460,7 +461,8 @@ unsigned int GInstancer::getRepeatIndex(const std::string& pdig )
 GInstancer::labelTree
 -----------------------
 
-Sets the repeat index.
+Sets the repeat index, by recursive labelling 
+starting from each of the placements.
 
 **/
 
@@ -479,10 +481,18 @@ void GInstancer::labelTree()   // hmm : doesnt label global volumes ?
          assert(ridx == i + 1 );
          std::vector<GNode*> placements = m_root->findAllProgenyDigest(pdig);
 
+         LOG(LEVEL) 
+               << " i " << std::setw(2) << i 
+               << " ridx " << std::setw(2) << ridx 
+               << " placements " << std::setw(7) << placements.size()
+               ; 
+
          // recursive labelling starting from the placements
          for(unsigned int p=0 ; p < placements.size() ; p++)
          {
-             labelRepeats_r(placements[p], ridx);
+             GNode* outernode = placements[p] ; 
+             int outernode_copyNumber = dynamic_cast<GVolume*>(outernode)->getCopyNumber() ; 
+             labelRepeats_r(outernode, ridx, outernode_copyNumber );
          }
     }
 
@@ -502,17 +512,32 @@ void GInstancer::labelTree()   // hmm : doesnt label global volumes ?
 
 }
 
-void GInstancer::labelRepeats_r( GNode* node, unsigned int ridx)
+/**
+GInstancer::labelRepeats_r
+----------------------------
+
+
+**/
+
+void GInstancer::labelRepeats_r( GNode* node, unsigned int ridx, int outernode_copyNumber )
 {
+    GVolume* vol = dynamic_cast<GVolume*>(node); 
     node->setRepeatIndex(ridx);
     m_repeats_count += 1 ; 
+
+    if(m_duplicate_outernode_copynumber)
+    {
+        if( vol->getCopyNumber() != outernode_copyNumber && outernode_copyNumber > -1 )
+        {
+            vol->setCopyNumber(outernode_copyNumber); 
+        }    
+    } 
 
     unsigned lvidx = node->getMeshIndex();  
     m_meshset[ridx].insert( lvidx ) ; 
 
     if( m_ok->isCSGSkipLV(lvidx) )   // --csgskiplv
     {
-        GVolume* vol = dynamic_cast<GVolume*>(node); 
         vol->setCSGSkip(true);      
 
         m_csgskiplv[lvidx].push_back( node->getIndex() ); 
@@ -527,7 +552,7 @@ void GInstancer::labelRepeats_r( GNode* node, unsigned int ridx)
              ;
          m_labels++ ; 
     }
-    for(unsigned int i = 0; i < node->getNumChildren(); i++) labelRepeats_r(node->getChild(i), ridx );
+    for(unsigned int i = 0; i < node->getNumChildren(); i++) labelRepeats_r(node->getChild(i), ridx, outernode_copyNumber );
 }
 
 
