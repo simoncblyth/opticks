@@ -258,7 +258,7 @@ void CGenstepCollector::collectScintillationStep
           << " gentype " << gentype
           << " gentype " << OpticksGenstep::Gentype(gentype)
           << " pdgCode " << pdgCode
-          << " numPhotons " << numPhotons 
+          << " numPhotons " << std::setw(4) << numPhotons 
           << desc()
           ;
 

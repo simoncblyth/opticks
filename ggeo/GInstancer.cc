@@ -525,9 +525,9 @@ void GInstancer::labelRepeats_r( GNode* node, unsigned int ridx, int outernode_c
     node->setRepeatIndex(ridx);
     m_repeats_count += 1 ; 
 
-    if(m_duplicate_outernode_copynumber)
+    if(m_duplicate_outernode_copynumber && outernode_copyNumber > -1)
     {
-        if( vol->getCopyNumber() != outernode_copyNumber && outernode_copyNumber > -1 )
+        if( vol->getCopyNumber() != unsigned(outernode_copyNumber) )
         {
             vol->setCopyNumber(outernode_copyNumber); 
         }    
