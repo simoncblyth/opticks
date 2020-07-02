@@ -31,6 +31,7 @@
 #include "G4VSolid.hh"
 #include "G4TransportationManager.hh"
 #include "G4VSensitiveDetector.hh"
+#include "G4PVPlacement.hh"
 
 #include "X4.hh"
 #include "X4PhysicalVolume.hh"
@@ -1154,6 +1155,11 @@ GVolume* X4PhysicalVolume::convertNode(const G4VPhysicalVolume* const pv, GVolum
 #ifdef X4_PROFILE
     float t00 = BTimeStamp::RealTime(); 
 #endif
+   
+    // record copynumber in GVolume, as thats one way to handle pmtid
+    const G4PVPlacement* placement = dynamic_cast<const G4PVPlacement*>(pv); 
+    assert(placement); 
+    G4int copyNumber = placement->GetCopyNo() ;  
 
     X4Nd* parent_nd = parent ? static_cast<X4Nd*>(parent->getParallelNode()) : NULL ;
 
@@ -1169,6 +1175,7 @@ GVolume* X4PhysicalVolume::convertNode(const G4VPhysicalVolume* const pv, GVolum
     int lvIdx = m_lvidx[lv] ;   // from postorder traverse in convertSolids to match GDML lvIdx : mesh identity uses lvIdx
 
     LOG(verbose) 
+        << " copyNumber " << std::setw(8) << copyNumber
         << " boundary " << std::setw(4) << boundary 
         << " materialIdx " << std::setw(4) << materialIdx
         << " boundaryName " << boundaryName
@@ -1302,6 +1309,7 @@ GVolume* X4PhysicalVolume::convertNode(const G4VPhysicalVolume* const pv, GVolum
  
     NSensor* sensor = NULL ; 
     volume->setSensor( sensor );   
+    volume->setCopyNumber(copyNumber); 
     volume->setBoundary( boundary ); 
     volume->setSelected( selected );
 

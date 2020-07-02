@@ -51,7 +51,8 @@ GVolume::GVolume( unsigned index, GMatrix<float>* transform, const GMesh* mesh )
     m_sensor_surface_index(0),
     m_parts(NULL),
     m_pt(NULL),
-    m_parallel_node(NULL)
+    m_parallel_node(NULL), 
+    m_copyNumber(-1)
 {
 }
 
@@ -80,6 +81,14 @@ NSensor* GVolume::getSensor()
     return m_sensor ; 
 }
 
+void GVolume::setCopyNumber(unsigned copyNumber)
+{
+    m_copyNumber = copyNumber ; 
+}
+unsigned GVolume::getCopyNumber() const 
+{
+    return m_copyNumber ; 
+}
 
 void GVolume::setPVName(const char* pvname)
 {
@@ -191,25 +200,28 @@ void GVolume::setSensor(NSensor* sensor)
 
 guint4 GVolume::getIdentity()
 {
+    unsigned node_index = m_index ;    
+  
+    //unsigned identity_index = getSensorSurfaceIndex() ;   
+    unsigned identity_index = m_copyNumber  ;   
+
     return guint4(
-                   m_index, 
+                   node_index, 
                    getMeshIndex(), 
                    m_boundary,
-                   getSensorSurfaceIndex()
+                   identity_index
                  );
 }
 
 
-/*
-void GVolume::setIdentity(const guint4& id )
-{
-    assert( id.x == m_index );
-    assert( id.y == getMeshIndex() ) ;
-
-    setBoundary( id.z );
-    setSensorSurfaceIndex( id.w ); 
-}
-*/
+//void GVolume::setIdentity(const guint4& id )
+//{
+//    assert( id.x == m_index );
+//    assert( id.y == getMeshIndex() ) ;
+//
+//    setBoundary( id.z );
+//    setSensorSurfaceIndex( id.w ); 
+//}
 
 void GVolume::setSensorSurfaceIndex(unsigned int ssi)
 {

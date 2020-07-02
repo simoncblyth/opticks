@@ -652,8 +652,12 @@ void Scene::uploadGeometryInstanced(GMergedMesh* mm)
 
     if(!skip && !empty)
     { 
+        LOG(LEVEL)
+            << " num_instance_renderer " << m_num_instance_renderer 
+            << " MAX_INSTANCE_RENDERER " << MAX_INSTANCE_RENDERER
+            << " instcull " << m_instcull
+            ;
         assert(m_num_instance_renderer < MAX_INSTANCE_RENDERER) ;
-        LOG(LEVEL)<< "instance renderer " << m_num_instance_renderer << " instcull " << m_instcull ;
 
         NPY<float>* ibuf = mm->getITransformsBuffer();
         assert(ibuf);

@@ -62,6 +62,10 @@ class GGEO_API GVolume : public GNode {
       void     setSensorSurfaceIndex(unsigned int ssi);
       unsigned getSensorSurfaceIndex();
   public:
+      // CopyNumber comes from G4PVPlacement.CopyNo (physvol/@copynumber in GDML)
+      void     setCopyNumber(unsigned copyNumber); 
+      unsigned getCopyNumber() const ;  
+  public:
       void        setPVName(const char* pvname);
       void        setLVName(const char* lvname);
       const char* getPVName() const ;
@@ -95,6 +99,7 @@ class GGEO_API GVolume : public GNode {
       GParts*           m_parts ; 
       GPt*              m_pt ; 
       void*             m_parallel_node ; 
+      int               m_copyNumber ; 
 
 };
 #include "GGEO_TAIL.hh"

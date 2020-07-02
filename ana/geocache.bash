@@ -347,7 +347,9 @@ geocache-tds(){
     export X4Solid=INFO
     export X4PhysicalVolume=INFO
 
-    local gdml=$(opticks-prefix)/tds.gdml
+    #local label=tds
+    local label=tds_ngt_pcnk
+    local gdml=$(opticks-prefix)/$label.gdml
     echo $msg gdml $gdml
     geocache-gdml-kludge      $gdml
     geocache-gdml-kludge-dump $gdml

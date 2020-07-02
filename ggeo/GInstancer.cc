@@ -53,7 +53,7 @@
 // TODO: retune
 
 
-const plog::Severity GInstancer::LEVEL = debug ; 
+const plog::Severity GInstancer::LEVEL = PLOG::EnvLevel("GInstancer", "DEBUG") ; 
 
 GInstancer::GInstancer(Opticks* ok, GGeoLib* geolib, GNodeLib* nodelib, NSceneConfig* config) 
     : 
@@ -135,6 +135,8 @@ DYB: minrep 120 removes repeats from headonPMT, calibration sources and RPC leav
 
 void GInstancer::traverse()
 {
+    LOG(LEVEL) << "[" ; 
+
     m_root = m_nodelib->getVolume(0);
     assert(m_root);
 
@@ -150,6 +152,8 @@ void GInstancer::traverse()
     unsigned num_reps = getNumRepeats();
     if(num_reps > 0 )
     dumpRepeatCandidates(20u);
+
+    LOG(LEVEL) << "]" ; 
 }
 
 void GInstancer::traverse_r( GNode* node, unsigned int depth)
@@ -275,10 +279,18 @@ so get bad matching.
 
 Allowing leaf repeaters results in too many, so place vertex count reqirement too. 
 
+
+* m_repeat_candidates is a vector of string digests
+* std::remove_if invokes the UnaryPredicate GInstancer::operator() with digest argument
+  to decide if a repeat is contained within another and hence is disqualified.
+
+
 **/
 
 void GInstancer::findRepeatCandidates(unsigned int repeat_min, unsigned int vertex_min)
 {
+    LOG(LEVEL) << "[" ; 
+
     unsigned int nall = m_digest_count->size() ; 
     std::vector<GRepeat> cands ; 
 
@@ -303,9 +315,8 @@ void GInstancer::findRepeatCandidates(unsigned int repeat_min, unsigned int vert
 
     // erase repeats that are enclosed within other repeats 
     // ie that have an ancestor which is also a repeat candidate
-
     m_repeat_candidates.erase(
-         std::remove_if(m_repeat_candidates.begin(), m_repeat_candidates.end(), *this ),
+         std::remove_if(m_repeat_candidates.begin(), m_repeat_candidates.end(), *this ), 
          m_repeat_candidates.end()
     ); 
 
@@ -320,8 +331,9 @@ void GInstancer::findRepeatCandidates(unsigned int repeat_min, unsigned int vert
 
     if(num_repcan > 0)
     {
-        unsigned dmax = 20u ;  
+        unsigned dmax = 30u ;  
         LOG(info) 
+                  << " num_all " << num_all 
                   << " num_repcan " << num_repcan 
                   << " dmax " << dmax
                   ;
@@ -335,6 +347,7 @@ void GInstancer::findRepeatCandidates(unsigned int repeat_min, unsigned int vert
             std::cout << cand.desc() << std::endl; 
         }
     }
+    LOG(LEVEL) << "]" ; 
 }
 
 
@@ -354,20 +367,26 @@ bool GInstancer::operator()(const std::string& dig)
     return cr ;  
 } 
 
+/**
+GInstancer::isContainedRepeat
+------------------------------
+
+For the first node that matches the *pdig* progeny digest
+look back *levels* ancestors to see if any of the immediate ancestors 
+are also repeat candidates, if they are then this is a contained repeat
+and is thus disallowed in favor of the ancestor that contains it. 
+
+**/
+
 bool GInstancer::isContainedRepeat( const std::string& pdig, unsigned int levels ) const 
 {
-    // for the first node that matches the *pdig* progeny digest
-    // look back *levels* ancestors to see if any of the immediate ancestors 
-    // are also repeat candidates, if they are then this is a contained repeat
-    // and is thus disallowed in favor of the ancestor that contains it 
-
     GNode* node = m_root->findProgenyDigest(pdig) ; 
     std::vector<GNode*>& ancestors = node->getAncestors();  // ordered from root to parent 
     unsigned int asize = ancestors.size(); 
 
     for(unsigned int i=0 ; i < std::min(levels, asize) ; i++)
     {
-        GNode* a = ancestors[asize - 1 - i] ; // from back to start with parent
+        GNode* a = ancestors[asize - 1 - i] ; // from back of ancestors to start with parent
         std::string& adig = a->getProgenyDigest();
         if(std::find(m_repeat_candidates.begin(), m_repeat_candidates.end(), adig ) != m_repeat_candidates.end())
         { 
@@ -437,9 +456,20 @@ unsigned int GInstancer::getRepeatIndex(const std::string& pdig )
 }
 
 
+/**
+GInstancer::labelTree
+-----------------------
+
+Sets the repeat index.
+
+**/
 
 void GInstancer::labelTree()   // hmm : doesnt label global volumes ?
 {
+    LOG(LEVEL) << "[" 
+               << " nrep " << m_repeat_candidates.size() 
+               ; 
+
     m_labels = 0 ; 
 
     for(unsigned int i=0 ; i < m_repeat_candidates.size() ; i++)
@@ -467,6 +497,9 @@ void GInstancer::labelTree()   // hmm : doesnt label global volumes ?
         << " m_globals_count " << m_globals_count
         << " total_count : " << ( m_globals_count + m_repeats_count ) 
         ;     
+
+    LOG(LEVEL) << "]" ; 
+
 }
 
 void GInstancer::labelRepeats_r( GNode* node, unsigned int ridx)

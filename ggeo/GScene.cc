@@ -805,6 +805,8 @@ void GScene::transferMetadata( GVolume* node, const NCSG* csg, const nd* n, unsi
 
 void GScene::transferIdentity( GVolume* node, const nd* n)
 {
+    assert(0 && "suspect this is not being used"); 
+
     // passing tri identity into analytic branch 
     unsigned rel_node_idx = n->idx ;
     unsigned abs_node_idx = n->idx + m_targetnode  ;  
