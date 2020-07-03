@@ -17,8 +17,7 @@ log = logging.getLogger(__name__)
 sys.path.insert(0, os.path.expanduser("~"))  # assumes $HOME/opticks 
 
 from opticks.analytic.gdml import GDML, odict
-from opticks.ana.torus_hyperboloid import Tor, Hyp
-from opticks.ana.shape import X, SEllipsoid, STubs, STorus, SCons, SSubtractionSolid, SUnionSolid, SIntersectionSolid
+from opticks.ana.gargs import GArgs 
 
 
 class GPlot(object):
@@ -33,67 +32,11 @@ class GPlot(object):
         self.root = lv 
         self.args = args
 
-    @classmethod
-    def pmt_volname(cls, idx=0, pfx0="NNVTMCPPMT", pfx1="_PMT_20inch"):  
-        """
-        PMT volumes changed very recently, old GDML needs pfx1="_PMT_20inch" new GDML pfx1=""
-        """
-        dlv = odict()
+    def plot(self, ax, recurse=True, **kwa):
+        log.debug("kwa %s " % kwa)
+        self.plot_r(self.root, ax, recurse=recurse, depth=0, **kwa )
 
-        dlv[0] = "lMaskVirtual"   # gone ?
-        dlv[1] = "lMask"          # gone ?
-        dlv[2] = "_log" 
-        dlv[3] = "_body_log" 
-        dlv[4] = "_inner1_log"
-        dlv[5] = "_inner2_log" 
-
-        return "%s%s%s" % (pfx0, pfx1, dlv[idx]) 
-
-    @classmethod
-    def parse_args(cls, doc):
-        parser = argparse.ArgumentParser(__doc__)
-        parser.add_argument( "--path", default="$OPTICKS_PREFIX/tds.gdml")
-
-        defaults = {}
-        #defaults["lvx"] = "lInnerWater"
-        defaults["lvx"] = cls.pmt_volname(2)
-        defaults["maxdepth"] = -1    
-        defaults["xlim"] = "-330,330"  # 660
-        defaults["ylim"] = "-460,200"
-        defaults["size"] = "8,8"
-        defaults["color"] = "r,g,b,c,y,m,k" 
-        defaults["figdir"] = "/tmp/fig"       
-        #defaults["figpfx"] = "TorusNeck"       
-        defaults["figpfx"] = "PolyconeNeck"       
-
-        parser.add_argument( "--lvx", default=defaults["lvx"], help="LV name prefix" )
-        parser.add_argument( "--maxdepth", type=int, default=defaults["maxdepth"], help="Maximum local depth of volumes to plot, 0 for just root, -1 for no limit" )
-        parser.add_argument( "--xlim", default=defaults["xlim"], help="x limits : comma delimited string of two values" )
-        parser.add_argument( "--ylim", default=defaults["ylim"], help="y limits : comma delimited string of two values" )
-        parser.add_argument( "--size", default=defaults["size"], help="figure size in inches : comma delimited string of two values" )
-        parser.add_argument( "--color", default=defaults["color"], help="comma delimited string of color strings" )
-        parser.add_argument( "--figdir", default=defaults["figdir"], help="directory path in which to save PNG figures" )
-        parser.add_argument( "--figpfx", default=defaults["figpfx"], help="prefix for PNG filename" )
-
-        args = parser.parse_args()
-        fmt = '[%(asctime)s] p%(process)s {%(pathname)s:%(lineno)d} %(levelname)s - %(message)s'
-        logging.basicConfig(level=logging.INFO, format=fmt)
-
-        fsplit_ = lambda s:map(float,s.split(",")) 
-        args.xlim = fsplit_(args.xlim)
-        args.ylim = fsplit_(args.ylim)
-        args.size = fsplit_(args.size)
-        args.color = args.color.split(",")
-
-        if not os.path.isdir(args.figdir):
-            os.makedirs(args.figdir)
-        pass 
-
-        args.pngpath = lambda _:os.path.join(args.figdir, "%s%s.png" % (args.figpfx,_))
-        return args
-
-
-    def plot_r(self, lv0, ax, recurse, depth=0, **kwa):
+    def plot_r(self, lv0, ax, recurse, depth, **kwa):
         """
         Suspect this is assuming no offsets at pv/lv level 
         """
@@ -106,9 +49,8 @@ class GPlot(object):
         kwa.update(color=color)
 
         sh = s.as_shape(**kwa)
-        x = X(sh)       # X provides a place to spawn modified geometry
 
-        for pt in x.root.patches():
+        for pt in sh.patches():
             log.debug("pt %s" % pt)
             ax.add_patch(pt)
         pass
@@ -121,10 +63,6 @@ class GPlot(object):
         else:
             pass
         pass
-
-    def plot(self, ax, recurse=True, **kwa):
-        log.debug("kwa %s " % kwa)
-        self.plot_r(self.root, ax, recurse=recurse, depth=0, **kwa )
 
 
     @classmethod
@@ -149,6 +87,24 @@ class GPlot(object):
         return fig, ax 
 
     @classmethod
+    def MakeFigX(cls, plt, lvs, args, recurse=True):
+        """
+        With recurse True all subvolumes are drawn onto the same canvas
+        """
+        ny = 1
+        nx = len(lvs) 
+        fig, axs = plt.subplots(ny, nx, **kwa )
+        assert axs.shape == (nx) 
+
+        for i in range(len(lvs)):
+            lv = lvs[i]
+            ax = axs[i]
+            gp = cls( lv, args)
+            gp.plot(ax, recurse=True)
+        pass
+ 
+
+    @classmethod
     def MultiFig(cls, plt, lvs, args):
         """
         Separate canvas for each LV
@@ -164,7 +120,7 @@ class GPlot(object):
 
 
     @classmethod
-    def SubPlotsFig(cls, plt, lvsl, args):
+    def SubPlotsFig(cls, plt, lvsl, args, combiZoom=False, zoomlimits=None):
         """
         :param plt:
         :param lvsl: list containing one or more lvs lists of lv
@@ -174,6 +130,12 @@ class GPlot(object):
 
         All volumes on one page via subplots  
         """
+
+        if combiZoom:
+            assert not zoomlimits is None 
+        pass
+        shorten_title_ = getattr(args, 'shorten_title_', lambda t:t) 
+
         if len(lvsl) == 1:
             cf = False
             lvs = lvsl[0]
@@ -193,52 +155,75 @@ class GPlot(object):
             ny, nx = 2, n_lvs/2
         pass        
 
-
         log.info("SubFig ny:%d nx:%d n_lvs:%d" % (ny,nx,n_lvs) )
 
         kwa = dict()
-        kwa["sharex"] = True 
-        kwa["sharey"] = True 
-        #kwa["figsize"] = (nx*3,ny*3)
+        if not combiZoom:
+            kwa["sharex"] = True 
+            kwa["sharey"] = True 
+        pass
         kwa["figsize"] = args.size
-        #kwa["gridspec_kw" ] = {'hspace': 0}
 
-        fig, axs = plt.subplots(ny, nx, **kwa )
+        cx = 2
+        if combiZoom:
+            izz = range(2)
+            fig, axs = plt.subplots(1, cx, **kwa )
+        else:
+            izz = range(1)
+            fig, axs = plt.subplots(ny, nx, **kwa )
+        pass
 
         suptitle = lvs[0].local_prefix if cf == False else "%s cf %s " % (lvs0[0].local_prefix, lvs1[0].local_prefix)
-        fig.suptitle(suptitle, fontsize=10) 
+        fig.suptitle(suptitle, fontsize=args.suptitle_fontsize) 
 
-        iv = 0 
-        for iy in range(ny):
-            for ix in range(nx):
-                if iv < len(lvs):
-                    if len(axs.shape) == 1:
-                        ax = axs[iy]
-                    else:
-                        ax = axs[iy,ix]
+        
+        for iz in izz:
+            iv = 0 
+            for iy in range(ny):
+                for ix in range(nx):
+                    if iv < len(lvs):
+                        
+                        if combiZoom:
+                            ax = axs if cx == 1 else axs[iz]
+                        elif len(axs.shape) == 1:
+                            ax = axs[iy]
+                        elif len(axs.shape) == 2:
+                            ax = axs[iy,ix]
+                        pass
+
+                        ax.set_xlim(args.xlim)
+                        ax.set_ylim(args.ylim) 
+                        ax.set_aspect('equal')
+
+                        if combiZoom and iz == 1:
+                            zoomlimits(ax)  
+                        pass
+                        
+                        lv = lvs[iv]
+                        title = lv.local_title if cf == False else "%s cf %s" % (shorten_title_(lvs0[iv].local_title), shorten_title_(lvs1[iv].local_title))
+                      
+                        if combiZoom and iv == 0: 
+                            log.info(title)
+                            ax.set_title(title, fontsize=10)
+                        else:
+                            ax.set_title(title, fontsize=10)
+                        pass
+
+                        if cf == False:
+                            gp = cls( lv, args)
+                            gp.plot(ax, recurse=False)
+                        else:
+                            gp0 = cls( lvs0[iv], args)
+                            gp0.plot(ax, recurse=False)
+                            gp1 = cls( lvs1[iv], args)
+                            gp1.plot(ax, recurse=False, linestyle="dotted")
+                        pass 
                     pass
-                    ax.set_xlim(args.xlim)
-                    ax.set_ylim(args.ylim) 
-                    
-                    lv = lvs[iv]
-                    title = lv.local_title if cf == False else "%s cf %s" % (lvs0[iv].local_title, lvs1[iv].local_title)
-
-                    ax.set_title(title, fontsize=10)
-
-                    if cf == False:
-                        gp = cls( lv, args)
-                        gp.plot(ax, recurse=False)
-                    else:
-                        gp0 = cls( lvs0[iv], args)
-                        gp0.plot(ax, recurse=False)
-                        gp1 = cls( lvs1[iv], args)
-                        gp1.plot(ax, recurse=False, linestyle="dotted")
-                    pass 
+                    iv += 1 
                 pass
-                iv += 1 
             pass
-        pass
         return fig, axs
+
 
 
 
@@ -284,19 +269,15 @@ def pmt_annotate( ax, pmt):
 
 
 if __name__ == '__main__':
+    args = GArgs.parse(__doc__)
+    lvx = args.lvname(1)
 
-    args = GPlot.parse_args(__doc__)
-    g = GDML.parse(args.path)
+    g = GDML.parse(args.gdmlpath(0))
     g.smry()
 
-
-    #lvx = "NNVTMCPPMT_PMT_20inch_log"
-    #lvx = "NNVTMCPPMT_log"
-    lvx = "HamamatsuR12860_PMT_20inch_body_log" 
-
     lv = g.find_one_volume(lvx)
-    s = lv.solid 
-    s.sub_traverse()
+    #s = lv.solid 
+    #s.sub_traverse()
 
     log.info( "lv %r" % lv )
 
@@ -305,16 +286,21 @@ if __name__ == '__main__':
     plt.ion()
 
     fig, ax = GPlot.MakeFig(plt, lv, args, recurse=True)  # all volumes together
+
+    ax.set_aspect('equal')
+
     fig.show()
-    fig.savefig(args.pngpath("CombinedFig"))
+
+    combpath = args.figpath("CombinedFig")
+    log.info("saving to %s " % combpath)
+    fig.savefig(combpath)
     
     #axs = GPlot.MultiFig(plt, lvs, args)
 
+if 0:
     fig, axs = GPlot.SubPlotsFig(plt, [lvs], args)
     fig.show()
-    fig.savefig(args.pngpath("SplitFig"))
-
-
+    fig.savefig(args.figpath("SplitFig"))
 
 
 if 0:

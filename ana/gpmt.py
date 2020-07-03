@@ -18,39 +18,19 @@ sys.path.insert(0, os.path.expanduser("~"))  # assumes $HOME/opticks
 from opticks.analytic.gdml import GDML
 from opticks.ana.shape import ellipse_points, circle_points
 from opticks.ana.gplt import GPlot, add_line
+from opticks.ana.gargs import GArgs
 
 if __name__ == '__main__':
 
-    args = GPlot.parse_args(__doc__)
-
-    lvx = specs_(r"""
-    PMT_3inch_log
-    NNVTMCPPMTlMaskVirtual
-    HamamatsuR12860lMaskVirtual
-    mask_PMT_20inch_vetolMaskVirtual 
-    NNVTMCPPMT_PMT_20inch_log
-    HamamatsuR12860_PMT_20inch_log
-    """
-    )
-    ilv = 5
-
-    labels = specs_(r"""
-    tds_ngt
-    tds_ngt_pcnk
-    """
-    )
-    ila = 1
-    label = labels[ila]
-
-
-    path = "$OPTICKS_PREFIX/%s.gdml" % label
-    g = GDML.parse(path)
+    args = GArgs.parse(__doc__)
+    g = GDML.parse(args.gdmlpath(0))
     g.smry()
 
-    lv = g.find_one_volume(lvx[ilv])
+    lvx = args.lvname(1) 
+    lv = g.find_one_volume(lvx)
 
     if lv == None:
-        log.fatal("failed to find ilv:%d lvx[ilv]:[%s] " % (ilv,lvx[ilv])) 
+        log.fatal("failed to find lvx:[%s] " % (lvx)) 
     assert lv
 
     #s = lv.solid 
@@ -64,13 +44,17 @@ if __name__ == '__main__':
 
     fig, ax = GPlot.MakeFig(plt, lv, args, recurse=True)  # all volumes together
     fig.show()
-    fig.savefig(args.pngpath("CombinedFig"))
+    path = args.figpath("CombinedFig")
+    log.info("saving to %s " % path)
+    fig.savefig(path)
     
     #axs = GPlot.MultiFig(plt, lvs, args)
 
     fig, axs = GPlot.SubPlotsFig(plt, [lvs], args)
     fig.show()
-    fig.savefig(args.pngpath("SplitFig"))
+    path = args.figpath("SplitFig")
+    log.info("saving to %s " % path)
+    fig.savefig(path)
 
     #scribble( axs[0,2] )
 
