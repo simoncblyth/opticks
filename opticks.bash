@@ -1440,30 +1440,45 @@ EOI
 opticks-full()
 {
     local msg="=== $FUNCNAME :"
-    echo $msg START $(date)
     opticks-info
 
+    # hmm just a dir check leading to assumption that 
+    #  all externals built OK is far too optimistic 
     if [ ! -d "$(opticks-prefix)/externals" ]; then
-
-        echo $msg installing the below externals into $(opticks-prefix)/externals
-        opticks-externals 
-        opticks-externals-install
-
-        echo $msg config-ing the preqs 
-        opticks-preqs
-        opticks-preqs-pc
-
-        echo $msg config-ing the optionals
-        opticks-optionals
-        opticks-optionals-pc
-
-
-        echo $msg generating setup script 
-        opticks-setup-generate 
+        opticks-full-externals
     else
         echo $msg using preexisting externals from $(opticks-prefix)/externals
     fi 
+    opticks-full-make    
+}
 
+opticks-full-externals()
+{
+    local msg="=== $FUNCNAME :"
+    echo $msg START $(date)
+
+    echo $msg installing the below externals into $(opticks-prefix)/externals
+    opticks-externals 
+    opticks-externals-install
+
+    echo $msg config-ing the preqs 
+    opticks-preqs
+    opticks-preqs-pc
+
+    echo $msg config-ing the optionals
+    opticks-optionals
+    opticks-optionals-pc
+
+    echo $msg generating setup script 
+    opticks-setup-generate 
+
+    echo $msg DONE $(date)
+}
+
+opticks-full-make()
+{
+    local msg="=== $FUNCNAME :"
+    echo $msg START $(date)
 
     om-
     cd $(om-home)
@@ -1471,9 +1486,10 @@ opticks-full()
 
     opticks-prepare-installation
 
-
     echo $msg DONE $(date)
 }
+
+
 
 
 opticks-ext-setup()
