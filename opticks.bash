@@ -1456,39 +1456,54 @@ opticks-full-externals()
 {
     local msg="=== $FUNCNAME :"
     echo $msg START $(date)
+    local rc
 
     echo $msg installing the below externals into $(opticks-prefix)/externals
     opticks-externals 
     opticks-externals-install
+    rc=$?
+    [ $rc -ne 0 ] && return $rc
 
     echo $msg config-ing the preqs 
     opticks-preqs
     opticks-preqs-pc
+    rc=$?
+    [ $rc -ne 0 ] && return $rc
 
     echo $msg config-ing the optionals
     opticks-optionals
     opticks-optionals-pc
+    rc=$?
+    [ $rc -ne 0 ] && return $rc
 
     echo $msg generating setup script 
     opticks-setup-generate 
+    rc=$?
+    [ $rc -ne 0 ] && return $rc
 
     echo $msg DONE $(date)
+    return 0 
 }
 
 opticks-full-make()
 {
     local msg="=== $FUNCNAME :"
     echo $msg START $(date)
+    local rc
 
-    om-
+    om-  
     cd $(om-home)
     om-install
+    rc=$? 
+    [ $rc -ne 0 ] && return $rc
 
     opticks-prepare-installation
+    rc=$? 
+    [ $rc -ne 0 ] && return $rc
 
     echo $msg DONE $(date)
+    return 0
 }
-
 
 
 

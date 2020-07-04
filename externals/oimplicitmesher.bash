@@ -137,8 +137,8 @@ oimplicitmesher-url(){
 
 
 
-oimplicitmesher-dir(){  echo $(opticks-prefix)/externals/ImplicitMesher/ImplicitMesher ; }
-oimplicitmesher-bdir(){ echo $(opticks-prefix)/externals/ImplicitMesher/ImplicitMesher.build ; }
+oimplicitmesher-dir(){  echo $(opticks-prefix)/externals/ImplicitMesher/implicitmesher ; }
+oimplicitmesher-bdir(){ echo $(opticks-prefix)/externals/ImplicitMesher/implicitmesher.build ; }
 
 
 
@@ -151,7 +151,7 @@ oimplicitmesher-fullwipe()
     local iwd=$PWD
     cd $(opticks-prefix)
 
-    rm -rf externals/ImplicitMesher/ImplicitMesher.build
+    rm -rf externals/ImplicitMesher/implicitmesher.build
 
     rm -f  externals/lib/libImplicitMesher.*
     rm -rf externals/include/ImplicitMesher
