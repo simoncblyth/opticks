@@ -825,6 +825,9 @@ OPTICKS_OPTIX_PREFIX
 OPTICKS_CUDA_PREFIX
    determines the CUDA installation to build against, eg /usr/local/cuda-10.1 
 
+OPTICKS_COMPUTE_CAPABILITY
+   influences CUDA compilation flags, optixrap fails to build without this 
+
 Note that reinstalling a different version of these externals 
 into the same directory eg /usr/local/cuda or /usr/local/optix 
 will break the installation.  To avoid this it is 
@@ -948,6 +951,11 @@ opticks-setup-check-mandatory-buildenv()
         echo $msg OPTICKS_CUDA_PREFIX
         return 1
     fi 
+    if [ -z "$OPTICKS_COMPUTE_CAPABILITY" ]; then 
+        echo $msg OPTICKS_COMPUTE_CAPABILITY
+        return 1
+    fi 
+
     return 0 
 }
 opticks-setup-check-mandatory-dir()
@@ -1004,18 +1012,15 @@ BUILD_$var=${!var}
 
 if [ -n "\$$var" ]; then
    if [ "\$$var" != "\$BUILD_$var" ]; then 
-       echo \$MSG WARNING inconsistent $var between build time and usage is not allowed
+       echo \$MSG WARNING inconsistent $var between build time and setup time
        printf "%s %-25s \n"  "\$MSG" $var   
        echo \$$var | tr ":" "\n"
        printf "%s %-25s \n"  "\$MSG" BUILD_$var 
        echo \$BUILD_$var | tr ":" "\n"  
        echo 
-
-       echo \$MSG WARNING resetting $var to the build time input value : it will be modified below  
-       export $var=\$BUILD_$var
-
-       #echo \$MSG exiting with RC 1 
-       #return 1
+       
+       #echo \$MSG WARNING resetting $var to the build time input value : it will be modified below  
+       #export $var=\$BUILD_$var
    else
        echo \$MSG consistent $var between build time and usage 
        printf "%s %25s \n"  "\$MSG" $var 
