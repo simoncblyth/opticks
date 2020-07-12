@@ -26,7 +26,9 @@ if __name__ == '__main__':
     g = GDML.parse(args.gdmlpath(0))
     g.smry()
 
-    lvx = args.lvname(1) 
+    nnvt = 1
+    hama = 2 
+    lvx = args.lvname(hama) 
     lv = g.find_one_volume(lvx)
 
     if lv == None:

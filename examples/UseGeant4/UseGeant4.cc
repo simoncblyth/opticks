@@ -167,6 +167,8 @@ $8 = (const G4AffineTransform &) @0x252ff58: {rxx = -0.10182051317974285, rxy = 
 
 */
 
+    std::cout << "local = dbg_affine_trans.TransformPoint(global[i]) " << std::endl ; 
+
     G4ThreeVector local ; 
     for(int i=0 ; i < 3 ; i++)
     {
@@ -197,11 +199,10 @@ $8 = (const G4AffineTransform &) @0x252ff58: {rxx = -0.10182051317974285, rxy = 
     G4Transform3D t3(gdml_rot,position);   // g4-cls G4GDMLReadStructure
     G4AffineTransform trans2 = X4AffineTransform__FromTransform(t3);  
 
-    
-
 
 
      G4cout << "trans2 " << trans2 << G4endl ; 
+    std::cout << "local = trans2.TransformPoint(global[i]) " << std::endl ; 
 
     for(int i=0 ; i < 3 ; i++)
     {
