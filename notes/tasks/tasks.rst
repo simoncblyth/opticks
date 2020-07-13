@@ -1,11 +1,11 @@
 Tasks
 =======
 
-Needed within 2020 for JUNO 
-------------------------------
+**A** : Needed within 2020 for JUNO 
+---------------------------------
 
-Expand GPU processing to detector collection efficiency hit culling
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+**A1** : Expand GPU processing to detector collection efficiency hit culling
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * **New development : but intended approach uses techniques familiar from reemission texture**
 
@@ -31,8 +31,8 @@ GPU texture can be increased as much as needed to closely reproduce the result
 of the cubic spline interpolation.
 
 
-Machinery for Random Aligned "Bi-Simulation" Validation 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+**A2** : Machinery for Random Aligned "Bi-Simulation" Validation 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * **Adaption of existing machinery**
 
@@ -54,8 +54,8 @@ Interpretation of the causes of problems is assisted by GPU based photon history
 indexing that facilitates comparisons within categories of photon histories.
 
 
-Production Running Optimization
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+**A3** : Production Running Optimization
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * **New Area : lots of learning + experiments needed**
 
@@ -74,8 +74,8 @@ situation by allowing the many more CPU nodes available to effectively share the
 fewer GPUs.
 
 
-Opticks Server
-~~~~~~~~~~~~~~~~~~
+**A4** : Opticks Server
+~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * **Reviving old code : little new development but much experimentation to see if useful**
 
@@ -90,8 +90,8 @@ Experimentation is needed to see if these Opticks Server capabilities could allo
 limited GPU resources to be effectively shared from a larger number of CPU only nodes.
 
 
-migrate OptixRap geometry to OptiX 7.1+
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+**A5** : migrate OptixRap geometry to OptiX 7.1+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * **Adoption of New API : significant learning/experimentation needed** 
 
@@ -106,8 +106,8 @@ migrate OptixRap geometry to OptiX 7.1+
 3. explore ways of bringing the geometry to 7.1 
 
 
-geometry model BVH "tuning" with OptiX 6.5, 7.1,...
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+**A6** : geometry model BVH "tuning" with OptiX 6.5, 7.1,...
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * **A critical task for performance**
 
@@ -123,45 +123,26 @@ optimal performance and gain some intuition of what works best.
 
 
 
-Useful for JUNO but not expected to be required in 2020 
------------------------------------------------------------
+**B** : Useful for JUNO but not expected to be required in 2020 
+--------------------------------------------------------------
+
+**B1** : prototype Geant4 optical genstep API and try to get Geant4 to incorporate it
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Another aspect of improving integration that while possibly quite 
+simple requires changes on the Geant4 side. 
+
+Currently it is necessary to  
+customize G4Scintillation and G4Cerenkov (and in future G4OpWLS) 
+in order to collect "genstep" parameters just before the photon 
+generation loop. Addition of a "genstep" API and a way to inhibit the 
+photon generation loop to all Geant4 optical photon generating 
+processes would be very helpful for integrating external optical photon simulations
+like Opticks.  
 
 
-
-Multi-GPU scaling in OptiX 7+
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-* **New Area : Lots of Learning/Exerimentation Required**
-
-*This task has some cross-talk with production running optimization. 
-As I suspect the CPU/GPU work balance will usually mean that GPUs are 
-starved of work and waiting around for the CPU : so the priority assigned 
-to development of this (which could be very difficult) needs to bear in mind this 
-bigger picture.*
-
-
-OptiX 6 features transparent linear performance scaling out to 4 GPUs.
-The transition to OptiX 7 drops this feature, with the 
-task of handling multiple GPUs being left to the application.
-
-1. investigations to see how others are doing this
-   (praying for some demo code from NVIDIA or some open source OptiX renderers that have done this)
-
-   * expect will entail pinned memory on the host 
-
-2. create "standalone" example code to explore techniques, 
-3. performance measurements 
-4. investigate how this can be integrated with Opticks 
-
-
-Try to benefit from multi-threaded support in OptiX 7+
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-* **New Area : Lots of Learning/Exerimentation Required**
-
-
-Visualization Refactoring to explore new graphics developments
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+**B2** : Visualization Refactoring to explore new graphics developments
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Visualizations of detector geometries and event displays provide
 the fastest and most effective way to communicate the principals of
@@ -201,17 +182,56 @@ many more devices.
 
 
 
-Tasks not Needed for JUNO 
-------------------------------
+**B3** : Multi-GPU scaling in OptiX 7+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-implement Geant4 extended example
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+* **New Area : Lots of Learning/Exerimentation Required**
+
+*This task has some cross-talk with production running optimization. 
+As I suspect the CPU/GPU work balance will usually mean that GPUs are 
+starved of work and waiting around for the CPU : so the priority assigned 
+to development of this (which could be very difficult) needs to bear in mind this 
+bigger picture.*
+
+
+OptiX 6 features transparent linear performance scaling out to 4 GPUs.
+The transition to OptiX 7 drops this feature, with the 
+task of handling multiple GPUs being left to the application.
+
+1. investigations to see how others are doing this
+   (praying for some demo code from NVIDIA or some open source OptiX renderers that have done this)
+
+   * expect will entail pinned memory on the host 
+
+2. create "standalone" example code to explore techniques, 
+3. performance measurements 
+4. investigate how this can be integrated with Opticks 
+
+
+**B4** : Try to benefit from multi-threaded support in OptiX 7+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* **New Area : Lots of Learning/Exerimentation Required**
+
+
+
+
+
+
+
+
+
+**C** : Tasks not Needed for JUNO, but useful for wider applicability 
+-----------------------------------------------------------------------
+
+**C1** : implement Geant4 extended example
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Fermilab Geant4 group are working on this 
 
 
-add support for G4OpWLS wavelength shifting
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+**C2** : add support for G4OpWLS wavelength shifting
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * **Straightforward but a bit involved as widespread modifications needed**
 
@@ -232,8 +252,8 @@ Summary of the steps:
 6. optixrap/cu/wavelength_lookup.h  wls_lookup similar to reemission_lookup 
  
 
-add support for G4OpMieHG scattering
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+**C3** : add support for G4OpMieHG scattering
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * source/processes/optical/src/G4OpMieHG.cc
 
@@ -243,14 +263,14 @@ A brief look suggests this is straightforward, will entail adding more propertie
 standard Opticks subset.
 
 
-add support for more G4OpBoundaryProcess surface types
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+**C4** : add support for more G4OpBoundaryProcess surface types
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Only the small portion of G4OpBoundaryProcess surface types needed for JUNO are ported.
 
 
-find a way to handle G4Torus which doesnt kill performance
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+**C5** : find a way to handle G4Torus which doesnt kill performance
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Direct approach of solving quartics is horrible due 
 to the very large range of coefficients. Even analytic 
@@ -267,8 +287,8 @@ to find intersections that could provide performant ray torus
 intersections without using doubles.
 
 
-Iterative intersection via Sphere tracing and SDF geometry modelling 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+**C6** : Iterative intersection via Sphere tracing and SDF geometry modelling 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 This is a very different way of finding intersects in an iterative manner 
 that removes the need to solve polynomials instead you just 
@@ -310,8 +330,8 @@ to pick the bbox and sphere tracing in the intersect.
 
 
 
-expand geometry support to more complex geometries
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+**C7** : expand geometry support to more complex geometries
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Although the Opticks translation of detector geometries is general 
 in its approach it has been developed and tested in the context of  
@@ -330,8 +350,8 @@ needed will depend on the performance obtained with geometries
 of LHC detector complexity. 
 
 
-support for more complex (G4Boolean abuse) CSG solids
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+**C8** : support for more complex (G4Boolean abuse) CSG solids
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Some detector geometries abuse G4Boolean taking some shape and 
 subtracting hundreds of holes from it.  The Opticks CSG implementation 
@@ -345,8 +365,8 @@ is one way to work better with complex CSG : however that would effectively
 require a full reimplementation of the CSG intersection algorithm.
 
 
-supporting custom solid primitives 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+**C9** : supporting custom solid primitives 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Solids which are difficult to model in a performant way with 
 generic CSG can be implemented with a custom ray geometry intersection primitive. 
@@ -367,8 +387,8 @@ added to Geant4 in order to have both CPU and GPU implemetations
 for validation. 
 
 
-supporting hairy geometry, eg lots of wires  
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+**C10** : supporting hairy geometry, eg lots of wires  
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * https://news.developer.nvidia.com/optix-sdk-7-1/
 
