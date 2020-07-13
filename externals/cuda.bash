@@ -33,6 +33,8 @@ See Also
 
 * cudatoolkit-
 * cudamac-
+* env-;cudatex-
+
 
 
 Samples
@@ -51,6 +53,7 @@ CUDA Application Design and Development, Chapter 1 - First Programs and How to T
 * https://www.sciencedirect.com/science/article/pii/B978012388426800001X
 
 * https://www.sciencedirect.com/topics/computer-science/amdahls-law
+
 
 
 CUDA envvars

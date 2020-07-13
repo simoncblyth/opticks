@@ -31,6 +31,24 @@ rtDeclareVariable(optix::Ray,           ray, rtCurrentRay, );
 rtDeclareVariable(float,                  t, rtIntersectionDistance, );
 
 
+/**
+Quoting from optix_device.h:rtTransformPoint
+
+    rtTransformPoint transforms a point using the current
+    active transformation stack.
+
+    During traversal, intersection and any-hit programs, 
+    the current ray will be located in object space.
+    During ray generation, closest-hit and miss programs, the current ray
+    will be located in world space.  
+
+    For ray generation and miss programs, the transform will 
+    always be the identity transform.  For traversal, intersection,
+    any-hit and closest-hit programs, the transform will be dependent on
+    the set of active transform nodes for the current state.
+
+**/
+
 RT_PROGRAM void closest_hit_propagate()
 {
      const float3 n = normalize(rtTransformNormal(RT_OBJECT_TO_WORLD, geometricNormal)) ; 

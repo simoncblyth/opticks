@@ -73,6 +73,12 @@ rtDeclareVariable(float3, shading_normal,   attribute shading_normal, );
 rtDeclareVariable(PerRayData_radiance, prd_radiance, rtPayload, );
 
 
+rtDeclareVariable(optix::Ray,           raycur, rtCurrentRay, );
+rtDeclareVariable(float,                  t, rtIntersectionDistance, );
+
+
+
+
 RT_PROGRAM void raygen()
 {
     PerRayData_radiance prd;
@@ -92,7 +98,13 @@ RT_PROGRAM void raygen()
 // Returns shading normal as the surface shading result
 RT_PROGRAM void closest_hit_radiance0()
 {
-  prd_radiance.result = normalize(rtTransformNormal(RT_OBJECT_TO_WORLD, shading_normal))*0.5f + 0.5f;
+  float3 isect = raycur.origin + t*raycur.direction ; 
+  const float3 local = rtTransformPoint( RT_WORLD_TO_OBJECT, isect );  
+  prd_radiance.result = normalize(local)*0.5f + 0.5f ; 
+  //prd_radiance.result = normalize(isect)*0.5f + 0.5f ;    // coloring clearly global like this
+
+  //prd_radiance.result = normalize(rtTransformNormal(RT_WORLD_TO_OBJECT, shading_normal))*0.5f + 0.5f;
+  //prd_radiance.result = normalize(rtTransformNormal(RT_OBJECT_TO_WORLD, shading_normal))*0.5f + 0.5f;
 }
 RT_PROGRAM void miss()
 {

@@ -199,6 +199,8 @@ void InitRTX(int rtxmode)
     }
     else
     {
+#if OPTIX_VERSION_MAJOR >= 6
+
         int rtx0(-1) ;
         RT_CHECK_ERROR( rtGlobalGetAttribute(RT_GLOBAL_ATTRIBUTE_ENABLE_RTX, sizeof(rtx0), &rtx0) );
         assert( rtx0 == 0 );  // despite being zero performance suggests it is enabled
@@ -210,6 +212,10 @@ void InitRTX(int rtxmode)
         int rtx2(-1) ;
         RT_CHECK_ERROR(rtGlobalGetAttribute(RT_GLOBAL_ATTRIBUTE_ENABLE_RTX, sizeof(rtx2), &rtx2));
         assert( rtx2 == rtx );
+#else
+        printf("RTX requires optix version >= 6 \n"); 
+#endif
+
     }
 }
 
@@ -225,16 +231,25 @@ int main(int argc, char** argv)
     int ppmsave = ppmstr ? atoi(ppmstr) : -1 ; 
 
 
-    const char* name = getenv("EXAMPLE_NAME") ; 
-    assert( name && "expecting EXAMPLE_NAME envvar " );
-    const char* prefix = getenv("EXAMPLE_PREFIX"); 
-    assert( prefix && "expecting PREFIX envvar pointing to writable directory" );
+    const char* name = getenv("STANDALONE_NAME") ; 
+    assert( name && "expecting STANDALONE_NAME envvar with name of the CMake target " );
+    const char* prefix = getenv("STANDALONE_PREFIX"); 
+    assert( prefix && "expecting STANDALONE_PREFIX envvar pointing to writable directory" );
 
     const char* cmake_target = name ; 
 
-    unsigned factor = 2u ; 
-    unsigned width =  factor*2560u ; 
-    unsigned height = factor*1440u ; 
+    //unsigned factor = 2u ; 
+    //unsigned width =  factor*2560u ; 
+    //unsigned height = factor*1440u ; 
+
+    //unsigned factor = 1u ; 
+    //unsigned width =  factor*2880u ; 
+    //unsigned height = factor*1800u ; 
+
+    unsigned factor = 1u ; 
+    unsigned width =  factor*1440u ; 
+    unsigned height = factor*900u ; 
+
 
     const unsigned nu = 100u;
     const unsigned nv = 100u;

@@ -1,3 +1,4 @@
+// nvcc compute_capability.cu -o /tmp/compute_capability 
 #include <stdio.h>
 
 int main(int, char**)

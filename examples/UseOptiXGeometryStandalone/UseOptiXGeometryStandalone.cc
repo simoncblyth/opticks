@@ -143,8 +143,8 @@ int main(int argc, char** argv)
 {
 
     const char* name = "UseOptiXGeometryStandalone" ; 
-    const char* prefix = getenv("PREFIX"); 
-    assert( prefix && "expecting PREFIX envvar pointing to writable directory" );
+    const char* prefix = getenv("STANDALONE_PREFIX"); 
+    assert( prefix && "expecting STANDALONE_PREFIX envvar pointing to writable directory" );
 
     const char* cmake_target = name ; 
 

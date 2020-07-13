@@ -69,6 +69,16 @@ OptiX 7 : Brand New Lower Level API
 
 
 
+OptiX 7.1.0 Release Notes (June 2020)
+-----------------------------------------
+
+OptiX 7.1.0 requires that you install a r450+ driver.
+
+* Windows 7/8.1/10 64-bit
+* Linux RHEL 4.8+ or Ubuntu 10.10+ 64-bit
+
+
+
 Profiling
 ------------
 
