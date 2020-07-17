@@ -33,6 +33,12 @@ OptiX 7 : Brand New Lower Level API
 
 
 
+* https://forums.developer.nvidia.com/t/optix-7-1-release/139962
+* https://github.com/NVIDIA/OptiX_Apps
+
+
+
+
 * https://www.nvidia.com/en-us/gtc/session-catalog/?search=OptiX
 * https://developer.nvidia.com/gtc/2020/video/s21904
 
@@ -408,8 +414,8 @@ EOU
 
 
 
-optix7-prefix(){ echo $OPTICKS_PREFIX/externals/OptiX_700 ; }
-optix6-prefix(){ echo $OPTICKS_PREFIX/externals/OptiX_650 ; }
+#optix7-prefix(){ echo $OPTICKS_PREFIX/externals/OptiX_700 ; }
+#optix6-prefix(){ echo $OPTICKS_PREFIX/externals/OptiX_650 ; }
 
 optix7-realprefix(){ 
   local prefix=$OPTICKS_OPTIX_PREFIX 
@@ -421,21 +427,35 @@ optix7-prefix(){ echo $(dirname $(optix7-realprefix))/OptiX_700 ; }
 optix6-prefix(){ echo $(dirname $(optix7-realprefix))/OptiX_650 ; }
 
 
+optix7-icd(){ cd $(optix7-prefix)/include ; }
+optix7-cd(){ cd $(optix7-prefix)/SDK ; }
+optix7-dcd(){ cd $(optix7-prefix)/doc ; }
+
+optix6-icd(){ cd $(optix6-prefix)/include ; }
+optix6-cd(){ cd $(optix6-prefix)/SDK ; }
+optix6-dcd(){ cd $(optix6-prefix)/doc ; }
+
+
 optix7-pdf-(){ echo $(optix7-prefix)/doc/OptiX_Programming_Guide_7.0.0.pdf ; }
 optix6-pdf-(){ echo $(optix6-prefix)/doc/OptiX_Programming_Guide_6.5.0.pdf ; }
 
 optix7-pdf(){ open $($FUNCNAME-) ; }
 optix6-pdf(){ open $($FUNCNAME-) ; }
 
+# open- is from env-
+optix6-p(){ open- ; open-page $(( 8 + ${1:-0} )) $(optix6-pdf-) ; }
+optix7-p(){ open- ; open-page $(( 4 + ${1:-0} )) $(optix7-pdf-) ; }
 
-optix7-icd(){ cd $(optix7-prefix)/include ; }
-optix7-cd(){ cd $(optix7-prefix)/SDK ; }
-optix7-dcd(){ cd $(optix7-prefix)/doc ; }
+optix7-g(){ optix7-cd ; find . -name '*.cpp' -o -name '*.h' -exec grep -Hi ${1:-texture} {} \+ ; }
+optix7-l(){ optix7-cd ; find . -name '*.cpp' -o -name '*.h' -exec grep -li ${1:-texture} {} \+ ; }
+optix6-g(){ optix6-cd ; find . -name '*.cpp' -o -name '*.h' -exec grep -Hi ${1:-texture} {} \+ ; }
+optix6-l(){ optix6-cd ; find . -name '*.cpp' -o -name '*.h' -exec grep -li ${1:-texture} {} \+ ; }
+
+
 optix7-info(){ cat << EOI
 
    OPTICKS_PREFIX       : $OPTICKS_PREFIX
    OPTICKS_OPTIX_PREFIX : $OPTICKS_OPTIX_PREFIX
-
 
    optix7-realprefix : $(optix7-realprefix)      # obtained with readlink
    optix7-prefix     : $(optix7-prefix)
@@ -445,6 +465,13 @@ optix7-info(){ cat << EOI
 EOI
 }
 
+
+
+optix7-apps(){
+   local dir=/tmp/$USER/opticks
+   mkdir -p $dir && cd $dir    
+   [ ! -d OptiX_Apps ] && git clone https://github.com/NVIDIA/OptiX_Apps
+}
 
 
 
