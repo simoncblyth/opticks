@@ -816,7 +816,10 @@ void OpticksHub::configureGeometryTest()
 OpticksHub::deferredGeometryPrep
 ---------------------------------
 
-Invoked from OpticksHub::init after loading or adopting geometry.
+Invoked from on high in OpticksHub::init after loading or adopting geometry.
+
+TODO: find a less surprising place to do this, here is jarringly high level :
+      I would have expected GGeoLib perhaps
 
 
 **/

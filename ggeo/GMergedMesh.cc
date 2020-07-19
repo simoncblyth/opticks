@@ -311,7 +311,15 @@ void GMergedMesh::postcreate()
 GMergedMesh::traverse_r
 --------------------------
 
-Pre-order traversal of the node tree, so root is index zero
+Pre-order traversal of tree(ridx=0) or sub-tree(ridx=1,2,3,..) starting from *node*
+called in two passes : PASS_COUNT and PASS_MERGE.
+
+PASS_COUNT
+    total selected volumes and vertices and faces
+PASS_MERGE
+    collect into this GMergedMesh the information from the GVolume being concatenated together 
+    using base relative transforms for the first example of repeated geometry instances
+
 
 **/
 
@@ -505,23 +513,24 @@ void GMergedMesh::mergeVolume( GVolume* volume, bool selected, unsigned verbosit
     gfloat3* normals  = mesh->getTransformedNormals(*transform);  
 
     if(verbosity > 3) mergeVolumeDump(volume);
-    mergeVolumeBBox(vertices, num_vert);
-    mergeVolumeIdentity(volume, selected );
+    mergeVolumeBBox(vertices, num_vert);     // m_bbox, m_center_extent  
+    mergeVolumeIdentity(volume, selected );  // m_nodeinfo, m_identity, m_meshes
 
     m_cur_volume += 1 ;    // irrespective of selection, as prefer absolute volume indexing 
 
     if(selected)
     {
 
-        mergeVolumeVertices( num_vert, vertices, normals );
+        mergeVolumeVertices( num_vert, vertices, normals );  // m_vertices, m_normals
 
         unsigned* node_indices     = volume->getNodeIndices();
         unsigned* boundary_indices = volume->getBoundaryIndices();
         unsigned* sensor_indices   = volume->getSensorIndices();
 
-        mergeVolumeFaces( num_face, faces, node_indices, boundary_indices, sensor_indices  );
+        mergeVolumeFaces( num_face, faces, node_indices, boundary_indices, sensor_indices  ); // m_faces, m_nodes, m_boundaries, m_sensors
    
 #ifdef GPARTS_HOT 
+        assert(0) ; // THIS OLD WAY WAS TERRIBLY WASTEFUL : INSTEAD MOVED TO DEFERRED GParts CONCAT USING GPt WHICH COLLECTS THE ARGS FOR GParts  
         GParts* parts = volume->getParts();  // analytic 
         mergeVolumeAnalytic( parts, transform, verbosity );
 #endif
@@ -649,6 +658,17 @@ void GMergedMesh::mergeVolumeDump( GVolume* volume)
         ;
 }
 
+
+
+/**
+GMergedMesh::mergeVolumeBBox
+-----------------------------
+
+Collect bounding box and center extent obtained from the vertices
+into m_bbox and m_center_extent.
+
+**/
+
 void GMergedMesh::mergeVolumeBBox( gfloat3* vertices, unsigned nvert )
 {
     // needs to be outside the selection branch for the all volume center extent
@@ -659,6 +679,23 @@ void GMergedMesh::mergeVolumeBBox( gfloat3* vertices, unsigned nvert )
     m_bbox[m_cur_volume] = *bb ;  
     m_center_extent[m_cur_volume] = bb->center_extent() ;
 }
+
+/**
+GMergedMesh::mergeVolumeIdentity
+----------------------------------
+
+Collects identity info from the GVolume and its GMesh into 
+the below arrays:
+
+m_identity 
+      GVolume::getIdentity 
+m_nodeinfo 
+      mesh face/vert counts and node/parent indices 
+m_meshes
+      mesh index 
+
+
+**/
 
 void GMergedMesh::mergeVolumeIdentity( GVolume* volume, bool selected )
 {
@@ -716,6 +753,15 @@ void GMergedMesh::mergeVolumeIdentity( GVolume* volume, bool selected )
     m_identity[m_cur_volume] = _identity ; 
 }
 
+/**
+GMergedMesh::mergeVolumeVertices
+---------------------------------
+
+Collect nvert vertices and normals into m_vertices and m_normals
+
+
+**/
+
 void GMergedMesh::mergeVolumeVertices( unsigned nvert, gfloat3* vertices, gfloat3* normals )
 {
     for(unsigned i=0 ; i < nvert ; ++i )
@@ -724,6 +770,18 @@ void GMergedMesh::mergeVolumeVertices( unsigned nvert, gfloat3* vertices, gfloat
         m_normals[m_cur_vertices+i] = normals[i] ; 
     }
 }
+
+
+/**
+GMergedMesh::mergeVolumeFaces
+---------------------------------
+
+Collects nface into m_faces (triplets of vertex indices).
+In doing the merge the vertex indices are offset by m_cur_verices.
+
+Also collects other face level quantities: m_nodes, m_boundaries, m_sensors.
+
+**/
 
 void GMergedMesh::mergeVolumeFaces( unsigned nface, guint3* faces, unsigned* node_indices, unsigned* boundary_indices, unsigned* sensor_indices )
 {
@@ -767,6 +825,7 @@ and the GPt collected into GPts
 #ifdef GPARTS_HOT
 void GMergedMesh::mergeVolumeAnalytic( GParts* parts, GMatrixF* transform, unsigned verbosity )
 {
+    assert(0); 
     if(!parts)
     {
         LOG(fatal) << "parts NULL  " ;
@@ -785,6 +844,17 @@ void GMergedMesh::mergeVolumeAnalytic( GParts* parts, GMatrixF* transform, unsig
 }
 #endif
 
+/**
+GMergedMesh::mergeVolumeAnalytic
+----------------------------------
+
+GPt instance from the volume are instanciated within X4PhysicalVolume::convertNode.
+Here the placement transform is set into the GPt and it is collected into the GPts m_pts, 
+which is able to persist into the geocache. 
+
+With repeated geometry one GPt instance for each GVolume is collected into GPts m_pts. 
+
+**/
 
 void GMergedMesh::mergeVolumeAnalytic( GPt* pt, GMatrixF* transform, unsigned /*verbosity*/ )
 {
@@ -1044,24 +1114,36 @@ float* GMergedMesh::getModelToWorldPtr(unsigned int index)
 GMergedMesh::addInstancedBuffers
 -----------------------------------
 
-hmm for very large numbers of instances : probably better to defer this post-cache
-and/or use some thrust trickery to do the repeating at GPU upload stage
+itransforms InstanceTransformsBuffer
+    (num_instances, 4, 4)
 
+    collect GNode placement transforms into buffer
+
+iidentity InstanceIdentityBuffer
+    (num_instances*num_volumes_per_instance, 4 )
+
+    collects the results of GVolume::getIdentity for all volumes within all instances. 
+
+aii AnalyticInstanceIdentityBuffer
+    (num_instances, 4 )
+
+    adhoc collects volume identity info for the base node of all instances
+    TODO: eliminate this ?
+    TODO: change name : Analytic is NOT appropriate name anymore, maybe makeInstanceBaseIdentityBuffer 
 
 **/
-
 
 void GMergedMesh::addInstancedBuffers(const std::vector<GNode*>& placements)
 {
     LOG(LEVEL) << " placements.size() " << placements.size() ; 
 
-    NPY<float>* itransforms = GTree::makeInstanceTransformsBuffer(placements); // collect GNode placement transforms into buffer
+    NPY<float>* itransforms = GTree::makeInstanceTransformsBuffer(placements); 
     setITransformsBuffer(itransforms);
 
     NPY<unsigned int>* iidentity  = GTree::makeInstanceIdentityBuffer(placements);
-    setInstancedIdentityBuffer(iidentity);
+    setInstancedIdentityBuffer(iidentity);  
 
-    NPY<unsigned int>* aii   = GTree::makeAnalyticInstanceIdentityBuffer(placements);
+    NPY<unsigned int>* aii   = GTree::makeAnalyticInstanceIdentityBuffer(placements); 
     setAnalyticInstancedIdentityBuffer(aii);
 }
 

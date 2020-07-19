@@ -88,6 +88,16 @@ GMesh* X4Mesh::Placeholder(const G4VSolid* solid ) //static
 }
 
 
+/**
+X4Mesh::Convert
+------------------
+
+Convert G4VSolid into GMesh by (G4Polyhedron) polygonization into vertices and faces 
+which are gathered into GMesh by GMeshMaker::Make.  
+The meshindex defaults to zero.
+
+**/
+
 GMesh* X4Mesh::Convert(const G4VSolid* solid ) //static
 {
     X4Mesh xm(solid); 
@@ -116,7 +126,7 @@ GMesh* X4Mesh::getMesh() const
 
 void X4Mesh::init()
 {
-    polygonize();
+    polygonize();   // using G4Polyhedron
     collect();
     makemesh();
 
@@ -354,7 +364,8 @@ void X4Mesh::makemesh()
     }
     else
     {
-        m_mesh = GMeshMaker::Make(m_vtx, m_tri, 0 );
+        unsigned meshindex = 0 ; 
+        m_mesh = GMeshMaker::Make(m_vtx, m_tri, meshindex );
     }
 }
 

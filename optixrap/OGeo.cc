@@ -640,6 +640,10 @@ have been concatenated from multiple other GParts instances,
 one for each NCSG solid.  GParts concatenation happens during 
 GMergedMesh formation in GMergedMesh::mergeVolumeAnalytic.
 
+For repeated geometry note how all bar one of the geometry buffers 
+are small. Only the idBuf is large and usage GPU side requires 
+use of the instance_index. 
+
 **/
 
 optix::Geometry OGeo::makeAnalyticGeometry(GMergedMesh* mm, unsigned lod)

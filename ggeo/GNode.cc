@@ -376,15 +376,38 @@ void GNode::collectProgeny(std::vector<GNode*>& progeny)
 }
 
 
+/**
+GNode::getRelativeTransform
+-----------------------------
+
+This effectively provides transforms for nodes within 
+a subtree as if the base of the subtree were the root node.
+
+A vector of nodes is constructed starting from the root 
+node and ending with *this* node.  This node must be 
+within the subtree starting from the base node otherwise
+this will assert.
+
+The level transforms from nodes within the base node 
+(but not the base node transform itself) are mutiplied together to 
+form the relative to base node transform.
+
+This is canonically used by GMergedMesh::mergeVolume for 
+concatenating multiple GVolume for repeated instance where the 
+base node is the outermost node of an example of the repeated 
+instance. 
+
+Only transforms after the base node are collected
+   
+#. When this node is the base get identity ?
+#. When this node is above base this will assert
+#. When this node is below base get transforms relative to base
+   
+**/
+
+
 GMatrixF* GNode::getRelativeTransform(GNode* base)
 {
-   // only transforms after the base node are collected
-   //
-   // #. When this node is the base get identity ?
-   // #. When this node is above base this will assert
-   // #. When this node is below base get transforms relative to base
-   //  
-
     std::vector<GNode*> nodes = getAncestors();  // <--- in order starting from root
     nodes.push_back(this);
 

@@ -188,12 +188,16 @@ int GParts::Compare(const GParts* a, const GParts* b, bool dump )
 GParts::Create from GPts
 --------------------------
 
+The (GPt)pt from each GVolume yields a per-volume (GParts)parts instance
+that is added to the (GParts)com instance.
+
+
 GParts::Create from GPts attempts to duplicate the standard precache GParts 
 in a deferred postcache manner using NCSG solids persisted with GMeshLib 
 and the requisite GParts arguments (spec, placement transforms) persisted by GPts 
 together with the GGeoLib merged meshes.  
 
-Canonically the merged GParts is created precache by:
+Previously the merged GParts was created precache by:
 
 X4PhysicalVolume::convertNode  
     creating single volume GParts from NCSG and associating to GVolume
@@ -330,13 +334,18 @@ GParts* GParts::Combine(GParts* onesub, unsigned verbosity)  // static
 }
 
 
+/**
+GParts::Make
+-------------
+
+Serialize the npart shape (BOX, SPHERE or PRISM) into a (1,4,4) parts buffer. 
+Then instanciate a GParts instance to hold the parts buffer 
+together with the boundary spec.
+
+**/
 
 GParts* GParts::Make(const npart& pt, const char* spec)
 {
-    // Serialize the npart shape (BOX, SPHERE or PRISM) into a (1,4,4) parts buffer. 
-    // Then instanciate a GParts instance to hold the parts buffer 
-    // together with the boundary spec.
-
     NPY<unsigned>* idxBuf = NPY<unsigned>::make(1,4);
     idxBuf->zero();
 
@@ -999,12 +1008,12 @@ GParts::applyPlacementTransform
    to avoid leaving behind constituents this means that every constituent
    must have an associated transform, **even if its the identity transform**
 
+This gets invoked from GGeo::prepare...GMergedMesh::mergeVolumeAnalytic
 
 **/
 
 void GParts::applyPlacementTransform(GMatrix<float>* gtransform, unsigned verbosity )
 {
-   // gets invoked from GGeo::prepare...GMergedMesh::mergeVolumeAnalytic
     const float* data = static_cast<float*>(gtransform->getPointer());
     if(verbosity > 2)
     nmat4triple::dump(data, "GParts::applyPlacementTransform gtransform:" ); 
@@ -1172,12 +1181,19 @@ void GParts::add(GParts* other, unsigned verbosity )
     
 }
 
+
+/**
+GParts::setContainingMaterial
+-------------------------------
+
+For flexibility persisted GParts should leave the outer containing material
+set to a default marker name such as "CONTAINING_MATERIAL", 
+to allow the GParts to be placed within other geometry
+
+**/
+
 void GParts::setContainingMaterial(const char* material)
 {
-    // for flexibility persisted GParts should leave the outer containing material
-    // set to a default marker name such as "CONTAINING_MATERIAL", 
-    // to allow the GParts to be placed within other geometry
-
     if(m_medium)
        LOG(fatal) << "setContainingMaterial called already " << m_medium 
        ;
@@ -1276,8 +1292,6 @@ are added separtately, see GGeoTest::loadCSG.
 
 void GParts::reconstructPartsPerPrim()
 {
-
-
     assert(isPartList());
     m_parts_per_prim.clear();
 

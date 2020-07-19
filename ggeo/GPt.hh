@@ -32,6 +32,10 @@ Canonically instanciated in X4PhysicalVolume::convertNode
 where instances are associated with the GVolume of the 
 structural tree.
 
+vectors of GPt instances are collected into GPts m_pts within GMergedMesh.
+The GPts are persisted into the geocache which allows GParts creation 
+to be deferred postcache. 
+
 **/
 
 struct GGEO_API GPt 

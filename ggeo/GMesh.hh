@@ -43,6 +43,22 @@ class GBuffer ;
 GMesh
 ======
 
+TODO : Change the name to GSolid/GShape(?) OR add a GSolid/GShape that contains GMesh+NCSG  
+----------------------------------------------------------------------------------------------
+
+GMesh is no longer a good name as this class encompasses 
+both the triangulated mesh and the analytic CSG descriptions 
+converted from G4VSolid shapes.
+
+
+TODO : estrange the GMergedMesh/GMesh inheritance relationship 
+------------------------------------------------------------------
+
+GMergedMesh has become so different from GMesh that the isa relationship
+is distinctly strained with the base class GMesh having many members that 
+make sense only for the GMergedMesh subclass.  
+
+
 G4DAE Workflow
 -----------------
 

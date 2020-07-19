@@ -19,7 +19,7 @@
 #
 
 
-import sys, os, numpy as np, logging
+import sys, os, numpy as np, logging, argparse
 log = logging.getLogger(__name__)
 tx_load = lambda _:map(str.strip, open(_).readlines())
 
@@ -28,17 +28,31 @@ class BLib(object):
         return os.path.join(self.idpath, rel)
 
     @classmethod
+    def parse_args(cls, doc, **kwa):
+        np.set_printoptions(suppress=True, precision=3 )
+        parser = argparse.ArgumentParser(doc)
+        parser.add_argument(     "path",  nargs="?", help="Geocache directory", default=kwa.get("path",None) )
+        parser.add_argument(     "--level", default="info", help="logging level" ) 
+        parser.add_argument(     "-b","--brief", action="store_true", default=False ) 
+        parser.add_argument(     "-n","--names", action="store_true", default=False ) 
+        parser.add_argument(     "-s","--selection", default="", help="comma delimited list of selected boundary indices" ) 
+        args = parser.parse_args()
+        fmt = '[%(asctime)s] p%(process)s {%(pathname)s:%(lineno)d} %(levelname)s - %(message)s'
+        logging.basicConfig(level=getattr(logging,args.level.upper()), format=fmt)
+        return args  
+
+    @classmethod
     def make(cls, path):
         return cls(cls.find_idpath(path))
 
     @classmethod
     def find_idpath(cls, path):
         """
-        Convert any absolute path inside the idpath into the idpath 
+        Heuristically convert any absolute path inside the idpath into the idpath 
+        by looking for path element of length 32 corresponding to the digest string.
         """
         elem = path.split("/")
         elen = map(len,elem)
-
         try: 
             digp = elen.index(32)   # digest has length of 32 
             idpath = "/".join(elem[:digp+2])  # one past the digest 
@@ -49,6 +63,9 @@ class BLib(object):
         return idpath
 
     def __init__(self, idpath):
+        """
+        Load boundary lib index and the GItemList text files with material and surface names
+        """
         self.idpath = idpath
         blib = np.load(self.path("GBndLib/GBndLibIndex.npy"))
         mlib = tx_load(self.path("GItemList/GMaterialLib.txt"))
@@ -56,6 +73,7 @@ class BLib(object):
         self.blib = blib
         self.mlib = mlib
         self.slib = slib
+        self._selection = range(len(self.blib)) 
     def mname(self, idx):
         return self.mlib[idx] if idx < len(self.mlib) else ""
     def sname(self, idx):
@@ -71,40 +89,41 @@ class BLib(object):
 
     def __repr__(self):
         return " nbnd %3d nmat %3d nsur %3d " % ( len(self.blib), len(self.mlib), len(self.slib))
+
+    def _set_selection(self, q):
+        self._selection = map(int, q.split(","))
+    def _get_selection(self):
+        return self._selection
+    selection = property(_get_selection, _set_selection)
+
     def __str__(self):
-        return "\n".join([repr(self)] +  map(lambda _:"%3d : %s " % ( _, self.bname(_)) , range(len(self.blib))))
-    def smry(self):
+        return "\n".join([repr(self)] +  map(lambda _:"%3d : %s " % ( _, self.bname(_)) , self.selection))
+    def brief(self):
         rng = range(len(self.blib))
         rng = rng[0:5] + rng[-5:]
         return "\n".join([repr(self)] +  map(lambda _:"%3d : %s " % ( _, self.bname(_)) , rng ))
 
     def names(self):
-        rng = range(len(self.blib))
-        return "\n".join(map(lambda _:self.bname(_) , rng ))
-
+        return "\n".join(map(lambda _:self.bname(_) , self.selection ))
 
 
 
 if __name__ == '__main__':
 
-    logging.basicConfig(level=logging.INFO)
+    args = BLib.parse_args(__doc__, path=os.environ.get("IDPATH", None))
+    blib = BLib.make(args.path)
 
-    bdir = sys.argv[1] if len(sys.argv) > 1 else os.environ["IDPATH"]
-    blib = BLib.make(bdir)
-
-    mode = int(os.environ.get("MODE","0"))
-    if mode == 0: 
-        print blib
-    elif mode == 1: 
-        print blib.smry()
-    elif mode == 2: 
-        print blib.names()
-    else:
-        pass
+    if args.selection:
+        blib.selection = args.selection 
     pass
 
-
-
+    if args.brief: 
+        print(blib.brief())
+    elif args.names:
+        print(blib.names())
+    else:
+        print(blib)
+    pass
 
 
 

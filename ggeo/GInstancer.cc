@@ -48,10 +48,6 @@
 #include "PLOG.hh"
 
 
-// Following enabling of vertex de-duping (done at AssimpWrap level) 
-// the below criteria are finding fewer repeats, for DYB only the hemi pmt
-// TODO: retune
-
 
 const plog::Severity GInstancer::LEVEL = PLOG::EnvLevel("GInstancer", "DEBUG") ; 
 
@@ -96,7 +92,12 @@ void GInstancer::setVertexMin(unsigned vertex_min)
 GInstancer::createInstancedMergedMeshes
 ------------------------------------------
 
-Canonical invokation from GGeo::prepareMeshes
+Canonical invokation from GGeo::prepareVolumes
+
+1. spin over tree counting up progenyDigests to find repeated geometry 
+2. recursive setRepeatIndex on the GNode tree for each of the repeated bits of geometry
+3. makeMergedMeshAndInstancedBuffers
+
 
 **/
 
@@ -129,6 +130,10 @@ void GInstancer::createInstancedMergedMeshes(bool delta, unsigned verbosity)
 /**
 GInstancer::traverse
 ---------------------
+
+Find repeated subtrees by comparing progeny digests from every node of the tree, 
+with contained subtree repeats being excluded.
+
 
 DYB: minrep 120 removes repeats from headonPMT, calibration sources and RPC leaving just PMTs 
 
@@ -464,6 +469,18 @@ GInstancer::labelTree
 Sets the repeat index, by recursive labelling 
 starting from each of the placements.
 
+The copyNumber from the outernodes of the instance placement 
+nodes are copied to all of the nodes of the instance subtree, 
+as in some sense the copyNumber is relevant to all nodes of the subtrees
+of each placement.  
+
+Notice that the copyNumber is distinct for each placement 
+(and indeed is used as a "pmtID" by JUNO) as are the transforms 
+for these placements. 
+
+Due to this special handling of instance identity and transforms is required, 
+done in  GMergedMesh::addInstancedBuffers.
+
 **/
 
 void GInstancer::labelTree()   // hmm : doesnt label global volumes ?
@@ -600,6 +617,16 @@ void GInstancer::traverseGlobals_r( GNode* node, unsigned depth )
 }
 
 
+/**
+GInstancer::getPlacements
+--------------------------
+
+
+
+
+**/
+
+
 std::vector<GNode*> GInstancer::getPlacements(unsigned ridx)
 {
     std::vector<GNode*> placements ;
@@ -660,9 +687,13 @@ GInstancer::makeMergedMeshAndInstancedBuffers
 
 Populates m_geolib with merged meshes including the instancing buffers.
 
+Notice that for repeated geometry subtrees only the first example of such an 
+instance is concatenated into a GMergedMesh, as they are all the same.  Other than 
+this just the placement transforms for each instance are needed. These are 
+added with GMergedMesh::addInstancedBuffers.
+
 Using *last=true* is for the ndIdx of GParts(GPts) to match 
 those of GParts(NCSG) see notes/issues/x016.rst
-
 
 **/
 
@@ -676,10 +707,11 @@ void GInstancer::makeMergedMeshAndInstancedBuffers(unsigned verbosity)
 
 
     // passes thru to GMergedMesh::create with management of the mm in GGeoLib
-    GMergedMesh* mm0 = m_geolib->makeMergedMesh(0, base, root, verbosity );
+    unsigned ridx0 = 0 ; 
+    GMergedMesh* mm0 = m_geolib->makeMergedMesh(ridx0, base, root, verbosity );
 
 
-    std::vector<GNode*> placements = getPlacements(0);  // just m_root
+    std::vector<GNode*> placements = getPlacements(ridx0);  // just m_root
     assert(placements.size() == 1 );
     mm0->addInstancedBuffers(placements);  // call for global for common structure 
 

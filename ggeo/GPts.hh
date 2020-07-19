@@ -34,6 +34,9 @@ GPts
 Canonical m_pts instances are residents of GMergedMesh and
 are instanciated by GMergedMesh::GMergedMesh with GPts::Make.
 
+GPt instances are created in X4PhysicalVolume::convertNode
+and associated with the GVolume which are also instanciated there.
+
 Motivation for GPts is to allow postcache deferred creation of 
 merged GParts instances.  This capability is needed in order
 to reconcile the different Opticks/Geant4 requirements 
@@ -41,6 +44,11 @@ regarding balanced/unbalanced CSG trees, see notes/issues/x016.rst
 
 Can think of GPts as gathering and persisting the arguments needed 
 for deferred GParts creation and merging. 
+
+This GParts creation is done in GGeo::deferredCreateGParts
+which is invoked from on high in OpticksHub::init after 
+GGeo is loaded or adopted.
+
 
 **/
 
@@ -64,7 +72,7 @@ class GGEO_API GPts {
     public: 
         unsigned     getNumPt() const ; 
         const GPt*   getPt(unsigned i) const ; 
-        void         add(GPt*  other);
+        void         add(GPt* pt);
         void         dump(const char* msg="GPts::dump") const ;  
         void         save(const char* path); 
         std::string  brief() const ; 
@@ -72,8 +80,8 @@ class GGEO_API GPts {
         std::vector<GPt*>  m_pts ; 
     private:
         NPY<int>*          m_ipt_buffer ; 
-        NPY<float>*        m_plc_buffer ; 
-        GItemList*         m_specs ; 
+        NPY<float>*        m_plc_buffer ;  // placement transforms 
+        GItemList*         m_specs ;       // boundary specs 
  
 };
 

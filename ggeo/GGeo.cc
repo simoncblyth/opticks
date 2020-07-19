@@ -1414,11 +1414,22 @@ GMaterial* GGeo::getScintillatorMaterial(unsigned int index)
 GGeo::prepareVolumes
 --------------------
 
+Uses GInstancer to create the instanced GMergedMesh by combinations
+of volumes from the GVolume tree. 
+The created GMergedMesh are collected into GGeo/GGeoLib.
+
+As this is creating GMergedMesh it is clearly precache.
+(Now that GMeshLib are persisted this is not so clearly precache, 
+but that remains the case typically.)
+
+
+Old Notes
+~~~~~~~~~~
+
 This was formerly mis-named as prepareMeshes which as it 
 also does the analytic combination, with analytic GParts 
 instances hitched to the created GMergedMesh.
 
-As this is creating GMergedMesh it is clearly precache.
 
 **/
 
@@ -1448,7 +1459,6 @@ void GGeo::prepareVolumes()
         LOG(fatal) << "instancing inhibited " ;
         GNode* root = getNode(0);
         m_geolib->makeMergedMesh(0, NULL, root, meshverbosity);  // ridx:0 rbase:NULL 
-        // ^^^^  precache never needs analytic geolib ?
     }
 
     m_instancer->dump("GGeo::prepareVolumes") ; 
@@ -1459,6 +1469,9 @@ void GGeo::prepareVolumes()
 /**
 GGeo::deferredCreateGParts
 ------------------------------
+
+This is invoked from on high in OpticksHub::init/OpticksHub::deferredGeometryPrep
+after GGeo geometry is loaded or adopted into OpticksHub.
 
 This is needed prior to GPU upload of analytic geometry by OGeo,
 it requires the GMergedMesh from GGeoLib and the NCSG solids from GMeshLib.  

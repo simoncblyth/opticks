@@ -182,12 +182,12 @@ void X4PhysicalVolume::init()
     LOG(LEVEL) << " query : " << m_query->desc() ; 
 
 
-    convertMaterials();
-    convertSurfaces();
+    convertMaterials();   // populate GMaterialLib
+    convertSurfaces();    // populate GSurfaceLib
     // convertSensors();  // before closeSurfaces as may add some SensorSurfaces
     closeSurfaces();
-    convertSolids();
-    convertStructure();
+    convertSolids();      // populate GMeshLib with GMesh converted from each G4VSolid (postorder traverse processing first occurrence of G4LogicalVolume)  
+    convertStructure();   // populate GNodeLib with GVolume converted from each G4VPhysicalVolume (preorder traverse) 
     convertCheck();
 
     LOG(LEVEL) << "]" ; 
@@ -678,8 +678,8 @@ void X4PhysicalVolume::convertSolids_r(const G4VPhysicalVolume* const pv, int de
 
 
 /**
-convertSolid
--------------
+X4PhysicalVolume::convertSolid
+--------------------------------
 
 Converts G4VSolid into two things:
 
@@ -866,12 +866,19 @@ void X4PhysicalVolume::convertCheck() const
 convertStructure
 --------------------
 
+Preorder traverse conversion of the full tree of G4VPhysicalVolume 
+into a tree of GVolume, the work mostly done in X4PhysicalVolume::convertNode.
+GVolume instances are collected into GGeo/GNodeLib.
+
+Old Notes
+~~~~~~~~~~~~
+
 Note that its the YOG model that is updated, that gets
 converted to glTF later.  This is done to help keeping 
 this code independant of the actual glTF implementation 
 used.
 
-* NB this is very similar to AssimpGGeo::convertStructure, GScene::createVolumeTree
+* NB this is very similar to the ancient AssimpGGeo::convertStructure, GScene::createVolumeTree
 
 **/
 
@@ -1185,8 +1192,6 @@ GVolume* X4PhysicalVolume::convertNode(const G4VPhysicalVolume* const pv, GVolum
     // THIS IS HOT NODE CODE : ~300,000 TIMES FOR JUNO 
 
 
-    //const GMesh* mesh = m_ggeo->getMesh(lvIdx);  // <-- better to upfront get reference to the vector
-    //const GMesh* mesh = m_meshes[lvIdx] ; 
     const GMesh* mesh = m_hlib->getMeshWithIndex(lvIdx); 
 
     const NCSG* csg = mesh->getCSG();  
@@ -1213,6 +1218,7 @@ GVolume* X4PhysicalVolume::convertNode(const G4VPhysicalVolume* const pv, GVolum
     glm::mat4 xf_local_t = X4Transform3D::GetObjectTransform(pv);  
 
 #ifdef X4_TRANSFORM
+    // check the Object and Frame transforms are inverses of each other
     glm::mat4 xf_local_v = X4Transform3D::GetFrameTransform(pv);  
     glm::mat4 id0 = xf_local_t * xf_local_v ; 
     glm::mat4 id1 = xf_local_v * xf_local_t ; 

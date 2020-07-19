@@ -2174,7 +2174,17 @@ GBuffer* GMesh::makeFaceRepeatedInstancedIdentityBuffer()
 GMesh::getAppropriateRepeatedIdentityBuffer
 ---------------------------------------------
 
-Migrated here from OGeo::makeTriangulatedGeometry
+Depending on the number of ITransforms returns either
+
+friib (numITransforms > 0)
+    FaceRepeatedInstancedIdentityBuffer 
+frib (numITransforms == 0)
+    FaceRepeatedIdentityBuffer
+
+Migrated here from OGeo::makeTriangulatedGeometry.
+
+TODO: suspect might always be returning friib because even 
+      for globals there may be one identity matrix ITransform.
 
 
 **/

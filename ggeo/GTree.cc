@@ -26,16 +26,24 @@
 
 #include "PLOG.hh"
 
-const plog::Severity GTree::LEVEL = debug ; 
+const plog::Severity GTree::LEVEL = PLOG::EnvLevel("GTree", "DEBUG") ; 
 
+
+/**
+GTree::makeInstanceTransformsBuffer
+-------------------------------------
+
+Returns transforms array of shape (num_instances, 4, 4)
+
+Collects transforms from GNode placement instances into a buffer.
+getPlacement for ridx=0 just returns m_root (which always has identity transform)
+for ridx > 0 returns all GNode subtree bases of the ridx repeats.
+
+**/
 
 NPY<float>* GTree::makeInstanceTransformsBuffer(const std::vector<GNode*>& placements)
 {
-    // collecting transforms from GNode instances into a buffer
-    // getPlacement for ridx=0 just returns m_root (which always has identity transform)
-    // for ridx > 0 returns all GNode instances 
-
-    unsigned int ni = placements.size(); 
+    unsigned ni = placements.size(); 
     NPY<float>* buf = NPY<float>::make(0, 4, 4);
     for(unsigned int i=0 ; i < ni ; i++)
     {
@@ -62,13 +70,23 @@ triangulated:
    identity buffer has numInstances*numVolumes items (ie one entry for every volume of every instance), 
    downstream this gets repeated further to every triangle
  
+
+TODO: 
+   try to eliminate this using instead the below GTree::makeInstanceIdentityBuffer 
+   which collects identity info from all volumes, rather than this that just 
+   collects from the base volume of the instance (and rather poorly at that)
+
+   actually the problem with this is the name, it is no longer appropriate to be 
+   called Analytic following analytic/tringulated unification that happened years ago
+
+
 **/
 
 NPY<unsigned int>* GTree::makeAnalyticInstanceIdentityBuffer(const std::vector<GNode*>& placements) 
 {
     unsigned int numInstances = placements.size() ;
 
-    NPY<unsigned int>* buf = NPY<unsigned int>::make(numInstances, 1, 4); // huh non-analytic uses (-1,4)
+    NPY<unsigned>* buf = NPY<unsigned>::make(numInstances, 1, 4); // huh non-analytic uses (-1,4)
     buf->zero(); 
 
     std::vector<GNode*>& progeny0 = placements[0]->getProgeny();
@@ -98,7 +116,6 @@ NPY<unsigned int>* GTree::makeAnalyticInstanceIdentityBuffer(const std::vector<G
 
         bool progeny_match = progeny.size() == numProgeny ;
 
-        //if(ridx > 0)
         {
             if(!progeny_match)
                LOG(fatal) 
@@ -141,9 +158,9 @@ NPY<unsigned int>* GTree::makeAnalyticInstanceIdentityBuffer(const std::vector<G
 
         glm::uvec4 aii ; 
 
-        aii.x = base->getIndex();        
-        aii.y = i ;  // instance index (for triangulated this contains the mesh index)
-        aii.z = 0 ;  // formerly boundary, but with analytic have broken 1-1 volume/boundary relationship so boundary must live in partBuffer
+        aii.x = base->getIndex();        // nodeIndex of the base node of the instance  
+        aii.y = i ;                      // instance index (for triangulated this contains the mesh index)
+        aii.z = 0 ;                      // formerly boundary, but with analytic have broken 1-1 volume/boundary relationship so boundary must live in partBuffer
         aii.w = NSensor::RefIndex(sensor) ;  // the only critical one 
 
         buf->setQuadU(aii, i, 0); 
@@ -152,29 +169,29 @@ NPY<unsigned int>* GTree::makeAnalyticInstanceIdentityBuffer(const std::vector<G
     return buf ; 
 }
 
+/**
+GTree::makeInstanceIdentityBuffer
+-----------------------------------
+
+Repeating identity guint4 for all volumes of an instance (typically ~5 volumes for 1 instance)
+into all the instances (typically large 500-36k).
+
+Instances need to know the sensor they correspond 
+even though their geometry is duplicated. 
+
+For analytic geometry this is needed at the volume level 
+ie need buffer of size: num_transforms * num_volumes-per-instance
+
+For triangulated geometry this is needed at the triangle level
+ie need buffer of size: num_transforms * num_triangles-per-instance
+
+The triangulated version can be created from the analytic one
+by duplication according to the number of triangles.
+
+**/
+
 NPY<unsigned int>* GTree::makeInstanceIdentityBuffer(const std::vector<GNode*>& placements) 
 {
-    /*
-     Repeating identity guint4 for all volumes of an instance (typically ~5 volumes for 1 instance)
-     into all the instances (typically large 500-36k).
-
-
-     Instances need to know the sensor they correspond 
-     even though their geometry is duplicated. 
-
-     For analytic geometry this is needed at the volume level 
-     ie need buffer of size:
-             #transforms * #volumes-per-instance
-
-     For triangulated geometry this is needed at the triangle level
-     ie need buffer of size 
-             #transforms * #triangles-per-instance
-
-     The triangulated version can be created from the analytic one
-     by duplication according to the number of triangles.
-
-    */
-
     unsigned int numInstances = placements.size() ;
 
 
@@ -182,10 +199,10 @@ NPY<unsigned int>* GTree::makeInstanceIdentityBuffer(const std::vector<GNode*>& 
     unsigned numProgeny0 = placements[0]->getLastProgenyCount();
     assert( progeny0.size() == numProgeny0 );
 
-    unsigned int numVolumes  = numProgeny0 + 1 ; 
-    unsigned int num = numVolumes*numInstances ; 
+    unsigned numVolumes  = numProgeny0 + 1 ; 
+    unsigned num = numVolumes*numInstances ; 
 
-    NPY<unsigned int>* buf = NPY<unsigned int>::make(0, 4);
+    NPY<unsigned>* buf = NPY<unsigned>::make(0, 4);
 
     for(unsigned int i=0 ; i < numInstances ; i++)
     {
@@ -200,7 +217,6 @@ NPY<unsigned int>* GTree::makeInstanceIdentityBuffer(const std::vector<GNode*>& 
 
         bool progeny_match = progeny.size() == numProgeny ;
 
-        //if(ridx > 0)
         {
            if(!progeny_match)
            LOG(fatal) 

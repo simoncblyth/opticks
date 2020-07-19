@@ -90,6 +90,15 @@ GPts::GPts(NPY<int>* ipt, NPY<float>* plc, GItemList* specs)
 {
 }
 
+
+/**
+GPts::export_
+--------------
+
+From the vector of GPt instances into the transport arrays.
+
+**/
+
 void GPts::export_() // to the buffer
 {
     for(unsigned i=0 ; i < getNumPt() ; i++ )
@@ -102,8 +111,16 @@ void GPts::export_() // to the buffer
         m_plc_buffer->add(pt->placement) ;  
     }
 }
+
+/**
+GPts::import
+--------------
+
+From transport arrays into the vector of GPt instances.
+
+**/
  
-void GPts::import()  // from buffers into vector
+void GPts::import()  
 {
     assert( getNumPt() == 0 );  
 
@@ -116,8 +133,12 @@ void GPts::import()  // from buffers into vector
         const char* spec = m_specs->getKey(i); 
         glm::mat4 placement = m_plc_buffer->getMat4(i); 
         glm::ivec4 ipt = m_ipt_buffer->getQuadI(i); 
+
+        int lvIdx = ipt.x ; 
+        int ndIdx = ipt.y ; 
+        int csgIdx = ipt.z ; 
   
-        GPt* pt = new GPt( ipt.x, ipt.y, ipt.z, spec, placement ); 
+        GPt* pt = new GPt( lvIdx, ndIdx, csgIdx, spec, placement ); 
         add(pt);  
     }
     assert( getNumPt() == num_pt );  
@@ -133,9 +154,9 @@ const GPt* GPts::getPt(unsigned i) const
     return m_pts[i] ; 
 }
 
-void GPts::add( GPt* other )
+void GPts::add( GPt* pt )
 {
-    m_pts.push_back(other);    
+    m_pts.push_back(pt);    
 }
 
 std::string GPts::brief() const 
