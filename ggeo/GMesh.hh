@@ -21,6 +21,10 @@
 
 struct NSlice ; 
 template <typename T> class NPY ;
+
+
+#include "plog/Severity.h"
+
 #include "NGLM.hpp"
 
 class NPYBase ; 
@@ -214,6 +218,9 @@ class GGEO_API GMesh : public GDrawable {
       friend class Texture ;
       friend class Demo;
      // TODO: too many friends, suggests need to improve isolation
+
+  public:
+       static const plog::Severity LEVEL ;   
   public:
       static int g_instance_count ; 
 

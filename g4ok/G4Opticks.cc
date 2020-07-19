@@ -74,8 +74,8 @@ G4Opticks* G4Opticks::fOpticks = NULL ;
 //  --bouncemax 0 historical for checking generation   ??
 //
 
-//const char* G4Opticks::fEmbeddedCommandLine = " --gltf 3 --compute --save --embedded --natural --printenabled --pindex 0"  ; 
-const char* G4Opticks::fEmbeddedCommandLine = " --gltf 3 --compute --save --embedded --natural --printenabled --pindex 0 --xanalytic"  ; 
+const char* G4Opticks::fEmbeddedCommandLine = " --gltf 3 --compute --save --embedded --natural --printenabled --pindex 0"  ; 
+//const char* G4Opticks::fEmbeddedCommandLine = " --gltf 3 --compute --save --embedded --natural --printenabled --pindex 0 --xanalytic"  ; 
 
 std::string G4Opticks::EmbeddedCommandLine(const char* extra)
 {

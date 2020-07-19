@@ -996,3 +996,43 @@ aii looking useless
 
 
 
+
+Whats happening with mm0 ?
+----------------------------
+
+::
+
+    2020-07-20 02:22:51.074 INFO  [339094] [OGeo::convert@264] [ nmm 10
+    2020-07-20 02:22:51.074 INFO  [339094] [OGeo::convertMergedMesh@282] ( 0
+    2020-07-20 02:22:51.076 INFO  [339094] [OGeo::makeOGeometry@590] ugeocode [A]
+    2020-07-20 02:22:51.076 INFO  [339094] [OGeo::makeAnalyticGeometry@676]  skip GParts::close 
+    2020-07-20 02:22:51.076 INFO  [339094] [OGeo::makeAnalyticGeometry@679] mm 0 verbosity: 0   pts:  GParts  primflag         flagnodetree numParts 1916 numPrim  374
+    2020-07-20 02:22:51.076 INFO  [339094] [OGeo::makeAnalyticGeometry@709]  mmidx 0 numInstances 1 numPrim 374 idBuf 1,316326,4
+    2020-07-20 02:22:51.076 FATAL [339094] [OGeo::makeAnalyticGeometry@738]  NodeTree : MISMATCH (numPrim != numVolumes)  (this happens when using --csgskiplv)  numVolumes 316326 numVolumesSelected 374 numPrim 374 numPart 1916 numTran 967 numPlan 0
+    2020-07-20 02:22:51.379 INFO  [339094] [OGeo::convertMergedMesh@314] ) 0 numInstances 1
+    2020-07-20 02:22:51.380 INFO  [339094] [OGeo::convertMergedMesh@282] ( 1
+    2020-07-20 02:22:51.380 INFO  [339094] [OGeo::makeRepeatedAssembly@346]  mmidx 1 imodulo 0
+    2020-07-20 02:22:51.380 INFO  [339094] [OGeo::makeRepeatedAssembly@366]  numTransforms 25600 numIdentity 25600 numSolids 1 islice NSlice      0 : 25600 :     1 
+    2020-07-20 02:22:51.380 INFO  [339094] [OGeo::makeOGeometry@590] ugeocode [A]
+    2020-07-20 02:22:51.380 INFO  [339094] [OGeo::makeAnalyticGeometry@676]  skip GParts::close 
+    2020-07-20 02:22:51.380 INFO  [339094] [OGeo::makeAnalyticGeometry@679] mm 1 verbosity: 0   pts:  GParts  primflag         flagnodetree numParts    7 numPrim    5
+    2020-07-20 02:22:51.380 INFO  [339094] [OGeo::makeAnalyticGeometry@709]  mmidx 1 numInstances 25600 numPrim 5 idBuf 25600,5,4
+    2020-07-20 02:22:52.144 INFO  [339094] [OGeo::convertMergedMesh@314] ) 1 numInstances 25600
+
+
+
+
+    2020-07-20 02:49:37.444 INFO  [395156] [OGeo::convert@264] [ nmm 10
+    2020-07-20 02:49:37.444 INFO  [395156] [OGeo::convertMergedMesh@282] ( 0
+    2020-07-20 02:49:37.446 INFO  [395156] [OGeo::makeOGeometry@590] ugeocode [T]
+    2020-07-20 02:49:37.446 INFO  [395156] [OGeo::makeTriangulatedGeometry@926]  lod 0 mmIndex 0 numFaces (PrimitiveCount) 50136 numFaces0 (Outermost) 12 uFaces 50136 numVolumes 316326 numITransforms 1
+    2020-07-20 02:49:37.446 INFO  [395156] [GMesh::makeFaceRepeatedInstancedIdentityBuffer@2115]  m_index 0 numITransforms 1 numVolumes 316326 numVolumesSelected 374 numFaces 50136 numRepeatedIdentity (numITransforms*numFaces) 50136 numInstanceIdentity 1
+    2020-07-20 02:49:37.446 FATAL [395156] [GMesh::makeFaceRepeatedInstancedIdentityBuffer@2138] GMesh::makeFaceRepeatedInstancedIdentityBuffer iidentity_ok 0 iidentity_buffer_items 1 numFaces (sum of faces in numVolumes)50136 numITransforms 1 numVolumes*numITransforms 316326 numRepeatedIdentity 50136
+    python: /home/blyth/opticks/ggeo/GMesh.cc:2149: GBuffer* GMesh::makeFaceRepeatedInstancedIdentityBuffer(): Assertion `iidentity_ok' failed.
+
+    Program received signal SIGABRT, Aborted.
+
+
+
+
+

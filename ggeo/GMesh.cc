@@ -47,6 +47,8 @@
 
 #include "PLOG.hh"
 
+const plog::Severity GMesh::LEVEL = PLOG::EnvLevel("GMesh", "DEBUG" ); 
+
 namespace fs = boost::filesystem;
 
 
@@ -2104,16 +2106,31 @@ GBuffer* GMesh::makeFaceRepeatedInstancedIdentityBuffer()
     }
 
 
-    unsigned int numVolumes = getNumVolumes();
-    unsigned int numFaces = getNumFaces() ;
-    unsigned int numRepeatedIdentity = numITransforms*numFaces ;
+    unsigned numVolumes = getNumVolumes();
+    unsigned numVolumesSelected = getNumVolumesSelected();
+    unsigned numFaces = getNumFaces() ;
+    unsigned numRepeatedIdentity = numITransforms*numFaces ;
+    unsigned numInstanceIdentity = m_iidentity_buffer->getShape(0)*m_iidentity_buffer->getShape(1) ;  
+
+    LOG(LEVEL)
+        << " m_index " << m_index
+        << " numITransforms " << numITransforms
+        << " numVolumes " << numVolumes
+        << " numVolumesSelected " << numVolumesSelected
+        << " numFaces " << numFaces
+        << " numRepeatedIdentity (numITransforms*numFaces) " << numRepeatedIdentity
+        << " numInstanceIdentity " << numInstanceIdentity
+        << " m_iidentity_buffer " << m_iidentity_buffer->getShapeString()
+        << " m_itransforms_buffer " << m_itransforms_buffer->getShapeString()
+        ;
+
 
     bool nodeinfo_ok = m_nodeinfo_buffer && m_nodeinfo_buffer->getNumItems() == numVolumes ;
-    bool iidentity_ok = m_iidentity_buffer && m_iidentity_buffer->getNumItems() == numVolumes*numITransforms ;
+    bool iidentity_ok = m_iidentity_buffer && numInstanceIdentity == numVolumes*numITransforms ;
+
 
     if(!nodeinfo_ok)
         LOG(fatal) 
-            << "GMesh::makeFaceRepeatedInstancedIdentityBuffer"
             << " nodeinfo_ok " << nodeinfo_ok
             << " nodeinfo_buffer_items " << ( m_nodeinfo_buffer ? m_nodeinfo_buffer->getNumItems() : -1 )
             << " numVolumes " << numVolumes  
@@ -2121,7 +2138,6 @@ GBuffer* GMesh::makeFaceRepeatedInstancedIdentityBuffer()
 
     if(!iidentity_ok)
        LOG(fatal) 
-           << "GMesh::makeFaceRepeatedInstancedIdentityBuffer"
            << " iidentity_ok " << iidentity_ok
            << " iidentity_buffer_items " << ( m_iidentity_buffer ? m_iidentity_buffer->getNumItems() : -1 )
            << " numFaces (sum of faces in numVolumes)" << numFaces 
@@ -2147,9 +2163,9 @@ GBuffer* GMesh::makeFaceRepeatedInstancedIdentityBuffer()
               << " dumping per volume offsets "
               ;
 
-    for(unsigned int s=0 ; s < numVolumes ; s++)
+    for(unsigned s=0 ; s < numVolumes ; s++)
     {
-        unsigned int nf = (nodeinfo + s)->x ;
+        unsigned nf = (nodeinfo + s)->x ;
         if(m_verbosity > 3)
         printf(" s %u nf %3d  i0 %d:%d  i1 %d:%d   il %d:%d \n", s, nf, offset, offset+nf, i1+offset, i1+offset+nf, il+offset, il+offset+nf ); 
         nftot += nf ;
@@ -2161,22 +2177,21 @@ GBuffer* GMesh::makeFaceRepeatedInstancedIdentityBuffer()
               << " verbosity " << m_verbosity
               << " nftot " << nftot
               ;
-
-
-
     assert( numFaces == nftot );
+
+
 
 
     guint4* riid = new guint4[numRepeatedIdentity] ;
     
-    for(unsigned int i=0 ; i < numITransforms ; i++)
+    for(unsigned i=0 ; i < numITransforms ; i++)
     {
         offset = 0 ; 
-        for(unsigned int s=0 ; s < numVolumes ; s++)
+        for(unsigned s=0 ; s < numVolumes ; s++)
         {   
             guint4 iid = m_iidentity[numVolumes*i + s]  ;  
-            unsigned int nf = (nodeinfo + s)->x ;
-            for(unsigned int f=0 ; f < nf ; ++f) riid[i*numFaces+offset+f] = iid ; 
+            unsigned nf = (nodeinfo + s)->x ;
+            for(unsigned f=0 ; f < nf ; ++f) riid[i*numFaces+offset+f] = iid ; 
             offset += nf ; 
         }  
     }   
