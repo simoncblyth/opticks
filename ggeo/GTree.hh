@@ -47,7 +47,9 @@ class GGEO_API GTree {
    public: 
        static const plog::Severity LEVEL ; 
        static NPY<float>*    makeInstanceTransformsBuffer(const std::vector<GNode*>& placements);
+#ifdef WITH_AII
        static NPY<unsigned>* makeAnalyticInstanceIdentityBuffer(const std::vector<GNode*>& placements)  ; // ?->InstanceIdentityBuffer
+#endif
        static NPY<unsigned>* makeInstanceIdentityBuffer(const std::vector<GNode*>& placements)  ;         // ?->InstanceVolumeIdentityBuffer
 
 };

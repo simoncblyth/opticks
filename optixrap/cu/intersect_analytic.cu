@@ -165,7 +165,11 @@ RT_PROGRAM void bounds (int primIdx, float result[6])
     optix::Aabb* aabb = (optix::Aabb*)result;
     *aabb = optix::Aabb();
 
+#ifdef WITH_AII
     uint4 identity = identityBuffer[instance_index] ;  // instance_index from OGeo is 0 for non-instanced
+#else
+    uint4 identity = identityBuffer[instance_index*primitive_count+primIdx] ; 
+#endif
 
     const Prim& prim    = primBuffer[primIdx];
  
@@ -292,7 +296,12 @@ RT_PROGRAM void intersect(int primIdx)
     unsigned numParts    = prim.numParts() ; 
     unsigned primFlag    = prim.primFlag() ;  
 
-    uint4 identity = identityBuffer[instance_index] ; 
+#ifdef WITH_AII
+    uint4 identity = identityBuffer[instance_index] ;  // instance_index from OGeo is 0 for non-instanced
+#else
+    uint4 identity = identityBuffer[instance_index*primitive_count+primIdx] ; 
+#endif
+
 
     if(primFlag == CSG_FLAGNODETREE)  
     { 

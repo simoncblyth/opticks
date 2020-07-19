@@ -697,10 +697,19 @@ optix::Geometry OGeo::makeAnalyticGeometry(GMergedMesh* mm, unsigned lod)
     NPY<float>*     planBuf = pts->getPlanBuffer(); assert(planBuf && planBuf->hasShape(-1,4));      // planes used for convex polyhedra such as trapezoid
     NPY<int>*       primBuf = pts->getPrimBuffer(); assert(primBuf && primBuf->hasShape(-1,4));      // prim
 
-    NPY<unsigned>*  idBuf = mm->getAnalyticInstancedIdentityBuffer(); assert(idBuf && ( idBuf->hasShape(-1,4) || idBuf->hasShape(-1,1,4)));
-     // PmtIddnBox yielding -1,1,4 ?
-
     unsigned numPrim = primBuf->getNumItems();
+
+
+#ifdef WITH_AII
+    NPY<unsigned>*  idBuf = mm->getAnalyticInstancedIdentityBuffer(); assert(idBuf && ( idBuf->hasShape(-1,4) || idBuf->hasShape(-1,1,4)));
+#else
+    NPY<float>* itransforms = mm->getITransformsBuffer(); assert(itransforms && itransforms->hasShape(-1,4,4) ) ;
+    unsigned numInstances = itransforms->getNumItems(); 
+    NPY<unsigned>*  idBuf = mm->getInstancedIdentityBuffer();   assert(idBuf && idBuf->hasShape(numInstances,numPrim,4)); 
+#endif
+
+
+
     unsigned numPart = partBuf->getNumItems();
     unsigned numTran = tranBuf->getNumItems();
     unsigned numPlan = planBuf->getNumItems();

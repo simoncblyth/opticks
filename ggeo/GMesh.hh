@@ -242,7 +242,9 @@ class GGEO_API GMesh : public GDrawable {
       // per instance global transforms of repeated geometry 
       static const char* itransforms_ ;    
       static const char* iidentity_ ;     // guint4: node, mesh, boundary, sensor
+#ifdef WITH_AII
       static const char* aiidentity_ ;    
+#endif
 
       // composited GMergedMesh eg for LOD levels 
       static const char* components_ ;    
@@ -395,7 +397,9 @@ class GGEO_API GMesh : public GDrawable {
   public:
       void setITransformsBuffer(NPY<float>* buf);
       void setInstancedIdentityBuffer(NPY<unsigned int>* buf);
+#ifdef WITH_AII
       void setAnalyticInstancedIdentityBuffer(NPY<unsigned int>* buf);
+#endif
       void setComponentsBuffer(NPY<unsigned>* buf);
   public:
       bool hasTransformsBuffer(); 
@@ -418,7 +422,9 @@ class GGEO_API GMesh : public GDrawable {
       GBuffer* getIdentityBuffer() const ;
   public:
       // all instanced buffers created by GInstancer
+#ifdef WITH_AII
       NPY<unsigned int>* getAnalyticInstancedIdentityBuffer() const ;
+#endif
       NPY<float>*        getITransformsBuffer() const ;
       NPY<unsigned int>* getInstancedIdentityBuffer() const ; 
   public:
@@ -434,11 +440,11 @@ class GGEO_API GMesh : public GDrawable {
       GBuffer* getAppropriateRepeatedIdentityBuffer();
       GBuffer* getFaceRepeatedInstancedIdentityBuffer(); 
       GBuffer* getFaceRepeatedIdentityBuffer(); 
-      GBuffer* getAnalyticGeometryBuffer();
+      //GBuffer* getAnalyticGeometryBuffer();
   private: 
       GBuffer* makeFaceRepeatedInstancedIdentityBuffer();
       GBuffer* makeFaceRepeatedIdentityBuffer();
-      GBuffer* loadAnalyticGeometryBuffer(const char* path); 
+      //GBuffer* loadAnalyticGeometryBuffer(const char* path); 
 
   ///////// for use from subclass  /////////////////////////////////////
   public:
@@ -604,7 +610,9 @@ class GGEO_API GMesh : public GDrawable {
       // instancing related  buffers created by GInstancer 
       NPY<float>*        m_itransforms_buffer ;
       NPY<unsigned>*     m_iidentity_buffer ;
+#ifdef WITH_AII
       NPY<unsigned>*     m_aiidentity_buffer ; 
+#endif
   protected:
       // Composited MM components, offset recording 
       NPY<unsigned>*     m_components_buffer ;   

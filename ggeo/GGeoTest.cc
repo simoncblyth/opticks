@@ -316,11 +316,14 @@ notes/issues/test-geometry-assert-with-rtx-2-geometrytriangles-identity-buffer-i
 void GGeoTest::addPlaceholderBuffers( GMergedMesh* tmm, unsigned nelem )
 {
     GTransforms* txf = GTransforms::make(nelem); // identities
-    GIds*        aii = GIds::make(nelem);        // placeholder (n,4) of zeros
+    GIds*        ii = GIds::make(nelem);        // placeholder (n,4) of zeros
 
-    NPY<unsigned>* idbuf = aii->getBuffer() ;  
+    NPY<unsigned>* idbuf = ii->getBuffer() ;  
 
+#ifdef WITH_AII
     tmm->setAnalyticInstancedIdentityBuffer(idbuf);  
+#endif
+
     tmm->setInstancedIdentityBuffer(idbuf);  
 
     // NULL for tri avoids FaceRepeated complications

@@ -82,6 +82,8 @@ TODO:
 
 **/
 
+
+#ifdef WITH_AII
 NPY<unsigned int>* GTree::makeAnalyticInstanceIdentityBuffer(const std::vector<GNode*>& placements) 
 {
     unsigned int numInstances = placements.size() ;
@@ -168,6 +170,9 @@ NPY<unsigned int>* GTree::makeAnalyticInstanceIdentityBuffer(const std::vector<G
     }
     return buf ; 
 }
+#endif
+
+
 
 /**
 GTree::makeInstanceIdentityBuffer
@@ -253,6 +258,10 @@ NPY<unsigned int>* GTree::makeInstanceIdentityBuffer(const std::vector<GNode*>& 
         }
     }
     assert(buf->getNumItems() == num);
+    buf->reshape(-1, numVolumes, 4) ; 
+    assert(buf->getNumItems() == numInstances);
+    assert(buf->hasShape(numInstances,numVolumes, 4));
+
     return buf ;  
 }
 

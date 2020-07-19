@@ -1143,8 +1143,10 @@ void GMergedMesh::addInstancedBuffers(const std::vector<GNode*>& placements)
     NPY<unsigned int>* iidentity  = GTree::makeInstanceIdentityBuffer(placements);
     setInstancedIdentityBuffer(iidentity);  
 
+#ifdef WITH_AII
     NPY<unsigned int>* aii   = GTree::makeAnalyticInstanceIdentityBuffer(placements); 
     setAnalyticInstancedIdentityBuffer(aii);
+#endif
 }
 
 

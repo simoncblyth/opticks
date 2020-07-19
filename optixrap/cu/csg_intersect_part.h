@@ -59,7 +59,6 @@ void csg_bounds_prim(int primIdx, const Prim& prim, optix::Aabb* aabb )  // NB O
 
 #endif
 
-    //uint4 identity = identityBuffer[instance_index] ;  // instance_index from OGeo is 0 for non-instanced
 
     
     unsigned nodeIdx = 1 << height ; 
